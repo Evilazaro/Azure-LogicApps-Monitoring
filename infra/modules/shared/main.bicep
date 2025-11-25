@@ -13,7 +13,7 @@ module data 'data/main.bicep' = {
   scope: resourceGroup()
   params: {
     name: name
-    managedIdentityName: managedIdentity.name
+    servicePrincipalId: managedIdentity.properties.principalId
     tags: tags
   }
 }
@@ -26,7 +26,7 @@ module monitoring '../monitoring/main.bicep' = {
   params: {
     name: name
     location: location
-    managedIdentityName: managedIdentity.name
+    servicePrincipalId: managedIdentity.properties.principalId
     tags: tags
   }
 }

@@ -1,10 +1,13 @@
 param name string
 param location string = resourceGroup().location
-param managedIdentityName string
+param servicePrincipalId string
 param tags object
 
 resource storageAccount 'Microsoft.Storage/storageAccounts@2025-06-01' = {
-  name: take(toLower(replace(replace(replace('${name}-${uniqueString(resourceGroup().id, name)}stg', '-', ''), '_', ''), ' ', '')), 24)
+  name: take(
+    toLower(replace(replace(replace('${name}-${uniqueString(resourceGroup().id, name)}stg', '-', ''), '_', ''), ' ', '')),
+    24
+  )
   location: location
   sku: {
     name: 'Standard_LRS'
@@ -18,11 +21,6 @@ resource storageAccount 'Microsoft.Storage/storageAccounts@2025-06-01' = {
 }
 
 output STORAGE_ACCOUNT_NAME string = storageAccount.name
-
-resource managedIdentity 'Microsoft.ManagedIdentity/userAssignedIdentities@2025-01-31-preview' existing = {
-  name: managedIdentityName
-  scope: resourceGroup()
-}
 
 var storageRBACRoles = [
   '17d1049b-9a84-46fb-8f53-869881c3d3ab' // Storage Account Contributor
@@ -38,11 +36,11 @@ var storageRBACRoles = [
 
 resource storageAccountRoleAssignments 'Microsoft.Authorization/roleAssignments@2022-04-01' = [
   for roleId in storageRBACRoles: {
-    name: guid(storageAccount.id, managedIdentity.id, roleId)
+    name: guid(storageAccount.id, servicePrincipalId, roleId)
     scope: storageAccount
     properties: {
       roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', roleId)
-      principalId: managedIdentity.properties.principalId
+      principalId: servicePrincipalId
       principalType: 'ServicePrincipal'
     }
   }
