@@ -15,11 +15,11 @@ module shared 'modules/shared/main.bicep' = {
   }
 }
 
-// module workload 'modules/logic-app.bicep' = {
-//   name: 'WorkloadDeployment'
-//   scope: resourceGroup(rgName)
-//   params: {
-//     name: solutionName
-//     workspaceId: monitoring.outputs.AZURE_LOG_ANALYTICS_WORKSPACE_ID
-//   }
-// }
+module workload 'modules/logic-app.bicep' = {
+  name: 'WorkloadDeployment'
+  scope: resourceGroup(rgName)
+  params: {
+    name: solutionName
+    workspaceId: shared.outputs.AZURE_LOG_ANALYTICS_WORKSPACE_ID
+  }
+}

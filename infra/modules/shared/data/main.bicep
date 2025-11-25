@@ -14,6 +14,13 @@ resource storageAccount 'Microsoft.Storage/storageAccounts@2025-06-01' = {
   }
 }
 
+resource fileShare 'Microsoft.Storage/storageAccounts/fileServices/shares@2025-06-01' = {
+  name: '${storageAccount.name}/default/logicappfileshare'
+  properties: {
+    accessTier: 'TransactionOptimized'
+  }
+}
+
 resource managedIdentity 'Microsoft.ManagedIdentity/userAssignedIdentities@2025-01-31-preview' existing = {
   name: managedIdentityName
   scope: resourceGroup()
