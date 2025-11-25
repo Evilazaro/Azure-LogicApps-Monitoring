@@ -2,9 +2,12 @@ param name string
 param location string = resourceGroup().location
 param workspaceId string
 param storageAccountName string
+param appInsightsInstrumentationKey string
+param appInsightsConnectionString string
+param tags object 
 
 resource appServicePlan 'Microsoft.Web/serverfarms@2024-11-01' = {
-  name: '${name}${uniqueString(resourceGroup().id, name)}-asp'
+  name: '${name}-${uniqueString(resourceGroup().id, name)}-asp'
   location: location
   sku: {
     name: 'WS1'
@@ -14,6 +17,7 @@ resource appServicePlan 'Microsoft.Web/serverfarms@2024-11-01' = {
     capacity: 1
   }
   kind: 'elastic'
+  tags: tags
   properties: {
     perSiteScaling: false
     elasticScaleEnabled: true
@@ -51,12 +55,13 @@ resource storageAccount 'Microsoft.Storage/storageAccounts@2025-06-01' existing 
 var accountKey = storageAccount.listKeys().keys[0].value
 
 resource logicApp 'Microsoft.Web/sites@2023-01-01' = {
-  name: '${name}${uniqueString(resourceGroup().id, name)}-logicapp'
+  name: '${name}-${uniqueString(resourceGroup().id, name)}-logicapp'
   location: location
   kind: 'functionapp,workflowapp'
   identity: {
     type: 'SystemAssigned'
   }
+  tags: tags
   properties: {
     serverFarmId: appServicePlan.id
     publicNetworkAccess: 'Enabled'
@@ -70,6 +75,14 @@ resource logicApp 'Microsoft.Web/sites@2023-01-01' = {
         {
           name: 'AZURE_STORAGEFILE_CONNECTIONSTRING'
           value: 'DefaultEndpointsProtocol=https;AccountName=${storageAccount.name};AccountKey=${accountKey};BlobEndpoint=https://${storageAccount.name}.blob.core.windows.net/;FileEndpoint=https://${storageAccount.name}.file.core.windows.net/;TableEndpoint=https://${storageAccount.name}.table.core.windows.net/;QueueEndpoint=https://${storageAccount.name}.queue.core.windows.net/'
+        }
+        {
+          name: 'APPINSIGHTS_INSTRUMENTATIONKEY'
+          value: appInsightsInstrumentationKey
+        }
+        {
+          name: 'APPLICATIONINSIGHTS_CONNECTION_STRING'
+          value: appInsightsConnectionString
         }
       ]
     }

@@ -1,9 +1,11 @@
 param name string
 param location string = resourceGroup().location
+param tags object
 
 resource managedIdentity 'Microsoft.ManagedIdentity/userAssignedIdentities@2025-01-31-preview' = {
-  name: '${name}${uniqueString(resourceGroup().id, name)}-mi'
+  name: '${name}-${uniqueString(resourceGroup().id, name)}-mi'
   location: location
+  tags: tags
 }
 
 module data 'data/main.bicep' = {
@@ -12,6 +14,7 @@ module data 'data/main.bicep' = {
   params: {
     name: name
     managedIdentityName: managedIdentity.name
+    tags: tags
   }
 }
 
@@ -24,7 +27,10 @@ module monitoring '../monitoring/main.bicep' = {
     name: name
     location: location
     managedIdentityName: managedIdentity.name
+    tags: tags
   }
 }
 
 output AZURE_LOG_ANALYTICS_WORKSPACE_ID string = monitoring.outputs.AZURE_LOG_ANALYTICS_WORKSPACE_ID
+output AZURE_APPLICATION_INSIGHTS_INSTRUMENTATION_KEY string = monitoring.outputs.AZURE_APPLICATION_INSIGHTS_INSTRUMENTATION_KEY
+output AZURE_APPLICATION_INSIGHTS_CONNECTION_STRING string = monitoring.outputs.AZURE_APPLICATION_INSIGHTS_CONNECTION_STRING

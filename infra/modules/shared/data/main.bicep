@@ -1,14 +1,16 @@
 param name string
 param location string = resourceGroup().location
 param managedIdentityName string
+param tags object
 
 resource storageAccount 'Microsoft.Storage/storageAccounts@2025-06-01' = {
-  name: take('${name}${uniqueString(resourceGroup().id, name)}stg', 24)
+  name: take(toLower(replace(replace(replace('${name}-${uniqueString(resourceGroup().id, name)}stg', '-', ''), '_', ''), ' ', '')), 24)
   location: location
   sku: {
     name: 'Standard_LRS'
   }
   kind: 'StorageV2'
+  tags: tags
   properties: {
     accessTier: 'Hot'
     supportsHttpsTrafficOnly: true

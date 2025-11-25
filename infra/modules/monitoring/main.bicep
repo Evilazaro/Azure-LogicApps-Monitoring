@@ -1,13 +1,15 @@
 param name string
 param location string = resourceGroup().location
 param managedIdentityName string
+param tags object
 
 resource logAnalyticsWorkspace 'Microsoft.OperationalInsights/workspaces@2025-07-01' = {
-  name: '${name}${uniqueString(resourceGroup().id, name)}-law'
+  name: '${name}-${uniqueString(resourceGroup().id, name)}-law'
   location: location
   identity: {
     type: 'SystemAssigned'
   }
+  tags: tags
   properties: {
     sku: {
       name: 'PerGB2018'
@@ -22,9 +24,10 @@ resource logAnalyticsWorkspace 'Microsoft.OperationalInsights/workspaces@2025-07
 output AZURE_LOG_ANALYTICS_WORKSPACE_ID string = logAnalyticsWorkspace.id
 
 resource appInsights 'Microsoft.Insights/components@2020-02-02' = {
-  name: '${name}${uniqueString(resourceGroup().id, name)}-appinsights'
+  name: '${name}-${uniqueString(resourceGroup().id, name)}-appinsights'
   location: location
   kind: 'web'
+  tags: tags
   properties: {
     Application_Type: 'web'
     WorkspaceResourceId: logAnalyticsWorkspace.id
@@ -32,6 +35,8 @@ resource appInsights 'Microsoft.Insights/components@2020-02-02' = {
 }
 
 output AZURE_APPLICATION_INSIGHTS_NAME string = appInsights.name
+output AZURE_APPLICATION_INSIGHTS_INSTRUMENTATION_KEY string = appInsights.properties.InstrumentationKey
+output AZURE_APPLICATION_INSIGHTS_CONNECTION_STRING string = appInsights.properties.ConnectionString
 
 resource managedIdentity 'Microsoft.ManagedIdentity/userAssignedIdentities@2025-01-31-preview' existing = {
   name: managedIdentityName
