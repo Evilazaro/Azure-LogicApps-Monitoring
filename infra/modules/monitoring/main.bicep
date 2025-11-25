@@ -3,7 +3,7 @@ param location string = resourceGroup().location
 param managedIdentityName string
 
 resource logAnalyticsWorkspace 'Microsoft.OperationalInsights/workspaces@2025-07-01' = {
-  name: '${uniqueString(resourceGroup().id, name)}-law'
+  name: '${name}${uniqueString(resourceGroup().id, name)}-law'
   location: location
   identity: {
     type: 'SystemAssigned'
@@ -22,7 +22,7 @@ resource logAnalyticsWorkspace 'Microsoft.OperationalInsights/workspaces@2025-07
 output AZURE_LOG_ANALYTICS_WORKSPACE_ID string = logAnalyticsWorkspace.id
 
 resource appInsights 'Microsoft.Insights/components@2020-02-02' = {
-  name: '${uniqueString(resourceGroup().id, name)}-appinsights'
+  name: '${name}${uniqueString(resourceGroup().id, name)}-appinsights'
   location: location
   kind: 'web'
   properties: {

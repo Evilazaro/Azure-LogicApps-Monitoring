@@ -4,7 +4,7 @@ param workspaceId string
 param storageAccountName string
 
 resource appServicePlan 'Microsoft.Web/serverfarms@2024-11-01' = {
-  name: '${uniqueString(resourceGroup().id, name)}-asp'
+  name: '${name}${uniqueString(resourceGroup().id, name)}-asp'
   location: location
   sku: {
     name: 'WS1'
@@ -51,7 +51,7 @@ resource storageAccount 'Microsoft.Storage/storageAccounts@2025-06-01' existing 
 var accountKey = storageAccount.listKeys().keys[0].value
 
 resource logicApp 'Microsoft.Web/sites@2023-01-01' = {
-  name: '${uniqueString(resourceGroup().id, name)}-logicapp'
+  name: '${name}${uniqueString(resourceGroup().id, name)}-logicapp'
   location: location
   kind: 'functionapp,workflowapp'
   identity: {

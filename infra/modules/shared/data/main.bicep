@@ -3,7 +3,7 @@ param location string = resourceGroup().location
 param managedIdentityName string
 
 resource storageAccount 'Microsoft.Storage/storageAccounts@2025-06-01' = {
-  name: take('${uniqueString(resourceGroup().id, name)}stg', 24)
+  name: take('${name}${uniqueString(resourceGroup().id, name)}stg', 24)
   location: location
   sku: {
     name: 'Standard_LRS'

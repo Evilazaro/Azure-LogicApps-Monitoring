@@ -1,8 +1,8 @@
 targetScope = 'subscription'
-param solutionName string = 'contoso-tax-docs'
+param solutionName string = 'tax-docs'
 param location string
 
-var rgName = '${solutionName}-rg'
+var rgName = 'contoso-${solutionName}-rg'
 resource rg 'Microsoft.Resources/resourceGroups@2025-04-01' = {
   name: rgName
   location: location
