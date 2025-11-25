@@ -16,6 +16,7 @@ resource storageAccount 'Microsoft.Storage/storageAccounts@2025-06-01' = {
 
 resource managedIdentity 'Microsoft.ManagedIdentity/userAssignedIdentities@2025-01-31-preview' existing = {
   name: managedIdentityName
+  scope: resourceGroup()
 }
 
 var storageRBACRoles = [

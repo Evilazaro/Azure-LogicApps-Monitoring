@@ -35,6 +35,7 @@ output AZURE_APPLICATION_INSIGHTS_NAME string = appInsights.name
 
 resource managedIdentity 'Microsoft.ManagedIdentity/userAssignedIdentities@2025-01-31-preview' existing = {
   name: managedIdentityName
+  scope: resourceGroup()
 }
 
 var appInsightsRoles = [
