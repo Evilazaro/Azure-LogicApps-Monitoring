@@ -1,5 +1,5 @@
 targetScope = 'subscription'
-param solutionName string = 'contoso-tax'
+param solutionName string = 'contoso-taxdocs'
 param location string
 
 var rgName = '${solutionName}-rg'

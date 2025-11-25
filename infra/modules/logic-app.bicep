@@ -41,3 +41,20 @@ resource diagSettings 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview'
     ]
   }
 }
+
+resource logicApp 'Microsoft.Web/sites@2023-01-01' = {
+  name: '${name}-logicapp'
+  location: location
+  kind: 'functionapp,workflowapp'
+  properties: {
+    serverFarmId: appServicePlan.id
+    siteConfig: {
+      appSettings: [
+        {
+          name: 'FUNCTIONS_EXTENSION_VERSION'
+          value: '~4'
+        }
+      ]
+    }
+  }
+}
