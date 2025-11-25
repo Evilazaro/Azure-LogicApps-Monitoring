@@ -1,5 +1,5 @@
 targetScope = 'subscription'
-param solutionName string = 'contoso-logic-apps'
+param solutionName string = 'contoso-tax'
 param location string
 
 
@@ -10,7 +10,7 @@ resource rg 'Microsoft.Resources/resourceGroups@2025-04-01' = {
 }
 
 module monitoring 'modules/monitoring/main.bicep' = {
-  name: 'monitoringModuleDeployment'
+  name: 'MonitoringDeployment'
   scope: rg
   params: {
     name: solutionName
@@ -19,6 +19,7 @@ module monitoring 'modules/monitoring/main.bicep' = {
 }
 
 module workload 'modules/logic-app.bicep' = {
+  name: 'WorkloadDeployment'
   scope: resourceGroup(rgName)
   params: {
     name: solutionName
