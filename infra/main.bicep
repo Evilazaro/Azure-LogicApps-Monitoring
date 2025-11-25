@@ -10,7 +10,7 @@ var tags = {
   CostCenter: 'Engineering'
   Owner: 'Platform-Team'
   ApplicationName: 'Tax-Docs-Processing'
-  BusinessUnit: 'Finance'
+  BusinessUnit: 'Tax'
 }
 
 var rgName = 'contoso-${solutionName}-rg'

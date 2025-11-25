@@ -4,7 +4,7 @@ param workspaceId string
 param storageAccountName string
 param appInsightsInstrumentationKey string
 param appInsightsConnectionString string
-param tags object 
+param tags object
 
 resource appServicePlan 'Microsoft.Web/serverfarms@2024-11-01' = {
   name: '${name}-${uniqueString(resourceGroup().id, name)}-asp'
@@ -106,5 +106,93 @@ resource logicappDiagSettings 'Microsoft.Insights/diagnosticSettings@2021-05-01-
         category: 'AllMetrics'
       }
     ]
+  }
+}
+
+param dashBoardName string = '${name}-dashboard'
+
+resource workflowsDashboard 'Microsoft.Portal/dashboards@2025-04-01-preview' = {
+  name: dashBoardName
+  location: location
+  tags: {
+    'hidden-title': 'Tax-Docs-Workflows'
+  }
+  properties: {
+    lenses: [
+      {
+        order: 0
+        parts: [
+          {
+            position: {
+              x: 0
+              y: 0
+              rowSpan: 4
+              colSpan: 6
+            }
+            metadata: {
+              inputs: [
+                {
+                  name: 'options'
+                  value: {
+                    chart: {
+                      metrics: [
+                        {
+                          resourceMetadata: {
+                            id: logicApp.id
+                          }
+                          name: 'WorkflowActionsCompleted'
+                          aggregationType: 1
+                          namespace: 'microsoft.web/sites'
+                          metricVisualization: {
+                            displayName: 'Workflow Action Completed Count'
+                          }
+                        }
+                      ]
+                      title: 'Sum Workflow Action Completed Count for ${logicApp.name}'
+                      titleKind: 1
+                      visualization: {
+                        chartType: 2
+                        legendVisualization: {
+                          isVisible: true
+                          position: 2
+                          hideHoverCard: false
+                          hideLabelNames: true
+                        }
+                        axisVisualization: {
+                          x: {
+                            isVisible: true
+                            axisType: 2
+                          }
+                          y: {
+                            isVisible: true
+                            axisType: 1
+                          }
+                        }
+                      }
+                      timespan: {
+                        relative: {
+                          duration: 86400000
+                        }
+                        showUTCTime: false
+                        grain: 1
+                      }
+                    }
+                  }
+                  isOptional: true
+                }
+                {
+                  name: 'sharedTimeRange'
+                  isOptional: true
+                }
+              ]
+              type: 'Extension/HubsExtension/PartType/MonitorChartPart'
+            }
+          }
+        ]
+      }
+    ]
+    metadata: {
+      model: {}
+    }
   }
 }
