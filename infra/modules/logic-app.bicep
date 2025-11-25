@@ -1,15 +1,15 @@
-param appServicePlanName string = 'eyappserviceplan'
+param name string
 param location string = resourceGroup().location
 
 resource appServicePlan 'Microsoft.Web/serverfarms@2024-11-01' = {
-  name: appServicePlanName
+  name: '${name}-asp'
   location: location
   sku: {
     name: 'WS1'
     tier: 'WorkflowStandard'
     size: 'WS1'
     family: 'WS'
-    capacity: 2
+    capacity: 1
   }
   kind: 'elastic'
   properties: {
@@ -25,21 +25,4 @@ resource appServicePlan 'Microsoft.Web/serverfarms@2024-11-01' = {
     zoneRedundant: false
     asyncScalingEnabled: false
   }
-}
-
-resource storageAccount 'Microsoft.Storage/storageAccounts@2025-06-01' = {
-  name: 'eylogicappsa'
-  location: location
-  sku: {
-    name: 'Standard_LRS'
-  }
-  kind: 'StorageV2'
-  properties: {
-    accessTier: 'Hot'
-  }
-}
-
-resource logicApp 'Microsoft.App/logicApps@2025-07-01' = {
-  name: 'eylogicapp'
-  scope: appServicePlan
 }
