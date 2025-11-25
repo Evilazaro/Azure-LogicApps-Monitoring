@@ -1,43 +1,36 @@
 param name string
 param location string = resourceGroup().location
+param tags object
 
 resource managedIdentity 'Microsoft.ManagedIdentity/userAssignedIdentities@2025-01-31-preview' = {
-  name: '${name}-mi'
+  name: '${name}-${uniqueString(resourceGroup().id, name)}-mi'
   location: location
+  tags: tags
 }
 
-var storageRBACRoles = [
-  '17d1049b-9a84-46fb-8f53-869881c3d3ab' // Storage Account Contributor
-  'b7e6dc6d-f1e8-4753-8033-0f276bb0955b' // Storage Blob Data Owner
-  '974c5e8b-45b9-4653-ba55-5f855dd0fb88' // Storage Queue Data Contributor
-  '0a9a7e1f-b9d0-4cc4-a60d-0319b160aaa3' // Storage Table Data Contributor
-  '3913510d-42f4-4e42-8a64-420c390055eb' // Monitoring Metrics Publisher
-  '69566ab7-960f-475b-8e7c-b3118f30c6bd' // Storage File Data Privileged Contributor
-  'a235d3ee-5935-4cfb-8cc5-a3303ad5995e' // Storage File Data SMB MI Admin
-
-]
-
-resource storageAccount 'Microsoft.Storage/storageAccounts@2025-06-01' = {
-  name: take('${uniqueString(resourceGroup().id, name)}stg', 24)
-  location: location
-  sku: {
-    name: 'Standard_LRS'
-  }
-  kind: 'StorageV2'
-  properties: {
-    accessTier: 'Hot'
+module data 'data/main.bicep' = {
+  name: 'DataDeployment'
+  scope: resourceGroup()
+  params: {
+    name: name
+    servicePrincipalId: managedIdentity.properties.principalId
+    tags: tags
   }
 }
 
-resource storageAccountRoleAssignments 'Microsoft.Authorization/roleAssignments@2022-04-01' = [
-  for roleId in storageRBACRoles: {
-    name: guid(storageAccount.id, managedIdentity.id, roleId)
-    scope: storageAccount
-    properties: {
-      roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', roleId)
-      principalId: managedIdentity.properties.principalId
-      principalType: 'ServicePrincipal'
-    }
-  }
-]
+output STORAGE_ACCOUNT_NAME string = data.outputs.STORAGE_ACCOUNT_NAME
 
+module monitoring '../monitoring/main.bicep' = {
+  name: 'MonitoringDeployment'
+  scope: resourceGroup()
+  params: {
+    name: name
+    location: location
+    servicePrincipalId: managedIdentity.properties.principalId
+    tags: tags
+  }
+}
+
+output AZURE_LOG_ANALYTICS_WORKSPACE_ID string = monitoring.outputs.AZURE_LOG_ANALYTICS_WORKSPACE_ID
+output AZURE_APPLICATION_INSIGHTS_INSTRUMENTATION_KEY string = monitoring.outputs.AZURE_APPLICATION_INSIGHTS_INSTRUMENTATION_KEY
+output AZURE_APPLICATION_INSIGHTS_CONNECTION_STRING string = monitoring.outputs.AZURE_APPLICATION_INSIGHTS_CONNECTION_STRING
