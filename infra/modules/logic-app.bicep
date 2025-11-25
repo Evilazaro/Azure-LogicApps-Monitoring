@@ -37,10 +37,6 @@ resource diagSettings 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview'
       {
         enabled: true
         category: 'AllMetrics'
-        retentionPolicy: {
-          enabled: true
-          days: 30
-        }
       }
     ]
   }
