@@ -1,6 +1,5 @@
 param name string
 param location string = resourceGroup().location
-param workspaceId string
 
 resource managedIdentity 'Microsoft.ManagedIdentity/userAssignedIdentities@2025-01-31-preview' = {
   name: '${name}-mi'
@@ -13,6 +12,9 @@ var storageRBACRoles = [
   '974c5e8b-45b9-4653-ba55-5f855dd0fb88' // Storage Queue Data Contributor
   '0a9a7e1f-b9d0-4cc4-a60d-0319b160aaa3' // Storage Table Data Contributor
   '3913510d-42f4-4e42-8a64-420c390055eb' // Monitoring Metrics Publisher
+  '69566ab7-960f-475b-8e7c-b3118f30c6bd' // Storage File Data Privileged Contributor
+  'a235d3ee-5935-4cfb-8cc5-a3303ad5995e' // Storage File Data SMB MI Admin
+
 ]
 
 resource storageAccount 'Microsoft.Storage/storageAccounts@2025-06-01' = {
@@ -39,42 +41,3 @@ resource storageAccountRoleAssignments 'Microsoft.Authorization/roleAssignments@
   }
 ]
 
-resource appServicePlan 'Microsoft.Web/serverfarms@2024-11-01' = {
-  name: '${name}-asp'
-  location: location
-  sku: {
-    name: 'WS1'
-    tier: 'WorkflowStandard'
-    size: 'WS1'
-    family: 'WS'
-    capacity: 1
-  }
-  kind: 'elastic'
-  properties: {
-    perSiteScaling: false
-    elasticScaleEnabled: true
-    maximumElasticWorkerCount: 20
-    isSpot: false
-    reserved: false
-    isXenon: false
-    hyperV: false
-    targetWorkerCount: 0
-    targetWorkerSizeId: 0
-    zoneRedundant: false
-    asyncScalingEnabled: false
-  }
-}
-
-resource diagSettings 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
-  name: '${name}-diag'
-  scope: appServicePlan
-  properties: {
-    workspaceId: workspaceId
-    metrics: [
-      {
-        enabled: true
-        category: 'AllMetrics'
-      }
-    ]
-  }
-}
