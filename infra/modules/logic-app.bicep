@@ -1,5 +1,6 @@
 param name string
 param location string = resourceGroup().location
+param workspaceId string
 
 resource appServicePlan 'Microsoft.Web/serverfarms@2024-11-01' = {
   name: '${name}-asp'
@@ -24,5 +25,23 @@ resource appServicePlan 'Microsoft.Web/serverfarms@2024-11-01' = {
     targetWorkerSizeId: 0
     zoneRedundant: false
     asyncScalingEnabled: false
+  }
+}
+
+resource diagSettings 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
+  name: '${name}-diag'
+  scope: appServicePlan
+  properties: {
+    workspaceId: workspaceId
+    metrics: [
+      {
+        enabled: true
+        category: 'AllMetrics'
+        retentionPolicy: {
+          enabled: true
+          days: 30
+        }
+      }
+    ]
   }
 }

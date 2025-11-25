@@ -22,8 +22,6 @@ module workload 'modules/logic-app.bicep' = {
   scope: resourceGroup(rgName)
   params: {
     name: solutionName
+    workspaceId: monitoring.outputs.AZURE_LOG_ANALYTICS_WORKSPACE_ID
   }
-  dependsOn: [
-    monitoring
-  ] 
 }
