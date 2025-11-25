@@ -1,5 +1,5 @@
 targetScope = 'subscription'
-param solutionName string = 'contoso-taxdocs'
+param solutionName string = 'contoso-tax-docs'
 param location string
 
 var rgName = '${solutionName}-rg'
@@ -21,5 +21,6 @@ module workload 'modules/logic-app.bicep' = {
   params: {
     name: solutionName
     workspaceId: shared.outputs.AZURE_LOG_ANALYTICS_WORKSPACE_ID
+    storageAccountName: shared.outputs.STORAGE_ACCOUNT_NAME
   }
 }

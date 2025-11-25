@@ -2,7 +2,7 @@ param name string
 param location string = resourceGroup().location
 
 resource managedIdentity 'Microsoft.ManagedIdentity/userAssignedIdentities@2025-01-31-preview' = {
-  name: '${name}-mi'
+  name: '${uniqueString(resourceGroup().id, name)}-mi'
   location: location
 }
 
@@ -14,6 +14,8 @@ module data 'data/main.bicep' = {
     managedIdentityName: managedIdentity.name
   }
 }
+
+output STORAGE_ACCOUNT_NAME string = data.outputs.STORAGE_ACCOUNT_NAME
 
 module monitoring '../monitoring/main.bicep' = {
   name: 'MonitoringDeployment'
