@@ -12,39 +12,47 @@ A production-ready Infrastructure as Code (IaC) solution demonstrating Azure Mon
 
 ### Comprehensive Monitoring
 
+Centralized observability infrastructure for Logic Apps workflows using Azure Monitor services with hierarchical resource organization and automated diagnostic configuration.
+
 | Feature | Description |
 |---------|-------------|
-| **Azure Monitor Health Model** | Tenant-scoped Service Group deployment for hierarchical monitoring resource organization with parent-child relationships |
-| **Log Analytics Workspace** | Centralized log aggregation with 30-day retention using PerGB2018 pricing tier and system-assigned managed identity |
-| **Diagnostic Settings** | Automated diagnostic configuration for Logic Apps (WorkflowRuntime logs) and App Service Plans (AllMetrics) to Log Analytics |
-| **Custom Portal Dashboards** | Two pre-configured Azure Portal dashboards for workflow metrics (runs, triggers, actions) and infrastructure metrics (CPU, memory, network) |
+| **Azure Monitor Health Model** | Tenant-scoped Service Group deployment for hierarchical monitoring resource organization with parent-child relationships to the Tenantrootservicegroup. |
+| **Log Analytics Workspace** | Centralized log aggregation with 30-day retention using PerGB2018 pricing tier, system-assigned managed identity, and immediate purge on 30 days feature. |
+| **Diagnostic Settings** | Automated diagnostic configuration for Logic Apps (WorkflowRuntime logs and AllMetrics) and App Service Plans (AllMetrics) forwarding to Log Analytics. |
+| **Custom Portal Dashboards** | Two pre-configured Azure Portal dashboards for workflow metrics (runs, triggers, actions, failure rates) and infrastructure metrics (CPU, memory, network, HTTP queue). |
 
 ### Metrics & Telemetry
 
+Application Performance Monitoring (APM) integration with workspace-based Application Insights for Logic Apps telemetry collection and real-time workflow tracking.
+
 | Feature | Description |
 |---------|-------------|
-| **Application Insights Integration** | Workspace-based Application Insights with instrumentation key and connection string for Logic Apps telemetry collection |
-| **Workflow Runtime Metrics** | Real-time tracking of workflow runs (completed, started, dispatched), actions failure rate, triggers completed, and execution duration |
-| **Infrastructure Performance Metrics** | App Service Plan monitoring for CPU percentage, memory percentage, data in/out (BytesReceived/BytesSent), and HTTP queue length |
-| **Telemetry Forwarding** | Application Insights diagnostic settings forward all logs and metrics to Log Analytics Workspace for unified querying |
+| **Application Insights Integration** | Workspace-based Application Insights with instrumentation key and connection string for Logic Apps telemetry collection and distributed tracing. |
+| **Workflow Runtime Metrics** | Real-time tracking of workflow runs (completed, started, dispatched), actions failure rate, triggers completed, and job execution duration. |
+| **Infrastructure Performance Metrics** | App Service Plan monitoring for CPU percentage, memory percentage, data in/out (BytesReceived/BytesSent), and HTTP queue length. |
+| **Telemetry Forwarding** | Application Insights diagnostic settings forward all logs (categoryGroup 'allLogs') and metrics (AllMetrics) to Log Analytics Workspace for unified querying. |
 
 ### Security & Compliance
 
+Passwordless authentication using user-assigned managed identity with comprehensive RBAC role assignments for storage access and monitoring capabilities.
+
 | Feature | Description |
 |---------|-------------|
-| **Managed Identity Authentication** | User-assigned managed identity for passwordless authentication to Storage Account and monitoring resources without credential management |
-| **Comprehensive RBAC Assignments** | Nine granular role assignments including Storage Account Contributor, Storage Blob Data Owner, Queue/Table/File Data roles, and Monitoring Metrics Publisher |
-| **HTTPS-Only Enforcement** | Storage Account configured with supportsHttpsTrafficOnly set to true and Hot access tier for security compliance |
-| **Audit Trail Logging** | Application Insights diagnostic settings with categoryGroup 'allLogs' enabled for complete audit trail to Log Analytics |
+| **Managed Identity Authentication** | User-assigned managed identity for passwordless authentication to Storage Account and monitoring resources without credential management in code. |
+| **Comprehensive RBAC Assignments** | Nine granular role assignments including Storage Account Contributor, Storage Blob Data Owner, Queue/Table/File Data roles, and Monitoring Metrics Publisher. |
+| **HTTPS-Only Enforcement** | Storage Account configured with supportsHttpsTrafficOnly set to true, Hot access tier, and Standard_LRS replication for security compliance. |
+| **Audit Trail Logging** | Application Insights diagnostic settings with categoryGroup 'allLogs' enabled for complete audit trail to Log Analytics Workspace. |
 
 ### Infrastructure as Code
 
+Modular Bicep architecture with Azure Developer CLI support for streamlined deployment workflows and consistent environment provisioning.
+
 | Feature | Description |
 |---------|-------------|
-| **Modular Bicep Architecture** | Reusable modules organized by concern: monitoring (`src/monitoring/`), shared resources (`src/shared/`), data layer (`src/shared/data/`), and workload (`src/logic-app.bicep`) |
-| **Azure Developer CLI Support** | Streamlined deployment workflow using `azd` commands with project definition in azure.yaml for consistent environment provisioning |
-| **Comprehensive Resource Tagging** | Standardized tagging strategy with Solution, Environment, ManagedBy, CostCenter, Owner, ApplicationName, and BusinessUnit tags for governance |
-| **Parameterized Configuration** | Environment-specific values using main.parameters.json with AZURE_LOCATION placeholder for flexible regional deployments |
+| **Modular Bicep Architecture** | Reusable modules organized by concern: monitoring (monitoring), shared resources (shared), data layer (data), and workload (logic-app.bicep). |
+| **Azure Developer CLI Support** | Streamlined deployment workflow using `azd` commands with project definition in azure.yaml for consistent environment provisioning across development and production. |
+| **Comprehensive Resource Tagging** | Standardized tagging strategy with Solution, Environment, ManagedBy, CostCenter, Owner, ApplicationName, and BusinessUnit tags for governance and cost allocation. |
+| **Parameterized Configuration** | Environment-specific values using main.parameters.json with AZURE_LOCATION placeholder for flexible regional deployments across multiple Azure geographies. |
 
 ---
 
@@ -140,10 +148,10 @@ sequenceDiagram
 
 | Component | Description | Purpose | Key Features |
 |-----------|-------------|---------|--------------|
-| **Log Analytics Workspace** | Centralized log repository | Aggregate and query logs from all monitoring sources using Kusto Query Language (KQL) | 30-day retention, PerGB2018 SKU, system-assigned identity, immediate purge on 30 days feature |
+| **Log Analytics Workspace** | Centralized log repository for Azure Monitor data | Aggregate and query logs from all monitoring sources using Kusto Query Language (KQL) | 30-day retention, PerGB2018 SKU, system-assigned identity, immediate purge on 30 days feature |
 | **Application Insights** | Application Performance Monitoring (APM) service | Track Logic App workflow telemetry, custom events, dependencies, and distributed traces | Workspace-based mode, instrumentation key, connection string, diagnostic settings to Log Analytics |
-| **Storage Account** | Azure Storage service | Store Logic App runtime state, workflow definitions, file shares, queues, tables, and blobs | Standard_LRS replication, Hot tier, HTTPS-only traffic, managed identity authentication |
-| **App Service Plan** | Managed compute platform | Host Logic App Standard workflows with elastic scaling and dedicated compute capacity | WorkflowStandard tier (WS1), elastic scale enabled, up to 20 maximum workers, per-site scaling disabled |
+| **Storage Account** | Azure Storage service for Logic App runtime | Store Logic App runtime state, workflow definitions, file shares, queues, tables, and blobs | Standard_LRS replication, Hot tier, HTTPS-only traffic, managed identity authentication |
+| **App Service Plan** | Managed compute platform for hosting | Host Logic App Standard workflows with elastic scaling and dedicated compute capacity | WorkflowStandard tier (WS1), elastic scale enabled, up to 20 maximum workers, per-site scaling disabled |
 | **Logic App Standard** | Workflow orchestration engine | Execute stateful workflows with built-in connectors, triggers, and actions for business processes | System-assigned identity, diagnostic settings, Application Insights integration, storage account binding |
 | **Managed Identity** | Azure Active Directory (Azure AD) identity | Enable passwordless authentication to Azure resources without storing credentials in code | User-assigned type, automatic token management, RBAC role assignments, Azure AD integration |
 | **Health Model** | Azure Monitor organizational structure | Organize monitoring resources into hierarchical service groups at tenant scope for logical grouping | Parent-child relationships, tenant-level deployment, service group hierarchy |
@@ -194,22 +202,21 @@ Azure-LogicApps-Monitoring/
 ├── CONTRIBUTING.md
 ├── LICENSE.md
 ├── README.md
-├── revised-prompt.md
 └── SECURITY.md
 ```
 
-| File Name | File Path | Description |
-|-----------|-----------|-------------|
-| main.bicep | main.bicep | Subscription-level deployment entry point creating resource group and orchestrating shared and workload module deployments |
-| main.parameters.json | main.parameters.json | Deployment parameters with AZURE_LOCATION placeholder for environment-specific configuration via Azure Developer CLI |
-| logic-app.bicep | logic-app.bicep | Deploys App Service Plan (WorkflowStandard WS1), Logic App with diagnostic settings, and two custom Azure Portal dashboards |
-| main.bicep | main.bicep | Monitoring layer orchestration deploying Health Model, Log Analytics Workspace, and Application Insights with dependencies |
-| azure-monitor-health-model.bicep | azure-monitor-health-model.bicep | Creates tenant-scoped Service Group with parent relationship to Tenantrootservicegroup for hierarchical monitoring |
-| log-analytics-workspace.bicep | log-analytics-workspace.bicep | Deploys Log Analytics Workspace with PerGB2018 SKU, 30-day retention, system-assigned identity, and immediate purge feature |
-| app-insights.bicep | app-insights.bicep | Creates workspace-based Application Insights with Monitoring Metrics Publisher RBAC role and diagnostic settings to Log Analytics |
-| main.bicep | main.bicep | Shared resources orchestration deploying managed identity, data module (storage), and monitoring module with output forwarding |
-| main.bicep | main.bicep | Deploys Storage Account (Standard_LRS, Hot tier) with nine RBAC role assignments for managed identity authentication |
-| azure.yaml | azure.yaml | Azure Developer CLI project manifest defining project name 'azure-logicapps-monitoring' for azd command integration |
+| File Name | Path | Description |
+|-----------|------|-------------|
+| main.bicep | main.bicep | Subscription-level deployment entry point creating resource group and orchestrating shared and workload module deployments with standardized tagging strategy. |
+| main.parameters.json | main.parameters.json | Deployment parameters with AZURE_LOCATION placeholder for environment-specific configuration via Azure Developer CLI. |
+| logic-app.bicep | logic-app.bicep | Deploys App Service Plan (WorkflowStandard WS1), Logic App with diagnostic settings, and two custom Azure Portal dashboards for workflow and infrastructure metrics. |
+| main.bicep | main.bicep | Monitoring layer orchestration deploying Health Model, Log Analytics Workspace, and Application Insights with module dependencies. |
+| azure-monitor-health-model.bicep | azure-monitor-health-model.bicep | Creates tenant-scoped Service Group with parent relationship to Tenantrootservicegroup for hierarchical monitoring organization. |
+| log-analytics-workspace.bicep | log-analytics-workspace.bicep | Deploys Log Analytics Workspace with PerGB2018 SKU, 30-day retention, system-assigned identity, and immediate purge feature. |
+| app-insights.bicep | app-insights.bicep | Creates workspace-based Application Insights with Monitoring Metrics Publisher RBAC role and diagnostic settings forwarding to Log Analytics. |
+| main.bicep | main.bicep | Shared resources orchestration deploying managed identity, data module (storage), and monitoring module with output forwarding. |
+| main.bicep | main.bicep | Deploys Storage Account (Standard_LRS, Hot tier) with nine RBAC role assignments for managed identity authentication. |
+| azure.yaml | azure.yaml | Azure Developer CLI project manifest defining project name 'azure-logicapps-monitoring' for azd command integration. |
 
 ---
 
