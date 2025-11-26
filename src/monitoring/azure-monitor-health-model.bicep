@@ -1,4 +1,12 @@
+// Azure Monitor Health Model service group for hierarchical health monitoring
+// Creates a tenant-level service group for organizing monitoring resources
+
+@description('Name of the service group for health model organization.')
+@minLength(3)
+@maxLength(50)
 param name string
+
+@description('Tags to apply to the service group for organization and governance.')
 param tags object
 
 resource rootServiceGroup 'Microsoft.Management/serviceGroups@2024-02-01-preview' existing = {

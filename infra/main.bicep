@@ -1,5 +1,13 @@
+// Main deployment orchestrator for Azure Logic Apps Monitoring solution
+// Deploys resource group, shared resources (monitoring infrastructure, storage), and Logic App workload
 targetScope = 'subscription'
+
+@description('Base name for the solution. Used as prefix for all resource names to ensure consistency.')
+@minLength(3)
+@maxLength(20)
 param solutionName string = 'tax-docs'
+
+@description('Azure region where all resources will be deployed. Must support Logic Apps and Application Insights.')
 param location string
 
 @description('Tags to apply to all resources')
@@ -14,7 +22,7 @@ var tags = {
 }
 
 var rgName = 'contoso-${solutionName}-rg'
-resource rg 'Microsoft.Resources/resourceGroups@2025-04-01' = {
+resource rg 'Microsoft.Resources/resourceGroups@2024-03-01' = {
   name: rgName
   location: location
   tags: tags
@@ -25,6 +33,7 @@ module shared '../src/shared/main.bicep' = {
   scope: rg
   params: {
     name: solutionName
+    location: location
     tags: tags
   }
 }

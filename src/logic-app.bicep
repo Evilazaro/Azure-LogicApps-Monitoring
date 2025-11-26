@@ -1,9 +1,30 @@
+// Logic App workload module with App Service Plan and monitoring dashboards
+// Deploys workflow runtime, diagnostic settings, and Azure Portal dashboards
+// Configured with Application Insights telemetry and WorkflowRuntime logging
+
+@description('Base name for Logic App and App Service Plan resources.')
+@minLength(3)
+@maxLength(20)
 param name string
+
+@description('Azure region for Logic App deployment. Must support WorkflowStandard SKU.')
 param location string = resourceGroup().location
+
+@description('Resource ID of the Log Analytics workspace for diagnostic logs.')
 param workspaceId string
+
+@description('Name of the existing storage account (required for Logic Apps Standard).')
 param storageAccountName string
+
+@description('Application Insights instrumentation key for telemetry collection.')
+@secure()
 param appInsightsInstrumentationKey string
+
+@description('Application Insights connection string for telemetry endpoint configuration.')
+@secure()
 param appInsightsConnectionString string
+
+@description('Tags to apply to Logic App, App Service Plan, and dashboard resources.')
 param tags object
 
 resource appServicePlan 'Microsoft.Web/serverfarms@2024-11-01' = {
@@ -47,7 +68,7 @@ resource DiagnosticSettingsAsp 'Microsoft.Insights/diagnosticSettings@2021-05-01
   }
 }
 
-resource dashboardASP 'Microsoft.Portal/dashboards@2025-04-01-preview' = {
+resource dashboardASP 'Microsoft.Portal/dashboards@2020-09-01-preview' = {
   name: '${appServicePlan.name}-dashboard'
   location: 'eastus2'
   tags: {
@@ -517,14 +538,18 @@ resource dashboardASP 'Microsoft.Portal/dashboards@2025-04-01-preview' = {
   }
 }
 
-resource storageAccount 'Microsoft.Storage/storageAccounts@2025-06-01' existing = {
+resource storageAccount 'Microsoft.Storage/storageAccounts@2023-05-01' existing = {
   name: storageAccountName
   scope: resourceGroup()
 }
 
+// SECURITY NOTE: Using listKeys() exposes storage account key in deployment logs and outputs
+// RECOMMENDED: Configure managed identity authentication instead
+// For Logic Apps, use: AzureWebJobsStorage__accountName and remove accountKey
+// Reference: https://learn.microsoft.com/azure/logic-apps/set-up-zone-redundancy-availability-zones#prerequisites
 var accountKey = storageAccount.listKeys().keys[0].value
 
-resource logicApp 'Microsoft.Web/sites@2023-01-01' = {
+resource logicApp 'Microsoft.Web/sites@2023-12-01' = {
   name: '${name}-${uniqueString(resourceGroup().id, name)}-logicapp'
   location: location
   kind: 'functionapp,workflowapp'
@@ -581,7 +606,7 @@ resource DiagnosticSettingsLogicApp 'Microsoft.Insights/diagnosticSettings@2021-
 
 param dashBoardName string = '${name}-dashboard'
 
-resource workflowsDashboard 'Microsoft.Portal/dashboards@2025-04-01-preview' = {
+resource workflowsDashboard 'Microsoft.Portal/dashboards@2020-09-01-preview' = {
   name: dashBoardName
   location: location
   tags: {
