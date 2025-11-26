@@ -23,7 +23,7 @@ var appInsightsRoles = [
   '3913510d-42f4-4e42-8a64-420c390055eb' // Monitoring Metrics Publisher
 ]
 
-resource appInsightsRoleAssignments 'Microsoft.Authorization/roleAssignments@2022-04-01' = [
+resource roleAssignments 'Microsoft.Authorization/roleAssignments@2022-04-01' = [
   for roleId in appInsightsRoles: {
     name: guid(appInsights.id, servicePrincipalId, roleId)
     scope: appInsights
@@ -35,7 +35,7 @@ resource appInsightsRoleAssignments 'Microsoft.Authorization/roleAssignments@202
   }
 ]
 
-resource diagnosticSetting 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
+resource diagnosticSettings 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
   name: '${appInsights.name}-diagsetting'
   scope: appInsights
   properties: {
