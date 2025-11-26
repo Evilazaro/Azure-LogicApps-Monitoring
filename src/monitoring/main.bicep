@@ -3,6 +3,15 @@ param location string = resourceGroup().location
 param servicePrincipalId string
 param tags object
 
+module healthModel 'azure-monitor-health-model.bicep' = {
+  name: 'deployAzureMonitorHealthModel'
+  scope: resourceGroup()
+  params: {
+    name: name
+    tags: tags
+  }
+}
+
 module operationalInsights 'log-analytics-workspace.bicep' = {
   name: 'deployLogAnalyticsWorkspace'
   scope: resourceGroup()
@@ -11,6 +20,9 @@ module operationalInsights 'log-analytics-workspace.bicep' = {
     location: location
     tags: tags
   }
+  dependsOn: [
+    healthModel
+  ]
 }
 
 output AZURE_LOG_ANALYTICS_WORKSPACE_ID string = operationalInsights.outputs.AZURE_LOG_ANALYTICS_WORKSPACE_ID
