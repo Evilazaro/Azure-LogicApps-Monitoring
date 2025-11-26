@@ -150,13 +150,6 @@ sequenceDiagram
     Portal->>LAW: Query Metrics & Logs (KQL)
     LAW-->>Portal: Aggregated Data
     Portal-->>User: Visualizations (Charts & Graphs)
-    
-    style LA fill:#0078D4,stroke:#004578,color:#fff
-    style ASP fill:#0078D4,stroke:#004578,color:#fff
-    style SA fill:#00A4EF,stroke:#006BA1,color:#fff
-    style AI fill:#50E6FF,stroke:#007BA6,color:#000
-    style LAW fill:#50E6FF,stroke:#007BA6,color:#000
-    style Portal fill:#7FBA00,stroke:#5A8700,color:#fff
 ```
 
 ### Key Components
