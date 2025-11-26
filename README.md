@@ -154,12 +154,6 @@ sequenceDiagram
     Dashboard-->>User: Display Charts<br/>(Runs, Failures, Duration)
     
     Note over Dashboard: Auto-refresh<br/>24-hour window
-    
-    style LA fill:#065F46,stroke:#10B981,color:#FFFFFF
-    style AI fill:#1E3A8A,stroke:#3B82F6,color:#FFFFFF
-    style LAW fill:#1E3A8A,stroke:#3B82F6,color:#FFFFFF
-    style Dashboard fill:#831843,stroke:#EC4899,color:#FFFFFF
-    style SA fill:#7C2D12,stroke:#F97316,color:#FFFFFF
 ```
 
 ### Key Components
