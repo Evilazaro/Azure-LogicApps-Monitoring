@@ -16,11 +16,14 @@ resource serviceGroup 'Microsoft.Management/serviceGroups@2024-02-01-preview' = 
     parent: {
       resourceId: rootServiceGroup.id
     }
-    members: [
-      {
-        resourceId: subscription().id
-      }
-    ]
   }
 }
 
+#disable-next-line BCP081
+resource serviceGroupMember 'Microsoft.Management/serviceGroups/members@2024-02-01-preview' = {
+  parent: serviceGroup
+  name: guid(resourceGroup().id, serviceGroup.name)
+  properties: {
+    resourceId: resourceGroup().id
+  }
+}

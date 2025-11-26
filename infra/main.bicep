@@ -21,6 +21,7 @@ resource rg 'Microsoft.Resources/resourceGroups@2025-04-01' = {
 }
 
 module shared '../src/shared/main.bicep' = {
+  name: 'SharedResourcesDeployment'
   scope: rg
   params: {
     name: solutionName
