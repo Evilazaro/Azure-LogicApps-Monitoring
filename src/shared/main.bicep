@@ -2,7 +2,7 @@ param name string
 param location string = resourceGroup().location
 param tags object
 
-resource managedIdentity 'Microsoft.ManagedIdentity/userAssignedIdentities@2025-01-31-preview' = {
+resource workloadMi 'Microsoft.ManagedIdentity/userAssignedIdentities@2025-01-31-preview' = {
   name: '${name}-${uniqueString(resourceGroup().id, name)}-mi'
   location: location
   tags: tags
@@ -13,7 +13,7 @@ module data 'data/main.bicep' = {
   scope: resourceGroup()
   params: {
     name: name
-    servicePrincipalId: managedIdentity.properties.principalId
+    servicePrincipalId: workloadMi.properties.principalId
     tags: tags
   }
 }
@@ -26,7 +26,7 @@ module monitoring '../monitoring/main.bicep' = {
   params: {
     name: name
     location: location
-    servicePrincipalId: managedIdentity.properties.principalId
+    servicePrincipalId: workloadMi.properties.principalId
     tags: tags
   }
 }

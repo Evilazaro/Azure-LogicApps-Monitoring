@@ -33,7 +33,7 @@ resource appServicePlan 'Microsoft.Web/serverfarms@2024-11-01' = {
   }
 }
 
-resource diagSettings 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
+resource DiagnosticSettingsAsp 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
   name: '${appServicePlan.name}-diag'
   scope: appServicePlan
   properties: {
@@ -89,7 +89,7 @@ resource logicApp 'Microsoft.Web/sites@2023-01-01' = {
   }
 }
 
-resource logicappDiagSettings 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
+resource DiagnosticSettingsLogicApp 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
   name: '${logicApp.name}-diag'
   scope: logicApp
   properties: {

@@ -34,7 +34,7 @@ var storageRBACRoles = [
   'a7264617-510b-434b-a828-9731dc254ea7' // Storage File Data SMB Share Elevated Contributor
 ]
 
-resource storageAccountRoleAssignments 'Microsoft.Authorization/roleAssignments@2022-04-01' = [
+resource roleAssignments 'Microsoft.Authorization/roleAssignments@2022-04-01' = [
   for roleId in storageRBACRoles: {
     name: guid(storageAccount.id, servicePrincipalId, roleId)
     scope: storageAccount

@@ -20,7 +20,7 @@ resource rg 'Microsoft.Resources/resourceGroups@2025-04-01' = {
   tags: tags
 }
 
-module shared 'modules/shared/main.bicep' = {
+module shared '../src/shared/main.bicep' = {
   scope: rg
   params: {
     name: solutionName
@@ -28,7 +28,7 @@ module shared 'modules/shared/main.bicep' = {
   }
 }
 
-module workload 'modules/logic-app.bicep' = {
+module workload '../src/logic-app.bicep' = {
   name: 'WorkloadDeployment'
   scope: resourceGroup(rgName)
   params: {
