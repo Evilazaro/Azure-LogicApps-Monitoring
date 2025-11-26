@@ -1,4 +1,4 @@
-Collecting workspace information# Azure Logic Apps Monitoring
+# Azure Logic Apps Monitoring
 
 A production-ready Infrastructure as Code (IaC) solution demonstrating Azure Monitor best practices for Logic Apps Standard workflows. This project provides Bicep templates for deploying comprehensive observability including Log Analytics, Application Insights, custom dashboards, and Role-Based Access Control (RBAC) using managed identities. Designed for beginner-to-intermediate developers and architects learning enterprise monitoring patterns.
 
