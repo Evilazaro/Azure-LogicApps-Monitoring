@@ -735,19 +735,6 @@ resource logicApp 'Microsoft.Web/sites@2023-12-01' = {
           name: 'AzureWebJobsStorage__credential'
           value: 'managedidentity'
         }
-        // File share settings using managed identity (consistent with AzureWebJobsStorage)
-        {
-          name: 'WEBSITE_CONTENTOVERVNET'
-          value: '1'
-        }
-        {
-          name: 'WEBSITE_CONTENTSHARE'
-          value: toLower('${name}-${uniqueString(resourceGroup().id, name)}')
-        }
-        {
-          name: 'AzureWebJobsStorage__fileServiceUri'
-          value: 'https://${storageAccountName}.file.${environment().suffixes.storage}'
-        }
         // Application Insights telemetry and monitoring
         {
           name: 'APPINSIGHTS_INSTRUMENTATIONKEY'
@@ -811,6 +798,7 @@ resource serviceBusConnection 'Microsoft.Web/connections@2016-06-01' = {
   name: sbConnectionName
   location: location
   tags: tags
+  kind: 'V2'
   properties: {
     displayName: sbConnectionName
     parameterValues: {}
@@ -828,6 +816,7 @@ resource serviceBusConnectionAccessPolicy 'Microsoft.Web/connections/accessPolic
   name: logicApp.name
   parent: serviceBusConnection
   location: location
+  kind: 'V2'
   properties: {
     principal: {
       type: 'ActiveDirectory'
@@ -1541,30 +1530,3 @@ resource workflowsDashboard 'Microsoft.Portal/dashboards@2020-09-01-preview' = {
   }
 }
 
-// ============================================================================
-// OUTPUTS
-// ============================================================================
-
-@description('Name of the deployed Logic App (Workflow App)')
-output logicAppName string = logicApp.name
-
-@description('Resource ID of the Logic App for configuration and RBAC assignments')
-output logicAppId string = logicApp.id
-
-@description('Principal ID of the Logic App system-assigned managed identity for RBAC role assignments')
-output logicAppPrincipalId string = logicApp.identity.principalId
-
-@description('Name of the App Service Plan hosting the Logic App')
-output appServicePlanName string = appServicePlan.name
-
-@description('Resource ID of the App Service Plan for monitoring and scaling configuration')
-output appServicePlanId string = appServicePlan.id
-
-@description('Default hostname of the Logic App (e.g., myapp.azurewebsites.net)')
-output logicAppHostname string = logicApp.properties.defaultHostName
-
-@description('Name of the Service Plan metrics dashboard in Azure Portal')
-output servicePlanDashboardName string = dashboardASP.name
-
-@description('Name of the Workflow metrics dashboard in Azure Portal')
-output workflowDashboardName string = workflowsDashboard.name

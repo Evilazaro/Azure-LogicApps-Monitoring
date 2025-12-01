@@ -89,24 +89,6 @@ resource storageAccount 'Microsoft.Storage/storageAccounts@2023-05-01' = {
 }
 
 // ============================================================================
-// FILE SERVICES - Required for Logic Apps file share
-// ============================================================================
-
-resource fileServices 'Microsoft.Storage/storageAccounts/fileServices@2023-05-01' = {
-  name: 'default'
-  parent: storageAccount
-  properties: {
-    shareDeleteRetentionPolicy: {
-      enabled: true
-      days: 7
-    }
-    cors: {
-      corsRules: []
-    }
-  }
-}
-
-// ============================================================================
 // OUTPUTS
 // ============================================================================
 
@@ -115,4 +97,3 @@ output STORAGE_ACCOUNT_NAME string = storageAccount.name
 
 @description('Resource ID of the deployed storage account for RBAC role assignments')
 output STORAGE_ACCOUNT_ID string = storageAccount.id
-
