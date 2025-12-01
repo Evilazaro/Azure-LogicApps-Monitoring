@@ -80,10 +80,25 @@ resource storageAccount 'Microsoft.Storage/storageAccounts@2023-05-01' = {
     minimumTlsVersion: 'TLS1_2'
     allowBlobPublicAccess: false
     publicNetworkAccess: 'Enabled'
-    allowSharedKeyAccess: true // Required for connection string authentication
+    allowSharedKeyAccess: true // REQUIRED for Logic Apps file share creation
     networkAcls: {
-      bypass: 'AzureServices'
-      defaultAction: 'Allow'
+      bypass: 'AzureServices' // CRITICAL: Allow Azure services (Logic Apps) to bypass firewall
+      defaultAction: 'Allow' // Allow all traffic (change to 'Deny' for production with private endpoints)
+    }
+  }
+}
+
+// ============================================================================
+// FILE SERVICES - Enable file shares for Logic Apps
+// ============================================================================
+
+resource fileServices 'Microsoft.Storage/storageAccounts/fileServices@2023-05-01' = {
+  name: 'default'
+  parent: storageAccount
+  properties: {
+    shareDeleteRetentionPolicy: {
+      enabled: true
+      days: 7
     }
   }
 }
