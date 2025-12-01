@@ -643,6 +643,8 @@ resource appInsightsRoleAssignments 'Microsoft.Authorization/roleAssignments@202
 
 var sbRBAC = [
   '090c5cfd-751d-490a-894a-3ce6f1109419' // Azure Service Bus Data Owner - Full control over Service Bus resources
+  '4f6d3b9b-027b-4f4c-9142-0e5a2a2247e0'
+  '69a216fc-b8fb-44d8-bc22-1f3c2cd27a39'
 ]
 
 resource serviceBus 'Microsoft.ServiceBus/namespaces@2025-05-01-preview' existing = {
@@ -705,6 +707,36 @@ resource logicApp 'Microsoft.Web/sites@2023-12-01' = {
       ]
     }
   }
+}
+
+param sbConnectionName string = 'serviceBus'
+
+resource serviceBusConnection 'Microsoft.Web/connections@2016-06-01' = {
+  name: sbConnectionName
+  location: location
+  tags: tags
+  properties: {
+    parameterValues: {}
+    displayName: sbConnectionName
+    statuses: [
+      {
+        status: 'Ready'
+      }
+    ]
+    customParameterValues: {}
+    api: {
+      name: sbConnectionName
+      displayName: 'Service Bus'
+      description: 'Connect to Azure Service Bus to send and receive messages. You can perform actions such as send to queue, send to topic, receive from queue, receive from subscription, etc.'
+      iconUri: 'https://conn-afd-prod-endpoint-bmc9bqahasf3grgk.b01.azurefd.net/v1.0.1760/1.0.1760.4281/${sbConnectionName}/icon.png'
+      id: '/subscriptions/${subscription().subscriptionId}/providers/Microsoft.Web/locations/${location}/managedApis/${sbConnectionName}'
+      type: 'Microsoft.Web/locations/managedApis'
+    }
+    testLinks: []
+  }
+  dependsOn: [
+    logicApp
+  ]
 }
 
 resource DiagnosticSettingsLogicApp 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
