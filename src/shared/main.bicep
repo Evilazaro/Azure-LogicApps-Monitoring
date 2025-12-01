@@ -33,6 +33,9 @@ module monitoring '../monitoring/main.bicep' = {
     location: location
     tags: tags
   }
+  dependsOn: [
+    data
+  ]
 }
 
 @description('Resource ID of the Log Analytics workspace for Logic Apps diagnostic logging')
