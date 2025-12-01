@@ -147,8 +147,3 @@ output AZURE_SERVICEBUS_ENDPOINT string = serviceBus.properties.serviceBusEndpoi
 @description('Name of the deployed queue')
 output AZURE_SERVICEBUS_QUEUE_NAME string = queue.name
 
-// UNCOMMENT if using connection string authentication (requires disableLocalAuth = false)
-// @secure()
-// @description('Connection string for Service Bus (SAS-based authentication)')
-// output AZURE_SERVICEBUS_CONNECTIONSTRING string = serviceBusAuthRule.listKeys().primaryConnectionString
-

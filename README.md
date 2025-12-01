@@ -30,8 +30,15 @@ Azure-LogicApps-Monitoring/
 ├── .azure/                          # Azure Developer CLI environments
 │   ├── config.json                  # Global azd configuration
 │   ├── dev/                         # Development environment
-│   ├── prod/                        # Production environment
-│   └── uat/                         # UAT environment
+│   │   ├── .env                     # Dev environment variables
+│   │   └── config.json              # Dev configuration
+│   └── prod/                        # Production environment
+│       ├── .env                     # Prod environment variables
+│       └── config.json              # Prod configuration
+├── .vscode/                         # VS Code workspace settings
+│   ├── launch.json                  # Debug configurations
+│   ├── settings.json                # Workspace settings
+│   └── tasks.json                   # Build tasks
 ├── infra/                           # Infrastructure as Code
 │   ├── main.bicep                   # Subscription-level orchestrator
 │   └── main.parameters.json         # Deployment parameters
@@ -45,13 +52,18 @@ Azure-LogicApps-Monitoring/
 │   └── shared/                      # Shared resources
 │       ├── main.bicep               # Shared orchestrator
 │       ├── data/                    # Storage infrastructure
-│       │   └── main.bicep           # Storage account + RBAC
+│       │   └── main.bicep           # Storage account
 │       └── messaging/               # Messaging infrastructure
-│           └── main.bicep           # Service Bus (In Development)
+│           └── main.bicep           # Service Bus namespace
 ├── tax-docs/                        # Sample Logic App workflow
-│   └── tax-approval/                # Tax document approval workflow
+│   ├── .funcignore                  # Deployment exclusions
+│   ├── .gitignore                   # Git exclusions
+│   ├── connections.json             # Managed API connections
+│   ├── host.json                    # Function host configuration
+│   └── tax-processing/              # Sample workflow
+│       └── workflow.json            # Workflow definition
 ├── azure.yaml                       # Azure Developer CLI project
-├── host.json                        # Functions runtime configuration
+├── host.json                        # Root Functions runtime config
 ├── CODE_OF_CONDUCT.md               # Community guidelines
 ├── CONTRIBUTING.md                  # Contribution guidelines
 ├── LICENSE.md                       # MIT License
@@ -68,7 +80,7 @@ Azure-LogicApps-Monitoring/
 ```mermaid
 flowchart TB
     subgraph Subscription["Azure Subscription"]
-        subgraph RG["Resource Group: {resourceGroupName}"]
+        subgraph RG["Resource Group: contoso-{solutionName}-{env}-{location}-rg"]
             subgraph MonitoringStack["Monitoring & Observability"]
                 LAW["Log Analytics Workspace<br/>30-day retention<br/>PerGB2018 pricing"]
                 AI["Application Insights<br/>Workspace-based<br/>Connection string injection"]
@@ -77,7 +89,7 @@ flowchart TB
             
             subgraph ComputeLayer["Compute Resources"]
                 ASP["App Service Plan<br/>WS1 SKU<br/>Elastic scale: 1-20 workers"]
-                LA["Logic App<br/>Standard tier<br/>Workflow App<br/>System-assigned identity"]
+                LA["Logic App<br/>Standard tier<br/>Workflow App<br/>System + User-assigned identity"]
             end
             
             subgraph DataLayer["Data & Storage"]
@@ -85,46 +97,55 @@ flowchart TB
             end
             
             subgraph IdentityLayer["Identity & Access"]
-                UMI["User-Assigned<br/>Managed Identity<br/>RBAC: 4 storage roles<br/>+ 1 monitoring role"]
+                UMI["User-Assigned<br/>Managed Identity<br/>RBAC: 7 roles total"]
             end
             
             subgraph DashboardLayer["Visualization"]
-                DASH1["Service Plan Dashboard<br/>CPU, Memory, Data I/O<br/>HTTP Queue, Workers"]
-                DASH2["Workflow Dashboard<br/>Runs, Failures, Duration<br/>Triggers, Action metrics"]
+                DASH1["Service Plan Dashboard<br/>CPU, Memory, Data I/O<br/>HTTP Queue"]
+                DASH2["Workflow Dashboard<br/>Runs, Failures, Duration<br/>Triggers, Actions"]
             end
             
-            subgraph MessagingLayer["Messaging (In Development)"]
-                SB["Service Bus Namespace<br/>Standard tier<br/>Local auth disabled"]
+            subgraph MessagingLayer["Messaging"]
+                SB["Service Bus Namespace<br/>Standard tier<br/>Local auth disabled<br/>Managed identity required"]
+                Queue["Queue: tax-approval<br/>14-day TTL<br/>Dead-letter enabled"]
+                SBConn["API Connection: serviceBus<br/>Managed identity auth"]
             end
         end
     end
     
     UMI -->|Storage Blob Data Owner| SA
-    UMI -->|Storage Queue/Table Data Contributor| SA
+    UMI -->|Storage Queue Data Contributor| SA
+    UMI -->|Storage Table Data Contributor| SA
     UMI -->|Storage File Data Privileged Contributor| SA
     UMI -->|Monitoring Metrics Publisher| AI
+    UMI -->|Service Bus Data Owner| SB
+    UMI -->|Service Bus Data Sender| SB
+    UMI -->|Service Bus Data Receiver| SB
     
     LA -->|Hosted on| ASP
     LA -->|Identity| UMI
     LA -->|State/Data| SA
     LA -->|Diagnostic Settings:<br/>WorkflowRuntime logs| LAW
     LA -->|Telemetry:<br/>APPLICATIONINSIGHTS_CONNECTION_STRING| AI
+    LA -->|Access Policy| SBConn
+    
+    SBConn -->|Authenticate| SB
+    SB -->|Contains| Queue
     
     AI -->|Workspace Integration| LAW
     ASP -->|Platform Metrics| LAW
+    SB -->|Diagnostic Logs| LAW
     HM -->|Health Monitoring| LAW
     
     LAW -->|Data Source| DASH1
     LAW -->|Data Source| DASH2
-    
-    SB -.->|Future: Managed Identity Auth| LA
     
     style MonitoringStack fill:#1E3A8A,stroke:#3B82F6,stroke-width:2px,color:#FFFFFF
     style ComputeLayer fill:#065F46,stroke:#10B981,stroke-width:2px,color:#FFFFFF
     style DataLayer fill:#7C2D12,stroke:#F97316,stroke-width:2px,color:#FFFFFF
     style IdentityLayer fill:#4C1D95,stroke:#A78BFA,stroke-width:2px,color:#FFFFFF
     style DashboardLayer fill:#831843,stroke:#EC4899,stroke-width:2px,color:#FFFFFF
-    style MessagingLayer fill:#374151,stroke:#9CA3AF,stroke-width:2px,stroke-dasharray: 5 5,color:#FFFFFF
+    style MessagingLayer fill:#92400E,stroke:#FBBF24,stroke-width:2px,color:#FFFFFF
     style RG fill:#1F2937,stroke:#6B7280,stroke-width:1px,color:#FFFFFF
 ```
 
@@ -136,9 +157,9 @@ sequenceDiagram
     participant Portal as Azure Portal<br/>Dashboard
     participant LA as Logic App<br/>(Workflow)
     participant SA as Storage Account
+    participant SB as Service Bus<br/>Queue
     participant AI as Application<br/>Insights
     participant LAW as Log Analytics<br/>Workspace
-    participant SB as Service Bus<br/>(Future)
     
     rect rgba(59, 130, 246, 0.1)
         Note over User,Portal: 1. Monitoring & Visualization
@@ -150,24 +171,27 @@ sequenceDiagram
     
     rect rgba(16, 185, 129, 0.1)
         Note over User,LA: 2. Workflow Execution
-        User->>LA: Trigger Workflow<br/>(HTTP, Timer, Event)
+        User->>LA: Trigger Workflow<br/>(HTTP, Timer, Service Bus)
         activate LA
         
-        LA->>SA: Read/Write Data<br/>(Blobs, Queues, Tables, Files)
-        SA-->>LA: Data Response
+        LA->>SA: Read/Write State<br/>(Blobs, Queues, Tables)
+        SA-->>LA: State Data
         
-        alt Future: Service Bus Integration
-            LA-.->SB: Send/Receive Messages<br/>(Managed Identity Auth)
-            SB-.->LA: Message Response
-        end
+        LA->>SB: Receive Message<br/>(Managed Identity Auth)
+        SB-->>LA: Message Payload
+        
+        LA->>SB: Send Message<br/>(Queue: tax-approval)
+        SB-->>LA: Confirmation
     end
     
     rect rgba(167, 139, 250, 0.1)
         Note over LA,LAW: 3. Telemetry & Logging
-        LA->>AI: Send Telemetry<br/>(Connection String:<br/>APPLICATIONINSIGHTS_CONNECTION_STRING)
-        LA->>LAW: Stream Logs<br/>(Diagnostic Settings:<br/>WorkflowRuntime category)
+        LA->>AI: Send Telemetry<br/>(Connection String)
+        LA->>LAW: Stream Logs<br/>(WorkflowRuntime category)
         
         AI->>LAW: Forward Telemetry<br/>(Workspace Integration)
+        
+        SB->>LAW: Diagnostic Logs<br/>(Messages, Errors)
     end
     
     rect rgba(236, 72, 153, 0.1)
@@ -193,15 +217,17 @@ sequenceDiagram
 
 | Component | Description | Purpose | Key Features |
 |-----------|-------------|---------|--------------|
-| **Logic App (Workflow App)** | Standard-tier Logic App hosted on App Service Plan | Execute business workflows with observability | WorkflowRuntime logging, system-assigned identity, App Insights connection string injection |
+| **Logic App (Workflow App)** | Standard-tier Logic App hosted on App Service Plan | Execute business workflows with observability | WorkflowRuntime logging, system + user-assigned identity, App Insights connection string injection |
 | **App Service Plan (WS1)** | Workflow Standard SKU with elastic scaling | Provide dedicated compute for Logic App | Elastic scale (1-20 workers), zone-redundancy capable, per-instance monitoring |
 | **Application Insights** | APM (Application Performance Management) service | Collect telemetry, traces, and exceptions | Workspace-based resource, instrumentation key, diagnostic settings integration |
 | **Log Analytics Workspace** | Centralized log aggregation and analytics | Store and query logs across all resources | 30-day retention, PerGB2018 pricing, system-assigned identity, KQL query engine |
 | **Azure Monitor Health Model** | Hierarchical service group structure | Organize monitoring resources into logical groups | Tenant-level service groups, parent-child relationships, health rollup |
 | **Storage Account** | Standard LRS, Hot tier storage | Provide durable storage for Logic App state and data | HTTPS-only, managed identity RBAC (4 roles), unique naming with `uniqueString()` |
-| **User-Assigned Managed Identity** | Azure AD identity for the workload | Enable credential-free access to Azure resources | RBAC assignments to Storage (4 roles) and Monitoring (1 role) |
+| **User-Assigned Managed Identity** | Azure AD identity for the workload | Enable credential-free access to Azure resources | RBAC assignments to Storage (4 roles), Service Bus (3 roles), and Monitoring (1 role) |
+| **Service Bus Namespace** | Standard-tier messaging service with local auth disabled | Enable reliable message-based integration with Logic Apps | Managed identity authentication only, SAS-free access, diagnostic logging to Log Analytics |
+| **Service Bus Queue** | Message queue within Service Bus namespace | Store messages for asynchronous processing | 14-day TTL, dead-letter queue enabled, max 10 delivery attempts |
+| **API Connection (Service Bus)** | Managed API connection resource for Logic Apps | Provide authenticated access to Service Bus from workflows | Managed identity-based authentication, access policy linked to Logic App identity |
 | **Azure Portal Dashboards** | Pre-configured metric visualizations | Provide operational visibility for infrastructure and workflows | 2 dashboards: Service Plan metrics (CPU, memory, I/O) + Workflow metrics (runs, failures, latency) |
-| **Service Bus Namespace (In Development)** | Standard-tier messaging service | Enable reliable message-based integration | Local auth disabled, managed identity authentication, SAS-free access |
 
 ### RBAC Roles
 
@@ -212,6 +238,9 @@ sequenceDiagram
 | **Storage Table Data Contributor** | Read, write, and delete Azure Storage tables and table entities | [Microsoft Learn](https://learn.microsoft.com/azure/role-based-access-control/built-in-roles#storage-table-data-contributor) |
 | **Storage File Data Privileged Contributor** | Full access to Azure Storage file shares over SMB and REST with elevated privileges | [Microsoft Learn](https://learn.microsoft.com/azure/role-based-access-control/built-in-roles#storage-file-data-privileged-contributor) |
 | **Monitoring Metrics Publisher** | Enable publishing metrics against Azure resources | [Microsoft Learn](https://learn.microsoft.com/azure/role-based-access-control/built-in-roles#monitoring-metrics-publisher) |
+| **Azure Service Bus Data Owner** | Full access to Azure Service Bus resources (send, receive, manage entities) | [Microsoft Learn](https://learn.microsoft.com/azure/role-based-access-control/built-in-roles#azure-service-bus-data-owner) |
+| **Azure Service Bus Data Sender** | Send messages to Azure Service Bus queues and topics | [Microsoft Learn](https://learn.microsoft.com/azure/role-based-access-control/built-in-roles#azure-service-bus-data-sender) |
+| **Azure Service Bus Data Receiver** | Receive and delete messages from Azure Service Bus queues and subscriptions | [Microsoft Learn](https://learn.microsoft.com/azure/role-based-access-control/built-in-roles#azure-service-bus-data-receiver) |
 
 ---
 
@@ -229,10 +258,11 @@ This solution implements end-to-end observability for Logic Apps using Azure Mon
 
 | Feature | Description | Implementation | Documentation |
 |---------|-------------|----------------|---------------|
-| **WorkflowRuntime Logs** | Capture detailed execution logs for workflow runs, actions, and triggers | Diagnostic settings on Logic App resource with `WorkflowRuntime` category | [Monitor Logic Apps](https://learn.microsoft.com/azure/logic-apps/monitor-logic-apps-log-analytics) |
+| **WorkflowRuntime Logs** | Capture detailed execution logs for workflow runs, actions, and triggers | Diagnostic settings on Logic App resource with `WorkflowRuntime` category enabled | [Monitor Logic Apps](https://learn.microsoft.com/azure/logic-apps/monitor-logic-apps-log-analytics) |
 | **Application Insights Integration** | Distributed tracing, dependency tracking, and performance monitoring | Connection string injected via `APPLICATIONINSIGHTS_CONNECTION_STRING` app setting | [Application Insights Overview](https://learn.microsoft.com/azure/azure-monitor/app/app-insights-overview) |
 | **Log Analytics Workspace** | Centralized log storage with KQL query engine for analysis | PerGB2018 pricing tier, 30-day retention, system-assigned managed identity | [Log Analytics Workspace](https://learn.microsoft.com/azure/azure-monitor/logs/log-analytics-workspace-overview) |
 | **Health Model Service Groups** | Hierarchical organization of monitoring resources | Tenant-level service groups linked to root service group for health rollup | [Service Groups Overview](https://learn.microsoft.com/azure/azure-monitor/service-groups/overview) |
+| **Service Bus Diagnostic Logs** | Capture Service Bus operation logs, errors, and throttling events | Diagnostic settings send all log categories and metrics to Log Analytics Workspace | [Service Bus Monitoring](https://learn.microsoft.com/azure/service-bus-messaging/monitor-service-bus) |
 
 ---
 
@@ -248,10 +278,10 @@ Pre-configured Azure Portal dashboards provide real-time visibility into infrast
 
 | Feature | Description | Metrics Captured | Dashboard Location |
 |---------|-------------|------------------|-------------------|
-| **Service Plan Metrics Dashboard** | Monitor App Service Plan infrastructure health and capacity utilization | CPU Percentage, Memory Percentage, Data In/Out, HTTP Queue Length, App Service Plan Workers | [src/logic-app.bicep](src/logic-app.bicep) (lines 56-301) |
-| **Workflow Execution Dashboard** | Track Logic App run success, failures, latency, and throughput | Actions Failure Rate, Job Execution Duration, Runs Completed, Runs Dispatched, Runs Failure Rate, Runs Started, Triggers Completed, Triggers Failure Rate, Triggers Fired | [src/logic-app.bicep](src/logic-app.bicep) (lines 416-715) |
-| **AllMetrics Collection** | Stream all available platform metrics to Log Analytics Workspace | CPU, memory, network, storage, workflow metrics (20+ total metrics) | Diagnostic settings in [src/logic-app.bicep](src/logic-app.bicep) (lines 31-54) |
-| **Monitoring Metrics Publisher** | Enable managed identity to publish custom metrics to Azure Monitor | Custom application metrics via RBAC-based access | [src/monitoring/app-insights.bicep](src/monitoring/app-insights.bicep) (lines 51-59) |
+| **Service Plan Metrics Dashboard** | Monitor App Service Plan infrastructure health and capacity utilization | CPU Percentage, Memory Percentage, Data In/Out, HTTP Queue Length | src/logic-app.bicep |
+| **Workflow Execution Dashboard** | Track Logic App run success, failures, latency, and throughput | Actions Failure Rate, Job Execution Duration, Runs Completed, Runs Dispatched, Runs Failure Rate, Runs Started, Triggers Completed, Triggers Failure Rate | src/logic-app.bicep |
+| **AllMetrics Collection** | Stream all available platform metrics to Log Analytics Workspace | CPU, memory, network, storage, workflow metrics (20+ total metrics) | Diagnostic settings in src/logic-app.bicep |
+| **Monitoring Metrics Publisher** | Enable managed identity to publish custom metrics to Azure Monitor | Custom application metrics via RBAC-based access | src/logic-app.bicep |
 
 ---
 
@@ -267,11 +297,12 @@ This solution follows Azure security best practices with managed identities, RBA
 
 | Feature | Description | Security Mechanism | Implementation |
 |---------|-------------|-------------------|----------------|
-| **User-Assigned Managed Identity** | Credential-free authentication for Logic App to access Azure resources | Azure AD-based authentication via managed identity token exchange | [src/shared/main.bicep](src/shared/main.bicep) (lines 10-14) |
-| **RBAC Role Assignments** | Granular, least-privilege access control to storage and monitoring services | 4 storage roles (Blob, Queue, Table, File) + 1 monitoring role at resource scope | [src/shared/data/main.bicep](src/shared/data/main.bicep) (lines 40-80) |
-| **HTTPS-Only Storage** | Enforce encrypted communication for all storage operations | `supportsHttpsTrafficOnly: true` property on storage account | [src/shared/data/main.bicep](src/shared/data/main.bicep) (line 24) |
-| **System-Assigned Identity for Logs** | Secure data access for Log Analytics Workspace operations | System-assigned managed identity on Log Analytics Workspace | [src/monitoring/log-analytics-workspace.bicep](src/monitoring/log-analytics-workspace.bicep) (lines 11-13) |
-| **Local Auth Disabled (Service Bus)** | Block connection string/SAS authentication on Service Bus namespace | `disableLocalAuth: true` enforces Azure AD authentication only | [src/shared/messaging/main.bicep](src/shared/messaging/main.bicep) (line 24) |
+| **User-Assigned Managed Identity** | Credential-free authentication for Logic App to access Azure resources | Azure AD-based authentication via managed identity token exchange | Created in main.bicep, referenced in src/logic-app.bicep |
+| **RBAC Role Assignments** | Granular, least-privilege access control to storage, Service Bus, and monitoring services | 4 storage roles + 3 Service Bus roles + 1 monitoring role at resource scope | src/logic-app.bicep |
+| **HTTPS-Only Storage** | Enforce encrypted communication for all storage operations | `supportsHttpsTrafficOnly: true` property on storage account | src/shared/data/main.bicep |
+| **System-Assigned Identity for Logs** | Secure data access for Log Analytics Workspace operations | System-assigned managed identity on Log Analytics Workspace | src/monitoring/log-analytics-workspace.bicep |
+| **Local Auth Disabled (Service Bus)** | Block connection string/SAS authentication on Service Bus namespace | `disableLocalAuth: true` enforces Azure AD authentication only | src/shared/messaging/main.bicep |
+| **Managed Identity API Connections** | Logic Apps connect to Service Bus using managed identity instead of connection strings | API Connection resource with access policy granting Logic App identity permissions | src/logic-app.bicep |
 
 ---
 
@@ -281,16 +312,16 @@ All resources deploy via modular Azure Bicep templates using a subscription-leve
 
 **Benefits & Best Practices Applied**:
 - **Modular Architecture**: Separate modules for monitoring, storage, compute, and messaging enable independent updates and testing
-- **Consistent Tagging**: All resources tagged with 7 standard tags for cost tracking, organization, and automated governance
+- **Consistent Tagging**: All resources tagged with 9 standard tags for cost tracking, organization, and automated governance
 - **Deterministic Naming**: `uniqueString()` function ensures reproducible, globally unique resource names without manual input
 - **Explicit Dependencies**: `dependsOn` clauses prevent race conditions and ensure correct resource provisioning order
 
 | Feature | Description | Implementation | Files |
 |---------|-------------|----------------|-------|
-| **Modular Bicep Templates** | Reusable, composable infrastructure modules with clear separation of concerns | 8 Bicep modules organized by resource category (monitoring, shared, logic-app) | [infra/main.bicep](infra/main.bicep), [src/shared/main.bicep](src/shared/main.bicep), [src/monitoring/main.bicep](src/monitoring/main.bicep) |
-| **Azure Developer CLI Support** | Simplified multi-environment deployment workflow with `azd` commands | `azure.yaml` project definition with 3 environments (dev, uat, prod) | [azure.yaml](azure.yaml) |
-| **Parameterization** | Environment-specific configuration without code changes | `main.parameters.json` with token replacement for resource names, SKUs, and tags | [infra/main.parameters.json](infra/main.parameters.json) |
-| **Resource Tagging Strategy** | Consistent metadata across all resources for governance and cost management | 7 standard tags: Solution, Environment, Owner, Repository, DeploymentDate, ManagedBy, CostCenter | Applied in [infra/main.bicep](infra/main.bicep) (lines 15-21) |
+| **Modular Bicep Templates** | Reusable, composable infrastructure modules with clear separation of concerns | 9 Bicep modules organized by resource category (monitoring, shared, logic-app, messaging) | main.bicep, main.bicep, main.bicep |
+| **Azure Developer CLI Support** | Simplified multi-environment deployment workflow with `azd` commands | azure.yaml project definition with 2 environments (dev, prod) | azure.yaml |
+| **Parameterization** | Environment-specific configuration without code changes | main.parameters.json with token replacement for `location` and `envName` | main.parameters.json |
+| **Resource Tagging Strategy** | Consistent metadata across all resources for governance and cost management | 9 standard tags: Solution, Environment, ManagedBy, CostCenter, Owner, ApplicationName, BusinessUnit, DeploymentDate, Repository | Applied in infra/main.bicep |
 
 ---
 
@@ -323,13 +354,13 @@ azd auth login
 
 ### Step 3: Initialize Environment
 
-Initialize a new `azd` environment or select an existing one (dev, uat, prod).
+Initialize a new `azd` environment or select an existing one (dev, prod).
 
 ```bash
 azd init
 ```
 
-**Expected Output**: Prompts for environment name (e.g., `dev`). If `.azure/dev/.env` already exists, this step will use existing configuration.
+**Expected Output**: Prompts for environment name (e.g., `dev`). If .env already exists, this step will use existing configuration.
 
 ---
 
@@ -345,69 +376,64 @@ azd provision
 ```
 Provisioning Azure resources (azd provision)
 Subscription: <Your Subscription Name> (<subscription-id>)
-Location: East US
+Location: East US 2
 
 Provisioning resources...
-  (✓) Done: Resource group: contoso-tax-docs-dev-rg
-  (✓) Done: Log Analytics Workspace: contoso-tax-docs-dev-law
-  (✓) Done: Application Insights: contoso-tax-docs-dev-ai
-  (✓) Done: Storage Account: contosotaxdocsdevst
-  (✓) Done: App Service Plan: contoso-tax-docs-dev-asp
-  (✓) Done: Logic App: contoso-tax-docs-dev-la
+  (✓) Done: Resource group: contoso-tax-docs-dev-eastus2-rg
+  (✓) Done: User-assigned managed identity: tax-docs-mi
+  (✓) Done: Log Analytics Workspace: tax-docs-<unique>-law
+  (✓) Done: Application Insights: tax-docs-<unique>-appinsights
+  (✓) Done: Storage Account: taxdocs<unique>stg
+  (✓) Done: Service Bus Namespace: tax-docs-sb-<unique>
+  (✓) Done: Service Bus Queue: tax-approval
+  (✓) Done: App Service Plan: tax-docs-<unique>-asp
+  (✓) Done: Logic App: tax-docs-<unique>-logicapp
+  (✓) Done: Service Bus API Connection: serviceBus
   (✓) Done: Dashboards: Service Plan + Workflow Metrics
 
 SUCCESS: Your application was provisioned in Azure in X minutes Y seconds.
 ```
 
-**Note**: Initial deployment takes 3-5 minutes. Subsequent deployments are faster due to incremental updates.
+**Note**: Initial deployment takes 5-8 minutes. Subsequent deployments are faster due to incremental updates.
 
 ---
 
 ## Usage Examples
 
-### A. Viewing Dashboards
+### Viewing Dashboards
 
 #### Azure Portal Navigation
 
 1. Navigate to the [Azure Portal](https://portal.azure.com)
 2. In the left menu, select **Dashboard** or search for **"Dashboards"** in the top search bar
 3. Click **Browse all dashboards**
-4. Filter dashboards by your resource group name (e.g., `contoso-tax-docs-dev-rg`)
+4. Filter dashboards by your resource group name (e.g., `contoso-tax-docs-dev-eastus2-rg`)
 5. Open the **Service Plan Metrics** dashboard to view CPU, memory, and I/O metrics
-6. Open the **Workflow Metrics** dashboard to view run success/failure rates and latency
+6. Open the **Tax-Docs-Workflows** dashboard to view run success/failure rates and latency
 
 #### CLI Command to Open Dashboard
 
-Use the Azure CLI to open a specific dashboard in your browser:
+Use the Azure CLI to list dashboards in your resource group:
 
 ```bash
-# List all dashboards in the resource group
 az portal dashboard list \
-  --resource-group contoso-tax-docs-dev-rg \
+  --resource-group contoso-tax-docs-dev-eastus2-rg \
   --output table
-
-# Open the Service Plan Metrics dashboard in browser
-az portal dashboard show \
-  --resource-group contoso-tax-docs-dev-rg \
-  --name "contoso-tax-docs-dev-service-plan-dashboard" \
-  --query "id" \
-  --output tsv | xargs -I {} open "https://portal.azure.com/#@/resource{}/overview"
 ```
 
-**Expected Output**: Browser opens to the selected dashboard in Azure Portal.
+**Expected Output**: Table listing dashboard names and resource IDs.
 
 ---
 
-### B. Log Analytics Queries
+### Log Analytics Queries
 
-Use these KQL (Kusto Query Language) queries in Log Analytics Workspace to monitor Logic App performance and troubleshoot issues.
+Use these KQL (Kusto Query Language) queries in Log Analytics Workspace to monitor Logic App performance and troubleshoot issues. Access queries via **Azure Portal > Log Analytics Workspace > Logs**.
 
 #### 1. Track Workflow Run Success and Failure Rates
 
 Query all workflow runs with their status, duration, and trigger information over the past 24 hours.
 
 ```kql
-// Workflow run success and failure tracking
 AzureDiagnostics
 | where TimeGenerated > ago(24h)
 | where ResourceType == "WORKFLOWS"
@@ -442,7 +468,6 @@ AzureDiagnostics
 Query failed actions within workflows to pinpoint specific steps causing errors.
 
 ```kql
-// Action-level failure analysis
 AzureDiagnostics
 | where TimeGenerated > ago(24h)
 | where ResourceType == "WORKFLOWS"
@@ -465,33 +490,27 @@ AzureDiagnostics
 
 ---
 
-#### 3. Monitor Trigger Performance
+#### 3. Monitor Service Bus Message Processing
 
-Track trigger execution patterns and identify performance bottlenecks or misfires.
+Track Service Bus operations (send, receive, errors) correlated with Logic App workflow runs.
 
 ```kql
-// Trigger performance monitoring
 AzureDiagnostics
-| where TimeGenerated > ago(7d)
-| where ResourceType == "WORKFLOWS"
-| where Category == "WorkflowRuntime"
-| where OperationName == "Microsoft.Logic/workflows/workflowTriggerCompleted"
+| where TimeGenerated > ago(24h)
+| where ResourceProvider == "MICROSOFT.SERVICEBUS"
+| where Category == "OperationalLogs"
 | project 
     TimeGenerated,
-    WorkflowName = resource_workflowName_s,
-    TriggerName = resource_triggerName_s,
-    Status = status_s,
-    DurationMs = duration_d
-| summarize 
-    TriggerCount = count(),
-    SuccessfulTriggers = countif(Status == "Succeeded"),
-    AvgDurationMs = avg(DurationMs),
-    MaxDurationMs = max(DurationMs)
-    by WorkflowName, TriggerName, bin(TimeGenerated, 1h)
+    OperationName,
+    Status = ResultType,
+    EntityName = EntityName_s,
+    Message = Message_s,
+    ErrorCode = ErrorCode_s
 | order by TimeGenerated desc
+| take 100
 ```
 
-**Use Case**: Analyze trigger patterns over time. This query aggregates trigger executions by hour, revealing trends in trigger frequency and performance degradation.
+**Use Case**: Debug Service Bus integration issues. This query shows message send/receive operations, errors, and throttling events from the Service Bus namespace.
 
 ---
 
@@ -500,7 +519,6 @@ AzureDiagnostics
 Query App Service Plan metrics to monitor infrastructure health and identify capacity issues.
 
 ```kql
-// App Service Plan performance metrics
 AzureMetrics
 | where TimeGenerated > ago(24h)
 | where ResourceProvider == "MICROSOFT.WEB"
@@ -525,7 +543,6 @@ AzureMetrics
 Join workflow run data with Application Insights distributed traces for end-to-end observability.
 
 ```kql
-// Correlate Logic App runs with App Insights traces
 let WorkflowRuns = AzureDiagnostics
 | where TimeGenerated > ago(24h)
 | where ResourceType == "WORKFLOWS"
@@ -553,6 +570,7 @@ WorkflowRuns
 
 - **Azure Logic Apps Documentation**: [https://learn.microsoft.com/azure/logic-apps/](https://learn.microsoft.com/azure/logic-apps/)
 - **Monitor Logic Apps with Azure Monitor**: [https://learn.microsoft.com/azure/logic-apps/monitor-logic-apps-log-analytics](https://learn.microsoft.com/azure/logic-apps/monitor-logic-apps-log-analytics)
+- **Logic Apps Monitoring Overview**: [https://learn.microsoft.com/azure/logic-apps/monitor-logic-apps-overview](https://learn.microsoft.com/azure/logic-apps/monitor-logic-apps-overview)
 - **Azure Monitor Best Practices**: [https://learn.microsoft.com/azure/azure-monitor/best-practices](https://learn.microsoft.com/azure/azure-monitor/best-practices)
 - **Bicep Documentation**: [https://learn.microsoft.com/azure/azure-resource-manager/bicep/](https://learn.microsoft.com/azure/azure-resource-manager/bicep/)
 - **Azure Developer CLI (azd)**: [https://learn.microsoft.com/azure/developer/azure-developer-cli/](https://learn.microsoft.com/azure/developer/azure-developer-cli/)
@@ -561,3 +579,5 @@ WorkflowRuns
 - **Azure RBAC Built-in Roles**: [https://learn.microsoft.com/azure/role-based-access-control/built-in-roles](https://learn.microsoft.com/azure/role-based-access-control/built-in-roles)
 - **KQL Quick Reference**: [https://learn.microsoft.com/azure/data-explorer/kql-quick-reference](https://learn.microsoft.com/azure/data-explorer/kql-quick-reference)
 - **Azure Monitor Service Groups**: [https://learn.microsoft.com/azure/azure-monitor/service-groups/overview](https://learn.microsoft.com/azure/azure-monitor/service-groups/overview)
+- **Service Bus Messaging with Managed Identity**: [https://learn.microsoft.com/azure/service-bus-messaging/service-bus-managed-service-identity](https://learn.microsoft.com/azure/service-bus-messaging/service-bus-managed-service-identity)
+- **Service Bus Authentication and Authorization**: [https://learn.microsoft.com/azure/service-bus-messaging/service-bus-authentication-and-authorization](https://learn.microsoft.com/azure/service-bus-messaging/service-bus-authentication-and-authorization)

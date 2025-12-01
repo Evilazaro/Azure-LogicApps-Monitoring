@@ -596,6 +596,11 @@ resource dashboardASP 'Microsoft.Portal/dashboards@2020-09-01-preview' = {
   }
 }
 
+resource mi 'Microsoft.ManagedIdentity/userAssignedIdentities@2025-01-31-preview' existing = {
+  name: '${name}-mi'
+  scope: resourceGroup()
+}
+
 resource storageAccount 'Microsoft.Storage/storageAccounts@2023-05-01' existing = {
   name: storageAccountName
   scope: resourceGroup()
@@ -614,7 +619,7 @@ resource storageRoleAssignments 'Microsoft.Authorization/roleAssignments@2022-04
     scope: storageAccount
     properties: {
       roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', roleId)
-      principalId: logicApp.identity.principalId
+      principalId: mi.properties.principalId
       principalType: 'ServicePrincipal'
     }
   }
@@ -635,7 +640,7 @@ resource appInsightsRoleAssignments 'Microsoft.Authorization/roleAssignments@202
     scope: appInsights
     properties: {
       roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', roleId)
-      principalId: logicApp.identity.principalId
+      principalId: mi.properties.principalId
       principalType: 'ServicePrincipal'
     }
   }
@@ -658,7 +663,7 @@ resource sbRoleAssignments 'Microsoft.Authorization/roleAssignments@2022-04-01' 
     scope: serviceBus
     properties: {
       roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', roleId)
-      principalId: logicApp.identity.principalId
+      principalId: mi.properties.principalId
       principalType: 'ServicePrincipal'
     }
   }
@@ -675,11 +680,6 @@ var functionsWorkerRuntime = 'dotnet'
 // Extension bundle for Logic Apps Standard
 var extensionBundleId = 'Microsoft.Azure.Functions.ExtensionBundle.Workflows'
 var extensionBundleVersion = '[1.*, 2.0.0)'
-
-// Storage connection strings (SECURITY NOTE: Using listKeys() exposes keys)
-// TODO: Migrate to managed identity authentication for production
-var accountKey = storageAccount.listKeys().keys[0].value
-var storageConnectionString = 'DefaultEndpointsProtocol=https;AccountName=${storageAccount.name};AccountKey=${accountKey};EndpointSuffix=${environment().suffixes.storage}'
 
 // Application Insights telemetry
 var appInsightsInstrumentationKey = appInsights.properties.InstrumentationKey
@@ -700,7 +700,10 @@ resource logicApp 'Microsoft.Web/sites@2023-12-01' = {
   location: location
   kind: 'functionapp,workflowapp'
   identity: {
-    type: 'SystemAssigned'
+    type: 'SystemAssigned, UserAssigned'
+    userAssignedIdentities: {
+      '${mi.id}': {}
+    }
   }
   tags: tags
   properties: {
@@ -719,17 +722,30 @@ resource logicApp 'Microsoft.Web/sites@2023-12-01' = {
           value: functionsWorkerRuntime
         }
         // Storage account settings (workflow state, run history, artifacts)
+        // Using managed identity for secure authentication
         {
-          name: 'AzureWebJobsStorage'
-          value: storageConnectionString
+          name: 'AzureWebJobsStorage__accountName'
+          value: storageAccountName
         }
         {
-          name: 'WEBSITE_CONTENTAZUREFILECONNECTIONSTRING'
-          value: storageConnectionString
+          name: 'AzureWebJobsStorage__blobServiceUri'
+          value: 'https://${storageAccountName}.blob.${environment().suffixes.storage}'
         }
         {
-          name: 'WEBSITE_CONTENTSHARE'
-          value: toLower('${name}-${uniqueString(resourceGroup().id, name)}')
+          name: 'AzureWebJobsStorage__queueServiceUri'
+          value: 'https://${storageAccountName}.queue.${environment().suffixes.storage}'
+        }
+        {
+          name: 'AzureWebJobsStorage__tableServiceUri'
+          value: 'https://${storageAccountName}.table.${environment().suffixes.storage}'
+        }
+        {
+          name: 'AzureWebJobsStorage__credential'
+          value: 'managedidentity'
+        }
+        {
+          name: 'AzureWebJobsStorage__clientId'
+          value: mi.properties.clientId
         }
         // Application Insights telemetry and monitoring
         {
@@ -794,6 +810,7 @@ resource serviceBusConnection 'Microsoft.Web/connections@2016-06-01' = {
   name: sbConnectionName
   location: location
   tags: tags
+  kind: 'V2'
   properties: {
     displayName: sbConnectionName
     parameterValues: {}
@@ -811,6 +828,7 @@ resource serviceBusConnectionAccessPolicy 'Microsoft.Web/connections/accessPolic
   name: logicApp.name
   parent: serviceBusConnection
   location: location
+  kind: 'V2'
   properties: {
     principal: {
       type: 'ActiveDirectory'
@@ -1524,30 +1542,3 @@ resource workflowsDashboard 'Microsoft.Portal/dashboards@2020-09-01-preview' = {
   }
 }
 
-// ============================================================================
-// OUTPUTS
-// ============================================================================
-
-@description('Name of the deployed Logic App (Workflow App)')
-output logicAppName string = logicApp.name
-
-@description('Resource ID of the Logic App for configuration and RBAC assignments')
-output logicAppId string = logicApp.id
-
-@description('Principal ID of the Logic App system-assigned managed identity for RBAC role assignments')
-output logicAppPrincipalId string = logicApp.identity.principalId
-
-@description('Name of the App Service Plan hosting the Logic App')
-output appServicePlanName string = appServicePlan.name
-
-@description('Resource ID of the App Service Plan for monitoring and scaling configuration')
-output appServicePlanId string = appServicePlan.id
-
-@description('Default hostname of the Logic App (e.g., myapp.azurewebsites.net)')
-output logicAppHostname string = logicApp.properties.defaultHostName
-
-@description('Name of the Service Plan metrics dashboard in Azure Portal')
-output servicePlanDashboardName string = dashboardASP.name
-
-@description('Name of the Workflow metrics dashboard in Azure Portal')
-output workflowDashboardName string = workflowsDashboard.name

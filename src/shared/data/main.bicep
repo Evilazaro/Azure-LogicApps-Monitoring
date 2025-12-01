@@ -78,12 +78,12 @@ resource storageAccount 'Microsoft.Storage/storageAccounts@2023-05-01' = {
     accessTier: 'Hot'
     supportsHttpsTrafficOnly: true
     minimumTlsVersion: 'TLS1_2'
-    allowBlobPublicAccess: false
+    allowBlobPublicAccess: true
     publicNetworkAccess: 'Enabled'
-    allowSharedKeyAccess: true // Required for connection string authentication
+    allowSharedKeyAccess: true // REQUIRED for Logic Apps file share creation
     networkAcls: {
-      bypass: 'AzureServices'
-      defaultAction: 'Allow'
+      bypass: 'AzureServices' // CRITICAL: Allow Azure services (Logic Apps) to bypass firewall
+      defaultAction: 'Allow' // Allow all traffic (change to 'Deny' for production with private endpoints)
     }
   }
 }
@@ -97,4 +97,3 @@ output STORAGE_ACCOUNT_NAME string = storageAccount.name
 
 @description('Resource ID of the deployed storage account for RBAC role assignments')
 output STORAGE_ACCOUNT_ID string = storageAccount.id
-
