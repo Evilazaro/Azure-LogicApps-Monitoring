@@ -88,6 +88,23 @@ resource storageAccount 'Microsoft.Storage/storageAccounts@2023-05-01' = {
   }
 }
 
+// ============================================================================
+// FILE SERVICES - Required for Logic Apps file share
+// ============================================================================
+
+resource fileServices 'Microsoft.Storage/storageAccounts/fileServices@2025-06-01' = {
+  name: 'default'
+  parent: storageAccount
+  properties: {
+    shareDeleteRetentionPolicy: {
+      enabled: true
+      days: 7
+    }
+    cors: {
+      corsRules: []
+    }
+  }
+}
 
 // ============================================================================
 // OUTPUTS
