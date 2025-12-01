@@ -46,6 +46,9 @@ module monitoring '../monitoring/main.bicep' = {
 @description('Resource ID of the Log Analytics workspace for Logic Apps diagnostic logging')
 output AZURE_LOG_ANALYTICS_WORKSPACE_ID string = monitoring.outputs.AZURE_LOG_ANALYTICS_WORKSPACE_ID
 
+@description('Name of the deployed Application Insights instance for Logic Apps telemetry')
+output AZURE_APPLICATION_INSIGHTS_NAME string = monitoring.outputs.AZURE_APPLICATION_INSIGHTS_NAME
+
 module messaging 'messaging/main.bicep' = {
   name: 'MessagingDeployment'
   scope: resourceGroup()
