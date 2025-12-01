@@ -47,7 +47,6 @@ module insights 'app-insights.bicep' = {
   params: {
     name: name
     location: location
-    servicePrincipalId: servicePrincipalId
     logAnalyticsWorkspaceId: operationalInsights.outputs.AZURE_LOG_ANALYTICS_WORKSPACE_ID
     tags: tags
   }
