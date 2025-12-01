@@ -3,7 +3,7 @@ param location string = resourceGroup().location
 param tags object
 
 resource serviceBus 'Microsoft.ServiceBus/namespaces@2025-05-01-preview' = {
-  name: name
+  name: '${name}-${uniqueString(resourceGroup().id, name)}-sb'
   location: location
   tags: tags
   identity: {
