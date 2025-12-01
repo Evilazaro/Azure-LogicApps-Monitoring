@@ -24,7 +24,6 @@ module data 'data/main.bicep' = {
   scope: resourceGroup()
   params: {
     name: name
-    servicePrincipalId: workloadMi.properties.principalId
     tags: tags
   }
 }
