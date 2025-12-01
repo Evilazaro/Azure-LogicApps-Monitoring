@@ -19,6 +19,9 @@ param storageAccountName string
 @description('Name of the Application Insights instance for telemetry integration.')
 param appInsightsName string
 
+@description('Name of existing Service Bus namespace for messaging integration.')
+param serviceBusName string
+
 @description('Tags to apply to Logic App, App Service Plan, and dashboard resources.')
 param tags object
 
@@ -570,6 +573,27 @@ resource appInsightsRoleAssignments 'Microsoft.Authorization/roleAssignments@202
   for roleId in appInsightsRBAC: {
     name: guid(appInsights.id, appInsights.name, roleId)
     scope: appInsights
+    properties: {
+      roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', roleId)
+      principalId: logicApp.identity.principalId
+      principalType: 'ServicePrincipal'
+    }
+  }
+]
+
+var sbRBAC = [
+  '090c5cfd-751d-490a-894a-3ce6f1109419' // Azure Service Bus Data Owner - Full control over Service Bus resources
+]
+
+resource serviceBus 'Microsoft.ServiceBus/namespaces@2025-05-01-preview' existing = {
+  name: serviceBusName
+  scope: resourceGroup()
+}
+
+resource sbRoleAssignments 'Microsoft.Authorization/roleAssignments@2022-04-01' = [
+  for roleId in sbRBAC: {
+    name: guid(serviceBus.id, serviceBus.name, roleId)
+    scope: serviceBus
     properties: {
       roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', roleId)
       principalId: logicApp.identity.principalId

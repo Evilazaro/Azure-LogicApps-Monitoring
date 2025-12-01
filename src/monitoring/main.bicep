@@ -10,9 +10,6 @@ param name string
 @description('Azure region for monitoring resources deployment.')
 param location string = resourceGroup().location
 
-@description('Principal ID of the managed identity requiring monitoring access.')
-param servicePrincipalId string
-
 @description('Tags to apply to all monitoring resources.')
 param tags object
 

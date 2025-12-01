@@ -1,6 +1,5 @@
 param name string
 param location string = resourceGroup().location
-param servicePrincipalId string
 param workspaceId string
 param tags object
 
@@ -32,24 +31,7 @@ resource serviceBusAuthRule 'Microsoft.ServiceBus/namespaces/authorizationRules@
   parent: serviceBus
 }
 
-@secure()
-output AZURE_SERVICEBUS_CONNECTIONSTRING string = serviceBusAuthRule.listKeys().primaryConnectionString
-
-var RBACRoles = [
-  '090c5cfd-751d-490a-894a-3ce6f1109419' // Azure Service Bus Data Owner - Full control over Service Bus resources
-]
-
-resource roleAssignments 'Microsoft.Authorization/roleAssignments@2022-04-01' = [
-  for roleId in RBACRoles: {
-    name: guid(serviceBus.id, servicePrincipalId, roleId)
-    scope: serviceBus
-    properties: {
-      roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', roleId)
-      principalId: servicePrincipalId
-      principalType: 'ServicePrincipal'
-    }
-  }
-]
+output AZURE_SERVICEBUS_NAMESPACE_NAME string = serviceBus.name
 
 resource diagnosticSettings 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
   name: serviceBus.name

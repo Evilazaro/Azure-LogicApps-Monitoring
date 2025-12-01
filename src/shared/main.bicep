@@ -13,12 +13,6 @@ param location string = resourceGroup().location
 @description('Tags to apply to all shared resources.')
 param tags object
 
-resource workloadMi 'Microsoft.ManagedIdentity/userAssignedIdentities@2023-01-31' = {
-  name: '${name}-${uniqueString(resourceGroup().id, name)}-mi'
-  location: location
-  tags: tags
-}
-
 module data 'data/main.bicep' = {
   name: 'DataDeployment'
   scope: resourceGroup()
@@ -37,7 +31,6 @@ module monitoring '../monitoring/main.bicep' = {
   params: {
     name: name
     location: location
-    servicePrincipalId: workloadMi.properties.principalId
     tags: tags
   }
 }
@@ -54,8 +47,10 @@ module messaging 'messaging/main.bicep' = {
   params: {
     name: name
     location: location
-    servicePrincipalId: workloadMi.properties.principalId
     workspaceId: monitoring.outputs.AZURE_LOG_ANALYTICS_WORKSPACE_ID
     tags: tags
   }
 }
+
+@description('Name of the deployed Service Bus namespace for Logic Apps messaging integration')
+output AZURE_SERVICEBUS_NAMESPACE_NAME string = messaging.outputs.AZURE_SERVICEBUS_NAMESPACE_NAME
