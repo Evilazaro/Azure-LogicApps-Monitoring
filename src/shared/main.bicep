@@ -60,9 +60,7 @@ module messaging 'messaging/main.bicep' = {
   params: {
     name: name
     location: location
+    servicePrincipalId: workloadMi.properties.principalId
     tags: tags
   }
-  dependsOn: [
-    monitoring
-  ]
 }
