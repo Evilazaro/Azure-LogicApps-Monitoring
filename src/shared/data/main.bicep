@@ -78,7 +78,7 @@ resource storageAccount 'Microsoft.Storage/storageAccounts@2023-05-01' = {
     accessTier: 'Hot'
     supportsHttpsTrafficOnly: true
     minimumTlsVersion: 'TLS1_2'
-    allowBlobPublicAccess: false
+    allowBlobPublicAccess: true
     publicNetworkAccess: 'Enabled'
     allowSharedKeyAccess: true // REQUIRED for Logic Apps file share creation
     networkAcls: {
@@ -88,20 +88,6 @@ resource storageAccount 'Microsoft.Storage/storageAccounts@2023-05-01' = {
   }
 }
 
-// ============================================================================
-// FILE SERVICES - Enable file shares for Logic Apps
-// ============================================================================
-
-resource fileServices 'Microsoft.Storage/storageAccounts/fileServices@2023-05-01' = {
-  name: 'default'
-  parent: storageAccount
-  properties: {
-    shareDeleteRetentionPolicy: {
-      enabled: true
-      days: 7
-    }
-  }
-}
 
 // ============================================================================
 // OUTPUTS
