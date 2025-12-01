@@ -10,9 +10,6 @@ param name string
 @description('Azure region for monitoring resources deployment.')
 param location string = resourceGroup().location
 
-@description('Principal ID of the managed identity requiring monitoring access.')
-param servicePrincipalId string
-
 @description('Tags to apply to all monitoring resources.')
 param tags object
 
@@ -47,16 +44,10 @@ module insights 'app-insights.bicep' = {
   params: {
     name: name
     location: location
-    servicePrincipalId: servicePrincipalId
     logAnalyticsWorkspaceId: operationalInsights.outputs.AZURE_LOG_ANALYTICS_WORKSPACE_ID
     tags: tags
   }
 }
 
-@description('Application Insights instrumentation key for Logic Apps telemetry configuration')
-@secure()
-output AZURE_APPLICATION_INSIGHTS_INSTRUMENTATION_KEY string = insights.outputs.AZURE_APPLICATION_INSIGHTS_INSTRUMENTATION_KEY
-
-@description('Application Insights connection string for Logic Apps telemetry configuration')
-@secure()
-output AZURE_APPLICATION_INSIGHTS_CONNECTION_STRING string = insights.outputs.AZURE_APPLICATION_INSIGHTS_CONNECTION_STRING
+@description('Name of the deployed Application Insights instance')
+output AZURE_APPLICATION_INSIGHTS_NAME string = insights.outputs.AZURE_APPLICATION_INSIGHTS_NAME

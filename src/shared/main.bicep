@@ -13,18 +13,11 @@ param location string = resourceGroup().location
 @description('Tags to apply to all shared resources.')
 param tags object
 
-resource workloadMi 'Microsoft.ManagedIdentity/userAssignedIdentities@2023-01-31' = {
-  name: '${name}-${uniqueString(resourceGroup().id, name)}-mi'
-  location: location
-  tags: tags
-}
-
 module data 'data/main.bicep' = {
   name: 'DataDeployment'
   scope: resourceGroup()
   params: {
     name: name
-    servicePrincipalId: workloadMi.properties.principalId
     tags: tags
   }
 }
@@ -38,21 +31,18 @@ module monitoring '../monitoring/main.bicep' = {
   params: {
     name: name
     location: location
-    servicePrincipalId: workloadMi.properties.principalId
     tags: tags
   }
+  dependsOn: [
+    data
+  ]
 }
 
 @description('Resource ID of the Log Analytics workspace for Logic Apps diagnostic logging')
 output AZURE_LOG_ANALYTICS_WORKSPACE_ID string = monitoring.outputs.AZURE_LOG_ANALYTICS_WORKSPACE_ID
 
-@description('Application Insights instrumentation key for Logic Apps app settings')
-@secure()
-output AZURE_APPLICATION_INSIGHTS_INSTRUMENTATION_KEY string = monitoring.outputs.AZURE_APPLICATION_INSIGHTS_INSTRUMENTATION_KEY
-
-@description('Application Insights connection string for Logic Apps app settings')
-@secure()
-output AZURE_APPLICATION_INSIGHTS_CONNECTION_STRING string = monitoring.outputs.AZURE_APPLICATION_INSIGHTS_CONNECTION_STRING
+@description('Name of the deployed Application Insights instance for Logic Apps telemetry')
+output AZURE_APPLICATION_INSIGHTS_NAME string = monitoring.outputs.AZURE_APPLICATION_INSIGHTS_NAME
 
 module messaging 'messaging/main.bicep' = {
   name: 'MessagingDeployment'
@@ -60,7 +50,10 @@ module messaging 'messaging/main.bicep' = {
   params: {
     name: name
     location: location
-    servicePrincipalId: workloadMi.properties.principalId
+    workspaceId: monitoring.outputs.AZURE_LOG_ANALYTICS_WORKSPACE_ID
     tags: tags
   }
 }
+
+@description('Name of the deployed Service Bus namespace for Logic Apps messaging integration')
+output AZURE_SERVICEBUS_NAMESPACE_NAME string = messaging.outputs.AZURE_SERVICEBUS_NAMESPACE_NAME

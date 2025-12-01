@@ -10,9 +10,6 @@ param name string
 @description('Azure region for Application Insights deployment.')
 param location string = resourceGroup().location
 
-@description('Principal ID of the managed identity that needs Monitoring Metrics Publisher access.')
-param servicePrincipalId string
-
 @description('Resource ID of the Log Analytics workspace for Application Insights integration.')
 param logAnalyticsWorkspaceId string
 
@@ -32,33 +29,6 @@ resource appInsights 'Microsoft.Insights/components@2020-02-02' = {
 
 @description('Name of the deployed Application Insights instance')
 output AZURE_APPLICATION_INSIGHTS_NAME string = appInsights.name
-
-@description('Instrumentation key for Application Insights SDK initialization (legacy authentication)')
-@secure()
-output AZURE_APPLICATION_INSIGHTS_INSTRUMENTATION_KEY string = appInsights.properties.InstrumentationKey
-
-@description('Connection string for Application Insights telemetry ingestion (recommended authentication)')
-@secure()
-output AZURE_APPLICATION_INSIGHTS_CONNECTION_STRING string = appInsights.properties.ConnectionString
-
-// RBAC Role: Monitoring Metrics Publisher
-// Allows the managed identity to publish custom metrics to Application Insights
-// Reference: https://learn.microsoft.com/azure/role-based-access-control/built-in-roles#monitoring-metrics-publisher
-var appInsightsRoles = [
-  '3913510d-42f4-4e42-8a64-420c390055eb'
-]
-
-resource roleAssignments 'Microsoft.Authorization/roleAssignments@2022-04-01' = [
-  for roleId in appInsightsRoles: {
-    name: guid(appInsights.id, servicePrincipalId, roleId)
-    scope: appInsights
-    properties: {
-      roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', roleId)
-      principalId: servicePrincipalId
-      principalType: 'ServicePrincipal'
-    }
-  }
-]
 
 resource diagnosticSettings 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
   name: '${appInsights.name}-diagsetting'
