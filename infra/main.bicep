@@ -10,10 +10,13 @@ param solutionName string = 'tax-docs'
 @description('Azure region where all resources will be deployed. Must support Logic Apps and Application Insights.')
 param location string
 
+@description('Environment name (e.g., dev, test, prod) to differentiate deployments.')
+param envName string
+
 @description('Tags to apply to all resources')
 var tags = {
   Solution: solutionName
-  Environment: 'Production'
+  Environment: envName
   ManagedBy: 'Bicep'
   CostCenter: 'Engineering'
   Owner: 'Platform-Team'
@@ -21,7 +24,7 @@ var tags = {
   BusinessUnit: 'Tax'
 }
 
-var rgName = 'contoso-${solutionName}-rg'
+var rgName = 'contoso-${solutionName}-${envName}-${location}-rg'
 resource rg 'Microsoft.Resources/resourceGroups@2024-03-01' = {
   name: rgName
   location: location
