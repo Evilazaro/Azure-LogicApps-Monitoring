@@ -1,6 +1,7 @@
 param name string
 param location string = resourceGroup().location
 param servicePrincipalId string
+param workspaceId string
 param tags object
 
 resource serviceBus 'Microsoft.ServiceBus/namespaces@2025-05-01-preview' = {
@@ -49,3 +50,23 @@ resource roleAssignments 'Microsoft.Authorization/roleAssignments@2022-04-01' = 
     }
   }
 ]
+
+resource diagnosticSettings 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
+  name: serviceBus.name
+  scope: serviceBus
+  properties: {
+    workspaceId: workspaceId
+    logs: [
+      {
+        enabled: true
+        categoryGroup: 'allLogs'
+      }
+    ]
+    metrics: [
+      {
+        enabled: true
+        category: 'AllMetrics'
+      }
+    ]
+  }
+}

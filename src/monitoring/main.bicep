@@ -53,10 +53,5 @@ module insights 'app-insights.bicep' = {
   }
 }
 
-@description('Application Insights instrumentation key for Logic Apps telemetry configuration')
-@secure()
-output AZURE_APPLICATION_INSIGHTS_INSTRUMENTATION_KEY string = insights.outputs.AZURE_APPLICATION_INSIGHTS_INSTRUMENTATION_KEY
-
-@description('Application Insights connection string for Logic Apps telemetry configuration')
-@secure()
-output AZURE_APPLICATION_INSIGHTS_CONNECTION_STRING string = insights.outputs.AZURE_APPLICATION_INSIGHTS_CONNECTION_STRING
+@description('Name of the deployed Application Insights instance')
+output AZURE_APPLICATION_INSIGHTS_NAME string = insights.outputs.AZURE_APPLICATION_INSIGHTS_NAME

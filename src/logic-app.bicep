@@ -16,13 +16,8 @@ param workspaceId string
 @description('Name of the existing storage account (required for Logic Apps Standard).')
 param storageAccountName string
 
-@description('Application Insights instrumentation key for telemetry collection.')
-@secure()
-param appInsightsInstrumentationKey string
-
-@description('Application Insights connection string for telemetry endpoint configuration.')
-@secure()
-param appInsightsConnectionString string
+@description('Name of the Application Insights instance for telemetry integration.')
+param appInsightsName string
 
 @description('Tags to apply to Logic App, App Service Plan, and dashboard resources.')
 param tags object
@@ -543,6 +538,46 @@ resource storageAccount 'Microsoft.Storage/storageAccounts@2023-05-01' existing 
   scope: resourceGroup()
 }
 
+var storageRBAC = [
+  'b7e6dc6d-f1e8-4753-8033-0f276bb0955b' // Storage Blob Data Owner - Full control over blob containers and data
+  '974c5e8b-45b9-4653-ba55-5f855dd0fb88' // Storage Queue Data Contributor - Read, write, and delete queue messages
+  '0a9a7e1f-b9d0-4cc4-a60d-0319b160aaa3' // Storage Table Data Contributor - Read, write, and delete table data
+  '69566ab7-960f-475b-8e7c-b3118f30c6bd' // Storage File Data Privileged Contributor - Read, write, and modify files/directories
+]
+
+resource storageRoleAssignments 'Microsoft.Authorization/roleAssignments@2022-04-01' = [
+  for roleId in storageRBAC: {
+    name: guid(logicApp.id, logicApp.name, roleId)
+    scope: storageAccount
+    properties: {
+      roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', roleId)
+      principalId: logicApp.identity.principalId
+      principalType: 'ServicePrincipal'
+    }
+  }
+]
+
+resource appInsights 'Microsoft.Insights/components@2020-02-02' existing = {
+  name: appInsightsName
+  scope: resourceGroup()
+}
+
+var appInsightsRBAC = [
+  '3913510d-42f4-4e42-8a64-420c390055eb'
+]
+
+resource appInsightsRoleAssignments 'Microsoft.Authorization/roleAssignments@2022-04-01' = [
+  for roleId in appInsightsRBAC: {
+    name: guid(appInsights.id, appInsights.name, roleId)
+    scope: appInsights
+    properties: {
+      roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', roleId)
+      principalId: logicApp.identity.principalId
+      principalType: 'ServicePrincipal'
+    }
+  }
+]
+
 // SECURITY NOTE: Using listKeys() exposes storage account key in deployment logs and outputs
 // RECOMMENDED: Configure managed identity authentication instead
 // For Logic Apps, use: AzureWebJobsStorage__accountName and remove accountKey
@@ -577,11 +612,11 @@ resource logicApp 'Microsoft.Web/sites@2023-12-01' = {
         }
         {
           name: 'APPINSIGHTS_INSTRUMENTATIONKEY'
-          value: appInsightsInstrumentationKey
+          value: appInsights.properties.InstrumentationKey
         }
         {
           name: 'APPLICATIONINSIGHTS_CONNECTION_STRING'
-          value: appInsightsConnectionString
+          value: appInsights.properties.ConnectionString
         }
       ]
     }

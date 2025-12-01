@@ -33,14 +33,6 @@ resource appInsights 'Microsoft.Insights/components@2020-02-02' = {
 @description('Name of the deployed Application Insights instance')
 output AZURE_APPLICATION_INSIGHTS_NAME string = appInsights.name
 
-@description('Instrumentation key for Application Insights SDK initialization (legacy authentication)')
-@secure()
-output AZURE_APPLICATION_INSIGHTS_INSTRUMENTATION_KEY string = appInsights.properties.InstrumentationKey
-
-@description('Connection string for Application Insights telemetry ingestion (recommended authentication)')
-@secure()
-output AZURE_APPLICATION_INSIGHTS_CONNECTION_STRING string = appInsights.properties.ConnectionString
-
 // RBAC Role: Monitoring Metrics Publisher
 // Allows the managed identity to publish custom metrics to Application Insights
 // Reference: https://learn.microsoft.com/azure/role-based-access-control/built-in-roles#monitoring-metrics-publisher

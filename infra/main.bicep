@@ -48,8 +48,7 @@ module workload '../src/logic-app.bicep' = {
     name: solutionName
     workspaceId: shared.outputs.AZURE_LOG_ANALYTICS_WORKSPACE_ID
     storageAccountName: shared.outputs.STORAGE_ACCOUNT_NAME
-    appInsightsInstrumentationKey: shared.outputs.AZURE_APPLICATION_INSIGHTS_INSTRUMENTATION_KEY
-    appInsightsConnectionString: shared.outputs.AZURE_APPLICATION_INSIGHTS_CONNECTION_STRING
+    appInsightsName: shared.outputs.AZURE_APPLICATION_INSIGHTS_NAME
     tags: tags
   }
 }

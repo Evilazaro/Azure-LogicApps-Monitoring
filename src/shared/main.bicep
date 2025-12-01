@@ -46,14 +46,6 @@ module monitoring '../monitoring/main.bicep' = {
 @description('Resource ID of the Log Analytics workspace for Logic Apps diagnostic logging')
 output AZURE_LOG_ANALYTICS_WORKSPACE_ID string = monitoring.outputs.AZURE_LOG_ANALYTICS_WORKSPACE_ID
 
-@description('Application Insights instrumentation key for Logic Apps app settings')
-@secure()
-output AZURE_APPLICATION_INSIGHTS_INSTRUMENTATION_KEY string = monitoring.outputs.AZURE_APPLICATION_INSIGHTS_INSTRUMENTATION_KEY
-
-@description('Application Insights connection string for Logic Apps app settings')
-@secure()
-output AZURE_APPLICATION_INSIGHTS_CONNECTION_STRING string = monitoring.outputs.AZURE_APPLICATION_INSIGHTS_CONNECTION_STRING
-
 module messaging 'messaging/main.bicep' = {
   name: 'MessagingDeployment'
   scope: resourceGroup()
@@ -61,6 +53,7 @@ module messaging 'messaging/main.bicep' = {
     name: name
     location: location
     servicePrincipalId: workloadMi.properties.principalId
+    workspaceId: monitoring.outputs.AZURE_LOG_ANALYTICS_WORKSPACE_ID
     tags: tags
   }
 }
