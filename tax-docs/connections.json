@@ -1,0 +1,18 @@
+{
+  "managedApiConnections": {
+    "servicebus": {
+      "api": {
+        "id": "/subscriptions/6a4029ea-399b-4933-9701-436db72883d4/providers/Microsoft.Web/locations/eastus2/managedApis/servicebus"
+      },
+      "connection": {
+        "id": "/subscriptions/6a4029ea-399b-4933-9701-436db72883d4/resourceGroups/contoso-tax-docs-dev-eastus2-rg/providers/Microsoft.Web/connections/servicebus"
+      },
+      "connectionRuntimeUrl": "https://5a6ae91ddbd8ab93.19.common.logic-eastus2.azure-apihub.net/apim/servicebus/4982035ba0cf4a59a65681ff9df0a603/",
+      "authentication": {
+        "type": "Raw",
+        "scheme": "Key",
+        "parameter": "@appsetting('servicebus-connectionKey')"
+      }
+    }
+  }
+}

@@ -53,3 +53,14 @@ output AZURE_APPLICATION_INSIGHTS_INSTRUMENTATION_KEY string = monitoring.output
 @description('Application Insights connection string for Logic Apps app settings')
 @secure()
 output AZURE_APPLICATION_INSIGHTS_CONNECTION_STRING string = monitoring.outputs.AZURE_APPLICATION_INSIGHTS_CONNECTION_STRING
+
+module messaging 'messaging/main.bicep' = {
+  name: 'MessagingDeployment'
+  scope: resourceGroup()
+  params: {
+    name: name
+    location: location
+    servicePrincipalId: workloadMi.properties.principalId
+    tags: tags
+  }
+}
