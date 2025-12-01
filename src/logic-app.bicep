@@ -664,11 +664,36 @@ resource sbRoleAssignments 'Microsoft.Authorization/roleAssignments@2022-04-01' 
   }
 ]
 
-// SECURITY NOTE: Using listKeys() exposes storage account key in deployment logs and outputs
-// RECOMMENDED: Configure managed identity authentication instead
-// For Logic Apps, use: AzureWebJobsStorage__accountName and remove accountKey
-// Reference: https://learn.microsoft.com/azure/logic-apps/set-up-zone-redundancy-availability-zones#prerequisites
+// ============================================================================
+// VARIABLES - APP SETTINGS
+// ============================================================================
+
+// Core runtime settings
+var functionsExtensionVersion = '~4'
+var functionsWorkerRuntime = 'dotnet'
+
+// Extension bundle for Logic Apps Standard
+var extensionBundleId = 'Microsoft.Azure.Functions.ExtensionBundle.Workflows'
+var extensionBundleVersion = '[1.*, 2.0.0)'
+
+// Storage connection strings (SECURITY NOTE: Using listKeys() exposes keys)
+// TODO: Migrate to managed identity authentication for production
 var accountKey = storageAccount.listKeys().keys[0].value
+var storageConnectionString = 'DefaultEndpointsProtocol=https;AccountName=${storageAccount.name};AccountKey=${accountKey};EndpointSuffix=${environment().suffixes.storage}'
+
+// Application Insights telemetry
+var appInsightsInstrumentationKey = appInsights.properties.InstrumentationKey
+var appInsightsConnectionString = appInsights.properties.ConnectionString
+
+// Workflow configuration settings
+var workflowsSubscriptionId = subscription().subscriptionId
+var workflowsResourceGroupName = resourceGroup().name
+var workflowsLocationName = location
+var workflowsTenantId = subscription().tenantId
+
+// ============================================================================
+// LOGIC APP RESOURCE
+// ============================================================================
 
 resource logicApp 'Microsoft.Web/sites@2023-12-01' = {
   name: '${name}-${uniqueString(resourceGroup().id, name)}-logicapp'
@@ -684,27 +709,81 @@ resource logicApp 'Microsoft.Web/sites@2023-12-01' = {
     storageAccountRequired: true
     siteConfig: {
       appSettings: [
+        // Core Azure Functions runtime settings
         {
           name: 'FUNCTIONS_EXTENSION_VERSION'
-          value: '~4'
+          value: functionsExtensionVersion
         }
         {
           name: 'FUNCTIONS_WORKER_RUNTIME'
-          value: 'dotnet'
+          value: functionsWorkerRuntime
+        }
+        // Storage account settings (workflow state, run history, artifacts)
+        {
+          name: 'AzureWebJobsStorage'
+          value: storageConnectionString
         }
         {
-          name: 'AZURE_STORAGEFILE_CONNECTIONSTRING'
-          value: 'DefaultEndpointsProtocol=https;AccountName=${storageAccount.name};AccountKey=${accountKey};BlobEndpoint=https://${storageAccount.name}.blob.core.windows.net/;FileEndpoint=https://${storageAccount.name}.file.core.windows.net/;TableEndpoint=https://${storageAccount.name}.table.core.windows.net/;QueueEndpoint=https://${storageAccount.name}.queue.core.windows.net/'
+          name: 'WEBSITE_CONTENTAZUREFILECONNECTIONSTRING'
+          value: storageConnectionString
         }
+        {
+          name: 'WEBSITE_CONTENTSHARE'
+          value: toLower('${name}-${uniqueString(resourceGroup().id, name)}')
+        }
+        // Application Insights telemetry and monitoring
         {
           name: 'APPINSIGHTS_INSTRUMENTATIONKEY'
-          value: appInsights.properties.InstrumentationKey
+          value: appInsightsInstrumentationKey
         }
         {
           name: 'APPLICATIONINSIGHTS_CONNECTION_STRING'
-          value: appInsights.properties.ConnectionString
+          value: appInsightsConnectionString
+        }
+        // Logic Apps Standard extension bundle
+        {
+          name: 'AzureFunctionsJobHost__extensionBundle__id'
+          value: extensionBundleId
+        }
+        {
+          name: 'AzureFunctionsJobHost__extensionBundle__version'
+          value: extensionBundleVersion
+        }
+        // Workflow management settings
+        {
+          name: 'WORKFLOWS_SUBSCRIPTION_ID'
+          value: workflowsSubscriptionId
+        }
+        {
+          name: 'WORKFLOWS_RESOURCE_GROUP_NAME'
+          value: workflowsResourceGroupName
+        }
+        {
+          name: 'WORKFLOWS_LOCATION_NAME'
+          value: workflowsLocationName
+        }
+        {
+          name: 'WORKFLOWS_TENANT_ID'
+          value: workflowsTenantId
+        }
+        {
+          name: 'WORKFLOWS_MANAGEMENT_BASE_URI'
+          value: environment().resourceManager
+        }
+        // Performance and runtime settings
+        {
+          name: 'WEBSITE_NODE_DEFAULT_VERSION'
+          value: '~18'
+        }
+        {
+          name: 'WEBSITE_LOAD_USER_PROFILE'
+          value: '1'
         }
       ]
+      use32BitWorkerProcess: false
+      ftpsState: 'Disabled'
+      minTlsVersion: '1.2'
+      netFrameworkVersion: 'v6.0'
     }
   }
 }
@@ -716,27 +795,31 @@ resource serviceBusConnection 'Microsoft.Web/connections@2016-06-01' = {
   location: location
   tags: tags
   properties: {
-    parameterValues: {}
     displayName: sbConnectionName
-    statuses: [
-      {
-        status: 'Ready'
-      }
-    ]
-    customParameterValues: {}
+    parameterValues: {}
     api: {
-      name: sbConnectionName
-      displayName: 'Service Bus'
-      description: 'Connect to Azure Service Bus to send and receive messages. You can perform actions such as send to queue, send to topic, receive from queue, receive from subscription, etc.'
-      iconUri: 'https://conn-afd-prod-endpoint-bmc9bqahasf3grgk.b01.azurefd.net/v1.0.1760/1.0.1760.4281/${sbConnectionName}/icon.png'
-      id: '/subscriptions/${subscription().subscriptionId}/providers/Microsoft.Web/locations/${location}/managedApis/${sbConnectionName}'
-      type: 'Microsoft.Web/locations/managedApis'
+      id: subscriptionResourceId('Microsoft.Web/locations/managedApis', location, 'servicebus')
     }
-    testLinks: []
   }
   dependsOn: [
     logicApp
+    sbRoleAssignments
   ]
+}
+
+resource serviceBusConnectionAccessPolicy 'Microsoft.Web/connections/accessPolicies@2018-07-01-preview' = {
+  name: logicApp.name
+  parent: serviceBusConnection
+  location: location
+  properties: {
+    principal: {
+      type: 'ActiveDirectory'
+      identity: {
+        tenantId: subscription().tenantId
+        objectId: logicApp.identity.principalId
+      }
+    }
+  }
 }
 
 resource DiagnosticSettingsLogicApp 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
