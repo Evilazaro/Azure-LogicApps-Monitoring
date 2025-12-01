@@ -676,11 +676,6 @@ var functionsWorkerRuntime = 'dotnet'
 var extensionBundleId = 'Microsoft.Azure.Functions.ExtensionBundle.Workflows'
 var extensionBundleVersion = '[1.*, 2.0.0)'
 
-// Storage connection strings (SECURITY NOTE: Using listKeys() exposes keys)
-// TODO: Migrate to managed identity authentication for production
-var accountKey = storageAccount.listKeys().keys[0].value
-var storageConnectionString = 'DefaultEndpointsProtocol=https;AccountName=${storageAccount.name};AccountKey=${accountKey};EndpointSuffix=${environment().suffixes.storage}'
-
 // Application Insights telemetry
 var appInsightsInstrumentationKey = appInsights.properties.InstrumentationKey
 var appInsightsConnectionString = appInsights.properties.ConnectionString
@@ -740,13 +735,18 @@ resource logicApp 'Microsoft.Web/sites@2023-12-01' = {
           name: 'AzureWebJobsStorage__credential'
           value: 'managedidentity'
         }
+        // File share settings using managed identity (consistent with AzureWebJobsStorage)
         {
-          name: 'WEBSITE_CONTENTAZUREFILECONNECTIONSTRING'
-          value: storageConnectionString
+          name: 'WEBSITE_CONTENTOVERVNET'
+          value: '1'
         }
         {
           name: 'WEBSITE_CONTENTSHARE'
           value: toLower('${name}-${uniqueString(resourceGroup().id, name)}')
+        }
+        {
+          name: 'AzureWebJobsStorage__fileServiceUri'
+          value: 'https://${storageAccountName}.file.${environment().suffixes.storage}'
         }
         // Application Insights telemetry and monitoring
         {

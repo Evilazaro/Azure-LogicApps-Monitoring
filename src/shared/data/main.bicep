@@ -92,7 +92,7 @@ resource storageAccount 'Microsoft.Storage/storageAccounts@2023-05-01' = {
 // FILE SERVICES - Required for Logic Apps file share
 // ============================================================================
 
-resource fileServices 'Microsoft.Storage/storageAccounts/fileServices@2025-06-01' = {
+resource fileServices 'Microsoft.Storage/storageAccounts/fileServices@2023-05-01' = {
   name: 'default'
   parent: storageAccount
   properties: {
