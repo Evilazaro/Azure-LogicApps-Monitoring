@@ -17,7 +17,7 @@ resource serviceBus 'Microsoft.ServiceBus/namespaces@2025-05-01-preview' = {
   }
   properties: {
     publicNetworkAccess: 'Enabled'
-    disableLocalAuth: false
+    disableLocalAuth: true
   }
 }
 
