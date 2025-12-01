@@ -596,6 +596,11 @@ resource dashboardASP 'Microsoft.Portal/dashboards@2020-09-01-preview' = {
   }
 }
 
+resource mi 'Microsoft.ManagedIdentity/userAssignedIdentities@2025-01-31-preview' existing = {
+  name: '${name}-mi'
+  scope: resourceGroup()
+}
+
 resource storageAccount 'Microsoft.Storage/storageAccounts@2023-05-01' existing = {
   name: storageAccountName
   scope: resourceGroup()
@@ -614,7 +619,7 @@ resource storageRoleAssignments 'Microsoft.Authorization/roleAssignments@2022-04
     scope: storageAccount
     properties: {
       roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', roleId)
-      principalId: logicApp.identity.principalId
+      principalId: mi.properties.principalId
       principalType: 'ServicePrincipal'
     }
   }
@@ -635,7 +640,7 @@ resource appInsightsRoleAssignments 'Microsoft.Authorization/roleAssignments@202
     scope: appInsights
     properties: {
       roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', roleId)
-      principalId: logicApp.identity.principalId
+      principalId: mi.properties.principalId
       principalType: 'ServicePrincipal'
     }
   }
@@ -658,7 +663,7 @@ resource sbRoleAssignments 'Microsoft.Authorization/roleAssignments@2022-04-01' 
     scope: serviceBus
     properties: {
       roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', roleId)
-      principalId: logicApp.identity.principalId
+      principalId: mi.properties.principalId
       principalType: 'ServicePrincipal'
     }
   }
@@ -695,7 +700,10 @@ resource logicApp 'Microsoft.Web/sites@2023-12-01' = {
   location: location
   kind: 'functionapp,workflowapp'
   identity: {
-    type: 'SystemAssigned'
+    type: 'SystemAssigned, UserAssigned'
+    userAssignedIdentities: {
+      '${mi.id}': {}
+    }
   }
   tags: tags
   properties: {
@@ -734,6 +742,10 @@ resource logicApp 'Microsoft.Web/sites@2023-12-01' = {
         {
           name: 'AzureWebJobsStorage__credential'
           value: 'managedidentity'
+        }
+        {
+          name: 'AzureWebJobsStorage__clientId'
+          value: mi.properties.clientId
         }
         // Application Insights telemetry and monitoring
         {
