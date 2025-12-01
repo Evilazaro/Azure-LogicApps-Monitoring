@@ -1,18 +1,35 @@
-// Monitoring module orchestrator
-// Deploys Azure Monitor health model, Log Analytics workspace, and Application Insights
-// Provides complete observability stack for Logic Apps workload
+// ============================================================================
+// MONITORING MODULE ORCHESTRATOR
+// ============================================================================
+// Deploys the complete observability stack for Logic Apps:
+// 1. Azure Monitor Health Model - Hierarchical service group organization
+// 2. Log Analytics Workspace - Centralized log aggregation and KQL queries
+// 3. Application Insights - APM, distributed tracing, and telemetry
+//
+// This module provides workspace-based Application Insights (best practice)
+// integrated with Log Analytics for unified querying across all log sources.
+// ============================================================================
 
-@description('Base name for all monitoring resources.')
+// ============================================================================
+// PARAMETERS
+// ============================================================================
+
+@description('Base name for all monitoring resources. Used to generate unique resource names with consistent prefixes.')
 @minLength(3)
 @maxLength(20)
 param name string
 
-@description('Azure region for monitoring resources deployment.')
+@description('Azure region for monitoring resources deployment. Should match the Logic App deployment region for optimal performance.')
 param location string = resourceGroup().location
 
-@description('Tags to apply to all monitoring resources.')
+@description('Resource tags applied to all monitoring resources for cost tracking, organization, and compliance.')
 param tags object
 
+// ============================================================================
+// MODULE DEPLOYMENTS
+// ============================================================================
+
+// Deploy Azure Monitor Health Model for hierarchical resource organization
 module healthModel 'azure-monitor-health-model.bicep' = {
   name: 'deployAzureMonitorHealthModel'
   scope: resourceGroup()
@@ -22,6 +39,7 @@ module healthModel 'azure-monitor-health-model.bicep' = {
   }
 }
 
+// Deploy Log Analytics Workspace (30-day retention, PerGB2018 pricing tier)
 module operationalInsights 'log-analytics-workspace.bicep' = {
   name: 'deployLogAnalyticsWorkspace'
   scope: resourceGroup()
@@ -35,9 +53,7 @@ module operationalInsights 'log-analytics-workspace.bicep' = {
   ]
 }
 
-@description('Resource ID of the Log Analytics workspace for workload diagnostic settings')
-output AZURE_LOG_ANALYTICS_WORKSPACE_ID string = operationalInsights.outputs.AZURE_LOG_ANALYTICS_WORKSPACE_ID
-
+// Deploy Application Insights with workspace integration (workspace-based model)
 module insights 'app-insights.bicep' = {
   name: 'deployAppInsights'
   scope: resourceGroup()
@@ -49,5 +65,15 @@ module insights 'app-insights.bicep' = {
   }
 }
 
-@description('Name of the deployed Application Insights instance')
+// ============================================================================
+// OUTPUTS
+// ============================================================================
+
+@description('Resource ID of the Log Analytics workspace for configuring diagnostic settings on Azure resources')
+output AZURE_LOG_ANALYTICS_WORKSPACE_ID string = operationalInsights.outputs.AZURE_LOG_ANALYTICS_WORKSPACE_ID
+
+@description('Name of the deployed Application Insights instance for Logic Apps app settings configuration')
 output AZURE_APPLICATION_INSIGHTS_NAME string = insights.outputs.AZURE_APPLICATION_INSIGHTS_NAME
+
+@description('Name of the deployed Log Analytics workspace for reference and manual queries')
+output AZURE_LOG_ANALYTICS_WORKSPACE_NAME string = operationalInsights.outputs.AZURE_LOG_ANALYTICS_WORKSPACE_NAME

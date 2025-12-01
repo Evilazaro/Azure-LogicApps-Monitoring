@@ -4,14 +4,5 @@
       "name": "tax-docs",
       "path": "./tax-docs"
     }
-  ],
-  "settings": {
-    "terminal.integrated.env.windows": {
-      "PATH": "C:\\Users\\evalvesd\\.azurelogicapps\\dependencies\\DotNetSDK;${env:PATH}"
-    },
-    "omnisharp.dotNetCliPaths": [
-      "C:\\Users\\evalvesd\\.azurelogicapps\\dependencies\\DotNetSDK"
-    ],
-    "debug.internalConsoleOptions": "neverOpen"
-  }
+  ]
 }

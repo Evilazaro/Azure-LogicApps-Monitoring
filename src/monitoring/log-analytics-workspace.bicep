@@ -1,15 +1,36 @@
-// Log Analytics Workspace module for centralized logging and monitoring
-// Provides KQL query interface, log retention, and integration with Azure Monitor
+// ============================================================================
+// LOG ANALYTICS WORKSPACE MODULE
+// ============================================================================
+// Provides centralized log aggregation and analytics using Kusto Query Language (KQL).
+// 
+// Configuration:
+// - SKU: PerGB2018 (pay-as-you-go pricing based on data ingested)
+// - Retention: 30 days (configurable, balances cost and compliance)
+// - Immediate Purge: Enabled (data deleted immediately after 30 days)
+// - Identity: System-assigned managed identity for secure data access
+//
+// This workspace serves as the central repository for:
+// - Logic Apps WorkflowRuntime logs
+// - Application Insights telemetry
+// - Service Bus diagnostic logs
+// - App Service Plan metrics
+//
+// Reference: https://learn.microsoft.com/azure/azure-monitor/logs/log-analytics-workspace-overview
+// ============================================================================
 
-@description('Base name for the Log Analytics workspace. Will be suffixed with unique string and "-law".')
+// ============================================================================
+// PARAMETERS
+// ============================================================================
+
+@description('Base name for the Log Analytics workspace. Will be suffixed with unique string and "-law" to ensure global uniqueness.')
 @minLength(3)
 @maxLength(20)
 param name string
 
-@description('Azure region for the Log Analytics workspace deployment.')
+@description('Azure region for the Log Analytics workspace deployment. Should match application resources for optimal data transfer costs.')
 param location string = resourceGroup().location
 
-@description('Tags to apply to the Log Analytics workspace for organization and compliance.')
+@description('Resource tags applied to the Log Analytics workspace for cost tracking, organization, and compliance.')
 param tags object
 
 resource logAnalytics 'Microsoft.OperationalInsights/workspaces@2023-09-01' = {
