@@ -679,7 +679,7 @@ var extensionBundleVersion = '[1.*, 2.0.0)'
 // Storage connection strings (SECURITY NOTE: Using listKeys() exposes keys)
 // TODO: Migrate to managed identity authentication for production
 var accountKey = storageAccount.listKeys().keys[0].value
-var storageConnectionString = 'DefaultEndpointsProtocol=https;AccountName=${storageAccount.name};AccountKey=${accountKey};EndpointSuffix=${environment().suffixes.storage}'
+var storageConnectionString = 'DefaultEndpointsProtocol=https;AccountName=${storageAccount.name};AccountKey=${accountKey};EndpointSuffix=core.windows.net'
 
 // Application Insights telemetry
 var appInsightsInstrumentationKey = appInsights.properties.InstrumentationKey
