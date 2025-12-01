@@ -1,19 +1,39 @@
-// Application Insights module for APM (Application Performance Monitoring)
-// Provides telemetry collection, distributed tracing, and performance analytics
-// Integrated with Log Analytics workspace for unified query experience
+// ============================================================================
+// APPLICATION INSIGHTS MODULE
+// ============================================================================
+// Provides Application Performance Monitoring (APM) for Logic Apps:
+// - Distributed tracing across workflow actions
+// - Performance metrics and telemetry
+// - Dependency tracking (HTTP calls, database queries)
+// - Live metrics streaming for real-time monitoring
+//
+// Configuration:
+// - Type: Workspace-based (best practice, integrated with Log Analytics)
+// - Application Type: web (suitable for Logic Apps Standard)
+// - Ingestion Mode: LogAnalytics (routes telemetry to workspace)
+//
+// The connection string is injected into Logic App app settings via:
+// APPLICATIONINSIGHTS_CONNECTION_STRING environment variable
+//
+// Reference: https://learn.microsoft.com/azure/azure-monitor/app/app-insights-overview
+// ============================================================================
 
-@description('Base name for Application Insights. Will be suffixed with unique string and "-appinsights".')
+// ============================================================================
+// PARAMETERS
+// ============================================================================
+
+@description('Base name for Application Insights. Will be suffixed with unique string and "-appinsights" for global uniqueness.')
 @minLength(3)
 @maxLength(20)
 param name string
 
-@description('Azure region for Application Insights deployment.')
+@description('Azure region for Application Insights deployment. Must match Log Analytics workspace region for workspace-based model.')
 param location string = resourceGroup().location
 
-@description('Resource ID of the Log Analytics workspace for Application Insights integration.')
+@description('Resource ID of the Log Analytics workspace for workspace-based Application Insights integration (best practice).')
 param logAnalyticsWorkspaceId string
 
-@description('Tags to apply to Application Insights and related diagnostic settings.')
+@description('Resource tags applied to Application Insights and diagnostic settings for organization and governance.')
 param tags object
 
 resource appInsights 'Microsoft.Insights/components@2020-02-02' = {

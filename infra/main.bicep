@@ -1,19 +1,48 @@
-// Main deployment orchestrator for Azure Logic Apps Monitoring solution
-// Deploys resource group, shared resources (monitoring infrastructure, storage), and Logic App workload
+// ============================================================================
+// MAIN DEPLOYMENT ORCHESTRATOR
+// ============================================================================
+// Deploys a complete Azure Logic Apps monitoring solution including:
+// - Resource group with standardized naming
+// - Shared resources (monitoring, storage, messaging, managed identity)
+// - Logic App workload with App Service Plan
+// - Monitoring dashboards and diagnostic settings
+//
+// This is a subscription-level deployment that creates all necessary resources
+// for a production-ready Logic Apps Standard deployment with comprehensive
+// observability using Azure Monitor, Application Insights, and Log Analytics.
+// ============================================================================
+
 targetScope = 'subscription'
 
-@description('Base name for the solution. Used as prefix for all resource names to ensure consistency.')
+// ============================================================================
+// PARAMETERS
+// ============================================================================
+
+@description('Base name for the solution (e.g., tax-docs, invoice-processor). Used as prefix for all resource names to ensure consistency and traceability.')
 @minLength(3)
 @maxLength(20)
 param solutionName string = 'tax-docs'
 
-@description('Azure region where all resources will be deployed. Must support Logic Apps and Application Insights.')
+@description('Azure region where all resources will be deployed (e.g., eastus2, westeurope). Must support Logic Apps Standard, Application Insights, and Service Bus.')
+@minLength(3)
 param location string
 
-@description('Environment name (e.g., dev, test, prod) to differentiate deployments.')
+@description('Environment name to differentiate deployments and apply environment-specific configurations.')
+@allowed([
+  'dev'
+  'uat'
+  'prod'
+])
 param envName string
 
-@description('Tags to apply to all resources')
+@description('Deployment timestamp for tracking purposes. Auto-generated at deployment time.')
+param deploymentDate string = utcNow('yyyy-MM-dd')
+
+// ============================================================================
+// VARIABLES
+// ============================================================================
+
+@description('Standardized resource tags applied to all resources for cost tracking, organization, and governance policies.')
 var tags = {
   Solution: solutionName
   Environment: envName
@@ -22,14 +51,30 @@ var tags = {
   Owner: 'Platform-Team'
   ApplicationName: 'Tax-Docs-Processing'
   BusinessUnit: 'Tax'
+  DeploymentDate: deploymentDate
+  Repository: 'Azure-LogicApps-Monitoring'
 }
 
+@description('Resource group name following Azure naming convention: organization-solution-environment-region-rg')
 var rgName = 'contoso-${solutionName}-${envName}-${location}-rg'
+
+// ============================================================================
+// RESOURCE GROUP
+// ============================================================================
+
 resource rg 'Microsoft.Resources/resourceGroups@2024-03-01' = {
   name: rgName
   location: location
   tags: tags
 }
+
+// ============================================================================
+// SHARED RESOURCES MODULE
+// ============================================================================
+// Deploys monitoring infrastructure (Log Analytics, Application Insights),
+// storage account for Logic Apps runtime, Service Bus namespace for messaging,
+// and user-assigned managed identity for secure authentication
+// ============================================================================
 
 module shared '../src/shared/main.bicep' = {
   name: 'SharedResourcesDeployment'
@@ -40,6 +85,14 @@ module shared '../src/shared/main.bicep' = {
     tags: tags
   }
 }
+
+// ============================================================================
+// LOGIC APP WORKLOAD MODULE
+// ============================================================================
+// Deploys App Service Plan (Workflow Standard SKU), Logic App with system-assigned
+// managed identity, and Azure Portal dashboards for monitoring App Service Plan
+// and workflow execution metrics
+// ============================================================================
 
 module workload '../src/logic-app.bicep' = {
   name: 'WorkloadDeployment'
@@ -53,3 +106,5 @@ module workload '../src/logic-app.bicep' = {
     tags: tags
   }
 }
+
+

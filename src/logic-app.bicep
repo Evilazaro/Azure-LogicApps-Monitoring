@@ -1,28 +1,88 @@
-// Logic App workload module with App Service Plan and monitoring dashboards
-// Deploys workflow runtime, diagnostic settings, and Azure Portal dashboards
-// Configured with Application Insights telemetry and WorkflowRuntime logging
+// ============================================================================
+// LOGIC APP WORKLOAD MODULE
+// ============================================================================
+// Deploys Logic Apps Standard workload with comprehensive monitoring:
+// - App Service Plan (Workflow Standard SKU - WS1)
+// - Logic App (Function App + Workflow App)
+// - RBAC role assignments for managed identity access
+// - Diagnostic settings for logs and metrics
+// - Azure Portal dashboards for operational monitoring
+//
+// App Service Plan Configuration:
+// - SKU: WS1 (Workflow Standard tier)
+// - Elastic scaling: up to 20 workers
+// - Zone redundancy: configurable
+//
+// Logic App Configuration:
+// - Runtime: .NET (FUNCTIONS_WORKER_RUNTIME=dotnet)
+// - Identity: System-assigned managed identity
+// - Storage: Connection string-based (transition to managed identity recommended)
+// - Monitoring: Application Insights integration with connection string
+//
+// RBAC Roles Assigned to Logic App Managed Identity:
+// 1. Storage Account (4 roles):
+//    - Storage Blob Data Owner (b7e6dc6d-f1e8-4753-8033-0f276bb0955b)
+//      Full access to blob containers and data
+//      Docs: https://learn.microsoft.com/azure/role-based-access-control/built-in-roles#storage-blob-data-owner
+//
+//    - Storage Queue Data Contributor (974c5e8b-45b9-4653-ba55-5f855dd0fb88)
+//      Read, write, delete queue messages
+//      Docs: https://learn.microsoft.com/azure/role-based-access-control/built-in-roles#storage-queue-data-contributor
+//
+//    - Storage Table Data Contributor (0a9a7e1f-b9d0-4cc4-a60d-0319b160aaa3)
+//      Read, write, delete table entities
+//      Docs: https://learn.microsoft.com/azure/role-based-access-control/built-in-roles#storage-table-data-contributor
+//
+//    - Storage File Data Privileged Contributor (69566ab7-960f-475b-8e7c-b3118f30c6bd)
+//      Read, write, delete, modify ACLs on files/directories
+//      Docs: https://learn.microsoft.com/azure/role-based-access-control/built-in-roles#storage-file-data-privileged-contributor
+//
+// 2. Application Insights (1 role):
+//    - Monitoring Metrics Publisher (3913510d-42f4-4e42-8a64-420c390055eb)
+//      Publish metrics to Azure Monitor
+//      Docs: https://learn.microsoft.com/azure/role-based-access-control/built-in-roles#monitoring-metrics-publisher
+//
+// 3. Service Bus (1 role):
+//    - Azure Service Bus Data Owner (090c5cfd-751d-490a-894a-3ce6f1109419)
+//      Full control over Service Bus resources (send, receive, manage)
+//      Docs: https://learn.microsoft.com/azure/role-based-access-control/built-in-roles#azure-service-bus-data-owner
+//
+// Monitoring Dashboards:
+// - Service Plan Metrics: CPU, Memory, Data I/O, HTTP Queue Length
+// - Workflow Metrics: Runs, Failures, Triggers, Actions, Duration
+// - Time Range: Past 24 hours with auto-refresh
+//
+// References:
+// - Logic Apps Standard: https://learn.microsoft.com/azure/logic-apps/single-tenant-overview-compare
+// - App Service Plan: https://learn.microsoft.com/azure/app-service/overview-hosting-plans
+// - Managed Identity: https://learn.microsoft.com/azure/logic-apps/authenticate-with-managed-identity
+// ============================================================================
 
-@description('Base name for Logic App and App Service Plan resources.')
+// ============================================================================
+// PARAMETERS
+// ============================================================================
+
+@description('Base name for Logic App and App Service Plan resources. Will be suffixed with unique string for global uniqueness.')
 @minLength(3)
 @maxLength(20)
 param name string
 
-@description('Azure region for Logic App deployment. Must support WorkflowStandard SKU.')
+@description('Azure region for Logic App deployment. Must support Workflow Standard SKU and Application Insights.')
 param location string = resourceGroup().location
 
-@description('Resource ID of the Log Analytics workspace for diagnostic logs.')
+@description('Resource ID of the Log Analytics workspace for diagnostic logs and metrics.')
 param workspaceId string
 
-@description('Name of the existing storage account (required for Logic Apps Standard).')
+@description('Name of the existing storage account required by Logic Apps Standard for workflow state and artifacts.')
 param storageAccountName string
 
-@description('Name of the Application Insights instance for telemetry integration.')
+@description('Name of the Application Insights instance for telemetry collection and performance monitoring.')
 param appInsightsName string
 
-@description('Name of existing Service Bus namespace for messaging integration.')
+@description('Name of existing Service Bus namespace for messaging integration with workflows.')
 param serviceBusName string
 
-@description('Tags to apply to Logic App, App Service Plan, and dashboard resources.')
+@description('Resource tags applied to Logic App, App Service Plan, and dashboard resources for cost tracking and governance.')
 param tags object
 
 resource appServicePlan 'Microsoft.Web/serverfarms@2024-11-01' = {
@@ -1348,3 +1408,31 @@ resource workflowsDashboard 'Microsoft.Portal/dashboards@2020-09-01-preview' = {
     }
   }
 }
+
+// ============================================================================
+// OUTPUTS
+// ============================================================================
+
+@description('Name of the deployed Logic App (Workflow App)')
+output logicAppName string = logicApp.name
+
+@description('Resource ID of the Logic App for configuration and RBAC assignments')
+output logicAppId string = logicApp.id
+
+@description('Principal ID of the Logic App system-assigned managed identity for RBAC role assignments')
+output logicAppPrincipalId string = logicApp.identity.principalId
+
+@description('Name of the App Service Plan hosting the Logic App')
+output appServicePlanName string = appServicePlan.name
+
+@description('Resource ID of the App Service Plan for monitoring and scaling configuration')
+output appServicePlanId string = appServicePlan.id
+
+@description('Default hostname of the Logic App (e.g., myapp.azurewebsites.net)')
+output logicAppHostname string = logicApp.properties.defaultHostName
+
+@description('Name of the Service Plan metrics dashboard in Azure Portal')
+output servicePlanDashboardName string = dashboardASP.name
+
+@description('Name of the Workflow metrics dashboard in Azure Portal')
+output workflowDashboardName string = workflowsDashboard.name
