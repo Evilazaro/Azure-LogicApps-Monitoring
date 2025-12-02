@@ -5,7 +5,7 @@
     "_generator": {
       "name": "bicep",
       "version": "0.39.26.7824",
-      "templateHash": "5957660096373945149"
+      "templateHash": "16169509671256997588"
     }
   },
   "parameters": {
@@ -80,6 +80,9 @@
           "name": {
             "value": "[parameters('solutionName')]"
           },
+          "envName": {
+            "value": "[parameters('envName')]"
+          },
           "location": {
             "value": "[parameters('location')]"
           },
@@ -94,7 +97,7 @@
             "_generator": {
               "name": "bicep",
               "version": "0.39.26.7824",
-              "templateHash": "3754578318406583489"
+              "templateHash": "599092716998708621"
             }
           },
           "parameters": {
@@ -104,6 +107,12 @@
               "maxLength": 20,
               "metadata": {
                 "description": "Base name for all shared resources. Used as prefix to ensure consistent naming across modules."
+              }
+            },
+            "envName": {
+              "type": "string",
+              "metadata": {
+                "description": "Environment name suffix to ensure uniqueness across environments (e.g., dev, test, prod)."
               }
             },
             "location": {
@@ -134,6 +143,9 @@
                   "name": {
                     "value": "[parameters('name')]"
                   },
+                  "envName": {
+                    "value": "[parameters('envName')]"
+                  },
                   "location": {
                     "value": "[parameters('location')]"
                   },
@@ -148,7 +160,7 @@
                     "_generator": {
                       "name": "bicep",
                       "version": "0.39.26.7824",
-                      "templateHash": "10479052405314414636"
+                      "templateHash": "2603294671677099754"
                     }
                   },
                   "parameters": {
@@ -158,6 +170,12 @@
                       "maxLength": 20,
                       "metadata": {
                         "description": "Base name for the user-assigned managed identity. Will be suffixed with -mi."
+                      }
+                    },
+                    "envName": {
+                      "type": "string",
+                      "metadata": {
+                        "description": "Environment name suffix to ensure uniqueness across environments (e.g., dev, test, prod)."
                       }
                     },
                     "location": {
@@ -178,7 +196,7 @@
                     {
                       "type": "Microsoft.ManagedIdentity/userAssignedIdentities",
                       "apiVersion": "2023-01-31",
-                      "name": "[format('{0}-mi', parameters('name'))]",
+                      "name": "[format('{0}-{1}-mi', parameters('name'), uniqueString(resourceGroup().id, parameters('name'), parameters('envName'), parameters('location')))]",
                       "location": "[parameters('location')]",
                       "tags": "[parameters('tags')]"
                     }
@@ -189,28 +207,28 @@
                       "metadata": {
                         "description": "Resource ID of the user-assigned managed identity for identity assignment in Logic App"
                       },
-                      "value": "[resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', format('{0}-mi', parameters('name')))]"
+                      "value": "[resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', format('{0}-{1}-mi', parameters('name'), uniqueString(resourceGroup().id, parameters('name'), parameters('envName'), parameters('location'))))]"
                     },
                     "MANAGED_IDENTITY_NAME": {
                       "type": "string",
                       "metadata": {
                         "description": "Name of the user-assigned managed identity"
                       },
-                      "value": "[format('{0}-mi', parameters('name'))]"
+                      "value": "[format('{0}-{1}-mi', parameters('name'), uniqueString(resourceGroup().id, parameters('name'), parameters('envName'), parameters('location')))]"
                     },
                     "MANAGED_IDENTITY_PRINCIPAL_ID": {
                       "type": "string",
                       "metadata": {
                         "description": "Principal ID (object ID) of the managed identity for RBAC role assignments"
                       },
-                      "value": "[reference(resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', format('{0}-mi', parameters('name'))), '2023-01-31').principalId]"
+                      "value": "[reference(resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', format('{0}-{1}-mi', parameters('name'), uniqueString(resourceGroup().id, parameters('name'), parameters('envName'), parameters('location')))), '2023-01-31').principalId]"
                     },
                     "MANAGED_IDENTITY_CLIENT_ID": {
                       "type": "string",
                       "metadata": {
                         "description": "Client ID (application ID) of the managed identity for app settings configuration"
                       },
-                      "value": "[reference(resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', format('{0}-mi', parameters('name'))), '2023-01-31').clientId]"
+                      "value": "[reference(resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', format('{0}-{1}-mi', parameters('name'), uniqueString(resourceGroup().id, parameters('name'), parameters('envName'), parameters('location')))), '2023-01-31').clientId]"
                     }
                   }
                 }
@@ -229,6 +247,9 @@
                   "name": {
                     "value": "[parameters('name')]"
                   },
+                  "envName": {
+                    "value": "[parameters('envName')]"
+                  },
                   "location": {
                     "value": "[parameters('location')]"
                   },
@@ -243,7 +264,7 @@
                     "_generator": {
                       "name": "bicep",
                       "version": "0.39.26.7824",
-                      "templateHash": "12347149253031592865"
+                      "templateHash": "9354677623490417904"
                     }
                   },
                   "parameters": {
@@ -253,6 +274,12 @@
                       "maxLength": 20,
                       "metadata": {
                         "description": "Base name for the storage account. Must be 3-20 characters. Will be processed to meet Azure Storage naming requirements."
+                      }
+                    },
+                    "envName": {
+                      "type": "string",
+                      "metadata": {
+                        "description": "Environment name suffix to ensure uniqueness across environments (e.g., dev, test, prod)."
                       }
                     },
                     "location": {
@@ -271,7 +298,7 @@
                   },
                   "variables": {
                     "cleanedName": "[toLower(replace(replace(replace(parameters('name'), '-', ''), '_', ''), ' ', ''))]",
-                    "uniqueSuffix": "[uniqueString(resourceGroup().id, parameters('name'))]",
+                    "uniqueSuffix": "[uniqueString(resourceGroup().id, parameters('name'), parameters('envName'), parameters('location'))]",
                     "storageAccountName": "[take(format('{0}{1}stg', variables('cleanedName'), variables('uniqueSuffix')), 24)]"
                   },
                   "resources": [
@@ -331,6 +358,9 @@
                   "name": {
                     "value": "[parameters('name')]"
                   },
+                  "envName": {
+                    "value": "[parameters('envName')]"
+                  },
                   "location": {
                     "value": "[parameters('location')]"
                   },
@@ -345,7 +375,7 @@
                     "_generator": {
                       "name": "bicep",
                       "version": "0.39.26.7824",
-                      "templateHash": "16628368971103106376"
+                      "templateHash": "12521096792626237542"
                     }
                   },
                   "parameters": {
@@ -355,6 +385,12 @@
                       "maxLength": 20,
                       "metadata": {
                         "description": "Base name for all monitoring resources. Used to generate unique resource names with consistent prefixes."
+                      }
+                    },
+                    "envName": {
+                      "type": "string",
+                      "metadata": {
+                        "description": "Environment name suffix to ensure uniqueness across environments (e.g., dev, test, prod)."
                       }
                     },
                     "location": {
@@ -447,6 +483,9 @@
                           "name": {
                             "value": "[parameters('name')]"
                           },
+                          "envName": {
+                            "value": "[parameters('envName')]"
+                          },
                           "location": {
                             "value": "[parameters('location')]"
                           },
@@ -461,7 +500,7 @@
                             "_generator": {
                               "name": "bicep",
                               "version": "0.39.26.7824",
-                              "templateHash": "10585774879054874187"
+                              "templateHash": "15475635590232645583"
                             }
                           },
                           "parameters": {
@@ -471,6 +510,12 @@
                               "maxLength": 20,
                               "metadata": {
                                 "description": "Base name for the Log Analytics workspace. Will be suffixed with unique string and \"-law\" to ensure global uniqueness."
+                              }
+                            },
+                            "envName": {
+                              "type": "string",
+                              "metadata": {
+                                "description": "Environment name suffix to ensure uniqueness across environments (e.g., dev, test, prod)."
                               }
                             },
                             "location": {
@@ -491,7 +536,7 @@
                             {
                               "type": "Microsoft.OperationalInsights/workspaces",
                               "apiVersion": "2023-09-01",
-                              "name": "[format('{0}-{1}-law', parameters('name'), uniqueString(resourceGroup().id, parameters('name')))]",
+                              "name": "[format('{0}-{1}-law', parameters('name'), uniqueString(resourceGroup().id, parameters('name'), parameters('envName'), parameters('location')))]",
                               "location": "[parameters('location')]",
                               "identity": {
                                 "type": "SystemAssigned"
@@ -514,14 +559,14 @@
                               "metadata": {
                                 "description": "Resource ID of the deployed Log Analytics workspace for diagnostic settings configuration"
                               },
-                              "value": "[resourceId('Microsoft.OperationalInsights/workspaces', format('{0}-{1}-law', parameters('name'), uniqueString(resourceGroup().id, parameters('name'))))]"
+                              "value": "[resourceId('Microsoft.OperationalInsights/workspaces', format('{0}-{1}-law', parameters('name'), uniqueString(resourceGroup().id, parameters('name'), parameters('envName'), parameters('location'))))]"
                             },
                             "AZURE_LOG_ANALYTICS_WORKSPACE_NAME": {
                               "type": "string",
                               "metadata": {
                                 "description": "Name of the deployed Log Analytics workspace for reference and queries"
                               },
-                              "value": "[format('{0}-{1}-law', parameters('name'), uniqueString(resourceGroup().id, parameters('name')))]"
+                              "value": "[format('{0}-{1}-law', parameters('name'), uniqueString(resourceGroup().id, parameters('name'), parameters('envName'), parameters('location')))]"
                             }
                           }
                         }
@@ -543,6 +588,9 @@
                           "name": {
                             "value": "[parameters('name')]"
                           },
+                          "envName": {
+                            "value": "[parameters('envName')]"
+                          },
                           "location": {
                             "value": "[parameters('location')]"
                           },
@@ -560,7 +608,7 @@
                             "_generator": {
                               "name": "bicep",
                               "version": "0.39.26.7824",
-                              "templateHash": "351692399982255858"
+                              "templateHash": "8241207309646229865"
                             }
                           },
                           "parameters": {
@@ -577,6 +625,12 @@
                               "defaultValue": "[resourceGroup().location]",
                               "metadata": {
                                 "description": "Azure region for Application Insights deployment. Must match Log Analytics workspace region for workspace-based model."
+                              }
+                            },
+                            "envName": {
+                              "type": "string",
+                              "metadata": {
+                                "description": "Environment name suffix to ensure uniqueness across environments (e.g., dev, test, prod)."
                               }
                             },
                             "logAnalyticsWorkspaceId": {
@@ -596,7 +650,7 @@
                             {
                               "type": "Microsoft.Insights/components",
                               "apiVersion": "2020-02-02",
-                              "name": "[format('{0}-{1}-appinsights', parameters('name'), uniqueString(resourceGroup().id, parameters('name')))]",
+                              "name": "[format('{0}-{1}-appinsights', parameters('name'), uniqueString(resourceGroup().id, parameters('name'), parameters('envName'), parameters('location')))]",
                               "location": "[parameters('location')]",
                               "kind": "web",
                               "tags": "[parameters('tags')]",
@@ -608,8 +662,8 @@
                             {
                               "type": "Microsoft.Insights/diagnosticSettings",
                               "apiVersion": "2021-05-01-preview",
-                              "scope": "[format('Microsoft.Insights/components/{0}', format('{0}-{1}-appinsights', parameters('name'), uniqueString(resourceGroup().id, parameters('name'))))]",
-                              "name": "[format('{0}-diagsetting', format('{0}-{1}-appinsights', parameters('name'), uniqueString(resourceGroup().id, parameters('name'))))]",
+                              "scope": "[format('Microsoft.Insights/components/{0}', format('{0}-{1}-appinsights', parameters('name'), uniqueString(resourceGroup().id, parameters('name'), parameters('envName'), parameters('location'))))]",
+                              "name": "[format('{0}-diagsetting', format('{0}-{1}-appinsights', parameters('name'), uniqueString(resourceGroup().id, parameters('name'), parameters('envName'), parameters('location'))))]",
                               "properties": {
                                 "workspaceId": "[parameters('logAnalyticsWorkspaceId')]",
                                 "logs": [
@@ -626,7 +680,7 @@
                                 ]
                               },
                               "dependsOn": [
-                                "[resourceId('Microsoft.Insights/components', format('{0}-{1}-appinsights', parameters('name'), uniqueString(resourceGroup().id, parameters('name'))))]"
+                                "[resourceId('Microsoft.Insights/components', format('{0}-{1}-appinsights', parameters('name'), uniqueString(resourceGroup().id, parameters('name'), parameters('envName'), parameters('location'))))]"
                               ]
                             }
                           ],
@@ -636,28 +690,28 @@
                               "metadata": {
                                 "description": "Name of the deployed Application Insights instance"
                               },
-                              "value": "[format('{0}-{1}-appinsights', parameters('name'), uniqueString(resourceGroup().id, parameters('name')))]"
+                              "value": "[format('{0}-{1}-appinsights', parameters('name'), uniqueString(resourceGroup().id, parameters('name'), parameters('envName'), parameters('location')))]"
                             },
                             "AZURE_APPLICATION_INSIGHTS_ID": {
                               "type": "string",
                               "metadata": {
                                 "description": "Resource ID of the deployed Application Insights instance for RBAC assignments"
                               },
-                              "value": "[resourceId('Microsoft.Insights/components', format('{0}-{1}-appinsights', parameters('name'), uniqueString(resourceGroup().id, parameters('name'))))]"
+                              "value": "[resourceId('Microsoft.Insights/components', format('{0}-{1}-appinsights', parameters('name'), uniqueString(resourceGroup().id, parameters('name'), parameters('envName'), parameters('location'))))]"
                             },
                             "AZURE_APPLICATION_INSIGHTS_INSTRUMENTATION_KEY": {
                               "type": "string",
                               "metadata": {
                                 "description": "Instrumentation key for Application Insights telemetry"
                               },
-                              "value": "[reference(resourceId('Microsoft.Insights/components', format('{0}-{1}-appinsights', parameters('name'), uniqueString(resourceGroup().id, parameters('name')))), '2020-02-02').InstrumentationKey]"
+                              "value": "[reference(resourceId('Microsoft.Insights/components', format('{0}-{1}-appinsights', parameters('name'), uniqueString(resourceGroup().id, parameters('name'), parameters('envName'), parameters('location')))), '2020-02-02').InstrumentationKey]"
                             },
                             "AZURE_APPLICATION_INSIGHTS_CONNECTION_STRING": {
                               "type": "string",
                               "metadata": {
                                 "description": "Connection string for Application Insights telemetry (recommended over instrumentation key)"
                               },
-                              "value": "[reference(resourceId('Microsoft.Insights/components', format('{0}-{1}-appinsights', parameters('name'), uniqueString(resourceGroup().id, parameters('name')))), '2020-02-02').ConnectionString]"
+                              "value": "[reference(resourceId('Microsoft.Insights/components', format('{0}-{1}-appinsights', parameters('name'), uniqueString(resourceGroup().id, parameters('name'), parameters('envName'), parameters('location')))), '2020-02-02').ConnectionString]"
                             }
                           }
                         }
@@ -681,6 +735,27 @@
                         "description": "Name of the deployed Application Insights instance for Logic Apps app settings configuration"
                       },
                       "value": "[reference(resourceId('Microsoft.Resources/deployments', 'deployAppInsights'), '2025-04-01').outputs.AZURE_APPLICATION_INSIGHTS_NAME.value]"
+                    },
+                    "AZURE_APPLICATION_INSIGHTS_ID": {
+                      "type": "string",
+                      "metadata": {
+                        "description": "Resource ID of the deployed Application Insights instance for RBAC assignments"
+                      },
+                      "value": "[reference(resourceId('Microsoft.Resources/deployments', 'deployAppInsights'), '2025-04-01').outputs.AZURE_APPLICATION_INSIGHTS_ID.value]"
+                    },
+                    "AZURE_APPLICATION_INSIGHTS_CONNECTION_STRING": {
+                      "type": "string",
+                      "metadata": {
+                        "description": "Connection string for Application Insights telemetry"
+                      },
+                      "value": "[reference(resourceId('Microsoft.Resources/deployments', 'deployAppInsights'), '2025-04-01').outputs.AZURE_APPLICATION_INSIGHTS_CONNECTION_STRING.value]"
+                    },
+                    "AZURE_APPLICATION_INSIGHTS_INSTRUMENTATION_KEY": {
+                      "type": "string",
+                      "metadata": {
+                        "description": "Instrumentation key for Application Insights telemetry"
+                      },
+                      "value": "[reference(resourceId('Microsoft.Resources/deployments', 'deployAppInsights'), '2025-04-01').outputs.AZURE_APPLICATION_INSIGHTS_INSTRUMENTATION_KEY.value]"
                     },
                     "AZURE_LOG_ANALYTICS_WORKSPACE_NAME": {
                       "type": "string",
@@ -709,6 +784,9 @@
                   "name": {
                     "value": "[parameters('name')]"
                   },
+                  "envName": {
+                    "value": "[parameters('envName')]"
+                  },
                   "location": {
                     "value": "[parameters('location')]"
                   },
@@ -726,7 +804,7 @@
                     "_generator": {
                       "name": "bicep",
                       "version": "0.39.26.7824",
-                      "templateHash": "6162234453955210980"
+                      "templateHash": "9399188068836764913"
                     }
                   },
                   "parameters": {
@@ -736,6 +814,12 @@
                       "maxLength": 20,
                       "metadata": {
                         "description": "Base name for Service Bus namespace. Will be suffixed with unique string and -sb for global uniqueness."
+                      }
+                    },
+                    "envName": {
+                      "type": "string",
+                      "metadata": {
+                        "description": "Environment name suffix to ensure uniqueness across environments (e.g., dev, test, prod)."
                       }
                     },
                     "location": {
@@ -762,7 +846,7 @@
                     {
                       "type": "Microsoft.ServiceBus/namespaces",
                       "apiVersion": "2024-01-01",
-                      "name": "[format('{0}-sb-{1}', parameters('name'), uniqueString(resourceGroup().id, parameters('name')))]",
+                      "name": "[format('{0}-sb-{1}', parameters('name'), uniqueString(resourceGroup().id, parameters('name'), parameters('envName'), parameters('location')))]",
                       "location": "[parameters('location')]",
                       "tags": "[parameters('tags')]",
                       "identity": {
@@ -782,7 +866,7 @@
                     {
                       "type": "Microsoft.ServiceBus/namespaces/queues",
                       "apiVersion": "2024-01-01",
-                      "name": "[format('{0}/{1}', format('{0}-sb-{1}', parameters('name'), uniqueString(resourceGroup().id, parameters('name'))), 'tax-approval')]",
+                      "name": "[format('{0}/{1}', format('{0}-sb-{1}', parameters('name'), uniqueString(resourceGroup().id, parameters('name'), parameters('envName'), parameters('location'))), 'tax-processing-queue')]",
                       "properties": {
                         "maxSizeInMegabytes": 1024,
                         "requiresDuplicateDetection": false,
@@ -793,14 +877,14 @@
                         "maxDeliveryCount": 10
                       },
                       "dependsOn": [
-                        "[resourceId('Microsoft.ServiceBus/namespaces', format('{0}-sb-{1}', parameters('name'), uniqueString(resourceGroup().id, parameters('name'))))]"
+                        "[resourceId('Microsoft.ServiceBus/namespaces', format('{0}-sb-{1}', parameters('name'), uniqueString(resourceGroup().id, parameters('name'), parameters('envName'), parameters('location'))))]"
                       ]
                     },
                     {
                       "type": "Microsoft.Insights/diagnosticSettings",
                       "apiVersion": "2021-05-01-preview",
-                      "scope": "[format('Microsoft.ServiceBus/namespaces/{0}', format('{0}-sb-{1}', parameters('name'), uniqueString(resourceGroup().id, parameters('name'))))]",
-                      "name": "[format('{0}-diag', format('{0}-sb-{1}', parameters('name'), uniqueString(resourceGroup().id, parameters('name'))))]",
+                      "scope": "[format('Microsoft.ServiceBus/namespaces/{0}', format('{0}-sb-{1}', parameters('name'), uniqueString(resourceGroup().id, parameters('name'), parameters('envName'), parameters('location'))))]",
+                      "name": "[format('{0}-diag', format('{0}-sb-{1}', parameters('name'), uniqueString(resourceGroup().id, parameters('name'), parameters('envName'), parameters('location'))))]",
                       "properties": {
                         "workspaceId": "[parameters('workspaceId')]",
                         "logs": [
@@ -825,7 +909,7 @@
                         ]
                       },
                       "dependsOn": [
-                        "[resourceId('Microsoft.ServiceBus/namespaces', format('{0}-sb-{1}', parameters('name'), uniqueString(resourceGroup().id, parameters('name'))))]"
+                        "[resourceId('Microsoft.ServiceBus/namespaces', format('{0}-sb-{1}', parameters('name'), uniqueString(resourceGroup().id, parameters('name'), parameters('envName'), parameters('location'))))]"
                       ]
                     }
                   ],
@@ -835,28 +919,28 @@
                       "metadata": {
                         "description": "Name of the deployed Service Bus namespace"
                       },
-                      "value": "[format('{0}-sb-{1}', parameters('name'), uniqueString(resourceGroup().id, parameters('name')))]"
+                      "value": "[format('{0}-sb-{1}', parameters('name'), uniqueString(resourceGroup().id, parameters('name'), parameters('envName'), parameters('location')))]"
                     },
                     "AZURE_SERVICEBUS_NAMESPACE_ID": {
                       "type": "string",
                       "metadata": {
                         "description": "Resource ID of the Service Bus namespace for RBAC role assignments"
                       },
-                      "value": "[resourceId('Microsoft.ServiceBus/namespaces', format('{0}-sb-{1}', parameters('name'), uniqueString(resourceGroup().id, parameters('name'))))]"
+                      "value": "[resourceId('Microsoft.ServiceBus/namespaces', format('{0}-sb-{1}', parameters('name'), uniqueString(resourceGroup().id, parameters('name'), parameters('envName'), parameters('location'))))]"
                     },
                     "AZURE_SERVICEBUS_ENDPOINT": {
                       "type": "string",
                       "metadata": {
                         "description": "Fully qualified domain name of the Service Bus namespace endpoint"
                       },
-                      "value": "[reference(resourceId('Microsoft.ServiceBus/namespaces', format('{0}-sb-{1}', parameters('name'), uniqueString(resourceGroup().id, parameters('name')))), '2024-01-01').serviceBusEndpoint]"
+                      "value": "[reference(resourceId('Microsoft.ServiceBus/namespaces', format('{0}-sb-{1}', parameters('name'), uniqueString(resourceGroup().id, parameters('name'), parameters('envName'), parameters('location')))), '2024-01-01').serviceBusEndpoint]"
                     },
                     "AZURE_SERVICEBUS_QUEUE_NAME": {
                       "type": "string",
                       "metadata": {
                         "description": "Name of the deployed queue"
                       },
-                      "value": "tax-approval"
+                      "value": "tax-processing-queue"
                     }
                   }
                 }
@@ -930,6 +1014,27 @@
               },
               "value": "[reference(resourceId('Microsoft.Resources/deployments', 'MonitoringDeployment'), '2025-04-01').outputs.AZURE_APPLICATION_INSIGHTS_NAME.value]"
             },
+            "AZURE_APPLICATION_INSIGHTS_ID": {
+              "type": "string",
+              "metadata": {
+                "description": "Resource ID of the deployed Application Insights instance for RBAC assignments"
+              },
+              "value": "[reference(resourceId('Microsoft.Resources/deployments', 'MonitoringDeployment'), '2025-04-01').outputs.AZURE_APPLICATION_INSIGHTS_ID.value]"
+            },
+            "AZURE_APPLICATION_INSIGHTS_CONNECTION_STRING": {
+              "type": "string",
+              "metadata": {
+                "description": "Connection string for Application Insights telemetry"
+              },
+              "value": "[reference(resourceId('Microsoft.Resources/deployments', 'MonitoringDeployment'), '2025-04-01').outputs.AZURE_APPLICATION_INSIGHTS_CONNECTION_STRING.value]"
+            },
+            "AZURE_APPLICATION_INSIGHTS_INSTRUMENTATION_KEY": {
+              "type": "string",
+              "metadata": {
+                "description": "Instrumentation key for Application Insights telemetry"
+              },
+              "value": "[reference(resourceId('Microsoft.Resources/deployments', 'MonitoringDeployment'), '2025-04-01').outputs.AZURE_APPLICATION_INSIGHTS_INSTRUMENTATION_KEY.value]"
+            },
             "AZURE_SERVICEBUS_NAMESPACE_NAME": {
               "type": "string",
               "metadata": {
@@ -979,6 +1084,12 @@
           "name": {
             "value": "[parameters('solutionName')]"
           },
+          "location": {
+            "value": "[parameters('location')]"
+          },
+          "envName": {
+            "value": "[parameters('envName')]"
+          },
           "workspaceId": {
             "value": "[reference(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, variables('rgName')), 'Microsoft.Resources/deployments', 'SharedResourcesDeployment'), '2025-04-01').outputs.AZURE_LOG_ANALYTICS_WORKSPACE_ID.value]"
           },
@@ -991,6 +1102,9 @@
           "serviceBusName": {
             "value": "[reference(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, variables('rgName')), 'Microsoft.Resources/deployments', 'SharedResourcesDeployment'), '2025-04-01').outputs.AZURE_SERVICEBUS_NAMESPACE_NAME.value]"
           },
+          "managedIdentityName": {
+            "value": "[reference(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, variables('rgName')), 'Microsoft.Resources/deployments', 'SharedResourcesDeployment'), '2025-04-01').outputs.MANAGED_IDENTITY_NAME.value]"
+          },
           "tags": {
             "value": "[variables('tags')]"
           }
@@ -1002,7 +1116,7 @@
             "_generator": {
               "name": "bicep",
               "version": "0.39.26.7824",
-              "templateHash": "6326270760679447071"
+              "templateHash": "5984054219829907669"
             }
           },
           "parameters": {
@@ -1012,6 +1126,12 @@
               "maxLength": 20,
               "metadata": {
                 "description": "Base name for Logic App and App Service Plan resources. Will be suffixed with unique string for global uniqueness."
+              }
+            },
+            "envName": {
+              "type": "string",
+              "metadata": {
+                "description": "Environment name suffix to ensure uniqueness across environments (e.g., dev, test, prod)."
               }
             },
             "location": {
@@ -1045,6 +1165,12 @@
                 "description": "Name of existing Service Bus namespace for messaging integration with workflows."
               }
             },
+            "managedIdentityName": {
+              "type": "string",
+              "metadata": {
+                "description": "Managed Identity Name for Logic App to access resources securely without credentials."
+              }
+            },
             "tags": {
               "type": "object",
               "metadata": {
@@ -1066,6 +1192,9 @@
                   "name": {
                     "value": "[parameters('name')]"
                   },
+                  "envName": {
+                    "value": "[parameters('envName')]"
+                  },
                   "location": {
                     "value": "[parameters('location')]"
                   },
@@ -1086,7 +1215,7 @@
                     "_generator": {
                       "name": "bicep",
                       "version": "0.39.26.7824",
-                      "templateHash": "6752518334693407734"
+                      "templateHash": "12811373519460775077"
                     }
                   },
                   "parameters": {
@@ -1096,6 +1225,12 @@
                       "maxLength": 20,
                       "metadata": {
                         "description": "Base name for Logic App and App Service Plan resources. Will be suffixed with unique string for global uniqueness."
+                      }
+                    },
+                    "envName": {
+                      "type": "string",
+                      "metadata": {
+                        "description": "Environment name suffix to ensure uniqueness across environments (e.g., dev, test, prod)."
                       }
                     },
                     "location": {
@@ -1128,7 +1263,7 @@
                     {
                       "type": "Microsoft.Web/serverfarms",
                       "apiVersion": "2024-11-01",
-                      "name": "[format('{0}-{1}-apis-asp', parameters('name'), uniqueString(resourceGroup().id, parameters('name')))]",
+                      "name": "[format('{0}-{1}-apis-asp', parameters('name'), uniqueString(resourceGroup().id, parameters('name'), parameters('envName'), parameters('location')))]",
                       "location": "[parameters('location')]",
                       "sku": {
                         "name": "P0v3",
@@ -1155,7 +1290,7 @@
                     {
                       "type": "Microsoft.Web/sites",
                       "apiVersion": "2025-03-01",
-                      "name": "[format('{0}-{1}-api', parameters('name'), uniqueString(resourceGroup().id, parameters('name')))]",
+                      "name": "[format('{0}-{1}-api', parameters('name'), uniqueString(resourceGroup().id, parameters('name'), parameters('envName'), parameters('location')))]",
                       "location": "[parameters('location')]",
                       "kind": "app,linux",
                       "identity": {
@@ -1163,7 +1298,7 @@
                       },
                       "tags": "[parameters('tags')]",
                       "properties": {
-                        "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', format('{0}-{1}-apis-asp', parameters('name'), uniqueString(resourceGroup().id, parameters('name'))))]",
+                        "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', format('{0}-{1}-apis-asp', parameters('name'), uniqueString(resourceGroup().id, parameters('name'), parameters('envName'), parameters('location'))))]",
                         "reserved": true,
                         "siteConfig": {
                           "linuxFxVersion": "DOTNETCORE|9.0",
@@ -1185,14 +1320,14 @@
                         "httpsOnly": true
                       },
                       "dependsOn": [
-                        "[resourceId('Microsoft.Web/serverfarms', format('{0}-{1}-apis-asp', parameters('name'), uniqueString(resourceGroup().id, parameters('name'))))]"
+                        "[resourceId('Microsoft.Web/serverfarms', format('{0}-{1}-apis-asp', parameters('name'), uniqueString(resourceGroup().id, parameters('name'), parameters('envName'), parameters('location'))))]"
                       ]
                     },
                     {
                       "type": "Microsoft.Insights/diagnosticSettings",
                       "apiVersion": "2021-05-01-preview",
-                      "scope": "[format('Microsoft.Web/sites/{0}', format('{0}-{1}-api', parameters('name'), uniqueString(resourceGroup().id, parameters('name'))))]",
-                      "name": "[format('{0}-diag', format('{0}-{1}-api', parameters('name'), uniqueString(resourceGroup().id, parameters('name'))))]",
+                      "scope": "[format('Microsoft.Web/sites/{0}', format('{0}-{1}-api', parameters('name'), uniqueString(resourceGroup().id, parameters('name'), parameters('envName'), parameters('location'))))]",
+                      "name": "[format('{0}-diag', format('{0}-{1}-api', parameters('name'), uniqueString(resourceGroup().id, parameters('name'), parameters('envName'), parameters('location'))))]",
                       "properties": {
                         "workspaceId": "[parameters('workspaceId')]",
                         "logs": [
@@ -1217,14 +1352,14 @@
                         ]
                       },
                       "dependsOn": [
-                        "[resourceId('Microsoft.Web/sites', format('{0}-{1}-api', parameters('name'), uniqueString(resourceGroup().id, parameters('name'))))]"
+                        "[resourceId('Microsoft.Web/sites', format('{0}-{1}-api', parameters('name'), uniqueString(resourceGroup().id, parameters('name'), parameters('envName'), parameters('location'))))]"
                       ]
                     },
                     {
                       "type": "Microsoft.Insights/diagnosticSettings",
                       "apiVersion": "2021-05-01-preview",
-                      "scope": "[format('Microsoft.Web/serverfarms/{0}', format('{0}-{1}-apis-asp', parameters('name'), uniqueString(resourceGroup().id, parameters('name'))))]",
-                      "name": "[format('{0}-diag', format('{0}-{1}-apis-asp', parameters('name'), uniqueString(resourceGroup().id, parameters('name'))))]",
+                      "scope": "[format('Microsoft.Web/serverfarms/{0}', format('{0}-{1}-apis-asp', parameters('name'), uniqueString(resourceGroup().id, parameters('name'), parameters('envName'), parameters('location'))))]",
+                      "name": "[format('{0}-diag', format('{0}-{1}-apis-asp', parameters('name'), uniqueString(resourceGroup().id, parameters('name'), parameters('envName'), parameters('location'))))]",
                       "properties": {
                         "workspaceId": "[parameters('workspaceId')]",
                         "metrics": [
@@ -1235,13 +1370,13 @@
                         ]
                       },
                       "dependsOn": [
-                        "[resourceId('Microsoft.Web/serverfarms', format('{0}-{1}-apis-asp', parameters('name'), uniqueString(resourceGroup().id, parameters('name'))))]"
+                        "[resourceId('Microsoft.Web/serverfarms', format('{0}-{1}-apis-asp', parameters('name'), uniqueString(resourceGroup().id, parameters('name'), parameters('envName'), parameters('location'))))]"
                       ]
                     },
                     {
                       "type": "Microsoft.Portal/dashboards",
                       "apiVersion": "2020-09-01-preview",
-                      "name": "[format('{0}-dashboard', format('{0}-{1}-apis-asp', parameters('name'), uniqueString(resourceGroup().id, parameters('name'))))]",
+                      "name": "[format('{0}-dashboard', format('{0}-{1}-apis-asp', parameters('name'), uniqueString(resourceGroup().id, parameters('name'), parameters('envName'), parameters('location'))))]",
                       "location": "[parameters('location')]",
                       "tags": {
                         "hidden-title": "Service Plan Metrics"
@@ -1267,7 +1402,7 @@
                                           "metrics": [
                                             {
                                               "resourceMetadata": {
-                                                "id": "[resourceId('Microsoft.Web/serverfarms', format('{0}-{1}-apis-asp', parameters('name'), uniqueString(resourceGroup().id, parameters('name'))))]"
+                                                "id": "[resourceId('Microsoft.Web/serverfarms', format('{0}-{1}-apis-asp', parameters('name'), uniqueString(resourceGroup().id, parameters('name'), parameters('envName'), parameters('location'))))]"
                                               },
                                               "name": "CpuPercentage",
                                               "aggregationType": 4,
@@ -1336,7 +1471,7 @@
                                           "metrics": [
                                             {
                                               "resourceMetadata": {
-                                                "id": "[resourceId('Microsoft.Web/serverfarms', format('{0}-{1}-apis-asp', parameters('name'), uniqueString(resourceGroup().id, parameters('name'))))]"
+                                                "id": "[resourceId('Microsoft.Web/serverfarms', format('{0}-{1}-apis-asp', parameters('name'), uniqueString(resourceGroup().id, parameters('name'), parameters('envName'), parameters('location'))))]"
                                               },
                                               "name": "MemoryPercentage",
                                               "aggregationType": 4,
@@ -1405,7 +1540,7 @@
                                           "metrics": [
                                             {
                                               "resourceMetadata": {
-                                                "id": "[resourceId('Microsoft.Web/serverfarms', format('{0}-{1}-apis-asp', parameters('name'), uniqueString(resourceGroup().id, parameters('name'))))]"
+                                                "id": "[resourceId('Microsoft.Web/serverfarms', format('{0}-{1}-apis-asp', parameters('name'), uniqueString(resourceGroup().id, parameters('name'), parameters('envName'), parameters('location'))))]"
                                               },
                                               "name": "BytesReceived",
                                               "aggregationType": 4,
@@ -1474,7 +1609,7 @@
                                           "metrics": [
                                             {
                                               "resourceMetadata": {
-                                                "id": "[resourceId('Microsoft.Web/serverfarms', format('{0}-{1}-apis-asp', parameters('name'), uniqueString(resourceGroup().id, parameters('name'))))]"
+                                                "id": "[resourceId('Microsoft.Web/serverfarms', format('{0}-{1}-apis-asp', parameters('name'), uniqueString(resourceGroup().id, parameters('name'), parameters('envName'), parameters('location'))))]"
                                               },
                                               "name": "BytesSent",
                                               "aggregationType": 4,
@@ -1543,7 +1678,7 @@
                                           "metrics": [
                                             {
                                               "resourceMetadata": {
-                                                "id": "[resourceId('Microsoft.Web/serverfarms', format('{0}-{1}-apis-asp', parameters('name'), uniqueString(resourceGroup().id, parameters('name'))))]"
+                                                "id": "[resourceId('Microsoft.Web/serverfarms', format('{0}-{1}-apis-asp', parameters('name'), uniqueString(resourceGroup().id, parameters('name'), parameters('envName'), parameters('location'))))]"
                                               },
                                               "name": "HttpQueueLength",
                                               "aggregationType": 4,
@@ -1612,7 +1747,7 @@
                                           "metrics": [
                                             {
                                               "resourceMetadata": {
-                                                "id": "[resourceId('Microsoft.Web/serverfarms', format('{0}-{1}-apis-asp', parameters('name'), uniqueString(resourceGroup().id, parameters('name'))))]"
+                                                "id": "[resourceId('Microsoft.Web/serverfarms', format('{0}-{1}-apis-asp', parameters('name'), uniqueString(resourceGroup().id, parameters('name'), parameters('envName'), parameters('location'))))]"
                                               },
                                               "name": "HttpQueueLength",
                                               "aggregationType": 4,
@@ -1709,7 +1844,7 @@
                         }
                       },
                       "dependsOn": [
-                        "[resourceId('Microsoft.Web/serverfarms', format('{0}-{1}-apis-asp', parameters('name'), uniqueString(resourceGroup().id, parameters('name'))))]"
+                        "[resourceId('Microsoft.Web/serverfarms', format('{0}-{1}-apis-asp', parameters('name'), uniqueString(resourceGroup().id, parameters('name'), parameters('envName'), parameters('location'))))]"
                       ]
                     }
                   ],
@@ -1719,21 +1854,21 @@
                       "metadata": {
                         "description": "Resource ID of the deployed Function App for API layer"
                       },
-                      "value": "[resourceId('Microsoft.Web/sites', format('{0}-{1}-api', parameters('name'), uniqueString(resourceGroup().id, parameters('name'))))]"
+                      "value": "[resourceId('Microsoft.Web/sites', format('{0}-{1}-api', parameters('name'), uniqueString(resourceGroup().id, parameters('name'), parameters('envName'), parameters('location'))))]"
                     },
                     "FUNCTION_APP_NAME": {
                       "type": "string",
                       "metadata": {
                         "description": "Name of the deployed Function App"
                       },
-                      "value": "[format('{0}-{1}-api', parameters('name'), uniqueString(resourceGroup().id, parameters('name')))]"
+                      "value": "[format('{0}-{1}-api', parameters('name'), uniqueString(resourceGroup().id, parameters('name'), parameters('envName'), parameters('location')))]"
                     },
                     "FUNCTION_APP_DEFAULT_HOSTNAME": {
                       "type": "string",
                       "metadata": {
                         "description": "Default hostname of the Function App"
                       },
-                      "value": "[reference(resourceId('Microsoft.Web/sites', format('{0}-{1}-api', parameters('name'), uniqueString(resourceGroup().id, parameters('name')))), '2025-03-01').defaultHostName]"
+                      "value": "[reference(resourceId('Microsoft.Web/sites', format('{0}-{1}-api', parameters('name'), uniqueString(resourceGroup().id, parameters('name'), parameters('envName'), parameters('location')))), '2025-03-01').defaultHostName]"
                     }
                   }
                 }
@@ -1742,7 +1877,7 @@
             {
               "type": "Microsoft.Resources/deployments",
               "apiVersion": "2025-04-01",
-              "name": "WorkloadDeployment",
+              "name": "LogicAppWorkflowsDeployment",
               "properties": {
                 "expressionEvaluationOptions": {
                   "scope": "inner"
@@ -1751,6 +1886,12 @@
                 "parameters": {
                   "name": {
                     "value": "[parameters('name')]"
+                  },
+                  "location": {
+                    "value": "[parameters('location')]"
+                  },
+                  "envName": {
+                    "value": "[parameters('envName')]"
                   },
                   "workspaceId": {
                     "value": "[parameters('workspaceId')]"
@@ -1764,6 +1905,9 @@
                   "serviceBusName": {
                     "value": "[parameters('serviceBusName')]"
                   },
+                  "managedIdentityName": {
+                    "value": "[parameters('managedIdentityName')]"
+                  },
                   "tags": {
                     "value": "[parameters('tags')]"
                   }
@@ -1775,7 +1919,7 @@
                     "_generator": {
                       "name": "bicep",
                       "version": "0.39.26.7824",
-                      "templateHash": "7832887052382823908"
+                      "templateHash": "4600701178333322785"
                     }
                   },
                   "parameters": {
@@ -1785,6 +1929,12 @@
                       "maxLength": 20,
                       "metadata": {
                         "description": "Base name for Logic App and App Service Plan resources. Will be suffixed with unique string for global uniqueness."
+                      }
+                    },
+                    "envName": {
+                      "type": "string",
+                      "metadata": {
+                        "description": "Environment name suffix to ensure uniqueness across environments (e.g., dev, test, prod)."
                       }
                     },
                     "location": {
@@ -1816,6 +1966,12 @@
                       "type": "string",
                       "metadata": {
                         "description": "Name of existing Service Bus namespace for messaging integration with workflows."
+                      }
+                    },
+                    "managedIdentityName": {
+                      "type": "string",
+                      "metadata": {
+                        "description": "Managed Identity Name for Logic App to access resources securely without credentials."
                       }
                     },
                     "tags": {
@@ -1861,7 +2017,7 @@
                     {
                       "type": "Microsoft.Web/serverfarms",
                       "apiVersion": "2024-11-01",
-                      "name": "[format('{0}-{1}-asp', parameters('name'), uniqueString(resourceGroup().id, parameters('name')))]",
+                      "name": "[format('{0}-{1}-asp', parameters('name'), uniqueString(resourceGroup().id, parameters('name'), parameters('envName'), parameters('location')))]",
                       "location": "[parameters('location')]",
                       "sku": {
                         "name": "WS1",
@@ -1889,8 +2045,8 @@
                     {
                       "type": "Microsoft.Insights/diagnosticSettings",
                       "apiVersion": "2021-05-01-preview",
-                      "scope": "[format('Microsoft.Web/serverfarms/{0}', format('{0}-{1}-asp', parameters('name'), uniqueString(resourceGroup().id, parameters('name'))))]",
-                      "name": "[format('{0}-diag', format('{0}-{1}-asp', parameters('name'), uniqueString(resourceGroup().id, parameters('name'))))]",
+                      "scope": "[format('Microsoft.Web/serverfarms/{0}', format('{0}-{1}-asp', parameters('name'), uniqueString(resourceGroup().id, parameters('name'), parameters('envName'), parameters('location'))))]",
+                      "name": "[format('{0}-diag', format('{0}-{1}-asp', parameters('name'), uniqueString(resourceGroup().id, parameters('name'), parameters('envName'), parameters('location'))))]",
                       "properties": {
                         "workspaceId": "[parameters('workspaceId')]",
                         "metrics": [
@@ -1901,13 +2057,13 @@
                         ]
                       },
                       "dependsOn": [
-                        "[resourceId('Microsoft.Web/serverfarms', format('{0}-{1}-asp', parameters('name'), uniqueString(resourceGroup().id, parameters('name'))))]"
+                        "[resourceId('Microsoft.Web/serverfarms', format('{0}-{1}-asp', parameters('name'), uniqueString(resourceGroup().id, parameters('name'), parameters('envName'), parameters('location'))))]"
                       ]
                     },
                     {
                       "type": "Microsoft.Portal/dashboards",
                       "apiVersion": "2020-09-01-preview",
-                      "name": "[format('{0}-dashboard', format('{0}-{1}-asp', parameters('name'), uniqueString(resourceGroup().id, parameters('name'))))]",
+                      "name": "[format('{0}-dashboard', format('{0}-{1}-asp', parameters('name'), uniqueString(resourceGroup().id, parameters('name'), parameters('envName'), parameters('location'))))]",
                       "location": "[parameters('location')]",
                       "tags": {
                         "hidden-title": "Service Plan Metrics"
@@ -1933,7 +2089,7 @@
                                           "metrics": [
                                             {
                                               "resourceMetadata": {
-                                                "id": "[resourceId('Microsoft.Web/serverfarms', format('{0}-{1}-asp', parameters('name'), uniqueString(resourceGroup().id, parameters('name'))))]"
+                                                "id": "[resourceId('Microsoft.Web/serverfarms', format('{0}-{1}-asp', parameters('name'), uniqueString(resourceGroup().id, parameters('name'), parameters('envName'), parameters('location'))))]"
                                               },
                                               "name": "CpuPercentage",
                                               "aggregationType": 4,
@@ -2002,7 +2158,7 @@
                                           "metrics": [
                                             {
                                               "resourceMetadata": {
-                                                "id": "[resourceId('Microsoft.Web/serverfarms', format('{0}-{1}-asp', parameters('name'), uniqueString(resourceGroup().id, parameters('name'))))]"
+                                                "id": "[resourceId('Microsoft.Web/serverfarms', format('{0}-{1}-asp', parameters('name'), uniqueString(resourceGroup().id, parameters('name'), parameters('envName'), parameters('location'))))]"
                                               },
                                               "name": "MemoryPercentage",
                                               "aggregationType": 4,
@@ -2071,7 +2227,7 @@
                                           "metrics": [
                                             {
                                               "resourceMetadata": {
-                                                "id": "[resourceId('Microsoft.Web/serverfarms', format('{0}-{1}-asp', parameters('name'), uniqueString(resourceGroup().id, parameters('name'))))]"
+                                                "id": "[resourceId('Microsoft.Web/serverfarms', format('{0}-{1}-asp', parameters('name'), uniqueString(resourceGroup().id, parameters('name'), parameters('envName'), parameters('location'))))]"
                                               },
                                               "name": "BytesReceived",
                                               "aggregationType": 4,
@@ -2140,7 +2296,7 @@
                                           "metrics": [
                                             {
                                               "resourceMetadata": {
-                                                "id": "[resourceId('Microsoft.Web/serverfarms', format('{0}-{1}-asp', parameters('name'), uniqueString(resourceGroup().id, parameters('name'))))]"
+                                                "id": "[resourceId('Microsoft.Web/serverfarms', format('{0}-{1}-asp', parameters('name'), uniqueString(resourceGroup().id, parameters('name'), parameters('envName'), parameters('location'))))]"
                                               },
                                               "name": "BytesSent",
                                               "aggregationType": 4,
@@ -2209,7 +2365,7 @@
                                           "metrics": [
                                             {
                                               "resourceMetadata": {
-                                                "id": "[resourceId('Microsoft.Web/serverfarms', format('{0}-{1}-asp', parameters('name'), uniqueString(resourceGroup().id, parameters('name'))))]"
+                                                "id": "[resourceId('Microsoft.Web/serverfarms', format('{0}-{1}-asp', parameters('name'), uniqueString(resourceGroup().id, parameters('name'), parameters('envName'), parameters('location'))))]"
                                               },
                                               "name": "HttpQueueLength",
                                               "aggregationType": 4,
@@ -2278,7 +2434,7 @@
                                           "metrics": [
                                             {
                                               "resourceMetadata": {
-                                                "id": "[resourceId('Microsoft.Web/serverfarms', format('{0}-{1}-asp', parameters('name'), uniqueString(resourceGroup().id, parameters('name'))))]"
+                                                "id": "[resourceId('Microsoft.Web/serverfarms', format('{0}-{1}-asp', parameters('name'), uniqueString(resourceGroup().id, parameters('name'), parameters('envName'), parameters('location'))))]"
                                               },
                                               "name": "HttpQueueLength",
                                               "aggregationType": 4,
@@ -2375,7 +2531,7 @@
                         }
                       },
                       "dependsOn": [
-                        "[resourceId('Microsoft.Web/serverfarms', format('{0}-{1}-asp', parameters('name'), uniqueString(resourceGroup().id, parameters('name'))))]"
+                        "[resourceId('Microsoft.Web/serverfarms', format('{0}-{1}-asp', parameters('name'), uniqueString(resourceGroup().id, parameters('name'), parameters('envName'), parameters('location'))))]"
                       ]
                     },
                     {
@@ -2386,14 +2542,14 @@
                       "type": "Microsoft.Authorization/roleAssignments",
                       "apiVersion": "2022-04-01",
                       "scope": "[format('Microsoft.Storage/storageAccounts/{0}', parameters('storageAccountName'))]",
-                      "name": "[guid(resourceId('Microsoft.Web/sites', format('{0}-{1}-logicapp', parameters('name'), uniqueString(resourceGroup().id, parameters('name')))), format('{0}-{1}-logicapp', parameters('name'), uniqueString(resourceGroup().id, parameters('name'))), variables('storageRBAC')[copyIndex()])]",
+                      "name": "[guid(resourceId('Microsoft.Web/sites', format('{0}-{1}-logicapp', parameters('name'), uniqueString(resourceGroup().id, parameters('name'), parameters('envName'), parameters('location')))), format('{0}-{1}-logicapp', parameters('name'), uniqueString(resourceGroup().id, parameters('name'), parameters('envName'), parameters('location'))), variables('storageRBAC')[copyIndex()])]",
                       "properties": {
                         "roleDefinitionId": "[subscriptionResourceId('Microsoft.Authorization/roleDefinitions', variables('storageRBAC')[copyIndex()])]",
-                        "principalId": "[reference(resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', format('{0}-mi', parameters('name'))), '2025-01-31-preview').principalId]",
+                        "principalId": "[reference(resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', parameters('managedIdentityName')), '2025-01-31-preview').principalId]",
                         "principalType": "ServicePrincipal"
                       },
                       "dependsOn": [
-                        "[resourceId('Microsoft.Web/sites', format('{0}-{1}-logicapp', parameters('name'), uniqueString(resourceGroup().id, parameters('name'))))]"
+                        "[resourceId('Microsoft.Web/sites', format('{0}-{1}-logicapp', parameters('name'), uniqueString(resourceGroup().id, parameters('name'), parameters('envName'), parameters('location'))))]"
                       ]
                     },
                     {
@@ -2407,7 +2563,7 @@
                       "name": "[guid(resourceId('Microsoft.Insights/components', parameters('appInsightsName')), parameters('appInsightsName'), variables('appInsightsRBAC')[copyIndex()])]",
                       "properties": {
                         "roleDefinitionId": "[subscriptionResourceId('Microsoft.Authorization/roleDefinitions', variables('appInsightsRBAC')[copyIndex()])]",
-                        "principalId": "[reference(resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', format('{0}-mi', parameters('name'))), '2025-01-31-preview').principalId]",
+                        "principalId": "[reference(resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', parameters('managedIdentityName')), '2025-01-31-preview').principalId]",
                         "principalType": "ServicePrincipal"
                       }
                     },
@@ -2422,25 +2578,25 @@
                       "name": "[guid(resourceId('Microsoft.ServiceBus/namespaces', parameters('serviceBusName')), parameters('serviceBusName'), variables('sbRBAC')[copyIndex()])]",
                       "properties": {
                         "roleDefinitionId": "[subscriptionResourceId('Microsoft.Authorization/roleDefinitions', variables('sbRBAC')[copyIndex()])]",
-                        "principalId": "[reference(resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', format('{0}-mi', parameters('name'))), '2025-01-31-preview').principalId]",
+                        "principalId": "[reference(resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', parameters('managedIdentityName')), '2025-01-31-preview').principalId]",
                         "principalType": "ServicePrincipal"
                       }
                     },
                     {
                       "type": "Microsoft.Web/sites",
                       "apiVersion": "2023-12-01",
-                      "name": "[format('{0}-{1}-logicapp', parameters('name'), uniqueString(resourceGroup().id, parameters('name')))]",
+                      "name": "[format('{0}-{1}-logicapp', parameters('name'), uniqueString(resourceGroup().id, parameters('name'), parameters('envName'), parameters('location')))]",
                       "location": "[parameters('location')]",
                       "kind": "functionapp,workflowapp",
                       "identity": {
                         "type": "SystemAssigned, UserAssigned",
                         "userAssignedIdentities": {
-                          "[format('{0}', resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', format('{0}-mi', parameters('name'))))]": {}
+                          "[format('{0}', resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', parameters('managedIdentityName')))]": {}
                         }
                       },
                       "tags": "[parameters('tags')]",
                       "properties": {
-                        "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', format('{0}-{1}-asp', parameters('name'), uniqueString(resourceGroup().id, parameters('name'))))]",
+                        "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', format('{0}-{1}-asp', parameters('name'), uniqueString(resourceGroup().id, parameters('name'), parameters('envName'), parameters('location'))))]",
                         "publicNetworkAccess": "Enabled",
                         "storageAccountRequired": true,
                         "siteConfig": {
@@ -2475,7 +2631,7 @@
                             },
                             {
                               "name": "AzureWebJobsStorage__clientId",
-                              "value": "[reference(resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', format('{0}-mi', parameters('name'))), '2025-01-31-preview').clientId]"
+                              "value": "[reference(resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', parameters('managedIdentityName')), '2025-01-31-preview').clientId]"
                             },
                             {
                               "name": "APPINSIGHTS_INSTRUMENTATIONKEY",
@@ -2521,7 +2677,7 @@
                         }
                       },
                       "dependsOn": [
-                        "[resourceId('Microsoft.Web/serverfarms', format('{0}-{1}-asp', parameters('name'), uniqueString(resourceGroup().id, parameters('name'))))]"
+                        "[resourceId('Microsoft.Web/serverfarms', format('{0}-{1}-asp', parameters('name'), uniqueString(resourceGroup().id, parameters('name'), parameters('envName'), parameters('location'))))]"
                       ]
                     },
                     {
@@ -2539,35 +2695,34 @@
                         }
                       },
                       "dependsOn": [
-                        "[resourceId('Microsoft.Web/sites', format('{0}-{1}-logicapp', parameters('name'), uniqueString(resourceGroup().id, parameters('name'))))]",
+                        "[resourceId('Microsoft.Web/sites', format('{0}-{1}-logicapp', parameters('name'), uniqueString(resourceGroup().id, parameters('name'), parameters('envName'), parameters('location'))))]",
                         "sbRoleAssignments"
                       ]
                     },
                     {
                       "type": "Microsoft.Web/connections/accessPolicies",
                       "apiVersion": "2018-07-01-preview",
-                      "name": "[format('{0}/{1}', parameters('sbConnectionName'), format('{0}-{1}-logicapp', parameters('name'), uniqueString(resourceGroup().id, parameters('name'))))]",
+                      "name": "[format('{0}/{1}', parameters('sbConnectionName'), format('{0}-{1}-logicapp', parameters('name'), uniqueString(resourceGroup().id, parameters('name'), parameters('envName'), parameters('location'))))]",
                       "location": "[parameters('location')]",
-                      "kind": "V2",
                       "properties": {
                         "principal": {
                           "type": "ActiveDirectory",
                           "identity": {
                             "tenantId": "[subscription().tenantId]",
-                            "objectId": "[reference(resourceId('Microsoft.Web/sites', format('{0}-{1}-logicapp', parameters('name'), uniqueString(resourceGroup().id, parameters('name')))), '2023-12-01', 'full').identity.principalId]"
+                            "objectId": "[reference(resourceId('Microsoft.Web/sites', format('{0}-{1}-logicapp', parameters('name'), uniqueString(resourceGroup().id, parameters('name'), parameters('envName'), parameters('location')))), '2023-12-01', 'full').identity.principalId]"
                           }
                         }
                       },
                       "dependsOn": [
-                        "[resourceId('Microsoft.Web/sites', format('{0}-{1}-logicapp', parameters('name'), uniqueString(resourceGroup().id, parameters('name'))))]",
+                        "[resourceId('Microsoft.Web/sites', format('{0}-{1}-logicapp', parameters('name'), uniqueString(resourceGroup().id, parameters('name'), parameters('envName'), parameters('location'))))]",
                         "[resourceId('Microsoft.Web/connections', parameters('sbConnectionName'))]"
                       ]
                     },
                     {
                       "type": "Microsoft.Insights/diagnosticSettings",
                       "apiVersion": "2021-05-01-preview",
-                      "scope": "[format('Microsoft.Web/sites/{0}', format('{0}-{1}-logicapp', parameters('name'), uniqueString(resourceGroup().id, parameters('name'))))]",
-                      "name": "[format('{0}-diag', format('{0}-{1}-logicapp', parameters('name'), uniqueString(resourceGroup().id, parameters('name'))))]",
+                      "scope": "[format('Microsoft.Web/sites/{0}', format('{0}-{1}-logicapp', parameters('name'), uniqueString(resourceGroup().id, parameters('name'), parameters('envName'), parameters('location'))))]",
+                      "name": "[format('{0}-diag', format('{0}-{1}-logicapp', parameters('name'), uniqueString(resourceGroup().id, parameters('name'), parameters('envName'), parameters('location'))))]",
                       "properties": {
                         "workspaceId": "[parameters('workspaceId')]",
                         "logs": [
@@ -2584,7 +2739,7 @@
                         ]
                       },
                       "dependsOn": [
-                        "[resourceId('Microsoft.Web/sites', format('{0}-{1}-logicapp', parameters('name'), uniqueString(resourceGroup().id, parameters('name'))))]"
+                        "[resourceId('Microsoft.Web/sites', format('{0}-{1}-logicapp', parameters('name'), uniqueString(resourceGroup().id, parameters('name'), parameters('envName'), parameters('location'))))]"
                       ]
                     },
                     {
@@ -2616,7 +2771,7 @@
                                           "metrics": [
                                             {
                                               "resourceMetadata": {
-                                                "id": "[resourceId('Microsoft.Web/sites', format('{0}-{1}-logicapp', parameters('name'), uniqueString(resourceGroup().id, parameters('name'))))]"
+                                                "id": "[resourceId('Microsoft.Web/sites', format('{0}-{1}-logicapp', parameters('name'), uniqueString(resourceGroup().id, parameters('name'), parameters('envName'), parameters('location'))))]"
                                               },
                                               "name": "WorkflowActionsFailureRate",
                                               "aggregationType": 1,
@@ -2685,7 +2840,7 @@
                                           "metrics": [
                                             {
                                               "resourceMetadata": {
-                                                "id": "[resourceId('Microsoft.Web/sites', format('{0}-{1}-logicapp', parameters('name'), uniqueString(resourceGroup().id, parameters('name'))))]"
+                                                "id": "[resourceId('Microsoft.Web/sites', format('{0}-{1}-logicapp', parameters('name'), uniqueString(resourceGroup().id, parameters('name'), parameters('envName'), parameters('location'))))]"
                                               },
                                               "name": "WorkflowActionsFailureRate",
                                               "aggregationType": 1,
@@ -2754,7 +2909,7 @@
                                           "metrics": [
                                             {
                                               "resourceMetadata": {
-                                                "id": "[resourceId('Microsoft.Web/sites', format('{0}-{1}-logicapp', parameters('name'), uniqueString(resourceGroup().id, parameters('name'))))]"
+                                                "id": "[resourceId('Microsoft.Web/sites', format('{0}-{1}-logicapp', parameters('name'), uniqueString(resourceGroup().id, parameters('name'), parameters('envName'), parameters('location'))))]"
                                               },
                                               "name": "WorkflowJobExecutionDuration",
                                               "aggregationType": 4,
@@ -2823,7 +2978,7 @@
                                           "metrics": [
                                             {
                                               "resourceMetadata": {
-                                                "id": "[resourceId('Microsoft.Web/sites', format('{0}-{1}-logicapp', parameters('name'), uniqueString(resourceGroup().id, parameters('name'))))]"
+                                                "id": "[resourceId('Microsoft.Web/sites', format('{0}-{1}-logicapp', parameters('name'), uniqueString(resourceGroup().id, parameters('name'), parameters('envName'), parameters('location'))))]"
                                               },
                                               "name": "WorkflowRunsCompleted",
                                               "aggregationType": 1,
@@ -2892,7 +3047,7 @@
                                           "metrics": [
                                             {
                                               "resourceMetadata": {
-                                                "id": "[resourceId('Microsoft.Web/sites', format('{0}-{1}-logicapp', parameters('name'), uniqueString(resourceGroup().id, parameters('name'))))]"
+                                                "id": "[resourceId('Microsoft.Web/sites', format('{0}-{1}-logicapp', parameters('name'), uniqueString(resourceGroup().id, parameters('name'), parameters('envName'), parameters('location'))))]"
                                               },
                                               "name": "WorkflowRunsDispatched",
                                               "aggregationType": 1,
@@ -2961,7 +3116,7 @@
                                           "metrics": [
                                             {
                                               "resourceMetadata": {
-                                                "id": "[resourceId('Microsoft.Web/sites', format('{0}-{1}-logicapp', parameters('name'), uniqueString(resourceGroup().id, parameters('name'))))]"
+                                                "id": "[resourceId('Microsoft.Web/sites', format('{0}-{1}-logicapp', parameters('name'), uniqueString(resourceGroup().id, parameters('name'), parameters('envName'), parameters('location'))))]"
                                               },
                                               "name": "WorkflowRunsFailureRate",
                                               "aggregationType": 1,
@@ -3030,7 +3185,7 @@
                                           "metrics": [
                                             {
                                               "resourceMetadata": {
-                                                "id": "[resourceId('Microsoft.Web/sites', format('{0}-{1}-logicapp', parameters('name'), uniqueString(resourceGroup().id, parameters('name'))))]"
+                                                "id": "[resourceId('Microsoft.Web/sites', format('{0}-{1}-logicapp', parameters('name'), uniqueString(resourceGroup().id, parameters('name'), parameters('envName'), parameters('location'))))]"
                                               },
                                               "name": "WorkflowRunsStarted",
                                               "aggregationType": 1,
@@ -3099,7 +3254,7 @@
                                           "metrics": [
                                             {
                                               "resourceMetadata": {
-                                                "id": "[resourceId('Microsoft.Web/sites', format('{0}-{1}-logicapp', parameters('name'), uniqueString(resourceGroup().id, parameters('name'))))]"
+                                                "id": "[resourceId('Microsoft.Web/sites', format('{0}-{1}-logicapp', parameters('name'), uniqueString(resourceGroup().id, parameters('name'), parameters('envName'), parameters('location'))))]"
                                               },
                                               "name": "WorkflowTriggersCompleted",
                                               "aggregationType": 1,
@@ -3168,7 +3323,7 @@
                                           "metrics": [
                                             {
                                               "resourceMetadata": {
-                                                "id": "[resourceId('Microsoft.Web/sites', format('{0}-{1}-logicapp', parameters('name'), uniqueString(resourceGroup().id, parameters('name'))))]"
+                                                "id": "[resourceId('Microsoft.Web/sites', format('{0}-{1}-logicapp', parameters('name'), uniqueString(resourceGroup().id, parameters('name'), parameters('envName'), parameters('location'))))]"
                                               },
                                               "name": "WorkflowTriggersFailureRate",
                                               "aggregationType": 1,
@@ -3268,7 +3423,7 @@
                         }
                       },
                       "dependsOn": [
-                        "[resourceId('Microsoft.Web/sites', format('{0}-{1}-logicapp', parameters('name'), uniqueString(resourceGroup().id, parameters('name'))))]"
+                        "[resourceId('Microsoft.Web/sites', format('{0}-{1}-logicapp', parameters('name'), uniqueString(resourceGroup().id, parameters('name'), parameters('envName'), parameters('location'))))]"
                       ]
                     }
                   ],
@@ -3278,28 +3433,28 @@
                       "metadata": {
                         "description": "Resource ID of the deployed Logic App for RBAC assignments and integration"
                       },
-                      "value": "[resourceId('Microsoft.Web/sites', format('{0}-{1}-logicapp', parameters('name'), uniqueString(resourceGroup().id, parameters('name'))))]"
+                      "value": "[resourceId('Microsoft.Web/sites', format('{0}-{1}-logicapp', parameters('name'), uniqueString(resourceGroup().id, parameters('name'), parameters('envName'), parameters('location'))))]"
                     },
                     "LOGIC_APP_NAME": {
                       "type": "string",
                       "metadata": {
                         "description": "Name of the deployed Logic App"
                       },
-                      "value": "[format('{0}-{1}-logicapp', parameters('name'), uniqueString(resourceGroup().id, parameters('name')))]"
+                      "value": "[format('{0}-{1}-logicapp', parameters('name'), uniqueString(resourceGroup().id, parameters('name'), parameters('envName'), parameters('location')))]"
                     },
                     "APP_SERVICE_PLAN_ID": {
                       "type": "string",
                       "metadata": {
                         "description": "Resource ID of the App Service Plan hosting the Logic App"
                       },
-                      "value": "[resourceId('Microsoft.Web/serverfarms', format('{0}-{1}-asp', parameters('name'), uniqueString(resourceGroup().id, parameters('name'))))]"
+                      "value": "[resourceId('Microsoft.Web/serverfarms', format('{0}-{1}-asp', parameters('name'), uniqueString(resourceGroup().id, parameters('name'), parameters('envName'), parameters('location'))))]"
                     },
                     "APP_SERVICE_PLAN_NAME": {
                       "type": "string",
                       "metadata": {
                         "description": "Name of the App Service Plan"
                       },
-                      "value": "[format('{0}-{1}-asp', parameters('name'), uniqueString(resourceGroup().id, parameters('name')))]"
+                      "value": "[format('{0}-{1}-asp', parameters('name'), uniqueString(resourceGroup().id, parameters('name'), parameters('envName'), parameters('location')))]"
                     }
                   }
                 }
@@ -3315,21 +3470,21 @@
               "metadata": {
                 "description": "Resource ID of the deployed Logic App for reference and integration"
               },
-              "value": "[reference(resourceId('Microsoft.Resources/deployments', 'WorkloadDeployment'), '2025-04-01').outputs.LOGIC_APP_ID.value]"
+              "value": "[reference(resourceId('Microsoft.Resources/deployments', 'LogicAppWorkflowsDeployment'), '2025-04-01').outputs.LOGIC_APP_ID.value]"
             },
             "LOGIC_APP_NAME": {
               "type": "string",
               "metadata": {
                 "description": "Name of the deployed Logic App"
               },
-              "value": "[reference(resourceId('Microsoft.Resources/deployments', 'WorkloadDeployment'), '2025-04-01').outputs.LOGIC_APP_NAME.value]"
+              "value": "[reference(resourceId('Microsoft.Resources/deployments', 'LogicAppWorkflowsDeployment'), '2025-04-01').outputs.LOGIC_APP_NAME.value]"
             },
             "LOGIC_APP_SERVICE_PLAN_ID": {
               "type": "string",
               "metadata": {
                 "description": "Resource ID of the Logic App App Service Plan"
               },
-              "value": "[reference(resourceId('Microsoft.Resources/deployments', 'WorkloadDeployment'), '2025-04-01').outputs.APP_SERVICE_PLAN_ID.value]"
+              "value": "[reference(resourceId('Microsoft.Resources/deployments', 'LogicAppWorkflowsDeployment'), '2025-04-01').outputs.APP_SERVICE_PLAN_ID.value]"
             },
             "API_FUNCTION_APP_ID": {
               "type": "string",
@@ -3352,5 +3507,161 @@
         "[extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, variables('rgName')), 'Microsoft.Resources/deployments', 'SharedResourcesDeployment')]"
       ]
     }
-  ]
+  ],
+  "outputs": {
+    "RESOURCE_GROUP_NAME": {
+      "type": "string",
+      "metadata": {
+        "description": "Name of the deployed resource group"
+      },
+      "value": "[variables('rgName')]"
+    },
+    "RESOURCE_GROUP_ID": {
+      "type": "string",
+      "metadata": {
+        "description": "Resource ID of the deployed resource group"
+      },
+      "value": "[subscriptionResourceId('Microsoft.Resources/resourceGroups', variables('rgName'))]"
+    },
+    "MANAGED_IDENTITY_ID": {
+      "type": "string",
+      "metadata": {
+        "description": "Resource ID of the user-assigned managed identity"
+      },
+      "value": "[reference(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, variables('rgName')), 'Microsoft.Resources/deployments', 'SharedResourcesDeployment'), '2025-04-01').outputs.MANAGED_IDENTITY_ID.value]"
+    },
+    "MANAGED_IDENTITY_PRINCIPAL_ID": {
+      "type": "string",
+      "metadata": {
+        "description": "Principal ID of the managed identity for RBAC assignments"
+      },
+      "value": "[reference(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, variables('rgName')), 'Microsoft.Resources/deployments', 'SharedResourcesDeployment'), '2025-04-01').outputs.MANAGED_IDENTITY_PRINCIPAL_ID.value]"
+    },
+    "MANAGED_IDENTITY_CLIENT_ID": {
+      "type": "string",
+      "metadata": {
+        "description": "Client ID of the managed identity"
+      },
+      "value": "[reference(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, variables('rgName')), 'Microsoft.Resources/deployments', 'SharedResourcesDeployment'), '2025-04-01').outputs.MANAGED_IDENTITY_CLIENT_ID.value]"
+    },
+    "STORAGE_ACCOUNT_NAME": {
+      "type": "string",
+      "metadata": {
+        "description": "Name of the deployed storage account"
+      },
+      "value": "[reference(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, variables('rgName')), 'Microsoft.Resources/deployments', 'SharedResourcesDeployment'), '2025-04-01').outputs.STORAGE_ACCOUNT_NAME.value]"
+    },
+    "STORAGE_ACCOUNT_ID": {
+      "type": "string",
+      "metadata": {
+        "description": "Resource ID of the deployed storage account"
+      },
+      "value": "[reference(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, variables('rgName')), 'Microsoft.Resources/deployments', 'SharedResourcesDeployment'), '2025-04-01').outputs.STORAGE_ACCOUNT_ID.value]"
+    },
+    "AZURE_LOG_ANALYTICS_WORKSPACE_ID": {
+      "type": "string",
+      "metadata": {
+        "description": "Resource ID of the Log Analytics workspace"
+      },
+      "value": "[reference(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, variables('rgName')), 'Microsoft.Resources/deployments', 'SharedResourcesDeployment'), '2025-04-01').outputs.AZURE_LOG_ANALYTICS_WORKSPACE_ID.value]"
+    },
+    "AZURE_LOG_ANALYTICS_WORKSPACE_NAME": {
+      "type": "string",
+      "metadata": {
+        "description": "Name of the Log Analytics workspace"
+      },
+      "value": "[reference(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, variables('rgName')), 'Microsoft.Resources/deployments', 'SharedResourcesDeployment'), '2025-04-01').outputs.AZURE_LOG_ANALYTICS_WORKSPACE_NAME.value]"
+    },
+    "AZURE_APPLICATION_INSIGHTS_NAME": {
+      "type": "string",
+      "metadata": {
+        "description": "Name of the Application Insights instance"
+      },
+      "value": "[reference(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, variables('rgName')), 'Microsoft.Resources/deployments', 'SharedResourcesDeployment'), '2025-04-01').outputs.AZURE_APPLICATION_INSIGHTS_NAME.value]"
+    },
+    "AZURE_APPLICATION_INSIGHTS_ID": {
+      "type": "string",
+      "metadata": {
+        "description": "Resource ID of the Application Insights instance"
+      },
+      "value": "[reference(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, variables('rgName')), 'Microsoft.Resources/deployments', 'SharedResourcesDeployment'), '2025-04-01').outputs.AZURE_APPLICATION_INSIGHTS_ID.value]"
+    },
+    "AZURE_APPLICATION_INSIGHTS_CONNECTION_STRING": {
+      "type": "string",
+      "metadata": {
+        "description": "Connection string for Application Insights"
+      },
+      "value": "[reference(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, variables('rgName')), 'Microsoft.Resources/deployments', 'SharedResourcesDeployment'), '2025-04-01').outputs.AZURE_APPLICATION_INSIGHTS_CONNECTION_STRING.value]"
+    },
+    "AZURE_APPLICATION_INSIGHTS_INSTRUMENTATION_KEY": {
+      "type": "string",
+      "metadata": {
+        "description": "Instrumentation key for Application Insights"
+      },
+      "value": "[reference(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, variables('rgName')), 'Microsoft.Resources/deployments', 'SharedResourcesDeployment'), '2025-04-01').outputs.AZURE_APPLICATION_INSIGHTS_INSTRUMENTATION_KEY.value]"
+    },
+    "AZURE_SERVICEBUS_NAMESPACE_NAME": {
+      "type": "string",
+      "metadata": {
+        "description": "Name of the Service Bus namespace"
+      },
+      "value": "[reference(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, variables('rgName')), 'Microsoft.Resources/deployments', 'SharedResourcesDeployment'), '2025-04-01').outputs.AZURE_SERVICEBUS_NAMESPACE_NAME.value]"
+    },
+    "AZURE_SERVICEBUS_NAMESPACE_ID": {
+      "type": "string",
+      "metadata": {
+        "description": "Resource ID of the Service Bus namespace"
+      },
+      "value": "[reference(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, variables('rgName')), 'Microsoft.Resources/deployments', 'SharedResourcesDeployment'), '2025-04-01').outputs.AZURE_SERVICEBUS_NAMESPACE_ID.value]"
+    },
+    "AZURE_SERVICEBUS_ENDPOINT": {
+      "type": "string",
+      "metadata": {
+        "description": "Service Bus namespace endpoint"
+      },
+      "value": "[reference(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, variables('rgName')), 'Microsoft.Resources/deployments', 'SharedResourcesDeployment'), '2025-04-01').outputs.AZURE_SERVICEBUS_ENDPOINT.value]"
+    },
+    "AZURE_SERVICEBUS_QUEUE_NAME": {
+      "type": "string",
+      "metadata": {
+        "description": "Name of the Service Bus queue"
+      },
+      "value": "[reference(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, variables('rgName')), 'Microsoft.Resources/deployments', 'SharedResourcesDeployment'), '2025-04-01').outputs.AZURE_SERVICEBUS_QUEUE_NAME.value]"
+    },
+    "LOGIC_APP_ID": {
+      "type": "string",
+      "metadata": {
+        "description": "Resource ID of the deployed Logic App"
+      },
+      "value": "[reference(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, variables('rgName')), 'Microsoft.Resources/deployments', 'WorkloadDeployment'), '2025-04-01').outputs.LOGIC_APP_ID.value]"
+    },
+    "LOGIC_APP_NAME": {
+      "type": "string",
+      "metadata": {
+        "description": "Name of the deployed Logic App"
+      },
+      "value": "[reference(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, variables('rgName')), 'Microsoft.Resources/deployments', 'WorkloadDeployment'), '2025-04-01').outputs.LOGIC_APP_NAME.value]"
+    },
+    "LOGIC_APP_SERVICE_PLAN_ID": {
+      "type": "string",
+      "metadata": {
+        "description": "Resource ID of the Logic App Service Plan"
+      },
+      "value": "[reference(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, variables('rgName')), 'Microsoft.Resources/deployments', 'WorkloadDeployment'), '2025-04-01').outputs.LOGIC_APP_SERVICE_PLAN_ID.value]"
+    },
+    "API_FUNCTION_APP_ID": {
+      "type": "string",
+      "metadata": {
+        "description": "Resource ID of the API Function App"
+      },
+      "value": "[reference(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, variables('rgName')), 'Microsoft.Resources/deployments', 'WorkloadDeployment'), '2025-04-01').outputs.API_FUNCTION_APP_ID.value]"
+    },
+    "API_FUNCTION_APP_NAME": {
+      "type": "string",
+      "metadata": {
+        "description": "Name of the API Function App"
+      },
+      "value": "[reference(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, variables('rgName')), 'Microsoft.Resources/deployments', 'WorkloadDeployment'), '2025-04-01').outputs.API_FUNCTION_APP_NAME.value]"
+    }
+  }
 }
