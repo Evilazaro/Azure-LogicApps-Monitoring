@@ -706,7 +706,7 @@ resource logicApp 'Microsoft.Web/sites@2023-12-01' = {
   location: location
   kind: 'functionapp,workflowapp'
   identity: {
-    type: 'SystemAssigned, UserAssigned'
+    type: 'UserAssigned'
     userAssignedIdentities: {
       '${mi.id}': {}
     }
@@ -1554,3 +1554,18 @@ output APP_SERVICE_PLAN_ID string = appServicePlan.id
 @description('Name of the App Service Plan')
 output APP_SERVICE_PLAN_NAME string = appServicePlan.name
 
+resource symbolicname 'Microsoft.Logic/workflows@2019-05-01' = {
+  name: 'ss'
+  identity: {
+    type: 'SystemAssigned,UserAssigned'
+    userAssignedIdentities: {
+      '${mi.id}': {}
+    }
+  }
+  location: location
+  tags: tags
+  properties: {
+    state: 'Enabled'
+    definition: {}
+  }
+}
