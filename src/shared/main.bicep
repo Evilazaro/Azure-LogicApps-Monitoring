@@ -59,9 +59,6 @@ module data 'data/main.bicep' = {
     location: location
     tags: tags
   }
-  dependsOn: [
-    monitoring
-  ]
 }
 
 // Deploy Service Bus namespace for messaging integration
