@@ -786,15 +786,6 @@ resource logicApp 'Microsoft.Web/sites@2023-12-01' = {
           name: 'WORKFLOWS_MANAGEMENT_BASE_URI'
           value: environment().resourceManager
         }
-        // Performance and runtime settings
-        {
-          name: 'WEBSITE_NODE_DEFAULT_VERSION'
-          value: '~18'
-        }
-        {
-          name: 'WEBSITE_LOAD_USER_PROFILE'
-          value: '1'
-        }
       ]
       use32BitWorkerProcess: false
       ftpsState: 'Disabled'
