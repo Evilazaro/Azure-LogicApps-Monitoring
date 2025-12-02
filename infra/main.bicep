@@ -103,6 +103,7 @@ module workload '../src/workload/main.bicep' = {
     location: location
     envName: envName
     workspaceId: shared.outputs.AZURE_LOG_ANALYTICS_WORKSPACE_ID
+    storageAccountId: shared.outputs.LOGS_STORAGE_ACCOUNT_ID
     storageAccountName: shared.outputs.WORKFLOW_STORAGE_ACCOUNT_NAME
     appInsightsName: shared.outputs.AZURE_APPLICATION_INSIGHTS_NAME
     serviceBusName: shared.outputs.AZURE_SERVICEBUS_NAMESPACE_NAME
