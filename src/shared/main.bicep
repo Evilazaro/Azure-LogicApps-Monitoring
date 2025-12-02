@@ -37,9 +37,9 @@ param tags object
 // MODULE DEPLOYMENTS
 // ============================================================================
 
-// Deploy user-assigned managed identity for Logic Apps authentication
-module identity 'identity/main.bicep' = {
-  name: 'IdentityDeployment'
+// Deploy monitoring stack (Log Analytics, Application Insights, Health Model)
+module monitoring '../monitoring/main.bicep' = {
+  name: 'MonitoringDeployment'
   scope: resourceGroup()
   params: {
     name: name
@@ -61,21 +61,6 @@ module data 'data/main.bicep' = {
   }
 }
 
-// Deploy monitoring stack (Log Analytics, Application Insights, Health Model)
-module monitoring '../monitoring/main.bicep' = {
-  name: 'MonitoringDeployment'
-  scope: resourceGroup()
-  params: {
-    name: name
-    envName: envName
-    location: location
-    tags: tags
-  }
-  dependsOn: [
-    data
-  ]
-}
-
 // Deploy Service Bus namespace for messaging integration
 module messaging 'messaging/main.bicep' = {
   name: 'MessagingDeployment'
@@ -85,6 +70,7 @@ module messaging 'messaging/main.bicep' = {
     envName: envName
     location: location
     workspaceId: monitoring.outputs.AZURE_LOG_ANALYTICS_WORKSPACE_ID
+    storageAccountId: data.outputs.LOGS_STORAGE_ACCOUNT_ID
     tags: tags
   }
 }
@@ -93,23 +79,17 @@ module messaging 'messaging/main.bicep' = {
 // OUTPUTS
 // ============================================================================
 
-@description('Resource ID of the user-assigned managed identity for Logic Apps authentication')
-output MANAGED_IDENTITY_ID string = identity.outputs.MANAGED_IDENTITY_ID
-
-@description('Name of the user-assigned managed identity')
-output MANAGED_IDENTITY_NAME string = identity.outputs.MANAGED_IDENTITY_NAME
-
-@description('Principal ID of the managed identity for RBAC role assignments')
-output MANAGED_IDENTITY_PRINCIPAL_ID string = identity.outputs.MANAGED_IDENTITY_PRINCIPAL_ID
-
-@description('Client ID of the managed identity for app settings configuration')
-output MANAGED_IDENTITY_CLIENT_ID string = identity.outputs.MANAGED_IDENTITY_CLIENT_ID
-
 @description('Name of the deployed storage account for Logic Apps Standard runtime requirements')
-output STORAGE_ACCOUNT_NAME string = data.outputs.STORAGE_ACCOUNT_NAME
+output WORKFLOW_STORAGE_ACCOUNT_NAME string = data.outputs.WORKFLOW_STORAGE_ACCOUNT_NAME
 
 @description('Resource ID of the deployed storage account for RBAC role assignments')
-output STORAGE_ACCOUNT_ID string = data.outputs.STORAGE_ACCOUNT_ID
+output WORKFLOW_STORAGE_ACCOUNT_ID string = data.outputs.WORKFLOW_STORAGE_ACCOUNT_ID
+
+@description('Resource ID of the storage account for diagnostic logs and metrics')
+output LOGS_STORAGE_ACCOUNT_ID string = data.outputs.LOGS_STORAGE_ACCOUNT_ID
+
+@description('Name of the deployed storage account for diagnostic logs and metrics')
+output LOGS_STORAGE_ACCOUNT_NAME string = data.outputs.LOGS_STORAGE_ACCOUNT_NAME
 
 @description('Resource ID of the Log Analytics workspace for Logic Apps diagnostic logging configuration')
 output AZURE_LOG_ANALYTICS_WORKSPACE_ID string = monitoring.outputs.AZURE_LOG_ANALYTICS_WORKSPACE_ID

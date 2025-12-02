@@ -14,6 +14,10 @@
 
 targetScope = 'subscription'
 
+metadata name = 'Azure Logic Apps Monitoring Solution'
+metadata description = 'Complete monitoring infrastructure for Logic Apps Standard with Application Insights, Log Analytics, and Service Bus'
+metadata version = '1.0.0'
+
 // ============================================================================
 // PARAMETERS
 // ============================================================================
@@ -103,10 +107,10 @@ module workload '../src/workload/main.bicep' = {
     location: location
     envName: envName
     workspaceId: shared.outputs.AZURE_LOG_ANALYTICS_WORKSPACE_ID
-    storageAccountName: shared.outputs.STORAGE_ACCOUNT_NAME
+    storageAccountId: shared.outputs.LOGS_STORAGE_ACCOUNT_ID
+    storageAccountName: shared.outputs.WORKFLOW_STORAGE_ACCOUNT_NAME
     appInsightsName: shared.outputs.AZURE_APPLICATION_INSIGHTS_NAME
     serviceBusName: shared.outputs.AZURE_SERVICEBUS_NAMESPACE_NAME
-    managedIdentityName: shared.outputs.MANAGED_IDENTITY_NAME
     tags: tags
   }
 }
@@ -122,22 +126,12 @@ output RESOURCE_GROUP_NAME string = rgName
 @description('Resource ID of the deployed resource group')
 output RESOURCE_GROUP_ID string = rg.id
 
-// Managed Identity
-@description('Resource ID of the user-assigned managed identity')
-output MANAGED_IDENTITY_ID string = shared.outputs.MANAGED_IDENTITY_ID
-
-@description('Principal ID of the managed identity for RBAC assignments')
-output MANAGED_IDENTITY_PRINCIPAL_ID string = shared.outputs.MANAGED_IDENTITY_PRINCIPAL_ID
-
-@description('Client ID of the managed identity')
-output MANAGED_IDENTITY_CLIENT_ID string = shared.outputs.MANAGED_IDENTITY_CLIENT_ID
-
 // Storage
 @description('Name of the deployed storage account')
-output STORAGE_ACCOUNT_NAME string = shared.outputs.STORAGE_ACCOUNT_NAME
+output WORKFLOW_STORAGE_ACCOUNT_NAME string = shared.outputs.WORKFLOW_STORAGE_ACCOUNT_NAME
 
 @description('Resource ID of the deployed storage account')
-output STORAGE_ACCOUNT_ID string = shared.outputs.STORAGE_ACCOUNT_ID
+output WORKFLOW_STORAGE_ACCOUNT_ID string = shared.outputs.WORKFLOW_STORAGE_ACCOUNT_ID
 
 // Monitoring
 @description('Resource ID of the Log Analytics workspace')
@@ -187,4 +181,3 @@ output API_FUNCTION_APP_ID string = workload.outputs.API_FUNCTION_APP_ID
 
 @description('Name of the API Function App')
 output API_FUNCTION_APP_NAME string = workload.outputs.API_FUNCTION_APP_NAME
-

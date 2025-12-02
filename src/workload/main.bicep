@@ -31,6 +31,9 @@ param location string = resourceGroup().location
 @description('Resource ID of the Log Analytics workspace for diagnostic logs and metrics.')
 param workspaceId string
 
+@description('Storage Account ID for diagnostic logs and metrics.')
+param storageAccountId string
+
 @description('Name of the existing storage account required by Logic Apps Standard for workflow state and artifacts.')
 param storageAccountName string
 
@@ -39,9 +42,6 @@ param appInsightsName string
 
 @description('Name of existing Service Bus namespace for messaging integration with workflows.')
 param serviceBusName string
-
-@description('Managed Identity Name for Logic App to access resources securely without credentials.')
-param managedIdentityName string
 
 @description('Resource tags applied to Logic App, App Service Plan, and dashboard resources for cost tracking and governance.')
 param tags object
@@ -59,6 +59,7 @@ module apis 'azure-function.bicep' = {
     location: location
     appInsightsName: appInsightsName
     workspaceId: workspaceId
+    storageAccountId: storageAccountId
     tags: tags
   }
 }
@@ -71,10 +72,10 @@ module workflows 'logic-app.bicep' = {
     location: location
     envName: envName
     workspaceId: workspaceId
+    storageAccountId: storageAccountId
     storageAccountName: storageAccountName
     appInsightsName: appInsightsName
     serviceBusName: serviceBusName
-    managedIdentityName: managedIdentityName
     tags: tags
   }
   dependsOn: [

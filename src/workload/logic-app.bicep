@@ -76,6 +76,9 @@ param location string = resourceGroup().location
 @description('Resource ID of the Log Analytics workspace for diagnostic logs and metrics.')
 param workspaceId string
 
+@description('Storage Account ID for diagnostic logs and metrics.')
+param storageAccountId string
+
 @description('Name of the existing storage account required by Logic Apps Standard for workflow state and artifacts.')
 param storageAccountName string
 
@@ -84,9 +87,6 @@ param appInsightsName string
 
 @description('Name of existing Service Bus namespace for messaging integration with workflows.')
 param serviceBusName string
-
-@description('Managed Identity Name for Logic App to access resources securely without credentials.')
-param managedIdentityName string
 
 @description('Resource tags applied to Logic App, App Service Plan, and dashboard resources for cost tracking and governance.')
 param tags object
@@ -123,6 +123,7 @@ resource DiagnosticSettingsAsp 'Microsoft.Insights/diagnosticSettings@2021-05-01
   scope: appServicePlan
   properties: {
     workspaceId: workspaceId
+    storageAccountId: storageAccountId
     metrics: [
       {
         enabled: true
@@ -602,9 +603,10 @@ resource dashboardASP 'Microsoft.Portal/dashboards@2020-09-01-preview' = {
   }
 }
 
-resource mi 'Microsoft.ManagedIdentity/userAssignedIdentities@2025-01-31-preview' existing = {
-  name: managedIdentityName
-  scope: resourceGroup()
+resource mi 'Microsoft.ManagedIdentity/userAssignedIdentities@2023-01-31' = {
+  name: '${name}-${uniqueString(resourceGroup().id, name, envName, location)}-mi'
+  location: location
+  tags: tags
 }
 
 resource storageAccount 'Microsoft.Storage/storageAccounts@2023-05-01' existing = {
@@ -612,11 +614,26 @@ resource storageAccount 'Microsoft.Storage/storageAccounts@2023-05-01' existing 
   scope: resourceGroup()
 }
 
+// ============================================================================
+// VARIABLES - RBAC ROLE DEFINITIONS
+// ============================================================================
+
+// Storage Account RBAC roles for Logic Apps managed identity
+// These roles enable the Logic App to access storage account resources using managed identity
+var storageRoles = {
+  contributor: '17d1049b-9a84-46fb-8f53-869881c3d3ab' // Storage Account Contributor - Manage storage account
+  blobDataOwner: 'b7e6dc6d-f1e8-4753-8033-0f276bb0955b' // Storage Blob Data Owner - Full control over blobs
+  queueDataContributor: '974c5e8b-45b9-4653-ba55-5f855dd0fb88' // Storage Queue Data Contributor - Read/write queues
+  tableDataContributor: '0a9a7e1f-b9d0-4cc4-a60d-0319b160aaa3' // Storage Table Data Contributor - Read/write tables
+  fileDataContributor: '69566ab7-960f-475b-8e7c-b3118f30c6bd' // Storage File Data Privileged Contributor - Read/write files
+}
+
 var storageRBAC = [
-  'b7e6dc6d-f1e8-4753-8033-0f276bb0955b' // Storage Blob Data Owner - Full control over blob containers and data
-  '974c5e8b-45b9-4653-ba55-5f855dd0fb88' // Storage Queue Data Contributor - Read, write, and delete queue messages
-  '0a9a7e1f-b9d0-4cc4-a60d-0319b160aaa3' // Storage Table Data Contributor - Read, write, and delete table data
-  '69566ab7-960f-475b-8e7c-b3118f30c6bd' // Storage File Data Privileged Contributor - Read, write, and modify files/directories
+  storageRoles.contributor
+  storageRoles.blobDataOwner
+  storageRoles.queueDataContributor
+  storageRoles.tableDataContributor
+  storageRoles.fileDataContributor
 ]
 
 resource storageRoleAssignments 'Microsoft.Authorization/roleAssignments@2022-04-01' = [
@@ -631,13 +648,30 @@ resource storageRoleAssignments 'Microsoft.Authorization/roleAssignments@2022-04
   }
 ]
 
+resource storageRoleAssignmentsUser 'Microsoft.Authorization/roleAssignments@2022-04-01' = [
+  for roleId in storageRBAC: {
+    name: guid(logicApp.id, logicApp.name, roleId,deployer().objectId)
+    scope: storageAccount
+    properties: {
+      roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', roleId)
+      principalId: deployer().objectId
+      principalType: 'User'
+    }
+  }
+]
+
 resource appInsights 'Microsoft.Insights/components@2020-02-02' existing = {
   name: appInsightsName
   scope: resourceGroup()
 }
 
+// Application Insights RBAC role for Logic Apps managed identity
+var appInsightsRoles = {
+  metricsPublisher: '3913510d-42f4-4e42-8a64-420c390055eb' // Monitoring Metrics Publisher - Publish metrics to Azure Monitor
+}
+
 var appInsightsRBAC = [
-  '3913510d-42f4-4e42-8a64-420c390055eb'
+  appInsightsRoles.metricsPublisher
 ]
 
 resource appInsightsRoleAssignments 'Microsoft.Authorization/roleAssignments@2022-04-01' = [
@@ -652,10 +686,29 @@ resource appInsightsRoleAssignments 'Microsoft.Authorization/roleAssignments@202
   }
 ]
 
+resource appInsightsRoleAssignmentsUser 'Microsoft.Authorization/roleAssignments@2022-04-01' = [
+  for roleId in appInsightsRBAC: {
+    name: guid(appInsights.id, appInsights.name, roleId,deployer().objectId)
+    scope: appInsights
+    properties: {
+      roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', roleId)
+      principalId: deployer().objectId
+      principalType: 'User'
+    }
+  }
+]
+
+// Service Bus RBAC roles for Logic Apps managed identity
+var serviceBusRoles = {
+  dataOwner: '090c5cfd-751d-490a-894a-3ce6f1109419' // Azure Service Bus Data Owner - Full control over Service Bus
+  dataReceiver: '4f6d3b9b-027b-4f4c-9142-0e5a2a2247e0' // Azure Service Bus Data Receiver - Receive messages
+  dataSender: '69a216fc-b8fb-44d8-bc22-1f3c2cd27a39' // Azure Service Bus Data Sender - Send messages
+}
+
 var sbRBAC = [
-  '090c5cfd-751d-490a-894a-3ce6f1109419' // Azure Service Bus Data Owner - Full control over Service Bus resources
-  '4f6d3b9b-027b-4f4c-9142-0e5a2a2247e0'
-  '69a216fc-b8fb-44d8-bc22-1f3c2cd27a39'
+  serviceBusRoles.dataOwner
+  serviceBusRoles.dataReceiver
+  serviceBusRoles.dataSender
 ]
 
 resource serviceBus 'Microsoft.ServiceBus/namespaces@2025-05-01-preview' existing = {
@@ -675,9 +728,24 @@ resource sbRoleAssignments 'Microsoft.Authorization/roleAssignments@2022-04-01' 
   }
 ]
 
+resource sbRoleAssignmentsUser 'Microsoft.Authorization/roleAssignments@2022-04-01' = [
+  for roleId in sbRBAC: {
+    name: guid(serviceBus.id, serviceBus.name, roleId,deployer().objectId)
+    scope: serviceBus
+    properties: {
+      roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', roleId)
+      principalId: deployer().objectId
+      principalType: 'User'
+    }
+  }
+]
+
 // ============================================================================
 // VARIABLES - APP SETTINGS
 // ============================================================================
+
+// Service Bus connection configuration
+var serviceBusConnectionName = 'serviceBus'
 
 // Core runtime settings
 var functionsExtensionVersion = '~4'
@@ -706,7 +774,7 @@ resource logicApp 'Microsoft.Web/sites@2023-12-01' = {
   location: location
   kind: 'functionapp,workflowapp'
   identity: {
-    type: 'SystemAssigned, UserAssigned'
+    type: 'UserAssigned'
     userAssignedIdentities: {
       '${mi.id}': {}
     }
@@ -750,8 +818,8 @@ resource logicApp 'Microsoft.Web/sites@2023-12-01' = {
           value: 'managedidentity'
         }
         {
-          name: 'AzureWebJobsStorage__clientId'
-          value: mi.properties.clientId
+          name: 'AzureWebJobsStorage__managedIdentityResourceId'
+          value: resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', mi.name)
         }
         // Application Insights telemetry and monitoring
         {
@@ -801,15 +869,13 @@ resource logicApp 'Microsoft.Web/sites@2023-12-01' = {
   }
 }
 
-param sbConnectionName string = 'serviceBus'
-
 resource serviceBusConnection 'Microsoft.Web/connections@2016-06-01' = {
-  name: sbConnectionName
+  name: serviceBusConnectionName
   location: location
   tags: tags
   kind: 'V2'
   properties: {
-    displayName: sbConnectionName
+    displayName: serviceBusConnectionName
     parameterValues: {}
     api: {
       id: subscriptionResourceId('Microsoft.Web/locations/managedApis', location, 'servicebus')
@@ -830,7 +896,7 @@ resource serviceBusConnectionAccessPolicy 'Microsoft.Web/connections/accessPolic
       type: 'ActiveDirectory'
       identity: {
         tenantId: subscription().tenantId
-        objectId: logicApp.identity.principalId
+        objectId: mi.properties.principalId
       }
     }
   }
@@ -841,6 +907,7 @@ resource DiagnosticSettingsLogicApp 'Microsoft.Insights/diagnosticSettings@2021-
   scope: logicApp
   properties: {
     workspaceId: workspaceId
+    storageAccountId: storageAccountId
     logs: [
       {
         category: 'WorkflowRuntime'
@@ -1554,3 +1621,18 @@ output APP_SERVICE_PLAN_ID string = appServicePlan.id
 @description('Name of the App Service Plan')
 output APP_SERVICE_PLAN_NAME string = appServicePlan.name
 
+// resource symbolicname 'Microsoft.Logic/workflows@2019-05-01' = {
+//   name: 'ss'
+//   identity: {
+//     type: 'SystemAssigned,UserAssigned'
+//     userAssignedIdentities: {
+//       '${mi.id}': {}
+//     }
+//   }
+//   location: location
+//   tags: tags
+//   properties: {
+//     state: 'Enabled'
+//     definition: {}
+//   }
+// }

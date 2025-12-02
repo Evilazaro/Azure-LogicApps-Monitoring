@@ -58,8 +58,23 @@ param location string = resourceGroup().location
 @description('Resource ID of the Log Analytics workspace for diagnostic logs and metrics.')
 param workspaceId string
 
+@description('Storage Account ID for diagnostic logs and metrics.')
+param storageAccountId string
+
 @description('Resource tags applied to Service Bus resources for cost tracking and compliance.')
 param tags object
+
+// ============================================================================
+// VARIABLES
+// ============================================================================
+
+// Queue configuration for tax processing
+var queueConfig = {
+  name: 'tax-processing-queue'
+  maxSizeInMegabytes: 1024
+  defaultMessageTimeToLive: 'P14D' // 14 days
+  maxDeliveryCount: 10
+}
 
 // ============================================================================
 // RESOURCES
@@ -85,16 +100,17 @@ resource serviceBus 'Microsoft.ServiceBus/namespaces@2024-01-01' = {
 }
 
 resource queue 'Microsoft.ServiceBus/namespaces/queues@2024-01-01' = {
-  name: 'tax-processing-queue'
+  name: queueConfig.name
   parent: serviceBus
   properties: {
-    maxSizeInMegabytes: 1024
+    maxSizeInMegabytes: queueConfig.maxSizeInMegabytes
     requiresDuplicateDetection: false
     requiresSession: false
-    defaultMessageTimeToLive: 'P14D' // 14 days
+    defaultMessageTimeToLive: queueConfig.defaultMessageTimeToLive
     deadLetteringOnMessageExpiration: true
     enableBatchedOperations: true
-    maxDeliveryCount: 10
+    maxDeliveryCount: queueConfig.maxDeliveryCount
+    duplicateDetectionHistoryTimeWindow: 'PT10M'
   }
 }
 
@@ -110,6 +126,7 @@ resource diagnosticSettings 'Microsoft.Insights/diagnosticSettings@2021-05-01-pr
   scope: serviceBus
   properties: {
     workspaceId: workspaceId
+    storageAccountId: storageAccountId
     logs: [
       {
         enabled: true
@@ -148,4 +165,3 @@ output AZURE_SERVICEBUS_ENDPOINT string = serviceBus.properties.serviceBusEndpoi
 
 @description('Name of the deployed queue')
 output AZURE_SERVICEBUS_QUEUE_NAME string = queue.name
-
