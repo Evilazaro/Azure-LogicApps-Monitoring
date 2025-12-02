@@ -106,7 +106,6 @@ module workload '../src/workload/main.bicep' = {
     storageAccountName: shared.outputs.STORAGE_ACCOUNT_NAME
     appInsightsName: shared.outputs.AZURE_APPLICATION_INSIGHTS_NAME
     serviceBusName: shared.outputs.AZURE_SERVICEBUS_NAMESPACE_NAME
-    managedIdentityName: shared.outputs.MANAGED_IDENTITY_NAME
     tags: tags
   }
 }
@@ -121,16 +120,6 @@ output RESOURCE_GROUP_NAME string = rgName
 
 @description('Resource ID of the deployed resource group')
 output RESOURCE_GROUP_ID string = rg.id
-
-// Managed Identity
-@description('Resource ID of the user-assigned managed identity')
-output MANAGED_IDENTITY_ID string = shared.outputs.MANAGED_IDENTITY_ID
-
-@description('Principal ID of the managed identity for RBAC assignments')
-output MANAGED_IDENTITY_PRINCIPAL_ID string = shared.outputs.MANAGED_IDENTITY_PRINCIPAL_ID
-
-@description('Client ID of the managed identity')
-output MANAGED_IDENTITY_CLIENT_ID string = shared.outputs.MANAGED_IDENTITY_CLIENT_ID
 
 // Storage
 @description('Name of the deployed storage account')
@@ -187,4 +176,3 @@ output API_FUNCTION_APP_ID string = workload.outputs.API_FUNCTION_APP_ID
 
 @description('Name of the API Function App')
 output API_FUNCTION_APP_NAME string = workload.outputs.API_FUNCTION_APP_NAME
-

@@ -85,9 +85,6 @@ param appInsightsName string
 @description('Name of existing Service Bus namespace for messaging integration with workflows.')
 param serviceBusName string
 
-@description('Managed Identity Name for Logic App to access resources securely without credentials.')
-param managedIdentityName string
-
 @description('Resource tags applied to Logic App, App Service Plan, and dashboard resources for cost tracking and governance.')
 param tags object
 
@@ -602,9 +599,10 @@ resource dashboardASP 'Microsoft.Portal/dashboards@2020-09-01-preview' = {
   }
 }
 
-resource mi 'Microsoft.ManagedIdentity/userAssignedIdentities@2025-01-31-preview' existing = {
-  name: managedIdentityName
-  scope: resourceGroup()
+resource mi 'Microsoft.ManagedIdentity/userAssignedIdentities@2023-01-31' = {
+  name: '${name}-${uniqueString(resourceGroup().id, name, envName, location)}-mi'
+  location: location
+  tags: tags
 }
 
 resource storageAccount 'Microsoft.Storage/storageAccounts@2023-05-01' existing = {
@@ -751,7 +749,7 @@ resource logicApp 'Microsoft.Web/sites@2023-12-01' = {
         }
         {
           name: 'AzureWebJobsStorage__managedIdentityResourceId'
-          value: resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', managedIdentityName)
+          value: resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', mi.name)
         }
         // Application Insights telemetry and monitoring
         {
@@ -830,7 +828,7 @@ resource serviceBusConnectionAccessPolicy 'Microsoft.Web/connections/accessPolic
       type: 'ActiveDirectory'
       identity: {
         tenantId: subscription().tenantId
-        objectId: logicApp.identity.principalId
+        objectId: mi.properties.principalId
       }
     }
   }
@@ -1554,18 +1552,18 @@ output APP_SERVICE_PLAN_ID string = appServicePlan.id
 @description('Name of the App Service Plan')
 output APP_SERVICE_PLAN_NAME string = appServicePlan.name
 
-resource symbolicname 'Microsoft.Logic/workflows@2019-05-01' = {
-  name: 'ss'
-  identity: {
-    type: 'SystemAssigned,UserAssigned'
-    userAssignedIdentities: {
-      '${mi.id}': {}
-    }
-  }
-  location: location
-  tags: tags
-  properties: {
-    state: 'Enabled'
-    definition: {}
-  }
-}
+// resource symbolicname 'Microsoft.Logic/workflows@2019-05-01' = {
+//   name: 'ss'
+//   identity: {
+//     type: 'SystemAssigned,UserAssigned'
+//     userAssignedIdentities: {
+//       '${mi.id}': {}
+//     }
+//   }
+//   location: location
+//   tags: tags
+//   properties: {
+//     state: 'Enabled'
+//     definition: {}
+//   }
+// }

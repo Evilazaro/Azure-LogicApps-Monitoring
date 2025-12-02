@@ -37,18 +37,6 @@ param tags object
 // MODULE DEPLOYMENTS
 // ============================================================================
 
-// Deploy user-assigned managed identity for Logic Apps authentication
-module identity 'identity/main.bicep' = {
-  name: 'IdentityDeployment'
-  scope: resourceGroup()
-  params: {
-    name: name
-    envName: envName
-    location: location
-    tags: tags
-  }
-}
-
 // Deploy storage account for Logic Apps Standard runtime
 module data 'data/main.bicep' = {
   name: 'DataDeployment'
@@ -92,18 +80,6 @@ module messaging 'messaging/main.bicep' = {
 // ============================================================================
 // OUTPUTS
 // ============================================================================
-
-@description('Resource ID of the user-assigned managed identity for Logic Apps authentication')
-output MANAGED_IDENTITY_ID string = identity.outputs.MANAGED_IDENTITY_ID
-
-@description('Name of the user-assigned managed identity')
-output MANAGED_IDENTITY_NAME string = identity.outputs.MANAGED_IDENTITY_NAME
-
-@description('Principal ID of the managed identity for RBAC role assignments')
-output MANAGED_IDENTITY_PRINCIPAL_ID string = identity.outputs.MANAGED_IDENTITY_PRINCIPAL_ID
-
-@description('Client ID of the managed identity for app settings configuration')
-output MANAGED_IDENTITY_CLIENT_ID string = identity.outputs.MANAGED_IDENTITY_CLIENT_ID
 
 @description('Name of the deployed storage account for Logic Apps Standard runtime requirements')
 output STORAGE_ACCOUNT_NAME string = data.outputs.STORAGE_ACCOUNT_NAME
