@@ -22,6 +22,9 @@
 @maxLength(20)
 param name string
 
+@description('Environment name suffix to ensure uniqueness across environments (e.g., dev, test, prod).')
+param envName string
+
 @description('Azure region for Logic App deployment. Must support Workflow Standard SKU and Application Insights.')
 param location string = resourceGroup().location
 
@@ -49,6 +52,7 @@ module apis 'azure-function.bicep' = {
   scope: resourceGroup()
   params: {
     name: name
+    envName: envName
     location: location
     appInsightsName: appInsightsName
     workspaceId: workspaceId
@@ -61,6 +65,8 @@ module workflows 'logic-app.bicep' = {
   scope: resourceGroup()
   params: {
     name: name
+    location: location
+    envName: envName
     workspaceId: workspaceId
     storageAccountName: storageAccountName
     appInsightsName: appInsightsName

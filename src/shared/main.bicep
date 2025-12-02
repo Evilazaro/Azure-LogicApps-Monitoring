@@ -24,6 +24,9 @@
 @maxLength(20)
 param name string
 
+@description('Environment name suffix to ensure uniqueness across environments (e.g., dev, test, prod).')
+param envName string
+
 @description('Azure region for shared resources deployment. Should match Logic App deployment region.')
 param location string = resourceGroup().location
 
@@ -40,6 +43,7 @@ module identity 'identity/main.bicep' = {
   scope: resourceGroup()
   params: {
     name: name
+    envName: envName
     location: location
     tags: tags
   }
@@ -51,6 +55,7 @@ module data 'data/main.bicep' = {
   scope: resourceGroup()
   params: {
     name: name
+    envName: envName
     location: location
     tags: tags
   }
@@ -62,6 +67,7 @@ module monitoring '../monitoring/main.bicep' = {
   scope: resourceGroup()
   params: {
     name: name
+    envName: envName
     location: location
     tags: tags
   }
@@ -76,6 +82,7 @@ module messaging 'messaging/main.bicep' = {
   scope: resourceGroup()
   params: {
     name: name
+    envName: envName
     location: location
     workspaceId: monitoring.outputs.AZURE_LOG_ANALYTICS_WORKSPACE_ID
     tags: tags
@@ -124,4 +131,3 @@ output AZURE_SERVICEBUS_ENDPOINT string = messaging.outputs.AZURE_SERVICEBUS_END
 
 @description('Name of the Service Bus queue for workflow message processing')
 output AZURE_SERVICEBUS_QUEUE_NAME string = messaging.outputs.AZURE_SERVICEBUS_QUEUE_NAME
-

@@ -49,6 +49,9 @@
 @maxLength(20)
 param name string
 
+@description('Environment name suffix to ensure uniqueness across environments (e.g., dev, test, prod).')
+param envName string
+
 @description('Azure region for Service Bus deployment. Should match Logic App region for optimal latency.')
 param location string = resourceGroup().location
 
@@ -63,7 +66,7 @@ param tags object
 // ============================================================================
 
 resource serviceBus 'Microsoft.ServiceBus/namespaces@2024-01-01' = {
-  name: '${name}-sb-${uniqueString(resourceGroup().id, name)}'
+  name: '${name}-sb-${uniqueString(resourceGroup().id, name, envName, location)}'
   location: location
   tags: tags
   identity: {

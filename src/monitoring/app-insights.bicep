@@ -30,6 +30,9 @@ param name string
 @description('Azure region for Application Insights deployment. Must match Log Analytics workspace region for workspace-based model.')
 param location string = resourceGroup().location
 
+@description('Environment name suffix to ensure uniqueness across environments (e.g., dev, test, prod).')
+param envName string
+
 @description('Resource ID of the Log Analytics workspace for workspace-based Application Insights integration (best practice).')
 param logAnalyticsWorkspaceId string
 
@@ -37,7 +40,7 @@ param logAnalyticsWorkspaceId string
 param tags object
 
 resource appInsights 'Microsoft.Insights/components@2020-02-02' = {
-  name: '${name}-${uniqueString(resourceGroup().id, name)}-appinsights'
+  name: '${name}-${uniqueString(resourceGroup().id, name, envName, location)}-appinsights'
   location: location
   kind: 'web'
   tags: tags

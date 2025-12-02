@@ -67,6 +67,9 @@
 @maxLength(20)
 param name string
 
+@description('Environment name suffix to ensure uniqueness across environments (e.g., dev, test, prod).')
+param envName string
+
 @description('Azure region for Logic App deployment. Must support Workflow Standard SKU and Application Insights.')
 param location string = resourceGroup().location
 
@@ -86,7 +89,7 @@ param serviceBusName string
 param tags object
 
 resource appServicePlan 'Microsoft.Web/serverfarms@2024-11-01' = {
-  name: '${name}-${uniqueString(resourceGroup().id, name)}-asp'
+  name: '${name}-${uniqueString(resourceGroup().id, name, envName, location)}-asp'
   location: location
   sku: {
     name: 'WS1'
@@ -696,7 +699,7 @@ var workflowsTenantId = subscription().tenantId
 // ============================================================================
 
 resource logicApp 'Microsoft.Web/sites@2023-12-01' = {
-  name: '${name}-${uniqueString(resourceGroup().id, name)}-logicapp'
+  name: '${name}-${uniqueString(resourceGroup().id, name, envName, location)}-logicapp'
   location: location
   kind: 'functionapp,workflowapp'
   identity: {

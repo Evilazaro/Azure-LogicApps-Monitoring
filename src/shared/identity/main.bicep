@@ -35,6 +35,9 @@
 @maxLength(20)
 param name string
 
+@description('Environment name suffix to ensure uniqueness across environments (e.g., dev, test, prod).')
+param envName string
+
 @description('Azure region for managed identity deployment. Should match Logic App region.')
 param location string = resourceGroup().location
 
@@ -46,7 +49,7 @@ param tags object
 // ============================================================================
 
 resource userAssignedIdentity 'Microsoft.ManagedIdentity/userAssignedIdentities@2023-01-31' = {
-  name: '${name}-mi'
+  name: '${name}-${uniqueString(resourceGroup().id, name, envName, location)}-mi'
   location: location
   tags: tags
 }

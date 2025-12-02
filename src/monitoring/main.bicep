@@ -19,6 +19,9 @@
 @maxLength(20)
 param name string
 
+@description('Environment name suffix to ensure uniqueness across environments (e.g., dev, test, prod).')
+param envName string
+
 @description('Azure region for monitoring resources deployment. Should match the Logic App deployment region for optimal performance.')
 param location string = resourceGroup().location
 
@@ -45,6 +48,7 @@ module operationalInsights 'log-analytics-workspace.bicep' = {
   scope: resourceGroup()
   params: {
     name: name
+    envName: envName
     location: location
     tags: tags
   }
@@ -59,6 +63,7 @@ module insights 'app-insights.bicep' = {
   scope: resourceGroup()
   params: {
     name: name
+    envName: envName
     location: location
     logAnalyticsWorkspaceId: operationalInsights.outputs.AZURE_LOG_ANALYTICS_WORKSPACE_ID
     tags: tags

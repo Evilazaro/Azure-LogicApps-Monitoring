@@ -27,6 +27,9 @@
 @maxLength(20)
 param name string
 
+@description('Environment name suffix to ensure uniqueness across environments (e.g., dev, test, prod).')
+param envName string
+
 @description('Azure region for the Log Analytics workspace deployment. Should match application resources for optimal data transfer costs.')
 param location string = resourceGroup().location
 
@@ -34,7 +37,7 @@ param location string = resourceGroup().location
 param tags object
 
 resource logAnalytics 'Microsoft.OperationalInsights/workspaces@2023-09-01' = {
-  name: '${name}-${uniqueString(resourceGroup().id, name)}-law'
+  name: '${name}-${uniqueString(resourceGroup().id, name, envName, location)}-law'
   location: location
   identity: {
     type: 'SystemAssigned'

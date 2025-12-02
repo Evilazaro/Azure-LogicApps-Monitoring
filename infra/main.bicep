@@ -81,6 +81,7 @@ module shared '../src/shared/main.bicep' = {
   scope: rg
   params: {
     name: solutionName
+    envName: envName
     location: location
     tags: tags
   }
@@ -99,6 +100,8 @@ module workload '../src/workload/main.bicep' = {
   scope: resourceGroup(rgName)
   params: {
     name: solutionName
+    location: location
+    envName: envName
     workspaceId: shared.outputs.AZURE_LOG_ANALYTICS_WORKSPACE_ID
     storageAccountName: shared.outputs.STORAGE_ACCOUNT_NAME
     appInsightsName: shared.outputs.AZURE_APPLICATION_INSIGHTS_NAME
