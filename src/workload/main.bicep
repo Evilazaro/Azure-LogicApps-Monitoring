@@ -41,7 +41,7 @@ param storageAccountName string
 param appInsightsName string
 
 @description('Name of existing Service Bus namespace for messaging integration with workflows.')
-param serviceBusName string
+param workflowStorageAccountName string
 
 @description('Resource tags applied to Logic App, App Service Plan, and dashboard resources for cost tracking and governance.')
 param tags object
@@ -75,7 +75,7 @@ module workflows 'logic-app.bicep' = {
     storageAccountId: storageAccountId
     storageAccountName: storageAccountName
     appInsightsName: appInsightsName
-    serviceBusName: serviceBusName
+    workflowStorageAccountName: workflowStorageAccountName
     tags: tags
   }
   dependsOn: [

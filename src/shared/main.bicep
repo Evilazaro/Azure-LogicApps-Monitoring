@@ -85,6 +85,12 @@ output LOGS_STORAGE_ACCOUNT_ID string = data.outputs.LOGS_STORAGE_ACCOUNT_ID
 @description('Name of the deployed storage account for diagnostic logs and metrics')
 output LOGS_STORAGE_ACCOUNT_NAME string = data.outputs.LOGS_STORAGE_ACCOUNT_NAME
 
+@description('Name of the deployed storage account (generated with unique suffix for global uniqueness)')
+output WORKFLOW_STORAGE_ACCOUNT_NAME string = messaging.outputs.WORKFLOW_STORAGE_ACCOUNT_NAME
+
+@description('Resource ID of the deployed storage account for RBAC role assignments')
+output WORKFLOW_STORAGE_ACCOUNT_ID string = messaging.outputs.WORKFLOW_STORAGE_ACCOUNT_ID
+
 @description('Resource ID of the Log Analytics workspace for Logic Apps diagnostic logging configuration')
 output AZURE_LOG_ANALYTICS_WORKSPACE_ID string = monitoring.outputs.AZURE_LOG_ANALYTICS_WORKSPACE_ID
 

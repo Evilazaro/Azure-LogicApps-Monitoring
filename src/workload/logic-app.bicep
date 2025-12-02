@@ -86,7 +86,7 @@ param storageAccountName string
 param appInsightsName string
 
 @description('Name of existing Service Bus namespace for messaging integration with workflows.')
-param serviceBusName string
+param workflowStorageAccountName string
 
 @description('Resource tags applied to Logic App, App Service Plan, and dashboard resources for cost tracking and governance.')
 param tags object
@@ -712,7 +712,7 @@ var sbRBAC = [
 ]
 
 resource serviceBus 'Microsoft.ServiceBus/namespaces@2025-05-01-preview' existing = {
-  name: serviceBusName
+  name: workflowStorageAccountName
   scope: resourceGroup()
 }
 
