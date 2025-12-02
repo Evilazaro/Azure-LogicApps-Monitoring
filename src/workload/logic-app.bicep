@@ -749,10 +749,6 @@ resource logicApp 'Microsoft.Web/sites@2023-12-01' = {
           name: 'AzureWebJobsStorage__credential'
           value: 'managedidentity'
         }
-        {
-          name: 'AzureWebJobsStorage__clientId'
-          value: mi.properties.clientId
-        }
         // Application Insights telemetry and monitoring
         {
           name: 'APPINSIGHTS_INSTRUMENTATIONKEY'
