@@ -79,12 +79,6 @@ module messaging 'messaging/main.bicep' = {
 // OUTPUTS
 // ============================================================================
 
-@description('Name of the deployed storage account for Logic Apps Standard runtime requirements')
-output WORKFLOW_STORAGE_ACCOUNT_NAME string = data.outputs.WORKFLOW_STORAGE_ACCOUNT_NAME
-
-@description('Resource ID of the deployed storage account for RBAC role assignments')
-output WORKFLOW_STORAGE_ACCOUNT_ID string = data.outputs.WORKFLOW_STORAGE_ACCOUNT_ID
-
 @description('Resource ID of the storage account for diagnostic logs and metrics')
 output LOGS_STORAGE_ACCOUNT_ID string = data.outputs.LOGS_STORAGE_ACCOUNT_ID
 
@@ -108,15 +102,3 @@ output AZURE_APPLICATION_INSIGHTS_CONNECTION_STRING string = monitoring.outputs.
 
 @description('Instrumentation key for Application Insights telemetry')
 output AZURE_APPLICATION_INSIGHTS_INSTRUMENTATION_KEY string = monitoring.outputs.AZURE_APPLICATION_INSIGHTS_INSTRUMENTATION_KEY
-
-@description('Name of the deployed Service Bus namespace for Logic Apps messaging integration')
-output AZURE_SERVICEBUS_NAMESPACE_NAME string = messaging.outputs.AZURE_SERVICEBUS_NAMESPACE_NAME
-
-@description('Resource ID of the Service Bus namespace for RBAC role assignments to managed identity')
-output AZURE_SERVICEBUS_NAMESPACE_ID string = messaging.outputs.AZURE_SERVICEBUS_NAMESPACE_ID
-
-@description('Fully qualified endpoint of the Service Bus namespace for connection configuration')
-output AZURE_SERVICEBUS_ENDPOINT string = messaging.outputs.AZURE_SERVICEBUS_ENDPOINT
-
-@description('Name of the Service Bus queue for workflow message processing')
-output AZURE_SERVICEBUS_QUEUE_NAME string = messaging.outputs.AZURE_SERVICEBUS_QUEUE_NAME

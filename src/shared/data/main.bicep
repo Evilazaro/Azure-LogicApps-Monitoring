@@ -63,7 +63,6 @@ param tags object
 // - Must be globally unique across all Azure Storage accounts
 var cleanedName = toLower(replace(replace(replace(name, '-', ''), '_', ''), ' ', ''))
 var uniqueSuffix = uniqueString(resourceGroup().id, name, envName, location)
-var storageAccountName = take('${cleanedName}${uniqueSuffix}stg', 24)
 
 // Storage account configuration
 var storageConfig = {
@@ -77,29 +76,6 @@ var storageConfig = {
 // ============================================================================
 // RESOURCES
 // ============================================================================
-
-// Workflow storage account - stores Logic Apps runtime artifacts
-resource workflowSA 'Microsoft.Storage/storageAccounts@2023-05-01' = {
-  name: length(storageAccountName) >= 3 ? storageAccountName : '${storageAccountName}stg'
-  location: location
-  sku: {
-    name: storageConfig.sku
-  }
-  kind: storageConfig.kind
-  tags: tags
-  properties: {
-    accessTier: storageConfig.accessTier
-    supportsHttpsTrafficOnly: storageConfig.supportsHttpsTrafficOnly
-    minimumTlsVersion: storageConfig.minimumTlsVersion
-    allowBlobPublicAccess: true
-    publicNetworkAccess: 'Enabled'
-    allowSharedKeyAccess: true // REQUIRED for Logic Apps file share creation
-    networkAcls: {
-      bypass: 'AzureServices' // CRITICAL: Allow Azure services (Logic Apps) to bypass firewall
-      defaultAction: 'Allow' // Allow all traffic (change to 'Deny' for production with private endpoints)
-    }
-  }
-}
 
 // Logs storage account - stores diagnostic logs separately from workflow data
 var logsStorageAccountName = take('${cleanedName}logs${uniqueSuffix}stg', 24)
@@ -129,12 +105,6 @@ resource logsSA 'Microsoft.Storage/storageAccounts@2023-05-01' = {
 // ============================================================================
 // OUTPUTS
 // ============================================================================
-
-@description('Name of the deployed storage account (generated with unique suffix for global uniqueness)')
-output WORKFLOW_STORAGE_ACCOUNT_NAME string = workflowSA.name
-
-@description('Resource ID of the deployed storage account for RBAC role assignments')
-output WORKFLOW_STORAGE_ACCOUNT_ID string = workflowSA.id
 
 @description('Name of the deployed storage account for logs (generated with unique suffix for global uniqueness)')
 output LOGS_STORAGE_ACCOUNT_NAME string = logsSA.name

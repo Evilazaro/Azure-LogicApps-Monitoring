@@ -68,85 +68,47 @@ param tags object
 // VARIABLES
 // ============================================================================
 
-// Queue configuration for tax processing
-var queueConfig = {
-  name: 'tax-processing-queue'
-  maxSizeInMegabytes: 1024
-  defaultMessageTimeToLive: 'P14D' // 14 days
-  maxDeliveryCount: 10
+// Generate a storage account name that meets Azure naming requirements:
+// - Must be 3-24 characters long
+// - Can contain only lowercase letters and numbers
+// - Must be globally unique across all Azure Storage accounts
+var cleanedName = toLower(replace(replace(replace(name, '-', ''), '_', ''), ' ', ''))
+var uniqueSuffix = uniqueString(resourceGroup().id, name, envName, location)
+var storageAccountName = take('${cleanedName}${uniqueSuffix}stg', 24)
+
+// Storage account configuration
+var storageConfig = {
+  sku: 'Standard_LRS'
+  kind: 'StorageV2'
+  accessTier: 'Hot'
+  minimumTlsVersion: 'TLS1_2'
+  supportsHttpsTrafficOnly: true
 }
 
 // ============================================================================
 // RESOURCES
 // ============================================================================
 
-resource serviceBus 'Microsoft.ServiceBus/namespaces@2024-01-01' = {
-  name: '${name}-sb-${uniqueString(resourceGroup().id, name, envName, location)}'
+// Workflow storage account - stores Logic Apps runtime artifacts
+resource workflowSA 'Microsoft.Storage/storageAccounts@2023-05-01' = {
+  name: length(storageAccountName) >= 3 ? storageAccountName : '${storageAccountName}stg'
   location: location
-  tags: tags
-  identity: {
-    type: 'SystemAssigned'
-  }
   sku: {
-    name: 'Standard'
-    tier: 'Standard'
+    name: storageConfig.sku
   }
+  kind: storageConfig.kind
+  tags: tags
   properties: {
+    accessTier: storageConfig.accessTier
+    supportsHttpsTrafficOnly: storageConfig.supportsHttpsTrafficOnly
+    minimumTlsVersion: storageConfig.minimumTlsVersion
+    allowBlobPublicAccess: true
     publicNetworkAccess: 'Enabled'
-    disableLocalAuth: true // ENFORCES MANAGED IDENTITY - connection strings will NOT work
-    minimumTlsVersion: '1.2'
-    zoneRedundant: false
-  }
-}
-
-resource queue 'Microsoft.ServiceBus/namespaces/queues@2024-01-01' = {
-  name: queueConfig.name
-  parent: serviceBus
-  properties: {
-    maxSizeInMegabytes: queueConfig.maxSizeInMegabytes
-    requiresDuplicateDetection: false
-    requiresSession: false
-    defaultMessageTimeToLive: queueConfig.defaultMessageTimeToLive
-    deadLetteringOnMessageExpiration: true
-    enableBatchedOperations: true
-    maxDeliveryCount: queueConfig.maxDeliveryCount
-    duplicateDetectionHistoryTimeWindow: 'PT10M'
-  }
-}
-
-// UNCOMMENT BELOW to use connection string authentication (NOT RECOMMENDED)
-// Must also change disableLocalAuth to false above
-// resource serviceBusAuthRule 'Microsoft.ServiceBus/namespaces/authorizationRules@2022-10-01-preview' existing = {
-//   name: 'RootManageSharedAccessKey'
-//   parent: serviceBus
-// }
-
-resource diagnosticSettings 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
-  name: '${serviceBus.name}-diag'
-  scope: serviceBus
-  properties: {
-    workspaceId: workspaceId
-    storageAccountId: storageAccountId
-    logs: [
-      {
-        enabled: true
-        categoryGroup: 'allLogs'
-        retentionPolicy: {
-          enabled: false
-          days: 0
-        }
-      }
-    ]
-    metrics: [
-      {
-        enabled: true
-        category: 'AllMetrics'
-        retentionPolicy: {
-          enabled: false
-          days: 0
-        }
-      }
-    ]
+    allowSharedKeyAccess: true // REQUIRED for Logic Apps file share creation
+    networkAcls: {
+      bypass: 'AzureServices' // CRITICAL: Allow Azure services (Logic Apps) to bypass firewall
+      defaultAction: 'Allow' // Allow all traffic (change to 'Deny' for production with private endpoints)
+    }
   }
 }
 
@@ -154,14 +116,8 @@ resource diagnosticSettings 'Microsoft.Insights/diagnosticSettings@2021-05-01-pr
 // OUTPUTS
 // ============================================================================
 
-@description('Name of the deployed Service Bus namespace')
-output AZURE_SERVICEBUS_NAMESPACE_NAME string = serviceBus.name
+@description('Name of the deployed storage account (generated with unique suffix for global uniqueness)')
+output WORKFLOW_STORAGE_ACCOUNT_NAME string = workflowSA.name
 
-@description('Resource ID of the Service Bus namespace for RBAC role assignments')
-output AZURE_SERVICEBUS_NAMESPACE_ID string = serviceBus.id
-
-@description('Fully qualified domain name of the Service Bus namespace endpoint')
-output AZURE_SERVICEBUS_ENDPOINT string = serviceBus.properties.serviceBusEndpoint
-
-@description('Name of the deployed queue')
-output AZURE_SERVICEBUS_QUEUE_NAME string = queue.name
+@description('Resource ID of the deployed storage account for RBAC role assignments')
+output WORKFLOW_STORAGE_ACCOUNT_ID string = workflowSA.id
