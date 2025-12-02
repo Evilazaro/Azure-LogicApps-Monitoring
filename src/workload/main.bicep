@@ -61,7 +61,7 @@ module apis 'azure-function.bicep' = {
 }
 
 module workflows 'logic-app.bicep' = {
-  name: 'WorkloadDeployment'
+  name: 'LogicAppWorkflowsDeployment'
   scope: resourceGroup()
   params: {
     name: name
