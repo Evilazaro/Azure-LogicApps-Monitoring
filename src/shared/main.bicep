@@ -120,6 +120,15 @@ output AZURE_LOG_ANALYTICS_WORKSPACE_NAME string = monitoring.outputs.AZURE_LOG_
 @description('Name of the deployed Application Insights instance for Logic Apps app settings and telemetry')
 output AZURE_APPLICATION_INSIGHTS_NAME string = monitoring.outputs.AZURE_APPLICATION_INSIGHTS_NAME
 
+@description('Resource ID of the deployed Application Insights instance for RBAC assignments')
+output AZURE_APPLICATION_INSIGHTS_ID string = monitoring.outputs.AZURE_APPLICATION_INSIGHTS_ID
+
+@description('Connection string for Application Insights telemetry')
+output AZURE_APPLICATION_INSIGHTS_CONNECTION_STRING string = monitoring.outputs.AZURE_APPLICATION_INSIGHTS_CONNECTION_STRING
+
+@description('Instrumentation key for Application Insights telemetry')
+output AZURE_APPLICATION_INSIGHTS_INSTRUMENTATION_KEY string = monitoring.outputs.AZURE_APPLICATION_INSIGHTS_INSTRUMENTATION_KEY
+
 @description('Name of the deployed Service Bus namespace for Logic Apps messaging integration')
 output AZURE_SERVICEBUS_NAMESPACE_NAME string = messaging.outputs.AZURE_SERVICEBUS_NAMESPACE_NAME
 
