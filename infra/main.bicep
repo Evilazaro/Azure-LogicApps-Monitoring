@@ -14,6 +14,10 @@
 
 targetScope = 'subscription'
 
+metadata name = 'Azure Logic Apps Monitoring Solution'
+metadata description = 'Complete monitoring infrastructure for Logic Apps Standard with Application Insights, Log Analytics, and Service Bus'
+metadata version = '1.0.0'
+
 // ============================================================================
 // PARAMETERS
 // ============================================================================

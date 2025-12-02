@@ -65,6 +65,18 @@ param storageAccountId string
 param tags object
 
 // ============================================================================
+// VARIABLES
+// ============================================================================
+
+// Queue configuration for tax processing
+var queueConfig = {
+  name: 'tax-processing-queue'
+  maxSizeInMegabytes: 1024
+  defaultMessageTimeToLive: 'P14D' // 14 days
+  maxDeliveryCount: 10
+}
+
+// ============================================================================
 // RESOURCES
 // ============================================================================
 
@@ -88,16 +100,17 @@ resource serviceBus 'Microsoft.ServiceBus/namespaces@2024-01-01' = {
 }
 
 resource queue 'Microsoft.ServiceBus/namespaces/queues@2024-01-01' = {
-  name: 'tax-processing-queue'
+  name: queueConfig.name
   parent: serviceBus
   properties: {
-    maxSizeInMegabytes: 1024
+    maxSizeInMegabytes: queueConfig.maxSizeInMegabytes
     requiresDuplicateDetection: false
     requiresSession: false
-    defaultMessageTimeToLive: 'P14D' // 14 days
+    defaultMessageTimeToLive: queueConfig.defaultMessageTimeToLive
     deadLetteringOnMessageExpiration: true
     enableBatchedOperations: true
-    maxDeliveryCount: 10
+    maxDeliveryCount: queueConfig.maxDeliveryCount
+    duplicateDetectionHistoryTimeWindow: 'PT10M'
   }
 }
 

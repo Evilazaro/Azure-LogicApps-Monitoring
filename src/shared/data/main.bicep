@@ -65,22 +65,32 @@ var cleanedName = toLower(replace(replace(replace(name, '-', ''), '_', ''), ' ',
 var uniqueSuffix = uniqueString(resourceGroup().id, name, envName, location)
 var storageAccountName = take('${cleanedName}${uniqueSuffix}stg', 24)
 
+// Storage account configuration
+var storageConfig = {
+  sku: 'Standard_LRS'
+  kind: 'StorageV2'
+  accessTier: 'Hot'
+  minimumTlsVersion: 'TLS1_2'
+  supportsHttpsTrafficOnly: true
+}
+
 // ============================================================================
 // RESOURCES
 // ============================================================================
 
+// Workflow storage account - stores Logic Apps runtime artifacts
 resource workflowSA 'Microsoft.Storage/storageAccounts@2023-05-01' = {
   name: length(storageAccountName) >= 3 ? storageAccountName : '${storageAccountName}stg'
   location: location
   sku: {
-    name: 'Standard_LRS'
+    name: storageConfig.sku
   }
-  kind: 'StorageV2'
+  kind: storageConfig.kind
   tags: tags
   properties: {
-    accessTier: 'Hot'
-    supportsHttpsTrafficOnly: true
-    minimumTlsVersion: 'TLS1_2'
+    accessTier: storageConfig.accessTier
+    supportsHttpsTrafficOnly: storageConfig.supportsHttpsTrafficOnly
+    minimumTlsVersion: storageConfig.minimumTlsVersion
     allowBlobPublicAccess: true
     publicNetworkAccess: 'Enabled'
     allowSharedKeyAccess: true // REQUIRED for Logic Apps file share creation
@@ -91,24 +101,27 @@ resource workflowSA 'Microsoft.Storage/storageAccounts@2023-05-01' = {
   }
 }
 
+// Logs storage account - stores diagnostic logs separately from workflow data
+var logsStorageAccountName = take('${cleanedName}logs${uniqueSuffix}stg', 24)
+
 resource logsSA 'Microsoft.Storage/storageAccounts@2023-05-01' = {
-  name: length(storageAccountName) >= 3 ? storageAccountName : '${storageAccountName}stg'
+  name: length(logsStorageAccountName) >= 3 ? logsStorageAccountName : '${logsStorageAccountName}stg'
   location: location
   sku: {
-    name: 'Standard_LRS'
+    name: storageConfig.sku
   }
-  kind: 'StorageV2'
+  kind: storageConfig.kind
   tags: tags
   properties: {
-    accessTier: 'Hot'
-    supportsHttpsTrafficOnly: true
-    minimumTlsVersion: 'TLS1_2'
-    allowBlobPublicAccess: true
+    accessTier: storageConfig.accessTier
+    supportsHttpsTrafficOnly: storageConfig.supportsHttpsTrafficOnly
+    minimumTlsVersion: storageConfig.minimumTlsVersion
+    allowBlobPublicAccess: false // Logs don't need public access
     publicNetworkAccess: 'Enabled'
-    allowSharedKeyAccess: true // REQUIRED for Logic Apps file share creation
+    allowSharedKeyAccess: true
     networkAcls: {
-      bypass: 'AzureServices' // CRITICAL: Allow Azure services (Logic Apps) to bypass firewall
-      defaultAction: 'Allow' // Allow all traffic (change to 'Deny' for production with private endpoints)
+      bypass: 'AzureServices'
+      defaultAction: 'Allow'
     }
   }
 }

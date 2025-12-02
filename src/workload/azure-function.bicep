@@ -1,3 +1,32 @@
+// ============================================================================
+// AZURE FUNCTION APP MODULE (API LAYER)
+// ============================================================================
+// Deploys Azure Function App with App Service Plan for API layer:
+// - App Service Plan (Premium v3 - P0v3 SKU)
+// - Linux-based Function App (.NET Core 9.0)
+// - Application Insights integration for telemetry
+// - Diagnostic settings for logs and metrics
+// - Azure Portal dashboard for App Service Plan monitoring
+//
+// Configuration:
+// - SKU: P0v3 (Premium v3 tier - cost-effective for production)
+// - Platform: Linux with reserved compute
+// - Runtime: .NET Core 9.0
+// - Always On: Enabled for consistent availability
+// - TLS: 1.2 minimum, HTTPS only enforced
+//
+// Monitoring:
+// - Application Insights connection string for telemetry
+// - Diagnostic settings route logs to Log Analytics workspace
+// - Dashboard displays CPU, Memory, Data I/O, HTTP Queue metrics
+//
+// Reference: https://learn.microsoft.com/azure/azure-functions/functions-overview
+// ============================================================================
+
+// ============================================================================
+// PARAMETERS
+// ============================================================================
+
 @description('Base name for Logic App and App Service Plan resources. Will be suffixed with unique string for global uniqueness.')
 @minLength(3)
 @maxLength(20)
@@ -21,24 +50,56 @@ param appInsightsName string
 @description('Resource tags applied to Logic App, App Service Plan, and dashboard resources for cost tracking and governance.')
 param tags object
 
-resource appServicePlan 'Microsoft.Web/serverfarms@2024-11-01' = {
-  name: '${name}-${uniqueString(resourceGroup().id, name, envName, location)}-apis-asp'
-  location: location
+// ============================================================================
+// VARIABLES
+// ============================================================================
+
+// App Service Plan configuration for API Function App
+var appServicePlanConfig = {
   sku: {
     name: 'P0v3'
     tier: 'Premium0V3'
     size: 'P0v3'
     family: 'Pv3'
-    capacity: 1
   }
   kind: 'linux'
+  reserved: true // Required for Linux plans
+}
+
+// Function App configuration
+var functionAppConfig = {
+  runtime: 'DOTNETCORE'
+  version: '9.0'
+  kind: 'app,linux'
+}
+
+// Resource naming
+var resourceSuffix = uniqueString(resourceGroup().id, name, envName, location)
+var appServicePlanName = '${name}-${resourceSuffix}-apis-asp'
+var functionAppName = '${name}-${resourceSuffix}-api'
+
+// ============================================================================
+// RESOURCES
+// ============================================================================
+
+resource appServicePlan 'Microsoft.Web/serverfarms@2024-11-01' = {
+  name: appServicePlanName
+  location: location
+  sku: {
+    name: appServicePlanConfig.sku.name
+    tier: appServicePlanConfig.sku.tier
+    size: appServicePlanConfig.sku.size
+    family: appServicePlanConfig.sku.family
+    capacity: 1
+  }
+  kind: appServicePlanConfig.kind
   tags: tags
   properties: {
     perSiteScaling: false
     elasticScaleEnabled: false
     maximumElasticWorkerCount: 1
     isSpot: false
-    reserved: true
+    reserved: appServicePlanConfig.reserved
     isXenon: false
     hyperV: false
     targetWorkerCount: 0
@@ -53,18 +114,18 @@ resource appInsights 'Microsoft.Insights/components@2020-02-02' existing = {
 }
 
 resource webApi 'Microsoft.Web/sites@2025-03-01' = {
-  name: '${name}-${uniqueString(resourceGroup().id, name, envName, location)}-api'
+  name: functionAppName
   location: location
-  kind: 'app,linux'
+  kind: functionAppConfig.kind
   identity: {
     type: 'SystemAssigned'
   }
   tags: tags
   properties: {
     serverFarmId: appServicePlan.id
-    reserved: true
+    reserved: appServicePlanConfig.reserved
     siteConfig: {
-      linuxFxVersion: 'DOTNETCORE|9.0'
+      linuxFxVersion: '${functionAppConfig.runtime}|${functionAppConfig.version}'
       alwaysOn: true
       ftpsState: 'Disabled'
       minTlsVersion: '1.2'

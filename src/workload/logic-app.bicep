@@ -614,12 +614,26 @@ resource storageAccount 'Microsoft.Storage/storageAccounts@2023-05-01' existing 
   scope: resourceGroup()
 }
 
+// ============================================================================
+// VARIABLES - RBAC ROLE DEFINITIONS
+// ============================================================================
+
+// Storage Account RBAC roles for Logic Apps managed identity
+// These roles enable the Logic App to access storage account resources using managed identity
+var storageRoles = {
+  contributor: '17d1049b-9a84-46fb-8f53-869881c3d3ab' // Storage Account Contributor - Manage storage account
+  blobDataOwner: 'b7e6dc6d-f1e8-4753-8033-0f276bb0955b' // Storage Blob Data Owner - Full control over blobs
+  queueDataContributor: '974c5e8b-45b9-4653-ba55-5f855dd0fb88' // Storage Queue Data Contributor - Read/write queues
+  tableDataContributor: '0a9a7e1f-b9d0-4cc4-a60d-0319b160aaa3' // Storage Table Data Contributor - Read/write tables
+  fileDataContributor: '69566ab7-960f-475b-8e7c-b3118f30c6bd' // Storage File Data Privileged Contributor - Read/write files
+}
+
 var storageRBAC = [
-  '17d1049b-9a84-46fb-8f53-869881c3d3ab' // Storage Account Contributor - Manage storage account, but not access to data
-  'b7e6dc6d-f1e8-4753-8033-0f276bb0955b' // Storage Blob Data Owner - Full control over blob containers and data
-  '974c5e8b-45b9-4653-ba55-5f855dd0fb88' // Storage Queue Data Contributor - Read, write, and delete queue messages
-  '0a9a7e1f-b9d0-4cc4-a60d-0319b160aaa3' // Storage Table Data Contributor - Read, write, and delete table data
-  '69566ab7-960f-475b-8e7c-b3118f30c6bd' // Storage File Data Privileged Contributor - Read, write, and modify files/directories
+  storageRoles.contributor
+  storageRoles.blobDataOwner
+  storageRoles.queueDataContributor
+  storageRoles.tableDataContributor
+  storageRoles.fileDataContributor
 ]
 
 resource storageRoleAssignments 'Microsoft.Authorization/roleAssignments@2022-04-01' = [
@@ -651,8 +665,13 @@ resource appInsights 'Microsoft.Insights/components@2020-02-02' existing = {
   scope: resourceGroup()
 }
 
+// Application Insights RBAC role for Logic Apps managed identity
+var appInsightsRoles = {
+  metricsPublisher: '3913510d-42f4-4e42-8a64-420c390055eb' // Monitoring Metrics Publisher - Publish metrics to Azure Monitor
+}
+
 var appInsightsRBAC = [
-  '3913510d-42f4-4e42-8a64-420c390055eb'
+  appInsightsRoles.metricsPublisher
 ]
 
 resource appInsightsRoleAssignments 'Microsoft.Authorization/roleAssignments@2022-04-01' = [
@@ -679,10 +698,17 @@ resource appInsightsRoleAssignmentsUser 'Microsoft.Authorization/roleAssignments
   }
 ]
 
+// Service Bus RBAC roles for Logic Apps managed identity
+var serviceBusRoles = {
+  dataOwner: '090c5cfd-751d-490a-894a-3ce6f1109419' // Azure Service Bus Data Owner - Full control over Service Bus
+  dataReceiver: '4f6d3b9b-027b-4f4c-9142-0e5a2a2247e0' // Azure Service Bus Data Receiver - Receive messages
+  dataSender: '69a216fc-b8fb-44d8-bc22-1f3c2cd27a39' // Azure Service Bus Data Sender - Send messages
+}
+
 var sbRBAC = [
-  '090c5cfd-751d-490a-894a-3ce6f1109419' // Azure Service Bus Data Owner - Full control over Service Bus resources
-  '4f6d3b9b-027b-4f4c-9142-0e5a2a2247e0'
-  '69a216fc-b8fb-44d8-bc22-1f3c2cd27a39'
+  serviceBusRoles.dataOwner
+  serviceBusRoles.dataReceiver
+  serviceBusRoles.dataSender
 ]
 
 resource serviceBus 'Microsoft.ServiceBus/namespaces@2025-05-01-preview' existing = {
@@ -717,6 +743,9 @@ resource sbRoleAssignmentsUser 'Microsoft.Authorization/roleAssignments@2022-04-
 // ============================================================================
 // VARIABLES - APP SETTINGS
 // ============================================================================
+
+// Service Bus connection configuration
+var serviceBusConnectionName = 'serviceBus'
 
 // Core runtime settings
 var functionsExtensionVersion = '~4'
@@ -840,15 +869,13 @@ resource logicApp 'Microsoft.Web/sites@2023-12-01' = {
   }
 }
 
-param sbConnectionName string = 'serviceBus'
-
 resource serviceBusConnection 'Microsoft.Web/connections@2016-06-01' = {
-  name: sbConnectionName
+  name: serviceBusConnectionName
   location: location
   tags: tags
   kind: 'V2'
   properties: {
-    displayName: sbConnectionName
+    displayName: serviceBusConnectionName
     parameterValues: {}
     api: {
       id: subscriptionResourceId('Microsoft.Web/locations/managedApis', location, 'servicebus')
