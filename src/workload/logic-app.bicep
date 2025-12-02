@@ -67,6 +67,9 @@
 @maxLength(20)
 param name string
 
+@description('Environment name suffix to ensure uniqueness across environments (e.g., dev, test, prod).')
+param envName string
+
 @description('Azure region for Logic App deployment. Must support Workflow Standard SKU and Application Insights.')
 param location string = resourceGroup().location
 
@@ -82,11 +85,14 @@ param appInsightsName string
 @description('Name of existing Service Bus namespace for messaging integration with workflows.')
 param serviceBusName string
 
+@description('Managed Identity Name for Logic App to access resources securely without credentials.')
+param managedIdentityName string
+
 @description('Resource tags applied to Logic App, App Service Plan, and dashboard resources for cost tracking and governance.')
 param tags object
 
 resource appServicePlan 'Microsoft.Web/serverfarms@2024-11-01' = {
-  name: '${name}-${uniqueString(resourceGroup().id, name)}-asp'
+  name: '${name}-${uniqueString(resourceGroup().id, name, envName, location)}-asp'
   location: location
   sku: {
     name: 'WS1'
@@ -128,7 +134,7 @@ resource DiagnosticSettingsAsp 'Microsoft.Insights/diagnosticSettings@2021-05-01
 
 resource dashboardASP 'Microsoft.Portal/dashboards@2020-09-01-preview' = {
   name: '${appServicePlan.name}-dashboard'
-  location: 'eastus2'
+  location: location
   tags: {
     'hidden-title': 'Service Plan Metrics'
   }
@@ -597,7 +603,7 @@ resource dashboardASP 'Microsoft.Portal/dashboards@2020-09-01-preview' = {
 }
 
 resource mi 'Microsoft.ManagedIdentity/userAssignedIdentities@2025-01-31-preview' existing = {
-  name: '${name}-mi'
+  name: managedIdentityName
   scope: resourceGroup()
 }
 
@@ -696,7 +702,7 @@ var workflowsTenantId = subscription().tenantId
 // ============================================================================
 
 resource logicApp 'Microsoft.Web/sites@2023-12-01' = {
-  name: '${name}-${uniqueString(resourceGroup().id, name)}-logicapp'
+  name: '${name}-${uniqueString(resourceGroup().id, name, envName, location)}-logicapp'
   location: location
   kind: 'functionapp,workflowapp'
   identity: {
@@ -786,15 +792,6 @@ resource logicApp 'Microsoft.Web/sites@2023-12-01' = {
           name: 'WORKFLOWS_MANAGEMENT_BASE_URI'
           value: environment().resourceManager
         }
-        // Performance and runtime settings
-        {
-          name: 'WEBSITE_NODE_DEFAULT_VERSION'
-          value: '~18'
-        }
-        {
-          name: 'WEBSITE_LOAD_USER_PROFILE'
-          value: '1'
-        }
       ]
       use32BitWorkerProcess: false
       ftpsState: 'Disabled'
@@ -828,7 +825,6 @@ resource serviceBusConnectionAccessPolicy 'Microsoft.Web/connections/accessPolic
   name: logicApp.name
   parent: serviceBusConnection
   location: location
-  kind: 'V2'
   properties: {
     principal: {
       type: 'ActiveDirectory'
@@ -1541,4 +1537,20 @@ resource workflowsDashboard 'Microsoft.Portal/dashboards@2020-09-01-preview' = {
     }
   }
 }
+
+// ============================================================================
+// OUTPUTS
+// ============================================================================
+
+@description('Resource ID of the deployed Logic App for RBAC assignments and integration')
+output LOGIC_APP_ID string = logicApp.id
+
+@description('Name of the deployed Logic App')
+output LOGIC_APP_NAME string = logicApp.name
+
+@description('Resource ID of the App Service Plan hosting the Logic App')
+output APP_SERVICE_PLAN_ID string = appServicePlan.id
+
+@description('Name of the App Service Plan')
+output APP_SERVICE_PLAN_NAME string = appServicePlan.name
 

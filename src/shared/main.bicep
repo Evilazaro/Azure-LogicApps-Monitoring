@@ -24,6 +24,9 @@
 @maxLength(20)
 param name string
 
+@description('Environment name suffix to ensure uniqueness across environments (e.g., dev, test, prod).')
+param envName string
+
 @description('Azure region for shared resources deployment. Should match Logic App deployment region.')
 param location string = resourceGroup().location
 
@@ -34,12 +37,25 @@ param tags object
 // MODULE DEPLOYMENTS
 // ============================================================================
 
+// Deploy user-assigned managed identity for Logic Apps authentication
+module identity 'identity/main.bicep' = {
+  name: 'IdentityDeployment'
+  scope: resourceGroup()
+  params: {
+    name: name
+    envName: envName
+    location: location
+    tags: tags
+  }
+}
+
 // Deploy storage account for Logic Apps Standard runtime
 module data 'data/main.bicep' = {
   name: 'DataDeployment'
   scope: resourceGroup()
   params: {
     name: name
+    envName: envName
     location: location
     tags: tags
   }
@@ -51,6 +67,7 @@ module monitoring '../monitoring/main.bicep' = {
   scope: resourceGroup()
   params: {
     name: name
+    envName: envName
     location: location
     tags: tags
   }
@@ -65,6 +82,7 @@ module messaging 'messaging/main.bicep' = {
   scope: resourceGroup()
   params: {
     name: name
+    envName: envName
     location: location
     workspaceId: monitoring.outputs.AZURE_LOG_ANALYTICS_WORKSPACE_ID
     tags: tags
@@ -74,6 +92,18 @@ module messaging 'messaging/main.bicep' = {
 // ============================================================================
 // OUTPUTS
 // ============================================================================
+
+@description('Resource ID of the user-assigned managed identity for Logic Apps authentication')
+output MANAGED_IDENTITY_ID string = identity.outputs.MANAGED_IDENTITY_ID
+
+@description('Name of the user-assigned managed identity')
+output MANAGED_IDENTITY_NAME string = identity.outputs.MANAGED_IDENTITY_NAME
+
+@description('Principal ID of the managed identity for RBAC role assignments')
+output MANAGED_IDENTITY_PRINCIPAL_ID string = identity.outputs.MANAGED_IDENTITY_PRINCIPAL_ID
+
+@description('Client ID of the managed identity for app settings configuration')
+output MANAGED_IDENTITY_CLIENT_ID string = identity.outputs.MANAGED_IDENTITY_CLIENT_ID
 
 @description('Name of the deployed storage account for Logic Apps Standard runtime requirements')
 output STORAGE_ACCOUNT_NAME string = data.outputs.STORAGE_ACCOUNT_NAME
@@ -90,6 +120,15 @@ output AZURE_LOG_ANALYTICS_WORKSPACE_NAME string = monitoring.outputs.AZURE_LOG_
 @description('Name of the deployed Application Insights instance for Logic Apps app settings and telemetry')
 output AZURE_APPLICATION_INSIGHTS_NAME string = monitoring.outputs.AZURE_APPLICATION_INSIGHTS_NAME
 
+@description('Resource ID of the deployed Application Insights instance for RBAC assignments')
+output AZURE_APPLICATION_INSIGHTS_ID string = monitoring.outputs.AZURE_APPLICATION_INSIGHTS_ID
+
+@description('Connection string for Application Insights telemetry')
+output AZURE_APPLICATION_INSIGHTS_CONNECTION_STRING string = monitoring.outputs.AZURE_APPLICATION_INSIGHTS_CONNECTION_STRING
+
+@description('Instrumentation key for Application Insights telemetry')
+output AZURE_APPLICATION_INSIGHTS_INSTRUMENTATION_KEY string = monitoring.outputs.AZURE_APPLICATION_INSIGHTS_INSTRUMENTATION_KEY
+
 @description('Name of the deployed Service Bus namespace for Logic Apps messaging integration')
 output AZURE_SERVICEBUS_NAMESPACE_NAME string = messaging.outputs.AZURE_SERVICEBUS_NAMESPACE_NAME
 
@@ -101,4 +140,3 @@ output AZURE_SERVICEBUS_ENDPOINT string = messaging.outputs.AZURE_SERVICEBUS_END
 
 @description('Name of the Service Bus queue for workflow message processing')
 output AZURE_SERVICEBUS_QUEUE_NAME string = messaging.outputs.AZURE_SERVICEBUS_QUEUE_NAME
-

@@ -81,6 +81,7 @@ module shared '../src/shared/main.bicep' = {
   scope: rg
   params: {
     name: solutionName
+    envName: envName
     location: location
     tags: tags
   }
@@ -94,17 +95,96 @@ module shared '../src/shared/main.bicep' = {
 // and workflow execution metrics
 // ============================================================================
 
-module workload '../src/logic-app.bicep' = {
+module workload '../src/workload/main.bicep' = {
   name: 'WorkloadDeployment'
   scope: resourceGroup(rgName)
   params: {
     name: solutionName
+    location: location
+    envName: envName
     workspaceId: shared.outputs.AZURE_LOG_ANALYTICS_WORKSPACE_ID
     storageAccountName: shared.outputs.STORAGE_ACCOUNT_NAME
     appInsightsName: shared.outputs.AZURE_APPLICATION_INSIGHTS_NAME
     serviceBusName: shared.outputs.AZURE_SERVICEBUS_NAMESPACE_NAME
+    managedIdentityName: shared.outputs.MANAGED_IDENTITY_NAME
     tags: tags
   }
 }
 
+// ============================================================================
+// OUTPUTS
+// ============================================================================
+
+// Resource Group
+@description('Name of the deployed resource group')
+output RESOURCE_GROUP_NAME string = rgName
+
+@description('Resource ID of the deployed resource group')
+output RESOURCE_GROUP_ID string = rg.id
+
+// Managed Identity
+@description('Resource ID of the user-assigned managed identity')
+output MANAGED_IDENTITY_ID string = shared.outputs.MANAGED_IDENTITY_ID
+
+@description('Principal ID of the managed identity for RBAC assignments')
+output MANAGED_IDENTITY_PRINCIPAL_ID string = shared.outputs.MANAGED_IDENTITY_PRINCIPAL_ID
+
+@description('Client ID of the managed identity')
+output MANAGED_IDENTITY_CLIENT_ID string = shared.outputs.MANAGED_IDENTITY_CLIENT_ID
+
+// Storage
+@description('Name of the deployed storage account')
+output STORAGE_ACCOUNT_NAME string = shared.outputs.STORAGE_ACCOUNT_NAME
+
+@description('Resource ID of the deployed storage account')
+output STORAGE_ACCOUNT_ID string = shared.outputs.STORAGE_ACCOUNT_ID
+
+// Monitoring
+@description('Resource ID of the Log Analytics workspace')
+output AZURE_LOG_ANALYTICS_WORKSPACE_ID string = shared.outputs.AZURE_LOG_ANALYTICS_WORKSPACE_ID
+
+@description('Name of the Log Analytics workspace')
+output AZURE_LOG_ANALYTICS_WORKSPACE_NAME string = shared.outputs.AZURE_LOG_ANALYTICS_WORKSPACE_NAME
+
+@description('Name of the Application Insights instance')
+output AZURE_APPLICATION_INSIGHTS_NAME string = shared.outputs.AZURE_APPLICATION_INSIGHTS_NAME
+
+@description('Resource ID of the Application Insights instance')
+output AZURE_APPLICATION_INSIGHTS_ID string = shared.outputs.AZURE_APPLICATION_INSIGHTS_ID
+
+@description('Connection string for Application Insights')
+output AZURE_APPLICATION_INSIGHTS_CONNECTION_STRING string = shared.outputs.AZURE_APPLICATION_INSIGHTS_CONNECTION_STRING
+
+@description('Instrumentation key for Application Insights')
+output AZURE_APPLICATION_INSIGHTS_INSTRUMENTATION_KEY string = shared.outputs.AZURE_APPLICATION_INSIGHTS_INSTRUMENTATION_KEY
+
+// Service Bus
+@description('Name of the Service Bus namespace')
+output AZURE_SERVICEBUS_NAMESPACE_NAME string = shared.outputs.AZURE_SERVICEBUS_NAMESPACE_NAME
+
+@description('Resource ID of the Service Bus namespace')
+output AZURE_SERVICEBUS_NAMESPACE_ID string = shared.outputs.AZURE_SERVICEBUS_NAMESPACE_ID
+
+@description('Service Bus namespace endpoint')
+output AZURE_SERVICEBUS_ENDPOINT string = shared.outputs.AZURE_SERVICEBUS_ENDPOINT
+
+@description('Name of the Service Bus queue')
+output AZURE_SERVICEBUS_QUEUE_NAME string = shared.outputs.AZURE_SERVICEBUS_QUEUE_NAME
+
+// Logic App Workload
+@description('Resource ID of the deployed Logic App')
+output LOGIC_APP_ID string = workload.outputs.LOGIC_APP_ID
+
+@description('Name of the deployed Logic App')
+output LOGIC_APP_NAME string = workload.outputs.LOGIC_APP_NAME
+
+@description('Resource ID of the Logic App Service Plan')
+output LOGIC_APP_SERVICE_PLAN_ID string = workload.outputs.LOGIC_APP_SERVICE_PLAN_ID
+
+// API Function App
+@description('Resource ID of the API Function App')
+output API_FUNCTION_APP_ID string = workload.outputs.API_FUNCTION_APP_ID
+
+@description('Name of the API Function App')
+output API_FUNCTION_APP_NAME string = workload.outputs.API_FUNCTION_APP_NAME
 

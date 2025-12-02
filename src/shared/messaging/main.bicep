@@ -49,6 +49,9 @@
 @maxLength(20)
 param name string
 
+@description('Environment name suffix to ensure uniqueness across environments (e.g., dev, test, prod).')
+param envName string
+
 @description('Azure region for Service Bus deployment. Should match Logic App region for optimal latency.')
 param location string = resourceGroup().location
 
@@ -62,8 +65,8 @@ param tags object
 // RESOURCES
 // ============================================================================
 
-resource serviceBus 'Microsoft.ServiceBus/namespaces@2022-10-01-preview' = {
-  name: '${name}-sb-${uniqueString(resourceGroup().id, name)}'
+resource serviceBus 'Microsoft.ServiceBus/namespaces@2024-01-01' = {
+  name: '${name}-sb-${uniqueString(resourceGroup().id, name, envName, location)}'
   location: location
   tags: tags
   identity: {
@@ -72,7 +75,6 @@ resource serviceBus 'Microsoft.ServiceBus/namespaces@2022-10-01-preview' = {
   sku: {
     name: 'Standard'
     tier: 'Standard'
-    capacity: 1
   }
   properties: {
     publicNetworkAccess: 'Enabled'
@@ -82,8 +84,8 @@ resource serviceBus 'Microsoft.ServiceBus/namespaces@2022-10-01-preview' = {
   }
 }
 
-resource queue 'Microsoft.ServiceBus/namespaces/queues@2022-10-01-preview' = {
-  name: 'tax-approval'
+resource queue 'Microsoft.ServiceBus/namespaces/queues@2024-01-01' = {
+  name: 'tax-processing-queue'
   parent: serviceBus
   properties: {
     maxSizeInMegabytes: 1024
