@@ -94,7 +94,7 @@ module shared '../src/shared/main.bicep' = {
 // and workflow execution metrics
 // ============================================================================
 
-module workload '../src/logic-app.bicep' = {
+module workload '../src/workload/main.bicep' = {
   name: 'WorkloadDeployment'
   scope: resourceGroup(rgName)
   params: {
