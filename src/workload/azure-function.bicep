@@ -12,6 +12,9 @@ param location string = resourceGroup().location
 @description('Resource ID of the Log Analytics workspace for diagnostic logs and metrics.')
 param workspaceId string
 
+@description('Storage Account ID for diagnostic logs and metrics.')
+param storageAccountId string
+
 @description('Name of the Application Insights instance for telemetry collection and performance monitoring.')
 param appInsightsName string
 
@@ -86,6 +89,7 @@ resource webApiDiagnostics 'Microsoft.Insights/diagnosticSettings@2021-05-01-pre
   scope: webApi
   properties: {
     workspaceId: workspaceId
+    storageAccountId: storageAccountId
     logs: [
       {
         category: 'AppServiceHTTPLogs'
@@ -114,6 +118,7 @@ resource DiagnosticSettingsAsp 'Microsoft.Insights/diagnosticSettings@2021-05-01
   scope: appServicePlan
   properties: {
     workspaceId: workspaceId
+    storageAccountId: storageAccountId
     metrics: [
       {
         enabled: true

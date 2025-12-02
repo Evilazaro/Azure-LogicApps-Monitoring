@@ -73,6 +73,7 @@ module messaging 'messaging/main.bicep' = {
     envName: envName
     location: location
     workspaceId: monitoring.outputs.AZURE_LOG_ANALYTICS_WORKSPACE_ID
+    storageAccountId: data.outputs.LOGS_STORAGE_ACCOUNT_ID
     tags: tags
   }
 }

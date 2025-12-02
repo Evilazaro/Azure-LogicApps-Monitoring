@@ -58,6 +58,9 @@ param location string = resourceGroup().location
 @description('Resource ID of the Log Analytics workspace for diagnostic logs and metrics.')
 param workspaceId string
 
+@description('Storage Account ID for diagnostic logs and metrics.')
+param storageAccountId string
+
 @description('Resource tags applied to Service Bus resources for cost tracking and compliance.')
 param tags object
 
@@ -110,6 +113,7 @@ resource diagnosticSettings 'Microsoft.Insights/diagnosticSettings@2021-05-01-pr
   scope: serviceBus
   properties: {
     workspaceId: workspaceId
+    storageAccountId: storageAccountId
     logs: [
       {
         enabled: true
@@ -148,4 +152,3 @@ output AZURE_SERVICEBUS_ENDPOINT string = serviceBus.properties.serviceBusEndpoi
 
 @description('Name of the deployed queue')
 output AZURE_SERVICEBUS_QUEUE_NAME string = queue.name
-

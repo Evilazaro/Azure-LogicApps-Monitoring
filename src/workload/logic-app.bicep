@@ -76,6 +76,9 @@ param location string = resourceGroup().location
 @description('Resource ID of the Log Analytics workspace for diagnostic logs and metrics.')
 param workspaceId string
 
+@description('Storage Account ID for diagnostic logs and metrics.')
+param storageAccountId string
+
 @description('Name of the existing storage account required by Logic Apps Standard for workflow state and artifacts.')
 param storageAccountName string
 
@@ -120,6 +123,7 @@ resource DiagnosticSettingsAsp 'Microsoft.Insights/diagnosticSettings@2021-05-01
   scope: appServicePlan
   properties: {
     workspaceId: workspaceId
+    storageAccountId: storageAccountId
     metrics: [
       {
         enabled: true
@@ -876,6 +880,7 @@ resource DiagnosticSettingsLogicApp 'Microsoft.Insights/diagnosticSettings@2021-
   scope: logicApp
   properties: {
     workspaceId: workspaceId
+    storageAccountId: storageAccountId
     logs: [
       {
         category: 'WorkflowRuntime'

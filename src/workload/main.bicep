@@ -31,6 +31,9 @@ param location string = resourceGroup().location
 @description('Resource ID of the Log Analytics workspace for diagnostic logs and metrics.')
 param workspaceId string
 
+@description('Storage Account ID for diagnostic logs and metrics.')
+param storageAccountId string
+
 @description('Name of the existing storage account required by Logic Apps Standard for workflow state and artifacts.')
 param storageAccountName string
 
@@ -56,6 +59,7 @@ module apis 'azure-function.bicep' = {
     location: location
     appInsightsName: appInsightsName
     workspaceId: workspaceId
+    storageAccountId: storageAccountId
     tags: tags
   }
 }
@@ -68,6 +72,7 @@ module workflows 'logic-app.bicep' = {
     location: location
     envName: envName
     workspaceId: workspaceId
+    storageAccountId: storageAccountId
     storageAccountName: storageAccountName
     appInsightsName: appInsightsName
     serviceBusName: serviceBusName
