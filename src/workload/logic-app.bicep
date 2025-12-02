@@ -650,7 +650,7 @@ resource storageRoleAssignments 'Microsoft.Authorization/roleAssignments@2022-04
 
 resource storageRoleAssignmentsUser 'Microsoft.Authorization/roleAssignments@2022-04-01' = [
   for roleId in storageRBAC: {
-    name: guid(logicApp.id, logicApp.name, roleId,deployer().objectId)
+    name: guid(logicApp.id, logicApp.name, roleId, deployer().objectId)
     scope: storageAccount
     properties: {
       roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', roleId)
@@ -688,50 +688,8 @@ resource appInsightsRoleAssignments 'Microsoft.Authorization/roleAssignments@202
 
 resource appInsightsRoleAssignmentsUser 'Microsoft.Authorization/roleAssignments@2022-04-01' = [
   for roleId in appInsightsRBAC: {
-    name: guid(appInsights.id, appInsights.name, roleId,deployer().objectId)
+    name: guid(appInsights.id, appInsights.name, roleId, deployer().objectId)
     scope: appInsights
-    properties: {
-      roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', roleId)
-      principalId: deployer().objectId
-      principalType: 'User'
-    }
-  }
-]
-
-// Service Bus RBAC roles for Logic Apps managed identity
-var serviceBusRoles = {
-  dataOwner: '090c5cfd-751d-490a-894a-3ce6f1109419' // Azure Service Bus Data Owner - Full control over Service Bus
-  dataReceiver: '4f6d3b9b-027b-4f4c-9142-0e5a2a2247e0' // Azure Service Bus Data Receiver - Receive messages
-  dataSender: '69a216fc-b8fb-44d8-bc22-1f3c2cd27a39' // Azure Service Bus Data Sender - Send messages
-}
-
-var sbRBAC = [
-  serviceBusRoles.dataOwner
-  serviceBusRoles.dataReceiver
-  serviceBusRoles.dataSender
-]
-
-resource serviceBus 'Microsoft.ServiceBus/namespaces@2025-05-01-preview' existing = {
-  name: workflowStorageAccountName
-  scope: resourceGroup()
-}
-
-resource sbRoleAssignments 'Microsoft.Authorization/roleAssignments@2022-04-01' = [
-  for roleId in sbRBAC: {
-    name: guid(serviceBus.id, serviceBus.name, roleId)
-    scope: serviceBus
-    properties: {
-      roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', roleId)
-      principalId: mi.properties.principalId
-      principalType: 'ServicePrincipal'
-    }
-  }
-]
-
-resource sbRoleAssignmentsUser 'Microsoft.Authorization/roleAssignments@2022-04-01' = [
-  for roleId in sbRBAC: {
-    name: guid(serviceBus.id, serviceBus.name, roleId,deployer().objectId)
-    scope: serviceBus
     properties: {
       roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', roleId)
       principalId: deployer().objectId
@@ -745,7 +703,6 @@ resource sbRoleAssignmentsUser 'Microsoft.Authorization/roleAssignments@2022-04-
 // ============================================================================
 
 // Service Bus connection configuration
-var serviceBusConnectionName = 'serviceBus'
 
 // Core runtime settings
 var functionsExtensionVersion = '~4'
@@ -865,39 +822,6 @@ resource logicApp 'Microsoft.Web/sites@2023-12-01' = {
       ftpsState: 'Disabled'
       minTlsVersion: '1.2'
       netFrameworkVersion: 'v6.0'
-    }
-  }
-}
-
-resource serviceBusConnection 'Microsoft.Web/connections@2016-06-01' = {
-  name: serviceBusConnectionName
-  location: location
-  tags: tags
-  kind: 'V2'
-  properties: {
-    displayName: serviceBusConnectionName
-    parameterValues: {}
-    api: {
-      id: subscriptionResourceId('Microsoft.Web/locations/managedApis', location, 'servicebus')
-    }
-  }
-  dependsOn: [
-    logicApp
-    sbRoleAssignments
-  ]
-}
-
-resource serviceBusConnectionAccessPolicy 'Microsoft.Web/connections/accessPolicies@2018-07-01-preview' = {
-  name: logicApp.name
-  parent: serviceBusConnection
-  location: location
-  properties: {
-    principal: {
-      type: 'ActiveDirectory'
-      identity: {
-        tenantId: subscription().tenantId
-        objectId: mi.properties.principalId
-      }
     }
   }
 }

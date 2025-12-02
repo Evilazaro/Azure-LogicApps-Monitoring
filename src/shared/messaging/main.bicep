@@ -112,6 +112,14 @@ resource workflowSA 'Microsoft.Storage/storageAccounts@2023-05-01' = {
   }
 }
 
+resource diagSettings 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
+  name: 'named'
+  properties: {
+    workspaceId: workspaceId
+    storageAccountId: storageAccountId
+  }
+}
+
 // ============================================================================
 // OUTPUTS
 // ============================================================================

@@ -152,19 +152,6 @@ output AZURE_APPLICATION_INSIGHTS_CONNECTION_STRING string = shared.outputs.AZUR
 @description('Instrumentation key for Application Insights')
 output AZURE_APPLICATION_INSIGHTS_INSTRUMENTATION_KEY string = shared.outputs.AZURE_APPLICATION_INSIGHTS_INSTRUMENTATION_KEY
 
-// Service Bus
-@description('Name of the Service Bus namespace')
-output AZURE_SERVICEBUS_NAMESPACE_NAME string = shared.outputs.AZURE_SERVICEBUS_NAMESPACE_NAME
-
-@description('Resource ID of the Service Bus namespace')
-output AZURE_SERVICEBUS_NAMESPACE_ID string = shared.outputs.AZURE_SERVICEBUS_NAMESPACE_ID
-
-@description('Service Bus namespace endpoint')
-output AZURE_SERVICEBUS_ENDPOINT string = shared.outputs.AZURE_SERVICEBUS_ENDPOINT
-
-@description('Name of the Service Bus queue')
-output AZURE_SERVICEBUS_QUEUE_NAME string = shared.outputs.AZURE_SERVICEBUS_QUEUE_NAME
-
 // Logic App Workload
 @description('Resource ID of the deployed Logic App')
 output LOGIC_APP_ID string = workload.outputs.LOGIC_APP_ID
