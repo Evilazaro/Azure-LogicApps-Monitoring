@@ -103,7 +103,7 @@ module workload '../src/workload/main.bicep' = {
     location: location
     envName: envName
     workspaceId: shared.outputs.AZURE_LOG_ANALYTICS_WORKSPACE_ID
-    storageAccountName: shared.outputs.STORAGE_ACCOUNT_NAME
+    storageAccountName: shared.outputs.WORKFLOW_STORAGE_ACCOUNT_NAME
     appInsightsName: shared.outputs.AZURE_APPLICATION_INSIGHTS_NAME
     serviceBusName: shared.outputs.AZURE_SERVICEBUS_NAMESPACE_NAME
     tags: tags
@@ -123,10 +123,10 @@ output RESOURCE_GROUP_ID string = rg.id
 
 // Storage
 @description('Name of the deployed storage account')
-output STORAGE_ACCOUNT_NAME string = shared.outputs.STORAGE_ACCOUNT_NAME
+output WORKFLOW_STORAGE_ACCOUNT_NAME string = shared.outputs.WORKFLOW_STORAGE_ACCOUNT_NAME
 
 @description('Resource ID of the deployed storage account')
-output STORAGE_ACCOUNT_ID string = shared.outputs.STORAGE_ACCOUNT_ID
+output WORKFLOW_STORAGE_ACCOUNT_ID string = shared.outputs.WORKFLOW_STORAGE_ACCOUNT_ID
 
 // Monitoring
 @description('Resource ID of the Log Analytics workspace')

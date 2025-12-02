@@ -37,18 +37,6 @@ param tags object
 // MODULE DEPLOYMENTS
 // ============================================================================
 
-// Deploy storage account for Logic Apps Standard runtime
-module data 'data/main.bicep' = {
-  name: 'DataDeployment'
-  scope: resourceGroup()
-  params: {
-    name: name
-    envName: envName
-    location: location
-    tags: tags
-  }
-}
-
 // Deploy monitoring stack (Log Analytics, Application Insights, Health Model)
 module monitoring '../monitoring/main.bicep' = {
   name: 'MonitoringDeployment'
@@ -59,8 +47,20 @@ module monitoring '../monitoring/main.bicep' = {
     location: location
     tags: tags
   }
+}
+
+// Deploy storage account for Logic Apps Standard runtime
+module data 'data/main.bicep' = {
+  name: 'DataDeployment'
+  scope: resourceGroup()
+  params: {
+    name: name
+    envName: envName
+    location: location
+    tags: tags
+  }
   dependsOn: [
-    data
+    monitoring
   ]
 }
 
@@ -82,10 +82,10 @@ module messaging 'messaging/main.bicep' = {
 // ============================================================================
 
 @description('Name of the deployed storage account for Logic Apps Standard runtime requirements')
-output STORAGE_ACCOUNT_NAME string = data.outputs.STORAGE_ACCOUNT_NAME
+output WORKFLOW_STORAGE_ACCOUNT_NAME string = data.outputs.WORKFLOW_STORAGE_ACCOUNT_NAME
 
 @description('Resource ID of the deployed storage account for RBAC role assignments')
-output STORAGE_ACCOUNT_ID string = data.outputs.STORAGE_ACCOUNT_ID
+output WORKFLOW_STORAGE_ACCOUNT_ID string = data.outputs.WORKFLOW_STORAGE_ACCOUNT_ID
 
 @description('Resource ID of the Log Analytics workspace for Logic Apps diagnostic logging configuration')
 output AZURE_LOG_ANALYTICS_WORKSPACE_ID string = monitoring.outputs.AZURE_LOG_ANALYTICS_WORKSPACE_ID

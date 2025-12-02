@@ -69,7 +69,7 @@ var storageAccountName = take('${cleanedName}${uniqueSuffix}stg', 24)
 // RESOURCES
 // ============================================================================
 
-resource storageAccount 'Microsoft.Storage/storageAccounts@2023-05-01' = {
+resource workflowSA 'Microsoft.Storage/storageAccounts@2023-05-01' = {
   name: length(storageAccountName) >= 3 ? storageAccountName : '${storageAccountName}stg'
   location: location
   sku: {
@@ -96,7 +96,7 @@ resource storageAccount 'Microsoft.Storage/storageAccounts@2023-05-01' = {
 // ============================================================================
 
 @description('Name of the deployed storage account (generated with unique suffix for global uniqueness)')
-output STORAGE_ACCOUNT_NAME string = storageAccount.name
+output WORKFLOW_STORAGE_ACCOUNT_NAME string = workflowSA.name
 
 @description('Resource ID of the deployed storage account for RBAC role assignments')
-output STORAGE_ACCOUNT_ID string = storageAccount.id
+output WORKFLOW_STORAGE_ACCOUNT_ID string = workflowSA.id
