@@ -85,6 +85,9 @@ param appInsightsName string
 @description('Name of existing Service Bus namespace for messaging integration with workflows.')
 param serviceBusName string
 
+@description('Managed Identity Name for Logic App to access resources securely without credentials.')
+param managedIdentityName string
+
 @description('Resource tags applied to Logic App, App Service Plan, and dashboard resources for cost tracking and governance.')
 param tags object
 
@@ -600,7 +603,7 @@ resource dashboardASP 'Microsoft.Portal/dashboards@2020-09-01-preview' = {
 }
 
 resource mi 'Microsoft.ManagedIdentity/userAssignedIdentities@2025-01-31-preview' existing = {
-  name: '${name}-mi'
+  name: managedIdentityName
   scope: resourceGroup()
 }
 

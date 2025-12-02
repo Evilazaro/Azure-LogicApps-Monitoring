@@ -106,6 +106,7 @@ module workload '../src/workload/main.bicep' = {
     storageAccountName: shared.outputs.STORAGE_ACCOUNT_NAME
     appInsightsName: shared.outputs.AZURE_APPLICATION_INSIGHTS_NAME
     serviceBusName: shared.outputs.AZURE_SERVICEBUS_NAMESPACE_NAME
+    managedIdentityName: shared.outputs.MANAGED_IDENTITY_NAME
     tags: tags
   }
 }
