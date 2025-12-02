@@ -91,6 +91,28 @@ resource workflowSA 'Microsoft.Storage/storageAccounts@2023-05-01' = {
   }
 }
 
+resource logsSA 'Microsoft.Storage/storageAccounts@2023-05-01' = {
+  name: length(storageAccountName) >= 3 ? storageAccountName : '${storageAccountName}stg'
+  location: location
+  sku: {
+    name: 'Standard_LRS'
+  }
+  kind: 'StorageV2'
+  tags: tags
+  properties: {
+    accessTier: 'Hot'
+    supportsHttpsTrafficOnly: true
+    minimumTlsVersion: 'TLS1_2'
+    allowBlobPublicAccess: true
+    publicNetworkAccess: 'Enabled'
+    allowSharedKeyAccess: true // REQUIRED for Logic Apps file share creation
+    networkAcls: {
+      bypass: 'AzureServices' // CRITICAL: Allow Azure services (Logic Apps) to bypass firewall
+      defaultAction: 'Allow' // Allow all traffic (change to 'Deny' for production with private endpoints)
+    }
+  }
+}
+
 // ============================================================================
 // OUTPUTS
 // ============================================================================
@@ -100,3 +122,9 @@ output WORKFLOW_STORAGE_ACCOUNT_NAME string = workflowSA.name
 
 @description('Resource ID of the deployed storage account for RBAC role assignments')
 output WORKFLOW_STORAGE_ACCOUNT_ID string = workflowSA.id
+
+@description('Name of the deployed storage account for logs (generated with unique suffix for global uniqueness)')
+output LOGS_STORAGE_ACCOUNT_NAME string = logsSA.name
+
+@description('Resource ID of the deployed storage account for logs')
+output LOGS_STORAGE_ACCOUNT_ID string = logsSA.id
