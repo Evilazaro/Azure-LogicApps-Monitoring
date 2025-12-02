@@ -125,14 +125,14 @@ sequenceDiagram
     participant LA as Logic App
     participant SB as Service Bus
     participant AF as Azure Function
-    participant AI as Application<br/>Insights
-    participant LAW as Log Analytics<br/>Workspace
-    participant Portal as Azure Portal<br/>Dashboard
+    participant AI as Application Insights
+    participant LAW as Log Analytics Workspace
+    participant Portal as Azure Portal Dashboard
     
     User->>LA: Trigger Workflow
     activate LA
-    LA->>AI: Send Telemetry<br/>(Traces, Dependencies)
-    LA->>LAW: Send Diagnostic Logs<br/>(WorkflowRuntime)
+    LA->>AI: Send Telemetry (Traces, Dependencies)
+    LA->>LAW: Send Diagnostic Logs (WorkflowRuntime)
     LA->>SB: Send Message to Queue
     activate SB
     SB->>LAW: Send Diagnostic Logs
@@ -140,8 +140,8 @@ sequenceDiagram
     deactivate SB
     LA->>AF: HTTP Invoke Function
     activate AF
-    AF->>AI: Send Telemetry<br/>(Performance Metrics)
-    AF->>LAW: Send Diagnostic Logs<br/>(AppServiceHTTPLogs)
+    AF->>AI: Send Telemetry (Performance Metrics)
+    AF->>LAW: Send Diagnostic Logs (AppServiceHTTPLogs)
     AF-->>LA: Return Response
     deactivate AF
     LA->>AI: Send Action Completion
@@ -154,14 +154,6 @@ sequenceDiagram
     Portal->>AI: Query Metrics
     AI-->>Portal: Return Telemetry
     Portal-->>User: Display Dashboard
-    
-    style User fill:#2874A6,stroke:#1B4F72,color:#FFFFFF
-    style LA fill:#D68910,stroke:#B9770E,color:#FFFFFF
-    style SB fill:#17A589,stroke:#138D75,color:#FFFFFF
-    style AF fill:#C0392B,stroke:#A93226,color:#FFFFFF
-    style AI fill:#8E44AD,stroke:#7D3C98,color:#FFFFFF
-    style LAW fill:#229954,stroke:#1E8449,color:#FFFFFF
-    style Portal fill:#5DADE2,stroke:#3498DB,color:#FFFFFF
 ```
 
 ### Key Components
