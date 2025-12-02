@@ -16,7 +16,7 @@ param appInsightsName string
 param tags object
 
 resource appServicePlan 'Microsoft.Web/serverfarms@2024-11-01' = {
-  name: '${name}-${uniqueString(resourceGroup().id, name)}-asp'
+  name: '${name}-${uniqueString(resourceGroup().id, name)}-apis-asp'
   location: location
   sku: {
     name: 'P0v3'
