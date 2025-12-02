@@ -135,12 +135,6 @@ sequenceDiagram
     Portal->>AI: Query Metrics
     AI-->>Portal: Return Metrics
     Portal-->>User: Display Dashboard
-    
-    style LA fill:#8B4513,stroke:#5C2D0A,color:#FFFFFF
-    style AF fill:#8B4513,stroke:#5C2D0A,color:#FFFFFF
-    style AI fill:#2E5C8A,stroke:#1A3A52,color:#FFFFFF
-    style LAW fill:#2E5C8A,stroke:#1A3A52,color:#FFFFFF
-    style Portal fill:#3A6B35,stroke:#1F3A1E,color:#FFFFFF
 ```
 
 ### Key Components
