@@ -611,6 +611,7 @@ resource storageAccount 'Microsoft.Storage/storageAccounts@2023-05-01' existing 
 }
 
 var storageRBAC = [
+  '17d1049b-9a84-46fb-8f53-869881c3d3ab' // Storage Account Contributor - Manage storage account, but not access to data
   'b7e6dc6d-f1e8-4753-8033-0f276bb0955b' // Storage Blob Data Owner - Full control over blob containers and data
   '974c5e8b-45b9-4653-ba55-5f855dd0fb88' // Storage Queue Data Contributor - Read, write, and delete queue messages
   '0a9a7e1f-b9d0-4cc4-a60d-0319b160aaa3' // Storage Table Data Contributor - Read, write, and delete table data
@@ -625,6 +626,18 @@ resource storageRoleAssignments 'Microsoft.Authorization/roleAssignments@2022-04
       roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', roleId)
       principalId: mi.properties.principalId
       principalType: 'ServicePrincipal'
+    }
+  }
+]
+
+resource storageRoleAssignmentsUser 'Microsoft.Authorization/roleAssignments@2022-04-01' = [
+  for roleId in storageRBAC: {
+    name: guid(logicApp.id, logicApp.name, roleId,deployer().objectId)
+    scope: storageAccount
+    properties: {
+      roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', roleId)
+      principalId: deployer().objectId
+      principalType: 'User'
     }
   }
 ]
@@ -650,6 +663,18 @@ resource appInsightsRoleAssignments 'Microsoft.Authorization/roleAssignments@202
   }
 ]
 
+resource appInsightsRoleAssignmentsUser 'Microsoft.Authorization/roleAssignments@2022-04-01' = [
+  for roleId in appInsightsRBAC: {
+    name: guid(appInsights.id, appInsights.name, roleId,deployer().objectId)
+    scope: appInsights
+    properties: {
+      roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', roleId)
+      principalId: deployer().objectId
+      principalType: 'User'
+    }
+  }
+]
+
 var sbRBAC = [
   '090c5cfd-751d-490a-894a-3ce6f1109419' // Azure Service Bus Data Owner - Full control over Service Bus resources
   '4f6d3b9b-027b-4f4c-9142-0e5a2a2247e0'
@@ -669,6 +694,18 @@ resource sbRoleAssignments 'Microsoft.Authorization/roleAssignments@2022-04-01' 
       roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', roleId)
       principalId: mi.properties.principalId
       principalType: 'ServicePrincipal'
+    }
+  }
+]
+
+resource sbRoleAssignmentsUser 'Microsoft.Authorization/roleAssignments@2022-04-01' = [
+  for roleId in sbRBAC: {
+    name: guid(serviceBus.id, serviceBus.name, roleId,deployer().objectId)
+    scope: serviceBus
+    properties: {
+      roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', roleId)
+      principalId: deployer().objectId
+      principalType: 'User'
     }
   }
 ]
