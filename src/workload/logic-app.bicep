@@ -128,7 +128,7 @@ resource DiagnosticSettingsAsp 'Microsoft.Insights/diagnosticSettings@2021-05-01
 
 resource dashboardASP 'Microsoft.Portal/dashboards@2020-09-01-preview' = {
   name: '${appServicePlan.name}-dashboard'
-  location: 'eastus2'
+  location: location
   tags: {
     'hidden-title': 'Service Plan Metrics'
   }
@@ -1532,4 +1532,20 @@ resource workflowsDashboard 'Microsoft.Portal/dashboards@2020-09-01-preview' = {
     }
   }
 }
+
+// ============================================================================
+// OUTPUTS
+// ============================================================================
+
+@description('Resource ID of the deployed Logic App for RBAC assignments and integration')
+output LOGIC_APP_ID string = logicApp.id
+
+@description('Name of the deployed Logic App')
+output LOGIC_APP_NAME string = logicApp.name
+
+@description('Resource ID of the App Service Plan hosting the Logic App')
+output APP_SERVICE_PLAN_ID string = appServicePlan.id
+
+@description('Name of the App Service Plan')
+output APP_SERVICE_PLAN_NAME string = appServicePlan.name
 

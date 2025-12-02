@@ -122,7 +122,7 @@ resource DiagnosticSettingsAsp 'Microsoft.Insights/diagnosticSettings@2021-05-01
 
 resource dashboardASP 'Microsoft.Portal/dashboards@2020-09-01-preview' = {
   name: '${appServicePlan.name}-dashboard'
-  location: 'eastus2'
+  location: location
   tags: {
     'hidden-title': 'Service Plan Metrics'
   }
@@ -589,3 +589,16 @@ resource dashboardASP 'Microsoft.Portal/dashboards@2020-09-01-preview' = {
     }
   }
 }
+
+// ============================================================================
+// OUTPUTS
+// ============================================================================
+
+@description('Resource ID of the deployed Function App for API layer')
+output FUNCTION_APP_ID string = webApi.id
+
+@description('Name of the deployed Function App')
+output FUNCTION_APP_NAME string = webApi.name
+
+@description('Default hostname of the Function App')
+output FUNCTION_APP_DEFAULT_HOSTNAME string = webApi.properties.defaultHostName

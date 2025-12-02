@@ -62,7 +62,7 @@ param tags object
 // RESOURCES
 // ============================================================================
 
-resource serviceBus 'Microsoft.ServiceBus/namespaces@2022-10-01-preview' = {
+resource serviceBus 'Microsoft.ServiceBus/namespaces@2024-01-01' = {
   name: '${name}-sb-${uniqueString(resourceGroup().id, name)}'
   location: location
   tags: tags
@@ -72,7 +72,6 @@ resource serviceBus 'Microsoft.ServiceBus/namespaces@2022-10-01-preview' = {
   sku: {
     name: 'Standard'
     tier: 'Standard'
-    capacity: 1
   }
   properties: {
     publicNetworkAccess: 'Enabled'
@@ -82,7 +81,7 @@ resource serviceBus 'Microsoft.ServiceBus/namespaces@2022-10-01-preview' = {
   }
 }
 
-resource queue 'Microsoft.ServiceBus/namespaces/queues@2022-10-01-preview' = {
+resource queue 'Microsoft.ServiceBus/namespaces/queues@2024-01-01' = {
   name: 'tax-approval'
   parent: serviceBus
   properties: {

@@ -107,4 +107,3 @@ module workload '../src/workload/main.bicep' = {
   }
 }
 
-
