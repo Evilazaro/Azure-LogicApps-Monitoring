@@ -825,7 +825,6 @@ resource serviceBusConnectionAccessPolicy 'Microsoft.Web/connections/accessPolic
   name: logicApp.name
   parent: serviceBusConnection
   location: location
-  kind: 'V2'
   properties: {
     principal: {
       type: 'ActiveDirectory'

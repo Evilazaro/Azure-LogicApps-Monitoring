@@ -85,7 +85,7 @@ resource serviceBus 'Microsoft.ServiceBus/namespaces@2024-01-01' = {
 }
 
 resource queue 'Microsoft.ServiceBus/namespaces/queues@2024-01-01' = {
-  name: 'tax-approval'
+  name: 'tax-processing-queue'
   parent: serviceBus
   properties: {
     maxSizeInMegabytes: 1024
