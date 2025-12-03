@@ -59,3 +59,62 @@ output AZURE_LOG_ANALYTICS_WORKSPACE_ID string = logAnalytics.id
 
 @description('Name of the deployed Log Analytics workspace for reference and queries')
 output AZURE_LOG_ANALYTICS_WORKSPACE_NAME string = logAnalytics.name
+
+// ============================================================================
+// VARIABLES
+// ============================================================================
+
+// Generate a storage account name that meets Azure naming requirements:
+// - Must be 3-24 characters long
+// - Can contain only lowercase letters and numbers
+// - Must be globally unique across all Azure Storage accounts
+var cleanedName = toLower(replace(replace(replace(name, '-', ''), '_', ''), ' ', ''))
+var uniqueSuffix = uniqueString(resourceGroup().id, name, envName, location)
+
+// Storage account configuration
+var storageConfig = {
+  sku: 'Standard_LRS'
+  kind: 'StorageV2'
+  accessTier: 'Hot'
+  minimumTlsVersion: 'TLS1_2'
+  supportsHttpsTrafficOnly: true
+}
+
+// ============================================================================
+// RESOURCES
+// ============================================================================
+
+// Logs storage account - stores diagnostic logs separately from workflow data
+var logsStorageAccountName = take('${cleanedName}logs${uniqueSuffix}stg', 24)
+
+resource logsSA 'Microsoft.Storage/storageAccounts@2023-05-01' = {
+  name: length(logsStorageAccountName) >= 3 ? logsStorageAccountName : '${logsStorageAccountName}stg'
+  location: location
+  sku: {
+    name: storageConfig.sku
+  }
+  kind: storageConfig.kind
+  tags: tags
+  properties: {
+    accessTier: storageConfig.accessTier
+    supportsHttpsTrafficOnly: storageConfig.supportsHttpsTrafficOnly
+    minimumTlsVersion: storageConfig.minimumTlsVersion
+    allowBlobPublicAccess: false // Logs don't need public access
+    publicNetworkAccess: 'Enabled'
+    allowSharedKeyAccess: true
+    networkAcls: {
+      bypass: 'AzureServices'
+      defaultAction: 'Allow'
+    }
+  }
+}
+
+// ============================================================================
+// OUTPUTS
+// ============================================================================
+
+@description('Name of the deployed storage account for logs (generated with unique suffix for global uniqueness)')
+output LOGS_STORAGE_ACCOUNT_NAME string = logsSA.name
+
+@description('Resource ID of the deployed storage account for logs')
+output LOGS_STORAGE_ACCOUNT_ID string = logsSA.id

@@ -7,8 +7,8 @@
 // 3. Service Bus Namespace - Messaging and queue-based integrations
 //
 // Module Dependencies:
-// - Data module (storage) deploys first (no dependencies)
-// - Monitoring module deploys after data (uses tags, location)
+// - monitoring module (storage) deploys first (no dependencies)
+// - Monitoring module deploys after monitoring (uses tags, location)
 // - Messaging module deploys last (requires workspace ID for diagnostics)
 //
 // Note: User-assigned managed identity should be added here in future versions
@@ -49,18 +49,6 @@ module monitoring '../monitoring/main.bicep' = {
   }
 }
 
-// Deploy storage account for Logic Apps Standard runtime
-module data 'data/main.bicep' = {
-  name: 'DataDeployment'
-  scope: resourceGroup()
-  params: {
-    name: name
-    envName: envName
-    location: location
-    tags: tags
-  }
-}
-
 // Deploy Service Bus namespace for messaging integration
 module messaging 'messaging/main.bicep' = {
   name: 'MessagingDeployment'
@@ -70,7 +58,7 @@ module messaging 'messaging/main.bicep' = {
     envName: envName
     location: location
     workspaceId: monitoring.outputs.AZURE_LOG_ANALYTICS_WORKSPACE_ID
-    storageAccountId: data.outputs.LOGS_STORAGE_ACCOUNT_ID
+    storageAccountId: monitoring.outputs.LOGS_STORAGE_ACCOUNT_ID
     tags: tags
   }
 }
@@ -80,10 +68,10 @@ module messaging 'messaging/main.bicep' = {
 // ============================================================================
 
 @description('Resource ID of the storage account for diagnostic logs and metrics')
-output LOGS_STORAGE_ACCOUNT_ID string = data.outputs.LOGS_STORAGE_ACCOUNT_ID
+output LOGS_STORAGE_ACCOUNT_ID string = monitoring.outputs.LOGS_STORAGE_ACCOUNT_ID
 
 @description('Name of the deployed storage account for diagnostic logs and metrics')
-output LOGS_STORAGE_ACCOUNT_NAME string = data.outputs.LOGS_STORAGE_ACCOUNT_NAME
+output LOGS_STORAGE_ACCOUNT_NAME string = monitoring.outputs.LOGS_STORAGE_ACCOUNT_NAME
 
 @description('Name of the deployed storage account (generated with unique suffix for global uniqueness)')
 output WORKFLOW_STORAGE_ACCOUNT_NAME string = messaging.outputs.WORKFLOW_STORAGE_ACCOUNT_NAME

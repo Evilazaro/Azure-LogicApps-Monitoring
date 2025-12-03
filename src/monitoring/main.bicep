@@ -91,3 +91,9 @@ output AZURE_APPLICATION_INSIGHTS_INSTRUMENTATION_KEY string = insights.outputs.
 
 @description('Name of the deployed Log Analytics workspace for reference and manual queries')
 output AZURE_LOG_ANALYTICS_WORKSPACE_NAME string = operationalInsights.outputs.AZURE_LOG_ANALYTICS_WORKSPACE_NAME
+
+@description('Resource ID of the storage account for diagnostic logs and metrics (deployed in monitoring module)')
+output LOGS_STORAGE_ACCOUNT_ID string = operationalInsights.outputs.LOGS_STORAGE_ACCOUNT_ID
+
+@description('Name of the deployed storage account for diagnostic logs and metrics (deployed in monitoring module)')
+output LOGS_STORAGE_ACCOUNT_NAME string = operationalInsights.outputs.LOGS_STORAGE_ACCOUNT_NAME
