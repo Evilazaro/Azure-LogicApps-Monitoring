@@ -36,30 +36,6 @@ param location string = resourceGroup().location
 @description('Resource tags applied to the Log Analytics workspace for cost tracking, organization, and compliance.')
 param tags object
 
-resource logAnalytics 'Microsoft.OperationalInsights/workspaces@2023-09-01' = {
-  name: '${name}-${uniqueString(resourceGroup().id, name, envName, location)}-law'
-  location: location
-  identity: {
-    type: 'SystemAssigned'
-  }
-  tags: tags
-  properties: {
-    sku: {
-      name: 'PerGB2018'
-    }
-    retentionInDays: 30
-    features: {
-      immediatePurgeDataOn30Days: true
-    }
-  }
-}
-
-@description('Resource ID of the deployed Log Analytics workspace for diagnostic settings configuration')
-output AZURE_LOG_ANALYTICS_WORKSPACE_ID string = logAnalytics.id
-
-@description('Name of the deployed Log Analytics workspace for reference and queries')
-output AZURE_LOG_ANALYTICS_WORKSPACE_NAME string = logAnalytics.name
-
 // ============================================================================
 // VARIABLES
 // ============================================================================
@@ -118,3 +94,27 @@ output LOGS_STORAGE_ACCOUNT_NAME string = logsSA.name
 
 @description('Resource ID of the deployed storage account for logs')
 output LOGS_STORAGE_ACCOUNT_ID string = logsSA.id
+
+resource logAnalytics 'Microsoft.OperationalInsights/workspaces@2023-09-01' = {
+  name: '${name}-${uniqueString(resourceGroup().id, name, envName, location)}-law'
+  location: location
+  identity: {
+    type: 'SystemAssigned'
+  }
+  tags: tags
+  properties: {
+    sku: {
+      name: 'PerGB2018'
+    }
+    retentionInDays: 30
+    features: {
+      immediatePurgeDataOn30Days: true
+    }
+  }
+}
+
+@description('Resource ID of the deployed Log Analytics workspace for diagnostic settings configuration')
+output AZURE_LOG_ANALYTICS_WORKSPACE_ID string = logAnalytics.id
+
+@description('Name of the deployed Log Analytics workspace for reference and queries')
+output AZURE_LOG_ANALYTICS_WORKSPACE_NAME string = logAnalytics.name
