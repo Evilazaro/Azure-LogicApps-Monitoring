@@ -1,17 +1,3 @@
-// ============================================================================
-// MAIN DEPLOYMENT ORCHESTRATOR
-// ============================================================================
-// Deploys a complete Azure Logic Apps monitoring solution including:
-// - Resource group with standardized naming
-// - Shared resources (monitoring, storage, messaging, managed identity)
-// - Logic App workload with App Service Plan
-// - Monitoring dashboards and diagnostic settings
-//
-// This is a subscription-level deployment that creates all necessary resources
-// for a production-ready Logic Apps Standard deployment with comprehensive
-// observability using Azure Monitor, Application Insights, and Log Analytics.
-// ============================================================================
-
 targetScope = 'subscription'
 
 metadata name = 'Azure Logic Apps Monitoring Solution'
@@ -108,9 +94,8 @@ module workload '../src/workload/main.bicep' = {
     envName: envName
     workspaceId: shared.outputs.AZURE_LOG_ANALYTICS_WORKSPACE_ID
     storageAccountId: shared.outputs.LOGS_STORAGE_ACCOUNT_ID
-    storageAccountName: shared.outputs.WORKFLOW_STORAGE_ACCOUNT_NAME
     appInsightsName: shared.outputs.AZURE_APPLICATION_INSIGHTS_NAME
-    serviceBusName: shared.outputs.AZURE_SERVICEBUS_NAMESPACE_NAME
+    workflowStorageAccountName: shared.outputs.WORKFLOW_STORAGE_ACCOUNT_NAME
     tags: tags
   }
 }
@@ -147,23 +132,12 @@ output AZURE_APPLICATION_INSIGHTS_NAME string = shared.outputs.AZURE_APPLICATION
 output AZURE_APPLICATION_INSIGHTS_ID string = shared.outputs.AZURE_APPLICATION_INSIGHTS_ID
 
 @description('Connection string for Application Insights')
+@secure()
 output AZURE_APPLICATION_INSIGHTS_CONNECTION_STRING string = shared.outputs.AZURE_APPLICATION_INSIGHTS_CONNECTION_STRING
 
 @description('Instrumentation key for Application Insights')
+@secure()
 output AZURE_APPLICATION_INSIGHTS_INSTRUMENTATION_KEY string = shared.outputs.AZURE_APPLICATION_INSIGHTS_INSTRUMENTATION_KEY
-
-// Service Bus
-@description('Name of the Service Bus namespace')
-output AZURE_SERVICEBUS_NAMESPACE_NAME string = shared.outputs.AZURE_SERVICEBUS_NAMESPACE_NAME
-
-@description('Resource ID of the Service Bus namespace')
-output AZURE_SERVICEBUS_NAMESPACE_ID string = shared.outputs.AZURE_SERVICEBUS_NAMESPACE_ID
-
-@description('Service Bus namespace endpoint')
-output AZURE_SERVICEBUS_ENDPOINT string = shared.outputs.AZURE_SERVICEBUS_ENDPOINT
-
-@description('Name of the Service Bus queue')
-output AZURE_SERVICEBUS_QUEUE_NAME string = shared.outputs.AZURE_SERVICEBUS_QUEUE_NAME
 
 // Logic App Workload
 @description('Resource ID of the deployed Logic App')

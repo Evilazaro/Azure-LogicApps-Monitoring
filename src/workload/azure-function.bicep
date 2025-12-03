@@ -1,30 +1,13 @@
 // ============================================================================
-// AZURE FUNCTION APP MODULE (API LAYER)
+// API FUNCTION APP MODULE
 // ============================================================================
-// Deploys Azure Function App with App Service Plan for API layer:
-// - App Service Plan (Premium v3 - P0v3 SKU)
-// - Linux-based Function App (.NET Core 9.0)
-// - Application Insights integration for telemetry
-// - Diagnostic settings for logs and metrics
-// - Azure Portal dashboard for App Service Plan monitoring
-//
+// Deploys Azure Function App on Linux App Service Plan for custom API endpoints.
 // Configuration:
-// - SKU: P0v3 (Premium v3 tier - cost-effective for production)
-// - Platform: Linux with reserved compute
-// - Runtime: .NET Core 9.0
-// - Always On: Enabled for consistent availability
-// - TLS: 1.2 minimum, HTTPS only enforced
-//
-// Monitoring:
-// - Application Insights connection string for telemetry
-// - Diagnostic settings route logs to Log Analytics workspace
-// - Dashboard displays CPU, Memory, Data I/O, HTTP Queue metrics
-//
-// Reference: https://learn.microsoft.com/azure/azure-functions/functions-overview
-// ============================================================================
-
-// ============================================================================
-// PARAMETERS
+// - Premium P0v3 tier for production-ready performance
+// - .NET Core 9.0 runtime
+// - Application Insights integration for monitoring
+// - Diagnostic settings for HTTP logs, console logs, and app logs
+// - HTTPS-only with TLS 1.2 minimum
 // ============================================================================
 
 @description('Base name for Logic App and App Service Plan resources. Will be suffixed with unique string for global uniqueness.')
@@ -32,10 +15,13 @@
 @maxLength(20)
 param name string
 
-@description('Environment name suffix to ensure uniqueness across environments (e.g., dev, test, prod).') 
+@description('Environment name suffix to ensure uniqueness across environments (e.g., dev, test, prod).')
+@minLength(2)
+@maxLength(10)
 param envName string
 
 @description('Azure region for Logic App deployment. Must support Workflow Standard SKU and Application Insights.')
+@minLength(3)
 param location string = resourceGroup().location
 
 @description('Resource ID of the Log Analytics workspace for diagnostic logs and metrics.')
@@ -48,6 +34,12 @@ param storageAccountId string
 param appInsightsName string
 
 @description('Resource tags applied to Logic App, App Service Plan, and dashboard resources for cost tracking and governance.')
+@metadata({
+  example: {
+    Solution: 'tax-docs'
+    Environment: 'prod'
+  }
+})
 param tags object
 
 // ============================================================================
@@ -82,7 +74,7 @@ var functionAppName = '${name}-${resourceSuffix}-api'
 // RESOURCES
 // ============================================================================
 
-resource appServicePlan 'Microsoft.Web/serverfarms@2024-11-01' = {
+resource appServicePlan 'Microsoft.Web/serverfarms@2023-12-01' = {
   name: appServicePlanName
   location: location
   sku: {
@@ -113,7 +105,7 @@ resource appInsights 'Microsoft.Insights/components@2020-02-02' existing = {
   scope: resourceGroup()
 }
 
-resource webApi 'Microsoft.Web/sites@2025-03-01' = {
+resource webApi 'Microsoft.Web/sites@2023-12-01' = {
   name: functionAppName
   location: location
   kind: functionAppConfig.kind
