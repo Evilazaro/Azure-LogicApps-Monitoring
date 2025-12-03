@@ -1,3 +1,12 @@
+// ============================================================================
+// SHARED RESOURCES MODULE - Main Orchestration
+// ============================================================================
+// Orchestrates deployment of shared infrastructure components including:
+// - Monitoring stack (Log Analytics, Application Insights, Health Model)
+// - Messaging infrastructure (Storage accounts with queues for Logic Apps)
+// These resources are shared across the workload tier.
+// ============================================================================
+
 @description('Base name for all shared resources. Used as prefix to ensure consistent naming across modules.')
 @minLength(3)
 @maxLength(20)
@@ -27,7 +36,6 @@ param tags object
 
 // Deploy monitoring stack (Log Analytics, Application Insights, Health Model)
 module monitoring '../monitoring/main.bicep' = {
-  name: 'MonitoringDeployment'
   scope: resourceGroup()
   params: {
     name: name
@@ -39,7 +47,6 @@ module monitoring '../monitoring/main.bicep' = {
 
 // Deploy Service Bus namespace for messaging integration
 module messaging 'messaging/main.bicep' = {
-  name: 'MessagingDeployment'
   scope: resourceGroup()
   params: {
     name: name

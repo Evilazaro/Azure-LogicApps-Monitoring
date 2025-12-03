@@ -1,4 +1,14 @@
 
+// ============================================================================
+// WORKLOAD MODULE - Main Orchestration
+// ============================================================================
+// Orchestrates deployment of Logic Apps Standard workload tier including:
+// - API Function App for custom APIs and integrations
+// - Logic App workflows with App Service Plan (Workflow Standard SKU)
+// - User-assigned managed identity for secure resource access
+// - Diagnostic settings and Azure Portal dashboards for monitoring
+// ============================================================================
+
 @description('Base name for Logic App and App Service Plan resources. Will be suffixed with unique string for global uniqueness.')
 @minLength(3)
 @maxLength(20)
@@ -39,7 +49,6 @@ param tags object
 // ============================================================================
 
 module apis 'azure-function.bicep' = {
-  name: 'ApiFunctionDeployment'
   scope: resourceGroup()
   params: {
     name: name
@@ -53,7 +62,6 @@ module apis 'azure-function.bicep' = {
 }
 
 module workflows 'logic-app.bicep' = {
-  name: 'LogicAppWorkflowsDeployment'
   scope: resourceGroup()
   params: {
     name: name

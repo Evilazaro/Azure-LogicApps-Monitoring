@@ -1,3 +1,13 @@
+// ============================================================================
+// MESSAGING MODULE
+// ============================================================================
+// Provisions Azure Storage account configured for Logic Apps Standard runtime.
+// Includes:
+// - Queue Services with dedicated taxprocessing queue
+// - Diagnostic settings for storage operations monitoring
+// - Secure configuration (TLS 1.2, HTTPS-only, Shared Key enabled for Logic Apps)
+// ============================================================================
+
 @description('Base name for Service Bus namespace. Will be suffixed with unique string and -sb for global uniqueness.')
 @minLength(3)
 @maxLength(20)

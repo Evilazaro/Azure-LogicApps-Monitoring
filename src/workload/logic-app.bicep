@@ -1,3 +1,15 @@
+// ============================================================================
+// LOGIC APP MODULE
+// ============================================================================
+// Deploys Logic Apps Standard with comprehensive monitoring and RBAC:
+// - App Service Plan (Workflow Standard SKU - WS1)
+// - Logic App with user-assigned managed identity
+// - Storage account RBAC role assignments for managed identity
+// - Application Insights integration for telemetry
+// - Diagnostic settings capturing WorkflowRuntime logs
+// - Azure Portal dashboards for workflow metrics visualization
+// ============================================================================
+
 @description('Base name for Logic App and App Service Plan resources. Will be suffixed with unique string for global uniqueness.')
 @minLength(3)
 @maxLength(20)
@@ -565,27 +577,27 @@ resource workflowSA 'Microsoft.Storage/storageAccounts@2023-05-01' existing = {
 var storageRoles = {
   // Storage Account Contributor (17d1049b-9a84-46fb-8f53-869881c3d3ab)
   // Grants full management control over storage account
-  // Docs: https://learn.microsoft.com/azure/role-based-access-control/built-in-roles#storage-account-contributor
+  // https://learn.microsoft.com/azure/role-based-access-control/built-in-roles/storage#storage-account-contributor
   contributor: '17d1049b-9a84-46fb-8f53-869881c3d3ab'
   
   // Storage Blob Data Owner (b7e6dc6d-f1e8-4753-8033-0f276bb0955b)
   // Provides full control over blob containers and data, including ACL management
-  // Docs: https://learn.microsoft.com/azure/role-based-access-control/built-in-roles#storage-blob-data-owner
+  // https://learn.microsoft.com/azure/role-based-access-control/built-in-roles/storage#storage-blob-data-owner
   blobDataOwner: 'b7e6dc6d-f1e8-4753-8033-0f276bb0955b'
   
   // Storage Queue Data Contributor (974c5e8b-45b9-4653-ba55-5f855dd0fb88)
   // Allows reading, writing, and deleting Azure Storage queues and queue messages
-  // Docs: https://learn.microsoft.com/azure/role-based-access-control/built-in-roles#storage-queue-data-contributor
+  // https://learn.microsoft.com/azure/role-based-access-control/built-in-roles/storage#storage-queue-data-contributor
   queueDataContributor: '974c5e8b-45b9-4653-ba55-5f855dd0fb88'
   
   // Storage Table Data Contributor (0a9a7e1f-b9d0-4cc4-a60d-0319b160aaa3)
   // Allows reading, writing, and deleting Azure Storage tables and entities
-  // Docs: https://learn.microsoft.com/azure/role-based-access-control/built-in-roles#storage-table-data-contributor
+  // https://learn.microsoft.com/azure/role-based-access-control/built-in-roles/storage#storage-table-data-contributor
   tableDataContributor: '0a9a7e1f-b9d0-4cc4-a60d-0319b160aaa3'
   
   // Storage File Data Privileged Contributor (69566ab7-960f-475b-8e7c-b3118f30c6bd)
   // Allows read, write, delete, and modify ACLs on files/directories (required for Logic Apps file share)
-  // Docs: https://learn.microsoft.com/azure/role-based-access-control/built-in-roles#storage-file-data-privileged-contributor
+  // https://learn.microsoft.com/azure/role-based-access-control/built-in-roles/storage#storage-file-data-privileged-contributor
   fileDataContributor: '69566ab7-960f-475b-8e7c-b3118f30c6bd'
 }
 
@@ -619,7 +631,7 @@ resource appInsights 'Microsoft.Insights/components@2020-02-02' existing = {
 var appInsightsRoles = {
   // Monitoring Metrics Publisher (3913510d-42f4-4e42-8a64-420c390055eb)
   // Enables publishing metrics to Azure Monitor (required for custom metrics from Logic Apps)
-  // Docs: https://learn.microsoft.com/azure/role-based-access-control/built-in-roles#monitoring-metrics-publisher
+  // https://learn.microsoft.com/azure/role-based-access-control/built-in-roles/monitor#monitoring-metrics-publisher
   metricsPublisher: '3913510d-42f4-4e42-8a64-420c390055eb'
 }
 

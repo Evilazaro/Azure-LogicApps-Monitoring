@@ -1,3 +1,11 @@
+// ============================================================================
+// AZURE MONITOR HEALTH MODEL MODULE
+// ============================================================================
+// Creates a hierarchical service group structure for Azure Monitor to organize
+// and categorize monitoring resources. Enables logical grouping of resources
+// for better observability and resource management.
+// ============================================================================
+
 @description('Name of the service group for health model organization. Should be descriptive (e.g., solution name or business unit).')
 @minLength(3)
 @maxLength(50)

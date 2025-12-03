@@ -1,3 +1,11 @@
+// ============================================================================
+// MONITORING MODULE - Main Orchestration
+// ============================================================================
+// This module orchestrates the deployment of Azure monitoring infrastructure
+// including Azure Monitor Health Model, Log Analytics Workspace, and 
+// Application Insights for Logic Apps Standard observability and diagnostics.
+// ============================================================================
+
 @description('Base name for all monitoring resources. Used to generate unique resource names with consistent prefixes.')
 @minLength(3)
 @maxLength(20)
@@ -28,7 +36,6 @@ param tags object
 // Deploy Azure Monitor Health Model for hierarchical resource organization
 module healthModel 'azure-monitor-health-model.bicep' = {
   scope: resourceGroup()
-  name: 'HealthModelDeployment'
   params: {
     name: name
     tags: tags
@@ -38,7 +45,6 @@ module healthModel 'azure-monitor-health-model.bicep' = {
 // Deploy Log Analytics Workspace (30-day retention, PerGB2018 pricing tier)
 module operationalInsights 'log-analytics-workspace.bicep' = {
   scope: resourceGroup()
-  name: 'LogAnalyticsWorkspaceDeployment'
   params: {
     name: name
     envName: envName
@@ -53,7 +59,6 @@ module operationalInsights 'log-analytics-workspace.bicep' = {
 // Deploy Application Insights with workspace integration (workspace-based model)
 module insights 'app-insights.bicep' = {
   scope: resourceGroup()
-  name: 'AppInsightsDeployment'
   params: {
     name: name
     envName: envName
