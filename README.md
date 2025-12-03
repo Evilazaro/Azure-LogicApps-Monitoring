@@ -222,15 +222,14 @@ The solution implements defense-in-depth security patterns with managed identiti
 - **Least Privilege Access**: RBAC role assignments grant only required permissions to each resource, following the principle of least privilege
 - **Audit Trail**: All access and operations are logged to Log Analytics for compliance auditing and forensic investigation
 - **Secure by Default**: Bicep templates enforce TLS 1.2+ minimum version, HTTPS-only traffic, and secure storage configurations
-- **Network Isolation (Planned)**: Architecture supports future private endpoint integration for VNet (Virtual Network) isolation
+- **Network Isolation**: (Planned) Architecture supports future private endpoint integration for VNet (Virtual Network) isolation
 
 | Feature | Description | Implementation | Security Benefit |
 |---------|-------------|----------------|------------------|
-| **Managed Identity** | User-assigned managed identity for keyless authentication to Azure services | Deployed via `logic-app.bicep` (variable `mi`) | Eliminates credential storage, automatic rotation, no secret management overhead |
-| **RBAC Role Assignments** | Fine-grained access control with built-in Azure roles | Configured in `logic-app.bicep` (variables `storageRBAC`, `appInsightsRBAC`) | Enforces least-privilege access, prevents over-permissioned identities, auditable permissions |
+| **Managed Identity** | User-assigned managed identity for keyless authentication to Azure services | Deployed via `logic-app.bicep` (resource `mi`) | Eliminates credential storage, automatic rotation, no secret management overhead |
+| **RBAC Role Assignments** | Fine-grained access control with built-in Azure roles | Configured in `logic-app.bicep` (resources `storageRoleAssignments`, `appInsightsRoleAssignments`) | Enforces least-privilege access, prevents over-permissioned identities, auditable permissions |
 | **Storage Account Security** | TLS 1.2 minimum, HTTPS-only enforcement, shared key access enabled for Logic Apps file share requirement | Configured in `main.bicep` | Protects data in transit, prevents downgrade attacks, secure file share creation |
 | **Diagnostic Log Encryption** | At-rest encryption for all logs stored in Log Analytics and Storage Account | Enabled by default in Azure services | Protects sensitive telemetry data, meets compliance requirements (GDPR, HIPAA) |
-| **User-level RBAC (Development)** | RBAC role assignments for deployment user to enable local development | Configured in `logic-app.bicep` (resources `storageRoleAssignmentsUser`, `appInsightsRoleAssignmentsUser`) | Enables developers to test workflows locally with Azure resources |
 
 ### Infrastructure as Code
 
@@ -247,14 +246,14 @@ The entire solution deploys through modular Bicep templates, enabling repeatable
 
 | Feature | Description | Location | Deployment Scope |
 |---------|-------------|----------|------------------|
-| **Subscription-Level Orchestration** | Root deployment creates resource group and orchestrates all modules | main.bicep | Subscription (targetScope: 'subscription') |
+| **Subscription-Level Orchestration** | Root deployment creates resource group and orchestrates all modules | `main.bicep` | Subscription (targetScope: 'subscription') |
 | **Monitoring Module** | Self-contained module for Log Analytics, Application Insights, and Health Model | main.bicep | Resource group |
 | **Shared Resources Module** | Deploys storage accounts and managed identities | main.bicep | Resource group |
 | **Workload Module** | Orchestrates Logic App, Azure Functions, dashboards, and RBAC assignments | main.bicep | Resource group |
 | **Azure Developer CLI Support** | Simplified deployment workflow with `azd` commands and environment management | azure.yaml | Project level |
-| **Parameter Files** | Environment-specific configuration with token replacement | main.parameters.json | Multi-environment (dev/uat/prod) |
+| **Parameter Files** | Environment-specific configuration with token replacement | `main.parameters.json` | Multi-environment (dev/uat/prod) |
 | **Unique Naming** | Deterministic unique naming with `uniqueString()` ensures global uniqueness | All Bicep modules | Cross-region, cross-subscription |
-| **Tagging Strategy** | Consistent resource tagging for cost tracking, governance, and automation | main.bicep (variable `tags`) | All resources |
+| **Tagging Strategy** | Consistent resource tagging for cost tracking, governance, and automation | `main.bicep` (variable `tags`) | All resources |
 
 ## Installation & Setup
 
@@ -456,6 +455,32 @@ AzureMetrics
 ```
 
 **Purpose**: Monitor compute resource consumption to identify scaling needs, prevent throttling, and optimize cost by right-sizing App Service Plans.
+
+#### Monitor Workflow Trigger Latency
+
+This query tracks trigger latency to identify delays in workflow invocation:
+
+```kql
+AzureDiagnostics
+| where ResourceProvider == "MICROSOFT.WEB"
+| where Category == "WorkflowRuntime"
+| where OperationName has "TriggerCompleted"
+| extend workflowName = tostring(split(resource_workflowName_s, '/')[1])
+| extend triggerName = resource_triggerName_s
+| extend startTime = todatetime(startTime_t)
+| extend endTime = todatetime(endTime_t)
+| extend latency = datetime_diff('millisecond', endTime, startTime)
+| where TimeGenerated >= ago(24h)
+| summarize 
+    AvgLatency = avg(latency),
+    MaxLatency = max(latency),
+    P95Latency = percentile(latency, 95),
+    TriggerCount = count()
+    by workflowName, triggerName
+| order by AvgLatency desc
+```
+
+**Purpose**: Identify trigger performance issues, optimize polling intervals, and detect trigger throttling.
 
 ## Additional Resources
 
