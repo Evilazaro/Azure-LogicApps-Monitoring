@@ -80,13 +80,10 @@ param workspaceId string
 param storageAccountId string
 
 @description('Name of the existing storage account required by Logic Apps Standard for workflow state and artifacts.')
-param storageAccountName string
+param workflowStorageAccountName string
 
 @description('Name of the Application Insights instance for telemetry collection and performance monitoring.')
 param appInsightsName string
-
-@description('Name of existing Service Bus namespace for messaging integration with workflows.')
-param workflowStorageAccountName string
 
 @description('Resource tags applied to Logic App, App Service Plan, and dashboard resources for cost tracking and governance.')
 param tags object
@@ -609,8 +606,8 @@ resource mi 'Microsoft.ManagedIdentity/userAssignedIdentities@2023-01-31' = {
   tags: tags
 }
 
-resource storageAccount 'Microsoft.Storage/storageAccounts@2023-05-01' existing = {
-  name: storageAccountName
+resource workflowSA 'Microsoft.Storage/storageAccounts@2023-05-01' existing = {
+  name: workflowStorageAccountName
   scope: resourceGroup()
 }
 
@@ -639,7 +636,7 @@ var storageRBAC = [
 resource storageRoleAssignments 'Microsoft.Authorization/roleAssignments@2022-04-01' = [
   for roleId in storageRBAC: {
     name: guid(logicApp.id, logicApp.name, roleId)
-    scope: storageAccount
+    scope: workflowSA
     properties: {
       roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', roleId)
       principalId: mi.properties.principalId
@@ -651,7 +648,7 @@ resource storageRoleAssignments 'Microsoft.Authorization/roleAssignments@2022-04
 resource storageRoleAssignmentsUser 'Microsoft.Authorization/roleAssignments@2022-04-01' = [
   for roleId in storageRBAC: {
     name: guid(logicApp.id, logicApp.name, roleId, deployer().objectId)
-    scope: storageAccount
+    scope: workflowSA
     properties: {
       roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', roleId)
       principalId: deployer().objectId
@@ -756,19 +753,19 @@ resource logicApp 'Microsoft.Web/sites@2023-12-01' = {
         // Using managed identity for secure authentication
         {
           name: 'AzureWebJobsStorage__accountName'
-          value: storageAccountName
+          value: workflowStorageAccountName
         }
         {
           name: 'AzureWebJobsStorage__blobServiceUri'
-          value: 'https://${storageAccountName}.blob.${environment().suffixes.storage}'
+          value: 'https://${workflowStorageAccountName}.blob.${environment().suffixes.storage}'
         }
         {
           name: 'AzureWebJobsStorage__queueServiceUri'
-          value: 'https://${storageAccountName}.queue.${environment().suffixes.storage}'
+          value: 'https://${workflowStorageAccountName}.queue.${environment().suffixes.storage}'
         }
         {
           name: 'AzureWebJobsStorage__tableServiceUri'
-          value: 'https://${storageAccountName}.table.${environment().suffixes.storage}'
+          value: 'https://${workflowStorageAccountName}.table.${environment().suffixes.storage}'
         }
         {
           name: 'AzureWebJobsStorage__credential'
