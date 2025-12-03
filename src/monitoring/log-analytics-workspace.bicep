@@ -1,36 +1,15 @@
-// ============================================================================
-// LOG ANALYTICS WORKSPACE MODULE
-// ============================================================================
-// Provides centralized log aggregation and analytics using Kusto Query Language (KQL).
-// 
-// Configuration:
-// - SKU: PerGB2018 (pay-as-you-go pricing based on data ingested)
-// - Retention: 30 days (configurable, balances cost and compliance)
-// - Immediate Purge: Enabled (data deleted immediately after 30 days)
-// - Identity: System-assigned managed identity for secure data access
-//
-// This workspace serves as the central repository for:
-// - Logic Apps WorkflowRuntime logs
-// - Application Insights telemetry
-// - Service Bus diagnostic logs
-// - App Service Plan metrics
-//
-// Reference: https://learn.microsoft.com/azure/azure-monitor/logs/log-analytics-workspace-overview
-// ============================================================================
-
-// ============================================================================
-// PARAMETERS
-// ============================================================================
-
 @description('Base name for the Log Analytics workspace. Will be suffixed with unique string and "-law" to ensure global uniqueness.')
 @minLength(3)
 @maxLength(20)
 param name string
 
 @description('Environment name suffix to ensure uniqueness across environments (e.g., dev, test, prod).')
+@minLength(2)
+@maxLength(10)
 param envName string
 
 @description('Azure region for the Log Analytics workspace deployment. Should match application resources for optimal data transfer costs.')
+@minLength(3)
 param location string = resourceGroup().location
 
 @description('Resource tags applied to the Log Analytics workspace for cost tracking, organization, and compliance.')

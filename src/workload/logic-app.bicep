@@ -1,76 +1,15 @@
-// ============================================================================
-// LOGIC APP WORKLOAD MODULE
-// ============================================================================
-// Deploys Logic Apps Standard workload with comprehensive monitoring:
-// - App Service Plan (Workflow Standard SKU - WS1)
-// - Logic App (Function App + Workflow App)
-// - RBAC role assignments for managed identity access
-// - Diagnostic settings for logs and metrics
-// - Azure Portal dashboards for operational monitoring
-//
-// App Service Plan Configuration:
-// - SKU: WS1 (Workflow Standard tier)
-// - Elastic scaling: up to 20 workers
-// - Zone redundancy: configurable
-//
-// Logic App Configuration:
-// - Runtime: .NET (FUNCTIONS_WORKER_RUNTIME=dotnet)
-// - Identity: System-assigned managed identity
-// - Storage: Connection string-based (transition to managed identity recommended)
-// - Monitoring: Application Insights integration with connection string
-//
-// RBAC Roles Assigned to Logic App Managed Identity:
-// 1. Storage Account (4 roles):
-//    - Storage Blob Data Owner (b7e6dc6d-f1e8-4753-8033-0f276bb0955b)
-//      Full access to blob containers and data
-//      Docs: https://learn.microsoft.com/azure/role-based-access-control/built-in-roles#storage-blob-data-owner
-//
-//    - Storage Queue Data Contributor (974c5e8b-45b9-4653-ba55-5f855dd0fb88)
-//      Read, write, delete queue messages
-//      Docs: https://learn.microsoft.com/azure/role-based-access-control/built-in-roles#storage-queue-data-contributor
-//
-//    - Storage Table Data Contributor (0a9a7e1f-b9d0-4cc4-a60d-0319b160aaa3)
-//      Read, write, delete table entities
-//      Docs: https://learn.microsoft.com/azure/role-based-access-control/built-in-roles#storage-table-data-contributor
-//
-//    - Storage File Data Privileged Contributor (69566ab7-960f-475b-8e7c-b3118f30c6bd)
-//      Read, write, delete, modify ACLs on files/directories
-//      Docs: https://learn.microsoft.com/azure/role-based-access-control/built-in-roles#storage-file-data-privileged-contributor
-//
-// 2. Application Insights (1 role):
-//    - Monitoring Metrics Publisher (3913510d-42f4-4e42-8a64-420c390055eb)
-//      Publish metrics to Azure Monitor
-//      Docs: https://learn.microsoft.com/azure/role-based-access-control/built-in-roles#monitoring-metrics-publisher
-//
-// 3. Service Bus (1 role):
-//    - Azure Service Bus Data Owner (090c5cfd-751d-490a-894a-3ce6f1109419)
-//      Full control over Service Bus resources (send, receive, manage)
-//      Docs: https://learn.microsoft.com/azure/role-based-access-control/built-in-roles#azure-service-bus-data-owner
-//
-// Monitoring Dashboards:
-// - Service Plan Metrics: CPU, Memory, Data I/O, HTTP Queue Length
-// - Workflow Metrics: Runs, Failures, Triggers, Actions, Duration
-// - Time Range: Past 24 hours with auto-refresh
-//
-// References:
-// - Logic Apps Standard: https://learn.microsoft.com/azure/logic-apps/single-tenant-overview-compare
-// - App Service Plan: https://learn.microsoft.com/azure/app-service/overview-hosting-plans
-// - Managed Identity: https://learn.microsoft.com/azure/logic-apps/authenticate-with-managed-identity
-// ============================================================================
-
-// ============================================================================
-// PARAMETERS
-// ============================================================================
-
 @description('Base name for Logic App and App Service Plan resources. Will be suffixed with unique string for global uniqueness.')
 @minLength(3)
 @maxLength(20)
 param name string
 
 @description('Environment name suffix to ensure uniqueness across environments (e.g., dev, test, prod).')
+@minLength(2)
+@maxLength(10)
 param envName string
 
 @description('Azure region for Logic App deployment. Must support Workflow Standard SKU and Application Insights.')
+@minLength(3)
 param location string = resourceGroup().location
 
 @description('Resource ID of the Log Analytics workspace for diagnostic logs and metrics.')
@@ -94,7 +33,7 @@ param appInsightsName string
 })
 param tags object
 
-resource appServicePlan 'Microsoft.Web/serverfarms@2024-11-01' = {
+resource appServicePlan 'Microsoft.Web/serverfarms@2023-12-01' = {
   name: '${name}-${uniqueString(resourceGroup().id, name, envName, location)}-asp'
   location: location
   sku: {
@@ -117,7 +56,6 @@ resource appServicePlan 'Microsoft.Web/serverfarms@2024-11-01' = {
     targetWorkerCount: 0
     targetWorkerSizeId: 0
     zoneRedundant: false
-    asyncScalingEnabled: false
   }
 }
 
@@ -671,19 +609,7 @@ resource storageRoleAssignments 'Microsoft.Authorization/roleAssignments@2022-04
   }
 ]
 
-resource storageRoleAssignmentsUser 'Microsoft.Authorization/roleAssignments@2022-04-01' = [
-  for roleId in storageRBAC: {
-    name: guid(logicApp.id, logicApp.name, roleId, deployer().objectId)
-    scope: workflowSA
-    properties: {
-      roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', roleId)
-      principalId: deployer().objectId
-      principalType: 'User'
-    }
-  }
-]
-
-resource appInsights 'Microsoft.Insights/components@2020-02-02-preview' existing = {
+resource appInsights 'Microsoft.Insights/components@2020-02-02' existing = {
   name: appInsightsName
   scope: resourceGroup()
 }
@@ -709,18 +635,6 @@ resource appInsightsRoleAssignments 'Microsoft.Authorization/roleAssignments@202
       roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', roleId)
       principalId: mi.properties.principalId
       principalType: 'ServicePrincipal'
-    }
-  }
-]
-
-resource appInsightsRoleAssignmentsUser 'Microsoft.Authorization/roleAssignments@2022-04-01' = [
-  for roleId in appInsightsRBAC: {
-    name: guid(appInsights.id, appInsights.name, roleId, deployer().objectId)
-    scope: appInsights
-    properties: {
-      roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', roleId)
-      principalId: deployer().objectId
-      principalType: 'User'
     }
   }
 ]

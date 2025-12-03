@@ -1,28 +1,15 @@
-// ============================================================================
-// MONITORING MODULE ORCHESTRATOR
-// ============================================================================
-// Deploys the complete observability stack for Logic Apps:
-// 1. Azure Monitor Health Model - Hierarchical service group organization
-// 2. Log Analytics Workspace - Centralized log aggregation and KQL queries
-// 3. Application Insights - APM, distributed tracing, and telemetry
-//
-// This module provides workspace-based Application Insights (best practice)
-// integrated with Log Analytics for unified querying across all log sources.
-// ============================================================================
-
-// ============================================================================
-// PARAMETERS
-// ============================================================================
-
 @description('Base name for all monitoring resources. Used to generate unique resource names with consistent prefixes.')
 @minLength(3)
 @maxLength(20)
 param name string
 
 @description('Environment name suffix to ensure uniqueness across environments (e.g., dev, test, prod).')
+@minLength(2)
+@maxLength(10)
 param envName string
 
 @description('Azure region for monitoring resources deployment. Should match the Logic App deployment region for optimal performance.')
+@minLength(3)
 param location string = resourceGroup().location
 
 @description('Resource tags applied to all monitoring resources for cost tracking, organization, and compliance.')
@@ -40,8 +27,8 @@ param tags object
 
 // Deploy Azure Monitor Health Model for hierarchical resource organization
 module healthModel 'azure-monitor-health-model.bicep' = {
-  name: 'deployAzureMonitorHealthModel'
   scope: resourceGroup()
+  name: 'HealthModelDeployment'
   params: {
     name: name
     tags: tags
@@ -50,8 +37,8 @@ module healthModel 'azure-monitor-health-model.bicep' = {
 
 // Deploy Log Analytics Workspace (30-day retention, PerGB2018 pricing tier)
 module operationalInsights 'log-analytics-workspace.bicep' = {
-  name: 'deployLogAnalyticsWorkspace'
   scope: resourceGroup()
+  name: 'LogAnalyticsWorkspaceDeployment'
   params: {
     name: name
     envName: envName
@@ -65,8 +52,8 @@ module operationalInsights 'log-analytics-workspace.bicep' = {
 
 // Deploy Application Insights with workspace integration (workspace-based model)
 module insights 'app-insights.bicep' = {
-  name: 'deployAppInsights'
   scope: resourceGroup()
+  name: 'AppInsightsDeployment'
   params: {
     name: name
     envName: envName

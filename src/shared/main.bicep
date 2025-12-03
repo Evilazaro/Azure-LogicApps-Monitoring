@@ -1,33 +1,15 @@
-// ============================================================================
-// SHARED RESOURCES MODULE ORCHESTRATOR
-// ============================================================================
-// Orchestrates deployment of foundational resources required by Logic Apps:
-// 1. Storage Account - Runtime artifacts, state, and workflow definitions
-// 2. Monitoring Infrastructure - Log Analytics, Application Insights, Health Model
-// 3. Service Bus Namespace - Messaging and queue-based integrations
-//
-// Module Dependencies:
-// - monitoring module (storage) deploys first (no dependencies)
-// - Monitoring module deploys after monitoring (uses tags, location)
-// - Messaging module deploys last (requires workspace ID for diagnostics)
-//
-// Note: User-assigned managed identity should be added here in future versions
-// to enable RBAC-based authentication instead of connection strings.
-// ============================================================================
-
-// ============================================================================
-// PARAMETERS
-// ============================================================================
-
 @description('Base name for all shared resources. Used as prefix to ensure consistent naming across modules.')
 @minLength(3)
 @maxLength(20)
 param name string
 
 @description('Environment name suffix to ensure uniqueness across environments (e.g., dev, test, prod).')
+@minLength(2)
+@maxLength(10)
 param envName string
 
 @description('Azure region for shared resources deployment. Should match Logic App deployment region.')
+@minLength(3)
 param location string = resourceGroup().location
 
 @description('Resource tags applied to all shared resources for cost tracking, organization, and compliance.')

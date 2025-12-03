@@ -1,21 +1,3 @@
-// ============================================================================
-// WORKLOAD MODULE ORCHESTRATOR
-// ============================================================================
-// Orchestrates deployment of Logic Apps workload components:
-// 1. Azure Functions API - App Service Plan (Premium) + Function App
-// 2. Logic App Workflows - App Service Plan (WS1) + Logic App + Dashboards
-//
-// Module Dependencies:
-// - APIs module deploys first (Function App for API layer)
-// - Workflows module deploys after APIs (Logic Apps Standard workflows)
-//
-// Both modules share monitoring infrastructure (Log Analytics, App Insights)
-// from the shared resources module.
-// ============================================================================
-
-// ============================================================================
-// PARAMETERS
-// ============================================================================
 
 @description('Base name for Logic App and App Service Plan resources. Will be suffixed with unique string for global uniqueness.')
 @minLength(3)
@@ -23,9 +5,12 @@
 param name string
 
 @description('Environment name suffix to ensure uniqueness across environments (e.g., dev, test, prod).')
+@minLength(2)
+@maxLength(10)
 param envName string
 
 @description('Azure region for Logic App deployment. Must support Workflow Standard SKU and Application Insights.')
+@minLength(3)
 param location string = resourceGroup().location
 
 @description('Resource ID of the Log Analytics workspace for diagnostic logs and metrics.')

@@ -1,17 +1,3 @@
-// ============================================================================
-// MAIN DEPLOYMENT ORCHESTRATOR
-// ============================================================================
-// Deploys a complete Azure Logic Apps monitoring solution including:
-// - Resource group with standardized naming
-// - Shared resources (monitoring, storage, messaging, managed identity)
-// - Logic App workload with App Service Plan
-// - Monitoring dashboards and diagnostic settings
-//
-// This is a subscription-level deployment that creates all necessary resources
-// for a production-ready Logic Apps Standard deployment with comprehensive
-// observability using Azure Monitor, Application Insights, and Log Analytics.
-// ============================================================================
-
 targetScope = 'subscription'
 
 metadata name = 'Azure Logic Apps Monitoring Solution'

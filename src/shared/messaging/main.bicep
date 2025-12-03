@@ -1,58 +1,15 @@
-// ============================================================================
-// SERVICE BUS NAMESPACE MODULE
-// ============================================================================
-// Deploys Azure Service Bus namespace for messaging integration with Logic Apps.
-//
-// Configuration:
-// - SKU: Standard (supports topics, sessions, duplicate detection)
-// - Capacity: 16 messaging units
-// - Local Auth: DISABLED (enforces managed identity authentication - IMPORTANT!)
-// - Public Network Access: Enabled (can be restricted with firewall rules)
-//
-// AUTHENTICATION IMPORTANT NOTES:
-// 1. disableLocalAuth = true means connection strings/SAS keys are NOT allowed
-// 2. Logic Apps MUST use managed identity to connect to Service Bus
-// 3. Required RBAC roles for Logic Apps managed identity:
-//    - Azure Service Bus Data Owner (Role ID: 090c5cfd-751d-490a-894a-3ce6f1109419)
-//      Full access to send/receive messages and manage entities
-//      Docs: https://learn.microsoft.com/azure/role-based-access-control/built-in-roles#azure-service-bus-data-owner
-//
-//    - Azure Service Bus Data Sender (Role ID: 69a216fc-b8fb-44d8-bc22-1f3c2cd27a39)
-//      Send messages to queues and topics only
-//      Docs: https://learn.microsoft.com/azure/role-based-access-control/built-in-roles#azure-service-bus-data-sender
-//
-//    - Azure Service Bus Data Receiver (Role ID: 4f6d3b9b-027b-4f4c-9142-0e5a2a2247e0)
-//      Receive and delete messages from queues and subscriptions
-//      Docs: https://learn.microsoft.com/azure/role-based-access-control/built-in-roles#azure-service-bus-data-receiver
-//
-// 4. To use connection strings instead:
-//    - Change disableLocalAuth to false
-//    - Uncomment the serviceBusAuthRule resource and connection string output
-//    - Update Logic App connections to use connection string
-//    - NOTE: This is less secure and not recommended for production
-//
-// Diagnostic Settings:
-// - Configured to send all logs and metrics to Log Analytics workspace
-// - Enables monitoring of message flow, errors, and throttling
-//
-// References:
-// - Service Bus auth: https://learn.microsoft.com/azure/service-bus-messaging/service-bus-authentication-and-authorization
-// - Managed identity: https://learn.microsoft.com/azure/service-bus-messaging/service-bus-managed-service-identity
-// ============================================================================
-
-// ============================================================================
-// PARAMETERS
-// ============================================================================
-
 @description('Base name for Service Bus namespace. Will be suffixed with unique string and -sb for global uniqueness.')
 @minLength(3)
 @maxLength(20)
 param name string
 
 @description('Environment name suffix to ensure uniqueness across environments (e.g., dev, test, prod).')
+@minLength(2)
+@maxLength(10)
 param envName string
 
 @description('Azure region for Service Bus deployment. Should match Logic App region for optimal latency.')
+@minLength(3)
 param location string = resourceGroup().location
 
 @description('Resource ID of the Log Analytics workspace for diagnostic logs and metrics.')
