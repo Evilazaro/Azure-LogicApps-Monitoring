@@ -43,7 +43,7 @@ module healthModel 'azure-monitor-health-model.bicep' = {
 }
 
 // Deploy Log Analytics Workspace (30-day retention, PerGB2018 pricing tier)
-module operationalInsights 'log-analytics-workspace.bicep' = {
+module operational 'log-analytics-workspace.bicep' = {
   scope: resourceGroup()
   params: {
     name: name
@@ -51,9 +51,6 @@ module operationalInsights 'log-analytics-workspace.bicep' = {
     location: location
     tags: tags
   }
-  dependsOn: [
-    healthModel
-  ]
 }
 
 // Deploy Application Insights with workspace integration (workspace-based model)
@@ -63,7 +60,7 @@ module insights 'app-insights.bicep' = {
     name: name
     envName: envName
     location: location
-    logAnalyticsWorkspaceId: operationalInsights.outputs.AZURE_LOG_ANALYTICS_WORKSPACE_ID
+    logAnalyticsWorkspaceId: operational.outputs.AZURE_LOG_ANALYTICS_WORKSPACE_ID
     tags: tags
   }
 }
@@ -73,7 +70,7 @@ module insights 'app-insights.bicep' = {
 // ============================================================================
 
 @description('Resource ID of the Log Analytics workspace for configuring diagnostic settings on Azure resources')
-output AZURE_LOG_ANALYTICS_WORKSPACE_ID string = operationalInsights.outputs.AZURE_LOG_ANALYTICS_WORKSPACE_ID
+output AZURE_LOG_ANALYTICS_WORKSPACE_ID string = operational.outputs.AZURE_LOG_ANALYTICS_WORKSPACE_ID
 
 @description('Name of the deployed Application Insights instance for Logic Apps app settings configuration')
 output AZURE_APPLICATION_INSIGHTS_NAME string = insights.outputs.AZURE_APPLICATION_INSIGHTS_NAME
@@ -90,10 +87,10 @@ output AZURE_APPLICATION_INSIGHTS_CONNECTION_STRING string = insights.outputs.AZ
 output AZURE_APPLICATION_INSIGHTS_INSTRUMENTATION_KEY string = insights.outputs.AZURE_APPLICATION_INSIGHTS_INSTRUMENTATION_KEY
 
 @description('Name of the deployed Log Analytics workspace for reference and manual queries')
-output AZURE_LOG_ANALYTICS_WORKSPACE_NAME string = operationalInsights.outputs.AZURE_LOG_ANALYTICS_WORKSPACE_NAME
+output AZURE_LOG_ANALYTICS_WORKSPACE_NAME string = operational.outputs.AZURE_LOG_ANALYTICS_WORKSPACE_NAME
 
 @description('Resource ID of the storage account for diagnostic logs and metrics (deployed in monitoring module)')
-output LOGS_STORAGE_ACCOUNT_ID string = operationalInsights.outputs.LOGS_STORAGE_ACCOUNT_ID
+output LOGS_STORAGE_ACCOUNT_ID string = operational.outputs.LOGS_STORAGE_ACCOUNT_ID
 
 @description('Name of the deployed storage account for diagnostic logs and metrics (deployed in monitoring module)')
-output LOGS_STORAGE_ACCOUNT_NAME string = operationalInsights.outputs.LOGS_STORAGE_ACCOUNT_NAME
+output LOGS_STORAGE_ACCOUNT_NAME string = operational.outputs.LOGS_STORAGE_ACCOUNT_NAME

@@ -104,6 +104,9 @@ resource logAnalytics 'Microsoft.OperationalInsights/workspaces@2023-09-01' = {
       immediatePurgeDataOn30Days: true
     }
   }
+  dependsOn: [
+    logsSA
+  ]
 }
 
 @description('Resource ID of the deployed Log Analytics workspace for diagnostic settings configuration')

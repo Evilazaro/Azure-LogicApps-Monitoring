@@ -1,4 +1,3 @@
-
 // ============================================================================
 // WORKLOAD MODULE - Main Orchestration
 // ============================================================================
@@ -32,9 +31,6 @@ param storageAccountId string
 @description('Name of the Application Insights instance for telemetry collection and performance monitoring.')
 param appInsightsName string
 
-@description('Name of existing Service Bus namespace for messaging integration with workflows.')
-param workflowStorageAccountName string
-
 @description('Resource tags applied to Logic App, App Service Plan, and dashboard resources for cost tracking and governance.')
 @metadata({
   example: {
@@ -43,6 +39,18 @@ param workflowStorageAccountName string
   }
 })
 param tags object
+
+module messaging 'messaging/main.bicep' = {
+  name: 'MessagingDeployment'
+  scope: resourceGroup()
+  params: {
+    name: name
+    tags: tags
+    envName: envName
+    storageAccountId: storageAccountId
+    workspaceId: workspaceId
+  }
+}
 
 // ============================================================================
 // MODULE DEPLOYMENTS
@@ -70,7 +78,7 @@ module workflows 'logic-app.bicep' = {
     workspaceId: workspaceId
     storageAccountId: storageAccountId
     appInsightsName: appInsightsName
-    workflowStorageAccountName: workflowStorageAccountName
+    workflowStorageAccountName: messaging.outputs.WORKFLOW_STORAGE_ACCOUNT_NAME
     tags: tags
   }
   dependsOn: [
