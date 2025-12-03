@@ -66,14 +66,14 @@ resource rg 'Microsoft.Resources/resourceGroups@2024-03-01' = {
 // and user-assigned managed identity for secure authentication
 // ============================================================================
 
-module shared '../src/shared/main.bicep' = {
-  name: 'SharedResourcesDeployment'
+module monitoring '../src/monitoring/main.bicep' = {
+  name: 'MonitoringDeployment'
   scope: rg
   params: {
     name: solutionName
+    tags: tags
     envName: envName
     location: location
-    tags: tags
   }
 }
 
@@ -92,9 +92,9 @@ module workload '../src/workload/main.bicep' = {
     name: solutionName
     location: location
     envName: envName
-    workspaceId: shared.outputs.AZURE_LOG_ANALYTICS_WORKSPACE_ID
-    storageAccountId: shared.outputs.LOGS_STORAGE_ACCOUNT_ID
-    appInsightsName: shared.outputs.AZURE_APPLICATION_INSIGHTS_NAME
+    workspaceId: monitoring.outputs.AZURE_LOG_ANALYTICS_WORKSPACE_ID
+    storageAccountId: monitoring.outputs.LOGS_STORAGE_ACCOUNT_ID
+    appInsightsName: monitoring.outputs.AZURE_APPLICATION_INSIGHTS_NAME
     tags: tags
   }
 }
@@ -112,24 +112,23 @@ output RESOURCE_GROUP_ID string = rg.id
 
 // Monitoring
 @description('Resource ID of the Log Analytics workspace')
-output AZURE_LOG_ANALYTICS_WORKSPACE_ID string = shared.outputs.AZURE_LOG_ANALYTICS_WORKSPACE_ID
+output AZURE_LOG_ANALYTICS_WORKSPACE_ID string = monitoring.outputs.AZURE_LOG_ANALYTICS_WORKSPACE_ID
 
 @description('Name of the Log Analytics workspace')
-output AZURE_LOG_ANALYTICS_WORKSPACE_NAME string = shared.outputs.AZURE_LOG_ANALYTICS_WORKSPACE_NAME
+output AZURE_LOG_ANALYTICS_WORKSPACE_NAME string = monitoring.outputs.AZURE_LOG_ANALYTICS_WORKSPACE_NAME
 
 @description('Name of the Application Insights instance')
-output AZURE_APPLICATION_INSIGHTS_NAME string = shared.outputs.AZURE_APPLICATION_INSIGHTS_NAME
+output AZURE_APPLICATION_INSIGHTS_NAME string = monitoring.outputs.AZURE_APPLICATION_INSIGHTS_NAME
 
 @description('Resource ID of the Application Insights instance')
-output AZURE_APPLICATION_INSIGHTS_ID string = shared.outputs.AZURE_APPLICATION_INSIGHTS_ID
+output AZURE_APPLICATION_INSIGHTS_ID string = monitoring.outputs.AZURE_APPLICATION_INSIGHTS_ID
 
 @description('Connection string for Application Insights')
 @secure()
-output AZURE_APPLICATION_INSIGHTS_CONNECTION_STRING string = shared.outputs.AZURE_APPLICATION_INSIGHTS_CONNECTION_STRING
-
+output AZURE_APPLICATION_INSIGHTS_CONNECTION_STRING string = monitoring.outputs.AZURE_APPLICATION_INSIGHTS_CONNECTION_STRING
 @description('Instrumentation key for Application Insights')
 @secure()
-output AZURE_APPLICATION_INSIGHTS_INSTRUMENTATION_KEY string = shared.outputs.AZURE_APPLICATION_INSIGHTS_INSTRUMENTATION_KEY
+output AZURE_APPLICATION_INSIGHTS_INSTRUMENTATION_KEY string = monitoring.outputs.AZURE_APPLICATION_INSIGHTS_INSTRUMENTATION_KEY
 
 // Logic App Workload
 @description('Resource ID of the deployed Logic App')
