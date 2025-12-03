@@ -62,27 +62,35 @@ param workspaceId string
 param storageAccountId string
 
 @description('Resource tags applied to Service Bus resources for cost tracking and compliance.')
+@metadata({
+  example: {
+    Solution: 'tax-docs'
+    Environment: 'prod'
+  }
+})
 param tags object
 
 // ============================================================================
 // VARIABLES
 // ============================================================================
 
-// Generate a storage account name that meets Azure naming requirements:
-// - Must be 3-24 characters long
-// - Can contain only lowercase letters and numbers
-// - Must be globally unique across all Azure Storage accounts
+// Storage account name generation with Azure naming constraints
+// Azure Storage account names must:
+// - Be 3-24 characters long
+// - Contain only lowercase letters and numbers (no hyphens, underscores, or spaces)
+// - Be globally unique across all Azure Storage accounts
 var cleanedName = toLower(replace(replace(replace(name, '-', ''), '_', ''), ' ', ''))
 var uniqueSuffix = uniqueString(resourceGroup().id, name, envName, location)
 var storageAccountName = take('${cleanedName}${uniqueSuffix}stg', 24)
 
-// Storage account configuration
+// Storage account configuration aligned with Azure best practices
+// Reference: https://learn.microsoft.com/azure/storage/common/storage-account-overview
 var storageConfig = {
-  sku: 'Standard_LRS'
-  kind: 'StorageV2'
-  accessTier: 'Hot'
-  minimumTlsVersion: 'TLS1_2'
-  supportsHttpsTrafficOnly: true
+  sku: 'Standard_LRS' // Locally redundant storage - cost-effective for dev/test
+  kind: 'StorageV2' // General-purpose v2 - supports all storage services
+  accessTier: 'Hot' // Hot tier for frequently accessed data
+  minimumTlsVersion: 'TLS1_2' // Enforce TLS 1.2 minimum for security compliance
+  supportsHttpsTrafficOnly: true // Enforce HTTPS-only traffic (security best practice)
 }
 
 // ============================================================================
@@ -112,12 +120,12 @@ resource workflowSA 'Microsoft.Storage/storageAccounts@2023-05-01' = {
   }
 }
 
-resource queueServices 'Microsoft.Storage/storageAccounts/queueServices@2025-01-01' = {
+resource queueServices 'Microsoft.Storage/storageAccounts/queueServices@2023-05-01' = {
   name: 'default'
   parent: workflowSA
 }
 
-resource taxProcessing 'Microsoft.Storage/storageAccounts/queueServices/queues@2025-06-01' = {
+resource taxProcessing 'Microsoft.Storage/storageAccounts/queueServices/queues@2023-05-01' = {
   name: 'taxprocessing'
   parent: queueServices
   properties: {
@@ -127,12 +135,49 @@ resource taxProcessing 'Microsoft.Storage/storageAccounts/queueServices/queues@2
   }
 }
 
-resource diagSettings 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
-  name: 'named'
+// Diagnostic settings for storage account - capture logs and metrics
+resource storageDiagSettings 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
+  name: '${workflowSA.name}-diag'
   scope: workflowSA
   properties: {
     workspaceId: workspaceId
     storageAccountId: storageAccountId
+    metrics: [
+      {
+        category: 'Transaction'
+        enabled: true
+      }
+    ]
+  }
+}
+
+// Diagnostic settings for queue service - capture queue operations
+resource queueServiceDiagSettings 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
+  name: '${queueServices.name}-diag'
+  scope: queueServices
+  properties: {
+    workspaceId: workspaceId
+    storageAccountId: storageAccountId
+    logs: [
+      {
+        category: 'StorageRead'
+        enabled: true
+      }
+      {
+        category: 'StorageWrite'
+        enabled: true
+      }
+      {
+        category: 'StorageDelete'
+        enabled: true
+      }
+    ]
+    metrics: [
+      {
+        category: 'Transaction'
+        enabled: true
+      }
+    ]
   }
 }
 

@@ -37,9 +37,15 @@ param envName string
 param logAnalyticsWorkspaceId string
 
 @description('Resource tags applied to Application Insights and diagnostic settings for organization and governance.')
+@metadata({
+  example: {
+    Solution: 'tax-docs'
+    Environment: 'prod'
+  }
+})
 param tags object
 
-resource appInsights 'Microsoft.Insights/components@2020-02-02' = {
+resource appInsights 'Microsoft.Insights/components@2020-02-02-preview' = {
   name: '${name}-${uniqueString(resourceGroup().id, name, envName, location)}-appinsights'
   location: location
   kind: 'web'
@@ -64,9 +70,11 @@ output AZURE_APPLICATION_INSIGHTS_NAME string = appInsights.name
 output AZURE_APPLICATION_INSIGHTS_ID string = appInsights.id
 
 @description('Instrumentation key for Application Insights telemetry')
+@secure()
 output AZURE_APPLICATION_INSIGHTS_INSTRUMENTATION_KEY string = appInsights.properties.InstrumentationKey
 
 @description('Connection string for Application Insights telemetry (recommended over instrumentation key)')
+@secure()
 output AZURE_APPLICATION_INSIGHTS_CONNECTION_STRING string = appInsights.properties.ConnectionString
 
 // ============================================================================

@@ -86,6 +86,12 @@ param workflowStorageAccountName string
 param appInsightsName string
 
 @description('Resource tags applied to Logic App, App Service Plan, and dashboard resources for cost tracking and governance.')
+@metadata({
+  example: {
+    Solution: 'tax-docs'
+    Environment: 'prod'
+  }
+})
 param tags object
 
 resource appServicePlan 'Microsoft.Web/serverfarms@2024-11-01' = {
@@ -617,12 +623,32 @@ resource workflowSA 'Microsoft.Storage/storageAccounts@2023-05-01' existing = {
 
 // Storage Account RBAC roles for Logic Apps managed identity
 // These roles enable the Logic App to access storage account resources using managed identity
+// Reference: https://learn.microsoft.com/azure/role-based-access-control/built-in-roles
 var storageRoles = {
-  contributor: '17d1049b-9a84-46fb-8f53-869881c3d3ab' // Storage Account Contributor - Manage storage account
-  blobDataOwner: 'b7e6dc6d-f1e8-4753-8033-0f276bb0955b' // Storage Blob Data Owner - Full control over blobs
-  queueDataContributor: '974c5e8b-45b9-4653-ba55-5f855dd0fb88' // Storage Queue Data Contributor - Read/write queues
-  tableDataContributor: '0a9a7e1f-b9d0-4cc4-a60d-0319b160aaa3' // Storage Table Data Contributor - Read/write tables
-  fileDataContributor: '69566ab7-960f-475b-8e7c-b3118f30c6bd' // Storage File Data Privileged Contributor - Read/write files
+  // Storage Account Contributor (17d1049b-9a84-46fb-8f53-869881c3d3ab)
+  // Grants full management control over storage account
+  // Docs: https://learn.microsoft.com/azure/role-based-access-control/built-in-roles#storage-account-contributor
+  contributor: '17d1049b-9a84-46fb-8f53-869881c3d3ab'
+  
+  // Storage Blob Data Owner (b7e6dc6d-f1e8-4753-8033-0f276bb0955b)
+  // Provides full control over blob containers and data, including ACL management
+  // Docs: https://learn.microsoft.com/azure/role-based-access-control/built-in-roles#storage-blob-data-owner
+  blobDataOwner: 'b7e6dc6d-f1e8-4753-8033-0f276bb0955b'
+  
+  // Storage Queue Data Contributor (974c5e8b-45b9-4653-ba55-5f855dd0fb88)
+  // Allows reading, writing, and deleting Azure Storage queues and queue messages
+  // Docs: https://learn.microsoft.com/azure/role-based-access-control/built-in-roles#storage-queue-data-contributor
+  queueDataContributor: '974c5e8b-45b9-4653-ba55-5f855dd0fb88'
+  
+  // Storage Table Data Contributor (0a9a7e1f-b9d0-4cc4-a60d-0319b160aaa3)
+  // Allows reading, writing, and deleting Azure Storage tables and entities
+  // Docs: https://learn.microsoft.com/azure/role-based-access-control/built-in-roles#storage-table-data-contributor
+  tableDataContributor: '0a9a7e1f-b9d0-4cc4-a60d-0319b160aaa3'
+  
+  // Storage File Data Privileged Contributor (69566ab7-960f-475b-8e7c-b3118f30c6bd)
+  // Allows read, write, delete, and modify ACLs on files/directories (required for Logic Apps file share)
+  // Docs: https://learn.microsoft.com/azure/role-based-access-control/built-in-roles#storage-file-data-privileged-contributor
+  fileDataContributor: '69566ab7-960f-475b-8e7c-b3118f30c6bd'
 }
 
 var storageRBAC = [
@@ -657,14 +683,18 @@ resource storageRoleAssignmentsUser 'Microsoft.Authorization/roleAssignments@202
   }
 ]
 
-resource appInsights 'Microsoft.Insights/components@2020-02-02' existing = {
+resource appInsights 'Microsoft.Insights/components@2020-02-02-preview' existing = {
   name: appInsightsName
   scope: resourceGroup()
 }
 
 // Application Insights RBAC role for Logic Apps managed identity
+// Reference: https://learn.microsoft.com/azure/role-based-access-control/built-in-roles
 var appInsightsRoles = {
-  metricsPublisher: '3913510d-42f4-4e42-8a64-420c390055eb' // Monitoring Metrics Publisher - Publish metrics to Azure Monitor
+  // Monitoring Metrics Publisher (3913510d-42f4-4e42-8a64-420c390055eb)
+  // Enables publishing metrics to Azure Monitor (required for custom metrics from Logic Apps)
+  // Docs: https://learn.microsoft.com/azure/role-based-access-control/built-in-roles#monitoring-metrics-publisher
+  metricsPublisher: '3913510d-42f4-4e42-8a64-420c390055eb'
 }
 
 var appInsightsRBAC = [

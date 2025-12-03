@@ -26,6 +26,12 @@ param envName string
 param location string = resourceGroup().location
 
 @description('Resource tags applied to all monitoring resources for cost tracking, organization, and compliance.')
+@metadata({
+  example: {
+    Solution: 'tax-docs'
+    Environment: 'prod'
+  }
+})
 param tags object
 
 // ============================================================================
@@ -84,9 +90,11 @@ output AZURE_APPLICATION_INSIGHTS_NAME string = insights.outputs.AZURE_APPLICATI
 output AZURE_APPLICATION_INSIGHTS_ID string = insights.outputs.AZURE_APPLICATION_INSIGHTS_ID
 
 @description('Connection string for Application Insights telemetry')
+@secure()
 output AZURE_APPLICATION_INSIGHTS_CONNECTION_STRING string = insights.outputs.AZURE_APPLICATION_INSIGHTS_CONNECTION_STRING
 
 @description('Instrumentation key for Application Insights telemetry')
+@secure()
 output AZURE_APPLICATION_INSIGHTS_INSTRUMENTATION_KEY string = insights.outputs.AZURE_APPLICATION_INSIGHTS_INSTRUMENTATION_KEY
 
 @description('Name of the deployed Log Analytics workspace for reference and manual queries')

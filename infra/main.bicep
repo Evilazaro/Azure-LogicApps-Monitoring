@@ -146,9 +146,11 @@ output AZURE_APPLICATION_INSIGHTS_NAME string = shared.outputs.AZURE_APPLICATION
 output AZURE_APPLICATION_INSIGHTS_ID string = shared.outputs.AZURE_APPLICATION_INSIGHTS_ID
 
 @description('Connection string for Application Insights')
+@secure()
 output AZURE_APPLICATION_INSIGHTS_CONNECTION_STRING string = shared.outputs.AZURE_APPLICATION_INSIGHTS_CONNECTION_STRING
 
 @description('Instrumentation key for Application Insights')
+@secure()
 output AZURE_APPLICATION_INSIGHTS_INSTRUMENTATION_KEY string = shared.outputs.AZURE_APPLICATION_INSIGHTS_INSTRUMENTATION_KEY
 
 // Logic App Workload

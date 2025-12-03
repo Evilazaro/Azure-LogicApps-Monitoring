@@ -27,6 +27,12 @@
 param name string
 
 @description('Resource tags applied to the service group for organization, governance, and cost tracking.')
+@metadata({
+  example: {
+    Solution: 'tax-docs'
+    Environment: 'prod'
+  }
+})
 param tags object
 
 resource rootServiceGroup 'Microsoft.Management/serviceGroups@2024-02-01-preview' existing = {

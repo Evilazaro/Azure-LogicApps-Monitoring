@@ -34,6 +34,12 @@ param envName string
 param location string = resourceGroup().location
 
 @description('Resource tags applied to the Log Analytics workspace for cost tracking, organization, and compliance.')
+@metadata({
+  example: {
+    Solution: 'tax-docs'
+    Environment: 'prod'
+  }
+})
 param tags object
 
 // ============================================================================

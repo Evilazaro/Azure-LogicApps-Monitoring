@@ -48,6 +48,12 @@ param storageAccountId string
 param appInsightsName string
 
 @description('Resource tags applied to Logic App, App Service Plan, and dashboard resources for cost tracking and governance.')
+@metadata({
+  example: {
+    Solution: 'tax-docs'
+    Environment: 'prod'
+  }
+})
 param tags object
 
 // ============================================================================
@@ -108,12 +114,12 @@ resource appServicePlan 'Microsoft.Web/serverfarms@2024-11-01' = {
   }
 }
 
-resource appInsights 'Microsoft.Insights/components@2020-02-02' existing = {
+resource appInsights 'Microsoft.Insights/components@2020-02-02-preview' existing = {
   name: appInsightsName
   scope: resourceGroup()
 }
 
-resource webApi 'Microsoft.Web/sites@2025-03-01' = {
+resource webApi 'Microsoft.Web/sites@2024-04-01' = {
   name: functionAppName
   location: location
   kind: functionAppConfig.kind
