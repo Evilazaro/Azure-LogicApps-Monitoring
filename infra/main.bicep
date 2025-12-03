@@ -15,6 +15,7 @@ param solutionName string = 'tax-docs'
 
 @description('Azure region where all resources will be deployed (e.g., eastus2, westeurope). Must support Logic Apps Standard, Application Insights, and Service Bus.')
 @minLength(3)
+@maxLength(50)
 param location string
 
 @description('Environment name to differentiate deployments and apply environment-specific configurations.')
@@ -23,9 +24,11 @@ param location string
   'uat'
   'prod'
 ])
+@maxLength(10)
 param envName string
 
 @description('Deployment timestamp for tracking purposes. Auto-generated at deployment time.')
+@maxLength(10)
 param deploymentDate string = utcNow('yyyy-MM-dd')
 
 // ============================================================================
@@ -67,7 +70,6 @@ resource rg 'Microsoft.Resources/resourceGroups@2024-03-01' = {
 // ============================================================================
 
 module monitoring '../src/monitoring/main.bicep' = {
-  name: 'MonitoringDeployment'
   scope: rg
   params: {
     name: solutionName
@@ -86,7 +88,6 @@ module monitoring '../src/monitoring/main.bicep' = {
 // ============================================================================
 
 module workload '../src/workload/main.bicep' = {
-  name: 'WorkloadDeployment'
   scope: resourceGroup(rgName)
   params: {
     name: solutionName

@@ -22,12 +22,15 @@ param envName string
 
 @description('Azure region for Logic App deployment. Must support Workflow Standard SKU and Application Insights.')
 @minLength(3)
+@maxLength(50)
 param location string = resourceGroup().location
 
-@description('Resource ID of the Log Analytics workspace for diagnostic logs and metrics.')
+@description('Resource ID of the Log Analytics workspace for diagnostic logs and metrics. Example: /subscriptions/{subscriptionId}/resourceGroups/{resourceGroupName}/providers/Microsoft.OperationalInsights/workspaces/{workspaceName}')
+@minLength(50)
 param workspaceId string
 
-@description('Storage Account ID for diagnostic logs and metrics.')
+@description('Storage Account ID for diagnostic logs and metrics. Example: /subscriptions/{subscriptionId}/resourceGroups/{resourceGroupName}/providers/Microsoft.Storage/storageAccounts/{accountName}')
+@minLength(50)
 param storageAccountId string
 
 @description('Name of the Application Insights instance for telemetry collection and performance monitoring.')
@@ -46,7 +49,7 @@ param tags object
 // VARIABLES
 // ============================================================================
 
-// App Service Plan configuration for API Function App
+@description('App Service Plan SKU and configuration for Linux-based Premium Function App')
 var appServicePlanConfig = {
   sku: {
     name: 'P0v3'
@@ -58,7 +61,7 @@ var appServicePlanConfig = {
   reserved: true // Required for Linux plans
 }
 
-// Function App configuration
+@description('Function App runtime configuration for .NET Core 9.0')
 var functionAppConfig = {
   runtime: 'DOTNETCORE'
   version: '9.0'
@@ -66,8 +69,11 @@ var functionAppConfig = {
 }
 
 // Resource naming
+@description('Unique suffix generated from resource group, name, environment, and location')
 var resourceSuffix = uniqueString(resourceGroup().id, name, envName, location)
+@description('Generated App Service Plan name with unique suffix')
 var appServicePlanName = '${name}-${resourceSuffix}-apis-asp'
+@description('Generated Function App name with unique suffix')
 var functionAppName = '${name}-${resourceSuffix}-api'
 
 // ============================================================================

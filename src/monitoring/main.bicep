@@ -18,6 +18,7 @@ param envName string
 
 @description('Azure region for monitoring resources deployment. Should match the Logic App deployment region for optimal performance.')
 @minLength(3)
+@maxLength(50)
 param location string = resourceGroup().location
 
 @description('Resource tags applied to all monitoring resources for cost tracking, organization, and compliance.')

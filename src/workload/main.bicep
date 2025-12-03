@@ -20,12 +20,15 @@ param envName string
 
 @description('Azure region for Logic App deployment. Must support Workflow Standard SKU and Application Insights.')
 @minLength(3)
+@maxLength(50)
 param location string = resourceGroup().location
 
-@description('Resource ID of the Log Analytics workspace for diagnostic logs and metrics.')
+@description('Resource ID of the Log Analytics workspace for diagnostic logs and metrics. Example: /subscriptions/{subscriptionId}/resourceGroups/{resourceGroupName}/providers/Microsoft.OperationalInsights/workspaces/{workspaceName}')
+@minLength(50)
 param workspaceId string
 
-@description('Storage Account ID for diagnostic logs and metrics.')
+@description('Storage Account ID for diagnostic logs and metrics. Example: /subscriptions/{subscriptionId}/resourceGroups/{resourceGroupName}/providers/Microsoft.Storage/storageAccounts/{accountName}')
+@minLength(50)
 param storageAccountId string
 
 @description('Name of the Application Insights instance for telemetry collection and performance monitoring.')

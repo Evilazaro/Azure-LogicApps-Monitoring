@@ -13,6 +13,7 @@ param name string
 
 @description('Azure region for Application Insights deployment. Must match Log Analytics workspace region for workspace-based model.')
 @minLength(3)
+@maxLength(50)
 param location string = resourceGroup().location
 
 @description('Environment name suffix to ensure uniqueness across environments (e.g., dev, test, prod).')
@@ -20,7 +21,7 @@ param location string = resourceGroup().location
 @maxLength(10)
 param envName string
 
-@description('Resource ID of the Log Analytics workspace for workspace-based Application Insights integration (best practice).')
+@description('Resource ID of the Log Analytics workspace for workspace-based Application Insights integration (best practice). Example: /subscriptions/{subscriptionId}/resourceGroups/{resourceGroupName}/providers/Microsoft.OperationalInsights/workspaces/{workspaceName}')
 param logAnalyticsWorkspaceId string
 
 @description('Resource tags applied to Application Insights and diagnostic settings for organization and governance.')

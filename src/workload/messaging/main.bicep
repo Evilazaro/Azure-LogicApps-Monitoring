@@ -20,12 +20,15 @@ param envName string
 
 @description('Azure region for Service Bus deployment. Should match Logic App region for optimal latency.')
 @minLength(3)
+@maxLength(50)
 param location string = resourceGroup().location
 
-@description('Resource ID of the Log Analytics workspace for diagnostic logs and metrics.')
+@description('Resource ID of the Log Analytics workspace for diagnostic logs and metrics. Example: /subscriptions/{subscriptionId}/resourceGroups/{resourceGroupName}/providers/Microsoft.OperationalInsights/workspaces/{workspaceName}')
+@minLength(50)
 param workspaceId string
 
-@description('Storage Account ID for diagnostic logs and metrics.')
+@description('Storage Account ID for diagnostic logs and metrics. Example: /subscriptions/{subscriptionId}/resourceGroups/{resourceGroupName}/providers/Microsoft.Storage/storageAccounts/{accountName}')
+@minLength(50)
 param storageAccountId string
 
 @description('Resource tags applied to Service Bus resources for cost tracking and compliance.')
@@ -37,6 +40,11 @@ param storageAccountId string
 })
 param tags object
 
+@description('Name of the storage queue for tax processing workflow tasks')
+@minLength(3)
+@maxLength(63)
+param queueName string = 'taxprocessing'
+
 // ============================================================================
 // VARIABLES
 // ============================================================================
@@ -46,8 +54,11 @@ param tags object
 // - Be 3-24 characters long
 // - Contain only lowercase letters and numbers (no hyphens, underscores, or spaces)
 // - Be globally unique across all Azure Storage accounts
+@description('Cleaned base name with special characters removed for storage account naming')
 var cleanedName = toLower(replace(replace(replace(name, '-', ''), '_', ''), ' ', ''))
+@description('Unique suffix based on resource group, name, environment, and location')
 var uniqueSuffix = uniqueString(resourceGroup().id, name, envName, location)
+@description('Generated storage account name ensuring global uniqueness and Azure naming compliance')
 var storageAccountName = take('${cleanedName}${uniqueSuffix}stg', 24)
 
 // Storage account configuration aligned with Azure best practices
@@ -93,7 +104,7 @@ resource queueServices 'Microsoft.Storage/storageAccounts/queueServices@2023-05-
 }
 
 resource taxProcessing 'Microsoft.Storage/storageAccounts/queueServices/queues@2023-05-01' = {
-  name: 'taxprocessing'
+  name: queueName
   parent: queueServices
   properties: {
     metadata: {

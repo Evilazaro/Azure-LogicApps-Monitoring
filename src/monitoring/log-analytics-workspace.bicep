@@ -18,6 +18,7 @@ param envName string
 
 @description('Azure region for the Log Analytics workspace deployment. Should match application resources for optimal data transfer costs.')
 @minLength(3)
+@maxLength(50)
 param location string = resourceGroup().location
 
 @description('Resource tags applied to the Log Analytics workspace for cost tracking, organization, and compliance.')
@@ -37,7 +38,9 @@ param tags object
 // - Must be 3-24 characters long
 // - Can contain only lowercase letters and numbers
 // - Must be globally unique across all Azure Storage accounts
+@description('Cleaned base name with hyphens, underscores, and spaces removed for storage account naming')
 var cleanedName = toLower(replace(replace(replace(name, '-', ''), '_', ''), ' ', ''))
+@description('Unique suffix based on resource group, name, environment, and location to ensure global uniqueness')
 var uniqueSuffix = uniqueString(resourceGroup().id, name, envName, location)
 
 // Storage account configuration

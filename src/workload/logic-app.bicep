@@ -22,15 +22,20 @@ param envName string
 
 @description('Azure region for Logic App deployment. Must support Workflow Standard SKU and Application Insights.')
 @minLength(3)
+@maxLength(50)
 param location string = resourceGroup().location
 
-@description('Resource ID of the Log Analytics workspace for diagnostic logs and metrics.')
+@description('Resource ID of the Log Analytics workspace for diagnostic logs and metrics. Example: /subscriptions/{subscriptionId}/resourceGroups/{resourceGroupName}/providers/Microsoft.OperationalInsights/workspaces/{workspaceName}')
+@minLength(50)
 param workspaceId string
 
-@description('Storage Account ID for diagnostic logs and metrics.')
+@description('Storage Account ID for diagnostic logs and metrics. Example: /subscriptions/{subscriptionId}/resourceGroups/{resourceGroupName}/providers/Microsoft.Storage/storageAccounts/{accountName}')
+@minLength(50)
 param storageAccountId string
 
-@description('Name of the existing storage account required by Logic Apps Standard for workflow state and artifacts.')
+@description('Name of the existing storage account required by Logic Apps Standard for workflow state and artifacts. Must be 3-24 characters, lowercase letters and numbers only.')
+@minLength(3)
+@maxLength(24)
 param workflowStorageAccountName string
 
 @description('Name of the Application Insights instance for telemetry collection and performance monitoring.')
@@ -577,27 +582,27 @@ resource workflowSA 'Microsoft.Storage/storageAccounts@2023-05-01' existing = {
 var storageRoles = {
   // Storage Account Contributor (17d1049b-9a84-46fb-8f53-869881c3d3ab)
   // Grants full management control over storage account
-  // https://learn.microsoft.com/azure/role-based-access-control/built-in-roles/storage#storage-account-contributor
+  // Learn more: https://learn.microsoft.com/azure/role-based-access-control/built-in-roles#storage-account-contributor
   contributor: '17d1049b-9a84-46fb-8f53-869881c3d3ab'
   
   // Storage Blob Data Owner (b7e6dc6d-f1e8-4753-8033-0f276bb0955b)
   // Provides full control over blob containers and data, including ACL management
-  // https://learn.microsoft.com/azure/role-based-access-control/built-in-roles/storage#storage-blob-data-owner
+  // Learn more: https://learn.microsoft.com/azure/role-based-access-control/built-in-roles#storage-blob-data-owner
   blobDataOwner: 'b7e6dc6d-f1e8-4753-8033-0f276bb0955b'
   
   // Storage Queue Data Contributor (974c5e8b-45b9-4653-ba55-5f855dd0fb88)
   // Allows reading, writing, and deleting Azure Storage queues and queue messages
-  // https://learn.microsoft.com/azure/role-based-access-control/built-in-roles/storage#storage-queue-data-contributor
+  // Learn more: https://learn.microsoft.com/azure/role-based-access-control/built-in-roles#storage-queue-data-contributor
   queueDataContributor: '974c5e8b-45b9-4653-ba55-5f855dd0fb88'
   
   // Storage Table Data Contributor (0a9a7e1f-b9d0-4cc4-a60d-0319b160aaa3)
   // Allows reading, writing, and deleting Azure Storage tables and entities
-  // https://learn.microsoft.com/azure/role-based-access-control/built-in-roles/storage#storage-table-data-contributor
+  // Learn more: https://learn.microsoft.com/azure/role-based-access-control/built-in-roles#storage-table-data-contributor
   tableDataContributor: '0a9a7e1f-b9d0-4cc4-a60d-0319b160aaa3'
   
   // Storage File Data Privileged Contributor (69566ab7-960f-475b-8e7c-b3118f30c6bd)
   // Allows read, write, delete, and modify ACLs on files/directories (required for Logic Apps file share)
-  // https://learn.microsoft.com/azure/role-based-access-control/built-in-roles/storage#storage-file-data-privileged-contributor
+  // Learn more: https://learn.microsoft.com/azure/role-based-access-control/built-in-roles#storage-file-data-privileged-contributor
   fileDataContributor: '69566ab7-960f-475b-8e7c-b3118f30c6bd'
 }
 
@@ -631,7 +636,7 @@ resource appInsights 'Microsoft.Insights/components@2020-02-02' existing = {
 var appInsightsRoles = {
   // Monitoring Metrics Publisher (3913510d-42f4-4e42-8a64-420c390055eb)
   // Enables publishing metrics to Azure Monitor (required for custom metrics from Logic Apps)
-  // https://learn.microsoft.com/azure/role-based-access-control/built-in-roles/monitor#monitoring-metrics-publisher
+  // Learn more: https://learn.microsoft.com/azure/role-based-access-control/built-in-roles#monitoring-metrics-publisher
   metricsPublisher: '3913510d-42f4-4e42-8a64-420c390055eb'
 }
 
@@ -800,6 +805,7 @@ resource DiagnosticSettingsLogicApp 'Microsoft.Insights/diagnosticSettings@2021-
   }
 }
 
+@description('Name of the Azure Portal dashboard for workflow metrics visualization')
 param dashBoardName string = '${name}-dashboard'
 
 resource workflowsDashboard 'Microsoft.Portal/dashboards@2020-09-01-preview' = {
