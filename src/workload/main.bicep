@@ -34,9 +34,6 @@ param workspaceId string
 @description('Storage Account ID for diagnostic logs and metrics.')
 param storageAccountId string
 
-@description('Name of the existing storage account required by Logic Apps Standard for workflow state and artifacts.')
-param storageAccountName string
-
 @description('Name of the Application Insights instance for telemetry collection and performance monitoring.')
 param appInsightsName string
 
@@ -73,7 +70,6 @@ module workflows 'logic-app.bicep' = {
     envName: envName
     workspaceId: workspaceId
     storageAccountId: storageAccountId
-    storageAccountName: storageAccountName
     appInsightsName: appInsightsName
     workflowStorageAccountName: workflowStorageAccountName
     tags: tags

@@ -110,7 +110,6 @@ module workload '../src/workload/main.bicep' = {
     storageAccountId: shared.outputs.LOGS_STORAGE_ACCOUNT_ID
     appInsightsName: shared.outputs.AZURE_APPLICATION_INSIGHTS_NAME
     workflowStorageAccountName: shared.outputs.WORKFLOW_STORAGE_ACCOUNT_NAME
-    storageAccountName: shared.outputs.WORKFLOW_STORAGE_ACCOUNT_NAME
     tags: tags
   }
 }
