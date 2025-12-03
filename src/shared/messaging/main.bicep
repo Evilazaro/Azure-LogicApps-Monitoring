@@ -112,8 +112,24 @@ resource workflowSA 'Microsoft.Storage/storageAccounts@2023-05-01' = {
   }
 }
 
+resource queueServices 'Microsoft.Storage/storageAccounts/queueServices@2025-01-01' = {
+  name: 'default'
+  parent: workflowSA
+}
+
+resource taxProcessing 'Microsoft.Storage/storageAccounts/queueServices/queues@2025-06-01' = {
+  name: 'taxprocessing'
+  parent: queueServices
+  properties: {
+    metadata: {
+      purpose: 'Logic Apps workflow runtime queue for tax processing tasks'
+    }
+  }
+}
+
 resource diagSettings 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
   name: 'named'
+  scope: workflowSA
   properties: {
     workspaceId: workspaceId
     storageAccountId: storageAccountId
