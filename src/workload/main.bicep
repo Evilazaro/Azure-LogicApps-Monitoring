@@ -1,60 +1,55 @@
-
-// ============================================================================
-// WORKLOAD MODULE - Main Orchestration
-// ============================================================================
-// Orchestrates deployment of Logic Apps Standard workload tier including:
-// - API Function App for custom APIs and integrations
-// - Logic App workflows with App Service Plan (Workflow Standard SKU)
-// - User-assigned managed identity for secure resource access
-// - Diagnostic settings and Azure Portal dashboards for monitoring
-// ============================================================================
-
-@description('Base name for Logic App and App Service Plan resources. Will be suffixed with unique string for global uniqueness.')
+@description('Base name for Logic App and App Service Plan resources.')
 @minLength(3)
 @maxLength(20)
 param name string
 
-@description('Environment name suffix to ensure uniqueness across environments (e.g., dev, test, prod).')
+@description('Environment name suffix to ensure uniqueness.')
 @minLength(2)
 @maxLength(10)
 param envName string
 
-@description('Azure region for Logic App deployment. Must support Workflow Standard SKU and Application Insights.')
+@description('Azure region for Logic App deployment.')
 @minLength(3)
+@maxLength(50)
 param location string = resourceGroup().location
 
 @description('Resource ID of the Log Analytics workspace for diagnostic logs and metrics.')
+@minLength(50)
 param workspaceId string
 
 @description('Storage Account ID for diagnostic logs and metrics.')
+@minLength(50)
 param storageAccountId string
 
-@description('Name of the Application Insights instance for telemetry collection and performance monitoring.')
-param appInsightsName string
+@description('Connection string for Application Insights instance.')
+param appInsightsConnectionString string
 
-@description('Name of existing Service Bus namespace for messaging integration with workflows.')
-param workflowStorageAccountName string
+@description('Instrumentation key for Application Insights instance.')
+param appInsightsInstrumentationKey string
 
-@description('Resource tags applied to Logic App, App Service Plan, and dashboard resources for cost tracking and governance.')
-@metadata({
-  example: {
-    Solution: 'tax-docs'
-    Environment: 'prod'
-  }
-})
+@description('Resource tags applied to all workload resources.')
 param tags object
 
-// ============================================================================
-// MODULE DEPLOYMENTS
-// ============================================================================
+module messaging 'messaging/main.bicep' = {
+  name: 'messagingDeployment'
+  scope: resourceGroup()
+  params: {
+    name: name
+    tags: tags
+    envName: envName
+    storageAccountId: storageAccountId
+    workspaceId: workspaceId
+  }
+}
 
 module apis 'azure-function.bicep' = {
+  name: 'apisDeployment'
   scope: resourceGroup()
   params: {
     name: name
     envName: envName
     location: location
-    appInsightsName: appInsightsName
+    appInsightsConnectionString: appInsightsConnectionString
     workspaceId: workspaceId
     storageAccountId: storageAccountId
     tags: tags
@@ -62,6 +57,7 @@ module apis 'azure-function.bicep' = {
 }
 
 module workflows 'logic-app.bicep' = {
+  name: 'workflowsDeployment'
   scope: resourceGroup()
   params: {
     name: name
@@ -69,8 +65,9 @@ module workflows 'logic-app.bicep' = {
     envName: envName
     workspaceId: workspaceId
     storageAccountId: storageAccountId
-    appInsightsName: appInsightsName
-    workflowStorageAccountName: workflowStorageAccountName
+    appInsightsConnectionString: appInsightsConnectionString
+    appInsightsInstrumentationKey: appInsightsInstrumentationKey
+    workflowStorageAccountName: messaging.outputs.WORKFLOW_STORAGE_ACCOUNT_NAME
     tags: tags
   }
   dependsOn: [
@@ -78,11 +75,7 @@ module workflows 'logic-app.bicep' = {
   ]
 }
 
-// ============================================================================
-// OUTPUTS
-// ============================================================================
-
-@description('Resource ID of the deployed Logic App for reference and integration')
+@description('Resource ID of the deployed Logic App')
 output LOGIC_APP_ID string = workflows.outputs.LOGIC_APP_ID
 
 @description('Name of the deployed Logic App')

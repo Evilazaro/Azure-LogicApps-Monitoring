@@ -1,23 +1,9 @@
-// ============================================================================
-// AZURE MONITOR HEALTH MODEL MODULE
-// ============================================================================
-// Creates a hierarchical service group structure for Azure Monitor to organize
-// and categorize monitoring resources. Enables logical grouping of resources
-// for better observability and resource management.
-// ============================================================================
-
-@description('Name of the service group for health model organization. Should be descriptive (e.g., solution name or business unit).')
+@description('Name of the service group for health model organization.')
 @minLength(3)
-@maxLength(50)
+@maxLength(260)
 param name string
 
-@description('Resource tags applied to the service group for organization, governance, and cost tracking.')
-@metadata({
-  example: {
-    Solution: 'tax-docs'
-    Environment: 'prod'
-  }
-})
+@description('Resource tags applied to the service group.')
 param tags object
 
 resource rootServiceGroup 'Microsoft.Management/serviceGroups@2024-02-01-preview' existing = {
@@ -37,4 +23,3 @@ resource serviceGroup 'Microsoft.Management/serviceGroups@2024-02-01-preview' = 
     }
   }
 }
-

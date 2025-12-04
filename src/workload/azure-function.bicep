@@ -1,52 +1,34 @@
-// ============================================================================
-// API FUNCTION APP MODULE
-// ============================================================================
-// Deploys Azure Function App on Linux App Service Plan for custom API endpoints.
-// Configuration:
-// - Premium P0v3 tier for production-ready performance
-// - .NET Core 9.0 runtime
-// - Application Insights integration for monitoring
-// - Diagnostic settings for HTTP logs, console logs, and app logs
-// - HTTPS-only with TLS 1.2 minimum
-// ============================================================================
-
-@description('Base name for Logic App and App Service Plan resources. Will be suffixed with unique string for global uniqueness.')
+@description('Base name for Logic App and App Service Plan resources.')
 @minLength(3)
 @maxLength(20)
 param name string
 
-@description('Environment name suffix to ensure uniqueness across environments (e.g., dev, test, prod).')
+@description('Environment name suffix to ensure uniqueness.')
 @minLength(2)
 @maxLength(10)
 param envName string
 
-@description('Azure region for Logic App deployment. Must support Workflow Standard SKU and Application Insights.')
+@description('Azure region for Logic App deployment.')
 @minLength(3)
+@maxLength(50)
 param location string = resourceGroup().location
 
 @description('Resource ID of the Log Analytics workspace for diagnostic logs and metrics.')
+@minLength(50)
 param workspaceId string
 
 @description('Storage Account ID for diagnostic logs and metrics.')
+@minLength(50)
 param storageAccountId string
 
-@description('Name of the Application Insights instance for telemetry collection and performance monitoring.')
-param appInsightsName string
+@description('Connection string for Application Insights instance.')
+param appInsightsConnectionString string
 
-@description('Resource tags applied to Logic App, App Service Plan, and dashboard resources for cost tracking and governance.')
-@metadata({
-  example: {
-    Solution: 'tax-docs'
-    Environment: 'prod'
-  }
-})
+@description('Resource tags applied to all resources.')
 param tags object
 
-// ============================================================================
-// VARIABLES
-// ============================================================================
+var resourceSuffix = uniqueString(resourceGroup().id, name, envName, location)
 
-// App Service Plan configuration for API Function App
 var appServicePlanConfig = {
   sku: {
     name: 'P0v3'
@@ -55,27 +37,17 @@ var appServicePlanConfig = {
     family: 'Pv3'
   }
   kind: 'linux'
-  reserved: true // Required for Linux plans
+  reserved: true
 }
 
-// Function App configuration
 var functionAppConfig = {
   runtime: 'DOTNETCORE'
   version: '9.0'
   kind: 'app,linux'
 }
 
-// Resource naming
-var resourceSuffix = uniqueString(resourceGroup().id, name, envName, location)
-var appServicePlanName = '${name}-${resourceSuffix}-apis-asp'
-var functionAppName = '${name}-${resourceSuffix}-api'
-
-// ============================================================================
-// RESOURCES
-// ============================================================================
-
 resource appServicePlan 'Microsoft.Web/serverfarms@2023-12-01' = {
-  name: appServicePlanName
+  name: '${name}-${resourceSuffix}-apis-asp'
   location: location
   sku: {
     name: appServicePlanConfig.sku.name
@@ -100,13 +72,8 @@ resource appServicePlan 'Microsoft.Web/serverfarms@2023-12-01' = {
   }
 }
 
-resource appInsights 'Microsoft.Insights/components@2020-02-02' existing = {
-  name: appInsightsName
-  scope: resourceGroup()
-}
-
-resource webApi 'Microsoft.Web/sites@2023-12-01' = {
-  name: functionAppName
+resource functionApp 'Microsoft.Web/sites@2023-12-01' = {
+  name: '${name}-${resourceSuffix}-api'
   location: location
   kind: functionAppConfig.kind
   identity: {
@@ -125,7 +92,7 @@ resource webApi 'Microsoft.Web/sites@2023-12-01' = {
       appSettings: [
         {
           name: 'APPLICATIONINSIGHTS_CONNECTION_STRING'
-          value: appInsights.properties.ConnectionString
+          value: appInsightsConnectionString
         }
         {
           name: 'ApplicationInsightsAgent_EXTENSION_VERSION'
@@ -137,9 +104,9 @@ resource webApi 'Microsoft.Web/sites@2023-12-01' = {
   }
 }
 
-resource webApiDiagnostics 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
-  name: '${webApi.name}-diag'
-  scope: webApi
+resource functionAppDiagnosticSettings 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
+  name: '${functionApp.name}-diag'
+  scope: functionApp
   properties: {
     workspaceId: workspaceId
     storageAccountId: storageAccountId
@@ -166,7 +133,7 @@ resource webApiDiagnostics 'Microsoft.Insights/diagnosticSettings@2021-05-01-pre
   }
 }
 
-resource DiagnosticSettingsAsp 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
+resource appServicePlanDiagnosticSettings 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
   name: '${appServicePlan.name}-diag'
   scope: appServicePlan
   properties: {
@@ -181,485 +148,11 @@ resource DiagnosticSettingsAsp 'Microsoft.Insights/diagnosticSettings@2021-05-01
   }
 }
 
-resource dashboardASP 'Microsoft.Portal/dashboards@2020-09-01-preview' = {
-  name: '${appServicePlan.name}-dashboard'
-  location: location
-  tags: {
-    'hidden-title': 'Service Plan Metrics'
-  }
-  properties: {
-    lenses: [
-      {
-        order: 0
-        parts: [
-          {
-            position: {
-              x: 0
-              y: 0
-              rowSpan: 4
-              colSpan: 6
-            }
-            metadata: {
-              inputs: [
-                {
-                  name: 'options'
-                  value: {
-                    chart: {
-                      metrics: [
-                        {
-                          resourceMetadata: {
-                            id: appServicePlan.id
-                          }
-                          name: 'CpuPercentage'
-                          aggregationType: 4
-                          namespace: 'microsoft.web/serverfarms'
-                          metricVisualization: {
-                            displayName: 'CPU Percentage'
-                          }
-                        }
-                      ]
-                      title: 'Avg CPU Percentage for tax-docs-xz5pxrxowhg6e-asp'
-                      titleKind: 1
-                      visualization: {
-                        chartType: 2
-                        legendVisualization: {
-                          isVisible: true
-                          position: 2
-                          hideHoverCard: false
-                          hideLabelNames: true
-                        }
-                        axisVisualization: {
-                          x: {
-                            isVisible: true
-                            axisType: 2
-                          }
-                          y: {
-                            isVisible: true
-                            axisType: 1
-                          }
-                        }
-                      }
-                      timespan: {
-                        relative: {
-                          duration: 86400000
-                        }
-                        showUTCTime: false
-                        grain: 1
-                      }
-                    }
-                  }
-                  isOptional: true
-                }
-                {
-                  name: 'sharedTimeRange'
-                  isOptional: true
-                }
-              ]
-              type: 'Extension/HubsExtension/PartType/MonitorChartPart'
-              settings: {
-                content: {}
-              }
-            }
-          }
-          {
-            position: {
-              x: 6
-              y: 0
-              rowSpan: 4
-              colSpan: 6
-            }
-            metadata: {
-              inputs: [
-                {
-                  name: 'options'
-                  value: {
-                    chart: {
-                      metrics: [
-                        {
-                          resourceMetadata: {
-                            id: appServicePlan.id
-                          }
-                          name: 'MemoryPercentage'
-                          aggregationType: 4
-                          namespace: 'microsoft.web/serverfarms'
-                          metricVisualization: {
-                            displayName: 'Memory Percentage'
-                          }
-                        }
-                      ]
-                      title: 'Avg Memory Percentage for tax-docs-xz5pxrxowhg6e-asp'
-                      titleKind: 1
-                      visualization: {
-                        chartType: 2
-                        legendVisualization: {
-                          isVisible: true
-                          position: 2
-                          hideHoverCard: false
-                          hideLabelNames: true
-                        }
-                        axisVisualization: {
-                          x: {
-                            isVisible: true
-                            axisType: 2
-                          }
-                          y: {
-                            isVisible: true
-                            axisType: 1
-                          }
-                        }
-                      }
-                      timespan: {
-                        relative: {
-                          duration: 86400000
-                        }
-                        showUTCTime: false
-                        grain: 1
-                      }
-                    }
-                  }
-                  isOptional: true
-                }
-                {
-                  name: 'sharedTimeRange'
-                  isOptional: true
-                }
-              ]
-              type: 'Extension/HubsExtension/PartType/MonitorChartPart'
-              settings: {
-                content: {}
-              }
-            }
-          }
-          {
-            position: {
-              x: 12
-              y: 0
-              rowSpan: 4
-              colSpan: 6
-            }
-            metadata: {
-              inputs: [
-                {
-                  name: 'options'
-                  value: {
-                    chart: {
-                      metrics: [
-                        {
-                          resourceMetadata: {
-                            id: appServicePlan.id
-                          }
-                          name: 'BytesReceived'
-                          aggregationType: 4
-                          namespace: 'microsoft.web/serverfarms'
-                          metricVisualization: {
-                            displayName: 'Data In'
-                          }
-                        }
-                      ]
-                      title: 'Avg Data In for tax-docs-xz5pxrxowhg6e-asp'
-                      titleKind: 1
-                      visualization: {
-                        chartType: 2
-                        legendVisualization: {
-                          isVisible: true
-                          position: 2
-                          hideHoverCard: false
-                          hideLabelNames: true
-                        }
-                        axisVisualization: {
-                          x: {
-                            isVisible: true
-                            axisType: 2
-                          }
-                          y: {
-                            isVisible: true
-                            axisType: 1
-                          }
-                        }
-                      }
-                      timespan: {
-                        relative: {
-                          duration: 86400000
-                        }
-                        showUTCTime: false
-                        grain: 1
-                      }
-                    }
-                  }
-                  isOptional: true
-                }
-                {
-                  name: 'sharedTimeRange'
-                  isOptional: true
-                }
-              ]
-              type: 'Extension/HubsExtension/PartType/MonitorChartPart'
-              settings: {
-                content: {}
-              }
-            }
-          }
-          {
-            position: {
-              x: 0
-              y: 4
-              rowSpan: 4
-              colSpan: 6
-            }
-            metadata: {
-              inputs: [
-                {
-                  name: 'options'
-                  value: {
-                    chart: {
-                      metrics: [
-                        {
-                          resourceMetadata: {
-                            id: appServicePlan.id
-                          }
-                          name: 'BytesSent'
-                          aggregationType: 4
-                          namespace: 'microsoft.web/serverfarms'
-                          metricVisualization: {
-                            displayName: 'Data Out'
-                          }
-                        }
-                      ]
-                      title: 'Avg Data Out for tax-docs-xz5pxrxowhg6e-asp'
-                      titleKind: 1
-                      visualization: {
-                        chartType: 2
-                        legendVisualization: {
-                          isVisible: true
-                          position: 2
-                          hideHoverCard: false
-                          hideLabelNames: true
-                        }
-                        axisVisualization: {
-                          x: {
-                            isVisible: true
-                            axisType: 2
-                          }
-                          y: {
-                            isVisible: true
-                            axisType: 1
-                          }
-                        }
-                      }
-                      timespan: {
-                        relative: {
-                          duration: 86400000
-                        }
-                        showUTCTime: false
-                        grain: 1
-                      }
-                    }
-                  }
-                  isOptional: true
-                }
-                {
-                  name: 'sharedTimeRange'
-                  isOptional: true
-                }
-              ]
-              type: 'Extension/HubsExtension/PartType/MonitorChartPart'
-              settings: {
-                content: {}
-              }
-            }
-          }
-          {
-            position: {
-              x: 6
-              y: 4
-              rowSpan: 4
-              colSpan: 6
-            }
-            metadata: {
-              inputs: [
-                {
-                  name: 'options'
-                  value: {
-                    chart: {
-                      metrics: [
-                        {
-                          resourceMetadata: {
-                            id: appServicePlan.id
-                          }
-                          name: 'HttpQueueLength'
-                          aggregationType: 4
-                          namespace: 'microsoft.web/serverfarms'
-                          metricVisualization: {
-                            displayName: 'Http Queue Length'
-                          }
-                        }
-                      ]
-                      title: 'Avg Http Queue Length for tax-docs-xz5pxrxowhg6e-asp'
-                      titleKind: 1
-                      visualization: {
-                        chartType: 2
-                        legendVisualization: {
-                          isVisible: true
-                          position: 2
-                          hideHoverCard: false
-                          hideLabelNames: true
-                        }
-                        axisVisualization: {
-                          x: {
-                            isVisible: true
-                            axisType: 2
-                          }
-                          y: {
-                            isVisible: true
-                            axisType: 1
-                          }
-                        }
-                      }
-                      timespan: {
-                        relative: {
-                          duration: 86400000
-                        }
-                        showUTCTime: false
-                        grain: 1
-                      }
-                    }
-                  }
-                  isOptional: true
-                }
-                {
-                  name: 'sharedTimeRange'
-                  isOptional: true
-                }
-              ]
-              type: 'Extension/HubsExtension/PartType/MonitorChartPart'
-              settings: {
-                content: {}
-              }
-            }
-          }
-          {
-            position: {
-              x: 12
-              y: 4
-              rowSpan: 4
-              colSpan: 6
-            }
-            metadata: {
-              inputs: [
-                {
-                  name: 'options'
-                  value: {
-                    chart: {
-                      metrics: [
-                        {
-                          resourceMetadata: {
-                            id: appServicePlan.id
-                          }
-                          name: 'HttpQueueLength'
-                          aggregationType: 4
-                          namespace: 'microsoft.web/serverfarms'
-                          metricVisualization: {
-                            displayName: 'Http Queue Length'
-                          }
-                        }
-                      ]
-                      title: 'Avg Http Queue Length for tax-docs-xz5pxrxowhg6e-asp'
-                      titleKind: 1
-                      visualization: {
-                        chartType: 2
-                        legendVisualization: {
-                          isVisible: true
-                          position: 2
-                          hideHoverCard: false
-                          hideLabelNames: true
-                        }
-                        axisVisualization: {
-                          x: {
-                            isVisible: true
-                            axisType: 2
-                          }
-                          y: {
-                            isVisible: true
-                            axisType: 1
-                          }
-                        }
-                      }
-                      timespan: {
-                        relative: {
-                          duration: 86400000
-                        }
-                        showUTCTime: false
-                        grain: 1
-                      }
-                    }
-                  }
-                  isOptional: true
-                }
-                {
-                  name: 'sharedTimeRange'
-                  isOptional: true
-                }
-              ]
-              type: 'Extension/HubsExtension/PartType/MonitorChartPart'
-              settings: {
-                content: {}
-              }
-            }
-          }
-        ]
-      }
-    ]
-    metadata: {
-      model: {
-        timeRange: {
-          value: {
-            relative: {
-              duration: 24
-              timeUnit: 1
-            }
-          }
-          type: 'MsPortalFx.Composition.Configuration.ValueTypes.TimeRange'
-        }
-        filterLocale: {
-          value: 'en-us'
-        }
-        filters: {
-          value: {
-            MsPortalFx_TimeRange: {
-              model: {
-                format: 'utc'
-                granularity: 'auto'
-                relative: '24h'
-              }
-              displayCache: {
-                name: 'UTC Time'
-                value: 'Past 24 hours'
-              }
-              filteredPartIds: [
-                'StartboardPart-MonitorChartPart-65e21b99-3dc9-436e-b1ab-eae896f3631b'
-                'StartboardPart-MonitorChartPart-65e21b99-3dc9-436e-b1ab-eae896f3631d'
-                'StartboardPart-MonitorChartPart-65e21b99-3dc9-436e-b1ab-eae896f3631f'
-                'StartboardPart-MonitorChartPart-65e21b99-3dc9-436e-b1ab-eae896f36321'
-                'StartboardPart-MonitorChartPart-65e21b99-3dc9-436e-b1ab-eae896f36323'
-                'StartboardPart-MonitorChartPart-65e21b99-3dc9-436e-b1ab-eae896f36325'
-              ]
-            }
-          }
-        }
-      }
-    }
-  }
-}
-
-// ============================================================================
-// OUTPUTS
-// ============================================================================
-
-@description('Resource ID of the deployed Function App for API layer')
-output FUNCTION_APP_ID string = webApi.id
+@description('Resource ID of the deployed Function App')
+output FUNCTION_APP_ID string = functionApp.id
 
 @description('Name of the deployed Function App')
-output FUNCTION_APP_NAME string = webApi.name
+output FUNCTION_APP_NAME string = functionApp.name
 
 @description('Default hostname of the Function App')
-output FUNCTION_APP_DEFAULT_HOSTNAME string = webApi.properties.defaultHostName
+output FUNCTION_APP_DEFAULT_HOSTNAME string = functionApp.properties.defaultHostName

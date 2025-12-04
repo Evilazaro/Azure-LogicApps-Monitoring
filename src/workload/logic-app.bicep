@@ -1,52 +1,44 @@
-// ============================================================================
-// LOGIC APP MODULE
-// ============================================================================
-// Deploys Logic Apps Standard with comprehensive monitoring and RBAC:
-// - App Service Plan (Workflow Standard SKU - WS1)
-// - Logic App with user-assigned managed identity
-// - Storage account RBAC role assignments for managed identity
-// - Application Insights integration for telemetry
-// - Diagnostic settings capturing WorkflowRuntime logs
-// - Azure Portal dashboards for workflow metrics visualization
-// ============================================================================
-
-@description('Base name for Logic App and App Service Plan resources. Will be suffixed with unique string for global uniqueness.')
+@description('Base name for Logic App and App Service Plan resources.')
 @minLength(3)
 @maxLength(20)
 param name string
 
-@description('Environment name suffix to ensure uniqueness across environments (e.g., dev, test, prod).')
+@description('Environment name suffix to ensure uniqueness.')
 @minLength(2)
 @maxLength(10)
 param envName string
 
-@description('Azure region for Logic App deployment. Must support Workflow Standard SKU and Application Insights.')
+@description('Azure region for Logic App deployment.')
 @minLength(3)
+@maxLength(50)
 param location string = resourceGroup().location
 
 @description('Resource ID of the Log Analytics workspace for diagnostic logs and metrics.')
+@minLength(50)
 param workspaceId string
 
 @description('Storage Account ID for diagnostic logs and metrics.')
+@minLength(50)
 param storageAccountId string
 
-@description('Name of the existing storage account required by Logic Apps Standard for workflow state and artifacts.')
+@description('Name of the existing storage account required by Logic Apps Standard.')
+@minLength(3)
+@maxLength(24)
 param workflowStorageAccountName string
 
-@description('Name of the Application Insights instance for telemetry collection and performance monitoring.')
-param appInsightsName string
+@description('Connection string for Application Insights instance.')
+param appInsightsConnectionString string
 
-@description('Resource tags applied to Logic App, App Service Plan, and dashboard resources for cost tracking and governance.')
-@metadata({
-  example: {
-    Solution: 'tax-docs'
-    Environment: 'prod'
-  }
-})
+@description('Instrumentation key for Application Insights instance.')
+param appInsightsInstrumentationKey string
+
+@description('Resource tags applied to all resources.')
 param tags object
 
+var resourceSuffix = uniqueString(resourceGroup().id, name, envName, location)
+
 resource appServicePlan 'Microsoft.Web/serverfarms@2023-12-01' = {
-  name: '${name}-${uniqueString(resourceGroup().id, name, envName, location)}-asp'
+  name: '${name}-${resourceSuffix}-asp'
   location: location
   sku: {
     name: 'WS1'
@@ -71,7 +63,7 @@ resource appServicePlan 'Microsoft.Web/serverfarms@2023-12-01' = {
   }
 }
 
-resource DiagnosticSettingsAsp 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
+resource appServicePlanDiagnosticSettings 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
   name: '${appServicePlan.name}-diag'
   scope: appServicePlan
   properties: {
@@ -86,607 +78,57 @@ resource DiagnosticSettingsAsp 'Microsoft.Insights/diagnosticSettings@2021-05-01
   }
 }
 
-resource dashboardASP 'Microsoft.Portal/dashboards@2020-09-01-preview' = {
-  name: '${appServicePlan.name}-dashboard'
-  location: location
-  tags: {
-    'hidden-title': 'Service Plan Metrics'
-  }
-  properties: {
-    lenses: [
-      {
-        order: 0
-        parts: [
-          {
-            position: {
-              x: 0
-              y: 0
-              rowSpan: 4
-              colSpan: 6
-            }
-            metadata: {
-              inputs: [
-                {
-                  name: 'options'
-                  value: {
-                    chart: {
-                      metrics: [
-                        {
-                          resourceMetadata: {
-                            id: appServicePlan.id
-                          }
-                          name: 'CpuPercentage'
-                          aggregationType: 4
-                          namespace: 'microsoft.web/serverfarms'
-                          metricVisualization: {
-                            displayName: 'CPU Percentage'
-                          }
-                        }
-                      ]
-                      title: 'Avg CPU Percentage for tax-docs-xz5pxrxowhg6e-asp'
-                      titleKind: 1
-                      visualization: {
-                        chartType: 2
-                        legendVisualization: {
-                          isVisible: true
-                          position: 2
-                          hideHoverCard: false
-                          hideLabelNames: true
-                        }
-                        axisVisualization: {
-                          x: {
-                            isVisible: true
-                            axisType: 2
-                          }
-                          y: {
-                            isVisible: true
-                            axisType: 1
-                          }
-                        }
-                      }
-                      timespan: {
-                        relative: {
-                          duration: 86400000
-                        }
-                        showUTCTime: false
-                        grain: 1
-                      }
-                    }
-                  }
-                  isOptional: true
-                }
-                {
-                  name: 'sharedTimeRange'
-                  isOptional: true
-                }
-              ]
-              type: 'Extension/HubsExtension/PartType/MonitorChartPart'
-              settings: {
-                content: {}
-              }
-            }
-          }
-          {
-            position: {
-              x: 6
-              y: 0
-              rowSpan: 4
-              colSpan: 6
-            }
-            metadata: {
-              inputs: [
-                {
-                  name: 'options'
-                  value: {
-                    chart: {
-                      metrics: [
-                        {
-                          resourceMetadata: {
-                            id: appServicePlan.id
-                          }
-                          name: 'MemoryPercentage'
-                          aggregationType: 4
-                          namespace: 'microsoft.web/serverfarms'
-                          metricVisualization: {
-                            displayName: 'Memory Percentage'
-                          }
-                        }
-                      ]
-                      title: 'Avg Memory Percentage for tax-docs-xz5pxrxowhg6e-asp'
-                      titleKind: 1
-                      visualization: {
-                        chartType: 2
-                        legendVisualization: {
-                          isVisible: true
-                          position: 2
-                          hideHoverCard: false
-                          hideLabelNames: true
-                        }
-                        axisVisualization: {
-                          x: {
-                            isVisible: true
-                            axisType: 2
-                          }
-                          y: {
-                            isVisible: true
-                            axisType: 1
-                          }
-                        }
-                      }
-                      timespan: {
-                        relative: {
-                          duration: 86400000
-                        }
-                        showUTCTime: false
-                        grain: 1
-                      }
-                    }
-                  }
-                  isOptional: true
-                }
-                {
-                  name: 'sharedTimeRange'
-                  isOptional: true
-                }
-              ]
-              type: 'Extension/HubsExtension/PartType/MonitorChartPart'
-              settings: {
-                content: {}
-              }
-            }
-          }
-          {
-            position: {
-              x: 12
-              y: 0
-              rowSpan: 4
-              colSpan: 6
-            }
-            metadata: {
-              inputs: [
-                {
-                  name: 'options'
-                  value: {
-                    chart: {
-                      metrics: [
-                        {
-                          resourceMetadata: {
-                            id: appServicePlan.id
-                          }
-                          name: 'BytesReceived'
-                          aggregationType: 4
-                          namespace: 'microsoft.web/serverfarms'
-                          metricVisualization: {
-                            displayName: 'Data In'
-                          }
-                        }
-                      ]
-                      title: 'Avg Data In for tax-docs-xz5pxrxowhg6e-asp'
-                      titleKind: 1
-                      visualization: {
-                        chartType: 2
-                        legendVisualization: {
-                          isVisible: true
-                          position: 2
-                          hideHoverCard: false
-                          hideLabelNames: true
-                        }
-                        axisVisualization: {
-                          x: {
-                            isVisible: true
-                            axisType: 2
-                          }
-                          y: {
-                            isVisible: true
-                            axisType: 1
-                          }
-                        }
-                      }
-                      timespan: {
-                        relative: {
-                          duration: 86400000
-                        }
-                        showUTCTime: false
-                        grain: 1
-                      }
-                    }
-                  }
-                  isOptional: true
-                }
-                {
-                  name: 'sharedTimeRange'
-                  isOptional: true
-                }
-              ]
-              type: 'Extension/HubsExtension/PartType/MonitorChartPart'
-              settings: {
-                content: {}
-              }
-            }
-          }
-          {
-            position: {
-              x: 0
-              y: 4
-              rowSpan: 4
-              colSpan: 6
-            }
-            metadata: {
-              inputs: [
-                {
-                  name: 'options'
-                  value: {
-                    chart: {
-                      metrics: [
-                        {
-                          resourceMetadata: {
-                            id: appServicePlan.id
-                          }
-                          name: 'BytesSent'
-                          aggregationType: 4
-                          namespace: 'microsoft.web/serverfarms'
-                          metricVisualization: {
-                            displayName: 'Data Out'
-                          }
-                        }
-                      ]
-                      title: 'Avg Data Out for tax-docs-xz5pxrxowhg6e-asp'
-                      titleKind: 1
-                      visualization: {
-                        chartType: 2
-                        legendVisualization: {
-                          isVisible: true
-                          position: 2
-                          hideHoverCard: false
-                          hideLabelNames: true
-                        }
-                        axisVisualization: {
-                          x: {
-                            isVisible: true
-                            axisType: 2
-                          }
-                          y: {
-                            isVisible: true
-                            axisType: 1
-                          }
-                        }
-                      }
-                      timespan: {
-                        relative: {
-                          duration: 86400000
-                        }
-                        showUTCTime: false
-                        grain: 1
-                      }
-                    }
-                  }
-                  isOptional: true
-                }
-                {
-                  name: 'sharedTimeRange'
-                  isOptional: true
-                }
-              ]
-              type: 'Extension/HubsExtension/PartType/MonitorChartPart'
-              settings: {
-                content: {}
-              }
-            }
-          }
-          {
-            position: {
-              x: 6
-              y: 4
-              rowSpan: 4
-              colSpan: 6
-            }
-            metadata: {
-              inputs: [
-                {
-                  name: 'options'
-                  value: {
-                    chart: {
-                      metrics: [
-                        {
-                          resourceMetadata: {
-                            id: appServicePlan.id
-                          }
-                          name: 'HttpQueueLength'
-                          aggregationType: 4
-                          namespace: 'microsoft.web/serverfarms'
-                          metricVisualization: {
-                            displayName: 'Http Queue Length'
-                          }
-                        }
-                      ]
-                      title: 'Avg Http Queue Length for tax-docs-xz5pxrxowhg6e-asp'
-                      titleKind: 1
-                      visualization: {
-                        chartType: 2
-                        legendVisualization: {
-                          isVisible: true
-                          position: 2
-                          hideHoverCard: false
-                          hideLabelNames: true
-                        }
-                        axisVisualization: {
-                          x: {
-                            isVisible: true
-                            axisType: 2
-                          }
-                          y: {
-                            isVisible: true
-                            axisType: 1
-                          }
-                        }
-                      }
-                      timespan: {
-                        relative: {
-                          duration: 86400000
-                        }
-                        showUTCTime: false
-                        grain: 1
-                      }
-                    }
-                  }
-                  isOptional: true
-                }
-                {
-                  name: 'sharedTimeRange'
-                  isOptional: true
-                }
-              ]
-              type: 'Extension/HubsExtension/PartType/MonitorChartPart'
-              settings: {
-                content: {}
-              }
-            }
-          }
-          {
-            position: {
-              x: 12
-              y: 4
-              rowSpan: 4
-              colSpan: 6
-            }
-            metadata: {
-              inputs: [
-                {
-                  name: 'options'
-                  value: {
-                    chart: {
-                      metrics: [
-                        {
-                          resourceMetadata: {
-                            id: appServicePlan.id
-                          }
-                          name: 'HttpQueueLength'
-                          aggregationType: 4
-                          namespace: 'microsoft.web/serverfarms'
-                          metricVisualization: {
-                            displayName: 'Http Queue Length'
-                          }
-                        }
-                      ]
-                      title: 'Avg Http Queue Length for tax-docs-xz5pxrxowhg6e-asp'
-                      titleKind: 1
-                      visualization: {
-                        chartType: 2
-                        legendVisualization: {
-                          isVisible: true
-                          position: 2
-                          hideHoverCard: false
-                          hideLabelNames: true
-                        }
-                        axisVisualization: {
-                          x: {
-                            isVisible: true
-                            axisType: 2
-                          }
-                          y: {
-                            isVisible: true
-                            axisType: 1
-                          }
-                        }
-                      }
-                      timespan: {
-                        relative: {
-                          duration: 86400000
-                        }
-                        showUTCTime: false
-                        grain: 1
-                      }
-                    }
-                  }
-                  isOptional: true
-                }
-                {
-                  name: 'sharedTimeRange'
-                  isOptional: true
-                }
-              ]
-              type: 'Extension/HubsExtension/PartType/MonitorChartPart'
-              settings: {
-                content: {}
-              }
-            }
-          }
-        ]
-      }
-    ]
-    metadata: {
-      model: {
-        timeRange: {
-          value: {
-            relative: {
-              duration: 24
-              timeUnit: 1
-            }
-          }
-          type: 'MsPortalFx.Composition.Configuration.ValueTypes.TimeRange'
-        }
-        filterLocale: {
-          value: 'en-us'
-        }
-        filters: {
-          value: {
-            MsPortalFx_TimeRange: {
-              model: {
-                format: 'utc'
-                granularity: 'auto'
-                relative: '24h'
-              }
-              displayCache: {
-                name: 'UTC Time'
-                value: 'Past 24 hours'
-              }
-              filteredPartIds: [
-                'StartboardPart-MonitorChartPart-65e21b99-3dc9-436e-b1ab-eae896f3631b'
-                'StartboardPart-MonitorChartPart-65e21b99-3dc9-436e-b1ab-eae896f3631d'
-                'StartboardPart-MonitorChartPart-65e21b99-3dc9-436e-b1ab-eae896f3631f'
-                'StartboardPart-MonitorChartPart-65e21b99-3dc9-436e-b1ab-eae896f36321'
-                'StartboardPart-MonitorChartPart-65e21b99-3dc9-436e-b1ab-eae896f36323'
-                'StartboardPart-MonitorChartPart-65e21b99-3dc9-436e-b1ab-eae896f36325'
-              ]
-            }
-          }
-        }
-      }
-    }
-  }
-}
-
-resource mi 'Microsoft.ManagedIdentity/userAssignedIdentities@2023-01-31' = {
-  name: '${name}-${uniqueString(resourceGroup().id, name, envName, location)}-mi'
+resource managedIdentity 'Microsoft.ManagedIdentity/userAssignedIdentities@2023-01-31' = {
+  name: '${name}-${resourceSuffix}-mi'
   location: location
   tags: tags
 }
 
-resource workflowSA 'Microsoft.Storage/storageAccounts@2023-05-01' existing = {
+resource workflowStorageAccount 'Microsoft.Storage/storageAccounts@2023-05-01' existing = {
   name: workflowStorageAccountName
-  scope: resourceGroup()
 }
 
-// ============================================================================
-// VARIABLES - RBAC ROLE DEFINITIONS
-// ============================================================================
-
-// Storage Account RBAC roles for Logic Apps managed identity
-// These roles enable the Logic App to access storage account resources using managed identity
-// Reference: https://learn.microsoft.com/azure/role-based-access-control/built-in-roles
-var storageRoles = {
-  // Storage Account Contributor (17d1049b-9a84-46fb-8f53-869881c3d3ab)
-  // Grants full management control over storage account
-  // https://learn.microsoft.com/azure/role-based-access-control/built-in-roles/storage#storage-account-contributor
+var storageRoleDefinitions = {
   contributor: '17d1049b-9a84-46fb-8f53-869881c3d3ab'
-  
-  // Storage Blob Data Owner (b7e6dc6d-f1e8-4753-8033-0f276bb0955b)
-  // Provides full control over blob containers and data, including ACL management
-  // https://learn.microsoft.com/azure/role-based-access-control/built-in-roles/storage#storage-blob-data-owner
   blobDataOwner: 'b7e6dc6d-f1e8-4753-8033-0f276bb0955b'
-  
-  // Storage Queue Data Contributor (974c5e8b-45b9-4653-ba55-5f855dd0fb88)
-  // Allows reading, writing, and deleting Azure Storage queues and queue messages
-  // https://learn.microsoft.com/azure/role-based-access-control/built-in-roles/storage#storage-queue-data-contributor
   queueDataContributor: '974c5e8b-45b9-4653-ba55-5f855dd0fb88'
-  
-  // Storage Table Data Contributor (0a9a7e1f-b9d0-4cc4-a60d-0319b160aaa3)
-  // Allows reading, writing, and deleting Azure Storage tables and entities
-  // https://learn.microsoft.com/azure/role-based-access-control/built-in-roles/storage#storage-table-data-contributor
   tableDataContributor: '0a9a7e1f-b9d0-4cc4-a60d-0319b160aaa3'
-  
-  // Storage File Data Privileged Contributor (69566ab7-960f-475b-8e7c-b3118f30c6bd)
-  // Allows read, write, delete, and modify ACLs on files/directories (required for Logic Apps file share)
-  // https://learn.microsoft.com/azure/role-based-access-control/built-in-roles/storage#storage-file-data-privileged-contributor
   fileDataContributor: '69566ab7-960f-475b-8e7c-b3118f30c6bd'
 }
 
-var storageRBAC = [
-  storageRoles.contributor
-  storageRoles.blobDataOwner
-  storageRoles.queueDataContributor
-  storageRoles.tableDataContributor
-  storageRoles.fileDataContributor
+var storageRoleIds = [
+  storageRoleDefinitions.contributor
+  storageRoleDefinitions.blobDataOwner
+  storageRoleDefinitions.queueDataContributor
+  storageRoleDefinitions.tableDataContributor
+  storageRoleDefinitions.fileDataContributor
 ]
 
 resource storageRoleAssignments 'Microsoft.Authorization/roleAssignments@2022-04-01' = [
-  for roleId in storageRBAC: {
+  for roleId in storageRoleIds: {
     name: guid(logicApp.id, logicApp.name, roleId)
-    scope: workflowSA
+    scope: workflowStorageAccount
     properties: {
       roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', roleId)
-      principalId: mi.properties.principalId
+      principalId: managedIdentity.properties.principalId
       principalType: 'ServicePrincipal'
     }
   }
 ]
 
-resource appInsights 'Microsoft.Insights/components@2020-02-02' existing = {
-  name: appInsightsName
-  scope: resourceGroup()
-}
-
-// Application Insights RBAC role for Logic Apps managed identity
-// Reference: https://learn.microsoft.com/azure/role-based-access-control/built-in-roles
-var appInsightsRoles = {
-  // Monitoring Metrics Publisher (3913510d-42f4-4e42-8a64-420c390055eb)
-  // Enables publishing metrics to Azure Monitor (required for custom metrics from Logic Apps)
-  // https://learn.microsoft.com/azure/role-based-access-control/built-in-roles/monitor#monitoring-metrics-publisher
-  metricsPublisher: '3913510d-42f4-4e42-8a64-420c390055eb'
-}
-
-var appInsightsRBAC = [
-  appInsightsRoles.metricsPublisher
-]
-
-resource appInsightsRoleAssignments 'Microsoft.Authorization/roleAssignments@2022-04-01' = [
-  for roleId in appInsightsRBAC: {
-    name: guid(appInsights.id, appInsights.name, roleId)
-    scope: appInsights
-    properties: {
-      roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', roleId)
-      principalId: mi.properties.principalId
-      principalType: 'ServicePrincipal'
-    }
-  }
-]
-
-// ============================================================================
-// VARIABLES - APP SETTINGS
-// ============================================================================
-
-// Service Bus connection configuration
-
-// Core runtime settings
 var functionsExtensionVersion = '~4'
 var functionsWorkerRuntime = 'dotnet'
-
-// Extension bundle for Logic Apps Standard
 var extensionBundleId = 'Microsoft.Azure.Functions.ExtensionBundle.Workflows'
 var extensionBundleVersion = '[1.*, 2.0.0)'
 
-// Application Insights telemetry
-var appInsightsInstrumentationKey = appInsights.properties.InstrumentationKey
-var appInsightsConnectionString = appInsights.properties.ConnectionString
-
-// Workflow configuration settings
-var workflowsSubscriptionId = subscription().subscriptionId
-var workflowsResourceGroupName = resourceGroup().name
-var workflowsLocationName = location
-var workflowsTenantId = subscription().tenantId
-
-// ============================================================================
-// LOGIC APP RESOURCE
-// ============================================================================
-
 resource logicApp 'Microsoft.Web/sites@2023-12-01' = {
-  name: '${name}-${uniqueString(resourceGroup().id, name, envName, location)}-logicapp'
+  name: '${name}-${resourceSuffix}-logicapp'
   location: location
   kind: 'functionapp,workflowapp'
   identity: {
     type: 'UserAssigned'
     userAssignedIdentities: {
-      '${mi.id}': {}
+      '${managedIdentity.id}': {}
     }
   }
   tags: tags
@@ -696,7 +138,6 @@ resource logicApp 'Microsoft.Web/sites@2023-12-01' = {
     storageAccountRequired: true
     siteConfig: {
       appSettings: [
-        // Core Azure Functions runtime settings
         {
           name: 'FUNCTIONS_EXTENSION_VERSION'
           value: functionsExtensionVersion
@@ -705,8 +146,6 @@ resource logicApp 'Microsoft.Web/sites@2023-12-01' = {
           name: 'FUNCTIONS_WORKER_RUNTIME'
           value: functionsWorkerRuntime
         }
-        // Storage account settings (workflow state, run history, artifacts)
-        // Using managed identity for secure authentication
         {
           name: 'AzureWebJobsStorage__accountName'
           value: workflowStorageAccountName
@@ -729,9 +168,8 @@ resource logicApp 'Microsoft.Web/sites@2023-12-01' = {
         }
         {
           name: 'AzureWebJobsStorage__managedIdentityResourceId'
-          value: resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', mi.name)
+          value: managedIdentity.id
         }
-        // Application Insights telemetry and monitoring
         {
           name: 'APPINSIGHTS_INSTRUMENTATIONKEY'
           value: appInsightsInstrumentationKey
@@ -740,7 +178,6 @@ resource logicApp 'Microsoft.Web/sites@2023-12-01' = {
           name: 'APPLICATIONINSIGHTS_CONNECTION_STRING'
           value: appInsightsConnectionString
         }
-        // Logic Apps Standard extension bundle
         {
           name: 'AzureFunctionsJobHost__extensionBundle__id'
           value: extensionBundleId
@@ -749,22 +186,21 @@ resource logicApp 'Microsoft.Web/sites@2023-12-01' = {
           name: 'AzureFunctionsJobHost__extensionBundle__version'
           value: extensionBundleVersion
         }
-        // Workflow management settings
         {
           name: 'WORKFLOWS_SUBSCRIPTION_ID'
-          value: workflowsSubscriptionId
+          value: subscription().subscriptionId
         }
         {
           name: 'WORKFLOWS_RESOURCE_GROUP_NAME'
-          value: workflowsResourceGroupName
+          value: resourceGroup().name
         }
         {
           name: 'WORKFLOWS_LOCATION_NAME'
-          value: workflowsLocationName
+          value: location
         }
         {
           name: 'WORKFLOWS_TENANT_ID'
-          value: workflowsTenantId
+          value: subscription().tenantId
         }
         {
           name: 'WORKFLOWS_MANAGEMENT_BASE_URI'
@@ -779,7 +215,7 @@ resource logicApp 'Microsoft.Web/sites@2023-12-01' = {
   }
 }
 
-resource DiagnosticSettingsLogicApp 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
+resource logicAppDiagnosticSettings 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
   name: '${logicApp.name}-diag'
   scope: logicApp
   properties: {
@@ -800,716 +236,14 @@ resource DiagnosticSettingsLogicApp 'Microsoft.Insights/diagnosticSettings@2021-
   }
 }
 
-param dashBoardName string = '${name}-dashboard'
-
-resource workflowsDashboard 'Microsoft.Portal/dashboards@2020-09-01-preview' = {
-  name: dashBoardName
-  location: location
-  tags: {
-    'hidden-title': 'Tax-Docs-Workflows'
-  }
-  properties: {
-    lenses: [
-      {
-        order: 0
-        parts: [
-          {
-            position: {
-              x: 0
-              y: 0
-              rowSpan: 4
-              colSpan: 6
-            }
-            metadata: {
-              inputs: [
-                {
-                  name: 'options'
-                  value: {
-                    chart: {
-                      metrics: [
-                        {
-                          resourceMetadata: {
-                            id: logicApp.id
-                          }
-                          name: 'WorkflowActionsFailureRate'
-                          aggregationType: 1
-                          namespace: 'microsoft.web/sites'
-                          metricVisualization: {
-                            displayName: 'Workflow Actions Failure Rate'
-                          }
-                        }
-                      ]
-                      title: 'Sum Workflow Actions Failure Rate '
-                      titleKind: 1
-                      visualization: {
-                        chartType: 2
-                        legendVisualization: {
-                          isVisible: true
-                          position: 2
-                          hideHoverCard: false
-                          hideLabelNames: true
-                        }
-                        axisVisualization: {
-                          x: {
-                            isVisible: true
-                            axisType: 2
-                          }
-                          y: {
-                            isVisible: true
-                            axisType: 1
-                          }
-                        }
-                      }
-                      timespan: {
-                        relative: {
-                          duration: 86400000
-                        }
-                        showUTCTime: false
-                        grain: 1
-                      }
-                    }
-                  }
-                  isOptional: true
-                }
-                {
-                  name: 'sharedTimeRange'
-                  isOptional: true
-                }
-              ]
-              type: 'Extension/HubsExtension/PartType/MonitorChartPart'
-              settings: {
-                content: {}
-              }
-            }
-          }
-          {
-            position: {
-              x: 6
-              y: 0
-              rowSpan: 4
-              colSpan: 6
-            }
-            metadata: {
-              inputs: [
-                {
-                  name: 'options'
-                  value: {
-                    chart: {
-                      metrics: [
-                        {
-                          resourceMetadata: {
-                            id: logicApp.id
-                          }
-                          name: 'WorkflowActionsFailureRate'
-                          aggregationType: 1
-                          namespace: 'microsoft.web/sites'
-                          metricVisualization: {
-                            displayName: 'Workflow Actions Failure Rate'
-                          }
-                        }
-                      ]
-                      title: 'Sum Workflow Actions Failure Rate '
-                      titleKind: 1
-                      visualization: {
-                        chartType: 2
-                        legendVisualization: {
-                          isVisible: true
-                          position: 2
-                          hideHoverCard: false
-                          hideLabelNames: true
-                        }
-                        axisVisualization: {
-                          x: {
-                            isVisible: true
-                            axisType: 2
-                          }
-                          y: {
-                            isVisible: true
-                            axisType: 1
-                          }
-                        }
-                      }
-                      timespan: {
-                        relative: {
-                          duration: 86400000
-                        }
-                        showUTCTime: false
-                        grain: 1
-                      }
-                    }
-                  }
-                  isOptional: true
-                }
-                {
-                  name: 'sharedTimeRange'
-                  isOptional: true
-                }
-              ]
-              type: 'Extension/HubsExtension/PartType/MonitorChartPart'
-              settings: {
-                content: {}
-              }
-            }
-          }
-          {
-            position: {
-              x: 12
-              y: 0
-              rowSpan: 4
-              colSpan: 6
-            }
-            metadata: {
-              inputs: [
-                {
-                  name: 'options'
-                  value: {
-                    chart: {
-                      metrics: [
-                        {
-                          resourceMetadata: {
-                            id: logicApp.id
-                          }
-                          name: 'WorkflowJobExecutionDuration'
-                          aggregationType: 4
-                          namespace: 'microsoft.web/sites'
-                          metricVisualization: {
-                            displayName: 'Workflow Job Execution Duration'
-                          }
-                        }
-                      ]
-                      title: 'Avg Workflow Job Execution Duration '
-                      titleKind: 1
-                      visualization: {
-                        chartType: 2
-                        legendVisualization: {
-                          isVisible: true
-                          position: 2
-                          hideHoverCard: false
-                          hideLabelNames: true
-                        }
-                        axisVisualization: {
-                          x: {
-                            isVisible: true
-                            axisType: 2
-                          }
-                          y: {
-                            isVisible: true
-                            axisType: 1
-                          }
-                        }
-                      }
-                      timespan: {
-                        relative: {
-                          duration: 86400000
-                        }
-                        showUTCTime: false
-                        grain: 1
-                      }
-                    }
-                  }
-                  isOptional: true
-                }
-                {
-                  name: 'sharedTimeRange'
-                  isOptional: true
-                }
-              ]
-              type: 'Extension/HubsExtension/PartType/MonitorChartPart'
-              settings: {
-                content: {}
-              }
-            }
-          }
-          {
-            position: {
-              x: 0
-              y: 4
-              rowSpan: 4
-              colSpan: 6
-            }
-            metadata: {
-              inputs: [
-                {
-                  name: 'options'
-                  value: {
-                    chart: {
-                      metrics: [
-                        {
-                          resourceMetadata: {
-                            id: logicApp.id
-                          }
-                          name: 'WorkflowRunsCompleted'
-                          aggregationType: 1
-                          namespace: 'microsoft.web/sites'
-                          metricVisualization: {
-                            displayName: 'Workflow Runs Completed Count'
-                          }
-                        }
-                      ]
-                      title: 'Sum Workflow Runs Completed Count '
-                      titleKind: 1
-                      visualization: {
-                        chartType: 2
-                        legendVisualization: {
-                          isVisible: true
-                          position: 2
-                          hideHoverCard: false
-                          hideLabelNames: true
-                        }
-                        axisVisualization: {
-                          x: {
-                            isVisible: true
-                            axisType: 2
-                          }
-                          y: {
-                            isVisible: true
-                            axisType: 1
-                          }
-                        }
-                      }
-                      timespan: {
-                        relative: {
-                          duration: 86400000
-                        }
-                        showUTCTime: false
-                        grain: 1
-                      }
-                    }
-                  }
-                  isOptional: true
-                }
-                {
-                  name: 'sharedTimeRange'
-                  isOptional: true
-                }
-              ]
-              type: 'Extension/HubsExtension/PartType/MonitorChartPart'
-              settings: {
-                content: {}
-              }
-            }
-          }
-          {
-            position: {
-              x: 6
-              y: 4
-              rowSpan: 4
-              colSpan: 6
-            }
-            metadata: {
-              inputs: [
-                {
-                  name: 'options'
-                  value: {
-                    chart: {
-                      metrics: [
-                        {
-                          resourceMetadata: {
-                            id: logicApp.id
-                          }
-                          name: 'WorkflowRunsDispatched'
-                          aggregationType: 1
-                          namespace: 'microsoft.web/sites'
-                          metricVisualization: {
-                            displayName: 'Workflow Runs dispatched Count'
-                          }
-                        }
-                      ]
-                      title: 'Sum Workflow Runs dispatched Count '
-                      titleKind: 1
-                      visualization: {
-                        chartType: 2
-                        legendVisualization: {
-                          isVisible: true
-                          position: 2
-                          hideHoverCard: false
-                          hideLabelNames: true
-                        }
-                        axisVisualization: {
-                          x: {
-                            isVisible: true
-                            axisType: 2
-                          }
-                          y: {
-                            isVisible: true
-                            axisType: 1
-                          }
-                        }
-                      }
-                      timespan: {
-                        relative: {
-                          duration: 86400000
-                        }
-                        showUTCTime: false
-                        grain: 1
-                      }
-                    }
-                  }
-                  isOptional: true
-                }
-                {
-                  name: 'sharedTimeRange'
-                  isOptional: true
-                }
-              ]
-              type: 'Extension/HubsExtension/PartType/MonitorChartPart'
-              settings: {
-                content: {}
-              }
-            }
-          }
-          {
-            position: {
-              x: 12
-              y: 4
-              rowSpan: 4
-              colSpan: 6
-            }
-            metadata: {
-              inputs: [
-                {
-                  name: 'options'
-                  value: {
-                    chart: {
-                      metrics: [
-                        {
-                          resourceMetadata: {
-                            id: logicApp.id
-                          }
-                          name: 'WorkflowRunsFailureRate'
-                          aggregationType: 1
-                          namespace: 'microsoft.web/sites'
-                          metricVisualization: {
-                            displayName: 'Workflow Runs Failure Rate'
-                          }
-                        }
-                      ]
-                      title: 'Sum Workflow Runs Failure Rate '
-                      titleKind: 1
-                      visualization: {
-                        chartType: 2
-                        legendVisualization: {
-                          isVisible: true
-                          position: 2
-                          hideHoverCard: false
-                          hideLabelNames: true
-                        }
-                        axisVisualization: {
-                          x: {
-                            isVisible: true
-                            axisType: 2
-                          }
-                          y: {
-                            isVisible: true
-                            axisType: 1
-                          }
-                        }
-                      }
-                      timespan: {
-                        relative: {
-                          duration: 86400000
-                        }
-                        showUTCTime: false
-                        grain: 1
-                      }
-                    }
-                  }
-                  isOptional: true
-                }
-                {
-                  name: 'sharedTimeRange'
-                  isOptional: true
-                }
-              ]
-              type: 'Extension/HubsExtension/PartType/MonitorChartPart'
-              settings: {
-                content: {}
-              }
-            }
-          }
-          {
-            position: {
-              x: 0
-              y: 8
-              rowSpan: 4
-              colSpan: 6
-            }
-            metadata: {
-              inputs: [
-                {
-                  name: 'options'
-                  value: {
-                    chart: {
-                      metrics: [
-                        {
-                          resourceMetadata: {
-                            id: logicApp.id
-                          }
-                          name: 'WorkflowRunsStarted'
-                          aggregationType: 1
-                          namespace: 'microsoft.web/sites'
-                          metricVisualization: {
-                            displayName: 'Workflow Runs Started Count'
-                          }
-                        }
-                      ]
-                      title: 'Sum Workflow Runs Started Count '
-                      titleKind: 1
-                      visualization: {
-                        chartType: 2
-                        legendVisualization: {
-                          isVisible: true
-                          position: 2
-                          hideHoverCard: false
-                          hideLabelNames: true
-                        }
-                        axisVisualization: {
-                          x: {
-                            isVisible: true
-                            axisType: 2
-                          }
-                          y: {
-                            isVisible: true
-                            axisType: 1
-                          }
-                        }
-                      }
-                      timespan: {
-                        relative: {
-                          duration: 86400000
-                        }
-                        showUTCTime: false
-                        grain: 1
-                      }
-                    }
-                  }
-                  isOptional: true
-                }
-                {
-                  name: 'sharedTimeRange'
-                  isOptional: true
-                }
-              ]
-              type: 'Extension/HubsExtension/PartType/MonitorChartPart'
-              settings: {
-                content: {}
-              }
-            }
-          }
-          {
-            position: {
-              x: 6
-              y: 8
-              rowSpan: 4
-              colSpan: 6
-            }
-            metadata: {
-              inputs: [
-                {
-                  name: 'options'
-                  value: {
-                    chart: {
-                      metrics: [
-                        {
-                          resourceMetadata: {
-                            id: logicApp.id
-                          }
-                          name: 'WorkflowTriggersCompleted'
-                          aggregationType: 1
-                          namespace: 'microsoft.web/sites'
-                          metricVisualization: {
-                            displayName: 'Workflow Triggers Completed Count'
-                          }
-                        }
-                      ]
-                      title: 'Sum Workflow Triggers Completed Count '
-                      titleKind: 1
-                      visualization: {
-                        chartType: 2
-                        legendVisualization: {
-                          isVisible: true
-                          position: 2
-                          hideHoverCard: false
-                          hideLabelNames: true
-                        }
-                        axisVisualization: {
-                          x: {
-                            isVisible: true
-                            axisType: 2
-                          }
-                          y: {
-                            isVisible: true
-                            axisType: 1
-                          }
-                        }
-                      }
-                      timespan: {
-                        relative: {
-                          duration: 86400000
-                        }
-                        showUTCTime: false
-                        grain: 1
-                      }
-                    }
-                  }
-                  isOptional: true
-                }
-                {
-                  name: 'sharedTimeRange'
-                  isOptional: true
-                }
-              ]
-              type: 'Extension/HubsExtension/PartType/MonitorChartPart'
-              settings: {
-                content: {}
-              }
-            }
-          }
-          {
-            position: {
-              x: 12
-              y: 8
-              rowSpan: 4
-              colSpan: 6
-            }
-            metadata: {
-              inputs: [
-                {
-                  name: 'options'
-                  value: {
-                    chart: {
-                      metrics: [
-                        {
-                          resourceMetadata: {
-                            id: logicApp.id
-                          }
-                          name: 'WorkflowTriggersFailureRate'
-                          aggregationType: 1
-                          namespace: 'microsoft.web/sites'
-                          metricVisualization: {
-                            displayName: 'Workflow Triggers Failure Rate'
-                          }
-                        }
-                      ]
-                      title: 'Sum Workflow Triggers Failure Rate '
-                      titleKind: 1
-                      visualization: {
-                        chartType: 2
-                        legendVisualization: {
-                          isVisible: true
-                          position: 2
-                          hideHoverCard: false
-                          hideLabelNames: true
-                        }
-                        axisVisualization: {
-                          x: {
-                            isVisible: true
-                            axisType: 2
-                          }
-                          y: {
-                            isVisible: true
-                            axisType: 1
-                          }
-                        }
-                      }
-                      timespan: {
-                        relative: {
-                          duration: 86400000
-                        }
-                        showUTCTime: false
-                        grain: 1
-                      }
-                    }
-                  }
-                  isOptional: true
-                }
-                {
-                  name: 'sharedTimeRange'
-                  isOptional: true
-                }
-              ]
-              type: 'Extension/HubsExtension/PartType/MonitorChartPart'
-              settings: {
-                content: {}
-              }
-            }
-          }
-        ]
-      }
-    ]
-    metadata: {
-      model: {
-        timeRange: {
-          value: {
-            relative: {
-              duration: 24
-              timeUnit: 1
-            }
-          }
-          type: 'MsPortalFx.Composition.Configuration.ValueTypes.TimeRange'
-        }
-        filterLocale: {
-          value: 'en-us'
-        }
-        filters: {
-          value: {
-            MsPortalFx_TimeRange: {
-              model: {
-                format: 'utc'
-                granularity: 'auto'
-                relative: '24h'
-              }
-              displayCache: {
-                name: 'UTC Time'
-                value: 'Past 24 hours'
-              }
-              filteredPartIds: [
-                'StartboardPart-MonitorChartPart-08c26d29-ea96-4b0b-8f5d-4d54826983e7'
-                'StartboardPart-MonitorChartPart-08c26d29-ea96-4b0b-8f5d-4d54826983e9'
-                'StartboardPart-MonitorChartPart-08c26d29-ea96-4b0b-8f5d-4d54826983eb'
-                'StartboardPart-MonitorChartPart-08c26d29-ea96-4b0b-8f5d-4d54826983ed'
-                'StartboardPart-MonitorChartPart-08c26d29-ea96-4b0b-8f5d-4d54826983ef'
-                'StartboardPart-MonitorChartPart-08c26d29-ea96-4b0b-8f5d-4d54826983f1'
-                'StartboardPart-MonitorChartPart-08c26d29-ea96-4b0b-8f5d-4d54826983f3'
-                'StartboardPart-MonitorChartPart-08c26d29-ea96-4b0b-8f5d-4d54826983f5'
-                'StartboardPart-MonitorChartPart-08c26d29-ea96-4b0b-8f5d-4d54826983f7'
-              ]
-            }
-          }
-        }
-      }
-    }
-  }
-}
-
-// ============================================================================
-// OUTPUTS
-// ============================================================================
-
-@description('Resource ID of the deployed Logic App for RBAC assignments and integration')
+@description('Resource ID of the deployed Logic App')
 output LOGIC_APP_ID string = logicApp.id
 
 @description('Name of the deployed Logic App')
 output LOGIC_APP_NAME string = logicApp.name
 
-@description('Resource ID of the App Service Plan hosting the Logic App')
+@description('Resource ID of the App Service Plan')
 output APP_SERVICE_PLAN_ID string = appServicePlan.id
 
 @description('Name of the App Service Plan')
 output APP_SERVICE_PLAN_NAME string = appServicePlan.name
-
-// resource symbolicname 'Microsoft.Logic/workflows@2019-05-01' = {
-//   name: 'ss'
-//   identity: {
-//     type: 'SystemAssigned,UserAssigned'
-//     userAssignedIdentities: {
-//       '${mi.id}': {}
-//     }
-//   }
-//   location: location
-//   tags: tags
-//   properties: {
-//     state: 'Enabled'
-//     definition: {}
-//   }
-// }

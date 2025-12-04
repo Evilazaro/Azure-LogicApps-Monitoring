@@ -1,38 +1,28 @@
-// ============================================================================
-// APPLICATION INSIGHTS MODULE
-// ============================================================================
-// Deploys workspace-based Application Insights for Logic Apps telemetry
-// collection, performance monitoring, and custom metrics publishing.
-// Uses Log Analytics workspace integration for centralized logging.
-// ============================================================================
-
-@description('Base name for Application Insights. Will be suffixed with unique string and "-appinsights" for global uniqueness.')
+@description('Base name for Application Insights.')
 @minLength(3)
 @maxLength(20)
 param name string
 
-@description('Azure region for Application Insights deployment. Must match Log Analytics workspace region for workspace-based model.')
+@description('Azure region for Application Insights deployment.')
 @minLength(3)
+@maxLength(50)
 param location string = resourceGroup().location
 
-@description('Environment name suffix to ensure uniqueness across environments (e.g., dev, test, prod).')
+@description('Environment name suffix to ensure uniqueness.')
 @minLength(2)
 @maxLength(10)
 param envName string
 
-@description('Resource ID of the Log Analytics workspace for workspace-based Application Insights integration (best practice).')
+@description('Resource ID of the Log Analytics workspace for workspace-based Application Insights integration.')
 param logAnalyticsWorkspaceId string
 
-@description('Resource tags applied to Application Insights and diagnostic settings for organization and governance.')
-@metadata({
-  example: {
-    Solution: 'tax-docs'
-    Environment: 'prod'
-  }
-})
+@description('Resource ID of the Storage Account for the Application Insights diagnostic settings.')
+param storageAccountId string
+
+@description('Resource tags applied to Application Insights.')
 param tags object
 
-resource appInsights 'Microsoft.Insights/components@2020-02-02' = {
+resource applicationInsights 'Microsoft.Insights/components@2020-02-02' = {
   name: '${name}-${uniqueString(resourceGroup().id, name, envName, location)}-appinsights'
   location: location
   kind: 'web'
@@ -40,39 +30,31 @@ resource appInsights 'Microsoft.Insights/components@2020-02-02' = {
   properties: {
     Application_Type: 'web'
     WorkspaceResourceId: logAnalyticsWorkspaceId
-    // Public network access enabled for Application Insights ingestion and querying
     publicNetworkAccessForIngestion: 'Enabled'
     publicNetworkAccessForQuery: 'Enabled'
   }
 }
 
-// ============================================================================
-// OUTPUTS
-// ============================================================================
-
 @description('Name of the deployed Application Insights instance')
-output AZURE_APPLICATION_INSIGHTS_NAME string = appInsights.name
+output AZURE_APPLICATION_INSIGHTS_NAME string = applicationInsights.name
 
-@description('Resource ID of the deployed Application Insights instance for RBAC assignments')
-output AZURE_APPLICATION_INSIGHTS_ID string = appInsights.id
+@description('Resource ID of the deployed Application Insights instance')
+output AZURE_APPLICATION_INSIGHTS_ID string = applicationInsights.id
 
 @description('Instrumentation key for Application Insights telemetry')
 @secure()
-output AZURE_APPLICATION_INSIGHTS_INSTRUMENTATION_KEY string = appInsights.properties.InstrumentationKey
+output AZURE_APPLICATION_INSIGHTS_INSTRUMENTATION_KEY string = applicationInsights.properties.InstrumentationKey
 
-@description('Connection string for Application Insights telemetry (recommended over instrumentation key)')
+@description('Connection string for Application Insights telemetry')
 @secure()
-output AZURE_APPLICATION_INSIGHTS_CONNECTION_STRING string = appInsights.properties.ConnectionString
-
-// ============================================================================
-// DIAGNOSTIC SETTINGS
-// ============================================================================
+output AZURE_APPLICATION_INSIGHTS_CONNECTION_STRING string = applicationInsights.properties.ConnectionString
 
 resource diagnosticSettings 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
-  name: '${appInsights.name}-diagsetting'
-  scope: appInsights
+  name: '${applicationInsights.name}-diag'
+  scope: applicationInsights
   properties: {
     workspaceId: logAnalyticsWorkspaceId
+    storageAccountId: storageAccountId
     logs: [
       {
         categoryGroup: 'allLogs'

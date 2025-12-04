@@ -1,46 +1,25 @@
-// ============================================================================
-// LOG ANALYTICS WORKSPACE MODULE
-// ============================================================================
-// Deploys Log Analytics workspace with 30-day retention and PerGB2018 pricing.
-// Also provisions a separate storage account for diagnostic logs and metrics.
-// Workspace serves as the central repository for all Azure resource logs.
-// ============================================================================
-
-@description('Base name for the Log Analytics workspace. Will be suffixed with unique string and "-law" to ensure global uniqueness.')
+@description('Base name for the Log Analytics workspace.')
 @minLength(3)
 @maxLength(20)
 param name string
 
-@description('Environment name suffix to ensure uniqueness across environments (e.g., dev, test, prod).')
+@description('Environment name suffix to ensure uniqueness.')
 @minLength(2)
 @maxLength(10)
 param envName string
 
-@description('Azure region for the Log Analytics workspace deployment. Should match application resources for optimal data transfer costs.')
+@description('Azure region for the Log Analytics workspace deployment.')
 @minLength(3)
+@maxLength(50)
 param location string = resourceGroup().location
 
-@description('Resource tags applied to the Log Analytics workspace for cost tracking, organization, and compliance.')
-@metadata({
-  example: {
-    Solution: 'tax-docs'
-    Environment: 'prod'
-  }
-})
+@description('Resource tags applied to the Log Analytics workspace.')
 param tags object
 
-// ============================================================================
-// VARIABLES
-// ============================================================================
-
-// Generate a storage account name that meets Azure naming requirements:
-// - Must be 3-24 characters long
-// - Can contain only lowercase letters and numbers
-// - Must be globally unique across all Azure Storage accounts
 var cleanedName = toLower(replace(replace(replace(name, '-', ''), '_', ''), ' ', ''))
 var uniqueSuffix = uniqueString(resourceGroup().id, name, envName, location)
+var logsStorageAccountName = take('${cleanedName}logs${uniqueSuffix}', 24)
 
-// Storage account configuration
 var storageConfig = {
   sku: 'Standard_LRS'
   kind: 'StorageV2'
@@ -49,15 +28,8 @@ var storageConfig = {
   supportsHttpsTrafficOnly: true
 }
 
-// ============================================================================
-// RESOURCES
-// ============================================================================
-
-// Logs storage account - stores diagnostic logs separately from workflow data
-var logsStorageAccountName = take('${cleanedName}logs${uniqueSuffix}stg', 24)
-
-resource logsSA 'Microsoft.Storage/storageAccounts@2023-05-01' = {
-  name: length(logsStorageAccountName) >= 3 ? logsStorageAccountName : '${logsStorageAccountName}stg'
+resource logsStorageAccount 'Microsoft.Storage/storageAccounts@2025-06-01' = {
+  name: logsStorageAccountName
   location: location
   sku: {
     name: storageConfig.sku
@@ -68,7 +40,7 @@ resource logsSA 'Microsoft.Storage/storageAccounts@2023-05-01' = {
     accessTier: storageConfig.accessTier
     supportsHttpsTrafficOnly: storageConfig.supportsHttpsTrafficOnly
     minimumTlsVersion: storageConfig.minimumTlsVersion
-    allowBlobPublicAccess: false // Logs don't need public access
+    allowBlobPublicAccess: false
     publicNetworkAccess: 'Enabled'
     allowSharedKeyAccess: true
     networkAcls: {
@@ -78,17 +50,13 @@ resource logsSA 'Microsoft.Storage/storageAccounts@2023-05-01' = {
   }
 }
 
-// ============================================================================
-// OUTPUTS
-// ============================================================================
-
-@description('Name of the deployed storage account for logs (generated with unique suffix for global uniqueness)')
-output LOGS_STORAGE_ACCOUNT_NAME string = logsSA.name
+@description('Name of the deployed storage account for logs')
+output LOGS_STORAGE_ACCOUNT_NAME string = logsStorageAccount.name
 
 @description('Resource ID of the deployed storage account for logs')
-output LOGS_STORAGE_ACCOUNT_ID string = logsSA.id
+output LOGS_STORAGE_ACCOUNT_ID string = logsStorageAccount.id
 
-resource logAnalytics 'Microsoft.OperationalInsights/workspaces@2023-09-01' = {
+resource logAnalyticsWorkspace 'Microsoft.OperationalInsights/workspaces@2025-07-01' = {
   name: '${name}-${uniqueString(resourceGroup().id, name, envName, location)}-law'
   location: location
   identity: {
@@ -106,8 +74,17 @@ resource logAnalytics 'Microsoft.OperationalInsights/workspaces@2023-09-01' = {
   }
 }
 
-@description('Resource ID of the deployed Log Analytics workspace for diagnostic settings configuration')
-output AZURE_LOG_ANALYTICS_WORKSPACE_ID string = logAnalytics.id
+@description('Resource ID of the deployed Log Analytics workspace')
+output AZURE_LOG_ANALYTICS_WORKSPACE_ID string = logAnalyticsWorkspace.id
 
-@description('Name of the deployed Log Analytics workspace for reference and queries')
-output AZURE_LOG_ANALYTICS_WORKSPACE_NAME string = logAnalytics.name
+@description('Name of the deployed Log Analytics workspace')
+output AZURE_LOG_ANALYTICS_WORKSPACE_NAME string = logAnalyticsWorkspace.name
+
+resource diagnosticSettings 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
+  name: '${logAnalyticsWorkspace.name}-diag'
+  scope: logAnalyticsWorkspace
+  properties: {
+    workspaceId: logAnalyticsWorkspace.id
+    storageAccountId: logsStorageAccount.id
+  }
+}
