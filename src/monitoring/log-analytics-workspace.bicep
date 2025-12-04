@@ -72,9 +72,6 @@ resource logAnalytics 'Microsoft.OperationalInsights/workspaces@2025-07-01' = {
       immediatePurgeDataOn30Days: true
     }
   }
-  dependsOn: [
-    logsSA
-  ]
 }
 
 @description('Resource ID of the deployed Log Analytics workspace')
@@ -83,3 +80,11 @@ output AZURE_LOG_ANALYTICS_WORKSPACE_ID string = logAnalytics.id
 @description('Name of the deployed Log Analytics workspace')
 output AZURE_LOG_ANALYTICS_WORKSPACE_NAME string = logAnalytics.name
 
+resource diagnosticSettings 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
+  name: '${logAnalytics.name}-diag'
+  scope: logAnalytics
+  properties: {
+    workspaceId: logAnalytics.id
+    storageAccountId: logsSA.id
+  }
+}
