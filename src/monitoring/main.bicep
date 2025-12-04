@@ -1,4 +1,3 @@
-
 @description('Base name for all monitoring resources.')
 @minLength(3)
 @maxLength(20)
@@ -17,15 +16,6 @@ param location string = resourceGroup().location
 @description('Resource tags applied to all monitoring resources.')
 param tags object
 
-module healthModel 'azure-monitor-health-model.bicep' = {
-  name: 'healthModelDeployment'
-  scope: resourceGroup()
-  params: {
-    name: name
-    tags: tags
-  }
-}
-
 module operational 'log-analytics-workspace.bicep' = {
   name: 'operationalDeployment'
   scope: resourceGroup()
@@ -35,6 +25,18 @@ module operational 'log-analytics-workspace.bicep' = {
     location: location
     tags: tags
   }
+}
+
+module healthModel 'azure-monitor-health-model.bicep' = {
+  name: 'healthModelDeployment'
+  scope: resourceGroup()
+  params: {
+    name: name
+    tags: tags
+  }
+  dependsOn: [
+    operational
+  ]
 }
 
 module insights 'app-insights.bicep' = {
