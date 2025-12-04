@@ -67,7 +67,8 @@ module workload '../src/workload/main.bicep' = {
     envName: envName
     workspaceId: monitoring.outputs.AZURE_LOG_ANALYTICS_WORKSPACE_ID
     storageAccountId: monitoring.outputs.LOGS_STORAGE_ACCOUNT_ID
-    appInsightsName: monitoring.outputs.AZURE_APPLICATION_INSIGHTS_NAME
+    appInsightsConnectionString: monitoring.outputs.AZURE_APPLICATION_INSIGHTS_CONNECTION_STRING
+    appInsightsInstrumentationKey: monitoring.outputs.AZURE_APPLICATION_INSIGHTS_INSTRUMENTATION_KEY
     tags: tags
   }
 }
