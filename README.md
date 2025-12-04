@@ -1,647 +1,541 @@
 # Azure Logic Apps Standard - Monitoring Solution
 
-[![License](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE.md)
-[![Azure](https://img.shields.io/badge/Azure-Logic%20Apps%20Standard-0078D4?logo=microsoft-azure)](https://azure.microsoft.com/services/logic-apps/)
+A production-ready Infrastructure as Code (IaC) solution for implementing comprehensive observability in Azure Logic Apps Standard using Bicep. This project demonstrates Azure Monitor best practices with pre-configured diagnostic settings, centralized Log Analytics, workspace-based Application Insights, and a modular architecture designed for enterprise workflow orchestration.
 
-A production-ready Infrastructure as Code (IaC) solution that implements comprehensive monitoring and observability for Azure Logic Apps Standard using Bicep templates. This project demonstrates Azure Monitor best practices with pre-configured Application Insights, Log Analytics, custom health models, and diagnostic settings designed for enterprise workflow orchestration.
-
----
+[![Azure](https://img.shields.io/badge/Azure-Solution-0078D4.svg)](https://azure.microsoft.com)
+[![Bicep](https://img.shields.io/badge/Bicep-IaC-3178C6.svg)](https://learn.microsoft.com/azure/azure-resource-manager/bicep/)
+[![Logic Apps](https://img.shields.io/badge/Logic%20Apps-Standard-0078D4.svg)](https://learn.microsoft.com/azure/logic-apps/)
 
 ## Table of Contents
 
 - [Project Overview](#project-overview)
+  - [Purpose](#purpose)
+  - [Key Features](#key-features)
+  - [Target Audience](#target-audience)
+  - [Benefits](#benefits)
 - [Architecture](#architecture)
+  - [Solution Layers](#solution-layers)
+  - [Architecture Diagram](#architecture-diagram)
+  - [Data Flow](#data-flow)
 - [Prerequisites](#prerequisites)
 - [Deployment](#deployment)
+  - [Manual Bicep Deployment](#manual-bicep-deployment)
+  - [Troubleshooting](#troubleshooting-common-deployment-issues)
 - [Usage](#usage)
 - [Project Structure](#project-structure)
-- [Monitoring Components](#monitoring-components)
-- [Security](#security)
+- [Monitoring Best Practices](#monitoring-best-practices)
 - [Contributing](#contributing)
-- [Glossary](#glossary)
-- [License](#license)
-
----
+- [Security](#security)
+- [Additional Resources](#additional-resources)
+- [Support](#support)
 
 ## Project Overview
 
 ### Purpose
 
-This monitoring solution was created to address the observability gaps in Azure Logic Apps Standard deployments. While Azure provides basic monitoring capabilities out-of-the-box, enterprise workflow orchestration requires:
+Azure Logic Apps Standard provides a powerful serverless workflow engine, but effective production monitoring requires more than default Application Insights integration. This solution fills critical observability gaps by providing:
 
-- **Comprehensive telemetry collection** across all Logic App execution stages
-- **Centralized log aggregation** from Logic Apps, Azure Functions, and messaging services
-- **Proactive alerting** with custom health models and metric thresholds
-- **Infrastructure as Code** for repeatable, version-controlled monitoring deployments
-- **Best practice patterns** aligned with the Azure Well-Architected Framework
+**Centralized telemetry aggregation**: All resources (Logic Apps, Azure Functions, Storage Queues, App Service Plans) send diagnostic logs and metrics to a single Log Analytics workspace, enabling unified querying and correlation across your entire workflow ecosystem.
 
-This solution solves the problem of fragmented monitoring by providing a unified, automated approach to observability that works from day one.
+**Pre-configured diagnostic settings**: Every deployed resource automatically captures the right logs and metrics without manual portal configuration. This includes WorkflowRuntime logs for execution traces, AppService logs for hosting diagnostics, and Storage metrics for queue monitoring.
 
-### Target Use Cases
-
-- **Production workflow monitoring**: Track Logic App executions, failures, and performance metrics
-- **Multi-service observability**: Monitor Logic Apps, Azure Functions, Storage Queues, and supporting infrastructure
-- **Compliance and auditing**: Retain diagnostic logs in Azure Storage with configurable retention policies
-- **Cost optimization**: Identify inefficient workflows through performance telemetry
-- **Incident response**: Quickly diagnose issues with pre-configured Log Analytics queries
+**Repeatable infrastructure**: Bicep templates ensure consistent monitoring configuration across dev, staging, and production environments. Deploy once, replicate everywhere with environment-specific parameters.
 
 ### Key Features
 
-#### What It Monitors
-
-- **Logic Apps Standard**: Workflow runtime execution, trigger events, action failures, latency metrics
-- **Azure Functions (.NET 9.0)**: Function execution counts, duration, failure rates, dependencies
-- **Azure Storage Queues**: Message queue depth, processing latency, dead-letter queue metrics
-- **Application Insights**: End-to-end transaction tracing, dependency tracking, exception telemetry
-- **Log Analytics Workspace**: Centralized log repository with 30-day retention
-- **App Service Plans**: CPU, memory, and scaling metrics for compute resources
-
-#### How It Monitors
-
-- **Diagnostic Settings**: Automatically configured on all resources to send logs and metrics to Log Analytics
-- **Application Insights Integration**: Workspace-based Application Insights linked to Log Analytics for unified querying
-- **Managed Identity**: Secure, passwordless authentication for Logic Apps to access storage and monitoring resources
-- **Custom Health Models**: Azure Monitor service groups for hierarchical health aggregation (preview feature)
-- **Dual Storage**: Metrics stored in both Log Analytics (for querying) and Azure Storage (for long-term archival)
-
-#### Integration Points
-
-- **Log Analytics Workspace**: Central hub for all diagnostic data with KQL query support
-- **Application Insights**: Telemetry ingestion from Logic Apps and Azure Functions
-- **Azure Storage**: Long-term log retention in blob containers and queues for workflow triggers
-- **Managed Identities**: Role-based access control (RBAC) assignments for secure resource access
-- **Bicep Modules**: Modular, reusable IaC templates for monitoring and workload components
+- **Workspace-Based Application Insights**: Unified query experience across Logic Apps and supporting services with 30-day log retention
+- **Comprehensive Diagnostic Settings**: Automatic configuration for all resources capturing WorkflowRuntime, AppService, Storage Queue, and infrastructure metrics
+- **Managed Identity Security**: User-Assigned Identity for Logic Apps with RBAC roles (Storage Blob Data Owner, Queue Data Contributor) eliminates connection string management
+- **Multi-Tier Architecture**: Separation of monitoring infrastructure, messaging layer, and application workloads for modular deployment and reusability
+- **Azure Functions Integration**: Pre-configured API layer (.NET 9.0) with Application Insights telemetry for custom operations
+- **Storage Queue Monitoring**: Diagnostic settings on Storage Queue services for message tracking and dead-letter queue analysis
+- **Health Model Support**: Azure Monitor health model implementation (preview) for service group organization
+- **Dual Storage Architecture**: Separate storage accounts for workflow runtime and diagnostic logs to optimize performance and cost
 
 ### Target Audience
 
-- **DevOps Engineers**: Managing Azure Logic Apps in production environments
-- **Azure Architects**: Designing monitoring solutions for microservices and workflow orchestration
-- **Platform Engineers**: Standardizing observability across multiple Azure subscriptions
-- **SRE Teams**: Establishing SLIs, SLOs, and alert rules for workflow reliability
+- **Beginner developers**: Deploy your first production-ready Logic Apps monitoring solution in under 30 minutes
+- **Azure architects**: Evaluate a Well-Architected Framework-aligned approach for workflow observability
+- **DevOps engineers**: Implement repeatable Infrastructure as Code for Logic Apps Standard environments
+- **Platform engineers**: Standardize monitoring patterns across multiple Logic Apps deployments
 
 ### Benefits
 
-This solution goes beyond default Azure monitoring by providing:
+**Fills gaps beyond default Application Insights**:
+- Default Logic Apps monitoring only captures basic execution metrics; this solution adds WorkflowRuntime logs with detailed action-level traces, error messages, and execution context
+- Storage Queue operations (enqueue/dequeue) are not monitored by default; diagnostic settings capture queue metrics and operation logs for message flow visibility
+- App Service Plan metrics (CPU, memory, worker utilization) require manual configuration; automatically enabled here for capacity planning
 
-#### Gaps Filled Beyond Out-of-the-Box Monitoring
+**Logic Apps-specific monitoring capabilities**:
+- Pre-configured queries for common troubleshooting scenarios (failed runs, slow executions, action failures)
+- Correlation between Logic App executions and Azure Functions API calls via Application Insights distributed tracing
+- Message tracking from Storage Queue through Logic App workflow execution
 
-- **Pre-configured diagnostic settings**: No manual portal clicks required—all resources automatically send telemetry
-- **Unified logging**: Aggregates logs from Logic Apps, Functions, and Storage into a single queryable workspace
-- **Storage archival**: Automated long-term retention in Azure Storage for compliance requirements
-- **Managed Identity integration**: Demonstrates passwordless authentication patterns for Logic Apps
+**Cost optimization**:
+- 30-day log retention balances compliance needs with storage costs
+- Separate storage accounts allow different retention policies (hot storage for runtime, cool storage for diagnostic archives)
+- Metrics-based alerting reduces log query costs
 
-#### Logic Apps-Specific Monitoring Capabilities
+**Infrastructure-as-Code repeatability**:
+- Deploy identical monitoring configuration across multiple environments with parameter changes only
+- Version control for monitoring infrastructure ensures audit trails and change management
+- Modular Bicep structure allows reuse of monitoring patterns in other Azure projects
 
-- **Workflow execution tracking**: Detailed logs for each workflow run, including trigger sources and action results
-- **Retry and failure analysis**: Capture failed actions with error messages for root cause analysis
-- **Performance baselining**: Metrics for workflow duration, action latency, and throughput
-- **Queue-driven workflow monitoring**: Track Storage Queue triggers and processing delays
-
-#### Cost and Operational Advantages
-
-- **Pay-per-GB ingestion**: Log Analytics with 30-day retention optimized for cost (PerGB2018 SKU)
-- **Automated deployment**: Deploy entire monitoring stack in under 5 minutes using Bicep or Azure Developer CLI
-- **Reusable modules**: Separate monitoring and workload layers for flexible, composable infrastructure
-- **No third-party dependencies**: Native Azure services reduce complexity and integration overhead
-
-#### Azure Well-Architected Framework Alignment
-
-This solution implements best practices from the [Azure Well-Architected Framework](https://learn.microsoft.com/azure/well-architected/):
-
-- **Reliability**: Health models and diagnostic settings enable proactive issue detection
-- **Security**: Managed identities, RBAC, TLS 1.2 enforcement, and disabled public blob access
-- **Cost Optimization**: Right-sized SKUs (WS1 for Logic Apps, P0v3 for Functions) with scalable tiers
-- **Operational Excellence**: Infrastructure as Code with modular Bicep templates and automated deployments
-- **Performance Efficiency**: Application Insights dependency tracking identifies bottlenecks
-
----
+**Well-Architected Framework alignment**:
+- **Reliability**: Diagnostic settings survive resource redeployments
+- **Security**: Managed Identity eliminates credential exposure
+- **Operational Excellence**: Automated monitoring removes manual configuration errors
+- **Performance**: Workspace-based insights enable cross-resource queries
+- **Cost Optimization**: Configurable retention and sampling strategies
 
 ## Architecture
 
-### Solution Design
+### Solution Layers
 
-This solution implements a **layered separation of concerns** to maximize reusability and maintainability:
+This solution implements a three-tier architecture that separates concerns and enables modular deployment:
 
-1. **Infrastructure Layer** (`infra/main.bicep`): Deploys the resource group and orchestrates module deployments
-2. **Monitoring Layer** (`src/monitoring/main.bicep`): Provisions observability infrastructure independent of workloads
-3. **Workload Layer** (`src/workload/main.bicep`): Deploys Logic Apps, Functions, and messaging services that consume monitoring resources
+**Infrastructure Orchestration Layer** (`infra/main.bicep`): Top-level deployment coordinator that creates the resource group and sequences module deployments. This layer ensures monitoring infrastructure deploys before workloads, satisfying diagnostic settings dependencies.
 
-**Why Separate Layers?**
+**Monitoring Layer** (`src/monitoring/`): Observability infrastructure including Log Analytics workspace (30-day retention), workspace-based Application Insights, storage account for diagnostic logs, and Azure Monitor health model. All workload resources reference these centralized monitoring components.
 
-- **Reusability**: The monitoring layer can be deployed once and shared across multiple workloads
-- **Dependency management**: Monitoring resources must exist before workloads can configure diagnostic settings
-- **Lifecycle independence**: Update workloads without redeploying monitoring infrastructure
-- **Cost allocation**: Tag and bill monitoring vs. workload resources separately
+**Workload Layer** (`src/workload/`): Application resources including Logic Apps Standard (Workflow Standard SKU with elastic scaling), Azure Functions (.NET 9.0 on Linux Premium plan), and Storage Account with queue services. Each resource has diagnostic settings configured to send telemetry to the monitoring layer.
 
-**Modular Bicep Structure**
+**Deployment Sequence Rationale**: Monitoring resources must exist before workloads deploy because diagnostic settings require valid Log Analytics workspace and storage account resource IDs. The modular structure supports partial deployments (monitoring-only for testing) and allows workload updates without redeploying monitoring infrastructure.
 
-Each layer is composed of focused modules:
-
-- `monitoring/log-analytics-workspace.bicep`: Creates Log Analytics and log storage account
-- `monitoring/app-insights.bicep`: Configures Application Insights with workspace integration
-- `monitoring/azure-monitor-health-model.bicep`: Sets up custom health hierarchy (tenant-scoped)
-- `workload/messaging/main.bicep`: Deploys Storage Account with queues for workflow triggers
-- `workload/azure-function.bicep`: Provisions Function App with Application Insights integration
-- `workload/logic-app.bicep`: Creates Logic App Standard with managed identity and diagnostic settings
-
-**Deployment Sequence**
-
-```
-1. Infrastructure → Resource Group
-2. Monitoring → Log Analytics + Storage + Application Insights
-3. Workload → Messaging (Storage Queue)
-4. Workload → Azure Function (API layer)
-5. Workload → Logic App (depends on Function and Messaging)
-```
-
-Dependencies are enforced through Bicep `dependsOn` and module output parameters.
-
-### Component Architecture
+### Architecture Diagram
 
 ```mermaid
+%%{init: {'theme':'base', 'themeVariables': { 'primaryColor':'#0078D4', 'primaryTextColor':'#fff', 'primaryBorderColor':'#7C7C7C', 'lineColor':'#605E5C', 'secondaryColor':'#107C10', 'tertiaryColor':'#D83B01'}}}%%
 graph TB
-    subgraph Azure Subscription
-        subgraph "Resource Group: contoso-tax-docs-{env}-{location}-rg"
+    subgraph Azure["Azure Subscription"]
+        subgraph RG["Resource Group<br/>(contoso-tax-docs-[env]-[location]-rg)"]
             
-            subgraph Monitoring["🔍 Monitoring Layer"]
-                LAW["Log Analytics Workspace<br/>(PerGB2018 SKU, 30-day retention)"]
-                AppInsights["Application Insights<br/>(workspace-based)"]
-                LogStorage["Storage Account<br/>(logs archival)"]
-                HealthModel["Azure Monitor Health Model<br/>(Service Group)"]
-                
-                style LAW fill:#107C10,stroke:#0B5A0B,color:#fff
-                style AppInsights fill:#107C10,stroke:#0B5A0B,color:#fff
-                style LogStorage fill:#107C10,stroke:#0B5A0B,color:#fff
-                style HealthModel fill:#107C10,stroke:#0B5A0B,color:#fff
+            subgraph Monitoring["🔍 Monitoring Layer<br/>(src/monitoring/)"]
+                LAW["Log Analytics Workspace<br/>(30-day retention)"]
+                AI["Application Insights<br/>(workspace-based)"]
+                LogStorage["Storage Account<br/>(diagnostic logs)"]
+                Health["Health Model<br/>(service groups)"]
             end
             
-            subgraph Workload["🔧 Workload Layer"]
-                LogicApp["Logic App Standard<br/>(WS1 SKU, Elastic Scale)"]
-                FunctionApp["Azure Function<br/>(.NET 9.0, P0v3 Linux)"]
-                WorkflowStorage["Storage Account<br/>(queues, blobs, tables)"]
-                Queue["Storage Queue<br/>(taxprocessing)"]
+            subgraph Workload["🚀 Workload Layer<br/>(src/workload/)"]
+                subgraph Messaging["💬 Messaging"]
+                    WStorage["Storage Account<br/>(workflow runtime)"]
+                    Queue["Storage Queue<br/>(taxprocessing)"]
+                end
                 
-                style LogicApp fill:#D83B01,stroke:#A62A00,color:#fff
-                style FunctionApp fill:#D83B01,stroke:#A62A00,color:#fff
-                style WorkflowStorage fill:#D83B01,stroke:#A62A00,color:#fff
-                style Queue fill:#D83B01,stroke:#A62A00,color:#fff
-            end
-            
-            subgraph Compute["⚙️ Compute Layer"]
-                ASP_Logic["App Service Plan<br/>(WS1 - Workflow Standard)"]
-                ASP_Function["App Service Plan<br/>(P0v3 - Premium Linux)"]
+                subgraph APIs["🔌 APIs"]
+                    Function["Azure Functions<br/>(.NET 9.0 Linux)"]
+                    FuncPlan["App Service Plan<br/>(Premium P0v3)"]
+                end
                 
-                style ASP_Logic fill:#0078D4,stroke:#005A9E,color:#fff
-                style ASP_Function fill:#0078D4,stroke:#005A9E,color:#fff
+                subgraph Workflows["⚡ Workflows"]
+                    LogicApp["Logic App Standard<br/>(tax-processing)"]
+                    MI["Managed Identity<br/>(User-Assigned)"]
+                    LAPlan["App Service Plan<br/>(Workflow Standard WS1)"]
+                end
             end
-            
-            subgraph Identity["🔐 Identity"]
-                ManagedID["User-Assigned<br/>Managed Identity"]
-                
-                style ManagedID fill:#8764B8,stroke:#5E3F8A,color:#fff
-            end
-            
         end
     end
     
-    %% Data Flow Relationships
-    LogicApp -->|telemetry| AppInsights
-    FunctionApp -->|telemetry| AppInsights
-    AppInsights -->|ingests to| LAW
+    %% Data flow arrows
+    LogicApp -->|WorkflowRuntime logs| LAW
+    LogicApp -->|Telemetry| AI
+    Function -->|AppService logs| LAW
+    Function -->|Telemetry| AI
+    Queue -->|Queue metrics| LAW
+    WStorage -->|Storage metrics| LogStorage
+    LAPlan -->|Host metrics| LAW
+    FuncPlan -->|Host metrics| LAW
     
-    LogicApp -->|diagnostic logs| LAW
-    FunctionApp -->|diagnostic logs| LAW
-    WorkflowStorage -->|diagnostic logs| LAW
-    Queue -->|diagnostic logs| LAW
-    ASP_Logic -->|metrics| LAW
-    ASP_Function -->|metrics| LAW
+    %% Authentication flows
+    MI -.->|RBAC: Blob/Queue/Table/File Data Owner| WStorage
+    LogicApp -.->|Uses| MI
     
-    LogicApp -->|archive logs| LogStorage
-    FunctionApp -->|archive logs| LogStorage
-    WorkflowStorage -->|archive metrics| LogStorage
+    %% Dependencies
+    Messaging -.->|Provides storage| Workflows
+    APIs -.->|HTTP calls| Workflows
     
-    LogicApp -->|hosted on| ASP_Logic
-    FunctionApp -->|hosted on| ASP_Function
+    classDef monitoringStyle fill:#107C10,stroke:#0B5A0B,color:#fff
+    classDef workloadStyle fill:#D83B01,stroke:#A32A00,color:#fff
+    classDef infraStyle fill:#0078D4,stroke:#005A9E,color:#fff
     
-    LogicApp -->|uses identity| ManagedID
-    ManagedID -->|RBAC roles| WorkflowStorage
-    
-    Queue -->|part of| WorkflowStorage
-    LogicApp -->|triggers from| Queue
-    LogicApp -->|calls| FunctionApp
-    
-    HealthModel -.aggregates health.-> LAW
-    
-    style Monitoring fill:#E8F5E9,stroke:#4CAF50
-    style Workload fill:#FFF3E0,stroke:#FF9800
-    style Compute fill:#E3F2FD,stroke:#2196F3
-    style Identity fill:#F3E5F5,stroke:#9C27B0
+    class LAW,AI,LogStorage,Health monitoringStyle
+    class LogicApp,Function,WStorage,Queue,MI workloadStyle
+    class RG infraStyle
 ```
 
-### Component Details
+> **Note**: The diagram shows the logical architecture. Detailed sub-modules (individual Bicep files for each resource) are omitted for clarity. See [Project Structure](#project-structure) for complete module hierarchy.
 
-#### Monitoring Layer Resources
+### Data Flow
 
-| Resource | Type | Purpose | Configuration |
-|----------|------|---------|---------------|
-| **Log Analytics Workspace** | `Microsoft.OperationalInsights/workspaces` | Central log aggregation and KQL queries | PerGB2018 SKU, 30-day retention, system-assigned identity |
-| **Application Insights** | `Microsoft.Insights/components` | Application telemetry and distributed tracing | Workspace-based, linked to Log Analytics |
-| **Log Storage Account** | `Microsoft.Storage/storageAccounts` | Long-term diagnostic log archival | Standard_LRS, StorageV2, TLS 1.2, Hot tier |
-| **Health Model Service Group** | `Microsoft.Management/serviceGroups` | Custom health hierarchy (preview) | Tenant-scoped resource |
+The observability pipeline follows this flow:
 
-#### Workload Layer Resources
+1. **Workflow Execution**: Logic App Standard executes workflows triggered by Storage Queue messages or HTTP requests. The Logic App uses Managed Identity to authenticate to Storage Queue (no connection strings).
 
-| Resource | Type | Purpose | Configuration |
-|----------|------|---------|---------------|
-| **Logic App Standard** | `Microsoft.Web/sites` (workflowapp) | Workflow orchestration engine | WS1 elastic scale, user-assigned managed identity |
-| **Azure Function** | `Microsoft.Web/sites` (functionapp,linux) | API services for Logic App workflows | .NET 9.0 runtime, P0v3 Linux, system-assigned identity |
-| **Workflow Storage** | `Microsoft.Storage/storageAccounts` | Logic App state, queues, blobs, tables | Standard_LRS, StorageV2, managed identity access |
-| **Storage Queue** | `Microsoft.Storage/storageAccounts/queueServices/queues` | Workflow trigger source | Named `taxprocessing` |
-| **App Service Plans** | `Microsoft.Web/serverfarms` | Compute hosts for Logic App and Function | WS1 (elastic) and P0v3 (Linux reserved) |
-| **Managed Identity** | `Microsoft.ManagedIdentity/userAssignedIdentities` | Passwordless auth for Logic App | RBAC roles on storage (Blob Owner, Queue Contributor, etc.) |
+2. **Telemetry Generation**: During execution, the Logic App generates WorkflowRuntime logs (action traces, errors, input/output data) and metrics (runs started, runs succeeded/failed, execution duration). Application Insights SDK captures distributed traces.
 
-#### Resource Dependencies
+3. **Diagnostic Settings Routing**: Pre-configured diagnostic settings on the Logic App resource automatically send logs to Log Analytics workspace and storage account. Metrics are sent to Azure Monitor metrics store.
 
-```
-Log Analytics Workspace
-    ├─→ Application Insights (requires workspaceId)
-    ├─→ Logic App diagnostic settings (requires workspaceId)
-    └─→ Function App diagnostic settings (requires workspaceId)
+4. **Log Aggregation**: Log Analytics workspace receives logs from all resources (Logic Apps, Azure Functions, Storage Queues, App Service Plans) and indexes them for querying. Retention is set to 30 days.
 
-Workflow Storage Account
-    ├─→ Storage Queue (child resource)
-    ├─→ Logic App (requires storage for state)
-    └─→ Managed Identity RBAC (requires storage for role assignments)
+5. **Application Insights Correlation**: Workspace-based Application Insights shares the Log Analytics workspace, enabling unified queries that correlate Logic App executions with Azure Functions HTTP calls using distributed tracing context (`operation_Id`).
 
-Application Insights
-    ├─→ Logic App app settings (requires connection string)
-    └─→ Function App app settings (requires connection string)
-
-Function App
-    └─→ Logic App dependency (workflows call Function APIs)
-```
-
-### Data Flow Architecture
-
-```mermaid
-flowchart LR
-    subgraph External["External Triggers"]
-        Scheduler["Scheduler/Timer"]
-        HttpReq["HTTP Request"]
-        QueueMsg["Queue Message"]
-    end
-    
-    subgraph WorkloadLayer["Workload Execution"]
-        LA["Logic App<br/>Workflow"]
-        FA["Function App<br/>API"]
-        SQ["Storage Queue<br/>(taxprocessing)"]
-        
-        style LA fill:#D83B01,stroke:#A62A00,color:#fff
-        style FA fill:#D83B01,stroke:#A62A00,color:#fff
-        style SQ fill:#D83B01,stroke:#A62A00,color:#fff
-    end
-    
-    subgraph TelemetryCollection["Telemetry Collection"]
-        AppInsights["Application Insights<br/>(telemetry ingestion)"]
-        DiagPipeline["Diagnostic Settings<br/>(logs & metrics)"]
-        
-        style AppInsights fill:#107C10,stroke:#0B5A0B,color:#fff
-        style DiagPipeline fill:#107C10,stroke:#0B5A0B,color:#fff
-    end
-    
-    subgraph Storage["Storage & Query"]
-        LAW["Log Analytics<br/>Workspace<br/>(KQL queries)"]
-        BlobArchive["Blob Storage<br/>(long-term logs)"]
-        
-        style LAW fill:#107C10,stroke:#0B5A0B,color:#fff
-        style BlobArchive fill:#107C10,stroke:#0B5A0B,color:#fff
-    end
-    
-    subgraph Analysis["Analysis & Alerting"]
-        Workbooks["Azure Workbooks<br/>(dashboards)"]
-        Alerts["Azure Monitor<br/>Alerts"]
-        HealthCheck["Health Model<br/>(aggregation)"]
-        
-        style Workbooks fill:#8764B8,stroke:#5E3F8A,color:#fff
-        style Alerts fill:#8764B8,stroke:#5E3F8A,color:#fff
-        style HealthCheck fill:#8764B8,stroke:#5E3F8A,color:#fff
-    end
-    
-    %% Execution Flow
-    Scheduler -->|triggers| LA
-    HttpReq -->|invokes| LA
-    QueueMsg -->|triggers| LA
-    LA -->|calls API| FA
-    LA -->|writes to| SQ
-    
-    %% Telemetry Flow
-    LA -->|telemetry: traces, exceptions| AppInsights
-    FA -->|telemetry: dependencies, requests| AppInsights
-    
-    LA -->|diagnostic logs: WorkflowRuntime| DiagPipeline
-    FA -->|diagnostic logs: FunctionAppLogs| DiagPipeline
-    SQ -->|diagnostic logs: StorageRead/Write| DiagPipeline
-    
-    %% Storage Flow
-    AppInsights -->|ingests to| LAW
-    DiagPipeline -->|logs| LAW
-    DiagPipeline -->|metrics| LAW
-    DiagPipeline -->|archive| BlobArchive
-    
-    %% Analysis Flow
-    LAW -->|queries| Workbooks
-    LAW -->|metric alerts| Alerts
-    LAW -->|aggregates| HealthCheck
-    
-    style External fill:#F3E5F5,stroke:#9C27B0
-    style WorkloadLayer fill:#FFF3E0,stroke:#FF9800
-    style TelemetryCollection fill:#E8F5E9,stroke:#4CAF50
-    style Storage fill:#E8F5E9,stroke:#4CAF50
-    style Analysis fill:#F3E5F5,stroke:#9C27B0
-```
-
-### Telemetry and Log Flow Explanation
-
-1. **Execution Initiation**: Logic Apps are triggered by timers, HTTP requests, or Storage Queue messages. The workflow orchestrates business logic and calls Azure Functions for API operations.
-
-2. **Telemetry Collection**: Both Logic Apps and Azure Functions send application telemetry (traces, exceptions, dependencies, custom events) to Application Insights using the configured connection string.
-
-3. **Diagnostic Log Routing**: All resources have diagnostic settings configured to route logs and metrics to two destinations:
-   - **Log Analytics Workspace**: For real-time querying with KQL
-   - **Blob Storage**: For long-term archival and compliance retention
-
-4. **Data Aggregation**: Application Insights automatically ingests its telemetry into the linked Log Analytics Workspace, creating a unified query surface. Metrics from App Service Plans, Storage, and other resources are also aggregated here.
-
-5. **Analysis and Alerting**: 
-   - **Azure Workbooks** visualize metrics and logs through custom dashboards
-   - **Azure Monitor Alerts** trigger notifications based on metric thresholds or log query conditions
-   - **Health Models** aggregate resource health into hierarchical service groups for holistic monitoring
-
----
+6. **Query and Alert**: Operators run KQL queries in Log Analytics to troubleshoot failures or monitor SLAs. Azure Monitor alerts can trigger notifications when thresholds are breached (e.g., failure rate > 5%).
 
 ## Prerequisites
 
 ### Azure Requirements
 
-- **Azure Subscription**: Active subscription with **Contributor** role (minimum required for resource deployment and RBAC assignments)
-- **Resource Providers Registered**: The following providers must be registered in your subscription:
-  ```bash
-  Microsoft.Logic
-  Microsoft.Web
-  Microsoft.Storage
-  Microsoft.Insights
-  Microsoft.OperationalInsights
-  Microsoft.ManagedIdentity
-  Microsoft.Authorization
-  ```
-  To verify registration:
-  ```bash
-  az provider show --namespace Microsoft.Logic --query "registrationState"
-  ```
+- **Azure subscription** with Contributor role (minimum) on subscription or target resource group
+- **Resource providers registered**:
+  - `Microsoft.Logic` (Logic Apps)
+  - `Microsoft.Insights` (Application Insights, diagnostic settings)
+  - `Microsoft.OperationalInsights` (Log Analytics)
+  - `Microsoft.Web` (App Service Plans, Azure Functions)
+  - `Microsoft.Storage` (Storage Accounts)
+  - `Microsoft.ManagedIdentity` (User-Assigned Managed Identity)
+  - `Microsoft.Authorization` (Role assignments)
 
-### Local Development Tools
+Verify registration status:
+```bash
+az provider show --namespace Microsoft.Logic --query "registrationState"
+```
 
-Install these tools before deploying:
+### Local Tools
 
-| Tool | Minimum Version | Purpose | Installation Link |
-|------|-----------------|---------|-------------------|
-| **Azure CLI** | 2.50.0+ | Deploy Bicep templates and manage resources | [Install Azure CLI](https://learn.microsoft.com/cli/azure/install-azure-cli) |
-| **Bicep CLI** | 0.20.0+ | Compile and validate Bicep templates | [Install Bicep](https://learn.microsoft.com/azure/azure-resource-manager/bicep/install) |
-| **Azure Developer CLI (azd)** | 1.5.0+ | *Optional but recommended* for streamlined deployments | [Install azd](https://learn.microsoft.com/azure/developer/azure-developer-cli/install-azd) |
-| **PowerShell** | 7.0+ | Run deployment scripts on Windows/Linux/macOS | [Install PowerShell](https://learn.microsoft.com/powershell/scripting/install/installing-powershell) |
+- **Azure CLI**: Version 2.50 or higher ([Install](https://learn.microsoft.com/cli/azure/install-azure-cli))
+- **Bicep CLI**: Version 0.20 or higher (included with Azure CLI 2.20+)
+- **PowerShell**: Version 7.0 or higher ([Install](https://learn.microsoft.com/powershell/scripting/install/installing-powershell))
+- **Azure Developer CLI (azd)**: Optional but recommended for streamlined deployments ([Install](https://learn.microsoft.com/azure/developer/azure-developer-cli/install-azd))
 
-### Configuration Files
-
-Before deploying, you'll need to customize:
-
-- **`infra/main.parameters.json`**: Deployment parameters (location, environment name)
-- **Azure Developer CLI Environment**: If using `azd`, initialize with `azd env new`
+Verify installed versions:
+```bash
+az --version
+bicep --version
+pwsh --version
+```
 
 ### Knowledge Prerequisites
 
-- **Required**:
-  - Basic understanding of Azure Logic Apps Standard and workflow concepts
-  - Familiarity with Azure Resource Manager deployments (portal or CLI experience)
-  - Ability to read JSON configuration files
+- ✓ **Required**: Basic understanding of Azure Logic Apps Standard and workflow concepts
+- ✓ **Required**: Familiarity with Azure Resource Manager deployments (resource groups, resources)
+- ○ **Helpful**: Experience with Bicep or ARM templates for Infrastructure as Code
+- ○ **Helpful**: Knowledge of KQL (Kusto Query Language) for Log Analytics queries
+- ○ **Helpful**: Understanding of Azure Monitor concepts (diagnostic settings, metrics, logs)
 
-- **Recommended**:
-  - Experience with Bicep or ARM templates for infrastructure as code
-  - Knowledge of Azure Monitor, Log Analytics, and Application Insights
-  - Understanding of managed identities and Azure RBAC
+### Configuration Files
 
-- **Optional**:
-  - Familiarity with the [Azure Well-Architected Framework](https://learn.microsoft.com/azure/well-architected/)
-  - KQL (Kusto Query Language) for querying Log Analytics
-
----
+Before deployment, you'll configure:
+- **`infra/main.parameters.json`**: Environment-specific parameters (location, environment name)
+- **Environment variables**: `AZURE_LOCATION` (Azure region) and `AZURE_ENV_NAME` (dev/uat/prod)
 
 ## Deployment
 
-### Option A: Using Azure Developer CLI (Recommended)
+### Manual Bicep Deployment
 
-The fastest way to deploy the complete solution:
+**Step 1: Configure Parameters**
 
-```bash
-# Clone the repository
-git clone https://github.com/Evilazaro/Azure-LogicApps-Monitoring.git
-cd Azure-LogicApps-Monitoring
+The `infra/main.parameters.json` file uses environment variables for flexibility. Set these before deployment:
 
-# Login to Azure
-azd auth login
-
-# Initialize a new environment (first-time setup)
-azd env new
-
-# You'll be prompted for:
-# - Environment name (e.g., "dev", "prod")
-# - Azure subscription
-# - Azure region (e.g., "eastus", "westus2")
-
-# Provision infrastructure and deploy
-azd up
+```powershell
+# Set environment variables (PowerShell)
+$env:AZURE_LOCATION = "eastus"          # Your preferred Azure region
+$env:AZURE_ENV_NAME = "dev"             # Environment: dev, uat, or prod
 ```
 
-**What `azd up` does behind the scenes:**
+**Available parameters**:
+- `location` (required): Azure region (e.g., "eastus", "westus2", "westeurope")
+- `envName` (required): Environment suffix (allowed values: "dev", "uat", "prod")
+- `solutionName` (optional): Base name prefix (default: "tax-docs", 3-20 characters)
 
-1. Reads `azure.yaml` to understand the project structure
-2. Compiles Bicep templates in `infra/main.bicep`
-3. Creates a resource group in your chosen subscription and region
-4. Deploys the monitoring layer (Log Analytics, Application Insights, Storage)
-5. Deploys the workload layer (Logic App, Function App, Storage Queue)
-6. Configures diagnostic settings and managed identity role assignments
-7. Outputs connection strings and resource IDs to `.azure/{env}/.env`
+**Parameter defaults** (in `infra/main.bicep`):
+- Log Analytics retention: 30 days
+- Application Insights type: workspace-based
+- Logic App SKU: Workflow Standard (WS1)
+- Azure Functions SKU: Premium P0v3 (.NET 9.0 on Linux)
+- Storage replication: Locally redundant (LRS)
+- TLS version: 1.2 minimum
 
-**Typical deployment time**: 3-5 minutes
+---
 
-### Option B: Manual Bicep Deployment
+**Step 2: Login and Create Resource Group**
 
-For more control over the deployment process:
-
-#### Step 1: Configure Parameters
-
-Edit `infra/main.parameters.json` to customize your deployment:
-
-```json
-{
-  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
-  "contentVersion": "1.0.0.0",
-  "parameters": {
-    "location": {
-      "value": "eastus"  // Replace with your Azure region
-    },
-    "envName": {
-      "value": "dev"  // Options: dev, uat, prod
-    }
-  }
-}
-```
-
-**Parameter explanations:**
-
-- **`location`**: Azure region for all resources (choose one close to your users for latency optimization)
-- **`envName`**: Environment name suffix appended to resource names (helps differentiate dev/test/prod deployments)
-
-**Optional parameters** (defined with defaults in `main.bicep`):
-
-- `solutionName`: Base prefix for all resource names (default: `tax-docs`)
-- `deploymentDate`: Timestamp tag (auto-generated)
-
-#### Step 2: Login and Set Subscription
+The Bicep template creates the resource group automatically, but verify your Azure subscription first:
 
 ```bash
 # Login to Azure
 az login
 
-# List your subscriptions
+# List available subscriptions
 az account list --output table
 
-# Set the target subscription
-az account set --subscription "Your Subscription Name or ID"
+# Set active subscription (if you have multiple)
+az account set --subscription "<subscription-id-or-name>"
 
-# Verify the active subscription
-az account show --output table
+# Verify current subscription
+az account show --query "{Name:name, SubscriptionId:id, TenantId:tenantId}" --output table
 ```
 
-#### Step 3: Deploy Monitoring Infrastructure First
+---
 
-The monitoring layer must be deployed before workloads can configure diagnostic settings:
+**Step 3: Deploy Infrastructure**
+
+Deploy all resources with a single subscription-level deployment:
 
 ```bash
-# Deploy at subscription scope (creates resource group + monitoring)
+# Deploy to subscription scope (creates resource group + all resources)
 az deployment sub create \
-  --location eastus \
+  --name "logicapp-monitoring-$(Get-Date -Format 'yyyyMMddHHmm')" \
+  --location $env:AZURE_LOCATION \
   --template-file infra/main.bicep \
   --parameters infra/main.parameters.json \
-  --name "monitoring-$(date +%Y%m%d-%H%M%S)"
+  --parameters location=$env:AZURE_LOCATION envName=$env:AZURE_ENV_NAME
 ```
 
-**Why subscription scope?** The root `main.bicep` creates a resource group, which requires subscription-level deployment permissions.
+**What this does**:
+1. Creates resource group: `contoso-tax-docs-[envName]-[location]-rg`
+2. Deploys monitoring layer: Log Analytics workspace, Application Insights, storage account for logs
+3. Deploys messaging layer: Storage account with `taxprocessing` queue
+4. Deploys API layer: Azure Functions app with App Service Plan
+5. Deploys workflow layer: Logic App Standard with Managed Identity and RBAC role assignments
+6. Configures diagnostic settings on all resources
 
-**Expected output:**
+**Deployment time**: Approximately 5-8 minutes
 
-```
-{
-  "outputs": {
-    "RESOURCE_GROUP_NAME": "contoso-tax-docs-dev-eastus-rg",
-    "AZURE_LOG_ANALYTICS_WORKSPACE_ID": "/subscriptions/{sub-id}/resourceGroups/.../loganalytics",
-    "AZURE_APPLICATION_INSIGHTS_CONNECTION_STRING": "InstrumentationKey=...;IngestionEndpoint=...",
-    ...
-  }
-}
-```
+---
 
-Save these outputs—you'll need them for verification.
-
-#### Step 4: Verify Deployment
-
-Check that all resources were created successfully:
+**Step 4: Verify Deployment**
 
 ```bash
-# List all resources in the deployed resource group
+# Set resource group name (matches naming convention)
+$rgName = "contoso-tax-docs-$env:AZURE_ENV_NAME-$env:AZURE_LOCATION-rg"
+
+# List all deployed resources
 az resource list \
-  --resource-group contoso-tax-docs-dev-eastus-rg \
+  --resource-group $rgName \
   --output table
 
-# Verify Logic App status
+# Check Logic App status and health
 az logicapp show \
-  --name tax-docs-{uniqueId}-logicapp \
-  --resource-group contoso-tax-docs-dev-eastus-rg \
-  --query "{Name:name, State:state, HostName:defaultHostName}" \
+  --name (az resource list -g $rgName --resource-type Microsoft.Web/sites --query "[?kind=='functionapp,workflowapp'].name" -o tsv) \
+  --resource-group $rgName \
+  --query "{Name:name, State:state, DefaultHostName:defaultHostName}" \
   --output table
 
-# Check Application Insights connection
+# Verify Application Insights connection
 az monitor app-insights component show \
-  --app tax-docs-{uniqueId}-appinsights \
-  --resource-group contoso-tax-docs-dev-eastus-rg \
-  --query "{Name:name, AppId:appId, InstrumentationKey:instrumentationKey}" \
+  --resource-group $rgName \
+  --query "[].{Name:name, ApplicationId:appId, ConnectionString:connectionString}" \
+  --output table
+
+# Verify Log Analytics workspace
+az monitor log-analytics workspace show \
+  --resource-group $rgName \
+  --workspace-name (az resource list -g $rgName --resource-type Microsoft.OperationalInsights/workspaces --query "[0].name" -o tsv) \
+  --query "{Name:name, CustomerId:customerId, RetentionInDays:retentionInDays}" \
   --output table
 ```
 
-**Expected resource count**: 10-12 resources (depending on configuration):
+**Expected output**:
+- Logic App state: `Running`
+- Application Insights: Valid connection string returned
+- Log Analytics: Workspace with 30-day retention configured
+- 10-12 resources total (resource group, Log Analytics, Application Insights, 2 storage accounts, 2 App Service Plans, Logic App, Function App, Managed Identity, role assignments)
 
-- 1 Log Analytics Workspace
-- 1 Application Insights instance
-- 2 Storage Accounts (logs + workflow storage)
-- 1 Storage Queue
-- 1 Logic App (site + app service plan)
-- 1 Function App (site + app service plan)
-- 1 Managed Identity
-- 1 Service Group (Health Model)
+---
 
-#### Step 5: Post-Deployment Configuration
+**Step 5: Post-Deployment Configuration**
 
-##### Access Application Insights
+The Bicep deployment handles most configuration automatically. Optional manual steps:
 
-1. Navigate to the Azure Portal
-2. Find your Application Insights resource: `tax-docs-{uniqueId}-appinsights`
-3. Go to **Logs** and verify data ingestion with this KQL query:
-
-```kql
-requests
-| where timestamp > ago(1h)
-| summarize count() by cloud_RoleName
-| order by count_ desc
-```
-
-##### Configure Alert Rules (Optional)
-
-Create a metric alert for failed Logic App runs:
-
+**Configure Alert Action Groups** (for notifications):
 ```bash
-# Get the Logic App resource ID
-LOGIC_APP_ID=$(az logicapp show \
-  --name tax-docs-{uniqueId}-logicapp \
-  --resource-group contoso-tax-docs-dev-eastus-rg \
-  --query id --output tsv)
-
-# Create an action group (for email notifications)
+# Create action group for email notifications
 az monitor action-group create \
   --name "LogicAppAlerts" \
-  --resource-group contoso-tax-docs-dev-eastus-rg \
-  --short-name "LA-Alerts" \
-  --email-receiver name="DevOps Team" email="devops@example.com"
-
-# Create the alert rule
-az monitor metrics alert create \
-  --name "LogicAppFailures" \
-  --resource-group contoso-tax-docs-dev-eastus-rg \
-  --scopes $LOGIC_APP_ID \
-  --condition "count RunsFailed > 5" \
-  --window-size 5m \
-  --evaluation-frequency 1m \
-  --action LogicAppAlerts \
-  --description "Alert when Logic App fails more than 5 times in 5 minutes"
+  --resource-group $rgName \
+  --short-name "LA-Alert" \
+  --email-receiver name="DevOps Team" email="devops@yourcompany.com"
 ```
 
-### Troubleshooting Common Issues
+**Verify Diagnostic Settings** (already configured by Bicep):
+```bash
+# List diagnostic settings on Logic App
+$logicAppId = az resource list -g $rgName --resource-type Microsoft.Web/sites --query "[?kind=='functionapp,workflowapp'].id" -o tsv
+az monitor diagnostic-settings list --resource $logicAppId --output table
+```
 
-| Issue | Possible Cause | Solution |
-|-------|---------------|----------|
-| **Error: "Resource provider not registered"** | Missing provider registration | Run `az provider register --namespace Microsoft.Logic` and wait 2-3 minutes |
-| **Error: "Insufficient permissions"** | Lack of Contributor role | Verify role assignment: `az role assignment list --assignee <your-email> --scope /subscriptions/<sub-id>` |
-| **Error: "Deployment timeout"** | Azure service throttling or regional outage | Check [Azure Service Health](https://status.azure.com), retry with `--no-wait` flag |
-| **Error: "Storage account name already taken"** | Name collision (unlikely with uniqueString) | Change `solutionName` parameter to generate a different unique suffix |
-| **Warning: "Health model deployment failed"** | Tenant-scoped resource requires special permissions | Non-blocking warning; health model is a preview feature and optional |
+**Access Workflow Definition** (optional - deploy custom workflows):
+- Navigate to Azure Portal → Logic App → Workflows
+- Upload workflows from `tax-docs/tax-processing/workflow.json`
+- Configure connections in `tax-docs/connections.json`
+
+---
+
+### Troubleshooting Common Deployment Issues
+
+<details>
+<summary><strong>Issue: "Resource provider not registered"</strong></summary>
+
+**Symptom**: Deployment fails with error similar to:
+```
+The subscription is not registered to use namespace 'Microsoft.Logic'
+```
+
+**Solution**:
+```bash
+# Register required providers
+az provider register --namespace Microsoft.Logic
+az provider register --namespace Microsoft.Insights
+az provider register --namespace Microsoft.OperationalInsights
+az provider register --namespace Microsoft.Web
+az provider register --namespace Microsoft.Storage
+az provider register --namespace Microsoft.ManagedIdentity
+
+# Wait for registration to complete (takes 1-2 minutes)
+az provider show --namespace Microsoft.Logic --query "registrationState"
+# Expected: "Registered"
+```
+
+**Prevention**: Register providers before deployment in new subscriptions.
+</details>
+
+<details>
+<summary><strong>Issue: "Insufficient permissions"</strong></summary>
+
+**Symptom**: Deployment fails with authorization or forbidden errors:
+```
+The client does not have authorization to perform action 'Microsoft.Resources/deployments/write'
+```
+
+**Solution**:
+```bash
+# Check your current role assignments
+az role assignment list --assignee (az account show --query "user.name" -o tsv) --output table
+
+# Required minimum: Contributor role on subscription or resource group
+# If missing, request access from subscription owner
+```
+
+**Common causes**:
+- Reader role only (insufficient for deployments)
+- Custom roles without deployment permissions
+- Conditional access policies blocking role assignments
+
+**Workaround**: Ask subscription owner to grant Contributor role or create resource group with pre-assigned permissions.
+</details>
+
+<details>
+<summary><strong>Issue: "Deployment timeout"</strong></summary>
+
+**Symptom**: Deployment exceeds Azure timeout limits (typically 1 hour for resource group deployments)
+
+**Solution**:
+```bash
+# Use --no-wait flag for asynchronous deployment
+az deployment sub create \
+  --name "logicapp-monitoring" \
+  --location $env:AZURE_LOCATION \
+  --template-file infra/main.bicep \
+  --parameters infra/main.parameters.json \
+  --no-wait
+
+# Check deployment status
+az deployment sub show \
+  --name "logicapp-monitoring" \
+  --query "{Name:name, ProvisioningState:properties.provisioningState, Timestamp:properties.timestamp}" \
+  --output table
+
+# View detailed operation status
+az deployment operation sub list \
+  --name "logicapp-monitoring" \
+  --query "[].{Resource:properties.targetResource.resourceName, State:properties.provisioningState}" \
+  --output table
+```
+
+**Note**: This deployment typically completes in 5-8 minutes. Timeouts are rare unless Azure region is experiencing issues.
+</details>
+
+<details>
+<summary><strong>Issue: "Storage account name already exists"</strong></summary>
+
+**Symptom**: Deployment fails with:
+```
+Storage account name must be globally unique
+```
+
+**Cause**: The `uniqueString()` function generated a name collision (extremely rare but possible).
+
+**Solution**:
+```bash
+# Override solutionName parameter to generate different unique suffix
+az deployment sub create \
+  --name "logicapp-monitoring" \
+  --location $env:AZURE_LOCATION \
+  --template-file infra/main.bicep \
+  --parameters infra/main.parameters.json \
+  --parameters solutionName="taxdocs2"
+```
+
+**Prevention**: Use organization-specific prefixes in `solutionName` parameter (e.g., "contoso-tax").
+</details>
+
+<details>
+<summary><strong>Issue: "Role assignment failed for Managed Identity"</strong></summary>
+
+**Symptom**: Deployment succeeds but Logic App fails to access Storage Queue:
+```
+Logic App cannot authenticate to storage account
+```
+
+**Cause**: RBAC role assignments can take 5-10 minutes to propagate.
+
+**Solution**:
+```bash
+# Wait 5 minutes, then verify role assignments
+$miPrincipalId = az identity show \
+  --resource-group $rgName \
+  --name (az resource list -g $rgName --resource-type Microsoft.ManagedIdentity/userAssignedIdentities --query "[0].name" -o tsv) \
+  --query "principalId" -o tsv
+
+$storageId = az storage account show \
+  --resource-group $rgName \
+  --name (az resource list -g $rgName --resource-type Microsoft.Storage/storageAccounts --query "[?contains(name, 'taxdocs')].name" -o tsv) \
+  --query "id" -o tsv
+
+# Check role assignments
+az role assignment list \
+  --assignee $miPrincipalId \
+  --scope $storageId \
+  --output table
+
+# Expected roles: Storage Blob Data Owner, Storage Queue Data Contributor, Storage Table Data Contributor, Storage File Data Contributor
+```
+
+**Workaround**: Re-run deployment if roles are missing (Bicep is idempotent).
+</details>
+
+<details>
+<summary><strong>Issue: "Bicep compilation errors"</strong></summary>
+
+**Symptom**: `az deployment` fails during template validation with Bicep syntax errors.
+
+**Solution**:
+```bash
+# Validate Bicep template before deployment
+az bicep build --file infra/main.bicep
+
+# Check for linting warnings
+bicep build infra/main.bicep
+
+# Update Bicep CLI to latest version
+az bicep upgrade
+```
+
+**Common causes**:
+- Outdated Bicep CLI version (update with `az bicep upgrade`)
+- Modified template syntax (revert changes or fix errors shown in output)
+</details>
 
 ---
 
@@ -649,169 +543,133 @@ az monitor metrics alert create \
 
 ### Example 1: Query Logic App Execution History
 
-Query failed workflow runs with error details:
+**Scenario**: Troubleshoot failed workflow runs in the last 24 hours
 
+**Query** (Run in Log Analytics workspace):
 ```kql
-// KQL query for Application Insights or Log Analytics
+// Failed Logic App workflow runs with error details
 AzureDiagnostics
 | where ResourceProvider == "MICROSOFT.LOGIC"
 | where Category == "WorkflowRuntime"
 | where status_s == "Failed"
 | project 
     TimeGenerated,
+    ResourceGroup = resource_rg_s,
     WorkflowName = resource_workflowName_s,
     RunId = resource_runId_s,
+    ActionName = resource_actionName_s,
     Status = status_s,
     ErrorCode = error_code_s,
-    ErrorMessage = error_message_s,
-    TriggerName = resource_triggerName_s
+    ErrorMessage = error_message_s
 | order by TimeGenerated desc
 | take 50
 ```
 
-**How to run this query:**
+**How to run**:
+1. Navigate to Azure Portal → Log Analytics workspace (named `tax-docs-[uniqueId]-law`)
+2. Select **Logs** from left navigation
+3. Paste query into query editor
+4. Click **Run**
+5. Export results to CSV if needed
 
-1. Open the Azure Portal
-2. Navigate to your Log Analytics Workspace: `tax-docs-{uniqueId}-law`
-3. Click **Logs** in the left menu
-4. Paste the query above and click **Run**
-
-**What this query shows:**
-
-- Recent failed Logic App workflow runs
-- Workflow name and unique run ID for troubleshooting
-- Error codes and messages for root cause analysis
-- Trigger name to identify the execution source
-
-**Example visualization:**
-
-```
-TimeGenerated           WorkflowName      Status  ErrorCode  ErrorMessage
-2025-12-04 14:23:11     tax-processing    Failed  400        Invalid JSON payload
-2025-12-04 13:45:22     tax-processing    Failed  500        Function API timeout
-2025-12-04 12:10:33     tax-processing    Failed  404        Queue message not found
-```
+**Expected output**: Table showing recent failures with workflow names, run IDs, action names, and detailed error messages
 
 <details>
-<summary>View advanced query with success rate calculation</summary>
+<summary>View example output</summary>
 
-```kql
-AzureDiagnostics
-| where ResourceProvider == "MICROSOFT.LOGIC"
-| where Category == "WorkflowRuntime"
-| summarize 
-    TotalRuns = count(),
-    SuccessfulRuns = countif(status_s == "Succeeded"),
-    FailedRuns = countif(status_s == "Failed")
-    by bin(TimeGenerated, 1h), resource_workflowName_s
-| extend SuccessRate = round((SuccessfulRuns * 100.0) / TotalRuns, 2)
-| order by TimeGenerated desc
-| render timechart
-```
-
-This query calculates hourly success rates and renders a line chart.
+| TimeGenerated | ResourceGroup | WorkflowName | RunId | ActionName | Status | ErrorCode | ErrorMessage |
+|---------------|---------------|--------------|-------|------------|--------|-----------|--------------|
+| 2025-12-04 10:23:45 | contoso-tax-docs-dev-eastus-rg | tax-processing | 08584...1ab | Parse_JSON | Failed | InvalidTemplate | Invalid JSON schema |
+| 2025-12-04 09:15:22 | contoso-tax-docs-dev-eastus-rg | tax-processing | 08584...2cd | HTTP_Call | Failed | ConnectionTimeout | Request timeout after 30s |
 
 </details>
 
 ---
 
-### Example 2: Monitor Azure Function Performance Metrics
+### Example 2: Monitor Workflow Execution Duration
 
-Track Function App execution counts and duration:
+**Scenario**: Identify slow-running workflows to optimize performance
 
-```bash
-# Get Function App resource ID
-FUNCTION_APP_ID=$(az functionapp show \
-  --name tax-docs-{uniqueId}-api \
-  --resource-group contoso-tax-docs-dev-eastus-rg \
-  --query id --output tsv)
-
-# Query function execution count for the last 24 hours
-az monitor metrics list \
-  --resource $FUNCTION_APP_ID \
-  --metric "FunctionExecutionCount" \
-  --start-time $(date -u -d '24 hours ago' +%Y-%m-%dT%H:%M:%SZ) \
-  --end-time $(date -u +%Y-%m-%dT%H:%M:%SZ) \
-  --interval PT1H \
-  --aggregation Total \
-  --output table
-
-# Query average function execution duration
-az monitor metrics list \
-  --resource $FUNCTION_APP_ID \
-  --metric "FunctionExecutionUnits" \
-  --start-time $(date -u -d '24 hours ago' +%Y-%m-%dT%H:%M:%SZ) \
-  --end-time $(date -u +%Y-%m-%dT%H:%M:%SZ) \
-  --interval PT1H \
-  --aggregation Average \
-  --output table
+```kql
+// Workflow execution duration percentiles
+AzureDiagnostics
+| where ResourceProvider == "MICROSOFT.LOGIC"
+| where Category == "WorkflowRuntime"
+| where status_s == "Succeeded"
+| extend DurationSeconds = todouble(duration_s)
+| summarize 
+    Count = count(),
+    AvgDuration = avg(DurationSeconds),
+    P50 = percentile(DurationSeconds, 50),
+    P90 = percentile(DurationSeconds, 90),
+    P95 = percentile(DurationSeconds, 95),
+    P99 = percentile(DurationSeconds, 99),
+    MaxDuration = max(DurationSeconds)
+    by resource_workflowName_s
+| order by P95 desc
 ```
 
-**Metrics explained:**
+**Thresholds to monitor**:
+- P95 > 60 seconds: Investigate workflow design for optimization opportunities
+- P99 > 120 seconds: Possible timeout risks or external API latency issues
+- MaxDuration significantly higher than P99: Look for outliers or error scenarios
 
-- **FunctionExecutionCount**: Total number of function invocations (successful + failed)
-- **FunctionExecutionUnits**: Execution time × memory consumption (used for billing calculations)
-- **Http5xx**: Server-side errors returned by functions (indicates code bugs or dependency failures)
-
-**Example output:**
-
-```
-Timestamp            Total
-2025-12-04 14:00     1,245 executions
-2025-12-04 13:00     1,189 executions
-2025-12-04 12:00     1,302 executions
-```
-
-**Threshold recommendations:**
-
-- **Execution count spike**: Investigate if count increases >50% hour-over-hour (may indicate retry storms)
-- **Execution duration**: Alert if average duration exceeds 5 seconds (performance degradation)
+**Optimization techniques**:
+- Parallelize independent actions using `foreach` with concurrency
+- Use async HTTP actions to avoid blocking
+- Batch small operations instead of iterating individually
 
 ---
 
-### Example 3: Set Up Custom Alert Rule
+### Example 3: Create Custom Alert Rule for Failed Workflows
 
-Create an alert that triggers when Logic App failures exceed a threshold:
+**Scenario**: Get email notification when Logic App failures exceed threshold
 
 ```bash
-# Get resource IDs
-LOGIC_APP_ID=$(az logicapp show \
-  --name tax-docs-{uniqueId}-logicapp \
-  --resource-group contoso-tax-docs-dev-eastus-rg \
-  --query id --output tsv)
-
-# Create an action group (email + webhook)
+# Step 1: Create action group (if not already created)
 az monitor action-group create \
-  --name "LogicAppCriticalAlerts" \
-  --resource-group contoso-tax-docs-dev-eastus-rg \
-  --short-name "LA-Critical" \
-  --email-receiver name="On-Call Engineer" email="oncall@example.com" \
-  --webhook-receiver name="PagerDuty" service-uri="https://events.pagerduty.com/integration/YOUR_KEY/enqueue"
+  --name "LogicAppAlerts" \
+  --resource-group $rgName \
+  --short-name "LA-Alert" \
+  --email-receiver name="DevOps Team" email="devops@yourcompany.com"
 
-# Create the metric alert rule
+# Step 2: Get Logic App resource ID
+$logicAppId = az resource list \
+  --resource-group $rgName \
+  --resource-type Microsoft.Web/sites \
+  --query "[?kind=='functionapp,workflowapp'].id" \
+  --output tsv
+
+# Step 3: Create metric alert for failed runs
 az monitor metrics alert create \
-  --name "LogicAppHighFailureRate" \
-  --resource-group contoso-tax-docs-dev-eastus-rg \
-  --scopes $LOGIC_APP_ID \
+  --name "HighLogicAppFailureRate" \
+  --resource-group $rgName \
+  --scopes $logicAppId \
   --condition "count RunsFailed > 5" \
   --window-size 5m \
   --evaluation-frequency 1m \
-  --action LogicAppCriticalAlerts \
-  --severity 2 \
-  --description "Alert when Logic App fails more than 5 times in 5 minutes"
+  --action (az monitor action-group show -n LogicAppAlerts -g $rgName --query id -o tsv) \
+  --description "Alert when Logic App fails more than 5 times in 5 minutes" \
+  --severity 2
 ```
 
+**Alert configuration**:
+- **Severity 2** (Warning): Requires investigation but not critical
+- **Window size 5 minutes**: Short window for fast detection
+- **Evaluation frequency 1 minute**: Check every minute
+- **Threshold 5 failures**: Adjust based on your SLA
+
 <details>
-<summary>View full alert configuration JSON</summary>
+<summary>View complete alert configuration JSON</summary>
 
 ```json
 {
-  "name": "LogicAppHighFailureRate",
+  "name": "HighLogicAppFailureRate",
   "description": "Alert when Logic App fails more than 5 times in 5 minutes",
   "severity": 2,
   "enabled": true,
   "scopes": [
-    "/subscriptions/{sub-id}/resourceGroups/contoso-tax-docs-dev-eastus-rg/providers/Microsoft.Web/sites/tax-docs-abc123-logicapp"
+    "/subscriptions/<sub-id>/resourceGroups/<rg>/providers/Microsoft.Web/sites/<logic-app-name>"
   ],
   "evaluationFrequency": "PT1M",
   "windowSize": "PT5M",
@@ -821,7 +679,7 @@ az monitor metrics alert create \
         "criterionType": "StaticThresholdCriterion",
         "name": "FailedRuns",
         "metricName": "RunsFailed",
-        "metricNamespace": "Microsoft.Logic/workflows",
+        "metricNamespace": "Microsoft.Web/sites",
         "operator": "GreaterThan",
         "threshold": 5,
         "timeAggregation": "Total"
@@ -831,162 +689,118 @@ az monitor metrics alert create \
   },
   "actions": [
     {
-      "actionGroupId": "/subscriptions/{sub-id}/resourceGroups/contoso-tax-docs-dev-eastus-rg/providers/Microsoft.Insights/actionGroups/LogicAppCriticalAlerts",
-      "webHookProperties": {}
+      "actionGroupId": "/subscriptions/<sub-id>/resourceGroups/<rg>/providers/microsoft.insights/actionGroups/LogicAppAlerts"
     }
   ]
 }
 ```
-
 </details>
 
-**Severity levels:**
-
-- **0 (Critical)**: System-wide outage
-- **1 (Error)**: High-impact failures affecting multiple workflows
-- **2 (Warning)**: Elevated error rate, requires investigation ← *this alert*
-- **3 (Informational)**: Low-priority notifications
+**Additional alert recommendations**:
+- **Execution duration > 120 seconds** (P95): Performance degradation
+- **RunsStarted < 10 in 1 hour**: Possible trigger issues
+- **Storage Queue message count > 1000**: Backlog accumulation
 
 ---
 
-### Example 4: Query Storage Queue Diagnostic Logs
+### Example 4: Access Storage Queue Diagnostic Logs
 
-Monitor queue operations and latency:
+**Scenario**: Track message flow through Storage Queue to Logic App
 
 ```kql
-// Query Storage Queue read/write operations
+// Storage Queue operations with message counts
 StorageQueueLogs
-| where AccountName == "taxdocs{uniqueId}"
-| where QueueName == "taxprocessing"
+| where AccountName contains "taxdocs"
+| where OperationName in ("PutMessage", "GetMessages", "DeleteMessage")
 | summarize 
-    MessageCount = count(),
-    AvgLatencyMs = avg(DurationMs),
-    MaxLatencyMs = max(DurationMs)
-    by bin(TimeGenerated, 5m), OperationName
+    MessagesPut = countif(OperationName == "PutMessage"),
+    MessagesRetrieved = countif(OperationName == "GetMessages"),
+    MessagesDeleted = countif(OperationName == "DeleteMessage")
+    by bin(TimeGenerated, 5m), QueueName = Uri
 | order by TimeGenerated desc
-| render timechart
 ```
 
-**Via Azure CLI (configure diagnostic settings if not already enabled):**
-
+**Configure diagnostic settings** (already done by Bicep, verification only):
 ```bash
-# Get Storage Queue resource ID
-STORAGE_ID=$(az storage account show \
-  --name taxdocs{uniqueId} \
-  --resource-group contoso-tax-docs-dev-eastus-rg \
-  --query id --output tsv)
+# Verify Queue Service diagnostic settings
+$storageId = az storage account show \
+  --resource-group $rgName \
+  --name (az resource list -g $rgName --resource-type Microsoft.Storage/storageAccounts --query "[?contains(name, 'taxdocs')].name" -o tsv) \
+  --query "id" -o tsv
 
-# Enable diagnostic settings for queue service
-az monitor diagnostic-settings create \
-  --name "QueueServiceLogs" \
-  --resource "${STORAGE_ID}/queueServices/default" \
-  --workspace tax-docs-{uniqueId}-law \
-  --logs '[
-    {
-      "category": "StorageRead",
-      "enabled": true
-    },
-    {
-      "category": "StorageWrite",
-      "enabled": true
-    }
-  ]' \
-  --metrics '[
-    {
-      "category": "Transaction",
-      "enabled": true
-    }
-  ]'
+az monitor diagnostic-settings list \
+  --resource "$storageId/queueServices/default" \
+  --output table
 ```
 
-**What to monitor:**
-
-- **Queue depth**: Alert if depth >1000 messages (indicates backlog)
-- **Dequeue latency**: Alert if average latency >500ms (performance degradation)
-- **Poison messages**: Messages that fail processing repeatedly (check dead-letter queue)
+**Expected diagnostic settings**:
+- **Logs**: `StorageRead`, `StorageWrite`, `StorageDelete`
+- **Metrics**: `Transaction`, `Capacity`
+- **Destination**: Log Analytics workspace
 
 ---
 
-### Example 5: Generate Custom Azure Workbook for Logic Apps
+### Example 5: Correlate Logic App with Azure Functions Calls
 
-Create a visual dashboard to monitor workflow health:
-
-**Via Azure Portal:**
-
-1. Navigate to **Azure Workbooks** (search in portal)
-2. Click **+ New** → **Empty Workbook**
-3. Add a query step with this KQL:
+**Scenario**: Trace distributed transactions from Logic App HTTP action to Azure Functions
 
 ```kql
-AzureDiagnostics
+// Distributed tracing across Logic App and Functions
+let logicAppRequests = AzureDiagnostics
 | where ResourceProvider == "MICROSOFT.LOGIC"
 | where Category == "WorkflowRuntime"
-| summarize 
-    TotalRuns = count(),
-    SuccessfulRuns = countif(status_s == "Succeeded"),
-    FailedRuns = countif(status_s == "Failed"),
-    CancelledRuns = countif(status_s == "Cancelled")
-    by bin(TimeGenerated, 1h), resource_workflowName_s
-| extend SuccessRate = round((SuccessfulRuns * 100.0) / TotalRuns, 2)
+| where resource_actionName_s == "HTTP_Call_To_Function"
+| extend OperationId = tostring(properties_d.correlation.clientTrackingId)
+| project TimeGenerated, OperationId, WorkflowName = resource_workflowName_s, RunId = resource_runId_s;
+let functionRequests = AppRequests
+| where AppRoleName contains "api"
+| project TimeGenerated, OperationId = OperationId, FunctionName = Name, Duration = DurationMs, Success;
+logicAppRequests
+| join kind=inner functionRequests on OperationId
+| project 
+    TimeGenerated,
+    WorkflowName,
+    FunctionName,
+    FunctionDuration = Duration,
+    FunctionSuccess = Success,
+    CorrelationId = OperationId
 | order by TimeGenerated desc
 ```
 
-4. Change visualization to **Grid** or **Time Chart**
-5. Add parameters for time range and workflow name filtering
-6. Save the workbook to your resource group
-
-**Example workbook sections:**
-
-- **Overview**: Total runs, success rate, error rate (big number tiles)
-- **Execution Timeline**: Hourly run counts colored by status (area chart)
-- **Top Errors**: Most frequent error messages (table)
-- **Performance**: Average workflow duration by workflow name (bar chart)
+**Use case**: Identify whether workflow failures originate in Logic App or downstream Functions
 
 ---
 
-### Example 6: Export Diagnostic Logs to External SIEM
+### Example 6: Monitor App Service Plan Capacity
 
-For compliance or advanced analytics, export logs to Azure Event Hubs:
+**Scenario**: Track CPU and memory utilization to optimize scaling
 
 ```bash
-# Create an Event Hub namespace
-az eventhubs namespace create \
-  --name tax-docs-logs-eh \
-  --resource-group contoso-tax-docs-dev-eastus-rg \
-  --location eastus \
-  --sku Standard
-
-# Create an Event Hub
-az eventhubs eventhub create \
-  --name diagnostic-logs \
-  --namespace-name tax-docs-logs-eh \
-  --resource-group contoso-tax-docs-dev-eastus-rg
-
-# Update diagnostic settings to stream to Event Hub
-LOGIC_APP_ID=$(az logicapp show \
-  --name tax-docs-{uniqueId}-logicapp \
-  --resource-group contoso-tax-docs-dev-eastus-rg \
-  --query id --output tsv)
-
-EVENT_HUB_AUTH_RULE_ID=$(az eventhubs namespace authorization-rule show \
-  --namespace-name tax-docs-logs-eh \
-  --name RootManageSharedAccessKey \
-  --resource-group contoso-tax-docs-dev-eastus-rg \
-  --query id --output tsv)
-
-az monitor diagnostic-settings create \
-  --name "ExportToSIEM" \
-  --resource $LOGIC_APP_ID \
-  --event-hub-name diagnostic-logs \
-  --event-hub-rule $EVENT_HUB_AUTH_RULE_ID \
-  --logs '[{"categoryGroup":"allLogs","enabled":true}]'
+# Query App Service Plan metrics via Azure CLI
+az monitor metrics list \
+  --resource $(az resource list -g $rgName --resource-type Microsoft.Web/serverfarms --query "[?contains(name, 'asp')].id" -o tsv) \
+  --metric "CpuPercentage" "MemoryPercentage" \
+  --start-time (Get-Date).AddHours(-24).ToString("yyyy-MM-ddTHH:mm:ssZ") \
+  --end-time (Get-Date).ToString("yyyy-MM-ddTHH:mm:ssZ") \
+  --interval PT1H \
+  --aggregation Average \
+  --output table
 ```
 
-**Use cases:**
+**Scaling thresholds**:
+- **CPU > 70%** for 15 minutes: Scale out (add instances)
+- **CPU < 20%** for 1 hour: Scale in (reduce instances)
+- **Memory > 85%**: Investigate memory leaks or upgrade SKU
 
-- Stream logs to Splunk, Datadog, or other SIEMs
-- Integrate with custom alerting systems
-- Comply with regulatory requirements for log retention
+**KQL query alternative**:
+```kql
+AzureMetrics
+| where ResourceProvider == "MICROSOFT.WEB"
+| where ResourceId contains "serverfarms"
+| where MetricName in ("CpuPercentage", "MemoryPercentage")
+| summarize AvgValue = avg(Average) by MetricName, bin(TimeGenerated, 1h)
+| render timechart
+```
 
 ---
 
@@ -994,228 +808,217 @@ az monitor diagnostic-settings create \
 
 ```
 Azure-LogicApps-Monitoring/
-│
-├── azure.yaml                          # Azure Developer CLI configuration
-├── host.json                           # Logic Apps host settings
-├── README.md                           # This file
-├── LICENSE.md                          # Project license
-├── SECURITY.md                         # Security policies
-├── CONTRIBUTING.md                     # Contribution guidelines
-│
-├── infra/                              # Infrastructure as Code (Bicep templates)
-│   ├── main.bicep                      # Root deployment (subscription-scoped)
-│   └── main.parameters.json            # Deployment parameters (location, envName)
-│
-├── src/                                # Source modules (monitoring + workload)
-│   │
-│   ├── monitoring/                     # Observability infrastructure layer
-│   │   ├── main.bicep                  # Monitoring orchestration module
-│   │   ├── log-analytics-workspace.bicep  # Log Analytics + log storage
-│   │   ├── app-insights.bicep          # Application Insights (workspace-based)
-│   │   └── azure-monitor-health-model.bicep  # Custom health hierarchy (tenant-scoped)
-│   │
-│   └── workload/                       # Application workload layer
-│       ├── main.bicep                  # Workload orchestration module
-│       ├── logic-app.bicep             # Logic App Standard + App Service Plan
-│       ├── azure-function.bicep        # Function App (.NET 9.0) + App Service Plan
-│       └── messaging/                  # Messaging infrastructure
-│           └── main.bicep              # Storage Account with queues
-│
-└── tax-docs/                           # Logic App project files (workflows)
-    ├── connections.json                # API connection definitions
-    ├── host.json                       # Logic App host configuration
-    ├── local.settings.json             # Local development settings
-    ├── tax-processing/                 # Workflow definition folder
-    │   └── workflow.json               # Tax processing workflow definition
-    └── workflow-designtime/            # Design-time configuration
-        ├── host.json                   # Design-time host settings
-        └── local.settings.json         # Design-time local settings
+├── infra/                          # Infrastructure-as-Code root
+│   ├── main.bicep                  # Main deployment orchestrator (subscription scope)
+│   └── main.parameters.json        # Environment-specific parameters (location, envName)
+├── src/
+│   ├── monitoring/                 # Monitoring layer (deploys first)
+│   │   ├── main.bicep              # Monitoring orchestrator module
+│   │   ├── app-insights.bicep      # Workspace-based Application Insights
+│   │   ├── log-analytics-workspace.bicep  # Log Analytics (30-day retention) + storage account
+│   │   └── azure-monitor-health-model.bicep  # Service group health model
+│   └── workload/                   # Application workload layer (deploys second)
+│       ├── main.bicep              # Workload orchestrator module
+│       ├── logic-app.bicep         # Logic App Standard + Managed Identity + RBAC
+│       ├── azure-function.bicep    # Azure Functions (.NET 9.0 Linux Premium)
+│       └── messaging/
+│           └── main.bicep          # Storage Account + Queue Service + taxprocessing queue
+├── tax-docs/                       # Logic App workflow definitions
+│   ├── connections.json            # Managed API connections configuration
+│   ├── host.json                   # Logic App host configuration (extension bundle)
+│   ├── local.settings.json         # Local development settings (not deployed)
+│   └── tax-processing/
+│       └── workflow.json           # Stateful workflow definition (empty template)
+├── azure.yaml                      # Azure Developer CLI (azd) configuration
+├── host.json                       # Functions runtime configuration
+├── README.md                       # This file
+├── CONTRIBUTING.md                 # Contribution guidelines (empty placeholder)
+├── SECURITY.md                     # Security policies (empty placeholder)
+├── LICENSE.md                      # Project license (empty placeholder)
+└── CODE_OF_CONDUCT.md              # Community code of conduct (placeholder)
 ```
 
-### Key File Explanations
+**Key Directories**:
+- **`infra/`**: Top-level orchestrator for subscription-scoped deployments; creates resource group and calls monitoring/workload modules
+- **`src/monitoring/`**: Observability infrastructure deployed first; provides Log Analytics workspace and Application Insights for diagnostic settings
+- **`src/workload/`**: Application resources deployed second; all resources reference monitoring outputs for diagnostic configuration
+- **`tax-docs/`**: Logic App workflow definitions for deployment (currently contains empty template; customize for your scenarios)
 
-| File/Folder | Purpose |
-|-------------|---------|
-| **`azure.yaml`** | Defines the project name for Azure Developer CLI (`azd`) |
-| **`infra/main.bicep`** | Root deployment template that creates the resource group and orchestrates monitoring + workload modules |
-| **`infra/main.parameters.json`** | User-configurable parameters (Azure region, environment name) |
-| **`src/monitoring/main.bicep`** | Deploys Log Analytics, Application Insights, log storage, and health models |
-| **`src/workload/main.bicep`** | Deploys Logic App, Function App, and Storage Queue with diagnostic settings |
-| **`tax-docs/tax-processing/workflow.json`** | Logic App workflow definition (can be edited in VS Code with Logic Apps extension) |
-
----
-
-## Monitoring Components
-
-### Log Analytics Workspace
-
-- **SKU**: PerGB2018 (pay-per-GB ingestion)
-- **Retention**: 30 days (configurable in `log-analytics-workspace.bicep`)
-- **Features**: Immedi ate purge on 30 days, system-assigned managed identity
-- **Use case**: Central repository for all diagnostic logs and metrics with KQL query support
-
-### Application Insights
-
-- **Type**: Workspace-based (integrated with Log Analytics)
-- **Application Type**: Web (optimized for web apps and APIs)
-- **Features**: Distributed tracing, dependency tracking, exception telemetry, live metrics
-- **Integration**: Connected to both Logic App and Function App via connection string
-
-### Diagnostic Settings
-
-Automatically configured on all resources to send:
-
-- **Logs**: All log categories (`allLogs` category group)
-- **Metrics**: `AllMetrics` category
-- **Destinations**: Log Analytics Workspace (query) + Azure Storage (archive)
-
-### Managed Identity and RBAC
-
-The Logic App uses a user-assigned managed identity with these roles on the workflow storage account:
-
-- **Storage Account Contributor**: Manage storage account settings
-- **Storage Blob Data Owner**: Full access to blobs (read/write/delete)
-- **Storage Queue Data Contributor**: Send/receive queue messages
-- **Storage Table Data Contributor**: Read/write table entities
-- **Storage File Data Contributor**: Access file shares
-
-This enables **passwordless authentication** (no connection strings in app settings).
-
-### Health Model (Preview)
-
-The solution creates an Azure Monitor service group (tenant-scoped resource) for hierarchical health aggregation. This is a **preview feature** and may require additional permissions.
+**Modular Design Pattern**:
+Each `.bicep` file is a reusable module with clearly defined parameters and outputs. The orchestrator modules (`infra/main.bicep`, `src/monitoring/main.bicep`, `src/workload/main.bicep`) coordinate deployments and pass outputs between layers. This enables:
+- Partial deployments (monitoring-only, workload-only)
+- Module reuse in other projects
+- Independent updates without full redeployment
+- Environment-specific customization via parameters
 
 ---
 
-## Security
+## Monitoring Best Practices
 
-Security is critical for monitoring infrastructure. **Please review our [SECURITY.md](SECURITY.md) for:**
+This solution implements Azure Well-Architected Framework principles:
 
-- Reporting security vulnerabilities
-- Security best practices for deployments
-- Credential and secret management guidelines
+### Reliability
 
-### Security Best Practices Applied
+- **Health probes**: Application Insights availability tests can be added for Logic App HTTP endpoints
+- **Diagnostic settings survivability**: Configured via Bicep, survive resource redeployments
+- **Retry policies**: Logic Apps support built-in retry policies on actions (configure in workflow definition)
+- **Dead-letter queue**: Storage Queue supports automatic dead-letter for poison messages (enable in queue properties)
 
-This solution implements security controls aligned with the **Azure Well-Architected Framework Security pillar**:
+### Performance Efficiency
 
-#### 1. Identity and Access Management
+- **Metrics tracked**:
+  - **Logic Apps**: `RunsStarted`, `RunsSucceeded`, `RunsFailed`, `RunLatency`, `ActionLatency`
+  - **Azure Functions**: `FunctionExecutionCount`, `FunctionExecutionUnits`, `Http5xx`, `ResponseTime`
+  - **Storage Queue**: `QueueMessageCount`, `QueueCapacity`, `Transactions`
+  - **App Service Plans**: `CpuPercentage`, `MemoryPercentage`, `DiskQueueLength`
 
-- ✅ **Managed Identities**: Logic App uses user-assigned managed identity for passwordless storage access
-- ✅ **RBAC Enforcement**: Least-privilege role assignments (Blob Owner, Queue Contributor) instead of access keys
-- ✅ **No Hardcoded Secrets**: Application Insights connection strings injected via app settings, not stored in code
+- **Scaling triggers**:
+  - Logic Apps: Elastic scaling enabled (0-20 workers based on queue depth)
+  - Azure Functions: Premium plan with auto-scale rules (configure in portal or Bicep)
+  - Storage Queue: Monitor `QueueMessageCount` for backlog thresholds
 
-#### 2. Network Security
+### Security
 
-- ✅ **TLS 1.2 Enforcement**: All storage accounts configured with `minimumTlsVersion: 'TLS1_2'`
-- ✅ **HTTPS-Only Traffic**: `supportsHttpsTrafficOnly: true` on all storage accounts
-- ⚠️ **Public Network Access Enabled**: Current configuration allows public access (modify `publicNetworkAccess` property to disable)
+- **Managed Identities**: 
+  - Logic Apps use **User-Assigned Managed Identity** for Storage Queue authentication
+  - Azure Functions use **System-Assigned Managed Identity** for Application Insights
+  - Eliminates connection strings and credential management
 
-#### 3. Data Protection
+- **RBAC Roles Applied**:
+  - `Storage Blob Data Owner` (Logic App → Storage Account)
+  - `Storage Queue Data Contributor` (Logic App → Queue Service)
+  - `Storage Table Data Contributor` (Logic App → Table Service)
+  - `Storage File Data Contributor` (Logic App → File Service)
 
-- ✅ **Encryption at Rest**: Azure Storage and Log Analytics use Microsoft-managed keys by default
-- ✅ **Encryption in Transit**: All data transmitted over HTTPS/TLS 1.2
-- ✅ **Blob Public Access Disabled**: `allowBlobPublicAccess: false` on log storage account
-- ✅ **Diagnostic Log Retention**: 30-day retention in Log Analytics + long-term archival in Azure Storage
+- **Diagnostic logs capture**:
+  - Authentication attempts (successful and failed)
+  - RBAC permission checks
+  - Network access patterns
 
-#### 4. Monitoring and Auditing
+- **Secrets storage**:
+  - Application Insights connection strings secured with `@secure()` decorator in Bicep outputs
+  - Not exposed in deployment logs or portal
+  - Pass to application settings only
 
-- ✅ **Diagnostic Settings Enabled**: All resources send audit logs to Log Analytics
-- ✅ **Application Insights Telemetry**: Tracks all Logic App and Function App executions
-- ✅ **Activity Log Integration**: Azure Activity Log available for control plane operations
+### Cost Optimization
 
-#### 5. Secure Development Practices
+- **Log retention**: 30 days balances compliance with storage costs (configurable in `log-analytics-workspace.bicep`)
+- **Sampling strategies**: Application Insights adaptive sampling enabled by default (adjusts ingestion based on traffic)
+- **Dual storage accounts**: 
+  - **Workflow runtime storage**: Hot tier, Standard LRS for performance
+  - **Diagnostic logs storage**: Can be changed to Cool tier in production for long-term retention cost savings
+- **Metric-based alerts**: Reduce log query costs by using Azure Monitor metrics instead of KQL queries where possible
+- **Dashboard recommendations**: Use Azure Workbooks (free) instead of custom dashboards for cost-effective visualization
 
-- ✅ **Infrastructure as Code**: Bicep templates version-controlled in Git (no manual portal changes)
-- ✅ **Parameter Validation**: Bicep `@minLength`, `@maxLength`, `@allowed` constraints enforce valid inputs
-- ✅ **Resource Naming**: Unique resource names generated with `uniqueString()` to prevent collisions
+### Operational Excellence
 
-### Security Recommendations
+- **Infrastructure-as-Code**: All resources defined in version-controlled Bicep templates
+- **Automated monitoring configuration**: No manual portal clicks required for diagnostic settings
+- **Consistent tagging**: All resources tagged with `Solution`, `Environment`, `ManagedBy`, `Owner`, `ApplicationName`, `BusinessUnit`, `DeploymentDate`
+- **Parameterized deployments**: Environment-specific values isolated in parameters files
+- **Module reusability**: Monitoring modules can be imported into other Logic Apps projects
 
-**For production deployments, implement these additional controls:**
-
-1. **Private Endpoints**: Replace public network access with Azure Private Link for storage, Log Analytics, and Application Insights
-2. **Network Security Groups (NSGs)**: Restrict inbound/outbound traffic on App Service Plan subnets
-3. **Azure Policy**: Enforce organizational standards (e.g., require diagnostic settings, deny public blob access)
-4. **Key Vault Integration**: Store sensitive configuration values in Azure Key Vault (connection strings, API keys)
-5. **Microsoft Defender for Cloud**: Enable for threat detection and security posture management
-
-### Credential and Secret Management
-
-- **Never commit secrets to Git**: Use `.gitignore` for `local.settings.json`, `.env`, and `*.parameters.json` files
-- **Use Azure Key Vault**: Store connection strings and API keys in Key Vault, reference via app settings
-- **Rotate secrets regularly**: Implement automated key rotation policies for storage account keys
-- **Audit access**: Review Azure Activity Log for Key Vault access and role assignments
-
-### Reporting Security Issues
-
-If you discover a security vulnerability, **do not open a public GitHub issue**. Instead:
-
-1. Email security details to **opensource@microsoft.com** (if this is a Microsoft-hosted project)
-2. Include reproduction steps, impact assessment, and affected versions
-3. Allow 90 days for response and remediation before public disclosure
-
-For more details, see [SECURITY.md](SECURITY.md).
+**Runbooks for Common Scenarios**:
+1. **Workflow failure spike**: Use [Example 1 query](#example-1-query-logic-app-execution-history) → identify error pattern → check recent deployments or external API changes
+2. **Performance degradation**: Use [Example 2 query](#example-2-monitor-workflow-execution-duration) → check P95 duration trend → optimize slow actions or scale resources
+3. **Queue backlog**: Query `QueueMessageCount` metric → verify Logic App is running → check for failures → scale out if needed
 
 ---
 
 ## Contributing
 
-We welcome contributions from the community! To contribute:
-
-1. **Fork the repository** and create a feature branch
-2. **Make your changes** with clear, descriptive commit messages
-3. **Test your changes** by deploying to a dev environment
-4. **Submit a pull request** with a detailed description of your changes
-
-Please review our [CONTRIBUTING.md](CONTRIBUTING.md) for:
-
+We welcome contributions! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for:
 - Code of conduct
+- How to submit issues and pull requests
 - Development setup instructions
-- Pull request guidelines
-- Code style conventions
+- Testing requirements
+
+> **Note**: CONTRIBUTING.md is currently a placeholder. If you'd like to contribute, please open an issue to discuss your proposed changes.
+
+---
+
+## Security
+
+Security is critical for monitoring infrastructure. Please review [SECURITY.md](SECURITY.md) for:
+- Reporting security vulnerabilities
+- Security best practices for deployments
+- Credential and secret management guidelines
+
+### Key Security Considerations
+
+- ⚠️ **Never commit secrets**: Do not commit connection strings, storage account keys, or Application Insights instrumentation keys to version control
+- ✓ **Use Managed Identities**: Logic Apps use User-Assigned Managed Identity with RBAC roles; Azure Functions use System-Assigned Identity
+- ✓ **Least-privilege access**: 
+  - Developers: Reader role on resource group (view resources and logs)
+  - DevOps: Contributor role for deployments
+  - Logic Apps: Only required storage roles (Blob/Queue/Table/File Data Contributor)
+- ✓ **Enable audit logging**: Diagnostic settings capture all RBAC changes and authentication attempts in Log Analytics
+- ✓ **Rotate access keys**: If using storage account keys (not recommended), rotate every 90 days
+- ✓ **Use Azure Key Vault**: For application secrets referenced by Logic Apps (not implemented in this template; add as needed)
+
+### Security Best Practices Applied
+
+Based on workspace analysis:
+- **Managed Identity**: User-Assigned Identity for Logic Apps eliminates storage connection strings
+- **RBAC Enforcement**: Comprehensive role assignments for storage access (Blob/Queue/Table/File Data Owner/Contributor)
+- **TLS 1.2 Minimum**: All storage accounts and Application Insights enforce TLS 1.2+
+- **Secure Outputs**: Application Insights connection strings use `@secure()` decorator to prevent logging
+- **Network Access**: Public network access enabled for ease of use (restrict to VNet in production if required)
+- **Diagnostic Logging**: All resources send audit logs to Log Analytics for security monitoring
+
+> **Note**: SECURITY.md is currently a placeholder. For production deployments, implement additional controls like Private Endpoints, Key Vault integration, and network restrictions.
+
+---
+
+## Additional Resources
+
+- [Azure Logic Apps Standard Documentation](https://learn.microsoft.com/azure/logic-apps/logic-apps-overview)
+- [Azure Monitor Best Practices](https://learn.microsoft.com/azure/azure-monitor/best-practices)
+- [Bicep Language Documentation](https://learn.microsoft.com/azure/azure-resource-manager/bicep/)
+- [Well-Architected Framework for Azure](https://learn.microsoft.com/azure/architecture/framework/)
+- [KQL Query Language Reference](https://learn.microsoft.com/azure/data-explorer/kusto/query/)
+- [Logic Apps Monitoring and Diagnostics](https://learn.microsoft.com/azure/logic-apps/monitor-logic-apps-log-analytics)
+- [Application Insights for Logic Apps](https://learn.microsoft.com/azure/logic-apps/create-single-tenant-workflows-visual-studio-code#enable-application-insights)
+- [Managed Identity for Logic Apps](https://learn.microsoft.com/azure/logic-apps/create-managed-service-identity)
+
+---
+
+## Support
+
+For questions and support:
+
+- 📝 **Create an issue**: [GitHub Issues](https://github.com/Evilazaro/Azure-LogicApps-Monitoring/issues) (preferred for bug reports and feature requests)
+- 💬 **Review existing issues**: Check if your question has already been answered
+- 📖 **Documentation**: See [Additional Resources](#additional-resources) for official Microsoft documentation
+
+**Before opening an issue**:
+1. Verify your deployment followed all steps in [Deployment](#deployment)
+2. Check [Troubleshooting](#troubleshooting-common-deployment-issues) for common issues
+3. Include deployment logs and error messages in issue description
+4. Specify your environment (Azure region, subscription type, Bicep version)
 
 ---
 
 ## Glossary
 
 <details>
-<summary>Click to expand Azure terminology definitions</summary>
+<summary>Click to expand Azure-specific terms</summary>
 
-| Term | Definition |
-|------|------------|
-| **Application Insights** | Azure service for application performance monitoring (APM) and telemetry collection |
-| **Bicep** | Declarative language for deploying Azure resources (transpiles to ARM JSON) |
-| **Diagnostic Settings** | Azure configuration that routes resource logs and metrics to destinations (Log Analytics, Storage, Event Hub) |
-| **KQL (Kusto Query Language)** | Query language used in Log Analytics, Application Insights, and Azure Data Explorer |
-| **Log Analytics Workspace** | Central repository for log data with advanced query and visualization capabilities |
-| **Logic Apps Standard** | Stateful workflow orchestration service (single-tenant, runs on App Service Plan) |
-| **Managed Identity** | Azure AD identity for resources to authenticate to other services without credentials |
-| **RBAC (Role-Based Access Control)** | Azure authorization system using role assignments (Owner, Contributor, Reader, etc.) |
-| **Resource Group** | Logical container for Azure resources (enables grouped management and billing) |
-| **SKU (Stock Keeping Unit)** | Pricing tier for Azure services (e.g., WS1 for Logic Apps, PerGB2018 for Log Analytics) |
-| **Well-Architected Framework** | Microsoft's set of best practices for cloud architecture (reliability, security, cost, performance, operations) |
+- **Application Insights**: Azure Monitor service for application performance monitoring and telemetry collection
+- **Bicep**: Domain-specific language for declarative Azure resource deployment (alternative to ARM JSON templates)
+- **Diagnostic Settings**: Azure configuration that routes resource logs and metrics to destinations (Log Analytics, Storage, Event Hub)
+- **KQL (Kusto Query Language)**: Query language for searching and analyzing data in Log Analytics and Application Insights
+- **Log Analytics Workspace**: Centralized log aggregation service for querying logs from multiple Azure resources
+- **Logic Apps Standard**: Single-tenant Logic Apps runtime hosted on App Service Plan (vs. multi-tenant Consumption plan)
+- **Managed Identity**: Azure AD identity automatically managed by Azure for authenticating to Azure services without credentials
+- **RBAC (Role-Based Access Control)**: Azure permission model using roles (e.g., Contributor, Reader) assigned to identities
+- **WorkflowRuntime Logs**: Detailed execution traces from Logic Apps including action inputs/outputs, errors, and correlation IDs
+- **Workspace-Based Application Insights**: Application Insights integrated with Log Analytics workspace for unified querying
 
 </details>
 
 ---
 
-## License
-
-This project is licensed under the **MIT License**. See [LICENSE.md](LICENSE.md) for details.
-
----
-
-## Additional Resources
-
-- [Azure Logic Apps Standard Documentation](https://learn.microsoft.com/azure/logic-apps/single-tenant-overview-compare)
-- [Azure Monitor Best Practices](https://learn.microsoft.com/azure/azure-monitor/best-practices)
-- [Bicep Language Reference](https://learn.microsoft.com/azure/azure-resource-manager/bicep/)
-- [KQL Query Reference](https://learn.microsoft.com/azure/data-explorer/kusto/query/)
-- [Azure Well-Architected Framework](https://learn.microsoft.com/azure/well-architected/)
-
----
-
-**Questions or feedback?** Open an issue in this repository or contact the maintainers.
-
-**Ready to deploy?** Jump to the [Deployment](#deployment) section and get started in minutes! 🚀
+**Repository**: [Azure-LogicApps-Monitoring](https://github.com/Evilazaro/Azure-LogicApps-Monitoring)  
+**Branch**: refactor/Shared  
+**Last Updated**: December 4, 2025
