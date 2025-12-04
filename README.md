@@ -64,34 +64,46 @@ The deployment orchestration:
 
 ### Architecture Diagram
 
-```
-┌─────────────────────────────────────────────────────────────┐
-│                     Azure Subscription                       │
-├─────────────────────────────────────────────────────────────┤
-│  Resource Group: contoso-{solution}-{env}-{location}-rg     │
-│                                                               │
-│  ┌─────────────────────────────────────────────────────┐   │
-│  │          Monitoring Infrastructure                   │   │
-│  │  ┌──────────────────┐  ┌──────────────────┐        │   │
-│  │  │ Log Analytics    │  │ Application      │        │   │
-│  │  │ Workspace        │◄─┤ Insights         │        │   │
-│  │  └──────────────────┘  └──────────────────┘        │   │
-│  │           ▲                      ▲                   │   │
-│  │           │                      │                   │   │
-│  │  ┌────────┴──────────────────────┴────────┐        │   │
-│  │  │     Azure Monitor Health Model          │        │   │
-│  │  │  (Alerts, Metrics, Action Groups)       │        │   │
-│  │  └─────────────────────────────────────────┘        │   │
-│  └──────────────────────┬──────────────────────────────┘   │
-│                         │ (Diagnostic Settings)             │
-│  ┌──────────────────────▼──────────────────────────────┐   │
-│  │          Workload Infrastructure                     │   │
-│  │  ┌──────────────┐  ┌──────────────┐  ┌───────────┐ │   │
-│  │  │ Logic Apps   │  │ Azure        │  │ Service   │ │   │
-│  │  │ Standard     │◄─┤ Functions    │◄─┤ Bus       │ │   │
-│  │  └──────────────┘  └──────────────┘  └───────────┘ │   │
-│  └─────────────────────────────────────────────────────┘   │
-└─────────────────────────────────────────────────────────────┘
+```mermaid
+graph TB
+    subgraph Azure["Azure Subscription"]
+        subgraph RG["Resource Group: contoso-{solution}-{env}-{location}-rg"]
+            subgraph Monitoring["🔍 Monitoring Infrastructure"]
+                LAW[("Log Analytics<br/>Workspace")]
+                AI["Application<br/>Insights"]
+                AHM["Azure Monitor<br/>Health Model<br/>(Alerts, Metrics, Action Groups)"]
+                
+                AI -->|Sends Data| LAW
+                LAW --> AHM
+                AI --> AHM
+            end
+            
+            subgraph Workload["⚙️ Workload Infrastructure"]
+                LA["Logic Apps<br/>Standard"]
+                AF["Azure<br/>Functions"]
+                SB["Service<br/>Bus"]
+                
+                SB -->|Events| AF
+                AF -->|Triggers| LA
+            end
+            
+            Monitoring -->|Diagnostic Settings| Workload
+            LA -.->|Logs & Metrics| LAW
+            LA -.->|Telemetry| AI
+            AF -.->|Logs & Metrics| LAW
+            AF -.->|Telemetry| AI
+            SB -.->|Logs & Metrics| LAW
+        end
+    end
+    
+    style Monitoring fill:#e1f5ff,stroke:#0078d4,stroke-width:2px
+    style Workload fill:#fff4e1,stroke:#ff8c00,stroke-width:2px
+    style LAW fill:#50e6ff,stroke:#0078d4,stroke-width:2px
+    style AI fill:#50e6ff,stroke:#0078d4,stroke-width:2px
+    style AHM fill:#50e6ff,stroke:#0078d4,stroke-width:2px
+    style LA fill:#ffd670,stroke:#ff8c00,stroke-width:2px
+    style AF fill:#ffd670,stroke:#ff8c00,stroke-width:2px
+    style SB fill:#ffd670,stroke:#ff8c00,stroke-width:2px
 ```
 
 ### Data Flow
