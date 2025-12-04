@@ -1,11 +1,3 @@
-// ============================================================================
-// LOG ANALYTICS WORKSPACE MODULE
-// ============================================================================
-// Deploys Log Analytics workspace with 30-day retention and PerGB2018 pricing.
-// Also provisions a separate storage account for diagnostic logs and metrics.
-// Workspace serves as the central repository for all Azure resource logs.
-// ============================================================================
-
 @description('Base name for the Log Analytics workspace. Will be suffixed with unique string and "-law" to ensure global uniqueness.')
 @minLength(3)
 @maxLength(20)

@@ -1,11 +1,3 @@
-// ============================================================================
-// APPLICATION INSIGHTS MODULE
-// ============================================================================
-// Deploys workspace-based Application Insights for Logic Apps telemetry
-// collection, performance monitoring, and custom metrics publishing.
-// Uses Log Analytics workspace integration for centralized logging.
-// ============================================================================
-
 @description('Base name for Application Insights. Will be suffixed with unique string and "-appinsights" for global uniqueness.')
 @minLength(3)
 @maxLength(20)

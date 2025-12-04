@@ -1,15 +1,3 @@
-// ============================================================================
-// LOGIC APP MODULE
-// ============================================================================
-// Deploys Logic Apps Standard with comprehensive monitoring and RBAC:
-// - App Service Plan (Workflow Standard SKU - WS1)
-// - Logic App with user-assigned managed identity
-// - Storage account RBAC role assignments for managed identity
-// - Application Insights integration for telemetry
-// - Diagnostic settings capturing WorkflowRuntime logs
-// - Azure Portal dashboards for workflow metrics visualization
-// ============================================================================
-
 @description('Base name for Logic App and App Service Plan resources. Will be suffixed with unique string for global uniqueness.')
 @minLength(3)
 @maxLength(20)

@@ -1,15 +1,3 @@
-// ============================================================================
-// API FUNCTION APP MODULE
-// ============================================================================
-// Deploys Azure Function App on Linux App Service Plan for custom API endpoints.
-// Configuration:
-// - Premium P0v3 tier for production-ready performance
-// - .NET Core 9.0 runtime
-// - Application Insights integration for monitoring
-// - Diagnostic settings for HTTP logs, console logs, and app logs
-// - HTTPS-only with TLS 1.2 minimum
-// ============================================================================
-
 @description('Base name for Logic App and App Service Plan resources. Will be suffixed with unique string for global uniqueness.')
 @minLength(3)
 @maxLength(20)

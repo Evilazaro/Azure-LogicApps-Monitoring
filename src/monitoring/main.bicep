@@ -1,10 +1,3 @@
-// ============================================================================
-// MONITORING MODULE - Main Orchestration
-// ============================================================================
-// This module orchestrates the deployment of Azure monitoring infrastructure
-// including Azure Monitor Health Model, Log Analytics Workspace, and 
-// Application Insights for Logic Apps Standard observability and diagnostics.
-// ============================================================================
 
 @description('Base name for all monitoring resources. Used to generate unique resource names with consistent prefixes.')
 @minLength(3)
