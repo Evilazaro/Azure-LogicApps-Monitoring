@@ -4,21 +4,17 @@ metadata name = 'Azure Logic Apps Monitoring Solution'
 metadata description = 'Complete monitoring infrastructure for Logic Apps Standard with Application Insights, Log Analytics, and Service Bus'
 metadata version = '1.0.0'
 
-// ============================================================================
-// PARAMETERS
-// ============================================================================
-
-@description('Base name for the solution (e.g., tax-docs, invoice-processor). Used as prefix for all resource names to ensure consistency and traceability.')
+@description('Base name for the solution. Used as prefix for all resource names.')
 @minLength(3)
 @maxLength(20)
 param solutionName string = 'tax-docs'
 
-@description('Azure region where all resources will be deployed (e.g., eastus2, westeurope). Must support Logic Apps Standard, Application Insights, and Service Bus.')
+@description('Azure region where all resources will be deployed.')
 @minLength(3)
 @maxLength(50)
 param location string
 
-@description('Environment name to differentiate deployments and apply environment-specific configurations.')
+@description('Environment name to differentiate deployments.')
 @allowed([
   'dev'
   'uat'
@@ -27,15 +23,10 @@ param location string
 @maxLength(10)
 param envName string
 
-@description('Deployment timestamp for tracking purposes. Auto-generated at deployment time.')
+@description('Deployment timestamp for tracking purposes.')
 @maxLength(10)
 param deploymentDate string = utcNow('yyyy-MM-dd')
 
-// ============================================================================
-// VARIABLES
-// ============================================================================
-
-@description('Standardized resource tags applied to all resources for cost tracking, organization, and governance policies.')
 var tags = {
   Solution: solutionName
   Environment: envName
@@ -48,26 +39,13 @@ var tags = {
   Repository: 'Azure-LogicApps-Monitoring'
 }
 
-@description('Resource group name following Azure naming convention: organization-solution-environment-region-rg')
-var rgName = 'contoso-${solutionName}-${envName}-${location}-rg'
-
-// ============================================================================
-// RESOURCE GROUP
-// ============================================================================
+var resourceGroupName = 'contoso-${solutionName}-${envName}-${location}-rg'
 
 resource rg 'Microsoft.Resources/resourceGroups@2024-03-01' = {
-  name: rgName
+  name: resourceGroupName
   location: location
   tags: tags
 }
-
-// ============================================================================
-// SHARED RESOURCES MODULE
-// ============================================================================
-// Deploys monitoring infrastructure (Log Analytics, Application Insights),
-// storage account for Logic Apps runtime, Service Bus namespace for messaging,
-// and user-assigned managed identity for secure authentication
-// ============================================================================
 
 module monitoring '../src/monitoring/main.bicep' = {
   scope: rg
@@ -79,16 +57,8 @@ module monitoring '../src/monitoring/main.bicep' = {
   }
 }
 
-// ============================================================================
-// LOGIC APP WORKLOAD MODULE
-// ============================================================================
-// Deploys App Service Plan (Workflow Standard SKU), Logic App with system-assigned
-// managed identity, and Azure Portal dashboards for monitoring App Service Plan
-// and workflow execution metrics
-// ============================================================================
-
 module workload '../src/workload/main.bicep' = {
-  scope: resourceGroup(rgName)
+  scope: rg
   params: {
     name: solutionName
     location: location
@@ -100,18 +70,12 @@ module workload '../src/workload/main.bicep' = {
   }
 }
 
-// ============================================================================
-// OUTPUTS
-// ============================================================================
-
-// Resource Group
 @description('Name of the deployed resource group')
-output RESOURCE_GROUP_NAME string = rgName
+output RESOURCE_GROUP_NAME string = resourceGroupName
 
 @description('Resource ID of the deployed resource group')
 output RESOURCE_GROUP_ID string = rg.id
 
-// Monitoring
 @description('Resource ID of the Log Analytics workspace')
 output AZURE_LOG_ANALYTICS_WORKSPACE_ID string = monitoring.outputs.AZURE_LOG_ANALYTICS_WORKSPACE_ID
 
@@ -127,11 +91,11 @@ output AZURE_APPLICATION_INSIGHTS_ID string = monitoring.outputs.AZURE_APPLICATI
 @description('Connection string for Application Insights')
 @secure()
 output AZURE_APPLICATION_INSIGHTS_CONNECTION_STRING string = monitoring.outputs.AZURE_APPLICATION_INSIGHTS_CONNECTION_STRING
+
 @description('Instrumentation key for Application Insights')
 @secure()
 output AZURE_APPLICATION_INSIGHTS_INSTRUMENTATION_KEY string = monitoring.outputs.AZURE_APPLICATION_INSIGHTS_INSTRUMENTATION_KEY
 
-// Logic App Workload
 @description('Resource ID of the deployed Logic App')
 output LOGIC_APP_ID string = workload.outputs.LOGIC_APP_ID
 
@@ -141,7 +105,6 @@ output LOGIC_APP_NAME string = workload.outputs.LOGIC_APP_NAME
 @description('Resource ID of the Logic App Service Plan')
 output LOGIC_APP_SERVICE_PLAN_ID string = workload.outputs.LOGIC_APP_SERVICE_PLAN_ID
 
-// API Function App
 @description('Resource ID of the API Function App')
 output API_FUNCTION_APP_ID string = workload.outputs.API_FUNCTION_APP_ID
 

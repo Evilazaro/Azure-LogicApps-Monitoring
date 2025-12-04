@@ -1,33 +1,27 @@
-@description('Base name for Service Bus namespace. Will be suffixed with unique string and -sb for global uniqueness.')
+@description('Base name for Service Bus namespace.')
 @minLength(3)
 @maxLength(20)
 param name string
 
-@description('Environment name suffix to ensure uniqueness across environments (e.g., dev, test, prod).')
+@description('Environment name suffix to ensure uniqueness.')
 @minLength(2)
 @maxLength(10)
 param envName string
 
-@description('Azure region for Service Bus deployment. Should match Logic App region for optimal latency.')
+@description('Azure region for Service Bus deployment.')
 @minLength(3)
 @maxLength(50)
 param location string = resourceGroup().location
 
-@description('Resource ID of the Log Analytics workspace for diagnostic logs and metrics. Example: /subscriptions/{subscriptionId}/resourceGroups/{resourceGroupName}/providers/Microsoft.OperationalInsights/workspaces/{workspaceName}')
+@description('Resource ID of the Log Analytics workspace for diagnostic logs and metrics.')
 @minLength(50)
 param workspaceId string
 
-@description('Storage Account ID for diagnostic logs and metrics. Example: /subscriptions/{subscriptionId}/resourceGroups/{resourceGroupName}/providers/Microsoft.Storage/storageAccounts/{accountName}')
+@description('Storage Account ID for diagnostic logs and metrics.')
 @minLength(50)
 param storageAccountId string
 
-@description('Resource tags applied to Service Bus resources for cost tracking and compliance.')
-@metadata({
-  example: {
-    Solution: 'tax-docs'
-    Environment: 'prod'
-  }
-})
+@description('Resource tags applied to Service Bus resources.')
 param tags object
 
 @description('Name of the storage queue for tax processing workflow tasks')
@@ -35,37 +29,18 @@ param tags object
 @maxLength(63)
 param queueName string = 'taxprocessing'
 
-// ============================================================================
-// VARIABLES
-// ============================================================================
-
-// Storage account name generation with Azure naming constraints
-// Azure Storage account names must:
-// - Be 3-24 characters long
-// - Contain only lowercase letters and numbers (no hyphens, underscores, or spaces)
-// - Be globally unique across all Azure Storage accounts
-@description('Cleaned base name with special characters removed for storage account naming')
 var cleanedName = toLower(replace(replace(replace(name, '-', ''), '_', ''), ' ', ''))
-@description('Unique suffix based on resource group, name, environment, and location')
 var uniqueSuffix = uniqueString(resourceGroup().id, name, envName, location)
-@description('Generated storage account name ensuring global uniqueness and Azure naming compliance')
 var storageAccountName = take('${cleanedName}${uniqueSuffix}stg', 24)
 
-// Storage account configuration aligned with Azure best practices
-// Reference: https://learn.microsoft.com/azure/storage/common/storage-account-overview
 var storageConfig = {
-  sku: 'Standard_LRS' // Locally redundant storage - cost-effective for dev/test
-  kind: 'StorageV2' // General-purpose v2 - supports all storage services
-  accessTier: 'Hot' // Hot tier for frequently accessed data
-  minimumTlsVersion: 'TLS1_2' // Enforce TLS 1.2 minimum for security compliance
-  supportsHttpsTrafficOnly: true // Enforce HTTPS-only traffic (security best practice)
+  sku: 'Standard_LRS'
+  kind: 'StorageV2'
+  accessTier: 'Hot'
+  minimumTlsVersion: 'TLS1_2'
+  supportsHttpsTrafficOnly: true
 }
 
-// ============================================================================
-// RESOURCES
-// ============================================================================
-
-// Workflow storage account - stores Logic Apps runtime artifacts
 resource workflowSA 'Microsoft.Storage/storageAccounts@2023-05-01' = {
   name: length(storageAccountName) >= 3 ? storageAccountName : '${storageAccountName}stg'
   location: location
@@ -80,10 +55,10 @@ resource workflowSA 'Microsoft.Storage/storageAccounts@2023-05-01' = {
     minimumTlsVersion: storageConfig.minimumTlsVersion
     allowBlobPublicAccess: true
     publicNetworkAccess: 'Enabled'
-    allowSharedKeyAccess: true // REQUIRED for Logic Apps file share creation
+    allowSharedKeyAccess: true
     networkAcls: {
-      bypass: 'AzureServices' // CRITICAL: Allow Azure services (Logic Apps) to bypass firewall
-      defaultAction: 'Allow' // Allow all traffic (change to 'Deny' for production with private endpoints)
+      bypass: 'AzureServices'
+      defaultAction: 'Allow'
     }
   }
 }
@@ -96,14 +71,8 @@ resource queueServices 'Microsoft.Storage/storageAccounts/queueServices@2023-05-
 resource taxProcessing 'Microsoft.Storage/storageAccounts/queueServices/queues@2023-05-01' = {
   name: queueName
   parent: queueServices
-  properties: {
-    metadata: {
-      purpose: 'Logic Apps workflow runtime queue for tax processing tasks'
-    }
-  }
 }
 
-// Diagnostic settings for storage account - capture logs and metrics
 resource storageDiagSettings 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
   name: '${workflowSA.name}-diag'
   scope: workflowSA
@@ -119,7 +88,6 @@ resource storageDiagSettings 'Microsoft.Insights/diagnosticSettings@2021-05-01-p
   }
 }
 
-// Diagnostic settings for queue service - capture queue operations
 resource queueServiceDiagSettings 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
   name: '${queueServices.name}-diag'
   scope: queueServices
@@ -149,12 +117,8 @@ resource queueServiceDiagSettings 'Microsoft.Insights/diagnosticSettings@2021-05
   }
 }
 
-// ============================================================================
-// OUTPUTS
-// ============================================================================
-
-@description('Name of the deployed storage account (generated with unique suffix for global uniqueness)')
+@description('Name of the deployed storage account')
 output WORKFLOW_STORAGE_ACCOUNT_NAME string = workflowSA.name
 
-@description('Resource ID of the deployed storage account for RBAC role assignments')
+@description('Resource ID of the deployed storage account')
 output WORKFLOW_STORAGE_ACCOUNT_ID string = workflowSA.id
