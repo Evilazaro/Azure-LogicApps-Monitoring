@@ -18,6 +18,7 @@ param location string = resourceGroup().location
 param tags object
 
 module healthModel 'azure-monitor-health-model.bicep' = {
+  name: 'healthModelDeployment'
   scope: resourceGroup()
   params: {
     name: name
@@ -26,6 +27,7 @@ module healthModel 'azure-monitor-health-model.bicep' = {
 }
 
 module operational 'log-analytics-workspace.bicep' = {
+  name: 'operationalDeployment'
   scope: resourceGroup()
   params: {
     name: name
@@ -36,6 +38,7 @@ module operational 'log-analytics-workspace.bicep' = {
 }
 
 module insights 'app-insights.bicep' = {
+  name: 'insightsDeployment'
   scope: resourceGroup()
   params: {
     name: name

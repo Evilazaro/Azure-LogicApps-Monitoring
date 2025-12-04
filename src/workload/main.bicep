@@ -28,6 +28,7 @@ param appInsightsName string
 param tags object
 
 module messaging 'messaging/main.bicep' = {
+  name: 'messagingDeployment'
   scope: resourceGroup()
   params: {
     name: name
@@ -39,6 +40,7 @@ module messaging 'messaging/main.bicep' = {
 }
 
 module apis 'azure-function.bicep' = {
+  name: 'apisDeployment'
   scope: resourceGroup()
   params: {
     name: name
@@ -52,6 +54,7 @@ module apis 'azure-function.bicep' = {
 }
 
 module workflows 'logic-app.bicep' = {
+  name: 'workflowsDeployment'
   scope: resourceGroup()
   params: {
     name: name
