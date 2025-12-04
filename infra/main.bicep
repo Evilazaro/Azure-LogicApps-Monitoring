@@ -58,7 +58,7 @@ module monitoring '../src/monitoring/main.bicep' = {
 }
 
 module workload '../src/workload/main.bicep' = {
-  scope: rg
+  scope: resourceGroup(resourceGroupName)
   params: {
     name: solutionName
     location: location

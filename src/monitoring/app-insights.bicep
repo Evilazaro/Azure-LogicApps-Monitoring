@@ -16,6 +16,9 @@ param envName string
 @description('Resource ID of the Log Analytics workspace for workspace-based Application Insights integration.')
 param logAnalyticsWorkspaceId string
 
+@description('Resource ID of the Storage Account for the Application Insights diagnostic settings.')
+param storageAccountId string
+
 @description('Resource tags applied to Application Insights.')
 param tags object
 
@@ -51,6 +54,7 @@ resource diagnosticSettings 'Microsoft.Insights/diagnosticSettings@2021-05-01-pr
   scope: appInsights
   properties: {
     workspaceId: logAnalyticsWorkspaceId
+    storageAccountId: storageAccountId
     logs: [
       {
         categoryGroup: 'allLogs'

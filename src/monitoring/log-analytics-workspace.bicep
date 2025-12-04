@@ -28,7 +28,7 @@ var storageConfig = {
   supportsHttpsTrafficOnly: true
 }
 
-resource logsSA 'Microsoft.Storage/storageAccounts@2023-05-01' = {
+resource logsSA 'Microsoft.Storage/storageAccounts@2025-06-01' = {
   name: length(logsStorageAccountName) >= 3 ? logsStorageAccountName : '${logsStorageAccountName}stg'
   location: location
   sku: {
@@ -56,7 +56,7 @@ output LOGS_STORAGE_ACCOUNT_NAME string = logsSA.name
 @description('Resource ID of the deployed storage account for logs')
 output LOGS_STORAGE_ACCOUNT_ID string = logsSA.id
 
-resource logAnalytics 'Microsoft.OperationalInsights/workspaces@2023-09-01' = {
+resource logAnalytics 'Microsoft.OperationalInsights/workspaces@2025-07-01' = {
   name: '${name}-${uniqueString(resourceGroup().id, name, envName, location)}-law'
   location: location
   identity: {
@@ -82,3 +82,4 @@ output AZURE_LOG_ANALYTICS_WORKSPACE_ID string = logAnalytics.id
 
 @description('Name of the deployed Log Analytics workspace')
 output AZURE_LOG_ANALYTICS_WORKSPACE_NAME string = logAnalytics.name
+

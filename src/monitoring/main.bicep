@@ -42,6 +42,7 @@ module insights 'app-insights.bicep' = {
     envName: envName
     location: location
     logAnalyticsWorkspaceId: operational.outputs.AZURE_LOG_ANALYTICS_WORKSPACE_ID
+    storageAccountId: operational.outputs.LOGS_STORAGE_ACCOUNT_ID
     tags: tags
   }
 }
