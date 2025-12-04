@@ -39,6 +39,11 @@ module messaging 'messaging/main.bicep' = {
   }
 }
 
+resource appInsights 'Microsoft.Insights/components@2020-02-02' existing = {
+  name: appInsightsName
+  scope: resourceGroup()
+}
+
 module apis 'azure-function.bicep' = {
   name: 'apisDeployment'
   scope: resourceGroup()
@@ -46,7 +51,7 @@ module apis 'azure-function.bicep' = {
     name: name
     envName: envName
     location: location
-    appInsightsName: appInsightsName
+    appInsightsConnectionString: appInsights.properties.ConnectionString
     workspaceId: workspaceId
     storageAccountId: storageAccountId
     tags: tags
@@ -62,7 +67,8 @@ module workflows 'logic-app.bicep' = {
     envName: envName
     workspaceId: workspaceId
     storageAccountId: storageAccountId
-    appInsightsName: appInsightsName
+    appInsightsConnectionString: appInsights.properties.ConnectionString
+    appInsightsInstrumentationKey: appInsights.properties.InstrumentationKey
     workflowStorageAccountName: messaging.outputs.WORKFLOW_STORAGE_ACCOUNT_NAME
     tags: tags
   }

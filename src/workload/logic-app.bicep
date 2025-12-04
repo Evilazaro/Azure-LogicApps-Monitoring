@@ -26,8 +26,11 @@ param storageAccountId string
 @maxLength(24)
 param workflowStorageAccountName string
 
-@description('Name of the Application Insights instance.')
-param appInsightsName string
+@description('Connection string for Application Insights instance.')
+param appInsightsConnectionString string
+
+@description('Instrumentation key for Application Insights instance.')
+param appInsightsInstrumentationKey string
 
 @description('Resource tags applied to all resources.')
 param tags object
@@ -113,30 +116,6 @@ resource storageRoleAssignments 'Microsoft.Authorization/roleAssignments@2022-04
   }
 ]
 
-resource applicationInsights 'Microsoft.Insights/components@2020-02-02' existing = {
-  name: appInsightsName
-}
-
-var appInsightsRoleDefinitions = {
-  metricsPublisher: '3913510d-42f4-4e42-8a64-420c390055eb'
-}
-
-var appInsightsRoleIds = [
-  appInsightsRoleDefinitions.metricsPublisher
-]
-
-resource appInsightsRoleAssignments 'Microsoft.Authorization/roleAssignments@2022-04-01' = [
-  for roleId in appInsightsRoleIds: {
-    name: guid(applicationInsights.id, applicationInsights.name, roleId)
-    scope: applicationInsights
-    properties: {
-      roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', roleId)
-      principalId: managedIdentity.properties.principalId
-      principalType: 'ServicePrincipal'
-    }
-  }
-]
-
 var functionsExtensionVersion = '~4'
 var functionsWorkerRuntime = 'dotnet'
 var extensionBundleId = 'Microsoft.Azure.Functions.ExtensionBundle.Workflows'
@@ -193,11 +172,11 @@ resource logicApp 'Microsoft.Web/sites@2023-12-01' = {
         }
         {
           name: 'APPINSIGHTS_INSTRUMENTATIONKEY'
-          value: applicationInsights.properties.InstrumentationKey
+          value: appInsightsInstrumentationKey
         }
         {
           name: 'APPLICATIONINSIGHTS_CONNECTION_STRING'
-          value: applicationInsights.properties.ConnectionString
+          value: appInsightsConnectionString
         }
         {
           name: 'AzureFunctionsJobHost__extensionBundle__id'

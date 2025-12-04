@@ -21,8 +21,8 @@ param workspaceId string
 @minLength(50)
 param storageAccountId string
 
-@description('Name of the Application Insights instance.')
-param appInsightsName string
+@description('Connection string for Application Insights instance.')
+param appInsightsConnectionString string
 
 @description('Resource tags applied to all resources.')
 param tags object
@@ -72,10 +72,6 @@ resource appServicePlan 'Microsoft.Web/serverfarms@2023-12-01' = {
   }
 }
 
-resource applicationInsights 'Microsoft.Insights/components@2020-02-02' existing = {
-  name: appInsightsName
-}
-
 resource functionApp 'Microsoft.Web/sites@2023-12-01' = {
   name: '${name}-${resourceSuffix}-api'
   location: location
@@ -96,7 +92,7 @@ resource functionApp 'Microsoft.Web/sites@2023-12-01' = {
       appSettings: [
         {
           name: 'APPLICATIONINSIGHTS_CONNECTION_STRING'
-          value: applicationInsights.properties.ConnectionString
+          value: appInsightsConnectionString
         }
         {
           name: 'ApplicationInsightsAgent_EXTENSION_VERSION'

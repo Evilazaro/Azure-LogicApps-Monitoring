@@ -81,7 +81,7 @@ resource storageDiagnosticSettings 'Microsoft.Insights/diagnosticSettings@2021-0
     storageAccountId: storageAccountId
     metrics: [
       {
-        category: 'Transaction'
+        category: 'AllMetrics'
         enabled: true
       }
     ]
@@ -96,21 +96,13 @@ resource queueServiceDiagnosticSettings 'Microsoft.Insights/diagnosticSettings@2
     storageAccountId: storageAccountId
     logs: [
       {
-        category: 'StorageRead'
-        enabled: true
-      }
-      {
-        category: 'StorageWrite'
-        enabled: true
-      }
-      {
-        category: 'StorageDelete'
+        categoryGroup: 'allLogs'
         enabled: true
       }
     ]
     metrics: [
       {
-        category: 'Transaction'
+        category: 'AllMetrics'
         enabled: true
       }
     ]
