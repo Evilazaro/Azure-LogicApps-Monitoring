@@ -335,12 +335,12 @@ flowchart LR
     LA -->|writes to| SQ
     
     %% Telemetry Flow
-    LA -->|telemetry<br/>(traces, exceptions)| AppInsights
-    FA -->|telemetry<br/>(dependencies, requests)| AppInsights
+    LA -->|telemetry: traces, exceptions| AppInsights
+    FA -->|telemetry: dependencies, requests| AppInsights
     
-    LA -->|diagnostic logs<br/>(WorkflowRuntime)| DiagPipeline
-    FA -->|diagnostic logs<br/>(FunctionAppLogs)| DiagPipeline
-    SQ -->|diagnostic logs<br/>(StorageRead/Write)| DiagPipeline
+    LA -->|diagnostic logs: WorkflowRuntime| DiagPipeline
+    FA -->|diagnostic logs: FunctionAppLogs| DiagPipeline
+    SQ -->|diagnostic logs: StorageRead/Write| DiagPipeline
     
     %% Storage Flow
     AppInsights -->|ingests to| LAW
