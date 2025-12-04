@@ -27,6 +27,8 @@ param appInsightsName string
 @description('Resource tags applied to all resources.')
 param tags object
 
+var resourceSuffix = uniqueString(resourceGroup().id, name, envName, location)
+
 var appServicePlanConfig = {
   sku: {
     name: 'P0v3'
@@ -44,12 +46,8 @@ var functionAppConfig = {
   kind: 'app,linux'
 }
 
-var resourceSuffix = uniqueString(resourceGroup().id, name, envName, location)
-var appServicePlanName = '${name}-${resourceSuffix}-apis-asp'
-var functionAppName = '${name}-${resourceSuffix}-api'
-
 resource appServicePlan 'Microsoft.Web/serverfarms@2023-12-01' = {
-  name: appServicePlanName
+  name: '${name}-${resourceSuffix}-apis-asp'
   location: location
   sku: {
     name: appServicePlanConfig.sku.name
@@ -74,13 +72,12 @@ resource appServicePlan 'Microsoft.Web/serverfarms@2023-12-01' = {
   }
 }
 
-resource appInsights 'Microsoft.Insights/components@2020-02-02' existing = {
+resource applicationInsights 'Microsoft.Insights/components@2020-02-02' existing = {
   name: appInsightsName
-  scope: resourceGroup()
 }
 
-resource webApi 'Microsoft.Web/sites@2023-12-01' = {
-  name: functionAppName
+resource functionApp 'Microsoft.Web/sites@2023-12-01' = {
+  name: '${name}-${resourceSuffix}-api'
   location: location
   kind: functionAppConfig.kind
   identity: {
@@ -99,7 +96,7 @@ resource webApi 'Microsoft.Web/sites@2023-12-01' = {
       appSettings: [
         {
           name: 'APPLICATIONINSIGHTS_CONNECTION_STRING'
-          value: appInsights.properties.ConnectionString
+          value: applicationInsights.properties.ConnectionString
         }
         {
           name: 'ApplicationInsightsAgent_EXTENSION_VERSION'
@@ -111,9 +108,9 @@ resource webApi 'Microsoft.Web/sites@2023-12-01' = {
   }
 }
 
-resource webApiDiagnostics 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
-  name: '${webApi.name}-diag'
-  scope: webApi
+resource functionAppDiagnosticSettings 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
+  name: '${functionApp.name}-diag'
+  scope: functionApp
   properties: {
     workspaceId: workspaceId
     storageAccountId: storageAccountId
@@ -140,7 +137,7 @@ resource webApiDiagnostics 'Microsoft.Insights/diagnosticSettings@2021-05-01-pre
   }
 }
 
-resource DiagnosticSettingsAsp 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
+resource appServicePlanDiagnosticSettings 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
   name: '${appServicePlan.name}-diag'
   scope: appServicePlan
   properties: {
@@ -156,10 +153,10 @@ resource DiagnosticSettingsAsp 'Microsoft.Insights/diagnosticSettings@2021-05-01
 }
 
 @description('Resource ID of the deployed Function App')
-output FUNCTION_APP_ID string = webApi.id
+output FUNCTION_APP_ID string = functionApp.id
 
 @description('Name of the deployed Function App')
-output FUNCTION_APP_NAME string = webApi.name
+output FUNCTION_APP_NAME string = functionApp.name
 
 @description('Default hostname of the Function App')
-output FUNCTION_APP_DEFAULT_HOSTNAME string = webApi.properties.defaultHostName
+output FUNCTION_APP_DEFAULT_HOSTNAME string = functionApp.properties.defaultHostName

@@ -22,7 +22,7 @@ param storageAccountId string
 @description('Resource tags applied to Application Insights.')
 param tags object
 
-resource appInsights 'Microsoft.Insights/components@2020-02-02' = {
+resource applicationInsights 'Microsoft.Insights/components@2020-02-02' = {
   name: '${name}-${uniqueString(resourceGroup().id, name, envName, location)}-appinsights'
   location: location
   kind: 'web'
@@ -36,22 +36,22 @@ resource appInsights 'Microsoft.Insights/components@2020-02-02' = {
 }
 
 @description('Name of the deployed Application Insights instance')
-output AZURE_APPLICATION_INSIGHTS_NAME string = appInsights.name
+output AZURE_APPLICATION_INSIGHTS_NAME string = applicationInsights.name
 
 @description('Resource ID of the deployed Application Insights instance')
-output AZURE_APPLICATION_INSIGHTS_ID string = appInsights.id
+output AZURE_APPLICATION_INSIGHTS_ID string = applicationInsights.id
 
 @description('Instrumentation key for Application Insights telemetry')
 @secure()
-output AZURE_APPLICATION_INSIGHTS_INSTRUMENTATION_KEY string = appInsights.properties.InstrumentationKey
+output AZURE_APPLICATION_INSIGHTS_INSTRUMENTATION_KEY string = applicationInsights.properties.InstrumentationKey
 
 @description('Connection string for Application Insights telemetry')
 @secure()
-output AZURE_APPLICATION_INSIGHTS_CONNECTION_STRING string = appInsights.properties.ConnectionString
+output AZURE_APPLICATION_INSIGHTS_CONNECTION_STRING string = applicationInsights.properties.ConnectionString
 
 resource diagnosticSettings 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
-  name: '${appInsights.name}-diagsetting'
-  scope: appInsights
+  name: '${applicationInsights.name}-diag'
+  scope: applicationInsights
   properties: {
     workspaceId: logAnalyticsWorkspaceId
     storageAccountId: storageAccountId

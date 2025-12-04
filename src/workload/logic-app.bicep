@@ -32,8 +32,10 @@ param appInsightsName string
 @description('Resource tags applied to all resources.')
 param tags object
 
+var resourceSuffix = uniqueString(resourceGroup().id, name, envName, location)
+
 resource appServicePlan 'Microsoft.Web/serverfarms@2023-12-01' = {
-  name: '${name}-${uniqueString(resourceGroup().id, name, envName, location)}-asp'
+  name: '${name}-${resourceSuffix}-asp'
   location: location
   sku: {
     name: 'WS1'
@@ -58,7 +60,7 @@ resource appServicePlan 'Microsoft.Web/serverfarms@2023-12-01' = {
   }
 }
 
-resource DiagnosticSettingsAsp 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
+resource appServicePlanDiagnosticSettings 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
   name: '${appServicePlan.name}-diag'
   scope: appServicePlan
   properties: {
@@ -73,137 +75,81 @@ resource DiagnosticSettingsAsp 'Microsoft.Insights/diagnosticSettings@2021-05-01
   }
 }
 
-resource mi 'Microsoft.ManagedIdentity/userAssignedIdentities@2023-01-31' = {
-  name: '${name}-${uniqueString(resourceGroup().id, name, envName, location)}-mi'
+resource managedIdentity 'Microsoft.ManagedIdentity/userAssignedIdentities@2023-01-31' = {
+  name: '${name}-${resourceSuffix}-mi'
   location: location
   tags: tags
 }
 
-resource workflowSA 'Microsoft.Storage/storageAccounts@2023-05-01' existing = {
+resource workflowStorageAccount 'Microsoft.Storage/storageAccounts@2023-05-01' existing = {
   name: workflowStorageAccountName
-  scope: resourceGroup()
 }
 
-// ============================================================================
-// VARIABLES - RBAC ROLE DEFINITIONS
-// ============================================================================
-
-// Storage Account RBAC roles for Logic Apps managed identity
-// These roles enable the Logic App to access storage account resources using managed identity
-// Reference: https://learn.microsoft.com/azure/role-based-access-control/built-in-roles
-var storageRoles = {
-  // Storage Account Contributor (17d1049b-9a84-46fb-8f53-869881c3d3ab)
-  // Grants full management control over storage account
-  // Learn more: https://learn.microsoft.com/azure/role-based-access-control/built-in-roles#storage-account-contributor
+var storageRoleDefinitions = {
   contributor: '17d1049b-9a84-46fb-8f53-869881c3d3ab'
-  
-  // Storage Blob Data Owner (b7e6dc6d-f1e8-4753-8033-0f276bb0955b)
-  // Provides full control over blob containers and data, including ACL management
-  // Learn more: https://learn.microsoft.com/azure/role-based-access-control/built-in-roles#storage-blob-data-owner
   blobDataOwner: 'b7e6dc6d-f1e8-4753-8033-0f276bb0955b'
-  
-  // Storage Queue Data Contributor (974c5e8b-45b9-4653-ba55-5f855dd0fb88)
-  // Allows reading, writing, and deleting Azure Storage queues and queue messages
-  // Learn more: https://learn.microsoft.com/azure/role-based-access-control/built-in-roles#storage-queue-data-contributor
   queueDataContributor: '974c5e8b-45b9-4653-ba55-5f855dd0fb88'
-  
-  // Storage Table Data Contributor (0a9a7e1f-b9d0-4cc4-a60d-0319b160aaa3)
-  // Allows reading, writing, and deleting Azure Storage tables and entities
-  // Learn more: https://learn.microsoft.com/azure/role-based-access-control/built-in-roles#storage-table-data-contributor
   tableDataContributor: '0a9a7e1f-b9d0-4cc4-a60d-0319b160aaa3'
-  
-  // Storage File Data Privileged Contributor (69566ab7-960f-475b-8e7c-b3118f30c6bd)
-  // Allows read, write, delete, and modify ACLs on files/directories (required for Logic Apps file share)
-  // Learn more: https://learn.microsoft.com/azure/role-based-access-control/built-in-roles#storage-file-data-privileged-contributor
   fileDataContributor: '69566ab7-960f-475b-8e7c-b3118f30c6bd'
 }
 
-var storageRBAC = [
-  storageRoles.contributor
-  storageRoles.blobDataOwner
-  storageRoles.queueDataContributor
-  storageRoles.tableDataContributor
-  storageRoles.fileDataContributor
+var storageRoleIds = [
+  storageRoleDefinitions.contributor
+  storageRoleDefinitions.blobDataOwner
+  storageRoleDefinitions.queueDataContributor
+  storageRoleDefinitions.tableDataContributor
+  storageRoleDefinitions.fileDataContributor
 ]
 
 resource storageRoleAssignments 'Microsoft.Authorization/roleAssignments@2022-04-01' = [
-  for roleId in storageRBAC: {
+  for roleId in storageRoleIds: {
     name: guid(logicApp.id, logicApp.name, roleId)
-    scope: workflowSA
+    scope: workflowStorageAccount
     properties: {
       roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', roleId)
-      principalId: mi.properties.principalId
+      principalId: managedIdentity.properties.principalId
       principalType: 'ServicePrincipal'
     }
   }
 ]
 
-resource appInsights 'Microsoft.Insights/components@2020-02-02' existing = {
+resource applicationInsights 'Microsoft.Insights/components@2020-02-02' existing = {
   name: appInsightsName
-  scope: resourceGroup()
 }
 
-// Application Insights RBAC role for Logic Apps managed identity
-// Reference: https://learn.microsoft.com/azure/role-based-access-control/built-in-roles
-var appInsightsRoles = {
-  // Monitoring Metrics Publisher (3913510d-42f4-4e42-8a64-420c390055eb)
-  // Enables publishing metrics to Azure Monitor (required for custom metrics from Logic Apps)
-  // Learn more: https://learn.microsoft.com/azure/role-based-access-control/built-in-roles#monitoring-metrics-publisher
+var appInsightsRoleDefinitions = {
   metricsPublisher: '3913510d-42f4-4e42-8a64-420c390055eb'
 }
 
-var appInsightsRBAC = [
-  appInsightsRoles.metricsPublisher
+var appInsightsRoleIds = [
+  appInsightsRoleDefinitions.metricsPublisher
 ]
 
 resource appInsightsRoleAssignments 'Microsoft.Authorization/roleAssignments@2022-04-01' = [
-  for roleId in appInsightsRBAC: {
-    name: guid(appInsights.id, appInsights.name, roleId)
-    scope: appInsights
+  for roleId in appInsightsRoleIds: {
+    name: guid(applicationInsights.id, applicationInsights.name, roleId)
+    scope: applicationInsights
     properties: {
       roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', roleId)
-      principalId: mi.properties.principalId
+      principalId: managedIdentity.properties.principalId
       principalType: 'ServicePrincipal'
     }
   }
 ]
 
-// ============================================================================
-// VARIABLES - APP SETTINGS
-// ============================================================================
-
-// Service Bus connection configuration
-
-// Core runtime settings
 var functionsExtensionVersion = '~4'
 var functionsWorkerRuntime = 'dotnet'
-
-// Extension bundle for Logic Apps Standard
 var extensionBundleId = 'Microsoft.Azure.Functions.ExtensionBundle.Workflows'
 var extensionBundleVersion = '[1.*, 2.0.0)'
 
-// Application Insights telemetry
-var appInsightsInstrumentationKey = appInsights.properties.InstrumentationKey
-var appInsightsConnectionString = appInsights.properties.ConnectionString
-
-// Workflow configuration settings
-var workflowsSubscriptionId = subscription().subscriptionId
-var workflowsResourceGroupName = resourceGroup().name
-var workflowsLocationName = location
-var workflowsTenantId = subscription().tenantId
-
-// ============================================================================
-// LOGIC APP RESOURCE
-// ============================================================================
-
 resource logicApp 'Microsoft.Web/sites@2023-12-01' = {
-  name: '${name}-${uniqueString(resourceGroup().id, name, envName, location)}-logicapp'
+  name: '${name}-${resourceSuffix}-logicapp'
   location: location
   kind: 'functionapp,workflowapp'
   identity: {
     type: 'UserAssigned'
     userAssignedIdentities: {
-      '${mi.id}': {}
+      '${managedIdentity.id}': {}
     }
   }
   tags: tags
@@ -213,7 +159,6 @@ resource logicApp 'Microsoft.Web/sites@2023-12-01' = {
     storageAccountRequired: true
     siteConfig: {
       appSettings: [
-        // Core Azure Functions runtime settings
         {
           name: 'FUNCTIONS_EXTENSION_VERSION'
           value: functionsExtensionVersion
@@ -222,8 +167,6 @@ resource logicApp 'Microsoft.Web/sites@2023-12-01' = {
           name: 'FUNCTIONS_WORKER_RUNTIME'
           value: functionsWorkerRuntime
         }
-        // Storage account settings (workflow state, run history, artifacts)
-        // Using managed identity for secure authentication
         {
           name: 'AzureWebJobsStorage__accountName'
           value: workflowStorageAccountName
@@ -246,18 +189,16 @@ resource logicApp 'Microsoft.Web/sites@2023-12-01' = {
         }
         {
           name: 'AzureWebJobsStorage__managedIdentityResourceId'
-          value: resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', mi.name)
+          value: managedIdentity.id
         }
-        // Application Insights telemetry and monitoring
         {
           name: 'APPINSIGHTS_INSTRUMENTATIONKEY'
-          value: appInsightsInstrumentationKey
+          value: applicationInsights.properties.InstrumentationKey
         }
         {
           name: 'APPLICATIONINSIGHTS_CONNECTION_STRING'
-          value: appInsightsConnectionString
+          value: applicationInsights.properties.ConnectionString
         }
-        // Logic Apps Standard extension bundle
         {
           name: 'AzureFunctionsJobHost__extensionBundle__id'
           value: extensionBundleId
@@ -266,22 +207,21 @@ resource logicApp 'Microsoft.Web/sites@2023-12-01' = {
           name: 'AzureFunctionsJobHost__extensionBundle__version'
           value: extensionBundleVersion
         }
-        // Workflow management settings
         {
           name: 'WORKFLOWS_SUBSCRIPTION_ID'
-          value: workflowsSubscriptionId
+          value: subscription().subscriptionId
         }
         {
           name: 'WORKFLOWS_RESOURCE_GROUP_NAME'
-          value: workflowsResourceGroupName
+          value: resourceGroup().name
         }
         {
           name: 'WORKFLOWS_LOCATION_NAME'
-          value: workflowsLocationName
+          value: location
         }
         {
           name: 'WORKFLOWS_TENANT_ID'
-          value: workflowsTenantId
+          value: subscription().tenantId
         }
         {
           name: 'WORKFLOWS_MANAGEMENT_BASE_URI'
@@ -296,7 +236,7 @@ resource logicApp 'Microsoft.Web/sites@2023-12-01' = {
   }
 }
 
-resource DiagnosticSettingsLogicApp 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
+resource logicAppDiagnosticSettings 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
   name: '${logicApp.name}-diag'
   scope: logicApp
   properties: {

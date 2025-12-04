@@ -31,7 +31,7 @@ param queueName string = 'taxprocessing'
 
 var cleanedName = toLower(replace(replace(replace(name, '-', ''), '_', ''), ' ', ''))
 var uniqueSuffix = uniqueString(resourceGroup().id, name, envName, location)
-var storageAccountName = take('${cleanedName}${uniqueSuffix}stg', 24)
+var storageAccountName = take('${cleanedName}${uniqueSuffix}', 24)
 
 var storageConfig = {
   sku: 'Standard_LRS'
@@ -41,8 +41,8 @@ var storageConfig = {
   supportsHttpsTrafficOnly: true
 }
 
-resource workflowSA 'Microsoft.Storage/storageAccounts@2023-05-01' = {
-  name: length(storageAccountName) >= 3 ? storageAccountName : '${storageAccountName}stg'
+resource workflowStorageAccount 'Microsoft.Storage/storageAccounts@2023-05-01' = {
+  name: storageAccountName
   location: location
   sku: {
     name: storageConfig.sku
@@ -65,17 +65,17 @@ resource workflowSA 'Microsoft.Storage/storageAccounts@2023-05-01' = {
 
 resource queueServices 'Microsoft.Storage/storageAccounts/queueServices@2023-05-01' = {
   name: 'default'
-  parent: workflowSA
+  parent: workflowStorageAccount
 }
 
-resource taxProcessing 'Microsoft.Storage/storageAccounts/queueServices/queues@2023-05-01' = {
+resource taxProcessingQueue 'Microsoft.Storage/storageAccounts/queueServices/queues@2023-05-01' = {
   name: queueName
   parent: queueServices
 }
 
-resource storageDiagSettings 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
-  name: '${workflowSA.name}-diag'
-  scope: workflowSA
+resource storageDiagnosticSettings 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
+  name: '${workflowStorageAccount.name}-diag'
+  scope: workflowStorageAccount
   properties: {
     workspaceId: workspaceId
     storageAccountId: storageAccountId
@@ -88,7 +88,7 @@ resource storageDiagSettings 'Microsoft.Insights/diagnosticSettings@2021-05-01-p
   }
 }
 
-resource queueServiceDiagSettings 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
+resource queueServiceDiagnosticSettings 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
   name: '${queueServices.name}-diag'
   scope: queueServices
   properties: {
@@ -118,7 +118,7 @@ resource queueServiceDiagSettings 'Microsoft.Insights/diagnosticSettings@2021-05
 }
 
 @description('Name of the deployed storage account')
-output WORKFLOW_STORAGE_ACCOUNT_NAME string = workflowSA.name
+output WORKFLOW_STORAGE_ACCOUNT_NAME string = workflowStorageAccount.name
 
 @description('Resource ID of the deployed storage account')
-output WORKFLOW_STORAGE_ACCOUNT_ID string = workflowSA.id
+output WORKFLOW_STORAGE_ACCOUNT_ID string = workflowStorageAccount.id

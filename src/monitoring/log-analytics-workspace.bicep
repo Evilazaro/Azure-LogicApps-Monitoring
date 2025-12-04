@@ -18,7 +18,7 @@ param tags object
 
 var cleanedName = toLower(replace(replace(replace(name, '-', ''), '_', ''), ' ', ''))
 var uniqueSuffix = uniqueString(resourceGroup().id, name, envName, location)
-var logsStorageAccountName = take('${cleanedName}logs${uniqueSuffix}stg', 24)
+var logsStorageAccountName = take('${cleanedName}logs${uniqueSuffix}', 24)
 
 var storageConfig = {
   sku: 'Standard_LRS'
@@ -28,8 +28,8 @@ var storageConfig = {
   supportsHttpsTrafficOnly: true
 }
 
-resource logsSA 'Microsoft.Storage/storageAccounts@2025-06-01' = {
-  name: length(logsStorageAccountName) >= 3 ? logsStorageAccountName : '${logsStorageAccountName}stg'
+resource logsStorageAccount 'Microsoft.Storage/storageAccounts@2025-06-01' = {
+  name: logsStorageAccountName
   location: location
   sku: {
     name: storageConfig.sku
@@ -51,12 +51,12 @@ resource logsSA 'Microsoft.Storage/storageAccounts@2025-06-01' = {
 }
 
 @description('Name of the deployed storage account for logs')
-output LOGS_STORAGE_ACCOUNT_NAME string = logsSA.name
+output LOGS_STORAGE_ACCOUNT_NAME string = logsStorageAccount.name
 
 @description('Resource ID of the deployed storage account for logs')
-output LOGS_STORAGE_ACCOUNT_ID string = logsSA.id
+output LOGS_STORAGE_ACCOUNT_ID string = logsStorageAccount.id
 
-resource logAnalytics 'Microsoft.OperationalInsights/workspaces@2025-07-01' = {
+resource logAnalyticsWorkspace 'Microsoft.OperationalInsights/workspaces@2025-07-01' = {
   name: '${name}-${uniqueString(resourceGroup().id, name, envName, location)}-law'
   location: location
   identity: {
@@ -75,16 +75,16 @@ resource logAnalytics 'Microsoft.OperationalInsights/workspaces@2025-07-01' = {
 }
 
 @description('Resource ID of the deployed Log Analytics workspace')
-output AZURE_LOG_ANALYTICS_WORKSPACE_ID string = logAnalytics.id
+output AZURE_LOG_ANALYTICS_WORKSPACE_ID string = logAnalyticsWorkspace.id
 
 @description('Name of the deployed Log Analytics workspace')
-output AZURE_LOG_ANALYTICS_WORKSPACE_NAME string = logAnalytics.name
+output AZURE_LOG_ANALYTICS_WORKSPACE_NAME string = logAnalyticsWorkspace.name
 
 resource diagnosticSettings 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
-  name: '${logAnalytics.name}-diag'
-  scope: logAnalytics
+  name: '${logAnalyticsWorkspace.name}-diag'
+  scope: logAnalyticsWorkspace
   properties: {
-    workspaceId: logAnalytics.id
-    storageAccountId: logsSA.id
+    workspaceId: logAnalyticsWorkspace.id
+    storageAccountId: logsStorageAccount.id
   }
 }
