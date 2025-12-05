@@ -13,6 +13,12 @@ param envName string
 @maxLength(50)
 param location string = resourceGroup().location
 
+@description('Logs settings for the Log Analytics workspace.')
+param logsSettings object[]
+
+@description('Metrics settings for the Log Analytics workspace.')
+param metricsSettings object[]
+
 @description('Resource tags applied to the Log Analytics workspace.')
 param tags object
 
@@ -86,5 +92,8 @@ resource diagnosticSettings 'Microsoft.Insights/diagnosticSettings@2021-05-01-pr
   properties: {
     workspaceId: logAnalyticsWorkspace.id
     storageAccountId: logsStorageAccount.id
+    logAnalyticsDestinationType: 'Dedicated'
+    logs: logsSettings
+    metrics: metricsSettings
   }
 }
