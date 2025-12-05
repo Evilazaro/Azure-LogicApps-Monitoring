@@ -21,6 +21,12 @@ param workspaceId string
 @minLength(50)
 param storageAccountId string
 
+@description('Logs settings for the Log Analytics workspace.')
+param logsSettings object[]
+
+@description('Metrics settings for the Log Analytics workspace.')
+param metricsSettings object[]
+
 @description('Resource tags applied to Service Bus resources.')
 param tags object
 
@@ -41,7 +47,7 @@ var storageConfig = {
   supportsHttpsTrafficOnly: true
 }
 
-resource workflowStorageAccount 'Microsoft.Storage/storageAccounts@2023-05-01' = {
+resource appWorkflowSA 'Microsoft.Storage/storageAccounts@2025-06-01' = {
   name: storageAccountName
   location: location
   sku: {
@@ -63,54 +69,41 @@ resource workflowStorageAccount 'Microsoft.Storage/storageAccounts@2023-05-01' =
   }
 }
 
-resource queueServices 'Microsoft.Storage/storageAccounts/queueServices@2023-05-01' = {
+resource queueSvc 'Microsoft.Storage/storageAccounts/queueServices@2025-06-01' = {
   name: 'default'
-  parent: workflowStorageAccount
+  parent: appWorkflowSA
 }
 
-resource taxProcessingQueue 'Microsoft.Storage/storageAccounts/queueServices/queues@2023-05-01' = {
+resource queue 'Microsoft.Storage/storageAccounts/queueServices/queues@2025-06-01' = {
   name: queueName
-  parent: queueServices
+  parent: queueSvc
 }
 
-resource storageDiagnosticSettings 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
-  name: '${workflowStorageAccount.name}-diag'
-  scope: workflowStorageAccount
+resource storageDiag 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
+  name: '${appWorkflowSA.name}-diag'
+  scope: appWorkflowSA
   properties: {
     workspaceId: workspaceId
     storageAccountId: storageAccountId
-    metrics: [
-      {
-        category: 'AllMetrics'
-        enabled: true
-      }
-    ]
+    logAnalyticsDestinationType: 'Dedicated'
+    metrics: metricsSettings
   }
 }
 
-resource queueServiceDiagnosticSettings 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
-  name: '${queueServices.name}-diag'
-  scope: queueServices
+resource queueDiag 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
+  name: '${queueSvc.name}-diag'
+  scope: queueSvc
   properties: {
     workspaceId: workspaceId
     storageAccountId: storageAccountId
-    logs: [
-      {
-        categoryGroup: 'allLogs'
-        enabled: true
-      }
-    ]
-    metrics: [
-      {
-        category: 'AllMetrics'
-        enabled: true
-      }
-    ]
+    logAnalyticsDestinationType: 'Dedicated'
+    logs: logsSettings
+    metrics: metricsSettings
   }
 }
 
 @description('Name of the deployed storage account')
-output WORKFLOW_STORAGE_ACCOUNT_NAME string = workflowStorageAccount.name
+output WORKFLOW_STORAGE_ACCOUNT_NAME string = appWorkflowSA.name
 
 @description('Resource ID of the deployed storage account')
-output WORKFLOW_STORAGE_ACCOUNT_ID string = workflowStorageAccount.id
+output WORKFLOW_STORAGE_ACCOUNT_ID string = appWorkflowSA.id

@@ -30,6 +30,20 @@ param appInsightsInstrumentationKey string
 @description('Resource tags applied to all workload resources.')
 param tags object
 
+var allLogsSettings = [
+  {
+    categoryGroup: 'allLogs'
+    enabled: true
+  }
+]
+
+var allMetricsSettings = [
+  {
+    categoryGroup: 'allMetrics'
+    enabled: true
+  }
+]
+
 module messaging 'messaging/main.bicep' = {
   name: 'messagingDeployment'
   scope: resourceGroup()
@@ -39,6 +53,8 @@ module messaging 'messaging/main.bicep' = {
     envName: envName
     storageAccountId: storageAccountId
     workspaceId: workspaceId
+    logsSettings: allLogsSettings
+    metricsSettings: allMetricsSettings
   }
 }
 
@@ -52,6 +68,8 @@ module apis 'azure-function.bicep' = {
     appInsightsConnectionString: appInsightsConnectionString
     workspaceId: workspaceId
     storageAccountId: storageAccountId
+    logsSettings: allLogsSettings
+    metricsSettings: allMetricsSettings
     tags: tags
   }
 }
@@ -65,6 +83,8 @@ module workflows 'logic-app.bicep' = {
     envName: envName
     workspaceId: workspaceId
     storageAccountId: storageAccountId
+    logsSettings: allLogsSettings
+    metricsSettings: allMetricsSettings
     appInsightsConnectionString: appInsightsConnectionString
     appInsightsInstrumentationKey: appInsightsInstrumentationKey
     workflowStorageAccountName: messaging.outputs.WORKFLOW_STORAGE_ACCOUNT_NAME

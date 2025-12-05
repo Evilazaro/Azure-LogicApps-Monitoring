@@ -13,6 +13,12 @@ param envName string
 @maxLength(50)
 param location string = resourceGroup().location
 
+@description('Logs settings for the Log Analytics workspace.')
+param logsSettings object[]
+
+@description('Metrics settings for the Log Analytics workspace.')
+param metricsSettings object[]
+
 @description('Resource tags applied to the Log Analytics workspace.')
 param tags object
 
@@ -28,7 +34,7 @@ var storageConfig = {
   supportsHttpsTrafficOnly: true
 }
 
-resource logsStorageAccount 'Microsoft.Storage/storageAccounts@2025-06-01' = {
+resource logsSA 'Microsoft.Storage/storageAccounts@2025-06-01' = {
   name: logsStorageAccountName
   location: location
   sku: {
@@ -51,12 +57,45 @@ resource logsStorageAccount 'Microsoft.Storage/storageAccounts@2025-06-01' = {
 }
 
 @description('Name of the deployed storage account for logs')
-output LOGS_STORAGE_ACCOUNT_NAME string = logsStorageAccount.name
+output LOGS_STORAGE_ACCOUNT_NAME string = logsSA.name
 
 @description('Resource ID of the deployed storage account for logs')
-output LOGS_STORAGE_ACCOUNT_ID string = logsStorageAccount.id
+output LOGS_STORAGE_ACCOUNT_ID string = logsSA.id
 
-resource logAnalyticsWorkspace 'Microsoft.OperationalInsights/workspaces@2025-07-01' = {
+resource maPolicy 'Microsoft.Storage/storageAccounts/managementPolicies@2025-06-01' = {
+  name: 'default'
+  parent: logsSA
+  properties: {
+    policy: {
+      rules: [
+        {
+          name: 'SubscriptionLevelLifecycleRule'
+          enabled: true
+          type: 'Lifecycle'
+          definition: {
+            actions: {
+              baseBlob: {
+                delete: {
+                  daysAfterModificationGreaterThan: 30
+                }
+              }
+            }
+            filters: {
+              blobTypes: [
+                'appendBlob'
+              ]
+              prefixMatch: [
+                'insights-activity-logs/ResourceId=/SUBSCRIPTIONS/${subscription().subscriptionId}/'
+              ]
+            }
+          }
+        }
+      ]
+    }
+  }
+}
+
+resource workspace 'Microsoft.OperationalInsights/workspaces@2025-07-01' = {
   name: '${name}-${uniqueString(resourceGroup().id, name, envName, location)}-law'
   location: location
   identity: {
@@ -75,16 +114,39 @@ resource logAnalyticsWorkspace 'Microsoft.OperationalInsights/workspaces@2025-07
 }
 
 @description('Resource ID of the deployed Log Analytics workspace')
-output AZURE_LOG_ANALYTICS_WORKSPACE_ID string = logAnalyticsWorkspace.id
+output AZURE_LOG_ANALYTICS_WORKSPACE_ID string = workspace.id
 
 @description('Name of the deployed Log Analytics workspace')
-output AZURE_LOG_ANALYTICS_WORKSPACE_NAME string = logAnalyticsWorkspace.name
+output AZURE_LOG_ANALYTICS_WORKSPACE_NAME string = workspace.name
 
-resource diagnosticSettings 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
-  name: '${logAnalyticsWorkspace.name}-diag'
-  scope: logAnalyticsWorkspace
+resource alertsSA 'Microsoft.OperationalInsights/workspaces/linkedstorageaccounts@2025-02-01' = {
+  parent: workspace
+  name: 'Alerts'
   properties: {
-    workspaceId: logAnalyticsWorkspace.id
-    storageAccountId: logsStorageAccount.id
+    storageAccountIds: [
+      logsSA.id
+    ]
+  }
+}
+
+resource querySA 'Microsoft.OperationalInsights/workspaces/linkedstorageaccounts@2025-02-01' = {
+  parent: workspace
+  name: 'Query'
+  properties: {
+    storageAccountIds: [
+      logsSA.id
+    ]
+  }
+}
+
+resource wspDiag 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
+  name: '${workspace.name}-diag'
+  scope: workspace
+  properties: {
+    workspaceId: workspace.id
+    storageAccountId: logsSA.id
+    logAnalyticsDestinationType: 'Dedicated'
+    logs: logsSettings
+    metrics: metricsSettings
   }
 }

@@ -16,6 +16,20 @@ param location string = resourceGroup().location
 @description('Resource tags applied to all monitoring resources.')
 param tags object
 
+var allLogsSettings = [
+  {
+    categoryGroup: 'allLogs'
+    enabled: true
+  }
+]
+
+var allMetricsSettings = [
+  {
+    categoryGroup: 'allMetrics'
+    enabled: true
+  }
+]
+
 module operational 'log-analytics-workspace.bicep' = {
   name: 'operationalDeployment'
   scope: resourceGroup()
@@ -23,6 +37,8 @@ module operational 'log-analytics-workspace.bicep' = {
     name: name
     envName: envName
     location: location
+    logsSettings: allLogsSettings
+    metricsSettings: allMetricsSettings
     tags: tags
   }
 }
@@ -48,6 +64,8 @@ module insights 'app-insights.bicep' = {
     location: location
     logAnalyticsWorkspaceId: operational.outputs.AZURE_LOG_ANALYTICS_WORKSPACE_ID
     storageAccountId: operational.outputs.LOGS_STORAGE_ACCOUNT_ID
+    logsSettings: allLogsSettings
+    metricsSettings: allMetricsSettings
     tags: tags
   }
 }

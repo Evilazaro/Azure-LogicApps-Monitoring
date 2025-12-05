@@ -21,6 +21,12 @@ param workspaceId string
 @minLength(50)
 param storageAccountId string
 
+@description('Logs settings for the Log Analytics workspace.')
+param logsSettings object[]
+
+@description('Metrics settings for the Log Analytics workspace.')
+param metricsSettings object[]
+
 @description('Connection string for Application Insights instance.')
 param appInsightsConnectionString string
 
@@ -46,7 +52,7 @@ var functionAppConfig = {
   kind: 'app,linux'
 }
 
-resource appServicePlan 'Microsoft.Web/serverfarms@2023-12-01' = {
+resource asp 'Microsoft.Web/serverfarms@2025-03-01' = {
   name: '${name}-${resourceSuffix}-apis-asp'
   location: location
   sku: {
@@ -72,7 +78,7 @@ resource appServicePlan 'Microsoft.Web/serverfarms@2023-12-01' = {
   }
 }
 
-resource functionApp 'Microsoft.Web/sites@2023-12-01' = {
+resource api 'Microsoft.Web/sites@2025-03-01' = {
   name: '${name}-${resourceSuffix}-api'
   location: location
   kind: functionAppConfig.kind
@@ -81,7 +87,7 @@ resource functionApp 'Microsoft.Web/sites@2023-12-01' = {
   }
   tags: tags
   properties: {
-    serverFarmId: appServicePlan.id
+    serverFarmId: asp.id
     reserved: appServicePlanConfig.reserved
     siteConfig: {
       linuxFxVersion: '${functionAppConfig.runtime}|${functionAppConfig.version}'
@@ -104,55 +110,34 @@ resource functionApp 'Microsoft.Web/sites@2023-12-01' = {
   }
 }
 
-resource functionAppDiagnosticSettings 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
-  name: '${functionApp.name}-diag'
-  scope: functionApp
+resource apiDiag 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
+  name: '${api.name}-diag'
+  scope: api
   properties: {
     workspaceId: workspaceId
     storageAccountId: storageAccountId
-    logs: [
-      {
-        category: 'AppServiceHTTPLogs'
-        enabled: true
-      }
-      {
-        category: 'AppServiceConsoleLogs'
-        enabled: true
-      }
-      {
-        category: 'AppServiceAppLogs'
-        enabled: true
-      }
-    ]
-    metrics: [
-      {
-        enabled: true
-        category: 'AllMetrics'
-      }
-    ]
+    logAnalyticsDestinationType: 'Dedicated'
+    logs: logsSettings
+    metrics: metricsSettings
   }
 }
 
-resource appServicePlanDiagnosticSettings 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
-  name: '${appServicePlan.name}-diag'
-  scope: appServicePlan
+resource aspDiag 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
+  name: '${asp.name}-diag'
+  scope: asp
   properties: {
     workspaceId: workspaceId
     storageAccountId: storageAccountId
-    metrics: [
-      {
-        enabled: true
-        category: 'AllMetrics'
-      }
-    ]
+    logAnalyticsDestinationType: 'Dedicated'
+    metrics: metricsSettings
   }
 }
 
 @description('Resource ID of the deployed Function App')
-output FUNCTION_APP_ID string = functionApp.id
+output FUNCTION_APP_ID string = api.id
 
 @description('Name of the deployed Function App')
-output FUNCTION_APP_NAME string = functionApp.name
+output FUNCTION_APP_NAME string = api.name
 
 @description('Default hostname of the Function App')
-output FUNCTION_APP_DEFAULT_HOSTNAME string = functionApp.properties.defaultHostName
+output FUNCTION_APP_DEFAULT_HOSTNAME string = api.properties.defaultHostName

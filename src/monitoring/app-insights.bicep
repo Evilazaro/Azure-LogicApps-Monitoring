@@ -19,10 +19,16 @@ param logAnalyticsWorkspaceId string
 @description('Resource ID of the Storage Account for the Application Insights diagnostic settings.')
 param storageAccountId string
 
+@description('Logs settings for the Log Analytics workspace.')
+param logsSettings object[]
+
+@description('Metrics settings for the Log Analytics workspace.')
+param metricsSettings object[]
+
 @description('Resource tags applied to Application Insights.')
 param tags object
 
-resource applicationInsights 'Microsoft.Insights/components@2020-02-02' = {
+resource appInsights 'Microsoft.Insights/components@2020-02-02' = {
   name: '${name}-${uniqueString(resourceGroup().id, name, envName, location)}-appinsights'
   location: location
   kind: 'web'
@@ -36,44 +42,27 @@ resource applicationInsights 'Microsoft.Insights/components@2020-02-02' = {
 }
 
 @description('Name of the deployed Application Insights instance')
-output AZURE_APPLICATION_INSIGHTS_NAME string = applicationInsights.name
+output AZURE_APPLICATION_INSIGHTS_NAME string = appInsights.name
 
 @description('Resource ID of the deployed Application Insights instance')
-output AZURE_APPLICATION_INSIGHTS_ID string = applicationInsights.id
+output AZURE_APPLICATION_INSIGHTS_ID string = appInsights.id
 
 @description('Instrumentation key for Application Insights telemetry')
 @secure()
-output AZURE_APPLICATION_INSIGHTS_INSTRUMENTATION_KEY string = applicationInsights.properties.InstrumentationKey
+output AZURE_APPLICATION_INSIGHTS_INSTRUMENTATION_KEY string = appInsights.properties.InstrumentationKey
 
 @description('Connection string for Application Insights telemetry')
 @secure()
-output AZURE_APPLICATION_INSIGHTS_CONNECTION_STRING string = applicationInsights.properties.ConnectionString
+output AZURE_APPLICATION_INSIGHTS_CONNECTION_STRING string = appInsights.properties.ConnectionString
 
-resource diagnosticSettings 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
-  name: '${applicationInsights.name}-diag'
-  scope: applicationInsights
+resource diag 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
+  name: '${appInsights.name}-diag'
+  scope: appInsights
   properties: {
     workspaceId: logAnalyticsWorkspaceId
     storageAccountId: storageAccountId
-    logs: [
-      {
-        categoryGroup: 'allLogs'
-        enabled: true
-        retentionPolicy: {
-          enabled: false
-          days: 0
-        }
-      }
-    ]
-    metrics: [
-      {
-        category: 'AllMetrics'
-        enabled: true
-        retentionPolicy: {
-          enabled: false
-          days: 0
-        }
-      }
-    ]
+    logAnalyticsDestinationType: 'Dedicated'
+    logs: logsSettings
+    metrics: metricsSettings
   }
 }
