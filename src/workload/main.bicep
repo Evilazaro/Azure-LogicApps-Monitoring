@@ -30,6 +30,20 @@ param appInsightsInstrumentationKey string
 @description('Resource tags applied to all workload resources.')
 param tags object
 
+var allLogsSettings = [
+  {
+    categoryGroup: 'allLogs'
+    enabled: true
+  }
+]
+
+var allMetricsSettings = [
+  {
+    categoryGroup: 'allMetrics'
+    enabled: true
+  }
+]
+
 module messaging 'messaging/main.bicep' = {
   name: 'messagingDeployment'
   scope: resourceGroup()
@@ -39,53 +53,55 @@ module messaging 'messaging/main.bicep' = {
     envName: envName
     storageAccountId: storageAccountId
     workspaceId: workspaceId
+    logsSettings: allLogsSettings
+    metricsSettings: allMetricsSettings
   }
 }
 
-module apis 'azure-function.bicep' = {
-  name: 'apisDeployment'
-  scope: resourceGroup()
-  params: {
-    name: name
-    envName: envName
-    location: location
-    appInsightsConnectionString: appInsightsConnectionString
-    workspaceId: workspaceId
-    storageAccountId: storageAccountId
-    tags: tags
-  }
-}
+// module apis 'azure-function.bicep' = {
+//   name: 'apisDeployment'
+//   scope: resourceGroup()
+//   params: {
+//     name: name
+//     envName: envName
+//     location: location
+//     appInsightsConnectionString: appInsightsConnectionString
+//     workspaceId: workspaceId
+//     storageAccountId: storageAccountId
+//     tags: tags
+//   }
+// }
 
-module workflows 'logic-app.bicep' = {
-  name: 'workflowsDeployment'
-  scope: resourceGroup()
-  params: {
-    name: name
-    location: location
-    envName: envName
-    workspaceId: workspaceId
-    storageAccountId: storageAccountId
-    appInsightsConnectionString: appInsightsConnectionString
-    appInsightsInstrumentationKey: appInsightsInstrumentationKey
-    workflowStorageAccountName: messaging.outputs.WORKFLOW_STORAGE_ACCOUNT_NAME
-    tags: tags
-  }
-  dependsOn: [
-    apis
-  ]
-}
+// module workflows 'logic-app.bicep' = {
+//   name: 'workflowsDeployment'
+//   scope: resourceGroup()
+//   params: {
+//     name: name
+//     location: location
+//     envName: envName
+//     workspaceId: workspaceId
+//     storageAccountId: storageAccountId
+//     appInsightsConnectionString: appInsightsConnectionString
+//     appInsightsInstrumentationKey: appInsightsInstrumentationKey
+//     workflowStorageAccountName: messaging.outputs.WORKFLOW_STORAGE_ACCOUNT_NAME
+//     tags: tags
+//   }
+//   dependsOn: [
+//     apis
+//   ]
+// }
 
-@description('Resource ID of the deployed Logic App')
-output LOGIC_APP_ID string = workflows.outputs.LOGIC_APP_ID
+// @description('Resource ID of the deployed Logic App')
+// output LOGIC_APP_ID string = workflows.outputs.LOGIC_APP_ID
 
-@description('Name of the deployed Logic App')
-output LOGIC_APP_NAME string = workflows.outputs.LOGIC_APP_NAME
+// @description('Name of the deployed Logic App')
+// output LOGIC_APP_NAME string = workflows.outputs.LOGIC_APP_NAME
 
-@description('Resource ID of the Logic App App Service Plan')
-output LOGIC_APP_SERVICE_PLAN_ID string = workflows.outputs.APP_SERVICE_PLAN_ID
+// @description('Resource ID of the Logic App App Service Plan')
+// output LOGIC_APP_SERVICE_PLAN_ID string = workflows.outputs.APP_SERVICE_PLAN_ID
 
-@description('Resource ID of the API Function App')
-output API_FUNCTION_APP_ID string = apis.outputs.FUNCTION_APP_ID
+// @description('Resource ID of the API Function App')
+// output API_FUNCTION_APP_ID string = apis.outputs.FUNCTION_APP_ID
 
-@description('Name of the API Function App')
-output API_FUNCTION_APP_NAME string = apis.outputs.FUNCTION_APP_NAME
+// @description('Name of the API Function App')
+// output API_FUNCTION_APP_NAME string = apis.outputs.FUNCTION_APP_NAME
