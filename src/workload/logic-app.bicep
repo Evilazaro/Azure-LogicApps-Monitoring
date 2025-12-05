@@ -104,9 +104,9 @@ var storageRoleIds = [
   storageRoleDefinitions.fileDataContributor
 ]
 
-resource workflowRA 'Microsoft.Authorization/roleAssignments@2022-04-01' = [
+resource workflowSaRa 'Microsoft.Authorization/roleAssignments@2022-04-01' = [
   for roleId in storageRoleIds: {
-    name: guid(workflows.id, workflows.name, roleId)
+    name: guid(app.id, app.name, roleId)
     scope: workflowSA
     properties: {
       roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', roleId)
@@ -121,7 +121,7 @@ var functionsWorkerRuntime = 'dotnet'
 var extensionBundleId = 'Microsoft.Azure.Functions.ExtensionBundle.Workflows'
 var extensionBundleVersion = '[1.*, 2.0.0)'
 
-resource workflows 'Microsoft.Web/sites@2023-12-01' = {
+resource app 'Microsoft.Web/sites@2023-12-01' = {
   name: '${name}-${resourceSuffix}-logicapp'
   location: location
   kind: 'functionapp,workflowapp'
@@ -215,9 +215,9 @@ resource workflows 'Microsoft.Web/sites@2023-12-01' = {
   }
 }
 
-resource workflowsDiag 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
-  name: '${workflows.name}-diag'
-  scope: workflows
+resource appDiag 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
+  name: '${app.name}-diag'
+  scope: app
   properties: {
     workspaceId: workspaceId
     storageAccountId: storageAccountId
@@ -237,10 +237,10 @@ resource workflowsDiag 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview
 }
 
 @description('Resource ID of the deployed Logic App')
-output LOGIC_APP_ID string = workflows.id
+output LOGIC_APP_ID string = app.id
 
 @description('Name of the deployed Logic App')
-output LOGIC_APP_NAME string = workflows.name
+output LOGIC_APP_NAME string = app.name
 
 @description('Resource ID of the App Service Plan')
 output APP_SERVICE_PLAN_ID string = asp.id
