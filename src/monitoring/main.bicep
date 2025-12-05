@@ -21,10 +21,6 @@ var allLogsSettings = [
     categoryGroup: 'allLogs'
     enabled: true
   }
-  {
-    categoryGroup: 'audit'
-    enabled: true
-  }
 ]
 
 var allMetricsSettings = [
