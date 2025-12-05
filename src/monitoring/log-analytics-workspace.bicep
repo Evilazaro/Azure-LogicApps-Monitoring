@@ -34,7 +34,7 @@ var storageConfig = {
   supportsHttpsTrafficOnly: true
 }
 
-resource logsStorageAccount 'Microsoft.Storage/storageAccounts@2025-06-01' = {
+resource logsSA 'Microsoft.Storage/storageAccounts@2025-06-01' = {
   name: logsStorageAccountName
   location: location
   sku: {
@@ -57,10 +57,43 @@ resource logsStorageAccount 'Microsoft.Storage/storageAccounts@2025-06-01' = {
 }
 
 @description('Name of the deployed storage account for logs')
-output LOGS_STORAGE_ACCOUNT_NAME string = logsStorageAccount.name
+output LOGS_STORAGE_ACCOUNT_NAME string = logsSA.name
 
 @description('Resource ID of the deployed storage account for logs')
-output LOGS_STORAGE_ACCOUNT_ID string = logsStorageAccount.id
+output LOGS_STORAGE_ACCOUNT_ID string = logsSA.id
+
+resource symbolicname 'Microsoft.Storage/storageAccounts/managementPolicies@2025-06-01' = {
+  name: 'default'
+  parent: logsSA
+  properties: {
+    policy: {
+      rules: [
+        {
+          name: 'SubscriptionLevelLifecycleRule'
+          enabled: true
+          type: 'Lifecycle'
+          definition: {
+            actions: {
+              baseBlob: {
+                delete: {
+                  daysAfterModificationGreaterThan: 30
+                }
+              }
+            }
+            filters: {
+              blobTypes: [
+                'appendBlob'
+              ]
+              prefixMatch: [
+                'insights-activity-logs/ResourceId=/SUBSCRIPTIONS/${subscription().subscriptionId}/'
+              ]
+            }
+          }
+        }
+      ]
+    }
+  }
+}
 
 resource logAnalyticsWorkspace 'Microsoft.OperationalInsights/workspaces@2025-07-01' = {
   name: '${name}-${uniqueString(resourceGroup().id, name, envName, location)}-law'
@@ -91,7 +124,7 @@ resource diag 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
   scope: logAnalyticsWorkspace
   properties: {
     workspaceId: logAnalyticsWorkspace.id
-    storageAccountId: logsStorageAccount.id
+    storageAccountId: logsSA.id
     logAnalyticsDestinationType: 'Dedicated'
     logs: logsSettings
     metrics: metricsSettings

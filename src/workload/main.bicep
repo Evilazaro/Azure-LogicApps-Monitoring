@@ -58,19 +58,21 @@ module messaging 'messaging/main.bicep' = {
   }
 }
 
-// module apis 'azure-function.bicep' = {
-//   name: 'apisDeployment'
-//   scope: resourceGroup()
-//   params: {
-//     name: name
-//     envName: envName
-//     location: location
-//     appInsightsConnectionString: appInsightsConnectionString
-//     workspaceId: workspaceId
-//     storageAccountId: storageAccountId
-//     tags: tags
-//   }
-// }
+module apis 'azure-function.bicep' = {
+  name: 'apisDeployment'
+  scope: resourceGroup()
+  params: {
+    name: name
+    envName: envName
+    location: location
+    appInsightsConnectionString: appInsightsConnectionString
+    workspaceId: workspaceId
+    storageAccountId: storageAccountId
+    logsSettings: allLogsSettings
+    metricsSettings: allMetricsSettings
+    tags: tags
+  }
+}
 
 // module workflows 'logic-app.bicep' = {
 //   name: 'workflowsDeployment'
