@@ -78,7 +78,7 @@ resource asp 'Microsoft.Web/serverfarms@2025-03-01' = {
   }
 }
 
-resource functionApp 'Microsoft.Web/sites@2025-03-01' = {
+resource api 'Microsoft.Web/sites@2025-03-01' = {
   name: '${name}-${resourceSuffix}-api'
   location: location
   kind: functionAppConfig.kind
@@ -110,9 +110,9 @@ resource functionApp 'Microsoft.Web/sites@2025-03-01' = {
   }
 }
 
-resource funcAppDiag 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
-  name: '${functionApp.name}-diag'
-  scope: functionApp
+resource apiDiag 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
+  name: '${api.name}-diag'
+  scope: api
   properties: {
     workspaceId: workspaceId
     storageAccountId: storageAccountId
@@ -134,10 +134,10 @@ resource aspDiag 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
 }
 
 @description('Resource ID of the deployed Function App')
-output FUNCTION_APP_ID string = functionApp.id
+output FUNCTION_APP_ID string = api.id
 
 @description('Name of the deployed Function App')
-output FUNCTION_APP_NAME string = functionApp.name
+output FUNCTION_APP_NAME string = api.name
 
 @description('Default hostname of the Function App')
-output FUNCTION_APP_DEFAULT_HOSTNAME string = functionApp.properties.defaultHostName
+output FUNCTION_APP_DEFAULT_HOSTNAME string = api.properties.defaultHostName

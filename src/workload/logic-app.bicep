@@ -37,7 +37,7 @@ param tags object
 
 var resourceSuffix = uniqueString(resourceGroup().id, name, envName, location)
 
-resource appServicePlan 'Microsoft.Web/serverfarms@2023-12-01' = {
+resource asp 'Microsoft.Web/serverfarms@2023-12-01' = {
   name: '${name}-${resourceSuffix}-asp'
   location: location
   sku: {
@@ -63,9 +63,9 @@ resource appServicePlan 'Microsoft.Web/serverfarms@2023-12-01' = {
   }
 }
 
-resource appServicePlanDiagnosticSettings 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
-  name: '${appServicePlan.name}-diag'
-  scope: appServicePlan
+resource aspDiag 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
+  name: '${asp.name}-diag'
+  scope: asp
   properties: {
     workspaceId: workspaceId
     storageAccountId: storageAccountId
@@ -78,13 +78,13 @@ resource appServicePlanDiagnosticSettings 'Microsoft.Insights/diagnosticSettings
   }
 }
 
-resource managedIdentity 'Microsoft.ManagedIdentity/userAssignedIdentities@2023-01-31' = {
+resource mi 'Microsoft.ManagedIdentity/userAssignedIdentities@2023-01-31' = {
   name: '${name}-${resourceSuffix}-mi'
   location: location
   tags: tags
 }
 
-resource workflowStorageAccount 'Microsoft.Storage/storageAccounts@2023-05-01' existing = {
+resource workflowSA 'Microsoft.Storage/storageAccounts@2023-05-01' existing = {
   name: workflowStorageAccountName
 }
 
@@ -104,13 +104,13 @@ var storageRoleIds = [
   storageRoleDefinitions.fileDataContributor
 ]
 
-resource storageRoleAssignments 'Microsoft.Authorization/roleAssignments@2022-04-01' = [
+resource workflowRA 'Microsoft.Authorization/roleAssignments@2022-04-01' = [
   for roleId in storageRoleIds: {
-    name: guid(logicApp.id, logicApp.name, roleId)
-    scope: workflowStorageAccount
+    name: guid(workflows.id, workflows.name, roleId)
+    scope: workflowSA
     properties: {
       roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', roleId)
-      principalId: managedIdentity.properties.principalId
+      principalId: mi.properties.principalId
       principalType: 'ServicePrincipal'
     }
   }
@@ -121,19 +121,19 @@ var functionsWorkerRuntime = 'dotnet'
 var extensionBundleId = 'Microsoft.Azure.Functions.ExtensionBundle.Workflows'
 var extensionBundleVersion = '[1.*, 2.0.0)'
 
-resource logicApp 'Microsoft.Web/sites@2023-12-01' = {
+resource workflows 'Microsoft.Web/sites@2023-12-01' = {
   name: '${name}-${resourceSuffix}-logicapp'
   location: location
   kind: 'functionapp,workflowapp'
   identity: {
     type: 'UserAssigned'
     userAssignedIdentities: {
-      '${managedIdentity.id}': {}
+      '${mi.id}': {}
     }
   }
   tags: tags
   properties: {
-    serverFarmId: appServicePlan.id
+    serverFarmId: asp.id
     publicNetworkAccess: 'Enabled'
     storageAccountRequired: true
     siteConfig: {
@@ -168,7 +168,7 @@ resource logicApp 'Microsoft.Web/sites@2023-12-01' = {
         }
         {
           name: 'AzureWebJobsStorage__managedIdentityResourceId'
-          value: managedIdentity.id
+          value: mi.id
         }
         {
           name: 'APPINSIGHTS_INSTRUMENTATIONKEY'
@@ -215,9 +215,9 @@ resource logicApp 'Microsoft.Web/sites@2023-12-01' = {
   }
 }
 
-resource logicAppDiagnosticSettings 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
-  name: '${logicApp.name}-diag'
-  scope: logicApp
+resource workflowsDiag 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
+  name: '${workflows.name}-diag'
+  scope: workflows
   properties: {
     workspaceId: workspaceId
     storageAccountId: storageAccountId
@@ -237,13 +237,13 @@ resource logicAppDiagnosticSettings 'Microsoft.Insights/diagnosticSettings@2021-
 }
 
 @description('Resource ID of the deployed Logic App')
-output LOGIC_APP_ID string = logicApp.id
+output LOGIC_APP_ID string = workflows.id
 
 @description('Name of the deployed Logic App')
-output LOGIC_APP_NAME string = logicApp.name
+output LOGIC_APP_NAME string = workflows.name
 
 @description('Resource ID of the App Service Plan')
-output APP_SERVICE_PLAN_ID string = appServicePlan.id
+output APP_SERVICE_PLAN_ID string = asp.id
 
 @description('Name of the App Service Plan')
-output APP_SERVICE_PLAN_NAME string = appServicePlan.name
+output APP_SERVICE_PLAN_NAME string = asp.name

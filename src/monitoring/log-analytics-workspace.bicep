@@ -95,7 +95,7 @@ resource maPolicy 'Microsoft.Storage/storageAccounts/managementPolicies@2025-06-
   }
 }
 
-resource logAnalyticsWorkspace 'Microsoft.OperationalInsights/workspaces@2025-07-01' = {
+resource workspace 'Microsoft.OperationalInsights/workspaces@2025-07-01' = {
   name: '${name}-${uniqueString(resourceGroup().id, name, envName, location)}-law'
   location: location
   identity: {
@@ -114,13 +114,13 @@ resource logAnalyticsWorkspace 'Microsoft.OperationalInsights/workspaces@2025-07
 }
 
 @description('Resource ID of the deployed Log Analytics workspace')
-output AZURE_LOG_ANALYTICS_WORKSPACE_ID string = logAnalyticsWorkspace.id
+output AZURE_LOG_ANALYTICS_WORKSPACE_ID string = workspace.id
 
 @description('Name of the deployed Log Analytics workspace')
-output AZURE_LOG_ANALYTICS_WORKSPACE_NAME string = logAnalyticsWorkspace.name
+output AZURE_LOG_ANALYTICS_WORKSPACE_NAME string = workspace.name
 
 resource alertsSA 'Microsoft.OperationalInsights/workspaces/linkedstorageaccounts@2025-02-01' = {
-  parent: logAnalyticsWorkspace
+  parent: workspace
   name: 'Alerts'
   properties: {
     storageAccountIds: [
@@ -130,7 +130,7 @@ resource alertsSA 'Microsoft.OperationalInsights/workspaces/linkedstorageaccount
 }
 
 resource querySA 'Microsoft.OperationalInsights/workspaces/linkedstorageaccounts@2025-02-01' = {
-  parent: logAnalyticsWorkspace
+  parent: workspace
   name: 'Query'
   properties: {
     storageAccountIds: [
@@ -139,11 +139,11 @@ resource querySA 'Microsoft.OperationalInsights/workspaces/linkedstorageaccounts
   }
 }
 
-resource diag 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
-  name: '${logAnalyticsWorkspace.name}-diag'
-  scope: logAnalyticsWorkspace
+resource wspDiag 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
+  name: '${workspace.name}-diag'
+  scope: workspace
   properties: {
-    workspaceId: logAnalyticsWorkspace.id
+    workspaceId: workspace.id
     storageAccountId: logsSA.id
     logAnalyticsDestinationType: 'Dedicated'
     logs: logsSettings

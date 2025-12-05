@@ -69,14 +69,14 @@ resource workflowPersistence 'Microsoft.Storage/storageAccounts@2025-06-01' = {
   }
 }
 
-resource queueServices 'Microsoft.Storage/storageAccounts/queueServices@2025-06-01' = {
+resource qeueSvc 'Microsoft.Storage/storageAccounts/queueServices@2025-06-01' = {
   name: 'default'
   parent: workflowPersistence
 }
 
-resource taxProcessingQueue 'Microsoft.Storage/storageAccounts/queueServices/queues@2025-06-01' = {
+resource queue 'Microsoft.Storage/storageAccounts/queueServices/queues@2025-06-01' = {
   name: queueName
-  parent: queueServices
+  parent: qeueSvc
 }
 
 resource storageDiag 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
@@ -90,9 +90,9 @@ resource storageDiag 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' 
   }
 }
 
-resource diag 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
-  name: '${taxProcessingQueue.name}-diag'
-  scope: queueServices
+resource queueDiag 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
+  name: '${queue.name}-diag'
+  scope: qeueSvc
   properties: {
     workspaceId: workspaceId
     storageAccountId: storageAccountId
