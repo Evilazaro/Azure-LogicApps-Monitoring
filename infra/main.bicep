@@ -58,20 +58,20 @@ module monitoring '../src/monitoring/main.bicep' = {
   }
 }
 
-// module workload '../src/workload/main.bicep' = {
-//   name: 'workloadDeployment'
-//   scope: resourceGroup(resourceGroupName)
-//   params: {
-//     name: solutionName
-//     location: location
-//     envName: envName
-//     workspaceId: monitoring.outputs.AZURE_LOG_ANALYTICS_WORKSPACE_ID
-//     storageAccountId: monitoring.outputs.LOGS_STORAGE_ACCOUNT_ID
-//     appInsightsConnectionString: monitoring.outputs.AZURE_APPLICATION_INSIGHTS_CONNECTION_STRING
-//     appInsightsInstrumentationKey: monitoring.outputs.AZURE_APPLICATION_INSIGHTS_INSTRUMENTATION_KEY
-//     tags: tags
-//   }
-// }
+module workload '../src/workload/main.bicep' = {
+  name: 'workloadDeployment'
+  scope: resourceGroup(resourceGroupName)
+  params: {
+    name: solutionName
+    location: location
+    envName: envName
+    workspaceId: monitoring.outputs.AZURE_LOG_ANALYTICS_WORKSPACE_ID
+    storageAccountId: monitoring.outputs.LOGS_STORAGE_ACCOUNT_ID
+    appInsightsConnectionString: monitoring.outputs.AZURE_APPLICATION_INSIGHTS_CONNECTION_STRING
+    appInsightsInstrumentationKey: monitoring.outputs.AZURE_APPLICATION_INSIGHTS_INSTRUMENTATION_KEY
+    tags: tags
+  }
+}
 
 // @description('Name of the deployed resource group')
 // output RESOURCE_GROUP_NAME string = resourceGroupName
