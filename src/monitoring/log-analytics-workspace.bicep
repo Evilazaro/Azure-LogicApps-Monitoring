@@ -86,7 +86,7 @@ output AZURE_LOG_ANALYTICS_WORKSPACE_ID string = logAnalyticsWorkspace.id
 @description('Name of the deployed Log Analytics workspace')
 output AZURE_LOG_ANALYTICS_WORKSPACE_NAME string = logAnalyticsWorkspace.name
 
-resource diagnosticSettings 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
+resource diag 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
   name: '${logAnalyticsWorkspace.name}-diag'
   scope: logAnalyticsWorkspace
   properties: {
