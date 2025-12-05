@@ -83,6 +83,8 @@ module workflows 'logic-app.bicep' = {
     envName: envName
     workspaceId: workspaceId
     storageAccountId: storageAccountId
+    logsSettings: allLogsSettings
+    metricsSettings: allMetricsSettings
     appInsightsConnectionString: appInsightsConnectionString
     appInsightsInstrumentationKey: appInsightsInstrumentationKey
     workflowStorageAccountName: messaging.outputs.WORKFLOW_STORAGE_ACCOUNT_NAME

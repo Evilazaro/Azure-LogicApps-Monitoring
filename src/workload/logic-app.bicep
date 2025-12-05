@@ -21,6 +21,12 @@ param workspaceId string
 @minLength(50)
 param storageAccountId string
 
+@description('Logs settings for the Log Analytics workspace.')
+param logsSettings object[]
+
+@description('Metrics settings for the Log Analytics workspace.')
+param metricsSettings object[]
+
 @description('Name of the existing storage account required by Logic Apps Standard.')
 @minLength(3)
 @maxLength(24)
@@ -69,12 +75,7 @@ resource aspDiag 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
   properties: {
     workspaceId: workspaceId
     storageAccountId: storageAccountId
-    metrics: [
-      {
-        enabled: true
-        category: 'AllMetrics'
-      }
-    ]
+    metrics: metricsSettings
   }
 }
 
@@ -84,7 +85,7 @@ resource mi 'Microsoft.ManagedIdentity/userAssignedIdentities@2023-01-31' = {
   tags: tags
 }
 
-resource workflowSA 'Microsoft.Storage/storageAccounts@2023-05-01' existing = {
+resource appSA 'Microsoft.Storage/storageAccounts@2023-05-01' existing = {
   name: workflowStorageAccountName
 }
 
@@ -104,10 +105,10 @@ var storageRoleIds = [
   storageRoleDefinitions.fileDataContributor
 ]
 
-resource workflowSaRa 'Microsoft.Authorization/roleAssignments@2022-04-01' = [
+resource appSaRa 'Microsoft.Authorization/roleAssignments@2022-04-01' = [
   for roleId in storageRoleIds: {
     name: guid(app.id, app.name, roleId)
-    scope: workflowSA
+    scope: appSA
     properties: {
       roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', roleId)
       principalId: mi.properties.principalId
@@ -227,12 +228,7 @@ resource appDiag 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
         enabled: true
       }
     ]
-    metrics: [
-      {
-        enabled: true
-        category: 'AllMetrics'
-      }
-    ]
+    metrics: metricsSettings
   }
 }
 

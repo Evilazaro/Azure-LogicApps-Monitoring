@@ -47,7 +47,7 @@ var storageConfig = {
   supportsHttpsTrafficOnly: true
 }
 
-resource workflowPersistence 'Microsoft.Storage/storageAccounts@2025-06-01' = {
+resource appWorkflowSA 'Microsoft.Storage/storageAccounts@2025-06-01' = {
   name: storageAccountName
   location: location
   sku: {
@@ -71,7 +71,7 @@ resource workflowPersistence 'Microsoft.Storage/storageAccounts@2025-06-01' = {
 
 resource qeueSvc 'Microsoft.Storage/storageAccounts/queueServices@2025-06-01' = {
   name: 'default'
-  parent: workflowPersistence
+  parent: appWorkflowSA
 }
 
 resource queue 'Microsoft.Storage/storageAccounts/queueServices/queues@2025-06-01' = {
@@ -80,8 +80,8 @@ resource queue 'Microsoft.Storage/storageAccounts/queueServices/queues@2025-06-0
 }
 
 resource storageDiag 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
-  name: '${workflowPersistence.name}-diag'
-  scope: workflowPersistence
+  name: '${appWorkflowSA.name}-diag'
+  scope: appWorkflowSA
   properties: {
     workspaceId: workspaceId
     storageAccountId: storageAccountId
@@ -92,17 +92,18 @@ resource storageDiag 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' 
 
 resource queueDiag 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
   name: '${queue.name}-diag'
-  scope: qeueSvc
+  scope: queue
   properties: {
     workspaceId: workspaceId
     storageAccountId: storageAccountId
+    logAnalyticsDestinationType: 'Dedicated'
     logs: logsSettings
     metrics: metricsSettings
   }
 }
 
 @description('Name of the deployed storage account')
-output WORKFLOW_STORAGE_ACCOUNT_NAME string = workflowPersistence.name
+output WORKFLOW_STORAGE_ACCOUNT_NAME string = appWorkflowSA.name
 
 @description('Resource ID of the deployed storage account')
-output WORKFLOW_STORAGE_ACCOUNT_ID string = workflowPersistence.id
+output WORKFLOW_STORAGE_ACCOUNT_ID string = appWorkflowSA.id
