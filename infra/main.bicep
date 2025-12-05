@@ -73,43 +73,43 @@ module workload '../src/workload/main.bicep' = {
   }
 }
 
-// @description('Name of the deployed resource group')
-// output RESOURCE_GROUP_NAME string = resourceGroupName
+@description('Name of the deployed resource group')
+output RESOURCE_GROUP_NAME string = resourceGroupName
 
-// @description('Resource ID of the deployed resource group')
-// output RESOURCE_GROUP_ID string = rg.id
+@description('Resource ID of the deployed resource group')
+output RESOURCE_GROUP_ID string = rg.id
 
-// @description('Resource ID of the Log Analytics workspace')
-// output AZURE_LOG_ANALYTICS_WORKSPACE_ID string = monitoring.outputs.AZURE_LOG_ANALYTICS_WORKSPACE_ID
+@description('Resource ID of the Log Analytics workspace')
+output AZURE_LOG_ANALYTICS_WORKSPACE_ID string = monitoring.outputs.AZURE_LOG_ANALYTICS_WORKSPACE_ID
 
-// @description('Name of the Log Analytics workspace')
-// output AZURE_LOG_ANALYTICS_WORKSPACE_NAME string = monitoring.outputs.AZURE_LOG_ANALYTICS_WORKSPACE_NAME
+@description('Name of the Log Analytics workspace')
+output AZURE_LOG_ANALYTICS_WORKSPACE_NAME string = monitoring.outputs.AZURE_LOG_ANALYTICS_WORKSPACE_NAME
 
-// @description('Name of the Application Insights instance')
-// output AZURE_APPLICATION_INSIGHTS_NAME string = monitoring.outputs.AZURE_APPLICATION_INSIGHTS_NAME
+@description('Name of the Application Insights instance')
+output AZURE_APPLICATION_INSIGHTS_NAME string = monitoring.outputs.AZURE_APPLICATION_INSIGHTS_NAME
 
-// @description('Resource ID of the Application Insights instance')
-// output AZURE_APPLICATION_INSIGHTS_ID string = monitoring.outputs.AZURE_APPLICATION_INSIGHTS_ID
+@description('Resource ID of the Application Insights instance')
+output AZURE_APPLICATION_INSIGHTS_ID string = monitoring.outputs.AZURE_APPLICATION_INSIGHTS_ID
 
-// @description('Connection string for Application Insights')
-// @secure()
-// output AZURE_APPLICATION_INSIGHTS_CONNECTION_STRING string = monitoring.outputs.AZURE_APPLICATION_INSIGHTS_CONNECTION_STRING
+@description('Connection string for Application Insights')
+@secure()
+output AZURE_APPLICATION_INSIGHTS_CONNECTION_STRING string = monitoring.outputs.AZURE_APPLICATION_INSIGHTS_CONNECTION_STRING
 
-// @description('Instrumentation key for Application Insights')
-// @secure()
-// output AZURE_APPLICATION_INSIGHTS_INSTRUMENTATION_KEY string = monitoring.outputs.AZURE_APPLICATION_INSIGHTS_INSTRUMENTATION_KEY
+@description('Instrumentation key for Application Insights')
+@secure()
+output AZURE_APPLICATION_INSIGHTS_INSTRUMENTATION_KEY string = monitoring.outputs.AZURE_APPLICATION_INSIGHTS_INSTRUMENTATION_KEY
 
-// @description('Resource ID of the deployed Logic App')
-// output LOGIC_APP_ID string = workload.outputs.LOGIC_APP_ID
+@description('Resource ID of the deployed Logic App')
+output LOGIC_APP_ID string = workload.outputs.LOGIC_APP_ID
 
-// @description('Name of the deployed Logic App')
-// output LOGIC_APP_NAME string = workload.outputs.LOGIC_APP_NAME
+@description('Name of the deployed Logic App')
+output LOGIC_APP_NAME string = workload.outputs.LOGIC_APP_NAME
 
-// @description('Resource ID of the Logic App Service Plan')
-// output LOGIC_APP_SERVICE_PLAN_ID string = workload.outputs.LOGIC_APP_SERVICE_PLAN_ID
+@description('Resource ID of the Logic App Service Plan')
+output LOGIC_APP_SERVICE_PLAN_ID string = workload.outputs.LOGIC_APP_SERVICE_PLAN_ID
 
-// @description('Resource ID of the API Function App')
-// output API_FUNCTION_APP_ID string = workload.outputs.API_FUNCTION_APP_ID
+@description('Resource ID of the API Function App')
+output API_FUNCTION_APP_ID string = workload.outputs.API_FUNCTION_APP_ID
 
-// @description('Name of the API Function App')
-// output API_FUNCTION_APP_NAME string = workload.outputs.API_FUNCTION_APP_NAME
+@description('Name of the API Function App')
+output API_FUNCTION_APP_NAME string = workload.outputs.API_FUNCTION_APP_NAME
