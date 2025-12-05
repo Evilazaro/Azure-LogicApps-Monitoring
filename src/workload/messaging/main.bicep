@@ -69,14 +69,14 @@ resource appWorkflowSA 'Microsoft.Storage/storageAccounts@2025-06-01' = {
   }
 }
 
-resource qeueSvc 'Microsoft.Storage/storageAccounts/queueServices@2025-06-01' = {
+resource queueSvc 'Microsoft.Storage/storageAccounts/queueServices@2025-06-01' = {
   name: 'default'
   parent: appWorkflowSA
 }
 
 resource queue 'Microsoft.Storage/storageAccounts/queueServices/queues@2025-06-01' = {
   name: queueName
-  parent: qeueSvc
+  parent: queueSvc
 }
 
 resource storageDiag 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
@@ -91,8 +91,8 @@ resource storageDiag 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' 
 }
 
 resource queueDiag 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
-  name: '${queue.name}-diag'
-  scope: queue
+  name: '${queueSvc.name}-diag'
+  scope: queueSvc
   properties: {
     workspaceId: workspaceId
     storageAccountId: storageAccountId
