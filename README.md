@@ -123,47 +123,47 @@ This project configures diagnostic settings for:
 
 ```mermaid
 graph TB
-    subgraph "Azure Subscription"
-        subgraph "Resource Group: contoso-tax-docs-{env}-{region}-rg"
-            subgraph "Workload Resources"
-                LA[Logic App Standard<br/>tax-processing workflow]
-                FA[Function App API<br/>tax-docs-{hash}-api]
-                WF_SA[Storage Account Workflows<br/>tax-docs{hash}]
-                QUEUE[Storage Queue<br/>taxprocessing]
+    subgraph Azure["Azure Subscription"]
+        subgraph RG["Resource Group: contoso-tax-docs-env-region-rg"]
+            subgraph Workload["Workload Resources"]
+                LA["Logic App Standard<br/>tax-processing workflow"]
+                FA["Function App API<br/>tax-docs-hash-api"]
+                WFSA["Storage Account Workflows<br/>tax-docs-hash"]
+                QUEUE["Storage Queue<br/>taxprocessing"]
             end
             
-            subgraph "Monitoring Infrastructure"
-                LAW[Log Analytics Workspace<br/>tax-docs-{hash}-law]
-                AI[Application Insights<br/>tax-docs-{hash}-appinsights]
-                LOGS_SA[Storage Account Logs<br/>tax-docslogs{hash}]
+            subgraph Monitoring["Monitoring Infrastructure"]
+                LAW["Log Analytics Workspace<br/>tax-docs-hash-law"]
+                AI["Application Insights<br/>tax-docs-hash-appinsights"]
+                LOGSSA["Storage Account Logs<br/>tax-docslogs-hash"]
             end
             
-            ASP_WF[App Service Plan WS1<br/>tax-docs-{hash}-asp]
-            ASP_API[App Service Plan P0v3<br/>tax-docs-{hash}-apis-asp]
-            MI[Managed Identity<br/>tax-docs-{hash}-mi]
+            ASPWF["App Service Plan WS1<br/>tax-docs-hash-asp"]
+            ASPAPI["App Service Plan P0v3<br/>tax-docs-hash-apis-asp"]
+            MI["Managed Identity<br/>tax-docs-hash-mi"]
         end
     end
     
     LA -->|Application Settings:<br/>APPLICATIONINSIGHTS_CONNECTION_STRING| AI
     LA -->|Diagnostic Settings:<br/>WorkflowRuntime logs| LAW
-    LA -->|Diagnostic Settings:<br/>Archive logs| LOGS_SA
-    LA -->|Deployed to| ASP_WF
+    LA -->|Diagnostic Settings:<br/>Archive logs| LOGSSA
+    LA -->|Deployed to| ASPWF
     LA -->|System-Assigned Identity| MI
     
     FA -->|Diagnostic Settings| LAW
     FA -->|Application Settings| AI
-    FA -->|Deployed to| ASP_API
+    FA -->|Deployed to| ASPAPI
     
-    WF_SA -->|Diagnostic Settings| LAW
-    WF_SA -->|Diagnostic Settings| LOGS_SA
-    QUEUE -.->|Contained in| WF_SA
+    WFSA -->|Diagnostic Settings| LAW
+    WFSA -->|Diagnostic Settings| LOGSSA
+    QUEUE -.->|Contained in| WFSA
     
     AI -->|Workspace-Based Integration| LAW
-    AI -->|Diagnostic Settings| LOGS_SA
+    AI -->|Diagnostic Settings| LOGSSA
     
-    LAW -->|Linked Storage Account| LOGS_SA
+    LAW -->|Linked Storage Account| LOGSSA
     
-    MI -->|RBAC: Blob Data Owner,<br/>Queue Contributor| WF_SA
+    MI -->|RBAC: Blob Data Owner,<br/>Queue Contributor| WFSA
     
     style LA fill:#0078D4,color:#fff,stroke:#005A9E,stroke-width:2px
     style AI fill:#FF6C37,color:#fff,stroke:#E64A19,stroke-width:2px
