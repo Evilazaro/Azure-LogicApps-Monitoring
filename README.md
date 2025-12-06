@@ -16,12 +16,13 @@ A comprehensive, production-ready Infrastructure as Code (IaC) solution demonstr
 - Prerequisites
 - Installation & Deployment
 - Usage Examples
+- Contributing
 - License
 - References
 
 ## 🎯 Project Overview
 
-This open-source project provides a **complete monitoring infrastructure** for Azure Logic Apps Standard, addressing common observability challenges in enterprise workflow orchestration. The solution automates deployment of:
+This open-source project provides a **complete monitoring infrastructure** for Azure Logic Apps Standard, addressing common observability challenges in enterprise workflow orchestration. By leveraging Bicep templates, the solution automates the deployment of:
 
 - **Centralized Log Analytics Workspace** for unified telemetry collection
 - **Application Insights** with workspace-based integration for distributed tracing
@@ -122,48 +123,48 @@ This project configures diagnostic settings for:
 ## 🏗️ Architecture
 
 ```mermaid
-graph TB
+graph TD
     subgraph Azure["Azure Subscription"]
-        subgraph RG["Resource Group: contoso-tax-docs-env-region-rg"]
+        subgraph RG["Resource Group: contoso-tax-docs-{env}-{region}-rg"]
             subgraph Workload["Workload Resources"]
-                LA["Logic App Standard<br/>tax-processing workflow"]
-                FA["Function App API<br/>tax-docs-hash-api"]
-                WFSA["Storage Account Workflows<br/>tax-docs-hash"]
-                QUEUE["Storage Queue<br/>taxprocessing"]
+                LA[Logic App Standard<br/>tax-processing workflow]
+                FA[Function App API<br/>tax-docs-{hash}-api]
+                WF_SA[Storage Account Workflows<br/>taxdocs{hash}]
+                QUEUE[Storage Queue<br/>taxprocessing]
             end
             
             subgraph Monitoring["Monitoring Infrastructure"]
-                LAW["Log Analytics Workspace<br/>tax-docs-hash-law"]
-                AI["Application Insights<br/>tax-docs-hash-appinsights"]
-                LOGSSA["Storage Account Logs<br/>tax-docslogs-hash"]
+                LAW[Log Analytics Workspace<br/>tax-docs-{hash}-law]
+                AI[Application Insights<br/>tax-docs-{hash}-appinsights]
+                LOGS_SA[Storage Account Logs<br/>taxdocslogs{hash}]
             end
             
-            ASPWF["App Service Plan WS1<br/>tax-docs-hash-asp"]
-            ASPAPI["App Service Plan P0v3<br/>tax-docs-hash-apis-asp"]
-            MI["Managed Identity<br/>tax-docs-hash-mi"]
+            ASP_WF[App Service Plan WS1<br/>tax-docs-{hash}-asp]
+            ASP_API[App Service Plan P0v3<br/>tax-docs-{hash}-apis-asp]
+            MI[Managed Identity<br/>tax-docs-{hash}-mi]
         end
     end
     
     LA -->|Application Settings:<br/>APPLICATIONINSIGHTS_CONNECTION_STRING| AI
     LA -->|Diagnostic Settings:<br/>WorkflowRuntime logs| LAW
-    LA -->|Diagnostic Settings:<br/>Archive logs| LOGSSA
-    LA -->|Deployed to| ASPWF
-    LA -->|System-Assigned Identity| MI
+    LA -->|Diagnostic Settings:<br/>Archive logs| LOGS_SA
+    LA -->|Deployed to| ASP_WF
+    LA -->|User-Assigned Identity| MI
     
     FA -->|Diagnostic Settings| LAW
     FA -->|Application Settings| AI
-    FA -->|Deployed to| ASPAPI
+    FA -->|Deployed to| ASP_API
     
-    WFSA -->|Diagnostic Settings| LAW
-    WFSA -->|Diagnostic Settings| LOGSSA
-    QUEUE -.->|Contained in| WFSA
+    WF_SA -->|Diagnostic Settings| LAW
+    WF_SA -->|Diagnostic Settings| LOGS_SA
+    QUEUE -.->|Contained in| WF_SA
     
     AI -->|Workspace-Based Integration| LAW
-    AI -->|Diagnostic Settings| LOGSSA
+    AI -->|Diagnostic Settings| LOGS_SA
     
-    LAW -->|Linked Storage Account| LOGSSA
+    LAW -->|Linked Storage Account| LOGS_SA
     
-    MI -->|RBAC: Blob Data Owner,<br/>Queue Contributor| WFSA
+    MI -->|RBAC: Blob Data Owner,<br/>Queue Contributor,<br/>Table Contributor| WF_SA
     
     style LA fill:#0078D4,color:#fff,stroke:#005A9E,stroke-width:2px
     style AI fill:#FF6C37,color:#fff,stroke:#E64A19,stroke-width:2px
@@ -297,7 +298,7 @@ azd provision
    - Function App API
    - Storage Account for workflows (with queue)
 4. Configures diagnostic settings for all resources
-5. Assigns RBAC roles (Blob Data Owner, Queue Contributor) to Managed Identity
+5. Assigns RBAC roles (Blob Data Owner, Queue Contributor, Table Contributor) to Managed Identity
 
 **Expected Output:**
 
@@ -503,25 +504,13 @@ AzureDiagnostics
 
 **Reference**: [Azure Monitor pricing](https://azure.microsoft.com/pricing/details/monitor/)
 
+## 🤝 Contributing
+
+Contributions are welcome! Please see our Contributing Guidelines and Code of Conduct for details.
+
 ## 📄 License
 
 This project is licensed under the **MIT License** - see the LICENSE.md file for details.
-
-```
-MIT License
-
-Copyright (c) 2025 Azure-LogicApps-Monitoring Contributors
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-```
 
 ## 🔗 References
 
