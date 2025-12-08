@@ -29,7 +29,7 @@ namespace PoWebApp.Components
                 var queueServiceUri = configuration.GetConnectionString("StorageConnection:queueServiceUri");
 
                 var queueName = "orders-queue";
-
+                
                 var orderNumber = Guid.NewGuid().ToString();
                 var message = $"New order {orderNumber} placed at : {DateTime.UtcNow.ToString("o")}";
 
