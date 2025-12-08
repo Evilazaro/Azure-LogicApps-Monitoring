@@ -93,7 +93,7 @@ resource PoProcAspDiag 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview
 }
 
 resource PoProcAPI 'Microsoft.Web/sites@2025-03-01' = {
-  name: '${name}-${resourceSuffix}-processing-api'
+  name: '${name}-${resourceSuffix}-poproc-api'
   location: location
   kind: 'web,linux'
   identity: {
@@ -201,7 +201,7 @@ resource aspPoDiag 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = 
 }
 
 resource PoAPI 'Microsoft.Web/sites@2025-03-01' = {
-  name: '${name}-${resourceSuffix}--api'
+  name: '${name}-${resourceSuffix}-poapi-api'
   location: location
   kind: 'web,linux'
   identity: {
