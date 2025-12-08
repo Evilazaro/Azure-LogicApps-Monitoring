@@ -26,7 +26,7 @@ var cleanedName = toLower(replace(replace(replace(name, '-', ''), '_', ''), ' ',
 var uniqueSuffix = uniqueString(resourceGroup().id, name, envName, location)
 var logsStorageAccountName = take('${cleanedName}logs${uniqueSuffix}', 24)
 
-var saConfig = {
+var configSA = {
   sku: 'Standard_LRS'
   kind: 'StorageV2'
   accessTier: 'Hot'
@@ -34,18 +34,18 @@ var saConfig = {
   supportsHttpsTrafficOnly: true
 }
 
-resource logsSA 'Microsoft.Storage/storageAccounts@2025-06-01' = {
+resource logSA 'Microsoft.Storage/storageAccounts@2025-06-01' = {
   name: logsStorageAccountName
   location: location
   sku: {
-    name: saConfig.sku
+    name: configSA.sku
   }
-  kind: saConfig.kind
+  kind: configSA.kind
   //tags: tags
   properties: {
-    accessTier: saConfig.accessTier
-    supportsHttpsTrafficOnly: saConfig.supportsHttpsTrafficOnly
-    minimumTlsVersion: saConfig.minimumTlsVersion
+    accessTier: configSA.accessTier
+    supportsHttpsTrafficOnly: configSA.supportsHttpsTrafficOnly
+    minimumTlsVersion: configSA.minimumTlsVersion
     allowBlobPublicAccess: false
     publicNetworkAccess: 'Enabled'
     allowSharedKeyAccess: true
@@ -57,11 +57,11 @@ resource logsSA 'Microsoft.Storage/storageAccounts@2025-06-01' = {
 }
 
 @description('Resource ID of the deployed storage account for logs')
-output LOGS_STORAGE_ACCOUNT_ID string = logsSA.id
+output LOGS_STORAGE_ACCOUNT_ID string = logSA.id
 
 resource saPolicy 'Microsoft.Storage/storageAccounts/managementPolicies@2025-06-01' = {
   name: 'default'
-  parent: logsSA
+  parent: logSA
   properties: {
     policy: {
       rules: [
@@ -121,7 +121,7 @@ resource wspDiag 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
   scope: workspace
   properties: {
     workspaceId: workspace.id
-    storageAccountId: logsSA.id
+    storageAccountId: logSA.id
     logAnalyticsDestinationType: 'Dedicated'
     logs: logsSettings
     metrics: metricsSettings
@@ -133,7 +133,7 @@ resource saAlerts 'Microsoft.OperationalInsights/workspaces/linkedstorageaccount
   name: 'Alerts'
   properties: {
     storageAccountIds: [
-      logsSA.id
+      logSA.id
     ]
   }
 }
@@ -143,7 +143,7 @@ resource saQuery 'Microsoft.OperationalInsights/workspaces/linkedstorageaccounts
   name: 'Query'
   properties: {
     storageAccountIds: [
-      logsSA.id
+      logSA.id
     ]
   }
 }
