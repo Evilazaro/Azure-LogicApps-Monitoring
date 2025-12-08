@@ -1,3 +1,5 @@
+// ========== Parameters ==========
+
 @description('Base name for Service Bus namespace.')
 @minLength(3)
 @maxLength(20)
@@ -35,6 +37,8 @@ param tags object = {}
 @maxLength(63)
 param queueName string = 'taxprocessing'
 
+// ========== Variables ==========
+
 var cleanedName = toLower(replace(replace(replace(name, '-', ''), '_', ''), ' ', ''))
 var uniqueSuffix = uniqueString(resourceGroup().id, name, envName, location)
 var storageAccountName = take('${cleanedName}${uniqueSuffix}', 24)
@@ -46,6 +50,8 @@ var saConf = {
   minimumTlsVersion: 'TLS1_2'
   supportsHttpsTrafficOnly: true
 }
+
+// ========== Resources ==========
 
 resource wfSA 'Microsoft.Storage/storageAccounts@2025-06-01' = {
   name: storageAccountName
@@ -101,6 +107,8 @@ resource qDiag 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
     metrics: metricsSettings
   }
 }
+
+// ========== Outputs ==========
 
 @description('Name of the deployed storage account')
 output WORKFLOW_STORAGE_ACCOUNT_NAME string = wfSA.name

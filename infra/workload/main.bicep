@@ -1,3 +1,5 @@
+// ========== Parameters ==========
+
 @description('Base name for Logic App and App Service Plan resources.')
 @minLength(3)
 @maxLength(20)
@@ -30,6 +32,10 @@ param appInsightsInstrumentationKey string
 @description('Resource tags applied to all workload resources.')
 param tags object = {}
 
+// ========== Variables ==========
+
+// ========== Variables ==========
+
 var allLogsSettings = [
   {
     categoryGroup: 'allLogs'
@@ -44,8 +50,9 @@ var allMetricsSettings = [
   }
 ]
 
+// ========== Modules ==========
+
 module messaging 'messaging/main.bicep' = {
-  name: 'messagingDeployment'
   scope: resourceGroup()
   params: {
     name: name
@@ -59,7 +66,6 @@ module messaging 'messaging/main.bicep' = {
 }
 
 module webApp 'web-app.bicep' = {
-  name: 'webAppDeployment'
   scope: resourceGroup()
   params: {
     name: name
@@ -85,7 +91,6 @@ output PO_WEB_APP_NAME string = webApp.outputs.PO_WEB_APP_NAME
 output PO_WEB_APP_DEFAULT_HOST_NAME string = webApp.outputs.PO_WEB_APP_DEFAULT_HOST_NAME
 
 module api 'web-api.bicep' = {
-  name: 'apisDeployment'
   scope: resourceGroup()
   params: {
     name: name
@@ -111,7 +116,6 @@ output PO_PROC_API_WEB_APP_NAME string = api.outputs.PO_PROC_API_WEB_APP_NAME
 output PO_PROC_API_DEFAULT_HOST_NAME string = api.outputs.PO_PROC_API_DEFAULT_HOST_NAME
 
 module workflows 'logic-app.bicep' = {
-  name: 'workflowsDeployment'
   scope: resourceGroup()
   params: {
     name: name
@@ -119,7 +123,6 @@ module workflows 'logic-app.bicep' = {
     envName: envName
     workspaceId: workspaceId
     storageAccountId: storageAccountId
-    logsSettings: allLogsSettings
     metricsSettings: allMetricsSettings
     appInsightsConnectionString: appInsightsConnectionString
     appInsightsInstrumentationKey: appInsightsInstrumentationKey

@@ -1,3 +1,5 @@
+// ========== Parameters ==========
+
 @description('Base name for Application Insights.')
 @minLength(3)
 @maxLength(20)
@@ -19,14 +21,16 @@ param logAnalyticsWorkspaceId string
 @description('Resource ID of the Storage Account for the Application Insights diagnostic settings.')
 param storageAccountId string
 
-@description('Logs settings for the Log Analytics workspace.')
+@description('Logs settings for diagnostic configurations.')
 param logsSettings object[]
 
-@description('Metrics settings for the Log Analytics workspace.')
+@description('Metrics settings for diagnostic configurations.')
 param metricsSettings object[]
 
 @description('Resource tags applied to Application Insights.')
 param tags object = {}
+
+// ========== Resources ==========
 
 resource appInsights 'Microsoft.Insights/components@2020-02-02' = {
   name: '${name}-${uniqueString(resourceGroup().id, name, envName, location)}-appinsights'
@@ -40,6 +44,8 @@ resource appInsights 'Microsoft.Insights/components@2020-02-02' = {
     publicNetworkAccessForQuery: 'Enabled'
   }
 }
+
+// ========== Outputs ==========
 
 @description('Name of the deployed Application Insights instance')
 output AZURE_APPLICATION_INSIGHTS_NAME string = appInsights.name

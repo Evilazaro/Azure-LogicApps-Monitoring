@@ -1,3 +1,5 @@
+// ========== Parameters ==========
+
 @description('Base name for Logic App and App Service Plan resources.')
 @minLength(3)
 @maxLength(20)
@@ -36,6 +38,8 @@ param appInsightsInstrumentationKey string
 @description('Resource tags applied to all resources.')
 param tags object = {}
 
+// ========== Variables ==========
+
 var resourceSuffix = uniqueString(resourceGroup().id, name, envName, location)
 
 var aspConf = {
@@ -54,6 +58,8 @@ var appConf = {
   version: '10.0'
   kind: 'app,linux'
 }
+
+// ========== Resources ==========
 
 resource PoProcAsp 'Microsoft.Web/serverfarms@2025-03-01' = {
   name: '${name}-${resourceSuffix}-poproc-asp'
@@ -153,6 +159,8 @@ resource PoProcApiDiag 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview
     metrics: metricsSettings
   }
 }
+
+// ========== Outputs ==========
 
 @description('Resource ID of the deployed webApp App')
 output PO_PROC_API_WEB_APP_ID string = PoProcAPI.id

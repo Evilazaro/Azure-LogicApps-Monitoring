@@ -1,3 +1,5 @@
+// ========== Parameters ==========
+
 @description('Base name for Logic App and App Service Plan resources.')
 @minLength(3)
 @maxLength(20)
@@ -21,10 +23,7 @@ param workspaceId string
 @minLength(50)
 param storageAccountId string
 
-@description('Logs settings for the Log Analytics workspace.')
-param logsSettings object[]
-
-@description('Metrics settings for the Log Analytics workspace.')
+@description('Metrics settings for diagnostic configurations.')
 param metricsSettings object[]
 
 @description('Name of the existing storage account required by Logic Apps Standard.')
@@ -40,6 +39,8 @@ param appInsightsInstrumentationKey string
 
 @description('Resource tags applied to all resources.')
 param tags object = {}
+
+// ========== Variables ==========
 
 var resourceSuffix = uniqueString(resourceGroup().id, name, envName, location)
 
@@ -204,6 +205,8 @@ resource wfDiag 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
     metrics: metricsSettings
   }
 }
+
+// ========== Outputs ==========
 
 @description('Resource ID of the deployed Logic App')
 output WORKFLOW_ENGINE_ID string = workflowEngine.id

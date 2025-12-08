@@ -1,3 +1,25 @@
+// ========== Type Definitions ==========
+
+@description('Storage account configuration')
+type storageAccountConfig = {
+  @description('Storage account SKU')
+  sku: 'Standard_LRS' | 'Standard_GRS' | 'Standard_RAGRS' | 'Standard_ZRS'
+  
+  @description('Storage account kind')
+  kind: 'StorageV2' | 'BlobStorage' | 'BlockBlobStorage'
+  
+  @description('Access tier for the storage account')
+  accessTier: 'Hot' | 'Cool'
+  
+  @description('Minimum TLS version')
+  minimumTlsVersion: 'TLS1_0' | 'TLS1_1' | 'TLS1_2'
+  
+  @description('Whether HTTPS traffic only is supported')
+  supportsHttpsTrafficOnly: bool
+}
+
+// ========== Parameters ==========
+
 @description('Base name for the Log Analytics workspace.')
 @minLength(3)
 @maxLength(20)
@@ -13,14 +35,16 @@ param envName string
 @maxLength(50)
 param location string = resourceGroup().location
 
-@description('Logs settings for the Log Analytics workspace.')
+@description('Logs settings for diagnostic configurations.')
 param logsSettings object[]
 
-@description('Metrics settings for the Log Analytics workspace.')
+@description('Metrics settings for diagnostic configurations.')
 param metricsSettings object[]
 
 @description('Resource tags applied to the Log Analytics workspace.')
 param tags object = {}
+
+// ========== Variables ==========
 
 var cleanedName = toLower(replace(replace(replace(name, '-', ''), '_', ''), ' ', ''))
 var uniqueSuffix = uniqueString(resourceGroup().id, name, envName, location)
@@ -33,6 +57,8 @@ var configSA = {
   minimumTlsVersion: 'TLS1_2'
   supportsHttpsTrafficOnly: true
 }
+
+// ========== Resources ==========
 
 resource logSA 'Microsoft.Storage/storageAccounts@2025-06-01' = {
   name: logsStorageAccountName
@@ -55,6 +81,8 @@ resource logSA 'Microsoft.Storage/storageAccounts@2025-06-01' = {
     }
   }
 }
+
+// ========== Outputs ==========
 
 @description('Resource ID of the deployed storage account for logs')
 output LOGS_STORAGE_ACCOUNT_ID string = logSA.id

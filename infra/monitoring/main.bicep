@@ -1,3 +1,10 @@
+// ========== Type Definitions ==========
+
+// (Note: Diagnostic settings use object[] instead of user-defined types 
+// due to Azure Resource Provider schema requirements)
+
+// ========== Parameters ==========
+
 @description('Base name for all monitoring resources.')
 @minLength(3)
 @maxLength(20)
@@ -16,6 +23,8 @@ param location string = resourceGroup().location
 @description('Resource tags applied to all monitoring resources.')
 param tags object = {} 
 
+// ========== Variables ==========
+
 var allLogsSettings = [
   {
     categoryGroup: 'allLogs'
@@ -30,8 +39,9 @@ var allMetricsSettings = [
   }
 ]
 
+// ========== Modules ==========
+
 module operational 'log-analytics-workspace.bicep' = {
-  name: 'operationalDeployment'
   scope: resourceGroup()
   params: {
     name: name
@@ -44,7 +54,6 @@ module operational 'log-analytics-workspace.bicep' = {
 }
 
 module healthModel 'azure-monitor-health-model.bicep' = {
-  name: 'healthModelDeployment'
   scope: resourceGroup()
   params: {
     name: name
@@ -56,7 +65,6 @@ module healthModel 'azure-monitor-health-model.bicep' = {
 }
 
 module insights 'app-insights.bicep' = {
-  name: 'insightsDeployment'
   scope: resourceGroup()
   params: {
     name: name
@@ -69,6 +77,8 @@ module insights 'app-insights.bicep' = {
     tags: tags
   }
 }
+
+// ========== Outputs ==========
 
 @description('Resource ID of the Log Analytics workspace for configuring diagnostic settings')
 output AZURE_LOG_ANALYTICS_WORKSPACE_ID string = operational.outputs.AZURE_LOG_ANALYTICS_WORKSPACE_ID
