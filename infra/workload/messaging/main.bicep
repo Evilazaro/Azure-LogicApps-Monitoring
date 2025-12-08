@@ -35,7 +35,7 @@ param tags object = {}
 @description('Name of the storage queue for tax processing workflow tasks')
 @minLength(3)
 @maxLength(63)
-param queueName string = 'taxprocessing'
+param queueName string = 'orders-queue'
 
 // ========== Variables ==========
 

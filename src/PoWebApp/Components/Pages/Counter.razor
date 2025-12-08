@@ -12,8 +12,10 @@
 @code {
     private int currentCount = 0;
 
-    private void IncrementCount()
+    private async Task IncrementCount()
     {
+        var order = new Orders();
+        await order.AddOrderMessageToQueueAsync();
         currentCount++;
     }
 }

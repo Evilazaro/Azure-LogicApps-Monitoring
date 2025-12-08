@@ -10,11 +10,12 @@
       "connectionId": "APPLICATIONINSIGHTS_CONNECTION_STRING"
     },
     "storage1": {
-      "serviceConnectorResourceId": "/subscriptions/[parameters('subscriptionId')]/resourceGroups/[parameters('serviceConnectorResourceGroupName')]/providers/Microsoft.ServiceLinker/locations/eastus2/connectors/StorageConnection_055E4B7CA1, /subscriptions/6a4029ea-399b-4933-9701-436db72883d4/resourceGroups/contoso-eshop-orders-uat-eastus2-rg/providers/Microsoft.ServiceLinker/locations/eastus2/connectors/StorageConnection_A2718B22F9",
+      "serviceConnectorResourceId": "/subscriptions/[parameters('subscriptionId')]/resourceGroups/[parameters('serviceConnectorResourceGroupName')]/providers/Microsoft.ServiceLinker/locations/eastus2/connectors/StorageConnection_055E4B7CA1, /subscriptions/6a4029ea-399b-4933-9701-436db72883d4/resourceGroups/rg-eshop-orders-tax-eastus2/providers/Microsoft.ServiceLinker/locations/eastus2/connectors/StorageConnection_A2718B22F9",
       "secretStore": "LocalSecretsFile",
-      "resourceId": "/subscriptions/[parameters('subscriptionId')]/resourceGroups/[parameters('resourceGroupName')]/providers/Microsoft.Storage/storageAccounts/eshopordersap4xi6s2kv3yk",
+      "resourceId": "/subscriptions/[parameters('subscriptionId')]/resourceGroups/[parameters('resourceGroupName')]/providers/Microsoft.Storage/storageAccounts/eshopordersjpogkdwxbbpw2",
       "type": "storage.azure",
-      "connectionId": "StorageConnection"
+      "connectionId": "StorageConnection",
+      "dynamicId": null
     }
   }
 }
