@@ -75,6 +75,7 @@ module webApp 'web-app.bicep' = {
     appInsightsInstrumentationKey: appInsightsInstrumentationKey
     workspaceId: workspaceId
     storageAccountId: storageAccountId
+    workflowStorageAccountName: messaging.outputs.WORKFLOW_STORAGE_ACCOUNT_NAME
     logsSettings: allLogsSettings
     metricsSettings: allMetricsSettings
     tags: tags
@@ -130,7 +131,6 @@ module workflows 'logic-app.bicep' = {
     tags: tags
   }
   dependsOn: [
-    webApp
     api
   ]
 }
