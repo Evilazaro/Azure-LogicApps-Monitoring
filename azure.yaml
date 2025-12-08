@@ -13,5 +13,5 @@ services:
     project: ./src/PoWebApp/PoWebApp.csproj
     language: dotnet
     host: appservice
-    resourceGroup: ${AZURE_RESOURCE_GROUP_NAME}
+    resourceGroup: ${AZURE_RESOURCE_GROUP}
       
