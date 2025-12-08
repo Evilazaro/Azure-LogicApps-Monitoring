@@ -1,4 +1,6 @@
-﻿namespace PoWebApp.Components
+﻿using Azure.Storage.Queues;
+
+namespace PoWebApp.Components
 {
     public class Orders
     {
