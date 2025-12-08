@@ -28,8 +28,7 @@ var tags = {
   ManagedBy: 'Bicep'
   CostCenter: 'Engineering'
   Owner: 'Platform-Team'
-  ApplicationName: 'Tax-Docs-Proc'
-  BusinessUnit: 'Tax'
+  BusinessUnit: 'Finance'
   DeploymentDate: deploymentDate
   Repository: 'Azure-LogicApps-Monitoring'
 }
