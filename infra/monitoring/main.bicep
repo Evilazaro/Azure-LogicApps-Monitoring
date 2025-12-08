@@ -92,6 +92,3 @@ output AZURE_LOG_ANALYTICS_WORKSPACE_NAME string = operational.outputs.AZURE_LOG
 
 @description('Resource ID of the storage account for diagnostic logs and metrics')
 output LOGS_STORAGE_ACCOUNT_ID string = operational.outputs.LOGS_STORAGE_ACCOUNT_ID
-
-@description('Name of the deployed storage account for diagnostic logs and metrics')
-output LOGS_STORAGE_ACCOUNT_NAME string = operational.outputs.LOGS_STORAGE_ACCOUNT_NAME

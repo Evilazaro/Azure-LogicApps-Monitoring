@@ -56,9 +56,6 @@ resource logsSA 'Microsoft.Storage/storageAccounts@2025-06-01' = {
   }
 }
 
-@description('Name of the deployed storage account for logs')
-output LOGS_STORAGE_ACCOUNT_NAME string = logsSA.name
-
 @description('Resource ID of the deployed storage account for logs')
 output LOGS_STORAGE_ACCOUNT_ID string = logsSA.id
 
