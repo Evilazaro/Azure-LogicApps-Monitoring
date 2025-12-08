@@ -55,8 +55,8 @@ var appConf = {
   kind: 'app,linux'
 }
 
-resource PoASP 'Microsoft.Web/serverfarms@2025-03-01' = {
-  name: '${name}-${resourceSuffix}-po-asp'
+resource PoProcAsp 'Microsoft.Web/serverfarms@2025-03-01' = {
+  name: '${name}-${resourceSuffix}-poproc-asp'
   location: location
   sku: {
     name: aspConf.sku.name
@@ -81,9 +81,9 @@ resource PoASP 'Microsoft.Web/serverfarms@2025-03-01' = {
   }
 }
 
-resource aspPoDiag 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
-  name: '${PoASP.name}-diag'
-  scope: PoASP
+resource PoProcAspDiag 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
+  name: '${PoProcAsp.name}-diag'
+  scope: PoProcAsp
   properties: {
     workspaceId: workspaceId
     storageAccountId: storageAccountId
@@ -92,16 +92,16 @@ resource aspPoDiag 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = 
   }
 }
 
-resource PoWebApp 'Microsoft.Web/sites@2025-03-01' = {
-  name: '${name}-${resourceSuffix}-poapi-api'
+resource PoProcAPI 'Microsoft.Web/sites@2025-03-01' = {
+  name: '${name}-${resourceSuffix}-poproc-api'
   location: location
   kind: 'web,linux'
   identity: {
     type: 'SystemAssigned'
   }
-  tags: union(tags, { 'azd-service-name': 'PoWebApp' })
+  tags: union(tags, { 'azd-service-name': 'PoProcAPI' })
   properties: {
-    serverFarmId: PoASP.id
+    serverFarmId: PoProcAsp.id
     reserved: aspConf.reserved
     siteConfig: {
       linuxFxVersion: '${appConf.runtime}|${appConf.version}'
@@ -120,9 +120,9 @@ resource PoWebApp 'Microsoft.Web/sites@2025-03-01' = {
   }
 }
 
-resource PoConf 'Microsoft.Web/sites/config@2025-03-01' = {
+resource PoProcConf 'Microsoft.Web/sites/config@2025-03-01' = {
   name: 'appsettings'
-  parent: PoWebApp
+  parent: PoProcAPI
   properties: {
     APPINSIGHTS_INSTRUMENTATIONKEY: appInsightsInstrumentationKey
     APPINSIGHTS_PROFILERFEATURE_VERSION: '1.0.0'
@@ -142,9 +142,9 @@ resource PoConf 'Microsoft.Web/sites/config@2025-03-01' = {
   }
 }
 
-resource Po_WEBDiag 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
-  name: '${PoWebApp.name}-diag'
-  scope: PoWebApp
+resource PoProcApiDiag 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
+  name: '${PoProcAPI.name}-diag'
+  scope: PoProcAPI
   properties: {
     workspaceId: workspaceId
     storageAccountId: storageAccountId
@@ -155,10 +155,10 @@ resource Po_WEBDiag 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' =
 }
 
 @description('Resource ID of the deployed webApp App')
-output PO_WEB_APP_ID string = PoWebApp.id
+output PO_PROC_API_WEB_APP_ID string = PoProcAPI.id
 
 @description('Name of the deployed webApp App')
-output PO_WEB_APP_NAME string = PoWebApp.name
+output PO_PROC_API_WEB_APP_NAME string = PoProcAPI.name
 
 @description('Default hostname of the webApp App')
-output PO_WEB_APP_DEFAULT_HOST_NAME string = PoWebApp.properties.defaultHostName
+output PO_PROC_API_DEFAULT_HOST_NAME string = PoProcAPI.properties.defaultHostName

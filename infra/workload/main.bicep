@@ -58,7 +58,33 @@ module messaging 'messaging/main.bicep' = {
   }
 }
 
-module apis 'web-app.bicep' = {
+module webApp 'web-app.bicep' = {
+  name: 'webAppDeployment'
+  scope: resourceGroup()
+  params: {
+    name: name
+    envName: envName
+    location: location
+    appInsightsConnectionString: appInsightsConnectionString
+    appInsightsInstrumentationKey: appInsightsInstrumentationKey
+    workspaceId: workspaceId
+    storageAccountId: storageAccountId
+    logsSettings: allLogsSettings
+    metricsSettings: allMetricsSettings
+    tags: tags
+  }
+}
+
+@description('Resource ID of the deployed webApp App')
+output PO_WEB_APP_ID string = webApp.outputs.PO_WEB_APP_ID
+
+@description('Name of the deployed webApp App')
+output PO_WEB_APP_NAME string = webApp.outputs.PO_WEB_APP_NAME
+
+@description('Default hostname of the webApp App')
+output PO_WEB_APP_DEFAULT_HOST_NAME string = webApp.outputs.PO_WEB_APP_DEFAULT_HOST_NAME
+
+module api 'web-api.bicep' = {
   name: 'apisDeployment'
   scope: resourceGroup()
   params: {
@@ -76,22 +102,13 @@ module apis 'web-app.bicep' = {
 }
 
 @description('Resource ID of the deployed webApp App')
-output PO_PROC_API_WEB_APP_ID string = apis.outputs.PO_PROC_API_WEB_APP_ID
+output PO_PROC_API_WEB_APP_ID string = api.outputs.PO_PROC_API_WEB_APP_ID
 
 @description('Name of the deployed webApp App')
-output PO_PROC_API_WEB_APP_NAME string = apis.outputs.PO_PROC_API_WEB_APP_NAME
+output PO_PROC_API_WEB_APP_NAME string = api.outputs.PO_PROC_API_WEB_APP_NAME
 
 @description('Default hostname of the webApp App')
-output PO_PROC_API_DEFAULT_HOST_NAME string = apis.outputs.PO_PROC_API_DEFAULT_HOST_NAME
-
-@description('Resource ID of the deployed webApp App')
-output PO_WEB_APP_ID string = apis.outputs.PO_WEB_APP_ID
-
-@description('Name of the deployed webApp App')
-output PO_WEB_APP_NAME string = apis.outputs.PO_WEB_APP_NAME
-
-@description('Default hostname of the webApp App')
-output PO_WEB_APP_DEFAULT_HOST_NAME string = apis.outputs.PO_WEB_APP_DEFAULT_HOST_NAME
+output PO_PROC_API_DEFAULT_HOST_NAME string = api.outputs.PO_PROC_API_DEFAULT_HOST_NAME
 
 module workflows 'logic-app.bicep' = {
   name: 'workflowsDeployment'
@@ -110,7 +127,8 @@ module workflows 'logic-app.bicep' = {
     tags: tags
   }
   dependsOn: [
-    apis
+    webApp
+    api
   ]
 }
 
