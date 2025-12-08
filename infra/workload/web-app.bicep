@@ -120,10 +120,14 @@ resource siteConfig 'Microsoft.Web/sites/config@2025-03-01' = {
     APPLICATIONINSIGHTS_ENABLESQLQUERYCOLLECTION: 'true'
     ApplicationInsightsAgent_EXTENSION_VERSION: '~3'
     DiagnosticServices_EXTENSION_VERSION: '~3'
-    DISABLE_APPINSIGHTS_SDK: 'enabled'
+    DISABLE_APPINSIGHTS_SDK: 'disabled'
     IGNORE_APPINSIGHTS_SDK: 'disabled'
-    InstrumentationEngine_EXTENSION_VERSION: 'disabled'
-    SnapshotDebugger_EXTENSION_VERSION: 'disabled'
+    InstrumentationEngine_EXTENSION_VERSION: 'enabled'
+    SnapshotDebugger_EXTENSION_VERSION: 'enabled'
+    WEBSITE_HEALTHCHECK_MAXPINGFAILURES: '5'
+    XDT_MicrosoftApplicationInsights_BaseExtensions: 'enabled'
+    XDT_MicrosoftApplicationInsights_Mode: 'recommended'
+    XDT_MicrosoftApplicationInsights_PreemptSdk: 'enabled'
   }
 }
 
