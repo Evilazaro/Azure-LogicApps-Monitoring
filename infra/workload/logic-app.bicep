@@ -51,7 +51,7 @@ resource asp 'Microsoft.Web/serverfarms@2023-12-01' = {
     tier: 'WorkflowStandard'
     size: 'WS1'
     family: 'WS'
-    capacity: 1
+    capacity: 3
   }
   kind: 'elastic'
   tags: tags
