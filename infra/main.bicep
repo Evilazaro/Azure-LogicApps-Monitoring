@@ -109,7 +109,7 @@ output LOGIC_APP_NAME string = workload.outputs.LOGIC_APP_NAME
 output LOGIC_APP_SERVICE_PLAN_ID string = workload.outputs.LOGIC_APP_SERVICE_PLAN_ID
 
 @description('Resource ID of the API Web App')
-output WEB_APP_ID string = workload.outputs.WEB_APP_ID
+output API_WEB_APP_ID string = workload.outputs.API_WEB_APP_ID
 
 @description('Name of the API Web App')
-output API_FUNCTION_APP_NAME string = workload.outputs.API_FUNCTION_APP_NAME
+output API_WEB_APP_NAME string = workload.outputs.API_WEB_APP_NAME

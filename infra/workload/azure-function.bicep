@@ -138,10 +138,10 @@ resource aspDiag 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
 }
 
 @description('Resource ID of the deployed webApp App')
-output WEB_APP_ID string = api.id
+output API_WEB_APP_ID string = api.id
 
 @description('Name of the deployed webApp App')
-output WEB_APP_NAME string = api.name
+output API_WEB_APP_NAME string = api.name
 
 @description('Default hostname of the webApp App')
 output webApp_APP_DEFAULT_HOSTNAME string = api.properties.defaultHostName
