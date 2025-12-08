@@ -1,10 +1,8 @@
 ﻿using Azure.Identity;
 using Azure.Storage.Queues;
-using Microsoft.Extensions.Configuration;
-using System.Diagnostics;
 using Microsoft.ApplicationInsights;
 using Microsoft.ApplicationInsights.DataContracts;
-using OpenTelemetry.Trace;
+using System.Diagnostics;
 
 namespace PoWebApp.Components
 {
@@ -23,7 +21,7 @@ namespace PoWebApp.Components
         public async Task<int> AddOrderMessageToQueueAsync()
         {
             using var activity = ActivitySource.StartActivity("AddOrderMessageToQueue", ActivityKind.Producer);
-            
+
             try
             {
                 var queueName = "orders-queue";
@@ -54,7 +52,7 @@ namespace PoWebApp.Components
                     for (int i = 0; i <= 500; i++)
                     {
                         using var messageActivity = ActivitySource.StartActivity("SendQueueMessage", ActivityKind.Producer);
-                        
+
                         var orderNumber = Guid.NewGuid().ToString();
                         var message = $"New order {orderNumber} placed at : {DateTime.UtcNow:o}";
 
@@ -105,13 +103,13 @@ namespace PoWebApp.Components
             {
                 activity?.SetStatus(ActivityStatusCode.Error, ex.Message);
                 activity?.AddException(ex);
-                
+
                 _telemetryClient.TrackException(ex, new Dictionary<string, string>
                 {
                     { "Operation", "AddOrderMessageToQueue" },
                     { "Component", "Orders" }
                 });
-                
+
                 throw;
             }
         }

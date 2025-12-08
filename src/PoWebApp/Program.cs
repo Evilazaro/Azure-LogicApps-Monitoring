@@ -1,9 +1,7 @@
-using Microsoft.Extensions.Azure;
-using PoWebApp.Components;
-using Azure.Identity;
+using Azure.Monitor.OpenTelemetry.AspNetCore;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
-using Azure.Monitor.OpenTelemetry.AspNetCore;
+using PoWebApp.Components;
 
 var builder = WebApplication.CreateBuilder(args);
 
