@@ -41,6 +41,12 @@ resource rg 'Microsoft.Resources/resourceGroups@2024-03-01' = {
   //tags: tags
 }
 
+@description('Name of the deployed resource group')
+output RESOURCE_GROUP_NAME string = resourceGroupName
+
+@description('Resource ID of the deployed resource group')
+output RESOURCE_GROUP_ID string = rg.id
+
 module monitoring './monitoring/main.bicep' = {
   name: 'monitoringDeployment'
   scope: rg
@@ -51,27 +57,6 @@ module monitoring './monitoring/main.bicep' = {
     location: location
   }
 }
-
-module workload './workload/main.bicep' = {
-  name: 'workloadDeployment'
-  scope: resourceGroup(resourceGroupName)
-  params: {
-    name: solutionName
-    location: location
-    envName: envName
-    workspaceId: monitoring.outputs.AZURE_LOG_ANALYTICS_WORKSPACE_ID
-    storageAccountId: monitoring.outputs.LOGS_STORAGE_ACCOUNT_ID
-    appInsightsConnectionString: monitoring.outputs.AZURE_APPLICATION_INSIGHTS_CONNECTION_STRING
-    appInsightsInstrumentationKey: monitoring.outputs.AZURE_APPLICATION_INSIGHTS_INSTRUMENTATION_KEY
-    //tags: tags
-  }
-}
-
-@description('Name of the deployed resource group')
-output RESOURCE_GROUP_NAME string = resourceGroupName
-
-@description('Resource ID of the deployed resource group')
-output RESOURCE_GROUP_ID string = rg.id
 
 @description('Resource ID of the Log Analytics workspace')
 output AZURE_LOG_ANALYTICS_WORKSPACE_ID string = monitoring.outputs.AZURE_LOG_ANALYTICS_WORKSPACE_ID
@@ -92,6 +77,21 @@ output AZURE_APPLICATION_INSIGHTS_CONNECTION_STRING string = monitoring.outputs.
 @description('Instrumentation key for Application Insights')
 @secure()
 output AZURE_APPLICATION_INSIGHTS_INSTRUMENTATION_KEY string = monitoring.outputs.AZURE_APPLICATION_INSIGHTS_INSTRUMENTATION_KEY
+
+module workload './workload/main.bicep' = {
+  name: 'workloadDeployment'
+  scope: resourceGroup(resourceGroupName)
+  params: {
+    name: solutionName
+    location: location
+    envName: envName
+    workspaceId: monitoring.outputs.AZURE_LOG_ANALYTICS_WORKSPACE_ID
+    storageAccountId: monitoring.outputs.LOGS_STORAGE_ACCOUNT_ID
+    appInsightsConnectionString: monitoring.outputs.AZURE_APPLICATION_INSIGHTS_CONNECTION_STRING
+    appInsightsInstrumentationKey: monitoring.outputs.AZURE_APPLICATION_INSIGHTS_INSTRUMENTATION_KEY
+    //tags: tags
+  }
+}
 
 @description('Resource ID of the deployed webApp App')
 output PO_PROC_API_WEB_APP_ID string = workload.outputs.PO_PROC_API_WEB_APP_ID
