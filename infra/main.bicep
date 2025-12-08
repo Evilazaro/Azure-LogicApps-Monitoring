@@ -94,13 +94,13 @@ output AZURE_APPLICATION_INSIGHTS_CONNECTION_STRING string = monitoring.outputs.
 output AZURE_APPLICATION_INSIGHTS_INSTRUMENTATION_KEY string = monitoring.outputs.AZURE_APPLICATION_INSIGHTS_INSTRUMENTATION_KEY
 
 @description('Resource ID of the deployed Logic App')
-output LOGIC_APP_ID string = workload.outputs.LOGIC_APP_ID
+output WORKFLOW_ENGINE_ID string = workload.outputs.WORKFLOW_ENGINE_ID
 
 @description('Name of the deployed Logic App')
-output LOGIC_APP_NAME string = workload.outputs.LOGIC_APP_NAME
+output WORKFLOW_ENGINE_NAME string = workload.outputs.WORKFLOW_ENGINE_NAME
 
 @description('Resource ID of the Logic App Service Plan')
-output LOGIC_APP_SERVICE_PLAN_ID string = workload.outputs.LOGIC_APP_SERVICE_PLAN_ID
+output WORKFLOW_ENGINE_SERVICE_PLAN_ID string = workload.outputs.WORKFLOW_ENGINE_SERVICE_PLAN_ID
 
 @description('Resource ID of the API Web App')
 output PO_PROC_API_WEB_APP_ID string = workload.outputs.PO_PROC_API_WEB_APP_ID

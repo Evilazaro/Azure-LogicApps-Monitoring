@@ -97,13 +97,13 @@ module workflows 'logic-app.bicep' = {
 }
 
 @description('Resource ID of the deployed Logic App')
-output LOGIC_APP_ID string = workflows.outputs.LOGIC_APP_ID
+output WORKFLOW_ENGINE_ID string = workflows.outputs.WORKFLOW_ENGINE_ID
 
 @description('Name of the deployed Logic App')
-output LOGIC_APP_NAME string = workflows.outputs.LOGIC_APP_NAME
+output WORKFLOW_ENGINE_NAME string = workflows.outputs.WORKFLOW_ENGINE_NAME
 
 @description('Resource ID of the Logic App App Service Plan')
-output LOGIC_APP_SERVICE_PLAN_ID string = workflows.outputs.APP_SERVICE_PLAN_ID
+output WORKFLOW_ENGINE_SERVICE_PLAN_ID string = workflows.outputs.WORKFLOW_ENGINE_ASP_ID
 
 @description('Resource ID of the API Web App')
 output PO_PROC_API_WEB_APP_ID string = apis.outputs.PO_PROC_API_WEB_APP_ID
