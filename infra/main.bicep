@@ -42,7 +42,7 @@ resource rg 'Microsoft.Resources/resourceGroups@2024-03-01' = {
 }
 
 @description('Name of the deployed resource group')
-output RESOURCE_GROUP_NAME string = resourceGroupName
+output AZURE_RESOURCE_GROUP_NAME string = resourceGroupName
 
 @description('Resource ID of the deployed resource group')
 output RESOURCE_GROUP_ID string = rg.id

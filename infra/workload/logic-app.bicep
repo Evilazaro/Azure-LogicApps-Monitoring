@@ -182,7 +182,7 @@ resource wfConf 'Microsoft.Web/sites/config@2025-03-01' = {
     AzureFunctionsJobHost__extensionBundle__id: extensionBundleId
     AzureFunctionsJobHost__extensionBundle__version: extensionBundleVersion
     WORKFLOWS_SUBSCRIPTION_ID: subscription().subscriptionId
-    WORKFLOWS_RESOURCE_GROUP_NAME: resourceGroup().name
+    WORKFLOWS_AZURE_RESOURCE_GROUP_NAME: resourceGroup().name
     WORKFLOWS_LOCATION_NAME: location
     WORKFLOWS_TENANT_ID: subscription().tenantId
     WORKFLOWS_MANAGEMENT_BASE_URI: environment().resourceManager
