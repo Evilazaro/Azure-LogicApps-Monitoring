@@ -8,7 +8,7 @@ infra:
   module: main
 
 services:
-  PoWebApp:
+  PoAPI:
     resourceName: ${PO_API_WEB_APP_NAME}
     project: ./src/PoWebApp/PoWebApp.csproj
     language: dotnet

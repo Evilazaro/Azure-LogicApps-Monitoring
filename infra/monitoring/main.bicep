@@ -39,7 +39,7 @@ module operational 'log-analytics-workspace.bicep' = {
     location: location
     logsSettings: allLogsSettings
     metricsSettings: allMetricsSettings
-    //tags: tags
+    tags: tags
   }
 }
 
@@ -48,7 +48,7 @@ module healthModel 'azure-monitor-health-model.bicep' = {
   scope: resourceGroup()
   params: {
     name: name
-    //tags: tags
+    tags: tags
   }
   dependsOn: [
     operational
@@ -66,7 +66,7 @@ module insights 'app-insights.bicep' = {
     storageAccountId: operational.outputs.LOGS_STORAGE_ACCOUNT_ID
     logsSettings: allLogsSettings
     metricsSettings: allMetricsSettings
-    //tags: tags
+    tags: tags
   }
 }
 

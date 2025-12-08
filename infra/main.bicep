@@ -38,7 +38,7 @@ var resourceGroupName = 'rg-${solutionName}-${envName}-${substring(location, 0, 
 resource rg 'Microsoft.Resources/resourceGroups@2025-04-01' = {
   name: resourceGroupName
   location: location
-  //tags: tags
+  tags: tags
 }
 
 @description('Name of the deployed resource group')
@@ -52,7 +52,7 @@ module monitoring './monitoring/main.bicep' = {
   scope: rg
   params: {
     name: solutionName
-    //tags: tags
+    tags: tags
     envName: envName
     location: location
   }
@@ -89,7 +89,7 @@ module workload './workload/main.bicep' = {
     storageAccountId: monitoring.outputs.LOGS_STORAGE_ACCOUNT_ID
     appInsightsConnectionString: monitoring.outputs.AZURE_APPLICATION_INSIGHTS_CONNECTION_STRING
     appInsightsInstrumentationKey: monitoring.outputs.AZURE_APPLICATION_INSIGHTS_INSTRUMENTATION_KEY
-    //tags: tags
+    tags: tags
   }
 }
 

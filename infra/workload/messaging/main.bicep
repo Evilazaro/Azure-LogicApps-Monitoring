@@ -54,7 +54,7 @@ resource wfSA 'Microsoft.Storage/storageAccounts@2025-06-01' = {
     name: saConf.sku
   }
   kind: saConf.kind
-  //tags: tags
+  tags: tags
   properties: {
     accessTier: saConf.accessTier
     supportsHttpsTrafficOnly: saConf.supportsHttpsTrafficOnly

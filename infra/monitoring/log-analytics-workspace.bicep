@@ -41,7 +41,7 @@ resource logSA 'Microsoft.Storage/storageAccounts@2025-06-01' = {
     name: configSA.sku
   }
   kind: configSA.kind
-  //tags: tags
+  tags: tags
   properties: {
     accessTier: configSA.accessTier
     supportsHttpsTrafficOnly: configSA.supportsHttpsTrafficOnly
@@ -98,7 +98,7 @@ resource workspace 'Microsoft.OperationalInsights/workspaces@2025-07-01' = {
   identity: {
     type: 'SystemAssigned'
   }
-  //tags: tags
+  tags: tags
   properties: {
     sku: {
       name: 'PerGB2018'

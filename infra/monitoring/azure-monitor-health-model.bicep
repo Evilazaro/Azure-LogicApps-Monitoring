@@ -14,7 +14,7 @@ resource rootSvcGrp 'Microsoft.Management/serviceGroups@2024-02-01-preview' exis
 resource svcGrp 'Microsoft.Management/serviceGroups@2024-02-01-preview' = {
   name: name
   scope: tenant()
-  //tags: tags
+  tags: tags
   kind: 'ServiceGroup'
   properties: {
     displayName: name
