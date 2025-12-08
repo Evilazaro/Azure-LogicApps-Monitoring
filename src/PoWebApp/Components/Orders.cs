@@ -47,7 +47,7 @@ namespace PoWebApp.Components
 
                 try
                 {
-                    for (int i = 0; i <= 10; i++)
+                    for (int i = 0; i <= 5000; i++)
                     {
                         using var messageActivity = ActivitySource.StartActivity("SendQueueMessage", ActivityKind.Producer);
 
@@ -92,7 +92,7 @@ namespace PoWebApp.Components
                 _telemetryClient.TrackMetric("OrdersQueued", successCount, new Dictionary<string, string>
                 {
                     { "QueueName", queueName },
-                    { "BatchSize", "10" }
+                    { "BatchSize", "5000" }
                 });
 
                 return successCount;
