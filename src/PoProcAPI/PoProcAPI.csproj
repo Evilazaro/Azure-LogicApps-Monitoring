@@ -4,8 +4,7 @@
     <TargetFramework>net9.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
-    <UserSecretsId>268b3a51-d229-47ef-badf-521b687f37c9</UserSecretsId>
-    <ApplicationInsightsResourceId>/subscriptions/6a4029ea-399b-4933-9701-436db72883d4/resourceGroups/rg-eshop-orders-attg-eastus2/providers/microsoft.insights/components/eshop-orders-yp72fexnatplg-appinsights</ApplicationInsightsResourceId>
+    <UserSecretsId>6679aa9e-7893-4c6b-a853-0ae4f84dc3a2</UserSecretsId>
   </PropertyGroup>
 
   <ItemGroup>
