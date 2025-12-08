@@ -9,7 +9,8 @@ infra:
 
 services:
   PoWebApp:
-    resourceName: ${ORDER_API_WEB_APP_NAME}
+    resourceName: ${PO_PO_PROC_API_WEB_APP_NAME}
     project: ./src/PoWebApp/PoWebApp.csproj
     language: dotnet
     host: appservice
+    resourceGroup: ${RESOURCE_GROUP_NAME}
