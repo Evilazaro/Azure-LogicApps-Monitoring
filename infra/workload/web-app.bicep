@@ -136,6 +136,13 @@ resource PoConf 'Microsoft.Web/sites/config@2025-03-01' = {
   name: 'appsettings'
   parent: PoWebApp
   properties: {
+    AzureWebJobsStorage__accountName: workflowStorageAccountName
+    AzureWebJobsStorage__blobServiceUri: 'https://${workflowStorageAccountName}.blob.${environment().suffixes.storage}'
+    AzureWebJobsStorage__queueServiceUri: 'https://${workflowStorageAccountName}.queue.${environment().suffixes.storage}'
+    AzureWebJobsStorage__tableServiceUri: 'https://${workflowStorageAccountName}.table.${environment().suffixes.storage}'
+    AzureWebJobsStorage__fileServiceUri: 'https://${workflowStorageAccountName}.file.${environment().suffixes.storage}'
+    AzureWebJobsStorage__credential: 'managedidentity'
+    AzureWebJobsStorage__managedIdentityResourceId: PoWebApp.identity.principalId
     APPINSIGHTS_INSTRUMENTATIONKEY: appInsightsInstrumentationKey
     APPINSIGHTS_PROFILERFEATURE_VERSION: '1.0.0'
     APPINSIGHTS_SNAPSHOTFEATURE_VERSION: '1.0.0'
@@ -151,6 +158,7 @@ resource PoConf 'Microsoft.Web/sites/config@2025-03-01' = {
     XDT_MicrosoftApplicationInsights_BaseExtensions: 'enabled'
     XDT_MicrosoftApplicationInsights_Mode: 'recommended'
     XDT_MicrosoftApplicationInsights_PreemptSdk: 'enabled'
+    AZURE_TENANT_ID: tenant().tenantId
   }
 }
 
