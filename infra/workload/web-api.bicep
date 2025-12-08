@@ -23,6 +23,9 @@ param workspaceId string
 @minLength(50)
 param storageAccountId string
 
+@description('Workflow Storage Account Name for the API App.')
+param workflowStorageAccountName string
+
 @description('Logs settings for the Log Analytics workspace.')
 param logsSettings object[]
 
@@ -147,6 +150,39 @@ resource PoProcConf 'Microsoft.Web/sites/config@2025-03-01' = {
     XDT_MicrosoftApplicationInsights_PreemptSdk: 'enabled'
   }
 }
+
+var rolDefSA = {
+  contributor: '17d1049b-9a84-46fb-8f53-869881c3d3ab'
+  blobDataOwner: 'b7e6dc6d-f1e8-4753-8033-0f276bb0955b'
+  queueDataContributor: '974c5e8b-45b9-4653-ba55-5f855dd0fb88'
+  tableDataContributor: '0a9a7e1f-b9d0-4cc4-a60d-0319b160aaa3'
+  fileDataContributor: '69566ab7-960f-475b-8e7c-b3118f30c6bd'
+}
+
+var RolIdsSA = [
+  rolDefSA.contributor
+  rolDefSA.blobDataOwner
+  rolDefSA.queueDataContributor
+  rolDefSA.tableDataContributor
+  rolDefSA.fileDataContributor
+]
+
+resource wfSA 'Microsoft.Storage/storageAccounts@2021-04-01' existing = {
+  name: workflowStorageAccountName
+  scope: resourceGroup()
+}
+
+resource wfRaSA 'Microsoft.Authorization/roleAssignments@2022-04-01' = [
+  for roleId in RolIdsSA: {
+    name: guid(PoProcAPI.id, PoProcAPI.name, roleId)
+    scope: wfSA
+    properties: {
+      roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', roleId)
+      principalId: PoProcAPI.identity.principalId
+      principalType: 'ServicePrincipal'
+    }
+  }
+]
 
 resource PoProcApiDiag 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
   name: '${PoProcAPI.name}-diag'

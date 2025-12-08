@@ -141,9 +141,7 @@ resource workflowEngine 'Microsoft.Web/sites@2023-12-01' = {
     siteConfig: {
       minimumElasticInstanceCount: 3
       elasticWebAppScaleLimit: 20
-
       autoHealEnabled: true
-
       use32BitWorkerProcess: false
       ftpsState: 'Disabled'
       minTlsVersion: '1.2'

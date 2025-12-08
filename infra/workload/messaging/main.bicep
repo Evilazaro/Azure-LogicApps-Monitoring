@@ -85,6 +85,34 @@ resource poProcQueue 'Microsoft.Storage/storageAccounts/queueServices/queues@202
   parent: qSvc
 }
 
+var rolDefSA = {
+  contributor: '17d1049b-9a84-46fb-8f53-869881c3d3ab'
+  blobDataOwner: 'b7e6dc6d-f1e8-4753-8033-0f276bb0955b'
+  queueDataContributor: '974c5e8b-45b9-4653-ba55-5f855dd0fb88'
+  tableDataContributor: '0a9a7e1f-b9d0-4cc4-a60d-0319b160aaa3'
+  fileDataContributor: '69566ab7-960f-475b-8e7c-b3118f30c6bd'
+}
+
+var RolIdsSA = [
+  rolDefSA.contributor
+  rolDefSA.blobDataOwner
+  rolDefSA.queueDataContributor
+  rolDefSA.tableDataContributor
+  rolDefSA.fileDataContributor
+]
+
+resource wfRaSA 'Microsoft.Authorization/roleAssignments@2022-04-01' = [
+  for roleId in RolIdsSA: {
+    name: guid(deployer().objectId, deployer().tenantId, roleId)
+    scope: wfSA
+    properties: {
+      roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', roleId)
+      principalId: deployer().objectId
+      principalType: 'ServicePrincipal'
+    }
+  }
+]
+
 resource saDiag 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
   name: '${wfSA.name}-diag'
   scope: wfSA
