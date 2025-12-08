@@ -99,7 +99,7 @@ resource PoProcAPI 'Microsoft.Web/sites@2025-03-01' = {
   identity: {
     type: 'SystemAssigned'
   }
-  tags: tags
+  tags: union(tags, { 'azd-service-name': 'PoProcAPI' })
   properties: {
     serverFarmId: PoProcAsp.id
     reserved: aspConf.reserved
