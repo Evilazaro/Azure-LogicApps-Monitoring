@@ -102,7 +102,7 @@ resource api 'Microsoft.Web/sites@2025-03-01' = {
       minTlsVersion: '1.2'
       http20Enabled: true
       numberOfWorkers: 3
-      healthCheckPath: '/'
+
       autoHealEnabled: true
     }
     httpsOnly: true

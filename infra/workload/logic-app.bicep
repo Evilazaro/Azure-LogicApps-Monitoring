@@ -140,7 +140,7 @@ resource workflowEngine 'Microsoft.Web/sites@2023-12-01' = {
     siteConfig: {
       minimumElasticInstanceCount: 3
       elasticWebAppScaleLimit: 20
-      healthCheckPath: '/'
+
       autoHealEnabled: true
       appSettings: [
         {
@@ -223,9 +223,7 @@ resource workflowEngine 'Microsoft.Web/sites@2023-12-01' = {
 resource wfConfig 'Microsoft.Web/sites/config@2025-03-01' = {
   name: 'appsettings'
   parent: workflowEngine
-  properties: {
-    
-  }
+  properties: {}
 }
 
 resource wfDiag 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {

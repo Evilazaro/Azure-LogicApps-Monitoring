@@ -66,6 +66,7 @@ module apis 'web-app.bicep' = {
     envName: envName
     location: location
     appInsightsConnectionString: appInsightsConnectionString
+    appInsightsInstrumentationKey: appInsightsInstrumentationKey
     workspaceId: workspaceId
     storageAccountId: storageAccountId
     logsSettings: allLogsSettings
