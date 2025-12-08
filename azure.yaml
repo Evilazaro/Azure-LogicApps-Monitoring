@@ -14,3 +14,4 @@ services:
     language: dotnet
     host: appservice
     resourceGroup: ${RESOURCE_GROUP_NAME}
+      
