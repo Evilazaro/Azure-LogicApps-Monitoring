@@ -1,3 +1,21 @@
 # yaml-language-server: $schema=https://raw.githubusercontent.com/Azure/azure-dev/main/schemas/v1.0/azure.yaml.json
 
 name: azure-logicapps-monitoring
+
+infra:
+  provider: bicep
+  path: ./infra/
+  module: main
+
+services:
+  PoWebApp:
+    project: ./src/PoWebApp/PoWebApp.csproj
+    language: dotnet
+    host: appservice
+    resourceGroup: ${AZURE_RESOURCE_GROUP}
+    
+  # PoProcAPI:
+  #   project: ./src/PoProcAPI/PoProcAPI.csproj
+  #   language: dotnet
+  #   host: appservice
+  #   resourceGroup: ${AZURE_RESOURCE_GROUP}
