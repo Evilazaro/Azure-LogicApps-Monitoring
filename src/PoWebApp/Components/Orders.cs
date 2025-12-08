@@ -22,11 +22,11 @@ namespace PoWebApp.Components
                 else
                 {
                     configuration = new ConfigurationBuilder()
-                       .AddJsonFile("appsettings.Development.json")
+                       .AddUserSecrets(assembly: typeof(PoWebApp.Components.App).Assembly)
                        .Build();
                 }
 
-                var queueServiceUri = configuration.GetConnectionString("queueServiceUri");
+                var queueServiceUri = configuration.GetConnectionString("StorageConnection:queueServiceUri");
 
                 var queueName = "orders-queue";
 
