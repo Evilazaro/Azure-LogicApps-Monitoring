@@ -7,15 +7,27 @@
 
 <p role="status">Number of Orders Placed: @currentCount</p>
 
-<button class="btn btn-primary" @onclick="IncrementCount">Place Orders</button>
+<p role="status">@errorMessage</p>
+
+<button class="btn btn-primary" @onclick="PlaceOrder">Place Orders</button>
 
 @code {
     private int currentCount = 0;
+    private string errorMessage = string.Empty;
 
-    private async Task IncrementCount()
+    private void PlaceOrder()
     {
-        var order = new Orders();
-        await order.AddOrderMessageToQueueAsync();
-        currentCount++;
+        try
+        {
+            var order = new Orders();
+            order.AddOrderMessageToQueueAsync();
+            currentCount++;
+        }
+        catch (Exception ex)
+        {
+            errorMessage = ex.Message;
+            
+        }
+        
     }
 }
