@@ -169,3 +169,5 @@ output WORKFLOW_ENGINE_ASP_ID string = workload.outputs.WORKFLOW_ENGINE_ASP_ID
 @description('Name of the App Service Plan')
 output APP_SERVICE_PLAN_NAME string = workload.outputs.APP_SERVICE_PLAN_NAME
 
+@description('Tenant ID of the environment')
+output AZURE_TENANT_ID string = tenant().tenantId

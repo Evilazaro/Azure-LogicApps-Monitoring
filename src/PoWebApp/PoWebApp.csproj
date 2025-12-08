@@ -1,23 +1,23 @@
-<Project Sdk="Microsoft.NET.Sdk.Web">
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
     <TargetFramework>net9.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
-    <ApplicationInsightsResourceId>/subscriptions/6a4029ea-399b-4933-9701-436db72883d4/resourceGroups/contoso-eshop-orders-uat-eastus2-rg/providers/microsoft.insights/components/eshop-orders-ap4xi6s2kv3yk-appinsights</ApplicationInsightsResourceId>
+    <ApplicationInsightsResourceId>/subscriptions/6a4029ea-399b-4933-9701-436db72883d4/resourceGroups/rg-eshop-orders-staging-eastus2/providers/microsoft.insights/components/eshop-orders-3kmpzhhp4jje2-appinsights</ApplicationInsightsResourceId>
     <UserSecretsId>2e421415-d467-46f9-a64c-d8b3beee7cc1</UserSecretsId>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Azure.Data.Tables" Version="12.10.0" />
-    <PackageReference Include="Azure.Identity" Version="1.13.2" />
-    <PackageReference Include="Azure.Storage.Blobs" Version="12.24.0" />
-    <PackageReference Include="Azure.Storage.Files.Shares" Version="12.22.0" />
-    <PackageReference Include="Azure.Storage.Queues" Version="12.22.0" />
+    <PackageReference Include="Azure.Data.Tables" Version="12.11.0" />
+    <PackageReference Include="Azure.Identity" Version="1.17.1" />
+    <PackageReference Include="Azure.Storage.Blobs" Version="12.26.0" />
+    <PackageReference Include="Azure.Storage.Files.Shares" Version="12.24.0" />
+    <PackageReference Include="Azure.Storage.Queues" Version="12.24.0" />
     <PackageReference Include="Microsoft.ApplicationInsights.AspNetCore" Version="2.23.0" />
-    <PackageReference Include="Microsoft.Extensions.Azure" Version="1.11.0" />
-    <PackageReference Include="Microsoft.Extensions.Configuration" Version="9.0.11" />
-    <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="9.0.11" />
+    <PackageReference Include="Microsoft.Extensions.Azure" Version="1.13.1" />
+    <PackageReference Include="Microsoft.Extensions.Configuration" Version="10.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="10.0.0" />
   </ItemGroup>
 
 </Project>
