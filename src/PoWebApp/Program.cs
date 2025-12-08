@@ -17,8 +17,9 @@ builder.Services.AddAzureClients(clientBuilder =>
     clientBuilder.AddTableServiceClient(builder.Configuration["StorageConnection:tableServiceUri"]!).WithName("StorageConnection");
 });
 
-var app = builder.Build();
+builder.Services.AddScoped<Orders>();
 
+var app = builder.Build();
 
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())

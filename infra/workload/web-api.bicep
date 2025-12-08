@@ -64,6 +64,9 @@ var appConf = {
 resource PoProcAsp 'Microsoft.Web/serverfarms@2025-03-01' = {
   name: '${name}-${resourceSuffix}-poproc-asp'
   location: location
+  identity: {
+    type: 'SystemAssigned'
+  }
   sku: {
     name: aspConf.sku.name
     tier: aspConf.sku.tier

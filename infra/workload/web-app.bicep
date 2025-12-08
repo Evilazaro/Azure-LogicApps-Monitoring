@@ -67,6 +67,9 @@ var appConf = {
 resource PoASP 'Microsoft.Web/serverfarms@2025-03-01' = {
   name: '${name}-${resourceSuffix}-po-asp'
   location: location
+  identity: {
+    type: 'SystemAssigned'
+  }
   sku: {
     name: aspConf.sku.name
     tier: aspConf.sku.tier
