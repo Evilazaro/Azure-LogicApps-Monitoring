@@ -55,7 +55,7 @@ var aspConf = {
 
 var appConf = {
   runtime: 'DOTNETCORE'
-  version: '10.0'
+  version: '9.0'
   kind: 'app,linux'
 }
 
