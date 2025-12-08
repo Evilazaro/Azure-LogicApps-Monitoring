@@ -15,11 +15,6 @@ param solutionName string = 'eshop-orders'
 param location string
 
 @description('Environment name to differentiate deployments.')
-@allowed([
-  'dev'
-  'uat'
-  'prod'
-])
 @maxLength(10)
 param envName string
 
