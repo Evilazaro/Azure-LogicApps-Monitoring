@@ -8,13 +8,11 @@ namespace PoWebApp.Components
 {
     public class Orders
     {
-        private readonly IConfiguration _configuration;
         private readonly TelemetryClient _telemetryClient;
         private static readonly ActivitySource ActivitySource = new("PoWebApp.Orders");
 
-        public Orders(IConfiguration configuration, TelemetryClient telemetryClient)
+        public Orders(TelemetryClient telemetryClient)
         {
-            _configuration = configuration;
             _telemetryClient = telemetryClient;
         }
 
@@ -25,7 +23,8 @@ namespace PoWebApp.Components
             try
             {
                 var queueName = "orders-queue";
-                var queueServiceUri = _configuration.GetValue<string>("StorageConnection:queueServiceUri");
+                var queueServiceUri = Environment.GetEnvironmentVariable("AzureWebJobsStorage__queueServiceUri");
+                var tenantId = Environment.GetEnvironmentVariable("AZURE_TENANT_ID");
                 var queueUri = new Uri($"{queueServiceUri.TrimEnd('/')}/{queueName}");
 
                 activity?.SetTag("queue.name", queueName);
@@ -33,7 +32,7 @@ namespace PoWebApp.Components
 
                 var credential = new DefaultAzureCredential(new DefaultAzureCredentialOptions
                 {
-                    TenantId = "0e2ff29e-431a-420b-8a46-c6f39106927b"
+                    TenantId = tenantId
                 });
 
                 var queueClient = new QueueClient(queueUri, credential);
@@ -49,7 +48,7 @@ namespace PoWebApp.Components
 
                 try
                 {
-                    for (int i = 0; i <= 500; i++)
+                    for (int i = 0; i <= 10; i++)
                     {
                         using var messageActivity = ActivitySource.StartActivity("SendQueueMessage", ActivityKind.Producer);
 
@@ -94,7 +93,7 @@ namespace PoWebApp.Components
                 _telemetryClient.TrackMetric("OrdersQueued", successCount, new Dictionary<string, string>
                 {
                     { "QueueName", queueName },
-                    { "BatchSize", "500" }
+                    { "BatchSize", "10" }
                 });
 
                 return successCount;
