@@ -2,7 +2,7 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Run/Debug logic app tax-docs",
+            "name": "Run/Debug logic app eshop-orders",
             "type": "coreclr",
             "request": "attach",
             "processId": "${command:azureLogicAppsStandard.pickProcess}"

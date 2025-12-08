@@ -7,7 +7,7 @@ metadata version = '1.0.0'
 @description('Base name for the solution. Used as prefix for all resource names.')
 @minLength(3)
 @maxLength(20)
-param solutionName string = 'tax-docs'
+param solutionName string = 'eshop-orders'
 
 @description('Azure region where all resources will be deployed.')
 @minLength(3)

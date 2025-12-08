@@ -58,7 +58,7 @@ module messaging 'messaging/main.bicep' = {
   }
 }
 
-module apis 'azure-function.bicep' = {
+module apis 'web-app.bicep' = {
   name: 'apisDeployment'
   scope: resourceGroup()
   params: {
