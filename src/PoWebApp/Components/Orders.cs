@@ -17,13 +17,16 @@ namespace PoWebApp.Components
                 var queueServiceUri = configuration.GetConnectionString("queueServiceUri");
 
                 var queueName = "orders-queue";
-                var message = "New order placed at " + DateTime.UtcNow.ToString("o");
+
+                var orderNumber = Guid.NewGuid().ToString();
+                var message = $"New order {orderNumber} placed at : {DateTime.UtcNow.ToString("o")}";
 
                 // Use DefaultAzureCredential for Entra ID authentication
                 var credential = new DefaultAzureCredential();
                 var queueUri = new Uri($"{queueServiceUri.TrimEnd('/')}/{queueName}");
 
                 var queueClient = new QueueClient(queueUri, credential);
+                
                 queueClient.CreateIfNotExistsAsync();
                 queueClient.SendMessageAsync(message);
             }
