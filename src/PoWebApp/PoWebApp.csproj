@@ -4,8 +4,6 @@
     <TargetFramework>net9.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
-    <ApplicationInsightsResourceId>/subscriptions/6a4029ea-399b-4933-9701-436db72883d4/resourceGroups/rg-eshop-orders-staging-eastus2/providers/microsoft.insights/components/eshop-orders-3kmpzhhp4jje2-appinsights</ApplicationInsightsResourceId>
-    <UserSecretsId>2e421415-d467-46f9-a64c-d8b3beee7cc1</UserSecretsId>
   </PropertyGroup>
 
   <ItemGroup>
