@@ -55,7 +55,7 @@ var appConfig = {
   kind: 'app,linux'
 }
 
-resource asp 'Microsoft.Web/serverfarms@2025-03-01' = {
+resource aspPoProc 'Microsoft.Web/serverfarms@2025-03-01' = {
   name: '${name}-${resourceSuffix}-apis-asp'
   location: location
   sku: {
@@ -81,8 +81,19 @@ resource asp 'Microsoft.Web/serverfarms@2025-03-01' = {
   }
 }
 
-resource api 'Microsoft.Web/sites@2025-03-01' = {
-  name: '${name}-${resourceSuffix}-api'
+resource orderPRocAspDiag 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
+  name: '${aspPoProc.name}-diag'
+  scope: aspPoProc
+  properties: {
+    workspaceId: workspaceId
+    storageAccountId: storageAccountId
+    logAnalyticsDestinationType: 'Dedicated'
+    metrics: metricsSettings
+  }
+}
+
+resource orderProcAPI 'Microsoft.Web/sites@2025-03-01' = {
+  name: '${name}-${resourceSuffix}-processing-api'
   location: location
   kind: 'web,linux'
   identity: {
@@ -90,7 +101,7 @@ resource api 'Microsoft.Web/sites@2025-03-01' = {
   }
   tags: tags
   properties: {
-    serverFarmId: asp.id
+    serverFarmId: aspPoProc.id
     reserved: aspConfig.reserved
     siteConfig: {
       linuxFxVersion: '${appConfig.runtime}|${appConfig.version}'
@@ -109,9 +120,9 @@ resource api 'Microsoft.Web/sites@2025-03-01' = {
   }
 }
 
-resource siteConfig 'Microsoft.Web/sites/config@2025-03-01' = {
+resource orderProcConfig 'Microsoft.Web/sites/config@2025-03-01' = {
   name: 'appsettings'
-  parent: api
+  parent: orderProcAPI
   properties: {
     APPINSIGHTS_INSTRUMENTATIONKEY: appInsightsInstrumentationKey
     APPINSIGHTS_PROFILERFEATURE_VERSION: '1.0.0'
@@ -131,9 +142,9 @@ resource siteConfig 'Microsoft.Web/sites/config@2025-03-01' = {
   }
 }
 
-resource apiDiag 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
-  name: '${api.name}-diag'
-  scope: api
+resource orderProcApiDiag 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
+  name: '${orderProcAPI.name}-diag'
+  scope: orderProcAPI
   properties: {
     workspaceId: workspaceId
     storageAccountId: storageAccountId
@@ -143,9 +154,44 @@ resource apiDiag 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
   }
 }
 
-resource aspDiag 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
-  name: '${asp.name}-diag'
-  scope: asp
+@description('Resource ID of the deployed webApp App')
+output API_WEB_APP_ID string = orderProcAPI.id
+
+@description('Name of the deployed webApp App')
+output API_WEB_APP_NAME string = orderProcAPI.name
+
+@description('Default hostname of the webApp App')
+output WEB_APP_DEFAULT_HOSTNAME string = orderProcAPI.properties.defaultHostName
+
+resource aspPo 'Microsoft.Web/serverfarms@2025-03-01' = {
+  name: '${name}-${resourceSuffix}-apis-asp'
+  location: location
+  sku: {
+    name: aspConfig.sku.name
+    tier: aspConfig.sku.tier
+    size: aspConfig.sku.size
+    family: aspConfig.sku.family
+    capacity: 3
+  }
+  kind: aspConfig.kind
+  tags: tags
+  properties: {
+    perSiteScaling: true
+    elasticScaleEnabled: true
+    maximumElasticWorkerCount: 3
+    isSpot: false
+    reserved: aspConfig.reserved
+    isXenon: false
+    hyperV: false
+    targetWorkerCount: 0
+    targetWorkerSizeId: 0
+    zoneRedundant: false
+  }
+}
+
+resource aspPoDiag 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
+  name: '${aspPo.name}-diag'
+  scope: aspPo
   properties: {
     workspaceId: workspaceId
     storageAccountId: storageAccountId
@@ -154,11 +200,73 @@ resource aspDiag 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
   }
 }
 
+resource PoAPI 'Microsoft.Web/sites@2025-03-01' = {
+  name: '${name}-${resourceSuffix}--api'
+  location: location
+  kind: 'web,linux'
+  identity: {
+    type: 'SystemAssigned'
+  }
+  tags: tags
+  properties: {
+    serverFarmId: aspPo.id
+    reserved: aspConfig.reserved
+    siteConfig: {
+      linuxFxVersion: '${appConfig.runtime}|${appConfig.version}'
+      alwaysOn: true
+      acrUseManagedIdentityCreds: false
+      minimumElasticInstanceCount: 3
+      elasticWebAppScaleLimit: 10
+      ftpsState: 'Disabled'
+      minTlsVersion: '1.2'
+      http20Enabled: true
+      numberOfWorkers: 3
+
+      autoHealEnabled: true
+    }
+    httpsOnly: true
+  }
+}
+
+resource PoConfig 'Microsoft.Web/sites/config@2025-03-01' = {
+  name: 'appsettings'
+  parent: PoAPI
+  properties: {
+    APPINSIGHTS_INSTRUMENTATIONKEY: appInsightsInstrumentationKey
+    APPINSIGHTS_PROFILERFEATURE_VERSION: '1.0.0'
+    APPINSIGHTS_SNAPSHOTFEATURE_VERSION: '1.0.0'
+    APPLICATIONINSIGHTS_CONNECTION_STRING: appInsightsConnectionString
+    APPLICATIONINSIGHTS_ENABLESQLQUERYCOLLECTION: 'true'
+    ApplicationInsightsAgent_EXTENSION_VERSION: '~3'
+    DiagnosticServices_EXTENSION_VERSION: '~3'
+    DISABLE_APPINSIGHTS_SDK: 'disabled'
+    IGNORE_APPINSIGHTS_SDK: 'disabled'
+    InstrumentationEngine_EXTENSION_VERSION: 'enabled'
+    SnapshotDebugger_EXTENSION_VERSION: 'enabled'
+    WEBSITE_HEALTHCHECK_MAXPINGFAILURES: '5'
+    XDT_MicrosoftApplicationInsights_BaseExtensions: 'enabled'
+    XDT_MicrosoftApplicationInsights_Mode: 'recommended'
+    XDT_MicrosoftApplicationInsights_PreemptSdk: 'enabled'
+  }
+}
+
+resource PoAPIDiag 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
+  name: '${PoAPI.name}-diag'
+  scope: PoAPI
+  properties: {
+    workspaceId: workspaceId
+    storageAccountId: storageAccountId
+    logAnalyticsDestinationType: 'Dedicated'
+    logs: logsSettings
+    metrics: metricsSettings
+  }
+}
+
 @description('Resource ID of the deployed webApp App')
-output API_WEB_APP_ID string = api.id
+output _ORDER_API_WEB_APP_ID string = PoAPI.id
 
 @description('Name of the deployed webApp App')
-output API_WEB_APP_NAME string = api.name
+output _ORDER_API_WEB_APP_NAME string = PoAPI.name
 
 @description('Default hostname of the webApp App')
-output webApp_APP_DEFAULT_HOSTNAME string = api.properties.defaultHostName
+output _ORDER_API_WEB_APP_DEFAULT_HOSTNAME string = PoAPI.properties.defaultHostName
