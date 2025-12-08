@@ -4,7 +4,8 @@ name: azure-logicapps-monitoring
 
 infra:
   provider: bicep
-  path: ./infra/main.bicep
+  path: ./infra/
+  module: main
 
 services:
   PoWebApp:
