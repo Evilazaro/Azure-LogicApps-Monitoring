@@ -144,46 +144,6 @@ resource workflowEngine 'Microsoft.Web/sites@2023-12-01' = {
       autoHealEnabled: true
       appSettings: [
         {
-          name: 'FUNCTIONS_EXTENSION_VERSION'
-          value: functionsExtensionVersion
-        }
-        {
-          name: 'FUNCTIONS_WORKER_RUNTIME'
-          value: functionsWorkerRuntime
-        }
-        {
-          name: 'AzureWebJobsStorage__accountName'
-          value: workflowStorageAccountName
-        }
-        {
-          name: 'AzureWebJobsStorage__blobServiceUri'
-          value: 'https://${workflowStorageAccountName}.blob.${environment().suffixes.storage}'
-        }
-        {
-          name: 'AzureWebJobsStorage__queueServiceUri'
-          value: 'https://${workflowStorageAccountName}.queue.${environment().suffixes.storage}'
-        }
-        {
-          name: 'AzureWebJobsStorage__tableServiceUri'
-          value: 'https://${workflowStorageAccountName}.table.${environment().suffixes.storage}'
-        }
-        {
-          name: 'AzureWebJobsStorage__credential'
-          value: 'managedidentity'
-        }
-        {
-          name: 'AzureWebJobsStorage__managedIdentityResourceId'
-          value: mi.id
-        }
-        {
-          name: 'APPINSIGHTS_INSTRUMENTATIONKEY'
-          value: appInsightsInstrumentationKey
-        }
-        {
-          name: 'APPLICATIONINSIGHTS_CONNECTION_STRING'
-          value: appInsightsConnectionString
-        }
-        {
           name: 'AzureFunctionsJobHost__extensionBundle__id'
           value: extensionBundleId
         }
@@ -223,7 +183,20 @@ resource workflowEngine 'Microsoft.Web/sites@2023-12-01' = {
 resource wfConfig 'Microsoft.Web/sites/config@2025-03-01' = {
   name: 'appsettings'
   parent: workflowEngine
-  properties: {}
+  properties: {
+    FUNCTIONS_EXTENSION_VERSION: functionsExtensionVersion
+    FUNCTIONS_WORKER_RUNTIME: functionsWorkerRuntime
+    AzureWebJobsStorage__accountName: workflowStorageAccountName
+    AzureWebJobsStorage__blobServiceUri: 'https://${workflowStorageAccountName}.blob.${environment().suffixes.storage}'
+    AzureWebJobsStorage__queueServiceUri: 'https://${workflowStorageAccountName}.queue.${environment().suffixes.storage}'
+    AzureWebJobsStorage__tableServiceUri: 'https://${workflowStorageAccountName}.table.${environment().suffixes.storage}'
+    AzureWebJobsStorage__fileServiceUri: 'https://${workflowStorageAccountName}.file.${environment().suffixes.storage}'
+    AzureWebJobsStorage__credential: 'managedidentity'
+    AzureWebJobsStorage__managedIdentityResourceId: mi.id
+    APPINSIGHTS_INSTRUMENTATIONKEY: appInsightsInstrumentationKey
+    APPLICATIONINSIGHTS_CONNECTION_STRING: appInsightsConnectionString
+    AzureFunctionsJobHost__extensionBundle__id: extensionBundleId
+  }
 }
 
 resource wfDiag 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
