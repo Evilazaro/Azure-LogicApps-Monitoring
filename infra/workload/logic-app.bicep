@@ -139,6 +139,7 @@ resource workflowEngine 'Microsoft.Web/sites@2023-12-01' = {
     publicNetworkAccess: 'Enabled'
     storageAccountRequired: true
     siteConfig: {
+      alwaysOn: true
       minimumElasticInstanceCount: 3
       elasticWebAppScaleLimit: 20
       autoHealEnabled: true

@@ -36,7 +36,6 @@ namespace PoWebApp.Components
                 });
 
                 var queueClient = new QueueClient(queueUri, credential);
-                await queueClient.CreateIfNotExistsAsync();
 
                 var successCount = 0;
                 var failureCount = 0;
