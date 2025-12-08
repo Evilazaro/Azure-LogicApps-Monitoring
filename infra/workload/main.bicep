@@ -28,7 +28,7 @@ param appInsightsConnectionString string
 param appInsightsInstrumentationKey string
 
 @description('Resource tags applied to all workload resources.')
-param tags object
+param tags object = {}
 
 var allLogsSettings = [
   {
@@ -49,7 +49,7 @@ module messaging 'messaging/main.bicep' = {
   scope: resourceGroup()
   params: {
     name: name
-    tags: tags
+    //tags: tags
     envName: envName
     storageAccountId: storageAccountId
     workspaceId: workspaceId
@@ -71,7 +71,7 @@ module apis 'web-app.bicep' = {
     storageAccountId: storageAccountId
     logsSettings: allLogsSettings
     metricsSettings: allMetricsSettings
-    tags: tags
+    //tags: tags
   }
 }
 
@@ -89,7 +89,7 @@ module workflows 'logic-app.bicep' = {
     appInsightsConnectionString: appInsightsConnectionString
     appInsightsInstrumentationKey: appInsightsInstrumentationKey
     workflowStorageAccountName: messaging.outputs.WORKFLOW_STORAGE_ACCOUNT_NAME
-    tags: tags
+    //tags: tags
   }
   dependsOn: [
     apis

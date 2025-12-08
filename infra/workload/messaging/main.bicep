@@ -28,7 +28,7 @@ param logsSettings object[]
 param metricsSettings object[]
 
 @description('Resource tags applied to Service Bus resources.')
-param tags object
+param tags object = {}
 
 @description('Name of the storage queue for tax processing workflow tasks')
 @minLength(3)
@@ -54,7 +54,7 @@ resource wfSA 'Microsoft.Storage/storageAccounts@2025-06-01' = {
     name: saConf.sku
   }
   kind: saConf.kind
-  tags: tags
+  //tags: tags
   properties: {
     accessTier: saConf.accessTier
     supportsHttpsTrafficOnly: saConf.supportsHttpsTrafficOnly

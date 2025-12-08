@@ -38,7 +38,7 @@ var resourceGroupName = 'contoso-${solutionName}-${envName}-${location}-rg'
 resource rg 'Microsoft.Resources/resourceGroups@2024-03-01' = {
   name: resourceGroupName
   location: location
-  tags: tags
+  //tags: tags
 }
 
 module monitoring './monitoring/main.bicep' = {
@@ -46,7 +46,7 @@ module monitoring './monitoring/main.bicep' = {
   scope: rg
   params: {
     name: solutionName
-    tags: tags
+    //tags: tags
     envName: envName
     location: location
   }
@@ -63,7 +63,7 @@ module workload './workload/main.bicep' = {
     storageAccountId: monitoring.outputs.LOGS_STORAGE_ACCOUNT_ID
     appInsightsConnectionString: monitoring.outputs.AZURE_APPLICATION_INSIGHTS_CONNECTION_STRING
     appInsightsInstrumentationKey: monitoring.outputs.AZURE_APPLICATION_INSIGHTS_INSTRUMENTATION_KEY
-    tags: tags
+    //tags: tags
   }
 }
 

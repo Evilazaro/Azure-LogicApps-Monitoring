@@ -26,13 +26,13 @@ param logsSettings object[]
 param metricsSettings object[]
 
 @description('Resource tags applied to Application Insights.')
-param tags object
+param tags object = {}
 
 resource appInsights 'Microsoft.Insights/components@2020-02-02' = {
   name: '${name}-${uniqueString(resourceGroup().id, name, envName, location)}-appinsights'
   location: location
   kind: 'web'
-  tags: tags
+  //tags: tags
   properties: {
     Application_Type: 'web'
     WorkspaceResourceId: logAnalyticsWorkspaceId

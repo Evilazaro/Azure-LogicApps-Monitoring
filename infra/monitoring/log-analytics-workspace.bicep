@@ -20,7 +20,7 @@ param logsSettings object[]
 param metricsSettings object[]
 
 @description('Resource tags applied to the Log Analytics workspace.')
-param tags object
+param tags object = {}
 
 var cleanedName = toLower(replace(replace(replace(name, '-', ''), '_', ''), ' ', ''))
 var uniqueSuffix = uniqueString(resourceGroup().id, name, envName, location)
@@ -41,7 +41,7 @@ resource logsSA 'Microsoft.Storage/storageAccounts@2025-06-01' = {
     name: saConfig.sku
   }
   kind: saConfig.kind
-  tags: tags
+  //tags: tags
   properties: {
     accessTier: saConfig.accessTier
     supportsHttpsTrafficOnly: saConfig.supportsHttpsTrafficOnly
@@ -98,7 +98,7 @@ resource workspace 'Microsoft.OperationalInsights/workspaces@2025-07-01' = {
   identity: {
     type: 'SystemAssigned'
   }
-  tags: tags
+  //tags: tags
   properties: {
     sku: {
       name: 'PerGB2018'

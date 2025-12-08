@@ -34,7 +34,7 @@ param appInsightsConnectionString string
 param appInsightsInstrumentationKey string
 
 @description('Resource tags applied to all resources.')
-param tags object
+param tags object = {}
 
 var resourceSuffix = uniqueString(resourceGroup().id, name, envName, location)
 
@@ -66,7 +66,7 @@ resource PoProcAsp 'Microsoft.Web/serverfarms@2025-03-01' = {
     capacity: 3
   }
   kind: aspConf.kind
-  tags: tags
+  //tags: tags
   properties: {
     perSiteScaling: true
     elasticScaleEnabled: true
@@ -99,7 +99,7 @@ resource PoProcAPI 'Microsoft.Web/sites@2025-03-01' = {
   identity: {
     type: 'SystemAssigned'
   }
-  tags: tags
+  //tags: tags
   properties: {
     serverFarmId: PoProcAsp.id
     reserved: aspConf.reserved
@@ -174,7 +174,7 @@ resource PoASP 'Microsoft.Web/serverfarms@2025-03-01' = {
     capacity: 3
   }
   kind: aspConf.kind
-  tags: tags
+  //tags: tags
   properties: {
     perSiteScaling: true
     elasticScaleEnabled: true
@@ -207,7 +207,7 @@ resource PoAPI 'Microsoft.Web/sites@2025-03-01' = {
   identity: {
     type: 'SystemAssigned'
   }
-  tags: tags
+  //tags: tags
   properties: {
     serverFarmId: PoASP.id
     reserved: aspConf.reserved

@@ -39,7 +39,7 @@ param appInsightsConnectionString string
 param appInsightsInstrumentationKey string
 
 @description('Resource tags applied to all resources.')
-param tags object
+param tags object = {}
 
 var resourceSuffix = uniqueString(resourceGroup().id, name, envName, location)
 
@@ -54,7 +54,7 @@ resource wfASP 'Microsoft.Web/serverfarms@2023-12-01' = {
     capacity: 3
   }
   kind: 'elastic'
-  tags: tags
+  //tags: tags
   properties: {
     perSiteScaling: false
     elasticScaleEnabled: true
@@ -82,7 +82,7 @@ resource wfASPDiag 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = 
 resource mi 'Microsoft.ManagedIdentity/userAssignedIdentities@2023-01-31' = {
   name: '${name}-${resourceSuffix}-mi'
   location: location
-  tags: tags
+  //tags: tags
 }
 
 resource wfSA 'Microsoft.Storage/storageAccounts@2023-05-01' existing = {
@@ -132,7 +132,7 @@ resource workflowEngine 'Microsoft.Web/sites@2023-12-01' = {
       '${mi.id}': {}
     }
   }
-  tags: tags
+  //tags: tags
   properties: {
     serverFarmId: wfASP.id
     publicNetworkAccess: 'Enabled'
