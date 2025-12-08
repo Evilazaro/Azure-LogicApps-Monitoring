@@ -43,7 +43,7 @@ param tags object
 
 var resourceSuffix = uniqueString(resourceGroup().id, name, envName, location)
 
-resource asp 'Microsoft.Web/serverfarms@2023-12-01' = {
+resource wfASP 'Microsoft.Web/serverfarms@2023-12-01' = {
   name: '${name}-${resourceSuffix}-asp'
   location: location
   sku: {
@@ -69,9 +69,9 @@ resource asp 'Microsoft.Web/serverfarms@2023-12-01' = {
   }
 }
 
-resource aspDiag 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
-  name: '${asp.name}-diag'
-  scope: asp
+resource wfASPDiag 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
+  name: '${wfASP.name}-diag'
+  scope: wfASP
   properties: {
     workspaceId: workspaceId
     storageAccountId: storageAccountId
@@ -85,11 +85,11 @@ resource mi 'Microsoft.ManagedIdentity/userAssignedIdentities@2023-01-31' = {
   tags: tags
 }
 
-resource appSA 'Microsoft.Storage/storageAccounts@2023-05-01' existing = {
+resource wfSA 'Microsoft.Storage/storageAccounts@2023-05-01' existing = {
   name: workflowStorageAccountName
 }
 
-var saRoleDefinitions = {
+var rolDefSA = {
   contributor: '17d1049b-9a84-46fb-8f53-869881c3d3ab'
   blobDataOwner: 'b7e6dc6d-f1e8-4753-8033-0f276bb0955b'
   queueDataContributor: '974c5e8b-45b9-4653-ba55-5f855dd0fb88'
@@ -97,18 +97,18 @@ var saRoleDefinitions = {
   fileDataContributor: '69566ab7-960f-475b-8e7c-b3118f30c6bd'
 }
 
-var saRoleIds = [
-  saRoleDefinitions.contributor
-  saRoleDefinitions.blobDataOwner
-  saRoleDefinitions.queueDataContributor
-  saRoleDefinitions.tableDataContributor
-  saRoleDefinitions.fileDataContributor
+var RolIdsSA = [
+  rolDefSA.contributor
+  rolDefSA.blobDataOwner
+  rolDefSA.queueDataContributor
+  rolDefSA.tableDataContributor
+  rolDefSA.fileDataContributor
 ]
 
-resource appSaRa 'Microsoft.Authorization/roleAssignments@2022-04-01' = [
-  for roleId in saRoleIds: {
+resource wfRaSA 'Microsoft.Authorization/roleAssignments@2022-04-01' = [
+  for roleId in RolIdsSA: {
     name: guid(workflowEngine.id, workflowEngine.name, roleId)
-    scope: appSA
+    scope: wfSA
     properties: {
       roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', roleId)
       principalId: mi.properties.principalId
@@ -134,7 +134,7 @@ resource workflowEngine 'Microsoft.Web/sites@2023-12-01' = {
   }
   tags: tags
   properties: {
-    serverFarmId: asp.id
+    serverFarmId: wfASP.id
     publicNetworkAccess: 'Enabled'
     storageAccountRequired: true
     siteConfig: {
@@ -151,7 +151,7 @@ resource workflowEngine 'Microsoft.Web/sites@2023-12-01' = {
   }
 }
 
-resource wfConfig 'Microsoft.Web/sites/config@2025-03-01' = {
+resource wfConf 'Microsoft.Web/sites/config@2025-03-01' = {
   name: 'appsettings'
   parent: workflowEngine
   properties: {
@@ -212,7 +212,7 @@ output LOGIC_APP_ID string = workflowEngine.id
 output LOGIC_APP_NAME string = workflowEngine.name
 
 @description('Resource ID of the App Service Plan')
-output APP_SERVICE_PLAN_ID string = asp.id
+output APP_SERVICE_PLAN_ID string = wfASP.id
 
 @description('Name of the App Service Plan')
-output APP_SERVICE_PLAN_NAME string = asp.name
+output APP_SERVICE_PLAN_NAME string = wfASP.name

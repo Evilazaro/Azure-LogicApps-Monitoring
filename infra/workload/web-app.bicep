@@ -38,7 +38,7 @@ param tags object
 
 var resourceSuffix = uniqueString(resourceGroup().id, name, envName, location)
 
-var aspConfig = {
+var aspConf = {
   sku: {
     name: 'P0v3'
     tier: 'Premium0V3'
@@ -49,30 +49,30 @@ var aspConfig = {
   reserved: true
 }
 
-var appConfig = {
+var appConf = {
   runtime: 'DOTNETCORE'
   version: '10.0'
   kind: 'app,linux'
 }
 
-resource aspPoProc 'Microsoft.Web/serverfarms@2025-03-01' = {
+resource PoProcAsp 'Microsoft.Web/serverfarms@2025-03-01' = {
   name: '${name}-${resourceSuffix}-poproc-asp'
   location: location
   sku: {
-    name: aspConfig.sku.name
-    tier: aspConfig.sku.tier
-    size: aspConfig.sku.size
-    family: aspConfig.sku.family
+    name: aspConf.sku.name
+    tier: aspConf.sku.tier
+    size: aspConf.sku.size
+    family: aspConf.sku.family
     capacity: 3
   }
-  kind: aspConfig.kind
+  kind: aspConf.kind
   tags: tags
   properties: {
     perSiteScaling: true
     elasticScaleEnabled: true
     maximumElasticWorkerCount: 3
     isSpot: false
-    reserved: aspConfig.reserved
+    reserved: aspConf.reserved
     isXenon: false
     hyperV: false
     targetWorkerCount: 0
@@ -82,8 +82,8 @@ resource aspPoProc 'Microsoft.Web/serverfarms@2025-03-01' = {
 }
 
 resource PoProcAspDiag 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
-  name: '${aspPoProc.name}-diag'
-  scope: aspPoProc
+  name: '${PoProcAsp.name}-diag'
+  scope: PoProcAsp
   properties: {
     workspaceId: workspaceId
     storageAccountId: storageAccountId
@@ -101,10 +101,10 @@ resource PoProcAPI 'Microsoft.Web/sites@2025-03-01' = {
   }
   tags: tags
   properties: {
-    serverFarmId: aspPoProc.id
-    reserved: aspConfig.reserved
+    serverFarmId: PoProcAsp.id
+    reserved: aspConf.reserved
     siteConfig: {
-      linuxFxVersion: '${appConfig.runtime}|${appConfig.version}'
+      linuxFxVersion: '${appConf.runtime}|${appConf.version}'
       alwaysOn: true
       acrUseManagedIdentityCreds: false
       minimumElasticInstanceCount: 3
@@ -120,7 +120,7 @@ resource PoProcAPI 'Microsoft.Web/sites@2025-03-01' = {
   }
 }
 
-resource PoProcConfig 'Microsoft.Web/sites/config@2025-03-01' = {
+resource PoProcConf 'Microsoft.Web/sites/config@2025-03-01' = {
   name: 'appsettings'
   parent: PoProcAPI
   properties: {
@@ -163,24 +163,24 @@ output API_WEB_APP_NAME string = PoProcAPI.name
 @description('Default hostname of the webApp App')
 output WEB_APP_DEFAULT_HOSTNAME string = PoProcAPI.properties.defaultHostName
 
-resource aspPo 'Microsoft.Web/serverfarms@2025-03-01' = {
+resource PoASP 'Microsoft.Web/serverfarms@2025-03-01' = {
   name: '${name}-${resourceSuffix}-po-asp'
   location: location
   sku: {
-    name: aspConfig.sku.name
-    tier: aspConfig.sku.tier
-    size: aspConfig.sku.size
-    family: aspConfig.sku.family
+    name: aspConf.sku.name
+    tier: aspConf.sku.tier
+    size: aspConf.sku.size
+    family: aspConf.sku.family
     capacity: 3
   }
-  kind: aspConfig.kind
+  kind: aspConf.kind
   tags: tags
   properties: {
     perSiteScaling: true
     elasticScaleEnabled: true
     maximumElasticWorkerCount: 3
     isSpot: false
-    reserved: aspConfig.reserved
+    reserved: aspConf.reserved
     isXenon: false
     hyperV: false
     targetWorkerCount: 0
@@ -190,8 +190,8 @@ resource aspPo 'Microsoft.Web/serverfarms@2025-03-01' = {
 }
 
 resource aspPoDiag 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
-  name: '${aspPo.name}-diag'
-  scope: aspPo
+  name: '${PoASP.name}-diag'
+  scope: PoASP
   properties: {
     workspaceId: workspaceId
     storageAccountId: storageAccountId
@@ -209,10 +209,10 @@ resource PoAPI 'Microsoft.Web/sites@2025-03-01' = {
   }
   tags: tags
   properties: {
-    serverFarmId: aspPo.id
-    reserved: aspConfig.reserved
+    serverFarmId: PoASP.id
+    reserved: aspConf.reserved
     siteConfig: {
-      linuxFxVersion: '${appConfig.runtime}|${appConfig.version}'
+      linuxFxVersion: '${appConf.runtime}|${appConf.version}'
       alwaysOn: true
       acrUseManagedIdentityCreds: false
       minimumElasticInstanceCount: 3
@@ -228,7 +228,7 @@ resource PoAPI 'Microsoft.Web/sites@2025-03-01' = {
   }
 }
 
-resource PoConfig 'Microsoft.Web/sites/config@2025-03-01' = {
+resource PoConf 'Microsoft.Web/sites/config@2025-03-01' = {
   name: 'appsettings'
   parent: PoAPI
   properties: {

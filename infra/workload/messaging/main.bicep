@@ -39,7 +39,7 @@ var cleanedName = toLower(replace(replace(replace(name, '-', ''), '_', ''), ' ',
 var uniqueSuffix = uniqueString(resourceGroup().id, name, envName, location)
 var storageAccountName = take('${cleanedName}${uniqueSuffix}', 24)
 
-var staConfig = {
+var saConf = {
   sku: 'Standard_LRS'
   kind: 'StorageV2'
   accessTier: 'Hot'
@@ -47,18 +47,18 @@ var staConfig = {
   supportsHttpsTrafficOnly: true
 }
 
-resource workflowSA 'Microsoft.Storage/storageAccounts@2025-06-01' = {
+resource wfSA 'Microsoft.Storage/storageAccounts@2025-06-01' = {
   name: storageAccountName
   location: location
   sku: {
-    name: staConfig.sku
+    name: saConf.sku
   }
-  kind: staConfig.kind
+  kind: saConf.kind
   tags: tags
   properties: {
-    accessTier: staConfig.accessTier
-    supportsHttpsTrafficOnly: staConfig.supportsHttpsTrafficOnly
-    minimumTlsVersion: staConfig.minimumTlsVersion
+    accessTier: saConf.accessTier
+    supportsHttpsTrafficOnly: saConf.supportsHttpsTrafficOnly
+    minimumTlsVersion: saConf.minimumTlsVersion
     allowBlobPublicAccess: true
     publicNetworkAccess: 'Enabled'
     allowSharedKeyAccess: true
@@ -69,19 +69,19 @@ resource workflowSA 'Microsoft.Storage/storageAccounts@2025-06-01' = {
   }
 }
 
-resource queueSvc 'Microsoft.Storage/storageAccounts/queueServices@2025-06-01' = {
+resource qSvc 'Microsoft.Storage/storageAccounts/queueServices@2025-06-01' = {
   name: 'default'
-  parent: workflowSA
+  parent: wfSA
 }
 
-resource processQueue 'Microsoft.Storage/storageAccounts/queueServices/queues@2025-06-01' = {
+resource poProcQueue 'Microsoft.Storage/storageAccounts/queueServices/queues@2025-06-01' = {
   name: queueName
-  parent: queueSvc
+  parent: qSvc
 }
 
 resource saDiag 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
-  name: '${workflowSA.name}-diag'
-  scope: workflowSA
+  name: '${wfSA.name}-diag'
+  scope: wfSA
   properties: {
     workspaceId: workspaceId
     storageAccountId: storageAccountId
@@ -90,9 +90,9 @@ resource saDiag 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
   }
 }
 
-resource queueDiag 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
-  name: '${queueSvc.name}-diag'
-  scope: queueSvc
+resource qDiag 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
+  name: '${qSvc.name}-diag'
+  scope: qSvc
   properties: {
     workspaceId: workspaceId
     storageAccountId: storageAccountId
@@ -103,7 +103,7 @@ resource queueDiag 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = 
 }
 
 @description('Name of the deployed storage account')
-output WORKFLOW_STORAGE_ACCOUNT_NAME string = workflowSA.name
+output WORKFLOW_STORAGE_ACCOUNT_NAME string = wfSA.name
 
 @description('Resource ID of the deployed storage account')
-output WORKFLOW_STORAGE_ACCOUNT_ID string = workflowSA.id
+output WORKFLOW_STORAGE_ACCOUNT_ID string = wfSA.id
