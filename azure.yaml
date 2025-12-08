@@ -8,10 +8,15 @@ infra:
   module: main
 
 services:
-  Po_WEB:
+  PoWebApp:
     resourceName: ${PO_WEB_APP_NAME}
     project: ./src/PoWebApp/PoWebApp.csproj
     language: dotnet
     host: appservice
     resourceGroup: ${AZURE_RESOURCE_GROUP}
-      
+  PoProcAPI:
+    resourceName: ${PO_PROC_API_NAME}
+    project: ./src/PoProcAPI/PoProcAPI.csproj
+    language: dotnet
+    host: appservice
+    resourceGroup: ${AZURE_RESOURCE_GROUP}
