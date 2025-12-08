@@ -1,6 +1,5 @@
 ﻿using Azure.Identity;
 using Azure.Storage.Queues;
-using Microsoft.Extensions.Configuration;
 
 namespace PoWebApp.Components
 {
@@ -10,9 +9,22 @@ namespace PoWebApp.Components
         {
             try
             {
-                IConfiguration configuration = new ConfigurationBuilder()
+                IConfiguration configuration;
+
+                var environment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
+
+                if (environment == "Production")
+                {
+                    configuration = new ConfigurationBuilder()
+                       .AddJsonFile("appsettings.json")
+                       .Build();
+                }
+                else
+                {
+                    configuration = new ConfigurationBuilder()
                        .AddJsonFile("appsettings.Development.json")
                        .Build();
+                }
 
                 var queueServiceUri = configuration.GetConnectionString("queueServiceUri");
 
@@ -26,7 +38,7 @@ namespace PoWebApp.Components
                 var queueUri = new Uri($"{queueServiceUri.TrimEnd('/')}/{queueName}");
 
                 var queueClient = new QueueClient(queueUri, credential);
-                
+
                 queueClient.CreateIfNotExistsAsync();
                 queueClient.SendMessageAsync(message);
             }

@@ -1,6 +1,5 @@
-using PoWebApp.Components;
-using Azure.Identity;
 using Microsoft.Extensions.Azure;
+using PoWebApp.Components;
 
 var builder = WebApplication.CreateBuilder(args);
 
