@@ -93,7 +93,7 @@ resource api 'Microsoft.Web/sites@2025-03-01' = {
       linuxFxVersion: '${appConfig.runtime}|${appConfig.version}'
       alwaysOn: true
       acrUseManagedIdentityCreds: false
-      minimumElasticInstanceCount: 1 
+      minimumElasticInstanceCount: 3 
       elasticWebAppScaleLimit: 10
       ftpsState: 'Disabled'
       minTlsVersion: '1.2'

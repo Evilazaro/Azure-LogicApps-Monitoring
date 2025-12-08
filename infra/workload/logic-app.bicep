@@ -138,6 +138,8 @@ resource workflowEngine 'Microsoft.Web/sites@2023-12-01' = {
     publicNetworkAccess: 'Enabled'
     storageAccountRequired: true
     siteConfig: {
+      minimumElasticInstanceCount: 3
+      elasticWebAppScaleLimit: 20
       appSettings: [
         {
           name: 'FUNCTIONS_EXTENSION_VERSION'
