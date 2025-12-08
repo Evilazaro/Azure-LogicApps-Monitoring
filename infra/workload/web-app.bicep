@@ -56,7 +56,7 @@ var appConfig = {
 }
 
 resource aspPoProc 'Microsoft.Web/serverfarms@2025-03-01' = {
-  name: '${name}-${resourceSuffix}-apis-asp'
+  name: '${name}-${resourceSuffix}-poproc-asp'
   location: location
   sku: {
     name: aspConfig.sku.name
@@ -164,7 +164,7 @@ output API_WEB_APP_NAME string = PoProcAPI.name
 output WEB_APP_DEFAULT_HOSTNAME string = PoProcAPI.properties.defaultHostName
 
 resource aspPo 'Microsoft.Web/serverfarms@2025-03-01' = {
-  name: '${name}-${resourceSuffix}-apis-asp'
+  name: '${name}-${resourceSuffix}-po-asp'
   location: location
   sku: {
     name: aspConfig.sku.name
