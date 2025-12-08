@@ -108,7 +108,7 @@ resource wfRaSA 'Microsoft.Authorization/roleAssignments@2022-04-01' = [
     properties: {
       roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', roleId)
       principalId: deployer().objectId
-      principalType: 'ServicePrincipal'
+      principalType: 'User'
     }
   }
 ]
