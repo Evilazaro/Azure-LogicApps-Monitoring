@@ -33,9 +33,9 @@ var tags = {
   Repository: 'Azure-LogicApps-Monitoring'
 }
 
-var resourceGroupName = 'contoso-${solutionName}-${envName}-${location}-rg'
+var resourceGroupName = 'rg-${solutionName}-${envName}-${substring(location, 0, min(length(location), 8))}'
 
-resource rg 'Microsoft.Resources/resourceGroups@2024-03-01' = {
+resource rg 'Microsoft.Resources/resourceGroups@2025-04-01' = {
   name: resourceGroupName
   location: location
   //tags: tags
