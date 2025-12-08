@@ -93,7 +93,7 @@ resource aspPoDiag 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = 
 }
 
 resource PoWebApp 'Microsoft.Web/sites@2025-03-01' = {
-  name: '${name}-${resourceSuffix}-poapi-api'
+  name: '${name}-${resourceSuffix}-po-webapp'
   location: location
   kind: 'web,linux'
   identity: {
