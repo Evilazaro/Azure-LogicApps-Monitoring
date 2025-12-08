@@ -13,8 +13,8 @@ services:
     language: dotnet
     host: appservice
     resourceGroup: ${AZURE_RESOURCE_GROUP}
-  PoProcAPI:
-    project: ./src/PoProcAPI/PoProcAPI.csproj
-    language: dotnet
-    host: appservice
-    resourceGroup: ${AZURE_RESOURCE_GROUP}
+  # PoProcAPI:
+  #   project: ./src/PoProcAPI/PoProcAPI.csproj
+  #   language: dotnet
+  #   host: appservice
+  #   resourceGroup: ${AZURE_RESOURCE_GROUP}
