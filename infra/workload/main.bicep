@@ -104,8 +104,8 @@ output LOGIC_APP_NAME string = workflows.outputs.LOGIC_APP_NAME
 @description('Resource ID of the Logic App App Service Plan')
 output LOGIC_APP_SERVICE_PLAN_ID string = workflows.outputs.APP_SERVICE_PLAN_ID
 
-@description('Resource ID of the API Function App')
-output API_FUNCTION_APP_ID string = apis.outputs.FUNCTION_APP_ID
+@description('Resource ID of the API Web App')
+output WEB_APP_ID string = apis.outputs.WEB_APP_ID
 
-@description('Name of the API Function App')
-output API_FUNCTION_APP_NAME string = apis.outputs.FUNCTION_APP_NAME
+@description('Name of the API Web App')
+output WEB_APP_NAME string = apis.outputs.WEB_APP_NAME

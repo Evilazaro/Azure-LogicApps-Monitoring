@@ -35,7 +35,7 @@ param tags object
 
 var resourceSuffix = uniqueString(resourceGroup().id, name, envName, location)
 
-var appServicePlanConfig = {
+var aspConfig = {
   sku: {
     name: 'P0v3'
     tier: 'Premium0V3'
@@ -46,9 +46,9 @@ var appServicePlanConfig = {
   reserved: true
 }
 
-var functionAppConfig = {
+var appConfig = {
   runtime: 'DOTNETCORE'
-  version: '9.0'
+  version: '10.0'
   kind: 'app,linux'
 }
 
@@ -56,20 +56,20 @@ resource asp 'Microsoft.Web/serverfarms@2025-03-01' = {
   name: '${name}-${resourceSuffix}-apis-asp'
   location: location
   sku: {
-    name: appServicePlanConfig.sku.name
-    tier: appServicePlanConfig.sku.tier
-    size: appServicePlanConfig.sku.size
-    family: appServicePlanConfig.sku.family
-    capacity: 1
+    name: aspConfig.sku.name
+    tier: aspConfig.sku.tier
+    size: aspConfig.sku.size
+    family: aspConfig.sku.family
+    capacity: 3
   }
-  kind: appServicePlanConfig.kind
+  kind: aspConfig.kind
   tags: tags
   properties: {
-    perSiteScaling: false
-    elasticScaleEnabled: false
-    maximumElasticWorkerCount: 1
+    perSiteScaling: true
+    elasticScaleEnabled: true
+    maximumElasticWorkerCount: 3
     isSpot: false
-    reserved: appServicePlanConfig.reserved
+    reserved: aspConfig.reserved
     isXenon: false
     hyperV: false
     targetWorkerCount: 0
@@ -81,20 +81,24 @@ resource asp 'Microsoft.Web/serverfarms@2025-03-01' = {
 resource api 'Microsoft.Web/sites@2025-03-01' = {
   name: '${name}-${resourceSuffix}-api'
   location: location
-  kind: functionAppConfig.kind
+  kind: 'web,linux'
   identity: {
     type: 'SystemAssigned'
   }
   tags: tags
   properties: {
     serverFarmId: asp.id
-    reserved: appServicePlanConfig.reserved
+    reserved: aspConfig.reserved
     siteConfig: {
-      linuxFxVersion: '${functionAppConfig.runtime}|${functionAppConfig.version}'
+      linuxFxVersion: '${appConfig.runtime}|${appConfig.version}'
       alwaysOn: true
+      acrUseManagedIdentityCreds: false
+      minimumElasticInstanceCount: 1 
+      elasticWebAppScaleLimit: 10
       ftpsState: 'Disabled'
       minTlsVersion: '1.2'
       http20Enabled: true
+      numberOfWorkers: 3
       appSettings: [
         {
           name: 'APPLICATIONINSIGHTS_CONNECTION_STRING'
@@ -133,11 +137,11 @@ resource aspDiag 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
   }
 }
 
-@description('Resource ID of the deployed Function App')
-output FUNCTION_APP_ID string = api.id
+@description('Resource ID of the deployed webApp App')
+output WEB_APP_ID string = api.id
 
-@description('Name of the deployed Function App')
-output FUNCTION_APP_NAME string = api.name
+@description('Name of the deployed webApp App')
+output WEB_APP_NAME string = api.name
 
-@description('Default hostname of the Function App')
-output FUNCTION_APP_DEFAULT_HOSTNAME string = api.properties.defaultHostName
+@description('Default hostname of the webApp App')
+output webApp_APP_DEFAULT_HOSTNAME string = api.properties.defaultHostName
