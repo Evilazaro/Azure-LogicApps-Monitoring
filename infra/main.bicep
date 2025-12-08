@@ -47,7 +47,7 @@ resource rg 'Microsoft.Resources/resourceGroups@2024-03-01' = {
   tags: tags
 }
 
-module monitoring '../src/monitoring/main.bicep' = {
+module monitoring './monitoring/main.bicep' = {
   name: 'monitoringDeployment'
   scope: rg
   params: {
@@ -58,7 +58,7 @@ module monitoring '../src/monitoring/main.bicep' = {
   }
 }
 
-module workload '../src/workload/main.bicep' = {
+module workload './workload/main.bicep' = {
   name: 'workloadDeployment'
   scope: resourceGroup(resourceGroupName)
   params: {
