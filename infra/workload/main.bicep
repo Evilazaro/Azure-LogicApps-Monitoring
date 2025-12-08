@@ -75,6 +75,24 @@ module apis 'web-app.bicep' = {
   }
 }
 
+@description('Resource ID of the deployed webApp App')
+output PO_PROC_API_WEB_APP_ID string = apis.outputs.PO_PROC_API_WEB_APP_ID
+
+@description('Name of the deployed webApp App')
+output PO_PROC_API_WEB_APP_NAME string = apis.outputs.PO_PROC_API_WEB_APP_NAME
+
+@description('Default hostname of the webApp App')
+output PO_PROC_API_DEFAULT_HOST_NAME string = apis.outputs.PO_PROC_API_DEFAULT_HOST_NAME
+
+@description('Resource ID of the deployed webApp App')
+output PO_API_WEB_APP_ID string = apis.outputs.PO_API_WEB_APP_ID
+
+@description('Name of the deployed webApp App')
+output PO_API_WEB_APP_NAME string = apis.outputs.PO_API_WEB_APP_NAME
+
+@description('Default hostname of the webApp App')
+output PO_API_WEB_APP_DEFAULT_HOST_NAME string = apis.outputs.PO_API_WEB_APP_DEFAULT_HOST_NAME
+
 module workflows 'logic-app.bicep' = {
   name: 'workflowsDeployment'
   scope: resourceGroup()
@@ -102,14 +120,8 @@ output WORKFLOW_ENGINE_ID string = workflows.outputs.WORKFLOW_ENGINE_ID
 @description('Name of the deployed Logic App')
 output WORKFLOW_ENGINE_NAME string = workflows.outputs.WORKFLOW_ENGINE_NAME
 
-@description('Resource ID of the Logic App App Service Plan')
-output WORKFLOW_ENGINE_SERVICE_PLAN_ID string = workflows.outputs.WORKFLOW_ENGINE_ASP_ID
+@description('Resource ID of the App Service Plan')
+output WORKFLOW_ENGINE_ASP_ID string = workflows.outputs.WORKFLOW_ENGINE_ASP_ID
 
-@description('Resource ID of the API Web App')
-output PO_PROC_API_WEB_APP_ID string = apis.outputs.PO_PROC_API_WEB_APP_ID
-
-@description('Name of the API Web App')
-output PO_PROC_API_WEB_APP_NAME string = apis.outputs.PO_PROC_API_WEB_APP_NAME
-
-@description('Name of the deployed webApp App')
-output PO_PO_PROC_API_WEB_APP_NAME string = apis.outputs.PO_PO_PROC_API_WEB_APP_NAME
+@description('Name of the App Service Plan')
+output APP_SERVICE_PLAN_NAME string = workflows.outputs.APP_SERVICE_PLAN_NAME

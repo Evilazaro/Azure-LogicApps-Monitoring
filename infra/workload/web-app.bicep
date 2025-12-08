@@ -161,7 +161,7 @@ output PO_PROC_API_WEB_APP_ID string = PoProcAPI.id
 output PO_PROC_API_WEB_APP_NAME string = PoProcAPI.name
 
 @description('Default hostname of the webApp App')
-output WEB_APP_DEFAULT_HOSTNAME string = PoProcAPI.properties.defaultHostName
+output PO_PROC_API_DEFAULT_HOST_NAME string = PoProcAPI.properties.defaultHostName
 
 resource PoASP 'Microsoft.Web/serverfarms@2025-03-01' = {
   name: '${name}-${resourceSuffix}-po-asp'
@@ -263,10 +263,10 @@ resource PoAPIDiag 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = 
 }
 
 @description('Resource ID of the deployed webApp App')
-output PO_PO_PROC_API_WEB_APP_ID string = PoAPI.id
+output PO_API_WEB_APP_ID string = PoAPI.id
 
 @description('Name of the deployed webApp App')
-output PO_PO_PROC_API_WEB_APP_NAME string = PoAPI.name
+output PO_API_WEB_APP_NAME string = PoAPI.name
 
 @description('Default hostname of the webApp App')
-output PO_API_WEB_APP_DEFAULT_HOSTNAME string = PoAPI.properties.defaultHostName
+output PO_API_WEB_APP_DEFAULT_HOST_NAME string = PoAPI.properties.defaultHostName

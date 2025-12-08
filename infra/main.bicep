@@ -93,20 +93,32 @@ output AZURE_APPLICATION_INSIGHTS_CONNECTION_STRING string = monitoring.outputs.
 @secure()
 output AZURE_APPLICATION_INSIGHTS_INSTRUMENTATION_KEY string = monitoring.outputs.AZURE_APPLICATION_INSIGHTS_INSTRUMENTATION_KEY
 
+@description('Resource ID of the deployed webApp App')
+output PO_PROC_API_WEB_APP_ID string = workload.outputs.PO_PROC_API_WEB_APP_ID
+
+@description('Name of the deployed webApp App')
+output PO_PROC_API_WEB_APP_NAME string = workload.outputs.PO_PROC_API_WEB_APP_NAME
+
+@description('Default hostname of the webApp App')
+output PO_PROC_API_DEFAULT_HOST_NAME string = workload.outputs.PO_PROC_API_DEFAULT_HOST_NAME
+
+@description('Resource ID of the deployed webApp App')
+output PO_API_WEB_APP_ID string = workload.outputs.PO_API_WEB_APP_ID
+
+@description('Name of the deployed webApp App')
+output PO_API_WEB_APP_NAME string = workload.outputs.PO_API_WEB_APP_NAME
+
+@description('Default hostname of the webApp App')
+output PO_API_WEB_APP_DEFAULT_HOST_NAME string = workload.outputs.PO_API_WEB_APP_DEFAULT_HOST_NAME
+
 @description('Resource ID of the deployed Logic App')
 output WORKFLOW_ENGINE_ID string = workload.outputs.WORKFLOW_ENGINE_ID
 
 @description('Name of the deployed Logic App')
 output WORKFLOW_ENGINE_NAME string = workload.outputs.WORKFLOW_ENGINE_NAME
 
-@description('Resource ID of the Logic App Service Plan')
-output WORKFLOW_ENGINE_SERVICE_PLAN_ID string = workload.outputs.WORKFLOW_ENGINE_SERVICE_PLAN_ID
+@description('Resource ID of the App Service Plan')
+output WORKFLOW_ENGINE_ASP_ID string = workload.outputs.WORKFLOW_ENGINE_ASP_ID
 
-@description('Resource ID of the API Web App')
-output PO_PROC_API_WEB_APP_ID string = workload.outputs.PO_PROC_API_WEB_APP_ID
-
-@description('Name of the API Web App')
-output PO_PROC_API_WEB_APP_NAME string = workload.outputs.PO_PROC_API_WEB_APP_NAME
-
-@description('Name of the deployed webApp App')
-output PO_PO_PROC_API_WEB_APP_NAME string = workload.outputs.PO_PO_PROC_API_WEB_APP_NAME
+@description('Name of the App Service Plan')
+output APP_SERVICE_PLAN_NAME string = workload.outputs.APP_SERVICE_PLAN_NAME
