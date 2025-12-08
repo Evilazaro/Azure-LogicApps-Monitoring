@@ -89,7 +89,7 @@ resource appSA 'Microsoft.Storage/storageAccounts@2023-05-01' existing = {
   name: workflowStorageAccountName
 }
 
-var storageRoleDefinitions = {
+var saRoleDefinitions = {
   contributor: '17d1049b-9a84-46fb-8f53-869881c3d3ab'
   blobDataOwner: 'b7e6dc6d-f1e8-4753-8033-0f276bb0955b'
   queueDataContributor: '974c5e8b-45b9-4653-ba55-5f855dd0fb88'
@@ -97,17 +97,17 @@ var storageRoleDefinitions = {
   fileDataContributor: '69566ab7-960f-475b-8e7c-b3118f30c6bd'
 }
 
-var storageRoleIds = [
-  storageRoleDefinitions.contributor
-  storageRoleDefinitions.blobDataOwner
-  storageRoleDefinitions.queueDataContributor
-  storageRoleDefinitions.tableDataContributor
-  storageRoleDefinitions.fileDataContributor
+var saRoleIds = [
+  saRoleDefinitions.contributor
+  saRoleDefinitions.blobDataOwner
+  saRoleDefinitions.queueDataContributor
+  saRoleDefinitions.tableDataContributor
+  saRoleDefinitions.fileDataContributor
 ]
 
 resource appSaRa 'Microsoft.Authorization/roleAssignments@2022-04-01' = [
-  for roleId in storageRoleIds: {
-    name: guid(app.id, app.name, roleId)
+  for roleId in saRoleIds: {
+    name: guid(workflowEngine.id, workflowEngine.name, roleId)
     scope: appSA
     properties: {
       roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', roleId)
@@ -122,7 +122,7 @@ var functionsWorkerRuntime = 'dotnet'
 var extensionBundleId = 'Microsoft.Azure.Functions.ExtensionBundle.Workflows'
 var extensionBundleVersion = '[1.*, 2.0.0)'
 
-resource app 'Microsoft.Web/sites@2023-12-01' = {
+resource workflowEngine 'Microsoft.Web/sites@2023-12-01' = {
   name: '${name}-${resourceSuffix}-logicapp'
   location: location
   kind: 'functionapp,workflowapp'
@@ -216,9 +216,9 @@ resource app 'Microsoft.Web/sites@2023-12-01' = {
   }
 }
 
-resource appDiag 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
-  name: '${app.name}-diag'
-  scope: app
+resource wfDiag 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
+  name: '${workflowEngine.name}-diag'
+  scope: workflowEngine
   properties: {
     workspaceId: workspaceId
     storageAccountId: storageAccountId
@@ -233,10 +233,10 @@ resource appDiag 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
 }
 
 @description('Resource ID of the deployed Logic App')
-output LOGIC_APP_ID string = app.id
+output LOGIC_APP_ID string = workflowEngine.id
 
 @description('Name of the deployed Logic App')
-output LOGIC_APP_NAME string = app.name
+output LOGIC_APP_NAME string = workflowEngine.name
 
 @description('Resource ID of the App Service Plan')
 output APP_SERVICE_PLAN_ID string = asp.id

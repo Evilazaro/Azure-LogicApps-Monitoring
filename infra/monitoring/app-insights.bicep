@@ -55,7 +55,7 @@ output AZURE_APPLICATION_INSIGHTS_INSTRUMENTATION_KEY string = appInsights.prope
 @secure()
 output AZURE_APPLICATION_INSIGHTS_CONNECTION_STRING string = appInsights.properties.ConnectionString
 
-resource diag 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
+resource appDiag 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
   name: '${appInsights.name}-diag'
   scope: appInsights
   properties: {

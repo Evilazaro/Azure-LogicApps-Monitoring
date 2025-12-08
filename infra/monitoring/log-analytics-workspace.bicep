@@ -26,7 +26,7 @@ var cleanedName = toLower(replace(replace(replace(name, '-', ''), '_', ''), ' ',
 var uniqueSuffix = uniqueString(resourceGroup().id, name, envName, location)
 var logsStorageAccountName = take('${cleanedName}logs${uniqueSuffix}', 24)
 
-var storageConfig = {
+var saConfig = {
   sku: 'Standard_LRS'
   kind: 'StorageV2'
   accessTier: 'Hot'
@@ -38,14 +38,14 @@ resource logsSA 'Microsoft.Storage/storageAccounts@2025-06-01' = {
   name: logsStorageAccountName
   location: location
   sku: {
-    name: storageConfig.sku
+    name: saConfig.sku
   }
-  kind: storageConfig.kind
+  kind: saConfig.kind
   tags: tags
   properties: {
-    accessTier: storageConfig.accessTier
-    supportsHttpsTrafficOnly: storageConfig.supportsHttpsTrafficOnly
-    minimumTlsVersion: storageConfig.minimumTlsVersion
+    accessTier: saConfig.accessTier
+    supportsHttpsTrafficOnly: saConfig.supportsHttpsTrafficOnly
+    minimumTlsVersion: saConfig.minimumTlsVersion
     allowBlobPublicAccess: false
     publicNetworkAccess: 'Enabled'
     allowSharedKeyAccess: true
@@ -62,7 +62,7 @@ output LOGS_STORAGE_ACCOUNT_NAME string = logsSA.name
 @description('Resource ID of the deployed storage account for logs')
 output LOGS_STORAGE_ACCOUNT_ID string = logsSA.id
 
-resource maPolicy 'Microsoft.Storage/storageAccounts/managementPolicies@2025-06-01' = {
+resource saPolicy 'Microsoft.Storage/storageAccounts/managementPolicies@2025-06-01' = {
   name: 'default'
   parent: logsSA
   properties: {
@@ -119,26 +119,6 @@ output AZURE_LOG_ANALYTICS_WORKSPACE_ID string = workspace.id
 @description('Name of the deployed Log Analytics workspace')
 output AZURE_LOG_ANALYTICS_WORKSPACE_NAME string = workspace.name
 
-resource alertsSA 'Microsoft.OperationalInsights/workspaces/linkedstorageaccounts@2025-02-01' = {
-  parent: workspace
-  name: 'Alerts'
-  properties: {
-    storageAccountIds: [
-      logsSA.id
-    ]
-  }
-}
-
-resource querySA 'Microsoft.OperationalInsights/workspaces/linkedstorageaccounts@2025-02-01' = {
-  parent: workspace
-  name: 'Query'
-  properties: {
-    storageAccountIds: [
-      logsSA.id
-    ]
-  }
-}
-
 resource wspDiag 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
   name: '${workspace.name}-diag'
   scope: workspace
@@ -148,5 +128,25 @@ resource wspDiag 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
     logAnalyticsDestinationType: 'Dedicated'
     logs: logsSettings
     metrics: metricsSettings
+  }
+}
+
+resource saAlerts 'Microsoft.OperationalInsights/workspaces/linkedstorageaccounts@2025-02-01' = {
+  parent: workspace
+  name: 'Alerts'
+  properties: {
+    storageAccountIds: [
+      logsSA.id
+    ]
+  }
+}
+
+resource saQuery 'Microsoft.OperationalInsights/workspaces/linkedstorageaccounts@2025-02-01' = {
+  parent: workspace
+  name: 'Query'
+  properties: {
+    storageAccountIds: [
+      logsSA.id
+    ]
   }
 }
