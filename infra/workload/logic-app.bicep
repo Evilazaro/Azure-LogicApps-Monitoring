@@ -142,36 +142,7 @@ resource workflowEngine 'Microsoft.Web/sites@2023-12-01' = {
       elasticWebAppScaleLimit: 20
 
       autoHealEnabled: true
-      appSettings: [
-        {
-          name: 'AzureFunctionsJobHost__extensionBundle__id'
-          value: extensionBundleId
-        }
-        {
-          name: 'AzureFunctionsJobHost__extensionBundle__version'
-          value: extensionBundleVersion
-        }
-        {
-          name: 'WORKFLOWS_SUBSCRIPTION_ID'
-          value: subscription().subscriptionId
-        }
-        {
-          name: 'WORKFLOWS_RESOURCE_GROUP_NAME'
-          value: resourceGroup().name
-        }
-        {
-          name: 'WORKFLOWS_LOCATION_NAME'
-          value: location
-        }
-        {
-          name: 'WORKFLOWS_TENANT_ID'
-          value: subscription().tenantId
-        }
-        {
-          name: 'WORKFLOWS_MANAGEMENT_BASE_URI'
-          value: environment().resourceManager
-        }
-      ]
+
       use32BitWorkerProcess: false
       ftpsState: 'Disabled'
       minTlsVersion: '1.2'
@@ -195,7 +166,26 @@ resource wfConfig 'Microsoft.Web/sites/config@2025-03-01' = {
     AzureWebJobsStorage__managedIdentityResourceId: mi.id
     APPINSIGHTS_INSTRUMENTATIONKEY: appInsightsInstrumentationKey
     APPLICATIONINSIGHTS_CONNECTION_STRING: appInsightsConnectionString
+    APPINSIGHTS_PROFILERFEATURE_VERSION: '1.0.0'
+    APPINSIGHTS_SNAPSHOTFEATURE_VERSION: '1.0.0'
+    APPLICATIONINSIGHTS_ENABLESQLQUERYCOLLECTION: 'true'
+    ApplicationInsightsAgent_EXTENSION_VERSION: '~3'
+    DiagnosticServices_EXTENSION_VERSION: '~3'
+    DISABLE_APPINSIGHTS_SDK: 'disabled'
+    IGNORE_APPINSIGHTS_SDK: 'disabled'
+    InstrumentationEngine_EXTENSION_VERSION: 'enabled'
+    SnapshotDebugger_EXTENSION_VERSION: 'enabled'
+    WEBSITE_HEALTHCHECK_MAXPINGFAILURES: '5'
+    XDT_MicrosoftApplicationInsights_BaseExtensions: 'enabled'
+    XDT_MicrosoftApplicationInsights_Mode: 'recommended'
+    XDT_MicrosoftApplicationInsights_PreemptSdk: 'enabled'
     AzureFunctionsJobHost__extensionBundle__id: extensionBundleId
+    AzureFunctionsJobHost__extensionBundle__version: extensionBundleVersion
+    WORKFLOWS_SUBSCRIPTION_ID: subscription().subscriptionId
+    WORKFLOWS_RESOURCE_GROUP_NAME: resourceGroup().name
+    WORKFLOWS_LOCATION_NAME: location
+    WORKFLOWS_TENANT_ID: subscription().tenantId
+    WORKFLOWS_MANAGEMENT_BASE_URI: environment().resourceManager
   }
 }
 
