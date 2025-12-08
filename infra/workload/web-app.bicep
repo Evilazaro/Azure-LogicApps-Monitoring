@@ -266,7 +266,7 @@ resource PoAPIDiag 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = 
 output _ORDER_API_WEB_APP_ID string = PoAPI.id
 
 @description('Name of the deployed webApp App')
-output _ORDER_API_WEB_APP_NAME string = PoAPI.name
+output ORDER_API_WEB_APP_NAME string = PoAPI.name
 
 @description('Default hostname of the webApp App')
 output _ORDER_API_WEB_APP_DEFAULT_HOSTNAME string = PoAPI.properties.defaultHostName

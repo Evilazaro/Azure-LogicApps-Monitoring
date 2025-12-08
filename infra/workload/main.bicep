@@ -110,3 +110,6 @@ output API_WEB_APP_ID string = apis.outputs.API_WEB_APP_ID
 
 @description('Name of the API Web App')
 output API_WEB_APP_NAME string = apis.outputs.API_WEB_APP_NAME
+
+@description('Name of the deployed webApp App')
+output ORDER_API_WEB_APP_NAME string = apis.outputs.ORDER_API_WEB_APP_NAME

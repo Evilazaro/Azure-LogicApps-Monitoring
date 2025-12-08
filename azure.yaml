@@ -9,10 +9,9 @@ infra:
 
 services:
   PoWebApp:
+    resourceName: $ORDER_API_WEB_APP_NAME
     project: ./src/PoWebApp/PoWebApp.csproj
     language: dotnet
     host: appservice
     config: 
-      resourceGroup: ${RESOURCE_GROUP_NAME}
-      resourceName: PoWebAppService
-      
+      resourceGroup: $RESOURCE_GROUP_NAME
