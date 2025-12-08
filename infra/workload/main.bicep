@@ -85,13 +85,13 @@ output PO_PROC_API_WEB_APP_NAME string = apis.outputs.PO_PROC_API_WEB_APP_NAME
 output PO_PROC_API_DEFAULT_HOST_NAME string = apis.outputs.PO_PROC_API_DEFAULT_HOST_NAME
 
 @description('Resource ID of the deployed webApp App')
-output PO_API_WEB_APP_ID string = apis.outputs.PO_API_WEB_APP_ID
+output PO_WEB_APP_ID string = apis.outputs.PO_WEB_APP_ID
 
 @description('Name of the deployed webApp App')
-output PO_API_WEB_APP_NAME string = apis.outputs.PO_API_WEB_APP_NAME
+output PO_WEB_APP_NAME string = apis.outputs.PO_WEB_APP_NAME
 
 @description('Default hostname of the webApp App')
-output PO_API_WEB_APP_DEFAULT_HOST_NAME string = apis.outputs.PO_API_WEB_APP_DEFAULT_HOST_NAME
+output PO_WEB_APP_DEFAULT_HOST_NAME string = apis.outputs.PO_WEB_APP_DEFAULT_HOST_NAME
 
 module workflows 'logic-app.bicep' = {
   name: 'workflowsDeployment'

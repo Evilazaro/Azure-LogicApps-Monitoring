@@ -200,14 +200,14 @@ resource aspPoDiag 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = 
   }
 }
 
-resource PoAPI 'Microsoft.Web/sites@2025-03-01' = {
+resource Po_WEB 'Microsoft.Web/sites@2025-03-01' = {
   name: '${name}-${resourceSuffix}-poapi-api'
   location: location
   kind: 'web,linux'
   identity: {
     type: 'SystemAssigned'
   }
-  tags: union(tags, { 'azd-service-name': 'PoAPI' })
+  tags: union(tags, { 'azd-service-name': 'PoWebApp' })
   properties: {
     serverFarmId: PoASP.id
     reserved: aspConf.reserved
@@ -230,7 +230,7 @@ resource PoAPI 'Microsoft.Web/sites@2025-03-01' = {
 
 resource PoConf 'Microsoft.Web/sites/config@2025-03-01' = {
   name: 'appsettings'
-  parent: PoAPI
+  parent: Po_WEB
   properties: {
     APPINSIGHTS_INSTRUMENTATIONKEY: appInsightsInstrumentationKey
     APPINSIGHTS_PROFILERFEATURE_VERSION: '1.0.0'
@@ -250,9 +250,9 @@ resource PoConf 'Microsoft.Web/sites/config@2025-03-01' = {
   }
 }
 
-resource PoAPIDiag 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
-  name: '${PoAPI.name}-diag'
-  scope: PoAPI
+resource Po_WEBDiag 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
+  name: '${Po_WEB.name}-diag'
+  scope: Po_WEB
   properties: {
     workspaceId: workspaceId
     storageAccountId: storageAccountId
@@ -263,10 +263,10 @@ resource PoAPIDiag 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = 
 }
 
 @description('Resource ID of the deployed webApp App')
-output PO_API_WEB_APP_ID string = PoAPI.id
+output PO_WEB_APP_ID string = Po_WEB.id
 
 @description('Name of the deployed webApp App')
-output PO_API_WEB_APP_NAME string = PoAPI.name
+output PO_WEB_APP_NAME string = Po_WEB.name
 
 @description('Default hostname of the webApp App')
-output PO_API_WEB_APP_DEFAULT_HOST_NAME string = PoAPI.properties.defaultHostName
+output PO_WEB_APP_DEFAULT_HOST_NAME string = Po_WEB.properties.defaultHostName
