@@ -81,7 +81,7 @@ resource aspPoProc 'Microsoft.Web/serverfarms@2025-03-01' = {
   }
 }
 
-resource orderPRocAspDiag 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
+resource PoProcAspDiag 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
   name: '${aspPoProc.name}-diag'
   scope: aspPoProc
   properties: {
@@ -92,7 +92,7 @@ resource orderPRocAspDiag 'Microsoft.Insights/diagnosticSettings@2021-05-01-prev
   }
 }
 
-resource orderProcAPI 'Microsoft.Web/sites@2025-03-01' = {
+resource PoProcAPI 'Microsoft.Web/sites@2025-03-01' = {
   name: '${name}-${resourceSuffix}-processing-api'
   location: location
   kind: 'web,linux'
@@ -120,9 +120,9 @@ resource orderProcAPI 'Microsoft.Web/sites@2025-03-01' = {
   }
 }
 
-resource orderProcConfig 'Microsoft.Web/sites/config@2025-03-01' = {
+resource PoProcConfig 'Microsoft.Web/sites/config@2025-03-01' = {
   name: 'appsettings'
-  parent: orderProcAPI
+  parent: PoProcAPI
   properties: {
     APPINSIGHTS_INSTRUMENTATIONKEY: appInsightsInstrumentationKey
     APPINSIGHTS_PROFILERFEATURE_VERSION: '1.0.0'
@@ -142,9 +142,9 @@ resource orderProcConfig 'Microsoft.Web/sites/config@2025-03-01' = {
   }
 }
 
-resource orderProcApiDiag 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
-  name: '${orderProcAPI.name}-diag'
-  scope: orderProcAPI
+resource PoProcApiDiag 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
+  name: '${PoProcAPI.name}-diag'
+  scope: PoProcAPI
   properties: {
     workspaceId: workspaceId
     storageAccountId: storageAccountId
@@ -155,13 +155,13 @@ resource orderProcApiDiag 'Microsoft.Insights/diagnosticSettings@2021-05-01-prev
 }
 
 @description('Resource ID of the deployed webApp App')
-output API_WEB_APP_ID string = orderProcAPI.id
+output API_WEB_APP_ID string = PoProcAPI.id
 
 @description('Name of the deployed webApp App')
-output API_WEB_APP_NAME string = orderProcAPI.name
+output API_WEB_APP_NAME string = PoProcAPI.name
 
 @description('Default hostname of the webApp App')
-output WEB_APP_DEFAULT_HOSTNAME string = orderProcAPI.properties.defaultHostName
+output WEB_APP_DEFAULT_HOSTNAME string = PoProcAPI.properties.defaultHostName
 
 resource aspPo 'Microsoft.Web/serverfarms@2025-03-01' = {
   name: '${name}-${resourceSuffix}-apis-asp'
