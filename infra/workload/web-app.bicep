@@ -30,6 +30,9 @@ param metricsSettings object[]
 @description('Connection string for Application Insights instance.')
 param appInsightsConnectionString string
 
+@description('Application Insights Instrumentation Key.')
+param appInsightsInstrumentationKey string
+
 @description('Resource tags applied to all resources.')
 param tags object
 
@@ -93,24 +96,34 @@ resource api 'Microsoft.Web/sites@2025-03-01' = {
       linuxFxVersion: '${appConfig.runtime}|${appConfig.version}'
       alwaysOn: true
       acrUseManagedIdentityCreds: false
-      minimumElasticInstanceCount: 3 
+      minimumElasticInstanceCount: 3
       elasticWebAppScaleLimit: 10
       ftpsState: 'Disabled'
       minTlsVersion: '1.2'
       http20Enabled: true
       numberOfWorkers: 3
-      appSettings: [
-        {
-          name: 'APPLICATIONINSIGHTS_CONNECTION_STRING'
-          value: appInsightsConnectionString
-        }
-        {
-          name: 'ApplicationInsightsAgent_EXTENSION_VERSION'
-          value: '~3'
-        }
-      ]
+      healthCheckPath: '/'
+      autoHealEnabled: true
     }
     httpsOnly: true
+  }
+}
+
+resource siteConfig 'Microsoft.Web/sites/config@2025-03-01' = {
+  name: 'appsettings'
+  parent: api
+  properties: {
+    APPINSIGHTS_INSTRUMENTATIONKEY: appInsightsInstrumentationKey
+    APPINSIGHTS_PROFILERFEATURE_VERSION: '1.0.0'
+    APPINSIGHTS_SNAPSHOTFEATURE_VERSION: '1.0.0'
+    APPLICATIONINSIGHTS_CONNECTION_STRING: appInsightsConnectionString
+    APPLICATIONINSIGHTS_ENABLESQLQUERYCOLLECTION: 'true'
+    ApplicationInsightsAgent_EXTENSION_VERSION: '~3'
+    DiagnosticServices_EXTENSION_VERSION: '~3'
+    DISABLE_APPINSIGHTS_SDK: 'enabled'
+    IGNORE_APPINSIGHTS_SDK: 'disabled'
+    InstrumentationEngine_EXTENSION_VERSION: 'disabled'
+    SnapshotDebugger_EXTENSION_VERSION: 'disabled'
   }
 }
 

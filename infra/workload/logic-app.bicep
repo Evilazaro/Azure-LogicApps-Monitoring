@@ -140,6 +140,8 @@ resource workflowEngine 'Microsoft.Web/sites@2023-12-01' = {
     siteConfig: {
       minimumElasticInstanceCount: 3
       elasticWebAppScaleLimit: 20
+      healthCheckPath: '/'
+      autoHealEnabled: true
       appSettings: [
         {
           name: 'FUNCTIONS_EXTENSION_VERSION'
@@ -215,6 +217,14 @@ resource workflowEngine 'Microsoft.Web/sites@2023-12-01' = {
       minTlsVersion: '1.2'
       netFrameworkVersion: 'v6.0'
     }
+  }
+}
+
+resource wfConfig 'Microsoft.Web/sites/config@2025-03-01' = {
+  name: 'appsettings'
+  parent: workflowEngine
+  properties: {
+    
   }
 }
 
