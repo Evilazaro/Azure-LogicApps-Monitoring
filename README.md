@@ -186,45 +186,51 @@ graph TB
 ## 🔄 Data Flow
 
 ```mermaid
-flowchart TB
-    User[Web Browser]
-    WebApp[PoWebApp<br/>Blazor Server]
-    API[PoProcAPI<br/>REST API]
-    Queue[Storage Queue<br/>orders-queue]
-    LogicApp[Logic App<br/>Workflow Engine]
-    Table[Table Storage]
-    Blob[Blob Storage]
-    AI[Application Insights]
-    LAW[Log Analytics<br/>Workspace]
-    Storage[Archive Storage<br/>30-day retention]
-
-    User -->|1. Submit Order| WebApp
-    WebApp -->|2. Trace: Order.Create<br/>TraceId: 123| AI
-    WebApp -->|3. Enqueue Message| Queue
-    WebApp -->|4. POST /order| API
-    API -->|5. Trace: API.ProcessOrder<br/>ParentTraceId: 123| AI
-    API -->|6. Store Order| Table
-    API -->|7. 202 Accepted| WebApp
-    WebApp -->|8. Order Submitted| User
+graph LR
+    Start([User Submits Order]) --> WebApp[PoWebApp Process Request]
+    WebApp --> TraceCreate[Log Trace: Order.Create]
+    TraceCreate --> EnqueueMsg[Enqueue Message to Queue]
+    EnqueueMsg --> CallAPI[POST /order to API]
     
-    Queue -->|9. Trigger on New Message| LogicApp
-    LogicApp -->|10. Trace: Workflow.Start<br/>CorrelationId: 123| AI
-    LogicApp -->|"11. GET /order/id"| API
-    API -->|12. Trace: API.GetOrder| AI
-    API -->|13. Order Data| LogicApp
-    LogicApp -->|14. Save Receipt| Blob
-    LogicApp -->|15. Insert Audit Entry| Table
-    LogicApp -->|"16. Trace: Workflow.Complete<br/>Status: Success"| AI
+    CallAPI --> APIProcess[PoProcAPI Processes Order]
+    APIProcess --> TraceAPI[Log Trace: API.ProcessOrder]
+    TraceAPI --> StoreDB[(Store Order in Table Storage)]
+    StoreDB --> ReturnAccept[Return 202 Accepted]
+    ReturnAccept --> WebAppResponse[Display Order Submitted]
+    WebAppResponse --> UserNotify([User Receives Confirmation])
     
-    AI -->|17. Export Telemetry| LAW
-    LAW -->|18. Archive Logs| Storage
-
-    style AI fill:#FF6F00,stroke:#C43E00,color:#fff
-    style LAW fill:#0078D4,stroke:#003B73,color:#fff
-    style WebApp fill:#68217A,stroke:#3E145F,color:#fff
-    style API fill:#107C10,stroke:#0B5A0B,color:#fff
-    style LogicApp fill:#0078D4,stroke:#003B73,color:#fff
-    style Queue fill:#FFA500,stroke:#CC8400,color:#000
+    EnqueueMsg -.->|Triggers| QueueTrigger{Queue Message Available?}
+    QueueTrigger -->|Yes| LogicAppStart[Logic App Workflow Starts]
+    LogicAppStart --> TraceWorkflow[Log Trace: Workflow.Start]
+    TraceWorkflow --> GetOrder[GET /order from API]
+    
+    GetOrder --> APIGetProcess[API Retrieves Order]
+    APIGetProcess --> TraceGet[Log Trace: API.GetOrder]
+    TraceGet --> ReturnData[Return Order Data]
+    ReturnData --> SaveReceipt[Save Receipt to Blob Storage]
+    SaveReceipt --> AuditLog[(Insert Audit Entry to Table)]
+    AuditLog --> TraceComplete[Log Trace: Workflow.Complete]
+    TraceComplete --> LogicAppEnd([Workflow Complete])
+    
+    TraceCreate -.->|Telemetry| AppInsights[(Application Insights)]
+    TraceAPI -.->|Telemetry| AppInsights
+    TraceWorkflow -.->|Telemetry| AppInsights
+    TraceGet -.->|Telemetry| AppInsights
+    TraceComplete -.->|Telemetry| AppInsights
+    
+    AppInsights --> LogAnalytics[(Log Analytics Workspace)]
+    LogAnalytics --> Archive[(Storage Account Archive)]
+    
+    style Start fill:#90EE90
+    style UserNotify fill:#90EE90
+    style LogicAppEnd fill:#90EE90
+    style WebApp fill:#68217A,color:#fff
+    style APIProcess fill:#107C10,color:#fff
+    style APIGetProcess fill:#107C10,color:#fff
+    style LogicAppStart fill:#0078D4,color:#fff
+    style AppInsights fill:#FF6F00,color:#fff
+    style LogAnalytics fill:#0078D4,color:#fff
+    style QueueTrigger fill:#FFD700
 ```
 
 ---
