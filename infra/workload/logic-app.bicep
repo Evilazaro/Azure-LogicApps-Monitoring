@@ -44,7 +44,7 @@ param tags object = {}
 
 var resourceSuffix = uniqueString(resourceGroup().id, name, envName, location)
 
-resource wfASP 'Microsoft.Web/serverfarms@2023-12-01' = {
+resource wfASP 'Microsoft.Web/serverfarms@2025-03-01' = {
   name: '${name}-${resourceSuffix}-asp'
   location: location
   sku: {
@@ -80,13 +80,13 @@ resource wfASPDiag 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = 
   }
 }
 
-resource mi 'Microsoft.ManagedIdentity/userAssignedIdentities@2023-01-31' = {
+resource mi 'Microsoft.ManagedIdentity/userAssignedIdentities@2025-01-31-preview' = {
   name: '${name}-${resourceSuffix}-mi'
   location: location
   tags: tags
 }
 
-resource wfSA 'Microsoft.Storage/storageAccounts@2023-05-01' existing = {
+resource wfSA 'Microsoft.Storage/storageAccounts@2025-06-01' existing = {
   name: workflowStorageAccountName
   scope: resourceGroup()
 }
@@ -124,7 +124,7 @@ var functionsWorkerRuntime = 'dotnet'
 var extensionBundleId = 'Microsoft.Azure.Functions.ExtensionBundle.Workflows'
 var extensionBundleVersion = '[1.*, 2.0.0)'
 
-resource workflowEngine 'Microsoft.Web/sites@2023-12-01' = {
+resource workflowEngine 'Microsoft.Web/sites@2025-03-01' = {
   name: '${name}-${resourceSuffix}-logicapp'
   location: location
   kind: 'functionapp,workflowapp'
