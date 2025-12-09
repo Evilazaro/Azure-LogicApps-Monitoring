@@ -125,13 +125,13 @@ resource PoWebApp 'Microsoft.Web/sites@2025-03-01' = {
       minTlsVersion: '1.2'
       http20Enabled: true
       numberOfWorkers: 3
-      webSocketsEnabled: true
+      webSocketsEnabled: true // Already enabled ✓
       http20ProxyFlag: 1
       autoHealEnabled: true
     }
-    clientAffinityEnabled: true
-    clientAffinityProxyEnabled: true
-    clientAffinityPartitioningEnabled: true
+    clientAffinityEnabled: true // Already enabled ✓
+    clientAffinityProxyEnabled: true // This needs verification
+    clientAffinityPartitioningEnabled: true // This needs verification
     httpsOnly: true
   }
 }
@@ -141,6 +141,8 @@ resource PoConf 'Microsoft.Web/sites/config@2025-03-01' = {
   parent: PoWebApp
   properties: {
     ASPNETCORE_ENVIRONMENT: 'Production'
+    WEBSITE_WEBSOCKETS_ENABLED: 'true'
+    WEBSITE_CLIENT_AFFINITY_ENABLED: 'true'
     AzureWebJobsStorage__accountName: workflowStorageAccountName
     AzureWebJobsStorage__blobServiceUri: 'https://${workflowStorageAccountName}.blob.${environment().suffixes.storage}'
     AzureWebJobsStorage__queueServiceUri: 'https://${workflowStorageAccountName}.queue.${environment().suffixes.storage}'
