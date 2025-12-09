@@ -177,7 +177,7 @@ resource wfConf 'Microsoft.Web/sites/config@2025-03-01' = {
   }
 }
 
-var queueConnectionName string = 'api-conn-${wfSA.name}-queue'
+var queueConnectionName string = 'azurequeues'
 
 resource storageQueueApiConnection 'Microsoft.Web/connections@2016-06-01' = {
   name: queueConnectionName
