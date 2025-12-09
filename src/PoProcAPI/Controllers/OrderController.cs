@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using System.Diagnostics;
+using PoProcAPI.Diagnostics;
 
 namespace PoProcAPI.Controllers
 {
@@ -8,7 +9,6 @@ namespace PoProcAPI.Controllers
     public class OrderController : ControllerBase
     {
         private readonly ILogger<OrderController> _logger;
-        private static readonly ActivitySource ActivitySource = new("PoProcAPI.Orders", "1.0.0");
 
         public OrderController(ILogger<OrderController> logger)
         {
@@ -18,21 +18,19 @@ namespace PoProcAPI.Controllers
         [HttpPost(Name = "ProcessOrder")]
         public IActionResult ProcessOrder([FromBody] OrderRequest orderRequest)
         {
-            using var activity = ActivitySource.StartActivity("ProcessOrder", ActivityKind.Server);
+            using var activity = DiagnosticsConfig.ActivitySources.Orders.StartActivity("ProcessOrder", ActivityKind.Server);
 
-            // Add semantic convention attributes
-            activity?.SetTag("http.method", HttpContext.Request.Method);
-            activity?.SetTag("http.route", "/Order");
-            activity?.SetTag("http.target", HttpContext.Request.Path);
-            activity?.SetTag("order.id", orderRequest.OrderId);
-            activity?.SetTag("order.customer_id", orderRequest.CustomerId);
-            activity?.SetTag("order.amount", orderRequest.Amount);
+            // Enrich with HTTP context using extension method
+            activity?.AddHttpContext(HttpContext);
+
+            // Add order context with semantic conventions
+            activity?.AddOrderContext(orderRequest.OrderId, orderRequest.CustomerId, orderRequest.Amount);
             activity?.SetTag("operation.name", "ProcessOrder");
-            activity?.SetTag("service.name", "PoProcAPI");
+            activity?.SetTag(DiagnosticsConfig.SemanticConventions.ServiceName, DiagnosticsConfig.ServiceName);
 
             // Add baggage for cross-service correlation
-            activity?.AddBaggage("order.id", orderRequest.OrderId);
-            activity?.AddBaggage("business.flow", "order-processing");
+            activity?.AddBaggage(DiagnosticsConfig.BaggageKeys.BusinessFlow, "order-processing");
+            activity?.AddBaggage(DiagnosticsConfig.BaggageKeys.CorrelationId, Activity.Current?.TraceId.ToString() ?? Guid.NewGuid().ToString());
 
             try
             {
@@ -58,42 +56,68 @@ namespace PoProcAPI.Controllers
                         orderRequest.CustomerId,
                         orderRequest.Amount);
 
-                    // Simulate order validation
-                    using var validationActivity = ActivitySource.StartActivity("ValidateOrder", ActivityKind.Internal);
-                    validationActivity?.SetTag("order.id", orderRequest.OrderId);
+                    // Simulate order validation with detailed tracing
+                    using var validationActivity = DiagnosticsConfig.ActivitySources.Orders.StartActivity("ValidateOrder", ActivityKind.Internal);
+                    validationActivity?.AddOrderContext(orderRequest.OrderId);
                     validationActivity?.SetTag("validation.type", "business_rules");
+                    validationActivity?.SetTag("validation.rules", "required_fields,amount_positive");
+                    
+                    var validationStart = Stopwatch.GetTimestamp();
 
                     ValidateOrder(orderRequest);
+                    
+                    var validationDuration = Stopwatch.GetElapsedTime(validationStart);
+                    validationActivity?.SetTag("validation.duration_ms", validationDuration.TotalMilliseconds);
                     validationActivity?.SetStatus(ActivityStatusCode.Ok);
 
-                    // Add event for validation complete
+                    // Add event for validation complete with performance metrics
                     activity?.AddEvent(new ActivityEvent("OrderValidated",
                         tags: new ActivityTagsCollection
                         {
                             { "order.id", orderRequest.OrderId },
-                            { "validation.result", "success" }
+                            { "validation.result", "success" },
+                            { "validation.duration_ms", validationDuration.TotalMilliseconds }
                         }));
 
-                    // Simulate order processing
-                    using var processingActivity = ActivitySource.StartActivity("ProcessOrderInternal", ActivityKind.Internal);
-                    processingActivity?.SetTag("order.id", orderRequest.OrderId);
+                    // Simulate order processing with detailed tracing
+                    var processingStart = Stopwatch.GetTimestamp();
+                    using var processingActivity = DiagnosticsConfig.ActivitySources.Orders.StartActivity("ProcessOrderInternal", ActivityKind.Internal);
+                    processingActivity?.AddOrderContext(orderRequest.OrderId);
                     processingActivity?.SetTag("processing.type", "order_fulfillment");
+                    processingActivity?.SetTag("processing.step", "fulfillment_initiation");
 
                     // Simulate processing logic
                     Thread.Sleep(100); // Simulate processing time
-
-                    processingActivity?.SetStatus(ActivityStatusCode.Ok);
+                    
+                    var processingDuration = Stopwatch.GetElapsedTime(processingStart);
+                    processingActivity?.SetTag("processing.duration_ms", processingDuration.TotalMilliseconds);
+                    processingActivity?.SetTag("processing.status", "completed");
+                    processingActivity?.SetStatus(ActivityStatusCode.Ok, "Order fulfillment completed");
+                    
+                    // Add processing event with metrics
+                    processingActivity?.AddEvent(new ActivityEvent("FulfillmentCompleted",
+                        tags: new ActivityTagsCollection
+                        {
+                            { "order.id", orderRequest.OrderId },
+                            { "processing.duration_ms", processingDuration.TotalMilliseconds }
+                        }));
 
                     _logger.LogInformation("Order processed successfully: {OrderId}", orderRequest.OrderId);
                 }
 
                 // Set success status with description
                 activity?.SetStatus(ActivityStatusCode.Ok, "Order processed successfully");
+                activity?.SetTag(DiagnosticsConfig.SemanticConventions.OrderStatus, "accepted");
+                
+                var (traceParent, traceState) = activity.GetTraceContext();
+                
                 activity?.AddEvent(new ActivityEvent("OrderCompleted",
                     tags: new ActivityTagsCollection
                     {
                         { "order.id", orderRequest.OrderId },
-                        { "processing.duration_ms", activity?.Duration.TotalMilliseconds ?? 0 }
+                        { "processing.duration_ms", activity?.Duration.TotalMilliseconds ?? 0 },
+                        { "completion.timestamp", DateTimeOffset.UtcNow.ToString("o") },
+                        { "trace.parent", traceParent ?? "unknown" }
                     }));
 
                 return Accepted(new
@@ -105,15 +129,17 @@ namespace PoProcAPI.Controllers
             }
             catch (Exception ex)
             {
-                // Record exception with proper semantic conventions
+                // Record exception with proper semantic conventions using extension method
+                activity?.RecordException(ex);
                 activity?.SetStatus(ActivityStatusCode.Error, ex.Message);
-                activity?.AddException(ex);
+                activity?.SetTag(DiagnosticsConfig.SemanticConventions.OrderStatus, "failed");
                 activity?.AddEvent(new ActivityEvent("OrderProcessingFailed",
                     tags: new ActivityTagsCollection
                     {
                         { "order.id", orderRequest.OrderId },
                         { "error.type", ex.GetType().Name },
-                        { "error.message", ex.Message }
+                        { "error.message", ex.Message },
+                        { "failure.timestamp", DateTimeOffset.UtcNow.ToString("o") }
                     }));
 
                 using (_logger.BeginScope(new Dictionary<string, object>
