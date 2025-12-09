@@ -59,7 +59,7 @@ param(
         }
         return $true
     })]
-    [string]$ConnectionsJsonPath = (Join-Path -Path $PSScriptRoot -ChildPath 'connections.json')
+    [string]$ConnectionsJsonPath = (Join-Path -Path $PSScriptRoot -ChildPath '..\infra\workload\connections.json')
 )
 
 Set-StrictMode -Version Latest
