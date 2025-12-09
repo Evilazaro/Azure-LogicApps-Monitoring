@@ -1,4 +1,4 @@
-Collecting workspace information# Azure Logic Apps Monitoring Solution
+# Azure Logic Apps Monitoring Solution
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Azure](https://img.shields.io/badge/Azure-Logic%20Apps-0078D4?logo=microsoft-azure)](https://azure.microsoft.com/en-us/products/logic-apps/)
