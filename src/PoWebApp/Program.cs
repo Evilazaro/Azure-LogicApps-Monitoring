@@ -1,4 +1,5 @@
 using Azure.Monitor.OpenTelemetry.AspNetCore;
+using Microsoft.AspNetCore.Builder;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
 using PoWebApp.Components;
@@ -106,7 +107,8 @@ internal class Program
         app.MapStaticAssets();
         app.MapRazorComponents<App>()
             .AddInteractiveServerRenderMode();
-
+        app.UseRouting();
+        app.MapBlazorHub();
         app.Run();
     }
 }

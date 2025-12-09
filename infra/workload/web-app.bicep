@@ -129,6 +129,8 @@ resource PoWebApp 'Microsoft.Web/sites@2025-03-01' = {
       http20ProxyFlag: 1
       autoHealEnabled: true
     }
+    clientAffinityEnabled: true
+    clientAffinityProxyEnabled: true
     httpsOnly: true
   }
 }
