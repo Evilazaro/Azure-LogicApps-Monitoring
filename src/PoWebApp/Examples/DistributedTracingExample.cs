@@ -23,7 +23,7 @@ namespace PoWebApp.Examples
         /// <summary>
         /// Example 1: Creating a custom span for business operations
         /// </summary>
-        public async Task ProcessOrderExample(string orderId, string customerId, string amount)
+        public async Task ProcessOrderExample(string orderId, string quantity, string amount)
         {
             // Start a new activity (span) for order processing
             using var activity = DiagnosticsConfig.ActivitySources.Orders.StartActivity(
@@ -31,7 +31,7 @@ namespace PoWebApp.Examples
                 ActivityKind.Internal);
 
             // Add order context using extension method
-            activity?.AddOrderContext(orderId, customerId, amount);
+            activity?.AddOrderContext(orderId, quantity, amount);
 
             // Add custom tags
             activity?.SetTag("order.status", "processing");
@@ -40,8 +40,8 @@ namespace PoWebApp.Examples
             try
             {
                 // Simulate order processing
-                _logger.LogInformation("Processing order {OrderId} for customer {CustomerId}",
-                    orderId, customerId);
+                _logger.LogInformation("Processing order {OrderId} with quantity {Quantity}",
+                    orderId, quantity);
 
                 // Call downstream service (automatically creates child span)
                 await CallPaymentServiceExample(orderId, amount);
@@ -217,7 +217,7 @@ namespace PoWebApp.Examples
         /// <summary>
         /// Example 7: Adding custom events to spans
         /// </summary>
-        public async Task ProcessOrderWithEventsExample(string orderId,string quantity, string total)
+        public async Task ProcessOrderWithEventsExample(string orderId, string quantity, string total)
         {
             using var activity = DiagnosticsConfig.ActivitySources.Orders.StartActivity(
                 "ProcessOrderWithEvents",

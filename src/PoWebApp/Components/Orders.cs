@@ -17,12 +17,7 @@ namespace PoWebApp.Components
 
         public async Task<int> AddOrderMessageToQueueAsync()
         {
-            var ordersJson = JsonDocument
-                .Parse(File.ReadAllText("orders.json"))
-                .RootElement
-                .GetProperty("orders")
-                .GetRawText();            
-
+            var ordersJson = File.ReadAllText("orders.json");
             Order[] orders = JsonSerializer.Deserialize<Order[]>(ordersJson) ?? Array.Empty<Order>();
 
             int batchSize = orders.Count();

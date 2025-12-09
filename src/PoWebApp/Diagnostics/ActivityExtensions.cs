@@ -44,26 +44,24 @@ namespace PoWebApp.Diagnostics
         /// <summary>
         /// Adds order context to the activity
         /// </summary>
-        public static Activity? AddOrderContext(this Activity? activity, string orderId, string quantity , string total )
+        public static Activity? AddOrderContext(this Activity? activity, string orderId, string quantity, string total)
         {
             if (activity == null) return null;
-
-            activity.SetTag(DiagnosticsConfig.SemanticConventions.OrderId, orderId);
-            activity.AddBaggage(DiagnosticsConfig.BaggageKeys.OrderId, orderId);
 
             if (!string.IsNullOrEmpty(orderId))
             {
                 activity.SetTag(DiagnosticsConfig.SemanticConventions.OrderId, orderId);
+                activity.AddBaggage(DiagnosticsConfig.BaggageKeys.OrderId, orderId);
             }
 
             if (!string.IsNullOrEmpty(quantity) && int.TryParse(quantity, out var quantityValue) && quantityValue > 0)
             {
-                activity.SetTag(DiagnosticsConfig.SemanticConventions.OrderQuantity, quantity);
+                activity.SetTag(DiagnosticsConfig.SemanticConventions.OrderQuantity, quantityValue);
             }
 
             if (!string.IsNullOrEmpty(total) && decimal.TryParse(total, out var totalValue) && totalValue > 0)
             {
-                activity.SetTag(DiagnosticsConfig.SemanticConventions.OrderAmount, total);
+                activity.SetTag(DiagnosticsConfig.SemanticConventions.OrderAmount, totalValue);
             }
 
             return activity;
