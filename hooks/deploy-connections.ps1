@@ -184,9 +184,17 @@ try {
     Write-Verbose "Queue Runtime URL: $queueRuntimeUrl"
     Write-Verbose "Table Runtime URL: $tableRuntimeUrl"
 
-    # Read and update connections.json
+    # Read and update connections.json in the workflows folder
     Write-StatusMessage -Message 'Reading connections template...' -Emoji '📄' -Prefix 'READ' -Color Yellow
-    $connectionsJson = Get-Content -Path $ConnectionsJsonPath -Raw -ErrorAction Stop | ConvertFrom-Json
+    
+    $workflowsPath = Join-Path -Path (Split-Path -Parent $PSScriptRoot) -ChildPath 'workflows'
+    $workflowConnectionsPath = Join-Path -Path $workflowsPath -ChildPath "$WorkflowName\connections.json"
+    
+    if (-not (Test-Path -Path $workflowConnectionsPath)) {
+        throw "Workflow connections.json not found at: $workflowConnectionsPath"
+    }
+    
+    $connectionsJson = Get-Content -Path $workflowConnectionsPath -Raw -ErrorAction Stop | ConvertFrom-Json
 
     # Update queue connection
     $connectionsJson.managedApiConnections.azurequeues.api.id = "/subscriptions/$subscriptionId/providers/Microsoft.Web/locations/$location/managedApis/azurequeues"
@@ -198,30 +206,45 @@ try {
     $connectionsJson.managedApiConnections.azuretables.connection.id = $tableConnectionId
     $connectionsJson.managedApiConnections.azuretables.connectionRuntimeUrl = $tableRuntimeUrl
 
-    # Save to temp file with proper encoding and platform-agnostic path
-    $tempDir = if ($IsWindows) { $env:TEMP } elseif ($IsLinux -or $IsMacOS) { '/tmp' } else { [System.IO.Path]::GetTempPath() }
-    $tempConnectionsFile = Join-Path -Path $tempDir -ChildPath "connections_$([Guid]::NewGuid()).json"
-    
-    # Convert to JSON with platform-neutral line endings
+    # Save updated connections.json back to the workflow folder
     $jsonContent = $connectionsJson | ConvertTo-Json -Depth 10
-    [System.IO.File]::WriteAllText($tempConnectionsFile, $jsonContent, [System.Text.UTF8Encoding]::new($false))
+    [System.IO.File]::WriteAllText($workflowConnectionsPath, $jsonContent, [System.Text.UTF8Encoding]::new($false))
 
-    Write-StatusMessage -Message 'Deploying connections.json to Logic App...' -Emoji '🚀' -Prefix 'DEPLOY' -Color Yellow
+    Write-StatusMessage -Message 'Deploying workflow to Logic App...' -Emoji '🚀' -Prefix 'DEPLOY' -Color Yellow
 
-    # Use Azure CLI to upload the connections.json file (use forward slash for Azure path)
-    $workflowPath = "$WorkflowName/connections.json"
+    # Create a ZIP file of the workflows folder
+    $tempDir = if ($IsWindows) { $env:TEMP } elseif ($IsLinux -or $IsMacOS) { '/tmp' } else { [System.IO.Path]::GetTempPath() }
+    $tempZipFile = Join-Path -Path $tempDir -ChildPath "logicapp_$([Guid]::NewGuid()).zip"
     
-    # Invoke Azure CLI in a platform-agnostic way
+    Write-Verbose "Creating ZIP file: $tempZipFile"
+    Compress-Archive -Path "$workflowsPath\*" -DestinationPath $tempZipFile -Force
+    
+    # Deploy using az webapp deployment source config-zip
+    try {
+        Invoke-AzCli -Arguments @(
+            'webapp', 'deployment', 'source', 'config-zip',
+            '--resource-group', $ResourceGroupName,
+            '--name', $LogicAppName,
+            '--src', $tempZipFile
+        ) -ErrorMessage "Failed to deploy workflow ZIP to Logic App" | Out-Null
+        
+        Write-StatusMessage -Message 'Workflow deployed successfully!' -Emoji '✅' -Prefix 'SUCCESS' -Color Green
+    }
+    finally {
+        # Clean up ZIP file
+        if (Test-Path -Path $tempZipFile) {
+            Remove-Item -Path $tempZipFile -Force -ErrorAction SilentlyContinue
+            Write-Verbose "Cleaned up ZIP file: $tempZipFile"
+        }
+    }
+    
+    # Restart the Logic App to pick up the new workflow
+    Write-StatusMessage -Message 'Restarting Logic App to apply changes...' -Emoji '🔄' -Prefix 'RESTART' -Color Yellow
     Invoke-AzCli -Arguments @(
-        'functionapp', 'deploy',
+        'webapp', 'restart',
         '--resource-group', $ResourceGroupName,
-        '--name', $LogicAppName,
-        '--src-path', $tempConnectionsFile,
-        '--type', 'static',
-        '--target-path', $workflowPath
-    ) -ErrorMessage "Failed to deploy connections.json to Logic App" | Out-Null
-
-    Write-StatusMessage -Message 'Connections.json deployed successfully!' -Emoji '✅' -Prefix 'SUCCESS' -Color Green
+        '--name', $LogicAppName
+    ) -ErrorMessage "Failed to restart Logic App" | Out-Null
 
     Write-Host ""
     Write-StatusMessage -Message 'Logic App connections configured successfully!' -Emoji '✅' -Prefix 'SUCCESS' -Color Green
