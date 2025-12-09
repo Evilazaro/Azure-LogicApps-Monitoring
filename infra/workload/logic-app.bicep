@@ -192,7 +192,7 @@ resource wfConf 'Microsoft.Web/sites/config@2025-03-01' = {
 param connName string = 'azurequeues'
 
 resource queueConnection 'Microsoft.Web/connections@2016-06-01' = {
-  name: connName
+  name: '${connName}${uniqueString(name, envName, location)}'
   location: location
   kind: 'V2'
   properties: {
