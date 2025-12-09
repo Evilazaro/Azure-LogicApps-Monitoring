@@ -13,7 +13,7 @@ hooks:
     run: |
       ./hooks/deploy-connections.ps1 `
         -ResourceGroupName "${AZURE_RESOURCE_GROUP}" `
-        -LogicAppName "${LOGIC_APP_NAME}" `
+        -LogicAppName "${WORKFLOW_ENGINE_NAME}" `
         -QueueConnectionName "azurequeues" `
         -TableConnectionName "azuretables" `
         -WorkflowName "eShopOrders"
