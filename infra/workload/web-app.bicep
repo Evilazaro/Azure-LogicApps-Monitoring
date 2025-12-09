@@ -121,7 +121,7 @@ resource PoWebApp 'Microsoft.Web/sites@2025-03-01' = {
       acrUseManagedIdentityCreds: false
       minimumElasticInstanceCount: 3
       elasticWebAppScaleLimit: 10
-      ftpsState: 'Enabled'
+      ftpsState: 'AllAllowed'
       minTlsVersion: '1.2'
       http20Enabled: true
       numberOfWorkers: 3

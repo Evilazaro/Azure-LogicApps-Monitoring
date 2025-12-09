@@ -118,7 +118,7 @@ resource PoProcAPI 'Microsoft.Web/sites@2025-03-01' = {
       acrUseManagedIdentityCreds: false
       minimumElasticInstanceCount: 3
       elasticWebAppScaleLimit: 10
-      ftpsState: 'Enabled'
+      ftpsState: 'AllAllowed'
       webSocketsEnabled: true
       minTlsVersion: '1.2'
       http20Enabled: true
