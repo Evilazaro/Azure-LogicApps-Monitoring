@@ -2,13 +2,32 @@ using Azure.Monitor.OpenTelemetry.AspNetCore;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
+using Azure.Identity;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddOpenApi();
+
+builder.Services.AddOpenApi(options =>
+{
+    options.AddDocumentTransformer((document, context, cancellationToken) =>
+    {
+        document.Info = new()
+        {
+            Title = "PoProcAPI",
+            Version = "v1",
+            Description = "Purchase Order Processing API",
+            Contact = new()
+            {
+                Name = "API Support",
+                Email = "support@example.com"
+            }
+        };
+        return Task.CompletedTask;
+    });
+});
 
 // Configure comprehensive OpenTelemetry with Azure Monitor
 builder.Services.AddOpenTelemetry()

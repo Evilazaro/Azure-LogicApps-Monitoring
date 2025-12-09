@@ -94,7 +94,10 @@ else
 
     foreach (var envVariable in configs.AsEnumerable())
     {
-        Environment.SetEnvironmentVariable(envVariable.Key, envVariable.Value);
+        if (!string.IsNullOrEmpty(envVariable.Value))
+        {
+            Environment.SetEnvironmentVariable(envVariable.Key, envVariable.Value);
+        }
     }
 }
 
