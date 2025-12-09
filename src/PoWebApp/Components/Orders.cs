@@ -1,7 +1,5 @@
 ﻿using Azure.Identity;
 using Azure.Storage.Queues;
-using Microsoft.ApplicationInsights;
-using Microsoft.ApplicationInsights.DataContracts;
 using Microsoft.Extensions.Logging;
 using System.Diagnostics;
 using System.Text.Json;
@@ -11,19 +9,18 @@ namespace PoWebApp.Components
 {
     public class Orders
     {
-        private readonly TelemetryClient _telemetryClient;
         private readonly ILogger<Orders> _logger;
-        private static readonly ActivitySource ActivitySource = new("PoWebApp.Orders", "1.0.0");
 
-        public Orders(TelemetryClient telemetryClient, ILogger<Orders> logger)
+        public Orders(ILogger<Orders> logger)
         {
-            _telemetryClient = telemetryClient;
             _logger = logger;
         }
 
         public async Task<int> AddOrderMessageToQueueAsync()
         {
-            using var activity = ActivitySource.StartActivity("AddOrderMessageToQueue", ActivityKind.Producer);
+            using var activity = DiagnosticsConfig.ActivitySources.Orders.StartActivity(
+                "AddOrderMessageToQueue", 
+                ActivityKind.Producer);
 
             try
             {
@@ -38,18 +35,19 @@ namespace PoWebApp.Components
                 var tenantId = Environment.GetEnvironmentVariable("AZURE_TENANT_ID");
                 var queueUri = new Uri($"{queueServiceUri.TrimEnd('/')}/{queueName}");
 
-                // Add semantic convention tags
-                activity?.SetTag("messaging.system", "azure_queue_storage");
-                activity?.SetTag("messaging.destination", queueName);
-                activity?.SetTag("messaging.destination_kind", "queue");
+                // Add messaging context using extension method
+                activity?.AddMessagingContext("azure-queue", queueName, "batch-publish");
+                
+                // Add additional semantic convention tags
+                activity?.SetTag(DiagnosticsConfig.SemanticConventions.MessagingDestinationKind, "queue");
+                activity?.SetTag(DiagnosticsConfig.SemanticConventions.CloudProvider, "azure");
+                activity?.SetTag(DiagnosticsConfig.SemanticConventions.CloudService, "storage");
                 activity?.SetTag("messaging.url", queueServiceUri);
-                activity?.SetTag("messaging.operation", "publish");
-                activity?.SetTag("cloud.provider", "azure");
-                activity?.SetTag("cloud.service", "storage");
+                activity?.SetTag(DiagnosticsConfig.SemanticConventions.BatchSize, 5000);
                 
                 // Add baggage for cross-service correlation
-                activity?.AddBaggage("business.flow", "order-processing");
-                activity?.AddBaggage("messaging.system", "azure_queue_storage");
+                activity?.AddBaggage(DiagnosticsConfig.BaggageKeys.BusinessFlow, "order-processing");
+                activity?.AddBaggage(DiagnosticsConfig.BaggageKeys.MessagingSystem, "azure-queue");
 
                 using (_logger.BeginScope(new Dictionary<string, object>
                 {
@@ -71,54 +69,48 @@ namespace PoWebApp.Components
                     var successCount = 0;
                     var failureCount = 0;
 
-                    // Track batch operation
-                    var batchOperation = _telemetryClient.StartOperation<DependencyTelemetry>("Queue Batch Send");
-                    batchOperation.Telemetry.Type = "Azure Queue Storage";
-                    batchOperation.Telemetry.Target = queueServiceUri;
-                    batchOperation.Telemetry.Properties["QueueName"] = queueName;
-                    batchOperation.Telemetry.Properties["BatchSize"] = "5000";
-
                     // Add event for batch start
                     activity?.AddEvent(new ActivityEvent("BatchSendStarted",
                         tags: new ActivityTagsCollection
                         {
                             { "queue.name", queueName },
                             { "batch.size", 5000 },
-                            { "timestamp", DateTimeOffset.UtcNow }
+                            { "timestamp", DateTimeOffset.UtcNow.ToString("o") }
                         }));
 
                     try
                     {
                         for (int i = 0; i <= 5000; i++)
                         {
-                            using var messageActivity = ActivitySource.StartActivity("SendQueueMessage", ActivityKind.Producer);
+                            using var messageActivity = DiagnosticsConfig.ActivitySources.Messaging.StartActivity(
+                                "SendQueueMessage", 
+                                ActivityKind.Producer);
 
                             var orderNumber = Guid.NewGuid().ToString();
+                            var customerId = $"CUST-{Random.Shared.Next(1000, 9999)}";
+                            var amount = Random.Shared.Next(10, 1000);
+                            
                             var orderData = new
                             {
                                 OrderId = orderNumber,
-                                CustomerId = $"CUST-{Random.Shared.Next(1000, 9999)}",
-                                Amount = Random.Shared.Next(10, 1000),
+                                CustomerId = customerId,
+                                Amount = amount,
                                 Timestamp = DateTime.UtcNow,
+                                TraceParent = Activity.Current?.Id,
                                 TraceId = Activity.Current?.TraceId.ToString(),
                                 SpanId = Activity.Current?.SpanId.ToString()
                             };
 
                             var message = JsonSerializer.Serialize(orderData);
 
-                            // Add semantic conventions for messaging
-                            messageActivity?.SetTag("messaging.system", "azure_queue_storage");
-                            messageActivity?.SetTag("messaging.destination", queueName);
-                            messageActivity?.SetTag("messaging.operation", "publish");
-                            messageActivity?.SetTag("messaging.message_id", orderNumber);
-                            messageActivity?.SetTag("messaging.message_payload_size_bytes", message.Length);
-                            messageActivity?.SetTag("order.id", orderNumber);
-                            messageActivity?.SetTag("order.customer_id", orderData.CustomerId);
-                            messageActivity?.SetTag("order.amount", orderData.Amount);
-                            messageActivity?.SetTag("message.index", i);
+                            // Add messaging and order context using extension methods
+                            messageActivity?.AddMessagingContext("azure-queue", queueName, "publish");
+                            messageActivity?.AddOrderContext(orderNumber, customerId, amount);
                             
-                            // Add baggage to propagate context
-                            messageActivity?.AddBaggage("order.id", orderNumber);
+                            // Add additional semantic conventions
+                            messageActivity?.SetTag(DiagnosticsConfig.SemanticConventions.MessagingMessageId, orderNumber);
+                            messageActivity?.SetTag(DiagnosticsConfig.SemanticConventions.MessagingPayloadSize, message.Length);
+                            messageActivity?.SetTag("message.index", i);
 
                             try
                             {
@@ -136,53 +128,47 @@ namespace PoWebApp.Components
                             catch (Exception ex)
                             {
                                 failureCount++;
-                                messageActivity?.SetStatus(ActivityStatusCode.Error, ex.Message);
+                                
+                                // Record exception using extension method
                                 messageActivity?.RecordException(ex);
+                                messageActivity?.SetStatus(ActivityStatusCode.Error, ex.Message);
                                 
                                 messageActivity?.AddEvent(new ActivityEvent("MessageSendFailed",
                                     tags: new ActivityTagsCollection
                                     {
                                         { "order.id", orderNumber },
                                         { "error.type", ex.GetType().Name },
-                                        { "error.message", ex.Message }
+                                        { "error.message", ex.Message },
+                                        { "message.index", i }
                                     }));
 
-                                using (_logger.BeginScope(new Dictionary<string, object>
-                                {
-                                    ["OrderNumber"] = orderNumber,
-                                    ["MessageIndex"] = i,
-                                    ["TraceId"] = Activity.Current?.TraceId.ToString() ?? "unknown"
-                                }))
-                                {
-                                    _logger.LogError(ex,
-                                        "Failed to send message for order {OrderNumber} at index {MessageIndex}",
-                                        orderNumber, i);
-                                }
-
-                                _telemetryClient.TrackException(ex, new Dictionary<string, string>
-                                {
-                                    { "OrderNumber", orderNumber },
-                                    { "MessageIndex", i.ToString() },
-                                    { "Operation", "SendQueueMessage" },
-                                    { "QueueName", queueName }
-                                });
+                                _logger.LogStructuredError(ex,
+                                    "Failed to send message for order {OrderNumber} at index {MessageIndex}",
+                                    new Dictionary<string, object>
+                                    {
+                                        ["OrderNumber"] = orderNumber,
+                                        ["MessageIndex"] = i,
+                                        ["QueueName"] = queueName
+                                    });
                             }
                         }
 
-                        batchOperation.Telemetry.Success = true;
-                        batchOperation.Telemetry.Properties["SuccessCount"] = successCount.ToString();
-                        batchOperation.Telemetry.Properties["FailureCount"] = failureCount.ToString();
+                        // All message processing complete
                     }
-                    finally
+                    catch (Exception batchEx)
                     {
-                        _telemetryClient.StopOperation(batchOperation);
+                        activity?.RecordException(batchEx);
+                        throw;
                     }
 
-                    activity?.SetTag("batch.success_count", successCount);
-                    activity?.SetTag("batch.failure_count", failureCount);
+                    // Add batch completion tags using semantic conventions
+                    activity?.SetTag(DiagnosticsConfig.SemanticConventions.BatchSuccessCount, successCount);
+                    activity?.SetTag(DiagnosticsConfig.SemanticConventions.BatchFailureCount, failureCount);
                     activity?.SetTag("batch.total_count", 5000);
                     activity?.SetTag("batch.success_rate", (double)successCount / 5000);
-                    activity?.SetStatus(ActivityStatusCode.Ok, $"Batch completed: {successCount} succeeded, {failureCount} failed");
+                    
+                    var batchStatus = failureCount == 0 ? ActivityStatusCode.Ok : ActivityStatusCode.Error;
+                    activity?.SetStatus(batchStatus, $"Batch completed: {successCount} succeeded, {failureCount} failed");
 
                     // Add event for batch completion
                     activity?.AddEvent(new ActivityEvent("BatchSendCompleted",
@@ -193,25 +179,27 @@ namespace PoWebApp.Components
                             { "batch.duration_ms", activity?.Duration.TotalMilliseconds ?? 0 }
                         }));
 
-                    // Track custom metric
-                    _telemetryClient.TrackMetric("OrdersQueued", successCount, new Dictionary<string, string>
-                    {
-                        { "QueueName", queueName },
-                        { "BatchSize", "5000" },
-                        { "TraceId", Activity.Current?.TraceId.ToString() ?? "unknown" }
-                    });
-
-                    _logger.LogInformation(
+                    // Log batch completion with structured logging
+                    _logger.LogStructuredInformation(
                         "Batch operation completed: {SuccessCount} messages sent successfully, {FailureCount} failed",
-                        successCount, failureCount);
+                        "BatchOperationCompleted",
+                        new Dictionary<string, object>
+                        {
+                            ["SuccessCount"] = successCount,
+                            ["FailureCount"] = failureCount,
+                            ["QueueName"] = queueName,
+                            ["BatchSize"] = 5000,
+                            ["SuccessRate"] = (double)successCount / 5000
+                        });
 
                     return successCount;
                 }
             }
             catch (Exception ex)
             {
-                activity?.SetStatus(ActivityStatusCode.Error, ex.Message);
+                // Record exception using extension method
                 activity?.RecordException(ex);
+                activity?.SetStatus(ActivityStatusCode.Error, ex.Message);
                 
                 activity?.AddEvent(new ActivityEvent("BatchOperationFailed",
                     tags: new ActivityTagsCollection
@@ -220,21 +208,13 @@ namespace PoWebApp.Components
                         { "error.message", ex.Message }
                     }));
 
-                using (_logger.BeginScope(new Dictionary<string, object>
-                {
-                    ["TraceId"] = Activity.Current?.TraceId.ToString() ?? "unknown",
-                    ["SpanId"] = Activity.Current?.SpanId.ToString() ?? "unknown"
-                }))
-                {
-                    _logger.LogError(ex, "Error in AddOrderMessageToQueue operation: {ErrorMessage}", ex.Message);
-                }
-
-                _telemetryClient.TrackException(ex, new Dictionary<string, string>
-                {
-                    { "Operation", "AddOrderMessageToQueue" },
-                    { "Component", "Orders" },
-                    { "TraceId", Activity.Current?.TraceId.ToString() ?? "unknown" }
-                });
+                _logger.LogStructuredError(ex,
+                    "Error in AddOrderMessageToQueue operation: {ErrorMessage}",
+                    new Dictionary<string, object>
+                    {
+                        ["Operation"] = "AddOrderMessageToQueue",
+                        ["Component"] = "Orders"
+                    });
 
                 throw;
             }
