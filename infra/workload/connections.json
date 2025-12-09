@@ -1,0 +1,28 @@
+{
+  "managedApiConnections": {
+    "azurequeues": {
+      "api": {
+        "id": ""
+      },
+      "connection": {
+        "id": ""
+      },
+      "connectionRuntimeUrl": "",
+      "authentication": {
+        "type": "ManagedServiceIdentity"
+      }
+    },
+    "azuretables": {
+      "api": {
+        "id": ""
+      },
+      "connection": {
+        "id": ""
+      },
+      "connectionRuntimeUrl": "",
+      "authentication": {
+        "type": "ManagedServiceIdentity"
+      }
+    }
+  }
+}

@@ -156,7 +156,7 @@ resource wspDiag 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
   }
 }
 
-resource saAlerts 'Microsoft.OperationalInsights/workspaces/linkedstorageaccounts@2025-02-01' = {
+resource saAlerts 'Microsoft.OperationalInsights/workspaces/linkedStorageAccounts@2025-07-01' = {
   parent: workspace
   name: 'Alerts'
   properties: {
@@ -166,7 +166,7 @@ resource saAlerts 'Microsoft.OperationalInsights/workspaces/linkedstorageaccount
   }
 }
 
-resource saQuery 'Microsoft.OperationalInsights/workspaces/linkedstorageaccounts@2025-02-01' = {
+resource saQuery 'Microsoft.OperationalInsights/workspaces/linkedStorageAccounts@2025-07-01' = {
   parent: workspace
   name: 'Query'
   properties: {

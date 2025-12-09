@@ -1,5 +1,5 @@
-using System.Diagnostics;
 using PoProcAPI.Diagnostics;
+using System.Diagnostics;
 
 namespace PoProcAPI.Middleware
 {

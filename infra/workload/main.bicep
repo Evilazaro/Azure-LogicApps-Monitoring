@@ -146,3 +146,15 @@ output WORKFLOW_ENGINE_ASP_ID string = workflows.outputs.WORKFLOW_ENGINE_ASP_ID
 
 @description('Name of the App Service Plan')
 output APP_SERVICE_PLAN_NAME string = workflows.outputs.APP_SERVICE_PLAN_NAME
+
+@description('Resource ID of the Azure Queue Storage API connection')
+output QUEUE_CONNECTION_ID string = workflows.outputs.QUEUE_CONNECTION_ID
+
+@description('Name of the Azure Queue Storage API connection')
+output QUEUE_CONNECTION_NAME string = workflows.outputs.QUEUE_CONNECTION_NAME
+
+@description('Resource ID of the Azure Table Storage API connection')
+output TABLE_CONNECTION_ID string = workflows.outputs.TABLE_CONNECTION_ID
+
+@description('Name of the Azure Table Storage API connection')
+output TABLE_CONNECTION_NAME string = workflows.outputs.TABLE_CONNECTION_NAME

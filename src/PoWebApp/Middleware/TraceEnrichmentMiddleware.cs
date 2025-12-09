@@ -1,5 +1,5 @@
-using System.Diagnostics;
 using PoWebApp.Diagnostics;
+using System.Diagnostics;
 
 namespace PoWebApp.Middleware
 {
@@ -26,7 +26,7 @@ namespace PoWebApp.Middleware
                 // Enrich with request information
                 activity.SetTag("http.request.content_length", context.Request.ContentLength ?? 0);
                 activity.SetTag("http.request.user_agent", context.Request.Headers.UserAgent.ToString());
-                
+
                 // Add client IP
                 var clientIp = context.Connection.RemoteIpAddress?.ToString() ?? "unknown";
                 activity.SetTag("client.address", clientIp);
@@ -56,7 +56,7 @@ namespace PoWebApp.Middleware
                 if (activity != null)
                 {
                     activity.SetTag("http.response.content_length", context.Response.ContentLength ?? 0);
-                    
+
                     // Set status based on HTTP status code
                     if (context.Response.StatusCode >= 400)
                     {

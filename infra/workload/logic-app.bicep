@@ -44,7 +44,7 @@ param tags object = {}
 
 var resourceSuffix = uniqueString(resourceGroup().id, name, envName, location)
 
-resource wfASP 'Microsoft.Web/serverfarms@2023-12-01' = {
+resource wfASP 'Microsoft.Web/serverfarms@2025-03-01' = {
   name: '${name}-${resourceSuffix}-asp'
   location: location
   sku: {
@@ -80,13 +80,13 @@ resource wfASPDiag 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = 
   }
 }
 
-resource mi 'Microsoft.ManagedIdentity/userAssignedIdentities@2023-01-31' = {
+resource mi 'Microsoft.ManagedIdentity/userAssignedIdentities@2025-01-31-preview' = {
   name: '${name}-${resourceSuffix}-mi'
   location: location
   tags: tags
 }
 
-resource wfSA 'Microsoft.Storage/storageAccounts@2023-05-01' existing = {
+resource wfSA 'Microsoft.Storage/storageAccounts@2025-06-01' existing = {
   name: workflowStorageAccountName
   scope: resourceGroup()
 }
@@ -124,7 +124,7 @@ var functionsWorkerRuntime = 'dotnet'
 var extensionBundleId = 'Microsoft.Azure.Functions.ExtensionBundle.Workflows'
 var extensionBundleVersion = '[1.*, 2.0.0)'
 
-resource workflowEngine 'Microsoft.Web/sites@2023-12-01' = {
+resource workflowEngine 'Microsoft.Web/sites@2025-03-01' = {
   name: '${name}-${resourceSuffix}-logicapp'
   location: location
   kind: 'functionapp,workflowapp'
@@ -141,20 +141,21 @@ resource workflowEngine 'Microsoft.Web/sites@2023-12-01' = {
     storageAccountRequired: true
     siteConfig: {
       alwaysOn: true
+      webSocketsEnabled: true
       minimumElasticInstanceCount: 3
       elasticWebAppScaleLimit: 20
-      autoHealEnabled: true
       use32BitWorkerProcess: false
-      ftpsState: 'Disabled'
+      ftpsState: 'FtpsOnly'
       minTlsVersion: '1.2'
-      netFrameworkVersion: 'v6.0'
     }
+    httpsOnly: true
   }
 }
 
 resource wfConf 'Microsoft.Web/sites/config@2025-03-01' = {
   name: 'appsettings'
   parent: workflowEngine
+  kind: 'functionapp,workflowapp'
   properties: {
     FUNCTIONS_EXTENSION_VERSION: functionsExtensionVersion
     FUNCTIONS_WORKER_RUNTIME: functionsWorkerRuntime
@@ -182,9 +183,15 @@ var queueConnectionName string = 'azurequeues'
 resource storageQueueApiConnection 'Microsoft.Web/connections@2016-06-01' = {
   name: queueConnectionName
   location: location
+  tags: tags
   kind: 'V2'
   properties: {
     displayName: queueConnectionName
+    statuses: [
+      {
+        status: 'Connected'
+      }
+    ]
     api: {
       name: queueConnectionName
       displayName: 'Azure Queues'
@@ -194,10 +201,8 @@ resource storageQueueApiConnection 'Microsoft.Web/connections@2016-06-01' = {
       id: '/subscriptions/${subscription().subscriptionId}/providers/Microsoft.Web/locations/${location}/managedApis/${queueConnectionName}'
       type: 'Microsoft.Web/locations/managedApis'
     }
-    nonSecretParameterValues: {
-      storageaccount: wfSA.name
-    }
     parameterValues: {
+      storageaccount: wfSA.name
       sharedkey: wfSA.listKeys().keys[0].value
     }
     testLinks: [
@@ -212,6 +217,11 @@ resource storageQueueApiConnection 'Microsoft.Web/connections@2016-06-01' = {
 resource queueAccessPolicy 'Microsoft.Web/connections/accessPolicies@2018-07-01-preview' = {
   name: guid(subscription().id, resourceGroup().id, storageQueueApiConnection.id, mi.id)
   parent: storageQueueApiConnection
+  tags: tags
+  location: location
+  identity: {
+    type: 'SystemAssigned'
+  }
   properties: {
     principal: {
       type: 'ActiveDirectory'
@@ -226,44 +236,50 @@ resource queueAccessPolicy 'Microsoft.Web/connections/accessPolicies@2018-07-01-
   ]
 }
 
-// Output the connection ID for use in the Logic App workflow definition
-output apiConnectionId string = storageQueueApiConnection.id
+param tbConnName string = 'azuretables'
 
-param tableConnectionName string = 'azuretables'
-
-resource tableConnection 'Microsoft.Web/connections@2016-06-01' = {
-  name: tableConnectionName
+resource tbConn 'Microsoft.Web/connections@2016-06-01' = {
+  name: tbConnName
   location: location
   kind: 'V2'
+  tags: tags
   properties: {
-    displayName: tableConnectionName
+    displayName: tbConnName
     api: {
-      name: tableConnectionName
+      name: tbConnName
       displayName: 'Azure Table Storage'
       description: 'Azure Table storage is a service that stores structured NoSQL data in the cloud, providing a key/attribute store with a schemaless design. Sign into your Storage account to create, update, and query tables and more.'
-      iconUri: 'https://conn-afd-prod-endpoint-bmc9bqahasf3grgk.b01.azurefd.net/v1.0.1778/1.0.1778.4417/${tableConnectionName}/icon.png'
+      iconUri: 'https://conn-afd-prod-endpoint-bmc9bqahasf3grgk.b01.azurefd.net/v1.0.1778/1.0.1778.4417/${tbConnName}/icon.png'
       brandColor: '#804998'
-      id: '/subscriptions/${subscription().subscriptionId}/providers/Microsoft.Web/locations/${location}/managedApis/${tableConnectionName}'
+      id: '/subscriptions/${subscription().subscriptionId}/providers/Microsoft.Web/locations/${location}/managedApis/${tbConnName}'
       type: 'Microsoft.Web/locations/managedApis'
     }
-    nonSecretParameterValues: {
-      storageaccount: wfSA.name
-    }
+    statuses: [
+      {
+        status: 'Connected'
+      }
+    ]
     parameterValues: {
+      storageaccount: wfSA.name
       sharedkey: wfSA.listKeys().keys[0].value
     }
     testLinks: [
       {
-        requestUri: 'https://management.azure.com:443/subscriptions/${subscription().subscriptionId}/resourceGroups/${resourceGroup().name}/providers/Microsoft.Web/connections/${tableConnectionName}/extensions/proxy/testConnection?api-version=2016-06-01'
+        requestUri: 'https://management.azure.com:443/subscriptions/${subscription().subscriptionId}/resourceGroups/${resourceGroup().name}/providers/Microsoft.Web/connections/${tbConnName}/extensions/proxy/testConnection?api-version=2016-06-01'
         method: 'get'
       }
     ]
   }
 }
 
-resource tableAccessPolicy 'Microsoft.Web/connections/accessPolicies@2018-07-01-preview' = {
-  name: guid(subscription().id, resourceGroup().id, tableConnection.id, mi.id)
-  parent: tableConnection
+resource tbAccesPol 'Microsoft.Web/connections/accessPolicies@2018-07-01-preview' = {
+  name: guid(subscription().id, resourceGroup().id, tbConn.id, mi.id)
+  parent: tbConn
+  location: location
+  tags: tags
+  identity: {
+    type: 'SystemAssigned'
+  }
   properties: {
     principal: {
       type: 'ActiveDirectory'
@@ -294,8 +310,6 @@ resource wfDiag 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
   }
 }
 
-
-
 // ========== Outputs ==========
 
 @description('Resource ID of the deployed Logic App')
@@ -309,3 +323,15 @@ output WORKFLOW_ENGINE_ASP_ID string = wfASP.id
 
 @description('Name of the App Service Plan')
 output APP_SERVICE_PLAN_NAME string = wfASP.name
+
+@description('Resource ID of the Azure Queue Storage API connection')
+output QUEUE_CONNECTION_ID string = storageQueueApiConnection.id
+
+@description('Name of the Azure Queue Storage API connection')
+output QUEUE_CONNECTION_NAME string = storageQueueApiConnection.name
+
+@description('Resource ID of the Azure Table Storage API connection')
+output TABLE_CONNECTION_ID string = tbConn.id
+
+@description('Name of the Azure Table Storage API connection')
+output TABLE_CONNECTION_NAME string = tbConn.name

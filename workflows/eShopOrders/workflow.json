@@ -6,7 +6,7 @@
             "HTTP": {
                 "type": "Http",
                 "inputs": {
-                    "uri": "https://eshop-orders-4bewrs44cgeo6-poproc-api.azurewebsites.net/Orders",
+                    "uri": "@parameters('apiEndpoint')",
                     "method": "POST",
                     "headers": {
                         "accept": "*/*",
@@ -44,7 +44,7 @@
                             },
                             "method": "post",
                             "body": "@body('Parse_JSON')",
-                            "path": "/v2/storageAccounts/@{encodeURIComponent(encodeURIComponent('eshoporders4bewrs44cgeo6'))}/tables/@{encodeURIComponent('audit')}/entities"
+                            "path": "/v2/storageAccounts/@{encodeURIComponent(encodeURIComponent(parameters('storageAccountName')))}/tables/@{encodeURIComponent('audit')}/entities"
                         },
                         "runAfter": {
                             "Parse_JSON": [
@@ -114,7 +114,7 @@
                                 },
                                 "method": "post",
                                 "body": "@body('Parse_JSON_1')",
-                                "path": "/v2/storageAccounts/@{encodeURIComponent(encodeURIComponent('eshoporders4bewrs44cgeo6'))}/tables/@{encodeURIComponent('audit')}/entities"
+                                "path": "/v2/storageAccounts/@{encodeURIComponent(encodeURIComponent(parameters('storageAccountName')))}/tables/@{encodeURIComponent('audit')}/entities"
                             },
                             "runAfter": {
                                 "Parse_JSON_1": [
@@ -132,6 +132,14 @@
             }
         },
         "outputs": {},
+        "parameters": {
+            "apiEndpoint": {
+                "type": "string"
+            },
+            "storageAccountName": {
+                "type": "string"
+            }
+        },
         "triggers": {
             "When_there_are_messages_in_a_queue_(V2)": {
                 "type": "ApiConnection",
@@ -142,12 +150,11 @@
                         }
                     },
                     "method": "get",
-                    "path": "/v2/storageAccounts/@{encodeURIComponent(encodeURIComponent('eshoporders4bewrs44cgeo6'))}/queues/@{encodeURIComponent('orders-queue')}/message_trigger"
+                    "path": "/v2/storageAccounts/@{encodeURIComponent(encodeURIComponent(parameters('storageAccountName')))}/queues/@{encodeURIComponent('orders-queue')}/message_trigger"
                 },
                 "recurrence": {
                     "interval": 1,
-                    "frequency": "Second",
-                    "timeZone": "Central Standard Time"
+                    "frequency": "Second"
                 },
                 "runtimeConfiguration": {
                     "concurrency": {

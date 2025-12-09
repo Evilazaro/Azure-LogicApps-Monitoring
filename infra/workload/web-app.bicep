@@ -174,7 +174,7 @@ var RolIdsSA = [
   rolDefSA.fileDataContributor
 ]
 
-resource wfSA 'Microsoft.Storage/storageAccounts@2021-04-01' existing = {
+resource wfSA 'Microsoft.Storage/storageAccounts@2025-06-01' existing = {
   name: workflowStorageAccountName
   scope: resourceGroup()
 }

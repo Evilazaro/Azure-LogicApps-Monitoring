@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using System.Diagnostics;
 using PoProcAPI.Diagnostics;
+using System.Diagnostics;
 
 namespace PoProcAPI.Controllers
 {
