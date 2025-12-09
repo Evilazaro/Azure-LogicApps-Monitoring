@@ -115,16 +115,9 @@ resource PoProcAPI 'Microsoft.Web/sites@2025-03-01' = {
     siteConfig: {
       linuxFxVersion: '${appConf.runtime}|${appConf.version}'
       alwaysOn: true
-      acrUseManagedIdentityCreds: false
       minimumElasticInstanceCount: 3
       elasticWebAppScaleLimit: 10
-      ftpsState: 'AllAllowed'
-      webSocketsEnabled: true
-      minTlsVersion: '1.2'
-      http20Enabled: true
       numberOfWorkers: 3
-      http20ProxyFlag: 1
-      autoHealEnabled: true
     }
     httpsOnly: true
   }

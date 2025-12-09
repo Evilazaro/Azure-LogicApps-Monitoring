@@ -197,6 +197,11 @@ resource queueConnection 'Microsoft.Web/connections@2016-06-01' = {
   kind: 'V2'
   properties: {
     displayName: 'eshop-orders-workflow'
+    parameterValues: {
+      accountName: workflowStorageAccountName
+      storageAccountId: wfSA.id
+      queueName: 'orders-queue'
+    }
     statuses: [
       {
         status: 'Ready'

@@ -118,16 +118,10 @@ resource PoWebApp 'Microsoft.Web/sites@2025-03-01' = {
     siteConfig: {
       linuxFxVersion: '${appConf.runtime}|${appConf.version}'
       alwaysOn: true
-      acrUseManagedIdentityCreds: false
       minimumElasticInstanceCount: 3
       elasticWebAppScaleLimit: 10
-      ftpsState: 'AllAllowed'
-      minTlsVersion: '1.2'
-      http20Enabled: true
       numberOfWorkers: 3
       webSocketsEnabled: true // Already enabled ✓
-      http20ProxyFlag: 1
-      autoHealEnabled: true
     }
     clientAffinityEnabled: true // Already enabled ✓
     clientAffinityProxyEnabled: true // This needs verification
@@ -141,28 +135,41 @@ resource PoConf 'Microsoft.Web/sites/config@2025-03-01' = {
   properties: {
     ASPNETCORE_ENVIRONMENT: 'Production'
     AzureWebJobsStorage__accountName: workflowStorageAccountName
-    AzureWebJobsStorage__blobServiceUri: 'https://${workflowStorageAccountName}.blob.${environment().suffixes.storage}'
     AzureWebJobsStorage__queueServiceUri: 'https://${workflowStorageAccountName}.queue.${environment().suffixes.storage}'
-    AzureWebJobsStorage__tableServiceUri: 'https://${workflowStorageAccountName}.table.${environment().suffixes.storage}'
-    AzureWebJobsStorage__fileServiceUri: 'https://${workflowStorageAccountName}.file.${environment().suffixes.storage}'
     AzureWebJobsStorage__credential: 'managedidentity'
     AzureWebJobsStorage__managedIdentityResourceId: PoWebApp.identity.principalId
     APPINSIGHTS_INSTRUMENTATIONKEY: appInsightsInstrumentationKey
-    APPINSIGHTS_PROFILERFEATURE_VERSION: '1.0.0'
-    APPINSIGHTS_SNAPSHOTFEATURE_VERSION: '1.0.0'
+    // APPINSIGHTS_PROFILERFEATURE_VERSION: '1.0.0'
+    // APPINSIGHTS_SNAPSHOTFEATURE_VERSION: '1.0.0'
     APPLICATIONINSIGHTS_CONNECTION_STRING: appInsightsConnectionString
-    APPLICATIONINSIGHTS_ENABLESQLQUERYCOLLECTION: 'true'
-    ApplicationInsightsAgent_EXTENSION_VERSION: '~3'
-    DiagnosticServices_EXTENSION_VERSION: '~3'
-    DISABLE_APPINSIGHTS_SDK: 'disabled'
-    IGNORE_APPINSIGHTS_SDK: 'disabled'
-    InstrumentationEngine_EXTENSION_VERSION: 'enabled'
-    SnapshotDebugger_EXTENSION_VERSION: 'enabled'
-    WEBSITE_HEALTHCHECK_MAXPINGFAILURES: '5'
-    XDT_MicrosoftApplicationInsights_BaseExtensions: 'enabled'
-    XDT_MicrosoftApplicationInsights_Mode: 'recommended'
-    XDT_MicrosoftApplicationInsights_PreemptSdk: 'enabled'
+    // APPLICATIONINSIGHTS_ENABLESQLQUERYCOLLECTION: 'true'
+    // ApplicationInsightsAgent_EXTENSION_VERSION: '~3'
+    // DiagnosticServices_EXTENSION_VERSION: '~3'
+    // DISABLE_APPINSIGHTS_SDK: 'disabled'
+    // IGNORE_APPINSIGHTS_SDK: 'disabled'
+    // InstrumentationEngine_EXTENSION_VERSION: 'enabled'
+    // SnapshotDebugger_EXTENSION_VERSION: 'enabled'
+    // WEBSITE_HEALTHCHECK_MAXPINGFAILURES: '5'
+    // XDT_MicrosoftApplicationInsights_BaseExtensions: 'enabled'
+    // XDT_MicrosoftApplicationInsights_Mode: 'recommended'
+    // XDT_MicrosoftApplicationInsights_PreemptSdk: 'enabled'
     AZURE_TENANT_ID: tenant().tenantId
+  }
+}
+
+resource ftp 'Microsoft.Web/sites/basicPublishingCredentialsPolicies@2025-03-01' = {
+  parent: PoWebApp
+  name: 'ftp'
+  properties: {
+    allow: true
+  }
+}
+
+resource smc 'Microsoft.Web/sites/basicPublishingCredentialsPolicies@2025-03-01' = {
+  parent: PoWebApp
+  name: 'scm'
+  properties: {
+    allow: true
   }
 }
 
