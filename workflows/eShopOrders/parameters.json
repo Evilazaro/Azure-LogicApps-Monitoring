@@ -1,0 +1,8 @@
+{
+    "apiEndpoint": {
+        "value": "https://eshop-orders-e3iaps4jamrby-poproc-api.azurewebsites.net/Orders"
+    },
+    "storageAccountName": {
+        "value": "eshoporderse3iaps4jamrby"
+    }
+}
