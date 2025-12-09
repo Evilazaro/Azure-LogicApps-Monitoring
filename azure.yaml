@@ -11,12 +11,7 @@ hooks:
   postprovision:
     shell: pwsh
     run: |
-      ./hooks/deploy-connections.ps1 `
-        -ResourceGroupName "${AZURE_RESOURCE_GROUP}" `
-        -LogicAppName "${WORKFLOW_ENGINE_NAME}" `
-        -QueueConnectionName "azurequeues" `
-        -TableConnectionName "azuretables" `
-        -WorkflowName "eShopOrders"
+      ./hooks/deploy-connections.ps1 $env:AZURE_RESOURCE_GROUP $env:WORKFLOW_ENGINE_NAME "azurequeues" "azuretables" "eShopOrders"
 
 services:
   PoWebApp:
