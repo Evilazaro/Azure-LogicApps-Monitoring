@@ -177,13 +177,15 @@ resource wfConf 'Microsoft.Web/sites/config@2025-03-01' = {
   }
 }
 
+var queueConnectionName string = 'api-conn-${wfSA.name}-queue'
+
 resource storageQueueApiConnection 'Microsoft.Web/connections@2016-06-01' = {
-  name: 'api-conn-${wfSA.name}-queue'
+  name: queueConnectionName
   location: location
   properties: {
     displayName: 'Connection-${wfSA.name}-MI'
     api: {
-      id: '/subscriptions/${subscription().subscriptionId}/providers/Microsoft.Web/locations/${location}/managedApis/azurequeues'
+      id: '/subscriptions/${subscription().subscriptionId}/providers/Microsoft.Web/locations/${location}/managedApis/${queueConnectionName}'
     }
     // This part is specific to managed identity authentication for Logic Apps
     authentication: {
@@ -202,6 +204,50 @@ resource storageQueueApiConnection 'Microsoft.Web/connections@2016-06-01' = {
 
 // Output the connection ID for use in the Logic App workflow definition
 output apiConnectionId string = storageQueueApiConnection.id
+
+param tableConnectionName string = 'azuretables'
+
+resource tableConnection 'Microsoft.Web/connections@2016-06-01' = {
+  name: tableConnectionName
+  location: 'eastus2'
+  kind: 'V2'
+  properties: {
+    displayName: 'new_conn_67af3'
+    statuses: [
+      {
+        status: 'Ready'
+      }
+    ]
+    customParameterValues: {}
+    api: {
+      name: tableConnectionName
+      displayName: 'Azure Table Storage'
+      description: 'Azure Table storage is a service that stores structured NoSQL data in the cloud, providing a key/attribute store with a schemaless design. Sign into your Storage account to create, update, and query tables and more.'
+      iconUri: 'https://conn-afd-prod-endpoint-bmc9bqahasf3grgk.b01.azurefd.net/v1.0.1778/1.0.1778.4417/${tableConnectionName}/icon.png'
+      brandColor: '#804998'
+      id: '/subscriptions/${subscription().subscriptionId}/providers/Microsoft.Web/locations/${location}/managedApis/${tableConnectionName}'
+      type: 'Microsoft.Web/locations/managedApis'
+    }
+    // This part is specific to managed identity authentication for Logic Apps
+    authentication: {
+      type: 'ManagedServiceIdentity'
+      identity: {
+        // Reference the full resource ID of the user-assigned identity
+        id: mi.id
+      }
+    }
+    // Specific parameter for the storage account name
+    parameterValues: {
+      storageaccount: wfSA.name
+    }
+    testLinks: [
+      {
+        requestUri: 'https://management.azure.com:443/subscriptions/${subscription().subscriptionId}/resourceGroups/${resourceGroup().name}/providers/Microsoft.Web/connections/${tableConnectionName}/extensions/proxy/testConnection?api-version=2016-06-01'
+        method: 'get'
+      }
+    ]
+  }
+}
 
 resource wfDiag 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
   name: '${workflowEngine.name}-diag'
