@@ -1,4 +1,4 @@
-# Azure Logic Apps Monitoring Solution
+Collecting workspace information# Azure Logic Apps Monitoring Solution
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Azure](https://img.shields.io/badge/Azure-Logic%20Apps-0078D4?logo=microsoft-azure)](https://azure.microsoft.com/en-us/products/logic-apps/)
@@ -6,9 +6,11 @@
 
 A comprehensive, production-ready open-source solution demonstrating Azure Monitor best practices for Logic Apps Standard, ASP.NET Core applications, and enterprise workflow orchestration using **OpenTelemetry**, **Application Insights**, and **Log Analytics**.
 
+---
+
 ## 📋 Project Overview
 
-This project provides a reference implementation for enterprise-grade observability in Azure Logic Apps environments. It showcases distributed tracing, structured logging, custom instrumentation, and advanced monitoring patterns that go beyond default Azure Monitor capabilities.
+This project provides a **reference implementation** for enterprise-grade observability in Azure Logic Apps environments. It showcases **distributed tracing**, **structured logging**, **custom instrumentation**, and advanced monitoring patterns that go beyond default Azure Monitor capabilities.
 
 **Key Highlights:**
 - **Distributed Tracing**: End-to-end request correlation across Logic Apps, Web Apps, and APIs using OpenTelemetry
@@ -25,7 +27,7 @@ This project provides a reference implementation for enterprise-grade observabil
 |------|-----------------|-------------------------------|----------|
 | **Cloud Solution Architect** | Design cloud architectures, define monitoring strategies, ensure compliance | Use as reference architecture for Logic Apps observability; customize Bicep templates for enterprise requirements | Accelerated design phase; proven patterns; reduced risk |
 | **DevOps Engineer** | Automate deployments, maintain CI/CD pipelines, monitor infrastructure health | Deploy using `azd` CLI; integrate monitoring into pipelines; configure alerts | Simplified deployment; repeatable infrastructure; automated monitoring |
-| **Application Developer** | Build business logic, implement APIs, troubleshoot application issues | Study distributed tracing examples in DistributedTracingExample.cs; use structured logging patterns | Faster debugging; improved code quality; better telemetry |
+| **Application Developer** | Build business logic, implement APIs, troubleshoot application issues | Study distributed tracing examples in `DistributedTracingExample.cs`; use structured logging patterns | Faster debugging; improved code quality; better telemetry |
 | **Site Reliability Engineer (SRE)** | Ensure system reliability, manage incidents, optimize performance | Leverage KQL queries; configure alerts; analyze trace data in Application Insights | Reduced MTTR; proactive issue detection; better incident response |
 | **Platform Engineer** | Standardize infrastructure, maintain reusable templates, enforce governance | Extend Bicep modules for multi-region deployments; enforce diagnostic settings across subscriptions | Consistent infrastructure; reduced technical debt; governance enforcement |
 | **Security Engineer** | Monitor access patterns, detect anomalies, ensure compliance | Audit diagnostic logs; track authentication events; monitor Azure RBAC changes | Enhanced security posture; compliance visibility; threat detection |
@@ -71,7 +73,7 @@ This solution is built on three core design principles:
 
 ### Diagnostic Settings
 
-Diagnostic Settings are the foundation of Azure Monitor, enabling automated collection of **logs** and **metrics** from Azure resources. This solution configures comprehensive diagnostic settings across all resources, sending telemetry to both **Log Analytics** (for querying) and **Storage Accounts** (for long-term retention).
+**Diagnostic Settings** are the foundation of Azure Monitor, enabling automated collection of **logs** and **metrics** from Azure resources. This solution configures comprehensive diagnostic settings across all resources, sending telemetry to both **Log Analytics** (for querying) and **Storage Accounts** (for long-term retention).
 
 #### Diagnostic Settings Collection
 
@@ -85,7 +87,7 @@ Diagnostic Settings are the foundation of Azure Monitor, enabling automated coll
 
 **Example: Logic App Diagnostic Setting Configuration**
 
-```bicep
+````bicep
 resource wfDiag 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
   name: '${workflowEngine.name}-diag'
   scope: workflowEngine
@@ -106,7 +108,7 @@ resource wfDiag 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
     ]
   }
 }
-```
+````
 
 **Why This Matters:**
 - **Complete Visibility**: Every Azure resource sends logs and metrics to a centralized workspace
@@ -485,20 +487,20 @@ requests
 
 ### Distributed Tracing
 
-- DiagnosticsConfig.cs - Activity sources and semantic conventions
-- DistributedTracingExample.cs - Complete tracing examples
-- StructuredLogging.cs - Structured logging extensions
+- `DiagnosticsConfig.cs` - Activity sources and semantic conventions
+- `DistributedTracingExample.cs` - Complete tracing examples
+- `StructuredLogging.cs` - Structured logging extensions
 
 ### Infrastructure as Code
 
-- main.bicep - Main deployment template
-- app-insights.bicep - Application Insights configuration
-- logic-app.bicep - Logic App Standard deployment
+- `main.bicep` - Main deployment template
+- `app-insights.bicep` - Application Insights configuration
+- `logic-app.bicep` - Logic App Standard deployment
 
 ### Application Configuration
 
-- Program.cs - OpenTelemetry setup for Blazor app
-- Program.cs - OpenTelemetry setup for API
+- `Program.cs` - OpenTelemetry setup for Blazor app
+- `Program.cs` - OpenTelemetry setup for API
 
 ---
 
@@ -594,7 +596,7 @@ Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
 in the Software without restriction, including without limitation the rights
 to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
+copies of the Software, and to permit persons software is
 furnished to do so, subject to the following conditions:
 
 The above copyright notice and this permission notice shall be included in all
@@ -658,4 +660,4 @@ For questions or issues:
 
 **Built with ❤️ by the Azure community**
 
-Similar code found with 3 license types
+Similar code found with 2 license types
