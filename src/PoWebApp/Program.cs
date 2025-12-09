@@ -3,8 +3,6 @@ using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
 using PoWebApp.Components;
 using PoWebApp.Diagnostics;
-using Microsoft.ApplicationInsights;
-using System.Diagnostics;
 
 var builder = WebApplication.CreateBuilder(args);
 

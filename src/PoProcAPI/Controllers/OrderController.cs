@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
-using System.Diagnostics;
 using PoProcAPI.Diagnostics;
+using System.Diagnostics;
 
 namespace PoProcAPI.Controllers
 {
@@ -61,11 +61,11 @@ namespace PoProcAPI.Controllers
                     validationActivity?.AddOrderContext(orderRequest.OrderId);
                     validationActivity?.SetTag("validation.type", "business_rules");
                     validationActivity?.SetTag("validation.rules", "required_fields,amount_positive");
-                    
+
                     var validationStart = Stopwatch.GetTimestamp();
 
                     ValidateOrder(orderRequest);
-                    
+
                     var validationDuration = Stopwatch.GetElapsedTime(validationStart);
                     validationActivity?.SetTag("validation.duration_ms", validationDuration.TotalMilliseconds);
                     validationActivity?.SetStatus(ActivityStatusCode.Ok);
@@ -88,12 +88,12 @@ namespace PoProcAPI.Controllers
 
                     // Simulate processing logic
                     Thread.Sleep(100); // Simulate processing time
-                    
+
                     var processingDuration = Stopwatch.GetElapsedTime(processingStart);
                     processingActivity?.SetTag("processing.duration_ms", processingDuration.TotalMilliseconds);
                     processingActivity?.SetTag("processing.status", "completed");
                     processingActivity?.SetStatus(ActivityStatusCode.Ok, "Order fulfillment completed");
-                    
+
                     // Add processing event with metrics
                     processingActivity?.AddEvent(new ActivityEvent("FulfillmentCompleted",
                         tags: new ActivityTagsCollection
@@ -108,9 +108,9 @@ namespace PoProcAPI.Controllers
                 // Set success status with description
                 activity?.SetStatus(ActivityStatusCode.Ok, "Order processed successfully");
                 activity?.SetTag(DiagnosticsConfig.SemanticConventions.OrderStatus, "accepted");
-                
+
                 var (traceParent, traceState) = activity.GetTraceContext();
-                
+
                 activity?.AddEvent(new ActivityEvent("OrderCompleted",
                     tags: new ActivityTagsCollection
                     {

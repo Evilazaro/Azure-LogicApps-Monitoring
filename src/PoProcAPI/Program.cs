@@ -1,9 +1,7 @@
 using Azure.Monitor.OpenTelemetry.AspNetCore;
+using OpenTelemetry.Metrics;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
-using OpenTelemetry.Metrics;
-using OpenTelemetry.Logs;
-using System.Diagnostics;
 
 var builder = WebApplication.CreateBuilder(args);
 

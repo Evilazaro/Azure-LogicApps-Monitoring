@@ -1,6 +1,5 @@
-using System.Diagnostics;
-using Microsoft.Extensions.Logging;
 using PoWebApp.Diagnostics;
+using System.Diagnostics;
 
 namespace PoWebApp.Examples
 {
@@ -41,7 +40,7 @@ namespace PoWebApp.Examples
             try
             {
                 // Simulate order processing
-                _logger.LogInformation("Processing order {OrderId} for customer {CustomerId}", 
+                _logger.LogInformation("Processing order {OrderId} for customer {CustomerId}",
                     orderId, customerId);
 
                 // Call downstream service (automatically creates child span)
@@ -56,10 +55,10 @@ namespace PoWebApp.Examples
                 // Record exception with proper semantic conventions
                 activity?.RecordException(ex);
                 activity?.SetStatus(ActivityStatusCode.Error, ex.Message);
-                
-                _logger.LogStructuredError(ex, "Failed to process order {OrderId}", 
+
+                _logger.LogStructuredError(ex, "Failed to process order {OrderId}",
                     new Dictionary<string, object> { ["OrderId"] = orderId });
-                
+
                 throw;
             }
         }
@@ -82,15 +81,15 @@ namespace PoWebApp.Examples
             {
                 // HttpClient automatically propagates trace context
                 var httpClient = _httpClientFactory.CreateClient();
-                
+
                 // Simulate API call
                 _logger.LogInformation("Calling payment service for order {OrderId}", orderId);
-                
+
                 // In real scenario, you would make actual HTTP call:
                 // var response = await httpClient.PostAsync(...);
-                
+
                 await Task.Delay(100); // Simulate network delay
-                
+
                 activity?.SetStatus(ActivityStatusCode.Ok);
             }
             catch (Exception ex)
@@ -113,7 +112,7 @@ namespace PoWebApp.Examples
             // Add messaging context
             activity?.AddMessagingContext("azure-queue", "order-notifications", "publish");
             activity?.SetTag(DiagnosticsConfig.SemanticConventions.MessagingMessageId, Guid.NewGuid().ToString());
-            activity?.SetTag(DiagnosticsConfig.SemanticConventions.MessagingPayloadSize, 
+            activity?.SetTag(DiagnosticsConfig.SemanticConventions.MessagingPayloadSize,
                 System.Text.Encoding.UTF8.GetByteCount(messageContent));
 
             // Add order context as baggage for cross-service correlation
@@ -150,7 +149,7 @@ namespace PoWebApp.Examples
         {
             // Create a correlated logging scope
             using var logScope = _logger.BeginCorrelatedScope(
-                orderId, 
+                orderId,
                 new Dictionary<string, object>
                 {
                     ["CustomerId"] = "CUST-123",
@@ -203,10 +202,10 @@ namespace PoWebApp.Examples
 
             batchActivity?.SetTag(DiagnosticsConfig.SemanticConventions.BatchSuccessCount, successCount);
             batchActivity?.SetTag(DiagnosticsConfig.SemanticConventions.BatchFailureCount, failureCount);
-            
+
             if (failureCount > 0)
             {
-                batchActivity?.SetStatus(ActivityStatusCode.Error, 
+                batchActivity?.SetStatus(ActivityStatusCode.Error,
                     $"Batch processing completed with {failureCount} failures");
             }
             else
@@ -230,7 +229,7 @@ namespace PoWebApp.Examples
             activity?.AddEvent(new ActivityEvent("OrderValidationStarted"));
             await Task.Delay(50); // Simulate validation
 
-            activity?.AddEvent(new ActivityEvent("OrderValidationCompleted", 
+            activity?.AddEvent(new ActivityEvent("OrderValidationCompleted",
                 tags: new ActivityTagsCollection
                 {
                     { "validation.result", "passed" },

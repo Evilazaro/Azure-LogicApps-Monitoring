@@ -1,4 +1,3 @@
-using Microsoft.Extensions.Logging;
 using System.Diagnostics;
 
 namespace PoWebApp.Diagnostics
