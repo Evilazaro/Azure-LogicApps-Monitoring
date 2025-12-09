@@ -3,9 +3,8 @@ using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
 using PoWebApp.Components;
 using PoWebApp.Diagnostics;
-using PoWebApp.Middleware;
 using PoWebApp.HealthChecks;
-using Azure.Identity;
+using PoWebApp.Middleware;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -34,14 +33,14 @@ builder.Services.AddOpenTelemetry()
         .AddAspNetCoreInstrumentation(options =>
         {
             options.RecordException = true;
-            
+
             // Filter out health check endpoints
             options.Filter = (httpContext) =>
             {
                 var path = httpContext.Request.Path.Value;
                 return !path?.Contains("/health", StringComparison.OrdinalIgnoreCase) ?? true;
             };
-            
+
             options.EnrichWithHttpRequest = (activity, httpRequest) =>
             {
                 activity.SetTag("http.request.method", httpRequest.Method);
@@ -49,11 +48,11 @@ builder.Services.AddOpenTelemetry()
                 activity.SetTag("http.scheme", httpRequest.Scheme);
                 activity.SetTag("http.host", httpRequest.Host.ToString());
             };
-            
+
             options.EnrichWithHttpResponse = (activity, httpResponse) =>
             {
                 activity.SetTag("http.response.status_code", httpResponse.StatusCode);
-                
+
                 // Add response size if available
                 if (httpResponse.ContentLength.HasValue)
                 {
@@ -65,17 +64,17 @@ builder.Services.AddOpenTelemetry()
         .AddHttpClientInstrumentation(options =>
         {
             options.RecordException = true;
-            
+
             options.EnrichWithHttpRequestMessage = (activity, httpRequestMessage) =>
             {
                 activity.SetTag("http.request.method", httpRequestMessage.Method.ToString());
                 activity.SetTag("http.url", httpRequestMessage.RequestUri?.ToString());
             };
-            
+
             options.EnrichWithHttpResponseMessage = (activity, httpResponseMessage) =>
             {
                 activity.SetTag("http.response.status_code", (int)httpResponseMessage.StatusCode);
-                
+
                 // Track response time
                 if (httpResponseMessage.Headers.TryGetValues("X-Response-Time", out var responseTime))
                 {
@@ -87,10 +86,10 @@ builder.Services.AddOpenTelemetry()
         .AddSource(DiagnosticsConfig.ActivitySources.Orders.Name)
         .AddSource(DiagnosticsConfig.ActivitySources.UI.Name)
         .AddSource(DiagnosticsConfig.ActivitySources.Messaging.Name)
-        
+
         // Configure sampling - sample all traces in development, adaptive in production
-        .SetSampler(builder.Environment.IsDevelopment() 
-            ? new AlwaysOnSampler() 
+        .SetSampler(builder.Environment.IsDevelopment()
+            ? new AlwaysOnSampler()
             : new ParentBasedSampler(new TraceIdRatioBasedSampler(1.0))))
     // Enable Azure Monitor with Application Insights
     .UseAzureMonitor(options =>
@@ -106,7 +105,7 @@ builder.Services.AddOpenTelemetry()
 
         // Enable Live Metrics for real-time monitoring
         options.EnableLiveMetrics = true;
-        
+
         // Disable adaptive sampling in development for complete traces
         if (builder.Environment.IsDevelopment())
         {

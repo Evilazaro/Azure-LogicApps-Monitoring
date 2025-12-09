@@ -6,7 +6,7 @@ namespace PoWebApp.Components
     {
         [JsonPropertyName("Id")]
         public int Id { get; set; }
-        
+
         [JsonPropertyName("Date")]
         public DateTime Date { get; set; }
 

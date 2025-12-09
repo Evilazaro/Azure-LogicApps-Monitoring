@@ -41,7 +41,7 @@ builder.Services.AddOpenTelemetry()
             {
                 var path = httpContext.Request.Path.Value;
                 if (path == null) return true;
-                
+
                 return !path.Contains("/health", StringComparison.OrdinalIgnoreCase)
                     && !path.Contains("/swagger", StringComparison.OrdinalIgnoreCase)
                     && !path.Contains("/openapi", StringComparison.OrdinalIgnoreCase);

@@ -1,4 +1,3 @@
-using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using System.Diagnostics;
 using System.Text.Json;
@@ -44,11 +43,11 @@ namespace PoWebApp.HealthChecks
                 data["ApplicationInsightsConfigured"] = !string.IsNullOrEmpty(connectionString);
 
                 // Verify activity sources are available
-                data["OrderActivitySourceAvailable"] = 
+                data["OrderActivitySourceAvailable"] =
                     Diagnostics.DiagnosticsConfig.ActivitySources.Orders != null;
-                data["MessagingActivitySourceAvailable"] = 
+                data["MessagingActivitySourceAvailable"] =
                     Diagnostics.DiagnosticsConfig.ActivitySources.Messaging != null;
-                data["UIActivitySourceAvailable"] = 
+                data["UIActivitySourceAvailable"] =
                     Diagnostics.DiagnosticsConfig.ActivitySources.UI != null;
 
                 if (string.IsNullOrEmpty(connectionString))
