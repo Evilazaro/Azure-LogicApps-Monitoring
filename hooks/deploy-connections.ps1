@@ -210,6 +210,53 @@ try {
     $jsonContent = $connectionsJson | ConvertTo-Json -Depth 10
     [System.IO.File]::WriteAllText($workflowConnectionsPath, $jsonContent, [System.Text.UTF8Encoding]::new($false))
 
+    # Get storage account name for workflow parameters
+    Write-StatusMessage -Message 'Retrieving workflow storage account...' -Emoji '💾' -Prefix 'STORAGE' -Color Yellow
+    $storageAccounts = Invoke-AzCli -Arguments @(
+        'storage', 'account', 'list',
+        '--resource-group', $ResourceGroupName,
+        '--query', "[?contains(name, 'eshoporders') && !contains(name, 'logs')].name",
+        '-o', 'tsv'
+    ) -ErrorMessage "Failed to retrieve storage accounts"
+    
+    $storageAccountName = ($storageAccounts -split "`n" | Where-Object { $_ -notmatch 'logs' } | Select-Object -First 1).Trim()
+    
+    if (-not $storageAccountName) {
+        throw "Could not find workflow storage account in resource group '$ResourceGroupName'"
+    }
+    
+    Write-Verbose "Storage Account Name: $storageAccountName"
+    
+    # Get API endpoint hostname
+    Write-StatusMessage -Message 'Retrieving API endpoint...' -Emoji '🌐' -Prefix 'API' -Color Yellow
+    $apiAppJson = Invoke-AzCli -Arguments @(
+        'webapp', 'show',
+        '--resource-group', $ResourceGroupName,
+        '--name', ($LogicAppName -replace 'logicapp', 'poproc-api'),
+        '--query', 'defaultHostName',
+        '-o', 'tsv'
+    ) -ErrorMessage "Failed to retrieve API app hostname"
+    
+    $apiEndpoint = "https://$($apiAppJson.Trim())/Orders"
+    Write-Verbose "API Endpoint: $apiEndpoint"
+    
+    # Create or update parameters.json dynamically
+    Write-StatusMessage -Message 'Generating workflow parameters...' -Emoji '⚙️' -Prefix 'PARAMS' -Color Yellow
+    $workflowParametersPath = Join-Path -Path $workflowsPath -ChildPath "$WorkflowName\parameters.json"
+    
+    $parametersJson = @{
+        apiEndpoint = @{
+            value = $apiEndpoint
+        }
+        storageAccountName = @{
+            value = $storageAccountName
+        }
+    }
+    
+    $parametersContent = $parametersJson | ConvertTo-Json -Depth 10
+    [System.IO.File]::WriteAllText($workflowParametersPath, $parametersContent, [System.Text.UTF8Encoding]::new($false))
+    Write-Verbose "Parameters file created at: $workflowParametersPath"
+
     Write-StatusMessage -Message 'Deploying workflow to Logic App...' -Emoji '🚀' -Prefix 'DEPLOY' -Color Yellow
 
     # Create a ZIP file of the workflows folder
