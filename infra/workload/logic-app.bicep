@@ -184,13 +184,28 @@ resource storageQueueApiConnection 'Microsoft.Web/connections@2016-06-01' = {
   location: location
   kind: 'V2'
   properties: {
-    displayName: 'Connection-${wfSA.name}-MI'
+    displayName: queueConnectionName
     api: {
+      name: queueConnectionName
+      displayName: 'Azure Queues'
+      description: 'Azure Queue storage provides cloud messaging between application components. Queue storage also supports managing asynchronous tasks and building process work flows.'
+      iconUri: 'https://conn-afd-prod-endpoint-bmc9bqahasf3grgk.b01.azurefd.net/releases/v1.0.1777/1.0.1777.4410/${queueConnectionName}/icon.png'
+      brandColor: '#0072C6'
       id: '/subscriptions/${subscription().subscriptionId}/providers/Microsoft.Web/locations/${location}/managedApis/${queueConnectionName}'
+      type: 'Microsoft.Web/locations/managedApis'
     }
-    parameterValues: {
+    nonSecretParameterValues: {
       storageaccount: wfSA.name
     }
+    parameterValues: {
+      sharedkey: wfSA.listKeys().keys[0].value
+    }
+    testLinks: [
+      {
+        requestUri: 'https://management.azure.com:443/subscriptions/${subscription().subscriptionId}/resourceGroups/${resourceGroup().name}/providers/Microsoft.Web/connections/${queueConnectionName}/extensions/proxy/testConnection?api-version=2016-06-01'
+        method: 'get'
+      }
+    ]
   }
 }
 
@@ -221,13 +236,28 @@ resource tableConnection 'Microsoft.Web/connections@2016-06-01' = {
   location: location
   kind: 'V2'
   properties: {
-    displayName: 'Connection-${wfSA.name}-MI-Table'
+    displayName: tableConnectionName
     api: {
+      name: tableConnectionName
+      displayName: 'Azure Table Storage'
+      description: 'Azure Table storage is a service that stores structured NoSQL data in the cloud, providing a key/attribute store with a schemaless design. Sign into your Storage account to create, update, and query tables and more.'
+      iconUri: 'https://conn-afd-prod-endpoint-bmc9bqahasf3grgk.b01.azurefd.net/v1.0.1778/1.0.1778.4417/${tableConnectionName}/icon.png'
+      brandColor: '#804998'
       id: '/subscriptions/${subscription().subscriptionId}/providers/Microsoft.Web/locations/${location}/managedApis/${tableConnectionName}'
+      type: 'Microsoft.Web/locations/managedApis'
     }
-    parameterValues: {
+    nonSecretParameterValues: {
       storageaccount: wfSA.name
     }
+    parameterValues: {
+      sharedkey: wfSA.listKeys().keys[0].value
+    }
+    testLinks: [
+      {
+        requestUri: 'https://management.azure.com:443/subscriptions/${subscription().subscriptionId}/resourceGroups/${resourceGroup().name}/providers/Microsoft.Web/connections/${tableConnectionName}/extensions/proxy/testConnection?api-version=2016-06-01'
+        method: 'get'
+      }
+    ]
   }
 }
 
