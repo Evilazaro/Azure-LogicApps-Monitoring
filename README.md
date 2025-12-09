@@ -184,48 +184,149 @@ graph TB
 
 ---
 
-## 🔄 Data Flow
+## 🔄 Monitoring Data Flow
+
+### Flowchart View
 
 ```mermaid
-sequenceDiagram
-    autonumber
-    participant User as Web Browser
-    participant WebApp as PoWebApp<br/>(Blazor)
-    participant API as PoProcAPI<br/>(REST API)
-    participant Queue as Storage Queue
-    participant LogicApp as Logic App<br/>(Workflow)
-    participant AI as Application Insights
-    participant LAW as Log Analytics
+flowchart TB
+    subgraph Applications["Application Layer"]
+        WebApp[PoWebApp<br/>Blazor Server]
+        API[PoProcAPI<br/>ASP.NET Core]
+        LogicApp[Logic App<br/>Standard Workflow]
+    end
 
-    User->>WebApp: Submit Order
-    activate WebApp
-    WebApp->>AI: Trace: Order.Create (TraceId: 123)
-    WebApp->>Queue: Enqueue Order Message
-    WebApp->>API: POST /order
-    activate API
-    API->>AI: Trace: API.ProcessOrder (ParentTraceId: 123)
-    API->>Table: Store Order Details
-    API-->>WebApp: 202 Accepted
-    deactivate API
-    WebApp-->>User: Order Submitted
-    deactivate WebApp
+    subgraph Telemetry["Telemetry Generation"]
+        WebApp -->|OpenTelemetry SDK| WebTrace[Traces<br/>Logs<br/>Metrics]
+        API -->|OpenTelemetry SDK| APITrace[Traces<br/>Logs<br/>Metrics]
+        LogicApp -->|Workflow Runtime| WFLogs[Execution Logs<br/>Run Status<br/>Action Results]
+    end
 
-    Queue->>LogicApp: Trigger on New Message
-    activate LogicApp
-    LogicApp->>AI: Trace: Workflow.Start (CorrelationId: 123)
-    LogicApp->>API: GET /order/{id}
-    activate API
-    API->>AI: Trace: API.GetOrder
-    API-->>LogicApp: Order Data
-    deactivate API
-    LogicApp->>Blob: Save Receipt
-    LogicApp->>AI: Trace: Workflow.Complete (Status: Success)
-    deactivate LogicApp
+    subgraph Infrastructure["Azure Infrastructure"]
+        Storage[Storage Account]
+        AppPlan[App Service Plan]
+    end
 
-    AI->>LAW: Export All Telemetry
-    LAW->>Storage: Archive Logs (30-day retention)
+    subgraph DiagSettings["Diagnostic Settings"]
+        Storage -->|Configured| StorageDiag[Queue Metrics<br/>Blob Metrics<br/>Table Metrics]
+        AppPlan -->|Auto-collect| PlatformDiag[CPU Usage<br/>Memory Usage<br/>Network I/O]
+        LogicApp -->|Configured| WorkflowDiag[WorkflowRuntime Logs<br/>AllMetrics]
+    end
 
-    Note over AI,LAW: All traces linked by TraceId<br/>Enables end-to-end correlation
+    subgraph Collection["Centralized Collection"]
+        WebTrace -->|Azure Monitor Exporter| AI[Application Insights<br/>Workspace Mode]
+        APITrace -->|Azure Monitor Exporter| AI
+        WFLogs -->|Diagnostic Export| AI
+        StorageDiag -->|Diagnostic Export| LAW[Log Analytics<br/>Workspace]
+        PlatformDiag -->|Auto-export| LAW
+        WorkflowDiag -->|Diagnostic Export| LAW
+        AI -->|Unified Storage| LAW
+    end
+
+    subgraph Retention["Data Retention"]
+        LAW -->|Hot Data<br/>30 days| HotTier[(Interactive<br/>Queries)]
+        LAW -->|Archive<br/>90+ days| ColdTier[(Blob Storage<br/>Cold Tier)]
+    end
+
+    subgraph Consumption["Consumption & Analysis"]
+        HotTier -->|KQL Queries| Dashboard[Dashboards &<br/>Workbooks]
+        HotTier -->|Alert Rules| Alerts[Alerts &<br/>Notifications]
+        HotTier -->|API Export| External[External SIEM<br/>Splunk/Datadog]
+        ColdTier -->|Compliance| Audit[Audit &<br/>Compliance Reports]
+    end
+
+    style WebApp fill:#68217A,color:#fff
+    style API fill:#107C10,color:#fff
+    style LogicApp fill:#0078D4,color:#fff
+    style AI fill:#FF6F00,color:#fff
+    style LAW fill:#0078D4,color:#fff
+    style HotTier fill:#50E6FF
+    style ColdTier fill:#E0F7FF
+    style WebTrace fill:#FFD700
+    style APITrace fill:#FFD700
+    style WFLogs fill:#FFD700
+    style StorageDiag fill:#FFA500
+    style PlatformDiag fill:#FFA500
+    style WorkflowDiag fill:#FFA500
+```
+
+### BPMN View
+
+```mermaid
+flowchart TB
+    Start([Start Monitoring]) --> GenerateTelemetry{Application<br/>Activity?}
+
+    GenerateTelemetry -->|WebApp Request| WebAppActivity[WebApp Processes Request]
+    GenerateTelemetry -->|API Call| APIActivity[API Processes Request]
+    GenerateTelemetry -->|Workflow Trigger| WorkflowActivity[Workflow Executes]
+
+    WebAppActivity --> WebAppTelem[Generate OTel Telemetry<br/>- Traces with TraceId<br/>- Structured Logs<br/>- Custom Metrics]
+    APIActivity --> APITelem[Generate OTel Telemetry<br/>- Traces with ParentId<br/>- Structured Logs<br/>- Custom Metrics]
+    WorkflowActivity --> WorkflowTelem[Generate Workflow Logs<br/>- Execution Events<br/>- Action Results<br/>- CorrelationId]
+
+    subgraph InfraMonitoring["Infrastructure Monitoring"]
+        CheckDiagSettings{Diagnostic<br/>Settings<br/>Enabled?}
+        CheckDiagSettings -->|Yes| CollectStorage[Collect Storage Metrics<br/>- Queue Depth<br/>- Blob Latency<br/>- Table Operations]
+        CheckDiagSettings -->|Yes| CollectPlatform[Collect Platform Metrics<br/>- CPU Percentage<br/>- Memory Usage<br/>- Request Count]
+    end
+
+    WebAppTelem --> ExportToAI[Export via Azure Monitor Exporter]
+    APITelem --> ExportToAI
+    WorkflowTelem --> ExportViaDiag[Export via Diagnostic Settings]
+    
+    CollectStorage --> ExportViaDiag
+    CollectPlatform --> ExportViaDiag
+
+    ExportToAI --> AppInsights[(Application Insights<br/>Workspace-based Mode)]
+    ExportViaDiag --> LogAnalytics[(Log Analytics<br/>Workspace)]
+    
+    AppInsights --> UnifyData[Unify All Telemetry<br/>in Log Analytics]
+    LogAnalytics --> UnifyData
+
+    UnifyData --> EvaluateRetention{Apply<br/>Retention<br/>Policy?}
+    
+    EvaluateRetention -->|Recent Data<br/>0-30 days| HotStorage[(Hot Tier<br/>Fast Queries)]
+    EvaluateRetention -->|Old Data<br/>30-90 days| WarmStorage[(Archive Tier<br/>Compliance)]
+    EvaluateRetention -->|Historical<br/>90+ days| ColdStorage[(Cold Storage<br/>Long-term Retention)]
+
+    HotStorage --> QueryRequest{Query or<br/>Alert<br/>Request?}
+    
+    QueryRequest -->|Dashboard Query| ExecuteQuery[Execute KQL Query<br/>Join traces, logs, metrics]
+    QueryRequest -->|Alert Evaluation| EvaluateAlert{Threshold<br/>Exceeded?}
+    QueryRequest -->|Export Request| ExportData[Export to External System<br/>SIEM, Grafana, etc.]
+
+    ExecuteQuery --> RenderResults[Render Dashboard<br/>or Workbook]
+    
+    EvaluateAlert -->|Yes| TriggerAlert[Trigger Alert Action<br/>- Send Email<br/>- Webhook<br/>- Teams Message]
+    EvaluateAlert -->|No| ContinueMonitoring[Continue Monitoring]
+
+    ExportData --> ExternalSystem[External Monitoring<br/>System]
+
+    RenderResults --> CheckActivity{More<br/>Activity?}
+    TriggerAlert --> CheckActivity
+    ContinueMonitoring --> CheckActivity
+    ExternalSystem --> CheckActivity
+
+    CheckActivity -->|Yes| GenerateTelemetry
+    CheckActivity -->|No| End([End Monitoring Cycle])
+
+    style Start fill:#90EE90,stroke:#006400,stroke-width:3px
+    style End fill:#90EE90,stroke:#006400,stroke-width:3px
+    style GenerateTelemetry fill:#FFD700,stroke:#FF8C00,stroke-width:2px
+    style CheckDiagSettings fill:#FFD700,stroke:#FF8C00,stroke-width:2px
+    style EvaluateRetention fill:#FFD700,stroke:#FF8C00,stroke-width:2px
+    style QueryRequest fill:#FFD700,stroke:#FF8C00,stroke-width:2px
+    style EvaluateAlert fill:#FFD700,stroke:#FF8C00,stroke-width:2px
+    style CheckActivity fill:#FFD700,stroke:#FF8C00,stroke-width:2px
+    style AppInsights fill:#FF6F00,color:#fff,stroke:#C43E00,stroke-width:2px
+    style LogAnalytics fill:#0078D4,color:#fff,stroke:#003B73,stroke-width:2px
+    style HotStorage fill:#50E6FF,stroke:#0078D4,stroke-width:2px
+    style WarmStorage fill:#87CEEB,stroke:#4682B4,stroke-width:2px
+    style ColdStorage fill:#B0E0E6,stroke:#5F9EA0,stroke-width:2px
+    style TriggerAlert fill:#FF4500,color:#fff,stroke:#DC143C,stroke-width:2px
+    style WebAppActivity fill:#68217A,color:#fff
+    style APIActivity fill:#107C10,color:#fff
+    style WorkflowActivity fill:#0078D4,color:#fff
 ```
 
 ---
