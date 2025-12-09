@@ -66,6 +66,9 @@ $ErrorActionPreference = 'Stop'
 $ProgressPreference = 'SilentlyContinue'
 $InformationPreference = 'Continue'
 
+# Initialize temp file variable in outer scope
+$tempConnectionsFile = $null
+
 # Detect if terminal supports Unicode (for emojis)
 $useEmoji = $PSVersionTable.PSVersion.Major -ge 7 -and 
             ($IsLinux -or $IsMacOS -or 
@@ -80,6 +83,49 @@ function Write-StatusMessage {
     )
     $displayMessage = if ($useEmoji) { "$Emoji $Message" } else { "[$Prefix] $Message" }
     Write-Host $displayMessage -ForegroundColor $Color
+}
+
+# Check if Azure PowerShell module is available
+Write-Verbose "Checking for Azure PowerShell modules..."
+$azModules = @('Az.Accounts', 'Az.Resources')
+
+foreach ($module in $azModules) {
+    if (-not (Get-Module -Name $module -ListAvailable)) {
+        $errorMsg = "Required module '$module' is not installed. Please install it using: Install-Module -Name $module -Scope CurrentUser -Force"
+        Write-Host "❌ $errorMsg" -ForegroundColor Red
+        throw $errorMsg
+    }
+}
+
+# Import required modules
+Write-Verbose "Importing Azure PowerShell modules..."
+try {
+    Import-Module Az.Accounts -ErrorAction Stop
+    Import-Module Az.Resources -ErrorAction Stop
+}
+catch {
+    throw "Failed to import Azure modules: $_"
+}
+
+# Ensure we're logged in to Azure
+Write-Verbose "Checking Azure authentication..."
+$context = Get-AzContext -ErrorAction SilentlyContinue
+if (-not $context) {
+    Write-StatusMessage -Message "Not logged in to Azure. Attempting to authenticate..." -Emoji '🔐' -Prefix 'AUTH' -Color Yellow
+    try {
+        # Try to use existing Azure CLI authentication
+        $azAccount = az account show 2>$null | ConvertFrom-Json
+        if ($azAccount) {
+            Write-Verbose "Found Azure CLI authentication, connecting PowerShell..."
+            Connect-AzAccount -UseDeviceAuthentication -ErrorAction Stop | Out-Null
+        }
+        else {
+            throw "No Azure CLI authentication found"
+        }
+    }
+    catch {
+        throw "Not authenticated to Azure. Please run 'Connect-AzAccount' or 'az login' first."
+    }
 }
 
 Write-StatusMessage -Message 'Configuring Logic App connections...' -Emoji '📋' -Prefix 'INFO' -Color Cyan
