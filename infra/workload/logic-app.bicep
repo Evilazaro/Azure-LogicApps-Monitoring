@@ -294,6 +294,8 @@ resource wfDiag 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
   }
 }
 
+
+
 // ========== Outputs ==========
 
 @description('Resource ID of the deployed Logic App')
