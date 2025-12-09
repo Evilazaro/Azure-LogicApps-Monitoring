@@ -1,3 +1,4 @@
+param logicAppName string
 param poProcAPIEndPoint string
 param workflowStorageAccountName string
 param tags object
@@ -162,14 +163,22 @@ var wfDefinition = {
   }
 }
 
-resource workflow 'Microsoft.Logic/workflows@2019-05-01' = {
-  name: 'process-orders'
+resource workflowDef 'Microsoft.Logic/workflows@2019-05-01' = {
+  name: 'orders-processing'
+  location: resourceGroup().location
   properties: {
     definition: wfDefinition
+    parameters: {}
   }
-  identity: {
-    type: 'SystemAssigned'
-  }
-  location: resourceGroup().location
   tags: tags
+}
+
+resource logicAppSite 'Microsoft.Web/sites@2020-06-01' existing = {
+  name: logicAppName
+  scope: resourceGroup()
+}
+
+resource logicApp 'Microsoft.App/logicApps@2025-10-02-preview' existing = {
+  name: logicAppName
+  scope: logicAppSite
 }
