@@ -88,6 +88,7 @@ resource mi 'Microsoft.ManagedIdentity/userAssignedIdentities@2023-01-31' = {
 
 resource wfSA 'Microsoft.Storage/storageAccounts@2023-05-01' existing = {
   name: workflowStorageAccountName
+  scope: resourceGroup()
 }
 
 var rolDefSA = {
@@ -176,45 +177,31 @@ resource wfConf 'Microsoft.Web/sites/config@2025-03-01' = {
   }
 }
 
-// param connName string = 'azurequeues'
+resource storageQueueApiConnection 'Microsoft.Web/connections@2016-06-01' = {
+  name: 'api-conn-${wfSA.name}-queue'
+  location: location
+  properties: {
+    displayName: 'Connection-${wfSA.name}-MI'
+    api: {
+      id: '/subscriptions/${subscription().subscriptionId}/providers/Microsoft.Web/locations/${location}/managedApis/azurequeues'
+    }
+    // This part is specific to managed identity authentication for Logic Apps
+    authentication: {
+      type: 'ManagedServiceIdentity'
+      identity: {
+        // Reference the full resource ID of the user-assigned identity
+        id: mi.id
+      }
+    }
+    // Specific parameter for the storage account name
+    parameterValues: {
+      storageaccount: wfSA.name
+    }
+  }
+}
 
-// resource queueConnection 'Microsoft.Web/connections@2016-06-01' = {
-//   name: '${connName}${uniqueString(name, envName, location)}'
-//   location: location
-//   kind: 'V2'
-//   properties: {
-//     displayName: 'eshop-orders-workflow'
-//     // parameterValues: {
-//     //   accountName: workflowStorageAccountName
-//     //   storageAccountId: wfSA.id
-//     //   queueName: 'orders-queue'
-//     // }
-//     statuses: [
-//       {
-//         status: 'Ready'
-//       }
-//     ]
-//     customParameterValues: {}
-//     api: {
-//       name: connName
-//       displayName: 'Azure Queues'
-//       description: 'Azure Queue storage provides cloud messaging between application components. Queue storage also supports managing asynchronous tasks and building process work flows.'
-//       iconUri: 'https://conn-afd-prod-endpoint-bmc9bqahasf3grgk.b01.azurefd.net/releases/v1.0.1777/1.0.1777.4410/${connName}/icon.png'
-//       brandColor: '#0072C6'
-//       id: '/subscriptions/${subscription().subscriptionId}/providers/Microsoft.Web/locations/eastus2/managedApis/${connName}'
-//       type: 'Microsoft.Web/locations/managedApis'
-//     }
-//     testLinks: [
-//       {
-//         requestUri: 'https://management.azure.com:443/subscriptions/${subscription().subscriptionId}/resourceGroups/${resourceGroup().name}/providers/Microsoft.Web/connections/${connName}/extensions/proxy/testConnection?api-version=2016-06-01'
-//         method: 'get'
-//       }
-//     ]
-//   }
-//   dependsOn: [
-//     workflowEngine
-//   ]
-// }
+// Output the connection ID for use in the Logic App workflow definition
+output apiConnectionId string = storageQueueApiConnection.id
 
 resource wfDiag 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
   name: '${workflowEngine.name}-diag'

@@ -85,25 +85,6 @@ resource poProcQueue 'Microsoft.Storage/storageAccounts/queueServices/queues@202
   parent: qSvc
 }
 
-resource storageQueueConnection 'Microsoft.Web/connections@2016-06-01' = {
-  name: 'azurequeues-managed-identity'
-  location: location
-  properties: {
-    displayName: 'Azure Queue Storage Managed Identity'
-     api: {
-      id: subscriptionResourceId('Microsoft.Web/locations/managedApis', location, 'azurequeues')
-    }
-    customParameterValues: {
-      storageAccount: wfSA.name
-      queueName: queueName
-    }
-    parameterValues: {
-      name: 'managedIdentityAuth'
-      values: {}
-    }
-  }
-}
-
 var rolDefSA = {
   contributor: '17d1049b-9a84-46fb-8f53-869881c3d3ab'
   blobDataOwner: 'b7e6dc6d-f1e8-4753-8033-0f276bb0955b'
