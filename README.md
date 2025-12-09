@@ -209,12 +209,12 @@ flowchart TB
     
     Queue -->|9. Trigger on New Message| LogicApp
     LogicApp -->|10. Trace: Workflow.Start<br/>CorrelationId: 123| AI
-    LogicApp -->|11. GET /order/{id}| API
+    LogicApp -->|"11. GET /order/id"| API
     API -->|12. Trace: API.GetOrder| AI
     API -->|13. Order Data| LogicApp
     LogicApp -->|14. Save Receipt| Blob
     LogicApp -->|15. Insert Audit Entry| Table
-    LogicApp -->|16. Trace: Workflow.Complete<br/>Status: Success| AI
+    LogicApp -->|"16. Trace: Workflow.Complete<br/>Status: Success"| AI
     
     AI -->|17. Export Telemetry| LAW
     LAW -->|18. Archive Logs| Storage
