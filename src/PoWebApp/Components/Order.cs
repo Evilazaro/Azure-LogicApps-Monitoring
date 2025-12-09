@@ -4,19 +4,19 @@ namespace PoWebApp.Components
 {
     public class Order
     {
-        [JsonPropertyName("OrderId")]
+        [JsonPropertyName("Id")]
         public int Id { get; set; }
         
-        [JsonPropertyName("OrderDate")]
+        [JsonPropertyName("Date")]
         public DateTime Date { get; set; }
-        
-        [JsonPropertyName("OrderQuantity")]
+
+        [JsonPropertyName("Quantity")]
         public int Quantity { get; set; }
-        
-        [JsonPropertyName("OrderTotal")]
+
+        [JsonPropertyName("Total")]
         public double Total { get; set; }
-        
-        [JsonPropertyName("OrderMessage")]
+
+        [JsonPropertyName("Message")]
         public string Message { get; set; } = string.Empty;
     }
 }

@@ -47,7 +47,7 @@ namespace PoWebApp.Components
                 activity?.SetTag(DiagnosticsConfig.SemanticConventions.CloudProvider, "azure");
                 activity?.SetTag(DiagnosticsConfig.SemanticConventions.CloudService, "storage");
                 activity?.SetTag("messaging.url", queueServiceUri);
-                activity?.SetTag(DiagnosticsConfig.SemanticConventions.BatchSize, 5000);
+                activity?.SetTag(DiagnosticsConfig.SemanticConventions.BatchSize, batchSize);
 
                 // Add baggage for cross-service correlation
                 activity?.AddBaggage(DiagnosticsConfig.BaggageKeys.BusinessFlow, "order-processing");
