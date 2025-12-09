@@ -12,5 +12,15 @@ namespace PoProcAPI.Controllers
         {
             _logger = logger;
         }
+
+        [HttpPost(Name = "ProcessOrder")]
+        public void processOrder(Order order)
+        {
+            _logger.LogInformation("Processing order with ID: {OrderId}", order.Id);
+            
+            // Simulate order processing logic here
+            _logger.LogInformation("Order with ID: {OrderId} processed successfully", order.Id);
+
+        }
     }
 }
