@@ -183,54 +183,59 @@ graph TB
 
 ---
 
-## 🔄 Data Flow
+## 🔄 Monitoring Data Flow
 
 ```mermaid
-graph LR
-    Start([User Submits Order]) --> WebApp[PoWebApp Process Request]
-    WebApp --> TraceCreate[Log Trace: Order.Create]
-    TraceCreate --> EnqueueMsg[Enqueue Message to Queue]
-    EnqueueMsg --> CallAPI[POST /order to API]
+graph TB
+    subgraph "Application Layer"
+        WebApp[PoWebApp<br/>Blazor Server]
+        API[PoProcAPI<br/>ASP.NET Core]
+        LogicApp[Logic App<br/>Standard Workflow]
+    end
     
-    CallAPI --> APIProcess[PoProcAPI Processes Order]
-    APIProcess --> TraceAPI[Log Trace: API.ProcessOrder]
-    TraceAPI --> StoreDB[(Store Order in Table Storage)]
-    StoreDB --> ReturnAccept[Return 202 Accepted]
-    ReturnAccept --> WebAppResponse[Display Order Submitted]
-    WebAppResponse --> UserNotify([User Receives Confirmation])
+    subgraph "Azure Infrastructure"
+        Storage[Storage Account<br/>Queue, Blob, Table]
+        AppServicePlan[App Service Plan]
+    end
     
-    EnqueueMsg -.->|Triggers| QueueTrigger{Queue Message Available?}
-    QueueTrigger -->|Yes| LogicAppStart[Logic App Workflow Starts]
-    LogicAppStart --> TraceWorkflow[Log Trace: Workflow.Start]
-    TraceWorkflow --> GetOrder[GET /order from API]
+    subgraph "Telemetry Collection"
+        WebApp -->|OpenTelemetry SDK<br/>Traces, Logs, Metrics| OTel1[Trace Context<br/>TraceId: xxx]
+        API -->|OpenTelemetry SDK<br/>Traces, Logs, Metrics| OTel2[Trace Context<br/>ParentId: xxx]
+        LogicApp -->|Workflow Runtime<br/>Execution Logs| WFLogs[Workflow Events<br/>CorrelationId: xxx]
+        Storage -->|Diagnostic Settings<br/>Queue/Blob/Table Metrics| StorageMetrics[Storage Metrics<br/>QueueDepth, Latency]
+        AppServicePlan -->|Platform Metrics<br/>CPU, Memory, Network| PlatformMetrics[Platform Metrics<br/>Resource Usage]
+    end
     
-    GetOrder --> APIGetProcess[API Retrieves Order]
-    APIGetProcess --> TraceGet[Log Trace: API.GetOrder]
-    TraceGet --> ReturnData[Return Order Data]
-    ReturnData --> SaveReceipt[Save Receipt to Blob Storage]
-    SaveReceipt --> AuditLog[(Insert Audit Entry to Table)]
-    AuditLog --> TraceComplete[Log Trace: Workflow.Complete]
-    TraceComplete --> LogicAppEnd([Workflow Complete])
+    subgraph "Centralized Monitoring"
+        OTel1 -->|Azure Monitor Exporter| AI[Application Insights<br/>Workspace-based]
+        OTel2 -->|Azure Monitor Exporter| AI
+        WFLogs -->|Diagnostic Settings| AI
+        StorageMetrics -->|Diagnostic Settings| LAW[Log Analytics Workspace]
+        PlatformMetrics -->|Auto-collection| LAW
+        AI -->|Stores All Telemetry| LAW
+    end
     
-    TraceCreate -.->|Telemetry| AppInsights[(Application Insights)]
-    TraceAPI -.->|Telemetry| AppInsights
-    TraceWorkflow -.->|Telemetry| AppInsights
-    TraceGet -.->|Telemetry| AppInsights
-    TraceComplete -.->|Telemetry| AppInsights
+    subgraph "Long-term Storage"
+        LAW -->|Archive Policy<br/>30-day retention| ArchiveStorage[(Blob Storage<br/>Cold Tier)]
+    end
     
-    AppInsights --> LogAnalytics[(Log Analytics Workspace)]
-    LogAnalytics --> Archive[(Storage Account Archive)]
+    subgraph "Observability Outputs"
+        LAW -->|KQL Queries| Dashboards[Azure Dashboards<br/>& Workbooks]
+        LAW -->|Alert Rules| Alerts[Azure Monitor Alerts<br/>Email, SMS, Teams]
+        LAW -->|Continuous Export| SIEM[External SIEM<br/>Splunk, Datadog]
+    end
     
-    style Start fill:#90EE90
-    style UserNotify fill:#90EE90
-    style LogicAppEnd fill:#90EE90
     style WebApp fill:#68217A,color:#fff
-    style APIProcess fill:#107C10,color:#fff
-    style APIGetProcess fill:#107C10,color:#fff
-    style LogicAppStart fill:#0078D4,color:#fff
-    style AppInsights fill:#FF6F00,color:#fff
-    style LogAnalytics fill:#0078D4,color:#fff
-    style QueueTrigger fill:#FFD700
+    style API fill:#107C10,color:#fff
+    style LogicApp fill:#0078D4,color:#fff
+    style AI fill:#FF6F00,color:#fff
+    style LAW fill:#0078D4,color:#fff
+    style ArchiveStorage fill:#50E6FF
+    style OTel1 fill:#FFD700
+    style OTel2 fill:#FFD700
+    style WFLogs fill:#FFD700
+    style StorageMetrics fill:#FFD700
+    style PlatformMetrics fill:#FFD700
 ```
 
 ---
