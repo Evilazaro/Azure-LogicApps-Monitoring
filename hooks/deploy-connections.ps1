@@ -52,15 +52,37 @@ param(
     [string]$WorkflowName = 'eShopOrders',
     
     [Parameter()]
-    [ValidateScript({ Test-Path -Path $_ -PathType Leaf })]
-    [string]$ConnectionsJsonPath = (Join-Path $PSScriptRoot 'connections.json')
+    [ValidateScript({ 
+        if (-not (Test-Path -Path $_ -PathType Leaf)) {
+            throw "File not found: $_"
+        }
+        return $true
+    })]
+    [string]$ConnectionsJsonPath = (Join-Path -Path $PSScriptRoot -ChildPath 'connections.json')
 )
 
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
 $ProgressPreference = 'SilentlyContinue'
+$InformationPreference = 'Continue'
 
-Write-Host '📋 Configuring Logic App connections...' -ForegroundColor Cyan
+# Detect if terminal supports Unicode (for emojis)
+$useEmoji = $PSVersionTable.PSVersion.Major -ge 7 -and 
+            ($IsLinux -or $IsMacOS -or 
+            ($IsWindows -and [System.Console]::OutputEncoding.CodePage -eq 65001))
+
+function Write-StatusMessage {
+    param(
+        [string]$Message,
+        [string]$Emoji,
+        [string]$Prefix,
+        [ConsoleColor]$Color = 'White'
+    )
+    $displayMessage = if ($useEmoji) { "$Emoji $Message" } else { "[$Prefix] $Message" }
+    Write-Host $displayMessage -ForegroundColor $Color
+}
+
+Write-StatusMessage -Message 'Configuring Logic App connections...' -Emoji '📋' -Prefix 'INFO' -Color Cyan
 
 try {
     # Get subscription and location info
@@ -75,7 +97,7 @@ try {
     Write-Verbose "Location: $location"
 
     # Get the connection resources in parallel
-    Write-Host '🔍 Retrieving API connection resources...' -ForegroundColor Yellow
+    Write-StatusMessage -Message 'Retrieving API connection resources...' -Emoji '🔍' -Prefix 'SEARCH' -Color Yellow
     
     $connections = @(
         @{ Name = $QueueConnectionName; Type = 'Queue' }
@@ -106,7 +128,7 @@ try {
     }
 
     # Get connection runtime URLs in parallel
-    Write-Host '🔗 Retrieving connection runtime URLs...' -ForegroundColor Yellow
+    Write-StatusMessage -Message 'Retrieving connection runtime URLs...' -Emoji '🔗' -Prefix 'LINK' -Color Yellow
     
     $connectionDetails = @($queueConnection, $tableConnection) | ForEach-Object -Parallel {
         $conn = $_
@@ -126,8 +148,8 @@ try {
     Write-Verbose "Table Runtime URL: $tableRuntimeUrl"
 
     # Read and update connections.json
-    Write-Host '📄 Reading connections template...' -ForegroundColor Yellow
-    $connectionsJson = Get-Content -Path $ConnectionsJsonPath -Raw -ErrorAction Stop | ConvertFrom-Json
+    Write-StatusMessage -Message 'Reading connections template...' -Emoji '📄' -Prefix 'READ' -Color Yellow
+    $connectionsJson = Get-Content -Path $ConnectionsJsonPath -Raw -ErrorAction Stop | ConvertFrom-Json -AsHashtable:$false
 
     # Update queue connection using modern property access
     $connectionsJson.managedApiConnections.azurequeues.api.id = "/subscriptions/$subscriptionId/providers/Microsoft.Web/locations/$location/managedApis/azurequeues"
@@ -139,44 +161,63 @@ try {
     $connectionsJson.managedApiConnections.azuretables.connection.id = $tableConnection.ResourceId
     $connectionsJson.managedApiConnections.azuretables.connectionRuntimeUrl = $tableRuntimeUrl
 
-    # Save to temp file with proper encoding
-    $tempConnectionsFile = Join-Path ([System.IO.Path]::GetTempPath()) "connections_$([Guid]::NewGuid()).json"
-    $connectionsJson | ConvertTo-Json -Depth 10 | Set-Content -Path $tempConnectionsFile -Encoding utf8NoBOM -ErrorAction Stop
+    # Save to temp file with proper encoding and platform-agnostic path
+    $tempDir = if ($IsWindows) { $env:TEMP } elseif ($IsLinux -or $IsMacOS) { '/tmp' } else { [System.IO.Path]::GetTempPath() }
+    $tempConnectionsFile = Join-Path -Path $tempDir -ChildPath "connections_$([Guid]::NewGuid()).json"
+    
+    # Convert to JSON with platform-neutral line endings
+    $jsonContent = $connectionsJson | ConvertTo-Json -Depth 10
+    [System.IO.File]::WriteAllText($tempConnectionsFile, $jsonContent, [System.Text.UTF8Encoding]::new($false))
 
-    Write-Host '🚀 Deploying connections.json to Logic App...' -ForegroundColor Yellow
+    Write-StatusMessage -Message 'Deploying connections.json to Logic App...' -Emoji '🚀' -Prefix 'DEPLOY' -Color Yellow
 
-    # Use Azure CLI to upload the connections.json file
+    # Use Azure CLI to upload the connections.json file (use forward slash for Azure path)
     $workflowPath = "$WorkflowName/connections.json"
     
-    $deployOutput = az functionapp deploy `
-        --resource-group $ResourceGroupName `
-        --name $LogicAppName `
-        --src-path $tempConnectionsFile `
-        --type static `
-        --target-path $workflowPath `
-        2>&1
+    # Invoke Azure CLI in a platform-agnostic way
+    $azCliArgs = @(
+        'functionapp', 'deploy',
+        '--resource-group', $ResourceGroupName,
+        '--name', $LogicAppName,
+        '--src-path', $tempConnectionsFile,
+        '--type', 'static',
+        '--target-path', $workflowPath
+    )
+    
+    Write-Verbose "Executing: az $($azCliArgs -join ' ')"
+    $deployOutput = & az @azCliArgs 2>&1
 
     if ($LASTEXITCODE -ne 0) {
         throw "Failed to deploy connections.json. Azure CLI output: $deployOutput"
     }
 
-    Write-Host '✅ Connections.json deployed successfully!' -ForegroundColor Green
+    Write-StatusMessage -Message 'Connections.json deployed successfully!' -Emoji '✅' -Prefix 'SUCCESS' -Color Green
 
-    Write-Host "`n✅ Logic App connections configured successfully!" -ForegroundColor Green
-    Write-Host "`n📊 Connection Details:" -ForegroundColor Cyan
-    Write-Host "  • Queue Connection: $($queueConnection.ResourceId)" -ForegroundColor Gray
-    Write-Host "  • Table Connection: $($tableConnection.ResourceId)" -ForegroundColor Gray
+    Write-Host ""
+    Write-StatusMessage -Message 'Logic App connections configured successfully!' -Emoji '✅' -Prefix 'SUCCESS' -Color Green
+    Write-Host ""
+    Write-StatusMessage -Message 'Connection Details:' -Emoji '📊' -Prefix 'INFO' -Color Cyan
+    $bullet = if ($useEmoji) { '•' } else { '-' }
+    Write-Host "  $bullet Queue Connection: $($queueConnection.ResourceId)" -ForegroundColor Gray
+    Write-Host "  $bullet Table Connection: $($tableConnection.ResourceId)" -ForegroundColor Gray
     
     exit 0
 }
 catch {
-    Write-Error "❌ Error configuring Logic App connections: $_"
+    $errorPrefix = if ($useEmoji) { '❌' } else { '[ERROR]' }
+    Write-Host "$errorPrefix Error configuring Logic App connections: $_" -ForegroundColor Red
     Write-Verbose "Stack Trace: $($_.ScriptStackTrace)"
+    
+    # Ensure temp file cleanup on error
+    if ($tempConnectionsFile -and (Test-Path -Path $tempConnectionsFile -ErrorAction SilentlyContinue)) {
+        Remove-Item -Path $tempConnectionsFile -Force -ErrorAction SilentlyContinue
+    }
+    
     exit 1
 }
 finally {
-    # Clean up temp file
-    if (Test-Path -Path $tempConnectionsFile -ErrorAction SilentlyContinue) {
+    # Clean up temp file (if not already cleaned in catch)
+    if ($tempConnectionsFile -and (Test-Path -Path $tempConnectionsFile -ErrorAction SilentlyContinue)) {
         Remove-Item -Path $tempConnectionsFile -Force -ErrorAction SilentlyContinue
         Write-Verbose "Cleaned up temporary file: $tempConnectionsFile"
     }
