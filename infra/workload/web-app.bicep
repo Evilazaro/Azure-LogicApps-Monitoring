@@ -122,6 +122,7 @@ resource PoWebApp 'Microsoft.Web/sites@2025-03-01' = {
       elasticWebAppScaleLimit: 10
       numberOfWorkers: 3
       webSocketsEnabled: true // Already enabled ✓
+      http20Enabled: true // This needs verification
     }
     clientAffinityEnabled: true // Already enabled ✓
     clientAffinityProxyEnabled: true // This needs verification
@@ -154,22 +155,6 @@ resource PoConf 'Microsoft.Web/sites/config@2025-03-01' = {
     // XDT_MicrosoftApplicationInsights_Mode: 'recommended'
     // XDT_MicrosoftApplicationInsights_PreemptSdk: 'enabled'
     AZURE_TENANT_ID: tenant().tenantId
-  }
-}
-
-resource ftp 'Microsoft.Web/sites/basicPublishingCredentialsPolicies@2025-03-01' = {
-  parent: PoWebApp
-  name: 'ftp'
-  properties: {
-    allow: true
-  }
-}
-
-resource smc 'Microsoft.Web/sites/basicPublishingCredentialsPolicies@2025-03-01' = {
-  parent: PoWebApp
-  name: 'scm'
-  properties: {
-    allow: true
   }
 }
 

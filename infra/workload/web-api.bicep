@@ -118,6 +118,7 @@ resource PoProcAPI 'Microsoft.Web/sites@2025-03-01' = {
       minimumElasticInstanceCount: 3
       elasticWebAppScaleLimit: 10
       numberOfWorkers: 3
+      http20Enabled: true
     }
     httpsOnly: true
   }
