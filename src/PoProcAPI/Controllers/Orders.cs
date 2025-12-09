@@ -14,13 +14,25 @@ namespace PoProcAPI.Controllers
         }
 
         [HttpPost(Name = "ProcessOrder")]
-        public void processOrder(Order order)
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public IActionResult ProcessOrder(Order order)
         {
-            _logger.LogInformation("Processing order with ID: {OrderId}", order.Id);
-            
-            // Simulate order processing logic here
-            _logger.LogInformation("Order with ID: {OrderId} processed successfully", order.Id);
+            try
+            {
+                _logger.LogInformation("Processing order with ID: {OrderId}", order.Id);
 
+                // Simulate order processing logic here
+
+                _logger.LogInformation("Order with ID: {OrderId} processed successfully", order.Id);
+
+                return Ok();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error processing order with ID: {OrderId}", order.Id);
+                return BadRequest(ex.Message);
+            }
         }
     }
 }
