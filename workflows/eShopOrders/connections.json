@@ -2,28 +2,28 @@
   "managedApiConnections": {
     "azurequeues": {
       "api": {
-        "id": "/subscriptions/6a4029ea-399b-4933-9701-436db72883d4/providers/Microsoft.Web/locations/East US 2/managedApis/azurequeues"
+        "id": ""
       },
       "connection": {
-        "id": "/subscriptions/6a4029ea-399b-4933-9701-436db72883d4/resourceGroups/rg-eshop-orders-uat-eastus2/providers/Microsoft.Web/connections/azurequeues"
+        "id": ""
       },
-      "connectionRuntimeUrl": "https://5a6ae91ddbd8ab93.19.common.logic-eastus2.azure-apihub.net/apim/azurequeues/82fa16b92fd1436d99f805f759295fbb",
+      "connectionRuntimeUrl": "",
       "authentication": {
         "type": "ManagedServiceIdentity",
-        "identity": "/subscriptions/6a4029ea-399b-4933-9701-436db72883d4/resourcegroups/rg-eshop-orders-uat-eastus2/providers/Microsoft.ManagedIdentity/userAssignedIdentities/eshop-orders-e3iaps4jamrby-mi"
+        "identity": ""
       }
     },
     "azuretables": {
       "api": {
-        "id": "/subscriptions/6a4029ea-399b-4933-9701-436db72883d4/providers/Microsoft.Web/locations/East US 2/managedApis/azuretables"
+        "id": ""
       },
       "connection": {
-        "id": "/subscriptions/6a4029ea-399b-4933-9701-436db72883d4/resourceGroups/rg-eshop-orders-uat-eastus2/providers/Microsoft.Web/connections/azuretables"
+        "id": ""
       },
-      "connectionRuntimeUrl": "https://5a6ae91ddbd8ab93.19.common.logic-eastus2.azure-apihub.net/apim/azuretables/9a579239e9334eb3b855a9bf7ffdb97e",
+      "connectionRuntimeUrl": "",
       "authentication": {
         "type": "ManagedServiceIdentity",
-        "identity": "/subscriptions/6a4029ea-399b-4933-9701-436db72883d4/resourcegroups/rg-eshop-orders-uat-eastus2/providers/Microsoft.ManagedIdentity/userAssignedIdentities/eshop-orders-e3iaps4jamrby-mi"
+        "identity": ""
       }
     }
   }
