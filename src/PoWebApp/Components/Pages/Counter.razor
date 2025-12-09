@@ -2,6 +2,7 @@
 @rendermode InteractiveServer
 
 @inject Microsoft.ApplicationInsights.TelemetryClient TelemetryClient
+@inject ILogger<Orders> Logger
 
 <PageTitle>Orders</PageTitle>
 
@@ -65,7 +66,7 @@
             await Task.Delay(300);
 
             await UpdateProgress(50, "Creating queue if not exists...");
-            var order = new Orders(TelemetryClient);
+            var order = new Orders(TelemetryClient, Logger);
             
             await UpdateProgress(75, "Sending order message...");
             currentCount = await order.AddOrderMessageToQueueAsync();
