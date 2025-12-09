@@ -77,7 +77,7 @@ internal class Program
         builder.Services.AddScoped<Orders>();
 
         var app = builder.Build();
-                
+
         // Configure the HTTP request pipeline.
         if (!app.Environment.IsDevelopment())
         {
@@ -102,13 +102,15 @@ internal class Program
 
         app.UseHttpsRedirection();
 
+        app.UseRouting();
+        app.MapBlazorHub();
+
         app.UseAntiforgery();
 
         app.MapStaticAssets();
         app.MapRazorComponents<App>()
             .AddInteractiveServerRenderMode();
-        app.UseRouting();
-        app.MapBlazorHub();
+
         app.Run();
     }
 }
