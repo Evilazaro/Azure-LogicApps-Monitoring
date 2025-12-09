@@ -3,7 +3,7 @@
 ##
 ## Get latest from https://github.com/github/gitignore/blob/main/VisualStudio.gitignore
 
-connections.json
+./workflows/eShopOrders/connections.json
 
 # User-specific files
 *.rsuser
