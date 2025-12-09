@@ -5,6 +5,7 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <UserSecretsId>cae73de0-a56f-4e18-bb9f-8e76cdeb907b</UserSecretsId>
+    <ApplicationInsightsResourceId>/subscriptions/6a4029ea-399b-4933-9701-436db72883d4/resourceGroups/rg-eshop-orders-eymp-eastus2/providers/microsoft.insights/components/eshop-orders-3knhpvtaw7xwq-appinsights</ApplicationInsightsResourceId>
   </PropertyGroup>
 
   <ItemGroup>

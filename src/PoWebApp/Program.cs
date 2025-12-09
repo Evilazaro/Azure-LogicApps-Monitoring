@@ -3,6 +3,7 @@ using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
 using PoWebApp.Components;
 using PoWebApp.Diagnostics;
+using Azure.Identity;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -75,6 +76,10 @@ builder.Services.AddOpenTelemetry()
 // Add HttpClient for making HTTP requests with automatic tracing
 builder.Services.AddHttpClient();
 builder.Services.AddScoped<Orders>();
+builder.Services.AddApplicationInsightsTelemetry(new Microsoft.ApplicationInsights.AspNetCore.Extensions.ApplicationInsightsServiceOptions
+{
+    ConnectionString = builder.Configuration["APPLICATIONINSIGHTS_CONNECTION_STRING"]
+});
 
 var app = builder.Build();
 

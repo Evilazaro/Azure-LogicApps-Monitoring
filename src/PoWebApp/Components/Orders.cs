@@ -15,8 +15,18 @@ namespace PoWebApp.Components
             _logger = logger;
         }
 
-        public async Task<int> AddOrderMessageToQueueAsync(int batchSize)
+        public async Task<int> AddOrderMessageToQueueAsync()
         {
+            var ordersJson = JsonDocument
+                .Parse(File.ReadAllText("orders.json"))
+                .RootElement
+                .GetProperty("orders")
+                .GetRawText();            
+
+            Order[] orders = JsonSerializer.Deserialize<Order[]>(ordersJson) ?? Array.Empty<Order>();
+
+            int batchSize = orders.Count();
+
             using var activity = DiagnosticsConfig.ActivitySources.Orders.StartActivity(
                 "AddOrderMessageToQueue",
                 ActivityKind.Producer);
@@ -79,23 +89,22 @@ namespace PoWebApp.Components
 
                     try
                     {
-                        for (int i = 0; i <= batchSize; i++)
+                        var i = 0;
+                        foreach (var order in orders)
                         {
+                            i++;
+
                             using var messageActivity = DiagnosticsConfig.ActivitySources.Messaging.StartActivity(
                                 "SendQueueMessage",
                                 ActivityKind.Producer);
 
-                            var orderNumber = Guid.NewGuid().ToString();
-                            var customerId = $"CUST-{Random.Shared.Next(1000, 9999)}";
-                            var amount = Random.Shared.Next(10, 1000);
-
                             var orderData = new
                             {
-                                OrderId = orderNumber,
-                                CustomerId = customerId,
-                                Amount = amount,
-                                Timestamp = DateTime.UtcNow,
-                                TraceParent = Activity.Current?.Id,
+                                Id = order.Id,
+                                Date = order.Date,
+                                Quantity = order.Quantity,
+                                Total = order.Total,
+                                Message = order.Message,
                                 TraceId = Activity.Current?.TraceId.ToString(),
                                 SpanId = Activity.Current?.SpanId.ToString()
                             };
@@ -104,12 +113,11 @@ namespace PoWebApp.Components
 
                             // Add messaging and order context using extension methods
                             messageActivity?.AddMessagingContext("azure-queue", queueName, "publish");
-                            messageActivity?.AddOrderContext(orderNumber, customerId, amount);
+                            messageActivity?.AddOrderContext(order.Id.ToString(), order.Quantity.ToString(), order.Total.ToString());
 
                             // Add additional semantic conventions
-                            messageActivity?.SetTag(DiagnosticsConfig.SemanticConventions.MessagingMessageId, orderNumber);
+                            messageActivity?.SetTag(DiagnosticsConfig.SemanticConventions.MessagingMessageId, order.Id);
                             messageActivity?.SetTag(DiagnosticsConfig.SemanticConventions.MessagingPayloadSize, message.Length);
-                            messageActivity?.SetTag("message.index", i);
 
                             try
                             {
@@ -117,12 +125,9 @@ namespace PoWebApp.Components
                                 successCount++;
                                 messageActivity?.SetStatus(ActivityStatusCode.Ok);
 
-                                if (i % 1000 == 0)
-                                {
-                                    _logger.LogInformation(
-                                        "Batch progress: {MessagesSent}/{TotalMessages} messages sent",
-                                        i, batchSize);
-                                }
+                                _logger.LogInformation(
+                                    "Batch progress: {MessagesSent}/{TotalMessages} messages sent, Batch size: {BatchSize}",
+                                    i, batchSize, batchSize);
                             }
                             catch (Exception ex)
                             {
@@ -135,7 +140,7 @@ namespace PoWebApp.Components
                                 messageActivity?.AddEvent(new ActivityEvent("MessageSendFailed",
                                     tags: new ActivityTagsCollection
                                     {
-                                        { "order.id", orderNumber },
+                                        { "order.id", order.Id },
                                         { "error.type", ex.GetType().Name },
                                         { "error.message", ex.Message },
                                         { "message.index", i }
@@ -145,7 +150,7 @@ namespace PoWebApp.Components
                                     "Failed to send message for order {OrderNumber} at index {MessageIndex}",
                                     new Dictionary<string, object>
                                     {
-                                        ["OrderNumber"] = orderNumber,
+                                        ["OrderNumber"] = order.Id,
                                         ["MessageIndex"] = i,
                                         ["QueueName"] = queueName
                                     });

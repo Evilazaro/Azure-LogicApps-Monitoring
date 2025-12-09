@@ -23,7 +23,7 @@ namespace PoWebApp.Examples
         /// <summary>
         /// Example 1: Creating a custom span for business operations
         /// </summary>
-        public async Task ProcessOrderExample(string orderId, string customerId, decimal amount)
+        public async Task ProcessOrderExample(string orderId, string customerId, string amount)
         {
             // Start a new activity (span) for order processing
             using var activity = DiagnosticsConfig.ActivitySources.Orders.StartActivity(
@@ -66,7 +66,7 @@ namespace PoWebApp.Examples
         /// <summary>
         /// Example 2: Creating spans for external service calls
         /// </summary>
-        private async Task CallPaymentServiceExample(string orderId, decimal amount)
+        private async Task CallPaymentServiceExample(string orderId, string amount)
         {
             // Create a span for external service call
             using var activity = DiagnosticsConfig.ActivitySources.Orders.StartActivity(
@@ -103,7 +103,7 @@ namespace PoWebApp.Examples
         /// <summary>
         /// Example 3: Creating spans for messaging operations
         /// </summary>
-        public async Task SendOrderNotificationExample(string orderId, string messageContent)
+        public async Task SendOrderNotificationExample(string orderId, string quantity, string total, string messageContent)
         {
             using var activity = DiagnosticsConfig.ActivitySources.Messaging.StartActivity(
                 "SendOrderNotification",
@@ -116,7 +116,7 @@ namespace PoWebApp.Examples
                 System.Text.Encoding.UTF8.GetByteCount(messageContent));
 
             // Add order context as baggage for cross-service correlation
-            activity?.AddOrderContext(orderId);
+            activity?.AddOrderContext(orderId, quantity, total);
 
             try
             {
@@ -190,7 +190,7 @@ namespace PoWebApp.Examples
                 try
                 {
                     // Each ProcessOrder call creates a child span
-                    await ProcessOrderExample(orderId, "BATCH-CUSTOMER", 100.00m);
+                    await ProcessOrderExample(orderId, "BATCH-CUSTOMER", "100.00m");
                     successCount++;
                 }
                 catch (Exception ex)
@@ -217,13 +217,13 @@ namespace PoWebApp.Examples
         /// <summary>
         /// Example 7: Adding custom events to spans
         /// </summary>
-        public async Task ProcessOrderWithEventsExample(string orderId)
+        public async Task ProcessOrderWithEventsExample(string orderId,string quantity, string total)
         {
             using var activity = DiagnosticsConfig.ActivitySources.Orders.StartActivity(
                 "ProcessOrderWithEvents",
                 ActivityKind.Internal);
 
-            activity?.AddOrderContext(orderId);
+            activity?.AddOrderContext(orderId, quantity, total);
 
             // Add custom events to track milestones
             activity?.AddEvent(new ActivityEvent("OrderValidationStarted"));
