@@ -186,46 +186,45 @@ graph TB
 ## 🔄 Data Flow
 
 ```mermaid
-sequenceDiagram
-    autonumber
-    participant User as Web Browser
-    participant WebApp as PoWebApp<br/>(Blazor)
-    participant API as PoProcAPI<br/>(REST API)
-    participant Queue as Storage Queue
-    participant LogicApp as Logic App<br/>(Workflow)
-    participant AI as Application Insights
-    participant LAW as Log Analytics
+flowchart TB
+    User[Web Browser]
+    WebApp[PoWebApp<br/>Blazor Server]
+    API[PoProcAPI<br/>REST API]
+    Queue[Storage Queue<br/>orders-queue]
+    LogicApp[Logic App<br/>Workflow Engine]
+    Table[Table Storage]
+    Blob[Blob Storage]
+    AI[Application Insights]
+    LAW[Log Analytics<br/>Workspace]
+    Storage[Archive Storage<br/>30-day retention]
 
-    User->>WebApp: Submit Order
-    activate WebApp
-    WebApp->>AI: Trace: Order.Create (TraceId: 123)
-    WebApp->>Queue: Enqueue Order Message
-    WebApp->>API: POST /order
-    activate API
-    API->>AI: Trace: API.ProcessOrder (ParentTraceId: 123)
-    API->>Table: Store Order Details
-    API-->>WebApp: 202 Accepted
-    deactivate API
-    WebApp-->>User: Order Submitted
-    deactivate WebApp
+    User -->|1. Submit Order| WebApp
+    WebApp -->|2. Trace: Order.Create<br/>TraceId: 123| AI
+    WebApp -->|3. Enqueue Message| Queue
+    WebApp -->|4. POST /order| API
+    API -->|5. Trace: API.ProcessOrder<br/>ParentTraceId: 123| AI
+    API -->|6. Store Order| Table
+    API -->|7. 202 Accepted| WebApp
+    WebApp -->|8. Order Submitted| User
+    
+    Queue -->|9. Trigger on New Message| LogicApp
+    LogicApp -->|10. Trace: Workflow.Start<br/>CorrelationId: 123| AI
+    LogicApp -->|11. GET /order/{id}| API
+    API -->|12. Trace: API.GetOrder| AI
+    API -->|13. Order Data| LogicApp
+    LogicApp -->|14. Save Receipt| Blob
+    LogicApp -->|15. Insert Audit Entry| Table
+    LogicApp -->|16. Trace: Workflow.Complete<br/>Status: Success| AI
+    
+    AI -->|17. Export Telemetry| LAW
+    LAW -->|18. Archive Logs| Storage
 
-    Queue->>LogicApp: Trigger on New Message
-    activate LogicApp
-    LogicApp->>AI: Trace: Workflow.Start (CorrelationId: 123)
-    LogicApp->>API: GET /order/{id}
-    activate API
-    API->>AI: Trace: API.GetOrder
-    API-->>LogicApp: Order Data
-    deactivate API
-    LogicApp->>Blob: Save Receipt
-    LogicApp->>Table: Insert Audit Entry
-    LogicApp->>AI: Trace: Workflow.Complete (Status: Success)
-    deactivate LogicApp
-
-    AI->>LAW: Export All Telemetry
-    LAW->>Storage: Archive Logs (30-day retention)
-
-    Note over AI,LAW: All traces linked by TraceId<br/>Enables end-to-end correlation
+    style AI fill:#FF6F00,stroke:#C43E00,color:#fff
+    style LAW fill:#0078D4,stroke:#003B73,color:#fff
+    style WebApp fill:#68217A,stroke:#3E145F,color:#fff
+    style API fill:#107C10,stroke:#0B5A0B,color:#fff
+    style LogicApp fill:#0078D4,stroke:#003B73,color:#fff
+    style Queue fill:#FFA500,stroke:#CC8400,color:#000
 ```
 
 ---
