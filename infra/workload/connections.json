@@ -1,0 +1,28 @@
+{
+  "managedApiConnections": {
+    "azurequeues": {
+      "api": {
+        "id": "/subscriptions/{subscriptionId}/providers/Microsoft.Web/locations/{location}/managedApis/azurequeues"
+      },
+      "connection": {
+        "id": "/subscriptions/{subscriptionId}/resourceGroups/{resourceGroupName}/providers/Microsoft.Web/connections/azurequeues"
+      },
+      "connectionRuntimeUrl": "{queueConnectionRuntimeUrl}",
+      "authentication": {
+        "type": "ManagedServiceIdentity"
+      }
+    },
+    "azuretables": {
+      "api": {
+        "id": "/subscriptions/{subscriptionId}/providers/Microsoft.Web/locations/{location}/managedApis/azuretables"
+      },
+      "connection": {
+        "id": "/subscriptions/{subscriptionId}/resourceGroups/{resourceGroupName}/providers/Microsoft.Web/connections/azuretables"
+      },
+      "connectionRuntimeUrl": "{tableConnectionRuntimeUrl}",
+      "authentication": {
+        "type": "ManagedServiceIdentity"
+      }
+    }
+  }
+}

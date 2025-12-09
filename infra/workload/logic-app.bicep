@@ -155,6 +155,7 @@ resource workflowEngine 'Microsoft.Web/sites@2023-12-01' = {
 resource wfConf 'Microsoft.Web/sites/config@2025-03-01' = {
   name: 'appsettings'
   parent: workflowEngine
+  kind: 'functionapp,workflowapp'
   properties: {
     FUNCTIONS_EXTENSION_VERSION: functionsExtensionVersion
     FUNCTIONS_WORKER_RUNTIME: functionsWorkerRuntime
@@ -219,9 +220,6 @@ resource queueAccessPolicy 'Microsoft.Web/connections/accessPolicies@2018-07-01-
   tags: tags
   location: location
   kind: 'V2'
-  plan: {
-    id: '/subscriptions/${subscription().subscriptionId}/providers/Microsoft.Web/serverfarms/${wfASP.name}'
-  }
   identity: {
     type: 'SystemAssigned'
   }
@@ -239,49 +237,48 @@ resource queueAccessPolicy 'Microsoft.Web/connections/accessPolicies@2018-07-01-
   ]
 }
 
-// Output the connection ID for use in the Logic App workflow definition
-output apiConnectionId string = storageQueueApiConnection.id
+param tbConnName string = 'azuretables'
 
-param tableConnectionName string = 'azuretables'
-
-resource tableConnection 'Microsoft.Web/connections@2016-06-01' = {
-  name: tableConnectionName
+resource tbConn 'Microsoft.Web/connections@2016-06-01' = {
+  name: tbConnName
   location: location
   kind: 'V2'
   tags: tags
   properties: {
-    displayName: tableConnectionName
+    displayName: tbConnName
     api: {
-      name: tableConnectionName
+      name: tbConnName
       displayName: 'Azure Table Storage'
       description: 'Azure Table storage is a service that stores structured NoSQL data in the cloud, providing a key/attribute store with a schemaless design. Sign into your Storage account to create, update, and query tables and more.'
-      iconUri: 'https://conn-afd-prod-endpoint-bmc9bqahasf3grgk.b01.azurefd.net/v1.0.1778/1.0.1778.4417/${tableConnectionName}/icon.png'
+      iconUri: 'https://conn-afd-prod-endpoint-bmc9bqahasf3grgk.b01.azurefd.net/v1.0.1778/1.0.1778.4417/${tbConnName}/icon.png'
       brandColor: '#804998'
-      id: '/subscriptions/${subscription().subscriptionId}/providers/Microsoft.Web/locations/${location}/managedApis/${tableConnectionName}'
+      id: '/subscriptions/${subscription().subscriptionId}/providers/Microsoft.Web/locations/${location}/managedApis/${tbConnName}'
       type: 'Microsoft.Web/locations/managedApis'
     }
+    statuses: [
+      {
+        status: 'Connected'
+      }
+    ]
     parameterValues: {
       storageaccount: wfSA.name
       sharedkey: wfSA.listKeys().keys[0].value
     }
     testLinks: [
       {
-        requestUri: 'https://management.azure.com:443/subscriptions/${subscription().subscriptionId}/resourceGroups/${resourceGroup().name}/providers/Microsoft.Web/connections/${tableConnectionName}/extensions/proxy/testConnection?api-version=2016-06-01'
+        requestUri: 'https://management.azure.com:443/subscriptions/${subscription().subscriptionId}/resourceGroups/${resourceGroup().name}/providers/Microsoft.Web/connections/${tbConnName}/extensions/proxy/testConnection?api-version=2016-06-01'
         method: 'get'
       }
     ]
   }
 }
 
-resource tableAccessPolicy 'Microsoft.Web/connections/accessPolicies@2018-07-01-preview' = {
-  name: guid(subscription().id, resourceGroup().id, tableConnection.id, mi.id)
-  parent: tableConnection
+resource tbAccesPol 'Microsoft.Web/connections/accessPolicies@2018-07-01-preview' = {
+  name: guid(subscription().id, resourceGroup().id, tbConn.id, mi.id)
+  parent: tbConn
   location: location
   tags: tags
   kind: 'V2'
-  plan: {
-    id: '/subscriptions/${subscription().subscriptionId}/providers/Microsoft.Web/serverfarms/${wfASP.name}'
-  }
   identity: {
     type: 'SystemAssigned'
   }
@@ -328,3 +325,15 @@ output WORKFLOW_ENGINE_ASP_ID string = wfASP.id
 
 @description('Name of the App Service Plan')
 output APP_SERVICE_PLAN_NAME string = wfASP.name
+
+@description('Resource ID of the Azure Queue Storage API connection')
+output QUEUE_CONNECTION_ID string = storageQueueApiConnection.id
+
+@description('Name of the Azure Queue Storage API connection')
+output QUEUE_CONNECTION_NAME string = storageQueueApiConnection.name
+
+@description('Resource ID of the Azure Table Storage API connection')
+output TABLE_CONNECTION_ID string = tbConn.id
+
+@description('Name of the Azure Table Storage API connection')
+output TABLE_CONNECTION_NAME string = tbConn.name
