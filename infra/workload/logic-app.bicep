@@ -219,7 +219,6 @@ resource queueAccessPolicy 'Microsoft.Web/connections/accessPolicies@2018-07-01-
   parent: storageQueueApiConnection
   tags: tags
   location: location
-  kind: 'V2'
   identity: {
     type: 'SystemAssigned'
   }
@@ -278,7 +277,6 @@ resource tbAccesPol 'Microsoft.Web/connections/accessPolicies@2018-07-01-preview
   parent: tbConn
   location: location
   tags: tags
-  kind: 'V2'
   identity: {
     type: 'SystemAssigned'
   }
