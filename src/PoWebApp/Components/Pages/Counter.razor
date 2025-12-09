@@ -11,6 +11,9 @@
 
 <p role="status">@errorMessage</p>
 
+// Add a TextBox for the user to input the batch size
+<input type="number" class="form-control" placeholder="Enter batch size" @bind="batchSize" />  
+
 <button class="btn btn-primary" @onclick="PlaceOrder" disabled="@isPlacingOrder">
     @if (isPlacingOrder)
     {
@@ -45,6 +48,7 @@
     private int progressPercentage = 0;
     private string progressStatus = string.Empty;
     private string successMessage = string.Empty;
+    private int batchSize = 1;
 
     private async Task PlaceOrder()
     {
@@ -65,7 +69,7 @@
             var order = new Orders(Logger);
 
             await UpdateProgress(75, "Sending order message...");
-            currentCount = await order.AddOrderMessageToQueueAsync();
+            currentCount = await order.AddOrderMessageToQueueAsync(batchSize);
 
             await UpdateProgress(100, "Order placed successfully!");
             successMessage = $"Order placed successfully! Total orders: {currentCount}";

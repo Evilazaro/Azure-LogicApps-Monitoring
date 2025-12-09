@@ -16,7 +16,7 @@ namespace PoWebApp.Components
             _logger = logger;
         }
 
-        public async Task<int> AddOrderMessageToQueueAsync()
+        public async Task<int> AddOrderMessageToQueueAsync(int batchSize)
         {
             using var activity = DiagnosticsConfig.ActivitySources.Orders.StartActivity(
                 "AddOrderMessageToQueue", 
@@ -74,13 +74,13 @@ namespace PoWebApp.Components
                         tags: new ActivityTagsCollection
                         {
                             { "queue.name", queueName },
-                            { "batch.size", 5000 },
+                            { "batch.size", batchSize },
                             { "timestamp", DateTimeOffset.UtcNow.ToString("o") }
                         }));
 
                     try
                     {
-                        for (int i = 0; i <= 5000; i++)
+                        for (int i = 0; i <= batchSize; i++)
                         {
                             using var messageActivity = DiagnosticsConfig.ActivitySources.Messaging.StartActivity(
                                 "SendQueueMessage", 
@@ -122,7 +122,7 @@ namespace PoWebApp.Components
                                 {
                                     _logger.LogInformation(
                                         "Batch progress: {MessagesSent}/{TotalMessages} messages sent",
-                                        i, 5000);
+                                        i, batchSize);
                                 }
                             }
                             catch (Exception ex)
@@ -164,8 +164,8 @@ namespace PoWebApp.Components
                     // Add batch completion tags using semantic conventions
                     activity?.SetTag(DiagnosticsConfig.SemanticConventions.BatchSuccessCount, successCount);
                     activity?.SetTag(DiagnosticsConfig.SemanticConventions.BatchFailureCount, failureCount);
-                    activity?.SetTag("batch.total_count", 5000);
-                    activity?.SetTag("batch.success_rate", (double)successCount / 5000);
+                    activity?.SetTag("batch.total_count", batchSize);
+                    activity?.SetTag("batch.success_rate", (double)successCount / batchSize);
                     
                     var batchStatus = failureCount == 0 ? ActivityStatusCode.Ok : ActivityStatusCode.Error;
                     activity?.SetStatus(batchStatus, $"Batch completed: {successCount} succeeded, {failureCount} failed");
@@ -188,8 +188,8 @@ namespace PoWebApp.Components
                             ["SuccessCount"] = successCount,
                             ["FailureCount"] = failureCount,
                             ["QueueName"] = queueName,
-                            ["BatchSize"] = 5000,
-                            ["SuccessRate"] = (double)successCount / 5000
+                            ["BatchSize"] = batchSize,
+                            ["SuccessRate"] = (double)successCount / batchSize
                         });
 
                     return successCount;
