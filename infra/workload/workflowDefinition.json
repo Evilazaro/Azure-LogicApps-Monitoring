@@ -1,89 +1,58 @@
 {
-    "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
-    "contentVersion": "1.0.0.0",
-    "actions": {
-        "HTTP": {
-            "type": "Http",
-            "inputs": {
-                "uri": "https://eshop-orders-4bewrs44cgeo6-poproc-api.azurewebsites.net/Orders",
-                "method": "POST",
-                "headers": {
-                    "accept": "*/*",
-                    "Content-Type": "application/json"
-                },
-                "body": "@triggerBody()"
-            },
-            "runAfter": {},
-            "runtimeConfiguration": {
-                "contentTransfer": {
-                    "transferMode": "Chunked"
-                }
-            }
-        },
-        "Condition": {
-            "type": "If",
-            "expression": {
-                "and": [
-                    {
-                        "equals": [
-                            "@outputs('HTTP')?['statusCode']",
-                            200
-                        ]
-                    }
-                ]
-            },
-            "actions": {
-                "Insert_Entity_(V2)": {
-                    "type": "ApiConnection",
-                    "inputs": {
-                        "host": {
-                            "connection": {
-                                "referenceName": "azuretables"
-                            }
-                        },
-                        "method": "post",
-                        "body": "@body('Parse_JSON')",
-                        "path": "/v2/storageAccounts/@{encodeURIComponent(encodeURIComponent('eshoporders4bewrs44cgeo6'))}/tables/@{encodeURIComponent('audit')}/entities"
+    "definition": {
+        "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+        "contentVersion": "1.0.0.0",
+        "actions": {
+            "HTTP": {
+                "type": "Http",
+                "inputs": {
+                    "uri": "https://eshop-orders-4bewrs44cgeo6-poproc-api.azurewebsites.net/Orders",
+                    "method": "POST",
+                    "headers": {
+                        "accept": "*/*",
+                        "Content-Type": "application/json"
                     },
-                    "runAfter": {
-                        "Parse_JSON": [
-                            "SUCCEEDED"
-                        ]
-                    }
+                    "body": "@triggerBody()"
                 },
-                "Parse_JSON": {
-                    "type": "ParseJson",
-                    "inputs": {
-                        "content": "@triggerBody()",
-                        "schema": {
-                            "type": "object",
-                            "properties": {
-                                "PartitionKey": {
-                                    "type": "string"
-                                },
-                                "RowKey": {
-                                    "type": "string"
-                                },
-                                "Date": {
-                                    "type": "string"
-                                },
-                                "Quantity": {
-                                    "type": "integer"
-                                },
-                                "Total": {
-                                    "type": "number"
-                                },
-                                "Message": {
-                                    "type": "string"
-                                }
-                            }
-                        }
+                "runAfter": {},
+                "runtimeConfiguration": {
+                    "contentTransfer": {
+                        "transferMode": "Chunked"
                     }
                 }
             },
-            "else": {
+            "Condition": {
+                "type": "If",
+                "expression": {
+                    "and": [
+                        {
+                            "equals": [
+                                "@outputs('HTTP')?['statusCode']",
+                                200
+                            ]
+                        }
+                    ]
+                },
                 "actions": {
-                    "Parse_JSON_1": {
+                    "Insert_Entity_(V2)": {
+                        "type": "ApiConnection",
+                        "inputs": {
+                            "host": {
+                                "connection": {
+                                    "referenceName": "azuretables"
+                                }
+                            },
+                            "method": "post",
+                            "body": "@body('Parse_JSON')",
+                            "path": "/v2/storageAccounts/@{encodeURIComponent(encodeURIComponent('eshoporders4bewrs44cgeo6'))}/tables/@{encodeURIComponent('audit')}/entities"
+                        },
+                        "runAfter": {
+                            "Parse_JSON": [
+                                "SUCCEEDED"
+                            ]
+                        }
+                    },
+                    "Parse_JSON": {
                         "type": "ParseJson",
                         "inputs": {
                             "content": "@triggerBody()",
@@ -96,64 +65,98 @@
                                     "RowKey": {
                                         "type": "string"
                                     },
+                                    "Date": {
+                                        "type": "string"
+                                    },
+                                    "Quantity": {
+                                        "type": "integer"
+                                    },
+                                    "Total": {
+                                        "type": "number"
+                                    },
                                     "Message": {
                                         "type": "string"
                                     }
                                 }
                             }
                         }
-                    },
-                    "Insert_Entity_(V2)_1": {
-                        "type": "ApiConnection",
-                        "inputs": {
-                            "host": {
-                                "connection": {
-                                    "referenceName": "azuretables"
+                    }
+                },
+                "else": {
+                    "actions": {
+                        "Parse_JSON_1": {
+                            "type": "ParseJson",
+                            "inputs": {
+                                "content": "@triggerBody()",
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "PartitionKey": {
+                                            "type": "string"
+                                        },
+                                        "RowKey": {
+                                            "type": "string"
+                                        },
+                                        "Message": {
+                                            "type": "string"
+                                        }
+                                    }
                                 }
-                            },
-                            "method": "post",
-                            "body": "@body('Parse_JSON_1')",
-                            "path": "/v2/storageAccounts/@{encodeURIComponent(encodeURIComponent('eshoporders4bewrs44cgeo6'))}/tables/@{encodeURIComponent('audit')}/entities"
+                            }
                         },
-                        "runAfter": {
-                            "Parse_JSON_1": [
-                                "Succeeded"
-                            ]
+                        "Insert_Entity_(V2)_1": {
+                            "type": "ApiConnection",
+                            "inputs": {
+                                "host": {
+                                    "connection": {
+                                        "referenceName": "azuretables"
+                                    }
+                                },
+                                "method": "post",
+                                "body": "@body('Parse_JSON_1')",
+                                "path": "/v2/storageAccounts/@{encodeURIComponent(encodeURIComponent('eshoporders4bewrs44cgeo6'))}/tables/@{encodeURIComponent('audit')}/entities"
+                            },
+                            "runAfter": {
+                                "Parse_JSON_1": [
+                                    "Succeeded"
+                                ]
+                            }
                         }
                     }
+                },
+                "runAfter": {
+                    "HTTP": [
+                        "SUCCEEDED"
+                    ]
                 }
-            },
-            "runAfter": {
-                "HTTP": [
-                    "SUCCEEDED"
-                ]
+            }
+        },
+        "outputs": {},
+        "triggers": {
+            "When_there_are_messages_in_a_queue_(V2)": {
+                "type": "ApiConnection",
+                "inputs": {
+                    "host": {
+                        "connection": {
+                            "referenceName": "azurequeues"
+                        }
+                    },
+                    "method": "get",
+                    "path": "/v2/storageAccounts/@{encodeURIComponent(encodeURIComponent('eshoporders4bewrs44cgeo6'))}/queues/@{encodeURIComponent('orders-queue')}/message_trigger"
+                },
+                "recurrence": {
+                    "interval": 1,
+                    "frequency": "Second",
+                    "timeZone": "Central Standard Time"
+                },
+                "runtimeConfiguration": {
+                    "concurrency": {
+                        "runs": 50
+                    }
+                },
+                "splitOn": "@triggerBody()?['QueueMessagesList']?['QueueMessage']"
             }
         }
     },
-    "outputs": {},
-    "triggers": {
-        "When_there_are_messages_in_a_queue_(V2)": {
-            "type": "ApiConnection",
-            "inputs": {
-                "host": {
-                    "connection": {
-                        "referenceName": "azurequeues"
-                    }
-                },
-                "method": "get",
-                "path": "/v2/storageAccounts/@{encodeURIComponent(encodeURIComponent('eshoporders4bewrs44cgeo6'))}/queues/@{encodeURIComponent('orders-queue')}/message_trigger"
-            },
-            "recurrence": {
-                "interval": 1,
-                "frequency": "Second",
-                "timeZone": "Central Standard Time"
-            },
-            "runtimeConfiguration": {
-                "concurrency": {
-                    "runs": 50
-                }
-            },
-            "splitOn": "@triggerBody()?['QueueMessagesList']?['QueueMessage']"
-        }
-    }
+    "kind": "Stateful"
 }

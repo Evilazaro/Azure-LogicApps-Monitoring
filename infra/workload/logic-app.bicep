@@ -141,14 +141,14 @@ resource workflowEngine 'Microsoft.Web/sites@2023-12-01' = {
     storageAccountRequired: true
     siteConfig: {
       alwaysOn: true
+      webSocketsEnabled: true
       minimumElasticInstanceCount: 3
       elasticWebAppScaleLimit: 20
-      autoHealEnabled: true
       use32BitWorkerProcess: false
-      ftpsState: 'Disabled'
+      ftpsState: 'FtpsOnly'
       minTlsVersion: '1.2'
-      netFrameworkVersion: 'v6.0'
     }
+    httpsOnly: true
   }
 }
 
@@ -182,9 +182,15 @@ var queueConnectionName string = 'azurequeues'
 resource storageQueueApiConnection 'Microsoft.Web/connections@2016-06-01' = {
   name: queueConnectionName
   location: location
+  tags: tags
   kind: 'V2'
   properties: {
     displayName: queueConnectionName
+    statuses: [
+      {
+        status: 'Connected'
+      }
+    ]
     api: {
       name: queueConnectionName
       displayName: 'Azure Queues'
@@ -210,6 +216,15 @@ resource storageQueueApiConnection 'Microsoft.Web/connections@2016-06-01' = {
 resource queueAccessPolicy 'Microsoft.Web/connections/accessPolicies@2018-07-01-preview' = {
   name: guid(subscription().id, resourceGroup().id, storageQueueApiConnection.id, mi.id)
   parent: storageQueueApiConnection
+  tags: tags
+  location: location
+  kind: 'V2'
+  plan: {
+    id: '/subscriptions/${subscription().subscriptionId}/providers/Microsoft.Web/serverfarms/${wfASP.name}'
+  }
+  identity: {
+    type: 'SystemAssigned'
+  }
   properties: {
     principal: {
       type: 'ActiveDirectory'
@@ -233,6 +248,7 @@ resource tableConnection 'Microsoft.Web/connections@2016-06-01' = {
   name: tableConnectionName
   location: location
   kind: 'V2'
+  tags: tags
   properties: {
     displayName: tableConnectionName
     api: {
@@ -260,6 +276,15 @@ resource tableConnection 'Microsoft.Web/connections@2016-06-01' = {
 resource tableAccessPolicy 'Microsoft.Web/connections/accessPolicies@2018-07-01-preview' = {
   name: guid(subscription().id, resourceGroup().id, tableConnection.id, mi.id)
   parent: tableConnection
+  location: location
+  tags: tags
+  kind: 'V2'
+  plan: {
+    id: '/subscriptions/${subscription().subscriptionId}/providers/Microsoft.Web/serverfarms/${wfASP.name}'
+  }
+  identity: {
+    type: 'SystemAssigned'
+  }
   properties: {
     principal: {
       type: 'ActiveDirectory'
