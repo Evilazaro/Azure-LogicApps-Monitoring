@@ -1,5 +1,4 @@
 using Microsoft.AspNetCore.Mvc;
-using OpenTelemetry.Trace;
 using System.Diagnostics;
 
 namespace PoProcAPI.Controllers
@@ -20,7 +19,7 @@ namespace PoProcAPI.Controllers
         public IActionResult ProcessOrder([FromBody] OrderRequest orderRequest)
         {
             using var activity = ActivitySource.StartActivity("ProcessOrder", ActivityKind.Server);
-            
+
             // Add semantic convention attributes
             activity?.SetTag("http.method", HttpContext.Request.Method);
             activity?.SetTag("http.route", "/Order");
@@ -30,7 +29,7 @@ namespace PoProcAPI.Controllers
             activity?.SetTag("order.amount", orderRequest.Amount);
             activity?.SetTag("operation.name", "ProcessOrder");
             activity?.SetTag("service.name", "PoProcAPI");
-            
+
             // Add baggage for cross-service correlation
             activity?.AddBaggage("order.id", orderRequest.OrderId);
             activity?.AddBaggage("business.flow", "order-processing");
@@ -38,7 +37,7 @@ namespace PoProcAPI.Controllers
             try
             {
                 // Add event for order received
-                activity?.AddEvent(new ActivityEvent("OrderReceived", 
+                activity?.AddEvent(new ActivityEvent("OrderReceived",
                     tags: new ActivityTagsCollection
                     {
                         { "order.id", orderRequest.OrderId },
@@ -63,10 +62,10 @@ namespace PoProcAPI.Controllers
                     using var validationActivity = ActivitySource.StartActivity("ValidateOrder", ActivityKind.Internal);
                     validationActivity?.SetTag("order.id", orderRequest.OrderId);
                     validationActivity?.SetTag("validation.type", "business_rules");
-                    
+
                     ValidateOrder(orderRequest);
                     validationActivity?.SetStatus(ActivityStatusCode.Ok);
-                    
+
                     // Add event for validation complete
                     activity?.AddEvent(new ActivityEvent("OrderValidated",
                         tags: new ActivityTagsCollection
@@ -79,12 +78,12 @@ namespace PoProcAPI.Controllers
                     using var processingActivity = ActivitySource.StartActivity("ProcessOrderInternal", ActivityKind.Internal);
                     processingActivity?.SetTag("order.id", orderRequest.OrderId);
                     processingActivity?.SetTag("processing.type", "order_fulfillment");
-                    
+
                     // Simulate processing logic
                     Thread.Sleep(100); // Simulate processing time
-                    
+
                     processingActivity?.SetStatus(ActivityStatusCode.Ok);
-                    
+
                     _logger.LogInformation("Order processed successfully: {OrderId}", orderRequest.OrderId);
                 }
 
@@ -97,8 +96,9 @@ namespace PoProcAPI.Controllers
                         { "processing.duration_ms", activity?.Duration.TotalMilliseconds ?? 0 }
                     }));
 
-                return Accepted(new { 
-                    OrderId = orderRequest.OrderId, 
+                return Accepted(new
+                {
+                    OrderId = orderRequest.OrderId,
                     Status = "Accepted",
                     TraceId = Activity.Current?.TraceId.ToString()
                 });
@@ -123,12 +123,12 @@ namespace PoProcAPI.Controllers
                     ["SpanId"] = Activity.Current?.SpanId.ToString() ?? "unknown"
                 }))
                 {
-                    _logger.LogError(ex, 
-                        "Error processing order: {OrderId}. Error: {ErrorMessage}", 
-                        orderRequest.OrderId, 
+                    _logger.LogError(ex,
+                        "Error processing order: {OrderId}. Error: {ErrorMessage}",
+                        orderRequest.OrderId,
                         ex.Message);
                 }
-                
+
                 throw;
             }
         }
@@ -137,10 +137,10 @@ namespace PoProcAPI.Controllers
         {
             if (string.IsNullOrEmpty(orderRequest.OrderId))
                 throw new ArgumentException("OrderId cannot be null or empty", nameof(orderRequest.OrderId));
-            
+
             if (string.IsNullOrEmpty(orderRequest.CustomerId))
                 throw new ArgumentException("CustomerId cannot be null or empty", nameof(orderRequest.CustomerId));
-            
+
             if (orderRequest.Amount <= 0)
                 throw new ArgumentException("Amount must be greater than zero", nameof(orderRequest.Amount));
         }
