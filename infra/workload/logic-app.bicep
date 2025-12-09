@@ -194,10 +194,8 @@ resource storageQueueApiConnection 'Microsoft.Web/connections@2016-06-01' = {
       id: '/subscriptions/${subscription().subscriptionId}/providers/Microsoft.Web/locations/${location}/managedApis/${queueConnectionName}'
       type: 'Microsoft.Web/locations/managedApis'
     }
-    nonSecretParameterValues: {
-      storageaccount: wfSA.name
-    }
     parameterValues: {
+      storageaccount: wfSA.name
       sharedkey: wfSA.listKeys().keys[0].value
     }
     testLinks: [
@@ -246,10 +244,8 @@ resource tableConnection 'Microsoft.Web/connections@2016-06-01' = {
       id: '/subscriptions/${subscription().subscriptionId}/providers/Microsoft.Web/locations/${location}/managedApis/${tableConnectionName}'
       type: 'Microsoft.Web/locations/managedApis'
     }
-    nonSecretParameterValues: {
-      storageaccount: wfSA.name
-    }
     parameterValues: {
+      storageaccount: wfSA.name
       sharedkey: wfSA.listKeys().keys[0].value
     }
     testLinks: [
@@ -293,8 +289,6 @@ resource wfDiag 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
     metrics: metricsSettings
   }
 }
-
-
 
 // ========== Outputs ==========
 
