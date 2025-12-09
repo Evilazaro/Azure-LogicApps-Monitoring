@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using OpenTelemetry.Trace;
 using System.Diagnostics;
 
 namespace PoProcAPI.Controllers
@@ -106,7 +107,7 @@ namespace PoProcAPI.Controllers
             {
                 // Record exception with proper semantic conventions
                 activity?.SetStatus(ActivityStatusCode.Error, ex.Message);
-                activity?.RecordException(ex);
+                activity?.AddException(ex);
                 activity?.AddEvent(new ActivityEvent("OrderProcessingFailed",
                     tags: new ActivityTagsCollection
                     {
