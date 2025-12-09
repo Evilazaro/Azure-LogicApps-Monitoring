@@ -3,8 +3,9 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Azure](https://img.shields.io/badge/Azure-Logic%20Apps-0078D4?logo=microsoft-azure)](https://azure.microsoft.com/en-us/products/logic-apps/)
 [![OpenTelemetry](https://img.shields.io/badge/OpenTelemetry-Enabled-orange)](https://opentelemetry.io/)
+[![.NET](https://img.shields.io/badge/.NET-9.0-512BD4?logo=dotnet)](https://dotnet.microsoft.com/)
 
-A comprehensive, production-ready open-source solution demonstrating Azure Monitor best practices for Logic Apps Standard, ASP.NET Core applications, and enterprise workflow orchestration using **OpenTelemetry**, **Application Insights**, and **Log Analytics**.
+A comprehensive, production-ready open-source solution demonstrating **Azure Monitor best practices** for Logic Apps Standard, ASP.NET Core applications, and enterprise workflow orchestration using **OpenTelemetry**, **Application Insights**, and **Log Analytics**.
 
 ---
 
@@ -18,6 +19,13 @@ This project provides a **reference implementation** for enterprise-grade observ
 - **Custom Instrumentation**: Business-level telemetry with semantic conventions
 - **Infrastructure as Code**: Fully automated deployment using Bicep and Azure Developer CLI
 - **Production-Ready**: Includes health checks, diagnostic settings, and monitoring best practices
+
+**Use Cases:**
+- Enterprise workflow orchestration with full observability
+- Multi-service trace correlation (Blazor → API → Logic App → Storage)
+- Performance monitoring and bottleneck identification
+- Compliance and audit logging with long-term retention
+- Real-time application health monitoring
 
 ---
 
@@ -57,6 +65,7 @@ This solution is built on three core design principles:
 | **Health Checks** | Application-level health endpoints for monitoring | Proactive failure detection; automated recovery |
 | **Auto-Scaling Configuration** | Elastic scale limits for App Service Plans and Logic Apps | Cost optimization; performance under load |
 | **Managed Identity Authentication** | Password-less authentication to Azure Storage and services | Enhanced security; reduced credential management |
+| **Bicep Infrastructure Templates** | Declarative infrastructure with parameterization | Repeatable deployments; version control; easy customization |
 
 ### Comparison with Default Azure Monitor
 
@@ -87,7 +96,7 @@ This solution is built on three core design principles:
 
 **Example: Logic App Diagnostic Setting Configuration**
 
-````bicep
+```bicep
 resource wfDiag 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
   name: '${workflowEngine.name}-diag'
   scope: workflowEngine
@@ -108,7 +117,7 @@ resource wfDiag 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
     ]
   }
 }
-````
+```
 
 **Why This Matters:**
 - **Complete Visibility**: Every Azure resource sends logs and metrics to a centralized workspace
@@ -155,7 +164,9 @@ graph TB
     WEBAPP -->|Queue Messages| QUEUE
     API -->|Database Operations| TABLE
     LOGICAPP -->|Consumes| QUEUE
+    LOGICAPP -->|HTTP POST| API
     LOGICAPP -->|Reads/Writes| BLOB
+    LOGICAPP -->|Audit Logs| TABLE
 
     WEBAPP -.->|Traces, Logs| AI
     API -.->|Traces, Logs| AI
@@ -207,6 +218,7 @@ sequenceDiagram
     API-->>LogicApp: Order Data
     deactivate API
     LogicApp->>Blob: Save Receipt
+    LogicApp->>Table: Insert Audit Entry
     LogicApp->>AI: Trace: Workflow.Complete (Status: Success)
     deactivate LogicApp
 
@@ -596,7 +608,7 @@ Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
 in the Software without restriction, including without limitation the rights
 to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons software is
+copies of the Software, and to permit persons to whom the Software is
 furnished to do so, subject to the following conditions:
 
 The above copyright notice and this permission notice shall be included in all
@@ -660,4 +672,4 @@ For questions or issues:
 
 **Built with ❤️ by the Azure community**
 
-Similar code found with 2 license types
+Similar code found with 3 license types
