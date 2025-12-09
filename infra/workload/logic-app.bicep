@@ -182,6 +182,7 @@ var queueConnectionName string = 'azurequeues'
 resource storageQueueApiConnection 'Microsoft.Web/connections@2016-06-01' = {
   name: queueConnectionName
   location: location
+  kind: 'V2'
   properties: {
     displayName: 'Connection-${wfSA.name}-MI'
     api: {
@@ -218,6 +219,7 @@ param tableConnectionName string = 'azuretables'
 resource tableConnection 'Microsoft.Web/connections@2016-06-01' = {
   name: tableConnectionName
   location: location
+  kind: 'V2'
   properties: {
     displayName: 'Connection-${wfSA.name}-MI-Table'
     api: {
