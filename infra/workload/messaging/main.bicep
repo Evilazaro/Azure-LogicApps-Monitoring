@@ -85,6 +85,16 @@ resource poProcQueue 'Microsoft.Storage/storageAccounts/queueServices/queues@202
   parent: qSvc
 }
 
+resource tSvc 'Microsoft.Storage/storageAccounts/tableServices@2025-06-01' = {
+  name: 'default'
+  parent: wfSA
+}
+
+resource poProcTable 'Microsoft.Storage/storageAccounts/tableServices/tables@2025-06-01' = {
+  name: 'audit'
+  parent: tSvc
+}
+
 var rolDefSA = {
   contributor: '17d1049b-9a84-46fb-8f53-869881c3d3ab'
   blobDataOwner: 'b7e6dc6d-f1e8-4753-8033-0f276bb0955b'

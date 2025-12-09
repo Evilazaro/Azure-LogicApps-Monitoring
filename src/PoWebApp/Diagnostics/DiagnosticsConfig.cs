@@ -41,6 +41,7 @@ namespace PoWebApp.Diagnostics
             public const string OrderId = "order.id";
             public const string OrderCustomerId = "order.customer_id";
             public const string OrderAmount = "order.amount";
+            public const string OrderQuantity =  "order.quantity";
 
             // Batch attributes
             public const string BatchSize = "batch.size";

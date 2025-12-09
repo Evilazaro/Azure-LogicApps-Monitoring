@@ -1,6 +1,5 @@
-using System.Diagnostics;
-using Microsoft.Extensions.Logging;
 using PoWebApp.Diagnostics;
+using System.Diagnostics;
 
 namespace PoWebApp.Examples
 {
@@ -24,7 +23,7 @@ namespace PoWebApp.Examples
         /// <summary>
         /// Example 1: Creating a custom span for business operations
         /// </summary>
-        public async Task ProcessOrderExample(string orderId, string customerId, decimal amount)
+        public async Task ProcessOrderExample(string orderId, string quantity, string amount)
         {
             // Start a new activity (span) for order processing
             using var activity = DiagnosticsConfig.ActivitySources.Orders.StartActivity(
@@ -32,7 +31,7 @@ namespace PoWebApp.Examples
                 ActivityKind.Internal);
 
             // Add order context using extension method
-            activity?.AddOrderContext(orderId, customerId, amount);
+            activity?.AddOrderContext(orderId, quantity, amount);
 
             // Add custom tags
             activity?.SetTag("order.status", "processing");
@@ -41,8 +40,8 @@ namespace PoWebApp.Examples
             try
             {
                 // Simulate order processing
-                _logger.LogInformation("Processing order {OrderId} for customer {CustomerId}", 
-                    orderId, customerId);
+                _logger.LogInformation("Processing order {OrderId} with quantity {Quantity}",
+                    orderId, quantity);
 
                 // Call downstream service (automatically creates child span)
                 await CallPaymentServiceExample(orderId, amount);
@@ -56,10 +55,10 @@ namespace PoWebApp.Examples
                 // Record exception with proper semantic conventions
                 activity?.RecordException(ex);
                 activity?.SetStatus(ActivityStatusCode.Error, ex.Message);
-                
-                _logger.LogStructuredError(ex, "Failed to process order {OrderId}", 
+
+                _logger.LogStructuredError(ex, "Failed to process order {OrderId}",
                     new Dictionary<string, object> { ["OrderId"] = orderId });
-                
+
                 throw;
             }
         }
@@ -67,7 +66,7 @@ namespace PoWebApp.Examples
         /// <summary>
         /// Example 2: Creating spans for external service calls
         /// </summary>
-        private async Task CallPaymentServiceExample(string orderId, decimal amount)
+        private async Task CallPaymentServiceExample(string orderId, string amount)
         {
             // Create a span for external service call
             using var activity = DiagnosticsConfig.ActivitySources.Orders.StartActivity(
@@ -82,15 +81,15 @@ namespace PoWebApp.Examples
             {
                 // HttpClient automatically propagates trace context
                 var httpClient = _httpClientFactory.CreateClient();
-                
+
                 // Simulate API call
                 _logger.LogInformation("Calling payment service for order {OrderId}", orderId);
-                
+
                 // In real scenario, you would make actual HTTP call:
                 // var response = await httpClient.PostAsync(...);
-                
+
                 await Task.Delay(100); // Simulate network delay
-                
+
                 activity?.SetStatus(ActivityStatusCode.Ok);
             }
             catch (Exception ex)
@@ -104,7 +103,7 @@ namespace PoWebApp.Examples
         /// <summary>
         /// Example 3: Creating spans for messaging operations
         /// </summary>
-        public async Task SendOrderNotificationExample(string orderId, string messageContent)
+        public async Task SendOrderNotificationExample(string orderId, string quantity, string total, string messageContent)
         {
             using var activity = DiagnosticsConfig.ActivitySources.Messaging.StartActivity(
                 "SendOrderNotification",
@@ -113,11 +112,11 @@ namespace PoWebApp.Examples
             // Add messaging context
             activity?.AddMessagingContext("azure-queue", "order-notifications", "publish");
             activity?.SetTag(DiagnosticsConfig.SemanticConventions.MessagingMessageId, Guid.NewGuid().ToString());
-            activity?.SetTag(DiagnosticsConfig.SemanticConventions.MessagingPayloadSize, 
+            activity?.SetTag(DiagnosticsConfig.SemanticConventions.MessagingPayloadSize,
                 System.Text.Encoding.UTF8.GetByteCount(messageContent));
 
             // Add order context as baggage for cross-service correlation
-            activity?.AddOrderContext(orderId);
+            activity?.AddOrderContext(orderId, quantity, total);
 
             try
             {
@@ -150,7 +149,7 @@ namespace PoWebApp.Examples
         {
             // Create a correlated logging scope
             using var logScope = _logger.BeginCorrelatedScope(
-                orderId, 
+                orderId,
                 new Dictionary<string, object>
                 {
                     ["CustomerId"] = "CUST-123",
@@ -191,7 +190,7 @@ namespace PoWebApp.Examples
                 try
                 {
                     // Each ProcessOrder call creates a child span
-                    await ProcessOrderExample(orderId, "BATCH-CUSTOMER", 100.00m);
+                    await ProcessOrderExample(orderId, "BATCH-CUSTOMER", "100.00m");
                     successCount++;
                 }
                 catch (Exception ex)
@@ -203,10 +202,10 @@ namespace PoWebApp.Examples
 
             batchActivity?.SetTag(DiagnosticsConfig.SemanticConventions.BatchSuccessCount, successCount);
             batchActivity?.SetTag(DiagnosticsConfig.SemanticConventions.BatchFailureCount, failureCount);
-            
+
             if (failureCount > 0)
             {
-                batchActivity?.SetStatus(ActivityStatusCode.Error, 
+                batchActivity?.SetStatus(ActivityStatusCode.Error,
                     $"Batch processing completed with {failureCount} failures");
             }
             else
@@ -218,19 +217,19 @@ namespace PoWebApp.Examples
         /// <summary>
         /// Example 7: Adding custom events to spans
         /// </summary>
-        public async Task ProcessOrderWithEventsExample(string orderId)
+        public async Task ProcessOrderWithEventsExample(string orderId, string quantity, string total)
         {
             using var activity = DiagnosticsConfig.ActivitySources.Orders.StartActivity(
                 "ProcessOrderWithEvents",
                 ActivityKind.Internal);
 
-            activity?.AddOrderContext(orderId);
+            activity?.AddOrderContext(orderId, quantity, total);
 
             // Add custom events to track milestones
             activity?.AddEvent(new ActivityEvent("OrderValidationStarted"));
             await Task.Delay(50); // Simulate validation
 
-            activity?.AddEvent(new ActivityEvent("OrderValidationCompleted", 
+            activity?.AddEvent(new ActivityEvent("OrderValidationCompleted",
                 tags: new ActivityTagsCollection
                 {
                     { "validation.result", "passed" },

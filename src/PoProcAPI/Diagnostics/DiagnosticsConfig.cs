@@ -15,8 +15,7 @@ namespace PoProcAPI.Diagnostics
         public static class ActivitySources
         {
             public static readonly ActivitySource Orders = new("PoProcAPI.Orders", ServiceVersion);
-            public static readonly ActivitySource Database = new("PoProcAPI.Database", ServiceVersion);
-            public static readonly ActivitySource External = new("PoProcAPI.External", ServiceVersion);
+            public static readonly ActivitySource API = new("PoProcAPI.API", ServiceVersion);
         }
 
         // Semantic convention keys for consistent tagging
@@ -29,37 +28,34 @@ namespace PoProcAPI.Diagnostics
             public const string ServiceInstanceId = "service.instance.id";
             public const string DeploymentEnvironment = "deployment.environment";
 
-            // HTTP attributes
-            public const string HttpMethod = "http.method";
-            public const string HttpRoute = "http.route";
-            public const string HttpTarget = "http.target";
-            public const string HttpStatusCode = "http.status_code";
-            public const string HttpUrl = "http.url";
-
             // Order business attributes
             public const string OrderId = "order.id";
             public const string OrderCustomerId = "order.customer_id";
             public const string OrderAmount = "order.amount";
+            public const string OrderQuantity = "order.quantity";
             public const string OrderStatus = "order.status";
+
+            // HTTP attributes
+            public const string HttpRequestMethod = "http.request.method";
+            public const string HttpRequestPath = "http.request.path";
+            public const string HttpResponseStatusCode = "http.response.status_code";
+            public const string HttpResponseBodySize = "http.response.body.size";
 
             // Cloud attributes
             public const string CloudProvider = "cloud.provider";
             public const string CloudPlatform = "cloud.platform";
-            public const string CloudRegion = "cloud.region";
 
             // Error attributes
             public const string ErrorType = "error.type";
             public const string ErrorMessage = "error.message";
-            public const string ErrorStackTrace = "error.stack_trace";
         }
 
         // Common baggage keys for cross-service correlation
         public static class BaggageKeys
         {
             public const string OrderId = "order.id";
-            public const string BusinessFlow = "business.flow";
             public const string CorrelationId = "correlation.id";
-            public const string UserId = "user.id";
+            public const string BusinessFlow = "business.flow";
         }
     }
 }

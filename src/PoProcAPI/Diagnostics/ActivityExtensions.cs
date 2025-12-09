@@ -16,13 +16,13 @@ namespace PoProcAPI.Diagnostics
 
             activity.SetTag(DiagnosticsConfig.SemanticConventions.ErrorType, exception.GetType().FullName);
             activity.SetTag(DiagnosticsConfig.SemanticConventions.ErrorMessage, exception.Message);
-            activity.SetTag(DiagnosticsConfig.SemanticConventions.ErrorStackTrace, exception.StackTrace);
+            activity.SetStatus(ActivityStatusCode.Error, exception.Message);
 
             activity.AddEvent(new ActivityEvent("exception", tags: new ActivityTagsCollection
             {
                 { "exception.type", exception.GetType().FullName },
                 { "exception.message", exception.Message },
-                { "exception.stacktrace", exception.StackTrace }
+                { "exception.stacktrace", exception.StackTrace ?? "" }
             }));
 
             return activity;
@@ -31,36 +31,25 @@ namespace PoProcAPI.Diagnostics
         /// <summary>
         /// Adds order context to the activity
         /// </summary>
-        public static Activity? AddOrderContext(this Activity? activity, string orderId, string? customerId = null, decimal? amount = null)
+        public static Activity? AddOrderContext(this Activity? activity, Order order)
         {
-            if (activity == null) return null;
+            if (activity == null || order == null) return null;
 
-            activity.SetTag(DiagnosticsConfig.SemanticConventions.OrderId, orderId);
-            activity.AddBaggage(DiagnosticsConfig.BaggageKeys.OrderId, orderId);
-
-            if (!string.IsNullOrEmpty(customerId))
+            if (order.Id > 0)
             {
-                activity.SetTag(DiagnosticsConfig.SemanticConventions.OrderCustomerId, customerId);
+                activity.SetTag(DiagnosticsConfig.SemanticConventions.OrderId, order.Id);
+                activity.AddBaggage(DiagnosticsConfig.BaggageKeys.OrderId, order.Id.ToString());
             }
 
-            if (amount.HasValue)
+            if (order.Total > 0)
             {
-                activity.SetTag(DiagnosticsConfig.SemanticConventions.OrderAmount, amount.Value);
+                activity.SetTag(DiagnosticsConfig.SemanticConventions.OrderAmount, order.Total);
             }
 
-            return activity;
-        }
-
-        /// <summary>
-        /// Adds HTTP context to the activity
-        /// </summary>
-        public static Activity? AddHttpContext(this Activity? activity, HttpContext httpContext)
-        {
-            if (activity == null) return null;
-
-            activity.SetTag(DiagnosticsConfig.SemanticConventions.HttpMethod, httpContext.Request.Method);
-            activity.SetTag(DiagnosticsConfig.SemanticConventions.HttpRoute, httpContext.Request.Path.Value);
-            activity.SetTag(DiagnosticsConfig.SemanticConventions.HttpTarget, httpContext.Request.Path.Value);
+            if (order.Quantity > 0)
+            {
+                activity.SetTag(DiagnosticsConfig.SemanticConventions.OrderQuantity, order.Quantity);
+            }
 
             return activity;
         }
@@ -76,6 +65,33 @@ namespace PoProcAPI.Diagnostics
             var traceState = activity.TraceStateString;
 
             return (traceParent, traceState);
+        }
+
+        /// <summary>
+        /// Adds HTTP response context to the activity
+        /// </summary>
+        public static Activity? AddHttpResponseContext(this Activity? activity, int statusCode, long? contentLength = null)
+        {
+            if (activity == null) return null;
+
+            activity.SetTag(DiagnosticsConfig.SemanticConventions.HttpResponseStatusCode, statusCode);
+
+            if (contentLength.HasValue)
+            {
+                activity.SetTag(DiagnosticsConfig.SemanticConventions.HttpResponseBodySize, contentLength.Value);
+            }
+
+            // Set status based on HTTP status code
+            if (statusCode >= 400)
+            {
+                activity.SetStatus(ActivityStatusCode.Error, $"HTTP {statusCode}");
+            }
+            else
+            {
+                activity.SetStatus(ActivityStatusCode.Ok);
+            }
+
+            return activity;
         }
     }
 }

@@ -115,16 +115,10 @@ resource PoProcAPI 'Microsoft.Web/sites@2025-03-01' = {
     siteConfig: {
       linuxFxVersion: '${appConf.runtime}|${appConf.version}'
       alwaysOn: true
-      acrUseManagedIdentityCreds: false
       minimumElasticInstanceCount: 3
       elasticWebAppScaleLimit: 10
-      ftpsState: 'AllAllowed'
-      webSocketsEnabled: true
-      minTlsVersion: '1.2'
-      http20Enabled: true
       numberOfWorkers: 3
-      http20ProxyFlag: 1
-      autoHealEnabled: true
+      http20Enabled: true
     }
     httpsOnly: true
   }
@@ -136,20 +130,20 @@ resource PoProcConf 'Microsoft.Web/sites/config@2025-03-01' = {
   properties: {
     ASPNETCORE_ENVIRONMENT: 'Production'
     APPINSIGHTS_INSTRUMENTATIONKEY: appInsightsInstrumentationKey
-    APPINSIGHTS_PROFILERFEATURE_VERSION: '1.0.0'
-    APPINSIGHTS_SNAPSHOTFEATURE_VERSION: '1.0.0'
+    // APPINSIGHTS_PROFILERFEATURE_VERSION: '1.0.0'
+    // APPINSIGHTS_SNAPSHOTFEATURE_VERSION: '1.0.0'
     APPLICATIONINSIGHTS_CONNECTION_STRING: appInsightsConnectionString
-    APPLICATIONINSIGHTS_ENABLESQLQUERYCOLLECTION: 'true'
-    ApplicationInsightsAgent_EXTENSION_VERSION: '~3'
-    DiagnosticServices_EXTENSION_VERSION: '~3'
-    DISABLE_APPINSIGHTS_SDK: 'disabled'
-    IGNORE_APPINSIGHTS_SDK: 'disabled'
-    InstrumentationEngine_EXTENSION_VERSION: 'enabled'
-    SnapshotDebugger_EXTENSION_VERSION: 'enabled'
-    WEBSITE_HEALTHCHECK_MAXPINGFAILURES: '5'
-    XDT_MicrosoftApplicationInsights_BaseExtensions: 'enabled'
-    XDT_MicrosoftApplicationInsights_Mode: 'recommended'
-    XDT_MicrosoftApplicationInsights_PreemptSdk: 'enabled'
+    // APPLICATIONINSIGHTS_ENABLESQLQUERYCOLLECTION: 'true'
+    // ApplicationInsightsAgent_EXTENSION_VERSION: '~3'
+    // DiagnosticServices_EXTENSION_VERSION: '~3'
+    // DISABLE_APPINSIGHTS_SDK: 'disabled'
+    // IGNORE_APPINSIGHTS_SDK: 'disabled'
+    // InstrumentationEngine_EXTENSION_VERSION: 'enabled'
+    // SnapshotDebugger_EXTENSION_VERSION: 'enabled'
+    // WEBSITE_HEALTHCHECK_MAXPINGFAILURES: '5'
+    // XDT_MicrosoftApplicationInsights_BaseExtensions: 'enabled'
+    // XDT_MicrosoftApplicationInsights_Mode: 'recommended'
+    // XDT_MicrosoftApplicationInsights_PreemptSdk: 'enabled'
   }
 }
 

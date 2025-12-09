@@ -88,6 +88,7 @@ resource mi 'Microsoft.ManagedIdentity/userAssignedIdentities@2023-01-31' = {
 
 resource wfSA 'Microsoft.Storage/storageAccounts@2023-05-01' existing = {
   name: workflowStorageAccountName
+  scope: resourceGroup()
 }
 
 var rolDefSA = {
@@ -166,19 +167,6 @@ resource wfConf 'Microsoft.Web/sites/config@2025-03-01' = {
     AzureWebJobsStorage__managedIdentityResourceId: mi.id
     APPINSIGHTS_INSTRUMENTATIONKEY: appInsightsInstrumentationKey
     APPLICATIONINSIGHTS_CONNECTION_STRING: appInsightsConnectionString
-    APPINSIGHTS_PROFILERFEATURE_VERSION: '1.0.0'
-    APPINSIGHTS_SNAPSHOTFEATURE_VERSION: '1.0.0'
-    APPLICATIONINSIGHTS_ENABLESQLQUERYCOLLECTION: 'true'
-    ApplicationInsightsAgent_EXTENSION_VERSION: '~3'
-    DiagnosticServices_EXTENSION_VERSION: '~3'
-    DISABLE_APPINSIGHTS_SDK: 'disabled'
-    IGNORE_APPINSIGHTS_SDK: 'disabled'
-    InstrumentationEngine_EXTENSION_VERSION: 'enabled'
-    SnapshotDebugger_EXTENSION_VERSION: 'enabled'
-    WEBSITE_HEALTHCHECK_MAXPINGFAILURES: '5'
-    XDT_MicrosoftApplicationInsights_BaseExtensions: 'enabled'
-    XDT_MicrosoftApplicationInsights_Mode: 'recommended'
-    XDT_MicrosoftApplicationInsights_PreemptSdk: 'enabled'
     AzureFunctionsJobHost__extensionBundle__id: extensionBundleId
     AzureFunctionsJobHost__extensionBundle__version: extensionBundleVersion
     WORKFLOWS_SUBSCRIPTION_ID: subscription().subscriptionId
@@ -187,6 +175,107 @@ resource wfConf 'Microsoft.Web/sites/config@2025-03-01' = {
     WORKFLOWS_TENANT_ID: subscription().tenantId
     WORKFLOWS_MANAGEMENT_BASE_URI: environment().resourceManager
   }
+}
+
+var queueConnectionName string = 'azurequeues'
+
+resource storageQueueApiConnection 'Microsoft.Web/connections@2016-06-01' = {
+  name: queueConnectionName
+  location: location
+  kind: 'V2'
+  properties: {
+    displayName: queueConnectionName
+    api: {
+      name: queueConnectionName
+      displayName: 'Azure Queues'
+      description: 'Azure Queue storage provides cloud messaging between application components. Queue storage also supports managing asynchronous tasks and building process work flows.'
+      iconUri: 'https://conn-afd-prod-endpoint-bmc9bqahasf3grgk.b01.azurefd.net/releases/v1.0.1777/1.0.1777.4410/${queueConnectionName}/icon.png'
+      brandColor: '#0072C6'
+      id: '/subscriptions/${subscription().subscriptionId}/providers/Microsoft.Web/locations/${location}/managedApis/${queueConnectionName}'
+      type: 'Microsoft.Web/locations/managedApis'
+    }
+    nonSecretParameterValues: {
+      storageaccount: wfSA.name
+    }
+    parameterValues: {
+      sharedkey: wfSA.listKeys().keys[0].value
+    }
+    testLinks: [
+      {
+        requestUri: 'https://management.azure.com:443/subscriptions/${subscription().subscriptionId}/resourceGroups/${resourceGroup().name}/providers/Microsoft.Web/connections/${queueConnectionName}/extensions/proxy/testConnection?api-version=2016-06-01'
+        method: 'get'
+      }
+    ]
+  }
+}
+
+resource queueAccessPolicy 'Microsoft.Web/connections/accessPolicies@2018-07-01-preview' = {
+  name: guid(subscription().id, resourceGroup().id, storageQueueApiConnection.id, mi.id)
+  parent: storageQueueApiConnection
+  properties: {
+    principal: {
+      type: 'ActiveDirectory'
+      identity: {
+        tenantId: subscription().tenantId
+        objectId: mi.properties.principalId
+      }
+    }
+  }
+  dependsOn: [
+    wfRaSA
+  ]
+}
+
+// Output the connection ID for use in the Logic App workflow definition
+output apiConnectionId string = storageQueueApiConnection.id
+
+param tableConnectionName string = 'azuretables'
+
+resource tableConnection 'Microsoft.Web/connections@2016-06-01' = {
+  name: tableConnectionName
+  location: location
+  kind: 'V2'
+  properties: {
+    displayName: tableConnectionName
+    api: {
+      name: tableConnectionName
+      displayName: 'Azure Table Storage'
+      description: 'Azure Table storage is a service that stores structured NoSQL data in the cloud, providing a key/attribute store with a schemaless design. Sign into your Storage account to create, update, and query tables and more.'
+      iconUri: 'https://conn-afd-prod-endpoint-bmc9bqahasf3grgk.b01.azurefd.net/v1.0.1778/1.0.1778.4417/${tableConnectionName}/icon.png'
+      brandColor: '#804998'
+      id: '/subscriptions/${subscription().subscriptionId}/providers/Microsoft.Web/locations/${location}/managedApis/${tableConnectionName}'
+      type: 'Microsoft.Web/locations/managedApis'
+    }
+    nonSecretParameterValues: {
+      storageaccount: wfSA.name
+    }
+    parameterValues: {
+      sharedkey: wfSA.listKeys().keys[0].value
+    }
+    testLinks: [
+      {
+        requestUri: 'https://management.azure.com:443/subscriptions/${subscription().subscriptionId}/resourceGroups/${resourceGroup().name}/providers/Microsoft.Web/connections/${tableConnectionName}/extensions/proxy/testConnection?api-version=2016-06-01'
+        method: 'get'
+      }
+    ]
+  }
+}
+
+resource tableAccessPolicy 'Microsoft.Web/connections/accessPolicies@2018-07-01-preview' = {
+  name: guid(subscription().id, resourceGroup().id, tableConnection.id, mi.id)
+  parent: tableConnection
+  properties: {
+    principal: {
+      type: 'ActiveDirectory'
+      identity: {
+        tenantId: subscription().tenantId
+        objectId: mi.properties.principalId
+      }
+    }
+  }
+  dependsOn: [
+    wfRaSA
+  ]
 }
 
 resource wfDiag 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
@@ -204,6 +293,8 @@ resource wfDiag 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
     metrics: metricsSettings
   }
 }
+
+
 
 // ========== Outputs ==========
 

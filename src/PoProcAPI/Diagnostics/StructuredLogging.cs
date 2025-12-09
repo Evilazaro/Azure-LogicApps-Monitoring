@@ -10,7 +10,7 @@ namespace PoProcAPI.Diagnostics
         /// <summary>
         /// Creates a logging scope with trace correlation IDs
         /// </summary>
-        public static IDisposable? BeginCorrelatedScope(this ILogger logger, string? orderId = null, IDictionary<string, object>? additionalProperties = null)
+        public static IDisposable? BeginCorrelatedScope(this ILogger logger, int? orderId = null, IDictionary<string, object>? additionalProperties = null)
         {
             var properties = new Dictionary<string, object>
             {
@@ -19,9 +19,9 @@ namespace PoProcAPI.Diagnostics
                 ["ParentSpanId"] = Activity.Current?.ParentSpanId.ToString() ?? "unknown"
             };
 
-            if (!string.IsNullOrEmpty(orderId))
+            if (orderId.HasValue)
             {
-                properties["OrderId"] = orderId;
+                properties["OrderId"] = orderId.Value;
             }
 
             if (additionalProperties != null)
@@ -93,6 +93,34 @@ namespace PoProcAPI.Diagnostics
             using (logger.BeginScope(allProperties))
             {
                 logger.LogError(exception, message);
+            }
+        }
+
+        /// <summary>
+        /// Log structured warning with trace correlation
+        /// </summary>
+        public static void LogStructuredWarning(
+            this ILogger logger,
+            string message,
+            IDictionary<string, object>? properties = null)
+        {
+            var allProperties = new Dictionary<string, object>
+            {
+                ["TraceId"] = Activity.Current?.TraceId.ToString() ?? "unknown",
+                ["SpanId"] = Activity.Current?.SpanId.ToString() ?? "unknown"
+            };
+
+            if (properties != null)
+            {
+                foreach (var kvp in properties)
+                {
+                    allProperties[kvp.Key] = kvp.Value;
+                }
+            }
+
+            using (logger.BeginScope(allProperties))
+            {
+                logger.LogWarning(message);
             }
         }
     }
