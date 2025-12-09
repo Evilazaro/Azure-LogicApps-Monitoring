@@ -136,6 +136,7 @@ resource PoConf 'Microsoft.Web/sites/config@2025-03-01' = {
   name: 'appsettings'
   parent: PoWebApp
   properties: {
+    ASPNETCORE_ENVIRONMENT: 'Production'
     AzureWebJobsStorage__accountName: workflowStorageAccountName
     AzureWebJobsStorage__blobServiceUri: 'https://${workflowStorageAccountName}.blob.${environment().suffixes.storage}'
     AzureWebJobsStorage__queueServiceUri: 'https://${workflowStorageAccountName}.queue.${environment().suffixes.storage}'

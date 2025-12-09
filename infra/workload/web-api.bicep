@@ -133,6 +133,7 @@ resource PoProcConf 'Microsoft.Web/sites/config@2025-03-01' = {
   name: 'appsettings'
   parent: PoProcAPI
   properties: {
+    ASPNETCORE_ENVIRONMENT: 'Production'
     APPINSIGHTS_INSTRUMENTATIONKEY: appInsightsInstrumentationKey
     APPINSIGHTS_PROFILERFEATURE_VERSION: '1.0.0'
     APPINSIGHTS_SNAPSHOTFEATURE_VERSION: '1.0.0'
