@@ -1,7 +1,6 @@
 ﻿@page "/counter"
 @rendermode InteractiveServer
 
-@inject Microsoft.ApplicationInsights.TelemetryClient TelemetryClient
 @inject ILogger<Orders> Logger
 
 <PageTitle>Orders</PageTitle>
@@ -28,12 +27,9 @@
 {
     <div class="mt-3">
         <div class="progress" style="height: 25px;">
-            <div class="progress-bar progress-bar-striped progress-bar-animated" 
-                 role="progressbar" 
-                 style="width: @progressPercentage%;" 
-                 aria-valuenow="@progressPercentage" 
-                 aria-valuemin="0" 
-                 aria-valuemax="100">
+            <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar"
+                style="width: @progressPercentage%;" aria-valuenow="@progressPercentage" aria-valuemin="0"
+                aria-valuemax="100">
                 @progressPercentage%
             </div>
         </div>
@@ -66,15 +62,15 @@
             await Task.Delay(300);
 
             await UpdateProgress(50, "Creating queue if not exists...");
-            var order = new Orders(TelemetryClient, Logger);
-            
+            var order = new Orders(Logger);
+
             await UpdateProgress(75, "Sending order message...");
             currentCount = await order.AddOrderMessageToQueueAsync();
-            
+
             await UpdateProgress(100, "Order placed successfully!");
             successMessage = $"Order placed successfully! Total orders: {currentCount}";
             await Task.Delay(500);
-            
+
             // Hide progress bar after completion
             await Task.Delay(1000);
             showProgress = false;
