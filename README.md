@@ -240,6 +240,88 @@ graph TB
 
 ---
 
+## 🔄 Monitoring Data Flow (BPMN)
+
+```mermaid
+graph TB
+    Start([Monitoring Process Start]) --> CollectApp[Collect Application Telemetry]
+    
+    subgraph "Telemetry Generation"
+        CollectApp --> WebAppTelem{WebApp<br/>Activity?}
+        CollectApp --> APITelem{API<br/>Activity?}
+        CollectApp --> LogicAppTelem{Logic App<br/>Activity?}
+        
+        WebAppTelem -->|Yes| GenWebTrace[Generate OpenTelemetry<br/>Traces + Logs + Metrics]
+        APITelem -->|Yes| GenAPITrace[Generate OpenTelemetry<br/>Traces + Logs + Metrics]
+        LogicAppTelem -->|Yes| GenWFLogs[Generate Workflow<br/>Runtime Logs]
+    end
+    
+    subgraph "Infrastructure Telemetry"
+        CollectInfra[Collect Infrastructure Metrics] --> StorageDiag[Storage Account<br/>Diagnostic Settings]
+        CollectInfra --> AppPlanDiag[App Service Plan<br/>Platform Metrics]
+        
+        StorageDiag --> StorageMetrics[Queue Depth<br/>Blob Latency<br/>Table Operations]
+        AppPlanDiag --> PlatformMetrics[CPU Usage<br/>Memory Usage<br/>Network I/O]
+    end
+    
+    CollectApp --> CollectInfra
+    
+    subgraph "Telemetry Export"
+        GenWebTrace --> ExportOTel1[Azure Monitor<br/>Exporter]
+        GenAPITrace --> ExportOTel2[Azure Monitor<br/>Exporter]
+        GenWFLogs --> ExportDiag[Diagnostic Settings<br/>Export]
+        StorageMetrics --> ExportStorage[Diagnostic Settings<br/>Export]
+        PlatformMetrics --> ExportPlatform[Auto-Collection<br/>Export]
+    end
+    
+    subgraph "Centralized Storage"
+        ExportOTel1 --> AppInsights[(Application Insights<br/>Workspace Mode)]
+        ExportOTel2 --> AppInsights
+        ExportDiag --> AppInsights
+        ExportStorage --> LAW[(Log Analytics<br/>Workspace)]
+        ExportPlatform --> LAW
+        AppInsights --> LAW
+    end
+    
+    subgraph "Data Retention"
+        LAW --> EvalRetention{Retention<br/>Policy Check}
+        EvalRetention -->|Keep Hot| HotStorage[Hot Data<br/>0-30 days]
+        EvalRetention -->|Archive| ColdStorage[(Cold Blob Storage<br/>30+ days)]
+    end
+    
+    subgraph "Consumption & Analysis"
+        LAW --> QueryEngine{Query<br/>Request?}
+        QueryEngine -->|Dashboard| RenderDashboard[Render Azure<br/>Dashboard/Workbook]
+        QueryEngine -->|Alert Rule| EvalAlert{Threshold<br/>Exceeded?}
+        QueryEngine -->|Export| ExportSIEM[Export to External<br/>SIEM System]
+        
+        EvalAlert -->|Yes| SendAlert[Send Alert<br/>Email/SMS/Teams]
+        EvalAlert -->|No| Continue[Continue Monitoring]
+    end
+    
+    RenderDashboard --> End([Monitoring Cycle Complete])
+    SendAlert --> End
+    ExportSIEM --> End
+    Continue --> Start
+    
+    style Start fill:#90EE90
+    style End fill:#90EE90
+    style CollectApp fill:#4169E1,color:#fff
+    style CollectInfra fill:#4169E1,color:#fff
+    style WebAppTelem fill:#FFD700
+    style APITelem fill:#FFD700
+    style LogicAppTelem fill:#FFD700
+    style EvalRetention fill:#FFD700
+    style QueryEngine fill:#FFD700
+    style EvalAlert fill:#FFD700
+    style AppInsights fill:#FF6F00,color:#fff
+    style LAW fill:#0078D4,color:#fff
+    style ColdStorage fill:#50E6FF
+    style SendAlert fill:#FF4500,color:#fff
+```
+
+---
+
 ## 📦 Prerequisites
 
 ### Required Tools
