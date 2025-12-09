@@ -102,9 +102,6 @@ internal class Program
 
         app.UseHttpsRedirection();
 
-        app.UseRouting();
-        app.MapBlazorHub();
-
         app.UseAntiforgery();
 
         app.MapStaticAssets();
