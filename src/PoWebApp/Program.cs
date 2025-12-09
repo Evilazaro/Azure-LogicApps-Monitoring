@@ -75,7 +75,7 @@ builder.Services.AddOpenTelemetry()
 
 // Add HttpClient for making HTTP requests with automatic tracing
 builder.Services.AddHttpClient();
-
+builder.Services.AddScoped<Orders>();
 
 var app = builder.Build();
 
