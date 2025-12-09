@@ -189,6 +189,41 @@ resource wfConf 'Microsoft.Web/sites/config@2025-03-01' = {
   }
 }
 
+param connName string = 'azurequeues'
+
+resource queueConnection 'Microsoft.Web/connections@2016-06-01' = {
+  name: connName
+  location: location
+  kind: 'V2'
+  properties: {
+    displayName: 'eshop-orders-workflow'
+    statuses: [
+      {
+        status: 'Ready'
+      }
+    ]
+    customParameterValues: {}
+    api: {
+      name: connName
+      displayName: 'Azure Queues'
+      description: 'Azure Queue storage provides cloud messaging between application components. Queue storage also supports managing asynchronous tasks and building process work flows.'
+      iconUri: 'https://conn-afd-prod-endpoint-bmc9bqahasf3grgk.b01.azurefd.net/releases/v1.0.1777/1.0.1777.4410/${connName}/icon.png'
+      brandColor: '#0072C6'
+      id: '/subscriptions/${subscription().subscriptionId}/providers/Microsoft.Web/locations/eastus2/managedApis/${connName}'
+      type: 'Microsoft.Web/locations/managedApis'
+    }
+    testLinks: [
+      {
+        requestUri: 'https://management.azure.com:443/subscriptions/${subscription().subscriptionId}/resourceGroups/${resourceGroup().name}/providers/Microsoft.Web/connections/${connName}/extensions/proxy/testConnection?api-version=2016-06-01'
+        method: 'get'
+      }
+    ]
+  }
+  dependsOn: [
+    workflowEngine
+  ]
+}
+
 resource wfDiag 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
   name: '${workflowEngine.name}-diag'
   scope: workflowEngine
