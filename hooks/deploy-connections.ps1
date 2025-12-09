@@ -5,7 +5,8 @@
     Deploy Logic App Connections Configuration
 
 .DESCRIPTION
-    This script configures the API connections for the Logic App workflow using modern PowerShell 7+ features.
+    This script configures the API connections for the Logic App workflow using Azure CLI.
+    Compatible with azd workflows and cross-platform execution.
 
 .PARAMETER ResourceGroupName
     The name of the Azure resource group containing the Logic App
@@ -85,126 +86,116 @@ function Write-StatusMessage {
     Write-Host $displayMessage -ForegroundColor $Color
 }
 
-# Check if Azure PowerShell module is available
-Write-Verbose "Checking for Azure PowerShell modules..."
-$azModules = @('Az.Accounts', 'Az.Resources')
-
-foreach ($module in $azModules) {
-    if (-not (Get-Module -Name $module -ListAvailable)) {
-        $errorMsg = "Required module '$module' is not installed. Please install it using: Install-Module -Name $module -Scope CurrentUser -Force"
-        Write-Host "❌ $errorMsg" -ForegroundColor Red
-        throw $errorMsg
+function Invoke-AzCli {
+    param(
+        [Parameter(Mandatory)]
+        [string[]]$Arguments,
+        
+        [Parameter()]
+        [string]$ErrorMessage = "Azure CLI command failed"
+    )
+    
+    Write-Verbose "Executing: az $($Arguments -join ' ')"
+    $output = & az @Arguments 2>&1
+    
+    if ($LASTEXITCODE -ne 0) {
+        throw "$ErrorMessage. Exit code: $LASTEXITCODE. Output: $output"
     }
+    
+    return $output
 }
 
-# Import required modules
-Write-Verbose "Importing Azure PowerShell modules..."
+# Check if Azure CLI is available
+Write-Verbose "Checking for Azure CLI..."
+$azCliCheck = Get-Command az -ErrorAction SilentlyContinue
+if (-not $azCliCheck) {
+    $errorMsg = "Azure CLI (az) is not installed or not in PATH. Please install it from: https://learn.microsoft.com/cli/azure/install-azure-cli"
+    Write-Host "❌ $errorMsg" -ForegroundColor Red
+    throw $errorMsg
+}
+
+# Ensure we're logged in to Azure CLI
+Write-Verbose "Checking Azure CLI authentication..."
 try {
-    Import-Module Az.Accounts -ErrorAction Stop
-    Import-Module Az.Resources -ErrorAction Stop
+    $accountInfo = az account show 2>&1 | ConvertFrom-Json
+    if (-not $accountInfo) {
+        throw "Not authenticated"
+    }
+    Write-Verbose "Authenticated as: $($accountInfo.user.name)"
 }
 catch {
-    throw "Failed to import Azure modules: $_"
-}
-
-# Ensure we're logged in to Azure
-Write-Verbose "Checking Azure authentication..."
-$context = Get-AzContext -ErrorAction SilentlyContinue
-if (-not $context) {
-    Write-StatusMessage -Message "Not logged in to Azure. Attempting to authenticate..." -Emoji '🔐' -Prefix 'AUTH' -Color Yellow
-    try {
-        # Try to use existing Azure CLI authentication
-        $azAccount = az account show 2>$null | ConvertFrom-Json
-        if ($azAccount) {
-            Write-Verbose "Found Azure CLI authentication, connecting PowerShell..."
-            Connect-AzAccount -UseDeviceAuthentication -ErrorAction Stop | Out-Null
-        }
-        else {
-            throw "No Azure CLI authentication found"
-        }
-    }
-    catch {
-        throw "Not authenticated to Azure. Please run 'Connect-AzAccount' or 'az login' first."
-    }
+    throw "Not authenticated to Azure CLI. Please run 'az login' first."
 }
 
 Write-StatusMessage -Message 'Configuring Logic App connections...' -Emoji '📋' -Prefix 'INFO' -Color Cyan
 
 try {
     # Get subscription and location info
-    Write-Verbose "Retrieving Logic App resource: $LogicAppName"
-    $logicApp = Get-AzResource -ResourceGroupName $ResourceGroupName -ResourceType 'Microsoft.Web/sites' -Name $LogicAppName -ErrorAction Stop
+    Write-Verbose "Retrieving subscription information..."
+    $subscription = az account show | ConvertFrom-Json
+    $subscriptionId = $subscription.id
     
-    $context = Get-AzContext -ErrorAction Stop
-    $subscriptionId = $context.Subscription.Id
-    $location = $logicApp.Location
+    Write-Verbose "Retrieving Logic App resource: $LogicAppName"
+    $logicAppJson = Invoke-AzCli -Arguments @(
+        'resource', 'show',
+        '--resource-group', $ResourceGroupName,
+        '--resource-type', 'Microsoft.Web/sites',
+        '--name', $LogicAppName
+    ) -ErrorMessage "Failed to retrieve Logic App '$LogicAppName'"
+    
+    $logicApp = $logicAppJson | ConvertFrom-Json
+    $location = $logicApp.location
     
     Write-Verbose "Subscription: $subscriptionId"
     Write-Verbose "Location: $location"
 
-    # Get the connection resources in parallel
+    # Get the connection resources
     Write-StatusMessage -Message 'Retrieving API connection resources...' -Emoji '🔍' -Prefix 'SEARCH' -Color Yellow
     
-    $connections = @(
-        @{ Name = $QueueConnectionName; Type = 'Queue' }
-        @{ Name = $TableConnectionName; Type = 'Table' }
-    ) | ForEach-Object -Parallel {
-        $conn = $_
-        $result = Get-AzResource -ResourceGroupName $using:ResourceGroupName `
-            -ResourceType 'Microsoft.Web/connections' `
-            -Name $conn.Name `
-            -ErrorAction SilentlyContinue
-        
-        [PSCustomObject]@{
-            Type = $conn.Type
-            Name = $conn.Name
-            Resource = $result
-        }
-    } -ThrottleLimit 2
+    Write-Verbose "Retrieving Queue connection: $QueueConnectionName"
+    $queueConnectionJson = Invoke-AzCli -Arguments @(
+        'resource', 'show',
+        '--resource-group', $ResourceGroupName,
+        '--resource-type', 'Microsoft.Web/connections',
+        '--name', $QueueConnectionName
+    ) -ErrorMessage "Queue connection '$QueueConnectionName' not found in resource group '$ResourceGroupName'"
+    
+    $queueConnection = $queueConnectionJson | ConvertFrom-Json
+    
+    Write-Verbose "Retrieving Table connection: $TableConnectionName"
+    $tableConnectionJson = Invoke-AzCli -Arguments @(
+        'resource', 'show',
+        '--resource-group', $ResourceGroupName,
+        '--resource-type', 'Microsoft.Web/connections',
+        '--name', $TableConnectionName
+    ) -ErrorMessage "Table connection '$TableConnectionName' not found in resource group '$ResourceGroupName'"
+    
+    $tableConnection = $tableConnectionJson | ConvertFrom-Json
 
-    $queueConnection = ($connections | Where-Object Type -eq 'Queue').Resource
-    $tableConnection = ($connections | Where-Object Type -eq 'Table').Resource
-
-    if (-not $queueConnection) {
-        throw "Queue connection '$QueueConnectionName' not found in resource group '$ResourceGroupName'"
-    }
-
-    if (-not $tableConnection) {
-        throw "Table connection '$TableConnectionName' not found in resource group '$ResourceGroupName'"
-    }
-
-    # Get connection runtime URLs in parallel
+    # Get connection runtime URLs
     Write-StatusMessage -Message 'Retrieving connection runtime URLs...' -Emoji '🔗' -Prefix 'LINK' -Color Yellow
     
-    $connectionDetails = @($queueConnection, $tableConnection) | ForEach-Object -Parallel {
-        $conn = $_
-        $props = Get-AzResource -ResourceId $conn.ResourceId -ErrorAction Stop | 
-            Select-Object -ExpandProperty Properties
-        
-        [PSCustomObject]@{
-            ResourceId = $conn.ResourceId
-            RuntimeUrl = $props.connectionRuntimeUrl
-        }
-    } -ThrottleLimit 2
-
-    $queueRuntimeUrl = ($connectionDetails | Where-Object ResourceId -eq $queueConnection.ResourceId).RuntimeUrl
-    $tableRuntimeUrl = ($connectionDetails | Where-Object ResourceId -eq $tableConnection.ResourceId).RuntimeUrl
+    $queueRuntimeUrl = $queueConnection.properties.connectionRuntimeUrl
+    $tableRuntimeUrl = $tableConnection.properties.connectionRuntimeUrl
+    
+    $queueConnectionId = $queueConnection.id
+    $tableConnectionId = $tableConnection.id
 
     Write-Verbose "Queue Runtime URL: $queueRuntimeUrl"
     Write-Verbose "Table Runtime URL: $tableRuntimeUrl"
 
     # Read and update connections.json
     Write-StatusMessage -Message 'Reading connections template...' -Emoji '📄' -Prefix 'READ' -Color Yellow
-    $connectionsJson = Get-Content -Path $ConnectionsJsonPath -Raw -ErrorAction Stop | ConvertFrom-Json -AsHashtable:$false
+    $connectionsJson = Get-Content -Path $ConnectionsJsonPath -Raw -ErrorAction Stop | ConvertFrom-Json
 
-    # Update queue connection using modern property access
+    # Update queue connection
     $connectionsJson.managedApiConnections.azurequeues.api.id = "/subscriptions/$subscriptionId/providers/Microsoft.Web/locations/$location/managedApis/azurequeues"
-    $connectionsJson.managedApiConnections.azurequeues.connection.id = $queueConnection.ResourceId
+    $connectionsJson.managedApiConnections.azurequeues.connection.id = $queueConnectionId
     $connectionsJson.managedApiConnections.azurequeues.connectionRuntimeUrl = $queueRuntimeUrl
 
     # Update table connection
     $connectionsJson.managedApiConnections.azuretables.api.id = "/subscriptions/$subscriptionId/providers/Microsoft.Web/locations/$location/managedApis/azuretables"
-    $connectionsJson.managedApiConnections.azuretables.connection.id = $tableConnection.ResourceId
+    $connectionsJson.managedApiConnections.azuretables.connection.id = $tableConnectionId
     $connectionsJson.managedApiConnections.azuretables.connectionRuntimeUrl = $tableRuntimeUrl
 
     # Save to temp file with proper encoding and platform-agnostic path
@@ -221,21 +212,14 @@ try {
     $workflowPath = "$WorkflowName/connections.json"
     
     # Invoke Azure CLI in a platform-agnostic way
-    $azCliArgs = @(
+    Invoke-AzCli -Arguments @(
         'functionapp', 'deploy',
         '--resource-group', $ResourceGroupName,
         '--name', $LogicAppName,
         '--src-path', $tempConnectionsFile,
         '--type', 'static',
         '--target-path', $workflowPath
-    )
-    
-    Write-Verbose "Executing: az $($azCliArgs -join ' ')"
-    $deployOutput = & az @azCliArgs 2>&1
-
-    if ($LASTEXITCODE -ne 0) {
-        throw "Failed to deploy connections.json. Azure CLI output: $deployOutput"
-    }
+    ) -ErrorMessage "Failed to deploy connections.json to Logic App" | Out-Null
 
     Write-StatusMessage -Message 'Connections.json deployed successfully!' -Emoji '✅' -Prefix 'SUCCESS' -Color Green
 
@@ -244,8 +228,8 @@ try {
     Write-Host ""
     Write-StatusMessage -Message 'Connection Details:' -Emoji '📊' -Prefix 'INFO' -Color Cyan
     $bullet = if ($useEmoji) { '•' } else { '-' }
-    Write-Host "  $bullet Queue Connection: $($queueConnection.ResourceId)" -ForegroundColor Gray
-    Write-Host "  $bullet Table Connection: $($tableConnection.ResourceId)" -ForegroundColor Gray
+    Write-Host "  $bullet Queue Connection: $queueConnectionId" -ForegroundColor Gray
+    Write-Host "  $bullet Table Connection: $tableConnectionId" -ForegroundColor Gray
     
     exit 0
 }
