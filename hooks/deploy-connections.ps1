@@ -184,6 +184,20 @@ try {
     Write-Verbose "Queue Runtime URL: $queueRuntimeUrl"
     Write-Verbose "Table Runtime URL: $tableRuntimeUrl"
 
+    # Get the user-assigned managed identity
+    Write-StatusMessage -Message 'Retrieving managed identity...' -Emoji '🔐' -Prefix 'IDENTITY' -Color Yellow
+    $identityJson = Invoke-AzCli -Arguments @(
+        'webapp', 'identity', 'show',
+        '--resource-group', $ResourceGroupName,
+        '--name', $LogicAppName
+    ) -ErrorMessage "Failed to retrieve managed identity"
+    
+    $identity = $identityJson | ConvertFrom-Json
+    $userAssignedIdentity = $identity.userAssignedIdentities.PSObject.Properties | Select-Object -First 1
+    $identityResourceId = $userAssignedIdentity.Name
+    
+    Write-Verbose "Managed Identity Resource ID: $identityResourceId"
+
     # Read and update connections.json in the workflows folder
     Write-StatusMessage -Message 'Reading connections template...' -Emoji '📄' -Prefix 'READ' -Color Yellow
     
@@ -200,11 +214,19 @@ try {
     $connectionsJson.managedApiConnections.azurequeues.api.id = "/subscriptions/$subscriptionId/providers/Microsoft.Web/locations/$location/managedApis/azurequeues"
     $connectionsJson.managedApiConnections.azurequeues.connection.id = $queueConnectionId
     $connectionsJson.managedApiConnections.azurequeues.connectionRuntimeUrl = $queueRuntimeUrl
+    $connectionsJson.managedApiConnections.azurequeues.authentication = @{
+        type = 'ManagedServiceIdentity'
+        identity = $identityResourceId
+    }
 
     # Update table connection
     $connectionsJson.managedApiConnections.azuretables.api.id = "/subscriptions/$subscriptionId/providers/Microsoft.Web/locations/$location/managedApis/azuretables"
     $connectionsJson.managedApiConnections.azuretables.connection.id = $tableConnectionId
     $connectionsJson.managedApiConnections.azuretables.connectionRuntimeUrl = $tableRuntimeUrl
+    $connectionsJson.managedApiConnections.azuretables.authentication = @{
+        type = 'ManagedServiceIdentity'
+        identity = $identityResourceId
+    }
 
     # Save updated connections.json back to the workflow folder
     $jsonContent = $connectionsJson | ConvertTo-Json -Depth 10
