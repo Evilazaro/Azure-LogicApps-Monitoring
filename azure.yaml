@@ -9,7 +9,7 @@ infra:
   
 services:
   PoWebApp:
-    project: ./src/PoWebApp/PoWebApp.csproj
+    project: ./src/PoWebApp/PoWebApp/PoWebApp.csproj
     language: dotnet
     host: appservice
     resourceGroup: ${AZURE_RESOURCE_GROUP}
