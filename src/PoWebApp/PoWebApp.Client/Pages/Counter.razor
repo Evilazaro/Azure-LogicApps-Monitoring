@@ -1,5 +1,8 @@
 ﻿@page "/counter"
+@using PoLib
 @rendermode InteractiveWebAssembly
+
+@inject ILogger<Orders> Logger
 
 <PageTitle>Orders</PageTitle>
 
@@ -45,8 +48,35 @@
 
     private async Task PlaceOrder()
     {
-        isPlacingOrder = true;
-        await UpdateProgress(0, "Starting order placement...");
+        try
+        {
+            errorMessage = string.Empty;
+            isPlacingOrder = true;
+            showProgress = true;
+            progressPercentage = 0;
+            progressStatus = "Starting order placement...";
+            await InvokeAsync(StateHasChanged);
+
+            // Simulate progress steps
+            await UpdateProgress(10, "Connecting to queue...");
+            await Task.Delay(300);
+
+            await UpdateProgress(50, "Creating queue if not exists...");
+            var order = new Orders(Logger);
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Error placing order: {ex.Message}";
+            progressStatus = "Error occurred";
+            progressPercentage = 0;
+        }
+        finally
+        {
+            isPlacingOrder = false;
+            showProgress = false;
+            await InvokeAsync(StateHasChanged);
+        }
+
     }
 
     private async Task UpdateProgress(int percentage, string status)

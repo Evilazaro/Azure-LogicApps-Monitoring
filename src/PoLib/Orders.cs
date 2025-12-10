@@ -1,10 +1,10 @@
 ﻿using Azure.Identity;
 using Azure.Storage.Queues;
-using PoWebApp.Components.Classes.Diagnostics;
+using PoLib.Diagnostics;
 using System.Diagnostics;
 using System.Text.Json;
 
-namespace PoWebApp.Components.Classes
+namespace PoLib
 {
     public class Orders
     {

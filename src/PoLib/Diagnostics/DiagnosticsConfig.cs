@@ -1,19 +1,19 @@
 ﻿using System.Diagnostics;
 
-namespace PoWebApp.Components.Classes.Diagnostics
+namespace PoLib.Diagnostics
 {
     public static class DiagnosticsConfig
     {
-        public const string ServiceName = "PoWebApp";
+        public const string ServiceName = "PoLib";
         public const string ServiceVersion = "1.0.0";
         public const string ServiceNamespace = "eShopOrders";
 
         // Activity Sources for custom instrumentation
         public static class ActivitySources
         {
-            public static readonly ActivitySource Orders = new("PoWebApp.Orders", ServiceVersion);
-            public static readonly ActivitySource UI = new("PoWebApp.UI", ServiceVersion);
-            public static readonly ActivitySource Messaging = new("PoWebApp.Messaging", ServiceVersion);
+            public static readonly ActivitySource Orders = new("PoLib.Orders", ServiceVersion);
+            public static readonly ActivitySource UI = new("PoLib.UI", ServiceVersion);
+            public static readonly ActivitySource Messaging = new("PoLib.Messaging", ServiceVersion);
         }
 
         // Semantic convention keys for consistent tagging
