@@ -11,8 +11,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PoWebApp", "src\PoWebApp\Po
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PoWebApp.Client", "src\PoWebApp\PoWebApp.Client\PoWebApp.Client.csproj", "{ABD147C5-5885-423B-9596-63BA97810422}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PoLib", "src\PoLib\PoLib.csproj", "{875C25C9-B2AB-4AFD-84F7-90482EF384CA}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -31,10 +29,6 @@ Global
 		{ABD147C5-5885-423B-9596-63BA97810422}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{ABD147C5-5885-423B-9596-63BA97810422}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{ABD147C5-5885-423B-9596-63BA97810422}.Release|Any CPU.Build.0 = Release|Any CPU
-		{875C25C9-B2AB-4AFD-84F7-90482EF384CA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{875C25C9-B2AB-4AFD-84F7-90482EF384CA}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{875C25C9-B2AB-4AFD-84F7-90482EF384CA}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{875C25C9-B2AB-4AFD-84F7-90482EF384CA}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -43,7 +37,6 @@ Global
 		{6ED771AC-708E-4FB0-BE70-B3EAF26CF9DA} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
 		{E7C7F6A7-61B0-41C5-A672-C8B1BEC17B0C} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
 		{ABD147C5-5885-423B-9596-63BA97810422} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
-		{875C25C9-B2AB-4AFD-84F7-90482EF384CA} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {59BF1E4F-A388-42FD-AE16-EE8453E9F6F1}

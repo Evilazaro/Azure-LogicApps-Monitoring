@@ -1,6 +1,6 @@
 ﻿using System.Text.Json.Serialization;
 
-namespace PoLib
+namespace PoWebApp.Client
 {
     public class Order
     {

@@ -1,6 +1,6 @@
 ﻿using System.Diagnostics;
 
-namespace PoLib.Diagnostics
+namespace PoWebApp.Client.Diagnostics
 {
     public static class ActivityExtensions
     {

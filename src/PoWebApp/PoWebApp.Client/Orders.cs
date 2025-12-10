@@ -1,11 +1,11 @@
 ﻿using Azure.Identity;
 using Azure.Storage.Queues;
 using Microsoft.Extensions.Logging;
-using PoLib.Diagnostics;
+using PoWebApp.Client.Diagnostics;
 using System.Diagnostics;
 using System.Text.Json;
 
-namespace PoLib
+namespace PoWebApp.Client
 {
     public class Orders
     {
@@ -18,7 +18,9 @@ namespace PoLib
 
         public async Task<int> AddOrderMessageToQueueAsync()
         {
-            var ordersJson = File.ReadAllText("orders.json");
+            var files = Directory.GetFiles("/Files");
+            var filePath = "./Files/orders.json";
+            var ordersJson = File.ReadAllText(filePath);
             Order[] orders = JsonSerializer.Deserialize<Order[]>(ordersJson) ?? Array.Empty<Order>();
 
             int batchSize = orders.Count();

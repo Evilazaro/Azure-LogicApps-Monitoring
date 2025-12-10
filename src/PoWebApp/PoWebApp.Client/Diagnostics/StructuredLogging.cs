@@ -1,7 +1,7 @@
 ﻿using Microsoft.Extensions.Logging;
 using System.Diagnostics;
 
-namespace PoLib.Diagnostics
+namespace PoWebApp.Client.Diagnostics
 {
     public static class StructuredLogging
     {
