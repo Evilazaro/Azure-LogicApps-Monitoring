@@ -39,6 +39,7 @@
 }
 
 @code {
+    private int currentCount = 0;
     private string errorMessage = string.Empty;
     private bool isPlacingOrder = false;
     private bool showProgress = false;
@@ -58,11 +59,22 @@
             await InvokeAsync(StateHasChanged);
 
             // Simulate progress steps
-            await UpdateProgress(10, "Connecting to queue...");
+            await UpdateProgress(20, "Connecting to queue...");
             await Task.Delay(300);
 
-            await UpdateProgress(50, "Creating queue if not exists...");
+            await UpdateProgress(40, "Creating queue if not exists...");
             var order = new Orders(Logger);
+
+            await UpdateProgress(80, "Sending order message...");
+            currentCount = await order.AddOrderMessageToQueueAsync();
+
+            await UpdateProgress(100, "Order placed successfully!");
+            successMessage = $"Order placed successfully! Total orders: {currentCount}";
+            await Task.Delay(500);
+
+            // Hide progress bar after completion
+            await Task.Delay(1000);
+            showProgress = false;
         }
         catch (Exception ex)
         {
