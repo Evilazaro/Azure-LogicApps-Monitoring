@@ -709,7 +709,7 @@ Found a bug or have a feature request? Please open an issue on our [GitHub Issue
 
 For questions or support, please refer to the following resources:
 
-- **Documentation**: Review the detailed guides in DISTRIBUTED_TRACING.md and src/PoWebApp/QUICK_START.md
+- **Documentation**: Review the detailed guides in DISTRIBUTED_TRACING.md and `src/PoWebApp/QUICK_START.md`
 - **GitHub Discussions**: Ask questions in [Discussions](https://github.com/Evilazaro/Azure-LogicApps-Monitoring/discussions)
 - **Azure Support**: For Azure-specific issues, contact [Azure Support](https://azure.microsoft.com/support/)
 
