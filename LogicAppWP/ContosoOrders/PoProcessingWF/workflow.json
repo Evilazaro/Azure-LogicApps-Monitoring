@@ -54,19 +54,6 @@
                     ]
                 },
                 "actions": {
-                    "Insert_Entity_(V2)": {
-                        "type": "ApiConnection",
-                        "inputs": {
-                            "host": {
-                                "connection": {
-                                    "referenceName": "azuretables"
-                                }
-                            },
-                            "method": "post",
-                            "body": "@body('HTTP')",
-                            "path": "/v2/storageAccounts/@{encodeURIComponent(encodeURIComponent('eshopordersp23wtwaz3pxg6'))}/tables/@{encodeURIComponent('OrdersProcessedSuccessfully')}/entities"
-                        }
-                    },
                     "HTTP_1": {
                         "type": "Http",
                         "inputs": {
@@ -77,9 +64,35 @@
                             }
                         },
                         "runAfter": {
-                            "Insert_Entity_(V2)": [
+                            "Create_blob_(V2)": [
                                 "SUCCEEDED"
                             ]
+                        },
+                        "runtimeConfiguration": {
+                            "contentTransfer": {
+                                "transferMode": "Chunked"
+                            }
+                        }
+                    },
+                    "Create_blob_(V2)": {
+                        "type": "ApiConnection",
+                        "inputs": {
+                            "host": {
+                                "connection": {
+                                    "referenceName": "azureblob"
+                                }
+                            },
+                            "method": "post",
+                            "body": "@body('HTTP')",
+                            "headers": {
+                                "ReadFileMetadataFromServer": true
+                            },
+                            "path": "/v2/datasets/@{encodeURIComponent(encodeURIComponent('eshopordersp23wtwaz3pxg6'))}/files",
+                            "queries": {
+                                "folderPath": "/ordersprocessedsuccessfully",
+                                "name": "@triggerBody()?['MessageId']",
+                                "queryParametersSingleEncoded": true
+                            }
                         },
                         "runtimeConfiguration": {
                             "contentTransfer": {
@@ -90,17 +103,30 @@
                 },
                 "else": {
                     "actions": {
-                        "Insert_Entity_(V2)_1": {
+                        "Create_blob_(V2)_1": {
                             "type": "ApiConnection",
                             "inputs": {
                                 "host": {
                                     "connection": {
-                                        "referenceName": "azuretables"
+                                        "referenceName": "azureblob"
                                     }
                                 },
                                 "method": "post",
                                 "body": "@body('HTTP')",
-                                "path": "/v2/storageAccounts/@{encodeURIComponent(encodeURIComponent('eshopordersp23wtwaz3pxg6'))}/tables/@{encodeURIComponent('OrdersProcessedWithErrors')}/entities"
+                                "headers": {
+                                    "ReadFileMetadataFromServer": true
+                                },
+                                "path": "/v2/datasets/@{encodeURIComponent(encodeURIComponent('eshopordersp23wtwaz3pxg6'))}/files",
+                                "queries": {
+                                    "folderPath": "/ordersprocessedwitherrors",
+                                    "name": "@triggerBody()?['MessageId']",
+                                    "queryParametersSingleEncoded": true
+                                }
+                            },
+                            "runtimeConfiguration": {
+                                "contentTransfer": {
+                                    "transferMode": "Chunked"
+                                }
                             }
                         }
                     }

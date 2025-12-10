@@ -112,7 +112,7 @@ namespace PoProcAPI.Controllers
                     // Set final activity status
                     activity?.SetStatus(ActivityStatusCode.Ok, "Order processed successfully");
 
-                     var result = new
+                    var result = new
                     {
                         Message = "Order processed successfully",
                         OrderId = order.Id,
@@ -122,6 +122,8 @@ namespace PoProcAPI.Controllers
                         SpanId = Activity.Current?.SpanId.ToString(),
                         PartitionKey = order.Date.ToString("yyyy-MM-dd"),
                         RowKey = order.Id,
+                        RequestId = new Guid().ToString(),
+                        Time = DateTime.UtcNow.ToString("o")
                     };
 
                     return Ok(result);
