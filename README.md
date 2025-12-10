@@ -3,6 +3,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Azure](https://img.shields.io/badge/Azure-Logic%20Apps-0078D4?logo=microsoft-azure)](https://azure.microsoft.com/services/logic-apps/)
 [![OpenTelemetry](https://img.shields.io/badge/OpenTelemetry-Enabled-326CE5?logo=opentelemetry)](https://opentelemetry.io/)
+[![.NET](https://img.shields.io/badge/.NET-9.0-512BD4?logo=dotnet)](https://dotnet.microsoft.com/)
 
 A comprehensive, production-ready monitoring solution for Azure Logic Apps Standard that demonstrates enterprise-grade observability patterns using Azure Monitor, Application Insights, and distributed tracing with OpenTelemetry.
 
@@ -116,7 +117,96 @@ This solution automatically configures diagnostic settings for:
 
 ---
 
-## 🏗️ Architecture
+## 📁 Project Structure
+
+```
+Azure-LogicApps-Monitoring/
+│
+├── .azure/                          # Azure Developer CLI configuration
+│   └── config.json                  # Environment configuration
+│
+├── .github/                         # GitHub workflows (CI/CD)
+│   └── workflows/
+│
+├── hooks/                           # Deployment scripts
+│   ├── deploy-connections.ps1      # Logic App connections configuration
+│   └── generate_orders.ps1         # Test data generation
+│
+├── infra/                           # Infrastructure as Code (Bicep)
+│   ├── main.bicep                  # Main orchestration template
+│   ├── main.parameters.json        # Environment parameters
+│   ├── monitoring/                 # Monitoring infrastructure
+│   │   ├── main.bicep             # Monitoring orchestration
+│   │   ├── log-analytics-workspace.bicep  # Log Analytics + Storage
+│   │   ├── app-insights.bicep     # Application Insights
+│   │   └── azure-monitor-health-model.bicep  # Health monitoring
+│   └── workload/                   # Application infrastructure
+│       ├── main.bicep             # Workload orchestration
+│       ├── logic-app.bicep        # Logic App Standard
+│       ├── web-api.bicep          # PoProcAPI App Service
+│       ├── web-app.bicep          # PoWebApp App Service
+│       ├── workflow.bicep         # Workflow configuration
+│       └── messaging/
+│           └── main.bicep         # Storage Queue + Table
+│
+├── LogicAppWP/                     # Logic App workspace
+│   └── ContosoOrders/             # Logic App project
+│       ├── eShopOrders/           # Workflow definition
+│       │   ├── workflow.json     # Workflow schema
+│       │   └── connections.json  # API connections
+│       ├── host.json             # Runtime configuration
+│       └── .funcignore           # Deployment exclusions
+│
+├── src/                            # Application source code
+│   ├── PoProcAPI/                 # Order Processing API
+│   │   ├── Controllers/          # REST endpoints
+│   │   ├── Diagnostics/          # Tracing configuration
+│   │   │   ├── DiagnosticsConfig.cs      # Central config
+│   │   │   ├── ActivityExtensions.cs     # Tracing helpers
+│   │   │   └── StructuredLogging.cs      # Logging helpers
+│   │   ├── Middleware/           # HTTP middleware
+│   │   │   └── TraceEnrichmentMiddleware.cs  # Trace enrichment
+│   │   ├── Program.cs            # Application startup
+│   │   ├── validate-tracing.ps1 # Health check script
+│   │   ├── DISTRIBUTED_TRACING.md  # Technical documentation
+│   │   └── IMPLEMENTATION_SUMMARY.md  # Implementation guide
+│   │
+│   └── PoWebApp/                  # Blazor Web Application
+│       ├── PoWebApp/             # Server project
+│       │   ├── Components/       # Blazor components
+│       │   ├── Diagnostics/      # Tracing configuration
+│       │   ├── HealthChecks/     # Custom health checks
+│       │   ├── Middleware/       # HTTP middleware
+│       │   └── Program.cs        # Application startup
+│       ├── PoWebApp.Client/      # WebAssembly client
+│       ├── validate-tracing.ps1 # Health check script
+│       └── QUICK_START.md        # Quick start guide
+│
+├── azure.yaml                      # Azure Developer CLI manifest
+├── eShopOrders.sln                # Visual Studio solution
+├── README.md                      # This file
+├── LICENSE.md                     # MIT License
+├── CODE_OF_CONDUCT.md             # Community guidelines
+├── CONTRIBUTING.md                # Contribution guide
+├── SECURITY.md                    # Security policy
+└── LOGIC_APP_CONNECTIONS.md       # Logic App setup guide
+```
+
+### Key Files
+
+| File | Purpose | Audience |
+|------|---------|----------|
+| azure.yaml | Azure Developer CLI manifest defining services and deployment | DevOps Engineers |
+| main.bicep | Main infrastructure orchestration template | Cloud Architects |
+| main.bicep | Monitoring infrastructure (Log Analytics, Application Insights) | Platform Engineers |
+| `hooks/deploy-connections.ps1` | Automates Logic App API connection configuration | DevOps Engineers |
+| DISTRIBUTED_TRACING.md | Distributed tracing implementation guide | Application Developers |
+| `src/PoWebApp/QUICK_START.md` | Quick start for developers | Application Developers |
+| LOGIC_APP_CONNECTIONS.md | Logic App connections setup guide | DevOps Engineers |
+
+---
+
+## 🏗️ System Architecture
 
 ```mermaid
 graph TB
@@ -149,16 +239,62 @@ graph TB
     AppInsights --> LogAnalytics
     LogAnalytics --> StorageAccount
 
-    style AppInsights fill:#0078D4,color:#fff
-    style LogAnalytics fill:#0078D4,color:#fff
     style WebApp fill:#68217A,color:#fff
     style API fill:#68217A,color:#fff
     style LogicApp fill:#00188F,color:#fff
+    style AppInsights fill:#0078D4,color:#fff
+    style LogAnalytics fill:#0078D4,color:#fff
 ```
 
 ---
 
-## 🔄 Dataflow
+## 🔄 Application Architecture
+
+```mermaid
+graph TB
+    subgraph "Frontend"
+        Blazor[Blazor Web App<br/>Interactive UI]
+    end
+
+    subgraph "Backend Services"
+        API[PoProcAPI<br/>Order Processing]
+        LogicApp[Logic App<br/>eShopOrders Workflow]
+    end
+
+    subgraph "Data Storage"
+        Queue[(Azure Queue<br/>Order Messages)]
+        Table[(Azure Table<br/>Order Data)]
+        WorkflowStorage[(Blob Storage<br/>Workflow State)]
+    end
+
+    subgraph "Cross-Cutting Concerns"
+        Tracing[OpenTelemetry<br/>Distributed Tracing]
+        Logging[Structured Logging<br/>Correlation]
+        Health[Health Checks<br/>Validation]
+    end
+
+    Blazor -->|Submit Order| API
+    API -->|Enqueue| Queue
+    LogicApp -->|Trigger| Queue
+    LogicApp -->|Store| Table
+    LogicApp -.->|State| WorkflowStorage
+
+    API -.->|Traces| Tracing
+    Blazor -.->|Traces| Tracing
+    LogicApp -.->|Logs| Logging
+    API -.->|Validate| Health
+
+    style Blazor fill:#68217A,color:#fff
+    style API fill:#68217A,color:#fff
+    style LogicApp fill:#00188F,color:#fff
+    style Tracing fill:#326CE5,color:#fff
+    style Logging fill:#326CE5,color:#fff
+    style Health fill:#107C10,color:#fff
+```
+
+---
+
+## 🔀 Dataflow
 
 ```mermaid
 flowchart LR
@@ -573,7 +709,7 @@ Found a bug or have a feature request? Please open an issue on our [GitHub Issue
 
 For questions or support, please refer to the following resources:
 
-- **Documentation**: Review the detailed guides in DISTRIBUTED_TRACING.md and `src/PoWebApp/QUICK_START.md`
+- **Documentation**: Review the detailed guides in DISTRIBUTED_TRACING.md and src/PoWebApp/QUICK_START.md
 - **GitHub Discussions**: Ask questions in [Discussions](https://github.com/Evilazaro/Azure-LogicApps-Monitoring/discussions)
 - **Azure Support**: For Azure-specific issues, contact [Azure Support](https://azure.microsoft.com/support/)
 
