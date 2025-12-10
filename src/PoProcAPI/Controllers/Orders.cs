@@ -1,6 +1,9 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using PoProcAPI.Diagnostics;
+using System.Collections.Concurrent;
 using System.Diagnostics;
+using System.Runtime.Intrinsics.X86;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace PoProcAPI.Controllers
 {
@@ -111,8 +114,13 @@ namespace PoProcAPI.Controllers
 
                     return Ok(new
                     {
+                        // Use date as PartitionKey for efficient querying by date
+                        PartitionKey = order.Date.ToString("yyyy-MM-dd"),
+                        RowKey = order.Id,
                         Message = "Order processed successfully",
                         OrderId = order.Id,
+                        OrderDate = order.Date,
+                        OrderTotal = order.Total,
                         TraceId = Activity.Current?.TraceId.ToString(),
                         SpanId = Activity.Current?.SpanId.ToString()
                     });

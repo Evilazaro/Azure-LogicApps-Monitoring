@@ -90,8 +90,13 @@ resource tSvc 'Microsoft.Storage/storageAccounts/tableServices@2025-06-01' = {
   parent: wfSA
 }
 
-resource poProcTable 'Microsoft.Storage/storageAccounts/tableServices/tables@2025-06-01' = {
-  name: 'audit'
+resource tbProcOrdersSuccess 'Microsoft.Storage/storageAccounts/tableServices/tables@2025-06-01' = {
+  name: 'OrdersProcessedSuccessfully'
+  parent: tSvc
+}
+
+resource tbProcOrdersErrors 'Microsoft.Storage/storageAccounts/tableServices/tables@2025-06-01' = {
+  name: 'OrdersProcessedWithErrors'
   parent: tSvc
 }
 

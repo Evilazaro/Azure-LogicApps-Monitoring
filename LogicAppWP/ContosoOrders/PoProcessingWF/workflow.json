@@ -1,10 +1,152 @@
 {
-  "definition": {
-    "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
-    "contentVersion": "1.0.0.0",
-    "actions": {},
-    "outputs": {},
-    "triggers": {}
-  },
-  "kind": "Stateful"
+    "definition": {
+        "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+        "contentVersion": "1.0.0.0",
+        "actions": {
+            "Condition": {
+                "type": "If",
+                "expression": {
+                    "and": [
+                        {
+                            "equals": [
+                                "@outputs('HTTP')?['statusCode']",
+                                200
+                            ]
+                        }
+                    ]
+                },
+                "actions": {
+                    "Parse_JSON": {
+                        "type": "ParseJson",
+                        "inputs": {
+                            "content": "@triggerBody()",
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "Id": {
+                                        "type": "integer"
+                                    },
+                                    "Date": {
+                                        "type": "string"
+                                    },
+                                    "Quantity": {
+                                        "type": "integer"
+                                    },
+                                    "Total": {
+                                        "type": "integer"
+                                    },
+                                    "Message": {
+                                        "type": "string"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "HTTP_2": {
+                        "type": "Http",
+                        "inputs": {
+                            "uri": "https://eshop-orders-nwnr7fcjyhjao-poproc-api.azurewebsites.net/WeatherForecast",
+                            "method": "GET",
+                            "headers": {
+                                "accept": "text/plain"
+                            },
+                            "body": "@body('Parse_JSON')?['Message']"
+                        },
+                        "runAfter": {
+                            "Parse_JSON": [
+                                "SUCCEEDED"
+                            ]
+                        },
+                        "runtimeConfiguration": {
+                            "contentTransfer": {
+                                "transferMode": "Chunked"
+                            }
+                        }
+                    }
+                },
+                "else": {
+                    "actions": {
+                        "HTTP_1": {
+                            "type": "Http",
+                            "inputs": {
+                                "uri": "https://eshop-orders-nwnr7fcjyhjao-poproc-api.azurewebsites.net/WeatherForecast",
+                                "method": "GET",
+                                "headers": {
+                                    "accept": "accept: text/plain"
+                                },
+                                "body": "@outputs('HTTP')?['statusCode']"
+                            },
+                            "runtimeConfiguration": {
+                                "contentTransfer": {
+                                    "transferMode": "Chunked"
+                                }
+                            }
+                        }
+                    }
+                },
+                "runAfter": {
+                    "For_each": [
+                        "SUCCEEDED"
+                    ]
+                }
+            },
+            "Get_messages_(V2)": {
+                "type": "ApiConnection",
+                "inputs": {
+                    "host": {
+                        "connection": {
+                            "referenceName": "azurequeues-1"
+                        }
+                    },
+                    "method": "get",
+                    "path": "/v2/storageAccounts/@{encodeURIComponent(encodeURIComponent('eshopordersnwnr7fcjyhjao'))}/queues/@{encodeURIComponent('orders-queue')}/messages"
+                },
+                "runAfter": {}
+            },
+            "HTTP": {
+                "type": "Http",
+                "inputs": {
+                    "uri": "https://eshop-orders-nwnr7fcjyhjao-poproc-api.azurewebsites.net/Orders",
+                    "method": "POST",
+                    "headers": {
+                        "accept": "*/*",
+                        "Content-Type": "application/json"
+                    },
+                    "body": "@body('Get_messages_(V2)')?['QueueMessagesList']?['QueueMessage']?[0]?['MessageText']"
+                },
+                "runtimeConfiguration": {
+                    "contentTransfer": {
+                        "transferMode": "Chunked"
+                    }
+                },
+                "runAfter": {
+                    "Get_messages_(V2)": [
+                        "SUCCEEDED"
+                    ]
+                }
+            }
+        },
+        "outputs": {},
+        "triggers": {
+            "When_there_are_messages_in_a_queue_(V2)": {
+                "type": "ApiConnection",
+                "inputs": {
+                    "host": {
+                        "connection": {
+                            "referenceName": "azurequeues-1"
+                        }
+                    },
+                    "method": "get",
+                    "path": "/v2/storageAccounts/@{encodeURIComponent(encodeURIComponent('eshopordersnwnr7fcjyhjao'))}/queues/@{encodeURIComponent('orders-queue')}/message_trigger"
+                },
+                "recurrence": {
+                    "interval": 1,
+                    "frequency": "Second",
+                    "timeZone": "Central Standard Time"
+                },
+                "splitOn": "@triggerBody()?['QueueMessagesList']?['QueueMessage']"
+            }
+        }
+    },
+    "kind": "stateful"
 }
