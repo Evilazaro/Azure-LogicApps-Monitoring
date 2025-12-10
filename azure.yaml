@@ -6,18 +6,7 @@ infra:
   provider: bicep
   path: ./infra/
   module: main
-
-hooks:
-  postprovision:
-    shell: pwsh
-    run: |
-      ./hooks/deploy-connections.ps1 `
-        -ResourceGroupName $env:AZURE_RESOURCE_GROUP `
-        -LogicAppName $env:WORKFLOW_ENGINE_NAME `
-        -QueueConnectionName "azurequeues" `
-        -TableConnectionName "azuretables" `
-        -WorkflowName "eShopOrders"
-
+  
 services:
   PoWebApp:
     project: ./src/PoWebApp/PoWebApp.csproj
