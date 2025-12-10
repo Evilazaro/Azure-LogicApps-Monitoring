@@ -12,6 +12,12 @@
             "type": "coreclr",
             "request": "attach",
             "processId": "${command:azureLogicAppsStandard.pickProcess}"
+        },
+        {
+            "name": "Run/Debug logic app ContosoOrders",
+            "type": "coreclr",
+            "request": "attach",
+            "processId": "${command:azureLogicAppsStandard.pickProcess}"
         }
     ]
 }
