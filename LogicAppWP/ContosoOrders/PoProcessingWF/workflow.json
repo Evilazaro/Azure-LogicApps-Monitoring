@@ -12,7 +12,7 @@
                         }
                     },
                     "method": "delete",
-                    "path": "/v2/storageAccounts/@{encodeURIComponent(encodeURIComponent('eshopordersp23wtwaz3pxg6'))}/queues/@{encodeURIComponent('orders-queue')}/messages/@{encodeURIComponent(triggerBody()?['MessageId'])}",
+                    "path": "/v2/storageAccounts/@{encodeURIComponent(encodeURIComponent('{STORAGE_ACCOUNT_NAME}'))}/queues/@{encodeURIComponent('orders-queue')}/messages/@{encodeURIComponent(triggerBody()?['MessageId'])}",
                     "queries": {
                         "popreceipt": "@triggerBody()?['PopReceipt']"
                     }
@@ -26,7 +26,7 @@
             "HTTP": {
                 "type": "Http",
                 "inputs": {
-                    "uri": "https://eshop-orders-p23wtwaz3pxg6-poproc-api.azurewebsites.net/Orders",
+                    "uri": "{ORDER_API_ENDPOINT}/Orders",
                     "method": "POST",
                     "headers": {
                         "accept": "*/*",
@@ -57,7 +57,7 @@
                     "HTTP_1": {
                         "type": "Http",
                         "inputs": {
-                            "uri": "https://eshop-orders-p23wtwaz3pxg6-poproc-api.azurewebsites.net/WeatherForecast",
+                            "uri": "{ORDER_API_ENDPOINT}/WeatherForecast",
                             "method": "GET",
                             "headers": {
                                 "accept": "text/plain"
@@ -87,7 +87,7 @@
                             "headers": {
                                 "ReadFileMetadataFromServer": true
                             },
-                            "path": "/v2/datasets/@{encodeURIComponent(encodeURIComponent('eshopordersp23wtwaz3pxg6'))}/files",
+                            "path": "/v2/datasets/@{encodeURIComponent(encodeURIComponent('{STORAGE_ACCOUNT_NAME}'))}/files",
                             "queries": {
                                 "folderPath": "/ordersprocessedsuccessfully",
                                 "name": "@triggerBody()?['MessageId']",
@@ -116,7 +116,7 @@
                                 "headers": {
                                     "ReadFileMetadataFromServer": true
                                 },
-                                "path": "/v2/datasets/@{encodeURIComponent(encodeURIComponent('eshopordersp23wtwaz3pxg6'))}/files",
+                                "path": "/v2/datasets/@{encodeURIComponent(encodeURIComponent('{STORAGE_ACCOUNT_NAME}'))}/files",
                                 "queries": {
                                     "folderPath": "/ordersprocessedwitherrors",
                                     "name": "@triggerBody()?['MessageId']",
@@ -149,7 +149,7 @@
                         }
                     },
                     "method": "get",
-                    "path": "/v2/storageAccounts/@{encodeURIComponent(encodeURIComponent('eshopordersp23wtwaz3pxg6'))}/queues/@{encodeURIComponent('orders-queue')}/message_trigger"
+                    "path": "/v2/storageAccounts/@{encodeURIComponent(encodeURIComponent('{STORAGE_ACCOUNT_NAME}'))}/queues/@{encodeURIComponent('orders-queue')}/message_trigger"
                 },
                 "recurrence": {
                     "interval": 1,
