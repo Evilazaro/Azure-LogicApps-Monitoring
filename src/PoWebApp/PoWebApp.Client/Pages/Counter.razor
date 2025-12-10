@@ -1,0 +1,100 @@
+﻿@page "/counter"
+@using PoWebApp
+@rendermode InteractiveWebAssembly
+
+@inject ILogger<Orders> Logger
+
+<PageTitle>Orders</PageTitle>
+
+<h1>Place Orders</h1>
+
+<p role="status">@successMessage</p>
+
+<p role="status">@errorMessage</p>
+
+<button class="btn btn-primary" @onclick="() => this.PlaceOrder()" disabled ="@isPlacingOrder">
+    @if (isPlacingOrder)
+    {
+        <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+        <span>Placing Order...</span>
+    }
+    else
+    {
+        <span>Place Orders</span>
+    }
+</button>
+
+@if (isPlacingOrder || showProgress)
+{
+    <div class="mt-3">
+        <div class="progress" style="height: 25px;">
+            <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar"
+                 style="width: @(progressPercentage)%;" aria-valuenow="@progressPercentage" aria-valuemin="0"
+                 aria-valuemax="100">
+                @progressPercentage%
+            </div>
+        </div>
+        <small class="text-muted">@progressStatus</small>
+    </div>
+}
+
+@code {
+    private int currentCount = 0;
+    private string errorMessage = string.Empty;
+    private bool isPlacingOrder = false;
+    private bool showProgress = false;
+    private int progressPercentage = 0;
+    private string progressStatus = string.Empty;
+    private string successMessage = string.Empty;
+
+    private async Task PlaceOrder()
+    {
+        try
+        {
+            errorMessage = string.Empty;
+            isPlacingOrder = true;
+            showProgress = true;
+            progressPercentage = 0;
+            progressStatus = "Starting order placement...";
+            await InvokeAsync(StateHasChanged);
+
+            // Simulate progress steps
+            await UpdateProgress(20, "Connecting to queue...");
+            await Task.Delay(300);
+
+            await UpdateProgress(40, "Creating queue if not exists...");
+            var order = new Orders(Logger);
+
+            await UpdateProgress(80, "Sending order message...");
+            currentCount = await order.AddOrderMessageToQueueAsync();
+
+            await UpdateProgress(100, "Order placed successfully!");
+            successMessage = $"Order placed successfully! Total orders: {currentCount}";
+            await Task.Delay(500);
+
+            // Hide progress bar after completion
+            await Task.Delay(1000);
+            showProgress = false;
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Error placing order: {ex.Message}";
+            progressStatus = "Error occurred";
+            progressPercentage = 0;
+        }
+        finally
+        {
+            isPlacingOrder = false;
+            showProgress = false;
+            await InvokeAsync(StateHasChanged);
+        }
+
+    }
+
+    private async Task UpdateProgress(int percentage, string status)
+    {
+        progressPercentage = percentage;
+        progressStatus = status;
+        await InvokeAsync(StateHasChanged);
+    }
+}

@@ -109,13 +109,21 @@ namespace PoProcAPI.Controllers
                     // Set final activity status
                     activity?.SetStatus(ActivityStatusCode.Ok, "Order processed successfully");
 
-                    return Ok(new
+                    var result = new
                     {
                         Message = "Order processed successfully",
                         OrderId = order.Id,
+                        OrderDate = order.Date,
+                        OrderTotal = order.Total,
                         TraceId = Activity.Current?.TraceId.ToString(),
-                        SpanId = Activity.Current?.SpanId.ToString()
-                    });
+                        SpanId = Activity.Current?.SpanId.ToString(),
+                        PartitionKey = order.Date.ToString("yyyy-MM-dd"),
+                        RowKey = order.Id,
+                        RequestId = new Guid().ToString(),
+                        Time = DateTime.UtcNow.ToString("o")
+                    };
+
+                    return Ok(result);
                 }
             }
             catch (Exception ex)

@@ -1,0 +1,16 @@
+{
+  "folders": [
+    {
+      "name": "ContosoOrders",
+      "path": "./ContosoOrders"
+    }
+  ],
+  "settings": {
+    "terminal.integrated.env.windows": {
+      "PATH": "C:\\Users\\evalvesd\\.azurelogicapps\\dependencies\\DotNetSDK;${env:PATH}"
+    },
+    "omnisharp.dotNetCliPaths": [
+      "C:\\Users\\evalvesd\\.azurelogicapps\\dependencies\\DotNetSDK"
+    ]
+  }
+}

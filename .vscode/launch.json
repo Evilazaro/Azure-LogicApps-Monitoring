@@ -1,0 +1,23 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Run/Debug logic app eShopOrdersProcessing",
+            "type": "coreclr",
+            "request": "attach",
+            "processId": "${command:azureLogicAppsStandard.pickProcess}"
+        },
+        {
+            "name": "Run/Debug logic app Orders",
+            "type": "coreclr",
+            "request": "attach",
+            "processId": "${command:azureLogicAppsStandard.pickProcess}"
+        },
+        {
+            "name": "Run/Debug logic app ContosoOrders",
+            "type": "coreclr",
+            "request": "attach",
+            "processId": "${command:azureLogicAppsStandard.pickProcess}"
+        }
+    ]
+}

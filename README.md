@@ -1,45 +1,49 @@
 # Azure Logic Apps Monitoring Solution
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Azure](https://img.shields.io/badge/Azure-Logic%20Apps-0078D4?logo=microsoft-azure)](https://azure.microsoft.com/en-us/products/logic-apps/)
-[![OpenTelemetry](https://img.shields.io/badge/OpenTelemetry-Enabled-orange)](https://opentelemetry.io/)
+[![Azure](https://img.shields.io/badge/Azure-Logic%20Apps-0078D4?logo=microsoft-azure)](https://azure.microsoft.com/services/logic-apps/)
+[![OpenTelemetry](https://img.shields.io/badge/OpenTelemetry-Enabled-326CE5?logo=opentelemetry)](https://opentelemetry.io/)
 [![.NET](https://img.shields.io/badge/.NET-9.0-512BD4?logo=dotnet)](https://dotnet.microsoft.com/)
 
-A comprehensive, production-ready open-source solution demonstrating **Azure Monitor best practices** for Logic Apps Standard, ASP.NET Core applications, and enterprise workflow orchestration using **OpenTelemetry**, **Application Insights**, and **Log Analytics**.
+A comprehensive, production-ready monitoring solution for Azure Logic Apps Standard that demonstrates enterprise-grade observability patterns using Azure Monitor, Application Insights, and distributed tracing with OpenTelemetry.
 
 ---
 
 ## 📋 Project Overview
 
-This project provides a **reference implementation** for enterprise-grade observability in Azure Logic Apps environments. It showcases **distributed tracing**, **structured logging**, **custom instrumentation**, and advanced monitoring patterns that go beyond default Azure Monitor capabilities.
+**Azure Logic Apps Monitoring Solution** is an open-source reference implementation that showcases best practices for monitoring, observability, and troubleshooting Azure Logic Apps workflows in production environments. This solution goes beyond basic Azure Monitor capabilities by implementing:
 
-**Key Highlights:**
-- **Distributed Tracing**: End-to-end request correlation across Logic Apps, Web Apps, and APIs using OpenTelemetry
-- **Structured Logging**: Contextual logs with trace correlation for efficient troubleshooting
-- **Custom Instrumentation**: Business-level telemetry with semantic conventions
-- **Infrastructure as Code**: Fully automated deployment using Bicep and Azure Developer CLI
-- **Production-Ready**: Includes health checks, diagnostic settings, and monitoring best practices
+- **End-to-end distributed tracing** across Logic Apps, APIs, and web applications
+- **Automated diagnostic settings** for comprehensive log and metric collection
+- **Structured logging** with correlation IDs for multi-service transactions
+- **Infrastructure as Code (IaC)** using Bicep for reproducible deployments
+- **Health monitoring** with custom health checks and availability tests
+- **Cost-optimized log retention** with lifecycle management policies
 
-**What Makes This Different?**
+### Why This Project Matters
 
-Most Azure Logic Apps deployments rely on default monitoring configurations. This solution elevates observability to an enterprise standard by:
-- Implementing **W3C Trace Context** for cross-service correlation
-- Providing **custom Activity Sources** for business operations (Orders, Messaging, Database)
-- Offering **pre-built KQL queries** for common troubleshooting scenarios
-- Automating **diagnostic settings** across all resources via Infrastructure as Code
+While Azure provides baseline monitoring for Logic Apps, this solution addresses common enterprise challenges:
+
+- **Correlation gaps** across distributed workflow executions
+- **Manual diagnostic configuration** that is error-prone and inconsistent
+- **Limited visibility** into custom business metrics and operations
+- **Lack of standardization** for observability patterns across teams
+- **Troubleshooting complexity** in multi-service integrations
+
+This project provides a **battle-tested blueprint** that organizations can adopt to accelerate their Logic Apps monitoring strategy.
 
 ---
 
 ## 👥 Target Audience
 
 | Role | Responsibilities | How to Leverage This Solution | Benefits |
-|------|-----------------|-------------------------------|----------|
-| **Cloud Solution Architect** | Design cloud architectures, define monitoring strategies, ensure compliance | Use as reference architecture for Logic Apps observability; customize Bicep templates for enterprise requirements | Accelerated design phase; proven patterns; reduced risk |
-| **DevOps Engineer** | Automate deployments, maintain CI/CD pipelines, monitor infrastructure health | Deploy using `azd` CLI; integrate monitoring into pipelines; configure alerts | Simplified deployment; repeatable infrastructure; automated monitoring |
-| **Application Developer** | Build business logic, implement APIs, troubleshoot application issues | Study distributed tracing examples in [`DistributedTracingExample.cs`](src/PoWebApp/Examples/DistributedTracingExample.cs ); use structured logging patterns | Faster debugging; improved code quality; better telemetry |
-| **Site Reliability Engineer (SRE)** | Ensure system reliability, manage incidents, optimize performance | Leverage KQL queries; configure alerts; analyze trace data in Application Insights | Reduced MTTR; proactive issue detection; better incident response |
-| **Platform Engineer** | Standardize infrastructure, maintain reusable templates, enforce governance | Extend Bicep modules for multi-region deployments; enforce diagnostic settings across subscriptions | Consistent infrastructure; reduced technical debt; governance enforcement |
-| **Security Engineer** | Monitor access patterns, detect anomalies, ensure compliance | Audit diagnostic logs; track authentication events; monitor RBAC changes | Enhanced security posture; compliance visibility; threat detection |
+|------|------------------|-------------------------------|----------|
+| **Cloud Solution Architect** | Design scalable, observable cloud architectures | Use as a reference architecture for Logic Apps monitoring patterns; customize Bicep modules for organizational standards | Reduced architecture design time; proven observability patterns; compliance with Azure Well-Architected Framework |
+| **DevOps Engineer** | Automate deployment, monitoring, and incident response | Deploy via `azd` CLI; integrate diagnostic settings into CI/CD pipelines; use Kusto queries for alerting | Automated observability setup; consistent monitoring across environments; faster incident detection |
+| **Application Developer** | Build and maintain Logic Apps workflows and integrations | Leverage distributed tracing examples; implement structured logging in custom connectors; use health checks | Faster debugging with correlated logs; better understanding of workflow performance; reduced MTTR |
+| **Site Reliability Engineer (SRE)** | Ensure system reliability, availability, and performance | Configure alerts based on collected metrics; create dashboards from Log Analytics data; set SLOs/SLIs | Proactive issue detection; data-driven capacity planning; improved service reliability |
+| **Platform Engineer** | Manage shared services and infrastructure | Deploy monitoring infrastructure as a shared service; standardize diagnostic settings; manage Log Analytics workspaces | Centralized observability; cost optimization; governance enforcement |
+| **Security Operations** | Monitor security events and compliance | Analyze diagnostic logs for security anomalies; track access patterns; audit workflow executions | Enhanced security visibility; compliance reporting; threat detection |
 
 ---
 
@@ -47,320 +51,357 @@ Most Azure Logic Apps deployments rely on default monitoring configurations. Thi
 
 ### Design Principles
 
-This solution is built on three core design principles:
+This solution is built on four core design principles:
 
-1. **Observability by Design**: Telemetry is embedded at every layer—infrastructure, application, and business logic.
-2. **Automation First**: Full infrastructure-as-code with repeatable, idempotent deployments.
-3. **Enterprise-Ready**: Production-grade patterns including error handling, retries, and comprehensive diagnostics.
+1. **Observability by Default**: Every component emits structured logs, metrics, and traces
+2. **Automation First**: Infrastructure and monitoring configuration deployed as code
+3. **Cost Conscious**: Intelligent log retention and sampling to optimize Azure Monitor costs
+4. **Developer Experience**: Clear documentation, validation scripts, and examples
 
-### Feature Overview
+### Feature Overview Table
 
 | Feature | Purpose | Benefit |
 |---------|---------|---------|
-| **OpenTelemetry Integration** | Standards-based distributed tracing across services | Vendor-agnostic instrumentation; future-proof architecture |
-| **Application Insights Workspace Mode** | Centralized telemetry storage in Log Analytics | Unified query experience; cost optimization; advanced analytics |
-| **Custom Activity Sources** | Business-specific trace spans (Orders, Messaging, Database) | Domain-level observability; better troubleshooting |
-| **Semantic Conventions** | Standardized tag naming for telemetry attributes | Consistent queries; easier correlation; improved searchability |
-| **Structured Logging Extensions** | Contextual logging with automatic trace correlation | Faster root cause analysis; rich log context |
-| **Diagnostic Settings** | Automated log and metric collection for all Azure resources | Complete visibility; compliance; long-term retention |
-| **Health Checks** | Application-level health endpoints for monitoring | Proactive failure detection; automated recovery |
-| **Auto-Scaling Configuration** | Elastic scale limits for App Service Plans and Logic Apps | Cost optimization; performance under load |
-| **Managed Identity Authentication** | Password-less authentication to Azure Storage and services | Enhanced security; reduced credential management |
-| **Bicep Infrastructure Templates** | Modular, reusable IaC for all Azure resources | Consistent deployments; version control; peer review |
+| **Distributed Tracing with OpenTelemetry** | Track requests across Logic Apps, APIs, and web applications using W3C Trace Context | End-to-end visibility; correlate failures across services; measure true latency |
+| **Automated Diagnostic Settings** | Automatically configure log and metric collection for all Azure resources via Bicep | Consistent monitoring; eliminates manual setup; ensures compliance |
+| **Application Insights Integration** | Centralized telemetry collection with workspace-based Application Insights | Unified observability dashboard; cross-resource correlation; powerful query capabilities |
+| **Custom Health Checks** | Validate tracing configuration and Application Insights connectivity | Proactive issue detection; faster troubleshooting; deployment validation |
+| **Structured Logging with Correlation** | All logs include TraceId, SpanId, and business context | Simplified troubleshooting; better log analysis; trace-log correlation |
+| **Logic App Workflow Monitoring** | Capture workflow execution metrics, trigger history, and action results | Identify bottlenecks; track SLA compliance; optimize workflow performance |
+| **Storage Account Diagnostics** | Monitor queue depth, table operations, and storage performance | Detect data bottlenecks; optimize storage costs; prevent throttling |
+| **App Service Plan Metrics** | Track CPU, memory, and scaling events for hosting infrastructure | Capacity planning; cost optimization; performance tuning |
+| **Log Retention Policies** | Automated lifecycle management for diagnostic logs in storage accounts | Cost control; compliance with data retention requirements; optimized storage |
+| **Azure Developer CLI (azd) Support** | Single-command deployment and provisioning | Faster onboarding; reproducible environments; simplified CI/CD integration |
 
-### Comparison with Default Azure Monitor
+### Comparison Table
 
-| Aspect | This Solution | Default Azure Monitor |
-|--------|---------------|----------------------|
-| **Trace Correlation** | End-to-end distributed tracing with custom spans | Basic HTTP request tracking only |
-| **Custom Instrumentation** | Business-level telemetry (order processing, payment flows) | Infrastructure metrics only |
-| **Logging Strategy** | Structured logs with semantic tags and trace IDs | Unstructured text logs |
-| **Deployment Automation** | Full IaC with Bicep; one-command deployment (`azd up`) | Manual portal configuration |
-| **Cost Management** | Optimized sampling, retention policies, linked storage | Default settings (higher cost) |
-| **Query Capabilities** | Pre-built KQL queries for common scenarios | Generic queries only |
-| **OpenTelemetry Support** | Native OpenTelemetry SDK with Azure Monitor exporter | Legacy Application Insights SDK |
-| **Multi-Service Tracing** | Automatic trace propagation across Logic Apps, Web Apps, APIs | Limited to single-service visibility |
+| Aspect | Project Solution | Default Azure Monitor |
+|--------|------------------|----------------------|
+| **Diagnostic Settings** | Automatically configured via IaC for all resources | Manual configuration required per resource |
+| **Distributed Tracing** | Full OpenTelemetry instrumentation with W3C Trace Context | Limited to built-in Activity tracking |
+| **Log Correlation** | TraceId/SpanId in all logs; baggage propagation | Basic correlation with Operation IDs |
+| **Custom Business Metrics** | Semantic conventions for order processing, queue depth, etc. | Generic metrics only |
+| **Deployment Automation** | Single `azd up` command deploys everything | Manual portal configuration or custom scripts |
+| **Health Checks** | Built-in validation for tracing and connectivity | No automated health validation |
+| **Cost Optimization** | Lifecycle policies, intelligent sampling, filtered endpoints | Pay-per-GB ingestion without optimization |
+| **Developer Experience** | Validation scripts, examples, comprehensive documentation | Official docs only |
+| **Multi-Service Visibility** | Correlated traces across Logic Apps, APIs, and UIs | Isolated per-resource monitoring |
+| **Log Analytics Workspace** | Dedicated workspace with linked storage for long-term retention | Basic workspace without storage integration |
 
 ### Diagnostic Settings
 
-**Diagnostic Settings** are the foundation of Azure Monitor, enabling automated collection of **logs** and **metrics** from Azure resources. This solution configures comprehensive diagnostic settings across all resources, sending telemetry to both **Log Analytics** (for querying) and **Storage Accounts** (for long-term retention).
+**Diagnostic Settings** are the foundation of Azure Monitor observability. They define **what** telemetry data (logs and metrics) is collected from Azure resources and **where** it is sent (Log Analytics, Storage Account, Event Hub).
 
-#### Diagnostic Settings Collection
+This solution automatically configures diagnostic settings for:
+- **Logic Apps (Standard)**: Workflow runtime logs and metrics
+- **App Service Plans**: Hosting infrastructure metrics
+- **Application Insights**: Telemetry collection settings
+- **Storage Accounts**: Queue and table operation logs
 
-| Metric Category | Metrics Description | Log Category | Logs Description | Monitoring Improvement |
-|-----------------|---------------------|--------------|------------------|------------------------|
-| **AllMetrics** | CPU, memory, request count, response time | **WorkflowRuntime** | Workflow execution events (start, success, failure) | Real-time performance dashboards; capacity planning |
-| **HTTP Metrics** | Request throughput, status codes, latency percentiles | **FunctionExecutionLogs** | Function invocation details, duration, bindings | Identify slow requests; optimize workflows |
-| **Storage Metrics** | Queue depth, blob operations, table transactions | **AppServiceHTTPLogs** | HTTP request/response details for web apps | Track storage dependencies; detect bottlenecks |
-| **Application Insights Metrics** | Custom metrics (order count, payment success rate) | **AppServiceConsoleLogs** | Application stdout/stderr output | Business-level KPIs; custom alerting |
-| **Availability Metrics** | Uptime percentage, health check results | **AllLogs** | Complete audit trail (access, security, operations) | Proactive failure detection; compliance reporting |
+#### Diagnostic Settings Collection Table
 
-**Example: Logic App Diagnostic Setting Configuration**
+| Metrics | Metrics Description | Logs | Logs Description | Monitoring Improvement |
+|---------|---------------------|------|------------------|------------------------|
+| **WorkflowMetrics** | Workflow run counts, success/failure rates, duration | **WorkflowRuntime** | Detailed workflow execution events, trigger activations, action results | Identify failing workflows; measure SLA compliance; optimize execution time |
+| **AllMetrics** (App Service Plan) | CPU percentage, memory usage, HTTP queue length | N/A | Not applicable for App Service Plans | Capacity planning; detect resource exhaustion; optimize scaling rules |
+| **AllMetrics** (Storage Account) | Transaction counts, ingress/egress bytes, queue message count | **StorageRead**, **StorageWrite**, **StorageDelete** | Detailed storage operation logs with caller IP and operation type | Detect throttling; optimize queue processing; audit data access |
+| **AllMetrics** (Application Insights) | Request rate, failure rate, dependency duration | **AppTraces**, **AppDependencies**, **AppExceptions** | Distributed traces, dependency calls, exception stack traces | Correlate failures across services; measure true end-to-end latency; root cause analysis |
 
-```bicep
-resource wfDiag 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
-  name: '${workflowEngine.name}-diag'
-  scope: workflowEngine
-  properties: {
-    workspaceId: workspaceId
-    storageAccountId: storageAccountId
-    logs: [
-      {
-        category: 'WorkflowRuntime'
-        enabled: true
-      }
-    ]
-    metrics: [
-      {
-        categoryGroup: 'allMetrics'
-        enabled: true
-      }
-    ]
-  }
-}
-```
+**Why These Settings Improve Monitoring:**
 
-**Why This Matters:**
-- **Complete Visibility**: Every Azure resource sends logs and metrics to a centralized workspace
-- **Troubleshooting**: Quickly correlate issues across Logic Apps, Storage, App Services
-- **Compliance**: Meet audit requirements with long-term log retention in Storage
-- **Cost Optimization**: Configure retention policies to balance cost and compliance
+1. **Comprehensive Coverage**: Captures both metrics (quantitative) and logs (qualitative) for complete visibility
+2. **Dual Destination**: Logs sent to both Log Analytics (querying) and Storage Account (long-term retention/compliance)
+3. **Dedicated Workspace**: Uses `logAnalyticsDestinationType: 'Dedicated'` for resource-specific tables with better performance
+4. **Lifecycle Management**: Storage Account logs automatically purged after 30 days to control costs
+5. **Consistent Configuration**: All resources follow the same diagnostic pattern via Bicep modules
 
 ---
 
-## 🏗️ Architecture
+## 📁 Project Structure
+
+```
+Azure-LogicApps-Monitoring/
+│
+├── .azure/                          # Azure Developer CLI configuration
+│   └── config.json                  # Environment configuration
+│
+├── .github/                         # GitHub workflows (CI/CD)
+│   └── workflows/
+│
+├── hooks/                           # Deployment scripts
+│   ├── deploy-connections.ps1      # Logic App connections configuration
+│   └── generate_orders.ps1         # Test data generation
+│
+├── infra/                           # Infrastructure as Code (Bicep)
+│   ├── main.bicep                  # Main orchestration template
+│   ├── main.parameters.json        # Environment parameters
+│   ├── monitoring/                 # Monitoring infrastructure
+│   │   ├── main.bicep             # Monitoring orchestration
+│   │   ├── log-analytics-workspace.bicep  # Log Analytics + Storage
+│   │   ├── app-insights.bicep     # Application Insights
+│   │   └── azure-monitor-health-model.bicep  # Health monitoring
+│   └── workload/                   # Application infrastructure
+│       ├── main.bicep             # Workload orchestration
+│       ├── logic-app.bicep        # Logic App Standard
+│       ├── web-api.bicep          # PoProcAPI App Service
+│       ├── web-app.bicep          # PoWebApp App Service
+│       ├── workflow.bicep         # Workflow configuration
+│       └── messaging/
+│           └── main.bicep         # Storage Queue + Table
+│
+├── LogicAppWP/                     # Logic App workspace
+│   └── ContosoOrders/             # Logic App project
+│       ├── eShopOrders/           # Workflow definition
+│       │   ├── workflow.json     # Workflow schema
+│       │   └── connections.json  # API connections
+│       ├── host.json             # Runtime configuration
+│       └── .funcignore           # Deployment exclusions
+│
+├── src/                            # Application source code
+│   ├── PoProcAPI/                 # Order Processing API
+│   │   ├── Controllers/          # REST endpoints
+│   │   ├── Diagnostics/          # Tracing configuration
+│   │   │   ├── DiagnosticsConfig.cs      # Central config
+│   │   │   ├── ActivityExtensions.cs     # Tracing helpers
+│   │   │   └── StructuredLogging.cs      # Logging helpers
+│   │   ├── Middleware/           # HTTP middleware
+│   │   │   └── TraceEnrichmentMiddleware.cs  # Trace enrichment
+│   │   ├── Program.cs            # Application startup
+│   │   ├── validate-tracing.ps1 # Health check script
+│   │   ├── DISTRIBUTED_TRACING.md  # Technical documentation
+│   │   └── IMPLEMENTATION_SUMMARY.md  # Implementation guide
+│   │
+│   └── PoWebApp/                  # Blazor Web Application
+│       ├── PoWebApp/             # Server project
+│       │   ├── Components/       # Blazor components
+│       │   ├── Diagnostics/      # Tracing configuration
+│       │   ├── HealthChecks/     # Custom health checks
+│       │   ├── Middleware/       # HTTP middleware
+│       │   └── Program.cs        # Application startup
+│       ├── PoWebApp.Client/      # WebAssembly client
+│       ├── validate-tracing.ps1 # Health check script
+│       └── QUICK_START.md        # Quick start guide
+│
+├── azure.yaml                      # Azure Developer CLI manifest
+├── eShopOrders.sln                # Visual Studio solution
+├── README.md                      # This file
+├── LICENSE.md                     # MIT License
+├── CODE_OF_CONDUCT.md             # Community guidelines
+├── CONTRIBUTING.md                # Contribution guide
+├── SECURITY.md                    # Security policy
+└── LOGIC_APP_CONNECTIONS.md       # Logic App setup guide
+```
+
+### Key Files
+
+| File | Purpose | Audience |
+|------|---------|----------|
+| azure.yaml | Azure Developer CLI manifest defining services and deployment | DevOps Engineers |
+| main.bicep | Main infrastructure orchestration template | Cloud Architects |
+| main.bicep | Monitoring infrastructure (Log Analytics, Application Insights) | Platform Engineers |
+| `hooks/deploy-connections.ps1` | Automates Logic App API connection configuration | DevOps Engineers |
+| DISTRIBUTED_TRACING.md | Distributed tracing implementation guide | Application Developers |
+| `src/PoWebApp/QUICK_START.md` | Quick start for developers | Application Developers |
+| LOGIC_APP_CONNECTIONS.md | Logic App connections setup guide | DevOps Engineers |
+
+---
+
+## 🏗️ System Architecture
 
 ```mermaid
 graph TB
-    subgraph "Client Layer"
-        USER[Web Browser]
+    subgraph "Application Layer"
+        WebApp[Blazor Web App<br/>PoWebApp]
+        API[ASP.NET Core API<br/>PoProcAPI]
+        LogicApp[Logic App Standard<br/>Workflow Engine]
+    end
+
+    subgraph "Storage Layer"
+        Queue[Azure Storage Queue]
+        Table[Azure Storage Table]
     end
 
     subgraph "Monitoring Layer"
-        LAWS[Log Analytics Workspace]
-        AI[Application Insights]
-        STORAGE[Logs Storage Account]
+        AppInsights[Application Insights<br/>Workspace-Based]
+        LogAnalytics[Log Analytics Workspace]
+        StorageAccount[Storage Account<br/>Long-Term Retention]
     end
 
-    subgraph "Presentation Layer"
-        WEBAPP[PoWebApp<br/>Blazor Server]
-    end
+    WebApp -->|HTTP Requests| API
+    API -->|Enqueue Orders| Queue
+    LogicApp -->|Poll Queue| Queue
+    LogicApp -->|Store Results| Table
 
-    subgraph "API Layer"
-        API[PoProcAPI<br/>ASP.NET Core]
-    end
+    WebApp -.->|Telemetry| AppInsights
+    API -.->|Telemetry| AppInsights
+    LogicApp -.->|Diagnostic Logs| LogAnalytics
 
-    subgraph "Orchestration Layer"
-        LOGICAPP[Logic App Standard<br/>Workflow Engine]
-    end
-
-    subgraph "Data Layer"
-        QUEUE[Azure Storage Queue<br/>orders-queue]
-        BLOB[Blob Storage]
-        TABLE[Table Storage]
-    end
-
-    USER -->|HTTPS| WEBAPP
-    WEBAPP -->|HTTP API Calls| API
-    WEBAPP -->|Queue Messages| QUEUE
-    API -->|Database Operations| TABLE
-    LOGICAPP -->|Consumes| QUEUE
-    LOGICAPP -->|HTTP POST| API
-    LOGICAPP -->|Reads/Writes| BLOB
-    LOGICAPP -->|Audit Records| TABLE
-
-    WEBAPP -.->|Traces, Logs| AI
-    API -.->|Traces, Logs| AI
-    LOGICAPP -.->|Workflow Runtime Logs| AI
-    AI -->|Stores in| LAWS
-    LAWS -->|Archives to| STORAGE
-
-    style LAWS fill:#0078D4,stroke:#003B73,color:#fff
-    style AI fill:#FF6F00,stroke:#C43E00,color:#fff
-    style WEBAPP fill:#68217A,stroke:#3E145F,color:#fff
-    style API fill:#107C10,stroke:#0B5A0B,color:#fff
-    style LOGICAPP fill:#0078D4,stroke:#003B73,color:#fff
-```
-
----
-
-## 🔄 Monitoring Data Flow
-
-### Flowchart View
-
-```mermaid
-flowchart TB
-    subgraph Applications["Application Layer"]
-        WebApp[PoWebApp<br/>Blazor Server]
-        API[PoProcAPI<br/>ASP.NET Core]
-        LogicApp[Logic App<br/>Standard Workflow]
-    end
-
-    subgraph Telemetry["Telemetry Generation"]
-        WebApp -->|OpenTelemetry SDK| WebTrace[Traces<br/>Logs<br/>Metrics]
-        API -->|OpenTelemetry SDK| APITrace[Traces<br/>Logs<br/>Metrics]
-        LogicApp -->|Workflow Runtime| WFLogs[Execution Logs<br/>Run Status<br/>Action Results]
-    end
-
-    subgraph Infrastructure["Azure Infrastructure"]
-        Storage[Storage Account]
-        AppPlan[App Service Plan]
-    end
-
-    subgraph DiagSettings["Diagnostic Settings"]
-        Storage -->|Configured| StorageDiag[Queue Metrics<br/>Blob Metrics<br/>Table Metrics]
-        AppPlan -->|Auto-collect| PlatformDiag[CPU Usage<br/>Memory Usage<br/>Network I/O]
-        LogicApp -->|Configured| WorkflowDiag[WorkflowRuntime Logs<br/>AllMetrics]
-    end
-
-    subgraph Collection["Centralized Collection"]
-        WebTrace -->|Azure Monitor Exporter| AI[Application Insights<br/>Workspace Mode]
-        APITrace -->|Azure Monitor Exporter| AI
-        WFLogs -->|Diagnostic Export| AI
-        StorageDiag -->|Diagnostic Export| LAW[Log Analytics<br/>Workspace]
-        PlatformDiag -->|Auto-export| LAW
-        WorkflowDiag -->|Diagnostic Export| LAW
-        AI -->|Unified Storage| LAW
-    end
-
-    subgraph Retention["Data Retention"]
-        LAW -->|Hot Data<br/>30 days| HotTier[(Interactive<br/>Queries)]
-        LAW -->|Archive<br/>90+ days| ColdTier[(Blob Storage<br/>Cold Tier)]
-    end
-
-    subgraph Consumption["Consumption & Analysis"]
-        HotTier -->|KQL Queries| Dashboard[Dashboards &<br/>Workbooks]
-        HotTier -->|Alert Rules| Alerts[Alerts &<br/>Notifications]
-        HotTier -->|API Export| External[External SIEM<br/>Splunk/Datadog]
-        ColdTier -->|Compliance| Audit[Audit &<br/>Compliance Reports]
-    end
+    AppInsights --> LogAnalytics
+    LogAnalytics --> StorageAccount
 
     style WebApp fill:#68217A,color:#fff
-    style API fill:#107C10,color:#fff
-    style LogicApp fill:#0078D4,color:#fff
-    style AI fill:#FF6F00,color:#fff
-    style LAW fill:#0078D4,color:#fff
-    style HotTier fill:#50E6FF
-    style ColdTier fill:#E0F7FF
-    style WebTrace fill:#FFD700
-    style APITrace fill:#FFD700
-    style WFLogs fill:#FFD700
-    style StorageDiag fill:#FFA500
-    style PlatformDiag fill:#FFA500
-    style WorkflowDiag fill:#FFA500
-```
-
-### BPMN View
-
-```mermaid
-flowchart TB
-    Start([Start Monitoring]) --> GenerateTelemetry{Application<br/>Activity?}
-
-    GenerateTelemetry -->|WebApp Request| WebAppActivity[WebApp Processes Request]
-    GenerateTelemetry -->|API Call| APIActivity[API Processes Request]
-    GenerateTelemetry -->|Workflow Trigger| WorkflowActivity[Workflow Executes]
-
-    WebAppActivity --> WebAppTelem[Generate OTel Telemetry<br/>- Traces with TraceId<br/>- Structured Logs<br/>- Custom Metrics]
-    APIActivity --> APITelem[Generate OTel Telemetry<br/>- Traces with ParentId<br/>- Structured Logs<br/>- Custom Metrics]
-    WorkflowActivity --> WorkflowTelem[Generate Workflow Logs<br/>- Execution Events<br/>- Action Results<br/>- CorrelationId]
-
-    subgraph InfraMonitoring["Infrastructure Monitoring"]
-        CheckDiagSettings{Diagnostic<br/>Settings<br/>Enabled?}
-        CheckDiagSettings -->|Yes| CollectStorage[Collect Storage Metrics<br/>- Queue Depth<br/>- Blob Latency<br/>- Table Operations]
-        CheckDiagSettings -->|Yes| CollectPlatform[Collect Platform Metrics<br/>- CPU Percentage<br/>- Memory Usage<br/>- Request Count]
-    end
-
-    WebAppTelem --> ExportToAI[Export via Azure Monitor Exporter]
-    APITelem --> ExportToAI
-    WorkflowTelem --> ExportViaDiag[Export via Diagnostic Settings]
-    
-    CollectStorage --> ExportViaDiag
-    CollectPlatform --> ExportViaDiag
-
-    ExportToAI --> AppInsights[(Application Insights<br/>Workspace-based Mode)]
-    ExportViaDiag --> LogAnalytics[(Log Analytics<br/>Workspace)]
-    
-    AppInsights --> UnifyData[Unify All Telemetry<br/>in Log Analytics]
-    LogAnalytics --> UnifyData
-
-    UnifyData --> EvaluateRetention{Apply<br/>Retention<br/>Policy?}
-    
-    EvaluateRetention -->|Recent Data<br/>0-30 days| HotStorage[(Hot Tier<br/>Fast Queries)]
-    EvaluateRetention -->|Old Data<br/>30-90 days| WarmStorage[(Archive Tier<br/>Compliance)]
-    EvaluateRetention -->|Historical<br/>90+ days| ColdStorage[(Cold Storage<br/>Long-term Retention)]
-
-    HotStorage --> QueryRequest{Query or<br/>Alert<br/>Request?}
-    
-    QueryRequest -->|Dashboard Query| ExecuteQuery[Execute KQL Query<br/>Join traces, logs, metrics]
-    QueryRequest -->|Alert Evaluation| EvaluateAlert{Threshold<br/>Exceeded?}
-    QueryRequest -->|Export Request| ExportData[Export to External System<br/>SIEM, Grafana, etc.]
-
-    ExecuteQuery --> RenderResults[Render Dashboard<br/>or Workbook]
-    
-    EvaluateAlert -->|Yes| TriggerAlert[Trigger Alert Action<br/>- Send Email<br/>- Webhook<br/>- Teams Message]
-    EvaluateAlert -->|No| ContinueMonitoring[Continue Monitoring]
-
-    ExportData --> ExternalSystem[External Monitoring<br/>System]
-
-    RenderResults --> CheckActivity{More<br/>Activity?}
-    TriggerAlert --> CheckActivity
-    ContinueMonitoring --> CheckActivity
-    ExternalSystem --> CheckActivity
-
-    CheckActivity -->|Yes| GenerateTelemetry
-    CheckActivity -->|No| End([End Monitoring Cycle])
-
-    style Start fill:#90EE90,stroke:#006400,stroke-width:3px
-    style End fill:#90EE90,stroke:#006400,stroke-width:3px
-    style GenerateTelemetry fill:#FFD700,stroke:#FF8C00,stroke-width:2px
-    style CheckDiagSettings fill:#FFD700,stroke:#FF8C00,stroke-width:2px
-    style EvaluateRetention fill:#FFD700,stroke:#FF8C00,stroke-width:2px
-    style QueryRequest fill:#FFD700,stroke:#FF8C00,stroke-width:2px
-    style EvaluateAlert fill:#FFD700,stroke:#FF8C00,stroke-width:2px
-    style CheckActivity fill:#FFD700,stroke:#FF8C00,stroke-width:2px
-    style AppInsights fill:#FF6F00,color:#fff,stroke:#C43E00,stroke-width:2px
-    style LogAnalytics fill:#0078D4,color:#fff,stroke:#003B73,stroke-width:2px
-    style HotStorage fill:#50E6FF,stroke:#0078D4,stroke-width:2px
-    style WarmStorage fill:#87CEEB,stroke:#4682B4,stroke-width:2px
-    style ColdStorage fill:#B0E0E6,stroke:#5F9EA0,stroke-width:2px
-    style TriggerAlert fill:#FF4500,color:#fff,stroke:#DC143C,stroke-width:2px
-    style WebAppActivity fill:#68217A,color:#fff
-    style APIActivity fill:#107C10,color:#fff
-    style WorkflowActivity fill:#0078D4,color:#fff
+    style API fill:#68217A,color:#fff
+    style LogicApp fill:#00188F,color:#fff
+    style AppInsights fill:#0078D4,color:#fff
+    style LogAnalytics fill:#0078D4,color:#fff
 ```
 
 ---
 
-## 📦 Prerequisites
+## 🔄 Application Architecture
 
-### Required Tools
+```mermaid
+graph TB
+    subgraph "Frontend"
+        Blazor[Blazor Web App<br/>Interactive UI]
+    end
 
-| Tool | Version | Purpose | Installation Link |
-|------|---------|---------|------------------|
-| **Azure Developer CLI** | Latest | Deploy infrastructure and applications | [Install azd](https://learn.microsoft.com/azure/developer/azure-developer-cli/install-azd) |
-| **.NET SDK** | 9.0+ | Build ASP.NET Core applications | [Download .NET](https://dotnet.microsoft.com/download) |
-| **Azure CLI** | 2.50+ | Manage Azure resources | [Install Azure CLI](https://learn.microsoft.com/cli/azure/install-azure-cli) |
-| **Visual Studio Code** | Latest | Code editor (optional) | [Download VS Code](https://code.visualstudio.com/) |
-| **Git** | Latest | Clone repository | [Download Git](https://git-scm.com/) |
+    subgraph "Backend Services"
+        API[PoProcAPI<br/>Order Processing]
+        LogicApp[Logic App<br/>eShopOrders Workflow]
+    end
 
-### Azure Subscription Requirements
+    subgraph "Data Storage"
+        Queue[(Azure Queue<br/>Order Messages)]
+        Table[(Azure Table<br/>Order Data)]
+        WorkflowStorage[(Blob Storage<br/>Workflow State)]
+    end
 
-- **Active Azure Subscription** with at least **Contributor** access
-- **Resource Provider Registrations**:
-  - `Microsoft.Web` (App Service, Logic Apps)
-  - `Microsoft.Storage` (Storage Accounts)
-  - `Microsoft.Insights` (Application Insights, Log Analytics)
-  - `Microsoft.OperationalInsights` (Log Analytics Workspaces)
+    subgraph "Cross-Cutting Concerns"
+        Tracing[OpenTelemetry<br/>Distributed Tracing]
+        Logging[Structured Logging<br/>Correlation]
+        Health[Health Checks<br/>Validation]
+    end
 
-### RBAC Roles
+    Blazor -->|Submit Order| API
+    API -->|Enqueue| Queue
+    LogicApp -->|Trigger| Queue
+    LogicApp -->|Store| Table
+    LogicApp -.->|State| WorkflowStorage
+
+    API -.->|Traces| Tracing
+    Blazor -.->|Traces| Tracing
+    LogicApp -.->|Logs| Logging
+    API -.->|Validate| Health
+
+    style Blazor fill:#68217A,color:#fff
+    style API fill:#68217A,color:#fff
+    style LogicApp fill:#00188F,color:#fff
+    style Tracing fill:#326CE5,color:#fff
+    style Logging fill:#326CE5,color:#fff
+    style Health fill:#107C10,color:#fff
+```
+
+---
+
+## 🔀 Dataflow
+
+```mermaid
+flowchart LR
+    User([User]) -->|1. Submit Order| WebApp[Blazor Web App]
+    WebApp -->|2. POST /orders| API[PoProcAPI]
+    API -->|3. Enqueue Message| Queue[(Storage Queue)]
+    Queue -->|4. Trigger| LogicApp[Logic App Workflow]
+    LogicApp -->|5. Process Order| Processing{Validation}
+    Processing -->|Valid| Success[Store in Table]
+    Processing -->|Invalid| Failure[Error Handling]
+    Success --> Table[(Storage Table)]
+    Failure --> ErrorLog[Error Queue]
+
+    style User fill:#f9f,stroke:#333
+    style WebApp fill:#68217A,color:#fff
+    style API fill:#68217A,color:#fff
+    style LogicApp fill:#00188F,color:#fff
+    style Queue fill:#FFB900
+    style Table fill:#FFB900
+```
+
+---
+
+## 📊 Monitoring Dataflow
+
+```mermaid
+flowchart TB
+    subgraph Sources["Telemetry Sources"]
+        WebApp[Web App<br/>OpenTelemetry SDK]
+        API[API<br/>OpenTelemetry SDK]
+        LogicApp[Logic App<br/>Diagnostic Settings]
+        Storage[Storage Account<br/>Diagnostic Settings]
+    end
+
+    subgraph Collection["Collection Layer"]
+        AppInsights[Application Insights<br/>Ingestion Endpoint]
+    end
+
+    subgraph Storage_Layer["Storage & Analysis"]
+        LogAnalytics[Log Analytics Workspace<br/>Kusto Query Engine]
+        LongTerm[Storage Account<br/>30-Day Retention]
+    end
+
+    subgraph Visualization["Visualization & Alerting"]
+        Portal[Azure Portal<br/>Dashboards]
+        Workbooks[Azure Workbooks]
+        Alerts[Alert Rules]
+    end
+
+    WebApp -->|OTLP/HTTP| AppInsights
+    API -->|OTLP/HTTP| AppInsights
+    LogicApp -->|Azure Resource Logs| LogAnalytics
+    Storage -->|Azure Resource Logs| LogAnalytics
+
+    AppInsights --> LogAnalytics
+    LogAnalytics --> LongTerm
+    LogAnalytics --> Portal
+    LogAnalytics --> Workbooks
+    LogAnalytics --> Alerts
+
+    style AppInsights fill:#0078D4,color:#fff
+    style LogAnalytics fill:#0078D4,color:#fff
+    style Alerts fill:#D83B01,color:#fff
+```
+
+**Monitoring Flow Explanation:**
+
+1. **Telemetry Sources**: Applications emit traces, logs, and metrics using OpenTelemetry SDK or Azure diagnostic settings
+2. **Collection Layer**: Application Insights acts as the ingestion endpoint for all telemetry
+3. **Storage & Analysis**: Data flows to Log Analytics for querying and Storage Account for compliance retention
+4. **Visualization & Alerting**: Operators use Azure Portal, Workbooks, and Alert Rules to monitor system health
+
+---
+
+## 📋 Prerequisites
+
+### Tools & Software
+
+- [Azure Developer CLI (`azd`)](https://learn.microsoft.com/azure/developer/azure-developer-cli/install-azd) - v1.5.0 or later
+- [Azure CLI (`az`)](https://learn.microsoft.com/cli/azure/install-azure-cli) - v2.50.0 or later
+- [.NET 9.0 SDK](https://dotnet.microsoft.com/download/dotnet/9.0)
+- [PowerShell 7.x](https://learn.microsoft.com/powershell/scripting/install/installing-powershell) (cross-platform)
+- [Git](https://git-scm.com/downloads)
+
+### Azure Resources
+
+- **Active Azure Subscription** with available quota for:
+  - App Service Plans (Standard S1 or higher)
+  - Logic Apps (Standard tier)
+  - Storage Accounts (General Purpose v2)
+  - Log Analytics Workspace
+  - Application Insights
+
+### RBAC Roles Required
 
 | Role | Description | Documentation Link |
 |------|-------------|-------------------|
-| **Contributor** | Full management of Azure resources (required for deployment) | [Contributor role](https://learn.microsoft.com/azure/role-based-access-control/built-in-roles#contributor) |
-| **Storage Blob Data Owner** | Manage blob containers and data (assigned to managed identities) | [Storage Blob Data Owner](https://learn.microsoft.com/azure/role-based-access-control/built-in-roles#storage-blob-data-owner) |
-| **Storage Queue Data Contributor** | Send messages to queues (assigned to web app) | [Storage Queue Data Contributor](https://learn.microsoft.com/azure/role-based-access-control/built-in-roles#storage-queue-data-contributor) |
-| **Monitoring Contributor** | Manage monitoring resources and diagnostic settings | [Monitoring Contributor](https://learn.microsoft.com/azure/role-based-access-control/built-in-roles#monitoring-contributor) |
-| **Application Insights Component Contributor** | Manage Application Insights resources | [App Insights Contributor](https://learn.microsoft.com/azure/role-based-access-control/built-in-roles#application-insights-component-contributor) |
+| **Owner** or **Contributor** | Deploy Azure resources and configure role assignments | [Azure built-in roles](https://learn.microsoft.com/azure/role-based-access-control/built-in-roles#contributor) |
+| **Log Analytics Contributor** | Configure diagnostic settings and query logs | [Log Analytics Contributor](https://learn.microsoft.com/azure/role-based-access-control/built-in-roles#log-analytics-contributor) |
+| **Monitoring Contributor** | Create alert rules and manage Application Insights | [Monitoring Contributor](https://learn.microsoft.com/azure/role-based-access-control/built-in-roles#monitoring-contributor) |
+| **Storage Blob Data Contributor** | Upload Logic App workflow definitions | [Storage Blob Data Contributor](https://learn.microsoft.com/azure/role-based-access-control/built-in-roles#storage-blob-data-contributor) |
+
+### Dependencies
+
+- **Azure Storage Account** for Logic App workflow storage
+- **Managed Identity** enabled for all App Services and Logic Apps
+- **Virtual Network (optional)** for private endpoint scenarios
 
 ---
 
@@ -369,341 +410,239 @@ flowchart TB
 ### Step 1: Clone the Repository
 
 ```bash
-git clone https://github.com/yourusername/Azure-LogicApps-Monitoring.git
+git clone https://github.com/Evilazaro/Azure-LogicApps-Monitoring.git
 cd Azure-LogicApps-Monitoring
 ```
 
 ### Step 2: Authenticate with Azure
 
 ```bash
+# Login to Azure
 azd auth login
+
+# Set your subscription (if you have multiple)
+az account set --subscription "<your-subscription-id>"
 ```
 
-This opens a browser window for Azure authentication. Select your subscription when prompted.
-
-### Step 3: Initialize the Environment
+### Step 3: Initialize Azure Developer Environment
 
 ```bash
-azd env new
-```
+# Initialize a new environment
+azd init -e dev
 
-When prompted, enter:
-- **Environment Name**: `dev` (or any name like `prod`, `staging`)
-- **Azure Subscription**: Select your subscription from the list
-- **Azure Location**: Choose a region (e.g., `eastus2`, `westus2`)
+# This will prompt you for:
+# - Environment name (e.g., "dev", "prod")
+# - Azure subscription
+# - Azure region (e.g., "eastus", "westeurope")
+```
 
 ### Step 4: Deploy Infrastructure and Applications
 
 ```bash
+# Single command to provision and deploy everything
 azd up
+
+# This will:
+# 1. Create resource group
+# 2. Deploy monitoring infrastructure (Log Analytics, Application Insights)
+# 3. Deploy workload resources (Logic App, APIs, Web App)
+# 4. Configure diagnostic settings
+# 5. Deploy application code
 ```
 
-This command:
-1. ✅ Provisions Azure resources using Bicep templates (Log Analytics, App Insights, Storage, App Services, Logic Apps)
-2. ✅ Builds .NET applications (`PoWebApp`, `PoProcAPI`)
-3. ✅ Deploys applications to Azure App Service
-4. ✅ Configures diagnostic settings and RBAC roles
-
-**Expected Output:**
-
+**Expected output:**
 ```
-SUCCESS: Your application was provisioned and deployed to Azure in 8 minutes 34 seconds.
+Provisioning Azure resources (azd provision)
+  ✓ Provisioning resource group (1s)
+  ✓ Deploying monitoring infrastructure (45s)
+  ✓ Deploying workload infrastructure (60s)
+  ✓ Configuring diagnostic settings (15s)
 
-Resources:
-  - Application Insights: eshop-orders-abc123-appinsights
-  - Log Analytics Workspace: eshop-orders-abc123-law
-  - Web App: eshop-orders-abc123-po-webapp
-  - API App: eshop-orders-abc123-poproc-api
-  - Logic App: eshop-orders-abc123-logicapp
+Deploying application code (azd deploy)
+  ✓ Building PoProcAPI (30s)
+  ✓ Deploying PoProcAPI to Azure (45s)
+  ✓ Building PoWebApp (25s)
+  ✓ Deploying PoWebApp to Azure (40s)
+  ✓ Deploying Logic App workflows (20s)
 
-Endpoints:
-  - Web App: https://eshop-orders-abc123-po-webapp.azurewebsites.net
-  - API: https://eshop-orders-abc123-poproc-api.azurewebsites.net
+SUCCESS: Your application was provisioned and deployed!
 ```
 
-### Step 5: Verify Deployment
+### Step 5: Configure Logic App Connections
 
-Navigate to the Web App URL in your browser. You should see the Blazor application.
+```powershell
+# Run the connection deployment script
+cd hooks
+./deploy-connections.ps1 `
+  -ResourceGroupName "rg-eshop-orders-dev-eastus" `
+  -LogicAppName "eshop-orders-abc123-logicapp" `
+  -QueueConnectionName "azurequeues" `
+  -TableConnectionName "azuretables"
+```
 
-### Step 6: Access Application Insights
+### Step 6: Verify Deployment
 
 ```bash
-azd monitor --overview
+# Check deployment outputs
+azd env get-values
+
+# Test API endpoint
+curl https://<your-api-name>.azurewebsites.net/health
+
+# View Logic App in Azure Portal
+az logicapp show --name <your-logicapp-name> --resource-group <your-rg-name>
 ```
 
-This opens the Azure Portal to the Application Insights overview page.
+### Step 7: View Monitoring Data
+
+1. Open [Azure Portal](https://portal.azure.com)
+2. Navigate to **Application Insights** resource
+3. Go to **Transaction search** or **Application Map**
+4. View distributed traces with correlation IDs
 
 ---
 
-## 📊 Usage Examples
+## 💡 Usage Examples
 
-### Example 1: Query Failed Logic App Workflow Runs
+### Example 1: Query Failed Workflow Runs
 
-**Scenario**: Identify all failed workflow executions in the last 24 hours.
-
-**Kusto Query**:
+**Scenario**: Identify all Logic App workflow runs that failed in the last 24 hours.
 
 ```kql
-requests
-| where timestamp > ago(24h)
-| where cloud_RoleName == "eshop-orders-logicapp"
-| where success == false
-| extend WorkflowName = tostring(customDimensions["WorkflowName"])
-| extend RunId = tostring(customDimensions["WorkflowRunId"])
-| extend ErrorMessage = tostring(customDimensions["ErrorMessage"])
-| project timestamp, WorkflowName, RunId, resultCode, ErrorMessage, duration
-| order by timestamp desc
-```
-
-**Sample Output**:
-
-| timestamp | WorkflowName | RunId | resultCode | ErrorMessage | duration |
-|-----------|-------------|-------|-----------|--------------|----------|
-| 2025-01-15 14:32:45 | ProcessOrder | 08d9a1b2-... | 500 | Storage account unavailable | 5234 |
-| 2025-01-15 13:18:22 | SendNotification | 7fa23c1d-... | 400 | Invalid email address | 1245 |
-
-**Visualization**: Create a **Time Chart** showing failure count over time.
-
-**Reference**: [Monitor Logic Apps with Application Insights](https://learn.microsoft.com/azure/logic-apps/monitor-logic-apps-log-analytics)
-
----
-
-### Example 2: Trace End-to-End Request Flow
-
-**Scenario**: Follow a single order from web submission through API processing to Logic App completion.
-
-**Kusto Query**:
-
-```kql
-let traceId = "4bf92f3577b34da6a3ce929d0e0e4736"; // Replace with actual TraceId
-union requests, dependencies, traces
-| where operation_Id == traceId
-| extend ComponentType = case(
-    itemType == "request", "Request",
-    itemType == "dependency", "Dependency",
-    itemType == "trace", "Log",
-    "Other"
-)
-| project timestamp, ComponentType, cloud_RoleName, name, duration, resultCode, message
-| order by timestamp asc
+AzureDiagnostics
+| where Category == "WorkflowRuntime"
+| where status_s == "Failed"
+| where TimeGenerated > ago(24h)
+| project TimeGenerated, workflowName_s, runId_s, error_message_s
+| order by TimeGenerated desc
 ```
 
 **Sample Output**:
 
-| timestamp | ComponentType | cloud_RoleName | name | duration | resultCode |
-|-----------|--------------|----------------|------|----------|-----------|
-| 2025-01-15 10:00:00 | Request | PoWebApp | POST Orders/Submit | 234 | 200 |
-| 2025-01-15 10:00:01 | Dependency | PoWebApp | Azure Queue Send | 12 | 204 |
-| 2025-01-15 10:00:02 | Dependency | PoWebApp | HTTP POST /order | 189 | 202 |
-| 2025-01-15 10:00:05 | Request | PoProcAPI | POST /order | 156 | 200 |
-| 2025-01-15 10:00:12 | Request | LogicApp | ProcessOrder | 4521 | 200 |
+| TimeGenerated | workflowName_s | runId_s | error_message_s |
+|---------------|----------------|---------|-----------------|
+| 2024-12-09 14:23:45 | eShopOrders | 08585918354... | ActionFailed: InvalidQueueMessage |
+| 2024-12-09 12:15:30 | eShopOrders | 08585912234... | TriggerFailed: StorageAccountNotFound |
 
-**Visualization**: Create an **Application Map** to visualize service dependencies.
+**Chart Visualization**: Use **Column chart** to visualize failure trends over time.
 
-**Reference**: [Distributed Tracing in Application Insights](https://learn.microsoft.com/azure/azure-monitor/app/distributed-tracing)
+**Reference**: [Monitor Logic Apps with Azure Monitor](https://learn.microsoft.com/azure/logic-apps/monitor-logic-apps-log-analytics)
 
 ---
 
-### Example 3: Analyze API Performance Percentiles
+### Example 2: Measure API Response Time Distribution
 
-**Scenario**: Determine API response time percentiles to identify performance bottlenecks.
-
-**Kusto Query**:
+**Scenario**: Analyze P50, P90, and P99 response times for the PoProcAPI.
 
 ```kql
-requests
-| where timestamp > ago(7d)
-| where cloud_RoleName == "PoProcAPI"
+AppRequests
+| where Name startswith "POST /orders"
+| where TimeGenerated > ago(1h)
 | summarize 
-    p50 = percentile(duration, 50),
-    p90 = percentile(duration, 90),
-    p95 = percentile(duration, 95),
-    p99 = percentile(duration, 99),
-    count = count()
-    by name
-| order by p99 desc
+    P50 = percentile(DurationMs, 50),
+    P90 = percentile(DurationMs, 90),
+    P99 = percentile(DurationMs, 99),
+    RequestCount = count()
+    by bin(TimeGenerated, 5m)
+| render timechart
 ```
 
 **Sample Output**:
 
-| name | p50 | p90 | p95 | p99 | count |
-|------|-----|-----|-----|-----|-------|
-| POST /order | 145 | 234 | 312 | 567 | 12,456 |
-| GET /order/{id} | 78 | 123 | 156 | 289 | 34,782 |
+| TimeGenerated | P50 | P90 | P99 | RequestCount |
+|---------------|-----|-----|-----|--------------|
+| 2024-12-09 14:00 | 85ms | 210ms | 450ms | 342 |
+| 2024-12-09 14:05 | 92ms | 230ms | 520ms | 389 |
 
-**Visualization**: Create a **Bar Chart** showing p99 latency by endpoint.
+**Chart Visualization**: **Line chart** showing latency percentiles over time.
 
-**Reference**: [Performance Monitoring in Application Insights](https://learn.microsoft.com/azure/azure-monitor/app/performance-counters)
+**Reference**: [Application Insights Kusto Queries](https://learn.microsoft.com/azure/azure-monitor/logs/get-started-queries)
 
 ---
 
-### Example 4: Monitor Queue Depth Over Time
+### Example 3: Correlate Traces Across Services
 
-**Scenario**: Track Azure Storage Queue message count to detect processing backlogs.
+**Scenario**: Find all operations related to a specific order by TraceId.
 
-**Kusto Query**:
+```kql
+let traceId = "00-4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7-01";
+union AppTraces, AppDependencies, AppRequests
+| where OperationId == traceId
+| project TimeGenerated, ItemType, OperationName, Message, DurationMs
+| order by TimeGenerated asc
+```
+
+**Sample Output**:
+
+| TimeGenerated | ItemType | OperationName | Message | DurationMs |
+|---------------|----------|---------------|---------|------------|
+| 2024-12-09 14:23:45 | Request | POST /orders | Order received | 120 |
+| 2024-12-09 14:23:45 | Trace | ProcessOrder | Validating order data | - |
+| 2024-12-09 14:23:46 | Dependency | HTTP POST | Call to Logic App | 340 |
+
+**Reference**: [Distributed Tracing in Azure Monitor](https://learn.microsoft.com/azure/azure-monitor/app/distributed-tracing-telemetry-correlation)
+
+---
+
+### Example 4: Monitor Storage Queue Depth
+
+**Scenario**: Track queue message count to detect backlog or processing delays.
 
 ```kql
 AzureMetrics
-| where ResourceProvider == "MICROSOFT.STORAGE"
+| where ResourceId contains "storageAccounts"
 | where MetricName == "QueueMessageCount"
-| where Resource contains "orders-queue"
+| where TimeGenerated > ago(1h)
 | summarize AvgQueueDepth = avg(Average) by bin(TimeGenerated, 5m)
 | render timechart
 ```
 
-**Sample Output** (Chart):
+**Sample Output**:
 
-```
-Queue Depth Over Time
-│
-400 ┤     ╭──╮
-300 ┤   ╭─╯  ╰─╮
-200 ┤ ╭─╯      ╰──╮
-100 ┤─╯           ╰───
-  0 └────────────────────
-    00:00  06:00  12:00  18:00
-```
+| TimeGenerated | AvgQueueDepth |
+|---------------|---------------|
+| 2024-12-09 14:00 | 125 |
+| 2024-12-09 14:05 | 342 |
+| 2024-12-09 14:10 | 89 |
+
+**Chart Visualization**: **Area chart** to visualize queue backlog trends.
 
 **Reference**: [Monitor Azure Storage with Azure Monitor](https://learn.microsoft.com/azure/storage/common/monitor-storage)
 
 ---
 
-### Example 5: Alert on High Error Rate
+### Example 5: Detect Slow Logic App Actions
 
-**Scenario**: Create an alert rule when API error rate exceeds 5% over 5 minutes.
-
-**Kusto Query**:
+**Scenario**: Identify Logic App actions that exceed 5-second execution time.
 
 ```kql
-requests
-| where timestamp > ago(5m)
-| where cloud_RoleName == "PoProcAPI"
-| summarize 
-    TotalRequests = count(),
-    FailedRequests = countif(success == false)
-| extend ErrorRate = (FailedRequests * 100.0) / TotalRequests
-| where ErrorRate > 5
+AzureDiagnostics
+| where Category == "WorkflowRuntime"
+| where actionName_s != ""
+| where actionDuration_d > 5000  // milliseconds
+| project TimeGenerated, workflowName_s, actionName_s, actionDuration_d
+| order by actionDuration_d desc
 ```
 
-**Alert Configuration**:
-- **Signal**: Custom log search (above query)
-- **Threshold**: Error rate > 5%
-- **Evaluation Frequency**: Every 5 minutes
-- **Action**: Send email to on-call team
+**Sample Output**:
 
-**Reference**: [Create Log Alerts in Azure Monitor](https://learn.microsoft.com/azure/azure-monitor/alerts/alerts-create-log-alert-rule)
+| TimeGenerated | workflowName_s | actionName_s | actionDuration_d |
+|---------------|----------------|--------------|------------------|
+| 2024-12-09 14:23:45 | eShopOrders | Process_Order_Table | 8450 |
+| 2024-12-09 14:22:30 | eShopOrders | HTTP_Call_External_API | 6200 |
+
+**Reference**: [Optimize Logic Apps Performance](https://learn.microsoft.com/azure/logic-apps/create-workflow-with-trigger-or-action)
 
 ---
 
-## 📚 Key Implementation Files
+## 📄 License Information
 
-### Distributed Tracing
-
-- [`DiagnosticsConfig.cs`](src/PoProcAPI/Diagnostics/DiagnosticsConfig.cs ) - Activity sources and semantic conventions
-- [`DistributedTracingExample.cs`](src/PoWebApp/Examples/DistributedTracingExample.cs ) - Complete tracing examples
-- [`StructuredLogging.cs`](src/PoProcAPI/Diagnostics/StructuredLogging.cs ) - Structured logging extensions
-
-### Infrastructure as Code
-
-- [`main.bicep`](infra/main.bicep ) - Main deployment template
-- [`app-insights.bicep`](infra/monitoring/app-insights.bicep ) - Application Insights configuration
-- [`logic-app.bicep`](infra/workload/logic-app.bicep ) - Logic App Standard deployment
-
-### Application Configuration
-
-- [`Program.cs`](src/PoWebApp/Program.cs ) - OpenTelemetry setup for Blazor app
-- [`Program.cs`](src/PoProcAPI/Program.cs ) - OpenTelemetry setup for API
-
----
-
-## 🧪 Local Development
-
-### Run the Web App Locally
-
-```bash
-cd src/PoWebApp
-dotnet run
-```
-
-Navigate to `https://localhost:5001` in your browser.
-
-### Run the API Locally
-
-```bash
-cd src/PoProcAPI
-dotnet run
-```
-
-API will be available at `https://localhost:7001`.
-
-### Configure Local Application Insights
-
-Create `appsettings.Development.json`:
-
-```json
-{
-  "APPLICATIONINSIGHTS_CONNECTION_STRING": "InstrumentationKey=your-key-here;..."
-}
-```
-
----
-
-## 🛠️ Troubleshooting
-
-### Issue: Deployment Fails with "InvalidTemplate" Error
-
-**Solution**: Ensure you have the latest version of Azure CLI and Bicep:
-
-```bash
-az bicep upgrade
-az upgrade
-```
-
-### Issue: Application Insights Not Receiving Telemetry
-
-**Solution**: Verify the connection string in App Service Configuration:
-
-```bash
-az webapp config appsettings list --name <app-name> --resource-group <rg-name>
-```
-
-Ensure `APPLICATIONINSIGHTS_CONNECTION_STRING` is set correctly.
-
-### Issue: Logic App Not Triggering on Queue Messages
-
-**Solution**: Check RBAC permissions for the Logic App managed identity:
-
-```bash
-az role assignment list --assignee <managed-identity-principal-id> --scope <storage-account-id>
-```
-
-Ensure **Storage Queue Data Contributor** role is assigned.
-
----
-
-## 🤝 Contributing
-
-Contributions are welcome! Please follow these guidelines:
-
-1. **Fork** the repository
-2. **Create** a feature branch (`git checkout -b feature/amazing-feature`)
-3. **Commit** your changes (`git commit -m 'Add amazing feature'`)
-4. **Push** to the branch (`git push origin feature/amazing-feature`)
-5. **Open** a Pull Request
-
-Please ensure your code follows the existing style and includes appropriate tests.
-
----
-
-## 📄 License
-
-This project is licensed under the **MIT License**. See the [`LICENSE.md`](LICENSE.md ) file for details.
+This project is licensed under the **MIT License**.
 
 ```
 MIT License
 
-Copyright (c) 2025 Azure Logic Apps Monitoring Contributors
+Copyright (c) 2024 Evilazaro
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -724,53 +663,60 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 ```
 
+See LICENSE.md for full details.
+
 ---
 
-## 📖 References
+## 🔗 References
 
 ### Microsoft Documentation
 
-- [Monitor Logic Apps with Application Insights](https://learn.microsoft.com/azure/logic-apps/monitor-logic-apps-log-analytics)
-- [Application Insights Overview](https://learn.microsoft.com/azure/azure-monitor/app/app-insights-overview)
-- [OpenTelemetry in .NET](https://learn.microsoft.com/dotnet/core/diagnostics/observability-with-otel)
-- [Azure Monitor Logs Overview](https://learn.microsoft.com/azure/azure-monitor/logs/data-platform-logs)
+- [Monitor Logic Apps with Azure Monitor](https://learn.microsoft.com/azure/logic-apps/monitor-logic-apps-log-analytics)
+- [Azure Monitor Overview](https://learn.microsoft.com/azure/azure-monitor/overview)
+- [Application Insights for ASP.NET Core](https://learn.microsoft.com/azure/azure-monitor/app/asp-net-core)
+- [Diagnostic Settings in Azure Monitor](https://learn.microsoft.com/azure/azure-monitor/essentials/diagnostic-settings)
 - [Kusto Query Language (KQL) Reference](https://learn.microsoft.com/azure/data-explorer/kusto/query/)
-- [Bicep Documentation](https://learn.microsoft.com/azure/azure-resource-manager/bicep/)
+- [Azure Developer CLI Documentation](https://learn.microsoft.com/azure/developer/azure-developer-cli/)
+
+### OpenTelemetry Resources
+
+- [OpenTelemetry .NET Documentation](https://opentelemetry.io/docs/instrumentation/net/)
+- [W3C Trace Context Specification](https://www.w3.org/TR/trace-context/)
+- [Azure Monitor OpenTelemetry Integration](https://learn.microsoft.com/azure/azure-monitor/app/opentelemetry-enable)
 
 ### GitHub Best Practices
 
-- [GitHub README Best Practices](https://github.com/jehna/readme-best-practices)
-- [Open Source Guide](https://opensource.guide/)
-- [Semantic Versioning](https://semver.org/)
+- [Making READMEs Readable](https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-readmes)
+- [Open Source Guides](https://opensource.guide/)
+- [Awesome README Examples](https://github.com/matiassingers/awesome-readme)
 
-### OpenTelemetry
+### Related Projects
 
-- [OpenTelemetry .NET](https://github.com/open-telemetry/opentelemetry-dotnet)
-- [OpenTelemetry Semantic Conventions](https://opentelemetry.io/docs/specs/semconv/)
-
----
-
-## 📞 Support
-
-For questions or issues:
-
-- **GitHub Issues**: [Open an issue](https://github.com/yourusername/Azure-LogicApps-Monitoring/issues)
-- **Microsoft Q&A**: [Azure Logic Apps Questions](https://learn.microsoft.com/answers/tags/133/azure-logic-apps)
-- **Stack Overflow**: Tag your question with `azure-logic-apps` and `azure-monitor`
+- [Azure/azure-sdk-for-net](https://github.com/Azure/azure-sdk-for-net) - Azure SDK for .NET
+- [open-telemetry/opentelemetry-dotnet](https://github.com/open-telemetry/opentelemetry-dotnet) - OpenTelemetry .NET SDK
 
 ---
 
-## 🎯 Roadmap
+## 🤝 Contributing
 
-- [ ] Add Azure DevOps CI/CD pipeline templates
-- [ ] Implement custom Application Insights availability tests
-- [ ] Add Terraform alternative to Bicep templates
-- [ ] Create Grafana dashboard templates
-- [ ] Add unit and integration tests
-- [ ] Multi-region deployment support
+Contributions are welcome! Please read CONTRIBUTING.md for details on our code of conduct and the process for submitting pull requests.
+
+## 🐛 Issues
+
+Found a bug or have a feature request? Please open an issue on our [GitHub Issues](https://github.com/Evilazaro/Azure-LogicApps-Monitoring/issues) page.
+
+## 📧 Support
+
+For questions or support, please refer to the following resources:
+
+- **Documentation**: Review the detailed guides in DISTRIBUTED_TRACING.md and `src/PoWebApp/QUICK_START.md`
+- **GitHub Discussions**: Ask questions in [Discussions](https://github.com/Evilazaro/Azure-LogicApps-Monitoring/discussions)
+- **Azure Support**: For Azure-specific issues, contact [Azure Support](https://azure.microsoft.com/support/)
 
 ---
 
-**Built with ❤️ by the Azure community**
+**⭐ If you find this project helpful, please consider giving it a star on GitHub!**
 
-Similar code found with 3 license types
+**Last Updated**: December 9, 2024
+
+Similar code found with 2 license types

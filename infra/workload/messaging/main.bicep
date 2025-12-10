@@ -85,14 +85,25 @@ resource poProcQueue 'Microsoft.Storage/storageAccounts/queueServices/queues@202
   parent: qSvc
 }
 
-resource tSvc 'Microsoft.Storage/storageAccounts/tableServices@2025-06-01' = {
+resource blogSvc 'Microsoft.Storage/storageAccounts/blobServices@2025-06-01' = {
   name: 'default'
   parent: wfSA
 }
 
-resource poProcTable 'Microsoft.Storage/storageAccounts/tableServices/tables@2025-06-01' = {
-  name: 'audit'
-  parent: tSvc
+resource poSuccess 'Microsoft.Storage/storageAccounts/blobServices/containers@2025-06-01' = {
+  name: 'ordersprocessedsuccessfully'
+  parent: blogSvc
+  properties: {
+    publicAccess: 'None'
+  }
+}
+
+resource poFailed 'Microsoft.Storage/storageAccounts/blobServices/containers@2025-06-01' = {
+  name: 'ordersprocessedwitherrors'
+  parent: blogSvc
+  properties: {
+    publicAccess: 'None'
+  }
 }
 
 var rolDefSA = {
