@@ -112,18 +112,19 @@ namespace PoProcAPI.Controllers
                     // Set final activity status
                     activity?.SetStatus(ActivityStatusCode.Ok, "Order processed successfully");
 
-                    return Ok(new
+                     var result = new
                     {
-                        // Use date as PartitionKey for efficient querying by date
-                        PartitionKey = order.Date.ToString("yyyy-MM-dd"),
-                        RowKey = order.Id,
                         Message = "Order processed successfully",
                         OrderId = order.Id,
                         OrderDate = order.Date,
                         OrderTotal = order.Total,
                         TraceId = Activity.Current?.TraceId.ToString(),
-                        SpanId = Activity.Current?.SpanId.ToString()
-                    });
+                        SpanId = Activity.Current?.SpanId.ToString(),
+                        PartitionKey = order.Date.ToString("yyyy-MM-dd"),
+                        RowKey = order.Id,
+                    };
+
+                    return Ok(result);
                 }
             }
             catch (Exception ex)

@@ -3,6 +3,44 @@
         "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
         "contentVersion": "1.0.0.0",
         "actions": {
+            "Delete_message_(V2)": {
+                "type": "ApiConnection",
+                "inputs": {
+                    "host": {
+                        "connection": {
+                            "referenceName": "azurequeues"
+                        }
+                    },
+                    "method": "delete",
+                    "path": "/v2/storageAccounts/@{encodeURIComponent(encodeURIComponent('eshopordersp23wtwaz3pxg6'))}/queues/@{encodeURIComponent('orders-queue')}/messages/@{encodeURIComponent(triggerBody()?['MessageId'])}",
+                    "queries": {
+                        "popreceipt": "@triggerBody()?['PopReceipt']"
+                    }
+                },
+                "runAfter": {
+                    "Condition": [
+                        "SUCCEEDED"
+                    ]
+                }
+            },
+            "HTTP": {
+                "type": "Http",
+                "inputs": {
+                    "uri": "https://eshop-orders-p23wtwaz3pxg6-poproc-api.azurewebsites.net/Orders",
+                    "method": "POST",
+                    "headers": {
+                        "accept": "*/*",
+                        "Content-Type": "application/json"
+                    },
+                    "body": "@triggerBody()?['MessageText']"
+                },
+                "runAfter": {},
+                "runtimeConfiguration": {
+                    "contentTransfer": {
+                        "transferMode": "Chunked"
+                    }
+                }
+            },
             "Condition": {
                 "type": "If",
                 "expression": {
@@ -16,44 +54,30 @@
                     ]
                 },
                 "actions": {
-                    "Parse_JSON": {
-                        "type": "ParseJson",
+                    "Insert_Entity_(V2)": {
+                        "type": "ApiConnection",
                         "inputs": {
-                            "content": "@triggerBody()",
-                            "schema": {
-                                "type": "object",
-                                "properties": {
-                                    "Id": {
-                                        "type": "integer"
-                                    },
-                                    "Date": {
-                                        "type": "string"
-                                    },
-                                    "Quantity": {
-                                        "type": "integer"
-                                    },
-                                    "Total": {
-                                        "type": "integer"
-                                    },
-                                    "Message": {
-                                        "type": "string"
-                                    }
+                            "host": {
+                                "connection": {
+                                    "referenceName": "azuretables"
                                 }
-                            }
+                            },
+                            "method": "post",
+                            "body": "@body('HTTP')",
+                            "path": "/v2/storageAccounts/@{encodeURIComponent(encodeURIComponent('eshopordersp23wtwaz3pxg6'))}/tables/@{encodeURIComponent('OrdersProcessedSuccessfully')}/entities"
                         }
                     },
-                    "HTTP_2": {
+                    "HTTP_1": {
                         "type": "Http",
                         "inputs": {
-                            "uri": "https://eshop-orders-nwnr7fcjyhjao-poproc-api.azurewebsites.net/WeatherForecast",
+                            "uri": "https://eshop-orders-p23wtwaz3pxg6-poproc-api.azurewebsites.net/WeatherForecast",
                             "method": "GET",
                             "headers": {
                                 "accept": "text/plain"
-                            },
-                            "body": "@body('Parse_JSON')?['Message']"
+                            }
                         },
                         "runAfter": {
-                            "Parse_JSON": [
+                            "Insert_Entity_(V2)": [
                                 "SUCCEEDED"
                             ]
                         },
@@ -66,61 +90,23 @@
                 },
                 "else": {
                     "actions": {
-                        "HTTP_1": {
-                            "type": "Http",
+                        "Insert_Entity_(V2)_1": {
+                            "type": "ApiConnection",
                             "inputs": {
-                                "uri": "https://eshop-orders-nwnr7fcjyhjao-poproc-api.azurewebsites.net/WeatherForecast",
-                                "method": "GET",
-                                "headers": {
-                                    "accept": "accept: text/plain"
+                                "host": {
+                                    "connection": {
+                                        "referenceName": "azuretables"
+                                    }
                                 },
-                                "body": "@outputs('HTTP')?['statusCode']"
-                            },
-                            "runtimeConfiguration": {
-                                "contentTransfer": {
-                                    "transferMode": "Chunked"
-                                }
+                                "method": "post",
+                                "body": "@body('HTTP')",
+                                "path": "/v2/storageAccounts/@{encodeURIComponent(encodeURIComponent('eshopordersp23wtwaz3pxg6'))}/tables/@{encodeURIComponent('OrdersProcessedWithErrors')}/entities"
                             }
                         }
                     }
                 },
                 "runAfter": {
-                    "For_each": [
-                        "SUCCEEDED"
-                    ]
-                }
-            },
-            "Get_messages_(V2)": {
-                "type": "ApiConnection",
-                "inputs": {
-                    "host": {
-                        "connection": {
-                            "referenceName": "azurequeues-1"
-                        }
-                    },
-                    "method": "get",
-                    "path": "/v2/storageAccounts/@{encodeURIComponent(encodeURIComponent('eshopordersnwnr7fcjyhjao'))}/queues/@{encodeURIComponent('orders-queue')}/messages"
-                },
-                "runAfter": {}
-            },
-            "HTTP": {
-                "type": "Http",
-                "inputs": {
-                    "uri": "https://eshop-orders-nwnr7fcjyhjao-poproc-api.azurewebsites.net/Orders",
-                    "method": "POST",
-                    "headers": {
-                        "accept": "*/*",
-                        "Content-Type": "application/json"
-                    },
-                    "body": "@body('Get_messages_(V2)')?['QueueMessagesList']?['QueueMessage']?[0]?['MessageText']"
-                },
-                "runtimeConfiguration": {
-                    "contentTransfer": {
-                        "transferMode": "Chunked"
-                    }
-                },
-                "runAfter": {
-                    "Get_messages_(V2)": [
+                    "HTTP": [
                         "SUCCEEDED"
                     ]
                 }
@@ -133,11 +119,11 @@
                 "inputs": {
                     "host": {
                         "connection": {
-                            "referenceName": "azurequeues-1"
+                            "referenceName": "azurequeues"
                         }
                     },
                     "method": "get",
-                    "path": "/v2/storageAccounts/@{encodeURIComponent(encodeURIComponent('eshopordersnwnr7fcjyhjao'))}/queues/@{encodeURIComponent('orders-queue')}/message_trigger"
+                    "path": "/v2/storageAccounts/@{encodeURIComponent(encodeURIComponent('eshopordersp23wtwaz3pxg6'))}/queues/@{encodeURIComponent('orders-queue')}/message_trigger"
                 },
                 "recurrence": {
                     "interval": 1,
