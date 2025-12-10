@@ -1,9 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using PoProcAPI.Diagnostics;
-using System.Collections.Concurrent;
 using System.Diagnostics;
-using System.Runtime.Intrinsics.X86;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace PoProcAPI.Controllers
 {

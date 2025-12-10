@@ -1,5 +1,6 @@
 ﻿using Azure.Identity;
 using Azure.Storage.Queues;
+using Microsoft.Extensions.Logging;
 using PoLib.Diagnostics;
 using System.Diagnostics;
 using System.Text.Json;
