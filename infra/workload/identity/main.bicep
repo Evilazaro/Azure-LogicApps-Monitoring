@@ -24,6 +24,7 @@ var roles = [
   '4f6d3b9b-027b-4f4c-9142-0e5a2a2247e0' //Azure Service Bus Data Receiver
   '69a216fc-b8fb-44d8-bc22-1f3c2cd27a39' //Azure Service Bus Data Sender
   '7f951dda-4ed3-4680-a7ca-43fe172d538d' //Azure Container Registry ACR Pull
+  '8311e382-0749-4cb8-b61a-304f252e45ec' //Azure Container Registry ACR Push
 ]
 
 resource miRA 'Microsoft.Authorization/roleAssignments@2022-04-01' = [
