@@ -49,7 +49,8 @@ param containerAppEnvironmentName string = toLower('${name}-cae-${uniqueString(s
 
 resource containerAppEnv 'Microsoft.App/managedEnvironments@2025-02-02-preview' = {
   name: containerAppEnvironmentName
-  location: 'East US 2'
+  location: location
+  tags: tags
   identity: {
     type: 'SystemAssigned, UserAssigned'
     userAssignedIdentities: {
@@ -60,7 +61,7 @@ resource containerAppEnv 'Microsoft.App/managedEnvironments@2025-02-02-preview' 
     appLogsConfiguration: {
       destination: 'log-analytics'
       logAnalyticsConfiguration: {
-        customerId: '6a0ff81b-c2b4-4e81-81b0-9f2e82d79d61'
+        customerId: workspaceId
         dynamicJsonColumns: false
       }
     }
