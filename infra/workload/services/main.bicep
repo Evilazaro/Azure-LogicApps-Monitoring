@@ -31,6 +31,12 @@ param logsSettings object[]
 @description('Metrics settings for the Log Analytics workspace.')
 param metricsSettings object[]
 
+@description('Connection string for Application Insights instance.')
+param appInsightsConnectionString string
+
+@description('Application Insights Instrumentation Key.')
+param appInsightsInstrumentationKey string
+
 @description('Resource tags applied to container services.')
 param tags object
 
@@ -78,7 +84,7 @@ resource appEnv 'Microsoft.App/managedEnvironments@2025-02-02-preview' = {
     appLogsConfiguration: {
       destination: 'log-analytics'
       logAnalyticsConfiguration: {
-        customerId: 'a4564f99-6e69-4851-bfe1-10278862911b'
+        customerId: workspaceId
         dynamicJsonColumns: true
       }
     }
@@ -166,6 +172,20 @@ resource ordersApi 'Microsoft.App/containerapps@2025-02-02-preview' = {
             cpu: 4
             memory: '8Gi'
           }
+          env: [
+            {
+              name: 'ASPNETCORE_ENVIRONMENT'
+              value: 'Production'
+            }
+            {
+              name: 'APPINSIGHTS_INSTRUMENTATIONKEY'
+              value: appInsightsInstrumentationKey
+            }
+            {
+              name: 'APPLICATIONINSIGHTS_CONNECTION_STRING'
+              value: appInsightsConnectionString
+            }
+          ]
         }
       ]
       scale: {

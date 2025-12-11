@@ -23,6 +23,12 @@ param workspaceId string
 @minLength(50)
 param storageAccountId string
 
+@description('Connection string for Application Insights instance.')
+param appInsightsConnectionString string
+
+@description('Application Insights Instrumentation Key.')
+param appInsightsInstrumentationKey string
+
 @description('Resource tags applied to all workload resources.')
 param tags object = {}
 
@@ -76,6 +82,8 @@ module services 'services/main.bicep' = {
     storageAccountId: storageAccountId
     logsSettings: allLogsSettings
     metricsSettings: allMetricsSettings
+    appInsightsInstrumentationKey: appInsightsInstrumentationKey
+    appInsightsConnectionString: appInsightsConnectionString
     tags: tags
   }
 }

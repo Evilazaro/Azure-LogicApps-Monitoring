@@ -10,25 +10,25 @@ metadata version = '1.0.0'
 type tagsType = {
   @description('Name of the solution')
   Solution: string
-  
+
   @description('Environment identifier')
   Environment: string
-  
+
   @description('Management method')
   ManagedBy: string
-  
+
   @description('Cost center identifier')
   CostCenter: string
-  
+
   @description('Team responsible for the resources')
   Owner: string
-  
+
   @description('Business unit')
   BusinessUnit: string
-  
+
   @description('Deployment timestamp')
   DeploymentDate: string
-  
+
   @description('Source repository')
   Repository: string
 }
@@ -96,6 +96,8 @@ module workload './workload/main.bicep' = {
     envName: envName
     workspaceId: monitoring.outputs.AZURE_LOG_ANALYTICS_WORKSPACE_ID
     storageAccountId: monitoring.outputs.LOGS_STORAGE_ACCOUNT_ID
+    appInsightsConnectionString: monitoring.outputs.AZURE_APPLICATION_INSIGHTS_CONNECTION_STRING
+    appInsightsInstrumentationKey: monitoring.outputs.AZURE_APPLICATION_INSIGHTS_INSTRUMENTATION_KEY
     tags: tags
   }
 }
