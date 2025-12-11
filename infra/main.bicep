@@ -106,68 +106,68 @@ module workload './workload/main.bicep' = {
   }
 }
 
-// ========== Outputs ==========
+// // ========== Outputs ==========
 
-// ========== Outputs ==========
+// // ========== Outputs ==========
 
-// Resource Group outputs
-@description('Name of the deployed resource group')
-output AZURE_RESOURCE_GROUP string = resourceGroupName
+// // Resource Group outputs
+// @description('Name of the deployed resource group')
+// output AZURE_RESOURCE_GROUP string = resourceGroupName
 
-@description('Resource ID of the deployed resource group')
-output RESOURCE_GROUP_ID string = rg.id
+// @description('Resource ID of the deployed resource group')
+// output RESOURCE_GROUP_ID string = rg.id
 
-// Monitoring outputs
-@description('Resource ID of the Log Analytics workspace')
-output AZURE_LOG_ANALYTICS_WORKSPACE_ID string = monitoring.outputs.AZURE_LOG_ANALYTICS_WORKSPACE_ID
+// // Monitoring outputs
+// @description('Resource ID of the Log Analytics workspace')
+// output AZURE_LOG_ANALYTICS_WORKSPACE_ID string = monitoring.outputs.AZURE_LOG_ANALYTICS_WORKSPACE_ID
 
-@description('Name of the Log Analytics workspace')
-output AZURE_LOG_ANALYTICS_WORKSPACE_NAME string = monitoring.outputs.AZURE_LOG_ANALYTICS_WORKSPACE_NAME
+// @description('Name of the Log Analytics workspace')
+// output AZURE_LOG_ANALYTICS_WORKSPACE_NAME string = monitoring.outputs.AZURE_LOG_ANALYTICS_WORKSPACE_NAME
 
-@description('Name of the Application Insights instance')
-output AZURE_APPLICATION_INSIGHTS_NAME string = monitoring.outputs.AZURE_APPLICATION_INSIGHTS_NAME
+// @description('Name of the Application Insights instance')
+// output AZURE_APPLICATION_INSIGHTS_NAME string = monitoring.outputs.AZURE_APPLICATION_INSIGHTS_NAME
 
-@description('Resource ID of the Application Insights instance')
-output AZURE_APPLICATION_INSIGHTS_ID string = monitoring.outputs.AZURE_APPLICATION_INSIGHTS_ID
+// @description('Resource ID of the Application Insights instance')
+// output AZURE_APPLICATION_INSIGHTS_ID string = monitoring.outputs.AZURE_APPLICATION_INSIGHTS_ID
 
-@description('Connection string for Application Insights')
-@secure()
-output AZURE_APPLICATION_INSIGHTS_CONNECTION_STRING string = monitoring.outputs.AZURE_APPLICATION_INSIGHTS_CONNECTION_STRING
+// @description('Connection string for Application Insights')
+// @secure()
+// output AZURE_APPLICATION_INSIGHTS_CONNECTION_STRING string = monitoring.outputs.AZURE_APPLICATION_INSIGHTS_CONNECTION_STRING
 
-@description('Instrumentation key for Application Insights')
-@secure()
-output AZURE_APPLICATION_INSIGHTS_INSTRUMENTATION_KEY string = monitoring.outputs.AZURE_APPLICATION_INSIGHTS_INSTRUMENTATION_KEY
+// @description('Instrumentation key for Application Insights')
+// @secure()
+// output AZURE_APPLICATION_INSIGHTS_INSTRUMENTATION_KEY string = monitoring.outputs.AZURE_APPLICATION_INSIGHTS_INSTRUMENTATION_KEY
 
-// Workload outputs
-@description('Resource ID of the deployed webApp App')
-output PO_PROC_API_WEB_APP_ID string = workload.outputs.PO_PROC_API_WEB_APP_ID
+// // Workload outputs
+// @description('Resource ID of the deployed webApp App')
+// output PO_PROC_API_WEB_APP_ID string = workload.outputs.PO_PROC_API_WEB_APP_ID
 
-@description('Name of the deployed webApp App')
-output PO_PROC_API_WEB_APP_NAME string = workload.outputs.PO_PROC_API_WEB_APP_NAME
+// @description('Name of the deployed webApp App')
+// output PO_PROC_API_WEB_APP_NAME string = workload.outputs.PO_PROC_API_WEB_APP_NAME
 
-@description('Default hostname of the webApp App')
-output PO_PROC_API_DEFAULT_HOST_NAME string = workload.outputs.PO_PROC_API_DEFAULT_HOST_NAME
+// @description('Default hostname of the webApp App')
+// output PO_PROC_API_DEFAULT_HOST_NAME string = workload.outputs.PO_PROC_API_DEFAULT_HOST_NAME
 
-@description('Resource ID of the deployed webApp App')
-output PO_WEB_APP_ID string = workload.outputs.PO_WEB_APP_ID
+// @description('Resource ID of the deployed webApp App')
+// output PO_WEB_APP_ID string = workload.outputs.PO_WEB_APP_ID
 
-@description('Name of the deployed webApp App')
-output PO_WEB_APP_NAME string = workload.outputs.PO_WEB_APP_NAME
+// @description('Name of the deployed webApp App')
+// output PO_WEB_APP_NAME string = workload.outputs.PO_WEB_APP_NAME
 
-@description('Default hostname of the webApp App')
-output PO_WEB_APP_DEFAULT_HOST_NAME string = workload.outputs.PO_WEB_APP_DEFAULT_HOST_NAME
+// @description('Default hostname of the webApp App')
+// output PO_WEB_APP_DEFAULT_HOST_NAME string = workload.outputs.PO_WEB_APP_DEFAULT_HOST_NAME
 
-@description('Resource ID of the deployed Logic App')
-output WORKFLOW_ENGINE_ID string = workload.outputs.WORKFLOW_ENGINE_ID
+// @description('Resource ID of the deployed Logic App')
+// output WORKFLOW_ENGINE_ID string = workload.outputs.WORKFLOW_ENGINE_ID
 
-@description('Name of the deployed Logic App')
-output WORKFLOW_ENGINE_NAME string = workload.outputs.WORKFLOW_ENGINE_NAME
+// @description('Name of the deployed Logic App')
+// output WORKFLOW_ENGINE_NAME string = workload.outputs.WORKFLOW_ENGINE_NAME
 
-@description('Resource ID of the App Service Plan')
-output WORKFLOW_ENGINE_ASP_ID string = workload.outputs.WORKFLOW_ENGINE_ASP_ID
+// @description('Resource ID of the App Service Plan')
+// output WORKFLOW_ENGINE_ASP_ID string = workload.outputs.WORKFLOW_ENGINE_ASP_ID
 
-@description('Name of the App Service Plan')
-output APP_SERVICE_PLAN_NAME string = workload.outputs.APP_SERVICE_PLAN_NAME
+// @description('Name of the App Service Plan')
+// output APP_SERVICE_PLAN_NAME string = workload.outputs.APP_SERVICE_PLAN_NAME
 
-@description('Tenant ID of the environment')
-output AZURE_TENANT_ID string = tenant().tenantId
+// @description('Tenant ID of the environment')
+// output AZURE_TENANT_ID string = tenant().tenantId
