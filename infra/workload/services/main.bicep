@@ -21,6 +21,9 @@ param envName string
 @minLength(50)
 param workspaceId string
 
+@description('Log Analytics Workspace Customer ID.')
+param workspaceCustomerId string
+
 @description('Storage Account ID for diagnostic logs and metrics.')
 @minLength(50)
 param storageAccountId string
@@ -84,7 +87,7 @@ resource appEnv 'Microsoft.App/managedEnvironments@2025-02-02-preview' = {
     appLogsConfiguration: {
       destination: 'log-analytics'
       logAnalyticsConfiguration: {
-        customerId: workspaceId
+        customerId: workspaceCustomerId
         dynamicJsonColumns: true
       }
     }

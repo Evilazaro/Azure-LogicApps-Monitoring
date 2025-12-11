@@ -4,16 +4,16 @@
 type storageAccountConfig = {
   @description('Storage account SKU')
   sku: 'Standard_LRS' | 'Standard_GRS' | 'Standard_RAGRS' | 'Standard_ZRS'
-  
+
   @description('Storage account kind')
   kind: 'StorageV2' | 'BlobStorage' | 'BlockBlobStorage'
-  
+
   @description('Access tier for the storage account')
   accessTier: 'Hot' | 'Cool'
-  
+
   @description('Minimum TLS version')
   minimumTlsVersion: 'TLS1_0' | 'TLS1_1' | 'TLS1_2'
-  
+
   @description('Whether HTTPS traffic only is supported')
   supportsHttpsTrafficOnly: bool
 }
@@ -143,6 +143,9 @@ output AZURE_LOG_ANALYTICS_WORKSPACE_ID string = workspace.id
 
 @description('Name of the deployed Log Analytics workspace')
 output AZURE_LOG_ANALYTICS_WORKSPACE_NAME string = workspace.name
+
+@description('Log Analytics workspace customer ID')
+output AZURE_LOG_ANALYTICS_WORKSPACE_CUSTOMER_ID string = workspace.properties.customerId
 
 resource wspDiag 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
   name: '${workspace.name}-diag'

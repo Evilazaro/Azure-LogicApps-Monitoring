@@ -21,7 +21,7 @@ param envName string
 param location string = resourceGroup().location
 
 @description('Resource tags applied to all monitoring resources.')
-param tags object = {} 
+param tags object = {}
 
 // ========== Variables ==========
 
@@ -79,6 +79,9 @@ module insights 'app-insights.bicep' = {
 
 @description('Resource ID of the Log Analytics workspace for configuring diagnostic settings')
 output AZURE_LOG_ANALYTICS_WORKSPACE_ID string = operational.outputs.AZURE_LOG_ANALYTICS_WORKSPACE_ID
+
+@description('Log Analytics workspace customer ID')
+output AZURE_LOG_ANALYTICS_WORKSPACE_CUSTOMER_ID string = operational.outputs.AZURE_LOG_ANALYTICS_WORKSPACE_CUSTOMER_ID
 
 @description('Name of the deployed Application Insights instance')
 output AZURE_APPLICATION_INSIGHTS_NAME string = insights.outputs.AZURE_APPLICATION_INSIGHTS_NAME

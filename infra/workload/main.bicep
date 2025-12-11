@@ -19,6 +19,9 @@ param location string = resourceGroup().location
 @minLength(50)
 param workspaceId string
 
+@description('Log Analytics Workspace Customer ID.')
+param workspaceCustomerId string
+
 @description('Storage Account ID for diagnostic logs and metrics.')
 @minLength(50)
 param storageAccountId string
@@ -79,6 +82,7 @@ module services 'services/main.bicep' = {
     userAssignedIdentityId: identity.outputs.AZURE_MANAGED_IDENTITY_ID
     envName: envName
     workspaceId: workspaceId
+    workspaceCustomerId: workspaceCustomerId
     storageAccountId: storageAccountId
     logsSettings: allLogsSettings
     metricsSettings: allMetricsSettings
