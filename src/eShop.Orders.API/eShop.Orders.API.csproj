@@ -8,7 +8,6 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="9.0.11" />
-    <PackageReference Include="Swashbuckle.AspNetCore" Version="9.0.6" />
     <PackageReference Include="Swashbuckle.AspNetCore.Swagger" Version="9.0.6" />
     <PackageReference Include="Swashbuckle.AspNetCore.SwaggerGen" Version="9.0.6" />
     <PackageReference Include="Swashbuckle.AspNetCore.SwaggerUI" Version="9.0.6" />
@@ -16,7 +15,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\eShopOrders.ServiceDefaults\eShopOrders.ServiceDefaults.csproj" />
-    <ProjectReference Include="..\eShop.SDK\eShop.SDK.csproj" />
   </ItemGroup>
 
 </Project>
