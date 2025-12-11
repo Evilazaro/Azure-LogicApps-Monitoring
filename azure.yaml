@@ -8,20 +8,44 @@ infra:
   module: main
 
 hooks:
-  postprovision: 
+  postprovision:
     shell: pwsh
     run: |
-      az acr login -n ${AZURE_CONTAINER_REGISTRY_ENDPOINT}
+      # Set error action preference to stop on errors
+        $ErrorActionPreference = 'Stop'
 
-services:  
+        try {
+            # Validate required environment variables
+            if (-not $env:AZURE_CONTAINER_REGISTRY_ENDPOINT) {
+              throw "AZURE_CONTAINER_REGISTRY_ENDPOINT environment variable is not set"
+            }
+
+            Write-Information "Azure Container Registry Endpoint: $env:AZURE_CONTAINER_REGISTRY_ENDPOINT" -InformationAction Continue
+            
+            # Login to Azure Container Registry
+            Write-Information "Logging in to Azure Container Registry..." -InformationAction Continue
+            
+            az acr login --name $env:AZURE_CONTAINER_REGISTRY_ENDPOINT
+            
+            if ($LASTEXITCODE -ne 0) {
+              throw "Failed to login to Azure Container Registry"
+            }
+
+            Write-Information "Successfully logged in to Azure Container Registry." -InformationAction Continue
+        }
+        catch {
+            Write-Error "Post-provision hook failed: $($_.Exception.Message)"
+            exit 1
+        }
+
+services:
   app:
     language: dotnet
     project: ./eShopOrders.AppHost/eShopOrders.AppHost.csproj
     host: containerapp
     resourceGroup: ${AZURE_RESOURCE_GROUP}
-
 # hooks:
-#   preprovision: 
+#   preprovision:
 #     shell: pwsh
 #     run: |
 #       ./hooks/preprovision.ps1
@@ -40,14 +64,14 @@ services:
 #       image: eshop-orders-api
 #       remoteBuild: true
 #       tag: latest
-  # PoWebApp:
-  #   project: ./src/PoWebApp/PoWebApp/PoWebApp.csproj
-  #   language: dotnet
-  #   host: appservice
-  #   resourceGroup: ${AZURE_RESOURCE_GROUP}
+# PoWebApp:
+#   project: ./src/PoWebApp/PoWebApp/PoWebApp.csproj
+#   language: dotnet
+#   host: appservice
+#   resourceGroup: ${AZURE_RESOURCE_GROUP}
 
-  # PoProcAPI:
-  #   project: ./src/PoProcAPI/PoProcAPI.csproj
-  #   language: dotnet
-  #   host: appservice
-  #   resourceGroup: ${AZURE_RESOURCE_GROUP}
+# PoProcAPI:
+#   project: ./src/PoProcAPI/PoProcAPI.csproj
+#   language: dotnet
+#   host: appservice
+#   resourceGroup: ${AZURE_RESOURCE_GROUP}
