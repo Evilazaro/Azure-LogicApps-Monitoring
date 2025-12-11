@@ -15,10 +15,10 @@ resource appImages 'Microsoft.ContainerRegistry/registries@2025-11-01' = {
   }
 }
 
-param managedEnvironments_managedEnvironment_rgordersuateast_a749_name string = 'managedEnvironment-rgordersuateast-a749'
+param containerAppEnvironmentName string = toLower('${name}-cae-${uniqueString(subscription().id, resourceGroup().id, location, envnName)}')
 
-resource managedEnvironments_managedEnvironment_rgordersuateast_a749_name_resource 'Microsoft.App/managedEnvironments@2025-02-02-preview' = {
-  name: managedEnvironments_managedEnvironment_rgordersuateast_a749_name
+resource containerAppEnv 'Microsoft.App/managedEnvironments@2025-02-02-preview' = {
+  name: containerAppEnvironmentName
   location: 'East US 2'
   identity: {
     type: 'SystemAssigned'
