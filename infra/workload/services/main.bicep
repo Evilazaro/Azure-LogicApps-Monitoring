@@ -75,6 +75,13 @@ resource containerAppEnv 'Microsoft.App/managedEnvironments@2025-02-02-preview' 
     }
   }
   properties: {
+    appLogsConfiguration: {
+      destination: 'log-analytics'
+      logAnalyticsConfiguration: {
+        customerId: 'a4564f99-6e69-4851-bfe1-10278862911b'
+        dynamicJsonColumns: true
+      }
+    }
     zoneRedundant: false
     kedaConfiguration: {}
     daprConfiguration: {}
@@ -97,5 +104,76 @@ resource containerAppEnv 'Microsoft.App/managedEnvironments@2025-02-02-preview' 
       }
     }
     publicNetworkAccess: 'Enabled'
+  }
+}
+
+param ordersAPIName string = 'orders-api'
+
+resource containerapps_orders_api_name_resource 'Microsoft.App/containerapps@2025-02-02-preview' = {
+  name: ordersAPIName
+  location: location
+  kind: 'containerapps'
+  identity: {
+    type: 'SystemAssigned,UserAssigned'
+    userAssignedIdentities: {
+      '${userAssignedIdentityId}': {}
+    }
+  }
+  tags: union(tags, { 'azd-service-name': 'eShop.Orders.API' })
+  properties: {
+    managedEnvironmentId: containerAppEnv.id
+    environmentId: containerAppEnv.id
+    workloadProfileName: 'Consumption'
+    configuration: {
+      activeRevisionsMode: 'Single'
+      ingress: {
+        external: true
+        targetPort: 80
+        exposedPort: 80
+        transport: 'Auto'
+        traffic: [
+          {
+            weight: 100
+            latestRevision: true
+          }
+        ]
+        allowInsecure: false
+        stickySessions: {
+          affinity: 'none'
+        }
+      }
+      registries: [
+        {
+          server: imgRegistry.properties.loginServer
+          identity: userAssignedIdentityId
+        }
+      ]
+      identitySettings: []
+      runtime: {
+        dotnet: {
+          autoConfigureDataProtection: false
+        }
+      }
+      maxInactiveRevisions: 100
+    }
+    template: {
+      containers: [
+        {
+          image: '${imgRegistry.properties.loginServer}/${ordersAPIName}:latest'
+          imageType: 'ContainerImage'
+          name: ordersAPIName
+          resources: {
+            cpu: 4
+            memory: '8Gi'
+          }
+        }
+      ]
+      scale: {
+        minReplicas: 0
+        maxReplicas: 10
+        cooldownPeriod: 300
+        pollingInterval: 30
+      }
+    }
   }
 }
