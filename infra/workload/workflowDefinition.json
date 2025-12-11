@@ -6,7 +6,7 @@
             "HTTP": {
                 "type": "Http",
                 "inputs": {
-                    "uri": "https://eshop-orders-4bewrs44cgeo6-poproc-api.azurewebsites.net/Orders",
+                    "uri": "https://orders-4bewrs44cgeo6-poproc-api.azurewebsites.net/Orders",
                     "method": "POST",
                     "headers": {
                         "accept": "*/*",

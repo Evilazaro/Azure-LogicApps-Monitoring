@@ -38,7 +38,7 @@ type tagsType = {
 @description('Base name for the solution. Used as prefix for all resource names.')
 @minLength(3)
 @maxLength(20)
-param solutionName string = 'eshop-orders'
+param solutionName string = 'orders'
 
 @description('Azure region where all resources will be deployed.')
 @minLength(3)
