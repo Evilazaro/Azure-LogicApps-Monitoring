@@ -169,8 +169,8 @@ resource containerapps_orders_api_name_resource 'Microsoft.App/containerapps@202
         }
       ]
       scale: {
-        minReplicas: 0
-        maxReplicas: 10
+        minReplicas: 3
+        maxReplicas: 100
         cooldownPeriod: 300
         pollingInterval: 30
       }
