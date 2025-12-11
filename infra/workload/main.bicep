@@ -75,6 +75,15 @@ module messaging 'messaging/main.bicep' = {
   }
 }
 
+module services 'services/main.bicep' = {
+  scope: resourceGroup()
+  params: {
+    name: name
+    location: location
+    tags: tags
+  }
+}
+
 // module webApp 'web-app.bicep' = {
 //   scope: resourceGroup()
 //   params: {
