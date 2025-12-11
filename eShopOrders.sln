@@ -19,6 +19,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "eShopOrders.AppHost", "eSho
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "eShopOrders.ServiceDefaults", "eShopOrders.ServiceDefaults\eShopOrders.ServiceDefaults.csproj", "{2E1FCBDB-037F-AF19-974E-744120006BD1}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "eShop.Orders.API", "src\eShop.Orders.API\eShop.Orders.API.csproj", "{3D50C242-E20F-46B7-916A-60497C2D533F}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -53,6 +55,10 @@ Global
 		{2E1FCBDB-037F-AF19-974E-744120006BD1}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{2E1FCBDB-037F-AF19-974E-744120006BD1}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{2E1FCBDB-037F-AF19-974E-744120006BD1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3D50C242-E20F-46B7-916A-60497C2D533F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3D50C242-E20F-46B7-916A-60497C2D533F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3D50C242-E20F-46B7-916A-60497C2D533F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3D50C242-E20F-46B7-916A-60497C2D533F}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -63,6 +69,7 @@ Global
 		{ABD147C5-5885-423B-9596-63BA97810422} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
 		{2B6B1BA1-1109-2E3E-F1FB-6662F2648D47} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
 		{E7149CD9-8440-AAD5-BE03-12EAB876DA64} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
+		{3D50C242-E20F-46B7-916A-60497C2D533F} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {59BF1E4F-A388-42FD-AE16-EE8453E9F6F1}
