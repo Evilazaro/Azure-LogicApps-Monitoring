@@ -11,10 +11,7 @@ hooks:
   preprovision: 
     shell: pwsh
     run: |
-      Write-Host "Pre-provisioning steps..."
-      Write-Host "Building Docker images locally..."
-      docker-compose build 
-      Write-Host "Docker images built successfully."
+      ./hooks/preprovision.ps1
 
 # services:
 #   eShop.Orders.API:
