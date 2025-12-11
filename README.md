@@ -1,10 +1,6 @@
-# Azure Logic Apps - Enterprise Scale Monitoring & Optimization
+# Azure Logic Apps - Enterprise-Scale Monitoring & Optimization
 
-[![Azure Logic Apps](https://img.shields.io/badge/Azure-Logic%20Apps%20Standard-0078D4?logo=microsoft-azure)](https://azure.microsoft.com/en-us/products/logic-apps/)
-[![Infrastructure as Code](https://img.shields.io/badge/IaC-Bicep-blue)](https://learn.microsoft.com/azure/azure-resource-manager/bicep/)
-[![Well-Architected](https://img.shields.io/badge/Azure-Well--Architected-success)](https://learn.microsoft.com/azure/well-architected/)
-
-> **Production-ready reference architecture** for deploying and monitoring thousands of Azure Logic Apps Standard workflows at enterprise scale while optimizing costs and performance.
+A comprehensive solution for deploying, monitoring, and optimizing thousands of Azure Logic Apps workflows across enterprise environments while controlling costs and maintaining stability.
 
 ---
 
@@ -12,1643 +8,1188 @@
 
 - Project Overview
 - Problem Statement
-- Solution Architecture
-- System Architecture
-- Solution Dataflow
-- Monitoring Dataflow
-- Getting Started
+- Target Audience
+- Architecture
 - Installation & Configuration
 - Usage Examples
 - Monitoring & Alerting
 - Performance & Cost Optimization
-- Additional Resources
 
 ---
 
 ## 🎯 Project Overview
 
-This repository provides a **comprehensive enterprise-grade solution** for organizations deploying **Azure Logic Apps Standard** at massive scale. It addresses the critical challenges of running **thousands of workflows** across **hundreds of Logic Apps instances** in global, multi-region deployments while maintaining stability, performance, and cost-effectiveness.
+This project provides an enterprise-grade solution for organizations running **thousands of workflows** across hundreds of **Azure Logic Apps Standard** instances globally. It addresses critical scalability, cost, and operational challenges that emerge when deploying Logic Apps at scale.
 
-### What This Solution Delivers
+### Key Features
 
-This project is a **complete reference implementation** that includes:
+- **Optimized Architecture**: Reference implementation for hosting 1000+ workflows while minimizing memory footprint and infrastructure costs
+- **Comprehensive Monitoring**: Azure Monitor integration with custom metrics, Application Insights telemetry, and Log Analytics workspaces
+- **Cost Optimization**: Strategies to reduce operational costs from ~$80K to sustainable levels per environment
+- **Scalability Patterns**: Best practices for distributing workflows across Logic Apps instances and App Service Plans
+- **Infrastructure as Code**: Bicep templates for repeatable, auditable deployments
+- **Well-Architected Framework Alignment**: Implements Azure WAF pillars for reliability, security, cost optimization, operational excellence, and performance efficiency
+- **Long-Running Workflow Support**: Proven patterns for workflows executing over 18-36 months without stability degradation
 
-- ✅ **Optimized Infrastructure-as-Code**: Battle-tested Bicep templates for scalable, cost-efficient Logic Apps deployments
-- ✅ **Enterprise Monitoring Framework**: Comprehensive Application Insights integration with custom metrics, KQL queries, and automated alerting
-- ✅ **Cost Optimization Strategies**: Proven techniques to reduce operational costs by up to 70% while maintaining SLA commitments
-- ✅ **Performance Engineering**: Architecture patterns and success criteria for long-running workflows (18–36 months continuous operation)
-- ✅ **Production Sample Application**: Real-world eShop Orders processing system demonstrating enterprise patterns
-- ✅ **Automated Testing Suite**: Load generation scripts and synthetic monitoring for validation and stress testing
-- ✅ **Well-Architected Alignment**: Implementation following Azure Well-Architected Framework pillars
+### Technologies Used
 
-### Target Audience
-
-This solution is designed for:
-
-- **Enterprise Architects** designing large-scale integration platforms
-- **Cloud Engineers** implementing Azure Logic Apps at scale
-- **DevOps Teams** responsible for deployment automation and monitoring
-- **Platform Engineers** building self-service integration capabilities
-- **FinOps Teams** optimizing cloud spend while maintaining reliability
-
-### Key Capabilities
-
-| **Capability** | **Description** |
-|---------------|-----------------|
-| **Scale Management** | Handle 5,000+ workflows distributed across optimal App Service Plan configurations |
-| **Cost Intelligence** | Reduce annual costs from $80K to $24K per environment through intelligent resource allocation |
-| **Performance Monitoring** | Real-time telemetry with 50+ custom metrics and proactive alerting |
-| **Stability Patterns** | Design patterns for workflows running continuously for 18-36 months |
-| **Global Distribution** | Multi-region deployment with geo-redundancy and failover capabilities |
-| **Memory Optimization** | Prevent memory spikes and OOM errors through intelligent workflow distribution |
-| **Automated Deployment** | Full CI/CD pipeline with Azure Developer CLI (azd) integration |
-| **Security Compliance** | Key Vault integration, managed identities, and network isolation |
+- **Azure Logic Apps Standard** (Workflow orchestration)
+- **Azure App Service Plans** (EP1-EP3 hosting tiers with 64-bit support)
+- **Azure Monitor** (Metrics, logs, and alerting)
+- **Application Insights** (Telemetry and diagnostics)
+- **Log Analytics** (Centralized logging and querying)
+- **Azure Bicep** (Infrastructure as Code)
+- **Azure DevOps / GitHub Actions** (CI/CD pipelines)
 
 ---
 
-## ❗ Problem Statement
+## ⚠️ Problem Statement
 
-### The Enterprise-Scale Challenge
+### The Challenge
 
-Organizations adopting **Azure Logic Apps Standard** as their enterprise integration platform face significant architectural and operational constraints when scaling beyond Microsoft's recommended guidance. These constraints create a cascade of technical debt, cost overruns, and stability issues that impact business-critical workflows.
+Enterprise organizations deploying Azure Logic Apps at scale face critical operational and financial challenges:
 
-### Current Microsoft Guidance Limitations
+#### 1. **Microsoft Guidance Limitations**
+Microsoft recommends:
+- **Maximum 20 workflows per Logic App** instance
+- **Maximum 64 Logic Apps per App Service Plan**
 
-Microsoft documentation provides the following guidance for Azure Logic Apps Standard:
+For enterprises requiring **1000+ workflows**, this translates to:
+- **50+ Logic App instances** (at 20 workflows each)
+- **Multiple App Service Plans** (to avoid the 64-app limit)
+- **Complex distribution topology** across plans and regions
 
-| **Constraint** | **Limit** | **Impact at Scale** |
-|---------------|-----------|---------------------|
-| **Workflows per Logic App** | ~20 workflows (recommended) | Forces creation of dozens of Logic Apps for medium-sized enterprises |
-| **Logic Apps per App Service Plan** | 64 apps (hard limit) | Requires multiple App Service Plans per region |
-| **64-bit Process Memory** | Variable (dependent on workflow complexity) | Severe memory pressure and OOM errors when approaching limits |
-| **Long-Running Workflows** | No explicit guidance | Stability degradation after 6-12 months of continuous operation |
+#### 2. **Memory Consumption Issues**
+When scaling beyond recommended limits, especially with **64-bit runtime support**:
+- **Memory spikes** reaching 80-90% utilization on EP2/EP3 plans
+- **Worker process recycling** causing workflow interruptions
+- **Unpredictable performance degradation** during peak load
+- **Memory leaks** in long-running workflow scenarios (18+ months)
 
-### Real-World Enterprise Scenario
+#### 3. **Cost Overruns**
+Without optimization:
+- **~$80,000 USD annually per environment** (Dev, UAT, Prod multiply this cost)
+- Over-provisioning of App Service Plan tiers to handle memory spikes
+- Redundant infrastructure to maintain high availability
+- Inefficient resource allocation across workflow types
 
-Consider a typical Fortune 500 enterprise with these requirements:
+#### 4. **Operational Complexity**
+- Lack of centralized monitoring across 50+ Logic App instances
+- Difficulty correlating failures across distributed workflows
+- Manual scaling decisions without data-driven insights
+- Limited visibility into per-workflow resource consumption
 
-```
-Business Requirements:
-├─ 5,000 integration workflows across various domains
-├─ 3 geographic regions (Americas, EMEA, APAC)
-├─ 3 environments per region (Dev, UAT, Production)
-├─ 24/7/365 availability with < 100ms P95 latency
-└─ Long-running workflows (order processing: 18-36 months)
-
-Traditional Approach Calculations:
-├─ 5,000 workflows ÷ 20 per app = 250 Logic Apps
-├─ 250 Logic Apps × 3 regions = 750 Logic Apps total
-├─ 750 ÷ 64 per plan = 12 App Service Plans per region
-└─ 12 plans × 3 regions × 3 environments = 108 App Service Plans
-```
-
-### The Cost Impact
-
-#### Annual Cost Breakdown (Traditional Approach)
-
-| **Component** | **Unit Cost** | **Quantity** | **Annual Cost** |
-|--------------|---------------|--------------|-----------------|
-| App Service Plan (WS1) | $390/month | 108 plans | $505,440 |
-| Application Insights | $2.88/GB | ~2TB/month | $69,120 |
-| Storage Accounts | $50/month | 108 accounts | $64,800 |
-| Log Analytics | $1,500/month | 9 workspaces | $162,000 |
-| **Total per Environment** | | | **~$267,120** |
-| **Production Only** | | | **~$89,040** |
-
-> **Note**: The $80K figure mentioned represents optimized but still inefficient deployments. Full enterprise deployments can exceed $250K annually.
-
-### Technical Challenges
-
-#### 1. Memory Management Crisis
-
-When exceeding Microsoft's recommended limits with 64-bit processes:
-
-- **Memory Spikes**: Sudden increases from 40% to 95% utilization within minutes
-- **OOM Crashes**: Out-of-memory errors causing workflow failures and data loss
-- **Restart Cascades**: Single app restart triggering cascading failures across dependent workflows
-- **Performance Degradation**: 300-400% increase in P95 latency during memory pressure
-
-#### 2. Long-Running Workflow Stability
-
-Workflows designed to run for 18-36 months encounter:
-
-- **Connection Pool Exhaustion**: HTTP/database connections not properly recycled
-- **Memory Leaks**: Gradual memory growth over months due to internal state accumulation
-- **State Management Issues**: Workflow state growing beyond manageable size
-- **Monitoring Blind Spots**: Lack of visibility into workflow health over extended periods
-
-#### 3. Operational Complexity
-
-Managing hundreds of Logic Apps creates:
-
-- **Deployment Complexity**: 750+ individual deployments across environments
-- **Configuration Drift**: Inconsistent settings and connection strings
-- **Monitoring Fragmentation**: Telemetry scattered across dozens of Application Insights instances
-- **Cost Attribution Challenges**: Inability to track costs by business unit or project
-- **Security Surface Area**: Managing identities, secrets, and network rules at scale
-
-#### 4. Performance Bottlenecks
-
-Scale-related performance issues include:
-
-- **Cold Start Latency**: New instances taking 30-60 seconds to warm up
-- **Throughput Limitations**: Single Logic App maxing out at ~1,000 executions/minute
-- **Backend Service Saturation**: Cosmos DB, Service Bus, and APIs overwhelmed by traffic
-- **Cross-Region Latency**: 200-500ms added latency for geo-distributed workflows
+#### 5. **Long-Running Workflow Stability**
+- Workflows executing for **18-36 months** require special considerations
+- State persistence and checkpointing challenges
+- Memory accumulation over extended execution periods
+- No clear success criteria for ultra-long-running scenarios
 
 ### Business Impact
 
-These technical challenges translate to tangible business impacts:
-
-- **SLA Violations**: Inability to meet 99.9% uptime commitments
-- **Revenue Loss**: Failed order processing costing $50K-$500K per incident
-- **Customer Churn**: Poor user experience due to timeout errors
-- **Compliance Risk**: Audit failures due to incomplete logging and monitoring
-- **Innovation Slowdown**: Teams spending 60% of time on operational issues vs. new features
-- **Budget Overruns**: Cloud costs 3-4× higher than initial projections
+- **High Cloud Spend**: Unsustainable costs for multi-environment deployments (Dev/UAT/Prod)
+- **Operational Risk**: Workflow failures impact business-critical processes
+- **Limited Scalability**: Cannot easily add new workflows without infrastructure overhaul
+- **Poor Developer Experience**: Complex deployment topologies slow down development cycles
 
 ---
 
-## 🏗️ Solution Architecture
+## 👥 Target Audience
 
-### TOGAF Business, Data, Application, Technology (BDAT) Architecture
+### Solution Owner
+
+**Role Description:**  
+The Solution Owner is accountable for the overall business value, strategic alignment, and success of the Logic Apps solution. They ensure the implementation meets enterprise requirements, delivers ROI, and aligns with organizational digital transformation goals.
+
+**Key Responsibilities & Deliverables:**
+- Define business requirements and success criteria for workflow automation
+- Approve architectural decisions and infrastructure investments
+- Monitor total cost of ownership (TCO) and return on investment (ROI)
+- Ensure compliance with corporate governance and risk policies
+- Stakeholder communication and executive reporting
+- Prioritize workflow migration and optimization initiatives
+
+**How This Solution Helps:**
+- **Cost Transparency**: Clear visibility into infrastructure costs (~$80K baseline vs. optimized spend)
+- **Risk Mitigation**: Proven architecture reduces operational risk for mission-critical workflows
+- **Scalability Roadmap**: Enables business growth without proportional infrastructure cost increases
+- **Success Metrics**: Predefined KPIs for long-running workflow stability (18-36 months)
+
+---
+
+### Solution Architect
+
+**Role Description:**  
+The Solution Architect designs the end-to-end Logic Apps solution, ensuring it meets functional requirements, non-functional requirements, and aligns with enterprise architecture standards. They bridge business needs with technical implementation.
+
+**Key Responsibilities & Deliverables:**
+- Design workflow distribution strategy across Logic App instances
+- Define integration patterns with enterprise systems (APIs, databases, message queues)
+- Establish data flow models for business processes
+- Create high-level architecture diagrams (TOGAF BDAT models)
+- Define workflow categorization (real-time, batch, long-running)
+- Document architectural decisions and trade-offs
+
+**How This Solution Helps:**
+- **Reference Architecture**: TOGAF-aligned models for Business, Data, Application, and Technology layers
+- **Proven Patterns**: Tested workflow distribution strategies (20 workflows/app, 64 apps/plan)
+- **Integration Guidance**: Pre-built patterns for common enterprise integrations
+- **Dataflow Visualization**: Mermaid diagrams showing application and monitoring flows
+
+---
+
+### Cloud Architect
+
+**Role Description:**  
+The Cloud Architect focuses on Azure platform services, infrastructure design, and cloud best practices. They ensure the Logic Apps solution leverages Azure services optimally and adheres to the Well-Architected Framework.
+
+**Key Responsibilities & Deliverables:**
+- Select appropriate Azure services (Logic Apps Standard, App Service Plans, Storage)
+- Design multi-region topology for high availability and disaster recovery
+- Implement Azure Monitor and Application Insights architecture
+- Define resource naming conventions and tagging strategies
+- Optimize resource SKUs (EP1/EP2/EP3 plans) based on workload analysis
+- Plan for scalability, elasticity, and auto-scaling configurations
+
+**How This Solution Helps:**
+- **Well-Architected Framework Alignment**: Implements all five WAF pillars (Reliability, Security, Cost Optimization, Operational Excellence, Performance)
+- **Azure Native Monitoring**: Pre-configured Azure Monitor, Application Insights, and Log Analytics integration
+- **IaC Templates**: Bicep modules for repeatable, auditable infrastructure deployment
+- **Scaling Blueprints**: Documented strategies for horizontal (more apps) vs. vertical (larger plans) scaling
+
+---
+
+### Network Architect
+
+**Role Description:**  
+The Network Architect designs the network topology, connectivity, and security boundaries for the Logic Apps solution. They ensure secure, reliable communication between workflows and enterprise systems.
+
+**Key Responsibilities & Deliverables:**
+- Design VNet integration for Logic Apps connecting to on-premises systems
+- Configure private endpoints for secure Azure service connectivity
+- Implement network security groups (NSGs) and firewall rules
+- Plan for hybrid connectivity (ExpressRoute, VPN Gateway)
+- Design DNS and name resolution strategies
+- Document network flow diagrams and security zones
+
+**How This Solution Helps:**
+- **Connectivity Patterns**: Reference implementations for VNet integration and private endpoints
+- **Security Best Practices**: NSG and firewall configurations for Logic Apps Standard
+- **Hybrid Scenarios**: Guidance for connecting to on-premises APIs and databases
+- **Network Monitoring**: Integration with Azure Network Watcher for connectivity troubleshooting
+
+---
+
+### Data Architect
+
+**Role Description:**  
+The Data Architect defines data models, storage strategies, and data flow patterns for workflows processing business data. They ensure data integrity, compliance, and optimal data persistence strategies.
+
+**Key Responsibilities & Deliverables:**
+- Design data models for workflow state persistence (Azure Cosmos DB, SQL Database)
+- Define data retention and archival policies
+- Implement data lineage and audit trails for workflow executions
+- Ensure GDPR/CCPA compliance for data processing
+- Design data partitioning strategies for high-volume scenarios
+- Document data flow diagrams and entity relationships
+
+**How This Solution Helps:**
+- **State Management Patterns**: Guidance for persisting workflow state in long-running scenarios (18-36 months)
+- **Data Flow Diagrams**: Mermaid visualizations showing data movement across workflow stages
+- **Storage Optimization**: Best practices for Azure Storage, Cosmos DB, and SQL Database usage
+- **Audit Trail**: Built-in logging and diagnostics for data lineage and compliance
+
+---
+
+### Security Architect
+
+**Role Description:**  
+The Security Architect ensures the Logic Apps solution meets enterprise security standards, compliance requirements, and threat protection policies. They implement defense-in-depth strategies and identity/access management.
+
+**Key Responsibilities & Deliverables:**
+- Implement Azure AD authentication and role-based access control (RBAC)
+- Configure managed identities for secure service-to-service communication
+- Encrypt data at rest and in transit (TLS, Azure Key Vault)
+- Conduct threat modeling and security assessments
+- Implement Azure Security Center and Microsoft Defender for Cloud
+- Define secrets management and certificate rotation policies
+
+**How This Solution Helps:**
+- **Managed Identity Integration**: Pre-configured managed identities for Logic Apps accessing Azure services
+- **Key Vault Integration**: Secure secrets management for connection strings and API keys
+- **RBAC Templates**: Role assignments for least-privilege access to Logic Apps and monitoring resources
+- **Security Monitoring**: Azure Monitor alerts for suspicious activity and security events
+
+---
+
+### DevOps / SRE Lead
+
+**Role Description:**  
+The DevOps/SRE Lead establishes CI/CD pipelines, deployment automation, and operational runbooks for the Logic Apps solution. They ensure reliable, repeatable deployments and implement SRE practices for availability and performance.
+
+**Key Responsibilities & Deliverables:**
+- Build CI/CD pipelines for Logic Apps deployment (Azure DevOps, GitHub Actions)
+- Implement Infrastructure as Code (Bicep/ARM templates)
+- Define deployment strategies (blue-green, canary, rolling updates)
+- Create operational runbooks for incident response
+- Establish SLOs, SLIs, and error budgets for workflows
+- Automate monitoring alert responses and remediation
+
+**How This Solution Helps:**
+- **IaC Templates**: Production-ready Bicep modules for all Azure resources
+- **CI/CD Examples**: Reference pipeline configurations for automated deployments
+- **Monitoring Automation**: Pre-configured alerts with recommended thresholds
+- **Operational Dashboards**: Azure Monitor workbooks for at-a-glance health status
+- **SRE Metrics**: Predefined reliability metrics for long-running workflows
+
+---
+
+### Developer
+
+**Role Description:**  
+Developers build, test, and maintain individual Logic Apps workflows. They implement business logic, integrate with APIs, and troubleshoot workflow execution issues using monitoring tools.
+
+**Key Responsibilities & Deliverables:**
+- Develop workflows using Logic Apps Designer or code (JSON definitions)
+- Implement error handling, retry policies, and compensating transactions
+- Write unit and integration tests for workflows
+- Debug workflow failures using Application Insights and Log Analytics
+- Optimize workflow performance and reduce execution costs
+- Document workflow logic and dependencies
+
+**How This Solution Helps:**
+- **Local Development**: Azure Logic Apps Emulator configuration for offline testing
+- **Diagnostic Insights**: Application Insights integration for step-by-step workflow tracing
+- **Performance Profiling**: Identify slow actions and optimize workflow execution time
+- **Cost Visibility**: Per-workflow execution cost tracking
+- **Best Practices**: Code examples and patterns for common workflow scenarios
+
+---
+
+### System Engineer
+
+**Role Description:**  
+System Engineers maintain the Azure infrastructure hosting Logic Apps, ensuring availability, performance, and capacity planning. They handle operational incidents, patching, and infrastructure health monitoring.
+
+**Key Responsibilities & Deliverables:**
+- Monitor App Service Plan health (CPU, memory, worker processes)
+- Perform capacity planning and scaling operations
+- Execute infrastructure patching and updates
+- Respond to operational incidents and alerts
+- Maintain backup and disaster recovery procedures
+- Tune infrastructure configurations for optimal performance
+
+**How This Solution Helps:**
+- **Infrastructure Monitoring**: Pre-configured metrics for CPU, memory, and worker process health
+- **Capacity Planning**: Historical data and trends for scaling decisions
+- **Alerting Thresholds**: Recommended alert rules for proactive incident management
+- **Scaling Guidance**: Documentation on when to scale horizontally (more apps) vs. vertically (larger plans)
+- **Troubleshooting Tools**: Log Analytics queries for common infrastructure issues
+
+---
+
+### Project Manager
+
+**Role Description:**  
+The Project Manager coordinates the implementation, tracks progress, manages risks, and ensures timely delivery of the Logic Apps solution. They facilitate communication between technical teams and business stakeholders.
+
+**Key Responsibilities & Deliverables:**
+- Create project plans and timelines for Logic Apps migration
+- Track workflow migration progress (e.g., 100 workflows/sprint)
+- Manage risks related to cost overruns and performance issues
+- Coordinate across Solution Architect, Developers, and DevOps teams
+- Report status to Solution Owner and executive leadership
+- Ensure documentation and knowledge transfer
+
+**How This Solution Helps:**
+- **Phased Implementation**: Clear guidance for incremental workflow migration (avoid big-bang deployments)
+- **Success Metrics**: KPIs for tracking project health (workflow count, cost/workflow, uptime %)
+- **Risk Mitigation**: Documented risks and mitigation strategies for common issues
+- **Documentation**: Comprehensive README, architecture diagrams, and runbooks for team onboarding
+- **ROI Tracking**: Cost baseline ($80K/year) vs. optimized architecture for business case validation
+
+---
+
+## 🏗️ Architecture
+
+### TOGAF BDAT Model - Solution Architecture
 
 ```mermaid
 graph TB
     subgraph "Business Layer"
         B1[Order Processing]
-        B2[Customer Management]
-        B3[Inventory Management]
-        B4[Financial Operations]
-        B5[Compliance & Reporting]
+        B2[Invoice Management]
+        B3[Customer Notifications]
+        B4[Integration Orchestration]
+        B5[Long-Running Workflows<br/>18-36 months]
     end
-
+    
     subgraph "Data Layer"
-        D1[(Order Database<br/>Cosmos DB)]
-        D2[(Customer Profiles<br/>Cosmos DB)]
-        D3[(Inventory State<br/>Cosmos DB)]
-        D4[(Audit Logs<br/>Log Analytics)]
-        D5[(Metrics Store<br/>Application Insights)]
+        D1[(Azure Storage<br/>Workflow State)]
+        D2[(Cosmos DB<br/>Order Data)]
+        D3[(SQL Database<br/>Customer Records)]
+        D4[(Log Analytics<br/>Telemetry)]
+        D5[(Blob Storage<br/>Documents)]
     end
-
+    
     subgraph "Application Layer"
-        A1[Order Workflow Apps<br/>15 workflows/app]
-        A2[Customer Workflow Apps<br/>12 workflows/app]
-        A3[Inventory Workflow Apps<br/>10 workflows/app]
-        A4[Integration APIs<br/>.NET 8]
-        A5[Monitoring Dashboard<br/>Azure Workbooks]
+        A1[Logic Apps Standard<br/>Workflow Runtime]
+        A2[PoProcAPI<br/>Purchase Order API]
+        A3[PoWebApp<br/>Web Portal]
+        A4[Azure Functions<br/>Custom Logic]
+        A5[API Management<br/>Gateway]
     end
-
+    
     subgraph "Technology Layer"
-        T1[App Service Plan WS1<br/>3-5 instances]
-        T2[Azure Service Bus<br/>Premium Tier]
-        T3[Azure Key Vault<br/>Managed HSM]
-        T4[Azure Monitor<br/>Platform Services]
-        T5[Azure Front Door<br/>Global Load Balancer]
+        T1[App Service Plans<br/>EP1/EP2/EP3]
+        T2[Azure Monitor<br/>+ Application Insights]
+        T3[Azure Key Vault<br/>Secrets Management]
+        T4[VNet Integration<br/>Private Endpoints]
+        T5[Azure DevOps<br/>CI/CD Pipelines]
     end
-
+    
     B1 --> A1
-    B2 --> A2
-    B3 --> A3
-    B4 --> A4
-    B5 --> A5
-
+    B2 --> A1
+    B3 --> A1
+    B4 --> A1
+    B5 --> A1
+    
     A1 --> D1
-    A2 --> D2
+    A1 --> D2
+    A2 --> D3
     A3 --> D3
-    A1 & A2 & A3 --> D4
-    A1 & A2 & A3 & A4 --> D5
-
-    A1 & A2 & A3 --> T1
-    A1 & A2 & A3 --> T2
+    A1 --> D4
+    A1 --> D5
+    
+    A1 --> T1
+    A2 --> T1
+    A3 --> T1
     A4 --> T1
-    A1 & A2 & A3 & A4 --> T3
-    A5 --> T4
-    T5 --> T1
-
-    style B1 fill:#e1f5ff
-    style B2 fill:#e1f5ff
-    style B3 fill:#e1f5ff
-    style B4 fill:#e1f5ff
-    style B5 fill:#e1f5ff
-    style D1 fill:#fff4e1
-    style D2 fill:#fff4e1
-    style D3 fill:#fff4e1
-    style D4 fill:#fff4e1
-    style D5 fill:#fff4e1
-    style A1 fill:#e8f5e9
-    style A2 fill:#e8f5e9
-    style A3 fill:#e8f5e9
-    style A4 fill:#e8f5e9
-    style A5 fill:#e8f5e9
-    style T1 fill:#f3e5f5
-    style T2 fill:#f3e5f5
-    style T3 fill:#f3e5f5
-    style T4 fill:#f3e5f5
-    style T5 fill:#f3e5f5
+    A1 --> T2
+    A5 --> T2
+    A1 --> T3
+    A1 --> T4
+    
+    T5 --> A1
+    T5 --> A2
+    T5 --> A3
+    
+    classDef businessClass fill:#e1f5ff,stroke:#0078d4,stroke-width:2px
+    classDef dataClass fill:#fff4e1,stroke:#ff8c00,stroke-width:2px
+    classDef appClass fill:#e8f5e8,stroke:#107c10,stroke-width:2px
+    classDef techClass fill:#f3e8ff,stroke:#5c2d91,stroke-width:2px
+    
+    class B1,B2,B3,B4,B5 businessClass
+    class D1,D2,D3,D4,D5 dataClass
+    class A1,A2,A3,A4,A5 appClass
+    class T1,T2,T3,T4,T5 techClass
 ```
 
-### Architecture Principles
-
-This solution is built on five core architectural principles aligned with the **Azure Well-Architected Framework**:
-
-#### 1. **Workload Segmentation**
-- Distribute workflows based on execution patterns (high-volume vs. high-priority)
-- Isolate critical workflows from experimental or low-priority workflows
-- Implement separate App Service Plans for different SLA tiers
-
-#### 2. **Resource Optimization**
-- Right-size App Service Plans based on actual CPU/memory metrics, not theoretical capacity
-- Implement dynamic scaling policies tied to business metrics (orders/hour, not just CPU%)
-- Consolidate monitoring resources to reduce operational overhead
-
-#### 3. **Data Sovereignty & Compliance**
-- Deploy regional instances with data residency guarantees
-- Implement geo-replication for disaster recovery
-- Ensure audit logs are immutable and tamper-proof
-
-#### 4. **Observability by Design**
-- Emit structured telemetry from every workflow execution
-- Implement distributed tracing across microservices
-- Build real-time dashboards for business and technical metrics
-
-#### 5. **Cost-Conscious Engineering**
-- Track and attribute costs to business units/projects via tagging
-- Implement automated rightsizing recommendations
-- Use serverless components where appropriate (Functions, Container Apps)
-
----
-
-## 🖥️ System Architecture
-
-### Azure Resource Topology
+### System Architecture
 
 ```mermaid
 graph TB
-    subgraph "Global Services"
-        AFD[Azure Front Door<br/>Premium]
-        TM[Traffic Manager<br/>Performance Routing]
+    subgraph "External Systems"
+        EXT1[External APIs]
+        EXT2[Partner Systems]
+        EXT3[On-Premises Systems]
+        EXT4[SaaS Applications]
     end
-
-    subgraph "Region: East US 2"
-        subgraph "Compute Tier"
-            ASP1[App Service Plan<br/>WS1 - 3 instances<br/>High Priority Workflows]
-            LA1[Logic App: Orders<br/>15 workflows]
-            LA2[Logic App: Payments<br/>12 workflows]
-            LA3[Logic App: Fulfillment<br/>10 workflows]
-            
-            ASP2[App Service Plan<br/>WS1 - 5 instances<br/>High Volume Workflows]
-            LA4[Logic App: Batch Processing<br/>8 workflows]
-            LA5[Logic App: Integrations<br/>10 workflows]
+    
+    subgraph "Azure Logic Apps - Distributed Topology"
+        subgraph "App Service Plan 1 (EP2)"
+            LA1[Logic App 1<br/>20 workflows]
+            LA2[Logic App 2<br/>20 workflows]
+            LA3[Logic App N<br/>20 workflows]
         end
-
-        subgraph "Data Tier"
-            COSMOS1[(Cosmos DB<br/>SQL API<br/>Orders Container)]
-            SB1[Service Bus<br/>Premium<br/>4 Messaging Units]
-            STORAGE1[Storage Account<br/>GPv2 - Hot Tier]
-        end
-
-        subgraph "Observability"
-            AI1[Application Insights<br/>Workspace-based]
-            LA_WS1[Log Analytics<br/>30-day retention]
-        end
-
-        subgraph "Security"
-            KV1[Key Vault<br/>Standard Tier]
-            MI1[Managed Identity<br/>System-assigned]
+        
+        subgraph "App Service Plan 2 (EP3)"
+            LA64[Logic App 64<br/>20 workflows]
+            LA65[Logic App 65<br/>20 workflows]
+            LA66[Logic App M<br/>20 workflows]
         end
     end
-
-    subgraph "Region: West Europe"
-        subgraph "Compute Tier"
-            ASP3[App Service Plan<br/>WS1 - 3 instances]
-            LA6[Logic App: Orders EU<br/>15 workflows]
-            LA7[Logic App: Payments EU<br/>12 workflows]
-        end
-
-        subgraph "Data Tier"
-            COSMOS2[(Cosmos DB<br/>Read Replica)]
-            SB2[Service Bus<br/>Premium<br/>Geo-redundant]
-            STORAGE2[Storage Account<br/>GPv2 - Hot Tier]
-        end
-
-        subgraph "Observability"
-            AI2[Application Insights<br/>Workspace-based]
-            LA_WS2[Log Analytics<br/>30-day retention]
-        end
-
-        subgraph "Security"
-            KV2[Key Vault<br/>Standard Tier]
-            MI2[Managed Identity<br/>System-assigned]
-        end
+    
+    subgraph "Supporting Services"
+        APIM[API Management<br/>Gateway & Throttling]
+        KV[Azure Key Vault<br/>Secrets & Certificates]
+        STORAGE[Azure Storage<br/>Queue & Blob]
+        COSMOS[(Cosmos DB<br/>State & Business Data)]
     end
-
-    AFD --> TM
-    TM --> ASP1
-    TM --> ASP3
-
-    ASP1 --> LA1 & LA2 & LA3
-    ASP2 --> LA4 & LA5
-    ASP3 --> LA6 & LA7
-
-    LA1 & LA2 & LA3 --> COSMOS1
-    LA1 & LA2 & LA3 --> SB1
-    LA1 & LA2 & LA3 --> STORAGE1
-    LA4 & LA5 --> COSMOS1
-    LA4 & LA5 --> SB1
-    LA6 & LA7 --> COSMOS2
-    LA6 & LA7 --> SB2
-
-    LA1 & LA2 & LA3 & LA4 & LA5 --> AI1
-    LA6 & LA7 --> AI2
-    AI1 --> LA_WS1
-    AI2 --> LA_WS2
-
-    LA1 & LA2 & LA3 & LA4 & LA5 --> KV1
-    LA6 & LA7 --> KV2
-    LA1 & LA2 & LA3 & LA4 & LA5 --> MI1
-    LA6 & LA7 --> MI2
-
-    COSMOS1 -.Multi-region write.-> COSMOS2
-
-    style AFD fill:#0078D4,color:#fff
-    style ASP1 fill:#68217A,color:#fff
-    style ASP2 fill:#68217A,color:#fff
-    style ASP3 fill:#68217A,color:#fff
-    style COSMOS1 fill:#0078D4,color:#fff
-    style COSMOS2 fill:#0078D4,color:#fff
-    style AI1 fill:#FF6B00,color:#fff
-    style AI2 fill:#FF6B00,color:#fff
+    
+    subgraph "Monitoring & Observability"
+        MONITOR[Azure Monitor<br/>Metrics & Alerts]
+        INSIGHTS[Application Insights<br/>Distributed Tracing]
+        LOGS[Log Analytics<br/>Centralized Logging]
+        WORKBOOK[Azure Workbooks<br/>Dashboards]
+    end
+    
+    subgraph "CI/CD & DevOps"
+        REPO[GitHub/Azure Repos<br/>Source Control]
+        PIPELINE[Azure Pipelines<br/>Build & Deploy]
+        BICEP[Bicep Templates<br/>IaC]
+    end
+    
+    EXT1 --> APIM
+    EXT2 --> APIM
+    EXT3 --> APIM
+    EXT4 --> APIM
+    
+    APIM --> LA1
+    APIM --> LA2
+    APIM --> LA64
+    APIM --> LA65
+    
+    LA1 --> KV
+    LA2 --> KV
+    LA1 --> STORAGE
+    LA2 --> COSMOS
+    LA64 --> STORAGE
+    LA65 --> COSMOS
+    
+    LA1 --> INSIGHTS
+    LA2 --> INSIGHTS
+    LA64 --> INSIGHTS
+    LA65 --> INSIGHTS
+    
+    INSIGHTS --> LOGS
+    MONITOR --> LOGS
+    LOGS --> WORKBOOK
+    
+    MONITOR -.Alert.-> LA1
+    MONITOR -.Alert.-> LA2
+    MONITOR -.Alert.-> LA64
+    
+    REPO --> PIPELINE
+    PIPELINE --> BICEP
+    BICEP --> LA1
+    BICEP --> LA2
+    BICEP --> LA64
+    
+    classDef externalClass fill:#ffcccc,stroke:#cc0000,stroke-width:2px
+    classDef logicAppClass fill:#cce5ff,stroke:#0066cc,stroke-width:2px
+    classDef supportClass fill:#d9f2d9,stroke:#339933,stroke-width:2px
+    classDef monitorClass fill:#ffe6cc,stroke:#ff9933,stroke-width:2px
+    classDef devopsClass fill:#e6ccff,stroke:#9933ff,stroke-width:2px
+    
+    class EXT1,EXT2,EXT3,EXT4 externalClass
+    class LA1,LA2,LA3,LA64,LA65,LA66 logicAppClass
+    class APIM,KV,STORAGE,COSMOS supportClass
+    class MONITOR,INSIGHTS,LOGS,WORKBOOK monitorClass
+    class REPO,PIPELINE,BICEP devopsClass
 ```
 
-### Resource Configuration Details
-
-#### App Service Plans
-
-| **Plan Name** | **SKU** | **Instances** | **Workflow Type** | **Max Workflows** |
-|--------------|---------|---------------|-------------------|-------------------|
-| asp-orders-prod | WS1 | 3-5 (auto-scale) | High-priority, low-volume | 15 per app |
-| asp-batch-prod | WS1 | 5-10 (auto-scale) | High-volume, batch | 8-10 per app |
-| asp-integration-prod | WS1 | 2-3 (auto-scale) | API integrations | 12 per app |
-
-#### Cosmos DB Configuration
-
-```json
-{
-  "database": "eShopOrders",
-  "containers": [
-    {
-      "name": "orders",
-      "partitionKey": "/customerId",
-      "hierarchicalPartitionKey": ["/tenantId", "/customerId"],
-      "throughput": "autoscale",
-      "maxRU": 10000,
-      "defaultTTL": -1
-    },
-    {
-      "name": "orderEvents",
-      "partitionKey": "/orderId",
-      "throughput": "autoscale",
-      "maxRU": 5000,
-      "defaultTTL": 2592000
-    }
-  ]
-}
-```
-
-#### Service Bus Topology
-
-```
-Premium Tier (4 Messaging Units)
-├── Namespace: sb-orders-prod
-├── Topics
-│   ├── order-created (Max 1GB, TTL: 14 days)
-│   ├── order-updated (Max 1GB, TTL: 14 days)
-│   └── order-completed (Max 1GB, TTL: 7 days)
-└── Subscriptions
-    ├── order-fulfillment-sub
-    ├── order-payment-sub
-    └── order-notification-sub
-```
-
----
-
-## 📊 Solution Dataflow
-
-### Application Data Processing Flow
+### Solution Dataflow - Application Data
 
 ```mermaid
 flowchart TD
-    START([Customer Order Placed]) --> VALIDATE[Validate Order<br/>Logic App: OrderValidation]
+    START([External Trigger<br/>HTTP/Queue/Schedule])
     
-    VALIDATE --> CHECK{Order Valid?}
-    CHECK -->|Yes| COSMOS_WRITE[(Write to Cosmos DB<br/>orders container)]
-    CHECK -->|No| ERROR_HANDLER[Error Handler<br/>Retry Logic]
+    START --> APIM[API Management<br/>Rate Limiting & Auth]
     
-    COSMOS_WRITE --> PUBLISH_EVENT[Publish to Service Bus<br/>order-created topic]
+    APIM --> ROUTE{Workflow<br/>Router}
     
-    PUBLISH_EVENT --> PARALLEL{Parallel Processing}
+    ROUTE -->|Order Workflows| LA_ORDER[Logic App Instance<br/>Order Processing]
+    ROUTE -->|Invoice Workflows| LA_INVOICE[Logic App Instance<br/>Invoice Processing]
+    ROUTE -->|Notification Workflows| LA_NOTIFY[Logic App Instance<br/>Notifications]
     
-    PARALLEL --> PAYMENT[Payment Processing<br/>Logic App: ProcessPayment]
-    PARALLEL --> INVENTORY[Inventory Check<br/>Logic App: CheckInventory]
-    PARALLEL --> NOTIFY[Customer Notification<br/>Logic App: SendNotification]
+    LA_ORDER --> VALIDATE{Data<br/>Validation}
+    LA_INVOICE --> VALIDATE
+    LA_NOTIFY --> TRANSFORM[Transform Data<br/>Apply Business Rules]
     
-    PAYMENT --> PAYMENT_API[Call Payment Gateway<br/>External API]
-    PAYMENT_API --> PAYMENT_UPDATE[(Update Cosmos DB<br/>payment status)]
+    VALIDATE -->|Valid| TRANSFORM
+    VALIDATE -->|Invalid| ERROR_QUEUE[(Error Queue<br/>Dead Letter)]
     
-    INVENTORY --> INVENTORY_CHECK[Check Stock Levels<br/>Cosmos DB query]
-    INVENTORY_CHECK --> RESERVE{Stock Available?}
-    RESERVE -->|Yes| RESERVE_ITEM[(Reserve Inventory<br/>Update Cosmos DB)]
-    RESERVE -->|No| BACKORDER[Create Backorder<br/>Service Bus message]
+    TRANSFORM --> ENRICH[Enrich Data<br/>Lookup Reference Data]
     
-    NOTIFY --> SEND_EMAIL[Send Confirmation Email<br/>SendGrid/Graph API]
+    ENRICH --> COSMOS_READ[(Cosmos DB<br/>Read Customer/Product)]
+    COSMOS_READ --> BUSINESS_LOGIC[Execute<br/>Business Logic]
     
-    PAYMENT_UPDATE --> AGGREGATE[Order Aggregator<br/>Logic App: AggregateOrder]
-    RESERVE_ITEM --> AGGREGATE
-    BACKORDER --> AGGREGATE
-    SEND_EMAIL --> AGGREGATE
+    BUSINESS_LOGIC --> EXTERNAL_API[Call External API<br/>Partner Systems]
+    EXTERNAL_API --> PROCESS_RESPONSE{Response<br/>Status}
     
-    AGGREGATE --> FINAL_CHECK{All Steps Complete?}
-    FINAL_CHECK -->|Yes| COMPLETE[(Mark Order Complete<br/>Cosmos DB update)]
-    FINAL_CHECK -->|No| WAIT[Wait for Pending Steps<br/>Durable State Pattern]
+    PROCESS_RESPONSE -->|Success| PERSIST[(Persist Results<br/>Cosmos DB/SQL)]
+    PROCESS_RESPONSE -->|Retry| RETRY_QUEUE[(Retry Queue<br/>Exponential Backoff)]
+    PROCESS_RESPONSE -->|Fatal Error| ERROR_QUEUE
     
-    COMPLETE --> FULFILLMENT[Trigger Fulfillment<br/>Service Bus: order-completed]
-    FULFILLMENT --> END([Order Processed])
+    PERSIST --> NOTIFY_DOWNSTREAM[Trigger Downstream<br/>Event Grid/Service Bus]
     
-    WAIT --> TIMEOUT{Timeout?}
-    TIMEOUT -->|Yes| COMPENSATION[Compensation Logic<br/>Rollback Changes]
-    TIMEOUT -->|No| AGGREGATE
+    RETRY_QUEUE -.Retry After Delay.-> EXTERNAL_API
     
-    COMPENSATION --> CANCEL[(Cancel Order<br/>Cosmos DB update)]
-    CANCEL --> END
+    NOTIFY_DOWNSTREAM --> END([Workflow<br/>Complete])
     
-    ERROR_HANDLER --> RETRY_COUNT{Retry < 3?}
-    RETRY_COUNT -->|Yes| VALIDATE
-    RETRY_COUNT -->|No| DLQ[Dead Letter Queue<br/>Service Bus]
-    DLQ --> ALERT[Alert On-Call Engineer<br/>Azure Monitor Alert]
-    ALERT --> END
-
-    style START fill:#4CAF50,color:#fff
-    style END fill:#F44336,color:#fff
-    style COSMOS_WRITE fill:#2196F3,color:#fff
-    style PAYMENT_UPDATE fill:#2196F3,color:#fff
-    style RESERVE_ITEM fill:#2196F3,color:#fff
-    style COMPLETE fill:#2196F3,color:#fff
-    style CANCEL fill:#2196F3,color:#fff
-    style PUBLISH_EVENT fill:#FF9800,color:#fff
-    style FULFILLMENT fill:#FF9800,color:#fff
-    style ERROR_HANDLER fill:#F44336,color:#fff
-    style COMPENSATION fill:#F44336,color:#fff
+    ERROR_QUEUE --> ALERT[Trigger Alert<br/>Azure Monitor]
+    ALERT --> INCIDENT[Create Incident<br/>ServiceNow/Jira]
+    
+    style START fill:#4caf50,stroke:#2e7d32,stroke-width:3px,color:#fff
+    style END fill:#4caf50,stroke:#2e7d32,stroke-width:3px,color:#fff
+    style ERROR_QUEUE fill:#f44336,stroke:#c62828,stroke-width:2px,color:#fff
+    style ALERT fill:#ff9800,stroke:#e65100,stroke-width:2px,color:#fff
+    style COSMOS_READ fill:#2196f3,stroke:#1565c0,stroke-width:2px,color:#fff
+    style PERSIST fill:#2196f3,stroke:#1565c0,stroke-width:2px,color:#fff
 ```
 
-### Data Flow Characteristics
-
-#### Performance SLAs
-
-| **Flow Stage** | **Target Latency** | **Success Rate** |
-|---------------|-------------------|------------------|
-| Order Validation | < 200ms P95 | 99.9% |
-| Cosmos DB Write | < 50ms P95 | 99.99% |
-| Service Bus Publish | < 100ms P95 | 99.95% |
-| Payment Processing | < 3s P95 | 99.5% |
-| Inventory Check | < 500ms P95 | 99.9% |
-| End-to-End Processing | < 10s P95 | 99.5% |
-
-#### Data Volumes
-
-- **Peak Load**: 5,000 orders/minute
-- **Daily Order Volume**: 2-3 million orders
-- **Cosmos DB Operations**: 50M RUs/day
-- **Service Bus Messages**: 15M messages/day
-- **Storage**: 500GB active data, 5TB archive
-
----
-
-## 📡 Monitoring Dataflow
-
-### Telemetry Collection & Processing Flow
+### Monitoring Dataflow - Telemetry & Observability
 
 ```mermaid
 flowchart TD
-    subgraph "Data Sources"
-        LA[Logic Apps<br/>Workflow Executions]
-        API[.NET APIs<br/>Custom Events]
-        COSMOS[(Cosmos DB<br/>Diagnostic Logs)]
-        SB[Service Bus<br/>Metrics]
+    subgraph "Logic Apps Runtime"
+        LA1[Logic App Instance 1<br/>20 Workflows]
+        LA2[Logic App Instance 2<br/>20 Workflows]
+        LAN[Logic App Instance N<br/>20 Workflows]
     end
-
-    subgraph "Collection Layer"
-        LA --> AI_SDK[Application Insights SDK<br/>Auto-instrumentation]
-        API --> AI_SDK
-        COSMOS --> DIAG[Azure Diagnostic Settings]
-        SB --> DIAG
-    end
-
-    subgraph "Ingestion & Processing"
-        AI_SDK --> AI_INGESTION[AI Ingestion Endpoint<br/>TelemetryChannel]
-        DIAG --> DIAG_PIPELINE[Diagnostic Pipeline<br/>Azure Monitor]
-        
-        AI_INGESTION --> SAMPLING{Adaptive Sampling<br/>5% for high volume}
-        SAMPLING -->|Sampled| AI_STORAGE[(Application Insights<br/>Table Storage)]
-        SAMPLING -->|100%| CRITICAL[(Critical Events<br/>Always Logged)]
-        
-        DIAG_PIPELINE --> LA_STORAGE[(Log Analytics<br/>Custom Tables)]
-    end
-
-    subgraph "Analysis & Alerting"
-        AI_STORAGE --> QUERY[KQL Queries<br/>Custom Workbooks]
-        LA_STORAGE --> QUERY
-        CRITICAL --> QUERY
-        
-        QUERY --> METRICS[Custom Metrics<br/>50+ metrics]
-        QUERY --> ALERTS[Alert Rules<br/>30+ conditions]
-        
-        METRICS --> DASHBOARD[Azure Dashboards<br/>Real-time Views]
-        ALERTS --> ACTION_GROUP[Action Groups]
-    end
-
-    subgraph "Notification & Response"
-        ACTION_GROUP --> EMAIL[Email Notifications<br/>On-call team]
-        ACTION_GROUP --> SMS[SMS Alerts<br/>Critical only]
-        ACTION_GROUP --> WEBHOOK[Webhook<br/>PagerDuty/Slack]
-        ACTION_GROUP --> AUTO_SCALE[Autoscale Trigger<br/>Add instances]
-    end
-
-    subgraph "Long-term Storage"
-        AI_STORAGE --> EXPORT[Continuous Export<br/>Azure Storage]
-        LA_STORAGE --> ARCHIVE[Archive to Storage<br/>Cool tier]
-        EXPORT --> BLOB[(Blob Storage<br/>90-day retention)]
-        ARCHIVE --> BLOB
-        BLOB --> SYNAPSE[Azure Synapse<br/>Historical Analysis]
-    end
-
-    style LA fill:#68217A,color:#fff
-    style API fill:#68217A,color:#fff
-    style AI_STORAGE fill:#FF6B00,color:#fff
-    style LA_STORAGE fill:#FF6B00,color:#fff
-    style CRITICAL fill:#F44336,color:#fff
-    style ALERTS fill:#F44336,color:#fff
-    style DASHBOARD fill:#4CAF50,color:#fff
-```
-
-### Monitoring Metrics Catalog
-
-#### Workflow-Level Metrics
-
-```kusto
-// Custom metrics emitted by Logic Apps
-customMetrics
-| where name in (
-    "WorkflowExecutionTime",      // P50, P95, P99 latency
-    "WorkflowSuccessRate",         // Success % over 5min window
-    "WorkflowRetryCount",          // Number of retries before success
-    "WorkflowMemoryUsage",         // MB consumed per execution
-    "WorkflowConcurrentRuns",      // Parallel executions
-    "WorkflowQueueDepth"           // Pending workflow instances
-)
-```
-
-#### Infrastructure Metrics
-
-| **Metric** | **Source** | **Alert Threshold** | **Action** |
-|-----------|-----------|---------------------|-----------|
-| CPU Percentage | App Service | > 80% for 5 min | Scale out +1 instance |
-| Memory Percentage | App Service | > 85% for 3 min | Scale out +1 instance |
-| HTTP Server Errors | App Service | > 10 in 5 min | Alert on-call team |
-| Cosmos DB RU Consumption | Cosmos DB | > 80% of provisioned | Auto-scale RUs |
-| Service Bus Dead Letters | Service Bus | > 50 messages | Alert + investigate |
-| Storage Account Throttling | Storage | > 5 requests/min | Review access patterns |
-
-#### Business Metrics
-
-```kusto
-// Track business KPIs from workflow telemetry
-customEvents
-| where name == "OrderCompleted"
-| summarize 
-    OrderCount = count(),
-    TotalRevenue = sum(todouble(customDimensions.orderAmount)),
-    AvgOrderValue = avg(todouble(customDimensions.orderAmount))
-    by bin(timestamp, 1h)
+    
+    LA1 --> EMIT1[Emit Telemetry<br/>Traces/Metrics/Logs]
+    LA2 --> EMIT2[Emit Telemetry<br/>Traces/Metrics/Logs]
+    LAN --> EMITN[Emit Telemetry<br/>Traces/Metrics/Logs]
+    
+    EMIT1 --> INSIGHTS[Application Insights<br/>Distributed Tracing]
+    EMIT2 --> INSIGHTS
+    EMITN --> INSIGHTS
+    
+    EMIT1 --> METRICS[Azure Monitor Metrics<br/>CPU/Memory/Requests]
+    EMIT2 --> METRICS
+    EMITN --> METRICS
+    
+    EMIT1 --> LOGS_RAW[Diagnostic Logs<br/>Raw Event Stream]
+    EMIT2 --> LOGS_RAW
+    EMITN --> LOGS_RAW
+    
+    INSIGHTS --> LOGS[Log Analytics Workspace<br/>Centralized Repository]
+    METRICS --> LOGS
+    LOGS_RAW --> LOGS
+    
+    LOGS --> QUERY{KQL Queries<br/>Kusto Query Language}
+    
+    QUERY --> DASHBOARD[Azure Workbooks<br/>Operational Dashboards]
+    QUERY --> ALERT_RULES[Alert Rules<br/>Metric/Log-based]
+    QUERY --> EXPORT[Export to SIEM<br/>Splunk/Sentinel]
+    
+    ALERT_RULES --> EVAL{Evaluate<br/>Threshold}
+    
+    EVAL -->|Threshold Exceeded| FIRE_ALERT[Fire Alert<br/>Severity 0-4]
+    EVAL -->|Within Threshold| MONITOR_CONTINUE[Continue<br/>Monitoring]
+    
+    FIRE_ALERT --> ACTION_GROUP[Action Group<br/>Email/SMS/Webhook]
+    
+    ACTION_GROUP --> NOTIFY_TEAMS[Microsoft Teams<br/>Notification]
+    ACTION_GROUP --> NOTIFY_ONCALL[PagerDuty/Opsgenie<br/>On-Call Escalation]
+    ACTION_GROUP --> TRIGGER_RUNBOOK[Azure Automation<br/>Auto-Remediation]
+    
+    TRIGGER_RUNBOOK --> REMEDIATE{Auto-Remediate<br/>Success?}
+    
+    REMEDIATE -->|Yes| RESOLVE[Resolve Alert<br/>Update Status]
+    REMEDIATE -->|No| ESCALATE[Escalate to<br/>DevOps Team]
+    
+    DASHBOARD --> ANALYZE[Trend Analysis<br/>Performance Tuning]
+    EXPORT --> COMPLIANCE[Compliance Auditing<br/>Security Analytics]
+    
+    style INSIGHTS fill:#00bcd4,stroke:#0097a7,stroke-width:2px,color:#fff
+    style LOGS fill:#3f51b5,stroke:#283593,stroke-width:2px,color:#fff
+    style ALERT_RULES fill:#ff9800,stroke:#e65100,stroke-width:2px,color:#fff
+    style FIRE_ALERT fill:#f44336,stroke:#c62828,stroke-width:2px,color:#fff
+    style RESOLVE fill:#4caf50,stroke:#2e7d32,stroke-width:2px,color:#fff
 ```
 
 ---
 
-## 🚀 Getting Started
+## 🚀 Installation & Configuration
 
 ### Prerequisites
 
-Ensure you have the following installed and configured:
+- **Azure Subscription** with Contributor access
+- **Azure CLI** version 2.40.0 or higher
+- **Bicep CLI** version 0.13.1 or higher
+- **Visual Studio Code** with the following extensions:
+  - Azure Logic Apps (Standard)
+  - Azure Account
+  - Bicep
+- **.NET 6.0 SDK** (for Logic Apps local development)
+- **Git** for source control
 
-#### Required Software
-
-- **Azure CLI** (v2.50.0 or later) - [Install](https://learn.microsoft.com/cli/azure/install-azure-cli)
-- **Azure Developer CLI (azd)** (v1.0.0 or later) - [Install](https://learn.microsoft.com/azure/developer/azure-developer-cli/install-azd)
-- **.NET 8.0 SDK** - [Download](https://dotnet.microsoft.com/download/dotnet/8.0)
-- **Python 3.10+** (for order generation scripts) - [Download](https://www.python.org/downloads/)
-- **PowerShell 7.0+** - [Download](https://github.com/PowerShell/PowerShell)
-
-#### Recommended Tools
-
-- **Visual Studio Code** with extensions:
-  - [Azure Logic Apps (Standard)](https://marketplace.visualstudio.com/items?itemName=ms-azuretools.vscode-azurelogicapps)
-  - [Azure Account](https://marketplace.visualstudio.com/items?itemName=ms-vscode.azure-account)
-  - [Bicep](https://marketplace.visualstudio.com/items?itemName=ms-azuretools.vscode-bicep)
-  - [C# Dev Kit](https://marketplace.visualstudio.com/items?itemName=ms-dotnettools.csdevkit)
-- **Azure Storage Explorer** - [Download](https://azure.microsoft.com/features/storage-explorer/)
-- **Postman** or similar API testing tool
-
-#### Azure Subscription Requirements
-
-- **Active Azure Subscription** with Owner or Contributor access
-- **Resource Providers** registered:
-  ```bash
-  az provider register --namespace Microsoft.Web
-  az provider register --namespace Microsoft.DocumentDB
-  az provider register --namespace Microsoft.ServiceBus
-  az provider register --namespace Microsoft.Insights
-  az provider register --namespace Microsoft.KeyVault
-  ```
-- **Sufficient Quota**:
-  - App Service Plans: Minimum 5 WS1 instances per region
-  - Cosmos DB: Minimum 50,000 RU/s autoscale
-  - Service Bus: Premium tier with 4 messaging units
-
-### Quick Start Deployment
-
-#### 1. Clone the Repository
+### Step 1: Clone the Repository
 
 ```bash
 git clone https://github.com/Evilazaro/Azure-LogicApps-Monitoring.git
 cd Azure-LogicApps-Monitoring
 ```
 
-#### 2. Authenticate with Azure
+### Step 2: Configure Azure Environment
+
+1. **Login to Azure**:
+   ```bash
+   az login
+   az account set --subscription "Your-Subscription-Name"
+   ```
+
+2. **Set Environment Variables**:
+   
+   Create a `.azure/config.json` file (use [.azure/uat/config.json](.azure/uat/config.json) as template):
+   
+   ```json
+   {
+     "environment": "uat",
+     "location": "eastus",
+     "resourceGroupName": "rg-logicapps-uat",
+     "appServicePlanSku": "EP2",
+     "logicAppCount": 50,
+     "workflowsPerApp": 20,
+     "enableApplicationInsights": true,
+     "enableVNetIntegration": false
+   }
+   ```
+
+### Step 3: Deploy Infrastructure
+
+1. **Review Bicep Templates**:
+   
+   The main infrastructure template is located at [infra/main.bicep](infra/main.bicep). Review parameters in [infra/main.parameters.json](infra/main.parameters.json).
+
+2. **Deploy Using Azure CLI**:
+   
+   ```bash
+   # Validate Bicep template
+   az deployment sub validate \
+     --location eastus \
+     --template-file infra/main.bicep \
+     --parameters infra/main.parameters.json
+   
+   # Deploy infrastructure
+   az deployment sub create \
+     --location eastus \
+     --template-file infra/main.bicep \
+     --parameters infra/main.parameters.json \
+     --name "logicapps-deployment-$(date +%Y%m%d-%H%M%S)"
+   ```
+
+3. **Verify Deployment**:
+   
+   ```bash
+   # List deployed Logic Apps
+   az logicapp list --resource-group rg-logicapps-uat --output table
+   
+   # Check App Service Plan capacity
+   az appservice plan show \
+     --name asp-logicapps-uat \
+     --resource-group rg-logicapps-uat \
+     --query "{Name:name, Tier:sku.tier, Capacity:sku.capacity, Status:status}"
+   ```
+
+### Step 4: Configure Monitoring
+
+1. **Enable Application Insights**:
+   
+   Application Insights is automatically configured via Bicep. Verify the instrumentation key:
+   
+   ```bash
+   az monitor app-insights component show \
+     --app appi-logicapps-uat \
+     --resource-group rg-logicapps-uat \
+     --query instrumentationKey
+   ```
+
+2. **Configure Log Analytics Workspace**:
+   
+   The workspace is created at monitoring. All Logic Apps send logs to this workspace.
+
+3. **Deploy Alert Rules**:
+   
+   ```bash
+   az deployment group create \
+     --resource-group rg-logicapps-uat \
+     --template-file infra/monitoring/alerts.bicep
+   ```
+
+### Step 5: Deploy Logic Apps Workflows
+
+1. **Using Azure DevOps/GitHub Actions**:
+   
+   CI/CD pipelines are defined in workflows. Configure the following secrets:
+   
+   - `AZURE_CREDENTIALS`: Service Principal credentials
+   - `AZURE_SUBSCRIPTION_ID`: Your subscription ID
+   - `RESOURCE_GROUP_NAME`: Target resource group
+
+2. **Manual Deployment (Development)**:
+   
+   ```bash
+   # Deploy a single workflow
+   az logicapp deployment source config-zip \
+     --resource-group rg-logicapps-uat \
+     --name la-orders-001 \
+     --src workflows/order-processing.zip
+   ```
+
+### Step 6: Configure Managed Identities
+
+1. **Enable System-Assigned Managed Identity**:
+   
+   ```bash
+   az logicapp identity assign \
+     --resource-group rg-logicapps-uat \
+     --name la-orders-001
+   ```
+
+2. **Grant Access to Azure Resources**:
+   
+   ```bash
+   # Grant Cosmos DB access
+   az cosmosdb sql role assignment create \
+     --account-name cosmos-orders-uat \
+     --resource-group rg-logicapps-uat \
+     --scope "/" \
+     --principal-id <logic-app-managed-identity-id> \
+     --role-definition-id 00000000-0000-0000-0000-000000000002
+   ```
+
+### Step 7: Local Development Setup
+
+1. **Install Azure Logic Apps Extension** for VS Code
+
+2. **Create local.settings.json**:
+   
+   ```json
+   {
+     "IsEncrypted": false,
+     "Values": {
+       "AzureWebJobsStorage": "UseDevelopmentStorage=true",
+       "FUNCTIONS_WORKER_RUNTIME": "node",
+       "APPLICATIONINSIGHTS_CONNECTION_STRING": "InstrumentationKey=xxx"
+     }
+   }
+   ```
+
+3. **Run Logic App Locally**:
+   
+   Press `F5` in VS Code or use:
+   
+   ```bash
+   func start
+   ```
+
+---
+
+## 💡 Usage Examples
+
+### Example 1: Deploying 1000 Workflows Across 50 Logic Apps
+
+**Scenario**: You need to deploy 1000 order processing workflows.
+
+**Strategy**:
+- **50 Logic App instances** (1000 workflows ÷ 20 workflows/app)
+- **2 App Service Plans** (EP3 tier, each supporting 25-30 Logic Apps)
+- **Distribute by workflow type**: Orders, Invoices, Notifications
+
+**Implementation**:
 
 ```bash
-# Login to Azure CLI
-az login
+# Deploy first App Service Plan with 30 Logic Apps
+az deployment group create \
+  --resource-group rg-logicapps-uat \
+  --template-file infra/main.bicep \
+  --parameters \
+    appServicePlanName=asp-orders-plan1 \
+    appServicePlanSku=EP3 \
+    logicAppCount=30 \
+    logicAppNamePrefix=la-orders
 
-# Set your default subscription
-az account set --subscription "<your-subscription-id>"
-
-# Login to Azure Developer CLI
-azd auth login
+# Deploy second App Service Plan with 20 Logic Apps
+az deployment group create \
+  --resource-group rg-logicapps-uat \
+  --template-file infra/main.bicep \
+  --parameters \
+    appServicePlanName=asp-orders-plan2 \
+    appServicePlanSku=EP3 \
+    logicAppCount=20 \
+    logicAppNamePrefix=la-invoices
 ```
 
-#### 3. Initialize the Environment
+**Result**:
+- 50 Logic App instances deployed
+- Each hosting 20 workflows = 1000 total workflows
+- Memory optimized for long-term stability
 
-```bash
-# Initialize azd (interactive prompts)
-azd init
+---
 
-# Select or create an environment (e.g., "dev", "uat", "prod")
-# Choose your target Azure region (e.g., "eastus2")
+### Example 2: Monitoring a Long-Running Workflow (18+ Months)
+
+**Scenario**: Track a workflow that processes lease agreements over 18-36 months.
+
+**Key Metrics to Monitor**:
+- Memory consumption per Logic App instance
+- Workflow run duration
+- State checkpointing frequency
+
+**Log Analytics Query**:
+
+```kusto
+// Track long-running workflow performance over time
+AzureDiagnostics
+| where ResourceProvider == "MICROSOFT.WEB"
+| where Category == "WorkflowRuntime"
+| where workflow_name_s == "LeaseAgreementProcessing"
+| where run_duration_ms > 3600000 // Runs over 1 hour
+| summarize 
+    AvgDuration = avg(run_duration_ms),
+    MaxDuration = max(run_duration_ms),
+    RunCount = count()
+  by bin(TimeGenerated, 1d), workflow_name_s
+| render timechart
 ```
 
-This creates configuration in `.azure/<environment>/` directory.
-
-#### 4. Configure Environment Variables
-
-Edit `.azure/<environment>/.env` with your settings:
+**Alert Configuration**:
 
 ```bash
-# Core Configuration
-AZURE_ENV_NAME=dev
-AZURE_LOCATION=eastus2
-AZURE_SUBSCRIPTION_ID=<your-subscription-id>
-
-# Resource Naming (auto-generated but can be customized)
-RESOURCE_GROUP_NAME=rg-logicapps-dev
-APP_SERVICE_PLAN_NAME=asp-orders-dev
-LOGIC_APP_NAME=logic-orders-dev
-
-# Performance Tuning
-MAX_WORKFLOWS_PER_APP=15
-MAX_CONCURRENT_RUNS=50
-WORKFLOW_TIMEOUT_MINUTES=1440
-
-# Monitoring
-LOG_LEVEL=Information
-ENABLE_SAMPLING=true
-SAMPLING_PERCENTAGE=5
-
-# Feature Flags
-ENABLE_AUTO_SCALE=true
-ENABLE_COST_ALERTS=true
-```
-
-#### 5. Provision Azure Infrastructure
-
-```bash
-# Deploy all infrastructure (Bicep templates)
-azd provision
-
-# This will create:
-# - Resource Group
-# - App Service Plans
-# - Logic Apps (empty, ready for workflow deployment)
-# - Cosmos DB account and containers
-# - Service Bus namespace with topics
-# - Application Insights and Log Analytics
-# - Key Vault with secrets
-# - Storage Accounts
-# - Managed Identities
-```
-
-Provisioning typically takes **8-12 minutes**.
-
-#### 6. Deploy Application Code
-
-```bash
-# Deploy Logic Apps workflows and .NET APIs
-azd deploy
-
-# This will:
-# - Build .NET projects (src/PoProcAPI, src/PoWebApp)
-# - Package Logic Apps workflows (LogicAppWP/ContosoOrders)
-# - Deploy to Azure
-# - Configure application settings and connection strings
-```
-
-Deployment typically takes **5-8 minutes**.
-
-#### 7. Verify Deployment
-
-```bash
-# Check deployment status
-azd monitor --overview
-
-# View resource endpoints
-azd env get-values
-
-# Test Logic App endpoint
-curl https://<logic-app-name>.azurewebsites.net/runtime/webhooks/workflow/api/health
-```
-
-#### 8. Generate Test Data
-
-```bash
-# Using Python script
-python generate_orders.py --count 100 --output data/test_orders.json
-
-# Or using PowerShell
-.\hooks\generate_orders.ps1 -OrderCount 100 -OutputPath "data\test_orders.json"
-```
-
-#### 9. View Monitoring Dashboard
-
-```bash
-# Open Azure Portal to Application Insights
-azd monitor --logs
-
-# Or access directly
-https://portal.azure.com/#@<tenant>/resource<subscription>/resourceGroups/<rg-name>/providers/Microsoft.Insights/components/<ai-name>
+# Create alert for long-running workflow memory spikes
+az monitor metrics alert create \
+  --name "LongRunningWorkflow-MemorySpike" \
+  --resource-group rg-logicapps-uat \
+  --scopes "/subscriptions/.../resourceGroups/rg-logicapps-uat/providers/Microsoft.Web/sites/la-leases-001" \
+  --condition "avg WorkingSetBytes > 1500000000" \
+  --window-size 5m \
+  --evaluation-frequency 1m \
+  --severity 2
 ```
 
 ---
 
-## ⚙️ Installation & Configuration
+### Example 3: Cost Analysis Per Workflow
 
-### Detailed Configuration Guide
+**Scenario**: Calculate the cost per workflow to identify optimization opportunities.
 
-#### Infrastructure Customization
+**Azure Monitor Workbook Query**:
 
-Edit main.parameters.json to customize infrastructure:
-
-```json
-{
-  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
-  "contentVersion": "1.0.0.0",
-  "parameters": {
-    "environmentName": {
-      "value": "prod"
-    },
-    "location": {
-      "value": "eastus2"
-    },
-    "appServicePlanSku": {
-      "value": "WS1"
-    },
-    "appServicePlanCapacity": {
-      "value": 3
-    },
-    "cosmosDbThroughput": {
-      "value": 10000
-    },
-    "serviceBusSkuName": {
-      "value": "Premium"
-    },
-    "enableAutoScale": {
-      "value": true
-    },
-    "enableMonitoring": {
-      "value": true
-    },
-    "tags": {
-      "value": {
-        "Environment": "Production",
-        "CostCenter": "Engineering",
-        "Project": "eShop-Integration",
-        "Owner": "platform-team@contoso.com"
-      }
-    }
-  }
-}
+```kusto
+// Calculate execution cost per workflow
+let hourlyRate = 0.232; // EP2 hourly rate in USD
+let totalWorkflows = 1000;
+AzureDiagnostics
+| where ResourceProvider == "MICROSOFT.WEB"
+| where Category == "WorkflowRuntime"
+| summarize 
+    TotalRuns = count(),
+    AvgDuration = avg(run_duration_ms)
+  by workflow_name_s
+| extend 
+    CostPerRun = (AvgDuration / 3600000) * (hourlyRate / totalWorkflows),
+    MonthlyCost = TotalRuns * CostPerRun * 30
+| project workflow_name_s, TotalRuns, AvgDuration, CostPerRun, MonthlyCost
+| order by MonthlyCost desc
 ```
 
-#### Logic Apps Connection Configuration
+**Optimization Action**:
+- Workflows with `MonthlyCost > $100` should be reviewed for optimization
+- Consider moving high-frequency workflows to Azure Functions for cost savings
 
-Azure Logic Apps requires connection strings and API credentials for external services. These are stored securely in **Azure Key Vault** and referenced in workflow definitions.
+---
 
-**Step 1: Add Secrets to Key Vault**
+### Example 4: Scaling App Service Plans Based on Metrics
+
+**Scenario**: Automatically scale out when memory exceeds 80%.
+
+**Auto-Scale Configuration**:
 
 ```bash
-# Cosmos DB connection string
-az keyvault secret set \
-  --vault-name <key-vault-name> \
-  --name CosmosDBConnectionString \
-  --value "<cosmos-connection-string>"
-
-# Service Bus connection string
-az keyvault secret set \
-  --vault-name <key-vault-name> \
-  --name ServiceBusConnectionString \
-  --value "<service-bus-connection-string>"
-
-# External API keys
-az keyvault secret set \
-  --vault-name <key-vault-name> \
-  --name PaymentGatewayApiKey \
-  --value "<payment-api-key>"
-```
-
-**Step 2: Configure Managed Identity Access**
-
-```bash
-# Grant Logic App access to Key Vault
-az keyvault set-policy \
-  --name <key-vault-name> \
-  --object-id <logic-app-identity-id> \
-  --secret-permissions get list
-```
-
-**Step 3: Reference Secrets in Logic Apps**
-
-In your workflow's `connections.json`:
-
-```json
-{
-  "managedApiConnections": {
-    "cosmosdb": {
-      "api": {
-        "id": "/subscriptions/<sub-id>/providers/Microsoft.Web/locations/eastus2/managedApis/documentdb"
-      },
-      "authentication": {
-        "type": "ManagedServiceIdentity"
-      },
-      "connection": {
-        "id": "/subscriptions/<sub-id>/resourceGroups/<rg>/providers/Microsoft.Web/connections/cosmosdb-connection"
-      }
-    }
-  }
-}
-```
-
-For complete connection configuration, see LOGIC_APP_CONNECTIONS.md.
-
-#### Cosmos DB Optimization
-
-Configure Cosmos DB for optimal performance and cost:
-
-```bash
-# Create database with autoscale
-az cosmosdb sql database create \
-  --account-name <cosmos-account> \
-  --name eShopOrders \
-  --max-throughput 10000
-
-# Create container with hierarchical partition keys
-az cosmosdb sql container create \
-  --account-name <cosmos-account> \
-  --database-name eShopOrders \
-  --name orders \
-  --partition-key-path "/tenantId" \
-  --partition-key-version 2 \
-  --throughput 5000 \
-  --idx @indexing-policy.json
-```
-
-**Indexing Policy** (`indexing-policy.json`):
-
-```json
-{
-  "indexingMode": "consistent",
-  "automatic": true,
-  "includedPaths": [
-    {
-      "path": "/customerId/?",
-      "indexes": [
-        {
-          "kind": "Range",
-          "dataType": "String"
-        }
-      ]
-    },
-    {
-      "path": "/orderDate/?",
-      "indexes": [
-        {
-          "kind": "Range",
-          "dataType": "DateTime"
-        }
-      ]
-    }
-  ],
-  "excludedPaths": [
-    {
-      "path": "/orderDetails/*"
-    }
-  ]
-}
-```
-
-**Key Optimizations**:
-- **Hierarchical Partition Keys**: `/tenantId` (level 1) and `/customerId` (level 2) for better distribution
-- **Selective Indexing**: Only index frequently queried fields
-- **Autoscale**: Automatically adjust RUs based on traffic (min 1,000 RU/s, max 10,000 RU/s)
-- **TTL**: Set 30-day TTL on event containers to auto-delete old data
-
-#### Service Bus Configuration
-
-Configure Service Bus for reliable messaging:
-
-```bash
-# Create topics with dead-letter queues
-az servicebus topic create \
-  --namespace-name <sb-namespace> \
-  --name order-created \
-  --max-size 1024 \
-  --default-message-time-to-live P14D \
-  --enable-partitioning false
-
-# Create subscription with filter rules
-az servicebus topic subscription create \
-  --namespace-name <sb-namespace> \
-  --topic-name order-created \
-  --name order-fulfillment-sub \
-  --max-delivery-count 3 \
-  --dead-lettering-on-message-expiration true
-
-# Add SQL filter rule
-az servicebus topic subscription rule create \
-  --namespace-name <sb-namespace> \
-  --topic-name order-created \
-  --subscription-name order-fulfillment-sub \
-  --name HighPriorityOrders \
-  --filter-sql-expression "priority = 'high'"
-```
-
-#### Auto-Scaling Configuration
-
-Configure autoscale rules for App Service Plans:
-
-```bash
-# Enable autoscale based on CPU and memory
 az monitor autoscale create \
-  --resource-group <rg-name> \
-  --resource <asp-name> \
-  --resource-type Microsoft.Web/serverFarms \
-  --name autoscale-orders-prod \
+  --resource-group rg-logicapps-uat \
+  --name autoscale-orders-plan \
+  --resource /subscriptions/.../providers/Microsoft.Web/serverfarms/asp-orders-plan1 \
   --min-count 3 \
   --max-count 10 \
   --count 3
 
-# Add CPU-based scale-out rule
 az monitor autoscale rule create \
-  --resource-group <rg-name> \
-  --autoscale-name autoscale-orders-prod \
-  --condition "Percentage CPU > 75 avg 5m" \
-  --scale out 1
-
-# Add CPU-based scale-in rule
-az monitor autoscale rule create \
-  --resource-group <rg-name> \
-  --autoscale-name autoscale-orders-prod \
-  --condition "Percentage CPU < 25 avg 10m" \
-  --scale in 1
-
-# Add custom metric rule (queue depth)
-az monitor autoscale rule create \
-  --resource-group <rg-name> \
-  --autoscale-name autoscale-orders-prod \
-  --condition "WorkflowQueueDepth > 100 avg 5m" \
+  --resource-group rg-logicapps-uat \
+  --autoscale-name autoscale-orders-plan \
+  --condition "MemoryPercentage > 80 avg 5m" \
   --scale out 2
+
+az monitor autoscale rule create \
+  --resource-group rg-logicapps-uat \
+  --autoscale-name autoscale-orders-plan \
+  --condition "MemoryPercentage < 40 avg 10m" \
+  --scale in 1
 ```
 
 ---
 
-## 💻 Usage Examples
+### Example 5: Debugging Workflow Failures with Application Insights
 
-### Example 1: Deploy and Test Order Processing Workflow
+**Scenario**: A workflow intermittently fails when calling an external API.
 
-This example demonstrates end-to-end order processing using the eShop sample application.
+**Investigation Steps**:
 
-#### Generate Test Orders
+1. **Find Failed Runs**:
+   
+   ```kusto
+   traces
+   | where customDimensions.Category == "WorkflowRuntime"
+   | where customDimensions.EventName == "WorkflowRunCompleted"
+   | where customDimensions.Status == "Failed"
+   | where customDimensions.WorkflowName == "OrderProcessing"
+   | order by timestamp desc
+   | take 50
+   ```
 
-```bash
-# Generate 1,000 sample orders
-python generate_orders.py --count 1000 --output data/orders.json
+2. **Analyze Failure Reason**:
+   
+   ```kusto
+   exceptions
+   | where customDimensions.WorkflowName == "OrderProcessing"
+   | where timestamp > ago(24h)
+   | summarize Count = count() by type, outerMessage
+   | order by Count desc
+   ```
 
-# Sample output structure:
-# {
-#   "orderId": "ORD-20240101-12345",
-#   "customerId": "CUST-98765",
-#   "tenantId": "contoso",
-#   "orderDate": "2024-01-01T10:30:00Z",
-#   "items": [
-#     {
-#       "productId": "PROD-001",
-#       "quantity": 2,
-#       "unitPrice": 49.99
-#     }
-#   ],
-#   "totalAmount": 99.98,
-#   "priority": "high"
-# }
-```
+3. **Distributed Tracing**:
+   
+   Use Application Insights End-to-End Transaction view to trace the entire workflow execution across Logic Apps, APIs, and databases.
 
-#### Submit Orders to Logic App
-
-```bash
-# Get Logic App webhook URL
-WEBHOOK_URL=$(az logicapp show \
-  --name logic-orders-prod \
-  --resource-group rg-logicapps-prod \
-  --query "defaultHostName" -o tsv)
-
-# Submit single order
-curl -X POST \
-  "https://${WEBHOOK_URL}/runtime/webhooks/workflow/api/ProcessOrder/triggers/manual/invoke" \
-  -H "Content-Type: application/json" \
-  -d @data/orders.json
-
-# Batch submit using PowerShell
-Get-Content data/orders.json | ConvertFrom-Json | ForEach-Object {
-  Invoke-RestMethod -Method Post -Uri $webhookUrl -Body ($_ | ConvertTo-Json) -ContentType "application/json"
-}
-```
-
-#### Monitor Processing
-
-```bash
-# View real-time logs
-azd monitor --logs --follow
-
-# Query workflow runs
-az logicapp show-workflow-run-history \
-  --name logic-orders-prod \
-  --workflow-name ProcessOrder \
-  --resource-group rg-logicapps-prod \
-  --query "value[0:10].{Status:status, StartTime:startTime, Duration:properties.duration}"
-```
-
-### Example 2: Query Workflow Performance Metrics
-
-Use Azure CLI and KQL to analyze performance:
-
-#### KQL Query: Workflow Success Rate (Last 24 Hours)
-
-```kusto
-customEvents
-| where name == "WorkflowRunCompleted"
-| where timestamp > ago(24h)
-| extend WorkflowName = tostring(customDimensions.workflowName)
-| extend Status = tostring(customDimensions.status)
-| summarize 
-    TotalRuns = count(),
-    SuccessfulRuns = countif(Status == "Succeeded"),
-    FailedRuns = countif(Status == "Failed")
-    by WorkflowName
-| extend SuccessRate = round(todouble(SuccessfulRuns) / todouble(TotalRuns) * 100, 2)
-| project WorkflowName, TotalRuns, SuccessfulRuns, FailedRuns, SuccessRate
-| order by SuccessRate asc
-```
-
-#### Execute Query via Azure CLI
-
-```bash
-# Query Application Insights
-az monitor app-insights query \
-  --app logicapps-insights-prod \
-  --analytics-query "customEvents | where name == 'WorkflowRunCompleted' | summarize count() by tostring(customDimensions.status)" \
-  --offset 24h
-```
-
-#### KQL Query: P95 Latency by Workflow
-
-```kusto
-customMetrics
-| where name == "WorkflowExecutionTime"
-| where timestamp > ago(1d)
-| extend WorkflowName = tostring(customDimensions.workflowName)
-| summarize 
-    P50 = percentile(value, 50),
-    P95 = percentile(value, 95),
-    P99 = percentile(value, 99),
-    Max = max(value)
-    by WorkflowName
-| project WorkflowName, P50, P95, P99, Max
-| order by P95 desc
-```
-
-### Example 3: Scale Logic Apps Dynamically
-
-#### Manual Scaling
-
-```bash
-# Scale up for expected high-volume event
-az appservice plan update \
-  --name asp-orders-prod \
-  --resource-group rg-logicapps-prod \
-  --number-of-workers 8
-
-# Wait for scale operation to complete
-az appservice plan show \
-  --name asp-orders-prod \
-  --resource-group rg-logicapps-prod \
-  --query "sku.capacity"
-
-# Scale down after event
-az appservice plan update \
-  --name asp-orders-prod \
-  --resource-group rg-logicapps-prod \
-  --number-of-workers 3
-```
-
-#### Automated Scaling Based on Schedule
-
-```bash
-# Create autoscale profile for business hours (8 AM - 6 PM UTC)
-az monitor autoscale profile create \
-  --name business-hours \
-  --resource <asp-resource-id> \
-  --min-count 5 \
-  --max-count 10 \
-  --count 5 \
-  --start "08:00" \
-  --end "18:00" \
-  --recurrence week mon tue wed thu fri
-
-# Create off-hours profile
-az monitor autoscale profile create \
-  --name off-hours \
-  --resource <asp-resource-id> \
-  --min-count 2 \
-  --max-count 5 \
-  --count 2 \
-  --start "18:00" \
-  --end "08:00" \
-  --recurrence week mon tue wed thu fri
-```
-
-### Example 4: Troubleshoot Failed Workflows
-
-#### Identify Failed Workflow Runs
-
-```kusto
-traces
-| where severityLevel >= 3  // Warning or Error
-| where message contains "WorkflowRunFailed"
-| extend WorkflowName = tostring(customDimensions.workflowName)
-| extend ErrorCode = tostring(customDimensions.errorCode)
-| extend ErrorMessage = tostring(customDimensions.errorMessage)
-| project timestamp, WorkflowName, ErrorCode, ErrorMessage
-| order by timestamp desc
-| take 50
-```
-
-#### Get Detailed Workflow Run Information
-
-```bash
-# Get failed run details
-az logicapp show-workflow-run \
-  --name logic-orders-prod \
-  --workflow-name ProcessOrder \
-  --run-name <run-id> \
-  --resource-group rg-logicapps-prod \
-  --query "{Status:status, Error:properties.error, Trigger:properties.trigger}"
-```
-
-#### Resubmit Failed Workflows
-
-```bash
-# Resubmit using original input
-az logicapp workflow run trigger \
-  --name logic-orders-prod \
-  --workflow-name ProcessOrder \
-  --resource-group rg-logicapps-prod \
-  --input @failed-order.json
-```
-
-### Example 5: Cost Analysis and Optimization
-
-#### Query Daily Costs by Resource
-
-```bash
-# Get cost breakdown for last 30 days
-az consumption usage list \
-  --start-date "2024-01-01" \
-  --end-date "2024-01-31" \
-  --query "[?contains(instanceName, 'logic-orders')].{Date:usageStart, Resource:instanceName, Cost:pretaxCost, Unit:currency}" \
-  --output table
-```
-
-#### KQL Query: Track RU Consumption by Operation
-
-```kusto
-AzureDiagnostics
-| where ResourceProvider == "MICROSOFT.DOCUMENTDB"
-| where Category == "DataPlaneRequests"
-| where TimeGenerated > ago(24h)
-| extend OperationType = tostring(properties_OperationType_s)
-| summarize 
-    TotalRUs = sum(todouble(requestCharge_s)),
-    RequestCount = count()
-    by OperationType
-| extend AvgRUPerRequest = TotalRUs / RequestCount
-| project OperationType, RequestCount, TotalRUs, AvgRUPerRequest
-| order by TotalRUs desc
-```
+**Resolution**:
+- Increase retry attempts for the API connector
+- Add exponential backoff delay
+- Implement circuit breaker pattern
 
 ---
 
 ## 📊 Monitoring & Alerting
 
-### Comprehensive Monitoring Strategy
+### Key Metrics to Monitor
 
-This solution implements a **multi-layered monitoring approach** aligned with the Azure Well-Architected Framework's Operational Excellence pillar.
+| Metric | Threshold | Severity | Action |
+|--------|-----------|----------|--------|
+| **Memory Usage (%)** | > 80% | Warning | Scale out App Service Plan |
+| **Memory Usage (%)** | > 90% | Critical | Immediate scale out + investigation |
+| **CPU Usage (%)** | > 70% | Warning | Review workflow efficiency |
+| **Workflow Run Failures** | > 5% | Critical | Alert DevOps team |
+| **Workflow Duration** | > 30 minutes | Warning | Review for optimization |
+| **Request Rate** | > 1000/min | Info | Monitor for throttling |
+| **Storage Queue Length** | > 1000 messages | Warning | Check downstream processing |
 
-### Layer 1: Infrastructure Monitoring
+### Pre-Configured Alert Rules
 
-#### App Service Plan Metrics
+The following alerts are deployed via infra/monitoring/alerts.bicep:
 
-Monitor compute resource utilization to prevent performance degradation:
+1. **High Memory Usage Alert**
+   - **Condition**: Memory > 85% for 5 minutes
+   - **Action**: Email DevOps team + Scale out trigger
+
+2. **Workflow Failure Rate Alert**
+   - **Condition**: Failure rate > 5% over 15 minutes
+   - **Action**: PagerDuty notification + Create ServiceNow incident
+
+3. **Long-Running Workflow Alert**
+   - **Condition**: Workflow duration > 60 minutes
+   - **Action**: Log Analytics query for root cause analysis
+
+4. **App Service Plan Capacity Alert**
+   - **Condition**: Instance count > 90% of max
+   - **Action**: Notify Cloud Architect for capacity planning
+
+### Azure Monitor Workbooks
+
+Pre-built workbooks are available in monitoring:
+
+1. **Logic Apps Health Dashboard**
+   - Real-time view of all Logic App instances
+   - Memory, CPU, and request metrics
+   - Workflow success/failure rates
+
+2. **Cost Analysis Dashboard**
+   - Per-workflow execution cost
+   - App Service Plan cost breakdown
+   - Projected monthly spend
+
+3. **Performance Optimization Dashboard**
+   - Slowest workflows
+   - Most expensive workflows
+   - Bottleneck identification
+
+### Log Analytics Queries
+
+#### Query 1: Failed Workflows in Last 24 Hours
 
 ```kusto
-// Query: Average CPU and Memory over time
-AzureMetrics
-| where ResourceId contains "asp-orders-prod"
-| where MetricName in ("CpuPercentage", "MemoryPercentage")
-| summarize 
-    AvgCPU = avg(iff(MetricName == "CpuPercentage", Average, 0.0)),
-    AvgMemory = avg(iff(MetricName == "MemoryPercentage", Average, 0.0))
-    by bin(TimeGenerated, 5m)
-| render timechart
-```
-
-**Alert Rules**:
-
-| **Condition** | **Threshold** | **Window** | **Severity** | **Action** |
-|--------------|---------------|------------|--------------|-----------|
-| CPU > 80% | 80% | 5 minutes | Warning | Scale out +1 instance |
-| CPU > 90% | 90% | 3 minutes | Error | Scale out +2 instances + alert |
-| Memory > 85% | 85% | 5 minutes | Warning | Scale out +1 instance |
-| Memory > 95% | 95% | 2 minutes | Critical | Immediate scale + page on-call |
-
-#### Cosmos DB Monitoring
-
-Track database performance and cost:
-
-```kusto
-// Query: Top 10 most expensive queries by RU consumption
 AzureDiagnostics
-| where ResourceProvider == "MICROSOFT.DOCUMENTDB"
-| where Category == "DataPlaneRequests"
-| extend RUs = todouble(requestCharge_s)
-| extend Query = tostring(activityId_g)
-| summarize 
-    TotalRUs = sum(RUs),
-    AvgRUs = avg(RUs),
-    RequestCount = count()
-    by Query
-| top 10 by TotalRUs desc
-```
-
-**Alert Rules**:
-
-- RU consumption > 80% of provisioned → Auto-scale trigger
-- Server-side errors > 1% → Alert database team
-- Throttling (429 errors) > 5/min → Increase RUs + alert
-- Average latency > 100ms → Investigate query performance
-
-### Layer 2: Application Monitoring
-
-#### Logic Apps Workflow Metrics
-
-Track workflow execution health:
-
-```kusto
-// Query: Workflow failure analysis with error categorization
-customEvents
-| where name == "WorkflowRunCompleted"
-| where tostring(customDimensions.status) == "Failed"
-| extend 
-    WorkflowName = tostring(customDimensions.workflowName),
-    ErrorCode = tostring(customDimensions.errorCode),
-    ErrorCategory = case(
-        ErrorCode contains "Timeout", "Timeout",
-        ErrorCode contains "429", "Throttling",
-        ErrorCode contains "500", "ServerError",
-        ErrorCode contains "401", "Authentication",
-        "Unknown"
-    )
-| summarize FailureCount = count() by WorkflowName, ErrorCategory, bin(timestamp, 1h)
+| where ResourceProvider == "MICROSOFT.WEB"
+| where Category == "WorkflowRuntime"
+| where status_s == "Failed"
+| where TimeGenerated > ago(24h)
+| summarize FailureCount = count() by workflow_name_s, error_code_s
 | order by FailureCount desc
 ```
 
-**Key Workflow Metrics**:
+#### Query 2: Memory Pressure Analysis
 
 ```kusto
-// Custom metrics to track
-customMetrics
-| where name in (
-    "WorkflowExecutionTime",       // Latency tracking
-    "WorkflowSuccessRate",          // Reliability
-    "WorkflowRetryCount",           // Resilience indicator
-    "WorkflowConcurrentRuns",       // Concurrency
-    "WorkflowQueueDepth",           // Backlog
-    "WorkflowMemoryUsageMB",        // Resource consumption
-    "WorkflowCosmosDBRUs",          // Database cost
-    "WorkflowServiceBusMessages"    // Messaging throughput
-)
+AzureMetrics
+| where ResourceProvider == "MICROSOFT.WEB"
+| where MetricName == "MemoryPercentage"
+| where TimeGenerated > ago(7d)
 | summarize 
-    Avg = avg(value),
-    P95 = percentile(value, 95),
-    Max = max(value)
-    by name, bin(timestamp, 5m)
+    AvgMemory = avg(Average),
+    MaxMemory = max(Maximum)
+  by bin(TimeGenerated, 1h), Resource
+| render timechart
 ```
 
-#### Custom Instrumentation Example
-
-Add this to your Logic Apps workflows to emit custom telemetry:
-
-```json
-{
-  "type": "Compose",
-  "inputs": {
-    "eventName": "WorkflowStepCompleted",
-    "workflowName": "@workflow().name",
-    "runId": "@workflow().run.id",
-    "stepName": "ProcessPayment",
-    "duration": "@{sub(ticks(utcNow()), ticks(variables('stepStartTime')))}",
-    "success": true,
-    "customDimensions": {
-      "orderId": "@variables('orderId')",
-      "orderAmount": "@variables('orderAmount')",
-      "paymentMethod": "@variables('paymentMethod')"
-    }
-  },
-  "runAfter": {
-    "Call_Payment_API": ["Succeeded"]
-  }
-}
-```
-
-### Layer 3: Business Metrics Monitoring
-
-Track business KPIs alongside technical metrics:
+#### Query 3: Top 10 Expensive Workflows
 
 ```kusto
-// Query: Business metrics dashboard
-customEvents
-| where name in ("OrderCreated", "OrderCompleted", "OrderCancelled")
-| extend 
-    EventType = name,
-    OrderAmount = todouble(customDimensions.orderAmount),
-    CustomerId = tostring(customDimensions.customerId),
-    TenantId = tostring(customDimensions.tenantId)
+AzureDiagnostics
+| where ResourceProvider == "MICROSOFT.WEB"
+| where Category == "WorkflowRuntime"
+| extend Duration = todouble(run_duration_ms) / 1000
 | summarize 
-    OrderCount = count(),
-    TotalRevenue = sum(OrderAmount),
-    AvgOrderValue = avg(OrderAmount),
-    UniqueCustomers = dcount(CustomerId)
-    by EventType, TenantId, bin(timestamp, 1h)
-| order by timestamp desc
+    TotalRuns = count(),
+    AvgDuration = avg(Duration),
+    TotalDuration = sum(Duration)
+  by workflow_name_s
+| extend EstimatedCost = (TotalDuration / 3600) * 0.232 // EP2 hourly rate
+| top 10 by EstimatedCost desc
 ```
-
-### Alert Configuration
-
-#### Critical Alerts (Severity 0)
-
-**Immediately page on-call team via PagerDuty/SMS:**
-
-```bash
-# Create critical alert: Workflow failure rate > 10%
-az monitor metrics alert create \
-  --name "Critical: High Workflow Failure Rate" \
-  --resource-group rg-logicapps-prod \
-  --scopes <logic-app-resource-id> \
-  --condition "avg WorkflowFailureRate > 10" \
-  --window-size 5m \
-  --evaluation-frequency 1m \
-  --severity 0 \
-  --action <pagerduty-action-group-id>
-```
-
-Triggers for Severity 0:
-- Workflow success rate < 90% for 5 minutes
-- All Logic Apps instances down
-- Cosmos DB service unavailable
-- Memory usage > 95% with OOM errors
-
-#### Error Alerts (Severity 1)
-
-**Email + Slack notification to engineering team:**
-
-```bash
-# Create error alert: Elevated latency
-az monitor metrics alert create \
-  --name "Error: High Workflow Latency" \
-  --resource-group rg-logicapps-prod \
-  --scopes <logic-app-resource-id> \
-  --condition "avg WorkflowExecutionTimeP95 > 30000" \
-  --window-size 10m \
-  --evaluation-frequency 5m \
-  --severity 1 \
-  --action <slack-action-group-id>
-```
-
-Triggers for Severity 1:
-- P95 latency > 3× baseline for 10 minutes
-- Service Bus dead letter queue > 100 messages
-- HTTP 500 errors > 5% of requests
-- Cosmos DB throttling > 50 requests/minute
-
-#### Warning Alerts (Severity 2)
-
-**Email notification only:**
-
-- CPU usage > 75% for 15 minutes (scale-out recommended)
-- Memory usage > 80% for 15 minutes
-- Workflow retry rate > 10%
-- Cost anomaly detected (>20% increase week-over-week)
-
-#### Informational Alerts (Severity 3)
-
-**Dashboard notification only:**
-
-- Successful auto-scale events
-- Deployment completed
-- Configuration changes applied
-
-### Monitoring Dashboards
-
-#### Pre-Built Azure Workbooks
-
-The solution includes custom Azure Workbooks in infra/monitoring/workbooks/:
-
-1. **Logic Apps Performance Dashboard**
-   - Workflow execution trends (success rate, latency, throughput)
-   - Resource utilization (CPU, memory, network)
-   - Error analysis and categorization
-   - Cost tracking by workflow and tenant
-
-2. **Cosmos DB Performance Dashboard**
-   - RU consumption trends
-   - Top expensive queries
-   - Partition key distribution
-   - Latency percentiles (P50, P95, P99)
-
-3. **Service Bus Monitoring Dashboard**
-   - Message throughput by topic
-   - Dead letter queue depth
-   - Consumer lag analysis
-   - Throttling events
-
-4. **Business Metrics Dashboard**
-   - Orders processed per hour
-   - Revenue trends
-   - Top customers by order volume
-   - SLA compliance metrics
-
-#### Access Dashboards
-
-```bash
-# Deploy workbooks
-az deployment group create \
-  --resource-group rg-logicapps-prod \
-  --template-file infra/monitoring/workbooks/deploy.bicep
-
-# Get dashboard URLs
-az portal dashboard list \
-  --resource-group rg-logicapps-prod \
-  --query "[].{Name:name, URL:properties.metadata.url}"
-```
-
-### Continuous Monitoring Best Practices
-
-1. **Establish Baselines**: Run load tests to determine normal CPU/memory/latency ranges
-2. **Tune Alert Thresholds**: Reduce false positives by adjusting thresholds based on actual workload patterns
-3. **Implement Runbooks**: Document response procedures for each alert type
-4. **Regular Reviews**: Weekly review of monitoring dashboards with engineering team
-5. **Chaos Engineering**: Periodically inject failures to validate alerting and recovery procedures
 
 ---
 
 ## 💰 Performance & Cost Optimization
 
-### Proven Optimization Strategies
+### Cost Optimization Strategies
 
-This solution has been tested in production environments processing millions of workflows monthly. The following strategies have delivered measurable cost reductions and performance improvements.
+#### 1. **Right-Size App Service Plans**
 
-### Strategy 1: Intelligent Workflow Distribution
+| Plan Tier | vCPU | RAM | Workflows/App | Apps/Plan | Total Workflows | Monthly Cost* |
+|-----------|------|-----|---------------|-----------|-----------------|---------------|
+| **EP1** | 1 | 3.5 GB | 10-15 | 64 | 640-960 | ~$5,000 |
+| **EP2** | 2 | 7 GB | 15-20 | 64 | 960-1,280 | ~$10,000 |
+| **EP3** | 4 | 14 GB | 20-30 | 50-64 | 1,000-1,920 | ~$20,000 |
 
-#### The Problem
+*Estimates based on US East region pricing
 
-Traditional approach: Evenly distribute workflows across Logic Apps (20 workflows per app)
+**Recommendation**: Start with **EP2** for most scenarios. Scale to EP3 only if memory pressure exceeds 80% consistently.
 
-**Result**: Inefficient resource utilization
-- High-volume workflows consume excessive resources
-- Low-volume workflows waste capacity
-- Memory spikes when all workflows execute simultaneously
+#### 2. **Workflow Distribution Strategy**
 
-#### The Solution
+**Anti-Pattern** (Causes high memory):
+- 50 workflows in 1 Logic App instance
+- Heavy workflows mixed with lightweight workflows
 
-**Workload-Based Segmentation**:
+**Best Practice**:
+- **20 workflows per Logic App** (Microsoft recommended)
+- Group similar workflow types:
+  - **High-frequency, lightweight**: Orders, notifications
+  - **Low-frequency, complex**: Batch processing, long-running
+- Separate Logic Apps for different tenant/customer segments
 
-| **Segment** | **Characteristics** | **App Configuration** | **Workflows per App** |
-|------------|-------------------|---------------------|---------------------|
-| **High-Priority/Low-Volume** | Critical, low latency required | Dedicated ASP, 3 instances | 12-15 workflows |
-| **High-Volume/Batch** | Batch processing, can tolerate latency | Separate ASP, 5-10 instances | 8-10 workflows |
-| **Integration/API** | External API calls, variable latency | Shared ASP, 2-3 instances | 10-12 workflows |
-| **Long-Running** | State management, runs for months | Isolated ASP, 2 instances | 5-8 workflows |
+#### 3. **Reduce Execution Costs**
 
-**Implementation Example**:
+**Optimization Techniques**:
 
-```
-Production Deployment (5,000 workflows):
-├── asp-critical-prod (WS1, 3 instances)
-│   ├── logic-orders-critical (15 workflows)
-│   ├── logic-payments-critical (12 workflows)
-│   └── logic-fraud-detection (10 workflows)
-├── asp-batch-prod (WS1, 8 instances)
-│   ├── logic-batch-inventory (10 workflows)
-│   ├── logic-batch-reporting (8 workflows)
-│   └── logic-batch-analytics (10 workflows)
-└── asp-integration-prod (WS1, 3 instances)
-    ├── logic-api-partners (12 workflows)
-    └── logic-api-internal (12 workflows)
+1. **Eliminate Unnecessary Loops**:
+   ```json
+   // Before: Loop through 1000 items
+   "For_each_item": {
+     "type": "Foreach",
+     "foreach": "@body('Get_Items')"
+   }
+   
+   // After: Batch process with paging
+   "Process_batch": {
+     "type": "Compose",
+     "inputs": "@take(body('Get_Items'), 100)"
+   }
+   ```
 
-Result:
-- Reduced from 250 Logic Apps to 85 Logic Apps
-- Reduced from 12 ASPs to 5 ASPs per region
-- 66% reduction in infrastructure cost
-```
+2. **Use Managed Identities** (avoid API calls for token refresh):
+   - Eliminates HTTP actions for authentication
+   - Reduces action count by 1-2 per workflow run
 
-### Strategy 2: Memory Optimization Techniques
+3. **Cache Reference Data**:
+   - Store frequently accessed data (product catalogs, pricing) in Azure Cache for Redis
+   - Reduces Cosmos DB/SQL Database calls
 
-#### Understanding Memory Consumption
+4. **Optimize Connector Usage**:
+   - Prefer built-in connectors over custom HTTP actions
+   - Built-in connectors have lower per-action costs
 
-Logic Apps Standard uses memory for:
-1. Workflow definition loading (5-10 MB per workflow)
-2. Runtime execution context (variable with data size)
-3. Connection pooling (HTTP clients, database connections)
-4. Internal state management
+#### 4. **Memory Leak Prevention (Long-Running Workflows)**
 
-#### Optimization Techniques
+**Common Causes**:
+- Large in-memory state accumulation
+- Uncleared variable references
+- Excessive logging
 
-##### 1. **Minimize Workflow Complexity**
+**Solutions**:
 
-**Before** (High Memory):
-```json
-{
-  "actions": {
-    "LoadAllOrders": {
-      "type": "Http",
-      "inputs": {
-        "uri": "https://api.contoso.com/orders?pageSize=10000"
-      }
-    },
-    "ProcessInMemory": {
-      "type": "Foreach",
-      "foreach": "@body('LoadAllOrders')",
-      "actions": {
-        "ComplexTransformation": { ... }
-      }
-    }
-  }
-}
-```
+1. **Implement Checkpointing**:
+   ```json
+   // Save state to Cosmos DB every 1000 iterations
+   "Checkpoint_state": {
+     "type": "ApiConnection",
+     "inputs": {
+       "host": {
+         "connection": {
+           "name": "@parameters('$connections')['cosmosdb']['connectionId']"
+         }
+       },
+       "method": "post",
+       "path": "/dbs/@{encodeURIComponent('workflows')}/colls/@{encodeURIComponent('checkpoints')}/docs",
+       "body": {
+         "id": "@{workflow().run.name}",
+         "state": "@variables('currentState')",
+         "timestamp": "@utcNow()"
+       }
+     }
+   }
+   ```
 
-**After** (Optimized):
-```json
-{
-  "actions": {
-    "LoadOrdersPage": {
-      "type": "Http",
-      "inputs": {{
-  "actions": {
-    "LoadOrdersPage": {
-      "type": "Http",
-      "inputs": {
+2. **Clear Variables After Use**:
+   ```json
+   "Clear_large_array": {
+     "type": "SetVariable",
+     "inputs": {
+       "name": "processedItems",
+       "value": []
+     }
+   }
+   ```
+
+3. **Use External Storage for Large Payloads**:
+   - Store payloads > 1 MB in Azure Blob Storage
+   - Pass storage URLs instead of inline data
+
+#### 5. **Scale-Out vs. Scale-Up Decision Matrix**
+
+| Scenario | Scale-Out (More Apps) | Scale-Up (Larger Plan) |
+|----------|----------------------|------------------------|
+| **High workflow count** | ✅ Recommended | ❌ Not cost-effective |
+| **Memory pressure** | ❌ Doesn't help | ✅ Recommended |
+| **CPU bottleneck** | ✅ Distributes load | ✅ More vCPU |
+| **Long-running workflows** | ✅ Isolate instances | ✅ More memory |
+| **Cost optimization** | ⚠️ More management | ✅ Better $/performance |
+
+**Rule of Thumb**:
+- If **memory > 80%**: Scale up (EP2 → EP3)
+- If **workflow count increasing**: Scale out (add more Logic Apps)
+- If **both**: Combine strategies (more apps on larger plan)
+
+### Cost Monitoring Dashboard
+
+Deploy the Cost Analysis Workbook to track:
+
+- Daily infrastructure costs
+- Per-workflow execution costs
+- Cost anomalies and spikes
+- Projected monthly spend vs. budget
+
+---
+
+## 📚 Additional Resources
+
+- [Azure Logic Apps Documentation](https://learn.microsoft.com/azure/logic-apps/)
+- [Azure Well-Architected Framework](https://learn.microsoft.com/azure/well-architected/)
+- [Azure Monitor Best Practices](https://learn.microsoft.com/azure/azure-monitor/best-practices)
+- [Logic Apps Pricing Calculator](https://azure.microsoft.com/pricing/calculator/)
+
+---
+
+**Built with ❤️ for enterprise Azure Logic Apps deployments**
