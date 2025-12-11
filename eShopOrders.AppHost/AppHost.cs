@@ -1,8 +1,10 @@
+using Projects;
+
 var builder = DistributedApplication.CreateBuilder(args);
 
-builder.AddProject<Projects.eShop_Orders_App>("orders-app");
+var ordersApi = builder.AddProject<Projects.eShop_Orders_API>("orders-api");
 
-builder.AddProject<Projects.eShop_Orders_API>("orders-api");
-
+var ordersWebApp = builder.AddProject<eShop_Orders_App>("orders-webapp")
+    .WithReference(ordersApi).WaitFor(ordersApi);
 
 builder.Build().Run();
