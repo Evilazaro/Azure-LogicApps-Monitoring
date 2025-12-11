@@ -36,7 +36,7 @@ param tags object
 
 // ========== Resources ==========
 
-resource imgRegistry 'Microsoft.ContainerRegistry/registries@2025-11-01' = {
+resource registry 'Microsoft.ContainerRegistry/registries@2025-11-01' = {
   name: toLower('${name}acr${uniqueString(subscription().id, resourceGroup().id, location, envName)}')
   location: location
   identity: {
@@ -51,9 +51,9 @@ resource imgRegistry 'Microsoft.ContainerRegistry/registries@2025-11-01' = {
   }
 }
 
-resource imgRegistryDiag 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
-  name: '${imgRegistry.name}-diag'
-  scope: imgRegistry
+resource registryDiag 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
+  name: '${registry.name}-diag'
+  scope: registry
   properties: {
     workspaceId: workspaceId
     storageAccountId: storageAccountId
@@ -62,10 +62,10 @@ resource imgRegistryDiag 'Microsoft.Insights/diagnosticSettings@2021-05-01-previ
   }
 }
 
-param containerAppEnvironmentName string = toLower('${name}-cae-${uniqueString(subscription().id, resourceGroup().id, location, envName)}')
+param appEnvName string = toLower('${name}-cae-${uniqueString(subscription().id, resourceGroup().id, location, envName)}')
 
-resource containerAppEnv 'Microsoft.App/managedEnvironments@2025-02-02-preview' = {
-  name: containerAppEnvironmentName
+resource appEnv 'Microsoft.App/managedEnvironments@2025-02-02-preview' = {
+  name: appEnvName
   location: location
   tags: tags
   identity: {
@@ -109,7 +109,7 @@ resource containerAppEnv 'Microsoft.App/managedEnvironments@2025-02-02-preview' 
 
 param ordersAPIName string = 'orders-api'
 
-resource containerapps_orders_api_name_resource 'Microsoft.App/containerapps@2025-02-02-preview' = {
+resource ordersApi 'Microsoft.App/containerapps@2025-02-02-preview' = {
   name: ordersAPIName
   location: location
   kind: 'containerapps'
@@ -121,8 +121,8 @@ resource containerapps_orders_api_name_resource 'Microsoft.App/containerapps@202
   }
   tags: union(tags, { 'azd-service-name': 'eShop.Orders.API' })
   properties: {
-    managedEnvironmentId: containerAppEnv.id
-    environmentId: containerAppEnv.id
+    managedEnvironmentId: appEnv.id
+    environmentId: appEnv.id
     workloadProfileName: 'Consumption'
     configuration: {
       activeRevisionsMode: 'Single'
@@ -144,7 +144,7 @@ resource containerapps_orders_api_name_resource 'Microsoft.App/containerapps@202
       }
       registries: [
         {
-          server: imgRegistry.properties.loginServer
+          server: registry.properties.loginServer
           identity: userAssignedIdentityId
         }
       ]
@@ -159,7 +159,7 @@ resource containerapps_orders_api_name_resource 'Microsoft.App/containerapps@202
     template: {
       containers: [
         {
-          image: '${imgRegistry.properties.loginServer}/${ordersAPIName}:latest'
+          image: '${registry.properties.loginServer}/${ordersAPIName}:latest'
           imageType: 'ContainerImage'
           name: ordersAPIName
           resources: {
