@@ -2,10 +2,16 @@
 
 name: azure-logicapps-monitoring
 
-infra:
-  provider: bicep
-  path: ./infra/
-  module: main
+# infra:
+#   provider: bicep
+#   path: ./infra/
+#   module: main
+
+services:  
+  app:
+    language: dotnet
+    project: ./eShopOrders.AppHost/eShopOrders.AppHost.csproj
+    host: containerapp
 
 # hooks:
 #   preprovision: 

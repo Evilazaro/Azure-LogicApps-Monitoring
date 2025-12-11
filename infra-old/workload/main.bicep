@@ -66,6 +66,12 @@ module identity 'identity/main.bicep' = {
   }
 }
 
+
+@description('Client ID of the deployed managed identity')
+output MANAGED_IDENTITY_CLIENT_ID string = identity.outputs.MANAGED_IDENTITY_CLIENT_ID
+
+output AZURE_CONTAINER_REGISTRY_MANAGED_IDENTITY_ID string = identity.outputs.AZURE_MANAGED_IDENTITY_ID
+
 // ========== Modules ==========
 
 module messaging 'messaging/main.bicep' = {
@@ -98,6 +104,8 @@ module services 'services/main.bicep' = {
     tags: tags
   }
 }
+
+output AZURE_CONTAINER_APPS_ENVIRONMENT_ID string = services.outputs.AZURE_CONTAINER_APPS_ENVIRONMENT_ID
 
 // module webApp 'web-app.bicep' = {
 //   scope: resourceGroup()

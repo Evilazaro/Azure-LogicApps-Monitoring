@@ -66,6 +66,10 @@ resource registry 'Microsoft.ContainerRegistry/registries@2025-11-01' = {
   }
 }
 
+output AZURE_CONTAINER_REGISTRY_ENDPOINT string = registry.properties.loginServer
+
+output AZURE_CONTAINER_REGISTRY_MANAGED_IDENTITY_ID string = userAssignedIdentityId
+
 resource registryDiag 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
   name: '${registry.name}-diag'
   scope: registry
@@ -125,87 +129,4 @@ resource appEnv 'Microsoft.App/managedEnvironments@2025-02-02-preview' = {
   }
 }
 
-var ordersAPIName = 'orders-api'
-
-resource ordersApi 'Microsoft.App/containerapps@2025-02-02-preview' = {
-  name: ordersAPIName
-  location: location
-  kind: 'containerapps'
-  identity: {
-    type: 'SystemAssigned,UserAssigned'
-    userAssignedIdentities: {
-      '${userAssignedIdentityId}': {}
-    }
-  }
-  tags: union(tags, { 'azd-service-name': 'eShop.Orders.API' })
-  properties: {
-    managedEnvironmentId: appEnv.id
-    environmentId: appEnv.id
-    workloadProfileName: 'Consumption'
-    configuration: {
-      activeRevisionsMode: 'Single'
-      ingress: {
-        external: true
-        targetPort: 80
-        exposedPort: 80
-        transport: 'Auto'
-        traffic: [
-          {
-            weight: 100
-            latestRevision: true
-          }
-        ]
-        allowInsecure: false
-        stickySessions: {
-          affinity: 'none'
-        }
-      }
-      registries: [
-        {
-          server: registry.properties.loginServer
-          identity: userAssignedIdentityId
-        }
-      ]
-      identitySettings: []
-      runtime: {
-        dotnet: {
-          autoConfigureDataProtection: false
-        }
-      }
-      maxInactiveRevisions: 100
-    }
-    template: {
-      containers: [
-        {
-          image: '${registry.properties.loginServer}/${ordersAPIName}:latest'
-          imageType: 'ContainerImage'
-          name: ordersAPIName
-          resources: {
-            cpu: 4
-            memory: '8Gi'
-          }
-          env: [
-            {
-              name: 'ASPNETCORE_ENVIRONMENT'
-              value: 'Production'
-            }
-            {
-              name: 'APPINSIGHTS_INSTRUMENTATIONKEY'
-              value: appInsightsInstrumentationKey
-            }
-            {
-              name: 'APPLICATIONINSIGHTS_CONNECTION_STRING'
-              value: appInsightsConnectionString
-            }
-          ]
-        }
-      ]
-      scale: {
-        minReplicas: 3
-        maxReplicas: 100
-        cooldownPeriod: 300
-        pollingInterval: 30
-      }
-    }
-  }
-}
+output AZURE_CONTAINER_APPS_ENVIRONMENT_ID string = appEnv.id
