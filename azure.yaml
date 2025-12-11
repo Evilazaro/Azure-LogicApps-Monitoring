@@ -2,10 +2,10 @@
 
 name: azure-logicapps-monitoring
 
-# infra:
-#   provider: bicep
-#   path: ./infra/
-#   module: main
+infra:
+  provider: bicep
+  path: ./infra/
+  module: main
 
 services:  
   app:
