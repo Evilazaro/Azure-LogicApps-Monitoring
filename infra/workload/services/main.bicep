@@ -42,10 +42,6 @@ param metricsSettings object[]
 @secure()
 param appInsightsConnectionString string
 
-@description('Application Insights Instrumentation Key.')
-@secure()
-param appInsightsInstrumentationKey string
-
 @description('Resource tags applied to container services.')
 param tags object
 

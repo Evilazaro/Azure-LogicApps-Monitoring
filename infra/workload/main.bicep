@@ -34,10 +34,6 @@ param storageAccountId string
 @secure()
 param appInsightsConnectionString string
 
-@description('Application Insights Instrumentation Key.')
-@secure()
-param appInsightsInstrumentationKey string
-
 @description('Resource tags applied to all workload resources.')
 param tags object = {}
 
@@ -99,7 +95,6 @@ module services 'services/main.bicep' = {
     storageAccountId: storageAccountId
     logsSettings: allLogsSettings
     metricsSettings: allMetricsSettings
-    appInsightsInstrumentationKey: appInsightsInstrumentationKey
     appInsightsConnectionString: appInsightsConnectionString
     tags: tags
   }
