@@ -75,13 +75,6 @@ resource containerAppEnv 'Microsoft.App/managedEnvironments@2025-02-02-preview' 
     }
   }
   properties: {
-    appLogsConfiguration: {
-      destination: 'log-analytics'
-      logAnalyticsConfiguration: {
-        customerId: workspaceId
-        dynamicJsonColumns: false
-      }
-    }
     zoneRedundant: false
     kedaConfiguration: {}
     daprConfiguration: {}
