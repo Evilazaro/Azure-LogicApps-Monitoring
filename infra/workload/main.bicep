@@ -50,6 +50,15 @@ var allMetricsSettings = [
   }
 ]
 
+module identity 'identity/main.bicep' = {
+  params: {
+    name: name
+    location: location
+    tags: tags
+    envName: envName
+  }
+}
+
 // ========== Modules ==========
 
 module messaging 'messaging/main.bicep' = {
@@ -58,6 +67,7 @@ module messaging 'messaging/main.bicep' = {
     name: name
     tags: tags
     envName: envName
+    userAssignedIdentityId: identity.outputs.AZURE_MANAGED_IDENTITY_ID
     storageAccountId: storageAccountId
     workspaceId: workspaceId
     logsSettings: allLogsSettings

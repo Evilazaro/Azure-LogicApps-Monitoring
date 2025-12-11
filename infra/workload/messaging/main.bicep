@@ -15,6 +15,10 @@ param envName string
 @maxLength(50)
 param location string = resourceGroup().location
 
+@description('Resource ID of the User Assigned Identity to be used by Service Bus.')
+@minLength(50)
+param userAssignedIdentityId string
+
 @description('Resource ID of the Log Analytics workspace for diagnostic logs and metrics.')
 @minLength(50)
 param workspaceId string
@@ -62,7 +66,10 @@ resource broker 'Microsoft.ServiceBus/namespaces@2025-05-01-preview' = {
   }
   tags: tags
   identity: {
-    type: 'SystemAssigned'
+    type: 'SystemAssigned, UserAssigned'
+    userAssignedIdentities: {
+      '${userAssignedIdentityId}': {}
+    }
   }
 }
 
