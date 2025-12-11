@@ -51,6 +51,20 @@ var saConf = {
   supportsHttpsTrafficOnly: true
 }
 
+resource azSb 'Microsoft.ServiceBus/namespaces@2025-05-01-preview' = {
+  name: name
+  location: location
+  sku: {
+    name: 'Premium'
+    tier: 'Premium'
+    capacity: 64
+  }
+  tags: tags
+  identity: {
+    type: 'SystemAssigned'
+  }
+}
+
 // ========== Resources ==========
 
 resource wfSA 'Microsoft.Storage/storageAccounts@2025-06-01' = {
