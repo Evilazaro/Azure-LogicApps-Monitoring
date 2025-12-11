@@ -13,7 +13,7 @@ properties:
       dotnet:
         autoConfigureDataProtection: true
     ingress:
-      external: false
+      external: true
       targetPort: {{ targetPortOrDefault 8080 }}
       transport: http
       allowInsecure: true
@@ -42,7 +42,7 @@ properties:
           - name: services__orders-api__https__0
             value: https://orders-api.internal.{{ .Env.AZURE_CONTAINER_APPS_ENVIRONMENT_DEFAULT_DOMAIN }}
     scale:
-      minReplicas: 1
+      minReplicas: 3
 tags:
   azd-service-name: orders-webapp
   aspire-resource-name: orders-webapp
