@@ -52,13 +52,13 @@ var saConf = {
   supportsHttpsTrafficOnly: true
 }
 
-resource azSb 'Microsoft.ServiceBus/namespaces@2025-05-01-preview' = {
+resource broker 'Microsoft.ServiceBus/namespaces@2025-05-01-preview' = {
   name: serviceBusName
   location: location
   sku: {
     name: 'Premium'
     tier: 'Premium'
-    capacity: 64
+    capacity: 16
   }
   tags: tags
   identity: {
@@ -66,15 +66,27 @@ resource azSb 'Microsoft.ServiceBus/namespaces@2025-05-01-preview' = {
   }
 }
 
-resource sbQueue 'Microsoft.ServiceBus/namespaces/queues@2025-05-01-preview' = {
+resource orders 'Microsoft.ServiceBus/namespaces/queues@2025-05-01-preview' = {
   name: 'orders'
-  parent: azSb
+  parent: broker
   properties: {
     enablePartitioning: true
     maxSizeInMegabytes: 1024
     defaultMessageTimeToLive: 'P14D'
     lockDuration: 'PT5M'
     deadLetteringOnMessageExpiration: true
+  }
+}
+
+resource sbDiag 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
+  name: '${broker.name}-diag'
+  scope: broker
+  properties: {
+    workspaceId: workspaceId
+    storageAccountId: storageAccountId
+    logAnalyticsDestinationType: 'Dedicated'
+    logs: logsSettings
+    metrics: metricsSettings
   }
 }
 
