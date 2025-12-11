@@ -7,11 +7,11 @@ infra:
   path: ./infra/
   module: main
 
-hooks:
-  preprovision: 
-    shell: pwsh
-    run: |
-      ./hooks/preprovision.ps1
+# hooks:
+#   preprovision: 
+#     shell: pwsh
+#     run: |
+#       ./hooks/preprovision.ps1
 
 # services:
 #   eShop.Orders.API:
