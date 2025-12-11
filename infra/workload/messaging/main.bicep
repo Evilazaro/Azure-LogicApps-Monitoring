@@ -74,15 +74,8 @@ resource broker 'Microsoft.ServiceBus/namespaces@2025-05-01-preview' = {
 }
 
 resource orders 'Microsoft.ServiceBus/namespaces/queues@2025-05-01-preview' = {
-  name: 'orders'
+  name: queueName
   parent: broker
-  properties: {
-    enablePartitioning: true
-    maxSizeInMegabytes: 1024
-    defaultMessageTimeToLive: 'P14D'
-    lockDuration: 'PT5M'
-    deadLetteringOnMessageExpiration: true
-  }
 }
 
 resource sbDiag 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {

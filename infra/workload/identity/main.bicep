@@ -25,7 +25,7 @@ var roles = [
   '69a216fc-b8fb-44d8-bc22-1f3c2cd27a39'
 ]
 
-resource roleAssignments 'Microsoft.Authorization/roleAssignments@2022-04-01' = [
+resource miRA 'Microsoft.Authorization/roleAssignments@2022-04-01' = [
   for role in roles: {
     name: guid(subscription().id, resourceGroup().id, mi.id, role)
     scope: resourceGroup()
@@ -33,6 +33,18 @@ resource roleAssignments 'Microsoft.Authorization/roleAssignments@2022-04-01' = 
       principalId: mi.properties.principalId
       roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', role)
       principalType: 'ServicePrincipal'
+    }
+  }
+]
+
+resource userRA 'Microsoft.Authorization/roleAssignments@2022-04-01' = [
+  for role in roles: {
+    name: guid(subscription().id, resourceGroup().id, deployer().objectId, role)
+    scope: resourceGroup()
+    properties: {
+      principalId: deployer().objectId
+      roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', role)
+      principalType: 'User'
     }
   }
 ]
