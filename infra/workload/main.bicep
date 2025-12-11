@@ -80,6 +80,7 @@ module services 'services/main.bicep' = {
   params: {
     name: name
     location: location
+    envnName: envName
     tags: tags
   }
 }
