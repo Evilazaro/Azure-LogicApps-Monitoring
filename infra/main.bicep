@@ -117,8 +117,8 @@ output AZURE_CONTAINER_APPS_ENVIRONMENT_DEFAULT_DOMAIN string = workload.outputs
 // ========== Outputs ==========
 
 // Resource Group outputs
-// @description('Name of the deployed resource group')
-// output AZURE_RESOURCE_GROUP string = resourceGroupName
+@description('Name of the deployed resource group')
+output AZURE_RESOURCE_GROUP string = resourceGroupName
 
 // @description('Resource ID of the deployed resource group')
 // output RESOURCE_GROUP_ID string = rg.id

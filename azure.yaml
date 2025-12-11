@@ -12,6 +12,7 @@ services:
     language: dotnet
     project: ./eShopOrders.AppHost/eShopOrders.AppHost.csproj
     host: containerapp
+    resourceGroup: ${AZURE_RESOURCE_GROUP}
 
 # hooks:
 #   preprovision: 
