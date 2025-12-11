@@ -17,11 +17,20 @@ hooks:
         try {
             # Validate required environment variables
             if (-not $env:AZURE_CONTAINER_REGISTRY_ENDPOINT) {
-              throw "AZURE_CONTAINER_REGISTRY_ENDPOINT environment variable is not set"
+          throw "AZURE_CONTAINER_REGISTRY_ENDPOINT environment variable is not set"
             }
 
             Write-Information "Azure Container Registry Endpoint: $env:AZURE_CONTAINER_REGISTRY_ENDPOINT" -InformationAction Continue
             
+            # Check if already logged in to Azure Container Registry
+            Write-Information "Checking Azure Container Registry login status..." -InformationAction Continue
+            
+            # Try a simple command that requires authentication to check login status
+            $null = az acr repository list --name $env:AZURE_CONTAINER_REGISTRY_ENDPOINT 2>$null
+            
+            if ($LASTEXITCODE -eq 0) {
+            Write-Information "Already logged in to Azure Container Registry." -InformationAction Continue
+            } else {
             # Login to Azure Container Registry
             Write-Information "Logging in to Azure Container Registry..." -InformationAction Continue
             
@@ -32,6 +41,7 @@ hooks:
             }
 
             Write-Information "Successfully logged in to Azure Container Registry." -InformationAction Continue
+            }
         }
         catch {
             Write-Error "Post-provision hook failed: $($_.Exception.Message)"

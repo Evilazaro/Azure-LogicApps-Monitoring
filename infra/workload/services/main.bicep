@@ -128,3 +128,11 @@ resource appEnv 'Microsoft.App/managedEnvironments@2025-02-02-preview' = {
 output AZURE_CONTAINER_APPS_ENVIRONMENT_ID string = appEnv.id
 
 output AZURE_CONTAINER_APPS_ENVIRONMENT_DEFAULT_DOMAIN string = appEnv.properties.defaultDomain
+
+resource dashboard 'Microsoft.App/managedEnvironments/dotNetComponents@2025-02-02-preview' = {
+  parent: appEnv
+  name: 'aspire-dashboard'
+  properties: {
+    componentType: 'AspireDashboard'
+  }
+}
