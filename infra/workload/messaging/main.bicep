@@ -83,8 +83,6 @@ resource sbDiag 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
   }
 }
 
-// // ========== Resources ==========
-
 // resource wfSA 'Microsoft.Storage/storageAccounts@2025-06-01' = {
 //   name: storageAccountName
 //   location: location

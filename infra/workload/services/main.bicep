@@ -68,7 +68,7 @@ resource registryDiag 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview'
   }
 }
 
-param appEnvName string = toLower('${name}-cae-${uniqueString(subscription().id, resourceGroup().id, location, envName)}')
+var appEnvName = toLower('${name}-cae-${uniqueString(subscription().id, resourceGroup().id, location, envName)}')
 
 resource appEnv 'Microsoft.App/managedEnvironments@2025-02-02-preview' = {
   name: appEnvName
@@ -113,7 +113,7 @@ resource appEnv 'Microsoft.App/managedEnvironments@2025-02-02-preview' = {
   }
 }
 
-param ordersAPIName string = 'orders-api'
+var ordersAPIName = 'orders-api'
 
 resource ordersApi 'Microsoft.App/containerapps@2025-02-02-preview' = {
   name: ordersAPIName

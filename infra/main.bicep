@@ -102,11 +102,9 @@ module workload './workload/main.bicep' = {
   }
 }
 
-// // ========== Outputs ==========
+// ========== Outputs ==========
 
-// // ========== Outputs ==========
-
-// // Resource Group outputs
+// Resource Group outputs
 // @description('Name of the deployed resource group')
 // output AZURE_RESOURCE_GROUP string = resourceGroupName
 
