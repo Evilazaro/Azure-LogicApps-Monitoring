@@ -83,6 +83,10 @@ output AZURE_LOG_ANALYTICS_WORKSPACE_ID string = operational.outputs.AZURE_LOG_A
 @description('Log Analytics workspace customer ID')
 output AZURE_LOG_ANALYTICS_WORKSPACE_CUSTOMER_ID string = operational.outputs.AZURE_LOG_ANALYTICS_WORKSPACE_CUSTOMER_ID
 
+@description('Primary Key for the Log Analytics workspace')
+@secure()
+output AZURE_LOG_ANALYTICS_WORKSPACE_PRIMARY_KEY string = operational.outputs.AZURE_LOG_ANALYTICS_WORKSPACE_PRIMARY_KEY
+
 @description('Name of the deployed Application Insights instance')
 output AZURE_APPLICATION_INSIGHTS_NAME string = insights.outputs.AZURE_APPLICATION_INSIGHTS_NAME
 

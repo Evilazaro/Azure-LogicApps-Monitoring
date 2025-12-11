@@ -22,14 +22,20 @@ param workspaceId string
 @description('Log Analytics Workspace Customer ID.')
 param workspaceCustomerId string
 
+@description('Primary Key for Log Analytics workspace.')
+@secure()
+param workspacePrimaryKey string
+
 @description('Storage Account ID for diagnostic logs and metrics.')
 @minLength(50)
 param storageAccountId string
 
 @description('Connection string for Application Insights instance.')
+@secure()
 param appInsightsConnectionString string
 
 @description('Application Insights Instrumentation Key.')
+@secure()
 param appInsightsInstrumentationKey string
 
 @description('Resource tags applied to all workload resources.')
@@ -83,6 +89,7 @@ module services 'services/main.bicep' = {
     envName: envName
     workspaceId: workspaceId
     workspaceCustomerId: workspaceCustomerId
+    workspacePrimaryKey: workspacePrimaryKey
     storageAccountId: storageAccountId
     logsSettings: allLogsSettings
     metricsSettings: allMetricsSettings

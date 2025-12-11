@@ -24,6 +24,10 @@ param workspaceId string
 @description('Log Analytics Workspace Customer ID.')
 param workspaceCustomerId string
 
+@description('Primary Key for Log Analytics workspace.')
+@secure()
+param workspacePrimaryKey string
+
 @description('Storage Account ID for diagnostic logs and metrics.')
 @minLength(50)
 param storageAccountId string
@@ -35,9 +39,11 @@ param logsSettings object[]
 param metricsSettings object[]
 
 @description('Connection string for Application Insights instance.')
+@secure()
 param appInsightsConnectionString string
 
 @description('Application Insights Instrumentation Key.')
+@secure()
 param appInsightsInstrumentationKey string
 
 @description('Resource tags applied to container services.')
@@ -88,8 +94,11 @@ resource appEnv 'Microsoft.App/managedEnvironments@2025-02-02-preview' = {
       destination: 'log-analytics'
       logAnalyticsConfiguration: {
         customerId: workspaceCustomerId
-        dynamicJsonColumns: true
+        sharedKey: workspacePrimaryKey
       }
+    }
+    appInsightsConfiguration: {
+      connectionString: appInsightsConnectionString
     }
     zoneRedundant: false
     kedaConfiguration: {}

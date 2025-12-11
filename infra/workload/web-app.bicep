@@ -33,9 +33,11 @@ param logsSettings object[]
 param metricsSettings object[]
 
 @description('Connection string for Application Insights instance.')
+@secure()
 param appInsightsConnectionString string
 
 @description('Application Insights Instrumentation Key.')
+@secure()
 param appInsightsInstrumentationKey string
 
 @description('Resource tags applied to all resources.')

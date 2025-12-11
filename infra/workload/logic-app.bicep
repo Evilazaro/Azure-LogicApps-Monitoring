@@ -32,6 +32,7 @@ param metricsSettings object[]
 param workflowStorageAccountName string
 
 @description('Connection string for Application Insights instance.')
+@secure()
 param appInsightsConnectionString string
 
 @description('Instrumentation key for Application Insights instance.')

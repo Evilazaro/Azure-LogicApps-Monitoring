@@ -147,6 +147,10 @@ output AZURE_LOG_ANALYTICS_WORKSPACE_NAME string = workspace.name
 @description('Log Analytics workspace customer ID')
 output AZURE_LOG_ANALYTICS_WORKSPACE_CUSTOMER_ID string = workspace.properties.customerId
 
+@description('Primary Key for the Log Analytics workspace')
+@secure()
+output AZURE_LOG_ANALYTICS_WORKSPACE_PRIMARY_KEY string = workspace.listKeys().primarySharedKey
+
 resource wspDiag 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
   name: '${workspace.name}-diag'
   scope: workspace
