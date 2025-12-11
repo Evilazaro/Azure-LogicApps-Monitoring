@@ -11,7 +11,7 @@ hooks:
   postprovision: 
     shell: pwsh
     run: |
-      az login acr -n ${AZURE_CONTAINER_REGISTRY_ENDPOINT}
+      az acr login -n ${AZURE_CONTAINER_REGISTRY_ENDPOINT}
 
 services:  
   app:
