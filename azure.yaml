@@ -6,16 +6,38 @@ infra:
   provider: bicep
   path: ./infra/
   module: main
-  
-services:
-  PoWebApp:
-    project: ./src/PoWebApp/PoWebApp/PoWebApp.csproj
-    language: dotnet
-    host: appservice
-    resourceGroup: ${AZURE_RESOURCE_GROUP}
 
-  PoProcAPI:
-    project: ./src/PoProcAPI/PoProcAPI.csproj
-    language: dotnet
-    host: appservice
-    resourceGroup: ${AZURE_RESOURCE_GROUP}
+hooks:
+  preprovision: 
+    shell: pwsh
+    run: |
+      Write-Host "Pre-provisioning steps..."
+      Write-Host "Building Docker images locally..."
+      docker-compose build 
+      Write-Host "Docker images built successfully."
+
+# services:
+#   eShop.Orders.API:
+#     project: ./src/eShop.Orders.API/eShop.Orders.API.csproj
+#     language: dotnet
+#     host: containerapp
+#     resourceGroup: ${AZURE_RESOURCE_GROUP}
+#     docker:
+#       path: ./Dockerfile
+#       context: .
+#       platform: amd64
+#       registry: ${AZURE_CONTAINER_REGISTRY}
+#       image: eshop-orders-api
+#       remoteBuild: true
+#       tag: latest
+  # PoWebApp:
+  #   project: ./src/PoWebApp/PoWebApp/PoWebApp.csproj
+  #   language: dotnet
+  #   host: appservice
+  #   resourceGroup: ${AZURE_RESOURCE_GROUP}
+
+  # PoProcAPI:
+  #   project: ./src/PoProcAPI/PoProcAPI.csproj
+  #   language: dotnet
+  #   host: appservice
+  #   resourceGroup: ${AZURE_RESOURCE_GROUP}

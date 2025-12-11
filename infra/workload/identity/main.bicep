@@ -23,6 +23,7 @@ var roles = [
   '090c5cfd-751d-490a-894a-3ce6f1109419' //Azure Service Bus Data Owner
   '4f6d3b9b-027b-4f4c-9142-0e5a2a2247e0' //Azure Service Bus Data Receiver
   '69a216fc-b8fb-44d8-bc22-1f3c2cd27a39' //Azure Service Bus Data Sender
+  '7f951dda-4ed3-4680-a7ca-43fe172d538d' //Azure Container Registry ACR Pull
 ]
 
 resource miRA 'Microsoft.Authorization/roleAssignments@2022-04-01' = [

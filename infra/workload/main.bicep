@@ -80,7 +80,12 @@ module services 'services/main.bicep' = {
   params: {
     name: name
     location: location
+    userAssignedIdentityId: identity.outputs.AZURE_MANAGED_IDENTITY_ID
     envnName: envName
+    workspaceId: workspaceId
+    storageAccountId: storageAccountId
+    logsSettings: allLogsSettings
+    metricsSettings: allMetricsSettings
     tags: tags
   }
 }
