@@ -23,16 +23,8 @@ param workspaceId string
 @minLength(50)
 param storageAccountId string
 
-@description('Connection string for Application Insights instance.')
-param appInsightsConnectionString string
-
-@description('Instrumentation key for Application Insights instance.')
-param appInsightsInstrumentationKey string
-
 @description('Resource tags applied to all workload resources.')
 param tags object = {}
-
-// ========== Variables ==========
 
 // ========== Variables ==========
 
@@ -62,7 +54,6 @@ module identity 'identity/main.bicep' = {
 // ========== Modules ==========
 
 module messaging 'messaging/main.bicep' = {
-  scope: resourceGroup()
   params: {
     name: name
     tags: tags
@@ -76,12 +67,11 @@ module messaging 'messaging/main.bicep' = {
 }
 
 module services 'services/main.bicep' = {
-  scope: resourceGroup()
   params: {
     name: name
     location: location
     userAssignedIdentityId: identity.outputs.AZURE_MANAGED_IDENTITY_ID
-    envnName: envName
+    envName: envName
     workspaceId: workspaceId
     storageAccountId: storageAccountId
     logsSettings: allLogsSettings

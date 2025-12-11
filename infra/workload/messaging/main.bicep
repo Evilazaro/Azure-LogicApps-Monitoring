@@ -45,16 +45,9 @@ param queueName string = 'orders-queue'
 
 var cleanedName = toLower(replace(replace(replace(name, '-', ''), '_', ''), ' ', ''))
 var uniqueSuffix = uniqueString(resourceGroup().id, name, envName, location)
-var storageAccountName = take('${cleanedName}${uniqueSuffix}', 24)
 var serviceBusName = toLower(take('${cleanedName}sb${uniqueSuffix}', 20))
 
-var saConf = {
-  sku: 'Standard_LRS'
-  kind: 'StorageV2'
-  accessTier: 'Hot'
-  minimumTlsVersion: 'TLS1_2'
-  supportsHttpsTrafficOnly: true
-}
+// ========== Resources ==========
 
 resource broker 'Microsoft.ServiceBus/namespaces@2025-05-01-preview' = {
   name: serviceBusName

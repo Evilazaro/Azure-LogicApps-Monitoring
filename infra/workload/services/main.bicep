@@ -1,9 +1,22 @@
+@description('Base name for the container services.')
+@minLength(3)
+@maxLength(20)
 param name string
+
+@description('Azure region for container services deployment.')
+@minLength(3)
+@maxLength(50)
 param location string
+
 @description('Resource ID of the User Assigned Identity to be used by Service Bus.')
 @minLength(50)
 param userAssignedIdentityId string
-param envnName string
+
+@description('Environment name suffix to ensure uniqueness.')
+@minLength(2)
+@maxLength(10)
+param envName string
+
 @description('Resource ID of the Log Analytics workspace for diagnostic logs and metrics.')
 @minLength(50)
 param workspaceId string
@@ -17,10 +30,14 @@ param logsSettings object[]
 
 @description('Metrics settings for the Log Analytics workspace.')
 param metricsSettings object[]
+
+@description('Resource tags applied to container services.')
 param tags object
 
+// ========== Resources ==========
+
 resource imgRegistry 'Microsoft.ContainerRegistry/registries@2025-11-01' = {
-  name: toLower('${name}acr${uniqueString(subscription().id, resourceGroup().id, location,envnName)}')
+  name: toLower('${name}acr${uniqueString(subscription().id, resourceGroup().id, location, envName)}')
   location: location
   identity: {
     type: 'SystemAssigned, UserAssigned'
@@ -45,7 +62,7 @@ resource imgRegistryDiag 'Microsoft.Insights/diagnosticSettings@2021-05-01-previ
   }
 }
 
-param containerAppEnvironmentName string = toLower('${name}-cae-${uniqueString(subscription().id, resourceGroup().id, location, envnName)}')
+param containerAppEnvironmentName string = toLower('${name}-cae-${uniqueString(subscription().id, resourceGroup().id, location, envName)}')
 
 resource containerAppEnv 'Microsoft.App/managedEnvironments@2025-02-02-preview' = {
   name: containerAppEnvironmentName

@@ -1,9 +1,26 @@
+@description('Base name for the managed identity.')
+@minLength(3)
+@maxLength(20)
 param name string
+
+@description('Azure region for managed identity deployment.')
+@minLength(3)
+@maxLength(50)
 param location string
+
+@description('Environment name suffix to ensure uniqueness.')
+@minLength(2)
+@maxLength(10)
 param envName string
+
+@description('Resource tags applied to the managed identity.')
 param tags object
 
+// ========== Variables ==========
+
 var resourceSuffix = uniqueString(resourceGroup().id, name, envName, location)
+
+// ========== Resources ==========
 
 resource mi 'Microsoft.ManagedIdentity/userAssignedIdentities@2025-01-31-preview' = {
   name: '${name}-${resourceSuffix}-mi'
@@ -11,7 +28,12 @@ resource mi 'Microsoft.ManagedIdentity/userAssignedIdentities@2025-01-31-preview
   tags: tags
 }
 
+// ========== Outputs ==========
+
+@description('Resource ID of the deployed managed identity')
 output AZURE_MANAGED_IDENTITY_ID string = mi.id
+
+// ========== Role Assignments ==========
 
 var roles = [
   '17d1049b-9a84-46fb-8f53-869881c3d3ab' //Storage Account Contributor

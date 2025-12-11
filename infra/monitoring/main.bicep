@@ -42,7 +42,6 @@ var allMetricsSettings = [
 // ========== Modules ==========
 
 module operational 'log-analytics-workspace.bicep' = {
-  scope: resourceGroup()
   params: {
     name: name
     envName: envName
@@ -54,7 +53,6 @@ module operational 'log-analytics-workspace.bicep' = {
 }
 
 module healthModel 'azure-monitor-health-model.bicep' = {
-  scope: resourceGroup()
   params: {
     name: name
     tags: tags
@@ -65,7 +63,6 @@ module healthModel 'azure-monitor-health-model.bicep' = {
 }
 
 module insights 'app-insights.bicep' = {
-  scope: resourceGroup()
   params: {
     name: name
     envName: envName

@@ -44,6 +44,8 @@ param tags object = {}
 
 var resourceSuffix = uniqueString(resourceGroup().id, name, envName, location)
 
+// ========== Resources ==========
+
 resource wfASP 'Microsoft.Web/serverfarms@2025-03-01' = {
   name: '${name}-${resourceSuffix}-asp'
   location: location

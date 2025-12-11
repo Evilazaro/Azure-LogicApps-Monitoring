@@ -55,8 +55,6 @@ param deploymentDate string = utcNow('yyyy-MM-dd')
 
 // ========== Variables ==========
 
-// ========== Variables ==========
-
 var tags = {
   Solution: solutionName
   Environment: envName
@@ -69,8 +67,6 @@ var tags = {
 }
 
 var resourceGroupName = 'rg-${solutionName}-${envName}-${substring(location, 0, min(length(location), 8))}'
-
-// ========== Resources ==========
 
 // ========== Resources ==========
 
@@ -100,8 +96,6 @@ module workload './workload/main.bicep' = {
     envName: envName
     workspaceId: monitoring.outputs.AZURE_LOG_ANALYTICS_WORKSPACE_ID
     storageAccountId: monitoring.outputs.LOGS_STORAGE_ACCOUNT_ID
-    appInsightsConnectionString: monitoring.outputs.AZURE_APPLICATION_INSIGHTS_CONNECTION_STRING
-    appInsightsInstrumentationKey: monitoring.outputs.AZURE_APPLICATION_INSIGHTS_INSTRUMENTATION_KEY
     tags: tags
   }
 }
