@@ -15,6 +15,10 @@ param envName string
 @maxLength(50)
 param location string = resourceGroup().location
 
+@description('Resource ID of the User Assigned Identity to be used by Service Bus.')
+@minLength(50)
+param userAssignedIdentityId string
+
 @description('Resource ID of the Log Analytics workspace for diagnostic logs and metrics.')
 @minLength(50)
 param workspaceId string
@@ -34,9 +38,6 @@ param workflowStorageAccountName string
 @description('Connection string for Application Insights instance.')
 @secure()
 param appInsightsConnectionString string
-
-@description('Instrumentation key for Application Insights instance.')
-param appInsightsInstrumentationKey string
 
 @description('Resource tags applied to all resources.')
 param tags object = {}
@@ -73,55 +74,6 @@ resource wfASP 'Microsoft.Web/serverfarms@2025-03-01' = {
   }
 }
 
-resource wfASPDiag 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
-  name: '${wfASP.name}-diag'
-  scope: wfASP
-  properties: {
-    workspaceId: workspaceId
-    storageAccountId: storageAccountId
-    metrics: metricsSettings
-  }
-}
-
-resource mi 'Microsoft.ManagedIdentity/userAssignedIdentities@2025-01-31-preview' = {
-  name: '${name}-${resourceSuffix}-mi'
-  location: location
-  tags: tags
-}
-
-resource wfSA 'Microsoft.Storage/storageAccounts@2025-06-01' existing = {
-  name: workflowStorageAccountName
-  scope: resourceGroup()
-}
-
-var rolDefSA = {
-  contributor: '17d1049b-9a84-46fb-8f53-869881c3d3ab'
-  blobDataOwner: 'b7e6dc6d-f1e8-4753-8033-0f276bb0955b'
-  queueDataContributor: '974c5e8b-45b9-4653-ba55-5f855dd0fb88'
-  tableDataContributor: '0a9a7e1f-b9d0-4cc4-a60d-0319b160aaa3'
-  fileDataContributor: '69566ab7-960f-475b-8e7c-b3118f30c6bd'
-}
-
-var RolIdsSA = [
-  rolDefSA.contributor
-  rolDefSA.blobDataOwner
-  rolDefSA.queueDataContributor
-  rolDefSA.tableDataContributor
-  rolDefSA.fileDataContributor
-]
-
-resource wfRaSA 'Microsoft.Authorization/roleAssignments@2022-04-01' = [
-  for roleId in RolIdsSA: {
-    name: guid(workflowEngine.id, workflowEngine.name, roleId)
-    scope: wfSA
-    properties: {
-      roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', roleId)
-      principalId: mi.properties.principalId
-      principalType: 'ServicePrincipal'
-    }
-  }
-]
-
 var functionsExtensionVersion = '~4'
 var functionsWorkerRuntime = 'dotnet'
 var extensionBundleId = 'Microsoft.Azure.Functions.ExtensionBundle.Workflows'
@@ -134,7 +86,7 @@ resource workflowEngine 'Microsoft.Web/sites@2025-03-01' = {
   identity: {
     type: 'UserAssigned'
     userAssignedIdentities: {
-      '${mi.id}': {}
+      '${userAssignedIdentityId}': {}
     }
   }
   tags: tags
@@ -168,8 +120,7 @@ resource wfConf 'Microsoft.Web/sites/config@2025-03-01' = {
     AzureWebJobsStorage__tableServiceUri: 'https://${workflowStorageAccountName}.table.${environment().suffixes.storage}'
     AzureWebJobsStorage__fileServiceUri: 'https://${workflowStorageAccountName}.file.${environment().suffixes.storage}'
     AzureWebJobsStorage__credential: 'managedidentity'
-    AzureWebJobsStorage__managedIdentityResourceId: mi.id
-    APPINSIGHTS_INSTRUMENTATIONKEY: appInsightsInstrumentationKey
+    AzureWebJobsStorage__managedIdentityResourceId: userAssignedIdentityId
     APPLICATIONINSIGHTS_CONNECTION_STRING: appInsightsConnectionString
     AzureFunctionsJobHost__extensionBundle__id: extensionBundleId
     AzureFunctionsJobHost__extensionBundle__version: extensionBundleVersion
