@@ -53,6 +53,8 @@ var allMetricsSettings = [
   }
 ]
 
+// ========== Modules ==========
+
 module identity 'identity/main.bicep' = {
   params: {
     name: name
@@ -61,13 +63,6 @@ module identity 'identity/main.bicep' = {
     envName: envName
   }
 }
-
-@description('Client ID of the deployed managed identity')
-output MANAGED_IDENTITY_CLIENT_ID string = identity.outputs.MANAGED_IDENTITY_CLIENT_ID
-
-output AZURE_CONTAINER_REGISTRY_MANAGED_IDENTITY_ID string = identity.outputs.AZURE_MANAGED_IDENTITY_ID
-
-// ========== Modules ==========
 
 module messaging 'messaging/main.bicep' = {
   params: {
@@ -106,7 +101,6 @@ output AZURE_CONTAINER_APPS_ENVIRONMENT_DEFAULT_DOMAIN string = services.outputs
 output AZURE_CONTAINER_REGISTRY_ENDPOINT string = services.outputs.AZURE_CONTAINER_REGISTRY_ENDPOINT
 
 module workflows 'logic-app.bicep' = {
-  scope: resourceGroup()
   params: {
     name: name
     location: location
@@ -132,3 +126,10 @@ output WORKFLOW_ENGINE_ASP_ID string = workflows.outputs.WORKFLOW_ENGINE_ASP_ID
 
 @description('Name of the App Service Plan')
 output APP_SERVICE_PLAN_NAME string = workflows.outputs.APP_SERVICE_PLAN_NAME
+
+// ========== Outputs ==========
+
+@description('Client ID of the deployed managed identity')
+output MANAGED_IDENTITY_CLIENT_ID string = identity.outputs.MANAGED_IDENTITY_CLIENT_ID
+
+output AZURE_CONTAINER_REGISTRY_MANAGED_IDENTITY_ID string = identity.outputs.AZURE_MANAGED_IDENTITY_ID
