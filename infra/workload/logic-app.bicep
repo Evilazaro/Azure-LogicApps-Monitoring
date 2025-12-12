@@ -48,6 +48,7 @@ var resourceSuffix = uniqueString(resourceGroup().id, name, envName, location)
 
 // ========== Resources ==========
 
+@description('App Service Plan for Logic Apps Standard with elastic scaling')
 resource wfASP 'Microsoft.Web/serverfarms@2025-03-01' = {
   name: '${name}-${resourceSuffix}-asp'
   location: location
@@ -79,6 +80,7 @@ var functionsWorkerRuntime = 'dotnet'
 var extensionBundleId = 'Microsoft.Azure.Functions.ExtensionBundle.Workflows'
 var extensionBundleVersion = '[1.*, 2.0.0)'
 
+@description('Logic Apps Standard workflow engine for running business processes')
 resource workflowEngine 'Microsoft.Web/sites@2025-03-01' = {
   name: '${name}-${resourceSuffix}-logicapp'
   location: location
@@ -107,9 +109,10 @@ resource workflowEngine 'Microsoft.Web/sites@2025-03-01' = {
   }
 }
 
+@description('Application settings configuration for Logic App workflow engine')
 resource wfConf 'Microsoft.Web/sites/config@2025-03-01' = {
-  name: 'appsettings'
   parent: workflowEngine
+  name: 'appsettings'
   kind: 'functionapp,workflowapp'
   properties: {
     FUNCTIONS_EXTENSION_VERSION: functionsExtensionVersion
@@ -132,6 +135,7 @@ resource wfConf 'Microsoft.Web/sites/config@2025-03-01' = {
   }
 }
 
+@description('Diagnostic settings for Logic App workflow engine')
 resource wfDiag 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
   name: '${workflowEngine.name}-diag'
   scope: workflowEngine

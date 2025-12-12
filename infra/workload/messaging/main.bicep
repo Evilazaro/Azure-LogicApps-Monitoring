@@ -49,6 +49,7 @@ var serviceBusName = toLower(take('${cleanedName}sb${uniqueSuffix}', 20))
 
 // ========== Resources ==========
 
+@description('Service Bus namespace for message brokering')
 resource broker 'Microsoft.ServiceBus/namespaces@2025-05-01-preview' = {
   name: serviceBusName
   location: location
@@ -66,11 +67,13 @@ resource broker 'Microsoft.ServiceBus/namespaces@2025-05-01-preview' = {
   }
 }
 
+@description('Service Bus queue for order processing messages')
 resource orders 'Microsoft.ServiceBus/namespaces/queues@2025-05-01-preview' = {
-  name: queueName
   parent: broker
+  name: queueName
 }
 
+@description('Diagnostic settings for Service Bus namespace')
 resource sbDiag 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
   name: '${broker.name}-diag'
   scope: broker
@@ -83,6 +86,7 @@ resource sbDiag 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
   }
 }
 
+@description('Storage account for Logic Apps workflows and data')
 resource wfSA 'Microsoft.Storage/storageAccounts@2025-06-01' = {
   name: toLower('${cleanedName}wsa${uniqueSuffix}')
   location: location
@@ -105,27 +109,31 @@ resource wfSA 'Microsoft.Storage/storageAccounts@2025-06-01' = {
   }
 }
 
+@description('Blob service for workflow storage account')
 resource blobSvc 'Microsoft.Storage/storageAccounts/blobServices@2025-06-01' = {
-  name: 'default'
   parent: wfSA
+  name: 'default'
 }
 
+@description('Blob container for successfully processed orders')
 resource poSuccess 'Microsoft.Storage/storageAccounts/blobServices/containers@2025-06-01' = {
+  parent: blobSvc
   name: 'ordersprocessedsuccessfully'
-  parent: blobSvc
   properties: {
     publicAccess: 'None'
   }
 }
 
+@description('Blob container for orders processed with errors')
 resource poFailed 'Microsoft.Storage/storageAccounts/blobServices/containers@2025-06-01' = {
-  name: 'ordersprocessedwitherrors'
   parent: blobSvc
+  name: 'ordersprocessedwitherrors'
   properties: {
     publicAccess: 'None'
   }
 }
 
+@description('Diagnostic settings for workflow storage account')
 resource saDiag 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
   name: '${wfSA.name}-diag'
   scope: wfSA

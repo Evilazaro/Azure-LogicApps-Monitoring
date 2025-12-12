@@ -94,12 +94,6 @@ module services 'services/main.bicep' = {
   }
 }
 
-output AZURE_CONTAINER_APPS_ENVIRONMENT_ID string = services.outputs.AZURE_CONTAINER_APPS_ENVIRONMENT_ID
-
-output AZURE_CONTAINER_APPS_ENVIRONMENT_DEFAULT_DOMAIN string = services.outputs.AZURE_CONTAINER_APPS_ENVIRONMENT_DEFAULT_DOMAIN
-
-output AZURE_CONTAINER_REGISTRY_ENDPOINT string = services.outputs.AZURE_CONTAINER_REGISTRY_ENDPOINT
-
 module workflows 'logic-app.bicep' = {
   params: {
     name: name
@@ -114,6 +108,14 @@ module workflows 'logic-app.bicep' = {
     tags: tags
   }
 }
+
+// ========== Outputs ==========
+
+output AZURE_CONTAINER_APPS_ENVIRONMENT_ID string = services.outputs.AZURE_CONTAINER_APPS_ENVIRONMENT_ID
+
+output AZURE_CONTAINER_APPS_ENVIRONMENT_DEFAULT_DOMAIN string = services.outputs.AZURE_CONTAINER_APPS_ENVIRONMENT_DEFAULT_DOMAIN
+
+output AZURE_CONTAINER_REGISTRY_ENDPOINT string = services.outputs.AZURE_CONTAINER_REGISTRY_ENDPOINT
 
 @description('Resource ID of the deployed Logic App')
 output WORKFLOW_ENGINE_ID string = workflows.outputs.WORKFLOW_ENGINE_ID

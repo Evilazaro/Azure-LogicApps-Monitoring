@@ -47,6 +47,7 @@ param tags object
 
 // ========== Resources ==========
 
+@description('Azure Container Registry for storing container images')
 resource registry 'Microsoft.ContainerRegistry/registries@2025-11-01' = {
   name: toLower('${name}acr${uniqueString(subscription().id, resourceGroup().id, location, envName)}')
   location: location
@@ -66,6 +67,7 @@ output AZURE_CONTAINER_REGISTRY_ENDPOINT string = registry.properties.loginServe
 
 output AZURE_CONTAINER_REGISTRY_MANAGED_IDENTITY_ID string = userAssignedIdentityId
 
+@description('Diagnostic settings for Container Registry')
 resource registryDiag 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
   name: '${registry.name}-diag'
   scope: registry
@@ -79,6 +81,7 @@ resource registryDiag 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview'
 
 var appEnvName = toLower('${name}-cae-${uniqueString(subscription().id, resourceGroup().id, location, envName)}')
 
+@description('Container Apps managed environment for hosting containerized applications')
 resource appEnv 'Microsoft.App/managedEnvironments@2025-02-02-preview' = {
   name: appEnvName
   location: location
@@ -129,6 +132,7 @@ output AZURE_CONTAINER_APPS_ENVIRONMENT_ID string = appEnv.id
 
 output AZURE_CONTAINER_APPS_ENVIRONMENT_DEFAULT_DOMAIN string = appEnv.properties.defaultDomain
 
+@description('.NET Aspire dashboard component for application observability')
 resource dashboard 'Microsoft.App/managedEnvironments/dotNetComponents@2025-02-02-preview' = {
   parent: appEnv
   name: 'aspire-dashboard'

@@ -70,6 +70,7 @@ var resourceGroupName = 'rg-${solutionName}-${envName}-${substring(location, 0, 
 
 // ========== Resources ==========
 
+@description('Resource group containing all monitoring and workload resources')
 resource rg 'Microsoft.Resources/resourceGroups@2025-04-01' = {
   name: resourceGroupName
   location: location
@@ -89,7 +90,7 @@ module monitoring './monitoring/main.bicep' = {
 }
 
 module workload './workload/main.bicep' = {
-  scope: resourceGroup(resourceGroupName)
+  scope: rg
   params: {
     name: solutionName
     location: location

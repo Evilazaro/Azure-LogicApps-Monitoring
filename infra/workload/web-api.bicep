@@ -63,6 +63,7 @@ var appConf = {
 
 // ========== Resources ==========
 
+@description('App Service Plan for Purchase Order Processing API')
 resource PoProcAsp 'Microsoft.Web/serverfarms@2025-03-01' = {
   name: '${name}-${resourceSuffix}-poproc-asp'
   location: location
@@ -92,6 +93,7 @@ resource PoProcAsp 'Microsoft.Web/serverfarms@2025-03-01' = {
   }
 }
 
+@description('Diagnostic settings for Purchase Order Processing App Service Plan')
 resource PoProcAspDiag 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
   name: '${PoProcAsp.name}-diag'
   scope: PoProcAsp
@@ -103,6 +105,7 @@ resource PoProcAspDiag 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview
   }
 }
 
+@description('Web App for Purchase Order Processing API')
 resource PoProcAPI 'Microsoft.Web/sites@2025-03-01' = {
   name: '${name}-${resourceSuffix}-poproc-api'
   location: location
@@ -126,9 +129,10 @@ resource PoProcAPI 'Microsoft.Web/sites@2025-03-01' = {
   }
 }
 
+@description('Application settings for Purchase Order Processing API')
 resource PoProcConf 'Microsoft.Web/sites/config@2025-03-01' = {
-  name: 'appsettings'
   parent: PoProcAPI
+  name: 'appsettings'
   properties: {
     ASPNETCORE_ENVIRONMENT: 'Production'
     APPINSIGHTS_INSTRUMENTATIONKEY: appInsightsInstrumentationKey
@@ -136,6 +140,7 @@ resource PoProcConf 'Microsoft.Web/sites/config@2025-03-01' = {
   }
 }
 
+@description('Diagnostic settings for Purchase Order Processing API')
 resource PoProcApiDiag 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
   name: '${PoProcAPI.name}-diag'
   scope: PoProcAPI

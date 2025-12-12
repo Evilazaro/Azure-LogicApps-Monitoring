@@ -32,6 +32,7 @@ param tags object = {}
 
 // ========== Resources ==========
 
+@description('Application Insights instance for application telemetry and monitoring')
 resource appInsights 'Microsoft.Insights/components@2020-02-02' = {
   name: '${name}-${uniqueString(resourceGroup().id, name, envName, location)}-appinsights'
   location: location
@@ -61,6 +62,7 @@ output AZURE_APPLICATION_INSIGHTS_INSTRUMENTATION_KEY string = appInsights.prope
 @secure()
 output AZURE_APPLICATION_INSIGHTS_CONNECTION_STRING string = appInsights.properties.ConnectionString
 
+@description('Diagnostic settings for Application Insights')
 resource appDiag 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
   name: '${appInsights.name}-diag'
   scope: appInsights

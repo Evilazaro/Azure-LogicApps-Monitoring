@@ -22,6 +22,7 @@ var resourceSuffix = uniqueString(resourceGroup().id, name, envName, location)
 
 // ========== Resources ==========
 
+@description('User-assigned managed identity for workload resources')
 resource mi 'Microsoft.ManagedIdentity/userAssignedIdentities@2025-01-31-preview' = {
   name: '${name}-${resourceSuffix}-mi'
   location: location
@@ -52,6 +53,7 @@ var roles = [
   '8311e382-0749-4cb8-b61a-304f252e45ec' //Azure Container Registry ACR Push
 ]
 
+@description('Role assignments for managed identity to access Azure resources')
 resource miRA 'Microsoft.Authorization/roleAssignments@2022-04-01' = [
   for role in roles: {
     name: guid(subscription().id, resourceGroup().id, mi.id, role)
@@ -64,6 +66,7 @@ resource miRA 'Microsoft.Authorization/roleAssignments@2022-04-01' = [
   }
 ]
 
+@description('Role assignments for deployment user to access Azure resources')
 resource userRA 'Microsoft.Authorization/roleAssignments@2022-04-01' = [
   for role in roles: {
     name: guid(subscription().id, resourceGroup().id, deployer().objectId, role)

@@ -66,6 +66,7 @@ var appConf = {
 
 // ========== Resources ==========
 
+@description('App Service Plan for Purchase Order Web Application')
 resource PoASP 'Microsoft.Web/serverfarms@2025-03-01' = {
   name: '${name}-${resourceSuffix}-po-asp'
   location: location
@@ -95,6 +96,7 @@ resource PoASP 'Microsoft.Web/serverfarms@2025-03-01' = {
   }
 }
 
+@description('Diagnostic settings for Purchase Order App Service Plan')
 resource aspPoDiag 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
   name: '${PoASP.name}-diag'
   scope: PoASP
@@ -106,6 +108,7 @@ resource aspPoDiag 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = 
   }
 }
 
+@description('Web App for Purchase Order management application')
 resource PoWebApp 'Microsoft.Web/sites@2025-03-01' = {
   name: '${name}-${resourceSuffix}-po-webapp'
   location: location
@@ -132,9 +135,10 @@ resource PoWebApp 'Microsoft.Web/sites@2025-03-01' = {
   }
 }
 
+@description('Application settings for Purchase Order Web Application')
 resource PoConf 'Microsoft.Web/sites/config@2025-03-01' = {
-  name: 'appsettings'
   parent: PoWebApp
+  name: 'appsettings'
   properties: {
     ASPNETCORE_ENVIRONMENT: 'Production'
     AzureWebJobsStorage__accountName: workflowStorageAccountName
@@ -163,11 +167,13 @@ var RolIdsSA = [
   rolDefSA.fileDataContributor
 ]
 
+@description('Reference to existing workflow storage account')
 resource wfSA 'Microsoft.Storage/storageAccounts@2025-06-01' existing = {
   name: workflowStorageAccountName
   scope: resourceGroup()
 }
 
+@description('Role assignments granting Web App access to workflow storage account')
 resource wfRaSA 'Microsoft.Authorization/roleAssignments@2022-04-01' = [
   for roleId in RolIdsSA: {
     name: guid(PoWebApp.id, PoWebApp.name, roleId)
@@ -180,6 +186,7 @@ resource wfRaSA 'Microsoft.Authorization/roleAssignments@2022-04-01' = [
   }
 ]
 
+@description('Diagnostic settings for Purchase Order Web Application')
 resource PoWEBDiag 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
   name: '${PoWebApp.name}-diag'
   scope: PoWebApp

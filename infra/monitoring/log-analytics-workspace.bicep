@@ -60,6 +60,7 @@ var configSA = {
 
 // ========== Resources ==========
 
+@description('Storage account for storing diagnostic logs and metrics')
 resource logSA 'Microsoft.Storage/storageAccounts@2025-06-01' = {
   name: logsStorageAccountName
   location: location
@@ -87,9 +88,10 @@ resource logSA 'Microsoft.Storage/storageAccounts@2025-06-01' = {
 @description('Resource ID of the deployed storage account for logs')
 output LOGS_STORAGE_ACCOUNT_ID string = logSA.id
 
+@description('Lifecycle management policy for log storage account to delete old logs after 30 days')
 resource saPolicy 'Microsoft.Storage/storageAccounts/managementPolicies@2025-06-01' = {
-  name: 'default'
   parent: logSA
+  name: 'default'
   properties: {
     policy: {
       rules: [
@@ -120,6 +122,7 @@ resource saPolicy 'Microsoft.Storage/storageAccounts/managementPolicies@2025-06-
   }
 }
 
+@description('Log Analytics workspace for centralized logging and monitoring')
 resource workspace 'Microsoft.OperationalInsights/workspaces@2025-07-01' = {
   name: '${name}-${uniqueString(resourceGroup().id, name, envName, location)}-law'
   location: location
@@ -151,6 +154,7 @@ output AZURE_LOG_ANALYTICS_WORKSPACE_CUSTOMER_ID string = workspace.properties.c
 @secure()
 output AZURE_LOG_ANALYTICS_WORKSPACE_PRIMARY_KEY string = workspace.listKeys().primarySharedKey
 
+@description('Diagnostic settings for Log Analytics workspace')
 resource wspDiag 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
   name: '${workspace.name}-diag'
   scope: workspace
@@ -163,6 +167,7 @@ resource wspDiag 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
   }
 }
 
+@description('Linked storage account for storing alerts data')
 resource saAlerts 'Microsoft.OperationalInsights/workspaces/linkedStorageAccounts@2025-07-01' = {
   parent: workspace
   name: 'Alerts'
@@ -173,6 +178,7 @@ resource saAlerts 'Microsoft.OperationalInsights/workspaces/linkedStorageAccount
   }
 }
 
+@description('Linked storage account for storing query results')
 resource saQuery 'Microsoft.OperationalInsights/workspaces/linkedStorageAccounts@2025-07-01' = {
   parent: workspace
   name: 'Query'
