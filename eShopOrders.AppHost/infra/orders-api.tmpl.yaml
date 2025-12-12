@@ -42,7 +42,7 @@ properties:
           - name: ASPNETCORE_ENVIRONMENT
             value: 'Production'
           - name: APPINSIGHTS_INSTRUMENTATIONKEY
-            value: {{ .Env.AZURE_APPLICATION_INSIGHTS_CONNECTION_STRING }}
+            value: {{ .Env.AZURE_APPLICATION_INSIGHTS_INSTRUMENTATION_KEY }}
     scale:
       minReplicas: 3
 tags:
