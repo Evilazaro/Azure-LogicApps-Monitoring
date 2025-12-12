@@ -1,6 +1,3 @@
-using Aspire.Hosting;
-using Aspire.Hosting.Azure;
-using Microsoft.VisualBasic;
 using Projects;
 
 var builder = DistributedApplication.CreateBuilder(args);
