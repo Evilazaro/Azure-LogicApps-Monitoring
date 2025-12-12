@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Http.HttpResults;
+using Microsoft.AspNetCore.Mvc;
 
 namespace eShop.Orders.API.Controllers
 {
@@ -20,7 +21,14 @@ namespace eShop.Orders.API.Controllers
             }
 
             // Logic to place the order
-            return CreatedAtAction(nameof(GetOrder), new { id = order.Id }, order);
+            return Ok(new
+            {
+                order.Id,
+                order.Date,
+                order.Quantity,
+                order.Total,
+                Message = "Order placed successfully"
+            });
         }
 
         [HttpGet("{id}", Name = "GetOrder")]
@@ -48,7 +56,10 @@ namespace eShop.Orders.API.Controllers
 
             // Logic to place the batch of orders
 
-            return CreatedAtAction(nameof(GetOrder), new { id = orders.First().Id }, orders);
+            return Ok( new
+            {
+                Message = "All orders placed successfully"
+            });
         }
     }
 }
