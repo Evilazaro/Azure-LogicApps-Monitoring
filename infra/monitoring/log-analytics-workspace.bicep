@@ -1,5 +1,32 @@
 // ========== Type Definitions ==========
 
+@description('Tags applied to all resources for organization and cost tracking')
+type tagsType = {
+  @description('Name of the solution')
+  Solution: string
+
+  @description('Environment identifier')
+  Environment: string
+
+  @description('Management method')
+  ManagedBy: string
+
+  @description('Cost center identifier')
+  CostCenter: string
+
+  @description('Team responsible for the resources')
+  Owner: string
+
+  @description('Business unit')
+  BusinessUnit: string
+
+  @description('Deployment timestamp')
+  DeploymentDate: string
+
+  @description('Source repository')
+  Repository: string
+}
+
 @description('Storage account configuration')
 type storageAccountConfig = {
   @description('Storage account SKU')
@@ -42,7 +69,7 @@ param logsSettings object[]
 param metricsSettings object[]
 
 @description('Resource tags applied to the Log Analytics workspace.')
-param tags object = {}
+param tags tagsType
 
 // ========== Variables ==========
 

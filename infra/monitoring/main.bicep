@@ -1,5 +1,32 @@
 // ========== Type Definitions ==========
 
+@description('Tags applied to all resources for organization and cost tracking')
+type tagsType = {
+  @description('Name of the solution')
+  Solution: string
+
+  @description('Environment identifier')
+  Environment: string
+
+  @description('Management method')
+  ManagedBy: string
+
+  @description('Cost center identifier')
+  CostCenter: string
+
+  @description('Team responsible for the resources')
+  Owner: string
+
+  @description('Business unit')
+  BusinessUnit: string
+
+  @description('Deployment timestamp')
+  DeploymentDate: string
+
+  @description('Source repository')
+  Repository: string
+}
+
 // (Note: Diagnostic settings use object[] instead of user-defined types 
 // due to Azure Resource Provider schema requirements)
 
@@ -21,7 +48,7 @@ param envName string
 param location string = resourceGroup().location
 
 @description('Resource tags applied to all monitoring resources.')
-param tags object = {}
+param tags tagsType
 
 // ========== Variables ==========
 

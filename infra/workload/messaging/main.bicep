@@ -1,3 +1,32 @@
+// ========== Type Definitions ==========
+
+@description('Tags applied to all resources for organization and cost tracking')
+type tagsType = {
+  @description('Name of the solution')
+  Solution: string
+
+  @description('Environment identifier')
+  Environment: string
+
+  @description('Management method')
+  ManagedBy: string
+
+  @description('Cost center identifier')
+  CostCenter: string
+
+  @description('Team responsible for the resources')
+  Owner: string
+
+  @description('Business unit')
+  BusinessUnit: string
+
+  @description('Deployment timestamp')
+  DeploymentDate: string
+
+  @description('Source repository')
+  Repository: string
+}
+
 // ========== Parameters ==========
 
 @description('Base name for Service Bus namespace.')
@@ -34,7 +63,7 @@ param logsSettings object[]
 param metricsSettings object[]
 
 @description('Resource tags applied to Service Bus resources.')
-param tags object = {}
+param tags tagsType
 
 @description('Name of the storage queue for tax processing workflow tasks')
 @minLength(3)

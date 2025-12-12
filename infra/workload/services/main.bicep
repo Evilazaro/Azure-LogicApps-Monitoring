@@ -1,3 +1,34 @@
+// ========== Type Definitions ==========
+
+@description('Tags applied to all resources for organization and cost tracking')
+type tagsType = {
+  @description('Name of the solution')
+  Solution: string
+
+  @description('Environment identifier')
+  Environment: string
+
+  @description('Management method')
+  ManagedBy: string
+
+  @description('Cost center identifier')
+  CostCenter: string
+
+  @description('Team responsible for the resources')
+  Owner: string
+
+  @description('Business unit')
+  BusinessUnit: string
+
+  @description('Deployment timestamp')
+  DeploymentDate: string
+
+  @description('Source repository')
+  Repository: string
+}
+
+// ========== Parameters ==========
+
 @description('Base name for the container services.')
 @minLength(3)
 @maxLength(20)
@@ -43,7 +74,7 @@ param metricsSettings object[]
 param appInsightsConnectionString string
 
 @description('Resource tags applied to container services.')
-param tags object
+param tags tagsType
 
 // ========== Resources ==========
 
@@ -63,8 +94,10 @@ resource registry 'Microsoft.ContainerRegistry/registries@2025-11-01' = {
   }
 }
 
+@description('Login server endpoint for the Azure Container Registry')
 output AZURE_CONTAINER_REGISTRY_ENDPOINT string = registry.properties.loginServer
 
+@description('Resource ID of the managed identity used by Container Registry')
 output AZURE_CONTAINER_REGISTRY_MANAGED_IDENTITY_ID string = userAssignedIdentityId
 
 @description('Diagnostic settings for Container Registry')
@@ -128,8 +161,10 @@ resource appEnv 'Microsoft.App/managedEnvironments@2025-02-02-preview' = {
   }
 }
 
+@description('Resource ID of the Container Apps managed environment')
 output AZURE_CONTAINER_APPS_ENVIRONMENT_ID string = appEnv.id
 
+@description('Default domain for the Container Apps environment')
 output AZURE_CONTAINER_APPS_ENVIRONMENT_DEFAULT_DOMAIN string = appEnv.properties.defaultDomain
 
 @description('.NET Aspire dashboard component for application observability')

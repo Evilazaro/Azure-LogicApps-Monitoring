@@ -39,8 +39,6 @@ properties:
             value: in_memory
           - name: APPLICATIONINSIGHTS_CONNECTION_STRING
             value: {{ .Env.AZURE_APPLICATION_INSIGHTS_CONNECTION_STRING }}
-          - name: ASPNETCORE_ENVIRONMENT
-            value: 'Production'
           - name: APPINSIGHTS_INSTRUMENTATIONKEY
             value: {{ .Env.AZURE_APPLICATION_INSIGHTS_INSTRUMENTATION_KEY }}
     scale:
