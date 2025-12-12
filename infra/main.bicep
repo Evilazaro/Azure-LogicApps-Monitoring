@@ -96,7 +96,7 @@ output AZURE_APPLICATION_INSIGHTS_CONNECTION_STRING string = monitoring.outputs.
 output AZURE_APPLICATION_INSIGHTS_INSTRUMENTATION_KEY string = monitoring.outputs.AZURE_APPLICATION_INSIGHTS_INSTRUMENTATION_KEY
 
 module workload './workload/main.bicep' = {
-  scope: rg
+  scope: resourceGroup(resourceGroupName)
   params: {
     name: solutionName
     location: location
