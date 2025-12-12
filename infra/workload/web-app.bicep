@@ -1,3 +1,32 @@
+// ========== Type Definitions ==========
+
+@description('Tags applied to all resources for organization and cost tracking')
+type tagsType = {
+  @description('Name of the solution')
+  Solution: string
+
+  @description('Environment identifier')
+  Environment: string
+
+  @description('Management method')
+  ManagedBy: string
+
+  @description('Cost center identifier')
+  CostCenter: string
+
+  @description('Team responsible for the resources')
+  Owner: string
+
+  @description('Business unit')
+  BusinessUnit: string
+
+  @description('Deployment timestamp')
+  DeploymentDate: string
+
+  @description('Source repository')
+  Repository: string
+}
+
 // ========== Parameters ==========
 
 @description('Base name for Logic App and App Service Plan resources.')
@@ -33,13 +62,15 @@ param logsSettings object[]
 param metricsSettings object[]
 
 @description('Connection string for Application Insights instance.')
+@secure()
 param appInsightsConnectionString string
 
 @description('Application Insights Instrumentation Key.')
+@secure()
 param appInsightsInstrumentationKey string
 
 @description('Resource tags applied to all resources.')
-param tags object = {}
+param tags tagsType
 
 // ========== Variables ==========
 
@@ -64,6 +95,7 @@ var appConf = {
 
 // ========== Resources ==========
 
+@description('App Service Plan for Purchase Order Web Application')
 resource PoASP 'Microsoft.Web/serverfarms@2025-03-01' = {
   name: '${name}-${resourceSuffix}-po-asp'
   location: location
@@ -93,6 +125,7 @@ resource PoASP 'Microsoft.Web/serverfarms@2025-03-01' = {
   }
 }
 
+@description('Diagnostic settings for Purchase Order App Service Plan')
 resource aspPoDiag 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
   name: '${PoASP.name}-diag'
   scope: PoASP
@@ -104,6 +137,7 @@ resource aspPoDiag 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = 
   }
 }
 
+@description('Web App for Purchase Order management application')
 resource PoWebApp 'Microsoft.Web/sites@2025-03-01' = {
   name: '${name}-${resourceSuffix}-po-webapp'
   location: location
@@ -130,9 +164,10 @@ resource PoWebApp 'Microsoft.Web/sites@2025-03-01' = {
   }
 }
 
+@description('Application settings for Purchase Order Web Application')
 resource PoConf 'Microsoft.Web/sites/config@2025-03-01' = {
-  name: 'appsettings'
   parent: PoWebApp
+  name: 'appsettings'
   properties: {
     ASPNETCORE_ENVIRONMENT: 'Production'
     AzureWebJobsStorage__accountName: workflowStorageAccountName
@@ -140,20 +175,7 @@ resource PoConf 'Microsoft.Web/sites/config@2025-03-01' = {
     AzureWebJobsStorage__credential: 'managedidentity'
     AzureWebJobsStorage__managedIdentityResourceId: PoWebApp.identity.principalId
     APPINSIGHTS_INSTRUMENTATIONKEY: appInsightsInstrumentationKey
-    // APPINSIGHTS_PROFILERFEATURE_VERSION: '1.0.0'
-    // APPINSIGHTS_SNAPSHOTFEATURE_VERSION: '1.0.0'
     APPLICATIONINSIGHTS_CONNECTION_STRING: appInsightsConnectionString
-    // APPLICATIONINSIGHTS_ENABLESQLQUERYCOLLECTION: 'true'
-    // ApplicationInsightsAgent_EXTENSION_VERSION: '~3'
-    // DiagnosticServices_EXTENSION_VERSION: '~3'
-    // DISABLE_APPINSIGHTS_SDK: 'disabled'
-    // IGNORE_APPINSIGHTS_SDK: 'disabled'
-    // InstrumentationEngine_EXTENSION_VERSION: 'enabled'
-    // SnapshotDebugger_EXTENSION_VERSION: 'enabled'
-    // WEBSITE_HEALTHCHECK_MAXPINGFAILURES: '5'
-    // XDT_MicrosoftApplicationInsights_BaseExtensions: 'enabled'
-    // XDT_MicrosoftApplicationInsights_Mode: 'recommended'
-    // XDT_MicrosoftApplicationInsights_PreemptSdk: 'enabled'
     AZURE_TENANT_ID: tenant().tenantId
   }
 }
@@ -174,11 +196,13 @@ var RolIdsSA = [
   rolDefSA.fileDataContributor
 ]
 
+@description('Reference to existing workflow storage account')
 resource wfSA 'Microsoft.Storage/storageAccounts@2025-06-01' existing = {
   name: workflowStorageAccountName
   scope: resourceGroup()
 }
 
+@description('Role assignments granting Web App access to workflow storage account')
 resource wfRaSA 'Microsoft.Authorization/roleAssignments@2022-04-01' = [
   for roleId in RolIdsSA: {
     name: guid(PoWebApp.id, PoWebApp.name, roleId)
@@ -191,6 +215,7 @@ resource wfRaSA 'Microsoft.Authorization/roleAssignments@2022-04-01' = [
   }
 ]
 
+@description('Diagnostic settings for Purchase Order Web Application')
 resource PoWEBDiag 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
   name: '${PoWebApp.name}-diag'
   scope: PoWebApp

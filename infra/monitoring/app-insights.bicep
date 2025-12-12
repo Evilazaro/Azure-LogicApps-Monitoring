@@ -1,3 +1,32 @@
+// ========== Type Definitions ==========
+
+@description('Tags applied to all resources for organization and cost tracking')
+type tagsType = {
+  @description('Name of the solution')
+  Solution: string
+
+  @description('Environment identifier')
+  Environment: string
+
+  @description('Management method')
+  ManagedBy: string
+
+  @description('Cost center identifier')
+  CostCenter: string
+
+  @description('Team responsible for the resources')
+  Owner: string
+
+  @description('Business unit')
+  BusinessUnit: string
+
+  @description('Deployment timestamp')
+  DeploymentDate: string
+
+  @description('Source repository')
+  Repository: string
+}
+
 // ========== Parameters ==========
 
 @description('Base name for Application Insights.')
@@ -28,10 +57,11 @@ param logsSettings object[]
 param metricsSettings object[]
 
 @description('Resource tags applied to Application Insights.')
-param tags object = {}
+param tags tagsType
 
 // ========== Resources ==========
 
+@description('Application Insights instance for application telemetry and monitoring')
 resource appInsights 'Microsoft.Insights/components@2020-02-02' = {
   name: '${name}-${uniqueString(resourceGroup().id, name, envName, location)}-appinsights'
   location: location
@@ -54,13 +84,12 @@ output AZURE_APPLICATION_INSIGHTS_NAME string = appInsights.name
 output AZURE_APPLICATION_INSIGHTS_ID string = appInsights.id
 
 @description('Instrumentation key for Application Insights telemetry')
-@secure()
 output AZURE_APPLICATION_INSIGHTS_INSTRUMENTATION_KEY string = appInsights.properties.InstrumentationKey
 
 @description('Connection string for Application Insights telemetry')
-@secure()
 output AZURE_APPLICATION_INSIGHTS_CONNECTION_STRING string = appInsights.properties.ConnectionString
 
+@description('Diagnostic settings for Application Insights')
 resource appDiag 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
   name: '${appInsights.name}-diag'
   scope: appInsights

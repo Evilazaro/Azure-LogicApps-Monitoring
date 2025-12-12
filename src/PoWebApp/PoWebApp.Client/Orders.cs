@@ -1,6 +1,5 @@
 ﻿using Azure.Identity;
 using Azure.Storage.Queues;
-using Microsoft.Extensions.Logging;
 using PoWebApp.Client.Diagnostics;
 using System.Diagnostics;
 using System.Text.Json;

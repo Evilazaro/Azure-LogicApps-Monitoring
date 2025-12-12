@@ -1,19 +1,46 @@
 // ========== Type Definitions ==========
 
+@description('Tags applied to all resources for organization and cost tracking')
+type tagsType = {
+  @description('Name of the solution')
+  Solution: string
+
+  @description('Environment identifier')
+  Environment: string
+
+  @description('Management method')
+  ManagedBy: string
+
+  @description('Cost center identifier')
+  CostCenter: string
+
+  @description('Team responsible for the resources')
+  Owner: string
+
+  @description('Business unit')
+  BusinessUnit: string
+
+  @description('Deployment timestamp')
+  DeploymentDate: string
+
+  @description('Source repository')
+  Repository: string
+}
+
 @description('Storage account configuration')
 type storageAccountConfig = {
   @description('Storage account SKU')
   sku: 'Standard_LRS' | 'Standard_GRS' | 'Standard_RAGRS' | 'Standard_ZRS'
-  
+
   @description('Storage account kind')
   kind: 'StorageV2' | 'BlobStorage' | 'BlockBlobStorage'
-  
+
   @description('Access tier for the storage account')
   accessTier: 'Hot' | 'Cool'
-  
+
   @description('Minimum TLS version')
   minimumTlsVersion: 'TLS1_0' | 'TLS1_1' | 'TLS1_2'
-  
+
   @description('Whether HTTPS traffic only is supported')
   supportsHttpsTrafficOnly: bool
 }
@@ -42,7 +69,7 @@ param logsSettings object[]
 param metricsSettings object[]
 
 @description('Resource tags applied to the Log Analytics workspace.')
-param tags object = {}
+param tags tagsType
 
 // ========== Variables ==========
 
@@ -60,6 +87,7 @@ var configSA = {
 
 // ========== Resources ==========
 
+@description('Storage account for storing diagnostic logs and metrics')
 resource logSA 'Microsoft.Storage/storageAccounts@2025-06-01' = {
   name: logsStorageAccountName
   location: location
@@ -87,9 +115,10 @@ resource logSA 'Microsoft.Storage/storageAccounts@2025-06-01' = {
 @description('Resource ID of the deployed storage account for logs')
 output LOGS_STORAGE_ACCOUNT_ID string = logSA.id
 
+@description('Lifecycle management policy for log storage account to delete old logs after 30 days')
 resource saPolicy 'Microsoft.Storage/storageAccounts/managementPolicies@2025-06-01' = {
-  name: 'default'
   parent: logSA
+  name: 'default'
   properties: {
     policy: {
       rules: [
@@ -120,6 +149,7 @@ resource saPolicy 'Microsoft.Storage/storageAccounts/managementPolicies@2025-06-
   }
 }
 
+@description('Log Analytics workspace for centralized logging and monitoring')
 resource workspace 'Microsoft.OperationalInsights/workspaces@2025-07-01' = {
   name: '${name}-${uniqueString(resourceGroup().id, name, envName, location)}-law'
   location: location
@@ -144,6 +174,14 @@ output AZURE_LOG_ANALYTICS_WORKSPACE_ID string = workspace.id
 @description('Name of the deployed Log Analytics workspace')
 output AZURE_LOG_ANALYTICS_WORKSPACE_NAME string = workspace.name
 
+@description('Log Analytics workspace customer ID')
+output AZURE_LOG_ANALYTICS_WORKSPACE_CUSTOMER_ID string = workspace.properties.customerId
+
+@description('Primary Key for the Log Analytics workspace')
+@secure()
+output AZURE_LOG_ANALYTICS_WORKSPACE_PRIMARY_KEY string = workspace.listKeys().primarySharedKey
+
+@description('Diagnostic settings for Log Analytics workspace')
 resource wspDiag 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
   name: '${workspace.name}-diag'
   scope: workspace
@@ -156,6 +194,7 @@ resource wspDiag 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
   }
 }
 
+@description('Linked storage account for storing alerts data')
 resource saAlerts 'Microsoft.OperationalInsights/workspaces/linkedStorageAccounts@2025-07-01' = {
   parent: workspace
   name: 'Alerts'
@@ -166,6 +205,7 @@ resource saAlerts 'Microsoft.OperationalInsights/workspaces/linkedStorageAccount
   }
 }
 
+@description('Linked storage account for storing query results')
 resource saQuery 'Microsoft.OperationalInsights/workspaces/linkedStorageAccounts@2025-07-01' = {
   parent: workspace
   name: 'Query'

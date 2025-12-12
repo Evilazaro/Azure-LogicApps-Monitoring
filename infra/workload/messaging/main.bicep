@@ -1,3 +1,32 @@
+// ========== Type Definitions ==========
+
+@description('Tags applied to all resources for organization and cost tracking')
+type tagsType = {
+  @description('Name of the solution')
+  Solution: string
+
+  @description('Environment identifier')
+  Environment: string
+
+  @description('Management method')
+  ManagedBy: string
+
+  @description('Cost center identifier')
+  CostCenter: string
+
+  @description('Team responsible for the resources')
+  Owner: string
+
+  @description('Business unit')
+  BusinessUnit: string
+
+  @description('Deployment timestamp')
+  DeploymentDate: string
+
+  @description('Source repository')
+  Repository: string
+}
+
 // ========== Parameters ==========
 
 @description('Base name for Service Bus namespace.')
@@ -15,6 +44,10 @@ param envName string
 @maxLength(50)
 param location string = resourceGroup().location
 
+@description('Resource ID of the User Assigned Identity to be used by Service Bus.')
+@minLength(50)
+param userAssignedIdentityId string
+
 @description('Resource ID of the Log Analytics workspace for diagnostic logs and metrics.')
 @minLength(50)
 param workspaceId string
@@ -30,7 +63,7 @@ param logsSettings object[]
 param metricsSettings object[]
 
 @description('Resource tags applied to Service Bus resources.')
-param tags object = {}
+param tags tagsType
 
 @description('Name of the storage queue for tax processing workflow tasks')
 @minLength(3)
@@ -41,44 +74,60 @@ param queueName string = 'orders-queue'
 
 var cleanedName = toLower(replace(replace(replace(name, '-', ''), '_', ''), ' ', ''))
 var uniqueSuffix = uniqueString(resourceGroup().id, name, envName, location)
-var storageAccountName = take('${cleanedName}${uniqueSuffix}', 24)
+var serviceBusName = toLower(take('${cleanedName}sb${uniqueSuffix}', 20))
 
-var saConf = {
-  sku: 'Standard_LRS'
-  kind: 'StorageV2'
-  accessTier: 'Hot'
-  minimumTlsVersion: 'TLS1_2'
-  supportsHttpsTrafficOnly: true
-}
+// ========== Resources ==========
 
-resource azSb 'Microsoft.ServiceBus/namespaces@2025-05-01-preview' = {
-  name: name
+@description('Service Bus namespace for message brokering')
+resource broker 'Microsoft.ServiceBus/namespaces@2025-05-01-preview' = {
+  name: serviceBusName
   location: location
   sku: {
     name: 'Premium'
     tier: 'Premium'
-    capacity: 64
+    capacity: 16
   }
   tags: tags
   identity: {
-    type: 'SystemAssigned'
+    type: 'SystemAssigned, UserAssigned'
+    userAssignedIdentities: {
+      '${userAssignedIdentityId}': {}
+    }
   }
 }
 
-// ========== Resources ==========
+@description('Service Bus queue for order processing messages')
+resource orders 'Microsoft.ServiceBus/namespaces/queues@2025-05-01-preview' = {
+  parent: broker
+  name: queueName
+}
 
+@description('Diagnostic settings for Service Bus namespace')
+resource sbDiag 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
+  name: '${broker.name}-diag'
+  scope: broker
+  properties: {
+    workspaceId: workspaceId
+    storageAccountId: storageAccountId
+    logAnalyticsDestinationType: 'Dedicated'
+    logs: logsSettings
+    metrics: metricsSettings
+  }
+}
+
+@description('Storage account for Logic Apps workflows and data')
 resource wfSA 'Microsoft.Storage/storageAccounts@2025-06-01' = {
-  name: storageAccountName
+  name: toLower('${cleanedName}wsa${uniqueSuffix}')
   location: location
   sku: {
-    name: saConf.sku
+    name: 'Standard_LRS'
   }
-  kind: saConf.kind
+  kind: 'StorageV2'
   tags: tags
   properties: {
-    accessTier: saConf.accessTier
-    supportsHttpsTrafficOnly: saConf.supportsHttpsTrafficOnly
-    minimumTlsVersion: saConf.minimumTlsVersion
+    accessTier: 'Hot'
+    supportsHttpsTrafficOnly: true
+    minimumTlsVersion: 'TLS1_2'
     allowBlobPublicAccess: true
     publicNetworkAccess: 'Enabled'
     allowSharedKeyAccess: true
@@ -89,65 +138,31 @@ resource wfSA 'Microsoft.Storage/storageAccounts@2025-06-01' = {
   }
 }
 
-resource qSvc 'Microsoft.Storage/storageAccounts/queueServices@2025-06-01' = {
-  name: 'default'
+@description('Blob service for workflow storage account')
+resource blobSvc 'Microsoft.Storage/storageAccounts/blobServices@2025-06-01' = {
   parent: wfSA
-}
-
-resource poProcQueue 'Microsoft.Storage/storageAccounts/queueServices/queues@2025-06-01' = {
-  name: queueName
-  parent: qSvc
-}
-
-resource blogSvc 'Microsoft.Storage/storageAccounts/blobServices@2025-06-01' = {
   name: 'default'
-  parent: wfSA
 }
 
+@description('Blob container for successfully processed orders')
 resource poSuccess 'Microsoft.Storage/storageAccounts/blobServices/containers@2025-06-01' = {
+  parent: blobSvc
   name: 'ordersprocessedsuccessfully'
-  parent: blogSvc
   properties: {
     publicAccess: 'None'
   }
 }
 
+@description('Blob container for orders processed with errors')
 resource poFailed 'Microsoft.Storage/storageAccounts/blobServices/containers@2025-06-01' = {
+  parent: blobSvc
   name: 'ordersprocessedwitherrors'
-  parent: blogSvc
   properties: {
     publicAccess: 'None'
   }
 }
 
-var rolDefSA = {
-  contributor: '17d1049b-9a84-46fb-8f53-869881c3d3ab'
-  blobDataOwner: 'b7e6dc6d-f1e8-4753-8033-0f276bb0955b'
-  queueDataContributor: '974c5e8b-45b9-4653-ba55-5f855dd0fb88'
-  tableDataContributor: '0a9a7e1f-b9d0-4cc4-a60d-0319b160aaa3'
-  fileDataContributor: '69566ab7-960f-475b-8e7c-b3118f30c6bd'
-}
-
-var RolIdsSA = [
-  rolDefSA.contributor
-  rolDefSA.blobDataOwner
-  rolDefSA.queueDataContributor
-  rolDefSA.tableDataContributor
-  rolDefSA.fileDataContributor
-]
-
-resource wfRaSA 'Microsoft.Authorization/roleAssignments@2022-04-01' = [
-  for roleId in RolIdsSA: {
-    name: guid(deployer().objectId, deployer().tenantId, roleId)
-    scope: wfSA
-    properties: {
-      roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', roleId)
-      principalId: deployer().objectId
-      principalType: 'User'
-    }
-  }
-]
-
+@description('Diagnostic settings for workflow storage account')
 resource saDiag 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
   name: '${wfSA.name}-diag'
   scope: wfSA
@@ -155,18 +170,6 @@ resource saDiag 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
     workspaceId: workspaceId
     storageAccountId: storageAccountId
     logAnalyticsDestinationType: 'Dedicated'
-    metrics: metricsSettings
-  }
-}
-
-resource qDiag 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
-  name: '${qSvc.name}-diag'
-  scope: qSvc
-  properties: {
-    workspaceId: workspaceId
-    storageAccountId: storageAccountId
-    logAnalyticsDestinationType: 'Dedicated'
-    logs: logsSettings
     metrics: metricsSettings
   }
 }

@@ -1,5 +1,32 @@
 // ========== Type Definitions ==========
 
+@description('Tags applied to all resources for organization and cost tracking')
+type tagsType = {
+  @description('Name of the solution')
+  Solution: string
+
+  @description('Environment identifier')
+  Environment: string
+
+  @description('Management method')
+  ManagedBy: string
+
+  @description('Cost center identifier')
+  CostCenter: string
+
+  @description('Team responsible for the resources')
+  Owner: string
+
+  @description('Business unit')
+  BusinessUnit: string
+
+  @description('Deployment timestamp')
+  DeploymentDate: string
+
+  @description('Source repository')
+  Repository: string
+}
+
 // (Note: Diagnostic settings use object[] instead of user-defined types 
 // due to Azure Resource Provider schema requirements)
 
@@ -21,7 +48,7 @@ param envName string
 param location string = resourceGroup().location
 
 @description('Resource tags applied to all monitoring resources.')
-param tags object = {} 
+param tags tagsType
 
 // ========== Variables ==========
 
@@ -42,7 +69,6 @@ var allMetricsSettings = [
 // ========== Modules ==========
 
 module operational 'log-analytics-workspace.bicep' = {
-  scope: resourceGroup()
   params: {
     name: name
     envName: envName
@@ -54,7 +80,6 @@ module operational 'log-analytics-workspace.bicep' = {
 }
 
 module healthModel 'azure-monitor-health-model.bicep' = {
-  scope: resourceGroup()
   params: {
     name: name
     tags: tags
@@ -65,7 +90,6 @@ module healthModel 'azure-monitor-health-model.bicep' = {
 }
 
 module insights 'app-insights.bicep' = {
-  scope: resourceGroup()
   params: {
     name: name
     envName: envName
@@ -83,6 +107,12 @@ module insights 'app-insights.bicep' = {
 @description('Resource ID of the Log Analytics workspace for configuring diagnostic settings')
 output AZURE_LOG_ANALYTICS_WORKSPACE_ID string = operational.outputs.AZURE_LOG_ANALYTICS_WORKSPACE_ID
 
+@description('Log Analytics workspace customer ID')
+output AZURE_LOG_ANALYTICS_WORKSPACE_CUSTOMER_ID string = operational.outputs.AZURE_LOG_ANALYTICS_WORKSPACE_CUSTOMER_ID
+
+@description('Primary Key for the Log Analytics workspace')
+output AZURE_LOG_ANALYTICS_WORKSPACE_PRIMARY_KEY string = operational.outputs.AZURE_LOG_ANALYTICS_WORKSPACE_PRIMARY_KEY
+
 @description('Name of the deployed Application Insights instance')
 output AZURE_APPLICATION_INSIGHTS_NAME string = insights.outputs.AZURE_APPLICATION_INSIGHTS_NAME
 
@@ -90,11 +120,9 @@ output AZURE_APPLICATION_INSIGHTS_NAME string = insights.outputs.AZURE_APPLICATI
 output AZURE_APPLICATION_INSIGHTS_ID string = insights.outputs.AZURE_APPLICATION_INSIGHTS_ID
 
 @description('Connection string for Application Insights telemetry')
-@secure()
 output AZURE_APPLICATION_INSIGHTS_CONNECTION_STRING string = insights.outputs.AZURE_APPLICATION_INSIGHTS_CONNECTION_STRING
 
 @description('Instrumentation key for Application Insights telemetry')
-@secure()
 output AZURE_APPLICATION_INSIGHTS_INSTRUMENTATION_KEY string = insights.outputs.AZURE_APPLICATION_INSIGHTS_INSTRUMENTATION_KEY
 
 @description('Name of the deployed Log Analytics workspace')

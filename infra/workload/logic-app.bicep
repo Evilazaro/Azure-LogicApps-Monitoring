@@ -1,3 +1,32 @@
+// ========== Type Definitions ==========
+
+@description('Tags applied to all resources for organization and cost tracking')
+type tagsType = {
+  @description('Name of the solution')
+  Solution: string
+
+  @description('Environment identifier')
+  Environment: string
+
+  @description('Management method')
+  ManagedBy: string
+
+  @description('Cost center identifier')
+  CostCenter: string
+
+  @description('Team responsible for the resources')
+  Owner: string
+
+  @description('Business unit')
+  BusinessUnit: string
+
+  @description('Deployment timestamp')
+  DeploymentDate: string
+
+  @description('Source repository')
+  Repository: string
+}
+
 // ========== Parameters ==========
 
 @description('Base name for Logic App and App Service Plan resources.')
@@ -14,6 +43,10 @@ param envName string
 @minLength(3)
 @maxLength(50)
 param location string = resourceGroup().location
+
+@description('Resource ID of the User Assigned Identity to be used by Service Bus.')
+@minLength(50)
+param userAssignedIdentityId string
 
 @description('Resource ID of the Log Analytics workspace for diagnostic logs and metrics.')
 @minLength(50)
@@ -32,18 +65,19 @@ param metricsSettings object[]
 param workflowStorageAccountName string
 
 @description('Connection string for Application Insights instance.')
+@secure()
 param appInsightsConnectionString string
 
-@description('Instrumentation key for Application Insights instance.')
-param appInsightsInstrumentationKey string
-
 @description('Resource tags applied to all resources.')
-param tags object = {}
+param tags tagsType
 
 // ========== Variables ==========
 
 var resourceSuffix = uniqueString(resourceGroup().id, name, envName, location)
 
+// ========== Resources ==========
+
+@description('App Service Plan for Logic Apps Standard with elastic scaling')
 resource wfASP 'Microsoft.Web/serverfarms@2025-03-01' = {
   name: '${name}-${resourceSuffix}-asp'
   location: location
@@ -70,60 +104,12 @@ resource wfASP 'Microsoft.Web/serverfarms@2025-03-01' = {
   }
 }
 
-resource wfASPDiag 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
-  name: '${wfASP.name}-diag'
-  scope: wfASP
-  properties: {
-    workspaceId: workspaceId
-    storageAccountId: storageAccountId
-    metrics: metricsSettings
-  }
-}
-
-resource mi 'Microsoft.ManagedIdentity/userAssignedIdentities@2025-01-31-preview' = {
-  name: '${name}-${resourceSuffix}-mi'
-  location: location
-  tags: tags
-}
-
-resource wfSA 'Microsoft.Storage/storageAccounts@2025-06-01' existing = {
-  name: workflowStorageAccountName
-  scope: resourceGroup()
-}
-
-var rolDefSA = {
-  contributor: '17d1049b-9a84-46fb-8f53-869881c3d3ab'
-  blobDataOwner: 'b7e6dc6d-f1e8-4753-8033-0f276bb0955b'
-  queueDataContributor: '974c5e8b-45b9-4653-ba55-5f855dd0fb88'
-  tableDataContributor: '0a9a7e1f-b9d0-4cc4-a60d-0319b160aaa3'
-  fileDataContributor: '69566ab7-960f-475b-8e7c-b3118f30c6bd'
-}
-
-var RolIdsSA = [
-  rolDefSA.contributor
-  rolDefSA.blobDataOwner
-  rolDefSA.queueDataContributor
-  rolDefSA.tableDataContributor
-  rolDefSA.fileDataContributor
-]
-
-resource wfRaSA 'Microsoft.Authorization/roleAssignments@2022-04-01' = [
-  for roleId in RolIdsSA: {
-    name: guid(workflowEngine.id, workflowEngine.name, roleId)
-    scope: wfSA
-    properties: {
-      roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', roleId)
-      principalId: mi.properties.principalId
-      principalType: 'ServicePrincipal'
-    }
-  }
-]
-
 var functionsExtensionVersion = '~4'
 var functionsWorkerRuntime = 'dotnet'
 var extensionBundleId = 'Microsoft.Azure.Functions.ExtensionBundle.Workflows'
 var extensionBundleVersion = '[1.*, 2.0.0)'
 
+@description('Logic Apps Standard workflow engine for running business processes')
 resource workflowEngine 'Microsoft.Web/sites@2025-03-01' = {
   name: '${name}-${resourceSuffix}-logicapp'
   location: location
@@ -131,7 +117,7 @@ resource workflowEngine 'Microsoft.Web/sites@2025-03-01' = {
   identity: {
     type: 'UserAssigned'
     userAssignedIdentities: {
-      '${mi.id}': {}
+      '${userAssignedIdentityId}': {}
     }
   }
   tags: tags
@@ -152,9 +138,10 @@ resource workflowEngine 'Microsoft.Web/sites@2025-03-01' = {
   }
 }
 
+@description('Application settings configuration for Logic App workflow engine')
 resource wfConf 'Microsoft.Web/sites/config@2025-03-01' = {
-  name: 'appsettings'
   parent: workflowEngine
+  name: 'appsettings'
   kind: 'functionapp,workflowapp'
   properties: {
     FUNCTIONS_EXTENSION_VERSION: functionsExtensionVersion
@@ -165,8 +152,7 @@ resource wfConf 'Microsoft.Web/sites/config@2025-03-01' = {
     AzureWebJobsStorage__tableServiceUri: 'https://${workflowStorageAccountName}.table.${environment().suffixes.storage}'
     AzureWebJobsStorage__fileServiceUri: 'https://${workflowStorageAccountName}.file.${environment().suffixes.storage}'
     AzureWebJobsStorage__credential: 'managedidentity'
-    AzureWebJobsStorage__managedIdentityResourceId: mi.id
-    APPINSIGHTS_INSTRUMENTATIONKEY: appInsightsInstrumentationKey
+    AzureWebJobsStorage__managedIdentityResourceId: userAssignedIdentityId
     APPLICATIONINSIGHTS_CONNECTION_STRING: appInsightsConnectionString
     AzureFunctionsJobHost__extensionBundle__id: extensionBundleId
     AzureFunctionsJobHost__extensionBundle__version: extensionBundleVersion
@@ -178,6 +164,7 @@ resource wfConf 'Microsoft.Web/sites/config@2025-03-01' = {
   }
 }
 
+@description('Diagnostic settings for Logic App workflow engine')
 resource wfDiag 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
   name: '${workflowEngine.name}-diag'
   scope: workflowEngine

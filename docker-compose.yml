@@ -1,0 +1,17 @@
+services:
+  eshop.orders.api:
+    image: ${DOCKER_REGISTRY-}orders-api
+    build:
+      context: .
+      dockerfile: src/eShop.Orders.API/Dockerfile
+      tags:
+        - latest
+
+  eshop.orders.app:
+    image: ${DOCKER_REGISTRY-}orders-app
+    build:
+      context: .
+      dockerfile: src/eShop.Orders.App/eShop.Orders.App/Dockerfile
+      tags:
+        - latest
+

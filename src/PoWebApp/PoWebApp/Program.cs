@@ -1,4 +1,3 @@
-using PoWebApp.Client;
 using PoWebApp.Components;
 
 var builder = WebApplication.CreateBuilder(args);

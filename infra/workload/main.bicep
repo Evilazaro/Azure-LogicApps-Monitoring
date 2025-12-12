@@ -1,3 +1,32 @@
+// ========== Type Definitions ==========
+
+@description('Tags applied to all resources for organization and cost tracking')
+type tagsType = {
+  @description('Name of the solution')
+  Solution: string
+
+  @description('Environment identifier')
+  Environment: string
+
+  @description('Management method')
+  ManagedBy: string
+
+  @description('Cost center identifier')
+  CostCenter: string
+
+  @description('Team responsible for the resources')
+  Owner: string
+
+  @description('Business unit')
+  BusinessUnit: string
+
+  @description('Deployment timestamp')
+  DeploymentDate: string
+
+  @description('Source repository')
+  Repository: string
+}
+
 // ========== Parameters ==========
 
 @description('Base name for Logic App and App Service Plan resources.')
@@ -19,20 +48,23 @@ param location string = resourceGroup().location
 @minLength(50)
 param workspaceId string
 
+@description('Log Analytics Workspace Customer ID.')
+param workspaceCustomerId string
+
+@description('Primary Key for Log Analytics workspace.')
+@secure()
+param workspacePrimaryKey string
+
 @description('Storage Account ID for diagnostic logs and metrics.')
 @minLength(50)
 param storageAccountId string
 
 @description('Connection string for Application Insights instance.')
+@secure()
 param appInsightsConnectionString string
 
-@description('Instrumentation key for Application Insights instance.')
-param appInsightsInstrumentationKey string
-
 @description('Resource tags applied to all workload resources.')
-param tags object = {}
-
-// ========== Variables ==========
+param tags tagsType
 
 // ========== Variables ==========
 
@@ -52,12 +84,21 @@ var allMetricsSettings = [
 
 // ========== Modules ==========
 
+module identity 'identity/main.bicep' = {
+  params: {
+    name: name
+    location: location
+    tags: tags
+    envName: envName
+  }
+}
+
 module messaging 'messaging/main.bicep' = {
-  scope: resourceGroup()
   params: {
     name: name
     tags: tags
     envName: envName
+    userAssignedIdentityId: identity.outputs.AZURE_MANAGED_IDENTITY_ID
     storageAccountId: storageAccountId
     workspaceId: workspaceId
     logsSettings: allLogsSettings
@@ -65,59 +106,24 @@ module messaging 'messaging/main.bicep' = {
   }
 }
 
-module webApp 'web-app.bicep' = {
-  scope: resourceGroup()
+module services 'services/main.bicep' = {
   params: {
     name: name
-    envName: envName
     location: location
-    appInsightsConnectionString: appInsightsConnectionString
-    appInsightsInstrumentationKey: appInsightsInstrumentationKey
-    workspaceId: workspaceId
-    storageAccountId: storageAccountId
-    workflowStorageAccountName: messaging.outputs.WORKFLOW_STORAGE_ACCOUNT_NAME
-    logsSettings: allLogsSettings
-    metricsSettings: allMetricsSettings
-    tags: tags
-  }
-}
-
-@description('Resource ID of the deployed webApp App')
-output PO_WEB_APP_ID string = webApp.outputs.PO_WEB_APP_ID
-
-@description('Name of the deployed webApp App')
-output PO_WEB_APP_NAME string = webApp.outputs.PO_WEB_APP_NAME
-
-@description('Default hostname of the webApp App')
-output PO_WEB_APP_DEFAULT_HOST_NAME string = webApp.outputs.PO_WEB_APP_DEFAULT_HOST_NAME
-
-module api 'web-api.bicep' = {
-  scope: resourceGroup()
-  params: {
-    name: name
+    userAssignedIdentityId: identity.outputs.AZURE_MANAGED_IDENTITY_ID
     envName: envName
-    location: location
-    appInsightsConnectionString: appInsightsConnectionString
-    appInsightsInstrumentationKey: appInsightsInstrumentationKey
     workspaceId: workspaceId
+    workspaceCustomerId: workspaceCustomerId
+    workspacePrimaryKey: workspacePrimaryKey
     storageAccountId: storageAccountId
     logsSettings: allLogsSettings
     metricsSettings: allMetricsSettings
+    appInsightsConnectionString: appInsightsConnectionString
     tags: tags
   }
 }
-
-@description('Resource ID of the deployed webApp App')
-output PO_PROC_API_WEB_APP_ID string = api.outputs.PO_PROC_API_WEB_APP_ID
-
-@description('Name of the deployed webApp App')
-output PO_PROC_API_WEB_APP_NAME string = api.outputs.PO_PROC_API_WEB_APP_NAME
-
-@description('Default hostname of the webApp App')
-output PO_PROC_API_DEFAULT_HOST_NAME string = api.outputs.PO_PROC_API_DEFAULT_HOST_NAME
 
 module workflows 'logic-app.bicep' = {
-  scope: resourceGroup()
   params: {
     name: name
     location: location
@@ -126,14 +132,22 @@ module workflows 'logic-app.bicep' = {
     storageAccountId: storageAccountId
     metricsSettings: allMetricsSettings
     appInsightsConnectionString: appInsightsConnectionString
-    appInsightsInstrumentationKey: appInsightsInstrumentationKey
+    userAssignedIdentityId: identity.outputs.AZURE_MANAGED_IDENTITY_ID
     workflowStorageAccountName: messaging.outputs.WORKFLOW_STORAGE_ACCOUNT_NAME
     tags: tags
   }
-  dependsOn: [
-    api
-  ]
 }
+
+// ========== Outputs ==========
+
+@description('Resource ID of the Container Apps managed environment')
+output AZURE_CONTAINER_APPS_ENVIRONMENT_ID string = services.outputs.AZURE_CONTAINER_APPS_ENVIRONMENT_ID
+
+@description('Default domain for the Container Apps environment')
+output AZURE_CONTAINER_APPS_ENVIRONMENT_DEFAULT_DOMAIN string = services.outputs.AZURE_CONTAINER_APPS_ENVIRONMENT_DEFAULT_DOMAIN
+
+@description('Login server endpoint for the Azure Container Registry')
+output AZURE_CONTAINER_REGISTRY_ENDPOINT string = services.outputs.AZURE_CONTAINER_REGISTRY_ENDPOINT
 
 @description('Resource ID of the deployed Logic App')
 output WORKFLOW_ENGINE_ID string = workflows.outputs.WORKFLOW_ENGINE_ID
@@ -146,3 +160,10 @@ output WORKFLOW_ENGINE_ASP_ID string = workflows.outputs.WORKFLOW_ENGINE_ASP_ID
 
 @description('Name of the App Service Plan')
 output APP_SERVICE_PLAN_NAME string = workflows.outputs.APP_SERVICE_PLAN_NAME
+
+// ========== Outputs ==========
+
+@description('Client ID of the deployed managed identity')
+output MANAGED_IDENTITY_CLIENT_ID string = identity.outputs.MANAGED_IDENTITY_CLIENT_ID
+
+output AZURE_CONTAINER_REGISTRY_MANAGED_IDENTITY_ID string = identity.outputs.AZURE_MANAGED_IDENTITY_ID
