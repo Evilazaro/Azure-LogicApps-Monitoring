@@ -13,9 +13,9 @@ properties:
       dotnet:
         autoConfigureDataProtection: true
     ingress:
-      external: false
+      external: true
       targetPort: {{ targetPortOrDefault 8080 }}
-      transport: http
+      transport: http2
       allowInsecure: true
     registries:
       - server: {{ .Env.AZURE_CONTAINER_REGISTRY_ENDPOINT }}
@@ -28,7 +28,7 @@ properties:
           - name: AZURE_CLIENT_ID
             value: {{ .Env.MANAGED_IDENTITY_CLIENT_ID }}
           - name: APPLICATIONINSIGHTS_CONNECTION_STRING
-            value: '{{ .Env.AZURE_APPLICATION_INSIGHTS_CONNECTION_STRING }}'
+            value: {{ .Env.AZURE_APPLICATION_INSIGHTS_CONNECTION_STRING }}
           - name: ASPNETCORE_ENVIRONMENT
             value: Development
           - name: ASPNETCORE_FORWARDEDHEADERS_ENABLED
@@ -42,7 +42,7 @@ properties:
           - name: OTEL_DOTNET_EXPERIMENTAL_OTLP_RETRY
             value: in_memory
     scale:
-      minReplicas: 1
+      minReplicas: 3
 tags:
   azd-service-name: orders-api
   aspire-resource-name: orders-api
