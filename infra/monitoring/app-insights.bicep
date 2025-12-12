@@ -84,11 +84,9 @@ output AZURE_APPLICATION_INSIGHTS_NAME string = appInsights.name
 output AZURE_APPLICATION_INSIGHTS_ID string = appInsights.id
 
 @description('Instrumentation key for Application Insights telemetry')
-@secure()
 output AZURE_APPLICATION_INSIGHTS_INSTRUMENTATION_KEY string = appInsights.properties.InstrumentationKey
 
 @description('Connection string for Application Insights telemetry')
-@secure()
 output AZURE_APPLICATION_INSIGHTS_CONNECTION_STRING string = appInsights.properties.ConnectionString
 
 @description('Diagnostic settings for Application Insights')

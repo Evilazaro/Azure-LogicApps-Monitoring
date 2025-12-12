@@ -111,7 +111,6 @@ output AZURE_LOG_ANALYTICS_WORKSPACE_ID string = operational.outputs.AZURE_LOG_A
 output AZURE_LOG_ANALYTICS_WORKSPACE_CUSTOMER_ID string = operational.outputs.AZURE_LOG_ANALYTICS_WORKSPACE_CUSTOMER_ID
 
 @description('Primary Key for the Log Analytics workspace')
-@secure()
 output AZURE_LOG_ANALYTICS_WORKSPACE_PRIMARY_KEY string = operational.outputs.AZURE_LOG_ANALYTICS_WORKSPACE_PRIMARY_KEY
 
 @description('Name of the deployed Application Insights instance')
@@ -121,11 +120,9 @@ output AZURE_APPLICATION_INSIGHTS_NAME string = insights.outputs.AZURE_APPLICATI
 output AZURE_APPLICATION_INSIGHTS_ID string = insights.outputs.AZURE_APPLICATION_INSIGHTS_ID
 
 @description('Connection string for Application Insights telemetry')
-@secure()
 output AZURE_APPLICATION_INSIGHTS_CONNECTION_STRING string = insights.outputs.AZURE_APPLICATION_INSIGHTS_CONNECTION_STRING
 
 @description('Instrumentation key for Application Insights telemetry')
-@secure()
 output AZURE_APPLICATION_INSIGHTS_INSTRUMENTATION_KEY string = insights.outputs.AZURE_APPLICATION_INSIGHTS_INSTRUMENTATION_KEY
 
 @description('Name of the deployed Log Analytics workspace')

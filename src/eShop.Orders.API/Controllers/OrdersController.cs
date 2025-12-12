@@ -31,6 +31,19 @@ namespace eShop.Orders.API.Controllers
             });
         }
 
+        [HttpGet(Name = "GetAllOrders")]
+        public IEnumerable<Order> GetAllOrders()
+        {
+            // Logic to retrieve all orders
+            var orders = new List<Order>
+                {
+                    new Order { Id = 1, Date = DateTime.Now, Quantity = 1, Total = 100.0 },
+                    new Order { Id = 2, Date = DateTime.Now, Quantity = 2, Total = 200.0 }
+                };
+
+           return orders;
+        }
+
         [HttpGet("{id}", Name = "GetOrder")]
         public IActionResult GetOrder(int id)
         {
