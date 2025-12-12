@@ -89,6 +89,14 @@ module monitoring './monitoring/main.bicep' = {
   }
 }
 
+@description('Connection string for Application Insights telemetry')
+@secure()
+output AZURE_APPLICATION_INSIGHTS_CONNECTION_STRING string = monitoring.outputs.AZURE_APPLICATION_INSIGHTS_CONNECTION_STRING
+
+@description('Instrumentation key for Application Insights telemetry')
+@secure()
+output AZURE_APPLICATION_INSIGHTS_INSTRUMENTATION_KEY string = monitoring.outputs.AZURE_APPLICATION_INSIGHTS_INSTRUMENTATION_KEY
+
 module workload './workload/main.bicep' = {
   scope: rg
   params: {
@@ -121,4 +129,5 @@ output AZURE_CONTAINER_APPS_ENVIRONMENT_DEFAULT_DOMAIN string = workload.outputs
 // Resource Group outputs
 @description('Name of the deployed resource group')
 output AZURE_RESOURCE_GROUP string = resourceGroupName
+
 
