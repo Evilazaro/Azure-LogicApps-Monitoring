@@ -4,10 +4,10 @@ namespace eShop.Orders.API.Controllers
 {
     [ApiController]
     [Route("[controller]")]
-    public class Orders : ControllerBase
+    public class OrdersController : ControllerBase
     {
-        private readonly ILogger<Orders> _logger;
-        public Orders(ILogger<Orders> logger)
+        private readonly ILogger<OrdersController> _logger;
+        public OrdersController(ILogger<OrdersController> logger)
         {
             _logger = logger;
         }
