@@ -42,7 +42,14 @@ param location string = resourceGroup().location
 @description('Environment name suffix to ensure uniqueness.')
 @minLength(2)
 @maxLength(10)
+@allowed([
+  'local'
+  'dev'
+  'staging'
+  'prod'
+])
 param envName string
+
 
 @description('Resource ID of the Log Analytics workspace for workspace-based Application Insights integration.')
 param logAnalyticsWorkspaceId string

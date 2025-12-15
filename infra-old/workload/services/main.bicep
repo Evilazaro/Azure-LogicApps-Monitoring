@@ -46,7 +46,14 @@ param userAssignedIdentityId string
 @description('Environment name suffix to ensure uniqueness.')
 @minLength(2)
 @maxLength(10)
+@allowed([
+  'local'
+  'dev'
+  'staging'
+  'prod'
+])
 param envName string
+
 
 @description('Resource ID of the Log Analytics workspace for diagnostic logs and metrics.')
 @minLength(50)

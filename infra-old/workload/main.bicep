@@ -37,7 +37,14 @@ param name string
 @description('Environment name suffix to ensure uniqueness.')
 @minLength(2)
 @maxLength(10)
+@allowed([
+  'local'
+  'dev'
+  'staging'
+  'prod'
+])
 param envName string
+
 
 @description('Azure region for Logic App deployment.')
 @minLength(3)
@@ -170,6 +177,6 @@ output APP_SERVICE_PLAN_NAME string = workflows.outputs.APP_SERVICE_PLAN_NAME
 // ========== Outputs ==========
 
 @description('Client ID of the deployed managed identity')
-output MANAGED_IDENTITY_CLIENT_ID string = identity.outputs.MANAGED_IDENTITY_CLIENT_ID
+output AZURE_CLIENT_ID string = identity.outputs.AZURE_CLIENT_ID
 
 output AZURE_CONTAINER_REGISTRY_MANAGED_IDENTITY_ID string = identity.outputs.AZURE_MANAGED_IDENTITY_ID

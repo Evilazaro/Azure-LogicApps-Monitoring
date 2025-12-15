@@ -42,7 +42,14 @@ param location string
 @description('Environment name suffix to ensure uniqueness.')
 @minLength(2)
 @maxLength(10)
+@allowed([
+  'local'
+  'dev'
+  'staging'
+  'prod'
+])
 param envName string
+
 
 @description('Resource tags applied to the managed identity.')
 param tags tagsType
@@ -66,7 +73,7 @@ resource mi 'Microsoft.ManagedIdentity/userAssignedIdentities@2025-01-31-preview
 output AZURE_MANAGED_IDENTITY_ID string = mi.id
 
 @description('Client ID of the deployed managed identity')
-output MANAGED_IDENTITY_CLIENT_ID string = mi.properties.clientId
+output AZURE_CLIENT_ID string = mi.properties.clientId
 
 // ========== Role Assignments ==========
 

@@ -20,6 +20,9 @@ properties:
     registries:
       - server: {{ .Env.AZURE_CONTAINER_REGISTRY_ENDPOINT }}
         identity: {{ .Env.AZURE_CONTAINER_REGISTRY_MANAGED_IDENTITY_ID }}
+    secrets:
+      - name: applicationinsights-connection-string
+        value: '{{ .Env.TELEMETRY_APPINSIGHTSCONNECTIONSTRING }}'
   template:
     containers:
       - image: {{ .Image }}
@@ -27,8 +30,6 @@ properties:
         env:
           - name: AZURE_CLIENT_ID
             value: {{ .Env.MANAGED_IDENTITY_CLIENT_ID }}
-          - name: APPLICATIONINSIGHTS_CONNECTION_STRING
-            value: {{ .Env.AZURE_APPLICATION_INSIGHTS_CONNECTION_STRING }}
           - name: ASPNETCORE_FORWARDEDHEADERS_ENABLED
             value: "true"
           - name: HTTP_PORTS
@@ -47,8 +48,10 @@ properties:
             value: http://orders-api.{{ .Env.AZURE_CONTAINER_APPS_ENVIRONMENT_DEFAULT_DOMAIN }}
           - name: services__orders-api__https__0
             value: https://orders-api.{{ .Env.AZURE_CONTAINER_APPS_ENVIRONMENT_DEFAULT_DOMAIN }}
+          - name: APPLICATIONINSIGHTS_CONNECTION_STRING
+            secretRef: applicationinsights-connection-string
     scale:
-      minReplicas: 3
+      minReplicas: 5
 tags:
   azd-service-name: orders-webapp
   aspire-resource-name: orders-webapp
