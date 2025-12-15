@@ -1,0 +1,383 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/Azure/azure-dev/main/schemas/v1.0/azure.yaml.json
+
+name: azure-logicapps-monitoring
+
+infra:
+  provider: bicep
+  path: ./infra/
+  module: main
+
+hooks:
+  preprovision:
+    shell: pwsh
+    run: |
+      # Set error action preference to stop on errors
+      $ErrorActionPreference = 'Stop'
+
+      Write-Host "=== Pre-Provisioning Validation ===" -ForegroundColor Cyan
+      Write-Host ""
+
+      try {
+          # Step 1: Validate Logic App structure
+          Write-Host "[1/2] Validating Logic App structure..." -ForegroundColor Yellow
+          $logicAppPath = "./LogicAppWP/ContosoOrders"
+          
+          if (-not (Test-Path -Path $logicAppPath)) {
+              throw "Logic App path not found: $logicAppPath"
+          }
+          
+          # Check for required files
+          $hostJsonPath = Join-Path $logicAppPath "host.json"
+          if (-not (Test-Path -Path $hostJsonPath)) {
+              throw "host.json not found in Logic App directory: $hostJsonPath"
+          }
+          
+          # Check for workflows
+          $workflowsPath = Join-Path $logicAppPath "PoProcessingWF"
+          if (-not (Test-Path -Path $workflowsPath)) {
+              throw "Workflow directory not found: $workflowsPath"
+          }
+          
+          $workflowJsonPath = Join-Path $workflowsPath "workflow.json"
+          if (-not (Test-Path -Path $workflowJsonPath)) {
+              throw "workflow.json not found in: $workflowJsonPath"
+          }
+          
+          Write-Host "✓ Logic App structure is valid" -ForegroundColor Green
+          Write-Host ""
+          
+          # Step 2: Validate Bicep templates
+          Write-Host "[2/2] Validating Bicep templates..." -ForegroundColor Yellow
+          $bicepPath = "./infra/main.bicep"
+          
+          if (-not (Test-Path -Path $bicepPath)) {
+              throw "Main Bicep template not found: $bicepPath"
+          }
+          
+          # Validate Bicep syntax
+          $bicepOutput = az bicep build --file $bicepPath 2>&1
+          if ($LASTEXITCODE -ne 0) {
+              throw "Bicep validation failed: $bicepOutput"
+          }
+          
+          Write-Host "✓ Bicep templates are valid" -ForegroundColor Green
+          Write-Host ""
+          
+          Write-Host "=== Pre-Provisioning Validation Completed ===" -ForegroundColor Green
+      }
+      catch {
+          Write-Error "Pre-provisioning validation failed: $($_.Exception.Message)"
+          exit 1
+      }
+
+  postprovision:
+    shell: pwsh
+    run: |
+      # Set error action preference to stop on errors
+        $ErrorActionPreference = 'Stop'
+
+        try {
+            # Validate required environment variables
+            if (-not $env:AZURE_CONTAINER_REGISTRY_ENDPOINT) {
+          throw "AZURE_CONTAINER_REGISTRY_ENDPOINT environment variable is not set"
+            }
+
+            Write-Information "Azure Container Registry Endpoint: $env:AZURE_CONTAINER_REGISTRY_ENDPOINT" -InformationAction Continue
+            
+            # Check if already logged in to Azure Container Registry
+            Write-Information "Checking Azure Container Registry login status..." -InformationAction Continue
+            
+            # Try a simple command that requires authentication to check login status
+            $null = az acr repository list --name $env:AZURE_CONTAINER_REGISTRY_ENDPOINT 2>$null
+            
+            if ($LASTEXITCODE -eq 0) {
+            Write-Information "Already logged in to Azure Container Registry." -InformationAction Continue
+            } else {
+            # Login to Azure Container Registry
+            Write-Information "Logging in to Azure Container Registry..." -InformationAction Continue
+            
+            az acr login --name $env:AZURE_CONTAINER_REGISTRY_ENDPOINT
+            
+            if ($LASTEXITCODE -ne 0) {
+              throw "Failed to login to Azure Container Registry"
+            }
+
+            Write-Information "Successfully logged in to Azure Container Registry." -InformationAction Continue
+            }
+
+            # Set Logic App connection strings if needed
+            if ($env:AZURE_LOGIC_APP_NAME) {
+              Write-Information "Configuring Logic App connections..." -InformationAction Continue
+            }
+            Write-Host "Post-provision hook completed successfully."
+        }
+        catch {
+            Write-Error "Post-provision hook failed: $($_.Exception.Message)"
+            exit 1
+        }
+
+  predeploy:
+    shell: pwsh
+    run: |
+      # Set error action preference to stop on errors
+      $ErrorActionPreference = 'Stop'
+
+      Write-Host "=== Pre-Deploy: Logic App Packaging ===" -ForegroundColor Cyan
+      Write-Host ""
+
+      try {
+          # Step 1: Validate Logic App artifacts
+          Write-Host "[1/5] Validating Logic App artifacts..." -ForegroundColor Yellow
+          $logicAppPath = "./LogicAppWP/ContosoOrders"
+          
+          if (-not (Test-Path -Path $logicAppPath)) {
+              throw "Logic App path not found: $logicAppPath"
+          }
+          
+          # Verify all required files are present
+          $requiredFiles = @(
+              "host.json",
+              "PoProcessingWF/workflow.json"
+          )
+          
+          foreach ($file in $requiredFiles) {
+              $filePath = Join-Path $logicAppPath $file
+              if (-not (Test-Path -Path $filePath)) {
+                  throw "Required file not found: $filePath"
+              }
+          }
+          
+          Write-Host "✓ All required Logic App files are present" -ForegroundColor Green
+          Write-Host ""
+          
+          # Step 2: Clean previous build artifacts
+          Write-Host "[2/5] Cleaning previous build artifacts..." -ForegroundColor Yellow
+          $artifactsPath = Join-Path $logicAppPath "bin"
+          if (Test-Path -Path $artifactsPath) {
+              Remove-Item -Path $artifactsPath -Recurse -Force
+              Write-Host "✓ Cleaned previous artifacts" -ForegroundColor Green
+          } else {
+              Write-Host "✓ No previous artifacts to clean" -ForegroundColor Green
+          }
+          Write-Host ""
+          
+          # Step 3: Validate workflow definitions and replace placeholders
+          Write-Host "[3/6] Processing workflow definitions and replacing placeholders..." -ForegroundColor Yellow
+          $workflowJsonPath = Join-Path $logicAppPath "PoProcessingWF/workflow.json"
+          
+          try {
+              # Read workflow content as raw text
+              $workflowContent = Get-Content -Path $workflowJsonPath -Raw
+              
+              # Validate it's valid JSON first
+              $workflowObj = $workflowContent | ConvertFrom-Json
+              if (-not $workflowObj.definition) {
+                  throw "Workflow definition is missing required 'definition' property"
+              }
+              
+              # Define placeholder mappings to environment variables
+              $placeholders = @{
+                  '{STORAGE_ACCOUNT_NAME}' = $env:AZURE_STORAGE_ACCOUNT_NAME
+                  '{ORDER_API_ENDPOINT}' = $env:AZURE_ORDER_API_ENDPOINT
+              }
+              
+              # Track replacements
+              $replacementsMade = @{}
+              $missingVars = @()
+              
+              # Replace each placeholder with its environment variable value
+              foreach ($placeholder in $placeholders.Keys) {
+                  $envValue = $placeholders[$placeholder]
+                  
+                  # Check if placeholder exists in workflow
+                  if ($workflowContent -match [regex]::Escape($placeholder)) {
+                      if ([string]::IsNullOrWhiteSpace($envValue)) {
+                          $envVarName = $placeholder -replace '[{}]', ''
+                          $missingVars += "AZURE_$envVarName"
+                          Write-Warning "Placeholder $placeholder found but environment variable is not set"
+                      } else {
+                          $occurrences = ([regex]::Matches($workflowContent, [regex]::Escape($placeholder))).Count
+                          $workflowContent = $workflowContent -replace [regex]::Escape($placeholder), $envValue
+                          $replacementsMade[$placeholder] = @{
+                              Value = $envValue
+                              Count = $occurrences
+                          }
+                      }
+                  }
+              }
+              
+              # Report on replacements
+              if ($replacementsMade.Count -gt 0) {
+                  Write-Host "✓ Replaced placeholders in workflow.json:" -ForegroundColor Green
+                  foreach ($key in $replacementsMade.Keys) {
+                      $info = $replacementsMade[$key]
+                      Write-Host "  - $key → $($info.Value) ($($info.Count) occurrence(s))" -ForegroundColor Gray
+                  }
+              } else {
+                  Write-Host "✓ No placeholders found to replace" -ForegroundColor Green
+              }
+              
+              # Fail if required variables are missing
+              if ($missingVars.Count -gt 0) {
+                  throw "Missing required environment variables: $($missingVars -join ', '). Please set these variables before deployment."
+              }
+              
+              # Save the updated workflow content to a temp location
+              $tempWorkflowPath = Join-Path $logicAppPath "PoProcessingWF/workflow.json.tmp"
+              $workflowContent | Set-Content -Path $tempWorkflowPath -NoNewline -Force
+              
+              # Validate the updated content is still valid JSON
+              $null = Get-Content -Path $tempWorkflowPath -Raw | ConvertFrom-Json
+              
+              # Replace original with updated version
+              Move-Item -Path $tempWorkflowPath -Destination $workflowJsonPath -Force
+              
+              Write-Host "✓ Workflow definition validated and placeholders replaced" -ForegroundColor Green
+          }
+          catch {
+              throw "Failed to process workflow.json: $($_.Exception.Message)"
+          }
+          Write-Host ""
+          
+          # Step 4: Create deployment package
+          Write-Host "[4/6] Creating deployment package..." -ForegroundColor Yellow
+          
+          # Ensure bin directory exists
+          $deployPath = Join-Path $logicAppPath "bin/Deploy"
+          if (-not (Test-Path -Path $deployPath)) {
+              New-Item -Path $deployPath -ItemType Directory -Force | Out-Null
+          }
+          
+          # Copy all necessary files for deployment
+          $itemsToCopy = @(
+              "host.json",
+              "PoProcessingWF",
+              ".funcignore"
+          )
+          
+          foreach ($item in $itemsToCopy) {
+              $sourcePath = Join-Path $logicAppPath $item
+              if (Test-Path -Path $sourcePath) {
+                  $destPath = Join-Path $deployPath $item
+                  
+                  if (Test-Path -Path $sourcePath -PathType Container) {
+                      Copy-Item -Path $sourcePath -Destination $destPath -Recurse -Force
+                  } else {
+                      Copy-Item -Path $sourcePath -Destination $destPath -Force
+                  }
+              }
+          }
+          
+          Write-Host "✓ Deployment package created at: $deployPath" -ForegroundColor Green
+          Write-Host ""
+          
+          # Step 5: Set deployment environment variables
+          Write-Host "[5/6] Configuring deployment settings..." -ForegroundColor Yellow
+          
+          # Set environment variable for Logic App deployment path
+          $env:LOGIC_APP_DEPLOY_PATH = $deployPath
+          Write-Host "✓ LOGIC_APP_DEPLOY_PATH set to: $deployPath" -ForegroundColor Green
+          Write-Host ""
+          
+          # Step 6: Verify placeholder replacement in deployed package
+          Write-Host "[6/6] Verifying deployment package integrity..." -ForegroundColor Yellow
+          
+          $deployedWorkflowPath = Join-Path $deployPath "PoProcessingWF/workflow.json"
+          if (Test-Path -Path $deployedWorkflowPath) {
+              $deployedContent = Get-Content -Path $deployedWorkflowPath -Raw
+              
+              # Check for any remaining placeholders
+              $remainingPlaceholders = @()
+              if ($deployedContent -match '\{[A-Z_]+\}') {
+                  $matches = [regex]::Matches($deployedContent, '\{([A-Z_]+)\}')
+                  foreach ($match in $matches) {
+                      $remainingPlaceholders += $match.Value
+                  }
+              }
+              
+              if ($remainingPlaceholders.Count -gt 0) {
+                  Write-Warning "Found unreplaced placeholders in deployed workflow: $($remainingPlaceholders -join ', ')"
+                  Write-Host "This may cause runtime errors. Please verify environment variables are set correctly." -ForegroundColor Yellow
+              } else {
+                  Write-Host "✓ No unreplaced placeholders in deployment package" -ForegroundColor Green
+              }
+          }
+          
+          # Display deployment summary
+          Write-Host ""
+          Write-Host "=== Deployment Package Summary ===" -ForegroundColor Cyan
+          $packageFiles = Get-ChildItem -Path $deployPath -Recurse -File
+          Write-Host "Total files in package: $($packageFiles.Count)" -ForegroundColor White
+          
+          $packageSize = ($packageFiles | Measure-Object -Property Length -Sum).Sum / 1KB
+          Write-Host "Package size: $([math]::Round($packageSize, 2)) KB" -ForegroundColor White
+          
+          Write-Host ""
+          Write-Host "Environment Variables Used:" -ForegroundColor White
+          Write-Host "  - AZURE_STORAGE_ACCOUNT_NAME: $($env:AZURE_STORAGE_ACCOUNT_NAME ?? '(not set)')" -ForegroundColor Gray
+          Write-Host "  - AZURE_ORDER_API_ENDPOINT: $($env:AZURE_ORDER_API_ENDPOINT ?? '(not set)')" -ForegroundColor Gray
+          Write-Host ""
+          
+          Write-Host "=== Pre-Deploy Packaging Completed ===" -ForegroundColor Green
+      }
+      catch {
+          Write-Error "Pre-deploy packaging failed: $($_.Exception.Message)"
+          exit 1
+      }
+
+  postdeploy:
+    shell: pwsh
+    run: |
+      # Set error action preference to stop on errors
+      $ErrorActionPreference = 'Stop'
+
+      Write-Host "=== Post-Deploy: Cleanup ===" -ForegroundColor Cyan
+      Write-Host ""
+
+      try {
+          # Restore modified workflow.json to original state
+          Write-Host "Restoring workflow.json to original state..." -ForegroundColor Yellow
+          $workflowPath = "./LogicAppWP/ContosoOrders/PoProcessingWF/workflow.json"
+          
+          # Check if git is available and file is tracked
+          if (Get-Command git -ErrorAction SilentlyContinue) {
+              $gitStatus = git status --porcelain $workflowPath 2>$null
+              if ($LASTEXITCODE -eq 0) {
+                  git restore $workflowPath
+                  if ($LASTEXITCODE -eq 0) {
+                      Write-Host "✓ Workflow.json restored successfully" -ForegroundColor Green
+                  } else {
+                      Write-Warning "Failed to restore workflow.json with git, file may not be tracked"
+                  }
+              } else {
+                  Write-Warning "Git repository not available or file not tracked"
+              }
+          } else {
+              Write-Warning "Git command not available, skipping workflow.json restoration"
+          }
+          
+          # Clean up temporary deployment artifacts
+          Write-Host "Cleaning up deployment artifacts..." -ForegroundColor Yellow
+          $deployPath = "./LogicAppWP/ContosoOrders/bin"
+          if (Test-Path -Path $deployPath) {
+              Remove-Item -Path $deployPath -Recurse -Force
+              Write-Host "✓ Deployment artifacts cleaned up" -ForegroundColor Green
+          } else {
+              Write-Host "✓ No deployment artifacts to clean" -ForegroundColor Green
+          }
+          
+          Write-Host ""
+          Write-Host "=== Post-Deploy Cleanup Completed ===" -ForegroundColor Green
+      }
+      catch {
+          Write-Warning "Post-deploy cleanup encountered issues: $($_.Exception.Message)"
+          Write-Host "This does not affect the deployment success." -ForegroundColor Yellow
+      }
+
+services:
+  app:
+    language: dotnet
+    project: ./eShopOrders.AppHost/eShopOrders.AppHost.csproj
+    host: containerapp
+    resourceGroup: ${AZURE_RESOURCE_GROUP}
+  
