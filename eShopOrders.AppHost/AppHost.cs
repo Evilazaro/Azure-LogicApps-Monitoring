@@ -18,7 +18,7 @@ var builder = DistributedApplication.CreateBuilder(args);
 
     var sbName = builder.Configuration.GetSection("AZURE_SERVICE_BUS_NAMESPACE").Value ?? "";
     var existingSb = builder.AddParameter("AZURE-SERVICE-BUS", sbName);
-
+    
     var resourceGroupName = builder.Configuration.GetSection("AZURE_RESOURCE_GROUP").Value ?? "";
     var existingRg = builder.AddParameter("AZURE-RESOURCE-GROUP", resourceGroupName);
 

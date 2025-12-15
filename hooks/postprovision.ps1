@@ -336,6 +336,7 @@ try {
     $azureTenantId = $env:AZURE_TENANT_ID
     $azureClientId = $env:AZURE_CLIENT_ID
     $azureServiceBusNamespace = $env:AZURE_SERVICE_BUS_NAMESPACE
+    $azureMessagingServiceBusEndpoint = $env:MESSAGING_SERVICEBUSENDPOINT
     $azureEnvName = $env:AZURE_ENV_NAME
     $azureContainerRegistryEndpoint = $env:AZURE_CONTAINER_REGISTRY_ENDPOINT
     
@@ -349,6 +350,7 @@ try {
     Write-Information "  Client ID              : $azureClientId"
     Write-Information "  App Insights Name      : $azureApplicationInsightsName"
     Write-Information "  Service Bus Namespace  : $azureServiceBusNamespace"
+    Write-Information "  Service Bus Endpoint   : $azureMessagingServiceBusEndpoint"
     Write-Information "  ACR Endpoint           : $azureContainerRegistryEndpoint"
     
     # Authenticate to Azure Container Registry
@@ -409,10 +411,11 @@ try {
         'AZURE_RESOURCE_GROUP'                         = $azureResourceGroup
         'Azure:Location'                               = $azureLocation
         'Azure:CredentialSource'                       = 'AzureDeveloperCli'
-        'Azure:ClientId'                               = $azureClientId
+        'AZURE_CLIENT_ID'                              = $azureClientId
         'AZURE_APPLICATION_INSIGHTS_NAME'              = $azureApplicationInsightsName
         'AZURE_TENANT_ID'                              = $azureTenantId
         'AZURE_SERVICE_BUS_NAMESPACE'                  = $azureServiceBusNamespace
+        'AZURE_MESSAGING_SERVICEBUSENDPOINT'            = $azureMessagingServiceBusEndpoint
         'AZURE_ENV_NAME'                               = $azureEnvName
     }
     
