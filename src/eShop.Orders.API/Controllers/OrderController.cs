@@ -42,30 +42,18 @@ public sealed class OrderController : ControllerBase
     [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status503ServiceUnavailable)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
-    public async Task<IActionResult> PlaceOrder(
+    public async Task<ActionResult<Order>> PlaceOrder(
         [FromBody] Order order,
         CancellationToken cancellationToken)
     {
-        if (order is null)
-        {
-            _logger.LogWarning("PlaceOrder called with null order");
-            return Problem(
-                statusCode: StatusCodes.Status400BadRequest,
-                title: "Invalid Request",
-                detail: "Order cannot be null");
-        }
-
-        if (!ModelState.IsValid)
-        {
-            _logger.LogWarning("PlaceOrder called with invalid model state");
-            return ValidationProblem(ModelState);
-        }
-
         try
         {
             await _orderService.SendOrderMessageAsync(order, cancellationToken);
             _logger.LogInformation("Order {OrderId} placed successfully", order.Id);
-            return Accepted(order);
+            return AcceptedAtAction(
+                nameof(GetOrderById),
+                new { id = order.Id },
+                order);
         }
         catch (ServiceBusException ex) when (ex.Reason == ServiceBusFailureReason.ServiceTimeout ||
                                               ex.Reason == ServiceBusFailureReason.ServiceCommunicationProblem)
@@ -76,13 +64,13 @@ public sealed class OrderController : ControllerBase
                 title: "Service Unavailable",
                 detail: "The messaging service is temporarily unavailable. Please try again later.");
         }
-        catch (ServiceBusException ex) when (ex.Reason == ServiceBusFailureReason.GeneralError)
+        catch (ServiceBusException ex)
         {
-            _logger.LogError(ex, "General error occurred while placing order {OrderId}", order.Id);
+            _logger.LogError(ex, "Service Bus error occurred while placing order {OrderId}. Reason: {Reason}", order.Id, ex.Reason);
             return Problem(
                 statusCode: StatusCodes.Status500InternalServerError,
-                title: "Configuration Error",
-                detail: "There is a configuration issue with the messaging service.");
+                title: "Messaging Error",
+                detail: "An error occurred with the messaging service.");
         }
         catch (Exception ex)
         {
@@ -101,10 +89,10 @@ public sealed class OrderController : ControllerBase
     /// <returns>List of all orders</returns>
     /// <response code="200">Returns the list of orders</response>
     /// <response code="500">Internal server error</response>
-    [HttpGet("all", Name = nameof(GetAllOrders))]
-    [ProducesResponseType(typeof(IEnumerable<Order>), StatusCodes.Status200OK)]
+    [HttpGet(Name = nameof(GetAllOrders))]
+    [ProducesResponseType(typeof(IReadOnlyList<Order>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
-    public async Task<ActionResult<IEnumerable<Order>>> GetAllOrders(CancellationToken cancellationToken)
+    public async Task<ActionResult<IReadOnlyList<Order>>> GetAllOrders(CancellationToken cancellationToken)
     {
         try
         {
@@ -137,10 +125,12 @@ public sealed class OrderController : ControllerBase
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>The requested order</returns>
     /// <response code="200">Returns the order</response>
+    /// <response code="400">Invalid order ID</response>
     /// <response code="404">Order not found</response>
     /// <response code="500">Internal server error</response>
     [HttpGet("{id:int}", Name = nameof(GetOrderById))]
     [ProducesResponseType(typeof(Order), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
     public async Task<ActionResult<Order>> GetOrderById(int id, CancellationToken cancellationToken)
@@ -161,10 +151,12 @@ public sealed class OrderController : ControllerBase
             if (order is null)
             {
                 _logger.LogWarning("Order {OrderId} not found", id);
-                return Problem(
-                    statusCode: StatusCodes.Status404NotFound,
-                    title: "Not Found",
-                    detail: $"Order with ID {id} was not found");
+                return NotFound(new ProblemDetails
+                {
+                    Status = StatusCodes.Status404NotFound,
+                    Title = "Not Found",
+                    Detail = $"Order with ID {id} was not found"
+                });
             }
 
             _logger.LogInformation("Order {OrderId} retrieved successfully", id);
@@ -202,7 +194,7 @@ public sealed class OrderController : ControllerBase
     [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status503ServiceUnavailable)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
-    public async Task<IActionResult> PlaceOrdersBatch(
+    public async Task<ActionResult<BatchOrderResponse>> PlaceOrdersBatch(
         [FromBody] List<Order> orders,
         CancellationToken cancellationToken)
     {
@@ -213,12 +205,6 @@ public sealed class OrderController : ControllerBase
                 statusCode: StatusCodes.Status400BadRequest,
                 title: "Invalid Request",
                 detail: "Orders list cannot be null or empty");
-        }
-
-        if (!ModelState.IsValid)
-        {
-            _logger.LogWarning("PlaceOrdersBatch called with invalid model state");
-            return ValidationProblem(ModelState);
         }
 
         try
@@ -244,13 +230,13 @@ public sealed class OrderController : ControllerBase
                 title: "Service Unavailable",
                 detail: "The messaging service is temporarily unavailable. Please try again later.");
         }
-        catch (ServiceBusException ex) when (ex.Reason == ServiceBusFailureReason.GeneralError)
+        catch (ServiceBusException ex)
         {
-            _logger.LogError(ex, "Unauthorized access to Service Bus while placing order batch");
+            _logger.LogError(ex, "Service Bus error occurred while placing order batch. Reason: {Reason}", ex.Reason);
             return Problem(
                 statusCode: StatusCodes.Status500InternalServerError,
-                title: "Configuration Error",
-                detail: "There is a configuration issue with the messaging service.");
+                title: "Messaging Error",
+                detail: "An error occurred with the messaging service.");
         }
         catch (Exception ex)
         {
