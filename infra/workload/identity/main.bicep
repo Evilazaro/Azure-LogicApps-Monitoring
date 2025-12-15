@@ -66,7 +66,7 @@ resource mi 'Microsoft.ManagedIdentity/userAssignedIdentities@2025-01-31-preview
 output AZURE_MANAGED_IDENTITY_ID string = mi.id
 
 @description('Client ID of the deployed managed identity')
-output MANAGED_IDENTITY_CLIENT_ID string = mi.properties.clientId
+output AZURE_CLIENT_ID string = mi.properties.clientId
 
 // ========== Role Assignments ==========
 

@@ -170,6 +170,6 @@ output APP_SERVICE_PLAN_NAME string = workflows.outputs.APP_SERVICE_PLAN_NAME
 // ========== Outputs ==========
 
 @description('Client ID of the deployed managed identity')
-output MANAGED_IDENTITY_CLIENT_ID string = identity.outputs.MANAGED_IDENTITY_CLIENT_ID
+output AZURE_CLIENT_ID string = identity.outputs.AZURE_CLIENT_ID
 
 output AZURE_CONTAINER_REGISTRY_MANAGED_IDENTITY_ID string = identity.outputs.AZURE_MANAGED_IDENTITY_ID

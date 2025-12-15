@@ -117,7 +117,7 @@ module workload './workload/main.bicep' = {
 output AZURE_SERVICE_BUS_NAMESPACE string = workload.outputs.AZURE_SERVICE_BUS_NAMESPACE
 
 @description('Client ID of the deployed managed identity')
-output MANAGED_IDENTITY_CLIENT_ID string = workload.outputs.MANAGED_IDENTITY_CLIENT_ID
+output AZURE_CLIENT_ID string = workload.outputs.AZURE_CLIENT_ID
 
 @description('Login server endpoint for the Azure Container Registry')
 output AZURE_CONTAINER_REGISTRY_ENDPOINT string = workload.outputs.AZURE_CONTAINER_REGISTRY_ENDPOINT

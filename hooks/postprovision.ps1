@@ -7,6 +7,7 @@ $AZURE_LOCATION = $env:AZURE_LOCATION
 $AZURE_APPLICATION_INSIGHTS_NAME = $env:AZURE_APPLICATION_INSIGHTS_NAME
 $AZURE_APPLICATION_INSIGHTS_CONNECTION_STRING = $env:AZURE_APPLICATION_INSIGHTS_CONNECTION_STRING
 $AZURE_TENANT_ID = $env:AZURE_TENANT_ID
+$AZURE_CLIENT_ID = $env:AZURE_CLIENT_ID
 
 Write-Information "Post-provisioning script started." -InformationAction Continue
 Write-Information "Subscription ID: $AZURE_SUBSCRIPTION_ID" -InformationAction Continue
@@ -14,6 +15,8 @@ Write-Information "Resource Group: $AZURE_RESOURCE_GROUP" -InformationAction Con
 Write-Information "Location: $AZURE_LOCATION" -InformationAction Continue
 Write-Information "Application Insights Name: $AZURE_APPLICATION_INSIGHTS_NAME" -InformationAction Continue
 write-Information "Application Insights Connection String: $AZURE_APPLICATION_INSIGHTS_CONNECTION_STRING" -InformationAction Continue
+write-Information "Tenant ID: $AZURE_TENANT_ID" -InformationAction Continue
+Write-Information "Client ID: $AZURE_CLIENT_ID" -InformationAction Continue
 
 # Validate required environment variables
 if ([string]::IsNullOrEmpty($AZURE_SUBSCRIPTION_ID)) {
@@ -53,4 +56,5 @@ dotnet user-secrets set "Azure:Location" $AZURE_LOCATION -p $projectPath
 dotnet user-secrets set "Azure:CredentialSource" AzureDeveloperCli -p $projectPath
 dotnet user-secrets set "AZURE_APPLICATION_INSIGHTS_NAME" $AZURE_APPLICATION_INSIGHTS_NAME -p $projectPath
 dotnet user-secrets set "AZURE_APPLICATION_INSIGHTS_CONNECTION_STRING" $AZURE_APPLICATION_INSIGHTS_CONNECTION_STRING -p $projectPath
-dotnet user-secrets set "Azure:TenantId" $AZURE_TENANT_ID -p $projectPath
+dotnet user-secrets set "AZURE_TENANT_ID" $AZURE_TENANT_ID -p $projectPath
+dotnet user-secrets set "Azure:ClientId" $AZURE_CLIENT_ID -p $projectPath

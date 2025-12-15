@@ -26,7 +26,7 @@ properties:
         name: orders-api
         env:
           - name: AZURE_CLIENT_ID
-            value: {{ .Env.MANAGED_IDENTITY_CLIENT_ID }}
+            value: {{ .Env.AZURE_CLIENT_ID }}
           - name: APPLICATIONINSIGHTS_CONNECTION_STRING
             value: {{ .Env.AZURE_APPLICATION_INSIGHTS_CONNECTION_STRING }}
           - name: ASPNETCORE_ENVIRONMENT
