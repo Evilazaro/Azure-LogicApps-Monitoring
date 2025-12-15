@@ -142,3 +142,6 @@ output WORKFLOW_STORAGE_ACCOUNT_NAME string = workload.outputs.WORKFLOW_STORAGE_
 // Resource Group outputs
 @description('Name of the deployed resource group')
 output AZURE_RESOURCE_GROUP string = resourceGroupName
+
+@description('Azure Tenant ID where resources are deployed')
+output AZURE_TENANT_ID string = tenant().tenantId

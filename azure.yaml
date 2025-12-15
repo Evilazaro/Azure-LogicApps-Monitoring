@@ -11,7 +11,7 @@ hooks:
     postprovision:
         shell: pwsh
         run: |
-            .\infra\hooks\postprovision.ps1 $AZURE_SUBSCRIPTION_ID $AZURE_RESOURCE_GROUP $AZURE_LOCATION
+            .\hooks\postprovision.ps1 
 
 services:
     app:
