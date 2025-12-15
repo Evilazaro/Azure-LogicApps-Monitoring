@@ -50,7 +50,6 @@ param location string
 ])
 param envName string
 
-
 @description('Resource tags applied to the managed identity.')
 param tags tagsType
 
@@ -74,6 +73,9 @@ output AZURE_MANAGED_IDENTITY_ID string = mi.id
 
 @description('Client ID of the deployed managed identity')
 output AZURE_CLIENT_ID string = mi.properties.clientId
+
+output MANAGED_IDENTITY_CLIENT_ID string = mi.properties.clientId
+output MANAGED_IDENTITY_NAME string = mi.name
 
 // ========== Role Assignments ==========
 

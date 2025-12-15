@@ -54,7 +54,6 @@ param userAssignedIdentityId string
 ])
 param envName string
 
-
 @description('Resource ID of the Log Analytics workspace for diagnostic logs and metrics.')
 @minLength(50)
 param workspaceId string
@@ -106,6 +105,8 @@ output AZURE_CONTAINER_REGISTRY_ENDPOINT string = registry.properties.loginServe
 
 @description('Resource ID of the managed identity used by Container Registry')
 output AZURE_CONTAINER_REGISTRY_MANAGED_IDENTITY_ID string = userAssignedIdentityId
+
+output AZURE_CONTAINER_REGISTRY_NAME string = registry.name
 
 @description('Diagnostic settings for Container Registry')
 resource registryDiag 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
@@ -173,6 +174,8 @@ output AZURE_CONTAINER_APPS_ENVIRONMENT_ID string = appEnv.id
 
 @description('Default domain for the Container Apps environment')
 output AZURE_CONTAINER_APPS_ENVIRONMENT_DEFAULT_DOMAIN string = appEnv.properties.defaultDomain
+
+output AZURE_CONTAINER_APPS_ENVIRONMENT_NAME string = appEnv.name
 
 @description('.NET Aspire dashboard component for application observability')
 resource dashboard 'Microsoft.App/managedEnvironments/dotNetComponents@2025-02-02-preview' = {

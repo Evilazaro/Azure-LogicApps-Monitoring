@@ -45,7 +45,6 @@ param name string
 ])
 param envName string
 
-
 @description('Azure region for Service Bus deployment.')
 @minLength(3)
 @maxLength(50)
@@ -105,6 +104,8 @@ resource broker 'Microsoft.ServiceBus/namespaces@2025-05-01-preview' = {
 
 @description('Azure Service Bus Name')
 output AZURE_SERVICE_BUS_NAMESPACE string = broker.name
+
+output MESSAGING_SERVICEBUSENDPOINT string = broker.properties.serviceBusEndpoint
 
 @description('Service Bus queue for order processing messages')
 resource orders 'Microsoft.ServiceBus/namespaces/queues@2025-05-01-preview' = {

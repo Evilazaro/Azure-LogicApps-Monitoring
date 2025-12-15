@@ -22,7 +22,7 @@ properties:
         identity: {{ .Env.AZURE_CONTAINER_REGISTRY_MANAGED_IDENTITY_ID }}
     secrets:
       - name: applicationinsights-connection-string
-        value: '{{ .Env.AZURE_APPLICATION_INSIGHTS_CONNECTION_STRING }}'
+        value: '{{ .Env.TELEMETRY_APPINSIGHTSCONNECTIONSTRING }}'
       - name: connectionstrings--messaging
         value: '{{ .Env.MESSAGING_SERVICEBUSENDPOINT }}'
   template:
@@ -53,7 +53,7 @@ properties:
           - name: ConnectionStrings__Messaging
             secretRef: connectionstrings--messaging
     scale:
-      minReplicas: 5
+      minReplicas: 1
 tags:
   azd-service-name: orders-api
   aspire-resource-name: orders-api

@@ -50,7 +50,6 @@ param location string = resourceGroup().location
 ])
 param envName string
 
-
 @description('Resource ID of the Log Analytics workspace for workspace-based Application Insights integration.')
 param logAnalyticsWorkspaceId string
 

@@ -45,7 +45,6 @@ param name string
 ])
 param envName string
 
-
 @description('Azure region for Logic App deployment.')
 @minLength(3)
 @maxLength(50)

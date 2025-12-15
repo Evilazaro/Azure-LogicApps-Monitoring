@@ -48,7 +48,6 @@ param name string
 ])
 param envName string
 
-
 @description('Azure region for monitoring resources deployment.')
 @minLength(3)
 @maxLength(50)

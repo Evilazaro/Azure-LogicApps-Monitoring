@@ -45,7 +45,6 @@ param name string
 ])
 param envName string
 
-
 @description('Azure region for Logic App deployment.')
 @minLength(3)
 @maxLength(50)
@@ -100,6 +99,9 @@ module identity 'identity/main.bicep' = {
   }
 }
 
+output MANAGED_IDENTITY_CLIENT_ID string = identity.outputs.MANAGED_IDENTITY_CLIENT_ID
+output MANAGED_IDENTITY_NAME string = identity.outputs.MANAGED_IDENTITY_NAME
+
 module messaging 'messaging/main.bicep' = {
   params: {
     name: name
@@ -149,6 +151,8 @@ module workflows 'logic-app.bicep' = {
 }
 
 // ========== Outputs ==========
+output AZURE_CONTAINER_REGISTRY_NAME string = services.outputs.AZURE_CONTAINER_REGISTRY_NAME
+output AZURE_CONTAINER_APPS_ENVIRONMENT_NAME string = services.outputs.AZURE_CONTAINER_APPS_ENVIRONMENT_NAME
 
 @description('Resource ID of the Container Apps managed environment')
 output AZURE_CONTAINER_APPS_ENVIRONMENT_ID string = services.outputs.AZURE_CONTAINER_APPS_ENVIRONMENT_ID
@@ -158,6 +162,8 @@ output AZURE_CONTAINER_APPS_ENVIRONMENT_DEFAULT_DOMAIN string = services.outputs
 
 @description('Login server endpoint for the Azure Container Registry')
 output AZURE_CONTAINER_REGISTRY_ENDPOINT string = services.outputs.AZURE_CONTAINER_REGISTRY_ENDPOINT
+
+output MESSAGING_SERVICEBUSENDPOINT string = messaging.outputs.MESSAGING_SERVICEBUSENDPOINT
 
 @description('Name of the deployed storage account')
 output WORKFLOW_STORAGE_ACCOUNT_NAME string = messaging.outputs.WORKFLOW_STORAGE_ACCOUNT_NAME
