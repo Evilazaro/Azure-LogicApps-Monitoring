@@ -13,13 +13,13 @@ var builder = DistributedApplication.CreateBuilder(args);
 //}
 //else
 //{
-    var appInsightsName = builder.Configuration.GetSection("AZURE_APPLICATION_INSIGHTS_NAME").Value;
+    var appInsightsName = builder.Configuration.GetSection("AZURE_APPLICATION_INSIGHTS_NAME").Value ?? "";
     var existingAppInsights = builder.AddParameter("Application-Insights", appInsightsName);
 
-    var sbName = builder.Configuration.GetSection("AZURE_SERVICE_BUS_NAMESPACE").Value;
+    var sbName = builder.Configuration.GetSection("AZURE_SERVICE_BUS_NAMESPACE").Value ?? "";
     var existingSb = builder.AddParameter("Service-Bus", sbName);
 
-    var resourceGroupName = builder.Configuration.GetSection("AZURE_RESOURCE_GROUP").Value;
+    var resourceGroupName = builder.Configuration.GetSection("AZURE_RESOURCE_GROUP").Value ?? "";
     var existingRg = builder.AddParameter("Resource-Group", resourceGroupName);
 
     var sb = builder.AddAzureServiceBus("Messaging")
