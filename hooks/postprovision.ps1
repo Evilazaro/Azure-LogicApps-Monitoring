@@ -187,12 +187,16 @@ function Invoke-AzureContainerRegistryLogin {
     .DESCRIPTION
         Logs into the Azure Container Registry using Azure CLI.
         Validates that the registry endpoint is configured before attempting login.
+        Automatically strips .azurecr.io suffix if present.
     
     .PARAMETER RegistryEndpoint
-        The Azure Container Registry endpoint name.
+        The Azure Container Registry endpoint name or FQDN (e.g., 'myregistry' or 'myregistry.azurecr.io').
     
     .EXAMPLE
         Invoke-AzureContainerRegistryLogin -RegistryEndpoint 'myregistry'
+    
+    .EXAMPLE
+        Invoke-AzureContainerRegistryLogin -RegistryEndpoint 'myregistry.azurecr.io'
     #>
     [CmdletBinding()]
     param(
@@ -206,19 +210,40 @@ function Invoke-AzureContainerRegistryLogin {
     }
     
     try {
-        Write-Information "Authenticating to Azure Container Registry: $RegistryEndpoint"
+        # Strip .azurecr.io suffix if present (az acr login expects just the registry name)
+        $registryName = $RegistryEndpoint -replace '\.azurecr\.io$', ''
         
-        $output = & az acr login --name $RegistryEndpoint 2>&1
+        Write-Information "Authenticating to Azure Container Registry: $RegistryEndpoint"
+        Write-Verbose "Using registry name: $registryName"
+        
+        # Check if Azure CLI is available
+        $azCommand = Get-Command -Name az -ErrorAction SilentlyContinue
+        if (-not $azCommand) {
+            throw "Azure CLI not found. Please install Azure CLI from: https://docs.microsoft.com/cli/azure/install-azure-cli"
+        }
+        
+        Write-Verbose "Azure CLI found: $($azCommand.Source)"
+        
+        # Check if logged into Azure CLI
+        $accountOutput = & az account show 2>&1
+        if ($LASTEXITCODE -ne 0) {
+            throw "Not authenticated with Azure CLI. Please run 'az login' to authenticate with Azure before running this script."
+        }
+        
+        Write-Verbose "Azure CLI authenticated successfully"
+        
+        # Perform ACR login
+        $output = & az acr login --name $registryName 2>&1
         
         if ($LASTEXITCODE -ne 0) {
-            $errorMessage = "Failed to login to Azure Container Registry. Exit code: $LASTEXITCODE"
+            $errorMessage = "Failed to login to Azure Container Registry '$registryName'. Exit code: $LASTEXITCODE"
             if ($output) {
                 $errorMessage += "`nOutput: $output"
             }
             throw $errorMessage
         }
         
-        Write-Information "Successfully authenticated to Azure Container Registry."
+        Write-Information "✓ Successfully authenticated to Azure Container Registry."
     }
     catch {
         Write-Error "Azure Container Registry login failed: $($_.Exception.Message)"
