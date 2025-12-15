@@ -1,80 +1,154 @@
 targetScope = 'subscription'
 
-@minLength(1)
-@maxLength(64)
-@description('Name of the environment that can be used as part of naming resource convention, the name of the resource group for your application will use this name, prefixed with rg-')
-param environmentName string
+metadata name = 'Azure Logic Apps Monitoring Solution'
+metadata description = 'Complete monitoring infrastructure for Logic Apps Standard with Application Insights, Log Analytics, and Service Bus'
+metadata version = '1.0.0'
 
-@minLength(1)
-@description('The location used for all deployed resources')
-param location string
+// ========== Type Definitions ==========
 
-@description('Id of the user or app to assign application roles')
-param principalId string = ''
+@description('Tags applied to all resources for organization and cost tracking')
+type tagsType = {
+  @description('Name of the solution')
+  Solution: string
 
-param Application_Insights string
-@metadata({azd: {
-  type: 'resourceGroup'
-  config: {}
-  }
-})
-param Resource_Group string
-param Service_Bus string
+  @description('Environment identifier')
+  Environment: string
 
-var tags = {
-  'azd-env-name': environmentName
+  @description('Management method')
+  ManagedBy: string
+
+  @description('Cost center identifier')
+  CostCenter: string
+
+  @description('Team responsible for the resources')
+  Owner: string
+
+  @description('Business unit')
+  BusinessUnit: string
+
+  @description('Deployment timestamp')
+  DeploymentDate: string
+
+  @description('Source repository')
+  Repository: string
 }
 
-resource rg 'Microsoft.Resources/resourceGroups@2022-09-01' = {
-  name: 'rg-${environmentName}'
+// ========== Parameters ==========
+
+@description('Base name for the solution. Used as prefix for all resource names.')
+@minLength(3)
+@maxLength(20)
+param solutionName string = 'orders'
+
+@description('Azure region where all resources will be deployed.')
+@minLength(3)
+@maxLength(50)
+param location string
+
+@description('Environment name to differentiate deployments.')
+@maxLength(10)
+@allowed([
+  'local'
+  'dev'
+  'staging'
+  'prod'
+])
+param envName string
+
+
+@description('Deployment timestamp for tracking purposes.')
+@maxLength(10)
+param deploymentDate string = utcNow('yyyy-MM-dd')
+
+// ========== Variables ==========
+
+var tags = {
+  Solution: solutionName
+  Environment: envName
+  ManagedBy: 'Bicep'
+  CostCenter: 'Engineering'
+  Owner: 'Platform-Team'
+  BusinessUnit: 'Finance'
+  DeploymentDate: deploymentDate
+  Repository: 'Azure-LogicApps-Monitoring'
+}
+
+var resourceGroupName = 'rg-${solutionName}-${envName}-${substring(location, 0, min(length(location), 8))}'
+
+// ========== Resources ==========
+
+@description('Resource group containing all monitoring and workload resources')
+resource rg 'Microsoft.Resources/resourceGroups@2025-04-01' = {
+  name: resourceGroupName
   location: location
   tags: tags
 }
-module resources 'resources.bicep' = {
+
+// ========== Modules ==========
+
+module monitoring './monitoring/main.bicep' = {
   scope: rg
-  name: 'resources'
   params: {
-    location: location
+    name: solutionName
     tags: tags
-    principalId: principalId
-  }
-}
-
-module Messaging 'Messaging/Messaging.module.bicep' = {
-  name: 'Messaging'
-  scope: resourceGroup(Resource_Group)
-  params: {
-    Service_Bus: Service_Bus
-    location: location
-  }
-}
-module Messaging_roles 'Messaging-roles/Messaging-roles.module.bicep' = {
-  name: 'Messaging-roles'
-  scope: resourceGroup(Resource_Group)
-  params: {
-    Service_Bus: Service_Bus
-    location: location
-    principalId: resources.outputs.MANAGED_IDENTITY_PRINCIPAL_ID
-    principalType: 'ServicePrincipal'
-  }
-}
-module Telemetry 'Telemetry/Telemetry.module.bicep' = {
-  name: 'Telemetry'
-  scope: resourceGroup(Resource_Group)
-  params: {
-    Application_Insights: Application_Insights
+    envName: envName
     location: location
   }
 }
 
-output MANAGED_IDENTITY_CLIENT_ID string = resources.outputs.MANAGED_IDENTITY_CLIENT_ID
-output MANAGED_IDENTITY_NAME string = resources.outputs.MANAGED_IDENTITY_NAME
-output AZURE_LOG_ANALYTICS_WORKSPACE_NAME string = resources.outputs.AZURE_LOG_ANALYTICS_WORKSPACE_NAME
-output AZURE_CONTAINER_REGISTRY_ENDPOINT string = resources.outputs.AZURE_CONTAINER_REGISTRY_ENDPOINT
-output AZURE_CONTAINER_REGISTRY_MANAGED_IDENTITY_ID string = resources.outputs.AZURE_CONTAINER_REGISTRY_MANAGED_IDENTITY_ID
-output AZURE_CONTAINER_REGISTRY_NAME string = resources.outputs.AZURE_CONTAINER_REGISTRY_NAME
-output AZURE_CONTAINER_APPS_ENVIRONMENT_NAME string = resources.outputs.AZURE_CONTAINER_APPS_ENVIRONMENT_NAME
-output AZURE_CONTAINER_APPS_ENVIRONMENT_ID string = resources.outputs.AZURE_CONTAINER_APPS_ENVIRONMENT_ID
-output AZURE_CONTAINER_APPS_ENVIRONMENT_DEFAULT_DOMAIN string = resources.outputs.AZURE_CONTAINER_APPS_ENVIRONMENT_DEFAULT_DOMAIN
-output MESSAGING_SERVICEBUSENDPOINT string = Messaging.outputs.serviceBusEndpoint
-output TELEMETRY_APPINSIGHTSCONNECTIONSTRING string = Telemetry.outputs.appInsightsConnectionString
+@description('Name of the deployed Application Insights instance')
+output AZURE_APPLICATION_INSIGHTS_NAME string = monitoring.outputs.AZURE_APPLICATION_INSIGHTS_NAME
+
+@description('Connection string for Application Insights telemetry')
+output AZURE_APPLICATION_INSIGHTS_CONNECTION_STRING string = monitoring.outputs.AZURE_APPLICATION_INSIGHTS_CONNECTION_STRING
+
+@description('Instrumentation key for Application Insights telemetry')
+output AZURE_APPLICATION_INSIGHTS_INSTRUMENTATION_KEY string = monitoring.outputs.AZURE_APPLICATION_INSIGHTS_INSTRUMENTATION_KEY
+
+module workload './workload/main.bicep' = {
+  scope: resourceGroup(resourceGroupName)
+  params: {
+    name: solutionName
+    location: location
+    envName: envName
+    workspaceId: monitoring.outputs.AZURE_LOG_ANALYTICS_WORKSPACE_ID
+    workspacePrimaryKey: monitoring.outputs.AZURE_LOG_ANALYTICS_WORKSPACE_PRIMARY_KEY
+    workspaceCustomerId: monitoring.outputs.AZURE_LOG_ANALYTICS_WORKSPACE_CUSTOMER_ID
+    storageAccountId: monitoring.outputs.LOGS_STORAGE_ACCOUNT_ID
+    appInsightsConnectionString: monitoring.outputs.AZURE_APPLICATION_INSIGHTS_CONNECTION_STRING
+    tags: tags
+  }
+}
+
+@description('Azure Service Bus Name')
+output AZURE_SERVICE_BUS_NAMESPACE string = workload.outputs.AZURE_SERVICE_BUS_NAMESPACE
+
+@description('Client ID of the deployed managed identity')
+output AZURE_CLIENT_ID string = workload.outputs.AZURE_CLIENT_ID
+
+@description('Login server endpoint for the Azure Container Registry')
+output AZURE_CONTAINER_REGISTRY_ENDPOINT string = workload.outputs.AZURE_CONTAINER_REGISTRY_ENDPOINT
+
+@description('Resource ID of the managed identity used by Container Registry')
+output AZURE_CONTAINER_REGISTRY_MANAGED_IDENTITY_ID string = workload.outputs.AZURE_CONTAINER_REGISTRY_MANAGED_IDENTITY_ID
+
+@description('Resource ID of the Container Apps managed environment')
+output AZURE_CONTAINER_APPS_ENVIRONMENT_ID string = workload.outputs.AZURE_CONTAINER_APPS_ENVIRONMENT_ID
+
+@description('Default domain for the Container Apps environment')
+output AZURE_CONTAINER_APPS_ENVIRONMENT_DEFAULT_DOMAIN string = workload.outputs.AZURE_CONTAINER_APPS_ENVIRONMENT_DEFAULT_DOMAIN
+
+@description('Orders API Endpoint URL')
+output ORDERS_API_ENDPOINT string = workload.outputs.AZURE_CONTAINER_APPS_ENVIRONMENT_DEFAULT_DOMAIN
+
+@description('Name of the deployed storage account')
+output WORKFLOW_STORAGE_ACCOUNT_NAME string = workload.outputs.WORKFLOW_STORAGE_ACCOUNT_NAME
+
+// ========== Outputs ==========
+
+// Resource Group outputs
+@description('Name of the deployed resource group')
+output AZURE_RESOURCE_GROUP string = resourceGroupName
+
+@description('Azure Tenant ID where resources are deployed')
+output AZURE_TENANT_ID string = tenant().tenantId
