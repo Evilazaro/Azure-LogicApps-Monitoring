@@ -177,7 +177,7 @@ try {
     $secrets = @{
         'Azure:AllowResourceGroupCreation'                  = 'false'
         'Azure:SubscriptionId'                              = $azureSubscriptionId
-        'Azure:ResourceGroupName'                           = $azureResourceGroup
+        'AZURE_RESOURCE_GROUP'                           = $azureResourceGroup
         'Azure:Location'                                    = $azureLocation
         'Azure:CredentialSource'                            = 'AzureDeveloperCli'
         'Azure:ClientId'                                    = $azureClientId
