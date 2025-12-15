@@ -333,7 +333,6 @@ try {
     $azureResourceGroup = $env:AZURE_RESOURCE_GROUP
     $azureLocation = $env:AZURE_LOCATION
     $azureApplicationInsightsName = $env:AZURE_APPLICATION_INSIGHTS_NAME
-    $azureApplicationInsightsConnectionString = $env:AZURE_APPLICATION_INSIGHTS_CONNECTION_STRING
     $azureTenantId = $env:AZURE_TENANT_ID
     $azureClientId = $env:AZURE_CLIENT_ID
     $azureServiceBusNamespace = $env:AZURE_SERVICE_BUS_NAMESPACE
@@ -412,7 +411,6 @@ try {
         'Azure:CredentialSource'                       = 'AzureDeveloperCli'
         'Azure:ClientId'                               = $azureClientId
         'AZURE_APPLICATION_INSIGHTS_NAME'              = $azureApplicationInsightsName
-        'AZURE_APPLICATION_INSIGHTS_CONNECTION_STRING' = $azureApplicationInsightsConnectionString
         'AZURE_TENANT_ID'                              = $azureTenantId
         'AZURE_SERVICE_BUS_NAMESPACE'                  = $azureServiceBusNamespace
         'AZURE_ENV_NAME'                               = $azureEnvName

@@ -22,7 +22,7 @@ properties:
         identity: {{ .Env.AZURE_CONTAINER_REGISTRY_MANAGED_IDENTITY_ID }}
     secrets:
       - name: applicationinsights-connection-string
-        value: '{{ .Env.TELEMETRY_APPINSIGHTSCONNECTIONSTRING }}'
+        value: '{{ .Env.AZURE_APPLICATION_INSIGHTS_CONNECTION_STRING }}'
   template:
     containers:
       - image: {{ .Image }}
