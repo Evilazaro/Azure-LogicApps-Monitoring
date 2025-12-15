@@ -8,6 +8,7 @@ $AZURE_APPLICATION_INSIGHTS_NAME = $env:AZURE_APPLICATION_INSIGHTS_NAME
 $AZURE_APPLICATION_INSIGHTS_CONNECTION_STRING = $env:AZURE_APPLICATION_INSIGHTS_CONNECTION_STRING
 $AZURE_TENANT_ID = $env:AZURE_TENANT_ID
 $AZURE_CLIENT_ID = $env:AZURE_CLIENT_ID
+$AZURE_SERVICE_BUS_NAMESPACE = $env:AZURE_SERVICE_BUS_NAMESPACE
 
 Write-Information "Post-provisioning script started." -InformationAction Continue
 Write-Information "Subscription ID: $AZURE_SUBSCRIPTION_ID" -InformationAction Continue
@@ -17,6 +18,7 @@ Write-Information "Application Insights Name: $AZURE_APPLICATION_INSIGHTS_NAME" 
 write-Information "Application Insights Connection String: $AZURE_APPLICATION_INSIGHTS_CONNECTION_STRING" -InformationAction Continue
 write-Information "Tenant ID: $AZURE_TENANT_ID" -InformationAction Continue
 Write-Information "Client ID: $AZURE_CLIENT_ID" -InformationAction Continue
+Write-Information "Service Bus Namespace: $AZURE_SERVICE_BUS_NAMESPACE" -InformationAction Continue
 
 # Validate required environment variables
 if ([string]::IsNullOrEmpty($AZURE_SUBSCRIPTION_ID)) {
@@ -58,3 +60,4 @@ dotnet user-secrets set "AZURE_APPLICATION_INSIGHTS_NAME" $AZURE_APPLICATION_INS
 dotnet user-secrets set "AZURE_APPLICATION_INSIGHTS_CONNECTION_STRING" $AZURE_APPLICATION_INSIGHTS_CONNECTION_STRING -p $projectPath
 dotnet user-secrets set "AZURE_TENANT_ID" $AZURE_TENANT_ID -p $projectPath
 dotnet user-secrets set "Azure:ClientId" $AZURE_CLIENT_ID -p $projectPath
+dotnet user-secrets set "AZURE_SERVICE_BUS_NAMESPACE" $AZURE_SERVICE_BUS_NAMESPACE -p $projectPath
