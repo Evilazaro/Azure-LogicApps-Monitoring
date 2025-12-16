@@ -1,31 +1,9 @@
+metadata name = 'Monitoring Infrastructure'
+metadata description = 'Deploys Log Analytics, Application Insights, and health monitoring for the solution'
+
 // ========== Type Definitions ==========
 
-@description('Tags applied to all resources for organization and cost tracking')
-type tagsType = {
-  @description('Name of the solution')
-  Solution: string
-
-  @description('Environment identifier')
-  Environment: string
-
-  @description('Management method')
-  ManagedBy: string
-
-  @description('Cost center identifier')
-  CostCenter: string
-
-  @description('Team responsible for the resources')
-  Owner: string
-
-  @description('Business unit')
-  BusinessUnit: string
-
-  @description('Deployment timestamp')
-  DeploymentDate: string
-
-  @description('Source repository')
-  Repository: string
-}
+import { tagsType } from '../types.bicep'
 
 // (Note: Diagnostic settings use object[] instead of user-defined types 
 // due to Azure Resource Provider schema requirements)
@@ -117,6 +95,7 @@ output AZURE_LOG_ANALYTICS_WORKSPACE_ID string = operational.outputs.AZURE_LOG_A
 output AZURE_LOG_ANALYTICS_WORKSPACE_CUSTOMER_ID string = operational.outputs.AZURE_LOG_ANALYTICS_WORKSPACE_CUSTOMER_ID
 
 @description('Primary Key for the Log Analytics workspace')
+@secure()
 output AZURE_LOG_ANALYTICS_WORKSPACE_PRIMARY_KEY string = operational.outputs.AZURE_LOG_ANALYTICS_WORKSPACE_PRIMARY_KEY
 
 @description('Name of the deployed Application Insights instance')

@@ -1,31 +1,9 @@
+metadata name = 'Managed Identity'
+metadata description = 'Deploys user-assigned managed identity with role assignments for workload resources'
+
 // ========== Type Definitions ==========
 
-@description('Tags applied to all resources for organization and cost tracking')
-type tagsType = {
-  @description('Name of the solution')
-  Solution: string
-
-  @description('Environment identifier')
-  Environment: string
-
-  @description('Management method')
-  ManagedBy: string
-
-  @description('Cost center identifier')
-  CostCenter: string
-
-  @description('Team responsible for the resources')
-  Owner: string
-
-  @description('Business unit')
-  BusinessUnit: string
-
-  @description('Deployment timestamp')
-  DeploymentDate: string
-
-  @description('Source repository')
-  Repository: string
-}
+import { tagsType } from '../../types.bicep'
 
 // ========== Parameters ==========
 
