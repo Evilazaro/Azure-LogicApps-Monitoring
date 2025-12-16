@@ -1,7 +1,3 @@
-using Aspire.Hosting;
-using Aspire.Hosting.ApplicationModel;
-using Aspire.Hosting.Azure;
-using Microsoft.Extensions.Hosting;
 using Projects;
 
 var builder = DistributedApplication.CreateBuilder(args);
@@ -13,21 +9,21 @@ var builder = DistributedApplication.CreateBuilder(args);
 //}
 //else
 //{
-    var appInsightsName = builder.Configuration.GetSection("AZURE_APPLICATION_INSIGHTS_NAME").Value ?? "";
-    var existingAppInsights = builder.AddParameter("AZURE-APPLICATION-INSIGHTS", appInsightsName);
+var appInsightsName = builder.Configuration.GetSection("AZURE_APPLICATION_INSIGHTS_NAME").Value ?? "";
+var existingAppInsights = builder.AddParameter("AZURE-APPLICATION-INSIGHTS", appInsightsName);
 
-    var sbName = builder.Configuration.GetSection("AZURE_SERVICE_BUS_NAMESPACE").Value ?? "";
-    var existingSb = builder.AddParameter("AZURE-SERVICE-BUS", sbName);
-    
-    var resourceGroupName = builder.Configuration.GetSection("AZURE_RESOURCE_GROUP").Value ?? "";
-    var existingRg = builder.AddParameter("AZURE-RESOURCE-GROUP", resourceGroupName);
+var sbName = builder.Configuration.GetSection("AZURE_SERVICE_BUS_NAMESPACE").Value ?? "";
+var existingSb = builder.AddParameter("AZURE-SERVICE-BUS", sbName);
 
-    var sb = builder.AddAzureServiceBus("Messaging")
-        .AsExisting(existingSb, existingRg);
-    sb.AddServiceBusQueue("orders-queue");
+var resourceGroupName = builder.Configuration.GetSection("AZURE_RESOURCE_GROUP").Value ?? "";
+var existingRg = builder.AddParameter("AZURE-RESOURCE-GROUP", resourceGroupName);
 
-    var appInsights = builder.AddAzureApplicationInsights("Telemetry")
-        .AsExisting(existingAppInsights, existingRg);
+var sb = builder.AddAzureServiceBus("Messaging")
+    .AsExisting(existingSb, existingRg);
+sb.AddServiceBusQueue("orders-queue");
+
+var appInsights = builder.AddAzureApplicationInsights("Telemetry")
+    .AsExisting(existingAppInsights, existingRg);
 
 //}
 

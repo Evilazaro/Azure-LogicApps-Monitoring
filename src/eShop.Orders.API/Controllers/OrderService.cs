@@ -1,161 +1,196 @@
 using Azure.Messaging.ServiceBus;
-using eShop.Orders.API.Controllers;
-using System.Text;
+using eShop.Orders.API.Models;
+using System.Collections.Concurrent;
 using System.Text.Json;
 
 namespace eShop.Orders.API.Services;
 
 /// <summary>
-/// Implementation of order service for managing order operations
+/// Service implementation for managing orders with Azure Service Bus integration
 /// </summary>
 public sealed class OrderService : IOrderService
 {
-    private readonly ServiceBusClient _serviceBusClient;
-    private readonly IConfiguration _configuration;
+    private readonly ServiceBusSender _sender;
     private readonly ILogger<OrderService> _logger;
-    private readonly string _queueName;
-    private readonly string _ordersFilePath;
 
+    // In-memory store for demo purposes - replace with proper database in production
+    private static readonly ConcurrentDictionary<int, Order> _orderStore = new();
+
+    private static readonly JsonSerializerOptions _jsonOptions = new()
+    {
+        PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+        WriteIndented = false
+    };
+
+    /// <summary>
+    /// Initializes a new instance of the OrderService
+    /// </summary>
+    /// <param name="serviceBusClient">The Service Bus client for messaging</param>
+    /// <param name="configuration">Application configuration</param>
+    /// <param name="logger">Logger instance</param>
+    /// <exception cref="ArgumentNullException">Thrown when required dependencies are null</exception>
+    /// <exception cref="InvalidOperationException">Thrown when queue name is not configured</exception>
     public OrderService(
         ServiceBusClient serviceBusClient,
         IConfiguration configuration,
         ILogger<OrderService> logger)
     {
-        _serviceBusClient = serviceBusClient ?? throw new ArgumentNullException(nameof(serviceBusClient));
-        _configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
+        ArgumentNullException.ThrowIfNull(serviceBusClient);
+        ArgumentNullException.ThrowIfNull(configuration);
+
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
 
-        _queueName = _configuration.GetValue<string>("ServiceBus:QueueName")
-            ?? throw new InvalidOperationException("ServiceBus:QueueName configuration is required");
+        var queueName = configuration["ServiceBus:QueueName"] ?? "orders";
+        _sender = serviceBusClient.CreateSender(queueName);
 
-        _ordersFilePath = _configuration.GetValue<string>("Orders:FilePath") ?? "allOrders.json";
+        _logger.LogInformation("OrderService initialized with queue: {QueueName}", queueName);
     }
 
+    /// <inheritdoc/>
     public async Task SendOrderMessageAsync(Order order, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(order);
 
-        await using var sender = _serviceBusClient.CreateSender(_queueName);
-
         try
         {
-            var messageBody = JsonSerializer.Serialize(order);
-            var serviceBusMessage = new ServiceBusMessage(Encoding.UTF8.GetBytes(messageBody))
+            var messageBody = JsonSerializer.Serialize(order, _jsonOptions);
+            var message = new ServiceBusMessage(messageBody)
             {
-                ContentType = "application/json",
                 MessageId = Guid.NewGuid().ToString(),
-                Subject = "OrderPlaced",
-                ApplicationProperties =
-                {
-                    ["OrderId"] = order.Id,
-                    ["Timestamp"] = DateTime.UtcNow
-                }
+                ContentType = "application/json",
+                Subject = "OrderPlaced"
             };
 
-            await sender.SendMessageAsync(serviceBusMessage, cancellationToken);
-            _logger.LogInformation("Order {OrderId} sent to queue {QueueName} successfully", order.Id, _queueName);
+            // Add metadata for correlation and tracking
+            message.ApplicationProperties.Add("OrderId", order.Id);
+            message.ApplicationProperties.Add("CustomerId", order.CustomerId);
+            message.ApplicationProperties.Add("Timestamp", DateTimeOffset.UtcNow.ToString("o"));
+
+            await _sender.SendMessageAsync(message, cancellationToken);
+
+            // Store order for retrieval
+            _orderStore.AddOrUpdate(order.Id, order, (_, _) => order);
+
+            _logger.LogInformation(
+                "Successfully sent order message. OrderId: {OrderId}, MessageId: {MessageId}",
+                order.Id,
+                message.MessageId);
         }
         catch (ServiceBusException ex)
         {
-            _logger.LogError(ex, "Failed to send order {OrderId} to Service Bus queue {QueueName}", order.Id, _queueName);
+            _logger.LogError(
+                ex,
+                "Service Bus error sending order message. OrderId: {OrderId}, Reason: {Reason}",
+                order.Id,
+                ex.Reason);
             throw;
         }
     }
 
-    public async Task SendOrderBatchMessagesAsync(IEnumerable<Order> orders, CancellationToken cancellationToken = default)
+    /// <inheritdoc/>
+    public async Task SendOrderBatchMessagesAsync(
+        IReadOnlyList<Order> orders,
+        CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(orders);
 
-        var orderList = orders.ToList();
-        if (orderList.Count == 0)
+        if (orders.Count == 0)
         {
-            _logger.LogWarning("Attempted to send empty order batch");
+            _logger.LogWarning("SendOrderBatchMessagesAsync called with empty orders collection");
             return;
         }
 
-        await using var sender = _serviceBusClient.CreateSender(_queueName);
-
         try
         {
-            using var messageBatch = await sender.CreateMessageBatchAsync(cancellationToken);
-            var addedCount = 0;
+            using var messageBatch = await _sender.CreateMessageBatchAsync(cancellationToken);
+            var messagesAdded = 0;
 
-            foreach (var order in orderList)
+            foreach (var order in orders)
             {
-                var messageBody = JsonSerializer.Serialize(order);
-                var serviceBusMessage = new ServiceBusMessage(Encoding.UTF8.GetBytes(messageBody))
+                var messageBody = JsonSerializer.Serialize(order, _jsonOptions);
+                var message = new ServiceBusMessage(messageBody)
                 {
-                    ContentType = "application/json",
                     MessageId = Guid.NewGuid().ToString(),
-                    Subject = "OrderPlaced",
-                    ApplicationProperties =
-                    {
-                        ["OrderId"] = order.Id,
-                        ["Timestamp"] = DateTime.UtcNow
-                    }
+                    ContentType = "application/json",
+                    Subject = "OrderPlaced"
                 };
 
-                if (!messageBatch.TryAddMessage(serviceBusMessage))
+                message.ApplicationProperties.Add("OrderId", order.Id);
+                message.ApplicationProperties.Add("CustomerId", order.CustomerId);
+                message.ApplicationProperties.Add("Timestamp", DateTimeOffset.UtcNow.ToString("o"));
+
+                if (!messageBatch.TryAddMessage(message))
                 {
-                    _logger.LogWarning("Order {OrderId} could not be added to batch due to size constraints", order.Id);
+                    _logger.LogWarning(
+                        "Message batch is full. Sending {Count} messages before adding more",
+                        messagesAdded);
+
+                    // Send current batch
+                    await _sender.SendMessagesAsync(messageBatch, cancellationToken);
+                    messagesAdded = 0;
+
+                    // Create new batch and retry adding the message
+                    using var newBatch = await _sender.CreateMessageBatchAsync(cancellationToken);
+                    if (!newBatch.TryAddMessage(message))
+                    {
+                        throw new InvalidOperationException(
+                            $"Message for OrderId {order.Id} is too large for a single batch");
+                    }
                 }
-                else
-                {
-                    addedCount++;
-                }
+
+                messagesAdded++;
+                _orderStore.AddOrUpdate(order.Id, order, (_, _) => order);
             }
 
-            if (addedCount > 0)
+            // Send remaining messages
+            if (messagesAdded > 0)
             {
-                await sender.SendMessagesAsync(messageBatch, cancellationToken);
-                _logger.LogInformation("Batch of {Count} orders sent to queue {QueueName} successfully", addedCount, _queueName);
+                await _sender.SendMessagesAsync(messageBatch, cancellationToken);
             }
-            else
-            {
-                _logger.LogWarning("No orders were added to batch");
-            }
+
+            _logger.LogInformation(
+                "Successfully sent batch of {Count} order messages",
+                orders.Count);
         }
         catch (ServiceBusException ex)
         {
-            _logger.LogError(ex, "Failed to send order batch to Service Bus queue {QueueName}", _queueName);
+            _logger.LogError(
+                ex,
+                "Service Bus error sending order batch. OrderCount: {Count}, Reason: {Reason}",
+                orders.Count,
+                ex.Reason);
             throw;
         }
     }
 
-    public async Task<List<Order>> GetAllOrdersAsync(CancellationToken cancellationToken = default)
+    /// <inheritdoc/>
+    public Task<IReadOnlyList<Order>> GetAllOrdersAsync(CancellationToken cancellationToken = default)
     {
-        return await ReadOrdersFromJsonFileAsync(cancellationToken);
+        cancellationToken.ThrowIfCancellationRequested();
+
+        var orders = _orderStore.Values.OrderByDescending(o => o.OrderDate).ToList();
+
+        _logger.LogDebug("Retrieved {Count} orders from storage", orders.Count);
+
+        return Task.FromResult<IReadOnlyList<Order>>(orders);
     }
 
-    public async Task<Order?> GetOrderByIdAsync(int id, CancellationToken cancellationToken = default)
+    /// <inheritdoc/>
+    public Task<Order?> GetOrderByIdAsync(int id, CancellationToken cancellationToken = default)
     {
-        var orders = await ReadOrdersFromJsonFileAsync(cancellationToken);
-        return orders.FirstOrDefault(o => o.Id == id);
-    }
+        cancellationToken.ThrowIfCancellationRequested();
 
-    private async Task<List<Order>> ReadOrdersFromJsonFileAsync(CancellationToken cancellationToken = default)
-    {
-        if (!File.Exists(_ordersFilePath))
+        _orderStore.TryGetValue(id, out var order);
+
+        if (order is not null)
         {
-            _logger.LogInformation("Orders file {FilePath} does not exist, returning empty list", _ordersFilePath);
-            return [];
+            _logger.LogDebug("Retrieved order {OrderId} from storage", id);
+        }
+        else
+        {
+            _logger.LogDebug("Order {OrderId} not found in storage", id);
         }
 
-        try
-        {
-            await using var fileStream = File.OpenRead(_ordersFilePath);
-            var orders = await JsonSerializer.DeserializeAsync<List<Order>>(fileStream, cancellationToken: cancellationToken);
-            return orders ?? [];
-        }
-        catch (JsonException ex)
-        {
-            _logger.LogError(ex, "Failed to deserialize orders from file {FilePath}", _ordersFilePath);
-            return [];
-        }
-        catch (IOException ex)
-        {
-            _logger.LogError(ex, "IO error reading orders file {FilePath}", _ordersFilePath);
-            throw;
-        }
+        return Task.FromResult(order);
     }
 }
