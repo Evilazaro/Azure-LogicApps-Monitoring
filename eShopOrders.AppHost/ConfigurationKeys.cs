@@ -1,9 +1,24 @@
+// ------------------------------------------------------------------------------
+// <copyright file="ConfigurationKeys.cs" company="eShop Orders">
+//     Copyright (c) eShop Orders. All rights reserved.
+// </copyright>
+// <summary>
+//     Centralized configuration key constants for type-safe configuration access.
+// </summary>
+// ------------------------------------------------------------------------------
+
 namespace eShopOrders.AppHost.Configuration;
 
 /// <summary>
 /// Configuration key constants for the Orders application.
 /// Centralizes all configuration keys for easier maintenance and refactoring.
 /// </summary>
+/// <remarks>
+/// Using constants instead of magic strings provides:
+/// - Compile-time checking
+/// - IntelliSense support
+/// - Easier refactoring across the codebase
+/// </remarks>
 public static class ConfigurationKeys
 {
     /// <summary>
