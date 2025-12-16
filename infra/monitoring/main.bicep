@@ -1,3 +1,19 @@
+/*
+  Monitoring Infrastructure Module
+  ================================
+  Orchestrates deployment of all monitoring and observability components.
+  
+  Components:
+  - Log Analytics workspace with linked storage accounts
+  - Application Insights for telemetry collection
+  - Azure Monitor health model for service hierarchy
+  
+  Key Features:
+  - Centralized logging with 30-day retention
+  - Workspace-based Application Insights integration
+  - Diagnostic settings for all resources
+*/
+
 metadata name = 'Monitoring Infrastructure'
 metadata description = 'Deploys Log Analytics, Application Insights, and health monitoring for the solution'
 
@@ -5,8 +21,8 @@ metadata description = 'Deploys Log Analytics, Application Insights, and health 
 
 import { tagsType } from '../types.bicep'
 
-// (Note: Diagnostic settings use object[] instead of user-defined types 
-// due to Azure Resource Provider schema requirements)
+// Note: Diagnostic settings use object[] instead of user-defined types
+// due to Azure Resource Provider schema requirements
 
 // ========== Parameters ==========
 
@@ -36,6 +52,8 @@ param tags tagsType
 
 // ========== Variables ==========
 
+// Diagnostic settings configuration for comprehensive logging
+// Captures all log categories from monitoring resources
 var allLogsSettings = [
   {
     categoryGroup: 'allLogs'
@@ -43,6 +61,8 @@ var allLogsSettings = [
   }
 ]
 
+// Diagnostic settings configuration for comprehensive metrics
+// Captures all metric categories from monitoring resources
 var allMetricsSettings = [
   {
     categoryGroup: 'allMetrics'

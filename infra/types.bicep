@@ -1,3 +1,18 @@
+/*
+  Common Type Definitions
+  =======================
+  Shared user-defined types used across all Bicep modules.
+  
+  Purpose:
+  - Enforce consistent tagging across all resources
+  - Standardize storage account configurations
+  - Provide type safety and validation
+  
+  Usage:
+  - Import types in other modules: import { tagsType } from './types.bicep'
+  - All exported types are available for use in dependent modules
+*/
+
 // ========== Common Type Definitions ==========
 
 @export()

@@ -1,3 +1,23 @@
+/*
+  Container Services Module
+  =========================
+  Deploys container infrastructure for microservices hosting.
+  
+  Components:
+  1. Azure Container Registry (Premium tier)
+  2. Container Apps managed environment with:
+     - Log Analytics integration
+     - Application Insights telemetry
+     - Consumption workload profile
+  3. .NET Aspire dashboard for observability
+  
+  Key Features:
+  - Premium ACR for geo-replication and enhanced throughput
+  - System-assigned and user-assigned identity support
+  - KEDA and Dapr configurations ready
+  - Public network access enabled for development
+*/
+
 metadata name = 'Container Services'
 metadata description = 'Deploys Azure Container Registry, Container Apps Environment, and Aspire Dashboard'
 
@@ -96,6 +116,8 @@ resource registryDiag 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview'
   }
 }
 
+// Generate unique name for Container Apps Environment
+// Uses subscription and resource group for uniqueness across deployments
 var appEnvName = toLower('${name}-cae-${uniqueString(subscription().id, resourceGroup().id, location, envName)}')
 
 @description('Container Apps managed environment for hosting containerized applications')

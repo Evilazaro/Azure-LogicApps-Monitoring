@@ -1,3 +1,19 @@
+/*
+  Azure Logic Apps Monitoring Solution
+  ====================================
+  Main deployment orchestrator for the complete monitoring infrastructure.
+  
+  Purpose:
+  - Deploys monitoring infrastructure (Log Analytics, Application Insights)
+  - Deploys workload infrastructure (Identity, Messaging, Container Services, Logic Apps)
+  - Orchestrates resource group creation at subscription scope
+  
+  Dependencies:
+  - ./monitoring/main.bicep: Monitoring infrastructure module
+  - ./workload/main.bicep: Workload infrastructure module
+  - ./types.bicep: Shared type definitions
+*/
+
 targetScope = 'subscription'
 
 metadata name = 'Azure Logic Apps Monitoring Solution'
@@ -36,6 +52,7 @@ param deploymentDate string = utcNow('yyyy-MM-dd')
 
 // ========== Variables ==========
 
+// Standardized tags applied to all resources for governance and cost tracking
 var tags tagsType = {
   Solution: solutionName
   Environment: envName
@@ -47,6 +64,8 @@ var tags tagsType = {
   Repository: 'Azure-LogicApps-Monitoring'
 }
 
+// Resource group naming convention: rg-{solution}-{env}-{location-abbrev}
+// Truncates location to 8 chars to keep names concise
 var resourceGroupName = 'rg-${solutionName}-${envName}-${substring(location, 0, min(length(location), 8))}'
 
 // ========== Resources ==========
@@ -60,6 +79,8 @@ resource rg 'Microsoft.Resources/resourceGroups@2025-04-01' = {
 
 // ========== Modules ==========
 
+// Monitoring Infrastructure Module
+// Deploys Log Analytics workspace, Application Insights, and health monitoring
 module monitoring './monitoring/main.bicep' = {
   scope: rg
   params: {
@@ -70,6 +91,9 @@ module monitoring './monitoring/main.bicep' = {
   }
 }
 
+// Workload Infrastructure Module
+// Deploys managed identity, messaging (Service Bus), container services, and Logic Apps
+// Depends on monitoring outputs for workspace ID and Application Insights connection string
 module workload './workload/main.bicep' = {
   scope: resourceGroup(resourceGroupName)
   params: {

@@ -1,3 +1,20 @@
+/*
+  Workload Infrastructure Module
+  ==============================
+  Orchestrates deployment of all workload components.
+  
+  Components:
+  1. Identity: Managed identity with role assignments
+  2. Messaging: Service Bus namespace, queues, and workflow storage
+  3. Services: Container Registry and Container Apps Environment
+  4. Workflows: Logic Apps Standard with App Service Plan
+  
+  Deployment Order:
+  - Identity first (required by other modules)
+  - Messaging and Services in parallel (both use identity)
+  - Workflows last (depends on identity and messaging storage)
+*/
+
 metadata name = 'Workload Infrastructure'
 metadata description = 'Deploys identity, messaging, services, and Logic Apps workflows'
 
@@ -68,6 +85,8 @@ var allMetricsSettings = [
 
 // ========== Modules ==========
 
+// Identity Module: Deploys user-assigned managed identity
+// Must be deployed first as other modules depend on its output
 module identity 'identity/main.bicep' = {
   params: {
     name: name
@@ -77,6 +96,8 @@ module identity 'identity/main.bicep' = {
   }
 }
 
+// Messaging Module: Deploys Service Bus and workflow storage
+// Provides message queue infrastructure and Logic Apps storage backend
 module messaging 'messaging/main.bicep' = {
   params: {
     name: name
@@ -90,6 +111,8 @@ module messaging 'messaging/main.bicep' = {
   }
 }
 
+// Container Services Module: Deploys ACR, Container Apps Environment, and Aspire Dashboard
+// Provides container hosting infrastructure for microservices
 module services 'services/main.bicep' = {
   params: {
     name: name
@@ -107,6 +130,8 @@ module services 'services/main.bicep' = {
   }
 }
 
+// Logic Apps Module: Deploys Logic Apps Standard workflow engine
+// Depends on identity and messaging storage account outputs
 module workflows 'logic-app.bicep' = {
   params: {
     name: name

@@ -1,3 +1,21 @@
+/*
+  Log Analytics Workspace Module
+  ==============================
+  Deploys Log Analytics workspace with associated storage account.
+  
+  Components:
+  - Storage account for diagnostic logs with lifecycle management
+  - Log Analytics workspace with 30-day retention
+  - Linked storage accounts for alerts and query results
+  - Diagnostic settings configuration
+  
+  Key Features:
+  - PerGB2018 pricing tier for pay-as-you-go model
+  - Automatic log deletion after 30 days
+  - System-assigned managed identity
+  - Dedicated log analytics destination
+*/
+
 metadata name = 'Log Analytics Workspace'
 metadata description = 'Deploys Log Analytics workspace with linked storage accounts for centralized logging'
 
@@ -39,10 +57,17 @@ param tags tagsType
 
 // ========== Variables ==========
 
+// Remove special characters from name for storage account naming requirements
+// Storage account names must be lowercase alphanumeric only
 var cleanedName = toLower(replace(replace(replace(name, '-', ''), '_', ''), ' ', ''))
+
+// Generate unique suffix to ensure globally unique resource names
 var uniqueSuffix = uniqueString(resourceGroup().id, name, envName, location)
+
+// Storage account name must be 3-24 characters, lowercase alphanumeric only
 var logsStorageAccountName = take('${cleanedName}logs${uniqueSuffix}', 24)
 
+// Storage account configuration optimized for log storage
 var configSA storageAccountConfig = {
   sku: 'Standard_LRS'
   kind: 'StorageV2'

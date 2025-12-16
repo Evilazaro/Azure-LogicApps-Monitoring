@@ -1,3 +1,20 @@
+/*
+  Application Insights Module
+  ===========================
+  Deploys workspace-based Application Insights instance.
+  
+  Features:
+  - Workspace-based Application Insights (connected to Log Analytics)
+  - Public network access enabled for ingestion and query
+  - Diagnostic settings for Application Insights telemetry
+  - Web application type for general-purpose monitoring
+  
+  Outputs:
+  - Connection string for application telemetry
+  - Instrumentation key for legacy integrations
+  - Resource name for reference
+*/
+
 metadata name = 'Application Insights'
 metadata description = 'Deploys workspace-based Application Insights for application telemetry and monitoring'
 
