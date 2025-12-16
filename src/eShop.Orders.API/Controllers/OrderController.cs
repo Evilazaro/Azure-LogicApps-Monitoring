@@ -58,7 +58,7 @@ public class OrdersController : ControllerBase
         {
             // Set span status to error and add exception details
             activity?.SetStatus(ActivityStatusCode.Error, ex.Message);
-            activity?.RecordException(ex);
+            activity?.AddException(ex);
 
             _logger.LogError(ex, "Error retrieving orders");
             return StatusCode(500, "Internal server error");
@@ -103,7 +103,7 @@ public class OrdersController : ControllerBase
         catch (Exception ex)
         {
             activity?.SetStatus(ActivityStatusCode.Error, ex.Message);
-            activity?.RecordException(ex);
+            activity?.AddException(ex);
 
             _logger.LogError(ex, "Error retrieving order {OrderId}", id);
             return StatusCode(500, "Internal server error");
@@ -169,7 +169,7 @@ public class OrdersController : ControllerBase
         catch (Exception ex)
         {
             activity?.SetStatus(ActivityStatusCode.Error, ex.Message);
-            activity?.RecordException(ex);
+            activity?.AddException(ex);
 
             _logger.LogError(ex, "Error creating order");
             return StatusCode(500, "Internal server error");
@@ -221,7 +221,7 @@ public class OrdersController : ControllerBase
         catch (Exception ex)
         {
             activity?.SetStatus(ActivityStatusCode.Error, ex.Message);
-            activity?.RecordException(ex);
+            activity?.AddException(ex);
 
             _logger.LogError(ex, "Error updating order {OrderId}", id);
             return StatusCode(500, "Internal server error");
@@ -272,7 +272,7 @@ public class OrdersController : ControllerBase
         catch (Exception ex)
         {
             activity?.SetStatus(ActivityStatusCode.Error, ex.Message);
-            activity?.RecordException(ex);
+            activity?.AddException(ex);
 
             _logger.LogError(ex, "Error deleting order {OrderId}", id);
             return StatusCode(500, "Internal server error");

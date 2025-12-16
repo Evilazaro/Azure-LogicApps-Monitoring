@@ -108,7 +108,7 @@ public class OrderMessageHandler : BackgroundService
         {
             // Set span status to error
             activity?.SetStatus(ActivityStatusCode.Error, ex.Message);
-            activity?.RecordException(ex);
+            activity?.AddException(ex);
 
             _logger.LogError(ex, "Error processing message {MessageId}", args.Message.MessageId);
 
@@ -128,7 +128,7 @@ public class OrderMessageHandler : BackgroundService
         activity?.SetTag("messaging.system", "servicebus");
         activity?.SetTag("error.type", args.Exception.GetType().FullName);
         activity?.SetStatus(ActivityStatusCode.Error, args.Exception.Message);
-        activity?.RecordException(args.Exception);
+        activity?.AddException(args.Exception);
 
         _logger.LogError(
             args.Exception,

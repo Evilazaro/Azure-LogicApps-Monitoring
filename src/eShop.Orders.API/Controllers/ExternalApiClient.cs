@@ -64,7 +64,7 @@ public class ExternalApiClient
         catch (HttpRequestException ex)
         {
             activity?.SetStatus(ActivityStatusCode.Error, ex.Message);
-            activity?.RecordException(ex);
+            activity?.AddException(ex);
 
             _logger.LogError(ex, "HTTP error validating order {OrderId}", orderId);
             throw;
@@ -72,7 +72,7 @@ public class ExternalApiClient
         catch (Exception ex)
         {
             activity?.SetStatus(ActivityStatusCode.Error, ex.Message);
-            activity?.RecordException(ex);
+            activity?.AddException(ex);
 
             _logger.LogError(ex, "Error validating order {OrderId}", orderId);
             throw;
