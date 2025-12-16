@@ -197,11 +197,10 @@ The business processes center around **order lifecycle management** (create, upd
 #### Business Capability Map
 
 ```mermaid
-flowchart LR
+flowchart TB
     subgraph OrderManagement["Order Management"]
         OrderCreation["Order Creation"]
-        OrderUpdate["Order Updates"]
-        OrderProcessing["Order Processing"]
+        OrderFulfillment["Order Fulfillment"]
         OrderTracking["Order Tracking"]
     end
     
@@ -209,41 +208,62 @@ flowchart LR
         WorkflowDesign["Workflow Design"]
         WorkflowExecution["Workflow Execution"]
         WorkflowMonitoring["Workflow Monitoring"]
-        StateManagement["State Management"]
     end
     
     subgraph OperationalExcellence["Operational Excellence"]
         PerformanceOptimization["Performance Optimization"]
         CostManagement["Cost Management"]
         IncidentResponse["Incident Response"]
-        CapacityPlanning["Capacity Planning"]
     end
     
     subgraph Integration["Integration Capabilities"]
         APIManagement["API Management"]
         EventProcessing["Event Processing"]
         DataSynchronization["Data Synchronization"]
-        ConnectorManagement["Connector Management"]
     end
+    
+    style OrderManagement fill:#E6D5FF
+    style WorkflowOrchestration fill:#E6D5FF
+    style OperationalExcellence fill:#E6D5FF
+    style Integration fill:#E6D5FF
+    style OrderCreation fill:#E6D5FF
+    style OrderFulfillment fill:#E6D5FF
+    style OrderTracking fill:#E6D5FF
+    style WorkflowDesign fill:#E6D5FF
+    style WorkflowExecution fill:#E6D5FF
+    style WorkflowMonitoring fill:#E6D5FF
+    style PerformanceOptimization fill:#E6D5FF
+    style CostManagement fill:#E6D5FF
+    style IncidentResponse fill:#E6D5FF
+    style APIManagement fill:#E6D5FF
+    style EventProcessing fill:#E6D5FF
+    style DataSynchronization fill:#E6D5FF
 ```
 
 #### Value Stream Map
 
 ```mermaid
 flowchart LR
-    Demand["Customer Order<br/>Demand"] --> Capture["Order Capture<br/>via API"]
-    Capture --> Validate["Order Validation<br/>& Enrichment"]
-    Validate --> Persist["Persist State<br/>(Azure Storage)"]
-    Persist --> Route["Event Routing<br/>via Service Bus"]
-    Route --> Execute["Workflow<br/>Execution"]
-    Execute --> Monitor["Real-time<br/>Monitoring"]
-    Monitor --> Checkpoint["State<br/>Checkpoint"]
-    Checkpoint --> Process["Order<br/>Processing"]
-    Process --> Deliver["Value Delivered<br/>to Customer"]
+    Demand["Customer Order Demand"] --> Capture["Order Capture via API"]
+    Capture --> Validate["Order Validation"]
+    Validate --> Route["Workflow Routing"]
+    Route --> Execute["Workflow Execution"]
+    Execute --> Monitor["Real-time Monitoring"]
+    Monitor --> Fulfill["Order Fulfillment"]
+    Fulfill --> Deliver["Value Delivered to Customer"]
     
-    Monitor --> Analyze["Performance<br/>Analysis"]
-    Analyze --> Optimize["Continuous<br/>Optimization"]
+    Monitor --> Optimize["Continuous Optimization"]
     Optimize --> Route
+    
+    style Demand fill:#E6D5FF
+    style Capture fill:#E6D5FF
+    style Validate fill:#E6D5FF
+    style Route fill:#E6D5FF
+    style Execute fill:#E6D5FF
+    style Monitor fill:#FFD580
+    style Fulfill fill:#E6D5FF
+    style Deliver fill:#E6D5FF
+    style Optimize fill:#FFD580
 ```
 
 ### Data Architecture
@@ -259,31 +279,42 @@ Data flows through **ingestion** (orders via API, events via Service Bus), **pro
 ```mermaid
 flowchart LR
     subgraph Sources["Data Sources"]
-        OrdersAPI["Orders API<br/>(REST Endpoints)"]
-        Workflows["Logic App<br/>Workflows"]
-        ServiceBusEvents["Service Bus<br/>Events"]
+        OrdersAPI["Orders API"]
+        LogicAppWorkflows["Logic App Workflows"]
+        ServiceBusEvents["Service Bus Events"]
     end
     
-    subgraph MDMHub["MDM Hub - Azure Storage"]
-        OrderMaster["Order Master Data<br/>(Blob Storage)"]
-        WorkflowState["Workflow State<br/>(Stateful Execution)"]
+    subgraph MDMHub["MDM Hub - Cosmos DB"]
+        OrderMasterData["Order Master Data<br/>(Partition: userId)"]
+        WorkflowState["Workflow State Data"]
     end
     
     subgraph Consumers["Data Consumers"]
-        BlazorApp["Blazor App<br/>(UI)"]
-        MonitoringSystems["Monitoring<br/>Systems"]
-        Analytics["Analytics<br/>Services"]
+        BlazorApp["Blazor Application"]
+        MonitoringSystems["Monitoring Systems"]
+        AspireDashboard["Aspire Dashboard"]
     end
     
-    OrdersAPI --> OrderMaster
-    Workflows --> WorkflowState
-    ServiceBusEvents --> OrderMaster
-    Workflows --> OrderMaster
+    OrdersAPI --> OrderMasterData
+    LogicAppWorkflows --> WorkflowState
+    ServiceBusEvents --> OrderMasterData
     
-    OrderMaster --> BlazorApp
+    OrderMasterData --> BlazorApp
     WorkflowState --> MonitoringSystems
-    OrderMaster --> Analytics
-    WorkflowState --> Analytics
+    OrderMasterData --> AspireDashboard
+    WorkflowState --> AspireDashboard
+    
+    style Sources fill:#ADD8E6
+    style MDMHub fill:#FFE5B4
+    style Consumers fill:#90EE90
+    style OrdersAPI fill:#ADD8E6
+    style LogicAppWorkflows fill:#ADD8E6
+    style ServiceBusEvents fill:#ADD8E6
+    style OrderMasterData fill:#FFE5B4
+    style WorkflowState fill:#FFE5B4
+    style BlazorApp fill:#90EE90
+    style MonitoringSystems fill:#90EE90
+    style AspireDashboard fill:#90EE90
 ```
 
 #### Event-Driven Data Topology
@@ -291,54 +322,59 @@ flowchart LR
 ```mermaid
 flowchart LR
     subgraph Producers["Event Producers"]
-        OrderAPI["Orders API<br/>(Create/Update/Delete)"]
-        ExternalSystems["External<br/>Systems"]
+        OrdersAPI["Orders API"]
+        Workflows["Logic App Workflows<br/>(CreateOrder, UpdateOrder,<br/>DeleteOrder, ProcessOrder)"]
     end
     
     subgraph EventBus["Azure Service Bus"]
         OrdersTopic["Orders Topic"]
-        subgraph Subscriptions["Subscriptions"]
-            CreateSub["CreateOrder<br/>Subscription"]
-            UpdateSub["UpdateOrder<br/>Subscription"]
-            DeleteSub["DeleteOrder<br/>Subscription"]
-            ProcessSub["ProcessOrder<br/>Subscription"]
-        end
+        WorkflowTopics["Workflow Topics"]
     end
     
     subgraph Consumers["Event Consumers"]
-        CreateWorkflow["CreateOrder<br/>Workflow"]
-        UpdateWorkflow["UpdateOrder<br/>Workflow"]
-        DeleteWorkflow["DeleteOrder<br/>Workflow"]
-        ProcessWorkflow["ProcessOrder<br/>Workflow"]
+        CreateOrderWorkflow["CreateOrder Workflow"]
+        UpdateOrderWorkflow["UpdateOrder Workflow"]
+        ProcessOrderWorkflow["ProcessOrder Workflow"]
+        DeleteOrderWorkflow["DeleteOrder Workflow"]
     end
     
     subgraph Storage["Event Storage"]
-        BlobStorage["Azure Blob Storage<br/>(Workflow State)"]
-        AppInsights["Application Insights<br/>(Telemetry)"]
+        CosmosDB["Cosmos DB<br/>(Order Event Store)"]
+        AppInsights["Application Insights<br/>(Telemetry Events)"]
     end
     
-    OrderAPI --> OrdersTopic
-    ExternalSystems --> OrdersTopic
+    OrdersAPI --> OrdersTopic
+    Workflows --> WorkflowTopics
     
-    OrdersTopic --> CreateSub
-    OrdersTopic --> UpdateSub
-    OrdersTopic --> DeleteSub
-    OrdersTopic --> ProcessSub
+    OrdersTopic --> CreateOrderWorkflow
+    OrdersTopic --> UpdateOrderWorkflow
+    OrdersTopic --> ProcessOrderWorkflow
+    OrdersTopic --> DeleteOrderWorkflow
     
-    CreateSub --> CreateWorkflow
-    UpdateSub --> UpdateWorkflow
-    DeleteSub --> DeleteWorkflow
-    ProcessSub --> ProcessWorkflow
+    CreateOrderWorkflow --> CosmosDB
+    UpdateOrderWorkflow --> CosmosDB
+    ProcessOrderWorkflow --> CosmosDB
+    DeleteOrderWorkflow --> CosmosDB
     
-    CreateWorkflow --> BlobStorage
-    UpdateWorkflow --> BlobStorage
-    DeleteWorkflow --> BlobStorage
-    ProcessWorkflow --> BlobStorage
+    CreateOrderWorkflow --> AppInsights
+    UpdateOrderWorkflow --> AppInsights
+    ProcessOrderWorkflow --> AppInsights
+    DeleteOrderWorkflow --> AppInsights
     
-    CreateWorkflow --> AppInsights
-    UpdateWorkflow --> AppInsights
-    DeleteWorkflow --> AppInsights
-    ProcessWorkflow --> AppInsights
+    style Producers fill:#90EE90
+    style EventBus fill:#FFB347
+    style Consumers fill:#90EE90
+    style Storage fill:#FFE5B4
+    style OrdersAPI fill:#90EE90
+    style Workflows fill:#90EE90
+    style OrdersTopic fill:#FFB347
+    style WorkflowTopics fill:#FFB347
+    style CreateOrderWorkflow fill:#90EE90
+    style UpdateOrderWorkflow fill:#90EE90
+    style ProcessOrderWorkflow fill:#90EE90
+    style DeleteOrderWorkflow fill:#90EE90
+    style CosmosDB fill:#FFE5B4
+    style AppInsights fill:#FFE5B4
 ```
 
 #### Monitoring Dataflow
@@ -346,43 +382,56 @@ flowchart LR
 ```mermaid
 flowchart LR
     subgraph Ingestion["Telemetry Ingestion"]
-        OTLP["OpenTelemetry SDK<br/>(ServiceDefaults)"]
-        AspireExporter["Aspire<br/>Exporter"]
-        LogicAppsLogs["Logic Apps<br/>Runtime Logs"]
-        APILogs["Orders API<br/>Logs"]
+        OTLP["OpenTelemetry SDK<br/>(Orders API, Blazor App)"]
+        AspireExporter["Aspire Exporter<br/>(ServiceDefaults)"]
+        LogicAppsLogs["Logic Apps Runtime Logs"]
     end
     
     subgraph Processing["Processing Layer"]
-        AspireDashboard["Aspire Dashboard<br/>(Local Dev)"]
+        AspireDashboard["Aspire Dashboard<br/>(Local Development)"]
         AppInsightsProcessing["Application Insights<br/>Processing Pipeline"]
     end
     
-    subgraph Storage["Storage Zones"]
-        MetricsDB["Metrics Store<br/>(Time-series)"]
-        LogsDB["Logs Store<br/>(Structured)"]
-        TracesDB["Distributed Traces<br/>(Request Flow)"]
+    subgraph StorageZones["Storage Zones"]
+        MetricsDB["Metrics Store<br/>(Application Insights)"]
+        LogsDB["Logs Store<br/>(Log Analytics)"]
+        TracesDB["Distributed Traces<br/>(Application Insights)"]
     end
     
     subgraph Governance["Governance & Analytics"]
-        Alerts["Azure Monitor<br/>Alerts"]
-        Workbooks["Azure<br/>Workbooks"]
-        KustoDashboards["Kusto Query<br/>Dashboards"]
+        AzureMonitor["Azure Monitor Alerts"]
+        Workbooks["Azure Workbooks"]
+        CustomDashboards["Custom Dashboards"]
     end
     
     OTLP --> AspireDashboard
     AspireExporter --> AppInsightsProcessing
     LogicAppsLogs --> AppInsightsProcessing
-    APILogs --> AppInsightsProcessing
     
     AspireDashboard --> MetricsDB
     AppInsightsProcessing --> LogsDB
     AppInsightsProcessing --> TracesDB
     AppInsightsProcessing --> MetricsDB
     
-    MetricsDB --> Alerts
+    MetricsDB --> AzureMonitor
     LogsDB --> Workbooks
-    TracesDB --> KustoDashboards
-    MetricsDB --> KustoDashboards
+    TracesDB --> CustomDashboards
+    
+    style Ingestion fill:#ADD8E6
+    style Processing fill:#90EE90
+    style StorageZones fill:#FFE5B4
+    style Governance fill:#D3D3D3
+    style OTLP fill:#ADD8E6
+    style AspireExporter fill:#ADD8E6
+    style LogicAppsLogs fill:#ADD8E6
+    style AspireDashboard fill:#90EE90
+    style AppInsightsProcessing fill:#90EE90
+    style MetricsDB fill:#FFE5B4
+    style LogsDB fill:#FFE5B4
+    style TracesDB fill:#FFE5B4
+    style AzureMonitor fill:#D3D3D3
+    style Workbooks fill:#D3D3D3
+    style CustomDashboards fill:#D3D3D3
 ```
 
 ### Application Architecture
@@ -398,52 +447,64 @@ Applications are organized as **microservices** (Orders API with Minimal APIs, B
 ```mermaid
 flowchart LR
     subgraph Clients["Client Applications"]
-        Browser["Web Browser"]
-        MobileApp["Mobile App"]
+        WebBrowser["Web Browser"]
     end
     
-    subgraph Gateway["Service Gateway"]
-        AspireHost["Aspire AppHost<br/>(Service Discovery)"]
+    subgraph Gateway["Application Gateway"]
+        AspireAppHost["Aspire AppHost<br/>(Service Discovery)"]
     end
     
     subgraph Services["Application Services"]
-        OrdersAPI["Orders API<br/>(Minimal APIs)"]
-        BlazorServer["Blazor App<br/>(Server)"]
-        BlazorWASM["Blazor Client<br/>(WebAssembly)"]
+        OrdersAPI["Orders API<br/>(eShop.Orders.API)"]
+        BlazorServer["Blazor Server<br/>(eShop.Orders.App)"]
+        BlazorClient["Blazor WebAssembly<br/>(eShop.Orders.App.Client)"]
     end
     
     subgraph Workflows["Workflow Services"]
-        CreateWorkflow["CreateOrder<br/>Workflow"]
-        UpdateWorkflow["UpdateOrder<br/>Workflow"]
-        ProcessWorkflow["ProcessOrder<br/>Workflow"]
-        DeleteWorkflow["DeleteOrder<br/>Workflow"]
+        CreateOrderWF["CreateOrder Workflow"]
+        UpdateOrderWF["UpdateOrder Workflow"]
+        ProcessOrderWF["ProcessOrder Workflow"]
+        DeleteOrderWF["DeleteOrder Workflow"]
     end
     
-    subgraph Messaging["Messaging Layer"]
-        ServiceBus["Service Bus<br/>(Topics & Subscriptions)"]
+    subgraph DataServices["Data Services"]
+        CosmosDB["Cosmos DB<br/>(Partition: userId)"]
+        ServiceBus["Azure Service Bus<br/>(Topics & Subscriptions)"]
     end
     
-    subgraph Data["Data Services"]
-        AzureStorage["Azure Storage<br/>(Workflow State)"]
-    end
-    
-    Browser --> AspireHost
-    MobileApp --> AspireHost
-    
-    AspireHost --> OrdersAPI
-    AspireHost --> BlazorServer
-    BlazorServer --> BlazorWASM
+    WebBrowser --> AspireAppHost
+    AspireAppHost --> OrdersAPI
+    AspireAppHost --> BlazorServer
+    BlazorServer --> BlazorClient
     
     OrdersAPI --> ServiceBus
-    ServiceBus --> CreateWorkflow
-    ServiceBus --> UpdateWorkflow
-    ServiceBus --> ProcessWorkflow
-    ServiceBus --> DeleteWorkflow
+    ServiceBus --> CreateOrderWF
+    ServiceBus --> UpdateOrderWF
+    ServiceBus --> ProcessOrderWF
+    ServiceBus --> DeleteOrderWF
     
-    CreateWorkflow --> AzureStorage
-    UpdateWorkflow --> AzureStorage
-    ProcessWorkflow --> AzureStorage
-    DeleteWorkflow --> AzureStorage
+    OrdersAPI --> CosmosDB
+    CreateOrderWF --> CosmosDB
+    UpdateOrderWF --> CosmosDB
+    ProcessOrderWF --> CosmosDB
+    DeleteOrderWF --> CosmosDB
+    
+    style Clients fill:#ADD8E6
+    style Gateway fill:#E6D5FF
+    style Services fill:#90EE90
+    style Workflows fill:#90EE90
+    style DataServices fill:#FFE5B4
+    style WebBrowser fill:#ADD8E6
+    style AspireAppHost fill:#E6D5FF
+    style OrdersAPI fill:#90EE90
+    style BlazorServer fill:#90EE90
+    style BlazorClient fill:#90EE90
+    style CreateOrderWF fill:#90EE90
+    style UpdateOrderWF fill:#90EE90
+    style ProcessOrderWF fill:#90EE90
+    style DeleteOrderWF fill:#90EE90
+    style CosmosDB fill:#FFE5B4
+    style ServiceBus fill:#FFE5B4
 ```
 
 #### Event-Driven Architecture
@@ -451,88 +512,102 @@ flowchart LR
 ```mermaid
 flowchart LR
     subgraph Producers["Event Producers"]
-        OrdersAPI["Orders API<br/>(HTTP POST/PUT/DELETE)"]
-        ScheduledTriggers["Scheduled<br/>Triggers"]
+        OrdersAPI["Orders API<br/>(HTTP Triggers)"]
     end
     
     subgraph EventBus["Azure Service Bus"]
         OrdersTopic["Orders Topic"]
         subgraph Subscriptions["Subscriptions"]
-            CreateOrderSub["CreateOrder<br/>Subscription"]
-            UpdateOrderSub["UpdateOrder<br/>Subscription"]
-            ProcessOrderSub["ProcessOrder<br/>Subscription"]
-            DeleteOrderSub["DeleteOrder<br/>Subscription"]
+            CreateSub["CreateOrder Subscription"]
+            UpdateSub["UpdateOrder Subscription"]
+            ProcessSub["ProcessOrder Subscription"]
+            DeleteSub["DeleteOrder Subscription"]
         end
     end
     
-    subgraph Consumers["Event Consumers - Logic Apps"]
-        CreateWorkflow["CreateOrder<br/>Workflow<br/>(Stateful)"]
-        UpdateWorkflow["UpdateOrder<br/>Workflow<br/>(Stateful)"]
-        ProcessWorkflow["ProcessOrder<br/>Workflow<br/>(Long-Running)"]
-        DeleteWorkflow["DeleteOrder<br/>Workflow<br/>(Stateful)"]
+    subgraph Consumers["Event Consumers"]
+        CreateWorkflow["CreateOrder Workflow<br/>(LogicAppWP/ConsosoOrders)"]
+        UpdateWorkflow["UpdateOrder Workflow<br/>(LogicAppWP/ConsosoOrders)"]
+        ProcessWorkflow["ProcessOrder Workflow<br/>(LogicAppWP/ConsosoOrders)"]
+        DeleteWorkflow["DeleteOrder Workflow<br/>(LogicAppWP/ConsosoOrders)"]
     end
     
-    subgraph Analytics["Analytics & Monitoring"]
-        AppInsights["Application Insights<br/>(Telemetry)"]
-        AspireDashboard["Aspire Dashboard<br/>(Dev Monitoring)"]
+    subgraph Analytics["Analytics Services"]
+        AppInsights["Application Insights<br/>(Telemetry Collection)"]
+        AspireDashboard["Aspire Dashboard<br/>(Development Monitoring)"]
     end
     
     OrdersAPI --> OrdersTopic
-    ScheduledTriggers --> OrdersTopic
     
-    OrdersTopic --> CreateOrderSub
-    OrdersTopic --> UpdateOrderSub
-    OrdersTopic --> ProcessOrderSub
-    OrdersTopic --> DeleteOrderSub
+    OrdersTopic --> CreateSub
+    OrdersTopic --> UpdateSub
+    OrdersTopic --> ProcessSub
+    OrdersTopic --> DeleteSub
     
-    CreateOrderSub --> CreateWorkflow
-    UpdateOrderSub --> UpdateWorkflow
-    ProcessOrderSub --> ProcessWorkflow
-    DeleteOrderSub --> DeleteWorkflow
+    CreateSub --> CreateWorkflow
+    UpdateSub --> UpdateWorkflow
+    ProcessSub --> ProcessWorkflow
+    DeleteSub --> DeleteWorkflow
     
     CreateWorkflow --> AppInsights
     UpdateWorkflow --> AppInsights
     ProcessWorkflow --> AppInsights
     DeleteWorkflow --> AppInsights
     
-    OrdersAPI --> AspireDashboard
+    CreateWorkflow --> AspireDashboard
+    UpdateWorkflow --> AspireDashboard
+    ProcessWorkflow --> AspireDashboard
+    DeleteWorkflow --> AspireDashboard
+    
+    style Producers fill:#90EE90
+    style EventBus fill:#FFB347
+    style Consumers fill:#90EE90
+    style Analytics fill:#FFE5B4
+    style OrdersAPI fill:#90EE90
+    style OrdersTopic fill:#FFB347
+    style Subscriptions fill:#FFB347
+    style CreateSub fill:#FFB347
+    style UpdateSub fill:#FFB347
+    style ProcessSub fill:#FFB347
+    style DeleteSub fill:#FFB347
+    style CreateWorkflow fill:#90EE90
+    style UpdateWorkflow fill:#90EE90
+    style ProcessWorkflow fill:#90EE90
+    style DeleteWorkflow fill:#90EE90
+    style AppInsights fill:#FFE5B4
+    style AspireDashboard fill:#FFE5B4
 ```
 
 #### Event State Transitions
 
 ```mermaid
 stateDiagram-v2
-    [*] --> OrderReceived: API Request (POST/PUT/DELETE)
+    [*] --> OrderReceived: HTTP Request to Orders API
     
-    OrderReceived --> OrderValidated: Validate Schema & Business Rules
-    OrderValidated --> OrderPersisted: Store Order (Azure Storage)
+    OrderReceived --> OrderValidated: Validate Order Schema
+    OrderValidated --> OrderPersisted: Store in Cosmos DB (userId partition)
     OrderPersisted --> EventPublished: Publish to Service Bus Topic
     
-    EventPublished --> SubscriptionTriggered: Topic Subscription Filter Match
+    EventPublished --> WorkflowTriggered: Service Bus Subscription Activated
     
-    SubscriptionTriggered --> WorkflowStarted: Logic App Triggered
-    WorkflowStarted --> WorkflowRunning: Execute Workflow Actions
+    WorkflowTriggered --> WorkflowRunning: Logic App Execution Start
+    WorkflowRunning --> WorkflowCheckpoint: Save State (Stateful Workflow)
+    WorkflowCheckpoint --> WorkflowRunning: Continue Execution
     
-    WorkflowRunning --> StateCheckpoint: Save Stateful Checkpoint
-    StateCheckpoint --> WorkflowRunning: Continue Execution
+    WorkflowRunning --> WorkflowCompleted: Success
+    WorkflowRunning --> WorkflowFailed: Error Occurred
+    WorkflowRunning --> WorkflowSuspended: Long-Running Wait State
     
-    WorkflowRunning --> WorkflowCompleted: Success (All Actions Complete)
-    WorkflowRunning --> WorkflowFailed: Error (Action Failure)
-    WorkflowRunning --> WorkflowSuspended: Long Wait (18-36 months pattern)
-    
-    WorkflowSuspended --> WorkflowRunning: Resume (Timer/Event Trigger)
+    WorkflowSuspended --> WorkflowRunning: Resume After Wait
     
     WorkflowCompleted --> TelemetryRecorded: Log to Application Insights
-    WorkflowFailed --> RetryPolicy: Apply Retry Logic
+    WorkflowFailed --> ErrorHandling: Retry Policy Applied
     
-    RetryPolicy --> WorkflowRunning: Retry Attempt
-    RetryPolicy --> DeadLetterQueue: Max Retries Exceeded
+    ErrorHandling --> WorkflowRunning: Retry Attempt
+    ErrorHandling --> DeadLetter: Max Retries Exceeded
     
-    TelemetryRecorded --> OrderUpdated: Update Order Store
-    OrderUpdated --> [*]
-    
-    DeadLetterQueue --> AlertTriggered: Notify Operations Team
-    AlertTriggered --> [*]
+    TelemetryRecorded --> [*]
+    DeadLetter --> [*]
 ```
 
 ### Technology Architecture
@@ -549,53 +624,65 @@ The solution runs on **Azure Container Apps** for microservices and containerize
 flowchart LR
     subgraph Clients["Client Tier"]
         Browser["Web Browser"]
-        MobileApp["Mobile Application"]
-    end
-    
-    subgraph Gateway["Gateway Layer"]
-        AspireHost["Aspire AppHost<br/>(Dev Gateway)"]
-        ContainerAppsIngress["Container Apps<br/>Ingress"]
     end
     
     subgraph ApplicationServices["Application Services"]
-        OrdersAPIContainer["Orders API<br/>(Container App)"]
-        BlazorAppContainer["Blazor App<br/>(Container App)"]
-        LogicAppsContainer["Logic Apps<br/>(Container App)"]
+        ContainerApps["Azure Container Apps<br/>(Managed Environment)"]
+        OrdersAPIContainer["Orders API Container"]
+        BlazorAppContainer["Blazor App Container"]
+        LogicAppsContainers["Logic Apps Containers<br/>(CreateOrder, UpdateOrder,<br/>DeleteOrder, ProcessOrder)"]
     end
     
-    subgraph MessagingServices["Messaging Services"]
-        ServiceBus["Azure Service Bus<br/>(Topics/Subscriptions)"]
+    subgraph MessagingServices["Messaging & Events"]
+        ServiceBus["Azure Service Bus<br/>(Topics & Subscriptions)"]
     end
     
     subgraph DataServices["Data Services"]
-        StorageAccount["Azure Storage<br/>(Blob + Table Storage)"]
+        CosmosDB["Azure Cosmos DB<br/>(NoSQL, userId partition)"]
     end
     
     subgraph ObservabilityServices["Observability & Security"]
         AppInsights["Application Insights<br/>(OpenTelemetry)"]
-        LogAnalytics["Log Analytics<br/>Workspace"]
-        KeyVault["Azure Key Vault<br/>(Secrets)"]
-        ManagedIdentity["Managed Identity<br/>(AAD Auth)"]
+        LogAnalytics["Log Analytics Workspace"]
+        KeyVault["Azure Key Vault<br/>(Secrets Management)"]
+        ManagedIdentity["Azure Managed Identity<br/>(Passwordless Auth)"]
     end
     
-    Browser --> AspireHost
-    MobileApp --> ContainerAppsIngress
-    AspireHost --> OrdersAPIContainer
-    ContainerAppsIngress --> OrdersAPIContainer
-    ContainerAppsIngress --> BlazorAppContainer
+    Browser --> ContainerApps
+    
+    ContainerApps --> OrdersAPIContainer
+    ContainerApps --> BlazorAppContainer
+    ContainerApps --> LogicAppsContainers
     
     OrdersAPIContainer --> ServiceBus
-    LogicAppsContainer --> ServiceBus
+    LogicAppsContainers --> ServiceBus
     
-    LogicAppsContainer --> StorageAccount
+    OrdersAPIContainer --> CosmosDB
+    LogicAppsContainers --> CosmosDB
     
     OrdersAPIContainer --> AppInsights
     BlazorAppContainer --> AppInsights
-    LogicAppsContainer --> LogAnalytics
+    LogicAppsContainers --> LogAnalytics
     
     OrdersAPIContainer --> KeyVault
-    LogicAppsContainer --> ManagedIdentity
-    KeyVault --> ManagedIdentity
+    LogicAppsContainers --> ManagedIdentity
+    
+    style Clients fill:#ADD8E6
+    style ApplicationServices fill:#90EE90
+    style MessagingServices fill:#FFB347
+    style DataServices fill:#FFE5B4
+    style ObservabilityServices fill:#D3D3D3
+    style Browser fill:#ADD8E6
+    style ContainerApps fill:#90EE90
+    style OrdersAPIContainer fill:#90EE90
+    style BlazorAppContainer fill:#90EE90
+    style LogicAppsContainers fill:#90EE90
+    style ServiceBus fill:#FFB347
+    style CosmosDB fill:#FFE5B4
+    style AppInsights fill:#D3D3D3
+    style LogAnalytics fill:#D3D3D3
+    style KeyVault fill:#D3D3D3
+    style ManagedIdentity fill:#D3D3D3
 ```
 
 #### Container-Based Architecture
@@ -603,44 +690,44 @@ flowchart LR
 ```mermaid
 flowchart TB
     subgraph LoadBalancer["Load Balancer"]
-        Ingress["Container Apps<br/>Ingress Controller"]
+        Ingress["Azure Container Apps Ingress<br/>(HTTP/HTTPS)"]
     end
     
     subgraph ContainerEnvironment["Container Apps Environment"]
-        subgraph Services["Container App Services"]
-            OrdersAPISvc["Orders API<br/>Service"]
-            BlazorAppSvc["Blazor App<br/>Service"]
-            LogicAppsSvc["Logic Apps<br/>Service"]
+        subgraph Services["Container Apps Services"]
+            OrdersAPISvc["Orders API Service"]
+            BlazorAppSvc["Blazor App Service"]
+            LogicAppsSvc["Logic Apps Service"]
         end
         
         subgraph Workloads["Container Workloads"]
             subgraph OrdersAPIPods["Orders API Replicas"]
-                OrdersAPI1["API<br/>Replica 1"]
-                OrdersAPI2["API<br/>Replica 2"]
+                OrdersAPI1["API Replica 1"]
+                OrdersAPI2["API Replica 2"]
             end
             
             subgraph BlazorAppPods["Blazor App Replicas"]
-                BlazorApp1["Blazor<br/>Replica 1"]
-                BlazorApp2["Blazor<br/>Replica 2"]
+                BlazorApp1["App Replica 1"]
+                BlazorApp2["App Replica 2"]
             end
             
             subgraph LogicAppPods["Logic Apps Replicas"]
-                LogicApp1["Workflow<br/>Pod 1"]
-                LogicApp2["Workflow<br/>Pod 2"]
-                LogicApp3["Workflow<br/>Pod 3"]
+                LogicApp1["CreateOrder Instance"]
+                LogicApp2["UpdateOrder Instance"]
+                LogicApp3["ProcessOrder Instance"]
+                LogicApp4["DeleteOrder Instance"]
             end
         end
     end
     
     subgraph PersistentStorage["Persistent Storage"]
-        BlobStorage["Azure Blob Storage<br/>(Workflow State)"]
-        ServiceBus["Service Bus<br/>(Message Store)"]
+        CosmosDB["Cosmos DB<br/>(userId partition)"]
     end
     
-    subgraph ObservabilityPlatform["Observability Platform"]
-        AppInsights["Application Insights<br/>(OpenTelemetry)"]
-        LogAnalytics["Log Analytics<br/>(Container Logs)"]
-        AspireDashboard["Aspire Dashboard<br/>(Local Dev)"]
+    subgraph ObservabilityPlatform["Observability"]
+        AppInsights["Application Insights"]
+        LogAnalytics["Log Analytics"]
+        AspireDashboard["Aspire Dashboard<br/>(Development)"]
     end
     
     Ingress --> OrdersAPISvc
@@ -655,27 +742,53 @@ flowchart TB
     LogicAppsSvc --> LogicApp1
     LogicAppsSvc --> LogicApp2
     LogicAppsSvc --> LogicApp3
+    LogicAppsSvc --> LogicApp4
     
-    LogicApp1 --> BlobStorage
-    LogicApp2 --> BlobStorage
-    LogicApp3 --> BlobStorage
-    
-    OrdersAPI1 --> ServiceBus
-    OrdersAPI2 --> ServiceBus
-    LogicApp1 --> ServiceBus
-    LogicApp2 --> ServiceBus
+    OrdersAPI1 --> CosmosDB
+    OrdersAPI2 --> CosmosDB
+    LogicApp1 --> CosmosDB
+    LogicApp2 --> CosmosDB
+    LogicApp3 --> CosmosDB
+    LogicApp4 --> CosmosDB
     
     OrdersAPI1 --> AppInsights
     OrdersAPI2 --> AppInsights
     BlazorApp1 --> AppInsights
     BlazorApp2 --> AppInsights
-    
     LogicApp1 --> LogAnalytics
     LogicApp2 --> LogAnalytics
     LogicApp3 --> LogAnalytics
+    LogicApp4 --> LogAnalytics
     
     OrdersAPISvc --> AspireDashboard
     BlazorAppSvc --> AspireDashboard
+    LogicAppsSvc --> AspireDashboard
+    
+    style LoadBalancer fill:#E6D5FF
+    style ContainerEnvironment fill:#90EE90
+    style Services fill:#90EE90
+    style Workloads fill:#90EE90
+    style PersistentStorage fill:#FFE5B4
+    style ObservabilityPlatform fill:#D3D3D3
+    style Ingress fill:#E6D5FF
+    style OrdersAPISvc fill:#90EE90
+    style BlazorAppSvc fill:#90EE90
+    style LogicAppsSvc fill:#90EE90
+    style OrdersAPIPods fill:#90EE90
+    style BlazorAppPods fill:#90EE90
+    style LogicAppPods fill:#90EE90
+    style OrdersAPI1 fill:#90EE90
+    style OrdersAPI2 fill:#90EE90
+    style BlazorApp1 fill:#90EE90
+    style BlazorApp2 fill:#90EE90
+    style LogicApp1 fill:#90EE90
+    style LogicApp2 fill:#90EE90
+    style LogicApp3 fill:#90EE90
+    style LogicApp4 fill:#90EE90
+    style CosmosDB fill:#FFE5B4
+    style AppInsights fill:#D3D3D3
+    style LogAnalytics fill:#D3D3D3
+    style AspireDashboard fill:#D3D3D3
 ```
 
 #### Serverless Architecture
@@ -683,46 +796,53 @@ flowchart TB
 ```mermaid
 flowchart LR
     subgraph APIGateway["API Gateway"]
-        AspireHost["Aspire AppHost<br/>(Dev Mode)"]
-        ContainerAppsHTTP["Container Apps<br/>HTTP Ingress"]
+        AspireHost["Aspire AppHost<br/>(Development Orchestration)"]
     end
     
-    subgraph ServerlessCompute["Serverless Compute"]
+    subgraph Functions["Serverless Functions"]
         OrdersAPI["Orders API<br/>(Container App)"]
-        LogicApps["Logic Apps Standard<br/>(Containerized)"]
+        LogicAppsStandard["Logic Apps Standard<br/>(Stateful Workflows)"]
     end
     
-    subgraph EventSources["Event Triggers"]
-        ServiceBusTopic["Service Bus<br/>Topic Trigger"]
-        HTTPTrigger["HTTP<br/>Trigger"]
-        TimerTrigger["Timer<br/>Trigger"]
+    subgraph EventSources["Event Sources"]
+        ServiceBusTopic["Service Bus Topic<br/>(Orders Topic)"]
+        ServiceBusSubscriptions["Service Bus Subscriptions<br/>(CreateOrder, UpdateOrder,<br/>ProcessOrder, DeleteOrder)"]
     end
     
     subgraph DataStorage["Storage Services"]
-        BlobStorage["Blob Storage<br/>(Workflow State)"]
-        TableStorage["Table Storage<br/>(Workflow Metadata)"]
+        CosmosDB["Cosmos DB<br/>(NoSQL, userId partition)"]
     end
     
     subgraph Monitoring["Monitoring Services"]
         AppInsights["Application Insights<br/>(OpenTelemetry)"]
-        LogAnalytics["Log Analytics<br/>(Workflow Logs)"]
+        LogAnalytics["Log Analytics Workspace"]
     end
     
     AspireHost --> OrdersAPI
-    ContainerAppsHTTP --> OrdersAPI
     
-    HTTPTrigger --> LogicApps
-    ServiceBusTopic --> LogicApps
-    TimerTrigger --> LogicApps
+    ServiceBusSubscriptions --> LogicAppsStandard
     
     OrdersAPI --> ServiceBusTopic
+    OrdersAPI --> CosmosDB
     
-    LogicApps --> BlobStorage
-    LogicApps --> TableStorage
+    LogicAppsStandard --> CosmosDB
     
     OrdersAPI --> AppInsights
-    LogicApps --> LogAnalytics
-    LogicApps --> AppInsights
+    LogicAppsStandard --> LogAnalytics
+    
+    style APIGateway fill:#E6D5FF
+    style Functions fill:#90EE90
+    style EventSources fill:#FFB347
+    style DataStorage fill:#FFE5B4
+    style Monitoring fill:#D3D3D3
+    style AspireHost fill:#E6D5FF
+    style OrdersAPI fill:#90EE90
+    style LogicAppsStandard fill:#90EE90
+    style ServiceBusTopic fill:#FFB347
+    style ServiceBusSubscriptions fill:#FFB347
+    style CosmosDB fill:#FFE5B4
+    style AppInsights fill:#D3D3D3
+    style LogAnalytics fill:#D3D3D3
 ```
 
 #### Platform Engineering
@@ -730,66 +850,78 @@ flowchart LR
 ```mermaid
 flowchart TB
     subgraph DeveloperExperience["Developer Experience"]
-        VSCode["VS Code<br/>(IDE)"]
+        VSCode["Visual Studio Code<br/>(IDE)"]
         AspireDashboard["Aspire Dashboard<br/>(http://localhost:15888)"]
-        DockerCompose["Docker Compose<br/>(Local Orchestration)"]
+        LocalOrchestration["Local Orchestration<br/>(docker-compose)"]
     end
     
-    subgraph InternalDeveloperPlatform["Internal Developer Platform (IDP)"]
-        AspireAppHost["Aspire AppHost<br/>(Service Discovery)"]
-        ServiceDefaults["ServiceDefaults<br/>(Telemetry, Health, Resilience)"]
-        ConfigManagement["Configuration<br/>Management"]
+    subgraph InternalDeveloperPlatform["Internal Developer Platform"]
+        AspireAppHost["Aspire AppHost<br/>(eShopOrders.AppHost)"]
+        ServiceDefaults["Service Defaults<br/>(eShopOrders.ServiceDefaults:<br/>OpenTelemetry, Health Checks)"]
     end
     
     subgraph CICDPipelines["CI/CD & Policies"]
-        GitHubActions["GitHub Actions<br/>(Workflows)"]
-        BicepTemplates["Bicep IaC<br/>(Infrastructure)"]
-        AzureCLI["Azure CLI<br/>(azd)"]
+        BicepTemplates["Bicep IaC Templates<br/>(infra/)"]
+        AzureCLI["Azure CLI Deployment"]
     end
     
     subgraph RuntimePlatforms["Runtime Platforms"]
-        ContainerApps["Azure Container Apps<br/>(Microservices)"]
-        LogicAppsRuntime["Logic Apps Standard<br/>(Workflows)"]
+        ContainerApps["Azure Container Apps<br/>(Hosting Environment)"]
+        LogicAppsRuntime["Logic Apps Standard Runtime<br/>(Workflow Host)"]
     end
     
     subgraph SharedServices["Shared Services"]
-        Monitoring["Application Insights<br/>(Telemetry)"]
-        LogAnalytics["Log Analytics<br/>(Logs)"]
-        KeyVault["Key Vault<br/>(Secrets)"]
-        ManagedIdentity["Managed Identity<br/>(Auth)"]
+        MonitoringStack["Monitoring Stack<br/>(Application Insights,<br/>Log Analytics)"]
+        SecurityServices["Security Services<br/>(Managed Identity,<br/>Key Vault)"]
     end
     
     subgraph DataServices["Data Services"]
-        StorageAccount["Storage Account<br/>(Blob + Table)"]
-        ServiceBus["Service Bus<br/>(Topics)"]
+        CosmosDB["Cosmos DB<br/>(NoSQL Database)"]
+        ServiceBus["Service Bus<br/>(Messaging)"]
     end
     
     VSCode --> AspireAppHost
     AspireDashboard --> AspireAppHost
-    DockerCompose --> AspireAppHost
+    LocalOrchestration --> AspireAppHost
     
     AspireAppHost --> ServiceDefaults
-    AspireAppHost --> ConfigManagement
     
-    GitHubActions --> AzureCLI
-    AzureCLI --> BicepTemplates
     BicepTemplates --> ContainerApps
     BicepTemplates --> LogicAppsRuntime
+    AzureCLI --> BicepTemplates
     
-    ServiceDefaults --> Monitoring
-    ServiceDefaults --> LogAnalytics
+    ServiceDefaults --> MonitoringStack
+    ServiceDefaults --> SecurityServices
     
+    ContainerApps --> CosmosDB
     ContainerApps --> ServiceBus
-    LogicAppsRuntime --> StorageAccount
+    LogicAppsRuntime --> CosmosDB
     LogicAppsRuntime --> ServiceBus
     
-    ContainerApps --> KeyVault
-    LogicAppsRuntime --> ManagedIdentity
-    KeyVault --> ManagedIdentity
+    MonitoringStack --> ContainerApps
+    MonitoringStack --> LogicAppsRuntime
+    SecurityServices --> ContainerApps
+    SecurityServices --> LogicAppsRuntime
     
-    Monitoring --> ContainerApps
-    Monitoring --> LogicAppsRuntime
-    LogAnalytics --> LogicAppsRuntime
+    style DeveloperExperience fill:#ADD8E6
+    style InternalDeveloperPlatform fill:#90EE90
+    style CICDPipelines fill:#90EE90
+    style RuntimePlatforms fill:#E6D5FF
+    style SharedServices fill:#D3D3D3
+    style DataServices fill:#FFE5B4
+    style VSCode fill:#ADD8E6
+    style AspireDashboard fill:#ADD8E6
+    style LocalOrchestration fill:#ADD8E6
+    style AspireAppHost fill:#90EE90
+    style ServiceDefaults fill:#90EE90
+    style BicepTemplates fill:#90EE90
+    style AzureCLI fill:#90EE90
+    style ContainerApps fill:#E6D5FF
+    style LogicAppsRuntime fill:#E6D5FF
+    style MonitoringStack fill:#D3D3D3
+    style SecurityServices fill:#D3D3D3
+    style CosmosDB fill:#FFE5B4
+    style ServiceBus fill:#FFE5B4
 ```
 
 ## Deployment
