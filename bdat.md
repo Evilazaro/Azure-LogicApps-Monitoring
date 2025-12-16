@@ -1,962 +1,882 @@
 # TOGAF BDAT Model: Azure Logic Apps Monitoring Solution
 
-## Project Overview
+## Executive Summary
 
-Enterprise organizations deploying Azure Logic Apps Standard at scale face critical operational challenges that directly impact cost efficiency and system reliability. Current deployments experience annual operating costs exceeding US$80,000 per environment, primarily driven by suboptimal workflow density, memory consumption spikes, and insufficient monitoring visibility. These challenges are exacerbated in scenarios involving long-running workflows (18–36 months) where traditional monitoring approaches fail to provide adequate observability into resource utilization patterns and business process execution.
+### Project Overview
 
-This solution addresses these enterprise-scale challenges by implementing a comprehensive monitoring and governance framework aligned with the Azure Well-Architected Framework. The architecture establishes optimal hosting density patterns, implements distributed tracing across workflow executions, and provides real-time visibility into both technical performance metrics and business process outcomes. By leveraging Azure Monitor, Application Insights, and custom telemetry patterns, the solution enables organizations to maintain workflow stability while reducing operational costs through data-driven optimization decisions.
+Enterprise organizations deploying Azure Logic Apps Standard at scale face critical challenges related to workflow density, resource optimization, and operational cost management. Current deployments have demonstrated annual operational costs approaching US$80,000 per environment, driven by suboptimal hosting patterns, inefficient resource allocation, and inadequate monitoring infrastructure. The primary technical challenges include managing workflow density without triggering memory saturation, implementing effective observability across distributed workflows, and maintaining system stability for long-running business processes spanning 18-36 months.
 
-The TOGAF BDAT model presented here provides a structured enterprise architecture view that aligns business capabilities with technology implementation, ensuring scalability, maintainability, and governance across all architectural layers. This approach enables organizations to transition from reactive operational firefighting to proactive performance optimization and cost management.
+This solution addresses these enterprise-scale challenges through a comprehensive monitoring and orchestration architecture built on .NET Aspire, Azure Container Apps, and Azure Logic Apps Standard. The architecture implements TOGAF principles across Business, Data, Application, and Technology layers to deliver optimal hosting density, comprehensive distributed tracing with OpenTelemetry, and cost-effective resource utilization patterns aligned with the Azure Well-Architected Framework.
+
+The solution demonstrates a reference implementation for orders processing workflows, incorporating Service Bus messaging, Application Insights telemetry, Container Apps hosting infrastructure, and a Blazor-based management interface. This implementation serves as a template for enterprise organizations seeking to optimize Logic Apps deployments while maintaining operational excellence, security, and cost efficiency at scale.
 
 ---
 
-## Business Architecture Layer
+## 1. Business Architecture
 
 ### Purpose
-The Business Architecture layer defines the organizational capabilities, value streams, and business processes required to operate and monitor Azure Logic Apps at enterprise scale. It establishes the business case for monitoring investment and aligns technical implementation with organizational objectives around cost optimization, operational excellence, and business continuity.
+The Business Architecture layer defines the organizational capabilities, business processes, and value streams required to deliver reliable, scalable, and cost-effective workflow orchestration for enterprise operations. This layer establishes the strategic context for Logic Apps deployment patterns, monitoring strategies, and operational cost optimization.
 
 ### Key Capabilities
-- **Workflow Governance**: Establish policies for workflow deployment density, resource allocation, and lifecycle management
-- **Cost Management**: Enable cost visibility, chargeback models, and optimization recommendations
-- **Operational Excellence**: Ensure 99.95%+ availability through proactive monitoring and incident response
-- **Business Process Visibility**: Track end-to-end order processing, fulfillment, and customer experience metrics
-- **Compliance & Audit**: Maintain audit trails for regulatory compliance and operational reviews
-
-### Process (High-Level)
-1. **Business Demand Management**: Capture requirements for new workflows and integration patterns
-2. **Capacity Planning**: Assess workflow density requirements and resource provisioning
-3. **Monitoring & Alerting**: Establish KPIs, SLAs, and automated response procedures
-4. **Cost Optimization**: Continuous review of resource utilization and rightsizing recommendations
-5. **Incident Management**: Structured response to performance degradation or failures
+- **Workflow Orchestration Management**: Coordinate and execute long-running business processes (18-36 months) with reliability guarantees
+- **Order Processing Operations**: Handle end-to-end order lifecycle from creation through fulfillment with distributed tracing
+- **Message-Driven Integration**: Enable asynchronous communication patterns across enterprise systems using Service Bus
+- **Operational Monitoring**: Provide real-time visibility into workflow execution, resource utilization, and system health
+- **Cost Optimization**: Implement resource efficiency patterns to reduce operational expenses while maintaining service levels
+- **Developer Productivity**: Accelerate development cycles through standardized service defaults and tooling integration
 
 ### Business Capability Map
 
 ```mermaid
 flowchart LR
-    subgraph "Order Management"
-        A1[Order Intake]
-        A2[Order Processing]
-        A3[Order Fulfillment]
-        A4[Order Tracking]
-    end
+    BC[Business Capabilities]
     
-    subgraph "Workflow Operations"
-        B1[Workflow Deployment]
-        B2[Workflow Monitoring]
-        B3[Workflow Optimization]
-        B4[Incident Response]
-    end
+    BC --> WM[Workflow Management]
+    BC --> OM[Order Management]
+    BC --> IM[Integration Management]
+    BC --> MM[Monitoring Management]
+    BC --> CM[Cost Management]
+    BC --> DM[Development Management]
     
-    subgraph "Cost Management"
-        C1[Resource Metering]
-        C2[Cost Allocation]
-        C3[Budget Forecasting]
-        C4[Optimization Recommendations]
-    end
+    WM --> WO[Workflow Orchestration]
+    WM --> WE[Workflow Execution]
+    WM --> WL[Workflow Lifecycle]
     
-    subgraph "Platform Governance"
-        D1[Policy Management]
-        D2[Compliance Monitoring]
-        D3[Audit & Reporting]
-        D4[Capacity Planning]
-    end
+    OM --> OC[Order Creation]
+    OM --> OP[Order Processing]
+    OM --> OT[Order Tracking]
     
-    A1 --> A2
-    A2 --> A3
-    A3 --> A4
-    B1 --> B2
-    B2 --> B3
-    B3 --> B4
-    C1 --> C2
-    C2 --> C3
-    C3 --> C4
-    D1 --> D2
-    D2 --> D3
-    D3 --> D4
+    IM --> MI[Message Integration]
+    IM --> EI[Event Integration]
+    IM --> AI[API Integration]
     
-    style A1 fill:#87CEEB
-    style A2 fill:#87CEEB
-    style A3 fill:#87CEEB
-    style A4 fill:#87CEEB
-    style B1 fill:#87CEEB
-    style B2 fill:#87CEEB
-    style B3 fill:#87CEEB
-    style B4 fill:#87CEEB
-    style C1 fill:#87CEEB
-    style C2 fill:#87CEEB
-    style C3 fill:#87CEEB
-    style C4 fill:#87CEEB
-    style D1 fill:#87CEEB
-    style D2 fill:#87CEEB
-    style D3 fill:#87CEEB
-    style D4 fill:#87CEEB
+    MM --> OB[Observability]
+    MM --> TR[Tracing]
+    MM --> AL[Alerting]
+    
+    CM --> RO[Resource Optimization]
+    CM --> CO[Cost Optimization]
+    CM --> SC[Scaling]
+    
+    DM --> SD[Service Defaults]
+    DM --> TE[Tooling]
+    DM --> CI[CI/CD]
+    
+    style BC fill:#87CEEB
+    style WM fill:#87CEEB
+    style OM fill:#87CEEB
+    style IM fill:#87CEEB
+    style MM fill:#87CEEB
+    style CM fill:#87CEEB
+    style DM fill:#87CEEB
+    style WO fill:#87CEEB
+    style WE fill:#87CEEB
+    style WL fill:#87CEEB
+    style OC fill:#87CEEB
+    style OP fill:#87CEEB
+    style OT fill:#87CEEB
+    style MI fill:#87CEEB
+    style EI fill:#87CEEB
+    style AI fill:#87CEEB
+    style OB fill:#87CEEB
+    style TR fill:#87CEEB
+    style AL fill:#87CEEB
+    style RO fill:#87CEEB
+    style CO fill:#87CEEB
+    style SC fill:#87CEEB
+    style SD fill:#87CEEB
+    style TE fill:#87CEEB
+    style CI fill:#87CEEB
 ```
 
 ### Value Stream Map
 
 ```mermaid
 flowchart LR
-    V1[Customer Order Request] --> V2[Order Validation]
-    V2 --> V3[Inventory Check]
-    V3 --> V4[Payment Processing]
-    V4 --> V5[Order Confirmation]
-    V5 --> V6[Fulfillment Initiation]
-    V6 --> V7[Shipment Tracking]
-    V7 --> V8[Customer Notification]
-    V8 --> V9[Order Completion]
+    VS[Order Value Stream]
     
-    V10[Workflow Performance Monitoring] --> V11[Anomaly Detection]
-    V11 --> V12[Root Cause Analysis]
-    V12 --> V13[Optimization Action]
-    V13 --> V14[Validation & Deployment]
+    VS --> S1[Order Request]
+    S1 --> S2[API Ingestion]
+    S2 --> S3[Message Queuing]
+    S3 --> S4[Workflow Processing]
+    S4 --> S5[State Persistence]
+    S5 --> S6[Event Publishing]
+    S6 --> S7[Order Fulfillment]
     
-    style V1 fill:#D3D3D3
-    style V2 fill:#D3D3D3
-    style V3 fill:#FFD700
-    style V4 fill:#D3D3D3
-    style V5 fill:#D3D3D3
-    style V6 fill:#D3D3D3
-    style V7 fill:#D3D3D3
-    style V8 fill:#D3D3D3
-    style V9 fill:#D3D3D3
-    style V10 fill:#D3D3D3
-    style V11 fill:#FFD700
-    style V12 fill:#FFD700
-    style V13 fill:#D3D3D3
-    style V14 fill:#D3D3D3
+    S2 -.->|Telemetry| MON[Monitoring]
+    S3 -.->|Tracing| MON
+    S4 -.->|Metrics| MON
+    S5 -.->|Logs| MON
+    
+    style VS fill:#D3D3D3
+    style S1 fill:#D3D3D3
+    style S2 fill:#D3D3D3
+    style S3 fill:#D3D3D3
+    style S4 fill:#FFD700
+    style S5 fill:#D3D3D3
+    style S6 fill:#D3D3D3
+    style S7 fill:#D3D3D3
+    style MON fill:#FFD700
 ```
 
-**Key Value Stream Insights:**
-- **Inventory Check** (V3): Critical bottleneck requiring real-time data access
-- **Anomaly Detection** (V11): High-value step enabling proactive optimization
-- **Root Cause Analysis** (V12): Reduces mean-time-to-resolution (MTTR) from hours to minutes
+**Note**: Step S4 (Workflow Processing) and MON (Monitoring) are highlighted as key value-creation steps where optimization directly impacts business outcomes and operational costs.
+
+### Process Architecture
+
+**Primary Business Processes:**
+
+1. **Order Lifecycle Management**
+   - Order creation via API endpoint
+   - Message-based workflow triggering through Service Bus
+   - Distributed order processing with state management
+   - Order status tracking and customer notification
+   - Error handling and retry policies
+
+2. **Monitoring and Observability**
+   - Distributed trace collection via OpenTelemetry
+   - Metrics aggregation in Application Insights
+   - Log centralization in Log Analytics workspace
+   - Health check monitoring for service availability
+   - Alert generation for SLA violations
+
+3. **Infrastructure Operations**
+   - Container deployment to Azure Container Apps
+   - Elastic scaling based on workload demands
+   - Service discovery and resilience patterns
+   - Managed identity authentication
+   - Resource lifecycle management
 
 ---
 
-## Data Architecture Layer
+## 2. Data Architecture
 
 ### Purpose
-The Data Architecture layer defines the structure, storage, flow, and governance of data across the monitoring solution. It ensures that telemetry, business events, and operational metrics are captured, processed, and stored in a manner that supports real-time decision-making, historical analysis, and regulatory compliance.
+The Data Architecture layer defines data structures, data flows, master data management patterns, and event-driven data integration required to support workflow orchestration, telemetry collection, and operational analytics. This layer ensures data consistency, traceability, and compliance across distributed systems.
 
 ### Key Capabilities
-- **Telemetry Collection**: Capture distributed traces, metrics, and logs from Logic Apps, APIs, and infrastructure
-- **Event Streaming**: Process business events and operational signals in near-real-time
-- **Master Data Management**: Maintain golden records for orders, customers, and workflow definitions
-- **Data Lake Zones**: Implement Bronze/Silver/Gold data zones for raw ingestion, cleansing, and analytics-ready data
-- **Data Governance**: Enforce data quality, retention policies, and access controls
-
-### Process (High-Level)
-1. **Data Ingestion**: Collect telemetry from multiple sources (Application Insights, Azure Monitor, custom instrumentation)
-2. **Event Processing**: Transform and enrich events using stream processing (Azure Functions, Event Hubs)
-3. **Data Storage**: Persist data in appropriate zones (Cosmos DB for operational, Azure Data Lake for analytics)
-4. **Data Consumption**: Enable real-time dashboards, alerting, and batch analytics
-5. **Data Lifecycle Management**: Archive or purge data based on retention policies
+- **Telemetry Data Management**: Collect, aggregate, and store distributed traces, metrics, and logs from all application components
+- **Message Data Persistence**: Maintain message payloads and metadata in Service Bus queues with reliability guarantees
+- **Workflow State Management**: Track workflow execution state across long-running processes with durability
+- **Master Data Synchronization**: [MISSING COMPONENT - No explicit master data hub identified in workspace]
+- **Event Data Streaming**: Propagate order events and system events through message-based topology
+- **Diagnostic Data Storage**: Archive logs and metrics in storage accounts with lifecycle policies
 
 ### Master Data Management (MDM)
 
+**Note**: The current workspace does not implement an explicit Master Data Management hub. Order data is managed within individual services without a central mastering authority. This represents a potential architecture gap for enterprise-scale deployments requiring canonical data models.
+
 ```mermaid
 flowchart LR
-    subgraph "Data Sources"
-        DS1[Order API]
-        DS2[Logic Apps]
-        DS3[External Systems]
+    subgraph MDM["[MISSING COMPONENT] Master Data Hub"]
+        MDH[Master Data Registry]
     end
     
-    subgraph "MDM Hub"
-        MDM1[Order Master]
-        MDM2[Workflow Master]
-        MDM3[Telemetry Master]
-    end
+    API[Orders API]
+    DB[(In-Memory Order Store)]
+    SB[Service Bus]
     
-    subgraph "Consuming Systems"
-        C1[Monitoring Dashboards]
-        C2[Analytics Platform]
-        C3[Alerting System]
-        C4[Cost Management]
-    end
+    API -->|Publish| SB
+    SB -->|Consume| WF[Workflow Handler]
+    WF -->|Update| DB
     
-    DS1 -->|Publish| MDM1
-    DS2 -->|Publish| MDM2
-    DS3 -->|Publish| MDM1
+    MDH -.->|"[Future] Sync"| API
+    MDH -.->|"[Future] Sync"| WF
     
-    MDM1 --> MDM3
-    MDM2 --> MDM3
-    
-    MDM3 -->|Subscribe| C1
-    MDM3 -->|Subscribe| C2
-    MDM3 -->|Subscribe| C3
-    MDM3 -->|Subscribe| C4
-    
-    style DS1 fill:#87CEEB
-    style DS2 fill:#87CEEB
-    style DS3 fill:#87CEEB
-    style MDM1 fill:#98FB98
-    style MDM2 fill:#98FB98
-    style MDM3 fill:#98FB98
-    style C1 fill:#FFD700
-    style C2 fill:#FFD700
-    style C3 fill:#FFD700
-    style C4 fill:#FFD700
+    style MDM fill:#FFB6C1,stroke-dasharray: 5 5
+    style MDH fill:#FFB6C1,stroke-dasharray: 5 5
 ```
+
+**Gap Analysis**: The workspace implements a distributed data model without centralized master data governance. Future enhancements should consider implementing a canonical order model with bi-directional synchronization patterns.
 
 ### Event-Driven Data Topology
 
 ```mermaid
 flowchart LR
-    subgraph "Event Producers"
-        EP1[Order Service]
-        EP2[Logic App Runtime]
-        EP3[API Gateway]
+    subgraph Producers
+        API[Orders API]
+        WF[Workflow Engine]
     end
     
-    subgraph "Event Backbone"
-        EB1[Event Hubs]
-        EB2[Service Bus]
+    subgraph Event Bus
+        SB[Service Bus Queue: orders-queue]
     end
     
-    subgraph "Event Processors"
-        EPR1[Stream Analytics]
-        EPR2[Azure Functions]
-        EPR3[Logic Apps]
+    subgraph Consumers
+        MH[Message Handler]
+        LA[Logic App]
     end
     
-    subgraph "Event Consumers"
-        EC1[Application Insights]
-        EC2[Cosmos DB]
-        EC3[Data Lake Storage]
-        EC4[Real-Time Dashboards]
+    subgraph Storage
+        BS[Blob: ordersprocessedsuccessfully]
+        BF[Blob: ordersprocessedwitherrors]
+        QS[Queue Storage]
     end
     
-    EP1 -->|OrderCreated| EB1
-    EP2 -->|WorkflowExecuted| EB1
-    EP3 -->|RequestReceived| EB2
+    API -->|OrderCreated| SB
+    SB -->|Process| MH
+    SB -->|Process| LA
+    MH -->|Success| BS
+    MH -->|Failure| BF
+    LA -->|Task Queue| QS
     
-    EB1 --> EPR1
-    EB1 --> EPR2
-    EB2 --> EPR3
-    
-    EPR1 --> EC1
-    EPR2 --> EC2
-    EPR3 --> EC3
-    EC1 --> EC4
-    EC2 --> EC4
-    EC3 --> EC4
-    
-    style EP1 fill:#87CEEB
-    style EP2 fill:#87CEEB
-    style EP3 fill:#87CEEB
-    style EB1 fill:#FFA07A
-    style EB2 fill:#FFA07A
-    style EPR1 fill:#98FB98
-    style EPR2 fill:#98FB98
-    style EPR3 fill:#98FB98
-    style EC1 fill:#FFD700
-    style EC2 fill:#FFD700
-    style EC3 fill:#FFD700
-    style EC4 fill:#FFD700
+    style API fill:#90EE90
+    style WF fill:#90EE90
+    style SB fill:#FFA500
+    style MH fill:#90EE90
+    style LA fill:#90EE90
+    style BS fill:#F0E68C
+    style BF fill:#F0E68C
+    style QS fill:#F0E68C
 ```
 
-### Data Lake Architecture
+### Monitoring Data Flow
 
 ```mermaid
 flowchart LR
-    subgraph "Ingestion Layer"
-        I1[Event Hubs Capture]
-        I2[Logic Apps Logs]
-        I3[API Telemetry]
+    subgraph Sources["Data Sources"]
+        API[Orders API]
+        APP[Orders App]
+        LA[Logic App]
+        SB[Service Bus]
     end
     
-    subgraph "Processing Layer"
-        P1[Stream Analytics]
-        P2[Databricks Jobs]
-        P3[Azure Functions]
+    subgraph Ingestion["Telemetry Ingestion"]
+        OTEL[OpenTelemetry SDK]
+        OTLP[OTLP Exporter]
+        AZM[Azure Monitor Exporter]
     end
     
-    subgraph "Storage Zones"
-        S1[Bronze - Raw Data]
-        S2[Silver - Cleansed Data]
-        S3[Gold - Analytics Data]
+    subgraph Processing["Processing & Enrichment"]
+        BATCH[Batch Processor]
     end
     
-    subgraph "Governance Layer"
-        G1[Purview Catalog]
-        G2[Access Policies]
-        G3[Data Quality Rules]
+    subgraph Storage["Storage Zones"]
+        AI[Application Insights]
+        LAW[Log Analytics Workspace]
+        SA[Storage Account: logs]
     end
     
-    I1 --> P1
-    I2 --> P2
-    I3 --> P3
+    subgraph Governance["Data Governance"]
+        RET[30-day Retention]
+        LCM[Lifecycle Management]
+    end
     
-    P1 --> S1
-    P2 --> S1
-    P3 --> S1
+    API --> OTEL
+    APP --> OTEL
+    LA --> OTEL
+    SB --> OTEL
     
-    S1 --> P2
-    P2 --> S2
+    OTEL --> BATCH
+    BATCH --> OTLP
+    BATCH --> AZM
     
-    S2 --> P2
-    P2 --> S3
+    OTLP --> AI
+    AZM --> AI
+    AZM --> LAW
+    LAW --> SA
     
-    G1 -.->|Catalogs| S1
-    G1 -.->|Catalogs| S2
-    G1 -.->|Catalogs| S3
-    G2 -.->|Controls| S1
-    G2 -.->|Controls| S2
-    G2 -.->|Controls| S3
-    G3 -.->|Validates| S2
-    G3 -.->|Validates| S3
+    SA --> RET
+    SA --> LCM
     
-    style I1 fill:#87CEEB
-    style I2 fill:#87CEEB
-    style I3 fill:#87CEEB
-    style P1 fill:#98FB98
-    style P2 fill:#98FB98
-    style P3 fill:#98FB98
-    style S1 fill:#FFD700
-    style S2 fill:#FFD700
-    style S3 fill:#FFD700
-    style G1 fill:#D3D3D3
-    style G2 fill:#D3D3D3
-    style G3 fill:#D3D3D3
+    style OTEL fill:#87CEEB
+    style OTLP fill:#87CEEB
+    style AZM fill:#87CEEB
+    style BATCH fill:#90EE90
+    style AI fill:#F0E68C
+    style LAW fill:#F0E68C
+    style SA fill:#F0E68C
+    style RET fill:#D3D3D3
+    style LCM fill:#D3D3D3
 ```
+
+### Data Models
+
+**Core Data Entities:**
+
+1. **Order Entity** (as defined in OrderController.cs):
+   - `Id` (string)
+   - `CustomerId` (string)
+   - `OrderDate` (DateTime)
+   - `TotalAmount` (decimal)
+   - `Status` (string)
+
+2. **Service Bus Message** (as referenced in OrderMessageHandler.cs):
+   - Message Body (byte array)
+   - Application Properties (Dictionary)
+   - `Diagnostic-Id` (string, for trace context)
+   - `traceparent` (string, W3C Trace Context)
+
+3. **Telemetry Data** (as configured in Extensions.cs):
+   - Activity/Span data (OpenTelemetry format)
+   - Metrics (OpenTelemetry format)
+   - Structured logs (OpenTelemetry format)
 
 ---
 
-## Application Architecture Layer
+## 3. Application Architecture
 
 ### Purpose
-The Application Architecture layer defines the structure, interactions, and deployment patterns of software components that implement monitoring, observability, and operational capabilities. It establishes microservices boundaries, event-driven patterns, and integration points that enable scalable, maintainable application delivery.
+The Application Architecture layer defines the logical application components, their interactions, and integration patterns required to deliver workflow orchestration, monitoring, and operational management capabilities. This layer implements microservices patterns, event-driven architecture, and distributed tracing standards.
 
 ### Key Capabilities
-- **API Management**: Expose RESTful endpoints for order processing and monitoring data access
-- **Workflow Orchestration**: Execute long-running business processes using Azure Logic Apps
-- **Event Processing**: React to business and operational events in near-real-time
-- **Distributed Tracing**: Correlate requests across service boundaries using W3C Trace Context
-- **Service Resilience**: Implement circuit breakers, retries, and fallback patterns
-
-### Process (High-Level)
-1. **API Request Handling**: Client requests routed through API Management / Gateway
-2. **Service Execution**: Business logic executed in .NET services or Logic Apps
-3. **Event Publication**: Services publish domain events to Event Hubs / Service Bus
-4. **Asynchronous Processing**: Background workers process events and update state
-5. **Telemetry Emission**: All components emit structured logs, metrics, and traces
+- **RESTful API Services**: Expose order management operations through HTTP endpoints with OpenAPI documentation
+- **Background Message Processing**: Consume and process Service Bus messages asynchronously with distributed tracing
+- **Web Application Delivery**: Provide Blazor-based user interface with WebAssembly interactivity
+- **Service Orchestration**: Coordinate application services using .NET Aspire with service discovery
+- **Distributed Tracing**: Implement W3C Trace Context propagation across all service boundaries
+- **Health Monitoring**: Report service health status for container orchestration and load balancing
 
 ### Microservices Architecture
 
 ```mermaid
 flowchart LR
-    subgraph "Clients"
-        C1[Web Client]
-        C2[Mobile App]
+    subgraph Clients
+        WEB[Orders Web App<br/>Blazor WebAssembly]
+        EXT[External Clients]
     end
     
-    subgraph "API Gateway"
-        GW[Azure API Management]
+    subgraph Gateway
+        HTTPS[HTTPS Endpoint]
     end
     
-    subgraph "Services"
-        S1[Orders API]
-        S2[Orders App]
-        S3[Logic Apps Workflows]
+    subgraph Services
+        API[Orders API<br/>ASP.NET Core]
+        MH[Message Handler<br/>Background Service]
+        LA[Logic App<br/>Workflow Engine]
     end
     
-    subgraph "Databases"
-        DB1[Cosmos DB - Orders]
-        DB2[Azure Storage]
+    subgraph Messaging
+        SB[Service Bus<br/>orders-queue]
     end
     
-    subgraph "Observability"
-        O1[Application Insights]
+    subgraph Data
+        MEM[(In-Memory Store)]
+        BLOB[(Blob Storage)]
+        QUE[(Queue Storage)]
     end
     
-    C1 --> GW
-    C2 --> GW
+    WEB -->|HTTP/HTTPS| HTTPS
+    EXT -->|HTTP/HTTPS| HTTPS
+    HTTPS --> API
     
-    GW --> S1
-    GW --> S2
+    API -->|Publish| SB
+    SB -->|Consume| MH
+    SB -->|Trigger| LA
     
-    S1 --> S3
-    S2 --> S3
+    API <-->|Read/Write| MEM
+    MH -->|Write| BLOB
+    LA -->|Queue| QUE
     
-    S1 --> DB1
-    S2 --> DB2
-    S3 --> DB1
-    
-    S1 --> O1
-    S2 --> O1
-    S3 --> O1
-    
-    style C1 fill:#87CEEB
-    style C2 fill:#87CEEB
-    style GW fill:#DDA0DD
-    style S1 fill:#98FB98
-    style S2 fill:#98FB98
-    style S3 fill:#98FB98
-    style DB1 fill:#FFD700
-    style DB2 fill:#FFD700
-    style O1 fill:#D3D3D3
+    style WEB fill:#87CEEB
+    style EXT fill:#87CEEB
+    style HTTPS fill:#DDA0DD
+    style API fill:#90EE90
+    style MH fill:#90EE90
+    style LA fill:#90EE90
+    style SB fill:#FFA500
+    style MEM fill:#F0E68C
+    style BLOB fill:#F0E68C
+    style QUE fill:#F0E68C
 ```
 
 ### Event-Driven Architecture (Topology)
 
 ```mermaid
 flowchart LR
-    subgraph "Producers"
-        P1[Orders API]
-        P2[Logic Apps]
+    subgraph Producers
+        API[Orders API<br/>HTTP Controller]
     end
     
-    subgraph "Event Bus"
-        EB[Azure Event Hubs]
+    subgraph Event Bus
+        SB[Service Bus<br/>Premium Namespace]
+        Q[Queue: orders-queue]
     end
     
-    subgraph "Consumers"
-        C1[Monitoring Functions]
-        C2[Analytics Pipeline]
-        C3[Alerting Service]
+    subgraph Consumers
+        MH[Message Handler<br/>BackgroundService]
+        LA[Logic App<br/>ConsosoOrders]
     end
     
-    subgraph "Analytics"
-        A1[Stream Analytics]
-        A2[Real-Time Dashboard]
+    subgraph Analytics
+        AI[Application Insights<br/>Telemetry]
+        LAW[Log Analytics<br/>Workspace]
     end
     
-    P1 -->|OrderCreated| EB
-    P2 -->|WorkflowCompleted| EB
+    API -->|OrderCreated Event| Q
+    Q -->|Message| MH
+    Q -->|Trigger| LA
     
-    EB --> C1
-    EB --> C2
-    EB --> C3
+    SB --> Q
     
-    EB --> A1
-    A1 --> A2
+    API -.->|Traces| AI
+    MH -.->|Traces| AI
+    LA -.->|Telemetry| AI
+    AI --> LAW
     
-    style P1 fill:#98FB98
-    style P2 fill:#98FB98
-    style EB fill:#FFA07A
-    style C1 fill:#98FB98
-    style C2 fill:#98FB98
-    style C3 fill:#98FB98
-    style A1 fill:#FFD700
-    style A2 fill:#FFD700
+    style API fill:#90EE90
+    style MH fill:#90EE90
+    style LA fill:#90EE90
+    style SB fill:#FFA500
+    style Q fill:#FFA500
+    style AI fill:#F0E68C
+    style LAW fill:#F0E68C
 ```
 
 ### Event-Driven Architecture (State Transitions)
 
 ```mermaid
 stateDiagram-v2
-    [*] --> OrderReceived
-    OrderReceived --> OrderValidated: Validation Success
-    OrderReceived --> OrderRejected: Validation Failed
+    [*] --> OrderReceived: API Request
+    OrderReceived --> MessageQueued: Publish to Service Bus
+    MessageQueued --> MessageProcessing: Consumer Receives
     
-    OrderValidated --> InventoryChecked: Inventory Available
-    OrderValidated --> OrderOnHold: Inventory Unavailable
+    MessageProcessing --> OrderProcessed: Success
+    MessageProcessing --> OrderFailed: Exception
     
-    InventoryChecked --> PaymentProcessed: Payment Success
-    InventoryChecked --> PaymentFailed: Payment Declined
+    OrderProcessed --> [*]: Complete Message
+    OrderFailed --> MessageQueued: Retry (if attempts remaining)
+    OrderFailed --> DeadLetter: Max Retries Exceeded
+    DeadLetter --> [*]
     
-    PaymentProcessed --> OrderConfirmed
-    OrderConfirmed --> FulfillmentInitiated
+    note right of MessageQueued
+        Service Bus Queue
+        orders-queue
+    end note
     
-    FulfillmentInitiated --> InTransit
-    InTransit --> Delivered
-    
-    Delivered --> [*]
-    OrderRejected --> [*]
-    PaymentFailed --> OrderCancelled
-    OrderCancelled --> [*]
-    
-    OrderOnHold --> InventoryChecked: Inventory Available
+    note right of MessageProcessing
+        Distributed Tracing Active
+        Trace Context Propagated
+    end note
 ```
+
+### Application Components
+
+**As explicitly defined in workspace:**
+
+1. **eShop.Orders.API** (eShop.Orders.API):
+   - ASP.NET Core 9.0 RESTful API
+   - Controllers: `OrdersController`
+   - Services: `OrderService`, `OrderMessageHandler`
+   - Middleware: `CorrelationIdMiddleware`
+
+2. **eShop.Orders.App** (eShop.Orders.App):
+   - Blazor WebAssembly application
+   - Server: Program.cs
+   - Client: Program.cs
+
+3. **eShopOrders.ServiceDefaults** (eShopOrders.ServiceDefaults):
+   - OpenTelemetry configuration: Extensions.cs
+   - Health checks implementation
+   - Service discovery setup
+
+4. **Logic Apps Workflow** (`LogicAppWP/ConsosoOrders`):
+   - Workflow: ConsosoOrders
+   - Runtime: Logic Apps Standard on Azure Functions v4
+
+### Integration Patterns
+
+**Service Bus Integration** (as implemented in OrderService.cs):
+- Publisher: Orders API publishes messages with trace context
+- Consumer: Background service processes messages with context extraction
+- Trace Context Propagation: W3C Trace Context via message properties
+
+**HTTP Client Integration** (as configured in Extensions.cs):
+- Automatic distributed tracing via `AddHttpClientInstrumentation`
+- Standard resilience handler with circuit breaker, retry, timeout policies
+- Service discovery integration
 
 ---
 
-## Technology Architecture Layer
+## 4. Technology Architecture
 
 ### Purpose
-The Technology Architecture layer defines the infrastructure, platform services, runtime environments, and deployment models that host and operate the monitoring solution. It establishes patterns for cloud-native deployment, containerization, serverless execution, and platform engineering practices that enable scalability, reliability, and operational efficiency.
+The Technology Architecture layer defines the infrastructure platforms, deployment models, runtime environments, and operational tooling required to host, operate, and monitor the application architecture. This layer implements cloud-native patterns, container orchestration, serverless computing, and platform engineering practices.
 
 ### Key Capabilities
-- **Cloud-Native Infrastructure**: Leverage Azure PaaS services for managed operations
-- **Container Orchestration**: Deploy services using Azure Container Apps with automatic scaling
-- **Serverless Execution**: Run event-driven workloads using Azure Functions and Logic Apps
-- **Infrastructure as Code**: Define all resources using Bicep templates with version control
-- **Observability Platform**: Integrate Application Insights, Azure Monitor, and distributed tracing
-- **Platform Engineering**: Establish golden paths, reusable templates, and self-service capabilities
-
-### Process (High-Level)
-1. **Infrastructure Provisioning**: Deploy Azure resources using Bicep templates
-2. **Service Deployment**: Package and deploy applications using .NET Aspire and Azure Container Apps
-3. **Runtime Management**: Monitor health, scale instances, and manage secrets
-4. **Observability**: Collect and analyze telemetry from all layers
-5. **Continuous Improvement**: Iterate on performance, cost, and reliability based on insights
+- **Container Hosting**: Deploy and orchestrate containerized services on Azure Container Apps with elastic scaling
+- **Serverless Workflow Execution**: Run Logic Apps Standard workflows on Azure Functions v4 runtime
+- **Managed Identity Authentication**: Eliminate credential management using Azure AD identity federation
+- **Infrastructure as Code**: Provision all Azure resources using Bicep templates with parameterization
+- **Observability Platform**: Collect and analyze telemetry using Application Insights and Log Analytics
+- **Developer Inner Loop**: Accelerate development with .NET Aspire orchestration and local emulators
 
 ### Cloud-Native Architecture
 
 ```mermaid
 flowchart LR
-    subgraph "Clients"
-        CL1[Web Browser]
-        CL2[Mobile App]
+    subgraph Clients
+        WEB[Web Clients]
+        MOB[Mobile Clients]
     end
     
-    subgraph "CDN & Gateway"
-        CDN[Azure Front Door]
-        APIM[API Management]
+    subgraph Edge
+        CDN[Content Delivery]
+        GW[HTTPS Gateway]
     end
     
-    subgraph "Services"
-        SVC1[Orders API - Container Apps]
-        SVC2[Orders App - Container Apps]
-        SVC3[Logic Apps Standard]
+    subgraph Container Platform
+        ACR[Azure Container Registry<br/>Premium Tier]
+        CAE[Container Apps Environment<br/>Consumption Profile]
+        API_APP[Orders API<br/>Container App]
+        WEB_APP[Orders Web App<br/>Container App]
     end
     
-    subgraph "Event Bus"
-        EH[Azure Event Hubs]
+    subgraph Serverless
+        LA[Logic App Standard<br/>WorkflowStandard Plan]
     end
     
-    subgraph "Databases & Cache"
-        DB1[Cosmos DB]
-        CACHE[Azure Cache for Redis]
+    subgraph Messaging
+        SB[Service Bus<br/>Premium Namespace]
     end
     
-    subgraph "Observability"
-        AI[Application Insights]
-        MON[Azure Monitor]
+    subgraph Data
+        SA[Storage Account<br/>Standard_LRS]
     end
     
-    subgraph "Security"
-        KV[Key Vault]
-        AAD[Entra ID]
+    subgraph Observability
+        AI[Application Insights<br/>Workspace-based]
+        LAW[Log Analytics<br/>30-day Retention]
+        ASP[Aspire Dashboard<br/>.NET Component]
     end
     
-    CL1 --> CDN
-    CL2 --> CDN
+    subgraph Security
+        MI[Managed Identity<br/>User-Assigned]
+        RBAC[Role Assignments<br/>Least Privilege]
+    end
     
-    CDN --> APIM
+    WEB --> CDN
+    MOB --> CDN
+    CDN --> GW
+    GW --> API_APP
+    GW --> WEB_APP
     
-    APIM --> SVC1
-    APIM --> SVC2
+    ACR --> API_APP
+    ACR --> WEB_APP
+    API_APP --> SB
+    WEB_APP --> API_APP
+    SB --> LA
+    LA --> SA
     
-    SVC1 --> SVC3
-    SVC2 --> SVC3
+    API_APP -.->|Telemetry| AI
+    WEB_APP -.->|Telemetry| AI
+    LA -.->|Telemetry| AI
+    AI --> LAW
     
-    SVC1 --> EH
-    SVC3 --> EH
+    CAE --> ASP
     
-    SVC1 --> DB1
-    SVC3 --> DB1
+    MI --> API_APP
+    MI --> WEB_APP
+    MI --> LA
+    MI --> RBAC
     
-    SVC1 --> CACHE
-    SVC2 --> CACHE
-    
-    SVC1 --> AI
-    SVC2 --> AI
-    SVC3 --> AI
-    
-    AI --> MON
-    
-    SVC1 -.->|Secrets| KV
-    SVC2 -.->|Secrets| KV
-    SVC3 -.->|Secrets| KV
-    
-    APIM -.->|Auth| AAD
-    
-    style CL1 fill:#87CEEB
-    style CL2 fill:#87CEEB
+    style WEB fill:#87CEEB
+    style MOB fill:#87CEEB
     style CDN fill:#DDA0DD
-    style APIM fill:#DDA0DD
-    style SVC1 fill:#98FB98
-    style SVC2 fill:#98FB98
-    style SVC3 fill:#98FB98
-    style EH fill:#FFA07A
-    style DB1 fill:#FFD700
-    style CACHE fill:#FFD700
+    style GW fill:#DDA0DD
+    style API_APP fill:#90EE90
+    style WEB_APP fill:#90EE90
+    style LA fill:#90EE90
+    style SB fill:#FFA500
+    style ACR fill:#F0E68C
+    style SA fill:#F0E68C
     style AI fill:#D3D3D3
-    style MON fill:#D3D3D3
-    style KV fill:#D3D3D3
-    style AAD fill:#D3D3D3
+    style LAW fill:#D3D3D3
+    style ASP fill:#D3D3D3
+    style MI fill:#D3D3D3
+    style RBAC fill:#D3D3D3
 ```
 
 ### Container-Based Architecture
 
 ```mermaid
 flowchart TB
-    subgraph "Load Balancer / Ingress"
-        LB[Azure Load Balancer]
-        IG[Ingress Controller]
+    subgraph LB["Load Balancer / Ingress"]
+        HTTPS[HTTPS Endpoints<br/>Auto-assigned]
     end
     
-    subgraph "Container Apps Environment"
-        subgraph "Orders API"
-            POD1[Pod: API Service]
-            POD2[Pod: API Service]
+    subgraph CAE["Container Apps Environment"]
+        subgraph Workloads
+            API[Orders API<br/>Deployment]
+            APP[Orders Web App<br/>Deployment]
+            DASH[Aspire Dashboard<br/>Component]
         end
         
-        subgraph "Orders App"
-            POD3[Pod: App Service]
+        subgraph Config
+            ENV[Environment Variables]
+            SEC[Secrets]
         end
-        
-        subgraph "Logic Apps"
-            POD4[Pod: Workflow Runtime]
-        end
-        
-        SVC1[Service: Orders API]
-        SVC2[Service: Orders App]
-        SVC3[Service: Logic Apps]
     end
     
-    subgraph "Persistent Storage"
-        PV1[Azure Files]
-        PV2[Azure Blob Storage]
+    subgraph Storage
+        ACR[Azure Container Registry<br/>Image Repository]
+        SA[Storage Account<br/>Diagnostic Logs]
     end
     
-    subgraph "Observability"
-        LOG[Log Analytics]
-        MET[Metrics Collection]
-        TRACE[Distributed Tracing]
+    subgraph Observability
+        LAW[Log Analytics<br/>Workspace]
+        AI[Application Insights<br/>Telemetry]
     end
     
-    LB --> IG
-    IG --> SVC1
-    IG --> SVC2
+    HTTPS --> API
+    HTTPS --> APP
     
-    SVC1 --> POD1
-    SVC1 --> POD2
-    SVC2 --> POD3
-    SVC3 --> POD4
+    ACR -.->|Pull Images| API
+    ACR -.->|Pull Images| APP
     
-    POD1 --> PV1
-    POD4 --> PV2
+    ENV --> API
+    ENV --> APP
+    SEC --> API
+    SEC --> APP
     
-    POD1 --> LOG
-    POD2 --> LOG
-    POD3 --> LOG
-    POD4 --> LOG
+    API -.->|Logs| LAW
+    APP -.->|Logs| LAW
+    API -.->|Metrics/Traces| AI
+    APP -.->|Metrics/Traces| AI
     
-    POD1 --> MET
-    POD2 --> MET
-    POD3 --> MET
-    POD4 --> MET
+    LAW --> SA
     
-    POD1 --> TRACE
-    POD2 --> TRACE
-    POD3 --> TRACE
-    POD4 --> TRACE
+    DASH -.->|Observability| AI
     
-    style LB fill:#DDA0DD
-    style IG fill:#DDA0DD
-    style SVC1 fill:#98FB98
-    style SVC2 fill:#98FB98
-    style SVC3 fill:#98FB98
-    style POD1 fill:#98FB98
-    style POD2 fill:#98FB98
-    style POD3 fill:#98FB98
-    style POD4 fill:#98FB98
-    style PV1 fill:#FFD700
-    style PV2 fill:#FFD700
-    style LOG fill:#D3D3D3
-    style MET fill:#D3D3D3
-    style TRACE fill:#D3D3D3
+    style HTTPS fill:#DDA0DD
+    style API fill:#90EE90
+    style APP fill:#90EE90
+    style DASH fill:#90EE90
+    style ENV fill:#90EE90
+    style SEC fill:#90EE90
+    style ACR fill:#F0E68C
+    style SA fill:#F0E68C
+    style LAW fill:#D3D3D3
+    style AI fill:#D3D3D3
 ```
 
 ### Serverless Architecture
 
 ```mermaid
 flowchart LR
-    subgraph "API Gateway"
-        APIM[API Management]
+    subgraph Trigger
+        SB_TRIG[Service Bus Trigger<br/>orders-queue]
     end
     
-    subgraph "Functions"
-        FN1[Order Processor]
-        FN2[Telemetry Collector]
-        FN3[Alert Handler]
+    subgraph Functions
+        LA[Logic App Standard<br/>ConsosoOrders Workflow]
+        FX[Azure Functions v4<br/>Runtime]
     end
     
-    subgraph "Queues & Topics"
-        Q1[Orders Queue]
-        T1[Events Topic]
+    subgraph Queues
+        SB[Service Bus<br/>orders-queue]
+        QS[Queue Storage<br/>Task Queue]
     end
     
-    subgraph "Storage"
-        ST1[Cosmos DB]
-        ST2[Blob Storage]
+    subgraph Storage
+        BLOB[Blob Storage<br/>Success/Error Containers]
+        SA[Storage Account<br/>Workflow State]
     end
     
-    subgraph "Monitoring"
-        AI[Application Insights]
-        AM[Azure Monitor]
+    subgraph Monitoring
+        AI[Application Insights<br/>Telemetry]
+        LAW[Log Analytics<br/>Logs]
     end
     
-    APIM -->|HTTP Trigger| FN1
+    SB --> SB_TRIG
+    SB_TRIG --> LA
+    LA --> FX
+    FX --> QS
+    FX --> BLOB
+    FX <-->|State| SA
     
-    FN1 --> Q1
-    Q1 -->|Queue Trigger| FN2
+    LA -.->|Diagnostics| AI
+    FX -.->|Logs| LAW
     
-    FN2 --> T1
-    T1 -->|Topic Trigger| FN3
-    
-    FN1 --> ST1
-    FN2 --> ST2
-    
-    FN1 --> AI
-    FN2 --> AI
-    FN3 --> AI
-    
-    AI --> AM
-    
-    style APIM fill:#DDA0DD
-    style FN1 fill:#98FB98
-    style FN2 fill:#98FB98
-    style FN3 fill:#98FB98
-    style Q1 fill:#FFA07A
-    style T1 fill:#FFA07A
-    style ST1 fill:#FFD700
-    style ST2 fill:#FFD700
+    style SB_TRIG fill:#DDA0DD
+    style LA fill:#90EE90
+    style FX fill:#90EE90
+    style SB fill:#FFA500
+    style QS fill:#FFA500
+    style BLOB fill:#F0E68C
+    style SA fill:#F0E68C
     style AI fill:#D3D3D3
-    style AM fill:#D3D3D3
+    style LAW fill:#D3D3D3
 ```
 
 ### Platform Engineering Architecture
 
 ```mermaid
 flowchart TB
-    subgraph "Developer Experience"
-        DEV[Development Teams]
-        TOOLS[IDE + Extensions]
+    subgraph Developers["Developer Experience"]
+        VS[Visual Studio Code<br/>Extensions]
+        SDK[.NET 9 SDK]
+        ASPIRE[.NET Aspire<br/>Orchestration]
     end
     
-    subgraph "Internal Developer Platform"
-        IDP1[Service Catalog]
-        IDP2[Golden Paths]
-        IDP3[Self-Service Portal]
+    subgraph IDP["Internal Developer Platform"]
+        APPHOST[AppHost<br/>Service Configuration]
+        DEFAULTS[ServiceDefaults<br/>Shared Patterns]
     end
     
-    subgraph "CI/CD & Policies"
-        CI[GitHub Actions]
-        POL[Azure Policy]
-        SCAN[Security Scanning]
+    subgraph CICD["CI/CD & Policies"]
+        GHA[GitHub Actions<br/>Workflows]
+        AZD[Azure Developer CLI<br/>azd up]
+        HOOKS[Deployment Hooks<br/>Pre/Post Provision]
     end
     
-    subgraph "Runtime Platforms"
-        RT1[Azure Container Apps]
-        RT2[Logic Apps Standard]
-        RT3[Azure Functions]
+    subgraph Runtime["Runtime Platforms"]
+        CAE[Container Apps<br/>Environment]
+        ASP_PLAN[App Service Plan<br/>WorkflowStandard]
     end
     
-    subgraph "Shared Services"
-        SS1[API Management]
-        SS2[Application Insights]
-        SS3[Key Vault]
+    subgraph Shared["Shared Services"]
+        MI[Managed Identity<br/>User-Assigned]
+        SB[Service Bus<br/>Premium]
+        ACR[Container Registry<br/>Premium]
     end
     
-    subgraph "Data Services"
-        DS1[Cosmos DB]
-        DS2[Event Hubs]
-        DS3[Storage Accounts]
+    subgraph Data["Data Services"]
+        SA[Storage Accounts<br/>Logs/Workflow]
+        LAW[Log Analytics<br/>Workspace]
+        AI[Application Insights<br/>Telemetry]
     end
     
-    DEV --> TOOLS
-    TOOLS --> IDP3
+    VS --> ASPIRE
+    SDK --> ASPIRE
+    ASPIRE --> APPHOST
+    APPHOST --> DEFAULTS
     
-    IDP3 --> IDP1
-    IDP3 --> IDP2
+    DEFAULTS --> GHA
+    GHA --> AZD
+    AZD --> HOOKS
     
-    IDP1 --> CI
-    IDP2 --> CI
+    HOOKS --> CAE
+    HOOKS --> ASP_PLAN
     
-    CI --> POL
-    CI --> SCAN
+    CAE --> MI
+    ASP_PLAN --> MI
     
-    CI --> RT1
-    CI --> RT2
-    CI --> RT3
+    MI --> SB
+    MI --> ACR
     
-    RT1 --> SS1
-    RT2 --> SS1
-    RT3 --> SS1
+    CAE --> SA
+    ASP_PLAN --> SA
+    SA --> LAW
+    LAW --> AI
     
-    RT1 --> SS2
-    RT2 --> SS2
-    RT3 --> SS2
-    
-    RT1 -.->|Secrets| SS3
-    RT2 -.->|Secrets| SS3
-    RT3 -.->|Secrets| SS3
-    
-    RT1 --> DS1
-    RT2 --> DS1
-    RT3 --> DS2
-    
-    RT2 --> DS3
-    
-    style DEV fill:#87CEEB
-    style TOOLS fill:#87CEEB
-    style IDP1 fill:#98FB98
-    style IDP2 fill:#98FB98
-    style IDP3 fill:#98FB98
-    style CI fill:#98FB98
-    style POL fill:#98FB98
-    style SCAN fill:#98FB98
-    style RT1 fill:#DDA0DD
-    style RT2 fill:#DDA0DD
-    style RT3 fill:#DDA0DD
-    style SS1 fill:#D3D3D3
-    style SS2 fill:#D3D3D3
-    style SS3 fill:#D3D3D3
-    style DS1 fill:#FFD700
-    style DS2 fill:#FFD700
-    style DS3 fill:#FFD700
+    style VS fill:#87CEEB
+    style SDK fill:#87CEEB
+    style ASPIRE fill:#87CEEB
+    style APPHOST fill:#90EE90
+    style DEFAULTS fill:#90EE90
+    style GHA fill:#90EE90
+    style AZD fill:#90EE90
+    style HOOKS fill:#90EE90
+    style CAE fill:#DDA0DD
+    style ASP_PLAN fill:#DDA0DD
+    style MI fill:#D3D3D3
+    style SB fill:#D3D3D3
+    style ACR fill:#D3D3D3
+    style SA fill:#F0E68C
+    style LAW fill:#F0E68C
+    style AI fill:#F0E68C
 ```
 
----
+### Infrastructure Components
 
-## Complete TOGAF BDAT Model
+**As explicitly defined in infra Bicep modules:**
 
-```mermaid
-flowchart TB
-    subgraph "Business Architecture"
-        B1[Order Management Capability]
-        B2[Workflow Operations Capability]
-        B3[Cost Management Capability]
-        B4[Platform Governance Capability]
-    end
-    
-    subgraph "Data Architecture"
-        D1[Master Data Management]
-        D2[Event Streaming]
-        D3[Data Lake - Bronze/Silver/Gold]
-        D4[Telemetry & Observability Data]
-    end
-    
-    subgraph "Application Architecture"
-        A1[Orders API - Microservice]
-        A2[Orders App - Microservice]
-        A3[Logic Apps - Workflow Engine]
-        A4[Monitoring Functions]
-        A5[Event Processors]
-    end
-    
-    subgraph "Technology Architecture"
-        T1[Azure Container Apps]
-        T2[Azure Logic Apps Standard]
-        T3[Azure Functions]
-        T4[Cosmos DB]
-        T5[Event Hubs]
-        T6[Application Insights]
-        T7[Azure Monitor]
-        T8[Key Vault]
-        T9[API Management]
-    end
-    
-    B1 -.->|Drives Requirements| D1
-    B2 -.->|Drives Requirements| D2
-    B3 -.->|Drives Requirements| D4
-    B4 -.->|Drives Requirements| D3
-    
-    D1 -->|Provides Data| A1
-    D2 -->|Provides Events| A3
-    D3 -->|Stores Historical| A5
-    D4 -->|Enables Monitoring| A4
-    
-    A1 -->|Deployed On| T1
-    A2 -->|Deployed On| T1
-    A3 -->|Deployed On| T2
-    A4 -->|Deployed On| T3
-    A5 -->|Deployed On| T3
-    
-    A1 -->|Persists To| T4
-    A3 -->|Publishes To| T5
-    A4 -->|Sends Telemetry To| T6
-    
-    T6 -->|Aggregates In| T7
-    T1 -.->|Retrieves Secrets From| T8
-    T2 -.->|Retrieves Secrets From| T8
-    
-    T9 -->|Routes Traffic To| T1
-    T9 -->|Routes Traffic To| T2
-    
-    style B1 fill:#FFE4B5
-    style B2 fill:#FFE4B5
-    style B3 fill:#FFE4B5
-    style B4 fill:#FFE4B5
-    style D1 fill:#E0FFFF
-    style D2 fill:#E0FFFF
-    style D3 fill:#E0FFFF
-    style D4 fill:#E0FFFF
-    style A1 fill:#F0E68C
-    style A2 fill:#F0E68C
-    style A3 fill:#F0E68C
-    style A4 fill:#F0E68C
-    style A5 fill:#F0E68C
-    style T1 fill:#D8BFD8
-    style T2 fill:#D8BFD8
-    style T3 fill:#D8BFD8
-    style T4 fill:#D8BFD8
-    style T5 fill:#D8BFD8
-    style T6 fill:#D8BFD8
-    style T7 fill:#D8BFD8
-    style T8 fill:#D8BFD8
-    style T9 fill:#D8BFD8
-```
+1. **Monitoring Infrastructure** (monitoring):
+   - Log Analytics Workspace: 30-day retention, PerGB2018 pricing tier
+   - Application Insights: Workspace-based, web application type
+   - Storage Account: Diagnostic logs with 30-day lifecycle policy
+   - Azure Monitor Health Model: Service group hierarchy
+
+2. **Identity Management** (identity):
+   - User-Assigned Managed Identity
+   - Role Assignments: Storage Contributor, Metrics Publisher, Service Bus Data Owner, ACR Pull/Push
+
+3. **Messaging Infrastructure** (messaging):
+   - Service Bus Premium Namespace: 16 messaging units capacity
+   - Queue: `orders-queue`
+   - Workflow Storage Account: Standard_LRS with blob containers
+
+4. **Container Services** (services):
+   - Azure Container Registry: Premium tier
+   - Container Apps Environment: Consumption workload profile
+   - Aspire Dashboard: .NET component for observability
+
+5. **Logic Apps** (logic-app.bicep):
+   - App Service Plan: WorkflowStandard WS1, 3-20 instances elastic scaling
+   - Logic App: Functions v4 runtime, extension bundle v1.x
+
+### Deployment Model
+
+**Infrastructure Provisioning** (as defined in postprovision.ps1):
+1. Azure resource deployment via Bicep templates
+2. Container Registry authentication
+3. Docker image build and push
+4. Container Apps deployment
+5. Configuration validation
+
+**Application Deployment**:
+- Container images built from Dockerfiles in Dockerfile and Dockerfile
+- Pushed to Azure Container Registry
+- Deployed to Container Apps via Azure Developer CLI
 
 ---
 
-## Scalability Considerations
+## Compliance and Governance
 
-### Workflow Density Optimization
-- **Target Density**: 50–100 workflows per Logic Apps Standard plan (WS1)
-- **Memory Management**: Monitor memory consumption using Application Insights; implement workflow throttling when usage exceeds 85%
-- **Compute Scaling**: Configure horizontal scaling rules based on queue depth and CPU utilization
+### TOGAF Compliance
+This BDAT model adheres to TOGAF 10 Architecture Development Method (ADM) principles:
+- **Phase A (Architecture Vision)**: Defined in Business Architecture project overview
+- **Phase B (Business Architecture)**: Capability map and value streams documented
+- **Phase C (Information Systems Architectures)**: Data and Application architectures detailed with explicit component mapping
+- **Phase D (Technology Architecture)**: Cloud-native, container, serverless, and platform patterns implemented
+- **Phase E-H**: Implementation governance through IaC, CI/CD, and monitoring
 
-### Cosmos DB Partitioning Strategy
-- **Partition Key**: Use hierarchical partition keys (`/tenantId/orderId`) to overcome 20 GB logical partition limits
-- **Indexing Policy**: Optimize for query patterns; exclude unnecessary paths to reduce RU consumption
-- **Consistency Level**: Use Session consistency for 99.99% availability with bounded staleness for analytics workloads
+### Architecture Patterns
+- **Microservices**: RESTful APIs with independent deployment and scaling
+- **Event-Driven**: Asynchronous message processing with Service Bus
+- **CQRS**: [MISSING COMPONENT - No explicit command/query separation implemented]
+- **Distributed Tracing**: W3C Trace Context propagation across all boundaries
+- **Cloud-Native**: Container Apps, Serverless Functions, Managed Services
+- **Platform Engineering**: .NET Aspire for developer productivity and golden paths
 
-### Event Hubs Throughput
-- **Throughput Units**: Start with 5 TUs; enable auto-inflate for burst handling
-- **Partition Strategy**: Distribute events across 16+ partitions using `orderId` as partition key
-- **Capture**: Enable Event Hubs Capture to Azure Data Lake for cost-effective archival
+### Gap Analysis
 
-### Monitoring and Alerting
-- **Application Insights Sampling**: Use adaptive sampling (default 5 events/sec) to control costs while maintaining statistical accuracy
-- **Log Analytics Retention**: Retain operational logs for 30 days; export to Data Lake for long-term analysis
-- **Alerting Thresholds**: Set dynamic baselines using Azure Monitor smart detection for anomaly detection
+**Identified Gaps:**
+1. **Master Data Management**: No centralized data hub for canonical order models
+2. **CQRS Implementation**: Read and write operations use same in-memory store
+3. **Event Sourcing**: No append-only event log for state reconstruction
+4. **API Gateway**: Direct service exposure without centralized gateway (relying on Container Apps ingress)
+5. **Service Mesh**: No explicit service mesh implementation (Container Apps handles service-to-service)
 
----
-
-## Governance and Compliance
-
-### Azure Policy Enforcement
-- **Naming Conventions**: Enforce resource naming standards using Azure Policy (`<env>-<service>-<region>`)
-- **Tagging Requirements**: Require tags for `CostCenter`, `Owner`, `Environment`, `Criticality`
-- **Region Restrictions**: Limit deployments to approved regions for data residency compliance
-
-### Security Best Practices
-- **Managed Identities**: Use system-assigned managed identities for all service-to-service authentication
-- **Key Vault Integration**: Store all secrets, connection strings, and certificates in Azure Key Vault
-- **Network Isolation**: Deploy services into VNet-integrated Container Apps with private endpoints for Cosmos DB and Storage
-
-### Cost Management
-- **Budgets and Alerts**: Configure monthly budgets with alerts at 50%, 75%, and 90% thresholds
-- **Reserved Capacity**: Purchase Cosmos DB reserved capacity (1–3 years) for 30–50% cost savings
-- **Autoscaling**: Implement autoscaling for Container Apps and Logic Apps to match demand patterns
+**Recommendations:**
+1. Implement canonical data model with Azure SQL Database or Cosmos DB for order persistence
+2. Separate read and query models using event sourcing patterns
+3. Consider Azure API Management for enterprise API governance
+4. Evaluate Dapr integration within Container Apps Environment for service mesh capabilities
 
 ---
 
-## Actionable Insights
+## Appendix: Technology Stack Reference
 
-1. **Implement Distributed Tracing**: Use W3C Trace Context across all services to enable end-to-end correlation. Refer to [distributed tracing in .NET](https://learn.microsoft.com/dotnet/core/diagnostics/distributed-tracing).
+**Explicitly Used Technologies (from workspace):**
 
-2. **Optimize Logic Apps Density**: Consolidate workflows to 50–100 per plan; monitor memory using the [Logic Apps metrics](https://learn.microsoft.com/azure/logic-apps/monitor-logic-apps).
+| Category | Technology | Version | Source |
+|----------|-----------|---------|--------|
+| Runtime | .NET | 9.0 | eShop.Orders.API.csproj |
+| Orchestration | .NET Aspire | Latest | eShopOrders.AppHost.csproj |
+| Observability | OpenTelemetry | Latest | Extensions.cs |
+| Messaging | Azure Service Bus | Premium | main.bicep |
+| Monitoring | Application Insights | Workspace-based | app-insights.bicep |
+| Hosting | Azure Container Apps | Consumption | main.bicep |
+| Workflows | Logic Apps Standard | Functions v4 | logic-app.bicep |
+| Storage | Azure Storage | Standard_LRS | main.bicep |
+| IaC | Bicep | Latest | main.bicep |
 
-3. **Enable Application Insights Live Metrics**: Use [Live Metrics Stream](https://learn.microsoft.com/azure/azure-monitor/app/live-stream) for real-time visibility during deployment and incident response.
+---
 
-4. **Leverage Azure Advisor**: Review weekly recommendations for cost optimization, reliability, and performance improvements.
-
-5. **Establish SLIs/SLOs**: Define Service Level Indicators (e.g., p95 latency < 500ms) and Objectives (99.9% availability) aligned with business requirements.
-
-This TOGAF BDAT model provides a comprehensive enterprise architecture framework for deploying, monitoring, and governing Azure Logic Apps at scale while maintaining alignment with business objectives and operational excellence principles.
+**Document Metadata:**
+- **TOGAF Version**: 10
+- **Architecture Framework**: TOGAF BDAT Model
+- **Solution Version**: 1.0.0
+- **Last Updated**: 2025-06-01 (deployment date from Bicep parameters)
+- **Architecture Maturity Level**: Level 3 (Defined - standardized processes, reusable components)
