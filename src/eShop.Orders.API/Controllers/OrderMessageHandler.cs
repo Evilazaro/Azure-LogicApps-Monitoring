@@ -1,5 +1,4 @@
 ﻿using Azure.Messaging.ServiceBus;
-using Microsoft.Extensions.Hosting;
 using OpenTelemetry.Trace;
 using System.Diagnostics;
 

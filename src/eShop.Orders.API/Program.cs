@@ -10,7 +10,6 @@
 
 using eShop.Orders.API.Middleware;
 using eShop.Orders.API.Services;
-using Microsoft.AspNetCore.Mvc.ApplicationParts;
 
 var builder = WebApplication.CreateBuilder(args);
 

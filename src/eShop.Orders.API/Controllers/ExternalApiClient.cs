@@ -1,5 +1,4 @@
-﻿using Microsoft.Extensions.Hosting;
-using OpenTelemetry.Trace;
+﻿using OpenTelemetry.Trace;
 using System.Diagnostics;
 
 namespace eShop.Orders.API.Services;

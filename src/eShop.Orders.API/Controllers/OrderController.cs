@@ -1,5 +1,4 @@
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Hosting;
 using OpenTelemetry.Trace;
 using System.Diagnostics;
 

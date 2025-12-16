@@ -36,7 +36,7 @@ else
 {
     // Production error handling: redirect to error page
     app.UseExceptionHandler("/Error", createScopeForErrors: true);
-    
+
     // HTTP Strict Transport Security (HSTS) for production
     // Enforces HTTPS for 30 days (consider extending for production)
     app.UseHsts();

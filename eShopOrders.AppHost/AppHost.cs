@@ -1,4 +1,3 @@
-using Aspire.Hosting;
 using Aspire.Hosting.Azure;
 using Microsoft.Extensions.Hosting;
 
