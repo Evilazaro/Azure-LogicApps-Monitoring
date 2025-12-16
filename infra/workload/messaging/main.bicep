@@ -1,3 +1,21 @@
+/*
+  Messaging Infrastructure Module
+  ===============================
+  Deploys Service Bus and storage infrastructure for workflow orchestration.
+  
+  Components:
+  1. Service Bus Premium namespace with order queue
+  2. Storage account for Logic Apps runtime (Standard tier requirement)
+  3. Blob containers for processed orders (success/error segregation)
+  
+  Key Features:
+  - Premium Service Bus tier for enhanced performance and scalability
+  - Capacity of 16 messaging units
+  - Managed identity authentication for Service Bus
+  - Separate containers for success and error order processing
+  - Diagnostic settings for all resources
+*/
+
 metadata name = 'Messaging Infrastructure'
 metadata description = 'Deploys Service Bus namespace, queues, and workflow storage account'
 
@@ -56,8 +74,13 @@ param queueName string = 'orders-queue'
 
 // ========== Variables ==========
 
+// Remove special characters for naming compliance
 var cleanedName = toLower(replace(replace(replace(name, '-', ''), '_', ''), ' ', ''))
+
+// Generate unique suffix for globally unique resource names
 var uniqueSuffix = uniqueString(resourceGroup().id, name, envName, location)
+
+// Service Bus namespace name limited to 20 characters
 var serviceBusName = toLower(take('${cleanedName}sb${uniqueSuffix}', 20))
 
 // ========== Resources ==========
@@ -133,6 +156,8 @@ resource blobSvc 'Microsoft.Storage/storageAccounts/blobServices@2025-06-01' = {
   name: 'default'
 }
 
+// Container for successfully processed orders
+// Segregates successful processing for audit and compliance
 @description('Blob container for successfully processed orders')
 resource poSuccess 'Microsoft.Storage/storageAccounts/blobServices/containers@2025-06-01' = {
   parent: blobSvc
@@ -142,6 +167,8 @@ resource poSuccess 'Microsoft.Storage/storageAccounts/blobServices/containers@20
   }
 }
 
+// Container for failed order processing
+// Enables separate error handling and retry workflows
 @description('Blob container for orders processed with errors')
 resource poFailed 'Microsoft.Storage/storageAccounts/blobServices/containers@2025-06-01' = {
   parent: blobSvc
@@ -167,6 +194,3 @@ resource saDiag 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
 
 @description('Name of the deployed storage account')
 output WORKFLOW_STORAGE_ACCOUNT_NAME string = wfSA.name
-
-@description('Resource ID of the deployed storage account')
-output WORKFLOW_STORAGE_ACCOUNT_ID string = wfSA.id

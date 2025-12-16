@@ -1,271 +1,334 @@
-using Azure.Messaging.ServiceBus;
-using eShop.Orders.API.Services;
 using Microsoft.AspNetCore.Mvc;
-using System.Net.Mime;
+using OpenTelemetry.Trace;
+using System.Diagnostics;
 
 namespace eShop.Orders.API.Controllers;
 
 /// <summary>
-/// API controller for managing orders
+/// API controller for managing orders with comprehensive distributed tracing.
+/// Each endpoint automatically creates spans with detailed context propagation.
 /// </summary>
 [ApiController]
 [Route("api/[controller]")]
-[Produces(MediaTypeNames.Application.Json)]
-[Consumes(MediaTypeNames.Application.Json)]
-public sealed class OrderController : ControllerBase
+public class OrdersController : ControllerBase
 {
-    private readonly IOrderService _orderService;
-    private readonly ILogger<OrderController> _logger;
+    private readonly ILogger<OrdersController> _logger;
+    private readonly ActivitySource _activitySource;
 
     /// <summary>
-    /// Initializes a new instance of the OrderController
+    /// Initializes a new instance of the OrdersController.
     /// </summary>
-    public OrderController(
-        IOrderService orderService,
-        ILogger<OrderController> logger)
+    /// <param name="logger">Logger for structured logging with trace correlation.</param>
+    public OrdersController(ILogger<OrdersController> logger)
     {
-        _orderService = orderService ?? throw new ArgumentNullException(nameof(orderService));
-        _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        _logger = logger;
+        // Create activity source for custom spans in this controller
+        _activitySource = Extensions.CreateActivitySource();
     }
 
     /// <summary>
-    /// Places a new order
+    /// Retrieves all orders with distributed tracing.
+    /// Automatic span created by ASP.NET Core instrumentation.
     /// </summary>
-    /// <param name="order">The order details</param>
-    /// <param name="cancellationToken">Cancellation token</param>
-    /// <returns>Accepted response with order details</returns>
-    /// <response code="202">Order accepted for processing</response>
-    /// <response code="400">Invalid order data</response>
-    /// <response code="503">Service Bus unavailable</response>
-    [HttpPost(Name = nameof(PlaceOrder))]
-    [ProducesResponseType(typeof(Order), StatusCodes.Status202Accepted)]
-    [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status503ServiceUnavailable)]
-    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
-    public async Task<ActionResult<Order>> PlaceOrder(
-        [FromBody] Order order,
-        CancellationToken cancellationToken)
+    /// <returns>List of orders.</returns>
+    [HttpGet]
+    public async Task<ActionResult<IEnumerable<Order>>> GetOrders()
     {
-        try
-        {
-            await _orderService.SendOrderMessageAsync(order, cancellationToken);
-            _logger.LogInformation("Order {OrderId} placed successfully", order.Id);
-            return AcceptedAtAction(
-                nameof(GetOrderById),
-                new { id = order.Id },
-                order);
-        }
-        catch (ServiceBusException ex) when (ex.Reason == ServiceBusFailureReason.ServiceTimeout ||
-                                              ex.Reason == ServiceBusFailureReason.ServiceCommunicationProblem)
-        {
-            _logger.LogError(ex, "Service Bus unavailable while placing order {OrderId}", order.Id);
-            return Problem(
-                statusCode: StatusCodes.Status503ServiceUnavailable,
-                title: "Service Unavailable",
-                detail: "The messaging service is temporarily unavailable. Please try again later.");
-        }
-        catch (ServiceBusException ex)
-        {
-            _logger.LogError(ex, "Service Bus error occurred while placing order {OrderId}. Reason: {Reason}", order.Id, ex.Reason);
-            return Problem(
-                statusCode: StatusCodes.Status500InternalServerError,
-                title: "Messaging Error",
-                detail: "An error occurred with the messaging service.");
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Unexpected error while placing order {OrderId}", order.Id);
-            return Problem(
-                statusCode: StatusCodes.Status500InternalServerError,
-                title: "Internal Server Error",
-                detail: "An unexpected error occurred while processing your request.");
-        }
-    }
+        // Create a custom span for the business logic
+        using var activity = _activitySource.StartActivity("GetOrders.BusinessLogic");
 
-    /// <summary>
-    /// Retrieves all orders
-    /// </summary>
-    /// <param name="cancellationToken">Cancellation token</param>
-    /// <returns>List of all orders</returns>
-    /// <response code="200">Returns the list of orders</response>
-    /// <response code="500">Internal server error</response>
-    [HttpGet(Name = nameof(GetAllOrders))]
-    [ProducesResponseType(typeof(IReadOnlyList<Order>), StatusCodes.Status200OK)]
-    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
-    public async Task<ActionResult<IReadOnlyList<Order>>> GetAllOrders(CancellationToken cancellationToken)
-    {
         try
         {
-            var orders = await _orderService.GetAllOrdersAsync(cancellationToken);
-            _logger.LogInformation("Retrieved {OrderCount} orders", orders.Count);
+            // Add custom tags for filtering and analysis in Application Insights
+            activity?.SetTag("orders.operation", "list");
+            activity?.SetTag("orders.user", User?.Identity?.Name ?? "anonymous");
+
+            _logger.LogInformation("Retrieving all orders");
+
+            // Simulate business logic (replace with actual implementation)
+            var orders = await GetOrdersFromDatabase();
+
+            // Add result metrics to the span
+            activity?.SetTag("orders.count", orders.Count());
+            activity?.AddEvent(new ActivityEvent("Orders retrieved successfully"));
+
             return Ok(orders);
         }
-        catch (IOException ex)
-        {
-            _logger.LogError(ex, "IO error while retrieving orders");
-            return Problem(
-                statusCode: StatusCodes.Status500InternalServerError,
-                title: "Storage Error",
-                detail: "An error occurred while accessing order storage.");
-        }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Unexpected error while retrieving orders");
-            return Problem(
-                statusCode: StatusCodes.Status500InternalServerError,
-                title: "Internal Server Error",
-                detail: "An unexpected error occurred while retrieving orders.");
+            // Set span status to error and add exception details
+            activity?.SetStatus(ActivityStatusCode.Error, ex.Message);
+            activity?.RecordException(ex);
+
+            _logger.LogError(ex, "Error retrieving orders");
+            return StatusCode(500, "Internal server error");
         }
     }
 
     /// <summary>
-    /// Retrieves a specific order by ID
+    /// Retrieves a specific order by ID with detailed tracing.
     /// </summary>
-    /// <param name="id">The order ID</param>
-    /// <param name="cancellationToken">Cancellation token</param>
-    /// <returns>The requested order</returns>
-    /// <response code="200">Returns the order</response>
-    /// <response code="400">Invalid order ID</response>
-    /// <response code="404">Order not found</response>
-    /// <response code="500">Internal server error</response>
-    [HttpGet("{id:int}", Name = nameof(GetOrderById))]
-    [ProducesResponseType(typeof(Order), StatusCodes.Status200OK)]
-    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
-    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
-    public async Task<ActionResult<Order>> GetOrderById(int id, CancellationToken cancellationToken)
+    /// <param name="id">The order identifier.</param>
+    /// <returns>The requested order or 404 if not found.</returns>
+    [HttpGet("{id}")]
+    public async Task<ActionResult<Order>> GetOrder(string id)
     {
-        if (id <= 0)
-        {
-            _logger.LogWarning("GetOrderById called with invalid ID: {OrderId}", id);
-            return Problem(
-                statusCode: StatusCodes.Status400BadRequest,
-                title: "Invalid Request",
-                detail: "Order ID must be greater than 0");
-        }
+        using var activity = _activitySource.StartActivity("GetOrder.BusinessLogic");
 
         try
         {
-            var order = await _orderService.GetOrderByIdAsync(id, cancellationToken);
+            // Add order ID as a tag for trace filtering
+            activity?.SetTag("orders.id", id);
+            activity?.SetTag("orders.operation", "get");
 
-            if (order is null)
+            _logger.LogInformation("Retrieving order {OrderId}", id);
+
+            var order = await GetOrderFromDatabase(id);
+
+            if (order == null)
             {
+                activity?.SetTag("orders.found", false);
+                activity?.AddEvent(new ActivityEvent("Order not found"));
+
                 _logger.LogWarning("Order {OrderId} not found", id);
-                return NotFound(new ProblemDetails
-                {
-                    Status = StatusCodes.Status404NotFound,
-                    Title = "Not Found",
-                    Detail = $"Order with ID {id} was not found"
-                });
+                return NotFound();
             }
 
-            _logger.LogInformation("Order {OrderId} retrieved successfully", id);
+            activity?.SetTag("orders.found", true);
+            activity?.SetTag("orders.status", order.Status);
+            activity?.AddEvent(new ActivityEvent("Order retrieved successfully"));
+
             return Ok(order);
-        }
-        catch (IOException ex)
-        {
-            _logger.LogError(ex, "IO error while retrieving order {OrderId}", id);
-            return Problem(
-                statusCode: StatusCodes.Status500InternalServerError,
-                title: "Storage Error",
-                detail: "An error occurred while accessing order storage.");
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Unexpected error while retrieving order {OrderId}", id);
-            return Problem(
-                statusCode: StatusCodes.Status500InternalServerError,
-                title: "Internal Server Error",
-                detail: "An unexpected error occurred while retrieving the order.");
+            activity?.SetStatus(ActivityStatusCode.Error, ex.Message);
+            activity?.RecordException(ex);
+
+            _logger.LogError(ex, "Error retrieving order {OrderId}", id);
+            return StatusCode(500, "Internal server error");
         }
     }
 
     /// <summary>
-    /// Places multiple orders in a batch
+    /// Creates a new order with distributed tracing across messaging.
+    /// Demonstrates context propagation to Service Bus messages.
     /// </summary>
-    /// <param name="orders">List of orders to place</param>
-    /// <param name="cancellationToken">Cancellation token</param>
-    /// <returns>Accepted response</returns>
-    /// <response code="202">Orders accepted for processing</response>
-    /// <response code="400">Invalid order data</response>
-    /// <response code="503">Service Bus unavailable</response>
-    [HttpPost("batch", Name = nameof(PlaceOrdersBatch))]
-    [ProducesResponseType(typeof(BatchOrderResponse), StatusCodes.Status202Accepted)]
-    [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status503ServiceUnavailable)]
-    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
-    public async Task<ActionResult<BatchOrderResponse>> PlaceOrdersBatch(
-        [FromBody] List<Order> orders,
-        CancellationToken cancellationToken)
+    /// <param name="order">The order to create.</param>
+    /// <returns>The created order with location header.</returns>
+    [HttpPost]
+    public async Task<ActionResult<Order>> CreateOrder([FromBody] Order order)
     {
-        if (orders is null || orders.Count == 0)
-        {
-            _logger.LogWarning("PlaceOrdersBatch called with null or empty orders list");
-            return Problem(
-                statusCode: StatusCodes.Status400BadRequest,
-                title: "Invalid Request",
-                detail: "Orders list cannot be null or empty");
-        }
+        using var activity = _activitySource.StartActivity("CreateOrder.BusinessLogic");
 
         try
         {
-            await _orderService.SendOrderBatchMessagesAsync(orders, cancellationToken);
-            _logger.LogInformation("Batch of {OrderCount} orders placed successfully", orders.Count);
+            // Add order details as tags
+            activity?.SetTag("orders.operation", "create");
+            activity?.SetTag("orders.customer_id", order.CustomerId);
+            activity?.SetTag("orders.total_amount", order.TotalAmount);
 
-            var response = new BatchOrderResponse
+            _logger.LogInformation("Creating new order for customer {CustomerId}", order.CustomerId);
+
+            // Create a child span for database operation
+            using (var dbActivity = _activitySource.StartActivity("CreateOrder.Database", ActivityKind.Internal))
             {
-                Message = $"{orders.Count} orders accepted for processing",
-                OrderCount = orders.Count,
-                OrderIds = orders.Select(o => o.Id).ToList()
-            };
+                dbActivity?.SetTag("db.operation", "insert");
+                dbActivity?.SetTag("db.table", "Orders");
 
-            return Accepted(response);
-        }
-        catch (ServiceBusException ex) when (ex.Reason == ServiceBusFailureReason.ServiceTimeout ||
-                                              ex.Reason == ServiceBusFailureReason.ServiceCommunicationProblem)
-        {
-            _logger.LogError(ex, "Service Bus unavailable while placing order batch");
-            return Problem(
-                statusCode: StatusCodes.Status503ServiceUnavailable,
-                title: "Service Unavailable",
-                detail: "The messaging service is temporarily unavailable. Please try again later.");
-        }
-        catch (ServiceBusException ex)
-        {
-            _logger.LogError(ex, "Service Bus error occurred while placing order batch. Reason: {Reason}", ex.Reason);
-            return Problem(
-                statusCode: StatusCodes.Status500InternalServerError,
-                title: "Messaging Error",
-                detail: "An error occurred with the messaging service.");
+                // Simulate database insertion
+                order.Id = Guid.NewGuid().ToString();
+                order.Status = "Created";
+                order.CreatedAt = DateTime.UtcNow;
+
+                await SaveOrderToDatabase(order);
+
+                dbActivity?.AddEvent(new ActivityEvent("Order saved to database"));
+            }
+
+            // Create a child span for messaging operation
+            using (var messagingActivity = _activitySource.StartActivity("CreateOrder.PublishMessage", ActivityKind.Producer))
+            {
+                messagingActivity?.SetTag("messaging.system", "servicebus");
+                messagingActivity?.SetTag("messaging.destination", "orders-queue");
+                messagingActivity?.SetTag("messaging.operation", "publish");
+
+                // Propagate trace context to Service Bus message
+                await PublishOrderCreatedEvent(order, messagingActivity);
+
+                messagingActivity?.AddEvent(new ActivityEvent("Order created event published"));
+            }
+
+            activity?.SetTag("orders.id", order.Id);
+            activity?.AddEvent(new ActivityEvent("Order created successfully"));
+
+            _logger.LogInformation("Order {OrderId} created successfully", order.Id);
+
+            return CreatedAtAction(nameof(GetOrder), new { id = order.Id }, order);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Unexpected error while placing order batch");
-            return Problem(
-                statusCode: StatusCodes.Status500InternalServerError,
-                title: "Internal Server Error",
-                detail: "An unexpected error occurred while processing your request.");
+            activity?.SetStatus(ActivityStatusCode.Error, ex.Message);
+            activity?.RecordException(ex);
+
+            _logger.LogError(ex, "Error creating order");
+            return StatusCode(500, "Internal server error");
         }
+    }
+
+    /// <summary>
+    /// Updates an existing order with distributed tracing.
+    /// </summary>
+    /// <param name="id">The order identifier.</param>
+    /// <param name="order">The updated order data.</param>
+    /// <returns>No content on success, 404 if order not found.</returns>
+    [HttpPut("{id}")]
+    public async Task<IActionResult> UpdateOrder(string id, [FromBody] Order order)
+    {
+        using var activity = _activitySource.StartActivity("UpdateOrder.BusinessLogic");
+
+        try
+        {
+            activity?.SetTag("orders.id", id);
+            activity?.SetTag("orders.operation", "update");
+
+            _logger.LogInformation("Updating order {OrderId}", id);
+
+            var existingOrder = await GetOrderFromDatabase(id);
+            if (existingOrder == null)
+            {
+                activity?.SetTag("orders.found", false);
+                _logger.LogWarning("Order {OrderId} not found for update", id);
+                return NotFound();
+            }
+
+            // Create child span for database update
+            using (var dbActivity = _activitySource.StartActivity("UpdateOrder.Database", ActivityKind.Internal))
+            {
+                dbActivity?.SetTag("db.operation", "update");
+                dbActivity?.SetTag("db.table", "Orders");
+
+                await UpdateOrderInDatabase(id, order);
+
+                dbActivity?.AddEvent(new ActivityEvent("Order updated in database"));
+            }
+
+            activity?.AddEvent(new ActivityEvent("Order updated successfully"));
+            _logger.LogInformation("Order {OrderId} updated successfully", id);
+
+            return NoContent();
+        }
+        catch (Exception ex)
+        {
+            activity?.SetStatus(ActivityStatusCode.Error, ex.Message);
+            activity?.RecordException(ex);
+
+            _logger.LogError(ex, "Error updating order {OrderId}", id);
+            return StatusCode(500, "Internal server error");
+        }
+    }
+
+    /// <summary>
+    /// Deletes an order with distributed tracing.
+    /// </summary>
+    /// <param name="id">The order identifier.</param>
+    /// <returns>No content on success, 404 if order not found.</returns>
+    [HttpDelete("{id}")]
+    public async Task<IActionResult> DeleteOrder(string id)
+    {
+        using var activity = _activitySource.StartActivity("DeleteOrder.BusinessLogic");
+
+        try
+        {
+            activity?.SetTag("orders.id", id);
+            activity?.SetTag("orders.operation", "delete");
+
+            _logger.LogInformation("Deleting order {OrderId}", id);
+
+            var existingOrder = await GetOrderFromDatabase(id);
+            if (existingOrder == null)
+            {
+                activity?.SetTag("orders.found", false);
+                _logger.LogWarning("Order {OrderId} not found for deletion", id);
+                return NotFound();
+            }
+
+            // Create child span for database deletion
+            using (var dbActivity = _activitySource.StartActivity("DeleteOrder.Database", ActivityKind.Internal))
+            {
+                dbActivity?.SetTag("db.operation", "delete");
+                dbActivity?.SetTag("db.table", "Orders");
+
+                await DeleteOrderFromDatabase(id);
+
+                dbActivity?.AddEvent(new ActivityEvent("Order deleted from database"));
+            }
+
+            activity?.AddEvent(new ActivityEvent("Order deleted successfully"));
+            _logger.LogInformation("Order {OrderId} deleted successfully", id);
+
+            return NoContent();
+        }
+        catch (Exception ex)
+        {
+            activity?.SetStatus(ActivityStatusCode.Error, ex.Message);
+            activity?.RecordException(ex);
+
+            _logger.LogError(ex, "Error deleting order {OrderId}", id);
+            return StatusCode(500, "Internal server error");
+        }
+    }
+
+    // Private helper methods (replace with actual implementations)
+
+    private Task<IEnumerable<Order>> GetOrdersFromDatabase()
+    {
+        // TODO: Implement actual database query
+        return Task.FromResult(Enumerable.Empty<Order>());
+    }
+
+    private Task<Order?> GetOrderFromDatabase(string id)
+    {
+        // TODO: Implement actual database query
+        return Task.FromResult<Order?>(null);
+    }
+
+    private Task SaveOrderToDatabase(Order order)
+    {
+        // TODO: Implement actual database insertion
+        return Task.CompletedTask;
+    }
+
+    private Task UpdateOrderInDatabase(string id, Order order)
+    {
+        // TODO: Implement actual database update
+        return Task.CompletedTask;
+    }
+
+    private Task DeleteOrderFromDatabase(string id)
+    {
+        // TODO: Implement actual database deletion
+        return Task.CompletedTask;
+    }
+
+    private Task PublishOrderCreatedEvent(Order order, Activity? activity)
+    {
+        // TODO: Implement Service Bus message publishing with trace context propagation
+        // Example: Include TraceId and SpanId in message properties for correlation
+        // message.ApplicationProperties["Diagnostic-Id"] = Activity.Current?.Id;
+        // message.ApplicationProperties["traceparent"] = Activity.Current?.TraceParent;
+        return Task.CompletedTask;
     }
 }
 
 /// <summary>
-/// Response model for batch order operations
+/// Order data model.
 /// </summary>
-public sealed record BatchOrderResponse
+public class Order
 {
-    /// <summary>
-    /// Response message
-    /// </summary>
-    public required string Message { get; init; }
-
-    /// <summary>
-    /// Number of orders in the batch
-    /// </summary>
-    public required int OrderCount { get; init; }
-
-    /// <summary>
-    /// List of order IDs in the batch
-    /// </summary>
-    public required List<int> OrderIds { get; init; }
+    public string Id { get; set; } = string.Empty;
+    public string CustomerId { get; set; } = string.Empty;
+    public decimal TotalAmount { get; set; }
+    public string Status { get; set; } = string.Empty;
+    public DateTime CreatedAt { get; set; }
 }

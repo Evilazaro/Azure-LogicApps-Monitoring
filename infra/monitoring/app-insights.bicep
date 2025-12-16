@@ -1,3 +1,20 @@
+/*
+  Application Insights Module
+  ===========================
+  Deploys workspace-based Application Insights instance.
+  
+  Features:
+  - Workspace-based Application Insights (connected to Log Analytics)
+  - Public network access enabled for ingestion and query
+  - Diagnostic settings for Application Insights telemetry
+  - Web application type for general-purpose monitoring
+  
+  Outputs:
+  - Connection string for application telemetry
+  - Instrumentation key for legacy integrations
+  - Resource name for reference
+*/
+
 metadata name = 'Application Insights'
 metadata description = 'Deploys workspace-based Application Insights for application telemetry and monitoring'
 
@@ -63,9 +80,6 @@ resource appInsights 'Microsoft.Insights/components@2020-02-02' = {
 
 @description('Name of the deployed Application Insights instance')
 output AZURE_APPLICATION_INSIGHTS_NAME string = appInsights.name
-
-@description('Resource ID of the deployed Application Insights instance')
-output AZURE_APPLICATION_INSIGHTS_ID string = appInsights.id
 
 @description('Instrumentation key for Application Insights telemetry')
 output AZURE_APPLICATION_INSIGHTS_INSTRUMENTATION_KEY string = appInsights.properties.InstrumentationKey

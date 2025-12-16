@@ -1,3 +1,24 @@
+/*
+  Logic Apps Standard Module
+  ==========================
+  Deploys Logic Apps Standard workflow engine with elastic App Service Plan.
+  
+  Components:
+  1. App Service Plan (WorkflowStandard tier)
+     - Elastic scaling: 3-20 instances
+     - WS1 SKU for production workloads
+  2. Logic App (functionapp, workflowapp kind)
+     - Managed identity authentication
+     - Application Insights integration
+     - Functions runtime v4
+  
+  Configuration:
+  - Uses existing storage account (required for Logic Apps Standard)
+  - Extension bundle for workflow actions/triggers
+  - Always-on enabled for reliable execution
+  - HTTPS only with TLS 1.2 minimum
+*/
+
 metadata name = 'Logic Apps Standard'
 metadata description = 'Deploys Logic Apps Standard workflow engine with App Service Plan'
 
@@ -88,8 +109,13 @@ resource wfASP 'Microsoft.Web/serverfarms@2025-03-01' = {
   }
 }
 
+// Azure Functions runtime configuration for Logic Apps Standard
+// Logic Apps Standard is built on Azure Functions v4 runtime
 var functionsExtensionVersion = '~4'
 var functionsWorkerRuntime = 'dotnet'
+
+// Workflow extension bundle provides Logic Apps actions and triggers
+// Version range allows patch updates within major version 1.x
 var extensionBundleId = 'Microsoft.Azure.Functions.ExtensionBundle.Workflows'
 var extensionBundleVersion = '[1.*, 2.0.0)'
 
@@ -122,6 +148,9 @@ resource workflowEngine 'Microsoft.Web/sites@2025-03-01' = {
   }
 }
 
+// Configure Logic App runtime settings
+// Uses managed identity for storage authentication (no connection strings)
+// All workflow settings configured for Azure environment
 @description('Application settings configuration for Logic App workflow engine')
 resource wfConf 'Microsoft.Web/sites/config@2025-03-01' = {
   parent: workflowEngine
@@ -166,15 +195,3 @@ resource wfDiag 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
 }
 
 // ========== Outputs ==========
-
-@description('Resource ID of the deployed Logic App')
-output WORKFLOW_ENGINE_ID string = workflowEngine.id
-
-@description('Name of the deployed Logic App')
-output WORKFLOW_ENGINE_NAME string = workflowEngine.name
-
-@description('Resource ID of the App Service Plan')
-output WORKFLOW_ENGINE_ASP_ID string = wfASP.id
-
-@description('Name of the App Service Plan')
-output APP_SERVICE_PLAN_NAME string = wfASP.name

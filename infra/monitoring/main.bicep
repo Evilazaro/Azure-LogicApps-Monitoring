@@ -1,3 +1,19 @@
+/*
+  Monitoring Infrastructure Module
+  ================================
+  Orchestrates deployment of all monitoring and observability components.
+  
+  Components:
+  - Log Analytics workspace with linked storage accounts
+  - Application Insights for telemetry collection
+  - Azure Monitor health model for service hierarchy
+  
+  Key Features:
+  - Centralized logging with 30-day retention
+  - Workspace-based Application Insights integration
+  - Diagnostic settings for all resources
+*/
+
 metadata name = 'Monitoring Infrastructure'
 metadata description = 'Deploys Log Analytics, Application Insights, and health monitoring for the solution'
 
@@ -5,8 +21,8 @@ metadata description = 'Deploys Log Analytics, Application Insights, and health 
 
 import { tagsType } from '../types.bicep'
 
-// (Note: Diagnostic settings use object[] instead of user-defined types 
-// due to Azure Resource Provider schema requirements)
+// Note: Diagnostic settings use object[] instead of user-defined types
+// due to Azure Resource Provider schema requirements
 
 // ========== Parameters ==========
 
@@ -36,6 +52,8 @@ param tags tagsType
 
 // ========== Variables ==========
 
+// Diagnostic settings configuration for comprehensive logging
+// Captures all log categories from monitoring resources
 var allLogsSettings = [
   {
     categoryGroup: 'allLogs'
@@ -43,6 +61,8 @@ var allLogsSettings = [
   }
 ]
 
+// Diagnostic settings configuration for comprehensive metrics
+// Captures all metric categories from monitoring resources
 var allMetricsSettings = [
   {
     categoryGroup: 'allMetrics'
@@ -88,8 +108,12 @@ module insights 'app-insights.bicep' = {
 
 // ========== Outputs ==========
 
+// Log Analytics Workspace Outputs (Microsoft.OperationalInsights/workspaces)
 @description('Resource ID of the Log Analytics workspace for configuring diagnostic settings')
 output AZURE_LOG_ANALYTICS_WORKSPACE_ID string = operational.outputs.AZURE_LOG_ANALYTICS_WORKSPACE_ID
+
+@description('Name of the deployed Log Analytics workspace')
+output AZURE_LOG_ANALYTICS_WORKSPACE_NAME string = operational.outputs.AZURE_LOG_ANALYTICS_WORKSPACE_NAME
 
 @description('Log Analytics workspace customer ID')
 output AZURE_LOG_ANALYTICS_WORKSPACE_CUSTOMER_ID string = operational.outputs.AZURE_LOG_ANALYTICS_WORKSPACE_CUSTOMER_ID
@@ -98,11 +122,9 @@ output AZURE_LOG_ANALYTICS_WORKSPACE_CUSTOMER_ID string = operational.outputs.AZ
 @secure()
 output AZURE_LOG_ANALYTICS_WORKSPACE_PRIMARY_KEY string = operational.outputs.AZURE_LOG_ANALYTICS_WORKSPACE_PRIMARY_KEY
 
+// Application Insights Outputs (Microsoft.Insights/components)
 @description('Name of the deployed Application Insights instance')
 output AZURE_APPLICATION_INSIGHTS_NAME string = insights.outputs.AZURE_APPLICATION_INSIGHTS_NAME
-
-@description('Resource ID of the deployed Application Insights instance')
-output AZURE_APPLICATION_INSIGHTS_ID string = insights.outputs.AZURE_APPLICATION_INSIGHTS_ID
 
 @description('Connection string for Application Insights telemetry')
 output AZURE_APPLICATION_INSIGHTS_CONNECTION_STRING string = insights.outputs.AZURE_APPLICATION_INSIGHTS_CONNECTION_STRING
@@ -110,8 +132,6 @@ output AZURE_APPLICATION_INSIGHTS_CONNECTION_STRING string = insights.outputs.AZ
 @description('Instrumentation key for Application Insights telemetry')
 output AZURE_APPLICATION_INSIGHTS_INSTRUMENTATION_KEY string = insights.outputs.AZURE_APPLICATION_INSIGHTS_INSTRUMENTATION_KEY
 
-@description('Name of the deployed Log Analytics workspace')
-output AZURE_LOG_ANALYTICS_WORKSPACE_NAME string = operational.outputs.AZURE_LOG_ANALYTICS_WORKSPACE_NAME
-
+// Storage Account Outputs (Microsoft.Storage/storageAccounts)
 @description('Resource ID of the storage account for diagnostic logs and metrics')
 output LOGS_STORAGE_ACCOUNT_ID string = operational.outputs.LOGS_STORAGE_ACCOUNT_ID
