@@ -12,38 +12,96 @@ using System.Diagnostics;
 
 namespace Microsoft.Extensions.Hosting;
 
-// Adds common Aspire services: service discovery, resilience, health checks, and OpenTelemetry.
-// This project should be referenced by each service project in your solution.
-// To learn more about using this project, see https://aka.ms/dotnet/aspire/service-defaults
+/// <summary>
+/// Provides extension methods for configuring common Aspire services including
+/// service discovery, resilience, health checks, and comprehensive OpenTelemetry instrumentation.
+/// </summary>
+/// <remarks>
+/// This project should be referenced by each service project in your solution to ensure
+/// consistent observability, resilience patterns, and service discovery configuration.
+/// For more information, see https://aka.ms/dotnet/aspire/service-defaults
+/// </remarks>
 public static class Extensions
 {
+    #region Constants
+
     private const string HealthEndpointPath = "/health";
     private const string AlivenessEndpointPath = "/alive";
+    private const string LiveHealthCheckTag = "live";
+    private const string ServiceNamespace = "eShop.Orders";
 
     /// <summary>
     /// Activity source name for custom application spans.
-    /// This should be used when creating custom activities throughout the application.
+    /// Use this constant when creating custom activities throughout the application
+    /// to ensure proper trace correlation and filtering.
     /// </summary>
+    /// <example>
+    /// <code>
+    /// using var activity = activitySource.StartActivity("ProcessOrder", ActivityKind.Internal);
+    /// activity?.SetTag("order.id", orderId);
+    /// activity?.SetTag("order.total", total);
+    /// </code>
+    /// </example>
     public const string ApplicationActivitySourceName = "eShop.Orders";
 
-    public static TBuilder AddServiceDefaults<TBuilder>(this TBuilder builder) where TBuilder : IHostApplicationBuilder
+    #endregion
+
+    #region Service Defaults Configuration
+
+    /// <summary>
+    /// Adds default Aspire services including OpenTelemetry, health checks, service discovery, and resilience patterns.
+    /// </summary>
+    /// <typeparam name="TBuilder">The host application builder type (WebApplicationBuilder or HostApplicationBuilder).</typeparam>
+    /// <param name="builder">The host application builder instance.</param>
+    /// <returns>The configured builder for method chaining.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when builder is null.</exception>
+    /// <remarks>
+    /// This method configures the following features:
+    /// <list type="bullet">
+    /// <item>OpenTelemetry with distributed tracing, metrics, and logging</item>
+    /// <item>Health checks with liveness and readiness probes</item>
+    /// <item>Service discovery for inter-service communication</item>
+    /// <item>Standard resilience handlers with retry, circuit breaker, and timeout policies</item>
+    /// </list>
+    /// </remarks>
+    public static TBuilder AddServiceDefaults<TBuilder>(this TBuilder builder)
+        where TBuilder : IHostApplicationBuilder
     {
+        ArgumentNullException.ThrowIfNull(builder);
+
         builder.ConfigureOpenTelemetry();
-
         builder.AddDefaultHealthChecks();
+        builder.AddServiceDiscoveryWithResilience();
 
+        return builder;
+    }
+
+    /// <summary>
+    /// Configures service discovery with resilience patterns for HTTP client communication.
+    /// </summary>
+    /// <typeparam name="TBuilder">The host application builder type.</typeparam>
+    /// <param name="builder">The host application builder instance.</param>
+    /// <returns>The configured builder for method chaining.</returns>
+    private static TBuilder AddServiceDiscoveryWithResilience<TBuilder>(this TBuilder builder)
+        where TBuilder : IHostApplicationBuilder
+    {
         builder.Services.AddServiceDiscovery();
 
         builder.Services.ConfigureHttpClientDefaults(http =>
         {
-            // Turn on resilience by default
+            // Apply standard resilience handler with:
+            // - Retry policy: 3 attempts with exponential backoff
+            // - Circuit breaker: Opens after 5 consecutive failures
+            // - Timeout: 30 seconds per request
             http.AddStandardResilienceHandler();
 
-            // Turn on service discovery by default
+            // Enable service discovery for all HTTP clients
+            // Resolves service names to endpoints automatically
             http.AddServiceDiscovery();
         });
 
-        // Uncomment the following to restrict the allowed schemes for service discovery.
+        // Optional: Restrict allowed schemes for security
+        // Uncomment to enforce HTTPS-only communication in production
         // builder.Services.Configure<ServiceDiscoveryOptions>(options =>
         // {
         //     options.AllowedSchemes = ["https"];
@@ -52,247 +110,319 @@ public static class Extensions
         return builder;
     }
 
+    #endregion
+
+    #region OpenTelemetry Configuration
+
     /// <summary>
-    /// Configures comprehensive OpenTelemetry instrumentation including metrics, traces, and logs.
-    /// Implements distributed tracing with context propagation following W3C Trace Context specification.
+    /// Configures comprehensive OpenTelemetry instrumentation including metrics, traces, and logs
+    /// with distributed tracing context propagation following W3C Trace Context specification.
     /// </summary>
     /// <typeparam name="TBuilder">The host application builder type.</typeparam>
     /// <param name="builder">The host application builder instance.</param>
     /// <returns>The configured builder for method chaining.</returns>
-    public static TBuilder ConfigureOpenTelemetry<TBuilder>(this TBuilder builder) where TBuilder : IHostApplicationBuilder
+    /// <exception cref="ArgumentNullException">Thrown when builder is null.</exception>
+    /// <remarks>
+    /// This method configures:
+    /// <list type="bullet">
+    /// <item>Structured logging with formatted messages and scopes</item>
+    /// <item>Resource attributes including service name, version, and environment</item>
+    /// <item>Metrics for ASP.NET Core, HTTP clients, and .NET runtime</item>
+    /// <item>Distributed tracing with automatic instrumentation and custom enrichment</item>
+    /// <item>Environment-specific sampling strategies (always-on for dev, ratio-based for prod)</item>
+    /// <item>Exporters for OTLP (Aspire Dashboard) and Azure Monitor (Application Insights)</item>
+    /// </list>
+    /// </remarks>
+    public static TBuilder ConfigureOpenTelemetry<TBuilder>(this TBuilder builder)
+        where TBuilder : IHostApplicationBuilder
     {
-        // Configure structured logging with OpenTelemetry
-        builder.Logging.AddOpenTelemetry(logging =>
-        {
-            // Include formatted message for better readability in Application Insights
-            logging.IncludeFormattedMessage = true;
+        ArgumentNullException.ThrowIfNull(builder);
 
-            // Include log scopes for contextual information (user ID, correlation ID, etc.)
-            logging.IncludeScopes = true;
-        });
+        ConfigureLogging(builder);
+        ConfigureResourceAttributes(builder);
 
         builder.Services.AddOpenTelemetry()
-            .ConfigureResource(resource =>
-            {
-                // Set service name and version for proper identification in distributed traces
-                // This appears in Application Insights Application Map and dependency graphs
-                resource.AddService(
-                    serviceName: builder.Environment.ApplicationName,
-                    serviceVersion: typeof(Extensions).Assembly.GetName().Version?.ToString() ?? "1.0.0",
-                    serviceInstanceId: Environment.MachineName);
+            .WithMetrics(metrics => ConfigureMetrics(metrics, builder))
+            .WithTracing(tracing => ConfigureTracing(tracing, builder));
 
-                // Add deployment environment for filtering traces by environment
-                resource.AddAttributes(new Dictionary<string, object>
-                {
-                    ["deployment.environment"] = builder.Environment.EnvironmentName,
-                    ["service.namespace"] = "eShop.Orders"
-                });
-            })
-            .WithMetrics(metrics =>
-            {
-                // ASP.NET Core metrics: request duration, active requests, failed requests
-                metrics.AddAspNetCoreInstrumentation();
-
-                // HTTP client metrics: outbound request duration, failures, retries
-                metrics.AddHttpClientInstrumentation();
-
-                // .NET runtime metrics: GC collections, thread pool utilization, exception counts
-                metrics.AddRuntimeInstrumentation();
-
-                // Note: AddProcessInstrumentation() is not available in OpenTelemetry.Instrumentation.Runtime
-                // Process metrics are included in AddRuntimeInstrumentation() which covers:
-                // - CPU usage, memory consumption, thread count, GC collections, etc.
-
-                // Add meters for custom application metrics
-                metrics.AddMeter(ApplicationActivitySourceName);
-            })
-            .WithTracing(tracing =>
-            {
-                // Add application-specific activity source for custom spans
-                tracing.AddSource(ApplicationActivitySourceName);
-
-                // Add default activity source using application name
-                tracing.AddSource(builder.Environment.ApplicationName);
-
-                // ASP.NET Core instrumentation: automatic spans for HTTP requests
-                tracing.AddAspNetCoreInstrumentation(options =>
-                {
-                    // Exclude health check endpoints from traces to reduce noise
-                    options.Filter = context =>
-                        !context.Request.Path.StartsWithSegments(HealthEndpointPath)
-                        && !context.Request.Path.StartsWithSegments(AlivenessEndpointPath);
-
-                    // Enrich spans with additional HTTP request information
-                    options.EnrichWithHttpRequest = (activity, httpRequest) =>
-                    {
-                        // Add custom tags for better trace filtering and analysis
-                        activity.SetTag("http.request.host", httpRequest.Host.ToString());
-                        activity.SetTag("http.request.scheme", httpRequest.Scheme);
-
-                        // Add user agent for client tracking
-                        if (httpRequest.Headers.UserAgent.Count > 0)
-                        {
-                            activity.SetTag("http.user_agent", httpRequest.Headers.UserAgent.ToString());
-                        }
-
-                        // Add correlation ID if present (common in enterprise scenarios)
-                        if (httpRequest.Headers.TryGetValue("X-Correlation-ID", out var correlationId))
-                        {
-                            activity.SetTag("correlation.id", correlationId.ToString());
-                        }
-                    };
-
-                    // Enrich spans with HTTP response information
-                    options.EnrichWithHttpResponse = (activity, httpResponse) =>
-                    {
-                        // Add response size for performance analysis
-                        if (httpResponse.ContentLength.HasValue)
-                        {
-                            activity.SetTag("http.response.content_length", httpResponse.ContentLength.Value);
-                        }
-
-                        // Mark activity as error for non-success status codes
-                        if (httpResponse.StatusCode >= 400)
-                        {
-                            activity.SetStatus(ActivityStatusCode.Error, $"HTTP {httpResponse.StatusCode}");
-                        }
-                    };
-
-                    // Enrich spans with exception details
-                    options.EnrichWithException = (activity, exception) =>
-                    {
-                        // Add detailed exception information for troubleshooting
-                        activity.SetTag("exception.type", exception.GetType().FullName);
-                        activity.SetTag("exception.message", exception.Message);
-                        activity.SetTag("exception.stacktrace", exception.StackTrace);
-
-                        // Add inner exception if present
-                        if (exception.InnerException != null)
-                        {
-                            activity.SetTag("exception.inner.type", exception.InnerException.GetType().FullName);
-                            activity.SetTag("exception.inner.message", exception.InnerException.Message);
-                        }
-                    };
-
-                    // Record all exceptions as events in the span
-                    options.RecordException = true;
-                });
-
-                // HTTP client instrumentation: automatic spans for outbound HTTP calls
-                tracing.AddHttpClientInstrumentation(options =>
-                {
-                    // Enrich outbound HTTP request spans
-                    options.EnrichWithHttpRequestMessage = (activity, httpRequestMessage) =>
-                    {
-                        activity.SetTag("http.request.method", httpRequestMessage.Method.ToString());
-                        activity.SetTag("http.request.uri", httpRequestMessage.RequestUri?.ToString());
-
-                        // Add custom headers for distributed tracing context
-                        if (httpRequestMessage.Headers.TryGetValues("X-Request-ID", out var requestId))
-                        {
-                            activity.SetTag("http.request.id", string.Join(",", requestId));
-                        }
-                    };
-
-                    // Enrich with HTTP response message
-                    options.EnrichWithHttpResponseMessage = (activity, httpResponseMessage) =>
-                    {
-                        activity.SetTag("http.response.status_code", (int)httpResponseMessage.StatusCode);
-
-                        // Track response timing for performance monitoring
-                        if (httpResponseMessage.Headers.TryGetValues("X-Response-Time", out var responseTime))
-                        {
-                            activity.SetTag("http.response.time_ms", string.Join(",", responseTime));
-                        }
-                    };
-
-                    // Enrich with exception details for failed requests
-                    options.EnrichWithException = (activity, exception) =>
-                    {
-                        activity.SetTag("http.exception.type", exception.GetType().FullName);
-                        activity.SetTag("http.exception.message", exception.Message);
-                    };
-
-                    // Record exceptions in HTTP client spans
-                    options.RecordException = true;
-
-                    // Filter out health check requests to external services
-                    options.FilterHttpRequestMessage = (httpRequestMessage) =>
-                    {
-                        return !httpRequestMessage.RequestUri?.PathAndQuery.Contains("/health") ?? true;
-                    };
-                });
-
-                // Add SqlClient instrumentation for database tracing (if using SQL Server)
-                // Uncomment and add NuGet package: OpenTelemetry.Instrumentation.SqlClient
-                // tracing.AddSqlClientInstrumentation(options =>
-                // {
-                //     options.SetDbStatementForText = true; // Include SQL statements (be careful with PII)
-                //     options.SetDbStatementForStoredProcedure = true;
-                //     options.RecordException = true;
-                //     options.EnableConnectionLevelAttributes = true;
-                // });
-
-                // Add Azure Service Bus instrumentation for messaging tracing
-                // Uncomment and add NuGet package: Azure.Messaging.ServiceBus.OpenTelemetry
-                tracing.AddSource("Azure.Messaging.ServiceBus.*");
-
-                // Add gRPC client instrumentation if using gRPC
-                // Uncomment and add NuGet package: OpenTelemetry.Instrumentation.GrpcNetClient
-                // tracing.AddGrpcClientInstrumentation(options =>
-                // {
-                //     options.SuppressDownstreamInstrumentation = false;
-                //     options.EnrichWithHttpRequestMessage = (activity, httpRequestMessage) =>
-                //     {
-                //         activity.SetTag("grpc.method", httpRequestMessage.RequestUri?.ToString());
-                //     };
-                // });
-
-                // Set sampler for production environments to reduce telemetry volume
-                // In development, trace everything. In production, sample based on load.
-                if (builder.Environment.IsProduction())
-                {
-                    // Parent-based sampler: always sample if parent is sampled, otherwise use ratio
-                    tracing.SetSampler(new ParentBasedSampler(
-                        new TraceIdRatioBasedSampler(0.1))); // Sample 10% of traces in production
-                }
-                else
-                {
-                    // Always sample in non-production environments for debugging
-                    tracing.SetSampler(new AlwaysOnSampler());
-                }
-
-                // Set resource limits to prevent memory issues
-                tracing.SetResourceBuilder(ResourceBuilder.CreateDefault()
-                    .AddService(builder.Environment.ApplicationName));
-
-                // Configure batch export processor for better performance
-                // Spans are batched before export to reduce network overhead
-                tracing.AddProcessor(new BatchActivityExportProcessor(
-                    new NoopActivityExporter(), // Will be replaced by actual exporter
-                    maxQueueSize: 2048,
-                    scheduledDelayMilliseconds: 5000,
-                    exporterTimeoutMilliseconds: 30000,
-                    maxExportBatchSize: 512));
-            });
-
-        // Configure exporters based on environment variables and configuration
         builder.AddOpenTelemetryExporters();
 
         return builder;
     }
 
     /// <summary>
+    /// Configures structured logging with OpenTelemetry integration.
+    /// </summary>
+    /// <typeparam name="TBuilder">The host application builder type.</typeparam>
+    /// <param name="builder">The host application builder instance.</param>
+    private static void ConfigureLogging<TBuilder>(TBuilder builder)
+        where TBuilder : IHostApplicationBuilder
+    {
+        builder.Logging.AddOpenTelemetry(logging =>
+        {
+            // Include formatted message for better readability in Application Insights
+            // Example: "Order {OrderId} processed successfully" instead of template
+            logging.IncludeFormattedMessage = true;
+
+            // Include log scopes for contextual information
+            // Captures user ID, correlation ID, tenant ID, etc.
+            logging.IncludeScopes = true;
+        });
+    }
+
+    /// <summary>
+    /// Configures OpenTelemetry resource attributes for service identification and filtering.
+    /// </summary>
+    /// <typeparam name="TBuilder">The host application builder type.</typeparam>
+    /// <param name="builder">The host application builder instance.</param>
+    private static void ConfigureResourceAttributes<TBuilder>(TBuilder builder)
+        where TBuilder : IHostApplicationBuilder
+    {
+        var serviceVersion = typeof(Extensions).Assembly.GetName().Version?.ToString() ?? "1.0.0";
+
+        builder.Services.ConfigureOpenTelemetryTracerProvider(tracerProvider =>
+        {
+            tracerProvider.ConfigureResource(resource =>
+            {
+                // Set service identification attributes
+                // These appear in Application Insights Application Map and dependency graphs
+                resource.AddService(
+                    serviceName: builder.Environment.ApplicationName,
+                    serviceVersion: serviceVersion,
+                    serviceInstanceId: Environment.MachineName);
+
+                // Add custom attributes for filtering and grouping
+                resource.AddAttributes(new Dictionary<string, object>
+                {
+                    ["deployment.environment"] = builder.Environment.EnvironmentName,
+                    ["service.namespace"] = ServiceNamespace,
+                    ["host.name"] = Environment.MachineName,
+                    ["process.id"] = Environment.ProcessId
+                });
+            });
+        });
+    }
+
+    /// <summary>
+    /// Configures OpenTelemetry metrics collection for performance monitoring.
+    /// </summary>
+    /// <param name="metrics">The metrics builder to configure.</param>
+    /// <param name="builder">The host application builder instance.</param>
+    private static void ConfigureMetrics<TBuilder>(
+        MeterProviderBuilder metrics,
+        TBuilder builder)
+        where TBuilder : IHostApplicationBuilder
+    {
+        // ASP.NET Core metrics: request duration, active requests, failed requests
+        metrics.AddAspNetCoreInstrumentation();
+
+        // HTTP client metrics: outbound request duration, failures, retries
+        metrics.AddHttpClientInstrumentation();
+
+        // .NET runtime metrics: GC collections, thread pool utilization, exception counts
+        // Also includes process metrics: CPU usage, memory consumption, thread count
+        metrics.AddRuntimeInstrumentation();
+
+        // Add custom application metrics meter
+        metrics.AddMeter(ApplicationActivitySourceName);
+    }
+
+    /// <summary>
+    /// Configures OpenTelemetry distributed tracing with automatic instrumentation and enrichment.
+    /// </summary>
+    /// <param name="tracing">The tracing builder to configure.</param>
+    /// <param name="builder">The host application builder instance.</param>
+    private static void ConfigureTracing<TBuilder>(
+        TracerProviderBuilder tracing,
+        TBuilder builder)
+        where TBuilder : IHostApplicationBuilder
+    {
+        // Add activity sources for custom span creation
+        tracing.AddSource(ApplicationActivitySourceName);
+        tracing.AddSource(builder.Environment.ApplicationName);
+
+        // Configure ASP.NET Core instrumentation with custom enrichment
+        ConfigureAspNetCoreTracing(tracing);
+
+        // Configure HTTP client instrumentation with custom enrichment
+        ConfigureHttpClientTracing(tracing);
+
+        // Add Azure Service Bus instrumentation for messaging tracing
+        tracing.AddSource("Azure.Messaging.ServiceBus.*");
+
+        // Configure sampling strategy based on environment
+        ConfigureSampling(tracing, builder);
+    }
+
+    /// <summary>
+    /// Configures ASP.NET Core tracing instrumentation with request/response enrichment.
+    /// </summary>
+    /// <param name="tracing">The tracing builder to configure.</param>
+    private static void ConfigureAspNetCoreTracing(TracerProviderBuilder tracing)
+    {
+        tracing.AddAspNetCoreInstrumentation(options =>
+        {
+            // Exclude health check endpoints from traces to reduce noise
+            options.Filter = context =>
+                !context.Request.Path.StartsWithSegments(HealthEndpointPath)
+                && !context.Request.Path.StartsWithSegments(AlivenessEndpointPath);
+
+            // Enrich spans with HTTP request details
+            options.EnrichWithHttpRequest = (activity, httpRequest) =>
+            {
+                activity.SetTag("http.request.host", httpRequest.Host.ToString());
+                activity.SetTag("http.request.scheme", httpRequest.Scheme);
+
+                // Add user agent for client tracking
+                if (httpRequest.Headers.UserAgent.Count > 0)
+                {
+                    activity.SetTag("http.user_agent", httpRequest.Headers.UserAgent.ToString());
+                }
+
+                // Add correlation ID if present (common in enterprise scenarios)
+                if (httpRequest.Headers.TryGetValue("X-Correlation-ID", out var correlationId))
+                {
+                    activity.SetTag("correlation.id", correlationId.ToString());
+                }
+            };
+
+            // Enrich spans with HTTP response details
+            options.EnrichWithHttpResponse = (activity, httpResponse) =>
+            {
+                // Add response size for performance analysis
+                if (httpResponse.ContentLength.HasValue)
+                {
+                    activity.SetTag("http.response.content_length", httpResponse.ContentLength.Value);
+                }
+
+                // Mark activity as error for non-success status codes
+                if (httpResponse.StatusCode >= 400)
+                {
+                    activity.SetStatus(ActivityStatusCode.Error, $"HTTP {httpResponse.StatusCode}");
+                }
+            };
+
+            // Enrich spans with exception details
+            options.EnrichWithException = (activity, exception) =>
+            {
+                activity.SetTag("exception.type", exception.GetType().FullName);
+                activity.SetTag("exception.message", exception.Message);
+                activity.SetTag("exception.stacktrace", exception.StackTrace);
+
+                // Add inner exception if present
+                if (exception.InnerException is not null)
+                {
+                    activity.SetTag("exception.inner.type", exception.InnerException.GetType().FullName);
+                    activity.SetTag("exception.inner.message", exception.InnerException.Message);
+                }
+            };
+
+            // Record all exceptions as events in the span
+            options.RecordException = true;
+        });
+    }
+
+    /// <summary>
+    /// Configures HTTP client tracing instrumentation with request/response enrichment.
+    /// </summary>
+    /// <param name="tracing">The tracing builder to configure.</param>
+    private static void ConfigureHttpClientTracing(TracerProviderBuilder tracing)
+    {
+        tracing.AddHttpClientInstrumentation(options =>
+        {
+            // Enrich outbound HTTP request spans
+            options.EnrichWithHttpRequestMessage = (activity, httpRequestMessage) =>
+            {
+                activity.SetTag("http.request.method", httpRequestMessage.Method.ToString());
+                activity.SetTag("http.request.uri", httpRequestMessage.RequestUri?.ToString());
+
+                // Add custom headers for distributed tracing context
+                if (httpRequestMessage.Headers.TryGetValues("X-Request-ID", out var requestId))
+                {
+                    activity.SetTag("http.request.id", string.Join(",", requestId));
+                }
+            };
+
+            // Enrich with HTTP response message
+            options.EnrichWithHttpResponseMessage = (activity, httpResponseMessage) =>
+            {
+                activity.SetTag("http.response.status_code", (int)httpResponseMessage.StatusCode);
+
+                // Track response timing for performance monitoring
+                if (httpResponseMessage.Headers.TryGetValues("X-Response-Time", out var responseTime))
+                {
+                    activity.SetTag("http.response.time_ms", string.Join(",", responseTime));
+                }
+            };
+
+            // Enrich with exception details for failed requests
+            options.EnrichWithException = (activity, exception) =>
+            {
+                activity.SetTag("http.exception.type", exception.GetType().FullName);
+                activity.SetTag("http.exception.message", exception.Message);
+            };
+
+            // Record exceptions in HTTP client spans
+            options.RecordException = true;
+
+            // Filter out health check requests to external services
+            options.FilterHttpRequestMessage = httpRequestMessage =>
+                !httpRequestMessage.RequestUri?.PathAndQuery.Contains("/health") ?? true;
+        });
+    }
+
+    /// <summary>
+    /// Configures trace sampling strategy based on deployment environment.
+    /// </summary>
+    /// <param name="tracing">The tracing builder to configure.</param>
+    /// <param name="builder">The host application builder instance.</param>
+    /// <remarks>
+    /// In production, uses parent-based sampling with 10% ratio to reduce costs.
+    /// In non-production environments, always samples for debugging purposes.
+    /// </remarks>
+    private static void ConfigureSampling<TBuilder>(
+        TracerProviderBuilder tracing,
+        TBuilder builder)
+        where TBuilder : IHostApplicationBuilder
+    {
+        if (builder.Environment.IsProduction())
+        {
+            // Parent-based sampler: always sample if parent is sampled, otherwise use ratio
+            // This ensures complete traces for sampled requests while reducing volume
+            tracing.SetSampler(new ParentBasedSampler(
+                new TraceIdRatioBasedSampler(0.1))); // Sample 10% of traces in production
+        }
+        else
+        {
+            // Always sample in non-production environments for debugging
+            tracing.SetSampler(new AlwaysOnSampler());
+        }
+    }
+
+    #endregion
+
+    #region OpenTelemetry Exporters
+
+    /// <summary>
     /// Configures OpenTelemetry exporters based on environment configuration.
-    /// Supports OTLP (Aspire Dashboard) and Azure Monitor (Application Insights).
+    /// Supports OTLP exporter for Aspire Dashboard (local development) and
+    /// Azure Monitor exporter for Application Insights (production).
     /// </summary>
     /// <typeparam name="TBuilder">The host application builder type.</typeparam>
     /// <param name="builder">The host application builder instance.</param>
     /// <returns>The configured builder for method chaining.</returns>
-    private static TBuilder AddOpenTelemetryExporters<TBuilder>(this TBuilder builder) where TBuilder : IHostApplicationBuilder
+    /// <remarks>
+    /// Exporters are configured based on environment variables:
+    /// <list type="bullet">
+    /// <item>OTEL_EXPORTER_OTLP_ENDPOINT - Enables OTLP exporter (Aspire Dashboard)</item>
+    /// <item>APPLICATIONINSIGHTS_CONNECTION_STRING - Enables Azure Monitor exporter</item>
+    /// </list>
+    /// </remarks>
+    private static TBuilder AddOpenTelemetryExporters<TBuilder>(this TBuilder builder)
+        where TBuilder : IHostApplicationBuilder
     {
-        // Check if OTLP exporter should be enabled (Aspire Dashboard in local development)
-        var useOtlpExporter = !string.IsNullOrWhiteSpace(builder.Configuration["OTEL_EXPORTER_OTLP_ENDPOINT"]);
+        var otlpEndpoint = builder.Configuration["OTEL_EXPORTER_OTLP_ENDPOINT"];
+        var useOtlpExporter = !string.IsNullOrWhiteSpace(otlpEndpoint);
 
         if (useOtlpExporter)
         {
@@ -301,92 +431,137 @@ public static class Extensions
             builder.Services.AddOpenTelemetry().UseOtlpExporter();
         }
 
-        // Azure Monitor exporter for Application Insights in Azure environments
-        if (!string.IsNullOrEmpty(builder.Configuration["APPLICATIONINSIGHTS_CONNECTION_STRING"]))
+        var appInsightsConnectionString = builder.Configuration["APPLICATIONINSIGHTS_CONNECTION_STRING"];
+        if (!string.IsNullOrWhiteSpace(appInsightsConnectionString))
         {
+            // Azure Monitor exporter for Application Insights in Azure environments
             builder.Services.AddOpenTelemetry()
                .UseAzureMonitor(options =>
                {
                    // Connection string is automatically read from configuration
-                   // Additional configuration can be added here if needed
-
-                   // Enable sampling to reduce costs in production
-                   // Azure Monitor will respect the sampler configured in tracing
+                   // The configured sampler in tracing will be respected by Azure Monitor
                });
         }
 
         return builder;
     }
 
+    #endregion
+
+    #region Health Checks
+
     /// <summary>
     /// Adds default health checks for service monitoring and orchestration.
-    /// Health checks are used by Container Apps, Kubernetes, and Azure Load Balancers.
+    /// Health checks are used by Container Apps, Kubernetes, and Azure Load Balancers
+    /// to determine service readiness and liveness.
     /// </summary>
     /// <typeparam name="TBuilder">The host application builder type.</typeparam>
     /// <param name="builder">The host application builder instance.</param>
     /// <returns>The configured builder for method chaining.</returns>
-    public static TBuilder AddDefaultHealthChecks<TBuilder>(this TBuilder builder) where TBuilder : IHostApplicationBuilder
+    /// <exception cref="ArgumentNullException">Thrown when builder is null.</exception>
+    /// <remarks>
+    /// Configures a default "self" health check tagged as "live" for liveness probes.
+    /// Additional health checks (database, message queue, etc.) should be added by individual services.
+    /// </remarks>
+    public static TBuilder AddDefaultHealthChecks<TBuilder>(this TBuilder builder)
+        where TBuilder : IHostApplicationBuilder
     {
+        ArgumentNullException.ThrowIfNull(builder);
+
         builder.Services.AddHealthChecks()
-            // Add a default liveness check to ensure app is responsive
+            // Add default liveness check to ensure app is responsive
             // This is used by orchestrators to determine if the app should be restarted
-            .AddCheck("self", () => HealthCheckResult.Healthy(), ["live"]);
+            .AddCheck("self", () => HealthCheckResult.Healthy(), [LiveHealthCheckTag]);
 
         return builder;
     }
 
     /// <summary>
     /// Maps health check endpoints with distributed tracing integration.
-    /// Endpoints are only exposed in development for security reasons.
+    /// Endpoints are only exposed in development environments for security.
     /// </summary>
     /// <param name="app">The web application instance.</param>
     /// <returns>The configured web application for method chaining.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when app is null.</exception>
+    /// <remarks>
+    /// <para>
+    /// Exposes two endpoints in development:
+    /// <list type="bullet">
+    /// <item>/health - All health checks must pass (readiness probe)</item>
+    /// <item>/alive - Only "live" tagged checks must pass (liveness probe)</item>
+    /// </list>
+    /// </para>
+    /// <para>
+    /// WARNING: Adding health checks endpoints in non-development environments has security implications.
+    /// See https://aka.ms/dotnet/aspire/healthchecks for details before enabling in production.
+    /// </para>
+    /// </remarks>
     public static WebApplication MapDefaultEndpoints(this WebApplication app)
     {
-        // Adding health checks endpoints to applications in non-development environments has security implications.
-        // See https://aka.ms/dotnet/aspire/healthchecks for details before enabling these endpoints in non-development environments.
+        ArgumentNullException.ThrowIfNull(app);
+
         if (app.Environment.IsDevelopment())
         {
-            // All health checks must pass for app to be considered ready to accept traffic after starting
+            // All health checks must pass for app to be considered ready to accept traffic
             app.MapHealthChecks(HealthEndpointPath);
 
-            // Only health checks tagged with the "live" tag must pass for app to be considered alive
+            // Only health checks tagged with "live" must pass for app to be considered alive
             app.MapHealthChecks(AlivenessEndpointPath, new HealthCheckOptions
             {
-                Predicate = r => r.Tags.Contains("live")
+                Predicate = healthCheck => healthCheck.Tags.Contains(LiveHealthCheckTag)
             });
         }
 
         return app;
     }
 
+    #endregion
+
+    #region Activity Source Helper
+
     /// <summary>
     /// Creates an ActivitySource for custom application tracing.
     /// Use this when you need to create custom spans for business logic or complex operations.
     /// </summary>
-    /// <example>
-    /// <code>
-    /// var activitySource = Extensions.CreateActivitySource();
-    /// using var activity = activitySource.StartActivity("ProcessOrder");
-    /// activity?.SetTag("order.id", orderId);
-    /// // Your business logic here
-    /// </code>
-    /// </example>
     /// <returns>An ActivitySource configured with the application name.</returns>
+    /// <remarks>
+    /// <para>
+    /// The returned ActivitySource should be stored as a static field or singleton
+    /// and reused throughout the application lifecycle. Do not create multiple instances.
+    /// </para>
+    /// <para>
+    /// Example usage:
+    /// <code>
+    /// private static readonly ActivitySource ActivitySource = Extensions.CreateActivitySource();
+    /// 
+    /// public async Task ProcessOrderAsync(string orderId)
+    /// {
+    ///     using var activity = ActivitySource.StartActivity("ProcessOrder", ActivityKind.Internal);
+    ///     activity?.SetTag("order.id", orderId);
+    ///     activity?.SetTag("order.source", "api");
+    ///     
+    ///     try
+    ///     {
+    ///         // Your business logic here
+    ///         await ValidateOrderAsync(orderId);
+    ///         await SaveOrderAsync(orderId);
+    ///         
+    ///         activity?.SetStatus(ActivityStatusCode.Ok);
+    ///     }
+    ///     catch (Exception ex)
+    ///     {
+    ///         activity?.SetStatus(ActivityStatusCode.Error, ex.Message);
+    ///         activity?.RecordException(ex);
+    ///         throw;
+    ///     }
+    /// }
+    /// </code>
+    /// </para>
+    /// </remarks>
     public static ActivitySource CreateActivitySource()
     {
         return new ActivitySource(ApplicationActivitySourceName);
     }
-}
 
-/// <summary>
-/// No-op activity exporter used as placeholder in batch processor configuration.
-/// The actual exporter (OTLP or Azure Monitor) is configured separately.
-/// </summary>
-internal sealed class NoopActivityExporter : BaseExporter<Activity>
-{
-    public override ExportResult Export(in Batch<Activity> batch)
-    {
-        return ExportResult.Success;
-    }
+    #endregion
 }
