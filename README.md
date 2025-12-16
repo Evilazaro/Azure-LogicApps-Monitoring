@@ -1000,10 +1000,10 @@ Deploy the Azure infrastructure using Azure Developer CLI (`azd`) with the follo
 4. **Set environment-specific parameters** (optional):
    ```bash
    # For development environment
-   azd env set ENVIRONMENT_NAME dev
+   azd env set AZURE_ENV_NAME dev
    
    # For production environment
-   azd env set ENVIRONMENT_NAME prod
+   azd env set AZURE_ENV_NAME prod
    ```
 
 5. **Deploy infrastructure with parameters**:
