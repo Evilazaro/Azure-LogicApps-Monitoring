@@ -22,7 +22,7 @@ await builder.Build().RunAsync();
 static (IResourceBuilder<AzureApplicationInsightsResource>? AppInsights, IResourceBuilder<AzureServiceBusResource>? ServiceBus)
     ConfigureInfrastructureResources(IDistributedApplicationBuilder builder)
 {
-    if (builder.Environment.IsDevelopment())
+    if (!builder.Environment.IsDevelopment())
     {
         return ConfigureProductionResources(builder);
     }
