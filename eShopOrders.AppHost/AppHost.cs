@@ -3,9 +3,12 @@ using Microsoft.Extensions.Hosting;
 
 var builder = DistributedApplication.CreateBuilder(args);
 
+var ordersApi = builder.AddProject<Projects.eShop_Orders_API>("orders-api");
+var ordersWebApp = builder.AddProject<Projects.eShop_Orders_App>("orders-webapp");
+
 // Configure resources based on environment
 var resources = ConfigureInfrastructureResources(builder);
-ConfigureServices(builder, resources);
+ConfigureServices(builder, ordersApi, ordersWebApp, resources);
 
 await builder.Build().RunAsync();
 
@@ -38,37 +41,23 @@ static (IResourceBuilder<AzureApplicationInsightsResource>? AppInsights, IResour
 static (IResourceBuilder<AzureApplicationInsightsResource> AppInsights, IResourceBuilder<AzureServiceBusResource> ServiceBus)
     ConfigureProductionResources(IDistributedApplicationBuilder builder)
 {
-    // Configuration keys as constants for maintainability
-    const string AppInsightsNameKey = "AZURE_APPLICATION_INSIGHTS_NAME";
-    const string ServiceBusNamespaceKey = "AZURE_SERVICE_BUS_NAMESPACE";
-    const string ResourceGroupKey = "AZURE_RESOURCE_GROUP";
-    const string TenantIdKey = "AZURE_TENANT_ID";
-    const string ClientIdKey = "AZURE_CLIENT_ID";
-
-    // Validate and retrieve required configuration
-    var appInsightsName = GetRequiredConfiguration(builder, AppInsightsNameKey);
-    var serviceBusNamespace = GetRequiredConfiguration(builder, ServiceBusNamespaceKey);
-    var resourceGroupName = GetRequiredConfiguration(builder, ResourceGroupKey);
-
-    // Validate authentication configuration
-    _ = GetRequiredConfiguration(builder, TenantIdKey);
-    _ = GetRequiredConfiguration(builder, ClientIdKey);
-
-    // Create parameters for existing Azure resources
-    var appInsightsParameter = builder.AddParameter("azure-application-insights", appInsightsName);
-    var serviceBusParameter = builder.AddParameter("azure-service-bus", serviceBusNamespace);
-    var resourceGroupParameter = builder.AddParameter("azure-resource-group", resourceGroupName);
+    // Create parameters for Azure resources (these will be stored as secrets)
+    var appInsightsName = builder.AddParameter("azure-application-insights", builder.Configuration.GetSection("AZURE_APPLICATION_INSIGHTS_NAME").Value ?? "");
+    var serviceBusNamespace = builder.AddParameter("azure-service-bus", Environment.GetEnvironmentVariable("AZURE_SERVICE_BUS_NAMESPACE") ?? "");
+    var resourceGroupName = builder.AddParameter("azure-resource-group", Environment.GetEnvironmentVariable("AZURE_RESOURCE_GROUP") ?? "");
+    var tenantId = builder.AddParameter("azure-tenant-id", Environment.GetEnvironmentVariable("AZURE_TENANT_ID") ?? "");
+    var clientId = builder.AddParameter("azure-client-id", Environment.GetEnvironmentVariable("AZURE_CLIENT_ID") ?? "");
 
     // Configure Service Bus with queue
     var serviceBus = builder.AddAzureServiceBus("messaging")
-        .AsExisting(serviceBusParameter, resourceGroupParameter);
+        .AsExisting(serviceBusNamespace, resourceGroupName);
 
     // Add orders queue to the Service Bus namespace
-    var ordersQueue = serviceBus.AddServiceBusQueue("orders-queue");
+    serviceBus.AddServiceBusQueue("orders-queue");
 
     // Configure Application Insights
     var appInsights = builder.AddAzureApplicationInsights("telemetry")
-        .AsExisting(appInsightsParameter, resourceGroupParameter);
+        .AsExisting(appInsightsName, resourceGroupName);
 
     return (AppInsights: appInsights, ServiceBus: serviceBus);
 }
@@ -77,84 +66,51 @@ static (IResourceBuilder<AzureApplicationInsightsResource> AppInsights, IResourc
 /// Configures the Orders API and Web App services with appropriate references and settings.
 /// </summary>
 /// <param name="builder">The distributed application builder.</param>
+/// <param name="ordersApi">The Orders API project resource.</param>
+/// <param name="ordersWebApp">The Orders Web App project resource.</param>
 /// <param name="resources">Infrastructure resources to reference.</param>
 static void ConfigureServices(
     IDistributedApplicationBuilder builder,
+    IResourceBuilder<ProjectResource> ordersApi,
+    IResourceBuilder<ProjectResource> ordersWebApp,
     (IResourceBuilder<AzureApplicationInsightsResource>? AppInsights, IResourceBuilder<AzureServiceBusResource>? ServiceBus) resources)
 {
-    // Configuration keys
-    const string TenantIdKey = "AZURE_TENANT_ID";
-    const string ClientIdKey = "AZURE_CLIENT_ID";
+    // Create parameters for authentication (these can be shared across services)
+    var tenantId = builder.AddParameter("azure-tenant-id", Environment.GetEnvironmentVariable("AZURE_TENANT_ID") ?? "");
+    var clientId = builder.AddParameter("azure-client-id", Environment.GetEnvironmentVariable("AZURE_CLIENT_ID") ?? "");
 
     // Configure Orders API
-    var ordersApiBuilder = builder.AddProject<Projects.eShop_Orders_API>("orders-api")
-        .WithEnvironment("ASPNETCORE_ENVIRONMENT", builder.Environment.EnvironmentName);
-
-    // Add Azure authentication configuration if available
-    var tenantId = builder.Configuration[TenantIdKey];
-    var clientId = builder.Configuration[ClientIdKey];
-
-    if (!string.IsNullOrWhiteSpace(tenantId))
-    {
-        ordersApiBuilder.WithEnvironment(TenantIdKey, tenantId);
-    }
-
-    if (!string.IsNullOrWhiteSpace(clientId))
-    {
-        ordersApiBuilder.WithEnvironment(ClientIdKey, clientId);
-    }
+    ordersApi.WithEnvironment("ASPNETCORE_ENVIRONMENT", builder.Environment.EnvironmentName)
+        .WithEnvironment("AZURE_TENANT_ID", tenantId)
+        .WithEnvironment("AZURE_CLIENT_ID", clientId);
 
     // Add Service Bus reference if available (production only)
     if (resources.ServiceBus != null)
     {
-        ordersApiBuilder.WithReference(resources.ServiceBus);
+        ordersApi.WithReference(resources.ServiceBus);
     }
 
     // Add Application Insights reference if available (production only)
     if (resources.AppInsights != null)
     {
-        ordersApiBuilder.WithReference(resources.AppInsights);
+        ordersApi.WithReference(resources.AppInsights);
     }
 
-    var ordersApi = ordersApiBuilder
-        .WithHttpsEndpoint(port: null, name: "api-https")
-        .WithExternalHttpEndpoints();
+    ordersApi.WithHttpsEndpoint(port: null, name: "api-https")
+              .WithExternalHttpEndpoints();
 
     // Configure Orders Web App (Blazor WebAssembly)
-    var ordersWebAppBuilder = builder.AddProject<Projects.eShop_Orders_App>("orders-webapp")
-        .WithReference(ordersApi)
-        .WaitFor(ordersApi);
+    ordersWebApp.WithReference(ordersApi)
+        .WaitFor(ordersApi)
+        .WithEnvironment("AZURE_CLIENT_ID", clientId)
+        .WithEnvironment("AZURE_TENANT_ID", tenantId);
 
     // Add Application Insights reference if available (production only)
     if (resources.AppInsights != null)
     {
-        ordersWebAppBuilder.WithReference(resources.AppInsights);
+        ordersWebApp.WithReference(resources.AppInsights);
     }
 
-    ordersWebAppBuilder
-        .WithEnvironment(ClientIdKey, clientId)
-        .WithEnvironment(TenantIdKey, tenantId)
-        .WithHttpsEndpoint(port: null, name: "webapp-https")
-        .WithExternalHttpEndpoints();
-}
-
-/// <summary>
-/// Retrieves a required configuration value and throws if it's missing or empty.
-/// </summary>
-/// <param name="builder">The distributed application builder.</param>
-/// <param name="key">The configuration key to retrieve.</param>
-/// <returns>The configuration value.</returns>
-/// <exception cref="InvalidOperationException">Thrown when the configuration value is missing or empty.</exception>
-static string GetRequiredConfiguration(IDistributedApplicationBuilder builder, string key)
-{
-    var value = builder.Configuration[key];
-
-    if (string.IsNullOrWhiteSpace(value))
-    {
-        throw new InvalidOperationException(
-            $"Required configuration '{key}' is missing or empty. " +
-            $"Please ensure it's set in your configuration (appsettings.json, user secrets, or environment variables).");
-    }
-
-    return value;
+    ordersWebApp.WithHttpsEndpoint(port: null, name: "webapp-https")
+                .WithExternalHttpEndpoints();
 }

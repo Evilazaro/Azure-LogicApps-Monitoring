@@ -34,13 +34,26 @@ builder.Services.AddHttpClient<ExternalApiClient>(client =>
     client.DefaultRequestHeaders.Add("Accept", "application/json");
 });
 
-// Register Azure Service Bus client using Aspire integration
+// Register Azure Service Bus client using Aspire integration (if configured)
 // Provides automatic health checks, telemetry, and configuration management
 // Connection name "messaging" maps to the Service Bus resource defined in AppHost
-builder.AddAzureServiceBusClient("messaging");
+var messagingConnectionString = builder.Configuration.GetConnectionString("messaging");
+if (!string.IsNullOrWhiteSpace(messagingConnectionString))
+{
+    builder.AddAzureServiceBusClient("messaging");
 
-// Register background service for continuous message processing from Service Bus
-builder.Services.AddHostedService<OrderMessageHandler>();
+    // Register background service for continuous message processing from Service Bus
+    builder.Services.AddHostedService<OrderMessageHandler>();
+}
+else
+{
+    builder.Logging.AddConsole().Services.Configure<LoggerFilterOptions>(options =>
+    {
+        options.Rules.Add(new LoggerFilterRule(null, "Microsoft.Extensions.Hosting", LogLevel.Information, null));
+    });
+    var logger = LoggerFactory.Create(logging => logging.AddConsole()).CreateLogger("Startup");
+    logger.LogWarning("Service Bus connection string 'messaging' not found. Message processing is disabled.");
+}
 
 var app = builder.Build();
 
@@ -58,21 +71,26 @@ if (app.Environment.IsDevelopment())
     });
 }
 
+// Map health check endpoints FIRST for container orchestration probes
+// Health checks must respond on HTTP without HTTPS redirect
+// Used by load balancers and container orchestrators (Kubernetes, Container Apps)
+app.MapDefaultEndpoints();
+
 // Add correlation ID middleware early in pipeline
 // Ensures all subsequent middleware and logging operations have access to correlation ID
 app.UseCorrelationId();
 
-// Redirect HTTP requests to HTTPS for security
-app.UseHttpsRedirection();
+// Redirect HTTP requests to HTTPS for security (but after health checks)
+// In container environments, ingress handles HTTPS termination
+if (!app.Environment.IsProduction())
+{
+    app.UseHttpsRedirection();
+}
 
 // Enable authorization middleware (currently configured but not enforcing policies)
 app.UseAuthorization();
 
 // Map API controllers to handle HTTP requests
 app.MapControllers();
-
-// Map health check endpoints for monitoring and orchestration
-// Used by load balancers and container orchestrators (Kubernetes, Container Apps)
-app.MapDefaultEndpoints();
 
 app.Run();
