@@ -167,6 +167,3 @@ resource saDiag 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
 
 @description('Name of the deployed storage account')
 output WORKFLOW_STORAGE_ACCOUNT_NAME string = wfSA.name
-
-@description('Resource ID of the deployed storage account')
-output WORKFLOW_STORAGE_ACCOUNT_ID string = wfSA.id

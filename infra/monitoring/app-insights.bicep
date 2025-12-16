@@ -64,9 +64,6 @@ resource appInsights 'Microsoft.Insights/components@2020-02-02' = {
 @description('Name of the deployed Application Insights instance')
 output AZURE_APPLICATION_INSIGHTS_NAME string = appInsights.name
 
-@description('Resource ID of the deployed Application Insights instance')
-output AZURE_APPLICATION_INSIGHTS_ID string = appInsights.id
-
 @description('Instrumentation key for Application Insights telemetry')
 output AZURE_APPLICATION_INSIGHTS_INSTRUMENTATION_KEY string = appInsights.properties.InstrumentationKey
 

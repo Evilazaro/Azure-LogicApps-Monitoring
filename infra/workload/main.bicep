@@ -161,20 +161,6 @@ output AZURE_CONTAINER_APPS_ENVIRONMENT_ID string = services.outputs.AZURE_CONTA
 @description('Default domain for the Container Apps environment')
 output AZURE_CONTAINER_APPS_ENVIRONMENT_DEFAULT_DOMAIN string = services.outputs.AZURE_CONTAINER_APPS_ENVIRONMENT_DEFAULT_DOMAIN
 
-// Logic Apps Standard Outputs (Microsoft.Web/sites)
-@description('Resource ID of the deployed Logic App')
-output WORKFLOW_ENGINE_ID string = workflows.outputs.WORKFLOW_ENGINE_ID
-
-@description('Name of the deployed Logic App')
-output WORKFLOW_ENGINE_NAME string = workflows.outputs.WORKFLOW_ENGINE_NAME
-
-// App Service Plan Outputs (Microsoft.Web/serverfarms)
-@description('Resource ID of the App Service Plan')
-output WORKFLOW_ENGINE_ASP_ID string = workflows.outputs.WORKFLOW_ENGINE_ASP_ID
-
-@description('Name of the App Service Plan')
-output APP_SERVICE_PLAN_NAME string = workflows.outputs.APP_SERVICE_PLAN_NAME
-
 // Storage Account Outputs (Microsoft.Storage/storageAccounts)
 @description('Name of the workflow storage account')
 output WORKFLOW_STORAGE_ACCOUNT_NAME string = messaging.outputs.WORKFLOW_STORAGE_ACCOUNT_NAME

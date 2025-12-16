@@ -81,9 +81,7 @@ resource registry 'Microsoft.ContainerRegistry/registries@2025-11-01' = {
 @description('Login server endpoint for the Azure Container Registry')
 output AZURE_CONTAINER_REGISTRY_ENDPOINT string = registry.properties.loginServer
 
-@description('Resource ID of the managed identity used by Container Registry')
-output AZURE_CONTAINER_REGISTRY_MANAGED_IDENTITY_ID string = userAssignedIdentityId
-
+@description('Name of the Azure Container Registry')
 output AZURE_CONTAINER_REGISTRY_NAME string = registry.name
 
 @description('Diagnostic settings for Container Registry')

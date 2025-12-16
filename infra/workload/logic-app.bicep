@@ -166,15 +166,3 @@ resource wfDiag 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
 }
 
 // ========== Outputs ==========
-
-@description('Resource ID of the deployed Logic App')
-output WORKFLOW_ENGINE_ID string = workflowEngine.id
-
-@description('Name of the deployed Logic App')
-output WORKFLOW_ENGINE_NAME string = workflowEngine.name
-
-@description('Resource ID of the App Service Plan')
-output WORKFLOW_ENGINE_ASP_ID string = wfASP.id
-
-@description('Name of the App Service Plan')
-output APP_SERVICE_PLAN_NAME string = wfASP.name

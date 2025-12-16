@@ -78,9 +78,6 @@ resource logSA 'Microsoft.Storage/storageAccounts@2025-06-01' = {
 
 // ========== Outputs ==========
 
-@description('Resource ID of the deployed storage account for logs')
-output LOGS_STORAGE_ACCOUNT_ID string = logSA.id
-
 @description('Lifecycle management policy for log storage account to delete old logs after 30 days')
 resource saPolicy 'Microsoft.Storage/storageAccounts/managementPolicies@2025-06-01' = {
   parent: logSA
@@ -146,6 +143,9 @@ output AZURE_LOG_ANALYTICS_WORKSPACE_CUSTOMER_ID string = workspace.properties.c
 @description('Primary Key for the Log Analytics workspace')
 @secure()
 output AZURE_LOG_ANALYTICS_WORKSPACE_PRIMARY_KEY string = workspace.listKeys().primarySharedKey
+
+@description('Resource ID of the deployed storage account for logs')
+output LOGS_STORAGE_ACCOUNT_ID string = logSA.id
 
 @description('Diagnostic settings for Log Analytics workspace')
 resource wspDiag 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
