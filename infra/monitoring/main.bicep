@@ -88,8 +88,12 @@ module insights 'app-insights.bicep' = {
 
 // ========== Outputs ==========
 
+// Log Analytics Workspace Outputs (Microsoft.OperationalInsights/workspaces)
 @description('Resource ID of the Log Analytics workspace for configuring diagnostic settings')
 output AZURE_LOG_ANALYTICS_WORKSPACE_ID string = operational.outputs.AZURE_LOG_ANALYTICS_WORKSPACE_ID
+
+@description('Name of the deployed Log Analytics workspace')
+output AZURE_LOG_ANALYTICS_WORKSPACE_NAME string = operational.outputs.AZURE_LOG_ANALYTICS_WORKSPACE_NAME
 
 @description('Log Analytics workspace customer ID')
 output AZURE_LOG_ANALYTICS_WORKSPACE_CUSTOMER_ID string = operational.outputs.AZURE_LOG_ANALYTICS_WORKSPACE_CUSTOMER_ID
@@ -98,6 +102,7 @@ output AZURE_LOG_ANALYTICS_WORKSPACE_CUSTOMER_ID string = operational.outputs.AZ
 @secure()
 output AZURE_LOG_ANALYTICS_WORKSPACE_PRIMARY_KEY string = operational.outputs.AZURE_LOG_ANALYTICS_WORKSPACE_PRIMARY_KEY
 
+// Application Insights Outputs (Microsoft.Insights/components)
 @description('Name of the deployed Application Insights instance')
 output AZURE_APPLICATION_INSIGHTS_NAME string = insights.outputs.AZURE_APPLICATION_INSIGHTS_NAME
 
@@ -110,8 +115,6 @@ output AZURE_APPLICATION_INSIGHTS_CONNECTION_STRING string = insights.outputs.AZ
 @description('Instrumentation key for Application Insights telemetry')
 output AZURE_APPLICATION_INSIGHTS_INSTRUMENTATION_KEY string = insights.outputs.AZURE_APPLICATION_INSIGHTS_INSTRUMENTATION_KEY
 
-@description('Name of the deployed Log Analytics workspace')
-output AZURE_LOG_ANALYTICS_WORKSPACE_NAME string = operational.outputs.AZURE_LOG_ANALYTICS_WORKSPACE_NAME
-
+// Storage Account Outputs (Microsoft.Storage/storageAccounts)
 @description('Resource ID of the storage account for diagnostic logs and metrics')
 output LOGS_STORAGE_ACCOUNT_ID string = operational.outputs.LOGS_STORAGE_ACCOUNT_ID

@@ -77,9 +77,6 @@ module identity 'identity/main.bicep' = {
   }
 }
 
-output MANAGED_IDENTITY_CLIENT_ID string = identity.outputs.MANAGED_IDENTITY_CLIENT_ID
-output MANAGED_IDENTITY_NAME string = identity.outputs.MANAGED_IDENTITY_NAME
-
 module messaging 'messaging/main.bicep' = {
   params: {
     name: name
@@ -92,9 +89,6 @@ module messaging 'messaging/main.bicep' = {
     metricsSettings: allMetricsSettings
   }
 }
-
-@description('Azure Service Bus Name')
-output AZURE_SERVICE_BUS_NAMESPACE string = messaging.outputs.AZURE_SERVICE_BUS_NAMESPACE
 
 module services 'services/main.bicep' = {
   params: {
@@ -129,7 +123,36 @@ module workflows 'logic-app.bicep' = {
 }
 
 // ========== Outputs ==========
+
+// Managed Identity Outputs (Microsoft.ManagedIdentity/userAssignedIdentities)
+@description('Client ID of the deployed managed identity')
+output MANAGED_IDENTITY_CLIENT_ID string = identity.outputs.MANAGED_IDENTITY_CLIENT_ID
+
+@description('Name of the deployed managed identity')
+output MANAGED_IDENTITY_NAME string = identity.outputs.MANAGED_IDENTITY_NAME
+
+@description('Client ID of the deployed managed identity (alias)')
+output AZURE_CLIENT_ID string = identity.outputs.AZURE_CLIENT_ID
+
+@description('Resource ID of the managed identity used by Container Registry')
+output AZURE_CONTAINER_REGISTRY_MANAGED_IDENTITY_ID string = identity.outputs.AZURE_MANAGED_IDENTITY_ID
+
+// Service Bus Outputs (Microsoft.ServiceBus/namespaces)
+@description('Azure Service Bus namespace name')
+output AZURE_SERVICE_BUS_NAMESPACE string = messaging.outputs.AZURE_SERVICE_BUS_NAMESPACE
+
+@description('Azure Service Bus endpoint')
+output MESSAGING_SERVICEBUSENDPOINT string = messaging.outputs.MESSAGING_SERVICEBUSENDPOINT
+
+// Container Registry Outputs (Microsoft.ContainerRegistry/registries)
+@description('Name of the Azure Container Registry')
 output AZURE_CONTAINER_REGISTRY_NAME string = services.outputs.AZURE_CONTAINER_REGISTRY_NAME
+
+@description('Login server endpoint for the Azure Container Registry')
+output AZURE_CONTAINER_REGISTRY_ENDPOINT string = services.outputs.AZURE_CONTAINER_REGISTRY_ENDPOINT
+
+// Container Apps Environment Outputs (Microsoft.App/managedEnvironments)
+@description('Name of the Container Apps Environment')
 output AZURE_CONTAINER_APPS_ENVIRONMENT_NAME string = services.outputs.AZURE_CONTAINER_APPS_ENVIRONMENT_NAME
 
 @description('Resource ID of the Container Apps managed environment')
@@ -138,29 +161,20 @@ output AZURE_CONTAINER_APPS_ENVIRONMENT_ID string = services.outputs.AZURE_CONTA
 @description('Default domain for the Container Apps environment')
 output AZURE_CONTAINER_APPS_ENVIRONMENT_DEFAULT_DOMAIN string = services.outputs.AZURE_CONTAINER_APPS_ENVIRONMENT_DEFAULT_DOMAIN
 
-@description('Login server endpoint for the Azure Container Registry')
-output AZURE_CONTAINER_REGISTRY_ENDPOINT string = services.outputs.AZURE_CONTAINER_REGISTRY_ENDPOINT
-
-output MESSAGING_SERVICEBUSENDPOINT string = messaging.outputs.MESSAGING_SERVICEBUSENDPOINT
-
-@description('Name of the deployed storage account')
-output WORKFLOW_STORAGE_ACCOUNT_NAME string = messaging.outputs.WORKFLOW_STORAGE_ACCOUNT_NAME
-
+// Logic Apps Standard Outputs (Microsoft.Web/sites)
 @description('Resource ID of the deployed Logic App')
 output WORKFLOW_ENGINE_ID string = workflows.outputs.WORKFLOW_ENGINE_ID
 
 @description('Name of the deployed Logic App')
 output WORKFLOW_ENGINE_NAME string = workflows.outputs.WORKFLOW_ENGINE_NAME
 
+// App Service Plan Outputs (Microsoft.Web/serverfarms)
 @description('Resource ID of the App Service Plan')
 output WORKFLOW_ENGINE_ASP_ID string = workflows.outputs.WORKFLOW_ENGINE_ASP_ID
 
 @description('Name of the App Service Plan')
 output APP_SERVICE_PLAN_NAME string = workflows.outputs.APP_SERVICE_PLAN_NAME
 
-// ========== Outputs ==========
-
-@description('Client ID of the deployed managed identity')
-output AZURE_CLIENT_ID string = identity.outputs.AZURE_CLIENT_ID
-
-output AZURE_CONTAINER_REGISTRY_MANAGED_IDENTITY_ID string = identity.outputs.AZURE_MANAGED_IDENTITY_ID
+// Storage Account Outputs (Microsoft.Storage/storageAccounts)
+@description('Name of the workflow storage account')
+output WORKFLOW_STORAGE_ACCOUNT_NAME string = messaging.outputs.WORKFLOW_STORAGE_ACCOUNT_NAME
