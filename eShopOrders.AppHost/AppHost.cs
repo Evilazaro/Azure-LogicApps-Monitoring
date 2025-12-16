@@ -22,7 +22,7 @@ await builder.Build().RunAsync();
 static (IResourceBuilder<AzureApplicationInsightsResource>? AppInsights, IResourceBuilder<AzureServiceBusResource>? ServiceBus)
     ConfigureInfrastructureResources(IDistributedApplicationBuilder builder)
 {
-    if (!builder.Environment.IsDevelopment())
+    if (builder.Environment.IsDevelopment())
     {
         return ConfigureProductionResources(builder);
     }
@@ -34,30 +34,45 @@ static (IResourceBuilder<AzureApplicationInsightsResource>? AppInsights, IResour
 
 /// <summary>
 /// Configures Azure resources for production environments using existing infrastructure.
-/// Validates that all required configuration values are present.
+/// Retrieves configuration from user secrets, appsettings, or environment variables.
 /// </summary>
 /// <param name="builder">The distributed application builder.</param>
 /// <returns>Configured Application Insights and Service Bus resources.</returns>
 static (IResourceBuilder<AzureApplicationInsightsResource> AppInsights, IResourceBuilder<AzureServiceBusResource> ServiceBus)
     ConfigureProductionResources(IDistributedApplicationBuilder builder)
 {
-    // Create parameters for Azure resources (these will be stored as secrets)
-    var appInsightsName = builder.AddParameter("azure-application-insights", builder.Configuration.GetSection("AZURE_APPLICATION_INSIGHTS_NAME").Value ?? "");
-    var serviceBusNamespace = builder.AddParameter("azure-service-bus", Environment.GetEnvironmentVariable("AZURE_SERVICE_BUS_NAMESPACE") ?? "");
-    var resourceGroupName = builder.AddParameter("azure-resource-group", Environment.GetEnvironmentVariable("AZURE_RESOURCE_GROUP") ?? "");
-    var tenantId = builder.AddParameter("azure-tenant-id", Environment.GetEnvironmentVariable("AZURE_TENANT_ID") ?? "");
-    var clientId = builder.AddParameter("azure-client-id", Environment.GetEnvironmentVariable("AZURE_CLIENT_ID") ?? "");
+    // Get values from configuration (user secrets, appsettings, or environment variables)
+    // Aspire automatically loads from these sources in order:
+    // 1. User secrets (dotnet user-secrets)
+    // 2. appsettings.json / appsettings.{Environment}.json
+    // 3. Environment variables
+    var appInsightsName = builder.Configuration["Azure:ApplicationInsights:Name"];
+    var serviceBusNamespace = builder.Configuration["Azure:ServiceBus:Namespace"]; 
+    var resourceGroupName = builder.Configuration["Azure:ResourceGroup"];
+
+    // Validate required configuration
+    if (string.IsNullOrWhiteSpace(appInsightsName))
+        throw new InvalidOperationException("Azure Application Insights name is not configured. Set 'Azure:ApplicationInsights:Name' in user secrets or configuration.");
+    if (string.IsNullOrWhiteSpace(serviceBusNamespace))
+        throw new InvalidOperationException("Azure Service Bus namespace is not configured. Set 'Azure:ServiceBus:Namespace' in user secrets or configuration.");
+    if (string.IsNullOrWhiteSpace(resourceGroupName))
+        throw new InvalidOperationException("Azure Resource Group is not configured. Set 'Azure:ResourceGroup' in user secrets or configuration.");
+
+    // Create parameters for Azure resources
+    var appInsightsParameter = builder.AddParameter("azure-application-insights", appInsightsName);
+    var serviceBusParameter = builder.AddParameter("azure-service-bus", serviceBusNamespace);
+    var resourceGroupParameter = builder.AddParameter("azure-resource-group", resourceGroupName);
 
     // Configure Service Bus with queue
     var serviceBus = builder.AddAzureServiceBus("messaging")
-        .AsExisting(serviceBusNamespace, resourceGroupName);
+        .AsExisting(serviceBusParameter, resourceGroupParameter);
 
     // Add orders queue to the Service Bus namespace
     serviceBus.AddServiceBusQueue("orders-queue");
 
     // Configure Application Insights
     var appInsights = builder.AddAzureApplicationInsights("telemetry")
-        .AsExisting(appInsightsName, resourceGroupName);
+        .AsExisting(appInsightsParameter, resourceGroupParameter);
 
     return (AppInsights: appInsights, ServiceBus: serviceBus);
 }
@@ -75,14 +90,25 @@ static void ConfigureServices(
     IResourceBuilder<ProjectResource> ordersWebApp,
     (IResourceBuilder<AzureApplicationInsightsResource>? AppInsights, IResourceBuilder<AzureServiceBusResource>? ServiceBus) resources)
 {
-    // Create parameters for authentication (these can be shared across services)
-    var tenantId = builder.AddParameter("azure-tenant-id", Environment.GetEnvironmentVariable("AZURE_TENANT_ID") ?? "");
-    var clientId = builder.AddParameter("azure-client-id", Environment.GetEnvironmentVariable("AZURE_CLIENT_ID") ?? "");
+    // Get authentication configuration from secrets
+    var tenantId = builder.Configuration["Azure:TenantId"] 
+        ?? builder.Configuration["AZURE_TENANT_ID"];
+    var clientId = builder.Configuration["Azure:ClientId"] 
+        ?? builder.Configuration["AZURE_CLIENT_ID"];
 
     // Configure Orders API
-    ordersApi.WithEnvironment("ASPNETCORE_ENVIRONMENT", builder.Environment.EnvironmentName)
-        .WithEnvironment("AZURE_TENANT_ID", tenantId)
-        .WithEnvironment("AZURE_CLIENT_ID", clientId);
+    ordersApi.WithEnvironment("ASPNETCORE_ENVIRONMENT", builder.Environment.EnvironmentName);
+
+    // Only add authentication config if values are present
+    if (!string.IsNullOrWhiteSpace(tenantId))
+    {
+        ordersApi.WithEnvironment("AZURE_TENANT_ID", tenantId);
+    }
+
+    if (!string.IsNullOrWhiteSpace(clientId))
+    {
+        ordersApi.WithEnvironment("AZURE_CLIENT_ID", clientId);
+    }
 
     // Add Service Bus reference if available (production only)
     if (resources.ServiceBus != null)
@@ -101,9 +127,18 @@ static void ConfigureServices(
 
     // Configure Orders Web App (Blazor WebAssembly)
     ordersWebApp.WithReference(ordersApi)
-        .WaitFor(ordersApi)
-        .WithEnvironment("AZURE_CLIENT_ID", clientId)
-        .WithEnvironment("AZURE_TENANT_ID", tenantId);
+        .WaitFor(ordersApi);
+
+    // Only add authentication config if values are present
+    if (!string.IsNullOrWhiteSpace(tenantId))
+    {
+        ordersWebApp.WithEnvironment("AZURE_TENANT_ID", tenantId);
+    }
+
+    if (!string.IsNullOrWhiteSpace(clientId))
+    {
+        ordersWebApp.WithEnvironment("AZURE_CLIENT_ID", clientId);
+    }
 
     // Add Application Insights reference if available (production only)
     if (resources.AppInsights != null)

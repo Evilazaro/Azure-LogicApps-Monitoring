@@ -418,14 +418,14 @@ try {
     $secrets = [ordered]@{
         'Azure:AllowResourceGroupCreation'             = 'false'
         'Azure:SubscriptionId'                         = $azureSubscriptionId
-        'AZURE_RESOURCE_GROUP'                         = $azureResourceGroup
+        'Azure:ResourceGroup'                          = $azureResourceGroup
         'Azure:Location'                               = $azureLocation
         'Azure:CredentialSource'                       = 'AzureDeveloperCli'
         'AZURE_CLIENT_ID'                              = $azureClientId
-        'AZURE_APPLICATION_INSIGHTS_NAME'              = $azureApplicationInsightsName
+        'Azure:ApplicationInsights:Name'               = $azureApplicationInsightsName
         'AZURE_TENANT_ID'                              = $azureTenantId
-        'AZURE_SERVICE_BUS_NAMESPACE'                  = $azureServiceBusNamespace
-        'AZURE_MESSAGING_SERVICEBUSENDPOINT'            = $azureMessagingServiceBusEndpoint
+        'Azure:ServiceBus:Namespace'                   = $azureServiceBusNamespace
+        'Azure:ServiceBus:Endpoint'                    = $azureMessagingServiceBusEndpoint
         'AZURE_ENV_NAME'                               = $azureEnvName
     }
     
