@@ -116,7 +116,7 @@ static void ConfigureServices(
     }
 
     var ordersApi = ordersApiBuilder
-        .WithHttpsEndpoint(port: null, name: "https")
+        .WithHttpsEndpoint(port: null, name: "api-https")
         .WithExternalHttpEndpoints();
 
     // Configure Orders Web App (Blazor WebAssembly)
@@ -131,7 +131,7 @@ static void ConfigureServices(
     }
 
     ordersWebAppBuilder
-        .WithHttpsEndpoint(port: null, name: "https")
+        .WithHttpsEndpoint(port: null, name: "webapp-https")
         .WithExternalHttpEndpoints();
 }
 
