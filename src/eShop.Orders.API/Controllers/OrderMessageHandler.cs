@@ -10,7 +10,7 @@ namespace eShop.Orders.API.Services;
 public class OrderMessageHandler : BackgroundService
 {
     private readonly ILogger<OrderMessageHandler> _logger;
-    private readonly ServiceBusClient? _serviceBusClient;
+    private readonly ServiceBusClient _serviceBusClient;
     private readonly ActivitySource _activitySource;
     private ServiceBusProcessor? _processor;
 
@@ -18,10 +18,10 @@ public class OrderMessageHandler : BackgroundService
     /// Initializes a new instance of the OrderMessageHandler.
     /// </summary>
     /// <param name="logger">Logger for structured logging with trace correlation.</param>
-    /// <param name="serviceBusClient">Service Bus client for message processing. Can be null if Service Bus is not configured.</param>
+    /// <param name="serviceBusClient">Service Bus client injected by Aspire integration.</param>
     public OrderMessageHandler(
         ILogger<OrderMessageHandler> logger,
-        ServiceBusClient? serviceBusClient)
+        ServiceBusClient serviceBusClient)
     {
         _logger = logger;
         _serviceBusClient = serviceBusClient;
@@ -30,13 +30,6 @@ public class OrderMessageHandler : BackgroundService
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        // If Service Bus client is not configured, skip message processing
-        if (_serviceBusClient == null)
-        {
-            _logger.LogWarning("Service Bus client is not configured. Message processing is disabled.");
-            return;
-        }
-
         // Create processor for the orders queue
         _processor = _serviceBusClient.CreateProcessor("orders-queue", new ServiceBusProcessorOptions
         {
@@ -48,7 +41,7 @@ public class OrderMessageHandler : BackgroundService
         _processor.ProcessMessageAsync += ProcessMessageAsync;
         _processor.ProcessErrorAsync += ProcessErrorAsync;
 
-        _logger.LogInformation("Starting Service Bus message processor");
+        _logger.LogInformation("Starting Service Bus message processor for queue: orders-queue");
         await _processor.StartProcessingAsync(stoppingToken);
 
         // Wait for cancellation

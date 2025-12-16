@@ -8,7 +8,6 @@
 // </summary>
 // ------------------------------------------------------------------------------
 
-using Azure.Identity;
 using eShop.Orders.API.Middleware;
 using eShop.Orders.API.Services;
 
@@ -35,34 +34,12 @@ builder.Services.AddHttpClient<ExternalApiClient>(client =>
     client.DefaultRequestHeaders.Add("Accept", "application/json");
 });
 
-// Register Service Bus client as singleton for efficient connection pooling
-// Single instance is reused across all message operations
-builder.Services.AddSingleton(sp =>
-{
-    var connectionString = builder.Configuration["ConnectionStrings:Messaging"];
-    
-    if (string.IsNullOrWhiteSpace(connectionString))
-    {
-        // In development or when Service Bus is not configured, return null
-        // This prevents startup failures when Service Bus is optional
-        return null;
-    }
-    
-    // When using connection string with Aspire, the credential is already embedded
-    // Use connection string-only constructor for Aspire-managed connections
-    if (connectionString.StartsWith("Endpoint="))
-    {
-        var credential = new DefaultAzureCredential();
-        var endpoint = connectionString.Split(';')[0].Replace("Endpoint=", "");
-        return new Azure.Messaging.ServiceBus.ServiceBusClient(endpoint, credential);
-    }
-    
-    // For local development with emulator or Aspire, use connection string directly
-    return new Azure.Messaging.ServiceBus.ServiceBusClient(connectionString);
-});
+// Register Azure Service Bus client using Aspire integration
+// Provides automatic health checks, telemetry, and configuration management
+// Connection name "messaging" maps to the Service Bus resource defined in AppHost
+builder.AddAzureServiceBusClient("messaging");
 
 // Register background service for continuous message processing from Service Bus
-// Only if Service Bus client is configured
 builder.Services.AddHostedService<OrderMessageHandler>();
 
 var app = builder.Build();
