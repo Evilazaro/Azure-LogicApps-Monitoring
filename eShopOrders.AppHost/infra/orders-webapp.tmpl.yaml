@@ -51,7 +51,7 @@ properties:
           - name: APPLICATIONINSIGHTS_CONNECTION_STRING
             secretRef: applicationinsights-connection-string
     scale:
-      minReplicas: 1
+      minReplicas: 5
 tags:
   azd-service-name: orders-webapp
   aspire-resource-name: orders-webapp

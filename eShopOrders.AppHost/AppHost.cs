@@ -19,7 +19,7 @@ await builder.Build().RunAsync();
 static (IResourceBuilder<AzureApplicationInsightsResource>? AppInsights, IResourceBuilder<AzureServiceBusResource>? ServiceBus)
     ConfigureInfrastructureResources(IDistributedApplicationBuilder builder)
 {
-    if (builder.Environment.IsDevelopment())
+    if (!builder.Environment.IsDevelopment())
     {
         return ConfigureProductionResources(builder);
     }
@@ -63,7 +63,8 @@ static (IResourceBuilder<AzureApplicationInsightsResource> AppInsights, IResourc
     var serviceBus = builder.AddAzureServiceBus("messaging")
         .AsExisting(serviceBusParameter, resourceGroupParameter);
 
-    serviceBus.AddServiceBusQueue("orders-queue");
+    // Add orders queue to the Service Bus namespace
+    var ordersQueue = serviceBus.AddServiceBusQueue("orders-queue");
 
     // Configure Application Insights
     var appInsights = builder.AddAzureApplicationInsights("telemetry")
