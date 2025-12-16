@@ -225,27 +225,6 @@ flowchart LR
         DataSynchronization["Data Synchronization"]
         ConnectorManagement["Connector Management"]
     end
-    
-    style OrderManagement fill:#E6D5FF
-    style WorkflowOrchestration fill:#E6D5FF
-    style OperationalExcellence fill:#E6D5FF
-    style Integration fill:#E6D5FF
-    style OrderCreation fill:#E6D5FF
-    style OrderUpdate fill:#E6D5FF
-    style OrderProcessing fill:#E6D5FF
-    style OrderTracking fill:#E6D5FF
-    style WorkflowDesign fill:#E6D5FF
-    style WorkflowExecution fill:#E6D5FF
-    style WorkflowMonitoring fill:#E6D5FF
-    style StateManagement fill:#E6D5FF
-    style PerformanceOptimization fill:#E6D5FF
-    style CostManagement fill:#E6D5FF
-    style IncidentResponse fill:#E6D5FF
-    style CapacityPlanning fill:#E6D5FF
-    style APIManagement fill:#E6D5FF
-    style EventProcessing fill:#E6D5FF
-    style DataSynchronization fill:#E6D5FF
-    style ConnectorManagement fill:#E6D5FF
 ```
 
 #### Value Stream Map
@@ -265,19 +244,6 @@ flowchart LR
     Monitor --> Analyze["Performance<br/>Analysis"]
     Analyze --> Optimize["Continuous<br/>Optimization"]
     Optimize --> Route
-    
-    style Demand fill:#E6D5FF
-    style Capture fill:#E6D5FF
-    style Validate fill:#E6D5FF
-    style Persist fill:#E6D5FF
-    style Route fill:#E6D5FF
-    style Execute fill:#E6D5FF
-    style Monitor fill:#FFD580
-    style Checkpoint fill:#E6D5FF
-    style Process fill:#E6D5FF
-    style Deliver fill:#E6D5FF
-    style Analyze fill:#FFD580
-    style Optimize fill:#FFD580
 ```
 
 ### Data Architecture
@@ -318,18 +284,6 @@ flowchart LR
     WorkflowState --> MonitoringSystems
     OrderMaster --> Analytics
     WorkflowState --> Analytics
-    
-    style Sources fill:#ADD8E6
-    style MDMHub fill:#FFE5B4
-    style Consumers fill:#90EE90
-    style OrdersAPI fill:#ADD8E6
-    style Workflows fill:#ADD8E6
-    style ServiceBusEvents fill:#ADD8E6
-    style OrderMaster fill:#FFE5B4
-    style WorkflowState fill:#FFE5B4
-    style BlazorApp fill:#90EE90
-    style MonitoringSystems fill:#90EE90
-    style Analytics fill:#90EE90
 ```
 
 #### Event-Driven Data Topology
@@ -385,25 +339,6 @@ flowchart LR
     UpdateWorkflow --> AppInsights
     DeleteWorkflow --> AppInsights
     ProcessWorkflow --> AppInsights
-    
-    style Producers fill:#90EE90
-    style EventBus fill:#FFB347
-    style Consumers fill:#90EE90
-    style Storage fill:#FFE5B4
-    style OrderAPI fill:#90EE90
-    style ExternalSystems fill:#90EE90
-    style OrdersTopic fill:#FFB347
-    style Subscriptions fill:#FFB347
-    style CreateSub fill:#FFB347
-    style UpdateSub fill:#FFB347
-    style DeleteSub fill:#FFB347
-    style ProcessSub fill:#FFB347
-    style CreateWorkflow fill:#90EE90
-    style UpdateWorkflow fill:#90EE90
-    style DeleteWorkflow fill:#90EE90
-    style ProcessWorkflow fill:#90EE90
-    style BlobStorage fill:#FFE5B4
-    style AppInsights fill:#FFE5B4
 ```
 
 #### Monitoring Dataflow
@@ -448,23 +383,6 @@ flowchart LR
     LogsDB --> Workbooks
     TracesDB --> KustoDashboards
     MetricsDB --> KustoDashboards
-    
-    style Ingestion fill:#ADD8E6
-    style Processing fill:#90EE90
-    style Storage fill:#FFE5B4
-    style Governance fill:#D3D3D3
-    style OTLP fill:#ADD8E6
-    style AspireExporter fill:#ADD8E6
-    style LogicAppsLogs fill:#ADD8E6
-    style APILogs fill:#ADD8E6
-    style AspireDashboard fill:#90EE90
-    style AppInsightsProcessing fill:#90EE90
-    style MetricsDB fill:#FFE5B4
-    style LogsDB fill:#FFE5B4
-    style TracesDB fill:#FFE5B4
-    style Alerts fill:#D3D3D3
-    style Workbooks fill:#D3D3D3
-    style KustoDashboards fill:#D3D3D3
 ```
 
 ### Application Architecture
@@ -526,25 +444,6 @@ flowchart LR
     UpdateWorkflow --> AzureStorage
     ProcessWorkflow --> AzureStorage
     DeleteWorkflow --> AzureStorage
-    
-    style Clients fill:#ADD8E6
-    style Gateway fill:#E6D5FF
-    style Services fill:#90EE90
-    style Workflows fill:#90EE90
-    style Messaging fill:#FFB347
-    style Data fill:#FFE5B4
-    style Browser fill:#ADD8E6
-    style MobileApp fill:#ADD8E6
-    style AspireHost fill:#E6D5FF
-    style OrdersAPI fill:#90EE90
-    style BlazorServer fill:#90EE90
-    style BlazorWASM fill:#90EE90
-    style CreateWorkflow fill:#90EE90
-    style UpdateWorkflow fill:#90EE90
-    style ProcessWorkflow fill:#90EE90
-    style DeleteWorkflow fill:#90EE90
-    style ServiceBus fill:#FFB347
-    style AzureStorage fill:#FFE5B4
 ```
 
 #### Event-Driven Architecture
@@ -597,25 +496,6 @@ flowchart LR
     DeleteWorkflow --> AppInsights
     
     OrdersAPI --> AspireDashboard
-    
-    style Producers fill:#90EE90
-    style EventBus fill:#FFB347
-    style Consumers fill:#90EE90
-    style Analytics fill:#FFE5B4
-    style OrdersAPI fill:#90EE90
-    style ScheduledTriggers fill:#90EE90
-    style OrdersTopic fill:#FFB347
-    style Subscriptions fill:#FFB347
-    style CreateOrderSub fill:#FFB347
-    style UpdateOrderSub fill:#FFB347
-    style ProcessOrderSub fill:#FFB347
-    style DeleteOrderSub fill:#FFB347
-    style CreateWorkflow fill:#90EE90
-    style UpdateWorkflow fill:#90EE90
-    style ProcessWorkflow fill:#90EE90
-    style DeleteWorkflow fill:#90EE90
-    style AppInsights fill:#FFE5B4
-    style AspireDashboard fill:#FFE5B4
 ```
 
 #### Event State Transitions
@@ -716,26 +596,6 @@ flowchart LR
     OrdersAPIContainer --> KeyVault
     LogicAppsContainer --> ManagedIdentity
     KeyVault --> ManagedIdentity
-    
-    style Clients fill:#ADD8E6
-    style Gateway fill:#E6D5FF
-    style ApplicationServices fill:#90EE90
-    style MessagingServices fill:#FFB347
-    style DataServices fill:#FFE5B4
-    style ObservabilityServices fill:#D3D3D3
-    style Browser fill:#ADD8E6
-    style MobileApp fill:#ADD8E6
-    style AspireHost fill:#E6D5FF
-    style ContainerAppsIngress fill:#E6D5FF
-    style OrdersAPIContainer fill:#90EE90
-    style BlazorAppContainer fill:#90EE90
-    style LogicAppsContainer fill:#90EE90
-    style ServiceBus fill:#FFB347
-    style StorageAccount fill:#FFE5B4
-    style AppInsights fill:#D3D3D3
-    style LogAnalytics fill:#D3D3D3
-    style KeyVault fill:#D3D3D3
-    style ManagedIdentity fill:#D3D3D3
 ```
 
 #### Container-Based Architecture
@@ -816,32 +676,6 @@ flowchart TB
     
     OrdersAPISvc --> AspireDashboard
     BlazorAppSvc --> AspireDashboard
-    
-    style LoadBalancer fill:#E6D5FF
-    style ContainerEnvironment fill:#90EE90
-    style Services fill:#90EE90
-    style Workloads fill:#90EE90
-    style PersistentStorage fill:#FFE5B4
-    style ObservabilityPlatform fill:#D3D3D3
-    style Ingress fill:#E6D5FF
-    style OrdersAPISvc fill:#90EE90
-    style BlazorAppSvc fill:#90EE90
-    style LogicAppsSvc fill:#90EE90
-    style OrdersAPIPods fill:#90EE90
-    style BlazorAppPods fill:#90EE90
-    style LogicAppPods fill:#90EE90
-    style OrdersAPI1 fill:#90EE90
-    style OrdersAPI2 fill:#90EE90
-    style BlazorApp1 fill:#90EE90
-    style BlazorApp2 fill:#90EE90
-    style LogicApp1 fill:#90EE90
-    style LogicApp2 fill:#90EE90
-    style LogicApp3 fill:#90EE90
-    style BlobStorage fill:#FFE5B4
-    style ServiceBus fill:#FFE5B4
-    style AppInsights fill:#D3D3D3
-    style LogAnalytics fill:#D3D3D3
-    style AspireDashboard fill:#D3D3D3
 ```
 
 #### Serverless Architecture
@@ -889,23 +723,6 @@ flowchart LR
     OrdersAPI --> AppInsights
     LogicApps --> LogAnalytics
     LogicApps --> AppInsights
-    
-    style APIGateway fill:#E6D5FF
-    style ServerlessCompute fill:#90EE90
-    style EventSources fill:#FFB347
-    style DataStorage fill:#FFE5B4
-    style Monitoring fill:#D3D3D3
-    style AspireHost fill:#E6D5FF
-    style ContainerAppsHTTP fill:#E6D5FF
-    style OrdersAPI fill:#90EE90
-    style LogicApps fill:#90EE90
-    style ServiceBusTopic fill:#FFB347
-    style HTTPTrigger fill:#FFB347
-    style TimerTrigger fill:#FFB347
-    style BlobStorage fill:#FFE5B4
-    style TableStorage fill:#FFE5B4
-    style AppInsights fill:#D3D3D3
-    style LogAnalytics fill:#D3D3D3
 ```
 
 #### Platform Engineering
@@ -973,30 +790,6 @@ flowchart TB
     Monitoring --> ContainerApps
     Monitoring --> LogicAppsRuntime
     LogAnalytics --> LogicAppsRuntime
-    
-    style DeveloperExperience fill:#ADD8E6
-    style InternalDeveloperPlatform fill:#90EE90
-    style CICDPipelines fill:#90EE90
-    style RuntimePlatforms fill:#E6D5FF
-    style SharedServices fill:#D3D3D3
-    style DataServices fill:#FFE5B4
-    style VSCode fill:#ADD8E6
-    style AspireDashboard fill:#ADD8E6
-    style DockerCompose fill:#ADD8E6
-    style AspireAppHost fill:#90EE90
-    style ServiceDefaults fill:#90EE90
-    style ConfigManagement fill:#90EE90
-    style GitHubActions fill:#90EE90
-    style BicepTemplates fill:#90EE90
-    style AzureCLI fill:#90EE90
-    style ContainerApps fill:#E6D5FF
-    style LogicAppsRuntime fill:#E6D5FF
-    style Monitoring fill:#D3D3D3
-    style LogAnalytics fill:#D3D3D3
-    style KeyVault fill:#D3D3D3
-    style ManagedIdentity fill:#D3D3D3
-    style StorageAccount fill:#FFE5B4
-    style ServiceBus fill:#FFE5B4
 ```
 
 ## Deployment
