@@ -19,7 +19,7 @@ await builder.Build().RunAsync();
 static (IResourceBuilder<AzureApplicationInsightsResource>? AppInsights, IResourceBuilder<AzureServiceBusResource>? ServiceBus)
     ConfigureInfrastructureResources(IDistributedApplicationBuilder builder)
 {
-    if (!builder.Environment.IsDevelopment())
+    if (builder.Environment.IsDevelopment())
     {
         return ConfigureProductionResources(builder);
     }
@@ -131,6 +131,8 @@ static void ConfigureServices(
     }
 
     ordersWebAppBuilder
+        .WithEnvironment(ClientIdKey, clientId)
+        .WithEnvironment(TenantIdKey, tenantId)
         .WithHttpsEndpoint(port: null, name: "webapp-https")
         .WithExternalHttpEndpoints();
 }

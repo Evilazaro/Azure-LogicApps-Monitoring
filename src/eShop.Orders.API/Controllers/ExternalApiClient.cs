@@ -1,5 +1,4 @@
-﻿using OpenTelemetry.Trace;
-using System.Diagnostics;
+﻿using System.Diagnostics;
 
 namespace eShop.Orders.API.Services;
 

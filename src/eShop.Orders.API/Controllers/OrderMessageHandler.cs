@@ -1,5 +1,4 @@
 ﻿using Azure.Messaging.ServiceBus;
-using OpenTelemetry.Trace;
 using System.Diagnostics;
 
 namespace eShop.Orders.API.Services;

@@ -8,6 +8,7 @@
 // </summary>
 // ------------------------------------------------------------------------------
 
+using Azure.Identity;
 using eShop.Orders.API.Middleware;
 using eShop.Orders.API.Services;
 
@@ -38,8 +39,9 @@ builder.Services.AddHttpClient<ExternalApiClient>(client =>
 // Single instance is reused across all message operations
 builder.Services.AddSingleton(sp =>
 {
-    var connectionString = builder.Configuration["ServiceBus:ConnectionString"];
-    return new Azure.Messaging.ServiceBus.ServiceBusClient(connectionString);
+    var connectionString = builder.Configuration["ConnectionStrings:Messaging"];
+    var credential = new DefaultAzureCredential();
+    return new Azure.Messaging.ServiceBus.ServiceBusClient(connectionString, credential);
 });
 
 // Register background service for continuous message processing from Service Bus

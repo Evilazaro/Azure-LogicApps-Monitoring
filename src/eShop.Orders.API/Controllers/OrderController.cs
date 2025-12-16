@@ -1,5 +1,4 @@
 using Microsoft.AspNetCore.Mvc;
-using OpenTelemetry.Trace;
 using System.Diagnostics;
 
 namespace eShop.Orders.API.Controllers;
