@@ -295,7 +295,7 @@ flowchart LR
     subgraph EventBus[Event Infrastructure]
         style EventBus fill:#FFB366
         EB1[Service Bus Topic: orders-topic]
-        EB2[Service Bus Queue: OrderPlaced]
+        EB2[Service Bus Queue: OrdersPlaced]
         EB3[Dead Letter Queue]
     end
     
@@ -487,7 +487,7 @@ flowchart LR
     subgraph EventBus[Event Infrastructure]
         style EventBus fill:#FFB366
         EB1[Service Bus Topic: orders-topic]
-        EB2[Service Bus Queue: OrderPlaced]
+        EB2[Service Bus Queue: OrdersPlaced]
         EB3[Topic Subscription: workflow-sub]
     end
     
@@ -601,7 +601,7 @@ flowchart LR
         style Messaging fill:#FFB366
         MSG1[Service Bus Namespace]
         MSG2[Topics: orders-topic]
-        MSG3[Queues: OrderPlaced]
+        MSG3[Queues: OrdersPlaced]
     end
     
     subgraph Workflows[Serverless Tier]
@@ -771,7 +771,7 @@ flowchart LR
     
     subgraph Queues[Async Messaging Infrastructure]
         style Queues fill:#FFB366
-        Q1[Service Bus Queue: OrderPlaced]
+        Q1[Service Bus Queue: OrdersPlaced]
         T1[Service Bus Topic: orders-topic]
         DLQ[Dead Letter Queue]
     end
@@ -1052,7 +1052,7 @@ This command executes the following Bicep modules in order:
    - Application Insights with connection string output
 3. **Workload Module** (main.bicep):
    - **Identity**: User-assigned managed identity with RBAC assignments
-   - **Messaging**: Service Bus namespace with topics (`orders-topic`) and queues (`OrderPlaced`)
+   - **Messaging**: Service Bus namespace with topics (`orders-topic`) and queues (`OrdersPlaced`)
    - **Services**: Container Registry and Container Apps Environment
    - **Workflows**: Logic Apps Standard with App Service Plan WS1 (3-20 instances)
    - **Storage**: Workflow state storage account with blob containers
@@ -1393,7 +1393,7 @@ AzureDiagnostics
 dependencies
 | where type == "Azure Service Bus"
 | where timestamp > ago(24h)
-| where name contains "OrderPlaced" or name contains "orders-topic"
+| where name contains "OrdersPlaced" or name contains "orders-topic"
 | extend MessageLatency = duration
 | summarize 
     AvgLatency = avg(MessageLatency),
@@ -1696,7 +1696,7 @@ _telemetryClient.TrackMetric(
 );
 
 _telemetryClient.TrackEvent(
-    "OrderPlaced",
+    "OrdersPlaced",
     new Dictionary<string, string>
     {
         ["OrderId"] = order.Id,

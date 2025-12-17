@@ -65,7 +65,7 @@ public sealed class OrderService : IOrderService, IAsyncDisposable
         {
             // Add order details to activity tags
             activity?.SetTag("messaging.system", "servicebus");
-            activity?.SetTag("messaging.destination", "OrderPlaced");
+            activity?.SetTag("messaging.destination", "OrdersPlaced");
             activity?.SetTag("messaging.operation", "publish");
             activity?.SetTag("order.id", order.Id);
             activity?.SetTag("order.total", order.Total);
@@ -76,7 +76,7 @@ public sealed class OrderService : IOrderService, IAsyncDisposable
             {
                 MessageId = Guid.NewGuid().ToString(),
                 ContentType = "application/json",
-                Subject = "OrderPlaced"
+                Subject = "OrdersPlaced"
             };
 
             // Add metadata for correlation and tracking
@@ -167,7 +167,7 @@ public sealed class OrderService : IOrderService, IAsyncDisposable
             ActivityKind.Producer);
 
         activity?.SetTag("messaging.system", "servicebus");
-        activity?.SetTag("messaging.destination", "OrderPlaced");
+        activity?.SetTag("messaging.destination", "OrdersPlaced");
         activity?.SetTag("messaging.operation", "publish_batch");
         activity?.SetTag("messaging.batch_size", orders.Count);
 
@@ -183,7 +183,7 @@ public sealed class OrderService : IOrderService, IAsyncDisposable
                 {
                     MessageId = Guid.NewGuid().ToString(),
                     ContentType = "application/json",
-                    Subject = "OrderPlaced"
+                    Subject = "OrdersPlaced"
                 };
 
                 message.ApplicationProperties.Add("OrderId", order.Id);
