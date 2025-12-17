@@ -10,14 +10,27 @@
 
 using eShop.Orders.API.Middleware;
 using eShop.Orders.API.Services;
+using System.Diagnostics;
+
+// Create activity source for application startup tracing
+using var startupActivity = new ActivitySource("eShop.Orders.Startup")
+    .StartActivity("Application.Startup", ActivityKind.Internal);
+
+startupActivity?.SetTag("service.name", "eShop.Orders.API");
+startupActivity?.SetTag("deployment.environment", Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ?? "Unknown");
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add service defaults: OpenTelemetry instrumentation, health checks, service discovery, and resilience
-builder.AddServiceDefaults();
+using (var configActivity = new ActivitySource("eShop.Orders.Startup")
+    .StartActivity("Application.ConfigureServices", ActivityKind.Internal))
+{
+    configActivity?.SetTag("configuration.step", "service_defaults");
+    builder.AddServiceDefaults();
 
-// Register MVC controllers for RESTful API endpoints
-builder.Services.AddControllers();
+    // Register MVC controllers for RESTful API endpoints
+    configActivity?.SetTag("configuration.step", "mvc_controllers");
+    builder.Services.AddControllers();
 
 // Add API documentation support via Swagger/OpenAPI
 // Enables automatic API schema generation and interactive documentation UI
@@ -88,11 +101,22 @@ builder.Services.AddCors(options =>
     });
 });
 
-var app = builder.Build();
+    configActivity?.AddEvent(new ActivityEvent("Services configured successfully"));
+}
+
+using (var buildActivity = new ActivitySource("eShop.Orders.Startup")
+    .StartActivity("Application.Build", ActivityKind.Internal))
+{
+    var app = builder.Build();
+    buildActivity?.AddEvent(new ActivityEvent("Application built successfully"));
 
 
-// Enable OpenAPI/Swagger UI only in development for security
-app.MapOpenApi();
+    // Enable OpenAPI/Swagger UI only in development for security
+    using (var middlewareActivity = new ActivitySource("eShop.Orders.Startup")
+        .StartActivity("Application.ConfigureMiddleware", ActivityKind.Internal))
+    {
+        middlewareActivity?.SetTag("configuration.step", "openapi");
+        app.MapOpenApi();
 app.UseSwagger();
 app.UseSwaggerUI(options =>
 {
@@ -123,7 +147,15 @@ app.UseCors();
 // Enable authorization middleware (currently configured but not enforcing policies)
 app.UseAuthorization();
 
-// Map API controllers to handle HTTP requests
-app.MapControllers();
+        // Map API controllers to handle HTTP requests
+        middlewareActivity?.SetTag("configuration.step", "map_controllers");
+        app.MapControllers();
 
-app.Run();
+        middlewareActivity?.AddEvent(new ActivityEvent("Middleware configured successfully"));
+    }
+
+    startupActivity?.SetStatus(ActivityStatusCode.Ok);
+    startupActivity?.AddEvent(new ActivityEvent("Application startup completed"));
+
+    app.Run();
+}

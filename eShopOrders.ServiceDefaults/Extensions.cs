@@ -530,8 +530,48 @@ public static class Extensions
     /// and reused throughout the application lifecycle. Do not create multiple instances.
     /// </para>
     /// <para>
-    /// Example usage:
+    /// <strong>Best Practices for Distributed Tracing:</strong>
+    /// </para>
+    /// <list type="bullet">
+    /// <item>
+    /// <term>ActivitySource Lifecycle</term>
+    /// <description>Store as static readonly field, never create per-request or in constructors</description>
+    /// </item>
+    /// <item>
+    /// <term>Activity Naming</term>
+    /// <description>Use format: ComponentName.OperationName (e.g., "OrderService.SendMessage")</description>
+    /// </item>
+    /// <item>
+    /// <term>Activity Kind</term>
+    /// <description>
+    /// - Internal: Business logic operations
+    /// - Client: Outbound HTTP/gRPC calls
+    /// - Server: Inbound HTTP/gRPC requests (automatic)
+    /// - Producer: Message publishing to queues/topics
+    /// - Consumer: Message processing from queues/topics
+    /// </description>
+    /// </item>
+    /// <item>
+    /// <term>Semantic Tags</term>
+    /// <description>Use standard semantic conventions (http.*, db.*, messaging.*) for consistent telemetry</description>
+    /// </item>
+    /// <item>
+    /// <term>Status &amp; Events</term>
+    /// <description>Always set status (Ok/Error) and add meaningful events for debugging</description>
+    /// </item>
+    /// <item>
+    /// <term>Exception Recording</term>
+    /// <description>Use activity?.AddException(ex) to capture full exception details in telemetry</description>
+    /// </item>
+    /// <item>
+    /// <term>W3C Trace Context</term>
+    /// <description>For messaging, propagate activity.Id as "traceparent" header for end-to-end correlation</description>
+    /// </item>
+    /// </list>
+    /// <para>
+    /// Example usage patterns:
     /// <code>
+    /// // 1. Basic internal operation tracing
     /// private static readonly ActivitySource ActivitySource = Extensions.CreateActivitySource();
     /// 
     /// public async Task ProcessOrderAsync(string orderId)
@@ -542,19 +582,41 @@ public static class Extensions
     ///     
     ///     try
     ///     {
-    ///         // Your business logic here
     ///         await ValidateOrderAsync(orderId);
     ///         await SaveOrderAsync(orderId);
     ///         
     ///         activity?.SetStatus(ActivityStatusCode.Ok);
+    ///         activity?.AddEvent(new ActivityEvent("Order processed successfully"));
     ///     }
     ///     catch (Exception ex)
     ///     {
     ///         activity?.SetStatus(ActivityStatusCode.Error, ex.Message);
-    ///         activity?.RecordException(ex);
+    ///         activity?.AddException(ex);
     ///         throw;
     ///     }
     /// }
+    /// 
+    /// // 2. Service Bus message producer with trace context propagation
+    /// using var activity = ActivitySource.StartActivity("SendMessage", ActivityKind.Producer);
+    /// activity?.SetTag("messaging.system", "servicebus");
+    /// activity?.SetTag("messaging.destination", "orders-queue");
+    /// 
+    /// var message = new ServiceBusMessage(body);
+    /// // Propagate W3C Trace Context
+    /// if (activity != null)
+    /// {
+    ///     message.ApplicationProperties.Add("traceparent", activity.Id);
+    ///     message.ApplicationProperties.Add("TraceId", activity.TraceId.ToString());
+    /// }
+    /// await sender.SendMessageAsync(message);
+    /// 
+    /// // 3. Service Bus message consumer extracting trace context
+    /// var traceparent = message.ApplicationProperties.TryGetValue("traceparent", out var tp) 
+    ///     ? tp?.ToString() : null;
+    /// using var activity = ActivitySource.StartActivity(
+    ///     "ProcessMessage", 
+    ///     ActivityKind.Consumer, 
+    ///     traceparent ?? Activity.Current?.Id ?? string.Empty);
     /// </code>
     /// </para>
     /// </remarks>

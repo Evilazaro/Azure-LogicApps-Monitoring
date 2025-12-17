@@ -1,5 +1,13 @@
 using Aspire.Hosting.Azure;
 using Microsoft.Extensions.Hosting;
+using System.Diagnostics;
+
+// Create activity source for AppHost startup tracing
+using var startupActivity = new ActivitySource("eShop.Orders.AppHost.Startup")
+    .StartActivity("AppHost.Startup", ActivityKind.Internal);
+
+startupActivity?.SetTag("aspire.apphost", "eShopOrders");
+startupActivity?.SetTag("environment", Environment.GetEnvironmentVariable("DOTNET_ENVIRONMENT") ?? "Production");
 
 var builder = DistributedApplication.CreateBuilder(args);
 
@@ -9,10 +17,27 @@ var ordersApi = builder.AddProject<Projects.eShop_Orders_API>("orders-api");
 var ordersWebApp = builder.AddProject<Projects.eShop_Orders_App>("orders-webapp");
 
 // Configure resources based on environment
-var resources = ConfigureInfrastructureResources(builder);
-ConfigureServices(builder, ordersApi, ordersWebApp, resources);
+using (var resourceActivity = new ActivitySource("eShop.Orders.AppHost.Startup")
+    .StartActivity("AppHost.ConfigureResources", ActivityKind.Internal))
+{
+    resourceActivity?.SetTag("environment", builder.Environment.EnvironmentName);
+    resourceActivity?.SetTag("is_development", builder.Environment.IsDevelopment());
+    
+    var resources = ConfigureInfrastructureResources(builder);
+    resourceActivity?.AddEvent(new ActivityEvent("Infrastructure resources configured"));
+    
+    ConfigureServices(builder, ordersApi, ordersWebApp, resources);
+    resourceActivity?.AddEvent(new ActivityEvent("Services configured"));
+}
 
-await builder.Build().RunAsync();
+using (var buildActivity = new ActivitySource("eShop.Orders.AppHost.Startup")
+    .StartActivity("AppHost.Build", ActivityKind.Internal))
+{
+    startupActivity?.SetStatus(ActivityStatusCode.Ok);
+    startupActivity?.AddEvent(new ActivityEvent("AppHost startup completed"));
+    
+    await builder.Build().RunAsync();
+}
 
 /// <summary>
 /// Configures infrastructure resources (Application Insights, Service Bus) based on the environment.
