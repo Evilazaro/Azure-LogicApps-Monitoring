@@ -2,10 +2,10 @@ using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
 
-builder.Services.AddScoped(sp => new HttpClient 
-{ 
+builder.Services.AddScoped(sp => new HttpClient
+{
     BaseAddress = new Uri("https://localhost:7150") ?? throw new InvalidOperationException("OrdersApi:BaseUrl configuration is missing."),
-    DefaultRequestHeaders = 
+    DefaultRequestHeaders =
     {
         { "Accept", "application/json" }
     }
