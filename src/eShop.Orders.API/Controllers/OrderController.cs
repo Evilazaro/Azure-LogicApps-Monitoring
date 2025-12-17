@@ -72,8 +72,8 @@ public class OrdersController : ControllerBase
     /// </summary>
     /// <param name="id">The order identifier.</param>
     /// <returns>The requested order or 404 if not found.</returns>
-    [HttpGet("{id}")]
-    public async Task<ActionResult<Order>> GetOrder(string id)
+    [HttpGet("{id:int}")]
+    public async Task<ActionResult<Order>> GetOrder(int id)
     {
         using var activity = _activitySource.StartActivity("GetOrder.BusinessLogic");
 
@@ -85,13 +85,7 @@ public class OrdersController : ControllerBase
 
             _logger.LogInformation("Retrieving order {OrderId}", id);
 
-            if (!int.TryParse(id, out var orderId))
-            {
-                _logger.LogWarning("Invalid order ID format: {OrderId}", id);
-                return BadRequest("Order ID must be a valid integer");
-            }
-
-            var order = await _orderService.GetOrderByIdAsync(orderId);
+            var order = await _orderService.GetOrderByIdAsync(id);            
 
             if (order == null)
             {
@@ -136,6 +130,12 @@ public class OrdersController : ControllerBase
             activity?.SetTag("orders.total_amount", order.Total);
 
             _logger.LogInformation("Creating new order for customer {OrderId}", order.Id);
+
+            // Generate ID if not provided
+            if (string.IsNullOrEmpty(order.Id))
+            {
+                order.Id = Guid.NewGuid().ToString(); // or use your ID generation logic
+            }
 
             // Create a child span for messaging operation
             using (var messagingActivity = _activitySource.StartActivity("PlaceOrder.SendMessage", ActivityKind.Producer))
