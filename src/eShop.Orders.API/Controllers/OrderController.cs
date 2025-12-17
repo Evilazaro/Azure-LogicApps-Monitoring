@@ -1,3 +1,4 @@
+using eShop.Orders.API.Models;
 using Microsoft.AspNetCore.Mvc;
 using System.Diagnostics;
 
@@ -94,7 +95,6 @@ public class OrdersController : ControllerBase
             }
 
             activity?.SetTag("orders.found", true);
-            activity?.SetTag("orders.status", order.Status);
             activity?.AddEvent(new ActivityEvent("Order retrieved successfully"));
 
             return Ok(order);
@@ -116,29 +116,27 @@ public class OrdersController : ControllerBase
     /// <param name="order">The order to create.</param>
     /// <returns>The created order with location header.</returns>
     [HttpPost]
-    public async Task<ActionResult<Order>> CreateOrder([FromBody] Order order)
+    [Route("PlaceOrder")]
+    public async Task<ActionResult<Order>> PlaceOrder([FromBody] Order order)
     {
-        using var activity = _activitySource.StartActivity("CreateOrder.BusinessLogic");
+        using var activity = _activitySource.StartActivity("PlaceOrder.BusinessLogic");
 
         try
         {
             // Add order details as tags
             activity?.SetTag("orders.operation", "create");
-            activity?.SetTag("orders.customer_id", order.CustomerId);
-            activity?.SetTag("orders.total_amount", order.TotalAmount);
+            activity?.SetTag("orders.total_amount", order.Total);
 
-            _logger.LogInformation("Creating new order for customer {CustomerId}", order.CustomerId);
+            _logger.LogInformation("Creating new order for customer {OrderId}", order.Id);
 
             // Create a child span for database operation
-            using (var dbActivity = _activitySource.StartActivity("CreateOrder.Database", ActivityKind.Internal))
+            using (var dbActivity = _activitySource.StartActivity("PlaceOrder.Database", ActivityKind.Internal))
             {
                 dbActivity?.SetTag("db.operation", "insert");
                 dbActivity?.SetTag("db.table", "Orders");
 
                 // Simulate database insertion
                 order.Id = Guid.NewGuid().ToString();
-                order.Status = "Created";
-                order.CreatedAt = DateTime.UtcNow;
 
                 await SaveOrderToDatabase(order);
 
@@ -146,7 +144,7 @@ public class OrdersController : ControllerBase
             }
 
             // Create a child span for messaging operation
-            using (var messagingActivity = _activitySource.StartActivity("CreateOrder.PublishMessage", ActivityKind.Producer))
+            using (var messagingActivity = _activitySource.StartActivity("PlaceOrder.PublishMessage", ActivityKind.Producer))
             {
                 messagingActivity?.SetTag("messaging.system", "servicebus");
                 messagingActivity?.SetTag("messaging.destination", "orders-queue");
@@ -318,16 +316,4 @@ public class OrdersController : ControllerBase
         // message.ApplicationProperties["traceparent"] = Activity.Current?.TraceParent;
         return Task.CompletedTask;
     }
-}
-
-/// <summary>
-/// Order data model.
-/// </summary>
-public class Order
-{
-    public string Id { get; set; } = string.Empty;
-    public string CustomerId { get; set; } = string.Empty;
-    public decimal TotalAmount { get; set; }
-    public string Status { get; set; } = string.Empty;
-    public DateTime CreatedAt { get; set; }
 }

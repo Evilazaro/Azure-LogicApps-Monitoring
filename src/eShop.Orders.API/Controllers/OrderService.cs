@@ -63,13 +63,19 @@ public sealed class OrderService : IOrderService
 
             // Add metadata for correlation and tracking
             message.ApplicationProperties.Add("OrderId", order.Id);
-            message.ApplicationProperties.Add("CustomerId", order.CustomerId);
             message.ApplicationProperties.Add("Timestamp", DateTimeOffset.UtcNow.ToString("o"));
 
             await _sender.SendMessageAsync(message, cancellationToken);
 
             // Store order for retrieval
-            _orderStore.AddOrUpdate(order.Id, order, (_, _) => order);
+            if (int.TryParse(order.Id, out var orderId))
+            {
+                _orderStore.AddOrUpdate(orderId, order, (_, _) => order);
+            }
+            else
+            {
+                _logger.LogWarning("Order Id '{OrderId}' could not be parsed to int. Order not stored.", order.Id);
+            }
 
             _logger.LogInformation(
                 "Successfully sent order message. OrderId: {OrderId}, MessageId: {MessageId}",
@@ -116,7 +122,6 @@ public sealed class OrderService : IOrderService
                 };
 
                 message.ApplicationProperties.Add("OrderId", order.Id);
-                message.ApplicationProperties.Add("CustomerId", order.CustomerId);
                 message.ApplicationProperties.Add("Timestamp", DateTimeOffset.UtcNow.ToString("o"));
 
                 if (!messageBatch.TryAddMessage(message))
@@ -139,7 +144,14 @@ public sealed class OrderService : IOrderService
                 }
 
                 messagesAdded++;
-                _orderStore.AddOrUpdate(order.Id, order, (_, _) => order);
+                if (int.TryParse(order.Id, out var orderId))
+                {
+                    _orderStore.AddOrUpdate(orderId, order, (_, _) => order);
+                }
+                else
+                {
+                    _logger.LogWarning("Order Id '{OrderId}' could not be parsed to int. Order not stored.", order.Id);
+                }
             }
 
             // Send remaining messages
@@ -168,7 +180,7 @@ public sealed class OrderService : IOrderService
     {
         cancellationToken.ThrowIfCancellationRequested();
 
-        var orders = _orderStore.Values.OrderByDescending(o => o.OrderDate).ToList();
+        var orders = _orderStore.Values.OrderByDescending(o => o.Date).ToList();
 
         _logger.LogDebug("Retrieved {Count} orders from storage", orders.Count);
 

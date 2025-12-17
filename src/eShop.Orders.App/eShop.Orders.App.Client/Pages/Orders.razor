@@ -38,7 +38,7 @@
         try
         {
             var order = new OrdersProxy(Http);
-            var response = await order.CreateOrder(orderJson);
+            var response = await order.PlaceOrder(orderJson);
 
             if (response.IsSuccessStatusCode)
             {

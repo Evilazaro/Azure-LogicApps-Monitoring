@@ -158,7 +158,6 @@ static void ConfigureOrdersApi(
 {
     const string AzureTenantIdKey = "AZURE_TENANT_ID";
     const string AzureClientIdKey = "AZURE_CLIENT_ID";
-    const string ApiHttpsEndpointName = "api-https";
 
     ordersApi.WithEnvironment("ASPNETCORE_ENVIRONMENT", environmentName);
 
@@ -199,7 +198,6 @@ static void ConfigureOrdersWebApp(
 {
     const string AzureTenantIdKey = "AZURE_TENANT_ID";
     const string AzureClientIdKey = "AZURE_CLIENT_ID";
-    const string WebAppHttpsEndpointName = "webapp-https";
 
     ordersWebApp.WithReference(ordersApi)
                 .AsHttp2Service()
