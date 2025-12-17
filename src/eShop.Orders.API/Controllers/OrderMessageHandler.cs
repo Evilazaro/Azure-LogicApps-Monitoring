@@ -13,7 +13,7 @@ public class OrderMessageHandler : BackgroundService
     private readonly ServiceBusClient _serviceBusClient;
     private static readonly ActivitySource _activitySource = Extensions.CreateActivitySource();
     private ServiceBusProcessor? _processor;
-    private const string QueueName = "OrderPlaced";
+    private const string topicName = "OrderPlaced";
 
     /// <summary>
     /// Initializes a new instance of the OrderMessageHandler.
@@ -43,8 +43,8 @@ public class OrderMessageHandler : BackgroundService
 
         try
         {
-            // Create processor for the orders queue
-            _processor = _serviceBusClient.CreateProcessor(QueueName, new ServiceBusProcessorOptions
+            // Create processor for the orders topic
+            _processor = _serviceBusClient.CreateProcessor(topicName, new ServiceBusProcessorOptions
             {
                 MaxConcurrentCalls = 10,
                 AutoCompleteMessages = false,
@@ -55,7 +55,7 @@ public class OrderMessageHandler : BackgroundService
             _processor.ProcessMessageAsync += ProcessMessageAsync;
             _processor.ProcessErrorAsync += ProcessErrorAsync;
 
-            _logger.LogInformation("Starting Service Bus message processor for queue: {QueueName}", QueueName);
+            _logger.LogInformation("Starting Service Bus message processor for queue: {topicName}", topicName);
             await _processor.StartProcessingAsync(stoppingToken);
 
             _logger.LogInformation("Service Bus processor started successfully");
@@ -105,7 +105,7 @@ public class OrderMessageHandler : BackgroundService
             activity?.SetTag("messaging.correlation_id", args.Message.CorrelationId);
 
             _logger.LogInformation(
-                "Processing message {MessageId} from queue {QueueName}",
+                "Processing message {MessageId} from queue {topicName}",
                 args.Message.MessageId,
                 args.EntityPath);
 

@@ -44,10 +44,10 @@ public sealed class OrderService : IOrderService, IAsyncDisposable
 
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
 
-        var queueName = configuration["Azure:ServiceBus:TopicName"] ?? "orders";
-        _sender = serviceBusClient.CreateSender(queueName);
+        var topicName = configuration["Azure:ServiceBus:TopicName"] ?? "orders";
+        _sender = serviceBusClient.CreateSender(topicName);
 
-        _logger.LogInformation("OrderService initialized with queue: {QueueName}", queueName);
+        _logger.LogInformation("OrderService initialized with queue: {topicName}", topicName);
     }
 
     /// <inheritdoc/>
