@@ -3,11 +3,13 @@ using System.Net.Http.Json;
 using System.Text;
 using System.Text.Json;
 
+namespace eShop.Orders.App.Client.Controllers;
+
 /// <summary>
 /// Proxy client for Orders API with distributed tracing support.
 /// Automatically propagates trace context to API calls for end-to-end correlation.
 /// </summary>
-public class OrdersProxy
+public sealed class OrdersProxy
 {
     private readonly HttpClient _httpClient;
     private static readonly ActivitySource _activitySource = new("eShop.Orders.App.Client");
@@ -43,13 +45,13 @@ public class OrdersProxy
         try
         {
             activity?.SetTag("http.method", "POST");
-            activity?.SetTag("http.url", "/api/orders");
+            activity?.SetTag("http.url", "/api/Orders/PlaceOrder");
             activity?.SetTag("http.client", "orders-proxy");
 
             var content = new StringContent(orderJson, Encoding.UTF8, "application/json");
             
             activity?.AddEvent(new ActivityEvent("Sending order to API"));
-            var response = await _httpClient.PostAsync("/api/orders", content);
+            var response = await _httpClient.PostAsync("/api/Orders/PlaceOrder", content);
 
             activity?.SetTag("http.status_code", (int)response.StatusCode);
             

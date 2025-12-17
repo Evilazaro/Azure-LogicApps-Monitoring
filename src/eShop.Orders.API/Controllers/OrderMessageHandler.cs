@@ -32,6 +32,15 @@ public class OrderMessageHandler : BackgroundService
     /// <inheritdoc/>
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
+        // Check if Service Bus client is configured properly
+        if (_serviceBusClient == null)
+        {
+            _logger.LogWarning(
+                "Service Bus client is not configured. Message processing will not start. " +
+                "Ensure 'messaging' connection string is configured in appsettings or via Aspire.");
+            return;
+        }
+
         try
         {
             // Create processor for the orders queue

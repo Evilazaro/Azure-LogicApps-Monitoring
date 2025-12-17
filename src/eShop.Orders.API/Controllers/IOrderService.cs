@@ -37,4 +37,12 @@ public interface IOrderService
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>The order if found; otherwise, null</returns>
     Task<Order?> GetOrderByIdAsync(int id, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Deletes an order from storage
+    /// </summary>
+    /// <param name="id">The order identifier to delete</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>A task representing the asynchronous operation</returns>
+    Task DeleteOrderAsync(int id, CancellationToken cancellationToken = default);
 }

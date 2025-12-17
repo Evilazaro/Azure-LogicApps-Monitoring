@@ -72,8 +72,8 @@ public class OrdersController : ControllerBase
     /// </summary>
     /// <param name="id">The order identifier.</param>
     /// <returns>The requested order or 404 if not found.</returns>
-    [HttpGet("{id:int}")]
-    public async Task<ActionResult<Order>> GetOrder(int id)
+    [HttpGet("{id}")]
+    public async Task<ActionResult<Order>> GetOrder(string id)
     {
         using var activity = _activitySource.StartActivity("GetOrder.BusinessLogic");
 
@@ -85,7 +85,14 @@ public class OrdersController : ControllerBase
 
             _logger.LogInformation("Retrieving order {OrderId}", id);
 
-            var order = await _orderService.GetOrderByIdAsync(id);            
+            if (!int.TryParse(id, out var orderId))
+            {
+                activity?.SetTag("validation.error", "invalid_id_format");
+                _logger.LogWarning("Invalid order ID format: {OrderId}", id);
+                return BadRequest("Order ID must be a valid integer");
+            }
+
+            var order = await _orderService.GetOrderByIdAsync(orderId);            
 
             if (order == null)
             {
@@ -155,6 +162,7 @@ public class OrdersController : ControllerBase
 
             _logger.LogInformation("Order {OrderId} created successfully", order.Id);
 
+            // Return 201 Created with location header pointing to the created resource
             return CreatedAtAction(nameof(GetOrder), new { id = order.Id }, order);
         }
         catch (Exception ex)
@@ -249,10 +257,10 @@ public class OrdersController : ControllerBase
                 return NotFound();
             }
 
-            // Note: Delete operation not implemented in IOrderService
-            // This would require adding a DeleteOrderAsync method to the interface
-            _logger.LogWarning("Delete operation not yet implemented for order {OrderId}", id);
+            // Delete the order
+            await _orderService.DeleteOrderAsync(orderId);
 
+            activity?.SetTag("orders.deleted", true);
             activity?.AddEvent(new ActivityEvent("Order deleted successfully"));
             _logger.LogInformation("Order {OrderId} deleted successfully", id);
 

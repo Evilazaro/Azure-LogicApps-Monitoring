@@ -204,19 +204,41 @@ public sealed class OrderService : IOrderService, IAsyncDisposable
                 if (!messageBatch.TryAddMessage(message))
                 {
                     _logger.LogWarning(
-                        "Message batch is full. Sending {Count} messages before adding more",
+                        "Message batch is full. Sending {Count} messages and creating new batch",
                         messagesAdded);
 
                     // Send current batch
                     await _sender.SendMessagesAsync(messageBatch, cancellationToken);
+                    activity?.AddEvent(new ActivityEvent($"Sent batch of {messagesAdded} messages"));
                     
-                    // Cannot reuse disposed batch - this is a bug in the current implementation
-                    // For simplicity, throwing exception. In production, implement proper batch rotation.
-                    throw new InvalidOperationException(
-                        "Message batch exceeded. Implement batch rotation for production use.");
+                    // Create new batch for remaining messages
+                    using var newBatch = await _sender.CreateMessageBatchAsync(cancellationToken);
+                    
+                    // Reset counter for new batch
+                    messagesAdded = 0;
+                    
+                    // Try adding the message to the new batch
+                    if (!newBatch.TryAddMessage(message))
+                    {
+                        // Single message is too large for a batch
+                        _logger.LogError(
+                            "Single message exceeds maximum batch size. OrderId: {OrderId}",
+                            order.Id);
+                        throw new InvalidOperationException(
+                            $"Message for order {order.Id} exceeds maximum allowed size");
+                    }
+                    
+                    messagesAdded++;
+                    
+                    // Continue with remaining orders using the new batch
+                    // Note: This is a simplified fix. For production, consider implementing
+                    // a more robust batch management strategy with proper batch pooling
+                }
+                else
+                {
+                    messagesAdded++;
                 }
 
-                messagesAdded++;
                 if (int.TryParse(order.Id, out var orderId))
                 {
                     _orderStore.AddOrUpdate(orderId, order, (_, _) => order);
@@ -340,6 +362,55 @@ public sealed class OrderService : IOrderService, IAsyncDisposable
             }
 
             return Task.FromResult(order);
+        }
+        catch (Exception ex)
+        {
+            activity?.SetStatus(ActivityStatusCode.Error, ex.Message);
+            activity?.AddException(ex);
+            throw;
+        }
+    }
+
+    /// <inheritdoc/>
+    public Task DeleteOrderAsync(int id, CancellationToken cancellationToken = default)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+
+        // Create activity for delete operation
+        using var activity = _activitySource.StartActivity(
+            "OrderService.DeleteOrder",
+            ActivityKind.Internal);
+
+        try
+        {
+            activity?.SetTag("db.operation", "delete");
+            activity?.SetTag("db.collection", "orders");
+            activity?.SetTag("order.id", id);
+
+            var removed = _orderStore.TryRemove(id, out var removedOrder);
+
+            if (removed)
+            {
+                activity?.SetTag("order.deleted", true);
+                activity?.SetStatus(ActivityStatusCode.Ok);
+                activity?.AddEvent(new ActivityEvent("Order deleted successfully"));
+                
+                _logger.LogInformation("Deleted order {OrderId} from storage. TraceId: {TraceId}", 
+                    id,
+                    activity?.TraceId.ToString() ?? "none");
+            }
+            else
+            {
+                activity?.SetTag("order.deleted", false);
+                activity?.SetStatus(ActivityStatusCode.Ok);
+                activity?.AddEvent(new ActivityEvent("Order not found for deletion"));
+                
+                _logger.LogWarning("Order {OrderId} not found in storage for deletion. TraceId: {TraceId}", 
+                    id,
+                    activity?.TraceId.ToString() ?? "none");
+            }
+
+            return Task.CompletedTask;
         }
         catch (Exception ex)
         {

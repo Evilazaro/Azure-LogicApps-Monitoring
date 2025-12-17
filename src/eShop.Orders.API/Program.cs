@@ -105,8 +105,14 @@ using (var configActivity = new ActivitySource("eShop.Orders.Startup")
                 }
                 else
                 {
-                    // Fallback to permissive policy if no origins configured
-                    // Log warning about missing CORS configuration
+                    // WARNING: Fallback to permissive policy if no origins configured
+                    // This should be fixed in production by configuring proper allowed origins
+                    var logger = builder.Services.BuildServiceProvider()
+                        .GetRequiredService<ILogger<Program>>();
+                    logger.LogWarning(
+                        "CORS configuration is missing. Using permissive policy. " +
+                        "Configure 'Cors:AllowedOrigins' in appsettings for production.");
+                    
                     policy.AllowAnyOrigin()
                           .AllowAnyMethod()
                           .AllowAnyHeader();
