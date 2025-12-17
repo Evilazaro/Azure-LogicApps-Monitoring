@@ -55,6 +55,17 @@ else
     logger.LogWarning("Service Bus connection string 'messaging' not found. Message processing is disabled.");
 }
 
+// Configure CORS to allow Blazor WebAssembly client requests
+builder.Services.AddCors(options =>
+{
+    options.AddDefaultPolicy(policy =>
+    {
+        policy.AllowAnyOrigin()
+              .AllowAnyMethod()
+              .AllowAnyHeader();
+    });
+});
+
 var app = builder.Build();
 
 
@@ -86,6 +97,9 @@ if (!app.Environment.IsProduction())
 
 // Enable authorization middleware (currently configured but not enforcing policies)
 app.UseAuthorization();
+
+// Enable CORS before other middleware
+app.UseCors();
 
 // Map API controllers to handle HTTP requests
 app.MapControllers();
