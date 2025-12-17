@@ -13,7 +13,9 @@ public class OrderMessageHandler : BackgroundService
     private readonly ServiceBusClient _serviceBusClient;
     private readonly ActivitySource _activitySource;
     private ServiceBusProcessor? _processor;
-
+    private ServiceBusSender? _sender;
+    private const string QueueName = "orders-queue";
+    
     /// <summary>
     /// Initializes a new instance of the OrderMessageHandler.
     /// </summary>

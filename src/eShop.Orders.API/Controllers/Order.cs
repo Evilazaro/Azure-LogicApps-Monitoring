@@ -10,7 +10,6 @@ public class Order
     /// <summary>
     /// Gets or sets the unique identifier for the order
     /// </summary>
-    [Required(ErrorMessage = "Order ID is required")]
     public string Id { get; set; } = string.Empty;
 
     /// <summary>
