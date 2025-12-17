@@ -20,6 +20,13 @@ builder.AddServiceDefaults();
 builder.Services.AddRazorComponents()
     .AddInteractiveWebAssemblyComponents();
 
+
+var ordersApiHttpClient = builder.Services.AddHttpClient("orders-api", client =>
+{
+    client.BaseAddress = new Uri("https://orders-api");
+    client.DefaultRequestHeaders.Add("Accept", "application/json");
+});
+
 var app = builder.Build();
 
 // Map health check endpoints for monitoring

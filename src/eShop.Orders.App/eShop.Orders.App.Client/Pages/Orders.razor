@@ -1,5 +1,8 @@
 @page "/orders"
 @rendermode InteractiveWebAssembly
+@using System.Net.Http.Json
+@using System.Net.Http
+@inject HttpClient ordersApiHttpClient
 
 <PageTitle>Orders</PageTitle>
 
@@ -7,13 +10,54 @@
 
 <p role="status">Current count: @currentCount</p>
 
-<button class="btn btn-primary" @onclick="IncrementCount">Click me</button>
+<button class="btn btn-primary" @onclick="PlaceAnOrder">Place an Order</button>
+
+<p></p>
+
+<textarea rows="10" class="form-control" placeholder="Enter order details in JSON format" @bind="orderJson"></textarea>
+
+@if (!string.IsNullOrEmpty(statusMessage))
+{
+    <div class="alert alert-info mt-3">@statusMessage</div>
+}
 
 @code {
     private int currentCount = 0;
+    private string orderJson = string.Empty;
+    private string statusMessage = string.Empty;
 
-    private void IncrementCount()
+    private async Task PlaceAnOrder()
     {
-        currentCount++;
+        if (string.IsNullOrWhiteSpace(orderJson))
+        {
+            statusMessage = "Please enter order details";
+            return;
+        }
+
+        try
+        {
+            var content = new StringContent(orderJson, System.Text.Encoding.UTF8, "application/json");
+            var response = await ordersApiHttpClient.PostAsync("api/orders", content);
+
+            if (response.IsSuccessStatusCode)
+            {
+                currentCount++;
+                statusMessage = "Order placed successfully!";
+                orderJson = string.Empty;
+            }
+            else
+            {
+                var errorContent = await response.Content.ReadAsStringAsync();
+                statusMessage = $"Failed to place order: {response.StatusCode} - {errorContent}";
+            }
+        }
+        catch (HttpRequestException ex)
+        {
+            statusMessage = $"HTTP Error: {ex.Message}";
+        }
+        catch (Exception ex)
+        {
+            statusMessage = $"Error: {ex.Message}";
+        }
     }
 }
