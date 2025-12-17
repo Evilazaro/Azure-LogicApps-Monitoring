@@ -1476,3 +1476,528 @@ AzureDiagnostics
 | order by P95Duration desc
 | take 20
 ```
+
+**Purpose**: Identify slow workflow actions that require optimization or refactoring.
+
+#### Query 9: Correlation ID Tracking Across Services
+
+```kql
+union requests, dependencies, traces
+| where timestamp > ago(1h)
+| where customDimensions.CorrelationId == "<correlation-id>"
+| project 
+    timestamp,
+    itemType,
+    operation_Name,
+    name,
+    duration,
+    success,
+    cloud_RoleName,
+    message,
+    severityLevel
+| order by timestamp asc
+```
+
+**Purpose**: Track a specific business transaction across all services using custom correlation IDs.
+
+**Usage**: Replace `<correlation-id>` with the correlation ID from your order or transaction.
+
+#### Query 10: App Service Plan Resource Utilization
+
+```kql
+AzureMetrics
+| where ResourceProvider == "MICROSOFT.WEB"
+| where TimeGenerated > ago(24h)
+| where MetricName in ("CpuPercentage", "MemoryPercentage", "HttpQueueLength")
+| summarize 
+    AvgValue = avg(Average),
+    MaxValue = max(Maximum),
+    MinValue = min(Minimum)
+    by bin(TimeGenerated, 15m), MetricName
+| render timechart
+```
+
+**Purpose**: Monitor App Service Plan (WS1) resource consumption to inform scaling decisions.
+
+#### Query 11: Service Bus Dead Letter Queue Analysis
+
+```kql
+AzureDiagnostics
+| where Category == "OperationalLogs"
+| where ResourceProvider == "MICROSOFT.SERVICEBUS"
+| where TimeGenerated > ago(7d)
+| where Status == "DeadLetter"
+| extend DeadLetterReason = tostring(properties_DeadLetterReason_s)
+| extend DeadLetterErrorDescription = tostring(properties_DeadLetterErrorDescription_s)
+| summarize 
+    DeadLetterCount = count(),
+    UniqueReasons = dcount(DeadLetterReason)
+    by DeadLetterReason, DeadLetterErrorDescription
+| order by DeadLetterCount desc
+```
+
+**Purpose**: Identify recurring message processing failures requiring remediation.
+
+#### Query 12: OpenTelemetry Trace Spans with Custom Attributes
+
+```kql
+AppDependencies
+| where timestamp > ago(1h)
+| where customDimensions has "OrderId"
+| extend OrderId = tostring(customDimensions.OrderId)
+| extend TenantId = tostring(customDimensions.TenantId)
+| extend CustomerId = tostring(customDimensions.CustomerId)
+| project 
+    timestamp,
+    operation_Id,
+    operation_Name,
+    name,
+    type,
+    target,
+    duration,
+    success,
+    OrderId,
+    TenantId,
+    CustomerId
+| order by timestamp desc
+```
+
+**Purpose**: Query traces with custom business attributes for detailed transaction analysis.
+
+### Logic Apps Workflow Monitoring Best Practices
+
+#### 1. Enable Diagnostic Settings
+
+Configure comprehensive diagnostic logs for Logic Apps Standard:
+
+```bash
+# Enable diagnostic settings for Logic Apps
+az monitor diagnostic-settings create \
+  --name workflow-diagnostics \
+  --resource <logic-app-resource-id> \
+  --workspace <log-analytics-workspace-id> \
+  --logs '[
+    {"category":"WorkflowRuntime","enabled":true,"retentionPolicy":{"enabled":true,"days":90}},
+    {"category":"FunctionExecutionLogs","enabled":true,"retentionPolicy":{"enabled":true,"days":30}}
+  ]' \
+  --metrics '[
+    {"category":"AllMetrics","enabled":true,"retentionPolicy":{"enabled":true,"days":30}}
+  ]'
+```
+
+**Key categories to enable**:
+- **WorkflowRuntime**: Workflow execution events, action results, run status
+- **FunctionExecutionLogs**: Functions runtime logs, host diagnostics
+- **AllMetrics**: Performance metrics (duration, throughput, failures)
+
+**Reference**: [Configure diagnostic settings for Logic Apps](https://learn.microsoft.com/azure/logic-apps/monitor-logic-apps-log-analytics)
+
+#### 2. Implement Structured Logging with Custom Properties
+
+Emit structured logs with consistent business context:
+
+```csharp
+// In OrdersController.cs
+_logger.LogInformation(
+    "Order created successfully. OrderId: {OrderId}, TenantId: {TenantId}, CustomerId: {CustomerId}, CorrelationId: {CorrelationId}",
+    order.Id,
+    order.TenantId,
+    order.CustomerId,
+    Activity.Current?.TraceId.ToString()
+);
+```
+
+**Benefits**:
+- Enables filtering and grouping in Kusto queries
+- Provides business context for troubleshooting
+- Facilitates correlation across distributed traces
+
+#### 3. Configure Alert Rules for Proactive Monitoring
+
+Set up Azure Monitor alert rules for critical scenarios:
+
+**Workflow Failure Rate Alert**:
+
+```bash
+az monitor metrics alert create \
+  --name workflow-failure-rate-alert \
+  --resource-group rg-orders-prod-eastus \
+  --scopes <logic-app-resource-id> \
+  --condition "avg Percentage of WorkflowRunsCompleted > 95" \
+  --window-size 5m \
+  --evaluation-frequency 1m \
+  --description "Alert when workflow failure rate exceeds 5%"
+```
+
+**High Latency Alert**:
+
+```bash
+az monitor metrics alert create \
+  --name workflow-high-latency-alert \
+  --resource-group rg-orders-prod-eastus \
+  --scopes <logic-app-resource-id> \
+  --condition "avg WorkflowRunDuration > 5000" \
+  --window-size 15m \
+  --evaluation-frequency 5m \
+  --description "Alert when P95 workflow duration exceeds 5 seconds"
+```
+
+**Reference**: [Create metric alerts](https://learn.microsoft.com/azure/azure-monitor/alerts/alerts-create-new-alert-rule)
+
+#### 4. Use Correlation IDs for End-to-End Tracing
+
+Propagate correlation IDs across all service boundaries:
+
+**API Controller**:
+
+```csharp
+// In OrdersController.cs - CorrelationIdMiddleware
+var correlationId = httpContext.Request.Headers["X-Correlation-ID"].FirstOrDefault()
+    ?? Activity.Current?.TraceId.ToString()
+    ?? Guid.NewGuid().ToString();
+
+Activity.Current?.SetTag("correlation.id", correlationId);
+httpContext.Items["CorrelationId"] = correlationId;
+```
+
+**Service Bus Message**:
+
+```csharp
+// In OrderService.cs
+var message = new ServiceBusMessage(JsonSerializer.Serialize(order))
+{
+    CorrelationId = Activity.Current?.TraceId.ToString(),
+    ApplicationProperties =
+    {
+        ["OrderId"] = order.Id,
+        ["TenantId"] = order.TenantId
+    }
+};
+```
+
+**Reference**: [W3C Trace Context](https://www.w3.org/TR/trace-context/)
+
+#### 5. Monitor Business Metrics Alongside Technical Metrics
+
+Track business KPIs in addition to system metrics:
+
+**Custom Metrics**:
+
+```csharp
+// Track business metrics with Application Insights
+_telemetryClient.TrackMetric(
+    "OrderValue",
+    order.Total,
+    new Dictionary<string, string>
+    {
+        ["TenantId"] = order.TenantId,
+        ["CustomerId"] = order.CustomerId
+    }
+);
+
+_telemetryClient.TrackEvent(
+    "OrderPlaced",
+    new Dictionary<string, string>
+    {
+        ["OrderId"] = order.Id,
+        ["Channel"] = "API"
+    },
+    new Dictionary<string, double>
+    {
+        ["OrderValue"] = order.Total,
+        ["Quantity"] = order.Quantity
+    }
+);
+```
+
+**Kusto Query for Business Metrics**:
+
+```kql
+customMetrics
+| where name == "OrderValue"
+| where timestamp > ago(24h)
+| summarize 
+    TotalRevenue = sum(value),
+    AvgOrderValue = avg(value),
+    OrderCount = count()
+    by bin(timestamp, 1h)
+| render timechart
+```
+
+#### 6. Leverage Application Insights Application Map
+
+Use Application Map to visualize dependencies and health:
+
+1. Navigate to **Application Insights** → **Application Map**
+2. Review service topology:
+   - Client → API → Service Bus → Logic Apps → Cosmos DB
+3. Identify bottlenecks by:
+   - Red nodes = High failure rate
+   - Orange connections = Slow dependencies
+   - Thickness = Request volume
+4. Click on connections to drill into:
+   - Sample requests
+   - Failure examples
+   - Performance distribution
+
+**Reference**: [Application Map overview](https://learn.microsoft.com/azure/azure-monitor/app/app-map)
+
+#### 7. Optimize Cosmos DB Partition Keys for Query Performance
+
+Use hierarchical partition keys to overcome logical partition limits:
+
+**Partition Key Strategy**:
+
+```json
+{
+  "partitionKey": {
+    "paths": [
+      "/tenantId",
+      "/customerId"
+    ],
+    "kind": "MultiHash",
+    "version": 2
+  }
+}
+```
+
+**Benefits**:
+- Overcomes 20 GB logical partition limit
+- Enables targeted multi-partition queries
+- Improves query performance with partition key predicates
+
+**Monitoring Query**:
+
+```kql
+AzureDiagnostics
+| where Category == "DataPlaneRequests"
+| where collectionName_s == "Orders"
+| extend PartitionKeyValue = tostring(partitionKey_s)
+| summarize 
+    RequestCount = count(),
+    AvgRU = avg(todouble(requestCharge_s)),
+    TotalRU = sum(todouble(requestCharge_s))
+    by PartitionKeyValue
+| order by TotalRU desc
+| take 20
+```
+
+**Reference**: [Hierarchical partition keys](https://learn.microsoft.com/azure/cosmos-db/hierarchical-partition-keys)
+
+#### 8. Implement Retry Policies with Exponential Backoff
+
+Configure resilient retry policies for transient failures:
+
+**Service Bus Retry Policy** (in [`host.json`](host.json)):
+
+```json
+{
+  "version": "2.0",
+  "extensions": {
+    "serviceBus": {
+      "prefetchCount": 100,
+      "maxConcurrentCalls": 32,
+      "autoCompleteMessages": false,
+      "maxAutoLockRenewalDuration": "00:05:00",
+      "clientRetryOptions": {
+        "mode": "Exponential",
+        "tryTimeout": "00:01:00",
+        "delay": "00:00:01",
+        "maxDelay": "00:00:30",
+        "maxRetries": 3
+      }
+    }
+  }
+}
+```
+
+**HTTP Client Retry Policy**:
+
+```csharp
+// In ServiceDefaults/Extensions.cs
+services.AddHttpClient("orders-api")
+    .AddStandardResilienceHandler(options =>
+    {
+        options.Retry.MaxRetryAttempts = 3;
+        options.Retry.BackoffType = DelayBackoffType.Exponential;
+        options.Retry.UseJitter = true;
+    });
+```
+
+**Reference**: [Retry guidance for Azure services](https://learn.microsoft.com/azure/architecture/best-practices/retry-service-specific)
+
+#### 9. Scale Based on Telemetry and Load Patterns
+
+Configure auto-scaling rules based on observed metrics:
+
+**App Service Plan Auto-Scale Rule**:
+
+```bash
+az monitor autoscale create \
+  --resource-group rg-orders-prod-eastus \
+  --resource <app-service-plan-id> \
+  --min-count 3 \
+  --max-count 20 \
+  --count 3
+
+# Scale out rule: CPU > 70% for 5 minutes
+az monitor autoscale rule create \
+  --resource-group rg-orders-prod-eastus \
+  --autoscale-name <autoscale-name> \
+  --condition "Percentage CPU > 70 avg 5m" \
+  --scale out 2
+
+# Scale in rule: CPU < 30% for 10 minutes
+az monitor autoscale rule create \
+  --resource-group rg-orders-prod-eastus \
+  --autoscale-name <autoscale-name> \
+  --condition "Percentage CPU < 30 avg 10m" \
+  --scale in 1
+```
+
+**Reference**: [Autoscale in Azure](https://learn.microsoft.com/azure/azure-monitor/autoscale/autoscale-overview)
+
+#### 10. Review Azure Advisor Recommendations
+
+Regularly review Azure Advisor for cost, performance, and reliability improvements:
+
+1. Navigate to **Azure Advisor** in Azure Portal
+2. Review recommendations by category:
+   - **Reliability**: High availability configurations
+   - **Security**: RBAC and network security
+   - **Performance**: SKU sizing and caching
+   - **Cost**: Underutilized resources
+   - **Operational Excellence**: Monitoring and diagnostics
+3. Implement high-priority recommendations
+4. Track recommendation impact in Azure Monitor
+
+**Reference**: [Azure Advisor overview](https://learn.microsoft.com/azure/advisor/advisor-overview)
+
+---
+
+## Microsoft Learn References
+
+### Azure Logic Apps Standard
+
+- [What is Azure Logic Apps?](https://learn.microsoft.com/azure/logic-apps/logic-apps-overview)
+- [Single-tenant versus multi-tenant Azure Logic Apps](https://learn.microsoft.com/azure/logic-apps/single-tenant-overview-compare)
+- [Create stateful or stateless workflows](https://learn.microsoft.com/azure/logic-apps/create-single-tenant-workflows-azure-portal)
+- [Monitor Logic Apps](https://learn.microsoft.com/azure/logic-apps/monitor-logic-apps)
+- [Monitor Logic Apps with Log Analytics](https://learn.microsoft.com/azure/logic-apps/monitor-logic-apps-log-analytics)
+- [Edit host and app settings for Logic Apps](https://learn.microsoft.com/azure/logic-apps/edit-app-settings-host-settings)
+- [Limits and configuration reference](https://learn.microsoft.com/azure/logic-apps/logic-apps-limits-and-config)
+- [Managed connectors for Azure Logic Apps](https://learn.microsoft.com/azure/connectors/managed)
+- [Secure access and data in Azure Logic Apps](https://learn.microsoft.com/azure/logic-apps/logic-apps-securing-a-logic-app)
+
+### Azure Monitor & Application Insights
+
+- [Azure Monitor overview](https://learn.microsoft.com/azure/azure-monitor/overview)
+- [Application Insights overview](https://learn.microsoft.com/azure/azure-monitor/app/app-insights-overview)
+- [Application Insights for ASP.NET Core applications](https://learn.microsoft.com/azure/azure-monitor/app/asp-net-core)
+- [OpenTelemetry overview](https://learn.microsoft.com/azure/azure-monitor/app/opentelemetry-overview)
+- [Enable Azure Monitor OpenTelemetry for .NET applications](https://learn.microsoft.com/azure/azure-monitor/app/opentelemetry-enable)
+- [Distributed tracing and telemetry correlation](https://learn.microsoft.com/azure/azure-monitor/app/distributed-tracing-telemetry-correlation)
+- [Application Map in Application Insights](https://learn.microsoft.com/azure/azure-monitor/app/app-map)
+- [Transaction diagnostics](https://learn.microsoft.com/azure/azure-monitor/app/transaction-diagnostics)
+- [Log queries in Azure Monitor](https://learn.microsoft.com/azure/azure-monitor/logs/log-query-overview)
+- [Kusto Query Language (KQL) overview](https://learn.microsoft.com/azure/data-explorer/kusto/query/)
+
+### Azure Well-Architected Framework
+
+- [Microsoft Azure Well-Architected Framework](https://learn.microsoft.com/azure/well-architected/)
+- [Operational excellence pillar](https://learn.microsoft.com/azure/well-architected/operational-excellence/)
+- [Monitoring and diagnostics guidance](https://learn.microsoft.com/azure/well-architected/operational-excellence/monitoring)
+- [Health modeling for workloads](https://learn.microsoft.com/azure/well-architected/operational-excellence/observability)
+- [Performance efficiency pillar](https://learn.microsoft.com/azure/well-architected/performance-efficiency/)
+- [Reliability pillar](https://learn.microsoft.com/azure/well-architected/reliability/)
+- [Cost optimization pillar](https://learn.microsoft.com/azure/well-architected/cost-optimization/)
+
+### Azure Cosmos DB
+
+- [Azure Cosmos DB overview](https://learn.microsoft.com/azure/cosmos-db/introduction)
+- [Partitioning and horizontal scaling](https://learn.microsoft.com/azure/cosmos-db/partitioning-overview)
+- [Hierarchical partition keys](https://learn.microsoft.com/azure/cosmos-db/hierarchical-partition-keys)
+- [Request units in Azure Cosmos DB](https://learn.microsoft.com/azure/cosmos-db/request-units)
+- [Optimize request costs](https://learn.microsoft.com/azure/cosmos-db/optimize-cost-reads-writes)
+- [Role-based access control in Azure Cosmos DB](https://learn.microsoft.com/azure/cosmos-db/role-based-access-control)
+- [Monitor Azure Cosmos DB](https://learn.microsoft.com/azure/cosmos-db/monitor-cosmos-db)
+- [Diagnostic queries for troubleshooting](https://learn.microsoft.com/azure/cosmos-db/nosql/diagnostic-queries)
+
+### Azure Service Bus
+
+- [Azure Service Bus messaging overview](https://learn.microsoft.com/azure/service-bus-messaging/service-bus-messaging-overview)
+- [Service Bus queues, topics, and subscriptions](https://learn.microsoft.com/azure/service-bus-messaging/service-bus-queues-topics-subscriptions)
+- [Dead-letter queues overview](https://learn.microsoft.com/azure/service-bus-messaging/service-bus-dead-letter-queues)
+- [Service Bus performance best practices](https://learn.microsoft.com/azure/service-bus-messaging/service-bus-performance-improvements)
+- [Authenticate with managed identities](https://learn.microsoft.com/azure/service-bus-messaging/service-bus-managed-service-identity)
+
+### Azure Container Apps
+
+- [Azure Container Apps overview](https://learn.microsoft.com/azure/container-apps/overview)
+- [Microservices with Azure Container Apps](https://learn.microsoft.com/azure/container-apps/microservices)
+- [Scaling in Azure Container Apps](https://learn.microsoft.com/azure/container-apps/scale-app)
+- [Monitor logs in Azure Container Apps](https://learn.microsoft.com/azure/container-apps/logging)
+- [Manage revisions in Azure Container Apps](https://learn.microsoft.com/azure/container-apps/revisions)
+
+### .NET Aspire
+
+- [.NET Aspire overview](https://learn.microsoft.com/dotnet/aspire/get-started/aspire-overview)
+- [.NET Aspire dashboard](https://learn.microsoft.com/dotnet/aspire/fundamentals/dashboard/overview)
+- [.NET Aspire orchestration overview](https://learn.microsoft.com/dotnet/aspire/fundamentals/app-host-overview)
+- [Service defaults in .NET Aspire](https://learn.microsoft.com/dotnet/aspire/fundamentals/service-defaults)
+- [.NET Aspire integrations](https://learn.microsoft.com/dotnet/aspire/fundamentals/integrations-overview)
+- [Azure integrations for .NET Aspire](https://learn.microsoft.com/dotnet/aspire/azure/overview)
+- [Deploy .NET Aspire apps to Azure Container Apps](https://learn.microsoft.com/dotnet/aspire/deployment/azure/aca-deployment)
+
+### Azure Developer CLI (azd)
+
+- [Azure Developer CLI overview](https://learn.microsoft.com/azure/developer/azure-developer-cli/overview)
+- [Install Azure Developer CLI](https://learn.microsoft.com/azure/developer/azure-developer-cli/install-azd)
+- [Make your project compatible with azd](https://learn.microsoft.com/azure/developer/azure-developer-cli/make-azd-compatible)
+- [Azure Developer CLI reference](https://learn.microsoft.com/azure/developer/azure-developer-cli/reference)
+
+### Infrastructure as Code (Bicep)
+
+- [What is Bicep?](https://learn.microsoft.com/azure/azure-resource-manager/bicep/overview)
+- [Bicep file structure](https://learn.microsoft.com/azure/azure-resource-manager/bicep/file)
+- [Bicep modules](https://learn.microsoft.com/azure/azure-resource-manager/bicep/modules)
+- [Bicep best practices](https://learn.microsoft.com/azure/azure-resource-manager/bicep/best-practices)
+- [Deploy Bicep files with Azure CLI](https://learn.microsoft.com/azure/azure-resource-manager/bicep/deploy-cli)
+
+### Azure Identity & RBAC
+
+- [What is Azure role-based access control (RBAC)?](https://learn.microsoft.com/azure/role-based-access-control/overview)
+- [Azure built-in roles](https://learn.microsoft.com/azure/role-based-access-control/built-in-roles)
+- [What are managed identities for Azure resources?](https://learn.microsoft.com/entra/identity/managed-identities-azure-resources/overview)
+- [How to use managed identities](https://learn.microsoft.com/entra/identity/managed-identities-azure-resources/how-to-use-vm-sign-in)
+- [Assign Azure roles using Azure CLI](https://learn.microsoft.com/azure/role-based-access-control/role-assignments-cli)
+
+### Performance & Scalability
+
+- [Performance efficiency patterns](https://learn.microsoft.com/azure/well-architected/performance-efficiency/performance-efficiency-patterns)
+- [Autoscaling guidance](https://learn.microsoft.com/azure/architecture/best-practices/auto-scaling)
+- [Retry pattern](https://learn.microsoft.com/azure/architecture/patterns/retry)
+- [Circuit breaker pattern](https://learn.microsoft.com/azure/architecture/patterns/circuit-breaker)
+- [Throttling pattern](https://learn.microsoft.com/azure/architecture/patterns/throttling)
+
+### OpenTelemetry Standards
+
+- [OpenTelemetry official documentation](https://opentelemetry.io/docs/)
+- [W3C Trace Context specification](https://www.w3.org/TR/trace-context/)
+- [OpenTelemetry semantic conventions](https://opentelemetry.io/docs/specs/semconv/)
+
+---
+
+## Additional Resources
+
+- **Sample Code Repository**: [Azure-LogicApps-Monitoring](https://github.com/Evilazaro/Azure-LogicApps-Monitoring)
+- **Azure Architecture Center**: [Enterprise integration with Logic Apps](https://learn.microsoft.com/azure/architecture/reference-architectures/enterprise-integration/queues-events)
+- **Azure SDK for .NET**: [Overview](https://learn.microsoft.com/dotnet/azure/sdk/azure-sdk-for-dotnet)
+- **Azure Community Support**: [Microsoft Q&A](https://learn.microsoft.com/answers/tags/133/azure)
+
+---
+
+**Last Updated**: December 17, 2025  
+**Maintained By**: Evilazaro  
+**Repository**: [Azure-LogicApps-Monitoring](https://github.com/Evilazaro/Azure-LogicApps-Monitoring)  
+**Branch**: refactor/aspire
