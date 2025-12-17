@@ -3,17 +3,16 @@ using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
 
-// Configure logging
-builder.Logging.SetMinimumLevel(LogLevel.Information);
+// Add diagnostic logging
+builder.Logging.SetMinimumLevel(LogLevel.Debug);
 
-// Get Orders API base address from configuration
 var ordersApiBaseAddress = builder.Configuration["OrdersApi:BaseAddress"] 
+    ?? builder.Configuration.GetConnectionString("orders-api")
     ?? builder.HostEnvironment.BaseAddress;
 
-// Determine if running in development mode
-var isDevelopment = builder.HostEnvironment.IsDevelopment();
+// Log the resolved address
+Console.WriteLine($"Orders API Base Address: {ordersApiBaseAddress}");
 
-// Register order services with OpenTelemetry instrumentation
-builder.Services.AddOrderServices(ordersApiBaseAddress, isDevelopment);
+builder.Services.AddOrderServices(ordersApiBaseAddress, builder.HostEnvironment.IsDevelopment());
 
 await builder.Build().RunAsync();

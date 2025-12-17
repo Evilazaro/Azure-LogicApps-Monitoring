@@ -1,0 +1,12 @@
+{
+  "profiles": {
+    "eShop.Orders.App.Client": {
+      "commandName": "Project",
+      "launchBrowser": true,
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development"
+      },
+      "applicationUrl": "https://localhost:61924;http://localhost:61925"
+    }
+  }
+}
