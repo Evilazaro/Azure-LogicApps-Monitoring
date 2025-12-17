@@ -1,0 +1,21 @@
+﻿@page "/counter"
+@rendermode InteractiveServer
+
+<PageTitle>Orders</PageTitle>
+
+<h1>Order</h1>
+
+<textarea
+       placeholder="Enter order info"
+       class="form-control mb-3" />
+
+<button class="btn btn-primary" @onclick="IncrementCount">Click me</button>
+
+@code {
+    private int currentCount = 0;
+
+    private void IncrementCount()
+    {
+        currentCount++;
+    }
+}

@@ -85,7 +85,7 @@ public class OrdersController : ControllerBase
 
             _logger.LogInformation("Retrieving order {OrderId}", id);
 
-            var order = await _orderService.GetOrderByIdAsync(id);            
+            var order = await _orderService.GetOrderByIdAsync(id);
 
             if (order == null)
             {
@@ -141,7 +141,7 @@ public class OrdersController : ControllerBase
             using (var messagingActivity = _activitySource.StartActivity("PlaceOrder.SendMessage", ActivityKind.Producer))
             {
                 messagingActivity?.SetTag("messaging.system", "servicebus");
-                messagingActivity?.SetTag("messaging.destination", "orders-queue");
+                messagingActivity?.SetTag("messaging.destination", "OrdersPlaced");
                 messagingActivity?.SetTag("messaging.operation", "publish");
 
                 // Send order to Service Bus - this includes database persistence
@@ -155,7 +155,10 @@ public class OrdersController : ControllerBase
 
             _logger.LogInformation("Order {OrderId} created successfully", order.Id);
 
-            return CreatedAtAction(nameof(GetOrder), new { id = order.Id }, order);
+            // Return 201 Created with location header pointing to the created resource
+            // Parse the ID to int for the route parameter, default to 0 if parsing fails
+            int.TryParse(order.Id, out var orderId);
+            return CreatedAtAction(nameof(GetOrder), new { id = orderId }, order);
         }
         catch (Exception ex)
         {
@@ -173,8 +176,8 @@ public class OrdersController : ControllerBase
     /// <param name="id">The order identifier.</param>
     /// <param name="order">The updated order data.</param>
     /// <returns>No content on success, 404 if order not found.</returns>
-    [HttpPut("{id}")]
-    public async Task<IActionResult> UpdateOrder(string id, [FromBody] Order order)
+    [HttpPut("{id:int}")]
+    public async Task<IActionResult> UpdateOrder(int id, [FromBody] Order order)
     {
         using var activity = _activitySource.StartActivity("UpdateOrder.BusinessLogic");
 
@@ -185,13 +188,7 @@ public class OrdersController : ControllerBase
 
             _logger.LogInformation("Updating order {OrderId}", id);
 
-            if (!int.TryParse(id, out var orderId))
-            {
-                _logger.LogWarning("Invalid order ID format: {OrderId}", id);
-                return BadRequest("Order ID must be a valid integer");
-            }
-
-            var existingOrder = await _orderService.GetOrderByIdAsync(orderId);
+            var existingOrder = await _orderService.GetOrderByIdAsync(id);
             if (existingOrder == null)
             {
                 activity?.SetTag("orders.found", false);
@@ -200,7 +197,7 @@ public class OrdersController : ControllerBase
             }
 
             // Update order and send message
-            order.Id = id;
+            order.Id = id.ToString();
             await _orderService.SendOrderMessageAsync(order);
 
             activity?.AddEvent(new ActivityEvent("Order updated successfully"));
@@ -223,8 +220,8 @@ public class OrdersController : ControllerBase
     /// </summary>
     /// <param name="id">The order identifier.</param>
     /// <returns>No content on success, 404 if order not found.</returns>
-    [HttpDelete("{id}")]
-    public async Task<IActionResult> DeleteOrder(string id)
+    [HttpDelete("{id:int}")]
+    public async Task<IActionResult> DeleteOrder(int id)
     {
         using var activity = _activitySource.StartActivity("DeleteOrder.BusinessLogic");
 
@@ -235,13 +232,7 @@ public class OrdersController : ControllerBase
 
             _logger.LogInformation("Deleting order {OrderId}", id);
 
-            if (!int.TryParse(id, out var orderId))
-            {
-                _logger.LogWarning("Invalid order ID format: {OrderId}", id);
-                return BadRequest("Order ID must be a valid integer");
-            }
-
-            var existingOrder = await _orderService.GetOrderByIdAsync(orderId);
+            var existingOrder = await _orderService.GetOrderByIdAsync(id);
             if (existingOrder == null)
             {
                 activity?.SetTag("orders.found", false);
@@ -249,10 +240,10 @@ public class OrdersController : ControllerBase
                 return NotFound();
             }
 
-            // Note: Delete operation not implemented in IOrderService
-            // This would require adding a DeleteOrderAsync method to the interface
-            _logger.LogWarning("Delete operation not yet implemented for order {OrderId}", id);
+            // Delete the order
+            await _orderService.DeleteOrderAsync(id);
 
+            activity?.SetTag("orders.deleted", true);
             activity?.AddEvent(new ActivityEvent("Order deleted successfully"));
             _logger.LogInformation("Order {OrderId} deleted successfully", id);
 

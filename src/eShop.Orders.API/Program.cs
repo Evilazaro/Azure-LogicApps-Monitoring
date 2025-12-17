@@ -10,7 +10,6 @@
 
 using eShop.Orders.API.Middleware;
 using eShop.Orders.API.Services;
-using Microsoft.Extensions.Azure;
 using System.Diagnostics;
 
 // Create activity source for application startup tracing
@@ -33,64 +32,94 @@ using (var configActivity = new ActivitySource("eShop.Orders.Startup")
     configActivity?.SetTag("configuration.step", "mvc_controllers");
     builder.Services.AddControllers();
 
-// Add API documentation support via Swagger/OpenAPI
-// Enables automatic API schema generation and interactive documentation UI
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddOpenApi();
-builder.Services.AddSwaggerGen();
+    // Add API documentation support via Swagger/OpenAPI
+    // Only registered in development for security
+    if (builder.Environment.IsDevelopment())
+    {
+        builder.Services.AddEndpointsApiExplorer();
+        builder.Services.AddOpenApi();
+        builder.Services.AddSwaggerGen();
+    }
 
-// Register order service as singleton for in-memory storage
-// In production, this should be scoped with proper database context
-// Note: ServiceBusClient is automatically registered by AddAzureServiceBusClient
-builder.Services.AddSingleton<IOrderService, OrderService>();
+    // Register order service as singleton for in-memory storage
+    // Singleton is appropriate here because:
+    // - Uses thread-safe ConcurrentDictionary for storage
+    // - ServiceBusSender is thread-safe and reusable
+    // - In-memory storage should persist across requests
+    // - Implements IAsyncDisposable to properly release Service Bus resources on shutdown
+    // Note: In production with a database, use AddScoped instead for proper DbContext management
+    builder.Services.AddSingleton<IOrderService, OrderService>();
 
     // Register Azure Service Bus client using Aspire integration (if configured)
     // Provides automatic health checks, telemetry, and configuration management
     // Connection name "messaging" maps to the Service Bus resource defined in AppHost
     var messagingConnectionString = builder.Configuration.GetConnectionString("messaging");
-if (!string.IsNullOrWhiteSpace(messagingConnectionString))
-{
-    builder.AddAzureServiceBusClient("messaging");
-    // Register background service for continuous message processing from Service Bus
-    builder.Services.AddHostedService<OrderMessageHandler>();
-}
-else
-{
-    builder.Logging.AddConsole().Services.Configure<LoggerFilterOptions>(options =>
+    if (!string.IsNullOrWhiteSpace(messagingConnectionString))
     {
-        options.Rules.Add(new LoggerFilterRule(null, "Microsoft.Extensions.Hosting", LogLevel.Information, null));
-    });
-    var logger = LoggerFactory.Create(logging => logging.AddConsole()).CreateLogger("Startup");
-    logger.LogWarning("Service Bus connection string 'messaging' not found. Message processing is disabled.");
-}
+        builder.AddAzureServiceBusClient("messaging");
+        // Register background service for continuous message processing from Service Bus
+        builder.Services.AddHostedService<OrderMessageHandler>();
+    }
+    // Service Bus configuration is optional - application will log warning when OrderMessageHandler starts
 
-// Configure CORS to allow Blazor WebAssembly client requests
-// In production, restrict to specific origins
-builder.Services.AddCors(options =>
-{
-    options.AddDefaultPolicy(policy =>
+    // Configure CORS to allow Blazor WebAssembly client requests
+    // Uses Aspire service discovery for automatic origin resolution
+    builder.Services.AddCors(options =>
     {
-        if (builder.Environment.IsDevelopment())
+        options.AddDefaultPolicy(policy =>
         {
-            // Allow all in development
-            policy.AllowAnyOrigin()
-                  .AllowAnyMethod()
-                  .AllowAnyHeader();
-        }
-        else
-        {
-            // In production, restrict to specific origins from configuration
-            var allowedOrigins = builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>() ?? [];
-            if (allowedOrigins.Length > 0)
+            if (builder.Environment.IsDevelopment())
             {
-                policy.WithOrigins(allowedOrigins)
+                // Allow all origins in development for easier testing
+                policy.AllowAnyOrigin()
                       .AllowAnyMethod()
-                      .AllowAnyHeader()
-                      .AllowCredentials();
+                      .AllowAnyHeader();
             }
-        }
+            else
+            {
+                // In production, use Aspire service discovery to resolve allowed origins
+                var allowedOrigins = new List<string>();
+
+                // Try to resolve orders-webapp origin from Aspire service discovery
+                var webAppOrigin = builder.Configuration["services:orders-webapp:https:0"]
+                    ?? builder.Configuration["services:orders-webapp:http:0"];
+
+                if (!string.IsNullOrEmpty(webAppOrigin))
+                {
+                    allowedOrigins.Add(webAppOrigin);
+                }
+
+                // Also check appsettings.json for additional origins
+                var configuredOrigins = builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>();
+                if (configuredOrigins?.Length > 0)
+                {
+                    allowedOrigins.AddRange(configuredOrigins);
+                }
+
+                if (allowedOrigins.Count > 0)
+                {
+                    policy.WithOrigins([.. allowedOrigins])
+                          .AllowAnyMethod()
+                          .AllowAnyHeader()
+                          .AllowCredentials();
+                }
+                else
+                {
+                    // WARNING: Fallback to permissive policy if no origins configured
+                    // This should be fixed in production by configuring proper allowed origins
+                    var logger = builder.Services.BuildServiceProvider()
+                        .GetRequiredService<ILogger<Program>>();
+                    logger.LogWarning(
+                        "CORS configuration is missing. Using permissive policy. " +
+                        "Configure 'Cors:AllowedOrigins' in appsettings for production.");
+
+                    policy.AllowAnyOrigin()
+                          .AllowAnyMethod()
+                          .AllowAnyHeader();
+                }
+            }
+        });
     });
-});
 
     configActivity?.AddEvent(new ActivityEvent("Services configured successfully"));
 }
@@ -101,42 +130,44 @@ using (var buildActivity = new ActivitySource("eShop.Orders.Startup")
     var app = builder.Build();
     buildActivity?.AddEvent(new ActivityEvent("Application built successfully"));
 
-
-    // Enable OpenAPI/Swagger UI only in development for security
     using (var middlewareActivity = new ActivitySource("eShop.Orders.Startup")
         .StartActivity("Application.ConfigureMiddleware", ActivityKind.Internal))
     {
-        middlewareActivity?.SetTag("configuration.step", "openapi");
-        app.MapOpenApi();
-app.UseSwagger();
-app.UseSwaggerUI(options =>
-{
-    options.SwaggerEndpoint("/openapi/v1.json", "eShop.Orders.API v1");
-    options.RoutePrefix = string.Empty; // Serve Swagger UI at application root (http://localhost:port/)
-});
+        // Map health check endpoints FIRST for container orchestration probes
+        // Health checks must respond on HTTP without HTTPS redirect
+        // Used by load balancers and container orchestrators (Kubernetes, Container Apps)
+        app.MapDefaultEndpoints();
 
+        // Enable OpenAPI/Swagger UI only in development for security
+        if (app.Environment.IsDevelopment())
+        {
+            middlewareActivity?.SetTag("configuration.step", "openapi");
+            app.MapOpenApi();
+            app.UseSwagger();
+            app.UseSwaggerUI(options =>
+            {
+                options.SwaggerEndpoint("/openapi/v1.json", "eShop.Orders.API v1");
+                options.RoutePrefix = string.Empty; // Serve Swagger UI at application root (http://localhost:port/)
+            });
+        }
 
-// Map health check endpoints FIRST for container orchestration probes
-// Health checks must respond on HTTP without HTTPS redirect
-// Used by load balancers and container orchestrators (Kubernetes, Container Apps)
-app.MapDefaultEndpoints();
+        // Add correlation ID middleware early in pipeline
+        // Ensures all subsequent middleware and logging operations have access to correlation ID
+        app.UseCorrelationId();
 
-// Add correlation ID middleware early in pipeline
-// Ensures all subsequent middleware and logging operations have access to correlation ID
-app.UseCorrelationId();
+        // HTTPS redirection is handled differently based on environment
+        // In development: Redirect to HTTPS for local testing
+        // In production/container environments: Ingress/load balancer handles HTTPS termination
+        if (app.Environment.IsDevelopment())
+        {
+            app.UseHttpsRedirection();
+        }
 
-// Redirect HTTP requests to HTTPS for security (but after health checks)
-// In container environments, ingress handles HTTPS termination
-if (!app.Environment.IsProduction())
-{
-    app.UseHttpsRedirection();
-}
+        // Enable CORS before authorization to ensure preflight requests are handled correctly
+        app.UseCors();
 
-// Enable CORS before authorization to ensure preflight requests are handled correctly
-app.UseCors();
-
-// Enable authorization middleware (currently configured but not enforcing policies)
-app.UseAuthorization();
+        // Enable authorization middleware (currently configured but not enforcing policies)
+        app.UseAuthorization();
 
         // Map API controllers to handle HTTP requests
         middlewareActivity?.SetTag("configuration.step", "map_controllers");

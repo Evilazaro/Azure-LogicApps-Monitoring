@@ -15,6 +15,11 @@
     </None>
     <None Include="docker-compose.yml" />
     <None Include=".dockerignore" />
+    <None Include="src\eShop.Orders.App\appsettings.Development.json" />
+    <None Include="src\eShop.Orders.App\appsettings.json" />
     <None Include="src\eShop.Orders.App\eShop.Orders.App.Client\Pages\Component.razor" />
+    <None Include="src\eShop.Orders.App\Program.cs" />
+    <None Include="src\eShop.Orders.App\wwwroot\appsettings.Development.json" />
+    <None Include="src\eShop.Orders.App\wwwroot\appsettings.json" />
   </ItemGroup>
 </Project>

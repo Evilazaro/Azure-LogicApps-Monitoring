@@ -41,13 +41,14 @@ public sealed class OrderService : IOrderService, IAsyncDisposable
     {
         ArgumentNullException.ThrowIfNull(serviceBusClient);
         ArgumentNullException.ThrowIfNull(configuration);
+        ArgumentNullException.ThrowIfNull(logger);
 
-        _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        _logger = logger;
 
-        var queueName = configuration["Azure:ServiceBus:QueueName"] ?? "orders";
-        _sender = serviceBusClient.CreateSender(queueName);
+        var topicName = configuration["Azure:ServiceBus:TopicName"] ?? "orders";
+        _sender = serviceBusClient.CreateSender(topicName);
 
-        _logger.LogInformation("OrderService initialized with queue: {QueueName}", queueName);
+        _logger.LogInformation("OrderService initialized with topic: {TopicName}", topicName);
     }
 
     /// <inheritdoc/>
@@ -64,7 +65,7 @@ public sealed class OrderService : IOrderService, IAsyncDisposable
         {
             // Add order details to activity tags
             activity?.SetTag("messaging.system", "servicebus");
-            activity?.SetTag("messaging.destination", "orders-queue");
+            activity?.SetTag("messaging.destination", "OrdersPlaced");
             activity?.SetTag("messaging.operation", "publish");
             activity?.SetTag("order.id", order.Id);
             activity?.SetTag("order.total", order.Total);
@@ -75,7 +76,7 @@ public sealed class OrderService : IOrderService, IAsyncDisposable
             {
                 MessageId = Guid.NewGuid().ToString(),
                 ContentType = "application/json",
-                Subject = "OrderPlaced"
+                Subject = "OrdersPlaced"
             };
 
             // Add metadata for correlation and tracking
@@ -87,7 +88,7 @@ public sealed class OrderService : IOrderService, IAsyncDisposable
             {
                 // Add traceparent header (W3C Trace Context standard)
                 message.ApplicationProperties.Add("traceparent", activity.Id ?? string.Empty);
-                
+
                 // Add diagnostic context
                 message.ApplicationProperties.Add("TraceId", activity.TraceId.ToString());
                 message.ApplicationProperties.Add("SpanId", activity.SpanId.ToString());
@@ -166,13 +167,13 @@ public sealed class OrderService : IOrderService, IAsyncDisposable
             ActivityKind.Producer);
 
         activity?.SetTag("messaging.system", "servicebus");
-        activity?.SetTag("messaging.destination", "orders-queue");
+        activity?.SetTag("messaging.destination", "OrdersPlaced");
         activity?.SetTag("messaging.operation", "publish_batch");
         activity?.SetTag("messaging.batch_size", orders.Count);
 
         try
         {
-            using var messageBatch = await _sender.CreateMessageBatchAsync(cancellationToken);
+            var messageBatch = await _sender.CreateMessageBatchAsync(cancellationToken);
             var messagesAdded = 0;
 
             foreach (var order in orders)
@@ -182,7 +183,7 @@ public sealed class OrderService : IOrderService, IAsyncDisposable
                 {
                     MessageId = Guid.NewGuid().ToString(),
                     ContentType = "application/json",
-                    Subject = "OrderPlaced"
+                    Subject = "OrdersPlaced"
                 };
 
                 message.ApplicationProperties.Add("OrderId", order.Id);
@@ -194,7 +195,7 @@ public sealed class OrderService : IOrderService, IAsyncDisposable
                     message.ApplicationProperties.Add("traceparent", activity.Id ?? string.Empty);
                     message.ApplicationProperties.Add("TraceId", activity.TraceId.ToString());
                     message.ApplicationProperties.Add("SpanId", activity.SpanId.ToString());
-                    
+
                     if (!string.IsNullOrEmpty(activity.TraceStateString))
                     {
                         message.ApplicationProperties.Add("tracestate", activity.TraceStateString);
@@ -203,20 +204,41 @@ public sealed class OrderService : IOrderService, IAsyncDisposable
 
                 if (!messageBatch.TryAddMessage(message))
                 {
-                    _logger.LogWarning(
-                        "Message batch is full. Sending {Count} messages before adding more",
-                        messagesAdded);
+                    // Batch is full - send current batch and start a new one
+                    if (messagesAdded > 0)
+                    {
+                        _logger.LogInformation(
+                            "Message batch is full. Sending {Count} messages before adding more",
+                            messagesAdded);
 
-                    // Send current batch
-                    await _sender.SendMessagesAsync(messageBatch, cancellationToken);
-                    
-                    // Cannot reuse disposed batch - this is a bug in the current implementation
-                    // For simplicity, throwing exception. In production, implement proper batch rotation.
-                    throw new InvalidOperationException(
-                        "Message batch exceeded. Implement batch rotation for production use.");
+                        await _sender.SendMessagesAsync(messageBatch, cancellationToken);
+                        activity?.AddEvent(new ActivityEvent($"Sent batch of {messagesAdded} messages"));
+                    }
+
+                    // Cannot reuse batch after sending - recreate messageBatch for remaining messages
+                    messageBatch = await _sender.CreateMessageBatchAsync(cancellationToken);
+                    messagesAdded = 0;
+
+                    // Try adding the current message to the new batch
+                    if (!messageBatch.TryAddMessage(message))
+                    {
+                        // Single message is too large for any batch
+                        _logger.LogError(
+                            "Single message exceeds maximum batch size. OrderId: {OrderId}, MessageSize: {Size} bytes",
+                            order.Id,
+                            messageBody.Length);
+                        throw new InvalidOperationException(
+                            $"Message for order {order.Id} exceeds maximum allowed size");
+                    }
+
+                    messagesAdded++;
+                }
+                else
+                {
+                    messagesAdded++;
                 }
 
-                messagesAdded++;
+                // Store order in memory for retrieval
                 if (int.TryParse(order.Id, out var orderId))
                 {
                     _orderStore.AddOrUpdate(orderId, order, (_, _) => order);
@@ -286,8 +308,8 @@ public sealed class OrderService : IOrderService, IAsyncDisposable
             activity?.SetStatus(ActivityStatusCode.Ok);
             activity?.AddEvent(new ActivityEvent("Orders retrieved successfully"));
 
-            _logger.LogDebug("Retrieved {Count} orders from storage. TraceId: {TraceId}", 
-                orders.Count, 
+            _logger.LogDebug("Retrieved {Count} orders from storage. TraceId: {TraceId}",
+                orders.Count,
                 activity?.TraceId.ToString() ?? "none");
 
             return Task.FromResult<IReadOnlyList<Order>>(orders);
@@ -323,8 +345,8 @@ public sealed class OrderService : IOrderService, IAsyncDisposable
                 activity?.SetTag("order.found", true);
                 activity?.SetStatus(ActivityStatusCode.Ok);
                 activity?.AddEvent(new ActivityEvent("Order found"));
-                
-                _logger.LogDebug("Retrieved order {OrderId} from storage. TraceId: {TraceId}", 
+
+                _logger.LogDebug("Retrieved order {OrderId} from storage. TraceId: {TraceId}",
                     id,
                     activity?.TraceId.ToString() ?? "none");
             }
@@ -333,8 +355,8 @@ public sealed class OrderService : IOrderService, IAsyncDisposable
                 activity?.SetTag("order.found", false);
                 activity?.SetStatus(ActivityStatusCode.Ok);
                 activity?.AddEvent(new ActivityEvent("Order not found"));
-                
-                _logger.LogDebug("Order {OrderId} not found in storage. TraceId: {TraceId}", 
+
+                _logger.LogDebug("Order {OrderId} not found in storage. TraceId: {TraceId}",
                     id,
                     activity?.TraceId.ToString() ?? "none");
             }
@@ -349,14 +371,60 @@ public sealed class OrderService : IOrderService, IAsyncDisposable
         }
     }
 
+    /// <inheritdoc/>
+    public Task DeleteOrderAsync(int id, CancellationToken cancellationToken = default)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+
+        // Create activity for delete operation
+        using var activity = _activitySource.StartActivity(
+            "OrderService.DeleteOrder",
+            ActivityKind.Internal);
+
+        try
+        {
+            activity?.SetTag("db.operation", "delete");
+            activity?.SetTag("db.collection", "orders");
+            activity?.SetTag("order.id", id);
+
+            var removed = _orderStore.TryRemove(id, out var removedOrder);
+
+            if (removed)
+            {
+                activity?.SetTag("order.deleted", true);
+                activity?.SetStatus(ActivityStatusCode.Ok);
+                activity?.AddEvent(new ActivityEvent("Order deleted successfully"));
+
+                _logger.LogInformation("Deleted order {OrderId} from storage. TraceId: {TraceId}",
+                    id,
+                    activity?.TraceId.ToString() ?? "none");
+            }
+            else
+            {
+                activity?.SetTag("order.deleted", false);
+                activity?.SetStatus(ActivityStatusCode.Ok);
+                activity?.AddEvent(new ActivityEvent("Order not found for deletion"));
+
+                _logger.LogWarning("Order {OrderId} not found in storage for deletion. TraceId: {TraceId}",
+                    id,
+                    activity?.TraceId.ToString() ?? "none");
+            }
+
+            return Task.CompletedTask;
+        }
+        catch (Exception ex)
+        {
+            activity?.SetStatus(ActivityStatusCode.Error, ex.Message);
+            activity?.AddException(ex);
+            throw;
+        }
+    }
+
     /// <summary>
     /// Disposes the Service Bus sender asynchronously.
     /// </summary>
     public async ValueTask DisposeAsync()
     {
-        if (_sender != null)
-        {
-            await _sender.DisposeAsync();
-        }
+        await _sender.DisposeAsync();
     }
 }

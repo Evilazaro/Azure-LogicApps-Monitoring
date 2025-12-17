@@ -22,10 +22,10 @@ using (var resourceActivity = new ActivitySource("eShop.Orders.AppHost.Startup")
 {
     resourceActivity?.SetTag("environment", builder.Environment.EnvironmentName);
     resourceActivity?.SetTag("is_development", builder.Environment.IsDevelopment());
-    
+
     var resources = ConfigureInfrastructureResources(builder);
     resourceActivity?.AddEvent(new ActivityEvent("Infrastructure resources configured"));
-    
+
     ConfigureServices(builder, ordersApi, ordersWebApp, resources);
     resourceActivity?.AddEvent(new ActivityEvent("Services configured"));
 }
@@ -35,7 +35,7 @@ using (var buildActivity = new ActivitySource("eShop.Orders.AppHost.Startup")
 {
     startupActivity?.SetStatus(ActivityStatusCode.Ok);
     startupActivity?.AddEvent(new ActivityEvent("AppHost startup completed"));
-    
+
     await builder.Build().RunAsync();
 }
 
@@ -103,8 +103,11 @@ static (IResourceBuilder<AzureApplicationInsightsResource>? AppInsights, IResour
             .RunAsEmulator();
     }
 
-    // Add orders queue to the Service Bus namespace
-    serviceBus.AddServiceBusQueue(config.ServiceBusQueueName);
+    // Add orders topic with subscription to the Service Bus namespace
+    // The subscription is required for the API to receive messages from the topic
+    var topicName = config.ServiceBusTopicName ?? "orders";
+    var ordersTopic = serviceBus.AddServiceBusTopic(topicName);
+    ordersTopic.AddServiceBusSubscription("orders-api-subscription");
 
     return (AppInsights: appInsights, ServiceBus: serviceBus);
 }
@@ -132,11 +135,15 @@ static (IResourceBuilder<AzureApplicationInsightsResource> AppInsights, IResourc
     var serviceBusParameter = builder.AddParameter("azure-service-bus", config.ServiceBusNamespace!);
     var resourceGroupParameter = builder.AddParameter("azure-resource-group", config.ResourceGroupName!);
 
-    // Configure Service Bus with queue
+    // Configure Service Bus with topic and subscription
     var serviceBus = builder.AddAzureServiceBus(MessagingResourceName)
         .AsExisting(serviceBusParameter, resourceGroupParameter);
 
-    serviceBus.AddServiceBusQueue(config.ServiceBusQueueName);
+    // Add orders topic with subscription
+    // Topic name should always be configured in production, but provide a default for safety
+    var topicName = config.ServiceBusTopicName ?? "orders";
+    var ordersTopic = serviceBus.AddServiceBusTopic(topicName);
+    ordersTopic.AddServiceBusSubscription("orders-api-subscription");
 
     // Configure Application Insights
     var appInsights = builder.AddAzureApplicationInsights(TelemetryResourceName)
@@ -225,8 +232,7 @@ static void ConfigureOrdersWebApp(
     const string AzureClientIdKey = "AZURE_CLIENT_ID";
 
     ordersWebApp.WithReference(ordersApi)
-                .AsHttp2Service()
-                .WaitFor(ordersApi);
+                .AsHttp2Service();
 
     // Add authentication configuration if available
     if (!string.IsNullOrWhiteSpace(authConfig.TenantId))
@@ -251,22 +257,22 @@ static void ConfigureOrdersWebApp(
 /// </summary>
 /// <param name="builder">The distributed application builder.</param>
 /// <returns>A tuple containing Azure resource names and configuration status flags.</returns>
-static (string? AppInsightsName, string? ServiceBusNamespace, string? ServiceBusQueueName, string? ResourceGroupName, bool HasAppInsightsConfiguration, bool HasServiceBusConfiguration)
+static (string? AppInsightsName, string? ServiceBusNamespace, string? ServiceBusTopicName, string? ResourceGroupName, bool HasAppInsightsConfiguration, bool HasServiceBusConfiguration)
     GetAzureConfiguration(IDistributedApplicationBuilder builder)
 {
     ArgumentNullException.ThrowIfNull(builder);
     var appInsightsName = builder.Configuration["Azure:ApplicationInsights:Name"];
     var serviceBusNamespace = builder.Configuration["Azure:ServiceBus:Namespace"];
-    var serviceBusQueueName = builder.Configuration["Azure:ServiceBus:QueueName"];
+    var serviceBusTopicName = builder.Configuration["Azure:ServiceBus:TopicName"] ?? "orders";
     var resourceGroupName = builder.Configuration["Azure:ResourceGroup"];
 
     var hasAppInsightsConfig = !string.IsNullOrWhiteSpace(appInsightsName)
                              && !string.IsNullOrWhiteSpace(resourceGroupName);
     var hasServiceBusConfig = !string.IsNullOrWhiteSpace(serviceBusNamespace)
                             && !string.IsNullOrWhiteSpace(resourceGroupName)
-                            && !string.IsNullOrWhiteSpace(serviceBusQueueName);
+                            && !string.IsNullOrWhiteSpace(serviceBusTopicName);
 
-    return (appInsightsName, serviceBusNamespace, serviceBusQueueName, resourceGroupName, hasAppInsightsConfig, hasServiceBusConfig);
+    return (appInsightsName, serviceBusNamespace, serviceBusTopicName, resourceGroupName, hasAppInsightsConfig, hasServiceBusConfig);
 }
 
 /// <summary>
@@ -289,7 +295,7 @@ static (string? TenantId, string? ClientId) GetAuthenticationConfiguration(IDist
 /// Validates that all required production configuration values are present.
 /// </summary>
 static void ValidateProductionConfiguration(
-    (string? AppInsightsName, string? ServiceBusNamespace, string? ServiceBusQueueName, string? ResourceGroupName, bool HasAppInsightsConfiguration, bool HasServiceBusConfiguration) config)
+    (string? AppInsightsName, string? ServiceBusNamespace, string? ServiceBusTopicName, string? ResourceGroupName, bool HasAppInsightsConfiguration, bool HasServiceBusConfiguration) config)
 {
     if (string.IsNullOrWhiteSpace(config.AppInsightsName))
     {
@@ -303,10 +309,10 @@ static void ValidateProductionConfiguration(
             "Azure Service Bus namespace is not configured. Set 'Azure:ServiceBus:Namespace' in user secrets or configuration.");
     }
 
-    if (string.IsNullOrWhiteSpace(config.ServiceBusQueueName))
+    if (string.IsNullOrWhiteSpace(config.ServiceBusTopicName))
     {
         throw new InvalidOperationException(
-            "Azure Service Bus queue name is not configured. Set 'Azure:ServiceBus:QueueName' in user secrets or configuration.");
+            "Azure Service Bus topic name is not configured. Set 'Azure:ServiceBus:TopicName' in user secrets or configuration.");
     }
 
     if (string.IsNullOrWhiteSpace(config.ResourceGroupName))
@@ -318,6 +324,6 @@ static void ValidateProductionConfiguration(
     if (!config.HasServiceBusConfiguration)
     {
         throw new InvalidOperationException(
-            "Azure Service Bus configuration is incomplete. Ensure 'Azure:ServiceBus:Namespace', 'Azure:ServiceBus:QueueName', and 'Azure:ResourceGroup' are set in user secrets or configuration.");
+            "Azure Service Bus configuration is incomplete. Ensure 'Azure:ServiceBus:Namespace', 'Azure:ServiceBus:TopicName', and 'Azure:ResourceGroup' are set in user secrets or configuration.");
     }
 }

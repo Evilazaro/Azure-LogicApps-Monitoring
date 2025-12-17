@@ -11,42 +11,64 @@ public class OrderMessageHandler : BackgroundService
 {
     private readonly ILogger<OrderMessageHandler> _logger;
     private readonly ServiceBusClient _serviceBusClient;
+    private readonly IConfiguration _configuration;
     private static readonly ActivitySource _activitySource = Extensions.CreateActivitySource();
     private ServiceBusProcessor? _processor;
-    private const string QueueName = "orders-queue";
-    
+    private readonly string _topicName;
+    private readonly string _subscriptionName;
+
     /// <summary>
     /// Initializes a new instance of the OrderMessageHandler.
     /// </summary>
     /// <param name="logger">Logger for structured logging with trace correlation.</param>
     /// <param name="serviceBusClient">Service Bus client injected by Aspire integration.</param>
+    /// <param name="configuration">Application configuration for reading topic and subscription names.</param>
     /// <exception cref="ArgumentNullException">Thrown when required dependencies are null.</exception>
     public OrderMessageHandler(
         ILogger<OrderMessageHandler> logger,
-        ServiceBusClient serviceBusClient)
+        ServiceBusClient serviceBusClient,
+        IConfiguration configuration)
     {
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         _serviceBusClient = serviceBusClient ?? throw new ArgumentNullException(nameof(serviceBusClient));
+        _configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
+
+        // Read topic and subscription names from configuration
+        _topicName = _configuration["Azure:ServiceBus:TopicName"] ?? "orders";
+        _subscriptionName = _configuration["Azure:ServiceBus:SubscriptionName"] ?? "orders-api-subscription";
     }
 
     /// <inheritdoc/>
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
+        // Check if Service Bus client is configured properly
+        if (_serviceBusClient == null)
+        {
+            _logger.LogWarning(
+                "Service Bus client is not configured. Message processing will not start. " +
+                "Ensure 'messaging' connection string is configured in appsettings or via Aspire.");
+            return;
+        }
+
         try
         {
-            // Create processor for the orders queue
-            _processor = _serviceBusClient.CreateProcessor(QueueName, new ServiceBusProcessorOptions
+            // Create processor for the orders topic with subscription
+            _processor = _serviceBusClient.CreateProcessor(_topicName, _subscriptionName, new ServiceBusProcessorOptions
             {
                 MaxConcurrentCalls = 10,
                 AutoCompleteMessages = false,
-                MaxAutoLockRenewalDuration = TimeSpan.FromMinutes(5)
+                MaxAutoLockRenewalDuration = TimeSpan.FromMinutes(5),
+                ReceiveMode = ServiceBusReceiveMode.PeekLock
             });
 
             // Register message and error handlers
             _processor.ProcessMessageAsync += ProcessMessageAsync;
             _processor.ProcessErrorAsync += ProcessErrorAsync;
 
-            _logger.LogInformation("Starting Service Bus message processor for queue: {QueueName}", QueueName);
+            _logger.LogInformation(
+                "Starting Service Bus message processor for topic: {TopicName}, subscription: {SubscriptionName}",
+                _topicName,
+                _subscriptionName);
             await _processor.StartProcessingAsync(stoppingToken);
 
             _logger.LogInformation("Service Bus processor started successfully");
@@ -96,9 +118,10 @@ public class OrderMessageHandler : BackgroundService
             activity?.SetTag("messaging.correlation_id", args.Message.CorrelationId);
 
             _logger.LogInformation(
-                "Processing message {MessageId} from queue {QueueName}",
+                "Processing message {MessageId} from topic {TopicName} subscription {SubscriptionName}",
                 args.Message.MessageId,
-                args.EntityPath);
+                _topicName,
+                _subscriptionName);
 
             // Extract order ID from message body
             var messageBody = args.Message.Body.ToString();

@@ -70,7 +70,7 @@ param tags tagsType
 @description('Name of the storage queue for tax processing workflow tasks')
 @minLength(3)
 @maxLength(63)
-param queueName string = 'orders-queue'
+param topicName string = 'OrdersPlaced'
 
 // ========== Variables ==========
 
@@ -108,10 +108,10 @@ output AZURE_SERVICE_BUS_NAMESPACE string = broker.name
 
 output MESSAGING_SERVICEBUSENDPOINT string = broker.properties.serviceBusEndpoint
 
-@description('Service Bus queue for order processing messages')
-resource orders 'Microsoft.ServiceBus/namespaces/queues@2025-05-01-preview' = {
+@description('Service Bus Topic for orders placed to be processed')
+resource ordersTopic 'Microsoft.ServiceBus/namespaces/topics@2025-05-01-preview' = {
   parent: broker
-  name: queueName
+  name: 'OrdersPlaced'
 }
 
 @description('Diagnostic settings for Service Bus namespace')
