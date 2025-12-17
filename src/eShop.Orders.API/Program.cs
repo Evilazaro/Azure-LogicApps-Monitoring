@@ -10,6 +10,7 @@
 
 using eShop.Orders.API.Middleware;
 using eShop.Orders.API.Services;
+using Microsoft.Extensions.Azure;
 using System.Diagnostics;
 
 // Create activity source for application startup tracing
@@ -43,14 +44,13 @@ builder.Services.AddSwaggerGen();
 // Note: ServiceBusClient is automatically registered by AddAzureServiceBusClient
 builder.Services.AddSingleton<IOrderService, OrderService>();
 
-// Register Azure Service Bus client using Aspire integration (if configured)
-// Provides automatic health checks, telemetry, and configuration management
-// Connection name "messaging" maps to the Service Bus resource defined in AppHost
-var messagingConnectionString = builder.Configuration.GetConnectionString("messaging");
+    // Register Azure Service Bus client using Aspire integration (if configured)
+    // Provides automatic health checks, telemetry, and configuration management
+    // Connection name "messaging" maps to the Service Bus resource defined in AppHost
+    var messagingConnectionString = builder.Configuration.GetConnectionString("messaging");
 if (!string.IsNullOrWhiteSpace(messagingConnectionString))
 {
     builder.AddAzureServiceBusClient("messaging");
-
     // Register background service for continuous message processing from Service Bus
     builder.Services.AddHostedService<OrderMessageHandler>();
 }
