@@ -36,10 +36,10 @@ using (var configActivity = new ActivitySource("eShop.Orders.App.Startup")
     configActivity?.SetTag("configuration.step", "http_clients");
     builder.Services.AddHttpClient("orders-api", client =>
     {
-        var baseUrl = builder.Configuration["services:orders-api:https:0"] 
+        var baseUrl = builder.Configuration["services:orders-api:https:0"]
                       ?? builder.Configuration["services:orders-api:http:0"]
                       ?? throw new InvalidOperationException("Orders API service URL not found in configuration");
-        
+
         client.BaseAddress = new Uri(baseUrl);
         client.DefaultRequestHeaders.Add("Accept", "application/json");
         client.Timeout = TimeSpan.FromSeconds(30);

@@ -12,7 +12,7 @@ builder.Logging.SetMinimumLevel(LogLevel.Information);
 //
 // Priority 1: OrdersApi:BaseAddress from configuration (should be "/" for proxy)
 // Priority 2: Host environment base address (fallback)
-var ordersApiBaseAddress = builder.Configuration["OrdersApi:BaseAddress"] 
+var ordersApiBaseAddress = builder.Configuration["OrdersApi:BaseAddress"]
     ?? builder.HostEnvironment.BaseAddress;
 
 // Log configuration for diagnostics

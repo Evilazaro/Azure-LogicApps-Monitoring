@@ -87,7 +87,7 @@ public sealed class OrderService : IOrderService, IAsyncDisposable
             {
                 // Add traceparent header (W3C Trace Context standard)
                 message.ApplicationProperties.Add("traceparent", activity.Id ?? string.Empty);
-                
+
                 // Add diagnostic context
                 message.ApplicationProperties.Add("TraceId", activity.TraceId.ToString());
                 message.ApplicationProperties.Add("SpanId", activity.SpanId.ToString());
@@ -194,7 +194,7 @@ public sealed class OrderService : IOrderService, IAsyncDisposable
                     message.ApplicationProperties.Add("traceparent", activity.Id ?? string.Empty);
                     message.ApplicationProperties.Add("TraceId", activity.TraceId.ToString());
                     message.ApplicationProperties.Add("SpanId", activity.SpanId.ToString());
-                    
+
                     if (!string.IsNullOrEmpty(activity.TraceStateString))
                     {
                         message.ApplicationProperties.Add("tracestate", activity.TraceStateString);
@@ -210,13 +210,13 @@ public sealed class OrderService : IOrderService, IAsyncDisposable
                     // Send current batch
                     await _sender.SendMessagesAsync(messageBatch, cancellationToken);
                     activity?.AddEvent(new ActivityEvent($"Sent batch of {messagesAdded} messages"));
-                    
+
                     // Create new batch for remaining messages
                     using var newBatch = await _sender.CreateMessageBatchAsync(cancellationToken);
-                    
+
                     // Reset counter for new batch
                     messagesAdded = 0;
-                    
+
                     // Try adding the message to the new batch
                     if (!newBatch.TryAddMessage(message))
                     {
@@ -227,9 +227,9 @@ public sealed class OrderService : IOrderService, IAsyncDisposable
                         throw new InvalidOperationException(
                             $"Message for order {order.Id} exceeds maximum allowed size");
                     }
-                    
+
                     messagesAdded++;
-                    
+
                     // Continue with remaining orders using the new batch
                     // Note: This is a simplified fix. For production, consider implementing
                     // a more robust batch management strategy with proper batch pooling
@@ -308,8 +308,8 @@ public sealed class OrderService : IOrderService, IAsyncDisposable
             activity?.SetStatus(ActivityStatusCode.Ok);
             activity?.AddEvent(new ActivityEvent("Orders retrieved successfully"));
 
-            _logger.LogDebug("Retrieved {Count} orders from storage. TraceId: {TraceId}", 
-                orders.Count, 
+            _logger.LogDebug("Retrieved {Count} orders from storage. TraceId: {TraceId}",
+                orders.Count,
                 activity?.TraceId.ToString() ?? "none");
 
             return Task.FromResult<IReadOnlyList<Order>>(orders);
@@ -345,8 +345,8 @@ public sealed class OrderService : IOrderService, IAsyncDisposable
                 activity?.SetTag("order.found", true);
                 activity?.SetStatus(ActivityStatusCode.Ok);
                 activity?.AddEvent(new ActivityEvent("Order found"));
-                
-                _logger.LogDebug("Retrieved order {OrderId} from storage. TraceId: {TraceId}", 
+
+                _logger.LogDebug("Retrieved order {OrderId} from storage. TraceId: {TraceId}",
                     id,
                     activity?.TraceId.ToString() ?? "none");
             }
@@ -355,8 +355,8 @@ public sealed class OrderService : IOrderService, IAsyncDisposable
                 activity?.SetTag("order.found", false);
                 activity?.SetStatus(ActivityStatusCode.Ok);
                 activity?.AddEvent(new ActivityEvent("Order not found"));
-                
-                _logger.LogDebug("Order {OrderId} not found in storage. TraceId: {TraceId}", 
+
+                _logger.LogDebug("Order {OrderId} not found in storage. TraceId: {TraceId}",
                     id,
                     activity?.TraceId.ToString() ?? "none");
             }
@@ -394,8 +394,8 @@ public sealed class OrderService : IOrderService, IAsyncDisposable
                 activity?.SetTag("order.deleted", true);
                 activity?.SetStatus(ActivityStatusCode.Ok);
                 activity?.AddEvent(new ActivityEvent("Order deleted successfully"));
-                
-                _logger.LogInformation("Deleted order {OrderId} from storage. TraceId: {TraceId}", 
+
+                _logger.LogInformation("Deleted order {OrderId} from storage. TraceId: {TraceId}",
                     id,
                     activity?.TraceId.ToString() ?? "none");
             }
@@ -404,8 +404,8 @@ public sealed class OrderService : IOrderService, IAsyncDisposable
                 activity?.SetTag("order.deleted", false);
                 activity?.SetStatus(ActivityStatusCode.Ok);
                 activity?.AddEvent(new ActivityEvent("Order not found for deletion"));
-                
-                _logger.LogWarning("Order {OrderId} not found in storage for deletion. TraceId: {TraceId}", 
+
+                _logger.LogWarning("Order {OrderId} not found in storage for deletion. TraceId: {TraceId}",
                     id,
                     activity?.TraceId.ToString() ?? "none");
             }

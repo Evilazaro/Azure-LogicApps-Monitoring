@@ -10,7 +10,6 @@
 
 using eShop.Orders.API.Middleware;
 using eShop.Orders.API.Services;
-using Microsoft.Extensions.Azure;
 using System.Diagnostics;
 
 // Create activity source for application startup tracing
@@ -112,7 +111,7 @@ using (var configActivity = new ActivitySource("eShop.Orders.Startup")
                     logger.LogWarning(
                         "CORS configuration is missing. Using permissive policy. " +
                         "Configure 'Cors:AllowedOrigins' in appsettings for production.");
-                    
+
                     policy.AllowAnyOrigin()
                           .AllowAnyMethod()
                           .AllowAnyHeader();

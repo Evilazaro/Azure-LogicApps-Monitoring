@@ -1,9 +1,6 @@
 using eShop.Orders.App.Client.Services;
-using Microsoft.Extensions.DependencyInjection;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
-using System;
-using System.Collections.Generic;
 
 namespace eShop.Orders.App.Client.Extensions;
 
@@ -20,7 +17,7 @@ public static class ServiceCollectionExtensions
     /// <param name="isDevelopment">Indicates if the environment is development.</param>
     /// <returns>The configured service collection for method chaining.</returns>
     public static IServiceCollection AddOrderServices(
-        this IServiceCollection services, 
+        this IServiceCollection services,
         string ordersApiBaseAddress,
         bool isDevelopment = false)
     {
@@ -58,7 +55,7 @@ public static class ServiceCollectionExtensions
                         options.FilterHttpRequestMessage = (httpRequestMessage) =>
                         {
                             var requestPath = httpRequestMessage.RequestUri?.PathAndQuery ?? string.Empty;
-                            return !requestPath.Contains("_framework") && 
+                            return !requestPath.Contains("_framework") &&
                                    !requestPath.Contains("_blazor");
                         };
 
@@ -67,7 +64,7 @@ public static class ServiceCollectionExtensions
                         {
                             activity.SetTag("http.client", "blazor-wasm");
                             activity.SetTag("http.request.method", request.Method.ToString());
-                            
+
                             if (request.RequestUri != null)
                             {
                                 activity.SetTag("http.url", request.RequestUri.ToString());

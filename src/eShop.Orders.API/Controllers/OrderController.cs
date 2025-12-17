@@ -92,7 +92,7 @@ public class OrdersController : ControllerBase
                 return BadRequest("Order ID must be a valid integer");
             }
 
-            var order = await _orderService.GetOrderByIdAsync(orderId);            
+            var order = await _orderService.GetOrderByIdAsync(orderId);
 
             if (order == null)
             {

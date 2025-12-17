@@ -1,7 +1,6 @@
+using eShop.Orders.App.Client.Models;
 using System.Diagnostics;
 using System.Net.Http.Json;
-using eShop.Orders.App.Client.Models;
-using Microsoft.Extensions.Logging;
 
 namespace eShop.Orders.App.Client.Services;
 
@@ -14,7 +13,7 @@ public sealed class OrderService
     // Use proxy endpoint instead of direct API call
     private const string OrdersProxyEndpoint = "/api/proxy/orders";
     private const string ActivitySourceName = "eShop.Orders.Client";
-    
+
     private static readonly ActivitySource ActivitySource = new(ActivitySourceName);
     private readonly HttpClient _httpClient;
     private readonly ILogger<OrderService> _logger;
@@ -34,7 +33,7 @@ public sealed class OrderService
         ArgumentNullException.ThrowIfNull(order);
 
         using var activity = ActivitySource.StartActivity("PlaceOrder", ActivityKind.Client);
-        
+
         try
         {
             activity?.SetTag("order.id", order.Id);
@@ -58,12 +57,12 @@ public sealed class OrderService
             {
                 var errorContent = await response.Content.ReadAsStringAsync(cancellationToken);
                 var errorMessage = $"Failed to place order: {(int)response.StatusCode} - {errorContent}";
-                
+
                 activity?.SetStatus(ActivityStatusCode.Error, errorMessage);
                 _logger.LogWarning(
                     "Failed to place order {OrderId} via proxy. Status: {StatusCode}, Error: {Error}",
                     order.Id, response.StatusCode, errorContent);
-                
+
                 return OrderResult.Failure(errorMessage);
             }
         }

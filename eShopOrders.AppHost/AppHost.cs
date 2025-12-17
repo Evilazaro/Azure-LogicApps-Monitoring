@@ -22,10 +22,10 @@ using (var resourceActivity = new ActivitySource("eShop.Orders.AppHost.Startup")
 {
     resourceActivity?.SetTag("environment", builder.Environment.EnvironmentName);
     resourceActivity?.SetTag("is_development", builder.Environment.IsDevelopment());
-    
+
     var resources = ConfigureInfrastructureResources(builder);
     resourceActivity?.AddEvent(new ActivityEvent("Infrastructure resources configured"));
-    
+
     ConfigureServices(builder, ordersApi, ordersWebApp, resources);
     resourceActivity?.AddEvent(new ActivityEvent("Services configured"));
 }
@@ -35,7 +35,7 @@ using (var buildActivity = new ActivitySource("eShop.Orders.AppHost.Startup")
 {
     startupActivity?.SetStatus(ActivityStatusCode.Ok);
     startupActivity?.AddEvent(new ActivityEvent("AppHost startup completed"));
-    
+
     await builder.Build().RunAsync();
 }
 
