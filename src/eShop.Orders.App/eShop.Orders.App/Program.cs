@@ -18,9 +18,15 @@ builder.AddServiceDefaults();
 builder.Services.AddRazorComponents()
     .AddInteractiveWebAssemblyComponents();
 
-var ordersHttpClient = builder.Services.AddHttpClient("orders-api", client =>
+// Configure HTTP client for Orders API with service discovery
+// The configuration key is automatically provided by Aspire based on the service reference
+builder.Services.AddHttpClient("orders-api", client =>
 {
-    client.BaseAddress = new Uri(builder.Configuration["ORDERS_API_HTTPS"] ?? throw new InvalidOperationException("OrdersApi:BaseUrl configuration is missing."));
+    var baseUrl = builder.Configuration["services:orders-api:https:0"] 
+                  ?? builder.Configuration["services:orders-api:http:0"]
+                  ?? throw new InvalidOperationException("Orders API service URL not found in configuration");
+    
+    client.BaseAddress = new Uri(baseUrl);
     client.DefaultRequestHeaders.Add("Accept", "application/json");
 });
 

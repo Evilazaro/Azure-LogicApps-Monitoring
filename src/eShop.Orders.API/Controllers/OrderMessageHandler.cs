@@ -11,9 +11,8 @@ public class OrderMessageHandler : BackgroundService
 {
     private readonly ILogger<OrderMessageHandler> _logger;
     private readonly ServiceBusClient _serviceBusClient;
-    private readonly ActivitySource _activitySource;
+    private static readonly ActivitySource _activitySource = Extensions.CreateActivitySource();
     private ServiceBusProcessor? _processor;
-    private ServiceBusSender? _sender;
     private const string QueueName = "orders-queue";
     
     /// <summary>
@@ -21,33 +20,52 @@ public class OrderMessageHandler : BackgroundService
     /// </summary>
     /// <param name="logger">Logger for structured logging with trace correlation.</param>
     /// <param name="serviceBusClient">Service Bus client injected by Aspire integration.</param>
+    /// <exception cref="ArgumentNullException">Thrown when required dependencies are null.</exception>
     public OrderMessageHandler(
         ILogger<OrderMessageHandler> logger,
         ServiceBusClient serviceBusClient)
     {
-        _logger = logger;
-        _serviceBusClient = serviceBusClient;
-        _activitySource = Extensions.CreateActivitySource();
+        _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        _serviceBusClient = serviceBusClient ?? throw new ArgumentNullException(nameof(serviceBusClient));
     }
 
+    /// <inheritdoc/>
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        // Create processor for the orders queue
-        _processor = _serviceBusClient.CreateProcessor("orders-queue", new ServiceBusProcessorOptions
+        try
         {
-            MaxConcurrentCalls = 10,
-            AutoCompleteMessages = false
-        });
+            // Create processor for the orders queue
+            _processor = _serviceBusClient.CreateProcessor(QueueName, new ServiceBusProcessorOptions
+            {
+                MaxConcurrentCalls = 10,
+                AutoCompleteMessages = false,
+                MaxAutoLockRenewalDuration = TimeSpan.FromMinutes(5)
+            });
 
-        // Register message and error handlers
-        _processor.ProcessMessageAsync += ProcessMessageAsync;
-        _processor.ProcessErrorAsync += ProcessErrorAsync;
+            // Register message and error handlers
+            _processor.ProcessMessageAsync += ProcessMessageAsync;
+            _processor.ProcessErrorAsync += ProcessErrorAsync;
 
-        _logger.LogInformation("Starting Service Bus message processor for queue: orders-queue");
-        await _processor.StartProcessingAsync(stoppingToken);
+            _logger.LogInformation("Starting Service Bus message processor for queue: {QueueName}", QueueName);
+            await _processor.StartProcessingAsync(stoppingToken);
 
-        // Wait for cancellation
-        await Task.Delay(Timeout.Infinite, stoppingToken);
+            _logger.LogInformation("Service Bus processor started successfully");
+
+            // Wait for cancellation
+            try
+            {
+                await Task.Delay(Timeout.Infinite, stoppingToken);
+            }
+            catch (OperationCanceledException)
+            {
+                _logger.LogInformation("Service Bus processor cancellation requested");
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to start Service Bus message processor");
+            throw;
+        }
     }
 
     /// <summary>
@@ -140,14 +158,26 @@ public class OrderMessageHandler : BackgroundService
         return Task.CompletedTask;
     }
 
+    /// <inheritdoc/>
     public override async Task StopAsync(CancellationToken cancellationToken)
     {
         _logger.LogInformation("Stopping Service Bus message processor");
 
         if (_processor != null)
         {
-            await _processor.StopProcessingAsync(cancellationToken);
-            await _processor.DisposeAsync();
+            try
+            {
+                await _processor.StopProcessingAsync(cancellationToken);
+                _logger.LogInformation("Service Bus processor stopped successfully");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error stopping Service Bus processor");
+            }
+            finally
+            {
+                await _processor.DisposeAsync();
+            }
         }
 
         await base.StopAsync(cancellationToken);

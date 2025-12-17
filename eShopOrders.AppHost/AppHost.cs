@@ -3,6 +3,8 @@ using Microsoft.Extensions.Hosting;
 
 var builder = DistributedApplication.CreateBuilder(args);
 
+ArgumentNullException.ThrowIfNull(builder);
+
 var ordersApi = builder.AddProject<Projects.eShop_Orders_API>("orders-api");
 var ordersWebApp = builder.AddProject<Projects.eShop_Orders_App>("orders-webapp");
 
@@ -224,9 +226,12 @@ static void ConfigureOrdersWebApp(
 /// <summary>
 /// Retrieves Azure configuration from the builder's configuration sources.
 /// </summary>
+/// <param name="builder">The distributed application builder.</param>
+/// <returns>A tuple containing Azure resource names and configuration status flags.</returns>
 static (string? AppInsightsName, string? ServiceBusNamespace, string? ResourceGroupName, bool HasAppInsightsConfiguration, bool HasServiceBusConfiguration)
     GetAzureConfiguration(IDistributedApplicationBuilder builder)
 {
+    ArgumentNullException.ThrowIfNull(builder);
     var appInsightsName = builder.Configuration["Azure:ApplicationInsights:Name"];
     var serviceBusNamespace = builder.Configuration["Azure:ServiceBus:Namespace"];
     var resourceGroupName = builder.Configuration["Azure:ResourceGroup"];
@@ -242,8 +247,11 @@ static (string? AppInsightsName, string? ServiceBusNamespace, string? ResourceGr
 /// <summary>
 /// Retrieves authentication configuration from the builder's configuration sources.
 /// </summary>
+/// <param name="builder">The distributed application builder.</param>
+/// <returns>A tuple containing Azure AD tenant ID and client ID.</returns>
 static (string? TenantId, string? ClientId) GetAuthenticationConfiguration(IDistributedApplicationBuilder builder)
 {
+    ArgumentNullException.ThrowIfNull(builder);
     var tenantId = builder.Configuration["Azure:TenantId"]
                 ?? builder.Configuration["AZURE_TENANT_ID"];
     var clientId = builder.Configuration["Azure:ClientId"]

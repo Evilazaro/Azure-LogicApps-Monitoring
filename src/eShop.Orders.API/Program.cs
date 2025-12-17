@@ -25,6 +25,11 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddOpenApi();
 builder.Services.AddSwaggerGen();
 
+// Register order service as singleton for in-memory storage
+// In production, this should be scoped with proper database context
+// Note: ServiceBusClient is automatically registered by AddAzureServiceBusClient
+builder.Services.AddSingleton<IOrderService, OrderService>();
+
 // Register typed HTTP client with automatic distributed tracing
 // HttpClient instances are automatically instrumented with OpenTelemetry
 // for context propagation to downstream services
@@ -56,13 +61,30 @@ else
 }
 
 // Configure CORS to allow Blazor WebAssembly client requests
+// In production, restrict to specific origins
 builder.Services.AddCors(options =>
 {
     options.AddDefaultPolicy(policy =>
     {
-        policy.AllowAnyOrigin()
-              .AllowAnyMethod()
-              .AllowAnyHeader();
+        if (builder.Environment.IsDevelopment())
+        {
+            // Allow all in development
+            policy.AllowAnyOrigin()
+                  .AllowAnyMethod()
+                  .AllowAnyHeader();
+        }
+        else
+        {
+            // In production, restrict to specific origins from configuration
+            var allowedOrigins = builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>() ?? [];
+            if (allowedOrigins.Length > 0)
+            {
+                policy.WithOrigins(allowedOrigins)
+                      .AllowAnyMethod()
+                      .AllowAnyHeader()
+                      .AllowCredentials();
+            }
+        }
     });
 });
 
@@ -95,11 +117,11 @@ if (!app.Environment.IsProduction())
     app.UseHttpsRedirection();
 }
 
+// Enable CORS before authorization to ensure preflight requests are handled correctly
+app.UseCors();
+
 // Enable authorization middleware (currently configured but not enforcing policies)
 app.UseAuthorization();
-
-// Enable CORS before other middleware
-app.UseCors();
 
 // Map API controllers to handle HTTP requests
 app.MapControllers();
