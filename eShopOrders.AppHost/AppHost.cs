@@ -103,8 +103,11 @@ static (IResourceBuilder<AzureApplicationInsightsResource>? AppInsights, IResour
             .RunAsEmulator();
     }
 
-    // Add orders topic to the Service Bus namespace
-    serviceBus.AddServiceBusTopic(config.ServiceBusTopicName);
+    // Add orders topic with subscription to the Service Bus namespace
+    // The subscription is required for the API to receive messages from the topic
+    var topicName = config.ServiceBusTopicName ?? "orders";
+    var ordersTopic = serviceBus.AddServiceBusTopic(topicName);
+    ordersTopic.AddServiceBusSubscription("orders-api-subscription");
 
     return (AppInsights: appInsights, ServiceBus: serviceBus);
 }
@@ -132,11 +135,15 @@ static (IResourceBuilder<AzureApplicationInsightsResource> AppInsights, IResourc
     var serviceBusParameter = builder.AddParameter("azure-service-bus", config.ServiceBusNamespace!);
     var resourceGroupParameter = builder.AddParameter("azure-resource-group", config.ResourceGroupName!);
 
-    // Configure Service Bus with queue
+    // Configure Service Bus with topic and subscription
     var serviceBus = builder.AddAzureServiceBus(MessagingResourceName)
         .AsExisting(serviceBusParameter, resourceGroupParameter);
 
-    serviceBus.AddServiceBusTopic(config.ServiceBusTopicName);
+    // Add orders topic with subscription
+    // Topic name should always be configured in production, but provide a default for safety
+    var topicName = config.ServiceBusTopicName ?? "orders";
+    var ordersTopic = serviceBus.AddServiceBusTopic(topicName);
+    ordersTopic.AddServiceBusSubscription("orders-api-subscription");
 
     // Configure Application Insights
     var appInsights = builder.AddAzureApplicationInsights(TelemetryResourceName)
@@ -256,16 +263,16 @@ static (string? AppInsightsName, string? ServiceBusNamespace, string? ServiceBus
     ArgumentNullException.ThrowIfNull(builder);
     var appInsightsName = builder.Configuration["Azure:ApplicationInsights:Name"];
     var serviceBusNamespace = builder.Configuration["Azure:ServiceBus:Namespace"];
-    var ServiceBusTopicName = builder.Configuration["Azure:ServiceBus:TopicName"];
+    var serviceBusTopicName = builder.Configuration["Azure:ServiceBus:TopicName"] ?? "orders";
     var resourceGroupName = builder.Configuration["Azure:ResourceGroup"];
 
     var hasAppInsightsConfig = !string.IsNullOrWhiteSpace(appInsightsName)
                              && !string.IsNullOrWhiteSpace(resourceGroupName);
     var hasServiceBusConfig = !string.IsNullOrWhiteSpace(serviceBusNamespace)
                             && !string.IsNullOrWhiteSpace(resourceGroupName)
-                            && !string.IsNullOrWhiteSpace(ServiceBusTopicName);
+                            && !string.IsNullOrWhiteSpace(serviceBusTopicName);
 
-    return (appInsightsName, serviceBusNamespace, ServiceBusTopicName, resourceGroupName, hasAppInsightsConfig, hasServiceBusConfig);
+    return (appInsightsName, serviceBusNamespace, serviceBusTopicName, resourceGroupName, hasAppInsightsConfig, hasServiceBusConfig);
 }
 
 /// <summary>

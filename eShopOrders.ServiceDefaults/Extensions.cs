@@ -520,6 +520,49 @@ public static class Extensions
     #region Activity Source Helper
 
     /// <summary>
+    /// Adds exception details to an Activity following OpenTelemetry semantic conventions.
+    /// This ensures consistent exception reporting across all services.
+    /// </summary>
+    /// <param name="activity">The activity to add exception details to.</param>
+    /// <param name="exception">The exception to record.</param>
+    /// <remarks>
+    /// This extension method follows the OpenTelemetry semantic conventions for exceptions:
+    /// - exception.type: The fully qualified exception type name
+    /// - exception.message: The exception message
+    /// - exception.stacktrace: The stack trace of the exception
+    /// - exception.escaped: Whether the exception escaped the span scope (default: false)
+    /// </remarks>
+    public static void AddException(this Activity? activity, Exception exception)
+    {
+        if (activity == null || exception == null)
+        {
+            return;
+        }
+
+        // Add exception as an event (OpenTelemetry standard)
+        var tags = new ActivityTagsCollection
+        {
+            { "exception.type", exception.GetType().FullName },
+            { "exception.message", exception.Message },
+            { "exception.stacktrace", exception.StackTrace },
+            { "exception.escaped", false }
+        };
+
+        activity.AddEvent(new ActivityEvent("exception", DateTimeOffset.UtcNow, tags));
+
+        // Also set as tags for easier filtering in Application Insights
+        activity.SetTag("exception.type", exception.GetType().FullName);
+        activity.SetTag("exception.message", exception.Message);
+
+        // Add inner exception if present
+        if (exception.InnerException != null)
+        {
+            activity.SetTag("exception.inner.type", exception.InnerException.GetType().FullName);
+            activity.SetTag("exception.inner.message", exception.InnerException.Message);
+        }
+    }
+
+    /// <summary>
     /// Creates an ActivitySource for custom application tracing.
     /// Use this when you need to create custom spans for business logic or complex operations.
     /// </summary>

@@ -48,7 +48,7 @@ public sealed class OrderService : IOrderService, IAsyncDisposable
         var topicName = configuration["Azure:ServiceBus:TopicName"] ?? "orders";
         _sender = serviceBusClient.CreateSender(topicName);
 
-        _logger.LogInformation("OrderService initialized with queue: {topicName}", topicName);
+        _logger.LogInformation("OrderService initialized with topic: {TopicName}", topicName);
     }
 
     /// <inheritdoc/>
