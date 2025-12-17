@@ -746,6 +746,8 @@ try {
     # Define secrets configuration using ordered hashtable for consistent output
     $secrets = [ordered]@{
         'Azure:ServiceBus:TopicName' = $azureServiceBusTopicName
+        'Azure:ServiceBus:SubscriptionName' = $azureServiceBusSubscriptionName
+        'Azure:ServiceBus:Namespace' = $azureServiceBusNamespace
     }
     
     Write-Information "Preparing to configure $($secrets.Count) user secret(s)..."
