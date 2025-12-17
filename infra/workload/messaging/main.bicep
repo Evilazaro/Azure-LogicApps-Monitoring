@@ -70,7 +70,7 @@ param tags tagsType
 @description('Name of the storage queue for tax processing workflow tasks')
 @minLength(3)
 @maxLength(63)
-param queueName string = 'orders-queue'
+param queueName string = 'OrderPlaced'
 
 // ========== Variables ==========
 

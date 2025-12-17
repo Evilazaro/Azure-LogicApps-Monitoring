@@ -256,7 +256,7 @@ static (string? AppInsightsName, string? ServiceBusNamespace, string? ServiceBus
     ArgumentNullException.ThrowIfNull(builder);
     var appInsightsName = builder.Configuration["Azure:ApplicationInsights:Name"];
     var serviceBusNamespace = builder.Configuration["Azure:ServiceBus:Namespace"];
-    var serviceBusQueueName = builder.Configuration["Azure:ServiceBus:QueueName"];
+    var serviceBusQueueName = builder.Configuration["Azure:ServiceBus:TopicName"];
     var resourceGroupName = builder.Configuration["Azure:ResourceGroup"];
 
     var hasAppInsightsConfig = !string.IsNullOrWhiteSpace(appInsightsName)
@@ -305,7 +305,7 @@ static void ValidateProductionConfiguration(
     if (string.IsNullOrWhiteSpace(config.ServiceBusQueueName))
     {
         throw new InvalidOperationException(
-            "Azure Service Bus queue name is not configured. Set 'Azure:ServiceBus:QueueName' in user secrets or configuration.");
+            "Azure Service Bus queue name is not configured. Set 'Azure:ServiceBus:TopicName' in user secrets or configuration.");
     }
 
     if (string.IsNullOrWhiteSpace(config.ResourceGroupName))
@@ -317,6 +317,6 @@ static void ValidateProductionConfiguration(
     if (!config.HasServiceBusConfiguration)
     {
         throw new InvalidOperationException(
-            "Azure Service Bus configuration is incomplete. Ensure 'Azure:ServiceBus:Namespace', 'Azure:ServiceBus:QueueName', and 'Azure:ResourceGroup' are set in user secrets or configuration.");
+            "Azure Service Bus configuration is incomplete. Ensure 'Azure:ServiceBus:Namespace', 'Azure:ServiceBus:TopicName', and 'Azure:ResourceGroup' are set in user secrets or configuration.");
     }
 }

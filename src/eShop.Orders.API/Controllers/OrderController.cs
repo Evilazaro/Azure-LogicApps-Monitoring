@@ -148,7 +148,7 @@ public class OrdersController : ControllerBase
             using (var messagingActivity = _activitySource.StartActivity("PlaceOrder.SendMessage", ActivityKind.Producer))
             {
                 messagingActivity?.SetTag("messaging.system", "servicebus");
-                messagingActivity?.SetTag("messaging.destination", "orders-queue");
+                messagingActivity?.SetTag("messaging.destination", "OrderPlaced");
                 messagingActivity?.SetTag("messaging.operation", "publish");
 
                 // Send order to Service Bus - this includes database persistence

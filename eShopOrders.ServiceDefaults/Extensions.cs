@@ -599,7 +599,7 @@ public static class Extensions
     /// // 2. Service Bus message producer with trace context propagation
     /// using var activity = ActivitySource.StartActivity("SendMessage", ActivityKind.Producer);
     /// activity?.SetTag("messaging.system", "servicebus");
-    /// activity?.SetTag("messaging.destination", "orders-queue");
+    /// activity?.SetTag("messaging.destination", "OrderPlaced");
     /// 
     /// var message = new ServiceBusMessage(body);
     /// // Propagate W3C Trace Context

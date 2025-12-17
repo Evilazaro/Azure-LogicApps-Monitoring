@@ -65,7 +65,7 @@ public static class ResourceNames
     /// <summary>
     /// Service Bus queue name for orders.
     /// </summary>
-    public const string OrdersQueue = "orders-queue";
+    public const string OrdersTopic = "OrderPlaced";
 
     /// <summary>
     /// Orders API service name.

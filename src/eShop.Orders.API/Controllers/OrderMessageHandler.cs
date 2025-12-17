@@ -13,7 +13,7 @@ public class OrderMessageHandler : BackgroundService
     private readonly ServiceBusClient _serviceBusClient;
     private static readonly ActivitySource _activitySource = Extensions.CreateActivitySource();
     private ServiceBusProcessor? _processor;
-    private const string QueueName = "orders-queue";
+    private const string QueueName = "OrderPlaced";
 
     /// <summary>
     /// Initializes a new instance of the OrderMessageHandler.

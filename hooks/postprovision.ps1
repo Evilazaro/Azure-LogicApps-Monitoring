@@ -605,7 +605,7 @@ try {
     $azureTenantId = Get-EnvironmentVariableSafe -Name 'AZURE_TENANT_ID'
     $azureClientId = Get-EnvironmentVariableSafe -Name 'AZURE_CLIENT_ID'
     $azureServiceBusNamespace = Get-EnvironmentVariableSafe -Name 'AZURE_SERVICE_BUS_NAMESPACE'
-    $azureServiceBusQueueName = Get-EnvironmentVariableSafe -Name 'AZURE_SERVICE_BUS_QUEUE_NAME' -DefaultValue 'orders-queue'
+    $azureServiceBusTopicName = Get-EnvironmentVariableSafe -Name 'AZURE_SERVICE_BUS_TOPIC_NAME' -DefaultValue 'OrderPlaced'
     $azureMessagingServiceBusEndpoint = Get-EnvironmentVariableSafe -Name 'MESSAGING_SERVICEBUSENDPOINT'
     $azureEnvName = Get-EnvironmentVariableSafe -Name 'AZURE_ENV_NAME'
     $azureContainerRegistryEndpoint = Get-EnvironmentVariableSafe -Name 'AZURE_CONTAINER_REGISTRY_ENDPOINT'
@@ -620,7 +620,7 @@ try {
     Write-Information "  Client ID              : $(if ($azureClientId) { $azureClientId } else { '<not set>' })"
     Write-Information "  App Insights Name      : $(if ($azureApplicationInsightsName) { $azureApplicationInsightsName } else { '<not set>' })"
     Write-Information "  Service Bus Namespace  : $(if ($azureServiceBusNamespace) { $azureServiceBusNamespace } else { '<not set>' })"
-    Write-Information "  Service Bus Queue Name : $(if ($azureServiceBusQueueName) { $azureServiceBusQueueName } else { '<not set>' })"
+    Write-Information "  Service Bus Topic Name : $(if ($azureServiceBusTopicName) { $azureServiceBusTopicName } else { '<not set>' })"
     Write-Information "  Service Bus Endpoint   : $(if ($azureMessagingServiceBusEndpoint) { $azureMessagingServiceBusEndpoint } else { '<not set>' })"
     Write-Information "  ACR Endpoint           : $(if ($azureContainerRegistryEndpoint) { $azureContainerRegistryEndpoint } else { '<not set>' })"
     
@@ -718,7 +718,7 @@ try {
     
     # Define secrets configuration using ordered hashtable for consistent output
     $secrets = [ordered]@{
-        'Azure:ServiceBus:QueueName' = $azureServiceBusQueueName
+        'Azure:ServiceBus:TopicName' = $azureServiceBusTopicName
     }
     
     Write-Information "Preparing to configure $($secrets.Count) user secret(s)..."
