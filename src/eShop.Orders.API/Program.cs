@@ -43,15 +43,6 @@ builder.Services.AddSwaggerGen();
 // Note: ServiceBusClient is automatically registered by AddAzureServiceBusClient
 builder.Services.AddSingleton<IOrderService, OrderService>();
 
-// Register typed HTTP client with automatic distributed tracing
-// HttpClient instances are automatically instrumented with OpenTelemetry
-// for context propagation to downstream services
-builder.Services.AddHttpClient<ExternalApiClient>(client =>
-{
-    client.BaseAddress = new Uri(builder.Configuration["ExternalApi:BaseUrl"] ?? "https://api.external.com");
-    client.DefaultRequestHeaders.Add("Accept", "application/json");
-});
-
 // Register Azure Service Bus client using Aspire integration (if configured)
 // Provides automatic health checks, telemetry, and configuration management
 // Connection name "messaging" maps to the Service Bus resource defined in AppHost
