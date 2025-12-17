@@ -9,24 +9,53 @@
 // ------------------------------------------------------------------------------
 
 using eShop.Orders.App.Components;
+using System.Diagnostics;
+
+// Create activity source for application startup tracing
+using var startupActivity = new ActivitySource("eShop.Orders.App.Startup")
+    .StartActivity("WebApp.Startup", ActivityKind.Internal);
+
+startupActivity?.SetTag("service.name", "eShop.Orders.App");
+startupActivity?.SetTag("app.type", "blazor-server");
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.AddServiceDefaults();
-
-// Add services to the container.
-builder.Services.AddRazorComponents()
-    .AddInteractiveWebAssemblyComponents();
-
-var ordersHttpClient = builder.Services.AddHttpClient("orders-api", client =>
+using (var configActivity = new ActivitySource("eShop.Orders.App.Startup")
+    .StartActivity("WebApp.ConfigureServices", ActivityKind.Internal))
 {
-    client.BaseAddress = new Uri(builder.Configuration["ORDERS_API_HTTPS"] ?? throw new InvalidOperationException("OrdersApi:BaseUrl configuration is missing."));
+    configActivity?.SetTag("configuration.step", "service_defaults");
+    builder.AddServiceDefaults();
+
+    // Add services to the container.
+    configActivity?.SetTag("configuration.step", "razor_components");
+    builder.Services.AddRazorComponents()
+        .AddInteractiveWebAssemblyComponents();
+
+// Configure HTTP client for Orders API with service discovery
+// The configuration key is automatically provided by Aspire based on the service reference
+builder.Services.AddHttpClient("orders-api", client =>
+{
+    var baseUrl = builder.Configuration["services:orders-api:https:0"] 
+                  ?? builder.Configuration["services:orders-api:http:0"]
+                  ?? throw new InvalidOperationException("Orders API service URL not found in configuration");
+    
+    client.BaseAddress = new Uri(baseUrl);
     client.DefaultRequestHeaders.Add("Accept", "application/json");
 });
 
-var app = builder.Build();
+    configActivity?.AddEvent(new ActivityEvent("Services configured successfully"));
+}
 
-app.MapDefaultEndpoints();
+using (var buildActivity = new ActivitySource("eShop.Orders.App.Startup")
+    .StartActivity("WebApp.Build", ActivityKind.Internal))
+{
+    var app = builder.Build();
+    buildActivity?.AddEvent(new ActivityEvent("Application built successfully"));
+
+    using (var middlewareActivity = new ActivitySource("eShop.Orders.App.Startup")
+        .StartActivity("WebApp.ConfigureMiddleware", ActivityKind.Internal))
+    {
+        app.MapDefaultEndpoints();
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
@@ -45,9 +74,16 @@ app.UseHttpsRedirection();
 
 app.UseAntiforgery();
 
-app.MapStaticAssets();
-app.MapRazorComponents<App>()
-    .AddInteractiveWebAssemblyRenderMode()
-    .AddAdditionalAssemblies(typeof(eShop.Orders.App.Client._Imports).Assembly);
+        app.MapStaticAssets();
+        app.MapRazorComponents<App>()
+            .AddInteractiveWebAssemblyRenderMode()
+            .AddAdditionalAssemblies(typeof(eShop.Orders.App.Client._Imports).Assembly);
 
-app.Run();
+        middlewareActivity?.AddEvent(new ActivityEvent("Middleware configured successfully"));
+    }
+
+    startupActivity?.SetStatus(ActivityStatusCode.Ok);
+    startupActivity?.AddEvent(new ActivityEvent("Web app startup completed"));
+
+    app.Run();
+}

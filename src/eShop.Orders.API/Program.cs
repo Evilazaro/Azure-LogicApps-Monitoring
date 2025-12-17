@@ -10,14 +10,28 @@
 
 using eShop.Orders.API.Middleware;
 using eShop.Orders.API.Services;
+using Microsoft.Extensions.Azure;
+using System.Diagnostics;
+
+// Create activity source for application startup tracing
+using var startupActivity = new ActivitySource("eShop.Orders.Startup")
+    .StartActivity("Application.Startup", ActivityKind.Internal);
+
+startupActivity?.SetTag("service.name", "eShop.Orders.API");
+startupActivity?.SetTag("deployment.environment", Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ?? "Unknown");
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add service defaults: OpenTelemetry instrumentation, health checks, service discovery, and resilience
-builder.AddServiceDefaults();
+using (var configActivity = new ActivitySource("eShop.Orders.Startup")
+    .StartActivity("Application.ConfigureServices", ActivityKind.Internal))
+{
+    configActivity?.SetTag("configuration.step", "service_defaults");
+    builder.AddServiceDefaults();
 
-// Register MVC controllers for RESTful API endpoints
-builder.Services.AddControllers();
+    // Register MVC controllers for RESTful API endpoints
+    configActivity?.SetTag("configuration.step", "mvc_controllers");
+    builder.Services.AddControllers();
 
 // Add API documentation support via Swagger/OpenAPI
 // Enables automatic API schema generation and interactive documentation UI
@@ -25,23 +39,18 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddOpenApi();
 builder.Services.AddSwaggerGen();
 
-// Register typed HTTP client with automatic distributed tracing
-// HttpClient instances are automatically instrumented with OpenTelemetry
-// for context propagation to downstream services
-builder.Services.AddHttpClient<ExternalApiClient>(client =>
-{
-    client.BaseAddress = new Uri(builder.Configuration["ExternalApi:BaseUrl"] ?? "https://api.external.com");
-    client.DefaultRequestHeaders.Add("Accept", "application/json");
-});
+// Register order service as singleton for in-memory storage
+// In production, this should be scoped with proper database context
+// Note: ServiceBusClient is automatically registered by AddAzureServiceBusClient
+builder.Services.AddSingleton<IOrderService, OrderService>();
 
-// Register Azure Service Bus client using Aspire integration (if configured)
-// Provides automatic health checks, telemetry, and configuration management
-// Connection name "messaging" maps to the Service Bus resource defined in AppHost
-var messagingConnectionString = builder.Configuration.GetConnectionString("messaging");
+    // Register Azure Service Bus client using Aspire integration (if configured)
+    // Provides automatic health checks, telemetry, and configuration management
+    // Connection name "messaging" maps to the Service Bus resource defined in AppHost
+    var messagingConnectionString = builder.Configuration.GetConnectionString("messaging");
 if (!string.IsNullOrWhiteSpace(messagingConnectionString))
 {
     builder.AddAzureServiceBusClient("messaging");
-
     // Register background service for continuous message processing from Service Bus
     builder.Services.AddHostedService<OrderMessageHandler>();
 }
@@ -56,21 +65,49 @@ else
 }
 
 // Configure CORS to allow Blazor WebAssembly client requests
+// In production, restrict to specific origins
 builder.Services.AddCors(options =>
 {
     options.AddDefaultPolicy(policy =>
     {
-        policy.AllowAnyOrigin()
-              .AllowAnyMethod()
-              .AllowAnyHeader();
+        if (builder.Environment.IsDevelopment())
+        {
+            // Allow all in development
+            policy.AllowAnyOrigin()
+                  .AllowAnyMethod()
+                  .AllowAnyHeader();
+        }
+        else
+        {
+            // In production, restrict to specific origins from configuration
+            var allowedOrigins = builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>() ?? [];
+            if (allowedOrigins.Length > 0)
+            {
+                policy.WithOrigins(allowedOrigins)
+                      .AllowAnyMethod()
+                      .AllowAnyHeader()
+                      .AllowCredentials();
+            }
+        }
     });
 });
 
-var app = builder.Build();
+    configActivity?.AddEvent(new ActivityEvent("Services configured successfully"));
+}
+
+using (var buildActivity = new ActivitySource("eShop.Orders.Startup")
+    .StartActivity("Application.Build", ActivityKind.Internal))
+{
+    var app = builder.Build();
+    buildActivity?.AddEvent(new ActivityEvent("Application built successfully"));
 
 
-// Enable OpenAPI/Swagger UI only in development for security
-app.MapOpenApi();
+    // Enable OpenAPI/Swagger UI only in development for security
+    using (var middlewareActivity = new ActivitySource("eShop.Orders.Startup")
+        .StartActivity("Application.ConfigureMiddleware", ActivityKind.Internal))
+    {
+        middlewareActivity?.SetTag("configuration.step", "openapi");
+        app.MapOpenApi();
 app.UseSwagger();
 app.UseSwaggerUI(options =>
 {
@@ -95,13 +132,21 @@ if (!app.Environment.IsProduction())
     app.UseHttpsRedirection();
 }
 
+// Enable CORS before authorization to ensure preflight requests are handled correctly
+app.UseCors();
+
 // Enable authorization middleware (currently configured but not enforcing policies)
 app.UseAuthorization();
 
-// Enable CORS before other middleware
-app.UseCors();
+        // Map API controllers to handle HTTP requests
+        middlewareActivity?.SetTag("configuration.step", "map_controllers");
+        app.MapControllers();
 
-// Map API controllers to handle HTTP requests
-app.MapControllers();
+        middlewareActivity?.AddEvent(new ActivityEvent("Middleware configured successfully"));
+    }
 
-app.Run();
+    startupActivity?.SetStatus(ActivityStatusCode.Ok);
+    startupActivity?.AddEvent(new ActivityEvent("Application startup completed"));
+
+    app.Run();
+}

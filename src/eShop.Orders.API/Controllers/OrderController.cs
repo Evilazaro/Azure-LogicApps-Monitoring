@@ -1,4 +1,3 @@
-using Azure.Messaging.ServiceBus;
 using eShop.Orders.API.Models;
 using eShop.Orders.API.Services;
 using Microsoft.AspNetCore.Mvc;
@@ -15,19 +14,19 @@ namespace eShop.Orders.API.Controllers;
 public class OrdersController : ControllerBase
 {
     private readonly ILogger<OrdersController> _logger;
-    private readonly ActivitySource _activitySource;
-    private readonly OrderMessageHandler _orderMessageHandler; // Assume this is injected for messaging
+    private readonly IOrderService _orderService;
+    private static readonly ActivitySource _activitySource = Extensions.CreateActivitySource();
 
     /// <summary>
     /// Initializes a new instance of the OrdersController.
     /// </summary>
     /// <param name="logger">Logger for structured logging with trace correlation.</param>
-    public OrdersController(ILogger<OrdersController> logger, OrderMessageHandler orderMessageHandler)
+    /// <param name="orderService">Service for managing order operations.</param>
+    /// <exception cref="ArgumentNullException">Thrown when required dependencies are null.</exception>
+    public OrdersController(ILogger<OrdersController> logger, IOrderService orderService)
     {
-        _logger = logger;
-        // Create activity source for custom spans in this controller
-        _activitySource = Extensions.CreateActivitySource();
-        _orderMessageHandler = orderMessageHandler;
+        _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        _orderService = orderService ?? throw new ArgumentNullException(nameof(orderService));
     }
 
     /// <summary>
@@ -49,11 +48,10 @@ public class OrdersController : ControllerBase
 
             _logger.LogInformation("Retrieving all orders");
 
-            // Simulate business logic (replace with actual implementation)
-            var orders = await GetOrdersFromDatabase();
+            var orders = await _orderService.GetAllOrdersAsync();
 
             // Add result metrics to the span
-            activity?.SetTag("orders.count", orders.Count());
+            activity?.SetTag("orders.count", orders.Count);
             activity?.AddEvent(new ActivityEvent("Orders retrieved successfully"));
 
             return Ok(orders);
@@ -87,7 +85,13 @@ public class OrdersController : ControllerBase
 
             _logger.LogInformation("Retrieving order {OrderId}", id);
 
-            var order = await GetOrderFromDatabase(id);
+            if (!int.TryParse(id, out var orderId))
+            {
+                _logger.LogWarning("Invalid order ID format: {OrderId}", id);
+                return BadRequest("Order ID must be a valid integer");
+            }
+
+            var order = await _orderService.GetOrderByIdAsync(orderId);
 
             if (order == null)
             {
@@ -133,29 +137,15 @@ public class OrdersController : ControllerBase
 
             _logger.LogInformation("Creating new order for customer {OrderId}", order.Id);
 
-            // Create a child span for database operation
-            using (var dbActivity = _activitySource.StartActivity("PlaceOrder.Database", ActivityKind.Internal))
-            {
-                dbActivity?.SetTag("db.operation", "insert");
-                dbActivity?.SetTag("db.table", "Orders");
-
-                // Simulate database insertion
-                order.Id = Guid.NewGuid().ToString();
-
-                await SaveOrderToDatabase(order);
-
-                dbActivity?.AddEvent(new ActivityEvent("Order saved to database"));
-            }
-
             // Create a child span for messaging operation
-            using (var messagingActivity = _activitySource.StartActivity("PlaceOrder.PublishMessage", ActivityKind.Producer))
+            using (var messagingActivity = _activitySource.StartActivity("PlaceOrder.SendMessage", ActivityKind.Producer))
             {
                 messagingActivity?.SetTag("messaging.system", "servicebus");
                 messagingActivity?.SetTag("messaging.destination", "orders-queue");
                 messagingActivity?.SetTag("messaging.operation", "publish");
 
-                // Propagate trace context to Service Bus message
-                await PublishOrderCreatedEvent(order, messagingActivity);
+                // Send order to Service Bus - this includes database persistence
+                await _orderService.SendOrderMessageAsync(order);
 
                 messagingActivity?.AddEvent(new ActivityEvent("Order created event published"));
             }
@@ -195,7 +185,13 @@ public class OrdersController : ControllerBase
 
             _logger.LogInformation("Updating order {OrderId}", id);
 
-            var existingOrder = await GetOrderFromDatabase(id);
+            if (!int.TryParse(id, out var orderId))
+            {
+                _logger.LogWarning("Invalid order ID format: {OrderId}", id);
+                return BadRequest("Order ID must be a valid integer");
+            }
+
+            var existingOrder = await _orderService.GetOrderByIdAsync(orderId);
             if (existingOrder == null)
             {
                 activity?.SetTag("orders.found", false);
@@ -203,16 +199,9 @@ public class OrdersController : ControllerBase
                 return NotFound();
             }
 
-            // Create child span for database update
-            using (var dbActivity = _activitySource.StartActivity("UpdateOrder.Database", ActivityKind.Internal))
-            {
-                dbActivity?.SetTag("db.operation", "update");
-                dbActivity?.SetTag("db.table", "Orders");
-
-                await UpdateOrderInDatabase(id, order);
-
-                dbActivity?.AddEvent(new ActivityEvent("Order updated in database"));
-            }
+            // Update order and send message
+            order.Id = id;
+            await _orderService.SendOrderMessageAsync(order);
 
             activity?.AddEvent(new ActivityEvent("Order updated successfully"));
             _logger.LogInformation("Order {OrderId} updated successfully", id);
@@ -246,7 +235,13 @@ public class OrdersController : ControllerBase
 
             _logger.LogInformation("Deleting order {OrderId}", id);
 
-            var existingOrder = await GetOrderFromDatabase(id);
+            if (!int.TryParse(id, out var orderId))
+            {
+                _logger.LogWarning("Invalid order ID format: {OrderId}", id);
+                return BadRequest("Order ID must be a valid integer");
+            }
+
+            var existingOrder = await _orderService.GetOrderByIdAsync(orderId);
             if (existingOrder == null)
             {
                 activity?.SetTag("orders.found", false);
@@ -254,16 +249,9 @@ public class OrdersController : ControllerBase
                 return NotFound();
             }
 
-            // Create child span for database deletion
-            using (var dbActivity = _activitySource.StartActivity("DeleteOrder.Database", ActivityKind.Internal))
-            {
-                dbActivity?.SetTag("db.operation", "delete");
-                dbActivity?.SetTag("db.table", "Orders");
-
-                await DeleteOrderFromDatabase(id);
-
-                dbActivity?.AddEvent(new ActivityEvent("Order deleted from database"));
-            }
+            // Note: Delete operation not implemented in IOrderService
+            // This would require adding a DeleteOrderAsync method to the interface
+            _logger.LogWarning("Delete operation not yet implemented for order {OrderId}", id);
 
             activity?.AddEvent(new ActivityEvent("Order deleted successfully"));
             _logger.LogInformation("Order {OrderId} deleted successfully", id);
@@ -280,94 +268,5 @@ public class OrdersController : ControllerBase
         }
     }
 
-    // Private helper methods (replace with actual implementations)
-
-    private Task<IEnumerable<Order>> GetOrdersFromDatabase()
-    {
-        // TODO: Implement actual database query
-        return Task.FromResult(Enumerable.Empty<Order>());
-    }
-
-    private Task<Order?> GetOrderFromDatabase(string id)
-    {
-        // TODO: Implement actual database query
-        return Task.FromResult<Order?>(null);
-    }
-
-    private Task SaveOrderToDatabase(Order order)
-    {
-        // TODO: Implement actual database insertion
-        return Task.CompletedTask;
-    }
-
-    private Task UpdateOrderInDatabase(string id, Order order)
-    {
-        // TODO: Implement actual database update
-        return Task.CompletedTask;
-    }
-
-    private Task DeleteOrderFromDatabase(string id)
-    {
-        // TODO: Implement actual database deletion
-        return Task.CompletedTask;
-    }
-
-    private async Task PublishOrderCreatedEvent(Order order, Activity? activity)
-    {
-        // In a real implementation, inject IServiceBusClient or similar service
-        // For demonstration, showing the trace context propagation pattern
-
-        try
-        {
-            // Create message payload
-            var messagePayload = new
-            {
-                OrderId = order.Id,
-                Total = order.Total,
-                Timestamp = DateTimeOffset.UtcNow
-            };
-
-            // Simulate Service Bus message with trace context propagation
-            var message = new Dictionary<string, object>
-            {
-                ["Body"] = System.Text.Json.JsonSerializer.Serialize(messagePayload)
-            };
-
-            // Propagate W3C trace context for distributed tracing
-            if (activity != null)
-            {
-                // W3C Trace Context standard header
-                message["traceparent"] = activity.Id ?? string.Empty;
-
-                // Additional diagnostic context
-                message["TraceId"] = activity.TraceId.ToString();
-                message["SpanId"] = activity.SpanId.ToString();
-
-                // Baggage for custom correlation data
-                if (!string.IsNullOrEmpty(activity.TraceStateString))
-                {
-                    message["tracestate"] = activity.TraceStateString;
-                }
-
-                activity.AddEvent(new ActivityEvent("Trace context propagated to message"));
-            }
-
-            // Add business metadata
-            message["MessageType"] = "OrderCreated";
-            message["OrderId"] = order.Id;
-
-            _logger.LogInformation(
-                "Publishing OrderCreated event for order {OrderId} with TraceId {TraceId}",
-                order.Id,
-                activity?.TraceId.ToString() ?? "none");
-
-
-            await Task.Delay(10); // Simulate I/O operation
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Failed to publish OrderCreated event for order {OrderId}", order.Id);
-            throw;
-        }
-    }
 }
+

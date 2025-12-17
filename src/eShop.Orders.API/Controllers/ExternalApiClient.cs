@@ -10,18 +10,18 @@ public class ExternalApiClient
 {
     private readonly HttpClient _httpClient;
     private readonly ILogger<ExternalApiClient> _logger;
-    private readonly ActivitySource _activitySource;
+    private static readonly ActivitySource _activitySource = Extensions.CreateActivitySource();
 
     /// <summary>
     /// Initializes a new instance of the ExternalApiClient.
     /// </summary>
     /// <param name="httpClient">HTTP client with automatic trace propagation.</param>
     /// <param name="logger">Logger for structured logging.</param>
+    /// <exception cref="ArgumentNullException">Thrown when required dependencies are null.</exception>
     public ExternalApiClient(HttpClient httpClient, ILogger<ExternalApiClient> logger)
     {
-        _httpClient = httpClient;
-        _logger = logger;
-        _activitySource = Extensions.CreateActivitySource();
+        _httpClient = httpClient ?? throw new ArgumentNullException(nameof(httpClient));
+        _logger = logger ?? throw new ArgumentNullException(nameof(logger));
     }
 
     /// <summary>
