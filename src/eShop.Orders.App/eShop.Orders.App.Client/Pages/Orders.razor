@@ -37,19 +37,26 @@
 
         try
         {
-            var content = new StringContent(orderJson, System.Text.Encoding.UTF8, "application/json");
-            var response = await Http.PostAsync("api/orders", content);
+            // call the Orders API using ordersproxy class
+            var order = new OrdersProxy(Http);
+            var result = await order.CreateOrder(orderJson);
 
-            if (response.IsSuccessStatusCode)
+            if (result is ContentResult contentResult)
             {
-                currentCount++;
-                statusMessage = "Order placed successfully!";
-                orderJson = string.Empty;
+                if (contentResult.StatusCode >= 200 && contentResult.StatusCode < 300)
+                {
+                    currentCount++;
+                    statusMessage = "Order placed successfully!";
+                    orderJson = string.Empty;
+                }
+                else
+                {
+                    statusMessage = $"Failed to place order: {contentResult.StatusCode} - {contentResult.Content}";
+                }
             }
             else
             {
-                var errorContent = await response.Content.ReadAsStringAsync();
-                statusMessage = $"Failed to place order: {response.StatusCode} - {errorContent}";
+                statusMessage = $"Unexpected result type: {result.GetType().Name}";
             }
         }
         catch (HttpRequestException ex)

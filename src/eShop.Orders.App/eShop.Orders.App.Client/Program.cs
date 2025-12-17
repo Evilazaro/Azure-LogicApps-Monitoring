@@ -4,7 +4,11 @@ var builder = WebAssemblyHostBuilder.CreateDefault(args);
 
 builder.Services.AddScoped(sp => new HttpClient 
 { 
-    BaseAddress = new Uri(builder.Configuration["ORDERS_API_HTTPS"] ?? throw new InvalidOperationException("OrdersApi:BaseUrl configuration is missing.")) 
+    BaseAddress = new Uri("https://localhost:7150") ?? throw new InvalidOperationException("OrdersApi:BaseUrl configuration is missing."),
+    DefaultRequestHeaders = 
+    {
+        { "Accept", "application/json" }
+    }
 });
 
 await builder.Build().RunAsync();

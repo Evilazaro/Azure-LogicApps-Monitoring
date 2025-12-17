@@ -185,8 +185,7 @@ static void ConfigureOrdersApi(
         ordersApi.WithReference(resources.AppInsights);
     }
 
-    ordersApi.WithHttpsEndpoint(port: null, name: ApiHttpsEndpointName)
-             .WithExternalHttpEndpoints();
+    ordersApi.AsHttp2Service();
 }
 
 /// <summary>
@@ -203,6 +202,7 @@ static void ConfigureOrdersWebApp(
     const string WebAppHttpsEndpointName = "webapp-https";
 
     ordersWebApp.WithReference(ordersApi)
+                .AsHttp2Service()
                 .WaitFor(ordersApi);
 
     // Add authentication configuration if available
@@ -221,9 +221,6 @@ static void ConfigureOrdersWebApp(
     {
         ordersWebApp.WithReference(appInsights);
     }
-
-    ordersWebApp.WithHttpsEndpoint(port: null, name: WebAppHttpsEndpointName)
-                .WithExternalHttpEndpoints();
 }
 
 /// <summary>
