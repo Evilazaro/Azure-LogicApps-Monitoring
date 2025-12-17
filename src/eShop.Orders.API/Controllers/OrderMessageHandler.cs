@@ -32,7 +32,7 @@ public class OrderMessageHandler : BackgroundService
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         _serviceBusClient = serviceBusClient ?? throw new ArgumentNullException(nameof(serviceBusClient));
         _configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
-        
+
         // Read topic and subscription names from configuration
         _topicName = _configuration["Azure:ServiceBus:TopicName"] ?? "orders";
         _subscriptionName = _configuration["Azure:ServiceBus:SubscriptionName"] ?? "orders-api-subscription";
@@ -66,8 +66,8 @@ public class OrderMessageHandler : BackgroundService
             _processor.ProcessErrorAsync += ProcessErrorAsync;
 
             _logger.LogInformation(
-                "Starting Service Bus message processor for topic: {TopicName}, subscription: {SubscriptionName}", 
-                _topicName, 
+                "Starting Service Bus message processor for topic: {TopicName}, subscription: {SubscriptionName}",
+                _topicName,
                 _subscriptionName);
             await _processor.StartProcessingAsync(stoppingToken);
 

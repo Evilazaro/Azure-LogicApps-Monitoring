@@ -44,7 +44,7 @@ using (var configActivity = new ActivitySource("eShop.Orders.App.Startup")
             throw new InvalidOperationException(
                 "Orders API service endpoint not found. Ensure the API service is referenced in AppHost.");
         }
-        
+
         client.BaseAddress = new Uri(baseAddress);
         client.DefaultRequestHeaders.Add("Accept", "application/json");
         client.Timeout = TimeSpan.FromSeconds(30);
@@ -71,7 +71,7 @@ using (var buildActivity = new ActivitySource("eShop.Orders.App.Startup")
         {
             // Use exception handler page in production
             app.UseExceptionHandler("/Error", createScopeForErrors: true);
-            
+
             // Enable HSTS (HTTP Strict Transport Security)
             // The default HSTS value is 30 days. Consider extending for production.
             // See: https://aka.ms/aspnetcore-hsts
@@ -92,7 +92,7 @@ using (var buildActivity = new ActivitySource("eShop.Orders.App.Startup")
         // Map static assets (wwwroot files)
         middlewareActivity?.SetTag("configuration.step", "static_assets");
         app.MapStaticAssets();
-        
+
         // Map Razor components with interactive server-side rendering
         middlewareActivity?.SetTag("configuration.step", "razor_components");
         app.MapRazorComponents<App>()
