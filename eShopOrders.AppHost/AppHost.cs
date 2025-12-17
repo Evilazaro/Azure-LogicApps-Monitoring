@@ -136,7 +136,7 @@ static (IResourceBuilder<AzureApplicationInsightsResource> AppInsights, IResourc
     var serviceBus = builder.AddAzureServiceBus(MessagingResourceName)
         .AsExisting(serviceBusParameter, resourceGroupParameter);
 
-    serviceBus.AddServiceBusQueue(config.ServiceBusTopicName);
+    serviceBus.AddServiceBusTopic(config.ServiceBusTopicName);
 
     // Configure Application Insights
     var appInsights = builder.AddAzureApplicationInsights(TelemetryResourceName)
@@ -305,7 +305,7 @@ static void ValidateProductionConfiguration(
     if (string.IsNullOrWhiteSpace(config.ServiceBusTopicName))
     {
         throw new InvalidOperationException(
-            "Azure Service Bus queue name is not configured. Set 'Azure:ServiceBus:TopicName' in user secrets or configuration.");
+            "Azure Service Bus topic name is not configured. Set 'Azure:ServiceBus:TopicName' in user secrets or configuration.");
     }
 
     if (string.IsNullOrWhiteSpace(config.ResourceGroupName))

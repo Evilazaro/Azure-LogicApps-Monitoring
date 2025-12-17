@@ -72,8 +72,8 @@ public class OrdersController : ControllerBase
     /// </summary>
     /// <param name="id">The order identifier.</param>
     /// <returns>The requested order or 404 if not found.</returns>
-    [HttpGet("{id}")]
-    public async Task<ActionResult<Order>> GetOrder(string id)
+    [HttpGet("{id:int}")]
+    public async Task<ActionResult<Order>> GetOrder(int id)
     {
         using var activity = _activitySource.StartActivity("GetOrder.BusinessLogic");
 
@@ -85,14 +85,7 @@ public class OrdersController : ControllerBase
 
             _logger.LogInformation("Retrieving order {OrderId}", id);
 
-            if (!int.TryParse(id, out var orderId))
-            {
-                activity?.SetTag("validation.error", "invalid_id_format");
-                _logger.LogWarning("Invalid order ID format: {OrderId}", id);
-                return BadRequest("Order ID must be a valid integer");
-            }
-
-            var order = await _orderService.GetOrderByIdAsync(orderId);
+            var order = await _orderService.GetOrderByIdAsync(id);
 
             if (order == null)
             {
@@ -163,7 +156,9 @@ public class OrdersController : ControllerBase
             _logger.LogInformation("Order {OrderId} created successfully", order.Id);
 
             // Return 201 Created with location header pointing to the created resource
-            return CreatedAtAction(nameof(GetOrder), new { id = order.Id }, order);
+            // Parse the ID to int for the route parameter, default to 0 if parsing fails
+            int.TryParse(order.Id, out var orderId);
+            return CreatedAtAction(nameof(GetOrder), new { id = orderId }, order);
         }
         catch (Exception ex)
         {
@@ -181,8 +176,8 @@ public class OrdersController : ControllerBase
     /// <param name="id">The order identifier.</param>
     /// <param name="order">The updated order data.</param>
     /// <returns>No content on success, 404 if order not found.</returns>
-    [HttpPut("{id}")]
-    public async Task<IActionResult> UpdateOrder(string id, [FromBody] Order order)
+    [HttpPut("{id:int}")]
+    public async Task<IActionResult> UpdateOrder(int id, [FromBody] Order order)
     {
         using var activity = _activitySource.StartActivity("UpdateOrder.BusinessLogic");
 
@@ -193,13 +188,7 @@ public class OrdersController : ControllerBase
 
             _logger.LogInformation("Updating order {OrderId}", id);
 
-            if (!int.TryParse(id, out var orderId))
-            {
-                _logger.LogWarning("Invalid order ID format: {OrderId}", id);
-                return BadRequest("Order ID must be a valid integer");
-            }
-
-            var existingOrder = await _orderService.GetOrderByIdAsync(orderId);
+            var existingOrder = await _orderService.GetOrderByIdAsync(id);
             if (existingOrder == null)
             {
                 activity?.SetTag("orders.found", false);
@@ -208,7 +197,7 @@ public class OrdersController : ControllerBase
             }
 
             // Update order and send message
-            order.Id = id;
+            order.Id = id.ToString();
             await _orderService.SendOrderMessageAsync(order);
 
             activity?.AddEvent(new ActivityEvent("Order updated successfully"));
@@ -231,8 +220,8 @@ public class OrdersController : ControllerBase
     /// </summary>
     /// <param name="id">The order identifier.</param>
     /// <returns>No content on success, 404 if order not found.</returns>
-    [HttpDelete("{id}")]
-    public async Task<IActionResult> DeleteOrder(string id)
+    [HttpDelete("{id:int}")]
+    public async Task<IActionResult> DeleteOrder(int id)
     {
         using var activity = _activitySource.StartActivity("DeleteOrder.BusinessLogic");
 
@@ -243,13 +232,7 @@ public class OrdersController : ControllerBase
 
             _logger.LogInformation("Deleting order {OrderId}", id);
 
-            if (!int.TryParse(id, out var orderId))
-            {
-                _logger.LogWarning("Invalid order ID format: {OrderId}", id);
-                return BadRequest("Order ID must be a valid integer");
-            }
-
-            var existingOrder = await _orderService.GetOrderByIdAsync(orderId);
+            var existingOrder = await _orderService.GetOrderByIdAsync(id);
             if (existingOrder == null)
             {
                 activity?.SetTag("orders.found", false);
@@ -258,7 +241,7 @@ public class OrdersController : ControllerBase
             }
 
             // Delete the order
-            await _orderService.DeleteOrderAsync(orderId);
+            await _orderService.DeleteOrderAsync(id);
 
             activity?.SetTag("orders.deleted", true);
             activity?.AddEvent(new ActivityEvent("Order deleted successfully"));

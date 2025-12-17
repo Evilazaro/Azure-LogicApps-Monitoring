@@ -41,8 +41,9 @@ public sealed class OrderService : IOrderService, IAsyncDisposable
     {
         ArgumentNullException.ThrowIfNull(serviceBusClient);
         ArgumentNullException.ThrowIfNull(configuration);
+        ArgumentNullException.ThrowIfNull(logger);
 
-        _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        _logger = logger;
 
         var topicName = configuration["Azure:ServiceBus:TopicName"] ?? "orders";
         _sender = serviceBusClient.CreateSender(topicName);
@@ -172,7 +173,7 @@ public sealed class OrderService : IOrderService, IAsyncDisposable
 
         try
         {
-            using var messageBatch = await _sender.CreateMessageBatchAsync(cancellationToken);
+            var messageBatch = await _sender.CreateMessageBatchAsync(cancellationToken);
             var messagesAdded = 0;
 
             foreach (var order in orders)
@@ -203,7 +204,7 @@ public sealed class OrderService : IOrderService, IAsyncDisposable
 
                 if (!messageBatch.TryAddMessage(message))
                 {
-                    // Batch is full - send current batch and create a new one
+                    // Batch is full - send current batch and start a new one
                     if (messagesAdded > 0)
                     {
                         _logger.LogInformation(
@@ -214,13 +215,12 @@ public sealed class OrderService : IOrderService, IAsyncDisposable
                         activity?.AddEvent(new ActivityEvent($"Sent batch of {messagesAdded} messages"));
                     }
 
-                    // Create new batch for remaining messages
-                    // Note: Cannot reuse the previous batch after sending
-                    using var newBatch = await _sender.CreateMessageBatchAsync(cancellationToken);
+                    // Cannot reuse batch after sending - recreate messageBatch for remaining messages
+                    messageBatch = await _sender.CreateMessageBatchAsync(cancellationToken);
                     messagesAdded = 0;
 
                     // Try adding the current message to the new batch
-                    if (!newBatch.TryAddMessage(message))
+                    if (!messageBatch.TryAddMessage(message))
                     {
                         // Single message is too large for any batch
                         _logger.LogError(
@@ -232,11 +232,6 @@ public sealed class OrderService : IOrderService, IAsyncDisposable
                     }
 
                     messagesAdded++;
-                    
-                    // Send the new batch immediately since we can't continue with it in the using scope
-                    await _sender.SendMessagesAsync(newBatch, cancellationToken);
-                    activity?.AddEvent(new ActivityEvent("Sent overflow batch"));
-                    messagesAdded = 0;
                 }
                 else
                 {
@@ -430,9 +425,6 @@ public sealed class OrderService : IOrderService, IAsyncDisposable
     /// </summary>
     public async ValueTask DisposeAsync()
     {
-        if (_sender != null)
-        {
-            await _sender.DisposeAsync();
-        }
+        await _sender.DisposeAsync();
     }
 }
