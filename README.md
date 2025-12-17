@@ -1,192 +1,115 @@
-# Azure Logic Apps Standard - Enterprise-Scale Monitoring & Orchestration
+# Azure Logic Apps Monitoring Solution
 
-## Table of Contents
-
-- [Overview](#overview)
-  - [Problem Statement](#problem-statement)
-  - [Key Features](#key-features)
-  - [Solution Components](#solution-components)
-  - [Azure Components](#azure-components)
-- [Project Structure](#project-structure)
-- [Architecture](#architecture)
-  - [Business Architecture](#business-architecture)
-    - [Business Capability Map](#business-capability-map)
-    - [Value Stream Map](#value-stream-map)
-  - [Data Architecture](#data-architecture)
-    - [Master Data Management (MDM)](#master-data-management-mdm)
-    - [Event-Driven Data Topology](#event-driven-data-topology)
-    - [Monitoring Dataflow](#monitoring-dataflow)
-  - [Application Architecture](#application-architecture)
-    - [Microservices Architecture](#microservices-architecture)
-    - [Event-Driven Architecture](#event-driven-architecture)
-    - [Event State Transitions](#event-state-transitions)
-  - [Technology Architecture](#technology-architecture)
-    - [Cloud-Native Platform](#cloud-native-platform)
-    - [Container-Based Architecture](#container-based-architecture)
-    - [Serverless Architecture](#serverless-architecture)
-    - [Platform Engineering](#platform-engineering)
-- [Deployment](#deployment)
-  - [Prerequisites](#prerequisites)
-  - [Azure RBAC Roles](#azure-rbac-roles)
-  - [Infrastructure Deployment](#infrastructure-deployment)
-  - [Application Deployment](#application-deployment)
-- [Usage Examples](#usage-examples)
-  - [Order Management Operations](#order-management-operations)
-  - [Workflow Monitoring Examples](#workflow-monitoring-examples)
-  - [Kusto Queries for Logic Apps Monitoring](#kusto-queries-for-logic-apps-monitoring)
-- [Monitoring and Observability](#monitoring-and-observability)
-  - [.NET Aspire Dashboard](#net-aspire-dashboard)
-  - [Application Insights Integration](#application-insights-integration)
-  - [Logic Apps Workflow Monitoring Best Practices](#logic-apps-workflow-monitoring-best-practices)
-- [References](#references)
-
----
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Azure](https://img.shields.io/badge/Azure-Logic%20Apps-0078D4?logo=microsoft-azure)](https://azure.microsoft.com/services/logic-apps/)
+[![.NET](https://img.shields.io/badge/.NET-10-512BD4?logo=dotnet)](https://dotnet.microsoft.com/)
 
 ## Overview
 
-This solution provides a **production-ready reference architecture** for deploying and monitoring Azure Logic Apps Standard at enterprise scale. It demonstrates how to optimize workflow hosting density, implement comprehensive observability aligned with the Azure Well-Architected Framework, and operate long-running workflows (18–36 months) without compromising stability or cost-effectiveness.
+### Purpose
 
-The architecture leverages **.NET Aspire** for local development and orchestration, **Azure Container Apps** for hosting Logic Apps in a containerized environment, and **Azure Application Insights** with **OpenTelemetry** for end-to-end observability. The solution includes a reference implementation using an eShop Orders scenario, demonstrating real-world patterns for order processing, fulfillment, and monitoring across distributed systems.
+This solution provides a production-ready reference architecture for deploying and monitoring Azure Logic Apps Standard at enterprise scale. It addresses critical challenges faced by organizations managing thousands of workflows across global deployments, demonstrating proven patterns for workflow hosting density optimization, comprehensive observability, and cost management.
 
-The solution integrates **Azure Storage** for Logic Apps workflow state persistence, **Azure Service Bus** for event-driven workflow orchestration, and a **Blazor-based management interface** for operational teams to monitor and manage orders in real-time.
+The architecture integrates Azure Logic Apps Standard with Azure Monitor, Application Insights, and .NET Aspire to deliver end-to-end distributed tracing across Blazor WebAssembly clients, ASP.NET Core APIs, Azure Service Bus messaging, and serverless workflows. This implementation showcases how to instrument, monitor, and operate complex business processes while maintaining stability and controlling operational costs.
 
-This implementation serves as a blueprint for organizations scaling Azure Logic Apps deployments globally, addressing common challenges around workflow density limits, memory management, cost optimization, and operational visibility. By following Microsoft's recommended guidance while providing practical patterns for exceeding baseline limits safely, this solution enables enterprises to run thousands of workflows efficiently across multiple regions.
+Built on the Azure Well-Architected Framework's operational excellence pillar, the solution provides Infrastructure as Code (Bicep templates), containerized services via Azure Container Apps, and comprehensive telemetry collection using OpenTelemetry standards. It serves as a practical guide for platform engineers and solution architects designing resilient, observable, and cost-effective workflow orchestration systems.
 
 ### Problem Statement
 
-Enterprise organizations deploying Azure Logic Apps Standard at global scale encounter significant operational and financial challenges when managing thousands of workflows. Microsoft's current guidance recommends limiting deployments to approximately **20 workflows per Logic App instance** and up to **64 apps per App Service Plan**. Organizations that exceed these thresholds—particularly when leveraging 64-bit worker processes—frequently experience memory pressure, workflow instability, performance degradation, and unpredictable scaling behavior.
+Enterprise organizations deploying Azure Logic Apps Standard at scale encounter significant operational challenges when managing thousands of workflows across multiple regions. Microsoft's guidance recommends approximately 20 workflows per Logic App instance and up to 64 apps per App Service Plan to maintain optimal performance and reliability.
 
-These limitations become especially problematic for enterprises running **long-running workflows** that may execute for 18–36 months, such as complex approval chains, multi-stage fulfillment processes, or regulatory compliance workflows. The combination of high workflow density and extended execution times creates compounding operational risks, including increased memory consumption, state management challenges, and difficulty isolating problematic workflows. Without proper architecture patterns and monitoring, these issues cascade into **significant cost overruns**—with some organizations reporting operational costs approaching **US$80,000 annually per environment**.
+However, organizations that exceed these density limits—particularly those leveraging 64-bit runtime support for memory-intensive operations—frequently experience memory spikes, workflow execution instability, and unpredictable performance degradation. These issues compound in environments running long-duration workflows (18-36 months) where state management and resource consumption become critical factors. Without proper monitoring and architecture patterns, operational costs can spiral to approximately $80,000 USD annually per environment due to over-provisioned infrastructure and reactive scaling strategies.
 
-Current monitoring solutions often lack the granularity needed to diagnose performance issues at the individual workflow level, making it difficult to identify bottlenecks, track resource consumption patterns, or optimize workflow placement strategies. Organizations need comprehensive observability that spans from business process metrics down to infrastructure-level telemetry, integrated with modern DevOps practices and platform engineering principles. This solution addresses these challenges by providing proven architecture patterns, monitoring strategies, and deployment practices that enable safe, cost-effective operation of Azure Logic Apps Standard at enterprise scale.
+This solution directly addresses these challenges by providing validated patterns for workflow density optimization, elastic scaling strategies aligned with App Service Plan capabilities (WS1 SKU with 3-20 instance scaling), and comprehensive observability that enables proactive resource management and performance optimization.
 
 ### Key Features
 
 | Feature | Description | Implementation Details |
 |---------|-------------|------------------------|
-| **Optimized Workflow Hosting** | Reference architecture for maximizing workflow density while maintaining stability | Containerized Logic Apps on Azure Container Apps with resource quotas and horizontal scaling |
-| **Comprehensive Observability** | End-to-end monitoring aligned with Azure Well-Architected Framework | OpenTelemetry integration via ServiceDefaults, Application Insights, custom metrics, distributed tracing |
-| **Long-Running Workflow Support** | Patterns for workflows executing 18–36 months without instability | Stateful workflows with checkpoint management, durable execution tracking, Azure Storage state persistence |
-| **.NET Aspire Orchestration** | Modern local development experience with service discovery and configuration | AppHost orchestration with service registration, ServiceDefaults for telemetry, integrated dashboard |
-| **Event-Driven Integration** | Loosely coupled architecture using Azure Service Bus | Topic/subscription patterns, message-driven workflows, retry policies, dead-letter handling |
-| **Cost Optimization** | Strategies to reduce operational expenses while scaling | Resource right-sizing, consumption-based scaling, workflow consolidation patterns |
-| **Production-Ready Infrastructure** | Infrastructure-as-Code with Azure Bicep | Modular Bicep templates for Container Apps, Azure Storage, Service Bus, Application Insights |
-| **API-First Design** | RESTful API for order management and workflow orchestration | ASP.NET Core Web API with Minimal APIs, OpenAPI/Swagger documentation |
-| **Blazor Client Application** | Interactive UI for managing orders and monitoring workflows | Blazor WebAssembly client with server-side rendering, real-time updates |
-| **Workflow State Management** | Durable state persistence for long-running workflows | Azure Storage Account with blob and table storage for Logic Apps runtime state |
+| **Enterprise-Scale Workflow Hosting** | Optimized Logic Apps Standard deployment supporting high workflow density | Elastic App Service Plan (WS1 SKU) with 3-20 instance auto-scaling, Functions runtime v4 |
+| **End-to-End Distributed Tracing** | W3C Trace Context propagation across all service boundaries | OpenTelemetry SDK integration in Blazor, ASP.NET Core, Service Bus, and Logic Apps |
+| **Comprehensive Observability Stack** | Unified monitoring with correlation across application components | Application Insights, Log Analytics workspace, .NET Aspire Dashboard integration |
+| **Infrastructure as Code** | Repeatable, version-controlled infrastructure deployments | Azure Bicep modules with modular architecture (monitoring, identity, messaging, workload) |
+| **Managed Identity Authentication** | Keyless authentication across all Azure resources | User-assigned managed identity with granular RBAC role assignments |
+| **Event-Driven Architecture** | Asynchronous message processing with guaranteed delivery | Azure Service Bus topics, queues, and subscriptions with dead-letter handling |
+| **Optimized Data Access** | High-performance document storage with hierarchical partitioning | Azure Cosmos DB SQL API with hierarchical partition keys to overcome 20 GB limits |
+| **Local Development Support** | Full-fidelity local testing and debugging | .NET Aspire AppHost orchestration, Cosmos DB Emulator, Service Bus local development |
+| **Cost Optimization Patterns** | Right-sized infrastructure with elastic scaling | Proven patterns reducing annual costs from ~$80K to sustainable levels |
+| **Production-Ready Workflows** | Sample ConsosoOrders workflow demonstrating long-running patterns | Stateful workflow execution with checkpoint persistence and retry policies |
 
 ### Solution Components
 
 | Component | Description | Role in Solution |
 |-----------|-------------|------------------|
-| **eShopOrders.AppHost** | .NET Aspire AppHost orchestrating all services | Service discovery, configuration management, local development orchestration with telemetry aggregation |
-| **eShopOrders.ServiceDefaults** | Shared telemetry and observability configuration | OpenTelemetry setup, Application Insights integration, health checks, resilience patterns via Polly |
-| **eShop.Orders.API** | ASP.NET Core Web API for order management | RESTful endpoints for order CRUD operations, workflow trigger integration, business logic |
-| **eShop.Orders.App** | Blazor Server application for order management | UI host for order management, server-side rendering, SignalR communication |
-| **eShop.Orders.App.Client** | Blazor WebAssembly client components | Interactive UI components, client-side validation, API consumption |
-| **LogicAppWP** | Azure Logic Apps Standard workspace | Workflow definitions, connectors, stateful execution, long-running process orchestration |
-| **ContosoOrders Workflows** | Order processing workflows (CreateOrder, ProcessOrder, etc.) | Business process automation, event handling, Service Bus trigger integration |
-| **Infrastructure (Bicep)** | Azure resource provisioning templates | Container Apps environment, Application Insights, Service Bus, Azure Storage, managed identities |
+| **Monitoring Infrastructure** | Log Analytics workspace and Application Insights | Centralized telemetry collection, diagnostic logging, and performance analysis |
+| **Identity & Access** | User-assigned managed identity with RBAC assignments | Secure, keyless authentication to Azure Service Bus, Cosmos DB, and Storage |
+| **Messaging Layer** | Azure Service Bus namespace with topics and queues | Reliable async communication between APIs, workflows, and processors |
+| **Workflow Engine** | Logic Apps Standard on elastic App Service Plan | Serverless workflow orchestration with Functions v4 runtime and extension bundles |
+| **Data Platform** | Azure Cosmos DB SQL API with hierarchical partitioning | Persistent order storage with optimized query performance and scalability |
+| **Web API** | ASP.NET Core REST API with OpenTelemetry | Order management endpoints with distributed tracing instrumentation |
+| **Client Application** | Blazor WebAssembly with OpenTelemetry | Interactive UI with end-to-end trace correlation |
+| **Container Platform** | Azure Container Apps Environment | Managed Kubernetes-based hosting for containerized microservices |
+| **Developer Dashboard** | .NET Aspire Dashboard | Local observability during development with live telemetry visualization |
 
 ### Azure Components
 
 | Azure Service | Description | Role in Solution |
 |---------------|-------------|------------------|
-| **Azure Logic Apps Standard** | Workflow orchestration service | Hosts business process workflows with stateful execution for long-running processes (18-36 months) |
-| **Azure Container Apps** | Serverless container hosting platform | Runs Logic Apps and microservices in containers with auto-scaling and resource management |
-| **Azure Application Insights** | Application performance monitoring service | Collects telemetry, distributed tracing, custom metrics, performance analysis via OpenTelemetry |
-| **Azure Monitor** | Comprehensive monitoring and diagnostics platform | Aggregates logs and metrics, alerting, workbooks, operational insights |
-| **Azure Service Bus** | Enterprise message broker service | Asynchronous messaging with topic/subscription patterns for workflow event distribution |
-| **Azure Storage Account** | Scalable cloud storage service | Stores Logic Apps workflow state, blob storage for artifacts, table storage for metadata |
-| **Azure Cosmos DB** | Globally distributed NoSQL database | Order data persistence with hierarchical partition keys (userId) |
-| **Azure Key Vault** | Secrets and certificate management service | Stores connection strings, API keys, certificates, managed identity integration |
-| **Azure Container Registry** | Private container registry | Stores Logic Apps and microservices container images with CI/CD integration |
-| **Azure Managed Identity** | Azure AD identity for resources | Passwordless authentication for secure service-to-service communication |
+| **Azure Logic Apps Standard** | Serverless workflow orchestration (single-tenant) | Executes ConsosoOrders workflow for order processing with elastic scaling |
+| **Azure App Service Plan (WS1)** | Elastic compute for Logic Apps Standard | Provides 3-20 instance auto-scaling for workflow hosting density optimization |
+| **Azure Application Insights** | Application performance monitoring (APM) | Collects distributed traces, metrics, and logs with correlation IDs |
+| **Azure Log Analytics** | Centralized log aggregation and Kusto query engine | Stores diagnostic logs, workflow runtime telemetry, and custom metrics |
+| **Azure Service Bus (Standard)** | Enterprise messaging with topics and queues | Decouples producers/consumers with guaranteed message delivery and dead-lettering |
+| **Azure Cosmos DB (SQL API)** | Globally distributed NoSQL database | Stores order documents with hierarchical partition keys (`/tenantId/customerId`) |
+| **Azure Container Apps** | Managed Kubernetes application platform | Hosts containerized Orders API with ingress, scaling, and observability |
+| **Azure Managed Identity** | Azure AD identity for Azure resources | Eliminates credential management with RBAC-based access to Service Bus, Cosmos DB |
+| **Azure Storage Account** | Blob storage for Logic Apps state | Persists workflow checkpoints, run history, and configuration artifacts |
+| **Azure Container Registry** | Private container image registry | Stores Docker images for containerized services with vulnerability scanning |
 
----
-
-## Project Structure
+### Project Structure
 
 ```
 Azure-LogicApps-Monitoring/
-├── .dockerignore
-├── .gitignore
-├── azure.yaml                        # Azure Developer CLI configuration
-├── bdat.md                           # TOGAF BDAT architecture documentation
-├── CODE_OF_CONDUCT.md
-├── CONTRIBUTING.md
-├── docker-compose.dcproj
-├── docker-compose.override.yml       # Development-specific overrides
-├── docker-compose.yml                # Local orchestration for services
-├── eShopOrders.sln                   # Visual Studio solution file
-├── generate_orders.py                # Test data generation script
-├── launchSettings.json               # Launch profiles for debugging
-├── LICENSE
-├── LICENSE.md
-├── README.md                         # This file
-├── SECURITY.md
-├── .github/
-│   └── workflows/                    # CI/CD GitHub Actions workflows
-├── .vscode/
-│   ├── launch.json                   # VS Code debug configurations
-│   ├── settings.json                 # Workspace settings
-│   └── tasks.json                    # Build and deployment tasks
-├── eShopOrders.AppHost
-│   ├── Program.cs                    # Aspire AppHost entry point with service registration
-│   ├── AppHost.cs                    # AppHost configuration and orchestration
-│   ├── appsettings.Development.json  # Development environment configuration
-│   └── eShopOrders.AppHost.csproj    # AppHost project file
-├── eShopOrders.ServiceDefaults
-│   ├── Extensions.cs                 # OpenTelemetry, health checks, resilience extensions
-│   └── eShopOrders.ServiceDefaults.csproj
-├── infra/                            # Infrastructure-as-Code (Bicep)
-│   ├── main.bicep                    # Main orchestration template
-│   ├── resources/
-│   │   ├── containerApps.bicep       # Container Apps environment and apps
-│   │   ├── monitoring.bicep          # Application Insights and Log Analytics
-│   │   ├── serviceBus.bicep          # Service Bus namespace, topics, subscriptions
-│   │   ├── storage.bicep             # Azure Storage Account for Logic Apps state
-│   │   └── keyVault.bicep            # Key Vault for secrets management
-│   └── parameters/
-│       ├── dev.bicepparam            # Development environment parameters
-│       └── prod.bicepparam           # Production environment parameters
+├── infra/                              # Infrastructure as Code (Bicep)
+│   ├── main.bicep                      # Orchestrator deploying monitoring + workload
+│   ├── types.bicep                     # Shared type definitions for tagging
+│   ├── monitoring/
+│   │   └── main.bicep                  # Log Analytics + Application Insights
+│   └── workload/
+│       ├── main.bicep                  # Orchestrates identity, messaging, services, workflows
+│       ├── identity.bicep              # Managed identity + RBAC role assignments
+│       ├── messaging.bicep             # Service Bus namespace, queues, topics
+│       ├── logic-app.bicep             # Logic Apps Standard + App Service Plan (WS1)
+│       ├── services.bicep              # Container Registry + Container Apps Environment
+│       └── workflowstorage.bicep       # Storage account for workflow runtime state
+├── eShopOrders.AppHost                # .NET Aspire AppHost orchestration
+│   ├── Program.cs                      # Configures Aspire dashboard, services, workflows
+│   └── appsettings.json                # Local development configuration
+├── eShopOrders.ServiceDefaults        # Shared telemetry and resilience configuration
+│   ├── Extensions.cs                   # OpenTelemetry setup (tracing, metrics, logging)
+│   └── HealthChecks.cs                 # Service health check registration
 ├── src/
-│   ├── eShop.Orders.API/
+│   ├── eShop.Orders.API/               # ASP.NET Core Web API (REST endpoints)
 │   │   ├── Controllers/
-│   │   │   └── OrdersController.cs   # RESTful API endpoints for orders
-│   │   ├── Models/
-│   │   │   └── Order.cs              # Order domain model
-│   │   ├── Services/
-│   │   │   └── OrderService.cs       # Business logic for order management
-│   │   ├── Program.cs                # API application entry point with Minimal APIs
-│   │   ├── appsettings.json          # API configuration
-│   │   └── eShop.Orders.API.csproj
-│   ├── eShop.Orders.App/
-│   │   ├── Components/
-│   │   │   ├── Pages/                # Blazor server pages
-│   │   │   └── Layout/               # Blazor layout components
-│   │   ├── Program.cs                # Blazor Server entry point
-│   │   ├── appsettings.json          # Blazor app configuration
-│   │   └── eShop.Orders.App.csproj
-│   └── eShop.Orders.App.Client/
-│       ├── Pages/                    # Blazor WebAssembly pages
-│       ├── Program.cs                # Client entry point
-│       └── eShop.Orders.App.Client.csproj
-├── LogicAppWP/                       # Logic Apps Standard workspace
-│   ├── ContosoOrders/                # Workflow folder
-│   │   ├── CreateOrder/
-│   │   │   └── workflow.json         # Create order workflow definition
-│   │   ├── UpdateOrder/
-│   │   │   └── workflow.json         # Update order workflow definition
-│   │   ├── DeleteOrder/
-│   │   │   └── workflow.json         # Delete order workflow definition
-│   │   └── ProcessOrder/
-│   │       └── workflow.json         # Process order workflow definition
-│   ├── host.json                     # Logic Apps runtime configuration
-│   ├── connections.json              # Connector configurations (Service Bus)
-│   ├── local.settings.json           # Local development settings
-│   └── Dockerfile                    # Logic Apps container image definition
-└── hooks/                            # Deployment lifecycle hooks
+│   │   │   └── OrdersController.cs     # CRUD operations for orders
+│   │   ├── Program.cs                  # API bootstrapping with OpenTelemetry
+│   │   └── Services/
+│   │       └── OrderService.cs         # Business logic with Cosmos DB integration
+│   ├── eShop.Orders.App/               # Blazor Web App (server-side)
+│   │   └── Program.cs                  # Blazor hosting with OpenTelemetry
+│   └── eShop.Orders.App.Client/        # Blazor WebAssembly client
+│       └── Program.cs                  # Client-side OpenTelemetry instrumentation
+├── LogicAppWP/                         # Logic Apps Standard workspace
+│   ├── host.json                       # Functions runtime configuration
+│   ├── local.settings.json             # Local development settings
+│   └── ConsosoOrders/                  # Sample workflow (ConsosoOrders)
+│       ├── workflow.json               # Workflow definition (stateful)
+│       └── connections.json            # Managed connection configurations
+├── .azure/                             # Azure Developer CLI configuration
+│   └── config.json                     # azd environment settings
+├── docker-compose.yml                  # Multi-container orchestration
+├── azure.yaml                          # Azure Developer CLI manifest
+└── README.md                           # This file
 ```
 
 ---
@@ -196,81 +119,105 @@ Azure-LogicApps-Monitoring/
 ### Business Architecture
 
 #### Purpose
-The Business Architecture layer defines the **capabilities, value streams, and business outcomes** that the solution enables for enterprise-scale Azure Logic Apps deployments. It focuses on how the system supports order lifecycle management, workflow orchestration at scale, and operational excellence through comprehensive monitoring and cost optimization.
 
-#### Process (High-Level)
-The business processes center around **order lifecycle management** (create, update, process, delete orders), **workflow orchestration** (design, execute, monitor thousands of workflows), **operational excellence** (performance optimization, cost management, incident response), and **integration** (API management, event processing, data synchronization). The solution enables organizations to operate workflows efficiently while maintaining visibility into business outcomes, performance metrics, and resource utilization.
+The Business Architecture layer defines the stable business capabilities required for enterprise order management. It organizes the solution around capabilities rather than organizational structures, ensuring alignment between business strategy and technical implementation while supporting scalability and long-term stability.
+
+#### Key Capabilities
+
+- **Order Lifecycle Management**: Create, validate, process, and fulfill customer orders with comprehensive state tracking
+- **Workflow Orchestration**: Coordinate multi-step business processes across distributed systems with guaranteed execution
+- **Business Process Monitoring**: Track order metrics, workflow execution KPIs, and SLA compliance in real-time
+- **Compliance & Auditability**: Maintain immutable audit trails for regulatory requirements with correlation IDs
+- **Event-Driven Integration**: Enable asynchronous communication between systems with guaranteed message delivery
+
+#### Process
+
+Orders are submitted via REST API, validated against business rules, and published to Service Bus topics. Logic Apps workflows consume order events, enrich with external data, persist to Cosmos DB, and trigger fulfillment processes. Each operation emits distributed traces that flow through Application Insights, enabling end-to-end visibility from user action to workflow completion.
 
 #### Business Capability Map
 
 ```mermaid
-flowchart TB
-    subgraph OrderManagement["Order Management"]
-        OrderCreation["Order Creation"]
-        OrderFulfillment["Order Fulfillment"]
-        OrderTracking["Order Tracking"]
+flowchart LR
+    subgraph OrderManagement[Order Lifecycle Management]
+        style OrderManagement fill:#E6E6FA
+        OM1[Order Capture]
+        OM2[Order Validation]
+        OM3[Order Enrichment]
+        OM4[Order Processing]
+        OM5[Order Fulfillment]
     end
     
-    subgraph WorkflowOrchestration["Workflow Orchestration"]
-        WorkflowDesign["Workflow Design"]
-        WorkflowExecution["Workflow Execution"]
-        WorkflowMonitoring["Workflow Monitoring"]
+    subgraph WorkflowOrchestration[Workflow Orchestration]
+        style WorkflowOrchestration fill:#E6E6FA
+        WO1[Long-Running Workflows]
+        WO2[State Management]
+        WO3[Error Handling]
+        WO4[Compensation Logic]
     end
     
-    subgraph OperationalExcellence["Operational Excellence"]
-        PerformanceOptimization["Performance Optimization"]
-        CostManagement["Cost Management"]
-        IncidentResponse["Incident Response"]
+    subgraph Monitoring[Business Process Monitoring]
+        style Monitoring fill:#E6E6FA
+        M1[Performance Metrics]
+        M2[SLA Tracking]
+        M3[Workflow Analytics]
+        M4[Cost Analysis]
     end
     
-    subgraph Integration["Integration Capabilities"]
-        APIManagement["API Management"]
-        EventProcessing["Event Processing"]
-        DataSynchronization["Data Synchronization"]
+    subgraph Compliance[Compliance & Auditability]
+        style Compliance fill:#E6E6FA
+        C1[Audit Trail]
+        C2[Correlation Tracking]
+        C3[Data Retention]
     end
     
-    style OrderManagement fill:#E6D5FF
-    style WorkflowOrchestration fill:#E6D5FF
-    style OperationalExcellence fill:#E6D5FF
-    style Integration fill:#E6D5FF
-    style OrderCreation fill:#E6D5FF
-    style OrderFulfillment fill:#E6D5FF
-    style OrderTracking fill:#E6D5FF
-    style WorkflowDesign fill:#E6D5FF
-    style WorkflowExecution fill:#E6D5FF
-    style WorkflowMonitoring fill:#E6D5FF
-    style PerformanceOptimization fill:#E6D5FF
-    style CostManagement fill:#E6D5FF
-    style IncidentResponse fill:#E6D5FF
-    style APIManagement fill:#E6D5FF
-    style EventProcessing fill:#E6D5FF
-    style DataSynchronization fill:#E6D5FF
+    subgraph Integration[Event-Driven Integration]
+        style Integration fill:#E6E6FA
+        I1[Message Publishing]
+        I2[Event Consumption]
+        I3[Dead Letter Handling]
+    end
+    
+    style OM1 fill:#E6E6FA
+    style OM2 fill:#E6E6FA
+    style OM3 fill:#E6E6FA
+    style OM4 fill:#E6E6FA
+    style OM5 fill:#E6E6FA
+    style WO1 fill:#E6E6FA
+    style WO2 fill:#E6E6FA
+    style WO3 fill:#E6E6FA
+    style WO4 fill:#E6E6FA
+    style M1 fill:#E6E6FA
+    style M2 fill:#E6E6FA
+    style M3 fill:#E6E6FA
+    style M4 fill:#E6E6FA
+    style C1 fill:#E6E6FA
+    style C2 fill:#E6E6FA
+    style C3 fill:#E6E6FA
+    style I1 fill:#E6E6FA
+    style I2 fill:#E6E6FA
+    style I3 fill:#E6E6FA
 ```
 
 #### Value Stream Map
 
 ```mermaid
 flowchart LR
-    Demand["Customer Order Demand"] --> Capture["Order Capture via API"]
-    Capture --> Validate["Order Validation"]
-    Validate --> Route["Workflow Routing"]
-    Route --> Execute["Workflow Execution"]
-    Execute --> Monitor["Real-time Monitoring"]
-    Monitor --> Fulfill["Order Fulfillment"]
-    Fulfill --> Deliver["Value Delivered to Customer"]
+    VS1[Customer Places Order] --> VS2[Order Validated]
+    VS2 --> VS3[Event Published to Service Bus]
+    VS3 --> VS4[Workflow Triggered]
+    VS4 --> VS5[Order Enriched]
+    VS5 --> VS6[Order Persisted to Cosmos DB]
+    VS6 --> VS7[Fulfillment Initiated]
+    VS7 --> VS8[Customer Notified]
     
-    Monitor --> Optimize["Continuous Optimization"]
-    Optimize --> Route
-    
-    style Demand fill:#E6D5FF
-    style Capture fill:#E6D5FF
-    style Validate fill:#E6D5FF
-    style Route fill:#E6D5FF
-    style Execute fill:#E6D5FF
-    style Monitor fill:#FFD580
-    style Fulfill fill:#E6D5FF
-    style Deliver fill:#E6D5FF
-    style Optimize fill:#FFD580
+    style VS1 fill:#E6E6FA
+    style VS2 fill:#E6E6FA
+    style VS3 fill:#E6E6FA
+    style VS4 fill:#E6E6FA
+    style VS5 fill:#E6E6FA
+    style VS6 fill:#E6E6FA
+    style VS7 fill:#E6E6FA
+    style VS8 fill:#E6E6FA
 ```
 
 ---
@@ -278,169 +225,175 @@ flowchart LR
 ### Data Architecture
 
 #### Purpose
-The Data Architecture layer defines how data flows through the system, how workflow state is persisted in Azure Storage, and how monitoring and observability data is collected, processed, and analyzed to support operational excellence. This layer emphasizes event-driven data patterns with Service Bus for messaging and Azure Storage for durable workflow state management.
 
-#### Process (High-Level)
-Data flows through **ingestion** (orders via API, events via Service Bus), **processing** (workflow execution with stateful checkpoints, business logic validation), **storage** (Azure Storage for workflow state persistence, Application Insights for telemetry), and **governance** (monitoring, alerting, cost optimization). The architecture supports both workflow state data (checkpoints, execution history) and observability data (metrics, logs, distributed traces).
+The Data Architecture layer defines how order data, workflow state, and monitoring telemetry flow through the system. It ensures data consistency through Cosmos DB hierarchical partitioning, enables event-driven integration via Service Bus, and provides comprehensive observability through centralized telemetry collection.
+
+#### Key Capabilities
+
+- **Master Data Management**: Single source of truth for order data in Cosmos DB with optimized partition keys
+- **Event Streaming**: Real-time order events via Service Bus topics with subscriptions for workflow processing
+- **Telemetry Collection**: Distributed traces, metrics, and logs via OpenTelemetry SDK exported to Application Insights
+- **Workflow State Persistence**: Durable execution state stored in Azure Storage with checkpoint recovery
+- **Hierarchical Partitioning**: Cosmos DB partition keys (`/tenantId/customerId`) to overcome 20 GB logical partition limits
+
+#### Process
+
+Orders submitted via API are persisted to Cosmos DB with hierarchical partition keys for query optimization. Events are published to Service Bus topics with message TTL and dead-letter handling. Logic Apps workflows consume events, enrich orders, and update Cosmos DB. All operations emit W3C Trace Context headers that flow through Application Insights for correlation and distributed tracing analysis.
 
 #### Master Data Management (MDM)
 
 ```mermaid
 flowchart LR
-    subgraph Sources["Data Sources"]
-        OrdersAPI["Orders API"]
-        LogicAppWorkflows["Logic App Workflows"]
-        ServiceBusEvents["Service Bus Events"]
+    subgraph Sources[Data Sources]
+        style Sources fill:#ADD8E6
+        S1[Orders API Controller]
+        S2[ConsosoOrders Workflow]
+        S3[Order Service]
     end
     
-    subgraph MDMHub["MDM Hub - Cosmos DB"]
-        OrderMasterData["Order Master Data<br/>(Partition: userId)"]
-        WorkflowState["Workflow State Data"]
+    subgraph Hub[Master Data Hub]
+        style Hub fill:#90EE90
+        MDM[Azure Cosmos DB SQL API]
+        MDM_Part[Hierarchical Partition: /tenantId/customerId]
     end
     
-    subgraph Consumers["Data Consumers"]
-        BlazorApp["Blazor Application"]
-        MonitoringSystems["Monitoring Systems"]
-        AspireDashboard["Aspire Dashboard"]
+    subgraph Consumers[Data Consumers]
+        style Consumers fill:#FFFFE0
+        C1[Order Query Service]
+        C2[Reporting APIs]
+        C3[Analytics Pipelines]
     end
     
-    OrdersAPI --> OrderMasterData
-    LogicAppWorkflows --> WorkflowState
-    ServiceBusEvents --> OrderMasterData
+    S1 --> MDM
+    S2 --> MDM
+    S3 --> MDM
+    MDM --> MDM_Part
+    MDM_Part --> C1
+    MDM_Part --> C2
+    MDM_Part --> C3
     
-    OrderMasterData --> BlazorApp
-    WorkflowState --> MonitoringSystems
-    OrderMasterData --> AspireDashboard
-    WorkflowState --> AspireDashboard
-    
-    style Sources fill:#ADD8E6
-    style MDMHub fill:#FFE5B4
-    style Consumers fill:#90EE90
-    style OrdersAPI fill:#ADD8E6
-    style LogicAppWorkflows fill:#ADD8E6
-    style ServiceBusEvents fill:#ADD8E6
-    style OrderMasterData fill:#FFE5B4
-    style WorkflowState fill:#FFE5B4
-    style BlazorApp fill:#90EE90
-    style MonitoringSystems fill:#90EE90
-    style AspireDashboard fill:#90EE90
+    style S1 fill:#ADD8E6
+    style S2 fill:#ADD8E6
+    style S3 fill:#ADD8E6
+    style MDM fill:#90EE90
+    style MDM_Part fill:#90EE90
+    style C1 fill:#FFFFE0
+    style C2 fill:#FFFFE0
+    style C3 fill:#FFFFE0
 ```
 
 #### Event-Driven Data Topology
 
 ```mermaid
 flowchart LR
-    subgraph Producers["Event Producers"]
-        OrdersAPI["Orders API"]
-        Workflows["Logic App Workflows<br/>(CreateOrder, UpdateOrder,<br/>DeleteOrder, ProcessOrder)"]
+    subgraph Producers[Event Producers]
+        style Producers fill:#90EE90
+        P1[OrdersController PlaceOrder]
+        P2[OrderService CreateOrder]
     end
     
-    subgraph EventBus["Azure Service Bus"]
-        OrdersTopic["Orders Topic"]
-        WorkflowTopics["Workflow Topics"]
+    subgraph EventBus[Event Infrastructure]
+        style EventBus fill:#FFB366
+        EB1[Service Bus Topic: orders-topic]
+        EB2[Service Bus Queue: orders-queue]
+        EB3[Dead Letter Queue]
     end
     
-    subgraph Consumers["Event Consumers"]
-        CreateOrderWorkflow["CreateOrder Workflow"]
-        UpdateOrderWorkflow["UpdateOrder Workflow"]
-        ProcessOrderWorkflow["ProcessOrder Workflow"]
-        DeleteOrderWorkflow["DeleteOrder Workflow"]
+    subgraph Consumers[Event Consumers]
+        style Consumers fill:#90EE90
+        C1[ConsosoOrders Workflow]
+        C2[Order Processor Service]
     end
     
-    subgraph Storage["Event Storage"]
-        CosmosDB["Cosmos DB<br/>(Order Event Store)"]
-        AppInsights["Application Insights<br/>(Telemetry Events)"]
+    subgraph Storage[Event & State Storage]
+        style Storage fill:#FFFFE0
+        S1[Cosmos DB: Order Documents]
+        S2[Blob Storage: Workflow State]
     end
     
-    OrdersAPI --> OrdersTopic
-    Workflows --> WorkflowTopics
+    P1 --> EB1
+    P2 --> EB2
+    EB1 --> C1
+    EB2 --> C2
+    EB1 --> EB3
+    EB2 --> EB3
+    C1 --> S1
+    C2 --> S1
+    C1 --> S2
     
-    OrdersTopic --> CreateOrderWorkflow
-    OrdersTopic --> UpdateOrderWorkflow
-    OrdersTopic --> ProcessOrderWorkflow
-    OrdersTopic --> DeleteOrderWorkflow
-    
-    CreateOrderWorkflow --> CosmosDB
-    UpdateOrderWorkflow --> CosmosDB
-    ProcessOrderWorkflow --> CosmosDB
-    DeleteOrderWorkflow --> CosmosDB
-    
-    CreateOrderWorkflow --> AppInsights
-    UpdateOrderWorkflow --> AppInsights
-    ProcessOrderWorkflow --> AppInsights
-    DeleteOrderWorkflow --> AppInsights
-    
-    style Producers fill:#90EE90
-    style EventBus fill:#FFB347
-    style Consumers fill:#90EE90
-    style Storage fill:#FFE5B4
-    style OrdersAPI fill:#90EE90
-    style Workflows fill:#90EE90
-    style OrdersTopic fill:#FFB347
-    style WorkflowTopics fill:#FFB347
-    style CreateOrderWorkflow fill:#90EE90
-    style UpdateOrderWorkflow fill:#90EE90
-    style ProcessOrderWorkflow fill:#90EE90
-    style DeleteOrderWorkflow fill:#90EE90
-    style CosmosDB fill:#FFE5B4
-    style AppInsights fill:#FFE5B4
+    style P1 fill:#90EE90
+    style P2 fill:#90EE90
+    style EB1 fill:#FFB366
+    style EB2 fill:#FFB366
+    style EB3 fill:#FFB366
+    style C1 fill:#90EE90
+    style C2 fill:#90EE90
+    style S1 fill:#FFFFE0
+    style S2 fill:#FFFFE0
 ```
 
 #### Monitoring Dataflow
 
 ```mermaid
 flowchart LR
-    subgraph Ingestion["Telemetry Ingestion"]
-        OTLP["OpenTelemetry SDK<br/>(Orders API, Blazor App)"]
-        AspireExporter["Aspire Exporter<br/>(ServiceDefaults)"]
-        LogicAppsLogs["Logic Apps Runtime Logs"]
+    subgraph Sources[Telemetry Sources]
+        style Sources fill:#ADD8E6
+        T1[Blazor Client: Browser Traces]
+        T2[Orders API: HTTP Traces]
+        T3[Service Bus: Messaging Traces]
+        T4[Logic Apps: Workflow Runtime Logs]
+        T5[Cosmos DB: Data Plane Logs]
     end
     
-    subgraph Processing["Processing Layer"]
-        AspireDashboard["Aspire Dashboard<br/>(Local Development)"]
-        AppInsightsProcessing["Application Insights<br/>Processing Pipeline"]
+    subgraph Collection[Data Collection Layer]
+        style Collection fill:#90EE90
+        OT1[OpenTelemetry SDK: .NET]
+        OT2[Azure Monitor Agent]
+        OT3[Application Insights Ingestion]
     end
     
-    subgraph StorageZones["Storage Zones"]
-        MetricsDB["Metrics Store<br/>(Application Insights)"]
-        LogsDB["Logs Store<br/>(Log Analytics)"]
-        TracesDB["Distributed Traces<br/>(Application Insights)"]
+    subgraph Storage[Monitoring Storage]
+        style Storage fill:#FFFFE0
+        AI[Application Insights: Traces & Metrics]
+        LA[Log Analytics: Diagnostic Logs]
     end
     
-    subgraph Governance["Governance & Analytics"]
-        AzureMonitor["Azure Monitor Alerts"]
-        Workbooks["Azure Workbooks"]
-        CustomDashboards["Custom Dashboards"]
+    subgraph Analysis[Analysis & Visualization]
+        style Analysis fill:#D3D3D3
+        D1[.NET Aspire Dashboard]
+        D2[Azure Portal: Application Insights]
+        D3[Kusto Query Language]
+        D4[Application Map]
     end
     
-    OTLP --> AspireDashboard
-    AspireExporter --> AppInsightsProcessing
-    LogicAppsLogs --> AppInsightsProcessing
+    T1 --> OT1
+    T2 --> OT1
+    T3 --> OT2
+    T4 --> OT2
+    T5 --> OT2
+    OT1 --> OT3
+    OT2 --> OT3
+    OT3 --> AI
+    OT3 --> LA
+    AI --> D1
+    AI --> D2
+    LA --> D3
+    AI --> D4
     
-    AspireDashboard --> MetricsDB
-    AppInsightsProcessing --> LogsDB
-    AppInsightsProcessing --> TracesDB
-    AppInsightsProcessing --> MetricsDB
-    
-    MetricsDB --> AzureMonitor
-    LogsDB --> Workbooks
-    TracesDB --> CustomDashboards
-    
-    style Ingestion fill:#ADD8E6
-    style Processing fill:#90EE90
-    style StorageZones fill:#FFE5B4
-    style Governance fill:#D3D3D3
-    style OTLP fill:#ADD8E6
-    style AspireExporter fill:#ADD8E6
-    style LogicAppsLogs fill:#ADD8E6
-    style AspireDashboard fill:#90EE90
-    style AppInsightsProcessing fill:#90EE90
-    style MetricsDB fill:#FFE5B4
-    style LogsDB fill:#FFE5B4
-    style TracesDB fill:#FFE5B4
-    style AzureMonitor fill:#D3D3D3
-    style Workbooks fill:#D3D3D3
-    style CustomDashboards fill:#D3D3D3
+    style T1 fill:#ADD8E6
+    style T2 fill:#ADD8E6
+    style T3 fill:#ADD8E6
+    style T4 fill:#ADD8E6
+    style T5 fill:#ADD8E6
+    style OT1 fill:#90EE90
+    style OT2 fill:#90EE90
+    style OT3 fill:#90EE90
+    style AI fill:#FFFFE0
+    style LA fill:#FFFFE0
+    style D1 fill:#D3D3D3
+    style D2 fill:#D3D3D3
+    style D3 fill:#D3D3D3
+    style D4 fill:#D3D3D3
 ```
 
 ---
@@ -448,177 +401,158 @@ flowchart LR
 ### Application Architecture
 
 #### Purpose
-The Application Architecture layer defines the **services, APIs, workflows, and their interactions** that implement business capabilities. It focuses on microservices patterns with .NET Aspire orchestration, event-driven architecture using Azure Service Bus, and Logic Apps workflow orchestration for long-running business processes.
 
-#### Process (High-Level)
-Applications are organized as **microservices** (Orders API with Minimal APIs, Blazor App with WebAssembly client) orchestrated through **.NET Aspire AppHost** with service discovery and configuration management. Integration occurs via **event-driven patterns** using Azure Service Bus topics and subscriptions. Logic Apps workflows consume events, execute long-running stateful processes (18-36 months), and persist state to Azure Storage. All components are instrumented with OpenTelemetry for distributed tracing and observability.
+The Application Architecture layer defines the microservices, APIs, workflows, and integration patterns that implement business capabilities. It emphasizes event-driven communication with asynchronous message processing, comprehensive distributed tracing across service boundaries, and containerized deployment for portability and scalability.
+
+#### Key Capabilities
+
+- **RESTful Order Management API**: ASP.NET Core Web API with OpenAPI (Swagger) documentation and CRUD operations
+- **Interactive Web Application**: Blazor WebAssembly client with OpenTelemetry browser instrumentation
+- **Serverless Workflow Orchestration**: Logic Apps Standard for stateful, long-running business processes (18-36 months)
+- **Asynchronous Message Processing**: Service Bus-triggered workflows with guaranteed delivery and retry policies
+- **Service-to-Service Integration**: HTTP and messaging-based patterns with W3C Trace Context propagation
+
+#### Process
+
+Blazor clients submit orders to the REST API via HTTP POST. The API validates requests, persists to Cosmos DB, and publishes events to Service Bus topics. Logic Apps workflows consume messages from queues/subscriptions, execute business logic, enrich data, and update order state. All operations are correlated via trace IDs that flow through Application Insights for end-to-end visibility.
 
 #### Microservices Architecture
 
 ```mermaid
 flowchart LR
-    subgraph Clients["Client Applications"]
-        WebBrowser["Web Browser"]
+    subgraph Clients[Client Layer]
+        style Clients fill:#ADD8E6
+        C1[Blazor WebAssembly: eShop.Orders.App.Client]
+        C2[External API Consumers]
     end
     
-    subgraph Gateway["Application Gateway"]
-        AspireAppHost["Aspire AppHost<br/>(Service Discovery)"]
+    subgraph Gateway[API Gateway Layer]
+        style Gateway fill:#E6E6FA
+        GW[Container Apps Ingress]
     end
     
-    subgraph Services["Application Services"]
-        OrdersAPI["Orders API<br/>(eShop.Orders.API)"]
-        BlazorServer["Blazor Server<br/>(eShop.Orders.App)"]
-        BlazorClient["Blazor WebAssembly<br/>(eShop.Orders.App.Client)"]
+    subgraph Services[Service Layer]
+        style Services fill:#90EE90
+        S1[Orders API: eShop.Orders.API]
+        S2[OrderService Business Logic]
+        S3[Cosmos DB Repository]
     end
     
-    subgraph Workflows["Workflow Services"]
-        CreateOrderWF["CreateOrder Workflow"]
-        UpdateOrderWF["UpdateOrder Workflow"]
-        ProcessOrderWF["ProcessOrder Workflow"]
-        DeleteOrderWF["DeleteOrder Workflow"]
+    subgraph EventBus[Async Messaging]
+        style EventBus fill:#FFB366
+        SB[Service Bus Namespace]
     end
     
-    subgraph DataServices["Data Services"]
-        CosmosDB["Cosmos DB<br/>(Partition: userId)"]
-        ServiceBus["Azure Service Bus<br/>(Topics & Subscriptions)"]
+    subgraph Workflows[Workflow Orchestration]
+        style Workflows fill:#90EE90
+        W1[ConsosoOrders Workflow: LogicAppWP]
     end
     
-    WebBrowser --> AspireAppHost
-    AspireAppHost --> OrdersAPI
-    AspireAppHost --> BlazorServer
-    BlazorServer --> BlazorClient
+    subgraph Data[Data Persistence]
+        style Data fill:#FFFFE0
+        DB1[Cosmos DB: Order Collection]
+    end
     
-    OrdersAPI --> ServiceBus
-    ServiceBus --> CreateOrderWF
-    ServiceBus --> UpdateOrderWF
-    ServiceBus --> ProcessOrderWF
-    ServiceBus --> DeleteOrderWF
+    C1 --> GW
+    C2 --> GW
+    GW --> S1
+    S1 --> S2
+    S2 --> S3
+    S2 --> SB
+    SB --> W1
+    W1 --> DB1
+    S3 --> DB1
     
-    OrdersAPI --> CosmosDB
-    CreateOrderWF --> CosmosDB
-    UpdateOrderWF --> CosmosDB
-    ProcessOrderWF --> CosmosDB
-    DeleteOrderWF --> CosmosDB
-    
-    style Clients fill:#ADD8E6
-    style Gateway fill:#E6D5FF
-    style Services fill:#90EE90
-    style Workflows fill:#90EE90
-    style DataServices fill:#FFE5B4
-    style WebBrowser fill:#ADD8E6
-    style AspireAppHost fill:#E6D5FF
-    style OrdersAPI fill:#90EE90
-    style BlazorServer fill:#90EE90
-    style BlazorClient fill:#90EE90
-    style CreateOrderWF fill:#90EE90
-    style UpdateOrderWF fill:#90EE90
-    style ProcessOrderWF fill:#90EE90
-    style DeleteOrderWF fill:#90EE90
-    style CosmosDB fill:#FFE5B4
-    style ServiceBus fill:#FFE5B4
+    style C1 fill:#ADD8E6
+    style C2 fill:#ADD8E6
+    style GW fill:#E6E6FA
+    style S1 fill:#90EE90
+    style S2 fill:#90EE90
+    style S3 fill:#90EE90
+    style SB fill:#FFB366
+    style W1 fill:#90EE90
+    style DB1 fill:#FFFFE0
 ```
 
-#### Event-Driven Architecture
+#### Event-Driven Architecture (Topology)
 
 ```mermaid
 flowchart LR
-    subgraph Producers["Event Producers"]
-        OrdersAPI["Orders API<br/>(HTTP Triggers)"]
+    subgraph Producers[Event Producers]
+        style Producers fill:#90EE90
+        P1[OrdersController: PlaceOrder Endpoint]
+        P2[OrderService: CreateOrderAsync Method]
     end
     
-    subgraph EventBus["Azure Service Bus"]
-        OrdersTopic["Orders Topic"]
-        subgraph Subscriptions["Subscriptions"]
-            CreateSub["CreateOrder Subscription"]
-            UpdateSub["UpdateOrder Subscription"]
-            ProcessSub["ProcessOrder Subscription"]
-            DeleteSub["DeleteOrder Subscription"]
-        end
+    subgraph EventBus[Event Infrastructure]
+        style EventBus fill:#FFB366
+        EB1[Service Bus Topic: orders-topic]
+        EB2[Service Bus Queue: orders-queue]
+        EB3[Topic Subscription: workflow-sub]
     end
     
-    subgraph Consumers["Event Consumers"]
-        CreateWorkflow["CreateOrder Workflow<br/>(LogicAppWP/ConsosoOrders)"]
-        UpdateWorkflow["UpdateOrder Workflow<br/>(LogicAppWP/ConsosoOrders)"]
-        ProcessWorkflow["ProcessOrder Workflow<br/>(LogicAppWP/ConsosoOrders)"]
-        DeleteWorkflow["DeleteOrder Workflow<br/>(LogicAppWP/ConsosoOrders)"]
+    subgraph Consumers[Event Consumers]
+        style Consumers fill:#90EE90
+        C1[ConsosoOrders Workflow: Service Bus Trigger]
+        C2[Order Processor: Background Service]
     end
     
-    subgraph Analytics["Analytics Services"]
-        AppInsights["Application Insights<br/>(Telemetry Collection)"]
-        AspireDashboard["Aspire Dashboard<br/>(Development Monitoring)"]
+    subgraph Analytics[Event Analytics]
+        style Analytics fill:#FFFFE0
+        A1[Application Insights: Message Telemetry]
+        A2[Log Analytics: Diagnostic Logs]
     end
     
-    OrdersAPI --> OrdersTopic
+    P1 --> EB1
+    P2 --> EB2
+    EB1 --> EB3
+    EB3 --> C1
+    EB2 --> C2
+    P1 --> A1
+    P2 --> A1
+    C1 --> A2
+    C2 --> A2
     
-    OrdersTopic --> CreateSub
-    OrdersTopic --> UpdateSub
-    OrdersTopic --> ProcessSub
-    OrdersTopic --> DeleteSub
-    
-    CreateSub --> CreateWorkflow
-    UpdateSub --> UpdateWorkflow
-    ProcessSub --> ProcessWorkflow
-    DeleteSub --> DeleteWorkflow
-    
-    CreateWorkflow --> AppInsights
-    UpdateWorkflow --> AppInsights
-    ProcessWorkflow --> AppInsights
-    DeleteWorkflow --> AppInsights
-    
-    CreateWorkflow --> AspireDashboard
-    UpdateWorkflow --> AspireDashboard
-    ProcessWorkflow --> AspireDashboard
-    DeleteWorkflow --> AspireDashboard
-    
-    style Producers fill:#90EE90
-    style EventBus fill:#FFB347
-    style Consumers fill:#90EE90
-    style Analytics fill:#FFE5B4
-    style OrdersAPI fill:#90EE90
-    style OrdersTopic fill:#FFB347
-    style Subscriptions fill:#FFB347
-    style CreateSub fill:#FFB347
-    style UpdateSub fill:#FFB347
-    style ProcessSub fill:#FFB347
-    style DeleteSub fill:#FFB347
-    style CreateWorkflow fill:#90EE90
-    style UpdateWorkflow fill:#90EE90
-    style ProcessWorkflow fill:#90EE90
-    style DeleteWorkflow fill:#90EE90
-    style AppInsights fill:#FFE5B4
-    style AspireDashboard fill:#FFE5B4
+    style P1 fill:#90EE90
+    style P2 fill:#90EE90
+    style EB1 fill:#FFB366
+    style EB2 fill:#FFB366
+    style EB3 fill:#FFB366
+    style C1 fill:#90EE90
+    style C2 fill:#90EE90
+    style A1 fill:#FFFFE0
+    style A2 fill:#FFFFE0
 ```
 
-#### Event State Transitions
+#### Event-Driven Architecture (State Transitions)
 
 ```mermaid
 stateDiagram-v2
-    [*] --> OrderReceived: HTTP Request to Orders API
+    [*] --> OrderCreated: POST /api/orders/PlaceOrder
+    OrderCreated --> OrderValidated: API Validation Success
+    OrderCreated --> OrderRejected: Validation Failed (400 Bad Request)
+    OrderValidated --> OrderPublished: Event Published to Service Bus Topic
+    OrderPublished --> OrderEnriched: Workflow Triggered (ConsosoOrders)
+    OrderEnriched --> OrderProcessed: Business Logic Execution
+    OrderProcessed --> OrderPersisted: Cosmos DB Write Operation
+    OrderPersisted --> OrderFulfilled: Fulfillment Workflow Initiated
+    OrderFulfilled --> [*]
+    OrderRejected --> [*]
     
-    OrderReceived --> OrderValidated: Validate Order Schema
-    OrderValidated --> OrderPersisted: Store in Cosmos DB (userId partition)
-    OrderPersisted --> EventPublished: Publish to Service Bus Topic
+    note right of OrderPublished
+        W3C Trace Context propagated
+        Correlation ID preserved
+    end note
     
-    EventPublished --> WorkflowTriggered: Service Bus Subscription Activated
+    note right of OrderProcessed
+        Stateful workflow execution
+        Checkpoint persisted to Blob Storage
+    end note
     
-    WorkflowTriggered --> WorkflowRunning: Logic App Execution Start
-    WorkflowRunning --> WorkflowCheckpoint: Save State (Stateful Workflow)
-    WorkflowCheckpoint --> WorkflowRunning: Continue Execution
-    
-    WorkflowRunning --> WorkflowCompleted: Success
-    WorkflowRunning --> WorkflowFailed: Error Occurred
-    WorkflowRunning --> WorkflowSuspended: Long-Running Wait State
-    
-    WorkflowSuspended --> WorkflowRunning: Resume After Wait
-    
-    WorkflowCompleted --> TelemetryRecorded: Log to Application Insights
-    WorkflowFailed --> ErrorHandling: Retry Policy Applied
-    
-    ErrorHandling --> WorkflowRunning: Retry Attempt
-    ErrorHandling --> DeadLetter: Max Retries Exceeded
-    
-    TelemetryRecorded --> [*]
-    DeadLetter --> [*]
+    note right of OrderPersisted
+        Hierarchical partition key: /tenantId/customerId
+        Optimized for query performance
+    end note
 ```
 
 ---
@@ -626,883 +560,1444 @@ stateDiagram-v2
 ### Technology Architecture
 
 #### Purpose
-The Technology Architecture layer defines the **platforms, infrastructure, runtime environments, and supporting services** that host and operate the application components. It focuses on cloud-native patterns with Azure Container Apps, containerization with Docker, serverless computing with Logic Apps Standard, and platform engineering practices with .NET Aspire and Infrastructure-as-Code (Bicep).
 
-#### Process (High-Level)
-The solution runs on **Azure Container Apps** for microservices and containerized Logic Apps with automatic scaling, uses **.NET Aspire** for local orchestration, service defaults, and telemetry aggregation, leverages **Azure PaaS services** (Azure Storage for workflow state, Service Bus with topics/subscriptions, Application Insights with OpenTelemetry), and implements **platform engineering** practices with Bicep IaC, CI/CD pipelines, and golden path patterns through ServiceDefaults.
+The Technology Architecture layer defines the cloud-native platform components, container orchestration, serverless execution environments, and platform engineering capabilities that support the solution. It provides elastic scaling, managed services for reduced operational overhead, and comprehensive observability across all infrastructure layers.
 
-#### Cloud-Native Platform
+#### Key Capabilities
+
+- **Elastic Serverless Compute**: Logic Apps Standard on App Service Plan WS1 with 3-20 instance auto-scaling
+- **Container Orchestration**: Azure Container Apps for microservices hosting with built-in ingress and scaling
+- **Managed Identity & RBAC**: User-assigned managed identity with granular role assignments eliminating credential management
+- **Enterprise Messaging**: Azure Service Bus Standard tier with topics, queues, and dead-letter handling
+- **Globally Distributed Database**: Cosmos DB SQL API with hierarchical partition keys and single-digit millisecond latency
+- **Unified Observability**: Application Insights, Log Analytics, and .NET Aspire Dashboard with OpenTelemetry integration
+
+#### Process
+
+Infrastructure is deployed via Azure Bicep templates with modular architecture (monitoring, identity, messaging, workload). Applications run in Azure Container Apps (for APIs) or Logic Apps Standard (for workflows). Managed identities authenticate to Service Bus, Cosmos DB, and Storage without credentials. OpenTelemetry SDKs collect telemetry from all layers and export to Application Insights for unified correlation and analysis.
+
+#### Cloud-Native Architecture
 
 ```mermaid
 flowchart LR
-    subgraph Clients["Client Tier"]
-        Browser["Web Browser"]
+    subgraph Clients[Client Tier]
+        style Clients fill:#ADD8E6
+        CL1[Blazor WASM: Browser Runtime]
     end
     
-    subgraph ApplicationServices["Application Services"]
-        ContainerApps["Azure Container Apps<br/>(Managed Environment)"]
-        OrdersAPIContainer["Orders API Container"]
-        BlazorAppContainer["Blazor App Container"]
-        LogicAppsContainers["Logic Apps Containers<br/>(CreateOrder, UpdateOrder,<br/>DeleteOrder, ProcessOrder)"]
+    subgraph Gateway[API Gateway & CDN]
+        style Gateway fill:#E6E6FA
+        GW1[Container Apps Environment]
+        GW2[HTTP Ingress Controller]
     end
     
-    subgraph MessagingServices["Messaging & Events"]
-        ServiceBus["Azure Service Bus<br/>(Topics & Subscriptions)"]
+    subgraph Services[Service Tier]
+        style Services fill:#90EE90
+        SVC1[Orders API: Container Instance]
+        SVC2[OrderService: Business Logic]
     end
     
-    subgraph DataServices["Data Services"]
-        CosmosDB["Azure Cosmos DB<br/>(NoSQL, userId partition)"]
+    subgraph Messaging[Event Bus]
+        style Messaging fill:#FFB366
+        MSG1[Service Bus Namespace]
+        MSG2[Topics: orders-topic]
+        MSG3[Queues: orders-queue]
     end
     
-    subgraph ObservabilityServices["Observability & Security"]
-        AppInsights["Application Insights<br/>(OpenTelemetry)"]
-        LogAnalytics["Log Analytics Workspace"]
-        KeyVault["Azure Key Vault<br/>(Secrets Management)"]
-        ManagedIdentity["Azure Managed Identity<br/>(Passwordless Auth)"]
+    subgraph Workflows[Serverless Tier]
+        style Workflows fill:#90EE90
+        WF1[Logic Apps Standard: ConsosoOrders]
+        WF2[App Service Plan WS1: 3-20 Instances]
     end
     
-    Browser --> ContainerApps
+    subgraph Data[Data Tier]
+        style Data fill:#FFFFE0
+        DB1[Cosmos DB SQL API]
+        DB2[Hierarchical Partition Keys]
+        CACHE1[Integrated Cache]
+    end
     
-    ContainerApps --> OrdersAPIContainer
-    ContainerApps --> BlazorAppContainer
-    ContainerApps --> LogicAppsContainers
+    subgraph Observability[Observability Stack]
+        style Observability fill:#D3D3D3
+        OBS1[Application Insights]
+        OBS2[Log Analytics Workspace]
+        OBS3[.NET Aspire Dashboard]
+        OBS4[Azure Monitor Workbooks]
+    end
     
-    OrdersAPIContainer --> ServiceBus
-    LogicAppsContainers --> ServiceBus
+    subgraph Security[Security & Identity]
+        style Security fill:#D3D3D3
+        SEC1[User-Assigned Managed Identity]
+        SEC2[RBAC Role Assignments]
+        SEC3[Key Vault: Secrets]
+    end
     
-    OrdersAPIContainer --> CosmosDB
-    LogicAppsContainers --> CosmosDB
+    CL1 --> GW1
+    GW1 --> GW2
+    GW2 --> SVC1
+    SVC1 --> SVC2
+    SVC2 --> MSG1
+    MSG1 --> MSG2
+    MSG1 --> MSG3
+    MSG2 --> WF1
+    MSG3 --> WF1
+    WF1 --> WF2
+    WF1 --> DB1
+    SVC2 --> DB1
+    DB1 --> DB2
+    DB1 --> CACHE1
+    SVC1 --> OBS1
+    WF1 --> OBS2
+    OBS1 --> OBS3
+    OBS2 --> OBS3
+    OBS1 --> OBS4
+    SVC1 --> SEC1
+    WF1 --> SEC1
+    SEC1 --> SEC2
+    SEC2 --> MSG1
+    SEC2 --> DB1
+    SEC2 --> SEC3
     
-    OrdersAPIContainer --> AppInsights
-    BlazorAppContainer --> AppInsights
-    LogicAppsContainers --> LogAnalytics
-    
-    OrdersAPIContainer --> KeyVault
-    LogicAppsContainers --> ManagedIdentity
-    
-    style Clients fill:#ADD8E6
-    style ApplicationServices fill:#90EE90
-    style MessagingServices fill:#FFB347
-    style DataServices fill:#FFE5B4
-    style ObservabilityServices fill:#D3D3D3
-    style Browser fill:#ADD8E6
-    style ContainerApps fill:#90EE90
-    style OrdersAPIContainer fill:#90EE90
-    style BlazorAppContainer fill:#90EE90
-    style LogicAppsContainers fill:#90EE90
-    style ServiceBus fill:#FFB347
-    style CosmosDB fill:#FFE5B4
-    style AppInsights fill:#D3D3D3
-    style LogAnalytics fill:#D3D3D3
-    style KeyVault fill:#D3D3D3
-    style ManagedIdentity fill:#D3D3D3
+    style CL1 fill:#ADD8E6
+    style GW1 fill:#E6E6FA
+    style GW2 fill:#E6E6FA
+    style SVC1 fill:#90EE90
+    style SVC2 fill:#90EE90
+    style MSG1 fill:#FFB366
+    style MSG2 fill:#FFB366
+    style MSG3 fill:#FFB366
+    style WF1 fill:#90EE90
+    style WF2 fill:#90EE90
+    style DB1 fill:#FFFFE0
+    style DB2 fill:#FFFFE0
+    style CACHE1 fill:#FFFFE0
+    style OBS1 fill:#D3D3D3
+    style OBS2 fill:#D3D3D3
+    style OBS3 fill:#D3D3D3
+    style OBS4 fill:#D3D3D3
+    style SEC1 fill:#D3D3D3
+    style SEC2 fill:#D3D3D3
+    style SEC3 fill:#D3D3D3
 ```
 
 #### Container-Based Architecture
 
 ```mermaid
 flowchart TB
-    subgraph LoadBalancer["Load Balancer"]
-        Ingress["Azure Container Apps Ingress<br/>(HTTP/HTTPS)"]
+    subgraph Ingress[Load Balancer & Ingress]
+        style Ingress fill:#E6E6FA
+        LB[Azure Load Balancer]
+        ING[Container Apps Ingress Controller]
     end
     
-    subgraph ContainerEnvironment["Container Apps Environment"]
-        subgraph Services["Container Apps Services"]
-            OrdersAPISvc["Orders API Service"]
-            BlazorAppSvc["Blazor App Service"]
-            LogicAppsSvc["Logic Apps Service"]
-        end
-        
-        subgraph Workloads["Container Workloads"]
-            subgraph OrdersAPIPods["Orders API Replicas"]
-                OrdersAPI1["API Replica 1"]
-                OrdersAPI2["API Replica 2"]
-            end
-            
-            subgraph BlazorAppPods["Blazor App Replicas"]
-                BlazorApp1["App Replica 1"]
-                BlazorApp2["App Replica 2"]
-            end
-            
-            subgraph LogicAppPods["Logic Apps Replicas"]
-                LogicApp1["CreateOrder Instance"]
-                LogicApp2["UpdateOrder Instance"]
-                LogicApp3["ProcessOrder Instance"]
-                LogicApp4["DeleteOrder Instance"]
-            end
-        end
+    subgraph ContainerApps[Container Apps Environment]
+        style ContainerApps fill:#90EE90
+        CA1[Orders API Container App]
+        CA2[Revision Management]
+        CA3[Auto-scaling Rules: 1-10 Instances]
     end
     
-    subgraph PersistentStorage["Persistent Storage"]
-        CosmosDB["Cosmos DB<br/>(userId partition)"]
+    subgraph Workloads[Application Workloads]
+        style Workloads fill:#90EE90
+        POD1[Orders API: ASP.NET Core 10]
+        POD2[OpenTelemetry Sidecar]
+        POD3[Health Check Probes]
     end
     
-    subgraph ObservabilityPlatform["Observability"]
-        AppInsights["Application Insights"]
-        LogAnalytics["Log Analytics"]
-        AspireDashboard["Aspire Dashboard<br/>(Development)"]
+    subgraph Storage[Persistent Storage]
+        style Storage fill:#FFFFE0
+        PV1[Cosmos DB: Order Documents]
+        PV2[Service Bus: Message Queues]
+        PV3[Blob Storage: Logs & Artifacts]
     end
     
-    Ingress --> OrdersAPISvc
-    Ingress --> BlazorAppSvc
+    subgraph Observability[Logging & Monitoring]
+        style Observability fill:#D3D3D3
+        LOG1[Container Logs: stdout/stderr]
+        MET1[Metrics: CPU, Memory, RPS]
+        TRC1[Distributed Traces: W3C Context]
+        TRC2[Application Insights: Correlation]
+    end
     
-    OrdersAPISvc --> OrdersAPI1
-    OrdersAPISvc --> OrdersAPI2
+    LB --> ING
+    ING --> CA1
+    CA1 --> CA2
+    CA2 --> CA3
+    CA3 --> POD1
+    POD1 --> POD2
+    POD1 --> POD3
+    POD1 --> PV1
+    POD1 --> PV2
+    POD1 --> PV3
+    POD1 --> LOG1
+    POD2 --> MET1
+    POD2 --> TRC1
+    TRC1 --> TRC2
     
-    BlazorAppSvc --> BlazorApp1
-    BlazorAppSvc --> BlazorApp2
-    
-    LogicAppsSvc --> LogicApp1
-    LogicAppsSvc --> LogicApp2
-    LogicAppsSvc --> LogicApp3
-    LogicAppsSvc --> LogicApp4
-    
-    OrdersAPI1 --> CosmosDB
-    OrdersAPI2 --> CosmosDB
-    LogicApp1 --> CosmosDB
-    LogicApp2 --> CosmosDB
-    LogicApp3 --> CosmosDB
-    LogicApp4 --> CosmosDB
-    
-    OrdersAPI1 --> AppInsights
-    OrdersAPI2 --> AppInsights
-    BlazorApp1 --> AppInsights
-    BlazorApp2 --> AppInsights
-    LogicApp1 --> LogAnalytics
-    LogicApp2 --> LogAnalytics
-    LogicApp3 --> LogAnalytics
-    LogicApp4 --> LogAnalytics
-    
-    OrdersAPISvc --> AspireDashboard
-    BlazorAppSvc --> AspireDashboard
-    LogicAppsSvc --> AspireDashboard
-    
-    style LoadBalancer fill:#E6D5FF
-    style ContainerEnvironment fill:#90EE90
-    style Services fill:#90EE90
-    style Workloads fill:#90EE90
-    style PersistentStorage fill:#FFE5B4
-    style ObservabilityPlatform fill:#D3D3D3
-    style Ingress fill:#E6D5FF
-    style OrdersAPISvc fill:#90EE90
-    style BlazorAppSvc fill:#90EE90
-    style LogicAppsSvc fill:#90EE90
-    style OrdersAPIPods fill:#90EE90
-    style BlazorAppPods fill:#90EE90
-    style LogicAppPods fill:#90EE90
-    style OrdersAPI1 fill:#90EE90
-    style OrdersAPI2 fill:#90EE90
-    style BlazorApp1 fill:#90EE90
-    style BlazorApp2 fill:#90EE90
-    style LogicApp1 fill:#90EE90
-    style LogicApp2 fill:#90EE90
-    style LogicApp3 fill:#90EE90
-    style LogicApp4 fill:#90EE90
-    style CosmosDB fill:#FFE5B4
-    style AppInsights fill:#D3D3D3
-    style LogAnalytics fill:#D3D3D3
-    style AspireDashboard fill:#D3D3D3
+    style LB fill:#E6E6FA
+    style ING fill:#E6E6FA
+    style CA1 fill:#90EE90
+    style CA2 fill:#90EE90
+    style CA3 fill:#90EE90
+    style POD1 fill:#90EE90
+    style POD2 fill:#90EE90
+    style POD3 fill:#90EE90
+    style PV1 fill:#FFFFE0
+    style PV2 fill:#FFFFE0
+    style PV3 fill:#FFFFE0
+    style LOG1 fill:#D3D3D3
+    style MET1 fill:#D3D3D3
+    style TRC1 fill:#D3D3D3
+    style TRC2 fill:#D3D3D3
 ```
 
 #### Serverless Architecture
 
 ```mermaid
 flowchart LR
-    subgraph APIGateway["API Gateway"]
-        AspireHost["Aspire AppHost<br/>(Development Orchestration)"]
+    subgraph Triggers[API & Event Triggers]
+        style Triggers fill:#E6E6FA
+        API[HTTP Request Trigger]
+        SB[Service Bus Topic Trigger]
+        TIMER[Timer Trigger: Scheduled]
     end
     
-    subgraph Functions["Serverless Functions"]
-        OrdersAPI["Orders API<br/>(Container App)"]
-        LogicAppsStandard["Logic Apps Standard<br/>(Stateful Workflows)"]
+    subgraph Functions[Serverless Workflow Execution]
+        style Functions fill:#90EE90
+        LA1[ConsosoOrders Workflow: Stateful]
+        LA2[Functions Runtime v4]
+        LA3[Extension Bundle: Workflows]
     end
     
-    subgraph EventSources["Event Sources"]
-        ServiceBusTopic["Service Bus Topic<br/>(Orders Topic)"]
-        ServiceBusSubscriptions["Service Bus Subscriptions<br/>(CreateOrder, UpdateOrder,<br/>ProcessOrder, DeleteOrder)"]
+    subgraph Queues[Async Messaging Infrastructure]
+        style Queues fill:#FFB366
+        Q1[Service Bus Queue: orders-queue]
+        T1[Service Bus Topic: orders-topic]
+        DLQ[Dead Letter Queue]
     end
     
-    subgraph DataStorage["Storage Services"]
-        CosmosDB["Cosmos DB<br/>(NoSQL, userId partition)"]
+    subgraph Storage[Data & State Storage]
+        style Storage fill:#FFFFE0
+        DB[Cosmos DB: Order Documents]
+        BLOB[Blob Storage: Workflow State & Checkpoints]
+        TABLE[Table Storage: Run History]
     end
     
-    subgraph Monitoring["Monitoring Services"]
-        AppInsights["Application Insights<br/>(OpenTelemetry)"]
-        LogAnalytics["Log Analytics Workspace"]
+    subgraph Monitoring[Monitoring & Diagnostics]
+        style Monitoring fill:#D3D3D3
+        AI[Application Insights: Traces & Dependencies]
+        LA[Log Analytics: Workflow Runtime Logs]
+        DIAG[Diagnostic Settings: WorkflowRuntime Category]
     end
     
-    AspireHost --> OrdersAPI
+    API --> LA1
+    SB --> LA1
+    TIMER --> LA1
+    LA1 --> LA2
+    LA2 --> LA3
+    LA1 --> Q1
+    LA1 --> T1
+    Q1 --> LA1
+    T1 --> LA1
+    Q1 --> DLQ
+    T1 --> DLQ
+    LA1 --> DB
+    LA1 --> BLOB
+    LA1 --> TABLE
+    LA1 --> AI
+    LA1 --> LA
+    LA2 --> DIAG
     
-    ServiceBusSubscriptions --> LogicAppsStandard
-    
-    OrdersAPI --> ServiceBusTopic
-    OrdersAPI --> CosmosDB
-    
-    LogicAppsStandard --> CosmosDB
-    
-    OrdersAPI --> AppInsights
-    LogicAppsStandard --> LogAnalytics
-    
-    style APIGateway fill:#E6D5FF
-    style Functions fill:#90EE90
-    style EventSources fill:#FFB347
-    style DataStorage fill:#FFE5B4
-    style Monitoring fill:#D3D3D3
-    style AspireHost fill:#E6D5FF
-    style OrdersAPI fill:#90EE90
-    style LogicAppsStandard fill:#90EE90
-    style ServiceBusTopic fill:#FFB347
-    style ServiceBusSubscriptions fill:#FFB347
-    style CosmosDB fill:#FFE5B4
-    style AppInsights fill:#D3D3D3
-    style LogAnalytics fill:#D3D3D3
+    style API fill:#E6E6FA
+    style SB fill:#E6E6FA
+    style TIMER fill:#E6E6FA
+    style LA1 fill:#90EE90
+    style LA2 fill:#90EE90
+    style LA3 fill:#90EE90
+    style Q1 fill:#FFB366
+    style T1 fill:#FFB366
+    style DLQ fill:#FFB366
+    style DB fill:#FFFFE0
+    style BLOB fill:#FFFFE0
+    style TABLE fill:#FFFFE0
+    style AI fill:#D3D3D3
+    style LA fill:#D3D3D3
+    style DIAG fill:#D3D3D3
 ```
 
 #### Platform Engineering
 
 ```mermaid
 flowchart TB
-    subgraph DeveloperExperience["Developer Experience"]
-        VSCode["Visual Studio Code<br/>(IDE)"]
-        AspireDashboard["Aspire Dashboard<br/>(http://localhost:15888)"]
-        LocalOrchestration["Local Orchestration<br/>(docker-compose)"]
+    subgraph Developers[Developer Tools & Experience]
+        style Developers fill:#ADD8E6
+        IDE[VS Code + Azure Extensions]
+        CLI[Azure CLI + Azure Developer CLI]
+        LOCAL[.NET Aspire: Local Orchestration]
     end
     
-    subgraph InternalDeveloperPlatform["Internal Developer Platform"]
-        AspireAppHost["Aspire AppHost<br/>(eShopOrders.AppHost)"]
-        ServiceDefaults["Service Defaults<br/>(eShopOrders.ServiceDefaults:<br/>OpenTelemetry, Health Checks)"]
+    subgraph IDP[Internal Developer Platform]
+        style IDP fill:#90EE90
+        TMPL[Bicep Templates: infra/]
+        CFG[Configuration Management: azure.yaml]
+        PARAM[Parameter Files: .azure/]
     end
     
-    subgraph CICDPipelines["CI/CD & Policies"]
-        BicepTemplates["Bicep IaC Templates<br/>(infra/)"]
-        AzureCLI["Azure CLI Deployment"]
+    subgraph CICD[CI/CD & Governance]
+        style CICD fill:#90EE90
+        GH[GitHub Actions: .github/workflows/]
+        POL[Azure Policies: Cost & Compliance]
+        AZD[azd provision + azd deploy]
     end
     
-    subgraph RuntimePlatforms["Runtime Platforms"]
-        ContainerApps["Azure Container Apps<br/>(Hosting Environment)"]
-        LogicAppsRuntime["Logic Apps Standard Runtime<br/>(Workflow Host)"]
+    subgraph Platform[Runtime Platform Services]
+        style Platform fill:#E6E6FA
+        ACA[Container Apps: Microservices]
+        LA_SVC[Logic Apps Standard: Workflows]
+        ASP[App Service Plan WS1: Elastic Scaling]
     end
     
-    subgraph SharedServices["Shared Services"]
-        MonitoringStack["Monitoring Stack<br/>(Application Insights,<br/>Log Analytics)"]
-        SecurityServices["Security Services<br/>(Managed Identity,<br/>Key Vault)"]
+    subgraph Shared[Shared Platform Services]
+        style Shared fill:#D3D3D3
+        ID[Managed Identity: User-Assigned]
+        KV[Key Vault: Secrets & Certificates]
+        MON[Monitoring Stack: AI + LA]
+        NET[Virtual Network: Subnet Isolation]
     end
     
-    subgraph DataServices["Data Services"]
-        CosmosDB["Cosmos DB<br/>(NoSQL Database)"]
-        ServiceBus["Service Bus<br/>(Messaging)"]
+    subgraph Data[Data Services]
+        style Data fill:#FFFFE0
+        CDB[Cosmos DB: SQL API]
+        SB[Service Bus: Standard Tier]
+        STG[Storage Accounts: Workflow State]
     end
     
-    VSCode --> AspireAppHost
-    AspireDashboard --> AspireAppHost
-    LocalOrchestration --> AspireAppHost
+    IDE --> IDP
+    CLI --> IDP
+    LOCAL --> IDP
+    IDP --> CICD
+    CICD --> AZD
+    AZD --> Platform
+    CICD --> POL
+    Platform --> Shared
+    Platform --> Data
+    ACA --> MON
+    LA_SVC --> MON
+    ASP --> MON
+    ID --> CDB
+    ID --> SB
+    ID --> STG
     
-    AspireAppHost --> ServiceDefaults
-    
-    BicepTemplates --> ContainerApps
-    BicepTemplates --> LogicAppsRuntime
-    AzureCLI --> BicepTemplates
-    
-    ServiceDefaults --> MonitoringStack
-    ServiceDefaults --> SecurityServices
-    
-    ContainerApps --> CosmosDB
-    ContainerApps --> ServiceBus
-    LogicAppsRuntime --> CosmosDB
-    LogicAppsRuntime --> ServiceBus
-    
-    MonitoringStack --> ContainerApps
-    MonitoringStack --> LogicAppsRuntime
-    SecurityServices --> ContainerApps
-    SecurityServices --> LogicAppsRuntime
-    
-    style DeveloperExperience fill:#ADD8E6
-    style InternalDeveloperPlatform fill:#90EE90
-    style CICDPipelines fill:#90EE90
-    style RuntimePlatforms fill:#E6D5FF
-    style SharedServices fill:#D3D3D3
-    style DataServices fill:#FFE5B4
-    style VSCode fill:#ADD8E6
-    style AspireDashboard fill:#ADD8E6
-    style LocalOrchestration fill:#ADD8E6
-    style AspireAppHost fill:#90EE90
-    style ServiceDefaults fill:#90EE90
-    style BicepTemplates fill:#90EE90
-    style AzureCLI fill:#90EE90
-    style ContainerApps fill:#E6D5FF
-    style LogicAppsRuntime fill:#E6D5FF
-    style MonitoringStack fill:#D3D3D3
-    style SecurityServices fill:#D3D3D3
-    style CosmosDB fill:#FFE5B4
-    style ServiceBus fill:#FFE5B4
+    style IDE fill:#ADD8E6
+    style CLI fill:#ADD8E6
+    style LOCAL fill:#ADD8E6
+    style TMPL fill:#90EE90
+    style CFG fill:#90EE90
+    style PARAM fill:#90EE90
+    style GH fill:#90EE90
+    style POL fill:#90EE90
+    style AZD fill:#90EE90
+    style ACA fill:#E6E6FA
+    style LA_SVC fill:#E6E6FA
+    style ASP fill:#E6E6FA
+    style ID fill:#D3D3D3
+    style KV fill:#D3D3D3
+    style MON fill:#D3D3D3
+    style NET fill:#D3D3D3
+    style CDB fill:#FFFFE0
+    style SB fill:#FFFFE0
+    style STG fill:#FFFFE0
 ```
 
 ---
 
-## Deployment
+## Prerequisites
 
-### Prerequisites
+### Required Tools
 
-Before deploying this solution, ensure you have the following tools and access configured:
+| Tool | Minimum Version | Purpose | Download Link |
+|------|-----------------|---------|---------------|
+| **Azure CLI** | 2.50.0 | Azure resource management and authentication | [Install Azure CLI](https://docs.microsoft.com/cli/azure/install-azure-cli) |
+| **.NET SDK** | 10.0 | Build and run .NET applications and Aspire AppHost | [Download .NET 10](https://dotnet.microsoft.com/download/dotnet/10.0) |
+| **Azure Developer CLI (azd)** | 1.5.0 | Infrastructure provisioning and deployment automation | [Install azd](https://learn.microsoft.com/azure/developer/azure-developer-cli/install-azd) |
+| **Visual Studio Code** | Latest | IDE for development and Azure resource management | [Download VS Code](https://code.visualstudio.com/) |
+| **Docker Desktop** | Latest | Container runtime for local development | [Download Docker](https://www.docker.com/products/docker-desktop) |
 
-- **[.NET 10 SDK](https://dotnet.microsoft.com/download/dotnet/10.0)** or later
-- **[Azure CLI](https://docs.microsoft.com/cli/azure/install-azure-cli)** version 2.50.0 or later
-- **[Azure Developer CLI (azd)](https://learn.microsoft.com/azure/developer/azure-developer-cli/install-azd)** for streamlined deployment
-- **[Docker Desktop](https://www.docker.com/products/docker-desktop)** for local development and containerization
-- **[Visual Studio Code](https://code.visualstudio.com/)** with the following extensions:
-  - [Azure Account](https://marketplace.visualstudio.com/items?itemName=ms-vscode.azure-account)
-  - [Azure Resources](https://marketplace.visualstudio.com/items?itemName=ms-azuretools.vscode-azureresourcegroups)
-  - [Azure Logic Apps Standard](https://marketplace.visualstudio.com/items?itemName=ms-azuretools.vscode-azurelogicapps)
-  - [C# Dev Kit](https://marketplace.visualstudio.com/items?itemName=ms-dotnettools.csdevkit)
-  - [Azure Storage](https://marketplace.visualstudio.com/items?itemName=ms-azuretools.vscode-azurestorage)
-- **Active Azure subscription** with appropriate permissions (see RBAC roles below)
-- **Azurite** (optional, for local Azure Storage emulation): [Download](https://learn.microsoft.com/azure/storage/common/storage-use-azurite)
+### Recommended VS Code Extensions
 
-### Azure RBAC Roles
+| Extension ID | Extension Name | Purpose |
+|--------------|----------------|---------|
+| `ms-azuretools.vscode-azureresourcegroups` | Azure Resources | Browse and manage Azure resources directly from VS Code |
+| `ms-azuretools.vscode-azurelogicapps` | Azure Logic Apps (Standard) | Create, edit, and deploy Logic Apps Standard workflows |
+| `ms-azuretools.vscode-cosmosdb` | Azure Cosmos DB | Query and manage Cosmos DB databases, containers, and items |
+| `ms-azuretools.vscode-bicep` | Bicep | Authoring support for Azure Bicep with IntelliSense |
+| `ms-dotnettools.csdevkit` | C# Dev Kit | C# language support with debugging and testing |
+| `ms-azuretools.vscode-azurefunctions` | Azure Functions | Local debugging and deployment of Functions/Logic Apps |
 
-The following Azure RBAC roles are required for deploying and operating this solution:
+### Azure Subscription Requirements
 
-| Role Name | Description | Documentation Link |
-|-----------|-------------|-------------------|
-| **Contributor** | Required for provisioning Azure resources (Container Apps, Azure Storage, Service Bus, Application Insights) | [Azure Contributor role](https://learn.microsoft.com/azure/role-based-access-control/built-in-roles#contributor) |
-| **User Access Administrator** | Required for assigning managed identities and configuring RBAC for services | [User Access Administrator role](https://learn.microsoft.com/azure/role-based-access-control/built-in-roles#user-access-administrator) |
-| **Logic Apps Contributor** | Required for deploying and managing Logic Apps workflows | [Logic Apps Contributor role](https://learn.microsoft.com/azure/role-based-access-control/built-in-roles#logic-app-contributor) |
-| **Azure Service Bus Data Owner** | Required for Service Bus topic and subscription management with managed identity | [Service Bus Data Owner role](https://learn.microsoft.com/azure/role-based-access-control/built-in-roles#azure-service-bus-data-owner) |
-| **Storage Blob Data Contributor** | Required for Logic Apps workflow state persistence to Azure Storage | [Storage Blob Data Contributor role](https://learn.microsoft.com/azure/role-based-access-control/built-in-roles#storage-blob-data-contributor) |
-| **Monitoring Metrics Publisher** | Required for publishing custom metrics to Application Insights | [Monitoring Metrics Publisher role](https://learn.microsoft.com/azure/role-based-access-control/built-in-roles#monitoring-metrics-publisher) |
+- **Active Azure subscription** with sufficient quota for:
+  - Logic Apps Standard with App Service Plan WS1 (minimum 3 instances)
+  - Azure Container Apps Environment with managed environment
+  - Azure Cosmos DB account (SQL API) with minimum 400 RU/s
+  - Azure Service Bus namespace (Standard tier) with topics and queues
+  - Application Insights and Log Analytics workspace
+- **Permissions**: Contributor or Owner role at subscription or resource group level
+- **Resource Providers**: Ensure the following are registered:
+  - `Microsoft.Web` (for App Service Plan and Logic Apps)
+  - `Microsoft.App` (for Container Apps)
+  - `Microsoft.DocumentDB` (for Cosmos DB)
+  - `Microsoft.ServiceBus` (for Service Bus)
+  - `Microsoft.OperationalInsights` (for Log Analytics)
+  - `Microsoft.Insights` (for Application Insights)
 
-### Infrastructure Deployment
+---
 
-Deploy the Azure infrastructure using Azure Developer CLI (`azd`) with the following steps:
+## Azure RBAC Roles
 
-1. **Initialize the Azure Developer CLI environment**:
-   ```bash
-   azd init
-   ```
-   
-   This command configures the solution for your Azure subscription and sets up environment variables.
+The following Azure role-based access control (RBAC) roles are required for deployment and runtime operation. Managed identities are assigned these roles automatically during infrastructure provisioning.
 
-2. **Authenticate with Azure**:
-   ```bash
-   azd auth login
-   ```
+| Role Name | Description | Scope | Documentation Link |
+|-----------|-------------|-------|-------------------|
+| **Owner** | Full access to manage all resources and assign roles | Subscription or Resource Group | [Built-in roles](https://learn.microsoft.com/azure/role-based-access-control/built-in-roles#owner) |
+| **Contributor** | Manage all resources except role assignments | Resource Group | [Built-in roles](https://learn.microsoft.com/azure/role-based-access-control/built-in-roles#contributor) |
+| **Azure Service Bus Data Owner** | Full access to Service Bus namespaces, topics, queues | Service Bus Namespace | [Service Bus RBAC](https://learn.microsoft.com/azure/service-bus-messaging/service-bus-managed-service-identity#azure-built-in-roles-for-azure-service-bus) |
+| **Azure Service Bus Data Sender** | Send messages to queues and topics | Service Bus Namespace | [Service Bus RBAC](https://learn.microsoft.com/azure/service-bus-messaging/service-bus-managed-service-identity#azure-built-in-roles-for-azure-service-bus) |
+| **Azure Service Bus Data Receiver** | Receive and complete messages from queues/subscriptions | Service Bus Namespace | [Service Bus RBAC](https://learn.microsoft.com/azure/service-bus-messaging/service-bus-managed-service-identity#azure-built-in-roles-for-azure-service-bus) |
+| **Cosmos DB Built-in Data Contributor** | Read, write, delete items in Cosmos DB SQL API containers | Cosmos DB Account | [Cosmos DB RBAC](https://learn.microsoft.com/azure/cosmos-db/how-to-setup-rbac#built-in-role-definitions) |
+| **Cosmos DB Account Reader Role** | Read Cosmos DB account metadata (not data) | Cosmos DB Account | [Cosmos DB RBAC](https://learn.microsoft.com/azure/cosmos-db/role-based-access-control) |
+| **Storage Blob Data Contributor** | Read, write, delete blobs (required for Logic Apps state) | Storage Account | [Storage RBAC](https://learn.microsoft.com/azure/role-based-access-control/built-in-roles#storage-blob-data-contributor) |
+| **Storage Blob Data Owner** | Full access to blob containers and data including ACLs | Storage Account | [Storage RBAC](https://learn.microsoft.com/azure/role-based-access-control/built-in-roles#storage-blob-data-owner) |
+| **Monitoring Contributor** | Write monitoring data and manage alert rules | Resource Group | [Monitoring RBAC](https://learn.microsoft.com/azure/role-based-access-control/built-in-roles#monitoring-contributor) |
+| **Monitoring Reader** | Read all monitoring data (metrics, logs, alerts) | Resource Group | [Monitoring RBAC](https://learn.microsoft.com/azure/role-based-access-control/built-in-roles#monitoring-reader) |
+| **Application Insights Component Contributor** | Manage Application Insights components | Application Insights | [AI RBAC](https://learn.microsoft.com/azure/azure-monitor/app/resources-roles-access-control) |
+| **Log Analytics Contributor** | Read all monitoring data and edit settings | Log Analytics Workspace | [LA RBAC](https://learn.microsoft.com/azure/role-based-access-control/built-in-roles#log-analytics-contributor) |
 
-3. **Provision Azure resources**:
-   ```bash
-   azd provision
-   ```
-   
-   This command will:
-   - Prompt you to select an Azure subscription
-   - Ask for resource group name and Azure region
-   - Deploy the main.bicep infrastructure template
+---
 
-4. **Set environment-specific parameters** (optional):
-   ```bash
-   # For development environment
-   azd env set AZURE_ENV_NAME dev
-   
-   # For production environment
-   azd env set AZURE_ENV_NAME prod
-   ```
+## Deployment Instructions
 
-5. **Deploy infrastructure with parameters**:
-   ```bash
-   azd provision --environment dev
-   ```
-   
-   This command will:
-   - Create a resource group in the specified region
-   - Deploy Azure Container Apps environment with scale rules
-   - Provision Application Insights and Log Analytics workspace with OpenTelemetry support
-   - Create Azure Storage Account for Logic Apps workflow state (blob and table storage)
-   - Deploy Azure Service Bus namespace with topics (`orders`) and subscriptions (`CreateOrder`, `UpdateOrder`, `DeleteOrder`, `ProcessOrder`)
-   - Configure Azure Key Vault for connection string management
-   - Set up managed identities for passwordless authentication
-   - Assign RBAC roles for service-to-service communication
+### 1. Clone the Repository
 
-6. **Verify deployment**:
-   ```bash
-   azd show
-   ```
-   
-   This displays the provisioned resources and their endpoints.
+```bash
+git clone https://github.com/Evilazaro/Azure-LogicApps-Monitoring.git
+cd Azure-LogicApps-Monitoring
+```
 
-### Application Deployment
+### 2. Authenticate with Azure
 
-Deploy the application services, Logic Apps workflows, and supporting infrastructure to Azure.
+```bash
+# Login to Azure CLI
+az login
 
-1. **Build and deploy all services**:
-   ```bash
-   azd deploy
-   ```
-   
-   This command will:
-   - Build Docker images for:
-     - Orders API (ASP.NET Core Minimal APIs)
-     - Blazor App (Server + WebAssembly Client)
-     - Logic Apps Standard (ContosoOrders workflows)
-   - Push images to Azure Container Registry
-   - Deploy containers to Azure Container Apps with:
-     - Environment variables from Key Vault
-     - Managed identity configuration
-     - Auto-scaling rules (min 1, max 10 replicas)
-   - Configure Service Bus triggers for Logic Apps workflows
-   - Enable Application Insights instrumentation with OpenTelemetry
+# Set the target subscription (replace with your subscription ID)
+az account set --subscription "<your-subscription-id>"
 
-2. **Deploy individual services** (optional):
-   ```bash
-   # Deploy only the Orders API
-   azd deploy orders-api
-   
-   # Deploy only the Blazor App
-   azd deploy blazor-app
-   
-   # Deploy only Logic Apps workflows
-   azd deploy logicapps
-   ```
+# Login to Azure Developer CLI
+azd auth login
+```
 
-3. **Verify deployment and access endpoints**:
-   ```bash
-   # Get the Orders API endpoint
-   azd show --output json | jq -r '.services."orders-api".endpoints[0]'
-   
-   # Get the Blazor App endpoint
-   azd show --output json | jq -r '.services."blazor-app".endpoints[0]'
-   ```
-   
-   Navigate to the Blazor App URL to access the user interface.
+Verify your authentication:
 
-4. **Local development with .NET Aspire**:
-   
-   For local development with full observability:
-   
-   ```bash
-   # Option 1: Using .NET Aspire AppHost
-   cd eShopOrders.AppHost
-   dotnet run
-   
-   # Option 2: Using Docker Compose
-   docker-compose up
-   ```
-   
-   Access the **Aspire Dashboard** at `http://localhost:15888` to:
-   - View all running services with health status
-   - Monitor distributed traces across services
-   - View metrics and logs in real-time
-   - Test Service Bus message publishing and consumption
+```bash
+az account show
+```
+
+### 3. Initialize Azure Developer Environment
+
+```bash
+azd init
+```
+
+When prompted, provide:
+- **Environment name**: Unique identifier (e.g., `prod`, `staging`, `dev`)
+  - This becomes the `envName` parameter in Bicep templates
+  - Used to generate unique resource names with `uniqueString()`
+- **Azure subscription**: Select your target subscription from the list
+- **Azure region**: Choose deployment region (e.g., `eastus`, `westeurope`, `centralus`)
+
+The command creates a `.azure/<environment-name>` directory with configuration files.
+
+### 4. Configure Environment Variables (Optional)
+
+Edit `.azure/<environment-name>/.env` to customize deployment parameters:
+
+```bash
+# Solution name (default: "orders")
+AZURE_SOLUTION_NAME=orders
+
+# Environment name (already set by azd init)
+AZURE_ENV_NAME=prod
+
+# Azure location (already set by azd init)
+AZURE_LOCATION=eastus
+
+# Log Analytics retention days (default: 30)
+AZURE_LOG_ANALYTICS_RETENTION_DAYS=90
+```
+
+### 5. Provision Infrastructure
+
+Deploy the complete infrastructure stack:
+
+```bash
+azd provision
+```
+
+This command executes the following Bicep modules in order:
+
+1. **Resource Group**: Creates `rg-<solution>-<env>-<location>`
+2. **Monitoring Module** (main.bicep):
+   - Log Analytics workspace with diagnostic settings
+   - Application Insights with connection string output
+3. **Workload Module** (main.bicep):
+   - **Identity**: User-assigned managed identity with RBAC assignments
+   - **Messaging**: Service Bus namespace with topics (`orders-topic`) and queues (`orders-queue`)
+   - **Services**: Container Registry and Container Apps Environment
+   - **Workflows**: Logic Apps Standard with App Service Plan WS1 (3-20 instances)
+   - **Storage**: Workflow state storage account with blob containers
+
+Deployment typically takes 8-12 minutes.
+
+### 6. Deploy Application Code
+
+Deploy the Orders API, Blazor client, and Logic Apps workflows:
+
+```bash
+azd deploy
+```
+
+This command:
+1. Builds .NET 10 projects (`eShop.Orders.API`, `eShop.Orders.App`, `eShop.Orders.App.Client`)
+2. Packages Logic Apps workflows from `LogicAppWP/ConsosoOrders`
+3. Deploys containers to Azure Container Apps
+4. Deploys workflows to Logic Apps Standard via ZIP deployment
+5. Configures application settings with connection strings and managed identity
+
+### 7. Verify Deployment
+
+Check deployment status:
+
+```bash
+azd show
+```
+
+List all deployed resources:
+
+```bash
+az resource list \
+  --resource-group rg-orders-prod-eastus \
+  --output table \
+  --query "[].{Name:name, Type:type, Location:location}"
+```
+
+### 8. Access Application Endpoints
+
+Retrieve the Orders API endpoint:
+
+```bash
+az containerapp show \
+  --name ca-orders-api-<unique-suffix> \
+  --resource-group rg-orders-prod-eastus \
+  --query properties.configuration.ingress.fqdn \
+  --output tsv
+```
+
+Retrieve the Logic Apps workflow endpoint:
+
+```bash
+az logicapp show \
+  --name orders-<unique-suffix>-logicapp \
+  --resource-group rg-orders-prod-eastus \
+  --query defaultHostName \
+  --output tsv
+```
+
+Access the Application Insights resource:
+
+```bash
+az monitor app-insights component show \
+  --app orders-<unique-suffix>-ai \
+  --resource-group rg-orders-prod-eastus \
+  --query appId \
+  --output tsv
+```
+
+### 9. Configure Diagnostic Settings (Optional)
+
+Enable diagnostic logs for Logic Apps workflows:
+
+```bash
+# Get the Logic App resource ID
+LOGICAPP_ID=$(az logicapp show \
+  --name orders-<unique-suffix>-logicapp \
+  --resource-group rg-orders-prod-eastus \
+  --query id --output tsv)
+
+# Get the Log Analytics workspace ID
+WORKSPACE_ID=$(az monitor log-analytics workspace show \
+  --workspace-name orders-<unique-suffix>-la \
+  --resource-group rg-orders-prod-eastus \
+  --query id --output tsv)
+
+# Create diagnostic setting
+az monitor diagnostic-settings create \
+  --name workflow-diagnostics \
+  --resource $LOGICAPP_ID \
+  --workspace $WORKSPACE_ID \
+  --logs '[{"category":"WorkflowRuntime","enabled":true},{"category":"FunctionExecutionLogs","enabled":true}]' \
+  --metrics '[{"category":"AllMetrics","enabled":true}]'
+```
 
 ---
 
 ## Usage Examples
 
-### Order Management Operations
+### Placing an Order via REST API
 
-#### Creating an Order
-
-**Using the Orders API**:
+Submit an order using curl:
 
 ```bash
-# Create a new order
-curl -X POST https://<orders-api-endpoint>/api/orders \
+# Get the Orders API endpoint
+API_ENDPOINT=$(az containerapp show \
+  --name ca-orders-api-<unique-suffix> \
+  --resource-group rg-orders-prod-eastus \
+  --query properties.configuration.ingress.fqdn \
+  --output tsv)
+
+# Place an order
+curl -X POST https://$API_ENDPOINT/api/orders/PlaceOrder \
   -H "Content-Type: application/json" \
   -d '{
-    "userId": "user123",
-    "items": [
-      { "productId": "prod-001", "quantity": 2, "price": 29.99 }
-    ],
-    "totalAmount": 59.98
+    "id": "ORD-12345",
+    "date": "2024-01-15T10:30:00Z",
+    "quantity": 5,
+    "total": 299.99,
+    "message": "Customer order via API"
   }'
 ```
 
-**Using the Blazor UI**:
-1. Navigate to the Blazor App URL
-2. Click **Create Order**
-3. Fill in order details (user ID, items, quantities)
-4. Click **Submit** to trigger the CreateOrder workflow
+Expected response:
 
-#### Updating an Order
+```json
+{
+  "id": "ORD-12345",
+  "date": "2024-01-15T10:30:00Z",
+  "quantity": 5,
+  "total": 299.99,
+  "message": "Customer order via API",
+  "status": "Created",
+  "timestamp": "2024-01-15T10:30:05Z"
+}
+```
+
+### Retrieving Orders
 
 ```bash
-curl -X PUT https://<orders-api-endpoint>/api/orders/{orderId} \
+# Get all orders
+curl https://$API_ENDPOINT/api/orders
+
+# Get specific order by ID
+curl https://$API_ENDPOINT/api/orders/ORD-12345
+```
+
+### Updating an Order
+
+```bash
+curl -X PUT https://$API_ENDPOINT/api/orders/ORD-12345 \
   -H "Content-Type: application/json" \
   -d '{
-    "status": "Processing",
-    "items": [
-      { "productId": "prod-001", "quantity": 3, "price": 29.99 }
-    ]
+    "id": "ORD-12345",
+    "date": "2024-01-15T10:30:00Z",
+    "quantity": 10,
+    "total": 599.99,
+    "message": "Updated order quantity"
   }'
 ```
 
-#### Processing an Order
-
-The ProcessOrder workflow is automatically triggered via Service Bus subscription when an order status changes. Monitor execution in:
-- **Aspire Dashboard**: `http://localhost:15888` (local development)
-- **Azure Portal**: Navigate to Logic App → Runs history
-
-#### Deleting an Order
+### Deleting an Order
 
 ```bash
-curl -X DELETE https://<orders-api-endpoint>/api/orders/{orderId}
+curl -X DELETE https://$API_ENDPOINT/api/orders/ORD-12345
 ```
 
-### Workflow Monitoring Examples
+### Monitoring with .NET Aspire Dashboard
 
-#### Monitoring Workflow Execution in Aspire Dashboard
+Run the solution locally with Aspire orchestration:
 
-When running locally with .NET Aspire:
-
-1. Navigate to `http://localhost:15888`
-2. Click on **Traces** to view distributed traces:
-   - API request → Service Bus publish → Logic App trigger → Workflow execution
-3. Click on **Metrics** to view:
-   - Workflow execution count
-   - Average execution duration
-   - Failure rate by workflow
-4. Click on **Logs** and filter by:
-   - `WorkflowName == "CreateOrder"`
-   - `Status == "Failed"`
-
-#### Monitoring Workflows in Azure Portal
-
-1. Navigate to Azure Portal → Logic Apps
-2. Select your Logic App instance
-3. Click **Runs history** to view:
-   - All workflow executions with timestamp
-   - Input/output data for each run
-   - Execution duration and status
-4. Click on a specific run to view:
-   - Action-by-action execution details
-   - Retry attempts and failures
-   - Correlation ID for end-to-end tracing
-
-### Kusto Queries for Logic Apps Monitoring
-
-#### Query: Workflow Execution Summary (Last 24 Hours)
-
-```kql
-// Workflow execution summary with success/failure counts
-AppTraces
-| where TimeGenerated > ago(24h)
-| where Properties.Category == "Microsoft.Azure.Workflows.Runtime"
-| where Properties.WorkflowName in ("CreateOrder", "UpdateOrder", "ProcessOrder", "DeleteOrder")
-| summarize 
-    TotalRuns = count(),
-    SuccessfulRuns = countif(Properties.Status == "Succeeded"),
-    FailedRuns = countif(Properties.Status == "Failed"),
-    AvgDurationMs = avg(todouble(Properties.DurationMs))
-    by WorkflowName = tostring(Properties.WorkflowName)
-| order by TotalRuns desc
+```bash
+cd eShopOrders.AppHost
+dotnet run
 ```
 
-#### Query: Failed Workflow Runs with Error Details
+The Aspire Dashboard launches automatically at `http://localhost:15888` (or the port displayed in console output).
 
-```kql
-// Failed workflow runs with error messages
-AppTraces
-| where TimeGenerated > ago(7d)
-| where Properties.Category == "Microsoft.Azure.Workflows.Runtime"
-| where Properties.Status == "Failed"
-| project 
-    TimeGenerated,
-    WorkflowName = Properties.WorkflowName,
-    RunId = Properties.RunId,
-    ErrorCode = Properties.ErrorCode,
-    ErrorMessage = Properties.ErrorMessage,
-    ActionName = Properties.ActionName
-| order by TimeGenerated desc
-```
+Dashboard features:
+- **Resources**: View all running services (API, workflows, Service Bus, Cosmos DB)
+- **Console Logs**: Real-time logs from all services with filtering
+- **Structured Logs**: Query structured logs with log levels and properties
+- **Traces**: Distributed traces with operation timeline and dependency visualization
+- **Metrics**: Live metrics (request rate, duration, error rate) with time-series charts
 
-#### Query: Long-Running Workflows (Execution Time > 5 minutes)
+### Viewing Distributed Traces in Application Insights
 
-```kql
-// Identify long-running workflow executions
-AppTraces
-| where TimeGenerated > ago(24h)
-| where Properties.Category == "Microsoft.Azure.Workflows.Runtime"
-| where Properties.Status == "Succeeded"
-| extend DurationMinutes = todouble(Properties.DurationMs) / 60000
-| where DurationMinutes > 5
-| project 
-    TimeGenerated,
-    WorkflowName = Properties.WorkflowName,
-    RunId = Properties.RunId,
-    DurationMinutes,
-    TriggerName = Properties.TriggerName
-| order by DurationMinutes desc
-```
+1. Navigate to the Azure Portal
+2. Open the Application Insights resource (`orders-<unique-suffix>-ai`)
+3. Select **Transaction Search** from the left menu
+4. Filter by:
+   - **Operation Name**: `POST /api/orders/PlaceOrder`
+   - **Time Range**: Last 24 hours
+5. Click on a transaction to view the end-to-end trace:
+   - Browser → API → Service Bus → Logic Apps → Cosmos DB
 
-#### Query: Workflow Trigger Performance
+### Analyzing Application Map
 
-```kql
-// Analyze workflow trigger latency (Service Bus)
-AppDependencies
-| where TimeGenerated > ago(24h)
-| where Type == "Azure Service Bus"
-| where Target contains "orders"
-| summarize 
-    TriggerCount = count(),
-    AvgLatencyMs = avg(DurationMs),
-    P95LatencyMs = percentile(DurationMs, 95),
-    P99LatencyMs = percentile(DurationMs, 99)
-    by OperationName
-| order by TriggerCount desc
-```
+View service dependencies and performance:
 
-#### Query: Workflow Retry Analysis
-
-```kql
-// Analyze workflow retry patterns
-AppTraces
-| where TimeGenerated > ago(7d)
-| where Properties.Category == "Microsoft.Azure.Workflows.Runtime"
-| where Properties.ActionName has "Retry"
-| summarize 
-    RetryCount = count(),
-    UniqueRuns = dcount(Properties.RunId)
-    by 
-    WorkflowName = tostring(Properties.WorkflowName),
-    ActionName = tostring(Properties.ActionName)
-| order by RetryCount desc
-```
-
-#### Query: Service Bus Dead Letter Queue Monitoring
-
-```kql
-// Monitor messages moved to dead letter queue
-AppTraces
-| where TimeGenerated > ago(24h)
-| where Properties contains "DeadLetter"
-| project 
-    TimeGenerated,
-    WorkflowName = Properties.WorkflowName,
-    MessageId = Properties.MessageId,
-    Reason = Properties.Reason,
-    ErrorDescription = Properties.ErrorDescription
-| order by TimeGenerated desc
-```
-
-#### Query: Distributed Trace Analysis (API → Service Bus → Workflow)
-
-```kql
-// End-to-end trace correlation across services
-AppDependencies
-| where TimeGenerated > ago(1h)
-| where Type == "HTTP" or Type == "Azure Service Bus"
-| join kind=inner (
-    AppTraces
-    | where Properties.Category == "Microsoft.Azure.Workflows.Runtime"
-) on $left.OperationId == $right.OperationId
-| project 
-    TimeGenerated,
-    OperationId,
-    ServiceName = AppDependencies_Name,
-    DependencyType = Type,
-    WorkflowName = Properties.WorkflowName,
-    TotalDurationMs = DurationMs
-| order by TimeGenerated desc
-```
+1. In Application Insights, select **Application Map**
+2. Observe connections between:
+   - Blazor Client → Orders API
+   - Orders API → Service Bus
+   - Orders API → Cosmos DB
+   - Service Bus → Logic Apps
+   - Logic Apps → Cosmos DB
+3. Click on connections to see:
+   - Average response time
+   - Failure rate
+   - Request volume
 
 ---
 
 ## Monitoring and Observability
 
-### .NET Aspire Dashboard
+### Azure Portal Monitoring
 
-The [Aspire Dashboard](https://aspire.dev/dashboard/overview/) provides a comprehensive local development monitoring experience at `http://localhost:15888` with the following capabilities:
+#### Application Insights Overview
 
-#### Key Features:
-- **Service Health**: Real-time health status for all registered services (Orders API, Blazor App, Logic Apps)
-- **Distributed Tracing**: End-to-end request tracing across services with correlation IDs
-- **Metrics Visualization**: Custom metrics from OpenTelemetry (workflow execution counts, durations, failure rates)
-- **Log Aggregation**: Centralized logs from all services with filtering and search
-- **Resource Monitoring**: CPU, memory, and network usage for containerized services
+1. Navigate to **Application Insights** resource
+2. Select **Overview** to view:
+   - Failed requests (5xx errors)
+   - Server response time (average and P95)
+   - Server requests (requests per minute)
+   - Availability (uptime percentage)
 
-#### Accessing the Dashboard:
-1. Start the Aspire AppHost:
-   ```bash
-   cd eShopOrders.AppHost
-   dotnet run
-   ```
-2. Navigate to `http://localhost:15888`
-3. Explore:
-   - **Traces**: View distributed traces across API → Service Bus → Logic Apps
-   - **Metrics**: Analyze workflow execution metrics
-   - **Logs**: Search logs by service, severity, or custom properties
-   - **Resources**: Monitor container resource consumption
+#### Performance Analysis
 
-### Application Insights Integration
+1. Select **Performance** from the left menu
+2. Analyze operation durations:
+   - `POST /api/orders/PlaceOrder` → Target < 500ms
+   - `GET /api/orders/{id}` → Target < 100ms
+   - Cosmos DB queries → Target < 50ms
+3. Identify slow dependencies:
+   - Service Bus send operations
+   - Cosmos DB write operations
+   - HTTP calls to external services
 
-Application Insights is configured via Extensions.cs with OpenTelemetry instrumentation for:
+#### Failure Analysis
 
-#### Telemetry Collection:
-- **Distributed Tracing**: Automatic trace correlation across services using W3C Trace Context
-- **Custom Metrics**: Workflow-specific metrics (execution count, duration, success/failure rates)
-- **Request Telemetry**: HTTP request tracking with response times and status codes
-- **Dependency Telemetry**: External dependencies (Service Bus, Cosmos DB, Azure Storage)
-- **Exception Telemetry**: Unhandled exceptions with stack traces and contextual information
+1. Select **Failures** from the left menu
+2. Group failures by:
+   - **Exception type**: Identify recurring exceptions
+   - **Operation name**: Pinpoint failing endpoints
+   - **Dependency name**: Isolate external service failures
+3. Drill into failed requests to view:
+   - Exception stack traces
+   - Request headers and body
+   - Distributed trace timeline
 
-#### Configuration:
-The solution uses the [`Azure.Monitor.OpenTelemetry.AspNetCore`](https://learn.microsoft.com/dotnet/api/overview/azure/monitor?view=azure-dotnet) package for automatic instrumentation. All services inherit from `ServiceDefaults`, which configures:
-- Application Insights connection string (from Azure Key Vault)
-- Sampling rates for telemetry (100% for development, adaptive for production)
-- Custom resource attributes (service name, version, environment)
-- Health check endpoints for proactive monitoring
+### Kusto Queries for Logic Apps Workflow Monitoring
 
-### Logic Apps Workflow Monitoring Best Practices
-
-Monitor Azure Logic Apps Standard workflows using the guidance from [Monitor Logic Apps](https://learn.microsoft.com/azure/logic-apps/monitor-logic-apps).
-
-#### Best Practice 1: Enable Diagnostic Settings
-
-Configure diagnostic settings to route workflow runtime logs to Log Analytics:
-
-```bash
-az monitor diagnostic-settings create \
-  --name logic-app-diagnostics \
-  --resource /subscriptions/{subscription-id}/resourceGroups/{rg-name}/providers/Microsoft.Web/sites/{logic-app-name} \
-  --workspace /subscriptions/{subscription-id}/resourceGroups/{rg-name}/providers/Microsoft.OperationalInsights/workspaces/{workspace-name} \
-  --logs '[{"category":"WorkflowRuntime","enabled":true}]' \
-  --metrics '[{"category":"AllMetrics","enabled":true}]'
-```
-
-#### Best Practice 2: Implement Correlation IDs
-
-Use correlation IDs to trace requests across services and workflows:
+#### Query 1: Workflow Run Success Rate (Last 24 Hours)
 
 ```kql
-// Trace request flow using correlation ID
-AppRequests
-| where TimeGenerated > ago(1h)
-| where Name == "POST /api/orders"
-| join kind=inner (
-    AppTraces
-    | where Properties.Category == "Microsoft.Azure.Workflows.Runtime"
-) on $left.OperationId == $right.OperationId
-| project TimeGenerated, RequestName = Name, WorkflowName = Properties.WorkflowName, OperationId
+AzureDiagnostics
+| where Category == "WorkflowRuntime"
+| where TimeGenerated > ago(24h)
+| where resource_workflowName_s == "ConsosoOrders"
+| summarize 
+    TotalRuns = count(),
+    SuccessfulRuns = countif(status_s == "Succeeded"),
+    FailedRuns = countif(status_s == "Failed"),
+    RunningRuns = countif(status_s == "Running")
+| extend SuccessRate = round((SuccessfulRuns * 100.0) / TotalRuns, 2)
+| project TotalRuns, SuccessfulRuns, FailedRuns, RunningRuns, SuccessRate
 ```
 
-#### Best Practice 3: Monitor Long-Running Workflows
+**Purpose**: Calculate workflow success rate for SLA monitoring and alerting.
 
-For workflows executing 18-36 months:
-- **Checkpoint Monitoring**: Track state checkpoints to ensure workflow progress
-- **Heartbeat Metrics**: Implement periodic heartbeat signals
-- **State Persistence**: Verify Azure Storage connectivity for state management
-- **Resource Limits**: Monitor workflow instance count and memory usage
+#### Query 2: Workflow Duration Analysis (Percentiles)
 
 ```kql
-// Monitor workflow checkpoint frequency
-AppTraces
-| where Properties.Category == "Microsoft.Azure.Workflows.Runtime"
-| where Properties.EventName == "WorkflowCheckpoint"
-| summarize CheckpointCount = count() by bin(TimeGenerated, 1h), WorkflowName = tostring(Properties.WorkflowName)
+AzureDiagnostics
+| where Category == "WorkflowRuntime"
+| where status_s == "Succeeded"
+| where resource_workflowName_s == "ConsosoOrders"
+| extend DurationSeconds = todouble(endTime_t - startTime_t) / 1000.0
+| summarize 
+    AvgDuration = avg(DurationSeconds),
+    P50Duration = percentile(DurationSeconds, 50),
+    P95Duration = percentile(DurationSeconds, 95),
+    P99Duration = percentile(DurationSeconds, 99),
+    MaxDuration = max(DurationSeconds),
+    MinDuration = min(DurationSeconds)
+| project 
+    AvgDuration = round(AvgDuration, 2),
+    P50Duration = round(P50Duration, 2),
+    P95Duration = round(P95Duration, 2),
+    P99Duration = round(P99Duration, 2),
+    MaxDuration = round(MaxDuration, 2),
+    MinDuration = round(MinDuration, 2)
+```
+
+**Purpose**: Identify performance degradation and optimize workflow actions.
+
+#### Query 3: Failed Workflows with Error Details
+
+```kql
+AzureDiagnostics
+| where Category == "WorkflowRuntime"
+| where status_s == "Failed"
+| where TimeGenerated > ago(7d)
+| where resource_workflowName_s == "ConsosoOrders"
+| extend ErrorCode = tostring(error_code_s)
+| extend ErrorMessage = tostring(error_message_s)
+| extend WorkflowRunId = tostring(resource_runId_s)
+| project 
+    TimeGenerated,
+    WorkflowRunId,
+    ErrorCode,
+    ErrorMessage,
+    resource_actionName_s
+| order by TimeGenerated desc
+| take 50
+```
+
+**Purpose**: Root cause analysis for failed workflow executions.
+
+#### Query 4: Workflow Throughput Over Time (Hourly Bins)
+
+```kql
+AzureDiagnostics
+| where Category == "WorkflowRuntime"
+| where TimeGenerated > ago(24h)
+| where resource_workflowName_s == "ConsosoOrders"
+| summarize WorkflowRuns = count() by bin(TimeGenerated, 1h), status_s
 | render timechart
 ```
 
-#### Best Practice 4: Set Up Proactive Alerts
+**Purpose**: Visualize workflow execution patterns and identify peak load periods.
 
-Configure Azure Monitor alerts for critical workflow conditions:
-
-```bash
-# Alert for workflow failures exceeding threshold
-az monitor metrics alert create \
-  --name workflow-failure-alert \
-  --resource-group {rg-name} \
-  --scopes /subscriptions/{subscription-id}/resourceGroups/{rg-name}/providers/Microsoft.Web/sites/{logic-app-name} \
-  --condition "count WorkflowRunsFailureRate > 10" \
-  --window-size 5m \
-  --evaluation-frequency 1m \
-  --severity 2 \
-  --description "Alert when workflow failure rate exceeds 10% over 5 minutes"
-
-# Alert for long-running workflow delays
-az monitor metrics alert create \
-  --name workflow-duration-alert \
-  --resource-group {rg-name} \
-  --scopes /subscriptions/{subscription-id}/resourceGroups/{rg-name}/providers/Microsoft.Web/sites/{logic-app-name} \
-  --condition "avg RunsDuration > 300000" \
-  --window-size 15m \
-  --evaluation-frequency 5m \
-  --severity 3 \
-  --description "Alert when average workflow duration exceeds 5 minutes"
-```
-
-#### Best Practice 5: Optimize Workflow Hosting Density
-
-Follow these patterns to safely exceed the baseline ~20 workflows per Logic App instance:
-
-- **Resource Quotas**: Set CPU and memory limits per workflow in Container Apps
-- **Workflow Isolation**: Group workflows by execution pattern (short vs. long-running)
-- **Scaling Strategy**: Configure horizontal scaling (1-10 replicas) based on queue depth
-- **State Management**: Ensure Azure Storage has sufficient IOPS for checkpoint operations
-- **Monitoring**: Track per-workflow memory consumption to identify optimization opportunities
+#### Query 5: Service Bus Message Processing Latency
 
 ```kql
-// Monitor workflow memory consumption patterns
-AppMetrics
-| where TimeGenerated > ago(24h)
-| where Name == "WorkflowMemoryUsageMB"
+dependencies
+| where type == "Azure Service Bus"
+| where timestamp > ago(24h)
+| where name contains "orders-queue" or name contains "orders-topic"
+| extend MessageLatency = duration
 | summarize 
-    AvgMemoryMB = avg(Sum),
-    MaxMemoryMB = max(Sum),
-    P95MemoryMB = percentile(Sum, 95)
-    by WorkflowName = tostring(Properties.WorkflowName)
-| order by P95MemoryMB desc
+    AvgLatency = avg(MessageLatency),
+    P50Latency = percentile(MessageLatency, 50),
+    P95Latency = percentile(MessageLatency, 95),
+    MaxLatency = max(MessageLatency),
+    MessageCount = count()
+    by name
+| project 
+    QueueOrTopic = name,
+    AvgLatencyMs = round(AvgLatency, 2),
+    P50LatencyMs = round(P50Latency, 2),
+    P95LatencyMs = round(P95Latency, 2),
+    MaxLatencyMs = round(MaxLatency, 2),
+    MessageCount
+| order by P95LatencyMs desc
 ```
 
+**Purpose**: Monitor message delivery latency and identify Service Bus bottlenecks.
+
+#### Query 6: End-to-End Distributed Trace (Specific Operation)
+
+```kql
+union requests, dependencies
+| where timestamp > ago(1h)
+| where operation_Id == "<specific-operation-id-from-trace>"
+| project 
+    timestamp,
+    itemType,
+    name,
+    duration,
+    success,
+    resultCode,
+    operation_Id,
+    operation_ParentId,
+    cloud_RoleName
+| order by timestamp asc
+```
+
+**Purpose**: Debug specific transactions by reconstructing the complete call chain.
+
+**Usage**: Copy `operation_Id` from Application Insights Transaction Search and replace `<specific-operation-id-from-trace>`.
+
+#### Query 7: Cosmos DB Request Units (RU) Consumption Analysis
+
+```kql
+AzureDiagnostics
+| where Category == "DataPlaneRequests"
+| where TimeGenerated > ago(24h)
+| where databaseName_s == "OrdersDB"
+| extend RUCharge = todouble(requestCharge_s)
+| summarize 
+    TotalRU = sum(RUCharge),
+    AvgRU = avg(RUCharge),
+    P95RU = percentile(RUCharge, 95),
+    MaxRU = max(RUCharge),
+    RequestCount = count()
+    by bin(TimeGenerated, 1h), collectionName_s, operationType_s
+| order by TimeGenerated desc, TotalRU desc
+```
+
+**Purpose**: Optimize Cosmos DB RU allocation and identify expensive queries.
+
+#### Query 8: Logic Apps Action-Level Performance
+
+```kql
+AzureDiagnostics
+| where Category == "WorkflowRuntime"
+| where resource_actionName_s != ""
+| where resource_workflowName_s == "ConsosoOrders"
+| extend ActionDuration = todouble(endTime_t - startTime_t) / 1000.0
+| summarize 
+    AvgDuration = avg(ActionDuration),
+    P95Duration = percentile(ActionDuration, 95),
+    MaxDuration = max(ActionDuration),
+    ExecutionCount = count(),
+    FailureCount = countif(status_s == "Failed")
+    by resource_actionName_s
+| extend FailureRate = round((FailureCount * 100.0) / ExecutionCount, 2)
+| order by P95Duration desc
+| take 20
+```
+
+**Purpose**: Identify slow workflow actions that require optimization or refactoring.
+
+#### Query 9: Correlation ID Tracking Across Services
+
+```kql
+union requests, dependencies, traces
+| where timestamp > ago(1h)
+| where customDimensions.CorrelationId == "<correlation-id>"
+| project 
+    timestamp,
+    itemType,
+    operation_Name,
+    name,
+    duration,
+    success,
+    cloud_RoleName,
+    message,
+    severityLevel
+| order by timestamp asc
+```
+
+**Purpose**: Track a specific business transaction across all services using custom correlation IDs.
+
+**Usage**: Replace `<correlation-id>` with the correlation ID from your order or transaction.
+
+#### Query 10: App Service Plan Resource Utilization
+
+```kql
+AzureMetrics
+| where ResourceProvider == "MICROSOFT.WEB"
+| where TimeGenerated > ago(24h)
+| where MetricName in ("CpuPercentage", "MemoryPercentage", "HttpQueueLength")
+| summarize 
+    AvgValue = avg(Average),
+    MaxValue = max(Maximum),
+    MinValue = min(Minimum)
+    by bin(TimeGenerated, 15m), MetricName
+| render timechart
+```
+
+**Purpose**: Monitor App Service Plan (WS1) resource consumption to inform scaling decisions.
+
+#### Query 11: Service Bus Dead Letter Queue Analysis
+
+```kql
+AzureDiagnostics
+| where Category == "OperationalLogs"
+| where ResourceProvider == "MICROSOFT.SERVICEBUS"
+| where TimeGenerated > ago(7d)
+| where Status == "DeadLetter"
+| extend DeadLetterReason = tostring(properties_DeadLetterReason_s)
+| extend DeadLetterErrorDescription = tostring(properties_DeadLetterErrorDescription_s)
+| summarize 
+    DeadLetterCount = count(),
+    UniqueReasons = dcount(DeadLetterReason)
+    by DeadLetterReason, DeadLetterErrorDescription
+| order by DeadLetterCount desc
+```
+
+**Purpose**: Identify recurring message processing failures requiring remediation.
+
+#### Query 12: OpenTelemetry Trace Spans with Custom Attributes
+
+```kql
+AppDependencies
+| where timestamp > ago(1h)
+| where customDimensions has "OrderId"
+| extend OrderId = tostring(customDimensions.OrderId)
+| extend TenantId = tostring(customDimensions.TenantId)
+| extend CustomerId = tostring(customDimensions.CustomerId)
+| project 
+    timestamp,
+    operation_Id,
+    operation_Name,
+    name,
+    type,
+    target,
+    duration,
+    success,
+    OrderId,
+    TenantId,
+    CustomerId
+| order by timestamp desc
+```
+
+**Purpose**: Query traces with custom business attributes for detailed transaction analysis.
+
+### Logic Apps Workflow Monitoring Best Practices
+
+#### 1. Enable Diagnostic Settings
+
+Configure comprehensive diagnostic logs for Logic Apps Standard:
+
+```bash
+# Enable diagnostic settings for Logic Apps
+az monitor diagnostic-settings create \
+  --name workflow-diagnostics \
+  --resource <logic-app-resource-id> \
+  --workspace <log-analytics-workspace-id> \
+  --logs '[
+    {"category":"WorkflowRuntime","enabled":true,"retentionPolicy":{"enabled":true,"days":90}},
+    {"category":"FunctionExecutionLogs","enabled":true,"retentionPolicy":{"enabled":true,"days":30}}
+  ]' \
+  --metrics '[
+    {"category":"AllMetrics","enabled":true,"retentionPolicy":{"enabled":true,"days":30}}
+  ]'
+```
+
+**Key categories to enable**:
+- **WorkflowRuntime**: Workflow execution events, action results, run status
+- **FunctionExecutionLogs**: Functions runtime logs, host diagnostics
+- **AllMetrics**: Performance metrics (duration, throughput, failures)
+
+**Reference**: [Configure diagnostic settings for Logic Apps](https://learn.microsoft.com/azure/logic-apps/monitor-logic-apps-log-analytics)
+
+#### 2. Implement Structured Logging with Custom Properties
+
+Emit structured logs with consistent business context:
+
+```csharp
+// In OrdersController.cs
+_logger.LogInformation(
+    "Order created successfully. OrderId: {OrderId}, TenantId: {TenantId}, CustomerId: {CustomerId}, CorrelationId: {CorrelationId}",
+    order.Id,
+    order.TenantId,
+    order.CustomerId,
+    Activity.Current?.TraceId.ToString()
+);
+```
+
+**Benefits**:
+- Enables filtering and grouping in Kusto queries
+- Provides business context for troubleshooting
+- Facilitates correlation across distributed traces
+
+#### 3. Configure Alert Rules for Proactive Monitoring
+
+Set up Azure Monitor alert rules for critical scenarios:
+
+**Workflow Failure Rate Alert**:
+
+```bash
+az monitor metrics alert create \
+  --name workflow-failure-rate-alert \
+  --resource-group rg-orders-prod-eastus \
+  --scopes <logic-app-resource-id> \
+  --condition "avg Percentage of WorkflowRunsCompleted > 95" \
+  --window-size 5m \
+  --evaluation-frequency 1m \
+  --description "Alert when workflow failure rate exceeds 5%"
+```
+
+**High Latency Alert**:
+
+```bash
+az monitor metrics alert create \
+  --name workflow-high-latency-alert \
+  --resource-group rg-orders-prod-eastus \
+  --scopes <logic-app-resource-id> \
+  --condition "avg WorkflowRunDuration > 5000" \
+  --window-size 15m \
+  --evaluation-frequency 5m \
+  --description "Alert when P95 workflow duration exceeds 5 seconds"
+```
+
+**Reference**: [Create metric alerts](https://learn.microsoft.com/azure/azure-monitor/alerts/alerts-create-new-alert-rule)
+
+#### 4. Use Correlation IDs for End-to-End Tracing
+
+Propagate correlation IDs across all service boundaries:
+
+**API Controller**:
+
+```csharp
+// In OrdersController.cs - CorrelationIdMiddleware
+var correlationId = httpContext.Request.Headers["X-Correlation-ID"].FirstOrDefault()
+    ?? Activity.Current?.TraceId.ToString()
+    ?? Guid.NewGuid().ToString();
+
+Activity.Current?.SetTag("correlation.id", correlationId);
+httpContext.Items["CorrelationId"] = correlationId;
+```
+
+**Service Bus Message**:
+
+```csharp
+// In OrderService.cs
+var message = new ServiceBusMessage(JsonSerializer.Serialize(order))
+{
+    CorrelationId = Activity.Current?.TraceId.ToString(),
+    ApplicationProperties =
+    {
+        ["OrderId"] = order.Id,
+        ["TenantId"] = order.TenantId
+    }
+};
+```
+
+**Reference**: [W3C Trace Context](https://www.w3.org/TR/trace-context/)
+
+#### 5. Monitor Business Metrics Alongside Technical Metrics
+
+Track business KPIs in addition to system metrics:
+
+**Custom Metrics**:
+
+```csharp
+// Track business metrics with Application Insights
+_telemetryClient.TrackMetric(
+    "OrderValue",
+    order.Total,
+    new Dictionary<string, string>
+    {
+        ["TenantId"] = order.TenantId,
+        ["CustomerId"] = order.CustomerId
+    }
+);
+
+_telemetryClient.TrackEvent(
+    "OrderPlaced",
+    new Dictionary<string, string>
+    {
+        ["OrderId"] = order.Id,
+        ["Channel"] = "API"
+    },
+    new Dictionary<string, double>
+    {
+        ["OrderValue"] = order.Total,
+        ["Quantity"] = order.Quantity
+    }
+);
+```
+
+**Kusto Query for Business Metrics**:
+
+```kql
+customMetrics
+| where name == "OrderValue"
+| where timestamp > ago(24h)
+| summarize 
+    TotalRevenue = sum(value),
+    AvgOrderValue = avg(value),
+    OrderCount = count()
+    by bin(timestamp, 1h)
+| render timechart
+```
+
+#### 6. Leverage Application Insights Application Map
+
+Use Application Map to visualize dependencies and health:
+
+1. Navigate to **Application Insights** → **Application Map**
+2. Review service topology:
+   - Client → API → Service Bus → Logic Apps → Cosmos DB
+3. Identify bottlenecks by:
+   - Red nodes = High failure rate
+   - Orange connections = Slow dependencies
+   - Thickness = Request volume
+4. Click on connections to drill into:
+   - Sample requests
+   - Failure examples
+   - Performance distribution
+
+**Reference**: [Application Map overview](https://learn.microsoft.com/azure/azure-monitor/app/app-map)
+
+#### 7. Optimize Cosmos DB Partition Keys for Query Performance
+
+Use hierarchical partition keys to overcome logical partition limits:
+
+**Partition Key Strategy**:
+
+```json
+{
+  "partitionKey": {
+    "paths": [
+      "/tenantId",
+      "/customerId"
+    ],
+    "kind": "MultiHash",
+    "version": 2
+  }
+}
+```
+
+**Benefits**:
+- Overcomes 20 GB logical partition limit
+- Enables targeted multi-partition queries
+- Improves query performance with partition key predicates
+
+**Monitoring Query**:
+
+```kql
+AzureDiagnostics
+| where Category == "DataPlaneRequests"
+| where collectionName_s == "Orders"
+| extend PartitionKeyValue = tostring(partitionKey_s)
+| summarize 
+    RequestCount = count(),
+    AvgRU = avg(todouble(requestCharge_s)),
+    TotalRU = sum(todouble(requestCharge_s))
+    by PartitionKeyValue
+| order by TotalRU desc
+| take 20
+```
+
+**Reference**: [Hierarchical partition keys](https://learn.microsoft.com/azure/cosmos-db/hierarchical-partition-keys)
+
+#### 8. Implement Retry Policies with Exponential Backoff
+
+Configure resilient retry policies for transient failures:
+
+**Service Bus Retry Policy** (in [`host.json`](host.json)):
+
+```json
+{
+  "version": "2.0",
+  "extensions": {
+    "serviceBus": {
+      "prefetchCount": 100,
+      "maxConcurrentCalls": 32,
+      "autoCompleteMessages": false,
+      "maxAutoLockRenewalDuration": "00:05:00",
+      "clientRetryOptions": {
+        "mode": "Exponential",
+        "tryTimeout": "00:01:00",
+        "delay": "00:00:01",
+        "maxDelay": "00:00:30",
+        "maxRetries": 3
+      }
+    }
+  }
+}
+```
+
+**HTTP Client Retry Policy**:
+
+```csharp
+// In ServiceDefaults/Extensions.cs
+services.AddHttpClient("orders-api")
+    .AddStandardResilienceHandler(options =>
+    {
+        options.Retry.MaxRetryAttempts = 3;
+        options.Retry.BackoffType = DelayBackoffType.Exponential;
+        options.Retry.UseJitter = true;
+    });
+```
+
+**Reference**: [Retry guidance for Azure services](https://learn.microsoft.com/azure/architecture/best-practices/retry-service-specific)
+
+#### 9. Scale Based on Telemetry and Load Patterns
+
+Configure auto-scaling rules based on observed metrics:
+
+**App Service Plan Auto-Scale Rule**:
+
+```bash
+az monitor autoscale create \
+  --resource-group rg-orders-prod-eastus \
+  --resource <app-service-plan-id> \
+  --min-count 3 \
+  --max-count 20 \
+  --count 3
+
+# Scale out rule: CPU > 70% for 5 minutes
+az monitor autoscale rule create \
+  --resource-group rg-orders-prod-eastus \
+  --autoscale-name <autoscale-name> \
+  --condition "Percentage CPU > 70 avg 5m" \
+  --scale out 2
+
+# Scale in rule: CPU < 30% for 10 minutes
+az monitor autoscale rule create \
+  --resource-group rg-orders-prod-eastus \
+  --autoscale-name <autoscale-name> \
+  --condition "Percentage CPU < 30 avg 10m" \
+  --scale in 1
+```
+
+**Reference**: [Autoscale in Azure](https://learn.microsoft.com/azure/azure-monitor/autoscale/autoscale-overview)
+
+#### 10. Review Azure Advisor Recommendations
+
+Regularly review Azure Advisor for cost, performance, and reliability improvements:
+
+1. Navigate to **Azure Advisor** in Azure Portal
+2. Review recommendations by category:
+   - **Reliability**: High availability configurations
+   - **Security**: RBAC and network security
+   - **Performance**: SKU sizing and caching
+   - **Cost**: Underutilized resources
+   - **Operational Excellence**: Monitoring and diagnostics
+3. Implement high-priority recommendations
+4. Track recommendation impact in Azure Monitor
+
+**Reference**: [Azure Advisor overview](https://learn.microsoft.com/azure/advisor/advisor-overview)
+
 ---
 
-## References
+## Microsoft Learn References
 
-### Azure Logic Apps Documentation
-- [Monitor Logic Apps](https://learn.microsoft.com/azure/logic-apps/monitor-logic-apps)
-- [Logic Apps Standard Overview](https://learn.microsoft.com/azure/logic-apps/single-tenant-overview-compare)
+### Azure Logic Apps Standard
+
+- [What is Azure Logic Apps?](https://learn.microsoft.com/azure/logic-apps/logic-apps-overview)
+- [Single-tenant versus multi-tenant Azure Logic Apps](https://learn.microsoft.com/azure/logic-apps/single-tenant-overview-compare)
 - [Create stateful or stateless workflows](https://learn.microsoft.com/azure/logic-apps/create-single-tenant-workflows-azure-portal)
+- [Monitor Logic Apps](https://learn.microsoft.com/azure/logic-apps/monitor-logic-apps)
+- [Monitor Logic Apps with Log Analytics](https://learn.microsoft.com/azure/logic-apps/monitor-logic-apps-log-analytics)
 - [Edit host and app settings for Logic Apps](https://learn.microsoft.com/azure/logic-apps/edit-app-settings-host-settings)
-- [Manage Logic Apps in Azure Portal](https://learn.microsoft.com/azure/logic-apps/manage-logic-apps-with-azure-portal)
+- [Limits and configuration reference](https://learn.microsoft.com/azure/logic-apps/logic-apps-limits-and-config)
+- [Managed connectors for Azure Logic Apps](https://learn.microsoft.com/azure/connectors/managed)
+- [Secure access and data in Azure Logic Apps](https://learn.microsoft.com/azure/logic-apps/logic-apps-securing-a-logic-app)
 
-### Azure Monitoring & Observability
-- [Azure Monitor Overview](https://learn.microsoft.com/azure/azure-monitor/overview)
-- [Application Insights for .NET](https://learn.microsoft.com/dotnet/api/overview/azure/monitor?view=azure-dotnet)
-- [OpenTelemetry in Azure Monitor](https://learn.microsoft.com/azure/azure-monitor/app/opentelemetry-data-collection)
-- [Kusto Query Language (KQL) Reference](https://learn.microsoft.com/azure/data-explorer/kusto/query/)
-- [Azure Monitor Workbooks](https://learn.microsoft.com/azure/azure-monitor/visualize/workbooks-overview)
-- [Operational Excellence Monitoring](https://learn.microsoft.com/azure/well-architected/operational-excellence/monitoring)
+### Azure Monitor & Application Insights
 
-### .NET Aspire
-- [.NET Aspire Dashboard Overview](https://aspire.dev/dashboard/overview/)
-- [.NET Aspire Service Defaults](https://learn.microsoft.com/dotnet/aspire/fundamentals/service-defaults)
-- [.NET Aspire App Host](https://learn.microsoft.com/dotnet/aspire/fundamentals/app-host-overview)
-- [.NET Aspire Telemetry](https://learn.microsoft.com/dotnet/aspire/fundamentals/telemetry)
-- [Distributed tracing with .NET Aspire](https://learn.microsoft.com/dotnet/aspire/fundamentals/distributed-tracing)
-
-### Azure Container Apps
-- [Azure Container Apps Overview](https://learn.microsoft.com/azure/container-apps/overview)
-- [Scaling in Azure Container Apps](https://learn.microsoft.com/azure/container-apps/scale-app)
-- [Manage secrets in Azure Container Apps](https://learn.microsoft.com/azure/container-apps/manage-secrets)
-- [Monitoring Azure Container Apps](https://learn.microsoft.com/azure/container-apps/observability)
-
-### Azure Services
-- [Azure Service Bus Overview](https://learn.microsoft.com/azure/service-bus-messaging/service-bus-messaging-overview)
-- [Azure Cosmos DB Hierarchical Partition Keys](https://learn.microsoft.com/azure/cosmos-db/hierarchical-partition-keys)
-- [Azure Storage for Logic Apps](https://learn.microsoft.com/azure/logic-apps/logic-apps-enterprise-integration-create-integration-account)
-- [Azure Key Vault for developers](https://learn.microsoft.com/azure/key-vault/general/developers-guide)
-- [Azure Managed Identity](https://learn.microsoft.com/azure/active-directory/managed-identities-azure-resources/overview)
+- [Azure Monitor overview](https://learn.microsoft.com/azure/azure-monitor/overview)
+- [Application Insights overview](https://learn.microsoft.com/azure/azure-monitor/app/app-insights-overview)
+- [Application Insights for ASP.NET Core applications](https://learn.microsoft.com/azure/azure-monitor/app/asp-net-core)
+- [OpenTelemetry overview](https://learn.microsoft.com/azure/azure-monitor/app/opentelemetry-overview)
+- [Enable Azure Monitor OpenTelemetry for .NET applications](https://learn.microsoft.com/azure/azure-monitor/app/opentelemetry-enable)
+- [Distributed tracing and telemetry correlation](https://learn.microsoft.com/azure/azure-monitor/app/distributed-tracing-telemetry-correlation)
+- [Application Map in Application Insights](https://learn.microsoft.com/azure/azure-monitor/app/app-map)
+- [Transaction diagnostics](https://learn.microsoft.com/azure/azure-monitor/app/transaction-diagnostics)
+- [Log queries in Azure Monitor](https://learn.microsoft.com/azure/azure-monitor/logs/log-query-overview)
+- [Kusto Query Language (KQL) overview](https://learn.microsoft.com/azure/data-explorer/kusto/query/)
 
 ### Azure Well-Architected Framework
-- [Well-Architected Framework Overview](https://learn.microsoft.com/azure/well-architected/)
-- [Operational Excellence Pillar](https://learn.microsoft.com/azure/well-architected/operational-excellence/)
-- [Performance Efficiency Pillar](https://learn.microsoft.com/azure/well-architected/performance-efficiency/)
-- [Cost Optimization Pillar](https://learn.microsoft.com/azure/well-architected/cost-optimization/)
-- [Reliability Pillar](https://learn.microsoft.com/azure/well-architected/reliability/)
 
-### Infrastructure as Code
-- [Azure Bicep Documentation](https://learn.microsoft.com/azure/azure-resource-manager/bicep/)
-- [Azure Developer CLI (azd)](https://learn.microsoft.com/azure/developer/azure-developer-cli/)
-- [Bicep Best Practices](https://learn.microsoft.com/azure/azure-resource-manager/bicep/best-practices)
+- [Microsoft Azure Well-Architected Framework](https://learn.microsoft.com/azure/well-architected/)
+- [Operational excellence pillar](https://learn.microsoft.com/azure/well-architected/operational-excellence/)
+- [Monitoring and diagnostics guidance](https://learn.microsoft.com/azure/well-architected/operational-excellence/monitoring)
+- [Health modeling for workloads](https://learn.microsoft.com/azure/well-architected/operational-excellence/observability)
+- [Performance efficiency pillar](https://learn.microsoft.com/azure/well-architected/performance-efficiency/)
+- [Reliability pillar](https://learn.microsoft.com/azure/well-architected/reliability/)
+- [Cost optimization pillar](https://learn.microsoft.com/azure/well-architected/cost-optimization/)
+
+### Azure Cosmos DB
+
+- [Azure Cosmos DB overview](https://learn.microsoft.com/azure/cosmos-db/introduction)
+- [Partitioning and horizontal scaling](https://learn.microsoft.com/azure/cosmos-db/partitioning-overview)
+- [Hierarchical partition keys](https://learn.microsoft.com/azure/cosmos-db/hierarchical-partition-keys)
+- [Request units in Azure Cosmos DB](https://learn.microsoft.com/azure/cosmos-db/request-units)
+- [Optimize request costs](https://learn.microsoft.com/azure/cosmos-db/optimize-cost-reads-writes)
+- [Role-based access control in Azure Cosmos DB](https://learn.microsoft.com/azure/cosmos-db/role-based-access-control)
+- [Monitor Azure Cosmos DB](https://learn.microsoft.com/azure/cosmos-db/monitor-cosmos-db)
+- [Diagnostic queries for troubleshooting](https://learn.microsoft.com/azure/cosmos-db/nosql/diagnostic-queries)
+
+### Azure Service Bus
+
+- [Azure Service Bus messaging overview](https://learn.microsoft.com/azure/service-bus-messaging/service-bus-messaging-overview)
+- [Service Bus queues, topics, and subscriptions](https://learn.microsoft.com/azure/service-bus-messaging/service-bus-queues-topics-subscriptions)
+- [Dead-letter queues overview](https://learn.microsoft.com/azure/service-bus-messaging/service-bus-dead-letter-queues)
+- [Service Bus performance best practices](https://learn.microsoft.com/azure/service-bus-messaging/service-bus-performance-improvements)
+- [Authenticate with managed identities](https://learn.microsoft.com/azure/service-bus-messaging/service-bus-managed-service-identity)
+
+### Azure Container Apps
+
+- [Azure Container Apps overview](https://learn.microsoft.com/azure/container-apps/overview)
+- [Microservices with Azure Container Apps](https://learn.microsoft.com/azure/container-apps/microservices)
+- [Scaling in Azure Container Apps](https://learn.microsoft.com/azure/container-apps/scale-app)
+- [Monitor logs in Azure Container Apps](https://learn.microsoft.com/azure/container-apps/logging)
+- [Manage revisions in Azure Container Apps](https://learn.microsoft.com/azure/container-apps/revisions)
+
+### .NET Aspire
+
+- [.NET Aspire overview](https://learn.microsoft.com/dotnet/aspire/get-started/aspire-overview)
+- [.NET Aspire dashboard](https://learn.microsoft.com/dotnet/aspire/fundamentals/dashboard/overview)
+- [.NET Aspire orchestration overview](https://learn.microsoft.com/dotnet/aspire/fundamentals/app-host-overview)
+- [Service defaults in .NET Aspire](https://learn.microsoft.com/dotnet/aspire/fundamentals/service-defaults)
+- [.NET Aspire integrations](https://learn.microsoft.com/dotnet/aspire/fundamentals/integrations-overview)
+- [Azure integrations for .NET Aspire](https://learn.microsoft.com/dotnet/aspire/azure/overview)
+- [Deploy .NET Aspire apps to Azure Container Apps](https://learn.microsoft.com/dotnet/aspire/deployment/azure/aca-deployment)
+
+### Azure Developer CLI (azd)
+
+- [Azure Developer CLI overview](https://learn.microsoft.com/azure/developer/azure-developer-cli/overview)
+- [Install Azure Developer CLI](https://learn.microsoft.com/azure/developer/azure-developer-cli/install-azd)
+- [Make your project compatible with azd](https://learn.microsoft.com/azure/developer/azure-developer-cli/make-azd-compatible)
+- [Azure Developer CLI reference](https://learn.microsoft.com/azure/developer/azure-developer-cli/reference)
+
+### Infrastructure as Code (Bicep)
+
+- [What is Bicep?](https://learn.microsoft.com/azure/azure-resource-manager/bicep/overview)
+- [Bicep file structure](https://learn.microsoft.com/azure/azure-resource-manager/bicep/file)
+- [Bicep modules](https://learn.microsoft.com/azure/azure-resource-manager/bicep/modules)
+- [Bicep best practices](https://learn.microsoft.com/azure/azure-resource-manager/bicep/best-practices)
+- [Deploy Bicep files with Azure CLI](https://learn.microsoft.com/azure/azure-resource-manager/bicep/deploy-cli)
+
+### Azure Identity & RBAC
+
+- [What is Azure role-based access control (RBAC)?](https://learn.microsoft.com/azure/role-based-access-control/overview)
+- [Azure built-in roles](https://learn.microsoft.com/azure/role-based-access-control/built-in-roles)
+- [What are managed identities for Azure resources?](https://learn.microsoft.com/entra/identity/managed-identities-azure-resources/overview)
+- [How to use managed identities](https://learn.microsoft.com/entra/identity/managed-identities-azure-resources/how-to-use-vm-sign-in)
+- [Assign Azure roles using Azure CLI](https://learn.microsoft.com/azure/role-based-access-control/role-assignments-cli)
+
+### Performance & Scalability
+
+- [Performance efficiency patterns](https://learn.microsoft.com/azure/well-architected/performance-efficiency/performance-efficiency-patterns)
+- [Autoscaling guidance](https://learn.microsoft.com/azure/architecture/best-practices/auto-scaling)
+- [Retry pattern](https://learn.microsoft.com/azure/architecture/patterns/retry)
+- [Circuit breaker pattern](https://learn.microsoft.com/azure/architecture/patterns/circuit-breaker)
+- [Throttling pattern](https://learn.microsoft.com/azure/architecture/patterns/throttling)
+
+### OpenTelemetry Standards
+
+- [OpenTelemetry official documentation](https://opentelemetry.io/docs/)
+- [W3C Trace Context specification](https://www.w3.org/TR/trace-context/)
+- [OpenTelemetry semantic conventions](https://opentelemetry.io/docs/specs/semconv/)
 
 ---
 
-**Last Updated**: December 16, 2025  
-**Solution Version**: 1.0  
-**Maintained By**: Enterprise Architecture Team
+## Additional Resources
+
+- **Sample Code Repository**: [Azure-LogicApps-Monitoring](https://github.com/Evilazaro/Azure-LogicApps-Monitoring)
+- **Azure Architecture Center**: [Enterprise integration with Logic Apps](https://learn.microsoft.com/azure/architecture/reference-architectures/enterprise-integration/queues-events)
+- **Azure SDK for .NET**: [Overview](https://learn.microsoft.com/dotnet/azure/sdk/azure-sdk-for-dotnet)
+- **Azure Community Support**: [Microsoft Q&A](https://learn.microsoft.com/answers/tags/133/azure)
+
+---
+
+**Last Updated**: December 17, 2025  
+**Maintained By**: Evilazaro  
+**Repository**: [Azure-LogicApps-Monitoring](https://github.com/Evilazaro/Azure-LogicApps-Monitoring)  
+**Branch**: refactor/aspire
