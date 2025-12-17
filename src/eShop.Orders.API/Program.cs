@@ -57,19 +57,16 @@ else
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline
-// Middleware order is critical - each component processes requests in order
-if (app.Environment.IsDevelopment())
+
+// Enable OpenAPI/Swagger UI only in development for security
+app.MapOpenApi();
+app.UseSwagger();
+app.UseSwaggerUI(options =>
 {
-    // Enable OpenAPI/Swagger UI only in development for security
-    app.MapOpenApi();
-    app.UseSwagger();
-    app.UseSwaggerUI(options =>
-    {
-        options.SwaggerEndpoint("/openapi/v1.json", "eShop.Orders.API v1");
-        options.RoutePrefix = string.Empty; // Serve Swagger UI at application root (http://localhost:port/)
-    });
-}
+    options.SwaggerEndpoint("/openapi/v1.json", "eShop.Orders.API v1");
+    options.RoutePrefix = string.Empty; // Serve Swagger UI at application root (http://localhost:port/)
+});
+
 
 // Map health check endpoints FIRST for container orchestration probes
 // Health checks must respond on HTTP without HTTPS redirect

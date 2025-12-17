@@ -22,14 +22,77 @@ await builder.Build().RunAsync();
 static (IResourceBuilder<AzureApplicationInsightsResource>? AppInsights, IResourceBuilder<AzureServiceBusResource>? ServiceBus)
     ConfigureInfrastructureResources(IDistributedApplicationBuilder builder)
 {
+    var resources = (AppInsights: (IResourceBuilder<AzureApplicationInsightsResource>?)null,
+                     ServiceBus: (IResourceBuilder<AzureServiceBusResource>?)null);
+
     if (!builder.Environment.IsDevelopment())
     {
-        return ConfigureProductionResources(builder);
+        resources = ConfigureProductionResources(builder);
+    }
+    else
+    {
+        resources = ConfigureDevelopmentResources(builder);
     }
 
     // In development, Application Insights and Service Bus are optional
     // OpenTelemetry will use OTLP exporter to Aspire Dashboard
-    return (AppInsights: null, ServiceBus: null);
+    return (AppInsights: resources.AppInsights, ServiceBus: resources.ServiceBus);
+}
+
+/// <summary>
+/// Configures Azure resources for production environments using existing infrastructure.
+/// Retrieves configuration from user secrets, appsettings, or environment variables.
+/// </summary>
+/// <param name="builder">The distributed application builder.</param>
+/// <returns>Configured Application Insights and Service Bus resources.</returns>
+static (IResourceBuilder<AzureApplicationInsightsResource> AppInsights, IResourceBuilder<AzureServiceBusResource> ServiceBus)
+    ConfigureDevelopmentResources(IDistributedApplicationBuilder builder)
+{
+    // Get values from configuration (user secrets, appsettings, or environment variables)
+    // Aspire automatically loads from these sources in order:
+    // 1. User secrets (dotnet user-secrets)
+    // 2. appsettings.json / appsettings.{Environment}.json
+    // 3. Environment variables
+    var appInsightsName = builder.Configuration["Azure:ApplicationInsights:Name"];
+    var serviceBusNamespace = builder.Configuration["Azure:ServiceBus:Namespace"];
+    var resourceGroupName = builder.Configuration["Azure:ResourceGroup"];
+
+    IResourceBuilder<AzureApplicationInsightsResource>? appInsights;
+    IResourceBuilder<AzureServiceBusResource> serviceBus;
+
+    // Validate required configuration
+    if (!string.IsNullOrWhiteSpace(appInsightsName) && !string.IsNullOrWhiteSpace(resourceGroupName))
+    {
+        var resourceGroupParameter = builder.AddParameter("azure-resource-group", resourceGroupName);
+        var appInsightsParameter = builder.AddParameter("azure-application-insights", appInsightsName);
+        // Configure Application Insights
+        appInsights = builder.AddAzureApplicationInsights("telemetry")
+            .AsExisting(appInsightsParameter, resourceGroupParameter);
+    }
+    else
+    {
+        appInsights = null;
+    }
+
+    if (!string.IsNullOrWhiteSpace(serviceBusNamespace) && !string.IsNullOrWhiteSpace(resourceGroupName))
+    {
+        var resourceGroupParameter = builder.AddParameter("azure-resource-group", resourceGroupName);
+        var serviceBusParameter = builder.AddParameter("azure-service-bus", serviceBusNamespace);
+        // Configure Service Bus
+        serviceBus = builder.AddAzureServiceBus("messaging")
+            .AsExisting(serviceBusParameter, resourceGroupParameter);
+
+        // Add orders queue to the Service Bus namespace
+        serviceBus.AddServiceBusQueue("orders-queue");
+    }
+    else
+    {
+        var serviceBusParameter = builder.AddParameter("azure-service-bus", "service-bus-dev");
+        serviceBus = builder.AddAzureServiceBus("messaging")
+            .RunAsEmulator();
+    }
+
+    return (AppInsights: appInsights, ServiceBus: serviceBus);
 }
 
 /// <summary>
@@ -47,7 +110,7 @@ static (IResourceBuilder<AzureApplicationInsightsResource> AppInsights, IResourc
     // 2. appsettings.json / appsettings.{Environment}.json
     // 3. Environment variables
     var appInsightsName = builder.Configuration["Azure:ApplicationInsights:Name"];
-    var serviceBusNamespace = builder.Configuration["Azure:ServiceBus:Namespace"]; 
+    var serviceBusNamespace = builder.Configuration["Azure:ServiceBus:Namespace"];
     var resourceGroupName = builder.Configuration["Azure:ResourceGroup"];
 
     // Validate required configuration
@@ -91,9 +154,9 @@ static void ConfigureServices(
     (IResourceBuilder<AzureApplicationInsightsResource>? AppInsights, IResourceBuilder<AzureServiceBusResource>? ServiceBus) resources)
 {
     // Get authentication configuration from secrets
-    var tenantId = builder.Configuration["Azure:TenantId"] 
+    var tenantId = builder.Configuration["Azure:TenantId"]
         ?? builder.Configuration["AZURE_TENANT_ID"];
-    var clientId = builder.Configuration["Azure:ClientId"] 
+    var clientId = builder.Configuration["Azure:ClientId"]
         ?? builder.Configuration["AZURE_CLIENT_ID"];
 
     // Configure Orders API
@@ -114,6 +177,10 @@ static void ConfigureServices(
     if (resources.ServiceBus != null)
     {
         ordersApi.WithReference(resources.ServiceBus);
+    }
+    else
+    {
+        
     }
 
     // Add Application Insights reference if available (production only)
