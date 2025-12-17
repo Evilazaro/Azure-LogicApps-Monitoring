@@ -50,6 +50,10 @@ $ErrorActionPreference = 'Stop'
 $InformationPreference = 'Continue'
 $ProgressPreference = 'SilentlyContinue'
 
+# Suppress PSScriptAnalyzer warnings for unavoidable patterns
+[Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseDeclaredVarsMoreThanAssignments', '', Justification = 'Script-level variables used in try/catch/finally blocks')]
+param()
+
 # Script-level constants
 $script:ScriptVersion = '2.0.0'
 $script:RequiredEnvironmentVariables = @(
@@ -59,6 +63,12 @@ $script:RequiredEnvironmentVariables = @(
 )
 
 #region Helper Functions
+
+<#
+.DESCRIPTION
+    Helper functions for environment validation, project path resolution,
+    Azure authentication, and .NET user secrets management.
+#>
 
 function Test-RequiredEnvironmentVariable {
     <#
@@ -136,6 +146,10 @@ function Set-DotNetUserSecret {
         
     .EXAMPLE
         Set-DotNetUserSecret -Key 'ConnectionString' -Value $connStr -ProjectPath $projectPath -Verbose
+    
+    .EXAMPLE
+        Set-DotNetUserSecret -Key 'ApiKey' -Value $null -ProjectPath $projectPath
+        # Silently skips because value is null
         
     .NOTES
         Throws terminating errors if the dotnet CLI command fails.
@@ -257,7 +271,7 @@ function Get-ApiProjectPath {
             return $absolutePath
         }
         catch {
-            Write-Error "Failed to determine API project path: $($_.Exception.Message)"
+            Write-Error "Failed to determine API project path: $($_.Exception.Message)" -ErrorAction Stop
             throw
         }
     }
@@ -312,7 +326,7 @@ function Get-ProjectPath {
             return $absolutePath
         }
         catch {
-            Write-Error "Failed to determine AppHost project path: $($_.Exception.Message)"
+            Write-Error "Failed to determine AppHost project path: $($_.Exception.Message)" -ErrorAction Stop
             throw
         }
     }
@@ -385,8 +399,14 @@ function Invoke-AzureContainerRegistryLogin {
             
             # Check Azure CLI version
             try {
-                $azVersion = & az version --output json 2>&1 | ConvertFrom-Json
-                Write-Verbose "Azure CLI version: $($azVersion.'azure-cli')"
+                $azVersionJson = & az version --output json 2>&1
+                if ($LASTEXITCODE -eq 0) {
+                    $azVersion = $azVersionJson | ConvertFrom-Json
+                    Write-Verbose "Azure CLI version: $($azVersion.'azure-cli')"
+                }
+                else {
+                    Write-Verbose "Could not determine Azure CLI version (exit code: $LASTEXITCODE)"
+                }
             }
             catch {
                 Write-Verbose "Could not determine Azure CLI version: $($_.Exception.Message)"
@@ -582,8 +602,12 @@ try {
     $validationErrors = [System.Collections.Generic.List[string]]::new()
     
     foreach ($varName in $script:RequiredEnvironmentVariables) {
+        Write-Verbose "Validating: $varName"
         if (-not (Test-RequiredEnvironmentVariable -Name $varName)) {
-            $validationErrors.Add($varName)
+            $null = $validationErrors.Add($varName)
+        }
+        else {
+            Write-Verbose "  ✓ $varName is set"
         }
     }
     
@@ -597,7 +621,8 @@ try {
     Write-Information "✓ All $($script:RequiredEnvironmentVariables.Count) required environment variables are set."
     
     # Read environment variables with safe retrieval
-    Write-Verbose "Reading environment variables..."
+    Write-SectionHeader -Message "Reading Environment Variables" -Type 'Info'
+    Write-Verbose "Using safe retrieval for all environment variables..."
     $azureSubscriptionId = Get-EnvironmentVariableSafe -Name 'AZURE_SUBSCRIPTION_ID'
     $azureResourceGroup = Get-EnvironmentVariableSafe -Name 'AZURE_RESOURCE_GROUP'
     $azureLocation = Get-EnvironmentVariableSafe -Name 'AZURE_LOCATION'
@@ -606,6 +631,7 @@ try {
     $azureClientId = Get-EnvironmentVariableSafe -Name 'AZURE_CLIENT_ID'
     $azureServiceBusNamespace = Get-EnvironmentVariableSafe -Name 'AZURE_SERVICE_BUS_NAMESPACE'
     $azureServiceBusTopicName = Get-EnvironmentVariableSafe -Name 'AZURE_SERVICE_BUS_TOPIC_NAME' -DefaultValue 'OrdersPlaced'
+    $azureServiceBusSubscriptionName = Get-EnvironmentVariableSafe -Name 'AZURE_SERVICE_BUS_SUBSCRIPTION_NAME' -DefaultValue 'orders-api-subscription'
     $azureMessagingServiceBusEndpoint = Get-EnvironmentVariableSafe -Name 'MESSAGING_SERVICEBUSENDPOINT'
     $azureEnvName = Get-EnvironmentVariableSafe -Name 'AZURE_ENV_NAME'
     $azureContainerRegistryEndpoint = Get-EnvironmentVariableSafe -Name 'AZURE_CONTAINER_REGISTRY_ENDPOINT'
@@ -621,6 +647,7 @@ try {
     Write-Information "  App Insights Name      : $(if ($azureApplicationInsightsName) { $azureApplicationInsightsName } else { '<not set>' })"
     Write-Information "  Service Bus Namespace  : $(if ($azureServiceBusNamespace) { $azureServiceBusNamespace } else { '<not set>' })"
     Write-Information "  Service Bus Topic Name : $(if ($azureServiceBusTopicName) { $azureServiceBusTopicName } else { '<not set>' })"
+    Write-Information "  Service Bus Subscription: $(if ($azureServiceBusSubscriptionName) { $azureServiceBusSubscriptionName } else { '<not set>' })"
     Write-Information "  Service Bus Endpoint   : $(if ($azureMessagingServiceBusEndpoint) { $azureMessagingServiceBusEndpoint } else { '<not set>' })"
     Write-Information "  ACR Endpoint           : $(if ($azureContainerRegistryEndpoint) { $azureContainerRegistryEndpoint } else { '<not set>' })"
     
@@ -722,6 +749,7 @@ try {
     }
     
     Write-Information "Preparing to configure $($secrets.Count) user secret(s)..."
+    Write-Verbose "Target project: $projectPath"
     
     # Track success and failures
     $successCount = 0
@@ -742,11 +770,11 @@ try {
             Write-Verbose "Processing secret: $key"
             Set-DotNetUserSecret -Key $key -Value $value -ProjectPath $projectPath
             $successCount++
-            Write-Verbose "Successfully set secret: $key"
+            Write-Information "  ✓ Set: $key"
         }
         catch {
             Write-Warning "Failed to set secret '$key': $($_.Exception.Message)"
-            $failedSecrets.Add([PSCustomObject]@{
+            $null = $failedSecrets.Add([PSCustomObject]@{
                     Key     = $key
                     Message = $_.Exception.Message
                 })
@@ -783,8 +811,10 @@ try {
     Write-Information "  • Failed                  : $($failedSecrets.Count)"
     Write-Information ""
     Write-Information "Completion Time: $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')"
-    Write-Information "Duration: $((New-TimeSpan -Start $executionStart -End (Get-Date)).TotalSeconds) seconds"
+    $executionDuration = (New-TimeSpan -Start $executionStart -End (Get-Date)).TotalSeconds
+    Write-Information "Duration: $([Math]::Round($executionDuration, 2)) seconds"
     Write-Information ""
+    Write-Verbose "Exiting with success code 0"
     
     exit 0
 }
