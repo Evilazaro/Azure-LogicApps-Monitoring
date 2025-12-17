@@ -225,8 +225,7 @@ static void ConfigureOrdersWebApp(
     const string AzureClientIdKey = "AZURE_CLIENT_ID";
 
     ordersWebApp.WithReference(ordersApi)
-                .AsHttp2Service()
-                .WaitFor(ordersApi);
+                .AsHttp2Service();
 
     // Add authentication configuration if available
     if (!string.IsNullOrWhiteSpace(authConfig.TenantId))

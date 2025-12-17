@@ -8,6 +8,12 @@ builder.AddServiceDefaults();
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 
+builder.Services.AddHttpClient("eShop.Orders.API", client =>
+{
+    client.BaseAddress = new Uri(builder.Configuration["services:orders-api:http:0"] ?? "");
+    client.DefaultRequestHeaders.Add("Accept", "application/json");
+});
+
 var app = builder.Build();
 
 app.MapDefaultEndpoints();
@@ -21,7 +27,6 @@ if (!app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
-
 
 app.UseAntiforgery();
 
