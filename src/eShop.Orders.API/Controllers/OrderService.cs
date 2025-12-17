@@ -203,42 +203,47 @@ public sealed class OrderService : IOrderService, IAsyncDisposable
 
                 if (!messageBatch.TryAddMessage(message))
                 {
-                    _logger.LogWarning(
-                        "Message batch is full. Sending {Count} messages and creating new batch",
-                        messagesAdded);
+                    // Batch is full - send current batch and create a new one
+                    if (messagesAdded > 0)
+                    {
+                        _logger.LogInformation(
+                            "Message batch is full. Sending {Count} messages before adding more",
+                            messagesAdded);
 
-                    // Send current batch
-                    await _sender.SendMessagesAsync(messageBatch, cancellationToken);
-                    activity?.AddEvent(new ActivityEvent($"Sent batch of {messagesAdded} messages"));
+                        await _sender.SendMessagesAsync(messageBatch, cancellationToken);
+                        activity?.AddEvent(new ActivityEvent($"Sent batch of {messagesAdded} messages"));
+                    }
 
                     // Create new batch for remaining messages
+                    // Note: Cannot reuse the previous batch after sending
                     using var newBatch = await _sender.CreateMessageBatchAsync(cancellationToken);
-
-                    // Reset counter for new batch
                     messagesAdded = 0;
 
-                    // Try adding the message to the new batch
+                    // Try adding the current message to the new batch
                     if (!newBatch.TryAddMessage(message))
                     {
-                        // Single message is too large for a batch
+                        // Single message is too large for any batch
                         _logger.LogError(
-                            "Single message exceeds maximum batch size. OrderId: {OrderId}",
-                            order.Id);
+                            "Single message exceeds maximum batch size. OrderId: {OrderId}, MessageSize: {Size} bytes",
+                            order.Id,
+                            messageBody.Length);
                         throw new InvalidOperationException(
                             $"Message for order {order.Id} exceeds maximum allowed size");
                     }
 
                     messagesAdded++;
-
-                    // Continue with remaining orders using the new batch
-                    // Note: This is a simplified fix. For production, consider implementing
-                    // a more robust batch management strategy with proper batch pooling
+                    
+                    // Send the new batch immediately since we can't continue with it in the using scope
+                    await _sender.SendMessagesAsync(newBatch, cancellationToken);
+                    activity?.AddEvent(new ActivityEvent("Sent overflow batch"));
+                    messagesAdded = 0;
                 }
                 else
                 {
                     messagesAdded++;
                 }
 
+                // Store order in memory for retrieval
                 if (int.TryParse(order.Id, out var orderId))
                 {
                     _orderStore.AddOrUpdate(orderId, order, (_, _) => order);

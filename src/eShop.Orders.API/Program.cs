@@ -46,7 +46,8 @@ using (var configActivity = new ActivitySource("eShop.Orders.Startup")
     // - Uses thread-safe ConcurrentDictionary for storage
     // - ServiceBusSender is thread-safe and reusable
     // - In-memory storage should persist across requests
-    // Note: In production with database, use AddScoped instead
+    // - Implements IAsyncDisposable to properly release Service Bus resources on shutdown
+    // Note: In production with a database, use AddScoped instead for proper DbContext management
     builder.Services.AddSingleton<IOrderService, OrderService>();
 
     // Register Azure Service Bus client using Aspire integration (if configured)
