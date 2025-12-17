@@ -13,13 +13,12 @@ using eShop.Orders.App.Components;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add service defaults: OpenTelemetry, health checks, and service discovery
-builder.AddServiceDefaults();
+ builder.AddServiceDefaults();
 
 // Configure Blazor Server with WebAssembly interactive rendering mode
 // Enables hybrid rendering: Server-side on initial load, client-side for interactivity
 builder.Services.AddRazorComponents()
     .AddInteractiveWebAssemblyComponents();
-
 
 var ordersApiHttpClient = builder.Services.AddHttpClient("orders-api", client =>
 {

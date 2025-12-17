@@ -15,5 +15,6 @@
     </None>
     <None Include="docker-compose.yml" />
     <None Include=".dockerignore" />
+    <None Include="src\eShop.Orders.App\eShop.Orders.App.Client\Pages\Component.razor" />
   </ItemGroup>
 </Project>
