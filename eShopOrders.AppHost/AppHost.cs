@@ -47,7 +47,7 @@ static (IResourceBuilder<AzureApplicationInsightsResource>? AppInsights, IResour
 
     // Get values from configuration (user secrets, appsettings, or environment variables)
     var config = GetAzureConfiguration(builder);
-    
+
     IResourceBuilder<AzureApplicationInsightsResource>? appInsights = null;
     IResourceBuilder<AzureServiceBusResource> serviceBus;
 
@@ -56,7 +56,7 @@ static (IResourceBuilder<AzureApplicationInsightsResource>? AppInsights, IResour
     {
         var resourceGroupParameter = builder.AddParameter("azure-resource-group", config.ResourceGroupName!);
         var appInsightsParameter = builder.AddParameter("azure-application-insights", config.AppInsightsName!);
-        
+
         appInsights = builder.AddAzureApplicationInsights(TelemetryResourceName)
             .AsExisting(appInsightsParameter, resourceGroupParameter);
     }
@@ -66,7 +66,7 @@ static (IResourceBuilder<AzureApplicationInsightsResource>? AppInsights, IResour
     {
         var resourceGroupParameter = builder.AddParameter("azure-resource-group", config.ResourceGroupName!);
         var serviceBusParameter = builder.AddParameter("azure-service-bus", config.ServiceBusNamespace!);
-        
+
         serviceBus = builder.AddAzureServiceBus(MessagingResourceName)
             .AsExisting(serviceBusParameter, resourceGroupParameter);
     }
@@ -229,16 +229,16 @@ static void ConfigureOrdersWebApp(
 /// <summary>
 /// Retrieves Azure configuration from the builder's configuration sources.
 /// </summary>
-static (string? AppInsightsName, string? ServiceBusNamespace, string? ResourceGroupName, bool HasAppInsightsConfiguration, bool HasServiceBusConfiguration) 
+static (string? AppInsightsName, string? ServiceBusNamespace, string? ResourceGroupName, bool HasAppInsightsConfiguration, bool HasServiceBusConfiguration)
     GetAzureConfiguration(IDistributedApplicationBuilder builder)
 {
     var appInsightsName = builder.Configuration["Azure:ApplicationInsights:Name"];
     var serviceBusNamespace = builder.Configuration["Azure:ServiceBus:Namespace"];
     var resourceGroupName = builder.Configuration["Azure:ResourceGroup"];
 
-    var hasAppInsightsConfig = !string.IsNullOrWhiteSpace(appInsightsName) 
+    var hasAppInsightsConfig = !string.IsNullOrWhiteSpace(appInsightsName)
                              && !string.IsNullOrWhiteSpace(resourceGroupName);
-    var hasServiceBusConfig = !string.IsNullOrWhiteSpace(serviceBusNamespace) 
+    var hasServiceBusConfig = !string.IsNullOrWhiteSpace(serviceBusNamespace)
                             && !string.IsNullOrWhiteSpace(resourceGroupName);
 
     return (appInsightsName, serviceBusNamespace, resourceGroupName, hasAppInsightsConfig, hasServiceBusConfig);
@@ -249,9 +249,9 @@ static (string? AppInsightsName, string? ServiceBusNamespace, string? ResourceGr
 /// </summary>
 static (string? TenantId, string? ClientId) GetAuthenticationConfiguration(IDistributedApplicationBuilder builder)
 {
-    var tenantId = builder.Configuration["Azure:TenantId"] 
+    var tenantId = builder.Configuration["Azure:TenantId"]
                 ?? builder.Configuration["AZURE_TENANT_ID"];
-    var clientId = builder.Configuration["Azure:ClientId"] 
+    var clientId = builder.Configuration["Azure:ClientId"]
                 ?? builder.Configuration["AZURE_CLIENT_ID"];
 
     return (tenantId, clientId);

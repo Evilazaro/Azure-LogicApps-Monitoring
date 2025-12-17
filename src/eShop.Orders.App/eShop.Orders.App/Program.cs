@@ -12,53 +12,40 @@ using eShop.Orders.App.Components;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add service defaults: OpenTelemetry, health checks, and service discovery
- builder.AddServiceDefaults();
+builder.AddServiceDefaults();
 
-// Configure Blazor Server with WebAssembly interactive rendering mode
-// Enables hybrid rendering: Server-side on initial load, client-side for interactivity
+// Add services to the container.
 builder.Services.AddRazorComponents()
     .AddInteractiveWebAssemblyComponents();
 
-var ordersApiHttpClient = builder.Services.AddHttpClient("orders-api", client =>
+var ordersHttpClient = builder.Services.AddHttpClient("orders-api", client =>
 {
-    client.BaseAddress = new Uri("https://orders-api");
+    client.BaseAddress = new Uri(builder.Configuration["ORDERS_API_HTTPS"] ?? throw new InvalidOperationException("OrdersApi:BaseUrl configuration is missing."));
     client.DefaultRequestHeaders.Add("Accept", "application/json");
 });
 
 var app = builder.Build();
 
-// Map health check endpoints for monitoring
 app.MapDefaultEndpoints();
 
-// Configure the HTTP request pipeline
+// Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
-    // Enable WebAssembly debugging in development
-    // Allows debugging Blazor WebAssembly code directly in the browser
     app.UseWebAssemblyDebugging();
 }
 else
 {
-    // Production error handling: redirect to error page
     app.UseExceptionHandler("/Error", createScopeForErrors: true);
-
-    // HTTP Strict Transport Security (HSTS) for production
-    // Enforces HTTPS for 30 days (consider extending for production)
+    // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
     app.UseHsts();
 }
 
-// Redirect all HTTP requests to HTTPS
 app.UseHttpsRedirection();
 
-// Enable anti-forgery token validation for forms
+
 app.UseAntiforgery();
 
-// Map static assets (CSS, JS, images) with optimized caching
 app.MapStaticAssets();
-
-// Map Razor Components with WebAssembly interactivity
-// Includes client-side assembly for interactive components
 app.MapRazorComponents<App>()
     .AddInteractiveWebAssemblyRenderMode()
     .AddAdditionalAssemblies(typeof(eShop.Orders.App.Client._Imports).Assembly);
