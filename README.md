@@ -1,4 +1,4 @@
-# Azure Logic Apps Standard - Enterprise-Scale Monitoring Solution
+Collecting workspace information# Azure Logic Apps Standard - Enterprise-Scale Monitoring Solution
 
 [![Azure](https://img.shields.io/badge/Azure-0078D4?style=flat&logo=microsoft-azure&logoColor=white)](https://azure.microsoft.com)
 [![.NET Aspire](https://img.shields.io/badge/.NET%20Aspire-512BD4?style=flat&logo=.net&logoColor=white)](https://learn.microsoft.com/dotnet/aspire)
@@ -6,25 +6,25 @@
 
 ## Table of Contents
 
-- [Problem Statement](#problem-statement)
-- [Project Purpose](#project-purpose)
-- [Key Features](#key-features)
-- [Solution Components](#solution-components)
-- [Azure Components](#azure-components)
-- [Project Structure](#project-structure)
-- [Architecture Overview](#architecture-overview)
-  - [Data Layer](#data-layer)
-  - [Application Layer](#application-layer)
-  - [Technology Layer](#technology-layer)
-- [Deployment Instructions](#deployment-instructions)
-  - [Prerequisites](#prerequisites)
-  - [Azure RBAC Roles](#azure-rbac-roles)
-  - [Deployment Steps](#deployment-steps)
-  - [Local Development Setup](#local-development-setup)
-- [Usage Examples](#usage-examples)
-  - [Monitoring Examples](#monitoring-examples)
-  - [Observability Guidance](#observability-guidance)
-- [References](#references)
+- Problem Statement
+- Project Purpose
+- Key Features
+- Solution Components
+- Azure Components
+- Project Structure
+- Architecture Overview
+  - Data Layer
+  - Application Layer
+  - Technology Layer
+- Deployment Instructions
+  - Prerequisites
+  - Azure RBAC Roles
+  - Deployment Steps
+  - Local Development Setup
+- Usage Examples
+  - Monitoring Examples
+  - Observability Guidance
+- References
 
 ---
 
@@ -92,7 +92,7 @@ Built on Azure Well-Architected Framework principles, the solution emphasizes op
 | 📝 **Log Analytics Workspace** | Centralized logging platform with PerGB2018 pricing tier | Aggregates logs and metrics from all Azure resources with 30-day retention in log-analytics-workspace.bicep lines 144-171 |
 | 🚌 **Service Bus Premium** | Enterprise messaging infrastructure with enhanced throughput | Provides reliable, scalable message queuing with 16 messaging units capacity via main.bicep lines 75-106, includes OrdersPlaced topic |
 | 🔐 **Managed Identity** | User-assigned Azure AD identity for zero-credential authentication | Enables authentication across Service Bus, Storage, and Container Registry with 11 RBAC roles in main.bicep lines 75-124 |
-| 🐳 **Container Registry Premium** | Container image repository with geo-replication support | Stores and manages Docker images built from Dockerfile via main.bicep lines 82-125 |
+| 🐳 **Container Registry Premium** | Container image repository with geo-replication support | Stores and manages Docker images built from `Dockerfile` via main.bicep lines 82-125 |
 | 📦 **Container Apps Environment** | Managed container hosting platform with consumption workload profile | Hosts microservices with KEDA autoscaling, Log Analytics integration, and Aspire Dashboard in main.bicep lines 112-183 |
 | ⚡ **Logic Apps Standard** | Workflow orchestration engine with Functions Runtime v4 | Executes long-running business processes with elastic scaling (3-20 instances) via logic-app.bicep lines 76-196 |
 | 🗄️ **Storage Account** | Blob storage for Logic Apps runtime state and processed orders | Supports Logic Apps durable state and segregated blob containers (ordersprocessedsuccessfully, ordersprocessedwitherrors) in main.bicep lines 126-172 |
@@ -114,12 +114,12 @@ Azure-LogicApps-Monitoring/
 │   ├── launch.json                            # Debugger configurations
 │   ├── settings.json                          # Editor preferences
 │   └── tasks.json                             # Build and deployment tasks
-├── eShopOrders.AppHost/                       # .NET Aspire AppHost project
+├── eShopOrders.AppHost                       # .NET Aspire AppHost project
 │   ├── AppHost.cs                             # Main orchestration configuration (lines 1-347)
 │   ├── ConfigurationKeys.cs                   # Configuration key constants
 │   ├── Constants.cs                           # Application-wide constants
 │   └── eShopOrders.AppHost.csproj            # Project file
-├── eShopOrders.ServiceDefaults/               # Shared observability library
+├── eShopOrders.ServiceDefaults               # Shared observability library
 │   ├── Extensions.cs                          # OpenTelemetry, health checks, resilience (lines 1-672)
 │   └── eShopOrders.ServiceDefaults.csproj    # Project file
 ├── hooks/                                     # Deployment automation scripts
@@ -249,7 +249,7 @@ graph TB
     classDef data fill:#E3F2FD,stroke:#1565C0,color:#000,font-weight:bold;
     classDef monitoring fill:#FFF9C4,stroke:#F57F17,color:#000,font-weight:bold;
     classDef workflow fill:#E8F5E9,stroke:#2E7D32,color:#000,font-weight:bold;
-
+    
     class A1,A2,A3,A4 data;
     class M1,M2,M3 monitoring;
     class W1,W2 workflow;
@@ -389,14 +389,12 @@ flowchart LR
 
 ### API Endpoints
 
-The following endpoints are exposed by the Orders API with automatic distributed tracing via ASP.NET Core instrumentation in Extensions.cs lines 269-297:
-
-| Method | Endpoint | Description | Distributed Tracing | Implementation |
-|--------|----------|-------------|---------------------|----------------|
-| GET | `/api/orders` | Retrieve all orders | Automatic span with custom business tags (orders.operation, orders.user) | OrderController.cs lines 54-80 |
-| GET | `/api/orders/{id}` | Retrieve order by ID | Parent-child span relationship with order.id tag | OrderController.cs lines 85-115 |
-| POST | `/api/orders` | Create new order and publish to Service Bus | Activity context propagated to message via traceparent header | OrderController.cs lines 120-155, OrderService.cs lines 76-146 |
-| DELETE | `/api/orders/{id}` | Delete order by ID | Status tracking in telemetry | Information not found in the provided sources |
+| Method | Endpoint | Description | Purpose | Implementation |
+|--------|----------|-------------|---------|----------------|
+| GET | `/api/orders` | Retrieve all orders | List all orders in memory | OrderController.cs lines 85-109 |
+| GET | `/api/orders/{id}` | Retrieve specific order | Get order by ID | OrderController.cs lines 112-137 |
+| POST | `/api/orders` | Create new order | Create order and publish to Service Bus | OrderController.cs lines 54-82 |
+| DELETE | `/api/orders/{id}` | Delete order | Remove order from memory | OrderController.cs lines 140-155 |
 | GET | `/health` | Health check endpoint | Readiness probe for container orchestrators | Extensions.cs lines 484-523 |
 | GET | `/alive` | Liveness check endpoint | Liveness probe for container orchestrators | Extensions.cs lines 484-523 |
 
@@ -592,7 +590,6 @@ graph TB
     AZD --> IaC
     AZD --> HOOKS
     HOOKS --> SCRIPTS
-
     ASPIRE --> DOCKER
     ASPIRE --> EMULATOR
 
@@ -727,6 +724,8 @@ Before deploying this solution, ensure the following prerequisites are met:
   - `Microsoft.ManagedIdentity` (Managed Identity)
   - `Microsoft.Web` (App Service Plans)
 
+---
+
 ### Azure RBAC Roles
 
 The following Azure RBAC roles are automatically assigned to the user-assigned managed identity during deployment via main.bicep lines 75-124. The deployment user also receives these roles for administrative access during and after deployment (lines 114-124).
@@ -745,6 +744,8 @@ The following Azure RBAC roles are automatically assigned to the user-assigned m
 | **Azure Container Registry ACR Pull** | `7f951dda-4ed3-4680-a7ca-43fe172d538d` | Pull container images from registry | [ACR roles](https://learn.microsoft.com/azure/role-based-access-control/built-in-roles/containers#acrpull) | main.bicep line 90 |
 | **Azure Container Registry ACR Push** | `8311e382-0749-4cb8-b61a-304f252e45ec` | Push container images to registry | [ACR roles](https://learn.microsoft.com/azure/role-based-access-control/built-in-roles/containers#acrpush) | main.bicep line 91 |
 
+---
+
 ### Deployment Steps
 
 #### 1. Clone the Repository
@@ -760,16 +761,23 @@ cd Azure-LogicApps-Monitoring
 azd init
 ```
 
-When prompted, provide an environment name (e.g., `dev`, `prod`) that will be used as a suffix for resource naming.
+When prompted:
+- **Environment name**: Choose a descriptive name (e.g., `dev`, `staging`, `prod`)
+- This creates the .azure directory with environment-specific configuration
 
 #### 3. Authenticate to Azure
 
 ```bash
-az login
 azd auth login
+az login
 ```
 
-Ensure you authenticate with an account that has Owner or Contributor + User Access Administrator permissions on the target subscription.
+Ensure you're authenticated to the correct Azure subscription:
+
+```bash
+az account show
+az account set --subscription "<subscription-id>"
+```
 
 #### 4. Configure Environment Variables
 
@@ -818,21 +826,21 @@ This command executes the following deployment sequence orchestrated by main.bic
 4. **Configures diagnostic settings** for all resources
 5. **Assigns RBAC roles** to managed identity and deployment user
 
+The deployment typically takes 10-15 minutes to complete.
+
 #### 6. Post-Provisioning Configuration
 
-The postprovision.ps1 script automatically executes after `azd provision` completes. This script (lines 619-928):
+The postprovision.ps1 script automatically executes after `azd provision` completes. It performs:
 
-1. **Reads environment variables** from azd output (lines 619-629)
-2. **Configures .NET user secrets** for local development:
-   - AppHost project secrets for Azure resource references (lines 746-754)
-   - API project secrets for Service Bus configuration (lines 757-760)
-3. **Logs into Azure Container Registry** for image push operations (lines 319-371)
-4. **Validates configuration** and provides diagnostic output
+- .NET user secrets configuration for local development
+- Azure Container Registry authentication
+- Environment variable validation
+- Service endpoint verification
 
-If the script fails, review the error output and ensure all required environment variables are set. Run with `-Verbose` for detailed diagnostic information:
+Manual execution (if needed):
 
-```powershell
-.\hooks\postprovision.ps1 -Verbose
+```bash
+pwsh postprovision.ps1
 ```
 
 #### 7. Deploy Application Code
@@ -844,8 +852,8 @@ azd deploy
 ```
 
 This command:
-1. Builds Docker images for Orders API from Dockerfile
-2. Builds Docker images for Orders App (information about Dockerfile not found in provided sources)
+1. Builds Docker images for Orders API from `Dockerfile`
+2. Builds Docker images for Orders App
 3. Pushes images to Azure Container Registry using managed identity authentication
 4. Deploys containers to Container Apps Environment
 5. Updates Logic Apps workflow definitions from `LogicAppWP/ConsosoOrders/workflow.json`
@@ -864,6 +872,8 @@ Access the deployed services:
 - **Application Insights**: Azure Portal → Application Insights → `<AZURE_APPLICATION_INSIGHTS_NAME>`
 - **Log Analytics**: Azure Portal → Log Analytics workspaces → `<AZURE_LOG_ANALYTICS_WORKSPACE_NAME>`
 - **Aspire Dashboard** (local development): `http://localhost:15888` when running with AppHost
+
+---
 
 ### Local Development Setup
 
@@ -917,14 +927,14 @@ Navigate to **Azure Portal → Application Insights → `<AZURE_APPLICATION_INSI
 
 **Key Metrics to Monitor:**
 
-Based on the OpenTelemetry instrumentation in [`eShopOrders.ServiceDefaults/Extensions.cs`](eShopOrders.ServiceDefaults/Extensions.cs "eShopOrders.ServiceDefaults/Extensions.cs"):
+Based on the OpenTelemetry instrumentation in Extensions.cs:
 
 - **Request Rate and Duration**: ASP.NET Core instrumentation (line 217) captures HTTP request metrics with automatic activity creation
 - **Failed Requests and Exceptions**: Exception recording via activity tags (lines 526-548) in custom exception handling
 - **Dependency Calls**: HTTP client instrumentation (line 220) tracks outbound calls including Service Bus message publishing
-- **Custom Metrics**: Business metrics added via activity tags in [`src/eShop.Orders.API/Controllers/OrderController.cs`](src/eShop.Orders.API/Controllers/OrderController.cs "src/eShop.Orders.API/Controllers/OrderController.cs") (e.g., `orders.operation`, `orders.user`, `order.id`)
+- **Custom Metrics**: Business metrics added via activity tags in OrderController.cs (e.g., `orders.operation`, `orders.user`, `order.id`)
 - **Service Bus Messaging**: Azure Service Bus instrumentation (line 218) tracks message send/receive operations with W3C Trace Context
-- **Health Check Status**: Health check endpoints exposed via [`eShopOrders.ServiceDefaults/Extensions.cs`](eShopOrders.ServiceDefaults/Extensions.cs "eShopOrders.ServiceDefaults/Extensions.cs") lines 484-523
+- **Health Check Status**: Health check endpoints exposed via Extensions.cs lines 484-523
 
 #### Using .NET Aspire Dashboard (Local Development)
 
@@ -956,23 +966,40 @@ Access the Aspire Dashboard at `http://localhost:15888` when running the AppHost
 #### Viewing Distributed Traces in Application Insights
 
 1. Navigate to **Application Insights → Transaction search** or **Performance** blade
-2. Filter by operation name: [`POST /api/orders`](../../Z:/Azure-LogicApps-Monitoring/src/eShop.Orders.API/Controllers/OrderController.cs )
+2. Filter by operation name: `POST /api/orders`
 3. Select a request to view end-to-end trace spanning:
-   - **HTTP Request** to Orders API with custom tags (`orders.operation`, `orders.user`)
-   - **Service Bus Message Publish** with traceparent propagation in [`src/eShop.Orders.API/Controllers/OrderService.cs`](src/eShop.Orders.API/Controllers/OrderService.cs "src/eShop.Orders.API/Controllers/OrderService.cs") lines 112-123
-   - **Background Message Processing** in [`src/eShop.Orders.API/Controllers/OrderMessageHandler.cs`](src/eShop.Orders.API/Controllers/OrderMessageHandler.cs "src/eShop.Orders.API/Controllers/OrderMessageHandler.cs") lines 61-120 with context extraction
-   - **Logic Apps Workflow Execution** (viewable in Log Analytics workspace)
-   - **Blob Storage Write** operation for processed orders
+   - **HTTP Request** to Orders API with custom tags (`orders.operation`, `orders.user`) added in [src/eShop.Orders.API/Controllers/OrderController.cs](src/eShop.Orders.API/Controllers/OrderController.cs) lines 66-70
+   - **Service Bus Message Publishing** with W3C Trace Context propagation via `traceparent` message property in [src/eShop.Orders.API/Controllers/OrderService.cs](src/eShop.Orders.API/Controllers/OrderService.cs) lines 112-123
+   - **Message Reception** in background service with context extraction in [src/eShop.Orders.API/Controllers/OrderMessageHandler.cs](src/eShop.Orders.API/Controllers/OrderMessageHandler.cs) lines 79-97
+   - **Logic Apps Workflow Execution** triggered from Service Bus with WorkflowRuntime logs captured via diagnostic settings in [infra/workload/logic-app.bicep](infra/workload/logic-app.bicep) lines 180-196
 
-4. Use **Application Map** to visualize service dependencies:
-   - Orders API → Service Bus Premium
-   - Service Bus → Logic Apps Standard
-   - Logic Apps → Blob Storage
+4. View correlation graph to visualize dependencies and identify performance bottlenecks across distributed components
 
-5. Analyze performance bottlenecks using **Performance** blade:
-   - Slowest operations by average duration
-   - Dependency call duration breakdown
-   - Failed dependency rate
+#### Testing End-to-End Flow
+
+Generate test orders using the PowerShell utility:
+
+```powershell
+# Generate 10 test orders with IDs 1-10
+pwsh hooks/generate_orders.ps1 -Count 10 -StartId 1
+
+# Submit orders to the API
+$orders = Get-Content "generated_orders.json" | ConvertFrom-Json
+foreach ($order in $orders) {
+    Invoke-RestMethod -Uri "https://<orders-api-endpoint>/api/orders" `
+        -Method POST `
+        -ContentType "application/json" `
+        -Body ($order | ConvertTo-Json)
+}
+```
+
+Verify the complete flow:
+1. **Orders API** receives POST request and creates order in-memory
+2. **Service Bus** receives message on OrdersPlaced topic with `traceparent` property
+3. **Logic Apps** workflow triggers from Service Bus queue
+4. **Workflow Execution**: HTTP POST to Orders API endpoint, conditional logic based on status code
+5. **Blob Storage**: Successful orders written to `ordersprocessedsuccessfully` container, errors to `ordersprocessedwitherrors`
+6. **Application Insights**: End-to-end trace visible with correlation across all components
 
 ---
 
@@ -980,479 +1007,360 @@ Access the Aspire Dashboard at `http://localhost:15888` when running the AppHost
 
 ### Logic Apps Workflow Monitoring Best Practices
 
-Based on [Monitor Logic Apps](https://learn.microsoft.com/azure/logic-apps/monitor-logic-apps) and the Azure Well-Architected Framework [Monitoring guidance](https://learn.microsoft.com/azure/well-architected/operational-excellence/monitoring):
+This solution implements comprehensive monitoring for Azure Logic Apps Standard aligned with the [Azure Well-Architected Framework - Operational Excellence](https://learn.microsoft.com/azure/well-architected/operational-excellence/monitoring) pillar.
 
-#### 1. Enable Diagnostic Settings
+#### WorkflowRuntime Diagnostic Logs
 
-Diagnostic settings are automatically configured in [`infra/workload/logic-app.bicep`](infra/workload/logic-app.bicep "infra/workload/logic-app.bicep") lines 198-228:
+Logic Apps Standard emits `WorkflowRuntime` logs captured via diagnostic settings configured in [infra/workload/logic-app.bicep](infra/workload/logic-app.bicep) lines 180-196. These logs are sent to Log Analytics workspace for centralized analysis.
 
-```bicep
-resource wfDiag 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
-  name: '${workflowEngine.name}-diag'
-  scope: workflowEngine
-  properties: {
-    workspaceId: workspaceId
-    storageAccountId: storageAccountId
-    logs: [
-      {
-        category: 'WorkflowRuntime'
-        enabled: true
-        retentionPolicy: {
-          enabled: true
-          days: 30
-        }
-      }
-    ]
-    metrics: metricsSettings
-  }
-}
-```
+**Key Log Categories:**
 
-**Key Categories to Monitor:**
+| Category | Description | Implementation | Query Target |
+|----------|-------------|----------------|--------------|
+| **WorkflowRuntime** | Workflow execution events including triggers, actions, and run status | [infra/workload/logic-app.bicep](infra/workload/logic-app.bicep) line 189 | `AzureDiagnostics` table with `Category == "WorkflowRuntime"` |
+| **FunctionAppLogs** | Functions runtime logs (Logic Apps runs on Functions v4) | Enabled by default | `FunctionAppLogs` table |
+| **AllMetrics** | Performance metrics including CPU, memory, HTTP requests | Configured via `metricsSettings` parameter | `AzureMetrics` table |
 
-| Log Category | Purpose | Retention |
-|--------------|---------|-----------|
-| `WorkflowRuntime` | Workflow execution logs, trigger history, action results | 30 days |
-| `FunctionAppLogs` | Functions runtime logs (Logic Apps Standard runs on Functions v4) | 30 days |
-| `AllMetrics` | Performance metrics including run duration, success/failure rate | 30 days |
+#### Workflow Execution Patterns
 
-#### 2. Monitor Workflow Run History
+The **PoProcessingWF** workflow in [LogicAppWP/ContosoOrders/PoProcessingWF/workflow.json](LogicAppWP/ContosoOrders/PoProcessingWF/workflow.json) demonstrates production-ready patterns:
 
-**Via Azure Portal:**
-1. Navigate to **Logic Apps → ConsosoOrders → Overview**
-2. View **Runs history** showing:
-   - Run status: Succeeded, Failed, Running, Cancelled, Skipped
-   - Trigger time and duration
-   - Inputs and outputs for each action
-3. **Filter runs** by status, time range, or correlation tracking properties
-4. **Drill into failed runs** to view:
-   - Action-level errors with error codes
-   - Retry history and backoff policies
-   - Input/output data at failure point
+**Workflow Actions Sequence:**
 
-**Via Log Analytics:**
+1. **Trigger**: `When_there_are_messages_in_a_queue_(V2)` - Service Bus queue trigger polling for new messages
+2. **HTTP Action**: POST request to Orders API endpoint with message payload (lines 22-47)
+3. **Condition**: Status code validation checking for HTTP 200 response (lines 48-62)
+4. **Success Path** (status == 200):
+   - `Create_blob_(V2)`: Write order to `ordersprocessedsuccessfully` container (lines 65-93)
+   - `HTTP_1`: Call WeatherForecast endpoint for additional processing (lines 53-71)
+5. **Error Path** (status != 200):
+   - `Create_blob_(V2)_1`: Write order to `ordersprocessedwitherrors` container (lines 106-131)
+6. **Cleanup**: `Delete_message_(V2)` - Remove processed message from queue (lines 9-24)
 
-See Kusto queries below for programmatic run history analysis.
+#### Health Monitoring Recommendations
 
-#### 3. Configure Workflow Retry Policies
+Based on the deployment configuration:
 
-Best practices for retry policies in Logic Apps workflows:
+- **App Service Plan Scaling**: Monitor WS1 plan metrics to ensure instances scale between 3-20 based on demand (configured in [infra/workload/logic-app.bicep](infra/workload/logic-app.bicep) lines 92-109)
+- **Storage Account Health**: Monitor `AzureWebJobsStorage` connection health as workflow state depends on durable storage
+- **Service Bus Queue Depth**: Alert on message backlog exceeding threshold indicating processing delays
+- **Blob Container Growth**: Track storage consumption in success/error containers for capacity planning
+- **Workflow Run Duration**: Monitor P95 and P99 percentiles to identify performance regressions
+- **Action Failure Rate**: Alert on elevated failure rates in HTTP actions or blob creation operations
 
-```json
-{
-  "actions": {
-    "HTTP_Action": {
-      "type": "Http",
-      "inputs": {
-        "method": "POST",
-        "uri": "https://api.example.com/orders"
-      },
-      "runAfter": {},
-      "retry": {
-        "type": "exponential",
-        "count": 4,
-        "interval": "PT10S",
-        "maximumInterval": "PT1H",
-        "minimumInterval": "PT5S"
-      }
-    }
-  }
-}
-```
+### Kusto Query Language (KQL) Queries for Log Analytics
 
-**Retry Policy Options:**
+Execute these queries in **Log Analytics Workspace** to gain insights into application and workflow behavior. Access via **Azure Portal → Log Analytics workspaces → `<AZURE_LOG_ANALYTICS_WORKSPACE_NAME>` → Logs**.
 
-| Type | Description | Use Case |
-|------|-------------|----------|
-| `fixed` | Fixed retry interval | Predictable service recovery times |
-| `exponential` | Exponential backoff with jitter | Transient failures, rate limiting scenarios |
-| `none` | No retries | Idempotent operations only |
+#### 1. Logic Apps Workflow Run Status Overview
 
-#### 4. Set Up Alerts for Workflow Failures
-
-Create Azure Monitor alerts for critical workflow issues:
-
-**Alert Rules to Configure:**
-
-| Alert Type | Metric/Log Query | Threshold | Action |
-|------------|------------------|-----------|--------|
-| **Failed Workflow Runs** | `AzureDiagnostics \| where status_s == "Failed"` | ≥ 1 in 5 minutes | Email, Teams notification |
-| **High Execution Duration** | `AzureDiagnostics \| where resource_runDuration_s > 300` | ≥ 5 in 15 minutes | Create incident ticket |
-| **Throttled Requests** | `AzureDiagnostics \| where status_s == "Throttled"` | ≥ 10 in 10 minutes | Scale up investigation |
-| **Service Bus Dead Letter** | Service Bus dead letter message count | > 0 | Immediate investigation |
-
-#### 5. Track Long-Running Workflows
-
-For workflows running 18-36 months (per solution goals):
-
-**Monitoring Strategy:**
-- Use **correlation tracking properties** to track workflow instances across time
-- Query **workflow run history** by custom tracking properties via Log Analytics
-- Set up **periodic health checks** (daily/weekly) via scheduled queries
-- Monitor **storage account usage** for workflow state (AzureWebJobsStorage in [`infra/workload/logic-app.bicep`](infra/workload/logic-app.bicep "infra/workload/logic-app.bicep") lines 163-166)
-- Track **memory consumption** metrics for App Service Plan to prevent workflow instability
-
-**Long-Running Workflow Best Practices:**
-- Checkpoint progress using **state management** patterns
-- Implement **manual trigger continuation** for workflows exceeding timeout limits
-- Use **blob storage** for intermediate state rather than in-memory variables
-- Configure **appropriate timeout values** at action level
-- Monitor **instance count** on App Service Plan (elastic scaling 3-20 instances)
-
-#### 6. Observability with OpenTelemetry Integration
-
-While Logic Apps Standard doesn't natively emit OpenTelemetry traces, correlation is achieved via:
-
-1. **W3C Trace Context Propagation**:
-   - Orders API creates traceparent header in [`src/eShop.Orders.API/Controllers/OrderService.cs`](src/eShop.Orders.API/Controllers/OrderService.cs "src/eShop.Orders.API/Controllers/OrderService.cs") lines 112-123
-   - Traceparent propagated via Service Bus message properties
-   - OrderMessageHandler extracts context in [`src/eShop.Orders.API/Controllers/OrderMessageHandler.cs`](src/eShop.Orders.API/Controllers/OrderMessageHandler.cs "src/eShop.Orders.API/Controllers/OrderMessageHandler.cs") lines 84-95
-
-2. **Correlation ID Tracking**:
-   - Use Service Bus `MessageId` or custom properties for correlation
-   - Query Application Insights and Log Analytics by `operation_Id`
-   - Join traces across Application Insights (microservices) and Log Analytics (Logic Apps)
-
-3. **End-to-End Trace Reconstruction**:
-   - Combine Application Insights traces with Logic Apps run history
-   - Use Kusto joins to correlate by message ID or custom tracking properties
-
----
-
-### Kusto Queries for Workflow Monitoring
-
-Access these queries via **Azure Portal → Log Analytics workspace → Logs**.
-
-#### Query 1: Failed Workflow Runs in Last 24 Hours
-
-```kql
+```kusto
 AzureDiagnostics
-| where ResourceProvider == "MICROSOFT.LOGIC"
+| where ResourceProvider == "MICROSOFT.WEB"
 | where Category == "WorkflowRuntime"
-| where TimeGenerated > ago(24h)
-| where status_s == "Failed"
-| project 
-    TimeGenerated,
-    WorkflowName = resource_workflowName_s,
-    RunId = resource_runId_s,
-    Status = status_s,
-    ErrorCode = error_code_s,
-    ErrorMessage = error_message_s,
-    Duration = resource_runDuration_s
-| order by TimeGenerated desc
-```
-
-**Usage**: Identify all failed workflow runs with error details for troubleshooting.
-
-#### Query 2: Workflow Execution Duration Statistics (7 Days)
-
-```kql
-AzureDiagnostics
-| where ResourceProvider == "MICROSOFT.LOGIC"
-| where Category == "WorkflowRuntime"
-| where TimeGenerated > ago(7d)
-| where status_s == "Succeeded"
-| extend DurationSeconds = todouble(resource_runDuration_s)
+| where OperationName == "Microsoft.Logic/workflows/workflowRunCompleted"
+| extend WorkflowName = resource_workflowName_s
+| extend RunStatus = status_s
 | summarize 
     TotalRuns = count(),
-    AvgDuration = avg(DurationSeconds),
-    P50Duration = percentile(DurationSeconds, 50),
-    P95Duration = percentile(DurationSeconds, 95),
-    P99Duration = percentile(DurationSeconds, 99),
-    MaxDuration = max(DurationSeconds)
-    by WorkflowName = resource_workflowName_s
-| order by AvgDuration desc
-```
-
-**Usage**: Analyze workflow performance and identify slow-running workflows requiring optimization.
-
-#### Query 3: Workflow Success/Failure Rate by Hour
-
-```kql
-AzureDiagnostics
-| where ResourceProvider == "MICROSOFT.LOGIC"
-| where Category == "WorkflowRuntime"
-| where TimeGenerated > ago(24h)
-| summarize 
-    Total = count(),
-    Succeeded = countif(status_s == "Succeeded"),
-    Failed = countif(status_s == "Failed"),
-    Running = countif(status_s == "Running"),
-    Cancelled = countif(status_s == "Cancelled")
-    by bin(TimeGenerated, 1h), WorkflowName = resource_workflowName_s
-| extend SuccessRate = round(100.0 * Succeeded / Total, 2)
-| project TimeGenerated, WorkflowName, Total, Succeeded, Failed, SuccessRate
+    SuccessfulRuns = countif(RunStatus == "Succeeded"),
+    FailedRuns = countif(RunStatus == "Failed"),
+    CancelledRuns = countif(RunStatus == "Cancelled"),
+    SuccessRate = round(100.0 * countif(RunStatus == "Succeeded") / count(), 2)
+    by WorkflowName, bin(TimeGenerated, 1h)
 | order by TimeGenerated desc
-| render timechart
 ```
 
-**Usage**: Monitor workflow reliability trends and detect anomalies in success rates.
+**Purpose**: Track workflow execution success rates and identify patterns of failures over time.
 
-#### Query 4: Top 10 Slowest Workflow Actions
+#### 2. Workflow Action Failures with Error Details
 
-```kql
+```kusto
 AzureDiagnostics
-| where ResourceProvider == "MICROSOFT.LOGIC"
+| where ResourceProvider == "MICROSOFT.WEB"
 | where Category == "WorkflowRuntime"
-| where TimeGenerated > ago(24h)
-| where isnotempty(resource_actionName_s)
-| extend 
-    ActionName = tostring(resource_actionName_s),
-    DurationSeconds = todouble(resource_actionDuration_s)
-| summarize 
-    TotalExecutions = count(),
-    AvgDuration = avg(DurationSeconds),
-    P95Duration = percentile(DurationSeconds, 95),
-    MaxDuration = max(DurationSeconds)
-    by ActionName, WorkflowName = resource_workflowName_s
-| top 10 by AvgDuration desc
-| project WorkflowName, ActionName, TotalExecutions, AvgDuration, P95Duration, MaxDuration
+| where OperationName == "Microsoft.Logic/workflows/workflowActionCompleted"
+| where status_s == "Failed"
+| extend WorkflowName = resource_workflowName_s
+| extend ActionName = resource_actionName_s
+| extend ErrorCode = error_code_s
+| extend ErrorMessage = error_message_s
+| project 
+    TimeGenerated,
+    WorkflowName,
+    ActionName,
+    ErrorCode,
+    ErrorMessage,
+    clientTrackingId_s,
+    resource_runId_s
+| order by TimeGenerated desc
+| take 100
 ```
 
-**Usage**: Identify bottleneck actions within workflows for performance optimization.
+**Purpose**: Identify specific workflow actions causing failures with error details for troubleshooting.
 
-#### Query 5: Distributed Trace Correlation (Orders API → Service Bus → Logic Apps)
+#### 3. Workflow Execution Duration Analysis
 
-```kql
-// Step 1: Get Application Insights traces for Order API
-let apiTraces = dependencies
-| where timestamp > ago(1h)
-| where type == "Azure Service Bus"
-| where target contains "OrdersPlaced"
-| where cloud_RoleName == "eShop.Orders.API"
+```kusto
+AzureDiagnostics
+| where ResourceProvider == "MICROSOFT.WEB"
+| where Category == "WorkflowRuntime"
+| where OperationName == "Microsoft.Logic/workflows/workflowRunCompleted"
+| extend WorkflowName = resource_workflowName_s
+| extend DurationMs = todouble(resource_duration_s) * 1000
+| summarize 
+    AvgDuration = round(avg(DurationMs), 2),
+    P50 = round(percentile(DurationMs, 50), 2),
+    P95 = round(percentile(DurationMs, 95), 2),
+    P99 = round(percentile(DurationMs, 99), 2),
+    MaxDuration = round(max(DurationMs), 2),
+    TotalRuns = count()
+    by WorkflowName, bin(TimeGenerated, 1h)
+| order by TimeGenerated desc
+```
+
+**Purpose**: Monitor workflow performance with percentile analysis to identify slow executions and set SLA baselines.
+
+#### 4. Service Bus Message Processing Latency
+
+```kusto
+// Correlate Service Bus message enqueue time with workflow trigger time
+AzureDiagnostics
+| where ResourceProvider == "MICROSOFT.WEB"
+| where Category == "WorkflowRuntime"
+| where OperationName == "Microsoft.Logic/workflows/workflowTriggerStarted"
+| extend WorkflowName = resource_workflowName_s
+| extend TriggerName = resource_triggerName_s
+| extend CorrelationId = clientTrackingId_s
+| project TimeGenerated, WorkflowName, TriggerName, CorrelationId
+| join kind=inner (
+    AppDependencies
+    | where Type == "Azure Service Bus"
+    | where Target contains "OrdersPlaced"
+    | project EnqueueTime = TimeGenerated, CorrelationId = OperationId
+) on CorrelationId
+| extend ProcessingLatencySeconds = datetime_diff('second', TimeGenerated, EnqueueTime)
+| summarize 
+    AvgLatency = round(avg(ProcessingLatencySeconds), 2),
+    P95Latency = round(percentile(ProcessingLatencySeconds, 95), 2),
+    MaxLatency = round(max(ProcessingLatencySeconds), 2)
+    by bin(TimeGenerated, 5m)
+| order by TimeGenerated desc
+```
+
+**Purpose**: Measure end-to-end latency from message enqueue to workflow trigger for SLA monitoring.
+
+#### 5. Application Insights Request Telemetry with Custom Tags
+
+```kusto
+requests
+| where name == "POST /api/orders"
+| extend OrderId = tostring(customDimensions["order.id"])
+| extend OrderUser = tostring(customDimensions["orders.user"])
+| extend Operation = tostring(customDimensions["orders.operation"])
+| extend TraceParent = tostring(customDimensions["traceparent"])
 | project 
     timestamp,
-    api_operation_Id = operation_Id,
-    api_operation_Name = operation_Name,
-    messageId = tostring(customDimensions.MessageId),
-    traceparent = tostring(customDimensions.traceparent),
+    name,
+    resultCode,
     duration,
-    success;
-// Step 2: Get Logic Apps workflow runs
-let workflowRuns = AzureDiagnostics
-| where ResourceProvider == "MICROSOFT.LOGIC"
-| where Category == "WorkflowRuntime"
-| where TimeGenerated > ago(1h)
-| where resource_workflowName_s == "ConsosoOrders"
-| extend 
-    workflow_messageId = tostring(properties_messageId_s),
-    workflow_runId = resource_runId_s,
-    workflow_status = status_s,
-    workflow_duration = todouble(resource_runDuration_s)
-| project TimeGenerated, workflow_messageId, workflow_runId, workflow_status, workflow_duration;
-// Step 3: Join traces
-apiTraces
-| join kind=inner (workflowRuns) on $left.messageId == $right.workflow_messageId
+    success,
+    OrderId,
+    OrderUser,
+    Operation,
+    TraceParent,
+    operation_Id
+| where isnotempty(OrderId)
+| order by timestamp desc
+| take 100
+```
+
+**Purpose**: Query order-specific requests with custom tags added in [src/eShop.Orders.API/Controllers/OrderController.cs](src/eShop.Orders.API/Controllers/OrderController.cs) for business-level observability.
+
+#### 6. Distributed Trace Correlation (End-to-End)
+
+```kusto
+let correlationId = "<operation_Id from Application Insights>";
+union requests, dependencies, traces, exceptions
+| where operation_Id == correlationId
 | project 
     timestamp,
-    api_operation_Name,
-    messageId,
-    api_duration_ms = duration,
-    workflow_runId,
-    workflow_status,
-    workflow_duration_sec = workflow_duration,
-    total_latency_sec = (duration / 1000.0) + workflow_duration
-| order by timestamp desc
+    itemType,
+    name,
+    type,
+    target,
+    resultCode,
+    duration,
+    success,
+    message,
+    severityLevel,
+    customDimensions
+| order by timestamp asc
 ```
 
-**Usage**: Correlate end-to-end traces from API request through Service Bus to Logic Apps execution.
+**Purpose**: Reconstruct complete distributed trace across Orders API → Service Bus → Logic Apps using correlation ID.
 
-#### Query 6: Service Bus Message Processing Latency
+#### 7. Container Apps Resource Utilization
 
-```kql
-customMetrics
-| where timestamp > ago(1h)
-| where name == "MessageProcessingTime" or name contains "servicebus"
-| summarize 
-    AvgLatency = avg(value),
-    P50Latency = percentile(value, 50),
-    P95Latency = percentile(value, 95),
-    P99Latency = percentile(value, 99),
-    MaxLatency = max(value)
-    by bin(timestamp, 5m), cloud_RoleName
-| render timechart
-```
-
-**Usage**: Monitor Service Bus message processing performance including queue/topic latency.
-
-#### Query 7: Orders API Exception Analysis
-
-```kql
-exceptions
-| where timestamp > ago(24h)
-| where cloud_RoleName == "eShop.Orders.API"
-| summarize 
-    ExceptionCount = count(),
-    AffectedUsers = dcount(user_Id),
-    SampleMessage = any(outerMessage)
-    by type, method, bin(timestamp, 1h)
-| order by ExceptionCount desc
-| render timechart
-```
-
-**Usage**: Analyze exception patterns to identify recurring errors requiring code fixes.
-
-#### Query 8: Container Apps CPU and Memory Usage
-
-```kql
-// Note: Container Apps logs may use different schema
-// This query assumes ContainerAppSystemLogs or Perf table
-Perf
-| where TimeGenerated > ago(1h)
-| where ObjectName == "K8SContainer"
-| where CounterName in ("cpuUsageNanoCores", "memoryWorkingSetBytes")
-| extend 
-    ContainerName = tostring(split(InstanceName, "/")[1]),
-    MetricValue = CounterValue
-| where ContainerName in ("orders-api", "orders-webapp")
-| summarize 
-    AvgCPU = avgif(MetricValue, CounterName == "cpuUsageNanoCores"),
-    AvgMemory = avgif(MetricValue, CounterName == "memoryWorkingSetBytes")
-    by ContainerName, bin(TimeGenerated, 5m)
-| render timechart
-```
-
-**Usage**: Monitor container resource utilization to detect resource constraints or memory leaks.
-
-**Alternative for Container Apps Diagnostics:**
-
-```kql
+```kusto
+// Query container metrics from Container Apps Environment
 ContainerAppConsoleLogs_CL
-| where TimeGenerated > ago(1h)
-| where ContainerAppName_s in ("orders-api", "orders-webapp")
-| where Log_s contains "memory" or Log_s contains "cpu"
+| where ContainerAppName_s contains "orders"
 | project TimeGenerated, ContainerAppName_s, Log_s
 | order by TimeGenerated desc
+| take 100
 ```
 
-#### Query 9: Workflow Trigger Failures and Dead Letter Analysis
+**Purpose**: Monitor container application logs and resource consumption for KEDA autoscaling decisions.
 
-```kql
-AzureDiagnostics
-| where ResourceProvider == "MICROSOFT.LOGIC"
-| where Category == "WorkflowRuntime"
-| where TimeGenerated > ago(24h)
-| where resource_triggerName_s == "When_a_message_is_received_in_a_topic_subscription"
-| where status_s == "Failed"
-| extend 
-    TriggerName = resource_triggerName_s,
-    ErrorCode = error_code_s,
-    ErrorMessage = error_message_s
+#### 8. Failed Requests by Endpoint with Response Codes
+
+```kusto
+requests
+| where success == false
 | summarize 
     FailureCount = count(),
-    UniqueErrors = dcount(ErrorCode),
-    SampleErrorMessage = any(ErrorMessage)
-    by ErrorCode, bin(TimeGenerated, 15m)
+    UniqueUsers = dcount(user_Id),
+    ResponseCodes = make_set(resultCode)
+    by name, resultCode
 | order by FailureCount desc
 ```
 
-**Usage**: Detect issues with Service Bus trigger configuration or dead letter scenarios.
+**Purpose**: Identify problematic API endpoints and HTTP error patterns for targeted remediation.
 
-#### Query 10: Application Insights Custom Metrics - Business KPIs
+#### 9. Logic Apps Action Success Rate by Action Type
 
-```kql
-customMetrics
-| where timestamp > ago(24h)
-| where name in ("orders.created", "orders.processed.success", "orders.processed.error")
+```kusto
+AzureDiagnostics
+| where ResourceProvider == "MICROSOFT.WEB"
+| where Category == "WorkflowRuntime"
+| where OperationName == "Microsoft.Logic/workflows/workflowActionCompleted"
+| extend WorkflowName = resource_workflowName_s
+| extend ActionName = resource_actionName_s
+| extend ActionType = resource_actionType_s
 | summarize 
-    TotalCount = sum(value),
-    AvgValue = avg(value)
-    by name, bin(timestamp, 1h)
-| render timechart
+    TotalActions = count(),
+    SuccessfulActions = countif(status_s == "Succeeded"),
+    FailedActions = countif(status_s == "Failed"),
+    SuccessRate = round(100.0 * countif(status_s == "Succeeded") / count(), 2)
+    by ActionType, ActionName
+| order by SuccessRate asc
 ```
 
-**Usage**: Track business KPIs and order processing success/failure rates.
+**Purpose**: Identify which action types (HTTP, ApiConnection, Condition) have the highest failure rates.
 
----
+#### 10. Blob Container Growth Rate (Success vs. Error)
 
-### Application Insights Query Examples
-
-Access queries via **Azure Portal → Application Insights → Logs**.
-
-#### Custom Trace Query with Business Tags
-
-```kql
-traces
-| where timestamp > ago(1h)
-| where customDimensions.["order.id"] != ""
-| extend 
-    orderId = tostring(customDimensions.["order.id"]),
-    operation = tostring(customDimensions.["orders.operation"]),
-    user = tostring(customDimensions.["orders.user"])
-| project 
-    timestamp,
-    message,
-    orderId,
-    operation,
-    user,
-    operationId = operation_Id,
-    serviceName = cloud_RoleName
-| order by timestamp desc
-```
-
-**Usage**: Track order processing with custom business context added via activity tags in [`src/eShop.Orders.API/Controllers/OrderController.cs`](src/eShop.Orders.API/Controllers/OrderController.cs "src/eShop.Orders.API/Controllers/OrderController.cs") lines 61-77.
-
-#### Dependency Call Performance Analysis
-
-```kql
-dependencies
-| where timestamp > ago(1h)
+```kusto
+AzureDiagnostics
+| where ResourceProvider == "MICROSOFT.STORAGE"
+| where OperationName == "PutBlob" or OperationName == "CreateBlob"
+| extend ContainerName = split(uri_s, "/")[3]
+| where ContainerName in ("ordersprocessedsuccessfully", "ordersprocessedwitherrors")
 | summarize 
-    CallCount = count(),
-    AvgDuration = avg(duration),
-    P50Duration = percentile(duration, 50),
-    P95Duration = percentile(duration, 95),
-    P99Duration = percentile(duration, 99),
-    SuccessRate = 100.0 * countif(success == true) / count()
-    by type, target, name
-| order by CallCount desc
+    BlobCount = count(),
+    TotalSizeBytes = sum(todouble(responseBodySize_d))
+    by ContainerName, bin(TimeGenerated, 1h)
+| order by TimeGenerated desc
 ```
 
-**Usage**: Analyze dependency performance including Service Bus, Storage, and HTTP calls.
+**Purpose**: Track storage consumption and success-to-error ratio for capacity planning and quality monitoring.
 
-#### Request Duration by Endpoint
+### Alerting Recommendations
 
-```kql
-requests
-| where timestamp > ago(24h)
-| where cloud_RoleName == "eShop.Orders.API"
-| summarize 
-    RequestCount = count(),
-    AvgDuration = avg(duration),
-    P95Duration = percentile(duration, 95),
-    FailureRate = 100.0 * countif(success == false) / count()
-    by name, resultCode
-| order by RequestCount desc
-```
+Configure alerts based on the following thresholds using Log Analytics alert rules:
 
-**Usage**: Identify slow or failing API endpoints requiring optimization.
+| Alert Name | Condition | Threshold | Query Reference | Action |
+|------------|-----------|-----------|-----------------|--------|
+| **High Workflow Failure Rate** | Workflow success rate < 95% over 15 minutes | 95% | Query #1 | Notify operations team, trigger runbook |
+| **Workflow Duration Exceeded SLA** | P95 workflow duration > 30 seconds | 30s | Query #3 | Investigate performance bottlenecks |
+| **Service Bus Processing Delay** | Message processing latency > 60 seconds | 60s | Query #4 | Check App Service Plan scaling |
+| **API Request Failure Spike** | Failed requests > 10% of total over 5 minutes | 10% | Query #8 | Page on-call engineer |
+| **Logic Apps Action Errors** | Action failure count > 5 in 10 minutes | 5 failures | Query #2 | Create incident, capture error details |
+| **Storage Container Error Growth** | Blob count in `ordersprocessedwitherrors` > 100/hour | 100/hour | Query #10 | Investigate upstream integration issues |
 
----
+### Monitoring Dashboard Configuration
 
-### Integration with Azure Well-Architected Framework
+Create a comprehensive monitoring dashboard in Azure Portal combining:
 
-This solution implements [Azure Well-Architected Framework](https://learn.microsoft.com/azure/well-architected/operational-excellence/monitoring) operational excellence principles:
+1. **Application Insights Application Map**: Visualize dependencies between Orders API, Service Bus, Logic Apps
+2. **Log Analytics Workbook**: Custom workbook with queries #1, #3, #4, #8, #9 for executive summary
+3. **Container Apps Metrics**: CPU, memory, replica count, request rate charts
+4. **Logic Apps Metrics**: Workflow runs completed, actions completed, trigger latency
+5. **Service Bus Metrics**: Active messages, dead-letter count, incoming/outgoing messages
+6. **Storage Account Metrics**: Blob count, storage utilization, transaction rate
 
-| Principle | Implementation | Reference |
-|-----------|----------------|-----------|
-| **Comprehensive Monitoring** | OpenTelemetry instrumentation across all services with Application Insights and Log Analytics integration | [`eShopOrders.ServiceDefaults/Extensions.cs`](eShopOrders.ServiceDefaults/Extensions.cs "eShopOrders.ServiceDefaults/Extensions.cs") lines 130-449 |
-| **Distributed Tracing** | W3C Trace Context propagation from API through Service Bus to Logic Apps | [`src/eShop.Orders.API/Controllers/OrderService.cs`](src/eShop.Orders.API/Controllers/OrderService.cs "src/eShop.Orders.API/Controllers/OrderService.cs") lines 112-123 |
-| **Health Monitoring** | Health check endpoints with custom health checks for dependencies | [`eShopOrders.ServiceDefaults/Extensions.cs`](eShopOrders.ServiceDefaults/Extensions.cs "eShopOrders.ServiceDefaults/Extensions.cs") lines 454-523 |
-| **Diagnostic Settings** | All Azure resources configured with diagnostic settings sending logs to Log Analytics | [`infra/workload/logic-app.bicep`](infra/workload/logic-app.bicep "infra/workload/logic-app.bicep") lines 198-228 |
-| **Centralized Logging** | Log Analytics workspace with 30-day retention aggregating logs from all services | [`infra/monitoring/log-analytics-workspace.bicep`](infra/monitoring/log-analytics-workspace.bicep "infra/monitoring/log-analytics-workspace.bicep") lines 144-171 |
-| **Metrics and Alerts** | Custom metrics via OpenTelemetry with Azure Monitor alerts for critical failures | OpenTelemetry metrics in [`eShopOrders.ServiceDefaults/Extensions.cs`](eShopOrders.ServiceDefaults/Extensions.cs "eShopOrders.ServiceDefaults/Extensions.cs") lines 312-326 |
-| **Resilience Patterns** | Retry policies, circuit breakers, and timeout handling | [`eShopOrders.ServiceDefaults/Extensions.cs`](eShopOrders.ServiceDefaults/Extensions.cs "eShopOrders.ServiceDefaults/Extensions.cs") lines 87-115 |
-| **Cost Optimization** | Sampling strategy (10% in production) to reduce telemetry costs while maintaining visibility | [`eShopOrders.ServiceDefaults/Extensions.cs`](eShopOrders.ServiceDefaults/Extensions.cs "eShopOrders.ServiceDefaults/Extensions.cs") lines 376-403 |
+### Integration with Azure Monitor Health Model
+
+The solution deploys Azure Monitor health model service groups in [infra/monitoring/azure-monitor-health-model.bicep](infra/monitoring/azure-monitor-health-model.bicep) lines 36-59 for hierarchical health monitoring:
+
+- **Root Service Group**: Tenant-scoped health model container
+- **Application Service Groups**: Child groups for Orders API, Orders App, Logic Apps
+- **Infrastructure Service Groups**: Child groups for Service Bus, Storage, Container Apps
+
+This enables rollup health status from individual resources to application-level health indicators.
 
 ---
 
 ## References
 
-- [Azure Monitor .NET SDK Documentation](https://learn.microsoft.com/dotnet/api/overview/azure/monitor?view=azure-dotnet)
-- [Monitor Azure Logic Apps](https://learn.microsoft.com/azure/logic-apps/monitor-logic-apps)
-- [.NET Aspire Dashboard Overview](https://aspire.dev/dashboard/overview/)
-- [Azure Well-Architected Framework - Monitoring](https://learn.microsoft.com/azure/well-architected/operational-excellence/monitoring)
-- [OpenTelemetry Data Collection in Azure Monitor](https://learn.microsoft.com/azure/azure-monitor/app/opentelemetry-data-collection)
-- [Azure Logic Apps Best Practices](https://learn.microsoft.com/azure/logic-apps/logic-apps-best-practices)
-- [Azure Service Bus Messaging with .NET](https://learn.microsoft.com/azure/service-bus-messaging/service-bus-dotnet-get-started-with-queues)
+### Official Microsoft Documentation
+
+- [Azure Logic Apps Standard Monitoring](https://learn.microsoft.com/azure/logic-apps/monitor-logic-apps)
+- [Azure Well-Architected Framework - Operational Excellence](https://learn.microsoft.com/azure/well-architected/operational-excellence/monitoring)
+- [.NET Aspire Dashboard Overview](https://learn.microsoft.com/dotnet/aspire/fundamentals/dashboard/overview)
+- [OpenTelemetry in Azure Monitor](https://learn.microsoft.com/azure/azure-monitor/app/opentelemetry-data-collection)
+- [Azure Monitor .NET API Reference](https://learn.microsoft.com/dotnet/api/overview/azure/monitor)
+- [Kusto Query Language (KQL) Reference](https://learn.microsoft.com/azure/data-explorer/kusto/query/)
+- [Azure Logic Apps Diagnostic Logging](https://learn.microsoft.com/azure/logic-apps/monitor-workflows-collect-diagnostic-data)
+- [Azure Service Bus W3C Trace Context](https://learn.microsoft.com/azure/service-bus-messaging/service-bus-end-to-end-tracing)
 - [Container Apps Observability](https://learn.microsoft.com/azure/container-apps/observability)
+
+### Architecture and Best Practices
+
+- [Azure Architecture Center - Logic Apps](https://learn.microsoft.com/azure/architecture/reference-architectures/enterprise-integration/queues-events)
+- [TOGAF Architecture Framework](https://www.opengroup.org/togaf)
+- [OpenTelemetry Specification](https://opentelemetry.io/docs/specs/otel/)
+- [W3C Trace Context](https://www.w3.org/TR/trace-context/)
+
+---
+
+## Support and Troubleshooting
+
+### Common Issues and Resolutions
+
+| Issue | Symptoms | Resolution | Documentation |
+|-------|----------|------------|---------------|
+| **Missing Traces in App Insights** | Gaps in distributed tracing, no correlation | Verify `APPLICATIONINSIGHTS_CONNECTION_STRING` environment variable, check sampling configuration in [eShopOrders.ServiceDefaults/Extensions.cs](eShopOrders.ServiceDefaults/Extensions.cs) lines 376-403 | [OpenTelemetry troubleshooting](https://learn.microsoft.com/azure/azure-monitor/app/opentelemetry-troubleshooting) |
+| **Workflow Not Triggering** | Logic Apps not processing Service Bus messages | Check Service Bus connection in `connections.json`, verify managed identity has Azure Service Bus Data Receiver role | [Logic Apps connectors](https://learn.microsoft.com/azure/logic-apps/logic-apps-using-sap-connector) |
+| **Container Image Pull Failure** | Container Apps cannot start, ACR authentication errors | Verify managed identity has ACR Pull role in [infra/workload/identity/main.bicep](infra/workload/identity/main.bicep) line 90 | [Container Apps managed identity](https://learn.microsoft.com/azure/container-apps/managed-identity) |
+| **High Memory Usage in Logic Apps** | OOM exceptions, workflow instability | Review workflow hosting density (target ~20 workflows per instance), increase App Service Plan workers in [infra/workload/logic-app.bicep](infra/workload/logic-app.bicep) lines 103-105 | [Logic Apps performance](https://learn.microsoft.com/azure/logic-apps/set-up-zone-redundancy-availability-zones) |
+| **Service Discovery Not Working** | HTTP client cannot resolve service endpoints | Verify Aspire service defaults are applied via `AddServiceDefaults()` in [src/eShop.Orders.App/Program.cs](src/eShop.Orders.App/Program.cs) lines 36-50 | [.NET Aspire service discovery](https://learn.microsoft.com/dotnet/aspire/service-discovery/overview) |
+
+### Diagnostic Commands
+
+```powershell
+# Check Azure CLI authentication
+az account show
+
+# List deployed resources in resource group
+az resource list --resource-group <AZURE_RESOURCE_GROUP> --output table
+
+# View Logic Apps workflow runs
+az logicapp show --name <logic-app-name> --resource-group <AZURE_RESOURCE_GROUP>
+
+# Query Service Bus queue depth
+az servicebus queue show --name OrdersPlaced --namespace-name <namespace> --resource-group <AZURE_RESOURCE_GROUP> --query "countDetails"
+
+# View Container Apps logs (last 100 lines)
+az containerapp logs show --name orders-api --resource-group <AZURE_RESOURCE_GROUP> --tail 100
+
+# Test Application Insights connectivity
+az monitor app-insights component show --app <AZURE_APPLICATION_INSIGHTS_NAME> --resource-group <AZURE_RESOURCE_GROUP>
+```
+
+### Getting Help
+
+- **GitHub Issues**: [Azure-LogicApps-Monitoring Issues](https://github.com/Evilazaro/Azure-LogicApps-Monitoring/issues)
+- **Azure Support**: [Create Azure support ticket](https://azure.microsoft.com/support/create-ticket/)
+- **Community Forums**: [Microsoft Q&A - Logic Apps](https://learn.microsoft.com/answers/tags/133/azure-logic-apps)
