@@ -39,8 +39,8 @@ using (var configActivity = startupActivitySource.StartActivity("Application.Con
     configActivity?.SetTag("configuration.step", "http_client");
     builder.Services.AddHttpClient("eShop.Orders.API", client =>
     {
-        // Service discovery resolves "services:orders-api:http:0" to actual endpoint
-        var baseAddress = builder.Configuration["services:orders-api:http:0"];
+        // Service discovery resolves "services:orders-api:https:0" to actual endpoint
+        var baseAddress = builder.Configuration["services:orders-api:https:0"];
         if (string.IsNullOrWhiteSpace(baseAddress))
         {
             throw new InvalidOperationException(
