@@ -234,8 +234,8 @@ static void ConfigureOrdersApi(IDistributedApplicationBuilder builder,
 
     if(!string.IsNullOrEmpty(config.TenantId) && !string.IsNullOrEmpty(config.ClientId))
     {
-        ordersApi.WithEnvironment("TenantId", config.TenantId);
-        ordersApi.WithEnvironment("ClientId", config.ClientId);
+        ordersApi.WithEnvironment("AZURE_TENANT_ID", config.TenantId);
+        ordersApi.WithEnvironment("AZURE_CLIENT_ID", config.ClientId);
     }
 
     // Add Service Bus reference if available
@@ -265,8 +265,8 @@ static void ConfigureOrdersWebApp(IDistributedApplicationBuilder builder,
 
     if (!string.IsNullOrEmpty(config.TenantId) && !string.IsNullOrEmpty(config.ClientId))
     {
-        ordersApi.WithEnvironment("TenantId", config.TenantId);
-        ordersApi.WithEnvironment("ClientId", config.ClientId);
+        ordersApi.WithEnvironment("AZURE_TENANT_ID", config.TenantId);
+        ordersApi.WithEnvironment("AZURE_CLIENT_ID", config.ClientId);
     }
 
     ordersWebApp.WithReference(ordersApi)
