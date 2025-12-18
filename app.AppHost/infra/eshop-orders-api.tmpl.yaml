@@ -13,7 +13,7 @@ properties:
       dotnet:
         autoConfigureDataProtection: true
     ingress:
-      external: true
+      external: false
       targetPort: {{ targetPortOrDefault 8080 }}
       transport: http
       allowInsecure: true
@@ -23,7 +23,7 @@ properties:
   template:
     containers:
       - image: {{ .Image }}
-        name: eshop-web-app
+        name: eshop-orders-api
         env:
           - name: AZURE_CLIENT_ID
             value: {{ .Env.MANAGED_IDENTITY_CLIENT_ID }}
@@ -37,12 +37,8 @@ properties:
             value: "true"
           - name: OTEL_DOTNET_EXPERIMENTAL_OTLP_RETRY
             value: in_memory
-          - name: services__eshop-orders-api__http__0
-            value: http://eshop-orders-api.internal.{{ .Env.AZURE_CONTAINER_APPS_ENVIRONMENT_DEFAULT_DOMAIN }}
-          - name: services__eshop-orders-api__https__0
-            value: https://eshop-orders-api.internal.{{ .Env.AZURE_CONTAINER_APPS_ENVIRONMENT_DEFAULT_DOMAIN }}
     scale:
       minReplicas: 1
 tags:
-  azd-service-name: eshop-web-app
-  aspire-resource-name: eshop-web-app
+  azd-service-name: eshop-orders-api
+  aspire-resource-name: eshop-orders-api
