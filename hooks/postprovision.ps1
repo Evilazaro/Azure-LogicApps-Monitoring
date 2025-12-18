@@ -622,6 +622,7 @@ try {
     # Read environment variables with safe retrieval
     Write-SectionHeader -Message "Reading Environment Variables" -Type 'Info'
     Write-Verbose "Using safe retrieval for all environment variables..."
+    $azureTenantId = Get-EnvironmentVariableSafe -Name 'AZURE_TENANT_ID'
     $azureSubscriptionId = Get-EnvironmentVariableSafe -Name 'AZURE_SUBSCRIPTION_ID'
     $azureResourceGroup = Get-EnvironmentVariableSafe -Name 'AZURE_RESOURCE_GROUP'
     $azureLocation = Get-EnvironmentVariableSafe -Name 'AZURE_LOCATION'
@@ -637,6 +638,7 @@ try {
     # Display configuration (with safe null handling)
     Write-SectionHeader -Message "Azure Configuration" -Type 'Sub'
     $notSet = '<not set>'
+    Write-Information "Azure Tenant ID          : $($azureTenantId ?? $notSet)"
     Write-Information "  Subscription ID        : $($azureSubscriptionId ?? $notSet)"
     Write-Information "  Resource Group         : $($azureResourceGroup ?? $notSet)"
     Write-Information "  Location               : $($azureLocation ?? $notSet)"
@@ -751,6 +753,7 @@ try {
     
     # Define secrets for AppHost project (all Azure configuration)
     $appHostSecrets = [ordered]@{
+        'Azure:TenantId'                 = $azureTenantId
         'Azure:SubscriptionId'             = $azureSubscriptionId
         'Azure:Location'                   = $azureLocation
         'Azure:ResourceGroup'              = $azureResourceGroup
