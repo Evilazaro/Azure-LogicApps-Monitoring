@@ -245,6 +245,14 @@ static void ConfigureOrdersApi(
         ordersApi.WithReference(resources.AppInsights);
     }
 
+    var clientId = authConfig.ClientId;
+    var tenantId = authConfig.TenantId;
+
+    if (!string.IsNullOrWhiteSpace(clientId) && !string.IsNullOrWhiteSpace(tenantId))
+    {
+        ordersApi.WithEnvironment("AZURE_CLIENT_ID", clientId)
+                 .WithEnvironment("AZURE_TENANT_ID", tenantId);
+    }
     ordersApi.AsHttp2Service();
 }
 
@@ -264,6 +272,15 @@ static void ConfigureOrdersWebApp(
     if (appInsights is not null)
     {
         ordersWebApp.WithReference(appInsights);
+    }
+
+    var clientId = authConfig.ClientId;
+    var tenantId = authConfig.TenantId;
+
+    if (!string.IsNullOrWhiteSpace(clientId) && !string.IsNullOrWhiteSpace(tenantId))
+    {
+        ordersWebApp.WithEnvironment("AZURE_CLIENT_ID", clientId)
+                    .WithEnvironment("AZURE_TENANT_ID", tenantId);
     }
 }
 
