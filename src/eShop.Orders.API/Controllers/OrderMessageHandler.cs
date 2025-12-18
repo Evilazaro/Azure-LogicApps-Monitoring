@@ -35,7 +35,7 @@ public class OrderMessageHandler : BackgroundService
 
         // Read topic and subscription names from configuration
         _topicName = _configuration["Azure:ServiceBus:TopicName"] ?? "orders";
-        _subscriptionName = _configuration["Azure:ServiceBus:SubscriptionName"] ?? "orders-api-subscription";
+        _subscriptionName = _configuration["Azure:ServiceBus:SubscriptionName"] ?? "OrderProcessingSubscription";
     }
 
     /// <inheritdoc/>

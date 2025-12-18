@@ -56,11 +56,7 @@ using (var configActivity = new ActivitySource("eShop.Orders.Startup")
     var messagingConnectionString = builder.Configuration.GetConnectionString("messaging");
     if (!string.IsNullOrWhiteSpace(messagingConnectionString))
     {
-        builder.AddAzureServiceBusClient("messaging", options =>
-        {
-            options.QueueOrTopicName = builder.Configuration["Azure:ServiceBus:TopicName"] ?? "orders";
-            options.SubscriptionName = builder.Configuration["Azure:ServiceBus:SubscriptionName"] ?? "orders-api";
-        });
+        builder.AddAzureServiceBusClient("messaging");
         // Register background service for continuous message processing from Service Bus
         builder.Services.AddHostedService<OrderMessageHandler>();
     }

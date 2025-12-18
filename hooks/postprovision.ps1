@@ -627,7 +627,7 @@ try {
     $azureClientId = Get-EnvironmentVariableSafe -Name 'AZURE_CLIENT_ID'
     $azureServiceBusNamespace = Get-EnvironmentVariableSafe -Name 'AZURE_SERVICE_BUS_NAMESPACE'
     $azureServiceBusTopicName = Get-EnvironmentVariableSafe -Name 'AZURE_SERVICE_BUS_TOPIC_NAME' -DefaultValue 'OrdersPlaced'
-    $azureServiceBusSubscriptionName = Get-EnvironmentVariableSafe -Name 'AZURE_SERVICE_BUS_SUBSCRIPTION_NAME' -DefaultValue 'orders-api-subscription'
+    $azureServiceBusSubscriptionName = Get-EnvironmentVariableSafe -Name 'AZURE_SERVICE_BUS_SUBSCRIPTION_NAME' -DefaultValue 'OrderProcessingSubscription'
     $azureMessagingServiceBusEndpoint = Get-EnvironmentVariableSafe -Name 'MESSAGING_SERVICEBUSENDPOINT'
     $azureEnvName = Get-EnvironmentVariableSafe -Name 'AZURE_ENV_NAME'
     $azureContainerRegistryEndpoint = Get-EnvironmentVariableSafe -Name 'AZURE_CONTAINER_REGISTRY_ENDPOINT'

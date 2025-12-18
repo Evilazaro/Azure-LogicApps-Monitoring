@@ -152,7 +152,7 @@ static (IResourceBuilder<AzureApplicationInsightsResource>? AppInsights, IResour
     // The subscription is required for the API to receive messages from the topic
     var topicName = config.ServiceBusTopicName ?? "orders";
     var ordersTopic = serviceBus.AddServiceBusTopic(topicName);
-    ordersTopic.AddServiceBusSubscription("orders-api-subscription");
+    ordersTopic.AddServiceBusSubscription("OrderProcessingSubscription");
 
     return (AppInsights: appInsights, ServiceBus: serviceBus);
 }
@@ -188,7 +188,7 @@ static (IResourceBuilder<AzureApplicationInsightsResource> AppInsights, IResourc
     // Topic name should always be configured in production, but provide a default for safety
     var topicName = config.ServiceBusTopicName ?? "orders";
     var ordersTopic = serviceBus.AddServiceBusTopic(topicName);
-    ordersTopic.AddServiceBusSubscription("orders-api-subscription");
+    ordersTopic.AddServiceBusSubscription("OrderProcessingSubscription");
 
     // Configure Application Insights
     var appInsights = builder.AddAzureApplicationInsights(TelemetryResourceName)

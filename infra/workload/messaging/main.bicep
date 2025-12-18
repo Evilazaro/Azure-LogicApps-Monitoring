@@ -104,6 +104,17 @@ resource ordersTopic 'Microsoft.ServiceBus/namespaces/topics@2025-05-01-preview'
   name: 'OrdersPlaced'
 }
 
+resource ordersSubscription 'Microsoft.ServiceBus/namespaces/topics/subscriptions@2025-05-01-preview' = {
+  parent: ordersTopic
+  name: 'OrderProcessingSubscription'
+  properties: {
+    maxDeliveryCount: 10
+    lockDuration: 'PT5M'
+    defaultMessageTimeToLive: 'P14D'
+    deadLetteringOnMessageExpiration: true
+  }
+}
+
 @description('Diagnostic settings for Service Bus namespace')
 resource sbDiag 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
   name: '${broker.name}-diag'

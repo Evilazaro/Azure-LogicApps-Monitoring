@@ -231,7 +231,7 @@ graph TB
 
     subgraph "Workflow State"
         W1[Logic Apps Storage<br/>AzureWebJobsStorage<br/>Durable State]
-        W2[Service Bus Topic<br/>OrdersPlaced<br/>orders-api-subscription]
+        W2[Service Bus Topic<br/>OrdersPlaced<br/>OrderProcessingSubscription]
     end
 
     A1 -->|Publish Order<br/>with traceparent| A2
@@ -307,7 +307,7 @@ graph TB
     subgraph "Messaging Layer"
         SB[Azure Service Bus<br/>Premium Namespace<br/>16 Messaging Units]
         TOPIC[OrdersPlaced Topic]
-        SUB[orders-api-subscription]
+        SUB[OrderProcessingSubscription]
     end
 
     subgraph "Workflow Layer"
@@ -624,7 +624,7 @@ graph TB
 
     subgraph "Messaging & Integration"
         SB[Service Bus<br/>Premium<br/>16 Messaging Units]
-        TOPIC[OrdersPlaced<br/>Topic<br/>orders-api-subscription]
+        TOPIC[OrdersPlaced<br/>Topic<br/>OrderProcessingSubscription]
     end
 
     subgraph "Storage & State"
