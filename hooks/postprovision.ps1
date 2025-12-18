@@ -205,13 +205,6 @@ function Set-DotNetUserSecret {
             }
         }
         catch {
-            $errorDetails = @{
-                Key        = $Key
-                ExitCode   = $LASTEXITCODE
-                Message    = $_.Exception.Message
-                StackTrace = $_.ScriptStackTrace
-            }
-            
             Write-Error "Error setting user secret '$Key': $($_.Exception.Message)" -ErrorAction Stop
             throw
         }
@@ -256,9 +249,7 @@ function Get-ApiProjectPath {
             }
             
             # Build path using Join-Path for cross-platform compatibility
-            $path = Join-Path -Path $scriptRoot -ChildPath '..' | Join-Path -ChildPath 'src'
-            $path = Join-Path -Path $path -ChildPath 'eShop.Orders.API'
-            $path = Join-Path -Path $path -ChildPath 'eShop.Orders.API.csproj'
+            $path = Join-Path -Path $scriptRoot -ChildPath '..' -AdditionalChildPath 'src', 'eShop.Orders.API', 'eShop.Orders.API.csproj'
             
             # Normalize to absolute path
             $absolutePath = [System.IO.Path]::GetFullPath($path)
@@ -311,9 +302,7 @@ function Get-ProjectPath {
             }
             
             # Build path using Join-Path for cross-platform compatibility
-            $path = Join-Path -Path $scriptRoot -ChildPath '..'
-            $path = Join-Path -Path $path -ChildPath 'eShopOrders.AppHost'
-            $path = Join-Path -Path $path -ChildPath 'eShopOrders.AppHost.csproj'
+            $path = Join-Path -Path $scriptRoot -ChildPath '..' -AdditionalChildPath 'eShopOrders.AppHost', 'eShopOrders.AppHost.csproj'
             
             # Normalize to absolute path
             $absolutePath = [System.IO.Path]::GetFullPath($path)
