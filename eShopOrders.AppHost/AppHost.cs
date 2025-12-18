@@ -136,7 +136,7 @@ static (IResourceBuilder<AzureApplicationInsightsResource>? AppInsights, IResour
     // Configure Service Bus - use emulator if no configuration is available
     if (config.HasServiceBusConfiguration)
     {
-        var serviceBusParameter = builder.AddParameter(MessagingParamName, config.ServiceBusNamespace!);
+        var serviceBusParameter = builder.AddParameter(MessagingParamName, config.ServiceBusHostName!);
 
         serviceBus = builder.AddAzureServiceBus(MessagingResourceName)
             .AsExisting(serviceBusParameter, resourceGroupParameter);
@@ -177,7 +177,7 @@ static (IResourceBuilder<AzureApplicationInsightsResource> AppInsights, IResourc
 
     // Create parameters for Azure resources
     var appInsightsParameter = builder.AddParameter("azure-application-insights", config.AppInsightsName!);
-    var serviceBusParameter = builder.AddParameter("azure-service-bus", config.ServiceBusNamespace!);
+    var serviceBusParameter = builder.AddParameter("azure-service-bus", config.ServiceBusHostName!);
     var resourceGroupParameter = builder.AddParameter("azure-resource-group", config.ResourceGroupName!);
 
     // Configure Service Bus with topic and subscription
@@ -268,7 +268,7 @@ static void ConfigureOrdersWebApp(
 /// </summary>
 /// <param name="builder">The distributed application builder.</param>
 /// <returns>A tuple containing Azure resource names and configuration status flags.</returns>
-static (string? AppInsightsName, string? ServiceBusNamespace, string? ServiceBusTopicName, string? ResourceGroupName, bool HasResourceGroupConfiguration, bool HasAppInsightsConfiguration, bool HasServiceBusConfiguration)
+static (string? AppInsightsName, string? ServiceBusHostName, string? ServiceBusTopicName, string? ResourceGroupName, bool HasResourceGroupConfiguration, bool HasAppInsightsConfiguration, bool HasServiceBusConfiguration)
     GetAzureConfiguration(IDistributedApplicationBuilder builder)
 {
     ArgumentNullException.ThrowIfNull(builder);
@@ -293,7 +293,7 @@ static (string? AppInsightsName, string? ServiceBusNamespace, string? ServiceBus
 /// Validates that all required production configuration values are present.
 /// </summary>
 static void ValidateProductionConfiguration(
-    (string? AppInsightsName, string? ServiceBusNamespace, string? ServiceBusTopicName, string? ResourceGroupName, bool HasResourceGroupConfiguration, bool HasAppInsightsConfiguration, bool HasServiceBusConfiguration) config)
+    (string? AppInsightsName, string? ServiceBusHostName, string? ServiceBusTopicName, string? ResourceGroupName, bool HasResourceGroupConfiguration, bool HasAppInsightsConfiguration, bool HasServiceBusConfiguration) config)
 {
     if (string.IsNullOrWhiteSpace(config.AppInsightsName))
     {
@@ -301,7 +301,7 @@ static void ValidateProductionConfiguration(
             "Azure Application Insights name is not configured. Set 'Azure:ApplicationInsights:Name' in user secrets or configuration.");
     }
 
-    if (string.IsNullOrWhiteSpace(config.ServiceBusNamespace))
+    if (string.IsNullOrWhiteSpace(config.ServiceBusHostName))
     {
         throw new InvalidOperationException(
             "Azure Service Bus namespace is not configured. Set 'Azure:ServiceBus:Namespace' in user secrets or configuration.");

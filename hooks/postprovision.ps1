@@ -626,8 +626,8 @@ try {
     $azureResourceGroup = Get-EnvironmentVariableSafe -Name 'AZURE_RESOURCE_GROUP'
     $azureLocation = Get-EnvironmentVariableSafe -Name 'AZURE_LOCATION'
     $azureApplicationInsightsName = Get-EnvironmentVariableSafe -Name 'AZURE_APPLICATION_INSIGHTS_NAME'
-    $azureClientId = Get-EnvironmentVariableSafe -Name 'AZURE_CLIENT_ID'
-    $azureServiceBusNamespace = Get-EnvironmentVariableSafe -Name 'AZURE_SERVICE_BUS_NAMESPACE'
+    $azureClientId = Get-EnvironmentVariableSafe -Name 'MANAGED_IDENTITY_CLIENT_ID'
+    $azureServiceBusHostName = Get-EnvironmentVariableSafe -Name 'MESSAGING_SERVICEBUSHOSTNAME'
     $azureServiceBusTopicName = Get-EnvironmentVariableSafe -Name 'AZURE_SERVICE_BUS_TOPIC_NAME' -DefaultValue 'OrdersPlaced'
     $azureServiceBusSubscriptionName = Get-EnvironmentVariableSafe -Name 'AZURE_SERVICE_BUS_SUBSCRIPTION_NAME' -DefaultValue 'OrderProcessingSubscription'
     $azureMessagingServiceBusEndpoint = Get-EnvironmentVariableSafe -Name 'MESSAGING_SERVICEBUSENDPOINT'
@@ -643,7 +643,7 @@ try {
     Write-Information "  Environment Name       : $($azureEnvName ?? $notSet)"
     Write-Information "  Client ID              : $($azureClientId ?? $notSet)"
     Write-Information "  App Insights Name      : $($azureApplicationInsightsName ?? $notSet)"
-    Write-Information "  Service Bus Namespace  : $($azureServiceBusNamespace ?? $notSet)"
+    Write-Information "  Service Bus Host Name  : $($azureServiceBusHostName ?? $notSet)"
     Write-Information "  Service Bus Topic Name : $($azureServiceBusTopicName ?? $notSet)"
     Write-Information "  Service Bus Subscription: $($azureServiceBusSubscriptionName ?? $notSet)"
     Write-Information "  Service Bus Endpoint   : $($azureMessagingServiceBusEndpoint ?? $notSet)"
@@ -754,14 +754,14 @@ try {
         'Azure:ResourceGroup'              = $azureResourceGroup
         'Azure:ApplicationInsights:Name'   = $azureApplicationInsightsName
         'Azure:ClientId'                   = $azureClientId
-        'Azure:ServiceBus:Namespace'       = $azureServiceBusNamespace
+        'Azure:ServiceBus:HostName '       = $azureServiceBusHostName
         'Azure:ServiceBus:TopicName'       = $azureServiceBusTopicName
         'Azure:ServiceBus:SubscriptionName' = $azureServiceBusSubscriptionName
     }
     
     # Define secrets for API project (Service Bus configuration only)
     $apiSecrets = [ordered]@{        
-        'Azure:ServiceBus:Namespace'       = $azureServiceBusNamespace
+        'Azure:ServiceBus:HostName '       = $azureServiceBusHostName
         'Azure:ServiceBus:TopicName'       = $azureServiceBusTopicName
         'Azure:ServiceBus:SubscriptionName' = $azureServiceBusSubscriptionName
     }
