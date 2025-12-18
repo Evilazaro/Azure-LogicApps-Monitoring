@@ -20,6 +20,9 @@ public sealed class OrderService : IOrderService, IAsyncDisposable
     // In-memory store for demo purposes - replace with proper database in production
     private static readonly ConcurrentDictionary<int, Order> _orderStore = new();
 
+    // Disposed flag to prevent multiple disposals and usage after disposal
+    private bool _disposed;
+
     private static readonly JsonSerializerOptions _jsonOptions = new()
     {
         PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
@@ -54,6 +57,7 @@ public sealed class OrderService : IOrderService, IAsyncDisposable
     /// <inheritdoc/>
     public async Task SendOrderMessageAsync(Order order, CancellationToken cancellationToken = default)
     {
+        ThrowIfDisposed();
         ArgumentNullException.ThrowIfNull(order);
 
         // Create activity for message sending operation
@@ -153,6 +157,7 @@ public sealed class OrderService : IOrderService, IAsyncDisposable
         IReadOnlyList<Order> orders,
         CancellationToken cancellationToken = default)
     {
+        ThrowIfDisposed();
         ArgumentNullException.ThrowIfNull(orders);
 
         if (orders.Count == 0)
@@ -290,6 +295,7 @@ public sealed class OrderService : IOrderService, IAsyncDisposable
     /// <inheritdoc/>
     public Task<IReadOnlyList<Order>> GetAllOrdersAsync(CancellationToken cancellationToken = default)
     {
+        ThrowIfDisposed();
         cancellationToken.ThrowIfCancellationRequested();
 
         // Create activity for data retrieval operation
@@ -325,6 +331,7 @@ public sealed class OrderService : IOrderService, IAsyncDisposable
     /// <inheritdoc/>
     public Task<Order?> GetOrderByIdAsync(int id, CancellationToken cancellationToken = default)
     {
+        ThrowIfDisposed();
         cancellationToken.ThrowIfCancellationRequested();
 
         // Create activity for single order retrieval
@@ -374,6 +381,7 @@ public sealed class OrderService : IOrderService, IAsyncDisposable
     /// <inheritdoc/>
     public Task DeleteOrderAsync(int id, CancellationToken cancellationToken = default)
     {
+        ThrowIfDisposed();
         cancellationToken.ThrowIfCancellationRequested();
 
         // Create activity for delete operation
@@ -422,9 +430,39 @@ public sealed class OrderService : IOrderService, IAsyncDisposable
 
     /// <summary>
     /// Disposes the Service Bus sender asynchronously.
+    /// Implements proper async dispose pattern to prevent multiple disposals.
     /// </summary>
     public async ValueTask DisposeAsync()
     {
-        await _sender.DisposeAsync();
+        if (_disposed)
+        {
+            return;
+        }
+
+        try
+        {
+            await _sender.DisposeAsync();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error disposing Service Bus sender");
+        }
+        finally
+        {
+            _disposed = true;
+        }
+
+        GC.SuppressFinalize(this);
+    }
+
+    /// <summary>
+    /// Throws ObjectDisposedException if the service has been disposed.
+    /// </summary>
+    private void ThrowIfDisposed()
+    {
+        if (_disposed)
+        {
+            throw new ObjectDisposedException(nameof(OrderService));
+        }
     }
 }

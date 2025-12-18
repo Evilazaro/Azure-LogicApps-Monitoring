@@ -29,8 +29,9 @@ public class ExternalApiClient
     /// Trace context is automatically propagated via HTTP headers.
     /// </summary>
     /// <param name="orderId">The order identifier to validate.</param>
+    /// <param name="cancellationToken">Cancellation token to cancel the operation.</param>
     /// <returns>True if the order is valid, false otherwise.</returns>
-    public async Task<bool> ValidateOrderAsync(string orderId)
+    public async Task<bool> ValidateOrderAsync(string orderId, CancellationToken cancellationToken = default)
     {
         // Create a custom span for this operation
         using var activity = _activitySource.StartActivity("ValidateOrder.ExternalApi", ActivityKind.Client);
@@ -45,7 +46,7 @@ public class ExternalApiClient
             // HTTP client instrumentation automatically adds trace headers:
             // - traceparent (W3C Trace Context)
             // - tracestate (vendor-specific context)
-            var response = await _httpClient.GetAsync($"/api/validation/{orderId}");
+            var response = await _httpClient.GetAsync($"/api/validation/{orderId}", cancellationToken);
 
             activity?.SetTag("http.response.status_code", (int)response.StatusCode);
 

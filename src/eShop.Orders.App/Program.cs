@@ -11,9 +11,12 @@
 using eShop.Orders.App.Components;
 using System.Diagnostics;
 
-// Create activity source for application startup tracing
-using var startupActivity = new ActivitySource("eShop.Orders.App.Startup")
-    .StartActivity("Application.Startup", ActivityKind.Internal);
+// Static ActivitySource for application startup tracing
+// Persists for the application lifetime to ensure proper trace correlation
+var startupActivitySource = new ActivitySource("eShop.Orders.App.Startup");
+
+// Create activity for application startup tracing
+using var startupActivity = startupActivitySource.StartActivity("Application.Startup", ActivityKind.Internal);
 
 startupActivity?.SetTag("service.name", "eShop.Orders.App");
 startupActivity?.SetTag("deployment.environment", Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ?? "Unknown");
@@ -21,8 +24,7 @@ startupActivity?.SetTag("deployment.environment", Environment.GetEnvironmentVari
 var builder = WebApplication.CreateBuilder(args);
 
 // Add service defaults: OpenTelemetry instrumentation, health checks, service discovery, and resilience
-using (var configActivity = new ActivitySource("eShop.Orders.App.Startup")
-    .StartActivity("Application.ConfigureServices", ActivityKind.Internal))
+using (var configActivity = startupActivitySource.StartActivity("Application.ConfigureServices", ActivityKind.Internal))
 {
     configActivity?.SetTag("configuration.step", "service_defaults");
     builder.AddServiceDefaults();
@@ -54,14 +56,12 @@ using (var configActivity = new ActivitySource("eShop.Orders.App.Startup")
 }
 
 
-using (var buildActivity = new ActivitySource("eShop.Orders.App.Startup")
-    .StartActivity("Application.Build", ActivityKind.Internal))
+using (var buildActivity = startupActivitySource.StartActivity("Application.Build", ActivityKind.Internal))
 {
     var app = builder.Build();
     buildActivity?.AddEvent(new ActivityEvent("Application built successfully"));
 
-    using (var middlewareActivity = new ActivitySource("eShop.Orders.App.Startup")
-        .StartActivity("Application.ConfigureMiddleware", ActivityKind.Internal))
+    using (var middlewareActivity = startupActivitySource.StartActivity("Application.ConfigureMiddleware", ActivityKind.Internal))
     {
         // Map health check endpoints FIRST for container orchestration probes
         app.MapDefaultEndpoints();

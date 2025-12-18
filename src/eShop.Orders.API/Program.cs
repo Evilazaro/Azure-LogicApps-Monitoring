@@ -12,9 +12,12 @@ using eShop.Orders.API.Middleware;
 using eShop.Orders.API.Services;
 using System.Diagnostics;
 
-// Create activity source for application startup tracing
-using var startupActivity = new ActivitySource("eShop.Orders.Startup")
-    .StartActivity("Application.Startup", ActivityKind.Internal);
+// Static ActivitySource for application startup tracing
+// Persists for the application lifetime to ensure proper trace correlation
+var startupActivitySource = new ActivitySource("eShop.Orders.Startup");
+
+// Create activity for application startup tracing
+using var startupActivity = startupActivitySource.StartActivity("Application.Startup", ActivityKind.Internal);
 
 startupActivity?.SetTag("service.name", "eShop.Orders.API");
 startupActivity?.SetTag("deployment.environment", Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ?? "Unknown");
@@ -22,8 +25,7 @@ startupActivity?.SetTag("deployment.environment", Environment.GetEnvironmentVari
 var builder = WebApplication.CreateBuilder(args);
 
 // Add service defaults: OpenTelemetry instrumentation, health checks, service discovery, and resilience
-using (var configActivity = new ActivitySource("eShop.Orders.Startup")
-    .StartActivity("Application.ConfigureServices", ActivityKind.Internal))
+using (var configActivity = startupActivitySource.StartActivity("Application.ConfigureServices", ActivityKind.Internal))
 {
     configActivity?.SetTag("configuration.step", "service_defaults");
     builder.AddServiceDefaults();
@@ -107,10 +109,9 @@ using (var configActivity = new ActivitySource("eShop.Orders.Startup")
                 {
                     // WARNING: Fallback to permissive policy if no origins configured
                     // This should be fixed in production by configuring proper allowed origins
-                    var logger = builder.Services.BuildServiceProvider()
-                        .GetRequiredService<ILogger<Program>>();
-                    logger.LogWarning(
-                        "CORS configuration is missing. Using permissive policy. " +
+                    // Using Console.WriteLine to avoid building ServiceProvider during configuration
+                    Console.WriteLine(
+                        "WARNING: CORS configuration is missing. Using permissive policy. " +
                         "Configure 'Cors:AllowedOrigins' in appsettings for production.");
 
                     policy.AllowAnyOrigin()
@@ -124,14 +125,12 @@ using (var configActivity = new ActivitySource("eShop.Orders.Startup")
     configActivity?.AddEvent(new ActivityEvent("Services configured successfully"));
 }
 
-using (var buildActivity = new ActivitySource("eShop.Orders.Startup")
-    .StartActivity("Application.Build", ActivityKind.Internal))
+using (var buildActivity = startupActivitySource.StartActivity("Application.Build", ActivityKind.Internal))
 {
     var app = builder.Build();
     buildActivity?.AddEvent(new ActivityEvent("Application built successfully"));
 
-    using (var middlewareActivity = new ActivitySource("eShop.Orders.Startup")
-        .StartActivity("Application.ConfigureMiddleware", ActivityKind.Internal))
+    using (var middlewareActivity = startupActivitySource.StartActivity("Application.ConfigureMiddleware", ActivityKind.Internal))
     {
         // Map health check endpoints FIRST for container orchestration probes
         // Health checks must respond on HTTP without HTTPS redirect

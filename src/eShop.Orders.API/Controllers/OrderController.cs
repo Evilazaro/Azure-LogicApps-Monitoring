@@ -33,9 +33,10 @@ public class OrdersController : ControllerBase
     /// Retrieves all orders with distributed tracing.
     /// Automatic span created by ASP.NET Core instrumentation.
     /// </summary>
+    /// <param name="cancellationToken">Cancellation token to cancel the operation.</param>
     /// <returns>List of orders.</returns>
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<Order>>> GetOrders()
+    public async Task<ActionResult<IEnumerable<Order>>> GetOrders(CancellationToken cancellationToken = default)
     {
         // Create a custom span for the business logic
         using var activity = _activitySource.StartActivity("GetOrders.BusinessLogic");
@@ -48,7 +49,7 @@ public class OrdersController : ControllerBase
 
             _logger.LogInformation("Retrieving all orders");
 
-            var orders = await _orderService.GetAllOrdersAsync();
+            var orders = await _orderService.GetAllOrdersAsync(cancellationToken);
 
             // Add result metrics to the span
             activity?.SetTag("orders.count", orders.Count);
@@ -71,9 +72,10 @@ public class OrdersController : ControllerBase
     /// Retrieves a specific order by ID with detailed tracing.
     /// </summary>
     /// <param name="id">The order identifier.</param>
+    /// <param name="cancellationToken">Cancellation token to cancel the operation.</param>
     /// <returns>The requested order or 404 if not found.</returns>
     [HttpGet("{id:int}")]
-    public async Task<ActionResult<Order>> GetOrder(int id)
+    public async Task<ActionResult<Order>> GetOrder(int id, CancellationToken cancellationToken = default)
     {
         using var activity = _activitySource.StartActivity("GetOrder.BusinessLogic");
 
@@ -85,7 +87,7 @@ public class OrdersController : ControllerBase
 
             _logger.LogInformation("Retrieving order {OrderId}", id);
 
-            var order = await _orderService.GetOrderByIdAsync(id);
+            var order = await _orderService.GetOrderByIdAsync(id, cancellationToken);
 
             if (order == null)
             {
@@ -116,10 +118,11 @@ public class OrdersController : ControllerBase
     /// Demonstrates context propagation to Service Bus messages.
     /// </summary>
     /// <param name="order">The order to create.</param>
+    /// <param name="cancellationToken">Cancellation token to cancel the operation.</param>
     /// <returns>The created order with location header.</returns>
     [HttpPost]
     [Route("PlaceOrder")]
-    public async Task<ActionResult<Order>> PlaceOrder([FromBody] Order order)
+    public async Task<ActionResult<Order>> PlaceOrder([FromBody] Order order, CancellationToken cancellationToken = default)
     {
         using var activity = _activitySource.StartActivity("PlaceOrder.BusinessLogic");
 
@@ -145,7 +148,7 @@ public class OrdersController : ControllerBase
                 messagingActivity?.SetTag("messaging.operation", "publish");
 
                 // Send order to Service Bus - this includes database persistence
-                await _orderService.SendOrderMessageAsync(order);
+                await _orderService.SendOrderMessageAsync(order, cancellationToken);
 
                 messagingActivity?.AddEvent(new ActivityEvent("Order created event published"));
             }
@@ -175,9 +178,10 @@ public class OrdersController : ControllerBase
     /// </summary>
     /// <param name="id">The order identifier.</param>
     /// <param name="order">The updated order data.</param>
+    /// <param name="cancellationToken">Cancellation token to cancel the operation.</param>
     /// <returns>No content on success, 404 if order not found.</returns>
     [HttpPut("{id:int}")]
-    public async Task<IActionResult> UpdateOrder(int id, [FromBody] Order order)
+    public async Task<IActionResult> UpdateOrder(int id, [FromBody] Order order, CancellationToken cancellationToken = default)
     {
         using var activity = _activitySource.StartActivity("UpdateOrder.BusinessLogic");
 
@@ -188,7 +192,7 @@ public class OrdersController : ControllerBase
 
             _logger.LogInformation("Updating order {OrderId}", id);
 
-            var existingOrder = await _orderService.GetOrderByIdAsync(id);
+            var existingOrder = await _orderService.GetOrderByIdAsync(id, cancellationToken);
             if (existingOrder == null)
             {
                 activity?.SetTag("orders.found", false);
@@ -198,7 +202,7 @@ public class OrdersController : ControllerBase
 
             // Update order and send message
             order.Id = id.ToString();
-            await _orderService.SendOrderMessageAsync(order);
+            await _orderService.SendOrderMessageAsync(order, cancellationToken);
 
             activity?.AddEvent(new ActivityEvent("Order updated successfully"));
             _logger.LogInformation("Order {OrderId} updated successfully", id);
@@ -219,9 +223,10 @@ public class OrdersController : ControllerBase
     /// Deletes an order with distributed tracing.
     /// </summary>
     /// <param name="id">The order identifier.</param>
+    /// <param name="cancellationToken">Cancellation token to cancel the operation.</param>
     /// <returns>No content on success, 404 if order not found.</returns>
     [HttpDelete("{id:int}")]
-    public async Task<IActionResult> DeleteOrder(int id)
+    public async Task<IActionResult> DeleteOrder(int id, CancellationToken cancellationToken = default)
     {
         using var activity = _activitySource.StartActivity("DeleteOrder.BusinessLogic");
 
@@ -232,7 +237,7 @@ public class OrdersController : ControllerBase
 
             _logger.LogInformation("Deleting order {OrderId}", id);
 
-            var existingOrder = await _orderService.GetOrderByIdAsync(id);
+            var existingOrder = await _orderService.GetOrderByIdAsync(id, cancellationToken);
             if (existingOrder == null)
             {
                 activity?.SetTag("orders.found", false);
@@ -241,7 +246,7 @@ public class OrdersController : ControllerBase
             }
 
             // Delete the order
-            await _orderService.DeleteOrderAsync(id);
+            await _orderService.DeleteOrderAsync(id, cancellationToken);
 
             activity?.SetTag("orders.deleted", true);
             activity?.AddEvent(new ActivityEvent("Order deleted successfully"));
