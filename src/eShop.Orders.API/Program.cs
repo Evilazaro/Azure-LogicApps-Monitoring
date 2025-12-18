@@ -66,59 +66,14 @@ using (var configActivity = startupActivitySource.StartActivity("Application.Con
 
     // Configure CORS to allow Blazor WebAssembly client requests
     // Uses Aspire service discovery for automatic origin resolution
+    
     builder.Services.AddCors(options =>
     {
         options.AddDefaultPolicy(policy =>
         {
-            if (builder.Environment.IsDevelopment())
-            {
-                // Allow all origins in development for easier testing
-                policy.AllowAnyOrigin()
-                      .AllowAnyMethod()
-                      .AllowAnyHeader();
-            }
-            else
-            {
-                // In production, use Aspire service discovery to resolve allowed origins
-                var allowedOrigins = new List<string>();
-
-                // Try to resolve orders-webapp origin from Aspire service discovery
-                var webAppOrigin = builder.Configuration["services:orders-webapp:https:0"]
-                    ?? builder.Configuration["services:orders-webapp:http:0"];
-
-                if (!string.IsNullOrEmpty(webAppOrigin))
-                {
-                    allowedOrigins.Add(webAppOrigin);
-                }
-
-                // Also check appsettings.json for additional origins
-                var configuredOrigins = builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>();
-                if (configuredOrigins?.Length > 0)
-                {
-                    allowedOrigins.AddRange(configuredOrigins);
-                }
-
-                if (allowedOrigins.Count > 0)
-                {
-                    policy.WithOrigins([.. allowedOrigins])
-                          .AllowAnyMethod()
-                          .AllowAnyHeader()
-                          .AllowCredentials();
-                }
-                else
-                {
-                    // WARNING: Fallback to permissive policy if no origins configured
-                    // This should be fixed in production by configuring proper allowed origins
-                    // Using Console.WriteLine to avoid building ServiceProvider during configuration
-                    Console.WriteLine(
-                        "WARNING: CORS configuration is missing. Using permissive policy. " +
-                        "Configure 'Cors:AllowedOrigins' in appsettings for production.");
-
-                    policy.AllowAnyOrigin()
-                          .AllowAnyMethod()
-                          .AllowAnyHeader();
-                }
-            }
+            policy.AllowAnyOrigin()
+                .AllowAnyHeader()
+                .AllowAnyMethod();
         });
     });
 
