@@ -50,10 +50,6 @@ $ErrorActionPreference = 'Stop'
 $InformationPreference = 'Continue'
 $ProgressPreference = 'SilentlyContinue'
 
-# Suppress PSScriptAnalyzer warnings for unavoidable patterns
-[Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseDeclaredVarsMoreThanAssignments', '', Justification = 'Script-level variables used in try/catch/finally blocks')]
-param()
-
 # Script-level constants
 $script:ScriptVersion = '2.0.0'
 $script:RequiredEnvironmentVariables = @(
