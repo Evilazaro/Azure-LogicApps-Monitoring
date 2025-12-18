@@ -241,13 +241,17 @@ static void ConfigureOrdersApi(IDistributedApplicationBuilder builder,
     // Add Service Bus reference if available
     if (resources.ServiceBus is not null)
     {
-        ordersApi.WithReference(resources.ServiceBus);
+        ordersApi
+            .WithReference(resources.ServiceBus)
+            .WaitFor(resources.ServiceBus);
     }
 
     // Add Application Insights reference if available
     if (resources.AppInsights is not null)
     {
-        ordersApi.WithReference(resources.AppInsights);
+        ordersApi
+            .WithReference(resources.AppInsights)
+            .WaitFor(resources.AppInsights);
     }
 
     ordersApi.AsHttp2Service();
@@ -261,22 +265,26 @@ static void ConfigureOrdersWebApp(IDistributedApplicationBuilder builder,
     IResourceBuilder<ProjectResource> ordersApi,
     IResourceBuilder<AzureApplicationInsightsResource>? appInsights)
 {
-    var config = GetAzureConfiguration(builder);
+    //    var config = GetAzureConfiguration(builder);
 
-    if (!string.IsNullOrEmpty(config.TenantId) && !string.IsNullOrEmpty(config.ClientId))
-    {
-        ordersApi.WithEnvironment("AZURE_TENANT_ID", config.TenantId);
-        ordersApi.WithEnvironment("AZURE_CLIENT_ID", config.ClientId);
-    }
-
-    ordersWebApp.WithReference(ordersApi)
-                .AsHttp2Service();
+    //    if (!string.IsNullOrEmpty(config.TenantId) && !string.IsNullOrEmpty(config.ClientId))
+    //    {
+    //        ordersWebApp.WithEnvironment("AZURE_TENANT_ID", config.TenantId);
+    //        ordersWebApp.WithEnvironment("AZURE_CLIENT_ID", config.ClientId);
+    //    }
 
     // Add Application Insights reference if available
     if (appInsights is not null)
     {
-        ordersWebApp.WithReference(appInsights);
+        ordersWebApp.WithReference(appInsights)
+                    .WaitFor(appInsights);
     }
+
+    ordersWebApp.WithReference(ordersApi)
+                .WaitFor(ordersApi)
+                .AsHttp2Service();
+
+    
 
 }
 
