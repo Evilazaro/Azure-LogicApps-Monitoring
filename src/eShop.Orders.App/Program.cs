@@ -23,6 +23,16 @@ startupActivity?.SetTag("deployment.environment", Environment.GetEnvironmentVari
 
 var builder = WebApplication.CreateBuilder(args);
 
+builder.Services.AddCors(options =>
+{
+    options.AddDefaultPolicy(policy =>
+    {
+        policy.AllowAnyOrigin()
+              .AllowAnyHeader()
+              .AllowAnyMethod();
+    });
+});
+
 // Add service defaults: OpenTelemetry instrumentation, health checks, service discovery, and resilience
 using (var configActivity = startupActivitySource.StartActivity("Application.ConfigureServices", ActivityKind.Internal))
 {
