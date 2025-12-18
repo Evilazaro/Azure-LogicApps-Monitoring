@@ -1,23 +1,21 @@
 /*
-  Messaging Infrastructure Module
-  ===============================
-  Deploys Service Bus and storage infrastructure for workflow orchestration.
+  Data Infrastructure Module (CURRENTLY UNUSED)
+  =============================================
+  NOTE: This file appears to be orphaned and is not referenced by any parent modules.
+  The functionality provided here is already covered by the messaging/main.bicep module.
+  
+  Consider removing this file or integrating it into the main deployment flow.
   
   Components:
-  1. Service Bus Premium namespace with order queue
-  2. Storage account for Logic Apps runtime (Standard tier requirement)
-  3. Blob containers for processed orders (success/error segregation)
+  1. Storage account for Logic Apps runtime (Standard tier requirement)
+  2. Blob containers for processed orders (success/error segregation)
   
   Key Features:
-  - Premium Service Bus tier for enhanced performance and scalability
-  - Capacity of 16 messaging units
-  - Managed identity authentication for Service Bus
   - Separate containers for success and error order processing
-  - Diagnostic settings for all resources
 */
 
-metadata name = 'Messaging Infrastructure'
-metadata description = 'Deploys Service Bus namespace, queues, and workflow storage account'
+metadata name = 'Data Infrastructure (Unused)'
+metadata description = 'Storage account and blob containers for workflow data - Currently not deployed'
 
 // ========== Type Definitions ==========
 

@@ -67,11 +67,6 @@ param metricsSettings object[]
 @description('Resource tags applied to Service Bus resources.')
 param tags tagsType
 
-@description('Name of the storage queue for tax processing workflow tasks')
-@minLength(3)
-@maxLength(63)
-param topicName string = 'OrdersPlaced'
-
 // ========== Variables ==========
 
 // Remove special characters for naming compliance
