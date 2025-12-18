@@ -42,7 +42,7 @@ properties:
           - name: services__eshop-orders-api__https__0
             value: https://eshop-orders-api.internal.{{ .Env.AZURE_CONTAINER_APPS_ENVIRONMENT_DEFAULT_DOMAIN }}
     scale:
-      minReplicas: 1
+      minReplicas: 10
 tags:
   azd-service-name: eshop-web-app
   aspire-resource-name: eshop-web-app
