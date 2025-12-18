@@ -106,7 +106,7 @@ static (IResourceBuilder<AzureApplicationInsightsResource>? AppInsights, IResour
     ArgumentNullException.ThrowIfNull(builder);
 
     const string TelemetryParamName = "azure-application-insights-dev";
-    const string TelemetryResourceName = "telemetry-dev";
+    const string TelemetryResourceName = "telemetry";
     const string MessagingParamName = "azure-service-bus-dev";
     const string MessagingResourceName = "messaging";
     const string ServiceBusDevParameterName = "service-bus-dev";
