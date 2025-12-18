@@ -8,7 +8,7 @@
 - [Solution Components](#solution-components)
 - [Azure Components](#azure-components)
 - [Project Structure](#project-structure)
-- [Architecture Layers (TOGAF)](#architecture-layers-togaf)
+- [Architecture Layers ](#architecture-layers)
   - [Data Layer](#data-layer)
   - [Application Layer](#application-layer)
     - [Microservices Architecture](#microservices-architecture)
@@ -130,7 +130,7 @@ The solution is designed for enterprise DevOps and Platform Engineering teams wh
         └── eShop.Orders.App.Client.csproj
 ```
 
-## Architecture Layers (TOGAF)
+## Architecture Layers 
 
 ### Data Layer
 
@@ -173,10 +173,6 @@ graph TB
     M2 --> M3
     
     classDef data fill:#E3F2FD,stroke:#1565C0,color:#000,font-weight:bold,rx:10,ry:10;
-    
-    style "Application Data" fill:#FFF,stroke:#666,stroke-width:2px
-    style "Workflow State" fill:#FFF,stroke:#666,stroke-width:2px
-    style "Monitoring Data" fill:#FFF,stroke:#666,stroke-width:2px
 ```
 
 **Legend:**
@@ -232,11 +228,6 @@ graph TB
     
     classDef app fill:#E8F5E9,stroke:#2E7D32,color:#000,font-weight:bold,rx:10,ry:10;
     classDef monitor fill:#FFF9C4,stroke:#F57F17,color:#000,font-weight:bold,rx:10,ry:10;
-    
-    style "Client Layer" fill:#FFF,stroke:#666,stroke-width:2px
-    style "API Layer" fill:#FFF,stroke:#666,stroke-width:2px
-    style "Workflow Layer" fill:#FFF,stroke:#666,stroke-width:2px
-    style "Monitoring" fill:#FFF,stroke:#666,stroke-width:2px
 ```
 
 **Legend:**
@@ -341,11 +332,6 @@ graph TB
     
     classDef tech fill:#F3E5F5,stroke:#6A1B9A,color:#000,font-weight:bold,rx:10,ry:10;
     classDef azure fill:#BBDEFB,stroke:#0D47A1,color:#000,font-weight:bold,rx:10,ry:10;
-    
-    style "Platform Engineering" fill:#FFF,stroke:#666,stroke-width:2px
-    style "Container Platform" fill:#FFF,stroke:#666,stroke-width:2px
-    style "Azure PaaS" fill:#FFF,stroke:#666,stroke-width:2px
-    style "DevOps" fill:#FFF,stroke:#666,stroke-width:2px
 ```
 
 **Legend:**
@@ -451,11 +437,6 @@ graph TB
     classDef tech fill:#F3E5F5,stroke:#6A1B9A,color:#000,font-weight:bold,rx:10,ry:10;
     classDef azure fill:#BBDEFB,stroke:#0D47A1,color:#000,font-weight:bold,rx:10,ry:10;
     classDef monitor fill:#FFF9C4,stroke:#F57F17,color:#000,font-weight:bold,rx:10,ry:10;
-    
-    style "Development" fill:#FFF,stroke:#666,stroke-width:2px
-    style "Azure Platform" fill:#FFF,stroke:#666,stroke-width:2px
-    style "Monitoring Stack" fill:#FFF,stroke:#666,stroke-width:2px
-    style "IaC & Deployment" fill:#FFF,stroke:#666,stroke-width:2px
 ```
 
 **Legend:**
