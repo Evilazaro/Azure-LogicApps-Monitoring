@@ -214,14 +214,11 @@ static void ConfigureServices(
     ArgumentNullException.ThrowIfNull(ordersApi);
     ArgumentNullException.ThrowIfNull(ordersWebApp);
 
-    // Get authentication configuration
-    var authConfig = GetAuthenticationConfiguration(builder);
-
     // Configure Orders API
-    ConfigureOrdersApi(ordersApi, builder.Environment.EnvironmentName, authConfig, resources);
+    ConfigureOrdersApi(ordersApi, builder.Environment.EnvironmentName, resources);
 
     // Configure Orders Web App (Blazor WebAssembly)
-    ConfigureOrdersWebApp(ordersWebApp, ordersApi, authConfig, resources.AppInsights);
+    ConfigureOrdersWebApp(ordersWebApp, ordersApi, resources.AppInsights);
 }
 
 /// <summary>
@@ -230,7 +227,6 @@ static void ConfigureServices(
 static void ConfigureOrdersApi(
     IResourceBuilder<ProjectResource> ordersApi,
     string environmentName,
-    (string? TenantId, string? ClientId) authConfig,
     (IResourceBuilder<AzureApplicationInsightsResource>? AppInsights, IResourceBuilder<AzureServiceBusResource>? ServiceBus) resources)
 {
     // Add Service Bus reference if available
@@ -245,13 +241,6 @@ static void ConfigureOrdersApi(
         ordersApi.WithReference(resources.AppInsights);
     }
 
-    var clientId = authConfig.ClientId;
-    var tenantId = authConfig.TenantId;
-
-    //if (!string.IsNullOrWhiteSpace(clientId) && !string.IsNullOrWhiteSpace(tenantId))
-    //{
-    //    ordersApi.WithEnvironment("MANAGED_IDENTITY_CLIENT_ID", clientId)
-    //}
     ordersApi.AsHttp2Service();
 }
 
@@ -261,7 +250,6 @@ static void ConfigureOrdersApi(
 static void ConfigureOrdersWebApp(
     IResourceBuilder<ProjectResource> ordersWebApp,
     IResourceBuilder<ProjectResource> ordersApi,
-    (string? TenantId, string? ClientId) authConfig,
     IResourceBuilder<AzureApplicationInsightsResource>? appInsights)
 {
     ordersWebApp.WithReference(ordersApi)
@@ -273,13 +261,6 @@ static void ConfigureOrdersWebApp(
         ordersWebApp.WithReference(appInsights);
     }
 
-    var clientId = authConfig.ClientId;
-    var tenantId = authConfig.TenantId;
-
-    //if (!string.IsNullOrWhiteSpace(clientId) && !string.IsNullOrWhiteSpace(tenantId))
-    //{
-    //    ordersWebApp.WithEnvironment("MANAGED_IDENTITY_CLIENT_ID", clientId);
-    //}
 }
 
 /// <summary>
@@ -306,21 +287,6 @@ static (string? AppInsightsName, string? ServiceBusNamespace, string? ServiceBus
     var hasResourceGroup = !string.IsNullOrWhiteSpace(resourceGroupName);
 
     return (appInsightsName, serviceBusNamespace, serviceBusTopicName, resourceGroupName, hasResourceGroup, hasAppInsightsConfig, hasServiceBusConfig);
-}
-
-/// <summary>
-/// Retrieves authentication configuration from the builder's configuration sources.
-/// </summary>
-/// <param name="builder">The distributed application builder.</param>
-/// <returns>A tuple containing Azure AD tenant ID and client ID.</returns>
-static (string? TenantId, string? ClientId) GetAuthenticationConfiguration(IDistributedApplicationBuilder builder)
-{
-    ArgumentNullException.ThrowIfNull(builder);
-
-    var tenantId = builder.Configuration["AZURE_TENANT_ID"];
-    var clientId = builder.Configuration["MANAGED_IDENTITY_CLIENT_ID"];
-
-    return (tenantId, clientId);
 }
 
 /// <summary>
