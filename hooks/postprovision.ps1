@@ -286,7 +286,7 @@ function Get-ProjectPath {
         Constructs the cross-platform path to the AppHost project file.
     
     .DESCRIPTION
-        Builds the absolute path to the eShopOrders.AppHost.csproj file
+        Builds the absolute path to the app.AppHost.csproj file
         relative to the script location. Uses Join-Path for cross-platform compatibility.
     
     .OUTPUTS
@@ -294,7 +294,7 @@ function Get-ProjectPath {
     
     .EXAMPLE
         Get-ProjectPath
-        Returns: Z:\Logic\eShopOrders.AppHost\eShopOrders.AppHost.csproj
+        Returns: Z:\Logic\app.AppHost\app.AppHost.csproj
         
     .NOTES
         Falls back to current location if $PSScriptRoot is not available.
@@ -319,8 +319,8 @@ function Get-ProjectPath {
             
             # Build path using Join-Path for cross-platform compatibility
             $path = Join-Path -Path $scriptRoot -ChildPath '..'
-            $path = Join-Path -Path $path -ChildPath 'eShopOrders.AppHost'
-            $path = Join-Path -Path $path -ChildPath 'eShopOrders.AppHost.csproj'
+            $path = Join-Path -Path $path -ChildPath 'app.AppHost'
+            $path = Join-Path -Path $path -ChildPath 'app.AppHost.csproj'
             
             # Normalize to absolute path
             $absolutePath = [System.IO.Path]::GetFullPath($path)
