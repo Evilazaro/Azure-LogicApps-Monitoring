@@ -143,7 +143,7 @@ static (IResourceBuilder<AzureApplicationInsightsResource>? AppInsights, IResour
     }
     else
     {
-        var serviceBusParameter = builder.AddParameter(MessagingResourceName, ServiceBusDevParameterName);
+        var serviceBusParameter = builder.AddParameter(ServiceBusDevParameterName, ServiceBusDevParameterName);
         serviceBus = builder.AddAzureServiceBus(MessagingResourceName)
             .RunAsEmulator();
     }
@@ -233,21 +233,7 @@ static void ConfigureOrdersApi(
     (string? TenantId, string? ClientId) authConfig,
     (IResourceBuilder<AzureApplicationInsightsResource>? AppInsights, IResourceBuilder<AzureServiceBusResource>? ServiceBus) resources)
 {
-    const string AzureTenantIdKey = "AZURE_TENANT_ID";
-    const string AzureClientIdKey = "AZURE_CLIENT_ID";
-
     ordersApi.WithEnvironment("ASPNETCORE_ENVIRONMENT", environmentName);
-
-    // Add authentication configuration if available
-    if (!string.IsNullOrWhiteSpace(authConfig.TenantId))
-    {
-        ordersApi.WithEnvironment(AzureTenantIdKey, authConfig.TenantId);
-    }
-
-    if (!string.IsNullOrWhiteSpace(authConfig.ClientId))
-    {
-        ordersApi.WithEnvironment(AzureClientIdKey, authConfig.ClientId);
-    }
 
     // Add Service Bus reference if available
     if (resources.ServiceBus is not null)
@@ -273,22 +259,8 @@ static void ConfigureOrdersWebApp(
     (string? TenantId, string? ClientId) authConfig,
     IResourceBuilder<AzureApplicationInsightsResource>? appInsights)
 {
-    const string AzureTenantIdKey = "AZURE_TENANT_ID";
-    const string AzureClientIdKey = "AZURE_CLIENT_ID";
-
     ordersWebApp.WithReference(ordersApi)
                 .AsHttp2Service();
-
-    // Add authentication configuration if available
-    if (!string.IsNullOrWhiteSpace(authConfig.TenantId))
-    {
-        ordersWebApp.WithEnvironment(AzureTenantIdKey, authConfig.TenantId);
-    }
-
-    if (!string.IsNullOrWhiteSpace(authConfig.ClientId))
-    {
-        ordersWebApp.WithEnvironment(AzureClientIdKey, authConfig.ClientId);
-    }
 
     // Add Application Insights reference if available
     if (appInsights is not null)
@@ -332,10 +304,8 @@ static (string? TenantId, string? ClientId) GetAuthenticationConfiguration(IDist
 {
     ArgumentNullException.ThrowIfNull(builder);
 
-    var tenantId = builder.Configuration["Azure:TenantId"]
-                ?? builder.Configuration["AZURE_TENANT_ID"];
-    var clientId = builder.Configuration["Azure:ClientId"]
-                ?? builder.Configuration["AZURE_CLIENT_ID"];
+    var tenantId = builder.Configuration["Azure:TenantId"];
+    var clientId = builder.Configuration["Azure:ClientId"];
 
     return (tenantId, clientId);
 }
