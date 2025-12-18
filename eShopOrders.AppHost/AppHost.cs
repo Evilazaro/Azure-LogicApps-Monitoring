@@ -2,42 +2,80 @@ using Aspire.Hosting.Azure;
 using Microsoft.Extensions.Hosting;
 using System.Diagnostics;
 
-// Create activity source for AppHost startup tracing
-using var startupActivity = new ActivitySource("eShop.Orders.AppHost.Startup")
-    .StartActivity("AppHost.Startup", ActivityKind.Internal);
+// ========== ActivitySource Management ==========
+// Static ActivitySource ensures proper lifecycle management and prevents resource leaks
+// This instance is reused throughout the application lifetime
+var activitySource = new ActivitySource("eShop.Orders.AppHost");
 
-startupActivity?.SetTag("aspire.apphost", "eShopOrders");
-startupActivity?.SetTag("environment", Environment.GetEnvironmentVariable("DOTNET_ENVIRONMENT") ?? "Production");
+// ========== Application Startup ==========
+// Create root activity for AppHost startup tracing
+using var startupActivity = activitySource.StartActivity("AppHost.Startup", ActivityKind.Internal);
 
-var builder = DistributedApplication.CreateBuilder(args);
-
-ArgumentNullException.ThrowIfNull(builder);
-
-var ordersApi = builder.AddProject<Projects.eShop_Orders_API>("orders-api");
-var ordersWebApp = builder.AddProject<Projects.eShop_Orders_App>("orders-webapp");
-
-// Configure resources based on environment
-using (var resourceActivity = new ActivitySource("eShop.Orders.AppHost.Startup")
-    .StartActivity("AppHost.ConfigureResources", ActivityKind.Internal))
+try
 {
-    resourceActivity?.SetTag("environment", builder.Environment.EnvironmentName);
-    resourceActivity?.SetTag("is_development", builder.Environment.IsDevelopment());
+    startupActivity?.SetTag("aspire.apphost", "eShopOrders");
+    startupActivity?.SetTag("environment", Environment.GetEnvironmentVariable("DOTNET_ENVIRONMENT") ?? "Production");
+    startupActivity?.SetTag("version", "1.0.0");
 
-    var resources = ConfigureInfrastructureResources(builder);
-    resourceActivity?.AddEvent(new ActivityEvent("Infrastructure resources configured"));
+    var builder = DistributedApplication.CreateBuilder(args);
 
-    ConfigureServices(builder, ordersApi, ordersWebApp, resources);
-    resourceActivity?.AddEvent(new ActivityEvent("Services configured"));
+    ArgumentNullException.ThrowIfNull(builder);
+
+    var ordersApi = builder.AddProject<Projects.eShop_Orders_API>("orders-api");
+    var ordersWebApp = builder.AddProject<Projects.eShop_Orders_App>("orders-webapp");
+
+    // ========== Resource Configuration ==========
+    // Configure infrastructure resources based on environment
+    using (var resourceActivity = activitySource.StartActivity("AppHost.ConfigureResources", ActivityKind.Internal))
+    {
+        try
+        {
+            resourceActivity?.SetTag("environment", builder.Environment.EnvironmentName);
+            resourceActivity?.SetTag("is_development", builder.Environment.IsDevelopment());
+
+            var resources = ConfigureInfrastructureResources(builder);
+            resourceActivity?.AddEvent(new ActivityEvent("Infrastructure resources configured"));
+
+            ConfigureServices(builder, ordersApi, ordersWebApp, resources);
+            resourceActivity?.AddEvent(new ActivityEvent("Services configured"));
+
+            resourceActivity?.SetStatus(ActivityStatusCode.Ok);
+        }
+        catch (Exception ex)
+        {
+            resourceActivity?.SetStatus(ActivityStatusCode.Error, ex.Message);
+            resourceActivity?.AddException(ex);
+            throw;
+        }
+    }
+
+    // ========== Application Build and Run ==========
+    using (var buildActivity = activitySource.StartActivity("AppHost.Build", ActivityKind.Internal))
+    {
+        try
+        {
+            startupActivity?.SetStatus(ActivityStatusCode.Ok);
+            startupActivity?.AddEvent(new ActivityEvent("AppHost startup completed"));
+
+            await builder.Build().RunAsync();
+        }
+        catch (Exception ex)
+        {
+            buildActivity?.SetStatus(ActivityStatusCode.Error, ex.Message);
+            buildActivity?.AddException(ex);
+            throw;
+        }
+    }
+}
+catch (Exception ex)
+{
+    startupActivity?.SetStatus(ActivityStatusCode.Error, ex.Message);
+    startupActivity?.AddException(ex);
+    Console.Error.WriteLine($"AppHost startup failed: {ex.Message}");
+    throw;
 }
 
-using (var buildActivity = new ActivitySource("eShop.Orders.AppHost.Startup")
-    .StartActivity("AppHost.Build", ActivityKind.Internal))
-{
-    startupActivity?.SetStatus(ActivityStatusCode.Ok);
-    startupActivity?.AddEvent(new ActivityEvent("AppHost startup completed"));
-
-    await builder.Build().RunAsync();
-}
+// ========== Infrastructure Configuration Methods ==========
 
 /// <summary>
 /// Configures infrastructure resources (Application Insights, Service Bus) based on the environment.
@@ -67,21 +105,29 @@ static (IResourceBuilder<AzureApplicationInsightsResource>? AppInsights, IResour
 {
     ArgumentNullException.ThrowIfNull(builder);
 
-    const string TelemetryResourceName = "telemetry";
+    const string TelemetryParamName = "azure-application-insights-dev";
+    const string TelemetryResourceName = "telemetry-dev";
+    const string MessagingParamName = "azure-service-bus-dev";
     const string MessagingResourceName = "messaging";
     const string ServiceBusDevParameterName = "service-bus-dev";
+    const string ResourceGroupParameterName = "azure-resource-group-dev";
 
     // Get values from configuration (user secrets, appsettings, or environment variables)
     var config = GetAzureConfiguration(builder);
 
     IResourceBuilder<AzureApplicationInsightsResource>? appInsights = null;
-    IResourceBuilder<AzureServiceBusResource> serviceBus;
+    IResourceBuilder<AzureServiceBusResource>? serviceBus;
+    IResourceBuilder<ParameterResource>? resourceGroupParameter = null;
+
+    if (config.HasResourceGroupConfiguration)
+    {
+        resourceGroupParameter = builder.AddParameter(ResourceGroupParameterName, config.ResourceGroupName!);
+    }
 
     // Configure Application Insights if configuration is available
     if (config.HasAppInsightsConfiguration)
     {
-        var resourceGroupParameter = builder.AddParameter("azure-resource-group", config.ResourceGroupName!);
-        var appInsightsParameter = builder.AddParameter("azure-application-insights", config.AppInsightsName!);
+        var appInsightsParameter = builder.AddParameter(TelemetryParamName, config.AppInsightsName!);
 
         appInsights = builder.AddAzureApplicationInsights(TelemetryResourceName)
             .AsExisting(appInsightsParameter, resourceGroupParameter);
@@ -90,15 +136,14 @@ static (IResourceBuilder<AzureApplicationInsightsResource>? AppInsights, IResour
     // Configure Service Bus - use emulator if no configuration is available
     if (config.HasServiceBusConfiguration)
     {
-        var resourceGroupParameter = builder.AddParameter("azure-resource-group", config.ResourceGroupName!);
-        var serviceBusParameter = builder.AddParameter("azure-service-bus", config.ServiceBusNamespace!);
+        var serviceBusParameter = builder.AddParameter(MessagingParamName, config.ServiceBusNamespace!);
 
         serviceBus = builder.AddAzureServiceBus(MessagingResourceName)
             .AsExisting(serviceBusParameter, resourceGroupParameter);
     }
     else
     {
-        var serviceBusParameter = builder.AddParameter("azure-service-bus", ServiceBusDevParameterName);
+        var serviceBusParameter = builder.AddParameter(ServiceBusDevParameterName, ServiceBusDevParameterName);
         serviceBus = builder.AddAzureServiceBus(MessagingResourceName)
             .RunAsEmulator();
     }
@@ -188,21 +233,7 @@ static void ConfigureOrdersApi(
     (string? TenantId, string? ClientId) authConfig,
     (IResourceBuilder<AzureApplicationInsightsResource>? AppInsights, IResourceBuilder<AzureServiceBusResource>? ServiceBus) resources)
 {
-    const string AzureTenantIdKey = "AZURE_TENANT_ID";
-    const string AzureClientIdKey = "AZURE_CLIENT_ID";
-
     ordersApi.WithEnvironment("ASPNETCORE_ENVIRONMENT", environmentName);
-
-    // Add authentication configuration if available
-    if (!string.IsNullOrWhiteSpace(authConfig.TenantId))
-    {
-        ordersApi.WithEnvironment(AzureTenantIdKey, authConfig.TenantId);
-    }
-
-    if (!string.IsNullOrWhiteSpace(authConfig.ClientId))
-    {
-        ordersApi.WithEnvironment(AzureClientIdKey, authConfig.ClientId);
-    }
 
     // Add Service Bus reference if available
     if (resources.ServiceBus is not null)
@@ -228,22 +259,8 @@ static void ConfigureOrdersWebApp(
     (string? TenantId, string? ClientId) authConfig,
     IResourceBuilder<AzureApplicationInsightsResource>? appInsights)
 {
-    const string AzureTenantIdKey = "AZURE_TENANT_ID";
-    const string AzureClientIdKey = "AZURE_CLIENT_ID";
-
     ordersWebApp.WithReference(ordersApi)
                 .AsHttp2Service();
-
-    // Add authentication configuration if available
-    if (!string.IsNullOrWhiteSpace(authConfig.TenantId))
-    {
-        ordersWebApp.WithEnvironment(AzureTenantIdKey, authConfig.TenantId);
-    }
-
-    if (!string.IsNullOrWhiteSpace(authConfig.ClientId))
-    {
-        ordersWebApp.WithEnvironment(AzureClientIdKey, authConfig.ClientId);
-    }
 
     // Add Application Insights reference if available
     if (appInsights is not null)
@@ -257,10 +274,11 @@ static void ConfigureOrdersWebApp(
 /// </summary>
 /// <param name="builder">The distributed application builder.</param>
 /// <returns>A tuple containing Azure resource names and configuration status flags.</returns>
-static (string? AppInsightsName, string? ServiceBusNamespace, string? ServiceBusTopicName, string? ResourceGroupName, bool HasAppInsightsConfiguration, bool HasServiceBusConfiguration)
+static (string? AppInsightsName, string? ServiceBusNamespace, string? ServiceBusTopicName, string? ResourceGroupName, bool HasResourceGroupConfiguration, bool HasAppInsightsConfiguration, bool HasServiceBusConfiguration)
     GetAzureConfiguration(IDistributedApplicationBuilder builder)
 {
     ArgumentNullException.ThrowIfNull(builder);
+
     var appInsightsName = builder.Configuration["Azure:ApplicationInsights:Name"];
     var serviceBusNamespace = builder.Configuration["Azure:ServiceBus:Namespace"];
     var serviceBusTopicName = builder.Configuration["Azure:ServiceBus:TopicName"] ?? "orders";
@@ -272,7 +290,9 @@ static (string? AppInsightsName, string? ServiceBusNamespace, string? ServiceBus
                             && !string.IsNullOrWhiteSpace(resourceGroupName)
                             && !string.IsNullOrWhiteSpace(serviceBusTopicName);
 
-    return (appInsightsName, serviceBusNamespace, serviceBusTopicName, resourceGroupName, hasAppInsightsConfig, hasServiceBusConfig);
+    var hasResourceGroup = !string.IsNullOrWhiteSpace(resourceGroupName);
+
+    return (appInsightsName, serviceBusNamespace, serviceBusTopicName, resourceGroupName, hasResourceGroup, hasAppInsightsConfig, hasServiceBusConfig);
 }
 
 /// <summary>
@@ -283,10 +303,9 @@ static (string? AppInsightsName, string? ServiceBusNamespace, string? ServiceBus
 static (string? TenantId, string? ClientId) GetAuthenticationConfiguration(IDistributedApplicationBuilder builder)
 {
     ArgumentNullException.ThrowIfNull(builder);
-    var tenantId = builder.Configuration["Azure:TenantId"]
-                ?? builder.Configuration["AZURE_TENANT_ID"];
-    var clientId = builder.Configuration["Azure:ClientId"]
-                ?? builder.Configuration["AZURE_CLIENT_ID"];
+
+    var tenantId = builder.Configuration["Azure:TenantId"];
+    var clientId = builder.Configuration["Azure:ClientId"];
 
     return (tenantId, clientId);
 }
@@ -295,7 +314,7 @@ static (string? TenantId, string? ClientId) GetAuthenticationConfiguration(IDist
 /// Validates that all required production configuration values are present.
 /// </summary>
 static void ValidateProductionConfiguration(
-    (string? AppInsightsName, string? ServiceBusNamespace, string? ServiceBusTopicName, string? ResourceGroupName, bool HasAppInsightsConfiguration, bool HasServiceBusConfiguration) config)
+    (string? AppInsightsName, string? ServiceBusNamespace, string? ServiceBusTopicName, string? ResourceGroupName, bool HasResourceGroupConfiguration, bool HasAppInsightsConfiguration, bool HasServiceBusConfiguration) config)
 {
     if (string.IsNullOrWhiteSpace(config.AppInsightsName))
     {

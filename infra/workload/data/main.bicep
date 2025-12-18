@@ -1,23 +1,21 @@
 /*
-  Messaging Infrastructure Module
-  ===============================
-  Deploys Service Bus and storage infrastructure for workflow orchestration.
+  Data Infrastructure Module (CURRENTLY UNUSED)
+  =============================================
+  NOTE: This file appears to be orphaned and is not referenced by any parent modules.
+  The functionality provided here is already covered by the messaging/main.bicep module.
+  
+  Consider removing this file or integrating it into the main deployment flow.
   
   Components:
-  1. Service Bus Premium namespace with order queue
-  2. Storage account for Logic Apps runtime (Standard tier requirement)
-  3. Blob containers for processed orders (success/error segregation)
+  1. Storage account for Logic Apps runtime (Standard tier requirement)
+  2. Blob containers for processed orders (success/error segregation)
   
   Key Features:
-  - Premium Service Bus tier for enhanced performance and scalability
-  - Capacity of 16 messaging units
-  - Managed identity authentication for Service Bus
   - Separate containers for success and error order processing
-  - Diagnostic settings for all resources
 */
 
-metadata name = 'Messaging Infrastructure'
-metadata description = 'Deploys Service Bus namespace, queues, and workflow storage account'
+metadata name = 'Data Infrastructure (Unused)'
+metadata description = 'Storage account and blob containers for workflow data - Currently not deployed'
 
 // ========== Type Definitions ==========
 
@@ -58,69 +56,14 @@ param workspaceId string
 @minLength(50)
 param storageAccountId string
 
-@description('Logs settings for the Log Analytics workspace.')
-param logsSettings object[]
-
-@description('Metrics settings for the Log Analytics workspace.')
-param metricsSettings object[]
-
 @description('Resource tags applied to Service Bus resources.')
 param tags tagsType
-
-// ========== Variables ==========
 
 // Remove special characters for naming compliance
 var cleanedName = toLower(replace(replace(replace(name, '-', ''), '_', ''), ' ', ''))
 
 // Generate unique suffix for globally unique resource names
 var uniqueSuffix = uniqueString(resourceGroup().id, name, envName, location)
-
-// Service Bus namespace name limited to 20 characters
-var serviceBusName = toLower(take('${cleanedName}sb${uniqueSuffix}', 20))
-
-// ========== Resources ==========
-
-@description('Service Bus namespace for message brokering')
-resource broker 'Microsoft.ServiceBus/namespaces@2025-05-01-preview' = {
-  name: serviceBusName
-  location: location
-  sku: {
-    name: 'Premium'
-    tier: 'Premium'
-    capacity: 16
-  }
-  tags: tags
-  identity: {
-    type: 'SystemAssigned, UserAssigned'
-    userAssignedIdentities: {
-      '${userAssignedIdentityId}': {}
-    }
-  }
-}
-
-@description('Azure Service Bus Name')
-output AZURE_SERVICE_BUS_NAMESPACE string = broker.name
-
-output MESSAGING_SERVICEBUSENDPOINT string = broker.properties.serviceBusEndpoint
-
-@description('Service Bus Topic for orders placed to be processed')
-resource ordersTopic 'Microsoft.ServiceBus/namespaces/topics@2025-05-01-preview' = {
-  parent: broker
-  name: 'OrdersPlaced'
-}
-
-@description('Diagnostic settings for Service Bus namespace')
-resource sbDiag 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
-  name: '${broker.name}-diag'
-  scope: broker
-  properties: {
-    workspaceId: workspaceId
-    storageAccountId: storageAccountId
-    logAnalyticsDestinationType: 'Dedicated'
-    logs: logsSettings
-    metrics: metricsSettings
-  }
-}
 
 @description('Storage account for Logic Apps workflows and data')
 resource wfSA 'Microsoft.Storage/storageAccounts@2025-06-01' = {
@@ -172,20 +115,3 @@ resource poFailed 'Microsoft.Storage/storageAccounts/blobServices/containers@202
     publicAccess: 'None'
   }
 }
-
-@description('Diagnostic settings for workflow storage account')
-resource saDiag 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
-  name: '${wfSA.name}-diag'
-  scope: wfSA
-  properties: {
-    workspaceId: workspaceId
-    storageAccountId: storageAccountId
-    logAnalyticsDestinationType: 'Dedicated'
-    metrics: metricsSettings
-  }
-}
-
-// ========== Outputs ==========
-
-@description('Name of the deployed storage account')
-output WORKFLOW_STORAGE_ACCOUNT_NAME string = wfSA.name

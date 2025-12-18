@@ -30,13 +30,17 @@ param name string
 @description('Resource tags applied to the service group.')
 param tags tagsType
 
-// ========== Resources ==========
+// ========== Variables ==========
 
 // Azure Monitor default root service group (fixed GUID)
 // All custom service groups must be parented under this root
+var rootServiceGroupId = '0e2ff29e-431a-420b-8a46-c6f39106927b'
+
+// ========== Resources ==========
+
 @description('Reference to the root service group in Azure Monitor health model')
 resource rootSvcGrp 'Microsoft.Management/serviceGroups@2024-02-01-preview' existing = {
-  name: '0e2ff29e-431a-420b-8a46-c6f39106927b'
+  name: rootServiceGroupId
   scope: tenant()
 }
 
