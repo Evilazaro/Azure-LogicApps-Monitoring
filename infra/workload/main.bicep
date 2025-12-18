@@ -166,6 +166,10 @@ output AZURE_CONTAINER_REGISTRY_MANAGED_IDENTITY_ID string = identity.outputs.AZ
 @description('Azure Service Bus namespace name')
 output AZURE_SERVICE_BUS_NAMESPACE string = messaging.outputs.AZURE_SERVICE_BUS_NAMESPACE
 
+@description('Messaging Service Bus Host Name')
+output MESSAGING_SERVICEBUSHOSTNAME string = messaging.outputs.MESSAGING_SERVICEBUSHOSTNAME
+
+
 @description('Azure Service Bus endpoint')
 output MESSAGING_SERVICEBUSENDPOINT string = messaging.outputs.MESSAGING_SERVICEBUSENDPOINT
 

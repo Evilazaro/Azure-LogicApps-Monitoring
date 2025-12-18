@@ -149,6 +149,9 @@ output AZURE_CLIENT_ID string = workload.outputs.AZURE_CLIENT_ID
 @description('Azure Service Bus namespace name')
 output AZURE_SERVICE_BUS_NAMESPACE string = workload.outputs.AZURE_SERVICE_BUS_NAMESPACE
 
+@description('Messaging Service Bus Host Name')
+output MESSAGING_SERVICEBUSHOSTNAME string = workload.outputs.MESSAGING_SERVICEBUSHOSTNAME
+
 @description('Azure Service Bus endpoint')
 output MESSAGING_SERVICEBUSENDPOINT string = workload.outputs.MESSAGING_SERVICEBUSENDPOINT
 

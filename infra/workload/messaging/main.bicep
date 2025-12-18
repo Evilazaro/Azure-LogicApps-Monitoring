@@ -101,6 +101,10 @@ resource broker 'Microsoft.ServiceBus/namespaces@2025-05-01-preview' = {
 @description('Azure Service Bus Name')
 output AZURE_SERVICE_BUS_NAMESPACE string = broker.name
 
+@description('Messaging Service Bus Host Name')
+output MESSAGING_SERVICEBUSHOSTNAME string = split(replace(broker.properties.serviceBusEndpoint, 'https://', ''), ':')[0]
+
+
 output MESSAGING_SERVICEBUSENDPOINT string = broker.properties.serviceBusEndpoint
 
 @description('Service Bus Topic for orders placed to be processed')
