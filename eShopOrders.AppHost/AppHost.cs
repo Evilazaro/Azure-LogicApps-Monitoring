@@ -1,6 +1,5 @@
 using Aspire.Hosting.Azure;
 using Microsoft.Extensions.Hosting;
-using OpenTelemetry.Trace;
 using System.Diagnostics;
 
 // ========== ActivitySource Management ==========
