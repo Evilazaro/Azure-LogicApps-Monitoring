@@ -13,7 +13,7 @@ properties:
       dotnet:
         autoConfigureDataProtection: true
     ingress:
-      external: false
+      external: true
       targetPort: {{ targetPortOrDefault 8080 }}
       transport: http
       allowInsecure: true
@@ -38,7 +38,7 @@ properties:
           - name: OTEL_DOTNET_EXPERIMENTAL_OTLP_RETRY
             value: in_memory
     scale:
-      minReplicas: 1
+      minReplicas: 10
 tags:
   azd-service-name: eshop-web-app
   aspire-resource-name: eshop-web-app
