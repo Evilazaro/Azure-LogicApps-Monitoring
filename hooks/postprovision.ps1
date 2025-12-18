@@ -739,40 +739,89 @@ try {
     # Configure user secrets
     Write-SectionHeader -Message "Configuring User Secrets" -Type 'Sub'
     
-    # Define secrets configuration using ordered hashtable for consistent output
-    $secrets = [ordered]@{
-        'Azure:ServiceBus:TopicName' = $azureServiceBusTopicName
-        'Azure:ServiceBus:SubscriptionName' = $azureServiceBusSubscriptionName
-        'Azure:ServiceBus:Namespace' = $azureServiceBusNamespace
+    # Define secrets for AppHost project (all Azure configuration)
+    $appHostSecrets = [ordered]@{
+        'Azure:SubscriptionId'             = $azureSubscriptionId
+        'Azure:ResourceGroup'              = $azureResourceGroup
+        'Azure:Location'                   = $azureLocation
+        'Azure:ApplicationInsights:Name'   = $azureApplicationInsightsName
+        'Azure:TenantId'                   = $azureTenantId
+        'Azure:ClientId'                   = $azureClientId
+        'Azure:ServiceBus:Namespace'       = $azureServiceBusNamespace
+        'Azure:ServiceBus:TopicName'       = $azureServiceBusTopicName
     }
     
-    Write-Information "Preparing to configure $($secrets.Count) user secret(s)..."
-    Write-Verbose "Target project: $projectPath"
+    # Define secrets for API project (Service Bus configuration only)
+    $apiSecrets = [ordered]@{
+        'Azure:ServiceBus:TopicName'       = $azureServiceBusTopicName
+        'Azure:ServiceBus:SubscriptionName' = $azureServiceBusSubscriptionName
+        'Azure:ServiceBus:Namespace'       = $azureServiceBusNamespace
+    }
     
-    # Track success and failures
-    $successCount = 0
-    $skippedCount = 0
+    Write-Information "Preparing to configure user secrets for both projects..."
+    Write-Information "  - AppHost: $($appHostSecrets.Count) secret(s)"
+    Write-Information "  - API: $($apiSecrets.Count) secret(s)"
+    
+    # Track results across both projects
+    $totalSecretsCount = $appHostSecrets.Count + $apiSecrets.Count
+    $totalSuccessCount = 0
+    $totalSkippedCount = 0
     $failedSecrets = [System.Collections.Generic.List[PSCustomObject]]::new()
     
-    # Set each secret with detailed tracking
-    foreach ($key in $secrets.Keys) {
+    # Configure AppHost project secrets
+    Write-Information ""
+    Write-Information "Configuring AppHost project secrets..."
+    Write-Verbose "Target project: $appHostProjectPath"
+    
+    foreach ($key in $appHostSecrets.Keys) {
         try {
-            $value = $secrets[$key]
+            $value = $appHostSecrets[$key]
             
             if ([string]::IsNullOrWhiteSpace($value)) {
-                Write-Verbose "Skipping secret '$key' - value is null, empty, or whitespace"
-                $skippedCount++
+                Write-Verbose "  Skipping secret '$key' - value is null, empty, or whitespace"
+                $totalSkippedCount++
                 continue
             }
             
-            Write-Verbose "Processing secret: $key"
-            Set-DotNetUserSecret -Key $key -Value $value -ProjectPath $projectPath
-            $successCount++
+            Write-Verbose "  Processing secret: $key"
+            Set-DotNetUserSecret -Key $key -Value $value -ProjectPath $appHostProjectPath
+            $totalSuccessCount++
             Write-Information "  ✓ Set: $key"
         }
         catch {
-            Write-Warning "Failed to set secret '$key': $($_.Exception.Message)"
+            Write-Warning "  Failed to set secret '$key': $($_.Exception.Message)"
             $null = $failedSecrets.Add([PSCustomObject]@{
+                    Project = 'AppHost'
+                    Key     = $key
+                    Message = $_.Exception.Message
+                })
+        }
+    }
+    
+    # Configure API project secrets
+    Write-Information ""
+    Write-Information "Configuring API project secrets..."
+    Write-Verbose "Target project: $projectPath"
+    
+    foreach ($key in $apiSecrets.Keys) {
+        try {
+            $value = $apiSecrets[$key]
+            
+            if ([string]::IsNullOrWhiteSpace($value)) {
+                Write-Verbose "  Skipping secret '$key' - value is null, empty, or whitespace"
+                $totalSkippedCount++
+                continue
+            }
+            
+            Write-Verbose "  Processing secret: $key"
+            Set-DotNetUserSecret -Key $key -Value $value -ProjectPath $projectPath
+            $totalSuccessCount++
+            Write-Information "  ✓ Set: $key"
+        }
+        catch {
+            Write-Warning "  Failed to set secret '$key': $($_.Exception.Message)"
+            $null = $failedSecrets.Add([PSCustomObject]@{
+                    Project = 'API'
                     Key     = $key
                     Message = $_.Exception.Message
                 })
@@ -782,20 +831,20 @@ try {
     # Report detailed results
     Write-SectionHeader -Message "Configuration Results" -Type 'Sub'
     Write-Information "User Secrets Configuration Summary:"
-    Write-Information "  ✓ Successfully configured: $successCount / $($secrets.Count)"
+    Write-Information "  ✓ Successfully configured: $totalSuccessCount / $totalSecretsCount"
     
-    if ($skippedCount -gt 0) {
-        Write-Information "  ⊘ Skipped (empty values): $skippedCount"
+    if ($totalSkippedCount -gt 0) {
+        Write-Information "  ⊘ Skipped (empty values): $totalSkippedCount"
     }
     
     if ($failedSecrets.Count -gt 0) {
         Write-Warning "  ✗ Failed: $($failedSecrets.Count)"
         foreach ($failed in $failedSecrets) {
-            Write-Warning "    - $($failed.Key): $($failed.Message)"
+            Write-Warning "    - [$($failed.Project)] $($failed.Key): $($failed.Message)"
         }
         
         # Don't fail the entire script for partial failures if some secrets were set
-        if ($successCount -eq 0) {
+        if ($totalSuccessCount -eq 0) {
             throw "All user secrets failed to configure. Please review errors above."
         }
     }
@@ -803,9 +852,9 @@ try {
     # Success summary
     Write-SectionHeader -Message "Post-Provisioning Completed Successfully!" -Type 'Main'
     Write-Information "Results:"
-    Write-Information "  • Total secrets defined   : $($secrets.Count)"
-    Write-Information "  • Successfully configured : $successCount"
-    Write-Information "  • Skipped (empty)         : $skippedCount"
+    Write-Information "  • Total secrets defined   : $totalSecretsCount"
+    Write-Information "  • Successfully configured : $totalSuccessCount"
+    Write-Information "  • Skipped (empty)         : $totalSkippedCount"
     Write-Information "  • Failed                  : $($failedSecrets.Count)"
     Write-Information ""
     Write-Information "Completion Time: $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')"
@@ -887,13 +936,19 @@ finally {
     # Cleanup and reset preferences
     Write-Verbose "Executing finally block - cleaning up..."
     
-    # Reset progress preference
+    # Reset progress preference to default
     $ProgressPreference = 'Continue'
     
     # Calculate total execution time if available
-    if ($null -ne $executionStart) {
-        $duration = (Get-Date) - $executionStart
-        Write-Verbose "Total execution time: $($duration.TotalSeconds) seconds"
+    if (Get-Variable -Name executionStart -Scope Local -ErrorAction SilentlyContinue) {
+        try {
+            $duration = (Get-Date) - $executionStart
+            $durationSeconds = [Math]::Round($duration.TotalSeconds, 2)
+            Write-Verbose "Total execution time: $durationSeconds seconds"
+        }
+        catch {
+            Write-Verbose "Could not calculate execution duration"
+        }
     }
     
     Write-Verbose "Script execution completed."
