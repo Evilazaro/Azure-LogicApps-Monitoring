@@ -205,6 +205,13 @@ function Set-DotNetUserSecret {
             }
         }
         catch {
+            $errorDetails = @{
+                Key        = $Key
+                ExitCode   = $LASTEXITCODE
+                Message    = $_.Exception.Message
+                StackTrace = $_.ScriptStackTrace
+            }
+            
             Write-Error "Error setting user secret '$Key': $($_.Exception.Message)" -ErrorAction Stop
             throw
         }
@@ -249,7 +256,9 @@ function Get-ApiProjectPath {
             }
             
             # Build path using Join-Path for cross-platform compatibility
-            $path = Join-Path -Path $scriptRoot -ChildPath '..' -AdditionalChildPath 'src', 'eShop.Orders.API', 'eShop.Orders.API.csproj'
+            $path = Join-Path -Path $scriptRoot -ChildPath '..' | Join-Path -ChildPath 'src'
+            $path = Join-Path -Path $path -ChildPath 'eShop.Orders.API'
+            $path = Join-Path -Path $path -ChildPath 'eShop.Orders.API.csproj'
             
             # Normalize to absolute path
             $absolutePath = [System.IO.Path]::GetFullPath($path)
@@ -302,7 +311,9 @@ function Get-ProjectPath {
             }
             
             # Build path using Join-Path for cross-platform compatibility
-            $path = Join-Path -Path $scriptRoot -ChildPath '..' -AdditionalChildPath 'eShopOrders.AppHost', 'eShopOrders.AppHost.csproj'
+            $path = Join-Path -Path $scriptRoot -ChildPath '..'
+            $path = Join-Path -Path $path -ChildPath 'eShopOrders.AppHost'
+            $path = Join-Path -Path $path -ChildPath 'eShopOrders.AppHost.csproj'
             
             # Normalize to absolute path
             $absolutePath = [System.IO.Path]::GetFullPath($path)
@@ -579,7 +590,8 @@ try {
     Write-Information "Script Version: $script:ScriptVersion"
     Write-Information "Execution Time: $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')"
     Write-Information "PowerShell Version: $($PSVersionTable.PSVersion)"
-    Write-Information "Operating System: $($PSVersionTable.OS)"
+    $osInfo = if ($PSVersionTable.OS) { $PSVersionTable.OS } else { "$($PSVersionTable.PSEdition) on $([System.Environment]::OSVersion.Platform)" }
+    Write-Information "Operating System: $osInfo"
     
     # Validate required environment variables
     Write-SectionHeader -Message "Validating Environment Variables" -Type 'Sub'
@@ -597,10 +609,12 @@ try {
     }
     
     if ($validationErrors.Count -gt 0) {
-        $errorMessage = "The following required environment variables are missing or empty:`n"
-        $errorMessage += ($validationErrors | ForEach-Object { "  - $_" }) -join "`n"
-        $errorMessage += "`n`nPlease ensure these environment variables are set before running this script."
-        throw $errorMessage
+        $errorLines = [System.Collections.Generic.List[string]]::new()
+        $errorLines.Add('The following required environment variables are missing or empty:')
+        $validationErrors | ForEach-Object { $errorLines.Add("  - $_") }
+        $errorLines.Add('')
+        $errorLines.Add('Please ensure these environment variables are set before running this script.')
+        throw ($errorLines -join "`n")
     }
     
     Write-Information "✓ All $($script:RequiredEnvironmentVariables.Count) required environment variables are set."
@@ -612,7 +626,7 @@ try {
     $azureResourceGroup = Get-EnvironmentVariableSafe -Name 'AZURE_RESOURCE_GROUP'
     $azureLocation = Get-EnvironmentVariableSafe -Name 'AZURE_LOCATION'
     $azureApplicationInsightsName = Get-EnvironmentVariableSafe -Name 'AZURE_APPLICATION_INSIGHTS_NAME'
-    $azureClientId = Get-EnvironmentVariableSafe -Name 'MANAGED_IDENTITY_CLIENT_ID'
+    $azureClientId = Get-EnvironmentVariableSafe -Name 'AZURE_CLIENT_ID'
     $azureServiceBusNamespace = Get-EnvironmentVariableSafe -Name 'AZURE_SERVICE_BUS_NAMESPACE'
     $azureServiceBusTopicName = Get-EnvironmentVariableSafe -Name 'AZURE_SERVICE_BUS_TOPIC_NAME' -DefaultValue 'OrdersPlaced'
     $azureServiceBusSubscriptionName = Get-EnvironmentVariableSafe -Name 'AZURE_SERVICE_BUS_SUBSCRIPTION_NAME' -DefaultValue 'OrderProcessingSubscription'
@@ -622,17 +636,18 @@ try {
     
     # Display configuration (with safe null handling)
     Write-SectionHeader -Message "Azure Configuration" -Type 'Sub'
-    Write-Information "  Subscription ID        : $(if ($azureSubscriptionId) { $azureSubscriptionId } else { '<not set>' })"
-    Write-Information "  Resource Group         : $(if ($azureResourceGroup) { $azureResourceGroup } else { '<not set>' })"
-    Write-Information "  Location               : $(if ($azureLocation) { $azureLocation } else { '<not set>' })"
-    Write-Information "  Environment Name       : $(if ($azureEnvName) { $azureEnvName } else { '<not set>' })"
-    Write-Information "  Client ID              : $(if ($azureClientId) { $azureClientId } else { '<not set>' })"
-    Write-Information "  App Insights Name      : $(if ($azureApplicationInsightsName) { $azureApplicationInsightsName } else { '<not set>' })"
-    Write-Information "  Service Bus Namespace  : $(if ($azureServiceBusNamespace) { $azureServiceBusNamespace } else { '<not set>' })"
-    Write-Information "  Service Bus Topic Name : $(if ($azureServiceBusTopicName) { $azureServiceBusTopicName } else { '<not set>' })"
-    Write-Information "  Service Bus Subscription: $(if ($azureServiceBusSubscriptionName) { $azureServiceBusSubscriptionName } else { '<not set>' })"
-    Write-Information "  Service Bus Endpoint   : $(if ($azureMessagingServiceBusEndpoint) { $azureMessagingServiceBusEndpoint } else { '<not set>' })"
-    Write-Information "  ACR Endpoint           : $(if ($azureContainerRegistryEndpoint) { $azureContainerRegistryEndpoint } else { '<not set>' })"
+    $notSet = '<not set>'
+    Write-Information "  Subscription ID        : $($azureSubscriptionId ?? $notSet)"
+    Write-Information "  Resource Group         : $($azureResourceGroup ?? $notSet)"
+    Write-Information "  Location               : $($azureLocation ?? $notSet)"
+    Write-Information "  Environment Name       : $($azureEnvName ?? $notSet)"
+    Write-Information "  Client ID              : $($azureClientId ?? $notSet)"
+    Write-Information "  App Insights Name      : $($azureApplicationInsightsName ?? $notSet)"
+    Write-Information "  Service Bus Namespace  : $($azureServiceBusNamespace ?? $notSet)"
+    Write-Information "  Service Bus Topic Name : $($azureServiceBusTopicName ?? $notSet)"
+    Write-Information "  Service Bus Subscription: $($azureServiceBusSubscriptionName ?? $notSet)"
+    Write-Information "  Service Bus Endpoint   : $($azureMessagingServiceBusEndpoint ?? $notSet)"
+    Write-Information "  ACR Endpoint           : $($azureContainerRegistryEndpoint ?? $notSet)"
     
     # Authenticate to Azure Container Registry (non-blocking)
     Invoke-AzureContainerRegistryLogin -RegistryEndpoint $azureContainerRegistryEndpoint
@@ -643,9 +658,11 @@ try {
     # Check for .NET CLI
     $dotnetCommand = Get-Command -Name dotnet -ErrorAction SilentlyContinue
     if (-not $dotnetCommand) {
-        $errorMessage = ".NET CLI (dotnet) not found in PATH.`n"
-        $errorMessage += "Please install .NET SDK from: https://dotnet.microsoft.com/download`n"
-        $errorMessage += "Required for managing user secrets."
+        $errorMessage = @(
+            '.NET CLI (dotnet) not found in PATH.'
+            'Please install .NET SDK from: https://dotnet.microsoft.com/download'
+            'Required for managing user secrets.'
+        ) -join "`n"
         throw $errorMessage
     }
     
@@ -664,8 +681,10 @@ try {
         Write-Verbose ".NET SDK successfully verified"
     }
     catch {
-        $errorMessage = "Error verifying .NET SDK: $($_.Exception.Message)`n"
-        $errorMessage += "Please ensure .NET SDK is properly installed and accessible."
+        $errorMessage = @(
+            "Error verifying .NET SDK: $($_.Exception.Message)"
+            'Please ensure .NET SDK is properly installed and accessible.'
+        ) -join "`n"
         throw $errorMessage
     }
     
@@ -688,9 +707,11 @@ try {
     Write-Information "✓ API Project Path: $projectPath"
     
     if (-not (Test-Path -Path $projectPath -PathType Leaf)) {
-        $errorMessage = "API project file not found at: $projectPath`n"
-        $errorMessage += "Please ensure the project structure is correct.`n"
-        $errorMessage += "Expected location: <script-root>/../src/eShop.Orders.API/eShop.Orders.API.csproj"
+        $errorMessage = @(
+            "API project file not found at: $projectPath"
+            'Please ensure the project structure is correct.'
+            'Expected location: <script-root>/../src/eShop.Orders.API/eShop.Orders.API.csproj'
+        ) -join "`n"
         throw $errorMessage
     }
     
@@ -717,8 +738,10 @@ try {
             Write-Verbose "Clear operation completed"
         }
         catch {
-            $errorMessage = "Error clearing user secrets: $($_.Exception.Message)`n"
-            $errorMessage += "This may indicate the project doesn't have user secrets initialized."
+            $errorMessage = @(
+                "Error clearing user secrets: $($_.Exception.Message)"
+                "This may indicate the project doesn't have user secrets initialized."
+            ) -join "`n"
             throw $errorMessage
         }
     }
@@ -728,21 +751,19 @@ try {
     
     # Define secrets for AppHost project (all Azure configuration)
     $appHostSecrets = [ordered]@{
-        'Azure:SubscriptionId'             = $azureSubscriptionId
         'Azure:ResourceGroup'              = $azureResourceGroup
-        'Azure:Location'                   = $azureLocation
         'Azure:ApplicationInsights:Name'   = $azureApplicationInsightsName
         'Azure:ClientId'                   = $azureClientId
         'Azure:ServiceBus:Namespace'       = $azureServiceBusNamespace
         'Azure:ServiceBus:TopicName'       = $azureServiceBusTopicName
+        'Azure:ServiceBus:SubscriptionName' = $azureServiceBusSubscriptionName
     }
     
     # Define secrets for API project (Service Bus configuration only)
-    $apiSecrets = [ordered]@{
+    $apiSecrets = [ordered]@{        
+        'Azure:ServiceBus:Namespace'       = $azureServiceBusNamespace
         'Azure:ServiceBus:TopicName'       = $azureServiceBusTopicName
         'Azure:ServiceBus:SubscriptionName' = $azureServiceBusSubscriptionName
-        'Azure:ServiceBus:Namespace'       = $azureServiceBusNamespace
-        'Azure:ClientId'                   = $azureClientId
     }
     
     Write-Information "Preparing to configure user secrets for both projects..."
