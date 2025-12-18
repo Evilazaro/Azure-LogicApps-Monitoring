@@ -745,8 +745,8 @@ try {
         'Azure:ResourceGroup'              = $azureResourceGroup
         'Azure:Location'                   = $azureLocation
         'Azure:ApplicationInsights:Name'   = $azureApplicationInsightsName
-        'Azure:TenantId'                   = $azureTenantId
-        'Azure:ClientId'                   = $azureClientId
+        'AZURE_TENANT_ID'                   = $azureTenantId
+        'AZURE_CLIENT_ID'                   = $azureClientId
         'Azure:ServiceBus:Namespace'       = $azureServiceBusNamespace
         'Azure:ServiceBus:TopicName'       = $azureServiceBusTopicName
     }
@@ -756,6 +756,8 @@ try {
         'Azure:ServiceBus:TopicName'       = $azureServiceBusTopicName
         'Azure:ServiceBus:SubscriptionName' = $azureServiceBusSubscriptionName
         'Azure:ServiceBus:Namespace'       = $azureServiceBusNamespace
+        'AZURE_TENANT_ID'                   = $azureTenantId
+        'AZURE_CLIENT_ID'                   = $azureClientId
     }
     
     Write-Information "Preparing to configure user secrets for both projects..."

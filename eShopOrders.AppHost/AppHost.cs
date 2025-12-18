@@ -136,14 +136,14 @@ static (IResourceBuilder<AzureApplicationInsightsResource>? AppInsights, IResour
     // Configure Service Bus - use emulator if no configuration is available
     if (config.HasServiceBusConfiguration)
     {
-        var serviceBusParameter = builder.AddParameter(MessagingParamName, config.ServiceBusNamespace!);
+        var serviceBusParameter = builder.AddParameter(TelemetryResourceName, config.ServiceBusNamespace!);
 
         serviceBus = builder.AddAzureServiceBus(MessagingResourceName)
             .AsExisting(serviceBusParameter, resourceGroupParameter);
     }
     else
     {
-        var serviceBusParameter = builder.AddParameter(ServiceBusDevParameterName, ServiceBusDevParameterName);
+        var serviceBusParameter = builder.AddParameter(TelemetryResourceName, ServiceBusDevParameterName);
         serviceBus = builder.AddAzureServiceBus(MessagingResourceName)
             .RunAsEmulator();
     }
@@ -319,8 +319,8 @@ static (string? TenantId, string? ClientId) GetAuthenticationConfiguration(IDist
 {
     ArgumentNullException.ThrowIfNull(builder);
 
-    var tenantId = builder.Configuration["Azure:TenantId"];
-    var clientId = builder.Configuration["Azure:ClientId"];
+    var tenantId = builder.Configuration["AZURE_TENANT_ID"];
+    var clientId = builder.Configuration["AZURE_CLIENT_ID"];
 
     return (tenantId, clientId);
 }
