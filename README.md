@@ -6,25 +6,25 @@ Collecting workspace information# Azure Logic Apps Standard - Enterprise-Scale M
 
 ## Table of Contents
 
-- Problem Statement
-- Project Purpose
-- Key Features
-- Solution Components
-- Azure Components
-- Project Structure
-- Architecture Overview
-  - Data Layer
-  - Application Layer
-  - Technology Layer
-- Deployment Instructions
-  - Prerequisites
-  - Azure RBAC Roles
-  - Deployment Steps
-  - Local Development Setup
-- Usage Examples
-  - Monitoring Examples
-  - Observability Guidance
-- References
+- [Problem Statement](#problem-statement)
+- [Project Purpose](#project-purpose)
+- [Key Features](#key-features)
+- [Solution Components](#solution-components)
+- [Azure Components](#azure-components)
+- [Project Structure](#project-structure)
+- [Architecture Overview](#architecture-overview)
+  - [Data Layer](#data-layer)
+  - [Application Layer](#application-layer)
+  - [Technology Layer](#technology-layer)
+- [Deployment Instructions](#deployment-instructions)
+  - [Prerequisites](#prerequisites)
+  - [Azure RBAC Roles](#azure-rbac-roles)
+  - [Deployment Steps](#deployment-steps)
+  - [Local Development Setup](#local-development-setup)
+- [Usage Examples](#usage-examples)
+- [Observability Guidance](#observability-guidance)
+- [References](#references)
+- [Support and Troubleshooting](#support-and-troubleshooting)
 
 ---
 
