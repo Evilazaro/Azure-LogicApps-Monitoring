@@ -248,11 +248,10 @@ static void ConfigureOrdersApi(
     var clientId = authConfig.ClientId;
     var tenantId = authConfig.TenantId;
 
-    if (!string.IsNullOrWhiteSpace(clientId) && !string.IsNullOrWhiteSpace(tenantId))
-    {
-        ordersApi.WithEnvironment("AZURE_CLIENT_ID", clientId)
-                 .WithEnvironment("AZURE_TENANT_ID", tenantId);
-    }
+    //if (!string.IsNullOrWhiteSpace(clientId) && !string.IsNullOrWhiteSpace(tenantId))
+    //{
+    //    ordersApi.WithEnvironment("AZURE_CLIENT_ID", clientId)
+    //}
     ordersApi.AsHttp2Service();
 }
 
@@ -277,11 +276,10 @@ static void ConfigureOrdersWebApp(
     var clientId = authConfig.ClientId;
     var tenantId = authConfig.TenantId;
 
-    if (!string.IsNullOrWhiteSpace(clientId) && !string.IsNullOrWhiteSpace(tenantId))
-    {
-        ordersWebApp.WithEnvironment("AZURE_CLIENT_ID", clientId)
-                    .WithEnvironment("AZURE_TENANT_ID", tenantId);
-    }
+    //if (!string.IsNullOrWhiteSpace(clientId) && !string.IsNullOrWhiteSpace(tenantId))
+    //{
+    //    ordersWebApp.WithEnvironment("AZURE_CLIENT_ID", clientId);
+    //}
 }
 
 /// <summary>

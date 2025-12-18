@@ -623,7 +623,6 @@ try {
     $azureResourceGroup = Get-EnvironmentVariableSafe -Name 'AZURE_RESOURCE_GROUP'
     $azureLocation = Get-EnvironmentVariableSafe -Name 'AZURE_LOCATION'
     $azureApplicationInsightsName = Get-EnvironmentVariableSafe -Name 'AZURE_APPLICATION_INSIGHTS_NAME'
-    $azureTenantId = Get-EnvironmentVariableSafe -Name 'AZURE_TENANT_ID'
     $azureClientId = Get-EnvironmentVariableSafe -Name 'AZURE_CLIENT_ID'
     $azureServiceBusNamespace = Get-EnvironmentVariableSafe -Name 'AZURE_SERVICE_BUS_NAMESPACE'
     $azureServiceBusTopicName = Get-EnvironmentVariableSafe -Name 'AZURE_SERVICE_BUS_TOPIC_NAME' -DefaultValue 'OrdersPlaced'
@@ -638,7 +637,6 @@ try {
     Write-Information "  Resource Group         : $(if ($azureResourceGroup) { $azureResourceGroup } else { '<not set>' })"
     Write-Information "  Location               : $(if ($azureLocation) { $azureLocation } else { '<not set>' })"
     Write-Information "  Environment Name       : $(if ($azureEnvName) { $azureEnvName } else { '<not set>' })"
-    Write-Information "  Tenant ID              : $(if ($azureTenantId) { $azureTenantId } else { '<not set>' })"
     Write-Information "  Client ID              : $(if ($azureClientId) { $azureClientId } else { '<not set>' })"
     Write-Information "  App Insights Name      : $(if ($azureApplicationInsightsName) { $azureApplicationInsightsName } else { '<not set>' })"
     Write-Information "  Service Bus Namespace  : $(if ($azureServiceBusNamespace) { $azureServiceBusNamespace } else { '<not set>' })"
@@ -745,8 +743,7 @@ try {
         'Azure:ResourceGroup'              = $azureResourceGroup
         'Azure:Location'                   = $azureLocation
         'Azure:ApplicationInsights:Name'   = $azureApplicationInsightsName
-        'AZURE_TENANT_ID'                   = $azureTenantId
-        'AZURE_CLIENT_ID'                   = $azureClientId
+        'Azure:ClientId'                   = $azureClientId
         'Azure:ServiceBus:Namespace'       = $azureServiceBusNamespace
         'Azure:ServiceBus:TopicName'       = $azureServiceBusTopicName
     }
@@ -756,8 +753,7 @@ try {
         'Azure:ServiceBus:TopicName'       = $azureServiceBusTopicName
         'Azure:ServiceBus:SubscriptionName' = $azureServiceBusSubscriptionName
         'Azure:ServiceBus:Namespace'       = $azureServiceBusNamespace
-        'AZURE_TENANT_ID'                   = $azureTenantId
-        'AZURE_CLIENT_ID'                   = $azureClientId
+        'Azure:ClientId'                   = $azureClientId
     }
     
     Write-Information "Preparing to configure user secrets for both projects..."

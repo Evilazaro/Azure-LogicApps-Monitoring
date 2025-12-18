@@ -162,13 +162,8 @@ output AZURE_CLIENT_ID string = identity.outputs.AZURE_CLIENT_ID
 @description('Resource ID of the managed identity used by Container Registry')
 output AZURE_CONTAINER_REGISTRY_MANAGED_IDENTITY_ID string = identity.outputs.AZURE_MANAGED_IDENTITY_ID
 
-// Service Bus Outputs (Microsoft.ServiceBus/namespaces)
-@description('Azure Service Bus namespace name')
-output AZURE_SERVICE_BUS_NAMESPACE string = messaging.outputs.AZURE_SERVICE_BUS_NAMESPACE
-
 @description('Messaging Service Bus Host Name')
 output MESSAGING_SERVICEBUSHOSTNAME string = messaging.outputs.MESSAGING_SERVICEBUSHOSTNAME
-
 
 @description('Azure Service Bus endpoint')
 output MESSAGING_SERVICEBUSENDPOINT string = messaging.outputs.MESSAGING_SERVICEBUSENDPOINT
@@ -189,7 +184,3 @@ output AZURE_CONTAINER_APPS_ENVIRONMENT_ID string = services.outputs.AZURE_CONTA
 
 @description('Default domain for the Container Apps environment')
 output AZURE_CONTAINER_APPS_ENVIRONMENT_DEFAULT_DOMAIN string = services.outputs.AZURE_CONTAINER_APPS_ENVIRONMENT_DEFAULT_DOMAIN
-
-// Storage Account Outputs (Microsoft.Storage/storageAccounts)
-@description('Name of the workflow storage account')
-output WORKFLOW_STORAGE_ACCOUNT_NAME string = messaging.outputs.WORKFLOW_STORAGE_ACCOUNT_NAME

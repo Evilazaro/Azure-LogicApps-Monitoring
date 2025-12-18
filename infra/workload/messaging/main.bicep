@@ -191,11 +191,6 @@ resource saDiag 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
   }
 }
 
-// ========== Outputs ==========
-
-@description('Azure Service Bus namespace name')
-output AZURE_SERVICE_BUS_NAMESPACE string = broker.name
-
 @description('Messaging Service Bus Host Name')
 output MESSAGING_SERVICEBUSHOSTNAME string = split(replace(broker.properties.serviceBusEndpoint, 'https://', ''), ':')[0]
 

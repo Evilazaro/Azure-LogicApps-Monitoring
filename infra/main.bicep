@@ -115,9 +115,6 @@ module workload './workload/main.bicep' = {
 @description('Name of the deployed resource group')
 output AZURE_RESOURCE_GROUP string = resourceGroupName
 
-@description('Azure Tenant ID where resources are deployed')
-output AZURE_TENANT_ID string = tenant().tenantId
-
 // Application Insights Outputs (Microsoft.Insights/components)
 @description('Name of the deployed Application Insights instance')
 output AZURE_APPLICATION_INSIGHTS_NAME string = monitoring.outputs.AZURE_APPLICATION_INSIGHTS_NAME
@@ -145,10 +142,6 @@ output MANAGED_IDENTITY_NAME string = workload.outputs.MANAGED_IDENTITY_NAME
 @description('Client ID of the deployed managed identity (alias)')
 output AZURE_CLIENT_ID string = workload.outputs.AZURE_CLIENT_ID
 
-// Service Bus Outputs (Microsoft.ServiceBus/namespaces)
-@description('Azure Service Bus namespace name')
-output AZURE_SERVICE_BUS_NAMESPACE string = workload.outputs.AZURE_SERVICE_BUS_NAMESPACE
-
 @description('Messaging Service Bus Host Name')
 output MESSAGING_SERVICEBUSHOSTNAME string = workload.outputs.MESSAGING_SERVICEBUSHOSTNAME
 
@@ -174,10 +167,3 @@ output AZURE_CONTAINER_APPS_ENVIRONMENT_ID string = workload.outputs.AZURE_CONTA
 
 @description('Default domain for the Container Apps environment')
 output AZURE_CONTAINER_APPS_ENVIRONMENT_DEFAULT_DOMAIN string = workload.outputs.AZURE_CONTAINER_APPS_ENVIRONMENT_DEFAULT_DOMAIN
-
-@description('Orders API Endpoint URL')
-output ORDERS_API_ENDPOINT string = workload.outputs.AZURE_CONTAINER_APPS_ENVIRONMENT_DEFAULT_DOMAIN
-
-// Storage Account Outputs (Microsoft.Storage/storageAccounts)
-@description('Name of the workflow storage account')
-output WORKFLOW_STORAGE_ACCOUNT_NAME string = workload.outputs.WORKFLOW_STORAGE_ACCOUNT_NAME

@@ -894,7 +894,6 @@ Configure user secrets for development (automatically configured by postprovisio
 ```bash
 cd eShopOrders.AppHost
 dotnet user-secrets set "Azure:ApplicationInsights:Name" "<AZURE_APPLICATION_INSIGHTS_NAME>"
-dotnet user-secrets set "Azure:ServiceBus:Namespace" "<AZURE_SERVICE_BUS_NAMESPACE>"
 dotnet user-secrets set "Azure:ServiceBus:TopicName" "OrdersPlaced"
 dotnet user-secrets set "Azure:ResourceGroup" "<AZURE_RESOURCE_GROUP>"
 ```
