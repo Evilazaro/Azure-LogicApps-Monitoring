@@ -136,21 +136,21 @@ static (IResourceBuilder<AzureApplicationInsightsResource>? AppInsights, IResour
     // Configure Service Bus - use emulator if no configuration is available
     if (config.HasServiceBusConfiguration)
     {
-        var serviceBusParameter = builder.AddParameter(TelemetryResourceName, config.ServiceBusNamespace!);
+        var serviceBusParameter = builder.AddParameter(MessagingParamName, config.ServiceBusNamespace!);
 
         serviceBus = builder.AddAzureServiceBus(MessagingResourceName)
             .AsExisting(serviceBusParameter, resourceGroupParameter);
     }
     else
     {
-        var serviceBusParameter = builder.AddParameter(TelemetryResourceName, ServiceBusDevParameterName);
+        var serviceBusParameter = builder.AddParameter(MessagingParamName, ServiceBusDevParameterName);
         serviceBus = builder.AddAzureServiceBus(MessagingResourceName)
             .RunAsEmulator();
     }
 
     // Add orders topic with subscription to the Service Bus namespace
     // The subscription is required for the API to receive messages from the topic
-    var topicName = config.ServiceBusTopicName ?? "orders";
+    var topicName = config.ServiceBusTopicName ?? "OrdersPlaced";
     var ordersTopic = serviceBus.AddServiceBusTopic(topicName);
     ordersTopic.AddServiceBusSubscription("OrderProcessingSubscription");
 
@@ -186,7 +186,7 @@ static (IResourceBuilder<AzureApplicationInsightsResource> AppInsights, IResourc
 
     // Add orders topic with subscription
     // Topic name should always be configured in production, but provide a default for safety
-    var topicName = config.ServiceBusTopicName ?? "orders";
+    var topicName = config.ServiceBusTopicName ?? "OrdersPlaced";
     var ordersTopic = serviceBus.AddServiceBusTopic(topicName);
     ordersTopic.AddServiceBusSubscription("OrderProcessingSubscription");
 
@@ -296,7 +296,7 @@ static (string? AppInsightsName, string? ServiceBusNamespace, string? ServiceBus
 
     var appInsightsName = builder.Configuration["Azure:ApplicationInsights:Name"];
     var serviceBusNamespace = builder.Configuration["Azure:ServiceBus:Namespace"];
-    var serviceBusTopicName = builder.Configuration["Azure:ServiceBus:TopicName"] ?? "orders";
+    var serviceBusTopicName = builder.Configuration["Azure:ServiceBus:TopicName"] ?? "OrdersPlaced";
     var resourceGroupName = builder.Configuration["Azure:ResourceGroup"];
 
     var hasAppInsightsConfig = !string.IsNullOrWhiteSpace(appInsightsName)

@@ -1205,7 +1205,7 @@ union requests, dependencies, traces, exceptions
 ```kusto
 // Query container metrics from Container Apps Environment
 ContainerAppConsoleLogs_CL
-| where ContainerAppName_s contains "orders"
+| where ContainerAppName_s contains "OrdersPlaced"
 | project TimeGenerated, ContainerAppName_s, Log_s
 | order by TimeGenerated desc
 | take 100

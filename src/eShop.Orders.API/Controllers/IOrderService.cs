@@ -18,7 +18,7 @@ public interface IOrderService
     /// <summary>
     /// Sends multiple order messages to the message queue in a batch
     /// </summary>
-    /// <param name="orders">The collection of orders to send</param>
+    /// <param name="OrdersPlaced">The collection of orders to send</param>
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>A task representing the asynchronous operation</returns>
     Task SendOrderBatchMessagesAsync(IReadOnlyList<Order> orders, CancellationToken cancellationToken = default);

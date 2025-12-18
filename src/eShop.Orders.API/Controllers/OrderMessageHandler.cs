@@ -34,7 +34,7 @@ public class OrderMessageHandler : BackgroundService
         _configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
 
         // Read topic and subscription names from configuration
-        _topicName = _configuration["Azure:ServiceBus:TopicName"] ?? "orders";
+        _topicName = _configuration["Azure:ServiceBus:TopicName"] ?? "OrdersPlaced";
         _subscriptionName = _configuration["Azure:ServiceBus:SubscriptionName"] ?? "OrderProcessingSubscription";
     }
 

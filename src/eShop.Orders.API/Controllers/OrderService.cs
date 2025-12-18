@@ -45,7 +45,7 @@ public sealed class OrderService : IOrderService, IAsyncDisposable
 
         _logger = logger;
 
-        var topicName = configuration["Azure:ServiceBus:TopicName"] ?? "orders";
+        var topicName = configuration["Azure:ServiceBus:TopicName"] ?? "OrdersPlaced";
         _sender = serviceBusClient.CreateSender(topicName);
 
         _logger.LogInformation("OrderService initialized with topic: {TopicName}", topicName);
@@ -300,7 +300,7 @@ public sealed class OrderService : IOrderService, IAsyncDisposable
         try
         {
             activity?.SetTag("db.operation", "select");
-            activity?.SetTag("db.collection", "orders");
+            activity?.SetTag("db.collection", "OrdersPlaced");
 
             var orders = _orderStore.Values.OrderByDescending(o => o.Date).ToList();
 
@@ -335,7 +335,7 @@ public sealed class OrderService : IOrderService, IAsyncDisposable
         try
         {
             activity?.SetTag("db.operation", "select");
-            activity?.SetTag("db.collection", "orders");
+            activity?.SetTag("db.collection", "OrdersPlaced");
             activity?.SetTag("order.id", id);
 
             _orderStore.TryGetValue(id, out var order);
@@ -384,7 +384,7 @@ public sealed class OrderService : IOrderService, IAsyncDisposable
         try
         {
             activity?.SetTag("db.operation", "delete");
-            activity?.SetTag("db.collection", "orders");
+            activity?.SetTag("db.collection", "OrdersPlaced");
             activity?.SetTag("order.id", id);
 
             var removed = _orderStore.TryRemove(id, out var removedOrder);
