@@ -68,7 +68,7 @@ var uniqueSuffix = uniqueString(resourceGroup().id, name, envName, location)
 var logsStorageAccountName = take('${cleanedName}logs${uniqueSuffix}', 24)
 
 // Storage account configuration optimized for log storage
-var configSA storageAccountConfig = {
+var storageConfig storageAccountConfig = {
   sku: 'Standard_LRS'
   kind: 'StorageV2'
   accessTier: 'Hot'
@@ -83,14 +83,14 @@ resource logSA 'Microsoft.Storage/storageAccounts@2025-06-01' = {
   name: logsStorageAccountName
   location: location
   sku: {
-    name: configSA.sku
+    name: storageConfig.sku
   }
-  kind: configSA.kind
+  kind: storageConfig.kind
   tags: tags
   properties: {
-    accessTier: configSA.accessTier
-    supportsHttpsTrafficOnly: configSA.supportsHttpsTrafficOnly
-    minimumTlsVersion: configSA.minimumTlsVersion
+    accessTier: storageConfig.accessTier
+    supportsHttpsTrafficOnly: storageConfig.supportsHttpsTrafficOnly
+    minimumTlsVersion: storageConfig.minimumTlsVersion
     allowBlobPublicAccess: false
     publicNetworkAccess: 'Enabled'
     allowSharedKeyAccess: true
