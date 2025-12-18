@@ -116,6 +116,10 @@ function Test-RequiredEnvironmentVariable {
             return $false
         }
     }
+    
+    end {
+        Write-Verbose "Completed environment variable validation for: $Name"
+    }
 }
 
 function Set-DotNetUserSecret {
@@ -189,9 +193,9 @@ function Set-DotNetUserSecret {
             if ($PSCmdlet.ShouldProcess("$Key in $ProjectPath", "Set user secret")) {
                 Write-Verbose "Executing: dotnet user-secrets set `"$Key`" <value> -p `"$ProjectPath`""
                 
-                # Capture both stdout and stderr
+                # Capture both stdout and stderr, save exit code immediately
                 $output = & dotnet user-secrets set $Key $Value -p $ProjectPath 2>&1
-                $exitCode = $LASTEXITCODE
+                $exitCode = $LASTEXITCODE  # Capture immediately to prevent race conditions
                 
                 if ($exitCode -ne 0) {
                     $errorMessage = "Failed to set secret '$Key'. Exit code: $exitCode"
@@ -212,8 +216,8 @@ function Set-DotNetUserSecret {
                 StackTrace = $_.ScriptStackTrace
             }
             
-            Write-Error "Error setting user secret '$Key': $($_.Exception.Message)" -ErrorAction Stop
-            throw
+            # Re-throw to allow caller to handle; ErrorActionPreference will handle termination
+            throw "Error setting user secret '$Key': $($_.Exception.Message)"
         }
     }
 }
@@ -267,9 +271,12 @@ function Get-ApiProjectPath {
             return $absolutePath
         }
         catch {
-            Write-Error "Failed to determine API project path: $($_.Exception.Message)" -ErrorAction Stop
-            throw
+            throw "Failed to determine API project path: $($_.Exception.Message)"
         }
+    }
+    
+    end {
+        Write-Verbose "API project path determination completed"
     }
 }
 
@@ -322,9 +329,12 @@ function Get-ProjectPath {
             return $absolutePath
         }
         catch {
-            Write-Error "Failed to determine AppHost project path: $($_.Exception.Message)" -ErrorAction Stop
-            throw
+            throw "Failed to determine AppHost project path: $($_.Exception.Message)"
         }
+    }
+    
+    end {
+        Write-Verbose "AppHost project path determination completed"
     }
 }
 
@@ -396,7 +406,8 @@ function Invoke-AzureContainerRegistryLogin {
             # Check Azure CLI version
             try {
                 $azVersionJson = & az version --output json 2>&1
-                if ($LASTEXITCODE -eq 0) {
+                $azVersionExitCode = $LASTEXITCODE
+                if ($azVersionExitCode -eq 0) {
                     $azVersion = $azVersionJson | ConvertFrom-Json
                     Write-Verbose "Azure CLI version: $($azVersion.'azure-cli')"
                 }
@@ -449,6 +460,10 @@ function Invoke-AzureContainerRegistryLogin {
                 Write-Verbose "  Stack trace: $($_.ScriptStackTrace)"
             }
         }
+    }
+    
+    end {
+        Write-Verbose "Azure Container Registry login process completed"
     }
 }
 
@@ -523,6 +538,10 @@ function Write-SectionHeader {
             Write-Host $Message -ForegroundColor Cyan
         }
     }
+    
+    end {
+        Write-Verbose "Section header written: $Message"
+    }
 }
 
 function Get-EnvironmentVariableSafe {
@@ -574,6 +593,10 @@ function Get-EnvironmentVariableSafe {
     catch {
         Write-Verbose "Error retrieving environment variable '$Name': $($_.Exception.Message)"
         return $DefaultValue
+    }
+    
+    end {
+        Write-Verbose "Environment variable retrieval completed for: $Name"
     }
 }
 
@@ -882,22 +905,22 @@ catch {
     # Comprehensive error reporting
     Write-SectionHeader -Message "Post-Provisioning Failed!" -Type 'Main'
     
-    Write-Error "╔══════════════════════════════════════════════════════════════╗"
-    Write-Error "║                   EXECUTION FAILED                           ║"
-    Write-Error "╚══════════════════════════════════════════════════════════════╝"
-    Write-Error ""
-    Write-Error "Error Message:"
-    Write-Error "  $($_.Exception.Message)"
-    Write-Error ""
-    Write-Error "Error Type: $($_.Exception.GetType().FullName)"
+    Write-Host "╔══════════════════════════════════════════════════════════════╗" -ForegroundColor Red
+    Write-Host "║                   EXECUTION FAILED                           ║" -ForegroundColor Red
+    Write-Host "╚══════════════════════════════════════════════════════════════╝" -ForegroundColor Red
+    Write-Host ""
+    Write-Host "Error Message:" -ForegroundColor Red
+    Write-Host "  $($_.Exception.Message)" -ForegroundColor Red
+    Write-Host ""
+    Write-Host "Error Type: $($_.Exception.GetType().FullName)" -ForegroundColor Red
     
     # Position information
     if ($_.InvocationInfo) {
-        Write-Error ""
-        Write-Error "Location:"
-        Write-Error "  Script: $($_.InvocationInfo.ScriptName)"
-        Write-Error "  Line: $($_.InvocationInfo.ScriptLineNumber)"
-        Write-Error "  Column: $($_.InvocationInfo.OffsetInLine)"
+        Write-Host "" -ForegroundColor Red
+        Write-Host "Location:" -ForegroundColor Red
+        Write-Host "  Script: $($_.InvocationInfo.ScriptName)" -ForegroundColor Red
+        Write-Host "  Line: $($_.InvocationInfo.ScriptLineNumber)" -ForegroundColor Red
+        Write-Host "  Column: $($_.InvocationInfo.OffsetInLine)" -ForegroundColor Red
     }
     
     # Stack trace (verbose only)

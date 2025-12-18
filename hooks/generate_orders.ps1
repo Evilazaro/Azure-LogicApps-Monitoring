@@ -40,7 +40,7 @@
     File Name      : generate_orders.ps1
     Author         : Azure-LogicApps-Monitoring Team
     Version        : 2.0.0
-    Last Modified  : 2025-12-17
+    Last Modified  : 2025-12-18
     Schema         : Matches eShop.Orders.API.Models.Order
 #>
 
@@ -59,12 +59,12 @@ param(
     [int]$StartOrderId = 101
 )
 
-# Set strict mode and preferences
+# Set strict mode and preferences for robust error handling
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
 $InformationPreference = 'Continue'
 
-# Script constants
+# Script constants for order generation parameters
 $script:MinQuantity = 1
 $script:MaxQuantity = 10
 $script:MinPricePerItem = 10.00
@@ -83,22 +83,26 @@ $script:Messages = @(
     'Order received - thanks!',
     'We value your business!',
     'Your order is being prepared for shipment.',
-    'Thank you for being a valued customer!',
+    'Thank you for being a valued customer!'
+)
 #region Order Generation
 
 try {
+    # Track execution time for performance metrics
     $executionStart = Get-Date
     
-    Write-Information "═══════════════════════════════════════════════════════════"
-    Write-Information "Order Generation Script Started"
-    Write-Information "═══════════════════════════════════════════════════════════"
-    Write-Information "Configuration:"
+    # Display script header and configuration
+    Write-Information '═══════════════════════════════════════════════════════════'
+    Write-Information 'Order Generation Script Started'
+    Write-Information '═══════════════════════════════════════════════════════════'
+    Write-Information 'Configuration:'
     Write-Information "  Number of Orders : $NumberOfOrders"
     Write-Information "  Output File      : $OutputPath"
     Write-Information "  Starting ID      : ORD-$StartOrderId"
-    Write-Information ""
+    Write-Information ''
     
-    # Initialize collection with pre-allocated capacity for performance
+    # Initialize collection with pre-allocated capacity for optimal performance
+    # Using List<T> prevents array reallocation overhead for large datasets
     $orders = [System.Collections.Generic.List[PSCustomObject]]::new($NumberOfOrders)
     $currentDate = Get-Date
     
@@ -106,8 +110,9 @@ try {
     Write-Verbose "Price range: $($script:MinPricePerItem) - $($script:MaxPricePerItem)"
     Write-Verbose "Quantity range: $($script:MinQuantity) - $($script:MaxQuantity)"
     
+    # Generate orders with realistic random data
     for ($i = 0; $i -lt $NumberOfOrders; $i++) {
-        # Progress indicator every 1000 orders
+        # Display progress indicator every 1000 orders for user feedback
         if ($i % 1000 -eq 0 -and $i -gt 0) {
             $percentComplete = [Math]::Round(($i / $NumberOfOrders) * 100, 1)
             Write-Information "Progress: $i / $NumberOfOrders orders ($percentComplete%) generated..."
@@ -117,104 +122,111 @@ try {
         $orderId = "ORD-$($StartOrderId + $i)"
         
         # Generate random Date within the last year (matches Order.Date property)
+        # Creates realistic order distribution across time
         $daysAgo = Get-Random -Minimum 0 -Maximum 366
         $hoursAgo = Get-Random -Minimum 0 -Maximum 24
         $minutesAgo = Get-Random -Minimum 0 -Maximum 60
         $orderDate = $currentDate.AddDays(-$daysAgo).AddHours(-$hoursAgo).AddMinutes(-$minutesAgo)
+        # Convert to ISO 8601 format for JSON serialization compatibility
         $orderDateString = $orderDate.ToUniversalTime().ToString('yyyy-MM-ddTHH:mm:ss.fffZ')
         
-    Write-Information ""
-    Write-Information "Converting to JSON..."
-    Write-Verbose "Using ConvertTo-Json with Depth 10 for proper serialization"
-    
-    $json = $orders | ConvertTo-Json -Depth 10 -Compress:$false
-    
-    Write-Information "Writing to file: $OutputPath"
-    Write-Verbose "Using UTF-8 encoding without BOM"
-    
-    # Write with UTF-8 encoding (no BOM) for cross-platform compatibility
-    [System.IO.File]::WriteAllText($OutputPath, $json, [System.Text.UTF8Encoding]::new($false))
-    
-    # Verify file was created
-    if (-not (Test-Path -Path $OutputPath)) {
-        throw "Failed to create output file: $OutputPath"
-    }
-    
-    $fileInfo = Get-Item -Path $OutputPath
-    $fileSizeMB = [Math]::Round($fileInfo.Length / 1MB, 2)
-    
-    Write-Information ""
-    Write-Information "═══════════════════════════════════════════════════════════"
-    Write-Information "Order Generation Completed Successfully!"
-    Write-Information "═══════════════════════════════════════════════════════════"
-    Write-Information "Results:"
-    Write-Information "  • Total orders generated : $NumberOfOrders"
-    Write-Information "  • First Order ID         : $($orders[0].Id)"
-    Write-Information "  • Last Order ID          : $($orders[$orders.Count - 1].Id)"
-    Write-Information "  • Output file            : $OutputPath"
-    Write-Information "  • File size              : $fileSizeMB MB"
-    Write-Information ""
-    
-    $executionDuration = (New-TimeSpan -Start $executionStart -End (Get-Date)).TotalSeconds
-    Write-Information "Generation Time: $([Math]::Round($executionDuration, 2)) seconds"
-    Write-Information "Orders per second: $([Math]::Round($NumberOfOrders / $executionDuration, 0))"
-    Write-Information ""
-    
-    Write-Information "Sample Order (first record):"
-    $orders[0] | Format-List | Out-String | ForEach-Object { Write-Information $_.TrimEnd() }
-    
-    Write-Verbose "Exiting with success code 0"
-    exit 0
-}
-catch {
-    Write-Error "═══════════════════════════════════════════════════════════"
-    Write-Error "Order Generation Failed!"
-    Write-Error "═══════════════════════════════════════════════════════════"
-    Write-Error "Error: $($_.Exception.Message)"
-    Write-Error ""
-    
-    if ($_.InvocationInfo) {
-        Write-Error "Location: Line $($_.InvocationInfo.ScriptLineNumber), Column $($_.InvocationInfo.OffsetInLine)"
-    }
-    
-    if ($_.ScriptStackTrace) {
-        Write-Verbose "Stack Trace:"
-        Write-Verbose $_.ScriptStackTrace
-    }
-    
-    exit 1
-}
-
-#endregionMessage (matches Order.Message property - max 500 chars)
+        # Generate random Quantity (matches Order.Quantity property - min 1)
+        $quantity = Get-Random -Minimum $script:MinQuantity -Maximum ($script:MaxQuantity + 1)
+        
+        # Calculate Total based on quantity and random price per item
+        # Matches Order.Total property (decimal, >= 0.01)
+        $pricePerItem = Get-Random -Minimum $script:MinPricePerItem -Maximum $script:MaxPricePerItem
+        $orderTotal = [Math]::Round($quantity * $pricePerItem, 2)
+        
+        # Select random Message (matches Order.Message property - max 500 chars)
         $message = $script:Messages | Get-Random
         
-        # Create order object with property names matching C# Order model
+        # Create order object with property names matching C# Order model exactly
+        # Property order and types must align with API schema for validation
         $order = [PSCustomObject]@{
             Id       = $orderId          # String, 1-50 chars, required
-            Date     = $orderDateString  # DateTime, required
+            Date     = $orderDateString  # DateTime (ISO 8601), required
             Quantity = $quantity         # Int, >= 1, required
             Total    = $orderTotal       # Decimal, >= 0.01, required
             Message  = $message          # String, 1-500 chars, required
         }
         
+        # Add to collection using $null assignment to suppress output
         $null = $orders.Add($order)
-            Total = $orderTotal        # Changed from OrderTotal
-        Message = $message         # Changed from OrderMessage
     }
     
-    $orders += $order
+    Write-Information ''
+    Write-Information 'Converting to JSON...'
+    Write-Verbose 'Using ConvertTo-Json with Depth 10 for proper serialization'
+    
+    # Convert to JSON with sufficient depth and readable formatting
+    # Depth 10 ensures nested properties are fully serialized
+    $json = $orders | ConvertTo-Json -Depth 10 -Compress:$false
+    
+    Write-Information "Writing to file: $OutputPath"
+    Write-Verbose 'Using UTF-8 encoding without BOM for cross-platform compatibility'
+    
+    # Write with UTF-8 encoding (no BOM) for cross-platform compatibility
+    # Using .NET method for precise encoding control
+    [System.IO.File]::WriteAllText($OutputPath, $json, [System.Text.UTF8Encoding]::new($false))
+    
+    # Verify file was created successfully
+    if (-not (Test-Path -Path $OutputPath -PathType Leaf)) {
+        throw "Failed to create output file: $OutputPath"
+    }
+    
+    # Gather file statistics for reporting
+    $fileInfo = Get-Item -Path $OutputPath
+    $fileSizeMB = [Math]::Round($fileInfo.Length / 1MB, 2)
+    
+    # Display success summary with detailed metrics
+    Write-Information ''
+    Write-Information '═══════════════════════════════════════════════════════════'
+    Write-Information 'Order Generation Completed Successfully!'
+    Write-Information '═══════════════════════════════════════════════════════════'
+    Write-Information 'Results:'
+    Write-Information "  • Total orders generated : $NumberOfOrders"
+    Write-Information "  • First Order ID         : $($orders[0].Id)"
+    Write-Information "  • Last Order ID          : $($orders[$orders.Count - 1].Id)"
+    Write-Information "  • Output file            : $OutputPath"
+    Write-Information "  • File size              : $fileSizeMB MB"
+    Write-Information ''
+    
+    # Calculate and display performance metrics
+    $executionDuration = (New-TimeSpan -Start $executionStart -End (Get-Date)).TotalSeconds
+    Write-Information "Generation Time: $([Math]::Round($executionDuration, 2)) seconds"
+    Write-Information "Orders per second: $([Math]::Round($NumberOfOrders / $executionDuration, 0))"
+    Write-Information ''
+    
+    # Display sample order for verification
+    Write-Information 'Sample Order (first record):'
+    $orders[0] | Format-List | Out-String | ForEach-Object { Write-Information $_.TrimEnd() }
+    
+    Write-Verbose 'Exiting with success code 0'
+    exit 0
+}
+catch {
+    # Comprehensive error reporting with actionable information
+    Write-Host '═══════════════════════════════════════════════════════════' -ForegroundColor Red
+    Write-Host 'Order Generation Failed!' -ForegroundColor Red
+    Write-Host '═══════════════════════════════════════════════════════════' -ForegroundColor Red
+    Write-Host ''
+    Write-Host "Error: $($_.Exception.Message)" -ForegroundColor Red
+    Write-Host ''
+    
+    # Display error location for troubleshooting
+    if ($_.InvocationInfo) {
+        Write-Host "Location: Line $($_.InvocationInfo.ScriptLineNumber), Column $($_.InvocationInfo.OffsetInLine)" -ForegroundColor Red
+    }
+    
+    # Include stack trace in verbose mode for detailed debugging
+    if ($_.ScriptStackTrace) {
+        Write-Verbose 'Stack Trace:'
+        Write-Verbose $_.ScriptStackTrace
+    }
+    
+    # Exit with error code
+    exit 1
 }
 
-Write-Host "Converting to JSON..." -ForegroundColor Cyan
-$json = $orders | ConvertTo-Json -Depth 10
-
-Write-Host "Writing to file..." -ForegroundColor Cyan
-$outputFile = "orders.json"
-$json | Out-File -FilePath $outputFile -Encoding UTF8
-
-Write-Host "`nSuccessfully generated $NUM_ORDERS orders in $outputFile" -ForegroundColor Green
-Write-Host "First Order ID: $($orders[0].Id)" -ForegroundColor Gray
-Write-Host "Last Order ID: $($orders[$orders.Count - 1].Id)" -ForegroundColor Gray
-Write-Host "File size: $((Get-Item $outputFile).Length / 1MB) MB" -ForegroundColor Gray
-Write-Host "`nSample Order (first record):" -ForegroundColor Cyan
-$orders[0] | Format-List
+#endregion

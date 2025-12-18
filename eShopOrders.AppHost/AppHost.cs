@@ -215,20 +215,29 @@ static void ConfigureServices(
     ArgumentNullException.ThrowIfNull(ordersWebApp);
 
     // Configure Orders API
-    ConfigureOrdersApi(ordersApi, builder.Environment.EnvironmentName, resources);
+    ConfigureOrdersApi(builder,ordersApi, builder.Environment.EnvironmentName, resources);
 
     // Configure Orders Web App (Blazor WebAssembly)
-    ConfigureOrdersWebApp(ordersWebApp, ordersApi, resources.AppInsights);
+    ConfigureOrdersWebApp(builder, ordersWebApp, ordersApi, resources.AppInsights);
 }
 
 /// <summary>
 /// Configures the Orders API project with environment variables and resource references.
 /// </summary>
-static void ConfigureOrdersApi(
+static void ConfigureOrdersApi(IDistributedApplicationBuilder builder,
     IResourceBuilder<ProjectResource> ordersApi,
     string environmentName,
     (IResourceBuilder<AzureApplicationInsightsResource>? AppInsights, IResourceBuilder<AzureServiceBusResource>? ServiceBus) resources)
 {
+
+    var config = GetAzureConfiguration(builder);
+
+    if(!string.IsNullOrEmpty(config.TenantId) && !string.IsNullOrEmpty(config.ClientId))
+    {
+        ordersApi.WithEnvironment("TenantId", config.TenantId);
+        ordersApi.WithEnvironment("ClientId", config.ClientId);
+    }
+
     // Add Service Bus reference if available
     if (resources.ServiceBus is not null)
     {
@@ -247,11 +256,19 @@ static void ConfigureOrdersApi(
 /// <summary>
 /// Configures the Orders Web App project with environment variables and resource references.
 /// </summary>
-static void ConfigureOrdersWebApp(
+static void ConfigureOrdersWebApp(IDistributedApplicationBuilder builder,
     IResourceBuilder<ProjectResource> ordersWebApp,
     IResourceBuilder<ProjectResource> ordersApi,
     IResourceBuilder<AzureApplicationInsightsResource>? appInsights)
 {
+    var config = GetAzureConfiguration(builder);
+
+    if (!string.IsNullOrEmpty(config.TenantId) && !string.IsNullOrEmpty(config.ClientId))
+    {
+        ordersApi.WithEnvironment("TenantId", config.TenantId);
+        ordersApi.WithEnvironment("ClientId", config.ClientId);
+    }
+
     ordersWebApp.WithReference(ordersApi)
                 .AsHttp2Service();
 
