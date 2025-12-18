@@ -268,33 +268,49 @@ static void ConfigureOrdersWebApp(
 /// </summary>
 /// <param name="builder">The distributed application builder.</param>
 /// <returns>A tuple containing Azure resource names and configuration status flags.</returns>
-static (string? AppInsightsName, string? ServiceBusHostName, string? ServiceBusTopicName, string? ResourceGroupName, bool HasResourceGroupConfiguration, bool HasAppInsightsConfiguration, bool HasServiceBusConfiguration)
+static (string? TenantId, string? ClientId, string? AppInsightsName, string? ServiceBusHostName, string? ServiceBusTopicName, string? ResourceGroupName, bool HasAzureAuthConfig, bool HasResourceGroupConfiguration, bool HasAppInsightsConfiguration, bool HasServiceBusConfiguration)
     GetAzureConfiguration(IDistributedApplicationBuilder builder)
 {
     ArgumentNullException.ThrowIfNull(builder);
 
+    var tenantId = builder.Configuration["Azure:TenantId"];
+    var clientId = builder.Configuration["Azure:ClientId"];
     var appInsightsName = builder.Configuration["Azure:ApplicationInsights:Name"];
-    var serviceBusNamespace = builder.Configuration["Azure:ServiceBus:Namespace"];
+    var serviceBusHostName = builder.Configuration["Azure:ServiceBus:HostName"];
     var serviceBusTopicName = builder.Configuration["Azure:ServiceBus:TopicName"] ?? "OrdersPlaced";
     var resourceGroupName = builder.Configuration["Azure:ResourceGroup"];
 
+    var hasAzureAuthConfig = !string.IsNullOrWhiteSpace(tenantId) && !string.IsNullOrEmpty(clientId);
+
     var hasAppInsightsConfig = !string.IsNullOrWhiteSpace(appInsightsName)
                              && !string.IsNullOrWhiteSpace(resourceGroupName);
-    var hasServiceBusConfig = !string.IsNullOrWhiteSpace(serviceBusNamespace)
+    var hasServiceBusConfig = !string.IsNullOrWhiteSpace(serviceBusHostName)
                             && !string.IsNullOrWhiteSpace(resourceGroupName)
                             && !string.IsNullOrWhiteSpace(serviceBusTopicName);
 
     var hasResourceGroup = !string.IsNullOrWhiteSpace(resourceGroupName);
 
-    return (appInsightsName, serviceBusNamespace, serviceBusTopicName, resourceGroupName, hasResourceGroup, hasAppInsightsConfig, hasServiceBusConfig);
+    return (tenantId, clientId, appInsightsName, serviceBusHostName, serviceBusTopicName, resourceGroupName, hasAzureAuthConfig, hasResourceGroup, hasAppInsightsConfig, hasServiceBusConfig);
 }
 
 /// <summary>
 /// Validates that all required production configuration values are present.
 /// </summary>
 static void ValidateProductionConfiguration(
-    (string? AppInsightsName, string? ServiceBusHostName, string? ServiceBusTopicName, string? ResourceGroupName, bool HasResourceGroupConfiguration, bool HasAppInsightsConfiguration, bool HasServiceBusConfiguration) config)
+    (string? TenantId, string? ClientId, string? AppInsightsName, string? ServiceBusHostName, string? ServiceBusTopicName, string? ResourceGroupName, bool HasAzureAuthConfig, bool HasResourceGroupConfiguration, bool HasAppInsightsConfiguration, bool HasServiceBusConfiguration) config)
 {
+    if (!config.HasAzureAuthConfig)
+    {
+        throw new InvalidOperationException(
+            "Azure authentication configuration is incomplete. Ensure 'Azure:TenantId' and 'Azure:ClientId' are set in user secrets or configuration.");
+    }
+
+    if (!config.HasAppInsightsConfiguration)
+    {
+        throw new InvalidOperationException(
+            "Azure Application Insights configuration is incomplete. Ensure 'Azure:ApplicationInsights:Name' and 'Azure:ResourceGroup' are set in user secrets or configuration.");
+    }
+
     if (string.IsNullOrWhiteSpace(config.AppInsightsName))
     {
         throw new InvalidOperationException(
@@ -304,7 +320,7 @@ static void ValidateProductionConfiguration(
     if (string.IsNullOrWhiteSpace(config.ServiceBusHostName))
     {
         throw new InvalidOperationException(
-            "Azure Service Bus namespace is not configured. Set 'Azure:ServiceBus:Namespace' in user secrets or configuration.");
+            "Azure Service Bus namespace is not configured. Set 'Azure:ServiceBus:HostName' in user secrets or configuration.");
     }
 
     if (string.IsNullOrWhiteSpace(config.ServiceBusTopicName))
@@ -322,6 +338,6 @@ static void ValidateProductionConfiguration(
     if (!config.HasServiceBusConfiguration)
     {
         throw new InvalidOperationException(
-            "Azure Service Bus configuration is incomplete. Ensure 'Azure:ServiceBus:Namespace', 'Azure:ServiceBus:TopicName', and 'Azure:ResourceGroup' are set in user secrets or configuration.");
+            "Azure Service Bus configuration is incomplete. Ensure 'Azure:ServiceBus:HostName', 'Azure:ServiceBus:TopicName', and 'Azure:ResourceGroup' are set in user secrets or configuration.");
     }
 }

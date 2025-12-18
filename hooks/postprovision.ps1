@@ -751,17 +751,19 @@ try {
     
     # Define secrets for AppHost project (all Azure configuration)
     $appHostSecrets = [ordered]@{
+        'Azure:SubscriptionId'             = $azureSubscriptionId
+        'Azure:Location'                   = $azureLocation
         'Azure:ResourceGroup'              = $azureResourceGroup
         'Azure:ApplicationInsights:Name'   = $azureApplicationInsightsName
         'Azure:ClientId'                   = $azureClientId
-        'Azure:ServiceBus:HostName '       = $azureServiceBusHostName
+        'Azure:ServiceBus:HostName'       = $azureServiceBusHostName
         'Azure:ServiceBus:TopicName'       = $azureServiceBusTopicName
         'Azure:ServiceBus:SubscriptionName' = $azureServiceBusSubscriptionName
     }
     
     # Define secrets for API project (Service Bus configuration only)
     $apiSecrets = [ordered]@{        
-        'Azure:ServiceBus:HostName '       = $azureServiceBusHostName
+        'Azure:ServiceBus:HostName'       = $azureServiceBusHostName
         'Azure:ServiceBus:TopicName'       = $azureServiceBusTopicName
         'Azure:ServiceBus:SubscriptionName' = $azureServiceBusSubscriptionName
     }
