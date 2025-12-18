@@ -612,7 +612,7 @@ try {
     $azureResourceGroup = Get-EnvironmentVariableSafe -Name 'AZURE_RESOURCE_GROUP'
     $azureLocation = Get-EnvironmentVariableSafe -Name 'AZURE_LOCATION'
     $azureApplicationInsightsName = Get-EnvironmentVariableSafe -Name 'AZURE_APPLICATION_INSIGHTS_NAME'
-    $azureClientId = Get-EnvironmentVariableSafe -Name 'AZURE_CLIENT_ID'
+    $azureClientId = Get-EnvironmentVariableSafe -Name 'MANAGED_IDENTITY_CLIENT_ID'
     $azureServiceBusNamespace = Get-EnvironmentVariableSafe -Name 'AZURE_SERVICE_BUS_NAMESPACE'
     $azureServiceBusTopicName = Get-EnvironmentVariableSafe -Name 'AZURE_SERVICE_BUS_TOPIC_NAME' -DefaultValue 'OrdersPlaced'
     $azureServiceBusSubscriptionName = Get-EnvironmentVariableSafe -Name 'AZURE_SERVICE_BUS_SUBSCRIPTION_NAME' -DefaultValue 'OrderProcessingSubscription'

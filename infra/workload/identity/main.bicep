@@ -111,9 +111,6 @@ resource userRA 'Microsoft.Authorization/roleAssignments@2022-04-01' = [
 // ========== Outputs ==========
 
 @description('Client ID of the deployed managed identity')
-output AZURE_CLIENT_ID string = mi.properties.clientId
-
-@description('Client ID of the deployed managed identity')
 output MANAGED_IDENTITY_CLIENT_ID string = mi.properties.clientId
 
 @description('Name of the deployed managed identity')

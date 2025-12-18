@@ -156,9 +156,6 @@ output MANAGED_IDENTITY_CLIENT_ID string = identity.outputs.MANAGED_IDENTITY_CLI
 @description('Name of the deployed managed identity')
 output MANAGED_IDENTITY_NAME string = identity.outputs.MANAGED_IDENTITY_NAME
 
-@description('Client ID of the deployed managed identity (alias)')
-output AZURE_CLIENT_ID string = identity.outputs.AZURE_CLIENT_ID
-
 @description('Resource ID of the managed identity used by Container Registry')
 output AZURE_CONTAINER_REGISTRY_MANAGED_IDENTITY_ID string = identity.outputs.AZURE_MANAGED_IDENTITY_ID
 

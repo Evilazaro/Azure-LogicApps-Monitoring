@@ -250,7 +250,7 @@ static void ConfigureOrdersApi(
 
     //if (!string.IsNullOrWhiteSpace(clientId) && !string.IsNullOrWhiteSpace(tenantId))
     //{
-    //    ordersApi.WithEnvironment("AZURE_CLIENT_ID", clientId)
+    //    ordersApi.WithEnvironment("MANAGED_IDENTITY_CLIENT_ID", clientId)
     //}
     ordersApi.AsHttp2Service();
 }
@@ -278,7 +278,7 @@ static void ConfigureOrdersWebApp(
 
     //if (!string.IsNullOrWhiteSpace(clientId) && !string.IsNullOrWhiteSpace(tenantId))
     //{
-    //    ordersWebApp.WithEnvironment("AZURE_CLIENT_ID", clientId);
+    //    ordersWebApp.WithEnvironment("MANAGED_IDENTITY_CLIENT_ID", clientId);
     //}
 }
 
@@ -318,7 +318,7 @@ static (string? TenantId, string? ClientId) GetAuthenticationConfiguration(IDist
     ArgumentNullException.ThrowIfNull(builder);
 
     var tenantId = builder.Configuration["AZURE_TENANT_ID"];
-    var clientId = builder.Configuration["AZURE_CLIENT_ID"];
+    var clientId = builder.Configuration["MANAGED_IDENTITY_CLIENT_ID"];
 
     return (tenantId, clientId);
 }

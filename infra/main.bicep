@@ -139,9 +139,6 @@ output MANAGED_IDENTITY_CLIENT_ID string = workload.outputs.MANAGED_IDENTITY_CLI
 @description('Name of the deployed managed identity')
 output MANAGED_IDENTITY_NAME string = workload.outputs.MANAGED_IDENTITY_NAME
 
-@description('Client ID of the deployed managed identity (alias)')
-output AZURE_CLIENT_ID string = workload.outputs.AZURE_CLIENT_ID
-
 @description('Messaging Service Bus Host Name')
 output MESSAGING_SERVICEBUSHOSTNAME string = workload.outputs.MESSAGING_SERVICEBUSHOSTNAME
 
