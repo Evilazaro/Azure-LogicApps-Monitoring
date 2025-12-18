@@ -192,7 +192,7 @@ resource saDiag 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
 }
 
 @description('Messaging Service Bus Host Name')
-output MESSAGING_SERVICEBUSHOSTNAME string = split(replace(broker.properties.serviceBusEndpoint, 'https://', ''), ':')[0]
+output MESSAGING_SERVICEBUSHOSTNAME string = broker.name //split(replace(broker.properties.serviceBusEndpoint, 'https://', ''), ':')[0]
 
 @description('Azure Service Bus endpoint')
 output MESSAGING_SERVICEBUSENDPOINT string = broker.properties.serviceBusEndpoint
