@@ -233,8 +233,6 @@ static void ConfigureOrdersApi(
     (string? TenantId, string? ClientId) authConfig,
     (IResourceBuilder<AzureApplicationInsightsResource>? AppInsights, IResourceBuilder<AzureServiceBusResource>? ServiceBus) resources)
 {
-    ordersApi.WithEnvironment("ASPNETCORE_ENVIRONMENT", environmentName);
-
     // Add Service Bus reference if available
     if (resources.ServiceBus is not null)
     {

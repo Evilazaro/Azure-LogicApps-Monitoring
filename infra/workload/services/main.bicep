@@ -98,12 +98,6 @@ resource registry 'Microsoft.ContainerRegistry/registries@2025-11-01' = {
   }
 }
 
-@description('Login server endpoint for the Azure Container Registry')
-output AZURE_CONTAINER_REGISTRY_ENDPOINT string = registry.properties.loginServer
-
-@description('Name of the Azure Container Registry')
-output AZURE_CONTAINER_REGISTRY_NAME string = registry.name
-
 @description('Diagnostic settings for Container Registry')
 resource registryDiag 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
   name: '${registry.name}-diag'
@@ -167,14 +161,6 @@ resource appEnv 'Microsoft.App/managedEnvironments@2025-02-02-preview' = {
   }
 }
 
-@description('Resource ID of the Container Apps managed environment')
-output AZURE_CONTAINER_APPS_ENVIRONMENT_ID string = appEnv.id
-
-@description('Default domain for the Container Apps environment')
-output AZURE_CONTAINER_APPS_ENVIRONMENT_DEFAULT_DOMAIN string = appEnv.properties.defaultDomain
-
-output AZURE_CONTAINER_APPS_ENVIRONMENT_NAME string = appEnv.name
-
 @description('.NET Aspire dashboard component for application observability')
 resource dashboard 'Microsoft.App/managedEnvironments/dotNetComponents@2025-02-02-preview' = {
   parent: appEnv
@@ -183,3 +169,20 @@ resource dashboard 'Microsoft.App/managedEnvironments/dotNetComponents@2025-02-0
     componentType: 'AspireDashboard'
   }
 }
+
+// ========== Outputs ==========
+
+@description('Login server endpoint for the Azure Container Registry')
+output AZURE_CONTAINER_REGISTRY_ENDPOINT string = registry.properties.loginServer
+
+@description('Name of the Azure Container Registry')
+output AZURE_CONTAINER_REGISTRY_NAME string = registry.name
+
+@description('Resource ID of the Container Apps managed environment')
+output AZURE_CONTAINER_APPS_ENVIRONMENT_ID string = appEnv.id
+
+@description('Name of the Container Apps Environment')
+output AZURE_CONTAINER_APPS_ENVIRONMENT_NAME string = appEnv.name
+
+@description('Default domain for the Container Apps environment')
+output AZURE_CONTAINER_APPS_ENVIRONMENT_DEFAULT_DOMAIN string = appEnv.properties.defaultDomain

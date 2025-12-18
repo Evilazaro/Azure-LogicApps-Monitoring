@@ -61,22 +61,6 @@ resource mi 'Microsoft.ManagedIdentity/userAssignedIdentities@2025-01-31-preview
   tags: tags
 }
 
-// ========== Outputs ==========
-
-@description('Client ID of the deployed managed identity')
-output AZURE_CLIENT_ID string = mi.properties.clientId
-
-@description('Client ID of the deployed managed identity')
-output MANAGED_IDENTITY_CLIENT_ID string = mi.properties.clientId
-
-@description('Name of the deployed managed identity')
-output MANAGED_IDENTITY_NAME string = mi.name
-
-@description('Resource ID of the deployed managed identity (internal use only)')
-output AZURE_MANAGED_IDENTITY_ID string = mi.id
-
-// ========== Role Assignments ==========
-
 // Built-in Azure role definition IDs for managed identity
 // These GUIDs are consistent across all Azure subscriptions
 var roles = [
@@ -122,3 +106,17 @@ resource userRA 'Microsoft.Authorization/roleAssignments@2022-04-01' = [
     }
   }
 ]
+
+// ========== Outputs ==========
+
+@description('Client ID of the deployed managed identity')
+output AZURE_CLIENT_ID string = mi.properties.clientId
+
+@description('Client ID of the deployed managed identity')
+output MANAGED_IDENTITY_CLIENT_ID string = mi.properties.clientId
+
+@description('Name of the deployed managed identity')
+output MANAGED_IDENTITY_NAME string = mi.name
+
+@description('Resource ID of the deployed managed identity (internal use only)')
+output AZURE_MANAGED_IDENTITY_ID string = mi.id

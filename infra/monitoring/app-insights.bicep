@@ -76,17 +76,6 @@ resource appInsights 'Microsoft.Insights/components@2020-02-02' = {
   }
 }
 
-// ========== Outputs ==========
-
-@description('Name of the deployed Application Insights instance')
-output AZURE_APPLICATION_INSIGHTS_NAME string = appInsights.name
-
-@description('Instrumentation key for Application Insights telemetry')
-output AZURE_APPLICATION_INSIGHTS_INSTRUMENTATION_KEY string = appInsights.properties.InstrumentationKey
-
-@description('Connection string for Application Insights telemetry')
-output AZURE_APPLICATION_INSIGHTS_CONNECTION_STRING string = appInsights.properties.ConnectionString
-
 @description('Diagnostic settings for Application Insights')
 resource appDiag 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
   name: '${appInsights.name}-diag'
@@ -99,3 +88,14 @@ resource appDiag 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
     metrics: metricsSettings
   }
 }
+
+// ========== Outputs ==========
+
+@description('Name of the deployed Application Insights instance')
+output AZURE_APPLICATION_INSIGHTS_NAME string = appInsights.name
+
+@description('Instrumentation key for Application Insights telemetry')
+output AZURE_APPLICATION_INSIGHTS_INSTRUMENTATION_KEY string = appInsights.properties.InstrumentationKey
+
+@description('Connection string for Application Insights telemetry')
+output AZURE_APPLICATION_INSIGHTS_CONNECTION_STRING string = appInsights.properties.ConnectionString

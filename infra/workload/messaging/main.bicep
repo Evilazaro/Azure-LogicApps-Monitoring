@@ -98,15 +98,6 @@ resource broker 'Microsoft.ServiceBus/namespaces@2025-05-01-preview' = {
   }
 }
 
-@description('Azure Service Bus Name')
-output AZURE_SERVICE_BUS_NAMESPACE string = broker.name
-
-@description('Messaging Service Bus Host Name')
-output MESSAGING_SERVICEBUSHOSTNAME string = split(replace(broker.properties.serviceBusEndpoint, 'https://', ''), ':')[0]
-
-
-output MESSAGING_SERVICEBUSENDPOINT string = broker.properties.serviceBusEndpoint
-
 @description('Service Bus Topic for orders placed to be processed')
 resource ordersTopic 'Microsoft.ServiceBus/namespaces/topics@2025-05-01-preview' = {
   parent: broker
@@ -190,6 +181,15 @@ resource saDiag 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
 }
 
 // ========== Outputs ==========
+
+@description('Azure Service Bus namespace name')
+output AZURE_SERVICE_BUS_NAMESPACE string = broker.name
+
+@description('Messaging Service Bus Host Name')
+output MESSAGING_SERVICEBUSHOSTNAME string = split(replace(broker.properties.serviceBusEndpoint, 'https://', ''), ':')[0]
+
+@description('Azure Service Bus endpoint')
+output MESSAGING_SERVICEBUSENDPOINT string = broker.properties.serviceBusEndpoint
 
 @description('Name of the deployed storage account')
 output WORKFLOW_STORAGE_ACCOUNT_NAME string = wfSA.name
