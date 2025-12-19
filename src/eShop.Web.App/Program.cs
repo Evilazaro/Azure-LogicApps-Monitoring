@@ -8,6 +8,11 @@ builder.AddServiceDefaults();
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 
+builder.Services.AddHttpClient("eShop.Web.Api", client =>
+{
+    client.BaseAddress = new Uri(builder.Configuration["ApiBaseAddress"] ?? throw new InvalidOperationException("ApiBaseAddress configuration is missing."));
+});
+
 var app = builder.Build();
 
 app.MapDefaultEndpoints();
