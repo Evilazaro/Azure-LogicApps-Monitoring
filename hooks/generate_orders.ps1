@@ -47,7 +47,7 @@
 param(
     [Parameter(Mandatory = $false, HelpMessage = 'Number of orders to generate')]
     [ValidateRange(1, 10000)]
-    [int]$NumberOfOrders = 100,
+    [int]$NumberOfOrders = 5000,
     
     [Parameter(Mandatory = $false, HelpMessage = 'Output file path for generated JSON')]
     [ValidateNotNullOrEmpty()]
@@ -71,25 +71,25 @@ $script:MaxQuantity = 3
 
 # Product catalog with realistic items
 $script:Products = @(
-    @{ Id = 'PROD-1001'; Description = 'Wireless Mouse'; MinPrice = 29.99; MaxPrice = 79.99 }
-    @{ Id = 'PROD-1002'; Description = 'Mechanical Keyboard'; MinPrice = 89.99; MaxPrice = 199.99 }
-    @{ Id = 'PROD-1003'; Description = 'USB-C Hub'; MinPrice = 29.99; MaxPrice = 59.99 }
-    @{ Id = 'PROD-2001'; Description = 'Noise Cancelling Headphones'; MinPrice = 79.99; MaxPrice = 349.99 }
-    @{ Id = 'PROD-2002'; Description = 'Webcam 1080p'; MinPrice = 49.99; MaxPrice = 129.99 }
-    @{ Id = 'PROD-3001'; Description = 'External SSD 1TB'; MinPrice = 89.99; MaxPrice = 179.99 }
-    @{ Id = 'PROD-3002'; Description = 'Portable Charger'; MinPrice = 24.99; MaxPrice = 79.99 }
-    @{ Id = 'PROD-4001'; Description = 'Laptop Stand'; MinPrice = 29.99; MaxPrice = 89.99 }
-    @{ Id = 'PROD-4002'; Description = 'Cable Management Kit'; MinPrice = 14.99; MaxPrice = 34.99 }
-    @{ Id = 'PROD-5001'; Description = 'Wireless Earbuds'; MinPrice = 49.99; MaxPrice = 249.99 }
-    @{ Id = 'PROD-5002'; Description = 'Smartphone Holder'; MinPrice = 12.99; MaxPrice = 39.99 }
-    @{ Id = 'PROD-6001'; Description = 'Monitor 27" 4K'; MinPrice = 299.99; MaxPrice = 799.99 }
-    @{ Id = 'PROD-6002'; Description = 'HDMI 2.1 Cable'; MinPrice = 19.99; MaxPrice = 49.99 }
-    @{ Id = 'PROD-7001'; Description = 'Desk Lamp LED'; MinPrice = 34.99; MaxPrice = 89.99 }
-    @{ Id = 'PROD-7002'; Description = 'Ergonomic Mouse Pad'; MinPrice = 19.99; MaxPrice = 49.99 }
-    @{ Id = 'PROD-8001'; Description = 'USB Microphone'; MinPrice = 59.99; MaxPrice = 199.99 }
-    @{ Id = 'PROD-8002'; Description = 'Ring Light'; MinPrice = 39.99; MaxPrice = 129.99 }
-    @{ Id = 'PROD-9001'; Description = 'Graphics Tablet'; MinPrice = 79.99; MaxPrice = 399.99 }
-    @{ Id = 'PROD-9002'; Description = 'Stylus Pen'; MinPrice = 29.99; MaxPrice = 99.99 }
+    @{ Id = 'PROD-1001'; Description = 'Wireless Mouse'; MinPrice = 29.99; MaxPrice = 79.99 },
+    @{ Id = 'PROD-1002'; Description = 'Mechanical Keyboard'; MinPrice = 89.99; MaxPrice = 199.99 },
+    @{ Id = 'PROD-1003'; Description = 'USB-C Hub'; MinPrice = 29.99; MaxPrice = 59.99 },
+    @{ Id = 'PROD-2001'; Description = 'Noise Cancelling Headphones'; MinPrice = 79.99; MaxPrice = 349.99 },
+    @{ Id = 'PROD-2002'; Description = 'Webcam 1080p'; MinPrice = 49.99; MaxPrice = 129.99 },
+    @{ Id = 'PROD-3001'; Description = 'External SSD 1TB'; MinPrice = 89.99; MaxPrice = 179.99 },
+    @{ Id = 'PROD-3002'; Description = 'Portable Charger'; MinPrice = 24.99; MaxPrice = 79.99 },
+    @{ Id = 'PROD-4001'; Description = 'Laptop Stand'; MinPrice = 29.99; MaxPrice = 89.99 },
+    @{ Id = 'PROD-4002'; Description = 'Cable Management Kit'; MinPrice = 14.99; MaxPrice = 34.99 },
+    @{ Id = 'PROD-5001'; Description = 'Wireless Earbuds'; MinPrice = 49.99; MaxPrice = 249.99 },
+    @{ Id = 'PROD-5002'; Description = 'Smartphone Holder'; MinPrice = 12.99; MaxPrice = 39.99 },
+    @{ Id = 'PROD-6001'; Description = 'Monitor 27" 4K'; MinPrice = 299.99; MaxPrice = 799.99 },
+    @{ Id = 'PROD-6002'; Description = 'HDMI 2.1 Cable'; MinPrice = 19.99; MaxPrice = 49.99 },
+    @{ Id = 'PROD-7001'; Description = 'Desk Lamp LED'; MinPrice = 34.99; MaxPrice = 89.99 },
+    @{ Id = 'PROD-7002'; Description = 'Ergonomic Mouse Pad'; MinPrice = 19.99; MaxPrice = 49.99 },
+    @{ Id = 'PROD-8001'; Description = 'USB Microphone'; MinPrice = 59.99; MaxPrice = 199.99 },
+    @{ Id = 'PROD-8002'; Description = 'Ring Light'; MinPrice = 39.99; MaxPrice = 129.99 },
+    @{ Id = 'PROD-9001'; Description = 'Graphics Tablet'; MinPrice = 79.99; MaxPrice = 399.99 },
+    @{ Id = 'PROD-9002'; Description = 'Stylus Pen'; MinPrice = 29.99; MaxPrice = 99.99 },
     @{ Id = 'PROD-9003'; Description = 'Docking Station'; MinPrice = 89.99; MaxPrice = 299.99 }
 )
 
@@ -167,7 +167,8 @@ try {
         $orderTotal = 0.0
         
         # Select random unique products for this order
-        $selectedProducts = $script:Products | Get-Random -Count $numProducts
+        # Ensure result is always an array by wrapping in @()
+        $selectedProducts = @($script:Products | Get-Random -Count $numProducts)
         
         for ($p = 0; $p -lt $numProducts; $p++) {
             $productInfo = $selectedProducts[$p]
@@ -186,7 +187,35 @@ try {
                 productId          = $productInfo.Id
                 productDescription = $productInfo.Description
                 quantity           = $quantity
-       reate the root object with orders array
+                price              = $price
+            }
+            
+            $null = $orderProducts.Add($product)
+            $orderTotal += ($quantity * $price)
+        }
+        
+        # Round total to 2 decimal places
+        $orderTotal = [Math]::Round($orderTotal, 2)
+        
+        # Create order object
+        $order = [PSCustomObject]@{
+            id              = $orderId
+            customerId      = $customerId
+            date            = $orderDateString
+            deliveryAddress = $deliveryAddress
+            total           = $orderTotal
+            products        = $orderProducts.ToArray()
+        }
+        
+        # Add to collection
+        $null = $orders.Add($order)
+    }
+    
+    Write-Information ''
+    Write-Information 'Converting to JSON...'
+    Write-Verbose 'Using ConvertTo-Json with Depth 10 for proper serialization'
+    
+    # Create the root object with orders array
     $rootObject = [PSCustomObject]@{
         orders = $orders.ToArray()
     }
@@ -197,16 +226,25 @@ try {
     Write-Information "Writing to file: $OutputPath"
     Write-Verbose 'Using UTF-8 encoding without BOM for cross-platform compatibility'
     
+    # Resolve full path
+    $fullPath = $ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath($OutputPath)
+    Write-Verbose "Full path: $fullPath"
+    
     # Write with UTF-8 encoding (no BOM) for cross-platform compatibility
-    [System.IO.File]::WriteAllText($OutputPath, $json, [System.Text.UTF8Encoding]::new($false))
+    try {
+        [System.IO.File]::WriteAllText($fullPath, $json, [System.Text.UTF8Encoding]::new($false))
+    }
+    catch {
+        throw "Failed to write file: $_"
+    }
     
     # Verify file was created successfully
-    if (-not (Test-Path -Path $OutputPath -PathType Leaf)) {
-        throw "Failed to create output file: $OutputPath"
+    if (-not (Test-Path -Path $fullPath -PathType Leaf)) {
+        throw "Failed to create output file: $fullPath"
     }
     
     # Gather file statistics for reporting
-    $fileInfo = Get-Item -Path $OutputPath
+    $fileInfo = Get-Item -Path $fullPath
     $fileSizeKB = [Math]::Round($fileInfo.Length / 1KB, 2)
     
     # Calculate total products
@@ -242,63 +280,7 @@ try {
     Write-Information "  Products: $($orders[0].products.Count)"
     foreach ($prod in $orders[0].products) {
         Write-Information "    - $($prod.productDescription) (x$($prod.quantity)) @ `$$($prod.price)"
-   
-            Date     = $orderDateString  # DateTime (ISO 8601), required
-            Quantity = $quantity         # Int, >= 1, required
-            Total    = $orderTotal       # Decimal, >= 0.01, required
-            Message  = $message          # String, 1-500 chars, required
-        }
-        
-        # Add to collection using $null assignment to suppress output
-        $null = $orders.Add($order)
     }
-    
-    Write-Information ''
-    Write-Information 'Converting to JSON...'
-    Write-Verbose 'Using ConvertTo-Json with Depth 10 for proper serialization'
-    
-    # Convert to JSON with sufficient depth and readable formatting
-    # Depth 10 ensures nested properties are fully serialized
-    $json = $orders | ConvertTo-Json -Depth 10 -Compress:$false
-    
-    Write-Information "Writing to file: $OutputPath"
-    Write-Verbose 'Using UTF-8 encoding without BOM for cross-platform compatibility'
-    
-    # Write with UTF-8 encoding (no BOM) for cross-platform compatibility
-    # Using .NET method for precise encoding control
-    [System.IO.File]::WriteAllText($OutputPath, $json, [System.Text.UTF8Encoding]::new($false))
-    
-    # Verify file was created successfully
-    if (-not (Test-Path -Path $OutputPath -PathType Leaf)) {
-        throw "Failed to create output file: $OutputPath"
-    }
-    
-    # Gather file statistics for reporting
-    $fileInfo = Get-Item -Path $OutputPath
-    $fileSizeMB = [Math]::Round($fileInfo.Length / 1MB, 2)
-    
-    # Display success summary with detailed metrics
-    Write-Information ''
-    Write-Information '═══════════════════════════════════════════════════════════'
-    Write-Information 'Order Generation Completed Successfully!'
-    Write-Information '═══════════════════════════════════════════════════════════'
-    Write-Information 'Results:'
-    Write-Information "  • Total orders generated : $NumberOfOrders"
-    Write-Information "  • First Order ID         : $($orders[0].Id)"
-    Write-Information "  • Last Order ID          : $($orders[$orders.Count - 1].Id)"
-    Write-Information "  • Output file            : $OutputPath"
-    Write-Information "  • File size              : $fileSizeMB MB"
-    Write-Information ''
-    
-    # Calculate and display performance metrics
-    $executionDuration = (New-TimeSpan -Start $executionStart -End (Get-Date)).TotalSeconds
-    Write-Information "Generation Time: $([Math]::Round($executionDuration, 2)) seconds"
-    Write-Information "Orders per second: $([Math]::Round($NumberOfOrders / $executionDuration, 0))"
-    Write-Information ''
-    
-    # Display sample order for verification
-    Write-Information 'Sample Order (first record):'
-    $orders[0] | Format-List | Out-String | ForEach-Object { Write-Information $_.TrimEnd() }
     
     Write-Verbose 'Exiting with success code 0'
     exit 0
