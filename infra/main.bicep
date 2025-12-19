@@ -53,7 +53,7 @@ param deploymentDate string = utcNow('yyyy-MM-dd')
 // ========== Variables ==========
 
 // Standardized tags applied to all resources for governance and cost tracking
-var tags tagsType = {
+var coreTags tagsType = {
   Solution: solutionName
   Environment: envName
   ManagedBy: 'Bicep'
@@ -63,6 +63,10 @@ var tags tagsType = {
   DeploymentDate: deploymentDate
   Repository: 'Azure-LogicApps-Monitoring'
 }
+
+var tags = union(coreTags, {
+  'azd-env-name': envName
+})
 
 // Resource group naming convention: rg-{solution}-{env}-{location-abbrev}
 // Truncates location to 8 chars to keep names concise
