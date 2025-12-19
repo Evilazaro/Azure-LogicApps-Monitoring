@@ -68,12 +68,12 @@ public class OrderService : IOrderService
         _logger.LogInformation("Retrieving all orders. Total count: {Count}", _orders.Count);
         var ordersReader = new StreamReader(Directory.GetCurrentDirectory() + "/Files/getOrders.json");
         var ordersJson = ordersReader.ReadToEnd();
-        
+
         var options = new JsonSerializerOptions
         {
             PropertyNameCaseInsensitive = true
         };
-        
+
         var result = JsonSerializer.Deserialize<List<Order>>(ordersJson, options) ?? [];
         return Task.FromResult<IEnumerable<Order>>(result);
     }

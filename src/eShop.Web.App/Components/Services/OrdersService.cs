@@ -26,7 +26,7 @@ public class OrdersService
             var response = await _httpClient.PostAsJsonAsync("api/orders", order, cancellationToken);
             response.EnsureSuccessStatusCode();
             var createdOrder = await response.Content.ReadFromJsonAsync<Order>(cancellationToken: cancellationToken);
-            
+
             _logger.LogInformation("Order {OrderId} placed successfully", createdOrder?.Id);
             return createdOrder!;
         }
@@ -46,7 +46,7 @@ public class OrdersService
             var response = await _httpClient.PostAsJsonAsync("api/orders/batch", orders, cancellationToken);
             response.EnsureSuccessStatusCode();
             var placedOrders = await response.Content.ReadFromJsonAsync<IEnumerable<Order>>(cancellationToken: cancellationToken);
-            
+
             _logger.LogInformation("Batch processing complete. {Count} orders placed successfully", placedOrders?.Count() ?? 0);
             return placedOrders ?? Enumerable.Empty<Order>();
         }
@@ -80,7 +80,7 @@ public class OrdersService
         try
         {
             var order = await _httpClient.GetFromJsonAsync<Order>($"api/orders/{orderId}", cancellationToken);
-            
+
             if (order == null)
             {
                 _logger.LogWarning("Order with ID {OrderId} not found", orderId);
