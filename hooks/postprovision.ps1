@@ -650,7 +650,7 @@ try {
     $azureResourceGroup = Get-EnvironmentVariableSafe -Name 'AZURE_RESOURCE_GROUP'
     $azureLocation = Get-EnvironmentVariableSafe -Name 'AZURE_LOCATION'
     $applicationInsightsName = Get-EnvironmentVariableSafe -Name 'AZURE_APPLICATION_INSIGHTS_NAME'
-    $applicationInsightsConnectionString = Get-EnvironmentVariableSafe -Name 'AZURE_APPLICATION_INSIGHTS_CONNECTION_STRING'
+    $applicationInsightsConnectionString = Get-EnvironmentVariableSafe -Name 'APPLICATIONINSIGHTS_CONNECTION_STRING'
     $azureClientId = Get-EnvironmentVariableSafe -Name 'MANAGED_IDENTITY_CLIENT_ID'
     $azureServiceBusHostName = Get-EnvironmentVariableSafe -Name 'MESSAGING_SERVICEBUSHOSTNAME'
     $azureServiceBusTopicName = Get-EnvironmentVariableSafe -Name 'AZURE_SERVICE_BUS_TOPIC_NAME' -DefaultValue 'OrdersPlaced'

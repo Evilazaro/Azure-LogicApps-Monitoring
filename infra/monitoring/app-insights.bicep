@@ -98,4 +98,4 @@ output AZURE_APPLICATION_INSIGHTS_NAME string = appInsights.name
 output AZURE_APPLICATION_INSIGHTS_INSTRUMENTATION_KEY string = appInsights.properties.InstrumentationKey
 
 @description('Connection string for Application Insights telemetry')
-output AZURE_APPLICATION_INSIGHTS_CONNECTION_STRING string = appInsights.properties.ConnectionString
+output APPLICATIONINSIGHTS_CONNECTION_STRING string = appInsights.properties.ConnectionString

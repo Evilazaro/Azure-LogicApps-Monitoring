@@ -126,7 +126,7 @@ output AZURE_LOG_ANALYTICS_WORKSPACE_PRIMARY_KEY string = operational.outputs.AZ
 output AZURE_APPLICATION_INSIGHTS_NAME string = insights.outputs.AZURE_APPLICATION_INSIGHTS_NAME
 
 @description('Connection string for Application Insights telemetry')
-output AZURE_APPLICATION_INSIGHTS_CONNECTION_STRING string = insights.outputs.AZURE_APPLICATION_INSIGHTS_CONNECTION_STRING
+output APPLICATIONINSIGHTS_CONNECTION_STRING string = insights.outputs.APPLICATIONINSIGHTS_CONNECTION_STRING
 
 @description('Instrumentation key for Application Insights telemetry')
 output AZURE_APPLICATION_INSIGHTS_INSTRUMENTATION_KEY string = insights.outputs.AZURE_APPLICATION_INSIGHTS_INSTRUMENTATION_KEY

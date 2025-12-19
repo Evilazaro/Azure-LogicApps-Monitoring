@@ -108,7 +108,7 @@ module workload './workload/main.bicep' = {
     workspacePrimaryKey: monitoring.outputs.AZURE_LOG_ANALYTICS_WORKSPACE_PRIMARY_KEY
     workspaceCustomerId: monitoring.outputs.AZURE_LOG_ANALYTICS_WORKSPACE_CUSTOMER_ID
     storageAccountId: monitoring.outputs.LOGS_STORAGE_ACCOUNT_ID
-    appInsightsConnectionString: monitoring.outputs.AZURE_APPLICATION_INSIGHTS_CONNECTION_STRING
+    appInsightsConnectionString: monitoring.outputs.APPLICATIONINSIGHTS_CONNECTION_STRING
     tags: tags
   }
 }
@@ -124,13 +124,13 @@ output AZURE_RESOURCE_GROUP string = resourceGroupName
 output AZURE_APPLICATION_INSIGHTS_NAME string = monitoring.outputs.AZURE_APPLICATION_INSIGHTS_NAME
 
 @description('Connection string for Application Insights telemetry')
-output AZURE_APPLICATION_INSIGHTS_CONNECTION_STRING string = monitoring.outputs.AZURE_APPLICATION_INSIGHTS_CONNECTION_STRING
+output APPLICATIONINSIGHTS_CONNECTION_STRING string = monitoring.outputs.APPLICATIONINSIGHTS_CONNECTION_STRING
 
 @description('Instrumentation key for Application Insights telemetry')
 output AZURE_APPLICATION_INSIGHTS_INSTRUMENTATION_KEY string = monitoring.outputs.AZURE_APPLICATION_INSIGHTS_INSTRUMENTATION_KEY
 
 @description('Connection string for Application Insights telemetry (alias)')
-output TELEMETRY_APPINSIGHTSCONNECTIONSTRING string = monitoring.outputs.AZURE_APPLICATION_INSIGHTS_CONNECTION_STRING
+output TELEMETRY_APPINSIGHTSCONNECTIONSTRING string = monitoring.outputs.APPLICATIONINSIGHTS_CONNECTION_STRING
 
 // Log Analytics Workspace Outputs (Microsoft.OperationalInsights/workspaces)
 @description('Name of the deployed Log Analytics workspace')
