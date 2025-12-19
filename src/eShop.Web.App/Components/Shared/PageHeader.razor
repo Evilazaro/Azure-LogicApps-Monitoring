@@ -1,0 +1,19 @@
+@using Microsoft.FluentUI.AspNetCore.Components
+
+<FluentStack Orientation="Orientation.Vertical" VerticalGap="6">
+    <FluentLabel Typo="Typography.H4">@Title</FluentLabel>
+    @if (!string.IsNullOrEmpty(Description))
+    {
+        <FluentLabel Typo="Typography.Body" Style="font-size: 14px; color: var(--neutral-foreground-hint);">
+            @Description
+        </FluentLabel>
+    }
+</FluentStack>
+
+@code {
+    [Parameter, EditorRequired]
+    public string Title { get; set; } = string.Empty;
+
+    [Parameter]
+    public string? Description { get; set; }
+}
