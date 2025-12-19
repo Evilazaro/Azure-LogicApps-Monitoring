@@ -66,6 +66,7 @@ var coreTags tagsType = {
 
 var tags = union(coreTags, {
   'azd-env-name': envName
+  'azd-service-name': 'app'
 })
 
 // Resource group naming convention: rg-{solution}-{env}-{location-abbrev}
