@@ -110,21 +110,13 @@
                     {
                         <FluentDataGrid Items="@order.Products.AsQueryable()"
                             GridTemplateColumns="@FluentDesignSystem.DataGridColumns.ProductsGrid" Style=@($"width: 100%; background-color: var(--neutral-layer-1); border: 1px solid var(--neutral-stroke-rest); font-size: {FluentDesignSystem.FontSizes.Body};")>
-                            <PropertyColumn Property="@(p => p.ProductId)" Title="Product ID" Align="Align.Start" />
-                            <PropertyColumn Property="@(p => p.ProductDescription)" Title="Description" Align="Align.Start"
+                            <PropertyColumn Property="@(p => p.ProductId)" Title="Product ID" Align="@Align.Start" />
+                            <PropertyColumn Property="@(p => p.ProductDescription)" Title="Description" Align="@Align.Start"
                                 Class="description-column" />
-                            <PropertyColumn Property="@(p => p.Quantity)" Title="Qty" Align="Align.Center" />
-                            <PropertyColumn Property="@(p => p.Price)" Title="Unit Price" Align="Align.End">
-                                @{
-                                    var product = context;
-                                    @product.Price.ToString("C2", new System.Globalization.CultureInfo("en-US"))
-                                }
-                            </PropertyColumn>
-                            <TemplateColumn Title="Subtotal" Align="Align.End">
-                                @{
-                                    var product = context;
-                                    <strong>@((product.Quantity * product.Price).ToString("C2", new System.Globalization.CultureInfo("en-US")))</strong>
-                                }
+                            <PropertyColumn Property="@(p => p.Quantity)" Title="Qty" Align="@Align.Center" />
+                            <PropertyColumn Property="@(p => p.Price)" Title="Unit Price" Align="@Align.End" Format="C2" />
+                            <TemplateColumn Title="Subtotal" Align="@Align.End">
+                                <strong>@((context.Quantity * context.Price).ToString("C2", new System.Globalization.CultureInfo("en-US")))</strong>
                             </TemplateColumn>
                         </FluentDataGrid>
 
