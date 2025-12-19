@@ -8,7 +8,8 @@
 
 <PageTitle>Place Orders in Batch</PageTitle>
 
-<FluentStack Orientation="Orientation.Vertical" VerticalGap="16" Style="padding: 20px; max-width: 1400px; margin: 0 auto;">
+<FluentStack Orientation="Orientation.Vertical" VerticalGap="16"
+    Style="padding: 20px; max-width: 1400px; margin: 0 auto;">
     <FluentStack Orientation="Orientation.Vertical" VerticalGap="6">
         <FluentLabel Typo="Typography.H4">Place Orders in Batch</FluentLabel>
         <FluentLabel Typo="Typography.Body" Style="font-size: 14px; color: var(--neutral-foreground-hint);">
@@ -26,21 +27,19 @@
     @if (errorMessage != null)
     {
         <FluentMessageBar Intent="MessageIntent.Error" Title="Error">
-            @errorMessage   
+            @errorMessage
         </FluentMessageBar>
     }
 
     <!-- Input Method Tabs -->
     <FluentStack Orientation="Orientation.Vertical" VerticalGap="16">
         <FluentStack Orientation="Orientation.Horizontal" HorizontalGap="12">
-            <FluentButton Appearance="@(inputMethod == InputMethod.Manual ? Appearance.Accent : Appearance.Outline)" 
-                        OnClick="() => inputMethod = InputMethod.Manual"
-                        Style="width: fit-content;">
+            <FluentButton Appearance="@(inputMethod == InputMethod.Manual ? Appearance.Accent : Appearance.Outline)"
+                OnClick="() => inputMethod = InputMethod.Manual" Style="width: fit-content;">
                 Manual Entry
             </FluentButton>
-            <FluentButton Appearance="@(inputMethod == InputMethod.Json ? Appearance.Accent : Appearance.Outline)" 
-                        OnClick="() => inputMethod = InputMethod.Json"
-                        Style="width: fit-content;">
+            <FluentButton Appearance="@(inputMethod == InputMethod.Json ? Appearance.Accent : Appearance.Outline)"
+                OnClick="() => inputMethod = InputMethod.Json" Style="width: fit-content;">
                 JSON Import
             </FluentButton>
         </FluentStack>
@@ -51,27 +50,24 @@
             <FluentCard Style="width: 100%; padding: 24px;">
                 <FluentStack Orientation="Orientation.Vertical" VerticalGap="16">
                     <FluentStack Orientation="Orientation.Vertical" VerticalGap="8">
-                        <FluentLabel Typo="Typography.Body" Style="font-weight: 600; font-size: 14px;">JSON Input</FluentLabel>
+                        <FluentLabel Typo="Typography.Body" Style="font-weight: 600; font-size: 14px;">JSON Input
+                        </FluentLabel>
                         <FluentLabel Typo="Typography.Body" Style="font-size: 13px; color: var(--neutral-foreground-hint);">
-                            Paste your JSON array of orders below. Each order should include Id, CustomerId, DeliveryAddress, and Products.
+                            Paste your JSON array of orders below. Each order should include Id, CustomerId,
+                            DeliveryAddress, and Products.
                         </FluentLabel>
                     </FluentStack>
 
-                    <FluentTextArea @bind-Value="jsonInput" 
-                                  Rows="15"
-                                  Placeholder="@jsonPlaceholder"
-                                  Style="width: 100%; font-family: 'Courier New', monospace; font-size: 12px;" />
+                    <FluentTextArea @bind-Value="jsonInput" Rows="15" Placeholder="@jsonPlaceholder"
+                        Style="width: 100%; font-family: 'Courier New', monospace; font-size: 12px;" />
 
-                    <FluentStack Orientation="Orientation.Horizontal" HorizontalGap="12" HorizontalAlignment="HorizontalAlignment.End">
-                        <FluentButton Appearance="Appearance.Neutral" 
-                                    OnClick="ClearJson"
-                                    Style="width: fit-content;">
+                    <FluentStack Orientation="Orientation.Horizontal" HorizontalGap="12"
+                        HorizontalAlignment="HorizontalAlignment.End">
+                        <FluentButton Appearance="Appearance.Neutral" OnClick="ClearJson" Style="width: fit-content;">
                             Clear
                         </FluentButton>
-                        <FluentButton Appearance="Appearance.Accent" 
-                                    OnClick="ParseJsonAndSubmit" 
-                                    Loading="@isLoading"
-                                    Style="width: fit-content;">
+                        <FluentButton Appearance="Appearance.Accent" OnClick="ParseJsonAndSubmit" Loading="@isLoading"
+                            Style="width: fit-content;">
                             Parse & Submit Orders
                         </FluentButton>
                     </FluentStack>
@@ -83,11 +79,11 @@
             <!-- Manual Input Method -->
             <FluentCard Style="width: 100%; padding: 24px;">
                 <FluentStack Orientation="Orientation.Vertical" VerticalGap="20">
-                    <FluentStack Orientation="Orientation.Horizontal" HorizontalAlignment="HorizontalAlignment.SpaceBetween" VerticalAlignment="VerticalAlignment.Center">
-                        <FluentLabel Typo="Typography.Body" Style="font-weight: 600; font-size: 15px;">Orders (@batchOrders.Count)</FluentLabel>
-                        <FluentButton Appearance="Appearance.Outline" 
-                                    OnClick="AddOrderToBatch"
-                                    Style="width: fit-content;">
+                    <FluentStack Orientation="Orientation.Horizontal" HorizontalAlignment="HorizontalAlignment.SpaceBetween"
+                        VerticalAlignment="VerticalAlignment.Center">
+                        <FluentLabel Typo="Typography.Body" Style="font-weight: 600; font-size: 15px;">Orders
+                            (@batchOrders.Count)</FluentLabel>
+                        <FluentButton Appearance="Appearance.Outline" OnClick="AddOrderToBatch" Style="width: fit-content;">
                             + Add Order
                         </FluentButton>
                     </FluentStack>
@@ -106,53 +102,62 @@
                                 <FluentCard Style="padding: 20px; background-color: var(--neutral-layer-2);">
                                     <FluentStack Orientation="Orientation.Vertical" VerticalGap="16">
                                         <!-- Order Header -->
-                                        <FluentStack Orientation="Orientation.Horizontal" HorizontalAlignment="HorizontalAlignment.SpaceBetween" VerticalAlignment="VerticalAlignment.Center">
-                                            <FluentLabel Typo="Typography.Body" Style="font-weight: 600; font-size: 14px; color: var(--accent-fill-rest);">Order @(orderIndex + 1)</FluentLabel>
-                                            <FluentButton Appearance="Appearance.Lightweight" 
-                                                        OnClick="() => RemoveOrderFromBatch(orderIndex)"
-                                                        Style="color: var(--error);">
+                                        <FluentStack Orientation="Orientation.Horizontal"
+                                            HorizontalAlignment="HorizontalAlignment.SpaceBetween"
+                                            VerticalAlignment="VerticalAlignment.Center">
+                                            <FluentLabel Typo="Typography.Body"
+                                                Style="font-weight: 600; font-size: 14px; color: var(--accent-fill-rest);">Order
+                                                @(orderIndex + 1)</FluentLabel>
+                                            <FluentButton Appearance="Appearance.Lightweight"
+                                                OnClick="() => RemoveOrderFromBatch(orderIndex)" Style="color: var(--error);">
                                                 Remove Order
                                             </FluentButton>
                                         </FluentStack>
 
                                         <!-- Order Fields -->
                                         <FluentStack Orientation="Orientation.Horizontal" HorizontalGap="12" Wrap="true">
-                                            <FluentStack Orientation="Orientation.Vertical" VerticalGap="6" Style="flex: 1; min-width: 150px;">
+                                            <FluentStack Orientation="Orientation.Vertical" VerticalGap="6"
+                                                Style="flex: 1; min-width: 150px;">
                                                 <FluentLabel Typo="Typography.Body" Style="font-size: 12px;">Order ID</FluentLabel>
-                                                <FluentTextField @bind-Value="order.Id" 
-                                                               Placeholder="Order ID"
-                                                               Style="width: 100%;" />
+                                                <FluentTextField @bind-Value="order.Id" Placeholder="Order ID"
+                                                    Style="width: 100%;" />
                                             </FluentStack>
 
-                                            <FluentStack Orientation="Orientation.Vertical" VerticalGap="6" Style="flex: 1; min-width: 150px;">
-                                                <FluentLabel Typo="Typography.Body" Style="font-size: 12px;">Customer ID</FluentLabel>
-                                                <FluentTextField @bind-Value="order.CustomerId" 
-                                                               Placeholder="Customer ID"
-                                                               Style="width: 100%;" />
+                                            <FluentStack Orientation="Orientation.Vertical" VerticalGap="6"
+                                                Style="flex: 1; min-width: 150px;">
+                                                <FluentLabel Typo="Typography.Body" Style="font-size: 12px;">Customer ID
+                                                </FluentLabel>
+                                                <FluentTextField @bind-Value="order.CustomerId" Placeholder="Customer ID"
+                                                    Style="width: 100%;" />
                                             </FluentStack>
 
-                                            <FluentStack Orientation="Orientation.Vertical" VerticalGap="6" Style="flex: 2; min-width: 250px;">
-                                                <FluentLabel Typo="Typography.Body" Style="font-size: 12px;">Delivery Address</FluentLabel>
-                                                <FluentTextField @bind-Value="order.DeliveryAddress" 
-                                                               Placeholder="Delivery Address"
-                                                               Style="width: 100%;" />
+                                            <FluentStack Orientation="Orientation.Vertical" VerticalGap="6"
+                                                Style="flex: 2; min-width: 250px;">
+                                                <FluentLabel Typo="Typography.Body" Style="font-size: 12px;">Delivery Address
+                                                </FluentLabel>
+                                                <FluentTextField @bind-Value="order.DeliveryAddress" Placeholder="Delivery Address"
+                                                    Style="width: 100%;" />
                                             </FluentStack>
                                         </FluentStack>
 
                                         <!-- Products -->
                                         <FluentStack Orientation="Orientation.Vertical" VerticalGap="8">
-                                            <FluentStack Orientation="Orientation.Horizontal" HorizontalAlignment="HorizontalAlignment.SpaceBetween" VerticalAlignment="VerticalAlignment.Center">
-                                                <FluentLabel Typo="Typography.Body" Style="font-size: 13px; font-weight: 600;">Products</FluentLabel>
-                                                <FluentButton Appearance="Appearance.Lightweight" 
-                                                            OnClick="() => AddProductToOrder(orderIndex)"
-                                                            Style="width: fit-content; font-size: 12px;">
+                                            <FluentStack Orientation="Orientation.Horizontal"
+                                                HorizontalAlignment="HorizontalAlignment.SpaceBetween"
+                                                VerticalAlignment="VerticalAlignment.Center">
+                                                <FluentLabel Typo="Typography.Body" Style="font-size: 13px; font-weight: 600;">
+                                                    Products</FluentLabel>
+                                                <FluentButton Appearance="Appearance.Lightweight"
+                                                    OnClick="() => AddProductToOrder(orderIndex)"
+                                                    Style="width: fit-content; font-size: 12px;">
                                                     + Add Product
                                                 </FluentButton>
                                             </FluentStack>
 
                                             @if (!order.Products.Any())
                                             {
-                                                <FluentLabel Typo="Typography.Body" Style="font-size: 12px; color: var(--neutral-foreground-hint);">
+                                                <FluentLabel Typo="Typography.Body"
+                                                    Style="font-size: 12px; color: var(--neutral-foreground-hint);">
                                                     No products added
                                                 </FluentLabel>
                                             }
@@ -160,43 +165,48 @@
                                             {
                                                 @foreach (var (product, productIndex) in order.Products.Select((p, i) => (p, i)))
                                                 {
-                                                    <FluentStack Orientation="Orientation.Horizontal" HorizontalGap="8" VerticalAlignment="VerticalAlignment.Bottom" Wrap="true">
-                                                        <FluentStack Orientation="Orientation.Vertical" VerticalGap="4" Style="width: 100px;">
-                                                            <FluentLabel Typo="Typography.Body" Style="font-size: 11px;">Product ID</FluentLabel>
-                                                            <FluentTextField @bind-Value="product.ProductId" 
-                                                                           Style="width: 100%; font-size: 12px;" />
+                                                    <FluentStack Orientation="Orientation.Horizontal" HorizontalGap="8"
+                                                        VerticalAlignment="VerticalAlignment.Bottom" Wrap="true">
+                                                        <FluentStack Orientation="Orientation.Vertical" VerticalGap="4"
+                                                            Style="width: 100px;">
+                                                            <FluentLabel Typo="Typography.Body" Style="font-size: 11px;">Product ID
+                                                            </FluentLabel>
+                                                            <FluentTextField @bind-Value="product.ProductId"
+                                                                Style="width: 100%; font-size: 12px;" />
                                                         </FluentStack>
 
-                                                        <FluentStack Orientation="Orientation.Vertical" VerticalGap="4" Style="flex: 1; min-width: 150px;">
-                                                            <FluentLabel Typo="Typography.Body" Style="font-size: 11px;">Description</FluentLabel>
-                                                            <FluentTextField @bind-Value="product.ProductDescription" 
-                                                                           Style="width: 100%; font-size: 12px;" />
+                                                        <FluentStack Orientation="Orientation.Vertical" VerticalGap="4"
+                                                            Style="flex: 1; min-width: 150px;">
+                                                            <FluentLabel Typo="Typography.Body" Style="font-size: 11px;">Description
+                                                            </FluentLabel>
+                                                            <FluentTextField @bind-Value="product.ProductDescription"
+                                                                Style="width: 100%; font-size: 12px;" />
                                                         </FluentStack>
 
-                                                        <FluentStack Orientation="Orientation.Vertical" VerticalGap="4" Style="width: 70px;">
+                                                        <FluentStack Orientation="Orientation.Vertical" VerticalGap="4"
+                                                            Style="width: 70px;">
                                                             <FluentLabel Typo="Typography.Body" Style="font-size: 11px;">Qty</FluentLabel>
-                                                            <FluentNumberField @bind-Value="product.Quantity" 
-                                                                             Min="1"
-                                                                             Style="width: 100%; font-size: 12px;" />
+                                                            <FluentNumberField @bind-Value="product.Quantity" Min="1"
+                                                                Style="width: 100%; font-size: 12px;" />
                                                         </FluentStack>
 
-                                                        <FluentStack Orientation="Orientation.Vertical" VerticalGap="4" Style="width: 100px;">
+                                                        <FluentStack Orientation="Orientation.Vertical" VerticalGap="4"
+                                                            Style="width: 100px;">
                                                             <FluentLabel Typo="Typography.Body" Style="font-size: 11px;">Price</FluentLabel>
-                                                            <FluentNumberField @bind-Value="product.Price" 
-                                                                             Min="0"
-                                                                             Step="0.01"
-                                                                             Style="width: 100%; font-size: 12px;" />
+                                                            <FluentNumberField @bind-Value="product.Price" Min="0" Step="0.01"
+                                                                Style="width: 100%; font-size: 12px;" />
                                                         </FluentStack>
 
-                                                        <FluentButton Appearance="Appearance.Lightweight" 
-                                                                    OnClick="() => RemoveProductFromOrder(orderIndex, productIndex)"
-                                                                    Style="color: var(--error); font-size: 12px; padding: 4px 8px;">
+                                                        <FluentButton Appearance="Appearance.Lightweight"
+                                                            OnClick="() => RemoveProductFromOrder(orderIndex, productIndex)"
+                                                            Style="color: var(--error); font-size: 12px; padding: 4px 8px;">
                                                             Remove
                                                         </FluentButton>
                                                     </FluentStack>
                                                 }
 
-                                                <FluentLabel Typo="Typography.Body" Style="font-size: 13px; font-weight: 600; text-align: right;">
+                                                <FluentLabel Typo="Typography.Body"
+                                                    Style="font-size: 13px; font-weight: 600; text-align: right;">
                                                     Order Total: @CalculateOrderTotal(order).ToString("C2")
                                                 </FluentLabel>
                                             }
@@ -208,22 +218,18 @@
 
                         <FluentDivider Style="width: 100%;" />
 
-                        <FluentStack Orientation="Orientation.Horizontal" HorizontalAlignment="HorizontalAlignment.SpaceBetween" VerticalAlignment="VerticalAlignment.Center">
+                        <FluentStack Orientation="Orientation.Horizontal" HorizontalAlignment="HorizontalAlignment.SpaceBetween"
+                            VerticalAlignment="VerticalAlignment.Center">
                             <FluentLabel Typo="Typography.Body" Style="font-weight: 700; font-size: 16px;">
                                 Total Orders: @batchOrders.Count | Grand Total: @CalculateGrandTotal().ToString("C2")
                             </FluentLabel>
 
                             <FluentStack Orientation="Orientation.Horizontal" HorizontalGap="12">
-                                <FluentButton Appearance="Appearance.Neutral" 
-                                            OnClick="ClearBatch"
-                                            Style="width: fit-content;">
+                                <FluentButton Appearance="Appearance.Neutral" OnClick="ClearBatch" Style="width: fit-content;">
                                     Clear All
                                 </FluentButton>
-                                <FluentButton Appearance="Appearance.Accent" 
-                                            OnClick="SubmitBatchAsync" 
-                                            Loading="@isLoading"
-                                            Disabled="@(!IsBatchValid())"
-                                            Style="width: fit-content;">
+                                <FluentButton Appearance="Appearance.Accent" OnClick="SubmitBatchAsync" Loading="@isLoading"
+                                    Disabled="@(!IsBatchValid())" Style="width: fit-content;">
                                     Submit Batch
                                 </FluentButton>
                             </FluentStack>
@@ -237,7 +243,7 @@
 
 @code {
     private enum InputMethod { Manual, Json }
-    
+
     private bool isLoading = false;
     private string? errorMessage;
     private string? successMessage;
@@ -246,19 +252,19 @@
     private string jsonInput = string.Empty;
 
     private string jsonPlaceholder = @"[
-  {
-    ""Id"": ""ORD001"",
-    ""CustomerId"": ""CUST001"",
-    ""DeliveryAddress"": ""123 Main St, City, State 12345"",
-    ""Products"": [
-      {
-        ""ProductId"": ""PROD001"",
-        ""ProductDescription"": ""Product 1"",
-        ""Quantity"": 2,
-        ""Price"": 29.99
-      }
-    ]
-  }
+{
+""Id"": ""ORD001"",
+""CustomerId"": ""CUST001"",
+""DeliveryAddress"": ""123 Main St, City, State 12345"",
+""Products"": [
+{
+""ProductId"": ""PROD001"",
+""ProductDescription"": ""Product 1"",
+""Quantity"": 2,
+""Price"": 29.99
+}
+]
+}
 ]";
 
     private class OrderFormModel
@@ -310,15 +316,15 @@
     private bool IsBatchValid()
     {
         return batchOrders.Any() && batchOrders.All(o =>
-            !string.IsNullOrWhiteSpace(o.Id) &&
-            !string.IsNullOrWhiteSpace(o.CustomerId) &&
-            !string.IsNullOrWhiteSpace(o.DeliveryAddress) &&
-            o.Products.Any() &&
-            o.Products.All(p =>
-                !string.IsNullOrWhiteSpace(p.ProductId) &&
-                !string.IsNullOrWhiteSpace(p.ProductDescription) &&
-                p.Quantity > 0 &&
-                p.Price > 0));
+        !string.IsNullOrWhiteSpace(o.Id) &&
+        !string.IsNullOrWhiteSpace(o.CustomerId) &&
+        !string.IsNullOrWhiteSpace(o.DeliveryAddress) &&
+        o.Products.Any() &&
+        o.Products.All(p =>
+        !string.IsNullOrWhiteSpace(p.ProductId) &&
+        !string.IsNullOrWhiteSpace(p.ProductDescription) &&
+        p.Quantity > 0 &&
+        p.Price > 0));
     }
 
     private void ClearBatch()
@@ -351,7 +357,7 @@
             };
 
             var parsedOrders = JsonSerializer.Deserialize<List<OrderFormModel>>(jsonInput, options);
-            
+
             if (parsedOrders == null || !parsedOrders.Any())
             {
                 errorMessage = "No valid orders found in JSON";

@@ -5,47 +5,42 @@
 @using eShop.Web.App.Shared
 @using app.ServiceDefaults.CommonTypes
 @using Microsoft.FluentUI.AspNetCore.Components
+@using Microsoft.AspNetCore.Components.Web
 @rendermode InteractiveServer
 @inject OrdersService ordersService
 @inject NavigationManager navigationManager
 
 <PageTitle>View Order</PageTitle>
 
-<FluentStack Orientation="Orientation.Vertical" VerticalGap="@(int.Parse(FluentDesignSystem.Spacing.Large))" Class="page-container">
+<FluentStack Orientation="Orientation.Vertical" VerticalGap="@(int.Parse(FluentDesignSystem.Spacing.Large))"
+    Class="page-container">
     <PageHeader Title="View Order" Description="Search and view order details by Order ID." />
-    
+
     <!-- Search Section -->
-    <FluentStack Orientation="Orientation.Horizontal" VerticalGap="@(int.Parse(FluentDesignSystem.Spacing.Medium))" HorizontalGap="@(int.Parse(FluentDesignSystem.Spacing.Medium))" Style="align-items: flex-end;">
-        <FluentStack Orientation="Orientation.Vertical" VerticalGap="@(int.Parse(FluentDesignSystem.Spacing.Small))" Style="flex: 1; max-width: 400px;">
+    <FluentStack Orientation="Orientation.Horizontal" VerticalGap="@(int.Parse(FluentDesignSystem.Spacing.Medium))"
+        HorizontalGap="@(int.Parse(FluentDesignSystem.Spacing.Medium))" Style="align-items: flex-end;">
+        <FluentStack Orientation="Orientation.Vertical" VerticalGap="@(int.Parse(FluentDesignSystem.Spacing.Small))"
+            Style="flex: 1; max-width: 400px;">
             <FieldLabel Label="Order ID" IsBold="true" FontSize="@FluentDesignSystem.FontSizes.Body" />
-            <FluentTextField @bind-Value="searchOrderId" 
-                           Placeholder="Enter Order ID"
-                           Aria-Label="Order ID Search"
-                           Style="width: 100%;"
-                           @onkeydown="HandleKeyDown"
-                           Disabled="@isLoading" />
+            <FluentTextField @bind-Value="searchOrderId" Placeholder="Enter Order ID" Aria-Label="Order ID Search"
+                Style="width: 100%;" @onkeydown="HandleKeyDown" Disabled="@isLoading" />
         </FluentStack>
-        
-        <FluentButton Appearance="Appearance.Accent" 
-                      OnClick="SearchOrderAsync" 
-                      Loading="@isLoading"
-                      Aria-Label="Search for order"
-                      Style="width: fit-content;">
+
+        <FluentButton Appearance="Appearance.Accent" OnClick="SearchOrderAsync" Loading="@isLoading"
+            Aria-Label="Search for order" Style="width: fit-content;">
             Search Order
         </FluentButton>
     </FluentStack>
 
     @if (errorMessage != null)
     {
-        <FluentMessageBar Intent="MessageIntent.Error" Title="Error" 
-                         Style="animation: fadeIn 0.3s ease-in-out;">
-            @errorMessage   
+        <FluentMessageBar Intent="MessageIntent.Error" Title="Error" Style="animation: fadeIn 0.3s ease-in-out;">
+            @errorMessage
         </FluentMessageBar>
     }
     else if (orderNotFound)
     {
-        <FluentMessageBar Intent="MessageIntent.Warning" Title="Not Found"
-                         Style="animation: fadeIn 0.3s ease-in-out;">
+        <FluentMessageBar Intent="MessageIntent.Warning" Title="Not Found" Style="animation: fadeIn 0.3s ease-in-out;">
             Order with ID "<strong>@searchOrderId</strong>" was not found in the system.
         </FluentMessageBar>
     }
@@ -59,11 +54,10 @@
         <FluentCard Style="width: 100%; padding: 0; margin-top: 8px; animation: slideUp 0.4s ease-in-out;">
             <FluentStack Orientation="Orientation.Vertical" VerticalGap="0" Style="width: 100%;">
                 <!-- Order Header -->
-                <FluentStack Orientation="Orientation.Vertical" 
-                           VerticalGap="@(int.Parse(FluentDesignSystem.Spacing.Medium))"
-                           Style="@GetOrderHeaderStyle()">
+                <FluentStack Orientation="Orientation.Vertical"
+                    VerticalGap="@(int.Parse(FluentDesignSystem.Spacing.Medium))" Style="@GetOrderHeaderStyle()">
                     <FluentLabel Typo="Typography.H5" Style="color: var(--accent-fill-rest);">Order Details</FluentLabel>
-                    
+
                     <div class="responsive-grid">
                         <FluentStack Orientation="Orientation.Vertical" VerticalGap="4">
                             <FluentLabel Typo="Typography.Body" class="field-label-small">Order ID</FluentLabel>
@@ -98,53 +92,52 @@
                         <FluentStack Orientation="Orientation.Vertical" VerticalGap="4">
                             <FluentLabel Typo="Typography.Body" class="field-label-small">Order Total</FluentLabel>
                             <FluentLabel Typo="Typography.Body" Style="@GetOrderTotalStyle()">
-                                @order.Total.ToString("C2")
+                                @order.Total.ToString("C2", new System.Globalization.CultureInfo("en-US"))
                             </FluentLabel>
                         </FluentStack>
                     </div>
                 </FluentStack>
 
                 <!-- Products Section -->
-                <FluentStack Orientation="Orientation.Vertical" VerticalGap="@(int.Parse(FluentDesignSystem.Spacing.Medium))" Style="@( $"padding: {FluentDesignSystem.Padding.Medium}; background-color: var(--neutral-layer-2);" )">
+                <FluentStack Orientation="Orientation.Vertical"
+                    VerticalGap="@(int.Parse(FluentDesignSystem.Spacing.Medium))"
+                    Style="@( $"padding: {FluentDesignSystem.Padding.Medium}; background-color: var(--neutral-layer-2);" )">
                     <FluentLabel Typo="Typography.Body" class="section-header">
                         Products (@order.Products.Count())
                     </FluentLabel>
-                    
+
                     @if (order.Products.Any())
                     {
-                        <FluentDataGrid Items="@order.Products.AsQueryable()" 
-    GridTemplateColumns="@FluentDesignSystem.DataGridColumns.ProductsGrid"
-    Style=@($"width: 100%; background-color: var(--neutral-layer-1); border: 1px solid var(--neutral-stroke-rest); font-size: {FluentDesignSystem.FontSizes.Body};")>
-                            <PropertyColumn Property="@(p => p.ProductId)" 
-                                           Title="Product ID" 
-                                           Align="Align.Start" />
-                            <PropertyColumn Property="@(p => p.ProductDescription)" 
-                                           Title="Description" 
-                                           Align="Align.Start"
-                                           Class="description-column" />
-                            <PropertyColumn Property="@(p => p.Quantity)" 
-                                           Title="Qty" 
-                                           Align="Align.Center" />
-                            <PropertyColumn Property="@(p => p.Price)" 
-                                           Title="Unit Price" 
-                                           Format="C2" 
-                                           Align="Align.End" />
-                            <TemplateColumn Title="Subtotal" Align="Align.End" Context="product">
-                                <strong>@((product.Quantity * product.Price).ToString("C2"))</strong>
+                        <FluentDataGrid Items="@order.Products.AsQueryable()"
+                            GridTemplateColumns="@FluentDesignSystem.DataGridColumns.ProductsGrid" Style=@($"width: 100%; background-color: var(--neutral-layer-1); border: 1px solid var(--neutral-stroke-rest); font-size: {FluentDesignSystem.FontSizes.Body};")>
+                            <PropertyColumn Property="@(p => p.ProductId)" Title="Product ID" Align="Align.Start" />
+                            <PropertyColumn Property="@(p => p.ProductDescription)" Title="Description" Align="Align.Start"
+                                Class="description-column" />
+                            <PropertyColumn Property="@(p => p.Quantity)" Title="Qty" Align="Align.Center" />
+                            <PropertyColumn Property="@(p => p.Price)" Title="Unit Price" Align="Align.End">
+                                @{
+                                    var product = context;
+                                    @product.Price.ToString("C2", new System.Globalization.CultureInfo("en-US"))
+                                }
+                            </PropertyColumn>
+                            <TemplateColumn Title="Subtotal" Align="Align.End">
+                                @{
+                                    var product = context;
+                                    <strong>@((product.Quantity * product.Price).ToString("C2", new System.Globalization.CultureInfo("en-US")))</strong>
+                                }
                             </TemplateColumn>
                         </FluentDataGrid>
-                        
+
                         <FluentDivider Style="width: 100%; margin: 4px 0;" Role="DividerRole.Separator" />
-                        
-                        <FluentStack Orientation="Orientation.Horizontal" 
-                                    HorizontalAlignment="HorizontalAlignment.End"
-                                    HorizontalGap="@(int.Parse(FluentDesignSystem.Spacing.Medium))"
-                                    Style="padding-right: 4px;">
-                            <FluentLabel Typo="Typography.Body" Style="@($"font-weight: {FluentDesignSystem.FontWeights.SemiBold}; font-size: {FluentDesignSystem.FontSizes.Subtitle};")">
+
+                        <FluentStack Orientation="Orientation.Horizontal" HorizontalAlignment="HorizontalAlignment.End"
+                            HorizontalGap="@(int.Parse(FluentDesignSystem.Spacing.Medium))" Style="padding-right: 4px;">
+                            <FluentLabel Typo="Typography.Body"
+                                Style="@($"font-weight: {FluentDesignSystem.FontWeights.SemiBold}; font-size: {FluentDesignSystem.FontSizes.Subtitle};")">
                                 Order Total:
                             </FluentLabel>
                             <FluentLabel Typo="Typography.Body" Style="@GetOrderTotalBottomStyle()">
-                                @order.Total.ToString("C2")
+                                @order.Total.ToString("C2", new System.Globalization.CultureInfo("en-US"))
                             </FluentLabel>
                         </FluentStack>
                     }
@@ -166,6 +159,7 @@
             opacity: 0;
             transform: translateY(-10px);
         }
+
         to {
             opacity: 1;
             transform: translateY(0);
@@ -177,6 +171,7 @@
             opacity: 0;
             transform: translateY(20px);
         }
+
         to {
             opacity: 1;
             transform: translateY(0);
@@ -219,7 +214,7 @@
         try
         {
             order = await ordersService.GetOrderByIdAsync(searchOrderId);
-            
+
             if (order == null)
             {
                 orderNotFound = true;

@@ -193,7 +193,7 @@ const findShadowRoot = element => {
   }
   return findShadowRoot(element.parentNode);
 };
-const noop = () => {};
+const noop = () => { };
 
 /**
  * Trick to restart an element's animation

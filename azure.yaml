@@ -11,7 +11,7 @@ hooks:
     postprovision:
         shell: pwsh
         run: |
-            .\hooks\postprovision.ps1 
+            .\hooks\postprovision.ps1
 
 services:
     app:
