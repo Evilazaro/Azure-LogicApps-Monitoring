@@ -92,6 +92,11 @@ public static class Extensions
             var appInsightsTelemetry = builder.Services.AddApplicationInsightsTelemetry(options =>
             {
                 options.ConnectionString = builder.Configuration["APPINSIGHTS_CONNECTION_STRING"];
+                options.EnableAppServicesHeartbeatTelemetryModule = true;
+                options.EnableAzureInstanceMetadataTelemetryModule = true;
+                options.EnableHeartbeat = true;
+                options.EnableDiagnosticsTelemetryModule = true;
+                options.DeveloperMode = builder.Environment.IsDevelopment();
             });
 
             builder.Services.AddOpenTelemetry();
