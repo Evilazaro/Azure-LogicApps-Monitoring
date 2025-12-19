@@ -1,4 +1,5 @@
-﻿namespace eShop.Web.App.Components.Services;
+﻿using app.ServiceDefaults.CommonTypes;
+namespace eShop.Web.App.Components.Services;
 
 public class OrdersService
 {
@@ -133,15 +134,4 @@ public record Order
     public int Quantity { get; init; }
     public decimal Total { get; init; }
     public string Message { get; init; } = string.Empty;
-}
-
-public class WeatherForecast
-{
-    public DateOnly Date { get; set; }
-
-    public int TemperatureC { get; set; }
-
-    public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
-
-    public string? Summary { get; set; }
 }
