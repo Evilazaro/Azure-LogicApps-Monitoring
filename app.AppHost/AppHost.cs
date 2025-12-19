@@ -1,7 +1,6 @@
 var builder = DistributedApplication.CreateBuilder(args);
 
-var enableAppInsights = builder.AddParameterFromConfiguration("UseApplicationInsights", "ApplicationInsights:Enabled");
-var appInsightsConnString = builder.AddParameterFromConfiguration("ApplicationInsightsConnectionString", "ApplicationInsights:ConnectionString");
+var appInsightsConnString = builder.Configuration["ApplicationInsights:ConnectionString"] ?? string.Empty;
 
 var ordersAPI = builder.AddProject<Projects.eShop_Orders_API>("orders-api")
                        .WithHttpHealthCheck("/health");
