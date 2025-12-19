@@ -126,6 +126,12 @@ resource appEnv 'Microsoft.App/managedEnvironments@2025-02-02-preview' = {
     }
   }
   properties: {
+    workloadProfiles: [
+      {
+        workloadProfileType: 'Consumption'
+        name: 'Consumption'
+      }
+    ]
     appLogsConfiguration: {
       destination: 'log-analytics'
       logAnalyticsConfiguration: {
@@ -136,28 +142,6 @@ resource appEnv 'Microsoft.App/managedEnvironments@2025-02-02-preview' = {
     appInsightsConfiguration: {
       connectionString: appInsightsConnectionString
     }
-    zoneRedundant: false
-    kedaConfiguration: {}
-    daprConfiguration: {}
-    customDomainConfiguration: {}
-    workloadProfiles: [
-      {
-        workloadProfileType: 'Consumption'
-        name: 'Consumption'
-        enableFips: false
-      }
-    ]
-    peerAuthentication: {
-      mtls: {
-        enabled: false
-      }
-    }
-    peerTrafficConfiguration: {
-      encryption: {
-        enabled: false
-      }
-    }
-    publicNetworkAccess: 'Enabled'
   }
 }
 
