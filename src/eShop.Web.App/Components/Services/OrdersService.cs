@@ -31,14 +31,14 @@ public class OrdersService
     {
         try
         {
-            _logger.LogInformation("Fetching weather forecasts from weather-api");
-            var forecasts = await _httpClient.GetFromJsonAsync<IEnumerable<WeatherForecast>>("api/weather", cancellationToken);
+            _logger.LogInformation("Fetching weather forecasts from orders-api");
+            var forecasts = await _httpClient.GetFromJsonAsync<IEnumerable<WeatherForecast>>("WeatherForecast", cancellationToken);
             _logger.LogInformation("Successfully retrieved {Count} weather forecasts", forecasts?.Count() ?? 0);
             return forecasts;
         }
         catch (HttpRequestException ex)
         {
-            _logger.LogError(ex, "Error fetching weather forecasts from weather-api");
+            _logger.LogError(ex, "Error fetching weather forecasts from orders-api");
             throw;
         }
     }
