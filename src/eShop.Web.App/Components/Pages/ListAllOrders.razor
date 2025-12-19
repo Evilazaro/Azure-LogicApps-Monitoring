@@ -1,17 +1,17 @@
-﻿@page "/order-management"
+﻿@page "/listallorders"
 @using eShop.Web.App.Components.Services;
 @using app.ServiceDefaults.CommonTypes;
 @using Microsoft.FluentUI.AspNetCore.Components;
 @rendermode InteractiveServer
 @inject OrdersService ordersService
 
-<PageTitle>Order Management</PageTitle>
+<PageTitle>All Orders</PageTitle>
 
 <FluentStack Orientation="Orientation.Vertical" VerticalGap="20" Style="padding: 24px;">
     <FluentStack Orientation="Orientation.Vertical" VerticalGap="8">
-        <FluentLabel Typo="Typography.H3">Order Management</FluentLabel>
+        <FluentLabel Typo="Typography.H3">All Orders</FluentLabel>
         <FluentLabel Typo="Typography.Body">
-            Manage and view all orders and their associated products.
+            View all orders and their associated products.
         </FluentLabel>
     </FluentStack>
     
