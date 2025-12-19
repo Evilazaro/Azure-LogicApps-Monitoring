@@ -11,22 +11,13 @@ var webApp = builder.AddProject<Projects.eShop_Web_App>("web-app")
                     .WithReference(ordersAPI)
                     .WaitFor(ordersAPI);
 
-if (builder.Environment.IsDevelopment())
-{
-    var useAppInsightsParam = builder.AddParameterFromConfiguration("UseApplicationInsights", "ApplicationInsights:Enabled");
-    var appInsightsConnStringParam = builder.AddParameterFromConfiguration("AppInsightsConnectionString", "ApplicationInsights:ConnectionString");
+var appInsightsConnString = builder.Configuration["ApplicationInsights:ConnectionString"] ?? string.Empty;
 
-    ordersAPI.WithEnvironment("APPLICATIONINSIGHTS_CONNECTION_STRING", appInsightsConnStringParam);
-    webApp.WithEnvironment("APPLICATIONINSIGHTS_CONNECTION_STRING", appInsightsConnStringParam);
-}
-else
+if (!string.IsNullOrEmpty(appInsightsConnString))
 {
-    var appInsightsConnString = builder.Configuration["ApplicationInsights:ConnectionString"] ?? string.Empty;
-    if (!string.IsNullOrEmpty(appInsightsConnString))
-    {
-        ordersAPI.WithEnvironment("APPLICATIONINSIGHTS_CONNECTION_STRING", appInsightsConnString);
-        webApp.WithEnvironment("APPLICATIONINSIGHTS_CONNECTION_STRING", appInsightsConnString);
-    }
+    ordersAPI.WithEnvironment("APPLICATIONINSIGHTS_CONNECTION_STRING", appInsightsConnString);
+    webApp.WithEnvironment("APPLICATIONINSIGHTS_CONNECTION_STRING", appInsightsConnString);
 }
+
 
 builder.Build().Run();
