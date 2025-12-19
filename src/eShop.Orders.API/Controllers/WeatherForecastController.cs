@@ -1,5 +1,5 @@
-using Microsoft.AspNetCore.Mvc;
 using app.ServiceDefaults.CommonTypes;
+using Microsoft.AspNetCore.Mvc;
 
 namespace eShop.Orders.API.Controllers;
 

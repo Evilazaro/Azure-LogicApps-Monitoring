@@ -126,12 +126,3 @@ public class OrdersService
         }
     }
 }
-
-public record Order
-{
-    public string Id { get; init; } = string.Empty;
-    public DateTime Date { get; init; }
-    public int Quantity { get; init; }
-    public decimal Total { get; init; }
-    public string Message { get; init; } = string.Empty;
-}
