@@ -12,18 +12,85 @@ public class OrdersService
         _logger = logger;
     }
 
-    public async Task<IEnumerable<Order>?> GetOrdersAsync(CancellationToken cancellationToken = default)
+    public async Task<Order> PlaceOrderAsync(Order order, CancellationToken cancellationToken = default)
+    {
+        _logger.LogInformation("Placing order with ID: {OrderId}", order.Id);
+
+        if (string.IsNullOrWhiteSpace(order.Id))
+        {
+            throw new ArgumentException("Order ID is required", nameof(order));
+        }
+
+        try
+        {
+            var response = await _httpClient.PostAsJsonAsync("api/orders", order, cancellationToken);
+            response.EnsureSuccessStatusCode();
+            var createdOrder = await response.Content.ReadFromJsonAsync<Order>(cancellationToken: cancellationToken);
+            
+            _logger.LogInformation("Order {OrderId} placed successfully", createdOrder?.Id);
+            return createdOrder!;
+        }
+        catch (HttpRequestException ex)
+        {
+            _logger.LogError(ex, "Error placing order with ID: {OrderId}", order.Id);
+            throw;
+        }
+    }
+
+    public async Task<IEnumerable<Order>> PlaceOrdersBatchAsync(IEnumerable<Order> orders, CancellationToken cancellationToken = default)
+    {
+        _logger.LogInformation("Placing batch of {Count} orders", orders.Count());
+
+        try
+        {
+            var response = await _httpClient.PostAsJsonAsync("api/orders/batch", orders, cancellationToken);
+            response.EnsureSuccessStatusCode();
+            var placedOrders = await response.Content.ReadFromJsonAsync<IEnumerable<Order>>(cancellationToken: cancellationToken);
+            
+            _logger.LogInformation("Batch processing complete. {Count} orders placed successfully", placedOrders?.Count() ?? 0);
+            return placedOrders ?? Enumerable.Empty<Order>();
+        }
+        catch (HttpRequestException ex)
+        {
+            _logger.LogError(ex, "Error placing batch of orders");
+            throw;
+        }
+    }
+
+    public async Task<IEnumerable<Order>> GetOrdersAsync(CancellationToken cancellationToken = default)
     {
         try
         {
-            _logger.LogInformation("Fetching orders from orders-api");
+            _logger.LogInformation("Retrieving all orders from orders-api");
             var orders = await _httpClient.GetFromJsonAsync<IEnumerable<Order>>("api/orders", cancellationToken);
             _logger.LogInformation("Successfully retrieved {Count} orders", orders?.Count() ?? 0);
-            return orders;
+            return orders ?? Enumerable.Empty<Order>();
         }
         catch (HttpRequestException ex)
         {
             _logger.LogError(ex, "Error fetching orders from orders-api");
+            throw;
+        }
+    }
+
+    public async Task<Order?> GetOrderByIdAsync(string orderId, CancellationToken cancellationToken = default)
+    {
+        _logger.LogInformation("Retrieving order with ID: {OrderId}", orderId);
+
+        try
+        {
+            var order = await _httpClient.GetFromJsonAsync<Order>($"api/orders/{orderId}", cancellationToken);
+            
+            if (order == null)
+            {
+                _logger.LogWarning("Order with ID {OrderId} not found", orderId);
+            }
+
+            return order;
+        }
+        catch (HttpRequestException ex)
+        {
+            _logger.LogError(ex, "Error fetching order {OrderId} from orders-api", orderId);
             throw;
         }
     }
@@ -40,40 +107,6 @@ public class OrdersService
         catch (HttpRequestException ex)
         {
             _logger.LogError(ex, "Error fetching weather forecasts from orders-api");
-            throw;
-        }
-    }
-
-    public async Task<Order?> GetOrderByIdAsync(string id, CancellationToken cancellationToken = default)
-    {
-        try
-        {
-            _logger.LogInformation("Fetching order {OrderId} from orders-api", id);
-            var order = await _httpClient.GetFromJsonAsync<Order>($"api/orders/{id}", cancellationToken);
-            _logger.LogInformation("Successfully retrieved order {OrderId}", id);
-            return order;
-        }
-        catch (HttpRequestException ex)
-        {
-            _logger.LogError(ex, "Error fetching order {OrderId} from orders-api", id);
-            throw;
-        }
-    }
-
-    public async Task<Order?> CreateOrderAsync(Order order, CancellationToken cancellationToken = default)
-    {
-        try
-        {
-            _logger.LogInformation("Creating new order");
-            var response = await _httpClient.PostAsJsonAsync("api/orders", order, cancellationToken);
-            response.EnsureSuccessStatusCode();
-            var createdOrder = await response.Content.ReadFromJsonAsync<Order>(cancellationToken: cancellationToken);
-            _logger.LogInformation("Successfully created order {OrderId}", createdOrder?.Id);
-            return createdOrder;
-        }
-        catch (HttpRequestException ex)
-        {
-            _logger.LogError(ex, "Error creating order");
             throw;
         }
     }

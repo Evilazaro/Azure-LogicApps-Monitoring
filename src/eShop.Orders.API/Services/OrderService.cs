@@ -1,5 +1,6 @@
 ﻿using app.ServiceDefaults.CommonTypes;
 using eShop.Orders.API.Services.Interfaces;
+using System.Text.Json;
 
 namespace eShop.Orders.API.Services;
 
@@ -65,14 +66,23 @@ public class OrderService : IOrderService
     public Task<IEnumerable<Order>> GetOrdersAsync(CancellationToken cancellationToken = default)
     {
         _logger.LogInformation("Retrieving all orders. Total count: {Count}", _orders.Count);
-        return Task.FromResult<IEnumerable<Order>>(_orders);
+        var ordersReader = new StreamReader(Directory.GetCurrentDirectory() + "/Files/getOrders.json");
+        var ordersJson = ordersReader.ReadToEnd();
+        
+        var options = new JsonSerializerOptions
+        {
+            PropertyNameCaseInsensitive = true
+        };
+        
+        var result = JsonSerializer.Deserialize<List<Order>>(ordersJson, options) ?? [];
+        return Task.FromResult<IEnumerable<Order>>(result);
     }
 
     public Task<Order?> GetOrderByIdAsync(string orderId, CancellationToken cancellationToken = default)
     {
         _logger.LogInformation("Retrieving order with ID: {OrderId}", orderId);
 
-        var order = _orders.FirstOrDefault(o => o.Id == orderId);
+        var order = GetOrdersAsync(cancellationToken).Result.FirstOrDefault(o => o.Id == orderId);
 
         if (order == null)
         {

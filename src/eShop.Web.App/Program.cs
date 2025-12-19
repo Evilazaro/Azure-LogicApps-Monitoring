@@ -1,5 +1,6 @@
 using eShop.Web.App.Components;
 using eShop.Web.App.Components.Services;
+using Microsoft.FluentUI.AspNetCore.Components;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -15,6 +16,8 @@ builder.Services.AddHttpClient<OrdersService>(client =>
     client.BaseAddress = new Uri(baseAddress);
     client.DefaultRequestHeaders.Add("Accept", "application/json");
 });
+
+builder.Services.AddFluentUIComponents();
 
 var app = builder.Build();
 
