@@ -54,7 +54,7 @@ param tags tagsType
 
 // Diagnostic settings configuration for comprehensive logging
 // Captures all log categories from monitoring resources
-var allLogsSettings = [
+var allLogsSettings object[] = [
   {
     categoryGroup: 'allLogs'
     enabled: true
@@ -63,7 +63,7 @@ var allLogsSettings = [
 
 // Diagnostic settings configuration for comprehensive metrics
 // Captures all metric categories from monitoring resources
-var allMetricsSettings = [
+var allMetricsSettings object[] = [
   {
     categoryGroup: 'allMetrics'
     enabled: true

@@ -56,10 +56,9 @@ param deploymentDate string = utcNow('yyyy-MM-dd')
 var coreTags tagsType = {
   Solution: solutionName
   Environment: envName
-  ManagedBy: 'Bicep'
   CostCenter: 'Engineering'
   Owner: 'Platform-Team'
-  BusinessUnit: 'Finance'
+  BusinessUnit: 'IT'
   DeploymentDate: deploymentDate
   Repository: 'Azure-LogicApps-Monitoring'
 }
@@ -71,7 +70,7 @@ var tags = union(coreTags, {
 
 // Resource group naming convention: rg-{solution}-{env}-{location-abbrev}
 // Truncates location to 8 chars to keep names concise
-var resourceGroupName = 'rg-${solutionName}-${envName}-${substring(location, 0, min(length(location), 8))}'
+var resourceGroupName string = 'rg-${solutionName}-${envName}-${substring(location, 0, min(length(location), 8))}'
 
 // ========== Resources ==========
 
