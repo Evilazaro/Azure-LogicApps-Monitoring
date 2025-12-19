@@ -649,7 +649,8 @@ try {
     $azureSubscriptionId = Get-EnvironmentVariableSafe -Name 'AZURE_SUBSCRIPTION_ID'
     $azureResourceGroup = Get-EnvironmentVariableSafe -Name 'AZURE_RESOURCE_GROUP'
     $azureLocation = Get-EnvironmentVariableSafe -Name 'AZURE_LOCATION'
-    $azureApplicationInsightsName = Get-EnvironmentVariableSafe -Name 'AZURE_APPLICATION_INSIGHTS_NAME'
+    $applicationInsightsName = Get-EnvironmentVariableSafe -Name 'AZURE_APPLICATION_INSIGHTS_NAME'
+    $applicationInsightsConnectionString = Get-EnvironmentVariableSafe -Name 'AZURE_APPLICATION_INSIGHTS_CONNECTION_STRING'
     $azureClientId = Get-EnvironmentVariableSafe -Name 'MANAGED_IDENTITY_CLIENT_ID'
     $azureServiceBusHostName = Get-EnvironmentVariableSafe -Name 'MESSAGING_SERVICEBUSHOSTNAME'
     $azureServiceBusTopicName = Get-EnvironmentVariableSafe -Name 'AZURE_SERVICE_BUS_TOPIC_NAME' -DefaultValue 'OrdersPlaced'
@@ -667,7 +668,8 @@ try {
     Write-Information "  Location               : $($azureLocation ?? $notSet)"
     Write-Information "  Environment Name       : $($azureEnvName ?? $notSet)"
     Write-Information "  Client ID              : $($azureClientId ?? $notSet)"
-    Write-Information "  App Insights Name      : $($azureApplicationInsightsName ?? $notSet)"
+    Write-Information "  App Insights Name      : $($applicationInsightsName ?? $notSet)"
+    Write-Information "  App Insights Conn Str  : $($applicationInsightsConnectionString ?? $notSet)"
     Write-Information "  Service Bus Host Name  : $($azureServiceBusHostName ?? $notSet)"
     Write-Information "  Service Bus Topic Name : $($azureServiceBusTopicName ?? $notSet)"
     Write-Information "  Service Bus Subscription: $($azureServiceBusSubscriptionName ?? $notSet)"
@@ -780,7 +782,8 @@ try {
         'Azure:SubscriptionId'             = $azureSubscriptionId
         'Azure:Location'                   = $azureLocation
         'Azure:ResourceGroup'              = $azureResourceGroup
-        'Azure:ApplicationInsights:Name'   = $azureApplicationInsightsName
+        'Azure:ApplicationInsights:Name'   = $applicationInsightsName
+        'ApplicationInsights:ConnectionString' = $applicationInsightsConnectionString
         'Azure:ClientId'                   = $azureClientId
         'Azure:ServiceBus:HostName'       = $azureServiceBusHostName
         'Azure:ServiceBus:TopicName'       = $azureServiceBusTopicName

@@ -87,11 +87,15 @@ public static class Extensions
         }
 
         // Uncomment the following lines to enable the Azure Monitor exporter (requires the Azure.Monitor.OpenTelemetry.AspNetCore package)
-        //if (!string.IsNullOrEmpty(builder.Configuration["APPLICATIONINSIGHTS_CONNECTION_STRING"]))
-        //{
-        //    builder.Services.AddOpenTelemetry()
-        //       .UseAzureMonitor();
-        //}
+        if (!string.IsNullOrEmpty(builder.Configuration["APPINSIGHTS_CONNECTION_STRING"]))
+        {
+            var appInsightsTelemetry = builder.Services.AddApplicationInsightsTelemetry(options =>
+            {
+                options.ConnectionString = builder.Configuration["APPINSIGHTS_CONNECTION_STRING"];
+            });
+
+            builder.Services.AddOpenTelemetry();
+        }
 
         return builder;
     }
