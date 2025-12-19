@@ -20,47 +20,47 @@ The solution leverages Infrastructure as Code (IaC) using Azure Bicep for reprod
 
 ## Key Features
 
-| Feature | Description | Implementation Details |
-|---------|-------------|------------------------|
-| Enterprise-Scale Architecture | Optimized for hosting 1000+ workflows across multiple Logic App instances | Implements hierarchical partition keys, resource pooling, and elastic scaling patterns |
-| Comprehensive Monitoring | End-to-end observability using Azure Monitor, Application Insights, and .NET Aspire Dashboard | OpenTelemetry instrumentation, distributed tracing, custom metrics, and real-time dashboards |
-| Managed Identity Security | Zero-trust authentication model eliminating connection strings and secrets | User-assigned managed identities with RBAC across all Azure resources |
-| Infrastructure as Code | Fully automated deployment using Azure Bicep modules | Modular architecture with separate monitoring, identity, messaging, and workload components |
-| Cost Optimization | Resource rightsizing and consumption-based scaling | Elastic App Service Plans (WS1), consumption workload profiles, auto-scaling policies |
-| Multi-Environment Support | Consistent deployment across dev, staging, and production | Environment-specific configurations with azd support |
-| Event-Driven Integration | Service Bus messaging with dead-letter handling | Topic-subscription model with retry policies and workflow triggers |
-| Container-Based Microservices | .NET Aspire application model with service discovery | Container Apps hosting with integrated service-to-service communication |
-| Operational Excellence | Follows Azure Well-Architected Framework principles | Log Analytics integration, diagnostic settings, health monitoring, and SLA tracking |
+| Feature                       | Description                                                                                   | Implementation Details                                                                       |
+| ----------------------------- | --------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------- |
+| Enterprise-Scale Architecture | Optimized for hosting 1000+ workflows across multiple Logic App instances                     | Implements hierarchical partition keys, resource pooling, and elastic scaling patterns       |
+| Comprehensive Monitoring      | End-to-end observability using Azure Monitor, Application Insights, and .NET Aspire Dashboard | OpenTelemetry instrumentation, distributed tracing, custom metrics, and real-time dashboards |
+| Managed Identity Security     | Zero-trust authentication model eliminating connection strings and secrets                    | User-assigned managed identities with RBAC across all Azure resources                        |
+| Infrastructure as Code        | Fully automated deployment using Azure Bicep modules                                          | Modular architecture with separate monitoring, identity, messaging, and workload components  |
+| Cost Optimization             | Resource rightsizing and consumption-based scaling                                            | Elastic App Service Plans (WS1), consumption workload profiles, auto-scaling policies        |
+| Multi-Environment Support     | Consistent deployment across dev, staging, and production                                     | Environment-specific configurations with azd support                                         |
+| Event-Driven Integration      | Service Bus messaging with dead-letter handling                                               | Topic-subscription model with retry policies and workflow triggers                           |
+| Container-Based Microservices | .NET Aspire application model with service discovery                                          | Container Apps hosting with integrated service-to-service communication                      |
+| Operational Excellence        | Follows Azure Well-Architected Framework principles                                           | Log Analytics integration, diagnostic settings, health monitoring, and SLA tracking          |
 
 ## Solution Components
 
-| Component | Description | Role |
-|-----------|-------------|------|
-| 🎯 .NET Aspire AppHost | Application orchestration and service configuration | Defines service topology, dependencies, and environment configuration |
-| ⚙️ .NET Aspire ServiceDefaults | Shared telemetry and resilience configuration | Configures OpenTelemetry, health checks, service discovery, and HTTP resilience |
-| 🚀 eShop.Orders.API | RESTful API for order management | Handles order creation, retrieval, and publishes events to Service Bus |
-| 💻 eShop.Orders.Web.App | Blazor web application | Provides user interface for order management and monitoring |
-| 📱 eShop.Orders.App.Client | Blazor WebAssembly client | Client-side SPA components for interactive user experience |
-| 🔄 Logic Apps Workflows | Serverless workflow orchestration | Processes orders from Service Bus, implements business logic, handles long-running operations |
-| 🔐 Managed Identity Module | Azure RBAC and identity management | Provides authentication for all Azure resource access |
-| 📊 Monitoring Infrastructure | Observability and diagnostics | Log Analytics workspace, Application Insights, health monitoring |
-| 📦 Container Services | Microservices hosting platform | Azure Container Registry, Container Apps Environment, Aspire Dashboard |
-| 📨 Messaging Infrastructure | Asynchronous communication | Service Bus namespace with topics, subscriptions, and workflow storage |
+| Component                      | Description                                         | Role                                                                                          |
+| ------------------------------ | --------------------------------------------------- | --------------------------------------------------------------------------------------------- |
+| 🎯 .NET Aspire AppHost         | Application orchestration and service configuration | Defines service topology, dependencies, and environment configuration                         |
+| ⚙️ .NET Aspire ServiceDefaults | Shared telemetry and resilience configuration       | Configures OpenTelemetry, health checks, service discovery, and HTTP resilience               |
+| 🚀 eShop.Orders.API            | RESTful API for order management                    | Handles order creation, retrieval, and publishes events to Service Bus                        |
+| 💻 eShop.Orders.Web.App        | Blazor web application                              | Provides user interface for order management and monitoring                                   |
+| 📱 eShop.Orders.App.Client     | Blazor WebAssembly client                           | Client-side SPA components for interactive user experience                                    |
+| 🔄 Logic Apps Workflows        | Serverless workflow orchestration                   | Processes orders from Service Bus, implements business logic, handles long-running operations |
+| 🔐 Managed Identity Module     | Azure RBAC and identity management                  | Provides authentication for all Azure resource access                                         |
+| 📊 Monitoring Infrastructure   | Observability and diagnostics                       | Log Analytics workspace, Application Insights, health monitoring                              |
+| 📦 Container Services          | Microservices hosting platform                      | Azure Container Registry, Container Apps Environment, Aspire Dashboard                        |
+| 📨 Messaging Infrastructure    | Asynchronous communication                          | Service Bus namespace with topics, subscriptions, and workflow storage                        |
 
 ## Azure Components
 
-| Azure Service | Description | Role |
-|---------------|-------------|------|
-| ☁️ Azure Logic Apps Standard | Serverless workflow orchestration engine | Executes business processes, integrates systems, handles long-running operations |
-| 🔗 Azure Service Bus | Enterprise message broker | Decouples services, ensures reliable message delivery, enables event-driven architecture |
-| 📊 Azure Monitor | Unified monitoring platform | Collects metrics, logs, and traces across all resources |
-| 📈 Application Insights | Application performance monitoring | Tracks telemetry, identifies bottlenecks, monitors user behavior |
-| 🔍 Log Analytics Workspace | Centralized log storage and analysis | Aggregates diagnostic data, enables KQL queries, supports alerting |
-| 🎭 Managed Identity | Azure Active Directory identity | Provides passwordless authentication, eliminates secret management |
-| 🐳 Azure Container Registry | Private container image repository | Stores and distributes container images with geo-replication |
-| 📦 Azure Container Apps | Serverless container hosting | Runs microservices with automatic scaling and HTTPS ingress |
-| 💾 Azure Storage Account | Persistent data storage | Workflow state, blob storage for artifacts, diagnostic logs |
-| 🏢 Azure App Service Plan | Logic Apps hosting infrastructure | Provides compute resources with elastic scaling (WS1 tier) |
+| Azure Service                | Description                              | Role                                                                                     |
+| ---------------------------- | ---------------------------------------- | ---------------------------------------------------------------------------------------- |
+| ☁️ Azure Logic Apps Standard | Serverless workflow orchestration engine | Executes business processes, integrates systems, handles long-running operations         |
+| 🔗 Azure Service Bus         | Enterprise message broker                | Decouples services, ensures reliable message delivery, enables event-driven architecture |
+| 📊 Azure Monitor             | Unified monitoring platform              | Collects metrics, logs, and traces across all resources                                  |
+| 📈 Application Insights      | Application performance monitoring       | Tracks telemetry, identifies bottlenecks, monitors user behavior                         |
+| 🔍 Log Analytics Workspace   | Centralized log storage and analysis     | Aggregates diagnostic data, enables KQL queries, supports alerting                       |
+| 🎭 Managed Identity          | Azure Active Directory identity          | Provides passwordless authentication, eliminates secret management                       |
+| 🐳 Azure Container Registry  | Private container image repository       | Stores and distributes container images with geo-replication                             |
+| 📦 Azure Container Apps      | Serverless container hosting             | Runs microservices with automatic scaling and HTTPS ingress                              |
+| 💾 Azure Storage Account     | Persistent data storage                  | Workflow state, blob storage for artifacts, diagnostic logs                              |
+| 🏢 Azure App Service Plan    | Logic Apps hosting infrastructure        | Provides compute resources with elastic scaling (WS1 tier)                               |
 
 ## Project Structure
 
@@ -146,6 +146,7 @@ This solution follows the TOGAF (The Open Group Architecture Framework) architec
 The Data Layer implements Master Data Management (MDM) patterns for both application data and monitoring telemetry. This layer ensures data consistency, integrity, and accessibility across all services while providing centralized storage for logs, metrics, traces, and operational state.
 
 **Purpose and Key Capabilities:**
+
 - Centralized storage for application state, workflow data, and monitoring telemetry
 - Hierarchical data organization using container structures and retention policies
 - Integration with Azure Monitor for comprehensive diagnostic data collection
@@ -160,48 +161,49 @@ graph TB
         SB[Service Bus Topics<br/>Event Messages]
         CA[Container Apps<br/>Application Logs]
     end
-    
+
     subgraph Storage Layer
         BLOB[Blob Storage<br/>Workflow Artifacts]
         TABLE[Table Storage<br/>Workflow State]
         QUEUE[Queue Storage<br/>Workflow Runtime]
     end
-    
+
     subgraph Monitoring Data
         LAW[Log Analytics Workspace<br/>Centralized Logs]
         AI[Application Insights<br/>Telemetry Data]
         DIAG[Diagnostic Storage<br/>Long-term Archive]
     end
-    
+
     API -->|Order Events| SB
     API -->|Telemetry| AI
     API -->|Logs| LAW
-    
+
     WF -->|State| TABLE
     WF -->|Artifacts| BLOB
     WF -->|Runtime| QUEUE
     WF -->|Telemetry| AI
     WF -->|Logs| LAW
-    
+
     SB -->|Dead Letters| BLOB
     SB -->|Metrics| LAW
-    
+
     CA -->|Container Logs| LAW
     CA -->|Metrics| AI
-    
+
     LAW -->|Archive| DIAG
     AI -->|Raw Data| LAW
-    
+
     classDef data fill:#E3F2FD,stroke:#1565C0,color:#000,font-weight:bold,stroke-width:2px;
     classDef storage fill:#FFF9C4,stroke:#F57F17,color:#000,font-weight:bold,stroke-width:2px;
     classDef monitor fill:#F3E5F5,stroke:#6A1B9A,color:#000,font-weight:bold,stroke-width:2px;
-    
+
     class API,WF,SB,CA data;
     class BLOB,TABLE,QUEUE storage;
     class LAW,AI,DIAG monitor;
 ```
 
 **Legend:**
+
 - **Blue nodes (data)**: Application components generating operational data
 - **Yellow nodes (storage)**: Persistent storage systems for state and artifacts
 - **Purple nodes (monitor)**: Monitoring infrastructure collecting diagnostic data
@@ -213,6 +215,7 @@ graph TB
 The Application Layer implements microservices architecture with event-driven communication patterns. This layer contains all business logic, API endpoints, user interfaces, and workflow orchestration components.
 
 **Purpose and Key Capabilities:**
+
 - RESTful APIs for order management with OpenAPI documentation
 - Blazor-based web applications with real-time updates
 - Event-driven integration using publish-subscribe patterns
@@ -227,53 +230,53 @@ graph TB
         WEB[Blazor Web App<br/>Server-Side Rendering]
         CLIENT[Blazor WebAssembly<br/>Client-Side SPA]
     end
-    
+
     subgraph API Gateway
         APPHOST[.NET Aspire AppHost<br/>Service Orchestration]
     end
-    
+
     subgraph Microservices
         API[Orders API<br/>Order Management]
         WORKFLOW[Logic Apps Workflows<br/>Order Processing]
     end
-    
+
     subgraph Service Defaults
         SD[ServiceDefaults<br/>Shared Configuration]
         OTEL[OpenTelemetry<br/>Distributed Tracing]
         HC[Health Checks<br/>Availability Monitoring]
         RES[HTTP Resilience<br/>Retry Policies]
     end
-    
+
     subgraph Messaging
         SB[Service Bus<br/>Event Broker]
         TOPIC[OrdersPlaced Topic]
         SUB[OrderProcessing Subscription]
     end
-    
+
     WEB --> APPHOST
     CLIENT --> APPHOST
     APPHOST --> API
     APPHOST --> WORKFLOW
-    
+
     API --> SD
     WORKFLOW --> SD
-    
+
     SD --> OTEL
     SD --> HC
     SD --> RES
-    
+
     API -->|Publish Event| TOPIC
     TOPIC --> SUB
     SUB -->|Trigger| WORKFLOW
-    
+
     OTEL -->|Traces| AI[Application Insights]
     HC -->|Status| LAW[Log Analytics]
-    
+
     classDef app fill:#E8F5E9,stroke:#2E7D32,color:#000,font-weight:bold,stroke-width:2px;
     classDef infra fill:#BBDEFB,stroke:#0D47A1,color:#000,font-weight:bold,stroke-width:2px;
     classDef msg fill:#FFE0B2,stroke:#E65100,color:#000,font-weight:bold,stroke-width:2px;
     classDef monitor fill:#F3E5F5,stroke:#6A1B9A,color:#000,font-weight:bold,stroke-width:2px;
-    
+
     class WEB,CLIENT,API,WORKFLOW app;
     class APPHOST,SD,OTEL,HC,RES infra;
     class SB,TOPIC,SUB msg;
@@ -281,6 +284,7 @@ graph TB
 ```
 
 **Legend:**
+
 - **Green nodes (app)**: Application components containing business logic
 - **Blue nodes (infra)**: Infrastructure services enabling application functionality
 - **Orange nodes (msg)**: Messaging components for asynchronous communication
@@ -292,33 +296,33 @@ graph TB
 flowchart LR
     USER[User] -->|Place Order| WEB[Web Application]
     WEB -->|HTTP POST| API[Orders API]
-    
+
     API -->|Validate| VAL{Validation}
     VAL -->|Valid| STORE[(Store Order)]
     VAL -->|Invalid| ERR[Return Error]
-    
+
     STORE -->|Publish| TOPIC[OrdersPlaced<br/>Service Bus Topic]
-    
+
     TOPIC -->|Deliver| SUB[OrderProcessing<br/>Subscription]
-    
+
     SUB -->|Trigger| WF[Logic App<br/>Workflow]
-    
+
     WF -->|Process| STEPS[Workflow Steps:<br/>1. Enrich Order<br/>2. Validate Inventory<br/>3. Process Payment<br/>4. Ship Order]
-    
+
     STEPS -->|Success| SUCCESS[(Success Container)]
     STEPS -->|Failure| RETRY{Retry?}
-    
+
     RETRY -->|Yes| SUB
     RETRY -->|Max Retries| DLQ[(Dead Letter Queue)]
-    
+
     SUCCESS -->|Notify| NOTIFY[Notification Service]
     DLQ -->|Alert| ALERT[Alert System]
-    
+
     classDef event fill:#FFF3E0,stroke:#EF6C00,color:#000,font-weight:bold,stroke-width:2px;
     classDef process fill:#E8F5E9,stroke:#2E7D32,color:#000,font-weight:bold,stroke-width:2px;
     classDef storage fill:#E3F2FD,stroke:#1565C0,color:#000,font-weight:bold,stroke-width:2px;
     classDef error fill:#FFEBEE,stroke:#C62828,color:#000,font-weight:bold,stroke-width:2px;
-    
+
     class TOPIC,SUB event;
     class API,WF,STEPS,NOTIFY process;
     class STORE,SUCCESS storage;
@@ -326,6 +330,7 @@ flowchart LR
 ```
 
 **Legend:**
+
 - **Orange nodes (event)**: Event triggers and message brokers
 - **Green nodes (process)**: Processing components executing business logic
 - **Blue nodes (storage)**: Data persistence points
@@ -338,6 +343,7 @@ flowchart LR
 The Technology Layer implements cloud-native patterns using Azure's serverless and container services. This layer provides the runtime infrastructure, security, networking, and DevOps capabilities required for production deployments.
 
 **Purpose and Key Capabilities:**
+
 - Kubernetes-based container orchestration through Azure Container Apps
 - Elastic scaling with consumption-based pricing models
 - Managed identity authentication eliminating secret management
@@ -353,67 +359,70 @@ graph TB
         ACR[Azure Container Registry<br/>Premium]
         ASP[App Service Plan<br/>WorkflowStandard WS1]
     end
-    
+
     subgraph Container Pods
         POD1[Orders API Pod<br/>Replica Set: 1-10]
         POD2[Web App Pod<br/>Replica Set: 1-10]
         POD3[Aspire Dashboard Pod<br/>Replica Set: 1]
     end
-    
+
     subgraph Logic Apps Runtime
         LA1[Logic App Instance 1<br/>3-20 workers]
         LA2[Logic App Instance N<br/>3-20 workers]
     end
-    
+
     subgraph Security
         MI[Managed Identity<br/>User-Assigned]
         RBAC[RBAC Roles:<br/>Storage Contributor<br/>Service Bus Owner<br/>ACR Pull/Push]
     end
-    
+
     subgraph Networking
         VN[Virtual Network<br/>Integration]
         PE[Private Endpoints<br/>Service Connectivity]
         FW[Azure Firewall<br/>Outbound Control]
     end
-    
+
     subgraph DevOps
         BICEP[Bicep Modules<br/>IaC Templates]
         AZD[Azure Developer CLI<br/>azd up]
         HOOKS[Deployment Hooks<br/>Pre/Post Provision]
     end
-    
+
     ACR -->|Pull Images| POD1
     ACR -->|Pull Images| POD2
     ACR -->|Pull Images| POD3
-    
+
     ACA -->|Hosts| POD1
     ACA -->|Hosts| POD2
     ACA -->|Hosts| POD3
-    
+
     ASP -->|Hosts| LA1
     ASP -->|Hosts| LA2
-    
+
     MI -->|Authenticates| POD1
     MI -->|Authenticates| POD2
     MI -->|Authenticates| LA1
     MI -->|Authenticates| LA2
-    
+
     RBAC -->|Grants Access| MI
-    
+
     ACA --> VN
     ASP --> VN
     VN --> PE
     PE --> FW
-    
-    BICEP -->|Deploys| Azure Platform
+
+    BICEP -->|Deploys| ACA
+    BICEP -->|Deploys| ACR
+    BICEP -->|Deploys| ASP
     AZD -->|Orchestrates| BICEP
-    HOOKS -->|Configures| Security
-    
+    HOOKS -->|Configures| MI
+    HOOKS -->|Configures| RBAC
+
     classDef tech fill:#F3E5F5,stroke:#6A1B9A,color:#000,font-weight:bold,stroke-width:2px;
     classDef azure fill:#BBDEFB,stroke:#0D47A1,color:#000,font-weight:bold,stroke-width:2px;
     classDef security fill:#FFEBEE,stroke:#C62828,color:#000,font-weight:bold,stroke-width:2px;
     classDef devops fill:#E8F5E9,stroke:#2E7D32,color:#000,font-weight:bold,stroke-width:2px;
-    
+
     class POD1,POD2,POD3,LA1,LA2 tech;
     class ACA,ACR,ASP,VN,PE,FW azure;
     class MI,RBAC security;
@@ -421,6 +430,7 @@ graph TB
 ```
 
 **Legend:**
+
 - **Purple nodes (tech)**: Technology runtime components
 - **Blue nodes (azure)**: Azure platform services
 - **Red nodes (security)**: Security and identity services
@@ -431,45 +441,45 @@ graph TB
 ```mermaid
 flowchart LR
     MSG[Service Bus Message] -->|Trigger| TRIGGER[Workflow Trigger]
-    
+
     TRIGGER -->|Initialize| INIT[Initialize Context]
-    
+
     INIT -->|Load State| STATE[(Workflow State<br/>Table Storage)]
-    
+
     STATE -->|Execute| ACTION1[Action: Enrich Order]
     ACTION1 -->|API Call| EXT1[External System]
     EXT1 -->|Response| ACTION1
-    
+
     ACTION1 -->|Save State| STATE
     ACTION1 -->|Next| ACTION2[Action: Validate Inventory]
-    
+
     ACTION2 -->|Check Stock| EXT2[Inventory System]
     EXT2 -->|Response| ACTION2
-    
+
     ACTION2 -->|Save State| STATE
     ACTION2 -->|Next| ACTION3[Action: Process Payment]
-    
+
     ACTION3 -->|Charge Card| EXT3[Payment Gateway]
     EXT3 -->|Response| ACTION3
-    
+
     ACTION3 -->|Save State| STATE
     ACTION3 -->|Complete| COMPLETE{Success?}
-    
+
     COMPLETE -->|Yes| SUCCESS[Write to Success Container]
     COMPLETE -->|No| FAIL[Write to Failed Container]
-    
+
     SUCCESS -->|Archive State| ARCHIVE[(Blob Storage)]
     FAIL -->|Archive State| ARCHIVE
-    
+
     ACTION1 -.->|Telemetry| AI[Application Insights]
     ACTION2 -.->|Telemetry| AI
     ACTION3 -.->|Telemetry| AI
-    
+
     classDef trigger fill:#FFF3E0,stroke:#EF6C00,color:#000,font-weight:bold,stroke-width:2px;
     classDef action fill:#E8F5E9,stroke:#2E7D32,color:#000,font-weight:bold,stroke-width:2px;
     classDef storage fill:#E3F2FD,stroke:#1565C0,color:#000,font-weight:bold,stroke-width:2px;
     classDef monitor fill:#F3E5F5,stroke:#6A1B9A,color:#000,font-weight:bold,stroke-width:2px;
-    
+
     class MSG,TRIGGER trigger;
     class INIT,ACTION1,ACTION2,ACTION3,EXT1,EXT2,EXT3 action;
     class STATE,ARCHIVE storage;
@@ -477,6 +487,7 @@ flowchart LR
 ```
 
 **Legend:**
+
 - **Orange nodes (trigger)**: Workflow initiation points
 - **Green nodes (action)**: Action steps and external integrations
 - **Blue nodes (storage)**: State persistence and archival
@@ -491,68 +502,68 @@ graph TB
         VSCODE[VS Code + Extensions]
         EMULATOR[Cosmos DB Emulator]
     end
-    
+
     subgraph Azure Platform
         SUBSCRIPTION[Azure Subscription]
         RG[Resource Group<br/>rg-orders-dev-eastus2]
-        
+
         subgraph Identity
             MI[Managed Identity<br/>orders-*-mi]
             ROLES[22 RBAC Role Assignments]
         end
-        
+
         subgraph Monitoring
             LAW[Log Analytics Workspace]
             AI[Application Insights]
             HEALTH[Azure Monitor Health Model]
         end
-        
+
         subgraph Compute
             ACA[Container Apps Environment]
             ASP[App Service Plan WS1]
             ACR[Container Registry Premium]
         end
-        
+
         subgraph Data
             SB[Service Bus Namespace]
             SA[Storage Accounts]
         end
     end
-    
+
     subgraph Deployment Pipeline
         AZD[Azure Developer CLI]
         BICEP[Bicep Templates]
         PRE[preprovision.ps1<br/>Docker Build]
         POST[postprovision.ps1<br/>User Secrets]
     end
-    
+
     DEV --> VSCODE
     VSCODE --> EMULATOR
     VSCODE --> AZD
-    
+
     AZD --> PRE
     PRE --> BICEP
     BICEP --> SUBSCRIPTION
-    
+
     SUBSCRIPTION --> RG
     RG --> Identity
     RG --> Monitoring
     RG --> Compute
     RG --> Data
-    
+
     BICEP --> POST
     POST --> VSCODE
-    
+
     MI --> ROLES
     ROLES -.->|Access| Monitoring
     ROLES -.->|Access| Compute
     ROLES -.->|Access| Data
-    
+
     classDef dev fill:#E8F5E9,stroke:#2E7D32,color:#000,font-weight:bold,stroke-width:2px;
     classDef azure fill:#BBDEFB,stroke:#0D47A1,color:#000,font-weight:bold,stroke-width:2px;
     classDef deploy fill:#F3E5F5,stroke:#6A1B9A,color:#000,font-weight:bold,stroke-width:2px;
     classDef security fill:#FFEBEE,stroke:#C62828,color:#000,font-weight:bold,stroke-width:2px;
-    
+
     class DEV,VSCODE,EMULATOR dev;
     class SUBSCRIPTION,RG,LAW,AI,HEALTH,ACA,ASP,ACR,SB,SA azure;
     class AZD,BICEP,PRE,POST deploy;
@@ -560,6 +571,7 @@ graph TB
 ```
 
 **Legend:**
+
 - **Green nodes (dev)**: Developer tools and local environment
 - **Blue nodes (azure)**: Azure platform resources
 - **Purple nodes (deploy)**: Deployment automation components
@@ -574,10 +586,12 @@ graph TB
 Before deploying this solution, ensure you have the following tools and access configured:
 
 1. **Azure Subscription**
+
    - Active Azure subscription with Owner or Contributor role
    - Sufficient quota for creating resources in the target region
 
 2. **Development Tools**
+
    - [.NET 10 SDK](https://dotnet.microsoft.com/download/dotnet/10.0) or later
    - [Azure Developer CLI (azd)](https://learn.microsoft.com/azure/developer/azure-developer-cli/install-azd) v1.5.0 or later
    - [Azure CLI](https://learn.microsoft.com/cli/azure/install-azure-cli) v2.50.0 or later
@@ -585,6 +599,7 @@ Before deploying this solution, ensure you have the following tools and access c
    - [Docker Desktop](https://www.docker.com/products/docker-desktop/) for local development and image building
 
 3. **Visual Studio Code Extensions (Recommended)**
+
    - [C# Dev Kit](https://marketplace.visualstudio.com/items?itemName=ms-dotnettools.csdevkit)
    - [Azure Developer CLI](https://marketplace.visualstudio.com/items?itemName=ms-azuretools.azure-dev)
    - [Bicep](https://marketplace.visualstudio.com/items?itemName=ms-azuretools.vscode-bicep)
@@ -599,56 +614,63 @@ Before deploying this solution, ensure you have the following tools and access c
 
 The deployment requires the following Azure role assignments. These roles are automatically granted to the user-assigned managed identity during provisioning:
 
-| Role Name | Description | Documentation Link |
-|-----------|-------------|-------------------|
-| Storage Account Contributor | Full management of storage accounts including keys | [Documentation](https://learn.microsoft.com/azure/role-based-access-control/built-in-roles#storage-account-contributor) |
-| Storage Blob Data Contributor | Read, write, and delete Azure Storage blobs and containers | [Documentation](https://learn.microsoft.com/azure/role-based-access-control/built-in-roles#storage-blob-data-contributor) |
-| Monitoring Metrics Publisher | Publish metrics to Azure Monitor | [Documentation](https://learn.microsoft.com/azure/role-based-access-control/built-in-roles#monitoring-metrics-publisher) |
-| Monitoring Contributor | Read monitoring data and edit monitoring settings | [Documentation](https://learn.microsoft.com/azure/role-based-access-control/built-in-roles#monitoring-contributor) |
-| Application Insights Component Contributor | Manage Application Insights components | [Documentation](https://learn.microsoft.com/azure/role-based-access-control/built-in-roles#application-insights-component-contributor) |
-| Application Insights Snapshot Debugger | View and download debug snapshots | [Documentation](https://learn.microsoft.com/azure/role-based-access-control/built-in-roles#application-insights-snapshot-debugger) |
-| Azure Service Bus Data Owner | Full access to Service Bus resources | [Documentation](https://learn.microsoft.com/azure/role-based-access-control/built-in-roles#azure-service-bus-data-owner) |
-| Azure Service Bus Data Receiver | Receive messages from Service Bus | [Documentation](https://learn.microsoft.com/azure/role-based-access-control/built-in-roles#azure-service-bus-data-receiver) |
-| Azure Service Bus Data Sender | Send messages to Service Bus | [Documentation](https://learn.microsoft.com/azure/role-based-access-control/built-in-roles#azure-service-bus-data-sender) |
-| Azure Resource Notifications System Topics Subscriber | Subscribe to system topics for resource notifications | [Documentation](https://learn.microsoft.com/azure/role-based-access-control/built-in-roles#azure-resource-notifications-system-topics-subscriber) |
-| AcrPull | Pull artifacts from Azure Container Registry | [Documentation](https://learn.microsoft.com/azure/role-based-access-control/built-in-roles#acrpull) |
-| AcrPush | Push artifacts to Azure Container Registry | [Documentation](https://learn.microsoft.com/azure/role-based-access-control/built-in-roles#acrpush) |
+| Role Name                                             | Description                                                | Documentation Link                                                                                                                                |
+| ----------------------------------------------------- | ---------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Storage Account Contributor                           | Full management of storage accounts including keys         | [Documentation](https://learn.microsoft.com/azure/role-based-access-control/built-in-roles#storage-account-contributor)                           |
+| Storage Blob Data Contributor                         | Read, write, and delete Azure Storage blobs and containers | [Documentation](https://learn.microsoft.com/azure/role-based-access-control/built-in-roles#storage-blob-data-contributor)                         |
+| Monitoring Metrics Publisher                          | Publish metrics to Azure Monitor                           | [Documentation](https://learn.microsoft.com/azure/role-based-access-control/built-in-roles#monitoring-metrics-publisher)                          |
+| Monitoring Contributor                                | Read monitoring data and edit monitoring settings          | [Documentation](https://learn.microsoft.com/azure/role-based-access-control/built-in-roles#monitoring-contributor)                                |
+| Application Insights Component Contributor            | Manage Application Insights components                     | [Documentation](https://learn.microsoft.com/azure/role-based-access-control/built-in-roles#application-insights-component-contributor)            |
+| Application Insights Snapshot Debugger                | View and download debug snapshots                          | [Documentation](https://learn.microsoft.com/azure/role-based-access-control/built-in-roles#application-insights-snapshot-debugger)                |
+| Azure Service Bus Data Owner                          | Full access to Service Bus resources                       | [Documentation](https://learn.microsoft.com/azure/role-based-access-control/built-in-roles#azure-service-bus-data-owner)                          |
+| Azure Service Bus Data Receiver                       | Receive messages from Service Bus                          | [Documentation](https://learn.microsoft.com/azure/role-based-access-control/built-in-roles#azure-service-bus-data-receiver)                       |
+| Azure Service Bus Data Sender                         | Send messages to Service Bus                               | [Documentation](https://learn.microsoft.com/azure/role-based-access-control/built-in-roles#azure-service-bus-data-sender)                         |
+| Azure Resource Notifications System Topics Subscriber | Subscribe to system topics for resource notifications      | [Documentation](https://learn.microsoft.com/azure/role-based-access-control/built-in-roles#azure-resource-notifications-system-topics-subscriber) |
+| AcrPull                                               | Pull artifacts from Azure Container Registry               | [Documentation](https://learn.microsoft.com/azure/role-based-access-control/built-in-roles#acrpull)                                               |
+| AcrPush                                               | Push artifacts to Azure Container Registry                 | [Documentation](https://learn.microsoft.com/azure/role-based-access-control/built-in-roles#acrpush)                                               |
 
 ### Deployment Steps
 
 1. **Clone the repository**
+
    ```bash
    git clone https://github.com/Evilazaro/Azure-LogicApps-Monitoring.git
    cd Azure-LogicApps-Monitoring
    ```
 
 2. **Initialize Azure Developer CLI environment**
+
    ```bash
    azd init
    ```
-   
+
    When prompted:
+
    - Environment name: Choose a unique name (e.g., `dev`, `staging`, `prod`)
    - Azure subscription: Select your target subscription
    - Azure location: Choose your preferred region (e.g., `eastus2`)
 
 3. **Deploy the infrastructure**
+
    ```bash
    azd up
    ```
-   
+
    This command performs the following:
+
    - Executes preprovision.ps1: Validates Docker and builds container images
    - Provisions all Azure resources using Bicep templates
    - Executes postprovision.ps1: Configures .NET user secrets and ACR authentication
    - Deploys application code to Container Apps
 
 4. **Verify deployment**
+
    ```bash
    azd show
    ```
-   
+
    Review the output for:
+
    - Resource group name and location
    - Application endpoints (Container Apps URLs)
    - Monitoring endpoints (Application Insights, Log Analytics)
@@ -663,12 +685,14 @@ The deployment requires the following Azure role assignments. These roles are au
 After successful deployment, the postprovision.ps1 script automatically configures:
 
 1. **.NET User Secrets** - Stores Azure resource connection details locally:
+
    - Azure Tenant ID and Subscription ID
    - Managed Identity Client ID
    - Service Bus connection details
    - Application Insights connection string
 
 2. **Azure Container Registry Authentication** - Logs into ACR for image management:
+
    - Executes `az acr login --name <registry-name>`
    - Enables local Docker image push operations
 
@@ -682,25 +706,31 @@ After successful deployment, the postprovision.ps1 script automatically configur
 If deployment fails, review the following:
 
 1. **Azure CLI Authentication**
+
    ```bash
    az account show
    ```
+
    Ensure you're logged into the correct subscription.
 
 2. **Resource Quotas**
    Verify your subscription has available quota for:
+
    - Container Apps (minimum 3 vCPU)
    - App Service Plan (WS1 tier)
    - Storage accounts (minimum 2)
 
 3. **Docker Validation**
+
    ```bash
    docker version
    docker compose version
    ```
+
    Ensure Docker Desktop is running and Docker Compose v2 is available.
 
 4. **Deployment Logs**
+
    - Review azd logs: `azd show --debug`
    - Check PowerShell script output in terminal
    - Inspect Azure Portal deployment operations
@@ -720,16 +750,19 @@ If deployment fails, review the following:
 #### Accessing Real-Time Metrics
 
 1. **Aspire Dashboard** - Provides real-time distributed tracing and metrics:
+
    - Navigate to the Aspire Dashboard endpoint from `azd show` output
    - View service topology, request traces, and performance metrics
    - Monitor resource consumption and scaling events
 
 2. **Application Insights Live Metrics** - Real-time telemetry stream:
+
    ```bash
    az portal open --resource <AZURE_APPLICATION_INSIGHTS_NAME> \
      --resource-group <AZURE_RESOURCE_GROUP> \
      --subscription <AZURE_SUBSCRIPTION_ID>
    ```
+
    - Navigate to "Live Metrics" blade
    - Monitor incoming requests, dependencies, and exceptions in real-time
    - View server metrics (CPU, memory, request rate)
@@ -751,11 +784,13 @@ If deployment fails, review the following:
 Based on [Microsoft's Logic Apps monitoring guidance](https://learn.microsoft.com/azure/logic-apps/monitor-logic-apps), implement the following practices:
 
 1. **Enable Diagnostic Settings**
+
    - All Logic Apps instances have diagnostic settings pre-configured
    - Logs are sent to Log Analytics workspace and Storage Account
    - Retention period: 30 days in Log Analytics, extended in Storage
 
 2. **Monitor Workflow Run History**
+
    - Access via Azure Portal → Logic App → Workflow runs
    - Review run status, duration, and input/output data
    - Filter by status (Succeeded, Failed, Cancelled, Running)
@@ -768,18 +803,19 @@ Based on [Microsoft's Logic Apps monitoring guidance](https://learn.microsoft.co
 #### Kusto Query Language (KQL) Examples
 
 **Query 1: Workflow Execution Summary (Last 24 Hours)**
+
 ```kql
 AzureDiagnostics
 | where ResourceProvider == "MICROSOFT.LOGIC"
 | where TimeGenerated > ago(24h)
-| summarize 
+| summarize
     TotalRuns = count(),
     SuccessfulRuns = countif(status_s == "Succeeded"),
     FailedRuns = countif(status_s == "Failed"),
     AvgDuration = avg(todouble(duration_d))
     by resource_workflowName_s
 | extend SuccessRate = round((SuccessfulRuns * 100.0) / TotalRuns, 2)
-| project 
+| project
     WorkflowName = resource_workflowName_s,
     TotalRuns,
     SuccessfulRuns,
@@ -790,12 +826,13 @@ AzureDiagnostics
 ```
 
 **Query 2: Failed Workflow Runs with Error Details**
+
 ```kql
 AzureDiagnostics
 | where ResourceProvider == "MICROSOFT.LOGIC"
 | where status_s == "Failed"
 | where TimeGenerated > ago(7d)
-| project 
+| project
     TimeGenerated,
     WorkflowName = resource_workflowName_s,
     RunId = resource_runId_g,
@@ -807,29 +844,31 @@ AzureDiagnostics
 ```
 
 **Query 3: Service Bus Message Processing Metrics**
+
 ```kql
 AzureDiagnostics
 | where ResourceProvider == "MICROSOFT.SERVICEBUS"
 | where MetricName in ("IncomingMessages", "OutgoingMessages", "DeadletteredMessages")
 | where TimeGenerated > ago(1h)
-| summarize 
-    Value = sum(Total) 
+| summarize
+    Value = sum(Total)
     by bin(TimeGenerated, 5m), MetricName, resource_entityName_s
-| render timechart 
+| render timechart
 ```
 
 **Query 4: Application Insights Request Telemetry**
+
 ```kql
 requests
 | where timestamp > ago(24h)
-| summarize 
+| summarize
     RequestCount = count(),
     AvgDuration = avg(duration),
     P95Duration = percentile(duration, 95),
     FailedRequests = countif(success == false)
     by name, resultCode
 | extend SuccessRate = round((RequestCount - FailedRequests) * 100.0 / RequestCount, 2)
-| project 
+| project
     Operation = name,
     StatusCode = resultCode,
     RequestCount,
@@ -841,12 +880,13 @@ requests
 ```
 
 **Query 5: Container Apps Resource Utilization**
+
 ```kql
 ContainerAppConsoleLogs_CL
 | where TimeGenerated > ago(1h)
 | where Log_s contains "CPU" or Log_s contains "Memory"
 | parse Log_s with * "CPU:" cpu "%" * "Memory:" memory "MB" *
-| summarize 
+| summarize
     AvgCPU = avg(todouble(cpu)),
     MaxCPU = max(todouble(cpu)),
     AvgMemory = avg(todouble(memory)),
@@ -856,11 +896,12 @@ ContainerAppConsoleLogs_CL
 ```
 
 **Query 6: OpenTelemetry Distributed Traces**
+
 ```kql
 AppDependencies
 | where timestamp > ago(1h)
 | where cloud_RoleName in ("eShop.Orders.API", "Logic Apps Workflows")
-| project 
+| project
     timestamp,
     operation_Id,
     operation_ParentId,
@@ -874,13 +915,14 @@ AppDependencies
 ```
 
 **Query 7: Workflow State Transitions**
+
 ```kql
 AzureDiagnostics
 | where ResourceProvider == "MICROSOFT.LOGIC"
 | where category == "WorkflowRuntime"
 | extend State = tostring(properties_d.status)
-| summarize 
-    StateTransitions = count() 
+| summarize
+    StateTransitions = count()
     by bin(TimeGenerated, 5m), State, resource_workflowName_s
 | render timechart
 ```
@@ -888,6 +930,7 @@ AzureDiagnostics
 ### Creating Custom Dashboards
 
 1. **Azure Workbook Template**
+
    - Navigate to Azure Portal → Log Analytics Workspace → Workbooks
    - Click "New" to create custom workbook
    - Add query tiles using the KQL examples above
@@ -895,6 +938,7 @@ AzureDiagnostics
    - Save and share with team members
 
 2. **Application Insights Dashboard**
+
    - Navigate to Application Insights → Dashboard
    - Pin key metrics: Request rate, Response time, Failed requests
    - Add custom charts from Analytics queries
@@ -908,6 +952,7 @@ AzureDiagnostics
 ### Alert Configuration Examples
 
 **Alert 1: Workflow Failure Rate Exceeds Threshold**
+
 ```json
 {
   "alertName": "High Workflow Failure Rate",
@@ -924,6 +969,7 @@ AzureDiagnostics
 ```
 
 **Alert 2: Service Bus Dead Letter Queue Growth**
+
 ```json
 {
   "alertName": "Dead Letter Queue Growth",
@@ -942,11 +988,13 @@ AzureDiagnostics
 ### Performance Optimization
 
 1. **Workflow Execution Time Analysis**
+
    - Use KQL Query 1 to identify slow-running workflows
    - Review workflow definition for inefficient actions
    - Consider parallelization for independent steps
 
 2. **Service Bus Throughput Optimization**
+
    - Monitor message ingestion rate using KQL Query 3
    - Adjust message batch size and prefetch count
    - Scale Service Bus to Premium tier for higher throughput
