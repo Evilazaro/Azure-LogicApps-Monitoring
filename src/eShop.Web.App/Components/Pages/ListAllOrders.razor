@@ -7,17 +7,18 @@
 
 <PageTitle>All Orders</PageTitle>
 
-<FluentStack Orientation="Orientation.Vertical" VerticalGap="20" Style="padding: 24px;">
-    <FluentStack Orientation="Orientation.Vertical" VerticalGap="8">
-        <FluentLabel Typo="Typography.H3">All Orders</FluentLabel>
-        <FluentLabel Typo="Typography.Body">
+<FluentStack Orientation="Orientation.Vertical" VerticalGap="16" Style="padding: 20px; max-width: 1400px; margin: 0 auto;">
+    <FluentStack Orientation="Orientation.Vertical" VerticalGap="6">
+        <FluentLabel Typo="Typography.H4">All Orders</FluentLabel>
+        <FluentLabel Typo="Typography.Body" Style="font-size: 14px; color: var(--neutral-foreground-hint);">
             View all orders and their associated products.
         </FluentLabel>
     </FluentStack>
     
     <FluentButton Appearance="Appearance.Accent" 
                   OnClick="LoadOrdersAsync" 
-                  Loading="@isLoading">
+                  Loading="@isLoading"
+                  Style="width: fit-content;">
         Load Orders
     </FluentButton>
 
@@ -37,11 +38,11 @@
         }
         else
         {
-            <FluentLabel Typo="Typography.Subject">
+            <FluentLabel Typo="Typography.Body" Style="font-size: 13px; color: var(--neutral-foreground-hint);">
                 @orders.Count() order@(orders.Count() == 1 ? "" : "s") found
             </FluentLabel>
 
-            <FluentStack Orientation="Orientation.Vertical" VerticalGap="16" Style="width: 100%;">
+            <FluentStack Orientation="Orientation.Vertical" VerticalGap="12" Style="width: 100%;">
                 @foreach (var order in orders.OrderByDescending(o => o.Date))
                 {
                     <FluentCard Style="width: 100%; padding: 0;">
@@ -49,42 +50,42 @@
                             <!-- Order Header -->
                             <FluentStack Orientation="Orientation.Horizontal" 
                                        VerticalAlignment="VerticalAlignment.Center"
-                                       Style="padding: 16px; background-color: var(--neutral-layer-1); border-bottom: 1px solid var(--neutral-stroke-rest); cursor: pointer;"
+                                       Style="padding: 12px 16px; background-color: var(--neutral-layer-1); border-bottom: 1px solid var(--neutral-stroke-rest); cursor: pointer;"
                                        @onclick="() => ToggleOrder(order.Id)">
                                 <FluentStack Orientation="Orientation.Horizontal" 
                                            VerticalAlignment="VerticalAlignment.Center"
-                                           HorizontalGap="12"
+                                           HorizontalGap="16"
                                            Style="flex: 1;">
-                                    <FluentLabel Style="font-size: 16px;">
+                                    <FluentLabel Style="font-size: 14px; min-width: 20px;">
                                         @(expandedOrders.Contains(order.Id) ? "▼" : "▶")
                                     </FluentLabel>
                                     
-                                    <FluentStack Orientation="Orientation.Vertical" VerticalGap="4" Style="min-width: 100px;">
-                                        <FluentLabel Typo="Typography.Body" Style="color: var(--neutral-foreground-hint); font-size: 12px;">Order ID</FluentLabel>
-                                        <FluentLabel Typo="Typography.Body" Style="font-weight: 600;">@order.Id</FluentLabel>
+                                    <FluentStack Orientation="Orientation.Vertical" VerticalGap="2" Style="width: 90px;">
+                                        <FluentLabel Typo="Typography.Body" Style="color: var(--neutral-foreground-hint); font-size: 11px;">Order ID</FluentLabel>
+                                        <FluentLabel Typo="Typography.Body" Style="font-weight: 600; font-size: 13px;">@order.Id</FluentLabel>
                                     </FluentStack>
 
-                                    <FluentStack Orientation="Orientation.Vertical" VerticalGap="4" Style="min-width: 120px;">
-                                        <FluentLabel Typo="Typography.Body" Style="color: var(--neutral-foreground-hint); font-size: 12px;">Customer</FluentLabel>
-                                        <FluentLabel Typo="Typography.Body">@order.CustomerId</FluentLabel>
+                                    <FluentStack Orientation="Orientation.Vertical" VerticalGap="2" Style="width: 110px;">
+                                        <FluentLabel Typo="Typography.Body" Style="color: var(--neutral-foreground-hint); font-size: 11px;">Customer</FluentLabel>
+                                        <FluentLabel Typo="Typography.Body" Style="font-size: 13px;">@order.CustomerId</FluentLabel>
                                     </FluentStack>
 
-                                    <FluentStack Orientation="Orientation.Vertical" VerticalGap="4" Style="min-width: 180px;">
-                                        <FluentLabel Typo="Typography.Body" Style="color: var(--neutral-foreground-hint); font-size: 12px;">Order Date</FluentLabel>
-                                        <FluentLabel Typo="Typography.Body">@order.Date.ToString("yyyy-MM-dd HH:mm")</FluentLabel>
+                                    <FluentStack Orientation="Orientation.Vertical" VerticalGap="2" Style="width: 150px;">
+                                        <FluentLabel Typo="Typography.Body" Style="color: var(--neutral-foreground-hint); font-size: 11px;">Order Date</FluentLabel>
+                                        <FluentLabel Typo="Typography.Body" Style="font-size: 13px;">@order.Date.ToString("yyyy-MM-dd HH:mm")</FluentLabel>
                                     </FluentStack>
 
-                                    <FluentStack Orientation="Orientation.Vertical" VerticalGap="4" Style="flex: 1;">
-                                        <FluentLabel Typo="Typography.Body" Style="color: var(--neutral-foreground-hint); font-size: 12px;">Delivery Address</FluentLabel>
-                                        <FluentLabel Typo="Typography.Body">@order.DeliveryAddress</FluentLabel>
+                                    <FluentStack Orientation="Orientation.Vertical" VerticalGap="2" Style="flex: 1; min-width: 300px;">
+                                        <FluentLabel Typo="Typography.Body" Style="color: var(--neutral-foreground-hint); font-size: 11px;">Delivery Address</FluentLabel>
+                                        <FluentLabel Typo="Typography.Body" Style="font-size: 13px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">@order.DeliveryAddress</FluentLabel>
                                     </FluentStack>
 
-                                    <FluentStack Orientation="Orientation.Vertical" VerticalGap="4" Style="min-width: 120px; align-items: flex-end;">
-                                        <FluentLabel Typo="Typography.Body" Style="color: var(--neutral-foreground-hint); font-size: 12px;">Total</FluentLabel>
-                                        <FluentLabel Typo="Typography.Body" Style="font-weight: 700; color: var(--accent-fill-rest);">@order.Total.ToString("C2")</FluentLabel>
+                                    <FluentStack Orientation="Orientation.Vertical" VerticalGap="2" Style="width: 100px; align-items: flex-end;">
+                                        <FluentLabel Typo="Typography.Body" Style="color: var(--neutral-foreground-hint); font-size: 11px;">Total</FluentLabel>
+                                        <FluentLabel Typo="Typography.Body" Style="font-weight: 700; font-size: 14px; color: var(--accent-fill-rest);">@order.Total.ToString("C2")</FluentLabel>
                                     </FluentStack>
 
-                                    <FluentBadge Appearance="Appearance.Neutral" Circular="true">
+                                    <FluentBadge Appearance="Appearance.Neutral" Circular="true" Style="min-width: 32px;">
                                         @order.Products.Count()
                                     </FluentBadge>
                                 </FluentStack>
@@ -93,22 +94,23 @@
                             <!-- Expandable Products Section -->
                             @if (expandedOrders.Contains(order.Id))
                             {
-                                <FluentStack Orientation="Orientation.Vertical" VerticalGap="16" Style="padding: 20px; background-color: var(--neutral-layer-2);">
-                                    <FluentLabel Typo="Typography.Body" Style="font-weight: 600;">Products (@order.Products.Count())</FluentLabel>
+                                <FluentStack Orientation="Orientation.Vertical" VerticalGap="12" Style="padding: 16px 20px; background-color: var(--neutral-layer-2);">
+                                    <FluentLabel Typo="Typography.Body" Style="font-weight: 600; font-size: 13px;">Products (@order.Products.Count())</FluentLabel>
                                     
                                     @if (order.Products.Any())
                                     {
                                         <FluentDataGrid Items="@order.Products.AsQueryable()" 
-                                                       GridTemplateColumns="100px 2fr 100px 120px 120px"
-                                                       Style="width: 100%; background-color: var(--neutral-layer-1); border: 1px solid var(--neutral-stroke-rest);">
+                                                       GridTemplateColumns="100px 1fr 80px 120px 120px"
+                                                       Style="width: 100%; background-color: var(--neutral-layer-1); border: 1px solid var(--neutral-stroke-rest); font-size: 13px;">
                                             <PropertyColumn Property="@(p => p.ProductId)" 
                                                            Title="Product ID" 
                                                            Align="Align.Start" />
                                             <PropertyColumn Property="@(p => p.ProductDescription)" 
                                                            Title="Description" 
-                                                           Align="Align.Start" />
+                                                           Align="Align.Start"
+                                                           Class="description-column" />
                                             <PropertyColumn Property="@(p => p.Quantity)" 
-                                                           Title="Quantity" 
+                                                           Title="Qty" 
                                                            Align="Align.Center" />
                                             <PropertyColumn Property="@(p => p.Price)" 
                                                            Title="Unit Price" 
@@ -119,15 +121,16 @@
                                             </TemplateColumn>
                                         </FluentDataGrid>
                                         
-                                        <FluentDivider Style="width: 100%;" />
+                                        <FluentDivider Style="width: 100%; margin: 4px 0;" />
                                         
                                         <FluentStack Orientation="Orientation.Horizontal" 
                                                     HorizontalAlignment="HorizontalAlignment.End"
-                                                    HorizontalGap="12">
-                                            <FluentLabel Typo="Typography.Body" Style="font-weight: 600;">
+                                                    HorizontalGap="10"
+                                                    Style="padding-right: 4px;">
+                                            <FluentLabel Typo="Typography.Body" Style="font-weight: 600; font-size: 14px;">
                                                 Order Total:
                                             </FluentLabel>
-                                            <FluentLabel Typo="Typography.Body" Style="font-weight: 700; font-size: 18px; color: var(--accent-fill-rest);">
+                                            <FluentLabel Typo="Typography.Body" Style="font-weight: 700; font-size: 16px; color: var(--accent-fill-rest);">
                                                 @order.Total.ToString("C2")
                                             </FluentLabel>
                                         </FluentStack>
@@ -147,6 +150,23 @@
         }
     }
 </FluentStack>
+
+<style>
+    fluent-data-grid-row {
+        min-height: 40px;
+    }
+    
+    fluent-data-grid-cell {
+        padding: 10px 12px !important;
+    }
+    
+    .description-column {
+        max-width: 350px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+</style>
 
 @code {
     private bool isLoading = false;

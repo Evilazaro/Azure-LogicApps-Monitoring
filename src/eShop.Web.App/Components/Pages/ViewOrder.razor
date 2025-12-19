@@ -1,0 +1,223 @@
+@page "/vieworder"
+@page "/vieworder/{OrderId}"
+@using eShop.Web.App.Components.Services;
+@using app.ServiceDefaults.CommonTypes;
+@using Microsoft.FluentUI.AspNetCore.Components;
+@rendermode InteractiveServer
+@inject OrdersService ordersService
+@inject NavigationManager navigationManager
+
+<PageTitle>View Order</PageTitle>
+
+<FluentStack Orientation="Orientation.Vertical" VerticalGap="16" Style="padding: 20px; max-width: 1400px; margin: 0 auto;">
+    <FluentStack Orientation="Orientation.Vertical" VerticalGap="6">
+        <FluentLabel Typo="Typography.H4">View Order</FluentLabel>
+        <FluentLabel Typo="Typography.Body" Style="font-size: 14px; color: var(--neutral-foreground-hint);">
+            Search and view order details by Order ID.
+        </FluentLabel>
+    </FluentStack>
+    
+    <!-- Search Section -->
+    <FluentStack Orientation="Orientation.Horizontal" VerticalGap="12" HorizontalGap="12" Style="align-items: flex-end;">
+        <FluentStack Orientation="Orientation.Vertical" VerticalGap="6" Style="flex: 1; max-width: 400px;">
+            <FluentLabel Typo="Typography.Body" Style="font-size: 13px; font-weight: 600;">Order ID</FluentLabel>
+            <FluentTextField @bind-Value="searchOrderId" 
+                           Placeholder="Enter Order ID"
+                           Style="width: 100%;"
+                           @onkeydown="HandleKeyDown" />
+        </FluentStack>
+        
+        <FluentButton Appearance="Appearance.Accent" 
+                      OnClick="SearchOrderAsync" 
+                      Loading="@isLoading"
+                      Style="width: fit-content;">
+            Search Order
+        </FluentButton>
+    </FluentStack>
+
+    @if (errorMessage != null)
+    {
+        <FluentMessageBar Intent="MessageIntent.Error" Title="Error">
+            @errorMessage   
+        </FluentMessageBar>
+    }
+    else if (orderNotFound)
+    {
+        <FluentMessageBar Intent="MessageIntent.Warning" Title="Not Found">
+            Order with ID "@searchOrderId" was not found in the system.
+        </FluentMessageBar>
+    }
+    else if (order != null)
+    {
+        <!-- Order Details Card -->
+        <FluentCard Style="width: 100%; padding: 0; margin-top: 8px;">
+            <FluentStack Orientation="Orientation.Vertical" VerticalGap="0" Style="width: 100%;">
+                <!-- Order Header -->
+                <FluentStack Orientation="Orientation.Vertical" 
+                           VerticalGap="12"
+                           Style="padding: 20px; background-color: var(--neutral-layer-1); border-bottom: 1px solid var(--neutral-stroke-rest);">
+                    <FluentLabel Typo="Typography.H5" Style="color: var(--accent-fill-rest);">Order Details</FluentLabel>
+                    
+                    <FluentStack Orientation="Orientation.Horizontal" HorizontalGap="32" Wrap="true">
+                        <FluentStack Orientation="Orientation.Vertical" VerticalGap="4" Style="min-width: 150px;">
+                            <FluentLabel Typo="Typography.Body" Style="color: var(--neutral-foreground-hint); font-size: 11px;">Order ID</FluentLabel>
+                            <FluentLabel Typo="Typography.Body" Style="font-weight: 600; font-size: 14px;">@order.Id</FluentLabel>
+                        </FluentStack>
+
+                        <FluentStack Orientation="Orientation.Vertical" VerticalGap="4" Style="min-width: 150px;">
+                            <FluentLabel Typo="Typography.Body" Style="color: var(--neutral-foreground-hint); font-size: 11px;">Customer ID</FluentLabel>
+                            <FluentLabel Typo="Typography.Body" Style="font-size: 14px;">@order.CustomerId</FluentLabel>
+                        </FluentStack>
+
+                        <FluentStack Orientation="Orientation.Vertical" VerticalGap="4" Style="min-width: 180px;">
+                            <FluentLabel Typo="Typography.Body" Style="color: var(--neutral-foreground-hint); font-size: 11px;">Order Date</FluentLabel>
+                            <FluentLabel Typo="Typography.Body" Style="font-size: 14px;">@order.Date.ToString("yyyy-MM-dd HH:mm:ss")</FluentLabel>
+                        </FluentStack>
+
+                        <FluentStack Orientation="Orientation.Vertical" VerticalGap="4" Style="flex: 1; min-width: 250px;">
+                            <FluentLabel Typo="Typography.Body" Style="color: var(--neutral-foreground-hint); font-size: 11px;">Delivery Address</FluentLabel>
+                            <FluentLabel Typo="Typography.Body" Style="font-size: 14px;">@order.DeliveryAddress</FluentLabel>
+                        </FluentStack>
+
+                        <FluentStack Orientation="Orientation.Vertical" VerticalGap="4" Style="min-width: 120px;">
+                            <FluentLabel Typo="Typography.Body" Style="color: var(--neutral-foreground-hint); font-size: 11px;">Order Total</FluentLabel>
+                            <FluentLabel Typo="Typography.Body" Style="font-weight: 700; font-size: 16px; color: var(--accent-fill-rest);">@order.Total.ToString("C2")</FluentLabel>
+                        </FluentStack>
+                    </FluentStack>
+                </FluentStack>
+
+                <!-- Products Section -->
+                <FluentStack Orientation="Orientation.Vertical" VerticalGap="12" Style="padding: 20px; background-color: var(--neutral-layer-2);">
+                    <FluentLabel Typo="Typography.Body" Style="font-weight: 600; font-size: 14px;">Products (@order.Products.Count())</FluentLabel>
+                    
+                    @if (order.Products.Any())
+                    {
+                        <FluentDataGrid Items="@order.Products.AsQueryable()" 
+                                       GridTemplateColumns="100px 1fr 80px 120px 120px"
+                                       Style="width: 100%; background-color: var(--neutral-layer-1); border: 1px solid var(--neutral-stroke-rest); font-size: 13px;">
+                            <PropertyColumn Property="@(p => p.ProductId)" 
+                                           Title="Product ID" 
+                                           Align="Align.Start" />
+                            <PropertyColumn Property="@(p => p.ProductDescription)" 
+                                           Title="Description" 
+                                           Align="Align.Start"
+                                           Class="description-column" />
+                            <PropertyColumn Property="@(p => p.Quantity)" 
+                                           Title="Qty" 
+                                           Align="Align.Center" />
+                            <PropertyColumn Property="@(p => p.Price)" 
+                                           Title="Unit Price" 
+                                           Format="C2" 
+                                           Align="Align.End" />
+                            <TemplateColumn Title="Subtotal" Align="Align.End" Context="product">
+                                <strong>@((product.Quantity * product.Price).ToString("C2"))</strong>
+                            </TemplateColumn>
+                        </FluentDataGrid>
+                        
+                        <FluentDivider Style="width: 100%; margin: 4px 0;" />
+                        
+                        <FluentStack Orientation="Orientation.Horizontal" 
+                                    HorizontalAlignment="HorizontalAlignment.End"
+                                    HorizontalGap="10"
+                                    Style="padding-right: 4px;">
+                            <FluentLabel Typo="Typography.Body" Style="font-weight: 600; font-size: 15px;">
+                                Order Total:
+                            </FluentLabel>
+                            <FluentLabel Typo="Typography.Body" Style="font-weight: 700; font-size: 18px; color: var(--accent-fill-rest);">
+                                @order.Total.ToString("C2")
+                            </FluentLabel>
+                        </FluentStack>
+                    }
+                    else
+                    {
+                        <FluentMessageBar Intent="MessageIntent.Warning">
+                            No products in this order.
+                        </FluentMessageBar>
+                    }
+                </FluentStack>
+            </FluentStack>
+        </FluentCard>
+    }
+</FluentStack>
+
+<style>
+    fluent-data-grid-row {
+        min-height: 40px;
+    }
+    
+    fluent-data-grid-cell {
+        padding: 10px 12px !important;
+    }
+    
+    .description-column {
+        max-width: 350px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+</style>
+
+@code {
+    [Parameter]
+    public string? OrderId { get; set; }
+
+    private bool isLoading = false;
+    private string? errorMessage;
+    private bool orderNotFound = false;
+    private Order? order;
+    private string searchOrderId = string.Empty;
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (!string.IsNullOrWhiteSpace(OrderId))
+        {
+            searchOrderId = OrderId;
+            await SearchOrderAsync();
+        }
+    }
+
+    private async Task SearchOrderAsync()
+    {
+        if (string.IsNullOrWhiteSpace(searchOrderId))
+        {
+            errorMessage = "Please enter an Order ID";
+            return;
+        }
+
+        isLoading = true;
+        errorMessage = null;
+        orderNotFound = false;
+        order = null;
+
+        try
+        {
+            order = await ordersService.GetOrderByIdAsync(searchOrderId);
+            
+            if (order == null)
+            {
+                orderNotFound = true;
+            }
+            else
+            {
+                // Update URL without reloading
+                navigationManager.NavigateTo($"/vieworder/{searchOrderId}", replace: true);
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = ex.Message;
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private async Task HandleKeyDown(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter")
+        {
+            await SearchOrderAsync();
+        }
+    }
+}
