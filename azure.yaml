@@ -2,16 +2,16 @@
 
 name: azure-logicapps-monitoring
 
-# infra:
-#     provider: bicep
-#     path: ./infra/
-#     module: main
+infra:
+    provider: bicep
+    path: ./infra/
+    module: main
 
-# hooks:
-#     postprovision:
-#         shell: pwsh
-#         run: |
-#             .\hooks\postprovision.ps1 
+hooks:
+    postprovision:
+        shell: pwsh
+        run: |
+            .\hooks\postprovision.ps1 
 
 services:
     app:

@@ -146,7 +146,7 @@ resource appEnv 'Microsoft.App/managedEnvironments@2025-02-02-preview' = {
 }
 
 @description('.NET Aspire dashboard component for application observability')
-resource dashboard 'Microsoft.App/managedEnvironments/dotNetComponents@2025-02-02-preview' = {
+resource dashboard 'Microsoft.App/managedEnvironments/dotNetComponents@2025-10-02-preview' = {
   parent: appEnv
   name: 'aspire-dashboard'
   properties: {
