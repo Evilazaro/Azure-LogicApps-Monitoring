@@ -9,8 +9,15 @@
 
 <textarea class="form-control" rows="5" placeholder="Enter order details here..."></textarea>
 
-<button class="btn btn-primary">Place Order</button>
+<button class="btn btn-primary" onclick="WeatherForecasts()">Place Order</button>
 
 @code {
-
+    async Task WeatherForecasts()
+    {
+        // TODO: Replace with actual order service call
+        // Example: await OrderService.PlaceOrderAsync(orderDetails);
+        
+        // Placeholder for backend service call
+        await Task.CompletedTask;
+    }
 }

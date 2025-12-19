@@ -1,4 +1,5 @@
 using eShop.Web.App.Components;
+using eShop.Web.App.Components.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -8,9 +9,11 @@ builder.AddServiceDefaults();
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 
-builder.Services.AddHttpClient("eShop.Web.Api", client =>
+builder.Services.AddHttpClient<OrdersService>(client =>
 {
-    client.BaseAddress = new Uri(builder.Configuration["ApiBaseAddress"] ?? throw new InvalidOperationException("ApiBaseAddress configuration is missing."));
+    var baseAddress = builder.Configuration["services:orders-api:https:0"] ?? "https://localhost:7001";
+    client.BaseAddress = new Uri(baseAddress);
+    client.DefaultRequestHeaders.Add("Accept", "application/json");
 });
 
 var app = builder.Build();
