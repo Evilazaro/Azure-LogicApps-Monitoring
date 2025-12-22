@@ -52,8 +52,10 @@ public static class Extensions
             .WithTracing(tracing =>
             {
                 tracing.AddSource(builder.Environment.ApplicationName)
-                    .AddAspNetCoreInstrumentation(tracing =>
-                        tracing.Filter = context =>
+                    .AddSource("eShop.Orders.API")
+                    .AddSource("eShop.Web.App")
+                    .AddAspNetCoreInstrumentation(options =>
+                        options.Filter = context =>
                             !context.Request.Path.StartsWithSegments(HealthEndpointPath)
                             && !context.Request.Path.StartsWithSegments(AlivenessEndpointPath)
                     )
@@ -102,20 +104,35 @@ public static class Extensions
 
     public static IHostApplicationBuilder AddAzureServiceBusClient(this IHostApplicationBuilder builder)
     {
-        var messagingHostName = builder.Configuration["MESSAGING_HOST"]
-                          ?? throw new InvalidOperationException("Service Bus is not configured");
+        ArgumentNullException.ThrowIfNull(builder);
 
-        builder.Services.AddSingleton(serviceProvider =>
+        var messagingHostName = builder.Configuration["MESSAGING_HOST"]
+                          ?? throw new InvalidOperationException("Service Bus is not configured. MESSAGING_HOST configuration is missing.");
+
+        builder.Services.AddSingleton<ServiceBusClient>(serviceProvider =>
         {
-            if (messagingHostName == "localhost")
+            var logger = serviceProvider.GetRequiredService<ILogger<ServiceBusClient>>();
+
+            try
             {
-                return new ServiceBusClient(builder.Configuration["MESSAGING_CONNECTIONSTRING"]);
+                if (messagingHostName.Equals("localhost", StringComparison.OrdinalIgnoreCase))
+                {
+                    var connectionString = builder.Configuration["MESSAGING_CONNECTIONSTRING"]
+                        ?? throw new InvalidOperationException("MESSAGING_CONNECTIONSTRING is required for localhost mode");
+                    logger.LogInformation("Configuring Service Bus client for local emulator");
+                    return new ServiceBusClient(connectionString);
+                }
+                else
+                {
+                    logger.LogInformation("Configuring Service Bus client for Azure with managed identity");
+                    var credential = new DefaultAzureCredential();
+                    return new ServiceBusClient(messagingHostName, credential);
+                }
             }
-            else
+            catch (Exception ex)
             {
-                var credential = new DefaultAzureCredential();
-                var fullyQualifiedName = builder.Configuration["MESSAGING_HOST"];
-                return new ServiceBusClient(fullyQualifiedName, credential);
+                logger.LogError(ex, "Failed to create Service Bus client");
+                throw;
             }
         });
 

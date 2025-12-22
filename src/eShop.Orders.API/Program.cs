@@ -12,11 +12,14 @@ builder.Services.AddScoped<IOrderService, OrderService>();
 builder.Services.AddScoped<IOrdersMessageHandler, OrdersMessageHandler>();
 
 builder.Services.AddControllers();
-// Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
+
+// Configure OpenAPI/Swagger
 builder.Services.AddOpenApi();
 builder.Services.AddSwaggerGen();
 builder.Services.AddEndpointsApiExplorer();
-var sbClient = builder.AddAzureServiceBusClient();
+
+// Add Azure Service Bus client
+builder.AddAzureServiceBusClient();
 
 var app = builder.Build();
 
@@ -34,6 +37,10 @@ if (app.Environment.IsDevelopment())
     });
     app.MapSwagger();
     app.UseDeveloperExceptionPage();
+}
+else
+{
+    app.UseExceptionHandler("/error");
 }
 
 app.UseHttpsRedirection();
