@@ -22,7 +22,6 @@ Key capabilities include automated Infrastructure-as-Code provisioning via Bicep
   - [Client Layer](#client-layer)
   - [Presentation Layer](#presentation-layer)
   - [Application Layer](#application-layer)
-  - [Messaging Layer](#messaging-layer)
   - [Data Layer](#data-layer)
   - [Technology Layer](#technology-layer)
   - [Monitoring Layer](#monitoring-layer)
@@ -90,22 +89,44 @@ Key capabilities include automated Infrastructure-as-Code provisioning via Bicep
 │           └── main.bicep
 └── src/
     ├── eShop.Orders.API/
+    │   ├── eShop.Orders.API.csproj
+    │   ├── Program.cs
+    │   ├── Controllers/
+    │   │   ├── OrdersController.cs
+    │   │   └── WeatherForecastController.cs
+    │   ├── Handlers/
+    │   │   └── OrdersMessageHandler.cs
+    │   ├── Interfaces/
+    │   │   └── IOrderRepository.cs
+    │   ├── Repositories/
+    │   │   └── OrderRepository.cs
+    │   └── Services/
+    │       ├── Interfaces/
+    │       │   └── IOrderService.cs
+    │       └── OrderService.cs
     └── eShop.Web.App/
+        ├── eShop.Web.App.csproj
+        ├── Program.cs
         ├── Components/
+        │   ├── App.razor
         │   ├── Layout/
-        │   │   └── MainLayout.razor
+        │   │   ├── MainLayout.razor
+        │   │   └── NavMenu.razor
         │   ├── Pages/
         │   │   ├── Error.razor
         │   │   ├── Home.razor
         │   │   ├── ListAllOrders.razor
+        │   │   ├── PlaceOrder.razor
+        │   │   ├── PlaceOrdersBatch.razor
         │   │   ├── ViewOrder.razor
         │   │   └── WeatherForecasts.razor
         │   ├── Routes.razor
         │   ├── Shared/
+        │   │   ├── LoadingCard.razor
         │   │   └── PageHeader.razor
         │   └── Services/
         │       └── OrdersAPIService.cs
-        └── Program.cs
+        └── wwwroot/
 ```
 
 ---
@@ -151,16 +172,9 @@ The Presentation Layer implements the user interface using Blazor Server with Fl
 ```mermaid
 graph TD
     subgraph PresentationLayer["🎨 Presentation Layer"]
-        BlazorApp["Blazor Server App<br/>(eShop.Web.App)"]
-        RazorComponents["Razor Components<br/>(Pages & Shared)"]
-        FluentUI["Fluent UI Components<br/>(Design System)"]
+        BlazorApp["eShop.Web.App<br/>(Blazor Server)"]
         OrdersAPIService["OrdersAPIService<br/>(HTTP Client)"]
     end
-
-    %% Internal connections
-    BlazorApp --> RazorComponents
-    RazorComponents --> FluentUI
-    RazorComponents --> OrdersAPIService
 
     %% Interactions with Client Layer
     ClientLayer["🖥️ Client Layer"] -->|"HTTPS/WSS"| BlazorApp
@@ -170,110 +184,93 @@ graph TD
     OrdersAPIService -->|"HTTP/HTTPS"| ApplicationLayer["⚙️ Application Layer"]
     ApplicationLayer -->|"JSON Response"| OrdersAPIService
 
+    %% Internal connection
+    BlazorApp --> OrdersAPIService
+
     %% Interactions with Monitoring Layer
     BlazorApp -.->|"Telemetry & Traces"| MonitoringLayer["📊 Monitoring Layer"]
 
     style PresentationLayer fill:#fff3e0,stroke:#f57c00,stroke-width:3px
     style BlazorApp fill:#ffffff,stroke:#f57c00
-    style RazorComponents fill:#ffffff,stroke:#f57c00
-    style FluentUI fill:#ffffff,stroke:#f57c00
     style OrdersAPIService fill:#ffffff,stroke:#f57c00
 ```
 
 **Key Components:**
-- eShop.Web.App/Program.cs - Application entry point
-- MainLayout.razor - Layout component
-- Home.razor - Landing page
-- OrdersAPIService.cs - API client
+- [eShop.Web.App/Program.cs](src/eShop.Web.App/Program.cs) - Application entry point
+- [MainLayout.razor](src/eShop.Web.App/Components/Layout/MainLayout.razor) - Layout component
+- [Home.razor](src/eShop.Web.App/Components/Pages/Home.razor) - Landing page
+- [OrdersAPIService.cs](src/eShop.Web.App/Components/Services/OrdersAPIService.cs) - API client
 
 ---
 
 ### Application Layer
 
-The Application Layer contains business logic, orchestration, and API endpoints.
+The Application Layer contains business logic, orchestration, API endpoints, and messaging infrastructure.
 
 ```mermaid
 graph TD
     subgraph ApplicationLayer["⚙️ Application Layer"]
-        OrdersAPI["Orders API<br/>(eShop.Orders.API)"]
-        OrderService["Order Service<br/>(Business Logic)"]
-        OrderRepository["Order Repository<br/>(Data Access)"]
         AppHost[".NET Aspire AppHost<br/>(Orchestration)"]
+        OrdersAPI["Orders API<br/>(eShop.Orders.API)"]
         ServiceDefaults["Service Defaults<br/>(OpenTelemetry Config)"]
+        OrderService["Order Service<br/>(Business Logic)"]
         MessageHandler["Orders Message Handler<br/>(Service Bus Client)"]
+        OrderRepository["Order Repository<br/>(Data Access)"]
+        
+        subgraph Messaging["📨 Messaging"]
+            ServiceBus["Azure Service Bus<br/>(Premium Tier)"]
+            OrdersTopic["OrdersPlaced Topic<br/>(Pub/Sub)"]
+            Subscription["Order Processing<br/>Subscription"]
+            DeadLetterQueue["Dead Letter Queue<br/>(Failed Messages)"]
+        end
     end
 
     %% Internal connections
+    AppHost -.->|"Orchestrates"| OrdersAPI
+    OrdersAPI -.->|"Uses Config"| ServiceDefaults
     OrdersAPI --> OrderService
     OrderService --> OrderRepository
     OrdersAPI --> MessageHandler
-    AppHost -.->|"Orchestrates"| OrdersAPI
-    OrdersAPI -.->|"Uses Config"| ServiceDefaults
+    
+    %% Messaging internal connections
+    ServiceBus --> OrdersTopic
+    OrdersTopic --> Subscription
+    Subscription -.->|"Failed Messages"| DeadLetterQueue
+    
+    %% Application to Messaging connections
+    MessageHandler -->|"Publish Order Events"| OrdersTopic
 
     %% Interactions with Presentation Layer
     PresentationLayer["🎨 Presentation Layer"] -->|"HTTP GET/POST"| OrdersAPI
     OrdersAPI -->|"JSON Response"| PresentationLayer
 
-    %% Interactions with Messaging Layer
-    MessageHandler -->|"Publish Messages"| MessagingLayer["📨 Messaging Layer"]
+    %% Interactions with Technology Layer
+    Subscription -->|"Trigger Workflow"| TechnologyLayer["🏗️ Technology Layer"]
 
     %% Interactions with Monitoring Layer
     ServiceDefaults -.->|"Telemetry Export"| MonitoringLayer["📊 Monitoring Layer"]
     OrdersAPI -.->|"Traces & Metrics"| MonitoringLayer
+    ServiceBus -.->|"Diagnostics & Metrics"| MonitoringLayer
 
     style ApplicationLayer fill:#f3e5f5,stroke:#7b1fa2,stroke-width:3px
-    style OrdersAPI fill:#ffffff,stroke:#7b1fa2
-    style OrderService fill:#ffffff,stroke:#7b1fa2
-    style OrderRepository fill:#ffffff,stroke:#7b1fa2
     style AppHost fill:#ffffff,stroke:#7b1fa2
+    style OrdersAPI fill:#ffffff,stroke:#7b1fa2
     style ServiceDefaults fill:#ffffff,stroke:#7b1fa2
+    style OrderService fill:#ffffff,stroke:#7b1fa2
     style MessageHandler fill:#ffffff,stroke:#7b1fa2
-```
-
-**Key Components:**
-- eShop.Orders.API/Program.cs - API configuration
-- AppHost.cs - Aspire orchestration
-- Extensions.cs - OpenTelemetry setup
-
----
-
-### Messaging Layer
-
-The Messaging Layer provides reliable asynchronous communication using Azure Service Bus.
-
-```mermaid
-graph TD
-    subgraph MessagingLayer["📨 Messaging Layer"]
-        ServiceBus["Azure Service Bus<br/>(Premium Tier)"]
-        OrdersTopic["OrdersPlaced Topic<br/>(Pub/Sub)"]
-        Subscription["Order Processing<br/>Subscription"]
-        DeadLetterQueue["Dead Letter Queue<br/>(Failed Messages)"]
-    end
-
-    %% Internal connections
-    ServiceBus --> OrdersTopic
-    OrdersTopic --> Subscription
-    Subscription -.->|"Failed Messages"| DeadLetterQueue
-
-    %% Interactions with Application Layer
-    ApplicationLayer["⚙️ Application Layer"] -->|"Publish Order Events"| OrdersTopic
-    
-    %% Interactions with Technology Layer
-    Subscription -->|"Trigger Workflow"| TechnologyLayer["🏗️ Technology Layer"]
-    TechnologyLayer -->|"ACK/NACK"| Subscription
-
-    %% Interactions with Monitoring Layer
-    ServiceBus -.->|"Diagnostics & Metrics"| MonitoringLayer["📊 Monitoring Layer"]
-
-    style MessagingLayer fill:#e8f5e9,stroke:#2e7d32,stroke-width:3px
+    style OrderRepository fill:#ffffff,stroke:#7b1fa2
+    style Messaging fill:#e8f5e9,stroke:#2e7d32,stroke-width:2px
     style ServiceBus fill:#ffffff,stroke:#2e7d32
     style OrdersTopic fill:#ffffff,stroke:#2e7d32
     style Subscription fill:#ffffff,stroke:#2e7d32
     style DeadLetterQueue fill:#ffffff,stroke:#2e7d32
 ```
 
-**Key Resources:**
-- messaging/main.bicep - Service Bus deployment
+**Key Components:**
+- [eShop.Orders.API/Program.cs](src/eShop.Orders.API/Program.cs) - API configuration
+- [AppHost.cs](app.AppHost/AppHost.cs) - Aspire orchestration
+- [Extensions.cs](app.ServiceDefaults/Extensions.cs) - OpenTelemetry setup
+- [messaging/main.bicep](infra/workload/messaging/main.bicep) - Service Bus deployment
 - Service Bus Premium with 16 messaging units
 - Topic-based publish/subscribe pattern
 - 10 max delivery attempts with 5-minute lock duration
@@ -315,7 +312,7 @@ graph TD
 ```
 
 **Key Resources:**
-- messaging/main.bicep - Storage deployment
+- [messaging/main.bicep](infra/workload/messaging/main.bicep) - Storage deployment
 - Segregated containers for success/error processing
 - Hot access tier for frequent access
 - TLS 1.2 minimum encryption
@@ -350,9 +347,9 @@ graph TD
     %% Interactions with Application Layer
     ContainerApps -->|"Hosts"| ApplicationLayer["⚙️ Application Layer"]
 
-    %% Interactions with Messaging Layer
-    LogicApps -->|"Consumes Messages"| MessagingLayer["📨 Messaging Layer"]
-    ManagedIdentity -.->|"Auth to"| MessagingLayer
+    %% Interactions with Application Layer Messaging
+    LogicApps -->|"Consumes Messages"| Messaging["📨 Messaging (Application Layer)"]
+    ManagedIdentity -.->|"Auth to"| Messaging
 
     %% Interactions with Data Layer
     LogicApps -->|"Reads/Writes"| DataLayer["💾 Data Layer"]
@@ -373,9 +370,9 @@ graph TD
 ```
 
 **Key Resources:**
-- services/main.bicep - Container infrastructure
-- logic-app.bicep - Logic Apps deployment
-- identity/main.bicep - Managed identity
+- [services/main.bicep](infra/workload/services/main.bicep) - Container infrastructure
+- [logic-app.bicep](infra/workload/logic-app.bicep) - Logic Apps deployment
+- [identity/main.bicep](infra/workload/identity/main.bicep) - Managed identity
 - Elastic scaling: 3-20 instances for Logic Apps
 
 ---
@@ -404,7 +401,7 @@ graph TD
     ClientLayer["🖥️ Client Layer"] -.->|"Browser Telemetry"| AppInsights
     PresentationLayer["🎨 Presentation Layer"] -.->|"Server Traces"| AppInsights
     ApplicationLayer["⚙️ Application Layer"] -.->|"API Telemetry"| AppInsights
-    MessagingLayer["📨 Messaging Layer"] -.->|"Service Bus Metrics"| DiagnosticSettings
+    Messaging["📨 Messaging (Application Layer)"] -.->|"Service Bus Metrics"| DiagnosticSettings
     DataLayer["💾 Data Layer"] -.->|"Storage Analytics"| DiagnosticSettings
     TechnologyLayer["🏗️ Technology Layer"] -.->|"Platform Logs"| DiagnosticSettings
 
@@ -420,9 +417,9 @@ graph TD
 ```
 
 **Key Resources:**
-- monitoring/main.bicep - Monitoring orchestration
-- app-insights.bicep - Application Insights
-- log-analytics-workspace.bicep - Log Analytics
+- [monitoring/main.bicep](infra/monitoring/main.bicep) - Monitoring orchestration
+- [app-insights.bicep](infra/monitoring/app-insights.bicep) - Application Insights
+- [log-analytics-workspace.bicep](infra/monitoring/log-analytics-workspace.bicep) - Log Analytics
 - 30-day retention with automatic log deletion
 
 ---
@@ -513,7 +510,7 @@ azd up
 ```
 
 This command:
-1. **Provisions Azure resources** via main.bicep
+1. **Provisions Azure resources** via [main.bicep](infra/main.bicep)
 2. **Builds container images** for microservices
 3. **Deploys to Azure Container Apps**
 4. **Configures Logic Apps workflows**
@@ -521,7 +518,7 @@ This command:
 
 ### Post-Deployment Configuration
 
-After deployment completes, the postprovision.ps1 hook automatically:
+After deployment completes, the [postprovision.ps1](hooks/postprovision.ps1) hook automatically:
 - Configures .NET user secrets with Azure resource information
 - Authenticates to Azure Container Registry
 - Updates connection strings for Application Insights and Service Bus
@@ -598,7 +595,7 @@ Access at `http://localhost:15888` when running locally.
 
 ### Diagnostic Settings
 
-All Azure resources are configured with diagnostic settings via monitoring to send:
+All Azure resources are configured with diagnostic settings via [monitoring](infra/monitoring) to send:
 - **All Logs**: Category group `allLogs`
 - **All Metrics**: Category group `allMetrics`
 
@@ -606,7 +603,7 @@ Data flows to both Log Analytics workspace and long-term storage accounts.
 
 ### Health Monitoring
 
-Health checks are implemented in Extensions.cs:
+Health checks are implemented in [Extensions.cs](app.ServiceDefaults/Extensions.cs):
 - `/health` - Comprehensive health check endpoint
 - `/alive` - Liveness probe endpoint
 
@@ -640,7 +637,7 @@ Container Apps automatically uses these for health monitoring.
 
 ## Contributing
 
-We welcome contributions! Please see CONTRIBUTING.md for guidelines on:
+We welcome contributions! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines on:
 
 - Reporting issues
 - Submitting pull requests
@@ -653,13 +650,13 @@ This project follows the Microsoft Open Source Code of Conduct.
 
 ### Security
 
-For security vulnerabilities, please see SECURITY.md for responsible disclosure procedures.
+For security vulnerabilities, please see [SECURITY.md](SECURITY.md) for responsible disclosure procedures.
 
 ---
 
 ## License
 
-This project is licensed under the **MIT License**. See LICENSE for full details.
+This project is licensed under the **MIT License**. See [LICENSE](LICENSE) for full details.
 
 ---
 
