@@ -107,7 +107,7 @@ public static class Extensions
         ArgumentNullException.ThrowIfNull(builder);
 
         var messagingHostName = builder.Configuration["MESSAGING_HOST"]
-                          ?? throw new InvalidOperationException("Service Bus is not configured. MESSAGING_HOST configuration is missing.");
+                          ?? builder.Configuration["Azure:ServiceBus:HostName"];
 
         builder.Services.AddSingleton<ServiceBusClient>(serviceProvider =>
         {
