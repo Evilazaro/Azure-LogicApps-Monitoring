@@ -1,17 +1,49 @@
 ﻿using app.ServiceDefaults.CommonTypes;
 using Azure.Messaging.ServiceBus;
-using eShop.Orders.API.Services.Interfaces;
+using eShop.Orders.API.Interfaces;
 
 namespace eShop.Orders.API.Handlers
 {
-    public class OrdersMessageHandler
+    public class OrdersMessageHandler : IOrdersMessageHandler
     {
-        private readonly ServiceBusClient _client;
+        private readonly ILogger _logger;
+        private readonly ServiceBusClient _seviceBusClient;
+        private readonly string _topicName = "OrdersPlaced";
 
-        public OrdersMessageHandler(ServiceBusClient client)
+        public OrdersMessageHandler(ILogger<IOrdersMessageHandler> logger, ServiceBusClient serviceBusClient)
         {
-            _client = client;
+            _logger = logger;
+            _seviceBusClient = serviceBusClient;
         }
 
+        public async Task SendOrderMessageAsync(Order order, CancellationToken cancellationToken)
+        {
+            var sender = _seviceBusClient.CreateSender(_topicName);
+            var message = new ServiceBusMessage(System.Text.Json.JsonSerializer.Serialize(order));
+            await sender.SendMessageAsync(message, cancellationToken);
+        }
+
+        public async Task SendOrdersBatchMessageAsync(IEnumerable<Order> orders, CancellationToken cancellationToken)
+        {
+            var sender = _seviceBusClient.CreateSender("orders-topic");
+            var messages = orders.Select(order => new ServiceBusMessage(System.Text.Json.JsonSerializer.Serialize(order))).ToList();
+            await sender.SendMessagesAsync(messages, cancellationToken);
+        }
+
+        public async Task GetOrderMessageAsync()
+        {
+            var receiver = _seviceBusClient.CreateReceiver("orders-topic", "orders-subscription");
+            var message = await receiver.ReceiveMessageAsync();
+            if (message != null)
+            {
+                var order = System.Text.Json.JsonSerializer.Deserialize<Order>(message.Body.ToString());
+                await receiver.CompleteMessageAsync(message);
+            }
+        }
+
+        public async Task CloseAsync()
+        {
+            await _seviceBusClient.DisposeAsync();
+        }
     }
 }

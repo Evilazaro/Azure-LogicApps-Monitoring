@@ -1,3 +1,6 @@
+using Azure.Identity;
+using Azure.Messaging.ServiceBus;
+using Azure.Monitor.OpenTelemetry.Exporter;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.Extensions.DependencyInjection;
@@ -6,10 +9,6 @@ using Microsoft.Extensions.Logging;
 using OpenTelemetry;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Trace;
-using Azure.Monitor.OpenTelemetry.Exporter;
-using Microsoft.Extensions.Configuration;
-using Azure.Messaging.ServiceBus;
-using Azure.Identity;
 
 namespace Microsoft.Extensions.Hosting;
 
@@ -108,7 +107,7 @@ public static class Extensions
 
         builder.Services.AddSingleton(serviceProvider =>
         {
-            if (messagingHostName == "messaging")
+            if (messagingHostName == "localhost")
             {
                 return new ServiceBusClient(builder.Configuration["MESSAGING_CONNECTIONSTRING"]);
             }

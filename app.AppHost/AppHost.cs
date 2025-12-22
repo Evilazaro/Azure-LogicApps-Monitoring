@@ -1,5 +1,3 @@
-using Aspire.Hosting;
-
 var builder = DistributedApplication.CreateBuilder(args);
 
 // =============================================================================
@@ -43,7 +41,7 @@ static void ConfigureApplicationInsights(
     params IResourceBuilder<ProjectResource>[] projects)
 {
     var appInsightsConnString = builder.Configuration["ApplicationInsights:ConnectionString"];
-    
+
     if (string.IsNullOrWhiteSpace(appInsightsConnString))
     {
         return;
@@ -66,15 +64,15 @@ static void ConfigureServiceBus(
     var sbHostName = builder.Configuration["Azure:ServiceBus:HostName"] ?? DefaultConnectionStringName;
     var sbTopicName = builder.Configuration["Azure:ServiceBus:TopicName"] ?? DefaultTopicName;
     var sbSubscriptionName = builder.Configuration["Azure:ServiceBus:SubscriptionName"] ?? DefaultSubscriptionName;
-    
+
     // Determine if we're running in local emulator mode or Azure mode
     var isLocalMode = string.IsNullOrWhiteSpace(sbHostName) || sbHostName == DefaultConnectionStringName;
-    var resourceName = isLocalMode ? DefaultConnectionStringName  : sbHostName;
+    var resourceName = isLocalMode ? DefaultConnectionStringName : sbHostName;
 
     // Create Service Bus resource
     var serviceBusResource = builder.AddAzureServiceBus(resourceName);
     var serviceBusTopic = serviceBusResource.AddServiceBusTopic(sbTopicName);
-    var serviceBus = serviceBusTopic.AddServiceBusSubscription(sbSubscriptionName);
+    var serviceBusSubscription = serviceBusTopic.AddServiceBusSubscription(sbSubscriptionName);
 
     // Configure emulator for local development
     if (isLocalMode)

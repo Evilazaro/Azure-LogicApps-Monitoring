@@ -1,5 +1,7 @@
 using eShop.Orders.API.Services;
 using eShop.Orders.API.Services.Interfaces;
+using eShop.Orders.API.Handlers;
+using eShop.Orders.API.Interfaces;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -7,6 +9,7 @@ builder.AddServiceDefaults();
 
 // Add services to the container.
 builder.Services.AddScoped<IOrderService, OrderService>();
+builder.Services.AddScoped<IOrdersMessageHandler, OrdersMessageHandler>();
 
 builder.Services.AddControllers();
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi

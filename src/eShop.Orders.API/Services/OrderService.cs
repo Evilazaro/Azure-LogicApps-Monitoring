@@ -1,4 +1,7 @@
 ﻿using app.ServiceDefaults.CommonTypes;
+using Azure.Messaging.ServiceBus;
+using eShop.Orders.API.Handlers;
+using eShop.Orders.API.Interfaces;
 using eShop.Orders.API.Services.Interfaces;
 using System.Text.Json;
 
@@ -8,10 +11,13 @@ public class OrderService : IOrderService
 {
     private readonly ILogger<OrderService> _logger;
     private static readonly List<Order> _orders = new();
+    private readonly OrdersMessageHandler _ordersMessageHandler;
 
-    public OrderService(ILogger<OrderService> logger)
+    public OrderService(ILogger<OrderService> logger, ServiceBusClient serviceBusClient)
     {
         _logger = logger;
+        var _loggerHandler = new LoggerFactory().CreateLogger<IOrdersMessageHandler>();
+        _ordersMessageHandler = new OrdersMessageHandler(_loggerHandler, serviceBusClient);
     }
 
     public Task<Order> PlaceOrderAsync(Order order, CancellationToken cancellationToken = default)
@@ -29,6 +35,7 @@ public class OrderService : IOrderService
         }
 
         _orders.Add(order);
+        _ordersMessageHandler.SendOrderMessageAsync(order,cancellationToken).GetAwaiter().GetResult();
         _logger.LogInformation("Order {OrderId} placed successfully", order.Id);
 
         return Task.FromResult(order);
