@@ -61,25 +61,38 @@ static void ConfigureServiceBus(
     const string DefaultTopicName = "OrdersPlaced";
     const string DefaultSubscriptionName = "OrderProcessingSubscription";
 
-    var sbHostName = builder.Configuration["Azure:ServiceBus:HostName"] ?? DefaultConnectionStringName;
+    var sbHostName = builder.Configuration["Azure:ServiceBus:HostName"] ?? "";
     var sbTopicName = builder.Configuration["Azure:ServiceBus:TopicName"] ?? DefaultTopicName;
     var sbSubscriptionName = builder.Configuration["Azure:ServiceBus:SubscriptionName"] ?? DefaultSubscriptionName;
 
     // Determine if we're running in local emulator mode or Azure mode
-    var isLocalMode = string.IsNullOrWhiteSpace(sbHostName) || sbHostName == DefaultConnectionStringName;
+    var isLocalMode = string.IsNullOrWhiteSpace(sbHostName);
     var resourceName = isLocalMode ? DefaultConnectionStringName : sbHostName;
 
     // Create Service Bus resource
-    var serviceBusResource = builder.AddAzureServiceBus(resourceName);
-    var serviceBusTopic = serviceBusResource.AddServiceBusTopic(sbTopicName);
-    var serviceBusSubscription = serviceBusTopic.AddServiceBusSubscription(sbSubscriptionName);
 
-    // Configure emulator for local development
     if (isLocalMode)
     {
+        var serviceBusResource = builder.AddAzureServiceBus(DefaultConnectionStringName);
+        var serviceBusTopic = serviceBusResource.AddServiceBusTopic(sbTopicName);
+        var serviceBusSubscription = serviceBusTopic.AddServiceBusSubscription(sbSubscriptionName);
+        
         serviceBusResource.RunAsEmulator();
+
+        // Add Service Bus reference to orders API with configuration
+        ordersAPI.WithReference(serviceBusResource);
+    }
+    else 
+    {
+        var sbParam = builder.AddParameter("messaging", resourceName);
+        var sbResourceGroupParam = builder.AddParameterFromConfiguration("resourceGroup", "Azure:ResourceGroup");
+        var serviceBusResource = builder.AddAzureServiceBus(resourceName).RunAsExisting(sbParam, sbResourceGroupParam);
+        
+        var serviceBusTopic = serviceBusResource.AddServiceBusTopic(sbTopicName);
+        var serviceBusSubscription = serviceBusTopic.AddServiceBusSubscription(sbSubscriptionName);
+
+        // Add Service Bus reference to orders API with configuration
+        ordersAPI.WithReference(serviceBusResource);
     }
 
-    // Add Service Bus reference to orders API with configuration
-    ordersAPI.WithReference(serviceBusResource);
 }
