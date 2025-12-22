@@ -7,6 +7,9 @@ using OpenTelemetry;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Trace;
 using Azure.Monitor.OpenTelemetry.Exporter;
+using Microsoft.Extensions.Configuration;
+using Azure.Messaging.ServiceBus;
+using Azure.Identity;
 
 namespace Microsoft.Extensions.Hosting;
 
@@ -97,6 +100,33 @@ public static class Extensions
 
         return builder;
     }
+
+    public static IHostApplicationBuilder AddAzureServiceBus(this IHostApplicationBuilder builder)
+    {
+        builder.Services.AddSingleton(serviceProvider =>
+        {
+            // Read from configuration hierarchy (appsettings.json -> user secrets -> environment variables)
+            var sbHostName = builder.Configuration["Azure:ServiceBus:HostName"]
+                          ?? builder.Configuration["messaging"]
+                          ?? throw new InvalidOperationException("Service Bus hostname not configured");
+
+            // For local development with Aspire emulator, check if it's a connection string
+            if (sbHostName.Contains("Endpoint="))
+            {
+                return new ServiceBusClient(sbHostName);
+            }
+
+            // For Azure deployment, construct the fully qualified namespace and use DefaultAzureCredential
+            var fullyQualifiedNamespace = sbHostName.Contains(".servicebus.windows.net")
+                ? sbHostName
+                : $"{sbHostName}.servicebus.windows.net";
+
+            return new ServiceBusClient(fullyQualifiedNamespace, new DefaultAzureCredential());
+        });
+
+        return builder;
+    }
+
 
     public static WebApplication MapDefaultEndpoints(this WebApplication app)
     {
