@@ -35,7 +35,7 @@ public class OrderService : IOrderService
         }
 
         _orders.Add(order);
-        _ordersMessageHandler.SendOrderMessageAsync(order,cancellationToken).GetAwaiter().GetResult();
+        _ordersMessageHandler.SendOrderMessageAsync(order, cancellationToken).GetAwaiter().GetResult();
         _logger.LogInformation("Order {OrderId} placed successfully", order.Id);
 
         return Task.FromResult(order);

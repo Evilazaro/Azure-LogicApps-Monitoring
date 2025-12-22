@@ -1,7 +1,7 @@
-using eShop.Orders.API.Services;
-using eShop.Orders.API.Services.Interfaces;
 using eShop.Orders.API.Handlers;
 using eShop.Orders.API.Interfaces;
+using eShop.Orders.API.Services;
+using eShop.Orders.API.Services.Interfaces;
 
 var builder = WebApplication.CreateBuilder(args);
 
