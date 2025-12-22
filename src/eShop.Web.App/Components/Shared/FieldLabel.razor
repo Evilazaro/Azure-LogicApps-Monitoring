@@ -1,0 +1,25 @@
+@using Microsoft.FluentUI.AspNetCore.Components
+
+<FluentLabel Typo="Typography.Body" Style="@StyleValue">
+    @Label
+    @if (Required)
+    {
+        <span style="color: var(--error);">*</span>
+    }
+</FluentLabel>
+
+@code {
+    [Parameter, EditorRequired]
+    public string Label { get; set; } = string.Empty;
+
+    [Parameter]
+    public bool Required { get; set; }
+
+    [Parameter]
+    public bool IsBold { get; set; } = true;
+
+    [Parameter]
+    public string FontSize { get; set; } = "13px";
+
+    private string StyleValue => $"font-size: {FontSize};{(IsBold ? " font-weight: 600;" : string.Empty)}";
+}

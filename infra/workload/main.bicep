@@ -69,14 +69,14 @@ param tags tagsType
 
 // ========== Variables ==========
 
-var allLogsSettings = [
+var allLogsSettings object[] = [
   {
     categoryGroup: 'allLogs'
     enabled: true
   }
 ]
 
-var allMetricsSettings = [
+var allMetricsSettings object[] = [
   {
     categoryGroup: 'allMetrics'
     enabled: true

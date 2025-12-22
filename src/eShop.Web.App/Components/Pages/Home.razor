@@ -1,0 +1,302 @@
+﻿@page "/"
+@using Microsoft.FluentUI.AspNetCore.Components
+@using eShop.Web.App.Components.Shared
+@using eShop.Web.App.Shared
+@inject NavigationManager navigationManager
+
+<PageTitle>eShop Orders Management - Home</PageTitle>
+
+<!-- Hero Section -->
+<FluentStack Orientation="Orientation.Vertical" VerticalGap="0" Class="hero-section">
+    <FluentStack Orientation="Orientation.Vertical" VerticalGap="@(int.Parse(FluentDesignSystem.Spacing.XLarge))"
+        Style="padding: 4rem 2rem; text-align: center; background: linear-gradient(135deg, var(--accent-fill-rest) 0%, var(--accent-fill-active) 100%); color: white;">
+        <FluentStack Orientation="Orientation.Vertical" VerticalGap="@(int.Parse(FluentDesignSystem.Spacing.Medium))">
+            <FluentLabel Typo="Typography.H2" Style="font-size: 3rem; font-weight: 700; color: white;">
+                Welcome to eShop Orders Management
+            </FluentLabel>
+            <FluentLabel Typo="Typography.Body"
+                Style="font-size: 1.5rem; color: rgba(255, 255, 255, 0.9); max-width: 700px; margin: 0 auto;">
+                Streamline your order processing with our comprehensive, cloud-powered management platform
+            </FluentLabel>
+        </FluentStack>
+
+        <FluentStack Orientation="Orientation.Horizontal"
+            HorizontalGap="@(int.Parse(FluentDesignSystem.Spacing.Medium))"
+            HorizontalAlignment="HorizontalAlignment.Center" Wrap="true">
+            <FluentButton Appearance="Appearance.Lightweight"
+                OnClick="@(() => navigationManager.NavigateTo("/vieworder"))"
+                Style="background: white; color: var(--accent-fill-rest); font-weight: 600; font-size: 1.1rem; padding: 1rem 2rem;">
+                🔍 View Orders
+            </FluentButton>
+            <FluentButton Appearance="Appearance.Outline"
+                Style="border-color: white; color: white; font-weight: 600; font-size: 1.1rem; padding: 1rem 2rem;">
+                ℹ️ Learn More
+            </FluentButton>
+        </FluentStack>
+    </FluentStack>
+</FluentStack>
+
+<!-- Key Features Section -->
+<FluentStack Orientation="Orientation.Vertical" VerticalGap="@(int.Parse(FluentDesignSystem.Spacing.XXLarge))"
+    Style="padding: 4rem 2rem; max-width: 1400px; margin: 0 auto;">
+
+    <!-- Section Header -->
+    <FluentStack Orientation="Orientation.Vertical" VerticalGap="@(int.Parse(FluentDesignSystem.Spacing.Small))"
+        Style="text-align: center;">
+        <FluentLabel Typo="Typography.H3"
+            Style="font-size: 2.5rem; font-weight: 700; color: var(--neutral-foreground-rest);">
+            Powerful Features for Modern Order Management
+        </FluentLabel>
+        <FluentLabel Typo="Typography.Body"
+            Style="font-size: 1.2rem; color: var(--neutral-foreground-hint); max-width: 800px; margin: 0 auto;">
+            Built with cutting-edge technology to deliver reliability, scalability, and performance
+        </FluentLabel>
+    </FluentStack>
+
+    <!-- Features Grid -->
+    <div class="features-grid">
+        <!-- Feature 1: Real-time Order Tracking -->
+        <FluentCard Style="padding: 2rem; height: 100%; animation: fadeInUp 0.6s ease-out;">
+            <FluentStack Orientation="Orientation.Vertical"
+                VerticalGap="@(int.Parse(FluentDesignSystem.Spacing.Medium))">
+                <div class="feature-icon"
+                    style="background: var(--accent-fill-rest); width: 64px; height: 64px; border-radius: 12px; display: flex; align-items: center; justify-content: center;">
+                    <span style="font-size: 32px; color: white;">📋</span>
+                </div>
+                <FluentLabel Typo="Typography.H5" Style="font-weight: 700; font-size: 1.5rem;">
+                    Real-time Order Tracking
+                </FluentLabel>
+                <FluentLabel Typo="Typography.Body" Style="color: var(--neutral-foreground-hint); line-height: 1.6;">
+                    Monitor order status instantly with our live tracking system. Search by Order ID and get
+                    comprehensive details including customer information, products, and delivery addresses.
+                </FluentLabel>
+                <FluentAnchor Href="/vieworder" Appearance="Appearance.Lightweight" Style="margin-top: auto;">
+                    View Orders →
+                </FluentAnchor>
+            </FluentStack>
+        </FluentCard>
+
+        <!-- Feature 2: Cloud-Native Architecture -->
+        <FluentCard
+            Style="padding: 2rem; height: 100%; animation: fadeInUp 0.6s ease-out 0.1s; animation-fill-mode: backwards;">
+            <FluentStack Orientation="Orientation.Vertical"
+                VerticalGap="@(int.Parse(FluentDesignSystem.Spacing.Medium))">
+                <div class="feature-icon"
+                    style="background: linear-gradient(135deg, #0078d4 0%, #00bcf2 100%); width: 64px; height: 64px; border-radius: 12px; display: flex; align-items: center; justify-content: center;">
+                    <span style="font-size: 32px; color: white;">☁️</span>
+                </div>
+                <FluentLabel Typo="Typography.H5" Style="font-weight: 700; font-size: 1.5rem;">
+                    Azure-Powered Infrastructure
+                </FluentLabel>
+                <FluentLabel Typo="Typography.Body" Style="color: var(--neutral-foreground-hint); line-height: 1.6;">
+                    Built on Microsoft Azure with Service Bus messaging, Container Apps, Application Insights, and Logic
+                    Apps for enterprise-grade reliability and scalability.
+                </FluentLabel>
+                <FluentLabel Typo="Typography.Body"
+                    Style="color: var(--accent-fill-rest); font-weight: 600; margin-top: auto; font-size: 0.875rem;">
+                    ☁️ 99.9% Uptime SLA
+                </FluentLabel>
+            </FluentStack>
+        </FluentCard>
+
+        <!-- Feature 3: Automated Workflows -->
+        <FluentCard
+            Style="padding: 2rem; height: 100%; animation: fadeInUp 0.6s ease-out 0.2s; animation-fill-mode: backwards;">
+            <FluentStack Orientation="Orientation.Vertical"
+                VerticalGap="@(int.Parse(FluentDesignSystem.Spacing.Medium))">
+                <div class="feature-icon"
+                    style="background: linear-gradient(135deg, #7b4397 0%, #dc2430 100%); width: 64px; height: 64px; border-radius: 12px; display: flex; align-items: center; justify-content: center;">
+                    <span style="font-size: 32px; color: white;">⚙️</span>
+                </div>
+                <FluentLabel Typo="Typography.H5" Style="font-weight: 700; font-size: 1.5rem;">
+                    Automated Order Processing
+                </FluentLabel>
+                <FluentLabel Typo="Typography.Body" Style="color: var(--neutral-foreground-hint); line-height: 1.6;">
+                    Leverage Azure Logic Apps and Service Bus for automated order workflows. Process orders efficiently
+                    with intelligent routing and error handling.
+                </FluentLabel>
+                <FluentLabel Typo="Typography.Body"
+                    Style="color: var(--accent-fill-rest); font-weight: 600; margin-top: auto; font-size: 0.875rem;">
+                    ⚡ Process 1000s per minute
+                </FluentLabel>
+            </FluentStack>
+        </FluentCard>
+
+        <!-- Feature 4: Comprehensive Analytics -->
+        <FluentCard
+            Style="padding: 2rem; height: 100%; animation: fadeInUp 0.6s ease-out 0.3s; animation-fill-mode: backwards;">
+            <FluentStack Orientation="Orientation.Vertical"
+                VerticalGap="@(int.Parse(FluentDesignSystem.Spacing.Medium))">
+                <div class="feature-icon"
+                    style="background: linear-gradient(135deg, #fc4a1a 0%, #f7b733 100%); width: 64px; height: 64px; border-radius: 12px; display: flex; align-items: center; justify-content: center;">
+                    <span style="font-size: 32px; color: white;">📊</span>
+                </div>
+                <FluentLabel Typo="Typography.H5" Style="font-weight: 700; font-size: 1.5rem;">
+                    Advanced Analytics
+                </FluentLabel>
+                <FluentLabel Typo="Typography.Body" Style="color: var(--neutral-foreground-hint); line-height: 1.6;">
+                    Gain insights with Application Insights integration. Monitor performance, track telemetry, and
+                    analyze order trends in real-time.
+                </FluentLabel>
+                <FluentLabel Typo="Typography.Body"
+                    Style="color: var(--accent-fill-rest); font-weight: 600; margin-top: auto; font-size: 0.875rem;">
+                    📊 Real-time Dashboards
+                </FluentLabel>
+            </FluentStack>
+        </FluentCard>
+
+        <!-- Feature 5: Modern UI/UX -->
+        <FluentCard
+            Style="padding: 2rem; height: 100%; animation: fadeInUp 0.6s ease-out 0.4s; animation-fill-mode: backwards;">
+            <FluentStack Orientation="Orientation.Vertical"
+                VerticalGap="@(int.Parse(FluentDesignSystem.Spacing.Medium))">
+                <div class="feature-icon"
+                    style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); width: 64px; height: 64px; border-radius: 12px; display: flex; align-items: center; justify-content: center;">
+                    <span style="font-size: 32px; color: white;">🎨</span>
+                </div>
+                <FluentLabel Typo="Typography.H5" Style="font-weight: 700; font-size: 1.5rem;">
+                    Fluent Design System
+                </FluentLabel>
+                <FluentLabel Typo="Typography.Body" Style="color: var(--neutral-foreground-hint); line-height: 1.6;">
+                    Beautiful, responsive interface built with Microsoft Fluent UI components. Consistent design
+                    language across all devices and platforms.
+                </FluentLabel>
+                <FluentLabel Typo="Typography.Body"
+                    Style="color: var(--accent-fill-rest); font-weight: 600; margin-top: auto; font-size: 0.875rem;">
+                    🎨 Modern & Accessible
+                </FluentLabel>
+            </FluentStack>
+        </FluentCard>
+
+        <!-- Feature 6: Secure & Compliant -->
+        <FluentCard
+            Style="padding: 2rem; height: 100%; animation: fadeInUp 0.6s ease-out 0.5s; animation-fill-mode: backwards;">
+            <FluentStack Orientation="Orientation.Vertical"
+                VerticalGap="@(int.Parse(FluentDesignSystem.Spacing.Medium))">
+                <div class="feature-icon"
+                    style="background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%); width: 64px; height: 64px; border-radius: 12px; display: flex; align-items: center; justify-content: center;">
+                    <span style="font-size: 32px; color: white;">🔒</span>
+                </div>
+                <FluentLabel Typo="Typography.H5" Style="font-weight: 700; font-size: 1.5rem;">
+                    Enterprise Security
+                </FluentLabel>
+                <FluentLabel Typo="Typography.Body" Style="color: var(--neutral-foreground-hint); line-height: 1.6;">
+                    Managed Identity authentication, TLS 1.2+ encryption, and Azure security best practices. Your data
+                    is protected at every layer.
+                </FluentLabel>
+                <FluentLabel Typo="Typography.Body"
+                    Style="color: var(--accent-fill-rest); font-weight: 600; margin-top: auto; font-size: 0.875rem;">
+                    🔒 Zero Trust Architecture
+                </FluentLabel>
+            </FluentStack>
+        </FluentCard>
+    </div>
+</FluentStack>
+
+<!-- Technology Stack Section -->
+<FluentStack Orientation="Orientation.Vertical" VerticalGap="@(int.Parse(FluentDesignSystem.Spacing.XLarge))"
+    Style="padding: 4rem 2rem; background: var(--neutral-layer-2);">
+    <FluentStack Orientation="Orientation.Vertical" VerticalGap="@(int.Parse(FluentDesignSystem.Spacing.Small))"
+        Style="text-align: center; max-width: 1400px; margin: 0 auto; width: 100%;">
+        <FluentLabel Typo="Typography.H3" Style="font-size: 2.5rem; font-weight: 700;">
+            Built with Modern Technology
+        </FluentLabel>
+        <FluentLabel Typo="Typography.Body" Style="font-size: 1.2rem; color: var(--neutral-foreground-hint);">
+            Leveraging the latest .NET and Azure technologies
+        </FluentLabel>
+
+        <div class="tech-stack-grid" style="margin-top: 3rem;">
+            <FluentCard Style="padding: 1.5rem; text-align: center;">
+                <FluentLabel Typo="Typography.H6" Style="font-weight: 700; color: var(--accent-fill-rest);">.NET 10
+                </FluentLabel>
+                <FluentLabel Typo="Typography.Body" Style="color: var(--neutral-foreground-hint); font-size: 0.875rem;">
+                    Modern Framework</FluentLabel>
+            </FluentCard>
+            <FluentCard Style="padding: 1.5rem; text-align: center;">
+                <FluentLabel Typo="Typography.H6" Style="font-weight: 700; color: var(--accent-fill-rest);">Blazor
+                </FluentLabel>
+                <FluentLabel Typo="Typography.Body" Style="color: var(--neutral-foreground-hint); font-size: 0.875rem;">
+                    Interactive UI</FluentLabel>
+            </FluentCard>
+            <FluentCard Style="padding: 1.5rem; text-align: center;">
+                <FluentLabel Typo="Typography.H6" Style="font-weight: 700; color: var(--accent-fill-rest);">Azure
+                    Service Bus</FluentLabel>
+                <FluentLabel Typo="Typography.Body" Style="color: var(--neutral-foreground-hint); font-size: 0.875rem;">
+                    Message Broker</FluentLabel>
+            </FluentCard>
+            <FluentCard Style="padding: 1.5rem; text-align: center;">
+                <FluentLabel Typo="Typography.H6" Style="font-weight: 700; color: var(--accent-fill-rest);">Container
+                    Apps</FluentLabel>
+                <FluentLabel Typo="Typography.Body" Style="color: var(--neutral-foreground-hint); font-size: 0.875rem;">
+                    Microservices</FluentLabel>
+            </FluentCard>
+            <FluentCard Style="padding: 1.5rem; text-align: center;">
+                <FluentLabel Typo="Typography.H6" Style="font-weight: 700; color: var(--accent-fill-rest);">Logic Apps
+                </FluentLabel>
+                <FluentLabel Typo="Typography.Body" Style="color: var(--neutral-foreground-hint); font-size: 0.875rem;">
+                    Workflows</FluentLabel>
+            </FluentCard>
+            <FluentCard Style="padding: 1.5rem; text-align: center;">
+                <FluentLabel Typo="Typography.H6" Style="font-weight: 700; color: var(--accent-fill-rest);">App Insights
+                </FluentLabel>
+                <FluentLabel Typo="Typography.Body" Style="color: var(--neutral-foreground-hint); font-size: 0.875rem;">
+                    Monitoring</FluentLabel>
+            </FluentCard>
+        </div>
+    </FluentStack>
+</FluentStack>
+
+<!-- Call to Action Section -->
+<FluentStack Orientation="Orientation.Vertical" VerticalGap="@(int.Parse(FluentDesignSystem.Spacing.Large))"
+    Style="padding: 4rem 2rem; text-align: center; max-width: 900px; margin: 0 auto;">
+    <FluentLabel Typo="Typography.H3" Style="font-size: 2.5rem; font-weight: 700;">
+        Ready to Get Started?
+    </FluentLabel>
+    <FluentLabel Typo="Typography.Body"
+        Style="font-size: 1.2rem; color: var(--neutral-foreground-hint); margin-bottom: 2rem;">
+        Explore orders, monitor workflows, and experience the power of cloud-native order management
+    </FluentLabel>
+
+    <FluentButton Appearance="Appearance.Accent" OnClick="@(() => navigationManager.NavigateTo("/vieworder"))"
+        Style="font-weight: 600; font-size: 1.2rem; padding: 1.25rem 3rem;">
+        🚀 View Orders Now
+    </FluentButton>
+</FluentStack>
+
+<style>
+    .features-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+        gap: 2rem;
+        width: 100%;
+    }
+
+    .tech-stack-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 1.5rem;
+        width: 100%;
+    }
+
+    @@keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    @@media (max-width: 768px) {
+        .features-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .tech-stack-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+    }
+</style>

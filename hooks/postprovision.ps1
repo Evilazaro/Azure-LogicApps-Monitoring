@@ -286,7 +286,7 @@ function Get-ProjectPath {
         Constructs the cross-platform path to the AppHost project file.
     
     .DESCRIPTION
-        Builds the absolute path to the eShopOrders.AppHost.csproj file
+        Builds the absolute path to the app.AppHost.csproj file
         relative to the script location. Uses Join-Path for cross-platform compatibility.
     
     .OUTPUTS
@@ -294,7 +294,7 @@ function Get-ProjectPath {
     
     .EXAMPLE
         Get-ProjectPath
-        Returns: Z:\Logic\eShopOrders.AppHost\eShopOrders.AppHost.csproj
+        Returns: Z:\Logic\app.AppHost\app.AppHost.csproj
         
     .NOTES
         Falls back to current location if $PSScriptRoot is not available.
@@ -319,8 +319,8 @@ function Get-ProjectPath {
             
             # Build path using Join-Path for cross-platform compatibility
             $path = Join-Path -Path $scriptRoot -ChildPath '..'
-            $path = Join-Path -Path $path -ChildPath 'eShopOrders.AppHost'
-            $path = Join-Path -Path $path -ChildPath 'eShopOrders.AppHost.csproj'
+            $path = Join-Path -Path $path -ChildPath 'app.AppHost'
+            $path = Join-Path -Path $path -ChildPath 'app.AppHost.csproj'
             
             # Normalize to absolute path
             $absolutePath = [System.IO.Path]::GetFullPath($path)
@@ -649,7 +649,9 @@ try {
     $azureSubscriptionId = Get-EnvironmentVariableSafe -Name 'AZURE_SUBSCRIPTION_ID'
     $azureResourceGroup = Get-EnvironmentVariableSafe -Name 'AZURE_RESOURCE_GROUP'
     $azureLocation = Get-EnvironmentVariableSafe -Name 'AZURE_LOCATION'
-    $azureApplicationInsightsName = Get-EnvironmentVariableSafe -Name 'AZURE_APPLICATION_INSIGHTS_NAME'
+    $enableApplicationInsights = $true
+    $applicationInsightsName = Get-EnvironmentVariableSafe -Name 'AZURE_APPLICATION_INSIGHTS_NAME'
+    $applicationInsightsConnectionString = Get-EnvironmentVariableSafe -Name 'APPLICATIONINSIGHTS_CONNECTION_STRING'
     $azureClientId = Get-EnvironmentVariableSafe -Name 'MANAGED_IDENTITY_CLIENT_ID'
     $azureServiceBusHostName = Get-EnvironmentVariableSafe -Name 'MESSAGING_SERVICEBUSHOSTNAME'
     $azureServiceBusTopicName = Get-EnvironmentVariableSafe -Name 'AZURE_SERVICE_BUS_TOPIC_NAME' -DefaultValue 'OrdersPlaced'
@@ -667,7 +669,9 @@ try {
     Write-Information "  Location               : $($azureLocation ?? $notSet)"
     Write-Information "  Environment Name       : $($azureEnvName ?? $notSet)"
     Write-Information "  Client ID              : $($azureClientId ?? $notSet)"
-    Write-Information "  App Insights Name      : $($azureApplicationInsightsName ?? $notSet)"
+    Write-Information "  Enable App Insights    : $enableApplicationInsights"
+    Write-Information "  App Insights Name      : $($applicationInsightsName ?? $notSet)"
+    Write-Information "  App Insights Conn Str  : $($applicationInsightsConnectionString ?? $notSet)"
     Write-Information "  Service Bus Host Name  : $($azureServiceBusHostName ?? $notSet)"
     Write-Information "  Service Bus Topic Name : $($azureServiceBusTopicName ?? $notSet)"
     Write-Information "  Service Bus Subscription: $($azureServiceBusSubscriptionName ?? $notSet)"
@@ -780,7 +784,9 @@ try {
         'Azure:SubscriptionId'             = $azureSubscriptionId
         'Azure:Location'                   = $azureLocation
         'Azure:ResourceGroup'              = $azureResourceGroup
-        'Azure:ApplicationInsights:Name'   = $azureApplicationInsightsName
+        'ApplicationInsights:Enabled'      = $enableApplicationInsights
+        'Azure:ApplicationInsights:Name'   = $applicationInsightsName
+        'ApplicationInsights:ConnectionString' = $applicationInsightsConnectionString
         'Azure:ClientId'                   = $azureClientId
         'Azure:ServiceBus:HostName'       = $azureServiceBusHostName
         'Azure:ServiceBus:TopicName'       = $azureServiceBusTopicName

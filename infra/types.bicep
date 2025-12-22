@@ -24,9 +24,6 @@ type tagsType = {
   @description('Environment identifier')
   Environment: string
 
-  @description('Management method')
-  ManagedBy: string
-
   @description('Cost center identifier')
   CostCenter: string
 

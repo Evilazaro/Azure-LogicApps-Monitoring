@@ -53,20 +53,24 @@ param deploymentDate string = utcNow('yyyy-MM-dd')
 // ========== Variables ==========
 
 // Standardized tags applied to all resources for governance and cost tracking
-var tags tagsType = {
+var coreTags tagsType = {
   Solution: solutionName
   Environment: envName
-  ManagedBy: 'Bicep'
   CostCenter: 'Engineering'
   Owner: 'Platform-Team'
-  BusinessUnit: 'Finance'
+  BusinessUnit: 'IT'
   DeploymentDate: deploymentDate
   Repository: 'Azure-LogicApps-Monitoring'
 }
 
+var tags = union(coreTags, {
+  'azd-env-name': envName
+  'azd-service-name': 'app'
+})
+
 // Resource group naming convention: rg-{solution}-{env}-{location-abbrev}
 // Truncates location to 8 chars to keep names concise
-var resourceGroupName = 'rg-${solutionName}-${envName}-${substring(location, 0, min(length(location), 8))}'
+var resourceGroupName string = 'rg-${solutionName}-${envName}-${substring(location, 0, min(length(location), 8))}'
 
 // ========== Resources ==========
 
@@ -104,7 +108,7 @@ module workload './workload/main.bicep' = {
     workspacePrimaryKey: monitoring.outputs.AZURE_LOG_ANALYTICS_WORKSPACE_PRIMARY_KEY
     workspaceCustomerId: monitoring.outputs.AZURE_LOG_ANALYTICS_WORKSPACE_CUSTOMER_ID
     storageAccountId: monitoring.outputs.LOGS_STORAGE_ACCOUNT_ID
-    appInsightsConnectionString: monitoring.outputs.AZURE_APPLICATION_INSIGHTS_CONNECTION_STRING
+    appInsightsConnectionString: monitoring.outputs.APPLICATIONINSIGHTS_CONNECTION_STRING
     tags: tags
   }
 }
@@ -120,13 +124,13 @@ output AZURE_RESOURCE_GROUP string = resourceGroupName
 output AZURE_APPLICATION_INSIGHTS_NAME string = monitoring.outputs.AZURE_APPLICATION_INSIGHTS_NAME
 
 @description('Connection string for Application Insights telemetry')
-output AZURE_APPLICATION_INSIGHTS_CONNECTION_STRING string = monitoring.outputs.AZURE_APPLICATION_INSIGHTS_CONNECTION_STRING
+output APPLICATIONINSIGHTS_CONNECTION_STRING string = monitoring.outputs.APPLICATIONINSIGHTS_CONNECTION_STRING
 
 @description('Instrumentation key for Application Insights telemetry')
 output AZURE_APPLICATION_INSIGHTS_INSTRUMENTATION_KEY string = monitoring.outputs.AZURE_APPLICATION_INSIGHTS_INSTRUMENTATION_KEY
 
 @description('Connection string for Application Insights telemetry (alias)')
-output TELEMETRY_APPINSIGHTSCONNECTIONSTRING string = monitoring.outputs.AZURE_APPLICATION_INSIGHTS_CONNECTION_STRING
+output TELEMETRY_APPINSIGHTSCONNECTIONSTRING string = monitoring.outputs.APPLICATIONINSIGHTS_CONNECTION_STRING
 
 // Log Analytics Workspace Outputs (Microsoft.OperationalInsights/workspaces)
 @description('Name of the deployed Log Analytics workspace')

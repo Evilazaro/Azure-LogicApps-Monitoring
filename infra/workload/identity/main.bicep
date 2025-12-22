@@ -50,7 +50,7 @@ param tags tagsType
 
 // ========== Variables ==========
 
-var resourceSuffix = uniqueString(resourceGroup().id, name, envName, location)
+var resourceSuffix string = uniqueString(resourceGroup().id, name, envName, location)
 
 // ========== Resources ==========
 
@@ -63,7 +63,7 @@ resource mi 'Microsoft.ManagedIdentity/userAssignedIdentities@2025-01-31-preview
 
 // Built-in Azure role definition IDs for managed identity
 // These GUIDs are consistent across all Azure subscriptions
-var roles = [
+var roles string[] = [
   '17d1049b-9a84-46fb-8f53-869881c3d3ab' // Storage Account Contributor
   'ba92f5b4-2d11-453d-a403-e96b0029c9fe' // Storage Blob Data Contributor
   '3913510d-42f4-4e42-8a64-420c390055eb' // Monitoring Metrics Publisher

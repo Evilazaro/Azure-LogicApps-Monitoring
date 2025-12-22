@@ -59,13 +59,13 @@ param tags tagsType
 
 // Remove special characters from name for storage account naming requirements
 // Storage account names must be lowercase alphanumeric only
-var cleanedName = toLower(replace(replace(replace(name, '-', ''), '_', ''), ' ', ''))
+var cleanedName string = toLower(replace(replace(replace(name, '-', ''), '_', ''), ' ', ''))
 
 // Generate unique suffix to ensure globally unique resource names
-var uniqueSuffix = uniqueString(resourceGroup().id, name, envName, location)
+var uniqueSuffix string = uniqueString(resourceGroup().id, name, envName, location)
 
 // Storage account name must be 3-24 characters, lowercase alphanumeric only
-var logsStorageAccountName = take('${cleanedName}logs${uniqueSuffix}', 24)
+var logsStorageAccountName string = take('${cleanedName}logs${uniqueSuffix}', 24)
 
 // Storage account configuration optimized for log storage
 var storageConfig storageAccountConfig = {

@@ -11,11 +11,11 @@ hooks:
     postprovision:
         shell: pwsh
         run: |
-            .\hooks\postprovision.ps1 
+            .\hooks\postprovision.ps1
 
 services:
     app:
         language: dotnet
-        project: ./eShopOrders.AppHost/eShopOrders.AppHost.csproj
+        project: ./app.AppHost/app.AppHost.csproj
         host: containerapp
         resourceGroup: ${AZURE_RESOURCE_GROUP}
