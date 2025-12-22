@@ -1,272 +1,457 @@
 # Azure Logic Apps Monitoring Sample
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![.NET](https://img.shields.io/badge/.NET-8.0-purple)](https://dotnet.microsoft.com/)
-[![Azure](https://img.shields.io/badge/Azure-Logic%20Apps-0078D4)](https://azure.microsoft.com/services/logic-apps/)
-[![Aspire](https://img.shields.io/badge/.NET-Aspire-512BD4)](https://learn.microsoft.com/dotnet/aspire/)
-
-A comprehensive sample application demonstrating enterprise-grade monitoring and observability best practices for Azure Logic Apps. This project showcases how to build a production-ready order processing system with distributed tracing, metrics collection, and comprehensive logging using .NET Aspire, Azure Logic Apps, and Azure Monitor.
+[![.NET](https://img.shields.io/badge/.NET-10.0-512BD4)](https://dotnet.microsoft.com/)
+[![Azure](https://img.shields.io/badge/Azure-0078D4?logo=microsoft-azure&logoColor=white)](https://azure.microsoft.com/)
+[![Blazor](https://img.shields.io/badge/Blazor-512BD4?logo=blazor&logoColor=white)](https://dotnet.microsoft.com/apps/aspnet/web-apps/blazor)
 
 ## Overview
 
-This repository provides a reference implementation for monitoring Azure Logic Apps workflows in an enterprise environment. It demonstrates a complete order processing pipeline where orders placed through a web application are processed asynchronously using Azure Logic Apps, with full observability across all components. The application leverages .NET Aspire for local development orchestration and implements OpenTelemetry standards for distributed tracing, making it easy to track requests across multiple services and identify performance bottlenecks.
+This repository demonstrates **enterprise-grade best practices for monitoring Azure Logic Apps Standard** using modern cloud-native architectures. The sample application showcases how to build observable, scalable, and resilient order processing workflows integrated with comprehensive telemetry, distributed tracing, and real-time monitoring capabilities.
 
-Key features include:
-- **End-to-end distributed tracing** across web applications, APIs, Service Bus, and Logic Apps
-- **Structured logging** with Azure Monitor and Application Insights integration
-- **Real-time metrics** collection for monitoring workflow execution and system health
-- **Azure-native integration** using Managed Identity and RBAC for secure, credential-free authentication
-- **.NET Aspire orchestration** for streamlined local development and deployment
-- **Production-ready infrastructure** defined with Bicep for repeatable deployments
+The solution leverages **.NET Aspire** for local development orchestration, **Azure Container Apps** for microservices hosting, **Azure Service Bus** for reliable messaging, and **Application Insights** with **Log Analytics** for observability. It implements a complete end-to-end monitoring strategy following the Microsoft Cloud Adoption Framework and Azure Well-Architected Framework principles, making it an ideal reference architecture for production Logic Apps deployments.
+
+Key capabilities include automated Infrastructure-as-Code provisioning via Bicep, managed identity-based authentication, elastic scaling with Container Apps, and rich diagnostic logging across all Azure resources. The project also includes PowerShell automation hooks for seamless CI/CD integration with Azure Developer CLI (azd).
+
+---
 
 ## Table of Contents
 
-- Project Structure
-- Architecture
-- Prerequisites
-- Setup Instructions
-- Deployment Guide
-- Monitoring & Observability
-- References & Documentation
-- Contributing
-- Code of Conduct
-- License
+- [Project Structure](#project-structure)
+- [Architecture](#architecture)
+  - [Client Layer](#client-layer)
+  - [Presentation Layer](#presentation-layer)
+  - [Application Layer](#application-layer)
+  - [Messaging Layer](#messaging-layer)
+  - [Data Layer](#data-layer)
+  - [Technology Layer](#technology-layer)
+  - [Monitoring Layer](#monitoring-layer)
+- [Prerequisites](#prerequisites)
+- [Setup Instructions](#setup-instructions)
+- [Deployment Guide](#deployment-guide)
+- [Monitoring & Observability](#monitoring--observability)
+- [References & Documentation](#references--documentation)
+- [Contributing](#contributing)
+- [License](#license)
+
+---
 
 ## Project Structure
 
 ```
 .
 ├── .gitignore
-├── app.sln                          # Solution file
-├── azure.yaml                       # Azure Developer CLI configuration
-├── README.md
-├── LICENSE.md
+├── app.sln
+├── azure.yaml
 ├── CODE_OF_CONDUCT.md
 ├── CONTRIBUTING.md
+├── LICENSE
+├── LICENSE.md
+├── README.md
 ├── SECURITY.md
-│
-├── app.AppHost/                     # .NET Aspire AppHost project
+├── app.AppHost/
 │   ├── app.AppHost.csproj
-│   ├── AppHost.cs                   # Aspire orchestration configuration
-│   ├── appsettings.json
+│   ├── AppHost.cs
 │   ├── appsettings.Development.json
+│   ├── appsettings.json
+│   ├── bin/
+│   ├── obj/
 │   └── Properties/
-│
-├── app.ServiceDefaults/             # Shared service configuration
+├── app.ServiceDefaults/
 │   ├── app.ServiceDefaults.csproj
-│   ├── CommonTypes.cs               # Shared types and models
-│   ├── Extensions.cs                # Service defaults extensions
-│   └── bin/
-│
-├── src/
-│   ├── eShop.Orders.API/           # Orders REST API
-│   │   ├── Controllers/
-│   │   ├── Services/
-│   │   ├── DTOs/
-│   │   └── Program.cs
-│   │
-│   ├── eShop.Orders.App/           # Blazor Web Application
-│   │   ├── Components/
-│   │   ├── Services/
-│   │   └── Program.cs
-│   │
-│   └── eShop.Orders.App.Client/    # Blazor Client Components
-│       ├── Pages/
-│       └── Components/
-│
-├── LogicAppWP/                      # Logic App Workspace Project
-│   ├── ConsosoOrders/              # Order Processing Workflow
-│   │   ├── workflow.json           # Workflow definition
-│   │   └── connections.json        # Workflow connections
-│   ├── host.json
-│   └── local.settings.json
-│
-├── infra/                           # Infrastructure as Code (Bicep)
-│   ├── main.bicep                  # Main infrastructure template
-│   ├── main.parameters.json        # Parameters file
-│   ├── types.bicep                 # Custom type definitions
-│   │
-│   ├── monitoring/                 # Monitoring resources
-│   │   ├── loganalytics.bicep     # Log Analytics Workspace
-│   │   └── appinsights.bicep      # Application Insights
-│   │
-│   └── workload/                   # Application resources
-│       ├── logicapp.bicep         # Logic App deployment
-│       ├── servicebus.bicep       # Service Bus namespace and topics
-│       ├── storage.bicep          # Storage account for orders
-│       └── managedidentity.bicep  # Managed Identity and RBAC
-│
-└── hooks/                          # Deployment hooks and utilities
-    ├── preprovision.ps1           # Pre-deployment script
-    ├── postprovision.ps1          # Post-deployment script
-    ├── generate_orders.ps1        # Sample order generation
-    └── orders.json                # Sample order data
+│   ├── CommonTypes.cs
+│   ├── Extensions.cs
+│   ├── bin/
+│   └── obj/
+├── hooks/
+│   ├── generate_orders.ps1
+│   ├── orders.json
+│   ├── postprovision.ps1
+│   └── preprovision.ps1
+├── infra/
+│   ├── main.bicep
+│   ├── main.parameters.json
+│   ├── types.bicep
+│   ├── monitoring/
+│   │   ├── app-insights.bicep
+│   │   ├── azure-monitor-health-model.bicep
+│   │   ├── log-analytics-workspace.bicep
+│   │   └── main.bicep
+│   └── workload/
+│       ├── data/
+│       │   └── main.bicep
+│       ├── identity/
+│       │   └── main.bicep
+│       ├── logic-app.bicep
+│       ├── main.bicep
+│       ├── messaging/
+│       │   └── main.bicep
+│       └── services/
+│           └── main.bicep
+└── src/
+    ├── eShop.Orders.API/
+    └── eShop.Web.App/
+        ├── Components/
+        │   ├── Layout/
+        │   │   └── MainLayout.razor
+        │   ├── Pages/
+        │   │   ├── Error.razor
+        │   │   ├── Home.razor
+        │   │   ├── ListAllOrders.razor
+        │   │   ├── ViewOrder.razor
+        │   │   └── WeatherForecasts.razor
+        │   ├── Routes.razor
+        │   ├── Shared/
+        │   │   └── PageHeader.razor
+        │   └── Services/
+        │       └── OrdersAPIService.cs
+        └── Program.cs
 ```
+
+---
 
 ## Architecture
 
-The application follows a layered architecture with clear separation of concerns and comprehensive observability throughout the system.
+The solution follows **TOGAF BDAT Model** principles with clear separation of concerns across seven architectural layers. Each layer is presented with its own diagram showing internal components and cross-layer interactions.
+
+### Client Layer
+
+The Client Layer represents the end-user interface accessing the application through web browsers.
 
 ```mermaid
 graph TD
-    subgraph ClientLayer["Client Layer"]
-        Browser["Browser"]
+    subgraph ClientLayer["🖥️ Client Layer"]
+        Browser["Web Browser<br/>(Desktop/Mobile)"]
+        UserSession["User Session<br/>Management"]
     end
 
-    subgraph PresentationLayer["Presentation Layer"]
-        WebApp["Web App<br/>(eShop.Orders.App)"]
-    end
+    %% Interactions with Presentation Layer
+    Browser -->|"HTTPS Requests"| PresentationLayer["📱 Presentation Layer"]
+    PresentationLayer -->|"HTML/CSS/JS Response"| Browser
+    
+    UserSession -.->|"Session State"| Browser
 
-    subgraph ApplicationLayer["Application Layer"]
-        subgraph OrdersAPI["Orders API<br/>(eShop.Orders.API)"]
-            OrderService["Order Service"]
-            DTOs["Data Transfer Objects"]
-        end
-    end
-
-    subgraph IntegrationLayer["Integration Layer"]
-        subgraph Messaging["Messaging"]
-            subgraph ServiceBus["Service Bus"]
-                OrdersTopic["Topic: OrdersPlaced"]
-            end
-        end
-        
-        subgraph WorkflowEngine["Workflow Engine"]
-            subgraph LogicApps["Azure Logic Apps"]
-                subgraph Workflows["Workflows"]
-                    OrdersProcessing["OrdersProcessing"]
-                end
-            end
-        end
-    end
-
-    subgraph ObservabilityLayer["Observability Layer"]
-        Telemetry["OpenTelemetry<br/>(Logs, Metrics, Traces)"]
-    end
-
-    subgraph DataLayer["Data Layer"]
-        subgraph LogAnalytics["Log Analytics Workspace"]
-            Logs["Logs"]
-            Metrics["Metrics"]
-            Traces["Traces"]
-            TelemetryData["Telemetry"]
-        end
-        
-        subgraph StorageAccount["Azure Storage Account"]
-            subgraph Tables["Table Storage"]
-                WorkflowState["Logic App Workflow State"]
-            end
-            subgraph Containers["Blob Containers"]
-                SuccessContainer["OrdersPlacedSuccessfully"]
-                FailureContainer["OrdersFailed"]
-            end
-        end
-    end
-
-    subgraph IdentityLayer["Identity Layer"]
-        ManagedIdentity["Managed Identity"]
-        subgraph RBAC["RBAC"]
-            RoleAssignments["Identity Role Assignments"]
-        end
-    end
-
-    %% Client Layer Interactions
-    Browser -->|HTTPS| WebApp
-
-    %% Presentation Layer Interactions
-    WebApp -->|REST API| OrdersAPI
-    WebApp -.->|Telemetry| Telemetry
-
-    %% Application Layer Interactions
-    OrderService -->|Publish Message| OrdersTopic
-    OrderService -.->|Telemetry| Telemetry
-    OrdersAPI -.->|Telemetry| Telemetry
-
-    %% Integration Layer Interactions
-    OrdersTopic -->|Trigger| OrdersProcessing
-    OrdersProcessing -->|Write Success| SuccessContainer
-    OrdersProcessing -->|Write Failure| FailureContainer
-    OrdersProcessing -->|State| WorkflowState
-    OrdersProcessing -.->|Telemetry| Telemetry
-    ServiceBus -.->|Telemetry| Telemetry
-    LogicApps -.->|Telemetry| Telemetry
-
-    %% Observability Layer Interactions
-    Telemetry -->|Export| LogAnalytics
-
-    %% Data Layer Interactions
-    LogAnalytics -->|Query| Logs
-    LogAnalytics -->|Query| Metrics
-    LogAnalytics -->|Query| Traces
-
-    %% Identity Layer Interactions
-    ManagedIdentity -->|Authenticate| ServiceBus
-    ManagedIdentity -->|Authenticate| StorageAccount
-    ManagedIdentity -->|Authenticate| LogAnalytics
-    RoleAssignments -.->|Manage| ManagedIdentity
-    WebApp -->|Uses| ManagedIdentity
-    OrdersAPI -->|Uses| ManagedIdentity
-    LogicApps -->|Uses| ManagedIdentity
-
-    %% Styling
-    classDef clientStyle fill:#E1F5FF,stroke:#01579B,stroke-width:2px
-    classDef presentationStyle fill:#F3E5F5,stroke:#4A148C,stroke-width:2px
-    classDef applicationStyle fill:#E8F5E9,stroke:#1B5E20,stroke-width:2px
-    classDef integrationStyle fill:#FFF3E0,stroke:#E65100,stroke-width:2px
-    classDef observabilityStyle fill:#FCE4EC,stroke:#880E4F,stroke-width:2px
-    classDef dataStyle fill:#E0F2F1,stroke:#004D40,stroke-width:2px
-    classDef identityStyle fill:#FFF9C4,stroke:#F57F17,stroke-width:2px
-
-    class Browser,ClientLayer clientStyle
-    class WebApp,PresentationLayer presentationStyle
-    class OrderService,DTOs,OrdersAPI,ApplicationLayer applicationStyle
-    class ServiceBus,OrdersTopic,LogicApps,OrdersProcessing,Workflows,WorkflowEngine,Messaging,IntegrationLayer integrationStyle
-    class Telemetry,ObservabilityLayer observabilityStyle
-    class LogAnalytics,Logs,Metrics,Traces,TelemetryData,StorageAccount,Tables,Containers,WorkflowState,SuccessContainer,FailureContainer,DataLayer dataStyle
-    class ManagedIdentity,RBAC,RoleAssignments,IdentityLayer identityStyle
+    style ClientLayer fill:#e1f5ff,stroke:#0078d4,stroke-width:3px
+    style Browser fill:#ffffff,stroke:#0078d4
+    style UserSession fill:#ffffff,stroke:#0078d4
 ```
 
-### Architecture Flow
+**Key Responsibilities:**
+- User authentication and session management
+- Rendering application UI in web browsers
+- Handling user input and interactions
+- Client-side validation and error handling
 
-1. **Client Layer**: Users interact with the application through a web browser
-2. **Presentation Layer**: Blazor web application provides the user interface for placing orders
-3. **Application Layer**: Orders API processes requests, validates data, and publishes messages
-4. **Integration Layer**: Service Bus queues messages and triggers Logic App workflows for async processing
-5. **Observability Layer**: OpenTelemetry collects distributed traces, metrics, and logs from all components
-6. **Data Layer**: Processed orders are stored in Azure Storage; telemetry data flows to Log Analytics
-7. **Identity Layer**: Managed Identity provides secure, credential-free authentication with RBAC-based authorization
+---
+
+### Presentation Layer
+
+The Presentation Layer implements the user interface using Blazor Server with Fluent UI components.
+
+```mermaid
+graph TD
+    subgraph PresentationLayer["🎨 Presentation Layer"]
+        BlazorApp["Blazor Server App<br/>(eShop.Web.App)"]
+        RazorComponents["Razor Components<br/>(Pages & Shared)"]
+        FluentUI["Fluent UI Components<br/>(Design System)"]
+        OrdersAPIService["OrdersAPIService<br/>(HTTP Client)"]
+    end
+
+    %% Internal connections
+    BlazorApp --> RazorComponents
+    RazorComponents --> FluentUI
+    RazorComponents --> OrdersAPIService
+
+    %% Interactions with Client Layer
+    ClientLayer["🖥️ Client Layer"] -->|"HTTPS/WSS"| BlazorApp
+    BlazorApp -->|"SignalR Updates"| ClientLayer
+
+    %% Interactions with Application Layer
+    OrdersAPIService -->|"HTTP/HTTPS"| ApplicationLayer["⚙️ Application Layer"]
+    ApplicationLayer -->|"JSON Response"| OrdersAPIService
+
+    %% Interactions with Monitoring Layer
+    BlazorApp -.->|"Telemetry & Traces"| MonitoringLayer["📊 Monitoring Layer"]
+
+    style PresentationLayer fill:#fff3e0,stroke:#f57c00,stroke-width:3px
+    style BlazorApp fill:#ffffff,stroke:#f57c00
+    style RazorComponents fill:#ffffff,stroke:#f57c00
+    style FluentUI fill:#ffffff,stroke:#f57c00
+    style OrdersAPIService fill:#ffffff,stroke:#f57c00
+```
+
+**Key Components:**
+- eShop.Web.App/Program.cs - Application entry point
+- MainLayout.razor - Layout component
+- Home.razor - Landing page
+- OrdersAPIService.cs - API client
+
+---
+
+### Application Layer
+
+The Application Layer contains business logic, orchestration, and API endpoints.
+
+```mermaid
+graph TD
+    subgraph ApplicationLayer["⚙️ Application Layer"]
+        OrdersAPI["Orders API<br/>(eShop.Orders.API)"]
+        OrderService["Order Service<br/>(Business Logic)"]
+        OrderRepository["Order Repository<br/>(Data Access)"]
+        AppHost[".NET Aspire AppHost<br/>(Orchestration)"]
+        ServiceDefaults["Service Defaults<br/>(OpenTelemetry Config)"]
+        MessageHandler["Orders Message Handler<br/>(Service Bus Client)"]
+    end
+
+    %% Internal connections
+    OrdersAPI --> OrderService
+    OrderService --> OrderRepository
+    OrdersAPI --> MessageHandler
+    AppHost -.->|"Orchestrates"| OrdersAPI
+    OrdersAPI -.->|"Uses Config"| ServiceDefaults
+
+    %% Interactions with Presentation Layer
+    PresentationLayer["🎨 Presentation Layer"] -->|"HTTP GET/POST"| OrdersAPI
+    OrdersAPI -->|"JSON Response"| PresentationLayer
+
+    %% Interactions with Messaging Layer
+    MessageHandler -->|"Publish Messages"| MessagingLayer["📨 Messaging Layer"]
+
+    %% Interactions with Monitoring Layer
+    ServiceDefaults -.->|"Telemetry Export"| MonitoringLayer["📊 Monitoring Layer"]
+    OrdersAPI -.->|"Traces & Metrics"| MonitoringLayer
+
+    style ApplicationLayer fill:#f3e5f5,stroke:#7b1fa2,stroke-width:3px
+    style OrdersAPI fill:#ffffff,stroke:#7b1fa2
+    style OrderService fill:#ffffff,stroke:#7b1fa2
+    style OrderRepository fill:#ffffff,stroke:#7b1fa2
+    style AppHost fill:#ffffff,stroke:#7b1fa2
+    style ServiceDefaults fill:#ffffff,stroke:#7b1fa2
+    style MessageHandler fill:#ffffff,stroke:#7b1fa2
+```
+
+**Key Components:**
+- eShop.Orders.API/Program.cs - API configuration
+- AppHost.cs - Aspire orchestration
+- Extensions.cs - OpenTelemetry setup
+
+---
+
+### Messaging Layer
+
+The Messaging Layer provides reliable asynchronous communication using Azure Service Bus.
+
+```mermaid
+graph TD
+    subgraph MessagingLayer["📨 Messaging Layer"]
+        ServiceBus["Azure Service Bus<br/>(Premium Tier)"]
+        OrdersTopic["OrdersPlaced Topic<br/>(Pub/Sub)"]
+        Subscription["Order Processing<br/>Subscription"]
+        DeadLetterQueue["Dead Letter Queue<br/>(Failed Messages)"]
+    end
+
+    %% Internal connections
+    ServiceBus --> OrdersTopic
+    OrdersTopic --> Subscription
+    Subscription -.->|"Failed Messages"| DeadLetterQueue
+
+    %% Interactions with Application Layer
+    ApplicationLayer["⚙️ Application Layer"] -->|"Publish Order Events"| OrdersTopic
+    
+    %% Interactions with Technology Layer
+    Subscription -->|"Trigger Workflow"| TechnologyLayer["🏗️ Technology Layer"]
+    TechnologyLayer -->|"ACK/NACK"| Subscription
+
+    %% Interactions with Monitoring Layer
+    ServiceBus -.->|"Diagnostics & Metrics"| MonitoringLayer["📊 Monitoring Layer"]
+
+    style MessagingLayer fill:#e8f5e9,stroke:#2e7d32,stroke-width:3px
+    style ServiceBus fill:#ffffff,stroke:#2e7d32
+    style OrdersTopic fill:#ffffff,stroke:#2e7d32
+    style Subscription fill:#ffffff,stroke:#2e7d32
+    style DeadLetterQueue fill:#ffffff,stroke:#2e7d32
+```
+
+**Key Resources:**
+- messaging/main.bicep - Service Bus deployment
+- Service Bus Premium with 16 messaging units
+- Topic-based publish/subscribe pattern
+- 10 max delivery attempts with 5-minute lock duration
+
+---
+
+### Data Layer
+
+The Data Layer manages persistent storage for processed orders using Azure Blob Storage.
+
+```mermaid
+graph TD
+    subgraph DataLayer["💾 Data Layer"]
+        BlobStorage["Azure Blob Storage<br/>(Standard LRS)"]
+        SuccessContainer["ordersprocessedsuccessfully<br/>Container"]
+        ErrorContainer["ordersprocessedwitherrors<br/>Container"]
+        LifecyclePolicy["Lifecycle Management<br/>(30-day retention)"]
+    end
+
+    %% Internal connections
+    BlobStorage --> SuccessContainer
+    BlobStorage --> ErrorContainer
+    BlobStorage -.->|"Applies to"| LifecyclePolicy
+
+    %% Interactions with Technology Layer
+    TechnologyLayer["🏗️ Technology Layer"] -->|"Write Success"| SuccessContainer
+    TechnologyLayer -->|"Write Errors"| ErrorContainer
+    SuccessContainer -->|"Read/Query"| TechnologyLayer
+    ErrorContainer -->|"Read/Query"| TechnologyLayer
+
+    %% Interactions with Monitoring Layer
+    BlobStorage -.->|"Storage Analytics"| MonitoringLayer["📊 Monitoring Layer"]
+
+    style DataLayer fill:#fff9c4,stroke:#f9a825,stroke-width:3px
+    style BlobStorage fill:#ffffff,stroke:#f9a825
+    style SuccessContainer fill:#ffffff,stroke:#f9a825
+    style ErrorContainer fill:#ffffff,stroke:#f9a825
+    style LifecyclePolicy fill:#ffffff,stroke:#f9a825
+```
+
+**Key Resources:**
+- messaging/main.bicep - Storage deployment
+- Segregated containers for success/error processing
+- Hot access tier for frequent access
+- TLS 1.2 minimum encryption
+
+---
+
+### Technology Layer
+
+The Technology Layer provides the runtime infrastructure for hosting and executing workloads.
+
+```mermaid
+graph TD
+    subgraph TechnologyLayer["🏗️ Technology Layer"]
+        ContainerApps["Azure Container Apps<br/>Environment"]
+        ACR["Azure Container Registry<br/>(Premium)"]
+        LogicApps["Logic Apps Standard<br/>(Workflow Engine)"]
+        AppServicePlan["App Service Plan<br/>(WorkflowStandard WS1)"]
+        ManagedIdentity["User-Assigned<br/>Managed Identity"]
+        AspireDashboard[".NET Aspire Dashboard<br/>(Local Observability)"]
+    end
+
+    %% Internal connections
+    ContainerApps -.->|"Pulls Images"| ACR
+    LogicApps --> AppServicePlan
+    LogicApps -.->|"Uses"| ManagedIdentity
+    ContainerApps -.->|"Uses"| ManagedIdentity
+    ContainerApps -.->|"Hosts"| AspireDashboard
+
+    %% Interactions with Presentation Layer
+    ContainerApps -->|"Hosts"| PresentationLayer["🎨 Presentation Layer"]
+
+    %% Interactions with Application Layer
+    ContainerApps -->|"Hosts"| ApplicationLayer["⚙️ Application Layer"]
+
+    %% Interactions with Messaging Layer
+    LogicApps -->|"Consumes Messages"| MessagingLayer["📨 Messaging Layer"]
+    ManagedIdentity -.->|"Auth to"| MessagingLayer
+
+    %% Interactions with Data Layer
+    LogicApps -->|"Reads/Writes"| DataLayer["💾 Data Layer"]
+    ManagedIdentity -.->|"Auth to"| DataLayer
+
+    %% Interactions with Monitoring Layer
+    ContainerApps -.->|"Container Logs"| MonitoringLayer["📊 Monitoring Layer"]
+    LogicApps -.->|"Workflow Telemetry"| MonitoringLayer
+    ACR -.->|"Registry Logs"| MonitoringLayer
+
+    style TechnologyLayer fill:#fce4ec,stroke:#c2185b,stroke-width:3px
+    style ContainerApps fill:#ffffff,stroke:#c2185b
+    style ACR fill:#ffffff,stroke:#c2185b
+    style LogicApps fill:#ffffff,stroke:#c2185b
+    style AppServicePlan fill:#ffffff,stroke:#c2185b
+    style ManagedIdentity fill:#ffffff,stroke:#c2185b
+    style AspireDashboard fill:#ffffff,stroke:#c2185b
+```
+
+**Key Resources:**
+- services/main.bicep - Container infrastructure
+- logic-app.bicep - Logic Apps deployment
+- identity/main.bicep - Managed identity
+- Elastic scaling: 3-20 instances for Logic Apps
+
+---
+
+### Monitoring Layer
+
+The Monitoring Layer provides comprehensive observability across all components.
+
+```mermaid
+graph TD
+    subgraph MonitoringLayer["📊 Monitoring Layer"]
+        AppInsights["Application Insights<br/>(Workspace-based)"]
+        LogAnalytics["Log Analytics<br/>Workspace"]
+        DiagnosticSettings["Diagnostic Settings<br/>(All Resources)"]
+        AspireDashboardLocal[".NET Aspire Dashboard<br/>(Local Dev)"]
+        StorageAccount["Logs Storage Account<br/>(30-day retention)"]
+    end
+
+    %% Internal connections
+    AppInsights -->|"Data Sink"| LogAnalytics
+    DiagnosticSettings -->|"Logs & Metrics"| LogAnalytics
+    DiagnosticSettings -.->|"Archive"| StorageAccount
+    LogAnalytics -.->|"Query Results"| StorageAccount
+
+    %% Receives telemetry from all layers
+    ClientLayer["🖥️ Client Layer"] -.->|"Browser Telemetry"| AppInsights
+    PresentationLayer["🎨 Presentation Layer"] -.->|"Server Traces"| AppInsights
+    ApplicationLayer["⚙️ Application Layer"] -.->|"API Telemetry"| AppInsights
+    MessagingLayer["📨 Messaging Layer"] -.->|"Service Bus Metrics"| DiagnosticSettings
+    DataLayer["💾 Data Layer"] -.->|"Storage Analytics"| DiagnosticSettings
+    TechnologyLayer["🏗️ Technology Layer"] -.->|"Platform Logs"| DiagnosticSettings
+
+    %% Local development observability
+    ApplicationLayer -.->|"OTLP Export"| AspireDashboardLocal
+
+    style MonitoringLayer fill:#e0f2f1,stroke:#00695c,stroke-width:3px
+    style AppInsights fill:#ffffff,stroke:#00695c
+    style LogAnalytics fill:#ffffff,stroke:#00695c
+    style DiagnosticSettings fill:#ffffff,stroke:#00695c
+    style AspireDashboardLocal fill:#ffffff,stroke:#00695c
+    style StorageAccount fill:#ffffff,stroke:#00695c
+```
+
+**Key Resources:**
+- monitoring/main.bicep - Monitoring orchestration
+- app-insights.bicep - Application Insights
+- log-analytics-workspace.bicep - Log Analytics
+- 30-day retention with automatic log deletion
+
+---
 
 ## Prerequisites
 
-Before getting started, ensure you have the following installed:
+### Required Tools & SDKs
 
-### Required Tools
-- **[.NET 8.0 SDK](https://dotnet.microsoft.com/download/dotnet/8.0)** or later
-- **[Visual Studio 2022](https://visualstudio.microsoft.com/)** (17.9+) or **[Visual Studio Code](https://code.visualstudio.com/)**
-  - For VS Code: Install the **C# Dev Kit** extension
-- **[Azure Developer CLI (azd)](https://learn.microsoft.com/azure/developer/azure-developer-cli/install-azd)** - For deployment automation
-- **[Azure CLI](https://learn.microsoft.com/cli/azure/install-azure-cli)** - For Azure resource management
-- **[Docker Desktop](https://www.docker.com/products/docker-desktop/)** - For running .NET Aspire components locally
-- **[PowerShell 7+](https://github.com/PowerShell/PowerShell)** - For running deployment hooks
+- [.NET SDK 10.0](https://dotnet.microsoft.com/download/dotnet/10.0) or later
+- [Azure Developer CLI (azd)](https://learn.microsoft.com/azure/developer/azure-developer-cli/install-azd) v1.5.0+
+- [Azure CLI](https://learn.microsoft.com/cli/azure/install-azure-cli) v2.60.0+
+- [Docker Desktop](https://www.docker.com/products/docker-desktop/) or Docker Engine
+- [PowerShell 7.4+](https://github.com/PowerShell/PowerShell) (cross-platform)
+- [Visual Studio Code](https://code.visualstudio.com/) with extensions:
+  - [C# Dev Kit](https://marketplace.visualstudio.com/items?itemName=ms-dotnettools.csdevkit)
+  - [Azure Tools](https://marketplace.visualstudio.com/items?itemName=ms-vscode.vscode-node-azure-pack)
+  - [Bicep](https://marketplace.visualstudio.com/items?itemName=ms-azuretools.vscode-bicep)
 
 ### Azure Subscription Requirements
-- An active **Azure subscription** with permissions to create resources
-- Ability to create the following Azure resources:
-  - Azure Logic Apps (Standard)
-  - Azure Service Bus
-  - Azure Storage Account
-  - Azure Monitor (Log Analytics Workspace & Application Insights)
-  - Managed Identity with RBAC assignments
 
-### Recommended Extensions
-For **Visual Studio Code**:
-- [C# Dev Kit](https://marketplace.visualstudio.com/items?itemName=ms-dotnettools.csdevkit)
-- [Azure Logic Apps (Standard)](https://marketplace.visualstudio.com/items?itemName=ms-azuretools.vscode-azurelogicapps)
-- [Azure Account](https://marketplace.visualstudio.com/items?itemName=ms-vscode.azure-account)
-- [Bicep](https://marketplace.visualstudio.com/items?itemName=ms-azuretools.vscode-bicep)
+- Active Azure subscription with Owner or Contributor role
+- Sufficient quota for:
+  - Azure Container Apps
+  - Azure Service Bus Premium
+  - Azure Logic Apps Standard
+  - Azure Container Registry
+  - Log Analytics workspace
 
-For **Visual Studio 2022**:
-- [Azure Logic Apps Tools](https://marketplace.visualstudio.com/items?itemName=VinaySinghMSFT.AzureLogicAppsToolsForVS2022)
+---
 
 ## Setup Instructions
 
@@ -277,292 +462,207 @@ git clone https://github.com/Evilazaro/Azure-LogicApps-Monitoring.git
 cd Azure-LogicApps-Monitoring
 ```
 
-### 2. Configure Local Development Environment
-
-#### Install .NET Aspire Workload
+### 2. Initialize Azure Developer CLI
 
 ```bash
-dotnet workload update
-dotnet workload install aspire
+azd init
 ```
 
-#### Verify Docker is Running
+Select "Use code in the current directory" when prompted.
 
-Ensure Docker Desktop is running, as .NET Aspire requires it for local container orchestration.
+### 3. Configure Environment Variables
 
 ```bash
-docker --version
+azd env set AZURE_LOCATION eastus2
+azd env set AZURE_ENV_NAME dev
 ```
 
-### 3. Configure Azure Connection
-
-Sign in to Azure:
+### 4. Authenticate to Azure
 
 ```bash
-az login
 azd auth login
+az login
 ```
 
-Set your default subscription (if you have multiple):
+### 5. Local Development Setup
 
-```bash
-az account set --subscription <subscription-id>
-```
-
-### 4. Restore Dependencies
-
-```bash
-dotnet restore
-```
-
-### 5. Run Locally with .NET Aspire
-
-Start the Aspire AppHost, which will orchestrate all services:
+The solution uses **.NET Aspire** for local orchestration:
 
 ```bash
 cd app.AppHost
 dotnet run
 ```
 
-This will:
-- Launch the .NET Aspire Dashboard (typically at `http://localhost:15888`)
-- Start the Orders API
-- Start the Blazor Web Application
-- Configure local Service Bus emulator (if available) or prompt for Azure connection
+This starts:
+- Blazor Web App (HTTPS)
+- Orders API (HTTPS)
+- .NET Aspire Dashboard (for local observability)
 
-Access the applications:
-- **Aspire Dashboard**: `http://localhost:15888` (view logs, traces, and metrics)
-- **Orders Web App**: Check the Aspire Dashboard for the dynamically assigned port
+Access the Aspire Dashboard at `http://localhost:15888` for traces, metrics, and logs.
+
+---
 
 ## Deployment Guide
 
-### Deploy to Azure using Azure Developer CLI
+### Deploy to Azure
 
-The easiest way to deploy this solution to Azure is using the Azure Developer CLI (azd).
-
-#### 1. Initialize the Environment
-
-```bash
-azd init
-```
-
-When prompted:
-- Enter an environment name (e.g., `dev`, `staging`, `prod`)
-- Select your Azure subscription
-- Choose an Azure region (e.g., `eastus`, `westeurope`)
-
-#### 2. Provision and Deploy
+The repository includes automated provisioning using Azure Developer CLI:
 
 ```bash
 azd up
 ```
 
-This command will:
-1. Run the `preprovision.ps1` hook to validate prerequisites
-2. Provision all Azure resources defined in main.bicep
-3. Deploy the Logic App workflows from `LogicAppWP`
-4. Deploy the web application and API
-5. Run the `postprovision.ps1` hook to configure connections
-6. Display the deployed application URLs
+This command:
+1. **Provisions Azure resources** via main.bicep
+2. **Builds container images** for microservices
+3. **Deploys to Azure Container Apps**
+4. **Configures Logic Apps workflows**
+5. **Sets up monitoring and diagnostic settings**
 
-#### 3. Verify Deployment
+### Post-Deployment Configuration
 
-After deployment completes, azd will output the application URLs:
+After deployment completes, the postprovision.ps1 hook automatically:
+- Configures .NET user secrets with Azure resource information
+- Authenticates to Azure Container Registry
+- Updates connection strings for Application Insights and Service Bus
 
-```
-Service Bus Namespace: <namespace>.servicebus.windows.net
-Logic App: <logicapp-name>.azurewebsites.net
-Web Application: <webapp-name>.azurewebsites.net
-Log Analytics Workspace: <workspace-id>
-```
-
-### Manual Deployment (Alternative)
+### Manual Deployment Steps
 
 If you prefer manual deployment:
 
-#### 1. Deploy Infrastructure
-
 ```bash
-cd infra
-az deployment sub create \
-  --location eastus \
-  --template-file main.bicep \
-  --parameters main.parameters.json
+# Provision infrastructure
+azd provision
+
+# Build and deploy applications
+azd deploy
+
+# View outputs
+azd env get-values
 ```
 
-#### 2. Deploy Logic App
+### Verify Deployment
 
-```bash
-cd ../LogicAppWP
-func azure functionapp publish <logic-app-name>
-```
-
-#### 3. Deploy Applications
-
-Deploy the web app and API using your preferred method (Azure App Service, Container Apps, etc.)
-
-### Environment Variables
-
-The following environment variables are automatically configured during deployment:
-
-- `AZURE_SERVICE_BUS_NAMESPACE`: Service Bus namespace connection
-- `AZURE_STORAGE_ACCOUNT_NAME`: Storage account for orders
-- `APPLICATIONINSIGHTS_CONNECTION_STRING`: Application Insights connection
-- `AZURE_LOG_ANALYTICS_WORKSPACE_ID`: Log Analytics workspace ID
-
-## Monitoring & Observability
-
-This solution implements comprehensive monitoring following the [Azure Well-Architected Framework operational excellence pillars](https://learn.microsoft.com/azure/well-architected/operational-excellence/monitoring).
-
-### .NET Aspire Dashboard (Local Development)
-
-When running locally, the .NET Aspire Dashboard provides real-time observability:
-
-1. **Access the Dashboard**: Navigate to `http://localhost:15888`
-2. **View Traces**: See distributed traces across all services
-3. **Monitor Logs**: Real-time structured logs with filtering
-4. **Check Metrics**: Service health, request rates, and custom metrics
-5. **Inspect Resources**: View Service Bus messages, container status
-
-### Azure Monitor (Production)
-
-#### Application Insights
-
-All telemetry is automatically sent to Application Insights using OpenTelemetry:
-
-```bash
-# View in Azure Portal
-az monitor app-insights component show \
-  --app <app-insights-name> \
-  --resource-group <resource-group>
-```
-
-**Key Features**:
-- **Application Map**: Visualize dependencies between components
-- **Live Metrics**: Real-time performance monitoring
-- **Transaction Search**: Find specific requests and traces
-- **Failures Analysis**: Identify and diagnose exceptions
-
-#### Log Analytics Queries
-
-Query telemetry data using KQL (Kusto Query Language):
-
-```kusto
-// View Logic App workflow executions
-AzureDiagnostics
-| where ResourceType == "WORKFLOWS"
-| where TimeGenerated > ago(1h)
-| project TimeGenerated, status_s, workflowName_s, runId_s
-| order by TimeGenerated desc
-
-// Monitor order processing success rate
-traces
-| where message contains "OrderProcessed"
-| summarize SuccessCount=count() by bin(timestamp, 5m)
-| render timechart
-```
-
-#### Monitoring Logic Apps
-
-Enable diagnostics for detailed workflow insights:
-
-1. Navigate to your Logic App in the Azure Portal
-2. Go to **Diagnostic settings** → **Add diagnostic setting**
-3. Select:
-   - ✅ Workflow runtime diagnostic events
-   - ✅ Workflow execution logs
-4. Send to **Log Analytics workspace**
-
-**References**:
-- [Monitor Logic Apps](https://learn.microsoft.com/azure/logic-apps/monitor-logic-apps)
-- [Azure Monitor .NET SDK](https://learn.microsoft.com/dotnet/api/overview/azure/monitor?view=azure-dotnet)
-- [OpenTelemetry in Azure Monitor](https://learn.microsoft.com/azure/azure-monitor/app/opentelemetry-data-collection)
-
-### Custom Metrics and Alerts
-
-Configure alerts for critical scenarios:
-
-```bash
-# Create an alert for failed Logic App runs
-az monitor metrics alert create \
-  --name "LogicApp-HighFailureRate" \
-  --resource-group <resource-group> \
-  --scopes <logic-app-resource-id> \
-  --condition "avg RunsFailed > 5" \
-  --window-size 5m \
-  --evaluation-frequency 1m
-```
-
-### Diagnostic Logging Best Practices
-
-The application follows these logging guidelines:
-
-- **Structured Logging**: All logs use structured format for easy querying
-- **Correlation IDs**: Track requests across services using `traceparent` headers
-- **Log Levels**: Appropriate levels (Information, Warning, Error) for filtering
-- **Sensitive Data**: PII and sensitive data are never logged
-
-## References & Documentation
-
-### Azure Services
-- [Azure Logic Apps Documentation](https://learn.microsoft.com/azure/logic-apps/)
-- [Azure Service Bus Documentation](https://learn.microsoft.com/azure/service-bus-messaging/)
-- [Azure Monitor Documentation](https://learn.microsoft.com/azure/azure-monitor/)
-- [Managed Identity Overview](https://learn.microsoft.com/azure/active-directory/managed-identities-azure-resources/overview)
-
-### .NET and Aspire
-- [.NET Aspire Overview](https://learn.microsoft.com/dotnet/aspire/get-started/aspire-overview)
-- [.NET Aspire Dashboard](https://learn.microsoft.com/dotnet/aspire/fundamentals/dashboard)
-- [OpenTelemetry in .NET](https://learn.microsoft.com/dotnet/core/diagnostics/observability-with-otel)
-
-### Monitoring & Observability
-- [Azure Monitor Best Practices](https://learn.microsoft.com/azure/azure-monitor/best-practices)
-- [Application Insights for .NET](https://learn.microsoft.com/azure/azure-monitor/app/asp-net-core)
-- [OpenTelemetry Data Collection in Azure Monitor](https://learn.microsoft.com/azure/azure-monitor/app/opentelemetry-data-collection)
-- [Azure Well-Architected Framework - Operational Excellence](https://learn.microsoft.com/azure/well-architected/operational-excellence/)
-
-### Azure Developer CLI
-- [Azure Developer CLI Documentation](https://learn.microsoft.com/azure/developer/azure-developer-cli/)
-- [azd Reference](https://learn.microsoft.com/azure/developer/azure-developer-cli/reference)
-
-## Contributing
-
-We welcome contributions! Please see our Contributing Guide for details on:
-
-- How to submit issues and feature requests
-- Code contribution guidelines
-- Development workflow
-- Coding standards and best practices
-- Pull request process
-
-Before contributing, please review:
-- Code of Conduct
-- Security Policy
-
-### Quick Contribution Steps
-
-1. Fork the repository
-2. Create a feature branch: `git checkout -b feature/your-feature-name`
-3. Make your changes and commit: `git commit -m 'Add some feature'`
-4. Push to your fork: `git push origin feature/your-feature-name`
-5. Submit a Pull Request
-
-## Code of Conduct
-
-This project has adopted the [Microsoft Open Source Code of Conduct](https://opensource.microsoft.com/codeofconduct/). For more information, see the [Code of Conduct FAQ](https://opensource.microsoft.com/codeofconduct/faq/) or contact [opencode@microsoft.com](mailto:opencode@microsoft.com) with any additional questions or comments.
-
-## License
-
-This project is licensed under the MIT License - see the LICENSE.md file for details.
+1. Check Azure Portal for resource group `rg-orders-{env}-{location}`
+2. Navigate to Application Insights to view live metrics
+3. Access the deployed Blazor app via Container Apps URL
+4. Test order submission and verify Service Bus messages
 
 ---
 
-**Questions or Issues?**
+## Monitoring & Observability
 
-- 📖 Review the documentation
-- 🐛 [Open an issue](https://github.com/Evilazaro/Azure-LogicApps-Monitoring/issues)
-- 💬 Start a [discussion](https://github.com/Evilazaro/Azure-LogicApps-Monitoring/discussions)
+### Application Insights Integration
 
-**Built with ❤️ using .NET Aspire and Azure**
+All components automatically send telemetry to Application Insights:
 
-Similar code found with 2 license types
+- **Distributed Traces**: End-to-end request tracking across services
+- **Metrics**: Performance counters, custom metrics, dependency timings
+- **Logs**: Structured logging from .NET applications and Logic Apps
+- **Live Metrics**: Real-time monitoring dashboard
+
+#### Access Application Insights
+
+```bash
+azd env get-value AZURE_APPLICATION_INSIGHTS_NAME
+```
+
+Navigate to **Azure Portal → Application Insights → [Your Instance]**.
+
+### Log Analytics Workspace
+
+Centralized logging with **30-day retention** for:
+- Container Apps logs
+- Service Bus diagnostic logs
+- Logic Apps workflow execution history
+- Container Registry audit logs
+
+Query logs using **Kusto Query Language (KQL)**:
+
+```kql
+ContainerAppConsoleLogs_CL
+| where TimeGenerated > ago(1h)
+| project TimeGenerated, Log_s, ContainerAppName_s
+| order by TimeGenerated desc
+```
+
+### .NET Aspire Dashboard (Local)
+
+For local development, the Aspire Dashboard provides:
+- **Traces**: OpenTelemetry distributed tracing visualization
+- **Metrics**: Real-time performance metrics
+- **Logs**: Aggregated application logs
+- **Structured Logs**: JSON-formatted log entries
+
+Access at `http://localhost:15888` when running locally.
+
+### Diagnostic Settings
+
+All Azure resources are configured with diagnostic settings via monitoring to send:
+- **All Logs**: Category group `allLogs`
+- **All Metrics**: Category group `allMetrics`
+
+Data flows to both Log Analytics workspace and long-term storage accounts.
+
+### Health Monitoring
+
+Health checks are implemented in Extensions.cs:
+- `/health` - Comprehensive health check endpoint
+- `/alive` - Liveness probe endpoint
+
+Container Apps automatically uses these for health monitoring.
+
+---
+
+## References & Documentation
+
+### Azure Services Documentation
+
+- [Azure Logic Apps Standard](https://learn.microsoft.com/azure/logic-apps/logic-apps-overview)
+- [Azure Service Bus](https://learn.microsoft.com/azure/service-bus-messaging/)
+- [Azure Container Apps](https://learn.microsoft.com/azure/container-apps/)
+- [Application Insights](https://learn.microsoft.com/azure/azure-monitor/app/app-insights-overview)
+- [.NET Aspire](https://learn.microsoft.com/dotnet/aspire/)
+
+### Architecture & Best Practices
+
+- [Azure Well-Architected Framework](https://learn.microsoft.com/azure/well-architected/)
+- [Cloud Adoption Framework](https://learn.microsoft.com/azure/cloud-adoption-framework/)
+- [TOGAF Architecture Framework](https://www.opengroup.org/togaf)
+- [OpenTelemetry for .NET](https://opentelemetry.io/docs/languages/net/)
+
+### Related Projects
+
+- [.NET Aspire Samples](https://github.com/dotnet/aspire-samples)
+- [Azure Developer CLI Templates](https://github.com/Azure/awesome-azd)
+
+---
+
+## Contributing
+
+We welcome contributions! Please see CONTRIBUTING.md for guidelines on:
+
+- Reporting issues
+- Submitting pull requests
+- Code style and conventions
+- Development workflow
+
+### Code of Conduct
+
+This project follows the Microsoft Open Source Code of Conduct.
+
+### Security
+
+For security vulnerabilities, please see SECURITY.md for responsible disclosure procedures.
+
+---
+
+## License
+
+This project is licensed under the **MIT License**. See LICENSE for full details.
+
+---
+
+**Maintained by**: [Evilazaro](https://github.com/Evilazaro)  
+**Questions?** Open an [issue](https://github.com/Evilazaro/Azure-LogicApps-Monitoring/issues)  
+**Repository**: [Azure-LogicApps-Monitoring](https://github.com/Evilazaro/Azure-LogicApps-Monitoring)
