@@ -1,5 +1,6 @@
 using eShop.Orders.API.Handlers;
 using eShop.Orders.API.Interfaces;
+using eShop.Orders.API.Repositories;
 using eShop.Orders.API.Services;
 using eShop.Orders.API.Services.Interfaces;
 
@@ -8,8 +9,20 @@ var builder = WebApplication.CreateBuilder(args);
 builder.AddServiceDefaults();
 
 // Add services to the container.
+builder.Services.Configure<OrderStorageOptions>(
+    builder.Configuration.GetSection(OrderStorageOptions.SectionName));
+
+builder.Services.AddScoped<IOrderRepository, OrderRepository>();
 builder.Services.AddScoped<IOrderService, OrderService>();
 builder.Services.AddScoped<IOrdersMessageHandler, OrdersMessageHandler>();
+
+// Add health checks for dependencies
+builder.Services.AddHealthChecks()
+    .AddCheck("self", () => Microsoft.Extensions.Diagnostics.HealthChecks.HealthCheckResult.Healthy())
+    .AddAzureServiceBusTopic(
+        builder.Configuration.GetConnectionString("serviceBus") ?? string.Empty,
+        builder.Configuration["Azure:ServiceBus:TopicName"] ?? "OrdersPlaced",
+        name: "servicebus");
 
 builder.Services.AddControllers();
 
