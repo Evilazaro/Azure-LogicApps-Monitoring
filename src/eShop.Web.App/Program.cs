@@ -10,7 +10,7 @@ builder.AddServiceDefaults();
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 
-builder.Services.AddHttpClient<OrdersService>(client =>
+builder.Services.AddHttpClient<OrdersAPIService>(client =>
 {
     var baseAddress = builder.Configuration["services:orders-api:https:0"] ?? "https://localhost:7001";
     client.BaseAddress = new Uri(baseAddress);

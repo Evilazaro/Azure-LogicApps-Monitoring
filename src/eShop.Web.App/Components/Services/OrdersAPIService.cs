@@ -3,13 +3,13 @@ using System.Diagnostics;
 
 namespace eShop.Web.App.Components.Services;
 
-public class OrdersService
+public class OrdersAPIService
 {
     private readonly HttpClient _httpClient;
-    private readonly ILogger<OrdersService> _logger;
+    private readonly ILogger<OrdersAPIService> _logger;
     private static readonly ActivitySource ActivitySource = new("eShop.Web.App");
 
-    public OrdersService(HttpClient httpClient, ILogger<OrdersService> logger)
+    public OrdersAPIService(HttpClient httpClient, ILogger<OrdersAPIService> logger)
     {
         _httpClient = httpClient ?? throw new ArgumentNullException(nameof(httpClient));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
