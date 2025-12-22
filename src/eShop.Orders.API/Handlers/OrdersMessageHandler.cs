@@ -29,18 +29,6 @@ namespace eShop.Orders.API.Handlers
             var messages = orders.Select(order => new ServiceBusMessage(System.Text.Json.JsonSerializer.Serialize(order))).ToList();
             await sender.SendMessagesAsync(messages, cancellationToken);
         }
-
-        public async Task GetOrderMessageAsync()
-        {
-            var receiver = _seviceBusClient.CreateReceiver("orders-topic", "orders-subscription");
-            var message = await receiver.ReceiveMessageAsync();
-            if (message != null)
-            {
-                var order = System.Text.Json.JsonSerializer.Deserialize<Order>(message.Body.ToString());
-                await receiver.CompleteMessageAsync(message);
-            }
-        }
-
         public async Task CloseAsync()
         {
             await _seviceBusClient.DisposeAsync();
