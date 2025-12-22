@@ -101,27 +101,23 @@ public static class Extensions
         return builder;
     }
 
-    public static IHostApplicationBuilder AddAzureServiceBus(this IHostApplicationBuilder builder)
+    public static IHostApplicationBuilder AddAzureServiceBusClient(this IHostApplicationBuilder builder)
     {
+        var messagingHostName = builder.Configuration["MESSAGING_HOST"]
+                          ?? throw new InvalidOperationException("Service Bus is not configured");
+
         builder.Services.AddSingleton(serviceProvider =>
         {
-            // Read from configuration hierarchy (appsettings.json -> user secrets -> environment variables)
-            var sbHostName = builder.Configuration["Azure:ServiceBus:HostName"]
-                          ?? builder.Configuration["messaging"]
-                          ?? throw new InvalidOperationException("Service Bus hostname not configured");
-
-            // For local development with Aspire emulator, check if it's a connection string
-            if (sbHostName.Contains("Endpoint="))
+            if (messagingHostName == "messaging")
             {
-                return new ServiceBusClient(sbHostName);
+                return new ServiceBusClient(builder.Configuration["MESSAGING_CONNECTIONSTRING"]);
             }
-
-            // For Azure deployment, construct the fully qualified namespace and use DefaultAzureCredential
-            var fullyQualifiedNamespace = sbHostName.Contains(".servicebus.windows.net")
-                ? sbHostName
-                : $"{sbHostName}.servicebus.windows.net";
-
-            return new ServiceBusClient(fullyQualifiedNamespace, new DefaultAzureCredential());
+            else
+            {
+                var credential = new DefaultAzureCredential();
+                var fullyQualifiedName = builder.Configuration["MESSAGING_HOST"];
+                return new ServiceBusClient(fullyQualifiedName, credential);
+            }
         });
 
         return builder;
