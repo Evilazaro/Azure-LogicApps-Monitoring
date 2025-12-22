@@ -13,7 +13,7 @@ public class OrderService : IOrderService
     private readonly IOrdersMessageHandler _ordersMessageHandler;
     private static readonly ActivitySource ActivitySource = new("eShop.Orders.API");
     private static readonly Meter Meter = new("eShop.Orders.API");
-    
+
     private readonly Counter<long> _ordersPlacedCounter;
     private readonly Histogram<double> _orderProcessingDuration;
     private readonly Counter<long> _orderProcessingErrors;
@@ -26,7 +26,7 @@ public class OrderService : IOrderService
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         _orderRepository = orderRepository ?? throw new ArgumentNullException(nameof(orderRepository));
         _ordersMessageHandler = ordersMessageHandler ?? throw new ArgumentNullException(nameof(ordersMessageHandler));
-        
+
         // Initialize metrics
         _ordersPlacedCounter = Meter.CreateCounter<long>(
             "orders.placed",
@@ -45,10 +45,10 @@ public class OrderService : IOrderService
     public async Task<Order> PlaceOrderAsync(Order order, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(order);
-        
+
         using var activity = ActivitySource.StartActivity("PlaceOrder", ActivityKind.Internal);
         var startTime = DateTime.UtcNow;
-        
+
         try
         {
             activity?.SetTag("order.id", order.Id);
@@ -70,15 +70,15 @@ public class OrderService : IOrderService
 
             // Save order to repository first
             await _orderRepository.SaveOrderAsync(order, cancellationToken).ConfigureAwait(false);
-            
+
             // Send message to Service Bus
             await _ordersMessageHandler.SendOrderMessageAsync(order, cancellationToken).ConfigureAwait(false);
-            
+
             // Record metrics
             _ordersPlacedCounter.Add(1, new KeyValuePair<string, object?>("customer.id", order.CustomerId));
             var duration = (DateTime.UtcNow - startTime).TotalMilliseconds;
             _orderProcessingDuration.Record(duration);
-            
+
             _logger.LogInformation("Order {OrderId} placed successfully in {Duration}ms", order.Id, duration);
             return order;
         }
@@ -94,16 +94,16 @@ public class OrderService : IOrderService
     public async Task<IEnumerable<Order>> PlaceOrdersBatchAsync(IEnumerable<Order> orders, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(orders);
-        
+
         using var activity = ActivitySource.StartActivity("PlaceOrdersBatch", ActivityKind.Internal);
         var startTime = DateTime.UtcNow;
-        
+
         var ordersList = orders.ToList();
         if (ordersList.Count == 0)
         {
             throw new ArgumentException("Orders collection cannot be empty", nameof(orders));
         }
-        
+
         activity?.SetTag("orders.count", ordersList.Count);
         _logger.LogInformation("Placing batch of {Count} orders", ordersList.Count);
 
@@ -151,10 +151,10 @@ public class OrderService : IOrderService
             _logger.LogInformation("Retrieving all orders");
             var orders = await _orderRepository.GetAllOrdersAsync(cancellationToken).ConfigureAwait(false);
             var ordersList = orders.ToList();
-            
+
             activity?.SetTag("orders.retrieved.count", ordersList.Count);
             _logger.LogInformation("Retrieved {Count} orders", ordersList.Count);
-            
+
             return ordersList;
         }
         catch (Exception ex)
@@ -170,7 +170,7 @@ public class OrderService : IOrderService
         {
             throw new ArgumentException("Order ID cannot be null or empty", nameof(orderId));
         }
-        
+
         using var activity = ActivitySource.StartActivity("GetOrderById", ActivityKind.Internal);
         activity?.SetTag("order.id", orderId);
 

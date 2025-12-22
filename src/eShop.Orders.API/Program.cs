@@ -16,14 +16,6 @@ builder.Services.AddScoped<IOrderRepository, OrderRepository>();
 builder.Services.AddScoped<IOrderService, OrderService>();
 builder.Services.AddScoped<IOrdersMessageHandler, OrdersMessageHandler>();
 
-// Add health checks for dependencies
-builder.Services.AddHealthChecks()
-    .AddCheck("self", () => Microsoft.Extensions.Diagnostics.HealthChecks.HealthCheckResult.Healthy())
-    .AddAzureServiceBusTopic(
-        builder.Configuration.GetConnectionString("serviceBus") ?? string.Empty,
-        builder.Configuration["Azure:ServiceBus:TopicName"] ?? "OrdersPlaced",
-        name: "servicebus");
-
 builder.Services.AddControllers();
 
 // Configure OpenAPI/Swagger

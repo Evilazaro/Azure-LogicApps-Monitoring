@@ -30,11 +30,11 @@ public class OrdersController : ControllerBase
         {
             return BadRequest("Order cannot be null");
         }
-        
+
         using var activity = ActivitySource.StartActivity("PlaceOrder", ActivityKind.Server);
         activity?.SetTag("order.id", order.Id);
         activity?.SetTag("order.customer_id", order.CustomerId);
-        
+
         // Add trace ID to log scope for correlation
         using var logScope = _logger.BeginScope(new Dictionary<string, object>
         {
@@ -64,7 +64,7 @@ public class OrdersController : ControllerBase
         {
             activity?.SetStatus(ActivityStatusCode.Error, ex.Message);
             _logger.LogError(ex, "Unexpected error while placing order {OrderId}", order.Id);
-            return StatusCode(StatusCodes.Status500InternalServerError, 
+            return StatusCode(StatusCodes.Status500InternalServerError,
                 new { error = "An error occurred while processing your request", orderId = order.Id });
         }
     }
@@ -79,11 +79,11 @@ public class OrdersController : ControllerBase
         {
             return BadRequest("Orders collection cannot be null or empty");
         }
-        
+
         using var activity = ActivitySource.StartActivity("PlaceOrdersBatch", ActivityKind.Server);
         var ordersList = orders.ToList();
         activity?.SetTag("orders.count", ordersList.Count);
-        
+
         using var logScope = _logger.BeginScope(new Dictionary<string, object>
         {
             ["TraceId"] = Activity.Current?.TraceId.ToString() ?? "none",
@@ -100,7 +100,7 @@ public class OrdersController : ControllerBase
         {
             activity?.SetStatus(ActivityStatusCode.Error, ex.Message);
             _logger.LogError(ex, "Unexpected error while placing batch of orders");
-            return StatusCode(StatusCodes.Status500InternalServerError, 
+            return StatusCode(StatusCodes.Status500InternalServerError,
                 new { error = "An error occurred while processing your request" });
         }
     }
@@ -111,7 +111,7 @@ public class OrdersController : ControllerBase
     public async Task<ActionResult<IEnumerable<Order>>> GetOrders(CancellationToken cancellationToken)
     {
         using var activity = ActivitySource.StartActivity("GetOrders", ActivityKind.Server);
-        
+
         using var logScope = _logger.BeginScope(new Dictionary<string, object>
         {
             ["TraceId"] = Activity.Current?.TraceId.ToString() ?? "none"
@@ -127,7 +127,7 @@ public class OrdersController : ControllerBase
         {
             activity?.SetStatus(ActivityStatusCode.Error, ex.Message);
             _logger.LogError(ex, "Unexpected error while retrieving orders");
-            return StatusCode(StatusCodes.Status500InternalServerError, 
+            return StatusCode(StatusCodes.Status500InternalServerError,
                 new { error = "An error occurred while processing your request" });
         }
     }
@@ -143,10 +143,10 @@ public class OrdersController : ControllerBase
         {
             return BadRequest(new { error = "Order ID cannot be empty" });
         }
-        
+
         using var activity = ActivitySource.StartActivity("GetOrderById", ActivityKind.Server);
         activity?.SetTag("order.id", id);
-        
+
         using var logScope = _logger.BeginScope(new Dictionary<string, object>
         {
             ["TraceId"] = Activity.Current?.TraceId.ToString() ?? "none",
@@ -170,7 +170,7 @@ public class OrdersController : ControllerBase
         {
             activity?.SetStatus(ActivityStatusCode.Error, ex.Message);
             _logger.LogError(ex, "Unexpected error while retrieving order {OrderId}", id);
-            return StatusCode(StatusCodes.Status500InternalServerError, 
+            return StatusCode(StatusCodes.Status500InternalServerError,
                 new { error = "An error occurred while processing your request", orderId = id });
         }
     }

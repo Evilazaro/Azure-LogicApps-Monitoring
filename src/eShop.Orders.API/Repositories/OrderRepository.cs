@@ -1,7 +1,7 @@
-using System.Text.Json;
 using app.ServiceDefaults.CommonTypes;
 using eShop.Orders.API.Interfaces;
 using Microsoft.Extensions.Options;
+using System.Text.Json;
 
 namespace eShop.Orders.API.Repositories;
 
@@ -34,7 +34,7 @@ public sealed class OrderRepository : IOrderRepository, IDisposable
         {
             var orders = await GetAllOrdersInternalAsync(filePath, cancellationToken).ConfigureAwait(false);
             var ordersList = orders.ToList();
-            
+
             // Add or update order
             var existingIndex = ordersList.FindIndex(o => o.Id == order.Id);
             if (existingIndex >= 0)
@@ -109,9 +109,9 @@ public sealed class OrderRepository : IOrderRepository, IDisposable
     private string GetFilePath()
     {
         ObjectDisposedException.ThrowIf(_disposed, this);
-        
+
         var directory = Path.Combine(_environment.ContentRootPath, _options.StorageDirectory);
-        
+
         if (!Directory.Exists(directory))
         {
             Directory.CreateDirectory(directory);
@@ -120,14 +120,14 @@ public sealed class OrderRepository : IOrderRepository, IDisposable
 
         return Path.Combine(directory, _options.FileName);
     }
-    
+
     public void Dispose()
     {
         if (_disposed)
         {
             return;
         }
-        
+
         _fileLock?.Dispose();
         _disposed = true;
     }
@@ -136,7 +136,7 @@ public sealed class OrderRepository : IOrderRepository, IDisposable
 public sealed class OrderStorageOptions
 {
     public const string SectionName = "OrderStorage";
-    
+
     public required string StorageDirectory { get; init; } = "Files";
     public required string FileName { get; init; } = "orders.json";
 }

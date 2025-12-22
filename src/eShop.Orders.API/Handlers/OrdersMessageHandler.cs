@@ -1,7 +1,6 @@
 ﻿using app.ServiceDefaults.CommonTypes;
 using Azure.Messaging.ServiceBus;
 using eShop.Orders.API.Interfaces;
-using Microsoft.Azure.Amqp.Framing;
 using System.Diagnostics;
 using System.Text.Json;
 
@@ -31,7 +30,7 @@ public class OrdersMessageHandler : IOrdersMessageHandler
     public async Task SendOrderMessageAsync(Order order, CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(order);
-        
+
         using var activity = ActivitySource.StartActivity("SendOrderMessage", ActivityKind.Producer);
         activity?.SetTag("messaging.system", "servicebus");
         activity?.SetTag("messaging.destination", _topicName);
@@ -58,7 +57,7 @@ public class OrdersMessageHandler : IOrdersMessageHandler
             }
 
             await sender.SendMessageAsync(message, cancellationToken).ConfigureAwait(false);
-            
+
             activity?.SetStatus(ActivityStatusCode.Ok);
             _logger.LogInformation("Successfully sent order message for order {OrderId} to topic {TopicName}",
                 order.Id, _topicName);
@@ -75,16 +74,16 @@ public class OrdersMessageHandler : IOrdersMessageHandler
     public async Task SendOrdersBatchMessageAsync(IEnumerable<Order> orders, CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(orders);
-        
+
         using var activity = ActivitySource.StartActivity("SendOrdersBatchMessage", ActivityKind.Producer);
-        
+
         var ordersList = orders.ToList();
         if (ordersList.Count == 0)
         {
             _logger.LogWarning("Empty orders collection provided for batch send");
             return;
         }
-        
+
         activity?.SetTag("messaging.system", "servicebus");
         activity?.SetTag("messaging.destination", _topicName);
         activity?.SetTag("messaging.batch.message_count", ordersList.Count);
@@ -94,7 +93,7 @@ public class OrdersMessageHandler : IOrdersMessageHandler
         try
         {
             var messages = new List<ServiceBusMessage>();
-            
+
             foreach (var order in ordersList)
             {
                 activity?.AddEvent(new ActivityEvent("OrderInBatch",
@@ -117,7 +116,7 @@ public class OrdersMessageHandler : IOrdersMessageHandler
                     message.ApplicationProperties["TraceId"] = activity.TraceId.ToString();
                     message.ApplicationProperties["SpanId"] = activity.SpanId.ToString();
                 }
-                
+
                 messages.Add(message);
             }
 

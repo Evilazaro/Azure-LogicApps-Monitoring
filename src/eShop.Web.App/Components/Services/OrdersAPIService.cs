@@ -18,12 +18,12 @@ public class OrdersAPIService
     public async Task<Order> PlaceOrderAsync(Order order, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(order);
-        
+
         if (string.IsNullOrWhiteSpace(order.Id))
         {
             throw new ArgumentException("Order ID is required", nameof(order));
         }
-        
+
         using var activity = ActivitySource.StartActivity("PlaceOrder", ActivityKind.Client);
         activity?.SetTag("order.id", order.Id);
         activity?.SetTag("order.customer_id", order.CustomerId);
@@ -37,10 +37,10 @@ public class OrdersAPIService
         try
         {
             _logger.LogInformation("Placing order with ID: {OrderId}", order.Id);
-            
+
             var response = await _httpClient.PostAsJsonAsync("api/orders", order, cancellationToken).ConfigureAwait(false);
             response.EnsureSuccessStatusCode();
-            
+
             var createdOrder = await response.Content.ReadFromJsonAsync<Order>(cancellationToken: cancellationToken).ConfigureAwait(false);
 
             if (createdOrder == null)
@@ -70,7 +70,7 @@ public class OrdersAPIService
     public async Task<IEnumerable<Order>> PlaceOrdersBatchAsync(IEnumerable<Order> orders, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(orders);
-        
+
         using var activity = ActivitySource.StartActivity("PlaceOrdersBatch", ActivityKind.Client);
 
         var ordersList = orders.ToList();
@@ -78,7 +78,7 @@ public class OrdersAPIService
         {
             throw new ArgumentException("Orders collection cannot be empty", nameof(orders));
         }
-        
+
         activity?.SetTag("orders.count", ordersList.Count);
 
         using var logScope = _logger.BeginScope(new Dictionary<string, object>
@@ -90,10 +90,10 @@ public class OrdersAPIService
         try
         {
             _logger.LogInformation("Placing batch of {Count} orders", ordersList.Count);
-            
+
             var response = await _httpClient.PostAsJsonAsync("api/orders/batch", ordersList, cancellationToken).ConfigureAwait(false);
             response.EnsureSuccessStatusCode();
-            
+
             var placedOrders = await response.Content.ReadFromJsonAsync<IEnumerable<Order>>(cancellationToken: cancellationToken).ConfigureAwait(false);
 
             var result = placedOrders ?? Enumerable.Empty<Order>();
@@ -118,7 +118,7 @@ public class OrdersAPIService
     public async Task<IEnumerable<Order>> GetOrdersAsync(CancellationToken cancellationToken = default)
     {
         using var activity = ActivitySource.StartActivity("GetOrders", ActivityKind.Client);
-        
+
         using var logScope = _logger.BeginScope(new Dictionary<string, object>
         {
             ["TraceId"] = Activity.Current?.TraceId.ToString() ?? "none"
@@ -127,10 +127,10 @@ public class OrdersAPIService
         try
         {
             _logger.LogInformation("Retrieving all orders from orders-api");
-            
+
             var orders = await _httpClient.GetFromJsonAsync<IEnumerable<Order>>("api/orders", cancellationToken).ConfigureAwait(false);
             var result = orders ?? Enumerable.Empty<Order>();
-            
+
             activity?.SetTag("orders.count", result.Count());
             activity?.SetStatus(ActivityStatusCode.Ok);
             _logger.LogInformation("Successfully retrieved {Count} orders", result.Count());
@@ -156,7 +156,7 @@ public class OrdersAPIService
         {
             throw new ArgumentException("Order ID cannot be null or empty", nameof(orderId));
         }
-        
+
         using var activity = ActivitySource.StartActivity("GetOrderById", ActivityKind.Client);
         activity?.SetTag("order.id", orderId);
 
@@ -169,7 +169,7 @@ public class OrdersAPIService
         try
         {
             _logger.LogInformation("Retrieving order with ID: {OrderId}", orderId);
-            
+
             var order = await _httpClient.GetFromJsonAsync<Order>($"api/orders/{orderId}", cancellationToken).ConfigureAwait(false);
 
             if (order == null)
@@ -213,7 +213,7 @@ public class OrdersAPIService
         {
             _logger.LogInformation("Fetching weather forecasts from orders-api");
             var forecasts = await _httpClient.GetFromJsonAsync<IEnumerable<WeatherForecast>>("WeatherForecast", cancellationToken).ConfigureAwait(false);
-            
+
             activity?.SetTag("forecasts.count", forecasts?.Count() ?? 0);
             _logger.LogInformation("Successfully retrieved {Count} weather forecasts", forecasts?.Count() ?? 0);
             return forecasts;
@@ -247,7 +247,7 @@ public class OrdersAPIService
             _logger.LogInformation("Updating order {OrderId}", id);
             var response = await _httpClient.PutAsJsonAsync($"api/orders/{id}", order, cancellationToken).ConfigureAwait(false);
             var success = response.IsSuccessStatusCode;
-            
+
             if (success)
             {
                 _logger.LogInformation("Successfully updated order {OrderId}", id);
@@ -256,7 +256,7 @@ public class OrdersAPIService
             {
                 _logger.LogWarning("Failed to update order {OrderId}. Status code: {StatusCode}", id, response.StatusCode);
             }
-            
+
             return success;
         }
         catch (HttpRequestException ex)
@@ -286,7 +286,7 @@ public class OrdersAPIService
             _logger.LogInformation("Deleting order {OrderId}", id);
             var response = await _httpClient.DeleteAsync($"api/orders/{id}", cancellationToken).ConfigureAwait(false);
             var success = response.IsSuccessStatusCode;
-            
+
             if (success)
             {
                 _logger.LogInformation("Successfully deleted order {OrderId}", id);
@@ -295,7 +295,7 @@ public class OrdersAPIService
             {
                 _logger.LogWarning("Failed to delete order {OrderId}. Status code: {StatusCode}", id, response.StatusCode);
             }
-            
+
             return success;
         }
         catch (HttpRequestException ex)

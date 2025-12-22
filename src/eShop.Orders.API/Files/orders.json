@@ -1,0 +1,35 @@
+[
+  {
+    "Id": "ORD-1950",
+    "CustomerId": "CUST-9722",
+    "Date": "2024-02-23T17:35:35Z",
+    "DeliveryAddress": "1 Apple Park Way, Cupertino, CA, USA",
+    "Total": 165.56,
+    "Products": [
+      {
+        "Id": "OP-1950-1",
+        "OrderId": "ORD-1950",
+        "ProductId": "PROD-6002",
+        "ProductDescription": "HDMI 2.1 Cable",
+        "Quantity": 3,
+        "Price": 24.5
+      },
+      {
+        "Id": "OP-1950-2",
+        "OrderId": "ORD-1950",
+        "ProductId": "PROD-4001",
+        "ProductDescription": "Laptop Stand",
+        "Quantity": 1,
+        "Price": 53.3
+      },
+      {
+        "Id": "OP-1950-3",
+        "OrderId": "ORD-1950",
+        "ProductId": "PROD-5002",
+        "ProductDescription": "Smartphone Holder",
+        "Quantity": 2,
+        "Price": 19.38
+      }
+    ]
+  }
+]
