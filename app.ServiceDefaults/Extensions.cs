@@ -12,11 +12,20 @@ using OpenTelemetry.Trace;
 
 namespace Microsoft.Extensions.Hosting;
 
-public static class Extensions
+/// <summary>\n/// Provides extension methods for configuring common service defaults including OpenTelemetry,\n/// health checks, service discovery, and Azure Service Bus integration.\n/// </summary>\npublic static class Extensions
 {
     private const string HealthEndpointPath = "/health";
     private const string AlivenessEndpointPath = "/alive";
+    private const string MessagingHostConfigKey = "MESSAGING_HOST";
+    private const string MessagingConnectionStringKey = "ConnectionStrings:messaging";
+    private const string LocalhostValue = "localhost";
 
+    /// <summary>
+    /// Adds common service defaults including OpenTelemetry, health checks, and service discovery.
+    /// </summary>
+    /// <typeparam name=\"TBuilder\">The type of host application builder.</typeparam>
+    /// <param name=\"builder\">The host application builder to configure.</param>
+    /// <returns>The configured builder instance for method chaining.</returns>
     public static TBuilder AddServiceDefaults<TBuilder>(this TBuilder builder) where TBuilder : IHostApplicationBuilder
     {
         builder.ConfigureOpenTelemetry();
@@ -27,13 +36,22 @@ public static class Extensions
 
         builder.Services.ConfigureHttpClientDefaults(http =>
         {
+            // Add resilience handler with retry, timeout, and circuit breaker policies
             http.AddStandardResilienceHandler();
+            
+            // Enable service discovery for HTTP clients
             http.AddServiceDiscovery();
         });
 
         return builder;
     }
 
+    /// <summary>
+    /// Configures OpenTelemetry for distributed tracing, metrics, and logging with proper instrumentation.
+    /// </summary>
+    /// <typeparam name=\"TBuilder\">The type of host application builder.</typeparam>
+    /// <param name=\"builder\">The host application builder to configure.</param>
+    /// <returns>The configured builder instance for method chaining.</returns>
     public static TBuilder ConfigureOpenTelemetry<TBuilder>(this TBuilder builder) where TBuilder : IHostApplicationBuilder
     {
         builder.Logging.AddOpenTelemetry(logging =>
@@ -67,6 +85,12 @@ public static class Extensions
         return builder;
     }
 
+    /// <summary>
+    /// Adds OpenTelemetry exporters (OTLP and Azure Monitor) based on configuration.
+    /// </summary>
+    /// <typeparam name="TBuilder">The type of host application builder.</typeparam>
+    /// <param name="builder">The host application builder to configure.</param>
+    /// <returns>The configured builder instance for method chaining.</returns>
     private static TBuilder AddOpenTelemetryExporters<TBuilder>(this TBuilder builder) where TBuilder : IHostApplicationBuilder
     {
         var useOtlpExporter = !string.IsNullOrWhiteSpace(builder.Configuration["OTEL_EXPORTER_OTLP_ENDPOINT"]);
@@ -94,6 +118,12 @@ public static class Extensions
         return builder;
     }
 
+    /// <summary>
+    /// Adds default health checks including a self-check endpoint for liveness probes.
+    /// </summary>
+    /// <typeparam name="TBuilder">The type of host application builder.</typeparam>
+    /// <param name="builder">The host application builder to configure.</param>
+    /// <returns>The configured builder instance for method chaining.</returns>
     public static TBuilder AddDefaultHealthChecks<TBuilder>(this TBuilder builder) where TBuilder : IHostApplicationBuilder
     {
         builder.Services.AddHealthChecks()
@@ -102,6 +132,14 @@ public static class Extensions
         return builder;
     }
 
+    /// <summary>
+    /// Registers an Azure Service Bus client with automatic configuration for local emulator or Azure deployment.
+    /// Supports both connection string authentication (local) and managed identity (Azure).
+    /// </summary>
+    /// <param name="builder">The host application builder.</param>
+    /// <returns>The configured builder instance for method chaining.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when builder is null.</exception>
+    /// <exception cref="InvalidOperationException">Thrown when required configuration is missing.</exception>
     public static IHostApplicationBuilder AddAzureServiceBusClient(this IHostApplicationBuilder builder)
     {
         ArgumentNullException.ThrowIfNull(builder);
@@ -112,26 +150,27 @@ public static class Extensions
 
             try
             {
-                var messagingHostName = builder.Configuration["MESSAGING_HOST"]
-                                      ?? throw new InvalidOperationException("MESSAGING_HOST configuration is required");
+                var messagingHostName = builder.Configuration[MessagingHostConfigKey]
+                                      ?? throw new InvalidOperationException($"\"{MessagingHostConfigKey}\" configuration is required for Service Bus client initialization\");
 
-                var connectionString = builder.Configuration["ConnectionStrings:messaging"]
-                                     ?? throw new InvalidOperationException("ConnectionStrings:messaging is required");
+                var connectionString = builder.Configuration[MessagingConnectionStringKey]
+                                     ?? throw new InvalidOperationException($"\"{MessagingConnectionStringKey}\" is required for Service Bus client initialization\");
 
-                if (messagingHostName.Equals("localhost", StringComparison.OrdinalIgnoreCase))
+                if (messagingHostName.Equals(LocalhostValue, StringComparison.OrdinalIgnoreCase))
                 {
-                    logger.LogInformation("Configuring Service Bus client for local emulator");
+                    logger.LogInformation(\"Configuring Service Bus client for local emulator mode\");
                     return new ServiceBusClient(connectionString);
                 }
                 else
                 {
-                    logger.LogInformation("Configuring Service Bus client for Azure with managed identity. HostName: {HostName}", messagingHostName);
+                    logger.LogInformation(\"Configuring Service Bus client for Azure with managed identity. HostName: {HostName}\", messagingHostName);
                     return new ServiceBusClient(messagingHostName, new DefaultAzureCredential());
                 }
             }
             catch (Exception ex)
             {
-                logger.LogError(ex, "Failed to create Service Bus client");
+                logger.LogError(ex, \"Failed to create Service Bus client. Ensure configuration keys '{MessagingHostKey}' and '{ConnectionStringKey}' are properly set\",
+                    MessagingHostConfigKey, MessagingConnectionStringKey);
                 throw;
             }
         });
@@ -139,7 +178,12 @@ public static class Extensions
         return builder;
     }
 
-
+    /// <summary>
+    /// Maps default health check endpoints for application health monitoring.
+    /// Includes both general health endpoint and liveness endpoint.
+    /// </summary>
+    /// <param name="app">The web application to configure.</param>
+    /// <returns>The configured web application instance for method chaining.</returns>
     public static WebApplication MapDefaultEndpoints(this WebApplication app)
     {
         if (app.Environment.IsDevelopment())

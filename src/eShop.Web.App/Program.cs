@@ -1,22 +1,28 @@
 using eShop.Web.App.Components;
 using eShop.Web.App.Components.Services;
 using Microsoft.FluentUI.AspNetCore.Components;
+using System.Diagnostics;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.AddServiceDefaults();
 
-// Add services to the container.
+// Register observability components for dependency injection
+builder.Services.AddSingleton(new ActivitySource(\"eShop.Web.App\"));
+
+// Add Razor Components with interactive server-side rendering
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 
-// Add SignalR services for Blazor Server
+// Configure SignalR for Blazor Server with optimal settings
 builder.Services.AddSignalR(options =>
 {
     if (builder.Environment.IsDevelopment())
     {
         options.EnableDetailedErrors = true;
     }
+    options.MaximumReceiveMessageSize = 32 * 1024; // 32 KB
+    options.StreamBufferCapacity = 10;
 });
 
 // Configure circuit options for better reliability and debugging
@@ -32,17 +38,20 @@ builder.Services.Configure<Microsoft.AspNetCore.Components.Server.CircuitOptions
     options.MaxBufferedUnacknowledgedRenderBatches = 10;
 });
 
-// Configure HTTP client for Orders API with proper error handling
-builder.Services.AddHttpClient<OrdersAPIService>(client =>
+// Configure typed HTTP client for Orders API with resilience and service discovery
+builder.Services.AddHttpClient<OrdersAPIService>((serviceProvider, client) =>
 {
-    var baseAddress = builder.Configuration["services:orders-api:https:0"]
-                    ?? builder.Configuration["services:orders-api:http:0"]
-                    ?? throw new InvalidOperationException("Orders API base address not configured");
+    var configuration = serviceProvider.GetRequiredService<IConfiguration>();
+    var baseAddress = configuration[\"services:orders-api:https:0\"]
+                    ?? configuration[\"services:orders-api:http:0\"]
+                    ?? throw new InvalidOperationException(\"Orders API base address not configured. Ensure 'services:orders-api' is set in configuration.\");
 
     client.BaseAddress = new Uri(baseAddress);
-    client.DefaultRequestHeaders.Add("Accept", "application/json");
+    client.DefaultRequestHeaders.Add(\"Accept\", \"application/json\");
     client.Timeout = TimeSpan.FromSeconds(30);
-});
+})
+.AddStandardResilienceHandler() // Adds retry, timeout, and circuit breaker policies
+.AddServiceDiscovery(); // Enables service discovery
 
 builder.Services.AddFluentUIComponents();
 

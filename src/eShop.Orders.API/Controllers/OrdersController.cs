@@ -5,20 +5,44 @@ using System.Diagnostics;
 
 namespace eShop.Orders.API.Controllers;
 
+/// <summary>
+/// API controller for managing customer orders including placement, retrieval, and deletion.
+/// </summary>
 [ApiController]
 [Route("api/[controller]")]
-public class OrdersController : ControllerBase
+public sealed class OrdersController : ControllerBase
 {
     private readonly ILogger<OrdersController> _logger;
     private readonly IOrderService _orderService;
-    private static readonly ActivitySource ActivitySource = new("eShop.Orders.API");
+    private readonly ActivitySource _activitySource;
 
-    public OrdersController(ILogger<OrdersController> logger, IOrderService orderService)
+    /// <summary>
+    /// Initializes a new instance of the <see cref=\"OrdersController\"/> class.
+    /// </summary>
+    /// <param name=\"logger\">The logger instance for structured logging.</param>
+    /// <param name=\"orderService\">The service for order operations.</param>
+    /// <param name=\"activitySource\">The activity source for distributed tracing.</param>
+    /// <exception cref=\"ArgumentNullException\">Thrown when any parameter is null.</exception>
+    public OrdersController(
+        ILogger<OrdersController> logger,
+        IOrderService orderService,
+        ActivitySource activitySource)
     {
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         _orderService = orderService ?? throw new ArgumentNullException(nameof(orderService));
+        _activitySource = activitySource ?? throw new ArgumentNullException(nameof(activitySource));
     }
 
+    /// <summary>
+    /// Places a new order in the system.
+    /// </summary>
+    /// <param name=\"order\">The order details to be placed.</param>
+    /// <param name=\"cancellationToken\">Cancellation token to cancel the operation.</param>
+    /// <returns>The created order with status information.</returns>
+    /// <response code=\"201\">Returns the newly created order.</response>
+    /// <response code=\"400\">If the order data is invalid.</response>
+    /// <response code=\"409\">If an order with the same ID already exists.</response>
+    /// <response code=\"500\">If an internal server error occurs.</response>
     [HttpPost]
     [ProducesResponseType(typeof(Order), StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -28,22 +52,23 @@ public class OrdersController : ControllerBase
     {
         if (order == null)
         {
-            return BadRequest("Order cannot be null");
+            return BadRequest(new { error = \"Order cannot be null\" });
         }
 
-        using var activity = ActivitySource.StartActivity("PlaceOrder", ActivityKind.Server);
-        activity?.SetTag("order.id", order.Id);
-        activity?.SetTag("order.customer_id", order.CustomerId);
-        activity?.SetTag("order.total", order.Total);
-        activity?.SetTag("order.products.count", order.Products?.Count ?? 0);
-        activity?.SetTag("http.method", "POST");
-        activity?.SetTag("http.route", "/api/orders");
+        using var activity = _activitySource.StartActivity(\"PlaceOrder\", ActivityKind.Server);
+        activity?.SetTag(\"order.id\", order.Id);
+        activity?.SetTag(\"order.customer_id\", order.CustomerId);
+        activity?.SetTag(\"order.total\", order.Total);
+        activity?.SetTag(\"order.products.count\", order.Products?.Count ?? 0);
+        activity?.SetTag(\"http.method\", \"POST\");
+        activity?.SetTag(\"http.route\", \"/api/orders\");
 
         // Add trace ID to log scope for correlation
         using var logScope = _logger.BeginScope(new Dictionary<string, object>
         {
-            ["TraceId"] = Activity.Current?.TraceId.ToString() ?? "none",
-            ["SpanId"] = Activity.Current?.SpanId.ToString() ?? "none"
+            [\"TraceId\"] = Activity.Current?.TraceId.ToString() ?? \"none\",
+            [\"SpanId\"] = Activity.Current?.SpanId.ToString() ?? \"none\",
+            [\"OrderId\"] = order.Id
         });
 
         try
@@ -73,6 +98,15 @@ public class OrdersController : ControllerBase
         }
     }
 
+    /// <summary>
+    /// Places multiple orders in a single batch operation.
+    /// </summary>
+    /// <param name="orders">The collection of orders to be placed.</param>
+    /// <param name="cancellationToken">Cancellation token to cancel the operation.</param>
+    /// <returns>The collection of successfully placed orders.</returns>
+    /// <response code="200">Returns the successfully placed orders.</response>
+    /// <response code="400">If the orders collection is invalid.</response>
+    /// <response code="500">If an internal server error occurs.</response>
     [HttpPost("batch")]
     [ProducesResponseType(typeof(IEnumerable<Order>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -81,10 +115,10 @@ public class OrdersController : ControllerBase
     {
         if (orders == null || !orders.Any())
         {
-            return BadRequest("Orders collection cannot be null or empty");
+            return BadRequest(new { error = "Orders collection cannot be null or empty" });
         }
 
-        using var activity = ActivitySource.StartActivity("PlaceOrdersBatch", ActivityKind.Server);
+        using var activity = _activitySource.StartActivity("PlaceOrdersBatch", ActivityKind.Server);
         var ordersList = orders.ToList();
         activity?.SetTag("orders.count", ordersList.Count);
         activity?.SetTag("http.method", "POST");
@@ -111,12 +145,19 @@ public class OrdersController : ControllerBase
         }
     }
 
+    /// <summary>
+    /// Retrieves all orders from the system.
+    /// </summary>
+    /// <param name="cancellationToken">Cancellation token to cancel the operation.</param>
+    /// <returns>A collection of all orders.</returns>
+    /// <response code="200">Returns all orders in the system.</response>
+    /// <response code="500">If an internal server error occurs.</response>
     [HttpGet]
     [ProducesResponseType(typeof(IEnumerable<Order>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<ActionResult<IEnumerable<Order>>> GetOrders(CancellationToken cancellationToken)
     {
-        using var activity = ActivitySource.StartActivity("GetOrders", ActivityKind.Server);
+        using var activity = _activitySource.StartActivity("GetOrders", ActivityKind.Server);
         activity?.SetTag("http.method", "GET");
         activity?.SetTag("http.route", "/api/orders");
 
@@ -140,6 +181,16 @@ public class OrdersController : ControllerBase
         }
     }
 
+    /// <summary>
+    /// Retrieves a specific order by its unique identifier.
+    /// </summary>
+    /// <param name="id">The unique identifier of the order.</param>
+    /// <param name="cancellationToken">Cancellation token to cancel the operation.</param>
+    /// <returns>The order matching the specified ID, or 404 if not found.</returns>
+    /// <response code="200">Returns the requested order.</response>
+    /// <response code="400">If the order ID is invalid.</response>
+    /// <response code="404">If the order is not found.</response>
+    /// <response code="500">If an internal server error occurs.</response>
     [HttpGet("{id}")]
     [ProducesResponseType(typeof(Order), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -152,7 +203,7 @@ public class OrdersController : ControllerBase
             return BadRequest(new { error = "Order ID cannot be empty" });
         }
 
-        using var activity = ActivitySource.StartActivity("GetOrderById", ActivityKind.Server);
+        using var activity = _activitySource.StartActivity("GetOrderById", ActivityKind.Server);
         activity?.SetTag("order.id", id);
         activity?.SetTag("http.method", "GET");
         activity?.SetTag("http.route", "/api/orders/{id}");
@@ -185,6 +236,16 @@ public class OrdersController : ControllerBase
         }
     }
 
+    /// <summary>
+    /// Deletes an order from the system.
+    /// </summary>
+    /// <param name="id">The unique identifier of the order to delete.</param>
+    /// <param name="cancellationToken">Cancellation token to cancel the operation.</param>
+    /// <returns>No content on successful deletion.</returns>
+    /// <response code="204">If the order was successfully deleted.</response>
+    /// <response code="400">If the order ID is invalid.</response>
+    /// <response code="404">If the order is not found.</response>
+    /// <response code="500">If an internal server error occurs.</response>
     [HttpDelete("{id}")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -197,7 +258,7 @@ public class OrdersController : ControllerBase
             return BadRequest(new { error = "Order ID cannot be empty" });
         }
 
-        using var activity = ActivitySource.StartActivity("DeleteOrder", ActivityKind.Server);
+        using var activity = _activitySource.StartActivity("DeleteOrder", ActivityKind.Server);
         activity?.SetTag("order.id", id);
         activity?.SetTag("http.method", "DELETE");
         activity?.SetTag("http.route", "/api/orders/{id}");

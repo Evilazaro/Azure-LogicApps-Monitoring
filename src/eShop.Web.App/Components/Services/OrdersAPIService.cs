@@ -3,19 +3,34 @@ using System.Diagnostics;
 
 namespace eShop.Web.App.Components.Services;
 
+/// <summary>
+/// Provides HTTP client-based service for communicating with the Orders API.
+/// Implements distributed tracing and structured logging for all operations.
+/// </summary>
 public sealed class OrdersAPIService
 {
     private readonly HttpClient _httpClient;
     private readonly ILogger<OrdersAPIService> _logger;
-    private static readonly ActivitySource ActivitySource = new("eShop.Web.App");
+    private readonly ActivitySource _activitySource;
 
-    public OrdersAPIService(HttpClient httpClient, ILogger<OrdersAPIService> logger)
+    /// <summary>
+    /// Initializes a new instance of the <see cref=\"OrdersAPIService\"/> class.
+    /// </summary>
+    /// <param name=\"httpClient\">The HTTP client for API communication.</param>
+    /// <param name=\"logger\">The logger instance for structured logging.</param>
+    /// <param name=\"activitySource\">The activity source for distributed tracing.</param>
+    /// <exception cref=\"ArgumentNullException\">Thrown when any parameter is null.</exception>
+    public OrdersAPIService(
+        HttpClient httpClient,
+        ILogger<OrdersAPIService> logger,
+        ActivitySource activitySource)
     {
         _httpClient = httpClient ?? throw new ArgumentNullException(nameof(httpClient));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        _activitySource = activitySource ?? throw new ArgumentNullException(nameof(activitySource));
     }
 
-    public async Task<Order> PlaceOrderAsync(Order order, CancellationToken cancellationToken = default)
+    /// <summary>\n    /// Places a new order through the Orders API.\n    /// </summary>\n    /// <param name=\"order\">The order to be placed.</param>\n    /// <param name=\"cancellationToken\">Cancellation token to cancel the operation.</param>\n    /// <returns>The created order.</returns>\n    /// <exception cref=\"ArgumentNullException\">Thrown when order is null.</exception>\n    /// <exception cref=\"ArgumentException\">Thrown when order ID is invalid.</exception>\n    /// <exception cref=\"HttpRequestException\">Thrown when API request fails.</exception>\n    public async Task<Order> PlaceOrderAsync(Order order, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(order);
 
@@ -24,7 +39,7 @@ public sealed class OrdersAPIService
             throw new ArgumentException("Order ID is required", nameof(order));
         }
 
-        using var activity = ActivitySource.StartActivity("PlaceOrder", ActivityKind.Client);
+        using var activity = _activitySource.StartActivity("PlaceOrder", ActivityKind.Client);
         activity?.SetTag("order.id", order.Id);
         activity?.SetTag("order.customer_id", order.CustomerId);
         activity?.SetTag("http.method", "POST");
@@ -69,11 +84,20 @@ public sealed class OrdersAPIService
         }
     }
 
+    /// <summary>
+    /// Places multiple orders in a batch operation through the Orders API.
+    /// </summary>
+    /// <param name="orders">The collection of orders to be placed.</param>
+    /// <param name="cancellationToken">Cancellation token to cancel the operation.</param>
+    /// <returns>A collection of successfully placed orders.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when orders is null.</exception>
+    /// <exception cref="ArgumentException">Thrown when orders collection is empty.</exception>
+    /// <exception cref="HttpRequestException">Thrown when API request fails.</exception>
     public async Task<IEnumerable<Order>> PlaceOrdersBatchAsync(IEnumerable<Order> orders, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(orders);
 
-        using var activity = ActivitySource.StartActivity("PlaceOrdersBatch", ActivityKind.Client);
+        using var activity = _activitySource.StartActivity("PlaceOrdersBatch", ActivityKind.Client);
 
         var ordersList = orders.ToList();
         if (ordersList.Count == 0)
@@ -119,9 +143,15 @@ public sealed class OrdersAPIService
         }
     }
 
+    /// <summary>
+    /// Retrieves all orders from the Orders API.
+    /// </summary>
+    /// <param name="cancellationToken">Cancellation token to cancel the operation.</param>
+    /// <returns>A collection of all orders.</returns>
+    /// <exception cref="HttpRequestException">Thrown when API request fails.</exception>
     public async Task<IEnumerable<Order>> GetOrdersAsync(CancellationToken cancellationToken = default)
     {
-        using var activity = ActivitySource.StartActivity("GetOrders", ActivityKind.Client);
+        using var activity = _activitySource.StartActivity("GetOrders", ActivityKind.Client);
 
         using var logScope = _logger.BeginScope(new Dictionary<string, object>
         {
@@ -154,6 +184,14 @@ public sealed class OrdersAPIService
         }
     }
 
+    /// <summary>
+    /// Retrieves a specific order by its unique identifier from the Orders API.
+    /// </summary>
+    /// <param name="orderId">The unique identifier of the order.</param>
+    /// <param name="cancellationToken">Cancellation token to cancel the operation.</param>
+    /// <returns>The order if found; otherwise, null.</returns>
+    /// <exception cref="ArgumentException">Thrown when orderId is null or empty.</exception>
+    /// <exception cref="HttpRequestException">Thrown when API request fails (excluding 404).</exception>
     public async Task<Order?> GetOrderByIdAsync(string orderId, CancellationToken cancellationToken = default)
     {
         if (string.IsNullOrWhiteSpace(orderId))
@@ -161,7 +199,7 @@ public sealed class OrdersAPIService
             throw new ArgumentException("Order ID cannot be null or empty", nameof(orderId));
         }
 
-        using var activity = ActivitySource.StartActivity("GetOrderById", ActivityKind.Client);
+        using var activity = _activitySource.StartActivity("GetOrderById", ActivityKind.Client);
         activity?.SetTag("order.id", orderId);
 
         using var logScope = _logger.BeginScope(new Dictionary<string, object>
@@ -275,9 +313,17 @@ public sealed class OrdersAPIService
         }
     }
 
+    /// <summary>
+    /// Deletes an order by its unique identifier through the Orders API.
+    /// </summary>
+    /// <param name="id">The unique identifier of the order to delete.</param>
+    /// <param name="cancellationToken">Cancellation token to cancel the operation.</param>
+    /// <returns>True if the order was successfully deleted; otherwise, false.</returns>
+    /// <exception cref="ArgumentException">Thrown when id is null or empty.</exception>
+    /// <exception cref="HttpRequestException">Thrown when API request fails.</exception>
     public async Task<bool> DeleteOrderAsync(string id, CancellationToken cancellationToken = default)
     {
-        using var activity = ActivitySource.StartActivity("DeleteOrder", ActivityKind.Client);
+        using var activity = _activitySource.StartActivity("DeleteOrder", ActivityKind.Client);
         activity?.SetTag("order.id", id);
 
         if (string.IsNullOrWhiteSpace(id))

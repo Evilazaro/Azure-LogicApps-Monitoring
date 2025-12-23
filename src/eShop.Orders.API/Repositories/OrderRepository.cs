@@ -6,6 +6,10 @@ using System.Text.Json;
 
 namespace eShop.Orders.API.Repositories;
 
+/// <summary>
+/// Provides file-based persistence for order data with thread-safe operations.
+/// Implements the repository pattern for order management.
+/// </summary>
 public sealed class OrderRepository : IOrderRepository, IDisposable
 {
     private readonly ILogger<OrderRepository> _logger;
@@ -14,6 +18,13 @@ public sealed class OrderRepository : IOrderRepository, IDisposable
     private readonly SemaphoreSlim _fileLock = new(1, 1);
     private bool _disposed;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref=\"OrderRepository\"/> class.
+    /// </summary>
+    /// <param name=\"logger\">The logger instance for structured logging.</param>
+    /// <param name=\"environment\">The web host environment for path resolution.</param>
+    /// <param name=\"options\">The configured storage options.</param>
+    /// <exception cref=\"ArgumentNullException\">Thrown when any parameter is null.</exception>
     public OrderRepository(
         ILogger<OrderRepository> logger,
         IWebHostEnvironment environment,
@@ -24,7 +35,7 @@ public sealed class OrderRepository : IOrderRepository, IDisposable
         _options = options?.Value ?? throw new ArgumentNullException(nameof(options));
     }
 
-    public async Task SaveOrderAsync(Order order, CancellationToken cancellationToken = default)
+    /// <summary>\n    /// Saves an order to the file-based storage asynchronously.\n    /// Creates or updates the order if it already exists.\n    /// </summary>\n    /// <param name=\"order\">The order to save.</param>\n    /// <param name=\"cancellationToken\">Cancellation token to cancel the operation.</param>\n    /// <returns>A task representing the asynchronous operation.</returns>\n    /// <exception cref=\"ArgumentNullException\">Thrown when order is null.</exception>\n    public async Task SaveOrderAsync(Order order, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(order);
 
@@ -69,12 +80,24 @@ public sealed class OrderRepository : IOrderRepository, IDisposable
         }
     }
 
+    /// <summary>
+    /// Retrieves all orders from the file-based storage asynchronously.
+    /// </summary>
+    /// <param name="cancellationToken">Cancellation token to cancel the operation.</param>
+    /// <returns>A collection of all orders.</returns>
     public async Task<IEnumerable<Order>> GetAllOrdersAsync(CancellationToken cancellationToken = default)
     {
         var filePath = GetFilePath();
         return await GetAllOrdersInternalAsync(filePath, cancellationToken).ConfigureAwait(false);
     }
 
+    /// <summary>
+    /// Retrieves a specific order by its unique identifier.
+    /// </summary>
+    /// <param name="orderId">The unique identifier of the order.</param>
+    /// <param name="cancellationToken">Cancellation token to cancel the operation.</param>
+    /// <returns>The order if found; otherwise, null.</returns>
+    /// <exception cref="ArgumentException">Thrown when orderId is null or empty.</exception>
     public async Task<Order?> GetOrderByIdAsync(string orderId, CancellationToken cancellationToken = default)
     {
         if (string.IsNullOrWhiteSpace(orderId))
@@ -86,6 +109,13 @@ public sealed class OrderRepository : IOrderRepository, IDisposable
         return orders.FirstOrDefault(o => o.Id == orderId);
     }
 
+    /// <summary>
+    /// Deletes an order from the file-based storage by its unique identifier.
+    /// </summary>
+    /// <param name="orderId">The unique identifier of the order to delete.</param>
+    /// <param name="cancellationToken">Cancellation token to cancel the operation.</param>
+    /// <returns>True if the order was successfully deleted; otherwise, false.</returns>
+    /// <exception cref="ArgumentException">Thrown when orderId is null or empty.</exception>
     public async Task<bool> DeleteOrderAsync(string orderId, CancellationToken cancellationToken = default)
     {
         if (string.IsNullOrWhiteSpace(orderId))
@@ -182,13 +212,25 @@ public sealed class OrderRepository : IOrderRepository, IDisposable
     }
 }
 
+/// <summary>
+/// Configuration options for order file-based storage.
+/// </summary>
 public sealed class OrderStorageOptions
 {
-    public const string SectionName = "OrderStorage";
+    /// <summary>
+    /// Gets the configuration section name for order storage options.
+    /// </summary>
+    public const string SectionName = \"OrderStorage\";
 
-    [Required(AllowEmptyStrings = false)]
-    public required string StorageDirectory { get; init; } = "Files";
+    /// <summary>
+    /// Gets or initializes the directory path for storing order files.
+    /// </summary>
+    [Required(AllowEmptyStrings = false, ErrorMessage = \"Storage directory path is required\")]
+    public required string StorageDirectory { get; init; } = \"Files\";
 
-    [Required(AllowEmptyStrings = false)]
+    /// <summary>
+    /// Gets or initializes the filename for the orders JSON file.
+    /// </summary>
+    [Required(AllowEmptyStrings = false, ErrorMessage = \"Storage filename is required\")]
     public required string FileName { get; init; } = "orders.json";
 }

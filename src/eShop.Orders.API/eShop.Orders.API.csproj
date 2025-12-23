@@ -5,6 +5,9 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <UserSecretsId>61a55d93-2516-4d9c-a9db-a3d0658150d2</UserSecretsId>
+    <!-- Enable XML documentation generation for API documentation -->
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <NoWarn>$(NoWarn);1591</NoWarn> <!-- Suppress missing XML comment warnings -->
   </PropertyGroup>
 
   <ItemGroup>

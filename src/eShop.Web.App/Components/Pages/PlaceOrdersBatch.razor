@@ -14,14 +14,14 @@
     <FluentStack Orientation="Orientation.Vertical" VerticalGap="6">
         <FluentLabel Typo="Typography.H4">Place Orders in Batch</FluentLabel>
         <FluentLabel Typo="Typography.Body" Style="font-size: 14px; color: var(--neutral-foreground-hint);">
-            Upload multiple orders at once using JSON format or add them manually.
+            Upload multiple orders at once using a JSON file or add them manually.
         </FluentLabel>
     </FluentStack>
 
     @if (successMessage != null)
     {
         <FluentMessageBar Intent="MessageIntent.Success" 
-                          Title="?? Batch Submission Complete!"
+                          Title="? Batch Submission Complete!"
                           Style="font-size: 15px; padding: 16px; border-left: 4px solid var(--success);">
             <strong>@successMessage</strong>
             <br/>
@@ -45,27 +45,51 @@
                 OnClick="() => inputMethod = InputMethod.Manual" Style="width: fit-content;">
                 Manual Entry
             </FluentButton>
-            <FluentButton Appearance="@(inputMethod == InputMethod.Json ? Appearance.Accent : Appearance.Outline)"
-                OnClick="() => inputMethod = InputMethod.Json" Style="width: fit-content;">
-                JSON Import
+            <FluentButton Appearance="@(inputMethod == InputMethod.FileUpload ? Appearance.Accent : Appearance.Outline)"
+                OnClick="() => inputMethod = InputMethod.FileUpload" Style="width: fit-content;">
+                Upload JSON File
             </FluentButton>
         </FluentStack>
 
-        @if (inputMethod == InputMethod.Json)
+        @if (inputMethod == InputMethod.FileUpload)
         {
-            <!-- JSON Input Method -->
+            <!-- File Upload Method -->
             <FluentCard Style="width: 100%; padding: 24px;">
                 <FluentStack Orientation="Orientation.Vertical" VerticalGap="16">
                     <FluentStack Orientation="Orientation.Vertical" VerticalGap="8">
-                        <FluentLabel Typo="Typography.Body" Style="font-weight: 600; font-size: 14px;">JSON Input
+                        <FluentLabel Typo="Typography.Body" Style="font-weight: 600; font-size: 14px;">Upload JSON File
                         </FluentLabel>
                         <FluentLabel Typo="Typography.Body" Style="font-size: 13px; color: var(--neutral-foreground-hint);">
-                            Paste your JSON array of orders below. Supports both PascalCase and camelCase property names.
+                            Select a JSON file containing an array of orders. Supports both PascalCase and camelCase property names.
                         </FluentLabel>
                     </FluentStack>
 
-                    <FluentTextArea @bind-Value="jsonInput" Rows="15" Placeholder="@jsonPlaceholder"
-                        Style="width: 100%; font-family: 'Courier New', monospace; font-size: 12px;" />
+                    <FluentStack Orientation="Orientation.Vertical" VerticalGap="12">
+                        <InputFile OnChange="@LoadFileAsync" accept=".json" 
+                            Style="padding: 12px; border: 2px dashed var(--neutral-stroke-accessible); border-radius: 4px; cursor: pointer;" />
+                        
+                        @if (!string.IsNullOrEmpty(uploadedFileName))
+                        {
+                            <FluentMessageBar Intent="MessageIntent.Info">
+                                <strong>File loaded:</strong> @uploadedFileName (@uploadedFileSize KB)
+                            </FluentMessageBar>
+                        }
+
+                        @if (loadedOrders.Any())
+                        {
+                            <FluentMessageBar Intent="MessageIntent.Success">
+                                <strong>@loadedOrders.Count orders</strong> loaded from file and ready to submit.
+                            </FluentMessageBar>
+                        }
+                    </FluentStack>
+
+                    <FluentStack Orientation="Orientation.Vertical" VerticalGap="8">
+                        <FluentLabel Typo="Typography.Body" Style="font-weight: 600; font-size: 13px;">
+                            Expected JSON Format:
+                        </FluentLabel>
+                        <FluentTextArea Value="@jsonExample" ReadOnly="true" Rows="12"
+                            Style="width: 100%; font-family: 'Courier New', monospace; font-size: 11px; background-color: var(--neutral-layer-2);" />
+                    </FluentStack>
 
                     <FluentStack Orientation="Orientation.Horizontal" HorizontalGap="12"
                         HorizontalAlignment="HorizontalAlignment.End">
@@ -249,7 +273,7 @@
 </FluentStack>
 
 @code {
-    private enum InputMethod { Manual, Json }
+    private enum InputMethod { Manual, FileUpload }
 
     private bool isLoading = false;
     private string? errorMessage;
@@ -469,4 +493,61 @@
             isLoading = false;
         }
     }
+
+    private string? uploadedFileName;
+    private long uploadedFileSize;
+    private List<OrderFormModel> loadedOrders = new();
+
+    private async Task LoadFileAsync(InputFileChangeEventArgs e)
+    {
+        ClearMessages();
+        loadedOrders.Clear();
+        uploadedFileName = null;
+        uploadedFileSize = 0;
+        jsonInput = string.Empty;
+
+        var file = e.File;
+        if (file == null)
+        {
+            errorMessage = "No file selected.";
+            return;
+        }
+
+        uploadedFileName = file.Name;
+        uploadedFileSize = file.Size / 1024;
+
+        try
+        {
+            using var stream = file.OpenReadStream(maxAllowedSize: 1024 * 1024 * 2); // 2MB limit
+            using var reader = new StreamReader(stream);
+            jsonInput = await reader.ReadToEndAsync();
+
+            var options = new JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true,
+                AllowTrailingCommas = true,
+                ReadCommentHandling = JsonCommentHandling.Skip
+            };
+
+            var parsedOrders = JsonSerializer.Deserialize<List<OrderFormModel>>(jsonInput, options);
+            if (parsedOrders != null && parsedOrders.Any())
+            {
+                loadedOrders = parsedOrders;
+            }
+            else
+            {
+                errorMessage = "No valid orders found in the uploaded file.";
+            }
+        }
+        catch (JsonException ex)
+        {
+            errorMessage = $"JSON parsing error: {ex.Message}.";
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Failed to load file: {ex.Message}";
+        }
+    }
+
+    private string jsonExample => jsonPlaceholder;
 }

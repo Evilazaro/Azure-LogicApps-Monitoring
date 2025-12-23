@@ -63,7 +63,7 @@ def random_date():
 def generate_order(order_num):
     """Generate a single order with random products"""
     order_id = f"ORD-{order_num:04d}"
-    customer_id = f"CUST-{random.randint(1000, 9999)}"
+    customer_id = f"CUST-{random.randint(50, 9999)}"
     date = random_date()
     address = random.choice(addresses)
     
@@ -101,13 +101,13 @@ def generate_order(order_num):
         "products": order_products
     }
 
-# Generate 1000 orders
-orders = [generate_order(i + 1) for i in range(1000)]
+# Generate 50 orders
+orders = [generate_order(i + 1) for i in range(50)]
 
 # Write to file
 output_path = r"d:\Azure-LogicApps-Monitoring\hooks\ordersBatch.json"
 with open(output_path, 'w', encoding='utf-8') as f:
     json.dump(orders, f, indent=4, ensure_ascii=False)
 
-print(f"Successfully generated 1000 orders in {output_path}")
+print(f"Successfully generated 50 orders in {output_path}")
 print(f"Total file size: {len(json.dumps(orders, indent=4))} bytes")

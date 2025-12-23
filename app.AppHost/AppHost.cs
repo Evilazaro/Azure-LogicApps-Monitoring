@@ -36,6 +36,12 @@ builder.Build().Run();
 // Helper Methods
 // =============================================================================
 
+/// <summary>
+/// Configures Application Insights connection string for the specified projects.
+/// Enables distributed tracing and telemetry collection in Azure environments.
+/// </summary>
+/// <param name="builder">The distributed application builder.</param>
+/// <param name="projects">The project resources to configure with Application Insights.</param>
 static void ConfigureApplicationInsights(
     IDistributedApplicationBuilder builder,
     params IResourceBuilder<ProjectResource>[] projects)
@@ -54,6 +60,12 @@ static void ConfigureApplicationInsights(
     }
 }
 
+/// <summary>
+/// Configures Azure Service Bus for order message processing.
+/// Supports both local emulator mode and Azure managed identity authentication.
+/// </summary>
+/// <param name="builder">The distributed application builder.</param>
+/// <param name="ordersAPI">The orders API project resource to configure with Service Bus.</param>
 static void ConfigureServiceBus(
     IDistributedApplicationBuilder builder,
     IResourceBuilder<ProjectResource> ordersAPI)

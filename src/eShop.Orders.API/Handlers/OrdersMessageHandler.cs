@@ -6,32 +6,47 @@ using System.Text.Json;
 
 namespace eShop.Orders.API.Handlers;
 
+/// <summary>
+/// Handles publishing order messages to Azure Service Bus with distributed tracing support.
+/// </summary>
 public sealed class OrdersMessageHandler : IOrdersMessageHandler
 {
     private readonly ILogger<OrdersMessageHandler> _logger;
     private readonly ServiceBusClient _serviceBusClient;
     private readonly string _topicName;
-    private static readonly ActivitySource ActivitySource = new("eShop.Orders.API");
+    private readonly ActivitySource _activitySource;
     private static readonly JsonSerializerOptions JsonOptions = new()
     {
         PropertyNameCaseInsensitive = true
     };
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref=\"OrdersMessageHandler\"/> class.
+    /// </summary>
+    /// <param name=\"logger\">The logger instance for structured logging.</param>
+    /// <param name=\"serviceBusClient\">The Service Bus client for message publishing.</param>
+    /// <param name=\"configuration\">The configuration to retrieve Service Bus topic name.</param>
+    /// <param name=\"activitySource\">The activity source for distributed tracing.</param>
+    /// <exception cref=\"ArgumentNullException\">Thrown when any parameter is null.</exception>
     public OrdersMessageHandler(
         ILogger<OrdersMessageHandler> logger,
         ServiceBusClient serviceBusClient,
-        IConfiguration configuration)
+        IConfiguration configuration,
+        ActivitySource activitySource)
     {
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         _serviceBusClient = serviceBusClient ?? throw new ArgumentNullException(nameof(serviceBusClient));
-        _topicName = configuration["Azure:ServiceBus:TopicName"] ?? "OrdersPlaced";
+        _activitySource = activitySource ?? throw new ArgumentNullException(nameof(activitySource));
+        
+        ArgumentNullException.ThrowIfNull(configuration);
+        _topicName = configuration[\"Azure:ServiceBus:TopicName\"] ?? \"OrdersPlaced\";
     }
 
-    public async Task SendOrderMessageAsync(Order order, CancellationToken cancellationToken)
+    /// <summary>\n    /// Sends a single order message to the Service Bus topic asynchronously.\n    /// </summary>\n    /// <param name=\"order\">The order to be published.</param>\n    /// <param name=\"cancellationToken\">Cancellation token to cancel the operation.</param>\n    /// <returns>A task representing the asynchronous operation.</returns>\n    /// <exception cref=\"ArgumentNullException\">Thrown when order is null.</exception>\n    /// <exception cref=\"ServiceBusException\">Thrown when Service Bus operation fails.</exception>\n    public async Task SendOrderMessageAsync(Order order, CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(order);
 
-        using var activity = ActivitySource.StartActivity("SendOrderMessage", ActivityKind.Producer);
+        using var activity = _activitySource.StartActivity("SendOrderMessage", ActivityKind.Producer);
         activity?.SetTag("messaging.system", "servicebus");
         activity?.SetTag("messaging.destination.name", _topicName);
         activity?.SetTag("messaging.operation", "publish");
@@ -72,11 +87,19 @@ public sealed class OrdersMessageHandler : IOrdersMessageHandler
         }
     }
 
+    /// <summary>
+    /// Sends multiple order messages to the Service Bus topic in a single batch operation.
+    /// </summary>
+    /// <param name="orders">The collection of orders to be published.</param>
+    /// <param name="cancellationToken">Cancellation token to cancel the operation.</param>
+    /// <returns>A task representing the asynchronous operation.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when orders is null.</exception>
+    /// <exception cref="ServiceBusException">Thrown when Service Bus operation fails.</exception>
     public async Task SendOrdersBatchMessageAsync(IEnumerable<Order> orders, CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(orders);
 
-        using var activity = ActivitySource.StartActivity("SendOrdersBatchMessage", ActivityKind.Producer);
+        using var activity = _activitySource.StartActivity("SendOrdersBatchMessage", ActivityKind.Producer);
 
         var ordersList = orders.ToList();
         if (ordersList.Count == 0)

@@ -6,54 +6,72 @@ using System.Diagnostics.Metrics;
 
 namespace eShop.Orders.API.Services;
 
+/// <summary>
+/// Provides business logic for order management including placement, retrieval, and deletion operations.
+/// Implements comprehensive observability through distributed tracing and metrics.
+/// </summary>
 public sealed class OrderService : IOrderService
 {
     private readonly ILogger<OrderService> _logger;
     private readonly IOrderRepository _orderRepository;
     private readonly IOrdersMessageHandler _ordersMessageHandler;
-    private static readonly ActivitySource ActivitySource = new("eShop.Orders.API");
-    private static readonly Meter Meter = new("eShop.Orders.API");
+    private readonly ActivitySource _activitySource;
+    private readonly Meter _meter;
 
     private readonly Counter<long> _ordersPlacedCounter;
     private readonly Histogram<double> _orderProcessingDuration;
     private readonly Counter<long> _orderProcessingErrors;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref=\"OrderService\"/> class.
+    /// </summary>
+    /// <param name=\"logger\">The logger instance for structured logging.</param>
+    /// <param name=\"orderRepository\">The repository for order data persistence.</param>
+    /// <param name=\"ordersMessageHandler\">The handler for publishing order messages.</param>
+    /// <param name=\"activitySource\">The activity source for distributed tracing.</param>
+    /// <param name=\"meter\">The meter for recording metrics.</param>
+    /// <exception cref=\"ArgumentNullException\">Thrown when any parameter is null.</exception>
     public OrderService(
         ILogger<OrderService> logger,
         IOrderRepository orderRepository,
-        IOrdersMessageHandler ordersMessageHandler)
+        IOrdersMessageHandler ordersMessageHandler,
+        ActivitySource activitySource,
+        Meter meter)
     {
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         _orderRepository = orderRepository ?? throw new ArgumentNullException(nameof(orderRepository));
         _ordersMessageHandler = ordersMessageHandler ?? throw new ArgumentNullException(nameof(ordersMessageHandler));
+        _activitySource = activitySource ?? throw new ArgumentNullException(nameof(activitySource));
+        _meter = meter ?? throw new ArgumentNullException(nameof(meter));
 
-        // Initialize metrics
-        _ordersPlacedCounter = Meter.CreateCounter<long>(
-            "orders.placed",
-            "orders",
-            "Number of orders placed");
-        _orderProcessingDuration = Meter.CreateHistogram<double>(
-            "orders.processing.duration",
-            "ms",
-            "Duration of order processing");
-        _orderProcessingErrors = Meter.CreateCounter<long>(
-            "orders.processing.errors",
-            "errors",
-            "Number of order processing errors");
+        // Initialize metrics with semantic naming conventions
+        _ordersPlacedCounter = _meter.CreateCounter<long>(
+            \"orders.placed\",
+            \"orders\",
+            \"Number of orders successfully placed\");
+        _orderProcessingDuration = _meter.CreateHistogram<double>(
+            \"orders.processing.duration\",
+            \"ms\",
+            \"Duration of order processing operations\");
+        _orderProcessingErrors = _meter.CreateCounter<long>(
+            \"orders.processing.errors\",
+            \"errors\",
+            \"Number of order processing errors by error type\");
     }
 
-    public async Task<Order> PlaceOrderAsync(Order order, CancellationToken cancellationToken = default)
+    /// <summary>\n    /// Places a new order asynchronously with validation, persistence, and message publishing.\n    /// </summary>\n    /// <param name=\"order\">The order to be placed.</param>\n    /// <param name=\"cancellationToken\">Cancellation token to cancel the operation.</param>\n    /// <returns>The placed order.</returns>\n    /// <exception cref=\"ArgumentNullException\">Thrown when order is null.</exception>\n    /// <exception cref=\"ArgumentException\">Thrown when order validation fails.</exception>\n    /// <exception cref=\"InvalidOperationException\">Thrown when order already exists.</exception>\n    public async Task<Order> PlaceOrderAsync(Order order, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(order);
 
-        using var activity = ActivitySource.StartActivity("PlaceOrder", ActivityKind.Internal);
+        using var activity = _activitySource.StartActivity(\"PlaceOrder\", ActivityKind.Internal);
         var startTime = DateTime.UtcNow;
 
         try
         {
-            activity?.SetTag("order.id", order.Id);
-            activity?.SetTag("order.customer_id", order.CustomerId);
-            activity?.SetTag("order.total", order.Total);
+            activity?.SetTag(\"order.id\", order.Id);
+            activity?.SetTag(\"order.customer_id\", order.CustomerId);
+            activity?.SetTag(\"order.total\", order.Total);
+            activity?.SetTag(\"order.products.count\", order.Products?.Count ?? 0);
 
             _logger.LogInformation("Placing order with ID: {OrderId} for customer {CustomerId}", order.Id, order.CustomerId);
 
@@ -101,11 +119,20 @@ public sealed class OrderService : IOrderService
         }
     }
 
+    /// <summary>
+    /// Places multiple orders asynchronously in a batch operation.
+    /// Continues processing remaining orders if individual orders fail.
+    /// </summary>
+    /// <param name="orders">The collection of orders to be placed.</param>
+    /// <param name="cancellationToken">Cancellation token to cancel the operation.</param>
+    /// <returns>A collection of successfully placed orders.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when orders is null.</exception>
+    /// <exception cref="ArgumentException">Thrown when orders collection is empty.</exception>
     public async Task<IEnumerable<Order>> PlaceOrdersBatchAsync(IEnumerable<Order> orders, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(orders);
 
-        using var activity = ActivitySource.StartActivity("PlaceOrdersBatch", ActivityKind.Internal);
+        using var activity = _activitySource.StartActivity("PlaceOrdersBatch", ActivityKind.Internal);
         var startTime = DateTime.UtcNow;
 
         var ordersList = orders.ToList();
@@ -152,9 +179,14 @@ public sealed class OrderService : IOrderService
         return placedOrders;
     }
 
+    /// <summary>
+    /// Retrieves all orders from the repository asynchronously.
+    /// </summary>
+    /// <param name="cancellationToken">Cancellation token to cancel the operation.</param>
+    /// <returns>A collection of all orders.</returns>
     public async Task<IEnumerable<Order>> GetOrdersAsync(CancellationToken cancellationToken = default)
     {
-        using var activity = ActivitySource.StartActivity("GetOrders", ActivityKind.Internal);
+        using var activity = _activitySource.StartActivity("GetOrders", ActivityKind.Internal);
 
         try
         {
@@ -176,6 +208,13 @@ public sealed class OrderService : IOrderService
         }
     }
 
+    /// <summary>
+    /// Retrieves a specific order by its unique identifier.
+    /// </summary>
+    /// <param name="orderId">The unique identifier of the order.</param>
+    /// <param name="cancellationToken">Cancellation token to cancel the operation.</param>
+    /// <returns>The order if found; otherwise, null.</returns>
+    /// <exception cref="ArgumentException">Thrown when orderId is null or empty.</exception>
     public async Task<Order?> GetOrderByIdAsync(string orderId, CancellationToken cancellationToken = default)
     {
         if (string.IsNullOrWhiteSpace(orderId))
@@ -183,7 +222,7 @@ public sealed class OrderService : IOrderService
             throw new ArgumentException("Order ID cannot be null or empty", nameof(orderId));
         }
 
-        using var activity = ActivitySource.StartActivity("GetOrderById", ActivityKind.Internal);
+        using var activity = _activitySource.StartActivity("GetOrderById", ActivityKind.Internal);
         activity?.SetTag("order.id", orderId);
 
         try
@@ -211,6 +250,13 @@ public sealed class OrderService : IOrderService
         }
     }
 
+    /// <summary>
+    /// Deletes an order from the repository by its unique identifier.
+    /// </summary>
+    /// <param name="orderId">The unique identifier of the order to delete.</param>
+    /// <param name="cancellationToken">Cancellation token to cancel the operation.</param>
+    /// <returns>True if the order was successfully deleted; otherwise, false.</returns>
+    /// <exception cref="ArgumentException">Thrown when orderId is null or empty.</exception>
     public async Task<bool> DeleteOrderAsync(string orderId, CancellationToken cancellationToken = default)
     {
         if (string.IsNullOrWhiteSpace(orderId))
@@ -218,7 +264,7 @@ public sealed class OrderService : IOrderService
             throw new ArgumentException("Order ID cannot be null or empty", nameof(orderId));
         }
 
-        using var activity = ActivitySource.StartActivity("DeleteOrder", ActivityKind.Internal);
+        using var activity = _activitySource.StartActivity("DeleteOrder", ActivityKind.Internal);
         activity?.SetTag("order.id", orderId);
 
         try
