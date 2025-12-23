@@ -21,13 +21,13 @@ public sealed class OrdersMessageHandler : IOrdersMessageHandler
     };
 
     /// <summary>
-    /// Initializes a new instance of the <see cref=\"OrdersMessageHandler\"/> class.
+    /// Initializes a new instance of the <see cref="OrdersMessageHandler"/> class.
     /// </summary>
-    /// <param name=\"logger\">The logger instance for structured logging.</param>
-    /// <param name=\"serviceBusClient\">The Service Bus client for message publishing.</param>
-    /// <param name=\"configuration\">The configuration to retrieve Service Bus topic name.</param>
-    /// <param name=\"activitySource\">The activity source for distributed tracing.</param>
-    /// <exception cref=\"ArgumentNullException\">Thrown when any parameter is null.</exception>
+    /// <param name="logger">The logger instance for structured logging.</param>
+    /// <param name="serviceBusClient">The Service Bus client for message publishing.</param>
+    /// <param name="configuration">The configuration to retrieve Service Bus topic name.</param>
+    /// <param name="activitySource">The activity source for distributed tracing.</param>
+    /// <exception cref="ArgumentNullException">Thrown when any parameter is null.</exception>
     public OrdersMessageHandler(
         ILogger<OrdersMessageHandler> logger,
         ServiceBusClient serviceBusClient,
@@ -39,31 +39,39 @@ public sealed class OrdersMessageHandler : IOrdersMessageHandler
         _activitySource = activitySource ?? throw new ArgumentNullException(nameof(activitySource));
 
         ArgumentNullException.ThrowIfNull(configuration);
-        _topicName = configuration[\"Azure:ServiceBus:TopicName\"] ?? \"OrdersPlaced\";
+        _topicName = configuration["Azure:ServiceBus:TopicName"] ?? "OrdersPlaced";
     }
 
-    /// <summary>\n    /// Sends a single order message to the Service Bus topic asynchronously.\n    /// </summary>\n    /// <param name=\"order\">The order to be published.</param>\n    /// <param name=\"cancellationToken\">Cancellation token to cancel the operation.</param>\n    /// <returns>A task representing the asynchronous operation.</returns>\n    /// <exception cref=\"ArgumentNullException\">Thrown when order is null.</exception>\n    /// <exception cref=\"ServiceBusException\">Thrown when Service Bus operation fails.</exception>\n    public async Task SendOrderMessageAsync(Order order, CancellationToken cancellationToken)
+    /// <summary>
+    /// Sends a single order message to the Service Bus topic asynchronously.
+    /// </summary>
+    /// <param name="order">The order to be published.</param>
+    /// <param name="cancellationToken">Cancellation token to cancel the operation.</param>
+    /// <returns>A task representing the asynchronous operation.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when order is null.</exception>
+    /// <exception cref="ServiceBusException">Thrown when Service Bus operation fails.</exception>
+    public async Task SendOrderMessageAsync(Order order, CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(order);
 
         using var activity = _activitySource.StartActivity("SendOrderMessage", ActivityKind.Producer);
-    activity?.SetTag("messaging.system", "servicebus");
-    activity?.SetTag("messaging.destination.name", _topicName);
-    activity?.SetTag("messaging.operation", "publish");
-    activity?.SetTag("order.id", order.Id);
-    activity?.SetTag("order.customer_id", order.CustomerId);
+        activity?.SetTag("messaging.system", "servicebus");
+        activity?.SetTag("messaging.destination.name", _topicName);
+        activity?.SetTag("messaging.operation", "publish");
+        activity?.SetTag("order.id", order.Id);
+        activity?.SetTag("order.customer_id", order.CustomerId);
 
-    await using var sender = _serviceBusClient.CreateSender(_topicName);
+        await using var sender = _serviceBusClient.CreateSender(_topicName);
 
         try
         {
             var messageBody = JsonSerializer.Serialize(order, JsonOptions);
-var message = new ServiceBusMessage(messageBody)
-{
-    ContentType = "application/json",
-    MessageId = order.Id,
-    Subject = "OrderPlaced"
-};
+            var message = new ServiceBusMessage(messageBody)
+            {
+                ContentType = "application/json",
+                MessageId = order.Id,
+                Subject = "OrderPlaced"
+            };
 
             // Add trace context to message for distributed tracing
             if (activity != null)
@@ -75,15 +83,15 @@ var message = new ServiceBusMessage(messageBody)
             await sender.SendMessageAsync(message, cancellationToken).ConfigureAwait(false);
 
 activity?.SetStatus(ActivityStatusCode.Ok);
-_logger.LogInformation("Successfully sent order message for order {OrderId} to topic {TopicName}",
-    order.Id, _topicName);
+            _logger.LogInformation("Successfully sent order message for order {OrderId} to topic {TopicName}",
+                order.Id, _topicName);
         }
         catch (ServiceBusException ex)
         {
             activity?.SetStatus(ActivityStatusCode.Error, ex.Message);
-_logger.LogError(ex, "Failed to send order message for order {OrderId} to topic {TopicName}",
-    order.Id, _topicName);
-throw;
+            _logger.LogError(ex, "Failed to send order message for order {OrderId} to topic {TopicName}",
+                order.Id, _topicName);
+            throw;
         }
     }
 
@@ -96,24 +104,24 @@ throw;
     /// <exception cref="ArgumentNullException">Thrown when orders is null.</exception>
     /// <exception cref="ServiceBusException">Thrown when Service Bus operation fails.</exception>
     public async Task SendOrdersBatchMessageAsync(IEnumerable<Order> orders, CancellationToken cancellationToken)
-{
-    ArgumentNullException.ThrowIfNull(orders);
-
-    using var activity = _activitySource.StartActivity("SendOrdersBatchMessage", ActivityKind.Producer);
-
-    var ordersList = orders.ToList();
-    if (ordersList.Count == 0)
     {
-        _logger.LogWarning("Empty orders collection provided for batch send");
-        return;
-    }
+        ArgumentNullException.ThrowIfNull(orders);
 
-    activity?.SetTag("messaging.system", "servicebus");
-    activity?.SetTag("messaging.destination.name", _topicName);
-    activity?.SetTag("messaging.operation", "publish");
-    activity?.SetTag("messaging.batch.message_count", ordersList.Count);
+        using var activity = _activitySource.StartActivity("SendOrdersBatchMessage", ActivityKind.Producer);
 
-    await using var sender = _serviceBusClient.CreateSender(_topicName);
+        var ordersList = orders.ToList();
+        if (ordersList.Count == 0)
+        {
+            _logger.LogWarning("Empty orders collection provided for batch send");
+            return;
+        }
+
+        activity?.SetTag("messaging.system", "servicebus");
+        activity?.SetTag("messaging.destination.name", _topicName);
+        activity?.SetTag("messaging.operation", "publish");
+        activity?.SetTag("messaging.batch.message_count", ordersList.Count);
+
+        await using var sender = _serviceBusClient.CreateSender(_topicName);
 
     try
     {
@@ -124,7 +132,7 @@ throw;
             activity?.AddEvent(new ActivityEvent("OrderInBatch",
                 tags: new ActivityTagsCollection
                 {
-                        { "order.id", order.Id }
+                    { "order.id", order.Id }
                 }));
 
             var messageBody = JsonSerializer.Serialize(order, JsonOptions);

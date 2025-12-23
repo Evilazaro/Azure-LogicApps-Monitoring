@@ -17,12 +17,12 @@ public sealed class OrdersController : ControllerBase
     private readonly ActivitySource _activitySource;
 
     /// <summary>
-    /// Initializes a new instance of the <see cref=\"OrdersController\"/> class.
+    /// Initializes a new instance of the <see cref="OrdersController"/> class.
     /// </summary>
-    /// <param name=\"logger\">The logger instance for structured logging.</param>
-    /// <param name=\"orderService\">The service for order operations.</param>
-    /// <param name=\"activitySource\">The activity source for distributed tracing.</param>
-    /// <exception cref=\"ArgumentNullException\">Thrown when any parameter is null.</exception>
+    /// <param name="logger">The logger instance for structured logging.</param>
+    /// <param name="orderService">The service for order operations.</param>
+    /// <param name="activitySource">The activity source for distributed tracing.</param>
+    /// <exception cref="ArgumentNullException">Thrown when any parameter is null.</exception>
     public OrdersController(
         ILogger<OrdersController> logger,
         IOrderService orderService,
@@ -36,13 +36,13 @@ public sealed class OrdersController : ControllerBase
     /// <summary>
     /// Places a new order in the system.
     /// </summary>
-    /// <param name=\"order\">The order details to be placed.</param>
-    /// <param name=\"cancellationToken\">Cancellation token to cancel the operation.</param>
+    /// <param name="order">The order details to be placed.</param>
+    /// <param name="cancellationToken">Cancellation token to cancel the operation.</param>
     /// <returns>The created order with status information.</returns>
-    /// <response code=\"201\">Returns the newly created order.</response>
-    /// <response code=\"400\">If the order data is invalid.</response>
-    /// <response code=\"409\">If an order with the same ID already exists.</response>
-    /// <response code=\"500\">If an internal server error occurs.</response>
+    /// <response code="201">Returns the newly created order.</response>
+    /// <response code="400">If the order data is invalid.</response>
+    /// <response code="409">If an order with the same ID already exists.</response>
+    /// <response code="500">If an internal server error occurs.</response>
     [HttpPost]
     [ProducesResponseType(typeof(Order), StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -52,53 +52,51 @@ public sealed class OrdersController : ControllerBase
     {
         if (order == null)
         {
-            return BadRequest(new
-            {
-                error = \"Order cannot be null\" });
-            }
+            return BadRequest(new { error = "Order cannot be null" });
+        }
 
-        using var activity = _activitySource.StartActivity(\"PlaceOrder\", ActivityKind.Server);
-        activity?.SetTag(\"order.id\", order.Id);
-        activity?.SetTag(\"order.customer_id\", order.CustomerId);
-        activity?.SetTag(\"order.total\", order.Total);
-        activity?.SetTag(\"order.products.count\", order.Products?.Count ?? 0);
-        activity?.SetTag(\"http.method\", \"POST\");
-        activity?.SetTag(\"http.route\", \"/api/orders\");
+        using var activity = _activitySource.StartActivity("PlaceOrder", ActivityKind.Server);
+        activity?.SetTag("order.id", order.Id);
+        activity?.SetTag("order.customer_id", order.CustomerId);
+        activity?.SetTag("order.total", order.Total);
+        activity?.SetTag("order.products.count", order.Products?.Count ?? 0);
+        activity?.SetTag("http.method", "POST");
+        activity?.SetTag("http.route", "/api/orders");
 
         // Add trace ID to log scope for correlation
         using var logScope = _logger.BeginScope(new Dictionary<string, object>
         {
-            [\"TraceId\"] = Activity.Current?.TraceId.ToString() ?? \"none\",
-            [\"SpanId\"] = Activity.Current?.SpanId.ToString() ?? \"none\",
-            [\"OrderId\"] = order.Id
+            ["TraceId"] = Activity.Current?.TraceId.ToString() ?? "none",
+            ["SpanId"] = Activity.Current?.SpanId.ToString() ?? "none",
+            ["OrderId"] = order.Id
         });
 
-            try
-            {
-                var placedOrder = await _orderService.PlaceOrderAsync(order, cancellationToken);
-                activity?.SetStatus(ActivityStatusCode.Ok);
-                return CreatedAtAction(nameof(GetOrderById), new { id = placedOrder.Id }, placedOrder);
-            }
-            catch (ArgumentException ex)
-            {
-                activity?.SetStatus(ActivityStatusCode.Error, "Validation failed");
-                _logger.LogWarning(ex, "Invalid order data for order {OrderId}", order.Id);
-                return BadRequest(new { error = ex.Message, orderId = order.Id });
-            }
-            catch (InvalidOperationException ex)
-            {
-                activity?.SetStatus(ActivityStatusCode.Error, "Order already exists");
-                _logger.LogWarning(ex, "Order {OrderId} already exists", order.Id);
-                return Conflict(new { error = ex.Message, orderId = order.Id });
-            }
-            catch (Exception ex)
-            {
-                activity?.SetStatus(ActivityStatusCode.Error, ex.Message);
-                _logger.LogError(ex, "Unexpected error while placing order {OrderId}", order.Id);
-                return StatusCode(StatusCodes.Status500InternalServerError,
-                    new { error = "An error occurred while processing your request", orderId = order.Id });
-            }
+        try
+        {
+            var placedOrder = await _orderService.PlaceOrderAsync(order, cancellationToken);
+            activity?.SetStatus(ActivityStatusCode.Ok);
+            return CreatedAtAction(nameof(GetOrderById), new { id = placedOrder.Id }, placedOrder);
         }
+        catch (ArgumentException ex)
+        {
+            activity?.SetStatus(ActivityStatusCode.Error, "Validation failed");
+            _logger.LogWarning(ex, "Invalid order data for order {OrderId}", order.Id);
+            return BadRequest(new { error = ex.Message, orderId = order.Id });
+        }
+        catch (InvalidOperationException ex)
+        {
+            activity?.SetStatus(ActivityStatusCode.Error, "Order already exists");
+            _logger.LogWarning(ex, "Order {OrderId} already exists", order.Id);
+            return Conflict(new { error = ex.Message, orderId = order.Id });
+        }
+        catch (Exception ex)
+        {
+            activity?.SetStatus(ActivityStatusCode.Error, ex.Message);
+            _logger.LogError(ex, "Unexpected error while placing order {OrderId}", order.Id);
+            return StatusCode(StatusCodes.Status500InternalServerError,
+                new { error = "An error occurred while processing your request", orderId = order.Id });
+        }
+    }
 
         /// <summary>
         /// Places multiple orders in a single batch operation.

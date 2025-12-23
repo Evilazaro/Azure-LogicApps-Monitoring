@@ -12,21 +12,25 @@ using OpenTelemetry.Trace;
 
 namespace Microsoft.Extensions.Hosting;
 
-/// <summary>\n/// Provides extension methods for configuring common service defaults including OpenTelemetry,\n/// health checks, service discovery, and Azure Service Bus integration.\n/// </summary>\npublic static class Extensions
+/// <summary>
+/// Provides extension methods for configuring common service defaults including OpenTelemetry,
+/// health checks, service discovery, and Azure Service Bus integration.
+/// </summary>
+public static class Extensions
 {
     private const string HealthEndpointPath = "/health";
-private const string AlivenessEndpointPath = "/alive";
-private const string MessagingHostConfigKey = "MESSAGING_HOST";
-private const string MessagingConnectionStringKey = "ConnectionStrings:messaging";
-private const string LocalhostValue = "localhost";
+    private const string AlivenessEndpointPath = "/alive";
+    private const string MessagingHostConfigKey = "MESSAGING_HOST";
+    private const string MessagingConnectionStringKey = "ConnectionStrings:messaging";
+    private const string LocalhostValue = "localhost";
 
-/// <summary>
-/// Adds common service defaults including OpenTelemetry, health checks, and service discovery.
-/// </summary>
-/// <typeparam name=\"TBuilder\">The type of host application builder.</typeparam>
-/// <param name=\"builder\">The host application builder to configure.</param>
-/// <returns>The configured builder instance for method chaining.</returns>
-public static TBuilder AddServiceDefaults<TBuilder>(this TBuilder builder) where TBuilder : IHostApplicationBuilder
+    /// <summary>
+    /// Adds common service defaults including OpenTelemetry, health checks, and service discovery.
+    /// </summary>
+    /// <typeparam name="TBuilder">The type of host application builder.</typeparam>
+    /// <param name="builder">The host application builder to configure.</param>
+    /// <returns>The configured builder instance for method chaining.</returns>
+    public static TBuilder AddServiceDefaults<TBuilder>(this TBuilder builder) where TBuilder : IHostApplicationBuilder
 {
     builder.ConfigureOpenTelemetry();
 
@@ -49,8 +53,8 @@ public static TBuilder AddServiceDefaults<TBuilder>(this TBuilder builder) where
 /// <summary>
 /// Configures OpenTelemetry for distributed tracing, metrics, and logging with proper instrumentation.
 /// </summary>
-/// <typeparam name=\"TBuilder\">The type of host application builder.</typeparam>
-/// <param name=\"builder\">The host application builder to configure.</param>
+/// <typeparam name="TBuilder">The type of host application builder.</typeparam>
+/// <param name="builder">The host application builder to configure.</param>
 /// <returns>The configured builder instance for method chaining.</returns>
 public static TBuilder ConfigureOpenTelemetry<TBuilder>(this TBuilder builder) where TBuilder : IHostApplicationBuilder
 {
@@ -151,30 +155,25 @@ public static IHostApplicationBuilder AddAzureServiceBusClient(this IHostApplica
         try
         {
             var messagingHostName = builder.Configuration[MessagingHostConfigKey]
-                                  ?? throw new InvalidOperationException($"\"{MessagingHostConfigKey}\" configuration is required for Service Bus client initialization\");
-
+                ?? throw new InvalidOperationException($"{MessagingHostConfigKey} configuration is required for Service Bus client initialization");
 
             var connectionString = builder.Configuration[MessagingConnectionStringKey]
-                                 ?? throw new InvalidOperationException($"\"{MessagingConnectionStringKey}\" is required for Service Bus client initialization\");
+                ?? throw new InvalidOperationException($"{MessagingConnectionStringKey} is required for Service Bus client initialization");
 
 
             if (messagingHostName.Equals(LocalhostValue, StringComparison.OrdinalIgnoreCase))
             {
-                logger.LogInformation(\"Configuring Service Bus client for local emulator mode\");
-
+                logger.LogInformation("Configuring Service Bus client for local emulator mode");
                 return new ServiceBusClient(connectionString);
             }
-            else
-            {
-                logger.LogInformation(\"Configuring Service Bus client for Azure with managed identity. HostName: {HostName}\", messagingHostName);
 
-                return new ServiceBusClient(messagingHostName, new DefaultAzureCredential());
-            }
+            logger.LogInformation("Configuring Service Bus client for Azure with managed identity. HostName: {HostName}", messagingHostName);
+            return new ServiceBusClient(messagingHostName, new DefaultAzureCredential());
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, \"Failed to create Service Bus client. Ensure configuration keys '{MessagingHostKey}' and '{ConnectionStringKey}' are properly set\",
-
+            logger.LogError(ex,
+                "Failed to create Service Bus client. Ensure configuration keys '{MessagingHostKey}' and '{ConnectionStringKey}' are properly set",
                 MessagingHostConfigKey, MessagingConnectionStringKey);
             throw;
         }

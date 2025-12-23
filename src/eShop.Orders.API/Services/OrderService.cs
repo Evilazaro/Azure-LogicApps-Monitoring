@@ -23,14 +23,14 @@ public sealed class OrderService : IOrderService
     private readonly Counter<long> _orderProcessingErrors;
 
     /// <summary>
-    /// Initializes a new instance of the <see cref=\"OrderService\"/> class.
+    /// Initializes a new instance of the <see cref="OrderService"/> class.
     /// </summary>
-    /// <param name=\"logger\">The logger instance for structured logging.</param>
-    /// <param name=\"orderRepository\">The repository for order data persistence.</param>
-    /// <param name=\"ordersMessageHandler\">The handler for publishing order messages.</param>
-    /// <param name=\"activitySource\">The activity source for distributed tracing.</param>
-    /// <param name=\"meter\">The meter for recording metrics.</param>
-    /// <exception cref=\"ArgumentNullException\">Thrown when any parameter is null.</exception>
+    /// <param name="logger">The logger instance for structured logging.</param>
+    /// <param name="orderRepository">The repository for order data persistence.</param>
+    /// <param name="ordersMessageHandler">The handler for publishing order messages.</param>
+    /// <param name="activitySource">The activity source for distributed tracing.</param>
+    /// <param name="meter">The meter for recording metrics.</param>
+    /// <exception cref="ArgumentNullException">Thrown when any parameter is null.</exception>
     public OrderService(
         ILogger<OrderService> logger,
         IOrderRepository orderRepository,
@@ -46,40 +46,49 @@ public sealed class OrderService : IOrderService
 
         // Initialize metrics with semantic naming conventions
         _ordersPlacedCounter = _meter.CreateCounter<long>(
-            \"orders.placed\",
-            \"orders\",
-            \"Number of orders successfully placed\");
+            "orders.placed",
+            "orders",
+            "Number of orders successfully placed");
         _orderProcessingDuration = _meter.CreateHistogram<double>(
-            \"orders.processing.duration\",
-            \"ms\",
-            \"Duration of order processing operations\");
+            "orders.processing.duration",
+            "ms",
+            "Duration of order processing operations");
         _orderProcessingErrors = _meter.CreateCounter<long>(
-            \"orders.processing.errors\",
-            \"errors\",
-            \"Number of order processing errors by error type\");
+            "orders.processing.errors",
+            "errors",
+            "Number of order processing errors by error type");
     }
 
-    /// <summary>\n    /// Places a new order asynchronously with validation, persistence, and message publishing.\n    /// </summary>\n    /// <param name=\"order\">The order to be placed.</param>\n    /// <param name=\"cancellationToken\">Cancellation token to cancel the operation.</param>\n    /// <returns>The placed order.</returns>\n    /// <exception cref=\"ArgumentNullException\">Thrown when order is null.</exception>\n    /// <exception cref=\"ArgumentException\">Thrown when order validation fails.</exception>\n    /// <exception cref=\"InvalidOperationException\">Thrown when order already exists.</exception>\n    public async Task<Order> PlaceOrderAsync(Order order, CancellationToken cancellationToken = default)
+    /// <summary>
+    /// Places a new order asynchronously with validation, persistence, and message publishing.
+    /// </summary>
+    /// <param name="order">The order to be placed.</param>
+    /// <param name="cancellationToken">Cancellation token to cancel the operation.</param>
+    /// <returns>The placed order.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when order is null.</exception>
+    /// <exception cref="ArgumentException">Thrown when order validation fails.</exception>
+    /// <exception cref="InvalidOperationException">Thrown when order already exists.</exception>
+    public async Task<Order> PlaceOrderAsync(Order order, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(order);
 
-        using var activity = _activitySource.StartActivity(\"PlaceOrder\", ActivityKind.Internal);
+        using var activity = _activitySource.StartActivity("PlaceOrder", ActivityKind.Internal);
         var startTime = DateTime.UtcNow;
 
         try
         {
-            activity?.SetTag(\"order.id\", order.Id);
-            activity?.SetTag(\"order.customer_id\", order.CustomerId);
-            activity?.SetTag(\"order.total\", order.Total);
-            activity?.SetTag(\"order.products.count\", order.Products?.Count ?? 0);
+            activity?.SetTag("order.id", order.Id);
+            activity?.SetTag("order.customer_id", order.CustomerId);
+            activity?.SetTag("order.total", order.Total);
+            activity?.SetTag("order.products.count", order.Products?.Count ?? 0);
 
             _logger.LogInformation("Placing order with ID: {OrderId} for customer {CustomerId}", order.Id, order.CustomerId);
 
-    // Validate order data
-    ValidateOrder(order);
+            // Validate order data
+            ValidateOrder(order);
 
-    // Check if order already exists
-    var existingOrder = await _orderRepository.GetOrderByIdAsync(order.Id, cancellationToken).ConfigureAwait(false);
+            // Check if order already exists
+            var existingOrder = await _orderRepository.GetOrderByIdAsync(order.Id, cancellationToken).ConfigureAwait(false);
             if (existingOrder != null)
             {
                 _logger.LogWarning("Order with ID {OrderId} already exists", order.Id);
@@ -89,18 +98,18 @@ public sealed class OrderService : IOrderService
             // Save order to repository first
             await _orderRepository.SaveOrderAsync(order, cancellationToken).ConfigureAwait(false);
 
-    // Send message to Service Bus
-    await _ordersMessageHandler.SendOrderMessageAsync(order, cancellationToken).ConfigureAwait(false);
+            // Send message to Service Bus
+            await _ordersMessageHandler.SendOrderMessageAsync(order, cancellationToken).ConfigureAwait(false);
 
-    // Record metrics
-    var metricTags = new TagList
+            // Record metrics
+            var metricTags = new TagList
             {
                 { "customer.id", order.CustomerId },
                 { "order.status", "success" }
             };
             _ordersPlacedCounter.Add(1, metricTags);
             var duration = (DateTime.UtcNow - startTime).TotalMilliseconds;
-_orderProcessingDuration.Record(duration, metricTags);
+            _orderProcessingDuration.Record(duration, metricTags);
 
             _logger.LogInformation("Order {OrderId} placed successfully in {Duration}ms", order.Id, duration);
             return order;
@@ -112,10 +121,10 @@ _orderProcessingDuration.Record(duration, metricTags);
                 { "error.type", ex.GetType().Name },
                 { "order.status", "failed" }
             };
-_orderProcessingErrors.Add(1, errorTags);
-activity?.SetStatus(ActivityStatusCode.Error, ex.Message);
-_logger.LogError(ex, "Failed to place order {OrderId}: {ErrorMessage}", order.Id, ex.Message);
-throw;
+            _orderProcessingErrors.Add(1, errorTags);
+            activity?.SetStatus(ActivityStatusCode.Error, ex.Message);
+            _logger.LogError(ex, "Failed to place order {OrderId}: {ErrorMessage}", order.Id, ex.Message);
+            throw;
         }
     }
 
@@ -129,55 +138,55 @@ throw;
     /// <exception cref="ArgumentNullException">Thrown when orders is null.</exception>
     /// <exception cref="ArgumentException">Thrown when orders collection is empty.</exception>
     public async Task<IEnumerable<Order>> PlaceOrdersBatchAsync(IEnumerable<Order> orders, CancellationToken cancellationToken = default)
-{
-    ArgumentNullException.ThrowIfNull(orders);
-
-    using var activity = _activitySource.StartActivity("PlaceOrdersBatch", ActivityKind.Internal);
-    var startTime = DateTime.UtcNow;
-
-    var ordersList = orders.ToList();
-    if (ordersList.Count == 0)
     {
-        throw new ArgumentException("Orders collection cannot be empty", nameof(orders));
-    }
+        ArgumentNullException.ThrowIfNull(orders);
 
-    activity?.SetTag("orders.count", ordersList.Count);
-    _logger.LogInformation("Placing batch of {Count} orders", ordersList.Count);
+        using var activity = _activitySource.StartActivity("PlaceOrdersBatch", ActivityKind.Internal);
+        var startTime = DateTime.UtcNow;
 
-    var placedOrders = new List<Order>();
-    var failedOrders = new List<(string OrderId, string ErrorMessage)>();
-
-    foreach (var order in ordersList)
-    {
-        try
+        var ordersList = orders.ToList();
+        if (ordersList.Count == 0)
         {
-            var placedOrder = await PlaceOrderAsync(order, cancellationToken).ConfigureAwait(false);
-            placedOrders.Add(placedOrder);
+            throw new ArgumentException("Orders collection cannot be empty", nameof(orders));
         }
-        catch (Exception ex)
+
+        activity?.SetTag("orders.count", ordersList.Count);
+        _logger.LogInformation("Placing batch of {Count} orders", ordersList.Count);
+
+        var placedOrders = new List<Order>();
+        var failedOrders = new List<(string OrderId, string ErrorMessage)>();
+
+        foreach (var order in ordersList)
         {
-            _logger.LogError(ex, "Failed to place order {OrderId} in batch", order.Id);
-            failedOrders.Add((order.Id, ex.Message));
-        }
-    }
-
-    var duration = (DateTime.UtcNow - startTime).TotalMilliseconds;
-    _logger.LogInformation(
-        "Batch processing complete in {Duration}ms. {SuccessCount} orders placed successfully, {FailedCount} failed",
-        duration, placedOrders.Count, failedOrders.Count);
-
-    if (failedOrders.Count > 0)
-    {
-        activity?.AddEvent(new ActivityEvent("BatchPartialFailure",
-            tags: new ActivityTagsCollection
+            try
             {
+                var placedOrder = await PlaceOrderAsync(order, cancellationToken).ConfigureAwait(false);
+                placedOrders.Add(placedOrder);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to place order {OrderId} in batch", order.Id);
+                failedOrders.Add((order.Id, ex.Message));
+            }
+        }
+
+        var duration = (DateTime.UtcNow - startTime).TotalMilliseconds;
+        _logger.LogInformation(
+            "Batch processing complete in {Duration}ms. {SuccessCount} orders placed successfully, {FailedCount} failed",
+            duration, placedOrders.Count, failedOrders.Count);
+
+        if (failedOrders.Count > 0)
+        {
+            activity?.AddEvent(new ActivityEvent("BatchPartialFailure",
+                tags: new ActivityTagsCollection
+                {
                     { "failed.count", failedOrders.Count },
                     { "success.count", placedOrders.Count }
-            }));
-    }
+                }));
+        }
 
-    return placedOrders;
-}
+        return placedOrders;
+    }
 
 /// <summary>
 /// Retrieves all orders from the repository asynchronously.
@@ -303,7 +312,12 @@ public async Task<bool> DeleteOrderAsync(string orderId, CancellationToken cance
     }
 }
 
-private static void ValidateOrder(Order order)
+    /// <summary>
+    /// Validates the order data to ensure it meets all business requirements.
+    /// </summary>
+    /// <param name="order">The order to validate.</param>
+    /// <exception cref="ArgumentException">Thrown when validation fails.</exception>
+    private static void ValidateOrder(Order order)
 {
     if (string.IsNullOrWhiteSpace(order.Id))
     {

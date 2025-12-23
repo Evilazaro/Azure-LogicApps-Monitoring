@@ -30,20 +30,29 @@ public sealed class OrdersAPIService
         _activitySource = activitySource ?? throw new ArgumentNullException(nameof(activitySource));
     }
 
-    /// <summary>\n    /// Places a new order through the Orders API.\n    /// </summary>\n    /// <param name=\"order\">The order to be placed.</param>\n    /// <param name=\"cancellationToken\">Cancellation token to cancel the operation.</param>\n    /// <returns>The created order.</returns>\n    /// <exception cref=\"ArgumentNullException\">Thrown when order is null.</exception>\n    /// <exception cref=\"ArgumentException\">Thrown when order ID is invalid.</exception>\n    /// <exception cref=\"HttpRequestException\">Thrown when API request fails.</exception>\n    public async Task<Order> PlaceOrderAsync(Order order, CancellationToken cancellationToken = default)
+    /// <summary>
+    /// Places a new order through the Orders API.
+    /// </summary>
+    /// <param name="order">The order to be placed.</param>
+    /// <param name="cancellationToken">Cancellation token to cancel the operation.</param>
+    /// <returns>The created order.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when order is null.</exception>
+    /// <exception cref="ArgumentException">Thrown when order ID is invalid.</exception>
+    /// <exception cref="HttpRequestException">Thrown when API request fails.</exception>
+    public async Task<Order> PlaceOrderAsync(Order order, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(order);
 
         if (string.IsNullOrWhiteSpace(order.Id))
         {
             throw new ArgumentException("Order ID is required", nameof(order));
-}
+        }
 
         using var activity = _activitySource.StartActivity("PlaceOrder", ActivityKind.Client);
         activity?.SetTag("order.id", order.Id);
-activity?.SetTag("order.customer_id", order.CustomerId);
-activity?.SetTag("http.method", "POST");
-activity?.SetTag("http.url", $"{_httpClient.BaseAddress}api/orders");
+        activity?.SetTag("order.customer_id", order.CustomerId);
+        activity?.SetTag("http.method", "POST");
+        activity?.SetTag("http.url", $"{_httpClient.BaseAddress}api/orders");
 
         using var logScope = _logger.BeginScope(new Dictionary<string, object>
         {
@@ -51,37 +60,37 @@ activity?.SetTag("http.url", $"{_httpClient.BaseAddress}api/orders");
             ["OrderId"] = order.Id
         });
 
-try
-{
-    _logger.LogInformation("Placing order with ID: {OrderId}", order.Id);
+        try
+        {
+            _logger.LogInformation("Placing order with ID: {OrderId}", order.Id);
 
-    var response = await _httpClient.PostAsJsonAsync("api/orders", order, cancellationToken).ConfigureAwait(false);
-    response.EnsureSuccessStatusCode();
+            var response = await _httpClient.PostAsJsonAsync("api/orders", order, cancellationToken).ConfigureAwait(false);
+            response.EnsureSuccessStatusCode();
 
-    var createdOrder = await response.Content.ReadFromJsonAsync<Order>(cancellationToken: cancellationToken).ConfigureAwait(false);
+            var createdOrder = await response.Content.ReadFromJsonAsync<Order>(cancellationToken: cancellationToken).ConfigureAwait(false);
 
-    if (createdOrder == null)
-    {
-        throw new InvalidOperationException("Failed to deserialize created order response");
-    }
+            if (createdOrder == null)
+            {
+                throw new InvalidOperationException("Failed to deserialize created order response");
+            }
 
-    activity?.SetStatus(ActivityStatusCode.Ok);
-    _logger.LogInformation("Order {OrderId} placed successfully", createdOrder.Id);
-    return createdOrder;
-}
-catch (HttpRequestException ex)
-{
-    activity?.SetStatus(ActivityStatusCode.Error, $"HTTP error: {ex.StatusCode}");
-    _logger.LogError(ex, "HTTP error while placing order with ID: {OrderId}. Status: {StatusCode}",
-        order.Id, ex.StatusCode);
-    throw;
-}
-catch (Exception ex) when (ex is not ArgumentException)
-{
-    activity?.SetStatus(ActivityStatusCode.Error, ex.Message);
-    _logger.LogError(ex, "Unexpected error while placing order with ID: {OrderId}", order.Id);
-    throw;
-}
+            activity?.SetStatus(ActivityStatusCode.Ok);
+            _logger.LogInformation("Order {OrderId} placed successfully", createdOrder.Id);
+            return createdOrder;
+        }
+        catch (HttpRequestException ex)
+        {
+            activity?.SetStatus(ActivityStatusCode.Error, $"HTTP error: {ex.StatusCode}");
+            _logger.LogError(ex, "HTTP error while placing order with ID: {OrderId}. Status: {StatusCode}",
+                order.Id, ex.StatusCode);
+            throw;
+        }
+        catch (Exception ex) when (ex is not ArgumentException)
+        {
+            activity?.SetStatus(ActivityStatusCode.Error, ex.Message);
+            _logger.LogError(ex, "Unexpected error while placing order with ID: {OrderId}", order.Id);
+            throw;
+        }
     }
 
     /// <summary>
@@ -94,20 +103,20 @@ catch (Exception ex) when (ex is not ArgumentException)
     /// <exception cref="ArgumentException">Thrown when orders collection is empty.</exception>
     /// <exception cref="HttpRequestException">Thrown when API request fails.</exception>
     public async Task<IEnumerable<Order>> PlaceOrdersBatchAsync(IEnumerable<Order> orders, CancellationToken cancellationToken = default)
-{
-    ArgumentNullException.ThrowIfNull(orders);
-
-    using var activity = _activitySource.StartActivity("PlaceOrdersBatch", ActivityKind.Client);
-
-    var ordersList = orders.ToList();
-    if (ordersList.Count == 0)
     {
-        throw new ArgumentException("Orders collection cannot be empty", nameof(orders));
-    }
+        ArgumentNullException.ThrowIfNull(orders);
 
-    activity?.SetTag("orders.count", ordersList.Count);
-    activity?.SetTag("http.method", "POST");
-    activity?.SetTag("http.url", $"{_httpClient.BaseAddress}api/orders/batch");
+        using var activity = _activitySource.StartActivity("PlaceOrdersBatch", ActivityKind.Client);
+
+        var ordersList = orders.ToList();
+        if (ordersList.Count == 0)
+        {
+            throw new ArgumentException("Orders collection cannot be empty", nameof(orders));
+        }
+
+        activity?.SetTag("orders.count", ordersList.Count);
+        activity?.SetTag("http.method", "POST");
+        activity?.SetTag("http.url", $"{_httpClient.BaseAddress}api/orders/batch");
 
     using var logScope = _logger.BeginScope(new Dictionary<string, object>
     {
@@ -115,74 +124,74 @@ catch (Exception ex) when (ex is not ArgumentException)
         ["OrdersCount"] = ordersList.Count
     });
 
-    try
-    {
-        _logger.LogInformation("Placing batch of {Count} orders", ordersList.Count);
+        try
+        {
+            _logger.LogInformation("Placing batch of {Count} orders", ordersList.Count);
 
-        var response = await _httpClient.PostAsJsonAsync("api/orders/batch", ordersList, cancellationToken).ConfigureAwait(false);
-        response.EnsureSuccessStatusCode();
+            var response = await _httpClient.PostAsJsonAsync("api/orders/batch", ordersList, cancellationToken).ConfigureAwait(false);
+            response.EnsureSuccessStatusCode();
 
-        var placedOrders = await response.Content.ReadFromJsonAsync<IEnumerable<Order>>(cancellationToken: cancellationToken).ConfigureAwait(false);
+            var placedOrders = await response.Content.ReadFromJsonAsync<IEnumerable<Order>>(cancellationToken: cancellationToken).ConfigureAwait(false);
 
-        var result = placedOrders ?? Enumerable.Empty<Order>();
-        activity?.SetStatus(ActivityStatusCode.Ok);
-        _logger.LogInformation("Batch processing complete. {Count} orders placed successfully", result.Count());
-        return result;
+            var result = placedOrders ?? Enumerable.Empty<Order>();
+            activity?.SetStatus(ActivityStatusCode.Ok);
+            _logger.LogInformation("Batch processing complete. {Count} orders placed successfully", result.Count());
+            return result;
+        }
+        catch (HttpRequestException ex)
+        {
+            activity?.SetStatus(ActivityStatusCode.Error, $"HTTP error: {ex.StatusCode}");
+            _logger.LogError(ex, "HTTP error while placing batch of orders. Status: {StatusCode}", ex.StatusCode);
+            throw;
+        }
+        catch (Exception ex) when (ex is not ArgumentException)
+        {
+            activity?.SetStatus(ActivityStatusCode.Error, ex.Message);
+            _logger.LogError(ex, "Unexpected error while placing batch of orders");
+            throw;
+        }
     }
-    catch (HttpRequestException ex)
-    {
-        activity?.SetStatus(ActivityStatusCode.Error, $"HTTP error: {ex.StatusCode}");
-        _logger.LogError(ex, "HTTP error while placing batch of orders. Status: {StatusCode}", ex.StatusCode);
-        throw;
-    }
-    catch (Exception ex) when (ex is not ArgumentException)
-    {
-        activity?.SetStatus(ActivityStatusCode.Error, ex.Message);
-        _logger.LogError(ex, "Unexpected error while placing batch of orders");
-        throw;
-    }
-}
 
-/// <summary>
-/// Retrieves all orders from the Orders API.
-/// </summary>
-/// <param name="cancellationToken">Cancellation token to cancel the operation.</param>
-/// <returns>A collection of all orders.</returns>
-/// <exception cref="HttpRequestException">Thrown when API request fails.</exception>
-public async Task<IEnumerable<Order>> GetOrdersAsync(CancellationToken cancellationToken = default)
-{
-    using var activity = _activitySource.StartActivity("GetOrders", ActivityKind.Client);
-
-    using var logScope = _logger.BeginScope(new Dictionary<string, object>
+    /// <summary>
+    /// Retrieves all orders from the Orders API.
+    /// </summary>
+    /// <param name="cancellationToken">Cancellation token to cancel the operation.</param>
+    /// <returns>A collection of all orders.</returns>
+    /// <exception cref="HttpRequestException">Thrown when API request fails.</exception>
+        public async Task<IEnumerable<Order>> GetOrdersAsync(CancellationToken cancellationToken = default)
     {
-        ["TraceId"] = Activity.Current?.TraceId.ToString() ?? "none"
-    });
+        using var activity = _activitySource.StartActivity("GetOrders", ActivityKind.Client);
 
-    try
-    {
-        _logger.LogInformation("Retrieving all orders from orders-api");
+        using var logScope = _logger.BeginScope(new Dictionary<string, object>
+        {
+            ["TraceId"] = Activity.Current?.TraceId.ToString() ?? "none"
+        });
 
-        var orders = await _httpClient.GetFromJsonAsync<IEnumerable<Order>>("api/orders", cancellationToken).ConfigureAwait(false);
-        var result = orders ?? Enumerable.Empty<Order>();
+        try
+        {
+            _logger.LogInformation("Retrieving all orders from orders-api");
 
-        activity?.SetTag("orders.count", result.Count());
-        activity?.SetStatus(ActivityStatusCode.Ok);
-        _logger.LogInformation("Successfully retrieved {Count} orders", result.Count());
-        return result;
+            var orders = await _httpClient.GetFromJsonAsync<IEnumerable<Order>>("api/orders", cancellationToken).ConfigureAwait(false);
+            var result = orders ?? Enumerable.Empty<Order>();
+
+            activity?.SetTag("orders.count", result.Count());
+            activity?.SetStatus(ActivityStatusCode.Ok);
+            _logger.LogInformation("Successfully retrieved {Count} orders", result.Count());
+            return result;
+        }
+        catch (HttpRequestException ex)
+        {
+            activity?.SetStatus(ActivityStatusCode.Error, $"HTTP error: {ex.StatusCode}");
+            _logger.LogError(ex, "HTTP error while fetching orders from orders-api. Status: {StatusCode}", ex.StatusCode);
+            throw;
+        }
+        catch (Exception ex)
+        {
+            activity?.SetStatus(ActivityStatusCode.Error, ex.Message);
+            _logger.LogError(ex, "Unexpected error while fetching orders from orders-api");
+            throw;
+        }
     }
-    catch (HttpRequestException ex)
-    {
-        activity?.SetStatus(ActivityStatusCode.Error, $"HTTP error: {ex.StatusCode}");
-        _logger.LogError(ex, "HTTP error while fetching orders from orders-api. Status: {StatusCode}", ex.StatusCode);
-        throw;
-    }
-    catch (Exception ex)
-    {
-        activity?.SetStatus(ActivityStatusCode.Error, ex.Message);
-        _logger.LogError(ex, "Unexpected error while fetching orders from orders-api");
-        throw;
-    }
-}
 
 /// <summary>
 /// Retrieves a specific order by its unique identifier from the Orders API.
@@ -192,15 +201,15 @@ public async Task<IEnumerable<Order>> GetOrdersAsync(CancellationToken cancellat
 /// <returns>The order if found; otherwise, null.</returns>
 /// <exception cref="ArgumentException">Thrown when orderId is null or empty.</exception>
 /// <exception cref="HttpRequestException">Thrown when API request fails (excluding 404).</exception>
-public async Task<Order?> GetOrderByIdAsync(string orderId, CancellationToken cancellationToken = default)
-{
-    if (string.IsNullOrWhiteSpace(orderId))
+    public async Task<Order?> GetOrderByIdAsync(string orderId, CancellationToken cancellationToken = default)
     {
-        throw new ArgumentException("Order ID cannot be null or empty", nameof(orderId));
-    }
+        if (string.IsNullOrWhiteSpace(orderId))
+        {
+            throw new ArgumentException("Order ID cannot be null or empty", nameof(orderId));
+        }
 
-    using var activity = _activitySource.StartActivity("GetOrderById", ActivityKind.Client);
-    activity?.SetTag("order.id", orderId);
+        using var activity = _activitySource.StartActivity("GetOrderById", ActivityKind.Client);
+        activity?.SetTag("order.id", orderId);
 
     using var logScope = _logger.BeginScope(new Dictionary<string, object>
     {
@@ -247,9 +256,15 @@ public async Task<Order?> GetOrderByIdAsync(string orderId, CancellationToken ca
     }
 }
 
-public async Task<IEnumerable<WeatherForecast>?> GetWeatherForecastAsync(CancellationToken cancellationToken = default)
-{
-    using var activity = ActivitySource.StartActivity("GetWeatherForecast", ActivityKind.Client);
+    /// <summary>
+    /// Retrieves weather forecast data from the Orders API.
+    /// </summary>
+    /// <param name="cancellationToken">Cancellation token to cancel the operation.</param>
+    /// <returns>A collection of weather forecasts, or null if unavailable.</returns>
+    /// <exception cref="HttpRequestException">Thrown when API request fails.</exception>
+    public async Task<IEnumerable<WeatherForecast>?> GetWeatherForecastAsync(CancellationToken cancellationToken = default)
+    {
+        using var activity = _activitySource.StartActivity("GetWeatherForecast", ActivityKind.Client);
 
     try
     {
@@ -272,17 +287,27 @@ public async Task<IEnumerable<WeatherForecast>?> GetWeatherForecastAsync(Cancell
     }
 }
 
-public async Task<bool> UpdateOrderAsync(string id, Order order, CancellationToken cancellationToken = default)
-{
-    using var activity = ActivitySource.StartActivity("UpdateOrder", ActivityKind.Client);
-    activity?.SetTag("order.id", id);
-
-    if (string.IsNullOrWhiteSpace(id))
+    /// <summary>
+    /// Updates an existing order through the Orders API.
+    /// </summary>
+    /// <param name="id">The unique identifier of the order to update.</param>
+    /// <param name="order">The updated order data.</param>
+    /// <param name="cancellationToken">Cancellation token to cancel the operation.</param>
+    /// <returns>True if the order was successfully updated; otherwise, false.</returns>
+    /// <exception cref="ArgumentException">Thrown when id is null or empty.</exception>
+    /// <exception cref="ArgumentNullException">Thrown when order is null.</exception>
+    /// <exception cref="HttpRequestException">Thrown when API request fails.</exception>
+    public async Task<bool> UpdateOrderAsync(string id, Order order, CancellationToken cancellationToken = default)
     {
-        throw new ArgumentException("Order ID cannot be null or empty", nameof(id));
-    }
+        using var activity = _activitySource.StartActivity("UpdateOrder", ActivityKind.Client);
+        activity?.SetTag("order.id", id);
 
-    ArgumentNullException.ThrowIfNull(order);
+        if (string.IsNullOrWhiteSpace(id))
+        {
+            throw new ArgumentException("Order ID cannot be null or empty", nameof(id));
+        }
+
+        ArgumentNullException.ThrowIfNull(order);
 
     try
     {

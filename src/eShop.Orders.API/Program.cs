@@ -11,8 +11,8 @@ var builder = WebApplication.CreateBuilder(args);
 builder.AddServiceDefaults();
 
 // Register observability components for dependency injection
-builder.Services.AddSingleton(new ActivitySource(\"eShop.Orders.API\"));
-builder.Services.AddSingleton(new Meter(\"eShop.Orders.API\"));
+builder.Services.AddSingleton(new ActivitySource("eShop.Orders.API"));
+builder.Services.AddSingleton(new Meter("eShop.Orders.API"));
 
 // Configure strongly-typed options with validation
 builder.Services.AddOptions<OrderStorageOptions>()
@@ -36,7 +36,7 @@ if (builder.Environment.IsDevelopment())
     builder.Services.AddSwaggerGen(options =>
     {
         // Include XML comments in Swagger documentation
-        var xmlFile = $\"{System.Reflection.Assembly.GetExecutingAssembly().GetName().Name}.xml\";
+        var xmlFile = $"{System.Reflection.Assembly.GetExecutingAssembly().GetName().Name}.xml";
         var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
         if (File.Exists(xmlPath))
         {

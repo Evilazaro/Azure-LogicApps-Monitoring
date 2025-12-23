@@ -8,7 +8,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.AddServiceDefaults();
 
 // Register observability components for dependency injection
-builder.Services.AddSingleton(new ActivitySource(\"eShop.Web.App\"));
+builder.Services.AddSingleton(new ActivitySource("eShop.Web.App"));
 
 // Add Razor Components with interactive server-side rendering
 builder.Services.AddRazorComponents()
@@ -42,16 +42,16 @@ builder.Services.Configure<Microsoft.AspNetCore.Components.Server.CircuitOptions
 builder.Services.AddHttpClient<OrdersAPIService>((serviceProvider, client) =>
 {
     var configuration = serviceProvider.GetRequiredService<IConfiguration>();
-    var baseAddress = configuration[\"services:orders-api:https:0\"]
-                    ?? configuration[\"services:orders-api:http:0\"]
-                    ?? throw new InvalidOperationException(\"Orders API base address not configured. Ensure 'services:orders-api' is set in configuration.\");
+    var baseAddress = configuration["services:orders-api:https:0"]
+                    ?? configuration["services:orders-api:http:0"]
+                    ?? throw new InvalidOperationException("Orders API base address not configured. Ensure 'services:orders-api' is set in configuration.");
 
     client.BaseAddress = new Uri(baseAddress);
-    client.DefaultRequestHeaders.Add(\"Accept\", \"application/json\");
+    client.DefaultRequestHeaders.Add("Accept", "application/json");
     client.Timeout = TimeSpan.FromSeconds(30);
 })
-.AddStandardResilienceHandler() // Adds retry, timeout, and circuit breaker policies
-.AddServiceDiscovery(); // Enables service discovery
+.AddServiceDiscovery() // Enables service discovery
+.AddStandardResilienceHandler(); // Adds retry, timeout, and circuit breaker policies
 
 builder.Services.AddFluentUIComponents();
 
