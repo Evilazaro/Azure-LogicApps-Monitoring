@@ -84,7 +84,7 @@ static void ConfigureServiceBus(
     }
     else 
     {
-        var sbParam = builder.AddParameter(resourceName, resourceName);
+        var sbParam = builder.AddParameter("service-bus", resourceName);
         var sbResourceGroupParam = builder.AddParameterFromConfiguration("resourceGroup", "Azure:ResourceGroup");
         var serviceBusResource = builder.AddAzureServiceBus(DefaultConnectionStringName).RunAsExisting(sbParam, sbResourceGroupParam);
         
