@@ -97,7 +97,18 @@ static void ConfigureServiceBus(
         ordersAPI.WithReference(serviceBusResource);
     }
 
-    ordersAPI.WithEnvironment("AZURE_SUBSCRIPTION_ID", builder.Configuration["Azure:SubscriptionId"] ?? string.Empty);
-    ordersAPI.WithEnvironment("AZURE_CLIENT_ID", builder.Configuration["Azure:ClientId"] ?? string.Empty);
-    ordersAPI.WithEnvironment("AZURE_TENANT_ID", builder.Configuration["Azure:TenantId"] ?? string.Empty);
+    var azureSubscriptionId = builder.Configuration["Azure:SubscriptionId"];
+    var azureClientId = builder.Configuration["Azure:ClientId"];
+    var azureTenantId = builder.Configuration["Azure:TenantId"];
+
+    if (!string.IsNullOrWhiteSpace(azureSubscriptionId) &&
+        !string.IsNullOrWhiteSpace(azureClientId) &&
+        !string.IsNullOrWhiteSpace(azureTenantId))
+    {
+        ordersAPI.WithEnvironment("AZURE_SUBSCRIPTION_ID", azureSubscriptionId ?? string.Empty);
+        ordersAPI.WithEnvironment("AZURE_CLIENT_ID", azureClientId ?? string.Empty);
+        ordersAPI.WithEnvironment("AZURE_TENANT_ID", azureTenantId ?? string.Empty);
+    }
+
+   
 }
