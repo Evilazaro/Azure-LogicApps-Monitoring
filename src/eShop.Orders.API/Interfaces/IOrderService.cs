@@ -14,7 +14,7 @@ public interface IOrderService
     /// <param name="cancellationToken">Cancellation token to cancel the operation.</param>
     /// <returns>The placed order.</returns>
     Task<Order> PlaceOrderAsync(Order order, CancellationToken cancellationToken = default);
-    
+
     /// <summary>
     /// Places multiple orders in a batch operation asynchronously.
     /// </summary>
@@ -22,14 +22,14 @@ public interface IOrderService
     /// <param name="cancellationToken">Cancellation token to cancel the operation.</param>
     /// <returns>A collection of successfully placed orders.</returns>
     Task<IEnumerable<Order>> PlaceOrdersBatchAsync(IEnumerable<Order> orders, CancellationToken cancellationToken = default);
-    
+
     /// <summary>
     /// Retrieves all orders asynchronously.
     /// </summary>
     /// <param name="cancellationToken">Cancellation token to cancel the operation.</param>
     /// <returns>A collection of all orders.</returns>
     Task<IEnumerable<Order>> GetOrdersAsync(CancellationToken cancellationToken = default);
-    
+
     /// <summary>
     /// Retrieves a specific order by its unique identifier.
     /// </summary>
@@ -37,7 +37,7 @@ public interface IOrderService
     /// <param name="cancellationToken">Cancellation token to cancel the operation.</param>
     /// <returns>The order if found; otherwise, null.</returns>
     Task<Order?> GetOrderByIdAsync(string orderId, CancellationToken cancellationToken = default);
-    
+
     /// <summary>
     /// Deletes an order by its unique identifier.
     /// </summary>

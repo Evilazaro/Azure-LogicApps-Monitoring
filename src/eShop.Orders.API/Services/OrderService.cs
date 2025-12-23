@@ -75,11 +75,11 @@ public sealed class OrderService : IOrderService
 
             _logger.LogInformation("Placing order with ID: {OrderId} for customer {CustomerId}", order.Id, order.CustomerId);
 
-            // Validate order data
-            ValidateOrder(order);
+    // Validate order data
+    ValidateOrder(order);
 
-            // Check if order already exists
-            var existingOrder = await _orderRepository.GetOrderByIdAsync(order.Id, cancellationToken).ConfigureAwait(false);
+    // Check if order already exists
+    var existingOrder = await _orderRepository.GetOrderByIdAsync(order.Id, cancellationToken).ConfigureAwait(false);
             if (existingOrder != null)
             {
                 _logger.LogWarning("Order with ID {OrderId} already exists", order.Id);
@@ -89,18 +89,18 @@ public sealed class OrderService : IOrderService
             // Save order to repository first
             await _orderRepository.SaveOrderAsync(order, cancellationToken).ConfigureAwait(false);
 
-            // Send message to Service Bus
-            await _ordersMessageHandler.SendOrderMessageAsync(order, cancellationToken).ConfigureAwait(false);
+    // Send message to Service Bus
+    await _ordersMessageHandler.SendOrderMessageAsync(order, cancellationToken).ConfigureAwait(false);
 
-            // Record metrics
-            var metricTags = new TagList
+    // Record metrics
+    var metricTags = new TagList
             {
                 { "customer.id", order.CustomerId },
                 { "order.status", "success" }
             };
             _ordersPlacedCounter.Add(1, metricTags);
             var duration = (DateTime.UtcNow - startTime).TotalMilliseconds;
-            _orderProcessingDuration.Record(duration, metricTags);
+_orderProcessingDuration.Record(duration, metricTags);
 
             _logger.LogInformation("Order {OrderId} placed successfully in {Duration}ms", order.Id, duration);
             return order;
@@ -112,10 +112,10 @@ public sealed class OrderService : IOrderService
                 { "error.type", ex.GetType().Name },
                 { "order.status", "failed" }
             };
-            _orderProcessingErrors.Add(1, errorTags);
-            activity?.SetStatus(ActivityStatusCode.Error, ex.Message);
-            _logger.LogError(ex, "Failed to place order {OrderId}: {ErrorMessage}", order.Id, ex.Message);
-            throw;
+_orderProcessingErrors.Add(1, errorTags);
+activity?.SetStatus(ActivityStatusCode.Error, ex.Message);
+_logger.LogError(ex, "Failed to place order {OrderId}: {ErrorMessage}", order.Id, ex.Message);
+throw;
         }
     }
 
@@ -129,200 +129,200 @@ public sealed class OrderService : IOrderService
     /// <exception cref="ArgumentNullException">Thrown when orders is null.</exception>
     /// <exception cref="ArgumentException">Thrown when orders collection is empty.</exception>
     public async Task<IEnumerable<Order>> PlaceOrdersBatchAsync(IEnumerable<Order> orders, CancellationToken cancellationToken = default)
+{
+    ArgumentNullException.ThrowIfNull(orders);
+
+    using var activity = _activitySource.StartActivity("PlaceOrdersBatch", ActivityKind.Internal);
+    var startTime = DateTime.UtcNow;
+
+    var ordersList = orders.ToList();
+    if (ordersList.Count == 0)
     {
-        ArgumentNullException.ThrowIfNull(orders);
+        throw new ArgumentException("Orders collection cannot be empty", nameof(orders));
+    }
 
-        using var activity = _activitySource.StartActivity("PlaceOrdersBatch", ActivityKind.Internal);
-        var startTime = DateTime.UtcNow;
+    activity?.SetTag("orders.count", ordersList.Count);
+    _logger.LogInformation("Placing batch of {Count} orders", ordersList.Count);
 
-        var ordersList = orders.ToList();
-        if (ordersList.Count == 0)
+    var placedOrders = new List<Order>();
+    var failedOrders = new List<(string OrderId, string ErrorMessage)>();
+
+    foreach (var order in ordersList)
+    {
+        try
         {
-            throw new ArgumentException("Orders collection cannot be empty", nameof(orders));
+            var placedOrder = await PlaceOrderAsync(order, cancellationToken).ConfigureAwait(false);
+            placedOrders.Add(placedOrder);
         }
-
-        activity?.SetTag("orders.count", ordersList.Count);
-        _logger.LogInformation("Placing batch of {Count} orders", ordersList.Count);
-
-        var placedOrders = new List<Order>();
-        var failedOrders = new List<(string OrderId, string ErrorMessage)>();
-
-        foreach (var order in ordersList)
+        catch (Exception ex)
         {
-            try
-            {
-                var placedOrder = await PlaceOrderAsync(order, cancellationToken).ConfigureAwait(false);
-                placedOrders.Add(placedOrder);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Failed to place order {OrderId} in batch", order.Id);
-                failedOrders.Add((order.Id, ex.Message));
-            }
+            _logger.LogError(ex, "Failed to place order {OrderId} in batch", order.Id);
+            failedOrders.Add((order.Id, ex.Message));
         }
+    }
 
-        var duration = (DateTime.UtcNow - startTime).TotalMilliseconds;
-        _logger.LogInformation(
-            "Batch processing complete in {Duration}ms. {SuccessCount} orders placed successfully, {FailedCount} failed",
-            duration, placedOrders.Count, failedOrders.Count);
+    var duration = (DateTime.UtcNow - startTime).TotalMilliseconds;
+    _logger.LogInformation(
+        "Batch processing complete in {Duration}ms. {SuccessCount} orders placed successfully, {FailedCount} failed",
+        duration, placedOrders.Count, failedOrders.Count);
 
-        if (failedOrders.Count > 0)
-        {
-            activity?.AddEvent(new ActivityEvent("BatchPartialFailure",
-                tags: new ActivityTagsCollection
-                {
+    if (failedOrders.Count > 0)
+    {
+        activity?.AddEvent(new ActivityEvent("BatchPartialFailure",
+            tags: new ActivityTagsCollection
+            {
                     { "failed.count", failedOrders.Count },
                     { "success.count", placedOrders.Count }
-                }));
-        }
-
-        return placedOrders;
+            }));
     }
 
-    /// <summary>
-    /// Retrieves all orders from the repository asynchronously.
-    /// </summary>
-    /// <param name="cancellationToken">Cancellation token to cancel the operation.</param>
-    /// <returns>A collection of all orders.</returns>
-    public async Task<IEnumerable<Order>> GetOrdersAsync(CancellationToken cancellationToken = default)
+    return placedOrders;
+}
+
+/// <summary>
+/// Retrieves all orders from the repository asynchronously.
+/// </summary>
+/// <param name="cancellationToken">Cancellation token to cancel the operation.</param>
+/// <returns>A collection of all orders.</returns>
+public async Task<IEnumerable<Order>> GetOrdersAsync(CancellationToken cancellationToken = default)
+{
+    using var activity = _activitySource.StartActivity("GetOrders", ActivityKind.Internal);
+
+    try
     {
-        using var activity = _activitySource.StartActivity("GetOrders", ActivityKind.Internal);
+        _logger.LogInformation("Retrieving all orders");
+        var orders = await _orderRepository.GetAllOrdersAsync(cancellationToken).ConfigureAwait(false);
+        var ordersList = orders.ToList();
 
-        try
+        activity?.SetTag("orders.retrieved.count", ordersList.Count);
+        activity?.SetStatus(ActivityStatusCode.Ok);
+        _logger.LogInformation("Retrieved {Count} orders", ordersList.Count);
+
+        return ordersList;
+    }
+    catch (Exception ex)
+    {
+        activity?.SetStatus(ActivityStatusCode.Error, ex.Message);
+        _logger.LogError(ex, "Failed to retrieve orders");
+        throw;
+    }
+}
+
+/// <summary>
+/// Retrieves a specific order by its unique identifier.
+/// </summary>
+/// <param name="orderId">The unique identifier of the order.</param>
+/// <param name="cancellationToken">Cancellation token to cancel the operation.</param>
+/// <returns>The order if found; otherwise, null.</returns>
+/// <exception cref="ArgumentException">Thrown when orderId is null or empty.</exception>
+public async Task<Order?> GetOrderByIdAsync(string orderId, CancellationToken cancellationToken = default)
+{
+    if (string.IsNullOrWhiteSpace(orderId))
+    {
+        throw new ArgumentException("Order ID cannot be null or empty", nameof(orderId));
+    }
+
+    using var activity = _activitySource.StartActivity("GetOrderById", ActivityKind.Internal);
+    activity?.SetTag("order.id", orderId);
+
+    try
+    {
+        _logger.LogInformation("Retrieving order with ID: {OrderId}", orderId);
+        var order = await _orderRepository.GetOrderByIdAsync(orderId, cancellationToken).ConfigureAwait(false);
+
+        if (order == null)
         {
-            _logger.LogInformation("Retrieving all orders");
-            var orders = await _orderRepository.GetAllOrdersAsync(cancellationToken).ConfigureAwait(false);
-            var ordersList = orders.ToList();
-
-            activity?.SetTag("orders.retrieved.count", ordersList.Count);
+            activity?.SetStatus(ActivityStatusCode.Error, "Order not found");
+            _logger.LogWarning("Order with ID {OrderId} not found", orderId);
+        }
+        else
+        {
             activity?.SetStatus(ActivityStatusCode.Ok);
-            _logger.LogInformation("Retrieved {Count} orders", ordersList.Count);
+        }
 
-            return ordersList;
-        }
-        catch (Exception ex)
-        {
-            activity?.SetStatus(ActivityStatusCode.Error, ex.Message);
-            _logger.LogError(ex, "Failed to retrieve orders");
-            throw;
-        }
+        return order;
     }
-
-    /// <summary>
-    /// Retrieves a specific order by its unique identifier.
-    /// </summary>
-    /// <param name="orderId">The unique identifier of the order.</param>
-    /// <param name="cancellationToken">Cancellation token to cancel the operation.</param>
-    /// <returns>The order if found; otherwise, null.</returns>
-    /// <exception cref="ArgumentException">Thrown when orderId is null or empty.</exception>
-    public async Task<Order?> GetOrderByIdAsync(string orderId, CancellationToken cancellationToken = default)
+    catch (Exception ex)
     {
-        if (string.IsNullOrWhiteSpace(orderId))
-        {
-            throw new ArgumentException("Order ID cannot be null or empty", nameof(orderId));
-        }
-
-        using var activity = _activitySource.StartActivity("GetOrderById", ActivityKind.Internal);
-        activity?.SetTag("order.id", orderId);
-
-        try
-        {
-            _logger.LogInformation("Retrieving order with ID: {OrderId}", orderId);
-            var order = await _orderRepository.GetOrderByIdAsync(orderId, cancellationToken).ConfigureAwait(false);
-
-            if (order == null)
-            {
-                activity?.SetStatus(ActivityStatusCode.Error, "Order not found");
-                _logger.LogWarning("Order with ID {OrderId} not found", orderId);
-            }
-            else
-            {
-                activity?.SetStatus(ActivityStatusCode.Ok);
-            }
-
-            return order;
-        }
-        catch (Exception ex)
-        {
-            activity?.SetStatus(ActivityStatusCode.Error, ex.Message);
-            _logger.LogError(ex, "Failed to retrieve order {OrderId}", orderId);
-            throw;
-        }
+        activity?.SetStatus(ActivityStatusCode.Error, ex.Message);
+        _logger.LogError(ex, "Failed to retrieve order {OrderId}", orderId);
+        throw;
     }
+}
 
-    /// <summary>
-    /// Deletes an order from the repository by its unique identifier.
-    /// </summary>
-    /// <param name="orderId">The unique identifier of the order to delete.</param>
-    /// <param name="cancellationToken">Cancellation token to cancel the operation.</param>
-    /// <returns>True if the order was successfully deleted; otherwise, false.</returns>
-    /// <exception cref="ArgumentException">Thrown when orderId is null or empty.</exception>
-    public async Task<bool> DeleteOrderAsync(string orderId, CancellationToken cancellationToken = default)
+/// <summary>
+/// Deletes an order from the repository by its unique identifier.
+/// </summary>
+/// <param name="orderId">The unique identifier of the order to delete.</param>
+/// <param name="cancellationToken">Cancellation token to cancel the operation.</param>
+/// <returns>True if the order was successfully deleted; otherwise, false.</returns>
+/// <exception cref="ArgumentException">Thrown when orderId is null or empty.</exception>
+public async Task<bool> DeleteOrderAsync(string orderId, CancellationToken cancellationToken = default)
+{
+    if (string.IsNullOrWhiteSpace(orderId))
     {
-        if (string.IsNullOrWhiteSpace(orderId))
-        {
-            throw new ArgumentException("Order ID cannot be null or empty", nameof(orderId));
-        }
-
-        using var activity = _activitySource.StartActivity("DeleteOrder", ActivityKind.Internal);
-        activity?.SetTag("order.id", orderId);
-
-        try
-        {
-            _logger.LogInformation("Deleting order with ID: {OrderId}", orderId);
-
-            // First verify the order exists
-            var order = await _orderRepository.GetOrderByIdAsync(orderId, cancellationToken).ConfigureAwait(false);
-            if (order == null)
-            {
-                _logger.LogWarning("Order with ID {OrderId} not found for deletion", orderId);
-                return false;
-            }
-
-            // Delete the order from repository
-            var deleted = await _orderRepository.DeleteOrderAsync(orderId, cancellationToken).ConfigureAwait(false);
-
-            if (deleted)
-            {
-                activity?.SetStatus(ActivityStatusCode.Ok);
-                _logger.LogInformation("Order {OrderId} deleted successfully", orderId);
-            }
-            else
-            {
-                activity?.SetStatus(ActivityStatusCode.Error, "Failed to delete order");
-                _logger.LogWarning("Failed to delete order {OrderId}", orderId);
-            }
-
-            return deleted;
-        }
-        catch (Exception ex)
-        {
-            activity?.SetStatus(ActivityStatusCode.Error, ex.Message);
-            _logger.LogError(ex, "Failed to delete order {OrderId}", orderId);
-            throw;
-        }
+        throw new ArgumentException("Order ID cannot be null or empty", nameof(orderId));
     }
 
-    private static void ValidateOrder(Order order)
+    using var activity = _activitySource.StartActivity("DeleteOrder", ActivityKind.Internal);
+    activity?.SetTag("order.id", orderId);
+
+    try
     {
-        if (string.IsNullOrWhiteSpace(order.Id))
+        _logger.LogInformation("Deleting order with ID: {OrderId}", orderId);
+
+        // First verify the order exists
+        var order = await _orderRepository.GetOrderByIdAsync(orderId, cancellationToken).ConfigureAwait(false);
+        if (order == null)
         {
-            throw new ArgumentException("Order ID is required", nameof(order));
+            _logger.LogWarning("Order with ID {OrderId} not found for deletion", orderId);
+            return false;
         }
 
-        if (string.IsNullOrWhiteSpace(order.CustomerId))
+        // Delete the order from repository
+        var deleted = await _orderRepository.DeleteOrderAsync(orderId, cancellationToken).ConfigureAwait(false);
+
+        if (deleted)
         {
-            throw new ArgumentException("Customer ID is required", nameof(order));
+            activity?.SetStatus(ActivityStatusCode.Ok);
+            _logger.LogInformation("Order {OrderId} deleted successfully", orderId);
+        }
+        else
+        {
+            activity?.SetStatus(ActivityStatusCode.Error, "Failed to delete order");
+            _logger.LogWarning("Failed to delete order {OrderId}", orderId);
         }
 
-        if (order.Total <= 0)
-        {
-            throw new ArgumentException("Order total must be greater than zero", nameof(order));
-        }
-
-        if (order.Products == null || order.Products.Count == 0)
-        {
-            throw new ArgumentException("Order must contain at least one product", nameof(order));
-        }
+        return deleted;
     }
+    catch (Exception ex)
+    {
+        activity?.SetStatus(ActivityStatusCode.Error, ex.Message);
+        _logger.LogError(ex, "Failed to delete order {OrderId}", orderId);
+        throw;
+    }
+}
+
+private static void ValidateOrder(Order order)
+{
+    if (string.IsNullOrWhiteSpace(order.Id))
+    {
+        throw new ArgumentException("Order ID is required", nameof(order));
+    }
+
+    if (string.IsNullOrWhiteSpace(order.CustomerId))
+    {
+        throw new ArgumentException("Customer ID is required", nameof(order));
+    }
+
+    if (order.Total <= 0)
+    {
+        throw new ArgumentException("Order total must be greater than zero", nameof(order));
+    }
+
+    if (order.Products == null || order.Products.Count == 0)
+    {
+        throw new ArgumentException("Order must contain at least one product", nameof(order));
+    }
+}
 }

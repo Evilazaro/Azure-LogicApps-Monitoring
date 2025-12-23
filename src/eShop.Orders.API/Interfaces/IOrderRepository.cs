@@ -14,14 +14,14 @@ public interface IOrderRepository
     /// <param name="cancellationToken">Cancellation token to cancel the operation.</param>
     /// <returns>A task representing the asynchronous operation.</returns>
     Task SaveOrderAsync(Order order, CancellationToken cancellationToken = default);
-    
+
     /// <summary>
     /// Retrieves all orders from the data store asynchronously.
     /// </summary>
     /// <param name="cancellationToken">Cancellation token to cancel the operation.</param>
     /// <returns>A collection of all orders.</returns>
     Task<IEnumerable<Order>> GetAllOrdersAsync(CancellationToken cancellationToken = default);
-    
+
     /// <summary>
     /// Retrieves a specific order by its unique identifier.
     /// </summary>
@@ -29,7 +29,7 @@ public interface IOrderRepository
     /// <param name="cancellationToken">Cancellation token to cancel the operation.</param>
     /// <returns>The order if found; otherwise, null.</returns>
     Task<Order?> GetOrderByIdAsync(string orderId, CancellationToken cancellationToken = default);
-    
+
     /// <summary>
     /// Deletes an order from the data store by its unique identifier.
     /// </summary>

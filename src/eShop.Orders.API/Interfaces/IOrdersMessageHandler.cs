@@ -14,7 +14,7 @@ public interface IOrdersMessageHandler
     /// <param name="cancellationToken">Cancellation token to cancel the operation.</param>
     /// <returns>A task representing the asynchronous operation.</returns>
     Task SendOrderMessageAsync(Order order, CancellationToken cancellationToken);
-    
+
     /// <summary>
     /// Sends multiple order messages in a batch asynchronously.
     /// </summary>

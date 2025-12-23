@@ -40,15 +40,15 @@ public sealed class OrderRepository : IOrderRepository, IDisposable
         ArgumentNullException.ThrowIfNull(order);
 
         var filePath = GetFilePath();
-        await _fileLock.WaitAsync(cancellationToken).ConfigureAwait(false);
+    await _fileLock.WaitAsync(cancellationToken).ConfigureAwait(false);
 
         try
         {
             var orders = await GetAllOrdersInternalAsync(filePath, cancellationToken).ConfigureAwait(false);
-            var ordersList = orders.ToList();
+    var ordersList = orders.ToList();
 
-            // Add or update order
-            var existingIndex = ordersList.FindIndex(o => o.Id == order.Id);
+    // Add or update order
+    var existingIndex = ordersList.FindIndex(o => o.Id == order.Id);
             if (existingIndex >= 0)
             {
                 ordersList[existingIndex] = order;
@@ -64,20 +64,20 @@ public sealed class OrderRepository : IOrderRepository, IDisposable
                 WriteIndented = true
             };
 
-            var ordersJson = JsonSerializer.Serialize(ordersList, options);
-            await File.WriteAllTextAsync(filePath, ordersJson, cancellationToken).ConfigureAwait(false);
+var ordersJson = JsonSerializer.Serialize(ordersList, options);
+await File.WriteAllTextAsync(filePath, ordersJson, cancellationToken).ConfigureAwait(false);
 
-            _logger.LogDebug("Order {OrderId} saved to file successfully", order.Id);
+_logger.LogDebug("Order {OrderId} saved to file successfully", order.Id);
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Failed to save order {OrderId} to file {FilePath}", order.Id, filePath);
-            throw;
+throw;
         }
         finally
         {
-            _fileLock.Release();
-        }
+    _fileLock.Release();
+}
     }
 
     /// <summary>
@@ -86,130 +86,130 @@ public sealed class OrderRepository : IOrderRepository, IDisposable
     /// <param name="cancellationToken">Cancellation token to cancel the operation.</param>
     /// <returns>A collection of all orders.</returns>
     public async Task<IEnumerable<Order>> GetAllOrdersAsync(CancellationToken cancellationToken = default)
+{
+    var filePath = GetFilePath();
+    return await GetAllOrdersInternalAsync(filePath, cancellationToken).ConfigureAwait(false);
+}
+
+/// <summary>
+/// Retrieves a specific order by its unique identifier.
+/// </summary>
+/// <param name="orderId">The unique identifier of the order.</param>
+/// <param name="cancellationToken">Cancellation token to cancel the operation.</param>
+/// <returns>The order if found; otherwise, null.</returns>
+/// <exception cref="ArgumentException">Thrown when orderId is null or empty.</exception>
+public async Task<Order?> GetOrderByIdAsync(string orderId, CancellationToken cancellationToken = default)
+{
+    if (string.IsNullOrWhiteSpace(orderId))
     {
-        var filePath = GetFilePath();
-        return await GetAllOrdersInternalAsync(filePath, cancellationToken).ConfigureAwait(false);
+        throw new ArgumentException("Order ID cannot be null or empty", nameof(orderId));
     }
 
-    /// <summary>
-    /// Retrieves a specific order by its unique identifier.
-    /// </summary>
-    /// <param name="orderId">The unique identifier of the order.</param>
-    /// <param name="cancellationToken">Cancellation token to cancel the operation.</param>
-    /// <returns>The order if found; otherwise, null.</returns>
-    /// <exception cref="ArgumentException">Thrown when orderId is null or empty.</exception>
-    public async Task<Order?> GetOrderByIdAsync(string orderId, CancellationToken cancellationToken = default)
+    var orders = await GetAllOrdersAsync(cancellationToken).ConfigureAwait(false);
+    return orders.FirstOrDefault(o => o.Id == orderId);
+}
+
+/// <summary>
+/// Deletes an order from the file-based storage by its unique identifier.
+/// </summary>
+/// <param name="orderId">The unique identifier of the order to delete.</param>
+/// <param name="cancellationToken">Cancellation token to cancel the operation.</param>
+/// <returns>True if the order was successfully deleted; otherwise, false.</returns>
+/// <exception cref="ArgumentException">Thrown when orderId is null or empty.</exception>
+public async Task<bool> DeleteOrderAsync(string orderId, CancellationToken cancellationToken = default)
+{
+    if (string.IsNullOrWhiteSpace(orderId))
     {
-        if (string.IsNullOrWhiteSpace(orderId))
-        {
-            throw new ArgumentException("Order ID cannot be null or empty", nameof(orderId));
-        }
+        throw new ArgumentException("Order ID cannot be null or empty", nameof(orderId));
+    }
+
+    try
+    {
+        _logger.LogInformation("Deleting order {OrderId} from repository", orderId);
 
         var orders = await GetAllOrdersAsync(cancellationToken).ConfigureAwait(false);
-        return orders.FirstOrDefault(o => o.Id == orderId);
-    }
+        var ordersList = orders.ToList();
+        var orderToDelete = ordersList.FirstOrDefault(o => o.Id.Equals(orderId, StringComparison.OrdinalIgnoreCase));
 
-    /// <summary>
-    /// Deletes an order from the file-based storage by its unique identifier.
-    /// </summary>
-    /// <param name="orderId">The unique identifier of the order to delete.</param>
-    /// <param name="cancellationToken">Cancellation token to cancel the operation.</param>
-    /// <returns>True if the order was successfully deleted; otherwise, false.</returns>
-    /// <exception cref="ArgumentException">Thrown when orderId is null or empty.</exception>
-    public async Task<bool> DeleteOrderAsync(string orderId, CancellationToken cancellationToken = default)
+        if (orderToDelete == null)
+        {
+            _logger.LogWarning("Order {OrderId} not found in repository for deletion", orderId);
+            return false;
+        }
+
+        ordersList.Remove(orderToDelete);
+
+        // Save updated list
+        await SaveOrdersListAsync(ordersList, cancellationToken).ConfigureAwait(false);
+
+        _logger.LogInformation("Successfully deleted order {OrderId} from repository", orderId);
+        return true;
+    }
+    catch (Exception ex)
     {
-        if (string.IsNullOrWhiteSpace(orderId))
-        {
-            throw new ArgumentException("Order ID cannot be null or empty", nameof(orderId));
-        }
-
-        try
-        {
-            _logger.LogInformation("Deleting order {OrderId} from repository", orderId);
-
-            var orders = await GetAllOrdersAsync(cancellationToken).ConfigureAwait(false);
-            var ordersList = orders.ToList();
-            var orderToDelete = ordersList.FirstOrDefault(o => o.Id.Equals(orderId, StringComparison.OrdinalIgnoreCase));
-
-            if (orderToDelete == null)
-            {
-                _logger.LogWarning("Order {OrderId} not found in repository for deletion", orderId);
-                return false;
-            }
-
-            ordersList.Remove(orderToDelete);
-
-            // Save updated list
-            await SaveOrdersListAsync(ordersList, cancellationToken).ConfigureAwait(false);
-
-            _logger.LogInformation("Successfully deleted order {OrderId} from repository", orderId);
-            return true;
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error deleting order {OrderId} from repository", orderId);
-            throw;
-        }
+        _logger.LogError(ex, "Error deleting order {OrderId} from repository", orderId);
+        throw;
     }
+}
 
-    private async Task SaveOrdersListAsync(List<Order> orders, CancellationToken cancellationToken)
+private async Task SaveOrdersListAsync(List<Order> orders, CancellationToken cancellationToken)
+{
+    var filePath = GetFilePath();
+    await using var fileStream = new FileStream(filePath, FileMode.Create, FileAccess.Write, FileShare.None, 4096, true);
+    await JsonSerializer.SerializeAsync(fileStream, orders, cancellationToken: cancellationToken).ConfigureAwait(false);
+}
+
+private async Task<List<Order>> GetAllOrdersInternalAsync(string filePath, CancellationToken cancellationToken)
+{
+    if (!File.Exists(filePath))
     {
-        var filePath = GetFilePath();
-        await using var fileStream = new FileStream(filePath, FileMode.Create, FileAccess.Write, FileShare.None, 4096, true);
-        await JsonSerializer.SerializeAsync(fileStream, orders, cancellationToken: cancellationToken).ConfigureAwait(false);
+        _logger.LogWarning("Orders file not found at {FilePath}", filePath);
+        return new List<Order>();
     }
 
-    private async Task<List<Order>> GetAllOrdersInternalAsync(string filePath, CancellationToken cancellationToken)
+    try
     {
-        if (!File.Exists(filePath))
-        {
-            _logger.LogWarning("Orders file not found at {FilePath}", filePath);
-            return new List<Order>();
-        }
+        var ordersJson = await File.ReadAllTextAsync(filePath, cancellationToken).ConfigureAwait(false);
 
-        try
+        var options = new JsonSerializerOptions
         {
-            var ordersJson = await File.ReadAllTextAsync(filePath, cancellationToken).ConfigureAwait(false);
+            PropertyNameCaseInsensitive = true
+        };
 
-            var options = new JsonSerializerOptions
-            {
-                PropertyNameCaseInsensitive = true
-            };
-
-            return JsonSerializer.Deserialize<List<Order>>(ordersJson, options) ?? new List<Order>();
-        }
-        catch (JsonException ex)
-        {
-            _logger.LogError(ex, "Failed to deserialize orders from file {FilePath}", filePath);
-            throw;
-        }
+        return JsonSerializer.Deserialize<List<Order>>(ordersJson, options) ?? new List<Order>();
     }
-
-    private string GetFilePath()
+    catch (JsonException ex)
     {
-        ObjectDisposedException.ThrowIf(_disposed, this);
-
-        var directory = Path.Combine(_environment.ContentRootPath, _options.StorageDirectory);
-
-        if (!Directory.Exists(directory))
-        {
-            Directory.CreateDirectory(directory);
-            _logger.LogInformation("Created storage directory at {Directory}", directory);
-        }
-
-        return Path.Combine(directory, _options.FileName);
+        _logger.LogError(ex, "Failed to deserialize orders from file {FilePath}", filePath);
+        throw;
     }
+}
 
-    public void Dispose()
+private string GetFilePath()
+{
+    ObjectDisposedException.ThrowIf(_disposed, this);
+
+    var directory = Path.Combine(_environment.ContentRootPath, _options.StorageDirectory);
+
+    if (!Directory.Exists(directory))
     {
-        if (_disposed)
-        {
-            return;
-        }
-
-        _fileLock?.Dispose();
-        _disposed = true;
+        Directory.CreateDirectory(directory);
+        _logger.LogInformation("Created storage directory at {Directory}", directory);
     }
+
+    return Path.Combine(directory, _options.FileName);
+}
+
+public void Dispose()
+{
+    if (_disposed)
+    {
+        return;
+    }
+
+    _fileLock?.Dispose();
+    _disposed = true;
+}
 }
 
 /// <summary>

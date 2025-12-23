@@ -37,7 +37,7 @@ public sealed class OrdersMessageHandler : IOrdersMessageHandler
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         _serviceBusClient = serviceBusClient ?? throw new ArgumentNullException(nameof(serviceBusClient));
         _activitySource = activitySource ?? throw new ArgumentNullException(nameof(activitySource));
-        
+
         ArgumentNullException.ThrowIfNull(configuration);
         _topicName = configuration[\"Azure:ServiceBus:TopicName\"] ?? \"OrdersPlaced\";
     }
@@ -47,16 +47,86 @@ public sealed class OrdersMessageHandler : IOrdersMessageHandler
         ArgumentNullException.ThrowIfNull(order);
 
         using var activity = _activitySource.StartActivity("SendOrderMessage", ActivityKind.Producer);
-        activity?.SetTag("messaging.system", "servicebus");
-        activity?.SetTag("messaging.destination.name", _topicName);
-        activity?.SetTag("messaging.operation", "publish");
-        activity?.SetTag("order.id", order.Id);
-        activity?.SetTag("order.customer_id", order.CustomerId);
+    activity?.SetTag("messaging.system", "servicebus");
+    activity?.SetTag("messaging.destination.name", _topicName);
+    activity?.SetTag("messaging.operation", "publish");
+    activity?.SetTag("order.id", order.Id);
+    activity?.SetTag("order.customer_id", order.CustomerId);
 
-        await using var sender = _serviceBusClient.CreateSender(_topicName);
+    await using var sender = _serviceBusClient.CreateSender(_topicName);
 
         try
         {
+            var messageBody = JsonSerializer.Serialize(order, JsonOptions);
+var message = new ServiceBusMessage(messageBody)
+{
+    ContentType = "application/json",
+    MessageId = order.Id,
+    Subject = "OrderPlaced"
+};
+
+            // Add trace context to message for distributed tracing
+            if (activity != null)
+            {
+                message.ApplicationProperties["TraceId"] = activity.TraceId.ToString();
+                message.ApplicationProperties["SpanId"] = activity.SpanId.ToString();
+            }
+
+            await sender.SendMessageAsync(message, cancellationToken).ConfigureAwait(false);
+
+activity?.SetStatus(ActivityStatusCode.Ok);
+_logger.LogInformation("Successfully sent order message for order {OrderId} to topic {TopicName}",
+    order.Id, _topicName);
+        }
+        catch (ServiceBusException ex)
+        {
+            activity?.SetStatus(ActivityStatusCode.Error, ex.Message);
+_logger.LogError(ex, "Failed to send order message for order {OrderId} to topic {TopicName}",
+    order.Id, _topicName);
+throw;
+        }
+    }
+
+    /// <summary>
+    /// Sends multiple order messages to the Service Bus topic in a single batch operation.
+    /// </summary>
+    /// <param name="orders">The collection of orders to be published.</param>
+    /// <param name="cancellationToken">Cancellation token to cancel the operation.</param>
+    /// <returns>A task representing the asynchronous operation.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when orders is null.</exception>
+    /// <exception cref="ServiceBusException">Thrown when Service Bus operation fails.</exception>
+    public async Task SendOrdersBatchMessageAsync(IEnumerable<Order> orders, CancellationToken cancellationToken)
+{
+    ArgumentNullException.ThrowIfNull(orders);
+
+    using var activity = _activitySource.StartActivity("SendOrdersBatchMessage", ActivityKind.Producer);
+
+    var ordersList = orders.ToList();
+    if (ordersList.Count == 0)
+    {
+        _logger.LogWarning("Empty orders collection provided for batch send");
+        return;
+    }
+
+    activity?.SetTag("messaging.system", "servicebus");
+    activity?.SetTag("messaging.destination.name", _topicName);
+    activity?.SetTag("messaging.operation", "publish");
+    activity?.SetTag("messaging.batch.message_count", ordersList.Count);
+
+    await using var sender = _serviceBusClient.CreateSender(_topicName);
+
+    try
+    {
+        var messages = new List<ServiceBusMessage>();
+
+        foreach (var order in ordersList)
+        {
+            activity?.AddEvent(new ActivityEvent("OrderInBatch",
+                tags: new ActivityTagsCollection
+                {
+                        { "order.id", order.Id }
+                }));
+
             var messageBody = JsonSerializer.Serialize(order, JsonOptions);
             var message = new ServiceBusMessage(messageBody)
             {
@@ -72,88 +142,18 @@ public sealed class OrdersMessageHandler : IOrdersMessageHandler
                 message.ApplicationProperties["SpanId"] = activity.SpanId.ToString();
             }
 
-            await sender.SendMessageAsync(message, cancellationToken).ConfigureAwait(false);
+            messages.Add(message);
+        }
 
-            activity?.SetStatus(ActivityStatusCode.Ok);
-            _logger.LogInformation("Successfully sent order message for order {OrderId} to topic {TopicName}",
-                order.Id, _topicName);
-        }
-        catch (ServiceBusException ex)
-        {
-            activity?.SetStatus(ActivityStatusCode.Error, ex.Message);
-            _logger.LogError(ex, "Failed to send order message for order {OrderId} to topic {TopicName}",
-                order.Id, _topicName);
-            throw;
-        }
+        await sender.SendMessagesAsync(messages, cancellationToken).ConfigureAwait(false);
+        _logger.LogInformation("Successfully sent batch of {Count} order messages to topic {TopicName}",
+            messages.Count, _topicName);
     }
-
-    /// <summary>
-    /// Sends multiple order messages to the Service Bus topic in a single batch operation.
-    /// </summary>
-    /// <param name="orders">The collection of orders to be published.</param>
-    /// <param name="cancellationToken">Cancellation token to cancel the operation.</param>
-    /// <returns>A task representing the asynchronous operation.</returns>
-    /// <exception cref="ArgumentNullException">Thrown when orders is null.</exception>
-    /// <exception cref="ServiceBusException">Thrown when Service Bus operation fails.</exception>
-    public async Task SendOrdersBatchMessageAsync(IEnumerable<Order> orders, CancellationToken cancellationToken)
+    catch (ServiceBusException ex)
     {
-        ArgumentNullException.ThrowIfNull(orders);
-
-        using var activity = _activitySource.StartActivity("SendOrdersBatchMessage", ActivityKind.Producer);
-
-        var ordersList = orders.ToList();
-        if (ordersList.Count == 0)
-        {
-            _logger.LogWarning("Empty orders collection provided for batch send");
-            return;
-        }
-
-        activity?.SetTag("messaging.system", "servicebus");
-        activity?.SetTag("messaging.destination.name", _topicName);
-        activity?.SetTag("messaging.operation", "publish");
-        activity?.SetTag("messaging.batch.message_count", ordersList.Count);
-
-        await using var sender = _serviceBusClient.CreateSender(_topicName);
-
-        try
-        {
-            var messages = new List<ServiceBusMessage>();
-
-            foreach (var order in ordersList)
-            {
-                activity?.AddEvent(new ActivityEvent("OrderInBatch",
-                    tags: new ActivityTagsCollection
-                    {
-                        { "order.id", order.Id }
-                    }));
-
-                var messageBody = JsonSerializer.Serialize(order, JsonOptions);
-                var message = new ServiceBusMessage(messageBody)
-                {
-                    ContentType = "application/json",
-                    MessageId = order.Id,
-                    Subject = "OrderPlaced"
-                };
-
-                // Add trace context to message for distributed tracing
-                if (activity != null)
-                {
-                    message.ApplicationProperties["TraceId"] = activity.TraceId.ToString();
-                    message.ApplicationProperties["SpanId"] = activity.SpanId.ToString();
-                }
-
-                messages.Add(message);
-            }
-
-            await sender.SendMessagesAsync(messages, cancellationToken).ConfigureAwait(false);
-            _logger.LogInformation("Successfully sent batch of {Count} order messages to topic {TopicName}",
-                messages.Count, _topicName);
-        }
-        catch (ServiceBusException ex)
-        {
-            activity?.SetStatus(ActivityStatusCode.Error, ex.Message);
-            _logger.LogError(ex, "Failed to send batch of order messages to topic {TopicName}", _topicName);
-            throw;
-        }
+        activity?.SetStatus(ActivityStatusCode.Error, ex.Message);
+        _logger.LogError(ex, "Failed to send batch of order messages to topic {TopicName}", _topicName);
+        throw;
     }
+}
 }
