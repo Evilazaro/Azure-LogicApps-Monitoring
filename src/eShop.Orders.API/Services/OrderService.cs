@@ -350,7 +350,7 @@ public sealed class OrderService : IOrderService
     public async Task<int> DeleteOrdersBatchAsync(IEnumerable<string> orderIds, CancellationToken cancellationToken)
     {
         var deletedCount = 0;
-        
+
         foreach (var orderId in orderIds)
         {
             try
@@ -367,7 +367,7 @@ public sealed class OrderService : IOrderService
                 // Continue with next order instead of failing entire batch
             }
         }
-        
+
         return deletedCount;
     }
 
