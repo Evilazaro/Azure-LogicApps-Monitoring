@@ -47,7 +47,7 @@ var otheBa = builder.Configuration["services:orders-api:https:0"];
 builder.Services.AddHttpClient<OrdersAPIService>((serviceProvider, client) =>
 {
     var configuration = serviceProvider.GetRequiredService<IConfiguration>();
-    var baseAddress = "https://orders-api.internal.yellowdesert-f94baa2f.eastus2.azurecontainerapps.io";//configuration["services:orders-api:https:0"]
+    var baseAddress = "https://orders-api.yellowdesert-f94baa2f.eastus2.azurecontainerapps.io";//configuration["services:orders-api:https:0"]
                     //?? throw new InvalidOperationException("Orders API base address not configured. Ensure 'services:orders-api' is set in configuration.");
 
     client.BaseAddress = new Uri(baseAddress);

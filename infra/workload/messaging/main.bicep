@@ -129,74 +129,9 @@ resource sbDiag 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
   }
 }
 
-@description('Storage account for Logic Apps workflows and data')
-resource wfSA 'Microsoft.Storage/storageAccounts@2025-06-01' = {
-  name: toLower('${cleanedName}wsa${uniqueSuffix}')
-  location: location
-  sku: {
-    name: 'Standard_LRS'
-  }
-  kind: 'StorageV2'
-  tags: tags
-  properties: {
-    accessTier: 'Hot'
-    supportsHttpsTrafficOnly: true
-    minimumTlsVersion: 'TLS1_2'
-    allowBlobPublicAccess: true
-    publicNetworkAccess: 'Enabled'
-    allowSharedKeyAccess: true
-    networkAcls: {
-      bypass: 'AzureServices'
-      defaultAction: 'Allow'
-    }
-  }
-}
-
-@description('Blob service for workflow storage account')
-resource blobSvc 'Microsoft.Storage/storageAccounts/blobServices@2025-06-01' = {
-  parent: wfSA
-  name: 'default'
-}
-
-// Container for successfully processed orders
-// Segregates successful processing for audit and compliance
-@description('Blob container for successfully processed orders')
-resource poSuccess 'Microsoft.Storage/storageAccounts/blobServices/containers@2025-06-01' = {
-  parent: blobSvc
-  name: 'ordersprocessedsuccessfully'
-  properties: {
-    publicAccess: 'None'
-  }
-}
-
-// Container for failed order processing
-// Enables separate error handling and retry workflows
-@description('Blob container for orders processed with errors')
-resource poFailed 'Microsoft.Storage/storageAccounts/blobServices/containers@2025-06-01' = {
-  parent: blobSvc
-  name: 'ordersprocessedwitherrors'
-  properties: {
-    publicAccess: 'None'
-  }
-}
-
-@description('Diagnostic settings for workflow storage account')
-resource saDiag 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
-  name: '${wfSA.name}-diag'
-  scope: wfSA
-  properties: {
-    workspaceId: workspaceId
-    storageAccountId: storageAccountId
-    logAnalyticsDestinationType: 'Dedicated'
-    metrics: metricsSettings
-  }
-}
-
 @description('Messaging Service Bus Host Name')
 output MESSAGING_SERVICEBUSHOSTNAME string = broker.name //split(replace(broker.properties.serviceBusEndpoint, 'https://', ''), ':')[0]
 
 @description('Azure Service Bus endpoint')
 output MESSAGING_SERVICEBUSENDPOINT string = broker.properties.serviceBusEndpoint
 
-@description('Name of the deployed storage account')
-output WORKFLOW_STORAGE_ACCOUNT_NAME string = wfSA.name

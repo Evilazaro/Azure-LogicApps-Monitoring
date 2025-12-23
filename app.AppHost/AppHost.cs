@@ -4,8 +4,21 @@ var builder = DistributedApplication.CreateBuilder(args);
 // Project Resources
 // =============================================================================
 
-var ordersAPI = builder.AddProject<Projects.eShop_Orders_API>("orders-api")
-                       .WithHttpHealthCheck("/health");
+var ordersAPI = builder.AddProject<Projects.eShop_Orders_API>("orders-api");
+
+// Configure storage based on environment
+var isAzureDeployment = builder.ExecutionContext.IsPublishMode;
+
+if (isAzureDeployment)
+{
+    // For Azure Container Apps: Use persistent volume path
+    ordersAPI.WithEnvironment("OrderStorage__StorageDirectory", "/data/orders");
+}
+else
+{
+    // For local development: Use relative path in project directory
+    ordersAPI.WithEnvironment("OrderStorage__StorageDirectory", "data/orders");
+}
 
 var webApp = builder.AddProject<Projects.eShop_Web_App>("web-app")
                     .WithExternalHttpEndpoints()
@@ -105,8 +118,15 @@ static void ConfigureServiceBus(
         var serviceBusTopic = serviceBusResource.AddServiceBusTopic(sbTopicName ?? DefaultTopicName);
         var serviceBusSubscription = serviceBusTopic.AddServiceBusSubscription(sbSubscriptionName ?? DefaultSubscriptionName);
 
+        // Add Azure Storage Account
+        var storage = builder.AddAzureStorage("storage").AsExisting(sbParam,sbResourceGroupParam);
+
+        // Add blob container for orders
+        var blobs = storage.AddBlobs("orders");
+
         // Add Service Bus reference to orders API with configuration
         ordersAPI.WithReference(serviceBusResource);
+        ordersAPI.WithReference(blobs);
     }
 
     var azureSubscriptionId = builder.Configuration["Azure:SubscriptionId"];
@@ -121,6 +141,4 @@ static void ConfigureServiceBus(
         ordersAPI.WithEnvironment("AZURE_CLIENT_ID", azureClientId ?? string.Empty);
         ordersAPI.WithEnvironment("AZURE_TENANT_ID", azureTenantId ?? string.Empty);
     }
-
-    ordersAPI.WithReplicas(10);
 }
