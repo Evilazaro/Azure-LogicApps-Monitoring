@@ -57,16 +57,17 @@ static void ConfigureServiceBus(
     IDistributedApplicationBuilder builder,
     IResourceBuilder<ProjectResource> ordersAPI)
 {
+    const string DefaultNamespaceName = "localhost";
     const string DefaultConnectionStringName = "messaging";
     const string DefaultTopicName = "OrdersPlaced";
     const string DefaultSubscriptionName = "OrderProcessingSubscription";
 
-    var sbHostName = builder.Configuration["Azure:ServiceBus:HostName"] ?? "";
-    var sbTopicName = builder.Configuration["Azure:ServiceBus:TopicName"] ?? DefaultTopicName;
-    var sbSubscriptionName = builder.Configuration["Azure:ServiceBus:SubscriptionName"] ?? DefaultSubscriptionName;
+    var sbHostName = string.IsNullOrEmpty(builder.Configuration["Azure:ServiceBus:HostName"]) ? DefaultNamespaceName : builder.Configuration["Azure:ServiceBus:HostName"];
+    var sbTopicName = string.IsNullOrEmpty(builder.Configuration["Azure:ServiceBus:TopicName"]) ? DefaultTopicName : builder.Configuration["Azure:ServiceBus:TopicName"];
+    var sbSubscriptionName = string.IsNullOrEmpty(builder.Configuration["Azure:ServiceBus:SubscriptionName"]) ? DefaultSubscriptionName : builder.Configuration["Azure:ServiceBus:SubscriptionName"];
 
     // Determine if we're running in local emulator mode or Azure mode
-    var isLocalMode = string.IsNullOrWhiteSpace(sbHostName);
+    var isLocalMode = true; // (sbHostName == DefaultNamespaceName);
     var resourceName = isLocalMode ? DefaultConnectionStringName : sbHostName;
 
     // Create Service Bus resource
@@ -76,7 +77,7 @@ static void ConfigureServiceBus(
         var serviceBusResource = builder.AddAzureServiceBus(DefaultConnectionStringName);
         var serviceBusTopic = serviceBusResource.AddServiceBusTopic(sbTopicName);
         var serviceBusSubscription = serviceBusTopic.AddServiceBusSubscription(sbSubscriptionName);
-        
+
         serviceBusResource.RunAsEmulator();
 
         // Add Service Bus reference to orders API with configuration

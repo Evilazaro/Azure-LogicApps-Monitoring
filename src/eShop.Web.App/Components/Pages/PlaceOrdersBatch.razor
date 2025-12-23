@@ -3,6 +3,7 @@
 @using app.ServiceDefaults.CommonTypes;
 @using Microsoft.FluentUI.AspNetCore.Components;
 @using System.Text.Json;
+@using System.Text.Json.Serialization;
 @rendermode InteractiveServer
 @inject OrdersAPIService ordersService
 
@@ -53,8 +54,7 @@
                         <FluentLabel Typo="Typography.Body" Style="font-weight: 600; font-size: 14px;">JSON Input
                         </FluentLabel>
                         <FluentLabel Typo="Typography.Body" Style="font-size: 13px; color: var(--neutral-foreground-hint);">
-                            Paste your JSON array of orders below. Each order should include Id, CustomerId,
-                            DeliveryAddress, and Products.
+                            Paste your JSON array of orders below. Supports both PascalCase and camelCase property names.
                         </FluentLabel>
                     </FluentStack>
 
@@ -67,6 +67,7 @@
                             Clear
                         </FluentButton>
                         <FluentButton Appearance="Appearance.Accent" OnClick="ParseJsonAndSubmit" Loading="@isLoading"
+                            Disabled="@(string.IsNullOrWhiteSpace(jsonInput))"
                             Style="width: fit-content;">
                             Parse & Submit Orders
                         </FluentButton>
@@ -252,19 +253,19 @@
     private string jsonInput = string.Empty;
 
     private string jsonPlaceholder = @"[
-{
-""Id"": ""ORD001"",
-""CustomerId"": ""CUST001"",
-""DeliveryAddress"": ""123 Main St, City, State 12345"",
-""Products"": [
-{
-""ProductId"": ""PROD001"",
-""ProductDescription"": ""Product 1"",
-""Quantity"": 2,
-""Price"": 29.99
-}
-]
-}
+  {
+    ""id"": ""ORD-0001"",
+    ""customerId"": ""CUST-1288"",
+    ""deliveryAddress"": ""221B Baker Street, London, UK"",
+    ""products"": [
+      {
+        ""productId"": ""PROD-8001"",
+        ""productDescription"": ""USB Microphone"",
+        ""quantity"": 3,
+        ""price"": 108.15
+      }
+    ]
+  }
 ]";
 
     private class OrderFormModel
@@ -286,21 +287,25 @@
     private void AddOrderToBatch()
     {
         batchOrders.Add(new OrderFormModel());
+        ClearMessages();
     }
 
     private void RemoveOrderFromBatch(int index)
     {
         batchOrders.RemoveAt(index);
+        ClearMessages();
     }
 
     private void AddProductToOrder(int orderIndex)
     {
         batchOrders[orderIndex].Products.Add(new OrderProductFormModel());
+        ClearMessages();
     }
 
     private void RemoveProductFromOrder(int orderIndex, int productIndex)
     {
         batchOrders[orderIndex].Products.RemoveAt(productIndex);
+        ClearMessages();
     }
 
     private decimal CalculateOrderTotal(OrderFormModel order)
@@ -316,51 +321,76 @@
     private bool IsBatchValid()
     {
         return batchOrders.Any() && batchOrders.All(o =>
-        !string.IsNullOrWhiteSpace(o.Id) &&
-        !string.IsNullOrWhiteSpace(o.CustomerId) &&
-        !string.IsNullOrWhiteSpace(o.DeliveryAddress) &&
-        o.Products.Any() &&
-        o.Products.All(p =>
-        !string.IsNullOrWhiteSpace(p.ProductId) &&
-        !string.IsNullOrWhiteSpace(p.ProductDescription) &&
-        p.Quantity > 0 &&
-        p.Price > 0));
+            !string.IsNullOrWhiteSpace(o.Id) &&
+            !string.IsNullOrWhiteSpace(o.CustomerId) &&
+            !string.IsNullOrWhiteSpace(o.DeliveryAddress) &&
+            o.Products.Any() &&
+            o.Products.All(p =>
+                !string.IsNullOrWhiteSpace(p.ProductId) &&
+                !string.IsNullOrWhiteSpace(p.ProductDescription) &&
+                p.Quantity > 0 &&
+                p.Price > 0));
+    }
+
+    private void ClearMessages()
+    {
+        errorMessage = null;
+        successMessage = null;
     }
 
     private void ClearBatch()
     {
         batchOrders.Clear();
-        errorMessage = null;
-        successMessage = null;
+        ClearMessages();
     }
 
     private void ClearJson()
     {
         jsonInput = string.Empty;
-        errorMessage = null;
-        successMessage = null;
+        ClearMessages();
     }
 
     private async Task ParseJsonAndSubmit()
     {
+        ClearMessages();
+        
         if (string.IsNullOrWhiteSpace(jsonInput))
         {
             errorMessage = "Please provide JSON input";
             return;
         }
 
+        isLoading = true;
+
         try
         {
             var options = new JsonSerializerOptions
             {
-                PropertyNameCaseInsensitive = true
+                PropertyNameCaseInsensitive = true,
+                AllowTrailingCommas = true,
+                ReadCommentHandling = JsonCommentHandling.Skip
             };
 
             var parsedOrders = JsonSerializer.Deserialize<List<OrderFormModel>>(jsonInput, options);
 
             if (parsedOrders == null || !parsedOrders.Any())
             {
-                errorMessage = "No valid orders found in JSON";
+                errorMessage = "No valid orders found in JSON. Please check your JSON format.";
+                return;
+            }
+
+            // Validate parsed orders
+            var invalidOrders = parsedOrders
+                .Select((order, index) => new { Order = order, Index = index })
+                .Where(x => string.IsNullOrWhiteSpace(x.Order.Id) ||
+                           string.IsNullOrWhiteSpace(x.Order.CustomerId) ||
+                           string.IsNullOrWhiteSpace(x.Order.DeliveryAddress) ||
+                           !x.Order.Products.Any())
+                .ToList();
+
+            if (invalidOrders.Any())
+            {
+                errorMessage = $"Invalid orders found at positions: {string.Join(", ", invalidOrders.Select(x => x.Index + 1))}. Please ensure all required fields are provided.";
                 return;
             }
 
@@ -369,15 +399,28 @@
         }
         catch (JsonException ex)
         {
-            errorMessage = $"JSON parsing error: {ex.Message}";
+            errorMessage = $"JSON parsing error: {ex.Message}. Please verify your JSON format matches the example.";
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Unexpected error: {ex.Message}";
+        }
+        finally
+        {
+            isLoading = false;
         }
     }
 
     private async Task SubmitBatchAsync()
     {
+        if (!IsBatchValid())
+        {
+            errorMessage = "Please ensure all orders have complete information (ID, Customer ID, Delivery Address, and at least one valid product).";
+            return;
+        }
+
         isLoading = true;
-        errorMessage = null;
-        successMessage = null;
+        ClearMessages();
 
         try
         {
@@ -400,13 +443,20 @@
             }).ToList();
 
             await ordersService.PlaceOrdersBatchAsync(orders);
-            successMessage = $"Successfully submitted {orders.Count} orders in batch!";
+            
+            var totalAmount = CalculateGrandTotal();
+            successMessage = $"Successfully submitted {orders.Count} order{(orders.Count > 1 ? "s" : "")} with a total value of {totalAmount:C2}!";
+            
             ClearBatch();
             ClearJson();
         }
+        catch (HttpRequestException ex)
+        {
+            errorMessage = $"Network error while submitting orders: {ex.Message}. Please check your connection and try again.";
+        }
         catch (Exception ex)
         {
-            errorMessage = ex.Message;
+            errorMessage = $"Failed to submit orders: {ex.Message}";
         }
         finally
         {

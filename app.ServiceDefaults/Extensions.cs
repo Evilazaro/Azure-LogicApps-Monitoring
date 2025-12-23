@@ -109,24 +109,23 @@ public static class Extensions
         var messagingHostName = builder.Configuration["MESSAGING_HOST"]
                           ?? builder.Configuration["Azure:ServiceBus:HostName"];
 
+        var connectionString = builder.Configuration["ConnectionStrings:messaging"];
+                        ?? throw new InvalidOperationException("MESSAGING_CONNECTIONSTRING is required for localhost mode");
+
         builder.Services.AddSingleton<ServiceBusClient>(serviceProvider =>
         {
             var logger = serviceProvider.GetRequiredService<ILogger<ServiceBusClient>>();
-
             try
             {
                 if (messagingHostName.Equals("localhost", StringComparison.OrdinalIgnoreCase))
                 {
-                    var connectionString = builder.Configuration["MESSAGING_CONNECTIONSTRING"]
-                        ?? throw new InvalidOperationException("MESSAGING_CONNECTIONSTRING is required for localhost mode");
                     logger.LogInformation("Configuring Service Bus client for local emulator");
-                    return new ServiceBusClient(connectionString);
+                    return  new ServiceBusClient(connectionString);
                 }
                 else
                 {
                     logger.LogInformation("Configuring Service Bus client for Azure with managed identity");
-                    var credential = new DefaultAzureCredential();
-                    return new ServiceBusClient(messagingHostName, credential);
+                    return new ServiceBusClient(connectionString, new DefaultAzureCredential());
                 }
             }
             catch (Exception ex)

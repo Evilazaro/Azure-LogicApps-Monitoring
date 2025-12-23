@@ -57,6 +57,11 @@ public sealed class OrderRepository : IOrderRepository, IDisposable
 
             _logger.LogDebug("Order {OrderId} saved to file successfully", order.Id);
         }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to save order {OrderId} to file {FilePath}", order.Id, filePath);
+            throw;
+        }
         finally
         {
             _fileLock.Release();

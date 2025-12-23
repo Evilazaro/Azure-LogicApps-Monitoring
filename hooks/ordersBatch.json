@@ -1,0 +1,158 @@
+[
+    {
+        "id": "ORD-0001",
+        "customerId": "CUST-1288",
+        "date": "2024-04-21T03:45:35Z",
+        "deliveryAddress": "221B Baker Street, London, UK",
+        "total": 481.69,
+        "products": [
+            {
+                "id": "OP-0001-1",
+                "orderId": "ORD-0001",
+                "productId": "PROD-8001",
+                "productDescription": "USB Microphone",
+                "quantity": 3,
+                "price": 108.15
+            },
+            {
+                "id": "OP-0001-2",
+                "orderId": "ORD-0001",
+                "productId": "PROD-1003",
+                "productDescription": "USB-C Hub",
+                "quantity": 2,
+                "price": 30.6
+            },
+            {
+                "id": "OP-0001-3",
+                "orderId": "ORD-0001",
+                "productId": "PROD-5002",
+                "productDescription": "Smartphone Holder",
+                "quantity": 2,
+                "price": 20.6
+            },
+            {
+                "id": "OP-0001-4",
+                "orderId": "ORD-0001",
+                "productId": "PROD-3002",
+                "productDescription": "Portable Charger",
+                "quantity": 1,
+                "price": 54.84
+            }
+        ]
+    },
+    {
+        "id": "ORD-0002",
+        "customerId": "CUST-2743",
+        "date": "2025-05-10T23:04:35Z",
+        "deliveryAddress": "350 Fifth Ave, New York, NY, USA",
+        "total": 848.7,
+        "products": [
+            {
+                "id": "OP-0002-1",
+                "orderId": "ORD-0002",
+                "productId": "PROD-5002",
+                "productDescription": "Smartphone Holder",
+                "quantity": 3,
+                "price": 19.78
+            },
+            {
+                "id": "OP-0002-2",
+                "orderId": "ORD-0002",
+                "productId": "PROD-9001",
+                "productDescription": "Graphics Tablet",
+                "quantity": 1,
+                "price": 330.22
+            },
+            {
+                "id": "OP-0002-3",
+                "orderId": "ORD-0002",
+                "productId": "PROD-3001",
+                "productDescription": "External SSD 1TB",
+                "quantity": 3,
+                "price": 125.64
+            },
+            {
+                "id": "OP-0002-4",
+                "orderId": "ORD-0002",
+                "productId": "PROD-3002",
+                "productDescription": "Portable Charger",
+                "quantity": 2,
+                "price": 41.11
+            }
+        ]
+    },
+    {
+        "id": "ORD-0003",
+        "customerId": "CUST-9509",
+        "date": "2024-08-03T07:43:35Z",
+        "deliveryAddress": "221B Baker Street, London, UK",
+        "total": 1670.91,
+        "products": [
+            {
+                "id": "OP-0003-1",
+                "orderId": "ORD-0003",
+                "productId": "PROD-1003",
+                "productDescription": "USB-C Hub",
+                "quantity": 3,
+                "price": 37.15
+            },
+            {
+                "id": "OP-0003-2",
+                "orderId": "ORD-0003",
+                "productId": "PROD-6001",
+                "productDescription": "Monitor 27\" 4K",
+                "quantity": 1,
+                "price": 595.05
+            },
+            {
+                "id": "OP-0003-3",
+                "orderId": "ORD-0003",
+                "productId": "PROD-2001",
+                "productDescription": "Noise Cancelling Headphones",
+                "quantity": 3,
+                "price": 256.02
+            },
+            {
+                "id": "OP-0003-4",
+                "orderId": "ORD-0003",
+                "productId": "PROD-1001",
+                "productDescription": "Wireless Mouse",
+                "quantity": 3,
+                "price": 65.45
+            }
+        ]
+    },
+    {
+        "id": "ORD-0004",
+        "customerId": "CUST-2014",
+        "date": "2025-04-27T05:06:35Z",
+        "deliveryAddress": "88 Colin P Kelly Jr St, San Francisco, CA, USA",
+        "total": 466.17,
+        "products": [
+            {
+                "id": "OP-0004-1",
+                "orderId": "ORD-0004",
+                "productId": "PROD-2001",
+                "productDescription": "Noise Cancelling Headphones",
+                "quantity": 1,
+                "price": 123.72
+            },
+            {
+                "id": "OP-0004-2",
+                "orderId": "ORD-0004",
+                "productId": "PROD-1001",
+                "productDescription": "Wireless Mouse",
+                "quantity": 3,
+                "price": 71.75
+            },
+            {
+                "id": "OP-0004-3",
+                "orderId": "ORD-0004",
+                "productId": "PROD-8002",
+                "productDescription": "Ring Light",
+                "quantity": 3,
+                "price": 42.4
+            }
+        ]
+    }
+]
