@@ -368,7 +368,6 @@
     private bool isProcessing = false;
     private int ordersBeingProcessed = 0;
     private string? errorMessage;
-    private string? successMessage;
     private InputMethod inputMethod = InputMethod.Manual;
     private List<OrderFormModel> batchOrders = new();
     private string jsonInput = string.Empty;
@@ -468,7 +467,6 @@
     private void ClearMessages()
     {
         errorMessage = null;
-        successMessage = null;
         batchTransactionStatus = null;
     }
 
@@ -481,7 +479,6 @@
     {
         batchOrders.Clear();
         errorMessage = null;
-        successMessage = null;
     }
 
     private void ClearJson()
@@ -491,7 +488,6 @@
         uploadedFileName = null;
         uploadedFileSize = 0;
         errorMessage = null;
-        successMessage = null;
     }
 
     private async Task ParseJsonAndSubmit()
@@ -567,7 +563,6 @@
         isProcessing = true;
         ordersBeingProcessed = batchOrders.Count;
         errorMessage = null;
-        successMessage = null;
 
         // Store the current orders data before clearing
         var ordersToSubmit = batchOrders.ToList();

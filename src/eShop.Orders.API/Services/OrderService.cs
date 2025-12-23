@@ -21,6 +21,7 @@ public sealed class OrderService : IOrderService
     private readonly Counter<long> _ordersPlacedCounter;
     private readonly Histogram<double> _orderProcessingDuration;
     private readonly Counter<long> _orderProcessingErrors;
+    private readonly Counter<long> _ordersDeletedCounter;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="OrderService"/> class.
@@ -57,6 +58,10 @@ public sealed class OrderService : IOrderService
             "orders.processing.errors",
             "errors",
             "Number of order processing errors by error type");
+        _ordersDeletedCounter = _meter.CreateCounter<long>(
+            "orders.deleted",
+            "orders",
+            "Number of orders successfully deleted");
     }
 
     /// <summary>
@@ -151,23 +156,45 @@ public sealed class OrderService : IOrderService
         }
 
         activity?.SetTag("orders.count", ordersList.Count);
-        _logger.LogInformation("Placing batch of {Count} orders", ordersList.Count);
+        _logger.LogInformation("Placing batch of {Count} orders with parallel processing", ordersList.Count);
 
         var placedOrders = new List<Order>();
         var failedOrders = new List<(string OrderId, string ErrorMessage)>();
 
-        foreach (var order in ordersList)
+        var options = new ParallelOptions
         {
-            try
+            MaxDegreeOfParallelism = Math.Min(Environment.ProcessorCount * 2, 20),
+            CancellationToken = cancellationToken
+        };
+
+        var lockObject = new object();
+
+        try
+        {
+            await Parallel.ForEachAsync(ordersList, options, async (order, ct) =>
             {
-                var placedOrder = await PlaceOrderAsync(order, cancellationToken).ConfigureAwait(false);
-                placedOrders.Add(placedOrder);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Failed to place order {OrderId} in batch", order.Id);
-                failedOrders.Add((order.Id, ex.Message));
-            }
+                try
+                {
+                    var placedOrder = await PlaceOrderAsync(order, ct).ConfigureAwait(false);
+                    lock (lockObject)
+                    {
+                        placedOrders.Add(placedOrder);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Failed to place order {OrderId} in batch", order.Id);
+                    lock (lockObject)
+                    {
+                        failedOrders.Add((order.Id, ex.Message));
+                    }
+                }
+            });
+        }
+        catch (OperationCanceledException)
+        {
+            _logger.LogWarning("Batch processing was cancelled after processing {Count} orders", placedOrders.Count);
+            throw;
         }
 
         var duration = (DateTime.UtcNow - startTime).TotalMilliseconds;
@@ -181,7 +208,8 @@ public sealed class OrderService : IOrderService
                 tags: new ActivityTagsCollection
                 {
                     { "failed.count", failedOrders.Count },
-                    { "success.count", placedOrders.Count }
+                    { "success.count", placedOrders.Count },
+                    { "failed.orders", string.Join(", ", failedOrders.Select(f => f.OrderId)) }
                 }));
         }
 
@@ -295,6 +323,7 @@ public sealed class OrderService : IOrderService
             {
                 activity?.SetStatus(ActivityStatusCode.Ok);
                 _logger.LogInformation("Order {OrderId} deleted successfully", orderId);
+                _ordersDeletedCounter.Add(1, new TagList { { "order.id", orderId } });
             }
             else
             {
@@ -310,6 +339,93 @@ public sealed class OrderService : IOrderService
             _logger.LogError(ex, "Failed to delete order {OrderId}", orderId);
             throw;
         }
+    }
+
+    /// <summary>
+    /// Deletes multiple orders asynchronously in a batch operation with parallel processing.
+    /// </summary>
+    /// <param name="orderIds">The collection of order IDs to delete.</param>
+    /// <param name="cancellationToken">Cancellation token to cancel the operation.</param>
+    /// <returns>The number of successfully deleted orders.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when orderIds is null.</exception>
+    /// <exception cref="ArgumentException">Thrown when orderIds collection is empty.</exception>
+    public async Task<int> DeleteOrdersBatchAsync(IEnumerable<string> orderIds, CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(orderIds);
+
+        using var activity = _activitySource.StartActivity("DeleteOrdersBatch", ActivityKind.Internal);
+        var startTime = DateTime.UtcNow;
+
+        var orderIdsList = orderIds.ToList();
+        if (orderIdsList.Count == 0)
+        {
+            throw new ArgumentException("Order IDs collection cannot be empty", nameof(orderIds));
+        }
+
+        activity?.SetTag("orders.count", orderIdsList.Count);
+        _logger.LogInformation("Deleting batch of {Count} orders with parallel processing", orderIdsList.Count);
+
+        var deletedCount = 0;
+        var failedCount = 0;
+        var lockObject = new object();
+
+        var options = new ParallelOptions
+        {
+            MaxDegreeOfParallelism = Math.Min(Environment.ProcessorCount * 2, 20),
+            CancellationToken = cancellationToken
+        };
+
+        try
+        {
+            await Parallel.ForEachAsync(orderIdsList, options, async (orderId, ct) =>
+            {
+                try
+                {
+                    var deleted = await DeleteOrderAsync(orderId, ct).ConfigureAwait(false);
+                    lock (lockObject)
+                    {
+                        if (deleted)
+                        {
+                            deletedCount++;
+                        }
+                        else
+                        {
+                            failedCount++;
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Failed to delete order {OrderId} in batch", orderId);
+                    lock (lockObject)
+                    {
+                        failedCount++;
+                    }
+                }
+            });
+        }
+        catch (OperationCanceledException)
+        {
+            _logger.LogWarning("Batch deletion was cancelled after deleting {Count} orders", deletedCount);
+            throw;
+        }
+
+        var duration = (DateTime.UtcNow - startTime).TotalMilliseconds;
+        _logger.LogInformation(
+            "Batch deletion complete in {Duration}ms. {DeletedCount} orders deleted successfully, {FailedCount} failed",
+            duration, deletedCount, failedCount);
+
+        if (failedCount > 0)
+        {
+            activity?.AddEvent(new ActivityEvent("BatchPartialFailure",
+                tags: new ActivityTagsCollection
+                {
+                    { "failed.count", failedCount },
+                    { "success.count", deletedCount }
+                }));
+        }
+
+        return deletedCount;
     }
 
     /// <summary>

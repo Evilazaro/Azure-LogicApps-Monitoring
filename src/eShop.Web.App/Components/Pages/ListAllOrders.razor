@@ -386,26 +386,19 @@
             TotalToDelete = ordersToDelete.Count 
         };
 
-        var deletedOrderIds = new List<string>();
-
         try
         {
-            foreach (var orderId in ordersToDelete)
-            {
-                await ordersService.DeleteOrderAsync(orderId);
-                deletedOrderIds.Add(orderId);
-                deletionProgress.DeletedCount++;
-                await InvokeAsync(StateHasChanged);
-            }
+            // Use the new batch delete method for parallel processing
+            var deletedCount = await ordersService.DeleteOrdersBatchAsync(ordersToDelete);
 
             // Create deletion status
             deletionStatus = new DeletionStatus
             {
                 TransactionId = Guid.NewGuid().ToString().Substring(0, 8).ToUpper(),
                 Timestamp = DateTime.UtcNow,
-                TotalDeleted = deletedOrderIds.Count,
+                TotalDeleted = deletedCount,
                 Status = "Successfully Completed",
-                DeletedOrderIds = deletedOrderIds
+                DeletedOrderIds = ordersToDelete
             };
 
             // Reload orders after successful deletion

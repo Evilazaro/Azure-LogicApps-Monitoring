@@ -81,16 +81,16 @@ static void ConfigureServiceBus(
     var sbSubscriptionName = string.IsNullOrEmpty(builder.Configuration["Azure:ServiceBus:SubscriptionName"]) ? DefaultSubscriptionName : builder.Configuration["Azure:ServiceBus:SubscriptionName"];
 
     // Determine if we're running in local emulator mode or Azure mode
-    var isLocalMode = sbHostName.Equals(DefaultNamespaceName, StringComparison.OrdinalIgnoreCase);
-    var resourceName = isLocalMode ? DefaultConnectionStringName : sbHostName;
+    var isLocalMode = (sbHostName ?? string.Empty).Equals(DefaultNamespaceName, StringComparison.OrdinalIgnoreCase);
+    var resourceName = isLocalMode ? DefaultConnectionStringName : sbHostName ?? DefaultConnectionStringName;
 
     // Create Service Bus resource
 
     if (isLocalMode)
     {
         var serviceBusResource = builder.AddAzureServiceBus(DefaultConnectionStringName);
-        var serviceBusTopic = serviceBusResource.AddServiceBusTopic(sbTopicName);
-        var serviceBusSubscription = serviceBusTopic.AddServiceBusSubscription(sbSubscriptionName);
+        var serviceBusTopic = serviceBusResource.AddServiceBusTopic(sbTopicName ?? DefaultTopicName);
+        var serviceBusSubscription = serviceBusTopic.AddServiceBusSubscription(sbSubscriptionName ?? DefaultSubscriptionName);
 
         serviceBusResource.RunAsEmulator();
 
@@ -103,8 +103,8 @@ static void ConfigureServiceBus(
         var sbResourceGroupParam = builder.AddParameterFromConfiguration("resourceGroup", "Azure:ResourceGroup");
         var serviceBusResource = builder.AddAzureServiceBus(DefaultConnectionStringName).RunAsExisting(sbParam, sbResourceGroupParam);
 
-        var serviceBusTopic = serviceBusResource.AddServiceBusTopic(sbTopicName);
-        var serviceBusSubscription = serviceBusTopic.AddServiceBusSubscription(sbSubscriptionName);
+        var serviceBusTopic = serviceBusResource.AddServiceBusTopic(sbTopicName ?? DefaultTopicName);
+        var serviceBusSubscription = serviceBusTopic.AddServiceBusSubscription(sbSubscriptionName ?? DefaultSubscriptionName);
 
         // Add Service Bus reference to orders API with configuration
         ordersAPI.WithReference(serviceBusResource);

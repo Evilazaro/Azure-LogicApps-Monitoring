@@ -303,4 +303,33 @@ public sealed class OrdersController : ControllerBase
                 new { error = "An error occurred while processing your request", orderId = id });
         }
     }
+
+    /// <summary>
+    /// Deletes multiple orders in batch.
+    /// </summary>
+    /// <param name="orderIds">The collection of order IDs to delete.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>The number of successfully deleted orders.</returns>
+    [HttpPost("batch/delete")]
+    [ProducesResponseType(typeof(int), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    public async Task<ActionResult<int>> DeleteOrdersBatch([FromBody] IEnumerable<string> orderIds, CancellationToken cancellationToken)
+    {
+        if (orderIds == null || !orderIds.Any())
+        {
+            return BadRequest("Order IDs collection cannot be null or empty");
+        }
+
+        try
+        {
+            var deletedCount = await _orderService.DeleteOrdersBatchAsync(orderIds, cancellationToken);
+            return Ok(deletedCount);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to delete orders batch");
+            return StatusCode(StatusCodes.Status500InternalServerError, $"Failed to delete orders: {ex.Message}");
+        }
+    }
 }
