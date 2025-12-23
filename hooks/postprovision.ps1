@@ -209,14 +209,8 @@ function Set-DotNetUserSecret {
             }
         }
         catch {
-            $errorDetails = @{
-                Key        = $Key
-                ExitCode   = $LASTEXITCODE
-                Message    = $_.Exception.Message
-                StackTrace = $_.ScriptStackTrace
-            }
-            
             # Re-throw to allow caller to handle; ErrorActionPreference will handle termination
+            Write-Verbose "Error details - Exit Code: $LASTEXITCODE, Stack: $($_.ScriptStackTrace)"
             throw "Error setting user secret '$Key': $($_.Exception.Message)"
         }
     }
@@ -412,7 +406,7 @@ function Invoke-AzureContainerRegistryLogin {
                     Write-Verbose "Azure CLI version: $($azVersion.'azure-cli')"
                 }
                 else {
-                    Write-Verbose "Could not determine Azure CLI version (exit code: $LASTEXITCODE)"
+                    Write-Verbose "Could not determine Azure CLI version (exit code: $azVersionExitCode)"
                 }
             }
             catch {
@@ -580,19 +574,21 @@ function Get-EnvironmentVariableSafe {
         [string]$DefaultValue = $null
     )
     
-    try {
-        $value = [Environment]::GetEnvironmentVariable($Name)
-        
-        if ([string]::IsNullOrWhiteSpace($value)) {
-            Write-Verbose "Environment variable '$Name' is not set or empty."
+    process {
+        try {
+            $value = [Environment]::GetEnvironmentVariable($Name)
+            
+            if ([string]::IsNullOrWhiteSpace($value)) {
+                Write-Verbose "Environment variable '$Name' is not set or empty."
+                return $DefaultValue
+            }
+            
+            return $value
+        }
+        catch {
+            Write-Verbose "Error retrieving environment variable '$Name': $($_.Exception.Message)"
             return $DefaultValue
         }
-        
-        return $value
-    }
-    catch {
-        Write-Verbose "Error retrieving environment variable '$Name': $($_.Exception.Message)"
-        return $DefaultValue
     }
     
     end {
@@ -606,7 +602,7 @@ function Get-EnvironmentVariableSafe {
 
 try {
     # Start execution timer
-    $executionStart = Get-Date
+    $script:executionStart = Get-Date
     
     # Script initialization
     Write-SectionHeader -Message "Post-Provisioning Script Started" -Type 'Main'
@@ -903,7 +899,7 @@ try {
     Write-Information "  • Failed                  : $($failedSecrets.Count)"
     Write-Information ""
     Write-Information "Completion Time: $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')"
-    $executionDuration = (New-TimeSpan -Start $executionStart -End (Get-Date)).TotalSeconds
+    $executionDuration = (New-TimeSpan -Start $script:executionStart -End (Get-Date)).TotalSeconds
     Write-Information "Duration: $([Math]::Round($executionDuration, 2)) seconds"
     Write-Information ""
     Write-Verbose "Exiting with success code 0"
@@ -985,9 +981,9 @@ finally {
     $ProgressPreference = 'Continue'
     
     # Calculate total execution time if available
-    if (Get-Variable -Name executionStart -Scope Local -ErrorAction SilentlyContinue) {
+    if (Get-Variable -Name executionStart -Scope Script -ErrorAction SilentlyContinue) {
         try {
-            $duration = (Get-Date) - $executionStart
+            $duration = (Get-Date) - $script:executionStart
             $durationSeconds = [Math]::Round($duration.TotalSeconds, 2)
             Write-Verbose "Total execution time: $durationSeconds seconds"
         }
