@@ -4,6 +4,7 @@
 [![.NET](https://img.shields.io/badge/.NET-10.0-512BD4)](https://dotnet.microsoft.com/)
 [![Azure](https://img.shields.io/badge/Azure-0078D4?logo=microsoft-azure&logoColor=white)](https://azure.microsoft.com/)
 [![Blazor](https://img.shields.io/badge/Blazor-512BD4?logo=blazor&logoColor=white)](https://dotnet.microsoft.com/apps/aspnet/web-apps/blazor)
+[![Logic Apps](https://img.shields.io/badge/Logic%20Apps-0078D4?logo=microsoft-azure&logoColor=white)](https://learn.microsoft.com/azure/logic-apps/)
 
 ## Overview
 
@@ -42,12 +43,18 @@ Key capabilities include automated Infrastructure-as-Code provisioning via Bicep
 ├── .gitignore
 ├── app.sln
 ├── azure.yaml
+├── BDAT.MD
 ├── CODE_OF_CONDUCT.md
 ├── CONTRIBUTING.md
 ├── LICENSE
 ├── LICENSE.md
-├── README.md
+├── README.MD
 ├── SECURITY.md
+├── .github/
+│   └── workflows/
+├── .vs/
+│   ├── app/
+│   └── ProjectEvaluation/
 ├── app.AppHost/
 │   ├── app.AppHost.csproj
 │   ├── AppHost.cs
@@ -63,8 +70,9 @@ Key capabilities include automated Infrastructure-as-Code provisioning via Bicep
 │   ├── bin/
 │   └── obj/
 ├── hooks/
+│   ├── generate_orders_script.py
 │   ├── generate_orders.ps1
-│   ├── orders.json
+│   ├── ordersBatch.json
 │   ├── postprovision.ps1
 │   └── preprovision.ps1
 ├── infra/
@@ -111,6 +119,7 @@ Key capabilities include automated Infrastructure-as-Code provisioning via Bicep
         │   ├── App.razor
         │   ├── Layout/
         │   │   ├── MainLayout.razor
+        │   │   ├── MainLayout.razor.css
         │   │   └── NavMenu.razor
         │   ├── Pages/
         │   │   ├── Error.razor
@@ -196,10 +205,10 @@ graph TD
 ```
 
 **Key Components:**
-- [eShop.Web.App/Program.cs](src/eShop.Web.App/Program.cs) - Application entry point
-- [MainLayout.razor](src/eShop.Web.App/Components/Layout/MainLayout.razor) - Layout component
-- [Home.razor](src/eShop.Web.App/Components/Pages/Home.razor) - Landing page
-- [OrdersAPIService.cs](src/eShop.Web.App/Components/Services/OrdersAPIService.cs) - API client
+- eShop.Web.App/Program.cs - Application entry point
+- MainLayout.razor - Layout component
+- Home.razor - Landing page
+- OrdersAPIService.cs - API client
 
 ---
 
@@ -267,10 +276,10 @@ graph TD
 ```
 
 **Key Components:**
-- [eShop.Orders.API/Program.cs](src/eShop.Orders.API/Program.cs) - API configuration
-- [AppHost.cs](app.AppHost/AppHost.cs) - Aspire orchestration
-- [Extensions.cs](app.ServiceDefaults/Extensions.cs) - OpenTelemetry setup
-- [messaging/main.bicep](infra/workload/messaging/main.bicep) - Service Bus deployment
+- eShop.Orders.API/Program.cs - API configuration
+- AppHost.cs - Aspire orchestration
+- Extensions.cs - OpenTelemetry setup
+- messaging/main.bicep - Service Bus deployment
 - Service Bus Premium with 16 messaging units
 - Topic-based publish/subscribe pattern
 - 10 max delivery attempts with 5-minute lock duration
@@ -312,7 +321,7 @@ graph TD
 ```
 
 **Key Resources:**
-- [messaging/main.bicep](infra/workload/messaging/main.bicep) - Storage deployment
+- messaging/main.bicep - Storage deployment
 - Segregated containers for success/error processing
 - Hot access tier for frequent access
 - TLS 1.2 minimum encryption
@@ -346,8 +355,6 @@ graph TD
 
     %% Interactions with Application Layer
     ContainerApps -->|"Hosts"| ApplicationLayer["⚙️ Application Layer"]
-
-    %% Interactions with Application Layer Messaging
     LogicApps -->|"Consumes Messages"| Messaging["📨 Messaging (Application Layer)"]
     ManagedIdentity -.->|"Auth to"| Messaging
 
@@ -370,9 +377,9 @@ graph TD
 ```
 
 **Key Resources:**
-- [services/main.bicep](infra/workload/services/main.bicep) - Container infrastructure
-- [logic-app.bicep](infra/workload/logic-app.bicep) - Logic Apps deployment
-- [identity/main.bicep](infra/workload/identity/main.bicep) - Managed identity
+- services/main.bicep - Container infrastructure
+- logic-app.bicep - Logic Apps deployment
+- identity/main.bicep - Managed identity
 - Elastic scaling: 3-20 instances for Logic Apps
 
 ---
@@ -417,9 +424,9 @@ graph TD
 ```
 
 **Key Resources:**
-- [monitoring/main.bicep](infra/monitoring/main.bicep) - Monitoring orchestration
-- [app-insights.bicep](infra/monitoring/app-insights.bicep) - Application Insights
-- [log-analytics-workspace.bicep](infra/monitoring/log-analytics-workspace.bicep) - Log Analytics
+- monitoring/main.bicep - Monitoring orchestration
+- app-insights.bicep - Application Insights
+- log-analytics-workspace.bicep - Log Analytics
 - 30-day retention with automatic log deletion
 
 ---
@@ -510,7 +517,7 @@ azd up
 ```
 
 This command:
-1. **Provisions Azure resources** via [main.bicep](infra/main.bicep)
+1. **Provisions Azure resources** via main.bicep
 2. **Builds container images** for microservices
 3. **Deploys to Azure Container Apps**
 4. **Configures Logic Apps workflows**
@@ -518,7 +525,7 @@ This command:
 
 ### Post-Deployment Configuration
 
-After deployment completes, the [postprovision.ps1](hooks/postprovision.ps1) hook automatically:
+After deployment completes, the postprovision.ps1 hook automatically:
 - Configures .NET user secrets with Azure resource information
 - Authenticates to Azure Container Registry
 - Updates connection strings for Application Insights and Service Bus
@@ -595,7 +602,7 @@ Access at `http://localhost:15888` when running locally.
 
 ### Diagnostic Settings
 
-All Azure resources are configured with diagnostic settings via [monitoring](infra/monitoring) to send:
+All Azure resources are configured with diagnostic settings via monitoring to send:
 - **All Logs**: Category group `allLogs`
 - **All Metrics**: Category group `allMetrics`
 
@@ -603,7 +610,7 @@ Data flows to both Log Analytics workspace and long-term storage accounts.
 
 ### Health Monitoring
 
-Health checks are implemented in [Extensions.cs](app.ServiceDefaults/Extensions.cs):
+Health checks are implemented in Extensions.cs:
 - `/health` - Comprehensive health check endpoint
 - `/alive` - Liveness probe endpoint
 
@@ -637,7 +644,7 @@ Container Apps automatically uses these for health monitoring.
 
 ## Contributing
 
-We welcome contributions! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines on:
+We welcome contributions! Please see CONTRIBUTING.md for guidelines on:
 
 - Reporting issues
 - Submitting pull requests
@@ -650,13 +657,13 @@ This project follows the Microsoft Open Source Code of Conduct.
 
 ### Security
 
-For security vulnerabilities, please see [SECURITY.md](SECURITY.md) for responsible disclosure procedures.
+For security vulnerabilities, please see SECURITY.md for responsible disclosure procedures.
 
 ---
 
 ## License
 
-This project is licensed under the **MIT License**. See [LICENSE](LICENSE) for full details.
+This project is licensed under the **MIT License**. See LICENSE for full details.
 
 ---
 
