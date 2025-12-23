@@ -5,7 +5,6 @@
 @rendermode InteractiveServer
 @inject OrdersAPIService ordersService
 @inject IDialogService DialogService
-@inject IDialogService DialogService
 
 <PageTitle>All Orders</PageTitle>
 
@@ -14,14 +13,32 @@
     <FluentStack Orientation="Orientation.Vertical" VerticalGap="6">
         <FluentLabel Typo="Typography.H4">All Orders</FluentLabel>
         <FluentLabel Typo="Typography.Body" Style="font-size: 14px; color: var(--neutral-foreground-hint);">
-            View all orders and their associated products.
+            View all orders and their associated products. Select orders to delete them individually or in batch.
         </FluentLabel>
     </FluentStack>
 
-    <FluentButton Appearance="Appearance.Accent" OnClick="LoadOrdersAsync" Loading="@isLoading"
-        Style="width: fit-content;">
-        Load Orders
-    </FluentButton>
+    <FluentStack Orientation="Orientation.Horizontal" HorizontalGap="12" Wrap="true">
+        <FluentButton Appearance="Appearance.Accent" OnClick="LoadOrdersAsync" Loading="@isLoading"
+            Style="width: fit-content;">
+            Load Orders
+        </FluentButton>
+
+        @if (orders != null && orders.Any())
+        {
+            <FluentButton Appearance="Appearance.Neutral" OnClick="ToggleSelectAll" 
+                Disabled="@isDeleting"
+                Style="width: fit-content;">
+                @(selectedOrderIds.Count == orders.Count() ? "Deselect All" : "Select All")
+            </FluentButton>
+
+            <FluentButton Appearance="Appearance.Accent" OnClick="DeleteSelectedOrdersAsync" 
+                Loading="@isDeleting"
+                Disabled="@(!selectedOrderIds.Any() || isLoading)"
+                Style="width: fit-content; background-color: var(--error); border-color: var(--error);">
+                Delete Selected (@selectedOrderIds.Count)
+            </FluentButton>
+        }
+    </FluentStack>
 
     @if (errorMessage != null)
     {
@@ -47,7 +64,7 @@
                 @foreach (var order in orders.OrderByDescending(o => o.Date))
                 {
                     <FluentCard Style="width: 100%; padding: 0;">
-                        <FluentStack Orientation="Orientation.Vertical" VerticalGap="0" Style="width: 100%;">
+                        <FluentStack Orientation="Orientation.Vertical" VerticalGap="0" Style="width: 100%">
                             <!-- Order Header -->
                             <FluentStack Orientation="Orientation.Horizontal" VerticalAlignment="VerticalAlignment.Center"
                                 Style="padding: 12px 16px; background-color: var(--neutral-layer-1); border-bottom: 1px solid var(--neutral-stroke-rest); cursor: pointer;"
@@ -174,9 +191,11 @@
 
 @code {
     private bool isLoading = false;
+    private bool isDeleting = false;
     private string? errorMessage;
     private IEnumerable<Order>? orders;
     private HashSet<string> expandedOrders = new();
+    private HashSet<string> selectedOrderIds = new();
 
     private async Task LoadOrdersAsync()
     {
@@ -184,6 +203,7 @@
         errorMessage = null;
         orders = null;
         expandedOrders.Clear();
+        selectedOrderIds.Clear();
 
         try
         {
@@ -208,6 +228,47 @@
         else
         {
             expandedOrders.Add(orderId);
+        }
+    }
+
+    private void ToggleSelectAll()
+    {
+        if (orders == null)
+            return;
+
+        if (selectedOrderIds.Count == orders.Count())
+        {
+            selectedOrderIds.Clear();
+        }
+        else
+        {
+            selectedOrderIds = orders.Select(o => o.Id).ToHashSet();
+        }
+    }
+
+    private async Task DeleteSelectedOrdersAsync()
+    {
+        if (orders == null || !selectedOrderIds.Any())
+            return;
+
+        isDeleting = true;
+        errorMessage = null;
+
+        try
+        {
+            foreach (var orderId in selectedOrderIds.ToList())
+            {
+                await ordersService.DeleteOrderAsync(orderId);
+            }
+            await LoadOrdersAsync();
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Failed to delete selected orders: {ex.Message}";
+        }
+        finally
+        {
+            isDeleting = false;
         }
     }
 }
