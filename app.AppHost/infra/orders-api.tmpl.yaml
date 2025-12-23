@@ -17,6 +17,9 @@ properties:
       targetPort: {{ targetPortOrDefault 8080 }}
       transport: http
       allowInsecure: true
+      # configure sticky session affinity for web app
+      stickySessions:
+        affinity: sticky
     registries:
       - server: {{ .Env.AZURE_CONTAINER_REGISTRY_ENDPOINT }}
         identity: {{ .Env.AZURE_CONTAINER_REGISTRY_MANAGED_IDENTITY_ID }}
