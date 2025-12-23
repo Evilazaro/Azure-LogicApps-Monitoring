@@ -659,6 +659,7 @@ try {
     $azureMessagingServiceBusEndpoint = Get-EnvironmentVariableSafe -Name 'MESSAGING_SERVICEBUSENDPOINT'
     $azureEnvName = Get-EnvironmentVariableSafe -Name 'AZURE_ENV_NAME'
     $azureContainerRegistryEndpoint = Get-EnvironmentVariableSafe -Name 'AZURE_CONTAINER_REGISTRY_ENDPOINT'
+    $azureStorageAccountName = Get-EnvironmentVariableSafe -Name 'WORKFLOW_STORAGE_ACCOUNT_NAME'
     
     # Display configuration (with safe null handling)
     Write-SectionHeader -Message "Azure Configuration" -Type 'Sub'
@@ -677,6 +678,7 @@ try {
     Write-Information "  Service Bus Subscription: $($azureServiceBusSubscriptionName ?? $notSet)"
     Write-Information "  Service Bus Endpoint   : $($azureMessagingServiceBusEndpoint ?? $notSet)"
     Write-Information "  ACR Endpoint           : $($azureContainerRegistryEndpoint ?? $notSet)"
+    Write-Information "  Storage Account Name   : $($azureStorageAccountName ?? $notSet)"
     
     # Authenticate to Azure Container Registry (non-blocking)
     Invoke-AzureContainerRegistryLogin -RegistryEndpoint $azureContainerRegistryEndpoint
@@ -791,6 +793,7 @@ try {
         'Azure:ServiceBus:HostName'       = $azureServiceBusHostName
         'Azure:ServiceBus:TopicName'       = $azureServiceBusTopicName
         'Azure:ServiceBus:SubscriptionName' = $azureServiceBusSubscriptionName
+        'Azure:StorageAccount:Name'      = $azureStorageAccountName
     }
     
     # Define secrets for API project (Service Bus configuration only)
