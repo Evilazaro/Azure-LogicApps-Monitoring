@@ -18,7 +18,8 @@ properties:
       transport: http
       allowInsecure: false
       # configure sticky session affinity for web app
-      stickySessions: Enabled
+      stickySessions:
+        affinity: sticky
     registries:
       - server: {{ .Env.AZURE_CONTAINER_REGISTRY_ENDPOINT }}
         identity: {{ .Env.AZURE_CONTAINER_REGISTRY_MANAGED_IDENTITY_ID }}
