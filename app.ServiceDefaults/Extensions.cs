@@ -3,10 +3,10 @@ using Azure.Messaging.ServiceBus;
 using Azure.Monitor.OpenTelemetry.Exporter;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Configuration;
 using OpenTelemetry;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Trace;
@@ -111,7 +111,7 @@ public static class Extensions
         {
             var logger = serviceProvider.GetRequiredService<ILogger<ServiceBusClient>>();
             var configuration = serviceProvider.GetRequiredService<IConfiguration>();
-            
+
             try
             {
                 var messagingHostName = configuration["MESSAGING_HOST"]

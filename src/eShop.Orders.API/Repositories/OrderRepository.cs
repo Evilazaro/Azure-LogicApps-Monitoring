@@ -145,7 +145,7 @@ public sealed class OrderStorageOptions
 
     [Required(AllowEmptyStrings = false)]
     public required string StorageDirectory { get; init; } = "Files";
-    
+
     [Required(AllowEmptyStrings = false)]
     public required string FileName { get; init; } = "orders.json";
 }

@@ -84,12 +84,12 @@ static void ConfigureServiceBus(
         // Add Service Bus reference to orders API with configuration
         ordersAPI.WithReference(serviceBusResource);
     }
-    else 
+    else
     {
         var sbParam = builder.AddParameter("service-bus", resourceName);
         var sbResourceGroupParam = builder.AddParameterFromConfiguration("resourceGroup", "Azure:ResourceGroup");
         var serviceBusResource = builder.AddAzureServiceBus(DefaultConnectionStringName).RunAsExisting(sbParam, sbResourceGroupParam);
-        
+
         var serviceBusTopic = serviceBusResource.AddServiceBusTopic(sbTopicName);
         var serviceBusSubscription = serviceBusTopic.AddServiceBusSubscription(sbSubscriptionName);
 

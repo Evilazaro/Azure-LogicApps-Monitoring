@@ -35,10 +35,10 @@ builder.Services.Configure<Microsoft.AspNetCore.Components.Server.CircuitOptions
 // Configure HTTP client for Orders API with proper error handling
 builder.Services.AddHttpClient<OrdersAPIService>(client =>
 {
-    var baseAddress = builder.Configuration["services:orders-api:https:0"] 
+    var baseAddress = builder.Configuration["services:orders-api:https:0"]
                     ?? builder.Configuration["services:orders-api:http:0"]
                     ?? throw new InvalidOperationException("Orders API base address not configured");
-    
+
     client.BaseAddress = new Uri(baseAddress);
     client.DefaultRequestHeaders.Add("Accept", "application/json");
     client.Timeout = TimeSpan.FromSeconds(30);
