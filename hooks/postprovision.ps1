@@ -794,7 +794,7 @@ try {
     }
     
     # Define secrets for API project (Service Bus configuration only)
-    $apiSecrets = [ordered]@{        
+    $apiSecrets = [ordered]@{
         'Azure:ServiceBus:HostName'       = $azureServiceBusHostName
         'Azure:ServiceBus:TopicName'       = $azureServiceBusTopicName
         'Azure:ServiceBus:SubscriptionName' = $azureServiceBusSubscriptionName

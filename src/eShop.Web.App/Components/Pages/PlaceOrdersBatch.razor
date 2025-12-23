@@ -20,8 +20,14 @@
 
     @if (successMessage != null)
     {
-        <FluentMessageBar Intent="MessageIntent.Success" Title="Success">
-            @successMessage
+        <FluentMessageBar Intent="MessageIntent.Success" 
+                          Title="?? Batch Submission Complete!"
+                          Style="font-size: 15px; padding: 16px; border-left: 4px solid var(--success);">
+            <strong>@successMessage</strong>
+            <br/>
+            <FluentLabel Typo="Typography.Body" Style="font-size: 13px; margin-top: 8px;">
+                Your orders have been successfully placed and are now being processed.
+            </FluentLabel>
         </FluentMessageBar>
     }
 

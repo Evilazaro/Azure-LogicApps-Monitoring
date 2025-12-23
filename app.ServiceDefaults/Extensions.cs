@@ -110,15 +110,13 @@ public static class Extensions
         builder.Services.AddSingleton<ServiceBusClient>(serviceProvider =>
         {
             var logger = serviceProvider.GetRequiredService<ILogger<ServiceBusClient>>();
-            var configuration = serviceProvider.GetRequiredService<IConfiguration>();
 
             try
             {
-                var messagingHostName = configuration["MESSAGING_HOST"]
-                                      ?? configuration["Azure:ServiceBus:HostName"]
-                                      ?? throw new InvalidOperationException("MESSAGING_HOST or Azure:ServiceBus:HostName configuration is required");
+                var messagingHostName = builder.Configuration["MESSAGING_HOST"]
+                                      ?? throw new InvalidOperationException("MESSAGING_HOST configuration is required");
 
-                var connectionString = configuration["ConnectionStrings:messaging"]
+                var connectionString = builder.Configuration["ConnectionStrings:messaging"]
                                      ?? throw new InvalidOperationException("ConnectionStrings:messaging is required");
 
                 if (messagingHostName.Equals("localhost", StringComparison.OrdinalIgnoreCase))

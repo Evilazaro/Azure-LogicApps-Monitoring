@@ -97,4 +97,7 @@ static void ConfigureServiceBus(
         ordersAPI.WithReference(serviceBusResource);
     }
 
+    ordersAPI.WithEnvironment("AZURE_SUBSCRIPTION_ID", builder.Configuration["Azure:SubscriptionId"] ?? string.Empty);
+    ordersAPI.WithEnvironment("AZURE_CLIENT_ID", builder.Configuration["Azure:ClientId"] ?? string.Empty);
+    ordersAPI.WithEnvironment("AZURE_TENANT_ID", builder.Configuration["Azure:TenantId"] ?? string.Empty);
 }

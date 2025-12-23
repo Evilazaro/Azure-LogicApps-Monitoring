@@ -5,6 +5,8 @@
 
 ./workflows/eShopOrders/connections.json
 
+orders.json
+
 # User-specific files
 *.rsuser
 *.suo
