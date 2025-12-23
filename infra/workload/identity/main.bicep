@@ -50,7 +50,7 @@ param tags tagsType
 
 // ========== Variables ==========
 
-var resourceSuffix string = uniqueString(resourceGroup().id, name, envName, location)
+var resourceSuffix = uniqueString(resourceGroup().id, name, envName, location)
 
 // ========== Resources ==========
 

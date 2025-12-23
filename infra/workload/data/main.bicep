@@ -56,6 +56,12 @@ param workspaceId string
 @minLength(50)
 param storageAccountId string
 
+@description('Logs settings for the Log Analytics workspace.')
+param logsSettings object[]
+
+@description('Metrics settings for the Log Analytics workspace.')
+param metricsSettings object[]
+
 @description('Resource tags applied to Service Bus resources.')
 param tags tagsType
 
@@ -71,6 +77,12 @@ resource wfSA 'Microsoft.Storage/storageAccounts@2025-06-01' = {
   location: location
   sku: {
     name: 'Standard_LRS'
+  }
+  identity: {
+    type: 'UserAssigned'
+    userAssignedIdentities: {
+      '${userAssignedIdentityId}': {}
+    }
   }
   kind: 'StorageV2'
   tags: tags
@@ -115,3 +127,18 @@ resource poFailed 'Microsoft.Storage/storageAccounts/blobServices/containers@202
     publicAccess: 'None'
   }
 }
+
+@description('Diagnostic settings for workflow storage account')
+resource saDiag 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
+  name: '${wfSA.name}-diag'
+  scope: wfSA
+  properties: {
+    workspaceId: workspaceId
+    storageAccountId: storageAccountId
+    logAnalyticsDestinationType: 'Dedicated'
+    logs: logsSettings
+    metrics: metricsSettings
+  }
+}
+
+output WORKFLOW_STORAGE_ACCOUNT_NAME string = wfSA.name

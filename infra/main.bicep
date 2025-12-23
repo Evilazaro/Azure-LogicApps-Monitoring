@@ -70,7 +70,7 @@ var tags = union(coreTags, {
 
 // Resource group naming convention: rg-{solution}-{env}-{location-abbrev}
 // Truncates location to 8 chars to keep names concise
-var resourceGroupName string = 'rg-${solutionName}-${envName}-${substring(location, 0, min(length(location), 8))}'
+var resourceGroupName = 'rg-${solutionName}-${envName}-${substring(location, 0, min(length(location), 8))}'
 
 // ========== Resources ==========
 
@@ -171,3 +171,6 @@ output AZURE_CONTAINER_APPS_ENVIRONMENT_DEFAULT_DOMAIN string = workload.outputs
 
 @description('Azure Tenant ID where resources are deployed')
 output AZURE_TENANT_ID string = tenant().tenantId
+
+@description('Azure Storage Workflow State Account Name')
+output LOGICAPPS_STORAGE_ACCOUNT_NAME string = workload.outputs.WORKFLOW_STORAGE_ACCOUNT_NAME

@@ -12,6 +12,7 @@ hooks:
         shell: pwsh
         run: |
             .\hooks\postprovision.ps1
+            .\hooks\Generate-Orders.ps1
 
 services:
     app:

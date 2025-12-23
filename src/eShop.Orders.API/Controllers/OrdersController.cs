@@ -303,4 +303,48 @@ public sealed class OrdersController : ControllerBase
                 new { error = "An error occurred while processing your request", orderId = id });
         }
     }
+
+    /// <summary>
+    /// Deletes multiple orders in batch.
+    /// </summary>
+    /// <param name="orderIds">The collection of order IDs to delete.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>The number of successfully deleted orders.</returns>
+    [HttpPost("batch/delete")]
+    [ProducesResponseType(typeof(int), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    public async Task<ActionResult<int>> DeleteOrdersBatch([FromBody] IEnumerable<string> orderIds, CancellationToken cancellationToken)
+    {
+        if (orderIds == null || !orderIds.Any())
+        {
+            return BadRequest("Order IDs collection cannot be null or empty");
+        }
+
+        using var activity = _activitySource.StartActivity("DeleteOrdersBatch", ActivityKind.Server);
+        var orderIdsList = orderIds.ToList();
+        activity?.SetTag("orders.count", orderIdsList.Count);
+        activity?.SetTag("http.method", "POST");
+        activity?.SetTag("http.route", "/api/orders/batch/delete");
+
+        using var logScope = _logger.BeginScope(new Dictionary<string, object>
+        {
+            ["TraceId"] = Activity.Current?.TraceId.ToString() ?? "none",
+            ["SpanId"] = Activity.Current?.SpanId.ToString() ?? "none"
+        });
+
+        try
+        {
+            var deletedCount = await _orderService.DeleteOrdersBatchAsync(orderIdsList, cancellationToken);
+            activity?.SetStatus(ActivityStatusCode.Ok);
+            _logger.LogInformation("Successfully deleted {DeletedCount} orders out of {TotalCount}", deletedCount, orderIdsList.Count);
+            return Ok(deletedCount);
+        }
+        catch (Exception ex)
+        {
+            activity?.SetStatus(ActivityStatusCode.Error, ex.Message);
+            _logger.LogError(ex, "Failed to delete orders batch");
+            return StatusCode(StatusCodes.Status500InternalServerError, $"Failed to delete orders: {ex.Message}");
+        }
+    }
 }

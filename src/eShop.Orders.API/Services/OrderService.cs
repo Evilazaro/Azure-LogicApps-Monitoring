@@ -21,6 +21,7 @@ public sealed class OrderService : IOrderService
     private readonly Counter<long> _ordersPlacedCounter;
     private readonly Histogram<double> _orderProcessingDuration;
     private readonly Counter<long> _orderProcessingErrors;
+    private readonly Counter<long> _ordersDeletedCounter;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="OrderService"/> class.
@@ -57,6 +58,10 @@ public sealed class OrderService : IOrderService
             "orders.processing.errors",
             "errors",
             "Number of order processing errors by error type");
+        _ordersDeletedCounter = _meter.CreateCounter<long>(
+            "orders.deleted",
+            "orders",
+            "Number of orders successfully deleted");
     }
 
     /// <summary>
@@ -129,8 +134,8 @@ public sealed class OrderService : IOrderService
     }
 
     /// <summary>
-    /// Places multiple orders asynchronously in a batch operation.
-    /// Continues processing remaining orders if individual orders fail.
+    /// Places multiple orders asynchronously in a batch operation with parallel processing.
+    /// Processes orders in parallel while maintaining observability and error handling .
     /// </summary>
     /// <param name="orders">The collection of orders to be placed.</param>
     /// <param name="cancellationToken">Cancellation token to cancel the operation.</param>
@@ -151,23 +156,45 @@ public sealed class OrderService : IOrderService
         }
 
         activity?.SetTag("orders.count", ordersList.Count);
-        _logger.LogInformation("Placing batch of {Count} orders", ordersList.Count);
+        _logger.LogInformation("Placing batch of {Count} orders with parallel processing", ordersList.Count);
 
         var placedOrders = new List<Order>();
         var failedOrders = new List<(string OrderId, string ErrorMessage)>();
 
-        foreach (var order in ordersList)
+        var options = new ParallelOptions
         {
-            try
+            MaxDegreeOfParallelism = Math.Min(Environment.ProcessorCount * 2, 20),
+            CancellationToken = cancellationToken
+        };
+
+        var lockObject = new object();
+
+        try
+        {
+            await Parallel.ForEachAsync(ordersList, options, async (order, ct) =>
             {
-                var placedOrder = await PlaceOrderAsync(order, cancellationToken).ConfigureAwait(false);
-                placedOrders.Add(placedOrder);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Failed to place order {OrderId} in batch", order.Id);
-                failedOrders.Add((order.Id, ex.Message));
-            }
+                try
+                {
+                    var placedOrder = await PlaceOrderAsync(order, ct).ConfigureAwait(false);
+                    lock (lockObject)
+                    {
+                        placedOrders.Add(placedOrder);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Failed to place order {OrderId} in batch", order.Id);
+                    lock (lockObject)
+                    {
+                        failedOrders.Add((order.Id, ex.Message));
+                    }
+                }
+            });
+        }
+        catch (OperationCanceledException)
+        {
+            _logger.LogWarning("Batch processing was cancelled after processing {Count} orders", placedOrders.Count);
+            throw;
         }
 
         var duration = (DateTime.UtcNow - startTime).TotalMilliseconds;
@@ -181,7 +208,8 @@ public sealed class OrderService : IOrderService
                 tags: new ActivityTagsCollection
                 {
                     { "failed.count", failedOrders.Count },
-                    { "success.count", placedOrders.Count }
+                    { "success.count", placedOrders.Count },
+                    { "failed.orders", string.Join(", ", failedOrders.Select(f => f.OrderId)) }
                 }));
         }
 
@@ -295,6 +323,7 @@ public sealed class OrderService : IOrderService
             {
                 activity?.SetStatus(ActivityStatusCode.Ok);
                 _logger.LogInformation("Order {OrderId} deleted successfully", orderId);
+                _ordersDeletedCounter.Add(1, new TagList { { "order.id", orderId } });
             }
             else
             {
@@ -310,6 +339,36 @@ public sealed class OrderService : IOrderService
             _logger.LogError(ex, "Failed to delete order {OrderId}", orderId);
             throw;
         }
+    }
+
+    /// <summary>
+    /// Deletes multiple orders in batch.
+    /// </summary>
+    /// <param name="orderIds">The collection of order IDs to delete.</param>
+    /// <param name="cancellationToken">Cancellation token to cancel the operation.</param>
+    /// <returns>The number of successfully deleted orders.</returns>
+    public async Task<int> DeleteOrdersBatchAsync(IEnumerable<string> orderIds, CancellationToken cancellationToken)
+    {
+        var deletedCount = 0;
+
+        foreach (var orderId in orderIds)
+        {
+            try
+            {
+                var deleted = await DeleteOrderAsync(orderId, cancellationToken);
+                if (deleted)
+                {
+                    deletedCount++;
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Failed to delete order {OrderId} in batch operation", orderId);
+                // Continue with next order instead of failing entire batch
+            }
+        }
+
+        return deletedCount;
     }
 
     /// <summary>

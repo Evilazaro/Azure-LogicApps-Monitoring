@@ -96,6 +96,20 @@ module identity 'identity/main.bicep' = {
   }
 }
 
+module data 'data/main.bicep' = {
+  params: {
+    name: name
+    envName: envName
+    location: location
+    workspaceId: workspaceId
+    storageAccountId: storageAccountId
+    logsSettings: allLogsSettings
+    metricsSettings: allMetricsSettings
+    userAssignedIdentityId: identity.outputs.AZURE_MANAGED_IDENTITY_ID
+    tags: tags
+  }
+}
+
 // Messaging Module: Deploys Service Bus and workflow storage
 // Provides message queue infrastructure and Logic Apps storage backend
 module messaging 'messaging/main.bicep' = {
@@ -142,7 +156,7 @@ module workflows 'logic-app.bicep' = {
     metricsSettings: allMetricsSettings
     appInsightsConnectionString: appInsightsConnectionString
     userAssignedIdentityId: identity.outputs.AZURE_MANAGED_IDENTITY_ID
-    workflowStorageAccountName: messaging.outputs.WORKFLOW_STORAGE_ACCOUNT_NAME
+    workflowStorageAccountName: data.outputs.WORKFLOW_STORAGE_ACCOUNT_NAME
     tags: tags
   }
 }
@@ -181,3 +195,6 @@ output AZURE_CONTAINER_APPS_ENVIRONMENT_ID string = services.outputs.AZURE_CONTA
 
 @description('Default domain for the Container Apps environment')
 output AZURE_CONTAINER_APPS_ENVIRONMENT_DEFAULT_DOMAIN string = services.outputs.AZURE_CONTAINER_APPS_ENVIRONMENT_DEFAULT_DOMAIN
+
+@description('Azure Storage Workflow State Account Name')
+output WORKFLOW_STORAGE_ACCOUNT_NAME string = data.outputs.WORKFLOW_STORAGE_ACCOUNT_NAME

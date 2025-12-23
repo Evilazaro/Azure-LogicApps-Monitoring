@@ -23,6 +23,9 @@ builder.Services.AddSignalR(options =>
     }
     options.MaximumReceiveMessageSize = 32 * 1024; // 32 KB
     options.StreamBufferCapacity = 10;
+    options.HandshakeTimeout = TimeSpan.FromMinutes(2);
+    options.KeepAliveInterval = TimeSpan.FromSeconds(15);
+    options.ClientTimeoutInterval = TimeSpan.FromMinutes(5);
 });
 
 // Configure circuit options for better reliability and debugging
@@ -33,25 +36,25 @@ builder.Services.Configure<Microsoft.AspNetCore.Components.Server.CircuitOptions
         options.DetailedErrors = true;
     }
     options.DisconnectedCircuitMaxRetained = 100;
-    options.DisconnectedCircuitRetentionPeriod = TimeSpan.FromMinutes(3);
-    options.JSInteropDefaultCallTimeout = TimeSpan.FromMinutes(1);
+    options.DisconnectedCircuitRetentionPeriod = TimeSpan.FromMinutes(10);
+    options.JSInteropDefaultCallTimeout = TimeSpan.FromMinutes(10);
     options.MaxBufferedUnacknowledgedRenderBatches = 10;
 });
+
+var otheBa = builder.Configuration["services:orders-api:https:0"];
 
 // Configure typed HTTP client for Orders API with resilience and service discovery
 builder.Services.AddHttpClient<OrdersAPIService>((serviceProvider, client) =>
 {
     var configuration = serviceProvider.GetRequiredService<IConfiguration>();
-    var baseAddress = configuration["services:orders-api:https:0"]
-                    ?? configuration["services:orders-api:http:0"]
-                    ?? throw new InvalidOperationException("Orders API base address not configured. Ensure 'services:orders-api' is set in configuration.");
+    var baseAddress = "https://orders-api.yellowdesert-f94baa2f.eastus2.azurecontainerapps.io";//configuration["services:orders-api:https:0"]
+                                                                                               //?? throw new InvalidOperationException("Orders API base address not configured. Ensure 'services:orders-api' is set in configuration.");
 
     client.BaseAddress = new Uri(baseAddress);
     client.DefaultRequestHeaders.Add("Accept", "application/json");
-    client.Timeout = TimeSpan.FromSeconds(30);
+    client.Timeout = TimeSpan.FromMinutes(5);
 })
-.AddServiceDiscovery() // Enables service discovery
-.AddStandardResilienceHandler(); // Adds retry, timeout, and circuit breaker policies
+.AddServiceDiscovery(); // Enables service discovery
 
 builder.Services.AddFluentUIComponents();
 

@@ -384,4 +384,62 @@ public sealed class OrdersAPIService
             throw;
         }
     }
+
+    /// <summary>
+    /// Deletes multiple orders in a batch operation.
+    /// </summary>
+    /// <param name="orderIds">The collection of order IDs to be deleted.</param>
+    /// <param name="cancellationToken">Cancellation token to cancel the operation.</param>
+    /// <returns>The number of orders successfully deleted.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when orderIds is null.</exception>
+    /// <exception cref="ArgumentException">Thrown when orderIds collection is empty.</exception>
+    /// <exception cref="HttpRequestException">Thrown when API request fails.</exception>
+    public async Task<int> DeleteOrdersBatchAsync(IEnumerable<string> orderIds, CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(orderIds);
+
+        using var activity = _activitySource.StartActivity("DeleteOrdersBatch", ActivityKind.Client);
+
+        var orderIdsList = orderIds.ToList();
+        if (orderIdsList.Count == 0)
+        {
+            throw new ArgumentException("Order IDs collection cannot be empty", nameof(orderIds));
+        }
+
+        activity?.SetTag("orderIds.count", orderIdsList.Count);
+        activity?.SetTag("http.method", "POST");
+        activity?.SetTag("http.url", $"{_httpClient.BaseAddress}api/orders/batch/delete");
+
+        using var logScope = _logger.BeginScope(new Dictionary<string, object>
+        {
+            ["TraceId"] = Activity.Current?.TraceId.ToString() ?? "none",
+            ["OrderIdsCount"] = orderIdsList.Count
+        });
+
+        try
+        {
+            _logger.LogInformation("Deleting batch of {Count} orders", orderIdsList.Count);
+
+            var response = await _httpClient.PostAsJsonAsync("api/orders/batch/delete", orderIdsList, cancellationToken).ConfigureAwait(false);
+            response.EnsureSuccessStatusCode();
+
+            var deletedCount = await response.Content.ReadFromJsonAsync<int>(cancellationToken: cancellationToken).ConfigureAwait(false);
+
+            activity?.SetStatus(ActivityStatusCode.Ok);
+            _logger.LogInformation("Batch deletion complete. {Count} orders deleted successfully", deletedCount);
+            return deletedCount;
+        }
+        catch (HttpRequestException ex)
+        {
+            activity?.SetStatus(ActivityStatusCode.Error, $"HTTP error: {ex.StatusCode}");
+            _logger.LogError(ex, "HTTP error while deleting batch of orders. Status: {StatusCode}", ex.StatusCode);
+            throw;
+        }
+        catch (Exception ex) when (ex is not ArgumentException)
+        {
+            activity?.SetStatus(ActivityStatusCode.Error, ex.Message);
+            _logger.LogError(ex, "Unexpected error while deleting batch of orders");
+            throw;
+        }
+    }
 }
