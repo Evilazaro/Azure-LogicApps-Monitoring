@@ -342,89 +342,32 @@ public sealed class OrderService : IOrderService
     }
 
     /// <summary>
-    /// Deletes multiple orders asynchronously in a batch operation with parallel processing.
+    /// Deletes multiple orders in batch.
     /// </summary>
     /// <param name="orderIds">The collection of order IDs to delete.</param>
     /// <param name="cancellationToken">Cancellation token to cancel the operation.</param>
     /// <returns>The number of successfully deleted orders.</returns>
-    /// <exception cref="ArgumentNullException">Thrown when orderIds is null.</exception>
-    /// <exception cref="ArgumentException">Thrown when orderIds collection is empty.</exception>
-    public async Task<int> DeleteOrdersBatchAsync(IEnumerable<string> orderIds, CancellationToken cancellationToken = default)
+    public async Task<int> DeleteOrdersBatchAsync(IEnumerable<string> orderIds, CancellationToken cancellationToken)
     {
-        ArgumentNullException.ThrowIfNull(orderIds);
-
-        using var activity = _activitySource.StartActivity("DeleteOrdersBatch", ActivityKind.Internal);
-        var startTime = DateTime.UtcNow;
-
-        var orderIdsList = orderIds.ToList();
-        if (orderIdsList.Count == 0)
-        {
-            throw new ArgumentException("Order IDs collection cannot be empty", nameof(orderIds));
-        }
-
-        activity?.SetTag("orders.count", orderIdsList.Count);
-        _logger.LogInformation("Deleting batch of {Count} orders with parallel processing", orderIdsList.Count);
-
         var deletedCount = 0;
-        var failedCount = 0;
-        var lockObject = new object();
-
-        var options = new ParallelOptions
+        
+        foreach (var orderId in orderIds)
         {
-            MaxDegreeOfParallelism = Math.Min(Environment.ProcessorCount * 2, 20),
-            CancellationToken = cancellationToken
-        };
-
-        try
-        {
-            await Parallel.ForEachAsync(orderIdsList, options, async (orderId, ct) =>
+            try
             {
-                try
+                var deleted = await DeleteOrderAsync(orderId, cancellationToken);
+                if (deleted)
                 {
-                    var deleted = await DeleteOrderAsync(orderId, ct).ConfigureAwait(false);
-                    lock (lockObject)
-                    {
-                        if (deleted)
-                        {
-                            deletedCount++;
-                        }
-                        else
-                        {
-                            failedCount++;
-                        }
-                    }
+                    deletedCount++;
                 }
-                catch (Exception ex)
-                {
-                    _logger.LogError(ex, "Failed to delete order {OrderId} in batch", orderId);
-                    lock (lockObject)
-                    {
-                        failedCount++;
-                    }
-                }
-            });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Failed to delete order {OrderId} in batch operation", orderId);
+                // Continue with next order instead of failing entire batch
+            }
         }
-        catch (OperationCanceledException)
-        {
-            _logger.LogWarning("Batch deletion was cancelled after deleting {Count} orders", deletedCount);
-            throw;
-        }
-
-        var duration = (DateTime.UtcNow - startTime).TotalMilliseconds;
-        _logger.LogInformation(
-            "Batch deletion complete in {Duration}ms. {DeletedCount} orders deleted successfully, {FailedCount} failed",
-            duration, deletedCount, failedCount);
-
-        if (failedCount > 0)
-        {
-            activity?.AddEvent(new ActivityEvent("BatchPartialFailure",
-                tags: new ActivityTagsCollection
-                {
-                    { "failed.count", failedCount },
-                    { "success.count", deletedCount }
-                }));
-        }
-
+        
         return deletedCount;
     }
 

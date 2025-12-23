@@ -45,4 +45,12 @@ public interface IOrderService
     /// <param name="cancellationToken">Cancellation token to cancel the operation.</param>
     /// <returns>True if the order was successfully deleted; otherwise, false.</returns>
     Task<bool> DeleteOrderAsync(string orderId, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Deletes multiple orders in batch.
+    /// </summary>
+    /// <param name="orderIds">The collection of order IDs to delete.</param>
+    /// <param name="cancellationToken">Cancellation token to cancel the operation.</param>
+    /// <returns>The number of successfully deleted orders.</returns>
+    Task<int> DeleteOrdersBatchAsync(IEnumerable<string> orderIds, CancellationToken cancellationToken);
 }
