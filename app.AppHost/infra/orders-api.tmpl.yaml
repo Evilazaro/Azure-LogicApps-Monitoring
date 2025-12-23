@@ -50,7 +50,7 @@ properties:
           - name: ConnectionStrings__messaging
             secretRef: connectionstrings--messaging
     scale:
-      minReplicas: 10
+      minReplicas: 1
 tags:
   azd-service-name: orders-api
   aspire-resource-name: orders-api

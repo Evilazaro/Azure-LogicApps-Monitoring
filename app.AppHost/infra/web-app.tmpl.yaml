@@ -49,7 +49,7 @@ properties:
           - name: services__orders-api__https__0
             value: https://orders-api.internal.{{ .Env.AZURE_CONTAINER_APPS_ENVIRONMENT_DEFAULT_DOMAIN }}
     scale:
-      minReplicas: 10
+      minReplicas: 1
 tags:
   azd-service-name: web-app
   aspire-resource-name: web-app

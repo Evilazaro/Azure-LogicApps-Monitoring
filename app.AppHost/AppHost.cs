@@ -11,8 +11,7 @@ var webApp = builder.AddProject<Projects.eShop_Web_App>("web-app")
                     .WithExternalHttpEndpoints()
                     .WithHttpHealthCheck("/health")
                     .WithReference(ordersAPI)
-                    .WaitFor(ordersAPI)
-                    .WithReplicas(10);
+                    .WaitFor(ordersAPI);
 
 // =============================================================================
 // Application Insights Configuration
