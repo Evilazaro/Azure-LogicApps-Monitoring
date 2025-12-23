@@ -112,7 +112,7 @@ resource registryDiag 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview'
 
 // Generate unique name for Container Apps Environment
 // Uses subscription and resource group for uniqueness across deployments
-var appEnvName string = toLower('${name}-cae-${uniqueString(subscription().id, resourceGroup().id, location, envName)}')
+var appEnvName = toLower('${name}-cae-${uniqueString(subscription().id, resourceGroup().id, location, envName)}')
 
 @description('Container Apps managed environment for hosting containerized applications')
 resource appEnv 'Microsoft.App/managedEnvironments@2025-02-02-preview' = {

@@ -70,13 +70,13 @@ param tags tagsType
 // ========== Variables ==========
 
 // Remove special characters for naming compliance
-var cleanedName string = toLower(replace(replace(replace(name, '-', ''), '_', ''), ' ', ''))
+var cleanedName = toLower(replace(replace(replace(name, '-', ''), '_', ''), ' ', ''))
 
 // Generate unique suffix for globally unique resource names
-var uniqueSuffix string = uniqueString(resourceGroup().id, name, envName, location)
+var uniqueSuffix = uniqueString(resourceGroup().id, name, envName, location)
 
 // Service Bus namespace name limited to 20 characters
-var serviceBusName string = toLower(take('${cleanedName}sb${uniqueSuffix}', 20))
+var serviceBusName = toLower(take('${cleanedName}sb${uniqueSuffix}', 20))
 
 // ========== Resources ==========
 
@@ -130,7 +130,7 @@ resource sbDiag 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
 }
 
 @description('Messaging Service Bus Host Name')
-output MESSAGING_SERVICEBUSHOSTNAME string = broker.name //split(replace(broker.properties.serviceBusEndpoint, 'https://', ''), ':')[0]
+output MESSAGING_SERVICEBUSHOSTNAME string = broker.name
 
 @description('Azure Service Bus endpoint')
 output MESSAGING_SERVICEBUSENDPOINT string = broker.properties.serviceBusEndpoint

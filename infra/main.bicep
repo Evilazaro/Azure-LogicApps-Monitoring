@@ -70,7 +70,7 @@ var tags = union(coreTags, {
 
 // Resource group naming convention: rg-{solution}-{env}-{location-abbrev}
 // Truncates location to 8 chars to keep names concise
-var resourceGroupName string = 'rg-${solutionName}-${envName}-${substring(location, 0, min(length(location), 8))}'
+var resourceGroupName = 'rg-${solutionName}-${envName}-${substring(location, 0, min(length(location), 8))}'
 
 // ========== Resources ==========
 
