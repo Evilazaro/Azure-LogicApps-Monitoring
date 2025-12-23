@@ -6,14 +6,14 @@
 @inject OrdersAPIService ordersService
 @inject IDialogService DialogService
 
-<PageTitle>All Orders</PageTitle>
+<PageTitle>List All Orders</PageTitle>
 
 <FluentStack Orientation="Orientation.Vertical" VerticalGap="16"
     Style="padding: 20px; max-width: 1400px; margin: 0 auto;">
     <FluentStack Orientation="Orientation.Vertical" VerticalGap="6">
-        <FluentLabel Typo="Typography.H4">All Orders</FluentLabel>
+        <FluentLabel Typo="Typography.H4">List All Orders</FluentLabel>
         <FluentLabel Typo="Typography.Body" Style="font-size: 14px; color: var(--neutral-foreground-hint);">
-            View all orders and their associated products. Select orders to delete them individually or in batch.
+            View List All Orders and their associated products. Select orders to delete them individually or in batch.
         </FluentLabel>
     </FluentStack>
 
@@ -165,7 +165,8 @@
                             <FluentStack Orientation="Orientation.Horizontal" VerticalAlignment="VerticalAlignment.Center"
                                 Style="padding: 12px 16px; background-color: var(--neutral-layer-1); border-bottom: 1px solid var(--neutral-stroke-rest);">
                                 
-                                <FluentCheckbox @bind-Value="@selectedOrderIds[order.Id]" 
+                                <FluentCheckbox Value="@selectedOrderIds[order.Id]" 
+                                    ValueChanged="@(value => selectedOrderIds[order.Id] = value)"
                                     Style="margin-right: 16px;"
                                     Disabled="@isDeleting" />
 
