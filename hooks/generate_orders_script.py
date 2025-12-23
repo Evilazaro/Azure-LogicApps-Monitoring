@@ -1,6 +1,7 @@
 import json
 import random
 from datetime import datetime, timedelta
+import os
 
 # Product catalog
 products = [
@@ -105,7 +106,9 @@ def generate_order(order_num):
 orders = [generate_order(i + 1) for i in range(50)]
 
 # Write to file
-output_path = r"d:\Azure-LogicApps-Monitoring\hooks\ordersBatch.json"
+output_path = r"..\infra\data\ordersBatch.json"
+# Create the directory if it doesn't exist
+os.makedirs(os.path.dirname(output_path), exist_ok=True)
 with open(output_path, 'w', encoding='utf-8') as f:
     json.dump(orders, f, indent=4, ensure_ascii=False)
 

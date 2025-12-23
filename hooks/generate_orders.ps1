@@ -51,7 +51,7 @@ param(
     
     [Parameter(Mandatory = $false, HelpMessage = 'Output file path for generated JSON')]
     [ValidateNotNullOrEmpty()]
-    [string]$OutputPath = 'orders.json',
+    [string]$OutputPath = '..\infra\data\orders.json',
     
     [Parameter(Mandatory = $false, HelpMessage = 'Starting order ID number')]
     [ValidateRange(1, [int]::MaxValue)]
