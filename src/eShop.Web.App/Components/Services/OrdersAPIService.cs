@@ -118,11 +118,11 @@ public sealed class OrdersAPIService
         activity?.SetTag("http.method", "POST");
         activity?.SetTag("http.url", $"{_httpClient.BaseAddress}api/orders/batch");
 
-    using var logScope = _logger.BeginScope(new Dictionary<string, object>
-    {
-        ["TraceId"] = Activity.Current?.TraceId.ToString() ?? "none",
-        ["OrdersCount"] = ordersList.Count
-    });
+        using var logScope = _logger.BeginScope(new Dictionary<string, object>
+        {
+            ["TraceId"] = Activity.Current?.TraceId.ToString() ?? "none",
+            ["OrdersCount"] = ordersList.Count
+        });
 
         try
         {
@@ -158,7 +158,7 @@ public sealed class OrdersAPIService
     /// <param name="cancellationToken">Cancellation token to cancel the operation.</param>
     /// <returns>A collection of all orders.</returns>
     /// <exception cref="HttpRequestException">Thrown when API request fails.</exception>
-        public async Task<IEnumerable<Order>> GetOrdersAsync(CancellationToken cancellationToken = default)
+    public async Task<IEnumerable<Order>> GetOrdersAsync(CancellationToken cancellationToken = default)
     {
         using var activity = _activitySource.StartActivity("GetOrders", ActivityKind.Client);
 
@@ -193,14 +193,14 @@ public sealed class OrdersAPIService
         }
     }
 
-/// <summary>
-/// Retrieves a specific order by its unique identifier from the Orders API.
-/// </summary>
-/// <param name="orderId">The unique identifier of the order.</param>
-/// <param name="cancellationToken">Cancellation token to cancel the operation.</param>
-/// <returns>The order if found; otherwise, null.</returns>
-/// <exception cref="ArgumentException">Thrown when orderId is null or empty.</exception>
-/// <exception cref="HttpRequestException">Thrown when API request fails (excluding 404).</exception>
+    /// <summary>
+    /// Retrieves a specific order by its unique identifier from the Orders API.
+    /// </summary>
+    /// <param name="orderId">The unique identifier of the order.</param>
+    /// <param name="cancellationToken">Cancellation token to cancel the operation.</param>
+    /// <returns>The order if found; otherwise, null.</returns>
+    /// <exception cref="ArgumentException">Thrown when orderId is null or empty.</exception>
+    /// <exception cref="HttpRequestException">Thrown when API request fails (excluding 404).</exception>
     public async Task<Order?> GetOrderByIdAsync(string orderId, CancellationToken cancellationToken = default)
     {
         if (string.IsNullOrWhiteSpace(orderId))
@@ -211,50 +211,50 @@ public sealed class OrdersAPIService
         using var activity = _activitySource.StartActivity("GetOrderById", ActivityKind.Client);
         activity?.SetTag("order.id", orderId);
 
-    using var logScope = _logger.BeginScope(new Dictionary<string, object>
-    {
-        ["TraceId"] = Activity.Current?.TraceId.ToString() ?? "none",
-        ["OrderId"] = orderId
-    });
-
-    try
-    {
-        _logger.LogInformation("Retrieving order with ID: {OrderId}", orderId);
-
-        var order = await _httpClient.GetFromJsonAsync<Order>($"api/orders/{orderId}", cancellationToken).ConfigureAwait(false);
-
-        if (order == null)
+        using var logScope = _logger.BeginScope(new Dictionary<string, object>
         {
-            activity?.SetStatus(ActivityStatusCode.Error, "Order not found");
-            _logger.LogWarning("Order with ID {OrderId} not found", orderId);
-        }
-        else
-        {
-            activity?.SetStatus(ActivityStatusCode.Ok);
-        }
+            ["TraceId"] = Activity.Current?.TraceId.ToString() ?? "none",
+            ["OrderId"] = orderId
+        });
 
-        return order;
+        try
+        {
+            _logger.LogInformation("Retrieving order with ID: {OrderId}", orderId);
+
+            var order = await _httpClient.GetFromJsonAsync<Order>($"api/orders/{orderId}", cancellationToken).ConfigureAwait(false);
+
+            if (order == null)
+            {
+                activity?.SetStatus(ActivityStatusCode.Error, "Order not found");
+                _logger.LogWarning("Order with ID {OrderId} not found", orderId);
+            }
+            else
+            {
+                activity?.SetStatus(ActivityStatusCode.Ok);
+            }
+
+            return order;
+        }
+        catch (HttpRequestException ex) when (ex.StatusCode == System.Net.HttpStatusCode.NotFound)
+        {
+            activity?.SetStatus(ActivityStatusCode.Error, "Order not found (404)");
+            _logger.LogWarning("Order with ID {OrderId} not found (404)", orderId);
+            return null;
+        }
+        catch (HttpRequestException ex)
+        {
+            activity?.SetStatus(ActivityStatusCode.Error, $"HTTP error: {ex.StatusCode}");
+            _logger.LogError(ex, "HTTP error while fetching order {OrderId} from orders-api. Status: {StatusCode}",
+                orderId, ex.StatusCode);
+            throw;
+        }
+        catch (Exception ex) when (ex is not ArgumentException)
+        {
+            activity?.SetStatus(ActivityStatusCode.Error, ex.Message);
+            _logger.LogError(ex, "Unexpected error while fetching order {OrderId} from orders-api", orderId);
+            throw;
+        }
     }
-    catch (HttpRequestException ex) when (ex.StatusCode == System.Net.HttpStatusCode.NotFound)
-    {
-        activity?.SetStatus(ActivityStatusCode.Error, "Order not found (404)");
-        _logger.LogWarning("Order with ID {OrderId} not found (404)", orderId);
-        return null;
-    }
-    catch (HttpRequestException ex)
-    {
-        activity?.SetStatus(ActivityStatusCode.Error, $"HTTP error: {ex.StatusCode}");
-        _logger.LogError(ex, "HTTP error while fetching order {OrderId} from orders-api. Status: {StatusCode}",
-            orderId, ex.StatusCode);
-        throw;
-    }
-    catch (Exception ex) when (ex is not ArgumentException)
-    {
-        activity?.SetStatus(ActivityStatusCode.Error, ex.Message);
-        _logger.LogError(ex, "Unexpected error while fetching order {OrderId} from orders-api", orderId);
-        throw;
-    }
-}
 
     /// <summary>
     /// Retrieves weather forecast data from the Orders API.
@@ -266,26 +266,26 @@ public sealed class OrdersAPIService
     {
         using var activity = _activitySource.StartActivity("GetWeatherForecast", ActivityKind.Client);
 
-    try
-    {
-        _logger.LogInformation("Fetching weather forecasts from orders-api");
-        var forecasts = await _httpClient.GetFromJsonAsync<IEnumerable<WeatherForecast>>("WeatherForecast", cancellationToken).ConfigureAwait(false);
+        try
+        {
+            _logger.LogInformation("Fetching weather forecasts from orders-api");
+            var forecasts = await _httpClient.GetFromJsonAsync<IEnumerable<WeatherForecast>>("WeatherForecast", cancellationToken).ConfigureAwait(false);
 
-        activity?.SetTag("forecasts.count", forecasts?.Count() ?? 0);
-        _logger.LogInformation("Successfully retrieved {Count} weather forecasts", forecasts?.Count() ?? 0);
-        return forecasts;
+            activity?.SetTag("forecasts.count", forecasts?.Count() ?? 0);
+            _logger.LogInformation("Successfully retrieved {Count} weather forecasts", forecasts?.Count() ?? 0);
+            return forecasts;
+        }
+        catch (HttpRequestException ex)
+        {
+            _logger.LogError(ex, "HTTP error while fetching weather forecasts from orders-api. Status: {StatusCode}", ex.StatusCode);
+            throw;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Unexpected error while fetching weather forecasts from orders-api");
+            throw;
+        }
     }
-    catch (HttpRequestException ex)
-    {
-        _logger.LogError(ex, "HTTP error while fetching weather forecasts from orders-api. Status: {StatusCode}", ex.StatusCode);
-        throw;
-    }
-    catch (Exception ex)
-    {
-        _logger.LogError(ex, "Unexpected error while fetching weather forecasts from orders-api");
-        throw;
-    }
-}
 
     /// <summary>
     /// Updates an existing order through the Orders API.
@@ -309,79 +309,79 @@ public sealed class OrdersAPIService
 
         ArgumentNullException.ThrowIfNull(order);
 
-    try
-    {
-        _logger.LogInformation("Updating order {OrderId}", id);
-        var response = await _httpClient.PutAsJsonAsync($"api/orders/{id}", order, cancellationToken).ConfigureAwait(false);
-        var success = response.IsSuccessStatusCode;
-
-        if (success)
+        try
         {
-            _logger.LogInformation("Successfully updated order {OrderId}", id);
+            _logger.LogInformation("Updating order {OrderId}", id);
+            var response = await _httpClient.PutAsJsonAsync($"api/orders/{id}", order, cancellationToken).ConfigureAwait(false);
+            var success = response.IsSuccessStatusCode;
+
+            if (success)
+            {
+                _logger.LogInformation("Successfully updated order {OrderId}", id);
+            }
+            else
+            {
+                _logger.LogWarning("Failed to update order {OrderId}. Status code: {StatusCode}", id, response.StatusCode);
+            }
+
+            return success;
         }
-        else
+        catch (HttpRequestException ex)
         {
-            _logger.LogWarning("Failed to update order {OrderId}. Status code: {StatusCode}", id, response.StatusCode);
+            _logger.LogError(ex, "HTTP error while updating order {OrderId}. Status: {StatusCode}", id, ex.StatusCode);
+            throw;
         }
-
-        return success;
-    }
-    catch (HttpRequestException ex)
-    {
-        _logger.LogError(ex, "HTTP error while updating order {OrderId}. Status: {StatusCode}", id, ex.StatusCode);
-        throw;
-    }
-    catch (Exception ex) when (ex is not ArgumentException)
-    {
-        _logger.LogError(ex, "Unexpected error while updating order {OrderId}", id);
-        throw;
-    }
-}
-
-/// <summary>
-/// Deletes an order by its unique identifier through the Orders API.
-/// </summary>
-/// <param name="id">The unique identifier of the order to delete.</param>
-/// <param name="cancellationToken">Cancellation token to cancel the operation.</param>
-/// <returns>True if the order was successfully deleted; otherwise, false.</returns>
-/// <exception cref="ArgumentException">Thrown when id is null or empty.</exception>
-/// <exception cref="HttpRequestException">Thrown when API request fails.</exception>
-public async Task<bool> DeleteOrderAsync(string id, CancellationToken cancellationToken = default)
-{
-    using var activity = _activitySource.StartActivity("DeleteOrder", ActivityKind.Client);
-    activity?.SetTag("order.id", id);
-
-    if (string.IsNullOrWhiteSpace(id))
-    {
-        throw new ArgumentException("Order ID cannot be null or empty", nameof(id));
-    }
-
-    try
-    {
-        _logger.LogInformation("Deleting order {OrderId}", id);
-        var response = await _httpClient.DeleteAsync($"api/orders/{id}", cancellationToken).ConfigureAwait(false);
-        var success = response.IsSuccessStatusCode;
-
-        if (success)
+        catch (Exception ex) when (ex is not ArgumentException)
         {
-            _logger.LogInformation("Successfully deleted order {OrderId}", id);
+            _logger.LogError(ex, "Unexpected error while updating order {OrderId}", id);
+            throw;
         }
-        else
+    }
+
+    /// <summary>
+    /// Deletes an order by its unique identifier through the Orders API.
+    /// </summary>
+    /// <param name="id">The unique identifier of the order to delete.</param>
+    /// <param name="cancellationToken">Cancellation token to cancel the operation.</param>
+    /// <returns>True if the order was successfully deleted; otherwise, false.</returns>
+    /// <exception cref="ArgumentException">Thrown when id is null or empty.</exception>
+    /// <exception cref="HttpRequestException">Thrown when API request fails.</exception>
+    public async Task<bool> DeleteOrderAsync(string id, CancellationToken cancellationToken = default)
+    {
+        using var activity = _activitySource.StartActivity("DeleteOrder", ActivityKind.Client);
+        activity?.SetTag("order.id", id);
+
+        if (string.IsNullOrWhiteSpace(id))
         {
-            _logger.LogWarning("Failed to delete order {OrderId}. Status code: {StatusCode}", id, response.StatusCode);
+            throw new ArgumentException("Order ID cannot be null or empty", nameof(id));
         }
 
-        return success;
+        try
+        {
+            _logger.LogInformation("Deleting order {OrderId}", id);
+            var response = await _httpClient.DeleteAsync($"api/orders/{id}", cancellationToken).ConfigureAwait(false);
+            var success = response.IsSuccessStatusCode;
+
+            if (success)
+            {
+                _logger.LogInformation("Successfully deleted order {OrderId}", id);
+            }
+            else
+            {
+                _logger.LogWarning("Failed to delete order {OrderId}. Status code: {StatusCode}", id, response.StatusCode);
+            }
+
+            return success;
+        }
+        catch (HttpRequestException ex)
+        {
+            _logger.LogError(ex, "HTTP error while deleting order {OrderId}. Status: {StatusCode}", id, ex.StatusCode);
+            throw;
+        }
+        catch (Exception ex) when (ex is not ArgumentException)
+        {
+            _logger.LogError(ex, "Unexpected error while deleting order {OrderId}", id);
+            throw;
+        }
     }
-    catch (HttpRequestException ex)
-    {
-        _logger.LogError(ex, "HTTP error while deleting order {OrderId}. Status: {StatusCode}", id, ex.StatusCode);
-        throw;
-    }
-    catch (Exception ex) when (ex is not ArgumentException)
-    {
-        _logger.LogError(ex, "Unexpected error while deleting order {OrderId}", id);
-        throw;
-    }
-}
 }

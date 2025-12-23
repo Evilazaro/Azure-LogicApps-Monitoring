@@ -1,4 +1,4 @@
-@page "/placeordersbatch"
+﻿@page "/placeordersbatch"
 @using eShop.Web.App.Components.Services;
 @using app.ServiceDefaults.CommonTypes;
 @using Microsoft.FluentUI.AspNetCore.Components;
@@ -18,17 +18,106 @@
         </FluentLabel>
     </FluentStack>
 
-    @if (successMessage != null)
+    @if (isProcessing)
     {
-        <FluentMessageBar Intent="MessageIntent.Success" 
-                          Title="? Batch Submission Complete!"
-                          Style="font-size: 15px; padding: 16px; border-left: 4px solid var(--success);">
-            <strong>@successMessage</strong>
-            <br/>
-            <FluentLabel Typo="Typography.Body" Style="font-size: 13px; margin-top: 8px;">
-                Your orders have been successfully placed and are now being processed.
-            </FluentLabel>
-        </FluentMessageBar>
+        <FluentCard Style="padding: 24px;">
+            <FluentStack Orientation="Orientation.Vertical" VerticalGap="16">
+                <FluentLabel Typo="Typography.Body" Style="font-weight: 600; font-size: 15px;">
+                    Processing Orders...
+                </FluentLabel>
+                <FluentProgress Style="width: 100%;" />
+                <FluentLabel Typo="Typography.Body" Style="font-size: 13px; color: var(--neutral-foreground-hint);">
+                    Please wait while your @ordersBeingProcessed order@(ordersBeingProcessed > 1 ? "s are" : " is") being submitted.
+                </FluentLabel>
+            </FluentStack>
+        </FluentCard>
+    }
+
+    @if (batchTransactionStatus != null)
+    {
+        <FluentCard Style="padding: 24px; border-left: 4px solid var(--success);">
+            <FluentStack Orientation="Orientation.Vertical" VerticalGap="16">
+                <FluentStack Orientation="Orientation.Horizontal" VerticalAlignment="VerticalAlignment.Center" HorizontalGap="12">
+                    <FluentLabel Typo="Typography.H5" Style="color: var(--success);">
+                        ✓ Batch Transaction Complete
+                    </FluentLabel>
+                </FluentStack>
+
+                <FluentDivider Style="width: 100%;" />
+
+                <FluentStack Orientation="Orientation.Vertical" VerticalGap="12">
+                    <FluentStack Orientation="Orientation.Horizontal" HorizontalAlignment="HorizontalAlignment.SpaceBetween">
+                        <FluentLabel Typo="Typography.Body" Style="font-size: 14px;">Transaction ID:</FluentLabel>
+                        <FluentLabel Typo="Typography.Body" Style="font-size: 14px; font-weight: 600;">
+                            @batchTransactionStatus.TransactionId
+                        </FluentLabel>
+                    </FluentStack>
+
+                    <FluentStack Orientation="Orientation.Horizontal" HorizontalAlignment="HorizontalAlignment.SpaceBetween">
+                        <FluentLabel Typo="Typography.Body" Style="font-size: 14px;">Timestamp:</FluentLabel>
+                        <FluentLabel Typo="Typography.Body" Style="font-size: 14px; font-weight: 600;">
+                            @batchTransactionStatus.Timestamp.ToString("yyyy-MM-dd HH:mm:ss UTC")
+                        </FluentLabel>
+                    </FluentStack>
+
+                    <FluentStack Orientation="Orientation.Horizontal" HorizontalAlignment="HorizontalAlignment.SpaceBetween">
+                        <FluentLabel Typo="Typography.Body" Style="font-size: 14px;">Total Orders Submitted:</FluentLabel>
+                        <FluentLabel Typo="Typography.Body" Style="font-size: 14px; font-weight: 600; color: var(--accent-fill-rest);">
+                            @batchTransactionStatus.TotalOrders
+                        </FluentLabel>
+                    </FluentStack>
+
+                    <FluentStack Orientation="Orientation.Horizontal" HorizontalAlignment="HorizontalAlignment.SpaceBetween">
+                        <FluentLabel Typo="Typography.Body" Style="font-size: 14px;">Total Products:</FluentLabel>
+                        <FluentLabel Typo="Typography.Body" Style="font-size: 14px; font-weight: 600;">
+                            @batchTransactionStatus.TotalProducts
+                        </FluentLabel>
+                    </FluentStack>
+
+                    <FluentStack Orientation="Orientation.Horizontal" HorizontalAlignment="HorizontalAlignment.SpaceBetween">
+                        <FluentLabel Typo="Typography.Body" Style="font-size: 14px;">Grand Total Amount:</FluentLabel>
+                        <FluentLabel Typo="Typography.Body" Style="font-size: 16px; font-weight: 700; color: var(--success);">
+                            @batchTransactionStatus.TotalAmount.ToString("C2")
+                        </FluentLabel>
+                    </FluentStack>
+
+                    <FluentStack Orientation="Orientation.Horizontal" HorizontalAlignment="HorizontalAlignment.SpaceBetween">
+                        <FluentLabel Typo="Typography.Body" Style="font-size: 14px;">Status:</FluentLabel>
+                        <FluentLabel Typo="Typography.Body" Style="font-size: 14px; font-weight: 600; color: var(--success);">
+                            @batchTransactionStatus.Status
+                        </FluentLabel>
+                    </FluentStack>
+                </FluentStack>
+
+                @if (batchTransactionStatus.OrderIds.Any())
+                {
+                    <FluentDivider Style="width: 100%;" />
+                    
+                    <FluentStack Orientation="Orientation.Vertical" VerticalGap="8">
+                        <FluentLabel Typo="Typography.Body" Style="font-size: 14px; font-weight: 600;">
+                            Submitted Order IDs:
+                        </FluentLabel>
+                        <FluentStack Orientation="Orientation.Horizontal" HorizontalGap="8" Wrap="true">
+                            @foreach (var orderId in batchTransactionStatus.OrderIds)
+                            {
+                                <FluentBadge Appearance="Appearance.Accent" Style="font-size: 12px; padding: 4px 8px;">
+                                    @orderId
+                                </FluentBadge>
+                            }
+                        </FluentStack>
+                    </FluentStack>
+                }
+
+                <FluentMessageBar Intent="MessageIntent.Success" Style="margin-top: 12px;">
+                    Your orders have been successfully placed and are now being processed by the system.
+                </FluentMessageBar>
+
+                <FluentButton Appearance="Appearance.Lightweight" OnClick="ClearTransactionStatus" 
+                    Style="width: fit-content; align-self: flex-end;">
+                    Dismiss
+                </FluentButton>
+            </FluentStack>
+        </FluentCard>
     }
 
     @if (errorMessage != null)
@@ -97,7 +186,7 @@
                             Clear
                         </FluentButton>
                         <FluentButton Appearance="Appearance.Accent" OnClick="ParseJsonAndSubmit" Loading="@isLoading"
-                            Disabled="@(string.IsNullOrWhiteSpace(jsonInput))"
+                            Disabled="@(string.IsNullOrWhiteSpace(jsonInput) || isProcessing)"
                             Style="width: fit-content;">
                             Parse & Submit Orders
                         </FluentButton>
@@ -260,7 +349,7 @@
                                     Clear All
                                 </FluentButton>
                                 <FluentButton Appearance="Appearance.Accent" OnClick="SubmitBatchAsync" Loading="@isLoading"
-                                    Disabled="@(!IsBatchValid())" Style="width: fit-content;">
+                                    Disabled="@(!IsBatchValid() || isProcessing)" Style="width: fit-content;">
                                     Submit Batch
                                 </FluentButton>
                             </FluentStack>
@@ -276,11 +365,14 @@
     private enum InputMethod { Manual, FileUpload }
 
     private bool isLoading = false;
+    private bool isProcessing = false;
+    private int ordersBeingProcessed = 0;
     private string? errorMessage;
     private string? successMessage;
     private InputMethod inputMethod = InputMethod.Manual;
     private List<OrderFormModel> batchOrders = new();
     private string jsonInput = string.Empty;
+    private BatchTransactionStatus? batchTransactionStatus;
 
     private string jsonPlaceholder = @"[
   {
@@ -297,6 +389,17 @@
     ]
   }
 ]";
+
+    private class BatchTransactionStatus
+    {
+        public string TransactionId { get; set; } = string.Empty;
+        public DateTime Timestamp { get; set; }
+        public int TotalOrders { get; set; }
+        public int TotalProducts { get; set; }
+        public decimal TotalAmount { get; set; }
+        public string Status { get; set; } = string.Empty;
+        public List<string> OrderIds { get; set; } = new();
+    }
 
     private class OrderFormModel
     {
@@ -366,18 +469,29 @@
     {
         errorMessage = null;
         successMessage = null;
+        batchTransactionStatus = null;
+    }
+
+    private void ClearTransactionStatus()
+    {
+        batchTransactionStatus = null;
     }
 
     private void ClearBatch()
     {
         batchOrders.Clear();
-        ClearMessages();
+        errorMessage = null;
+        successMessage = null;
     }
 
     private void ClearJson()
     {
         jsonInput = string.Empty;
-        ClearMessages();
+        loadedOrders.Clear();
+        uploadedFileName = null;
+        uploadedFileSize = 0;
+        errorMessage = null;
+        successMessage = null;
     }
 
     private async Task ParseJsonAndSubmit()
@@ -410,7 +524,7 @@
             }
 
             // Validate parsed orders
-            var invalidOrders = parsedOrders
+            var invalidOrders = parsedOrders 
                 .Select((order, index) => new { Order = order, Index = index })
                 .Where(x => string.IsNullOrWhiteSpace(x.Order.Id) ||
                            string.IsNullOrWhiteSpace(x.Order.CustomerId) ||
@@ -450,11 +564,17 @@
         }
 
         isLoading = true;
-        ClearMessages();
+        isProcessing = true;
+        ordersBeingProcessed = batchOrders.Count;
+        errorMessage = null;
+        successMessage = null;
+
+        // Store the current orders data before clearing
+        var ordersToSubmit = batchOrders.ToList();
 
         try
         {
-            var orders = batchOrders.Select(o => new Order
+            var orders = ordersToSubmit.Select(o => new Order
             {
                 Id = o.Id,
                 CustomerId = o.CustomerId,
@@ -474,11 +594,27 @@
 
             await ordersService.PlaceOrdersBatchAsync(orders);
             
-            var totalAmount = CalculateGrandTotal();
-            successMessage = $"Successfully submitted {orders.Count} order{(orders.Count > 1 ? "s" : "")} with a total value of {totalAmount:C2}!";
+            var totalAmount = ordersToSubmit.Sum(o => CalculateOrderTotal(o));
+            var totalProducts = ordersToSubmit.Sum(o => o.Products.Count);
             
-            ClearBatch();
-            ClearJson();
+            // Create detailed transaction status
+            batchTransactionStatus = new BatchTransactionStatus
+            {
+                TransactionId = Guid.NewGuid().ToString().Substring(0, 8).ToUpper(),
+                Timestamp = DateTime.UtcNow,
+                TotalOrders = orders.Count,
+                TotalProducts = totalProducts,
+                TotalAmount = totalAmount,
+                Status = "Successfully Completed",
+                OrderIds = orders.Select(o => o.Id).ToList()
+            };
+            
+            // Clear the form data but NOT the transaction status
+            batchOrders.Clear();
+            jsonInput = string.Empty;
+            loadedOrders.Clear();
+            uploadedFileName = null;
+            uploadedFileSize = 0;
         }
         catch (HttpRequestException ex)
         {
@@ -491,6 +627,8 @@
         finally
         {
             isLoading = false;
+            isProcessing = false;
+            ordersBeingProcessed = 0;
         }
     }
 

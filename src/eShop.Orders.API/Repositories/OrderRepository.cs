@@ -99,13 +99,13 @@ public sealed class OrderRepository : IOrderRepository, IDisposable
         return await GetAllOrdersInternalAsync(filePath, cancellationToken).ConfigureAwait(false);
     }
 
-/// <summary>
-/// Retrieves a specific order by its unique identifier.
-/// </summary>
-/// <param name="orderId">The unique identifier of the order.</param>
-/// <param name="cancellationToken">Cancellation token to cancel the operation.</param>
-/// <returns>The order if found; otherwise, null.</returns>
-/// <exception cref="ArgumentException">Thrown when orderId is null or empty.</exception>
+    /// <summary>
+    /// Retrieves a specific order by its unique identifier.
+    /// </summary>
+    /// <param name="orderId">The unique identifier of the order.</param>
+    /// <param name="cancellationToken">Cancellation token to cancel the operation.</param>
+    /// <returns>The order if found; otherwise, null.</returns>
+    /// <exception cref="ArgumentException">Thrown when orderId is null or empty.</exception>
     public async Task<Order?> GetOrderByIdAsync(string orderId, CancellationToken cancellationToken = default)
     {
         if (string.IsNullOrWhiteSpace(orderId))
@@ -117,13 +117,13 @@ public sealed class OrderRepository : IOrderRepository, IDisposable
         return orders.FirstOrDefault(o => o.Id == orderId);
     }
 
-/// <summary>
-/// Deletes an order from the file-based storage by its unique identifier.
-/// </summary>
-/// <param name="orderId">The unique identifier of the order to delete.</param>
-/// <param name="cancellationToken">Cancellation token to cancel the operation.</param>
-/// <returns>True if the order was successfully deleted; otherwise, false.</returns>
-/// <exception cref="ArgumentException">Thrown when orderId is null or empty.</exception>
+    /// <summary>
+    /// Deletes an order from the file-based storage by its unique identifier.
+    /// </summary>
+    /// <param name="orderId">The unique identifier of the order to delete.</param>
+    /// <param name="cancellationToken">Cancellation token to cancel the operation.</param>
+    /// <returns>True if the order was successfully deleted; otherwise, false.</returns>
+    /// <exception cref="ArgumentException">Thrown when orderId is null or empty.</exception>
     public async Task<bool> DeleteOrderAsync(string orderId, CancellationToken cancellationToken = default)
     {
         if (string.IsNullOrWhiteSpace(orderId))

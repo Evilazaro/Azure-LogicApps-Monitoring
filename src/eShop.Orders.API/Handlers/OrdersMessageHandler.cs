@@ -82,7 +82,7 @@ public sealed class OrdersMessageHandler : IOrdersMessageHandler
 
             await sender.SendMessageAsync(message, cancellationToken).ConfigureAwait(false);
 
-activity?.SetStatus(ActivityStatusCode.Ok);
+            activity?.SetStatus(ActivityStatusCode.Ok);
             _logger.LogInformation("Successfully sent order message for order {OrderId} to topic {TopicName}",
                 order.Id, _topicName);
         }
@@ -123,45 +123,45 @@ activity?.SetStatus(ActivityStatusCode.Ok);
 
         await using var sender = _serviceBusClient.CreateSender(_topicName);
 
-    try
-    {
-        var messages = new List<ServiceBusMessage>();
-
-        foreach (var order in ordersList)
+        try
         {
-            activity?.AddEvent(new ActivityEvent("OrderInBatch",
-                tags: new ActivityTagsCollection
-                {
+            var messages = new List<ServiceBusMessage>();
+
+            foreach (var order in ordersList)
+            {
+                activity?.AddEvent(new ActivityEvent("OrderInBatch",
+                    tags: new ActivityTagsCollection
+                    {
                     { "order.id", order.Id }
-                }));
+                    }));
 
-            var messageBody = JsonSerializer.Serialize(order, JsonOptions);
-            var message = new ServiceBusMessage(messageBody)
-            {
-                ContentType = "application/json",
-                MessageId = order.Id,
-                Subject = "OrderPlaced"
-            };
+                var messageBody = JsonSerializer.Serialize(order, JsonOptions);
+                var message = new ServiceBusMessage(messageBody)
+                {
+                    ContentType = "application/json",
+                    MessageId = order.Id,
+                    Subject = "OrderPlaced"
+                };
 
-            // Add trace context to message for distributed tracing
-            if (activity != null)
-            {
-                message.ApplicationProperties["TraceId"] = activity.TraceId.ToString();
-                message.ApplicationProperties["SpanId"] = activity.SpanId.ToString();
+                // Add trace context to message for distributed tracing
+                if (activity != null)
+                {
+                    message.ApplicationProperties["TraceId"] = activity.TraceId.ToString();
+                    message.ApplicationProperties["SpanId"] = activity.SpanId.ToString();
+                }
+
+                messages.Add(message);
             }
 
-            messages.Add(message);
+            await sender.SendMessagesAsync(messages, cancellationToken).ConfigureAwait(false);
+            _logger.LogInformation("Successfully sent batch of {Count} order messages to topic {TopicName}",
+                messages.Count, _topicName);
         }
-
-        await sender.SendMessagesAsync(messages, cancellationToken).ConfigureAwait(false);
-        _logger.LogInformation("Successfully sent batch of {Count} order messages to topic {TopicName}",
-            messages.Count, _topicName);
+        catch (ServiceBusException ex)
+        {
+            activity?.SetStatus(ActivityStatusCode.Error, ex.Message);
+            _logger.LogError(ex, "Failed to send batch of order messages to topic {TopicName}", _topicName);
+            throw;
+        }
     }
-    catch (ServiceBusException ex)
-    {
-        activity?.SetStatus(ActivityStatusCode.Error, ex.Message);
-        _logger.LogError(ex, "Failed to send batch of order messages to topic {TopicName}", _topicName);
-        throw;
-    }
-}
 }
