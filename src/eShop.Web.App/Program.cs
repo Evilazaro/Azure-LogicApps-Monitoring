@@ -10,6 +10,18 @@ builder.AddServiceDefaults();
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 
+// Add SignalR services for Blazor Server
+builder.Services.AddSignalR();
+
+// Configure circuit options for better debugging
+builder.Services.Configure<Microsoft.AspNetCore.Components.Server.CircuitOptions>(options =>
+{
+    if (builder.Environment.IsDevelopment())
+    {
+        options.DetailedErrors = true;
+    }
+});
+
 // Configure HTTP client for Orders API
 builder.Services.AddHttpClient<OrdersAPIService>(client =>
 {
