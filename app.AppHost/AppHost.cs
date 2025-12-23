@@ -11,7 +11,8 @@ var webApp = builder.AddProject<Projects.eShop_Web_App>("web-app")
                     .WithExternalHttpEndpoints()
                     .WithHttpHealthCheck("/health")
                     .WithReference(ordersAPI)
-                    .WaitFor(ordersAPI);
+                    .WaitFor(ordersAPI)
+                    .WithReplicas(10);
 
 // =============================================================================
 // Application Insights Configuration
@@ -121,4 +122,6 @@ static void ConfigureServiceBus(
         ordersAPI.WithEnvironment("AZURE_CLIENT_ID", azureClientId ?? string.Empty);
         ordersAPI.WithEnvironment("AZURE_TENANT_ID", azureTenantId ?? string.Empty);
     }
+
+    ordersAPI.WithReplicas(10);
 }
