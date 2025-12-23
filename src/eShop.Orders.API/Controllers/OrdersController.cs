@@ -184,4 +184,62 @@ public class OrdersController : ControllerBase
                 new { error = "An error occurred while processing your request", orderId = id });
         }
     }
+
+    [HttpDelete("{id}")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    public async Task<ActionResult> DeleteOrder(string id, CancellationToken cancellationToken)
+    {
+        if (string.IsNullOrWhiteSpace(id))
+        {
+            return BadRequest(new { error = "Order ID cannot be empty" });
+        }
+
+        using var activity = ActivitySource.StartActivity("DeleteOrder", ActivityKind.Server);
+        activity?.SetTag("order.id", id);
+        activity?.SetTag("http.method", "DELETE");
+        activity?.SetTag("http.route", "/api/orders/{id}");
+
+        using var logScope = _logger.BeginScope(new Dictionary<string, object>
+        {
+            ["TraceId"] = Activity.Current?.TraceId.ToString() ?? "none",
+            ["OrderId"] = id
+        });
+
+        try
+        {
+            // First check if order exists
+            var order = await _orderService.GetOrderByIdAsync(id, cancellationToken);
+            if (order == null)
+            {
+                activity?.SetStatus(ActivityStatusCode.Error, "Order not found");
+                return NotFound(new { error = $"Order with ID {id} not found", orderId = id });
+            }
+
+            // Delete the order
+            var deleted = await _orderService.DeleteOrderAsync(id, cancellationToken);
+            
+            if (deleted)
+            {
+                activity?.SetStatus(ActivityStatusCode.Ok);
+                _logger.LogInformation("Successfully deleted order {OrderId}", id);
+                return NoContent();
+            }
+            else
+            {
+                activity?.SetStatus(ActivityStatusCode.Error, "Failed to delete order");
+                return StatusCode(StatusCodes.Status500InternalServerError,
+                    new { error = "Failed to delete order", orderId = id });
+            }
+        }
+        catch (Exception ex)
+        {
+            activity?.SetStatus(ActivityStatusCode.Error, ex.Message);
+            _logger.LogError(ex, "Unexpected error while deleting order {OrderId}", id);
+            return StatusCode(StatusCodes.Status500InternalServerError,
+                new { error = "An error occurred while processing your request", orderId = id });
+        }
+    }
 }

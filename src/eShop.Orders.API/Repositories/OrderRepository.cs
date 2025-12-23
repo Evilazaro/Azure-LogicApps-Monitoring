@@ -86,6 +86,49 @@ public sealed class OrderRepository : IOrderRepository, IDisposable
         return orders.FirstOrDefault(o => o.Id == orderId);
     }
 
+    public async Task<bool> DeleteOrderAsync(string orderId, CancellationToken cancellationToken = default)
+    {
+        if (string.IsNullOrWhiteSpace(orderId))
+        {
+            throw new ArgumentException("Order ID cannot be null or empty", nameof(orderId));
+        }
+
+        try
+        {
+            _logger.LogInformation("Deleting order {OrderId} from repository", orderId);
+
+            var orders = await GetAllOrdersAsync(cancellationToken).ConfigureAwait(false);
+            var ordersList = orders.ToList();
+            var orderToDelete = ordersList.FirstOrDefault(o => o.Id.Equals(orderId, StringComparison.OrdinalIgnoreCase));
+
+            if (orderToDelete == null)
+            {
+                _logger.LogWarning("Order {OrderId} not found in repository for deletion", orderId);
+                return false;
+            }
+
+            ordersList.Remove(orderToDelete);
+
+            // Save updated list
+            await SaveOrdersListAsync(ordersList, cancellationToken).ConfigureAwait(false);
+
+            _logger.LogInformation("Successfully deleted order {OrderId} from repository", orderId);
+            return true;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error deleting order {OrderId} from repository", orderId);
+            throw;
+        }
+    }
+
+    private async Task SaveOrdersListAsync(List<Order> orders, CancellationToken cancellationToken)
+    {
+        var filePath = GetFilePath();
+        await using var fileStream = new FileStream(filePath, FileMode.Create, FileAccess.Write, FileShare.None, 4096, true);
+        await JsonSerializer.SerializeAsync(fileStream, orders, cancellationToken: cancellationToken).ConfigureAwait(false);
+    }
+
     private async Task<List<Order>> GetAllOrdersInternalAsync(string filePath, CancellationToken cancellationToken)
     {
         if (!File.Exists(filePath))

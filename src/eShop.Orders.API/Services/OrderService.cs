@@ -211,6 +211,52 @@ public sealed class OrderService : IOrderService
         }
     }
 
+    public async Task<bool> DeleteOrderAsync(string orderId, CancellationToken cancellationToken = default)
+    {
+        if (string.IsNullOrWhiteSpace(orderId))
+        {
+            throw new ArgumentException("Order ID cannot be null or empty", nameof(orderId));
+        }
+
+        using var activity = ActivitySource.StartActivity("DeleteOrder", ActivityKind.Internal);
+        activity?.SetTag("order.id", orderId);
+
+        try
+        {
+            _logger.LogInformation("Deleting order with ID: {OrderId}", orderId);
+
+            // First verify the order exists
+            var order = await _orderRepository.GetOrderByIdAsync(orderId, cancellationToken).ConfigureAwait(false);
+            if (order == null)
+            {
+                _logger.LogWarning("Order with ID {OrderId} not found for deletion", orderId);
+                return false;
+            }
+
+            // Delete the order from repository
+            var deleted = await _orderRepository.DeleteOrderAsync(orderId, cancellationToken).ConfigureAwait(false);
+
+            if (deleted)
+            {
+                activity?.SetStatus(ActivityStatusCode.Ok);
+                _logger.LogInformation("Order {OrderId} deleted successfully", orderId);
+            }
+            else
+            {
+                activity?.SetStatus(ActivityStatusCode.Error, "Failed to delete order");
+                _logger.LogWarning("Failed to delete order {OrderId}", orderId);
+            }
+
+            return deleted;
+        }
+        catch (Exception ex)
+        {
+            activity?.SetStatus(ActivityStatusCode.Error, ex.Message);
+            _logger.LogError(ex, "Failed to delete order {OrderId}", orderId);
+            throw;
+        }
+    }
+
     private static void ValidateOrder(Order order)
     {
         if (string.IsNullOrWhiteSpace(order.Id))
