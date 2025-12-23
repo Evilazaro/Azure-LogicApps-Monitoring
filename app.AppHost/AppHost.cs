@@ -110,5 +110,5 @@ static void ConfigureServiceBus(
         ordersAPI.WithEnvironment("AZURE_TENANT_ID", azureTenantId ?? string.Empty);
     }
 
-   
+
 }

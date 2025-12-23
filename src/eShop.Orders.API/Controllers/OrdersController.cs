@@ -220,7 +220,7 @@ public class OrdersController : ControllerBase
 
             // Delete the order
             var deleted = await _orderService.DeleteOrderAsync(id, cancellationToken);
-            
+
             if (deleted)
             {
                 activity?.SetStatus(ActivityStatusCode.Ok);
