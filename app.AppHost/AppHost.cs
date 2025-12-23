@@ -84,9 +84,9 @@ static void ConfigureServiceBus(
     }
     else 
     {
-        var sbParam = builder.AddParameter("messaging", resourceName);
+        var sbParam = builder.AddParameter(resourceName, resourceName);
         var sbResourceGroupParam = builder.AddParameterFromConfiguration("resourceGroup", "Azure:ResourceGroup");
-        var serviceBusResource = builder.AddAzureServiceBus(resourceName).RunAsExisting(sbParam, sbResourceGroupParam);
+        var serviceBusResource = builder.AddAzureServiceBus(DefaultConnectionStringName).RunAsExisting(sbParam, sbResourceGroupParam);
         
         var serviceBusTopic = serviceBusResource.AddServiceBusTopic(sbTopicName);
         var serviceBusSubscription = serviceBusTopic.AddServiceBusSubscription(sbSubscriptionName);
