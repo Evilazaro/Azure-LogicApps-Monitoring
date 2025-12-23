@@ -36,18 +36,19 @@ builder.Services.Configure<Microsoft.AspNetCore.Components.Server.CircuitOptions
         options.DetailedErrors = true;
     }
     options.DisconnectedCircuitMaxRetained = 100;
-    options.DisconnectedCircuitRetentionPeriod = TimeSpan.FromMinutes(3);
+    options.DisconnectedCircuitRetentionPeriod = TimeSpan.FromMinutes(10);
     options.JSInteropDefaultCallTimeout = TimeSpan.FromMinutes(10);
     options.MaxBufferedUnacknowledgedRenderBatches = 10;
 });
+
+var otheBa = builder.Configuration["services:orders-api:https:0"];
 
 // Configure typed HTTP client for Orders API with resilience and service discovery
 builder.Services.AddHttpClient<OrdersAPIService>((serviceProvider, client) =>
 {
     var configuration = serviceProvider.GetRequiredService<IConfiguration>();
-    var baseAddress = configuration["services:orders-api:https:0"]
-                    ?? configuration["services:orders-api:http:0"]
-                    ?? throw new InvalidOperationException("Orders API base address not configured. Ensure 'services:orders-api' is set in configuration.");
+    var baseAddress = "https://orders-api.internal.yellowdesert-f94baa2f.eastus2.azurecontainerapps.io";//configuration["services:orders-api:https:0"]
+                    //?? throw new InvalidOperationException("Orders API base address not configured. Ensure 'services:orders-api' is set in configuration.");
 
     client.BaseAddress = new Uri(baseAddress);
     client.DefaultRequestHeaders.Add("Accept", "application/json");
