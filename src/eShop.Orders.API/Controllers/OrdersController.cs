@@ -34,6 +34,10 @@ public class OrdersController : ControllerBase
         using var activity = ActivitySource.StartActivity("PlaceOrder", ActivityKind.Server);
         activity?.SetTag("order.id", order.Id);
         activity?.SetTag("order.customer_id", order.CustomerId);
+        activity?.SetTag("order.total", order.Total);
+        activity?.SetTag("order.products.count", order.Products?.Count ?? 0);
+        activity?.SetTag("http.method", "POST");
+        activity?.SetTag("http.route", "/api/orders");
 
         // Add trace ID to log scope for correlation
         using var logScope = _logger.BeginScope(new Dictionary<string, object>
@@ -83,6 +87,8 @@ public class OrdersController : ControllerBase
         using var activity = ActivitySource.StartActivity("PlaceOrdersBatch", ActivityKind.Server);
         var ordersList = orders.ToList();
         activity?.SetTag("orders.count", ordersList.Count);
+        activity?.SetTag("http.method", "POST");
+        activity?.SetTag("http.route", "/api/orders/batch");
 
         using var logScope = _logger.BeginScope(new Dictionary<string, object>
         {
@@ -111,6 +117,8 @@ public class OrdersController : ControllerBase
     public async Task<ActionResult<IEnumerable<Order>>> GetOrders(CancellationToken cancellationToken)
     {
         using var activity = ActivitySource.StartActivity("GetOrders", ActivityKind.Server);
+        activity?.SetTag("http.method", "GET");
+        activity?.SetTag("http.route", "/api/orders");
 
         using var logScope = _logger.BeginScope(new Dictionary<string, object>
         {
@@ -146,6 +154,8 @@ public class OrdersController : ControllerBase
 
         using var activity = ActivitySource.StartActivity("GetOrderById", ActivityKind.Server);
         activity?.SetTag("order.id", id);
+        activity?.SetTag("http.method", "GET");
+        activity?.SetTag("http.route", "/api/orders/{id}");
 
         using var logScope = _logger.BeginScope(new Dictionary<string, object>
         {

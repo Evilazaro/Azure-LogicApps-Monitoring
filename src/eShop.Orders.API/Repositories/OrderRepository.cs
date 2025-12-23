@@ -1,6 +1,7 @@
 using app.ServiceDefaults.CommonTypes;
 using eShop.Orders.API.Interfaces;
 using Microsoft.Extensions.Options;
+using System.ComponentModel.DataAnnotations;
 using System.Text.Json;
 
 namespace eShop.Orders.API.Repositories;
@@ -142,6 +143,9 @@ public sealed class OrderStorageOptions
 {
     public const string SectionName = "OrderStorage";
 
+    [Required(AllowEmptyStrings = false)]
     public required string StorageDirectory { get; init; } = "Files";
+    
+    [Required(AllowEmptyStrings = false)]
     public required string FileName { get; init; } = "orders.json";
 }

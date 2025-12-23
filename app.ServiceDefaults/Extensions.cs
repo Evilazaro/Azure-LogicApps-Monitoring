@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Configuration;
 using OpenTelemetry;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Trace;
@@ -106,26 +107,29 @@ public static class Extensions
     {
         ArgumentNullException.ThrowIfNull(builder);
 
-        var messagingHostName = builder.Configuration["MESSAGING_HOST"]
-                          ?? builder.Configuration["Azure:ServiceBus:HostName"];
-
-        var connectionString = builder.Configuration["ConnectionStrings:messaging"];
-                        ?? throw new InvalidOperationException("MESSAGING_CONNECTIONSTRING is required for localhost mode");
-
         builder.Services.AddSingleton<ServiceBusClient>(serviceProvider =>
         {
             var logger = serviceProvider.GetRequiredService<ILogger<ServiceBusClient>>();
+            var configuration = serviceProvider.GetRequiredService<IConfiguration>();
+            
             try
             {
+                var messagingHostName = configuration["MESSAGING_HOST"]
+                                      ?? configuration["Azure:ServiceBus:HostName"]
+                                      ?? throw new InvalidOperationException("MESSAGING_HOST or Azure:ServiceBus:HostName configuration is required");
+
+                var connectionString = configuration["ConnectionStrings:messaging"]
+                                     ?? throw new InvalidOperationException("ConnectionStrings:messaging is required");
+
                 if (messagingHostName.Equals("localhost", StringComparison.OrdinalIgnoreCase))
                 {
                     logger.LogInformation("Configuring Service Bus client for local emulator");
-                    return  new ServiceBusClient(connectionString);
+                    return new ServiceBusClient(connectionString);
                 }
                 else
                 {
-                    logger.LogInformation("Configuring Service Bus client for Azure with managed identity");
-                    return new ServiceBusClient(connectionString, new DefaultAzureCredential());
+                    logger.LogInformation("Configuring Service Bus client for Azure with managed identity. HostName: {HostName}", messagingHostName);
+                    return new ServiceBusClient(messagingHostName, new DefaultAzureCredential());
                 }
             }
             catch (Exception ex)

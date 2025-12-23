@@ -6,7 +6,7 @@ using System.Diagnostics.Metrics;
 
 namespace eShop.Orders.API.Services;
 
-public class OrderService : IOrderService
+public sealed class OrderService : IOrderService
 {
     private readonly ILogger<OrderService> _logger;
     private readonly IOrderRepository _orderRepository;
@@ -75,16 +75,26 @@ public class OrderService : IOrderService
             await _ordersMessageHandler.SendOrderMessageAsync(order, cancellationToken).ConfigureAwait(false);
 
             // Record metrics
-            _ordersPlacedCounter.Add(1, new KeyValuePair<string, object?>("customer.id", order.CustomerId));
+            var metricTags = new TagList
+            {
+                { "customer.id", order.CustomerId },
+                { "order.status", "success" }
+            };
+            _ordersPlacedCounter.Add(1, metricTags);
             var duration = (DateTime.UtcNow - startTime).TotalMilliseconds;
-            _orderProcessingDuration.Record(duration);
+            _orderProcessingDuration.Record(duration, metricTags);
 
             _logger.LogInformation("Order {OrderId} placed successfully in {Duration}ms", order.Id, duration);
             return order;
         }
         catch (Exception ex)
         {
-            _orderProcessingErrors.Add(1);
+            var errorTags = new TagList
+            {
+                { "error.type", ex.GetType().Name },
+                { "order.status", "failed" }
+            };
+            _orderProcessingErrors.Add(1, errorTags);
             activity?.SetStatus(ActivityStatusCode.Error, ex.Message);
             _logger.LogError(ex, "Failed to place order {OrderId}: {ErrorMessage}", order.Id, ex.Message);
             throw;
@@ -153,12 +163,14 @@ public class OrderService : IOrderService
             var ordersList = orders.ToList();
 
             activity?.SetTag("orders.retrieved.count", ordersList.Count);
+            activity?.SetStatus(ActivityStatusCode.Ok);
             _logger.LogInformation("Retrieved {Count} orders", ordersList.Count);
 
             return ordersList;
         }
         catch (Exception ex)
         {
+            activity?.SetStatus(ActivityStatusCode.Error, ex.Message);
             _logger.LogError(ex, "Failed to retrieve orders");
             throw;
         }
@@ -181,13 +193,19 @@ public class OrderService : IOrderService
 
             if (order == null)
             {
+                activity?.SetStatus(ActivityStatusCode.Error, "Order not found");
                 _logger.LogWarning("Order with ID {OrderId} not found", orderId);
+            }
+            else
+            {
+                activity?.SetStatus(ActivityStatusCode.Ok);
             }
 
             return order;
         }
         catch (Exception ex)
         {
+            activity?.SetStatus(ActivityStatusCode.Error, ex.Message);
             _logger.LogError(ex, "Failed to retrieve order {OrderId}", orderId);
             throw;
         }

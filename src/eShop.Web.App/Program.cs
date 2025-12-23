@@ -11,23 +11,37 @@ builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 
 // Add SignalR services for Blazor Server
-builder.Services.AddSignalR();
+builder.Services.AddSignalR(options =>
+{
+    if (builder.Environment.IsDevelopment())
+    {
+        options.EnableDetailedErrors = true;
+    }
+});
 
-// Configure circuit options for better debugging
+// Configure circuit options for better reliability and debugging
 builder.Services.Configure<Microsoft.AspNetCore.Components.Server.CircuitOptions>(options =>
 {
     if (builder.Environment.IsDevelopment())
     {
         options.DetailedErrors = true;
     }
+    options.DisconnectedCircuitMaxRetained = 100;
+    options.DisconnectedCircuitRetentionPeriod = TimeSpan.FromMinutes(3);
+    options.JSInteropDefaultCallTimeout = TimeSpan.FromMinutes(1);
+    options.MaxBufferedUnacknowledgedRenderBatches = 10;
 });
 
-// Configure HTTP client for Orders API
+// Configure HTTP client for Orders API with proper error handling
 builder.Services.AddHttpClient<OrdersAPIService>(client =>
 {
-    var baseAddress = builder.Configuration["services:orders-api:https:0"] ?? "https://localhost:7001";
+    var baseAddress = builder.Configuration["services:orders-api:https:0"] 
+                    ?? builder.Configuration["services:orders-api:http:0"]
+                    ?? throw new InvalidOperationException("Orders API base address not configured");
+    
     client.BaseAddress = new Uri(baseAddress);
     client.DefaultRequestHeaders.Add("Accept", "application/json");
+    client.Timeout = TimeSpan.FromSeconds(30);
 });
 
 builder.Services.AddFluentUIComponents();

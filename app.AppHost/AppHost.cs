@@ -44,6 +44,7 @@ static void ConfigureApplicationInsights(
 
     if (string.IsNullOrWhiteSpace(appInsightsConnString))
     {
+        // Application Insights not configured - will use local development mode
         return;
     }
 
@@ -67,7 +68,7 @@ static void ConfigureServiceBus(
     var sbSubscriptionName = string.IsNullOrEmpty(builder.Configuration["Azure:ServiceBus:SubscriptionName"]) ? DefaultSubscriptionName : builder.Configuration["Azure:ServiceBus:SubscriptionName"];
 
     // Determine if we're running in local emulator mode or Azure mode
-    var isLocalMode = true; // (sbHostName == DefaultNamespaceName);
+    var isLocalMode = sbHostName.Equals(DefaultNamespaceName, StringComparison.OrdinalIgnoreCase);
     var resourceName = isLocalMode ? DefaultConnectionStringName : sbHostName;
 
     // Create Service Bus resource

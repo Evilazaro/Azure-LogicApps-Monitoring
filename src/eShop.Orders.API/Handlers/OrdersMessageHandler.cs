@@ -6,7 +6,7 @@ using System.Text.Json;
 
 namespace eShop.Orders.API.Handlers;
 
-public class OrdersMessageHandler : IOrdersMessageHandler
+public sealed class OrdersMessageHandler : IOrdersMessageHandler
 {
     private readonly ILogger<OrdersMessageHandler> _logger;
     private readonly ServiceBusClient _serviceBusClient;
@@ -33,7 +33,8 @@ public class OrdersMessageHandler : IOrdersMessageHandler
 
         using var activity = ActivitySource.StartActivity("SendOrderMessage", ActivityKind.Producer);
         activity?.SetTag("messaging.system", "servicebus");
-        activity?.SetTag("messaging.destination", _topicName);
+        activity?.SetTag("messaging.destination.name", _topicName);
+        activity?.SetTag("messaging.operation", "publish");
         activity?.SetTag("order.id", order.Id);
         activity?.SetTag("order.customer_id", order.CustomerId);
 
@@ -85,7 +86,8 @@ public class OrdersMessageHandler : IOrdersMessageHandler
         }
 
         activity?.SetTag("messaging.system", "servicebus");
-        activity?.SetTag("messaging.destination", _topicName);
+        activity?.SetTag("messaging.destination.name", _topicName);
+        activity?.SetTag("messaging.operation", "publish");
         activity?.SetTag("messaging.batch.message_count", ordersList.Count);
 
         await using var sender = _serviceBusClient.CreateSender(_topicName);
@@ -130,10 +132,5 @@ public class OrdersMessageHandler : IOrdersMessageHandler
             _logger.LogError(ex, "Failed to send batch of order messages to topic {TopicName}", _topicName);
             throw;
         }
-    }
-
-    public async Task CloseAsync()
-    {
-        await _serviceBusClient.DisposeAsync().ConfigureAwait(false);
     }
 }

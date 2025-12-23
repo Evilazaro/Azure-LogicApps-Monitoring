@@ -2,7 +2,7 @@ using app.ServiceDefaults.CommonTypes;
 
 namespace eShop.Orders.API.Services;
 
-public class OrdersWrapper
+public sealed class OrdersWrapper
 {
-    public List<Order> Orders { get; set; } = [];
+    public required List<Order> Orders { get; init; } = [];
 }

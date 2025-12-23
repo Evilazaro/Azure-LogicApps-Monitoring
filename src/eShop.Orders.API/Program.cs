@@ -9,8 +9,10 @@ var builder = WebApplication.CreateBuilder(args);
 builder.AddServiceDefaults();
 
 // Add services to the container.
-builder.Services.Configure<OrderStorageOptions>(
-    builder.Configuration.GetSection(OrderStorageOptions.SectionName));
+builder.Services.AddOptions<OrderStorageOptions>()
+    .Bind(builder.Configuration.GetSection(OrderStorageOptions.SectionName))
+    .ValidateDataAnnotations()
+    .ValidateOnStart();
 
 builder.Services.AddScoped<IOrderRepository, OrderRepository>();
 builder.Services.AddScoped<IOrderService, OrderService>();
@@ -20,8 +22,12 @@ builder.Services.AddControllers();
 
 // Configure OpenAPI/Swagger
 builder.Services.AddOpenApi();
-builder.Services.AddSwaggerGen();
 builder.Services.AddEndpointsApiExplorer();
+
+if (builder.Environment.IsDevelopment())
+{
+    builder.Services.AddSwaggerGen();
+}
 
 // Add Azure Service Bus client
 builder.AddAzureServiceBusClient();

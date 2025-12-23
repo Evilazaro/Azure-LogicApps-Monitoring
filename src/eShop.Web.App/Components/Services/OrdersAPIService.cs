@@ -3,7 +3,7 @@ using System.Diagnostics;
 
 namespace eShop.Web.App.Components.Services;
 
-public class OrdersAPIService
+public sealed class OrdersAPIService
 {
     private readonly HttpClient _httpClient;
     private readonly ILogger<OrdersAPIService> _logger;
@@ -27,6 +27,8 @@ public class OrdersAPIService
         using var activity = ActivitySource.StartActivity("PlaceOrder", ActivityKind.Client);
         activity?.SetTag("order.id", order.Id);
         activity?.SetTag("order.customer_id", order.CustomerId);
+        activity?.SetTag("http.method", "POST");
+        activity?.SetTag("http.url", $"{_httpClient.BaseAddress}api/orders");
 
         using var logScope = _logger.BeginScope(new Dictionary<string, object>
         {
@@ -80,6 +82,8 @@ public class OrdersAPIService
         }
 
         activity?.SetTag("orders.count", ordersList.Count);
+        activity?.SetTag("http.method", "POST");
+        activity?.SetTag("http.url", $"{_httpClient.BaseAddress}api/orders/batch");
 
         using var logScope = _logger.BeginScope(new Dictionary<string, object>
         {
