@@ -1,3 +1,5 @@
+using Aspire.Hosting.Azure;
+
 var builder = DistributedApplication.CreateBuilder(args);
 
 // =============================================================================
@@ -47,14 +49,15 @@ static void ConfigureOrdersStoragePath(
     IDistributedApplicationBuilder builder,
     IResourceBuilder<ProjectResource> ordersApi)
 {
-    const string DefaultParamName = "orders-storage";
+    const string DefaultParamName = "storage";
     const string LocalStoragePath = "data/orders";
     const string StorageDirectoryKey = "OrderStorage__StorageDirectory";
     const string DefaultStorageName = "orders-storage";
     const string BlobContainerName = "orders";
 
-    var storageResourceName = string.IsNullOrEmpty(builder.Configuration["Azure:Storage:AccountName"]) ? DefaultStorageName : builder.Configuration["Azure:Storage:AccountName"];
-    var isLocalMode = (storageResourceName ?? string.Empty).Equals(DefaultStorageName, StringComparison.OrdinalIgnoreCase);
+    var storageResourceName = builder.Configuration["Azure:Storage:AccountName"];
+    var isLocalMode = string.IsNullOrWhiteSpace(storageResourceName) ||
+                      storageResourceName.Equals(DefaultStorageName, StringComparison.OrdinalIgnoreCase);
 
     if (isLocalMode)
     {
@@ -72,7 +75,7 @@ static void ConfigureOrdersStoragePath(
     {
         // Azure deployment mode - use existing storage account with managed identity
         var resourceGroupParameter = builder.AddParameterFromConfiguration("resourceGroup", "Azure:ResourceGroup");
-        var storageAccountParameter = builder.AddParameter(DefaultParamName, storageResourceName);
+        var storageAccountParameter = builder.AddParameter(DefaultParamName, storageResourceName!);
 
         var storageResource = builder.AddAzureStorage(DefaultParamName)
             .AsExisting(storageAccountParameter, resourceGroupParameter);
@@ -124,7 +127,6 @@ static void ConfigureServiceBus(
     const string DefaultConnectionStringName = "messaging";
     const string DefaultTopicName = "OrdersPlaced";
     const string DefaultSubscriptionName = "OrderProcessingSubscription";
-    const string DefaultStorageAccountName = "localstorage";
 
     var sbHostName = string.IsNullOrEmpty(builder.Configuration["Azure:ServiceBus:HostName"]) ? DefaultNamespaceName : builder.Configuration["Azure:ServiceBus:HostName"];
     var sbTopicName = string.IsNullOrEmpty(builder.Configuration["Azure:ServiceBus:TopicName"]) ? DefaultTopicName : builder.Configuration["Azure:ServiceBus:TopicName"];
@@ -132,35 +134,32 @@ static void ConfigureServiceBus(
 
     // Determine if we're running in local emulator mode or Azure mode
     var isLocalMode = (sbHostName ?? string.Empty).Equals(DefaultNamespaceName, StringComparison.OrdinalIgnoreCase);
-    var resourceName = isLocalMode ? DefaultConnectionStringName : sbHostName ?? DefaultConnectionStringName;
-    var storageResourceName = string.IsNullOrEmpty(builder.Configuration["Azure:Storage:AccountName"]) ? DefaultStorageAccountName : builder.Configuration["Azure:Storage:AccountName"];
 
     // Create Service Bus resource
+    IResourceBuilder<Aspire.Hosting.Azure.AzureServiceBusResource> serviceBusResource;
 
     if (isLocalMode)
     {
-        var serviceBusResource = builder.AddAzureServiceBus(DefaultConnectionStringName);
-        var serviceBusTopic = serviceBusResource.AddServiceBusTopic(sbTopicName ?? DefaultTopicName);
-        var serviceBusSubscription = serviceBusTopic.AddServiceBusSubscription(sbSubscriptionName ?? DefaultSubscriptionName);
-
-        serviceBusResource.RunAsEmulator();
-
-        // Add Service Bus reference to orders API with configuration
-        ordersApi.WithReference(serviceBusResource);
+        serviceBusResource = builder.AddAzureServiceBus(DefaultConnectionStringName)
+            .RunAsEmulator();
     }
     else
     {
-        var sbParam = builder.AddParameter("service-bus", resourceName);
-
+        var sbParam = builder.AddParameter("service-bus", sbHostName ?? DefaultNamespaceName);
         var sbResourceGroupParam = builder.AddParameterFromConfiguration("resourceGroup", "Azure:ResourceGroup");
-        var serviceBusResource = builder.AddAzureServiceBus(DefaultConnectionStringName).RunAsExisting(sbParam, sbResourceGroupParam);
-
-        var serviceBusTopic = serviceBusResource.AddServiceBusTopic(sbTopicName ?? DefaultTopicName);
-        var serviceBusSubscription = serviceBusTopic.AddServiceBusSubscription(sbSubscriptionName ?? DefaultSubscriptionName);
-
-
+        
+        serviceBusResource = builder.AddAzureServiceBus(DefaultConnectionStringName)
+            .AsExisting(sbParam, sbResourceGroupParam);
     }
 
+    // Configure Service Bus topology
+    var serviceBusTopic = serviceBusResource.AddServiceBusTopic(sbTopicName ?? DefaultTopicName);
+    serviceBusTopic.AddServiceBusSubscription(sbSubscriptionName ?? DefaultSubscriptionName);
+
+    // Add Service Bus reference to orders API
+    ordersApi.WithReference(serviceBusResource);
+
+    // Configure Azure credentials if available
     var azureSubscriptionId = builder.Configuration["Azure:SubscriptionId"];
     var azureClientId = builder.Configuration["Azure:ClientId"];
     var azureTenantId = builder.Configuration["Azure:TenantId"];
@@ -169,8 +168,9 @@ static void ConfigureServiceBus(
         !string.IsNullOrWhiteSpace(azureClientId) &&
         !string.IsNullOrWhiteSpace(azureTenantId))
     {
-        ordersApi.WithEnvironment("AZURE_SUBSCRIPTION_ID", azureSubscriptionId ?? string.Empty);
-        ordersApi.WithEnvironment("AZURE_CLIENT_ID", azureClientId ?? string.Empty);
-        ordersApi.WithEnvironment("AZURE_TENANT_ID", azureTenantId ?? string.Empty);
+        ordersApi
+            .WithEnvironment("AZURE_SUBSCRIPTION_ID", azureSubscriptionId)
+            .WithEnvironment("AZURE_CLIENT_ID", azureClientId)
+            .WithEnvironment("AZURE_TENANT_ID", azureTenantId);
     }
 }
