@@ -791,8 +791,8 @@ try {
         'Azure:ServiceBus:HostName'       = $azureServiceBusHostName
         'Azure:ServiceBus:TopicName'       = $azureServiceBusTopicName
         'Azure:ServiceBus:SubscriptionName' = $azureServiceBusSubscriptionName
-        'Azure:StorageAccount:Name'      = $azureStorageAccountName
-        'Azure:OrdersStorage:VolumeName'  = $azureOrdersStorageVolumeName
+        'Azure:StorageAccount:VolumeName'      = $azureStorageAccountName
+        'Azure:StorageAccount:VolumeName'  = $azureOrdersStorageVolumeName
     }
     
     # Define secrets for API project (Service Bus configuration only)
