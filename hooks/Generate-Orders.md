@@ -1,35 +1,49 @@
-# Generate-Orders.ps1
+# Generate-Orders (.ps1 / .sh)
 
 ![PowerShell](https://img.shields.io/badge/PowerShell-7.0+-blue.svg)
+![Bash](https://img.shields.io/badge/Bash-4.0+-green.svg)
+![Python](https://img.shields.io/badge/Python-3.8+-yellow.svg)
+![Cross-Platform](https://img.shields.io/badge/platform-Windows%20%7C%20Linux%20%7C%20macOS-lightgrey.svg)
 ![Version](https://img.shields.io/badge/version-1.0.0-green.svg)
 ![License](https://img.shields.io/badge/license-MIT-orange.svg)
 ![Test Data](https://img.shields.io/badge/test%20data-generator-yellow.svg)
 
 ## 📋 Overview
 
-`Generate-Orders.ps1` is a sophisticated test data generator that creates realistic e-commerce order data for testing and demonstrating the Azure Logic Apps Monitoring solution. It generates randomized orders with products, customers, delivery addresses, and order metadata, outputting a JSON file ready for ingestion into the monitoring system.
+The `Generate-Orders` script is a sophisticated test data generator utility for the Azure Logic Apps Monitoring solution. It creates realistic e-commerce order data with randomized products, customers, delivery addresses, and order metadata, outputting structured JSON files ready for system ingestion. Available in both PowerShell (`.ps1`) and Bash (`.sh`) versions, this cross-platform tool supports development, testing, demonstrations, and load testing scenarios.
 
-**Workflow Position**: 🔧 Standalone utility (not part of main deployment workflow)
+As a standalone utility independent of the main deployment workflow, the script generates orders from a 20-product catalog with global delivery addresses across 15 countries. Each order contains 1-6 products (configurable), realistic pricing with variations, unique identifiers, and comprehensive metadata. The generation process is highly customizable through parameters controlling order count (1-10,000), products per order, and output paths.
 
-**Use After**: Complete the main workflow (check-dev-workstation → preprovision → postprovision) before generating test data
+With built-in progress tracking, comprehensive validation, and detailed summary statistics, the script typically generates 50 orders in under 5 seconds, providing immediate feedback on total revenue, average order value, and file details. It integrates seamlessly with CI/CD pipelines and supports both interactive and automated testing workflows.
 
 ## 📑 Table of Contents
 
-- [Purpose](#purpose)
-- [Data Structure](#data-structure)
-- [Usage](#usage)
-- [Parameters](#parameters)
-- [Examples](#examples)
-- [How It Works](#how-it-works)
-- [Troubleshooting](#troubleshooting)
-- [Technical Implementation](#technical-implementation)
-- [Related Documentation](#related-documentation)
-- [Best Practices](#best-practices)
-- [Performance](#performance)
-- [Version History](#version-history)
-- [Support](#support)
-- [License](#license)
-- [Quick Links](#quick-links)
+- [Overview](#-overview)
+- [Purpose](#-purpose)
+- [Data Structure](#️-data-structure)
+  - [Generated Order Schema](#generated-order-schema)
+  - [Product Catalog](#product-catalog-20-products)
+  - [Delivery Addresses](#delivery-addresses-20-locations)
+- [Usage](#-usage)
+  - [Basic Usage](#basic-usage)
+  - [Generate Specific Number](#generate-specific-number-of-orders)
+  - [Custom Output Path](#custom-output-path)
+  - [Control Products Per Order](#control-products-per-order)
+  - [Combined Options](#combined-options)
+  - [WhatIf Mode](#whatif-mode)
+- [Parameters](#-parameters)
+- [Examples](#-examples)
+- [How It Works](#️-how-it-works)
+  - [Workflow Diagram](#workflow-diagram)
+  - [Integration Points](#integration-points)
+  - [Key Algorithms](#key-algorithms)
+- [Troubleshooting](#️-troubleshooting)
+- [Technical Implementation](#-technical-implementation)
+- [Related Documentation](#-related-documentation)
+- [Security Considerations](#-security-considerations)
+- [Best Practices](#-best-practices)
+- [Performance](#-performance)
+- [Version History](#-version-history)
 
 ## 🎯 Purpose
 
@@ -114,9 +128,16 @@ Global coverage including:
 
 ### Basic Usage
 
+**PowerShell (Windows):**
 ```powershell
 # Generate 50 orders (default)
 .\Generate-Orders.ps1
+```
+
+**Bash (Linux/macOS):**
+```bash
+# Generate 50 orders (default)
+./Generate-Orders.sh
 ```
 
 **Output:**
@@ -150,6 +171,7 @@ Global coverage including:
 
 ### Generate Specific Number of Orders
 
+**PowerShell (Windows):**
 ```powershell
 # Generate 100 orders
 .\Generate-Orders.ps1 -OrderCount 100
@@ -161,8 +183,21 @@ Global coverage including:
 .\Generate-Orders.ps1 -OrderCount 10
 ```
 
+**Bash (Linux/macOS):**
+```bash
+# Generate 100 orders
+./Generate-Orders.sh --order-count 100
+
+# Generate 1000 orders for load testing
+./Generate-Orders.sh --order-count 1000
+
+# Generate 10 orders for quick testing
+./Generate-Orders.sh --order-count 10
+```
+
 ### Custom Output Path
 
+**PowerShell (Windows):**
 ```powershell
 # Save to custom location
 .\Generate-Orders.ps1 -OutputPath "C:\TestData\orders.json"
@@ -172,8 +207,19 @@ $timestamp = Get-Date -Format "yyyyMMdd-HHmmss"
 .\Generate-Orders.ps1 -OutputPath "orders-$timestamp.json"
 ```
 
+**Bash (Linux/macOS):**
+```bash
+# Save to custom location
+./Generate-Orders.sh --output-path "/tmp/TestData/orders.json"
+
+# Save to timestamped file
+timestamp=$(date +"%Y%m%d-%H%M%S")
+./Generate-Orders.sh --output-path "orders-$timestamp.json"
+```
+
 ### Control Products Per Order
 
+**PowerShell (Windows):**
 ```powershell
 # Generate orders with 1-3 products each
 .\Generate-Orders.ps1 -MinProducts 1 -MaxProducts 3
@@ -185,8 +231,21 @@ $timestamp = Get-Date -Format "yyyyMMdd-HHmmss"
 .\Generate-Orders.ps1 -MinProducts 1 -MaxProducts 1
 ```
 
+**Bash (Linux/macOS):**
+```bash
+# Generate orders with 1-3 products each
+./Generate-Orders.sh --min-products 1 --max-products 3
+
+# Generate large orders with 5-10 products each
+./Generate-Orders.sh --min-products 5 --max-products 10
+
+# Generate single-product orders
+./Generate-Orders.sh --min-products 1 --max-products 1
+```
+
 ### Combined Options
 
+**PowerShell (Windows):**
 ```powershell
 # Custom configuration for load testing
 .\Generate-Orders.ps1 `
@@ -197,11 +256,29 @@ $timestamp = Get-Date -Format "yyyyMMdd-HHmmss"
     -Verbose
 ```
 
+**Bash (Linux/macOS):**
+```bash
+# Custom configuration for load testing
+./Generate-Orders.sh \
+    --order-count 500 \
+    --output-path "/tmp/LoadTest/orders.json" \
+    --min-products 2 \
+    --max-products 8 \
+    --verbose
+```
+
 ### WhatIf Mode
 
+**PowerShell (Windows):**
 ```powershell
 # Preview what would be generated
 .\Generate-Orders.ps1 -WhatIf -Verbose
+```
+
+**Bash (Linux/macOS):**
+```bash
+# Preview what would be generated
+./Generate-Orders.sh --dry-run --verbose
 ```
 
 **Output:**
@@ -230,33 +307,45 @@ Number of orders to generate.
 **Default:** `50`  
 **Valid Range:** `1-10000`
 
-**Examples:**
+**PowerShell Examples:**
 ```powershell
 .\Generate-Orders.ps1 -OrderCount 100
 .\Generate-Orders.ps1 -OrderCount 1000
 ```
 
+**Bash Examples:**
+```bash
+./Generate-Orders.sh --order-count 100
+./Generate-Orders.sh --order-count 1000
+```
+
 ---
 
-### `-OutputPath`
+### `-OutputPath` (PowerShell) / `--output-path` (Bash)
 
 File path where the JSON output will be saved.
 
 **Type:** `String`  
 **Required:** No  
-**Default:** `..\infra\data\ordersBatch.json` (relative to script location)
+**Default:** `../infra/data/ordersBatch.json` (relative to script location)
 
-**Examples:**
+**PowerShell Examples:**
 ```powershell
 .\Generate-Orders.ps1 -OutputPath "C:\temp\orders.json"
 .\Generate-Orders.ps1 -OutputPath ".\my-orders.json"
+```
+
+**Bash Examples:**
+```bash
+./Generate-Orders.sh --output-path "/tmp/orders.json"
+./Generate-Orders.sh --output-path "./my-orders.json"
 ```
 
 **Note:** The directory will be created automatically if it doesn't exist.
 
 ---
 
-### `-MinProducts`
+### `-MinProducts` (PowerShell) / `--min-products` (Bash)
 
 Minimum number of products per order.
 
@@ -265,15 +354,21 @@ Minimum number of products per order.
 **Default:** `1`  
 **Valid Range:** `1-20`
 
-**Examples:**
+**PowerShell Examples:**
 ```powershell
 .\Generate-Orders.ps1 -MinProducts 2
 .\Generate-Orders.ps1 -MinProducts 5 -MaxProducts 10
 ```
 
+**Bash Examples:**
+```bash
+./Generate-Orders.sh --min-products 2
+./Generate-Orders.sh --min-products 5 --max-products 10
+```
+
 ---
 
-### `-MaxProducts`
+### `-MaxProducts` (PowerShell) / `--max-products` (Bash)
 
 Maximum number of products per order.
 
@@ -282,10 +377,16 @@ Maximum number of products per order.
 **Default:** `6`  
 **Valid Range:** `1-20`
 
-**Examples:**
+**PowerShell Examples:**
 ```powershell
 .\Generate-Orders.ps1 -MaxProducts 10
 .\Generate-Orders.ps1 -MinProducts 1 -MaxProducts 3
+```
+
+**Bash Examples:**
+```bash
+./Generate-Orders.sh --max-products 10
+./Generate-Orders.sh --min-products 1 --max-products 3
 ```
 
 **Note:** Must be greater than or equal to `MinProducts`.
@@ -294,6 +395,7 @@ Maximum number of products per order.
 
 ### Example 1: Quick Test Dataset
 
+**PowerShell (Windows):**
 ```powershell
 # Generate 10 orders for quick testing
 cd Z:\Azure-LogicApps-Monitoring\hooks
@@ -304,58 +406,20 @@ $orders = Get-Content ..\infra\data\ordersBatch.json | ConvertFrom-Json
 Write-Host "Generated $($orders.Count) orders"
 ```
 
----
+**Bash (Linux/macOS):**
+```bash
+# Generate 10 orders for quick testing
+cd /path/to/Azure-LogicApps-Monitoring/hooks
+./Generate-Orders.sh --order-count 10
 
-### Example 2: Load Testing Dataset
-
-```powershell
-# Generate 5000 orders for load testing
-.\Generate-Orders.ps1 -OrderCount 5000 -Verbose
-
-# Verify file was created
-$file = Get-Item ..\infra\data\ordersBatch.json
-Write-Host "File size: $([Math]::Round($file.Length / 1MB, 2)) MB"
+# Use the generated data
+orders_count=$(jq 'length' ../infra/data/ordersBatch.json)
+echo "Generated $orders_count orders"
 ```
 
 ---
 
-### Example 3: Specific Product Range
-
-```powershell
-# Generate orders with exactly 3-5 products each
-.\Generate-Orders.ps1 `
-    -OrderCount 100 `
-    -MinProducts 3 `
-    -MaxProducts 5
-
-# Analyze the distribution
-$orders = Get-Content ..\infra\data\ordersBatch.json | ConvertFrom-Json
-$orders | ForEach-Object { $_.products.Count } | 
-    Measure-Object -Average -Minimum -Maximum
-```
-
----
-
-### Example 4: Multiple Test Files
-
-```powershell
-# Generate multiple datasets with different characteristics
-@(
-    @{ Count = 50; Min = 1; Max = 3; Name = "small-orders" },
-    @{ Count = 50; Min = 5; Max = 10; Name = "large-orders" },
-    @{ Count = 100; Min = 1; Max = 6; Name = "mixed-orders" }
-) | ForEach-Object {
-    .\Generate-Orders.ps1 `
-        -OrderCount $_.Count `
-        -MinProducts $_.Min `
-        -MaxProducts $_.Max `
-        -OutputPath "C:\TestData\$($_.Name).json"
-}
-```
-
----
-
-### Example 5: CI/CD Integration
+### Example 2: CI/CD Integration
 
 ```powershell
 # Add to CI/CD pipeline
@@ -391,73 +455,61 @@ catch {
 
 ---
 
-### Example 6: Data Analysis
-
-```powershell
-# Generate orders
-.\Generate-Orders.ps1 -OrderCount 200
-
-# Analyze the generated data
-$orders = Get-Content ..\infra\data\ordersBatch.json | ConvertFrom-Json
-
-# Revenue statistics
-$totalRevenue = ($orders | Measure-Object -Property totalAmount -Sum).Sum
-$avgOrder = ($orders | Measure-Object -Property totalAmount -Average).Average
-Write-Host "Total Revenue: $([Math]::Round($totalRevenue, 2))"
-Write-Host "Average Order: $([Math]::Round($avgOrder, 2))"
-
-# Product distribution
-$productCounts = $orders | ForEach-Object { $_.products.Count }
-$productCounts | Group-Object | Select-Object Name, Count | Sort-Object Name
-
-# Top products
-$orders | Select-Object -ExpandProperty products | 
-    Group-Object productId | 
-    Sort-Object Count -Descending | 
-    Select-Object -First 5 Name, Count
-```
-
----
-
 ## 🛠️ How It Works
 
 ### Workflow Diagram
 
-**Context**: 🔧 Standalone utility - Run after deployment workflow completes
+The script executes a comprehensive data generation workflow through distinct phases:
 
 ```mermaid
 flowchart LR
-    Start["Generate-Orders.ps1 starts<br/>(Standalone Utility)"]
-    Start --> Validate["Validate parameters<br/>• OrderCount (1-10000)<br/>• MinProducts ≤ MaxProducts<br/>• Output path is valid"]
-    Validate --> Init["Initialize data structures<br/>• Load product catalog (20)<br/>• Load address pool (20)<br/>• Prepare orders array"]
-    Init --> OrderLoop["For each order (loop)"]
+    Start(["🚀 Generate-Orders starts"])
+    Validate["1️⃣ Validate Parameters<br/>• OrderCount: 1-10,000<br/>• MinProducts ≤ MaxProducts<br/>• Output path validity"]
+    Init["2️⃣ Initialize Data<br/>• Load 20-product catalog<br/>• Load 20 addresses<br/>• Prepare orders array"]
+    OrderLoop["3️⃣ Order Generation Loop<br/>For each order"]
+    OrderGen["Generate Order<br/>• Order ID & date<br/>• Customer info<br/>• Random address<br/>• Product count"]
+    ProductLoop["Product Loop<br/>For each product"]
+    ProductGen["Add Product<br/>• Random selection<br/>• Quantity (1-5)<br/>• Price variation<br/>• Calculate total"]
+    Finalize["4️⃣ Finalize Order<br/>• Calculate total<br/>• Set status<br/>• Add to array"]
+    WriteJSON["5️⃣ Write Output<br/>• Format JSON<br/>• Write to file<br/>• Create directory"]
+    Summary["6️⃣ Display Summary<br/>• Total revenue<br/>• Average order<br/>• File size<br/>• Execution time"]
+    End(["🏁 Complete"])
     
-    subgraph OrderProcessing["Order Generation Loop"]
-        OrderLoop --> OrderSteps["1. Generate order ID<br/>2. Generate customer info<br/>3. Select random address<br/>4. Generate order date<br/>5. Determine product count"]
-        OrderSteps --> ProductLoop["For each product in order"]
-        
-        subgraph ProductProcessing["Product Loop"]
-            ProductLoop --> ProductSteps["• Select random product<br/>• Generate quantity (1-5)<br/>• Apply price variation<br/>• Calculate total price"]
-        end
-        
-        ProductSteps --> FinalizeOrder["6. Calculate order total<br/>7. Set order status<br/>8. Add to orders array"]
-    end
+    Start --> Validate
+    Validate --> Init
+    Init --> OrderLoop
+    OrderLoop --> OrderGen
+    OrderGen --> ProductLoop
+    ProductLoop --> ProductGen
+    ProductGen --> ProductLoop
+    ProductLoop --> Finalize
+    Finalize --> OrderLoop
+    OrderLoop --> WriteJSON
+    WriteJSON --> Summary
+    Summary --> End
     
-    FinalizeOrder --> WriteJSON["Write JSON to file<br/>• Format as indented JSON<br/>• Write to specified path<br/>• Create directory if needed"]
-    WriteJSON --> Summary["Display summary<br/>• Total orders<br/>• Total revenue<br/>• Average order value<br/>• File size<br/>• Execution time"]
+    classDef startEnd fill:#e8f5e9,stroke:#2e7d32,stroke-width:3px,color:#1b5e20
+    classDef process fill:#e3f2fd,stroke:#1976d2,stroke-width:2px,color:#0d47a1
+    classDef loop fill:#fff3e0,stroke:#f57c00,stroke-width:2px,color:#e65100
+    classDef generate fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px,color:#4a148c
+    classDef output fill:#e0f2f1,stroke:#00796b,stroke-width:2px,color:#004d40
     
-    classDef startClass fill:#d4edda,stroke:#28a745,stroke-width:2px,color:#155724
-    classDef validateClass fill:#cfe2ff,stroke:#0d6efd,stroke-width:2px,color:#084298
-    classDef loopClass fill:#fff3cd,stroke:#ffc107,stroke-width:3px,color:#856404
-    classDef processClass fill:#e2d5f1,stroke:#6f42c1,stroke-width:2px,color:#3d2065
-    classDef outputClass fill:#d1ecf1,stroke:#17a2b8,stroke-width:2px,color:#0c5460
-    
-    class Start startClass
-    class Validate,Init validateClass
-    class OrderLoop,ProductLoop loopClass
-    class OrderSteps,ProductSteps,FinalizeOrder processClass
-    class WriteJSON,Summary outputClass
+    class Start,End startEnd
+    class Validate,Init,Summary process
+    class OrderLoop,ProductLoop loop
+    class OrderGen,ProductGen,Finalize generate
+    class WriteJSON output
 ```
+
+### Integration Points
+
+| Aspect | Details |
+|--------|---------|  
+| **Called By** | • Developers manually for test data generation<br/>• CI/CD pipelines during automated testing phases<br/>• Load testing scripts for performance validation<br/>• QA teams for scenario-based testing<br/>• Demo preparation workflows |
+| **Calls** | • No external scripts or services<br/>• File system operations for JSON output<br/>• Built-in randomization functions<br/>• PowerShell/Python core libraries only<br/>• Self-contained data generation logic |
+| **Dependencies** | • **Runtime:** PowerShell 7.0+ or Bash 4.0+ with Python 3.8+<br/>• **Data:** Internal product catalog (20 items) and address pool (20 locations)<br/>• **File System:** Write access to output directory<br/>• **No External:** No network calls, APIs, or external databases required |
+| **Outputs** | • **Primary:** JSON file with order batch data (default: infra/data/ordersBatch.json)<br/>• **Console:** Progress updates, summary statistics, execution time<br/>• **Metrics:** Total orders, revenue, average order value, product count, file size<br/>• **Exit Code:** 0 (success) or 1 (failure with error details) |
+| **Integration Role** | Serves as a **standalone test data generator** providing realistic order data for development, testing, and demonstration purposes. Operates independently from the main deployment workflow, enabling on-demand data generation without affecting provisioned resources. Critical for load testing, scenario validation, and demo preparation. |
 
 ### Key Algorithms
 
@@ -968,26 +1020,16 @@ infra/data/ordersBatch.json
 
 ## 📊 Performance
 
-**Generation Speed:**
-- 10 orders: ~0.1 seconds
-- 50 orders: ~0.3 seconds
-- 100 orders: ~0.5 seconds
-- 500 orders: ~2.5 seconds
-- 1000 orders: ~5 seconds
-- 5000 orders: ~25 seconds
+### Performance Characteristics
 
-**File Sizes (Approximate):**
-- 10 orders: 10 KB
-- 50 orders: 45 KB
-- 100 orders: 90 KB
-- 500 orders: 450 KB
-- 1000 orders: 900 KB
-- 5000 orders: 4.5 MB
-
-**Resource Usage:**
-- Memory: ~100 MB (for 1000 orders)
-- CPU: Low-medium during generation
-- Disk: Proportional to order count
+| Characteristic | Details |
+|----------------|---------|
+| **Execution Time** | • 10 orders: ~0.1 seconds<br/>• 50 orders: ~0.3 seconds (default)<br/>• 100 orders: ~0.5 seconds<br/>• 500 orders: ~2.5 seconds<br/>• 1000 orders: ~5 seconds<br/>• 5000 orders: ~25 seconds<br/>• **Scaling:** Linear O(n) with order count |
+| **Resource Usage** | • **Memory:** ~100 MB peak for 1000 orders<br/>• **CPU:** Low-medium utilization during generation<br/>• **Disk I/O:** Single write operation at completion<br/>• **Baseline:** ~20 MB for script initialization |
+| **Network Impact** | • **Zero network calls** - completely offline operation<br/>• **No external dependencies** - self-contained execution<br/>• **No API requests** - uses internal data structures<br/>• **Ideal for airgapped environments** |
+| **Output File Size** | • 10 orders: ~10 KB<br/>• 50 orders: ~45 KB<br/>• 100 orders: ~90 KB<br/>• 500 orders: ~450 KB<br/>• 1000 orders: ~900 KB<br/>• 5000 orders: ~4.5 MB<br/>• **Average:** ~900 bytes per order |
+| **Scalability** | • **Maximum tested:** 10,000 orders (~50 seconds)<br/>• **Recommended batch size:** 100-1000 orders<br/>• **Memory efficient:** Generates orders sequentially<br/>• **No degradation:** Consistent per-order generation time |
+| **Optimization** | • **Fast initialization:** Data structures loaded once<br/>• **Efficient randomization:** Built-in language features<br/>• **Minimal overhead:** Direct JSON serialization<br/>• **Progress tracking:** Optional, minimal impact on speed |
 
 ## 🔄 Version History
 
@@ -1001,46 +1043,7 @@ infra/data/ordersBatch.json
 |           |            | • Comprehensive validation |
 |           |            | • 480+ lines of code |
 
-## 📞 Support
-
-### Getting Help
-
-1. **Review Error Messages**: Script provides detailed error messages
-2. **Check Parameters**: Ensure valid ranges and values
-3. **Verify Output Path**: Ensure directory exists and is writable
-4. **Test Small Batches**: Start with 10 orders to verify functionality
-
-### Customization
-
-The script can be easily customized:
-
-**Add More Products:**
-```powershell
-# Edit Generate-Orders.ps1 around line 75
-$script:Products += [PSCustomObject]@{ 
-    Id = 'PROD-B001'
-    Description = 'New Product'
-    BasePrice = 59.99 
-}
-```
-
-**Add More Addresses:**
-```powershell
-# Edit Generate-Orders.ps1 around line 125
-$script:Addresses += 'New Address, City, Country'
-```
-
-**Customize Order Statuses:**
-```powershell
-# Find the status array and modify
-$statuses = @('Pending', 'Processing', 'Shipped', 'Delivered', 'Cancelled')
-```
-
-## 📄 License
-
-Copyright (c) 2025 Azure-LogicApps-Monitoring Team. All rights reserved.
-
-## 🔗 Quick Links
+##  Quick Links
 
 - **Repository**: [Azure-LogicApps-Monitoring](https://github.com/Evilazaro/Azure-LogicApps-Monitoring)
 - **Issues**: [Report Bug](https://github.com/Evilazaro/Azure-LogicApps-Monitoring/issues)

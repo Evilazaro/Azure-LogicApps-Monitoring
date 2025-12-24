@@ -1,34 +1,39 @@
-# check-dev-workstation.ps1
+# check-dev-workstation (.ps1 / .sh)
 
 ![PowerShell](https://img.shields.io/badge/PowerShell-7.0+-blue.svg)
+![Bash](https://img.shields.io/badge/Bash-4.0+-green.svg)
+![Cross-Platform](https://img.shields.io/badge/platform-Windows%20%7C%20Linux%20%7C%20macOS-lightgrey.svg)
 ![Version](https://img.shields.io/badge/version-1.0.0-green.svg)
 ![License](https://img.shields.io/badge/license-MIT-orange.svg)
 
 ## 📋 Overview
 
-`check-dev-workstation.ps1` is a **first-step** developer-focused validation tool that ensures your workstation meets all prerequisites for developing the Azure Logic Apps Monitoring solution. It acts as a lightweight wrapper around [preprovision.ps1](./preprovision.md) in validation-only mode, providing a quick and non-intrusive way to verify environment readiness.
+The `check-dev-workstation` script is a critical first-step validation tool in the Developer Inner Loop Workflow for Azure Logic Apps Monitoring. It performs comprehensive environment validation to ensure your workstation meets all prerequisites before development begins. Available in both PowerShell (`.ps1`) and Bash (`.sh`) versions, this script provides cross-platform compatibility for Windows, Linux, and macOS environments.
 
-**Workflow Position**: 1️⃣ First → Run before `preprovision.ps1` and `postprovision.ps1`
+As a lightweight wrapper around the preprovision script in validation-only mode, it executes read-only checks without modifying any configuration. The script validates essential components including PowerShell 7.0+, .NET SDK 10.0+, Azure CLI, Bicep CLI, Azure authentication status, and registration of eight critical Azure resource providers. This non-destructive validation typically completes in 3-5 seconds, providing immediate feedback on environment readiness.
+
+Running this script before `preprovision.ps1` and `postprovision.ps1` helps developers identify configuration issues early, avoid deployment failures, and save valuable development time by ensuring all prerequisites are properly installed and configured.
 
 ## 📑 Table of Contents
 
-- [Purpose](#purpose)
-- [What It Validates](#what-it-validates)
-- [Usage](#usage)
-- [Exit Codes](#exit-codes)
-- [Parameters](#parameters)
-- [Examples](#examples)
-- [How It Works](#how-it-works)
-- [Troubleshooting](#troubleshooting)
-- [Technical Implementation Details](#technical-implementation-details)
-- [Related Documentation](#related-documentation)
-- [Security Considerations](#security-considerations)
-- [Best Practices](#best-practices)
-- [Performance](#performance)
-- [Version History](#version-history)
-- [Support](#support)
-- [License](#license)
-- [Quick Links](#quick-links)
+- [Overview](#-overview)
+- [What It Validates](#-what-it-validates)
+- [Usage](#-usage)
+  - [Basic Usage](#basic-usage)
+  - [Verbose Mode](#verbose-mode)
+- [Exit Codes](#-exit-codes)
+- [Parameters](#-parameters)
+- [Examples](#-examples)
+- [How It Works](#️-how-it-works)
+  - [Internal Process Flow](#internal-process-flow)
+  - [Integration Points](#integration-points)
+- [Troubleshooting](#️-troubleshooting)
+- [Technical Implementation Details](#-technical-implementation-details)
+- [Related Documentation](#-related-documentation)
+- [Security Considerations](#-security-considerations)
+- [Best Practices](#-best-practices)
+- [Performance](#-performance)
+- [Version History](#-version-history)
 
 ## 🎯 Purpose
 
@@ -67,9 +72,16 @@ The script performs comprehensive validation of:
 
 ### Basic Usage
 
+**PowerShell (Windows):**
 ```powershell
 # Standard validation
 .\check-dev-workstation.ps1
+```
+
+**Bash (Linux/macOS):**
+```bash
+# Standard validation
+./check-dev-workstation.sh
 ```
 
 **Output Example:**
@@ -88,9 +100,16 @@ Your workstation is ready for development.
 
 ### Verbose Mode
 
+**PowerShell (Windows):**
 ```powershell
 # Get detailed diagnostic information
 .\check-dev-workstation.ps1 -Verbose
+```
+
+**Bash (Linux/macOS):**
+```bash
+# Get detailed diagnostic information
+./check-dev-workstation.sh --verbose
 ```
 
 **Output Example:**
@@ -120,7 +139,7 @@ The script uses standard exit codes to indicate validation status:
 
 ### Example: Checking Exit Code
 
-**PowerShell:**
+**PowerShell (Windows):**
 ```powershell
 .\check-dev-workstation.ps1
 if ($LASTEXITCODE -eq 0) {
@@ -130,9 +149,9 @@ if ($LASTEXITCODE -eq 0) {
 }
 ```
 
-**Bash:**
+**Bash (Linux/macOS):**
 ```bash
-pwsh ./check-dev-workstation.ps1
+./check-dev-workstation.sh
 if [ $? -eq 0 ]; then
     echo "✓ Environment validated successfully"
 else
@@ -142,17 +161,22 @@ fi
 
 ## 🔧 Parameters
 
-### `-Verbose`
+### `-Verbose` (PowerShell) / `--verbose` (Bash)
 
 Enables detailed diagnostic output for troubleshooting.
 
-**Type:** `SwitchParameter`  
+**Type:** `SwitchParameter` (PowerShell) / `Flag` (Bash)  
 **Required:** No  
-**Default:** `$false`
+**Default:** `$false` / `false`
 
-**Usage:**
+**PowerShell Usage:**
 ```powershell
 .\check-dev-workstation.ps1 -Verbose
+```
+
+**Bash Usage:**
+```bash
+./check-dev-workstation.sh --verbose
 ```
 
 **Use Cases:**
@@ -165,6 +189,7 @@ Enables detailed diagnostic output for troubleshooting.
 
 ### Example 1: Quick Check Before Starting Work
 
+**PowerShell (Windows):**
 ```powershell
 # Run a quick validation before starting development
 .\check-dev-workstation.ps1
@@ -173,8 +198,18 @@ Enables detailed diagnostic output for troubleshooting.
 # If failed, review error messages and install missing components
 ```
 
+**Bash (Linux/macOS):**
+```bash
+# Run a quick validation before starting development
+./check-dev-workstation.sh
+
+# If successful, proceed with development
+# If failed, review error messages and install missing components
+```
+
 ### Example 2: Automated CI/CD Pre-Flight Check
 
+**PowerShell (Windows):**
 ```powershell
 # Add to CI/CD pipeline
 .\check-dev-workstation.ps1
@@ -187,69 +222,74 @@ if ($LASTEXITCODE -ne 0) {
 Write-Host "Environment validated - proceeding with build..."
 ```
 
-### Example 3: Troubleshooting Setup Issues
+**Bash (Linux/macOS):**
+```bash
+# Add to CI/CD pipeline
+./check-dev-workstation.sh
+if [ $? -ne 0 ]; then
+    echo "ERROR: Environment validation failed" >&2
+    exit 1
+fi
 
-```powershell
-# Get detailed output for troubleshooting
-.\check-dev-workstation.ps1 -Verbose 2>&1 | Tee-Object -FilePath "validation-log.txt"
-
-# Review the log file
-Get-Content validation-log.txt
-```
-
-### Example 4: Scheduled Validation Task
-
-```powershell
-# Create a scheduled task to validate environment daily
-$action = New-ScheduledTaskAction -Execute "pwsh" -Argument "-File Z:\Azure-LogicApps-Monitoring\hooks\check-dev-workstation.ps1"
-$trigger = New-ScheduledTaskTrigger -Daily -At 9:00AM
-Register-ScheduledTask -Action $action -Trigger $trigger -TaskName "ValidateDevEnvironment"
+# Continue with build/deploy process
+echo "Environment validated - proceeding with build..."
 ```
 
 ## 🛠️ How It Works
 
-### Workflow Diagram
+### Internal Process Flow
 
-**Context**: 1️⃣ First step - Run before preprovision and postprovision
+The script executes a streamlined validation workflow through four distinct phases:
 
 ```mermaid
 flowchart LR
-    Start["1️⃣ check-dev-workstation.ps1 starts<br/>(First Step)"]
-    Start --> Validate["Validate script prerequisites<br/>• PowerShell 7.0+ available<br/>• preprovision.ps1 exists"]
-    Validate --> Call["Call preprovision.ps1 with:<br/>• -ValidateOnly flag<br/>• Pass through -Verbose if set"]
-    Call --> Perform["preprovision.ps1 performs:<br/>• PowerShell version check<br/>• .NET SDK validation<br/>• Azure CLI validation<br/>• Bicep CLI validation<br/>• Azure authentication check<br/>• Resource provider validation"]
-    Perform --> Return["Return results to caller<br/>• Exit code: 0 (success) or 1<br/>• Formatted validation output"]
+    Start(["🚀 check-dev-workstation starts"])
+    Init["1️⃣ Script Initialization<br/>• Set StrictMode<br/>• Configure error preferences<br/>• Validate prerequisites"]
+    Path["2️⃣ Path Resolution<br/>• Locate preprovision script<br/>• Verify script exists<br/>• Prepare execution context"]
+    Delegate["3️⃣ Validation Delegation<br/>• Invoke preprovision -ValidateOnly<br/>• Pass -Verbose flag if set<br/>• Monitor execution"]
+    Check{"All validations<br/>passed?"}
+    Success["✅ Success Path<br/>• Format success message<br/>• Exit code: 0<br/>• Display summary"]
+    Failure["❌ Failure Path<br/>• Format error details<br/>• Exit code: 1<br/>• Show remediation steps"]
+    End(["🏁 Script completes"])
     
-    classDef startClass fill:#d4edda,stroke:#28a745,stroke-width:2px,color:#155724
-    classDef processClass fill:#cfe2ff,stroke:#0d6efd,stroke-width:2px,color:#084298
-    classDef returnClass fill:#fff3cd,stroke:#ffc107,stroke-width:2px,color:#856404
+    Start --> Init
+    Init --> Path
+    Path --> Delegate
+    Delegate --> Check
+    Check -->|Yes| Success
+    Check -->|No| Failure
+    Success --> End
+    Failure --> End
     
-    class Start startClass
-    class Validate,Call,Perform processClass
-    class Return returnClass
+    classDef startEnd fill:#e8f5e9,stroke:#2e7d32,stroke-width:3px,color:#1b5e20
+    classDef process fill:#e3f2fd,stroke:#1976d2,stroke-width:2px,color:#0d47a1
+    classDef decision fill:#fff3e0,stroke:#f57c00,stroke-width:2px,color:#e65100
+    classDef success fill:#c8e6c9,stroke:#388e3c,stroke-width:2px,color:#1b5e20
+    classDef failure fill:#ffcdd2,stroke:#d32f2f,stroke-width:2px,color:#b71c1c
+    
+    class Start,End startEnd
+    class Init,Path,Delegate process
+    class Check decision
+    class Success success
+    class Failure failure
 ```
 
-### Internal Process
+**Process Details:**
 
-1. **Script Initialization**
-   - Sets `StrictMode` for error handling
-   - Configures error action preferences
-   - Validates script prerequisites
+1. **Script Initialization**: Establishes strict error handling and validates that PowerShell 7.0+ is available
+2. **Path Resolution**: Locates the preprovision script in the same directory and confirms it's executable
+3. **Validation Delegation**: Invokes preprovision with `-ValidateOnly` flag, delegating all validation logic
+4. **Result Processing**: Captures exit codes, formats output, and returns appropriate status to the caller
 
-2. **Path Resolution**
-   - Locates `preprovision.ps1` in same directory
-   - Validates preprovision script exists and is readable
-   - Prepares execution context
+### Integration Points
 
-3. **Validation Delegation**
-   - Invokes `preprovision.ps1 -ValidateOnly`
-   - Passes through `-Verbose` parameter if specified
-   - Captures exit code and output
-
-4. **Result Processing**
-   - Formats validation results
-   - Returns appropriate exit code
-   - Displays summary message
+| Aspect | Details |
+|--------|---------|
+| **Called By** | • Manual execution by developers during workstation setup<br/>• CI/CD pipelines for environment pre-flight checks<br/>• Automated scripts and scheduled tasks<br/>• Team onboarding workflows |
+| **Calls** | • `preprovision.ps1` (or `preprovision.sh`) with `-ValidateOnly` flag<br/>• Azure CLI commands for authentication verification<br/>• Version check commands (`dotnet --version`, `az --version`, `bicep --version`) |
+| **Dependencies** | • **Runtime:** PowerShell 7.0+ (cross-platform)<br/>• **Scripts:** preprovision script in same directory<br/>• **Tools:** Azure CLI, .NET SDK 10.0+, Bicep CLI, Azure Developer CLI<br/>• **Azure:** Active Azure subscription and authentication |
+| **Outputs** | • **Exit Code:** `0` (success) or `1` (failure)<br/>• **Console Output:** Formatted validation messages with timestamps<br/>• **Verbose Logs:** Detailed diagnostic information (optional)<br/>• **Summary:** Pass/fail status for each validation check |
+| **Integration Role** | Acts as a **gateway validation layer** ensuring environment readiness before any provisioning or deployment operations. Provides fail-fast feedback to prevent downstream errors in the development workflow. |
 
 ## ⚠️ Troubleshooting
 
@@ -268,8 +308,13 @@ Found: PowerShell 5.1
 2. Install for your platform (Windows, macOS, Linux)
 3. Run the script using `pwsh` instead of `powershell`
 
-**Verify Installation:**
+**Verify Installation (PowerShell):**
 ```powershell
+pwsh --version
+```
+
+**Verify Installation (Bash):**
+```bash
 pwsh --version
 ```
 
@@ -289,7 +334,13 @@ dotnet command not found
 3. Restart your terminal
 4. Verify installation:
 
+**PowerShell:**
 ```powershell
+dotnet --version
+```
+
+**Bash:**
+```bash
 dotnet --version
 ```
 
@@ -303,8 +354,20 @@ ERROR: Not authenticated to Azure
 Please run 'az login' first
 ```
 
-**Solution:**
+**Solution (PowerShell):**
 ```powershell
+# Login to Azure
+az login
+
+# Verify authentication
+az account show
+
+# Set default subscription (if needed)
+az account set --subscription "Your-Subscription-Name"
+```
+
+**Solution (Bash):**
+```bash
 # Login to Azure
 az login
 
@@ -325,7 +388,7 @@ ERROR: Required Azure Resource Provider not registered
 Microsoft.App is not registered in subscription
 ```
 
-**Solution:**
+**Solution (PowerShell):**
 ```powershell
 # Register the provider
 az provider register --namespace Microsoft.App
@@ -351,20 +414,42 @@ foreach ($provider in $providers) {
 }
 ```
 
+**Solution (Bash):**
+```bash
+# Register the provider
+az provider register --namespace Microsoft.App
+
+# Wait for registration to complete (can take 5-10 minutes)
+az provider show --namespace Microsoft.App --query "registrationState"
+
+# Register all required providers at once
+providers=(
+    "Microsoft.App"
+    "Microsoft.ServiceBus"
+    "Microsoft.Storage"
+    "Microsoft.Web"
+    "Microsoft.ContainerRegistry"
+    "Microsoft.Insights"
+    "Microsoft.OperationalInsights"
+    "Microsoft.ManagedIdentity"
+)
+
+for provider in "${providers[@]}"; do
+    az provider register --namespace "$provider"
+    echo "Registering $provider..."
+done
+```
+
 ---
 
-#### Issue: preprovision.ps1 Not Found
+#### Issue: preprovision script Not Found
 
 **Error Message:**
 ```
-ERROR: Cannot find preprovision.ps1 in current directory
+ERROR: Cannot find preprovision script in current directory
 ```
 
-**Solution:**
-1. Ensure you're running the script from the `hooks` directory
-2. Verify the repository structure is intact
-3. Check file permissions
-
+**Solution (PowerShell - Windows):**
 ```powershell
 # Navigate to hooks directory
 cd Z:\Azure-LogicApps-Monitoring\hooks
@@ -374,6 +459,18 @@ Test-Path .\preprovision.ps1
 
 # Run validation
 .\check-dev-workstation.ps1
+```
+
+**Solution (Bash - Linux/macOS):**
+```bash
+# Navigate to hooks directory
+cd /path/to/Azure-LogicApps-Monitoring/hooks
+
+# Verify preprovision.sh exists
+ls -la preprovision.sh
+
+# Run validation
+./check-dev-workstation.sh
 ```
 
 ---
@@ -419,46 +516,6 @@ function Test-ToolVersion {
 }
 ```
 
-### Integration Points
-
-**Called By:**
-- Manual execution by developers
-- preprovision.ps1 (indirectly through validation)
-- CI/CD pipelines for environment verification
-
-**Calls:**
-- None (read-only validation script)
-
-**Dependencies:**
-- PowerShell 7.0+
-- Access to check tool versions (dotnet, az, azd, bicep)
-
-### Performance Characteristics
-
-**Execution Time:**
-- Typical: 3-5 seconds
-- First run: 3-5 seconds (no caching)
-- **Fast:** No write operations
-
-**Resource Usage:**
-- Memory: < 50 MB
-- CPU: Minimal (version checks only)
-- Disk: Read-only operations
-
-### Error Handling
-
-**Error Categories:**
-1. **Tool Not Found:** Clear installation instructions provided
-2. **Version Too Old:** Upgrade command suggested
-3. **Execution Error:** Detailed error message with context
-
-**Recovery Strategy:**
-- Script never modifies system
-- Safe to run multiple times
-- Always exits gracefully
-
----
-
 ## �📖 Related Documentation
 
 - **[preprovision.ps1](./preprovision.ps1)** - Comprehensive pre-provisioning validation (called by this script)
@@ -501,11 +558,26 @@ This script is **completely safe** to run on developer workstations because it:
 
 ### Development Workflow Integration
 
+**PowerShell (Windows):**
 ```powershell
 # Typical development workflow
 
 # Step 1: Validate environment
 .\check-dev-workstation.ps1 -Verbose
+
+# Step 2: If validation passes, provision infrastructure
+azd provision
+
+# Step 3: Run application locally
+azd up
+```
+
+**Bash (Linux/macOS):**
+```bash
+# Typical development workflow
+
+# Step 1: Validate environment
+./check-dev-workstation.sh --verbose
 
 # Step 2: If validation passes, provision infrastructure
 azd provision
@@ -524,15 +596,15 @@ azd up
 
 ## 📊 Performance
 
-**Typical Execution Time:**
-- Standard validation: **3-5 seconds**
-- With `-Verbose`: **5-8 seconds**
-- With slow network: **10-15 seconds** (Azure provider checks)
+### Performance Characteristics
 
-**Resource Usage:**
-- Memory: ~50 MB
-- CPU: Low (validation only)
-- Network: Minimal (Azure CLI queries only)
+| Characteristic | Details |
+|----------------|---------|
+| **Execution Time** | • **Standard validation:** 3-5 seconds<br/>• **With -Verbose flag:** 5-8 seconds<br/>• **With slow network:** 10-15 seconds (Azure provider checks)<br/>• **Fast path:** Sub-second for local tool checks only<br/>• **Blocking operations:** Azure CLI queries for authentication and provider status |
+| **Resource Usage** | • **Memory:** ~50 MB peak during execution<br/>• **CPU:** Low utilization - validation checks only<br/>• **Disk I/O:** Minimal - reads preprovision script, no writes<br/>• **Baseline:** Lightweight wrapper with minimal overhead |
+| **Network Impact** | • **Azure CLI queries:** Authentication status and resource provider registration<br/>• **API calls:** Read-only operations via Azure CLI<br/>• **Bandwidth:** < 1 KB for provider status checks<br/>• **Offline mode:** Partial - local tools validated, Azure checks fail gracefully<br/>• **No modifications:** Zero write operations to Azure resources |
+| **Scalability** | • **Consistent performance:** Same execution time regardless of repository size<br/>• **No degradation:** Independent of project complexity<br/>• **Parallel safe:** Can run simultaneously in multiple terminals<br/>• **Cache benefits:** Azure CLI caches authentication tokens |
+| **Optimization** | • **Delegation pattern:** Leverages existing preprovision script logic<br/>• **No redundancy:** Single validation pass with -ValidateOnly flag<br/>• **Early exit:** Stops immediately on critical failures<br/>• **Efficient checks:** Version comparisons use native commands |
 
 ## 🔄 Version History
 
@@ -544,35 +616,7 @@ azd up
 |           |            | • Verbose logging support |
 |           |            | • Exit code support |
 
-## 📞 Support
-
-### Getting Help
-
-1. **Review Error Messages**: Script provides detailed error messages with solutions
-2. **Use Verbose Mode**: Run with `-Verbose` for diagnostic information
-3. **Check Prerequisites**: Ensure all tools are installed before running
-4. **Check Documentation**: Review README.md for script usage information
-
-### Reporting Issues
-
-If you encounter issues:
-
-1. Run with verbose logging: `.\check-dev-workstation.ps1 -Verbose`
-2. Capture complete output
-3. Include your environment details:
-   - PowerShell version (`$PSVersionTable`)
-   - .NET SDK version (`dotnet --version`)
-   - Azure CLI version (`az --version`)
-4. Check existing issues on GitHub
-5. Create a new issue with the above information
-
-## 📄 License
-
-Copyright (c) 2025 Azure-LogicApps-Monitoring Team. All rights reserved.
-
-This script is part of the Azure-LogicApps-Monitoring solution.
-
-## 🔗 Quick Links
+##  Quick Links
 
 - **Repository**: [Azure-LogicApps-Monitoring](https://github.com/Evilazaro/Azure-LogicApps-Monitoring)
 - **Issues**: [Report Bug](https://github.com/Evilazaro/Azure-LogicApps-Monitoring/issues)
