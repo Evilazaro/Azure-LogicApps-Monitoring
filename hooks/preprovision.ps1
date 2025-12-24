@@ -2,217 +2,544 @@
 
 <#
 .SYNOPSIS
-    Pre-provisioning script for Azure deployment.
+    Pre-provisioning script for Azure Developer CLI (azd) deployment.
 
 .DESCRIPTION
-    This script performs pre-provisioning tasks including Docker validation and image building
-    before Azure resources are provisioned. It validates Docker availability, checks for
-    docker-compose configuration, and builds container images.
+    This script performs pre-provisioning tasks before Azure resources are provisioned.
+    It ensures a clean state by clearing user secrets and validates the development environment.
     
     The script performs the following operations:
-    - Validates Docker is installed and running
-    - Checks for docker-compose.yml configuration file
-    - Builds Docker images using Docker Compose
+    - Validates PowerShell version compatibility
+    - Clears .NET user secrets for all projects
+    - Validates required tools (.NET SDK)
+    - Prepares environment for Azure deployment
+    - Provides detailed logging and error handling
 
 .PARAMETER Force
-    Forces the build even if images already exist by using --no-cache flag.
+    Skips confirmation prompts and forces execution of all operations.
 
-.PARAMETER SkipBuild
-    Skips the Docker build step (validation only).
+.PARAMETER SkipSecretsClear
+    Skips the user secrets clearing step.
+
+.PARAMETER ValidateOnly
+    Only validates prerequisites without making changes.
 
 .EXAMPLE
     .\preprovision.ps1
-    Runs standard pre-provisioning with default settings.
+    Runs standard pre-provisioning with confirmation prompts.
 
 .EXAMPLE
     .\preprovision.ps1 -Force
-    Forces rebuild of all Docker images without using cache.
+    Runs pre-provisioning without confirmation prompts.
 
 .EXAMPLE
-    .\preprovision.ps1 -SkipBuild -Verbose
-    Validates Docker availability without building images, with verbose output.
+    .\preprovision.ps1 -ValidateOnly
+    Only validates prerequisites without clearing secrets.
+
+.EXAMPLE
+    .\preprovision.ps1 -SkipSecretsClear -Verbose
+    Skips secret clearing and shows verbose output.
 
 .NOTES
     File Name      : preprovision.ps1
     Author         : Azure-LogicApps-Monitoring Team
     Version        : 2.0.0
-    Last Modified  : 2025-12-17
-    Requires       : Docker Desktop or Docker Engine
-    Requires       : Docker Compose v2 (docker compose command)
+    Last Modified  : 2025-12-24
+    Prerequisite   : PowerShell 7.0 or higher
+    Prerequisite   : .NET SDK 8.0 or higher
+    Prerequisite   : Azure Developer CLI (azd)
+    Copyright      : (c) 2025. All rights reserved.
+
+.LINK
+    https://github.com/Evilazaro/Azure-LogicApps-Monitoring
 #>
 
-[CmdletBinding(SupportsShouldProcess, ConfirmImpact = 'Low')]
+[CmdletBinding(SupportsShouldProcess, ConfirmImpact = 'Medium')]
 param(
-    [Parameter(Mandatory = $false, HelpMessage = "Forces rebuild of Docker images without using cache")]
+    [Parameter(Mandatory = $false, HelpMessage = 'Skip confirmation prompts')]
     [switch]$Force,
 
-    [Parameter(Mandatory = $false, HelpMessage = "Skips Docker build step (validation only)")]
-    [switch]$SkipBuild
+    [Parameter(Mandatory = $false, HelpMessage = 'Skip clearing user secrets')]
+    [switch]$SkipSecretsClear,
+
+    [Parameter(Mandatory = $false, HelpMessage = 'Only validate prerequisites without making changes')]
+    [switch]$ValidateOnly
 )
 
-# Set strict mode and error action preference
+#Requires -Version 7.0
+
+# Script configuration
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
 $InformationPreference = 'Continue'
 $ProgressPreference = 'SilentlyContinue'
+$WarningPreference = 'Continue'
 
 # Script-level constants
 $script:ScriptVersion = '2.0.0'
+$script:MinimumPowerShellVersion = [version]'7.0'
+$script:MinimumDotNetVersion = [version]'10.0'
+$script:MinimumAzureCLIVersion = [version]'2.60.0'
+$script:MinimumBicepVersion = [version]'0.30.0'
+$script:CleanSecretsScriptPath = Join-Path $PSScriptRoot 'clean-secrets.ps1'
+$script:RequiredResourceProviders = @(
+    'Microsoft.App'
+    'Microsoft.ServiceBus'
+    'Microsoft.Storage'
+    'Microsoft.Web'
+    'Microsoft.ContainerRegistry'
+    'Microsoft.Insights'
+    'Microsoft.OperationalInsights'
+    'Microsoft.ManagedIdentity'
+)
 
 #region Functions
 
-function Test-DockerAvailability {
+function Test-PowerShellVersion {
     <#
     .SYNOPSIS
-        Checks if Docker is available and running.
+        Validates PowerShell version meets minimum requirements.
     
     .DESCRIPTION
-        Validates that Docker is installed, accessible in PATH, and the Docker daemon is running.
-        Returns $true if Docker is available and functional, $false otherwise.
+        Checks if the current PowerShell version is compatible with the script requirements.
+        Returns $true if version is acceptable, $false otherwise.
     
     .OUTPUTS
-        System.Boolean - Returns $true if Docker is available, $false otherwise.
+        System.Boolean - Returns $true if PowerShell version is sufficient, $false otherwise.
     
     .EXAMPLE
-        Test-DockerAvailability
-        Returns $true if Docker is running, $false otherwise.
+        Test-PowerShellVersion
+        Returns $true if PowerShell 7.0 or higher is running.
     #>
     [CmdletBinding()]
     [OutputType([bool])]
     param()
 
     begin {
-        Write-Verbose "Starting Docker availability check..."
+        Write-Verbose 'Validating PowerShell version...'
     }
 
     process {
         try {
-            # Check if docker command exists
-            $dockerCommand = Get-Command -Name docker -ErrorAction SilentlyContinue
-            if (-not $dockerCommand) {
-                Write-Verbose "Docker command not found in PATH"
+            $currentVersion = $PSVersionTable.PSVersion
+            
+            if ($currentVersion -lt $script:MinimumPowerShellVersion) {
+                Write-Warning "Current PowerShell version: $currentVersion"
+                Write-Warning "Minimum required version: $script:MinimumPowerShellVersion"
                 return $false
             }
             
-            Write-Verbose "Docker command found at: $($dockerCommand.Source)"
-            
-            # Test Docker daemon connectivity
-            Write-Verbose "Testing Docker daemon connectivity..."
-            $dockerInfo = & docker info 2>&1
-            $dockerExitCode = $LASTEXITCODE
-            
-            if ($dockerExitCode -ne 0) {
-                Write-Verbose "Docker info command failed with exit code: $dockerExitCode"
-                Write-Verbose "Docker output: $($dockerInfo -join ' ')"
-                return $false
-            }
-
-            Write-Verbose "Docker is running successfully"
+            Write-Verbose "PowerShell version $currentVersion is compatible"
             return $true
         }
         catch {
-            Write-Verbose "Docker availability check failed: $($_.Exception.Message)"
+            Write-Verbose "Error validating PowerShell version: $($_.Exception.Message)"
             return $false
         }
     }
 }
 
-function Test-DockerComposeFile {
+function Test-DotNetSDK {
     <#
     .SYNOPSIS
-        Validates the existence of docker-compose configuration file.
+        Validates .NET SDK availability and version.
     
     .DESCRIPTION
-        Checks if the docker-compose.yml file exists in the project root directory.
-        Attempts to resolve the path relative to the script location first, then
-        falls back to the current working directory.
-    
-    .PARAMETER Path
-        The relative path to the docker-compose file. Defaults to 'docker-compose.yml'.
+        Checks if .NET SDK is installed and meets the minimum version requirement (.NET 10.0).
+        Returns $true if .NET SDK is available and compatible, $false otherwise.
     
     .OUTPUTS
-        System.Boolean - Returns $true if the file exists, $false otherwise.
+        System.Boolean - Returns $true if .NET SDK is available and compatible, $false otherwise.
     
     .EXAMPLE
-        Test-DockerComposeFile
-        Checks for docker-compose.yml in the default location.
-    
-    .EXAMPLE
-        Test-DockerComposeFile -Path 'docker-compose.override.yml'
-        Checks for a specific compose file.
+        Test-DotNetSDK
+        Returns $true if .NET SDK 10.0 or higher is installed.
     #>
     [CmdletBinding()]
     [OutputType([bool])]
-    param(
-        [Parameter(Mandatory = $false)]
-        [ValidateNotNullOrEmpty()]
-        [string]$Path = 'docker-compose.yml'
-    )
+    param()
 
     begin {
-        Write-Verbose "Searching for Docker Compose file: $Path"
+        Write-Verbose 'Validating .NET SDK...'
     }
 
     process {
         try {
-            # Try to resolve relative to script root first
-            $scriptRoot = $PSScriptRoot
-            if ([string]::IsNullOrWhiteSpace($scriptRoot)) {
-                $scriptRoot = Get-Location
-                Write-Verbose "PSScriptRoot is empty, using current location: $scriptRoot"
+            # Check if dotnet command exists
+            $dotnetCommand = Get-Command -Name dotnet -ErrorAction SilentlyContinue
+            if (-not $dotnetCommand) {
+                Write-Verbose '.NET SDK not found in PATH'
+                return $false
             }
             
-            $fullPath = Join-Path -Path $scriptRoot -ChildPath '..'
-            $fullPath = Join-Path -Path $fullPath -ChildPath $Path
+            Write-Verbose "dotnet found at: $($dotnetCommand.Source)"
             
-            # Attempt to resolve to absolute path
-            if (Test-Path -Path $fullPath -PathType Leaf) {
-                $resolvedPath = [System.IO.Path]::GetFullPath($fullPath)
-                Write-Verbose "Docker Compose file found at: $resolvedPath"
-                return $true
+            # Get .NET version
+            $versionOutput = & dotnet --version 2>&1
+            if ($LASTEXITCODE -ne 0) {
+                Write-Verbose 'Failed to retrieve .NET version'
+                return $false
             }
             
-            # Fallback to current directory
-            $fallbackPath = Join-Path -Path (Get-Location) -ChildPath $Path
-            if (Test-Path -Path $fallbackPath -PathType Leaf) {
-                Write-Verbose "Docker Compose file found at: $fallbackPath"
-                return $true
+            # Parse version
+            $versionString = $versionOutput | Select-Object -First 1
+            Write-Verbose "Detected .NET SDK version: $versionString"
+            
+            # Extract major version for comparison
+            if ($versionString -match '^(\d+)\.') {
+                $majorVersion = [int]$matches[1]
+                $minMajorVersion = [int]$script:MinimumDotNetVersion.Major
+                
+                if ($majorVersion -lt $minMajorVersion) {
+                    Write-Warning "Current .NET SDK version: $versionString"
+                    Write-Warning "Minimum required version: $script:MinimumDotNetVersion"
+                    return $false
+                }
             }
-
-            Write-Verbose "Docker Compose file not found. Searched paths:"
-            Write-Verbose "  - $fullPath"
-            Write-Verbose "  - $fallbackPath"
-            return $false
+            
+            Write-Verbose ".NET SDK version $versionString is compatible"
+            return $true
         }
         catch {
-            Write-Verbose "Error checking Docker Compose file: $($_.Exception.Message)"
+            Write-Verbose "Error validating .NET SDK: $($_.Exception.Message)"
             return $false
         }
     }
 }
 
-function Invoke-DockerBuild {
+function Test-AzureDeveloperCLI {
     <#
     .SYNOPSIS
-        Builds Docker images using Docker Compose.
+        Validates Azure Developer CLI (azd) availability.
     
     .DESCRIPTION
-        Executes 'docker compose build' to build all services defined in docker-compose.yml.
-        Supports forcing a clean build without cache and provides detailed output.
-    
-    .PARAMETER Force
-        Forces a clean build by adding the --no-cache flag to docker compose build.
+        Checks if Azure Developer CLI is installed and accessible.
+        Returns $true if azd is available, $false otherwise.
     
     .OUTPUTS
-        System.Boolean - Returns $true if build succeeds, $false otherwise.
+        System.Boolean - Returns $true if azd is available, $false otherwise.
     
     .EXAMPLE
-        Invoke-DockerBuild
-        Builds Docker images using cache if available.
+        Test-AzureDeveloperCLI
+        Returns $true if azd command is available.
+    #>
+    [CmdletBinding()]
+    [OutputType([bool])]
+    param()
+
+    begin {
+        Write-Verbose 'Validating Azure Developer CLI...'
+    }
+
+    process {
+        try {
+            $azdCommand = Get-Command -Name azd -ErrorAction SilentlyContinue
+            if (-not $azdCommand) {
+                Write-Verbose 'Azure Developer CLI not found in PATH'
+                return $false
+            }
+            
+            Write-Verbose "azd found at: $($azdCommand.Source)"
+            
+            # Verify azd can execute
+            $versionOutput = & azd version 2>&1
+            if ($LASTEXITCODE -ne 0) {
+                Write-Verbose 'Failed to execute azd version command'
+                return $false
+            }
+            
+            Write-Verbose "Azure Developer CLI version: $($versionOutput | Select-Object -First 1)"
+            return $true
+        }
+        catch {
+            Write-Verbose "Error validating Azure Developer CLI: $($_.Exception.Message)"
+            return $false
+        }
+    }
+}
+
+function Test-AzureCLI {
+    <#
+    .SYNOPSIS
+        Validates Azure CLI availability and version.
+    
+    .DESCRIPTION
+        Checks if Azure CLI is installed and meets the minimum version requirement.
+        Also validates that the user is authenticated to Azure.
+        Returns $true if Azure CLI is available, compatible, and authenticated, $false otherwise.
+    
+    .OUTPUTS
+        System.Boolean - Returns $true if Azure CLI is available and authenticated, $false otherwise.
     
     .EXAMPLE
-        Invoke-DockerBuild -Force
-        Builds Docker images from scratch without using cache.
+        Test-AzureCLI
+        Returns $true if Azure CLI 2.60.0 or higher is installed and user is authenticated.
+    #>
+    [CmdletBinding()]
+    [OutputType([bool])]
+    param()
+
+    begin {
+        Write-Verbose 'Validating Azure CLI...'
+    }
+
+    process {
+        try {
+            # Check if az command exists
+            $azCommand = Get-Command -Name az -ErrorAction SilentlyContinue
+            if (-not $azCommand) {
+                Write-Verbose 'Azure CLI not found in PATH'
+                return $false
+            }
+            
+            Write-Verbose "az found at: $($azCommand.Source)"
+            
+            # Get Azure CLI version
+            $versionOutput = & az version --output json 2>&1 | ConvertFrom-Json
+            if ($LASTEXITCODE -ne 0) {
+                Write-Verbose 'Failed to retrieve Azure CLI version'
+                return $false
+            }
+            
+            $azVersion = [version]$versionOutput.'azure-cli'
+            Write-Verbose "Detected Azure CLI version: $azVersion"
+            
+            if ($azVersion -lt $script:MinimumAzureCLIVersion) {
+                Write-Warning "Current Azure CLI version: $azVersion"
+                Write-Warning "Minimum required version: $script:MinimumAzureCLIVersion"
+                return $false
+            }
+            
+            # Check if user is authenticated
+            Write-Verbose 'Checking Azure authentication...'
+            $accountInfo = & az account show --output json 2>&1
+            if ($LASTEXITCODE -ne 0) {
+                Write-Verbose 'User is not authenticated to Azure'
+                return $false
+            }
+            
+            $account = $accountInfo | ConvertFrom-Json
+            Write-Verbose "Authenticated as: $($account.user.name)"
+            Write-Verbose "Active subscription: $($account.name) ($($account.id))"
+            
+            return $true
+        }
+        catch {
+            Write-Verbose "Error validating Azure CLI: $($_.Exception.Message)"
+            return $false
+        }
+    }
+}
+
+function Test-BicepCLI {
+    <#
+    .SYNOPSIS
+        Validates Bicep CLI availability and version.
+    
+    .DESCRIPTION
+        Checks if Bicep CLI is installed and meets the minimum version requirement.
+        Bicep is typically installed via Azure CLI or as a standalone tool.
+        Returns $true if Bicep CLI is available and compatible, $false otherwise.
+    
+    .OUTPUTS
+        System.Boolean - Returns $true if Bicep CLI is available and compatible, $false otherwise.
+    
+    .EXAMPLE
+        Test-BicepCLI
+        Returns $true if Bicep CLI 0.30.0 or higher is installed.
+    #>
+    [CmdletBinding()]
+    [OutputType([bool])]
+    param()
+
+    begin {
+        Write-Verbose 'Validating Bicep CLI...'
+    }
+
+    process {
+        try {
+            # Check if bicep command exists (standalone)
+            $bicepCommand = Get-Command -Name bicep -ErrorAction SilentlyContinue
+            
+            if (-not $bicepCommand) {
+                # Try Azure CLI bicep
+                Write-Verbose 'Standalone Bicep CLI not found, checking via Azure CLI...'
+                $versionOutput = & az bicep version 2>&1
+                if ($LASTEXITCODE -ne 0) {
+                    Write-Verbose 'Bicep CLI not available via Azure CLI'
+                    return $false
+                }
+            }
+            else {
+                Write-Verbose "bicep found at: $($bicepCommand.Source)"
+                $versionOutput = & bicep --version 2>&1
+                if ($LASTEXITCODE -ne 0) {
+                    Write-Verbose 'Failed to retrieve Bicep version'
+                    return $false
+                }
+            }
+            
+            # Parse version from output (format: "Bicep CLI version x.y.z")
+            if ($versionOutput -match '(\d+\.\d+\.\d+)') {
+                $bicepVersion = [version]$matches[1]
+                Write-Verbose "Detected Bicep CLI version: $bicepVersion"
+                
+                if ($bicepVersion -lt $script:MinimumBicepVersion) {
+                    Write-Warning "Current Bicep CLI version: $bicepVersion"
+                    Write-Warning "Minimum required version: $script:MinimumBicepVersion"
+                    return $false
+                }
+                
+                return $true
+            }
+            else {
+                Write-Verbose 'Failed to parse Bicep version'
+                return $false
+            }
+        }
+        catch {
+            Write-Verbose "Error validating Bicep CLI: $($_.Exception.Message)"
+            return $false
+        }
+    }
+}
+
+function Test-AzureResourceProviders {
+    <#
+    .SYNOPSIS
+        Validates required Azure resource providers are registered.
+    
+    .DESCRIPTION
+        Checks if all required Azure resource providers are registered in the active subscription.
+        Provides warnings for unregistered providers with instructions to register them.
+        Returns $true if all providers are registered, $false otherwise.
+    
+    .OUTPUTS
+        System.Boolean - Returns $true if all required providers are registered, $false otherwise.
+    
+    .EXAMPLE
+        Test-AzureResourceProviders
+        Checks registration status of all required Azure resource providers.
+    #>
+    [CmdletBinding()]
+    [OutputType([bool])]
+    param()
+
+    begin {
+        Write-Verbose 'Validating Azure resource provider registration...'
+    }
+
+    process {
+        try {
+            $allRegistered = $true
+            $unregisteredProviders = [System.Collections.Generic.List[string]]::new()
+            
+            foreach ($provider in $script:RequiredResourceProviders) {
+                Write-Verbose "Checking provider: $provider"
+                
+                $providerInfo = & az provider show --namespace $provider --output json 2>&1
+                if ($LASTEXITCODE -ne 0) {
+                    Write-Verbose "Failed to retrieve provider info for: $provider"
+                    $unregisteredProviders.Add($provider)
+                    $allRegistered = $false
+                    continue
+                }
+                
+                $providerData = $providerInfo | ConvertFrom-Json
+                $registrationState = $providerData.registrationState
+                
+                if ($registrationState -ne 'Registered') {
+                    Write-Verbose "Provider $provider is not registered (State: $registrationState)"
+                    $unregisteredProviders.Add($provider)
+                    $allRegistered = $false
+                }
+                else {
+                    Write-Verbose "Provider $provider is registered"
+                }
+            }
+            
+            if (-not $allRegistered) {
+                Write-Warning 'Some required resource providers are not registered:'
+                foreach ($provider in $unregisteredProviders) {
+                    Write-Warning "  - $provider"
+                }
+                Write-Warning ''
+                Write-Warning 'To register these providers, run:'
+                foreach ($provider in $unregisteredProviders) {
+                    Write-Warning "  az provider register --namespace $provider --wait"
+                }
+            }
+            
+            return $allRegistered
+        }
+        catch {
+            Write-Verbose "Error validating resource providers: $($_.Exception.Message)"
+            return $false
+        }
+    }
+}
+
+function Test-AzureQuota {
+    <#
+    .SYNOPSIS
+        Validates Azure subscription has sufficient quota for deployment.
+    
+    .DESCRIPTION
+        Provides informational check about common quota limits that might affect deployment.
+        This is a best-effort check and doesn't fail the validation.
+    
+    .EXAMPLE
+        Test-AzureQuota
+        Displays information about subscription quotas.
+    #>
+    [CmdletBinding()]
+    param()
+
+    begin {
+        Write-Verbose 'Checking Azure subscription quotas...'
+    }
+
+    process {
+        try {
+            Write-Verbose 'Retrieving subscription limits information...'
+            
+            # This is informational only - we don't fail based on quotas
+            # as some resources (like Container Apps) don't have easy-to-check quotas
+            Write-Information '  ℹ  Quota check: Ensure your subscription has sufficient quota for:'
+            Write-Information '     - Container Apps (minimum 2 apps)'
+            Write-Information '     - Storage Accounts (minimum 3 accounts)'
+            Write-Information '     - Service Bus namespaces (minimum 1)'
+            Write-Information '     - Logic Apps Standard (minimum 1)'
+            Write-Information '     - Container Registry (minimum 1)'
+            Write-Information ''
+            
+            return $true
+        }
+        catch {
+            Write-Verbose "Error checking Azure quotas: $($_.Exception.Message)"
+            return $true  # Don't fail on quota check errors
+        }
+    }
+}
+
+function Invoke-CleanSecrets {
+    <#
+    .SYNOPSIS
+        Invokes the clean-secrets.ps1 script to clear user secrets.
+    
+    .DESCRIPTION
+        Executes the clean-secrets.ps1 script with appropriate parameters.
+        Handles errors gracefully and provides detailed logging.
+    
+    .PARAMETER Force
+        Passes the Force parameter to clean-secrets.ps1 to skip confirmations.
+    
+    .OUTPUTS
+        System.Boolean - Returns $true if successful, $false otherwise.
+    
+    .EXAMPLE
+        Invoke-CleanSecrets -Force
+        Clears all user secrets without confirmation.
     #>
     [CmdletBinding(SupportsShouldProcess)]
     [OutputType([bool])]
@@ -222,121 +549,306 @@ function Invoke-DockerBuild {
     )
 
     begin {
-        Write-Verbose "Preparing to build Docker images..."
+        Write-Verbose 'Preparing to clear user secrets...'
     }
 
     process {
         try {
-            $buildArgs = @('compose', 'build')
-            
-            if ($Force) {
-                $buildArgs += '--no-cache'
-                Write-Verbose "Using --no-cache flag for clean build"
+            # Validate clean-secrets.ps1 exists
+            if (-not (Test-Path -Path $script:CleanSecretsScriptPath -PathType Leaf)) {
+                Write-Warning "clean-secrets.ps1 not found at: $script:CleanSecretsScriptPath"
+                return $false
             }
             
-            $buildCommand = "docker $($buildArgs -join ' ')"
-            
-            if ($PSCmdlet.ShouldProcess('Docker images', 'Build')) {
-                Write-Information "Building Docker images..."
-                Write-Verbose "Executing: $buildCommand"
+            if ($PSCmdlet.ShouldProcess('User secrets', 'Clear all project secrets')) {
+                Write-Information 'Clearing user secrets for all projects...'
+                Write-Verbose "Executing: $script:CleanSecretsScriptPath"
                 
-                # Execute docker compose build
-                $output = & docker @buildArgs 2>&1
-                $exitCode = $LASTEXITCODE
-                
-                if ($exitCode -ne 0) {
-                    Write-Error "Docker build failed with exit code: $exitCode"
-                    if ($output) {
-                        Write-Error "Build output: $($output -join "`n")"
-                    }
-                    return $false
+                # Build splatting hashtable for parameters
+                $cleanSecretsParams = @{}
+                if ($Force) {
+                    $cleanSecretsParams['Force'] = $true
+                }
+                if ($VerbosePreference -eq 'Continue') {
+                    $cleanSecretsParams['Verbose'] = $true
                 }
                 
-                Write-Verbose "Docker build completed successfully"
-                Write-Verbose "Build output: $($output -join "`n")"
+                # Execute clean-secrets.ps1 using splatting
+                if ($cleanSecretsParams.Count -gt 0) {
+                    & $script:CleanSecretsScriptPath @cleanSecretsParams
+                }
+                else {
+                    & $script:CleanSecretsScriptPath
+                }
+                
+                if ($LASTEXITCODE -eq 0) {
+                    Write-Information '✓ User secrets cleared successfully'
+                    return $true
+                }
+                else {
+                    Write-Warning "clean-secrets.ps1 exited with code: $LASTEXITCODE"
+                    return $false
+                }
+            }
+            else {
+                Write-Verbose 'WhatIf: Would clear user secrets'
                 return $true
             }
-            
-            return $true
         }
         catch {
-            Write-Error "Exception during Docker build: $($_.Exception.Message)" -ErrorAction Stop
+            Write-Error "Error clearing user secrets: $($_.Exception.Message)"
             return $false
         }
     }
 }
 
+function Write-PreProvisionHeader {
+    <#
+    .SYNOPSIS
+        Displays the script header with version and environment information.
+    
+    .DESCRIPTION
+        Outputs a formatted header with script details and execution context.
+    
+    .EXAMPLE
+        Write-PreProvisionHeader
+    #>
+    [CmdletBinding()]
+    param()
+
+    process {
+        $timestamp = Get-Date -Format 'yyyy-MM-dd HH:mm:ss'
+        $psVersion = $PSVersionTable.PSVersion
+        $osDescription = if ($PSVersionTable.PSObject.Properties['OS']) { 
+            $PSVersionTable.OS 
+        } 
+        else { 
+            [System.Runtime.InteropServices.RuntimeInformation]::OSDescription 
+        }
+        
+        Write-Information ''
+        Write-Information '╔════════════════════════════════════════════════════════════════╗'
+        Write-Information '║          Azure Pre-Provisioning Script                        ║'
+        Write-Information '╚════════════════════════════════════════════════════════════════╝'
+        Write-Information ''
+        Write-Information "  Version:          $script:ScriptVersion"
+        Write-Information "  Execution Time:   $timestamp"
+        Write-Information "  PowerShell:       $psVersion"
+        Write-Information "  OS:               $osDescription"
+        Write-Information ''
+        Write-Information '────────────────────────────────────────────────────────────────'
+        Write-Information ''
+    }
+}
+
+function Write-PreProvisionSummary {
+    <#
+    .SYNOPSIS
+        Displays the execution summary.
+    
+    .DESCRIPTION
+        Outputs a summary of the pre-provisioning execution results.
+    
+    .PARAMETER Duration
+        The execution duration in seconds.
+    
+    .PARAMETER Success
+        Indicates if the execution was successful.
+    
+    .EXAMPLE
+        Write-PreProvisionSummary -Duration 5.23 -Success $true
+    #>
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true)]
+        [double]$Duration,
+        
+        [Parameter(Mandatory = $true)]
+        [bool]$Success
+    )
+
+    process {
+        Write-Information ''
+        Write-Information '────────────────────────────────────────────────────────────────'
+        Write-Information ''
+        if ($Success) {
+            Write-Information '  Status:           ✓ SUCCESS'
+        }
+        else {
+            Write-Information '  Status:           ✗ FAILED'
+        }
+        Write-Information "  Duration:         $([Math]::Round($Duration, 2)) seconds"
+        Write-Information ''
+        Write-Information '╔════════════════════════════════════════════════════════════════╗'
+        if ($Success) {
+            Write-Information '║   Pre-provisioning completed successfully!                    ║'
+        }
+        else {
+            Write-Information '║   Pre-provisioning completed with errors.                     ║'
+        }
+        Write-Information '╚════════════════════════════════════════════════════════════════╝'
+        Write-Information ''
+    }
+}
+
 #endregion
 
-#region Main Script Execution
+#region Main Execution
 
 try {
     # Start execution timer
     $executionStart = Get-Date
     
-    Write-Information "══════════════════════════════════════════════════════════"
-    Write-Information "Pre-Provisioning Script Started"
-    Write-Information "══════════════════════════════════════════════════════════"
-    Write-Information "Script Version: $script:ScriptVersion"
-    Write-Information "Execution Time: $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')"
-    Write-Information "PowerShell Version: $($PSVersionTable.PSVersion)"
-    Write-Information ""
-
-    # Step 1: Validate Docker availability
-    Write-Host "[1/3] Validating Docker..." -ForegroundColor Yellow
-    if (-not (Test-DockerAvailability)) {
-        Write-Warning "Docker is not running or not installed."
-        Write-Host "Please ensure Docker Desktop is installed and running." -ForegroundColor Yellow
-        Write-Host "Skipping Docker build steps." -ForegroundColor Yellow
-        exit 0
+    # Display header
+    Write-PreProvisionHeader
+    
+    # Step 1: Validate PowerShell version
+    Write-Information 'Step 1: Validating PowerShell version...'
+    if (-not (Test-PowerShellVersion)) {
+        throw "PowerShell version $($PSVersionTable.PSVersion) is not supported. Minimum required: $script:MinimumPowerShellVersion"
     }
-    Write-Host "✓ Docker is available and running" -ForegroundColor Green
-    Write-Host ""
-
-    # Step 2: Validate docker-compose.yml exists
-    Write-Host "[2/3] Validating Docker Compose configuration..." -ForegroundColor Yellow
-    if (-not (Test-DockerComposeFile)) {
-        Write-Warning "docker-compose.yml not found in the project directory."
-        Write-Host "Skipping Docker build steps." -ForegroundColor Yellow
-        exit 0
-    }
-    Write-Host "✓ Docker Compose configuration found" -ForegroundColor Green
-    Write-Host ""
-
-    # Step 3: Build Docker images (if not skipped)
-    if ($SkipBuild) {
-        Write-Host "[3/3] Skipping Docker build (SkipBuild flag set)" -ForegroundColor Yellow
+    Write-Information "  ✓ PowerShell $($PSVersionTable.PSVersion) is compatible"
+    Write-Information ''
+    
+    # Step 2: Validate prerequisites
+    Write-Information 'Step 2: Validating prerequisites...'
+    Write-Information ''
+    
+    $prerequisitesFailed = $false
+    
+    # Check .NET SDK
+    Write-Information '  • Checking .NET SDK...'
+    if (-not (Test-DotNetSDK)) {
+        Write-Warning "    ✗ .NET SDK $script:MinimumDotNetVersion or higher is required"
+        Write-Warning "      Download from: https://dotnet.microsoft.com/download/dotnet/10.0"
+        $prerequisitesFailed = $true
     }
     else {
-        Write-Host "[3/3] Building Docker images..." -ForegroundColor Yellow
-        $buildSuccess = Invoke-DockerBuild -Force:$Force
-
-        if (-not $buildSuccess) {
-            Write-Error "Docker image build failed. Please review the errors above."
-            exit 1
-        }
-        Write-Host "✓ Docker images built successfully" -ForegroundColor Green
+        Write-Information '    ✓ .NET SDK is available and compatible'
     }
-
-    Write-Information ""
-    Write-Information "══════════════════════════════════════════════════════════"
-    Write-Information "Pre-Provisioning Completed Successfully!"
-    Write-Information "══════════════════════════════════════════════════════════"
+    Write-Information ''
     
+    # Check Azure Developer CLI
+    Write-Information '  • Checking Azure Developer CLI...'
+    if (-not (Test-AzureDeveloperCLI)) {
+        Write-Warning '    ✗ Azure Developer CLI (azd) is required'
+        Write-Warning '      Install from: https://aka.ms/azd/install'
+        $prerequisitesFailed = $true
+    }
+    else {
+        Write-Information '    ✓ Azure Developer CLI is available'
+    }
+    Write-Information ''
+    
+    # Check Azure CLI
+    Write-Information '  • Checking Azure CLI...'
+    if (-not (Test-AzureCLI)) {
+        Write-Warning "    ✗ Azure CLI $script:MinimumAzureCLIVersion or higher is required"
+        Write-Warning '      Install from: https://docs.microsoft.com/cli/azure/install-azure-cli'
+        Write-Warning '      After installation, authenticate with: az login'
+        $prerequisitesFailed = $true
+    }
+    else {
+        Write-Information '    ✓ Azure CLI is available and authenticated'
+    }
+    Write-Information ''
+    
+    # Check Bicep CLI
+    Write-Information '  • Checking Bicep CLI...'
+    if (-not (Test-BicepCLI)) {
+        Write-Warning "    ✗ Bicep CLI $script:MinimumBicepVersion or higher is required"
+        Write-Warning '      Install with Azure CLI: az bicep install'
+        Write-Warning '      Or upgrade: az bicep upgrade'
+        $prerequisitesFailed = $true
+    }
+    else {
+        Write-Information '    ✓ Bicep CLI is available and compatible'
+    }
+    Write-Information ''
+    
+    # Check Azure Resource Providers
+    if (-not $prerequisitesFailed) {
+        Write-Information '  • Checking Azure Resource Provider registration...'
+        if (-not (Test-AzureResourceProviders)) {
+            Write-Warning '    ✗ Some required Azure resource providers are not registered'
+            Write-Warning '      See warnings above for registration commands'
+            $prerequisitesFailed = $true
+        }
+        else {
+            Write-Information '    ✓ All required resource providers are registered'
+        }
+        Write-Information ''
+        
+        # Check quotas (informational only)
+        Write-Information '  • Checking Azure subscription quotas...'
+        Test-AzureQuota | Out-Null
+        Write-Information ''
+    }
+    else {
+        Write-Information '  • Skipping Azure resource provider check (previous validations failed)'
+        Write-Information ''
+    }
+    
+    if ($prerequisitesFailed) {
+        throw 'One or more required prerequisites are missing or not configured. Please address the issues above.'
+    }
+    
+    Write-Information '  ✓ All prerequisites validated successfully'
+    Write-Information ''
+    
+    # Step 3: Clear user secrets (unless skipped or validate-only)
+    if ($ValidateOnly) {
+        Write-Information 'Step 3: Skipping user secrets clearing (ValidateOnly mode)'
+        Write-Information ''
+    }
+    elseif ($SkipSecretsClear) {
+        Write-Information 'Step 3: Skipping user secrets clearing (SkipSecretsClear flag set)'
+        Write-Information ''
+    }
+    else {
+        Write-Information 'Step 3: Clearing user secrets...'
+        Write-Information ''
+        
+        $cleanSuccess = Invoke-CleanSecrets -Force:$Force
+        
+        if (-not $cleanSuccess) {
+            Write-Warning 'User secrets clearing completed with warnings.'
+            Write-Warning 'This may not affect deployment, but should be investigated.'
+        }
+        
+        Write-Information ''
+    }
+    
+    # Calculate execution duration
     $executionDuration = (New-TimeSpan -Start $executionStart -End (Get-Date)).TotalSeconds
-    Write-Information "Duration: $([Math]::Round($executionDuration, 2)) seconds"
-    Write-Verbose "Exiting with success code 0"
     
+    # Display summary
+    Write-PreProvisionSummary -Duration $executionDuration -Success $true
+    
+    Write-Verbose 'Pre-provisioning completed successfully'
     exit 0
 }
 catch {
-    Write-Error "Pre-provisioning failed with error: $($_.Exception.Message)"
-    Write-Error "Stack trace: $($_.ScriptStackTrace)"
+    # Calculate execution duration
+    $executionDuration = if ($executionStart) {
+        (New-TimeSpan -Start $executionStart -End (Get-Date)).TotalSeconds
+    }
+    else {
+        0
+    }
+    
+    # Display error summary
+    Write-PreProvisionSummary -Duration $executionDuration -Success $false
+    
+    Write-Error "Pre-provisioning failed: $($_.Exception.Message)"
+    Write-Verbose "Stack trace: $($_.ScriptStackTrace)"
     exit 1
 }
 finally {
-    # Cleanup or final steps if needed
-    Write-Verbose "Pre-provisioning script completed."
+    # Reset preferences
+    $ErrorActionPreference = 'Continue'
+    $InformationPreference = 'Continue'
+    Write-Verbose 'Pre-provisioning script execution completed.'
 }
 
 #endregion

@@ -1,0 +1,1 @@
+.\preprovision.ps1 -ValidateOnly -InformationAction Continue 2>&1 | Out-String
