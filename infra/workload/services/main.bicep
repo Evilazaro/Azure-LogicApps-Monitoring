@@ -180,20 +180,6 @@ resource appEnvStorage 'Microsoft.App/managedEnvironments/storages@2025-02-02-pr
   }
 }
 
-@description('Azure Files storage mount for orders-api persistent data')
-resource ordersStorage 'Microsoft.App/managedEnvironments/storages@2025-02-02-preview' = {
-  parent: appEnv
-  name: storageVolumeName
-  properties: {
-    azureFile: {
-      accountName: caVolumeMountSAName
-      accountKey: caVolumeMountSAKey
-      shareName: caVolumeMountFileShareName
-      accessMode: 'ReadWrite'
-    }
-  }
-}
-
 // ========== Outputs ==========
 
 @description('Login server endpoint for the Azure Container Registry')
@@ -212,4 +198,4 @@ output AZURE_CONTAINER_APPS_ENVIRONMENT_NAME string = appEnv.name
 output AZURE_CONTAINER_APPS_ENVIRONMENT_DEFAULT_DOMAIN string = appEnv.properties.defaultDomain
 
 @description('Name of the storage volume mount for orders-api')
-output ORDERS_STORAGE_VOLUME_NAME string = ordersStorage.name
+output ORDERS_STORAGE_VOLUME_NAME string = storageVolumeName

@@ -179,7 +179,7 @@ output LOGICAPPS_STORAGE_ACCOUNT_NAME string = workload.outputs.WORKFLOW_STORAGE
 output ORDERS_STORAGE_VOLUME_NAME string = workload.outputs.ORDERS_STORAGE_VOLUME_NAME
 
 @description('Orders Storage Account Blob Endpoint')
-output ORDERS_STORAGE_BLOBENDPOINT string = workload.outputs.ORDERS_STORAGE_BLOBENDPOINT
+output DATA_BLOBENDPOINT string = workload.outputs.DATA_BLOBENDPOINT
 
 @description('Orders API Storage Account Name')
 output ORDERS_STORAGE_ACCOUNT_NAME string = workload.outputs.ORDERS_STORAGE_ACCOUNT_NAME
