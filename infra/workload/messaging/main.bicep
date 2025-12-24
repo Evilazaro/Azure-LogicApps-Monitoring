@@ -91,7 +91,7 @@ resource broker 'Microsoft.ServiceBus/namespaces@2025-05-01-preview' = {
   }
   tags: tags
   identity: {
-    type: 'SystemAssigned, UserAssigned'
+    type: 'UserAssigned'
     userAssignedIdentities: {
       '${userAssignedIdentityId}': {}
     }

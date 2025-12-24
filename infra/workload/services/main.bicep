@@ -101,7 +101,7 @@ resource registry 'Microsoft.ContainerRegistry/registries@2025-11-01' = {
   name: toLower('${name}acr${uniqueString(subscription().id, resourceGroup().id, location, envName)}')
   location: location
   identity: {
-    type: 'SystemAssigned, UserAssigned'
+    type: 'UserAssigned'
     userAssignedIdentities: {
       '${userAssignedIdentityId}': {}
     }
@@ -134,7 +134,7 @@ resource appEnv 'Microsoft.App/managedEnvironments@2025-02-02-preview' = {
   location: location
   tags: tags
   identity: {
-    type: 'SystemAssigned, UserAssigned'
+    type: 'UserAssigned'
     userAssignedIdentities: {
       '${userAssignedIdentityId}': {}
     }
