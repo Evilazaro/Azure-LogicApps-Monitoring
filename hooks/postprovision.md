@@ -1094,3 +1094,6 @@ jobs:
 **Last Updated**: December 24, 2025  
 **Script Version**: 2.0.0  
 **Compatibility**: PowerShell 7.0+, .NET 10.0+, Azure CLI 2.60.0+
+---
+
+**Made with ❤️ by Evilazaro | Principal Cloud Solution Architect | Microsoft**

@@ -872,3 +872,7 @@ azd up
 **Last Updated**: December 24, 2025  
 **Script Version**: 2.0.0  
 **Compatibility**: PowerShell 7.0+, .NET 10.0+, Windows/macOS/Linux
+
+---
+
+**Made with ❤️ by Evilazaro | Principal Cloud Solution Architect | Microsoft**

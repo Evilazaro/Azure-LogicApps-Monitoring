@@ -47,58 +47,48 @@ The Developer Inner Loop consists of iterative cycles through validation, provis
 ### Workflow Phases
 
 ```mermaid
-graph LR
-    Start[Developer Workstation] --> Phase1
+flowchart LR
+    Start([👨‍💻 Developer Starts Work]) --> Validate
     
-    subgraph Phase1["🔍 Phase 1: Environment Validation"]
-        direction LR
-        CheckDev[check-dev-workstation<br/>Optional but Recommended]
-        PreProv[preprovision<br/>Required by azd]
-        CheckDev --> PreProv
+    subgraph Setup["🔧 ONE-TIME SETUP"]
+        direction TB
+        Validate["1️⃣ Validate Environment<br/>check-dev-workstation + preprovision<br/>⏱️ ~20 sec"] 
+        Validate --> CheckValid{✅ Prerequisites OK?}
+        CheckValid --> |No| Fix[🔧 Install/Update Tools]
+        Fix --> Validate
+        CheckValid --> |Yes| Provision
+        
+        Provision["2️⃣ Provision Infrastructure<br/>azd provision<br/>⏱️ ~5-10 min"]
+        Provision --> CheckDeploy{✅ Deployed OK?}
+        CheckDeploy --> |No| Debug[🐛 Debug & Fix]
+        Debug --> Provision
+        CheckDeploy --> |Yes| Configure
+        
+        Configure["3️⃣ Configure Secrets<br/>postprovision + Generate-Orders<br/>⏱️ ~15 sec"]
     end
     
-    Phase1 --> Decision1{Prerequisites<br/>Met?}
-    Decision1 -->|No| Fix[Fix Issues]
-    Fix --> Phase1
-    Decision1 -->|Yes| Phase2
+    Configure --> Ready([✅ Environment Ready])
+    Ready --> DevLoop
     
-    subgraph Phase2["🚀 Phase 2: Infrastructure Provisioning"]
-        direction LR
-        AzdProv[azd provision<br/>Bicep Deployment]
+    subgraph DevLoop["🔄 DEVELOPER INNER LOOP"]
+        direction TB
+        Code[💻 Write Code] --> Test[🧪 Test Locally]
+        Test --> Review{Works?}
+        Review --> |Yes| Code
+        Review --> |Needs Infra Changes| ExitLoop[ ]
     end
     
-    Phase2 --> Decision2{Deployment<br/>Success?}
-    Decision2 -->|No| Debug[Debug & Retry]
-    Debug --> Phase2
-    Decision2 -->|Yes| Phase3
+    ExitLoop --> Validate
     
-    subgraph Phase3["⚙️ Phase 3: Post-Deployment Configuration"]
-        direction LR
-        PostProv[postprovision] --> CleanSec[clean-secrets]
-        CleanSec --> SetSec[Configure User Secrets<br/>26 secrets across 3 projects]
-    end
-    
-    Phase3 --> Phase4
-    
-    subgraph Phase4["🧪 Phase 4: Test Data Generation"]
-        direction LR
-        GenOrders[Generate-Orders<br/>Optional]
-    end
-    
-    Phase4 --> Ready[Ready for Development]
-    Ready --> Develop[Develop & Test]
-    Develop --> Changes{Need to<br/>Reprovision?}
-    Changes -->|Yes| Phase1
-    Changes -->|No| Develop
-    
-    style Start fill:#e3f2fd,stroke:#1976d2,stroke-width:2px
-    style Ready fill:#d1e7dd,stroke:#198754,stroke-width:2px
-    style Develop fill:#d1e7dd,stroke:#198754,stroke-width:2px
-    style Fix fill:#f8d7da,stroke:#dc3545,stroke-width:2px
-    style Debug fill:#f8d7da,stroke:#dc3545,stroke-width:2px
-    style Decision1 fill:#fff3cd,stroke:#ffc107,stroke-width:2px
-    style Decision2 fill:#fff3cd,stroke:#ffc107,stroke-width:2px
-    style Changes fill:#fff3cd,stroke:#ffc107,stroke-width:2px
+    style Start fill:#0078d4,stroke:#005a9e,stroke-width:3px,color:#fff
+    style Ready fill:#28a745,stroke:#218838,stroke-width:3px,color:#fff
+    style Setup fill:#f8f9fa,stroke:#6c757d,stroke-width:2px
+    style DevLoop fill:#fff3e0,stroke:#ff9800,stroke-width:4px
+    style Code fill:#e3f2fd,stroke:#1976d2,stroke-width:2px
+    style Test fill:#e8f5e9,stroke:#4caf50,stroke-width:2px
+    style Fix fill:#ffebee,stroke:#f44336,stroke-width:2px
+    style Debug fill:#ffebee,stroke:#f44336,stroke-width:2px
+    style ExitLoop fill:none,stroke:none
 ```
 
 ---
