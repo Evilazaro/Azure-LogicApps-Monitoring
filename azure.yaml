@@ -59,15 +59,15 @@ hooks:
       run: |
         ./hooks/postprovision.sh --force       # Configure .NET user secrets
         ./hooks/Generate-Orders.sh --force     # Generate test order data
-      continueOnError: false           # Fail fast on validation errors
-      interactive: false               # Non-interactive execution
+      continueOnError: false
+      interactive: false
     windows:                           # Windows configuration
       shell: pwsh
       run: |
         ./hooks/postprovision.ps1 -Force      # Configure .NET user secrets
         ./hooks/Generate-Orders.ps1 -Force    # Generate test order data
-      continueOnError: false           # Fail fast on validation errors
-      interactive: false               # Non-interactive execution
+      continueOnError: false
+      interactive: false
 
 # ------------------------------------------------------------------------------
 # Application Services
