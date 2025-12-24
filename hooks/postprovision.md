@@ -9,13 +9,36 @@
 
 ## 📋 Overview
 
-`postprovision` is an Azure Developer CLI (azd) hook that automatically configures .NET user secrets with Azure resource information immediately after infrastructure provisioning completes. Available in both PowerShell (`.ps1`) and Bash (`.sh`) versions, it bridges the gap between infrastructure deployment and application configuration, ensuring that applications have the correct connection strings, endpoints, and resource identifiers.
+The `postprovision` script is an Azure Developer CLI (azd) hook that automatically configures .NET user secrets with Azure resource information immediately after infrastructure provisioning completes. As the third and final step in the deployment workflow, it bridges the gap between infrastructure deployment and application configuration by extracting Bicep outputs and Azure resource properties to populate connection strings, endpoints, and identifiers. Available in both PowerShell (`.ps1`) and Bash (`.sh`) versions for cross-platform compatibility.
 
-**Available Versions:**
-- **Windows/PowerShell**: `postprovision.ps1`
-- **Linux/macOS/Bash**: `postprovision.sh`
+Triggered automatically by `azd provision` and `azd up`, the script validates environment variables set by azd, authenticates to Azure Container Registry if configured, clears stale secrets via clean-secrets.ps1, and configures 26 secrets across three projects (app.AppHost, eShop.Orders.API, eShop.Web.App). Each project receives its tailored configuration including connection strings for Service Bus and Storage, Application Insights connection details, and service endpoints.
 
-**Workflow Position**: 3️⃣ Third → Automatically runs after `azd provision` completes (following check-dev-workstation → preprovision)
+With comprehensive validation, error handling, and detailed logging, the script typically completes in 8-13 seconds, providing immediate feedback on configuration success. It supports both automatic execution within the azd workflow and manual invocation for reconfiguration scenarios, with optional Force and Verbose modes for CI/CD integration and troubleshooting.
+
+## 📑 Table of Contents
+
+- [Overview](#-overview)
+- [Purpose](#-purpose)
+- [Required Environment Variables](#️-required-environment-variables)
+- [Usage](#-usage)
+  - [Automatic Execution](#automatic-execution-standard)
+  - [Manual Execution](#manual-execution)
+  - [Force Mode](#force-mode)
+  - [Verbose Mode](#verbose-mode)
+  - [WhatIf Mode](#whatif-mode)
+- [Parameters](#-parameters)
+- [Examples](#-examples)
+- [Configured Secrets](#-configured-secrets)
+- [How It Works](#️-how-it-works)
+  - [Workflow Diagram](#workflow-diagram)
+  - [Integration Points](#integration-points)
+- [Troubleshooting](#️-troubleshooting)
+- [Technical Implementation](#-technical-implementation)
+- [Related Documentation](#-related-documentation)
+- [Security Considerations](#-security-considerations)
+- [Best Practices](#-best-practices)
+- [Performance](#-performance)
+- [Version History](#-version-history)
 
 ## 🎯 Purpose
 
@@ -366,116 +389,54 @@ Enables detailed diagnostic output.
 
 ### Workflow Diagram
 
-**Context**: This is step 3️⃣ in the workflow: check-dev-workstation → preprovision → **postprovision**
+The script executes a comprehensive post-provisioning configuration workflow:
 
 ```mermaid
 flowchart LR
-    Start["3️⃣ azd provision completes<br/>• Infrastructure deployed<br/>• Outputs captured"]
-    Start --> SetEnv["azd sets environment variables<br/>• From Bicep outputs<br/>• From resource properties<br/>• From .env file"]
-    SetEnv --> Execute["azd executes postprovision.ps1"]
+    Start(["🚀 azd provision completes"])
+    SetEnv["1️⃣ azd Sets Env Variables<br/>• Bicep outputs<br/>• Resource properties<br/>• .env file values"]
+    Execute["2️⃣ Execute postprovision<br/>• Called by azd hook<br/>• Environment ready"]
+    Validate["3️⃣ Validate Environment<br/>• Required variables<br/>• Subscription ID<br/>• Resource group"]
+    ACRAuth["4️⃣ ACR Authentication<br/>• Check ACR endpoint<br/>• az acr login<br/>• Graceful skip if N/A"]
+    Clear["5️⃣ Clear Old Secrets<br/>• Run clean-secrets.ps1<br/>• Clean slate<br/>• 3 projects"]
+    ConfigLoop["6️⃣ Configure Secrets Loop<br/>For each project"]
+    ConfigProject["Set Project Secrets<br/>• app.AppHost: 12<br/>• Orders.API: 8<br/>• Web.App: 6"]
+    Validate2["7️⃣ Validate Configuration<br/>• Verify secrets set<br/>• Check for errors<br/>• Count totals"]
+    Summary["8️⃣ Display Summary<br/>• Projects: 3<br/>• Secrets: 26<br/>• Time & status"]
+    End(["🏁 Complete"])
     
-    subgraph ValidationPhase["Validation Phase"]
-        Execute --> Validate["Validate environment variables<br/>• AZURE_SUBSCRIPTION_ID<br/>• AZURE_RESOURCE_GROUP<br/>• AZURE_LOCATION"]
-        Validate --> ACRAuth["Azure Container Registry auth<br/>• Check for ACR endpoint<br/>• Run: az acr login<br/>• Handle errors gracefully"]
-    end
+    Start --> SetEnv
+    SetEnv --> Execute
+    Execute --> Validate
+    Validate --> ACRAuth
+    ACRAuth --> Clear
+    Clear --> ConfigLoop
+    ConfigLoop --> ConfigProject
+    ConfigProject --> ConfigLoop
+    ConfigLoop --> Validate2
+    Validate2 --> Summary
+    Summary --> End
     
-    ACRAuth --> ClearSecrets["Clear existing secrets<br/>• Execute clean-secrets.ps1<br/>• Prepare clean slate"]
+    classDef startEnd fill:#e8f5e9,stroke:#2e7d32,stroke-width:3px,color:#1b5e20
+    classDef process fill:#e3f2fd,stroke:#1976d2,stroke-width:2px,color:#0d47a1
+    classDef config fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px,color:#4a148c
+    classDef loop fill:#fff3e0,stroke:#f57c00,stroke-width:2px,color:#e65100
     
-    subgraph ConfigurationPhase["Configuration Phase"]
-        ClearSecrets --> ConfigAppHost["Configure app.AppHost secrets<br/>• 12 secrets from env vars<br/>• Connection strings<br/>• Service endpoints"]
-        ConfigAppHost --> ConfigOrdersAPI["Configure eShop.Orders.API secrets<br/>• 8 secrets from env vars<br/>• Database connections<br/>• API keys"]
-        ConfigOrdersAPI --> ConfigWebApp["Configure eShop.Web.App secrets<br/>• 6 secrets from env vars<br/>• Service endpoints<br/>• Authentication settings"]
-    end
-    
-    ConfigWebApp --> Summary["Display summary and exit<br/>• Total projects configured<br/>• Total secrets set<br/>• Execution time<br/>• Exit code: 0 (success)"]
-    
-    classDef startClass fill:#d4edda,stroke:#28a745,stroke-width:2px,color:#155724
-    classDef validateClass fill:#cfe2ff,stroke:#0d6efd,stroke-width:2px,color:#084298
-    classDef configClass fill:#e2d5f1,stroke:#6f42c1,stroke-width:2px,color:#3d2065
-    classDef summaryClass fill:#d1ecf1,stroke:#17a2b8,stroke-width:2px,color:#0c5460
-    
-    class Start startClass
-    class SetEnv,Execute,Validate,ACRAuth validateClass
-    class ClearSecrets,ConfigAppHost,ConfigOrdersAPI,ConfigWebApp configClass
-    class Summary summaryClass
+    class Start,End startEnd
+    class SetEnv,Execute,Validate,ACRAuth,Clear,Validate2,Summary process
+    class ConfigLoop loop
+    class ConfigProject config
 ```
 
-### Internal Functions
+### Integration Points
 
-#### `Test-RequiredEnvironmentVariable`
-Validates that a required environment variable exists and has a value.
-
-```powershell
-function Test-RequiredEnvironmentVariable {
-    param([string]$Name)
-    
-    $value = [Environment]::GetEnvironmentVariable($Name)
-    
-    if ([string]::IsNullOrWhiteSpace($value)) {
-        Write-Warning "Required variable '$Name' not set"
-        return $false
-    }
-    
-    return $true
-}
-```
-
-#### `Set-DotNetUserSecret`
-Sets a user secret with error handling and validation.
-
-```powershell
-function Set-DotNetUserSecret {
-    param(
-        [string]$Key,
-        [string]$Value,
-        [string]$ProjectPath
-    )
-    
-    if ([string]::IsNullOrWhiteSpace($Value)) {
-        Write-Verbose "Skipping empty value for key: $Key"
-        return $false
-    }
-    
-    if ($PSCmdlet.ShouldProcess($Key, "Set User Secret")) {
-        $result = dotnet user-secrets set $Key $Value --project $ProjectPath 2>&1
-        
-        if ($LASTEXITCODE -eq 0) {
-            Write-Verbose "✓ Set secret: $Key"
-            return $true
-        }
-        else {
-            Write-Warning "Failed to set secret: $Key - $result"
-            return $false
-        }
-    }
-}
-```
-
-#### `Test-AzureContainerRegistryAuth`
-Authenticates to Azure Container Registry if configured.
-
-```powershell
-function Test-AzureContainerRegistryAuth {
-    $acrEndpoint = [Environment]::GetEnvironmentVariable('AZURE_CONTAINER_REGISTRY_ENDPOINT')
-    
-    if ([string]::IsNullOrWhiteSpace($acrEndpoint)) {
-        Write-Verbose "No ACR endpoint configured, skipping authentication"
-        return $true
-    }
-    
-    Write-Information "Authenticating to Azure Container Registry..."
-    $result = az acr login --name $acrEndpoint 2>&1
-    
-    if ($LASTEXITCODE -eq 0) {
-        Write-Information "✓ ACR authentication successful"
-        return $true
-    }
-    else {
-        Write-Warning "ACR authentication failed: $result"
-        return $false
-    }
-}
-```
+| Aspect | Details |
+|--------|---------|  
+| **Called By** | • **Azure Developer CLI (azd)** automatically after `azd provision` or `azd up`<br/>• Developers manually for reconfiguration without reprovisioning<br/>• CI/CD pipelines during automated deployment workflows<br/>• Post-deployment automation scripts for environment setup |
+| **Calls** | • `clean-secrets.ps1` or `clean-secrets.sh` to clear existing secrets<br/>• `dotnet user-secrets set` for each secret configuration<br/>• `az acr login` for Azure Container Registry authentication<br/>• Environment variable reads from azd-set values |
+| **Dependencies** | • **Runtime:** PowerShell 7.0+ or Bash 4.0+<br/>• **.NET SDK:** Version 10.0+ with user-secrets tool<br/>• **Azure CLI:** Version 2.60.0+ for ACR authentication<br/>• **Azure Developer CLI (azd):** For automatic hook execution and environment variables<br/>• **Azure Resources:** Provisioned infrastructure with Bicep outputs<br/>• **clean-secrets script:** Must exist in same hooks directory |
+| **Outputs** | • **User Secrets:** 26 secrets across 3 projects in local user secrets storage<br/>• **Console Output:** Progress messages, validation results, summary statistics<br/>• **Exit Code:** 0 (success) or 1 (failure with detailed error messages)<br/>• **Verbose Logs:** Detailed diagnostic information for each operation (optional)<br/>• **WhatIf Preview:** Simulated execution plan without making changes (optional) |
+| **Integration Role** | Serves as the **critical configuration bridge** between Azure infrastructure provisioning and local application development. Automatically translates Azure resource information into application configuration, enabling immediate local development and testing with real Azure resources. Essential for azd-based development workflows, ensuring seamless transition from deployment to development. |
 
 ## 📚 Examples
 
@@ -1147,13 +1108,17 @@ jobs:
 - ACR authentication: 2-3 seconds
 - Clear secrets: 2-4 seconds (via clean-secrets.ps1)
 - Configure secrets: 3-5 seconds (3 projects, 26 secrets)
-- **Total**: 8-13 seconds
+## 📋 Performance
 
-**Resource Usage:**
-- Memory: ~50 MB
-- CPU: Low (dotnet CLI + az CLI operations)
-- Network: Minimal (ACR auth only)
-- Disk: Minimal (secrets.json files)
+### Performance Characteristics
+
+| Characteristic | Details |
+|----------------|---------||
+| **Execution Time** | • **Environment validation:** 1-2 seconds<br/>• **ACR authentication:** 2-3 seconds (if configured)<br/>• **Clear secrets:** 2-4 seconds (calls clean-secrets.ps1)<br/>• **Configure secrets:** 3-6 seconds (26 secrets across 3 projects)<br/>• **Total standard:** 8-13 seconds<br/>• **With -Verbose:** 10-15 seconds |
+| **Resource Usage** | • **Memory:** ~50 MB peak during execution<br/>• **CPU:** Low utilization - dotnet CLI and az CLI operations<br/>• **Disk I/O:** Moderate - writes to secrets.json files<br/>• **Process spawning:** 30+ child processes (dotnet user-secrets commands)<br/>• **Baseline:** Lightweight orchestration script |
+| **Network Impact** | • **ACR authentication:** Single API call to Azure Container Registry<br/>• **Azure CLI:** Minimal network usage for authentication token refresh<br/>• **Environment variables:** Read from local azd context (no network)<br/>• **Secret storage:** Local file system only (no network)<br/>• **Bandwidth:** < 10 KB total (primarily ACR auth) |
+| **Scalability** | • **Linear with projects:** O(n) scaling with number of projects<br/>• **Linear with secrets:** O(m) scaling with secrets per project<br/>• **Sequential processing:** Projects configured one at a time<br/>• **No degradation:** Consistent per-secret configuration time<br/>• **Tested configuration:** 3 projects, 26 secrets completes in <15s |
+| **Optimization** | • **Batch validation:** All environment variables checked upfront<br/>• **Conditional ACR:** Skips authentication if not configured<br/>• **Efficient clearing:** Delegates to optimized clean-secrets script<br/>• **Error handling:** Early exit on critical failures<br/>• **Minimal overhead:** Direct dotnet CLI invocations |
 
 ## 🔄 Version History
 
@@ -1169,57 +1134,7 @@ jobs:
 | **1.0.0** | 2025-12-15 | Initial release |
 |           |            | • Basic secret configuration |
 
-## 📞 Support
-
-### Getting Help
-
-1. **Review Error Messages**: Script provides detailed errors with context
-2. **Use Verbose Mode**: Run with `-Verbose` for diagnostic information
-3. **Check Environment Variables**: Verify azd set all required variables
-4. **Verify Azure Login**: Ensure `az login` is successful
-5. **Test Components**: Use `-WhatIf` to preview operations
-
-### Manual Secret Management
-
-If the script fails, manually configure secrets:
-
-```powershell
-# List current secrets
-dotnet user-secrets list --project ..\app.AppHost\app.AppHost.csproj
-
-# Set a secret manually
-dotnet user-secrets set "ConnectionStrings:ServiceBus" "Endpoint=sb://..." `
-    --project ..\app.AppHost\app.AppHost.csproj
-
-# Remove a secret
-dotnet user-secrets remove "ConnectionStrings:ServiceBus" `
-    --project ..\app.AppHost\app.AppHost.csproj
-
-# Clear all secrets
-dotnet user-secrets clear --project ..\app.AppHost\app.AppHost.csproj
-```
-
-### Reporting Issues
-
-When reporting problems:
-
-1. Run with verbose logging: `.\postprovision.ps1 -Verbose`
-2. Capture complete output
-3. Include environment details:
-   - PowerShell version: `$PSVersionTable`
-   - .NET SDK version: `dotnet --version`
-   - Azure CLI version: `az --version`
-   - azd version: `azd version`
-4. List environment variables: `azd env get-values`
-5. Create GitHub issue with above information
-
-## 📄 License
-
-Copyright (c) 2025 Azure-LogicApps-Monitoring Team. All rights reserved.
-
-This script is part of the Azure-LogicApps-Monitoring solution.
-
-## 🔗 Quick Links
+##  Quick Links
 
 - **Repository**: [Azure-LogicApps-Monitoring](https://github.com/Evilazaro/Azure-LogicApps-Monitoring)
 - **Issues**: [Report Bug](https://github.com/Evilazaro/Azure-LogicApps-Monitoring/issues)

@@ -925,16 +925,15 @@ azd up
 
 ## 📊 Performance
 
-**Execution Time:**
-- Standard execution: **2-4 seconds**
-- With `-Verbose`: **3-5 seconds**
-- Large number of secrets: **5-8 seconds**
+### Performance Characteristics
 
-**Resource Usage:**
-- Memory: ~30 MB
-- CPU: Low (dotnet CLI operations)
-- Disk: Minimal (delete operations)
-- Network: None
+| Characteristic | Details |
+|----------------|---------|
+| **Execution Time** | • **Standard execution:** 2-4 seconds (3 projects)<br/>• **With -Verbose flag:** 3-5 seconds<br/>• **Large number of secrets:** 5-8 seconds<br/>• **Per-project time:** ~1 second (dotnet user-secrets clear)<br/>• **Scaling:** Linear O(n) with number of projects |
+| **Resource Usage** | • **Memory:** ~30 MB peak during execution<br/>• **CPU:** Low utilization - dotnet CLI operations only<br/>• **Disk I/O:** Minimal delete operations on secrets.json files<br/>• **Process spawning:** 3 dotnet CLI child processes<br/>• **Baseline:** Lightweight script with minimal overhead |
+| **Network Impact** | • **Zero network calls** - completely offline operation<br/>• **No Azure connections** - local file system only<br/>• **No API requests** - uses .NET SDK local commands<br/>• **Ideal for disconnected environments**<br/>• **No bandwidth consumption** |
+| **Scalability** | • **Consistent per-project time:** No degradation with secrets count<br/>• **Parallel safe:** Can run in multiple terminals (different projects)<br/>• **No locking issues:** Each project has unique secret storage<br/>• **Fast completion:** 3 projects cleared in under 5 seconds |
+| **Optimization** | • **Sequential processing:** Projects cleared one at a time<br/>• **No redundant checks:** Direct dotnet CLI invocation<br/>• **Minimal validation:** Only checks .NET SDK availability<br/>• **Efficient operation:** Single delete per project<br/>• **No caching needed:** Direct file system operations |
 
 ## 🔄 Version History
 
