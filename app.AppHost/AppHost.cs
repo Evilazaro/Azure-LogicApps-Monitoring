@@ -77,7 +77,7 @@ static void ConfigureOrdersStoragePath(
     IResourceBuilder<ParameterResource>? resourceGroupParameter)
 {
     const string DefaultParamName = "data";
-    const string LocalStoragePath = "data/orders";
+    const string LocalStoragePath = "data";
     const string StorageDirectoryKey = "OrderStorage__StorageDirectory";
     const string DefaultStorageName = "orders-storage";
     const string BlobContainerName = "orders";
