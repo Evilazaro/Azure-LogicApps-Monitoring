@@ -11,21 +11,6 @@
 
 This directory contains automation scripts available in both PowerShell (`.ps1`) and Bash (`.sh`) versions that are executed during the Azure deployment lifecycle via Azure Developer CLI (azd). These scripts ensure that the environment is properly configured and prepared before and after provisioning Azure resources.
 
-## 📑 Table of Contents
-
-- [Core Scripts](#core-scripts)
-- [Technical Deep-Dive: preprovision.ps1 Enhancements](#technical-deep-dive-preprovisionps1-enhancements)
-- [Project Enhancement Summary](#project-enhancement-summary)
-- [Documentation Files](#documentation-files)
-- [Quick Start](#quick-start)
-- [Architecture](#architecture)
-- [Validation Prerequisites](#validation-prerequisites)
-- [Common Workflows](#common-workflows)
-- [Troubleshooting](#troubleshooting)
-- [Performance Considerations](#performance-considerations)
-- [Best Practices](#best-practices)
-- [Support and Resources](#support-and-resources)
-
 ## 🔧 Core Scripts
 
 ### Production Scripts

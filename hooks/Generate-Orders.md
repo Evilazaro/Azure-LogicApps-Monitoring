@@ -20,24 +20,6 @@
 
 **Use After**: Complete the main workflow (check-dev-workstation → preprovision → postprovision) before generating test data
 
-## 📑 Table of Contents
-
-- [Purpose](#purpose)
-- [Data Structure](#data-structure)
-- [Usage](#usage)
-- [Parameters](#parameters)
-- [Examples](#examples)
-- [How It Works](#how-it-works)
-- [Troubleshooting](#troubleshooting)
-- [Technical Implementation](#technical-implementation)
-- [Related Documentation](#related-documentation)
-- [Best Practices](#best-practices)
-- [Performance](#performance)
-- [Version History](#version-history)
-- [Support](#support)
-- [License](#license)
-- [Quick Links](#quick-links)
-
 ## 🎯 Purpose
 
 This script helps developers and testers:

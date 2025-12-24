@@ -16,26 +16,6 @@
 
 **Workflow Position**: 1️⃣ First → Run before `preprovision.ps1` and `postprovision.ps1`
 
-## 📑 Table of Contents
-
-- [Purpose](#purpose)
-- [What It Validates](#what-it-validates)
-- [Usage](#usage)
-- [Exit Codes](#exit-codes)
-- [Parameters](#parameters)
-- [Examples](#examples)
-- [How It Works](#how-it-works)
-- [Troubleshooting](#troubleshooting)
-- [Technical Implementation Details](#technical-implementation-details)
-- [Related Documentation](#related-documentation)
-- [Security Considerations](#security-considerations)
-- [Best Practices](#best-practices)
-- [Performance](#performance)
-- [Version History](#version-history)
-- [Support](#support)
-- [License](#license)
-- [Quick Links](#quick-links)
-
 ## 🎯 Purpose
 
 This script helps developers:
