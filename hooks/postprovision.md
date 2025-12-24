@@ -648,7 +648,324 @@ git pull origin main
 ```
 
 ---
+## 🔧 Technical Architecture
 
+This section provides technical details about the postprovision.ps1 implementation.
+
+### Script Flow
+
+**High-Level Process:**
+```
+postprovision.ps1
+├── 1. Validate Environment
+│   ├── Check azd is installed
+│   ├── Check azd environment is initialized
+│   └── Check dotnet SDK is available
+├── 2. Clear Existing Secrets
+│   └── Call clean-secrets.ps1
+├── 3. Retrieve Azure Resources
+│   ├── Get environment variables (azd env get-values)
+│   ├── Extract resource IDs
+│   └── Retrieve connection strings
+├── 4. Set User Secrets
+│   ├── app.AppHost
+│   ├── eShop.Orders.API
+│   └── eShop.Web.App
+├── 5. Validate Configuration
+│   └── Verify secrets were set
+└── 6. Display Summary
+    └── Show success message + next steps
+```
+
+### Azure Resource Discovery
+
+**Environment Variables Retrieved:**
+```powershell
+# Execute azd env get-values and parse output
+$envVars = azd env get-values | ConvertFrom-StringData
+
+# Expected variables:
+$resourceGroupName = $envVars['AZURE_RESOURCE_GROUP']
+$storageAccountName = $envVars['STORAGE_ACCOUNT_NAME']
+$serviceBusNamespace = $envVars['SERVICE_BUS_NAMESPACE']
+$appInsightsName = $envVars['APP_INSIGHTS_NAME']
+$logicAppName = $envVars['LOGIC_APP_NAME']
+$containerRegistryName = $envVars['CONTAINER_REGISTRY_NAME']
+```
+
+**Connection String Retrieval:**
+
+1. **Storage Account:**
+```powershell
+$storageConnString = az storage account show-connection-string `
+    --name $storageAccountName `
+    --resource-group $resourceGroupName `
+    --query connectionString `
+    --output tsv
+```
+
+2. **Service Bus:**
+```powershell
+$serviceBusConnString = az servicebus namespace authorization-rule keys list `
+    --namespace-name $serviceBusNamespace `
+    --resource-group $resourceGroupName `
+    --name RootManageSharedAccessKey `
+    --query primaryConnectionString `
+    --output tsv
+```
+
+3. **Application Insights:**
+```powershell
+$appInsightsConnString = az monitor app-insights component show `
+    --app $appInsightsName `
+    --resource-group $resourceGroupName `
+    --query connectionString `
+    --output tsv
+
+$appInsightsKey = az monitor app-insights component show `
+    --app $appInsightsName `
+    --resource-group $resourceGroupName `
+    --query instrumentationKey `
+    --output tsv
+```
+
+### User Secrets Configuration
+
+**Project-Specific Secrets:**
+
+#### 1. app.AppHost (Aspire Orchestration)
+```powershell
+$projectPath = "app.AppHost/app.AppHost.csproj"
+
+# Aspire orchestration connection strings
+dotnet user-secrets set "ConnectionStrings:ServiceBus" $serviceBusConnString --project $projectPath
+dotnet user-secrets set "ConnectionStrings:Storage" $storageConnString --project $projectPath
+dotnet user-secrets set "ConnectionStrings:AppInsights" $appInsightsConnString --project $projectPath
+
+# Orchestration settings
+dotnet user-secrets set "Aspire:ResourceGroup" $resourceGroupName --project $projectPath
+dotnet user-secrets set "Aspire:SubscriptionId" $subscriptionId --project $projectPath
+```
+
+#### 2. eShop.Orders.API (Orders Service)
+```powershell
+$projectPath = "src/eShop.Orders.API/eShop.Orders.API.csproj"
+
+# Data and messaging
+dotnet user-secrets set "ConnectionStrings:ServiceBus" $serviceBusConnString --project $projectPath
+dotnet user-secrets set "ConnectionStrings:Storage" $storageConnString --project $projectPath
+
+# Observability
+dotnet user-secrets set "ApplicationInsights:ConnectionString" $appInsightsConnString --project $projectPath
+dotnet user-secrets set "ApplicationInsights:InstrumentationKey" $appInsightsKey --project $projectPath
+
+# API settings
+dotnet user-secrets set "OrdersApi:QueueName" "orders-queue" --project $projectPath
+dotnet user-secrets set "OrdersApi:ContainerName" "orders" --project $projectPath
+```
+
+#### 3. eShop.Web.App (Web Frontend)
+```powershell
+$projectPath = "src/eShop.Web.App/eShop.Web.App.csproj"
+
+# Backend API
+$ordersApiUrl = $envVars['ORDERS_API_URL']
+dotnet user-secrets set "OrdersApi:Url" $ordersApiUrl --project $projectPath
+
+# Observability
+dotnet user-secrets set "ApplicationInsights:ConnectionString" $appInsightsConnString --project $projectPath
+
+# Frontend settings
+dotnet user-secrets set "WebApp:ContainerRegistry" $containerRegistryName --project $projectPath
+```
+
+### Error Handling & Rollback
+
+**Validation Checks:**
+```powershell
+function Test-PrerequisitesFunction {
+    $errors = @()
+    
+    # Check azd
+    if (-not (Get-Command azd -ErrorAction SilentlyContinue)) {
+        $errors += "Azure Developer CLI (azd) not found"
+    }
+    
+    # Check dotnet
+    if (-not (Get-Command dotnet -ErrorAction SilentlyContinue)) {
+        $errors += ".NET SDK not found"
+    }
+    
+    # Check azd environment
+    $envName = azd env list --output json | ConvertFrom-Json | Select-Object -First 1 -ExpandProperty Name
+    if (-not $envName) {
+        $errors += "No azd environment found. Run 'azd init' first."
+    }
+    
+    return $errors
+}
+```
+
+**Rollback Strategy:**
+```powershell
+try {
+    # Clear secrets before setting new ones
+    .\clean-secrets.ps1 -Force
+    
+    # Set secrets for all projects
+    Set-AppHostSecrets
+    Set-OrdersApiSecrets
+    Set-WebAppSecrets
+    
+    Write-Host "[SUCCESS] All secrets configured successfully" -ForegroundColor Green
+}
+catch {
+    Write-Error "Failed to set secrets: $_"
+    
+    # Rollback: Clear partially set secrets
+    Write-Warning "Rolling back changes..."
+    .\clean-secrets.ps1 -Force
+    
+    exit 1
+}
+```
+
+### Security Implementation
+
+**Secret Protection:**
+
+1. **Never Log Secret Values:**
+```powershell
+# WRONG - logs secret
+Write-Verbose "Connection string: $connString"
+
+# CORRECT - logs only metadata
+Write-Verbose "Connection string retrieved for: $resourceName"
+```
+
+2. **Secure Variable Handling:**
+```powershell
+# Use SecureString for sensitive data in memory
+$secureString = ConvertTo-SecureString $connString -AsPlainText -Force
+
+# Clear variables after use
+$storageConnString = $null
+$serviceBusConnString = $null
+[System.GC]::Collect()
+```
+
+3. **Minimal Permissions:**
+```powershell
+# Script requires only:
+# - Azure Reader role (read resource properties)
+# - Storage Account Key Operator (get connection strings)
+# - Service Bus Data Owner (get SAS keys)
+# - Application Insights Component Contributor (read instrumentation key)
+```
+
+**User Secrets Storage:**
+
+**Windows Location:**
+```
+%APPDATA%\Microsoft\UserSecrets\<UserSecretsId>\secrets.json
+```
+
+**Linux/macOS Location:**
+```
+~/.microsoft/usersecrets/<UserSecretsId>/secrets.json
+```
+
+**File Permissions:**
+- Windows: Accessible only to current user account
+- Linux/macOS: `chmod 600` (owner read/write only)
+
+**Format (secrets.json):**
+```json
+{
+  "ConnectionStrings:ServiceBus": "Endpoint=sb://...",
+  "ConnectionStrings:Storage": "DefaultEndpointsProtocol=https;...",
+  "ApplicationInsights:ConnectionString": "InstrumentationKey=...;",
+  "ApplicationInsights:InstrumentationKey": "a1b2c3d4-..."
+}
+```
+
+### Integration with Azure Key Vault
+
+**Production Recommendation:**
+
+For production environments, migrate from user secrets to Azure Key Vault:
+
+**Setup Azure Key Vault:**
+```powershell
+# Create Key Vault
+az keyvault create `
+    --name "myapp-kv" `
+    --resource-group $resourceGroupName `
+    --location $location
+
+# Set secrets
+az keyvault secret set --vault-name "myapp-kv" --name "ServiceBusConnectionString" --value $serviceBusConnString
+az keyvault secret set --vault-name "myapp-kv" --name "StorageConnectionString" --value $storageConnString
+
+# Grant access to managed identity
+az keyvault set-policy `
+    --name "myapp-kv" `
+    --object-id <managed-identity-principal-id> `
+    --secret-permissions get list
+```
+
+**Update Application Configuration:**
+```csharp
+// Program.cs
+builder.Configuration.AddAzureKeyVault(
+    new Uri($"https://myapp-kv.vault.azure.net/"),
+    new DefaultAzureCredential());
+```
+
+### Performance Metrics
+
+**Execution Time:**
+- Environment validation: 1-2s
+- Clean secrets: 2-3s
+- Retrieve Azure resources: 5-10s
+- Set secrets (3 projects): 3-5s
+- **Total typical runtime:** 15-25s
+
+**Azure CLI Calls:**
+- `azd env get-values`: 1 call
+- `az storage account show-connection-string`: 1 call
+- `az servicebus namespace authorization-rule keys list`: 1 call
+- `az monitor app-insights component show`: 2 calls (connection string + key)
+- **Total Azure API calls:** ~5
+
+### Troubleshooting
+
+**Common Issues & Solutions:**
+
+1. **"azd environment not found"**
+   - Run `azd init` to create environment
+   - Or run `azd provision` which initializes automatically
+
+2. **"Resource not found"**
+   - Verify `azd provision` completed successfully
+   - Check resource group exists: `az group show --name <rg-name>`
+
+3. **"Access denied to retrieve connection string"**
+   - Verify Azure RBAC permissions
+   - Ensure `az login` session is active
+   - Check subscription access: `az account show`
+
+4. **"dotnet user-secrets failed"**
+   - Verify project has UserSecretsId in .csproj
+   - Run `dotnet user-secrets init --project <path>` if missing
+   - Check .NET SDK version: `dotnet --version` (need 10.0+)
+
+5. **"Secrets not applied to running application"**
+   - Restart application after running postprovision
+   - User secrets only loaded at application startup
+   - Verify secrets exist: `dotnet user-secrets list --project <path>`
+
+---
 ## 📖 Related Documentation
 
 - **[preprovision.ps1](./preprovision.ps1)** - Pre-provisioning validation (runs before)

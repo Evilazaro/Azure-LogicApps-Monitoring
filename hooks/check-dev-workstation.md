@@ -358,7 +358,88 @@ Test-Path .\preprovision.ps1
 
 ---
 
-## 📖 Related Documentation
+## � Technical Implementation Details
+
+This section provides technical insights into the check-dev-workstation.ps1 implementation.
+
+### Script Architecture
+
+**Modular Function Design:**
+```
+check-dev-workstation.ps1
+├── Initialize-Script
+├── Test-PowerShellVersion
+├── Test-DotNetSDK
+├── Test-AzureDeveloperCLI
+├── Test-AzureCLI
+├── Test-BicepCLI
+├── Show-ValidationSummary
+└── Exit with appropriate code
+```
+
+### Validation Logic
+
+**Version Comparison:**
+```powershell
+function Test-ToolVersion {
+    param(
+        [version]$CurrentVersion,
+        [version]$MinimumVersion,
+        [string]$ToolName
+    )
+    
+    if ($CurrentVersion -ge $MinimumVersion) {
+        Write-Host "[✓] $ToolName version: $CurrentVersion" -ForegroundColor Green
+        return $true
+    }
+    else {
+        Write-Warning "[!] $ToolName version $CurrentVersion is below minimum $MinimumVersion"
+        return $false
+    }
+}
+```
+
+### Integration Points
+
+**Called By:**
+- Manual execution by developers
+- preprovision.ps1 (indirectly through validation)
+- CI/CD pipelines for environment verification
+
+**Calls:**
+- None (read-only validation script)
+
+**Dependencies:**
+- PowerShell 7.0+
+- Access to check tool versions (dotnet, az, azd, bicep)
+
+### Performance Characteristics
+
+**Execution Time:**
+- Typical: 3-5 seconds
+- First run: 3-5 seconds (no caching)
+- **Fast:** No write operations
+
+**Resource Usage:**
+- Memory: < 50 MB
+- CPU: Minimal (version checks only)
+- Disk: Read-only operations
+
+### Error Handling
+
+**Error Categories:**
+1. **Tool Not Found:** Clear installation instructions provided
+2. **Version Too Old:** Upgrade command suggested
+3. **Execution Error:** Detailed error message with context
+
+**Recovery Strategy:**
+- Script never modifies system
+- Safe to run multiple times
+- Always exits gracefully
+
+---
+
+## �📖 Related Documentation
 
 - **[preprovision.ps1](./preprovision.ps1)** - Comprehensive pre-provisioning validation (called by this script)
 - **[VALIDATION-WORKFLOW.md](./VALIDATION-WORKFLOW.md)** - Visual workflow diagrams

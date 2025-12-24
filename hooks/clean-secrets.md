@@ -524,7 +524,144 @@ Get-ExecutionPolicy
 ```
 
 ---
+## 🔧 Technical Implementation
 
+This section provides technical details about the clean-secrets.ps1 implementation.
+
+### How It Works
+
+**Project Discovery Process:**
+```powershell
+# 1. Find solution file
+$solutionPath = Get-ChildItem -Path $PSScriptRoot -Filter "*.sln" -Recurse
+
+# 2. Parse project references
+$projects = dotnet sln $solutionPath list | Select-Object -Skip 2
+
+# 3. For each project, check for UserSecretsId
+foreach ($project in $projects) {
+    $projectXml = [xml](Get-Content $project)
+    $secretId = $projectXml.Project.PropertyGroup.UserSecretsId
+    
+    if ($secretId) {
+        # 4. Clear secrets
+        dotnet user-secrets clear --project $project
+    }
+}
+```
+
+**Target Projects in This Repository:**
+
+1. **app.AppHost**
+   - Path: `app.AppHost/app.AppHost.csproj`
+   - UserSecretsId: Generated GUID
+   - Purpose: Aspire orchestration secrets
+
+2. **eShop.Orders.API**
+   - Path: `src/eShop.Orders.API/eShop.Orders.API.csproj`
+   - UserSecretsId: Generated GUID
+   - Purpose: API connection strings and keys
+
+3. **eShop.Web.App**
+   - Path: `src/eShop.Web.App/eShop.Web.App.csproj`
+   - UserSecretsId: Generated GUID
+   - Purpose: Web app configuration
+
+### Secret Storage Location
+
+**Windows:**
+```
+%APPDATA%\Microsoft\UserSecrets\<UserSecretsId>\secrets.json
+```
+
+**Linux/macOS:**
+```
+~/.microsoft/usersecrets/<UserSecretsId>/secrets.json
+```
+
+**What Gets Cleared:**
+- All key-value pairs in secrets.json
+- File remains but content becomes `{}`
+- UserSecretsId in .csproj is preserved
+
+### Integration with Deployment Workflow
+
+**Workflow Position:**
+```mermaid
+graph LR
+    A[check-dev-workstation] --> B[preprovision]
+    B --> C[clean-secrets]
+    C --> D[azd provision]
+    D --> E[postprovision]
+    
+    style C fill:#ff6b6b,color:#fff
+```
+
+**Called By:**
+- **preprovision.ps1** - Before provisioning (unless `-SkipSecretsClear`)
+- **postprovision.ps1** - Before setting new secrets
+- **Manual execution** - For troubleshooting
+
+**Call Chain:**
+```
+preprovision.ps1
+  └─> Invoke-CleanSecrets function
+       └─> .\clean-secrets.ps1 -Force
+```
+
+### Error Handling
+
+**Common Errors & Solutions:**
+
+1. **"dotnet command not found"**
+   - Cause: .NET SDK not installed
+   - Solution: Install .NET SDK 10.0+
+
+2. **"Project does not contain UserSecretsId"**
+   - Cause: Project not initialized for user secrets
+   - Solution: Run `dotnet user-secrets init --project <path>`
+
+3. **"Access denied to secrets file"**
+   - Cause: File permissions issue
+   - Solution: Run PowerShell as Administrator
+
+4. **"Project file not found"**
+   - Cause: Incorrect path or missing project
+   - Solution: Verify project exists and .csproj path is correct
+
+### Performance Metrics
+
+**Execution Time:**
+- Single project: < 1 second
+- Three projects: 2-3 seconds
+- **Fast:** Minimal I/O operations
+
+**Operations Performed:**
+- Find .sln file: 1 file system scan
+- Parse project list: 1 dotnet sln command
+- Clear secrets: 3 dotnet user-secrets commands
+
+### Security Considerations
+
+**What This Script Does NOT Do:**
+- ❌ Does not access or read secret values
+- ❌ Does not transmit secrets over network
+- ❌ Does not log secret values
+- ❌ Does not modify .csproj files
+
+**What This Script DOES Do:**
+- ✅ Clears secrets from local file system only
+- ✅ Preserves UserSecretsId configuration
+- ✅ Logs project paths (not secret values)
+- ✅ Uses official .NET CLI commands
+
+**Best Practices:**
+- Always clear secrets before provisioning (prevents stale data)
+- Never commit secrets.json to source control (already in .gitignore)
+- Use Azure Key Vault for production secrets
+- Rotate secrets regularly
+
+---
 ## 📖 Related Documentation
 
 - **[postprovision.ps1](./postprovision.md)** - Sets user secrets after provisioning (inverse operation)

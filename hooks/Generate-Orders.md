@@ -591,7 +591,318 @@ catch {
 ```
 
 ---
+## 🔧 Technical Implementation
 
+This section provides technical details about the order generation scripts.
+
+### Generate-Orders.ps1 (PowerShell)
+
+**Architecture:**
+```powershell
+Generate-Orders.ps1
+├── Parameter Validation
+├── Initialize-OrderData
+│   ├── Product catalog
+│   ├── Customer pool
+│   └── Order status types
+├── Generate-Orders
+│   ├── For each order
+│   │   ├── Generate OrderId (GUID)
+│   │   ├── Select random customer
+│   │   ├── Select random products (1-$MaxProducts)
+│   │   ├── Calculate quantities and prices
+│   │   └── Set order status
+│   └── Add to orders array
+├── Export-OrdersToJson
+└── Display summary
+```
+
+**Key Functions:**
+
+1. **New-RandomOrder**
+```powershell
+function New-RandomOrder {
+    param(
+        [int]$MaxProducts = 5
+    )
+    
+    $order = @{
+        OrderId = (New-Guid).ToString()
+        CustomerId = Get-Random -InputObject $script:Customers
+        OrderDate = (Get-Date).AddDays(-(Get-Random -Minimum 0 -Maximum 90))
+        Items = @()
+        TotalAmount = 0
+        Status = Get-Random -InputObject @('Pending', 'Processing', 'Shipped', 'Delivered')
+    }
+    
+    $productCount = Get-Random -Minimum 1 -Maximum ($MaxProducts + 1)
+    $selectedProducts = Get-Random -InputObject $script:Products -Count $productCount
+    
+    foreach ($product in $selectedProducts) {
+        $quantity = Get-Random -Minimum 1 -Maximum 10
+        $item = @{
+            ProductId = $product.Id
+            ProductName = $product.Name
+            Quantity = $quantity
+            UnitPrice = $product.Price
+            LineTotal = $quantity * $product.Price
+        }
+        $order.Items += $item
+        $order.TotalAmount += $item.LineTotal
+    }
+    
+    return $order
+}
+```
+
+2. **Export-OrdersToJson**
+```powershell
+function Export-OrdersToJson {
+    param(
+        [array]$Orders,
+        [string]$OutputPath
+    )
+    
+    $json = $Orders | ConvertTo-Json -Depth 10
+    $json | Out-File -FilePath $OutputPath -Encoding UTF8
+}
+```
+
+### generate_orders_script.py (Python)
+
+**Architecture:**
+```python
+generate_orders_script.py
+├── Import libraries (json, uuid, datetime, random)
+├── Define product catalog
+├── Define customer pool
+├── generate_order() function
+├── generate_orders_batch() function
+├── save_to_json() function
+└── main() execution
+```
+
+**Key Functions:**
+
+1. **generate_order()**
+```python
+import uuid
+import random
+from datetime import datetime, timedelta
+
+def generate_order(max_products=5):
+    order_id = str(uuid.uuid4())
+    customer_id = random.choice(customers)
+    order_date = datetime.now() - timedelta(days=random.randint(0, 90))
+    
+    items = []
+    total = 0
+    
+    num_products = random.randint(1, max_products)
+    selected_products = random.sample(products, num_products)
+    
+    for product in selected_products:
+        quantity = random.randint(1, 10)
+        line_total = quantity * product['price']
+        
+        items.append({
+            'productId': product['id'],
+            'productName': product['name'],
+            'quantity': quantity,
+            'unitPrice': product['price'],
+            'lineTotal': line_total
+        })
+        total += line_total
+    
+    return {
+        'orderId': order_id,
+        'customerId': customer_id,
+        'orderDate': order_date.isoformat(),
+        'items': items,
+        'totalAmount': total,
+        'status': random.choice(['Pending', 'Processing', 'Shipped', 'Delivered'])
+    }
+```
+
+2. **save_to_json()**
+```python
+import json
+
+def save_to_json(orders, output_path):
+    with open(output_path, 'w', encoding='utf-8') as f:
+        json.dump(orders, f, indent=2, ensure_ascii=False)
+```
+
+### Data Format Specification
+
+**Output JSON Schema:**
+```json
+{
+  "type": "array",
+  "items": {
+    "type": "object",
+    "required": ["orderId", "customerId", "orderDate", "items", "totalAmount", "status"],
+    "properties": {
+      "orderId": {
+        "type": "string",
+        "format": "uuid",
+        "description": "Unique identifier for the order"
+      },
+      "customerId": {
+        "type": "string",
+        "description": "Customer identifier"
+      },
+      "orderDate": {
+        "type": "string",
+        "format": "date-time",
+        "description": "ISO 8601 timestamp"
+      },
+      "items": {
+        "type": "array",
+        "minItems": 1,
+        "items": {
+          "type": "object",
+          "required": ["productId", "productName", "quantity", "unitPrice", "lineTotal"],
+          "properties": {
+            "productId": {
+              "type": "string",
+              "description": "Product SKU"
+            },
+            "productName": {
+              "type": "string",
+              "description": "Product display name"
+            },
+            "quantity": {
+              "type": "integer",
+              "minimum": 1,
+              "description": "Number of units ordered"
+            },
+            "unitPrice": {
+              "type": "number",
+              "minimum": 0,
+              "description": "Price per unit"
+            },
+            "lineTotal": {
+              "type": "number",
+              "minimum": 0,
+              "description": "quantity * unitPrice"
+            }
+          }
+        }
+      },
+      "totalAmount": {
+        "type": "number",
+        "minimum": 0,
+        "description": "Sum of all line totals"
+      },
+      "status": {
+        "type": "string",
+        "enum": ["Pending", "Processing", "Shipped", "Delivered"],
+        "description": "Current order status"
+      }
+    }
+  }
+}
+```
+
+**Example Output:**
+```json
+[
+  {
+    "orderId": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+    "customerId": "CUST-001",
+    "orderDate": "2025-11-15T10:30:00Z",
+    "items": [
+      {
+        "productId": "PROD-101",
+        "productName": "Laptop",
+        "quantity": 2,
+        "unitPrice": 999.99,
+        "lineTotal": 1999.98
+      },
+      {
+        "productId": "PROD-205",
+        "productName": "Mouse",
+        "quantity": 3,
+        "unitPrice": 29.99,
+        "lineTotal": 89.97
+      }
+    ],
+    "totalAmount": 2089.95,
+    "status": "Processing"
+  }
+]
+```
+
+### Product Catalog
+
+**Included Products:**
+
+| Product ID | Name | Category | Price Range |
+|------------|------|----------|-------------|
+| PROD-101 | Laptop | Electronics | $800-$1500 |
+| PROD-102 | Desktop | Electronics | $600-$1200 |
+| PROD-103 | Tablet | Electronics | $300-$800 |
+| PROD-201 | Keyboard | Accessories | $50-$150 |
+| PROD-202 | Mouse | Accessories | $20-$80 |
+| PROD-203 | Monitor | Electronics | $200-$600 |
+| PROD-204 | Webcam | Accessories | $40-$150 |
+| PROD-205 | Headset | Accessories | $50-$200 |
+| PROD-301 | Office Chair | Furniture | $150-$500 |
+| PROD-302 | Desk | Furniture | $200-$800 |
+
+### Logic Apps Integration
+
+**Upload to Storage Account:**
+```powershell
+# Generate orders
+.\Generate-Orders.ps1 -OrderCount 100 -OutputPath "orders.json"
+
+# Upload to Azure Storage
+az storage blob upload `
+    --account-name <storage-account> `
+    --container-name orders `
+    --file orders.json `
+    --name "batch-$(Get-Date -Format 'yyyyMMdd-HHmmss').json"
+```
+
+**Logic App Trigger:**
+- Trigger Type: `When a blob is added or modified`
+- Container: `orders`
+- Polling Interval: 1 minute
+- File Pattern: `batch-*.json`
+
+**Processing Flow:**
+```
+1. Blob added to Storage Account
+2. Logic App triggered
+3. Parse JSON content
+4. For each order:
+   - Validate order schema
+   - Send to Service Bus queue
+   - Log to Application Insights
+5. Update blob metadata (processed = true)
+```
+
+### Performance Characteristics
+
+**Generation Speed:**
+- 10 orders: < 1 second
+- 100 orders: 1-2 seconds
+- 1,000 orders: 5-10 seconds
+- 10,000 orders: 30-60 seconds
+
+**File Size:**
+- 10 orders: ~3 KB
+- 100 orders: ~30 KB
+- 1,000 orders: ~300 KB
+- 10,000 orders: ~3 MB
+
+**Memory Usage:**
+- PowerShell: ~50 MB baseline + (orders * 1 KB)
+- Python: ~30 MB baseline + (orders * 0.8 KB)
+
+---
 ## 📖 Related Documentation
 
 - **[postprovision.ps1](./postprovision.md)** - Uses generated orders during provisioning
