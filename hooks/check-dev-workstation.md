@@ -360,8 +360,7 @@ Test-Path .\preprovision.ps1
 
 ## 📖 Related Documentation
 
-- **[preprovision.ps1](./PREPROVISION-ENHANCEMENTS.md)** - Comprehensive pre-provisioning validation (called by this script)
-- **[PREPROVISION-QUICK-REFERENCE.md](./PREPROVISION-QUICK-REFERENCE.md)** - Quick reference for preprovision options
+- **[preprovision.ps1](./preprovision.ps1)** - Comprehensive pre-provisioning validation (called by this script)
 - **[VALIDATION-WORKFLOW.md](./VALIDATION-WORKFLOW.md)** - Visual workflow diagrams
 - **[clean-secrets.md](./clean-secrets.md)** - User secrets management
 - **[postprovision.md](./postprovision.md)** - Post-provisioning configuration
@@ -451,7 +450,7 @@ azd up
 1. **Review Error Messages**: Script provides detailed error messages with solutions
 2. **Use Verbose Mode**: Run with `-Verbose` for diagnostic information
 3. **Check Prerequisites**: Ensure all tools are installed before running
-4. **Consult Documentation**: Review [preprovision.md](./PREPROVISION-ENHANCEMENTS.md) for detailed validation info
+4. **Check Documentation**: Review README.md for script usage information
 
 ### Reporting Issues
 

@@ -279,14 +279,6 @@ azd provision  # postprovision runs automatically
 | **[clean-secrets.md](./clean-secrets.md)** | Comprehensive documentation for secret clearing | ~650 | ✅ Complete |
 | **[Generate-Orders.md](./Generate-Orders.md)** | Test data generation guide with examples | ~700 | ✅ Complete |
 | **[postprovision.md](./postprovision.md)** | Post-provisioning configuration documentation | ~750 | ✅ Complete |
-
-### preprovision.ps1 Documentation Suite
-
-| File | Description | Lines | Status |
-|------|-------------|-------|--------|
-| **[PREPROVISION-ENHANCEMENTS.md](./PREPROVISION-ENHANCEMENTS.md)** | Technical deep-dive into preprovision enhancements | ~450 | ✅ Complete |
-| **[PREPROVISION-QUICK-REFERENCE.md](./PREPROVISION-QUICK-REFERENCE.md)** | Quick reference guide with common scenarios | ~400 | ✅ Complete |
-| **[ENHANCEMENT-SUMMARY.md](./ENHANCEMENT-SUMMARY.md)** | Executive summary of project improvements | ~350 | ✅ Complete |
 | **[VALIDATION-WORKFLOW.md](./VALIDATION-WORKFLOW.md)** | Visual workflow diagrams and process flows | ~300 | ✅ Complete |
 
 ### Directory Documentation

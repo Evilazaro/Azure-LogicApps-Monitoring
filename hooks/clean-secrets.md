@@ -528,7 +528,7 @@ Get-ExecutionPolicy
 ## 📖 Related Documentation
 
 - **[postprovision.ps1](./postprovision.md)** - Sets user secrets after provisioning (inverse operation)
-- **[preprovision.ps1](./PREPROVISION-ENHANCEMENTS.md)** - Calls this script during pre-provisioning
+- **[preprovision.ps1](./preprovision.ps1)** - Calls this script during pre-provisioning
 - **[check-dev-workstation.md](./check-dev-workstation.md)** - Environment validation
 - **[Main README](./README.md)** - Hooks directory overview
 - **[.NET User Secrets](https://learn.microsoft.com/aspnet/core/security/app-secrets)** - Official Microsoft documentation

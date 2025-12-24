@@ -651,7 +651,7 @@ git pull origin main
 
 ## 📖 Related Documentation
 
-- **[preprovision.ps1](./PREPROVISION-ENHANCEMENTS.md)** - Pre-provisioning validation (runs before)
+- **[preprovision.ps1](./preprovision.ps1)** - Pre-provisioning validation (runs before)
 - **[clean-secrets.ps1](./clean-secrets.md)** - Secret clearing (called by this script)
 - **[check-dev-workstation.md](./check-dev-workstation.md)** - Environment validation
 - **[Azure Developer CLI](https://learn.microsoft.com/azure/developer/azure-developer-cli/)** - azd documentation

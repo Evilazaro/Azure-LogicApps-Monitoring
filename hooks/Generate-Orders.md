@@ -595,7 +595,7 @@ catch {
 ## 📖 Related Documentation
 
 - **[postprovision.ps1](./postprovision.md)** - Uses generated orders during provisioning
-- **[preprovision.ps1](./PREPROVISION-ENHANCEMENTS.md)** - Pre-provisioning validation
+- **[preprovision.ps1](./preprovision.ps1)** - Pre-provisioning validation
 - **[Main README](./README.md)** - Hooks directory overview
 - **[Azure Logic Apps](https://learn.microsoft.com/azure/logic-apps/)** - Microsoft documentation
 
