@@ -8,13 +8,32 @@
 
 ## 📋 Overview
 
-`check-dev-workstation` is a **first-step** developer-focused validation tool that ensures your workstation meets all prerequisites for developing the Azure Logic Apps Monitoring solution. Available in both PowerShell (`.ps1`) and Bash (`.sh`) versions, it acts as a lightweight wrapper around the preprovision script in validation-only mode, providing a quick and non-intrusive way to verify environment readiness.
+The `check-dev-workstation` script is a critical first-step validation tool in the Developer Inner Loop Workflow for Azure Logic Apps Monitoring. It performs comprehensive environment validation to ensure your workstation meets all prerequisites before development begins. Available in both PowerShell (`.ps1`) and Bash (`.sh`) versions, this script provides cross-platform compatibility for Windows, Linux, and macOS environments.
 
-**Available Versions:**
-- **Windows/PowerShell**: `check-dev-workstation.ps1`
-- **Linux/macOS/Bash**: `check-dev-workstation.sh`
+As a lightweight wrapper around the preprovision script in validation-only mode, it executes read-only checks without modifying any configuration. The script validates essential components including PowerShell 7.0+, .NET SDK 10.0+, Azure CLI, Bicep CLI, Azure authentication status, and registration of eight critical Azure resource providers. This non-destructive validation typically completes in 3-5 seconds, providing immediate feedback on environment readiness.
 
-**Workflow Position**: 1️⃣ First → Run before `preprovision.ps1` and `postprovision.ps1`
+Running this script before `preprovision.ps1` and `postprovision.ps1` helps developers identify configuration issues early, avoid deployment failures, and save valuable development time by ensuring all prerequisites are properly installed and configured.
+
+## 📑 Table of Contents
+
+- [Overview](#-overview)
+- [What It Validates](#-what-it-validates)
+- [Usage](#-usage)
+  - [Basic Usage](#basic-usage)
+  - [Verbose Mode](#verbose-mode)
+- [Exit Codes](#-exit-codes)
+- [Parameters](#-parameters)
+- [Examples](#-examples)
+- [How It Works](#️-how-it-works)
+  - [Internal Process Flow](#internal-process-flow)
+  - [Integration Points](#integration-points)
+- [Troubleshooting](#️-troubleshooting)
+- [Technical Implementation Details](#-technical-implementation-details)
+- [Related Documentation](#-related-documentation)
+- [Security Considerations](#-security-considerations)
+- [Best Practices](#-best-practices)
+- [Performance](#-performance)
+- [Version History](#-version-history)
 
 ## 🎯 Purpose
 
@@ -258,48 +277,60 @@ crontab -e
 
 ## 🛠️ How It Works
 
-### Workflow Diagram
+### Internal Process Flow
 
-**Context**: 1️⃣ First step - Run before preprovision and postprovision
+The script executes a streamlined validation workflow through four distinct phases:
 
 ```mermaid
 flowchart LR
-    Start["1️⃣ check-dev-workstation.ps1 starts<br/>(First Step)"]
-    Start --> Validate["Validate script prerequisites<br/>• PowerShell 7.0+ available<br/>• preprovision.ps1 exists"]
-    Validate --> Call["Call preprovision.ps1 with:<br/>• -ValidateOnly flag<br/>• Pass through -Verbose if set"]
-    Call --> Perform["preprovision.ps1 performs:<br/>• PowerShell version check<br/>• .NET SDK validation<br/>• Azure CLI validation<br/>• Bicep CLI validation<br/>• Azure authentication check<br/>• Resource provider validation"]
-    Perform --> Return["Return results to caller<br/>• Exit code: 0 (success) or 1<br/>• Formatted validation output"]
+    Start(["🚀 check-dev-workstation starts"])
+    Init["1️⃣ Script Initialization<br/>• Set StrictMode<br/>• Configure error preferences<br/>• Validate prerequisites"]
+    Path["2️⃣ Path Resolution<br/>• Locate preprovision script<br/>• Verify script exists<br/>• Prepare execution context"]
+    Delegate["3️⃣ Validation Delegation<br/>• Invoke preprovision -ValidateOnly<br/>• Pass -Verbose flag if set<br/>• Monitor execution"]
+    Check{"All validations<br/>passed?"}
+    Success["✅ Success Path<br/>• Format success message<br/>• Exit code: 0<br/>• Display summary"]
+    Failure["❌ Failure Path<br/>• Format error details<br/>• Exit code: 1<br/>• Show remediation steps"]
+    End(["🏁 Script completes"])
     
-    classDef startClass fill:#d4edda,stroke:#28a745,stroke-width:2px,color:#155724
-    classDef processClass fill:#cfe2ff,stroke:#0d6efd,stroke-width:2px,color:#084298
-    classDef returnClass fill:#fff3cd,stroke:#ffc107,stroke-width:2px,color:#856404
+    Start --> Init
+    Init --> Path
+    Path --> Delegate
+    Delegate --> Check
+    Check -->|Yes| Success
+    Check -->|No| Failure
+    Success --> End
+    Failure --> End
     
-    class Start startClass
-    class Validate,Call,Perform processClass
-    class Return returnClass
+    classDef startEnd fill:#e8f5e9,stroke:#2e7d32,stroke-width:3px,color:#1b5e20
+    classDef process fill:#e3f2fd,stroke:#1976d2,stroke-width:2px,color:#0d47a1
+    classDef decision fill:#fff3e0,stroke:#f57c00,stroke-width:2px,color:#e65100
+    classDef success fill:#c8e6c9,stroke:#388e3c,stroke-width:2px,color:#1b5e20
+    classDef failure fill:#ffcdd2,stroke:#d32f2f,stroke-width:2px,color:#b71c1c
+    
+    class Start,End startEnd
+    class Init,Path,Delegate process
+    class Check decision
+    class Success success
+    class Failure failure
 ```
 
-### Internal Process
+**Process Details:**
 
-1. **Script Initialization**
-   - Sets `StrictMode` for error handling
-   - Configures error action preferences
-   - Validates script prerequisites
+1. **Script Initialization**: Establishes strict error handling and validates that PowerShell 7.0+ is available
+2. **Path Resolution**: Locates the preprovision script in the same directory and confirms it's executable
+3. **Validation Delegation**: Invokes preprovision with `-ValidateOnly` flag, delegating all validation logic
+4. **Result Processing**: Captures exit codes, formats output, and returns appropriate status to the caller
 
-2. **Path Resolution**
-   - Locates `preprovision.ps1` in same directory
-   - Validates preprovision script exists and is readable
-   - Prepares execution context
+### Integration Points
 
-3. **Validation Delegation**
-   - Invokes `preprovision.ps1 -ValidateOnly`
-   - Passes through `-Verbose` parameter if specified
-   - Captures exit code and output
-
-4. **Result Processing**
-   - Formats validation results
-   - Returns appropriate exit code
-   - Displays summary message
+| Integration Type | Details | Interaction Mode |
+|-----------------|---------|------------------|
+| **Calls** | `preprovision.ps1` with `-ValidateOnly` flag | Synchronous subprocess |
+| **Called By** | Developers (manual), CI/CD pipelines, automation scripts | Direct execution |
+| **Dependencies** | PowerShell 7.0+, preprovision script, Azure CLI, .NET SDK | Runtime requirements |
+| **Output** | Exit code (0/1), formatted console messages, verbose diagnostics | Standard streams |
+| **Side Effects** | None - completely read-only validation | Non-destructive |
+| **External Services** | Azure CLI for authentication and provider status checks | Read-only API calls |
 
 ## ⚠️ Troubleshooting
 
@@ -666,35 +697,7 @@ azd up
 |           |            | • Verbose logging support |
 |           |            | • Exit code support |
 
-## 📞 Support
-
-### Getting Help
-
-1. **Review Error Messages**: Script provides detailed error messages with solutions
-2. **Use Verbose Mode**: Run with `-Verbose` for diagnostic information
-3. **Check Prerequisites**: Ensure all tools are installed before running
-4. **Check Documentation**: Review README.md for script usage information
-
-### Reporting Issues
-
-If you encounter issues:
-
-1. Run with verbose logging: `.\check-dev-workstation.ps1 -Verbose`
-2. Capture complete output
-3. Include your environment details:
-   - PowerShell version (`$PSVersionTable`)
-   - .NET SDK version (`dotnet --version`)
-   - Azure CLI version (`az --version`)
-4. Check existing issues on GitHub
-5. Create a new issue with the above information
-
-## 📄 License
-
-Copyright (c) 2025 Azure-LogicApps-Monitoring Team. All rights reserved.
-
-This script is part of the Azure-LogicApps-Monitoring solution.
-
-## 🔗 Quick Links
+##  Quick Links
 
 - **Repository**: [Azure-LogicApps-Monitoring](https://github.com/Evilazaro/Azure-LogicApps-Monitoring)
 - **Issues**: [Report Bug](https://github.com/Evilazaro/Azure-LogicApps-Monitoring/issues)
