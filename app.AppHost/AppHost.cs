@@ -1,3 +1,5 @@
+using Aspire.Hosting.Azure;
+
 var builder = DistributedApplication.CreateBuilder(args);
 
 // =============================================================================
@@ -77,8 +79,6 @@ static void ConfigureOrdersStoragePath(
     IResourceBuilder<ParameterResource>? resourceGroupParameter)
 {
     const string DefaultParamName = "data";
-    const string LocalStoragePath = "data";
-    const string StorageDirectoryKey = "OrderStorage__StorageDirectory";
     const string DefaultStorageName = "orders-storage";
     const string BlobContainerName = "orders";
 
@@ -89,14 +89,10 @@ static void ConfigureOrdersStoragePath(
     if (isLocalMode)
     {
         // Local development mode - use Azure Storage emulator
-        var storageResource = builder.AddAzureStorage(DefaultParamName)
-            .RunAsEmulator();
+        var storageResource = builder.AddAzureStorage(DefaultParamName).RunAsEmulator();
+        var blobContainer = storageResource.AddBlobContainer(BlobContainerName);
 
-        var blobContainer = storageResource.AddBlobs(BlobContainerName);
-
-        ordersApi
-            .WithEnvironment(StorageDirectoryKey, LocalStoragePath)
-            .WithReference(blobContainer);
+        ordersApi.WithReference(blobContainer);
     }
     else
     {
@@ -113,7 +109,7 @@ static void ConfigureOrdersStoragePath(
         var storageResource = builder.AddAzureStorage(DefaultStorageName)
             .AsExisting(storageAccountParameter, resourceGroupParameter);
 
-        var blobContainer = storageResource.AddBlobs(BlobContainerName);
+        var blobContainer = storageResource.AddBlobContainer(BlobContainerName);
 
         ordersApi.WithReference(blobContainer);
     }

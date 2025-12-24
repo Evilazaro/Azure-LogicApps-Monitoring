@@ -137,6 +137,8 @@ resource appEnv 'Microsoft.App/managedEnvironments@2025-02-02-preview' = {
     }
   }
   properties: {
+    // Consumption workload profile provides serverless, pay-per-use pricing
+    // Automatically scales from 0 to meet demand
     workloadProfiles: [
       {
         workloadProfileType: 'Consumption'
@@ -165,6 +167,7 @@ resource dashboard 'Microsoft.App/managedEnvironments/dotNetComponents@2025-10-0
   }
 }
 
+@description('Azure Files storage volume for Container Apps persistent data')
 resource appEnvStorage 'Microsoft.App/managedEnvironments/storages@2025-02-02-preview' = {
   parent: appEnv
   name: storageVolumeName

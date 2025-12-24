@@ -181,6 +181,9 @@ output ORDERS_STORAGE_VOLUME_NAME string = workload.outputs.ORDERS_STORAGE_VOLUM
 @description('Orders Storage Account Blob Endpoint')
 output DATA_BLOBENDPOINT string = workload.outputs.DATA_BLOBENDPOINT
 
+@description('Orders Storage Account Container Endpoint')
+output DATA_CONTAINERENDPOINT string = workload.outputs.DATA_CONTAINERENDPOINT
+
 @description('Orders API Storage Account Name')
 output ORDERS_STORAGE_ACCOUNT_NAME string = workload.outputs.ORDERS_STORAGE_ACCOUNT_NAME
 

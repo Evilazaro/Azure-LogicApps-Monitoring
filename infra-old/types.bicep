@@ -41,7 +41,7 @@ type tagsType = {
 }
 
 @export()
-@description('Storage account configuration')
+@description('Storage account configuration with security and performance settings')
 type storageAccountConfig = {
   @description('Storage account SKU')
   sku: 'Standard_LRS' | 'Standard_GRS' | 'Standard_RAGRS' | 'Standard_ZRS'

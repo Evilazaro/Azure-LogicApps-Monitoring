@@ -202,6 +202,9 @@ output ORDERS_STORAGE_ACCOUNT_NAME string = data.outputs.ORDERS_STORAGE_ACCOUNT_
 @description('Orders Storage Account Blob Endpoint')
 output DATA_BLOBENDPOINT string = data.outputs.DATA_BLOBENDPOINT
 
+@description('Orders Storage Account Container Endpoint')
+output DATA_CONTAINERENDPOINT string = data.outputs.DATA_CONTAINERENDPOINT
+
 @description('Orders API File Share Name')
 output ORDERS_FILE_SHARE_NAME string = data.outputs.ORDERS_FILE_SHARE_NAME
 
