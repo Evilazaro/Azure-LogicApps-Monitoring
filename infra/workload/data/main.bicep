@@ -154,7 +154,7 @@ module volumeStorage 'storage/main.bicep' = {
 // ========== Outputs ==========
 
 @description('Name of the storage account')
-output CA_STORAGE_ACCOUNT_NAME string = volumeStorage.outputs.CA_STORAGE_ACCOUNT_NAME
+output ORDERS_STORAGE_ACCOUNT_NAME string = volumeStorage.outputs.ORDERS_STORAGE_ACCOUNT_NAME
 
 @description('Resource ID of the storage account')
 output CA_STORAGE_ACCOUNT_ID string = volumeStorage.outputs.CA_STORAGE_ACCOUNT_ID

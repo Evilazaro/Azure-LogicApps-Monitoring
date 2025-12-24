@@ -155,7 +155,7 @@ resource storageAccountDiag 'Microsoft.Insights/diagnosticSettings@2021-05-01-pr
 // ========== Outputs ==========
 
 @description('Name of the storage account')
-output CA_STORAGE_ACCOUNT_NAME string = caSA.name
+output ORDERS_STORAGE_ACCOUNT_NAME string = caSA.name
 
 @description('Resource ID of the storage account')
 output CA_STORAGE_ACCOUNT_ID string = caSA.id

@@ -177,3 +177,6 @@ output LOGICAPPS_STORAGE_ACCOUNT_NAME string = workload.outputs.WORKFLOW_STORAGE
 
 @description('Name of the storage volume mount for orders-api')
 output ORDERS_STORAGE_VOLUME_NAME string = workload.outputs.ORDERS_STORAGE_VOLUME_NAME
+
+@description('Orders API Storage Account Name')
+output ORDERS_STORAGE_ACCOUNT_NAME string = workload.outputs.ORDERS_STORAGE_ACCOUNT_NAME

@@ -657,6 +657,7 @@ try {
     $azureContainerRegistryEndpoint = Get-EnvironmentVariableSafe -Name 'AZURE_CONTAINER_REGISTRY_ENDPOINT'
     $azureStorageAccountName = Get-EnvironmentVariableSafe -Name 'WORKFLOW_STORAGE_ACCOUNT_NAME'
     $azureOrdersStorageVolumeName = Get-EnvironmentVariableSafe -Name 'ORDERS_STORAGE_VOLUME_NAME'
+    $azureOrdersStorageAccountName = Get-EnvironmentVariableSafe -Name 'ORDERS_STORAGE_ACCOUNT_NAME'
     
     # Display configuration (with safe null handling)
     Write-SectionHeader -Message "Azure Configuration" -Type 'Sub'
@@ -677,6 +678,7 @@ try {
     Write-Information "  ACR Endpoint           : $($azureContainerRegistryEndpoint ?? $notSet)"
     Write-Information "  Storage Account Name   : $($azureStorageAccountName ?? $notSet)"
     Write-Information "  Orders Storage Volume  : $($azureOrdersStorageVolumeName ?? $notSet)"
+    Write-Information "  Orders Storage Account : $($azureOrdersStorageAccountName ?? $notSet)"
     
     # Authenticate to Azure Container Registry (non-blocking)
     Invoke-AzureContainerRegistryLogin -RegistryEndpoint $azureContainerRegistryEndpoint
@@ -791,8 +793,8 @@ try {
         'Azure:ServiceBus:HostName'       = $azureServiceBusHostName
         'Azure:ServiceBus:TopicName'       = $azureServiceBusTopicName
         'Azure:ServiceBus:SubscriptionName' = $azureServiceBusSubscriptionName
-        'Azure:StorageAccount:VolumeName'      = $azureStorageAccountName
-        'Azure:StorageAccount:VolumeName'  = $azureOrdersStorageVolumeName
+        'Azure:Storage:VolumeName'  = $azureOrdersStorageVolumeName
+        'Azure:Storage:AccountName' = $azureOrdersStorageAccountName
     }
     
     # Define secrets for API project (Service Bus configuration only)

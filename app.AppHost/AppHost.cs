@@ -47,19 +47,19 @@ static void ConfigureOrdersStoragePath(
     IDistributedApplicationBuilder builder,
     IResourceBuilder<ProjectResource> ordersApi)
 {
+    const string DefaultParamName = "orders-storage";
     const string LocalStoragePath = "data/orders";
     const string StorageDirectoryKey = "OrderStorage__StorageDirectory";
     const string DefaultStorageName = "orders-storage";
     const string BlobContainerName = "orders";
 
-    var storageResourceName = string.IsNullOrEmpty(builder.Configuration["Azure:StorageAccount:VolumeName"]) ? DefaultStorageName : builder.Configuration["Azure:StorageAccount:VolumeName"];
-    var isLocalMode = string.IsNullOrWhiteSpace(storageResourceName) ||
-                      storageResourceName.Equals(DefaultStorageName, StringComparison.OrdinalIgnoreCase);
+    var storageResourceName = string.IsNullOrEmpty(builder.Configuration["Azure:Storage:AccountName"]) ? DefaultStorageName : builder.Configuration["Azure:Storage:AccountName"];
+    var isLocalMode = (storageResourceName ?? string.Empty).Equals(DefaultStorageName, StringComparison.OrdinalIgnoreCase);
 
     if (isLocalMode)
     {
         // Local development mode - use Azure Storage emulator
-        var storageResource = builder.AddAzureStorage(DefaultStorageName)
+        var storageResource = builder.AddAzureStorage(DefaultParamName)
             .RunAsEmulator();
 
         var blobContainer = storageResource.AddBlobs(BlobContainerName);
@@ -72,9 +72,9 @@ static void ConfigureOrdersStoragePath(
     {
         // Azure deployment mode - use existing storage account with managed identity
         var resourceGroupParameter = builder.AddParameterFromConfiguration("resourceGroup", "Azure:ResourceGroup");
-        var storageAccountParameter = builder.AddParameter(DefaultStorageName, storageResourceName ?? DefaultStorageName);
+        var storageAccountParameter = builder.AddParameter(DefaultParamName, storageResourceName);
 
-        var storageResource = builder.AddAzureStorage(storageResourceName ?? DefaultStorageName)
+        var storageResource = builder.AddAzureStorage(DefaultParamName)
             .AsExisting(storageAccountParameter, resourceGroupParameter);
 
         var blobContainer = storageResource.AddBlobs(BlobContainerName);
