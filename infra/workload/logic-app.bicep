@@ -78,7 +78,7 @@ param tags tagsType
 
 // ========== Variables ==========
 
-var resourceSuffix = uniqueString(resourceGroup().id, name, envName, location)
+var resourceSuffix string = uniqueString(resourceGroup().id, name, envName, location)
 
 // ========== Resources ==========
 
@@ -111,13 +111,13 @@ resource wfASP 'Microsoft.Web/serverfarms@2025-03-01' = {
 
 // Azure Functions runtime configuration for Logic Apps Standard
 // Logic Apps Standard is built on Azure Functions v4 runtime
-var functionsExtensionVersion = '~4'
-var functionsWorkerRuntime = 'dotnet'
+var functionsExtensionVersion string = '~4'
+var functionsWorkerRuntime string = 'dotnet'
 
 // Workflow extension bundle provides Logic Apps actions and triggers
 // Version range allows patch updates within major version 1.x
-var extensionBundleId = 'Microsoft.Azure.Functions.ExtensionBundle.Workflows'
-var extensionBundleVersion = '[1.*, 2.0.0)'
+var extensionBundleId string = 'Microsoft.Azure.Functions.ExtensionBundle.Workflows'
+var extensionBundleVersion string = '[1.*, 2.0.0)'
 
 @description('Logic Apps Standard workflow engine for running business processes')
 resource workflowEngine 'Microsoft.Web/sites@2025-03-01' = {
