@@ -141,7 +141,7 @@ module services 'services/main.bicep' = {
     appInsightsConnectionString: appInsightsConnectionString
     caVolumeMountSAName: data.outputs.ORDERS_STORAGE_ACCOUNT_NAME
     caVolumeMountSAKey: data.outputs.ORDERS_STORAGE_ACCOUNT_KEY
-    caVolumeMountFileShareName: data.outputs.CA_FILE_SHARE_NAME
+    caVolumeMountFileShareName: data.outputs.ORDERS_FILE_SHARE_NAME
     tags: tags
   }
 }
@@ -205,7 +205,7 @@ output ORDERS_STORAGE_ACCOUNT_NAME string = data.outputs.ORDERS_STORAGE_ACCOUNT_
 output ORDERS_STORAGE_BLOBENDPOINT string = data.outputs.ORDERS_STORAGE_BLOBENDPOINT
 
 @description('Orders API File Share Name')
-output CA_FILE_SHARE_NAME string = data.outputs.CA_FILE_SHARE_NAME
+output ORDERS_FILE_SHARE_NAME string = data.outputs.ORDERS_FILE_SHARE_NAME
 
 @description('Azure Storage Workflow State Account Name')
 output WORKFLOW_STORAGE_ACCOUNT_NAME string = data.outputs.WORKFLOW_STORAGE_ACCOUNT_NAME

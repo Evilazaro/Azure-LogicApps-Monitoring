@@ -168,6 +168,18 @@ resource dashboard 'Microsoft.App/managedEnvironments/dotNetComponents@2025-10-0
   }
 }
 
+resource appEnvStorage 'Microsoft.App/managedEnvironments/storages@2025-02-02-preview' = {
+  parent: appEnv
+  name: 'orders-storage'
+  properties: {
+    azureFile: {
+      accountName: 'ordersfs564gx6fxhaxvw'
+      shareName: 'orders-data'
+      accessMode: 'ReadWrite'
+    }
+  }
+}
+
 @description('Azure Files storage mount for orders-api persistent data')
 resource ordersStorage 'Microsoft.App/managedEnvironments/storages@2025-02-02-preview' = {
   parent: appEnv

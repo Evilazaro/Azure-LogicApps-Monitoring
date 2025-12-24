@@ -160,7 +160,7 @@ output ORDERS_STORAGE_ACCOUNT_NAME string = volumeStorage.outputs.ORDERS_STORAGE
 output ORDERS_STORAGE_BLOBENDPOINT string = volumeStorage.outputs.ORDERS_STORAGE_BLOBENDPOINT
 
 @description('Name of the file share')
-output CA_FILE_SHARE_NAME string = volumeStorage.outputs.CA_FILE_SHARE_NAME
+output ORDERS_FILE_SHARE_NAME string = volumeStorage.outputs.ORDERS_FILE_SHARE_NAME
 
 @description('Primary key of the storage account for Orders API Volume Mount')
 #disable-next-line outputs-should-not-contain-secrets
