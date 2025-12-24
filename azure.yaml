@@ -41,11 +41,11 @@ hooks:
   preprovision:
     posix:                             # Linux/macOS configuration
       shell: sh
-      run: ./hooks/preprovision.sh
+      run: ./hooks/preprovision.sh --force
       continueOnError: false           # Fail fast on validation errors
     windows:                           # Windows configuration
       shell: pwsh
-      run: ./hooks/preprovision.ps1
+      run: ./hooks/preprovision.ps1 -Force
       continueOnError: false
 
   # Post-provisioning configuration hook

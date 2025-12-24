@@ -170,11 +170,11 @@ resource dashboard 'Microsoft.App/managedEnvironments/dotNetComponents@2025-10-0
 
 resource appEnvStorage 'Microsoft.App/managedEnvironments/storages@2025-02-02-preview' = {
   parent: appEnv
-  name: 'orders-storage'
+  name: storageVolumeName
   properties: {
     azureFile: {
-      accountName: 'ordersfs564gx6fxhaxvw'
-      shareName: 'orders-data'
+      accountName: caVolumeMountSAName
+      shareName: caVolumeMountFileShareName
       accessMode: 'ReadWrite'
     }
   }
