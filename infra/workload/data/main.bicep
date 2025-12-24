@@ -144,7 +144,7 @@ module volumeStorage 'storage/main.bicep' = {
     name: name
     tags: tags
     envName: envName
-    metricsSettings: metricsSettings 
+    metricsSettings: metricsSettings
     storageAccountId: storageAccountId
     userAssignedIdentityId: userAssignedIdentityId
     workspaceId: workspaceId
@@ -157,7 +157,7 @@ module volumeStorage 'storage/main.bicep' = {
 output ORDERS_STORAGE_ACCOUNT_NAME string = volumeStorage.outputs.ORDERS_STORAGE_ACCOUNT_NAME
 
 @description('Orders Storage Account Blob Endpoint')
-output ORDERS_STORAGE_BLOBENDPOINT string = volumeStorage.outputs.ORDERS_STORAGE_BLOBENDPOINT
+output DATA_BLOBENDPOINT string = volumeStorage.outputs.DATA_BLOBENDPOINT
 
 @description('Name of the file share')
 output ORDERS_FILE_SHARE_NAME string = volumeStorage.outputs.ORDERS_FILE_SHARE_NAME

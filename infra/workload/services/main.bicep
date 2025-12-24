@@ -60,7 +60,6 @@ param workspaceId string
 param workspaceCustomerId string
 
 @description('Primary Key for Log Analytics workspace.')
-@secure()
 param workspacePrimaryKey string
 
 @description('Storage Account ID for diagnostic logs and metrics.')
@@ -74,14 +73,12 @@ param logsSettings object[]
 param metricsSettings object[]
 
 @description('Connection string for Application Insights instance.')
-@secure()
 param appInsightsConnectionString string
 
 @description('Name of the storage account for Container Apps persistent storage.')
 param caVolumeMountSAName string
 
 @description('Storage account key for Azure Files mount.')
-@secure()
 param caVolumeMountSAKey string
 
 @description('Name of the file share for orders-api persistent data.')
@@ -101,7 +98,7 @@ resource registry 'Microsoft.ContainerRegistry/registries@2025-11-01' = {
   name: toLower('${name}acr${uniqueString(subscription().id, resourceGroup().id, location, envName)}')
   location: location
   identity: {
-    type: 'SystemAssigned, UserAssigned'
+    type: 'UserAssigned'
     userAssignedIdentities: {
       '${userAssignedIdentityId}': {}
     }
@@ -134,7 +131,7 @@ resource appEnv 'Microsoft.App/managedEnvironments@2025-02-02-preview' = {
   location: location
   tags: tags
   identity: {
-    type: 'SystemAssigned, UserAssigned'
+    type: 'UserAssigned'
     userAssignedIdentities: {
       '${userAssignedIdentityId}': {}
     }
@@ -175,20 +172,7 @@ resource appEnvStorage 'Microsoft.App/managedEnvironments/storages@2025-02-02-pr
     azureFile: {
       accountName: caVolumeMountSAName
       shareName: caVolumeMountFileShareName
-      accessMode: 'ReadWrite'
-    }
-  }
-}
-
-@description('Azure Files storage mount for orders-api persistent data')
-resource ordersStorage 'Microsoft.App/managedEnvironments/storages@2025-02-02-preview' = {
-  parent: appEnv
-  name: storageVolumeName
-  properties: {
-    azureFile: {
-      accountName: caVolumeMountSAName
       accountKey: caVolumeMountSAKey
-      shareName: caVolumeMountFileShareName
       accessMode: 'ReadWrite'
     }
   }
@@ -212,4 +196,4 @@ output AZURE_CONTAINER_APPS_ENVIRONMENT_NAME string = appEnv.name
 output AZURE_CONTAINER_APPS_ENVIRONMENT_DEFAULT_DOMAIN string = appEnv.properties.defaultDomain
 
 @description('Name of the storage volume mount for orders-api')
-output ORDERS_STORAGE_VOLUME_NAME string = ordersStorage.name
+output ORDERS_STORAGE_VOLUME_NAME string = storageVolumeName

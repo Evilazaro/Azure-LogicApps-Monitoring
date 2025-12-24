@@ -58,7 +58,10 @@ param(
 
     [Parameter(Mandatory = $false, HelpMessage = "Maximum products per order")]
     [ValidateRange(1, 20)]
-    [int]$MaxProducts = 6
+    [int]$MaxProducts = 6,
+
+    [Parameter(Mandatory = $false, HelpMessage = "Force execution without prompting")]
+    [switch]$Force
 )
 
 #Requires -Version 7.0
@@ -407,6 +410,11 @@ function Export-OrdersToJson {
 #region Main Script
 
 try {
+    # Handle -Force parameter to suppress confirmations
+    if ($Force) {
+        $ConfirmPreference = 'None'
+    }
+    
     Write-Verbose "Starting order generation process..."
     Write-Verbose "Parameters: OrderCount=$OrderCount, MinProducts=$MinProducts, MaxProducts=$MaxProducts"
     

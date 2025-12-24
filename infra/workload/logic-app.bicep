@@ -70,7 +70,6 @@ param metricsSettings object[]
 param workflowStorageAccountName string
 
 @description('Connection string for Application Insights instance.')
-@secure()
 param appInsightsConnectionString string
 
 @description('Resource tags applied to all resources.')

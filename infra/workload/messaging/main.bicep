@@ -91,7 +91,7 @@ resource broker 'Microsoft.ServiceBus/namespaces@2025-05-01-preview' = {
   }
   tags: tags
   identity: {
-    type: 'SystemAssigned, UserAssigned'
+    type: 'UserAssigned'
     userAssignedIdentities: {
       '${userAssignedIdentityId}': {}
     }
@@ -134,4 +134,3 @@ output MESSAGING_SERVICEBUSHOSTNAME string = broker.name
 
 @description('Azure Service Bus endpoint')
 output MESSAGING_SERVICEBUSENDPOINT string = broker.properties.serviceBusEndpoint
-

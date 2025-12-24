@@ -158,7 +158,7 @@ resource storageAccountDiag 'Microsoft.Insights/diagnosticSettings@2021-05-01-pr
 output ORDERS_STORAGE_ACCOUNT_NAME string = caSA.name
 
 @description('Orders Storage Account Blob Endpoint')
-output ORDERS_STORAGE_BLOBENDPOINT string = caSA.properties.primaryEndpoints.blob
+output DATA_BLOBENDPOINT string = caSA.properties.primaryEndpoints.blob
 
 @description('Name of the file share')
 output ORDERS_FILE_SHARE_NAME string = fileShare.name

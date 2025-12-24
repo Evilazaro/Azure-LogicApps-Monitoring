@@ -28,6 +28,9 @@
 #         Maximum number of products per order. Default is 6.
 #         Valid range: 1-20
 #
+#     --force
+#         Force execution without prompting for confirmation.
+#
 #     --verbose
 #         Enable verbose output for debugging.
 #
@@ -75,6 +78,7 @@ OUTPUT_PATH="${SCRIPT_DIR}/../infra/data/ordersBatch.json"
 MIN_PRODUCTS=1
 MAX_PRODUCTS=6
 VERBOSE=false
+FORCE=false
 
 # Product Catalog
 # Each product has: ID, Description, BasePrice
@@ -189,6 +193,7 @@ OPTIONS:
     --output-path PATH      Output file path (default: ../infra/data/ordersBatch.json)
     --min-products NUM      Minimum products per order (default: 1, range: 1-20)
     --max-products NUM      Maximum products per order (default: 6, range: 1-20)
+    --force                 Force execution without prompting
     --verbose               Enable verbose output
     --help                  Display this help message
 
@@ -404,6 +409,10 @@ parse_arguments() {
             --max-products)
                 MAX_PRODUCTS="$2"
                 shift 2
+                ;;
+            --force)
+                FORCE=true
+                shift
                 ;;
             --verbose)
                 VERBOSE=true

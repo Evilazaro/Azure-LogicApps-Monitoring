@@ -43,10 +43,12 @@ hooks:
       shell: sh
       run: ./hooks/preprovision.sh --force
       continueOnError: false           # Fail fast on validation errors
+      interactive: false               # Non-interactive execution
     windows:                           # Windows configuration
       shell: pwsh
       run: ./hooks/preprovision.ps1 -Force
-      continueOnError: false
+      continueOnError: false           # Fail fast on validation errors
+      interactive: false               # Non-interactive execution
 
   # Post-provisioning configuration hook
   # Executes after 'azd provision' to configure local development secrets
@@ -58,12 +60,14 @@ hooks:
         ./hooks/postprovision.sh --force       # Configure .NET user secrets
         ./hooks/Generate-Orders.sh --force     # Generate test order data
       continueOnError: false
+      interactive: false
     windows:                           # Windows configuration
       shell: pwsh
       run: |
         ./hooks/postprovision.ps1 -Force      # Configure .NET user secrets
         ./hooks/Generate-Orders.ps1 -Force    # Generate test order data
       continueOnError: false
+      interactive: false
 
 # ------------------------------------------------------------------------------
 # Application Services
