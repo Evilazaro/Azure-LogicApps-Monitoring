@@ -92,7 +92,7 @@ param tags tagsType
 
 // ========== Variables ==========
 
-var storageVolumeName = 'orders-storage'
+var storageVolumeName string = 'orders-storage'
 
 // ========== Resources ==========
 
@@ -126,7 +126,7 @@ resource registryDiag 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview'
 
 // Generate unique name for Container Apps Environment
 // Uses subscription and resource group for uniqueness across deployments
-var appEnvName = toLower('${name}-cae-${uniqueString(subscription().id, resourceGroup().id, location, envName)}')
+var appEnvName string = toLower('${name}-cae-${uniqueString(subscription().id, resourceGroup().id, location, envName)}')
 
 @description('Container Apps managed environment for hosting containerized applications')
 resource appEnv 'Microsoft.App/managedEnvironments@2025-02-02-preview' = {
@@ -184,9 +184,6 @@ resource ordersStorage 'Microsoft.App/managedEnvironments/storages@2025-02-02-pr
 
 // ========== Outputs ==========
 
-
-@description('Name of the storage volume mount for orders-api')
-output ORDERS_STORAGE_VOLUME_NAME string = ordersStorage.name
 @description('Login server endpoint for the Azure Container Registry')
 output AZURE_CONTAINER_REGISTRY_ENDPOINT string = registry.properties.loginServer
 
@@ -201,3 +198,6 @@ output AZURE_CONTAINER_APPS_ENVIRONMENT_NAME string = appEnv.name
 
 @description('Default domain for the Container Apps environment')
 output AZURE_CONTAINER_APPS_ENVIRONMENT_DEFAULT_DOMAIN string = appEnv.properties.defaultDomain
+
+@description('Name of the storage volume mount for orders-api')
+output ORDERS_STORAGE_VOLUME_NAME string = ordersStorage.name

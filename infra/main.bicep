@@ -175,5 +175,5 @@ output AZURE_TENANT_ID string = tenant().tenantId
 @description('Azure Storage Workflow State Account Name')
 output LOGICAPPS_STORAGE_ACCOUNT_NAME string = workload.outputs.WORKFLOW_STORAGE_ACCOUNT_NAME
 
-@description('Orders API Storage Volume Name in Container Apps Environment')
-output CA_FILE_SHARE_NAME string = workload.outputs.CA_FILE_SHARE_NAME
+@description('Name of the storage volume mount for orders-api')
+output ORDERS_STORAGE_VOLUME_NAME string = workload.outputs.ORDERS_STORAGE_VOLUME_NAME

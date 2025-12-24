@@ -1,21 +1,21 @@
 /*
-  Data Infrastructure Module (CURRENTLY UNUSED)
-  =============================================
-  NOTE: This file appears to be orphaned and is not referenced by any parent modules.
-  The functionality provided here is already covered by the messaging/main.bicep module.
-  
-  Consider removing this file or integrating it into the main deployment flow.
+  Data Infrastructure Module
+  ==========================
+  Deploys storage infrastructure for Logic Apps and Container Apps.
   
   Components:
   1. Storage account for Logic Apps runtime (Standard tier requirement)
   2. Blob containers for processed orders (success/error segregation)
+  3. Azure Files storage for Container Apps persistent volumes
   
   Key Features:
   - Separate containers for success and error order processing
+  - Azure Files share for orders-api persistent data
+  - Integrated diagnostic logging
 */
 
-metadata name = 'Data Infrastructure (Unused)'
-metadata description = 'Storage account and blob containers for workflow data - Currently not deployed'
+metadata name = 'Data Infrastructure'
+metadata description = 'Storage accounts and containers for workflow data and Container Apps persistent storage'
 
 // ========== Type Definitions ==========
 
@@ -63,10 +63,10 @@ param metricsSettings object[]
 param tags tagsType
 
 // Remove special characters for naming compliance
-var cleanedName = toLower(replace(replace(replace(name, '-', ''), '_', ''), ' ', ''))
+var cleanedName string = toLower(replace(replace(replace(name, '-', ''), '_', ''), ' ', ''))
 
 // Generate unique suffix for globally unique resource names
-var uniqueSuffix = uniqueString(resourceGroup().id, name, envName, location)
+var uniqueSuffix string = uniqueString(resourceGroup().id, name, envName, location)
 
 @description('Storage account for Logic Apps workflows and data')
 resource wfSA 'Microsoft.Storage/storageAccounts@2025-06-01' = {

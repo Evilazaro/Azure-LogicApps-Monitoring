@@ -66,16 +66,16 @@ param tags tagsType
 // ========== Variables ==========
 
 // Remove special characters for naming compliance
-var cleanedName = toLower(replace(replace(replace(name, '-', ''), '_', ''), ' ', ''))
+var cleanedName string = toLower(replace(replace(replace(name, '-', ''), '_', ''), ' ', ''))
 
 // Generate unique suffix for globally unique storage account name
-var uniqueSuffix = uniqueString(resourceGroup().id, name, envName, location)
+var uniqueSuffix string = uniqueString(resourceGroup().id, name, envName, location)
 
 // Storage account name: max 24 chars, alphanumeric only
-var storageAccountName = toLower('${cleanedName}fs${uniqueSuffix}')
+var storageAccountName string = toLower('${cleanedName}fs${uniqueSuffix}')
 
 // File share name for orders-api persistent storage
-var fileShareName = 'orders-data'
+var fileShareName string = 'orders-data'
 
 // ========== Resources ==========
 
