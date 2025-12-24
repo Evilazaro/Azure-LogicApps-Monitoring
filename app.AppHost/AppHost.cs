@@ -1,5 +1,3 @@
-using Aspire.Hosting.Azure;
-
 var builder = DistributedApplication.CreateBuilder(args);
 
 // =============================================================================
@@ -28,7 +26,7 @@ var webApp = builder.AddProject<Projects.eShop_Web_App>("web-app")
 // Application Insights is automatically configured in Azure Container Apps
 // through the infrastructure. In local development, it uses user secrets.
 
-ConfigureApplicationInsights(builder, ordersApi, webApp);
+ConfigureApplicationInsights(builder, resourceGroupParameter, ordersApi, webApp);
 
 // =============================================================================
 // Azure Service Bus Configuration
@@ -55,9 +53,9 @@ static IResourceBuilder<ParameterResource>? CreateResourceGroupParameterIfNeeded
     IDistributedApplicationBuilder builder)
 {
     const string ResourceGroupConfigKey = "Azure:ResourceGroup";
-    
+
     var resourceGroup = builder.Configuration[ResourceGroupConfigKey];
-    
+
     if (string.IsNullOrWhiteSpace(resourceGroup))
     {
         return null;
@@ -129,22 +127,36 @@ static void ConfigureOrdersStoragePath(
 /// <param name="projects">The project resources to configure with Application Insights.</param>
 static void ConfigureApplicationInsights(
     IDistributedApplicationBuilder builder,
+    IResourceBuilder<ParameterResource>? resourceGroupParameter,
     params IResourceBuilder<ProjectResource>[] projects)
 {
     const string AppInsightsConnectionStringKey = "ApplicationInsights:ConnectionString";
     const string AppInsightsEnvironmentKey = "APPLICATIONINSIGHTS_CONNECTION_STRING";
 
     var appInsightsConnectionString = builder.Configuration[AppInsightsConnectionStringKey];
+    var appInsightsName = builder.Configuration["Azure:ApplicationInsights:Name"];
 
-    if (string.IsNullOrWhiteSpace(appInsightsConnectionString))
+    if (string.IsNullOrWhiteSpace(appInsightsName))
     {
         // Application Insights not configured - will use local development mode
         return;
     }
-
-    foreach (var project in projects)
+    else
     {
-        project.WithEnvironment(AppInsightsEnvironmentKey, appInsightsConnectionString);
+        // Azure deployment mode - use existing storage account with managed identity
+        if (resourceGroupParameter is null)
+        {
+            throw new InvalidOperationException(
+                "Azure Resource Group configuration is required when using Azure Storage Account. " +
+                "Please configure 'Azure:ResourceGroup' in your application settings.");
+        }
+
+        var appInsightsParam = builder.AddParameter("app-insights", appInsightsName);
+        var appInsights = builder.AddAzureApplicationInsights("telemetry").RunAsExisting(appInsightsParam, resourceGroupParameter);
+        foreach (var project in projects)
+        {
+            project.WithReference(appInsights);
+        }
     }
 }
 
@@ -165,16 +177,16 @@ static void ConfigureServiceBus(
     const string DefaultTopicName = "OrdersPlaced";
     const string DefaultSubscriptionName = "OrderProcessingSubscription";
 
-    var sbHostName = string.IsNullOrEmpty(builder.Configuration["Azure:ServiceBus:HostName"]) 
-        ? DefaultNamespaceName 
+    var sbHostName = string.IsNullOrEmpty(builder.Configuration["Azure:ServiceBus:HostName"])
+        ? DefaultNamespaceName
         : builder.Configuration["Azure:ServiceBus:HostName"];
-    
-    var sbTopicName = string.IsNullOrEmpty(builder.Configuration["Azure:ServiceBus:TopicName"]) 
-        ? DefaultTopicName 
+
+    var sbTopicName = string.IsNullOrEmpty(builder.Configuration["Azure:ServiceBus:TopicName"])
+        ? DefaultTopicName
         : builder.Configuration["Azure:ServiceBus:TopicName"];
-    
-    var sbSubscriptionName = string.IsNullOrEmpty(builder.Configuration["Azure:ServiceBus:SubscriptionName"]) 
-        ? DefaultSubscriptionName 
+
+    var sbSubscriptionName = string.IsNullOrEmpty(builder.Configuration["Azure:ServiceBus:SubscriptionName"])
+        ? DefaultSubscriptionName
         : builder.Configuration["Azure:ServiceBus:SubscriptionName"];
 
     // Determine if we're running in local emulator mode or Azure mode
