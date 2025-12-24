@@ -373,6 +373,7 @@ function Invoke-AzureContainerRegistryLogin {
     
     process {
         # Validate registry endpoint is provided
+        # ACR login is optional - some deployments use managed identities
         if ([string]::IsNullOrWhiteSpace($RegistryEndpoint)) {
             Write-Warning "Azure Container Registry endpoint not configured. Skipping ACR login."
             Write-Verbose "Set AZURE_CONTAINER_REGISTRY_ENDPOINT environment variable if ACR authentication is required."
@@ -380,13 +381,16 @@ function Invoke-AzureContainerRegistryLogin {
         }
         
         try {
-            # Strip .azurecr.io suffix if present (az acr login expects just the registry name)
+            # Normalize registry endpoint by removing .azurecr.io suffix
+            # Azure CLI expects just the registry name, not the full FQDN
+            # Example: 'myregistry.azurecr.io' becomes 'myregistry'
             $registryName = $RegistryEndpoint -replace '\.azurecr\.io$', ''
             
             Write-Information "Authenticating to Azure Container Registry: $RegistryEndpoint"
             Write-Verbose "Using registry name: $registryName"
             
-            # Check if Azure CLI is available
+            # Verify Azure CLI is installed and accessible
+            # ACR authentication requires Azure CLI (az)
             $azCommand = Get-Command -Name az -ErrorAction SilentlyContinue
             if (-not $azCommand) {
                 Write-Warning "Azure CLI (az) not found in PATH. Skipping ACR authentication."
@@ -397,7 +401,8 @@ function Invoke-AzureContainerRegistryLogin {
             
             Write-Verbose "Azure CLI found at: $($azCommand.Source)"
             
-            # Check Azure CLI version
+            # Retrieve and log Azure CLI version for troubleshooting
+            # Helps identify version-specific issues with ACR authentication
             try {
                 $azVersionJson = & az version --output json 2>&1
                 $azVersionExitCode = $LASTEXITCODE
@@ -601,25 +606,35 @@ function Get-EnvironmentVariableSafe {
 #region Main Script Execution
 
 try {
-    # Start execution timer
+    # Initialize execution timer for performance tracking and reporting
+    # Used in finally block to calculate total execution duration
     $script:executionStart = Get-Date
     
-    # Script initialization
+    # Display script initialization banner with version and environment info
+    # Provides context for troubleshooting and audit logging
     Write-SectionHeader -Message "Post-Provisioning Script Started" -Type 'Main'
     Write-Information "Script Version: $script:ScriptVersion"
     Write-Information "Execution Time: $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')"
     Write-Information "PowerShell Version: $($PSVersionTable.PSVersion)"
+    
+    # Retrieve OS information using cross-platform approach
+    # $PSVersionTable.OS exists on PowerShell Core but not Windows PowerShell
     $osInfo = if ($PSVersionTable.OS) { $PSVersionTable.OS } else { "$($PSVersionTable.PSEdition) on $([System.Environment]::OSVersion.Platform)" }
     Write-Information "Operating System: $osInfo"
     
-    # Validate required environment variables
+    # Validate all required environment variables before proceeding
+    # Fail-fast approach ensures we don't attempt provisioning with incomplete configuration
     Write-SectionHeader -Message "Validating Environment Variables" -Type 'Sub'
     
+    # Use strongly-typed List for better performance than array concatenation
     $validationErrors = [System.Collections.Generic.List[string]]::new()
     
+    # Check each required environment variable
+    # Collect all failures before reporting to provide complete error context
     foreach ($varName in $script:RequiredEnvironmentVariables) {
         Write-Verbose "Validating: $varName"
         if (-not (Test-RequiredEnvironmentVariable -Name $varName)) {
+            # Add to error collection (method returns void, hence $null assignment)
             $null = $validationErrors.Add($varName)
         }
         else {
@@ -627,6 +642,8 @@ try {
         }
     }
     
+    # If any validation failed, build comprehensive error message and terminate
+    # Provides user with complete list of missing variables
     if ($validationErrors.Count -gt 0) {
         $errorLines = [System.Collections.Generic.List[string]]::new()
         $errorLines.Add('The following required environment variables are missing or empty:')
@@ -638,28 +655,45 @@ try {
     
     Write-Information "✓ All $($script:RequiredEnvironmentVariables.Count) required environment variables are set."
     
-    # Read environment variables with safe retrieval
+    # Retrieve all Azure configuration from environment variables
+    # Using Get-EnvironmentVariableSafe for consistent null handling and default values
     Write-SectionHeader -Message "Reading Environment Variables" -Type 'Info'
     Write-Verbose "Using safe retrieval for all environment variables..."
+    
+    # Core Azure configuration (required)
     $azureTenantId = Get-EnvironmentVariableSafe -Name 'AZURE_TENANT_ID'
     $azureSubscriptionId = Get-EnvironmentVariableSafe -Name 'AZURE_SUBSCRIPTION_ID'
     $azureResourceGroup = Get-EnvironmentVariableSafe -Name 'AZURE_RESOURCE_GROUP'
     $azureLocation = Get-EnvironmentVariableSafe -Name 'AZURE_LOCATION'
-    $enableApplicationInsights = $true
+    
+    # Application Insights configuration
+    $enableApplicationInsights = $true  # Feature flag for telemetry
     $applicationInsightsName = Get-EnvironmentVariableSafe -Name 'AZURE_APPLICATION_INSIGHTS_NAME'
     $applicationInsightsConnectionString = Get-EnvironmentVariableSafe -Name 'APPLICATIONINSIGHTS_CONNECTION_STRING'
+    
+    # Managed Identity configuration
     $azureClientId = Get-EnvironmentVariableSafe -Name 'MANAGED_IDENTITY_CLIENT_ID'
+    
+    # Service Bus messaging configuration
     $azureServiceBusHostName = Get-EnvironmentVariableSafe -Name 'MESSAGING_SERVICEBUSHOSTNAME'
+    # Provide default values for Service Bus topic/subscription names
     $azureServiceBusTopicName = Get-EnvironmentVariableSafe -Name 'AZURE_SERVICE_BUS_TOPIC_NAME' -DefaultValue 'OrdersPlaced'
     $azureServiceBusSubscriptionName = Get-EnvironmentVariableSafe -Name 'AZURE_SERVICE_BUS_SUBSCRIPTION_NAME' -DefaultValue 'OrderProcessingSubscription'
     $azureMessagingServiceBusEndpoint = Get-EnvironmentVariableSafe -Name 'MESSAGING_SERVICEBUSENDPOINT'
+    
+    # Environment and deployment configuration
     $azureEnvName = Get-EnvironmentVariableSafe -Name 'AZURE_ENV_NAME'
     $azureContainerRegistryEndpoint = Get-EnvironmentVariableSafe -Name 'AZURE_CONTAINER_REGISTRY_ENDPOINT'
-    $azureStorageAccountName = Get-EnvironmentVariableSafe -Name 'WORKFLOW_STORAGE_ACCOUNT_NAME'
     
-    # Display configuration (with safe null handling)
+    # Storage configuration for Logic Apps and Orders
+    $azureStorageAccountName = Get-EnvironmentVariableSafe -Name 'WORKFLOW_STORAGE_ACCOUNT_NAME'
+    $azureOrdersStorageVolumeName = Get-EnvironmentVariableSafe -Name 'ORDERS_STORAGE_VOLUME_NAME'
+    $azureOrdersStorageAccountName = Get-EnvironmentVariableSafe -Name 'ORDERS_STORAGE_ACCOUNT_NAME'
+    
+    # Display complete Azure configuration for verification and troubleshooting
+    # Using null-coalescing operator (??) to display "<not set>" for null values
     Write-SectionHeader -Message "Azure Configuration" -Type 'Sub'
-    $notSet = '<not set>'
+    $notSet = '<not set>'  # Sentinel value for display purposes
     Write-Information "Azure Tenant ID          : $($azureTenantId ?? $notSet)"
     Write-Information "  Subscription ID        : $($azureSubscriptionId ?? $notSet)"
     Write-Information "  Resource Group         : $($azureResourceGroup ?? $notSet)"
@@ -675,16 +709,23 @@ try {
     Write-Information "  Service Bus Endpoint   : $($azureMessagingServiceBusEndpoint ?? $notSet)"
     Write-Information "  ACR Endpoint           : $($azureContainerRegistryEndpoint ?? $notSet)"
     Write-Information "  Storage Account Name   : $($azureStorageAccountName ?? $notSet)"
+    Write-Information "  Orders Storage Volume  : $($azureOrdersStorageVolumeName ?? $notSet)"
+    Write-Information "  Orders Storage Account : $($azureOrdersStorageAccountName ?? $notSet)"
     
-    # Authenticate to Azure Container Registry (non-blocking)
+    # Attempt Azure Container Registry authentication
+    # Non-blocking operation - script continues even if ACR login fails
+    # Some deployments may not require ACR authentication (e.g., using managed identities)
     Invoke-AzureContainerRegistryLogin -RegistryEndpoint $azureContainerRegistryEndpoint
     
-    # Verify prerequisites
+    # Verify that required tools are installed before proceeding
+    # .NET CLI is required for managing user secrets
     Write-SectionHeader -Message "Verifying Prerequisites" -Type 'Sub'
     
-    # Check for .NET CLI
+    # Check for .NET CLI availability
+    # User secrets management requires dotnet CLI
     $dotnetCommand = Get-Command -Name dotnet -ErrorAction SilentlyContinue
     if (-not $dotnetCommand) {
+        # Build multi-line error message with installation guidance
         $errorMessage = @(
             '.NET CLI (dotnet) not found in PATH.'
             'Please install .NET SDK from: https://dotnet.microsoft.com/download'
@@ -789,7 +830,8 @@ try {
         'Azure:ServiceBus:HostName'       = $azureServiceBusHostName
         'Azure:ServiceBus:TopicName'       = $azureServiceBusTopicName
         'Azure:ServiceBus:SubscriptionName' = $azureServiceBusSubscriptionName
-        'Azure:StorageAccount:Name'      = $azureStorageAccountName
+        'Azure:Storage:VolumeName'  = $azureOrdersStorageVolumeName
+        'Azure:Storage:AccountName' = $azureOrdersStorageAccountName
     }
     
     # Define secrets for API project (Service Bus configuration only)

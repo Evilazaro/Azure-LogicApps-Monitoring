@@ -77,8 +77,22 @@ param metricsSettings object[]
 @secure()
 param appInsightsConnectionString string
 
+@description('Name of the storage account for Container Apps persistent storage.')
+param caVolumeMountSAName string
+
+@description('Storage account key for Azure Files mount.')
+@secure()
+param caVolumeMountSAKey string
+
+@description('Name of the file share for orders-api persistent data.')
+param caVolumeMountFileShareName string
+
 @description('Resource tags applied to container services.')
 param tags tagsType
+
+// ========== Variables ==========
+
+var storageVolumeName string = 'orders-storage'
 
 // ========== Resources ==========
 
@@ -112,7 +126,7 @@ resource registryDiag 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview'
 
 // Generate unique name for Container Apps Environment
 // Uses subscription and resource group for uniqueness across deployments
-var appEnvName = toLower('${name}-cae-${uniqueString(subscription().id, resourceGroup().id, location, envName)}')
+var appEnvName string = toLower('${name}-cae-${uniqueString(subscription().id, resourceGroup().id, location, envName)}')
 
 @description('Container Apps managed environment for hosting containerized applications')
 resource appEnv 'Microsoft.App/managedEnvironments@2025-02-02-preview' = {
@@ -154,6 +168,20 @@ resource dashboard 'Microsoft.App/managedEnvironments/dotNetComponents@2025-10-0
   }
 }
 
+@description('Azure Files storage mount for orders-api persistent data')
+resource ordersStorage 'Microsoft.App/managedEnvironments/storages@2025-02-02-preview' = {
+  parent: appEnv
+  name: storageVolumeName
+  properties: {
+    azureFile: {
+      accountName: caVolumeMountSAName
+      accountKey: caVolumeMountSAKey
+      shareName: caVolumeMountFileShareName
+      accessMode: 'ReadWrite'
+    }
+  }
+}
+
 // ========== Outputs ==========
 
 @description('Login server endpoint for the Azure Container Registry')
@@ -170,3 +198,6 @@ output AZURE_CONTAINER_APPS_ENVIRONMENT_NAME string = appEnv.name
 
 @description('Default domain for the Container Apps environment')
 output AZURE_CONTAINER_APPS_ENVIRONMENT_DEFAULT_DOMAIN string = appEnv.properties.defaultDomain
+
+@description('Name of the storage volume mount for orders-api')
+output ORDERS_STORAGE_VOLUME_NAME string = ordersStorage.name

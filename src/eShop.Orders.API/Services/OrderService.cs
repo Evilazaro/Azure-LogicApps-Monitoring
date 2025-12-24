@@ -135,7 +135,7 @@ public sealed class OrderService : IOrderService
 
     /// <summary>
     /// Places multiple orders asynchronously in a batch operation with parallel processing.
-    /// Processes orders in parallel while maintaining observability and error handling .
+    /// Processes orders in parallel while maintaining observability and error handling.
     /// </summary>
     /// <param name="orders">The collection of orders to be placed.</param>
     /// <param name="cancellationToken">Cancellation token to cancel the operation.</param>

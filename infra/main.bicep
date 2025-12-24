@@ -63,14 +63,14 @@ var coreTags tagsType = {
   Repository: 'Azure-LogicApps-Monitoring'
 }
 
-var tags = union(coreTags, {
+var tags tagsType = union(coreTags, {
   'azd-env-name': envName
   'azd-service-name': 'app'
 })
 
 // Resource group naming convention: rg-{solution}-{env}-{location-abbrev}
 // Truncates location to 8 chars to keep names concise
-var resourceGroupName = 'rg-${solutionName}-${envName}-${substring(location, 0, min(length(location), 8))}'
+var resourceGroupName string = 'rg-${solutionName}-${envName}-${substring(location, 0, min(length(location), 8))}'
 
 // ========== Resources ==========
 
@@ -174,3 +174,9 @@ output AZURE_TENANT_ID string = tenant().tenantId
 
 @description('Azure Storage Workflow State Account Name')
 output LOGICAPPS_STORAGE_ACCOUNT_NAME string = workload.outputs.WORKFLOW_STORAGE_ACCOUNT_NAME
+
+@description('Name of the storage volume mount for orders-api')
+output ORDERS_STORAGE_VOLUME_NAME string = workload.outputs.ORDERS_STORAGE_VOLUME_NAME
+
+@description('Orders API Storage Account Name')
+output ORDERS_STORAGE_ACCOUNT_NAME string = workload.outputs.ORDERS_STORAGE_ACCOUNT_NAME

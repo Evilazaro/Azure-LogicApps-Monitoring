@@ -103,7 +103,6 @@ module data 'data/main.bicep' = {
     location: location
     workspaceId: workspaceId
     storageAccountId: storageAccountId
-    logsSettings: allLogsSettings
     metricsSettings: allMetricsSettings
     userAssignedIdentityId: identity.outputs.AZURE_MANAGED_IDENTITY_ID
     tags: tags
@@ -140,6 +139,9 @@ module services 'services/main.bicep' = {
     logsSettings: allLogsSettings
     metricsSettings: allMetricsSettings
     appInsightsConnectionString: appInsightsConnectionString
+    caVolumeMountSAName: data.outputs.ORDERS_STORAGE_ACCOUNT_NAME
+    caVolumeMountSAKey: data.outputs.ORDERS_STORAGE_ACCOUNT_KEY
+    caVolumeMountFileShareName: data.outputs.CA_FILE_SHARE_NAME
     tags: tags
   }
 }
@@ -196,5 +198,14 @@ output AZURE_CONTAINER_APPS_ENVIRONMENT_ID string = services.outputs.AZURE_CONTA
 @description('Default domain for the Container Apps environment')
 output AZURE_CONTAINER_APPS_ENVIRONMENT_DEFAULT_DOMAIN string = services.outputs.AZURE_CONTAINER_APPS_ENVIRONMENT_DEFAULT_DOMAIN
 
+@description('Orders API Storage Account Name')
+output ORDERS_STORAGE_ACCOUNT_NAME string = data.outputs.ORDERS_STORAGE_ACCOUNT_NAME
+
+@description('Orders API File Share Name')
+output CA_FILE_SHARE_NAME string = data.outputs.CA_FILE_SHARE_NAME
+
 @description('Azure Storage Workflow State Account Name')
 output WORKFLOW_STORAGE_ACCOUNT_NAME string = data.outputs.WORKFLOW_STORAGE_ACCOUNT_NAME
+
+@description('Name of the storage volume mount for orders-api')
+output ORDERS_STORAGE_VOLUME_NAME string = services.outputs.ORDERS_STORAGE_VOLUME_NAME
