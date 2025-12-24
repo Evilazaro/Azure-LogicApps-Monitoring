@@ -103,7 +103,6 @@ module data 'data/main.bicep' = {
     location: location
     workspaceId: workspaceId
     storageAccountId: storageAccountId
-    logsSettings: allLogsSettings
     metricsSettings: allMetricsSettings
     userAssignedIdentityId: identity.outputs.AZURE_MANAGED_IDENTITY_ID
     tags: tags

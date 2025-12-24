@@ -56,9 +56,6 @@ param workspaceId string
 @minLength(50)
 param storageAccountId string
 
-@description('Logs settings for the Log Analytics workspace.')
-param logsSettings object[]
-
 @description('Metrics settings for the Log Analytics workspace.')
 param metricsSettings object[]
 
@@ -136,7 +133,6 @@ resource saDiag 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
     workspaceId: workspaceId
     storageAccountId: storageAccountId
     logAnalyticsDestinationType: 'Dedicated'
-    logs: logsSettings
     metrics: metricsSettings
   }
 }
