@@ -134,4 +134,3 @@ output MESSAGING_SERVICEBUSHOSTNAME string = broker.name
 
 @description('Azure Service Bus endpoint')
 output MESSAGING_SERVICEBUSENDPOINT string = broker.properties.serviceBusEndpoint
-

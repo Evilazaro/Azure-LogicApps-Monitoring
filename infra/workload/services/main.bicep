@@ -60,7 +60,6 @@ param workspaceId string
 param workspaceCustomerId string
 
 @description('Primary Key for Log Analytics workspace.')
-@secure()
 param workspacePrimaryKey string
 
 @description('Storage Account ID for diagnostic logs and metrics.')
@@ -74,14 +73,12 @@ param logsSettings object[]
 param metricsSettings object[]
 
 @description('Connection string for Application Insights instance.')
-@secure()
 param appInsightsConnectionString string
 
 @description('Name of the storage account for Container Apps persistent storage.')
 param caVolumeMountSAName string
 
 @description('Storage account key for Azure Files mount.')
-@secure()
 param caVolumeMountSAKey string
 
 @description('Name of the file share for orders-api persistent data.')

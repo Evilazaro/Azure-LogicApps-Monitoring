@@ -144,7 +144,7 @@ module volumeStorage 'storage/main.bicep' = {
     name: name
     tags: tags
     envName: envName
-    metricsSettings: metricsSettings 
+    metricsSettings: metricsSettings
     storageAccountId: storageAccountId
     userAssignedIdentityId: userAssignedIdentityId
     workspaceId: workspaceId

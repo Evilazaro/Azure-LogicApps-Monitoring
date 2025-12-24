@@ -53,7 +53,6 @@ param workspaceId string
 param workspaceCustomerId string
 
 @description('Primary Key for Log Analytics workspace.')
-@secure()
 param workspacePrimaryKey string
 
 @description('Storage Account ID for diagnostic logs and metrics.')
@@ -61,7 +60,6 @@ param workspacePrimaryKey string
 param storageAccountId string
 
 @description('Connection string for Application Insights instance.')
-@secure()
 param appInsightsConnectionString string
 
 @description('Resource tags applied to all workload resources.')
