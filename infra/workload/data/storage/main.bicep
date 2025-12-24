@@ -161,7 +161,7 @@ output ORDERS_STORAGE_ACCOUNT_NAME string = caSA.name
 output ORDERS_STORAGE_BLOBENDPOINT string = caSA.properties.primaryEndpoints.blob
 
 @description('Name of the file share')
-output CA_FILE_SHARE_NAME string = fileShare.name
+output ORDERS_FILE_SHARE_NAME string = fileShare.name
 
 @description('Primary key of the storage account for Orders API Volume Mount')
 #disable-next-line outputs-should-not-contain-secrets

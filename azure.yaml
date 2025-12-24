@@ -41,11 +41,11 @@ hooks:
   preprovision:
     posix:                             # Linux/macOS configuration
       shell: sh
-      run: ./hooks/preprovision.sh
+      run: ./hooks/preprovision.sh --force
       continueOnError: false           # Fail fast on validation errors
     windows:                           # Windows configuration
       shell: pwsh
-      run: ./hooks/preprovision.ps1
+      run: ./hooks/preprovision.ps1 -Force
       continueOnError: false
 
   # Post-provisioning configuration hook
@@ -55,14 +55,14 @@ hooks:
     posix:                             # Linux/macOS configuration
       shell: sh
       run: |
-        ./hooks/postprovision.sh       # Configure .NET user secrets
-        ./hooks/Generate-Orders.sh     # Generate test order data
+        ./hooks/postprovision.sh --force       # Configure .NET user secrets
+        ./hooks/Generate-Orders.sh --force     # Generate test order data
       continueOnError: false
     windows:                           # Windows configuration
       shell: pwsh
       run: |
-        ./hooks/postprovision.ps1      # Configure .NET user secrets
-        ./hooks/Generate-Orders.ps1    # Generate test order data
+        ./hooks/postprovision.ps1 -Force      # Configure .NET user secrets
+        ./hooks/Generate-Orders.ps1 -Force    # Generate test order data
       continueOnError: false
 
 # ------------------------------------------------------------------------------
