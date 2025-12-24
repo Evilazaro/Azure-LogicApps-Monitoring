@@ -209,3 +209,19 @@ output WORKFLOW_STORAGE_ACCOUNT_NAME string = data.outputs.WORKFLOW_STORAGE_ACCO
 
 @description('Name of the storage volume mount for orders-api')
 output ORDERS_STORAGE_VOLUME_NAME string = services.outputs.ORDERS_STORAGE_VOLUME_NAME
+
+// Logic Apps Outputs
+@description('Name of the deployed Logic App workflow engine')
+output LOGIC_APP_NAME string = workflows.outputs.LOGIC_APP_NAME
+
+@description('Resource ID of the deployed Logic App workflow engine')
+output LOGIC_APP_ID string = workflows.outputs.LOGIC_APP_ID
+
+@description('Default hostname of the Logic App workflow engine')
+output LOGIC_APP_DEFAULT_HOSTNAME string = workflows.outputs.LOGIC_APP_DEFAULT_HOSTNAME
+
+@description('Name of the App Service Plan hosting the Logic App')
+output APP_SERVICE_PLAN_NAME string = workflows.outputs.APP_SERVICE_PLAN_NAME
+
+@description('Resource ID of the App Service Plan')
+output APP_SERVICE_PLAN_ID string = workflows.outputs.APP_SERVICE_PLAN_ID

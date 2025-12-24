@@ -213,3 +213,7 @@ Legend:
 │  Result: Ready for Azure deployment                            │
 └─────────────────────────────────────────────────────────────────┘
 ```
+
+---
+
+**Made with ❤️ by Evilazaro | Principal Cloud Solution Architect | Microsoft**

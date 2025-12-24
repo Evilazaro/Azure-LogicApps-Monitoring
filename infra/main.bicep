@@ -180,3 +180,19 @@ output ORDERS_STORAGE_VOLUME_NAME string = workload.outputs.ORDERS_STORAGE_VOLUM
 
 @description('Orders API Storage Account Name')
 output ORDERS_STORAGE_ACCOUNT_NAME string = workload.outputs.ORDERS_STORAGE_ACCOUNT_NAME
+
+// Logic Apps Outputs (Microsoft.Web/sites)
+@description('Name of the deployed Logic App workflow engine')
+output LOGIC_APP_NAME string = workload.outputs.LOGIC_APP_NAME
+
+@description('Resource ID of the deployed Logic App workflow engine')
+output LOGIC_APP_ID string = workload.outputs.LOGIC_APP_ID
+
+@description('Default hostname of the Logic App workflow engine')
+output LOGIC_APP_DEFAULT_HOSTNAME string = workload.outputs.LOGIC_APP_DEFAULT_HOSTNAME
+
+@description('Name of the App Service Plan hosting the Logic App')
+output APP_SERVICE_PLAN_NAME string = workload.outputs.APP_SERVICE_PLAN_NAME
+
+@description('Resource ID of the App Service Plan')
+output APP_SERVICE_PLAN_ID string = workload.outputs.APP_SERVICE_PLAN_ID

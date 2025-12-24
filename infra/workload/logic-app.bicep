@@ -195,3 +195,18 @@ resource wfDiag 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
 }
 
 // ========== Outputs ==========
+
+@description('Name of the deployed Logic App workflow engine')
+output LOGIC_APP_NAME string = workflowEngine.name
+
+@description('Resource ID of the deployed Logic App workflow engine')
+output LOGIC_APP_ID string = workflowEngine.id
+
+@description('Default hostname of the Logic App workflow engine')
+output LOGIC_APP_DEFAULT_HOSTNAME string = workflowEngine.properties.defaultHostName
+
+@description('Name of the App Service Plan hosting the Logic App')
+output APP_SERVICE_PLAN_NAME string = wfASP.name
+
+@description('Resource ID of the App Service Plan')
+output APP_SERVICE_PLAN_ID string = wfASP.id
