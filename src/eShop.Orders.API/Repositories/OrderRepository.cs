@@ -173,8 +173,14 @@ public sealed class OrderRepository : IOrderRepository, IDisposable
 
         try
         {
-            await using var fileStream = new FileStream(filePath, FileMode.Create, FileAccess.Write, FileShare.None, 4096, true);
-            await JsonSerializer.SerializeAsync(fileStream, orders, cancellationToken: cancellationToken).ConfigureAwait(false);
+            var options = new JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true,
+                WriteIndented = true
+            };
+
+            await using var fileStream = new FileStream(filePath, FileMode.Create, FileAccess.Write, FileShare.None, 4096, useAsync: true);
+            await JsonSerializer.SerializeAsync(fileStream, orders, options, cancellationToken).ConfigureAwait(false);
         }
         finally
         {
