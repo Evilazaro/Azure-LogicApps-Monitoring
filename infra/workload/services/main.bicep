@@ -175,6 +175,7 @@ resource appEnvStorage 'Microsoft.App/managedEnvironments/storages@2025-02-02-pr
     azureFile: {
       accountName: caVolumeMountSAName
       shareName: caVolumeMountFileShareName
+      accountKey: caVolumeMountSAKey
       accessMode: 'ReadWrite'
     }
   }
