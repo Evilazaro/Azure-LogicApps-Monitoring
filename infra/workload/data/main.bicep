@@ -87,7 +87,7 @@ resource wfSA 'Microsoft.Storage/storageAccounts@2025-06-01' = {
     accessTier: 'Hot'
     supportsHttpsTrafficOnly: true
     minimumTlsVersion: 'TLS1_2'
-    allowBlobPublicAccess: true
+    allowBlobPublicAccess: false
     publicNetworkAccess: 'Enabled'
     allowSharedKeyAccess: true
     networkAcls: {
