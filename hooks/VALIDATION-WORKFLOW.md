@@ -3,9 +3,9 @@
 # Pre-Provisioning Script - Validation Workflow
 
 **Recommended Workflow Order**: 
-1. 🔍 **check-dev-workstation.ps1** - Quick workstation validation (optional but recommended)
-2. ✅ **preprovision.ps1** - Comprehensive validation (this document)
-3. 🚀 **azd provision** - Deploy infrastructure (automatically runs postprovision.ps1)
+1. 🔍 **check-dev-workstation** (.ps1 or .sh) - Quick workstation validation (optional but recommended)
+2. ✅ **preprovision** (.ps1 or .sh) - Comprehensive validation (this document)
+3. 🚀 **azd provision** - Deploy infrastructure (automatically runs postprovision.ps1 or .sh)
 
 ---
 
@@ -15,7 +15,7 @@
 
 ```mermaid
 flowchart LR
-    Start["PREPROVISION.PS1 START<br/>Version 2.0.0"]
+    Start["PREPROVISION (.PS1/.SH) START<br/>Version 2.0.0"]
     Start --> Step1["STEP 1: PowerShell Version<br/>Minimum: 7.0 | Current: 7.5.4"]
     
     Step1 --> Decision1{Pass?}
@@ -30,7 +30,7 @@ flowchart LR
     
     Step3 --> Decision3{Skip?}
     Decision3 -->|No| ClearSecrets["Clear all project secrets"]
-    Decision3 -->|Yes| Skip["SKIPPED<br/>-ValidateOnly<br/>-SkipSecretsClear<br/>-WhatIf"]
+    Decision3 -->|Yes| Skip["SKIPPED<br/>--validate-only<br/>--skip-secrets-clear<br/>--dry-run"]
     
     ClearSecrets --> Summary["EXECUTION SUMMARY<br/>Status: ✓ SUCCESS<br/>Duration: 14-22 seconds<br/>Exit Code: 0"]
     Skip --> Summary
@@ -53,31 +53,31 @@ flowchart LR
 
 ```mermaid
 flowchart TD
-    subgraph ValidateOnly["-ValidateOnly"]
+    subgraph ValidateOnly["-ValidateOnly / --validate-only"]
         VO1["Steps 1 & 2: Full validation"]
         VO2["Step 3: SKIPPED (no secrets clearing)"]
         VO1 --> VO2
     end
     
-    subgraph SkipSecretsClear["-SkipSecretsClear"]
+    subgraph SkipSecretsClear["-SkipSecretsClear / --skip-secrets-clear"]
         SS1["Steps 1 & 2: Full validation"]
         SS2["Step 3: SKIPPED (no secrets clearing)"]
         SS1 --> SS2
     end
     
-    subgraph Force["-Force"]
+    subgraph Force["-Force / --force"]
         F1["Steps 1 & 2: Full validation"]
         F2["Step 3: Execute WITHOUT confirmation"]
         F1 --> F2
     end
     
-    subgraph WhatIf["-WhatIf"]
+    subgraph WhatIf["-WhatIf / --dry-run"]
         WI1["Steps 1 & 2: Full validation"]
         WI2["Step 3: PREVIEW only (no execution)"]
         WI1 --> WI2
     end
     
-    subgraph Verbose["-Verbose"]
+    subgraph Verbose["-Verbose / --verbose"]
         V1["All steps: Detailed logging"]
         V2["Shows: Tool paths, versions, auth"]
         V3["Useful for: Troubleshooting, audit"]
@@ -111,22 +111,22 @@ flowchart LR
 
 ```mermaid
 flowchart TD
-    CheckDev["1️⃣ check-dev-workstation.ps1<br/>(optional but recommended)"]
+    CheckDev["1️⃣ check-dev-workstation (.ps1/.sh)<br/>(optional but recommended)"]
     CheckDev --> AZD
     
     subgraph AZD["Azure Developer CLI (azd)"]
-        AzdYaml["azure.yaml<br/>hooks:<br/>  preprovision:<br/>    windows:<br/>      run: preprovision.ps1"]
+        AzdYaml["azure.yaml<br/>hooks:<br/>  preprovision:<br/>    windows: preprovision.ps1<br/>    posix: preprovision.sh"]
         AzdYaml --> AzdCmd["azd provision | azd up"]
-        AzdCmd --> Execute["2️⃣ Execute preprovision.ps1"]
+        AzdCmd --> Execute["2️⃣ Execute preprovision (.ps1/.sh)"]
         Execute --> Validate{Validation<br/>passes?}
         Validate -->|✓| Deploy["Continue with deployment"]
-        Deploy --> Post["3️⃣ Execute postprovision.ps1"]
+        Deploy --> Post["3️⃣ Execute postprovision (.ps1/.sh)"]
         Validate -->|✗| Stop["Stop deployment"]
     end
     
     subgraph GitHub["GitHub Actions"]
-        GHAction1["- name: Check workstation<br/>  run: |<br/>    pwsh check-dev-workstation.ps1"]
-        GHAction2["- name: Pre-provision<br/>  run: |<br/>    pwsh preprovision.ps1<br/>    -Force"]
+        GHAction1["- name: Check workstation<br/>  run: |<br/>    # Windows: pwsh check-dev-workstation.ps1<br/>    # Linux: bash check-dev-workstation.sh"]
+        GHAction2["- name: Pre-provision<br/>  run: |<br/>    # Windows: pwsh preprovision.ps1 -Force<br/>    # Linux: bash preprovision.sh --force"]
         GHAction1 --> GHAction2
     end
     

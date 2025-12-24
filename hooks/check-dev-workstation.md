@@ -1,12 +1,18 @@
-# check-dev-workstation.ps1
+# check-dev-workstation (.ps1 / .sh)
 
 ![PowerShell](https://img.shields.io/badge/PowerShell-7.0+-blue.svg)
+![Bash](https://img.shields.io/badge/Bash-4.0+-green.svg)
+![Cross-Platform](https://img.shields.io/badge/platform-Windows%20%7C%20Linux%20%7C%20macOS-lightgrey.svg)
 ![Version](https://img.shields.io/badge/version-1.0.0-green.svg)
 ![License](https://img.shields.io/badge/license-MIT-orange.svg)
 
 ## 📋 Overview
 
-`check-dev-workstation.ps1` is a **first-step** developer-focused validation tool that ensures your workstation meets all prerequisites for developing the Azure Logic Apps Monitoring solution. It acts as a lightweight wrapper around [preprovision.ps1](./preprovision.md) in validation-only mode, providing a quick and non-intrusive way to verify environment readiness.
+`check-dev-workstation` is a **first-step** developer-focused validation tool that ensures your workstation meets all prerequisites for developing the Azure Logic Apps Monitoring solution. Available in both PowerShell (`.ps1`) and Bash (`.sh`) versions, it acts as a lightweight wrapper around the preprovision script in validation-only mode, providing a quick and non-intrusive way to verify environment readiness.
+
+**Available Versions:**
+- **Windows/PowerShell**: `check-dev-workstation.ps1`
+- **Linux/macOS/Bash**: `check-dev-workstation.sh`
 
 **Workflow Position**: 1️⃣ First → Run before `preprovision.ps1` and `postprovision.ps1`
 
@@ -67,9 +73,16 @@ The script performs comprehensive validation of:
 
 ### Basic Usage
 
+**PowerShell (Windows):**
 ```powershell
 # Standard validation
 .\check-dev-workstation.ps1
+```
+
+**Bash (Linux/macOS):**
+```bash
+# Standard validation
+./check-dev-workstation.sh
 ```
 
 **Output Example:**
@@ -88,9 +101,16 @@ Your workstation is ready for development.
 
 ### Verbose Mode
 
+**PowerShell (Windows):**
 ```powershell
 # Get detailed diagnostic information
 .\check-dev-workstation.ps1 -Verbose
+```
+
+**Bash (Linux/macOS):**
+```bash
+# Get detailed diagnostic information
+./check-dev-workstation.sh --verbose
 ```
 
 **Output Example:**
@@ -120,7 +140,7 @@ The script uses standard exit codes to indicate validation status:
 
 ### Example: Checking Exit Code
 
-**PowerShell:**
+**PowerShell (Windows):**
 ```powershell
 .\check-dev-workstation.ps1
 if ($LASTEXITCODE -eq 0) {
@@ -130,9 +150,9 @@ if ($LASTEXITCODE -eq 0) {
 }
 ```
 
-**Bash:**
+**Bash (Linux/macOS):**
 ```bash
-pwsh ./check-dev-workstation.ps1
+./check-dev-workstation.sh
 if [ $? -eq 0 ]; then
     echo "✓ Environment validated successfully"
 else
@@ -142,17 +162,22 @@ fi
 
 ## 🔧 Parameters
 
-### `-Verbose`
+### `-Verbose` (PowerShell) / `--verbose` (Bash)
 
 Enables detailed diagnostic output for troubleshooting.
 
-**Type:** `SwitchParameter`  
+**Type:** `SwitchParameter` (PowerShell) / `Flag` (Bash)  
 **Required:** No  
-**Default:** `$false`
+**Default:** `$false` / `false`
 
-**Usage:**
+**PowerShell Usage:**
 ```powershell
 .\check-dev-workstation.ps1 -Verbose
+```
+
+**Bash Usage:**
+```bash
+./check-dev-workstation.sh --verbose
 ```
 
 **Use Cases:**
@@ -165,6 +190,7 @@ Enables detailed diagnostic output for troubleshooting.
 
 ### Example 1: Quick Check Before Starting Work
 
+**PowerShell (Windows):**
 ```powershell
 # Run a quick validation before starting development
 .\check-dev-workstation.ps1
@@ -173,8 +199,18 @@ Enables detailed diagnostic output for troubleshooting.
 # If failed, review error messages and install missing components
 ```
 
+**Bash (Linux/macOS):**
+```bash
+# Run a quick validation before starting development
+./check-dev-workstation.sh
+
+# If successful, proceed with development
+# If failed, review error messages and install missing components
+```
+
 ### Example 2: Automated CI/CD Pre-Flight Check
 
+**PowerShell (Windows):**
 ```powershell
 # Add to CI/CD pipeline
 .\check-dev-workstation.ps1
@@ -187,8 +223,22 @@ if ($LASTEXITCODE -ne 0) {
 Write-Host "Environment validated - proceeding with build..."
 ```
 
+**Bash (Linux/macOS):**
+```bash
+# Add to CI/CD pipeline
+./check-dev-workstation.sh
+if [ $? -ne 0 ]; then
+    echo "ERROR: Environment validation failed" >&2
+    exit 1
+fi
+
+# Continue with build/deploy process
+echo "Environment validated - proceeding with build..."
+```
+
 ### Example 3: Troubleshooting Setup Issues
 
+**PowerShell (Windows):**
 ```powershell
 # Get detailed output for troubleshooting
 .\check-dev-workstation.ps1 -Verbose 2>&1 | Tee-Object -FilePath "validation-log.txt"
@@ -197,13 +247,33 @@ Write-Host "Environment validated - proceeding with build..."
 Get-Content validation-log.txt
 ```
 
+**Bash (Linux/macOS):**
+```bash
+# Get detailed output for troubleshooting
+./check-dev-workstation.sh --verbose 2>&1 | tee validation-log.txt
+
+# Review the log file
+cat validation-log.txt
+```
+
 ### Example 4: Scheduled Validation Task
 
+**PowerShell (Windows - Scheduled Task):**
 ```powershell
 # Create a scheduled task to validate environment daily
 $action = New-ScheduledTaskAction -Execute "pwsh" -Argument "-File Z:\Azure-LogicApps-Monitoring\hooks\check-dev-workstation.ps1"
 $trigger = New-ScheduledTaskTrigger -Daily -At 9:00AM
 Register-ScheduledTask -Action $action -Trigger $trigger -TaskName "ValidateDevEnvironment"
+```
+
+**Bash (Linux/macOS - Cron Job):**
+```bash
+# Add to crontab for daily validation at 9:00 AM
+# Open crontab editor
+crontab -e
+
+# Add this line:
+0 9 * * * cd /path/to/Azure-LogicApps-Monitoring/hooks && ./check-dev-workstation.sh >> /tmp/validation.log 2>&1
 ```
 
 ## 🛠️ How It Works
@@ -268,8 +338,13 @@ Found: PowerShell 5.1
 2. Install for your platform (Windows, macOS, Linux)
 3. Run the script using `pwsh` instead of `powershell`
 
-**Verify Installation:**
+**Verify Installation (PowerShell):**
 ```powershell
+pwsh --version
+```
+
+**Verify Installation (Bash):**
+```bash
 pwsh --version
 ```
 
@@ -289,7 +364,13 @@ dotnet command not found
 3. Restart your terminal
 4. Verify installation:
 
+**PowerShell:**
 ```powershell
+dotnet --version
+```
+
+**Bash:**
+```bash
 dotnet --version
 ```
 
@@ -303,8 +384,20 @@ ERROR: Not authenticated to Azure
 Please run 'az login' first
 ```
 
-**Solution:**
+**Solution (PowerShell):**
 ```powershell
+# Login to Azure
+az login
+
+# Verify authentication
+az account show
+
+# Set default subscription (if needed)
+az account set --subscription "Your-Subscription-Name"
+```
+
+**Solution (Bash):**
+```bash
 # Login to Azure
 az login
 
@@ -325,7 +418,7 @@ ERROR: Required Azure Resource Provider not registered
 Microsoft.App is not registered in subscription
 ```
 
-**Solution:**
+**Solution (PowerShell):**
 ```powershell
 # Register the provider
 az provider register --namespace Microsoft.App
@@ -351,20 +444,42 @@ foreach ($provider in $providers) {
 }
 ```
 
+**Solution (Bash):**
+```bash
+# Register the provider
+az provider register --namespace Microsoft.App
+
+# Wait for registration to complete (can take 5-10 minutes)
+az provider show --namespace Microsoft.App --query "registrationState"
+
+# Register all required providers at once
+providers=(
+    "Microsoft.App"
+    "Microsoft.ServiceBus"
+    "Microsoft.Storage"
+    "Microsoft.Web"
+    "Microsoft.ContainerRegistry"
+    "Microsoft.Insights"
+    "Microsoft.OperationalInsights"
+    "Microsoft.ManagedIdentity"
+)
+
+for provider in "${providers[@]}"; do
+    az provider register --namespace "$provider"
+    echo "Registering $provider..."
+done
+```
+
 ---
 
-#### Issue: preprovision.ps1 Not Found
+#### Issue: preprovision script Not Found
 
 **Error Message:**
 ```
-ERROR: Cannot find preprovision.ps1 in current directory
+ERROR: Cannot find preprovision script in current directory
 ```
 
-**Solution:**
-1. Ensure you're running the script from the `hooks` directory
-2. Verify the repository structure is intact
-3. Check file permissions
-
+**Solution (PowerShell - Windows):**
 ```powershell
 # Navigate to hooks directory
 cd Z:\Azure-LogicApps-Monitoring\hooks
@@ -374,6 +489,18 @@ Test-Path .\preprovision.ps1
 
 # Run validation
 .\check-dev-workstation.ps1
+```
+
+**Solution (Bash - Linux/macOS):**
+```bash
+# Navigate to hooks directory
+cd /path/to/Azure-LogicApps-Monitoring/hooks
+
+# Verify preprovision.sh exists
+ls -la preprovision.sh
+
+# Run validation
+./check-dev-workstation.sh
 ```
 
 ---
@@ -501,11 +628,26 @@ This script is **completely safe** to run on developer workstations because it:
 
 ### Development Workflow Integration
 
+**PowerShell (Windows):**
 ```powershell
 # Typical development workflow
 
 # Step 1: Validate environment
 .\check-dev-workstation.ps1 -Verbose
+
+# Step 2: If validation passes, provision infrastructure
+azd provision
+
+# Step 3: Run application locally
+azd up
+```
+
+**Bash (Linux/macOS):**
+```bash
+# Typical development workflow
+
+# Step 1: Validate environment
+./check-dev-workstation.sh --verbose
 
 # Step 2: If validation passes, provision infrastructure
 azd provision

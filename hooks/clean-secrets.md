@@ -1,17 +1,23 @@
-# clean-secrets.ps1
+# clean-secrets (.ps1 / .sh)
 
 ![PowerShell](https://img.shields.io/badge/PowerShell-7.0+-blue.svg)
+![Bash](https://img.shields.io/badge/Bash-4.0+-green.svg)
 ![.NET](https://img.shields.io/badge/.NET-10.0+-purple.svg)
+![Cross-Platform](https://img.shields.io/badge/platform-Windows%20%7C%20Linux%20%7C%20macOS-lightgrey.svg)
 ![Version](https://img.shields.io/badge/version-2.0.0-green.svg)
 ![License](https://img.shields.io/badge/license-MIT-orange.svg)
 
 ## 📋 Overview
 
-`clean-secrets.ps1` is a utility script that safely clears .NET user secrets from all projects in the Azure Logic Apps Monitoring solution. It ensures a clean state for secret management, particularly useful before re-provisioning infrastructure or troubleshooting configuration issues.
+`clean-secrets` is a utility script that safely clears .NET user secrets from all projects in the Azure Logic Apps Monitoring solution. Available in both PowerShell (`.ps1`) and Bash (`.sh`) versions, it ensures a clean state for secret management, particularly useful before re-provisioning infrastructure or troubleshooting configuration issues.
+
+**Available Versions:**
+- **Windows/PowerShell**: `clean-secrets.ps1`
+- **Linux/macOS/Bash**: `clean-secrets.sh`
 
 **Called By**: 
-- **preprovision.ps1** (2️⃣ Second in workflow)
-- **postprovision.ps1** (3️⃣ Third in workflow)
+- **preprovision** (2️⃣ Second in workflow) - `.ps1` or `.sh` depending on platform
+- **postprovision** (3️⃣ Third in workflow) - `.ps1` or `.sh` depending on platform
 - Manual execution by developers
 
 ## 📑 Table of Contents
@@ -71,9 +77,16 @@ Each project has a unique `UserSecretsId` in its `.csproj` file:
 
 ### Basic Usage
 
+**PowerShell (Windows):**
 ```powershell
 # Interactive mode - prompts for confirmation
 .\clean-secrets.ps1
+```
+
+**Bash (Linux/macOS):**
+```bash
+# Interactive mode - prompts for confirmation
+./clean-secrets.sh
 ```
 
 **Confirmation Prompt:**
@@ -90,9 +103,16 @@ This action will remove all stored secrets from:
 
 ### Force Mode (No Confirmation)
 
+**PowerShell (Windows):**
 ```powershell
 # Skip all confirmation prompts
 .\clean-secrets.ps1 -Force
+```
+
+**Bash (Linux/macOS):**
+```bash
+# Skip all confirmation prompts
+./clean-secrets.sh --force
 ```
 
 **Output:**
@@ -113,9 +133,16 @@ Operation completed successfully in 4.2 seconds.
 
 ### Preview Mode (WhatIf)
 
+**PowerShell (Windows):**
 ```powershell
 # Show what would be cleared without making changes
 .\clean-secrets.ps1 -WhatIf
+```
+
+**Bash (Linux/macOS):**
+```bash
+# Show what would be cleared without making changes
+./clean-secrets.sh --dry-run
 ```
 
 **Output:**
@@ -129,9 +156,16 @@ No changes were made. This was a simulation.
 
 ### Verbose Mode
 
+**PowerShell (Windows):**
 ```powershell
 # Get detailed execution information
 .\clean-secrets.ps1 -Verbose
+```
+
+**Bash (Linux/macOS):**
+```bash
+# Get detailed execution information
+./clean-secrets.sh --verbose
 ```
 
 **Output:**
@@ -150,6 +184,7 @@ VERBOSE: Processing project: eShop.Orders.API
 
 ### Combined Options
 
+**PowerShell (Windows):**
 ```powershell
 # Preview with verbose output
 .\clean-secrets.ps1 -WhatIf -Verbose
@@ -158,20 +193,34 @@ VERBOSE: Processing project: eShop.Orders.API
 .\clean-secrets.ps1 -Force -Verbose
 ```
 
+**Bash (Linux/macOS):**
+```bash
+# Preview with verbose output
+./clean-secrets.sh --dry-run --verbose
+
+# Force execution with verbose logging
+./clean-secrets.sh --force --verbose
+```
+
 ## 🔧 Parameters
 
-### `-Force`
+### `-Force` (PowerShell) / `--force` (Bash)
 
 Skips all confirmation prompts and forces immediate execution.
 
-**Type:** `SwitchParameter`  
+**Type:** `SwitchParameter` (PowerShell) / `Flag` (Bash)  
 **Required:** No  
-**Default:** `$false`  
-**Confirm Impact:** High (requires confirmation without `-Force`)
+**Default:** `$false` / `false`  
+**Confirm Impact:** High (requires confirmation without `-Force`/`--force`)
 
-**Example:**
+**PowerShell Example:**
 ```powershell
 .\clean-secrets.ps1 -Force
+```
+
+**Bash Example:**
+```bash
+./clean-secrets.sh --force
 ```
 
 **Use Cases:**
@@ -182,17 +231,22 @@ Skips all confirmation prompts and forces immediate execution.
 
 ---
 
-### `-WhatIf`
+### `-WhatIf` (PowerShell) / `--dry-run` (Bash)
 
 Shows what operations would be performed without making actual changes.
 
-**Type:** `SwitchParameter` (built-in)  
+**Type:** `SwitchParameter` (PowerShell built-in) / `Flag` (Bash)  
 **Required:** No  
-**Default:** `$false`
+**Default:** `$false` / `false`
 
-**Example:**
+**PowerShell Example:**
 ```powershell
 .\clean-secrets.ps1 -WhatIf
+```
+
+**Bash Example:**
+```bash
+./clean-secrets.sh --dry-run
 ```
 
 **Use Cases:**
@@ -222,17 +276,22 @@ Prompts for confirmation before each operation.
 
 ---
 
-### `-Verbose`
+### `-Verbose` (PowerShell) / `--verbose` (Bash)
 
 Enables detailed diagnostic output for troubleshooting.
 
-**Type:** `SwitchParameter` (built-in)  
+**Type:** `SwitchParameter` (PowerShell built-in) / `Flag` (Bash)  
 **Required:** No  
-**Default:** `$false`
+**Default:** `$false` / `false`
 
-**Example:**
+**PowerShell Example:**
 ```powershell
 .\clean-secrets.ps1 -Verbose
+```
+
+**Bash Example:**
+```bash
+./clean-secrets.sh --verbose
 ```
 
 **Use Cases:**
@@ -245,6 +304,7 @@ Enables detailed diagnostic output for troubleshooting.
 
 ### Example 1: Clean Secrets Before Re-provisioning
 
+**PowerShell (Windows):**
 ```powershell
 # Scenario: About to run 'azd provision' and want clean state
 cd Z:\Azure-LogicApps-Monitoring\hooks
@@ -257,10 +317,24 @@ cd ..
 azd provision
 ```
 
+**Bash (Linux/macOS):**
+```bash
+# Scenario: About to run 'azd provision' and want clean state
+cd /path/to/Azure-LogicApps-Monitoring/hooks
+
+# Clear all existing secrets
+./clean-secrets.sh --force
+
+# Proceed with provisioning
+cd ..
+azd provision
+```
+
 ---
 
 ### Example 2: Troubleshooting Configuration Issues
 
+**PowerShell (Windows):**
 ```powershell
 # Scenario: Application not working, suspect stale secrets
 
@@ -274,10 +348,25 @@ azd provision
 .\postprovision.ps1
 ```
 
+**Bash (Linux/macOS):**
+```bash
+# Scenario: Application not working, suspect stale secrets
+
+# Step 1: Preview what will be cleared
+./clean-secrets.sh --dry-run
+
+# Step 2: Clear secrets with verbose output
+./clean-secrets.sh --force --verbose
+
+# Step 3: Re-run postprovision to set fresh secrets
+./postprovision.sh
+```
+
 ---
 
 ### Example 3: CI/CD Pipeline Integration
 
+**PowerShell (Windows):**
 ```powershell
 # In CI/CD pipeline script
 $ErrorActionPreference = 'Stop'
@@ -298,10 +387,25 @@ catch {
 }
 ```
 
+**Bash (Linux/macOS):**
+```bash
+# In CI/CD pipeline script
+set -e  # Exit on error
+
+# Clear secrets non-interactively
+if ./hooks/clean-secrets.sh --force; then
+    echo "✓ Secrets cleared successfully"
+else
+    echo "ERROR: Secret clearing failed" >&2
+    exit 1
+fi
+```
+
 ---
 
 ### Example 4: Verify Secrets Are Cleared
 
+**PowerShell (Windows):**
 ```powershell
 # Clear secrets
 .\clean-secrets.ps1 -Force
@@ -311,10 +415,21 @@ dotnet user-secrets list --project ..\app.AppHost\app.AppHost.csproj
 # Should output: "No secrets configured for this application"
 ```
 
+**Bash (Linux/macOS):**
+```bash
+# Clear secrets
+./clean-secrets.sh --force
+
+# Verify they're gone
+dotnet user-secrets list --project ../app.AppHost/app.AppHost.csproj
+# Should output: "No secrets configured for this application"
+```
+
 ---
 
 ### Example 5: Scheduled Cleanup Task
 
+**PowerShell (Windows - Scheduled Task):**
 ```powershell
 # Create scheduled task for weekly cleanup
 $action = New-ScheduledTaskAction `
@@ -331,6 +446,15 @@ Register-ScheduledTask `
     -Trigger $trigger `
     -TaskName "CleanDevSecrets" `
     -Description "Weekly cleanup of development user secrets"
+```
+
+**Bash (Linux/macOS - Cron Job):**
+```bash
+# Add to crontab for weekly cleanup on Monday at 6:00 AM
+crontab -e
+
+# Add this line:
+0 6 * * 1 cd /path/to/Azure-LogicApps-Monitoring/hooks && ./clean-secrets.sh --force >> /tmp/clean-secrets.log 2>&1
 ```
 
 ---

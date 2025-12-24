@@ -1,13 +1,15 @@
 # Azure-LogicApps-Monitoring - Hooks Directory
 
 ![PowerShell](https://img.shields.io/badge/PowerShell-7.0+-blue.svg)
+![Bash](https://img.shields.io/badge/Bash-4.0+-green.svg)
+![Cross-Platform](https://img.shields.io/badge/platform-Windows%20%7C%20Linux%20%7C%20macOS-lightgrey.svg)
 ![Azure](https://img.shields.io/badge/Azure-DevOps-blue.svg)
 ![Status](https://img.shields.io/badge/status-production-green.svg)
 ![License](https://img.shields.io/badge/license-MIT-orange.svg)
 
 ## 📋 Overview
 
-This directory contains PowerShell automation scripts that are executed during the Azure deployment lifecycle via Azure Developer CLI (azd). These scripts ensure that the environment is properly configured and prepared before and after provisioning Azure resources.
+This directory contains automation scripts available in both PowerShell (`.ps1`) and Bash (`.sh`) versions that are executed during the Azure deployment lifecycle via Azure Developer CLI (azd). These scripts ensure that the environment is properly configured and prepared before and after provisioning Azure resources.
 
 ## 📑 Table of Contents
 
@@ -28,7 +30,7 @@ This directory contains PowerShell automation scripts that are executed during t
 
 ### Production Scripts
 
-#### 1. `preprovision.ps1` (Production Script)
+#### 1. `preprovision` (.ps1 / .sh) (Production Script)
 **Purpose**: Pre-provisioning validation and preparation  
 **Execution**: Automatically called by `azd provision` or `azd up`  
 **Version**: 2.0.0  
@@ -46,6 +48,7 @@ This directory contains PowerShell automation scripts that are executed during t
 - 🧹 Clears user secrets for all projects (optional)
 
 **Usage**:
+**PowerShell (Windows):**
 ```powershell
 # Validate environment only (no secrets clearing)
 .\preprovision.ps1 -ValidateOnly
@@ -66,6 +69,27 @@ This directory contains PowerShell automation scripts that are executed during t
 .\preprovision.ps1 -SkipSecretsClear
 ```
 
+**Bash (Linux/macOS):**
+```bash
+# Validate environment only (no secrets clearing)
+./preprovision.sh --validate-only
+
+# Full execution (validation + secrets clearing)
+./preprovision.sh
+
+# Force execution without prompts (CI/CD)
+./preprovision.sh --force
+
+# Preview changes without executing
+./preprovision.sh --dry-run
+
+# Detailed logging for troubleshooting
+./preprovision.sh --verbose
+
+# Validate but skip secrets clearing
+./preprovision.sh --skip-secrets-clear
+```
+
 **Parameters**:
 - `-ValidateOnly`: Performs validation without clearing secrets
 - `-SkipSecretsClear`: Validates and runs but skips secret clearing
@@ -80,7 +104,7 @@ This directory contains PowerShell automation scripts that are executed during t
 
 ---
 
-#### 2. `postprovision.ps1` (Production Script)
+#### 2. `postprovision` (.ps1 / .sh) (Production Script)
 **Purpose**: Post-provisioning configuration and secret management  
 **Execution**: Automatically called by `azd provision` or `azd up` after infrastructure deployment  
 **Version**: 2.0.0  
@@ -95,6 +119,7 @@ This directory contains PowerShell automation scripts that are executed during t
 - ✓ Configures 26 secrets across 3 projects
 
 **Usage**:
+**PowerShell (Windows):**
 ```powershell
 # Automatic execution during azd provision
 azd provision  # postprovision runs automatically
@@ -112,6 +137,24 @@ azd provision  # postprovision runs automatically
 .\postprovision.ps1 -Verbose
 ```
 
+**Bash (Linux/macOS):**
+```bash
+# Automatic execution during azd provision
+azd provision  # postprovision runs automatically
+
+# Manual execution
+./postprovision.sh
+
+# Force mode (no prompts)
+./postprovision.sh --force
+
+# Preview changes
+./postprovision.sh --dry-run
+
+# Detailed logging
+./postprovision.sh --verbose
+```
+
 **Parameters**:
 - `-Force`: Skip confirmation prompts (used by azd)
 - `-WhatIf`: Preview what would be configured
@@ -126,7 +169,7 @@ azd provision  # postprovision runs automatically
 
 ---
 
-#### 3. `check-dev-workstation.ps1` (Developer Tool)
+#### 3. `check-dev-workstation` (.ps1 / .sh) (Developer Tool)
 **Purpose**: Developer workstation prerequisite validation  
 **Execution**: Manual execution before development work  
 **Version**: 1.0.0  
@@ -139,12 +182,22 @@ azd provision  # postprovision runs automatically
 - ✓ Ensures workstation readiness before starting work
 
 **Usage**:
+**PowerShell (Windows):**
 ```powershell
 # Standard validation
 .\check-dev-workstation.ps1
 
 # Detailed output
 .\check-dev-workstation.ps1 -Verbose
+```
+
+**Bash (Linux/macOS):**
+```bash
+# Standard validation
+./check-dev-workstation.sh
+
+# Detailed output
+./check-dev-workstation.sh --verbose
 ```
 
 **Parameters**:
@@ -170,9 +223,9 @@ azd provision  # postprovision runs automatically
 - Validates .NET SDK availability before execution
 - Provides detailed execution summary
 
-#### 4. `clean-secrets.ps1` (Utility Script)
+#### 4. `clean-secrets` (.ps1 / .sh) (Utility Script)
 **Purpose**: Clear .NET user secrets for all projects  
-**Execution**: Called by preprovision.ps1 and postprovision.ps1, or manually  
+**Execution**: Called by preprovision (.ps1/.sh) and postprovision (.ps1/.sh), or manually  
 **Version**: 2.0.0  
 **Lines of Code**: ~420
 
@@ -184,6 +237,7 @@ azd provision  # postprovision runs automatically
 - Provides detailed execution summary
 
 **Usage**:
+**PowerShell (Windows):**
 ```powershell
 # Interactive mode with confirmation
 .\clean-secrets.ps1
@@ -196,6 +250,21 @@ azd provision  # postprovision runs automatically
 
 # Verbose output
 .\clean-secrets.ps1 -Verbose
+```
+
+**Bash (Linux/macOS):**
+```bash
+# Interactive mode with confirmation
+./clean-secrets.sh
+
+# Force mode (no confirmations)
+./clean-secrets.sh --force
+
+# Preview mode
+./clean-secrets.sh --dry-run
+
+# Verbose output
+./clean-secrets.sh --verbose
 ```
 
 **Parameters**:
@@ -211,7 +280,7 @@ azd provision  # postprovision runs automatically
 
 ---
 
-#### 5. `Generate-Orders.ps1` (Test Data Generator)
+#### 5. `Generate-Orders` (.ps1 / .sh) (Test Data Generator)
 **Purpose**: Generate sample e-commerce order data for testing  
 **Execution**: Manual execution when test data is needed  
 **Version**: 1.0.0  
@@ -238,6 +307,22 @@ azd provision  # postprovision runs automatically
 
 # Control products per order
 .\Generate-Orders.ps1 -MinProducts 2 -MaxProducts 8
+```
+
+```bash
+# Bash equivalents
+# Generate 50 orders (default)
+./Generate-Orders.sh
+
+# Generate custom number of orders
+./Generate-Orders.sh --count 100
+
+# Custom output path
+./Generate-Orders.sh --output-path "/tmp/orders.json"
+
+# Control products per order
+./Generate-Orders.sh --min-products 2 --max-products 8
+```
 
 # Combined options
 .\Generate-Orders.ps1 `

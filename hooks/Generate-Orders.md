@@ -1,13 +1,20 @@
-# Generate-Orders.ps1
+# Generate-Orders (.ps1 / .sh)
 
 ![PowerShell](https://img.shields.io/badge/PowerShell-7.0+-blue.svg)
+![Bash](https://img.shields.io/badge/Bash-4.0+-green.svg)
+![Python](https://img.shields.io/badge/Python-3.8+-yellow.svg)
+![Cross-Platform](https://img.shields.io/badge/platform-Windows%20%7C%20Linux%20%7C%20macOS-lightgrey.svg)
 ![Version](https://img.shields.io/badge/version-1.0.0-green.svg)
 ![License](https://img.shields.io/badge/license-MIT-orange.svg)
 ![Test Data](https://img.shields.io/badge/test%20data-generator-yellow.svg)
 
 ## 📋 Overview
 
-`Generate-Orders.ps1` is a sophisticated test data generator that creates realistic e-commerce order data for testing and demonstrating the Azure Logic Apps Monitoring solution. It generates randomized orders with products, customers, delivery addresses, and order metadata, outputting a JSON file ready for ingestion into the monitoring system.
+`Generate-Orders` is a sophisticated test data generator that creates realistic e-commerce order data for testing and demonstrating the Azure Logic Apps Monitoring solution. Available in both PowerShell (`.ps1`) and Bash (`.sh`) versions, it generates randomized orders with products, customers, delivery addresses, and order metadata, outputting a JSON file ready for ingestion into the monitoring system.
+
+**Available Versions:**
+- **Windows/PowerShell**: `Generate-Orders.ps1`
+- **Linux/macOS/Bash**: `Generate-Orders.sh` (wraps Python script)
 
 **Workflow Position**: 🔧 Standalone utility (not part of main deployment workflow)
 
@@ -114,9 +121,16 @@ Global coverage including:
 
 ### Basic Usage
 
+**PowerShell (Windows):**
 ```powershell
 # Generate 50 orders (default)
 .\Generate-Orders.ps1
+```
+
+**Bash (Linux/macOS):**
+```bash
+# Generate 50 orders (default)
+./Generate-Orders.sh
 ```
 
 **Output:**
@@ -150,6 +164,7 @@ Global coverage including:
 
 ### Generate Specific Number of Orders
 
+**PowerShell (Windows):**
 ```powershell
 # Generate 100 orders
 .\Generate-Orders.ps1 -OrderCount 100
@@ -161,8 +176,21 @@ Global coverage including:
 .\Generate-Orders.ps1 -OrderCount 10
 ```
 
+**Bash (Linux/macOS):**
+```bash
+# Generate 100 orders
+./Generate-Orders.sh --order-count 100
+
+# Generate 1000 orders for load testing
+./Generate-Orders.sh --order-count 1000
+
+# Generate 10 orders for quick testing
+./Generate-Orders.sh --order-count 10
+```
+
 ### Custom Output Path
 
+**PowerShell (Windows):**
 ```powershell
 # Save to custom location
 .\Generate-Orders.ps1 -OutputPath "C:\TestData\orders.json"
@@ -172,8 +200,19 @@ $timestamp = Get-Date -Format "yyyyMMdd-HHmmss"
 .\Generate-Orders.ps1 -OutputPath "orders-$timestamp.json"
 ```
 
+**Bash (Linux/macOS):**
+```bash
+# Save to custom location
+./Generate-Orders.sh --output-path "/tmp/TestData/orders.json"
+
+# Save to timestamped file
+timestamp=$(date +"%Y%m%d-%H%M%S")
+./Generate-Orders.sh --output-path "orders-$timestamp.json"
+```
+
 ### Control Products Per Order
 
+**PowerShell (Windows):**
 ```powershell
 # Generate orders with 1-3 products each
 .\Generate-Orders.ps1 -MinProducts 1 -MaxProducts 3
@@ -185,8 +224,21 @@ $timestamp = Get-Date -Format "yyyyMMdd-HHmmss"
 .\Generate-Orders.ps1 -MinProducts 1 -MaxProducts 1
 ```
 
+**Bash (Linux/macOS):**
+```bash
+# Generate orders with 1-3 products each
+./Generate-Orders.sh --min-products 1 --max-products 3
+
+# Generate large orders with 5-10 products each
+./Generate-Orders.sh --min-products 5 --max-products 10
+
+# Generate single-product orders
+./Generate-Orders.sh --min-products 1 --max-products 1
+```
+
 ### Combined Options
 
+**PowerShell (Windows):**
 ```powershell
 # Custom configuration for load testing
 .\Generate-Orders.ps1 `
@@ -197,11 +249,29 @@ $timestamp = Get-Date -Format "yyyyMMdd-HHmmss"
     -Verbose
 ```
 
+**Bash (Linux/macOS):**
+```bash
+# Custom configuration for load testing
+./Generate-Orders.sh \
+    --order-count 500 \
+    --output-path "/tmp/LoadTest/orders.json" \
+    --min-products 2 \
+    --max-products 8 \
+    --verbose
+```
+
 ### WhatIf Mode
 
+**PowerShell (Windows):**
 ```powershell
 # Preview what would be generated
 .\Generate-Orders.ps1 -WhatIf -Verbose
+```
+
+**Bash (Linux/macOS):**
+```bash
+# Preview what would be generated
+./Generate-Orders.sh --dry-run --verbose
 ```
 
 **Output:**
@@ -230,33 +300,45 @@ Number of orders to generate.
 **Default:** `50`  
 **Valid Range:** `1-10000`
 
-**Examples:**
+**PowerShell Examples:**
 ```powershell
 .\Generate-Orders.ps1 -OrderCount 100
 .\Generate-Orders.ps1 -OrderCount 1000
 ```
 
+**Bash Examples:**
+```bash
+./Generate-Orders.sh --order-count 100
+./Generate-Orders.sh --order-count 1000
+```
+
 ---
 
-### `-OutputPath`
+### `-OutputPath` (PowerShell) / `--output-path` (Bash)
 
 File path where the JSON output will be saved.
 
 **Type:** `String`  
 **Required:** No  
-**Default:** `..\infra\data\ordersBatch.json` (relative to script location)
+**Default:** `../infra/data/ordersBatch.json` (relative to script location)
 
-**Examples:**
+**PowerShell Examples:**
 ```powershell
 .\Generate-Orders.ps1 -OutputPath "C:\temp\orders.json"
 .\Generate-Orders.ps1 -OutputPath ".\my-orders.json"
+```
+
+**Bash Examples:**
+```bash
+./Generate-Orders.sh --output-path "/tmp/orders.json"
+./Generate-Orders.sh --output-path "./my-orders.json"
 ```
 
 **Note:** The directory will be created automatically if it doesn't exist.
 
 ---
 
-### `-MinProducts`
+### `-MinProducts` (PowerShell) / `--min-products` (Bash)
 
 Minimum number of products per order.
 
@@ -265,15 +347,21 @@ Minimum number of products per order.
 **Default:** `1`  
 **Valid Range:** `1-20`
 
-**Examples:**
+**PowerShell Examples:**
 ```powershell
 .\Generate-Orders.ps1 -MinProducts 2
 .\Generate-Orders.ps1 -MinProducts 5 -MaxProducts 10
 ```
 
+**Bash Examples:**
+```bash
+./Generate-Orders.sh --min-products 2
+./Generate-Orders.sh --min-products 5 --max-products 10
+```
+
 ---
 
-### `-MaxProducts`
+### `-MaxProducts` (PowerShell) / `--max-products` (Bash)
 
 Maximum number of products per order.
 
@@ -282,10 +370,16 @@ Maximum number of products per order.
 **Default:** `6`  
 **Valid Range:** `1-20`
 
-**Examples:**
+**PowerShell Examples:**
 ```powershell
 .\Generate-Orders.ps1 -MaxProducts 10
 .\Generate-Orders.ps1 -MinProducts 1 -MaxProducts 3
+```
+
+**Bash Examples:**
+```bash
+./Generate-Orders.sh --max-products 10
+./Generate-Orders.sh --min-products 1 --max-products 3
 ```
 
 **Note:** Must be greater than or equal to `MinProducts`.
@@ -294,6 +388,7 @@ Maximum number of products per order.
 
 ### Example 1: Quick Test Dataset
 
+**PowerShell (Windows):**
 ```powershell
 # Generate 10 orders for quick testing
 cd Z:\Azure-LogicApps-Monitoring\hooks
@@ -304,10 +399,22 @@ $orders = Get-Content ..\infra\data\ordersBatch.json | ConvertFrom-Json
 Write-Host "Generated $($orders.Count) orders"
 ```
 
+**Bash (Linux/macOS):**
+```bash
+# Generate 10 orders for quick testing
+cd /path/to/Azure-LogicApps-Monitoring/hooks
+./Generate-Orders.sh --order-count 10
+
+# Use the generated data
+orders_count=$(jq 'length' ../infra/data/ordersBatch.json)
+echo "Generated $orders_count orders"
+```
+
 ---
 
 ### Example 2: Load Testing Dataset
 
+**PowerShell (Windows):**
 ```powershell
 # Generate 5000 orders for load testing
 .\Generate-Orders.ps1 -OrderCount 5000 -Verbose
@@ -317,10 +424,21 @@ $file = Get-Item ..\infra\data\ordersBatch.json
 Write-Host "File size: $([Math]::Round($file.Length / 1MB, 2)) MB"
 ```
 
+**Bash (Linux/macOS):**
+```bash
+# Generate 5000 orders for load testing
+./Generate-Orders.sh --order-count 5000 --verbose
+
+# Verify file was created
+file_size=$(du -h ../infra/data/ordersBatch.json | cut -f1)
+echo "File size: $file_size"
+```
+
 ---
 
 ### Example 3: Specific Product Range
 
+**PowerShell (Windows):**
 ```powershell
 # Generate orders with exactly 3-5 products each
 .\Generate-Orders.ps1 `
@@ -332,6 +450,19 @@ Write-Host "File size: $([Math]::Round($file.Length / 1MB, 2)) MB"
 $orders = Get-Content ..\infra\data\ordersBatch.json | ConvertFrom-Json
 $orders | ForEach-Object { $_.products.Count } | 
     Measure-Object -Average -Minimum -Maximum
+```
+
+**Bash (Linux/macOS):**
+```bash
+# Generate orders with exactly 3-5 products each
+./Generate-Orders.sh \
+    --order-count 100 \
+    --min-products 3 \
+    --max-products 5
+
+# Analyze the distribution
+jq '[.[] | .products | length] | {avg: (add/length), min: min, max: max}' \
+    ../infra/data/ordersBatch.json
 ```
 
 ---

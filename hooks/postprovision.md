@@ -1,13 +1,19 @@
-# postprovision.ps1
+# postprovision (.ps1 / .sh)
 
 ![PowerShell](https://img.shields.io/badge/PowerShell-7.0+-blue.svg)
+![Bash](https://img.shields.io/badge/Bash-4.0+-green.svg)
 ![Azure](https://img.shields.io/badge/Azure-CLI-blue.svg)
+![Cross-Platform](https://img.shields.io/badge/platform-Windows%20%7C%20Linux%20%7C%20macOS-lightgrey.svg)
 ![Version](https://img.shields.io/badge/version-2.0.0-green.svg)
 ![License](https://img.shields.io/badge/license-MIT-orange.svg)
 
 ## 📋 Overview
 
-`postprovision.ps1` is an Azure Developer CLI (azd) hook that automatically configures .NET user secrets with Azure resource information immediately after infrastructure provisioning completes. It bridges the gap between infrastructure deployment and application configuration, ensuring that applications have the correct connection strings, endpoints, and resource identifiers.
+`postprovision` is an Azure Developer CLI (azd) hook that automatically configures .NET user secrets with Azure resource information immediately after infrastructure provisioning completes. Available in both PowerShell (`.ps1`) and Bash (`.sh`) versions, it bridges the gap between infrastructure deployment and application configuration, ensuring that applications have the correct connection strings, endpoints, and resource identifiers.
+
+**Available Versions:**
+- **Windows/PowerShell**: `postprovision.ps1`
+- **Linux/macOS/Bash**: `postprovision.sh`
 
 **Workflow Position**: 3️⃣ Third → Automatically runs after `azd provision` completes (following check-dev-workstation → preprovision)
 
@@ -76,7 +82,17 @@ output AZURE_SERVICEBUS_NAMESPACE string = serviceBusNamespace.name
 
 The script is **automatically called** by azd:
 
+**PowerShell (Windows):**
 ```powershell
+# Script runs automatically after provisioning
+azd provision
+
+# Or during full deployment
+azd up
+```
+
+**Bash (Linux/macOS):**
+```bash
 # Script runs automatically after provisioning
 azd provision
 
@@ -97,9 +113,16 @@ azd provision
 
 You can also run the script manually:
 
+**PowerShell (Windows):**
 ```powershell
 # Basic manual execution
 .\postprovision.ps1
+```
+
+**Bash (Linux/macOS):**
+```bash
+# Basic manual execution
+./postprovision.sh
 ```
 
 **Use Cases for Manual Execution:**
@@ -110,9 +133,16 @@ You can also run the script manually:
 
 ### Force Mode
 
+**PowerShell (Windows):**
 ```powershell
 # Skip confirmation prompts
 .\postprovision.ps1 -Force
+```
+
+**Bash (Linux/macOS):**
+```bash
+# Skip confirmation prompts
+./postprovision.sh --force
 ```
 
 **Output:**
@@ -139,9 +169,16 @@ You can also run the script manually:
 
 ### Verbose Mode
 
+**PowerShell (Windows):**
 ```powershell
 # Get detailed diagnostic output
 .\postprovision.ps1 -Verbose
+```
+
+**Bash (Linux/macOS):**
+```bash
+# Get detailed diagnostic output
+./postprovision.sh --verbose
 ```
 
 **Output:**
@@ -169,9 +206,16 @@ VERBOSE: Secret set successfully
 
 ### Preview Mode (WhatIf)
 
+**PowerShell (Windows):**
 ```powershell
 # Preview what would be configured
 .\postprovision.ps1 -WhatIf
+```
+
+**Bash (Linux/macOS):**
+```bash
+# Preview what would be configured
+./postprovision.sh --dry-run
 ```
 
 **Output:**
@@ -199,18 +243,23 @@ No changes were made. This was a simulation.
 
 ## 🔧 Parameters
 
-### `-Force`
+### `-Force` (PowerShell) / `--force` (Bash)
 
 Skips all confirmation prompts and forces immediate execution.
 
-**Type:** `SwitchParameter`  
+**Type:** `SwitchParameter` (PowerShell) / `Flag` (Bash)  
 **Required:** No  
-**Default:** `$false`  
+**Default:** `$false` / `false`  
 **Confirm Impact:** Medium
 
-**Example:**
+**PowerShell Example:**
 ```powershell
 .\postprovision.ps1 -Force
+```
+
+**Bash Example:**
+```bash
+./postprovision.sh --force
 ```
 
 **Use Cases:**
@@ -221,17 +270,22 @@ Skips all confirmation prompts and forces immediate execution.
 
 ---
 
-### `-WhatIf`
+### `-WhatIf` (PowerShell) / `--dry-run` (Bash)
 
 Shows what operations would be performed without making actual changes.
 
-**Type:** `SwitchParameter` (built-in)  
+**Type:** `SwitchParameter` (PowerShell built-in) / `Flag` (Bash)  
 **Required:** No  
-**Default:** `$false`
+**Default:** `$false` / `false`
 
-**Example:**
+**PowerShell Example:**
 ```powershell
 .\postprovision.ps1 -WhatIf
+```
+
+**Bash Example:**
+```bash
+./postprovision.sh --dry-run
 ```
 
 **Use Cases:**
@@ -261,17 +315,22 @@ Prompts for confirmation before operations.
 
 ---
 
-### `-Verbose`
+### `-Verbose` (PowerShell) / `--verbose` (Bash)
 
 Enables detailed diagnostic output.
 
-**Type:** `SwitchParameter` (built-in)  
+**Type:** `SwitchParameter` (PowerShell built-in) / `Flag` (Bash)  
 **Required:** No  
-**Default:** `$false`
+**Default:** `$false` / `false`
 
-**Example:**
+**PowerShell Example:**
 ```powershell
 .\postprovision.ps1 -Verbose
+```
+
+**Bash Example:**
+```bash
+./postprovision.sh --verbose
 ```
 
 **Use Cases:**
