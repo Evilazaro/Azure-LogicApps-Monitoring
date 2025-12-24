@@ -9,6 +9,11 @@
 
 `clean-secrets.ps1` is a utility script that safely clears .NET user secrets from all projects in the Azure Logic Apps Monitoring solution. It ensures a clean state for secret management, particularly useful before re-provisioning infrastructure or troubleshooting configuration issues.
 
+**Called By**: 
+- **preprovision.ps1** (2️⃣ Second in workflow)
+- **postprovision.ps1** (3️⃣ Third in workflow)
+- Manual execution by developers
+
 ## 🎯 Purpose
 
 This script helps developers and operators:
@@ -17,6 +22,7 @@ This script helps developers and operators:
 - 🔍 **Troubleshoot**: Eliminate stale secrets when debugging configuration issues
 - ✅ **Safe Execution**: Validate .NET SDK availability before making changes
 - 📊 **Detailed Logging**: Track which secrets are cleared and provide execution summary
+- 🔗 **Workflow Integration**: Automatically invoked by preprovision and postprovision scripts
 
 ## 🏗️ Target Projects
 
@@ -314,9 +320,11 @@ Register-ScheduledTask `
 
 ### Workflow Diagram
 
+**Context**: Helper script called by preprovision.ps1 (2️⃣) and postprovision.ps1 (3️⃣)
+
 ```mermaid
 flowchart LR
-    Start["clean-secrets.ps1 starts"]
+    Start["clean-secrets.ps1 starts<br/>(Helper Script)"]
     Start --> Validate["Validate prerequisites<br/>• PowerShell 7.0+<br/>• .NET SDK available<br/>• Project files exist"]
     Validate --> Confirm["Confirmation check<br/>• Skip if -Force specified<br/>• Prompt user otherwise<br/>• Exit if declined"]
     Confirm --> Clear1["Clear app.AppHost secrets<br/>dotnet user-secrets clear"]

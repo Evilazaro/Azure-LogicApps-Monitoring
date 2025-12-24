@@ -9,6 +9,8 @@
 
 `postprovision.ps1` is an Azure Developer CLI (azd) hook that automatically configures .NET user secrets with Azure resource information immediately after infrastructure provisioning completes. It bridges the gap between infrastructure deployment and application configuration, ensuring that applications have the correct connection strings, endpoints, and resource identifiers.
 
+**Workflow Position**: 3️⃣ Third → Automatically runs after `azd provision` completes (following check-dev-workstation → preprovision)
+
 ## 🎯 Purpose
 
 This script is **automatically executed** by `azd provision` and `azd up` after infrastructure deployment. It:
@@ -18,6 +20,7 @@ This script is **automatically executed** by `azd provision` and `azd up` after 
 - ✅ **Clears Old Secrets**: Removes stale configuration using [clean-secrets.ps1](./clean-secrets.md)
 - ✅ **Sets New Secrets**: Configures user secrets with fresh Azure resource information
 - ✅ **Validates Configuration**: Verifies that all secrets were set correctly
+- ✅ **Completes Workflow**: Final step in the deployment automation chain
 
 ## 🏗️ Required Environment Variables
 
@@ -304,9 +307,11 @@ Enables detailed diagnostic output.
 
 ### Workflow Diagram
 
+**Context**: This is step 3️⃣ in the workflow: check-dev-workstation → preprovision → **postprovision**
+
 ```mermaid
 flowchart LR
-    Start["azd provision completes<br/>• Infrastructure deployed<br/>• Outputs captured"]
+    Start["3️⃣ azd provision completes<br/>• Infrastructure deployed<br/>• Outputs captured"]
     Start --> SetEnv["azd sets environment variables<br/>• From Bicep outputs<br/>• From resource properties<br/>• From .env file"]
     SetEnv --> Execute["azd executes postprovision.ps1"]
     

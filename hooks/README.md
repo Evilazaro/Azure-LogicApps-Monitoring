@@ -365,7 +365,8 @@ Write-Host "Generated $($orders.Count) orders"
 
 ```mermaid
 flowchart LR
-    AzureYaml["azure.yaml"]
+    CheckDev["check-dev-workstation<br/>(developer validation)"]
+    CheckDev --> AzureYaml["azure.yaml"]
     AzureYaml --> Hooks["hooks:"]
     
     Hooks --> Preprovision["preprovision (before provisioning)"]
@@ -391,11 +392,13 @@ flowchart LR
         ConfigSecrets --> Summary["Display Summary"]
     end
     
+    classDef devClass fill:#fff3cd,stroke:#fd7e14,stroke-width:3px
     classDef rootClass fill:#d4edda,stroke:#28a745,stroke-width:2px
     classDef phaseClass fill:#fff3cd,stroke:#ffc107,stroke-width:2px
     classDef scriptClass fill:#cfe2ff,stroke:#0d6efd,stroke-width:2px
     classDef taskClass fill:#e2d5f1,stroke:#6f42c1,stroke-width:2px
     
+    class CheckDev devClass
     class AzureYaml,Hooks rootClass
     class Preprovision,Provision,Postprovision phaseClass
     class PreprovisionScript,PostprovisionScript,AzdProvision,CleanSecrets1,CleanSecrets2 scriptClass
@@ -404,13 +407,13 @@ flowchart LR
 
 ### Script Relationships Matrix
 
-| Script | Calls | Called By | Purpose |
-|--------|-------|-----------|---------|
-| **preprovision.ps1** | clean-secrets.ps1 | azd provision | Pre-provision validation |
-| **postprovision.ps1** | clean-secrets.ps1 | azd provision | Post-provision configuration |
-| **clean-secrets.ps1** | None | preprovision, postprovision, manual | Clear user secrets |
-| **check-dev-workstation.ps1** | preprovision.ps1 | Developer | Workstation validation |
-| **Generate-Orders.ps1** | None | Developer, CI/CD | Test data generation |
+| Script | Calls | Called By | Purpose | Workflow Order |
+|--------|-------|-----------|---------|----------------|
+| **check-dev-workstation.ps1** | preprovision.ps1 | Developer | Workstation validation | 1️⃣ First |
+| **preprovision.ps1** | clean-secrets.ps1 | azd provision, check-dev-workstation | Pre-provision validation | 2️⃣ Second |
+| **postprovision.ps1** | clean-secrets.ps1 | azd provision | Post-provision configuration | 3️⃣ Third |
+| **clean-secrets.ps1** | None | preprovision, postprovision, manual | Clear user secrets | Helper |
+| **Generate-Orders.ps1** | None | Developer, CI/CD | Test data generation | Standalone |
 
 ---
 

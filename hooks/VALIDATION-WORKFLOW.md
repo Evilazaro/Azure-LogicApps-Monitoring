@@ -2,6 +2,13 @@
 
 # Pre-Provisioning Script - Validation Workflow
 
+**Recommended Workflow Order**: 
+1. 🔍 **check-dev-workstation.ps1** - Quick workstation validation (optional but recommended)
+2. ✅ **preprovision.ps1** - Comprehensive validation (this document)
+3. 🚀 **azd provision** - Deploy infrastructure (automatically runs postprovision.ps1)
+
+---
+
 ## Visual Workflow
 
 ### Main Validation Flow
@@ -104,31 +111,41 @@ flowchart LR
 
 ```mermaid
 flowchart TD
+    CheckDev["1️⃣ check-dev-workstation.ps1<br/>(optional but recommended)"]
+    CheckDev --> AZD
+    
     subgraph AZD["Azure Developer CLI (azd)"]
         AzdYaml["azure.yaml<br/>hooks:<br/>  preprovision:<br/>    windows:<br/>      run: preprovision.ps1"]
         AzdYaml --> AzdCmd["azd provision | azd up"]
-        AzdCmd --> Execute["Execute preprovision.ps1"]
+        AzdCmd --> Execute["2️⃣ Execute preprovision.ps1"]
         Execute --> Validate{Validation<br/>passes?}
         Validate -->|✓| Deploy["Continue with deployment"]
+        Deploy --> Post["3️⃣ Execute postprovision.ps1"]
         Validate -->|✗| Stop["Stop deployment"]
     end
     
     subgraph GitHub["GitHub Actions"]
-        GHAction["- name: Pre-provision<br/>  run: |<br/>    pwsh preprovision.ps1<br/>    -Force"]
+        GHAction1["- name: Check workstation<br/>  run: |<br/>    pwsh check-dev-workstation.ps1"]
+        GHAction2["- name: Pre-provision<br/>  run: |<br/>    pwsh preprovision.ps1<br/>    -Force"]
+        GHAction1 --> GHAction2
     end
     
     subgraph AzureDevOps["Azure DevOps"]
-        ADOTask["- task: PowerShell@2<br/>  inputs:<br/>    filePath: preprovision<br/>    arguments: -Force"]
+        ADOTask1["- task: PowerShell@2<br/>  inputs:<br/>    filePath: check-dev-workstation"]
+        ADOTask2["- task: PowerShell@2<br/>  inputs:<br/>    filePath: preprovision<br/>    arguments: -Force"]
+        ADOTask1 --> ADOTask2
     end
     
+    classDef devClass fill:#fff3cd,stroke:#fd7e14,stroke-width:3px
     classDef azdClass fill:#cfe2ff,stroke:#0d6efd,stroke-width:2px
     classDef ciClass fill:#e2d5f1,stroke:#6f42c1,stroke-width:2px
     classDef successClass fill:#d4edda,stroke:#28a745,stroke-width:2px
     classDef failClass fill:#f8d7da,stroke:#dc3545,stroke-width:2px
     
+    class CheckDev devClass
     class AzdYaml,AzdCmd,Execute azdClass
-    class GHAction,ADOTask ciClass
-    class Deploy successClass
+    class GHAction1,GHAction2,ADOTask1,ADOTask2 ciClass
+    class Deploy,Post successClass
     class Stop failClass
 ```
 

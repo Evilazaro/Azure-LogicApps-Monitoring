@@ -9,6 +9,10 @@
 
 `Generate-Orders.ps1` is a sophisticated test data generator that creates realistic e-commerce order data for testing and demonstrating the Azure Logic Apps Monitoring solution. It generates randomized orders with products, customers, delivery addresses, and order metadata, outputting a JSON file ready for ingestion into the monitoring system.
 
+**Workflow Position**: 🔧 Standalone utility (not part of main deployment workflow)
+
+**Use After**: Complete the main workflow (check-dev-workstation → preprovision → postprovision) before generating test data
+
 ## 🎯 Purpose
 
 This script helps developers and testers:
@@ -17,6 +21,7 @@ This script helps developers and testers:
 - 🔬 **Scenario Testing**: Create controlled test datasets with specific characteristics
 - 📈 **Demo Preparation**: Generate sample data for demonstrations and presentations
 - 🔄 **Continuous Testing**: Integrate with CI/CD for automated test data generation
+- ⚙️ **Independent Tool**: Runs independently from the main deployment workflow
 
 ## 🏗️ Data Structure
 
@@ -400,9 +405,11 @@ $orders | Select-Object -ExpandProperty products |
 
 ### Workflow Diagram
 
+**Context**: 🔧 Standalone utility - Run after deployment workflow completes
+
 ```mermaid
 flowchart LR
-    Start["Generate-Orders.ps1 starts"]
+    Start["Generate-Orders.ps1 starts<br/>(Standalone Utility)"]
     Start --> Validate["Validate parameters<br/>• OrderCount (1-10000)<br/>• MinProducts ≤ MaxProducts<br/>• Output path is valid"]
     Validate --> Init["Initialize data structures<br/>• Load product catalog (20)<br/>• Load address pool (20)<br/>• Prepare orders array"]
     Init --> OrderLoop["For each order (loop)"]

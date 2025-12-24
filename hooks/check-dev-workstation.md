@@ -6,15 +6,18 @@
 
 ## 📋 Overview
 
-`check-dev-workstation.ps1` is a developer-focused validation tool that ensures your workstation meets all prerequisites for developing the Azure Logic Apps Monitoring solution. It acts as a lightweight wrapper around [preprovision.ps1](./preprovision.md) in validation-only mode, providing a quick and non-intrusive way to verify environment readiness.
+`check-dev-workstation.ps1` is a **first-step** developer-focused validation tool that ensures your workstation meets all prerequisites for developing the Azure Logic Apps Monitoring solution. It acts as a lightweight wrapper around [preprovision.ps1](./preprovision.md) in validation-only mode, providing a quick and non-intrusive way to verify environment readiness.
+
+**Workflow Position**: 1️⃣ First → Run before `preprovision.ps1` and `postprovision.ps1`
 
 ## 🎯 Purpose
 
 This script helps developers:
 - ✅ **Verify Environment**: Check that all required tools and SDKs are properly installed
-- ✅ **Detect Issues Early**: Identify configuration problems before starting development work
+- ✅ **Detect Issues Early**: Identify configuration problems before starting development work  
 - ✅ **Save Time**: Avoid deployment failures due to missing prerequisites
 - ✅ **Non-Destructive**: Performs read-only checks without modifying any configuration
+- ✅ **Fast Validation**: Quick prerequisite check before running `preprovision.ps1`
 
 ## 🔍 What It Validates
 
@@ -187,9 +190,11 @@ Register-ScheduledTask -Action $action -Trigger $trigger -TaskName "ValidateDevE
 
 ### Workflow Diagram
 
+**Context**: 1️⃣ First step - Run before preprovision and postprovision
+
 ```mermaid
 flowchart LR
-    Start["check-dev-workstation.ps1 starts"]
+    Start["1️⃣ check-dev-workstation.ps1 starts<br/>(First Step)"]
     Start --> Validate["Validate script prerequisites<br/>• PowerShell 7.0+ available<br/>• preprovision.ps1 exists"]
     Validate --> Call["Call preprovision.ps1 with:<br/>• -ValidateOnly flag<br/>• Pass through -Verbose if set"]
     Call --> Perform["preprovision.ps1 performs:<br/>• PowerShell version check<br/>• .NET SDK validation<br/>• Azure CLI validation<br/>• Bicep CLI validation<br/>• Azure authentication check<br/>• Resource provider validation"]
