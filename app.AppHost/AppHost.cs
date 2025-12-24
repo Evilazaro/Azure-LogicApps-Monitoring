@@ -1,5 +1,3 @@
-using Aspire.Hosting.Azure;
-
 var builder = DistributedApplication.CreateBuilder(args);
 
 // =============================================================================
@@ -147,7 +145,7 @@ static void ConfigureServiceBus(
     {
         var sbParam = builder.AddParameter("service-bus", sbHostName ?? DefaultNamespaceName);
         var sbResourceGroupParam = builder.AddParameterFromConfiguration("resourceGroup", "Azure:ResourceGroup");
-        
+
         serviceBusResource = builder.AddAzureServiceBus(DefaultConnectionStringName)
             .AsExisting(sbParam, sbResourceGroupParam);
     }
