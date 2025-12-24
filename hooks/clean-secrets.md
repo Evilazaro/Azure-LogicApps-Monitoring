@@ -14,6 +14,25 @@
 - **postprovision.ps1** (3️⃣ Third in workflow)
 - Manual execution by developers
 
+## 📑 Table of Contents
+
+- [Purpose](#purpose)
+- [Target Projects](#target-projects)
+- [Usage](#usage)
+- [Parameters](#parameters)
+- [Examples](#examples)
+- [How It Works](#how-it-works)
+- [Troubleshooting](#troubleshooting)
+- [Technical Implementation](#technical-implementation)
+- [Related Documentation](#related-documentation)
+- [Security Considerations](#security-considerations)
+- [Best Practices](#best-practices)
+- [Performance](#performance)
+- [Version History](#version-history)
+- [Support](#support)
+- [License](#license)
+- [Quick Links](#quick-links)
+
 ## 🎯 Purpose
 
 This script helps developers and operators:

@@ -11,6 +11,26 @@
 
 **Workflow Position**: 3️⃣ Third → Automatically runs after `azd provision` completes (following check-dev-workstation → preprovision)
 
+## 📑 Table of Contents
+
+- [Purpose](#purpose)
+- [Required Environment Variables](#required-environment-variables)
+- [Usage](#usage)
+- [Parameters](#parameters)
+- [Configured User Secrets](#configured-user-secrets)
+- [How It Works](#how-it-works)
+- [Examples](#examples)
+- [Troubleshooting](#troubleshooting)
+- [Technical Architecture](#technical-architecture)
+- [Related Documentation](#related-documentation)
+- [Security Considerations](#security-considerations)
+- [Best Practices](#best-practices)
+- [Performance](#performance)
+- [Version History](#version-history)
+- [Support](#support)
+- [License](#license)
+- [Quick Links](#quick-links)
+
 ## 🎯 Purpose
 
 This script is **automatically executed** by `azd provision` and `azd up` after infrastructure deployment. It:

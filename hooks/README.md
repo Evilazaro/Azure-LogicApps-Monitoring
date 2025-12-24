@@ -12,13 +12,17 @@ This directory contains PowerShell automation scripts that are executed during t
 ## 📑 Table of Contents
 
 - [Core Scripts](#core-scripts)
+- [Technical Deep-Dive: preprovision.ps1 Enhancements](#technical-deep-dive-preprovisionps1-enhancements)
+- [Project Enhancement Summary](#project-enhancement-summary)
 - [Documentation Files](#documentation-files)
 - [Quick Start](#quick-start)
 - [Architecture](#architecture)
+- [Validation Prerequisites](#validation-prerequisites)
 - [Common Workflows](#common-workflows)
 - [Troubleshooting](#troubleshooting)
+- [Performance Considerations](#performance-considerations)
 - [Best Practices](#best-practices)
-- [Support](#support)
+- [Support and Resources](#support-and-resources)
 
 ## 🔧 Core Scripts
 
