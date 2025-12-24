@@ -633,10 +633,9 @@ steps:
 - **Total (first run)**: 30-60s
 
 **Optimization Strategies:**
-1. Parallel provider registration (future enhancement)
-2. Cached version checks
-3. Skip unnecessary validations with `-ValidateOnly`
-4. Use `-SkipSecretsClear` when secrets don't need clearing
+1. Use cached Azure CLI session for faster authentication
+2. Skip unnecessary validations with `-ValidateOnly`
+3. Use `-SkipSecretsClear` when secrets don't need clearing
 
 ### Security Considerations
 
@@ -849,39 +848,9 @@ The hooks directory automation has been significantly enhanced to provide:
 | Execution Modes | 1 | 6+ | +500% |
 | Test Coverage | None | Comprehensive | New |
 
-### Future Enhancements
-
-**Planned Improvements:**
-1. Parallel resource provider registration
-2. Cached validation results (performance)
-3. Docker support validation
-4. Kubernetes CLI validation
-5. Additional cloud provider support
-6. Automated testing framework
-7. Performance benchmarking
-8. Health check endpoints
-
-**Community Feedback:**
-- Add support for macOS/Linux environments
-- Visual Studio Code extension integration
-- Azure Portal integration
-- Terraform support
-- Pulumi support
-
 ---
 
 **Documentation**: 📖 [Generate-Orders.md](./Generate-Orders.md)
-
-### Legacy/Placeholder Scripts
-
-#### 6. `preprovision.sh` (POSIX Script)
-**Status**: Not implemented  
-**Note**: Use PowerShell Core (pwsh) on Linux/macOS for cross-platform compatibility
-
-#### 7. `generate_orders_script.py` (Python Script)
-**Purpose**: Python implementation of order generation  
-**Status**: Alternative to Generate-Orders.ps1  
-**Language**: Python 3.x
 
 ---
 
@@ -1097,7 +1066,6 @@ azd up
 
 **Documentation**: 
 - 📖 [check-dev-workstation.md](./check-dev-workstation.md) - Detailed validation guide
-- 📖 [PREPROVISION-QUICK-REFERENCE.md](./PREPROVISION-QUICK-REFERENCE.md) - Prerequisites reference
 
 ---
 
@@ -1143,7 +1111,6 @@ az provider list --query "[?namespace in $providers].[namespace, registrationSta
 ```
 
 **Documentation**: 
-- 📖 [PREPROVISION-ENHANCEMENTS.md](./PREPROVISION-ENHANCEMENTS.md) - Technical troubleshooting
 - 📖 [VALIDATION-WORKFLOW.md](./VALIDATION-WORKFLOW.md) - Visual workflow diagrams
 
 ---
@@ -1232,7 +1199,7 @@ steps:
 ```
 
 **Documentation**: 
-- 📖 [PREPROVISION-QUICK-REFERENCE.md](./PREPROVISION-QUICK-REFERENCE.md) - CI/CD integration examples
+- 📖 [Generate-Orders.md](./Generate-Orders.md) - Complete generation guide
 
 ---
 
@@ -1484,16 +1451,11 @@ Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
 ### 📖 Documentation Navigator
 
 **Individual Script Guides:**
-- [check-dev-workstation.md](./check-dev-workstation.md) - Workstation validation (500 lines)
-- [clean-secrets.md](./clean-secrets.md) - Secret clearing guide (650 lines)
-- [Generate-Orders.md](./Generate-Orders.md) - Test data generation (700 lines)
-- [postprovision.md](./postprovision.md) - Post-provision configuration (750 lines)
-
-**preprovision.ps1 Documentation Suite:**
-- [PREPROVISION-ENHANCEMENTS.md](./PREPROVISION-ENHANCEMENTS.md) - Technical deep-dive (450 lines)
-- [PREPROVISION-QUICK-REFERENCE.md](./PREPROVISION-QUICK-REFERENCE.md) - Quick reference (400 lines)
-- [ENHANCEMENT-SUMMARY.md](./ENHANCEMENT-SUMMARY.md) - Executive summary (350 lines)
-- [VALIDATION-WORKFLOW.md](./VALIDATION-WORKFLOW.md) - Visual workflows (300 lines)
+- [check-dev-workstation.md](./check-dev-workstation.md) - Workstation validation
+- [clean-secrets.md](./clean-secrets.md) - Secret clearing guide
+- [Generate-Orders.md](./Generate-Orders.md) - Test data generation
+- [postprovision.md](./postprovision.md) - Post-provision configuration
+- [VALIDATION-WORKFLOW.md](./VALIDATION-WORKFLOW.md) - Visual workflows
 
 **Directory Documentation:**
 - [README.md](./README.md) - This file - navigation hub
