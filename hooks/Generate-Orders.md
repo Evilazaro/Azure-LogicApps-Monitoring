@@ -400,70 +400,38 @@ $orders | Select-Object -ExpandProperty products |
 
 ### Workflow Diagram
 
-```
-┌─────────────────────────────────────┐
-│  Generate-Orders.ps1 starts         │
-└───────────────┬─────────────────────┘
-                │
-                ▼
-┌─────────────────────────────────────┐
-│  Validate parameters                │
-│  • OrderCount (1-10000)            │
-│  • MinProducts ≤ MaxProducts       │
-│  • Output path is valid            │
-└───────────────┬─────────────────────┘
-                │
-                ▼
-┌─────────────────────────────────────┐
-│  Initialize data structures         │
-│  • Load product catalog (20)       │
-│  • Load address pool (20)          │
-│  • Prepare orders array            │
-└───────────────┬─────────────────────┘
-                │
-                ▼
-┌─────────────────────────────────────┐
-│  For each order (loop):             │
-│  ┌───────────────────────────────┐ │
-│  │ 1. Generate order ID          │ │
-│  │ 2. Generate customer info     │ │
-│  │ 3. Select random address      │ │
-│  │ 4. Generate order date        │ │
-│  │ 5. Determine product count    │ │
-│  └───────────┬───────────────────┘ │
-│              ▼                      │
-│  ┌───────────────────────────────┐ │
-│  │ For each product in order:    │ │
-│  │ • Select random product       │ │
-│  │ • Generate quantity (1-5)     │ │
-│  │ • Apply price variation       │ │
-│  │ • Calculate total price       │ │
-│  └───────────┬───────────────────┘ │
-│              ▼                      │
-│  ┌───────────────────────────────┐ │
-│  │ 6. Calculate order total      │ │
-│  │ 7. Set order status           │ │
-│  │ 8. Add to orders array        │ │
-│  └───────────────────────────────┘ │
-└───────────────┬─────────────────────┘
-                │
-                ▼
-┌─────────────────────────────────────┐
-│  Write JSON to file                 │
-│  • Format as indented JSON         │
-│  • Write to specified path         │
-│  • Create directory if needed      │
-└───────────────┬─────────────────────┘
-                │
-                ▼
-┌─────────────────────────────────────┐
-│  Display summary                    │
-│  • Total orders                    │
-│  • Total revenue                   │
-│  • Average order value             │
-│  • File size                       │
-│  • Execution time                  │
-└─────────────────────────────────────┘
+```mermaid
+flowchart LR
+    Start["Generate-Orders.ps1 starts"]
+    Start --> Validate["Validate parameters<br/>• OrderCount (1-10000)<br/>• MinProducts ≤ MaxProducts<br/>• Output path is valid"]
+    Validate --> Init["Initialize data structures<br/>• Load product catalog (20)<br/>• Load address pool (20)<br/>• Prepare orders array"]
+    Init --> OrderLoop["For each order (loop)"]
+    
+    subgraph OrderProcessing["Order Generation Loop"]
+        OrderLoop --> OrderSteps["1. Generate order ID<br/>2. Generate customer info<br/>3. Select random address<br/>4. Generate order date<br/>5. Determine product count"]
+        OrderSteps --> ProductLoop["For each product in order"]
+        
+        subgraph ProductProcessing["Product Loop"]
+            ProductLoop --> ProductSteps["• Select random product<br/>• Generate quantity (1-5)<br/>• Apply price variation<br/>• Calculate total price"]
+        end
+        
+        ProductSteps --> FinalizeOrder["6. Calculate order total<br/>7. Set order status<br/>8. Add to orders array"]
+    end
+    
+    FinalizeOrder --> WriteJSON["Write JSON to file<br/>• Format as indented JSON<br/>• Write to specified path<br/>• Create directory if needed"]
+    WriteJSON --> Summary["Display summary<br/>• Total orders<br/>• Total revenue<br/>• Average order value<br/>• File size<br/>• Execution time"]
+    
+    classDef startClass fill:#d4edda,stroke:#28a745,stroke-width:2px,color:#155724
+    classDef validateClass fill:#cfe2ff,stroke:#0d6efd,stroke-width:2px,color:#084298
+    classDef loopClass fill:#fff3cd,stroke:#ffc107,stroke-width:3px,color:#856404
+    classDef processClass fill:#e2d5f1,stroke:#6f42c1,stroke-width:2px,color:#3d2065
+    classDef outputClass fill:#d1ecf1,stroke:#17a2b8,stroke-width:2px,color:#0c5460
+    
+    class Start startClass
+    class Validate,Init validateClass
+    class OrderLoop,ProductLoop loopClass
+    class OrderSteps,ProductSteps,FinalizeOrder processClass
+    class WriteJSON,Summary outputClass
 ```
 
 ### Key Algorithms

@@ -363,56 +363,43 @@ Write-Host "Generated $($orders.Count) orders"
 
 ### Script Execution Flow
 
-```
-azure.yaml
-    │
-    └── hooks:
-            │
-            ├── preprovision (before provisioning)
-            │     │
-            │     └── preprovision.ps1 [~850 lines]
-            │           │
-            │           ├── Test-PowerShellVersion (7.0+)
-            │           ├── Test-DotNetSDK (10.0+)
-            │           ├── Test-AzureDeveloperCLI (any)
-            │           ├── Test-AzureCLI (2.60.0+)
-            │           ├── Test-AzureAuthentication
-            │           ├── Test-BicepCLI (0.30.0+)
-            │           ├── Test-AzureResourceProviders (8 providers)
-            │           ├── Show-AzureQuota (informational)
-            │           │
-            │           └── Invoke-CleanSecrets (optional)
-            │                 │
-            │                 └── clean-secrets.ps1 [~420 lines]
-            │                       │
-            │                       ├── Test-DotNetSDK
-            │                       ├── Test-ProjectPaths
-            │                       └── Clear-UserSecrets (3 projects)
-            │
-            ├── provision (Azure Developer CLI)
-            │     │
-            │     └── azd provision
-            │           │
-            │           ├── Deploy Bicep templates
-            │           ├── Capture outputs
-            │           └── Set environment variables
-            │
-            └── postprovision (after provisioning)
-                  │
-                  └── postprovision.ps1 [~1040 lines]
-                        │
-                        ├── Test-RequiredEnvironmentVariable (3 vars)
-                        ├── Test-AzureContainerRegistryAuth (optional)
-                        │
-                        ├── Invoke-CleanSecrets
-                        │     │
-                        │     └── clean-secrets.ps1
-                        │
-                        ├── Configure-AppHostSecrets (12 secrets)
-                        ├── Configure-OrdersApiSecrets (8 secrets)
-                        ├── Configure-WebAppSecrets (6 secrets)
-                        │
-                        └── Display-Summary
+```mermaid
+flowchart LR
+    AzureYaml["azure.yaml"]
+    AzureYaml --> Hooks["hooks:"]
+    
+    Hooks --> Preprovision["preprovision (before provisioning)"]
+    Hooks --> Provision["provision (Azure Developer CLI)"]
+    Hooks --> Postprovision["postprovision (after provisioning)"]
+    
+    subgraph PreprovisionPhase["Preprovision Phase"]
+        Preprovision --> PreprovisionScript["preprovision.ps1 [~850 lines]"]
+        PreprovisionScript --> PreprovTests["Validation Tests:<br/>PowerShell 7.0+ | .NET 10.0+<br/>Azure CLI 2.60.0+ | Bicep 0.30.0+<br/>Azure Auth | 8 Resource Providers"]
+        PreprovTests --> CleanSecrets1["clean-secrets.ps1 [~420 lines]<br/>Clear user secrets (3 projects)"]
+    end
+    
+    subgraph ProvisionPhase["Provision Phase"]
+        Provision --> AzdProvision["azd provision"]
+        AzdProvision --> BicepDeploy["Deploy Bicep templates<br/>Capture outputs<br/>Set environment variables"]
+    end
+    
+    subgraph PostprovisionPhase["Postprovision Phase"]
+        Postprovision --> PostprovisionScript["postprovision.ps1 [~1040 lines]"]
+        PostprovisionScript --> PostprovTests["Test env vars | ACR auth"]
+        PostprovTests --> CleanSecrets2["clean-secrets.ps1"]
+        CleanSecrets2 --> ConfigSecrets["Configure Secrets:<br/>AppHost (12) | OrdersAPI (8) | WebApp (6)"]
+        ConfigSecrets --> Summary["Display Summary"]
+    end
+    
+    classDef rootClass fill:#d4edda,stroke:#28a745,stroke-width:2px
+    classDef phaseClass fill:#fff3cd,stroke:#ffc107,stroke-width:2px
+    classDef scriptClass fill:#cfe2ff,stroke:#0d6efd,stroke-width:2px
+    classDef taskClass fill:#e2d5f1,stroke:#6f42c1,stroke-width:2px
+    
+    class AzureYaml,Hooks rootClass
+    class Preprovision,Provision,Postprovision phaseClass
+    class PreprovisionScript,PostprovisionScript,AzdProvision,CleanSecrets1,CleanSecrets2 scriptClass
+    class PreprovTests,BicepDeploy,PostprovTests,ConfigSecrets,Summary taskClass
 ```
 
 ### Script Relationships Matrix

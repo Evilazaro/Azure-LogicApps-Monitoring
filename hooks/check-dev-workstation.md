@@ -187,42 +187,21 @@ Register-ScheduledTask -Action $action -Trigger $trigger -TaskName "ValidateDevE
 
 ### Workflow Diagram
 
-```
-┌─────────────────────────────────────┐
-│  check-dev-workstation.ps1 starts   │
-└───────────────┬─────────────────────┘
-                │
-                ▼
-┌─────────────────────────────────────┐
-│  Validate script prerequisites      │
-│  • PowerShell 7.0+ available       │
-│  • preprovision.ps1 exists         │
-└───────────────┬─────────────────────┘
-                │
-                ▼
-┌─────────────────────────────────────┐
-│  Call preprovision.ps1 with:        │
-│  • -ValidateOnly flag               │
-│  • Pass through -Verbose if set     │
-└───────────────┬─────────────────────┘
-                │
-                ▼
-┌─────────────────────────────────────┐
-│  preprovision.ps1 performs:         │
-│  • PowerShell version check         │
-│  • .NET SDK validation              │
-│  • Azure CLI validation             │
-│  • Bicep CLI validation             │
-│  • Azure authentication check       │
-│  • Resource provider validation     │
-└───────────────┬─────────────────────┘
-                │
-                ▼
-┌─────────────────────────────────────┐
-│  Return results to caller           │
-│  • Exit code: 0 (success) or 1      │
-│  • Formatted validation output      │
-└─────────────────────────────────────┘
+```mermaid
+flowchart LR
+    Start["check-dev-workstation.ps1 starts"]
+    Start --> Validate["Validate script prerequisites<br/>• PowerShell 7.0+ available<br/>• preprovision.ps1 exists"]
+    Validate --> Call["Call preprovision.ps1 with:<br/>• -ValidateOnly flag<br/>• Pass through -Verbose if set"]
+    Call --> Perform["preprovision.ps1 performs:<br/>• PowerShell version check<br/>• .NET SDK validation<br/>• Azure CLI validation<br/>• Bicep CLI validation<br/>• Azure authentication check<br/>• Resource provider validation"]
+    Perform --> Return["Return results to caller<br/>• Exit code: 0 (success) or 1<br/>• Formatted validation output"]
+    
+    classDef startClass fill:#d4edda,stroke:#28a745,stroke-width:2px,color:#155724
+    classDef processClass fill:#cfe2ff,stroke:#0d6efd,stroke-width:2px,color:#084298
+    classDef returnClass fill:#fff3cd,stroke:#ffc107,stroke-width:2px,color:#856404
+    
+    class Start startClass
+    class Validate,Call,Perform processClass
+    class Return returnClass
 ```
 
 ### Internal Process

@@ -314,53 +314,27 @@ Register-ScheduledTask `
 
 ### Workflow Diagram
 
-```
-┌─────────────────────────────────────┐
-│  clean-secrets.ps1 starts           │
-└───────────────┬─────────────────────┘
-                │
-                ▼
-┌─────────────────────────────────────┐
-│  Validate prerequisites             │
-│  • PowerShell 7.0+                 │
-│  • .NET SDK available              │
-│  • Project files exist             │
-└───────────────┬─────────────────────┘
-                │
-                ▼
-┌─────────────────────────────────────┐
-│  Confirmation check                 │
-│  • Skip if -Force specified        │
-│  • Prompt user otherwise           │
-│  • Exit if declined                │
-└───────────────┬─────────────────────┘
-                │
-                ▼
-┌─────────────────────────────────────┐
-│  Clear app.AppHost secrets          │
-│  dotnet user-secrets clear         │
-└───────────────┬─────────────────────┘
-                │
-                ▼
-┌─────────────────────────────────────┐
-│  Clear eShop.Orders.API secrets     │
-│  dotnet user-secrets clear         │
-└───────────────┬─────────────────────┘
-                │
-                ▼
-┌─────────────────────────────────────┐
-│  Clear eShop.Web.App secrets        │
-│  dotnet user-secrets clear         │
-└───────────────┬─────────────────────┘
-                │
-                ▼
-┌─────────────────────────────────────┐
-│  Display summary                    │
-│  • Total projects processed        │
-│  • Success count                   │
-│  • Error count                     │
-│  • Execution time                  │
-└─────────────────────────────────────┘
+```mermaid
+flowchart LR
+    Start["clean-secrets.ps1 starts"]
+    Start --> Validate["Validate prerequisites<br/>• PowerShell 7.0+<br/>• .NET SDK available<br/>• Project files exist"]
+    Validate --> Confirm["Confirmation check<br/>• Skip if -Force specified<br/>• Prompt user otherwise<br/>• Exit if declined"]
+    Confirm --> Clear1["Clear app.AppHost secrets<br/>dotnet user-secrets clear"]
+    Clear1 --> Clear2["Clear eShop.Orders.API secrets<br/>dotnet user-secrets clear"]
+    Clear2 --> Clear3["Clear eShop.Web.App secrets<br/>dotnet user-secrets clear"]
+    Clear3 --> Summary["Display summary<br/>• Total projects processed<br/>• Success count<br/>• Error count<br/>• Execution time"]
+    
+    classDef startClass fill:#d4edda,stroke:#28a745,stroke-width:2px,color:#155724
+    classDef validateClass fill:#cfe2ff,stroke:#0d6efd,stroke-width:2px,color:#084298
+    classDef confirmClass fill:#fff3cd,stroke:#ffc107,stroke-width:2px,color:#856404
+    classDef clearClass fill:#e2d5f1,stroke:#6f42c1,stroke-width:2px,color:#3d2065
+    classDef summaryClass fill:#d1ecf1,stroke:#17a2b8,stroke-width:2px,color:#0c5460
+    
+    class Start startClass
+    class Validate validateClass
+    class Confirm confirmClass
+    class Clear1,Clear2,Clear3 clearClass
+    class Summary summaryClass
 ```
 
 ### Internal Functions

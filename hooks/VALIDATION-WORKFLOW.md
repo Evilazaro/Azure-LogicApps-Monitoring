@@ -1,246 +1,135 @@
 # Pre-Provisioning Script - Validation Workflow
 
+# Pre-Provisioning Script - Validation Workflow
+
 ## Visual Workflow
 
+### Main Validation Flow
+
+```mermaid
+flowchart LR
+    Start["PREPROVISION.PS1 START<br/>Version 2.0.0"]
+    Start --> Step1["STEP 1: PowerShell Version<br/>Minimum: 7.0 | Current: 7.5.4"]
+    
+    Step1 --> Decision1{Pass?}
+    Decision1 -->|✓ PASS| Step2["STEP 2: Prerequisites Validation"]
+    Decision1 -->|✗ FAIL| Error1["ERROR: Upgrade PowerShell"]
+    
+    Step2 --> Prereqs["Validate Prerequisites:<br/>2.1 .NET SDK (10.0+)<br/>2.2 Azure Developer CLI<br/>2.3 Azure CLI (2.60.0+)<br/>2.4 Bicep CLI (0.30.0+)<br/>2.5 Resource Providers (8)<br/>2.6 Azure Quota (info)"]
+    
+    Prereqs --> Decision2{All Pass?}
+    Decision2 -->|✓ ALL PASS| Step3["STEP 3: Clear User Secrets<br/>Execute: clean-secrets.ps1<br/>Projects: Orders.API, Web.App, AppHost"]
+    Decision2 -->|✗ ANY FAIL| Error2["ERROR: Fix prerequisites"]
+    
+    Step3 --> Decision3{Skip?}
+    Decision3 -->|No| ClearSecrets["Clear all project secrets"]
+    Decision3 -->|Yes| Skip["SKIPPED<br/>-ValidateOnly<br/>-SkipSecretsClear<br/>-WhatIf"]
+    
+    ClearSecrets --> Summary["EXECUTION SUMMARY<br/>Status: ✓ SUCCESS<br/>Duration: 14-22 seconds<br/>Exit Code: 0"]
+    Skip --> Summary
+    Summary --> Ready["READY FOR DEPLOYMENT<br/>azd provision | azd up"]
+    
+    classDef successClass fill:#d4edda,stroke:#28a745,stroke-width:2px
+    classDef errorClass fill:#f8d7da,stroke:#dc3545,stroke-width:2px
+    classDef processClass fill:#cfe2ff,stroke:#0d6efd,stroke-width:2px
+    classDef decisionClass fill:#fff3cd,stroke:#ffc107,stroke-width:2px
+    classDef skipClass fill:#e2e3e5,stroke:#6c757d,stroke-width:2px
+    
+    class Start,Summary,Ready successClass
+    class Error1,Error2 errorClass
+    class Step1,Step2,Prereqs,Step3,ClearSecrets processClass
+    class Decision1,Decision2,Decision3 decisionClass
+    class Skip skipClass
 ```
-┌─────────────────────────────────────────────────────────────────┐
-│                    PREPROVISION.PS1 START                       │
-│                      Version 2.0.0                              │
-└────────────────────────────┬────────────────────────────────────┘
-                             │
-                             ▼
-┌─────────────────────────────────────────────────────────────────┐
-│  STEP 1: PowerShell Version Validation                         │
-│  ┌───────────────────────────────────────────────────────────┐ │
-│  │  Test-PowerShellVersion                                   │ │
-│  │  • Minimum Required: 7.0                                  │ │
-│  │  • Current: 7.5.4                                         │ │
-│  └───────────────────────────────────────────────────────────┘ │
-└────────────────────────────┬────────────────────────────────────┘
-                             │
-                       ✓ PASS │ ✗ FAIL
-                             │    └──► [ERROR: Upgrade PowerShell]
-                             ▼
-┌─────────────────────────────────────────────────────────────────┐
-│  STEP 2: Prerequisites Validation                              │
-│                                                                 │
-│  ┌───────────────────────────────────────────────────────────┐ │
-│  │  2.1 Test-DotNetSDK                                       │ │
-│  │  • Minimum: 10.0                                          │ │
-│  │  • Check: dotnet --version                                │ │
-│  │  • Current: 10.0.101                                      │ │
-│  └───────────┬───────────────────────────────────────────────┘ │
-│              │                                                  │
-│        ✓ PASS│ ✗ FAIL                                          │
-│              │    └──► [WARN: Install .NET 10.0 SDK]           │
-│              ▼                                                  │
-│  ┌───────────────────────────────────────────────────────────┐ │
-│  │  2.2 Test-AzureDeveloperCLI                               │ │
-│  │  • Check: azd version                                     │ │
-│  │  • Current: 1.22.5                                        │ │
-│  └───────────┬───────────────────────────────────────────────┘ │
-│              │                                                  │
-│        ✓ PASS│ ✗ FAIL                                          │
-│              │    └──► [WARN: Install azd]                     │
-│              ▼                                                  │
-│  ┌───────────────────────────────────────────────────────────┐ │
-│  │  2.3 Test-AzureCLI                                        │ │
-│  │  • Minimum: 2.60.0                                        │ │
-│  │  • Check: az version                                      │ │
-│  │  • Check: az account show (authentication)                │ │
-│  │  • Current: 2.80.0                                        │ │
-│  │  • User: admin@tenant.onmicrosoft.com                     │ │
-│  │  • Subscription: Active                                   │ │
-│  └───────────┬───────────────────────────────────────────────┘ │
-│              │                                                  │
-│        ✓ PASS│ ✗ FAIL                                          │
-│              │    └──► [WARN: Install Azure CLI + az login]   │
-│              ▼                                                  │
-│  ┌───────────────────────────────────────────────────────────┐ │
-│  │  2.4 Test-BicepCLI                                        │ │
-│  │  • Minimum: 0.30.0                                        │ │
-│  │  • Check: bicep --version OR az bicep version             │ │
-│  │  • Current: 0.39.26                                       │ │
-│  └───────────┬───────────────────────────────────────────────┘ │
-│              │                                                  │
-│        ✓ PASS│ ✗ FAIL                                          │
-│              │    └──► [WARN: az bicep install/upgrade]        │
-│              ▼                                                  │
-│  ┌───────────────────────────────────────────────────────────┐ │
-│  │  2.5 Test-AzureResourceProviders                         │ │
-│  │  • Check 8 providers via: az provider show               │ │
-│  │    ├─ Microsoft.App                          ✓ Registered│ │
-│  │    ├─ Microsoft.ServiceBus                   ✓ Registered│ │
-│  │    ├─ Microsoft.Storage                      ✓ Registered│ │
-│  │    ├─ Microsoft.Web                          ✓ Registered│ │
-│  │    ├─ Microsoft.ContainerRegistry            ✓ Registered│ │
-│  │    ├─ Microsoft.Insights                     ✓ Registered│ │
-│  │    ├─ Microsoft.OperationalInsights          ✓ Registered│ │
-│  │    └─ Microsoft.ManagedIdentity              ✓ Registered│ │
-│  └───────────┬───────────────────────────────────────────────┘ │
-│              │                                                  │
-│        ✓ PASS│ ✗ FAIL                                          │
-│              │    └──► [WARN: az provider register commands]   │
-│              ▼                                                  │
-│  ┌───────────────────────────────────────────────────────────┐ │
-│  │  2.6 Test-AzureQuota (Informational)                     │ │
-│  │  • Display minimum resource requirements                 │ │
-│  │    ├─ Container Apps: 2 minimum                          │ │
-│  │    ├─ Storage Accounts: 3 minimum                        │ │
-│  │    ├─ Service Bus: 1 minimum                             │ │
-│  │    ├─ Logic Apps Standard: 1 minimum                     │ │
-│  │    └─ Container Registry: 1 minimum                      │ │
-│  └───────────┬───────────────────────────────────────────────┘ │
-│              │                                                  │
-│              ▼ (Always passes - informational only)            │
-└────────────────────────────┬────────────────────────────────────┘
-                             │
-                   ✓ ALL PASS │ ✗ ANY FAIL
-                             │    └──► [ERROR: Fix prerequisites]
-                             ▼
-┌─────────────────────────────────────────────────────────────────┐
-│  STEP 3: Clear User Secrets                                    │
-│  ┌───────────────────────────────────────────────────────────┐ │
-│  │  Invoke-CleanSecrets                                      │ │
-│  │  • Execute: clean-secrets.ps1                             │ │
-│  │  • Clears: All project user secrets                       │ │
-│  │  • Projects: eShop.Orders.API, eShop.Web.App, AppHost    │ │
-│  │                                                            │ │
-│  │  SKIP CONDITIONS:                                          │ │
-│  │  • -ValidateOnly parameter used                           │ │
-│  │  • -SkipSecretsClear parameter used                       │ │
-│  │  • -WhatIf parameter used                                 │ │
-│  └───────────┬───────────────────────────────────────────────┘ │
-│              │                                                  │
-│        ✓ PASS│ ⚠ WARN                                          │
-│              │    └──► [WARN: Secrets clear had issues]        │
-│              ▼                                                  │
-└────────────────────────────┬────────────────────────────────────┘
-                             │
-                             ▼
-┌─────────────────────────────────────────────────────────────────┐
-│                    EXECUTION SUMMARY                            │
-│  ┌───────────────────────────────────────────────────────────┐ │
-│  │  Status: ✓ SUCCESS                                        │ │
-│  │  Duration: 14-22 seconds                                  │ │
-│  │  Exit Code: 0                                             │ │
-│  └───────────────────────────────────────────────────────────┘ │
-└─────────────────────────────────────────────────────────────────┘
-                             │
-                             ▼
-                      READY FOR DEPLOYMENT
-                   (azd provision or azd up)
 
+### Parameter Modes
 
-═══════════════════════════════════════════════════════════════════
-                        PARAMETER MODES
-═══════════════════════════════════════════════════════════════════
+```mermaid
+flowchart TD
+    subgraph ValidateOnly["-ValidateOnly"]
+        VO1["Steps 1 & 2: Full validation"]
+        VO2["Step 3: SKIPPED (no secrets clearing)"]
+        VO1 --> VO2
+    end
+    
+    subgraph SkipSecretsClear["-SkipSecretsClear"]
+        SS1["Steps 1 & 2: Full validation"]
+        SS2["Step 3: SKIPPED (no secrets clearing)"]
+        SS1 --> SS2
+    end
+    
+    subgraph Force["-Force"]
+        F1["Steps 1 & 2: Full validation"]
+        F2["Step 3: Execute WITHOUT confirmation"]
+        F1 --> F2
+    end
+    
+    subgraph WhatIf["-WhatIf"]
+        WI1["Steps 1 & 2: Full validation"]
+        WI2["Step 3: PREVIEW only (no execution)"]
+        WI1 --> WI2
+    end
+    
+    subgraph Verbose["-Verbose"]
+        V1["All steps: Detailed logging"]
+        V2["Shows: Tool paths, versions, auth"]
+        V3["Useful for: Troubleshooting, audit"]
+        V1 --> V2 --> V3
+    end
+    
+    classDef paramClass fill:#e2d5f1,stroke:#6f42c1,stroke-width:2px
+    class ValidateOnly,SkipSecretsClear,Force,WhatIf,Verbose paramClass
+```
 
-┌─────────────────────────────────────────────────────────────────┐
-│  -ValidateOnly                                                  │
-│  ├─ Steps 1 & 2: Full validation                               │
-│  └─ Step 3: SKIPPED (no secrets clearing)                      │
-└─────────────────────────────────────────────────────────────────┘
+### Failure Handling Flow
 
-┌─────────────────────────────────────────────────────────────────┐
-│  -SkipSecretsClear                                              │
-│  ├─ Steps 1 & 2: Full validation                               │
-│  └─ Step 3: SKIPPED (no secrets clearing)                      │
-└─────────────────────────────────────────────────────────────────┘
+```mermaid
+flowchart LR
+    Failure["Validation Failure<br/>in Step 2"]
+    Failure --> Display["Display error with ✗ symbol"]
+    Display --> Instructions["Show installation/fix instructions"]
+    Instructions --> SetFlag["Set prerequisitesFailed = true"]
+    SetFlag --> Continue["Continue checking remaining"]
+    Continue --> ThrowError["After all checks:<br/>Throw error and exit code 1"]
+    ThrowError --> FailureSummary["Display failure summary<br/>with duration"]
+    
+    classDef failureClass fill:#f8d7da,stroke:#dc3545,stroke-width:2px
+    classDef processClass fill:#fff3cd,stroke:#ffc107,stroke-width:2px
+    
+    class Failure,ThrowError,FailureSummary failureClass
+    class Display,Instructions,SetFlag,Continue processClass
+```
 
-┌─────────────────────────────────────────────────────────────────┐
-│  -Force                                                         │
-│  ├─ Steps 1 & 2: Full validation                               │
-│  └─ Step 3: Execute WITHOUT confirmation prompts               │
-└─────────────────────────────────────────────────────────────────┘
+### Integration Points
 
-┌─────────────────────────────────────────────────────────────────┐
-│  -WhatIf                                                        │
-│  ├─ Steps 1 & 2: Full validation                               │
-│  └─ Step 3: PREVIEW only (no actual execution)                 │
-└─────────────────────────────────────────────────────────────────┘
-
-┌─────────────────────────────────────────────────────────────────┐
-│  -Verbose                                                       │
-│  ├─ All steps: Detailed logging                                │
-│  ├─ Shows: Tool paths, versions, authentication details        │
-│  └─ Useful for: Troubleshooting, audit trails                  │
-└─────────────────────────────────────────────────────────────────┘
-
-
-═══════════════════════════════════════════════════════════════════
-                      FAILURE HANDLING
-═══════════════════════════════════════════════════════════════════
-
-Any validation failure in Step 2:
-┌─────────────────────────────────────────────────────────────────┐
-│  1. Display specific error with ✗ symbol                        │
-│  2. Show installation/fix instructions                          │
-│  3. Set $prerequisitesFailed = $true                            │
-│  4. Continue checking remaining prerequisites                   │
-│  5. After all checks, throw error and exit with code 1         │
-│  6. Display failure summary with duration                       │
-└─────────────────────────────────────────────────────────────────┘
-
-Example failure output:
-┌─────────────────────────────────────────────────────────────────┐
-│  • Checking Azure CLI...                                        │
-│  WARNING: ✗ Azure CLI 2.60.0 or higher is required            │
-│  WARNING:   Install from: https://docs.microsoft.com/.../cli   │
-│  WARNING:   After installation: az login                        │
-│                                                                 │
-│  ERROR: One or more required prerequisites are missing          │
-│  Status: ✗ FAILED                                              │
-│  Exit Code: 1                                                   │
-└─────────────────────────────────────────────────────────────────┘
-
-
-═══════════════════════════════════════════════════════════════════
-                    INTEGRATION POINTS
-═══════════════════════════════════════════════════════════════════
-
-┌──────────────────────────────────┐
-│  Azure Developer CLI (azd)       │
-│  ┌────────────────────────────┐  │
-│  │ azure.yaml                 │  │
-│  │ hooks:                     │  │
-│  │   preprovision:            │  │
-│  │     windows:               │  │
-│  │       run: preprovision.ps1│  │
-│  └────────────────────────────┘  │
-└──────────────────────────────────┘
-              │
-              ▼
-    azd provision / azd up
-              │
-              ▼
-    Executes preprovision.ps1
-              │
-              ▼
-    ✓ Validation passes
-              │
-              ▼
-    Continues with deployment
-
-┌──────────────────────────────────┐
-│  GitHub Actions                  │
-│  ┌────────────────────────────┐  │
-│  │ - name: Pre-provision      │  │
-│  │   run: |                   │  │
-│  │     pwsh preprovision.ps1  │  │
-│  │     -Force                 │  │
-│  └────────────────────────────┘  │
-└──────────────────────────────────┘
-
-┌──────────────────────────────────┐
-│  Azure DevOps                    │
-│  ┌────────────────────────────┐  │
-│  │ - task: PowerShell@2       │  │
-│  │   inputs:                  │  │
-│  │     filePath: preprovision │  │
-│  │     arguments: -Force      │  │
-│  └────────────────────────────┘  │
-└──────────────────────────────────┘
+```mermaid
+flowchart TD
+    subgraph AZD["Azure Developer CLI (azd)"]
+        AzdYaml["azure.yaml<br/>hooks:<br/>  preprovision:<br/>    windows:<br/>      run: preprovision.ps1"]
+        AzdYaml --> AzdCmd["azd provision | azd up"]
+        AzdCmd --> Execute["Execute preprovision.ps1"]
+        Execute --> Validate{Validation<br/>passes?}
+        Validate -->|✓| Deploy["Continue with deployment"]
+        Validate -->|✗| Stop["Stop deployment"]
+    end
+    
+    subgraph GitHub["GitHub Actions"]
+        GHAction["- name: Pre-provision<br/>  run: |<br/>    pwsh preprovision.ps1<br/>    -Force"]
+    end
+    
+    subgraph AzureDevOps["Azure DevOps"]
+        ADOTask["- task: PowerShell@2<br/>  inputs:<br/>    filePath: preprovision<br/>    arguments: -Force"]
+    end
+    
+    classDef azdClass fill:#cfe2ff,stroke:#0d6efd,stroke-width:2px
+    classDef ciClass fill:#e2d5f1,stroke:#6f42c1,stroke-width:2px
+    classDef successClass fill:#d4edda,stroke:#28a745,stroke-width:2px
+    classDef failClass fill:#f8d7da,stroke:#dc3545,stroke-width:2px
+    
+    class AzdYaml,AzdCmd,Execute azdClass
+    class GHAction,ADOTask ciClass
+    class Deploy successClass
+    class Stop failClass
 ```
 
 ## Validation Matrix

@@ -304,81 +304,36 @@ Enables detailed diagnostic output.
 
 ### Workflow Diagram
 
-```
-┌─────────────────────────────────────┐
-│  azd provision completes            │
-│  • Infrastructure deployed          │
-│  • Outputs captured                 │
-└───────────────┬─────────────────────┘
-                │
-                ▼
-┌─────────────────────────────────────┐
-│  azd sets environment variables     │
-│  • From Bicep outputs               │
-│  • From resource properties         │
-│  • From .env file                   │
-└───────────────┬─────────────────────┘
-                │
-                ▼
-┌─────────────────────────────────────┐
-│  azd executes postprovision.ps1     │
-└───────────────┬─────────────────────┘
-                │
-                ▼
-┌─────────────────────────────────────┐
-│  Validate environment variables     │
-│  • AZURE_SUBSCRIPTION_ID            │
-│  • AZURE_RESOURCE_GROUP             │
-│  • AZURE_LOCATION                   │
-└───────────────┬─────────────────────┘
-                │
-                ▼
-┌─────────────────────────────────────┐
-│  Azure Container Registry auth      │
-│  • Check for ACR endpoint           │
-│  • Run: az acr login                │
-│  • Handle errors gracefully         │
-└───────────────┬─────────────────────┘
-                │
-                ▼
-┌─────────────────────────────────────┐
-│  Clear existing secrets             │
-│  • Execute clean-secrets.ps1        │
-│  • Prepare clean slate              │
-└───────────────┬─────────────────────┘
-                │
-                ▼
-┌─────────────────────────────────────┐
-│  Configure app.AppHost secrets      │
-│  • 12 secrets from env vars         │
-│  • Connection strings               │
-│  • Service endpoints                │
-└───────────────┬─────────────────────┘
-                │
-                ▼
-┌─────────────────────────────────────┐
-│  Configure eShop.Orders.API secrets │
-│  • 8 secrets from env vars          │
-│  • Database connections             │
-│  • API keys                         │
-└───────────────┬─────────────────────┘
-                │
-                ▼
-┌─────────────────────────────────────┐
-│  Configure eShop.Web.App secrets    │
-│  • 6 secrets from env vars          │
-│  • Service endpoints                │
-│  • Authentication settings          │
-└───────────────┬─────────────────────┘
-                │
-                ▼
-┌─────────────────────────────────────┐
-│  Display summary and exit           │
-│  • Total projects configured        │
-│  • Total secrets set                │
-│  • Execution time                   │
-│  • Exit code: 0 (success)           │
-└─────────────────────────────────────┘
+```mermaid
+flowchart LR
+    Start["azd provision completes<br/>• Infrastructure deployed<br/>• Outputs captured"]
+    Start --> SetEnv["azd sets environment variables<br/>• From Bicep outputs<br/>• From resource properties<br/>• From .env file"]
+    SetEnv --> Execute["azd executes postprovision.ps1"]
+    
+    subgraph ValidationPhase["Validation Phase"]
+        Execute --> Validate["Validate environment variables<br/>• AZURE_SUBSCRIPTION_ID<br/>• AZURE_RESOURCE_GROUP<br/>• AZURE_LOCATION"]
+        Validate --> ACRAuth["Azure Container Registry auth<br/>• Check for ACR endpoint<br/>• Run: az acr login<br/>• Handle errors gracefully"]
+    end
+    
+    ACRAuth --> ClearSecrets["Clear existing secrets<br/>• Execute clean-secrets.ps1<br/>• Prepare clean slate"]
+    
+    subgraph ConfigurationPhase["Configuration Phase"]
+        ClearSecrets --> ConfigAppHost["Configure app.AppHost secrets<br/>• 12 secrets from env vars<br/>• Connection strings<br/>• Service endpoints"]
+        ConfigAppHost --> ConfigOrdersAPI["Configure eShop.Orders.API secrets<br/>• 8 secrets from env vars<br/>• Database connections<br/>• API keys"]
+        ConfigOrdersAPI --> ConfigWebApp["Configure eShop.Web.App secrets<br/>• 6 secrets from env vars<br/>• Service endpoints<br/>• Authentication settings"]
+    end
+    
+    ConfigWebApp --> Summary["Display summary and exit<br/>• Total projects configured<br/>• Total secrets set<br/>• Execution time<br/>• Exit code: 0 (success)"]
+    
+    classDef startClass fill:#d4edda,stroke:#28a745,stroke-width:2px,color:#155724
+    classDef validateClass fill:#cfe2ff,stroke:#0d6efd,stroke-width:2px,color:#084298
+    classDef configClass fill:#e2d5f1,stroke:#6f42c1,stroke-width:2px,color:#3d2065
+    classDef summaryClass fill:#d1ecf1,stroke:#17a2b8,stroke-width:2px,color:#0c5460
+    
+    class Start startClass
+    class SetEnv,Execute,Validate,ACRAuth validateClass
+    class ClearSecrets,ConfigAppHost,ConfigOrdersAPI,ConfigWebApp configClass
+    class Summary summaryClass
 ```
 
 ### Internal Functions
