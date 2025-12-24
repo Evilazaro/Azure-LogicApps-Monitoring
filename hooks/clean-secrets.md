@@ -9,16 +9,35 @@
 
 ## 📋 Overview
 
-`clean-secrets` is a utility script that safely clears .NET user secrets from all projects in the Azure Logic Apps Monitoring solution. Available in both PowerShell (`.ps1`) and Bash (`.sh`) versions, it ensures a clean state for secret management, particularly useful before re-provisioning infrastructure or troubleshooting configuration issues.
+The `clean-secrets` script is a utility tool in the Developer Inner Loop Workflow that safely clears .NET user secrets from all projects in the Azure Logic Apps Monitoring solution. Available in both PowerShell (`.ps1`) and Bash (`.sh`) versions, it provides cross-platform support for managing local development secrets stored in user-specific directories.
 
-**Available Versions:**
-- **Windows/PowerShell**: `clean-secrets.ps1`
-- **Linux/macOS/Bash**: `clean-secrets.sh`
+This script operates as a helper utility called by both `preprovision` and `postprovision` scripts to ensure a clean state before configuring new secrets. It validates .NET SDK availability, confirms user intent (unless forced), and systematically clears secrets from three target projects: app.AppHost, eShop.Orders.API, and eShop.Web.App. The operation is non-destructive to project files, only removing secrets from the local user secrets storage.
 
-**Called By**: 
-- **preprovision** (2️⃣ Second in workflow) - `.ps1` or `.sh` depending on platform
-- **postprovision** (3️⃣ Third in workflow) - `.ps1` or `.sh` depending on platform
-- Manual execution by developers
+By providing multiple execution modes (interactive, force, preview, verbose), the script supports various workflows from manual troubleshooting to automated CI/CD pipelines, completing typical operations in 2-4 seconds with comprehensive error handling and detailed logging capabilities.
+
+## 📑 Table of Contents
+
+- [Overview](#-overview)
+- [Purpose](#-purpose)
+- [Target Projects](#️-target-projects)
+- [Usage](#-usage)
+  - [Basic Usage](#basic-usage)
+  - [Force Mode](#force-mode-no-confirmation)
+  - [Preview Mode](#preview-mode-whatif)
+  - [Verbose Mode](#verbose-mode)
+  - [Combined Options](#combined-options)
+- [Parameters](#-parameters)
+- [Examples](#-examples)
+- [How It Works](#️-how-it-works)
+  - [Internal Process Flow](#internal-process-flow)
+  - [Integration Points](#integration-points)
+- [Troubleshooting](#️-troubleshooting)
+- [Technical Implementation](#-technical-implementation)
+- [Related Documentation](#-related-documentation)
+- [Security Considerations](#-security-considerations)
+- [Best Practices](#-best-practices)
+- [Performance](#-performance)
+- [Version History](#-version-history)
 
 ## 🎯 Purpose
 
@@ -442,34 +461,67 @@ crontab -e
 
 ## 🛠️ How It Works
 
-### Workflow Diagram
+### Internal Process Flow
 
-**Context**: Helper script called by preprovision.ps1 (2️⃣) and postprovision.ps1 (3️⃣)
+The script executes a systematic secret clearing workflow through five distinct phases:
 
 ```mermaid
 flowchart LR
-    Start["clean-secrets.ps1 starts<br/>(Helper Script)"]
-    Start --> Validate["Validate prerequisites<br/>• PowerShell 7.0+<br/>• .NET SDK available<br/>• Project files exist"]
-    Validate --> Confirm["Confirmation check<br/>• Skip if -Force specified<br/>• Prompt user otherwise<br/>• Exit if declined"]
-    Confirm --> Clear1["Clear app.AppHost secrets<br/>dotnet user-secrets clear"]
-    Clear1 --> Clear2["Clear eShop.Orders.API secrets<br/>dotnet user-secrets clear"]
-    Clear2 --> Clear3["Clear eShop.Web.App secrets<br/>dotnet user-secrets clear"]
-    Clear3 --> Summary["Display summary<br/>• Total projects processed<br/>• Success count<br/>• Error count<br/>• Execution time"]
+    Start(["🚀 clean-secrets starts"])
+    Validate["1️⃣ Prerequisites Validation<br/>• PowerShell 7.0+ check<br/>• .NET SDK availability<br/>• Project files existence"]
+    Confirm{"2️⃣ User Confirmation<br/>Required?"}
+    ForceMode["Force mode: Skip confirmation"]
+    PromptUser{"Prompt user:<br/>Clear all secrets?"}
+    UserDecision{"User<br/>response?"}
+    Declined["❌ User declined<br/>Exit code: 0<br/>No changes made"]
+    Clear["3️⃣ Sequential Clearing<br/>• app.AppHost<br/>• eShop.Orders.API<br/>• eShop.Web.App"]
+    Track["4️⃣ Track Results<br/>• Success count<br/>• Error count<br/>• Execution time"]
+    Summary["5️⃣ Display Summary<br/>• Total: 3 projects<br/>• Cleared: X<br/>• Errors: Y<br/>• Time: Z seconds"]
+    End(["🏁 Script completes"])
     
-    classDef startClass fill:#d4edda,stroke:#28a745,stroke-width:2px,color:#155724
-    classDef validateClass fill:#cfe2ff,stroke:#0d6efd,stroke-width:2px,color:#084298
-    classDef confirmClass fill:#fff3cd,stroke:#ffc107,stroke-width:2px,color:#856404
-    classDef clearClass fill:#e2d5f1,stroke:#6f42c1,stroke-width:2px,color:#3d2065
-    classDef summaryClass fill:#d1ecf1,stroke:#17a2b8,stroke-width:2px,color:#0c5460
+    Start --> Validate
+    Validate --> Confirm
+    Confirm -->|Force flag set| ForceMode
+    Confirm -->|No force flag| PromptUser
+    ForceMode --> Clear
+    PromptUser --> UserDecision
+    UserDecision -->|Yes/Yes to All| Clear
+    UserDecision -->|No/No to All| Declined
+    Declined --> End
+    Clear --> Track
+    Track --> Summary
+    Summary --> End
     
-    class Start startClass
-    class Validate validateClass
-    class Confirm confirmClass
-    class Clear1,Clear2,Clear3 clearClass
-    class Summary summaryClass
+    classDef startEnd fill:#e8f5e9,stroke:#2e7d32,stroke-width:3px,color:#1b5e20
+    classDef process fill:#e3f2fd,stroke:#1976d2,stroke-width:2px,color:#0d47a1
+    classDef decision fill:#fff3e0,stroke:#f57c00,stroke-width:2px,color:#e65100
+    classDef clear fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px,color:#4a148c
+    classDef declined fill:#ffebee,stroke:#c62828,stroke-width:2px,color:#b71c1c
+    
+    class Start,End startEnd
+    class Validate,ForceMode,Track,Summary process
+    class Confirm,PromptUser,UserDecision decision
+    class Clear clear
+    class Declined declined
 ```
 
-### Internal Functions
+**Process Details:**
+
+1. **Prerequisites Validation**: Verifies PowerShell version, .NET SDK installation, and project file existence
+2. **User Confirmation**: Either skips confirmation with `-Force` flag or prompts user interactively
+3. **Sequential Clearing**: Clears secrets from each project using `dotnet user-secrets clear` command
+4. **Track Results**: Monitors success/failure status for each project operation
+5. **Display Summary**: Outputs detailed execution results including timing and error counts
+
+### Integration Points
+
+| Aspect | Details |
+|--------|---------|  
+| **Called By** | • `preprovision.ps1` or `preprovision.sh` before infrastructure provisioning<br/>• `postprovision.ps1` or `postprovision.sh` before setting new secrets<br/>• Developers manually for troubleshooting configuration issues<br/>• CI/CD pipelines during automated deployment workflows |
+| **Calls** | • `dotnet user-secrets clear` for each target project<br/>• `dotnet --version` for SDK validation<br/>• .NET CLI commands to manage local user secrets storage<br/>• No external APIs or network calls |
+| **Dependencies** | • **Runtime:** PowerShell 7.0+ or Bash 4.0+<br/>• **.NET SDK:** Version 10.0+ with user-secrets CLI tool<br/>• **Projects:** app.AppHost, eShop.Orders.API, eShop.Web.App with UserSecretsId configured<br/>• **File System:** Access to user secrets directory (Windows: %APPDATA%, Linux/macOS: ~/.microsoft) |
+| **Outputs** | • **Exit Code:** `0` (success/user declined) or `1` (failure/errors occurred)<br/>• **Console Output:** Timestamped messages for each operation with success/failure indicators<br/>• **Summary Report:** Total projects processed, success count, error count, execution time<br/>• **Verbose Logs:** Detailed diagnostic information including paths and command execution (optional) |
+| **Integration Role** | Acts as a **state reset utility** ensuring a clean slate for secret management. Prevents stale or conflicting configurations by clearing all local user secrets before provisioning or when troubleshooting. Critical for environment consistency across development, CI/CD, and re-provisioning scenarios. |
 
 #### `Test-DotNetSDK`
 Validates that .NET SDK is available and accessible.
@@ -898,53 +950,7 @@ azd up
 | **1.0.0** | 2025-12-15 | Initial release |
 |           |            | • Basic secret clearing |
 
-## 📞 Support
-
-### Getting Help
-
-1. **Review Error Messages**: Script provides detailed errors with solutions
-2. **Use Verbose Mode**: Run with `-Verbose` for diagnostic information
-3. **Check .NET SDK**: Ensure .NET 10.0+ is installed (`dotnet --version`)
-4. **Verify Projects**: Ensure all project files exist
-5. **Review Logs**: Check output for specific error details
-
-### Manual Secret Management
-
-If the script fails, you can manually manage secrets:
-
-```powershell
-# List secrets for a project
-dotnet user-secrets list --project ..\app.AppHost\app.AppHost.csproj
-
-# Clear secrets manually
-dotnet user-secrets clear --project ..\app.AppHost\app.AppHost.csproj
-
-# Remove a specific secret
-dotnet user-secrets remove "KeyName" --project ..\app.AppHost\app.AppHost.csproj
-
-# Set a secret manually
-dotnet user-secrets set "KeyName" "KeyValue" --project ..\app.AppHost\app.AppHost.csproj
-```
-
-### Reporting Issues
-
-If you encounter bugs:
-
-1. Run with verbose logging: `.\clean-secrets.ps1 -Verbose`
-2. Capture complete output
-3. Include environment details:
-   - PowerShell version: `$PSVersionTable`
-   - .NET SDK version: `dotnet --version`
-   - OS version
-4. Create GitHub issue with above information
-
-## 📄 License
-
-Copyright (c) 2025 Azure-LogicApps-Monitoring Team. All rights reserved.
-
-This script is part of the Azure-LogicApps-Monitoring solution.
-
-## 🔗 Quick Links
+##  Quick Links
 
 - **Repository**: [Azure-LogicApps-Monitoring](https://github.com/Evilazaro/Azure-LogicApps-Monitoring)
 - **Issues**: [Report Bug](https://github.com/Evilazaro/Azure-LogicApps-Monitoring/issues)

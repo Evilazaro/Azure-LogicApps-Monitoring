@@ -323,14 +323,13 @@ flowchart LR
 
 ### Integration Points
 
-| Integration Type | Details | Interaction Mode |
-|-----------------|---------|------------------|
-| **Calls** | `preprovision.ps1` with `-ValidateOnly` flag | Synchronous subprocess |
-| **Called By** | Developers (manual), CI/CD pipelines, automation scripts | Direct execution |
-| **Dependencies** | PowerShell 7.0+, preprovision script, Azure CLI, .NET SDK | Runtime requirements |
-| **Output** | Exit code (0/1), formatted console messages, verbose diagnostics | Standard streams |
-| **Side Effects** | None - completely read-only validation | Non-destructive |
-| **External Services** | Azure CLI for authentication and provider status checks | Read-only API calls |
+| Aspect | Details |
+|--------|---------|
+| **Called By** | • Manual execution by developers during workstation setup<br/>• CI/CD pipelines for environment pre-flight checks<br/>• Automated scripts and scheduled tasks<br/>• Team onboarding workflows |
+| **Calls** | • `preprovision.ps1` (or `preprovision.sh`) with `-ValidateOnly` flag<br/>• Azure CLI commands for authentication verification<br/>• Version check commands (`dotnet --version`, `az --version`, `bicep --version`) |
+| **Dependencies** | • **Runtime:** PowerShell 7.0+ (cross-platform)<br/>• **Scripts:** preprovision script in same directory<br/>• **Tools:** Azure CLI, .NET SDK 10.0+, Bicep CLI, Azure Developer CLI<br/>• **Azure:** Active Azure subscription and authentication |
+| **Outputs** | • **Exit Code:** `0` (success) or `1` (failure)<br/>• **Console Output:** Formatted validation messages with timestamps<br/>• **Verbose Logs:** Detailed diagnostic information (optional)<br/>• **Summary:** Pass/fail status for each validation check |
+| **Integration Role** | Acts as a **gateway validation layer** ensuring environment readiness before any provisioning or deployment operations. Provides fail-fast feedback to prevent downstream errors in the development workflow. |
 
 ## ⚠️ Troubleshooting
 
@@ -556,46 +555,6 @@ function Test-ToolVersion {
     }
 }
 ```
-
-### Integration Points
-
-**Called By:**
-- Manual execution by developers
-- preprovision.ps1 (indirectly through validation)
-- CI/CD pipelines for environment verification
-
-**Calls:**
-- None (read-only validation script)
-
-**Dependencies:**
-- PowerShell 7.0+
-- Access to check tool versions (dotnet, az, azd, bicep)
-
-### Performance Characteristics
-
-**Execution Time:**
-- Typical: 3-5 seconds
-- First run: 3-5 seconds (no caching)
-- **Fast:** No write operations
-
-**Resource Usage:**
-- Memory: < 50 MB
-- CPU: Minimal (version checks only)
-- Disk: Read-only operations
-
-### Error Handling
-
-**Error Categories:**
-1. **Tool Not Found:** Clear installation instructions provided
-2. **Version Too Old:** Upgrade command suggested
-3. **Execution Error:** Detailed error message with context
-
-**Recovery Strategy:**
-- Script never modifies system
-- Safe to run multiple times
-- Always exits gracefully
-
----
 
 ## �📖 Related Documentation
 
