@@ -8,7 +8,7 @@
   2. File Share for orders-api persistent data
   
   Key Features:
-  - SMB 3.0 protocol support for Container Apps mounting
+  - SMB 3.0 protocol support for Orders API Volume Mounting
   - Secure transfer required (HTTPS/SMB 3.0)
   - TLS 1.2 minimum version
   - Hot access tier for frequently accessed data
@@ -158,7 +158,7 @@ resource storageAccountDiag 'Microsoft.Insights/diagnosticSettings@2021-05-01-pr
 output ORDERS_STORAGE_ACCOUNT_NAME string = caSA.name
 
 @description('Resource ID of the storage account')
-output CA_STORAGE_ACCOUNT_ID string = caSA.id
+output ORDERS_STORAGE_ACCOUNT_ID string = caSA.id
 
 @description('Name of the file share')
 output CA_FILE_SHARE_NAME string = fileShare.name
@@ -166,6 +166,6 @@ output CA_FILE_SHARE_NAME string = fileShare.name
 @description('Storage account endpoint for Azure Files')
 output CA_FILE_ENDPOINT string = caSA.properties.primaryEndpoints.file
 
-@description('Primary key of the storage account for Container Apps mount')
+@description('Primary key of the storage account for Orders API Volume Mount')
 #disable-next-line outputs-should-not-contain-secrets
-output CA_STORAGE_ACCOUNT_KEY string = caSA.listKeys().keys[0].value
+output ORDERS_STORAGE_ACCOUNT_KEY string = caSA.listKeys().keys[0].value
