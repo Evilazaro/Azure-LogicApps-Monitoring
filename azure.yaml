@@ -1,27 +1,78 @@
 # yaml-language-server: $schema=https://raw.githubusercontent.com/Azure/azure-dev/main/schemas/v1.0/azure.yaml.json
 
+# ==============================================================================
+# Azure Developer CLI (azd) Configuration
+# ==============================================================================
+# This configuration defines the infrastructure, services, and lifecycle hooks
+# for the Azure Logic Apps Monitoring solution. It orchestrates environment
+# setup, provisioning, and post-deployment configuration.
+#
+# Documentation: https://learn.microsoft.com/azure/developer/azure-developer-cli/
+# ==============================================================================
+
+# ------------------------------------------------------------------------------
+# Project Metadata
+# ------------------------------------------------------------------------------
+# Unique identifier for this azd template
 name: azure-logicapps-monitoring
 
+# Template version and metadata for azd template gallery
+metadata:
+  template: azure-logicapps-monitoring@0.0.1
+
+# ------------------------------------------------------------------------------
+# Infrastructure Configuration
+# ------------------------------------------------------------------------------
+# Defines how and where infrastructure is defined and deployed
 infra:
-    provider: bicep
-    path: ./infra/
-    module: main
+  provider: bicep                      # Infrastructure as Code provider
+  path: infra                          # Directory containing Bicep templates
+  module: main                         # Entry point Bicep module (main.bicep)
+
+# ------------------------------------------------------------------------------
+# Lifecycle Hooks
+# ------------------------------------------------------------------------------
+# Scripts executed at specific points in the azd workflow to automate
+# environment validation, configuration, and data generation
 
 hooks:
-    preprovision: 
-        shell: pwsh
-        run: |
-            .\hooks\preprovision.ps1
+  # Pre-provisioning validation hook
+  # Executes before 'azd provision' to validate workstation prerequisites
+  preprovision:
+    posix:                             # Linux/macOS configuration
+      shell: sh
+      run: ./hooks/preprovision.sh
+      continueOnError: false           # Fail fast on validation errors
+    windows:                           # Windows configuration
+      shell: pwsh
+      run: ./hooks/preprovision.ps1
+      continueOnError: false
 
-    postprovision:
-        shell: pwsh
-        run: |
-            .\hooks\postprovision.ps1
-            .\hooks\Generate-Orders.ps1
+  # Post-provisioning configuration hook
+  # Executes after 'azd provision' to configure local development secrets
+  # and generate test data for the application
+  postprovision:
+    posix:                             # Linux/macOS configuration
+      shell: sh
+      run: |
+        ./hooks/postprovision.sh       # Configure .NET user secrets
+        ./hooks/Generate-Orders.sh     # Generate test order data
+      continueOnError: false
+    windows:                           # Windows configuration
+      shell: pwsh
+      run: |
+        ./hooks/postprovision.ps1      # Configure .NET user secrets
+        ./hooks/Generate-Orders.ps1    # Generate test order data
+      continueOnError: false
+
+# ------------------------------------------------------------------------------
+# Application Services
+# ------------------------------------------------------------------------------
+# Defines the application components to be deployed to Azure
 
 services:
-    app:
-        language: dotnet
-        project: ./app.AppHost/app.AppHost.csproj
-        host: containerapp
-        resourceGroup: ${AZURE_RESOURCE_GROUP}
+  # .NET Aspire AppHost orchestrating the monitoring solution
+  app:
+    language: dotnet                   # Service implementation language
+    project: ./app.AppHost/app.AppHost.csproj  # Path to project file
+    host: containerapp                 # Target hosting platform (Azure Container Apps)

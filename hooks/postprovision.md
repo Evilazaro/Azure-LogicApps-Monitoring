@@ -455,38 +455,7 @@ dotnet user-secrets list --project app.AppHost\app.AppHost.csproj
 
 ---
 
-### Example 2: Re-configure After Variable Change
-
-```powershell
-# Scenario: Updated an environment variable manually
-
-# Re-run postprovision to update secrets
-cd hooks
-.\postprovision.ps1 -Force
-
-# Restart application to pick up changes
-azd up
-```
-
----
-
-### Example 3: Troubleshooting Configuration
-
-```powershell
-# Run with verbose output to diagnose issues
-.\postprovision.ps1 -Verbose 2>&1 | Tee-Object -FilePath postprovision-log.txt
-
-# Review the log
-Get-Content postprovision-log.txt
-
-# Verify specific secret
-dotnet user-secrets list --project ..\app.AppHost\app.AppHost.csproj | 
-    Select-String "ServiceBus"
-```
-
----
-
-### Example 4: CI/CD Integration
+### Example 2: CI/CD Integration
 
 ```powershell
 # In CI/CD pipeline after azd provision
@@ -508,27 +477,6 @@ try {
 catch {
     Write-Error "Provisioning failed: $_"
     exit 1
-}
-```
-
----
-
-### Example 5: Multiple Environment Management
-
-```powershell
-# Switch between environments
-$environments = @('dev', 'staging', 'prod')
-
-foreach ($env in $environments) {
-    Write-Host "Configuring environment: $env"
-    
-    # Switch environment
-    azd env select $env
-    
-    # Re-run postprovision
-    & ./hooks/postprovision.ps1 -Force
-    
-    Write-Host "✓ $env configured"
 }
 ```
 

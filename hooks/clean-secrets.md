@@ -332,39 +332,7 @@ azd provision
 
 ---
 
-### Example 2: Troubleshooting Configuration Issues
-
-**PowerShell (Windows):**
-```powershell
-# Scenario: Application not working, suspect stale secrets
-
-# Step 1: Preview what will be cleared
-.\clean-secrets.ps1 -WhatIf
-
-# Step 2: Clear secrets with verbose output
-.\clean-secrets.ps1 -Force -Verbose
-
-# Step 3: Re-run postprovision to set fresh secrets
-.\postprovision.ps1
-```
-
-**Bash (Linux/macOS):**
-```bash
-# Scenario: Application not working, suspect stale secrets
-
-# Step 1: Preview what will be cleared
-./clean-secrets.sh --dry-run
-
-# Step 2: Clear secrets with verbose output
-./clean-secrets.sh --force --verbose
-
-# Step 3: Re-run postprovision to set fresh secrets
-./postprovision.sh
-```
-
----
-
-### Example 3: CI/CD Pipeline Integration
+### Example 2: CI/CD Pipeline Integration
 
 **PowerShell (Windows):**
 ```powershell
@@ -399,62 +367,6 @@ else
     echo "ERROR: Secret clearing failed" >&2
     exit 1
 fi
-```
-
----
-
-### Example 4: Verify Secrets Are Cleared
-
-**PowerShell (Windows):**
-```powershell
-# Clear secrets
-.\clean-secrets.ps1 -Force
-
-# Verify they're gone
-dotnet user-secrets list --project ..\app.AppHost\app.AppHost.csproj
-# Should output: "No secrets configured for this application"
-```
-
-**Bash (Linux/macOS):**
-```bash
-# Clear secrets
-./clean-secrets.sh --force
-
-# Verify they're gone
-dotnet user-secrets list --project ../app.AppHost/app.AppHost.csproj
-# Should output: "No secrets configured for this application"
-```
-
----
-
-### Example 5: Scheduled Cleanup Task
-
-**PowerShell (Windows - Scheduled Task):**
-```powershell
-# Create scheduled task for weekly cleanup
-$action = New-ScheduledTaskAction `
-    -Execute "pwsh" `
-    -Argument "-File Z:\Azure-LogicApps-Monitoring\hooks\clean-secrets.ps1 -Force"
-
-$trigger = New-ScheduledTaskTrigger `
-    -Weekly `
-    -DaysOfWeek Monday `
-    -At 6:00AM
-
-Register-ScheduledTask `
-    -Action $action `
-    -Trigger $trigger `
-    -TaskName "CleanDevSecrets" `
-    -Description "Weekly cleanup of development user secrets"
-```
-
-**Bash (Linux/macOS - Cron Job):**
-```bash
-# Add to crontab for weekly cleanup on Monday at 6:00 AM
-crontab -e
-
-# Add this line:
-0 6 * * 1 cd /path/to/Azure-LogicApps-Monitoring/hooks && ./clean-secrets.sh --force >> /tmp/clean-secrets.log 2>&1
 ```
 
 ---

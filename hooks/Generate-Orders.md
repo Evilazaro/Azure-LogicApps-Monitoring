@@ -419,81 +419,7 @@ echo "Generated $orders_count orders"
 
 ---
 
-### Example 2: Load Testing Dataset
-
-**PowerShell (Windows):**
-```powershell
-# Generate 5000 orders for load testing
-.\Generate-Orders.ps1 -OrderCount 5000 -Verbose
-
-# Verify file was created
-$file = Get-Item ..\infra\data\ordersBatch.json
-Write-Host "File size: $([Math]::Round($file.Length / 1MB, 2)) MB"
-```
-
-**Bash (Linux/macOS):**
-```bash
-# Generate 5000 orders for load testing
-./Generate-Orders.sh --order-count 5000 --verbose
-
-# Verify file was created
-file_size=$(du -h ../infra/data/ordersBatch.json | cut -f1)
-echo "File size: $file_size"
-```
-
----
-
-### Example 3: Specific Product Range
-
-**PowerShell (Windows):**
-```powershell
-# Generate orders with exactly 3-5 products each
-.\Generate-Orders.ps1 `
-    -OrderCount 100 `
-    -MinProducts 3 `
-    -MaxProducts 5
-
-# Analyze the distribution
-$orders = Get-Content ..\infra\data\ordersBatch.json | ConvertFrom-Json
-$orders | ForEach-Object { $_.products.Count } | 
-    Measure-Object -Average -Minimum -Maximum
-```
-
-**Bash (Linux/macOS):**
-```bash
-# Generate orders with exactly 3-5 products each
-./Generate-Orders.sh \
-    --order-count 100 \
-    --min-products 3 \
-    --max-products 5
-
-# Analyze the distribution
-jq '[.[] | .products | length] | {avg: (add/length), min: min, max: max}' \
-    ../infra/data/ordersBatch.json
-```
-
----
-
-### Example 4: Multiple Test Files
-
-```powershell
-# Generate multiple datasets with different characteristics
-@(
-    @{ Count = 50; Min = 1; Max = 3; Name = "small-orders" },
-    @{ Count = 50; Min = 5; Max = 10; Name = "large-orders" },
-    @{ Count = 100; Min = 1; Max = 6; Name = "mixed-orders" }
-) | ForEach-Object {
-    .\Generate-Orders.ps1 `
-        -OrderCount $_.Count `
-        -MinProducts $_.Min `
-        -MaxProducts $_.Max `
-        -OutputPath "C:\TestData\$($_.Name).json"
-}
-```
-
----
-
-### Example 5: CI/CD Integration
+### Example 2: CI/CD Integration
 
 ```powershell
 # Add to CI/CD pipeline
@@ -525,34 +451,6 @@ catch {
     Write-Error "Test data generation failed: $_"
     exit 1
 }
-```
-
----
-
-### Example 6: Data Analysis
-
-```powershell
-# Generate orders
-.\Generate-Orders.ps1 -OrderCount 200
-
-# Analyze the generated data
-$orders = Get-Content ..\infra\data\ordersBatch.json | ConvertFrom-Json
-
-# Revenue statistics
-$totalRevenue = ($orders | Measure-Object -Property totalAmount -Sum).Sum
-$avgOrder = ($orders | Measure-Object -Property totalAmount -Average).Average
-Write-Host "Total Revenue: $([Math]::Round($totalRevenue, 2))"
-Write-Host "Average Order: $([Math]::Round($avgOrder, 2))"
-
-# Product distribution
-$productCounts = $orders | ForEach-Object { $_.products.Count }
-$productCounts | Group-Object | Select-Object Name, Count | Sort-Object Name
-
-# Top products
-$orders | Select-Object -ExpandProperty products | 
-    Group-Object productId | 
-    Sort-Object Count -Descending | 
-    Select-Object -First 5 Name, Count
 ```
 
 ---

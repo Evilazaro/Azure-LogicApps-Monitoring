@@ -235,46 +235,6 @@ fi
 echo "Environment validated - proceeding with build..."
 ```
 
-### Example 3: Troubleshooting Setup Issues
-
-**PowerShell (Windows):**
-```powershell
-# Get detailed output for troubleshooting
-.\check-dev-workstation.ps1 -Verbose 2>&1 | Tee-Object -FilePath "validation-log.txt"
-
-# Review the log file
-Get-Content validation-log.txt
-```
-
-**Bash (Linux/macOS):**
-```bash
-# Get detailed output for troubleshooting
-./check-dev-workstation.sh --verbose 2>&1 | tee validation-log.txt
-
-# Review the log file
-cat validation-log.txt
-```
-
-### Example 4: Scheduled Validation Task
-
-**PowerShell (Windows - Scheduled Task):**
-```powershell
-# Create a scheduled task to validate environment daily
-$action = New-ScheduledTaskAction -Execute "pwsh" -Argument "-File Z:\Azure-LogicApps-Monitoring\hooks\check-dev-workstation.ps1"
-$trigger = New-ScheduledTaskTrigger -Daily -At 9:00AM
-Register-ScheduledTask -Action $action -Trigger $trigger -TaskName "ValidateDevEnvironment"
-```
-
-**Bash (Linux/macOS - Cron Job):**
-```bash
-# Add to crontab for daily validation at 9:00 AM
-# Open crontab editor
-crontab -e
-
-# Add this line:
-0 9 * * * cd /path/to/Azure-LogicApps-Monitoring/hooks && ./check-dev-workstation.sh >> /tmp/validation.log 2>&1
-```
-
 ## 🛠️ How It Works
 
 ### Internal Process Flow

@@ -1,7 +1,5 @@
 # Pre-Provisioning Script - Validation Workflow
 
-# Pre-Provisioning Script - Validation Workflow
-
 **Recommended Workflow Order**: 
 1. 🔍 **check-dev-workstation** (.ps1 or .sh) - Quick workstation validation (optional but recommended)
 2. ✅ **preprovision** (.ps1 or .sh) - Comprehensive validation (this document)
