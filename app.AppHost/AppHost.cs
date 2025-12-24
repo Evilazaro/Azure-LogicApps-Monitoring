@@ -1,4 +1,12 @@
+using Aspire.Hosting.Azure;
+
 var builder = DistributedApplication.CreateBuilder(args);
+
+// =============================================================================
+// Shared Azure Parameters
+// =============================================================================
+
+var resourceGroupParameter = CreateResourceGroupParameterIfNeeded(builder);
 
 // =============================================================================
 // Project Resources Configuration
@@ -6,7 +14,7 @@ var builder = DistributedApplication.CreateBuilder(args);
 
 var ordersApi = builder.AddProject<Projects.eShop_Orders_API>("orders-api");
 
-ConfigureOrdersStoragePath(builder, ordersApi);
+ConfigureOrdersStoragePath(builder, ordersApi, resourceGroupParameter);
 
 var webApp = builder.AddProject<Projects.eShop_Web_App>("web-app")
     .WithExternalHttpEndpoints()
@@ -29,7 +37,7 @@ ConfigureApplicationInsights(builder, ordersApi, webApp);
 // 1. Local Development: Uses Service Bus emulator (when HostName is not configured)
 // 2. Azure Deployment: Connects to existing Azure Service Bus via managed identity
 
-ConfigureServiceBus(builder, ordersApi);
+ConfigureServiceBus(builder, ordersApi, resourceGroupParameter);
 
 builder.Build().Run();
 
@@ -38,16 +46,39 @@ builder.Build().Run();
 // =============================================================================
 
 /// <summary>
+/// Creates the Azure Resource Group parameter if Azure resources are configured.
+/// This ensures the parameter is only created once and shared across all Azure resources.
+/// </summary>
+/// <param name="builder">The distributed application builder.</param>
+/// <returns>The resource group parameter builder, or null if not in Azure mode.</returns>
+static IResourceBuilder<ParameterResource>? CreateResourceGroupParameterIfNeeded(
+    IDistributedApplicationBuilder builder)
+{
+    const string ResourceGroupConfigKey = "Azure:ResourceGroup";
+    
+    var resourceGroup = builder.Configuration[ResourceGroupConfigKey];
+    
+    if (string.IsNullOrWhiteSpace(resourceGroup))
+    {
+        return null;
+    }
+
+    return builder.AddParameterFromConfiguration("resourceGroup", ResourceGroupConfigKey);
+}
+
+/// <summary>
 /// Configures the storage directory path for orders based on the deployment environment.
 /// Uses absolute paths for Azure Container Apps and relative paths for local development.
 /// </summary>
 /// <param name="builder">The distributed application builder.</param>
 /// <param name="ordersApi">The orders API project resource.</param>
+/// <param name="resourceGroupParameter">The shared Azure resource group parameter.</param>
 static void ConfigureOrdersStoragePath(
     IDistributedApplicationBuilder builder,
-    IResourceBuilder<ProjectResource> ordersApi)
+    IResourceBuilder<ProjectResource> ordersApi,
+    IResourceBuilder<ParameterResource>? resourceGroupParameter)
 {
-    const string DefaultParamName = "storage";
+    const string DefaultParamName = "data";
     const string LocalStoragePath = "data/orders";
     const string StorageDirectoryKey = "OrderStorage__StorageDirectory";
     const string DefaultStorageName = "orders-storage";
@@ -72,10 +103,16 @@ static void ConfigureOrdersStoragePath(
     else
     {
         // Azure deployment mode - use existing storage account with managed identity
-        var resourceGroupParameter = builder.AddParameterFromConfiguration("resourceGroup", "Azure:ResourceGroup");
+        if (resourceGroupParameter is null)
+        {
+            throw new InvalidOperationException(
+                "Azure Resource Group configuration is required when using Azure Storage Account. " +
+                "Please configure 'Azure:ResourceGroup' in your application settings.");
+        }
+
         var storageAccountParameter = builder.AddParameter(DefaultParamName, storageResourceName!);
 
-        var storageResource = builder.AddAzureStorage(DefaultParamName)
+        var storageResource = builder.AddAzureStorage(DefaultStorageName)
             .AsExisting(storageAccountParameter, resourceGroupParameter);
 
         var blobContainer = storageResource.AddBlobs(BlobContainerName);
@@ -117,18 +154,28 @@ static void ConfigureApplicationInsights(
 /// </summary>
 /// <param name="builder">The distributed application builder.</param>
 /// <param name="ordersApi">The orders API project resource to configure with Service Bus.</param>
+/// <param name="resourceGroupParameter">The shared Azure resource group parameter.</param>
 static void ConfigureServiceBus(
     IDistributedApplicationBuilder builder,
-    IResourceBuilder<ProjectResource> ordersApi)
+    IResourceBuilder<ProjectResource> ordersApi,
+    IResourceBuilder<ParameterResource>? resourceGroupParameter)
 {
     const string DefaultNamespaceName = "localhost";
     const string DefaultConnectionStringName = "messaging";
     const string DefaultTopicName = "OrdersPlaced";
     const string DefaultSubscriptionName = "OrderProcessingSubscription";
 
-    var sbHostName = string.IsNullOrEmpty(builder.Configuration["Azure:ServiceBus:HostName"]) ? DefaultNamespaceName : builder.Configuration["Azure:ServiceBus:HostName"];
-    var sbTopicName = string.IsNullOrEmpty(builder.Configuration["Azure:ServiceBus:TopicName"]) ? DefaultTopicName : builder.Configuration["Azure:ServiceBus:TopicName"];
-    var sbSubscriptionName = string.IsNullOrEmpty(builder.Configuration["Azure:ServiceBus:SubscriptionName"]) ? DefaultSubscriptionName : builder.Configuration["Azure:ServiceBus:SubscriptionName"];
+    var sbHostName = string.IsNullOrEmpty(builder.Configuration["Azure:ServiceBus:HostName"]) 
+        ? DefaultNamespaceName 
+        : builder.Configuration["Azure:ServiceBus:HostName"];
+    
+    var sbTopicName = string.IsNullOrEmpty(builder.Configuration["Azure:ServiceBus:TopicName"]) 
+        ? DefaultTopicName 
+        : builder.Configuration["Azure:ServiceBus:TopicName"];
+    
+    var sbSubscriptionName = string.IsNullOrEmpty(builder.Configuration["Azure:ServiceBus:SubscriptionName"]) 
+        ? DefaultSubscriptionName 
+        : builder.Configuration["Azure:ServiceBus:SubscriptionName"];
 
     // Determine if we're running in local emulator mode or Azure mode
     var isLocalMode = (sbHostName ?? string.Empty).Equals(DefaultNamespaceName, StringComparison.OrdinalIgnoreCase);
@@ -143,11 +190,17 @@ static void ConfigureServiceBus(
     }
     else
     {
+        if (resourceGroupParameter is null)
+        {
+            throw new InvalidOperationException(
+                "Azure Resource Group configuration is required when using Azure Service Bus. " +
+                "Please configure 'Azure:ResourceGroup' in your application settings.");
+        }
+
         var sbParam = builder.AddParameter("service-bus", sbHostName ?? DefaultNamespaceName);
-        var sbResourceGroupParam = builder.AddParameterFromConfiguration("resourceGroup", "Azure:ResourceGroup");
 
         serviceBusResource = builder.AddAzureServiceBus(DefaultConnectionStringName)
-            .AsExisting(sbParam, sbResourceGroupParam);
+            .AsExisting(sbParam, resourceGroupParameter);
     }
 
     // Configure Service Bus topology
