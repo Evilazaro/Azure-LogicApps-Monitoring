@@ -76,13 +76,13 @@ param metricsSettings object[]
 param appInsightsConnectionString string
 
 @description('Name of the storage account for Container Apps persistent storage.')
-param caVolumeMountSAName string
+param caStorageAccountName string
 
 @description('Storage account key for Azure Files mount.')
-param caVolumeMountSAKey string
+param caStoargeAccountKey string
 
 @description('Name of the file share for orders-api persistent data.')
-param caVolumeMountFileShareName string
+param caStorageAccountFileShareName string
 
 @description('Resource tags applied to container services.')
 param tags tagsType
@@ -170,9 +170,9 @@ resource appEnvStorage 'Microsoft.App/managedEnvironments/storages@2025-02-02-pr
   name: storageVolumeName
   properties: {
     azureFile: {
-      accountName: caVolumeMountSAName
-      shareName: caVolumeMountFileShareName
-      accountKey: caVolumeMountSAKey
+      accountName: caStorageAccountName
+      shareName: caStorageAccountFileShareName
+      accountKey: caStoargeAccountKey
       accessMode: 'ReadWrite'
     }
   }

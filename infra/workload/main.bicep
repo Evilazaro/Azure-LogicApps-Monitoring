@@ -137,9 +137,9 @@ module services 'services/main.bicep' = {
     logsSettings: allLogsSettings
     metricsSettings: allMetricsSettings
     appInsightsConnectionString: appInsightsConnectionString
-    caVolumeMountSAName: data.outputs.ORDERS_STORAGE_ACCOUNT_NAME
-    caVolumeMountSAKey: data.outputs.ORDERS_STORAGE_ACCOUNT_KEY
-    caVolumeMountFileShareName: data.outputs.ORDERS_FILE_SHARE_NAME
+    caStorageAccountName: data.outputs.ORDERS_STORAGE_ACCOUNT_NAME
+    caStoargeAccountKey: data.outputs.ORDERS_STORAGE_ACCOUNT_KEY
+    caStorageAccountFileShareName: data.outputs.ORDERS_FILE_SHARE_NAME
     tags: tags
   }
 }
