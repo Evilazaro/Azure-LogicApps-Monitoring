@@ -77,8 +77,22 @@ param metricsSettings object[]
 @secure()
 param appInsightsConnectionString string
 
+@description('Name of the storage account for Container Apps persistent storage.')
+param caVolumeMountSAName string
+
+@description('Storage account key for Azure Files mount.')
+@secure()
+param caVolumeMountSAKey string
+
+@description('Name of the file share for orders-api persistent data.')
+param caVolumeMountFileShareName string
+
 @description('Resource tags applied to container services.')
 param tags tagsType
+
+// ========== Variables ==========
+
+var storageVolumeName = 'orders-storage'
 
 // ========== Resources ==========
 
@@ -154,8 +168,25 @@ resource dashboard 'Microsoft.App/managedEnvironments/dotNetComponents@2025-10-0
   }
 }
 
+@description('Azure Files storage mount for orders-api persistent data')
+resource ordersStorage 'Microsoft.App/managedEnvironments/storages@2025-02-02-preview' = {
+  parent: appEnv
+  name: storageVolumeName
+  properties: {
+    azureFile: {
+      accountName: caVolumeMountSAName
+      accountKey: caVolumeMountSAKey
+      shareName: caVolumeMountFileShareName
+      accessMode: 'ReadWrite'
+    }
+  }
+}
+
 // ========== Outputs ==========
 
+
+@description('Name of the storage volume mount for orders-api')
+output ORDERS_STORAGE_VOLUME_NAME string = ordersStorage.name
 @description('Login server endpoint for the Azure Container Registry')
 output AZURE_CONTAINER_REGISTRY_ENDPOINT string = registry.properties.loginServer
 

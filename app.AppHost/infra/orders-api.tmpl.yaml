@@ -54,6 +54,13 @@ properties:
             secretRef: connectionstrings--messaging
           - name: ConnectionStrings__orders
             secretRef: connectionstrings--orders
+        volumeMounts:
+          - volumeName: orders-storage
+            mountPath: /data
+    volumes:
+      - name: orders-storage
+        storageType: AzureFile
+        storageName: {{ .Env.ORDERS_STORAGE_VOLUME_NAME }}
     scale:
       minReplicas: 1
 tags:
