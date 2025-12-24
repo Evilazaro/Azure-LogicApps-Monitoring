@@ -47,14 +47,41 @@ static void ConfigureOrdersStoragePath(
     IDistributedApplicationBuilder builder,
     IResourceBuilder<ProjectResource> ordersApi)
 {
-    const string AzureStoragePath = "/data/orders";
     const string LocalStoragePath = "data/orders";
     const string StorageDirectoryKey = "OrderStorage__StorageDirectory";
+    const string LocalStorageIdentifier = "localstorage";
+    const string StorageResourceName = "storage";
+    const string BlobContainerName = "orders";
 
-    var isAzureDeployment = builder.ExecutionContext.IsPublishMode;
-    var storagePath = isAzureDeployment ? AzureStoragePath : LocalStoragePath;
+    var storageAccountName = builder.Configuration["Azure:StorageAccount:Name"];
+    var isLocalMode = string.IsNullOrWhiteSpace(storageAccountName) ||
+                      storageAccountName.Equals(LocalStorageIdentifier, StringComparison.OrdinalIgnoreCase);
 
-    ordersApi.WithEnvironment(StorageDirectoryKey, storagePath);
+    if (isLocalMode)
+    {
+        // Local development mode - use Azure Storage emulator
+        var storageResource = builder.AddAzureStorage(StorageResourceName)
+            .RunAsEmulator();
+
+        var blobContainer = storageResource.AddBlobs(BlobContainerName);
+
+        ordersApi
+            .WithEnvironment(StorageDirectoryKey, LocalStoragePath)
+            .WithReference(blobContainer);
+    }
+    else
+    {
+        // Azure deployment mode - use existing storage account with managed identity
+        var resourceGroupParameter = builder.AddParameterFromConfiguration("resourceGroup", "Azure:ResourceGroup");
+        var storageAccountParameter = builder.AddParameter("storage-account", storageAccountName);
+
+        var storageResource = builder.AddAzureStorage(StorageResourceName)
+            .AsExisting(storageAccountParameter, resourceGroupParameter);
+
+        var blobContainer = storageResource.AddBlobs(BlobContainerName);
+
+        ordersApi.WithReference(blobContainer);
+    }
 }
 
 /// <summary>
@@ -125,22 +152,14 @@ static void ConfigureServiceBus(
     else
     {
         var sbParam = builder.AddParameter("service-bus", resourceName);
-        var storageParam = builder.AddParameter("storage-account", storageResourceName);
+
         var sbResourceGroupParam = builder.AddParameterFromConfiguration("resourceGroup", "Azure:ResourceGroup");
         var serviceBusResource = builder.AddAzureServiceBus(DefaultConnectionStringName).RunAsExisting(sbParam, sbResourceGroupParam);
 
         var serviceBusTopic = serviceBusResource.AddServiceBusTopic(sbTopicName ?? DefaultTopicName);
         var serviceBusSubscription = serviceBusTopic.AddServiceBusSubscription(sbSubscriptionName ?? DefaultSubscriptionName);
 
-        // Add Azure Storage Account
-        var storage = builder.AddAzureStorage("storage").AsExisting(storageParam, sbResourceGroupParam);
 
-        // Add blob container for orders
-        var blobs = storage.AddBlobs("orders");
-
-        // Add Service Bus reference to orders API with configuration
-        ordersApi.WithReference(serviceBusResource);
-        ordersApi.WithReference(blobs);
     }
 
     var azureSubscriptionId = builder.Configuration["Azure:SubscriptionId"];
