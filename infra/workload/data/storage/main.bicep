@@ -157,6 +157,9 @@ resource storageAccountDiag 'Microsoft.Insights/diagnosticSettings@2021-05-01-pr
 @description('Name of the storage account')
 output ORDERS_STORAGE_ACCOUNT_NAME string = caSA.name
 
+@description('Orders Storage Account Blob Endpoint')
+output ORDERS_STORAGE_BLOBENDPOINT string = caSA.properties.primaryEndpoints.blob
+
 @description('Resource ID of the storage account')
 output ORDERS_STORAGE_ACCOUNT_ID string = caSA.id
 

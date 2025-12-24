@@ -201,6 +201,9 @@ output AZURE_CONTAINER_APPS_ENVIRONMENT_DEFAULT_DOMAIN string = services.outputs
 @description('Orders API Storage Account Name')
 output ORDERS_STORAGE_ACCOUNT_NAME string = data.outputs.ORDERS_STORAGE_ACCOUNT_NAME
 
+@description('Orders Storage Account Blob Endpoint')
+output ORDERS_STORAGE_BLOBENDPOINT string = data.outputs.ORDERS_STORAGE_BLOBENDPOINT
+
 @description('Orders API File Share Name')
 output CA_FILE_SHARE_NAME string = data.outputs.CA_FILE_SHARE_NAME
 

@@ -156,6 +156,9 @@ module volumeStorage 'storage/main.bicep' = {
 @description('Name of the storage account')
 output ORDERS_STORAGE_ACCOUNT_NAME string = volumeStorage.outputs.ORDERS_STORAGE_ACCOUNT_NAME
 
+@description('Orders Storage Account Blob Endpoint')
+output ORDERS_STORAGE_BLOBENDPOINT string = volumeStorage.outputs.ORDERS_STORAGE_BLOBENDPOINT
+
 @description('Resource ID of the storage account')
 output ORDERS_STORAGE_ACCOUNT_ID string = volumeStorage.outputs.ORDERS_STORAGE_ACCOUNT_ID
 
