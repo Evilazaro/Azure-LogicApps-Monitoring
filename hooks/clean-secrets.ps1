@@ -1,3 +1,7 @@
-$appHostPath="$(Get-Item -Path $PSScriptRoot\..\app.AppHost\AppHost.cs).FullName"
-dotnet user-secrets clear $appHostPath
-dotnet user-secrets remove $appHostPath
+$appHostProjectPath=".\app.AppHost\"
+$eShopOrdersApiProjectPath=".\src\eShop.Orders.API\"
+$eShopWebAppProjectPath=".\src\eShop.Web.App\"
+
+dotnet user-secrets clear -p $appHostProjectPath
+dotnet user-secrets clear -p $eShopOrdersApiProjectPath
+dotnet user-secrets clear -p $eShopWebAppProjectPath
