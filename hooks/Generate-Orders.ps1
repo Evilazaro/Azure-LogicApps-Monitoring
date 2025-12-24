@@ -411,7 +411,7 @@ function Export-OrdersToJson {
 
 try {
     # Handle -Force parameter to suppress confirmations
-    if ($Force -and -not $Confirm) {
+    if ($Force) {
         $ConfirmPreference = 'None'
     }
     
