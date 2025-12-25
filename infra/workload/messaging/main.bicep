@@ -89,8 +89,8 @@ resource broker 'Microsoft.ServiceBus/namespaces@2025-05-01-preview' = {
   // - VNet integration capability
   // - Larger message size support (1 MB)
   sku: {
-    name: 'Premium'
-    tier: 'Premium'
+    name: 'Standard'
+    tier: 'Standard'
     capacity: 16 // 16 messaging units for production scale
   }
   tags: tags
