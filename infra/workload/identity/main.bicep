@@ -80,6 +80,7 @@ var roles string[] = [
 
 // Assign roles to managed identity for resource access
 // Uses loop to assign all roles at resource group scope
+// Each assignment uses guid() for deterministic, idempotent assignment names
 @description('Role assignments for managed identity to access Azure resources')
 resource miRA 'Microsoft.Authorization/roleAssignments@2022-04-01' = [
   for role in roles: {

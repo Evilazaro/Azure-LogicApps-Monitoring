@@ -84,12 +84,12 @@ resource wfSA 'Microsoft.Storage/storageAccounts@2025-06-01' = {
   kind: 'StorageV2'
   tags: tags
   properties: {
-    accessTier: 'Hot'
-    supportsHttpsTrafficOnly: true
-    minimumTlsVersion: 'TLS1_2'
-    allowBlobPublicAccess: false
-    publicNetworkAccess: 'Enabled'
-    allowSharedKeyAccess: true
+    accessTier: 'Hot' // Hot tier for frequently accessed workflow data
+    supportsHttpsTrafficOnly: true // Require secure connections
+    minimumTlsVersion: 'TLS1_2' // Enforce TLS 1.2 minimum for security compliance
+    allowBlobPublicAccess: false // Disable anonymous public access
+    publicNetworkAccess: 'Enabled' // Allow access from public networks
+    allowSharedKeyAccess: true // Required for Logic Apps Standard storage authentication
     networkAcls: {
       bypass: 'AzureServices'
       defaultAction: 'Allow'
@@ -155,6 +155,9 @@ module volumeStorage 'storage/main.bicep' = {
 
 @description('Name of the storage account')
 output ORDERS_STORAGE_ACCOUNT_NAME string = volumeStorage.outputs.ORDERS_STORAGE_ACCOUNT_NAME
+
+@description('Orders Storage Account Container Endpoint')
+output DATA_CONTAINERENDPOINT string = volumeStorage.outputs.DATA_CONTAINERENDPOINT
 
 @description('Orders Storage Account Blob Endpoint')
 output DATA_BLOBENDPOINT string = volumeStorage.outputs.DATA_BLOBENDPOINT

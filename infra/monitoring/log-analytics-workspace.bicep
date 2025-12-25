@@ -62,12 +62,14 @@ param tags tagsType
 var cleanedName string = toLower(replace(replace(replace(name, '-', ''), '_', ''), ' ', ''))
 
 // Generate unique suffix to ensure globally unique resource names
+// Uses resource group ID and deployment parameters to create deterministic but unique names
 var uniqueSuffix string = uniqueString(resourceGroup().id, name, envName, location)
 
 // Storage account name must be 3-24 characters, lowercase alphanumeric only
 var logsStorageAccountName string = take('${cleanedName}logs${uniqueSuffix}', 24)
 
 // Storage account configuration optimized for log storage
+// Uses LRS for cost optimization, Hot tier for frequent access, and TLS 1.2 for security
 var storageConfig storageAccountConfig = {
   sku: 'Standard_LRS'
   kind: 'StorageV2'
@@ -101,7 +103,7 @@ resource logSA 'Microsoft.Storage/storageAccounts@2025-06-01' = {
   }
 }
 
-@description('Lifecycle management policy for log storage account to delete old logs after 30 days')
+@description('Lifecycle management policy for log storage account to automatically delete append blobs (activity logs) after 30 days')
 resource saPolicy 'Microsoft.Storage/storageAccounts/managementPolicies@2025-06-01' = {
   parent: logSA
   name: 'default'
@@ -144,6 +146,7 @@ resource workspace 'Microsoft.OperationalInsights/workspaces@2025-07-01' = {
   }
   tags: tags
   properties: {
+    // PerGB2018 pricing tier provides pay-as-you-go billing model
     sku: {
       name: 'PerGB2018'
     }

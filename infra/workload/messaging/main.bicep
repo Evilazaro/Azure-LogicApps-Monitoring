@@ -84,10 +84,14 @@ var serviceBusName string = toLower(take('${cleanedName}sb${uniqueSuffix}', 20))
 resource broker 'Microsoft.ServiceBus/namespaces@2025-05-01-preview' = {
   name: serviceBusName
   location: location
+  // Premium SKU provides:
+  // - Enhanced throughput and performance
+  // - VNet integration capability
+  // - Larger message size support (1 MB)
   sku: {
     name: 'Premium'
     tier: 'Premium'
-    capacity: 16
+    capacity: 16 // 16 messaging units for production scale
   }
   tags: tags
   identity: {
@@ -109,10 +113,10 @@ resource ordersSubscription 'Microsoft.ServiceBus/namespaces/topics/subscription
   parent: ordersTopic
   name: 'OrderProcessingSubscription'
   properties: {
-    maxDeliveryCount: 10
-    lockDuration: 'PT5M'
-    defaultMessageTimeToLive: 'P14D'
-    deadLetteringOnMessageExpiration: true
+    maxDeliveryCount: 10 // Retry up to 10 times before dead-lettering
+    lockDuration: 'PT5M' // 5 minute message lock duration for processing
+    defaultMessageTimeToLive: 'P14D' // Messages expire after 14 days
+    deadLetteringOnMessageExpiration: true // Move expired messages to dead-letter queue
   }
 }
 

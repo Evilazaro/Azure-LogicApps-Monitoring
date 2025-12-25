@@ -75,7 +75,7 @@ var uniqueSuffix string = uniqueString(resourceGroup().id, name, envName, locati
 var storageAccountName string = toLower('${cleanedName}fs${uniqueSuffix}')
 
 // File share name for orders-api persistent storage
-var fileShareName string = 'orders-data'
+var fileShareName string = 'data'
 
 // ========== Resources ==========
 
@@ -117,6 +117,17 @@ resource caSA 'Microsoft.Storage/storageAccounts@2023-05-01' = {
   }
 }
 
+resource blobs 'Microsoft.Storage/storageAccounts/blobServices@2025-06-01' = {
+  name: 'default'
+  parent: caSA
+}
+
+@description('Blob container for orders-api data storage')
+resource orders 'Microsoft.Storage/storageAccounts/blobServices/containers@2025-06-01' = {
+  name: fileShareName
+  parent: blobs
+}
+
 @description('File service for the storage account')
 resource fileService 'Microsoft.Storage/storageAccounts/fileServices@2023-05-01' = {
   parent: caSA
@@ -134,9 +145,9 @@ resource fileShare 'Microsoft.Storage/storageAccounts/fileServices/shares@2023-0
   parent: fileService
   name: fileShareName
   properties: {
-    accessTier: 'TransactionOptimized'
-    shareQuota: 5120 // 5 GB
-    enabledProtocols: 'SMB' // SMB protocol for Container Apps
+    accessTier: 'TransactionOptimized' // Optimized for high transaction rates
+    shareQuota: 5120 // 5 GB (5120 MB) quota for persistent data
+    enabledProtocols: 'SMB' // SMB protocol required for Container Apps volume mounts
   }
 }
 
@@ -162,6 +173,9 @@ output DATA_BLOBENDPOINT string = caSA.properties.primaryEndpoints.blob
 
 @description('Name of the file share')
 output ORDERS_FILE_SHARE_NAME string = fileShare.name
+
+@description('Orders Storage Account Container Endpoint')
+output DATA_CONTAINERENDPOINT string = caSA.properties.primaryEndpoints.blob
 
 @description('Primary key of the storage account for Orders API Volume Mount')
 #disable-next-line outputs-should-not-contain-secrets

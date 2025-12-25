@@ -95,9 +95,9 @@ resource wfASP 'Microsoft.Web/serverfarms@2025-03-01' = {
   kind: 'elastic'
   tags: tags
   properties: {
-    perSiteScaling: false
-    elasticScaleEnabled: true
-    maximumElasticWorkerCount: 20
+    perSiteScaling: false // Scale the entire plan, not individual sites
+    elasticScaleEnabled: true // Enable automatic elastic scaling
+    maximumElasticWorkerCount: 20 // Scale up to 20 instances based on demand
     isSpot: false
     reserved: false
     isXenon: false
@@ -135,10 +135,10 @@ resource workflowEngine 'Microsoft.Web/sites@2025-03-01' = {
     publicNetworkAccess: 'Enabled'
     storageAccountRequired: true
     siteConfig: {
-      alwaysOn: true
-      webSocketsEnabled: true
-      minimumElasticInstanceCount: 3
-      elasticWebAppScaleLimit: 20
+      alwaysOn: true // Keep the app always loaded for reliable execution
+      webSocketsEnabled: true // Required for Logic Apps runtime
+      minimumElasticInstanceCount: 3 // Minimum number of always-running instances
+      elasticWebAppScaleLimit: 20 // Maximum scale-out limit
       use32BitWorkerProcess: false
       ftpsState: 'FtpsOnly'
       minTlsVersion: '1.2'
