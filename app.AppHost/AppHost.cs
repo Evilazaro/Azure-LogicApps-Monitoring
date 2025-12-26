@@ -173,7 +173,8 @@ static void ConfigureServiceBus(
     serviceBusTopic.AddServiceBusSubscription(sbSubscriptionName ?? DefaultSubscriptionName);
 
     // Add Service Bus reference to orders API
-    ordersApi.WithReference(serviceBusResource);
+    ordersApi.WithReference(serviceBusResource)
+             .WaitFor(serviceBusResource);
 
     // Configure Azure credentials if available
     var azureSubscriptionId = builder.Configuration["Azure:SubscriptionId"];
@@ -213,12 +214,16 @@ static void ConfigureSQLAzure(
     if (isLocalMode)
     {
         // Local development mode - use SQL Server container with persistent volume
-        var sqlServer = builder.AddSqlServer(DefaultSqlServerName)
-            .WithDataVolume(); // Now this works!
+        var sqlServer = builder.AddAzureSqlServer(DefaultSqlServerName)
+                               .RunAsContainer(configureContainer =>
+                               {
+                                   configureContainer.WithDataVolume();
+                               });
 
         var sqlDatabase = sqlServer.AddDatabase(DefaultDatabaseName);
 
-        ordersApi.WithReference(sqlDatabase);
+        ordersApi.WithReference(sqlDatabase)
+                 .WaitFor(sqlDatabase);
     }
     else
     {
@@ -230,12 +235,13 @@ static void ConfigureSQLAzure(
                 "Please configure 'Azure:ResourceGroup' in your application settings.");
         }
 
-        var sqlServerParam = builder.AddParameter(DefaultSqlServerName, sqlServerName!);
+        var sqlServerParam = builder.AddParameter("sql-db", sqlServerName!);
         var sqlServer = builder.AddAzureSqlServer(DefaultSqlServerName)
             .AsExisting(sqlServerParam, resourceGroupParameter);
 
         var sqlDatabase = sqlServer.AddDatabase(DefaultDatabaseName);
 
-        ordersApi.WithReference(sqlDatabase);
+        ordersApi.WithReference(sqlDatabase)
+                 .WaitFor(sqlDatabase);
     }
 }

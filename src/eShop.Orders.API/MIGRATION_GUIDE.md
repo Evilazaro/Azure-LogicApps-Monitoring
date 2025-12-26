@@ -53,7 +53,7 @@ Server=tcp:{SQL_SERVER_FQDN},1433;Initial Catalog={DATABASE_NAME};Encrypt=True;T
 
 Replace the following placeholders in `appsettings.json` and `appsettings.Development.json`:
 
-- `{SQL_SERVER_FQDN}`: Your SQL Server's fully qualified domain name (from Bicep output: `SQL_DB_SQLSERVERFQDN`)
+- `{SQL_SERVER_FQDN}`: Your SQL Server's fully qualified domain name (from Bicep output: `ORDERSDATABASE_SQLSERVERFQDN`)
 - `{DATABASE_NAME}`: Your database name (e.g., `ordersdb`)
 
 ### Example Configuration

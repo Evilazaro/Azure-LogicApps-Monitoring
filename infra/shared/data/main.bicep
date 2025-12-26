@@ -176,7 +176,7 @@ resource sqlServer 'Microsoft.Sql/servers@2024-11-01-preview' = {
   tags: tags
 }
 
-output SQL_DB_SQLSERVERFQDN string = sqlServer.properties.fullyQualifiedDomainName
+output ORDERSDATABASE_SQLSERVERFQDN string = sqlServer.properties.fullyQualifiedDomainName
 
 // Enforce Entra ID-only authentication for SQL Server
 // Disables SQL authentication to enhance security

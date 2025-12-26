@@ -111,7 +111,7 @@ output AZURE_LOG_ANALYTICS_WORKSPACE_NAME string = shared.outputs.AZURE_LOG_ANAL
 
 // Data Outputs
 @description('Fully qualified domain name of the SQL Server')
-output SQL_DB_SQLSERVERFQDN string = shared.outputs.SQL_DB_SQLSERVERFQDN
+output ORDERSDATABASE_SQLSERVERFQDN string = shared.outputs.ORDERSDATABASE_SQLSERVERFQDN
 
 // Workload Infrastructure Module
 // Deploys managed identity, messaging (Service Bus), container services, and Logic Apps
