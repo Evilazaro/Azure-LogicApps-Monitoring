@@ -1051,7 +1051,7 @@ infra/data/ordersBatch.json
 
 ---
 
-**Last Updated**: December 24, 2025  
+**Last Updated**: December 26, 2025  
 **Script Version**: 1.0.0  
 **Compatibility**: PowerShell 7.0+, Windows/macOS/Linux
 

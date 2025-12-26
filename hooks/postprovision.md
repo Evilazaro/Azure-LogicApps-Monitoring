@@ -239,15 +239,15 @@ What if: Performing operation "Configure User Secrets" with configuration:
     AZURE_LOCATION: eastus
   
   Projects to Configure:
-    • app.AppHost (12 secrets)
-    • eShop.Orders.API (8 secrets)
-    • eShop.Web.App (6 secrets)
+    • app.AppHost (23 secrets)
+    • eShop.Orders.API (3 secrets)
   
   Operations:
     1. Validate environment variables
     2. Authenticate to Azure Container Registry
     3. Clear existing secrets
-    4. Configure 26 new secrets across 3 projects
+    4. Configure SQL Database Managed Identity
+    5. Configure 26 new secrets across 2 projects
 
 No changes were made. This was a simulation.
 ```
@@ -352,46 +352,45 @@ Enables detailed diagnostic output.
 
 ## 📚 Configured User Secrets
 
-### app.AppHost Project
+### app.AppHost Project (23 secrets)
 
 | Secret Key | Source | Purpose |
 |------------|--------|---------|
-| `ConnectionStrings:ServiceBus` | `AZURE_SERVICEBUS_NAMESPACE` | Service Bus connection |
-| `ConnectionStrings:Storage` | `AZURE_STORAGE_ACCOUNT_NAME` | Storage account access |
-| `ConnectionStrings:Redis` | `AZURE_REDIS_CONNECTION_STRING` | Redis cache connection |
-| `ConnectionStrings:CosmosDb` | `AZURE_COSMOSDB_CONNECTION_STRING` | Cosmos DB connection |
-| `ApplicationInsights:ConnectionString` | `AZURE_APP_INSIGHTS_CONNECTION_STRING` | Telemetry |
+| `Azure:TenantId` | `AZURE_TENANT_ID` | Azure AD tenant ID |
 | `Azure:SubscriptionId` | `AZURE_SUBSCRIPTION_ID` | Azure subscription |
-| `Azure:ResourceGroup` | `AZURE_RESOURCE_GROUP` | Resource group name |
 | `Azure:Location` | `AZURE_LOCATION` | Azure region |
-| `Services:OrdersApi:Endpoint` | `ORDERS_API_ENDPOINT` | Orders API URL |
-| `Services:OrdersApi:ApiKey` | `ORDERS_API_KEY` | API authentication |
-| `Azure:TenantId` | `AZURE_TENANT_ID` | Azure AD tenant |
-| `Azure:ClientId` | `AZURE_CLIENT_ID` | Application ID |
+| `Azure:ResourceGroup` | `AZURE_RESOURCE_GROUP` | Resource group name |
+| `ApplicationInsights:Enabled` | Environment | Application Insights feature flag |
+| `Azure:ApplicationInsights:Name` | Bicep output | Application Insights resource name |
+| `ApplicationInsights:ConnectionString` | Bicep output | Telemetry connection string |
+| `Azure:ClientId` | `AZURE_CLIENT_ID` | Managed Identity client ID |
+| `Azure:ManagedIdentity:Name` | Bicep output | Managed Identity display name |
+| `Azure:ServiceBus:HostName` | Bicep output | Service Bus namespace hostname |
+| `Azure:ServiceBus:TopicName` | Bicep output | Service Bus topic name |
+| `Azure:ServiceBus:SubscriptionName` | Bicep output | Service Bus subscription name |
+| `Azure:ServiceBus:Endpoint` | Bicep output | Service Bus endpoint URL |
+| `Azure:SqlServer:Fqdn` | Bicep output | SQL Server FQDN |
+| `Azure:SqlServer:Name` | Bicep output | SQL Server name |
+| `Azure:SqlDatabase:Name` | Bicep output | SQL Database name |
+| `Azure:Storage:AccountName` | Bicep output | Storage account name |
+| `Azure:ContainerRegistry:Endpoint` | Bicep output | ACR login server |
+| `Azure:ContainerRegistry:Name` | Bicep output | ACR name |
+| `Azure:ContainerApps:EnvironmentName` | Bicep output | Container Apps environment name |
+| `Azure:ContainerApps:EnvironmentId` | Bicep output | Container Apps environment resource ID |
+| `Azure:ContainerApps:DefaultDomain` | Bicep output | Container Apps default domain |
+| `Azure:LogAnalytics:WorkspaceName` | Bicep output | Log Analytics workspace name |
 
-### eShop.Orders.API Project
+### eShop.Orders.API Project (3 secrets)
 
 | Secret Key | Source | Purpose |
 |------------|--------|---------|
-| `ConnectionStrings:ServiceBus` | `AZURE_SERVICEBUS_NAMESPACE` | Message queue access |
-| `ConnectionStrings:OrdersDb` | `AZURE_SQL_CONNECTION_STRING` | Orders database |
-| `ConnectionStrings:CosmosDb` | `AZURE_COSMOSDB_CONNECTION_STRING` | Document database |
-| `ApplicationInsights:ConnectionString` | `AZURE_APP_INSIGHTS_CONNECTION_STRING` | Monitoring |
-| `Azure:StorageAccountName` | `AZURE_STORAGE_ACCOUNT_NAME` | File storage |
-| `Azure:KeyVaultEndpoint` | `AZURE_KEYVAULT_ENDPOINT` | Secret storage |
-| `Authentication:ApiKey` | `ORDERS_API_KEY` | API security |
-| `LogicApps:Endpoint` | `AZURE_LOGICAPP_ENDPOINT` | Logic Apps callback |
+| `Azure:TenantId` | `AZURE_TENANT_ID` | Azure AD tenant for authentication |
+| `Azure:ClientId` | `AZURE_CLIENT_ID` | Managed Identity client ID |
+| `ApplicationInsights:ConnectionString` | Bicep output | Monitoring and telemetry |
 
-### eShop.Web.App Project
+### eShop.Web.App Project (0 secrets)
 
-| Secret Key | Source | Purpose |
-|------------|--------|---------|
-| `Services:OrdersApi:Endpoint` | `ORDERS_API_ENDPOINT` | API base URL |
-| `Services:OrdersApi:ApiKey` | `ORDERS_API_KEY` | API authentication |
-| `ApplicationInsights:ConnectionString` | `AZURE_APP_INSIGHTS_CONNECTION_STRING` | Telemetry |
-| `Azure:TenantId` | `AZURE_TENANT_ID` | Authentication |
-| `Azure:ClientId` | `AZURE_CLIENT_ID` | App registration |
-| `Redis:ConnectionString` | `AZURE_REDIS_CONNECTION_STRING` | Session state |
+**Note:** The Web App project does not have user secrets configured by this script. All necessary configuration is retrieved from AppHost or environment variables at runtime.
 
 ## 🛠️ How It Works
 
@@ -406,18 +405,20 @@ flowchart LR
     Execute["2️⃣ Execute postprovision<br/>• Called by azd hook<br/>• Environment ready"]
     Validate["3️⃣ Validate Environment<br/>• Required variables<br/>• Subscription ID<br/>• Resource group"]
     ACRAuth["4️⃣ ACR Authentication<br/>• Check ACR endpoint<br/>• az acr login<br/>• Graceful skip if N/A"]
-    Clear["5️⃣ Clear Old Secrets<br/>• Run clean-secrets.ps1<br/>• Clean slate<br/>• 3 projects"]
-    ConfigLoop["6️⃣ Configure Secrets Loop<br/>For each project"]
-    ConfigProject["Set Project Secrets<br/>• app.AppHost: 12<br/>• Orders.API: 8<br/>• Web.App: 6"]
-    Validate2["7️⃣ Validate Configuration<br/>• Verify secrets set<br/>• Check for errors<br/>• Count totals"]
-    Summary["8️⃣ Display Summary<br/>• Projects: 3<br/>• Secrets: 26<br/>• Time & status"]
+    SQLConfig["5️⃣ SQL Managed Identity<br/>• Configure SQL database user<br/>• Assign db_datareader role<br/>• Assign db_datawriter role"]
+    Clear["6️⃣ Clear Old Secrets<br/>• Run clean-secrets.ps1<br/>• Clean slate<br/>• 2 projects"]
+    ConfigLoop["7️⃣ Configure Secrets Loop<br/>For each project"]
+    ConfigProject["Set Project Secrets<br/>• app.AppHost: 23<br/>• Orders.API: 3"]
+    Validate2["8️⃣ Validate Configuration<br/>• Verify secrets set<br/>• Check for errors<br/>• Count totals"]
+    Summary["9️⃣ Display Summary<br/>• Projects: 2<br/>• Secrets: 26<br/>• Time & status"]
     End(["🏁 Complete"])
     
     Start --> SetEnv
     SetEnv --> Execute
     Execute --> Validate
     Validate --> ACRAuth
-    ACRAuth --> Clear
+    ACRAuth --> SQLConfig
+    SQLConfig --> Clear
     Clear --> ConfigLoop
     ConfigLoop --> ConfigProject
     ConfigProject --> ConfigLoop
@@ -441,9 +442,9 @@ flowchart LR
 | Aspect | Details |
 |--------|---------|  
 | **Called By** | • **Azure Developer CLI (azd)** automatically after `azd provision` or `azd up`<br/>• Developers manually for reconfiguration without reprovisioning<br/>• CI/CD pipelines during automated deployment workflows<br/>• Post-deployment automation scripts for environment setup |
-| **Calls** | • `clean-secrets.ps1` or `clean-secrets.sh` to clear existing secrets<br/>• `dotnet user-secrets set` for each secret configuration<br/>• `az acr login` for Azure Container Registry authentication<br/>• Environment variable reads from azd-set values |
+| **Calls** | • `clean-secrets.ps1` or `clean-secrets.sh` to clear existing secrets<br/>• `sql-managed-identity-config.ps1` for SQL Database managed identity configuration<br/>• `dotnet user-secrets set` for each secret configuration<br/>• `az acr login` for Azure Container Registry authentication<br/>• Environment variable reads from azd-set values |
 | **Dependencies** | • **Runtime:** PowerShell 7.0+ or Bash 4.0+<br/>• **.NET SDK:** Version 10.0+ with user-secrets tool<br/>• **Azure CLI:** Version 2.60.0+ for ACR authentication<br/>• **Azure Developer CLI (azd):** For automatic hook execution and environment variables<br/>• **Azure Resources:** Provisioned infrastructure with Bicep outputs<br/>• **clean-secrets script:** Must exist in same hooks directory |
-| **Outputs** | • **User Secrets:** 26 secrets across 3 projects in local user secrets storage<br/>• **Console Output:** Progress messages, validation results, summary statistics<br/>• **Exit Code:** 0 (success) or 1 (failure with detailed error messages)<br/>• **Verbose Logs:** Detailed diagnostic information for each operation (optional)<br/>• **WhatIf Preview:** Simulated execution plan without making changes (optional) |
+| **Outputs** | • **User Secrets:** 26 secrets across 2 projects (23 AppHost + 3 API) in local user secrets storage<br/>• **SQL Database:** Managed identity user configured with db_datareader and db_datawriter roles<br/>• **Console Output:** Progress messages, validation results, summary statistics<br/>• **Exit Code:** 0 (success) or 1 (failure with detailed error messages)<br/>• **Verbose Logs:** Detailed diagnostic information for each operation (optional)<br/>• **WhatIf Preview:** Simulated execution plan without making changes (optional) |
 | **Integration Role** | Serves as the **critical configuration bridge** between Azure infrastructure provisioning and local application development. Automatically translates Azure resource information into application configuration, enabling immediate local development and testing with real Azure resources. Essential for azd-based development workflows, ensuring seamless transition from deployment to development. |
 
 ## 📚 Examples
@@ -902,17 +903,16 @@ builder.Configuration.AddAzureKeyVault(
 
 **Execution Time:**
 - Environment validation: 1-2s
-- Clean secrets: 2-3s
-- Retrieve Azure resources: 5-10s
-- Set secrets (3 projects): 3-5s
-- **Total typical runtime:** 15-25s
+- SQL Managed Identity configuration: 3-5s (if configured)
+- Clear secrets: 2-3s
+- Retrieve Azure resources: Minimal (environment variables already set by azd)
+- Set secrets (2 projects, 26 total): 3-5s
+- **Total typical runtime:** 11-17s
 
 **Azure CLI Calls:**
-- `azd env get-values`: 1 call
-- `az storage account show-connection-string`: 1 call
-- `az servicebus namespace authorization-rule keys list`: 1 call
-- `az monitor app-insights component show`: 2 calls (connection string + key)
-- **Total Azure API calls:** ~5
+- `az acr login`: 1 call (if ACR configured)
+- SQL database operations: 2-3 calls (if SQL configured)
+- **Total Azure API calls:** ~3-4
 
 ### Troubleshooting
 
@@ -1070,23 +1070,28 @@ jobs:
 
 | Characteristic | Details |
 |----------------|---------||
-| **Execution Time** | • **Environment validation:** 1-2 seconds<br/>• **ACR authentication:** 2-3 seconds (if configured)<br/>• **Clear secrets:** 2-4 seconds (calls clean-secrets.ps1)<br/>• **Configure secrets:** 3-6 seconds (26 secrets across 3 projects)<br/>• **Total standard:** 8-13 seconds<br/>• **With -Verbose:** 10-15 seconds |
+| **Execution Time** | • **Environment validation:** 1-2 seconds<br/>• **ACR authentication:** 2-3 seconds (if configured)<br/>• **SQL Managed Identity config:** 3-5 seconds (if configured)<br/>• **Clear secrets:** 2-4 seconds (calls clean-secrets.ps1)<br/>• **Configure secrets:** 3-6 seconds (26 secrets across 2 projects)<br/>• **Total standard:** 11-20 seconds<br/>• **With -Verbose:** 14-24 seconds |
 | **Resource Usage** | • **Memory:** ~50 MB peak during execution<br/>• **CPU:** Low utilization - dotnet CLI and az CLI operations<br/>• **Disk I/O:** Moderate - writes to secrets.json files<br/>• **Process spawning:** 30+ child processes (dotnet user-secrets commands)<br/>• **Baseline:** Lightweight orchestration script |
-| **Network Impact** | • **ACR authentication:** Single API call to Azure Container Registry<br/>• **Azure CLI:** Minimal network usage for authentication token refresh<br/>• **Environment variables:** Read from local azd context (no network)<br/>• **Secret storage:** Local file system only (no network)<br/>• **Bandwidth:** < 10 KB total (primarily ACR auth) |
-| **Scalability** | • **Linear with projects:** O(n) scaling with number of projects<br/>• **Linear with secrets:** O(m) scaling with secrets per project<br/>• **Sequential processing:** Projects configured one at a time<br/>• **No degradation:** Consistent per-secret configuration time<br/>• **Tested configuration:** 3 projects, 26 secrets completes in <15s |
-| **Optimization** | • **Batch validation:** All environment variables checked upfront<br/>• **Conditional ACR:** Skips authentication if not configured<br/>• **Efficient clearing:** Delegates to optimized clean-secrets script<br/>• **Error handling:** Early exit on critical failures<br/>• **Minimal overhead:** Direct dotnet CLI invocations |
+| **Network Impact** | • **ACR authentication:** Single API call to Azure Container Registry<br/>• **SQL configuration:** 2-3 API calls for managed identity setup<br/>• **Azure CLI:** Minimal network usage for authentication token refresh<br/>• **Environment variables:** Read from local azd context (no network)<br/>• **Secret storage:** Local file system only (no network)<br/>• **Bandwidth:** < 20 KB total (primarily ACR + SQL operations) |
+| **Scalability** | • **Linear with projects:** O(n) scaling with number of projects<br/>• **Linear with secrets:** O(m) scaling with secrets per project<br/>• **Sequential processing:** Projects configured one at a time<br/>• **No degradation:** Consistent per-secret configuration time<br/>• **Tested configuration:** 2 projects, 26 secrets completes in <20s |
+| **Optimization** | • **Batch validation:** All environment variables checked upfront<br/>• **Conditional ACR:** Skips authentication if not configured<br/>• **Conditional SQL:** Skips managed identity setup if not configured<br/>• **Efficient clearing:** Delegates to optimized clean-secrets script<br/>• **Error handling:** Early exit on critical failures<br/>• **Minimal overhead:** Direct dotnet CLI invocations |
 
 ## 🔄 Version History
 
 | Version | Date | Changes |
 |---------|------|---------|
+| **2.0.0** | 2025-12-26 | Updated documentation for actual implementation |
+|           |            | • Corrected secret counts: 23 AppHost + 3 API = 26 total |
+|           |            | • Added SQL Managed Identity configuration documentation |
+|           |            | • Updated secret key tables with actual implementation |
+|           |            | • Web.App project has no secrets configured |
+|           |            | • Documented SQL database roles (db_datareader, db_datawriter) |
 | **2.0.0** | 2025-12-24 | Production release |
 |           |            | • Complete rewrite with best practices |
 |           |            | • Comprehensive validation |
 |           |            | • Error handling and logging |
 |           |            | • WhatIf support |
 |           |            | • 1000+ lines of production code |
-|           |            | • 26 secrets across 3 projects |
 | **1.0.0** | 2025-12-15 | Initial release |
 |           |            | • Basic secret configuration |
 
@@ -1099,7 +1104,7 @@ jobs:
 
 ---
 
-**Last Updated**: December 24, 2025  
+**Last Updated**: December 26, 2025  
 **Script Version**: 2.0.0  
 **Compatibility**: PowerShell 7.0+, .NET 10.0+, Azure CLI 2.60.0+
 ---
