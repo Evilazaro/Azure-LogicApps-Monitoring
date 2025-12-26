@@ -30,6 +30,8 @@ param tags tagsType
 
 // ========== Variables ==========
 
+// Diagnostic settings for comprehensive logging across all resources
+// Captures all log categories for centralized monitoring
 var allLogsSettings object[] = [
   {
     categoryGroup: 'allLogs'
@@ -37,12 +39,16 @@ var allLogsSettings object[] = [
   }
 ]
 
+// Diagnostic settings for comprehensive metrics across all resources
+// Captures all metric categories for performance monitoring
 var allMetricsSettings object[] = [
   {
     categoryGroup: 'allMetrics'
     enabled: true
   }
 ]
+
+// ========== Modules ==========
 
 // Identity Module: Deploys user-assigned managed identity
 // Must be deployed first as other modules depend on its output
@@ -54,14 +60,21 @@ module identity 'identity/main.bicep' = {
     envName: envName
   }
 }
+
+// ========== Outputs ==========
+
+// Identity Outputs
 @description('Resource ID of the deployed managed identity (internal use only)')
 output AZURE_MANAGED_IDENTITY_ID string = identity.outputs.AZURE_MANAGED_IDENTITY_ID
 
 @description('Managed Identity ClientId (internal use only)')
 output MANAGED_IDENTITY_CLIENT_ID string = identity.outputs.MANAGED_IDENTITY_CLIENT_ID
 
+@description('Name of the managed identity resource')
 output MANAGED_IDENTITY_NAME string = identity.outputs.MANAGED_IDENTITY_NAME
 
+// Monitoring Module: Deploys Log Analytics workspace and Application Insights
+// Provides centralized logging and telemetry infrastructure
 module monitoring 'monitoring/main.bicep' = {
   params: {
     name: name
@@ -99,6 +112,8 @@ output APPLICATION_INSIGHTS_INSTRUMENTATION_KEY string = monitoring.outputs.APPL
 @description('Resource ID of the storage account for diagnostic logs and metrics')
 output AZURE_STOARGE_ACCOUNT_ID_LOGS string = monitoring.outputs.AZURE_STOARGE_ACCOUNT_ID_LOGS
 
+// Data Module: Deploys storage accounts and SQL Server
+// Provides storage for workflows and persistent data
 module data 'data/main.bicep' = {
   params: {
     name: name
@@ -107,7 +122,7 @@ module data 'data/main.bicep' = {
     userAssignedIdentityId: identity.outputs.AZURE_MANAGED_IDENTITY_ID
     workspaceId: monitoring.outputs.AZURE_LOG_ANALYTICS_WORKSPACE_ID
     storageAccountId: monitoring.outputs.AZURE_STOARGE_ACCOUNT_ID_LOGS
-    entraAdminLoginName: identity.name
+    entraAdminLoginName: identity.outputs.MANAGED_IDENTITY_NAME
     entraAdminPrincipalId: identity.outputs.AZURE_MANAGED_IDENTITY_PRINCIPAL_ID
     tenantId: subscription().tenantId
     logsSettings: allLogsSettings
@@ -119,4 +134,5 @@ module data 'data/main.bicep' = {
 @description('Storage account name for Logic Apps workflows and data')
 output AZURE_STORAGE_ACCOUNT_NAME_WORKFLOW string = data.outputs.AZURE_STORAGE_ACCOUNT_NAME_WORKFLOW
 
+@description('Fully qualified domain name of the SQL Server for database connections')
 output SQL_DB_SQLSERVERFQDN string = data.outputs.SQL_DB_SQLSERVERFQDN

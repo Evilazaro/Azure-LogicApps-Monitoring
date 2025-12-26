@@ -83,6 +83,9 @@ resource rg 'Microsoft.Resources/resourceGroups@2025-04-01' = {
 
 // ========== Modules ==========
 
+// Shared Infrastructure Module
+// Deploys identity, monitoring, and data infrastructure
+// Must be deployed first as workload module depends on its outputs
 module shared 'shared/main.bicep' = {
   scope: rg
   params: {
@@ -93,11 +96,21 @@ module shared 'shared/main.bicep' = {
   }
 }
 
+// ========== Outputs ==========
+
+// Identity Outputs
+@description('Client ID of the managed identity for application authentication')
 output MANAGED_IDENTITY_CLIENT_ID string = shared.outputs.MANAGED_IDENTITY_CLIENT_ID
+
+@description('Name of the managed identity resource')
 output MANAGED_IDENTITY_NAME string = shared.outputs.MANAGED_IDENTITY_NAME
 
+// Monitoring Outputs
+@description('Name of the Log Analytics workspace for centralized logging')
 output AZURE_LOG_ANALYTICS_WORKSPACE_NAME string = shared.outputs.AZURE_LOG_ANALYTICS_WORKSPACE_NAME
 
+// Data Outputs
+@description('Fully qualified domain name of the SQL Server')
 output SQL_DB_SQLSERVERFQDN string = shared.outputs.SQL_DB_SQLSERVERFQDN
 
 // Workload Infrastructure Module
@@ -120,13 +133,29 @@ module workload './workload/main.bicep' = {
   }
 }
 
+// Messaging Outputs
+@description('Service Bus endpoint URL for message brokering')
 output MESSAGING_SERVICEBUSENDPOINT string = workload.outputs.MESSAGING_SERVICEBUSENDPOINT
+
+@description('Service Bus hostname for connection configuration')
 output MESSAGING_SERVICEBUSHOSTNAME string = workload.outputs.MESSAGING_SERVICEBUSHOSTNAME
 
+// Container Registry Outputs
+@description('Container Registry login server endpoint')
 output AZURE_CONTAINER_REGISTRY_ENDPOINT string = workload.outputs.AZURE_CONTAINER_REGISTRY_ENDPOINT
+
+@description('Managed identity resource ID for Container Registry')
 output AZURE_CONTAINER_REGISTRY_MANAGED_IDENTITY_ID string = workload.outputs.AZURE_CONTAINER_REGISTRY_MANAGED_IDENTITY_ID
+
+@description('Name of the Azure Container Registry')
 output AZURE_CONTAINER_REGISTRY_NAME string = workload.outputs.AZURE_CONTAINER_REGISTRY_NAME
 
+// Container Apps Outputs
+@description('Name of the Container Apps Environment')
 output AZURE_CONTAINER_APPS_ENVIRONMENT_NAME string = workload.outputs.AZURE_CONTAINER_APPS_ENVIRONMENT_NAME
+
+@description('Resource ID of the Container Apps Environment')
 output AZURE_CONTAINER_APPS_ENVIRONMENT_ID string = workload.outputs.AZURE_CONTAINER_APPS_ENVIRONMENT_ID
+
+@description('Default domain for the Container Apps Environment')
 output AZURE_CONTAINER_APPS_ENVIRONMENT_DEFAULT_DOMAIN string = workload.outputs.AZURE_CONTAINER_APPS_ENVIRONMENT_DEFAULT_DOMAIN

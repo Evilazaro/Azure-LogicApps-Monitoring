@@ -90,8 +90,8 @@ var allMetricsSettings object[] = [
 
 // ========== Modules ==========
 
-// Messaging Module: Deploys Service Bus and workflow storage
-// Provides message queue infrastructure and Logic Apps storage backend
+// Messaging Module: Deploys Service Bus namespace and topics
+// Provides message queue infrastructure for order processing
 module messaging 'messaging/main.bicep' = {
   params: {
     name: name
@@ -105,7 +105,13 @@ module messaging 'messaging/main.bicep' = {
   }
 }
 
+// ========== Outputs ==========
+
+// Messaging Outputs
+@description('Service Bus endpoint URL for message brokering')
 output MESSAGING_SERVICEBUSENDPOINT string = messaging.outputs.MESSAGING_SERVICEBUSENDPOINT
+
+@description('Service Bus hostname for connection configuration')
 output MESSAGING_SERVICEBUSHOSTNAME string = messaging.outputs.MESSAGING_SERVICEBUSHOSTNAME
 
 // Container Services Module: Deploys ACR, Container Apps Environment, and Aspire Dashboard
@@ -127,11 +133,24 @@ module services 'services/main.bicep' = {
   }
 }
 
+// Container Registry Outputs
+@description('Container Registry login server endpoint')
 output AZURE_CONTAINER_REGISTRY_ENDPOINT string = services.outputs.AZURE_CONTAINER_REGISTRY_ENDPOINT
+
+@description('Managed identity resource ID for Container Registry')
 output AZURE_CONTAINER_REGISTRY_MANAGED_IDENTITY_ID string = services.outputs.AZURE_CONTAINER_REGISTRY_MANAGED_IDENTITY_ID
+
+@description('Name of the Azure Container Registry')
 output AZURE_CONTAINER_REGISTRY_NAME string = services.outputs.AZURE_CONTAINER_REGISTRY_NAME
+
+// Container Apps Outputs
+@description('Name of the Container Apps Environment')
 output AZURE_CONTAINER_APPS_ENVIRONMENT_NAME string = services.outputs.AZURE_CONTAINER_APPS_ENVIRONMENT_NAME
+
+@description('Resource ID of the Container Apps Environment')
 output AZURE_CONTAINER_APPS_ENVIRONMENT_ID string = services.outputs.AZURE_CONTAINER_APPS_ENVIRONMENT_ID
+
+@description('Default domain for the Container Apps Environment')
 output AZURE_CONTAINER_APPS_ENVIRONMENT_DEFAULT_DOMAIN string = services.outputs.AZURE_CONTAINER_APPS_ENVIRONMENT_DEFAULT_DOMAIN
 
 // Logic Apps Module: Deploys Logic Apps Standard workflow engine

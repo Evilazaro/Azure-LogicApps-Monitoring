@@ -98,15 +98,17 @@ resource wfASP 'Microsoft.Web/serverfarms@2025-03-01' = {
     perSiteScaling: false // Scale the entire plan, not individual sites
     elasticScaleEnabled: true // Enable automatic elastic scaling
     maximumElasticWorkerCount: 20 // Scale up to 20 instances based on demand
-    isSpot: false
-    reserved: false
-    isXenon: false
-    hyperV: false
-    targetWorkerCount: 0
-    targetWorkerSizeId: 0
-    zoneRedundant: false
+    isSpot: false // Not using spot instances
+    reserved: false // Windows-based hosting
+    isXenon: false // Not using Xenon container
+    hyperV: false // Not using Hyper-V container
+    targetWorkerCount: 0 // Auto-scaling manages worker count
+    targetWorkerSizeId: 0 // Auto-scaling manages worker size
+    zoneRedundant: false // Zone redundancy disabled
   }
 }
+
+// ========== Variables ==========
 
 // Azure Functions runtime configuration for Logic Apps Standard
 // Logic Apps Standard is built on Azure Functions v4 runtime
