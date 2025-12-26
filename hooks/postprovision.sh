@@ -39,7 +39,7 @@
 #   Prerequisite   : .NET SDK, Azure Developer CLI, Azure CLI
 #   Required Env   : AZURE_SUBSCRIPTION_ID, AZURE_RESOURCE_GROUP, AZURE_LOCATION
 #   Author         : Azure DevOps Team
-#   Last Modified  : 2025-12-24
+#   Last Modified  : 2025-12-26
 #   Version        : 2.0.0
 #
 #============================================================================
@@ -196,15 +196,22 @@ ${COLOR_BOLD}REQUIRED ENVIRONMENT VARIABLES:${COLOR_RESET}
 
 ${COLOR_BOLD}OPTIONAL ENVIRONMENT VARIABLES:${COLOR_RESET}
     AZURE_TENANT_ID                          - Azure tenant ID
-    APPLICATION_INSIGHTS_NAME          - Application Insights name
+    APPLICATION_INSIGHTS_NAME                - Application Insights name
     APPLICATIONINSIGHTS_CONNECTION_STRING    - Application Insights connection string
     MANAGED_IDENTITY_CLIENT_ID               - Managed identity client ID
+    MANAGED_IDENTITY_NAME                    - Managed identity name
     MESSAGING_SERVICEBUSHOSTNAME             - Service Bus hostname
     AZURE_SERVICE_BUS_TOPIC_NAME             - Service Bus topic name
     AZURE_SERVICE_BUS_SUBSCRIPTION_NAME      - Service Bus subscription name
+    MESSAGING_SERVICEBUSENDPOINT             - Service Bus endpoint
+    ORDERSDATABASE_SQLSERVERFQDN             - SQL Server fully qualified domain name
+    AZURE_SQL_SERVER_NAME                    - SQL Server name
+    AZURE_SQL_DATABASE_NAME                  - SQL Database name
     AZURE_CONTAINER_REGISTRY_ENDPOINT        - Container registry endpoint
-    ORDERS_STORAGE_VOLUME_NAME               - Orders storage volume name
-    ORDERS_STORAGE_ACCOUNT_NAME              - Orders storage account name
+    AZURE_CONTAINER_REGISTRY_NAME            - Container registry name
+    AZURE_CONTAINER_APPS_ENVIRONMENT_NAME    - Container Apps environment name
+    AZURE_LOG_ANALYTICS_WORKSPACE_NAME       - Log Analytics workspace name
+    AZURE_STORAGE_ACCOUNT_NAME_WORKFLOW      - Workflow storage account name
 
 ${COLOR_BOLD}EXIT CODES:${COLOR_RESET}
     0    Success
@@ -602,7 +609,11 @@ main() {
     
     # SQL Database configuration (new in current infrastructure)
     local azure_sql_server_fqdn
+    local azure_sql_server_name
+    local azure_sql_database_name
     azure_sql_server_fqdn=$(get_env_var_safe "ORDERSDATABASE_SQLSERVERFQDN")
+    azure_sql_server_name=$(get_env_var_safe "AZURE_SQL_SERVER_NAME")
+    azure_sql_database_name=$(get_env_var_safe "AZURE_SQL_DATABASE_NAME")
     
     # Container Services configuration
     local azure_acr_endpoint
@@ -645,6 +656,8 @@ main() {
     info "  Service Bus Subscription: ${azure_servicebus_subscription:-$not_set}"
     info "  Service Bus Endpoint   : ${azure_servicebus_endpoint:-$not_set}"
     info "  SQL Server FQDN        : ${azure_sql_server_fqdn:-$not_set}"
+    info "  SQL Server Name        : ${azure_sql_server_name:-$not_set}"
+    info "  SQL Database Name      : ${azure_sql_database_name:-$not_set}"
     info "  ACR Endpoint           : ${azure_acr_endpoint:-$not_set}"
     info "  ACR Name               : ${azure_acr_name:-$not_set}"
     info "  Container Apps Env     : ${azure_container_apps_env_name:-$not_set}"
@@ -701,7 +714,7 @@ main() {
     # Configure user secrets
     write_section_header "Configuring User Secrets" "sub"
     
-    # Define AppHost secrets
+    # Define AppHost secrets (matches PowerShell configuration)
     local apphost_secrets=(
         "Azure:TenantId=$azure_tenant_id"
         "Azure:SubscriptionId=$azure_subscription_id"
@@ -717,6 +730,8 @@ main() {
         "Azure:ServiceBus:SubscriptionName=$azure_servicebus_subscription"
         "Azure:ServiceBus:Endpoint=$azure_servicebus_endpoint"
         "Azure:SqlServer:Fqdn=$azure_sql_server_fqdn"
+        "Azure:SqlServer:Name=$azure_sql_server_name"
+        "Azure:SqlServer:DatabaseName=$azure_sql_database_name"
         "Azure:Storage:AccountName=$azure_storage_account"
         "Azure:ContainerRegistry:Endpoint=$azure_acr_endpoint"
         "Azure:ContainerRegistry:Name=$azure_acr_name"
@@ -726,13 +741,15 @@ main() {
         "Azure:LogAnalytics:WorkspaceName=$azure_log_analytics_workspace"
     )
     
-    # Define API secrets
+    # Define API secrets (matches PowerShell configuration)
     local api_secrets=(
         "Azure:ServiceBus:HostName=$azure_servicebus_hostname"
         "Azure:ServiceBus:TopicName=$azure_servicebus_topic"
         "Azure:ServiceBus:SubscriptionName=$azure_servicebus_subscription"
         "Azure:ServiceBus:Endpoint=$azure_servicebus_endpoint"
         "Azure:SqlServer:Fqdn=$azure_sql_server_fqdn"
+        "Azure:SqlServer:Name=$azure_sql_server_name"
+        "Azure:SqlServer:DatabaseName=$azure_sql_database_name"
         "Azure:ManagedIdentity:ClientId=$azure_client_id"
         "ApplicationInsights:ConnectionString=$app_insights_conn_str"
     )

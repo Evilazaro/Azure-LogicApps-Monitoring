@@ -203,10 +203,10 @@ static void ConfigureSQLAzure(
     const string DefaultSqlServerName = "OrdersDatabase";
     const string DefaultDatabaseName = "OrderDb";
 
-    var sqlServerName = string.IsNullOrEmpty(builder.Configuration["Azure:SQL:ServerName"])
+    var sqlServerName = string.IsNullOrEmpty(builder.Configuration["Azure:SqlServer:Name"])
         ? DefaultSqlServerName
         : builder.Configuration["Azure:SQL:ServerName"];
-    var sqlDatabaseName = string.IsNullOrEmpty(builder.Configuration["Azure:SQL:DatabaseName"])
+    var sqlDatabaseName = string.IsNullOrEmpty(builder.Configuration["Azure:SqlDatabase:Name"])
         ? DefaultDatabaseName
         : builder.Configuration["Azure:SQL:DatabaseName"];
     var isLocalMode = (sqlServerName ?? string.Empty).Equals(DefaultSqlServerName, StringComparison.OrdinalIgnoreCase);

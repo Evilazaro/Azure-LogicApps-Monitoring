@@ -20,7 +20,7 @@ public static class Extensions
 {
     private const string HealthEndpointPath = "/health";
     private const string AlivenessEndpointPath = "/alive";
-    private const string MessagingHostConfigKey = "MESSAGING_HOST";
+    private const string MessagingHostConfigKey = "messaging:host";
     private const string MessagingConnectionStringKey = "ConnectionStrings:messaging";
     private const string LocalhostValue = "localhost";
 

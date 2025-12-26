@@ -684,6 +684,8 @@ try {
     
     # SQL Database configuration (new in current infrastructure)
     $azureSqlServerFqdn = Get-EnvironmentVariableSafe -Name 'ORDERSDATABASE_SQLSERVERFQDN'
+    $azureSqlServerName = Get-EnvironmentVariableSafe -Name 'AZURE_SQL_SERVER_NAME'
+    $azureSqlDatabaseName = Get-EnvironmentVariableSafe -Name 'AZURE_SQL_DATABASE_NAME'
     
     # Container Services configuration
     $azureContainerRegistryEndpoint = Get-EnvironmentVariableSafe -Name 'AZURE_CONTAINER_REGISTRY_ENDPOINT'
@@ -719,6 +721,8 @@ try {
     Write-Information "  Service Bus Subscription: $($azureServiceBusSubscriptionName ?? $notSet)"
     Write-Information "  Service Bus Endpoint   : $($azureMessagingServiceBusEndpoint ?? $notSet)"
     Write-Information "  SQL Server FQDN        : $($azureSqlServerFqdn ?? $notSet)"
+    Write-Information "  SQL Server Name        : $($azureSqlServerName ?? $notSet)"
+    Write-Information "  SQL Database Name      : $($azureSqlDatabaseName ?? $notSet)"
     Write-Information "  ACR Endpoint           : $($azureContainerRegistryEndpoint ?? $notSet)"
     Write-Information "  ACR Name               : $($azureContainerRegistryName ?? $notSet)"
     Write-Information "  Container Apps Env     : $($azureContainerAppsEnvironmentName ?? $notSet)"
@@ -847,6 +851,8 @@ try {
         'Azure:ServiceBus:SubscriptionName' = $azureServiceBusSubscriptionName
         'Azure:ServiceBus:Endpoint'        = $azureMessagingServiceBusEndpoint
         'Azure:SqlServer:Fqdn'             = $azureSqlServerFqdn
+        'Azure:SqlServer:Name'             = $azureSqlServerName
+        'Azure:SqlDatabase:Name'           = $azureSqlDatabaseName
         'Azure:Storage:AccountName'        = $azureStorageAccountName
         'Azure:ContainerRegistry:Endpoint' = $azureContainerRegistryEndpoint
         'Azure:ContainerRegistry:Name'     = $azureContainerRegistryName
@@ -858,11 +864,7 @@ try {
     
     # Define secrets for API project (Service Bus and Database configuration)
     $apiSecrets = [ordered]@{
-        'Azure:ServiceBus:HostName'        = $azureServiceBusHostName
-        'Azure:ServiceBus:TopicName'       = $azureServiceBusTopicName
-        'Azure:ServiceBus:SubscriptionName' = $azureServiceBusSubscriptionName
-        'Azure:ServiceBus:Endpoint'        = $azureMessagingServiceBusEndpoint
-        'Azure:SqlServer:Fqdn'             = $azureSqlServerFqdn
+        'Azure:TenantId'                   = $azureTenantId
         'Azure:ManagedIdentity:ClientId'   = $azureClientId
         'ApplicationInsights:ConnectionString' = $applicationInsightsConnectionString
     }
