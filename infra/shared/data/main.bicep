@@ -109,7 +109,6 @@ resource wfSA 'Microsoft.Storage/storageAccounts@2025-06-01' = {
   }
 }
 
-
 @description('Blob service for workflow storage account')
 resource blobSvc 'Microsoft.Storage/storageAccounts/blobServices@2025-06-01' = {
   parent: wfSA
@@ -177,8 +176,6 @@ resource sqlServer 'Microsoft.Sql/servers@2024-11-01-preview' = {
   tags: tags
 }
 
-output SQL_DB_SQLSERVERFQDN string = sqlServer.properties.fullyQualifiedDomainName
-
 resource entraOnlyAuth 'Microsoft.Sql/servers/azureADOnlyAuthentications@2024-11-01-preview' = {
   parent: sqlServer
   name: 'Default' // The name for this resource is typically 'Default'
@@ -220,6 +217,9 @@ resource sqlDiag 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
     storageAccountId: storageAccountId
     logAnalyticsDestinationType: 'Dedicated'
     logs: logsSettings
+    metrics: metricsSettings
+  }
+}
     metrics: metricsSettings
   }
 }

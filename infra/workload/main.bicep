@@ -150,5 +150,3 @@ module workflows 'logic-app.bicep' = {
     tags: tags
   }
 }
-
-
