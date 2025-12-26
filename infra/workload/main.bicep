@@ -49,11 +49,6 @@ param location string = resourceGroup().location
 @minLength(50)
 param userAssignedIdentityId string
 
-@description('User Assigned Identity name to be used by Container Services.')
-@minLength(3)
-@maxLength(50)
-param userAssignedIdentityClientId string
-
 @description('Resource ID of the Log Analytics workspace for diagnostic logs and metrics.')
 @minLength(50)
 param workspaceId string
@@ -128,7 +123,6 @@ module services 'services/main.bicep' = {
     name: name
     location: location
     userAssignedIdentityId: userAssignedIdentityId
-    userAssignedIdentityClientId: userAssignedIdentityClientId
     envName: envName
     workspaceId: workspaceId
     workspaceCustomerId: workspaceCustomerId

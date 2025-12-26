@@ -41,11 +41,6 @@ param location string
 @minLength(50)
 param userAssignedIdentityId string
 
-@description('User Assigned Identity name to be used by Container Services.')
-@minLength(3)
-@maxLength(50)
-param userAssignedIdentityClientId string
-
 @description('Environment name suffix to ensure uniqueness.')
 @minLength(2)
 @maxLength(10)
@@ -119,7 +114,7 @@ resource registry 'Microsoft.ContainerRegistry/registries@2025-11-01' = {
 output AZURE_CONTAINER_REGISTRY_ENDPOINT string = registry.properties.loginServer
 
 @description('Managed identity resource ID for Container Registry')
-output AZURE_CONTAINER_REGISTRY_MANAGED_IDENTITY_ID string = registry.identity.userAssignedIdentities[userAssignedIdentityClientId].id
+output AZURE_CONTAINER_REGISTRY_MANAGED_IDENTITY_ID string = userAssignedIdentityId
 
 @description('Name of the Azure Container Registry')
 output AZURE_CONTAINER_REGISTRY_NAME string = registry.name
