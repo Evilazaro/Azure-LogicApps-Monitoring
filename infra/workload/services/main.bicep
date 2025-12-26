@@ -97,6 +97,11 @@ resource registry 'Microsoft.ContainerRegistry/registries@2025-11-01' = {
     }
   }
   tags: tags
+  // Premium SKU provides:
+  // - Geo-replication for high availability
+  // - Enhanced throughput and storage capacity
+  // - Advanced security features including content trust
+  // - Private link support for network isolation
   sku: {
     name: 'Premium'
   }
@@ -109,7 +114,7 @@ resource registry 'Microsoft.ContainerRegistry/registries@2025-11-01' = {
 output AZURE_CONTAINER_REGISTRY_ENDPOINT string = registry.properties.loginServer
 
 @description('Managed identity resource ID for Container Registry')
-output AZURE_CONTAINER_REGISTRY_MANAGED_IDENTITY_ID string = registry.identity.userAssignedIdentities[userAssignedIdentityId].id
+output AZURE_CONTAINER_REGISTRY_MANAGED_IDENTITY_ID string = userAssignedIdentityId
 
 @description('Name of the Azure Container Registry')
 output AZURE_CONTAINER_REGISTRY_NAME string = registry.name
@@ -139,8 +144,11 @@ resource appEnv 'Microsoft.App/managedEnvironments@2025-02-02-preview' = {
     }
   }
   properties: {
-    // Consumption workload profile provides serverless, pay-per-use pricing
-    // Automatically scales from 0 to meet demand
+    // Consumption workload profile provides:
+    // - Serverless, pay-per-use pricing model (only pay for actual resource usage)
+    // - Automatic scaling from 0 to meet demand
+    // - No minimum instance charges when scaled to zero
+    // - Suitable for event-driven and variable workloads
     workloadProfiles: [
       {
         workloadProfileType: 'Consumption'

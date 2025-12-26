@@ -149,6 +149,7 @@ resource saDiag 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
   }
 }
 
+@description('Name of the deployed storage account for Logic Apps workflows')
 output AZURE_STORAGE_ACCOUNT_NAME_WORKFLOW string = wfSA.name
 
 resource sqlServer 'Microsoft.Sql/servers@2024-11-01-preview' = {
@@ -165,7 +166,9 @@ resource sqlServer 'Microsoft.Sql/servers@2024-11-01-preview' = {
     administrators: {
       administratorType: 'ActiveDirectory'
       azureADOnlyAuthentication: true
-      principalType: 'Application' // 'Application' is used for Managed Identities and Service Principals
+      // 'Application' principal type is used for both Managed Identities and Service Principals
+      // This allows the managed identity to administer the SQL Server using Entra ID authentication
+      principalType: 'Application'
       login: entraAdminLoginName
       sid: entraAdminPrincipalId
       tenantId: tenantId
@@ -176,7 +179,11 @@ resource sqlServer 'Microsoft.Sql/servers@2024-11-01-preview' = {
   tags: tags
 }
 
-output SQL_DB_SQLSERVERFQDN string = sqlServer.properties.fullyQualifiedDomainName
+@description('Fully qualified domain name of the deployed SQL Server')
+output ORDERSDATABASE_SQLSERVERFQDN string = sqlServer.properties.fullyQualifiedDomainName
+
+@description('Name of the deployed SQL Server instance')
+output AZURE_SQL_SERVER_NAME string = sqlServer.name
 
 // Enforce Entra ID-only authentication for SQL Server
 // Disables SQL authentication to enhance security
@@ -214,6 +221,71 @@ resource sqlDb 'Microsoft.Sql/servers/databases@2024-11-01-preview' = {
     zoneRedundant: false
   }
   tags: tags
+}
+
+@description('Name of the deployed SQL Database')
+output AZURE_SQL_DATABASE_NAME string = sqlDb.name
+
+resource postDeployScript 'Microsoft.Resources/deploymentScripts@2023-08-01' = {
+  name: 'sql-postdeploy-provisioning'
+  location: location
+  kind: 'AzurePowerShell'
+  properties: {
+    azPowerShellVersion: '11.0'
+    timeout: 'PT30M'
+    cleanupPreference: 'OnSuccess'
+    retentionInterval: 'P1D'
+
+    // IMPORTANT: Run as a user-assigned MI if you want deterministic identity
+    // If you omit identity, it uses a system-assigned identity (still must be AAD admin / in AAD admin group).
+    // identity: { type: 'UserAssigned', userAssignedIdentities: { '<resourceId>': {} } }
+
+    scriptContent: '''
+      $ErrorActionPreference = "Stop"
+
+      $sqlSuffix = "${environment().suffixes.sqlServerHostname}"
+      $serverFqdn = "${sqlServerName}.$sqlSuffix"
+      $database   = "${databaseName}"
+      $principal  = "${appPrincipalDisplayName}"
+
+      # Get Entra token for Azure SQL
+      $resourceUrl = "https://${environment().suffixes.sqlServerHostname}/"
+      $token = (Get-AzAccessToken -ResourceUrl $resourceUrl).Token
+
+      $connString = "Server=tcp:$serverFqdn,1433;Initial Catalog=$database;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;"
+
+      $sql = @"
+      IF NOT EXISTS (SELECT 1 FROM sys.database_principals WHERE name = N'$principal')
+      BEGIN
+        CREATE USER [$principal] FROM EXTERNAL PROVIDER;
+      END
+      "@
+
+      # Add roles
+      $roles = @(${join(dbRoles, ',')})
+      foreach ($r in $roles) {
+        $sql += " IF IS_ROLEMEMBER(N'$r', N'$principal') = 0 BEGIN ALTER ROLE [$r] ADD MEMBER [$principal]; END;"
+      }
+
+      # Execute
+      $cn = New-Object System.Data.SqlClient.SqlConnection
+      $cn.ConnectionString = $connString
+      $cn.AccessToken = $token
+      $cn.Open()
+
+      $cmd = $cn.CreateCommand()
+      $cmd.CommandText = $sql
+      $cmd.CommandTimeout = 120
+      [void]$cmd.ExecuteNonQuery()
+
+      $cn.Close()
+      Write-Output "Provisioning done for principal: $principal"
+    '''
+    dependsOn: [
+      sqlDb
+      entraOnlyAuth
+    ]
+  }
 }
 
 // Enable diagnostic settings for SQL Database

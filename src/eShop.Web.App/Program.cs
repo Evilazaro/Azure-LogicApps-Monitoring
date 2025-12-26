@@ -45,14 +45,22 @@ builder.Services.Configure<Microsoft.AspNetCore.Components.Server.CircuitOptions
 builder.Services.AddHttpClient<OrdersAPIService>((serviceProvider, client) =>
 {
     var configuration = serviceProvider.GetRequiredService<IConfiguration>();
-    var baseAddress = configuration["services:orders-api:https:0"]
-        ?? throw new InvalidOperationException("Orders API base address not configured. Ensure 'services:orders-api' is set in configuration.");
+    var baseAddress = configuration["services:orders-api:https:0"];
+
+    if (string.IsNullOrWhiteSpace(baseAddress))
+    {
+        throw new InvalidOperationException(
+            "Orders API base address not configured. " +
+            "Ensure 'services:orders-api:https:0' is properly set in configuration or service discovery is enabled.");
+    }
 
     client.BaseAddress = new Uri(baseAddress);
     client.DefaultRequestHeaders.Add("Accept", "application/json");
+    client.DefaultRequestHeaders.Add("User-Agent", "eShop.Web.App");
     client.Timeout = TimeSpan.FromMinutes(5);
 })
-.AddServiceDiscovery(); // Enables service discovery
+.AddServiceDiscovery() // Enables service discovery - must be called before AddStandardResilienceHandler
+.AddStandardResilienceHandler(); // Add retry, timeout, and circuit breaker policies
 
 builder.Services.AddFluentUIComponents();
 

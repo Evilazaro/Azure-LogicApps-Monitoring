@@ -47,21 +47,21 @@ public sealed class OrderService : IOrderService
 
         // Initialize metrics with semantic naming conventions
         _ordersPlacedCounter = _meter.CreateCounter<long>(
-            "orders.placed",
-            "orders",
-            "Number of orders successfully placed");
+            "eShop.orders.placed",
+            "order",
+            "Total number of orders successfully placed in the system");
         _orderProcessingDuration = _meter.CreateHistogram<double>(
-            "orders.processing.duration",
+            "eShop.orders.processing.duration",
             "ms",
-            "Duration of order processing operations");
+            "Time taken to process order operations in milliseconds");
         _orderProcessingErrors = _meter.CreateCounter<long>(
-            "orders.processing.errors",
-            "errors",
-            "Number of order processing errors by error type");
+            "eShop.orders.processing.errors",
+            "error",
+            "Total number of order processing errors categorized by error type");
         _ordersDeletedCounter = _meter.CreateCounter<long>(
-            "orders.deleted",
-            "orders",
-            "Number of orders successfully deleted");
+            "eShop.orders.deleted",
+            "order",
+            "Total number of orders successfully deleted from the system");
     }
 
     /// <summary>
@@ -161,9 +161,10 @@ public sealed class OrderService : IOrderService
         var placedOrders = new List<Order>();
         var failedOrders = new List<(string OrderId, string ErrorMessage)>();
 
+        // Use more conservative parallelism for resource-intensive operations
         var options = new ParallelOptions
         {
-            MaxDegreeOfParallelism = Math.Min(Environment.ProcessorCount * 2, 20),
+            MaxDegreeOfParallelism = Math.Min(Environment.ProcessorCount, 10),
             CancellationToken = cancellationToken
         };
 
@@ -183,13 +184,13 @@ public sealed class OrderService : IOrderService
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError(ex, "Failed to place order {OrderId} in batch", order.Id);
+                    _logger.LogError(ex, "Failed to place order {OrderId} in batch: {ErrorMessage}", order.Id, ex.Message);
                     lock (lockObject)
                     {
                         failedOrders.Add((order.Id, ex.Message));
                     }
                 }
-            });
+            }).ConfigureAwait(false);
         }
         catch (OperationCanceledException)
         {
@@ -342,31 +343,49 @@ public sealed class OrderService : IOrderService
     }
 
     /// <summary>
-    /// Deletes multiple orders in batch.
+    /// Deletes multiple orders in batch with parallel processing.
     /// </summary>
     /// <param name="orderIds">The collection of order IDs to delete.</param>
     /// <param name="cancellationToken">Cancellation token to cancel the operation.</param>
     /// <returns>The number of successfully deleted orders.</returns>
     public async Task<int> DeleteOrdersBatchAsync(IEnumerable<string> orderIds, CancellationToken cancellationToken)
     {
-        var deletedCount = 0;
+        ArgumentNullException.ThrowIfNull(orderIds);
 
-        foreach (var orderId in orderIds)
+        var orderIdsList = orderIds.ToList();
+        if (orderIdsList.Count == 0)
+        {
+            return 0;
+        }
+
+        var deletedCount = 0;
+        var lockObject = new object();
+
+        var options = new ParallelOptions
+        {
+            MaxDegreeOfParallelism = Math.Min(Environment.ProcessorCount, 10),
+            CancellationToken = cancellationToken
+        };
+
+        await Parallel.ForEachAsync(orderIdsList, options, async (orderId, ct) =>
         {
             try
             {
-                var deleted = await DeleteOrderAsync(orderId, cancellationToken);
+                var deleted = await DeleteOrderAsync(orderId, ct).ConfigureAwait(false);
                 if (deleted)
                 {
-                    deletedCount++;
+                    lock (lockObject)
+                    {
+                        deletedCount++;
+                    }
                 }
             }
             catch (Exception ex)
             {
-                _logger.LogWarning(ex, "Failed to delete order {OrderId} in batch operation", orderId);
+                _logger.LogWarning(ex, "Failed to delete order {OrderId} in batch operation: {ErrorMessage}", orderId, ex.Message);
                 // Continue with next order instead of failing entire batch
             }
-        }
+        }).ConfigureAwait(false);
 
         return deletedCount;
     }

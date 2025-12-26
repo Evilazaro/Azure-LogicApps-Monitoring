@@ -39,7 +39,7 @@
 #   Prerequisite   : .NET SDK, Azure Developer CLI, Azure CLI
 #   Required Env   : AZURE_SUBSCRIPTION_ID, AZURE_RESOURCE_GROUP, AZURE_LOCATION
 #   Author         : Azure DevOps Team
-#   Last Modified  : 2025-12-24
+#   Last Modified  : 2025-12-26
 #   Version        : 2.0.0
 #
 #============================================================================
@@ -196,15 +196,22 @@ ${COLOR_BOLD}REQUIRED ENVIRONMENT VARIABLES:${COLOR_RESET}
 
 ${COLOR_BOLD}OPTIONAL ENVIRONMENT VARIABLES:${COLOR_RESET}
     AZURE_TENANT_ID                          - Azure tenant ID
-    APPLICATION_INSIGHTS_NAME          - Application Insights name
+    APPLICATION_INSIGHTS_NAME                - Application Insights name
     APPLICATIONINSIGHTS_CONNECTION_STRING    - Application Insights connection string
     MANAGED_IDENTITY_CLIENT_ID               - Managed identity client ID
+    MANAGED_IDENTITY_NAME                    - Managed identity name
     MESSAGING_SERVICEBUSHOSTNAME             - Service Bus hostname
     AZURE_SERVICE_BUS_TOPIC_NAME             - Service Bus topic name
     AZURE_SERVICE_BUS_SUBSCRIPTION_NAME      - Service Bus subscription name
+    MESSAGING_SERVICEBUSENDPOINT             - Service Bus endpoint
+    ORDERSDATABASE_SQLSERVERFQDN             - SQL Server fully qualified domain name
+    AZURE_SQL_SERVER_NAME                    - SQL Server name
+    AZURE_SQL_DATABASE_NAME                  - SQL Database name
     AZURE_CONTAINER_REGISTRY_ENDPOINT        - Container registry endpoint
-    ORDERS_STORAGE_VOLUME_NAME               - Orders storage volume name
-    ORDERS_STORAGE_ACCOUNT_NAME              - Orders storage account name
+    AZURE_CONTAINER_REGISTRY_NAME            - Container registry name
+    AZURE_CONTAINER_APPS_ENVIRONMENT_NAME    - Container Apps environment name
+    AZURE_LOG_ANALYTICS_WORKSPACE_NAME       - Log Analytics workspace name
+    AZURE_STORAGE_ACCOUNT_NAME_WORKFLOW      - Workflow storage account name
 
 ${COLOR_BOLD}EXIT CODES:${COLOR_RESET}
     0    Success
@@ -586,27 +593,51 @@ main() {
     
     # Managed Identity configuration
     local azure_client_id
+    local azure_managed_identity_name
     azure_client_id=$(get_env_var_safe "MANAGED_IDENTITY_CLIENT_ID")
+    azure_managed_identity_name=$(get_env_var_safe "MANAGED_IDENTITY_NAME")
     
     # Service Bus messaging configuration
     local azure_servicebus_hostname
     local azure_servicebus_topic
     local azure_servicebus_subscription
+    local azure_servicebus_endpoint
     azure_servicebus_hostname=$(get_env_var_safe "MESSAGING_SERVICEBUSHOSTNAME")
     azure_servicebus_topic=$(get_env_var_safe "AZURE_SERVICE_BUS_TOPIC_NAME" "OrdersPlaced")
     azure_servicebus_subscription=$(get_env_var_safe "AZURE_SERVICE_BUS_SUBSCRIPTION_NAME" "OrderProcessingSubscription")
+    azure_servicebus_endpoint=$(get_env_var_safe "MESSAGING_SERVICEBUSENDPOINT")
+    
+    # SQL Database configuration (new in current infrastructure)
+    local azure_sql_server_fqdn
+    local azure_sql_server_name
+    local azure_sql_database_name
+    azure_sql_server_fqdn=$(get_env_var_safe "ORDERSDATABASE_SQLSERVERFQDN")
+    azure_sql_server_name=$(get_env_var_safe "AZURE_SQL_SERVER_NAME")
+    azure_sql_database_name=$(get_env_var_safe "AZURE_SQL_DATABASE_NAME")
+    
+    # Container Services configuration
+    local azure_acr_endpoint
+    local azure_acr_name
+    local azure_container_apps_env_name
+    local azure_container_apps_env_id
+    local azure_container_apps_domain
+    azure_acr_endpoint=$(get_env_var_safe "AZURE_CONTAINER_REGISTRY_ENDPOINT")
+    azure_acr_name=$(get_env_var_safe "AZURE_CONTAINER_REGISTRY_NAME")
+    azure_container_apps_env_name=$(get_env_var_safe "AZURE_CONTAINER_APPS_ENVIRONMENT_NAME")
+    azure_container_apps_env_id=$(get_env_var_safe "AZURE_CONTAINER_APPS_ENVIRONMENT_ID")
+    azure_container_apps_domain=$(get_env_var_safe "AZURE_CONTAINER_APPS_ENVIRONMENT_DEFAULT_DOMAIN")
+    
+    # Monitoring configuration
+    local azure_log_analytics_workspace
+    azure_log_analytics_workspace=$(get_env_var_safe "AZURE_LOG_ANALYTICS_WORKSPACE_NAME")
     
     # Environment and deployment configuration
     local azure_env_name
-    local azure_acr_endpoint
     azure_env_name=$(get_env_var_safe "AZURE_ENV_NAME")
-    azure_acr_endpoint=$(get_env_var_safe "AZURE_CONTAINER_REGISTRY_ENDPOINT")
     
     # Storage configuration
-    local azure_storage_volume
     local azure_storage_account
-    azure_storage_volume=$(get_env_var_safe "ORDERS_STORAGE_VOLUME_NAME")
-    azure_storage_account=$(get_env_var_safe "ORDERS_STORAGE_ACCOUNT_NAME")
+    azure_storage_account=$(get_env_var_safe "AZURE_STORAGE_ACCOUNT_NAME_WORKFLOW")
     
     # Display Azure configuration
     write_section_header "Azure Configuration" "sub"
@@ -623,8 +654,15 @@ main() {
     info "  Service Bus Host Name  : ${azure_servicebus_hostname:-$not_set}"
     info "  Service Bus Topic Name : ${azure_servicebus_topic:-$not_set}"
     info "  Service Bus Subscription: ${azure_servicebus_subscription:-$not_set}"
+    info "  Service Bus Endpoint   : ${azure_servicebus_endpoint:-$not_set}"
+    info "  SQL Server FQDN        : ${azure_sql_server_fqdn:-$not_set}"
+    info "  SQL Server Name        : ${azure_sql_server_name:-$not_set}"
+    info "  SQL Database Name      : ${azure_sql_database_name:-$not_set}"
     info "  ACR Endpoint           : ${azure_acr_endpoint:-$not_set}"
-    info "  Storage Volume Name    : ${azure_storage_volume:-$not_set}"
+    info "  ACR Name               : ${azure_acr_name:-$not_set}"
+    info "  Container Apps Env     : ${azure_container_apps_env_name:-$not_set}"
+    info "  Container Apps Domain  : ${azure_container_apps_domain:-$not_set}"
+    info "  Log Analytics Workspace: ${azure_log_analytics_workspace:-$not_set}"
     info "  Storage Account Name   : ${azure_storage_account:-$not_set}"
     
     # Attempt Azure Container Registry authentication
@@ -676,7 +714,60 @@ main() {
     # Configure user secrets
     write_section_header "Configuring User Secrets" "sub"
     
-    # Define AppHost secrets
+    # Configure SQL Database Managed Identity (if configured)
+    write_section_header "Configuring SQL Database Managed Identity" "sub"
+    
+    if [[ -n "$azure_sql_server_name" ]] && [[ -n "$azure_sql_database_name" ]] && [[ -n "$azure_managed_identity_name" ]]; then
+        info "SQL Database configuration detected..."
+        info "  Server: $azure_sql_server_name"
+        info "  Database: $azure_sql_database_name"
+        info "  Managed Identity: $azure_managed_identity_name"
+        
+        local sql_config_script="$SCRIPT_DIR/sql-managed-identity-config.sh"
+        
+        if [[ ! -f "$sql_config_script" ]]; then
+            warning "SQL managed identity configuration script not found at: $sql_config_script"
+            warning "Skipping SQL database user configuration. The API may not have database access."
+        else
+            verbose "SQL configuration script found at: $sql_config_script"
+            
+            if [[ "$DRY_RUN" == "false" ]]; then
+                info "Executing SQL managed identity configuration..."
+                
+                # Make executable if needed
+                chmod +x "$sql_config_script" 2>/dev/null || true
+                
+                # Execute with database roles
+                if bash "$sql_config_script" \
+                    --server-name "$azure_sql_server_name" \
+                    --database-name "$azure_sql_database_name" \
+                    --principal-name "$azure_managed_identity_name" \
+                    --roles "db_datareader,db_datawriter"; then
+                    success "✓ SQL Database managed identity configured successfully"
+                    verbose "Assigned roles: db_datareader, db_datawriter"
+                else
+                    warning "Failed to configure SQL database managed identity"
+                    warning "The application may not have database access. Manual configuration may be required."
+                    info ""
+                    info "To manually configure database access, run:"
+                    info "  ./sql-managed-identity-config.sh --server-name '$azure_sql_server_name' --database-name '$azure_sql_database_name' --principal-name '$azure_managed_identity_name'"
+                    info ""
+                fi
+            else
+                info "[DRY-RUN] Would configure SQL managed identity"
+            fi
+        fi
+    else
+        info "SQL Database configuration parameters not available - skipping managed identity setup"
+        
+        [[ -z "$azure_sql_server_name" ]] && verbose "  Missing: AZURE_SQL_SERVER_NAME"
+        [[ -z "$azure_sql_database_name" ]] && verbose "  Missing: AZURE_SQL_DATABASE_NAME"
+        [[ -z "$azure_managed_identity_name" ]] && verbose "  Missing: MANAGED_IDENTITY_NAME"
+        
+        info "Database user secrets will still be configured if connection string is available."
+    fi
+    
+    # Define AppHost secrets (EXACTLY matches PowerShell configuration)
     local apphost_secrets=(
         "Azure:TenantId=$azure_tenant_id"
         "Azure:SubscriptionId=$azure_subscription_id"
@@ -686,18 +777,28 @@ main() {
         "Azure:ApplicationInsights:Name=$app_insights_name"
         "ApplicationInsights:ConnectionString=$app_insights_conn_str"
         "Azure:ClientId=$azure_client_id"
+        "Azure:ManagedIdentity:Name=$azure_managed_identity_name"
         "Azure:ServiceBus:HostName=$azure_servicebus_hostname"
         "Azure:ServiceBus:TopicName=$azure_servicebus_topic"
         "Azure:ServiceBus:SubscriptionName=$azure_servicebus_subscription"
-        "Azure:Storage:VolumeName=$azure_storage_volume"
+        "Azure:ServiceBus:Endpoint=$azure_servicebus_endpoint"
+        "Azure:SqlServer:Fqdn=$azure_sql_server_fqdn"
+        "Azure:SqlServer:Name=$azure_sql_server_name"
+        "Azure:SqlDatabase:Name=$azure_sql_database_name"
         "Azure:Storage:AccountName=$azure_storage_account"
+        "Azure:ContainerRegistry:Endpoint=$azure_acr_endpoint"
+        "Azure:ContainerRegistry:Name=$azure_acr_name"
+        "Azure:ContainerApps:EnvironmentName=$azure_container_apps_env_name"
+        "Azure:ContainerApps:EnvironmentId=$azure_container_apps_env_id"
+        "Azure:ContainerApps:DefaultDomain=$azure_container_apps_domain"
+        "Azure:LogAnalytics:WorkspaceName=$azure_log_analytics_workspace"
     )
     
-    # Define API secrets
+    # Define API secrets (EXACTLY matches PowerShell configuration - only 3 secrets!)
     local api_secrets=(
-        "Azure:ServiceBus:HostName=$azure_servicebus_hostname"
-        "Azure:ServiceBus:TopicName=$azure_servicebus_topic"
-        "Azure:ServiceBus:SubscriptionName=$azure_servicebus_subscription"
+        "Azure:TenantId=$azure_tenant_id"
+        "Azure:ClientId=$azure_client_id"
+        "ApplicationInsights:ConnectionString=$app_insights_conn_str"
     )
     
     TOTAL_SECRETS=$((${#apphost_secrets[@]} + ${#api_secrets[@]}))

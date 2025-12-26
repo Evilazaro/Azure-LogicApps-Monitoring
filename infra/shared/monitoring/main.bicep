@@ -74,6 +74,7 @@ var allMetricsSettings object[] = [
 
 // Log Analytics Workspace Module: Deploys workspace with linked storage
 // Provides centralized logging infrastructure with 30-day retention
+@description('Deploys Log Analytics workspace with linked storage accounts')
 module operational 'log-analytics-workspace.bicep' = {
   params: {
     name: name
@@ -87,6 +88,7 @@ module operational 'log-analytics-workspace.bicep' = {
 
 // Azure Monitor Health Model Module: Creates service group hierarchy
 // Enables hierarchical health monitoring across services
+@description('Creates service group hierarchy for organizing health monitoring')
 module healthModel 'azure-monitor-health-model.bicep' = {
   params: {
     name: name
@@ -99,6 +101,7 @@ module healthModel 'azure-monitor-health-model.bicep' = {
 
 // Application Insights Module: Deploys workspace-based Application Insights
 // Provides application telemetry and monitoring capabilities
+@description('Deploys workspace-based Application Insights for application telemetry')
 module insights 'app-insights.bicep' = {
   params: {
     name: name

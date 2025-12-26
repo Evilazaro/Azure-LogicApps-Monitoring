@@ -70,7 +70,7 @@ var tags tagsType = union(coreTags, {
 
 // Resource group naming convention: rg-{solution}-{env}-{location-abbrev}
 // Truncates location to 8 chars to keep names concise
-var resourceGroupName string = 'rg-${solutionName}-${envName}-${substring(location, 0, min(length(location), 8))}'
+var resourceGroupName string = 'rg-${solutionName}-${envName}-${take(location, 8)}'
 
 // ========== Resources ==========
 
@@ -109,9 +109,21 @@ output MANAGED_IDENTITY_NAME string = shared.outputs.MANAGED_IDENTITY_NAME
 @description('Name of the Log Analytics workspace for centralized logging')
 output AZURE_LOG_ANALYTICS_WORKSPACE_NAME string = shared.outputs.AZURE_LOG_ANALYTICS_WORKSPACE_NAME
 
+@description('Name of the deployed Application Insights instance')
+output APPLICATION_INSIGHTS_NAME string = shared.outputs.APPLICATION_INSIGHTS_NAME
+
+@description('Connection string for Application Insights telemetry')
+output APPLICATIONINSIGHTS_CONNECTION_STRING string = shared.outputs.APPLICATIONINSIGHTS_CONNECTION_STRING
+
 // Data Outputs
 @description('Fully qualified domain name of the SQL Server')
-output SQL_DB_SQLSERVERFQDN string = shared.outputs.SQL_DB_SQLSERVERFQDN
+output ORDERSDATABASE_SQLSERVERFQDN string = shared.outputs.ORDERSDATABASE_SQLSERVERFQDN
+
+@description('Name of the deployed SQL Server instance')
+output AZURE_SQL_SERVER_NAME string = shared.outputs.AZURE_SQL_SERVER_NAME
+
+@description('Name of the deployed SQL Database')
+output AZURE_SQL_DATABASE_NAME string = shared.outputs.AZURE_SQL_DATABASE_NAME
 
 // Workload Infrastructure Module
 // Deploys managed identity, messaging (Service Bus), container services, and Logic Apps
@@ -132,6 +144,9 @@ module workload './workload/main.bicep' = {
     tags: tags
   }
 }
+
+@description('Azure Resource Group name containing all deployed resources')
+output AZURE_RESOURCE_GROUP string = rg.name
 
 // Messaging Outputs
 @description('Service Bus endpoint URL for message brokering')
@@ -159,3 +174,6 @@ output AZURE_CONTAINER_APPS_ENVIRONMENT_ID string = workload.outputs.AZURE_CONTA
 
 @description('Default domain for the Container Apps Environment')
 output AZURE_CONTAINER_APPS_ENVIRONMENT_DEFAULT_DOMAIN string = workload.outputs.AZURE_CONTAINER_APPS_ENVIRONMENT_DEFAULT_DOMAIN
+
+@description('Azure Tenant ID for Container Apps authentication')
+output AZURE_TENANT_ID string = tenant().tenantId
