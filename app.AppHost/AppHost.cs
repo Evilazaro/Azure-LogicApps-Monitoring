@@ -18,8 +18,6 @@ var webApp = builder.AddProject<Projects.eShop_Web_App>("web-app")
     .WithReference(ordersApi)
     .WaitFor(ordersApi);
 
-ConfigureAzureCredentials(builder, ordersApi);
-
 // =============================================================================
 // Observability Configuration
 // =============================================================================
@@ -44,24 +42,6 @@ builder.Build().Run();
 // =============================================================================
 // Helper Methods
 // =============================================================================
-
-static void ConfigureAzureCredentials(
-    IDistributedApplicationBuilder builder,
-    IResourceBuilder<ProjectResource> ordersApi)
-{
-    ArgumentNullException.ThrowIfNull(builder);
-    ArgumentNullException.ThrowIfNull(ordersApi);
-
-    const string AzureTenantIdKey = "Azure:TenantId";
-    const string AzureClientIdKey = "Azure:ClientId";
-    
-    var tenantId = builder.Configuration[AzureTenantIdKey];
-    var clientId = builder.Configuration[AzureClientIdKey];
-    
-    ordersApi.WithEnvironment("AZURE_TENANT_ID", tenantId ?? string.Empty)
-             .WithEnvironment("AZURE_CLIENT_ID", clientId ?? string.Empty);
-}
-
 
 /// <summary>
 /// Creates the Azure Resource Group parameter if Azure resources are configured.
@@ -192,7 +172,8 @@ static void ConfigureServiceBus(
 
 /// <summary>
 /// Configures Azure SQL Database for order data persistence.
-/// Supports both local container mode and Azure managed identity authentication.
+/// Supports both local container mode and Azure managed identity authentication with Entra ID.
+/// In Azure mode, Entra ID authentication is automatically configured through managed identity.
 /// </summary>
 /// <param name="builder">The distributed application builder.</param>
 /// <param name="ordersApi">The orders API project resource to configure with SQL Database.</param>
@@ -230,6 +211,7 @@ static void ConfigureSQLAzure(
     else
     {
         // Azure deployment mode - use existing Azure SQL Server with managed identity
+        // Entra ID authentication is automatically configured when using AsExisting()
         if (resourceGroupParameter is null)
         {
             throw new InvalidOperationException(

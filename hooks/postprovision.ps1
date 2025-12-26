@@ -803,6 +803,96 @@ try {
     
     Write-Information "✓ API project file verified."
     
+    # Configure SQL Database Managed Identity
+    Write-SectionHeader -Message "Configuring SQL Database Managed Identity" -Type 'Sub'
+    
+    # Only configure SQL managed identity if all required parameters are available
+    if ($azureSqlServerName -and $azureSqlDatabaseName -and $azureManagedIdentityName) {
+        Write-Information "SQL Database configuration detected..."
+        Write-Information "  Server: $azureSqlServerName"
+        Write-Information "  Database: $azureSqlDatabaseName"
+        Write-Information "  Managed Identity: $azureManagedIdentityName"
+        
+        # Construct path to SQL managed identity configuration script
+        $sqlConfigScriptPath = if ($PSScriptRoot) {
+            Join-Path -Path $PSScriptRoot -ChildPath "sql-managed-identity-config.ps1"
+        } else {
+            Join-Path -Path (Get-Location) -ChildPath "sql-managed-identity-config.ps1"
+        }
+        
+        if (-not (Test-Path -Path $sqlConfigScriptPath -PathType Leaf)) {
+            Write-Warning "SQL managed identity configuration script not found at: $sqlConfigScriptPath"
+            Write-Warning "Skipping SQL database user configuration. The API may not have database access."
+        }
+        else {
+            Write-Verbose "SQL configuration script found at: $sqlConfigScriptPath"
+            
+            if ($PSCmdlet.ShouldProcess("$azureSqlServerName/$azureSqlDatabaseName", "Configure managed identity database user")) {
+                try {
+                    Write-Information "Executing SQL managed identity configuration..."
+                    
+                    # Define database roles for the application
+                    # Using standard roles for CRUD operations
+                    $databaseRoles = @(
+                        'db_datareader',    # Read data from all user tables
+                        'db_datawriter'     # Add, delete, or change data in all user tables
+                    )
+                    
+                    # Execute the SQL configuration script
+                    $sqlConfigResult = & $sqlConfigScriptPath `
+                        -SqlServerName $azureSqlServerName `
+                        -DatabaseName $azureSqlDatabaseName `
+                        -PrincipalDisplayName $azureManagedIdentityName `
+                        -DatabaseRoles $databaseRoles `
+                        -ErrorAction Stop
+                    
+                    # Check result
+                    if ($sqlConfigResult -and $sqlConfigResult.Success) {
+                        Write-Information "✓ SQL Database managed identity configured successfully"
+                        Write-Verbose "Assigned roles: $($databaseRoles -join ', ')"
+                    }
+                    elseif ($sqlConfigResult) {
+                        Write-Warning "SQL configuration completed with warnings"
+                        Write-Warning "Details: $($sqlConfigResult.Message ?? $sqlConfigResult.Error ?? 'Unknown result')"
+                    }
+                    else {
+                        Write-Warning "SQL configuration returned no result object"
+                    }
+                }
+                catch {
+                    # Non-fatal error - log warning but continue with provisioning
+                    # The database connection string will still be configured in user secrets
+                    # Manual intervention may be required for database access
+                    Write-Warning "Failed to configure SQL database managed identity: $($_.Exception.Message)"
+                    Write-Warning "The application may not have database access. Manual configuration may be required."
+                    Write-Verbose "Error details: $($_.Exception.ToString())"
+                    Write-Information ""
+                    Write-Information "To manually configure database access, run:"
+                    Write-Information "  .\sql-managed-identity-config.ps1 -SqlServerName '$azureSqlServerName' -DatabaseName '$azureSqlDatabaseName' -PrincipalDisplayName '$azureManagedIdentityName'"
+                    Write-Information ""
+                }
+            }
+            else {
+                Write-Information "SQL managed identity configuration skipped (WhatIf mode)"
+            }
+        }
+    }
+    else {
+        Write-Information "SQL Database configuration parameters not available - skipping managed identity setup"
+        
+        if (-not $azureSqlServerName) {
+            Write-Verbose "  Missing: AZURE_SQL_SERVER_NAME"
+        }
+        if (-not $azureSqlDatabaseName) {
+            Write-Verbose "  Missing: AZURE_SQL_DATABASE_NAME"
+        }
+        if (-not $azureManagedIdentityName) {
+            Write-Verbose "  Missing: MANAGED_IDENTITY_NAME"
+        }
+        
+        Write-Information "Database user secrets will still be configured if connection string is available."
+    }
+    
     # Clear existing user secrets
     Write-SectionHeader -Message "Clearing Existing User Secrets" -Type 'Sub'
     
