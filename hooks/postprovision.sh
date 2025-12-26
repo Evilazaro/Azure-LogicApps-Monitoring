@@ -714,7 +714,60 @@ main() {
     # Configure user secrets
     write_section_header "Configuring User Secrets" "sub"
     
-    # Define AppHost secrets (matches PowerShell configuration)
+    # Configure SQL Database Managed Identity (if configured)
+    write_section_header "Configuring SQL Database Managed Identity" "sub"
+    
+    if [[ -n "$azure_sql_server_name" ]] && [[ -n "$azure_sql_database_name" ]] && [[ -n "$azure_managed_identity_name" ]]; then
+        info "SQL Database configuration detected..."
+        info "  Server: $azure_sql_server_name"
+        info "  Database: $azure_sql_database_name"
+        info "  Managed Identity: $azure_managed_identity_name"
+        
+        local sql_config_script="$SCRIPT_DIR/sql-managed-identity-config.sh"
+        
+        if [[ ! -f "$sql_config_script" ]]; then
+            warning "SQL managed identity configuration script not found at: $sql_config_script"
+            warning "Skipping SQL database user configuration. The API may not have database access."
+        else
+            verbose "SQL configuration script found at: $sql_config_script"
+            
+            if [[ "$DRY_RUN" == "false" ]]; then
+                info "Executing SQL managed identity configuration..."
+                
+                # Make executable if needed
+                chmod +x "$sql_config_script" 2>/dev/null || true
+                
+                # Execute with database roles
+                if bash "$sql_config_script" \
+                    --server-name "$azure_sql_server_name" \
+                    --database-name "$azure_sql_database_name" \
+                    --principal-name "$azure_managed_identity_name" \
+                    --roles "db_datareader,db_datawriter"; then
+                    success "✓ SQL Database managed identity configured successfully"
+                    verbose "Assigned roles: db_datareader, db_datawriter"
+                else
+                    warning "Failed to configure SQL database managed identity"
+                    warning "The application may not have database access. Manual configuration may be required."
+                    info ""
+                    info "To manually configure database access, run:"
+                    info "  ./sql-managed-identity-config.sh --server-name '$azure_sql_server_name' --database-name '$azure_sql_database_name' --principal-name '$azure_managed_identity_name'"
+                    info ""
+                fi
+            else
+                info "[DRY-RUN] Would configure SQL managed identity"
+            fi
+        fi
+    else
+        info "SQL Database configuration parameters not available - skipping managed identity setup"
+        
+        [[ -z "$azure_sql_server_name" ]] && verbose "  Missing: AZURE_SQL_SERVER_NAME"
+        [[ -z "$azure_sql_database_name" ]] && verbose "  Missing: AZURE_SQL_DATABASE_NAME"
+        [[ -z "$azure_managed_identity_name" ]] && verbose "  Missing: MANAGED_IDENTITY_NAME"
+        
+        info "Database user secrets will still be configured if connection string is available."
+    fi
+    
+    # Define AppHost secrets (EXACTLY matches PowerShell configuration)
     local apphost_secrets=(
         "Azure:TenantId=$azure_tenant_id"
         "Azure:SubscriptionId=$azure_subscription_id"
@@ -731,7 +784,7 @@ main() {
         "Azure:ServiceBus:Endpoint=$azure_servicebus_endpoint"
         "Azure:SqlServer:Fqdn=$azure_sql_server_fqdn"
         "Azure:SqlServer:Name=$azure_sql_server_name"
-        "Azure:SqlServer:DatabaseName=$azure_sql_database_name"
+        "Azure:SqlDatabase:Name=$azure_sql_database_name"
         "Azure:Storage:AccountName=$azure_storage_account"
         "Azure:ContainerRegistry:Endpoint=$azure_acr_endpoint"
         "Azure:ContainerRegistry:Name=$azure_acr_name"
@@ -741,15 +794,9 @@ main() {
         "Azure:LogAnalytics:WorkspaceName=$azure_log_analytics_workspace"
     )
     
-    # Define API secrets (matches PowerShell configuration)
+    # Define API secrets (EXACTLY matches PowerShell configuration - only 3 secrets!)
     local api_secrets=(
-        "Azure:ServiceBus:HostName=$azure_servicebus_hostname"
-        "Azure:ServiceBus:TopicName=$azure_servicebus_topic"
-        "Azure:ServiceBus:SubscriptionName=$azure_servicebus_subscription"
-        "Azure:ServiceBus:Endpoint=$azure_servicebus_endpoint"
-        "Azure:SqlServer:Fqdn=$azure_sql_server_fqdn"
-        "Azure:SqlServer:Name=$azure_sql_server_name"
-        "Azure:SqlServer:DatabaseName=$azure_sql_database_name"
+        "Azure:TenantId=$azure_tenant_id"
         "Azure:ClientId=$azure_client_id"
         "ApplicationInsights:ConnectionString=$app_insights_conn_str"
     )
