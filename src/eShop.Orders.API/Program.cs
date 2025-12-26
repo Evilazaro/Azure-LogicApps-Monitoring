@@ -28,17 +28,7 @@ builder.Services.AddDbContext<OrderDbContext>(options =>
             "Please ensure the connection string is properly set in appsettings.json or environment variables.");
     }
 
-    options.UseSqlServer(connectionString, sqlOptions =>
-    {
-        // Configure retry strategy for transient failures
-        sqlOptions.EnableRetryOnFailure(
-            maxRetryCount: 5,
-            maxRetryDelay: TimeSpan.FromSeconds(30),
-            errorNumbersToAdd: null);
-
-        // Set command timeout
-        sqlOptions.CommandTimeout(30);
-    });
+    options.UseAzureSql(connectionString);
 
     // Enable sensitive data logging in development only
     if (builder.Environment.IsDevelopment())

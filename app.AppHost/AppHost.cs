@@ -18,6 +18,8 @@ var webApp = builder.AddProject<Projects.eShop_Web_App>("web-app")
     .WithReference(ordersApi)
     .WaitFor(ordersApi);
 
+ConfigureAzureCredentials(builder, ordersApi);
+
 // =============================================================================
 // Observability Configuration
 // =============================================================================
@@ -42,6 +44,24 @@ builder.Build().Run();
 // =============================================================================
 // Helper Methods
 // =============================================================================
+
+static void ConfigureAzureCredentials(
+    IDistributedApplicationBuilder builder,
+    IResourceBuilder<ProjectResource> ordersApi)
+{
+    ArgumentNullException.ThrowIfNull(builder);
+    ArgumentNullException.ThrowIfNull(ordersApi);
+
+    const string AzureTenantIdKey = "Azure:TenantId";
+    const string AzureClientIdKey = "Azure:ClientId";
+    
+    var tenantId = builder.Configuration[AzureTenantIdKey];
+    var clientId = builder.Configuration[AzureClientIdKey];
+    
+    ordersApi.WithEnvironment("AZURE_TENANT_ID", tenantId ?? string.Empty)
+             .WithEnvironment("AZURE_CLIENT_ID", clientId ?? string.Empty);
+}
+
 
 /// <summary>
 /// Creates the Azure Resource Group parameter if Azure resources are configured.
@@ -155,7 +175,7 @@ static void ConfigureServiceBus(
                 "Please configure 'Azure:ResourceGroup' in your application settings.");
         }
 
-        var sbParam = builder.AddParameter("service-bus", sbHostName);
+        var sbParam = builder.AddParameter("service-bus", sbHostName.Substring(0, sbHostName.IndexOf('.')));
 
         serviceBusResource = builder.AddAzureServiceBus(DefaultConnectionStringName)
             .AsExisting(sbParam, resourceGroupParameter);
@@ -168,21 +188,6 @@ static void ConfigureServiceBus(
     // Add Service Bus reference to orders API
     ordersApi.WithReference(serviceBusResource)
              .WaitFor(serviceBusResource);
-
-    // Configure Azure credentials if available (for managed identity authentication)
-    var azureSubscriptionId = builder.Configuration["Azure:SubscriptionId"];
-    var azureClientId = builder.Configuration["Azure:ClientId"];
-    var azureTenantId = builder.Configuration["Azure:TenantId"];
-
-    if (!string.IsNullOrWhiteSpace(azureSubscriptionId) &&
-        !string.IsNullOrWhiteSpace(azureClientId) &&
-        !string.IsNullOrWhiteSpace(azureTenantId))
-    {
-        ordersApi
-            .WithEnvironment("AZURE_SUBSCRIPTION_ID", azureSubscriptionId)
-            .WithEnvironment("AZURE_CLIENT_ID", azureClientId)
-            .WithEnvironment("AZURE_TENANT_ID", azureTenantId);
-    }
 }
 
 /// <summary>
