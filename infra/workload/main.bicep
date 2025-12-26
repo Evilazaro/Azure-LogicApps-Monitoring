@@ -193,18 +193,6 @@ output AZURE_CONTAINER_APPS_ENVIRONMENT_ID string = services.outputs.AZURE_CONTA
 @description('Default domain for the Container Apps environment')
 output AZURE_CONTAINER_APPS_ENVIRONMENT_DEFAULT_DOMAIN string = services.outputs.AZURE_CONTAINER_APPS_ENVIRONMENT_DEFAULT_DOMAIN
 
-@description('Orders API Storage Account Name')
-output ORDERS_STORAGE_ACCOUNT_NAME string = data.outputs.ORDERS_STORAGE_ACCOUNT_NAME
-
-@description('Orders Storage Account Blob Endpoint')
-output DATA_BLOBENDPOINT string = data.outputs.DATA_BLOBENDPOINT
-
-@description('Orders Storage Account Container Endpoint')
-output DATA_CONTAINERENDPOINT string = data.outputs.DATA_CONTAINERENDPOINT
-
-@description('Orders API File Share Name')
-output ORDERS_FILE_SHARE_NAME string = data.outputs.ORDERS_FILE_SHARE_NAME
-
 @description('Azure Storage Workflow State Account Name')
 output WORKFLOW_STORAGE_ACCOUNT_NAME string = data.outputs.WORKFLOW_STORAGE_ACCOUNT_NAME
 

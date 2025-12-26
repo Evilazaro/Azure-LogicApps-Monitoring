@@ -75,9 +75,6 @@ param metricsSettings object[]
 @description('Connection string for Application Insights instance.')
 param appInsightsConnectionString string
 
-@description('Name of the file share for orders-api persistent data.')
-param caStorageAccountFileShareName string
-
 @description('Resource tags applied to container services.')
 param tags tagsType
 
@@ -158,20 +155,6 @@ resource dashboard 'Microsoft.App/managedEnvironments/dotNetComponents@2025-10-0
   name: 'aspire-dashboard'
   properties: {
     componentType: 'AspireDashboard'
-  }
-}
-
-@description('Azure Files storage volume for Container Apps persistent data')
-resource appEnvStorage 'Microsoft.App/managedEnvironments/storages@2025-02-02-preview' = {
-  parent: appEnv
-  name: storageVolumeName
-  properties: {
-    azureFile: {
-      accountName: caStorageAccountName
-      shareName: caStorageAccountFileShareName
-      accountKey: caStoargeAccountKey
-      accessMode: 'ReadWrite'
-    }
   }
 }
 
