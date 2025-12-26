@@ -75,12 +75,6 @@ param metricsSettings object[]
 @description('Connection string for Application Insights instance.')
 param appInsightsConnectionString string
 
-@description('Name of the storage account for Container Apps persistent storage.')
-param caStorageAccountName string
-
-@description('Storage account key for Azure Files mount.')
-param caStoargeAccountKey string
-
 @description('Name of the file share for orders-api persistent data.')
 param caStorageAccountFileShareName string
 

@@ -137,9 +137,6 @@ module services 'services/main.bicep' = {
     logsSettings: allLogsSettings
     metricsSettings: allMetricsSettings
     appInsightsConnectionString: appInsightsConnectionString
-    caStorageAccountName: data.outputs.ORDERS_STORAGE_ACCOUNT_NAME
-    caStoargeAccountKey: data.outputs.ORDERS_STORAGE_ACCOUNT_KEY
-    caStorageAccountFileShareName: data.outputs.ORDERS_FILE_SHARE_NAME
     tags: tags
   }
 }

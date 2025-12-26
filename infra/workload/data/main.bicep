@@ -56,6 +56,9 @@ param workspaceId string
 @minLength(50)
 param storageAccountId string
 
+@secure()
+param administratorLoginPassword string = newGuid()
+
 @description('Metrics settings for the Log Analytics workspace.')
 param metricsSettings object[]
 
@@ -139,32 +142,46 @@ resource saDiag 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
 
 output WORKFLOW_STORAGE_ACCOUNT_NAME string = wfSA.name
 
-module volumeStorage 'storage/main.bicep' = {
-  params: {
-    name: name
-    tags: tags
-    envName: envName
-    metricsSettings: metricsSettings
-    storageAccountId: storageAccountId
-    userAssignedIdentityId: userAssignedIdentityId
-    workspaceId: workspaceId
+resource sqlServer 'Microsoft.Sql/servers@2024-11-01-preview' = {
+  name: toLower('${cleanedName}server${uniqueSuffix}')
+  location: location
+  identity: {
+    type: 'UserAssigned'
+    userAssignedIdentities: {
+      '${userAssignedIdentityId}': {}
+    }
+  }
+  tags: tags
+  properties: {
+    administrators: {
+      administratorType: 'ActiveDirectory'
+      principalType: 'User'
+      tenantId: subscription().tenantId
+      login: deployer().objectId
+    }
+    administratorLogin: 'sqlAdmin'
+    administratorLoginPassword: administratorLoginPassword
+    publicNetworkAccess: 'Enabled'
+    primaryUserAssignedIdentityId: userAssignedIdentityId
   }
 }
 
-// ========== Outputs ==========
-
-@description('Name of the storage account')
-output ORDERS_STORAGE_ACCOUNT_NAME string = volumeStorage.outputs.ORDERS_STORAGE_ACCOUNT_NAME
-
-@description('Orders Storage Account Container Endpoint')
-output DATA_CONTAINERENDPOINT string = volumeStorage.outputs.DATA_CONTAINERENDPOINT
-
-@description('Orders Storage Account Blob Endpoint')
-output DATA_BLOBENDPOINT string = volumeStorage.outputs.DATA_BLOBENDPOINT
-
-@description('Name of the file share')
-output ORDERS_FILE_SHARE_NAME string = volumeStorage.outputs.ORDERS_FILE_SHARE_NAME
-
-@description('Primary key of the storage account for Orders API Volume Mount')
-#disable-next-line outputs-should-not-contain-secrets
-output ORDERS_STORAGE_ACCOUNT_KEY string = volumeStorage.outputs.ORDERS_STORAGE_ACCOUNT_KEY
+resource sqlDb 'Microsoft.Sql/servers/databases@2024-11-01-preview' = {
+  name: toLower('${cleanedName}db${uniqueSuffix}')
+  parent: sqlServer
+  location: location
+  identity: {
+    type: 'UserAssigned'
+    userAssignedIdentities: {
+      '${userAssignedIdentityId}': {}
+    }
+  }
+  sku: {
+    name: 'GP_Gen5_2'
+    tier: 'GeneralPurpose'
+    family: 'Gen5'
+    capacity: 2
+    size: '32GB'
+  }
+  tags: tags
+}
