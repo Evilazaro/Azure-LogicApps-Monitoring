@@ -52,6 +52,7 @@ var allMetricsSettings object[] = [
 
 // Identity Module: Deploys user-assigned managed identity
 // Must be deployed first as other modules depend on its output
+@description('Deploys user-assigned managed identity with role assignments')
 module identity 'identity/main.bicep' = {
   params: {
     name: name
@@ -75,6 +76,7 @@ output MANAGED_IDENTITY_NAME string = identity.outputs.MANAGED_IDENTITY_NAME
 
 // Monitoring Module: Deploys Log Analytics workspace and Application Insights
 // Provides centralized logging and telemetry infrastructure
+@description('Deploys Log Analytics workspace and Application Insights for centralized monitoring')
 module monitoring 'monitoring/main.bicep' = {
   params: {
     name: name
@@ -114,6 +116,7 @@ output AZURE_STOARGE_ACCOUNT_ID_LOGS string = monitoring.outputs.AZURE_STOARGE_A
 
 // Data Module: Deploys storage accounts and SQL Server
 // Provides storage for workflows and persistent data
+@description('Deploys storage accounts and SQL Server database for workflow data storage')
 module data 'data/main.bicep' = {
   params: {
     name: name
@@ -137,5 +140,8 @@ output AZURE_STORAGE_ACCOUNT_NAME_WORKFLOW string = data.outputs.AZURE_STORAGE_A
 @description('Fully qualified domain name of the SQL Server for database connections')
 output ORDERSDATABASE_SQLSERVERFQDN string = data.outputs.ORDERSDATABASE_SQLSERVERFQDN
 
+@description('Name of the deployed SQL Server instance')
 output AZURE_SQL_SERVER_NAME string = data.outputs.AZURE_SQL_SERVER_NAME
+
+@description('Name of the deployed SQL Database')
 output AZURE_SQL_DATABASE_NAME string = data.outputs.AZURE_SQL_DATABASE_NAME

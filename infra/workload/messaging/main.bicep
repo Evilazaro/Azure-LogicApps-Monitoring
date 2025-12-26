@@ -84,14 +84,15 @@ var serviceBusName string = toLower(take('${cleanedName}sb${uniqueSuffix}', 20))
 resource broker 'Microsoft.ServiceBus/namespaces@2025-05-01-preview' = {
   name: serviceBusName
   location: location
-  // Premium SKU provides:
-  // - Enhanced throughput and performance
-  // - VNet integration capability
-  // - Larger message size support (1 MB)
+  // Standard SKU provides:
+  // - Basic message brokering with topics and subscriptions
+  // - Suitable for most workloads with moderate throughput requirements
+  // - Maximum message size of 256 KB
+  // - Capacity is not applicable for Standard tier (auto-managed)
   sku: {
     name: 'Standard'
     tier: 'Standard'
-    capacity: 16 // 16 messaging units for production scale
+    capacity: 16
   }
   tags: tags
   identity: {
@@ -122,10 +123,14 @@ resource ordersSubscription 'Microsoft.ServiceBus/namespaces/topics/subscription
   parent: ordersTopic
   name: 'OrderProcessingSubscription'
   properties: {
-    maxDeliveryCount: 10 // Retry up to 10 times before dead-lettering
-    lockDuration: 'PT5M' // 5 minute message lock duration for processing
-    defaultMessageTimeToLive: 'P14D' // Messages expire after 14 days
-    deadLetteringOnMessageExpiration: true // Move expired messages to dead-letter queue
+    // Maximum delivery attempts before message is moved to dead-letter queue
+    maxDeliveryCount: 10
+    // Duration a message is locked for processing (ISO 8601 duration: 5 minutes)
+    lockDuration: 'PT5M'
+    // Time-to-live for messages in the subscription (ISO 8601 duration: 14 days)
+    defaultMessageTimeToLive: 'P14D'
+    // Enable automatic dead-lettering for expired messages
+    deadLetteringOnMessageExpiration: true
   }
 }
 

@@ -92,6 +92,7 @@ var allMetricsSettings object[] = [
 
 // Messaging Module: Deploys Service Bus namespace and topics
 // Provides message queue infrastructure for order processing
+@description('Deploys Service Bus namespace with topics and subscriptions for message brokering')
 module messaging 'messaging/main.bicep' = {
   params: {
     name: name
@@ -116,6 +117,7 @@ output MESSAGING_SERVICEBUSHOSTNAME string = messaging.outputs.MESSAGING_SERVICE
 
 // Container Services Module: Deploys ACR, Container Apps Environment, and Aspire Dashboard
 // Provides container hosting infrastructure for microservices
+@description('Deploys Azure Container Registry, Container Apps Environment, and Aspire Dashboard')
 module services 'services/main.bicep' = {
   params: {
     name: name
@@ -155,6 +157,7 @@ output AZURE_CONTAINER_APPS_ENVIRONMENT_DEFAULT_DOMAIN string = services.outputs
 
 // Logic Apps Module: Deploys Logic Apps Standard workflow engine
 // Depends on identity and messaging storage account outputs
+@description('Deploys Logic Apps Standard workflow engine with App Service Plan')
 module workflows 'logic-app.bicep' = {
   params: {
     name: name

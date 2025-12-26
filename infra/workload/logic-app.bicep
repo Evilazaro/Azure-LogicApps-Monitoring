@@ -95,16 +95,26 @@ resource wfASP 'Microsoft.Web/serverfarms@2025-03-01' = {
   kind: 'elastic'
   tags: tags
   properties: {
-    perSiteScaling: false // Scale the entire plan, not individual sites
-    elasticScaleEnabled: true // Enable automatic elastic scaling
-    maximumElasticWorkerCount: 20 // Scale up to 20 instances based on demand
-    isSpot: false // Not using spot instances
-    reserved: false // Windows-based hosting
-    isXenon: false // Not using Xenon container
-    hyperV: false // Not using Hyper-V container
-    targetWorkerCount: 0 // Auto-scaling manages worker count
-    targetWorkerSizeId: 0 // Auto-scaling manages worker size
-    zoneRedundant: false // Zone redundancy disabled
+    // Scale the entire plan uniformly rather than individual sites
+    perSiteScaling: false
+    // Enable automatic elastic scaling based on workload demand
+    elasticScaleEnabled: true
+    // Maximum number of instances the plan can scale out to under heavy load
+    maximumElasticWorkerCount: 20
+    // Use standard instances instead of low-cost spot instances for reliability
+    isSpot: false
+    // Windows-based hosting for Logic Apps Standard runtime
+    reserved: false
+    // Standard App Service containers (not Xenon)
+    isXenon: false
+    // Standard virtualization (not Hyper-V)
+    hyperV: false
+    // Auto-scaling manages worker count dynamically (0 = automatic)
+    targetWorkerCount: 0
+    // Auto-scaling manages worker size dynamically (0 = automatic)
+    targetWorkerSizeId: 0
+    // Zone redundancy disabled for cost optimization (enable for production HA)
+    zoneRedundant: false
   }
 }
 
@@ -116,7 +126,8 @@ var functionsExtensionVersion string = '~4'
 var functionsWorkerRuntime string = 'dotnet'
 
 // Workflow extension bundle provides Logic Apps actions and triggers
-// Version range allows patch updates within major version 1.x
+// The bundle includes all standard connectors and actions without requiring individual installations
+// Version range [1.*, 2.0.0) allows automatic patch updates within 1.x but prevents breaking changes from 2.0
 var extensionBundleId string = 'Microsoft.Azure.Functions.ExtensionBundle.Workflows'
 var extensionBundleVersion string = '[1.*, 2.0.0)'
 
@@ -135,14 +146,22 @@ resource workflowEngine 'Microsoft.Web/sites@2025-03-01' = {
   properties: {
     serverFarmId: wfASP.id
     publicNetworkAccess: 'Enabled'
+    // Logic Apps Standard requires a storage account for workflow state and runtime data
     storageAccountRequired: true
     siteConfig: {
-      alwaysOn: true // Keep the app always loaded for reliable execution
-      webSocketsEnabled: true // Required for Logic Apps runtime
-      minimumElasticInstanceCount: 3 // Minimum number of always-running instances
-      elasticWebAppScaleLimit: 20 // Maximum scale-out limit
+      // Keep the app always loaded to prevent cold starts and ensure reliable execution
+      alwaysOn: true
+      // WebSockets support required for Logic Apps runtime communication
+      webSocketsEnabled: true
+      // Minimum number of pre-warmed instances to handle baseline load
+      minimumElasticInstanceCount: 3
+      // Maximum number of instances allowed during scale-out
+      elasticWebAppScaleLimit: 20
+      // Use 64-bit worker process for better performance and memory capacity
       use32BitWorkerProcess: false
+      // Require FTPS (FTP over SSL) for secure file transfers
       ftpsState: 'FtpsOnly'
+      // Enforce TLS 1.2 minimum for secure HTTPS connections
       minTlsVersion: '1.2'
     }
     httpsOnly: true

@@ -70,7 +70,7 @@ var tags tagsType = union(coreTags, {
 
 // Resource group naming convention: rg-{solution}-{env}-{location-abbrev}
 // Truncates location to 8 chars to keep names concise
-var resourceGroupName string = 'rg-${solutionName}-${envName}-${substring(location, 0, min(length(location), 8))}'
+var resourceGroupName string = 'rg-${solutionName}-${envName}-${take(location, 8)}'
 
 // ========== Resources ==========
 
@@ -113,7 +113,10 @@ output AZURE_LOG_ANALYTICS_WORKSPACE_NAME string = shared.outputs.AZURE_LOG_ANAL
 @description('Fully qualified domain name of the SQL Server')
 output ORDERSDATABASE_SQLSERVERFQDN string = shared.outputs.ORDERSDATABASE_SQLSERVERFQDN
 
+@description('Name of the deployed SQL Server instance')
 output AZURE_SQL_SERVER_NAME string = shared.outputs.AZURE_SQL_SERVER_NAME
+
+@description('Name of the deployed SQL Database')
 output AZURE_SQL_DATABASE_NAME string = shared.outputs.AZURE_SQL_DATABASE_NAME
 
 // Workload Infrastructure Module

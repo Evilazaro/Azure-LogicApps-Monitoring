@@ -104,6 +104,8 @@ resource logSA 'Microsoft.Storage/storageAccounts@2025-06-01' = {
 }
 
 @description('Lifecycle management policy for log storage account to automatically delete append blobs (activity logs) after 30 days')
+// This policy reduces storage costs by removing old activity logs while maintaining compliance with retention requirements
+// Only affects subscription-level activity logs stored as append blobs
 resource saPolicy 'Microsoft.Storage/storageAccounts/managementPolicies@2025-06-01' = {
   parent: logSA
   name: 'default'

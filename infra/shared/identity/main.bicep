@@ -90,7 +90,8 @@ var roles string[] = [
 
 // Assign roles to managed identity for resource access
 // Uses loop to assign all roles at resource group scope
-// Each assignment uses guid() for deterministic, idempotent assignment names
+// Each assignment uses guid() with subscription, resource group, identity, and role IDs
+// to create deterministic, idempotent assignment names that won't conflict on redeployment
 @description('Role assignments for managed identity to access Azure resources')
 resource miRA 'Microsoft.Authorization/roleAssignments@2022-04-01' = [
   for role in roles: {
@@ -106,6 +107,7 @@ resource miRA 'Microsoft.Authorization/roleAssignments@2022-04-01' = [
 
 // Assign same roles to deployment user for administrative access
 // Allows user to manage resources during and after deployment
+// Uses deployer() function to reference the principal executing the deployment
 @description('Role assignments for deployment user to access Azure resources')
 resource userRA 'Microsoft.Authorization/roleAssignments@2022-04-01' = [
   for role in roles: {

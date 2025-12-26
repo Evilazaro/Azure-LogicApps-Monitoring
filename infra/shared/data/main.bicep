@@ -149,6 +149,7 @@ resource saDiag 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
   }
 }
 
+@description('Name of the deployed storage account for Logic Apps workflows')
 output AZURE_STORAGE_ACCOUNT_NAME_WORKFLOW string = wfSA.name
 
 resource sqlServer 'Microsoft.Sql/servers@2024-11-01-preview' = {
@@ -165,7 +166,9 @@ resource sqlServer 'Microsoft.Sql/servers@2024-11-01-preview' = {
     administrators: {
       administratorType: 'ActiveDirectory'
       azureADOnlyAuthentication: true
-      principalType: 'Application' // 'Application' is used for Managed Identities and Service Principals
+      // 'Application' principal type is used for both Managed Identities and Service Principals
+      // This allows the managed identity to administer the SQL Server using Entra ID authentication
+      principalType: 'Application'
       login: entraAdminLoginName
       sid: entraAdminPrincipalId
       tenantId: tenantId
@@ -176,7 +179,10 @@ resource sqlServer 'Microsoft.Sql/servers@2024-11-01-preview' = {
   tags: tags
 }
 
+@description('Fully qualified domain name of the deployed SQL Server')
 output ORDERSDATABASE_SQLSERVERFQDN string = sqlServer.properties.fullyQualifiedDomainName
+
+@description('Name of the deployed SQL Server instance')
 output AZURE_SQL_SERVER_NAME string = sqlServer.name
 
 // Enforce Entra ID-only authentication for SQL Server
@@ -217,6 +223,7 @@ resource sqlDb 'Microsoft.Sql/servers/databases@2024-11-01-preview' = {
   tags: tags
 }
 
+@description('Name of the deployed SQL Database')
 output AZURE_SQL_DATABASE_NAME string = sqlDb.name
 
 // Enable diagnostic settings for SQL Database
