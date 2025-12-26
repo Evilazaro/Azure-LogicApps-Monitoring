@@ -171,7 +171,7 @@ static void ConfigureServiceBus(
 
     // Configure Azure credentials if available (for managed identity authentication)
     var azureSubscriptionId = builder.Configuration["Azure:SubscriptionId"];
-    var azureClientId = builder.Configuration["Azure:ManagedIdentity:ClientId"];
+    var azureClientId = builder.Configuration["Azure:ClientId"];
     var azureTenantId = builder.Configuration["Azure:TenantId"];
 
     if (!string.IsNullOrWhiteSpace(azureSubscriptionId) &&

@@ -84,7 +84,7 @@ $appHostSecrets = [ordered]@{
     'ApplicationInsights:Enabled'      = $enableApplicationInsights
     'Azure:ApplicationInsights:Name'   = $applicationInsightsName
     'ApplicationInsights:ConnectionString' = $applicationInsightsConnectionString
-    'Azure:ManagedIdentity:ClientId'   = $azureClientId
+    'Azure:ClientId'   = $azureClientId
     'Azure:ManagedIdentity:Name'       = $azureManagedIdentityName
     'Azure:ServiceBus:HostName'        = $azureServiceBusHostName
     'Azure:ServiceBus:TopicName'       = $azureServiceBusTopicName
@@ -110,7 +110,7 @@ $apiSecrets = [ordered]@{
     'Azure:ServiceBus:SubscriptionName' = $azureServiceBusSubscriptionName
     'Azure:ServiceBus:Endpoint'        = $azureMessagingServiceBusEndpoint  # NEW
     'Azure:SqlServer:Fqdn'             = $azureSqlServerFqdn  # NEW
-    'Azure:ManagedIdentity:ClientId'   = $azureClientId  # NEW
+    'Azure:ClientId'   = $azureClientId  # NEW
     'ApplicationInsights:ConnectionString' = $applicationInsightsConnectionString  # NEW
 }
 ```
@@ -178,7 +178,7 @@ Created comprehensive documentation covering:
 
 ```bicep
 // Identity Outputs (infra/shared/identity/)
-MANAGED_IDENTITY_CLIENT_ID         → Azure:ManagedIdentity:ClientId
+MANAGED_IDENTITY_CLIENT_ID         → Azure:ClientId
 MANAGED_IDENTITY_NAME              → Azure:ManagedIdentity:Name
 
 // Monitoring Outputs (infra/shared/monitoring/)
@@ -276,7 +276,7 @@ Verify the application can:
    - Subscription name: `OrderProcessingSubscription`
 
 3. **Secret Keys**: Some secret keys have changed
-   - `Azure:ClientId` → `Azure:ManagedIdentity:ClientId`
+   - `Azure:ClientId` → `Azure:ClientId`
    - Added `Azure:ManagedIdentity:Name`
    - Added `Azure:SqlServer:Fqdn`
 

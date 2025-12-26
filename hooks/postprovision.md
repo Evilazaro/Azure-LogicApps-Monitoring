@@ -366,8 +366,8 @@ Enables detailed diagnostic output.
 | `Azure:Location` | `AZURE_LOCATION` | Azure region |
 | `Services:OrdersApi:Endpoint` | `ORDERS_API_ENDPOINT` | Orders API URL |
 | `Services:OrdersApi:ApiKey` | `ORDERS_API_KEY` | API authentication |
-| `AzureAd:TenantId` | `AZURE_TENANT_ID` | Azure AD tenant |
-| `AzureAd:ClientId` | `AZURE_CLIENT_ID` | Application ID |
+| `Azure:TenantId` | `AZURE_TENANT_ID` | Azure AD tenant |
+| `Azure:ClientId` | `AZURE_CLIENT_ID` | Application ID |
 
 ### eShop.Orders.API Project
 
@@ -389,8 +389,8 @@ Enables detailed diagnostic output.
 | `Services:OrdersApi:Endpoint` | `ORDERS_API_ENDPOINT` | API base URL |
 | `Services:OrdersApi:ApiKey` | `ORDERS_API_KEY` | API authentication |
 | `ApplicationInsights:ConnectionString` | `AZURE_APP_INSIGHTS_CONNECTION_STRING` | Telemetry |
-| `AzureAd:TenantId` | `AZURE_TENANT_ID` | Authentication |
-| `AzureAd:ClientId` | `AZURE_CLIENT_ID` | App registration |
+| `Azure:TenantId` | `AZURE_TENANT_ID` | Authentication |
+| `Azure:ClientId` | `AZURE_CLIENT_ID` | App registration |
 | `Redis:ConnectionString` | `AZURE_REDIS_CONNECTION_STRING` | Session state |
 
 ## 🛠️ How It Works

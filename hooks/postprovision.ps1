@@ -844,7 +844,7 @@ try {
         'ApplicationInsights:Enabled'      = $enableApplicationInsights
         'Azure:ApplicationInsights:Name'   = $applicationInsightsName
         'ApplicationInsights:ConnectionString' = $applicationInsightsConnectionString
-        'Azure:ManagedIdentity:ClientId'   = $azureClientId
+        'Azure:ClientId'   = $azureClientId
         'Azure:ManagedIdentity:Name'       = $azureManagedIdentityName
         'Azure:ServiceBus:HostName'        = $azureServiceBusHostName
         'Azure:ServiceBus:TopicName'       = $azureServiceBusTopicName
@@ -865,7 +865,7 @@ try {
     # Define secrets for API project (Service Bus and Database configuration)
     $apiSecrets = [ordered]@{
         'Azure:TenantId'                   = $azureTenantId
-        'Azure:ManagedIdentity:ClientId'   = $azureClientId
+        'Azure:ClientId'   = $azureClientId
         'ApplicationInsights:ConnectionString' = $applicationInsightsConnectionString
     }
     

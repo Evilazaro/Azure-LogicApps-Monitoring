@@ -129,11 +129,11 @@ var sbHostName = builder.Configuration["Azure:ServiceBus:HostName"] ?? DefaultNa
 ### 1.9 Configuration Key Consistency
 
 **Problem:** Mixed configuration key usage
-- `Azure:ClientId` vs `Azure:ManagedIdentity:ClientId`
+- `Azure:ClientId` vs `Azure:ClientId`
 
 **Fix:** Standardized to use proper managed identity configuration path
 ```csharp
-var azureClientId = builder.Configuration["Azure:ManagedIdentity:ClientId"];
+var azureClientId = builder.Configuration["Azure:ClientId"];
 ```
 
 ---

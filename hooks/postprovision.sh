@@ -723,7 +723,7 @@ main() {
         "ApplicationInsights:Enabled=$enable_app_insights"
         "Azure:ApplicationInsights:Name=$app_insights_name"
         "ApplicationInsights:ConnectionString=$app_insights_conn_str"
-        "Azure:ManagedIdentity:ClientId=$azure_client_id"
+        "Azure:ClientId=$azure_client_id"
         "Azure:ManagedIdentity:Name=$azure_managed_identity_name"
         "Azure:ServiceBus:HostName=$azure_servicebus_hostname"
         "Azure:ServiceBus:TopicName=$azure_servicebus_topic"
@@ -750,7 +750,7 @@ main() {
         "Azure:SqlServer:Fqdn=$azure_sql_server_fqdn"
         "Azure:SqlServer:Name=$azure_sql_server_name"
         "Azure:SqlServer:DatabaseName=$azure_sql_database_name"
-        "Azure:ManagedIdentity:ClientId=$azure_client_id"
+        "Azure:ClientId=$azure_client_id"
         "ApplicationInsights:ConnectionString=$app_insights_conn_str"
     )
     

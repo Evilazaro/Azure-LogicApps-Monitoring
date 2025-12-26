@@ -174,3 +174,6 @@ output AZURE_CONTAINER_APPS_ENVIRONMENT_ID string = workload.outputs.AZURE_CONTA
 
 @description('Default domain for the Container Apps Environment')
 output AZURE_CONTAINER_APPS_ENVIRONMENT_DEFAULT_DOMAIN string = workload.outputs.AZURE_CONTAINER_APPS_ENVIRONMENT_DEFAULT_DOMAIN
+
+@description('Azure Tenant ID for Container Apps authentication')
+output AZURE_TENANT_ID string = tenant().tenantId
