@@ -161,6 +161,7 @@ resource sqlServer 'Microsoft.Sql/servers@2024-11-01-preview' = {
     }
   }
   properties: {
+    primaryUserAssignedIdentityId: userAssignedIdentityId
     administrators: {
       administratorType: 'ActiveDirectory'
       azureADOnlyAuthentication: true

@@ -1,5 +1,3 @@
-using Aspire.Hosting.Azure;
-
 var builder = DistributedApplication.CreateBuilder(args);
 
 // =============================================================================
@@ -29,6 +27,8 @@ var webApp = builder.AddProject<Projects.eShop_Web_App>("web-app")
 // through the infrastructure. In local development, it uses user secrets.
 
 ConfigureApplicationInsights(builder, resourceGroupParameter, ordersApi, webApp);
+
+ConfigureSQLAzure(builder, ordersApi, resourceGroupParameter);
 
 // =============================================================================
 // Azure Service Bus Configuration
@@ -231,5 +231,51 @@ static void ConfigureServiceBus(
             .WithEnvironment("AZURE_SUBSCRIPTION_ID", azureSubscriptionId)
             .WithEnvironment("AZURE_CLIENT_ID", azureClientId)
             .WithEnvironment("AZURE_TENANT_ID", azureTenantId);
+    }
+}
+
+static void ConfigureSQLAzure(
+    IDistributedApplicationBuilder builder,
+    IResourceBuilder<ProjectResource> ordersApi,
+    IResourceBuilder<ParameterResource>? resourceGroupParameter)
+{
+    const string DefaultSqlServerName = "localhost";
+    const string DefaultDatabaseName = "eShopOrdersDb";
+    const string DefaultSqlUserName = "sa";
+    const string DefaultSqlPassword = "Your_password123";
+    var sqlServerName = string.IsNullOrEmpty(builder.Configuration["Azure:SQL:ServerName"])
+        ? DefaultSqlServerName
+        : builder.Configuration["Azure:SQL:ServerName"];
+    var sqlDatabaseName = string.IsNullOrEmpty(builder.Configuration["Azure:SQL:DatabaseName"])
+        ? DefaultDatabaseName
+        : builder.Configuration["Azure:SQL:DatabaseName"];
+    var isLocalMode = (sqlServerName ?? string.Empty).Equals(DefaultSqlServerName, StringComparison.OrdinalIgnoreCase);
+    if (isLocalMode)
+    {
+        // Local development mode - use local SQL Server
+        var sqlResource = builder.AddAzureSqlServer("sql-db")
+            .RunAsContainer(configureContainer =>
+            {
+                configureContainer
+                    .WithEnvironment("ACCEPT_EULA", "Y")
+                    .WithEnvironment("SA_PASSWORD", DefaultSqlPassword)
+                    .WithHostPort(1433);
+            });
+        ordersApi.WithReference(sqlResource);
+    }
+    else
+    {
+        // Azure deployment mode - use existing SQL Server with managed identity
+        if (resourceGroupParameter is null)
+        {
+            throw new InvalidOperationException(
+                "Azure Resource Group configuration is required when using Azure SQL Database. " +
+                "Please configure 'Azure:ResourceGroup' in your application settings.");
+        }
+        var sqlServerParam = builder.AddParameter("sql-server", sqlServerName!);
+        var sqlResource = builder.AddAzureSqlServer("sql-db")
+            .AsExisting(sqlServerParam, resourceGroupParameter)
+            .AddDatabase(sqlDatabaseName!);
+        ordersApi.WithReference(sqlResource);
     }
 }
