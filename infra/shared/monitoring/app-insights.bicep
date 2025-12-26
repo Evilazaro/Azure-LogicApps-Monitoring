@@ -20,7 +20,7 @@ metadata description = 'Deploys workspace-based Application Insights for applica
 
 // ========== Type Definitions ==========
 
-import { tagsType } from '../types.bicep'
+import { tagsType } from '../../types.bicep'
 
 // ========== Parameters ==========
 

@@ -19,7 +19,7 @@ metadata description = 'Deploys Log Analytics, Application Insights, and health 
 
 // ========== Type Definitions ==========
 
-import { tagsType } from '../types.bicep'
+import { tagsType } from '../../types.bicep'
 
 // Note: Diagnostic settings use object[] instead of user-defined types
 // due to Azure Resource Provider schema requirements

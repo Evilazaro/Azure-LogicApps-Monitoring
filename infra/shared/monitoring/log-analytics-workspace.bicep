@@ -21,7 +21,7 @@ metadata description = 'Deploys Log Analytics workspace with linked storage acco
 
 // ========== Type Definitions ==========
 
-import { tagsType, storageAccountConfig } from '../types.bicep'
+import { tagsType, storageAccountConfig } from '../../types.bicep'
 
 // ========== Parameters ==========
 

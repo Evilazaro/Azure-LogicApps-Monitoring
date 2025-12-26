@@ -59,6 +59,9 @@ param storageAccountId string
 @secure()
 param administratorLoginPassword string = newGuid()
 
+@description('Logs settings for the Log Analytics workspace.')
+param logsSettings object[]
+
 @description('Metrics settings for the Log Analytics workspace.')
 param metricsSettings object[]
 
@@ -184,4 +187,15 @@ resource sqlDb 'Microsoft.Sql/servers/databases@2024-11-01-preview' = {
     size: '32GB'
   }
   tags: tags
+}
+
+resource sqlDiag 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
+  name: '${sqlServer.name}-diag'
+  scope: sqlServer
+  properties: {
+    workspaceId: workspaceId
+    storageAccountId: storageAccountId
+    logAnalyticsDestinationType: 'Dedicated'
+    metrics: metricsSettings
+  }
 }

@@ -83,122 +83,132 @@ resource rg 'Microsoft.Resources/resourceGroups@2025-04-01' = {
 
 // ========== Modules ==========
 
-// Monitoring Infrastructure Module
-// Deploys Log Analytics workspace, Application Insights, and health monitoring
-module monitoring './monitoring/main.bicep' = {
+module shared 'shared/main.bicep' = {
   scope: rg
   params: {
     name: solutionName
+    location: location
     tags: tags
     envName: envName
-    location: location
   }
 }
 
-// Workload Infrastructure Module
-// Deploys managed identity, messaging (Service Bus), container services, and Logic Apps
-// Depends on monitoring outputs for workspace ID and Application Insights connection string
-module workload './workload/main.bicep' = {
-  scope: resourceGroup(resourceGroupName)
-  params: {
-    name: solutionName
-    location: location
-    envName: envName
-    workspaceId: monitoring.outputs.AZURE_LOG_ANALYTICS_WORKSPACE_ID
-    workspacePrimaryKey: monitoring.outputs.AZURE_LOG_ANALYTICS_WORKSPACE_PRIMARY_KEY
-    workspaceCustomerId: monitoring.outputs.AZURE_LOG_ANALYTICS_WORKSPACE_CUSTOMER_ID
-    storageAccountId: monitoring.outputs.LOGS_STORAGE_ACCOUNT_ID
-    appInsightsConnectionString: monitoring.outputs.APPLICATIONINSIGHTS_CONNECTION_STRING
-    tags: tags
-  }
-}
+// // Monitoring Infrastructure Module
+// // Deploys Log Analytics workspace, Application Insights, and health monitoring
+// module monitoring './monitoring/main.bicep' = {
+//   scope: rg
+//   params: {
+//     name: solutionName
+//     tags: tags
+//     envName: envName
+//     location: location
+//   }
+// }
 
-// ========== Outputs ==========
+// // Workload Infrastructure Module
+// // Deploys managed identity, messaging (Service Bus), container services, and Logic Apps
+// // Depends on monitoring outputs for workspace ID and Application Insights connection string
+// module workload './workload/main.bicep' = {
+//   scope: resourceGroup(resourceGroupName)
+//   params: {
+//     name: solutionName
+//     location: location
+//     envName: envName
+//     workspaceId: monitoring.outputs.AZURE_LOG_ANALYTICS_WORKSPACE_ID
+//     workspacePrimaryKey: monitoring.outputs.AZURE_LOG_ANALYTICS_WORKSPACE_PRIMARY_KEY
+//     workspaceCustomerId: monitoring.outputs.AZURE_LOG_ANALYTICS_WORKSPACE_CUSTOMER_ID
+//     storageAccountId: monitoring.outputs.LOGS_STORAGE_ACCOUNT_ID
+//     appInsightsConnectionString: monitoring.outputs.APPLICATIONINSIGHTS_CONNECTION_STRING
+//     tags: tags
+//   }
+// }
 
-// Resource Group & Tenant Outputs
-@description('Name of the deployed resource group')
-output AZURE_RESOURCE_GROUP string = resourceGroupName
+// // ========== Outputs ==========
 
-// Application Insights Outputs (Microsoft.Insights/components)
-@description('Name of the deployed Application Insights instance')
-output AZURE_APPLICATION_INSIGHTS_NAME string = monitoring.outputs.AZURE_APPLICATION_INSIGHTS_NAME
+// // Resource Group & Tenant Outputs
+// @description('Name of the deployed resource group')
+// output AZURE_RESOURCE_GROUP string = resourceGroupName
 
-@description('Connection string for Application Insights telemetry')
-output APPLICATIONINSIGHTS_CONNECTION_STRING string = monitoring.outputs.APPLICATIONINSIGHTS_CONNECTION_STRING
+// // Application Insights Outputs (Microsoft.Insights/components)
+// @description('Name of the deployed Application Insights instance')
+// output AZURE_APPLICATION_INSIGHTS_NAME string = monitoring.outputs.AZURE_APPLICATION_INSIGHTS_NAME
 
-@description('Instrumentation key for Application Insights telemetry')
-output AZURE_APPLICATION_INSIGHTS_INSTRUMENTATION_KEY string = monitoring.outputs.AZURE_APPLICATION_INSIGHTS_INSTRUMENTATION_KEY
+// @description('Connection string for Application Insights telemetry')
+// output APPLICATIONINSIGHTS_CONNECTION_STRING string = monitoring.outputs.APPLICATIONINSIGHTS_CONNECTION_STRING
 
-@description('Connection string for Application Insights telemetry (alias)')
-output TELEMETRY_APPINSIGHTSCONNECTIONSTRING string = monitoring.outputs.APPLICATIONINSIGHTS_CONNECTION_STRING
+// @description('Instrumentation key for Application Insights telemetry')
+// output AZURE_APPLICATION_INSIGHTS_INSTRUMENTATION_KEY string = monitoring.outputs.AZURE_APPLICATION_INSIGHTS_INSTRUMENTATION_KEY
 
-// Log Analytics Workspace Outputs (Microsoft.OperationalInsights/workspaces)
-@description('Name of the deployed Log Analytics workspace')
-output AZURE_LOG_ANALYTICS_WORKSPACE_NAME string = monitoring.outputs.AZURE_LOG_ANALYTICS_WORKSPACE_NAME
+// @description('Connection string for Application Insights telemetry (alias)')
+// output TELEMETRY_APPINSIGHTSCONNECTIONSTRING string = monitoring.outputs.APPLICATIONINSIGHTS_CONNECTION_STRING
 
-// Managed Identity Outputs (Microsoft.ManagedIdentity/userAssignedIdentities)
-@description('Client ID of the deployed managed identity')
-output MANAGED_IDENTITY_CLIENT_ID string = workload.outputs.MANAGED_IDENTITY_CLIENT_ID
+// // Log Analytics Workspace Outputs (Microsoft.OperationalInsights/workspaces)
+// @description('Name of the deployed Log Analytics workspace')
+// output AZURE_LOG_ANALYTICS_WORKSPACE_NAME string = monitoring.outputs.AZURE_LOG_ANALYTICS_WORKSPACE_NAME
 
-@description('Name of the deployed managed identity')
-output MANAGED_IDENTITY_NAME string = workload.outputs.MANAGED_IDENTITY_NAME
+// // Managed Identity Outputs (Microsoft.ManagedIdentity/userAssignedIdentities)
+// @description('Client ID of the deployed managed identity')
+// output MANAGED_IDENTITY_CLIENT_ID string = workload.outputs.MANAGED_IDENTITY_CLIENT_ID
 
-@description('Messaging Service Bus Host Name')
-output MESSAGING_SERVICEBUSHOSTNAME string = workload.outputs.MESSAGING_SERVICEBUSHOSTNAME
+// @description('Name of the deployed managed identity')
+// output MANAGED_IDENTITY_NAME string = workload.outputs.MANAGED_IDENTITY_NAME
 
-@description('Azure Service Bus endpoint')
-output MESSAGING_SERVICEBUSENDPOINT string = workload.outputs.MESSAGING_SERVICEBUSENDPOINT
+// @description('Messaging Service Bus Host Name')
+// output MESSAGING_SERVICEBUSHOSTNAME string = workload.outputs.MESSAGING_SERVICEBUSHOSTNAME
 
-// Container Registry Outputs (Microsoft.ContainerRegistry/registries)
-@description('Login server endpoint for the Azure Container Registry')
-output AZURE_CONTAINER_REGISTRY_ENDPOINT string = workload.outputs.AZURE_CONTAINER_REGISTRY_ENDPOINT
+// @description('Azure Service Bus endpoint')
+// output MESSAGING_SERVICEBUSENDPOINT string = workload.outputs.MESSAGING_SERVICEBUSENDPOINT
 
-@description('Name of the Azure Container Registry')
-output AZURE_CONTAINER_REGISTRY_NAME string = workload.outputs.AZURE_CONTAINER_REGISTRY_NAME
+// // Container Registry Outputs (Microsoft.ContainerRegistry/registries)
+// @description('Login server endpoint for the Azure Container Registry')
+// output AZURE_CONTAINER_REGISTRY_ENDPOINT string = workload.outputs.AZURE_CONTAINER_REGISTRY_ENDPOINT
 
-@description('Resource ID of the managed identity used by Container Registry')
-output AZURE_CONTAINER_REGISTRY_MANAGED_IDENTITY_ID string = workload.outputs.AZURE_CONTAINER_REGISTRY_MANAGED_IDENTITY_ID
+// @description('Name of the Azure Container Registry')
+// output AZURE_CONTAINER_REGISTRY_NAME string = workload.outputs.AZURE_CONTAINER_REGISTRY_NAME
 
-// Container Apps Environment Outputs (Microsoft.App/managedEnvironments)
-@description('Name of the Container Apps Environment')
-output AZURE_CONTAINER_APPS_ENVIRONMENT_NAME string = workload.outputs.AZURE_CONTAINER_APPS_ENVIRONMENT_NAME
+// @description('Resource ID of the managed identity used by Container Registry')
+// output AZURE_CONTAINER_REGISTRY_MANAGED_IDENTITY_ID string = workload.outputs.AZURE_CONTAINER_REGISTRY_MANAGED_IDENTITY_ID
 
-@description('Resource ID of the Container Apps managed environment')
-output AZURE_CONTAINER_APPS_ENVIRONMENT_ID string = workload.outputs.AZURE_CONTAINER_APPS_ENVIRONMENT_ID
+// // Container Apps Environment Outputs (Microsoft.App/managedEnvironments)
+// @description('Name of the Container Apps Environment')
+// output AZURE_CONTAINER_APPS_ENVIRONMENT_NAME string = workload.outputs.AZURE_CONTAINER_APPS_ENVIRONMENT_NAME
 
-@description('Default domain for the Container Apps environment')
-output AZURE_CONTAINER_APPS_ENVIRONMENT_DEFAULT_DOMAIN string = workload.outputs.AZURE_CONTAINER_APPS_ENVIRONMENT_DEFAULT_DOMAIN
+// @description('Resource ID of the Container Apps managed environment')
+// output AZURE_CONTAINER_APPS_ENVIRONMENT_ID string = workload.outputs.AZURE_CONTAINER_APPS_ENVIRONMENT_ID
 
-@description('Azure Tenant ID where resources are deployed')
-output AZURE_TENANT_ID string = tenant().tenantId
+// @description('Default domain for the Container Apps environment')
+// output AZURE_CONTAINER_APPS_ENVIRONMENT_DEFAULT_DOMAIN string = workload.outputs.AZURE_CONTAINER_APPS_ENVIRONMENT_DEFAULT_DOMAIN
 
-@description('Azure Storage Workflow State Account Name')
-output LOGICAPPS_STORAGE_ACCOUNT_NAME string = workload.outputs.WORKFLOW_STORAGE_ACCOUNT_NAME
+// @description('Azure Tenant ID where resources are deployed')
+// output AZURE_TENANT_ID string = tenant().tenantId
 
-@description('Name of the storage volume mount for orders-api')
-output ORDERS_STORAGE_VOLUME_NAME string = workload.outputs.ORDERS_STORAGE_VOLUME_NAME
+// @description('Azure Storage Workflow State Account Name')
+// output LOGICAPPS_STORAGE_ACCOUNT_NAME string = workload.outputs.WORKFLOW_STORAGE_ACCOUNT_NAME
 
-@description('Orders Storage Account Blob Endpoint')
-output DATA_BLOBENDPOINT string = workload.outputs.DATA_BLOBENDPOINT
+// @description('Name of the storage volume mount for orders-api')
+// output ORDERS_STORAGE_VOLUME_NAME string = workload.outputs.ORDERS_STORAGE_VOLUME_NAME
 
-@description('Orders Storage Account Container Endpoint')
-output DATA_CONTAINERENDPOINT string = workload.outputs.DATA_CONTAINERENDPOINT
+// @description('Orders Storage Account Blob Endpoint')
+// output DATA_BLOBENDPOINT string = workload.outputs.DATA_BLOBENDPOINT
 
-@description('Orders API Storage Account Name')
-output ORDERS_STORAGE_ACCOUNT_NAME string = workload.outputs.ORDERS_STORAGE_ACCOUNT_NAME
+// @description('Orders Storage Account Container Endpoint')
+// output DATA_CONTAINERENDPOINT string = workload.outputs.DATA_CONTAINERENDPOINT
 
-// Logic Apps Outputs (Microsoft.Web/sites)
-@description('Name of the deployed Logic App workflow engine')
-output LOGIC_APP_NAME string = workload.outputs.LOGIC_APP_NAME
+// @description('Orders API Storage Account Name')
+// output ORDERS_STORAGE_ACCOUNT_NAME string = workload.outputs.ORDERS_STORAGE_ACCOUNT_NAME
 
-@description('Resource ID of the deployed Logic App workflow engine')
-output LOGIC_APP_ID string = workload.outputs.LOGIC_APP_ID
+// // Logic Apps Outputs (Microsoft.Web/sites)
+// @description('Name of the deployed Logic App workflow engine')
+// output LOGIC_APP_NAME string = workload.outputs.LOGIC_APP_NAME
 
-@description('Default hostname of the Logic App workflow engine')
-output LOGIC_APP_DEFAULT_HOSTNAME string = workload.outputs.LOGIC_APP_DEFAULT_HOSTNAME
+// @description('Resource ID of the deployed Logic App workflow engine')
+// output LOGIC_APP_ID string = workload.outputs.LOGIC_APP_ID
 
-@description('Name of the App Service Plan hosting the Logic App')
-output APP_SERVICE_PLAN_NAME string = workload.outputs.APP_SERVICE_PLAN_NAME
+// @description('Default hostname of the Logic App workflow engine')
+// output LOGIC_APP_DEFAULT_HOSTNAME string = workload.outputs.LOGIC_APP_DEFAULT_HOSTNAME
 
-@description('Resource ID of the App Service Plan')
-output APP_SERVICE_PLAN_ID string = workload.outputs.APP_SERVICE_PLAN_ID
+// @description('Name of the App Service Plan hosting the Logic App')
+// output APP_SERVICE_PLAN_NAME string = workload.outputs.APP_SERVICE_PLAN_NAME
+
+// @description('Resource ID of the App Service Plan')
+// output APP_SERVICE_PLAN_ID string = workload.outputs.APP_SERVICE_PLAN_ID
