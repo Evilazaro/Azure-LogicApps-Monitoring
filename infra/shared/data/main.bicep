@@ -151,72 +151,117 @@ resource saDiag 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
 
 output AZURE_STORAGE_ACCOUNT_NAME_WORKFLOW string = wfSA.name
 
+// Azure SQL Server with Azure AD-only authentication (Entra ID)
+// Eliminates SQL authentication for enhanced security posture
+// Uses managed identity for administration and application access
+@description('Azure SQL Server with Entra ID (Azure AD) authentication only')
 resource sqlServer 'Microsoft.Sql/servers@2024-11-01-preview' = {
   name: toLower('${cleanedName}server${uniqueSuffix}')
   location: location
   identity: {
+    // User-assigned managed identity for Azure AD authentication
+    // Enables passwordless authentication for applications
     type: 'UserAssigned'
     userAssignedIdentities: {
       '${userAssignedIdentityId}': {}
     }
   }
   properties: {
+    // Designate the managed identity as the primary identity for this server
+    // Required for Azure AD-only authentication mode
     primaryUserAssignedIdentityId: userAssignedIdentityId
     administrators: {
+      // Configure Azure AD (Entra ID) admin for the SQL Server
+      // This admin has full permissions on all databases
       administratorType: 'ActiveDirectory'
+      // Enforce Azure AD-only authentication - disables SQL authentication
+      // Improves security by eliminating password-based authentication
       azureADOnlyAuthentication: true
-      principalType: 'Application' // 'Application' is used for Managed Identities and Service Principals
+      // 'Application' principal type is used for Managed Identities and Service Principals
+      // 'User' would be used for individual user accounts
+      principalType: 'Application'
       login: entraAdminLoginName
+      // Principal ID (Object ID) of the managed identity in Azure AD
       sid: entraAdminPrincipalId
       tenantId: tenantId
     }
-    publicNetworkAccess: 'Enabled' // Can be restricted based on requirements
+    // Public network access enabled for development/testing
+    // Consider restricting to 'Disabled' or specific VNets in production
+    publicNetworkAccess: 'Enabled'
+    // Enforce TLS 1.2 minimum for encrypted connections
     minimalTlsVersion: '1.2'
   }
   tags: tags
 }
 
+// Explicit policy to enforce Azure AD-only authentication
+// This sub-resource explicitly disables SQL authentication
+// Name must be 'Default' per Azure Resource Provider requirements
+@description('Enforce Azure AD-only authentication policy for SQL Server')
 resource entraOnlyAuth 'Microsoft.Sql/servers/azureADOnlyAuthentications@2024-11-01-preview' = {
   parent: sqlServer
-  name: 'Default' // The name for this resource is typically 'Default'
+  name: 'Default'
   properties: {
+    // Set to true to disable SQL authentication entirely
+    // Only Azure AD principals can connect to this server
     azureADOnlyAuthentication: true
   }
 }
 
+// Azure SQL Database configuration
+// General Purpose tier with Gen5 compute for balanced performance
+@description('Azure SQL Database for application data')
 resource sqlDb 'Microsoft.Sql/servers/databases@2024-11-01-preview' = {
   name: toLower('${cleanedName}db${uniqueSuffix}')
   parent: sqlServer
   location: location
   identity: {
+    // Managed identity for the database enables passwordless connections
+    // Applications can authenticate using the same managed identity
     type: 'UserAssigned'
     userAssignedIdentities: {
       '${userAssignedIdentityId}': {}
     }
   }
   sku: {
+    // GP_Gen5_2: General Purpose tier with 2 vCores (Gen5 compute)
+    // Provides balanced compute and memory for most workloads
     name: 'GP_Gen5_2'
     tier: 'GeneralPurpose'
     family: 'Gen5'
-    capacity: 2
-    size: '32GB'
+    capacity: 2 // 2 vCores
+    size: '32GB' // Maximum data size
   }
   properties: {
+    // SQL_Latin1_General_CP1_CI_AS: Default SQL Server collation
+    // Case-insensitive (CI), accent-sensitive (AS)
     collation: 'SQL_Latin1_General_CP1_CI_AS'
-    maxSizeBytes: 34359738368 // 32 GB
+    // 32 GB maximum database size (34,359,738,368 bytes)
+    maxSizeBytes: 34359738368
+    // Zone redundancy disabled for cost optimization
+    // Enable in production for high availability across zones
     zoneRedundant: false
   }
   tags: tags
 }
 
+// Diagnostic settings for SQL Database monitoring
+// Captures query performance, errors, and resource utilization metrics
+@description('Diagnostic settings for SQL Database')
 resource sqlDiag 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
   name: '${sqlDb.name}-diag'
   scope: sqlDb
   properties: {
+    // Send diagnostic data to Log Analytics workspace for querying and alerting
     workspaceId: workspaceId
+    // Also archive diagnostic data to storage account for long-term retention
     storageAccountId: storageAccountId
+    // Dedicated destination type provides better query performance
+    // Alternative is 'AzureDiagnostics' which uses a shared table
     logAnalyticsDestinationType: 'Dedicated'
+    // Capture all available log categories (query performance, errors, etc.)
     logs: logsSettings
+    // Capture all available metrics (CPU, IO, DTU usage, etc.)
     metrics: metricsSettings
   }
 }

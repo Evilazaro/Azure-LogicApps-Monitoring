@@ -183,41 +183,66 @@ static void ConfigureServiceBus(
     }
 }
 
+/// <summary>
+/// Configures Azure SQL Database connection for the Orders API.
+/// Supports both local SQL Server (container-based) and Azure SQL Database with managed identity.
+/// </summary>
+/// <param name="builder">The distributed application builder.</param>
+/// <param name="ordersApi">The orders API project resource to configure with SQL Database.</param>
+/// <param name="resourceGroupParameter">The shared Azure resource group parameter.</param>
 static void ConfigureSQLAzure(
     IDistributedApplicationBuilder builder,
     IResourceBuilder<ProjectResource> ordersApi,
     IResourceBuilder<ParameterResource>? resourceGroupParameter)
 {
+    // Default configuration for local development
+    // Uses localhost SQL Server running in a container
     const string DefaultSqlServerName = "localhost";
     const string DefaultDatabaseName = "eShopOrdersDb";
     const string DefaultSqlUserName = "sa";
     const string DefaultSqlPassword = "123#@!qweEWQ";
+    
+    // Read SQL Server configuration from user secrets or appsettings
+    // Falls back to localhost if not configured (local development mode)
     var sqlServerName = string.IsNullOrEmpty(builder.Configuration["Azure:SQL:ServerName"])
         ? DefaultSqlServerName
         : builder.Configuration["Azure:SQL:ServerName"];
     var sqlDatabaseName = string.IsNullOrEmpty(builder.Configuration["Azure:SQL:DatabaseName"])
         ? DefaultDatabaseName
         : builder.Configuration["Azure:SQL:DatabaseName"];
+    
+    // Determine deployment mode based on server name
+    // localhost = local container, anything else = Azure SQL Database
     var isLocalMode = (sqlServerName ?? string.Empty).Equals(DefaultSqlServerName, StringComparison.OrdinalIgnoreCase);
+    
     if (isLocalMode)
     {
-        // Local development mode - use local SQL Server
+        // Local development mode - use SQL Server in container
+        // Container is automatically provisioned with default credentials
+        // Connection string is injected into the ordersApi automatically
         var sqlResource = builder.AddAzureSqlServer("sql-db").RunAsContainer();
         ordersApi.WithReference(sqlResource);
     }
     else
     {
-        // Azure deployment mode - use existing SQL Server with managed identity
+        // Azure deployment mode - use existing Azure SQL Server with managed identity authentication
+        // Requires resource group configuration to locate the existing SQL Server
         if (resourceGroupParameter is null)
         {
             throw new InvalidOperationException(
                 "Azure Resource Group configuration is required when using Azure SQL Database. " +
                 "Please configure 'Azure:ResourceGroup' in your application settings.");
         }
+        
+        // Create parameter for SQL Server name and connect to existing resource
+        // AsExisting indicates this resource is already deployed via Bicep
         var sqlServerParam = builder.AddParameter("sql-server", sqlServerName!);
         var sqlResource = builder.AddAzureSqlServer("sql-db")
             .AsExisting(sqlServerParam, resourceGroupParameter)
             .AddDatabase(DefaultDatabaseName);
+        
+        // WithReference configures the connection string in the ordersApi
+        // Uses managed identity authentication (passwordless) when deployed to Azure
         ordersApi.WithReference(sqlResource);
     }
 }

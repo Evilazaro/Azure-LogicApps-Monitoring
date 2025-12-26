@@ -83,6 +83,9 @@ resource rg 'Microsoft.Resources/resourceGroups@2025-04-01' = {
 
 // ========== Modules ==========
 
+// Shared Infrastructure Module
+// Orchestrates deployment of identity, monitoring, and data infrastructure
+// All shared resources are deployed together to ensure proper dependency ordering
 module shared 'shared/main.bicep' = {
   scope: rg
   params: {
@@ -95,19 +98,28 @@ module shared 'shared/main.bicep' = {
 
 // Workload Infrastructure Module
 // Deploys managed identity, messaging (Service Bus), container services, and Logic Apps
-// Depends on monitoring outputs for workspace ID and Application Insights connection string
+// Depends on shared module outputs for:
+//   - Log Analytics workspace for diagnostic logging
+//   - Application Insights for telemetry collection
+//   - Managed identity for resource authentication
+//   - Workflow storage account for Logic Apps runtime
 module workload './workload/main.bicep' = {
   scope: resourceGroup(resourceGroupName)
   params: {
     name: solutionName
     location: location
     envName: envName
+    // Log Analytics workspace outputs for diagnostic settings
     workspaceId: shared.outputs.AZURE_LOG_ANALYTICS_WORKSPACE_ID
     workspacePrimaryKey: shared.outputs.AZURE_LOG_ANALYTICS_WORKSPACE_PRIMARY_KEY
     workspaceCustomerId: shared.outputs.AZURE_LOG_ANALYTICS_WORKSPACE_CUSTOMER_ID
+    // Storage account for archiving diagnostic logs
     storageAccountId: shared.outputs.AZURE_STOARGE_ACCOUNT_ID_LOGS
+    // Application Insights connection string for application telemetry
     appInsightsConnectionString: shared.outputs.APPLICATIONINSIGHTS_CONNECTION_STRING
+    // Managed identity for resource authentication (passwordless)
     userAssignedIdentityId: shared.outputs.AZURE_MANAGED_IDENTITY_ID
+    // Workflow storage account required by Logic Apps Standard runtime
     workflowStorageAccountName: shared.outputs.AZURE_STORAGE_ACCOUNT_NAME_WORKFLOW
     tags: tags
   }

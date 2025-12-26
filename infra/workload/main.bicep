@@ -74,6 +74,8 @@ param tags tagsType
 
 // ========== Variables ==========
 
+// Diagnostic settings configuration for comprehensive logging
+// Applied to all workload resources (Service Bus, Container Registry, Logic Apps)
 var allLogsSettings object[] = [
   {
     categoryGroup: 'allLogs'
@@ -81,6 +83,8 @@ var allLogsSettings object[] = [
   }
 ]
 
+// Diagnostic settings configuration for comprehensive metrics collection
+// Captures performance counters and resource utilization metrics
 var allMetricsSettings object[] = [
   {
     categoryGroup: 'allMetrics'
@@ -91,7 +95,8 @@ var allMetricsSettings object[] = [
 // ========== Modules ==========
 
 // Messaging Module: Deploys Service Bus and workflow storage
-// Provides message queue infrastructure and Logic Apps storage backend
+// Provides message queue infrastructure for asynchronous communication
+// Service Bus enables reliable message delivery between microservices
 module messaging 'messaging/main.bicep' = {
   params: {
     name: name
