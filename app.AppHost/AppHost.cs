@@ -12,8 +12,6 @@ var resourceGroupParameter = CreateResourceGroupParameterIfNeeded(builder);
 
 var ordersApi = builder.AddProject<Projects.eShop_Orders_API>("orders-api");
 
-ConfigureOrdersStoragePath(builder, ordersApi, resourceGroupParameter);
-
 var webApp = builder.AddProject<Projects.eShop_Web_App>("web-app")
     .WithExternalHttpEndpoints()
     .WithHttpHealthCheck("/health")
@@ -64,55 +62,6 @@ static IResourceBuilder<ParameterResource>? CreateResourceGroupParameterIfNeeded
     }
 
     return builder.AddParameterFromConfiguration("resourceGroup", ResourceGroupConfigKey);
-}
-
-/// <summary>
-/// Configures the storage directory path for orders based on the deployment environment.
-/// Uses absolute paths for Azure Container Apps and relative paths for local development.
-/// </summary>
-/// <param name="builder">The distributed application builder.</param>
-/// <param name="ordersApi">The orders API project resource.</param>
-/// <param name="resourceGroupParameter">The shared Azure resource group parameter.</param>
-static void ConfigureOrdersStoragePath(
-    IDistributedApplicationBuilder builder,
-    IResourceBuilder<ProjectResource> ordersApi,
-    IResourceBuilder<ParameterResource>? resourceGroupParameter)
-{
-    const string DefaultParamName = "data";
-    const string DefaultStorageName = "orders-storage";
-    const string BlobContainerName = "orders";
-
-    var storageResourceName = builder.Configuration["Azure:Storage:AccountName"];
-    var isLocalMode = string.IsNullOrWhiteSpace(storageResourceName) ||
-                      storageResourceName.Equals(DefaultStorageName, StringComparison.OrdinalIgnoreCase);
-
-    if (isLocalMode)
-    {
-        // Local development mode - use Azure Storage emulator
-        var storageResource = builder.AddAzureStorage(DefaultParamName).RunAsEmulator();
-        var blobContainer = storageResource.AddBlobContainer(BlobContainerName);
-
-        ordersApi.WithReference(blobContainer);
-    }
-    else
-    {
-        // Azure deployment mode - use existing storage account with managed identity
-        if (resourceGroupParameter is null)
-        {
-            throw new InvalidOperationException(
-                "Azure Resource Group configuration is required when using Azure Storage Account. " +
-                "Please configure 'Azure:ResourceGroup' in your application settings.");
-        }
-
-        var storageAccountParameter = builder.AddParameter(DefaultParamName, storageResourceName!);
-
-        var storageResource = builder.AddAzureStorage(DefaultStorageName)
-            .AsExisting(storageAccountParameter, resourceGroupParameter);
-
-        var blobContainer = storageResource.AddBlobContainer(BlobContainerName);
-
-        ordersApi.WithReference(blobContainer);
-    }
 }
 
 /// <summary>

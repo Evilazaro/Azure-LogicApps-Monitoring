@@ -210,8 +210,8 @@ resource sqlDb 'Microsoft.Sql/servers/databases@2024-11-01-preview' = {
 }
 
 resource sqlDiag 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
-  name: '${sqlServer.name}-diag'
-  scope: sqlServer
+  name: '${sqlDb.name}-diag'
+  scope: sqlDb
   properties: {
     workspaceId: workspaceId
     storageAccountId: storageAccountId
