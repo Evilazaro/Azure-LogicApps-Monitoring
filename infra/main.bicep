@@ -93,35 +93,23 @@ module shared 'shared/main.bicep' = {
   }
 }
 
-// // Monitoring Infrastructure Module
-// // Deploys Log Analytics workspace, Application Insights, and health monitoring
-// module monitoring './monitoring/main.bicep' = {
-//   scope: rg
-//   params: {
-//     name: solutionName
-//     tags: tags
-//     envName: envName
-//     location: location
-//   }
-// }
-
-// // Workload Infrastructure Module
-// // Deploys managed identity, messaging (Service Bus), container services, and Logic Apps
-// // Depends on monitoring outputs for workspace ID and Application Insights connection string
-// module workload './workload/main.bicep' = {
-//   scope: resourceGroup(resourceGroupName)
-//   params: {
-//     name: solutionName
-//     location: location
-//     envName: envName
-//     workspaceId: monitoring.outputs.AZURE_LOG_ANALYTICS_WORKSPACE_ID
-//     workspacePrimaryKey: monitoring.outputs.AZURE_LOG_ANALYTICS_WORKSPACE_PRIMARY_KEY
-//     workspaceCustomerId: monitoring.outputs.AZURE_LOG_ANALYTICS_WORKSPACE_CUSTOMER_ID
-//     storageAccountId: monitoring.outputs.LOGS_STORAGE_ACCOUNT_ID
-//     appInsightsConnectionString: monitoring.outputs.APPLICATIONINSIGHTS_CONNECTION_STRING
-//     tags: tags
-//   }
-// }
+// Workload Infrastructure Module
+// Deploys managed identity, messaging (Service Bus), container services, and Logic Apps
+// Depends on monitoring outputs for workspace ID and Application Insights connection string
+module workload './workload/main.bicep' = {
+  scope: resourceGroup(resourceGroupName)
+  params: {
+    name: solutionName
+    location: location
+    envName: envName
+    workspaceId: shared.outputs.AZURE_LOG_ANALYTICS_WORKSPACE_ID
+    workspacePrimaryKey: shared.outputs.AZURE_LOG_ANALYTICS_WORKSPACE_PRIMARY_KEY
+    workspaceCustomerId: shared.outputs.AZURE_LOG_ANALYTICS_WORKSPACE_CUSTOMER_ID
+    storageAccountId: shared.outputs.LOGS_STORAGE_ACCOUNT_ID
+    appInsightsConnectionString: shared.outputs.APPLICATIONINSIGHTS_CONNECTION_STRING
+    tags: tags
+  }
+}
 
 // // ========== Outputs ==========
 

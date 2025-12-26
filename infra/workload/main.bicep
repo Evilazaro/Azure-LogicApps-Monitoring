@@ -45,6 +45,10 @@ param envName string
 @maxLength(50)
 param location string = resourceGroup().location
 
+@description('Resource ID of the User Assigned Identity to be used by workload resources.')
+@minLength(50)
+param userAssignedIdentityId string
+
 @description('Resource ID of the Log Analytics workspace for diagnostic logs and metrics.')
 @minLength(50)
 param workspaceId string
@@ -61,6 +65,9 @@ param storageAccountId string
 
 @description('Connection string for Application Insights instance.')
 param appInsightsConnectionString string
+
+@description('Workflow Storage Account Name for Logic Apps runtime.')
+param workflowStorageAccountName string
 
 @description('Resource tags applied to all workload resources.')
 param tags tagsType
@@ -83,30 +90,6 @@ var allMetricsSettings object[] = [
 
 // ========== Modules ==========
 
-// Identity Module: Deploys user-assigned managed identity
-// Must be deployed first as other modules depend on its output
-module identity 'identity/main.bicep' = {
-  params: {
-    name: name
-    location: location
-    tags: tags
-    envName: envName
-  }
-}
-
-module data 'data/main.bicep' = {
-  params: {
-    name: name
-    envName: envName
-    location: location
-    workspaceId: workspaceId
-    storageAccountId: storageAccountId
-    metricsSettings: allMetricsSettings
-    userAssignedIdentityId: identity.outputs.AZURE_MANAGED_IDENTITY_ID
-    tags: tags
-  }
-}
-
 // Messaging Module: Deploys Service Bus and workflow storage
 // Provides message queue infrastructure and Logic Apps storage backend
 module messaging 'messaging/main.bicep' = {
@@ -114,7 +97,7 @@ module messaging 'messaging/main.bicep' = {
     name: name
     tags: tags
     envName: envName
-    userAssignedIdentityId: identity.outputs.AZURE_MANAGED_IDENTITY_ID
+    userAssignedIdentityId: userAssignedIdentityId
     storageAccountId: storageAccountId
     workspaceId: workspaceId
     logsSettings: allLogsSettings
@@ -128,7 +111,7 @@ module services 'services/main.bicep' = {
   params: {
     name: name
     location: location
-    userAssignedIdentityId: identity.outputs.AZURE_MANAGED_IDENTITY_ID
+    userAssignedIdentityId: userAssignedIdentityId
     envName: envName
     workspaceId: workspaceId
     workspaceCustomerId: workspaceCustomerId
@@ -152,65 +135,8 @@ module workflows 'logic-app.bicep' = {
     storageAccountId: storageAccountId
     metricsSettings: allMetricsSettings
     appInsightsConnectionString: appInsightsConnectionString
-    userAssignedIdentityId: identity.outputs.AZURE_MANAGED_IDENTITY_ID
-    workflowStorageAccountName: data.outputs.WORKFLOW_STORAGE_ACCOUNT_NAME
+    userAssignedIdentityId: userAssignedIdentityId
+    workflowStorageAccountName: workflowStorageAccountName
     tags: tags
   }
 }
-
-// ========== Outputs ==========
-
-// Managed Identity Outputs (Microsoft.ManagedIdentity/userAssignedIdentities)
-@description('Client ID of the deployed managed identity')
-output MANAGED_IDENTITY_CLIENT_ID string = identity.outputs.MANAGED_IDENTITY_CLIENT_ID
-
-@description('Name of the deployed managed identity')
-output MANAGED_IDENTITY_NAME string = identity.outputs.MANAGED_IDENTITY_NAME
-
-@description('Resource ID of the managed identity used by Container Registry')
-output AZURE_CONTAINER_REGISTRY_MANAGED_IDENTITY_ID string = identity.outputs.AZURE_MANAGED_IDENTITY_ID
-
-@description('Messaging Service Bus Host Name')
-output MESSAGING_SERVICEBUSHOSTNAME string = messaging.outputs.MESSAGING_SERVICEBUSHOSTNAME
-
-@description('Azure Service Bus endpoint')
-output MESSAGING_SERVICEBUSENDPOINT string = messaging.outputs.MESSAGING_SERVICEBUSENDPOINT
-
-// Container Registry Outputs (Microsoft.ContainerRegistry/registries)
-@description('Name of the Azure Container Registry')
-output AZURE_CONTAINER_REGISTRY_NAME string = services.outputs.AZURE_CONTAINER_REGISTRY_NAME
-
-@description('Login server endpoint for the Azure Container Registry')
-output AZURE_CONTAINER_REGISTRY_ENDPOINT string = services.outputs.AZURE_CONTAINER_REGISTRY_ENDPOINT
-
-// Container Apps Environment Outputs (Microsoft.App/managedEnvironments)
-@description('Name of the Container Apps Environment')
-output AZURE_CONTAINER_APPS_ENVIRONMENT_NAME string = services.outputs.AZURE_CONTAINER_APPS_ENVIRONMENT_NAME
-
-@description('Resource ID of the Container Apps managed environment')
-output AZURE_CONTAINER_APPS_ENVIRONMENT_ID string = services.outputs.AZURE_CONTAINER_APPS_ENVIRONMENT_ID
-
-@description('Default domain for the Container Apps environment')
-output AZURE_CONTAINER_APPS_ENVIRONMENT_DEFAULT_DOMAIN string = services.outputs.AZURE_CONTAINER_APPS_ENVIRONMENT_DEFAULT_DOMAIN
-
-@description('Azure Storage Workflow State Account Name')
-output WORKFLOW_STORAGE_ACCOUNT_NAME string = data.outputs.WORKFLOW_STORAGE_ACCOUNT_NAME
-
-@description('Name of the storage volume mount for orders-api')
-output ORDERS_STORAGE_VOLUME_NAME string = services.outputs.ORDERS_STORAGE_VOLUME_NAME
-
-// Logic Apps Outputs
-@description('Name of the deployed Logic App workflow engine')
-output LOGIC_APP_NAME string = workflows.outputs.LOGIC_APP_NAME
-
-@description('Resource ID of the deployed Logic App workflow engine')
-output LOGIC_APP_ID string = workflows.outputs.LOGIC_APP_ID
-
-@description('Default hostname of the Logic App workflow engine')
-output LOGIC_APP_DEFAULT_HOSTNAME string = workflows.outputs.LOGIC_APP_DEFAULT_HOSTNAME
-
-@description('Name of the App Service Plan hosting the Logic App')
-output APP_SERVICE_PLAN_NAME string = workflows.outputs.APP_SERVICE_PLAN_NAME
-
-@description('Resource ID of the App Service Plan')
-output APP_SERVICE_PLAN_ID string = workflows.outputs.APP_SERVICE_PLAN_ID

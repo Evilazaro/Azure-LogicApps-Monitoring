@@ -45,12 +45,14 @@ param location string
 ])
 param envName string
 
+param guidName string = newGuid()
+
 @description('Resource tags applied to the managed identity.')
 param tags tagsType
 
 // ========== Variables ==========
 
-var resourceSuffix string = uniqueString(resourceGroup().id, name, envName, location)
+var resourceSuffix string = uniqueString(subscription().subscriptionId,resourceGroup().id , name, envName, location, guidName)
 
 // ========== Resources ==========
 
@@ -110,12 +112,6 @@ resource userRA 'Microsoft.Authorization/roleAssignments@2022-04-01' = [
 ]
 
 // ========== Outputs ==========
-
-@description('Client ID of the deployed managed identity')
-output MANAGED_IDENTITY_CLIENT_ID string = mi.properties.clientId
-
-@description('Name of the deployed managed identity')
-output MANAGED_IDENTITY_NAME string = mi.name
 
 @description('Resource ID of the deployed managed identity (internal use only)')
 output AZURE_MANAGED_IDENTITY_ID string = mi.id

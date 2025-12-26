@@ -196,6 +196,7 @@ resource sqlDiag 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
     workspaceId: workspaceId
     storageAccountId: storageAccountId
     logAnalyticsDestinationType: 'Dedicated'
+    logs: logsSettings
     metrics: metricsSettings
   }
 }

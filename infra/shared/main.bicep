@@ -44,7 +44,6 @@ var allMetricsSettings object[] = [
   }
 ]
 
-
 // Identity Module: Deploys user-assigned managed identity
 // Must be deployed first as other modules depend on its output
 module identity 'identity/main.bicep' = {
@@ -55,6 +54,8 @@ module identity 'identity/main.bicep' = {
     envName: envName
   }
 }
+@description('Resource ID of the deployed managed identity (internal use only)')
+output AZURE_MANAGED_IDENTITY_ID string = identity.outputs.AZURE_MANAGED_IDENTITY_ID
 
 module monitoring 'monitoring/main.bicep' = {
   params: {
@@ -63,6 +64,16 @@ module monitoring 'monitoring/main.bicep' = {
     envName: envName
   }
 }
+
+// ========== Outputs ==========
+
+// Log Analytics Workspace Outputs (Microsoft.OperationalInsights/workspaces)
+@description('Resource ID of the Log Analytics workspace for configuring diagnostic settings')
+output AZURE_LOG_ANALYTICS_WORKSPACE_ID string = monitoring.outputs.AZURE_LOG_ANALYTICS_WORKSPACE_ID
+
+// Storage Account Outputs (Microsoft.Storage/storageAccounts)
+@description('Resource ID of the storage account for diagnostic logs and metrics')
+output LOGS_STORAGE_ACCOUNT_ID string = monitoring.outputs.LOGS_STORAGE_ACCOUNT_ID
 
 module data 'data/main.bicep' = {
   params: {
@@ -78,3 +89,6 @@ module data 'data/main.bicep' = {
     tags: tags
   }
 }
+
+@description('Storage account name for Logic Apps workflows and data')
+output WORKFLOW_STORAGE_ACCOUNT_NAME string = data.outputs.WORKFLOW_STORAGE_ACCOUNT_NAME
