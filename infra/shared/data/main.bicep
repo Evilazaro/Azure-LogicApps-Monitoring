@@ -177,6 +177,7 @@ resource sqlServer 'Microsoft.Sql/servers@2024-11-01-preview' = {
 }
 
 output ORDERSDATABASE_SQLSERVERFQDN string = sqlServer.properties.fullyQualifiedDomainName
+output AZURE_SQL_SERVER_NAME string = sqlServer.name
 
 // Enforce Entra ID-only authentication for SQL Server
 // Disables SQL authentication to enhance security
@@ -215,6 +216,8 @@ resource sqlDb 'Microsoft.Sql/servers/databases@2024-11-01-preview' = {
   }
   tags: tags
 }
+
+output AZURE_SQL_DATABASE_NAME string = sqlDb.name
 
 // Enable diagnostic settings for SQL Database
 @description('Diagnostic settings for SQL Database')

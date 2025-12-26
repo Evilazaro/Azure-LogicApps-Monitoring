@@ -136,3 +136,6 @@ output AZURE_STORAGE_ACCOUNT_NAME_WORKFLOW string = data.outputs.AZURE_STORAGE_A
 
 @description('Fully qualified domain name of the SQL Server for database connections')
 output ORDERSDATABASE_SQLSERVERFQDN string = data.outputs.ORDERSDATABASE_SQLSERVERFQDN
+
+output AZURE_SQL_SERVER_NAME string = data.outputs.AZURE_SQL_SERVER_NAME
+output AZURE_SQL_DATABASE_NAME string = data.outputs.AZURE_SQL_DATABASE_NAME
