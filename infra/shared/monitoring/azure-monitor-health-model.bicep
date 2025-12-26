@@ -18,7 +18,7 @@ metadata description = 'Creates service group hierarchy for organizing health mo
 
 // ========== Type Definitions ==========
 
-import { tagsType } from '../types.bicep'
+import { tagsType } from '../../types.bicep'
 
 // ========== Parameters ==========
 

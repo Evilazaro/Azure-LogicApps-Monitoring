@@ -19,7 +19,7 @@ metadata description = 'Deploys Log Analytics, Application Insights, and health 
 
 // ========== Type Definitions ==========
 
-import { tagsType } from '../types.bicep'
+import { tagsType } from '../../types.bicep'
 
 // Note: Diagnostic settings use object[] instead of user-defined types
 // due to Azure Resource Provider schema requirements
@@ -99,7 +99,7 @@ module insights 'app-insights.bicep' = {
     envName: envName
     location: location
     logAnalyticsWorkspaceId: operational.outputs.AZURE_LOG_ANALYTICS_WORKSPACE_ID
-    storageAccountId: operational.outputs.LOGS_STORAGE_ACCOUNT_ID
+    storageAccountId: operational.outputs.AZURE_STOARGE_ACCOUNT_ID_LOGS
     logsSettings: allLogsSettings
     metricsSettings: allMetricsSettings
     tags: tags
@@ -123,14 +123,14 @@ output AZURE_LOG_ANALYTICS_WORKSPACE_PRIMARY_KEY string = operational.outputs.AZ
 
 // Application Insights Outputs (Microsoft.Insights/components)
 @description('Name of the deployed Application Insights instance')
-output AZURE_APPLICATION_INSIGHTS_NAME string = insights.outputs.AZURE_APPLICATION_INSIGHTS_NAME
+output APPLICATION_INSIGHTS_NAME string = insights.outputs.APPLICATION_INSIGHTS_NAME
 
 @description('Connection string for Application Insights telemetry')
 output APPLICATIONINSIGHTS_CONNECTION_STRING string = insights.outputs.APPLICATIONINSIGHTS_CONNECTION_STRING
 
 @description('Instrumentation key for Application Insights telemetry')
-output AZURE_APPLICATION_INSIGHTS_INSTRUMENTATION_KEY string = insights.outputs.AZURE_APPLICATION_INSIGHTS_INSTRUMENTATION_KEY
+output APPLICATION_INSIGHTS_INSTRUMENTATION_KEY string = insights.outputs.APPLICATION_INSIGHTS_INSTRUMENTATION_KEY
 
 // Storage Account Outputs (Microsoft.Storage/storageAccounts)
 @description('Resource ID of the storage account for diagnostic logs and metrics')
-output LOGS_STORAGE_ACCOUNT_ID string = operational.outputs.LOGS_STORAGE_ACCOUNT_ID
+output AZURE_STOARGE_ACCOUNT_ID_LOGS string = operational.outputs.AZURE_STOARGE_ACCOUNT_ID_LOGS

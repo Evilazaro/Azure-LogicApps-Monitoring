@@ -56,6 +56,18 @@ param workspaceId string
 @minLength(50)
 param storageAccountId string
 
+@description('Principal ID (Object ID) of the Managed Identity to be used as SQL Server Entra admin')
+param entraAdminPrincipalId string
+
+@description('Name of the Managed Identity to be used as SQL Server Entra admin')
+param entraAdminLoginName string
+
+@description('Tenant ID for Microsoft Entra authentication')
+param tenantId string = subscription().tenantId
+
+@description('Logs settings for the Log Analytics workspace.')
+param logsSettings object[]
+
 @description('Metrics settings for the Log Analytics workspace.')
 param metricsSettings object[]
 
@@ -137,34 +149,74 @@ resource saDiag 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
   }
 }
 
-output WORKFLOW_STORAGE_ACCOUNT_NAME string = wfSA.name
+output AZURE_STORAGE_ACCOUNT_NAME_WORKFLOW string = wfSA.name
 
-module volumeStorage 'storage/main.bicep' = {
-  params: {
-    name: name
-    tags: tags
-    envName: envName
-    metricsSettings: metricsSettings
-    storageAccountId: storageAccountId
-    userAssignedIdentityId: userAssignedIdentityId
-    workspaceId: workspaceId
+resource sqlServer 'Microsoft.Sql/servers@2024-11-01-preview' = {
+  name: toLower('${cleanedName}server${uniqueSuffix}')
+  location: location
+  identity: {
+    type: 'UserAssigned'
+    userAssignedIdentities: {
+      '${userAssignedIdentityId}': {}
+    }
+  }
+  properties: {
+    primaryUserAssignedIdentityId: userAssignedIdentityId
+    administrators: {
+      administratorType: 'ActiveDirectory'
+      azureADOnlyAuthentication: true
+      principalType: 'Application' // 'Application' is used for Managed Identities and Service Principals
+      login: entraAdminLoginName
+      sid: entraAdminPrincipalId
+      tenantId: tenantId
+    }
+    publicNetworkAccess: 'Enabled' // Can be restricted based on requirements
+    minimalTlsVersion: '1.2'
+  }
+  tags: tags
+}
+
+resource entraOnlyAuth 'Microsoft.Sql/servers/azureADOnlyAuthentications@2024-11-01-preview' = {
+  parent: sqlServer
+  name: 'Default' // The name for this resource is typically 'Default'
+  properties: {
+    azureADOnlyAuthentication: true
   }
 }
 
-// ========== Outputs ==========
+resource sqlDb 'Microsoft.Sql/servers/databases@2024-11-01-preview' = {
+  name: toLower('${cleanedName}db${uniqueSuffix}')
+  parent: sqlServer
+  location: location
+  identity: {
+    type: 'UserAssigned'
+    userAssignedIdentities: {
+      '${userAssignedIdentityId}': {}
+    }
+  }
+  sku: {
+    name: 'GP_Gen5_2'
+    tier: 'GeneralPurpose'
+    family: 'Gen5'
+    capacity: 2
+    size: '32GB'
+  }
+  properties: {
+    collation: 'SQL_Latin1_General_CP1_CI_AS'
+    maxSizeBytes: 34359738368 // 32 GB
+    zoneRedundant: false
+  }
+  tags: tags
+}
 
-@description('Name of the storage account')
-output ORDERS_STORAGE_ACCOUNT_NAME string = volumeStorage.outputs.ORDERS_STORAGE_ACCOUNT_NAME
-
-@description('Orders Storage Account Container Endpoint')
-output DATA_CONTAINERENDPOINT string = volumeStorage.outputs.DATA_CONTAINERENDPOINT
-
-@description('Orders Storage Account Blob Endpoint')
-output DATA_BLOBENDPOINT string = volumeStorage.outputs.DATA_BLOBENDPOINT
-
-@description('Name of the file share')
-output ORDERS_FILE_SHARE_NAME string = volumeStorage.outputs.ORDERS_FILE_SHARE_NAME
-
-@description('Primary key of the storage account for Orders API Volume Mount')
-#disable-next-line outputs-should-not-contain-secrets
-output ORDERS_STORAGE_ACCOUNT_KEY string = volumeStorage.outputs.ORDERS_STORAGE_ACCOUNT_KEY
+resource sqlDiag 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
+  name: '${sqlDb.name}-diag'
+  scope: sqlDb
+  properties: {
+    workspaceId: workspaceId
+    storageAccountId: storageAccountId
+    logAnalyticsDestinationType: 'Dedicated'
+    logs: logsSettings
+    metrics: metricsSettings
+  }
+}

@@ -1,5 +1,3 @@
-using Aspire.Hosting.Azure;
-
 var builder = DistributedApplication.CreateBuilder(args);
 
 // =============================================================================
@@ -14,8 +12,6 @@ var resourceGroupParameter = CreateResourceGroupParameterIfNeeded(builder);
 
 var ordersApi = builder.AddProject<Projects.eShop_Orders_API>("orders-api");
 
-ConfigureOrdersStoragePath(builder, ordersApi, resourceGroupParameter);
-
 var webApp = builder.AddProject<Projects.eShop_Web_App>("web-app")
     .WithExternalHttpEndpoints()
     .WithHttpHealthCheck("/health")
@@ -29,6 +25,8 @@ var webApp = builder.AddProject<Projects.eShop_Web_App>("web-app")
 // through the infrastructure. In local development, it uses user secrets.
 
 ConfigureApplicationInsights(builder, resourceGroupParameter, ordersApi, webApp);
+
+ConfigureSQLAzure(builder, ordersApi, resourceGroupParameter);
 
 // =============================================================================
 // Azure Service Bus Configuration
@@ -64,55 +62,6 @@ static IResourceBuilder<ParameterResource>? CreateResourceGroupParameterIfNeeded
     }
 
     return builder.AddParameterFromConfiguration("resourceGroup", ResourceGroupConfigKey);
-}
-
-/// <summary>
-/// Configures the storage directory path for orders based on the deployment environment.
-/// Uses absolute paths for Azure Container Apps and relative paths for local development.
-/// </summary>
-/// <param name="builder">The distributed application builder.</param>
-/// <param name="ordersApi">The orders API project resource.</param>
-/// <param name="resourceGroupParameter">The shared Azure resource group parameter.</param>
-static void ConfigureOrdersStoragePath(
-    IDistributedApplicationBuilder builder,
-    IResourceBuilder<ProjectResource> ordersApi,
-    IResourceBuilder<ParameterResource>? resourceGroupParameter)
-{
-    const string DefaultParamName = "data";
-    const string DefaultStorageName = "orders-storage";
-    const string BlobContainerName = "orders";
-
-    var storageResourceName = builder.Configuration["Azure:Storage:AccountName"];
-    var isLocalMode = string.IsNullOrWhiteSpace(storageResourceName) ||
-                      storageResourceName.Equals(DefaultStorageName, StringComparison.OrdinalIgnoreCase);
-
-    if (isLocalMode)
-    {
-        // Local development mode - use Azure Storage emulator
-        var storageResource = builder.AddAzureStorage(DefaultParamName).RunAsEmulator();
-        var blobContainer = storageResource.AddBlobContainer(BlobContainerName);
-
-        ordersApi.WithReference(blobContainer);
-    }
-    else
-    {
-        // Azure deployment mode - use existing storage account with managed identity
-        if (resourceGroupParameter is null)
-        {
-            throw new InvalidOperationException(
-                "Azure Resource Group configuration is required when using Azure Storage Account. " +
-                "Please configure 'Azure:ResourceGroup' in your application settings.");
-        }
-
-        var storageAccountParameter = builder.AddParameter(DefaultParamName, storageResourceName!);
-
-        var storageResource = builder.AddAzureStorage(DefaultStorageName)
-            .AsExisting(storageAccountParameter, resourceGroupParameter);
-
-        var blobContainer = storageResource.AddBlobContainer(BlobContainerName);
-
-        ordersApi.WithReference(blobContainer);
-    }
 }
 
 /// <summary>
@@ -231,5 +180,44 @@ static void ConfigureServiceBus(
             .WithEnvironment("AZURE_SUBSCRIPTION_ID", azureSubscriptionId)
             .WithEnvironment("AZURE_CLIENT_ID", azureClientId)
             .WithEnvironment("AZURE_TENANT_ID", azureTenantId);
+    }
+}
+
+static void ConfigureSQLAzure(
+    IDistributedApplicationBuilder builder,
+    IResourceBuilder<ProjectResource> ordersApi,
+    IResourceBuilder<ParameterResource>? resourceGroupParameter)
+{
+    const string DefaultSqlServerName = "localhost";
+    const string DefaultDatabaseName = "eShopOrdersDb";
+    const string DefaultSqlUserName = "sa";
+    const string DefaultSqlPassword = "123#@!qweEWQ";
+    var sqlServerName = string.IsNullOrEmpty(builder.Configuration["Azure:SQL:ServerName"])
+        ? DefaultSqlServerName
+        : builder.Configuration["Azure:SQL:ServerName"];
+    var sqlDatabaseName = string.IsNullOrEmpty(builder.Configuration["Azure:SQL:DatabaseName"])
+        ? DefaultDatabaseName
+        : builder.Configuration["Azure:SQL:DatabaseName"];
+    var isLocalMode = (sqlServerName ?? string.Empty).Equals(DefaultSqlServerName, StringComparison.OrdinalIgnoreCase);
+    if (isLocalMode)
+    {
+        // Local development mode - use local SQL Server
+        var sqlResource = builder.AddAzureSqlServer("sql-db").RunAsContainer();
+        ordersApi.WithReference(sqlResource);
+    }
+    else
+    {
+        // Azure deployment mode - use existing SQL Server with managed identity
+        if (resourceGroupParameter is null)
+        {
+            throw new InvalidOperationException(
+                "Azure Resource Group configuration is required when using Azure SQL Database. " +
+                "Please configure 'Azure:ResourceGroup' in your application settings.");
+        }
+        var sqlServerParam = builder.AddParameter("sql-server", sqlServerName!);
+        var sqlResource = builder.AddAzureSqlServer("sql-db")
+            .AsExisting(sqlServerParam, resourceGroupParameter)
+            .AddDatabase(DefaultDatabaseName);
+        ordersApi.WithReference(sqlResource);
     }
 }

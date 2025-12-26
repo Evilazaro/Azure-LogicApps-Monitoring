@@ -21,7 +21,7 @@ metadata description = 'Deploys Log Analytics workspace with linked storage acco
 
 // ========== Type Definitions ==========
 
-import { tagsType, storageAccountConfig } from '../types.bicep'
+import { tagsType, storageAccountConfig } from '../../types.bicep'
 
 // ========== Parameters ==========
 
@@ -207,4 +207,4 @@ output AZURE_LOG_ANALYTICS_WORKSPACE_CUSTOMER_ID string = workspace.properties.c
 output AZURE_LOG_ANALYTICS_WORKSPACE_PRIMARY_KEY string = workspace.listKeys().primarySharedKey
 
 @description('Resource ID of the deployed storage account for logs')
-output LOGS_STORAGE_ACCOUNT_ID string = logSA.id
+output AZURE_STOARGE_ACCOUNT_ID_LOGS string = logSA.id
