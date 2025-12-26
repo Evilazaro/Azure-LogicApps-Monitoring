@@ -196,7 +196,7 @@ ${COLOR_BOLD}REQUIRED ENVIRONMENT VARIABLES:${COLOR_RESET}
 
 ${COLOR_BOLD}OPTIONAL ENVIRONMENT VARIABLES:${COLOR_RESET}
     AZURE_TENANT_ID                          - Azure tenant ID
-    AZURE_APPLICATION_INSIGHTS_NAME          - Application Insights name
+    APPLICATION_INSIGHTS_NAME          - Application Insights name
     APPLICATIONINSIGHTS_CONNECTION_STRING    - Application Insights connection string
     MANAGED_IDENTITY_CLIENT_ID               - Managed identity client ID
     MESSAGING_SERVICEBUSHOSTNAME             - Service Bus hostname
@@ -581,7 +581,7 @@ main() {
     local enable_app_insights="true"
     local app_insights_name
     local app_insights_conn_str
-    app_insights_name=$(get_env_var_safe "AZURE_APPLICATION_INSIGHTS_NAME")
+    app_insights_name=$(get_env_var_safe "APPLICATION_INSIGHTS_NAME")
     app_insights_conn_str=$(get_env_var_safe "APPLICATIONINSIGHTS_CONNECTION_STRING")
     
     # Managed Identity configuration

@@ -92,10 +92,10 @@ resource appDiag 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
 // ========== Outputs ==========
 
 @description('Name of the deployed Application Insights instance')
-output AZURE_APPLICATION_INSIGHTS_NAME string = appInsights.name
+output APPLICATION_INSIGHTS_NAME string = appInsights.name
 
 @description('Instrumentation key for Application Insights telemetry')
-output AZURE_APPLICATION_INSIGHTS_INSTRUMENTATION_KEY string = appInsights.properties.InstrumentationKey
+output APPLICATION_INSIGHTS_INSTRUMENTATION_KEY string = appInsights.properties.InstrumentationKey
 
 @description('Connection string for Application Insights telemetry')
 output APPLICATIONINSIGHTS_CONNECTION_STRING string = appInsights.properties.ConnectionString

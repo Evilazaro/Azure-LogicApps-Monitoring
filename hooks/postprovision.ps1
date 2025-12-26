@@ -668,7 +668,7 @@ try {
     
     # Application Insights configuration
     $enableApplicationInsights = $true  # Feature flag for telemetry
-    $applicationInsightsName = Get-EnvironmentVariableSafe -Name 'AZURE_APPLICATION_INSIGHTS_NAME'
+    $applicationInsightsName = Get-EnvironmentVariableSafe -Name 'APPLICATION_INSIGHTS_NAME'
     $applicationInsightsConnectionString = Get-EnvironmentVariableSafe -Name 'APPLICATIONINSIGHTS_CONNECTION_STRING'
     
     # Managed Identity configuration

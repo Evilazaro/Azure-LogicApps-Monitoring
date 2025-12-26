@@ -105,38 +105,38 @@ module messaging 'messaging/main.bicep' = {
   }
 }
 
-// Container Services Module: Deploys ACR, Container Apps Environment, and Aspire Dashboard
-// Provides container hosting infrastructure for microservices
-module services 'services/main.bicep' = {
-  params: {
-    name: name
-    location: location
-    userAssignedIdentityId: userAssignedIdentityId
-    envName: envName
-    workspaceId: workspaceId
-    workspaceCustomerId: workspaceCustomerId
-    workspacePrimaryKey: workspacePrimaryKey
-    storageAccountId: storageAccountId
-    logsSettings: allLogsSettings
-    metricsSettings: allMetricsSettings
-    appInsightsConnectionString: appInsightsConnectionString
-    tags: tags
-  }
-}
+// // Container Services Module: Deploys ACR, Container Apps Environment, and Aspire Dashboard
+// // Provides container hosting infrastructure for microservices
+// module services 'services/main.bicep' = {
+//   params: {
+//     name: name
+//     location: location
+//     userAssignedIdentityId: userAssignedIdentityId
+//     envName: envName
+//     workspaceId: workspaceId
+//     workspaceCustomerId: workspaceCustomerId
+//     workspacePrimaryKey: workspacePrimaryKey
+//     storageAccountId: storageAccountId
+//     logsSettings: allLogsSettings
+//     metricsSettings: allMetricsSettings
+//     appInsightsConnectionString: appInsightsConnectionString
+//     tags: tags
+//   }
+// }
 
-// Logic Apps Module: Deploys Logic Apps Standard workflow engine
-// Depends on identity and messaging storage account outputs
-module workflows 'logic-app.bicep' = {
-  params: {
-    name: name
-    location: location
-    envName: envName
-    workspaceId: workspaceId
-    storageAccountId: storageAccountId
-    metricsSettings: allMetricsSettings
-    appInsightsConnectionString: appInsightsConnectionString
-    userAssignedIdentityId: userAssignedIdentityId
-    workflowStorageAccountName: workflowStorageAccountName
-    tags: tags
-  }
-}
+// // Logic Apps Module: Deploys Logic Apps Standard workflow engine
+// // Depends on identity and messaging storage account outputs
+// module workflows 'logic-app.bicep' = {
+//   params: {
+//     name: name
+//     location: location
+//     envName: envName
+//     workspaceId: workspaceId
+//     storageAccountId: storageAccountId
+//     metricsSettings: allMetricsSettings
+//     appInsightsConnectionString: appInsightsConnectionString
+//     userAssignedIdentityId: userAssignedIdentityId
+//     workflowStorageAccountName: workflowStorageAccountName
+//     tags: tags
+//   }
+// }

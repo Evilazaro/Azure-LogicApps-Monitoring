@@ -119,13 +119,13 @@ module workload './workload/main.bicep' = {
 
 // // Application Insights Outputs (Microsoft.Insights/components)
 // @description('Name of the deployed Application Insights instance')
-// output AZURE_APPLICATION_INSIGHTS_NAME string = monitoring.outputs.AZURE_APPLICATION_INSIGHTS_NAME
+// output APPLICATION_INSIGHTS_NAME string = monitoring.outputs.APPLICATION_INSIGHTS_NAME
 
 // @description('Connection string for Application Insights telemetry')
 // output APPLICATIONINSIGHTS_CONNECTION_STRING string = monitoring.outputs.APPLICATIONINSIGHTS_CONNECTION_STRING
 
 // @description('Instrumentation key for Application Insights telemetry')
-// output AZURE_APPLICATION_INSIGHTS_INSTRUMENTATION_KEY string = monitoring.outputs.AZURE_APPLICATION_INSIGHTS_INSTRUMENTATION_KEY
+// output APPLICATION_INSIGHTS_INSTRUMENTATION_KEY string = monitoring.outputs.APPLICATION_INSIGHTS_INSTRUMENTATION_KEY
 
 // @description('Connection string for Application Insights telemetry (alias)')
 // output TELEMETRY_APPINSIGHTSCONNECTIONSTRING string = monitoring.outputs.APPLICATIONINSIGHTS_CONNECTION_STRING
