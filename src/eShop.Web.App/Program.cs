@@ -46,7 +46,7 @@ builder.Services.AddHttpClient<OrdersAPIService>((serviceProvider, client) =>
 {
     var configuration = serviceProvider.GetRequiredService<IConfiguration>();
     var baseAddress = configuration["services:orders-api:https:0"];
-    
+
     if (string.IsNullOrWhiteSpace(baseAddress))
     {
         throw new InvalidOperationException(

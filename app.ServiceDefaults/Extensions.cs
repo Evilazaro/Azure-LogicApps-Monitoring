@@ -191,7 +191,7 @@ public static class Extensions
     public static WebApplication MapDefaultEndpoints(this WebApplication app)
     {
         ArgumentNullException.ThrowIfNull(app);
-        
+
         if (app.Environment.IsDevelopment())
         {
             app.MapHealthChecks(HealthEndpointPath);

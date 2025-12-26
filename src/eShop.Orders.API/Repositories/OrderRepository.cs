@@ -46,7 +46,7 @@ public sealed class OrderRepository : IOrderRepository
 
             // Convert domain model to entity
             var orderEntity = order.ToEntity();
-            
+
             // Add new order - EF Core will handle duplicate detection via exception
             await _dbContext.Orders.AddAsync(orderEntity, cancellationToken).ConfigureAwait(false);
             await _dbContext.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
@@ -121,7 +121,7 @@ public sealed class OrderRepository : IOrderRepository
                 .ConfigureAwait(false);
 
             var order = orderEntity?.ToDomainModel();
-            
+
             if (order != null)
             {
                 _logger.LogDebug("Order {OrderId} retrieved successfully from database", orderId);

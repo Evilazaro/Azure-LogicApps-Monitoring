@@ -53,7 +53,7 @@ static IResourceBuilder<ParameterResource>? CreateResourceGroupParameterIfNeeded
     IDistributedApplicationBuilder builder)
 {
     ArgumentNullException.ThrowIfNull(builder);
-    
+
     const string ResourceGroupConfigKey = "Azure:ResourceGroup";
 
     var resourceGroup = builder.Configuration[ResourceGroupConfigKey];
@@ -80,7 +80,7 @@ static void ConfigureApplicationInsights(
 {
     ArgumentNullException.ThrowIfNull(builder);
     ArgumentNullException.ThrowIfNull(projects);
-    
+
     const string AppInsightsConnectionStringKey = "ApplicationInsights:ConnectionString";
     const string AppInsightsEnvironmentKey = "APPLICATIONINSIGHTS_CONNECTION_STRING";
 
@@ -125,7 +125,7 @@ static void ConfigureServiceBus(
 {
     ArgumentNullException.ThrowIfNull(builder);
     ArgumentNullException.ThrowIfNull(ordersApi);
-    
+
     const string DefaultNamespaceName = "localhost";
     const string DefaultConnectionStringName = "messaging";
     const string DefaultTopicName = "OrdersPlaced";
@@ -199,7 +199,7 @@ static void ConfigureSQLAzure(
 {
     ArgumentNullException.ThrowIfNull(builder);
     ArgumentNullException.ThrowIfNull(ordersApi);
-    
+
     const string DefaultSqlServerName = "localhost";
     const string DefaultDatabaseName = "eShopOrdersDb";
     const string DefaultSqlUserName = "sa";

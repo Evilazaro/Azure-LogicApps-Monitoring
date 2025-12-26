@@ -15,7 +15,7 @@ public sealed class OrdersMessageHandler : IOrdersMessageHandler
     private readonly ServiceBusClient _serviceBusClient;
     private readonly string _topicName;
     private readonly ActivitySource _activitySource;
-    
+
     private static readonly JsonSerializerOptions JsonOptions = new()
     {
         PropertyNameCaseInsensitive = true,
@@ -171,7 +171,7 @@ public sealed class OrdersMessageHandler : IOrdersMessageHandler
             }
 
             await sender.SendMessagesAsync(messages, cancellationToken).ConfigureAwait(false);
-            
+
             activity?.SetStatus(ActivityStatusCode.Ok);
             _logger.LogInformation("Successfully sent batch of {Count} order messages to topic {TopicName}",
                 messages.Count, _topicName);
