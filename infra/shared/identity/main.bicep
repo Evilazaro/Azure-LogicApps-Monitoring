@@ -45,14 +45,12 @@ param location string
 ])
 param envName string
 
-param guidName string = newGuid()
-
 @description('Resource tags applied to the managed identity.')
 param tags tagsType
 
 // ========== Variables ==========
 
-var resourceSuffix string = uniqueString(subscription().subscriptionId,resourceGroup().id , name, envName, location, guidName)
+var resourceSuffix string = uniqueString(subscription().subscriptionId,resourceGroup().id , name, envName, location)
 
 // ========== Resources ==========
 
