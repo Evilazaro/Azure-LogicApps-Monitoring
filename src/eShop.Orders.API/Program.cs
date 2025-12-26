@@ -1,8 +1,10 @@
+using eShop.Orders.API.Data;
 using eShop.Orders.API.Handlers;
 using eShop.Orders.API.Interfaces;
 using eShop.Orders.API.Repositories;
 using eShop.Orders.API.Services;
 using eShop.Orders.API.Services.Interfaces;
+using Microsoft.EntityFrameworkCore;
 using System.Diagnostics;
 using System.Diagnostics.Metrics;
 
@@ -14,11 +16,35 @@ builder.AddServiceDefaults();
 builder.Services.AddSingleton(new ActivitySource("eShop.Orders.API"));
 builder.Services.AddSingleton(new Meter("eShop.Orders.API"));
 
-// Configure strongly-typed options with validation
-builder.Services.AddOptions<OrderStorageOptions>()
-    .Bind(builder.Configuration.GetSection(OrderStorageOptions.SectionName))
-    .ValidateDataAnnotations()
-    .ValidateOnStart();
+// Configure Entity Framework Core with SQL Server
+builder.Services.AddDbContext<OrderDbContext>(options =>
+{
+    var connectionString = builder.Configuration.GetConnectionString("OrdersDatabase");
+    
+    if (string.IsNullOrEmpty(connectionString))
+    {
+        throw new InvalidOperationException("Connection string 'OrdersDatabase' is not configured.");
+    }
+
+    options.UseSqlServer(connectionString, sqlOptions =>
+    {
+        // Configure retry strategy for transient failures
+        sqlOptions.EnableRetryOnFailure(
+            maxRetryCount: 5,
+            maxRetryDelay: TimeSpan.FromSeconds(30),
+            errorNumbersToAdd: null);
+        
+        // Set command timeout
+        sqlOptions.CommandTimeout(30);
+    });
+
+    // Enable sensitive data logging in development
+    if (builder.Environment.IsDevelopment())
+    {
+        options.EnableSensitiveDataLogging();
+        options.EnableDetailedErrors();
+    }
+});
 
 // Register application services with scoped lifetime
 builder.Services.AddScoped<IOrderRepository, OrderRepository>();
