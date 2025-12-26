@@ -9,11 +9,19 @@
 
 ## 📋 Overview
 
-The `postprovision` script is an Azure Developer CLI (azd) hook that automatically configures .NET user secrets with Azure resource information immediately after infrastructure provisioning completes. As the third and final step in the deployment workflow, it bridges the gap between infrastructure deployment and application configuration by extracting Bicep outputs and Azure resource properties to populate connection strings, endpoints, and identifiers. Available in both PowerShell (`.ps1`) and Bash (`.sh`) versions for cross-platform compatibility.
+The `postprovision` script is an Azure Developer CLI (azd) hook that automatically configures .NET user secrets with Azure resource information immediately after infrastructure provisioning completes. As the third and final step in the deployment workflow, it bridges the gap between infrastructure deployment and application configuration by extracting Bicep outputs and Azure resource properties to populate connection strings, endpoints, and identifiers.
 
-Triggered automatically by `azd provision` and `azd up`, the script validates environment variables set by azd, authenticates to Azure Container Registry if configured, clears stale secrets via clean-secrets.ps1, and configures 26 secrets across three projects (app.AppHost, eShop.Orders.API, eShop.Web.App). Each project receives its tailored configuration including connection strings for Service Bus and Storage, Application Insights connection details, and service endpoints.
+Available in both PowerShell (`.ps1`) and Bash (`.sh`) versions for cross-platform compatibility, this script automatically runs after `azd provision` or `azd up`, configuring **28 secrets across 2 projects** (app.AppHost and eShop.Orders.API) with comprehensive Azure infrastructure details including SQL Database, Service Bus topics, Container Registry, Container Apps, and monitoring configuration.
 
-With comprehensive validation, error handling, and detailed logging, the script typically completes in 8-13 seconds, providing immediate feedback on configuration success. It supports both automatic execution within the azd workflow and manual invocation for reconfiguration scenarios, with optional Force and Verbose modes for CI/CD integration and troubleshooting.
+The script supports the current infrastructure which includes:
+- **SQL Database** with Entra ID authentication
+- **Service Bus** with topics and subscriptions
+- **Container Registry** and Container Apps Environment
+- **Application Insights** and Log Analytics
+- **Managed Identity** for authentication
+- **Storage accounts** for Logic Apps workflows
+
+With comprehensive validation, error handling, and detailed logging, the script typically completes in 8-15 seconds, providing immediate feedback on configuration success.
 
 ## 📑 Table of Contents
 

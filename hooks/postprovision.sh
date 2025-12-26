@@ -586,27 +586,47 @@ main() {
     
     # Managed Identity configuration
     local azure_client_id
+    local azure_managed_identity_name
     azure_client_id=$(get_env_var_safe "MANAGED_IDENTITY_CLIENT_ID")
+    azure_managed_identity_name=$(get_env_var_safe "MANAGED_IDENTITY_NAME")
     
     # Service Bus messaging configuration
     local azure_servicebus_hostname
     local azure_servicebus_topic
     local azure_servicebus_subscription
+    local azure_servicebus_endpoint
     azure_servicebus_hostname=$(get_env_var_safe "MESSAGING_SERVICEBUSHOSTNAME")
     azure_servicebus_topic=$(get_env_var_safe "AZURE_SERVICE_BUS_TOPIC_NAME" "OrdersPlaced")
     azure_servicebus_subscription=$(get_env_var_safe "AZURE_SERVICE_BUS_SUBSCRIPTION_NAME" "OrderProcessingSubscription")
+    azure_servicebus_endpoint=$(get_env_var_safe "MESSAGING_SERVICEBUSENDPOINT")
+    
+    # SQL Database configuration (new in current infrastructure)
+    local azure_sql_server_fqdn
+    azure_sql_server_fqdn=$(get_env_var_safe "ORDERSDATABASE_SQLSERVERFQDN")
+    
+    # Container Services configuration
+    local azure_acr_endpoint
+    local azure_acr_name
+    local azure_container_apps_env_name
+    local azure_container_apps_env_id
+    local azure_container_apps_domain
+    azure_acr_endpoint=$(get_env_var_safe "AZURE_CONTAINER_REGISTRY_ENDPOINT")
+    azure_acr_name=$(get_env_var_safe "AZURE_CONTAINER_REGISTRY_NAME")
+    azure_container_apps_env_name=$(get_env_var_safe "AZURE_CONTAINER_APPS_ENVIRONMENT_NAME")
+    azure_container_apps_env_id=$(get_env_var_safe "AZURE_CONTAINER_APPS_ENVIRONMENT_ID")
+    azure_container_apps_domain=$(get_env_var_safe "AZURE_CONTAINER_APPS_ENVIRONMENT_DEFAULT_DOMAIN")
+    
+    # Monitoring configuration
+    local azure_log_analytics_workspace
+    azure_log_analytics_workspace=$(get_env_var_safe "AZURE_LOG_ANALYTICS_WORKSPACE_NAME")
     
     # Environment and deployment configuration
     local azure_env_name
-    local azure_acr_endpoint
     azure_env_name=$(get_env_var_safe "AZURE_ENV_NAME")
-    azure_acr_endpoint=$(get_env_var_safe "AZURE_CONTAINER_REGISTRY_ENDPOINT")
     
     # Storage configuration
-    local azure_storage_volume
     local azure_storage_account
-    azure_storage_volume=$(get_env_var_safe "ORDERS_STORAGE_VOLUME_NAME")
-    azure_storage_account=$(get_env_var_safe "ORDERS_STORAGE_ACCOUNT_NAME")
+    azure_storage_account=$(get_env_var_safe "AZURE_STORAGE_ACCOUNT_NAME_WORKFLOW")
     
     # Display Azure configuration
     write_section_header "Azure Configuration" "sub"
@@ -623,8 +643,13 @@ main() {
     info "  Service Bus Host Name  : ${azure_servicebus_hostname:-$not_set}"
     info "  Service Bus Topic Name : ${azure_servicebus_topic:-$not_set}"
     info "  Service Bus Subscription: ${azure_servicebus_subscription:-$not_set}"
+    info "  Service Bus Endpoint   : ${azure_servicebus_endpoint:-$not_set}"
+    info "  SQL Server FQDN        : ${azure_sql_server_fqdn:-$not_set}"
     info "  ACR Endpoint           : ${azure_acr_endpoint:-$not_set}"
-    info "  Storage Volume Name    : ${azure_storage_volume:-$not_set}"
+    info "  ACR Name               : ${azure_acr_name:-$not_set}"
+    info "  Container Apps Env     : ${azure_container_apps_env_name:-$not_set}"
+    info "  Container Apps Domain  : ${azure_container_apps_domain:-$not_set}"
+    info "  Log Analytics Workspace: ${azure_log_analytics_workspace:-$not_set}"
     info "  Storage Account Name   : ${azure_storage_account:-$not_set}"
     
     # Attempt Azure Container Registry authentication
@@ -685,12 +710,20 @@ main() {
         "ApplicationInsights:Enabled=$enable_app_insights"
         "Azure:ApplicationInsights:Name=$app_insights_name"
         "ApplicationInsights:ConnectionString=$app_insights_conn_str"
-        "Azure:ClientId=$azure_client_id"
+        "Azure:ManagedIdentity:ClientId=$azure_client_id"
+        "Azure:ManagedIdentity:Name=$azure_managed_identity_name"
         "Azure:ServiceBus:HostName=$azure_servicebus_hostname"
         "Azure:ServiceBus:TopicName=$azure_servicebus_topic"
         "Azure:ServiceBus:SubscriptionName=$azure_servicebus_subscription"
-        "Azure:Storage:VolumeName=$azure_storage_volume"
+        "Azure:ServiceBus:Endpoint=$azure_servicebus_endpoint"
+        "Azure:SqlServer:Fqdn=$azure_sql_server_fqdn"
         "Azure:Storage:AccountName=$azure_storage_account"
+        "Azure:ContainerRegistry:Endpoint=$azure_acr_endpoint"
+        "Azure:ContainerRegistry:Name=$azure_acr_name"
+        "Azure:ContainerApps:EnvironmentName=$azure_container_apps_env_name"
+        "Azure:ContainerApps:EnvironmentId=$azure_container_apps_env_id"
+        "Azure:ContainerApps:DefaultDomain=$azure_container_apps_domain"
+        "Azure:LogAnalytics:WorkspaceName=$azure_log_analytics_workspace"
     )
     
     # Define API secrets
@@ -698,6 +731,10 @@ main() {
         "Azure:ServiceBus:HostName=$azure_servicebus_hostname"
         "Azure:ServiceBus:TopicName=$azure_servicebus_topic"
         "Azure:ServiceBus:SubscriptionName=$azure_servicebus_subscription"
+        "Azure:ServiceBus:Endpoint=$azure_servicebus_endpoint"
+        "Azure:SqlServer:Fqdn=$azure_sql_server_fqdn"
+        "Azure:ManagedIdentity:ClientId=$azure_client_id"
+        "ApplicationInsights:ConnectionString=$app_insights_conn_str"
     )
     
     TOTAL_SECRETS=$((${#apphost_secrets[@]} + ${#api_secrets[@]}))
