@@ -56,8 +56,14 @@ param workspaceId string
 @minLength(50)
 param storageAccountId string
 
-@secure()
-param administratorLoginPassword string = newGuid()
+@description('Principal ID (Object ID) of the Managed Identity to be used as SQL Server Entra admin')
+param entraAdminPrincipalId string
+
+@description('Name of the Managed Identity to be used as SQL Server Entra admin')
+param entraAdminLoginName string
+
+@description('Tenant ID for Microsoft Entra authentication')
+param tenantId string = subscription().tenantId
 
 @description('Logs settings for the Log Analytics workspace.')
 param logsSettings object[]
@@ -153,6 +159,18 @@ resource sqlServer 'Microsoft.Sql/servers@2024-11-01-preview' = {
     userAssignedIdentities: {
       '${userAssignedIdentityId}': {}
     }
+  }
+  properties: {
+    administrators: {
+      administratorType: 'ActiveDirectory'
+      azureADOnlyAuthentication: true
+      principalType: 'Application' // 'Application' is used for Managed Identities and Service Principals
+      login: entraAdminLoginName
+      sid: entraAdminPrincipalId
+      tenantId: tenantId
+    }
+    publicNetworkAccess: 'Enabled' // Can be restricted based on requirements
+    minimalTlsVersion: '1.2'
   }
   tags: tags
 }

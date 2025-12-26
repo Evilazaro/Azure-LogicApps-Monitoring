@@ -115,3 +115,6 @@ resource userRA 'Microsoft.Authorization/roleAssignments@2022-04-01' = [
 
 @description('Resource ID of the deployed managed identity (internal use only)')
 output AZURE_MANAGED_IDENTITY_ID string = mi.id
+
+@description('Managed Identity Principal ID for assigning permissions')
+output AZURE_MANAGED_IDENTITY_PRINCIPAL_ID string = mi.properties.principalId

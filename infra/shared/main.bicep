@@ -102,7 +102,9 @@ module data 'data/main.bicep' = {
     userAssignedIdentityId: identity.outputs.AZURE_MANAGED_IDENTITY_ID
     workspaceId: monitoring.outputs.AZURE_LOG_ANALYTICS_WORKSPACE_ID
     storageAccountId: monitoring.outputs.AZURE_STOARGE_ACCOUNT_ID_LOGS
-    administratorLoginPassword: '123#@!qweEWQ' // Replace with secure parameter or Key Vault reference in production
+    entraAdminLoginName: identity.name
+    entraAdminPrincipalId: identity.outputs.AZURE_MANAGED_IDENTITY_PRINCIPAL_ID
+    tenantId: subscription().tenantId
     logsSettings: allLogsSettings
     metricsSettings: allMetricsSettings
     tags: tags
