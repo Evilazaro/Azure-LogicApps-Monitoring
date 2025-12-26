@@ -109,6 +109,12 @@ output MANAGED_IDENTITY_NAME string = shared.outputs.MANAGED_IDENTITY_NAME
 @description('Name of the Log Analytics workspace for centralized logging')
 output AZURE_LOG_ANALYTICS_WORKSPACE_NAME string = shared.outputs.AZURE_LOG_ANALYTICS_WORKSPACE_NAME
 
+@description('Name of the deployed Application Insights instance')
+output APPLICATION_INSIGHTS_NAME string = shared.outputs.APPLICATION_INSIGHTS_NAME
+
+@description('Connection string for Application Insights telemetry')
+output APPLICATIONINSIGHTS_CONNECTION_STRING string = shared.outputs.APPLICATIONINSIGHTS_CONNECTION_STRING
+
 // Data Outputs
 @description('Fully qualified domain name of the SQL Server')
 output ORDERSDATABASE_SQLSERVERFQDN string = shared.outputs.ORDERSDATABASE_SQLSERVERFQDN
