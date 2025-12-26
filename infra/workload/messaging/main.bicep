@@ -132,9 +132,3 @@ resource sbDiag 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
     metrics: metricsSettings
   }
 }
-
-@description('Messaging Service Bus Host Name')
-output MESSAGING_SERVICEBUSHOSTNAME string = broker.name
-
-@description('Azure Service Bus endpoint')
-output MESSAGING_SERVICEBUSENDPOINT string = broker.properties.serviceBusEndpoint

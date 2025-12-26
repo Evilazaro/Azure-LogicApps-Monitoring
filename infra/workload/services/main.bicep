@@ -157,23 +157,3 @@ resource dashboard 'Microsoft.App/managedEnvironments/dotNetComponents@2025-10-0
     componentType: 'AspireDashboard'
   }
 }
-
-// ========== Outputs ==========
-
-@description('Login server endpoint for the Azure Container Registry')
-output AZURE_CONTAINER_REGISTRY_ENDPOINT string = registry.properties.loginServer
-
-@description('Name of the Azure Container Registry')
-output AZURE_CONTAINER_REGISTRY_NAME string = registry.name
-
-@description('Resource ID of the Container Apps managed environment')
-output AZURE_CONTAINER_APPS_ENVIRONMENT_ID string = appEnv.id
-
-@description('Name of the Container Apps Environment')
-output AZURE_CONTAINER_APPS_ENVIRONMENT_NAME string = appEnv.name
-
-@description('Default domain for the Container Apps environment')
-output AZURE_CONTAINER_APPS_ENVIRONMENT_DEFAULT_DOMAIN string = appEnv.properties.defaultDomain
-
-@description('Name of the storage volume mount for orders-api')
-output ORDERS_STORAGE_VOLUME_NAME string = storageVolumeName
