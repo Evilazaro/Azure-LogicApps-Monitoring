@@ -105,6 +105,9 @@ module messaging 'messaging/main.bicep' = {
   }
 }
 
+output MESSAGING_SERVICEBUSENDPOINT string = messaging.outputs.MESSAGING_SERVICEBUSENDPOINT
+output MESSAGING_SERVICEBUSHOSTNAME string = messaging.outputs.MESSAGING_SERVICEBUSHOSTNAME
+
 // Container Services Module: Deploys ACR, Container Apps Environment, and Aspire Dashboard
 // Provides container hosting infrastructure for microservices
 module services 'services/main.bicep' = {
@@ -124,6 +127,13 @@ module services 'services/main.bicep' = {
   }
 }
 
+output AZURE_CONTAINER_REGISTRY_ENDPOINT string = services.outputs.AZURE_CONTAINER_REGISTRY_ENDPOINT
+output AZURE_CONTAINER_REGISTRY_MANAGED_IDENTITY_ID string = services.outputs.AZURE_CONTAINER_REGISTRY_MANAGED_IDENTITY_ID
+output AZURE_CONTAINER_REGISTRY_NAME string = services.outputs.AZURE_CONTAINER_REGISTRY_NAME
+output AZURE_CONTAINER_APPS_ENVIRONMENT_NAME string = services.outputs.AZURE_CONTAINER_APPS_ENVIRONMENT_NAME
+output AZURE_CONTAINER_APPS_ENVIRONMENT_ID string = services.outputs.AZURE_CONTAINER_APPS_ENVIRONMENT_ID
+output AZURE_CONTAINER_APPS_ENVIRONMENT_DEFAULT_DOMAIN string = services.outputs.AZURE_CONTAINER_APPS_ENVIRONMENT_DEFAULT_DOMAIN
+
 // Logic Apps Module: Deploys Logic Apps Standard workflow engine
 // Depends on identity and messaging storage account outputs
 module workflows 'logic-app.bicep' = {
@@ -140,3 +150,5 @@ module workflows 'logic-app.bicep' = {
     tags: tags
   }
 }
+
+

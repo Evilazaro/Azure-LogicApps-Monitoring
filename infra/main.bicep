@@ -93,6 +93,13 @@ module shared 'shared/main.bicep' = {
   }
 }
 
+output MANAGED_IDENTITY_CLIENT_ID string = shared.outputs.MANAGED_IDENTITY_CLIENT_ID
+output MANAGED_IDENTITY_NAME string = shared.outputs.MANAGED_IDENTITY_NAME
+
+output AZURE_LOG_ANALYTICS_WORKSPACE_NAME string = shared.outputs.AZURE_LOG_ANALYTICS_WORKSPACE_NAME
+
+output SQL_DB_SQLSERVERFQDN string = shared.outputs.SQL_DB_SQLSERVERFQDN
+
 // Workload Infrastructure Module
 // Deploys managed identity, messaging (Service Bus), container services, and Logic Apps
 // Depends on monitoring outputs for workspace ID and Application Insights connection string
@@ -112,4 +119,16 @@ module workload './workload/main.bicep' = {
     tags: tags
   }
 }
+
+output MESSAGING_SERVICEBUSENDPOINT string = workload.outputs.MESSAGING_SERVICEBUSENDPOINT
+output MESSAGING_SERVICEBUSHOSTNAME string = workload.outputs.MESSAGING_SERVICEBUSHOSTNAME
+
+output AZURE_CONTAINER_REGISTRY_ENDPOINT string = workload.outputs.AZURE_CONTAINER_REGISTRY_ENDPOINT
+output AZURE_CONTAINER_REGISTRY_MANAGED_IDENTITY_ID string = workload.outputs.AZURE_CONTAINER_REGISTRY_MANAGED_IDENTITY_ID
+output AZURE_CONTAINER_REGISTRY_NAME string = workload.outputs.AZURE_CONTAINER_REGISTRY_NAME
+
+output AZURE_CONTAINER_APPS_ENVIRONMENT_NAME string = workload.outputs.AZURE_CONTAINER_APPS_ENVIRONMENT_NAME
+output AZURE_CONTAINER_APPS_ENVIRONMENT_ID string = workload.outputs.AZURE_CONTAINER_APPS_ENVIRONMENT_ID
+output AZURE_CONTAINER_APPS_ENVIRONMENT_DEFAULT_DOMAIN string = workload.outputs.AZURE_CONTAINER_APPS_ENVIRONMENT_DEFAULT_DOMAIN
+
 

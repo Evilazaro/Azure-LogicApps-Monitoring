@@ -102,6 +102,9 @@ resource broker 'Microsoft.ServiceBus/namespaces@2025-05-01-preview' = {
   }
 }
 
+output MESSAGING_SERVICEBUSENDPOINT string = broker.properties.serviceBusEndpoint
+output MESSAGING_SERVICEBUSHOSTNAME string = split(replace(broker.properties.serviceBusEndpoint, 'https://', ''), ':')[0]
+
 @description('Service Bus Topic for orders placed to be processed')
 resource ordersTopic 'Microsoft.ServiceBus/namespaces/topics@2025-05-01-preview' = {
   parent: broker
@@ -132,3 +135,4 @@ resource sbDiag 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
     metrics: metricsSettings
   }
 }
+

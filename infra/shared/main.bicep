@@ -57,6 +57,11 @@ module identity 'identity/main.bicep' = {
 @description('Resource ID of the deployed managed identity (internal use only)')
 output AZURE_MANAGED_IDENTITY_ID string = identity.outputs.AZURE_MANAGED_IDENTITY_ID
 
+@description('Managed Identity ClientId (internal use only)')
+output MANAGED_IDENTITY_CLIENT_ID string = identity.outputs.MANAGED_IDENTITY_CLIENT_ID
+
+output MANAGED_IDENTITY_NAME string = identity.outputs.MANAGED_IDENTITY_NAME
+
 module monitoring 'monitoring/main.bicep' = {
   params: {
     name: name
@@ -113,3 +118,5 @@ module data 'data/main.bicep' = {
 
 @description('Storage account name for Logic Apps workflows and data')
 output AZURE_STORAGE_ACCOUNT_NAME_WORKFLOW string = data.outputs.AZURE_STORAGE_ACCOUNT_NAME_WORKFLOW
+
+output SQL_DB_SQLSERVERFQDN string = data.outputs.SQL_DB_SQLSERVERFQDN

@@ -61,6 +61,11 @@ resource mi 'Microsoft.ManagedIdentity/userAssignedIdentities@2025-01-31-preview
   tags: tags
 }
 
+@description('Managed Identity ClientId (internal use only)')
+output MANAGED_IDENTITY_CLIENT_ID string = mi.properties.clientId
+
+output MANAGED_IDENTITY_NAME string = mi.name
+
 // Built-in Azure role definition IDs for managed identity
 // These GUIDs are consistent across all Azure subscriptions
 var roles string[] = [

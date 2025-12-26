@@ -100,6 +100,10 @@ resource registry 'Microsoft.ContainerRegistry/registries@2025-11-01' = {
   }
 }
 
+output AZURE_CONTAINER_REGISTRY_ENDPOINT string = registry.properties.loginServer
+output AZURE_CONTAINER_REGISTRY_MANAGED_IDENTITY_ID string = registry.identity.userAssignedIdentities[userAssignedIdentityId].id
+output AZURE_CONTAINER_REGISTRY_NAME string = registry.name
+
 @description('Diagnostic settings for Container Registry')
 resource registryDiag 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
   name: '${registry.name}-diag'
@@ -148,6 +152,10 @@ resource appEnv 'Microsoft.App/managedEnvironments@2025-02-02-preview' = {
     }
   }
 }
+
+output AZURE_CONTAINER_APPS_ENVIRONMENT_NAME string = appEnv.name
+output AZURE_CONTAINER_APPS_ENVIRONMENT_ID string = appEnv.id
+output AZURE_CONTAINER_APPS_ENVIRONMENT_DEFAULT_DOMAIN string = appEnv.properties.defaultDomain
 
 @description('.NET Aspire dashboard component for application observability')
 resource dashboard 'Microsoft.App/managedEnvironments/dotNetComponents@2025-10-02-preview' = {
