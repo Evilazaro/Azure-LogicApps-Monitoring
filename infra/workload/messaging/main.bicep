@@ -102,6 +102,15 @@ resource broker 'Microsoft.ServiceBus/namespaces@2025-05-01-preview' = {
   }
 }
 
+// ========== Outputs ==========
+
+@description('Service Bus endpoint URL for message brokering')
+output MESSAGING_SERVICEBUSENDPOINT string = broker.properties.serviceBusEndpoint
+
+@description('Service Bus hostname for connection configuration')
+output MESSAGING_SERVICEBUSHOSTNAME string = split(replace(broker.properties.serviceBusEndpoint, 'https://', ''), ':')[0]
+
+// Service Bus Topic for order processing workflow
 @description('Service Bus Topic for orders placed to be processed')
 resource ordersTopic 'Microsoft.ServiceBus/namespaces/topics@2025-05-01-preview' = {
   parent: broker
@@ -132,9 +141,3 @@ resource sbDiag 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
     metrics: metricsSettings
   }
 }
-
-@description('Messaging Service Bus Host Name')
-output MESSAGING_SERVICEBUSHOSTNAME string = broker.name
-
-@description('Azure Service Bus endpoint')
-output MESSAGING_SERVICEBUSENDPOINT string = broker.properties.serviceBusEndpoint

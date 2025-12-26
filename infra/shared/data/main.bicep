@@ -176,6 +176,11 @@ resource sqlServer 'Microsoft.Sql/servers@2024-11-01-preview' = {
   tags: tags
 }
 
+output SQL_DB_SQLSERVERFQDN string = sqlServer.properties.fullyQualifiedDomainName
+
+// Enforce Entra ID-only authentication for SQL Server
+// Disables SQL authentication to enhance security
+@description('Entra-only authentication configuration for SQL Server')
 resource entraOnlyAuth 'Microsoft.Sql/servers/azureADOnlyAuthentications@2024-11-01-preview' = {
   parent: sqlServer
   name: 'Default' // The name for this resource is typically 'Default'
@@ -184,6 +189,8 @@ resource entraOnlyAuth 'Microsoft.Sql/servers/azureADOnlyAuthentications@2024-11
   }
 }
 
+// SQL Database resource for application data
+@description('SQL Database for storing application data')
 resource sqlDb 'Microsoft.Sql/servers/databases@2024-11-01-preview' = {
   name: toLower('${cleanedName}db${uniqueSuffix}')
   parent: sqlServer
@@ -209,6 +216,8 @@ resource sqlDb 'Microsoft.Sql/servers/databases@2024-11-01-preview' = {
   tags: tags
 }
 
+// Enable diagnostic settings for SQL Database
+@description('Diagnostic settings for SQL Database')
 resource sqlDiag 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
   name: '${sqlDb.name}-diag'
   scope: sqlDb

@@ -80,7 +80,9 @@ param tags tagsType
 
 // ========== Variables ==========
 
-var storageVolumeName string = 'orders-storage'
+// Generate unique name for Container Apps Environment
+// Uses subscription and resource group for uniqueness across deployments
+var appEnvName string = toLower('${name}-cae-${uniqueString(subscription().id, resourceGroup().id, location, envName)}')
 
 // ========== Resources ==========
 
@@ -100,6 +102,19 @@ resource registry 'Microsoft.ContainerRegistry/registries@2025-11-01' = {
   }
 }
 
+// ========== Outputs ==========
+
+// Container Registry Outputs
+@description('Container Registry login server endpoint')
+output AZURE_CONTAINER_REGISTRY_ENDPOINT string = registry.properties.loginServer
+
+@description('Managed identity resource ID for Container Registry')
+output AZURE_CONTAINER_REGISTRY_MANAGED_IDENTITY_ID string = registry.identity.userAssignedIdentities[userAssignedIdentityId].id
+
+@description('Name of the Azure Container Registry')
+output AZURE_CONTAINER_REGISTRY_NAME string = registry.name
+
+// Diagnostic Settings for Container Registry
 @description('Diagnostic settings for Container Registry')
 resource registryDiag 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
   name: '${registry.name}-diag'
@@ -111,10 +126,6 @@ resource registryDiag 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview'
     metrics: metricsSettings
   }
 }
-
-// Generate unique name for Container Apps Environment
-// Uses subscription and resource group for uniqueness across deployments
-var appEnvName string = toLower('${name}-cae-${uniqueString(subscription().id, resourceGroup().id, location, envName)}')
 
 @description('Container Apps managed environment for hosting containerized applications')
 resource appEnv 'Microsoft.App/managedEnvironments@2025-02-02-preview' = {
@@ -149,6 +160,17 @@ resource appEnv 'Microsoft.App/managedEnvironments@2025-02-02-preview' = {
   }
 }
 
+// Container Apps Environment Outputs
+@description('Name of the Container Apps Environment')
+output AZURE_CONTAINER_APPS_ENVIRONMENT_NAME string = appEnv.name
+
+@description('Resource ID of the Container Apps Environment')
+output AZURE_CONTAINER_APPS_ENVIRONMENT_ID string = appEnv.id
+
+@description('Default domain for the Container Apps Environment')
+output AZURE_CONTAINER_APPS_ENVIRONMENT_DEFAULT_DOMAIN string = appEnv.properties.defaultDomain
+
+// .NET Aspire Dashboard for Application Observability
 @description('.NET Aspire dashboard component for application observability')
 resource dashboard 'Microsoft.App/managedEnvironments/dotNetComponents@2025-10-02-preview' = {
   parent: appEnv
@@ -157,23 +179,3 @@ resource dashboard 'Microsoft.App/managedEnvironments/dotNetComponents@2025-10-0
     componentType: 'AspireDashboard'
   }
 }
-
-// ========== Outputs ==========
-
-@description('Login server endpoint for the Azure Container Registry')
-output AZURE_CONTAINER_REGISTRY_ENDPOINT string = registry.properties.loginServer
-
-@description('Name of the Azure Container Registry')
-output AZURE_CONTAINER_REGISTRY_NAME string = registry.name
-
-@description('Resource ID of the Container Apps managed environment')
-output AZURE_CONTAINER_APPS_ENVIRONMENT_ID string = appEnv.id
-
-@description('Name of the Container Apps Environment')
-output AZURE_CONTAINER_APPS_ENVIRONMENT_NAME string = appEnv.name
-
-@description('Default domain for the Container Apps environment')
-output AZURE_CONTAINER_APPS_ENVIRONMENT_DEFAULT_DOMAIN string = appEnv.properties.defaultDomain
-
-@description('Name of the storage volume mount for orders-api')
-output ORDERS_STORAGE_VOLUME_NAME string = storageVolumeName
