@@ -191,7 +191,7 @@ static void ConfigureSQLAzure(
     const string DefaultSqlServerName = "localhost";
     const string DefaultDatabaseName = "eShopOrdersDb";
     const string DefaultSqlUserName = "sa";
-    const string DefaultSqlPassword = "Your_password123";
+    const string DefaultSqlPassword = "123#@!qweEWQ";
     var sqlServerName = string.IsNullOrEmpty(builder.Configuration["Azure:SQL:ServerName"])
         ? DefaultSqlServerName
         : builder.Configuration["Azure:SQL:ServerName"];
@@ -202,14 +202,7 @@ static void ConfigureSQLAzure(
     if (isLocalMode)
     {
         // Local development mode - use local SQL Server
-        var sqlResource = builder.AddAzureSqlServer("sql-db")
-            .RunAsContainer(configureContainer =>
-            {
-                configureContainer
-                    .WithEnvironment("ACCEPT_EULA", "Y")
-                    .WithEnvironment("SA_PASSWORD", DefaultSqlPassword)
-                    .WithHostPort(1433);
-            });
+        var sqlResource = builder.AddAzureSqlServer("sql-db").RunAsContainer();
         ordersApi.WithReference(sqlResource);
     }
     else
@@ -224,7 +217,7 @@ static void ConfigureSQLAzure(
         var sqlServerParam = builder.AddParameter("sql-server", sqlServerName!);
         var sqlResource = builder.AddAzureSqlServer("sql-db")
             .AsExisting(sqlServerParam, resourceGroupParameter)
-            .AddDatabase(sqlDatabaseName!);
+            .AddDatabase(DefaultDatabaseName);
         ordersApi.WithReference(sqlResource);
     }
 }
