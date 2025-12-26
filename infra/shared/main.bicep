@@ -71,9 +71,28 @@ module monitoring 'monitoring/main.bicep' = {
 @description('Resource ID of the Log Analytics workspace for configuring diagnostic settings')
 output AZURE_LOG_ANALYTICS_WORKSPACE_ID string = monitoring.outputs.AZURE_LOG_ANALYTICS_WORKSPACE_ID
 
+@description('Name of the deployed Log Analytics workspace')
+output AZURE_LOG_ANALYTICS_WORKSPACE_NAME string = monitoring.outputs.AZURE_LOG_ANALYTICS_WORKSPACE_NAME
+
+@description('Log Analytics workspace customer ID')
+output AZURE_LOG_ANALYTICS_WORKSPACE_CUSTOMER_ID string = monitoring.outputs.AZURE_LOG_ANALYTICS_WORKSPACE_CUSTOMER_ID
+
+@description('Primary Key for the Log Analytics workspace')
+output AZURE_LOG_ANALYTICS_WORKSPACE_PRIMARY_KEY string = monitoring.outputs.AZURE_LOG_ANALYTICS_WORKSPACE_PRIMARY_KEY
+
+// Application Insights Outputs (Microsoft.Insights/components)
+@description('Name of the deployed Application Insights instance')
+output APPLICATION_INSIGHTS_NAME string = monitoring.outputs.APPLICATION_INSIGHTS_NAME
+
+@description('Connection string for Application Insights telemetry')
+output APPLICATIONINSIGHTS_CONNECTION_STRING string = monitoring.outputs.APPLICATIONINSIGHTS_CONNECTION_STRING
+
+@description('Instrumentation key for Application Insights telemetry')
+output APPLICATION_INSIGHTS_INSTRUMENTATION_KEY string = monitoring.outputs.APPLICATION_INSIGHTS_INSTRUMENTATION_KEY
+
 // Storage Account Outputs (Microsoft.Storage/storageAccounts)
 @description('Resource ID of the storage account for diagnostic logs and metrics')
-output LOGS_STORAGE_ACCOUNT_ID string = monitoring.outputs.LOGS_STORAGE_ACCOUNT_ID
+output AZURE_STOARGE_ACCOUNT_ID_LOGS string = monitoring.outputs.AZURE_STOARGE_ACCOUNT_ID_LOGS
 
 module data 'data/main.bicep' = {
   params: {
@@ -82,7 +101,7 @@ module data 'data/main.bicep' = {
     location: location
     userAssignedIdentityId: identity.outputs.AZURE_MANAGED_IDENTITY_ID
     workspaceId: monitoring.outputs.AZURE_LOG_ANALYTICS_WORKSPACE_ID
-    storageAccountId: monitoring.outputs.LOGS_STORAGE_ACCOUNT_ID
+    storageAccountId: monitoring.outputs.AZURE_STOARGE_ACCOUNT_ID_LOGS
     administratorLoginPassword: '123#@!qweEWQ' // Replace with secure parameter or Key Vault reference in production
     logsSettings: allLogsSettings
     metricsSettings: allMetricsSettings
@@ -91,4 +110,4 @@ module data 'data/main.bicep' = {
 }
 
 @description('Storage account name for Logic Apps workflows and data')
-output WORKFLOW_STORAGE_ACCOUNT_NAME string = data.outputs.WORKFLOW_STORAGE_ACCOUNT_NAME
+output AZURE_STORAGE_ACCOUNT_NAME_WORKFLOW string = data.outputs.AZURE_STORAGE_ACCOUNT_NAME_WORKFLOW

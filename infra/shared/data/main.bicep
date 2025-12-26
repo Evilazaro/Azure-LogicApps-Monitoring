@@ -143,7 +143,7 @@ resource saDiag 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
   }
 }
 
-output WORKFLOW_STORAGE_ACCOUNT_NAME string = wfSA.name
+output AZURE_STORAGE_ACCOUNT_NAME_WORKFLOW string = wfSA.name
 
 resource sqlServer 'Microsoft.Sql/servers@2024-11-01-preview' = {
   name: toLower('${cleanedName}server${uniqueSuffix}')

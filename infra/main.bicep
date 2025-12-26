@@ -105,8 +105,10 @@ module workload './workload/main.bicep' = {
     workspaceId: shared.outputs.AZURE_LOG_ANALYTICS_WORKSPACE_ID
     workspacePrimaryKey: shared.outputs.AZURE_LOG_ANALYTICS_WORKSPACE_PRIMARY_KEY
     workspaceCustomerId: shared.outputs.AZURE_LOG_ANALYTICS_WORKSPACE_CUSTOMER_ID
-    storageAccountId: shared.outputs.LOGS_STORAGE_ACCOUNT_ID
+    storageAccountId: shared.outputs.AZURE_STOARGE_ACCOUNT_ID_LOGS
     appInsightsConnectionString: shared.outputs.APPLICATIONINSIGHTS_CONNECTION_STRING
+    userAssignedIdentityId: shared.outputs.AZURE_MANAGED_IDENTITY_ID
+    workflowStorageAccountName: shared.outputs.AZURE_STORAGE_ACCOUNT_NAME_WORKFLOW
     tags: tags
   }
 }
@@ -171,7 +173,7 @@ module workload './workload/main.bicep' = {
 // output AZURE_TENANT_ID string = tenant().tenantId
 
 // @description('Azure Storage Workflow State Account Name')
-// output LOGICAPPS_STORAGE_ACCOUNT_NAME string = workload.outputs.WORKFLOW_STORAGE_ACCOUNT_NAME
+// output LOGICAPPS_STORAGE_ACCOUNT_NAME string = workload.outputs.AZURE_STORAGE_ACCOUNT_NAME_WORKFLOW
 
 // @description('Name of the storage volume mount for orders-api')
 // output ORDERS_STORAGE_VOLUME_NAME string = workload.outputs.ORDERS_STORAGE_VOLUME_NAME

@@ -99,7 +99,7 @@ module insights 'app-insights.bicep' = {
     envName: envName
     location: location
     logAnalyticsWorkspaceId: operational.outputs.AZURE_LOG_ANALYTICS_WORKSPACE_ID
-    storageAccountId: operational.outputs.LOGS_STORAGE_ACCOUNT_ID
+    storageAccountId: operational.outputs.AZURE_STOARGE_ACCOUNT_ID_LOGS
     logsSettings: allLogsSettings
     metricsSettings: allMetricsSettings
     tags: tags
@@ -133,4 +133,4 @@ output APPLICATION_INSIGHTS_INSTRUMENTATION_KEY string = insights.outputs.APPLIC
 
 // Storage Account Outputs (Microsoft.Storage/storageAccounts)
 @description('Resource ID of the storage account for diagnostic logs and metrics')
-output LOGS_STORAGE_ACCOUNT_ID string = operational.outputs.LOGS_STORAGE_ACCOUNT_ID
+output AZURE_STOARGE_ACCOUNT_ID_LOGS string = operational.outputs.AZURE_STOARGE_ACCOUNT_ID_LOGS

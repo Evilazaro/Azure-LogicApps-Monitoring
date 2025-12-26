@@ -686,7 +686,7 @@ try {
     $azureContainerRegistryEndpoint = Get-EnvironmentVariableSafe -Name 'AZURE_CONTAINER_REGISTRY_ENDPOINT'
     
     # Storage configuration for Logic Apps and Orders
-    $azureStorageAccountName = Get-EnvironmentVariableSafe -Name 'WORKFLOW_STORAGE_ACCOUNT_NAME'
+    $azureStorageAccountName = Get-EnvironmentVariableSafe -Name 'AZURE_STORAGE_ACCOUNT_NAME_WORKFLOW'
     $azureOrdersStorageVolumeName = Get-EnvironmentVariableSafe -Name 'ORDERS_STORAGE_VOLUME_NAME'
     $azureOrdersStorageAccountName = Get-EnvironmentVariableSafe -Name 'ORDERS_STORAGE_ACCOUNT_NAME'
     
