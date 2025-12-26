@@ -82,7 +82,6 @@ static void ConfigureApplicationInsights(
     ArgumentNullException.ThrowIfNull(projects);
 
     const string AppInsightsConnectionStringKey = "ApplicationInsights:ConnectionString";
-    const string AppInsightsEnvironmentKey = "APPLICATIONINSIGHTS_CONNECTION_STRING";
 
     var appInsightsConnectionString = builder.Configuration[AppInsightsConnectionStringKey];
     var appInsightsName = builder.Configuration["Azure:ApplicationInsights:Name"];
@@ -200,10 +199,9 @@ static void ConfigureSQLAzure(
     ArgumentNullException.ThrowIfNull(builder);
     ArgumentNullException.ThrowIfNull(ordersApi);
 
-    const string DefaultSqlServerName = "localhost";
-    const string DefaultDatabaseName = "eShopOrdersDb";
-    const string DefaultSqlUserName = "sa";
-    const string DefaultSqlPassword = "123#@!qweEWQ";
+    const string DefaultSqlServerName = "OrdersDatabase";
+    const string DefaultDatabaseName = "OrderDb";
+
     var sqlServerName = string.IsNullOrEmpty(builder.Configuration["Azure:SQL:ServerName"])
         ? DefaultSqlServerName
         : builder.Configuration["Azure:SQL:ServerName"];
@@ -211,25 +209,33 @@ static void ConfigureSQLAzure(
         ? DefaultDatabaseName
         : builder.Configuration["Azure:SQL:DatabaseName"];
     var isLocalMode = (sqlServerName ?? string.Empty).Equals(DefaultSqlServerName, StringComparison.OrdinalIgnoreCase);
+
     if (isLocalMode)
     {
-        // Local development mode - use local SQL Server
-        var sqlResource = builder.AddAzureSqlServer("sql-db").RunAsContainer();
-        ordersApi.WithReference(sqlResource);
+        // Local development mode - use SQL Server container with persistent volume
+        var sqlServer = builder.AddSqlServer(DefaultSqlServerName)
+            .WithDataVolume(); // Now this works!
+
+        var sqlDatabase = sqlServer.AddDatabase(DefaultDatabaseName);
+
+        ordersApi.WithReference(sqlDatabase);
     }
     else
     {
-        // Azure deployment mode - use existing SQL Server with managed identity
+        // Azure deployment mode - use existing Azure SQL Server with managed identity
         if (resourceGroupParameter is null)
         {
             throw new InvalidOperationException(
                 "Azure Resource Group configuration is required when using Azure SQL Database. " +
                 "Please configure 'Azure:ResourceGroup' in your application settings.");
         }
-        var sqlServerParam = builder.AddParameter("sql-server", sqlServerName!);
-        var sqlResource = builder.AddAzureSqlServer("sql-db")
-            .AsExisting(sqlServerParam, resourceGroupParameter)
-            .AddDatabase(DefaultDatabaseName);
-        ordersApi.WithReference(sqlResource);
+
+        var sqlServerParam = builder.AddParameter(DefaultSqlServerName, sqlServerName!);
+        var sqlServer = builder.AddAzureSqlServer(DefaultSqlServerName)
+            .AsExisting(sqlServerParam, resourceGroupParameter);
+
+        var sqlDatabase = sqlServer.AddDatabase(DefaultDatabaseName);
+
+        ordersApi.WithReference(sqlDatabase);
     }
 }

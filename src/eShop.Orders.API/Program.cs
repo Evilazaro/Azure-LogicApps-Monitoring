@@ -19,12 +19,12 @@ builder.Services.AddSingleton(new Meter("eShop.Orders.API"));
 // Configure Entity Framework Core with SQL Server
 builder.Services.AddDbContext<OrderDbContext>(options =>
 {
-    var connectionString = builder.Configuration.GetConnectionString("OrdersDatabase");
+    var connectionString = builder.Configuration.GetConnectionString("OrderDb");
 
     if (string.IsNullOrWhiteSpace(connectionString))
     {
         throw new InvalidOperationException(
-            "Connection string 'OrdersDatabase' is not configured. " +
+            "Connection string 'OrderDb' is not configured. " +
             "Please ensure the connection string is properly set in appsettings.json or environment variables.");
     }
 
@@ -77,6 +77,24 @@ if (builder.Environment.IsDevelopment())
 builder.AddAzureServiceBusClient();
 
 var app = builder.Build();
+
+// Apply database migrations in development
+if (app.Environment.IsDevelopment())
+{
+    using var scope = app.Services.CreateScope();
+    var dbContext = scope.ServiceProvider.GetRequiredService<OrderDbContext>();
+
+    try
+    {
+        dbContext.Database.EnsureCreated();
+        // Or use: await dbContext.Database.MigrateAsync();
+    }
+    catch (Exception ex)
+    {
+        var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
+        logger.LogError(ex, "An error occurred while migrating the database.");
+    }
+}
 
 app.MapDefaultEndpoints();
 
