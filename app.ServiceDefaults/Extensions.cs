@@ -9,7 +9,6 @@ using Microsoft.Extensions.Logging;
 using OpenTelemetry;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Trace;
-using OpenTelemetry.Instrumentation.SqlClient;
 
 namespace Microsoft.Extensions.Hosting;
 

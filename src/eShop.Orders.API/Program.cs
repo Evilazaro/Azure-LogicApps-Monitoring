@@ -82,12 +82,12 @@ using (var scope = app.Services.CreateScope())
 {
     var services = scope.ServiceProvider;
     var logger = services.GetRequiredService<ILogger<Program>>();
-    
+
     try
     {
         var dbContext = services.GetRequiredService<OrderDbContext>();
         logger.LogInformation("Initializing database...");
-        
+
         // Use migrations in production, EnsureCreated for development
         if (app.Environment.IsProduction())
         {
