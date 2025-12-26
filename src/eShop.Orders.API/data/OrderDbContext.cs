@@ -1,4 +1,3 @@
-using app.ServiceDefaults.CommonTypes;
 using eShop.Orders.API.Data.Entities;
 using Microsoft.EntityFrameworkCore;
 

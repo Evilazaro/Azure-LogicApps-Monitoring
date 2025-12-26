@@ -20,7 +20,7 @@ builder.Services.AddSingleton(new Meter("eShop.Orders.API"));
 builder.Services.AddDbContext<OrderDbContext>(options =>
 {
     var connectionString = builder.Configuration.GetConnectionString("OrdersDatabase");
-    
+
     if (string.IsNullOrEmpty(connectionString))
     {
         throw new InvalidOperationException("Connection string 'OrdersDatabase' is not configured.");
@@ -33,7 +33,7 @@ builder.Services.AddDbContext<OrderDbContext>(options =>
             maxRetryCount: 5,
             maxRetryDelay: TimeSpan.FromSeconds(30),
             errorNumbersToAdd: null);
-        
+
         // Set command timeout
         sqlOptions.CommandTimeout(30);
     });
