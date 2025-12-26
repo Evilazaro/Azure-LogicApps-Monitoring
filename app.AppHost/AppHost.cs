@@ -52,6 +52,8 @@ builder.Build().Run();
 static IResourceBuilder<ParameterResource>? CreateResourceGroupParameterIfNeeded(
     IDistributedApplicationBuilder builder)
 {
+    ArgumentNullException.ThrowIfNull(builder);
+    
     const string ResourceGroupConfigKey = "Azure:ResourceGroup";
 
     var resourceGroup = builder.Configuration[ResourceGroupConfigKey];
@@ -69,12 +71,16 @@ static IResourceBuilder<ParameterResource>? CreateResourceGroupParameterIfNeeded
 /// Enables distributed tracing and telemetry collection in Azure environments.
 /// </summary>
 /// <param name="builder">The distributed application builder.</param>
+/// <param name="resourceGroupParameter">The Azure resource group parameter.</param>
 /// <param name="projects">The project resources to configure with Application Insights.</param>
 static void ConfigureApplicationInsights(
     IDistributedApplicationBuilder builder,
     IResourceBuilder<ParameterResource>? resourceGroupParameter,
     params IResourceBuilder<ProjectResource>[] projects)
 {
+    ArgumentNullException.ThrowIfNull(builder);
+    ArgumentNullException.ThrowIfNull(projects);
+    
     const string AppInsightsConnectionStringKey = "ApplicationInsights:ConnectionString";
     const string AppInsightsEnvironmentKey = "APPLICATIONINSIGHTS_CONNECTION_STRING";
 
@@ -117,6 +123,9 @@ static void ConfigureServiceBus(
     IResourceBuilder<ProjectResource> ordersApi,
     IResourceBuilder<ParameterResource>? resourceGroupParameter)
 {
+    ArgumentNullException.ThrowIfNull(builder);
+    ArgumentNullException.ThrowIfNull(ordersApi);
+    
     const string DefaultNamespaceName = "localhost";
     const string DefaultConnectionStringName = "messaging";
     const string DefaultTopicName = "OrdersPlaced";
@@ -188,6 +197,9 @@ static void ConfigureSQLAzure(
     IResourceBuilder<ProjectResource> ordersApi,
     IResourceBuilder<ParameterResource>? resourceGroupParameter)
 {
+    ArgumentNullException.ThrowIfNull(builder);
+    ArgumentNullException.ThrowIfNull(ordersApi);
+    
     const string DefaultSqlServerName = "localhost";
     const string DefaultDatabaseName = "eShopOrdersDb";
     const string DefaultSqlUserName = "sa";

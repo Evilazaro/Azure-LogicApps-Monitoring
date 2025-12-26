@@ -190,6 +190,8 @@ public static class Extensions
     /// <returns>The configured web application instance for method chaining.</returns>
     public static WebApplication MapDefaultEndpoints(this WebApplication app)
     {
+        ArgumentNullException.ThrowIfNull(app);
+        
         if (app.Environment.IsDevelopment())
         {
             app.MapHealthChecks(HealthEndpointPath);

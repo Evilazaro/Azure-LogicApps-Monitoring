@@ -21,9 +21,11 @@ builder.Services.AddDbContext<OrderDbContext>(options =>
 {
     var connectionString = builder.Configuration.GetConnectionString("OrdersDatabase");
 
-    if (string.IsNullOrEmpty(connectionString))
+    if (string.IsNullOrWhiteSpace(connectionString))
     {
-        throw new InvalidOperationException("Connection string 'OrdersDatabase' is not configured.");
+        throw new InvalidOperationException(
+            "Connection string 'OrdersDatabase' is not configured. " +
+            "Please ensure the connection string is properly set in appsettings.json or environment variables.");
     }
 
     options.UseSqlServer(connectionString, sqlOptions =>
@@ -38,7 +40,7 @@ builder.Services.AddDbContext<OrderDbContext>(options =>
         sqlOptions.CommandTimeout(30);
     });
 
-    // Enable sensitive data logging in development
+    // Enable sensitive data logging in development only
     if (builder.Environment.IsDevelopment())
     {
         options.EnableSensitiveDataLogging();

@@ -15,9 +15,12 @@ public sealed class OrdersMessageHandler : IOrdersMessageHandler
     private readonly ServiceBusClient _serviceBusClient;
     private readonly string _topicName;
     private readonly ActivitySource _activitySource;
+    
     private static readonly JsonSerializerOptions JsonOptions = new()
     {
-        PropertyNameCaseInsensitive = true
+        PropertyNameCaseInsensitive = true,
+        WriteIndented = false,
+        DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull
     };
 
     /// <summary>
@@ -58,6 +61,7 @@ public sealed class OrdersMessageHandler : IOrdersMessageHandler
         activity?.SetTag("messaging.system", "servicebus");
         activity?.SetTag("messaging.destination.name", _topicName);
         activity?.SetTag("messaging.operation", "publish");
+        activity?.SetTag("messaging.destination.kind", "topic");
         activity?.SetTag("order.id", order.Id);
         activity?.SetTag("order.customer_id", order.CustomerId);
 
@@ -78,6 +82,7 @@ public sealed class OrdersMessageHandler : IOrdersMessageHandler
             {
                 message.ApplicationProperties["TraceId"] = activity.TraceId.ToString();
                 message.ApplicationProperties["SpanId"] = activity.SpanId.ToString();
+                message.ApplicationProperties["TraceParent"] = activity.Id ?? string.Empty;
             }
 
             await sender.SendMessageAsync(message, cancellationToken).ConfigureAwait(false);
@@ -89,7 +94,17 @@ public sealed class OrdersMessageHandler : IOrdersMessageHandler
         catch (ServiceBusException ex)
         {
             activity?.SetStatus(ActivityStatusCode.Error, ex.Message);
-            _logger.LogError(ex, "Failed to send order message for order {OrderId} to topic {TopicName}",
+            activity?.SetTag("error.type", nameof(ServiceBusException));
+            activity?.SetTag("exception.message", ex.Message);
+            _logger.LogError(ex, "Failed to send order message for order {OrderId} to topic {TopicName}. Reason: {Reason}",
+                order.Id, _topicName, ex.Reason);
+            throw;
+        }
+        catch (Exception ex)
+        {
+            activity?.SetStatus(ActivityStatusCode.Error, ex.Message);
+            activity?.SetTag("error.type", ex.GetType().Name);
+            _logger.LogError(ex, "Unexpected error sending order message for order {OrderId} to topic {TopicName}",
                 order.Id, _topicName);
             throw;
         }
@@ -119,20 +134,21 @@ public sealed class OrdersMessageHandler : IOrdersMessageHandler
         activity?.SetTag("messaging.system", "servicebus");
         activity?.SetTag("messaging.destination.name", _topicName);
         activity?.SetTag("messaging.operation", "publish");
+        activity?.SetTag("messaging.destination.kind", "topic");
         activity?.SetTag("messaging.batch.message_count", ordersList.Count);
 
         await using var sender = _serviceBusClient.CreateSender(_topicName);
 
         try
         {
-            var messages = new List<ServiceBusMessage>();
+            var messages = new List<ServiceBusMessage>(ordersList.Count);
 
             foreach (var order in ordersList)
             {
                 activity?.AddEvent(new ActivityEvent("OrderInBatch",
                     tags: new ActivityTagsCollection
                     {
-                    { "order.id", order.Id }
+                        { "order.id", order.Id }
                     }));
 
                 var messageBody = JsonSerializer.Serialize(order, JsonOptions);
@@ -148,19 +164,33 @@ public sealed class OrdersMessageHandler : IOrdersMessageHandler
                 {
                     message.ApplicationProperties["TraceId"] = activity.TraceId.ToString();
                     message.ApplicationProperties["SpanId"] = activity.SpanId.ToString();
+                    message.ApplicationProperties["TraceParent"] = activity.Id ?? string.Empty;
                 }
 
                 messages.Add(message);
             }
 
             await sender.SendMessagesAsync(messages, cancellationToken).ConfigureAwait(false);
+            
+            activity?.SetStatus(ActivityStatusCode.Ok);
             _logger.LogInformation("Successfully sent batch of {Count} order messages to topic {TopicName}",
                 messages.Count, _topicName);
         }
         catch (ServiceBusException ex)
         {
             activity?.SetStatus(ActivityStatusCode.Error, ex.Message);
-            _logger.LogError(ex, "Failed to send batch of order messages to topic {TopicName}", _topicName);
+            activity?.SetTag("error.type", nameof(ServiceBusException));
+            activity?.SetTag("exception.message", ex.Message);
+            _logger.LogError(ex, "Failed to send batch of order messages to topic {TopicName}. Reason: {Reason}",
+                _topicName, ex.Reason);
+            throw;
+        }
+        catch (Exception ex)
+        {
+            activity?.SetStatus(ActivityStatusCode.Error, ex.Message);
+            activity?.SetTag("error.type", ex.GetType().Name);
+            _logger.LogError(ex, "Unexpected error sending batch of order messages to topic {TopicName}",
+                _topicName);
             throw;
         }
     }

@@ -50,10 +50,7 @@ public sealed class OrdersController : ControllerBase
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<ActionResult<Order>> PlaceOrder([FromBody] Order order, CancellationToken cancellationToken)
     {
-        if (order == null)
-        {
-            return BadRequest(new { error = "Order cannot be null" });
-        }
+        ArgumentNullException.ThrowIfNull(order);
 
         using var activity = _activitySource.StartActivity("PlaceOrder", ActivityKind.Server);
         activity?.SetTag("order.id", order.Id);
@@ -62,6 +59,8 @@ public sealed class OrdersController : ControllerBase
         activity?.SetTag("order.products.count", order.Products?.Count ?? 0);
         activity?.SetTag("http.method", "POST");
         activity?.SetTag("http.route", "/api/orders");
+        activity?.SetTag("http.request.method", "POST");
+        activity?.SetTag("url.path", "/api/orders");
 
         // Add trace ID to log scope for correlation
         using var logScope = _logger.BeginScope(new Dictionary<string, object>
@@ -73,28 +72,31 @@ public sealed class OrdersController : ControllerBase
 
         try
         {
-            var placedOrder = await _orderService.PlaceOrderAsync(order, cancellationToken);
+            var placedOrder = await _orderService.PlaceOrderAsync(order, cancellationToken).ConfigureAwait(false);
             activity?.SetStatus(ActivityStatusCode.Ok);
             return CreatedAtAction(nameof(GetOrderById), new { id = placedOrder.Id }, placedOrder);
         }
         catch (ArgumentException ex)
         {
             activity?.SetStatus(ActivityStatusCode.Error, "Validation failed");
+            activity?.SetTag("error.type", nameof(ArgumentException));
             _logger.LogWarning(ex, "Invalid order data for order {OrderId}", order.Id);
-            return BadRequest(new { error = ex.Message, orderId = order.Id });
+            return BadRequest(new { error = ex.Message, orderId = order.Id, type = "ValidationError" });
         }
         catch (InvalidOperationException ex)
         {
             activity?.SetStatus(ActivityStatusCode.Error, "Order already exists");
+            activity?.SetTag("error.type", nameof(InvalidOperationException));
             _logger.LogWarning(ex, "Order {OrderId} already exists", order.Id);
-            return Conflict(new { error = ex.Message, orderId = order.Id });
+            return Conflict(new { error = ex.Message, orderId = order.Id, type = "ConflictError" });
         }
         catch (Exception ex)
         {
             activity?.SetStatus(ActivityStatusCode.Error, ex.Message);
+            activity?.SetTag("error.type", ex.GetType().Name);
             _logger.LogError(ex, "Unexpected error while placing order {OrderId}", order.Id);
             return StatusCode(StatusCodes.Status500InternalServerError,
-                new { error = "An error occurred while processing your request", orderId = order.Id });
+                new { error = "An error occurred while processing your request", orderId = order.Id, type = "InternalError" });
         }
     }
 
@@ -113,16 +115,20 @@ public sealed class OrdersController : ControllerBase
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<ActionResult<IEnumerable<Order>>> PlaceOrdersBatch([FromBody] IEnumerable<Order> orders, CancellationToken cancellationToken)
     {
-        if (orders == null || !orders.Any())
+        ArgumentNullException.ThrowIfNull(orders);
+
+        var ordersList = orders.ToList();
+        if (ordersList.Count == 0)
         {
-            return BadRequest(new { error = "Orders collection cannot be null or empty" });
+            return BadRequest(new { error = "Orders collection cannot be empty", type = "ValidationError" });
         }
 
         using var activity = _activitySource.StartActivity("PlaceOrdersBatch", ActivityKind.Server);
-        var ordersList = orders.ToList();
         activity?.SetTag("orders.count", ordersList.Count);
         activity?.SetTag("http.method", "POST");
         activity?.SetTag("http.route", "/api/orders/batch");
+        activity?.SetTag("http.request.method", "POST");
+        activity?.SetTag("url.path", "/api/orders/batch");
 
         using var logScope = _logger.BeginScope(new Dictionary<string, object>
         {
@@ -132,16 +138,17 @@ public sealed class OrdersController : ControllerBase
 
         try
         {
-            var placedOrders = await _orderService.PlaceOrdersBatchAsync(ordersList, cancellationToken);
+            var placedOrders = await _orderService.PlaceOrdersBatchAsync(ordersList, cancellationToken).ConfigureAwait(false);
             activity?.SetStatus(ActivityStatusCode.Ok);
             return Ok(placedOrders);
         }
         catch (Exception ex)
         {
             activity?.SetStatus(ActivityStatusCode.Error, ex.Message);
+            activity?.SetTag("error.type", ex.GetType().Name);
             _logger.LogError(ex, "Unexpected error while placing batch of orders");
             return StatusCode(StatusCodes.Status500InternalServerError,
-                new { error = "An error occurred while processing your request" });
+                new { error = "An error occurred while processing your request", type = "InternalError" });
         }
     }
 
@@ -160,6 +167,8 @@ public sealed class OrdersController : ControllerBase
         using var activity = _activitySource.StartActivity("GetOrders", ActivityKind.Server);
         activity?.SetTag("http.method", "GET");
         activity?.SetTag("http.route", "/api/orders");
+        activity?.SetTag("http.request.method", "GET");
+        activity?.SetTag("url.path", "/api/orders");
 
         using var logScope = _logger.BeginScope(new Dictionary<string, object>
         {
@@ -168,16 +177,17 @@ public sealed class OrdersController : ControllerBase
 
         try
         {
-            var orders = await _orderService.GetOrdersAsync(cancellationToken);
+            var orders = await _orderService.GetOrdersAsync(cancellationToken).ConfigureAwait(false);
             activity?.SetStatus(ActivityStatusCode.Ok);
             return Ok(orders);
         }
         catch (Exception ex)
         {
             activity?.SetStatus(ActivityStatusCode.Error, ex.Message);
+            activity?.SetTag("error.type", ex.GetType().Name);
             _logger.LogError(ex, "Unexpected error while retrieving orders");
             return StatusCode(StatusCodes.Status500InternalServerError,
-                new { error = "An error occurred while processing your request" });
+                new { error = "An error occurred while processing your request", type = "InternalError" });
         }
     }
 
@@ -207,6 +217,8 @@ public sealed class OrdersController : ControllerBase
         activity?.SetTag("order.id", id);
         activity?.SetTag("http.method", "GET");
         activity?.SetTag("http.route", "/api/orders/{id}");
+        activity?.SetTag("http.request.method", "GET");
+        activity?.SetTag("url.path", $"/api/orders/{id}");
 
         using var logScope = _logger.BeginScope(new Dictionary<string, object>
         {
@@ -216,12 +228,12 @@ public sealed class OrdersController : ControllerBase
 
         try
         {
-            var order = await _orderService.GetOrderByIdAsync(id, cancellationToken);
+            var order = await _orderService.GetOrderByIdAsync(id, cancellationToken).ConfigureAwait(false);
 
             if (order == null)
             {
                 activity?.SetStatus(ActivityStatusCode.Error, "Order not found");
-                return NotFound(new { error = $"Order with ID {id} not found", orderId = id });
+                return NotFound(new { error = $"Order with ID {id} not found", orderId = id, type = "NotFoundError" });
             }
 
             activity?.SetStatus(ActivityStatusCode.Ok);
@@ -230,9 +242,10 @@ public sealed class OrdersController : ControllerBase
         catch (Exception ex)
         {
             activity?.SetStatus(ActivityStatusCode.Error, ex.Message);
+            activity?.SetTag("error.type", ex.GetType().Name);
             _logger.LogError(ex, "Unexpected error while retrieving order {OrderId}", id);
             return StatusCode(StatusCodes.Status500InternalServerError,
-                new { error = "An error occurred while processing your request", orderId = id });
+                new { error = "An error occurred while processing your request", orderId = id, type = "InternalError" });
         }
     }
 
@@ -262,6 +275,8 @@ public sealed class OrdersController : ControllerBase
         activity?.SetTag("order.id", id);
         activity?.SetTag("http.method", "DELETE");
         activity?.SetTag("http.route", "/api/orders/{id}");
+        activity?.SetTag("http.request.method", "DELETE");
+        activity?.SetTag("url.path", $"/api/orders/{id}");
 
         using var logScope = _logger.BeginScope(new Dictionary<string, object>
         {
@@ -272,15 +287,15 @@ public sealed class OrdersController : ControllerBase
         try
         {
             // First check if order exists
-            var order = await _orderService.GetOrderByIdAsync(id, cancellationToken);
+            var order = await _orderService.GetOrderByIdAsync(id, cancellationToken).ConfigureAwait(false);
             if (order == null)
             {
                 activity?.SetStatus(ActivityStatusCode.Error, "Order not found");
-                return NotFound(new { error = $"Order with ID {id} not found", orderId = id });
+                return NotFound(new { error = $"Order with ID {id} not found", orderId = id, type = "NotFoundError" });
             }
 
             // Delete the order
-            var deleted = await _orderService.DeleteOrderAsync(id, cancellationToken);
+            var deleted = await _orderService.DeleteOrderAsync(id, cancellationToken).ConfigureAwait(false);
 
             if (deleted)
             {
@@ -288,19 +303,18 @@ public sealed class OrdersController : ControllerBase
                 _logger.LogInformation("Successfully deleted order {OrderId}", id);
                 return NoContent();
             }
-            else
-            {
-                activity?.SetStatus(ActivityStatusCode.Error, "Failed to delete order");
-                return StatusCode(StatusCodes.Status500InternalServerError,
-                    new { error = "Failed to delete order", orderId = id });
-            }
+
+            activity?.SetStatus(ActivityStatusCode.Error, "Failed to delete order");
+            return StatusCode(StatusCodes.Status500InternalServerError,
+                new { error = "Failed to delete order", orderId = id, type = "InternalError" });
         }
         catch (Exception ex)
         {
             activity?.SetStatus(ActivityStatusCode.Error, ex.Message);
+            activity?.SetTag("error.type", ex.GetType().Name);
             _logger.LogError(ex, "Unexpected error while deleting order {OrderId}", id);
             return StatusCode(StatusCodes.Status500InternalServerError,
-                new { error = "An error occurred while processing your request", orderId = id });
+                new { error = "An error occurred while processing your request", orderId = id, type = "InternalError" });
         }
     }
 
@@ -316,16 +330,20 @@ public sealed class OrdersController : ControllerBase
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<ActionResult<int>> DeleteOrdersBatch([FromBody] IEnumerable<string> orderIds, CancellationToken cancellationToken)
     {
-        if (orderIds == null || !orderIds.Any())
+        ArgumentNullException.ThrowIfNull(orderIds);
+
+        var orderIdsList = orderIds.ToList();
+        if (orderIdsList.Count == 0)
         {
-            return BadRequest("Order IDs collection cannot be null or empty");
+            return BadRequest(new { error = "Order IDs collection cannot be empty", type = "ValidationError" });
         }
 
         using var activity = _activitySource.StartActivity("DeleteOrdersBatch", ActivityKind.Server);
-        var orderIdsList = orderIds.ToList();
         activity?.SetTag("orders.count", orderIdsList.Count);
         activity?.SetTag("http.method", "POST");
         activity?.SetTag("http.route", "/api/orders/batch/delete");
+        activity?.SetTag("http.request.method", "POST");
+        activity?.SetTag("url.path", "/api/orders/batch/delete");
 
         using var logScope = _logger.BeginScope(new Dictionary<string, object>
         {
@@ -335,7 +353,7 @@ public sealed class OrdersController : ControllerBase
 
         try
         {
-            var deletedCount = await _orderService.DeleteOrdersBatchAsync(orderIdsList, cancellationToken);
+            var deletedCount = await _orderService.DeleteOrdersBatchAsync(orderIdsList, cancellationToken).ConfigureAwait(false);
             activity?.SetStatus(ActivityStatusCode.Ok);
             _logger.LogInformation("Successfully deleted {DeletedCount} orders out of {TotalCount}", deletedCount, orderIdsList.Count);
             return Ok(deletedCount);
@@ -343,8 +361,10 @@ public sealed class OrdersController : ControllerBase
         catch (Exception ex)
         {
             activity?.SetStatus(ActivityStatusCode.Error, ex.Message);
+            activity?.SetTag("error.type", ex.GetType().Name);
             _logger.LogError(ex, "Failed to delete orders batch");
-            return StatusCode(StatusCodes.Status500InternalServerError, $"Failed to delete orders: {ex.Message}");
+            return StatusCode(StatusCodes.Status500InternalServerError,
+                new { error = "Failed to delete orders", message = ex.Message, type = "InternalError" });
         }
     }
 }

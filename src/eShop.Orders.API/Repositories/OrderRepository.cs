@@ -30,7 +30,7 @@ public sealed class OrderRepository : IOrderRepository
 
     /// <summary>
     /// Saves an order to the database asynchronously.
-    /// Creates or updates the order if it already exists.
+    /// Creates a new order if it doesn't exist.
     /// </summary>
     /// <param name="order">The order to save.</param>
     /// <param name="cancellationToken">Cancellation token to cancel the operation.</param>
@@ -44,38 +44,19 @@ public sealed class OrderRepository : IOrderRepository
         {
             _logger.LogDebug("Saving order {OrderId} to database", order.Id);
 
-            // Check if order already exists
-            var existingOrder = await _dbContext.Orders
-                .Include(o => o.Products)
-                .FirstOrDefaultAsync(o => o.Id == order.Id, cancellationToken)
-                .ConfigureAwait(false);
-
-            if (existingOrder != null)
-            {
-                // Update existing order
-                existingOrder.CustomerId = order.CustomerId;
-                existingOrder.Date = order.Date;
-                existingOrder.DeliveryAddress = order.DeliveryAddress;
-                existingOrder.Total = order.Total;
-
-                // Remove old products
-                _dbContext.OrderProducts.RemoveRange(existingOrder.Products);
-
-                // Add new products
-                existingOrder.Products = order.Products.Select(p => p.ToEntity()).ToList();
-
-                _dbContext.Orders.Update(existingOrder);
-            }
-            else
-            {
-                // Add new order
-                var orderEntity = order.ToEntity();
-                await _dbContext.Orders.AddAsync(orderEntity, cancellationToken).ConfigureAwait(false);
-            }
-
+            // Convert domain model to entity
+            var orderEntity = order.ToEntity();
+            
+            // Add new order - EF Core will handle duplicate detection via exception
+            await _dbContext.Orders.AddAsync(orderEntity, cancellationToken).ConfigureAwait(false);
             await _dbContext.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
 
             _logger.LogDebug("Order {OrderId} saved to database successfully", order.Id);
+        }
+        catch (DbUpdateException ex) when (ex.InnerException?.Message.Contains("duplicate", StringComparison.OrdinalIgnoreCase) == true)
+        {
+            _logger.LogError(ex, "Failed to save order {OrderId} - duplicate key violation", order.Id);
+            throw new InvalidOperationException($"Order with ID {order.Id} already exists", ex);
         }
         catch (Exception ex)
         {
@@ -85,7 +66,7 @@ public sealed class OrderRepository : IOrderRepository
     }
 
     /// <summary>
-    /// Retrieves all orders from the database asynchronously.
+    /// Retrieves all orders from the database asynchronously with optimized query.
     /// </summary>
     /// <param name="cancellationToken">Cancellation token to cancel the operation.</param>
     /// <returns>A collection of all orders.</returns>
@@ -93,13 +74,19 @@ public sealed class OrderRepository : IOrderRepository
     {
         try
         {
+            _logger.LogDebug("Retrieving all orders from database");
+
             var orderEntities = await _dbContext.Orders
                 .Include(o => o.Products)
                 .AsNoTracking()
+                .AsSplitQuery() // Use split query for better performance with multiple includes
                 .ToListAsync(cancellationToken)
                 .ConfigureAwait(false);
 
-            return orderEntities.Select(e => e.ToDomainModel()).ToList();
+            var orders = orderEntities.Select(e => e.ToDomainModel()).ToList();
+            _logger.LogDebug("Retrieved {Count} orders from database", orders.Count);
+
+            return orders;
         }
         catch (Exception ex)
         {
@@ -109,7 +96,7 @@ public sealed class OrderRepository : IOrderRepository
     }
 
     /// <summary>
-    /// Retrieves a specific order by its unique identifier.
+    /// Retrieves a specific order by its unique identifier with optimized query.
     /// </summary>
     /// <param name="orderId">The unique identifier of the order.</param>
     /// <param name="cancellationToken">Cancellation token to cancel the operation.</param>
@@ -124,13 +111,27 @@ public sealed class OrderRepository : IOrderRepository
 
         try
         {
+            _logger.LogDebug("Retrieving order {OrderId} from database", orderId);
+
             var orderEntity = await _dbContext.Orders
                 .Include(o => o.Products)
                 .AsNoTracking()
+                .AsSplitQuery() // Use split query for better performance
                 .FirstOrDefaultAsync(o => o.Id == orderId, cancellationToken)
                 .ConfigureAwait(false);
 
-            return orderEntity?.ToDomainModel();
+            var order = orderEntity?.ToDomainModel();
+            
+            if (order != null)
+            {
+                _logger.LogDebug("Order {OrderId} retrieved successfully from database", orderId);
+            }
+            else
+            {
+                _logger.LogDebug("Order {OrderId} not found in database", orderId);
+            }
+
+            return order;
         }
         catch (Exception ex)
         {
