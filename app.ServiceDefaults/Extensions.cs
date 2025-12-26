@@ -3,6 +3,7 @@ using Azure.Messaging.ServiceBus;
 using Azure.Monitor.OpenTelemetry.Exporter;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Logging;
@@ -81,8 +82,7 @@ public static class Extensions
             {
                 metrics.AddAspNetCoreInstrumentation()
                     .AddHttpClientInstrumentation()
-                    .AddRuntimeInstrumentation()
-                    .AddProcessInstrumentation();
+                    .AddRuntimeInstrumentation();
             })
             .WithTracing(tracing =>
             {
@@ -111,12 +111,6 @@ public static class Extensions
                         {
                             activity.SetTag("http.request.method", httpRequest.Method.ToString());
                         };
-                    })
-                    .AddSqlClientInstrumentation(options =>
-                    {
-                        options.SetDbStatementForText = true;
-                        options.RecordException = true;
-                        options.EnableConnectionLevelAttributes = true;
                     });
             });
 
