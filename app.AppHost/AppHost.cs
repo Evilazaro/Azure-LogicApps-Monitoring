@@ -130,20 +130,13 @@ static void ConfigureServiceBus(
     const string DefaultTopicName = "OrdersPlaced";
     const string DefaultSubscriptionName = "OrderProcessingSubscription";
 
-    var sbHostName = string.IsNullOrEmpty(builder.Configuration["Azure:ServiceBus:HostName"])
-        ? DefaultNamespaceName
-        : builder.Configuration["Azure:ServiceBus:HostName"];
-
-    var sbTopicName = string.IsNullOrEmpty(builder.Configuration["Azure:ServiceBus:TopicName"])
-        ? DefaultTopicName
-        : builder.Configuration["Azure:ServiceBus:TopicName"];
-
-    var sbSubscriptionName = string.IsNullOrEmpty(builder.Configuration["Azure:ServiceBus:SubscriptionName"])
-        ? DefaultSubscriptionName
-        : builder.Configuration["Azure:ServiceBus:SubscriptionName"];
+    // Use null-coalescing operator for cleaner code
+    var sbHostName = builder.Configuration["Azure:ServiceBus:HostName"] ?? DefaultNamespaceName;
+    var sbTopicName = builder.Configuration["Azure:ServiceBus:TopicName"] ?? DefaultTopicName;
+    var sbSubscriptionName = builder.Configuration["Azure:ServiceBus:SubscriptionName"] ?? DefaultSubscriptionName;
 
     // Determine if we're running in local emulator mode or Azure mode
-    var isLocalMode = (sbHostName ?? string.Empty).Equals(DefaultNamespaceName, StringComparison.OrdinalIgnoreCase);
+    var isLocalMode = sbHostName.Equals(DefaultNamespaceName, StringComparison.OrdinalIgnoreCase);
 
     // Create Service Bus resource
     IResourceBuilder<Aspire.Hosting.Azure.AzureServiceBusResource> serviceBusResource;
@@ -162,23 +155,23 @@ static void ConfigureServiceBus(
                 "Please configure 'Azure:ResourceGroup' in your application settings.");
         }
 
-        var sbParam = builder.AddParameter("service-bus", sbHostName ?? DefaultNamespaceName);
+        var sbParam = builder.AddParameter("service-bus", sbHostName);
 
         serviceBusResource = builder.AddAzureServiceBus(DefaultConnectionStringName)
             .AsExisting(sbParam, resourceGroupParameter);
     }
 
     // Configure Service Bus topology
-    var serviceBusTopic = serviceBusResource.AddServiceBusTopic(sbTopicName ?? DefaultTopicName);
-    serviceBusTopic.AddServiceBusSubscription(sbSubscriptionName ?? DefaultSubscriptionName);
+    var serviceBusTopic = serviceBusResource.AddServiceBusTopic(sbTopicName);
+    serviceBusTopic.AddServiceBusSubscription(sbSubscriptionName);
 
     // Add Service Bus reference to orders API
     ordersApi.WithReference(serviceBusResource)
              .WaitFor(serviceBusResource);
 
-    // Configure Azure credentials if available
+    // Configure Azure credentials if available (for managed identity authentication)
     var azureSubscriptionId = builder.Configuration["Azure:SubscriptionId"];
-    var azureClientId = builder.Configuration["Azure:ClientId"];
+    var azureClientId = builder.Configuration["Azure:ManagedIdentity:ClientId"];
     var azureTenantId = builder.Configuration["Azure:TenantId"];
 
     if (!string.IsNullOrWhiteSpace(azureSubscriptionId) &&
@@ -192,6 +185,13 @@ static void ConfigureServiceBus(
     }
 }
 
+/// <summary>
+/// Configures Azure SQL Database for order data persistence.
+/// Supports both local container mode and Azure managed identity authentication.
+/// </summary>
+/// <param name="builder">The distributed application builder.</param>
+/// <param name="ordersApi">The orders API project resource to configure with SQL Database.</param>
+/// <param name="resourceGroupParameter">The shared Azure resource group parameter.</param>
 static void ConfigureSQLAzure(
     IDistributedApplicationBuilder builder,
     IResourceBuilder<ProjectResource> ordersApi,
@@ -203,13 +203,10 @@ static void ConfigureSQLAzure(
     const string DefaultSqlServerName = "OrdersDatabase";
     const string DefaultDatabaseName = "OrderDb";
 
-    var sqlServerName = string.IsNullOrEmpty(builder.Configuration["Azure:SqlServer:Name"])
-        ? DefaultSqlServerName
-        : builder.Configuration["Azure:SqlServer:Name"];
-    var sqlDatabaseName = string.IsNullOrEmpty(builder.Configuration["Azure:SqlDatabase:Name"])
-        ? DefaultDatabaseName
-        : builder.Configuration["Azure:SqlDatabase:Name"];
-    var isLocalMode = (sqlServerName ?? string.Empty).Equals(DefaultSqlServerName, StringComparison.OrdinalIgnoreCase);
+    // Use null-coalescing operator for cleaner code
+    var sqlServerName = builder.Configuration["Azure:SqlServer:Name"] ?? DefaultSqlServerName;
+    var sqlDatabaseName = builder.Configuration["Azure:SqlServer:DatabaseName"] ?? DefaultDatabaseName;
+    var isLocalMode = sqlServerName.Equals(DefaultSqlServerName, StringComparison.OrdinalIgnoreCase);
 
     if (isLocalMode)
     {
@@ -235,11 +232,11 @@ static void ConfigureSQLAzure(
                 "Please configure 'Azure:ResourceGroup' in your application settings.");
         }
 
-        var sqlServerParam = builder.AddParameter("sql-db", sqlServerName!);
+        var sqlServerParam = builder.AddParameter("sql-db", sqlServerName);
         var sqlServer = builder.AddAzureSqlServer(DefaultSqlServerName)
             .AsExisting(sqlServerParam, resourceGroupParameter);
 
-        var sqlDatabase = sqlServer.AddDatabase(DefaultDatabaseName);
+        var sqlDatabase = sqlServer.AddDatabase(sqlDatabaseName);
 
         ordersApi.WithReference(sqlDatabase)
                  .WaitFor(sqlDatabase);

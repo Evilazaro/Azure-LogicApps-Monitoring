@@ -9,6 +9,7 @@ using Microsoft.Extensions.Logging;
 using OpenTelemetry;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Trace;
+using OpenTelemetry.Instrumentation.SqlClient;
 
 namespace Microsoft.Extensions.Hosting;
 
@@ -32,6 +33,8 @@ public static class Extensions
     /// <returns>The configured builder instance for method chaining.</returns>
     public static TBuilder AddServiceDefaults<TBuilder>(this TBuilder builder) where TBuilder : IHostApplicationBuilder
     {
+        ArgumentNullException.ThrowIfNull(builder);
+
         builder.ConfigureOpenTelemetry();
 
         builder.AddDefaultHealthChecks();
@@ -41,7 +44,15 @@ public static class Extensions
         builder.Services.ConfigureHttpClientDefaults(http =>
         {
             // Add resilience handler with retry, timeout, and circuit breaker policies
-            http.AddStandardResilienceHandler();
+            // Configure for typical microservice scenarios
+            http.AddStandardResilienceHandler(options =>
+            {
+                options.TotalRequestTimeout.Timeout = TimeSpan.FromSeconds(30);
+                options.AttemptTimeout.Timeout = TimeSpan.FromSeconds(10);
+                options.Retry.MaxRetryAttempts = 3;
+                options.Retry.BackoffType = Polly.DelayBackoffType.Exponential;
+                options.CircuitBreaker.SamplingDuration = TimeSpan.FromSeconds(30);
+            });
 
             // Enable service discovery for HTTP clients
             http.AddServiceDiscovery();
@@ -58,6 +69,8 @@ public static class Extensions
     /// <returns>The configured builder instance for method chaining.</returns>
     public static TBuilder ConfigureOpenTelemetry<TBuilder>(this TBuilder builder) where TBuilder : IHostApplicationBuilder
     {
+        ArgumentNullException.ThrowIfNull(builder);
+
         builder.Logging.AddOpenTelemetry(logging =>
         {
             logging.IncludeFormattedMessage = true;
@@ -69,7 +82,8 @@ public static class Extensions
             {
                 metrics.AddAspNetCoreInstrumentation()
                     .AddHttpClientInstrumentation()
-                    .AddRuntimeInstrumentation();
+                    .AddRuntimeInstrumentation()
+                    .AddProcessInstrumentation();
             })
             .WithTracing(tracing =>
             {
@@ -77,11 +91,34 @@ public static class Extensions
                     .AddSource("eShop.Orders.API")
                     .AddSource("eShop.Web.App")
                     .AddAspNetCoreInstrumentation(options =>
+                    {
                         options.Filter = context =>
                             !context.Request.Path.StartsWithSegments(HealthEndpointPath)
-                            && !context.Request.Path.StartsWithSegments(AlivenessEndpointPath)
-                    )
-                    .AddHttpClientInstrumentation();
+                            && !context.Request.Path.StartsWithSegments(AlivenessEndpointPath);
+                        options.RecordException = true;
+                        options.EnrichWithHttpRequest = (activity, httpRequest) =>
+                        {
+                            activity.SetTag("http.request.size", httpRequest.ContentLength ?? 0);
+                        };
+                        options.EnrichWithHttpResponse = (activity, httpResponse) =>
+                        {
+                            activity.SetTag("http.response.size", httpResponse.ContentLength ?? 0);
+                        };
+                    })
+                    .AddHttpClientInstrumentation(options =>
+                    {
+                        options.RecordException = true;
+                        options.EnrichWithHttpRequestMessage = (activity, httpRequest) =>
+                        {
+                            activity.SetTag("http.request.method", httpRequest.Method.ToString());
+                        };
+                    })
+                    .AddSqlClientInstrumentation(options =>
+                    {
+                        options.SetDbStatementForText = true;
+                        options.RecordException = true;
+                        options.EnableConnectionLevelAttributes = true;
+                    });
             });
 
         builder.AddOpenTelemetryExporters();
@@ -130,8 +167,10 @@ public static class Extensions
     /// <returns>The configured builder instance for method chaining.</returns>
     public static TBuilder AddDefaultHealthChecks<TBuilder>(this TBuilder builder) where TBuilder : IHostApplicationBuilder
     {
+        ArgumentNullException.ThrowIfNull(builder);
+
         builder.Services.AddHealthChecks()
-            .AddCheck("self", () => HealthCheckResult.Healthy(), ["live"]);
+            .AddCheck("self", () => HealthCheckResult.Healthy("Application is running"), ["live", "ready"]);
 
         return builder;
     }
@@ -151,15 +190,25 @@ public static class Extensions
         builder.Services.AddSingleton<ServiceBusClient>(serviceProvider =>
         {
             var logger = serviceProvider.GetRequiredService<ILogger<ServiceBusClient>>();
+            var configuration = serviceProvider.GetRequiredService<IConfiguration>();
 
             try
             {
-                var messagingHostName = builder.Configuration[MessagingHostConfigKey]
-                    ?? throw new InvalidOperationException($"{MessagingHostConfigKey} configuration is required for Service Bus client initialization");
+                var messagingHostName = configuration[MessagingHostConfigKey];
+                if (string.IsNullOrWhiteSpace(messagingHostName))
+                {
+                    throw new InvalidOperationException(
+                        $"Configuration key '{MessagingHostConfigKey}' is required for Service Bus client initialization. " +
+                        $"Please ensure this value is set in appsettings.json or user secrets.");
+                }
 
-                var connectionString = builder.Configuration[MessagingConnectionStringKey]
-                    ?? throw new InvalidOperationException($"{MessagingConnectionStringKey} is required for Service Bus client initialization");
-
+                var connectionString = configuration[MessagingConnectionStringKey];
+                if (string.IsNullOrWhiteSpace(connectionString))
+                {
+                    throw new InvalidOperationException(
+                        $"Configuration key '{MessagingConnectionStringKey}' is required for Service Bus client initialization. " +
+                        $"Please ensure this value is set in appsettings.json or user secrets.");
+                }
 
                 if (messagingHostName.Equals(LocalhostValue, StringComparison.OrdinalIgnoreCase))
                 {
@@ -173,7 +222,7 @@ public static class Extensions
             catch (Exception ex)
             {
                 logger.LogError(ex,
-                    "Failed to create Service Bus client. Ensure configuration keys '{MessagingHostKey}' and '{ConnectionStringKey}' are properly set",
+                    "Failed to create Service Bus client. Ensure configuration keys '{MessagingHostKey}' and '{ConnectionStringKey}' are properly set.",
                     MessagingHostConfigKey, MessagingConnectionStringKey);
                 throw;
             }

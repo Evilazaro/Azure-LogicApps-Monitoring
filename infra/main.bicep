@@ -139,6 +139,9 @@ module workload './workload/main.bicep' = {
   }
 }
 
+@description('Azure Resource Group name containing all deployed resources')
+output AZURE_RESOURCE_GROUP string = rg.name
+
 // Messaging Outputs
 @description('Service Bus endpoint URL for message brokering')
 output MESSAGING_SERVICEBUSENDPOINT string = workload.outputs.MESSAGING_SERVICEBUSENDPOINT
