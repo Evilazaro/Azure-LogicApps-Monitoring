@@ -155,17 +155,13 @@ resource sqlServer 'Microsoft.Sql/servers@2024-11-01-preview' = {
     }
   }
   tags: tags
+}
+
+resource entraOnlyAuth 'Microsoft.Sql/servers/azureADOnlyAuthentications@2024-11-01-preview' = {
+  parent: sqlServer
+  name: 'Default' // The name for this resource is typically 'Default'
   properties: {
-    administrators: {
-      administratorType: 'ActiveDirectory'
-      principalType: 'User'
-      tenantId: subscription().tenantId
-      login: deployer().objectId
-    }
-    administratorLogin: 'sqlAdmin'
-    administratorLoginPassword: administratorLoginPassword
-    publicNetworkAccess: 'Enabled'
-    primaryUserAssignedIdentityId: userAssignedIdentityId
+    azureADOnlyAuthentication: true
   }
 }
 
@@ -185,6 +181,11 @@ resource sqlDb 'Microsoft.Sql/servers/databases@2024-11-01-preview' = {
     family: 'Gen5'
     capacity: 2
     size: '32GB'
+  }
+  properties: {
+    collation: 'SQL_Latin1_General_CP1_CI_AS'
+    maxSizeBytes: 34359738368 // 32 GB
+    zoneRedundant: false
   }
   tags: tags
 }
