@@ -186,35 +186,86 @@ public static class Extensions
             try
             {
                 var messagingHostName = builder.Configuration[MessagingHostConfigKey];
+
+                // Also check alternative configuration key
                 if (string.IsNullOrWhiteSpace(messagingHostName))
                 {
+                    messagingHostName = builder.Configuration["Azure:ServiceBus:HostName"];
+                }
+
+                if (string.IsNullOrWhiteSpace(messagingHostName))
+                {
+                    logger.LogWarning(
+                        "Configuration key '{MessagingHostKey}' is not set. Service Bus client will not be available.",
+                        MessagingHostConfigKey);
+
+                    // Return a null client or throw based on environment
+                    if (builder.Environment.IsDevelopment())
+                    {
+                        logger.LogWarning("Returning null ServiceBusClient for development environment");
+                        return null!; // Allow null in development
+                    }
+
                     throw new InvalidOperationException(
                         $"Configuration key '{MessagingHostConfigKey}' is required for Service Bus client initialization. " +
                         $"Please ensure this value is set in appsettings.json or user secrets.");
                 }
 
                 var connectionString = builder.Configuration[MessagingConnectionStringKey];
-                if (string.IsNullOrWhiteSpace(connectionString))
-                {
-                    throw new InvalidOperationException(
-                        $"Configuration key '{MessagingConnectionStringKey}' is required for Service Bus client initialization. " +
-                        $"Please ensure this value is set in appsettings.json or user secrets.");
-                }
 
+                // Local emulator mode
                 if (messagingHostName.Equals(LocalhostValue, StringComparison.OrdinalIgnoreCase))
                 {
+                    if (string.IsNullOrWhiteSpace(connectionString))
+                    {
+                        logger.LogWarning("Service Bus emulator connection string not configured");
+                        return null!;
+                    }
+
                     logger.LogInformation("Configuring Service Bus client for local emulator mode");
                     return new ServiceBusClient(connectionString);
                 }
 
+                // Azure mode with managed identity
                 logger.LogInformation("Configuring Service Bus client for Azure with managed identity. HostName: {HostName}", messagingHostName);
-                return new ServiceBusClient(messagingHostName, new DefaultAzureCredential());
+
+                var credential = new DefaultAzureCredential(new DefaultAzureCredentialOptions
+                {
+                    // Add timeout to prevent hanging
+                    Retry = {
+                        MaxRetries = 3,
+                        NetworkTimeout = TimeSpan.FromSeconds(30)
+                    },
+                    ExcludeEnvironmentCredential = false,
+                    ExcludeManagedIdentityCredential = false,
+                    ExcludeVisualStudioCredential = true,
+                    ExcludeVisualStudioCodeCredential = true,
+                    ExcludeAzureCliCredential = false,
+                    ExcludeAzurePowerShellCredential = true,
+                    ExcludeInteractiveBrowserCredential = true
+                });
+
+                var clientOptions = new ServiceBusClientOptions
+                {
+                    RetryOptions = new ServiceBusRetryOptions
+                    {
+                        MaxRetries = 3,
+                        Delay = TimeSpan.FromSeconds(1),
+                        MaxDelay = TimeSpan.FromSeconds(10),
+                        Mode = ServiceBusRetryMode.Exponential
+                    },
+                    TransportType = ServiceBusTransportType.AmqpWebSockets // Better for firewall scenarios
+                };
+
+                return new ServiceBusClient(messagingHostName, credential, clientOptions);
             }
             catch (Exception ex)
             {
                 logger.LogError(ex,
                     "Failed to create Service Bus client. Ensure configuration keys '{MessagingHostKey}' and '{ConnectionStringKey}' are properly set.",
                     MessagingHostConfigKey, MessagingConnectionStringKey);
+
+                // In production, we need to fail fast to prevent the app from starting incorrectly
                 throw;
             }
         });
