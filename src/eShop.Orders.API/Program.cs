@@ -127,21 +127,21 @@ _ = Task.Run(async () =>
     using var scope = app.Services.CreateScope();
     var services = scope.ServiceProvider;
     var logger = services.GetRequiredService<ILogger<Program>>();
-    
+
     var maxRetries = 10;
     var retryDelay = TimeSpan.FromSeconds(5);
-    
+
     for (int attempt = 1; attempt <= maxRetries; attempt++)
     {
         try
         {
             var dbContext = services.GetRequiredService<OrderDbContext>();
             var connectionString = builder.Configuration.GetConnectionString("OrderDb");
-            
+
             logger.LogInformation("Initializing database (attempt {Attempt}/{MaxRetries})...", attempt, maxRetries);
-            logger.LogInformation("Database server: {Server}", 
-                connectionString?.Contains("Server=") == true 
-                    ? connectionString.Split("Server=")[1].Split(";")[0] 
+            logger.LogInformation("Database server: {Server}",
+                connectionString?.Contains("Server=") == true
+                    ? connectionString.Split("Server=")[1].Split(";")[0]
                     : "Not specified");
 
             // Use migrations in production, EnsureCreated for development
@@ -172,7 +172,7 @@ _ = Task.Run(async () =>
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, 
+            logger.LogError(ex,
                 "Database initialization failed (attempt {Attempt}/{MaxRetries}). " +
                 "Error: {ErrorMessage}. " +
                 "Connection string configured: {HasConnectionString}. " +
@@ -182,17 +182,17 @@ _ = Task.Run(async () =>
                 ex.Message,
                 !string.IsNullOrWhiteSpace(builder.Configuration.GetConnectionString("OrderDb")),
                 retryDelay.TotalSeconds);
-            
+
             // Log additional diagnostic information on first failure
             if (attempt == 1)
             {
                 logger.LogError("Environment: {Environment}", app.Environment.EnvironmentName);
-                logger.LogError("Configuration sources: {Sources}", 
+                logger.LogError("Configuration sources: {Sources}",
                     string.Join(", ", builder.Configuration.AsEnumerable()
                         .Where(kvp => kvp.Key.Contains("ConnectionStrings"))
                         .Select(kvp => $"{kvp.Key}={(kvp.Value?.Length > 0 ? "***" : "empty")}")));
             }
-            
+
             if (attempt < maxRetries)
             {
                 await Task.Delay(retryDelay);
