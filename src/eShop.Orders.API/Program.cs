@@ -1,10 +1,12 @@
 using eShop.Orders.API.Data;
 using eShop.Orders.API.Handlers;
+using eShop.Orders.API.HealthChecks;
 using eShop.Orders.API.Interfaces;
 using eShop.Orders.API.Repositories;
 using eShop.Orders.API.Services;
 using eShop.Orders.API.Services.Interfaces;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Diagnostics.HealthChecks;
 using System.Diagnostics;
 using System.Diagnostics.Metrics;
 
@@ -41,14 +43,12 @@ builder.Services.AddDbContext<OrderDbContext>(options =>
 // Register application services with scoped lifetime
 builder.Services.AddScoped<IOrderRepository, OrderRepository>();
 builder.Services.AddScoped<IOrderService, OrderService>();
-builder.Services.AddScoped<IOrdersMessageHandler, OrdersMessageHandler>();
 
 builder.Services.AddControllers();
 
 // Configure OpenAPI/Swagger for API documentation
 builder.Services.AddOpenApi();
 builder.Services.AddEndpointsApiExplorer();
-
 
 builder.Services.AddSwaggerGen(options =>
 {
@@ -61,11 +61,44 @@ builder.Services.AddSwaggerGen(options =>
     }
 });
 
+// Add Azure Service Bus client configuration - only if configured
+var serviceBusHostName = builder.Configuration["Azure:ServiceBus:HostName"]
+                         ?? builder.Configuration["MESSAGING_HOST"];
 
-// Add Azure Service Bus client configuration
-builder.AddAzureServiceBusClient();
+if (!string.IsNullOrWhiteSpace(serviceBusHostName))
+{
+    builder.AddAzureServiceBusClient();
+    builder.Services.AddScoped<IOrdersMessageHandler, OrdersMessageHandler>();
+}
+else
+{
+    // Register a no-op message handler for development without Service Bus
+    builder.Services.AddScoped<IOrdersMessageHandler, NoOpOrdersMessageHandler>();
+}
+
+// Configure health checks
+var healthChecksBuilder = builder.Services.AddHealthChecks();
+
+// Add database health check
+healthChecksBuilder.AddCheck<DbContextHealthCheck>("database", tags: new[] { "ready", "db" });
+
+// Add self health check
+healthChecksBuilder.AddCheck("self", () => HealthCheckResult.Healthy("Application is running"), tags: new[] { "live" });
+
+// Only add Service Bus health check if it's configured
+if (!string.IsNullOrWhiteSpace(serviceBusHostName))
+{
+    healthChecksBuilder.AddCheck<ServiceBusHealthCheck>("servicebus", tags: new[] { "ready", "servicebus" });
+}
 
 var app = builder.Build();
+
+// Log warning about missing Service Bus configuration (if applicable)
+if (string.IsNullOrWhiteSpace(serviceBusHostName))
+{
+    var logger = app.Services.GetRequiredService<ILogger<Program>>();
+    logger.LogWarning("Service Bus is not configured. Orders will not be published to the message queue.");
+}
 
 // Initialize database with proper async handling
 using (var scope = app.Services.CreateScope())
