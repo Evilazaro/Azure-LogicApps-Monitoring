@@ -58,7 +58,6 @@ static void ConfigureAzureCredentials(IDistributedApplicationBuilder builder, IR
     {
         ordersApi.WithEnvironment("AZURE_CLIENT_ID", builder.Configuration["Azure:ClientId"]);
     }
-
 }
 
 /// <summary>
