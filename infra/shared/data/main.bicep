@@ -187,6 +187,16 @@ resource entraOnlyAuth 'Microsoft.Sql/servers/azureADOnlyAuthentications@2024-11
   }
 }
 
+@description('Allow Azure services to access SQL Server')
+resource allowAzureServices 'Microsoft.Sql/servers/firewallRules@2024-11-01-preview' = {
+  parent: sqlServer
+  name: 'AllowAllWindowsAzureIps'
+  properties: {
+    startIpAddress: '0.0.0.0'
+    endIpAddress: '0.0.0.0'
+  }
+}
+
 // SQL Database resource for application data
 @description('SQL Database for storing application data')
 resource sqlDb 'Microsoft.Sql/servers/databases@2024-11-01-preview' = {

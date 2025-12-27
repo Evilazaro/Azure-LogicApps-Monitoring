@@ -66,7 +66,7 @@ hooks:
       run: |
         ./hooks/postprovision.ps1 -Force -Verbose    # Configure .NET user secrets
         ./hooks/Generate-Orders.ps1 -Force -Verbose    # Generate test order data
-        ./hooks/sql-managed-identity-config.ps1 -SqlServerName $env:AZURE_SQL_SERVER_NAME -DatabaseName $env:AZURE_SQL_DATABASE_NAME -PrincipalDisplayName $env:MANAGED_IDENTITY_NAME
+        #./hooks/sql-managed-identity-config.ps1 -SqlServerName $env:AZURE_SQL_SERVER_NAME -DatabaseName $env:AZURE_SQL_DATABASE_NAME -PrincipalDisplayName $env:MANAGED_IDENTITY_NAME
       continueOnError: false
       interactive: false
 
