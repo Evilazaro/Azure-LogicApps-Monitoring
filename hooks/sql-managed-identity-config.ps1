@@ -108,7 +108,11 @@
     
     Prerequisites:
     - Azure authentication via Az.Accounts module (Connect-AzAccount) OR Azure CLI (az login)
-    - Permissions: SQL Server Contributor or higher on the SQL Server resource
+    - CRITICAL: You must authenticate as an Entra ID administrator of the SQL Server
+      * Set Entra ID admin: az sql server ad-admin create --resource-group <rg> --server-name <server> --display-name <name> --object-id <id>
+      * The authenticated user must BE this admin or have equivalent permissions
+    - Permissions: SQL Server Contributor or higher on the SQL Server resource (for Azure Resource Manager)
+    - Permissions: SQL db_owner or higher in the target database (for database operations)
     - Network: Access to Azure SQL Database (firewall rules configured)
     
     Security Notes:
@@ -259,7 +263,7 @@ function Write-Log {
     [OutputType([void])]
     param(
         [Parameter(Mandatory = $true, Position = 0)]
-        [ValidateNotNullOrEmpty()]
+        [AllowEmptyString()]
         [string]$Message,
         
         [Parameter(Mandatory = $false)]
@@ -913,7 +917,25 @@ try {
         
         # Common SQL error numbers and their meanings
         $errorGuidance = switch ($sqlEx.Number) {
-            18456 { 'Login failed - check Azure AD authentication and permissions' }
+            18456 { 
+                @(
+                    'Login failed - The authenticated user does not have permission to connect to this SQL Server.'
+                    ''
+                    'REQUIRED: You must connect as an Entra ID administrator to create database users.'
+                    ''
+                    'To fix this issue:'
+                    '1. Set an Entra ID Admin on the SQL Server:'
+                    '   az sql server ad-admin create --resource-group <rg> --server-name <server> --display-name <admin-name> --object-id <admin-object-id>'
+                    ''
+                    '2. Authenticate as that Entra ID admin:'
+                    '   az login'
+                    '   (or) Connect-AzAccount'
+                    ''
+                    '3. Verify your identity has admin rights on the SQL Server'
+                    ''
+                    'More info: https://learn.microsoft.com/azure/azure-sql/database/authentication-aad-configure'
+                ) -join "`n"
+            }
             40615 { 'Firewall rule blocking connection - add client IP to SQL firewall' }
             40613 { 'Database not available - check database exists and is online' }
             33134 { 'User already exists - this is usually safe to ignore' }
@@ -921,7 +943,15 @@ try {
             default { 'Check SQL Server logs and Azure AD configuration' }
         }
         
-        Write-Log "  Guidance:           $errorGuidance" -Level Warning
+        Write-Log '' -Level Error
+        Write-Log 'Troubleshooting Guidance:' -Level Warning
+        $errorGuidance -split "`n" | ForEach-Object {
+            if ($_) {
+                Write-Log "  $_" -Level Warning
+            } else {
+                Write-Log '' -Level Warning
+            }
+        }
         throw
     }
     catch [System.InvalidOperationException] {
