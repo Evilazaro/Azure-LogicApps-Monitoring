@@ -276,6 +276,7 @@ public static class Extensions
     /// <summary>
     /// Maps default health check endpoints for application health monitoring.
     /// Includes both general health endpoint and liveness endpoint.
+    /// Health endpoints are exposed in all environments to support Azure Container Apps probes.
     /// </summary>
     /// <param name="app">The web application to configure.</param>
     /// <returns>The configured web application instance for method chaining.</returns>
@@ -283,15 +284,13 @@ public static class Extensions
     {
         ArgumentNullException.ThrowIfNull(app);
 
-        if (app.Environment.IsDevelopment())
-        {
-            app.MapHealthChecks(HealthEndpointPath);
+        // Always expose health endpoints for container orchestration (Azure Container Apps, Kubernetes, etc.)
+        app.MapHealthChecks(HealthEndpointPath);
 
-            app.MapHealthChecks(AlivenessEndpointPath, new HealthCheckOptions
-            {
-                Predicate = r => r.Tags.Contains("live")
-            });
-        }
+        app.MapHealthChecks(AlivenessEndpointPath, new HealthCheckOptions
+        {
+            Predicate = r => r.Tags.Contains("live")
+        });
 
         return app;
     }
