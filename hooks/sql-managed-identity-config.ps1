@@ -7,7 +7,7 @@
     and assigns specified database roles using Azure AD token-based authentication.
     
     This script performs the following operations:
-    - Validates Azure authentication (Az.Accounts module or Azure CLI)
+    - Validates Azure CLI authentication
     - Acquires an access token for Azure SQL Database
     - Creates a contained database user from external provider
     - Assigns specified database roles to the user
@@ -107,7 +107,8 @@
     Purpose:        Post-provisioning SQL Database managed identity configuration
     
     Prerequisites:
-    - Azure authentication via Az.Accounts module (Connect-AzAccount) OR Azure CLI (az login)
+    - PowerShell 7.0 or higher
+    - Azure CLI (az) version 2.60.0 or higher with active authentication (az login)
     - CRITICAL: You must authenticate as an Entra ID administrator of the SQL Server
       * Set Entra ID admin: az sql server ad-admin create --resource-group <rg> --server-name <server> --display-name <name> --object-id <id>
       * The authenticated user must BE this admin or have equivalent permissions
@@ -377,84 +378,7 @@ function Test-AzureCliAvailability {
     }
 }
 
-function Test-AzureContext {
-    <#
-    .SYNOPSIS
-        Validates Azure authentication context via Az.Accounts module.
-    
-    .DESCRIPTION
-        Checks if the Az.Accounts PowerShell module is available and if the user
-        has an active Azure context. This function is optional as the script can
-        fall back to Azure CLI authentication if Az.Accounts is not available.
-    
-    .OUTPUTS
-        System.Boolean
-        Returns $true if authentication is valid, $false otherwise.
-    
-    .EXAMPLE
-        if (Test-AzureContext) {
-            Write-Host "Azure authentication is valid"
-        }
-    
-    .NOTES
-        This function does not throw exceptions. It returns $false on any failure
-        to allow graceful fallback to Azure CLI authentication.
-    #>
-    [CmdletBinding()]
-    [OutputType([bool])]
-    param()
-    
-    begin {
-        Write-Log 'Checking Azure authentication context...' -Level Verbose
-    }
-    
-    process {
-        try {
-            # Check if Az.Accounts module is available in the module path
-            $moduleAvailable = Get-Module -ListAvailable -Name Az.Accounts -ErrorAction SilentlyContinue
-            
-            if (-not $moduleAvailable) {
-                Write-Log 'Az.Accounts PowerShell module is not installed' -Level Warning
-                Write-Log 'Install with: Install-Module -Name Az.Accounts -Scope CurrentUser -Repository PSGallery -Force' -Level Info
-                Write-Log 'Falling back to Azure CLI authentication...' -Level Info
-                return $false
-            }
-            
-            # Import the module if not already loaded
-            if (-not (Get-Module -Name Az.Accounts)) {
-                Write-Log 'Importing Az.Accounts module...' -Level Verbose
-                Import-Module Az.Accounts -ErrorAction Stop -Verbose:$false
-            }
-            
-            # Check for active Azure context
-            $context = Get-AzContext -ErrorAction SilentlyContinue
-            
-            if (-not $context) {
-                Write-Log 'No active Azure context found in Az.Accounts' -Level Warning
-                Write-Log 'Run Connect-AzAccount to authenticate, or the script will use Azure CLI' -Level Info
-                return $false
-            }
-            
-            # Validate context has required properties
-            if (-not $context.Account -or -not $context.Subscription) {
-                Write-Log 'Azure context is incomplete (missing account or subscription)' -Level Warning
-                return $false
-            }
-            
-            Write-Log "Azure context validated: Account=$($context.Account.Id), Subscription=$($context.Subscription.Name)" -Level Success
-            return $true
-        }
-        catch {
-            Write-Log "Azure context validation failed: $($_.Exception.Message)" -Level Warning
-            Write-Log 'Will attempt to use Azure CLI authentication as fallback' -Level Info
-            return $false
-        }
-    }
-    
-    end {
-        Write-Log 'Azure context validation completed' -Level Verbose
-    }
-}
+# Test-AzureContext function removed - using Azure CLI exclusively for authentication
 
 function Get-AzureSqlAccessToken {
     <#
@@ -462,8 +386,7 @@ function Get-AzureSqlAccessToken {
         Acquires an Azure AD access token for Azure SQL Database.
     
     .DESCRIPTION
-        Attempts to acquire an access token using Az.Accounts module first,
-        then falls back to Azure CLI if the module is not available.
+        Acquires an access token using Azure CLI for Azure SQL Database authentication.
     
     .PARAMETER ResourceUrl
         The resource URL for Azure SQL Database (e.g., https://database.windows.net/).
@@ -486,64 +409,30 @@ function Get-AzureSqlAccessToken {
     
     begin {
         Write-Log "Acquiring access token for resource: $ResourceUrl" -Level Verbose
-        $accessToken = $null
     }
     
     process {
-        # Attempt 1: Use Az.Accounts module if available
-        if (Get-Module -Name Az.Accounts -ListAvailable) {
-            try {
-                Write-Log 'Attempting token acquisition via Az.Accounts module...' -Level Verbose
-                
-                if (-not (Get-Module -Name Az.Accounts)) {
-                    Import-Module Az.Accounts -ErrorAction Stop -Verbose:$false
-                }
-                
-                $tokenResult = Get-AzAccessToken -ResourceUrl $ResourceUrl -ErrorAction Stop
-                
-                if ($tokenResult -and $tokenResult.Token) {
-                    $accessToken = $tokenResult.Token
-                    Write-Log 'Token acquired successfully via Az.Accounts' -Level Success
-                    return $accessToken
-                }
+        try {
+            Write-Log 'Attempting token acquisition via Azure CLI...' -Level Verbose
+            
+            # Execute Azure CLI command to get access token
+            $cliOutput = az account get-access-token --resource $ResourceUrl --query accessToken -o tsv 2>&1
+            $cliExitCode = $LASTEXITCODE
+            
+            if ($cliExitCode -ne 0) {
+                throw "Azure CLI returned exit code $cliExitCode. Output: $cliOutput"
             }
-            catch {
-                Write-Log "Az.Accounts token acquisition failed: $($_.Exception.Message)" -Level Warning
-                Write-Log 'Falling back to Azure CLI...' -Level Info
+            
+            if ([string]::IsNullOrWhiteSpace($cliOutput)) {
+                throw 'Azure CLI returned an empty token'
             }
+            
+            $accessToken = $cliOutput.Trim()
+            Write-Log 'Token acquired successfully via Azure CLI' -Level Success
+            return $accessToken
         }
-        
-        # Attempt 2: Fall back to Azure CLI
-        if (-not $accessToken) {
-            try {
-                Write-Log 'Attempting token acquisition via Azure CLI...' -Level Verbose
-                
-                # Execute Azure CLI command to get access token
-                $cliOutput = az account get-access-token --resource $ResourceUrl --query accessToken -o tsv 2>&1
-                $cliExitCode = $LASTEXITCODE
-                
-                if ($cliExitCode -ne 0) {
-                    throw "Azure CLI returned exit code $cliExitCode. Output: $cliOutput"
-                }
-                
-                if ([string]::IsNullOrWhiteSpace($cliOutput)) {
-                    throw 'Azure CLI returned an empty token'
-                }
-                
-                $accessToken = $cliOutput.Trim()
-                Write-Log 'Token acquired successfully via Azure CLI' -Level Success
-                return $accessToken
-            }
-            catch {
-                $errorMessage = "Azure CLI token acquisition failed: $($_.Exception.Message)"
-                Write-Log $errorMessage -Level Error
-                throw $errorMessage
-            }
-        }
-        
-        # If we reach here, both methods failed
-        if (-not $accessToken) {
-            $errorMessage = 'Failed to acquire access token using both Az.Accounts and Azure CLI'
+        catch {
+            $errorMessage = "Azure CLI token acquisition failed: $($_.Exception.Message)"
             Write-Log $errorMessage -Level Error
             throw $errorMessage
         }
@@ -691,32 +580,20 @@ try {
     #region Azure Authentication Validation
     Write-Log "[Step 1/5] Validating Azure authentication..." -Level Info
     
-    # Try Az.Accounts first (preferred for PowerShell environments)
-    $useAzAccounts = Test-AzureContext
+    # Validate Azure CLI is available and authenticated
+    if (-not (Test-AzureCliAvailability)) {
+        $errorMessage = @(
+            'Azure CLI authentication is required but not available.'
+            'Please authenticate using Azure CLI:'
+            '  1. Run: az login'
+            '  2. Verify authentication: az account show'
+            ''
+            'To install Azure CLI: https://learn.microsoft.com/cli/azure/install-azure-cli'
+        ) -join "`n"
+        throw $errorMessage
+    }
     
-    # Fall back to Azure CLI if Az.Accounts is not available
-    if (-not $useAzAccounts) {
-        Write-Log 'Az.Accounts module not available or not authenticated' -Level Warning
-        Write-Log 'Attempting Azure CLI authentication...' -Level Info
-        
-        if (-not (Test-AzureCliAvailability)) {
-            $errorMessage = @(
-                'Azure authentication is required but not available.'
-                'Please authenticate using one of these methods:'
-                '  1. PowerShell: Connect-AzAccount (requires Az.Accounts module)'
-                '  2. Azure CLI:  az login'
-                ''
-                'To install Azure CLI: https://learn.microsoft.com/cli/azure/install-azure-cli'
-                'To install Az.Accounts: Install-Module -Name Az.Accounts -Scope CurrentUser'
-            ) -join "`n"
-            throw $errorMessage
-        }
-        
-        Write-Log 'Using Azure CLI for authentication' -Level Success
-    }
-    else {
-        Write-Log 'Using Az.Accounts module for authentication' -Level Success
-    }
+    Write-Log 'Using Azure CLI for authentication' -Level Success
     #endregion
     
     #region Connection Details

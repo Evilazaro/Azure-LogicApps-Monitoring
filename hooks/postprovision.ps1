@@ -44,6 +44,8 @@ param(
     [switch]$Force
 )
 
+#Requires -Version 7.0
+
 # Script configuration
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
