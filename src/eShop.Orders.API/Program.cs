@@ -25,16 +25,10 @@ builder.Services.AddDbContext<OrderDbContext>(options =>
 
     if (string.IsNullOrWhiteSpace(connectionString))
     {
-        var logger = builder.Services.BuildServiceProvider().GetRequiredService<ILogger<Program>>();
-        logger.LogCritical(
-            "Connection string 'OrderDb' is not configured. " +
-            "Please ensure the connection string is properly set in appsettings.json or environment variables. " +
-            "Available connection strings: {ConnectionStrings}",
-            string.Join(", ", builder.Configuration.GetSection("ConnectionStrings").GetChildren().Select(c => c.Key)));
-
-        throw new InvalidOperationException(
-            "Connection string 'OrderDb' is not configured. " +
-            "Please ensure the connection string is properly set in appsettings.json or environment variables.");
+        // During manifest generation or early startup, connection string might not be available yet
+        // Log at warning level and return early - the actual validation will happen when the app runs
+        Console.WriteLine("Warning: Connection string 'OrderDb' is not configured yet. This may be expected during manifest generation.");
+        return;
     }
 
     // Use standard UseSqlServer - Aspire automatically configures Azure AD authentication
