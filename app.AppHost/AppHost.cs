@@ -236,13 +236,9 @@ static void ConfigureSQLAzure(
                 "Please configure 'Azure:ResourceGroup' in your application settings.");
         }
 
-        var sqlServerParam = builder.AddParameter("sql-db", sqlServerName);
-        var sqlServer = builder.AddAzureSqlServer(DefaultSqlServerName)
-                               .AsExisting(sqlServerParam, resourceGroupParameter);
+        var sqlServer = builder.AddConnectionString("OrderDb");
 
-        var sqlDatabase = sqlServer.AddDatabase(sqlDatabaseName);
-
-        ordersApi.WithReference(sqlDatabase)
-                 .WaitFor(sqlDatabase);
+        ordersApi.WithReference(sqlServer)
+                 .WaitFor(sqlServer);
     }
 }
