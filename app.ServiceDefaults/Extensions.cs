@@ -162,7 +162,7 @@ public static class Extensions
         ArgumentNullException.ThrowIfNull(builder);
 
         builder.Services.AddHealthChecks()
-            .AddCheck("self", () => HealthCheckResult.Healthy("Application is running"), ["live", "ready"]);
+            .AddCheck("self", () => HealthCheckResult.Healthy("Application is running"), tags: new[] { "live" });
 
         return builder;
     }
