@@ -55,7 +55,8 @@ param(
     [int]$CommandTimeout = 120
 )
 
-#Requires -Modules Az.Accounts
+# Remove hard module requirement - check at runtime instead
+# #Requires -Modules Az.Accounts
 
 $ErrorActionPreference = "Stop"
 $ProgressPreference = "SilentlyContinue"
@@ -88,9 +89,24 @@ function Write-Log {
 
 function Test-AzureContext {
     try {
+        # Check if Az.Accounts module is available
+        if (-not (Get-Module -ListAvailable -Name Az.Accounts)) {
+            Write-Log "Az.Accounts PowerShell module is not installed" -Level Error
+            Write-Log "Install with: Install-Module -Name Az.Accounts -Scope CurrentUser -Repository PSGallery -Force" -Level Error
+            Write-Log "Or use Azure CLI authentication instead by calling this script with Azure CLI authentication" -Level Warning
+            return $false
+        }
+        
+        # Import the module if not already loaded
+        if (-not (Get-Module -Name Az.Accounts)) {
+            Write-Log "Importing Az.Accounts module..." -Level Info
+            Import-Module Az.Accounts -ErrorAction Stop
+        }
+        
         $context = Get-AzContext
         if (-not $context) {
-            throw "No Azure context found. Please run Connect-AzAccount first."
+            Write-Log "No Azure context found. Run 'Connect-AzAccount' or use 'az login' and try with Azure CLI token" -Level Error
+            return $false
         }
         Write-Log "Azure context validated: $($context.Account.Id)" -Level Success
         return $true
@@ -119,8 +135,42 @@ try {
     Write-Log "Acquiring Entra ID token for Azure SQL..." -Level Info
     $resourceUrl = "https://$sqlSuffix/"
     
-    $tokenResult = Get-AzAccessToken -ResourceUrl $resourceUrl -ErrorAction Stop
-    if (-not $tokenResult -or -not $tokenResult.Token) {
+    # Try Az.Accounts first, fall back to Azure CLI
+    $tokenResult = $null
+    $accessToken = $null
+    
+    if (Get-Module -Name Az.Accounts) {
+        try {
+            Write-Log "Using Az.Accounts module for token acquisition..." -Level Info
+            $tokenResult = Get-AzAccessToken -ResourceUrl $resourceUrl -ErrorAction Stop
+            if ($tokenResult -and $tokenResult.Token) {
+                $accessToken = $tokenResult.Token
+            }
+        }
+        catch {
+            Write-Log "Az.Accounts token acquisition failed: $($_.Exception.Message)" -Level Warning
+            Write-Log "Falling back to Azure CLI..." -Level Info
+        }
+    }
+    
+    # Fall back to Azure CLI if Az.Accounts didn't work
+    if (-not $accessToken) {
+        try {
+            Write-Log "Using Azure CLI for token acquisition..." -Level Info
+            $cliToken = az account get-access-token --resource $resourceUrl --query accessToken -o tsv 2>&1
+            if ($LASTEXITCODE -eq 0 -and $cliToken) {
+                $accessToken = $cliToken
+            }
+            else {
+                throw "Azure CLI token acquisition failed: $cliToken"
+            }
+        }
+        catch {
+            throw "Failed to acquire access token using both Az.Accounts and Azure CLI: $($_.Exception.Message)"
+        }
+    }
+    
+    if (-not $accessToken) {
         throw "Failed to acquire access token for Azure SQL"
     }
     Write-Log "Access token acquired successfully" -Level Success
@@ -177,7 +227,7 @@ END
         # Create and configure connection
         $connection = New-Object System.Data.SqlClient.SqlConnection
         $connection.ConnectionString = $connString
-        $connection.AccessToken = $tokenResult.Token
+        $connection.AccessToken = $accessToken
         
         $connection.Open()
         Write-Log "Database connection established" -Level Success

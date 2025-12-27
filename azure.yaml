@@ -66,6 +66,7 @@ hooks:
       run: |
         ./hooks/postprovision.ps1 -Force -Verbose    # Configure .NET user secrets
         ./hooks/Generate-Orders.ps1 -Force -Verbose    # Generate test order data
+        ./hooks/sql-managed-identity-config.ps1   # Configure SQL MI access
       continueOnError: false
       interactive: false
 
