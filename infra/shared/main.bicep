@@ -125,9 +125,6 @@ module data 'data/main.bicep' = {
     userAssignedIdentityId: identity.outputs.AZURE_MANAGED_IDENTITY_ID
     workspaceId: monitoring.outputs.AZURE_LOG_ANALYTICS_WORKSPACE_ID
     storageAccountId: monitoring.outputs.AZURE_STOARGE_ACCOUNT_ID_LOGS
-    entraAdminLoginName: identity.outputs.MANAGED_IDENTITY_NAME
-    entraAdminPrincipalId: identity.outputs.AZURE_MANAGED_IDENTITY_PRINCIPAL_ID
-    tenantId: subscription().tenantId
     logsSettings: allLogsSettings
     metricsSettings: allMetricsSettings
     tags: tags

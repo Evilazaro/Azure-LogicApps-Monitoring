@@ -221,7 +221,7 @@ static void ConfigureSQLAzure(
 
         var sqlServerParam = builder.AddParameter("sql-db", sqlServerName);
         var sqlServer = builder.AddAzureSqlServer(DefaultSqlServerName)
-            .AsExisting(sqlServerParam, resourceGroupParameter);
+                               .AsExisting(sqlServerParam, resourceGroupParameter);
 
         var sqlDatabase = sqlServer.AddDatabase(sqlDatabaseName);
 

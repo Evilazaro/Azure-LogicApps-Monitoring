@@ -15,6 +15,7 @@ public sealed class OrderService : IOrderService
     private readonly ILogger<OrderService> _logger;
     private readonly IOrderRepository _orderRepository;
     private readonly IOrdersMessageHandler _ordersMessageHandler;
+    private readonly IServiceScopeFactory _serviceScopeFactory;
     private readonly ActivitySource _activitySource;
     private readonly Meter _meter;
 
@@ -29,6 +30,7 @@ public sealed class OrderService : IOrderService
     /// <param name="logger">The logger instance for structured logging.</param>
     /// <param name="orderRepository">The repository for order data persistence.</param>
     /// <param name="ordersMessageHandler">The handler for publishing order messages.</param>
+    /// <param name="serviceScopeFactory">The service scope factory for creating isolated scopes.</param>
     /// <param name="activitySource">The activity source for distributed tracing.</param>
     /// <param name="meter">The meter for recording metrics.</param>
     /// <exception cref="ArgumentNullException">Thrown when any parameter is null.</exception>
@@ -36,12 +38,14 @@ public sealed class OrderService : IOrderService
         ILogger<OrderService> logger,
         IOrderRepository orderRepository,
         IOrdersMessageHandler ordersMessageHandler,
+        IServiceScopeFactory serviceScopeFactory,
         ActivitySource activitySource,
         Meter meter)
     {
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         _orderRepository = orderRepository ?? throw new ArgumentNullException(nameof(orderRepository));
         _ordersMessageHandler = ordersMessageHandler ?? throw new ArgumentNullException(nameof(ordersMessageHandler));
+        _serviceScopeFactory = serviceScopeFactory ?? throw new ArgumentNullException(nameof(serviceScopeFactory));
         _activitySource = activitySource ?? throw new ArgumentNullException(nameof(activitySource));
         _meter = meter ?? throw new ArgumentNullException(nameof(meter));
 
@@ -136,6 +140,7 @@ public sealed class OrderService : IOrderService
     /// <summary>
     /// Places multiple orders asynchronously in a batch operation with parallel processing.
     /// Processes orders in parallel while maintaining observability and error handling.
+    /// Creates a new service scope for each order to ensure thread-safe DbContext usage.
     /// </summary>
     /// <param name="orders">The collection of orders to be placed.</param>
     /// <param name="cancellationToken">Cancellation token to cancel the operation.</param>
@@ -158,8 +163,8 @@ public sealed class OrderService : IOrderService
         activity?.SetTag("orders.count", ordersList.Count);
         _logger.LogInformation("Placing batch of {Count} orders with parallel processing", ordersList.Count);
 
-        var placedOrders = new List<Order>();
-        var failedOrders = new List<(string OrderId, string ErrorMessage)>();
+        var placedOrders = new System.Collections.Concurrent.ConcurrentBag<Order>();
+        var failedOrders = new System.Collections.Concurrent.ConcurrentBag<(string OrderId, string ErrorMessage)>();
 
         // Use more conservative parallelism for resource-intensive operations
         var options = new ParallelOptions
@@ -168,27 +173,64 @@ public sealed class OrderService : IOrderService
             CancellationToken = cancellationToken
         };
 
-        var lockObject = new object();
-
         try
         {
             await Parallel.ForEachAsync(ordersList, options, async (order, ct) =>
             {
                 try
                 {
-                    var placedOrder = await PlaceOrderAsync(order, ct).ConfigureAwait(false);
-                    lock (lockObject)
+                    // Validate order data first (no DB access, thread-safe)
+                    ValidateOrder(order);
+
+                    // Create a new scope for this order to get a fresh DbContext instance
+                    await using var scope = _serviceScopeFactory.CreateAsyncScope();
+                    var scopedRepository = scope.ServiceProvider.GetRequiredService<IOrderRepository>();
+                    var scopedMessageHandler = scope.ServiceProvider.GetRequiredService<IOrdersMessageHandler>();
+
+                    using var orderActivity = _activitySource.StartActivity("PlaceOrderInBatch", ActivityKind.Internal);
+                    orderActivity?.SetTag("order.id", order.Id);
+                    orderActivity?.SetTag("order.customer_id", order.CustomerId);
+
+                    var orderStartTime = DateTime.UtcNow;
+
+                    // Check if order already exists using scoped repository
+                    var existingOrder = await scopedRepository.GetOrderByIdAsync(order.Id, ct).ConfigureAwait(false);
+                    if (existingOrder != null)
                     {
-                        placedOrders.Add(placedOrder);
+                        throw new InvalidOperationException($"Order with ID {order.Id} already exists");
                     }
+
+                    // Save order using scoped repository
+                    await scopedRepository.SaveOrderAsync(order, ct).ConfigureAwait(false);
+
+                    // Send message using scoped handler
+                    await scopedMessageHandler.SendOrderMessageAsync(order, ct).ConfigureAwait(false);
+
+                    // Record metrics
+                    var metricTags = new TagList
+                    {
+                        { "customer.id", order.CustomerId },
+                        { "order.status", "success" }
+                    };
+                    _ordersPlacedCounter.Add(1, metricTags);
+                    var orderDuration = (DateTime.UtcNow - orderStartTime).TotalMilliseconds;
+                    _orderProcessingDuration.Record(orderDuration, metricTags);
+
+                    placedOrders.Add(order);
+                    orderActivity?.SetStatus(ActivityStatusCode.Ok);
                 }
                 catch (Exception ex)
                 {
                     _logger.LogError(ex, "Failed to place order {OrderId} in batch: {ErrorMessage}", order.Id, ex.Message);
-                    lock (lockObject)
+
+                    var errorTags = new TagList
                     {
-                        failedOrders.Add((order.Id, ex.Message));
-                    }
+                        { "error.type", ex.GetType().Name },
+                        { "order.status", "failed" }
+                    };
+                    _orderProcessingErrors.Add(1, errorTags);
+
+                    failedOrders.Add((order.Id, ex.Message));
                 }
             }).ConfigureAwait(false);
         }
@@ -214,7 +256,7 @@ public sealed class OrderService : IOrderService
                 }));
         }
 
-        return placedOrders;
+        return placedOrders.ToList();
     }
 
     /// <summary>
@@ -344,6 +386,7 @@ public sealed class OrderService : IOrderService
 
     /// <summary>
     /// Deletes multiple orders in batch with parallel processing.
+    /// Creates a new service scope for each order to ensure thread-safe DbContext usage.
     /// </summary>
     /// <param name="orderIds">The collection of order IDs to delete.</param>
     /// <param name="cancellationToken">Cancellation token to cancel the operation.</param>
@@ -371,13 +414,27 @@ public sealed class OrderService : IOrderService
         {
             try
             {
-                var deleted = await DeleteOrderAsync(orderId, ct).ConfigureAwait(false);
+                // Create a new scope for thread-safe DbContext usage
+                await using var scope = _serviceScopeFactory.CreateAsyncScope();
+                var scopedRepository = scope.ServiceProvider.GetRequiredService<IOrderRepository>();
+
+                // First verify the order exists
+                var order = await scopedRepository.GetOrderByIdAsync(orderId, ct).ConfigureAwait(false);
+                if (order == null)
+                {
+                    _logger.LogWarning("Order with ID {OrderId} not found for deletion", orderId);
+                    return;
+                }
+
+                // Delete the order
+                var deleted = await scopedRepository.DeleteOrderAsync(orderId, ct).ConfigureAwait(false);
                 if (deleted)
                 {
                     lock (lockObject)
                     {
                         deletedCount++;
                     }
+                    _ordersDeletedCounter.Add(1, new TagList { { "order.id", orderId } });
                 }
             }
             catch (Exception ex)

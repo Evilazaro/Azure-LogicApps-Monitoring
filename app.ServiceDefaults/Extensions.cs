@@ -3,7 +3,6 @@ using Azure.Messaging.ServiceBus;
 using Azure.Monitor.OpenTelemetry.Exporter;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Logging;
@@ -21,7 +20,7 @@ public static class Extensions
 {
     private const string HealthEndpointPath = "/health";
     private const string AlivenessEndpointPath = "/alive";
-    private const string MessagingHostConfigKey = "messaging:host";
+    private const string MessagingHostConfigKey = "MESSAGING_HOST";
     private const string MessagingConnectionStringKey = "ConnectionStrings:messaging";
     private const string LocalhostValue = "localhost";
 
@@ -183,11 +182,10 @@ public static class Extensions
         builder.Services.AddSingleton<ServiceBusClient>(serviceProvider =>
         {
             var logger = serviceProvider.GetRequiredService<ILogger<ServiceBusClient>>();
-            var configuration = serviceProvider.GetRequiredService<IConfiguration>();
 
             try
             {
-                var messagingHostName = configuration[MessagingHostConfigKey];
+                var messagingHostName = builder.Configuration[MessagingHostConfigKey];
                 if (string.IsNullOrWhiteSpace(messagingHostName))
                 {
                     throw new InvalidOperationException(
@@ -195,7 +193,7 @@ public static class Extensions
                         $"Please ensure this value is set in appsettings.json or user secrets.");
                 }
 
-                var connectionString = configuration[MessagingConnectionStringKey];
+                var connectionString = builder.Configuration[MessagingConnectionStringKey];
                 if (string.IsNullOrWhiteSpace(connectionString))
                 {
                     throw new InvalidOperationException(
