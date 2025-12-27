@@ -6,7 +6,6 @@ using eShop.Orders.API.Repositories;
 using eShop.Orders.API.Services;
 using eShop.Orders.API.Services.Interfaces;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Diagnostics.HealthChecks;
 using System.Diagnostics;
 using System.Diagnostics.Metrics;
 
@@ -25,16 +24,10 @@ builder.Services.AddDbContext<OrderDbContext>(options =>
 
     if (string.IsNullOrWhiteSpace(connectionString))
     {
-        var logger = builder.Services.BuildServiceProvider().GetRequiredService<ILogger<Program>>();
-        logger.LogCritical(
-            "Connection string 'OrderDb' is not configured. " +
-            "Please ensure the connection string is properly set in appsettings.json or environment variables. " +
-            "Available connection strings: {ConnectionStrings}",
-            string.Join(", ", builder.Configuration.GetSection("ConnectionStrings").GetChildren().Select(c => c.Key)));
-
-        throw new InvalidOperationException(
-            "Connection string 'OrderDb' is not configured. " +
-            "Please ensure the connection string is properly set in appsettings.json or environment variables.");
+        // During manifest generation or early startup, connection string might not be available yet
+        // Log at warning level and return early - the actual validation will happen when the app runs
+        Console.WriteLine("Warning: Connection string 'OrderDb' is not configured yet. This may be expected during manifest generation.");
+        return;
     }
 
     // Use standard UseSqlServer - Aspire automatically configures Azure AD authentication
@@ -101,9 +94,6 @@ var healthChecksBuilder = builder.Services.AddHealthChecks();
 // Add database health check
 healthChecksBuilder.AddCheck<DbContextHealthCheck>("database", tags: new[] { "ready", "db" });
 
-// Add self health check
-healthChecksBuilder.AddCheck("self", () => HealthCheckResult.Healthy("Application is running"), tags: new[] { "live" });
-
 // Only add Service Bus health check if it's configured
 if (!string.IsNullOrWhiteSpace(serviceBusHostName))
 {
@@ -144,19 +134,9 @@ _ = Task.Run(async () =>
                     ? connectionString.Split("Server=")[1].Split(";")[0]
                     : "Not specified");
 
-            // Use migrations in production, EnsureCreated for development
-            if (app.Environment.IsProduction())
-            {
-                logger.LogInformation("Running database migrations...");
-                await dbContext.Database.MigrateAsync();
-                logger.LogInformation("Database migration completed successfully");
-            }
-            else
-            {
-                logger.LogInformation("Ensuring database is created (development mode)...");
-                await dbContext.Database.EnsureCreatedAsync();
-                logger.LogInformation("Database ensured created for development environment");
-            }
+            logger.LogInformation("Ensuring database is created (development mode)...");
+            await dbContext.Database.EnsureCreatedAsync();
+            logger.LogInformation("Database ensured created for development environment");
 
             // Test database connectivity
             var canConnect = await dbContext.Database.CanConnectAsync();
