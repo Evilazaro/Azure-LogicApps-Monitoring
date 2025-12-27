@@ -452,172 +452,567 @@ function Test-AzureContext {
     }
 }
 
-try {
-    Write-Log "Starting Azure SQL Managed Identity configuration..." -Level Info
-    Write-Log "Parameters: Server=$SqlServerName, Database=$DatabaseName, Principal=$PrincipalDisplayName" -Level Info
-
-    # Validate prerequisites
-    if (-not (Test-AzureContext)) {
-        throw "Azure authentication required"
+function Get-AzureSqlAccessToken {
+    <#
+    .SYNOPSIS
+        Acquires an Azure AD access token for Azure SQL Database.
+    
+    .DESCRIPTION
+        Attempts to acquire an access token using Az.Accounts module first,
+        then falls back to Azure CLI if the module is not available.
+    
+    .PARAMETER ResourceUrl
+        The resource URL for Azure SQL Database (e.g., https://database.windows.net/).
+    
+    .OUTPUTS
+        System.String
+        Returns the access token string.
+    
+    .EXAMPLE
+        $token = Get-AzureSqlAccessToken -ResourceUrl 'https://database.windows.net/'
+    #>
+    [CmdletBinding()]
+    [OutputType([string])]
+    param(
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
+        [ValidatePattern('^https?://')]
+        [string]$ResourceUrl
+    )
+    
+    begin {
+        Write-Log "Acquiring access token for resource: $ResourceUrl" -Level Verbose
+        $accessToken = $null
     }
-
-    # Construct connection details
-    $sqlSuffix = $sqlEndpoints[$AzureEnvironment]
-    $serverFqdn = "$SqlServerName.$sqlSuffix"
-    Write-Log "Target server: $serverFqdn" -Level Info
-
-    # Get Entra token for Azure SQL
-    Write-Log "Acquiring Entra ID token for Azure SQL..." -Level Info
-    $resourceUrl = "https://$sqlSuffix/"
     
-    # Try Az.Accounts first, fall back to Azure CLI
-    $tokenResult = $null
-    $accessToken = $null
-    
-    if (Get-Module -Name Az.Accounts) {
-        try {
-            Write-Log "Using Az.Accounts module for token acquisition..." -Level Info
-            $tokenResult = Get-AzAccessToken -ResourceUrl $resourceUrl -ErrorAction Stop
-            if ($tokenResult -and $tokenResult.Token) {
-                $accessToken = $tokenResult.Token
+    process {
+        # Attempt 1: Use Az.Accounts module if available
+        if (Get-Module -Name Az.Accounts -ListAvailable) {
+            try {
+                Write-Log 'Attempting token acquisition via Az.Accounts module...' -Level Verbose
+                
+                if (-not (Get-Module -Name Az.Accounts)) {
+                    Import-Module Az.Accounts -ErrorAction Stop -Verbose:$false
+                }
+                
+                $tokenResult = Get-AzAccessToken -ResourceUrl $ResourceUrl -ErrorAction Stop
+                
+                if ($tokenResult -and $tokenResult.Token) {
+                    $accessToken = $tokenResult.Token
+                    Write-Log 'Token acquired successfully via Az.Accounts' -Level Success
+                    return $accessToken
+                }
+            }
+            catch {
+                Write-Log "Az.Accounts token acquisition failed: $($_.Exception.Message)" -Level Warning
+                Write-Log 'Falling back to Azure CLI...' -Level Info
             }
         }
-        catch {
-            Write-Log "Az.Accounts token acquisition failed: $($_.Exception.Message)" -Level Warning
-            Write-Log "Falling back to Azure CLI..." -Level Info
+        
+        # Attempt 2: Fall back to Azure CLI
+        if (-not $accessToken) {
+            try {
+                Write-Log 'Attempting token acquisition via Azure CLI...' -Level Verbose
+                
+                # Execute Azure CLI command to get access token
+                $cliOutput = az account get-access-token --resource $ResourceUrl --query accessToken -o tsv 2>&1
+                $cliExitCode = $LASTEXITCODE
+                
+                if ($cliExitCode -ne 0) {
+                    throw "Azure CLI returned exit code $cliExitCode. Output: $cliOutput"
+                }
+                
+                if ([string]::IsNullOrWhiteSpace($cliOutput)) {
+                    throw 'Azure CLI returned an empty token'
+                }
+                
+                $accessToken = $cliOutput.Trim()
+                Write-Log 'Token acquired successfully via Azure CLI' -Level Success
+                return $accessToken
+            }
+            catch {
+                $errorMessage = "Azure CLI token acquisition failed: $($_.Exception.Message)"
+                Write-Log $errorMessage -Level Error
+                throw $errorMessage
+            }
+        }
+        
+        # If we reach here, both methods failed
+        if (-not $accessToken) {
+            $errorMessage = 'Failed to acquire access token using both Az.Accounts and Azure CLI'
+            Write-Log $errorMessage -Level Error
+            throw $errorMessage
         }
     }
     
-    # Fall back to Azure CLI if Az.Accounts didn't work
-    if (-not $accessToken) {
-        try {
-            Write-Log "Using Azure CLI for token acquisition..." -Level Info
-            $cliToken = az account get-access-token --resource $resourceUrl --query accessToken -o tsv 2>&1
-            if ($LASTEXITCODE -eq 0 -and $cliToken) {
-                $accessToken = $cliToken
-            }
-            else {
-                throw "Azure CLI token acquisition failed: $cliToken"
-            }
-        }
-        catch {
-            throw "Failed to acquire access token using both Az.Accounts and Azure CLI: $($_.Exception.Message)"
-        }
+    end {
+        Write-Log 'Token acquisition completed' -Level Verbose
+    }
+}
+
+function New-SqlIdentityScript {
+    <#
+    .SYNOPSIS
+        Generates T-SQL script to create a database user and assign roles.
+    
+    .DESCRIPTION
+        Creates an idempotent T-SQL script that:
+        - Creates a contained database user from external provider (Entra ID)
+        - Assigns specified database roles to the user
+        - Safely handles existing users and role memberships
+    
+    .PARAMETER PrincipalName
+        The display name of the managed identity or service principal.
+    
+    .PARAMETER Roles
+        Array of database role names to assign.
+    
+    .OUTPUTS
+        System.String
+        Returns the T-SQL script as a string.
+    
+    .EXAMPLE
+        $script = New-SqlIdentityScript -PrincipalName 'my-identity' -Roles @('db_datareader', 'db_datawriter')
+    #>
+    [CmdletBinding()]
+    [OutputType([string])]
+    param(
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
+        [string]$PrincipalName,
+        
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
+        [string[]]$Roles
+    )
+    
+    begin {
+        Write-Log 'Generating SQL script for managed identity configuration...' -Level Verbose
+        $scriptParts = [System.Collections.Generic.List[string]]::new()
+        
+        # Sanitize principal name to prevent SQL injection
+        # Replace single quotes with two single quotes (T-SQL escaping)
+        $safePrincipalName = $PrincipalName.Replace("'", "''")
     }
     
-    if (-not $accessToken) {
-        throw "Failed to acquire access token for Azure SQL"
-    }
-    Write-Log "Access token acquired successfully" -Level Success
-
-    # Build connection string (using Microsoft.Data.SqlClient is preferred, but System.Data.SqlClient works for token auth)
-    $connString = "Server=tcp:$serverFqdn,1433;Initial Catalog=$DatabaseName;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;"
-
-    # Build SQL script for user creation
-    $createUserSql = @"
-IF NOT EXISTS (SELECT 1 FROM sys.database_principals WHERE name = N'$PrincipalDisplayName' AND type IN ('E', 'X'))
+    process {
+        # Part 1: Create user from external provider
+        $createUserScript = @"
+-- Create contained database user from Microsoft Entra ID (Azure AD)
+-- This user will authenticate using Entra ID managed identity
+IF NOT EXISTS (
+    SELECT 1 
+    FROM sys.database_principals 
+    WHERE name = N'$safePrincipalName' 
+    AND type IN ('E', 'X')  -- E = External user, X = External group
+)
 BEGIN
-    CREATE USER [$PrincipalDisplayName] FROM EXTERNAL PROVIDER;
-    PRINT 'User [$PrincipalDisplayName] created successfully';
+    CREATE USER [$safePrincipalName] FROM EXTERNAL PROVIDER;
+    PRINT 'SUCCESS: User [$safePrincipalName] created successfully';
 END
 ELSE
 BEGIN
-    PRINT 'User [$PrincipalDisplayName] already exists';
-END
+    PRINT 'INFO: User [$safePrincipalName] already exists - skipping creation';
+END;
+GO
+
 "@
-
-    # Build SQL script for role assignments
-    $roleAssignmentSql = ""
-    foreach ($role in $DatabaseRoles) {
-        $roleAssignmentSql += @"
-
-IF EXISTS (SELECT 1 FROM sys.database_principals WHERE name = N'$role' AND type = 'R')
+        $scriptParts.Add($createUserScript)
+        
+        # Part 2: Assign roles
+        foreach ($role in $Roles) {
+            # Sanitize role name
+            $safeRoleName = $role.Replace("'", "''")
+            
+            $roleScript = @"
+-- Assign database role: $safeRoleName
+IF EXISTS (
+    SELECT 1 
+    FROM sys.database_principals 
+    WHERE name = N'$safeRoleName' 
+    AND type = 'R'  -- R = Database role
+)
 BEGIN
-    IF IS_ROLEMEMBER(N'$role', N'$PrincipalDisplayName') = 0 OR IS_ROLEMEMBER(N'$role', N'$PrincipalDisplayName') IS NULL
+    -- Check if user is already a member of this role
+    IF IS_ROLEMEMBER(N'$safeRoleName', N'$safePrincipalName') = 0 
+       OR IS_ROLEMEMBER(N'$safeRoleName', N'$safePrincipalName') IS NULL
     BEGIN
-        ALTER ROLE [$role] ADD MEMBER [$PrincipalDisplayName];
-        PRINT 'Added [$PrincipalDisplayName] to role [$role]';
+        ALTER ROLE [$safeRoleName] ADD MEMBER [$safePrincipalName];
+        PRINT 'SUCCESS: Added [$safePrincipalName] to role [$safeRoleName]';
     END
     ELSE
     BEGIN
-        PRINT '[$PrincipalDisplayName] is already a member of role [$role]';
+        PRINT 'INFO: [$safePrincipalName] is already a member of role [$safeRoleName] - skipping';
     END
 END
 ELSE
 BEGIN
-    PRINT 'Warning: Role [$role] does not exist in database';
-END
+    PRINT 'WARNING: Role [$safeRoleName] does not exist in database - skipping';
+END;
+GO
+
 "@
+            $scriptParts.Add($roleScript)
+        }
+        
+        # Combine all script parts
+        $fullScript = $scriptParts -join "`n"
+        
+        Write-Log "Generated SQL script with $($Roles.Count) role assignment(s)" -Level Verbose
+        return $fullScript
     }
-
-    $fullSql = $createUserSql + $roleAssignmentSql
-
-    # Execute SQL commands with proper error handling and resource disposal
-    Write-Log "Connecting to database..." -Level Info
     
-    $connection = $null
-    $command = $null
+    end {
+        Write-Log 'SQL script generation completed' -Level Verbose
+    }
+}
+
+try {
+    #region Script Initialization
+    Write-Log "====================================================================" -Level Info
+    Write-Log "SQL Managed Identity Configuration Script v$script:ScriptVersion" -Level Info
+    Write-Log "====================================================================" -Level Info
+    Write-Log "Starting Azure SQL Database managed identity configuration..." -Level Info
+    Write-Log "" -Level Info
+    
+    # Log input parameters (mask sensitive data)
+    Write-Log "Configuration Parameters:" -Level Info
+    Write-Log "  SQL Server Name:    $SqlServerName" -Level Info
+    Write-Log "  Database Name:      $DatabaseName" -Level Info
+    Write-Log "  Principal Name:     $PrincipalDisplayName" -Level Info
+    Write-Log "  Database Roles:     $($DatabaseRoles -join ', ')" -Level Info
+    Write-Log "  Azure Environment:  $AzureEnvironment" -Level Info
+    Write-Log "  Command Timeout:    ${CommandTimeout}s" -Level Info
+    Write-Log "" -Level Info
+    #endregion
+    
+    #region Azure Authentication Validation
+    Write-Log "[Step 1/5] Validating Azure authentication..." -Level Info
+    
+    # Try Az.Accounts first (preferred for PowerShell environments)
+    $useAzAccounts = Test-AzureContext
+    
+    # Fall back to Azure CLI if Az.Accounts is not available
+    if (-not $useAzAccounts) {
+        Write-Log 'Az.Accounts module not available or not authenticated' -Level Warning
+        Write-Log 'Attempting Azure CLI authentication...' -Level Info
+        
+        if (-not (Test-AzureCliAvailability)) {
+            $errorMessage = @(
+                'Azure authentication is required but not available.'
+                'Please authenticate using one of these methods:'
+                '  1. PowerShell: Connect-AzAccount (requires Az.Accounts module)'
+                '  2. Azure CLI:  az login'
+                ''
+                'To install Azure CLI: https://learn.microsoft.com/cli/azure/install-azure-cli'
+                'To install Az.Accounts: Install-Module -Name Az.Accounts -Scope CurrentUser'
+            ) -join "`n"
+            throw $errorMessage
+        }
+        
+        Write-Log 'Using Azure CLI for authentication' -Level Success
+    }
+    else {
+        Write-Log 'Using Az.Accounts module for authentication' -Level Success
+    }
+    #endregion
+    
+    #region Connection Details
+    Write-Log "" -Level Info
+    Write-Log "[Step 2/5] Constructing connection details..." -Level Info
+    
+    # Get SQL endpoint suffix for the specified Azure environment
+    if (-not $script:SqlEndpoints.ContainsKey($AzureEnvironment)) {
+        throw "Invalid Azure environment: $AzureEnvironment. Valid values: $($script:SqlEndpoints.Keys -join ', ')"
+    }
+    
+    $sqlSuffix = $script:SqlEndpoints[$AzureEnvironment]
+    $serverFqdn = "${SqlServerName}.${sqlSuffix}"
+    $resourceUrl = "https://${sqlSuffix}/"
+    
+    Write-Log "  Server FQDN:      $serverFqdn" -Level Info
+    Write-Log "  Resource URL:     $resourceUrl" -Level Info
+    Write-Log "  Port:             1433 (default)" -Level Info
+    Write-Log "  Encryption:       TLS 1.2+ (enforced)" -Level Info
+    #endregion
+
+    #endregion
+    
+    #region Access Token Acquisition
+    Write-Log "" -Level Info
+    Write-Log "[Step 3/5] Acquiring Entra ID access token for Azure SQL..." -Level Info
     
     try {
-        # Create and configure connection
-        $connection = New-Object System.Data.SqlClient.SqlConnection
-        $connection.ConnectionString = $connString
-        $connection.AccessToken = $accessToken
+        $accessToken = Get-AzureSqlAccessToken -ResourceUrl $resourceUrl
         
-        $connection.Open()
-        Write-Log "Database connection established" -Level Success
-
-        # Create and execute command
-        $command = $connection.CreateCommand()
-        $command.CommandText = $fullSql
-        $command.CommandTimeout = $CommandTimeout
-        
-        Write-Log "Executing SQL commands..." -Level Info
-        $rowsAffected = $command.ExecuteNonQuery()
-        
-        Write-Log "SQL commands executed successfully (rows affected: $rowsAffected)" -Level Success
-        Write-Log "Managed identity configuration completed for principal: $PrincipalDisplayName" -Level Success
-        
-        # Return success object
-        return @{
-            Success = $true
-            Principal = $PrincipalDisplayName
-            Server = $serverFqdn
-            Database = $DatabaseName
-            Roles = $DatabaseRoles
-            Message = "Configuration completed successfully"
+        # Validate token format (JWT tokens are base64-encoded and contain dots)
+        if ($accessToken -notmatch '^[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+$') {
+            Write-Log 'Warning: Access token does not appear to be a valid JWT format' -Level Warning
         }
+        
+        # Mask token in logs (show only first 10 and last 10 characters)
+        $tokenLength = $accessToken.Length
+        if ($tokenLength -gt 20) {
+            $maskedToken = "$($accessToken.Substring(0, 10))...$($accessToken.Substring($tokenLength - 10))"
+            Write-Log "  Token length:     $tokenLength characters" -Level Verbose
+            Write-Log "  Token preview:    $maskedToken" -Level Verbose
+        }
+        
+        Write-Log 'Access token acquired and validated successfully' -Level Success
     }
     catch {
-        Write-Log "SQL execution failed: $($_.Exception.Message)" -Level Error
+        $errorMessage = "Failed to acquire access token: $($_.Exception.Message)"
+        Write-Log $errorMessage -Level Error
+        throw $errorMessage
+    }
+    #endregion
+
+    #endregion
+    
+    #region SQL Script Generation
+    Write-Log "" -Level Info
+    Write-Log "[Step 4/5] Generating SQL configuration script..." -Level Info
+    
+    try {
+        $sqlScript = New-SqlIdentityScript -PrincipalName $PrincipalDisplayName -Roles $DatabaseRoles
+        Write-Log "SQL script generated successfully ($($sqlScript.Length) characters)" -Level Success
+        Write-Log "Script will create user and assign $($DatabaseRoles.Count) role(s)" -Level Verbose
+    }
+    catch {
+        $errorMessage = "Failed to generate SQL script: $($_.Exception.Message)"
+        Write-Log $errorMessage -Level Error
+        throw $errorMessage
+    }
+    #endregion
+    
+    #region Database Connection and Execution
+    Write-Log "" -Level Info
+    Write-Log "[Step 5/5] Executing SQL script on target database..." -Level Info
+    Write-Log "" -Level Info
+    Write-Log "[Step 5/5] Executing SQL script on target database..." -Level Info
+    
+    # Initialize connection variables for proper cleanup in finally block
+    $connection = $null
+    $command = $null
+    $commandStartTime = Get-Date
+    
+    try {
+        # Build secure connection string with encryption enforced
+        # Note: System.Data.SqlClient supports Azure AD token authentication
+        $connectionString = @(
+            "Server=tcp:${serverFqdn},1433"
+            "Initial Catalog=${DatabaseName}"
+            "Encrypt=True"                      # Enforce TLS encryption
+            "TrustServerCertificate=False"      # Validate server certificate
+            "Connection Timeout=30"              # Connection timeout in seconds
+            "MultipleActiveResultSets=False"    # MARS not needed for this script
+        ) -join ';'
+        
+        Write-Log "  Connection string: $($connectionString.Replace($DatabaseName, '***'))" -Level Verbose
+        
+        # Create SQL connection object
+        Write-Log 'Creating database connection...' -Level Verbose
+        $connection = New-Object -TypeName System.Data.SqlClient.SqlConnection
+        $connection.ConnectionString = $connectionString
+        $connection.AccessToken = $accessToken  # Use Azure AD token instead of SQL auth
+        
+        # Open connection with retry logic
+        $maxRetries = 3
+        $retryCount = 0
+        $connected = $false
+        
+        while (-not $connected -and $retryCount -lt $maxRetries) {
+            try {
+                Write-Log "Opening database connection (attempt $($retryCount + 1)/$maxRetries)..." -Level Verbose
+                $connection.Open()
+                $connected = $true
+                Write-Log 'Database connection established successfully' -Level Success
+                Write-Log "  Connection state:   $($connection.State)" -Level Verbose
+                Write-Log "  Server version:     $($connection.ServerVersion)" -Level Verbose
+                Write-Log "  Database:           $($connection.Database)" -Level Verbose
+            }
+            catch {
+                $retryCount++
+                if ($retryCount -lt $maxRetries) {
+                    $waitTime = [Math]::Pow(2, $retryCount)  # Exponential backoff: 2, 4, 8 seconds
+                    Write-Log "Connection attempt failed: $($_.Exception.Message)" -Level Warning
+                    Write-Log "Retrying in $waitTime seconds..." -Level Info
+                    Start-Sleep -Seconds $waitTime
+                }
+                else {
+                    throw
+                }
+            }
+        }
+        
+        # Create and configure SQL command
+        Write-Log 'Creating SQL command...' -Level Verbose
+        $command = $connection.CreateCommand()
+        $command.CommandText = $sqlScript
+        $command.CommandTimeout = $CommandTimeout
+        $command.CommandType = [System.Data.CommandType]::Text
+        
+        Write-Log "  Command timeout:    ${CommandTimeout}s" -Level Verbose
+        Write-Log "  Command type:       Text" -Level Verbose
+        
+        # Execute SQL script
+        Write-Log 'Executing T-SQL script...' -Level Info
+        Write-Log "Script creates user [$PrincipalDisplayName] and assigns roles: $($DatabaseRoles -join ', ')" -Level Info
+        
+        # Use ExecuteNonQuery for DDL/DML commands (CREATE USER, ALTER ROLE)
+        $rowsAffected = $command.ExecuteNonQuery()
+        $commandEndTime = Get-Date
+        $executionDuration = ($commandEndTime - $commandStartTime).TotalSeconds
+        
+        Write-Log "" -Level Info
+        Write-Log "====================================================================" -Level Success
+        Write-Log "SQL SCRIPT EXECUTION COMPLETED SUCCESSFULLY" -Level Success
+        Write-Log "====================================================================" -Level Success
+        Write-Log "  Rows affected:      $rowsAffected" -Level Success
+        Write-Log "  Execution time:     $([Math]::Round($executionDuration, 2))s" -Level Success
+        Write-Log "  Principal:          $PrincipalDisplayName" -Level Success
+        Write-Log "  Database:           $DatabaseName" -Level Success
+        Write-Log "  Roles assigned:     $($DatabaseRoles -join ', ')" -Level Success
+        Write-Log "" -Level Info
+        
+        # Build success result object with comprehensive information
+        $result = [PSCustomObject]@{
+            PSTypeName        = 'SqlManagedIdentityConfiguration.Result'
+            Success           = $true
+            Principal         = $PrincipalDisplayName
+            Server            = $serverFqdn
+            Database          = $DatabaseName
+            Roles             = $DatabaseRoles
+            RowsAffected      = $rowsAffected
+            ExecutionTimeSeconds = [Math]::Round($executionDuration, 2)
+            Timestamp         = Get-Date -Format 'o'  # ISO 8601 format
+            Message           = 'Managed identity configuration completed successfully'
+            ScriptVersion     = $script:ScriptVersion
+        }
+        
+        # Return the result object
+        return $result
+    }
+    catch [System.Data.SqlClient.SqlException] {
+        # Handle SQL-specific exceptions with detailed error information
+        $sqlEx = $_.Exception
+        $errorDetails = @(
+            "SQL Error occurred during script execution"
+            "  Error Number:       $($sqlEx.Number)"
+            "  Error Message:      $($sqlEx.Message)"
+            "  Severity:           $($sqlEx.Class)"
+            "  State:              $($sqlEx.State)"
+            "  Line Number:        $($sqlEx.LineNumber)"
+            "  Procedure:          $($sqlEx.Procedure)"
+            "  Server:             $($sqlEx.Server)"
+        )
+        
+        foreach ($line in $errorDetails) {
+            Write-Log $line -Level Error
+        }
+        
+        # Common SQL error numbers and their meanings
+        $errorGuidance = switch ($sqlEx.Number) {
+            18456 { 'Login failed - check Azure AD authentication and permissions' }
+            40615 { 'Firewall rule blocking connection - add client IP to SQL firewall' }
+            40613 { 'Database not available - check database exists and is online' }
+            33134 { 'User already exists - this is usually safe to ignore' }
+            15023 { 'User, group, or role already exists in database' }
+            default { 'Check SQL Server logs and Azure AD configuration' }
+        }
+        
+        Write-Log "  Guidance:           $errorGuidance" -Level Warning
+        throw
+    }
+    catch [System.InvalidOperationException] {
+        # Handle connection state exceptions
+        Write-Log "Connection state error: $($_.Exception.Message)" -Level Error
+        Write-Log 'This usually indicates an authentication or network connectivity issue' -Level Error
+        throw
+    }
+    catch {
+        # Handle all other exceptions
+        Write-Log "Unexpected error during SQL execution: $($_.Exception.Message)" -Level Error
+        Write-Log "Exception type: $($_.Exception.GetType().FullName)" -Level Error
         throw
     }
     finally {
-        # Ensure proper cleanup of resources
+        # Ensure proper cleanup of database resources
+        # This block always executes, even if exceptions occur
+        Write-Log 'Cleaning up database resources...' -Level Verbose
+        
         if ($command) {
-            $command.Dispose()
+            try {
+                $command.Dispose()
+                Write-Log 'SQL command disposed' -Level Verbose
+            }
+            catch {
+                Write-Log "Warning: Failed to dispose command: $($_.Exception.Message)" -Level Warning
+            }
         }
-        if ($connection -and $connection.State -eq 'Open') {
-            $connection.Close()
-            Write-Log "Database connection closed" -Level Info
-        }
+        
         if ($connection) {
-            $connection.Dispose()
+            try {
+                if ($connection.State -eq [System.Data.ConnectionState]::Open) {
+                    $connection.Close()
+                    Write-Log 'Database connection closed' -Level Verbose
+                }
+                $connection.Dispose()
+                Write-Log 'Connection object disposed' -Level Verbose
+            }
+            catch {
+                Write-Log "Warning: Failed to dispose connection: $($_.Exception.Message)" -Level Warning
+            }
         }
+        
+        Write-Log 'Resource cleanup completed' -Level Verbose
     }
+    #endregion
 }
 catch {
-    Write-Log "Script execution failed: $($_.Exception.Message)" -Level Error
-    Write-Log "Stack trace: $($_.ScriptStackTrace)" -Level Error
+    # Top-level exception handler for the entire script
+    # This catches any unhandled exceptions from the main execution block
     
-    # Return error object
-    return @{
-        Success = $false
-        Error = $_.Exception.Message
-        Principal = $PrincipalDisplayName
-        Server = "$SqlServerName.$($sqlEndpoints[$AzureEnvironment])"
-        Database = $DatabaseName
+    Write-Log "" -Level Error
+    Write-Log "====================================================================" -Level Error
+    Write-Log "SCRIPT EXECUTION FAILED" -Level Error
+    Write-Log "====================================================================" -Level Error
+    Write-Log "Error message:      $($_.Exception.Message)" -Level Error
+    Write-Log "Error type:         $($_.Exception.GetType().FullName)" -Level Error
+    Write-Log "Error source:       $($_.Exception.Source)" -Level Error
+    
+    # Include inner exception details if available
+    if ($_.Exception.InnerException) {
+        Write-Log "Inner exception:    $($_.Exception.InnerException.Message)" -Level Error
     }
     
-    exit 1
+    # Include script stack trace for debugging
+    if ($_.ScriptStackTrace) {
+        Write-Log "" -Level Error
+        Write-Log "Stack trace:" -Level Error
+        $_.ScriptStackTrace -split "`n" | ForEach-Object {
+            Write-Log "  $_" -Level Error
+        }
+    }
+    
+    Write-Log "" -Level Error
+    
+    # Build detailed error result object
+    $errorResult = [PSCustomObject]@{
+        PSTypeName    = 'SqlManagedIdentityConfiguration.Result'
+        Success       = $false
+        Principal     = $PrincipalDisplayName
+        Server        = "${SqlServerName}.$($script:SqlEndpoints[$AzureEnvironment])"
+        Database      = $DatabaseName
+        Roles         = $DatabaseRoles
+        Error         = $_.Exception.Message
+        ErrorType     = $_.Exception.GetType().FullName
+        InnerError    = if ($_.Exception.InnerException) { $_.Exception.InnerException.Message } else { $null }
+        Timestamp     = Get-Date -Format 'o'
+        ScriptVersion = $script:ScriptVersion
+    }
+    
+    # Return error object for programmatic handling
+    # Note: Return statement in catch block prevents the exception from propagating
+    return $errorResult
 }
