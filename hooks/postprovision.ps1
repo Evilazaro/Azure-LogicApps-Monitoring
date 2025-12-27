@@ -866,6 +866,38 @@ try {
                     else {
                         Write-Warning "SQL configuration returned no result object"
                     }
+                    
+                    # Configure current user for local development access
+                    Write-Information "Configuring current Azure user for local development..."
+                    try {
+                        $currentUser = az account show --query "user.name" -o tsv 2>$null
+                        if ($currentUser -and -not [string]::IsNullOrWhiteSpace($currentUser)) {
+                            Write-Verbose "Current user: $currentUser"
+                            
+                            $userConfigResult = & $sqlConfigScriptPath `
+                                -SqlServerName $azureSqlServerName `
+                                -DatabaseName $azureSqlDatabaseName `
+                                -PrincipalDisplayName $currentUser `
+                                -DatabaseRoles $databaseRoles `
+                                -ErrorAction Stop
+                            
+                            if ($userConfigResult -and $userConfigResult.Success) {
+                                Write-Information "✓ Current user configured for local database access"
+                                Write-Information "  User: $currentUser"
+                            }
+                            else {
+                                Write-Verbose "User configuration returned: $($userConfigResult.Message ?? 'Unknown')"
+                            }
+                        }
+                        else {
+                            Write-Verbose "Could not detect current Azure user - skipping user configuration"
+                        }
+                    }
+                    catch {
+                        Write-Verbose "Failed to configure current user (non-critical): $($_.Exception.Message)"
+                        Write-Verbose "You can manually grant yourself permissions using:"
+                        Write-Verbose "  .\sql-managed-identity-config.ps1 -SqlServerName '$azureSqlServerName' -DatabaseName '$azureSqlDatabaseName' -PrincipalDisplayName '<your-user@domain.com>' -DatabaseRoles @('db_owner')"
+                    }
                 }
                 catch {
                     # Non-fatal error - log warning but continue with provisioning
@@ -965,6 +997,13 @@ try {
         'Azure:TenantId'                   = $azureTenantId
         'Azure:ClientId'   = $azureClientId
         'ApplicationInsights:ConnectionString' = $applicationInsightsConnectionString
+    }
+    
+    # Add SQL connection string if Azure SQL is configured
+    if ($azureSqlServerFqdn -and $azureSqlDatabaseName) {
+        $sqlConnectionString = "Server=tcp:$azureSqlServerFqdn,1433;Initial Catalog=$azureSqlDatabaseName;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;Authentication=Active Directory Default;"
+        $apiSecrets['ConnectionStrings:OrdersDatabase'] = $sqlConnectionString
+        Write-Verbose "Added SQL connection string for standalone API execution"
     }
     
     Write-Information "Preparing to configure user secrets for both projects..."
