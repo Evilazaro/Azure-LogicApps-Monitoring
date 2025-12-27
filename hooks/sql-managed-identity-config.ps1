@@ -724,14 +724,14 @@ try {
     Write-Log "[Step 2/5] Constructing connection details..." -Level Info
 
     # Get current public IP address to add to SQL Server firewall rules
-    Write-Log 'Detecting current public IP address for firewall configuration...' -Level Verbose
+    Write-Log 'Detecting current public IP address for firewall configuration...' -Level Info
 
     try {
-        # Try multiple IP detection services for reliability
+        # Try multiple IP detection services for reliability (similar to example pattern)
         $ipDetectionServices = @(
-            'https://api.ipify.org?format=text'
-            'https://ifconfig.me/ip'
-            'https://icanhazip.com'
+            'http://ifconfig.me/ip'              # Primary service (as per example)
+            'https://api.ipify.org?format=text'  # Fallback 1
+            'https://icanhazip.com'              # Fallback 2
         )
         
         $currentIp = $null
@@ -742,7 +742,7 @@ try {
                 
                 # Validate IP address format
                 if ($currentIp -match '^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$') {
-                    Write-Log "  Detected IP: $currentIp" -Level Success
+                    Write-Log "Found public IP address: $currentIp" -Level Info
                     break
                 }
             }
@@ -757,32 +757,35 @@ try {
             Write-Log 'You may need to manually add your IP to the SQL Server firewall rules' -Level Warning
         }
         else {
-            # Add firewall rule using Azure CLI
-            Write-Log "Adding firewall rule for IP: $currentIp" -Level Info
-            
-            $ruleName = "ClientIP-$(Get-Date -Format 'yyyyMMddHHmmss')"
+            # Define firewall rule name with timestamp (dynamic naming as per example)
+            $firewallRuleName = "ClientIP-$(Get-Date -Format 'yyyyMMddHHmmss')"
             
             # Extract resource group from SQL Server using Azure CLI
+            Write-Log 'Retrieving SQL Server resource group...' -Level Verbose
             $serverInfo = az sql server show --name $SqlServerName --query '{rg:resourceGroup}' -o json 2>&1
             
             if ($LASTEXITCODE -eq 0) {
                 $serverData = $serverInfo | ConvertFrom-Json
-                $resourceGroup = $serverData.rg
+                $resourceGroupName = $serverData.rg
                 
-                Write-Log "  Resource Group: $resourceGroup" -Level Verbose
-                Write-Log "  Rule Name: $ruleName" -Level Verbose
+                Write-Log "  Resource Group: $resourceGroupName" -Level Info
+                Write-Log "  Server Name:    $SqlServerName" -Level Info
+                Write-Log "  Rule Name:      $firewallRuleName" -Level Info
                 
-                # Create firewall rule
+                # Add the IP address to the Azure SQL Server firewall rules using Azure CLI
+                # This follows the exact pattern from the example
+                Write-Log "Adding firewall rule '$firewallRuleName' for IP '$currentIp'..." -Level Info
+                
                 $firewallResult = az sql server firewall-rule create `
-                    --resource-group $resourceGroup `
+                    --resource-group $resourceGroupName `
                     --server $SqlServerName `
-                    --name $ruleName `
+                    --name $firewallRuleName `
                     --start-ip-address $currentIp `
                     --end-ip-address $currentIp `
                     -o none 2>&1
                 
                 if ($LASTEXITCODE -eq 0) {
-                    Write-Log "Firewall rule '$ruleName' created successfully for IP $currentIp" -Level Success
+                    Write-Log "Firewall rule '$firewallRuleName' with IP '$currentIp' has been created." -Level Success
                 }
                 else {
                     Write-Log "Warning: Failed to create firewall rule: $firewallResult" -Level Warning
