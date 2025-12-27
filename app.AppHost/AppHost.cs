@@ -49,17 +49,14 @@ static void ConfigureAzureCredentials(IDistributedApplicationBuilder builder, IR
 {
     ArgumentNullException.ThrowIfNull(builder);
 
-    const string AzureClientIdKey = "Azure:ClientId";
-    const string AzureTenantIdKey = "Azure:TenantId";
-
-    if (!string.IsNullOrWhiteSpace(builder.Configuration[AzureClientIdKey]) &&
-        !string.IsNullOrWhiteSpace(builder.Configuration[AzureTenantIdKey]))
+    if (!string.IsNullOrWhiteSpace(builder.Configuration["Azure:TenantId"]))
     {
-        var azureClientIdParam = builder.AddParameterFromConfiguration("azure-client-id", AzureClientIdKey);
-        var azureTenantIdParam = builder.AddParameterFromConfiguration("azure-tenant-id", AzureTenantIdKey);
+        ordersApi.WithEnvironment("AZURE_TENANT_ID", builder.Configuration["Azure:TenantId"]);
+    }
 
-        ordersApi.WithEnvironment("AZURE_CLIENT_ID", azureClientIdParam)
-                 .WithEnvironment("AZURE_TENANT_ID", azureTenantIdParam);
+    if (!string.IsNullOrWhiteSpace(builder.Configuration["Azure:ClientId"]))
+    {
+        ordersApi.WithEnvironment("AZURE_CLIENT_ID", builder.Configuration["Azure:ClientId"]);
     }
 
 }
