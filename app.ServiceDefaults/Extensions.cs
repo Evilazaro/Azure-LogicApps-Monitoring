@@ -238,7 +238,6 @@ public static class Extensions
                     },
                     ExcludeEnvironmentCredential = false,
                     ExcludeManagedIdentityCredential = false,
-                    ExcludeSharedTokenCacheCredential = true,
                     ExcludeVisualStudioCredential = true,
                     ExcludeVisualStudioCodeCredential = true,
                     ExcludeAzureCliCredential = false,
