@@ -132,6 +132,8 @@
     https://github.com/Evilazaro/Azure-LogicApps-Monitoring
 #>
 
+#Requires -Version 7.0
+
 [CmdletBinding(SupportsShouldProcess = $false)]
 param(
     [Parameter(
@@ -160,7 +162,7 @@ param(
         { $_ -ne 'master' },
         ErrorMessage = "Cannot configure managed identity users in the 'master' database. Please specify a user database."
     )]
-    [Alias('Database', 'Db')]
+    [Alias('Database')]
     [string]$DatabaseName,
 
     [Parameter(
@@ -212,8 +214,6 @@ param(
     [Alias('Timeout')]
     [int]$CommandTimeout = 120
 )
-
-#Requires -Version 7.0
 
 # Script metadata
 Set-StrictMode -Version Latest
