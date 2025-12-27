@@ -115,6 +115,9 @@ output APPLICATION_INSIGHTS_NAME string = shared.outputs.APPLICATION_INSIGHTS_NA
 @description('Connection string for Application Insights telemetry')
 output APPLICATIONINSIGHTS_CONNECTION_STRING string = shared.outputs.APPLICATIONINSIGHTS_CONNECTION_STRING
 
+@description('Connection string for Application Insights telemetry')
+output TELEMETRY_APPINSIGHTSCONNECTIONSTRING string = shared.outputs.APPLICATIONINSIGHTS_CONNECTION_STRING
+
 // Data Outputs
 @description('Fully qualified domain name of the SQL Server')
 output ORDERSDATABASE_SQLSERVERFQDN string = shared.outputs.ORDERSDATABASE_SQLSERVERFQDN
