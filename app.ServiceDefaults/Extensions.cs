@@ -46,11 +46,11 @@ public static class Extensions
             // Configure for typical microservice scenarios
             http.AddStandardResilienceHandler(options =>
             {
-                options.TotalRequestTimeout.Timeout = TimeSpan.FromSeconds(30);
-                options.AttemptTimeout.Timeout = TimeSpan.FromSeconds(10);
+                options.TotalRequestTimeout.Timeout = TimeSpan.FromSeconds(600);
+                options.AttemptTimeout.Timeout = TimeSpan.FromSeconds(600);
                 options.Retry.MaxRetryAttempts = 3;
                 options.Retry.BackoffType = Polly.DelayBackoffType.Exponential;
-                options.CircuitBreaker.SamplingDuration = TimeSpan.FromSeconds(30);
+                options.CircuitBreaker.SamplingDuration = TimeSpan.FromSeconds(1200); // Changed from 600 to 1200 (at least 2x AttemptTimeout)
             });
 
             // Enable service discovery for HTTP clients

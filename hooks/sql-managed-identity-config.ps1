@@ -618,7 +618,6 @@ ELSE
 BEGIN
     PRINT 'INFO: User [$safePrincipalName] already exists - skipping creation';
 END;
-GO
 
 "@
         $scriptParts.Add($createUserScript)
@@ -653,7 +652,6 @@ ELSE
 BEGIN
     PRINT 'WARNING: Role [$safeRoleName] does not exist in database - skipping';
 END;
-GO
 
 "@
             $scriptParts.Add($roleScript)
