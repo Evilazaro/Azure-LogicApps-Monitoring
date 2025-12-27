@@ -18,6 +18,8 @@ var webApp = builder.AddProject<Projects.eShop_Web_App>("web-app")
     .WithReference(ordersApi)
     .WaitFor(ordersApi);
 
+ConfigureAzureCredentials(builder, ordersApi);
+
 // =============================================================================
 // Observability Configuration
 // =============================================================================
@@ -42,6 +44,21 @@ builder.Build().Run();
 // =============================================================================
 // Helper Methods
 // =============================================================================
+
+static void ConfigureAzureCredentials(IDistributedApplicationBuilder builder, IResourceBuilder<ProjectResource> ordersApi)
+{
+    ArgumentNullException.ThrowIfNull(builder);
+
+    if (!string.IsNullOrWhiteSpace(builder.Configuration["Azure:TenantId"]))
+    {
+        ordersApi.WithEnvironment("AZURE_TENANT_ID", builder.Configuration["Azure:TenantId"]);
+    }
+
+    if (!string.IsNullOrWhiteSpace(builder.Configuration["Azure:ClientId"]))
+    {
+        ordersApi.WithEnvironment("AZURE_CLIENT_ID", builder.Configuration["Azure:ClientId"]);
+    }
+}
 
 /// <summary>
 /// Creates the Azure Resource Group parameter if Azure resources are configured.
