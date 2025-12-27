@@ -243,7 +243,7 @@ static void ConfigureSQLAzure(
 
         var sqlDatabase = sqlServer.AddDatabase(sqlDatabaseName).WithDefaultAzureSku();
 
-        ordersApi.WithReference(sqlServer)
-                 .WaitFor(sqlServer);
+        ordersApi.WithReference(sqlDatabase)
+                 .WaitFor(sqlDatabase);
     }
 }

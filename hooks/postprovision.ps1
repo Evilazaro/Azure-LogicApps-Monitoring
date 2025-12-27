@@ -808,6 +808,12 @@ try {
     # Configure SQL Database Managed Identity
     Write-SectionHeader -Message "Configuring SQL Database Managed Identity" -Type 'Sub'
     
+    # IMPORTANT: The managed identity requires db_owner role for:
+    # - Entity Framework migrations and schema creation
+    # - Creating tables, indexes, and foreign key constraints
+    # - Running EnsureCreatedAsync() operations
+    # Without db_owner, the application will fail with REFERENCES permission errors
+    
     # Only configure SQL managed identity if all required parameters are available
     if ($azureSqlServerName -and $azureSqlDatabaseName -and $azureManagedIdentityName) {
         Write-Information "SQL Database configuration detected..."
@@ -834,10 +840,10 @@ try {
                     Write-Information "Executing SQL managed identity configuration..."
                     
                     # Define database roles for the application
-                    # Using standard roles for CRUD operations
+                    # Using db_owner for full schema management and CRUD operations
+                    # Required for Entity Framework migrations and EnsureCreatedAsync operations
                     $databaseRoles = @(
-                        'db_datareader',    # Read data from all user tables
-                        'db_datawriter'     # Add, delete, or change data in all user tables
+                        'db_owner'          # Full permissions: schema creation, data read/write, and constraints
                     )
                     
                     # Execute the SQL configuration script
