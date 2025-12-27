@@ -200,7 +200,7 @@ resource allowAzureServices 'Microsoft.Sql/servers/firewallRules@2024-11-01-prev
 // SQL Database resource for application data
 @description('SQL Database for storing application data')
 resource sqlDb 'Microsoft.Sql/servers/databases@2024-11-01-preview' = {
-  name: toLower('${cleanedName}db${uniqueSuffix}')
+  name: 'OrderDb'
   parent: sqlServer
   location: location
   identity: {
