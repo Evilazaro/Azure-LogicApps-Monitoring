@@ -183,11 +183,10 @@ public static class Extensions
         builder.Services.AddSingleton<ServiceBusClient>(serviceProvider =>
         {
             var logger = serviceProvider.GetRequiredService<ILogger<ServiceBusClient>>();
-            var configuration = serviceProvider.GetRequiredService<IConfiguration>();
 
             try
             {
-                var messagingHostName = configuration[MessagingHostConfigKey];
+                var messagingHostName = builder.Configuration[MessagingHostConfigKey];
                 if (string.IsNullOrWhiteSpace(messagingHostName))
                 {
                     throw new InvalidOperationException(
@@ -195,7 +194,7 @@ public static class Extensions
                         $"Please ensure this value is set in appsettings.json or user secrets.");
                 }
 
-                var connectionString = configuration[MessagingConnectionStringKey];
+                var connectionString = builder.Configuration[MessagingConnectionStringKey];
                 if (string.IsNullOrWhiteSpace(connectionString))
                 {
                     throw new InvalidOperationException(
