@@ -56,15 +56,6 @@ param workspaceId string
 @minLength(50)
 param storageAccountId string
 
-@description('Principal ID (Object ID) of the Managed Identity to be used as SQL Server Entra admin')
-param entraAdminPrincipalId string
-
-@description('Name of the Managed Identity to be used as SQL Server Entra admin')
-param entraAdminLoginName string
-
-@description('Tenant ID for Microsoft Entra authentication')
-param tenantId string = subscription().tenantId
-
 @description('Logs settings for the Log Analytics workspace.')
 param logsSettings object[]
 
@@ -169,9 +160,9 @@ resource sqlServer 'Microsoft.Sql/servers@2024-11-01-preview' = {
       // 'Application' principal type is used for both Managed Identities and Service Principals
       // This allows the managed identity to administer the SQL Server using Entra ID authentication
       principalType: 'Application'
-      login: entraAdminLoginName
-      sid: entraAdminPrincipalId
-      tenantId: tenantId
+      login: deployer().userPrincipalName
+      sid: deployer().objectId
+      tenantId: tenant().tenantId
     }
     publicNetworkAccess: 'Enabled' // Can be restricted based on requirements
     minimalTlsVersion: '1.2'
