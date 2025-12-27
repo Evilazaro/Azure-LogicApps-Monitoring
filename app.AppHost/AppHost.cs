@@ -1,3 +1,5 @@
+using Aspire.Hosting;
+
 var builder = DistributedApplication.CreateBuilder(args);
 
 // =============================================================================
@@ -205,6 +207,7 @@ static void ConfigureSQLAzure(
 
     const string DefaultSqlServerName = "OrdersDatabase";
     const string DefaultDatabaseName = "OrderDb";
+    const string DefaultConnectionName = "OrdersDatabase";
 
     // Use null-coalescing operator for cleaner code
     var sqlServerName = builder.Configuration["Azure:SqlServer:Name"] ?? DefaultSqlServerName;
@@ -214,7 +217,7 @@ static void ConfigureSQLAzure(
     if (isLocalMode)
     {
         // Local development mode - use SQL Server container with persistent volume
-        var sqlServer = builder.AddAzureSqlServer(DefaultSqlServerName)
+        var sqlServer = builder.AddAzureSqlServer(DefaultConnectionName)
                                .RunAsContainer(configureContainer =>
                                {
                                    configureContainer.WithDataVolume();
@@ -228,7 +231,7 @@ static void ConfigureSQLAzure(
     else
     {
         // Azure deployment mode - use existing Azure SQL Server with managed identity
-        // Entra ID authentication is automatically configured when using AsExisting()
+        // Entra ID authentication is automatically configured when using RunAsExisting()
         if (resourceGroupParameter is null)
         {
             throw new InvalidOperationException(
@@ -236,7 +239,11 @@ static void ConfigureSQLAzure(
                 "Please configure 'Azure:ResourceGroup' in your application settings.");
         }
 
-        var sqlServer = builder.AddConnectionString("OrderDb");
+        var sqlServerParam = builder.AddParameter("sql-server", sqlServerName);
+        var sqlServer = builder.AddAzureSqlServer(DefaultConnectionName)
+                               .RunAsExisting(sqlServerParam, resourceGroupParameter);
+
+        var sqlDatabase = sqlServer.AddDatabase(sqlDatabaseName).WithDefaultAzureSku();
 
         ordersApi.WithReference(sqlServer)
                  .WaitFor(sqlServer);

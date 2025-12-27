@@ -20,13 +20,15 @@ builder.Services.AddSingleton(new Meter("eShop.Orders.API"));
 // Configure Entity Framework Core with SQL Server
 builder.Services.AddDbContext<OrderDbContext>(options =>
 {
-    var connectionString = builder.Configuration.GetConnectionString("OrderDb");
+    var connectionString = builder.Configuration["ConnectionStrings:OrdersDatabase"];
 
     if (string.IsNullOrWhiteSpace(connectionString))
     {
-        // During manifest generation or early startup, connection string might not be available yet
-        // Log at warning level and return early - the actual validation will happen when the app runs
-        Console.WriteLine("Warning: Connection string 'OrderDb' is not configured yet. This may be expected during manifest generation.");
+        // During manifest generation, we need to provide a minimal valid configuration
+        // This allows the manifest to be generated without throwing exceptions
+        // At runtime, the actual connection string will be provided by Aspire
+        Console.WriteLine("Warning: Connection string 'OrderDb' is not configured yet. Using placeholder configuration.");
+        options.UseSqlServer("Server=.;Database=placeholder;Integrated Security=true;TrustServerCertificate=true;");
         return;
     }
 
