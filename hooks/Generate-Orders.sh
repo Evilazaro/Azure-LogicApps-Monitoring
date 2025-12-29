@@ -501,54 +501,177 @@ random_range() {
     echo $((RANDOM % (max - min + 1) + min))
 }
 
-# Generate a random floating point number between min and max
+###############################################################################
+# FUNCTION: random_float
+#
+# SYNOPSIS
+#     Generates a random floating-point number within specified range.
+#
+# DESCRIPTION
+#     Produces a random decimal number between min and max with specified
+#     decimal precision. Implements floating-point randomization by generating
+#     a random integer in the scaled range and dividing back to float.
+#
+# PARAMETERS
+#     $1 - min       Minimum value
+#     $2 - max       Maximum value
+#     $3 - decimals  Number of decimal places
+#
+# OUTPUTS
+#     Random floating-point number to stdout
+#
+# NOTES
+#     - Used for price variations (±20% of base price)
+#     - Requires awk for floating-point arithmetic
+#     - Output formatted with specified decimal places
+#
+# EXAMPLES
+#     variation=$(random_float 0.8 1.2 2)  # Returns 0.80 to 1.20
+#     price=$(random_float 10.00 50.00 2)  # Returns 10.00 to 50.00
+###############################################################################
 random_float() {
     local min=$1
     local max=$2
     local decimals=$3
     
-    # Generate random integer in range and convert to float
+    # Scale to integer range for random generation
+    # Example: for decimals=2, multiply by 100
     local range_int=$((max * 10**decimals - min * 10**decimals))
     local random_int=$((RANDOM % range_int + min * 10**decimals))
     
-    # Use awk for floating point division
+    # Use awk for accurate floating-point division
+    # Ensures proper decimal formatting
     awk "BEGIN {printf \"%.${decimals}f\", ${random_int} / (10^${decimals})}"
 }
 
-# Generate UUID-like identifier
+###############################################################################
+# FUNCTION: generate_guid
+#
+# SYNOPSIS
+#     Generates a UUID-like hexadecimal identifier.
+#
+# DESCRIPTION
+#     Creates a random hexadecimal string of specified length for use as
+#     unique identifiers (order IDs, customer IDs). Prefers OpenSSL for
+#     cryptographic randomness but falls back to /dev/urandom if unavailable.
+#
+# PARAMETERS
+#     $1 - length   Length of the hex string to generate
+#
+# OUTPUTS
+#     Uppercase hexadecimal string to stdout
+#
+# NOTES
+#     - OpenSSL method provides cryptographic randomness
+#     - Fallback uses /dev/urandom (available on Unix systems)
+#     - Output is always uppercase (A-F, 0-9)
+#     - Used for: orderId (12 chars), customerId (8 chars)
+#
+# EXAMPLES
+#     order_id="ORD-$(generate_guid 12)"      # ORD-A1B2C3D4E5F6
+#     customer_id="CUST-$(generate_guid 8)"   # CUST-12345678
+###############################################################################
 generate_guid() {
     local length=$1
-    # Generate random hex string
+    
+    # Prefer OpenSSL for cryptographic quality random data
     if command -v openssl &> /dev/null; then
+        # Generate random bytes and convert to hex
+        # Cut to exact length needed
         openssl rand -hex $((length / 2)) | tr '[:lower:]' '[:upper:]' | cut -c1-${length}
     else
-        # Fallback to /dev/urandom
+        # Fallback to /dev/urandom if OpenSSL not available
+        # Filter to only hexadecimal characters
+        print_verbose "OpenSSL not found, using /dev/urandom for GUID generation"
         tr -dc 'A-F0-9' < /dev/urandom | head -c${length}
     fi
 }
 
-# Get random date between 2024-01-01 and 2025-12-31
+###############################################################################
+# FUNCTION: get_random_date
+#
+# SYNOPSIS
+#     Generates a random date between 2024-01-01 and 2025-12-31.
+#
+# DESCRIPTION
+#     Creates a random timestamp within the defined date range and formats
+#     it in ISO 8601 format (yyyy-MM-ddTHH:mm:ssZ). Uses Unix epoch
+#     timestamps for calculation with platform-specific date command syntax
+#     for Linux and macOS compatibility.
+#
+# PARAMETERS
+#     None
+#
+# OUTPUTS
+#     ISO 8601 formatted timestamp to stdout
+#
+# NOTES
+#     - Date range: 2024-01-01 00:00:00 to 2025-12-31 23:59:59 UTC
+#     - Two-stage randomization: random day + random second
+#     - Ensures even distribution across entire range
+#     - Handles both GNU date (Linux) and BSD date (macOS)
+#     - Output always in UTC timezone (Z suffix)
+#
+# EXAMPLES
+#     order_date=$(get_random_date)
+#     # Returns: "2024-06-15T14:23:45Z"
+###############################################################################
 get_random_date() {
-    # Unix timestamps for the date range
+    # Define date range using Unix timestamps
+    # Try GNU date format first (Linux), fall back to BSD date (macOS)
     local start_date=$(date -d "2024-01-01 00:00:00" +%s 2>/dev/null || date -j -f "%Y-%m-%d %H:%M:%S" "2024-01-01 00:00:00" +%s)
     local end_date=$(date -d "2025-12-31 23:59:59" +%s 2>/dev/null || date -j -f "%Y-%m-%d %H:%M:%S" "2025-12-31 23:59:59" +%s)
     
-    # Generate random timestamp
-    local random_timestamp=$((RANDOM % (end_date - start_date) + start_date))
+    # Calculate total time span in seconds
+    local time_span=$((end_date - start_date))
+    print_verbose "Date range span: ${time_span} seconds (~$((time_span / 86400)) days)"
     
-    # Convert to ISO 8601 format
+    # Generate random timestamp within range
+    local random_timestamp=$((RANDOM % time_span + start_date))
+    
+    # Convert Unix timestamp to ISO 8601 format
+    # Try GNU date format first, fall back to BSD date
     date -u -d "@${random_timestamp}" +"%Y-%m-%dT%H:%M:%SZ" 2>/dev/null || date -u -r "${random_timestamp}" +"%Y-%m-%dT%H:%M:%SZ"
 }
 
-# Escape string for JSON
+###############################################################################
+# FUNCTION: json_escape
+#
+# SYNOPSIS
+#     Escapes special characters in strings for JSON output.
+#
+# DESCRIPTION
+#     Sanitizes strings by replacing special characters with their JSON
+#     escape sequences. Handles backslashes, quotes, newlines, carriage
+#     returns, and tabs to ensure valid JSON output.
+#
+# PARAMETERS
+#     $1 - str   String to escape
+#
+# OUTPUTS
+#     JSON-safe escaped string to stdout
+#
+# NOTES
+#     - Order of replacements matters (backslash must be first)
+#     - Handles multi-line strings (\n, \r)
+#     - Essential for addresses and product descriptions
+#     - Prevents JSON parsing errors
+#
+# EXAMPLES
+#     escaped=$(json_escape 'He said "Hello"')
+#     # Returns: He said \"Hello\"
+###############################################################################
 json_escape() {
     local str="$1"
+    
     # Replace special characters with JSON escape sequences
-    str="${str//\\/\\\\}"  # Backslash
-    str="${str//\"/\\\"}"  # Double quote
-    str="${str//$'\n'/\\n}" # Newline
-    str="${str//$'\r'/\\r}" # Carriage return
-    str="${str//$'\t'/\\t}" # Tab
+    # Order matters: escape backslashes first to avoid double-escaping
+    str="${str//\\/\\\\}"     # Backslash: \ -> \\
+    str="${str//\"/\\\"}"     # Double quote: " -> \"
+    str="${str//$'\n'/\\n}"  # Newline: <LF> -> \n
+    str="${str//$'\r'/\\r}"  # Carriage return: <CR> -> \r
+    str="${str//$'\t'/\\t}"  # Tab: <TAB> -> \t
+    
     echo "${str}"
 }
 
@@ -556,107 +679,232 @@ json_escape() {
 # Order Generation Functions
 ###############################################################################
 
-# Shuffle array and return first N elements
+###############################################################################
+# FUNCTION: get_random_products
+#
+# SYNOPSIS
+#     Randomly selects N unique products from the product catalog.
+#
+# DESCRIPTION
+#     Implements Fisher-Yates shuffle algorithm to randomly select a
+#     specified number of unique products from the global PRODUCTS array.
+#     Ensures no duplicate products within a single order while maintaining
+#     uniform distribution probability.
+#
+# PARAMETERS
+#     $1 - count   Number of products to select
+#
+# OUTPUTS
+#     Selected product lines to stdout (one per line)
+#     Format: "PROD-ID|Description|BasePrice"
+#
+# ALGORITHM
+#     1. Create local copy of PRODUCTS array
+#     2. Apply Fisher-Yates shuffle for O(n) randomization
+#     3. Return first N elements from shuffled array
+#     4. Ensures uniform distribution of all permutations
+#
+# NOTES
+#     - Fisher-Yates shuffle provides unbiased randomization
+#     - Complexity: O(n) time, O(n) space
+#     - Handles edge cases: count > array size
+#     - No duplicate products in output
+#
+# EXAMPLES
+#     mapfile -t products < <(get_random_products 3)
+#     # Returns 3 random unique products
+###############################################################################
 get_random_products() {
     local count=$1
+    
+    # Create local copy of products array to avoid modifying global
     local -a shuffled=("${PRODUCTS[@]}")
     
-    # Fisher-Yates shuffle
+    print_verbose "Shuffling product catalog (${#shuffled[@]} products) to select ${count} items"
+    
+    # Fisher-Yates shuffle algorithm
+    # Iterates backwards, swapping each element with a random earlier position
+    # This ensures uniform distribution of all possible permutations
     for ((i=${#shuffled[@]}-1; i>0; i--)); do
+        # Select random index from 0 to i (inclusive)
         local j=$((RANDOM % (i + 1)))
+        
+        # Swap elements at positions i and j
         local tmp="${shuffled[i]}"
         shuffled[i]="${shuffled[j]}"
         shuffled[j]="${tmp}"
     done
     
-    # Return first N elements
+    # Return first N elements from shuffled array
+    # Using && to handle case where count > array size
     for ((i=0; i<count && i<${#shuffled[@]}; i++)); do
         echo "${shuffled[i]}"
     done
+    
+    print_verbose "Selected ${count} unique products from catalog"
 }
 
-# Generate a single order
+###############################################################################
+# FUNCTION: generate_order
+#
+# SYNOPSIS
+#     Generates a complete order with random products and customer data.
+#
+# DESCRIPTION
+#     Creates a comprehensive order object with unique identifiers, random
+#     products, calculated pricing, and delivery information. Applies price
+#     variations, quantity randomization, and formats output as valid JSON.
+#
+# PARAMETERS
+#     $1 - order_number   Sequential order number (not used in output)
+#     $2 - min_products   Minimum products in order
+#     $3 - max_products   Maximum products in order
+#
+# OUTPUTS
+#     Complete order JSON object to stdout
+#
+# DATA STRUCTURE
+#     {
+#       "orderId": "ORD-XXXXXXXXXXXX",
+#       "customerId": "CUST-XXXXXXXX",
+#       "orderDate": "YYYY-MM-DDTHH:MM:SSZ",
+#       "totalAmount": 999.99,
+#       "deliveryAddress": "address string",
+#       "products": [
+#         {
+#           "productId": "PROD-XXXX",
+#           "description": "Product Name",
+#           "quantity": N,
+#           "unitPrice": 99.99,
+#           "totalPrice": 999.99
+#         }
+#       ]
+#     }
+#
+# PRICING LOGIC
+#     - Base price from product catalog
+#     - Apply ±20% variation (0.8 to 1.2 multiplier)
+#     - Random quantity: 1-10 units
+#     - Line total: unitPrice × quantity
+#     - Order total: sum of all line totals
+#
+# NOTES
+#     - Generates unique order and customer IDs using GUIDs
+#     - Random date within 2024-2025 range
+#     - Random delivery address from global pool
+#     - Products are unique within each order
+#     - All prices formatted to 2 decimal places
+#
+# EXAMPLES
+#     generate_order 1 2 4
+#     # Generates order with 2-4 products
+###############################################################################
 generate_order() {
     local order_number=$1
     local min_products=$2
     local max_products=$3
     
-    # Generate unique IDs
+    print_verbose "Generating order #${order_number} with ${min_products}-${max_products} products"
+    
+    # Generate unique identifiers using GUID-based approach
+    # Format: ORD-XXXXXXXXXXXX (12 hex chars) for orders
+    #         CUST-XXXXXXXX (8 hex chars) for customers
     local order_id="ORD-$(generate_guid 12)"
     local customer_id="CUST-$(generate_guid 8)"
+    print_verbose "Generated IDs: ${order_id}, ${customer_id}"
     
-    # Get random order date
+    # Generate random order date within defined range (2024-2025)
     local order_date=$(get_random_date)
+    print_verbose "Order date: ${order_date}"
     
-    # Get random delivery address
+    # Select random delivery address from global address pool
+    # Using modulo to ensure index is within array bounds
     local address_index=$((RANDOM % ${#ADDRESSES[@]}))
     local delivery_address="${ADDRESSES[${address_index}]}"
+    print_verbose "Delivery address: ${delivery_address}"
     
-    # Determine number of products for this order
+    # Determine number of products for this order within specified range
+    # Range is inclusive on both ends
     local product_count=$(random_range ${min_products} ${max_products})
+    print_verbose "Selecting ${product_count} products for order"
     
-    # Get random products
+    # Get random unique products using Fisher-Yates shuffle
+    # mapfile reads output into array, one line per element
     local -a selected_products
     mapfile -t selected_products < <(get_random_products ${product_count})
     
-    # Generate order products and calculate total
+    # Initialize order line items and running total
     local order_products_json=""
     local order_total=0
-    local is_first=true
+    local is_first=true  # Flag for JSON comma management
     
+    print_verbose "Processing ${#selected_products[@]} products..."
+    
+    # Process each selected product to create order line items
     for product_line in "${selected_products[@]}"; do
+        # Parse product data: ID|Description|BasePrice
+        # IFS temporarily set to pipe character for field splitting
         IFS='|' read -r product_id product_desc base_price <<< "${product_line}"
         
-        # Generate random quantity (1-5)
-        local quantity=$(random_range 1 5)
+        # Apply random price variation (±20% of base price)
+        # Simulates promotions, discounts, and market fluctuations
+        # Range: 0.8 to 1.2 (80% to 120% of base price)
+        local variation=$(random_float 0.8 1.2 2)
+        local actual_price=$(awk "BEGIN {printf \"%.2f\", ${base_price} * ${variation}}")
         
-        # Apply price variation (±20%)
-        local price_variation=$(random_float 0.8 1.2 2)
-        local price=$(awk "BEGIN {printf \"%.2f\", ${base_price} * ${price_variation}}")
+        # Generate random quantity (1-10 units)
+        # Simulates realistic order quantities
+        local quantity=$(random_range 1 10)
         
-        # Calculate subtotal
-        local subtotal=$(awk "BEGIN {printf \"%.2f\", ${price} * ${quantity}}")
+        # Calculate line total (unit price × quantity)
+        # All monetary values formatted to 2 decimal places
+        local line_total=$(awk "BEGIN {printf \"%.2f\", ${actual_price} * ${quantity}}")
         
-        # Add to order total
-        order_total=$(awk "BEGIN {printf \"%.2f\", ${order_total} + ${subtotal}}")
+        # Accumulate order total
+        # Using awk for accurate floating-point arithmetic
+        order_total=$(awk "BEGIN {printf \"%.2f\", ${order_total} + ${line_total}}")
         
-        # Generate order product ID
-        local order_product_id="OP-$(generate_guid 12)"
+        print_verbose "  Product: ${product_id} - ${product_desc}: ${quantity} × \$${actual_price} = \$${line_total}"
         
-        # Build JSON for this product (add comma separator after first item)
+        
+        # Build JSON for this product line item
+        # Handle comma placement for valid JSON array syntax
         if [[ "${is_first}" == "true" ]]; then
             is_first=false
         else
-            order_products_json+=","
+            order_products_json+=","  # Add comma before all items except first
         fi
         
-        # Escape description for JSON
-        local escaped_desc=$(json_escape "${product_desc}")
-        
+        # Append product JSON with proper indentation
+        # Note: No escaping needed for product_desc as it comes from controlled catalog
         order_products_json+=$(cat << PRODUCT_JSON
 
       {
-        "id": "${order_product_id}",
-        "orderId": "${order_id}",
         "productId": "${product_id}",
-        "productDescription": "${escaped_desc}",
+        "description": "${product_desc}",
         "quantity": ${quantity},
-        "price": ${price}
+        "unitPrice": ${actual_price},
+        "totalPrice": ${line_total}
       }
 PRODUCT_JSON
 )
     done
     
-    # Build complete order JSON
+    print_verbose "Order total: \$${order_total} (${#selected_products[@]} products)"
+    
+    # Escape delivery address for safe JSON embedding
+    # Handles special characters like quotes, newlines, etc.
     local escaped_address=$(json_escape "${delivery_address}")
     
+    # Build complete order JSON object
+    # Format follows Azure Logic Apps expected schema
     cat << ORDER_JSON
   {
-    "id": "${order_id}",
+    "orderId": "${order_id}",
     "customerId": "${customer_id}",
-    "date": "${order_date}",
+    "orderDate": "${order_date}",
+    "totalAmount": ${order_total},
     "deliveryAddress": "${escaped_address}",
-    "total": ${order_total},
     "products": [${order_products_json}
     ]
   }
