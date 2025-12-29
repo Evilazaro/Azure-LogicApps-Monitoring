@@ -149,6 +149,13 @@ _ = Task.Run(async () =>
         }
         catch (Exception ex)
         {
+            // Record exception in activity for distributed tracing
+            if (Activity.Current != null)
+            {
+                Activity.Current.SetStatus(ActivityStatusCode.Error, ex.Message);
+                Activity.Current.AddException(ex);
+            }
+
             logger.LogError(ex,
                 "Database initialization failed (attempt {Attempt}/{MaxRetries}). " +
                 "Error: {ErrorMessage}. " +
