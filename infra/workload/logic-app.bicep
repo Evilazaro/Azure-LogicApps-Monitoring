@@ -175,16 +175,16 @@ resource wfConf 'Microsoft.Web/sites/config@2025-03-01' = {
     APPLICATIONINSIGHTS_CONNECTION_STRING: appInsightsConnectionString
     ApplicationInsightsAgent_EXTENSION_VERSION: '~3'
 
-    // // Extension bundle for Logic Apps actions
-    // AzureFunctionsJobHost__extensionBundle__id: extensionBundleId
-    // AzureFunctionsJobHost__extensionBundle__version: extensionBundleVersion
+    // Extension bundle for Logic Apps actions
+    AzureFunctionsJobHost__extensionBundle__id: extensionBundleId
+    AzureFunctionsJobHost__extensionBundle__version: extensionBundleVersion
 
-    // // Workflow runtime configuration
-    // WORKFLOWS_SUBSCRIPTION_ID: subscription().subscriptionId
-    // WORKFLOWS_RESOURCE_GROUP_NAME: resourceGroup().name
-    // WORKFLOWS_LOCATION_NAME: location
-    // WORKFLOWS_TENANT_ID: tenant().tenantId
-    // WORKFLOWS_MANAGEMENT_BASE_URI: environment().resourceManager
+    // Workflow runtime configuration
+    WORKFLOWS_SUBSCRIPTION_ID: subscription().subscriptionId
+    WORKFLOWS_RESOURCE_GROUP_NAME: resourceGroup().name
+    WORKFLOWS_LOCATION_NAME: location
+    WORKFLOWS_TENANT_ID: tenant().tenantId
+    WORKFLOWS_MANAGEMENT_BASE_URI: environment().resourceManager
   }
 }
 
