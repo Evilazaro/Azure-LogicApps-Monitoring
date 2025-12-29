@@ -57,8 +57,11 @@ param diagnosticsStorageAccountId string
 @description('Metrics settings for diagnostic configurations.')
 param metricsSettings object[]
 
-@description('Resource ID of the existing storage account required by Logic Apps Standard runtime (AzureWebJobsStorage + content share).')
-@minLength(50)
+// workflowStorageAccountId is passed from parent module but not currently used
+// The storage account is accessed via managed identity using workflowStorageAccountName
+// This parameter is retained for potential future use
+// Suppress unused parameter warning as this is part of the module interface
+#disable-next-line no-unused-params
 param workflowStorageAccountId string
 
 @description('Name of the existing storage account required by Logic Apps Standard runtime.')
@@ -186,6 +189,8 @@ resource wfDiag 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
   scope: workflowEngine
   properties: {
     workspaceId: workspaceId
+    // Using diagnosticsStorageAccountId for diagnostic logs
+    // workflowStorageAccountId is available but not used here as it's for Logic App runtime storage
     storageAccountId: diagnosticsStorageAccountId
     logs: [
       {
