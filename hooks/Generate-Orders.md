@@ -4,7 +4,7 @@
 ![Bash](https://img.shields.io/badge/Bash-4.0+-green.svg)
 ![Python](https://img.shields.io/badge/Python-3.8+-yellow.svg)
 ![Cross-Platform](https://img.shields.io/badge/platform-Windows%20%7C%20Linux%20%7C%20macOS-lightgrey.svg)
-![Version](https://img.shields.io/badge/version-1.0.0-green.svg)
+![Version](https://img.shields.io/badge/version-2.0.1-green.svg)
 ![License](https://img.shields.io/badge/license-MIT-orange.svg)
 ![Test Data](https://img.shields.io/badge/test%20data-generator-yellow.svg)
 

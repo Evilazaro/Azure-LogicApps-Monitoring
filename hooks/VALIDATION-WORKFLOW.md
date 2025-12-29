@@ -17,12 +17,12 @@ This workflow uses multiple automation scripts from the hooks directory:
 
 | Script                          | Version | Purpose                                      | Execution               | Duration  |
 | ------------------------------- | ------- | -------------------------------------------- | ----------------------- | --------- |
-| **check-dev-workstation**       | 1.0.0   | Validate workstation prerequisites           | Manual (recommended)    | 3-5 sec   |
-| **preprovision**                | 2.0.0   | Pre-deployment validation & secrets clearing | Automatic via azd       | 14-22 sec |
-| **postprovision**               | 2.0.0   | Configure .NET user secrets post-deployment  | Automatic via azd       | 10-20 sec |
+| **check-dev-workstation**       | 2.0.1   | Validate workstation prerequisites           | Manual (recommended)    | 3-5 sec   |
+| **preprovision**                | 2.0.1   | Pre-deployment validation & secrets clearing | Automatic via azd       | 14-22 sec |
+| **postprovision**               | 2.0.1   | Configure .NET user secrets post-deployment  | Automatic via azd       | 10-20 sec |
 | **sql-managed-identity-config** | 1.0.0   | Configure SQL Database managed identity      | Called by postprovision | 5-10 sec  |
-| **clean-secrets**               | 2.0.0   | Clear .NET user secrets utility              | Called by other scripts | 2-4 sec   |
-| **Generate-Orders**             | 1.0.0   | Generate test order data                     | Manual (optional)       | 1-5 sec   |
+| **clean-secrets**               | 2.0.1   | Clear .NET user secrets utility              | Called by other scripts | 2-4 sec   |
+| **Generate-Orders**             | 2.0.1   | Generate test order data                     | Manual (optional)       | 1-5 sec   |
 
 ### Script Dependencies
 
@@ -69,7 +69,7 @@ flowchart TB
     end
 
     subgraph PreProvision["2️⃣ Pre-Provisioning (Automatic)"]
-        PreStart["PREPROVISION START<br/>Version 2.0.0 (2025-12-29)"]
+        PreStart["PREPROVISION START<br/>Version 2.0.1 (2025-12-29)"]
         PreStep1["Step 1: PowerShell/Bash Version<br/>PS: 7.0+ | Bash: 4.0+"]
         PreStep2["Step 2: Prerequisites<br/>.NET 10.0+ | azd | Azure CLI 2.60.0+<br/>Bicep 0.30.0+ | 8 Resource Providers"]
         PreStep3["Step 3: Clear User Secrets<br/>Call clean-secrets script"]
@@ -89,11 +89,11 @@ flowchart TB
     end
 
     subgraph PostProvision["4️⃣ Post-Provisioning (Automatic)"]
-        PostStart["POSTPROVISION START<br/>Version 2.0.0"]
-        PostStep1["Step 1: Validate Env Vars<br/>26 azd outputs"]
+        PostStart["POSTPROVISION START<br/>Version 2.0.1"]
+        PostStep1["Step 1: Validate Env Vars<br/>Azure resource outputs"]
         PostStep2["Step 2: ACR Authentication<br/>(if configured)"]
-        PostStep3["Step 3: Clear Old Secrets<br/>Call clean-secrets script"]
-        PostStep4["Step 4: Set New Secrets<br/>26 secrets across 2 projects"]
+        PostStep3["Step 3: Clear Old Secrets<br/>Call clean-secrets script<br/>3 projects"]
+        PostStep4["Step 4: Set New Secrets<br/>Secrets across 3 projects<br/>AppHost | API | WebApp"]
         PostStep5["Step 5: SQL Managed Identity<br/>Call sql-managed-identity-config"]
 
         PostStart --> PostStep1
@@ -163,7 +163,7 @@ flowchart TB
 
 ```mermaid
 flowchart LR
-    Start["PREPROVISION (.PS1/.SH) START<br/>Version 2.0.0<br/>PS: 2025-12-24 | Bash: 2025-12-29"]
+    Start["PREPROVISION (.PS1/.SH) START<br/>Version 2.0.1<br/>Last Modified: 2025-12-29"]
     Start --> Step1["STEP 1: Runtime Version<br/>PowerShell: 7.0+ | Bash: 4.0+"]
 
     Step1 --> Decision1{Pass?}
@@ -259,24 +259,24 @@ flowchart LR
 
 ```mermaid
 flowchart TD
-    CheckDev["1️⃣ check-dev-workstation (.ps1/.sh)<br/>(optional but recommended)<br/>Version: 1.0.0"]
+    CheckDev["1️⃣ check-dev-workstation (.ps1/.sh)<br/>(optional but recommended)<br/>Version: 2.0.1"]
     CheckDev --> AZD
 
     subgraph AZD["Azure Developer CLI (azd)"]
         AzdYaml["azure.yaml<br/>hooks:<br/>  preprovision:<br/>    windows: preprovision.ps1<br/>    posix: preprovision.sh<br/>  postprovision:<br/>    windows: postprovision.ps1<br/>    posix: postprovision.sh"]
         AzdYaml --> AzdCmd["azd provision | azd up"]
-        AzdCmd --> Execute["2️⃣ Execute preprovision (.ps1/.sh)<br/>Version: 2.0.0"]
+        AzdCmd --> Execute["2️⃣ Execute preprovision (.ps1/.sh)<br/>Version: 2.0.1"]
         Execute --> Validate{Validation<br/>passes?}
         Validate -->|✓| Deploy["Continue with deployment<br/>Bicep: infra/main.bicep"]
-        Deploy --> Post["3️⃣ Execute postprovision (.ps1/.sh)<br/>Version: 2.0.0"]
+        Deploy --> Post["3️⃣ Execute postprovision (.ps1/.sh)<br/>Version: 2.0.1"]
         Post --> SqlConfig["4️⃣ Execute sql-managed-identity-config<br/>Version: 1.0.0 (2025-12-29)"]
         SqlConfig --> Ready["✓ Ready for development"]
         Validate -->|✗| Stop["Stop deployment"]
     end
 
     subgraph Utilities["Utility Scripts (Called by others)"]
-        CleanSec["clean-secrets (.ps1/.sh)<br/>Version: 2.0.0<br/>Called by: preprovision & postprovision"]
-        GenOrd["Generate-Orders (.ps1/.sh)<br/>Version: 1.0.0<br/>Manual execution (optional)"]
+        CleanSec["clean-secrets (.ps1/.sh)<br/>Version: 2.0.1<br/>Called by: preprovision & postprovision"]
+        GenOrd["Generate-Orders (.ps1/.sh)<br/>Version: 2.0.1<br/>Manual execution (optional)"]
     end
 
     subgraph GitHub["GitHub Actions Integration"]
@@ -318,7 +318,7 @@ flowchart TD
 
 ### check-dev-workstation
 
-**Version:** 1.0.0  
+**Version:** 2.0.1  
 **Purpose:** Quick prerequisite validation (wrapper around preprovision --validate-only)  
 **Execution:** Manual (recommended before main workflow)  
 **Duration:** 3-5 seconds  
@@ -336,8 +336,8 @@ flowchart TD
 
 ### preprovision
 
-**Version:** 2.0.0  
-**Last Modified:** PowerShell: 2025-12-24 | Bash: 2025-12-29  
+**Version:** 2.0.1  
+**Last Modified:** 2025-12-29  
 **Purpose:** Comprehensive pre-deployment validation and secrets clearing  
 **Execution:** Automatic via azd hooks  
 **Duration:** 14-22 seconds  
@@ -360,8 +360,8 @@ flowchart TD
 
 ### postprovision
 
-**Version:** 2.0.0  
-**Last Modified:** 2025-12-17  
+**Version:** 2.0.1  
+**Last Modified:** 2025-12-29  
 **Purpose:** Configure .NET user secrets with Azure resource information  
 **Execution:** Automatic via azd hooks after provisioning  
 **Duration:** 10-20 seconds  
@@ -369,12 +369,13 @@ flowchart TD
 
 **Operations:**
 
-1. Validate 26 required environment variables set by azd
+1. Validate environment variables set by azd
 2. Authenticate to Azure Container Registry (if configured)
 3. Clear old secrets via clean-secrets script
-4. Set 26 new secrets across 2 projects:
-   - app.AppHost (14 secrets)
-   - eShop.Orders.API (12 secrets)
+4. Set new secrets across 3 projects:
+   - app.AppHost (23 secrets)
+   - eShop.Orders.API (3+ secrets including ConnectionStrings:OrderDb)
+   - eShop.Web.App (1 secret for Application Insights)
 5. Call sql-managed-identity-config to configure database access
 6. Validate all secrets were set correctly
 
@@ -436,7 +437,7 @@ flowchart TD
 
 ### clean-secrets
 
-**Version:** 2.0.0  
+**Version:** 2.0.1  
 **Purpose:** Clear .NET user secrets utility  
 **Execution:** Called by preprovision and postprovision scripts  
 **Duration:** 2-4 seconds  
@@ -450,7 +451,7 @@ flowchart TD
 
 ### Generate-Orders
 
-**Version:** 1.0.0  
+**Version:** 2.0.1  
 **Purpose:** Generate test order data for development/testing  
 **Execution:** Manual (optional, not part of deployment workflow)  
 **Duration:** 1-5 seconds  
@@ -595,16 +596,17 @@ Legend:
 ┌─────────────────────────────────────────────────────────────────┐
 │  All operations must SUCCEED for successful execution:         │
 │                                                                 │
-│  ✓ All 26 environment variables set by azd                     │
+│  ✓ All environment variables set by azd                        │
 │  ✓ Azure Container Registry authentication (if configured)     │
 │  ✓ Old secrets cleared successfully                            │
-│  ✓ All 26 new secrets set across 2 projects                    │
+│  ✓ All new secrets set across 3 projects                       │
 │  ✓ SQL managed identity configured successfully                │
 │  ✓ All secrets validated after configuration                   │
 │                                                                 │
 │  Configured Projects:                                           │
-│    • app.AppHost: 14 secrets                                   │
-│    • eShop.Orders.API: 12 secrets                              │
+│    • app.AppHost: 23 secrets                                   │
+│    • eShop.Orders.API: 3+ secrets (incl. OrderDb connection)   │
+│    • eShop.Web.App: 1 secret (Application Insights)            │
 │                                                                 │
 │  Result: Exit code 0, application ready for local development  │
 └─────────────────────────────────────────────────────────────────┘
@@ -649,12 +651,12 @@ This document focuses on the validation workflow. For detailed information about
 
 | Script                      | PowerShell Version | Bash Version       | Last Modified |
 | --------------------------- | ------------------ | ------------------ | ------------- |
-| check-dev-workstation       | 1.0.0              | 1.0.0              | -             |
-| preprovision                | 2.0.0 (2025-12-24) | 2.0.0 (2025-12-29) | Latest        |
-| postprovision               | 2.0.0 (2025-12-17) | 2.0.0              | -             |
-| sql-managed-identity-config | 1.0.0 (2025-12-26) | 1.0.0 (2025-12-29) | Latest        |
-| clean-secrets               | 2.0.0              | 2.0.0              | -             |
-| Generate-Orders             | 1.0.0              | 1.0.0              | -             |
+| check-dev-workstation       | 2.0.1              | 2.0.1              | 2025-12-29    |
+| preprovision                | 2.0.1              | 2.0.1              | 2025-12-29    |
+| postprovision               | 2.0.1              | 2.0.1              | 2025-12-29    |
+| sql-managed-identity-config | 1.0.0              | 1.0.0              | 2025-12-29    |
+| clean-secrets               | 2.0.1              | 2.0.1              | 2025-12-29    |
+| Generate-Orders             | 2.0.1              | 2.0.1              | 2025-12-29    |
 
 ---
 

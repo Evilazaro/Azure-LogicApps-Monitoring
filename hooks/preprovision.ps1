@@ -76,7 +76,7 @@ $ProgressPreference = 'SilentlyContinue'
 $WarningPreference = 'Continue'
 
 # Script-level constants
-$script:ScriptVersion = '2.0.0'
+$script:ScriptVersion = '2.0.1'
 $script:MinimumPowerShellVersion = [version]'7.0'
 $script:MinimumDotNetVersion = [version]'10.0'
 $script:MinimumAzureCLIVersion = [version]'2.60.0'

@@ -46,7 +46,7 @@
 # NOTES
 #     File Name      : clean-secrets.sh
 #     Author         : Azure-LogicApps-Monitoring Team
-#     Version        : 2.0.0
+#     Version        : 2.0.1
 #     Last Modified  : 2025-12-29
 #     Prerequisite   : .NET SDK 10.0 or higher
 #     Purpose        : Clean .NET user secrets before deployment

@@ -11,6 +11,12 @@
 #     information, and delivery addresses. The generated data is saved as JSON 
 #     for use in testing and demonstration scenarios.
 #
+# VERSION
+#     2.0.1
+#
+# LAST MODIFIED
+#     2025-12-29
+#
 # PARAMETERS
 #     --count COUNT
 #         The number of orders to generate. Default is 50.

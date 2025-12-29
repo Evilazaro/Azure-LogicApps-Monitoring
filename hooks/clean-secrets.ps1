@@ -37,9 +37,9 @@
 .NOTES
     File Name      : clean-secrets.ps1
     Author         : Azure-LogicApps-Monitoring Team
-    Version        : 2.0.0
-    Last Modified  : 2025-12-24
-    Prerequisite   : .NET SDK 8.0 or higher
+    Version        : 2.0.1
+    Last Modified  : 2025-12-29
+    Prerequisite   : .NET SDK 10.0 or higher
     Copyright      : (c) 2025. All rights reserved.
 
 .LINK
@@ -61,7 +61,7 @@ $InformationPreference = 'Continue'
 $ProgressPreference = 'SilentlyContinue'
 
 # Script-level constants
-$script:ScriptVersion = '2.0.0'
+$script:ScriptVersion = '2.0.1'
 $script:Projects = @(
     @{
         Name = 'app.AppHost'

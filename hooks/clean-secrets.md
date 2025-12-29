@@ -2,9 +2,9 @@
 
 ![PowerShell](https://img.shields.io/badge/PowerShell-7.0+-blue.svg)
 ![Bash](https://img.shields.io/badge/Bash-4.0+-green.svg)
-![.NET](https://img.shields.io/badge/.NET-8.0+-purple.svg)
+![.NET](https://img.shields.io/badge/.NET-10.0+-purple.svg)
 ![Cross-Platform](https://img.shields.io/badge/platform-Windows%20%7C%20Linux%20%7C%20macOS-lightgrey.svg)
-![Version](https://img.shields.io/badge/version-2.0.0-green.svg)
+![Version](https://img.shields.io/badge/version-2.0.1-green.svg)
 ![License](https://img.shields.io/badge/license-MIT-orange.svg)
 
 ## 📋 Overview
@@ -471,7 +471,7 @@ flowchart LR
 | -------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **Called By**        | • `preprovision.ps1` or `preprovision.sh` before infrastructure provisioning<br/>• `postprovision.ps1` or `postprovision.sh` before setting new secrets<br/>• Developers manually for troubleshooting configuration issues<br/>• CI/CD pipelines during automated deployment workflows                                                                                                  |
 | **Calls**            | • `dotnet user-secrets clear` for each target project<br/>• `dotnet --version` for SDK validation<br/>• .NET CLI commands to manage local user secrets storage<br/>• No external APIs or network calls                                                                                                                                                                                  |
-| **Dependencies**     | • **Runtime:** PowerShell 7.0+ or Bash 4.0+<br/>• **.NET SDK:** Version 8.0+ (PowerShell) or 10.0+ (Bash) with user-secrets CLI tool<br/>• **Projects:** app.AppHost, eShop.Orders.API, eShop.Web.App with UserSecretsId configured<br/>• **File System:** Access to user secrets directory (Windows: %APPDATA%, Linux/macOS: ~/.microsoft)                                             |
+| **Dependencies**     | • **Runtime:** PowerShell 7.0+ or Bash 4.0+<br/>• **.NET SDK:** Version 10.0+ with user-secrets CLI tool<br/>• **Projects:** app.AppHost, eShop.Orders.API, eShop.Web.App with UserSecretsId configured<br/>• **File System:** Access to user secrets directory (Windows: %APPDATA%, Linux/macOS: ~/.microsoft)                                             |
 | **Outputs**          | • **Exit Code:** `0` (success/user declined) or `1` (failure/errors occurred)<br/>• **Console Output:** Timestamped messages for each operation with success/failure indicators<br/>• **Summary Report:** Total projects processed, success count, error count, execution time<br/>• **Verbose Logs:** Detailed diagnostic information including paths and command execution (optional) |
 | **Integration Role** | Acts as a **state reset utility** ensuring a clean slate for secret management. Prevents stale or conflicting configurations by clearing all local user secrets before provisioning or when troubleshooting. Critical for environment consistency across development, CI/CD, and re-provisioning scenarios.                                                                             |
 ## ⚠️ Troubleshooting
@@ -484,7 +484,7 @@ flowchart LR
 
 ```
 ERROR: .NET SDK is not installed or not accessible.
-Please install .NET SDK 8.0 or higher.
+Please install .NET SDK 10.0 or higher.
 ```
 
 **Error Message (Bash):**
@@ -498,8 +498,8 @@ Download from: https://dotnet.microsoft.com/download/dotnet/10.0
 **Solution:**
 
 ```powershell
-# PowerShell: Download and install .NET SDK 8.0+
-# https://dotnet.microsoft.com/download/dotnet/8.0
+# PowerShell: Download and install .NET SDK 10.0+
+# https://dotnet.microsoft.com/download/dotnet/10
 
 # Bash: Download and install .NET SDK 10.0+
 # https://dotnet.microsoft.com/download/dotnet/10.0
@@ -715,6 +715,11 @@ azd up
 
 | Version   | Date                                 | Changes                                                                        |
 | --------- | ------------------------------------ | ------------------------------------------------------------------------------ |
+| **2.0.1** | 2025-12-29                           | Unified version and documentation update                                       |
+|           |                                      | • Unified PowerShell and Bash version to 2.0.1                                |
+|           |                                      | • Updated .NET requirement to 10.0+ across all platforms                      |
+|           |                                      | • Confirmed support for all 3 projects (AppHost, Orders.API, Web.App)        |
+|           |                                      | • Synchronized version numbering with other hook scripts                       |
 | **2.0.0** | 2025-12-24 (PS1)<br/>2025-12-29 (SH) | Production release                                                             |
 |           |                                      | • Complete rewrite with best practices for both PowerShell and Bash            |
 |           |                                      | • Added comprehensive error handling with try-catch-finally pattern            |
@@ -735,8 +740,8 @@ azd up
 ---
 
 **Last Updated**: December 29, 2025  
-**Script Version**: 2.0.0  
-**PowerShell**: Last Modified 2025-12-24 (Requires .NET 8.0+)  
+**Script Version**: 2.0.1  
+**PowerShell**: Last Modified 2025-12-29 (Requires .NET 10.0+)  
 **Bash**: Last Modified 2025-12-29 (Requires .NET 10.0+)  
 **Compatibility**: PowerShell 7.0+ / Bash 4.0+, Windows/macOS/Linux
 

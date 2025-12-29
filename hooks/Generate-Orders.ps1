@@ -36,6 +36,8 @@
     File Name      : Generate-Orders.ps1
     Author         : Azure Logic Apps Monitoring Team
     Prerequisite   : PowerShell 7.0 or higher
+    Version        : 2.0.1
+    Last Modified  : 2025-12-29
     Copyright      : (c) 2025. All rights reserved.
 
 .LINK

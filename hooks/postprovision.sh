@@ -41,7 +41,7 @@
 #   Required Env   : AZURE_SUBSCRIPTION_ID, AZURE_RESOURCE_GROUP, AZURE_LOCATION
 #   Author         : Azure DevOps Team
 #   Last Modified  : 2025-12-29
-#   Version        : 2.0.0
+#   Version        : 2.0.1
 #
 #============================================================================
 
@@ -53,7 +53,7 @@ set -euo pipefail
 
 # Script configuration constants
 # These values define script versioning and location for relative path resolution
-readonly SCRIPT_VERSION="2.0.0"
+readonly SCRIPT_VERSION="2.0.1"
 readonly SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 # Required environment variables that must be present before script execution
