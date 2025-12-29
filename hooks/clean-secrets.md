@@ -35,7 +35,6 @@ By providing multiple execution modes (interactive, force, preview, verbose), th
   - [Internal Process Flow](#internal-process-flow)
   - [Integration Points](#integration-points)
 - [Troubleshooting](#️-troubleshooting)
-  - [Common Issues and Solutions](#common-issues-and-solutions)
 - [Related Documentation](#-related-documentation)
 - [Security Considerations](#-security-considerations)
   - [Safe Operations](#safe-operations)
@@ -476,136 +475,25 @@ flowchart LR
 | **Integration Role** | Acts as a **state reset utility** ensuring a clean slate for secret management. Prevents stale or conflicting configurations by clearing all local user secrets before provisioning or when troubleshooting. Critical for environment consistency across development, CI/CD, and re-provisioning scenarios.                                                                             |
 ## ⚠️ Troubleshooting
 
-### Common Issues and Solutions
+### Using Verbose Mode
 
-#### Issue: .NET SDK Not Found
+The script includes comprehensive error detection and provides clear, actionable guidance when issues occur:
 
-**Error Message (PowerShell):**
+- **Automatic validation** of .NET SDK availability
+- **Project path verification** before attempting operations
+- **Detailed error messages** with resolution steps
+- **Installation links** for missing dependencies
 
-```
-ERROR: .NET SDK is not installed or not accessible.
-Please install .NET SDK 10.0 or higher.
-```
+For additional diagnostic information, run with verbose mode:
 
-**Error Message (Bash):**
-
-```
-ERROR: .NET SDK is not installed or not accessible.
-Please install .NET SDK 10.0 or higher.
-Download from: https://dotnet.microsoft.com/download/dotnet/10.0
-```
-
-**Solution:**
-
+**PowerShell:**
 ```powershell
-# PowerShell: Download and install .NET SDK 10.0+
-# https://dotnet.microsoft.com/download/dotnet/10
-
-# Bash: Download and install .NET SDK 10.0+
-# https://dotnet.microsoft.com/download/dotnet/10.0
-
-# Verify installation
-dotnet --version
-
-# Restart terminal and try again
-.\clean-secrets.ps1  # PowerShell
-./clean-secrets.sh   # Bash
+.\clean-secrets.ps1 -Verbose
 ```
 
----
-
-#### Issue: Project File Not Found
-
-**Error Message:**
-
-```
-ERROR: Project file not found
-Path: Z:\Azure-LogicApps-Monitoring\app.AppHost\app.AppHost.csproj
-```
-
-**Solution:**
-
-```powershell
-# Ensure you're in the hooks directory
-cd Z:\Azure-LogicApps-Monitoring\hooks
-
-# Verify project structure
-Test-Path ..\app.AppHost\app.AppHost.csproj
-
-# If false, check repository integrity
-git status
-```
-
----
-
-#### Issue: User Secrets Not Configured
-
-**Error Message:**
-
-```
-Could not find the global property 'UserSecretsId' in MSBuild project
-```
-
-**Explanation:**
-This error occurs when a project doesn't have user secrets configured. This is normal if the project hasn't been initialized with secrets yet.
-
-**Solution:**
-
-```powershell
-# Initialize user secrets for the project
-dotnet user-secrets init --project ..\app.AppHost\app.AppHost.csproj
-
-# Verify secrets ID was added
-Select-String -Path ..\app.AppHost\app.AppHost.csproj -Pattern "UserSecretsId"
-```
-
----
-
-#### Issue: Permission Denied
-
-**Error Message:**
-
-```
-Access to the path 'C:\Users\...\Microsoft\UserSecrets\...' is denied
-```
-
-**Solution:**
-
-```powershell
-# Run PowerShell as Administrator (Windows)
-Start-Process pwsh -Verb RunAs
-
-# Navigate to hooks directory
-cd Z:\Azure-LogicApps-Monitoring\hooks
-
-# Run script
-.\clean-secrets.ps1 -Force
-```
-
----
-
-#### Issue: Script Execution Policy
-
-**Error Message:**
-
-```
-.\clean-secrets.ps1 : File cannot be loaded because running scripts is disabled
-```
-
-**Solution:**
-
-```powershell
-# Check current execution policy
-Get-ExecutionPolicy
-
-# Set execution policy (current user)
-Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
-
-# Verify
-Get-ExecutionPolicy
-
-# Run script
-.\clean-secrets.ps1
+**Bash:**
+```bash
+./clean-secrets.sh --verbose
 ```
 
 ---

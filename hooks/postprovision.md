@@ -1068,34 +1068,21 @@ builder.Configuration.AddAzureKeyVault(
 
 ### Troubleshooting
 
-**Common Issues & Solutions:**
+**Using Verbose Mode:**
 
-1. **"azd environment not found"**
+The script includes comprehensive error detection with clear, actionable error messages. All common issues are automatically detected and reported with guidance on resolution.
 
-   - Run `azd init` to create environment
-   - Or run `azd provision` which initializes automatically
+For additional diagnostic information:
 
-2. **"Resource not found"**
+**PowerShell:**
+```powershell
+.\postprovision.ps1 -Verbose
+```
 
-   - Verify `azd provision` completed successfully
-   - Check resource group exists: `az group show --name <rg-name>`
-
-3. **"Access denied to retrieve connection string"**
-
-   - Verify Azure RBAC permissions
-   - Ensure `az login` session is active
-   - Check subscription access: `az account show`
-
-4. **"dotnet user-secrets failed"**
-
-   - Verify project has UserSecretsId in .csproj
-   - Run `dotnet user-secrets init --project <path>` if missing
-   - Check .NET SDK version: `dotnet --version` (need 10.0+)
-
-5. **"Secrets not applied to running application"**
-   - Restart application after running postprovision
-   - User secrets only loaded at application startup
-   - Verify secrets exist: `dotnet user-secrets list --project <path>`
+**Bash:**
+```bash
+./postprovision.sh --verbose
+```
 
 ---
 

@@ -42,7 +42,6 @@ With built-in progress tracking, comprehensive validation, and detailed summary 
   - [Execution Speed](#execution-speed)
   - [Optimization Tips](#optimization-tips)
 - [Troubleshooting](#️-troubleshooting)
-  - [Common Issues and Solutions](#common-issues-and-solutions)
 - [Related Documentation](#-related-documentation)
 - [Security Considerations](#-security-considerations)
   - [Data Privacy](#data-privacy)

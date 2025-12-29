@@ -826,125 +826,13 @@ steps:
 
 ## 🛠️ Troubleshooting
 
-### Common Issues
+### Using Verbose Mode
 
-#### Issue: "PowerShell version is too old"
-
-**Solution:**
-
-```powershell
-# Install PowerShell 7.0+
-# Windows:
-winget install Microsoft.PowerShell
-
-# Linux/macOS:
-# See: https://learn.microsoft.com/powershell/scripting/install/installing-powershell
-```
-
-#### Issue: ".NET SDK not found"
-
-**Solution:**
-
-```bash
-# Install .NET SDK 10.0+
-# Windows:
-winget install Microsoft.DotNet.SDK.10
-
-# Linux/macOS:
-# See: https://dotnet.microsoft.com/download
-```
-
-#### Issue: "Azure CLI authentication failed"
-
-**Solution:**
-
-```bash
-# Login to Azure
-az login
-
-# Set subscription (if multiple)
-az account set --subscription "your-subscription-id"
-
-# Verify login
-az account show
-```
-
-#### Issue: "Resource provider not registered"
-
-**Solution:**
-
-```bash
-# Register required providers
-az provider register --namespace Microsoft.App
-az provider register --namespace Microsoft.ServiceBus
-az provider register --namespace Microsoft.Storage
-az provider register --namespace Microsoft.Web
-az provider register --namespace Microsoft.ContainerRegistry
-az provider register --namespace Microsoft.Insights
-az provider register --namespace Microsoft.OperationalInsights
-az provider register --namespace Microsoft.ManagedIdentity
-
-# Check registration status
-az provider show --namespace Microsoft.App --query "registrationState"
-```
-
-#### Issue: "Secrets not configured after provisioning"
-
-**Solution:**
-
-```powershell
-# Manually run postprovision
-.\hooks\postprovision.ps1 -Force -Verbose
-
-# Verify secrets are set
-dotnet user-secrets list --project app.AppHost
-```
-
-#### Issue: "SQL Database managed identity configuration failed"
-
-**Solution:**
-
-```powershell
-# PowerShell - Manual SQL managed identity configuration
-.\hooks\sql-managed-identity-config.ps1 `
-    -SqlServerName "your-sql-server" `
-    -DatabaseName "your-database" `
-    -PrincipalDisplayName "your-managed-identity-name" `
-    -Verbose
-
-# Bash - Manual SQL managed identity configuration
-./hooks/sql-managed-identity-config.sh \
-    --sql-server-name "your-sql-server" \
-    --database-name "your-database" \
-    --principal-name "your-managed-identity-name" \
-    --verbose
-
-# Verify you're authenticated as SQL Server Entra ID admin
-az sql server ad-admin list --resource-group <rg-name> --server <server-name>
-
-# Check sqlcmd is installed (required for Bash)
-sqlcmd -?  # Should show version and help
-```
-
-#### Issue: "Generate-Orders fails with Python error"
-
-**Solution:**
-
-```bash
-# Install Python 3.8+
-# Windows:
-winget install Python.Python.3.12
-
-# Linux:
-sudo apt install python3.12
-
-# macOS:
-brew install python@3.12
-```
+All scripts in the hooks folder include comprehensive error detection and provide clear, actionable error messages with resolution guidance. Common issues are automatically detected and reported with installation links and fix commands.
 
 ### Debug Mode
 
-Enable verbose output for detailed diagnostics:
+All scripts include comprehensive error detection and provide clear, actionable guidance when issues occur. Enable verbose output for detailed diagnostics:
 
 ```powershell
 # Windows
