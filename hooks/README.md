@@ -10,13 +10,39 @@
 ## 📋 Table of Contents
 
 - [Overview](#-overview)
+  - [Available Scripts](#available-scripts)
 - [Developer Inner Loop Workflow](#-developer-inner-loop-workflow)
+  - [Development Modes](#development-modes)
+  - [Local Development Workflow (Inner Loop)](#local-development-workflow-inner-loop)
+  - [Azure Deployment Workflow](#azure-deployment-workflow)
   - [Workflow Phases](#workflow-phases)
+  - [Comparison: Local vs. Azure Development](#comparison-local-vs-azure-development)
+  - [Hybrid Development Mode](#hybrid-development-mode)
+  - [Troubleshooting Local Development](#troubleshooting-local-development)
 - [Quick Start Guide](#-quick-start-guide)
+  - [Choose Your Development Path](#choose-your-development-path)
+  - [Azure Developer CLI Overview](#azure-developer-cli-overview)
+  - [azd Lifecycle Hooks](#azd-lifecycle-hooks)
+  - [First-Time Setup](#first-time-setup)
+  - [Subsequent Development Cycles](#subsequent-development-cycles)
+  - [Manual Secret Management](#manual-secret-management)
 - [CI/CD Pipeline Integration](#-cicd-pipeline-integration)
+  - [GitHub Actions](#github-actions)
+  - [Azure DevOps](#azure-devops)
 - [Best Practices](#-best-practices)
-- [Troubleshooting](#-troubleshooting)
+  - [Development Workflow](#development-workflow)
+  - [Script Execution](#script-execution)
+  - [Secret Management](#secret-management)
+  - [Azure Resource Management](#azure-resource-management)
+  - [Cross-Platform Development](#cross-platform-development)
+- [Troubleshooting](#️-troubleshooting)
+  - [Common Issues](#common-issues)
+  - [Debug Mode](#debug-mode)
+  - [Getting Help](#getting-help)
 - [Related Documentation](#-related-documentation)
+  - [Script Documentation](#script-documentation)
+  - [Azure Documentation](#azure-documentation)
+  - [Repository Documentation](#repository-documentation)
 
 ---
 
@@ -109,7 +135,7 @@ flowchart LR
     Ready --> DevLoop
 
     subgraph DevLoop["🔄 INNER LOOP (10-30 seconds/iteration)"]
-        direction TB
+        direction LR
         Code[💻 Edit Code<br/>C#, Razor, JSON] --> HotReload[⚡ Hot Reload<br/>1-3 seconds]
         HotReload --> Test[🧪 Test Changes<br/>Browser/Postman]
         Test --> Logs[📊 View Logs<br/>Aspire Dashboard]
@@ -226,14 +252,14 @@ flowchart LR
     ModeChoice -->|Azure| AzureSetup
 
     subgraph LocalSetup["🏠 LOCAL DEVELOPMENT (Fast)"]
-        direction TB
+        direction LR
         LocalPrereq["1️⃣ Prerequisites<br/>Docker, .NET 10, Aspire"]
         LocalPrereq --> LocalRun["2️⃣ Run AppHost<br/>dotnet run (~1 min)"]
         LocalRun --> LocalReady["✅ Environment Ready<br/>Containers + Services"]
     end
 
     subgraph AzureSetup["☁️ AZURE DEPLOYMENT (Complete)"]
-        direction TB
+        direction LR
         Validate["1️⃣ Validate Environment<br/>check-dev-workstation + preprovision<br/>⏱️ ~20 sec"]
         Validate --> CheckValid{✅ Prerequisites OK?}
         CheckValid --> |No| Fix[🔧 Install/Update Tools]
@@ -254,7 +280,7 @@ flowchart LR
     AzureReady --> DevLoop
 
     subgraph DevLoop["🔄 DEVELOPER INNER LOOP (Both Modes)"]
-        direction TB
+        direction LR
         Code[💻 Write Code] --> Test[🧪 Test Locally]
         Test --> Review{Works?}
         Review --> |Yes| Code
