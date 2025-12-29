@@ -285,60 +285,6 @@ resource wfDiag 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
   }
 }
 
-// Deployment script to configure content share settings after Logic App creation
-// This avoids 403 errors during initial deployment
-@description('Deployment script to configure Logic App content share settings')
-resource configureContentShare 'Microsoft.Resources/deploymentScripts@2023-08-01' = {
-  name: '${logicAppName}-configure-content-share'
-  location: location
-  kind: 'AzurePowerShell'
-  identity: {
-    type: 'UserAssigned'
-    userAssignedIdentities: {
-      '${userAssignedIdentityId}': {}
-    }
-  }
-  properties: {
-    azPowerShellVersion: '11.0'
-    retentionInterval: 'PT1H'
-    timeout: 'PT10M'
-    cleanupPreference: 'OnSuccess'
-    scriptContent: '''
-      param(
-        [string]$logicAppName,
-        [string]$resourceGroupName,
-        [string]$contentShareName,
-        [string]$storageConnectionString
-      )
-      
-      Write-Output "Configuring content share for Logic App: $logicAppName"
-      
-      # Get current app settings
-      $existingSettings = az webapp config appsettings list --name $logicAppName --resource-group $resourceGroupName | ConvertFrom-Json
-      
-      # Check if content share settings already exist
-      $hasContentShare = $existingSettings | Where-Object { $_.name -eq 'WEBSITE_CONTENTSHARE' }
-      $hasConnectionString = $existingSettings | Where-Object { $_.name -eq 'WEBSITE_CONTENTAZUREFILECONNECTIONSTRING' }
-      
-      if (-not $hasContentShare -or -not $hasConnectionString) {
-        Write-Output "Adding content share settings..."
-        
-        az webapp config appsettings set --name $logicAppName --resource-group $resourceGroupName --settings `
-          "WEBSITE_CONTENTSHARE=$contentShareName" `
-          "WEBSITE_CONTENTAZUREFILECONNECTIONSTRING=$storageConnectionString"
-        
-        Write-Output "Content share settings configured successfully"
-      } else {
-        Write-Output "Content share settings already configured"
-      }
-    '''
-    arguments: '-logicAppName "${logicAppName}" -resourceGroupName "${resourceGroup().name}" -contentShareName "${contentShareName}" -storageConnectionString "${storageConnectionString}"'
-  }
-  dependsOn: [
-    wfConf
-  ]
-}
-
 // ========== Outputs ==========
 output logicAppName string = workflowEngine.name
 output logicAppId string = workflowEngine.id

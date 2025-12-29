@@ -180,5 +180,12 @@ output AZURE_CONTAINER_APPS_ENVIRONMENT_ID string = workload.outputs.AZURE_CONTA
 @description('Default domain for the Container Apps Environment')
 output AZURE_CONTAINER_APPS_ENVIRONMENT_DEFAULT_DOMAIN string = workload.outputs.AZURE_CONTAINER_APPS_ENVIRONMENT_DEFAULT_DOMAIN
 
+// Logic Apps Outputs
+@description('Name of the deployed Logic App')
+output LOGIC_APP_NAME string = workload.outputs.LOGIC_APP_NAME
+
+@description('Content share name for Logic App')
+output CONTENT_SHARE_NAME string = workload.outputs.CONTENT_SHARE_NAME
+
 @description('Azure Tenant ID for Container Apps authentication')
 output AZURE_TENANT_ID string = tenant().tenantId
