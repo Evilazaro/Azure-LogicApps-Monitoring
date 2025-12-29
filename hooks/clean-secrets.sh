@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-###############################################################################
+################################################################################
 # clean-secrets.sh
 #
 # SYNOPSIS
@@ -12,11 +12,13 @@
 #     troubleshooting configuration issues.
 #
 #     The script performs the following operations:
-#     - Validates .NET SDK availability
+#     - Validates .NET SDK availability and version
+#     - Validates project paths and structure
 #     - Clears user secrets for app.AppHost project
 #     - Clears user secrets for eShop.Orders.API project
 #     - Clears user secrets for eShop.Web.App project
-#     - Provides detailed logging and error handling
+#     - Provides comprehensive logging and error handling
+#     - Generates execution summary with statistics
 #
 # USAGE
 #     ./clean-secrets.sh [OPTIONS]
@@ -25,84 +27,231 @@
 #     -f, --force      Skip confirmation prompts and force execution
 #     -n, --dry-run    Show what would be executed without making changes
 #     -v, --verbose    Display detailed diagnostic information
-#     -h, --help       Display this help message
+#     -h, --help       Display this help message and exit
 #
 # EXAMPLES
 #     ./clean-secrets.sh
+#         Clears all user secrets with confirmation prompt.
+#
 #     ./clean-secrets.sh --force
+#         Clears all user secrets without confirmation.
+#
 #     ./clean-secrets.sh --dry-run --verbose
+#         Shows what would be cleared without making changes, with verbose output.
+#
+# EXIT CODES
+#     0    Success - All operations completed successfully
+#     1    Error - Fatal error occurred or validation failed
 #
 # NOTES
 #     File Name      : clean-secrets.sh
 #     Author         : Azure-LogicApps-Monitoring Team
 #     Version        : 2.0.0
-#     Last Modified  : 2025-12-24
+#     Last Modified  : 2025-12-29
 #     Prerequisite   : .NET SDK 10.0 or higher
+#     Purpose        : Clean .NET user secrets before deployment
 #     Copyright      : (c) 2025. All rights reserved.
 #
 # LINKS
 #     https://github.com/Evilazaro/Azure-LogicApps-Monitoring
 #
-###############################################################################
+# COMPONENT
+#     Azure Logic Apps Monitoring - Development Tools
+#
+# ROLE
+#     Development Environment Preparation
+#
+# FUNCTIONALITY
+#     Clears .NET user secrets to ensure clean state before provisioning
+#
+################################################################################
 
-set -euo pipefail  # Exit on error, undefined variables, and pipe failures
+#==============================================================================
+# STRICT MODE AND ERROR HANDLING
+#==============================================================================
 
-# Script metadata
+# Enable Bash strict mode for robust error handling
+# -e: Exit immediately if any command exits with non-zero status
+# -u: Treat unset variables as errors
+# -o pipefail: Propagate errors through pipes
+set -euo pipefail
+
+# Set Internal Field Separator to default (space, tab, newline)
+# Protects against word splitting vulnerabilities
+IFS=$' \t\n'
+
+#==============================================================================
+# SCRIPT METADATA AND CONSTANTS
+#==============================================================================
+
+# Script version following semantic versioning (MAJOR.MINOR.PATCH)
 readonly SCRIPT_VERSION="2.0.0"
+
+# Script name for consistent logging and error messages
 readonly SCRIPT_NAME="clean-secrets.sh"
+
+# Resolve script directory for reliable path operations
+# Using BASH_SOURCE[0] instead of $0 for sourcing compatibility
 readonly SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-# Script configuration
-FORCE=false
-DRY_RUN=false
-VERBOSE=false
+#==============================================================================
+# PROJECT CONFIGURATION
+#==============================================================================
 
-# Project paths (relative to script directory)
+# Project paths relative to script directory
+# These projects will have their user secrets cleared
 declare -A PROJECTS=(
     ["app.AppHost"]="../app.AppHost/"
     ["eShop.Orders.API"]="../src/eShop.Orders.API/"
     ["eShop.Web.App"]="../src/eShop.Web.App/"
 )
 
-###############################################################################
-# Function: print_error
-# Description: Prints error message to stderr in red
-###############################################################################
-print_error() {
-    echo -e "\033[0;31mERROR: $*\033[0m" >&2
+#==============================================================================
+# GLOBAL VARIABLES
+#==============================================================================
+
+# Command-line options
+FORCE=false
+DRY_RUN=false
+VERBOSE=false
+
+# Execution statistics
+SUCCESS_COUNT=0
+FAILURE_COUNT=0
+TOTAL_COUNT=0
+
+#==============================================================================
+# COLOR CODES FOR OUTPUT
+#==============================================================================
+
+# ANSI color codes for enhanced terminal output
+readonly COLOR_RESET='\033[0m'
+readonly COLOR_RED='\033[0;31m'
+readonly COLOR_GREEN='\033[0;32m'
+readonly COLOR_YELLOW='\033[0;33m'
+readonly COLOR_CYAN='\033[0;36m'
+readonly COLOR_BOLD='\033[1m'
+
+#==============================================================================
+# ERROR HANDLING AND CLEANUP
+#==============================================================================
+
+#------------------------------------------------------------------------------
+# Function: cleanup
+# Description: Performs cleanup operations before script exit. Called
+#              automatically via trap on EXIT signal.
+# Arguments:
+#   None
+# Returns:
+#   Preserves exit code from script execution
+# Example:
+#   trap cleanup EXIT
+#------------------------------------------------------------------------------
+cleanup() {
+    local exit_code=$?
+    
+    # Perform any necessary cleanup operations
+    # Currently no cleanup needed, but structure is in place
+    
+    return "${exit_code}"
 }
 
-###############################################################################
-# Function: print_warning
-# Description: Prints warning message in yellow
-###############################################################################
-print_warning() {
-    echo -e "\033[0;33mWARNING: $*\033[0m"
+# Register cleanup function to run on EXIT signal
+trap cleanup EXIT
+
+#------------------------------------------------------------------------------
+# Function: handle_interrupt
+# Description: Handles user interruption (Ctrl+C) and termination signals
+#              gracefully, ensuring proper cleanup and exit.
+# Arguments:
+#   None
+# Returns:
+#   Exits with code 130 (128 + SIGINT)
+# Example:
+#   trap handle_interrupt INT TERM
+#------------------------------------------------------------------------------
+handle_interrupt() {
+    echo "" >&2
+    log_error "Script interrupted by user"
+    exit 130
 }
 
-###############################################################################
-# Function: print_success
-# Description: Prints success message in green
-###############################################################################
-print_success() {
-    echo -e "\033[0;32m$*\033[0m"
+# Register interrupt handler for SIGINT and SIGTERM
+trap handle_interrupt INT TERM
+
+#==============================================================================
+# LOGGING FUNCTIONS
+#==============================================================================
+
+#------------------------------------------------------------------------------
+# Function: log_error
+# Description: Outputs error messages to stderr with ERROR prefix and red color
+# Arguments:
+#   $@ - Error message to display
+# Returns:
+#   None
+# Example:
+#   log_error "Failed to clear secrets for project: ${project_name}"
+#------------------------------------------------------------------------------
+log_error() {
+    echo -e "${COLOR_RED}ERROR: $*${COLOR_RESET}" >&2
 }
 
-###############################################################################
-# Function: print_info
-# Description: Prints informational message
-###############################################################################
-print_info() {
-    echo "$*"
+#------------------------------------------------------------------------------
+# Function: log_warning
+# Description: Outputs warning messages with WARNING prefix and yellow color
+# Arguments:
+#   $@ - Warning message to display
+# Returns:
+#   None
+# Example:
+#   log_warning "Project path not found: ${path}"
+#------------------------------------------------------------------------------
+log_warning() {
+    echo -e "${COLOR_YELLOW}WARNING: $*${COLOR_RESET}" >&2
 }
 
-###############################################################################
-# Function: print_verbose
-# Description: Prints verbose message if verbose mode is enabled
-###############################################################################
-print_verbose() {
-    if [[ "${VERBOSE}" == true ]]; then
-        echo -e "\033[0;36m[VERBOSE] $*\033[0m"
+#------------------------------------------------------------------------------
+# Function: log_success
+# Description: Outputs success messages with green color
+# Arguments:
+#   $@ - Success message to display
+# Returns:
+#   None
+# Example:
+#   log_success "✓ Successfully cleared secrets for: ${project_name}"
+#------------------------------------------------------------------------------
+log_success() {
+    echo -e "${COLOR_GREEN}$*${COLOR_RESET}"
+}
+
+#------------------------------------------------------------------------------
+# Function: log_info
+# Description: Outputs informational messages with cyan color
+# Arguments:
+#   $@ - Information message to display
+# Returns:
+#   None
+# Example:
+#   log_info "Processing project: ${project_name}"
+#------------------------------------------------------------------------------
+log_info() {
+    echo -e "${COLOR_CYAN}$*${COLOR_RESET}"
+}
+
+#------------------------------------------------------------------------------
+# Function: log_verbose
+# Description: Outputs verbose diagnostic messages when verbose mode is enabled
+# Arguments:
+#   $@ - Verbose message to display
+# Returns:
+#   None
+# Example:
+#   log_verbose "Executing: dotnet user-secrets clear -p ${project_path}"
+#------------------------------------------------------------------------------
+log_verbose() {
+    if [[ "${VERBOSE}" == "true" ]]; then
+        echo "[VERBOSE] $*" >&2
     fi
 }
 

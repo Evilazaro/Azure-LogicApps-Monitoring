@@ -45,6 +45,10 @@
 #     1    General error - missing script or invalid arguments
 #     >1   Validation failed - see preprovision.sh exit codes
 #
+# OUTPUTS
+#     Formatted output string containing validation results to stdout.
+#     Verbose diagnostic messages to stderr when --verbose flag is used.
+#
 # NOTES
 #     File Name      : check-dev-workstation.sh
 #     Author         : Azure-LogicApps-Monitoring Team
@@ -84,7 +88,7 @@ set -euo pipefail
 IFS=$' \t\n'
 
 #==============================================================================
-# SCRIPT METADATA AND CONSTANTS
+# SCRIPT METADATA AND CONFIGURATION
 #==============================================================================
 
 # Script version following semantic versioning (MAJOR.MINOR.PATCH)
@@ -97,6 +101,10 @@ readonly SCRIPT_NAME="check-dev-workstation.sh"
 # Using BASH_SOURCE[0] instead of $0 for sourcing compatibility
 readonly SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
+# Error action preference - mimics PowerShell behavior
+# "Continue" allows script to complete even if preprovision has warnings
+readonly ERROR_ACTION_PREFERENCE="Continue"
+
 #==============================================================================
 # GLOBAL VARIABLES
 #==============================================================================
@@ -104,53 +112,65 @@ readonly SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 # Verbose mode flag - controls diagnostic output verbosity
 VERBOSE=false
 
-# Error action preference - mimics PowerShell behavior
-# "Continue" allows script to complete even with warnings from preprovision
-readonly ERROR_ACTION_PREFERENCE="Continue"
-
 #==============================================================================
 # ERROR HANDLING AND CLEANUP
 #==============================================================================
 
-# Trap function for graceful exit and cleanup
-# Executes on script exit (normal or error)
-# Parameters:
-#   $?: Exit code from the last command
+#------------------------------------------------------------------------------
+# Function: cleanup
+# Description: Cleanup function executed on script exit (normal or error).
+#              Ensures proper resource cleanup and preserves exit codes.
+# Arguments:
+#   None (implicitly uses $? for exit code)
+# Returns:
+#   Preserved exit code from last command
+# Notes:
+#   Registered via trap to execute on EXIT signal
+#------------------------------------------------------------------------------
 cleanup() {
     local exit_code=$?
     
-    # Perform any necessary cleanup here
-    # Currently no cleanup needed, but structure is in place for future use
+    # Restore error action preference (currently no-op, structure for future use)
+    # No additional cleanup needed for this wrapper script
     
-    # Preserve the original exit code
     return "${exit_code}"
 }
 
 # Register cleanup function to run on EXIT signal
 trap cleanup EXIT
 
-# Trap function for interruption signals (SIGINT, SIGTERM)
-# Provides clean shutdown when user presses Ctrl+C or process is terminated
+#------------------------------------------------------------------------------
+# Function: handle_interrupt
+# Description: Handles interruption signals (SIGINT, SIGTERM) gracefully.
+#              Provides clean shutdown when user presses Ctrl+C or process
+#              is terminated.
+# Arguments:
+#   None
+# Returns:
+#   Exits with standard SIGINT exit code (130)
+# Notes:
+#   Registered via trap for INT and TERM signals
+#------------------------------------------------------------------------------
 handle_interrupt() {
     echo "" >&2
     echo "ERROR: Script interrupted by user" >&2
     exit 130  # Standard exit code for SIGINT (128 + 2)
 }
 
-# Register interrupt handler
+# Register interrupt handler for INT and TERM signals
 trap handle_interrupt INT TERM
 
 #==============================================================================
-# HELPER FUNCTIONS
+# LOGGING FUNCTIONS
 #==============================================================================
 
 #------------------------------------------------------------------------------
 # Function: log_verbose
-# Description: Outputs verbose logging messages to stderr when verbose mode
+# Description: Outputs verbose diagnostic messages to stderr when verbose mode
 #              is enabled. Uses stderr to avoid polluting stdout with
 #              diagnostic information.
 # Arguments:
-#   $@ - Message to log
+#   $@ - Message components to log
 # Returns:
 #   None
 # Example:
@@ -165,9 +185,9 @@ log_verbose() {
 #------------------------------------------------------------------------------
 # Function: log_error
 # Description: Outputs error messages to stderr with ERROR prefix for
-#              consistent error reporting across the script.
+#              consistent error reporting.
 # Arguments:
-#   $@ - Error message to log
+#   $@ - Error message components
 # Returns:
 #   None
 # Example:
@@ -178,14 +198,32 @@ log_error() {
 }
 
 #------------------------------------------------------------------------------
+# Function: log_warning
+# Description: Outputs warning messages to stderr with WARNING prefix.
+# Arguments:
+#   $@ - Warning message components
+# Returns:
+#   None
+# Example:
+#   log_warning "Validation completed with issues"
+#------------------------------------------------------------------------------
+log_warning() {
+    echo "WARNING: $*" >&2
+}
+
+#==============================================================================
+# HELP AND USAGE
+#==============================================================================
+
+#------------------------------------------------------------------------------
 # Function: show_help
-# Description: Displays comprehensive help information including usage,
-#              options, examples, and exit codes. Follows standard Unix
-#              conventions for help output.
+# Description: Displays comprehensive help information including synopsis,
+#              description, usage, options, examples, and exit codes.
+#              Follows standard Unix conventions for help output.
 # Arguments:
 #   None
 # Returns:
-#   None (exits with code 0)
+#   Exits with code 0
 # Example:
 #   show_help
 #------------------------------------------------------------------------------
@@ -244,96 +282,6 @@ EOF
     exit 0
 }
 
-#------------------------------------------------------------------------------
-# Function: validate_preprovision_script
-# Description: Validates that the required preprovision.sh script exists and
-#              is executable. Attempts to set execute permissions if needed.
-# Arguments:
-#   None
-# Returns:
-#   0 - Script exists and is executable
-#   1 - Script not found or cannot be made executable
-# Example:
-#   validate_preprovision_script || exit 1
-#------------------------------------------------------------------------------
-validate_preprovision_script() {
-    local preprovision_path="${SCRIPT_DIR}/preprovision.sh"
-    
-    log_verbose "Validating preprovision.sh script..."
-    log_verbose "Expected path: ${preprovision_path}"
-    
-    # Check if script file exists
-    if [[ ! -f "${preprovision_path}" ]]; then
-        log_error "Required script not found: ${preprovision_path}"
-        log_error "This script requires preprovision.sh to be in the same directory."
-        log_error "Current directory: ${SCRIPT_DIR}"
-        return 1
-    fi
-    
-    log_verbose "Script file found: ${preprovision_path}"
-    
-    # Check if script is executable
-    if [[ ! -x "${preprovision_path}" ]]; then
-        log_verbose "Script is not executable, attempting to set execute permission..."
-        
-        # Attempt to make script executable
-        if chmod +x "${preprovision_path}" 2>/dev/null; then
-            log_verbose "Execute permission set successfully"
-        else
-            log_error "Failed to set execute permission on: ${preprovision_path}"
-            log_error "Please run: chmod +x ${preprovision_path}"
-            return 1
-        fi
-    else
-        log_verbose "Script is executable"
-    fi
-    
-    # Export the validated path for use in main execution
-    echo "${preprovision_path}"
-    return 0
-}
-
-#------------------------------------------------------------------------------
-# Function: parse_arguments
-# Description: Parses command-line arguments and sets global configuration
-#              variables. Validates argument format and provides error
-#              messages for unknown options.
-# Arguments:
-#   $@ - All command-line arguments
-# Returns:
-#   0 - Arguments parsed successfully
-#   1 - Invalid argument encountered
-# Example:
-#   parse_arguments "$@" || exit 1
-#------------------------------------------------------------------------------
-parse_arguments() {
-    # Process all command-line arguments
-    while [[ $# -gt 0 ]]; do
-        case "$1" in
-            -v|--verbose)
-                # Enable verbose logging
-                VERBOSE=true
-                log_verbose "Verbose mode enabled"
-                shift
-                ;;
-            -h|--help)
-                # Display help and exit
-                show_help
-                # show_help exits, but return here for clarity
-                return 0
-                ;;
-            *)
-                # Unknown option encountered
-                log_error "Unknown option: $1"
-                echo "Use --help for usage information." >&2
-                return 1
-                ;;
-        esac
-    done
-    
-    return 0
-}
-
 #==============================================================================
 # MAIN EXECUTION
 #==============================================================================
@@ -341,80 +289,86 @@ parse_arguments() {
 #------------------------------------------------------------------------------
 # Function: main
 # Description: Main execution function that orchestrates the validation
-#              workflow. Handles argument parsing, script validation, and
-#              execution of preprovision.sh in validation-only mode.
+#              workflow. Validates prerequisites, executes preprovision.sh
+#              in ValidateOnly mode, captures output, and reports results.
 # Arguments:
 #   $@ - All command-line arguments
 # Returns:
 #   0 - Validation successful
 #   1 - Validation failed or error occurred
-# Example:
-#   main "$@"
+# Exit Codes:
+#   Propagates exit code from preprovision.sh on validation failure
+# Notes:
+#   Uses try-catch-finally pattern via conditional execution and trap
 #------------------------------------------------------------------------------
 main() {
+    # Parse command-line arguments
+    while [[ $# -gt 0 ]]; do
+        case "$1" in
+            -v|--verbose)
+                VERBOSE=true
+                shift
+                ;;
+            -h|--help)
+                show_help
+                ;;
+            *)
+                log_error "Unknown option: $1"
+                echo "Use --help for usage information." >&2
+                exit 1
+                ;;
+        esac
+    done
+    
+    # Validate preprovision.ps1 exists (mirroring PowerShell variable naming)
+    local preprovision_path="${SCRIPT_DIR}/preprovision.sh"
+    
+    if [[ ! -f "${preprovision_path}" ]]; then
+        log_error "Required script not found: ${preprovision_path}"
+        log_error "This script requires preprovision.sh to be in the same directory."
+        exit 1
+    fi
+    
     log_verbose "Starting developer workstation validation..."
-    log_verbose "Script: ${SCRIPT_NAME}"
-    log_verbose "Version: ${SCRIPT_VERSION}"
-    log_verbose "Script directory: ${SCRIPT_DIR}"
-    
-    # Parse and validate command-line arguments
-    log_verbose "Parsing command-line arguments..."
-    if ! parse_arguments "$@"; then
-        return 1
-    fi
-    
-    # Validate and locate preprovision.sh script
-    log_verbose "Validating preprovision.sh script..."
-    local preprovision_path
-    if ! preprovision_path=$(validate_preprovision_script); then
-        return 1
-    fi
-    
     log_verbose "Using validation script: ${preprovision_path}"
+    log_verbose "Script version: ${SCRIPT_VERSION}"
     
-    # Build argument array for preprovision.sh
-    # --validate-only: Skips secret clearing, only performs validation
-    # --verbose: Forwards verbose mode to preprovision (if enabled)
+    # Execute preprovision.sh in ValidateOnly mode
+    # This performs all prerequisite checks without making any changes
+    # Parameters:
+    #   --validate-only: Skips secret clearing, only performs validation
+    #   --verbose: Forwards verbose flag if enabled (conditional)
+    #   2>&1: Redirects error stream to output stream for complete capture
+    
     local validation_args=("--validate-only")
-    
     if [[ "${VERBOSE}" == "true" ]]; then
         validation_args+=("--verbose")
-        log_verbose "Forwarding verbose flag to preprovision.sh"
     fi
     
-    log_verbose "Executing preprovision.sh with arguments: ${validation_args[*]}"
-    
-    # Execute preprovision.sh and capture exit code
-    # Run in subshell to capture all output (stdout and stderr)
-    # Store exit code immediately to prevent it from being overwritten
+    # Capture validation output and exit code
     local validation_output
     local validation_exit_code=0
     
-    # Execute and capture output, preserving exit code
+    # Execute preprovision.sh and capture all output (stdout + stderr)
+    # Preserve exit code for later evaluation
     if validation_output=$("${preprovision_path}" "${validation_args[@]}" 2>&1); then
         validation_exit_code=0
     else
         validation_exit_code=$?
     fi
     
-    log_verbose "preprovision.sh exit code: ${validation_exit_code}"
+    # Display validation results to stdout
+    echo "${validation_output}"
     
-    # Display captured output to user
-    # This ensures clean output separation from verbose logging
-    if [[ -n "${validation_output}" ]]; then
-        echo "${validation_output}"
-    fi
-    
-    # Evaluate validation results and provide summary
+    # Check if validation was successful by examining the exit code
     if [[ ${validation_exit_code} -eq 0 ]]; then
         log_verbose "✓ Workstation validation completed successfully"
         log_verbose "Your development environment is properly configured for Azure deployment"
-        return 0
+        exit 0
     else
-        log_verbose "⚠ Workstation validation completed with issues"
-        log_verbose "Please address the warnings/errors above before proceeding with development"
-        log_verbose "For detailed diagnostics, run with --verbose flag"
-        return "${validation_exit_code}"
+        log_warning "⚠ Workstation validation completed with issues"
+        log_warning "Please address the warnings/errors above before proceeding with development"
+        exit "${validation_exit_code}"
     fi
 }
 
@@ -423,6 +377,5 @@ main() {
 #==============================================================================
 
 # Execute main function with all command-line arguments
-# Exit with the return code from main
+# The cleanup trap will ensure proper exit code handling
 main "$@"
-exit $?
