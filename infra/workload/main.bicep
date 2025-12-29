@@ -73,14 +73,12 @@ param workflowStorageAccountName string
 @minLength(50)
 param workflowStorageAccountId string
 
-@description('Confirmation that storage role assignments are complete before configuring Logic App.')
-param storageRoleAssignmentsComplete bool
-
 @description('Resource tags applied to all workload resources.')
 param tags tagsType
 
 // ========== Variables ==========
 
+@description('Diagnostic settings configuration for capturing all log categories')
 var allLogsSettings object[] = [
   {
     categoryGroup: 'allLogs'
@@ -88,6 +86,7 @@ var allLogsSettings object[] = [
   }
 ]
 
+@description('Diagnostic settings configuration for capturing all metric categories')
 var allMetricsSettings object[] = [
   {
     categoryGroup: 'allMetrics'
@@ -178,7 +177,13 @@ module workflows 'logic-app.bicep' = {
     userAssignedIdentityId: userAssignedIdentityId
     workflowStorageAccountId: workflowStorageAccountId
     workflowStorageAccountName: workflowStorageAccountName
-    storageRoleAssignmentsComplete: storageRoleAssignmentsComplete
     tags: tags
   }
 }
+
+// Logic Apps Outputs
+@description('Name of the deployed Logic App')
+output LOGIC_APP_NAME string = workflows.outputs.logicAppName
+
+@description('Content share name for Logic App')
+output CONTENT_SHARE_NAME string = workflows.outputs.contentShareName

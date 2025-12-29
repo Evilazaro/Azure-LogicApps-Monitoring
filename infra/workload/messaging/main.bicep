@@ -67,12 +67,15 @@ param tags tagsType
 // ========== Variables ==========
 
 // Remove special characters for naming compliance
+@description('Cleaned name with special characters removed for Azure naming requirements')
 var cleanedName string = toLower(replace(replace(replace(name, '-', ''), '_', ''), ' ', ''))
 
 // Generate unique suffix for globally unique resource names
+@description('Unique suffix for globally unique resource names')
 var uniqueSuffix string = uniqueString(resourceGroup().id, name, envName, location)
 
 // Service Bus namespace name limited to 20 characters
+@description('Service Bus namespace name (max 20 characters)')
 var serviceBusName string = toLower(take('${cleanedName}sb${uniqueSuffix}', 20))
 
 // ========== Resources ==========
@@ -89,7 +92,6 @@ resource broker 'Microsoft.ServiceBus/namespaces@2025-05-01-preview' = {
   sku: {
     name: 'Standard'
     tier: 'Standard'
-    capacity: 16
   }
   tags: tags
   identity: {

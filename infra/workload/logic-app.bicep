@@ -57,8 +57,11 @@ param diagnosticsStorageAccountId string
 @description('Metrics settings for diagnostic configurations.')
 param metricsSettings object[]
 
-@description('Resource ID of the existing storage account required by Logic Apps Standard runtime (AzureWebJobsStorage + content share).')
-@minLength(50)
+// workflowStorageAccountId is passed from parent module but not currently used
+// The storage account is accessed via managed identity using workflowStorageAccountName
+// This parameter is retained for potential future use
+// Suppress unused parameter warning as this is part of the module interface
+#disable-next-line no-unused-params
 param workflowStorageAccountId string
 
 @description('Name of the existing storage account required by Logic Apps Standard runtime.')
@@ -66,41 +69,35 @@ param workflowStorageAccountId string
 @maxLength(24)
 param workflowStorageAccountName string
 
-@description('Confirmation that storage role assignments are complete before configuring Logic App.')
-param storageRoleAssignmentsComplete bool
-
 @description('Connection string for Application Insights instance.')
 param appInsightsConnectionString string
-
-@description('Enable mounting the content share over VNet. Set true ONLY when private storage + VNet integration + DNS are configured.')
-param usePrivateStorage bool = false
-
-@description('If true, sets WEBSITE_RUN_FROM_PACKAGE=1. Only enable when you deploy as package/zip.')
-param runFromPackage bool = false
 
 @description('Resource tags applied to all resources.')
 param tags tagsType
 
 // ========== Variables ==========
+@description('Unique suffix for resource naming based on resource group and parameters')
 var resourceSuffix = uniqueString(resourceGroup().id, name, envName, location)
 
+@description('App Service Plan name for Logic Apps Standard')
 var planName = '${name}-${resourceSuffix}-asp'
+@description('Logic App workflow engine name')
 var logicAppName = '${name}-${resourceSuffix}-logicapp'
 
 // Functions/Logic Apps runtime settings
+@description('Azure Functions runtime version')
 var functionsExtensionVersion = '~4'
+@description('Functions worker runtime language')
 var functionsWorkerRuntime = 'dotnet'
 
+@description('Logic Apps extension bundle identifier')
 var extensionBundleId = 'Microsoft.Azure.Functions.ExtensionBundle.Workflows'
+@description('Logic Apps extension bundle version range')
 var extensionBundleVersion = '[1.*, 2.0.0)'
 
 // Content share name
-var contentShareName = '${logicAppName}-content'
-
-// Storage connection string for file share (required for initial setup)
-// Runtime operations will use managed identity via AzureWebJobsStorage__* settings
-var storageKey = listKeys(workflowStorageAccountId, '2025-06-01').keys[0].value
-var storageConnectionString = 'DefaultEndpointsProtocol=https;AccountName=${workflowStorageAccountName};EndpointSuffix=${environment().suffixes.storage};AccountKey=${storageKey}'
+@description('File share name for Logic App workflow state')
+var contentShareName = 'workflowstate'
 
 // ========== Resources ==========
 
@@ -148,81 +145,10 @@ resource workflowEngine 'Microsoft.Web/sites@2025-03-01' = {
   properties: {
     serverFarmId: wfASP.id
     publicNetworkAccess: 'Enabled'
-    storageAccountRequired: false // Set to false initially to prevent auto-creation of file share
-
     siteConfig: {
       alwaysOn: true
       webSocketsEnabled: true
-
-      minimumElasticInstanceCount: 3
-      elasticWebAppScaleLimit: 20
-
-      use32BitWorkerProcess: false
-      ftpsState: 'FtpsOnly'
-      minTlsVersion: '1.2'
-
-      // Pre-configure app settings during site creation to avoid separate deployment
-      appSettings: [
-        {
-          name: 'FUNCTIONS_EXTENSION_VERSION'
-          value: functionsExtensionVersion
-        }
-        {
-          name: 'FUNCTIONS_WORKER_RUNTIME'
-          value: functionsWorkerRuntime
-        }
-        {
-          name: 'AzureWebJobsStorage__accountName'
-          value: workflowStorageAccountName
-        }
-        {
-          name: 'AzureWebJobsStorage__credentialType'
-          value: 'managedidentity'
-        }
-        {
-          name: 'AzureWebJobsStorage__managedIdentityResourceId'
-          value: userAssignedIdentityId
-        }
-        {
-          name: 'APPLICATIONINSIGHTS_CONNECTION_STRING'
-          value: appInsightsConnectionString
-        }
-        {
-          name: 'ApplicationInsightsAgent_EXTENSION_VERSION'
-          value: '~3'
-        }
-        {
-          name: 'AzureFunctionsJobHost__extensionBundle__id'
-          value: extensionBundleId
-        }
-        {
-          name: 'AzureFunctionsJobHost__extensionBundle__version'
-          value: extensionBundleVersion
-        }
-        {
-          name: 'WORKFLOWS_SUBSCRIPTION_ID'
-          value: subscription().subscriptionId
-        }
-        {
-          name: 'WORKFLOWS_RESOURCE_GROUP_NAME'
-          value: resourceGroup().name
-        }
-        {
-          name: 'WORKFLOWS_LOCATION_NAME'
-          value: location
-        }
-        {
-          name: 'WORKFLOWS_TENANT_ID'
-          value: tenant().tenantId
-        }
-        {
-          name: 'WORKFLOWS_MANAGEMENT_BASE_URI'
-          value: environment().resourceManager
-        }
-      ]
     }
-
-    httpsOnly: true
   }
 }
 
@@ -235,23 +161,11 @@ resource wfConf 'Microsoft.Web/sites/config@2025-03-01' = {
     FUNCTIONS_EXTENSION_VERSION: functionsExtensionVersion
     FUNCTIONS_WORKER_RUNTIME: functionsWorkerRuntime
 
-    // Required storage settings for Logic Apps Standard host with Managed Identity
-    // Note: Requires RBAC role assignments to be complete (storageRoleAssignmentsComplete = ${storageRoleAssignmentsComplete})
-    // AzureWebJobsStorage uses managed identity for runtime operations
-    AzureWebJobsStorage__accountName: workflowStorageAccountName
-    AzureWebJobsStorage__credentialType: 'managedidentity'
     AzureWebJobsStorage__managedIdentityResourceId: userAssignedIdentityId
-
-    // Content share settings required for Logic Apps runtime
-    // The file share is pre-created in the storage module with proper role assignments
-    WEBSITE_CONTENTSHARE: contentShareName
-    WEBSITE_CONTENTAZUREFILECONNECTIONSTRING: storageConnectionString
-
-    // Only enable when private storage is correctly configured
-    WEBSITE_CONTENTOVERVNET: usePrivateStorage ? '1' : '0'
-
-    // Deployment mode (optional)
-    WEBSITE_RUN_FROM_PACKAGE: runFromPackage ? '1' : '0'
+    AzureWebJobsStorage__credential: 'managedIdentity'
+    AzureWebJobsStorage__blobServiceUri: 'https://${workflowStorageAccountName}.blob.${environment().suffixes.storage}/'
+    AzureWebJobsStorage__queueServiceUri: 'https://${workflowStorageAccountName}.queue.${environment().suffixes.storage}/'
+    AzureWebJobsStorage__tableServiceUri: 'https://${workflowStorageAccountName}.table.${environment().suffixes.storage}/'
 
     // App Insights
     APPLICATIONINSIGHTS_CONNECTION_STRING: appInsightsConnectionString
@@ -266,7 +180,6 @@ resource wfConf 'Microsoft.Web/sites/config@2025-03-01' = {
     WORKFLOWS_RESOURCE_GROUP_NAME: resourceGroup().name
     WORKFLOWS_LOCATION_NAME: location
     WORKFLOWS_TENANT_ID: tenant().tenantId
-    WORKFLOWS_MANAGEMENT_BASE_URI: environment().resourceManager
   }
 }
 
@@ -276,6 +189,8 @@ resource wfDiag 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
   scope: workflowEngine
   properties: {
     workspaceId: workspaceId
+    // Using diagnosticsStorageAccountId for diagnostic logs
+    // workflowStorageAccountId is available but not used here as it's for Logic App runtime storage
     storageAccountId: diagnosticsStorageAccountId
     logs: [
       {

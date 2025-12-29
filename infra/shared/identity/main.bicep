@@ -50,6 +50,7 @@ param tags tagsType
 
 // ========== Variables ==========
 
+@description('Unique suffix for resource naming based on subscription, resource group, and parameters')
 var resourceSuffix string = uniqueString(subscription().subscriptionId, resourceGroup().id, name, envName, location)
 
 // ========== Resources ==========
@@ -73,9 +74,18 @@ output MANAGED_IDENTITY_NAME string = mi.name
 
 // Built-in Azure role definition IDs for managed identity
 // These GUIDs are consistent across all Azure subscriptions
+@description('Array of Azure built-in role definition IDs for resource access')
 var roles string[] = [
   '17d1049b-9a84-46fb-8f53-869881c3d3ab' // Storage Account Contributor
   'ba92f5b4-2d11-453d-a403-e96b0029c9fe' // Storage Blob Data Contributor
+  'b7e6dc6d-f1e8-4753-8033-0f276bb0955b' // Blob Data Owner
+  '0a9a7e1f-b9d0-4cc4-a60d-0319b160aaa3' // Storage Table Data Contributor
+  '974c5e8b-45b9-4653-ba55-5f855dd0fb88' // Storage Queue Data Contributor
+  '69566ab7-960f-475b-8e7c-b3118f30c6bd' // Storage File Data Privileged Contributor
+  'bbf004e3-0e4b-4f86-ae4f-1f8fb47b357b' // Storage File Data SMB Admin
+  'a235d3ee-5935-4cfb-8cc5-a3303ad5995e' // Storage File Data SMB MI Admin
+  '0c867c2a-1d8c-454a-a3db-ab2ea1bdc8bb' // Storage File Data SMB Share Contributor
+  'a7264617-510b-434b-a828-9731dc254ea7' // Storage File Data SMB Share Elevated Contributor
   '3913510d-42f4-4e42-8a64-420c390055eb' // Monitoring Metrics Publisher
   '749f88d5-cbae-40b8-bcfc-e573ddc772fa' // Monitoring Contributor
   'ae349356-3a1b-4a5e-921d-050484c6347e' // Application Insights Component Contributor

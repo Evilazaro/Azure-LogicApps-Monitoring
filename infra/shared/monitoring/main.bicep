@@ -54,6 +54,7 @@ param tags tagsType
 
 // Diagnostic settings configuration for comprehensive logging
 // Captures all log categories from monitoring resources
+@description('Diagnostic settings configuration for capturing all log categories')
 var allLogsSettings object[] = [
   {
     categoryGroup: 'allLogs'
@@ -63,6 +64,7 @@ var allLogsSettings object[] = [
 
 // Diagnostic settings configuration for comprehensive metrics
 // Captures all metric categories from monitoring resources
+@description('Diagnostic settings configuration for capturing all metric categories')
 var allMetricsSettings object[] = [
   {
     categoryGroup: 'allMetrics'
@@ -108,7 +110,7 @@ module insights 'app-insights.bicep' = {
     envName: envName
     location: location
     logAnalyticsWorkspaceId: operational.outputs.AZURE_LOG_ANALYTICS_WORKSPACE_ID
-    storageAccountId: operational.outputs.AZURE_STOARGE_ACCOUNT_ID_LOGS
+    storageAccountId: operational.outputs.AZURE_STORAGE_ACCOUNT_ID_LOGS
     logsSettings: allLogsSettings
     metricsSettings: allMetricsSettings
     tags: tags
@@ -142,4 +144,4 @@ output APPLICATION_INSIGHTS_INSTRUMENTATION_KEY string = insights.outputs.APPLIC
 
 // Storage Account Outputs (Microsoft.Storage/storageAccounts)
 @description('Resource ID of the storage account for diagnostic logs and metrics')
-output AZURE_STOARGE_ACCOUNT_ID_LOGS string = operational.outputs.AZURE_STOARGE_ACCOUNT_ID_LOGS
+output AZURE_STORAGE_ACCOUNT_ID_LOGS string = operational.outputs.AZURE_STORAGE_ACCOUNT_ID_LOGS

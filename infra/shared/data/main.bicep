@@ -69,6 +69,7 @@ param tags tagsType
 var cleanedName string = toLower(replace(replace(replace(name, '-', ''), '_', ''), ' ', ''))
 
 // Generate unique suffix for globally unique resource names
+@description('Unique suffix for globally unique resource names')
 var uniqueSuffix string = uniqueString(resourceGroup().id, name, envName, location)
 
 @description('Storage account for Logic Apps workflows and data')
@@ -97,71 +98,6 @@ resource wfSA 'Microsoft.Storage/storageAccounts@2025-06-01' = {
   }
 }
 
-// Role assignments for managed identity to access storage account
-// Required for Logic Apps Standard runtime with managed identity authentication
-var storageRoles = {
-  StorageBlobDataOwner: 'b7e6dc6d-f1e8-4753-8033-0f276bb0955b'
-  StorageQueueDataContributor: '974c5e8b-45b9-4653-ba55-5f855dd0fb88'
-  StorageTableDataContributor: '0a9a7e1f-b9d0-4cc4-a60d-0319b160aaa3'
-  StorageFileDataSMBShareContributor: '0c867c2a-1d8c-454a-a3db-ab2ea1bdc8bb'
-}
-
-@description('Assign Storage Blob Data Owner role to managed identity')
-resource blobOwnerRole 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
-  name: guid(wfSA.id, userAssignedIdentityId, storageRoles.StorageBlobDataOwner)
-  scope: wfSA
-  properties: {
-    principalId: reference(userAssignedIdentityId, '2025-01-31-preview').principalId
-    roleDefinitionId: subscriptionResourceId(
-      'Microsoft.Authorization/roleDefinitions',
-      storageRoles.StorageBlobDataOwner
-    )
-    principalType: 'ServicePrincipal'
-  }
-}
-
-@description('Assign Storage Queue Data Contributor role to managed identity')
-resource queueContributorRole 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
-  name: guid(wfSA.id, userAssignedIdentityId, storageRoles.StorageQueueDataContributor)
-  scope: wfSA
-  properties: {
-    principalId: reference(userAssignedIdentityId, '2025-01-31-preview').principalId
-    roleDefinitionId: subscriptionResourceId(
-      'Microsoft.Authorization/roleDefinitions',
-      storageRoles.StorageQueueDataContributor
-    )
-    principalType: 'ServicePrincipal'
-  }
-}
-
-@description('Assign Storage Table Data Contributor role to managed identity')
-resource tableContributorRole 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
-  name: guid(wfSA.id, userAssignedIdentityId, storageRoles.StorageTableDataContributor)
-  scope: wfSA
-  properties: {
-    principalId: reference(userAssignedIdentityId, '2025-01-31-preview').principalId
-    roleDefinitionId: subscriptionResourceId(
-      'Microsoft.Authorization/roleDefinitions',
-      storageRoles.StorageTableDataContributor
-    )
-    principalType: 'ServicePrincipal'
-  }
-}
-
-@description('Assign Storage File Data SMB Share Contributor role to managed identity for file share access')
-resource fileContributorRole 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
-  name: guid(wfSA.id, userAssignedIdentityId, storageRoles.StorageFileDataSMBShareContributor)
-  scope: wfSA
-  properties: {
-    principalId: reference(userAssignedIdentityId, '2025-01-31-preview').principalId
-    roleDefinitionId: subscriptionResourceId(
-      'Microsoft.Authorization/roleDefinitions',
-      storageRoles.StorageFileDataSMBShareContributor
-    )
-    principalType: 'ServicePrincipal'
-  }
-}
-
 @description('Blob service for workflow storage account')
 resource blobSvc 'Microsoft.Storage/storageAccounts/blobServices@2025-06-01' = {
   parent: wfSA
@@ -175,10 +111,8 @@ resource fileSvc 'Microsoft.Storage/storageAccounts/fileServices@2025-06-01' = {
   name: 'default'
 }
 
-// Pre-create the Logic App content share to avoid 403 errors during deployment
-// The share name must match what the Logic App expects: {logicAppName}-content
-var logicAppName = '${cleanedName}-${uniqueSuffix}-logicapp'
-var contentShareName = '${logicAppName}-content'
+@description('File share name for Logic App workflow state')
+var contentShareName = 'workflowstate'
 
 @description('File share for Logic App content (pre-created to avoid 403 errors)')
 resource contentShare 'Microsoft.Storage/storageAccounts/fileServices/shares@2025-06-01' = {
@@ -188,12 +122,6 @@ resource contentShare 'Microsoft.Storage/storageAccounts/fileServices/shares@202
     shareQuota: 5120 // 5GB quota
     enabledProtocols: 'SMB'
   }
-  dependsOn: [
-    blobOwnerRole
-    queueContributorRole
-    tableContributorRole
-    fileContributorRole
-  ]
 }
 
 // Container for successfully processed orders
@@ -235,9 +163,6 @@ output AZURE_STORAGE_ACCOUNT_NAME_WORKFLOW string = wfSA.name
 
 @description('Resource ID of the deployed storage account for Logic Apps workflows')
 output AZURE_STORAGE_ACCOUNT_ID_WORKFLOW string = wfSA.id
-
-@description('Confirmation that all storage role assignments are complete')
-output STORAGE_ROLE_ASSIGNMENTS_COMPLETE bool = blobOwnerRole.id != '' && queueContributorRole.id != '' && tableContributorRole.id != '' && fileContributorRole.id != ''
 
 resource sqlServer 'Microsoft.Sql/servers@2024-11-01-preview' = {
   name: toLower('${cleanedName}server${uniqueSuffix}')

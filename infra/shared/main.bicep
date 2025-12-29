@@ -32,6 +32,7 @@ param tags tagsType
 
 // Diagnostic settings for comprehensive logging across all resources
 // Captures all log categories for centralized monitoring
+@description('Diagnostic settings configuration for capturing all log categories')
 var allLogsSettings object[] = [
   {
     categoryGroup: 'allLogs'
@@ -41,6 +42,7 @@ var allLogsSettings object[] = [
 
 // Diagnostic settings for comprehensive metrics across all resources
 // Captures all metric categories for performance monitoring
+@description('Diagnostic settings configuration for capturing all metric categories')
 var allMetricsSettings object[] = [
   {
     categoryGroup: 'allMetrics'
@@ -112,7 +114,7 @@ output APPLICATION_INSIGHTS_INSTRUMENTATION_KEY string = monitoring.outputs.APPL
 
 // Storage Account Outputs (Microsoft.Storage/storageAccounts)
 @description('Resource ID of the storage account for diagnostic logs and metrics')
-output AZURE_STOARGE_ACCOUNT_ID_LOGS string = monitoring.outputs.AZURE_STOARGE_ACCOUNT_ID_LOGS
+output AZURE_STORAGE_ACCOUNT_ID_LOGS string = monitoring.outputs.AZURE_STORAGE_ACCOUNT_ID_LOGS
 
 // Data Module: Deploys storage accounts and SQL Server
 // Provides storage for workflows and persistent data
@@ -124,7 +126,7 @@ module data 'data/main.bicep' = {
     location: location
     userAssignedIdentityId: identity.outputs.AZURE_MANAGED_IDENTITY_ID
     workspaceId: monitoring.outputs.AZURE_LOG_ANALYTICS_WORKSPACE_ID
-    storageAccountId: monitoring.outputs.AZURE_STOARGE_ACCOUNT_ID_LOGS
+    storageAccountId: monitoring.outputs.AZURE_STORAGE_ACCOUNT_ID_LOGS
     logsSettings: allLogsSettings
     metricsSettings: allMetricsSettings
     tags: tags
@@ -136,9 +138,6 @@ output AZURE_STORAGE_ACCOUNT_NAME_WORKFLOW string = data.outputs.AZURE_STORAGE_A
 
 @description('Resource ID of the storage account for Logic Apps workflows and data')
 output AZURE_STORAGE_ACCOUNT_ID_WORKFLOW string = data.outputs.AZURE_STORAGE_ACCOUNT_ID_WORKFLOW
-
-@description('Confirmation that all storage role assignments are complete')
-output STORAGE_ROLE_ASSIGNMENTS_COMPLETE bool = data.outputs.STORAGE_ROLE_ASSIGNMENTS_COMPLETE
 
 @description('Fully qualified domain name of the SQL Server for database connections')
 output ORDERSDATABASE_SQLSERVERFQDN string = data.outputs.ORDERSDATABASE_SQLSERVERFQDN
