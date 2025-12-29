@@ -112,20 +112,25 @@ Your workstation is ready for development.
 ./check-dev-workstation.sh --verbose
 ```
 
-**Output Example:**
+**Output Example (PowerShell):**
 ```
-VERBOSE: Starting workstation validation...
-VERBOSE: Validating PowerShell version...
-VERBOSE: Found PowerShell version: 7.4.1
-VERBOSE: PowerShell version check: PASS
-VERBOSE: Validating .NET SDK...
-VERBOSE: Found .NET SDK version: 10.0.0
-VERBOSE: .NET SDK check: PASS
-VERBOSE: Checking Azure CLI installation...
-VERBOSE: Azure CLI version: 2.62.0
-VERBOSE: Minimum required: 2.60.0
-VERBOSE: Azure CLI check: PASS
-...
+VERBOSE: Starting developer workstation validation...
+VERBOSE: Using validation script: Z:\app\hooks\preprovision.ps1
+VERBOSE: Script version: 1.0.0
+[Validation output from preprovision.ps1]
+VERBOSE: ✓ Workstation validation completed successfully
+VERBOSE: Your development environment is properly configured for Azure deployment
+VERBOSE: Workstation validation process completed
+```
+
+**Output Example (Bash):**
+```
+[VERBOSE] Starting developer workstation validation...
+[VERBOSE] Using validation script: /app/hooks/preprovision.sh
+[VERBOSE] Script version: 1.0.0
+[Validation output from preprovision.sh]
+[VERBOSE] ✓ Workstation validation completed successfully
+[VERBOSE] Your development environment is properly configured for Azure deployment
 ```
 
 ## 📊 Exit Codes
@@ -135,7 +140,8 @@ The script uses standard exit codes to indicate validation status:
 | Exit Code | Status | Description |
 |-----------|--------|-------------|
 | `0` | ✅ Success | All validations passed - workstation is ready |
-| `1` | ❌ Failure | One or more validations failed - see error output |
+| `1` | ❌ Failure | Script error (preprovision script not found or invalid arguments) |
+| `>1` | ❌ Failure | Validation failed - exit code propagated from preprovision script |
 
 ### Example: Checking Exit Code
 
@@ -276,17 +282,17 @@ flowchart LR
 
 **Process Details:**
 
-1. **Script Initialization**: Establishes strict error handling and validates that PowerShell 7.0+ is available
-2. **Path Resolution**: Locates the preprovision script in the same directory and confirms it's executable
-3. **Validation Delegation**: Invokes preprovision with `-ValidateOnly` flag, delegating all validation logic
-4. **Result Processing**: Captures exit codes, formats output, and returns appropriate status to the caller
+1. **Script Initialization**: Establishes strict error handling (PowerShell: `Set-StrictMode -Version Latest`, Bash: `set -euo pipefail`) and sets error action preference to `Continue`
+2. **Path Resolution**: Validates that the preprovision script exists in the same directory (`$PSScriptRoot/preprovision.ps1` or `$SCRIPT_DIR/preprovision.sh`)
+3. **Validation Delegation**: Executes preprovision with `-ValidateOnly` (PowerShell) or `--validate-only` (Bash) flag, capturing all output via stream redirection (`2>&1`)
+4. **Result Processing**: Captures exit code, displays formatted output to stdout, and exits with appropriate status code (0 for success, error code for failure)
 
 ### Integration Points
 
 | Aspect | Details |
 |--------|---------|
 | **Called By** | • Manual execution by developers during workstation setup<br/>• CI/CD pipelines for environment pre-flight checks<br/>• Automated scripts and scheduled tasks<br/>• Team onboarding workflows |
-| **Calls** | • `preprovision.ps1` (or `preprovision.sh`) with `-ValidateOnly` flag<br/>• Azure CLI commands for authentication verification<br/>• Version check commands (`dotnet --version`, `az --version`, `bicep --version`) |
+| **Calls** | • `preprovision.ps1` with `-ValidateOnly` flag (PowerShell)<br/>• `preprovision.sh` with `--validate-only` flag (Bash)<br/>• All validation logic delegated to preprovision scripts |
 | **Dependencies** | • **Runtime:** PowerShell 7.0+ (cross-platform)<br/>• **Scripts:** preprovision script in same directory<br/>• **Tools:** Azure CLI, .NET SDK 10.0+, Bicep CLI, Azure Developer CLI<br/>• **Azure:** Active Azure subscription and authentication |
 | **Outputs** | • **Exit Code:** `0` (success) or `1` (failure)<br/>• **Console Output:** Formatted validation messages with timestamps<br/>• **Verbose Logs:** Detailed diagnostic information (optional)<br/>• **Summary:** Pass/fail status for each validation check |
 | **Integration Role** | Acts as a **gateway validation layer** ensuring environment readiness before any provisioning or deployment operations. Provides fail-fast feedback to prevent downstream errors in the development workflow. |
@@ -475,48 +481,65 @@ ls -la preprovision.sh
 
 ---
 
-## � Technical Implementation Details
+## 🔧 Technical Implementation Details
 
-This section provides technical insights into the check-dev-workstation.ps1 implementation.
+This section provides technical insights into the script implementations.
 
 ### Script Architecture
 
-**Modular Function Design:**
-```
-check-dev-workstation.ps1
-├── Initialize-Script
-├── Test-PowerShellVersion
-├── Test-DotNetSDK
-├── Test-AzureDeveloperCLI
-├── Test-AzureCLI
-├── Test-BicepCLI
-├── Show-ValidationSummary
-└── Exit with appropriate code
-```
+**PowerShell Implementation (`check-dev-workstation.ps1`):**
+- **Pattern**: Try-catch-finally block for error handling
+- **Structure**: Single execution flow with no helper functions
+- **Error Handling**: `Set-StrictMode -Version Latest` with `$ErrorActionPreference = 'Continue'`
+- **Output Capture**: Uses `& $preprovisionPath -ValidateOnly -InformationAction Continue 2>&1 | Out-String`
+- **Exit Code**: Checks `$LASTEXITCODE` and exits with appropriate code
 
-### Validation Logic
+**Bash Implementation (`check-dev-workstation.sh`):**
+- **Pattern**: Trap handlers for cleanup and interrupt handling
+- **Structure**: Main function with inline argument parsing and logging helper functions
+- **Error Handling**: Strict mode (`set -euo pipefail`) with IFS hardening
+- **Output Capture**: Uses command substitution with `"${preprovision_path}" "${validation_args[@]}" 2>&1`
+- **Exit Code**: Captures `$?` and propagates to caller
 
-**Version Comparison:**
+### Key Implementation Features
+
+**PowerShell:**
 ```powershell
-function Test-ToolVersion {
-    param(
-        [version]$CurrentVersion,
-        [version]$MinimumVersion,
-        [string]$ToolName
-    )
-    
-    if ($CurrentVersion -ge $MinimumVersion) {
-        Write-Host "[✓] $ToolName version: $CurrentVersion" -ForegroundColor Green
-        return $true
-    }
-    else {
-        Write-Warning "[!] $ToolName version $CurrentVersion is below minimum $MinimumVersion"
-        return $false
-    }
+# Simple wrapper pattern
+$validationOutput = & $preprovisionPath -ValidateOnly -InformationAction Continue 2>&1 | Out-String
+Write-Output $validationOutput
+
+if ($LASTEXITCODE -eq 0) {
+    Write-Verbose "✓ Workstation validation completed successfully"
+    exit 0
+}
+else {
+    Write-Warning "⚠ Workstation validation completed with issues"
+    exit $LASTEXITCODE
 }
 ```
 
-## �📖 Related Documentation
+**Bash:**
+```bash
+# Capture output and exit code
+if validation_output=$("${preprovision_path}" "${validation_args[@]}" 2>&1); then
+    validation_exit_code=0
+else
+    validation_exit_code=$?
+fi
+
+echo "${validation_output}"
+
+if [[ ${validation_exit_code} -eq 0 ]]; then
+    log_verbose "✓ Workstation validation completed successfully"
+    exit 0
+else
+    log_warning "⚠ Workstation validation completed with issues"
+    exit "${validation_exit_code}"
+fi
+```
+
+## 📖 Related Documentation
 
 - **[preprovision.ps1](./preprovision.ps1)** - Comprehensive pre-provisioning validation (called by this script)
 - **[VALIDATION-WORKFLOW.md](./VALIDATION-WORKFLOW.md)** - Visual workflow diagrams
@@ -610,11 +633,12 @@ azd up
 
 | Version | Date | Changes |
 |---------|------|---------|
-| **1.0.0** | 2025-12-24 | Initial production release |
-|           |            | • Full validation suite |
-|           |            | • Comprehensive error handling |
-|           |            | • Verbose logging support |
-|           |            | • Exit code support |
+| **1.0.0** | 2025-12-24 (PS1)<br/>2025-12-29 (SH) | Initial production release |
+|           |            | • PowerShell and Bash implementations |
+|           |            | • Full validation suite via preprovision wrapper |
+|           |            | • Comprehensive error handling with try-catch-finally pattern |
+|           |            | • Verbose logging support (`-Verbose` / `--verbose`) |
+|           |            | • Exit code propagation from preprovision scripts |
 
 ##  Quick Links
 
@@ -624,9 +648,11 @@ azd up
 
 ---
 
-**Last Updated**: December 26, 2025  
+**Last Updated**: December 29, 2025  
 **Script Version**: 1.0.0  
-**Compatibility**: PowerShell 7.0+, Windows/macOS/Linux
+**PowerShell**: Last Modified 2025-12-24  
+**Bash**: Last Modified 2025-12-29  
+**Compatibility**: PowerShell 7.0+ / Bash 4.0+, Windows/macOS/Linux
 
 ---
 
