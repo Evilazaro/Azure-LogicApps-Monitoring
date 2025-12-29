@@ -203,9 +203,8 @@ static void ConfigureSQLAzure(
     ArgumentNullException.ThrowIfNull(builder);
     ArgumentNullException.ThrowIfNull(ordersApi);
 
-    const string DefaultSqlServerName = "localhost";
+    const string DefaultSqlServerName = "OrdersDatabase";
     const string DefaultDatabaseName = "OrderDb";
-    const string DefaultConnectionName = "OrdersDatabase";
 
     // Use null-coalescing operator for cleaner code
     var sqlServerName = builder.Configuration["Azure:SqlServer:Name"] ?? DefaultSqlServerName;
@@ -238,7 +237,7 @@ static void ConfigureSQLAzure(
         }
 
         var sqlServerParam = builder.AddParameter("sql-server", sqlServerName);
-        var sqlServer = builder.AddAzureSqlServer(DefaultConnectionName)
+        var sqlServer = builder.AddAzureSqlServer(DefaultSqlServerName)
                                .RunAsExisting(sqlServerParam, resourceGroupParameter);
 
         var sqlDatabase = sqlServer.AddDatabase(sqlDatabaseName).WithDefaultAzureSku();

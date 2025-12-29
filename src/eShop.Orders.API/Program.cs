@@ -11,28 +11,21 @@ using System.Diagnostics.Metrics;
 
 var builder = WebApplication.CreateBuilder(args);
 
-const string DefaultSqlServerName = "localhost";
-
 builder.AddServiceDefaults();
 
 // Register observability components for dependency injection
 builder.Services.AddSingleton(new ActivitySource("eShop.Orders.API"));
 builder.Services.AddSingleton(new Meter("eShop.Orders.API"));
 
-var sqlServerName = builder.Configuration["ORDERDB_HOST"] ?? DefaultSqlServerName;
-var connectionString = (sqlServerName != DefaultSqlServerName) ? builder.Configuration["ConnectionStrings:OrdersDatabase"] : builder.Configuration["ConnectionStrings:OrderDb"];
+var connectionString = builder.Configuration["ConnectionStrings:OrderDb"];
 
 // Configure Entity Framework Core with SQL Server
 builder.Services.AddDbContext<OrderDbContext>(options =>
 {
     if (string.IsNullOrWhiteSpace(connectionString))
     {
-        // During manifest generation, we need to provide a minimal valid configuration
-        // This allows the manifest to be generated without throwing exceptions
-        // At runtime, the actual connection string will be provided by Aspire
         Console.WriteLine("Warning: Connection string 'OrdersDatabase' is not configured yet. Using placeholder configuration.");
-        options.UseSqlServer("Server=.;Database=placeholder;Integrated Security=true;TrustServerCertificate=true;");
-        return;
+        throw new InvalidOperationException("Connection string 'OrdersDatabase' is not configured. Please set it in the configuration.");
     }
 
     // Use standard UseSqlServer - Aspire automatically configures Azure AD authentication
