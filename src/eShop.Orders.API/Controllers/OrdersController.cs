@@ -48,9 +48,12 @@ public sealed class OrdersController : ControllerBase
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status409Conflict)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<ActionResult<Order>> PlaceOrder([FromBody] Order order, CancellationToken cancellationToken)
+    public async Task<ActionResult<Order>> PlaceOrder([FromBody] Order? order, CancellationToken cancellationToken)
     {
-        ArgumentNullException.ThrowIfNull(order);
+        if (order is null)
+        {
+            return BadRequest(new { error = "Order payload is required", type = "ValidationError" });
+        }
 
         // ModelState validation is automatically handled by [ApiController] attribute
         if (!ModelState.IsValid)
@@ -60,7 +63,6 @@ public sealed class OrdersController : ControllerBase
 
         using var activity = _activitySource.StartActivity("PlaceOrder", ActivityKind.Server);
         activity?.SetTag("order.id", order.Id);
-        activity?.SetTag("order.customer_id", order.CustomerId);
         activity?.SetTag("order.total", order.Total);
         activity?.SetTag("order.products.count", order.Products?.Count ?? 0);
         activity?.SetTag("http.method", "POST");
@@ -134,9 +136,12 @@ public sealed class OrdersController : ControllerBase
     [ProducesResponseType(typeof(IEnumerable<Order>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<ActionResult<IEnumerable<Order>>> PlaceOrdersBatch([FromBody] IEnumerable<Order> orders, CancellationToken cancellationToken)
+    public async Task<ActionResult<IEnumerable<Order>>> PlaceOrdersBatch([FromBody] IEnumerable<Order>? orders, CancellationToken cancellationToken)
     {
-        ArgumentNullException.ThrowIfNull(orders);
+        if (orders is null)
+        {
+            return BadRequest(new { error = "Orders collection is required", type = "ValidationError" });
+        }
 
         var ordersList = orders.ToList();
         if (ordersList.Count == 0)
@@ -369,9 +374,12 @@ public sealed class OrdersController : ControllerBase
     [ProducesResponseType(typeof(int), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<ActionResult<int>> DeleteOrdersBatch([FromBody] IEnumerable<string> orderIds, CancellationToken cancellationToken)
+    public async Task<ActionResult<int>> DeleteOrdersBatch([FromBody] IEnumerable<string>? orderIds, CancellationToken cancellationToken)
     {
-        ArgumentNullException.ThrowIfNull(orderIds);
+        if (orderIds is null)
+        {
+            return BadRequest(new { error = "Order IDs collection is required", type = "ValidationError" });
+        }
 
         var orderIdsList = orderIds.ToList();
         if (orderIdsList.Count == 0)

@@ -16,6 +16,8 @@ public sealed class OrdersMessageHandler : IOrdersMessageHandler
     private readonly string _topicName;
     private readonly ActivitySource _activitySource;
 
+    private const string DefaultTopicName = "OrdersPlaced";
+
     private static readonly JsonSerializerOptions JsonOptions = new()
     {
         PropertyNameCaseInsensitive = true,
@@ -42,7 +44,8 @@ public sealed class OrdersMessageHandler : IOrdersMessageHandler
         _activitySource = activitySource ?? throw new ArgumentNullException(nameof(activitySource));
 
         ArgumentNullException.ThrowIfNull(configuration);
-        _topicName = configuration["Azure:ServiceBus:TopicName"] ?? "OrdersPlaced";
+        var configuredTopicName = configuration["Azure:ServiceBus:TopicName"];
+        _topicName = string.IsNullOrWhiteSpace(configuredTopicName) ? DefaultTopicName : configuredTopicName;
     }
 
     /// <summary>
@@ -83,6 +86,11 @@ public sealed class OrdersMessageHandler : IOrdersMessageHandler
                 message.ApplicationProperties["TraceId"] = activity.TraceId.ToString();
                 message.ApplicationProperties["SpanId"] = activity.SpanId.ToString();
                 message.ApplicationProperties["TraceParent"] = activity.Id ?? string.Empty;
+                message.ApplicationProperties["traceparent"] = activity.Id ?? string.Empty;
+                if (!string.IsNullOrWhiteSpace(activity.TraceStateString))
+                {
+                    message.ApplicationProperties["tracestate"] = activity.TraceStateString;
+                }
             }
 
             await sender.SendMessageAsync(message, cancellationToken);
@@ -167,6 +175,11 @@ public sealed class OrdersMessageHandler : IOrdersMessageHandler
                     message.ApplicationProperties["TraceId"] = activity.TraceId.ToString();
                     message.ApplicationProperties["SpanId"] = activity.SpanId.ToString();
                     message.ApplicationProperties["TraceParent"] = activity.Id ?? string.Empty;
+                    message.ApplicationProperties["traceparent"] = activity.Id ?? string.Empty;
+                    if (!string.IsNullOrWhiteSpace(activity.TraceStateString))
+                    {
+                        message.ApplicationProperties["tracestate"] = activity.TraceStateString;
+                    }
                 }
 
                 messages.Add(message);

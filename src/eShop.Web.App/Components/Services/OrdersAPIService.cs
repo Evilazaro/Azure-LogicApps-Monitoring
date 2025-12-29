@@ -50,7 +50,6 @@ public sealed class OrdersAPIService
 
         using var activity = _activitySource.StartActivity("PlaceOrder", ActivityKind.Client);
         activity?.SetTag("order.id", order.Id);
-        activity?.SetTag("order.customer_id", order.CustomerId);
         activity?.SetTag("http.method", "POST");
         activity?.SetTag("http.url", $"{_httpClient.BaseAddress}api/orders");
 
@@ -135,9 +134,9 @@ public sealed class OrdersAPIService
 
             var placedOrders = await response.Content.ReadFromJsonAsync<IEnumerable<Order>>(cancellationToken: cancellationToken).ConfigureAwait(false);
 
-            var result = placedOrders ?? Enumerable.Empty<Order>();
+            var result = placedOrders?.ToList() ?? [];
             activity?.SetStatus(ActivityStatusCode.Ok);
-            _logger.LogInformation("Batch processing complete. {Count} orders placed successfully", result.Count());
+            _logger.LogInformation("Batch processing complete. {Count} orders placed successfully", result.Count);
             return result;
         }
         catch (HttpRequestException ex)
@@ -176,11 +175,11 @@ public sealed class OrdersAPIService
             _logger.LogInformation("Retrieving all orders from orders-api");
 
             var orders = await _httpClient.GetFromJsonAsync<IEnumerable<Order>>("api/orders", cancellationToken).ConfigureAwait(false);
-            var result = orders ?? Enumerable.Empty<Order>();
+            var result = orders?.ToList() ?? [];
 
-            activity?.SetTag("orders.count", result.Count());
+            activity?.SetTag("orders.count", result.Count);
             activity?.SetStatus(ActivityStatusCode.Ok);
-            _logger.LogInformation("Successfully retrieved {Count} orders", result.Count());
+            _logger.LogInformation("Successfully retrieved {Count} orders", result.Count);
             return result;
         }
         catch (HttpRequestException ex)

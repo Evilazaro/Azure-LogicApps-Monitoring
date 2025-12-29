@@ -110,11 +110,11 @@ static void ConfigureApplicationInsights(
     }
     else
     {
-        // Azure deployment mode - use existing storage account with managed identity
+        // Azure deployment mode - use existing Application Insights with managed identity
         if (resourceGroupParameter is null)
         {
             throw new InvalidOperationException(
-                "Azure Resource Group configuration is required when using Azure Storage Account. " +
+                "Azure Resource Group configuration is required when using Azure Application Insights. " +
                 "Please configure 'Azure:ResourceGroup' in your application settings.");
         }
 
@@ -172,7 +172,9 @@ static void ConfigureServiceBus(
                 "Please configure 'Azure:ResourceGroup' in your application settings.");
         }
 
-        var sbParam = builder.AddParameter("service-bus", sbHostName.Substring(0, sbHostName.IndexOf('.')));
+        var dotIndex = sbHostName.IndexOf('.', StringComparison.Ordinal);
+        var serviceBusName = dotIndex > 0 ? sbHostName[..dotIndex] : sbHostName;
+        var sbParam = builder.AddParameter("service-bus", serviceBusName);
 
         serviceBusResource = builder.AddAzureServiceBus(DefaultConnectionStringName)
             .AsExisting(sbParam, resourceGroupParameter);

@@ -42,10 +42,9 @@ builder.Services.Configure<Microsoft.AspNetCore.Components.Server.CircuitOptions
 });
 
 // Configure typed HTTP client for Orders API with resilience and service discovery
-builder.Services.AddHttpClient<OrdersAPIService>((serviceProvider, client) =>
+builder.Services.AddHttpClient<OrdersAPIService>(client =>
 {
-    var configuration = serviceProvider.GetRequiredService<IConfiguration>();
-    var baseAddress = configuration["services:orders-api:https:0"];
+    var baseAddress = builder.Configuration["services:orders-api:https:0"];
 
     if (string.IsNullOrWhiteSpace(baseAddress))
     {

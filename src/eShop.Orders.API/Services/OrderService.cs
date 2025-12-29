@@ -17,12 +17,24 @@ public sealed class OrderService : IOrderService
     private readonly IOrdersMessageHandler _ordersMessageHandler;
     private readonly IServiceScopeFactory _serviceScopeFactory;
     private readonly ActivitySource _activitySource;
-    private readonly Meter _meter;
 
-    private readonly Counter<long> _ordersPlacedCounter;
-    private readonly Histogram<double> _orderProcessingDuration;
-    private readonly Counter<long> _orderProcessingErrors;
-    private readonly Counter<long> _ordersDeletedCounter;
+    private static readonly Meter Meter = new("eShop.Orders.API");
+    private static readonly Counter<long> OrdersPlacedCounter = Meter.CreateCounter<long>(
+        "eShop.orders.placed",
+        unit: "order",
+        description: "Total number of orders successfully placed in the system");
+    private static readonly Histogram<double> OrderProcessingDuration = Meter.CreateHistogram<double>(
+        "eShop.orders.processing.duration",
+        unit: "ms",
+        description: "Time taken to process order operations in milliseconds");
+    private static readonly Counter<long> OrderProcessingErrors = Meter.CreateCounter<long>(
+        "eShop.orders.processing.errors",
+        unit: "error",
+        description: "Total number of order processing errors categorized by error type");
+    private static readonly Counter<long> OrdersDeletedCounter = Meter.CreateCounter<long>(
+        "eShop.orders.deleted",
+        unit: "order",
+        description: "Total number of orders successfully deleted from the system");
 
     /// <summary>
     /// Initializes a new instance of the <see cref="OrderService"/> class.
@@ -32,40 +44,19 @@ public sealed class OrderService : IOrderService
     /// <param name="ordersMessageHandler">The handler for publishing order messages.</param>
     /// <param name="serviceScopeFactory">The service scope factory for creating isolated scopes.</param>
     /// <param name="activitySource">The activity source for distributed tracing.</param>
-    /// <param name="meter">The meter for recording metrics.</param>
     /// <exception cref="ArgumentNullException">Thrown when any parameter is null.</exception>
     public OrderService(
         ILogger<OrderService> logger,
         IOrderRepository orderRepository,
         IOrdersMessageHandler ordersMessageHandler,
         IServiceScopeFactory serviceScopeFactory,
-        ActivitySource activitySource,
-        Meter meter)
+        ActivitySource activitySource)
     {
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         _orderRepository = orderRepository ?? throw new ArgumentNullException(nameof(orderRepository));
         _ordersMessageHandler = ordersMessageHandler ?? throw new ArgumentNullException(nameof(ordersMessageHandler));
         _serviceScopeFactory = serviceScopeFactory ?? throw new ArgumentNullException(nameof(serviceScopeFactory));
         _activitySource = activitySource ?? throw new ArgumentNullException(nameof(activitySource));
-        _meter = meter ?? throw new ArgumentNullException(nameof(meter));
-
-        // Initialize metrics with semantic naming conventions
-        _ordersPlacedCounter = _meter.CreateCounter<long>(
-            "eShop.orders.placed",
-            "order",
-            "Total number of orders successfully placed in the system");
-        _orderProcessingDuration = _meter.CreateHistogram<double>(
-            "eShop.orders.processing.duration",
-            "ms",
-            "Time taken to process order operations in milliseconds");
-        _orderProcessingErrors = _meter.CreateCounter<long>(
-            "eShop.orders.processing.errors",
-            "error",
-            "Total number of order processing errors categorized by error type");
-        _ordersDeletedCounter = _meter.CreateCounter<long>(
-            "eShop.orders.deleted",
-            "order",
-            "Total number of orders successfully deleted from the system");
     }
 
     /// <summary>
@@ -87,7 +78,6 @@ public sealed class OrderService : IOrderService
         try
         {
             activity?.SetTag("order.id", order.Id);
-            activity?.SetTag("order.customer_id", order.CustomerId);
             activity?.SetTag("order.total", order.Total);
             activity?.SetTag("order.products.count", order.Products?.Count ?? 0);
 
@@ -113,12 +103,11 @@ public sealed class OrderService : IOrderService
             // Record metrics
             var metricTags = new TagList
             {
-                { "customer.id", order.CustomerId },
                 { "order.status", "success" }
             };
-            _ordersPlacedCounter.Add(1, metricTags);
+            OrdersPlacedCounter.Add(1, metricTags);
             var duration = (DateTime.UtcNow - startTime).TotalMilliseconds;
-            _orderProcessingDuration.Record(duration, metricTags);
+            OrderProcessingDuration.Record(duration, metricTags);
 
             _logger.LogInformation("Order {OrderId} placed successfully in {Duration}ms", order.Id, duration);
             return order;
@@ -130,7 +119,7 @@ public sealed class OrderService : IOrderService
                 { "error.type", ex.GetType().Name },
                 { "order.status", "failed" }
             };
-            _orderProcessingErrors.Add(1, errorTags);
+            OrderProcessingErrors.Add(1, errorTags);
 
             // Record exception with full details in activity
             activity?.SetStatus(ActivityStatusCode.Error, ex.Message);
@@ -219,12 +208,11 @@ public sealed class OrderService : IOrderService
                     // Record metrics
                     var metricTags = new TagList
                     {
-                        { "customer.id", order.CustomerId },
                         { "order.status", "success" }
                     };
-                    _ordersPlacedCounter.Add(1, metricTags);
+                    OrdersPlacedCounter.Add(1, metricTags);
                     var orderDuration = (DateTime.UtcNow - orderStartTime).TotalMilliseconds;
-                    _orderProcessingDuration.Record(orderDuration, metricTags);
+                    OrderProcessingDuration.Record(orderDuration, metricTags);
 
                     placedOrders.Add(order);
                     orderActivity?.SetStatus(ActivityStatusCode.Ok);
@@ -238,7 +226,7 @@ public sealed class OrderService : IOrderService
                         { "error.type", ex.GetType().Name },
                         { "order.status", "failed" }
                     };
-                    _orderProcessingErrors.Add(1, errorTags);
+                    OrderProcessingErrors.Add(1, errorTags);
 
                     failedOrders.Add((order.Id, ex.Message));
                 }
@@ -389,7 +377,7 @@ public sealed class OrderService : IOrderService
             {
                 activity?.SetStatus(ActivityStatusCode.Ok);
                 _logger.LogInformation("Order {OrderId} deleted successfully", orderId);
-                _ordersDeletedCounter.Add(1, new TagList { { "order.id", orderId } });
+                OrdersDeletedCounter.Add(1, new TagList { { "order.status", "success" } });
             }
             else
             {
@@ -464,7 +452,7 @@ public sealed class OrderService : IOrderService
                     {
                         deletedCount++;
                     }
-                    _ordersDeletedCounter.Add(1, new TagList { { "order.id", orderId } });
+                    OrdersDeletedCounter.Add(1, new TagList { { "order.status", "success" } });
                 }
             }
             catch (Exception ex)

@@ -74,52 +74,57 @@ public static class Extensions
         {
             logging.IncludeFormattedMessage = true;
             logging.IncludeScopes = true;
+            logging.ParseStateValues = true;
         });
 
-        builder.Services.AddOpenTelemetry()
-            .WithMetrics(metrics =>
-            {
-                metrics.AddAspNetCoreInstrumentation()
-                    .AddHttpClientInstrumentation()
-                    .AddRuntimeInstrumentation();
-            })
-            .WithTracing(tracing =>
-            {
-                tracing.AddSource(builder.Environment.ApplicationName)
-                    .AddSource("eShop.Orders.API")
-                    .AddSource("eShop.Web.App")
-                    .AddAspNetCoreInstrumentation(options =>
-                    {
-                        options.Filter = context =>
-                            !context.Request.Path.StartsWithSegments(HealthEndpointPath)
-                            && !context.Request.Path.StartsWithSegments(AlivenessEndpointPath);
-                        options.RecordException = true;
-                        options.EnrichWithHttpRequest = (activity, httpRequest) =>
-                        {
-                            activity.SetTag("http.request.size", httpRequest.ContentLength ?? 0);
-                        };
-                        options.EnrichWithHttpResponse = (activity, httpResponse) =>
-                        {
-                            activity.SetTag("http.response.size", httpResponse.ContentLength ?? 0);
-                        };
-                    })
-                    .AddHttpClientInstrumentation(options =>
-                    {
-                        options.RecordException = true;
-                        options.EnrichWithHttpRequestMessage = (activity, httpRequest) =>
-                        {
-                            activity.SetTag("http.request.method", httpRequest.Method.ToString());
-                        };
-                    })
-                    .AddSqlClientInstrumentation(options =>
-                    {
-                        // Add SQL Client instrumentation for additional database telemetry
-                        options.RecordException = true;
-                    })
-                    .AddSource("Azure.Messaging.ServiceBus.*"); // Add Service Bus instrumentation
-            });
+        var openTelemetry = builder.Services.AddOpenTelemetry();
 
-        builder.AddOpenTelemetryExporters();
+        openTelemetry.WithMetrics(metrics =>
+        {
+            metrics.AddAspNetCoreInstrumentation()
+                .AddHttpClientInstrumentation()
+                .AddRuntimeInstrumentation()
+                .AddMeter(builder.Environment.ApplicationName)
+                .AddMeter("eShop.Orders.API")
+                .AddMeter("eShop.Web.App");
+        });
+
+        openTelemetry.WithTracing(tracing =>
+        {
+            tracing.AddSource(builder.Environment.ApplicationName)
+                .AddSource("eShop.Orders.API")
+                .AddSource("eShop.Web.App")
+                .AddSource("Azure.Messaging.ServiceBus")
+                .AddAspNetCoreInstrumentation(options =>
+                {
+                    options.Filter = context =>
+                        !context.Request.Path.StartsWithSegments(HealthEndpointPath)
+                        && !context.Request.Path.StartsWithSegments(AlivenessEndpointPath);
+                    options.RecordException = true;
+                    options.EnrichWithHttpRequest = (activity, httpRequest) =>
+                    {
+                        activity.SetTag("http.request.size", httpRequest.ContentLength ?? 0);
+                    };
+                    options.EnrichWithHttpResponse = (activity, httpResponse) =>
+                    {
+                        activity.SetTag("http.response.size", httpResponse.ContentLength ?? 0);
+                    };
+                })
+                .AddHttpClientInstrumentation(options =>
+                {
+                    options.RecordException = true;
+                    options.EnrichWithHttpRequestMessage = (activity, httpRequest) =>
+                    {
+                        activity.SetTag("http.request.method", httpRequest.Method.ToString());
+                    };
+                })
+                .AddSqlClientInstrumentation(options =>
+                {
+                    options.RecordException = true;
+                });
+        });
+
+        AddOpenTelemetryExporters(builder, openTelemetry);
 
         return builder;
     }
@@ -130,20 +135,23 @@ public static class Extensions
     /// <typeparam name="TBuilder">The type of host application builder.</typeparam>
     /// <param name="builder">The host application builder to configure.</param>
     /// <returns>The configured builder instance for method chaining.</returns>
-    private static TBuilder AddOpenTelemetryExporters<TBuilder>(this TBuilder builder) where TBuilder : IHostApplicationBuilder
+    private static void AddOpenTelemetryExporters(IHostApplicationBuilder builder, OpenTelemetryBuilder openTelemetry)
     {
+        ArgumentNullException.ThrowIfNull(builder);
+        ArgumentNullException.ThrowIfNull(openTelemetry);
+
         var useOtlpExporter = !string.IsNullOrWhiteSpace(builder.Configuration["OTEL_EXPORTER_OTLP_ENDPOINT"]);
 
         if (useOtlpExporter)
         {
-            builder.Services.AddOpenTelemetry().UseOtlpExporter();
+            openTelemetry.UseOtlpExporter();
         }
 
         var appInsightsConnectionString = builder.Configuration["APPLICATIONINSIGHTS_CONNECTION_STRING"];
         if (!string.IsNullOrEmpty(appInsightsConnectionString))
         {
             // Add Azure Monitor exporters to the existing OpenTelemetry configuration
-            builder.Services.AddOpenTelemetry()
+            openTelemetry
                 .WithTracing(tracing => tracing.AddAzureMonitorTraceExporter(options =>
                 {
                     options.ConnectionString = appInsightsConnectionString;
@@ -153,8 +161,6 @@ public static class Extensions
                     options.ConnectionString = appInsightsConnectionString;
                 }));
         }
-
-        return builder;
     }
 
     /// <summary>
@@ -201,17 +207,6 @@ public static class Extensions
 
                 if (string.IsNullOrWhiteSpace(messagingHostName))
                 {
-                    logger.LogWarning(
-                        "Configuration key '{MessagingHostKey}' is not set. Service Bus client will not be available.",
-                        MessagingHostConfigKey);
-
-                    // Return a null client or throw based on environment
-                    if (builder.Environment.IsDevelopment())
-                    {
-                        logger.LogWarning("Returning null ServiceBusClient for development environment");
-                        return null!; // Allow null in development
-                    }
-
                     throw new InvalidOperationException(
                         $"Configuration key '{MessagingHostConfigKey}' is required for Service Bus client initialization. " +
                         $"Please ensure this value is set in appsettings.json or user secrets.");
@@ -224,8 +219,9 @@ public static class Extensions
                 {
                     if (string.IsNullOrWhiteSpace(connectionString))
                     {
-                        logger.LogWarning("Service Bus emulator connection string not configured");
-                        return null!;
+                        throw new InvalidOperationException(
+                            $"Configuration key '{MessagingConnectionStringKey}' is required when using local Service Bus emulator. " +
+                            "Ensure the emulator resource is referenced so the connection string is provided.");
                     }
 
                     logger.LogInformation("Configuring Service Bus client for local emulator mode");
