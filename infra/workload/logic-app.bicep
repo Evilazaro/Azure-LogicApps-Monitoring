@@ -242,10 +242,10 @@ resource wfConf 'Microsoft.Web/sites/config@2025-03-01' = {
     AzureWebJobsStorage__credentialType: 'managedidentity'
     AzureWebJobsStorage__managedIdentityResourceId: userAssignedIdentityId
 
-    // Content share settings commented out to avoid 403 errors during deployment
-    // The file share is pre-created in the storage module and should be configured post-deployment
-    // WEBSITE_CONTENTSHARE: contentShareName
-    // WEBSITE_CONTENTAZUREFILECONNECTIONSTRING: storageConnectionString
+    // Content share settings required for Logic Apps runtime
+    // The file share is pre-created in the storage module with proper role assignments
+    WEBSITE_CONTENTSHARE: contentShareName
+    WEBSITE_CONTENTAZUREFILECONNECTIONSTRING: storageConnectionString
 
     // Only enable when private storage is correctly configured
     WEBSITE_CONTENTOVERVNET: usePrivateStorage ? '1' : '0'
