@@ -208,6 +208,9 @@ resource saDiag 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
 @description('Name of the deployed storage account for Logic Apps workflows')
 output AZURE_STORAGE_ACCOUNT_NAME_WORKFLOW string = wfSA.name
 
+@description('Resource ID of the deployed storage account for Logic Apps workflows')
+output AZURE_STORAGE_ACCOUNT_ID_WORKFLOW string = wfSA.id
+
 resource sqlServer 'Microsoft.Sql/servers@2024-11-01-preview' = {
   name: toLower('${cleanedName}server${uniqueSuffix}')
   location: location

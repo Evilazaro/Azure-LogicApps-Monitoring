@@ -144,6 +144,7 @@ module workload './workload/main.bicep' = {
     appInsightsConnectionString: shared.outputs.APPLICATIONINSIGHTS_CONNECTION_STRING
     userAssignedIdentityId: shared.outputs.AZURE_MANAGED_IDENTITY_ID
     workflowStorageAccountName: shared.outputs.AZURE_STORAGE_ACCOUNT_NAME_WORKFLOW
+    workflowStorageAccountId: shared.outputs.AZURE_STORAGE_ACCOUNT_ID_WORKFLOW
     tags: tags
   }
 }

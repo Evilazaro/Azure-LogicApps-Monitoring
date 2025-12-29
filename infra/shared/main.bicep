@@ -134,6 +134,9 @@ module data 'data/main.bicep' = {
 @description('Storage account name for Logic Apps workflows and data')
 output AZURE_STORAGE_ACCOUNT_NAME_WORKFLOW string = data.outputs.AZURE_STORAGE_ACCOUNT_NAME_WORKFLOW
 
+@description('Resource ID of the storage account for Logic Apps workflows and data')
+output AZURE_STORAGE_ACCOUNT_ID_WORKFLOW string = data.outputs.AZURE_STORAGE_ACCOUNT_ID_WORKFLOW
+
 @description('Fully qualified domain name of the SQL Server for database connections')
 output ORDERSDATABASE_SQLSERVERFQDN string = data.outputs.ORDERSDATABASE_SQLSERVERFQDN
 

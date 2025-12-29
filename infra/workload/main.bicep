@@ -69,6 +69,10 @@ param appInsightsConnectionString string
 @description('Workflow Storage Account Name for Logic Apps runtime.')
 param workflowStorageAccountName string
 
+@description('Workflow Storage Account ID for Logic Apps runtime.')
+@minLength(50)
+param workflowStorageAccountId string
+
 @description('Resource tags applied to all workload resources.')
 param tags tagsType
 
@@ -164,10 +168,11 @@ module workflows 'logic-app.bicep' = {
     location: location
     envName: envName
     workspaceId: workspaceId
-    storageAccountId: storageAccountId
+    diagnosticsStorageAccountId: storageAccountId
     metricsSettings: allMetricsSettings
     appInsightsConnectionString: appInsightsConnectionString
     userAssignedIdentityId: userAssignedIdentityId
+    workflowStorageAccountId: workflowStorageAccountId
     workflowStorageAccountName: workflowStorageAccountName
     tags: tags
   }
