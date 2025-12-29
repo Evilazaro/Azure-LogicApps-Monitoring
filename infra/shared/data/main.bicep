@@ -106,6 +106,7 @@ var storageRoles = {
   StorageBlobDataOwner: 'b7e6dc6d-f1e8-4753-8033-0f276bb0955b'
   StorageQueueDataContributor: '974c5e8b-45b9-4653-ba55-5f855dd0fb88'
   StorageTableDataContributor: '0a9a7e1f-b9d0-4cc4-a60d-0319b160aaa3'
+  StorageFileDataSMBShareContributor: '0c867c2a-1d8c-454a-a3db-ab2ea1bdc8bb'
 }
 
 @description('Assign Storage Blob Data Owner role to managed identity')
@@ -145,6 +146,20 @@ resource tableContributorRole 'Microsoft.Authorization/roleAssignments@2022-04-0
     roleDefinitionId: subscriptionResourceId(
       'Microsoft.Authorization/roleDefinitions',
       storageRoles.StorageTableDataContributor
+    )
+    principalType: 'ServicePrincipal'
+  }
+}
+
+@description('Assign Storage File Data SMB Share Contributor role to managed identity for file share access')
+resource fileContributorRole 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
+  name: guid(wfSA.id, userAssignedIdentityId, storageRoles.StorageFileDataSMBShareContributor)
+  scope: wfSA
+  properties: {
+    principalId: reference(userAssignedIdentityId, '2025-01-31-preview').principalId
+    roleDefinitionId: subscriptionResourceId(
+      'Microsoft.Authorization/roleDefinitions',
+      storageRoles.StorageFileDataSMBShareContributor
     )
     principalType: 'ServicePrincipal'
   }
