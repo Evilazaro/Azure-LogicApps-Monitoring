@@ -185,6 +185,10 @@ resource wfConf 'Microsoft.Web/sites/config@2025-03-01' = {
     // WEBSITE_CONTENTAZUREFILECONNECTIONSTRING requires full connection string for file share creation
     WEBSITE_CONTENTSHARE: contentShareName
     WEBSITE_CONTENTAZUREFILECONNECTIONSTRING: storageConnectionString
+    
+    // Skip content share validation during deployment to avoid 403 errors
+    // The share is pre-created in the storage account module with proper permissions
+    WEBSITE_SKIP_CONTENTSHARE_VALIDATION: '1'
 
     // Only enable when private storage is correctly configured
     WEBSITE_CONTENTOVERVNET: usePrivateStorage ? '1' : '0'

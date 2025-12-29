@@ -88,8 +88,11 @@ resource wfSA 'Microsoft.Storage/storageAccounts@2025-06-01' = {
     publicNetworkAccess: 'Enabled' // Allow access from public networks
     allowSharedKeyAccess: true // Required for Logic Apps Standard initial connection
     networkAcls: {
-      bypass: 'AzureServices'
+      bypass: 'AzureServices, Logging, Metrics'
       defaultAction: 'Allow'
+      // Allow Azure datacenter IPs for deployment-time operations
+      ipRules: []
+      virtualNetworkRules: []
     }
   }
 }
