@@ -55,7 +55,6 @@ With comprehensive validation, error handling, SQL managed identity configuratio
   - [Example 1: Standard azd Provisioning](#example-1-standard-azd-provisioning)
   - [Example 2: CI/CD Integration](#example-2-cicd-integration)
 - [Troubleshooting](#️-troubleshooting)
-  - [Common Issues and Solutions](#common-issues-and-solutions)
 - [Technical Architecture](#-technical-architecture)
   - [Script Flow](#script-flow)
   - [Azure Resource Discovery](#azure-resource-discovery)

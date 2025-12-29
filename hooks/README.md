@@ -36,7 +36,7 @@
   - [Azure Resource Management](#azure-resource-management)
   - [Cross-Platform Development](#cross-platform-development)
 - [Troubleshooting](#️-troubleshooting)
-  - [Common Issues](#common-issues)
+  - [Using Verbose Mode](#using-verbose-mode)
   - [Debug Mode](#debug-mode)
   - [Getting Help](#getting-help)
 - [Related Documentation](#-related-documentation)

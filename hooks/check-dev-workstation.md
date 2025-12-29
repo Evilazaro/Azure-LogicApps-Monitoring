@@ -28,6 +28,7 @@ Running this script before `preprovision.ps1` and `postprovision.ps1` helps deve
   - [Internal Process Flow](#internal-process-flow)
   - [Integration Points](#integration-points)
 - [Troubleshooting](#️-troubleshooting)
+  - [Using Verbose Mode](#using-verbose-mode)
 - [Technical Implementation Details](#-technical-implementation-details)
 - [Related Documentation](#-related-documentation)
 - [Security Considerations](#-security-considerations)
