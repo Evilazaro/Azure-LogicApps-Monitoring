@@ -155,21 +155,11 @@ resource wfConf 'Microsoft.Web/sites/config@2025-03-01' = {
     FUNCTIONS_EXTENSION_VERSION: functionsExtensionVersion
     FUNCTIONS_WORKER_RUNTIME: functionsWorkerRuntime
 
-    // Required storage settings for Logic Apps Standard host with Managed Identity
-    // Note: Requires RBAC role assignments to be complete (storageRoleAssignmentsComplete = ${storageRoleAssignmentsComplete})
-    // AzureWebJobsStorage uses managed identity for runtime operations
-    // AzureWebJobsStorage__accountName: workflowStorageAccountName
-    // AzureWebJobsStorage__credentialType: 'managedidentity'
-    // AzureWebJobsStorage__managedIdentityResourceId: userAssignedIdentityId
-
-    // Content share settings are added via deployment script to avoid 403 errors during initial deployment
-    // The file share is pre-created in the storage module with proper role assignments
-
-    // // Only enable when private storage is correctly configured
-    // WEBSITE_CONTENTOVERVNET: usePrivateStorage ? '1' : '0'
-
-    // // Deployment mode (optional)
-    // WEBSITE_RUN_FROM_PACKAGE: runFromPackage ? '1' : '0'
+    AzureWebJobsStorage__managedIdentityResourceId: userAssignedIdentityId
+    AzureWebJobsStorage__credential: 'managedIdentity'
+    AzureWebJobsStorage__blobServiceUri: 'https://${workflowStorageAccountName}.blob.${environment().suffixes.storage}/'
+    AzureWebJobsStorage__queueServiceUri: 'https://${workflowStorageAccountName}.queue.${environment().suffixes.storage}/'
+    AzureWebJobsStorage__tableServiceUri: 'https://${workflowStorageAccountName}.table.${environment().suffixes.storage}/'
 
     // App Insights
     APPLICATIONINSIGHTS_CONNECTION_STRING: appInsightsConnectionString
