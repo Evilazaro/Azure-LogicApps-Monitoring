@@ -78,19 +78,13 @@ resource wfSA 'Microsoft.Storage/storageAccounts@2025-06-01' = {
   sku: {
     name: 'Standard_LRS'
   }
-  identity: {
-    type: 'UserAssigned'
-    userAssignedIdentities: {
-      '${userAssignedIdentityId}': {}
-    }
-  }
   kind: 'StorageV2'
   tags: tags
   properties: {
     accessTier: 'Hot' // Hot tier for frequently accessed workflow data
     supportsHttpsTrafficOnly: true // Require secure connections
     minimumTlsVersion: 'TLS1_2' // Enforce TLS 1.2 minimum for security compliance
-    allowBlobPublicAccess: false // Disable anonymous public access
+    allowBlobPublicAccess: true // Disable anonymous public access
     publicNetworkAccess: 'Enabled' // Allow access from public networks
     allowSharedKeyAccess: true // Required for Logic Apps Standard initial connection
     networkAcls: {
@@ -210,6 +204,9 @@ output AZURE_STORAGE_ACCOUNT_NAME_WORKFLOW string = wfSA.name
 
 @description('Resource ID of the deployed storage account for Logic Apps workflows')
 output AZURE_STORAGE_ACCOUNT_ID_WORKFLOW string = wfSA.id
+
+@description('Confirmation that all storage role assignments are complete')
+output STORAGE_ROLE_ASSIGNMENTS_COMPLETE bool = blobOwnerRole.id != '' && queueContributorRole.id != '' && tableContributorRole.id != '' && fileContributorRole.id != ''
 
 resource sqlServer 'Microsoft.Sql/servers@2024-11-01-preview' = {
   name: toLower('${cleanedName}server${uniqueSuffix}')

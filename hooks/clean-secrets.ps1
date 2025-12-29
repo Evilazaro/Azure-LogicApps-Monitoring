@@ -20,6 +20,7 @@
     Skips confirmation prompts and forces execution.
 
 .PARAMETER WhatIf
+    Common parameter (because SupportsShouldProcess is enabled).
     Shows what would be executed without making changes.
 
 .EXAMPLE
@@ -56,12 +57,16 @@ param(
 
 # Script configuration
 Set-StrictMode -Version Latest
+$script:OriginalErrorActionPreference = $ErrorActionPreference
+$script:OriginalInformationPreference = $InformationPreference
+$script:OriginalProgressPreference = $ProgressPreference
 $ErrorActionPreference = 'Stop'
 $InformationPreference = 'Continue'
 $ProgressPreference = 'SilentlyContinue'
 
 # Script-level constants
 $script:ScriptVersion = '2.0.1'
+$script:MinimumDotNetMajorVersion = 10
 $script:Projects = @(
     @{
         Name = 'app.AppHost'
@@ -86,17 +91,17 @@ function Test-DotNetAvailability {
     
     .DESCRIPTION
         Validates that .NET SDK is installed and accessible in PATH.
-        Returns $true if .NET is available, $false otherwise.
+        Returns an object describing whether .NET is available and meets the minimum version.
     
     .OUTPUTS
-        System.Boolean - Returns $true if .NET SDK is available, $false otherwise.
+        System.Management.Automation.PSCustomObject - Availability and version details.
     
     .EXAMPLE
         Test-DotNetAvailability
-        Returns $true if .NET SDK is available, $false otherwise.
+        Returns an object indicating availability, version, and failure reason.
     #>
     [CmdletBinding()]
-    [OutputType([bool])]
+    [OutputType([pscustomobject])]
     param()
 
     begin {
@@ -108,24 +113,67 @@ function Test-DotNetAvailability {
             $dotnetCommand = Get-Command -Name dotnet -ErrorAction SilentlyContinue
             if (-not $dotnetCommand) {
                 Write-Verbose '.NET command not found in PATH'
-                return $false
+                return [pscustomobject]@{
+                    IsAvailable = $false
+                    Version     = $null
+                    Reason      = 'dotnet command not found in PATH'
+                }
             }
             
             Write-Verbose "dotnet command found at: $($dotnetCommand.Source)"
             
             # Verify dotnet can execute
-            $null = & dotnet --version 2>&1
+            $dotnetVersion = & dotnet --version 2>$null
             if ($LASTEXITCODE -ne 0) {
                 Write-Verbose 'dotnet command failed to execute'
-                return $false
+                return [pscustomobject]@{
+                    IsAvailable = $false
+                    Version     = $null
+                    Reason      = 'dotnet command failed to execute'
+                }
+            }
+
+            $dotnetVersion = ($dotnetVersion | Select-Object -First 1).ToString().Trim()
+            if ([string]::IsNullOrWhiteSpace($dotnetVersion)) {
+                return [pscustomobject]@{
+                    IsAvailable = $false
+                    Version     = $null
+                    Reason      = 'dotnet --version returned empty output'
+                }
+            }
+
+            $majorString = ($dotnetVersion -split '\.')[0]
+            $major = 0
+            if (-not [int]::TryParse($majorString, [ref]$major)) {
+                return [pscustomobject]@{
+                    IsAvailable = $false
+                    Version     = $dotnetVersion
+                    Reason      = 'Unable to parse dotnet major version'
+                }
+            }
+
+            if ($major -lt $script:MinimumDotNetMajorVersion) {
+                return [pscustomobject]@{
+                    IsAvailable = $false
+                    Version     = $dotnetVersion
+                    Reason      = "dotnet SDK major version $major is less than required $script:MinimumDotNetMajorVersion"
+                }
             }
             
             Write-Verbose '.NET SDK is available and functional'
-            return $true
+            return [pscustomobject]@{
+                IsAvailable = $true
+                Version     = $dotnetVersion
+                Reason      = $null
+            }
         }
         catch {
             Write-Verbose "Error checking .NET availability: $($_.Exception.Message)"
-            return $false
+            return [pscustomobject]@{
+                IsAvailable = $false
+                Version     = $null
+                Reason      = $_.Exception.Message
+            }
         }
     }
 }
@@ -145,13 +193,13 @@ function Test-ProjectPath {
         The project name for logging purposes.
     
     .OUTPUTS
-        System.Boolean - Returns $true if path is valid, $false otherwise.
+        System.String - Returns the full path to the project file if found; otherwise, $null.
     
     .EXAMPLE
         Test-ProjectPath -Path '.\app.AppHost\' -Name 'app.AppHost'
     #>
     [CmdletBinding()]
-    [OutputType([bool])]
+    [OutputType([string])]
     param(
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
@@ -171,22 +219,28 @@ function Test-ProjectPath {
             $resolvedPath = Resolve-Path -Path $Path -ErrorAction SilentlyContinue
             if (-not $resolvedPath) {
                 Write-Warning "Project path not found: $Path"
-                return $false
+                return $null
             }
+
+            $resolvedDirectory = ($resolvedPath | Select-Object -First 1).Path
             
             # Check if directory contains a .csproj file
-            $projectFiles = @(Get-ChildItem -Path $resolvedPath -Filter '*.csproj' -ErrorAction SilentlyContinue)
+            $projectFiles = @(Get-ChildItem -Path $resolvedDirectory -Filter '*.csproj' -File -ErrorAction SilentlyContinue)
             if ($projectFiles.Count -eq 0) {
                 Write-Warning "No .csproj file found in: $Path"
-                return $false
+                return $null
+            }
+
+            if ($projectFiles.Count -gt 1) {
+                Write-Warning "Multiple .csproj files found in: $resolvedDirectory. Using first match: $($projectFiles[0].Name)"
             }
             
-            Write-Verbose "Project path validated: $resolvedPath"
-            return $true
+            Write-Verbose "Project path validated: $resolvedDirectory"
+            return $projectFiles[0].FullName
         }
         catch {
             Write-Warning "Error validating project path ${Path}: $($_.Exception.Message)"
-            return $false
+            return $null
         }
     }
 }
@@ -197,11 +251,11 @@ function Clear-ProjectUserSecrets {
         Clears user secrets for a specific project.
     
     .DESCRIPTION
-        Executes 'dotnet user-secrets clear' for the specified project path.
+        Executes 'dotnet user-secrets clear' for the specified project file.
         Handles errors gracefully and provides detailed logging.
     
     .PARAMETER ProjectPath
-        The path to the project directory.
+        The path to the project (.csproj) file.
     
     .PARAMETER ProjectName
         The project name for logging purposes.
@@ -210,7 +264,7 @@ function Clear-ProjectUserSecrets {
         System.Boolean - Returns $true if successful, $false otherwise.
     
     .EXAMPLE
-        Clear-ProjectUserSecrets -ProjectPath '.\app.AppHost\' -ProjectName 'app.AppHost'
+        Clear-ProjectUserSecrets -ProjectPath '.\app.AppHost\app.AppHost.csproj' -ProjectName 'app.AppHost'
     #>
     [CmdletBinding(SupportsShouldProcess)]
     [OutputType([bool])]
@@ -230,6 +284,11 @@ function Clear-ProjectUserSecrets {
 
     process {
         try {
+            if (-not (Test-Path -LiteralPath $ProjectPath -PathType Leaf)) {
+                Write-Warning "Project file not found for ${ProjectName}: $ProjectPath"
+                return $false
+            }
+
             if ($PSCmdlet.ShouldProcess($ProjectName, 'Clear user secrets')) {
                 Write-Information "Clearing user secrets for project: $ProjectName"
                 
@@ -338,10 +397,12 @@ try {
     
     # Step 1: Validate .NET SDK availability
     Write-Information 'Step 1: Validating .NET SDK availability...'
-    if (-not (Test-DotNetAvailability)) {
-        throw '.NET SDK is not installed or not accessible. Please install .NET SDK 8.0 or higher.'
+    $dotnetCheck = Test-DotNetAvailability
+    if (-not $dotnetCheck.IsAvailable) {
+        $reason = if ($dotnetCheck.Reason) { $dotnetCheck.Reason } else { 'Unknown reason' }
+        throw ".NET SDK is not installed, not accessible, or does not meet requirements. Required: .NET SDK $script:MinimumDotNetMajorVersion.0 or higher. Details: $reason"
     }
-    Write-Information '✓ .NET SDK is available'
+    Write-Information "✓ .NET SDK is available (version: $($dotnetCheck.Version))"
     Write-Information ''
     
     # Step 2: Validate project paths
@@ -349,8 +410,13 @@ try {
     $validProjects = [System.Collections.Generic.List[hashtable]]::new()
     
     foreach ($project in $script:Projects) {
-        if (Test-ProjectPath -Path $project.Path -Name $project.Name) {
-            $validProjects.Add($project)
+        $projectFile = Test-ProjectPath -Path $project.Path -Name $project.Name
+        if ($projectFile) {
+            $validProjects.Add(@{
+                Name = $project.Name
+                Path = $project.Path
+                ProjectFile = $projectFile
+            })
             Write-Information "  ✓ $($project.Name)"
         }
         else {
@@ -359,20 +425,16 @@ try {
     }
     
     if ($validProjects.Count -eq 0) {
-        throw 'No valid project paths found. Please ensure the script is run from the repository root.'
+        throw 'No valid project paths found. Please ensure the repository structure is intact and the expected project folders exist relative to this script.'
     }
     
     Write-Information ''
     Write-Information "Found $($validProjects.Count) valid project(s)"
     Write-Information ''
     
-    # Step 3: Confirm action (unless -Force is specified)
-    if (-not $Force -and -not $WhatIfPreference) {
-        $confirmation = Read-Host "Are you sure you want to clear user secrets for $($validProjects.Count) project(s)? (yes/no)"
-        if ($confirmation -ne 'yes') {
-            Write-Information 'Operation cancelled by user.'
-            exit 0
-        }
+    # Respect PowerShell native confirmation model; -Force disables confirmation prompts.
+    if ($Force) {
+        $ConfirmPreference = 'None'
     }
     
     # Step 4: Clear user secrets
@@ -383,7 +445,7 @@ try {
     $failureCount = 0
     
     foreach ($project in $validProjects) {
-        $result = Clear-ProjectUserSecrets -ProjectPath $project.Path -ProjectName $project.Name
+        $result = Clear-ProjectUserSecrets -ProjectPath $project.ProjectFile -ProjectName $project.Name
         if ($result) {
             $successCount++
         }
@@ -412,8 +474,9 @@ catch {
 }
 finally {
     # Reset preferences
-    $ErrorActionPreference = 'Continue'
-    $InformationPreference = 'Continue'
+    $ErrorActionPreference = $script:OriginalErrorActionPreference
+    $InformationPreference = $script:OriginalInformationPreference
+    $ProgressPreference = $script:OriginalProgressPreference
 }
 
 #endregion

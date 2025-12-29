@@ -66,6 +66,9 @@ param workflowStorageAccountId string
 @maxLength(24)
 param workflowStorageAccountName string
 
+@description('Confirmation that storage role assignments are complete before configuring Logic App.')
+param storageRoleAssignmentsComplete bool
+
 @description('Connection string for Application Insights instance.')
 param appInsightsConnectionString string
 
@@ -91,12 +94,11 @@ var functionsWorkerRuntime = 'dotnet'
 var extensionBundleId = 'Microsoft.Azure.Functions.ExtensionBundle.Workflows'
 var extensionBundleVersion = '[1.*, 2.0.0)'
 
-// Storage keys (single evaluation reused)
-var workflowStorageKey = listKeys(workflowStorageAccountId, '2025-06-01').keys[0].value
-var storageConnString = 'DefaultEndpointsProtocol=https;AccountName=${workflowStorageAccountName};EndpointSuffix=${environment().suffixes.storage};AccountKey=${workflowStorageKey}'
-
 // Content share name
 var contentShareName = '${logicAppName}-content'
+
+// Storage endpoint for managed identity authentication
+var storageEndpoint = 'https://${workflowStorageAccountName}.blob.${environment().suffixes.storage}'
 
 // ========== Resources ==========
 
@@ -171,10 +173,14 @@ resource wfConf 'Microsoft.Web/sites/config@2025-03-01' = {
     FUNCTIONS_EXTENSION_VERSION: functionsExtensionVersion
     FUNCTIONS_WORKER_RUNTIME: functionsWorkerRuntime
 
-    // Required storage settings for Logic Apps Standard host
-    AzureWebJobsStorage: storageConnString
+    // Required storage settings for Logic Apps Standard host with Managed Identity
+    // Note: Requires RBAC role assignments to be complete (storageRoleAssignmentsComplete = ${storageRoleAssignmentsComplete})
+    AzureWebJobsStorage__accountName: workflowStorageAccountName
+    AzureWebJobsStorage__credential: 'managedidentity'
+    AzureWebJobsStorage__clientId: reference(userAssignedIdentityId, '2025-01-31-preview').clientId
+    
     WEBSITE_CONTENTSHARE: contentShareName
-    WEBSITE_CONTENTAZUREFILECONNECTIONSTRING: storageConnString
+    WEBSITE_CONTENTAZUREFILECONNECTIONSTRING: 'DefaultEndpointsProtocol=https;AccountName=${workflowStorageAccountName};EndpointSuffix=${environment().suffixes.storage}'
 
     // Only enable when private storage is correctly configured
     WEBSITE_CONTENTOVERVNET: usePrivateStorage ? '1' : '0'

@@ -17,14 +17,17 @@ public sealed class NoOpOrdersMessageHandler : IOrdersMessageHandler
 
     public Task SendOrderMessageAsync(Order order, CancellationToken cancellationToken)
     {
+        ArgumentNullException.ThrowIfNull(order);
         _logger.LogInformation("NoOp: Would send order message for order {OrderId}", order.Id);
         return Task.CompletedTask;
     }
 
     public Task SendOrdersBatchMessageAsync(IEnumerable<Order> orders, CancellationToken cancellationToken)
     {
-        var ordersList = orders?.ToList() ?? new List<Order>();
-        _logger.LogInformation("NoOp: Would send batch of {Count} order messages", ordersList.Count);
+        ArgumentNullException.ThrowIfNull(orders);
+
+        var count = orders is ICollection<Order> collection ? collection.Count : orders.Count();
+        _logger.LogInformation("NoOp: Would send batch of {Count} order messages", count);
         return Task.CompletedTask;
     }
 }

@@ -7,7 +7,6 @@ using eShop.Orders.API.Services;
 using eShop.Orders.API.Services.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using System.Diagnostics;
-using System.Diagnostics.Metrics;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -15,17 +14,16 @@ builder.AddServiceDefaults();
 
 // Register observability components for dependency injection
 builder.Services.AddSingleton(new ActivitySource("eShop.Orders.API"));
-builder.Services.AddSingleton(new Meter("eShop.Orders.API"));
 
-var connectionString = builder.Configuration["ConnectionStrings:OrderDb"];
+var connectionString = builder.Configuration.GetConnectionString("OrderDb");
 
 // Configure Entity Framework Core with SQL Server
 builder.Services.AddDbContext<OrderDbContext>(options =>
 {
     if (string.IsNullOrWhiteSpace(connectionString))
     {
-        Console.WriteLine("Warning: Connection string 'OrdersDatabase' is not configured yet. Using placeholder configuration.");
-        throw new InvalidOperationException("Connection string 'OrdersDatabase' is not configured. Please set it in the configuration.");
+        throw new InvalidOperationException(
+            "Connection string 'OrderDb' is not configured. Ensure the database resource is referenced so the connection string is provided.");
     }
 
     // Use standard UseSqlServer - Aspire automatically configures Azure AD authentication
@@ -74,7 +72,12 @@ builder.Services.AddSwaggerGen(options =>
 var serviceBusHostName = builder.Configuration["Azure:ServiceBus:HostName"]
                          ?? builder.Configuration["MESSAGING_HOST"];
 
-if (!string.IsNullOrWhiteSpace(serviceBusHostName))
+var serviceBusConnectionString = builder.Configuration.GetConnectionString("messaging");
+var isServiceBusEnabled = !string.IsNullOrWhiteSpace(serviceBusHostName)
+    && (!serviceBusHostName.Equals("localhost", StringComparison.OrdinalIgnoreCase)
+        || !string.IsNullOrWhiteSpace(serviceBusConnectionString));
+
+if (isServiceBusEnabled)
 {
     builder.AddAzureServiceBusClient();
     builder.Services.AddScoped<IOrdersMessageHandler, OrdersMessageHandler>();
@@ -100,98 +103,71 @@ if (!string.IsNullOrWhiteSpace(serviceBusHostName))
 var app = builder.Build();
 
 // Log warning about missing Service Bus configuration (if applicable)
-if (string.IsNullOrWhiteSpace(serviceBusHostName))
+if (!isServiceBusEnabled)
 {
     var logger = app.Services.GetRequiredService<ILogger<Program>>();
     logger.LogWarning("Service Bus is not configured. Orders will not be published to the message queue.");
 }
 
-// Initialize database asynchronously in the background
-// This allows the application to start and respond to health probes
-// even if the database is not immediately available (e.g., during initial deployment)
-_ = Task.Run(async () =>
+app.Lifetime.ApplicationStarted.Register(() =>
 {
-    using var scope = app.Services.CreateScope();
-    var services = scope.ServiceProvider;
-    var logger = services.GetRequiredService<ILogger<Program>>();
+    _ = InitializeDatabaseAsync(app.Services, app.Lifetime.ApplicationStopping, app.Logger);
+});
 
+static async Task InitializeDatabaseAsync(IServiceProvider serviceProvider, CancellationToken cancellationToken, ILogger logger)
+{
     var maxRetries = 10;
     var retryDelay = TimeSpan.FromSeconds(5);
 
-    for (int attempt = 1; attempt <= maxRetries; attempt++)
+    for (var attempt = 1; attempt <= maxRetries && !cancellationToken.IsCancellationRequested; attempt++)
     {
         try
         {
-            var dbContext = services.GetRequiredService<OrderDbContext>();
-            var connectionString = builder.Configuration.GetConnectionString("OrdersDatabase");
+            using var scope = serviceProvider.CreateScope();
+            var dbContext = scope.ServiceProvider.GetRequiredService<OrderDbContext>();
 
             logger.LogInformation("Initializing database (attempt {Attempt}/{MaxRetries})...", attempt, maxRetries);
-            logger.LogInformation("Database server: {Server}",
-                connectionString?.Contains("Server=", StringComparison.OrdinalIgnoreCase) == true
-                    ? connectionString.Split("Server=", StringSplitOptions.None)[1].Split(';')[0]
-                    : "Not specified");
 
-            logger.LogInformation("Ensuring database is created (development mode)...");
-            await dbContext.Database.EnsureCreatedAsync();
-            logger.LogInformation("Database ensured created for development environment");
+            await dbContext.Database.MigrateAsync(cancellationToken);
 
-            // Test database connectivity
-            var canConnect = await dbContext.Database.CanConnectAsync();
-            if (canConnect)
+            if (await dbContext.Database.CanConnectAsync(cancellationToken))
             {
                 logger.LogInformation("Database connection test successful");
-                return; // Success - exit retry loop
+                return;
             }
-            else
-            {
-                logger.LogWarning("Database connection test failed");
-            }
+
+            logger.LogWarning("Database connection test failed");
+        }
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        {
+            return;
         }
         catch (Exception ex)
         {
-            // Record exception in activity for distributed tracing
-            if (Activity.Current != null)
-            {
-                Activity.Current.SetStatus(ActivityStatusCode.Error, ex.Message);
-                Activity.Current.AddException(ex);
-            }
-
             logger.LogError(ex,
-                "Database initialization failed (attempt {Attempt}/{MaxRetries}). " +
-                "Error: {ErrorMessage}. " +
-                "Connection string configured: {HasConnectionString}. " +
-                "Will retry in {RetryDelay} seconds...",
+                "Database initialization failed (attempt {Attempt}/{MaxRetries}). Will retry in {RetryDelaySeconds} seconds...",
                 attempt,
                 maxRetries,
-                ex.Message,
-                !string.IsNullOrWhiteSpace(builder.Configuration.GetConnectionString("OrdersDatabase")),
                 retryDelay.TotalSeconds);
-
-            // Log additional diagnostic information on first failure
-            if (attempt == 1)
-            {
-                logger.LogError("Environment: {Environment}", app.Environment.EnvironmentName);
-                logger.LogError("Configuration sources: {Sources}",
-                    string.Join(", ", builder.Configuration.AsEnumerable()
-                        .Where(kvp => kvp.Key.Contains("ConnectionStrings", StringComparison.OrdinalIgnoreCase))
-                        .Select(kvp => $"{kvp.Key}={(kvp.Value?.Length > 0 ? "***" : "empty")}")));
-            }
 
             if (attempt < maxRetries)
             {
-                await Task.Delay(retryDelay);
+                try
+                {
+                    await Task.Delay(retryDelay, cancellationToken);
+                }
+                catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+                {
+                    return;
+                }
             }
             else
             {
-                logger.LogCritical("Database initialization failed after {MaxRetries} attempts. " +
-                    "The application will continue to run, but database operations will fail. " +
-                    "Please check: 1) SQL Server is accessible, 2) Managed identity has proper permissions, " +
-                    "3) Firewall rules allow Container App access.",
-                    maxRetries);
+                logger.LogCritical(ex, "Database initialization failed after {MaxRetries} attempts", maxRetries);
             }
         }
     }
-});
+}
 
 app.MapDefaultEndpoints();
 
@@ -207,7 +183,6 @@ if (app.Environment.IsDevelopment())
         options.DocumentTitle = "eShop Orders API";
     });
     app.MapSwagger();
-    app.UseDeveloperExceptionPage();
 }
 else
 {

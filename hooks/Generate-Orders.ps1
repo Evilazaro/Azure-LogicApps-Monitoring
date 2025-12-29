@@ -44,6 +44,8 @@
     https://github.com/Evilazaro/Azure-LogicApps-Monitoring
 #>
 
+#Requires -Version 7.0
+
 [CmdletBinding(SupportsShouldProcess)]
 param(
     [Parameter(Mandatory = $false, HelpMessage = "Number of orders to generate")]
@@ -65,8 +67,6 @@ param(
     [Parameter(Mandatory = $false, HelpMessage = "Force execution without prompting")]
     [switch]$Force
 )
-
-#Requires -Version 7.0
 
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
@@ -149,7 +149,7 @@ $script:Addresses = @(
 function Get-RandomDate {
     <#
     .SYNOPSIS
-        Generates a random date within the last year.
+        Generates a random date within the configured date range.
     
     .DESCRIPTION
         Creates a random timestamp between January 1, 2024 and December 31, 2025
@@ -173,28 +173,21 @@ function Get-RandomDate {
     [OutputType([string])]
     param()
 
-    # Define the date range for order generation (2024-2025)
-    # Start: January 1, 2024 at midnight UTC
-    $startDate = Get-Date -Year 2024 -Month 1 -Day 1 -Hour 0 -Minute 0 -Second 0
-    
-    # End: December 31, 2025 at 23:59:59 UTC
-    $endDate = Get-Date -Year 2025 -Month 12 -Day 31 -Hour 23 -Minute 59 -Second 59
-    
+    # Define the date range for order generation (2024-2025) in UTC
+    $startDateUtc = [DateTime]::new(2024, 1, 1, 0, 0, 0, [DateTimeKind]::Utc)
+    $endDateUtc = [DateTime]::new(2025, 12, 31, 23, 59, 59, [DateTimeKind]::Utc)
+
     # Calculate the total time span between start and end dates
-    $timeSpan = $endDate - $startDate
-    
-    # Generate random day offset within the range
-    $randomDays = Get-Random -Minimum 0 -Maximum $timeSpan.Days
-    
-    # Generate random second offset within a day (0-86400 seconds = 24 hours)
-    # This ensures time distribution throughout each day
-    $randomSeconds = Get-Random -Minimum 0 -Maximum 86400
-    
-    # Apply both offsets to create the final random timestamp
-    $randomDate = $startDate.AddDays($randomDays).AddSeconds($randomSeconds)
-    
+    $timeSpan = $endDateUtc - $startDateUtc
+
+    # Pick a random second offset across the whole range (inclusive)
+    $maxSecondsInclusive = [int][Math]::Floor($timeSpan.TotalSeconds)
+    $randomSeconds = Get-Random -Minimum 0 -Maximum ($maxSecondsInclusive + 1)
+
+    $randomDateUtc = $startDateUtc.AddSeconds($randomSeconds)
+
     # Convert to ISO 8601 format with UTC timezone indicator
-    return $randomDate.ToString('yyyy-MM-ddTHH:mm:ssZ')
+    return $randomDateUtc.ToString("yyyy-MM-dd'T'HH:mm:ss'Z'", [System.Globalization.CultureInfo]::InvariantCulture)
 }
 
 function New-Order {
@@ -261,20 +254,17 @@ function New-Order {
     # Determine number of products for this order within specified range
     # Note: Maximum parameter is exclusive, so we add 1 to include MaxProductCount
     $productCount = Get-Random -Minimum $MinProductCount -Maximum ($MaxProductCount + 1)
-    
+
     # Randomly select products from catalog without replacement
-    # -Count ensures we get exactly $productCount unique products
-    $selectedProducts = $script:Products | Get-Random -Count $productCount
-    
+    # Get-Random -Count 1 returns a scalar, so wrap in @() for consistent array semantics.
+    $selectedProducts = @($script:Products | Get-Random -Count $productCount)
+
     # Initialize collections for order products and running total
-    $orderProducts = @()
-    $orderTotal = 0.0
-    
+    $orderProducts = [System.Collections.Generic.List[hashtable]]::new($selectedProducts.Count)
+    [decimal]$orderTotal = 0
+
     # Process each selected product to create order line items
-    # Using 1-based indexing for human-readable iteration
-    foreach ($index in 1..$selectedProducts.Count) {
-        # Get current product (convert 1-based to 0-based array index)
-        $product = $selectedProducts[$index - 1]
+    foreach ($product in $selectedProducts) {
         
         # Generate random quantity between 1-5 items
         # Maximum is exclusive, so 6 means range is 1-5 inclusive
@@ -286,10 +276,10 @@ function New-Order {
         $priceVariation = Get-Random -Minimum 0.8 -Maximum 1.2
         
         # Calculate actual price with variation, rounded to 2 decimal places
-        $price = [Math]::Round($product.BasePrice * $priceVariation, 2)
-        
+        $price = [decimal]([Math]::Round(($product.BasePrice * $priceVariation), 2))
+
         # Calculate line item subtotal (price × quantity)
-        $subtotal = [Math]::Round($price * $quantity, 2)
+        $subtotal = [decimal]([Math]::Round(($price * $quantity), 2))
         
         # Generate unique order product ID (junction table ID)
         # Format: OP-XXXXXXXXXXXX (OP prefix + 12 hex characters)
@@ -299,14 +289,14 @@ function New-Order {
         
         # Create order product record (line item)
         # Contains all information needed for order fulfillment and billing
-        $orderProducts += @{
+        $orderProducts.Add([ordered]@{
             id                 = $orderProductId      # Unique line item ID
             orderId            = $orderId             # Foreign key to order
             productId          = $product.Id          # Foreign key to product catalog
             productDescription = $product.Description # Denormalized for reporting
             quantity           = $quantity            # Number of units ordered
             price              = $price               # Unit price at time of order
-        }
+        })
         
         # Add line item subtotal to order running total
         $orderTotal += $subtotal
@@ -314,12 +304,12 @@ function New-Order {
     
     # Return complete order object as hashtable
     # Structure mirrors the JSON schema expected by Azure Logic Apps
-    return @{
+    return [ordered]@{
         id              = $orderId                          # Unique order identifier
         customerId      = $customerId                       # Customer who placed the order
         date            = $orderDate                        # Order timestamp (ISO 8601)
         deliveryAddress = $deliveryAddress                  # Shipping destination
-        total           = [Math]::Round($orderTotal, 2)     # Order total (rounded to cents)
+        total           = [decimal]([Math]::Round($orderTotal, 2)) # Order total (rounded to cents)
         products        = $orderProducts                    # Array of line items
     }
 }
@@ -372,6 +362,11 @@ function Export-OrdersToJson {
             
             # Extract parent directory from the full file path
             $directory = Split-Path -Path $resolvedPath -Parent
+
+            # If a bare filename was provided, parent can be empty; use current location
+            if ([string]::IsNullOrWhiteSpace($directory)) {
+                $directory = (Get-Location).Path
+            }
             
             # Ensure output directory exists before writing file
             # This prevents "Path not found" errors when using nested directories
@@ -390,10 +385,10 @@ function Export-OrdersToJson {
             # -Compress:$false: Pretty-prints JSON for human readability
             $jsonContent = $allOrders | ConvertTo-Json -Depth 10 -Compress:$false
             
-            # Write JSON content to file with UTF-8 encoding
-            # UTF-8 is the standard for JSON and ensures international character support
+            # Write JSON content to file with UTF-8 (no BOM)
+            # UTF-8 without BOM is commonly expected for JSON interoperability.
             if ($PSCmdlet.ShouldProcess($resolvedPath, 'Write orders to JSON file')) {
-                $jsonContent | Out-File -FilePath $resolvedPath -Encoding utf8 -Force
+                Set-Content -Path $resolvedPath -Value $jsonContent -Encoding utf8NoBOM -Force
                 Write-Verbose "Successfully wrote orders to: $resolvedPath"
                 
                 # Return FileInfo object for pipeline support and further processing
@@ -401,7 +396,7 @@ function Export-OrdersToJson {
             }
         }
         catch {
-            Write-Error "Failed to export orders to JSON: $_"
+            Write-Error -ErrorRecord $_
             throw
         }
     }
@@ -427,8 +422,7 @@ try {
     }
     
     # Initialize order collection
-    # Using array (not ArrayList or List) for simplicity since size is known
-    $orders = @()
+    $orders = [System.Collections.Generic.List[hashtable]]::new($OrderCount)
     
     # Configure progress bar parameters using splatting for cleaner code
     # Splatting also makes it easier to update progress in the loop
@@ -446,7 +440,7 @@ try {
     for ($i = 1; $i -le $OrderCount; $i++) {
         # Create order and add to collection
         # OrderNumber parameter is used for tracking/logging, not for the order ID
-        $orders += New-Order -OrderNumber $i -MinProductCount $MinProducts -MaxProductCount $MaxProducts
+        $orders.Add((New-Order -OrderNumber $i -MinProductCount $MinProducts -MaxProductCount $MaxProducts))
         
         # Update progress bar periodically to avoid performance impact
         # Update every 10 orders OR on the final order to ensure 100% completion shows
@@ -467,7 +461,13 @@ try {
     
     # Export to JSON
     Write-Verbose "Exporting $($orders.Count) orders to JSON..."
-    $outputFile = Export-OrdersToJson -Orders $orders -Path $OutputPath
+    $outputFile = Export-OrdersToJson -Orders $orders.ToArray() -Path $OutputPath
+
+    # If export was skipped (e.g., -WhatIf or user declined -Confirm), stop cleanly.
+    if (-not $outputFile) {
+        Write-Host "No output file written (operation skipped)." -ForegroundColor Yellow
+        return
+    }
     
     # Display summary
     $fileSizeKB = [Math]::Round($outputFile.Length / 1KB, 2)
@@ -478,8 +478,8 @@ try {
     Write-Host "  Products per order: $MinProducts-$MaxProducts" -ForegroundColor Cyan
 }
 catch {
-    Write-Error "Order generation failed: $_"
-    exit 1
+    Write-Error -ErrorRecord $_
+    throw
 }
 finally {
     Write-Verbose "Order generation process completed."

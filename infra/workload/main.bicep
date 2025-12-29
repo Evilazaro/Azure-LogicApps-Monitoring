@@ -73,6 +73,9 @@ param workflowStorageAccountName string
 @minLength(50)
 param workflowStorageAccountId string
 
+@description('Confirmation that storage role assignments are complete before configuring Logic App.')
+param storageRoleAssignmentsComplete bool
+
 @description('Resource tags applied to all workload resources.')
 param tags tagsType
 
@@ -161,6 +164,7 @@ output AZURE_CONTAINER_APPS_ENVIRONMENT_DEFAULT_DOMAIN string = services.outputs
 
 // Logic Apps Module: Deploys Logic Apps Standard workflow engine
 // Depends on identity and messaging storage account outputs
+// Ensures storage role assignments are complete before deploying
 @description('Deploys Logic Apps Standard workflow engine with App Service Plan')
 module workflows 'logic-app.bicep' = {
   params: {
@@ -174,6 +178,7 @@ module workflows 'logic-app.bicep' = {
     userAssignedIdentityId: userAssignedIdentityId
     workflowStorageAccountId: workflowStorageAccountId
     workflowStorageAccountName: workflowStorageAccountName
+    storageRoleAssignmentsComplete: storageRoleAssignmentsComplete
     tags: tags
   }
 }

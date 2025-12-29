@@ -1,4 +1,6 @@
-#!/usr/bin/env pwsh
+﻿#!/usr/bin/env pwsh
+
+#Requires -Version 7.0
 
 <#
 .SYNOPSIS
@@ -44,13 +46,21 @@ param(
     [switch]$Force
 )
 
-#Requires -Version 7.0
-
 # Script configuration
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
 $InformationPreference = 'Continue'
 $ProgressPreference = 'SilentlyContinue'
+
+# -Force is documented as "skip confirmation prompts".
+# In PowerShell, confirmation prompts are controlled by $ConfirmPreference.
+if ($Force) {
+    $ConfirmPreference = 'None'
+    Write-Verbose "Force enabled: confirmation prompts suppressed (ConfirmPreference=None)."
+}
+
+# Track final process exit code; exit once at the end to ensure finally cleanup runs.
+$script:ExitCode = 0
 
 # Script-level constants
 $script:ScriptVersion = '2.0.1'
@@ -251,7 +261,7 @@ function Get-ApiProjectPath {
             # Get script root directory
             $scriptRoot = $PSScriptRoot
             if ([string]::IsNullOrWhiteSpace($scriptRoot)) {
-                $scriptRoot = Get-Location
+                $scriptRoot = (Get-Location).Path
                 Write-Verbose "PSScriptRoot is empty, using current location: $scriptRoot"
             }
             
@@ -309,7 +319,7 @@ function Get-AppHostProjectPath {
             # Get script root directory
             $scriptRoot = $PSScriptRoot
             if ([string]::IsNullOrWhiteSpace($scriptRoot)) {
-                $scriptRoot = Get-Location
+                $scriptRoot = (Get-Location).Path
                 Write-Verbose "PSScriptRoot is empty, using current location: $scriptRoot"
             }
             
@@ -367,7 +377,7 @@ function Get-WebAppProjectPath {
             # Get script root directory
             $scriptRoot = $PSScriptRoot
             if ([string]::IsNullOrWhiteSpace($scriptRoot)) {
-                $scriptRoot = Get-Location
+                $scriptRoot = (Get-Location).Path
                 Write-Verbose "PSScriptRoot is empty, using current location: $scriptRoot"
             }
             
@@ -595,7 +605,7 @@ function Write-SectionHeader {
         }
         catch {
             # Fallback to basic output if Write-Information fails
-            Write-Host $Message -ForegroundColor Cyan
+            Write-Output $Message
         }
     }
     
@@ -899,7 +909,7 @@ try {
         $sqlConfigScriptPath = if ($PSScriptRoot) {
             Join-Path -Path $PSScriptRoot -ChildPath "sql-managed-identity-config.ps1"
         } else {
-            Join-Path -Path (Get-Location) -ChildPath "sql-managed-identity-config.ps1"
+            Join-Path -Path (Get-Location).Path -ChildPath "sql-managed-identity-config.ps1"
         }
         
         if (-not (Test-Path -Path $sqlConfigScriptPath -PathType Leaf)) {
@@ -1255,30 +1265,33 @@ try {
     Write-Information "Duration: $([Math]::Round($executionDuration, 2)) seconds"
     Write-Information ""
     Write-Verbose "Exiting with success code 0"
-    
-    exit 0
+
+    $script:ExitCode = 0
 }
 catch {
     # Comprehensive error reporting
     Write-SectionHeader -Message "Post-Provisioning Failed!" -Type 'Main'
-    
-    Write-Host "╔══════════════════════════════════════════════════════════════╗" -ForegroundColor Red
-    Write-Host "║                   EXECUTION FAILED                           ║" -ForegroundColor Red
-    Write-Host "╚══════════════════════════════════════════════════════════════╝" -ForegroundColor Red
-    Write-Host ""
-    Write-Host "Error Message:" -ForegroundColor Red
-    Write-Host "  $($_.Exception.Message)" -ForegroundColor Red
-    Write-Host ""
-    Write-Host "Error Type: $($_.Exception.GetType().FullName)" -ForegroundColor Red
-    
+
+    $failureLines = [System.Collections.Generic.List[string]]::new()
+    $failureLines.Add('╔══════════════════════════════════════════════════════════════╗')
+    $failureLines.Add('║                   EXECUTION FAILED                           ║')
+    $failureLines.Add('╚══════════════════════════════════════════════════════════════╝')
+    $failureLines.Add('')
+    $failureLines.Add('Error Message:')
+    $failureLines.Add("  $($_.Exception.Message)")
+    $failureLines.Add('')
+    $failureLines.Add("Error Type: $($_.Exception.GetType().FullName)")
+
     # Position information
     if ($_.InvocationInfo) {
-        Write-Host "" -ForegroundColor Red
-        Write-Host "Location:" -ForegroundColor Red
-        Write-Host "  Script: $($_.InvocationInfo.ScriptName)" -ForegroundColor Red
-        Write-Host "  Line: $($_.InvocationInfo.ScriptLineNumber)" -ForegroundColor Red
-        Write-Host "  Column: $($_.InvocationInfo.OffsetInLine)" -ForegroundColor Red
+        $failureLines.Add('')
+        $failureLines.Add('Location:')
+        $failureLines.Add("  Script: $($_.InvocationInfo.ScriptName)")
+        $failureLines.Add("  Line: $($_.InvocationInfo.ScriptLineNumber)")
+        $failureLines.Add("  Column: $($_.InvocationInfo.OffsetInLine)")
     }
+
+    Write-Error ($failureLines -join "`n")
     
     # Stack trace (verbose only)
     if ($_.ScriptStackTrace) {
@@ -1323,7 +1336,7 @@ catch {
     Write-Information ""
     
     # Exit with error code
-    exit 1
+    $script:ExitCode = 1
 }
 finally {
     # Cleanup and reset preferences
@@ -1345,6 +1358,8 @@ finally {
     }
     
     Write-Verbose "Script execution completed."
+
+    exit $script:ExitCode
 }
 
 #endregion
