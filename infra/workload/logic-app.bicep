@@ -180,9 +180,7 @@ resource wfConf 'Microsoft.Web/sites/config@2025-03-01' = {
     AzureWebJobsStorage__clientId: reference(userAssignedIdentityId, '2025-01-31-preview').clientId
     
     WEBSITE_CONTENTSHARE: contentShareName
-    WEBSITE_CONTENTAZUREFILECONNECTIONSTRING__accountName: workflowStorageAccountName
-    WEBSITE_CONTENTAZUREFILECONNECTIONSTRING__credential: 'managedidentity'
-    WEBSITE_CONTENTAZUREFILECONNECTIONSTRING__clientId: reference(userAssignedIdentityId, '2025-01-31-preview').clientId
+    WEBSITE_CONTENTAZUREFILECONNECTIONSTRING: 'DefaultEndpointsProtocol=https;AccountName=${workflowStorageAccountName};EndpointSuffix=${environment().suffixes.storage}'
 
     // Only enable when private storage is correctly configured
     WEBSITE_CONTENTOVERVNET: usePrivateStorage ? '1' : '0'
