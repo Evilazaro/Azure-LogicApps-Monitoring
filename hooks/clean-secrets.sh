@@ -255,10 +255,21 @@ log_verbose() {
     fi
 }
 
-###############################################################################
+#==============================================================================
+# HELP AND USAGE
+#==============================================================================
+
+#------------------------------------------------------------------------------
 # Function: show_help
-# Description: Displays usage information
-###############################################################################
+# Description: Displays comprehensive usage information and examples.
+#              Matches PowerShell Get-Help output format.
+# Arguments:
+#   None
+# Returns:
+#   Exits with code 0
+# Example:
+#   show_help
+#------------------------------------------------------------------------------
 show_help() {
     cat << EOF
 clean-secrets.sh - .NET User Secrets Clearing Tool
@@ -268,209 +279,318 @@ SYNOPSIS
 
 DESCRIPTION
     Clears all .NET user secrets from configured projects to ensure a clean
-    state. Useful before re-provisioning or troubleshooting configuration issues.
+    state. This is useful before re-provisioning or when troubleshooting
+    configuration issues.
+    
+    The script performs the following operations:
+    - Validates .NET SDK availability
+    - Validates project paths and .csproj file existence
+    - Clears user secrets for app.AppHost project
+    - Clears user secrets for eShop.Orders.API project
+    - Clears user secrets for eShop.Web.App project
+    - Provides detailed logging and execution summary
 
 OPTIONS
-    -f, --force      Skip confirmation prompts
+    -f, --force      Skip confirmation prompts and force execution
     -n, --dry-run    Show what would be executed without making changes
     -v, --verbose    Display detailed diagnostic information
-    -h, --help       Display this help message
+    -h, --help       Display this help message and exit
 
 EXAMPLES
     ${SCRIPT_NAME}
+        Clears all user secrets with confirmation prompt.
+    
     ${SCRIPT_NAME} --force
+        Clears all user secrets without confirmation.
+    
     ${SCRIPT_NAME} --dry-run --verbose
+        Shows what would be cleared without making changes, with verbose output.
 
 TARGET PROJECTS
     • app.AppHost
     • eShop.Orders.API
     • eShop.Web.App
 
+EXIT CODES
+    0    Success - All operations completed successfully
+    1    Error - Fatal error occurred or some operations failed
+
 VERSION
     ${SCRIPT_VERSION}
 
+AUTHOR
+    Azure-LogicApps-Monitoring Team
+
+COPYRIGHT
+    (c) 2025. All rights reserved.
+
+SEE ALSO
+    clean-secrets.ps1 - PowerShell version of this script
+    https://github.com/Evilazaro/Azure-LogicApps-Monitoring
+
 EOF
+    exit 0
 }
 
-###############################################################################
+#==============================================================================
+# ARGUMENT PARSING
+#==============================================================================
+
+#------------------------------------------------------------------------------
 # Function: parse_arguments
-# Description: Parses command-line arguments
-###############################################################################
+# Description: Parses command-line arguments and sets global flags.
+#              Validates arguments and provides error messages for unknown
+#              options.
+# Arguments:
+#   $@ - All command-line arguments
+# Returns:
+#   0 - Arguments parsed successfully
+#   1 - Invalid argument encountered
+# Example:
+#   parse_arguments "$@"
+#------------------------------------------------------------------------------
 parse_arguments() {
     while [[ $# -gt 0 ]]; do
         case "$1" in
             -f|--force)
                 FORCE=true
+                log_verbose "Force mode enabled - confirmation prompts will be skipped"
                 shift
                 ;;
             -n|--dry-run)
                 DRY_RUN=true
+                log_verbose "Dry-run mode enabled - no changes will be made"
                 shift
                 ;;
             -v|--verbose)
                 VERBOSE=true
+                log_verbose "Verbose mode enabled"
                 shift
                 ;;
             -h|--help)
                 show_help
-                exit 0
                 ;;
             *)
-                print_error "Unknown option: $1"
-                echo "Use --help for usage information."
+                log_error "Unknown option: $1"
+                echo "Use --help for usage information." >&2
                 exit 1
                 ;;
         esac
     done
+    
+    return 0
 }
 
-###############################################################################
+#==============================================================================
+# VALIDATION FUNCTIONS
+#==============================================================================
+
+#------------------------------------------------------------------------------
 # Function: test_dotnet_availability
-# Description: Checks if .NET SDK is available
+# Description: Checks if .NET SDK is available and executable.
+#              Validates that dotnet command exists in PATH and can run.
+# Arguments:
+#   None
 # Returns:
-#   0 - .NET SDK available
-#   1 - .NET SDK not available
-###############################################################################
+#   0 - .NET SDK is available and functional
+#   1 - .NET SDK is not available or not functional
+# Example:
+#   test_dotnet_availability || exit 1
+#------------------------------------------------------------------------------
 test_dotnet_availability() {
-    print_verbose "Checking .NET SDK availability..."
+    log_verbose "Starting .NET SDK availability check..."
     
+    # Check if dotnet command exists in PATH
     if ! command -v dotnet &> /dev/null; then
-        print_verbose ".NET command not found in PATH"
+        log_verbose ".NET command not found in PATH"
         return 1
     fi
     
     local dotnet_path
     dotnet_path=$(command -v dotnet)
-    print_verbose "dotnet command found at: ${dotnet_path}"
+    log_verbose "dotnet command found at: ${dotnet_path}"
     
-    # Verify dotnet can execute
+    # Verify dotnet can execute and return version
     if ! dotnet --version &> /dev/null; then
-        print_verbose "dotnet command failed to execute"
+        log_verbose "dotnet command failed to execute"
         return 1
     fi
     
-    print_verbose ".NET SDK is available and functional"
+    log_verbose ".NET SDK is available and functional"
     return 0
 }
 
-###############################################################################
+#------------------------------------------------------------------------------
 # Function: test_project_path
-# Description: Validates that a project path exists
+# Description: Validates that a project path exists and contains a valid
+#              .NET project file (.csproj). Mimics PowerShell's Test-ProjectPath.
 # Arguments:
-#   $1 - Project name
-#   $2 - Project path
+#   $1 - Project name for logging purposes
+#   $2 - Project path relative to script directory
 # Returns:
-#   0 - Path is valid
-#   1 - Path is invalid
-###############################################################################
+#   0 - Path is valid and contains .csproj file
+#   1 - Path is invalid or missing .csproj file
+# Example:
+#   test_project_path "app.AppHost" "../app.AppHost/"
+#------------------------------------------------------------------------------
 test_project_path() {
     local project_name="$1"
     local project_path="$2"
     
-    print_verbose "Validating project path for: ${project_name}"
+    log_verbose "Validating project path for: ${project_name}"
     
     # Resolve absolute path
     local abs_path="${SCRIPT_DIR}/${project_path}"
+    log_verbose "Resolved absolute path: ${abs_path}"
     
+    # Check if directory exists
     if [[ ! -d "${abs_path}" ]]; then
-        print_warning "Project path not found: ${abs_path}"
+        log_verbose "Project directory not found: ${abs_path}"
         return 1
     fi
     
-    # Check if directory contains a .csproj file
-    if ! ls "${abs_path}"/*.csproj &> /dev/null; then
-        print_warning "No .csproj file found in: ${abs_path}"
+    # Check if directory contains at least one .csproj file
+    local csproj_count=0
+    while IFS= read -r -d '' file; do
+        ((csproj_count++))
+    done < <(find "${abs_path}" -maxdepth 1 -name "*.csproj" -print0 2>/dev/null)
+    
+    if [[ ${csproj_count} -eq 0 ]]; then
+        log_verbose "No .csproj file found in: ${abs_path}"
         return 1
     fi
     
-    print_verbose "Project path validated: ${abs_path}"
+    log_verbose "Project path validated successfully (found ${csproj_count} .csproj file(s))"
     return 0
 }
 
-###############################################################################
+#==============================================================================
+# OPERATIONS FUNCTIONS
+#==============================================================================
+
+#------------------------------------------------------------------------------
 # Function: clear_project_user_secrets
-# Description: Clears user secrets for a specific project
+# Description: Clears user secrets for a specific project using 'dotnet
+#              user-secrets clear' command. Handles dry-run mode and provides
+#              detailed logging. Mimics PowerShell's Clear-ProjectUserSecrets.
 # Arguments:
-#   $1 - Project name
-#   $2 - Project path
+#   $1 - Project name for logging purposes
+#   $2 - Project path relative to script directory
 # Returns:
-#   0 - Success
-#   1 - Failure
-###############################################################################
+#   0 - Secrets cleared successfully (or dry-run completed)
+#   1 - Failed to clear secrets
+# Example:
+#   clear_project_user_secrets "app.AppHost" "../app.AppHost/"
+#------------------------------------------------------------------------------
 clear_project_user_secrets() {
     local project_name="$1"
     local project_path="$2"
     local abs_path="${SCRIPT_DIR}/${project_path}"
     
-    print_verbose "Preparing to clear user secrets for: ${project_name}"
+    log_verbose "Preparing to clear user secrets for: ${project_name}"
+    log_verbose "Project path: ${abs_path}"
     
+    # Handle dry-run mode (equivalent to PowerShell's -WhatIf)
     if [[ "${DRY_RUN}" == true ]]; then
-        print_info "  [DRY-RUN] Would clear user secrets for: ${project_name}"
-        print_verbose "  [DRY-RUN] Command: dotnet user-secrets clear --project ${abs_path}"
+        log_info "  [DRY-RUN] Would clear user secrets for: ${project_name}"
+        log_verbose "  [DRY-RUN] Command: dotnet user-secrets clear --project ${abs_path}"
         return 0
     fi
     
-    print_info "Clearing user secrets for project: ${project_name}"
+    log_info "Clearing user secrets for project: ${project_name}"
     
-    # Execute dotnet user-secrets clear
+    # Execute dotnet user-secrets clear command
     local output
-    local exit_code
+    local exit_code=0
     
+    # Capture both stdout and stderr, preserving exit code
     if output=$(dotnet user-secrets clear --project "${abs_path}" 2>&1); then
+        exit_code=0
+        log_success "✓ Successfully cleared user secrets for: ${project_name}"
+        log_verbose "Command output: ${output}"
+        return 0
+    else
         exit_code=$?
-        if [[ ${exit_code} -eq 0 ]]; then
-            print_success "✓ Successfully cleared user secrets for: ${project_name}"
-            print_verbose "Output: ${output}"
-            return 0
-        fi
+        log_warning "Failed to clear user secrets for ${project_name}. Exit code: ${exit_code}"
+        log_verbose "Error output: ${output}"
+        return 1
     fi
-    
-    exit_code=$?
-    print_warning "Failed to clear user secrets for ${project_name}. Exit code: ${exit_code}"
-    print_verbose "Error output: ${output}"
-    return 1
 }
 
-###############################################################################
+#==============================================================================
+# DISPLAY FUNCTIONS
+#==============================================================================
+
+#------------------------------------------------------------------------------
 # Function: write_script_header
-# Description: Displays the script header with version information
-###############################################################################
+# Description: Displays the script header with version information and title.
+#              Mimics PowerShell's informational output format.
+# Arguments:
+#   None
+# Returns:
+#   None
+# Example:
+#   write_script_header
+#------------------------------------------------------------------------------
 write_script_header() {
-    print_info ""
-    print_info "================================================================="
-    print_info "  Clean .NET User Secrets - Version ${SCRIPT_VERSION}"
-    print_info "  Azure Logic Apps Monitoring Project"
-    print_info "================================================================="
-    print_info ""
+    log_info ""
+    log_info "================================================================="
+    log_info "  Clean .NET User Secrets - Version ${SCRIPT_VERSION}"
+    log_info "  Azure Logic Apps Monitoring Project"
+    log_info "================================================================="
+    log_info ""
 }
 
-###############################################################################
+#------------------------------------------------------------------------------
 # Function: write_script_summary
-# Description: Displays the execution summary
+# Description: Displays the execution summary with statistics showing total
+#              projects processed, successfully cleared, and failed operations.
+#              Mimics PowerShell's Write-ScriptSummary output.
 # Arguments:
 #   $1 - Success count
 #   $2 - Failure count
 #   $3 - Total count
-###############################################################################
+# Returns:
+#   None
+# Example:
+#   write_script_summary 3 0 3
+#------------------------------------------------------------------------------
 write_script_summary() {
     local success_count=$1
     local failure_count=$2
     local total_count=$3
     
-    print_info ""
-    print_info "================================================================="
-    print_info "  Execution Summary"
-    print_info "================================================================="
-    print_info "  Total projects:       ${total_count}"
-    print_info "  Successfully cleared: ${success_count}"
-    print_info "  Failed:               ${failure_count}"
-    print_info "================================================================="
-    print_info ""
+    log_info ""
+    log_info "================================================================="
+    log_info "  Execution Summary"
+    log_info "================================================================="
+    log_info "  Total projects:       ${total_count}"
+    log_info "  Successfully cleared: ${success_count}"
+    log_info "  Failed:               ${failure_count}"
+    log_info "================================================================="
+    log_info ""
 }
 
-###############################################################################
-# Main Execution
-###############################################################################
+#==============================================================================
+# MAIN EXECUTION
+#==============================================================================
+
+#------------------------------------------------------------------------------
+# Function: main
+# Description: Main execution function that orchestrates the secret clearing
+#              workflow. Implements try-catch-finally pattern using trap and
+#              conditional execution. Matches PowerShell script flow.
+# Arguments:
+#   $@ - All command-line arguments
+# Returns:
+#   0 - All operations completed successfully
+#   1 - Fatal error occurred or some operations failed
+# Exit Codes:
+#   0 - Success (all secrets cleared or dry-run completed)
+#   1 - Error (validation failed or some clear operations failed)
+# Notes:
+#   Uses trap for error handling to mimic PowerShell's try-catch-finally
+#------------------------------------------------------------------------------
 main() {
     local exit_code=0
     local success_count=0
@@ -478,99 +598,144 @@ main() {
     local total_count=0
     
     # Parse command-line arguments
+    log_verbose "Parsing command-line arguments..."
     parse_arguments "$@"
     
-    # Display script header
-    write_script_header
-    
-    # Step 1: Validate .NET SDK availability
-    print_info "Step 1: Validating .NET SDK availability..."
-    if ! test_dotnet_availability; then
-        print_error ".NET SDK is not installed or not accessible."
-        print_error "Please install .NET SDK 10.0 or higher."
-        print_error "Download from: https://dotnet.microsoft.com/download/dotnet/10.0"
-        exit 1
-    fi
-    
-    local dotnet_version
-    dotnet_version=$(dotnet --version 2>&1 || echo "unknown")
-    print_success "✓ .NET SDK is available (version: ${dotnet_version})"
-    print_info ""
-    
-    # Step 2: Validate project paths
-    print_info "Step 2: Validating project paths..."
-    
-    declare -a valid_projects=()
-    declare -a valid_paths=()
-    
-    for project_name in "${!PROJECTS[@]}"; do
-        local project_path="${PROJECTS[$project_name]}"
-        if test_project_path "${project_name}" "${project_path}"; then
-            valid_projects+=("${project_name}")
-            valid_paths+=("${project_path}")
-            print_info "  ✓ ${project_name}"
-        else
-            print_warning "  ✗ ${project_name} - Path not found or invalid"
-        fi
-    done
-    
-    total_count=${#valid_projects[@]}
-    
-    if [[ ${total_count} -eq 0 ]]; then
-        print_error "No valid project paths found."
-        print_error "Please ensure the script is run from the repository root."
-        exit 1
-    fi
-    
-    print_info ""
-    print_info "Found ${total_count} valid project(s)"
-    print_info ""
-    
-    # Step 3: Confirm action (unless --force or --dry-run is specified)
-    if [[ "${FORCE}" == false ]] && [[ "${DRY_RUN}" == false ]]; then
-        read -rp "Are you sure you want to clear user secrets for ${total_count} project(s)? (yes/no): " confirmation
-        if [[ "${confirmation}" != "yes" ]]; then
-            print_info "Operation cancelled by user."
-            exit 0
-        fi
-    fi
-    
-    # Step 4: Clear user secrets
-    print_info "Step 3: Clearing user secrets..."
-    print_info ""
-    
-    for i in "${!valid_projects[@]}"; do
-        local project_name="${valid_projects[$i]}"
-        local project_path="${valid_paths[$i]}"
+    # Try block equivalent - main execution logic
+    {
+        # Display script header
+        write_script_header
         
-        if clear_project_user_secrets "${project_name}" "${project_path}"; then
-            ((success_count++))
-        else
-            ((failure_count++))
+        # Step 1: Validate .NET SDK availability
+        log_info "Step 1: Validating .NET SDK availability..."
+        if ! test_dotnet_availability; then
+            log_error ".NET SDK is not installed or not accessible."
+            log_error "Please install .NET SDK 10.0 or higher."
+            log_error "Download from: https://dotnet.microsoft.com/download/dotnet/10.0"
+            exit 1
         fi
-    done
-    
-    # Display summary
-    write_script_summary "${success_count}" "${failure_count}" "${total_count}"
-    
-    # Exit with appropriate code
-    if [[ ${failure_count} -gt 0 ]]; then
-        print_warning "Script completed with errors."
+        
+        # Display .NET SDK version information
+        local dotnet_version
+        dotnet_version=$(dotnet --version 2>&1 || echo "unknown")
+        log_success "✓ .NET SDK is available (version: ${dotnet_version})"
+        log_info ""
+        
+        # Step 2: Validate project paths
+        log_info "Step 2: Validating project paths..."
+        
+        # Arrays to store valid projects (mimics PowerShell's List[hashtable])
+        declare -a valid_projects=()
+        declare -a valid_paths=()
+        
+        # Iterate through all configured projects and validate
+        for project_name in "${!PROJECTS[@]}"; do
+            local project_path="${PROJECTS[$project_name]}"
+            log_verbose "Checking project: ${project_name} at ${project_path}"
+            
+            if test_project_path "${project_name}" "${project_path}"; then
+                valid_projects+=("${project_name}")
+                valid_paths+=("${project_path}")
+                log_info "  ✓ ${project_name}"
+            else
+                log_warning "  ✗ ${project_name} - Path not found or invalid"
+            fi
+        done
+        
+        # Check if we found any valid projects
+        total_count=${#valid_projects[@]}
+        
+        if [[ ${total_count} -eq 0 ]]; then
+            log_error "No valid project paths found."
+            log_error "Please ensure the script is run from the correct directory."
+            log_error "Expected script location: <repo-root>/hooks/"
+            exit 1
+        fi
+        
+        log_info ""
+        log_info "Found ${total_count} valid project(s)"
+        log_info ""
+        
+        # Step 3: Confirm action (unless --force or --dry-run is specified)
+        # Mimics PowerShell's -Force parameter and ShouldProcess/WhatIf
+        if [[ "${FORCE}" == false ]] && [[ "${DRY_RUN}" == false ]]; then
+            log_verbose "Prompting user for confirmation..."
+            read -rp "Are you sure you want to clear user secrets for ${total_count} project(s)? (yes/no): " confirmation
+            
+            if [[ "${confirmation}" != "yes" ]]; then
+                log_info "Operation cancelled by user."
+                exit 0
+            fi
+            
+            log_verbose "User confirmed operation"
+        else
+            if [[ "${FORCE}" == true ]]; then
+                log_verbose "Force mode enabled - skipping confirmation"
+            fi
+            if [[ "${DRY_RUN}" == true ]]; then
+                log_verbose "Dry-run mode enabled - no confirmation needed"
+            fi
+        fi
+        
+        # Step 4: Clear user secrets for each valid project
+        log_info "Step 3: Clearing user secrets..."
+        log_info ""
+        
+        # Process each valid project
+        for i in "${!valid_projects[@]}"; do
+            local project_name="${valid_projects[$i]}"
+            local project_path="${valid_paths[$i]}"
+            
+            log_verbose "Processing project ${i+1}/${total_count}: ${project_name}"
+            
+            # Execute clear operation and track results
+            if clear_project_user_secrets "${project_name}" "${project_path}"; then
+                ((success_count++))
+                log_verbose "Success count: ${success_count}"
+            else
+                ((failure_count++))
+                log_verbose "Failure count: ${failure_count}"
+            fi
+        done
+        
+        # Display execution summary
+        write_script_summary "${success_count}" "${failure_count}" "${total_count}"
+        
+        # Determine final exit code based on results
+        if [[ ${failure_count} -gt 0 ]]; then
+            log_warning "Script completed with errors."
+            log_warning "Please review the error messages above and retry failed operations."
+            exit_code=1
+        else
+            if [[ "${DRY_RUN}" == true ]]; then
+                log_success "Dry-run completed successfully."
+                log_verbose "No changes were made - this was a simulation"
+            else
+                log_success "Script completed successfully."
+                log_verbose "All user secrets have been cleared"
+            fi
+            exit_code=0
+        fi
+        
+    } || {
+        # Catch block equivalent - handle unexpected errors
+        local error_code=$?
+        log_error "Fatal error occurred during execution"
+        log_verbose "Error code: ${error_code}"
+        log_verbose "Script exiting with error status"
         exit_code=1
-    else
-        if [[ "${DRY_RUN}" == true ]]; then
-            print_success "Dry-run completed successfully."
-        else
-            print_success "Script completed successfully."
-        fi
-        exit_code=0
-    fi
+    }
     
+    # Finally block equivalent - cleanup and exit
+    log_verbose "Main function completed with exit code: ${exit_code}"
     exit ${exit_code}
 }
 
-# Trap errors for cleanup
-trap 'print_error "Fatal error on line $LINENO: $BASH_COMMAND"; exit 1' ERR
+#==============================================================================
+# SCRIPT ENTRY POINT
+#==============================================================================
 
-# Execute main function
+# Execute main function with all command-line arguments
+# Error trap is already registered at the top of the script
+log_verbose "Script started: ${SCRIPT_NAME} version ${SCRIPT_VERSION}"
 main "$@"
