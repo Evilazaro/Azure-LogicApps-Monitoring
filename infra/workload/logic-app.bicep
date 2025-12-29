@@ -148,7 +148,7 @@ resource workflowEngine 'Microsoft.Web/sites@2025-03-01' = {
   properties: {
     serverFarmId: wfASP.id
     publicNetworkAccess: 'Enabled'
-    storageAccountRequired: false  // Set to false initially to prevent auto-creation of file share
+    storageAccountRequired: false // Set to false initially to prevent auto-creation of file share
 
     siteConfig: {
       alwaysOn: true
@@ -160,7 +160,7 @@ resource workflowEngine 'Microsoft.Web/sites@2025-03-01' = {
       use32BitWorkerProcess: false
       ftpsState: 'FtpsOnly'
       minTlsVersion: '1.2'
-      
+
       // Pre-configure app settings during site creation to avoid separate deployment
       appSettings: [
         {
@@ -176,12 +176,12 @@ resource workflowEngine 'Microsoft.Web/sites@2025-03-01' = {
           value: workflowStorageAccountName
         }
         {
-          name: 'AzureWebJobsStorage__credential'
+          name: 'AzureWebJobsStorage__credentialType'
           value: 'managedidentity'
         }
         {
-          name: 'AzureWebJobsStorage__clientId'
-          value: reference(userAssignedIdentityId, '2025-01-31-preview').clientId
+          name: 'AzureWebJobsStorage__managedIdentityResourceId'
+          value: userAssignedIdentityId
         }
         {
           name: 'APPLICATIONINSIGHTS_CONNECTION_STRING'
@@ -239,13 +239,13 @@ resource wfConf 'Microsoft.Web/sites/config@2025-03-01' = {
     // Note: Requires RBAC role assignments to be complete (storageRoleAssignmentsComplete = ${storageRoleAssignmentsComplete})
     // AzureWebJobsStorage uses managed identity for runtime operations
     AzureWebJobsStorage__accountName: workflowStorageAccountName
-    AzureWebJobsStorage__credential: 'managedidentity'
-    AzureWebJobsStorage__clientId: reference(userAssignedIdentityId, '2025-01-31-preview').clientId
+    AzureWebJobsStorage__credentialType: 'managedidentity'
+    AzureWebJobsStorage__managedIdentityResourceId: userAssignedIdentityId
 
-    // Content share settings - added after site creation to avoid 403 errors during deployment
-    // The share is pre-created in the storage account module with proper role assignments
-    WEBSITE_CONTENTSHARE: contentShareName
-    WEBSITE_CONTENTAZUREFILECONNECTIONSTRING: storageConnectionString
+    // Content share settings commented out to avoid 403 errors during deployment
+    // The file share is pre-created in the storage module and should be configured post-deployment
+    // WEBSITE_CONTENTSHARE: contentShareName
+    // WEBSITE_CONTENTAZUREFILECONNECTIONSTRING: storageConnectionString
 
     // Only enable when private storage is correctly configured
     WEBSITE_CONTENTOVERVNET: usePrivateStorage ? '1' : '0'
@@ -291,3 +291,5 @@ resource wfDiag 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
 output logicAppName string = workflowEngine.name
 output logicAppId string = workflowEngine.id
 output appServicePlanId string = wfASP.id
+output contentShareName string = contentShareName
+output workflowStorageAccountName string = workflowStorageAccountName
