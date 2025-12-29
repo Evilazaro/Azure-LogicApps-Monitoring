@@ -11,17 +11,20 @@ using System.Diagnostics.Metrics;
 
 var builder = WebApplication.CreateBuilder(args);
 
+const string DefaultSqlServerName = "localhost";
+
 builder.AddServiceDefaults();
 
 // Register observability components for dependency injection
 builder.Services.AddSingleton(new ActivitySource("eShop.Orders.API"));
 builder.Services.AddSingleton(new Meter("eShop.Orders.API"));
 
+var sqlServerName = builder.Configuration["Azure:SqlServer:Name"] ?? DefaultSqlServerName;
+var connectionString = (sqlServerName != DefaultSqlServerName) ? builder.Configuration["ConnectionStrings:OrdersDatabase"] : builder.Configuration["ConnectionStrings:OrderDb"];
+
 // Configure Entity Framework Core with SQL Server
 builder.Services.AddDbContext<OrderDbContext>(options =>
 {
-    var connectionString = builder.Configuration["ConnectionStrings:OrdersDatabase"];
-
     if (string.IsNullOrWhiteSpace(connectionString))
     {
         // During manifest generation, we need to provide a minimal valid configuration

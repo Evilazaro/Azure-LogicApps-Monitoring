@@ -203,7 +203,7 @@ static void ConfigureSQLAzure(
     ArgumentNullException.ThrowIfNull(builder);
     ArgumentNullException.ThrowIfNull(ordersApi);
 
-    const string DefaultSqlServerName = "OrdersDatabase";
+    const string DefaultSqlServerName = "localhost";
     const string DefaultDatabaseName = "OrderDb";
     const string DefaultConnectionName = "OrdersDatabase";
 
@@ -215,7 +215,7 @@ static void ConfigureSQLAzure(
     if (isLocalMode)
     {
         // Local development mode - use SQL Server container with persistent volume
-        var sqlServer = builder.AddAzureSqlServer(DefaultConnectionName)
+        var sqlServer = builder.AddAzureSqlServer(DefaultSqlServerName)
                                .RunAsContainer(configureContainer =>
                                {
                                    configureContainer.WithDataVolume();
