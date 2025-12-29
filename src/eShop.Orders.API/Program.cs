@@ -66,20 +66,12 @@ builder.Services.AddOpenApi();
 
 builder.Services.AddSwaggerGen(options =>
 {
-    options.SwaggerDoc("v1", new Microsoft.OpenApi.Models.OpenApiInfo
+    options.SwaggerDoc("v1", new()
     {
         Title = "eShop Orders API",
         Version = "v1",
-        Description = "API for managing customer orders in the eShop application"
+        Description = "API for managing orders in the eShop application."
     });
-
-    // Include XML comments in Swagger documentation
-    var xmlFile = $"{System.Reflection.Assembly.GetExecutingAssembly().GetName().Name}.xml";
-    var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
-    if (File.Exists(xmlPath))
-    {
-        options.IncludeXmlComments(xmlPath);
-    }
 });
 
 // Add Azure Service Bus client configuration - only if configured
