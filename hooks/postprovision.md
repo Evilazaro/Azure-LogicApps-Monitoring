@@ -433,12 +433,14 @@ A critical feature of this script is the automatic configuration of Azure SQL Da
 
 **Default Configuration:**
 
-- `db_datareader` - Read access to all tables
-- `db_datawriter` - Write access to all tables
+- `db_owner` - Full database permissions including schema control, data read/write access
+  - Required for Entity Framework migrations and `EnsureCreatedAsync()` operations
+  - Enables CREATE TABLE, ALTER TABLE, foreign key constraints
+  - Supports full CRUD operations on all tables
 
-**For Entity Framework Migrations (Manual):**
+**Why db_owner?**
 
-- `db_owner` - Full schema control including CREATE TABLE, ALTER TABLE, foreign keys
+The application uses Entity Framework with `EnsureCreatedAsync()` which requires permissions to create database schema objects (tables, indexes, constraints). Without `db_owner`, the application would fail with REFERENCES permission errors during startup.
 
 ### Configuration Process
 
