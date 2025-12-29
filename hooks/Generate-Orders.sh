@@ -79,10 +79,39 @@ MIN_PRODUCTS=1
 MAX_PRODUCTS=6
 VERBOSE=false
 FORCE=false
+DRY_RUN=false
 
 # Product Catalog
 # Each product has: ID, Description, BasePrice
 # Format: "ID|Description|BasePrice"
+#
+# Product Catalog Data Structure
+# ==============================
+# Structure: Array of product entries in pipe-delimited format
+#     Format: "ProductID|Description|BasePrice"
+#
+# Fields:
+#     - ProductID: Unique identifier (PROD-XXXX format)
+#     - Description: Human-readable product name
+#     - BasePrice: Starting price in USD (subject to ±20% variation)
+#
+# Price Variation Logic:
+#     - During order generation, each product price varies by ±20%
+#     - Variation range: 0.8x to 1.2x of base price
+#     - Simulates: promotions, discounts, market fluctuations, dynamic pricing
+#
+# Product Categories (20 total):
+#     - Peripherals: Mouse, Keyboard, Hub
+#     - Audio: Headphones, Speaker, Microphone, Earbuds
+#     - Storage: External SSD, Portable Charger
+#     - Video: Webcam, Ring Light
+#     - Furniture: Laptop Stand, Monitor Arm, Chair, Desk
+#     - Organization: Cable Organizer, Smartphone Holder
+#     - Displays: 4K Monitor (27")
+#     - Creative: Graphics Tablet, Drawing Pen Set
+#
+# Usage: Products are randomly selected using Fisher-Yates shuffle
+#        to ensure uniform distribution and no duplicates per order
 declare -a PRODUCTS=(
     "PROD-1001|Wireless Mouse|25.99"
     "PROD-1002|Mechanical Keyboard|89.99"
@@ -106,7 +135,30 @@ declare -a PRODUCTS=(
     "PROD-A001|Wireless Earbuds|129.99"
 )
 
-# Global delivery address pool
+# Global Delivery Address Pool
+# =============================
+# Contains diverse addresses from major cities worldwide to simulate
+# international e-commerce operations and realistic order distribution.
+#
+# Coverage:
+#     - United States: 5 locations (NY, SF, Mountain View, Redmond, Seattle)
+#     - United Kingdom: 2 locations (Baker Street London, Downing Street)
+#     - Germany: 2 locations (Berlin locations)
+#     - Europe: France, Spain, Italy
+#     - Asia-Pacific: Japan, China, South Korea, Australia (2 locations)
+#     - Americas: Canada, Brazil
+#
+# Total Addresses: 20 locations across 15 countries
+#
+# Selection Logic:
+#     - Addresses are randomly selected during order generation
+#     - Uses modulo arithmetic to ensure even distribution
+#     - Each order gets exactly one delivery address
+#     - Simulates global e-commerce reach
+#
+# Special Characters:
+#     - Addresses may contain quotes (") which are JSON-escaped
+#     - International characters handled via json_escape function
 declare -a ADDRESSES=(
     "221B Baker Street, London, UK"
     "350 Fifth Ave, New York, NY, USA"
@@ -134,29 +186,134 @@ declare -a ADDRESSES=(
 # Color Output Functions
 ###############################################################################
 
-# Color codes
-readonly RED='\033[0;31m'
-readonly YELLOW='\033[1;33m'
-readonly GREEN='\033[0;32m'
-readonly CYAN='\033[0;36m'
-readonly NC='\033[0m' # No Color
+# ANSI color codes for terminal output formatting
+# These codes enable colored text output for better visual feedback
+# Compatible with most modern terminals (Linux, macOS, Windows 10+)
+readonly RED='\033[0;31m'      # Error messages
+readonly YELLOW='\033[1;33m'   # Warning messages
+readonly GREEN='\033[0;32m'    # Success messages
+readonly CYAN='\033[0;36m'     # Info and verbose messages
+readonly NC='\033[0m'          # No Color (reset)
 
+###############################################################################
+# FUNCTION: print_error
+#
+# SYNOPSIS
+#     Prints an error message to stderr in red color.
+#
+# DESCRIPTION
+#     Outputs formatted error messages to standard error stream with red
+#     color highlighting for immediate visibility. All error messages are
+#     prefixed with "ERROR:" for consistent formatting.
+#
+# PARAMETERS
+#     $* - Error message text (accepts multiple arguments)
+#
+# OUTPUTS
+#     Formatted error message to stderr
+#
+# EXAMPLES
+#     print_error "Failed to create directory"
+#     print_error "Invalid parameter value: ${value}"
+###############################################################################
 print_error() {
     echo -e "${RED}ERROR: $*${NC}" >&2
 }
 
+###############################################################################
+# FUNCTION: print_warning
+#
+# SYNOPSIS
+#     Prints a warning message to stderr in yellow color.
+#
+# DESCRIPTION
+#     Outputs formatted warning messages to standard error stream with yellow
+#     color highlighting. Warnings indicate potential issues that don't prevent
+#     execution but require user attention.
+#
+# PARAMETERS
+#     $* - Warning message text (accepts multiple arguments)
+#
+# OUTPUTS
+#     Formatted warning message to stderr
+#
+# EXAMPLES
+#     print_warning "File already exists, will be overwritten"
+#     print_warning "Using default value for missing parameter"
+###############################################################################
 print_warning() {
     echo -e "${YELLOW}WARNING: $*${NC}" >&2
 }
 
+###############################################################################
+# FUNCTION: print_success
+#
+# SYNOPSIS
+#     Prints a success message to stdout in green color.
+#
+# DESCRIPTION
+#     Outputs formatted success messages with green color highlighting to
+#     indicate successful completion of operations or validation.
+#
+# PARAMETERS
+#     $* - Success message text (accepts multiple arguments)
+#
+# OUTPUTS
+#     Formatted success message to stdout
+#
+# EXAMPLES
+#     print_success "✓ Successfully generated 50 orders"
+#     print_success "✓ File saved successfully"
+###############################################################################
 print_success() {
     echo -e "${GREEN}$*${NC}"
 }
 
+###############################################################################
+# FUNCTION: print_info
+#
+# SYNOPSIS
+#     Prints an informational message to stdout in cyan color.
+#
+# DESCRIPTION
+#     Outputs formatted informational messages with cyan color highlighting.
+#     Used for general information, status updates, and non-critical notices.
+#
+# PARAMETERS
+#     $* - Info message text (accepts multiple arguments)
+#
+# OUTPUTS
+#     Formatted informational message to stdout
+#
+# EXAMPLES
+#     print_info "Processing order batch..."
+#     print_info "Output file: ${OUTPUT_PATH}"
+###############################################################################
 print_info() {
     echo -e "${CYAN}$*${NC}"
 }
 
+###############################################################################
+# FUNCTION: print_verbose
+#
+# SYNOPSIS
+#     Prints verbose debug messages when verbose mode is enabled.
+#
+# DESCRIPTION
+#     Conditionally outputs detailed diagnostic messages to stderr when the
+#     VERBOSE flag is set to true. Used for debugging and detailed progress
+#     tracking without cluttering normal output.
+#
+# PARAMETERS
+#     $* - Verbose message text (accepts multiple arguments)
+#
+# OUTPUTS
+#     Formatted verbose message to stderr (only when VERBOSE=true)
+#
+# EXAMPLES
+#     print_verbose "Validating parameter ranges..."
+#     print_verbose "Generated GUID: ${guid}"
+###############################################################################
 print_verbose() {
     if [[ "${VERBOSE}" == "true" ]]; then
         echo -e "${CYAN}VERBOSE: $*${NC}" >&2
@@ -164,24 +321,76 @@ print_verbose() {
 }
 
 ###############################################################################
-# Error Handling
+# Error Handling and Cleanup
 ###############################################################################
 
-# Trap errors and cleanup
+###############################################################################
+# FUNCTION: cleanup
+#
+# SYNOPSIS
+#     Cleanup handler executed on script exit.
+#
+# DESCRIPTION
+#     Trap handler that executes when the script exits (normally or due to
+#     error). Provides cleanup operations and reports exit status. This
+#     function is automatically called by the EXIT trap.
+#
+# PARAMETERS
+#     None (reads $? for exit code)
+#
+# OUTPUTS
+#     Error message if exit code is non-zero
+#     Verbose cleanup confirmation message
+#
+# NOTES
+#     - Automatically triggered by EXIT trap
+#     - Non-zero exit codes indicate errors
+#     - Verbose output controlled by VERBOSE flag
+#
+# EXAMPLES
+#     trap cleanup EXIT  # Already set in script
+###############################################################################
 cleanup() {
     local exit_code=$?
+    
+    # Report abnormal termination
     if [[ ${exit_code} -ne 0 ]]; then
         print_error "Script failed with exit code ${exit_code}"
+        print_verbose "Check error messages above for details"
     fi
+    
     print_verbose "Cleanup completed."
 }
 
+# Register cleanup handler for script exit
+# Handles both normal termination and errors
 trap cleanup EXIT
 
 ###############################################################################
 # Helper Functions
 ###############################################################################
 
+###############################################################################
+# FUNCTION: show_help
+#
+# SYNOPSIS
+#     Displays comprehensive usage information and examples.
+#
+# DESCRIPTION
+#     Outputs detailed help text including script purpose, all available
+#     command-line options with descriptions, valid ranges, and practical
+#     usage examples. Designed to match PowerShell's Get-Help output style.
+#
+# PARAMETERS
+#     None
+#
+# OUTPUTS
+#     Multi-line help text to stdout
+#
+# EXAMPLES
+#     show_help
+#     ./Generate-Orders.sh --help
+###############################################################################
 show_help() {
     cat << EOF
 Usage: $(basename "$0") [OPTIONS]
@@ -194,34 +403,101 @@ OPTIONS:
     --min-products NUM      Minimum products per order (default: 1, range: 1-20)
     --max-products NUM      Maximum products per order (default: 6, range: 1-20)
     --force                 Force execution without prompting
+    --dry-run               Preview what would be generated without making changes
     --verbose               Enable verbose output
     --help                  Display this help message
 
 EXAMPLES:
     $(basename "$0")
+        Generate 50 orders with default settings
+
     $(basename "$0") --count 100 --output-path "/tmp/orders.json"
+        Generate 100 orders to custom location
+
     $(basename "$0") --count 25 --min-products 2 --max-products 4 --verbose
+        Generate 25 orders with 2-4 products each, verbose output
+
+    $(basename "$0") --dry-run
+        Preview generation without creating files
 
 For more information, see the header documentation in this script.
 EOF
 }
 
+###############################################################################
+# FUNCTION: validate_range
+#
+# SYNOPSIS
+#     Validates that a numeric value falls within specified range.
+#
+# DESCRIPTION
+#     Performs range validation on numeric parameters to ensure they meet
+#     specified constraints. Exits with error code 1 if validation fails,
+#     providing clear error messages with expected range and actual value.
+#
+# PARAMETERS
+#     $1 - value        The numeric value to validate
+#     $2 - min          Minimum allowed value (inclusive)
+#     $3 - max          Maximum allowed value (inclusive)
+#     $4 - param_name   Parameter name for error messages
+#
+# OUTPUTS
+#     Error message and exits if validation fails
+#
+# EXAMPLES
+#     validate_range "${ORDER_COUNT}" 1 10000 "OrderCount"
+#     validate_range "${MIN_PRODUCTS}" 1 20 "MinProducts"
+###############################################################################
 validate_range() {
     local value=$1
     local min=$2
     local max=$3
     local param_name=$4
     
+    # Check if value is within valid range (inclusive)
     if [[ ${value} -lt ${min} ]] || [[ ${value} -gt ${max} ]]; then
-        print_error "${param_name} must be between ${min} and ${max} (got: ${value})"
+        print_error "${param_name} must be between ${min} and ${max}. Got: ${value}"
+        print_error "Please provide a value within the valid range and try again."
         exit 1
     fi
+    
+    print_verbose "${param_name} validation passed: ${value} is within [${min}, ${max}]"
 }
 
-# Generate a random number between min and max (inclusive)
+###############################################################################
+# FUNCTION: random_range
+#
+# SYNOPSIS
+#     Generates a random integer within specified range.
+#
+# DESCRIPTION
+#     Produces a uniformly distributed random integer between min and max
+#     (inclusive). Uses Bash's $RANDOM built-in variable with modulo
+#     arithmetic to ensure even distribution across the range.
+#
+# PARAMETERS
+#     $1 - min   Minimum value (inclusive)
+#     $2 - max   Maximum value (inclusive)
+#
+# OUTPUTS
+#     Random integer to stdout
+#
+# NOTES
+#     - Range is inclusive on both ends: [min, max]
+#     - Uses $RANDOM which provides values 0-32767
+#     - Suitable for most order generation needs
+#
+# EXAMPLES
+#     product_count=$(random_range 1 6)
+#     quantity=$(random_range 1 10)
+###############################################################################
 random_range() {
     local min=$1
     local max=$2
+    
+    # Calculate random value using modulo arithmetic
+    # Formula: RANDOM % (max - min + 1) + min
+    # +1 makes the range inclusive on both ends
     echo $((RANDOM % (max - min + 1) + min))
 }
 
