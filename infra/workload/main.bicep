@@ -73,9 +73,6 @@ param workflowStorageAccountName string
 @minLength(50)
 param workflowStorageAccountId string
 
-@description('Confirmation that storage role assignments are complete before configuring Logic App.')
-param storageRoleAssignmentsComplete bool
-
 @description('Resource tags applied to all workload resources.')
 param tags tagsType
 
@@ -178,7 +175,6 @@ module workflows 'logic-app.bicep' = {
     userAssignedIdentityId: userAssignedIdentityId
     workflowStorageAccountId: workflowStorageAccountId
     workflowStorageAccountName: workflowStorageAccountName
-    storageRoleAssignmentsComplete: storageRoleAssignmentsComplete
     tags: tags
   }
 }

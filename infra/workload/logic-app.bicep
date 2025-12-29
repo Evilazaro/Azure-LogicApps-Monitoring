@@ -66,17 +66,8 @@ param workflowStorageAccountId string
 @maxLength(24)
 param workflowStorageAccountName string
 
-@description('Confirmation that storage role assignments are complete before configuring Logic App.')
-param storageRoleAssignmentsComplete bool
-
 @description('Connection string for Application Insights instance.')
 param appInsightsConnectionString string
-
-@description('Enable mounting the content share over VNet. Set true ONLY when private storage + VNet integration + DNS are configured.')
-param usePrivateStorage bool = false
-
-@description('If true, sets WEBSITE_RUN_FROM_PACKAGE=1. Only enable when you deploy as package/zip.')
-param runFromPackage bool = false
 
 @description('Resource tags applied to all resources.')
 param tags tagsType
@@ -95,7 +86,7 @@ var extensionBundleId = 'Microsoft.Azure.Functions.ExtensionBundle.Workflows'
 var extensionBundleVersion = '[1.*, 2.0.0)'
 
 // Content share name
-var contentShareName = '${logicAppName}-content'
+var contentShareName = 'workflowstate'
 
 // Storage connection string for file share (required for initial setup)
 // Runtime operations will use managed identity via AzureWebJobsStorage__* settings
@@ -148,20 +139,10 @@ resource workflowEngine 'Microsoft.Web/sites@2025-03-01' = {
   properties: {
     serverFarmId: wfASP.id
     publicNetworkAccess: 'Enabled'
-    storageAccountRequired: false // Set to false initially to prevent auto-creation of file share
-
     siteConfig: {
       alwaysOn: true
       webSocketsEnabled: true
-
-      minimumElasticInstanceCount: 3
-      elasticWebAppScaleLimit: 20
-
-      use32BitWorkerProcess: false
-      ftpsState: 'FtpsOnly'
-      minTlsVersion: '1.2'
     }
-    httpsOnly: true
   }
 }
 

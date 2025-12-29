@@ -137,9 +137,6 @@ output AZURE_STORAGE_ACCOUNT_NAME_WORKFLOW string = data.outputs.AZURE_STORAGE_A
 @description('Resource ID of the storage account for Logic Apps workflows and data')
 output AZURE_STORAGE_ACCOUNT_ID_WORKFLOW string = data.outputs.AZURE_STORAGE_ACCOUNT_ID_WORKFLOW
 
-@description('Confirmation that all storage role assignments are complete')
-output STORAGE_ROLE_ASSIGNMENTS_COMPLETE bool = data.outputs.STORAGE_ROLE_ASSIGNMENTS_COMPLETE
-
 @description('Fully qualified domain name of the SQL Server for database connections')
 output ORDERSDATABASE_SQLSERVERFQDN string = data.outputs.ORDERSDATABASE_SQLSERVERFQDN
 
