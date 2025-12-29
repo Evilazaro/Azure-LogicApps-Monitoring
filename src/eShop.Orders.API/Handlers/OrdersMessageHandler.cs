@@ -1,7 +1,6 @@
 using app.ServiceDefaults.CommonTypes;
 using Azure.Messaging.ServiceBus;
 using eShop.Orders.API.Interfaces;
-using OpenTelemetry.Trace;
 using System.Diagnostics;
 using System.Text.Json;
 

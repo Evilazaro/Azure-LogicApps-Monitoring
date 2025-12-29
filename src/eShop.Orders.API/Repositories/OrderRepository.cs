@@ -134,12 +134,12 @@ public sealed class OrderRepository : IOrderRepository
                 .ToListAsync(cancellationToken);
 
             var orders = orderEntities.Select(e => e.ToDomainModel()).ToList();
-            
+
             activity?.AddEvent(new ActivityEvent("GetAllOrdersCompleted", tags: new ActivityTagsCollection
             {
                 { "orders.count", orders.Count }
             }));
-            
+
             _logger.LogDebug("Retrieved {Count} orders from database", orders.Count);
 
             return orders;

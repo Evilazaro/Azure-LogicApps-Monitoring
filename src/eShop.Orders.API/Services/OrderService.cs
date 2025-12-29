@@ -131,7 +131,7 @@ public sealed class OrderService : IOrderService
                 { "order.status", "failed" }
             };
             _orderProcessingErrors.Add(1, errorTags);
-            
+
             // Record exception with full details in activity
             activity?.SetStatus(ActivityStatusCode.Error, ex.Message);
             activity?.AddEvent(new ActivityEvent("PlaceOrderFailed", tags: new ActivityTagsCollection
@@ -141,7 +141,7 @@ public sealed class OrderService : IOrderService
                 { "exception.type", ex.GetType().FullName ?? ex.GetType().Name },
                 { "order.id", order.Id }
             }));
-            
+
             _logger.LogError(ex, "Failed to place order {OrderId}: {ErrorMessage}", order.Id, ex.Message);
             throw;
         }

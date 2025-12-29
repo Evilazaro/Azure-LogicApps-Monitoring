@@ -1,5 +1,4 @@
 using app.ServiceDefaults.CommonTypes;
-using OpenTelemetry.Trace;
 using System.Diagnostics;
 
 namespace eShop.Web.App.Components.Services;
