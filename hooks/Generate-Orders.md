@@ -35,9 +35,6 @@ With built-in progress tracking, comprehensive validation, and detailed summary 
 - [Examples](#-examples)
   - [Example 1: Quick Test Dataset](#example-1-quick-test-dataset)
   - [Example 2: CI/CD Integration](#example-2-cicd-integration)
-- [How It Works](#️-how-it-works)
-  - [Workflow Diagram](#workflow-diagram)
-  - [Integration Points](#integration-points)
 - [Performance](#-performance)
   - [Execution Speed](#execution-speed)
   - [Optimization Tips](#optimization-tips)
@@ -54,8 +51,6 @@ With built-in progress tracking, comprehensive validation, and detailed summary 
   - [Data Generation Guidelines](#data-generation-guidelines)
   - [File Management](#file-management)
   - [Version Control](#version-control)
-- [Performance](#-performance)
-  - [Performance Characteristics](#performance-characteristics)
 - [Version History](#-version-history)
 
 ## 🎯 Purpose
