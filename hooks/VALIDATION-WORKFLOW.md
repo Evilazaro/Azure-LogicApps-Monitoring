@@ -17,12 +17,12 @@ This workflow uses multiple automation scripts from the hooks directory:
 
 | Script                          | Version | Purpose                                      | Execution               | Duration  |
 | ------------------------------- | ------- | -------------------------------------------- | ----------------------- | --------- |
-| **check-dev-workstation**       | 1.0.0   | Validate workstation prerequisites           | Manual (recommended)    | 3-5 sec   |
-| **preprovision**                | 2.0.0   | Pre-deployment validation & secrets clearing | Automatic via azd       | 14-22 sec |
-| **postprovision**               | 2.0.0   | Configure .NET user secrets post-deployment  | Automatic via azd       | 10-20 sec |
+| **check-dev-workstation**       | 2.0.1   | Validate workstation prerequisites           | Manual (recommended)    | 3-5 sec   |
+| **preprovision**                | 2.0.1   | Pre-deployment validation & secrets clearing | Automatic via azd       | 14-22 sec |
+| **postprovision**               | 2.0.1   | Configure .NET user secrets post-deployment  | Automatic via azd       | 10-20 sec |
 | **sql-managed-identity-config** | 1.0.0   | Configure SQL Database managed identity      | Called by postprovision | 5-10 sec  |
-| **clean-secrets**               | 2.0.0   | Clear .NET user secrets utility              | Called by other scripts | 2-4 sec   |
-| **Generate-Orders**             | 1.0.0   | Generate test order data                     | Manual (optional)       | 1-5 sec   |
+| **clean-secrets**               | 2.0.1   | Clear .NET user secrets utility              | Called by other scripts | 2-4 sec   |
+| **Generate-Orders**             | 2.0.1   | Generate test order data                     | Manual (optional)       | 1-5 sec   |
 
 ### Script Dependencies
 
@@ -89,11 +89,11 @@ flowchart TB
     end
 
     subgraph PostProvision["4️⃣ Post-Provisioning (Automatic)"]
-        PostStart["POSTPROVISION START<br/>Version 2.0.0"]
-        PostStep1["Step 1: Validate Env Vars<br/>26 azd outputs"]
+        PostStart["POSTPROVISION START<br/>Version 2.0.1"]
+        PostStep1["Step 1: Validate Env Vars<br/>Azure resource outputs"]
         PostStep2["Step 2: ACR Authentication<br/>(if configured)"]
-        PostStep3["Step 3: Clear Old Secrets<br/>Call clean-secrets script"]
-        PostStep4["Step 4: Set New Secrets<br/>26 secrets across 2 projects"]
+        PostStep3["Step 3: Clear Old Secrets<br/>Call clean-secrets script<br/>3 projects"]
+        PostStep4["Step 4: Set New Secrets<br/>Secrets across 3 projects<br/>AppHost | API | WebApp"]
         PostStep5["Step 5: SQL Managed Identity<br/>Call sql-managed-identity-config"]
 
         PostStart --> PostStep1
@@ -163,7 +163,7 @@ flowchart TB
 
 ```mermaid
 flowchart LR
-    Start["PREPROVISION (.PS1/.SH) START<br/>Version 2.0.0<br/>PS: 2025-12-24 | Bash: 2025-12-29"]
+    Start["PREPROVISION (.PS1/.SH) START<br/>Version 2.0.1<br/>Last Modified: 2025-12-29"]
     Start --> Step1["STEP 1: Runtime Version<br/>PowerShell: 7.0+ | Bash: 4.0+"]
 
     Step1 --> Decision1{Pass?}

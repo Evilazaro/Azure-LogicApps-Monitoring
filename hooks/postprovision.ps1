@@ -34,8 +34,8 @@
     Prerequisite   : .NET SDK, Azure Developer CLI, Azure CLI
     Required Env   : AZURE_SUBSCRIPTION_ID, AZURE_RESOURCE_GROUP, AZURE_LOCATION
     Author         : Azure DevOps Team
-    Last Modified  : 2025-12-17
-    Version        : 2.0.0
+    Last Modified  : 2025-12-29
+    Version        : 2.0.1
 #>
 
 [CmdletBinding(SupportsShouldProcess, ConfirmImpact = 'Medium')]
@@ -53,7 +53,7 @@ $InformationPreference = 'Continue'
 $ProgressPreference = 'SilentlyContinue'
 
 # Script-level constants
-$script:ScriptVersion = '2.0.0'
+$script:ScriptVersion = '2.0.1'
 $script:RequiredEnvironmentVariables = @(
     'AZURE_SUBSCRIPTION_ID',
     'AZURE_RESOURCE_GROUP',
@@ -276,7 +276,7 @@ function Get-ApiProjectPath {
     }
 }
 
-function Get-ProjectPath {
+function Get-AppHostProjectPath {
     <#
     .SYNOPSIS
         Constructs the cross-platform path to the AppHost project file.
@@ -289,8 +289,8 @@ function Get-ProjectPath {
         System.String - The absolute path to the AppHost project file.
     
     .EXAMPLE
-        Get-ProjectPath
-        Returns: Z:\Logic\app.AppHost\app.AppHost.csproj
+        Get-AppHostProjectPath
+        Returns: Z:\app\app.AppHost\app.AppHost.csproj
         
     .NOTES
         Falls back to current location if $PSScriptRoot is not available.
@@ -331,6 +331,65 @@ function Get-ProjectPath {
     
     end {
         Write-Verbose "AppHost project path determination completed"
+    }
+}
+
+function Get-WebAppProjectPath {
+    <#
+    .SYNOPSIS
+        Constructs the cross-platform path to the Web App project file.
+    
+    .DESCRIPTION
+        Builds the absolute path to the eShop.Web.App.csproj file
+        relative to the script location. Uses Join-Path for cross-platform compatibility.
+    
+    .OUTPUTS
+        System.String - The absolute path to the Web App project file.
+    
+    .EXAMPLE
+        Get-WebAppProjectPath
+        Returns: Z:\app\src\eShop.Web.App\eShop.Web.App.csproj
+        
+    .NOTES
+        Falls back to current location if $PSScriptRoot is not available.
+        Uses .NET's GetFullPath for path normalization.
+    #>
+    [CmdletBinding()]
+    [OutputType([string])]
+    param()
+    
+    begin {
+        Write-Verbose "Determining Web App project path..."
+    }
+    
+    process {
+        try {
+            # Get script root directory
+            $scriptRoot = $PSScriptRoot
+            if ([string]::IsNullOrWhiteSpace($scriptRoot)) {
+                $scriptRoot = Get-Location
+                Write-Verbose "PSScriptRoot is empty, using current location: $scriptRoot"
+            }
+            
+            # Build path using Join-Path for cross-platform compatibility
+            $path = Join-Path -Path $scriptRoot -ChildPath '..'
+            $path = Join-Path -Path $path -ChildPath 'src'
+            $path = Join-Path -Path $path -ChildPath 'eShop.Web.App'
+            $path = Join-Path -Path $path -ChildPath 'eShop.Web.App.csproj'
+            
+            # Normalize to absolute path
+            $absolutePath = [System.IO.Path]::GetFullPath($path)
+            Write-Verbose "Resolved Web App project path: $absolutePath"
+            
+            return $absolutePath
+        }
+        catch {
+            throw "Failed to determine Web App project path: $($_.Exception.Message)"
+        }
+    }
+    
+    end {
+        Write-Verbose "Web App project path determination completed"
     }
 }
 
@@ -776,11 +835,11 @@ try {
         throw $errorMessage
     }
     
-    # Get and verify both project paths
+    # Get and verify all three project paths
     Write-Verbose "Resolving project paths..."
     
     # Get AppHost project path
-    $appHostProjectPath = Get-ProjectPath
+    $appHostProjectPath = Get-AppHostProjectPath
     Write-Information "  AppHost Project: $appHostProjectPath"
     
     if (-not (Test-Path -Path $appHostProjectPath -PathType Leaf)) {
@@ -790,20 +849,35 @@ try {
         Write-Verbose "✓ AppHost project file verified"
     }
     
-    # Get API project path (primary target for secrets)
-    $projectPath = Get-ApiProjectPath
-    Write-Information "✓ API Project Path: $projectPath"
+    # Get API project path
+    $apiProjectPath = Get-ApiProjectPath
+    Write-Information "  API Project: $apiProjectPath"
     
-    if (-not (Test-Path -Path $projectPath -PathType Leaf)) {
+    if (-not (Test-Path -Path $apiProjectPath -PathType Leaf)) {
         $errorMessage = @(
-            "API project file not found at: $projectPath"
+            "API project file not found at: $apiProjectPath"
             'Please ensure the project structure is correct.'
             'Expected location: <script-root>/../src/eShop.Orders.API/eShop.Orders.API.csproj'
         ) -join "`n"
         throw $errorMessage
     }
     
-    Write-Information "✓ API project file verified."
+    Write-Verbose "✓ API project file verified"
+    
+    # Get Web App project path
+    $webAppProjectPath = Get-WebAppProjectPath
+    Write-Information "  Web App Project: $webAppProjectPath"
+    
+    if (-not (Test-Path -Path $webAppProjectPath -PathType Leaf)) {
+        Write-Warning "Web App project file not found at: $webAppProjectPath"
+        Write-Warning "Web App secrets will be skipped."
+        $webAppProjectPath = $null
+    }
+    else {
+        Write-Verbose "✓ Web App project file verified"
+    }
+    
+    Write-Information "✓ All project paths verified."
     
     # Configure SQL Database Managed Identity
     Write-SectionHeader -Message "Configuring SQL Database Managed Identity" -Type 'Sub'
@@ -933,32 +1007,59 @@ try {
         Write-Information "Database user secrets will still be configured if connection string is available."
     }
     
-    # Clear existing user secrets
+    # Clear existing user secrets for all projects
     Write-SectionHeader -Message "Clearing Existing User Secrets" -Type 'Sub'
     
-    if ($PSCmdlet.ShouldProcess($projectPath, "Clear user secrets")) {
+    # Clear AppHost secrets
+    if ($PSCmdlet.ShouldProcess($appHostProjectPath, "Clear user secrets")) {
         try {
-            Write-Verbose "Executing: dotnet user-secrets clear -p `"$projectPath`""
-            $clearOutput = & dotnet user-secrets clear -p $projectPath 2>&1
-            $clearExitCode = $LASTEXITCODE
-            
-            if ($clearExitCode -ne 0) {
-                $errorMessage = "Failed to clear user secrets. Exit code: $clearExitCode"
-                if ($clearOutput) {
-                    $errorMessage += "`nOutput: $($clearOutput -join "`n")"
-                }
-                throw $errorMessage
+            Write-Verbose "Clearing AppHost secrets: dotnet user-secrets clear -p `"$appHostProjectPath`""
+            $clearOutput = & dotnet user-secrets clear -p $appHostProjectPath 2>&1
+            if ($LASTEXITCODE -ne 0) {
+                Write-Warning "Failed to clear AppHost user secrets. Output: $clearOutput"
             }
-            
-            Write-Information "✓ User secrets cleared successfully."
-            Write-Verbose "Clear operation completed"
+            else {
+                Write-Information "✓ AppHost user secrets cleared"
+            }
         }
         catch {
-            $errorMessage = @(
-                "Error clearing user secrets: $($_.Exception.Message)"
-                "This may indicate the project doesn't have user secrets initialized."
-            ) -join "`n"
-            throw $errorMessage
+            Write-Warning "Error clearing AppHost user secrets: $($_.Exception.Message)"
+        }
+    }
+    
+    # Clear API secrets
+    if ($PSCmdlet.ShouldProcess($apiProjectPath, "Clear user secrets")) {
+        try {
+            Write-Verbose "Clearing API secrets: dotnet user-secrets clear -p `"$apiProjectPath`""
+            $clearOutput = & dotnet user-secrets clear -p $apiProjectPath 2>&1
+            if ($LASTEXITCODE -ne 0) {
+                Write-Warning "Failed to clear API user secrets. Output: $clearOutput"
+            }
+            else {
+                Write-Information "✓ API user secrets cleared"
+            }
+        }
+        catch {
+            Write-Warning "Error clearing API user secrets: $($_.Exception.Message)"
+        }
+    }
+    
+    # Clear Web App secrets (if project exists)
+    if ($webAppProjectPath -and (Test-Path -Path $webAppProjectPath -PathType Leaf)) {
+        if ($PSCmdlet.ShouldProcess($webAppProjectPath, "Clear user secrets")) {
+            try {
+                Write-Verbose "Clearing Web App secrets: dotnet user-secrets clear -p `"$webAppProjectPath`""
+                $clearOutput = & dotnet user-secrets clear -p $webAppProjectPath 2>&1
+                if ($LASTEXITCODE -ne 0) {
+                    Write-Warning "Failed to clear Web App user secrets. Output: $clearOutput"
+                }
+                else {
+                    Write-Information "✓ Web App user secrets cleared"
+                }
+            }
+            catch {
+                Write-Warning "Error clearing Web App user secrets: $($_.Exception.Message)"
+            }
         }
     }
     
@@ -1000,18 +1101,25 @@ try {
     }
     
     # Add SQL connection string if Azure SQL is configured
+    # IMPORTANT: Connection string key must match Program.cs: 'ConnectionStrings:OrderDb'
     if ($azureSqlServerFqdn -and $azureSqlDatabaseName) {
         $sqlConnectionString = "Server=tcp:$azureSqlServerFqdn,1433;Initial Catalog=$azureSqlDatabaseName;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;Authentication=Active Directory Default;"
-        $apiSecrets['ConnectionStrings:OrdersDatabase'] = $sqlConnectionString
-        Write-Verbose "Added SQL connection string for standalone API execution"
+        $apiSecrets['ConnectionStrings:OrderDb'] = $sqlConnectionString
+        Write-Verbose "Added SQL connection string for standalone API execution (Key: ConnectionStrings:OrderDb)"
     }
     
-    Write-Information "Preparing to configure user secrets for both projects..."
+    # Define secrets for Web App project (minimal configuration for frontend)
+    $webAppSecrets = [ordered]@{
+        'ApplicationInsights:ConnectionString' = $applicationInsightsConnectionString
+    }
+    
+    Write-Information "Preparing to configure user secrets for all projects..."
     Write-Information "  - AppHost: $($appHostSecrets.Count) secret(s)"
     Write-Information "  - API: $($apiSecrets.Count) secret(s)"
+    Write-Information "  - Web App: $($webAppSecrets.Count) secret(s)"
     
-    # Track results across both projects
-    $totalSecretsCount = $appHostSecrets.Count + $apiSecrets.Count
+    # Track results across all projects
+    $totalSecretsCount = $appHostSecrets.Count + $apiSecrets.Count + $webAppSecrets.Count
     $totalSuccessCount = 0
     $totalSkippedCount = 0
     $failedSecrets = [System.Collections.Generic.List[PSCustomObject]]::new()
@@ -1049,7 +1157,7 @@ try {
     # Configure API project secrets
     Write-Information ""
     Write-Information "Configuring API project secrets..."
-    Write-Verbose "Target project: $projectPath"
+    Write-Verbose "Target project: $apiProjectPath"
     
     foreach ($key in $apiSecrets.Keys) {
         try {
@@ -1062,7 +1170,7 @@ try {
             }
             
             Write-Verbose "  Processing secret: $key"
-            Set-DotNetUserSecret -Key $key -Value $value -ProjectPath $projectPath
+            Set-DotNetUserSecret -Key $key -Value $value -ProjectPath $apiProjectPath
             $totalSuccessCount++
             Write-Information "  ✓ Set: $key"
         }
@@ -1074,6 +1182,43 @@ try {
                     Message = $_.Exception.Message
                 })
         }
+    }
+    
+    # Configure Web App project secrets (if project exists)
+    if ($webAppProjectPath) {
+        Write-Information ""
+        Write-Information "Configuring Web App project secrets..."
+        Write-Verbose "Target project: $webAppProjectPath"
+        
+        foreach ($key in $webAppSecrets.Keys) {
+            try {
+                $value = $webAppSecrets[$key]
+                
+                if ([string]::IsNullOrWhiteSpace($value)) {
+                    Write-Verbose "  Skipping secret '$key' - value is null, empty, or whitespace"
+                    $totalSkippedCount++
+                    continue
+                }
+                
+                Write-Verbose "  Processing secret: $key"
+                Set-DotNetUserSecret -Key $key -Value $value -ProjectPath $webAppProjectPath
+                $totalSuccessCount++
+                Write-Information "  ✓ Set: $key"
+            }
+            catch {
+                Write-Warning "  Failed to set secret '$key': $($_.Exception.Message)"
+                $null = $failedSecrets.Add([PSCustomObject]@{
+                        Project = 'WebApp'
+                        Key     = $key
+                        Message = $_.Exception.Message
+                    })
+            }
+        }
+    }
+    else {
+        Write-Information ""
+        Write-Information "Skipping Web App secrets configuration (project not found)"
+        $totalSkippedCount += $webAppSecrets.Count
     }
     
     # Report detailed results

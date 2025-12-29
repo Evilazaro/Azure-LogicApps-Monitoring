@@ -4,14 +4,14 @@
 ![Bash](https://img.shields.io/badge/Bash-4.0+-green.svg)
 ![Azure](https://img.shields.io/badge/Azure-CLI-blue.svg)
 ![Cross-Platform](https://img.shields.io/badge/platform-Windows%20%7C%20Linux%20%7C%20macOS-lightgrey.svg)
-![Version](https://img.shields.io/badge/version-2.0.0-green.svg)
+![Version](https://img.shields.io/badge/version-2.0.1-green.svg)
 ![License](https://img.shields.io/badge/license-MIT-orange.svg)
 
 ## 📋 Overview
 
 The `postprovision` script is an Azure Developer CLI (azd) hook that automatically configures .NET user secrets with Azure resource information immediately after infrastructure provisioning completes. As the third and final step in the deployment workflow, it bridges the gap between infrastructure deployment and application configuration by extracting Bicep outputs and Azure resource properties to populate connection strings, endpoints, and identifiers.
 
-Available in both PowerShell (`.ps1`) and Bash (`.sh`) versions for cross-platform compatibility, this script automatically runs after `azd provision` or `azd up`, configuring **26 secrets across 2 projects** (app.AppHost and eShop.Orders.API) with comprehensive Azure infrastructure details including SQL Database with managed identity access, Service Bus topics, Container Registry, Container Apps, and monitoring configuration.
+Available in both PowerShell (`.ps1`) and Bash (`.sh`) versions for cross-platform compatibility, this script automatically runs after `azd provision` or `azd up`, configuring **secrets across 3 projects** (app.AppHost, eShop.Orders.API, and eShop.Web.App) with comprehensive Azure infrastructure details including SQL Database with managed identity access, Service Bus topics, Container Registry, Container Apps, and monitoring configuration.
 
 The script supports the current infrastructure which includes:
 
