@@ -69,7 +69,9 @@ param()
 
 # Script configuration
 Set-StrictMode -Version Latest
-$ErrorActionPreference = 'Continue'  # Allow script to complete even if preprovision has warnings
+
+$originalErrorActionPreference = $ErrorActionPreference
+$ErrorActionPreference = 'Stop'
 
 # Script metadata
 $script:ScriptVersion = '1.0.0'
@@ -81,29 +83,50 @@ try {
     # Validate preprovision.ps1 exists
     $preprovisionPath = Join-Path $PSScriptRoot 'preprovision.ps1'
     if (-not (Test-Path -Path $preprovisionPath -PathType Leaf)) {
-        Write-Error "Required script not found: $preprovisionPath"
-        Write-Error "This script requires preprovision.ps1 to be in the same directory."
-        exit 1
+        throw "Required script not found: $preprovisionPath`nThis script requires preprovision.ps1 to be in the same directory."
     }
 
     Write-Verbose "Starting developer workstation validation..."
     Write-Verbose "Using validation script: $preprovisionPath"
     Write-Verbose "Script version: $script:ScriptVersion"
     
-    # Execute preprovision.ps1 in ValidateOnly mode
-    # This performs all prerequisite checks without making any changes
-    # Parameters:
-    #   -ValidateOnly: Skips secret clearing, only performs validation
-    #   -InformationAction Continue: Ensures all informational messages are displayed
-    #   2>&1: Redirects error stream to output stream for complete capture
-    #   | Out-String: Converts output objects to formatted string
-    
-    $validationOutput = & $preprovisionPath -ValidateOnly -InformationAction Continue 2>&1 | Out-String
-    
-    # Display validation results
-    Write-Output $validationOutput
-    
-    # Check if validation was successful by examining the last exit code
+    # Execute preprovision.ps1 in ValidateOnly mode.
+    # Run in a child pwsh process so that any `exit` in preprovision.ps1
+    # does not terminate this wrapper, and so the exit code can be trusted.
+
+    $pwshPath = $null
+    $pwshCommand = Get-Command -Name 'pwsh' -ErrorAction SilentlyContinue
+    if ($null -ne $pwshCommand -and $pwshCommand.CommandType -in @('Application', 'ExternalScript')) {
+        $pwshPath = $pwshCommand.Source
+    }
+    elseif (Test-Path -Path (Join-Path $PSHOME 'pwsh') -PathType Leaf) {
+        $pwshPath = Join-Path $PSHOME 'pwsh'
+    }
+    elseif (Test-Path -Path (Join-Path $PSHOME 'pwsh.exe') -PathType Leaf) {
+        $pwshPath = Join-Path $PSHOME 'pwsh.exe'
+    }
+    else {
+        throw "Unable to locate 'pwsh' to run preprovision.ps1 in a child process."
+    }
+
+    $preprovisionArgs = @(
+        '-NoProfile',
+        '-NonInteractive',
+        '-File', $preprovisionPath,
+        '-ValidateOnly',
+        '-InformationAction', 'Continue'
+    )
+
+    if ($IsWindows) {
+        $preprovisionArgs = @('-ExecutionPolicy', 'Bypass') + $preprovisionArgs
+    }
+
+    Write-Verbose "Executing: $pwshPath $($preprovisionArgs -join ' ')"
+
+    # Stream output to the caller while also capturing it if needed.
+    $null = & $pwshPath @preprovisionArgs 2>&1 | Tee-Object -Variable validationOutput
+
+    # Check if validation was successful by examining the child process exit code
     if ($LASTEXITCODE -eq 0) {
         Write-Verbose "✓ Workstation validation completed successfully"
         Write-Verbose "Your development environment is properly configured for Azure deployment"
@@ -118,13 +141,15 @@ try {
 catch {
     # Handle unexpected errors during validation
     Write-Error "Workstation validation failed with error: $($_.Exception.Message)"
-    Write-Error "Stack trace: $($_.ScriptStackTrace)"
+    if ($_.ScriptStackTrace) {
+        Write-Error "Stack trace: $($_.ScriptStackTrace)"
+    }
     Write-Verbose "Please ensure preprovision.ps1 is available and executable"
     exit 1
 }
 finally {
     # Cleanup - ensure error preference is restored
-    $ErrorActionPreference = 'Continue'
+    $ErrorActionPreference = $originalErrorActionPreference
     Write-Verbose "Workstation validation process completed"
 }
 
