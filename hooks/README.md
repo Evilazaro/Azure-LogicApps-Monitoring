@@ -22,11 +22,11 @@
 
 ## 🎯 Overview
 
-This directory contains automation scripts that streamline the Azure Logic Apps Monitoring solution's development lifecycle. These scripts integrate seamlessly with Azure Developer CLI (azd) to validate prerequisites, provision infrastructure, configure secrets, and generate test data—ensuring developers can focus on building features rather than managing environment setup.
+This directory contains automation scripts that streamline the Azure Logic Apps Monitoring solution's development lifecycle. These scripts integrate seamlessly with Azure Developer CLI (azd) to validate prerequisites, provision infrastructure, configure secrets, set up SQL Database managed identity access, and generate test data—ensuring developers can focus on building features rather than managing environment setup.
 
 The scripts support cross-platform execution (Windows, Linux, and macOS) with dual implementations in PowerShell and Bash. They execute automatically as part of the azd lifecycle hooks during `azd provision` and `azd up` commands, eliminating manual configuration steps and reducing the risk of environment-related deployment failures. Whether you're onboarding a new team member, reprovisioning infrastructure, or troubleshooting configuration issues, these scripts provide a consistent and reliable workflow.
 
-By automating environment validation, secret management, and test data generation, the hooks directory reduces time-to-productivity for developers while maintaining configuration consistency across development, testing, and production environments. Each script is designed with safety in mind, offering dry-run modes, verbose logging, and force options for CI/CD integration.
+By automating environment validation, secret management, SQL managed identity configuration, and test data generation, the hooks directory reduces time-to-productivity for developers while maintaining configuration consistency across development, testing, and production environments. Each script is designed with safety in mind, offering dry-run modes, verbose logging, and force options for CI/CD integration.
 
 ### Available Scripts
 
@@ -35,6 +35,7 @@ By automating environment validation, secret management, and test data generatio
 | **Environment Check** | `check-dev-workstation.ps1` | `check-dev-workstation.sh` | Validate workstation prerequisites | [📄 check-dev-workstation.md](./check-dev-workstation.md) |
 | **Pre-Provisioning** | `preprovision.ps1` | `preprovision.sh` | Validate and prepare for deployment | [📄 VALIDATION-WORKFLOW.md](./VALIDATION-WORKFLOW.md) |
 | **Post-Provisioning** | `postprovision.ps1` | `postprovision.sh` | Configure secrets after deployment | [📄 postprovision.md](./postprovision.md) |
+| **SQL Managed Identity** | `sql-managed-identity-config.ps1` | `sql-managed-identity-config.sh` | Configure SQL Database managed identity access | Embedded help (use `--help` or `-Help`) |
 | **Secrets Management** | `clean-secrets.ps1` | `clean-secrets.sh` | Clear .NET user secrets | [📄 clean-secrets.md](./clean-secrets.md) |
 | **Test Data** | `Generate-Orders.ps1` | `Generate-Orders.sh` | Generate sample order data | [📄 Generate-Orders.md](./Generate-Orders.md) |
 
@@ -64,7 +65,7 @@ flowchart LR
         Debug --> Provision
         CheckDeploy --> |Yes| Configure
         
-        Configure["3️⃣ Configure Secrets<br/>postprovision + Generate-Orders<br/>⏱️ ~15 sec"]
+        Configure["3️⃣ Configure Secrets<br/>postprovision (includes SQL managed identity)<br/>⏱️ ~20-30 sec"]
     end
     
     Configure --> Ready([✅ Environment Ready])
@@ -162,19 +163,15 @@ hooks:
 
   # Post-provisioning configuration hook
   # Executes after 'azd provision' to configure local development secrets
-  # and generate test data for the application
+  # and set up SQL Database managed identity access
   postprovision:
     posix:                             # Linux/macOS configuration
       shell: sh
-      run: |
-        ./hooks/postprovision.sh       # Configure .NET user secrets
-        ./hooks/Generate-Orders.sh     # Generate test order data
+      run: ./hooks/postprovision.sh    # Configures .NET user secrets & SQL managed identity
       continueOnError: false
     windows:                           # Windows configuration
       shell: pwsh
-      run: |
-        ./hooks/postprovision.ps1      # Configure .NET user secrets
-        ./hooks/Generate-Orders.ps1    # Generate test order data
+      run: ./hooks/postprovision.ps1   # Configures .NET user secrets & SQL managed identity
       continueOnError: false
 
 # ------------------------------------------------------------------------------
@@ -200,7 +197,7 @@ Lifecycle hooks are extension points in the Azure Developer CLI workflow that al
 
 The preprovision hook is your opportunity to validate that the development environment is properly configured before azd attempts to deploy infrastructure. This is where you check for required tools (Azure CLI, .NET SDK, PowerShell), verify Azure authentication, ensure resource providers are registered, and clear stale configuration that might interfere with the new deployment. By catching configuration issues early, preprovision hooks prevent failed deployments and save developers time troubleshooting errors that could have been detected upfront.
 
-The postprovision hook executes after infrastructure is successfully deployed but before application code deployment. At this stage, azd has set environment variables containing Azure resource names, connection strings, and endpoints from your Bicep template outputs. The postprovision hook uses these values to configure .NET user secrets, authenticate to Azure Container Registry, upload test data, or perform any other configuration that requires knowledge of the deployed infrastructure. This automation ensures that developers have a fully configured, ready-to-use environment immediately after provisioning completes.
+The postprovision hook executes after infrastructure is successfully deployed but before application code deployment. At this stage, azd has set environment variables containing Azure resource names, connection strings, and endpoints from your Bicep template outputs. The postprovision hook uses these values to configure .NET user secrets, set up SQL Database managed identity access, authenticate to Azure Container Registry, or perform any other configuration that requires knowledge of the deployed infrastructure. This automation ensures that developers have a fully configured, ready-to-use environment immediately after provisioning completes.
 
 #### Execution Flow
 
@@ -227,7 +224,7 @@ graph LR
         direction LR
         AuthACR[Authenticate ACR] --> ClearStale[Clear Stale Secrets]
         ClearStale --> ConfigSecrets[Configure User Secrets]
-        ConfigSecrets --> GenData[Generate Test Data]
+        ConfigSecrets --> ConfigSQL[Configure SQL Managed Identity]
     end
     
     PostHook --> Complete[Deployment Complete]
@@ -414,8 +411,9 @@ steps:
 1. **Always run check-dev-workstation first** on new workstations or after updates
 2. **Let azd manage the lifecycle** - don't call preprovision/postprovision manually unless needed
 3. **Use -Verbose for troubleshooting** to get detailed diagnostic information
-4. **Generate fresh test data** after each provisioning for consistent testing
-5. **Clear secrets before reprovisioning** to avoid stale configuration issues
+4. **Verify SQL Database access** after provisioning - the sql-managed-identity-config script runs automatically
+5. **Generate fresh test data** after each provisioning for consistent testing
+6. **Clear secrets before reprovisioning** to avoid stale configuration issues
 
 ### Script Execution
 
@@ -440,6 +438,8 @@ steps:
 3. **Use consistent naming** across environments
 4. **Tag resources appropriately** for cost tracking
 5. **Clean up unused resources** with `azd down`
+6. **Ensure Entra ID admin access** for SQL Server when using managed identities
+7. **Verify managed identity permissions** match application requirements (db_datareader, db_datawriter, etc.)
 
 ### Cross-Platform Development
 
@@ -522,6 +522,31 @@ az provider show --namespace Microsoft.App --query "registrationState"
 dotnet user-secrets list --project app.AppHost
 ```
 
+#### Issue: "SQL Database managed identity configuration failed"
+
+**Solution:**
+```powershell
+# PowerShell - Manual SQL managed identity configuration
+.\hooks\sql-managed-identity-config.ps1 `
+    -SqlServerName "your-sql-server" `
+    -DatabaseName "your-database" `
+    -PrincipalDisplayName "your-managed-identity-name" `
+    -Verbose
+
+# Bash - Manual SQL managed identity configuration
+./hooks/sql-managed-identity-config.sh \
+    --sql-server-name "your-sql-server" \
+    --database-name "your-database" \
+    --principal-name "your-managed-identity-name" \
+    --verbose
+
+# Verify you're authenticated as SQL Server Entra ID admin
+az sql server ad-admin list --resource-group <rg-name> --server <server-name>
+
+# Check sqlcmd is installed (required for Bash)
+sqlcmd -?  # Should show version and help
+```
+
 #### Issue: "Generate-Orders fails with Python error"
 
 **Solution:**
@@ -584,6 +609,7 @@ For additional assistance:
 - [postprovision.md](./postprovision.md) - Post-provisioning configuration
 - [clean-secrets.md](./clean-secrets.md) - Secret management details
 - [Generate-Orders.md](./Generate-Orders.md) - Test data generation details
+- **sql-managed-identity-config** (.ps1/.sh) - SQL Database managed identity configuration (embedded help: use `--help` or `Get-Help`)
 
 ### Azure Documentation
 
