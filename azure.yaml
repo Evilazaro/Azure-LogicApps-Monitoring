@@ -65,7 +65,6 @@ hooks:
       shell: pwsh
       run: |
         ./hooks/postprovision.ps1 -Force -Verbose    # Configure .NET user secrets and SQL managed identity
-        ./hooks/configure-logic-app.ps1               # Configure Logic App content share settings
         ./hooks/Generate-Orders.ps1 -Force -Verbose    # Generate test order data
       continueOnError: false
       interactive: false

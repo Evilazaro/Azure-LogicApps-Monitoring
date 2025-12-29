@@ -160,68 +160,7 @@ resource workflowEngine 'Microsoft.Web/sites@2025-03-01' = {
       use32BitWorkerProcess: false
       ftpsState: 'FtpsOnly'
       minTlsVersion: '1.2'
-
-      // Pre-configure app settings during site creation to avoid separate deployment
-      appSettings: [
-        {
-          name: 'FUNCTIONS_EXTENSION_VERSION'
-          value: functionsExtensionVersion
-        }
-        {
-          name: 'FUNCTIONS_WORKER_RUNTIME'
-          value: functionsWorkerRuntime
-        }
-        {
-          name: 'AzureWebJobsStorage__accountName'
-          value: workflowStorageAccountName
-        }
-        {
-          name: 'AzureWebJobsStorage__credentialType'
-          value: 'managedidentity'
-        }
-        {
-          name: 'AzureWebJobsStorage__managedIdentityResourceId'
-          value: userAssignedIdentityId
-        }
-        {
-          name: 'APPLICATIONINSIGHTS_CONNECTION_STRING'
-          value: appInsightsConnectionString
-        }
-        {
-          name: 'ApplicationInsightsAgent_EXTENSION_VERSION'
-          value: '~3'
-        }
-        {
-          name: 'AzureFunctionsJobHost__extensionBundle__id'
-          value: extensionBundleId
-        }
-        {
-          name: 'AzureFunctionsJobHost__extensionBundle__version'
-          value: extensionBundleVersion
-        }
-        {
-          name: 'WORKFLOWS_SUBSCRIPTION_ID'
-          value: subscription().subscriptionId
-        }
-        {
-          name: 'WORKFLOWS_RESOURCE_GROUP_NAME'
-          value: resourceGroup().name
-        }
-        {
-          name: 'WORKFLOWS_LOCATION_NAME'
-          value: location
-        }
-        {
-          name: 'WORKFLOWS_TENANT_ID'
-          value: tenant().tenantId
-        }
-        {
-          name: 'WORKFLOWS_MANAGEMENT_BASE_URI'
-          value: environment().resourceManager
-        }
-      ]
     }
-
     httpsOnly: true
   }
 }
@@ -238,33 +177,33 @@ resource wfConf 'Microsoft.Web/sites/config@2025-03-01' = {
     // Required storage settings for Logic Apps Standard host with Managed Identity
     // Note: Requires RBAC role assignments to be complete (storageRoleAssignmentsComplete = ${storageRoleAssignmentsComplete})
     // AzureWebJobsStorage uses managed identity for runtime operations
-    AzureWebJobsStorage__accountName: workflowStorageAccountName
-    AzureWebJobsStorage__credentialType: 'managedidentity'
-    AzureWebJobsStorage__managedIdentityResourceId: userAssignedIdentityId
+    // AzureWebJobsStorage__accountName: workflowStorageAccountName
+    // AzureWebJobsStorage__credentialType: 'managedidentity'
+    // AzureWebJobsStorage__managedIdentityResourceId: userAssignedIdentityId
 
     // Content share settings are added via deployment script to avoid 403 errors during initial deployment
     // The file share is pre-created in the storage module with proper role assignments
 
-    // Only enable when private storage is correctly configured
-    WEBSITE_CONTENTOVERVNET: usePrivateStorage ? '1' : '0'
+    // // Only enable when private storage is correctly configured
+    // WEBSITE_CONTENTOVERVNET: usePrivateStorage ? '1' : '0'
 
-    // Deployment mode (optional)
-    WEBSITE_RUN_FROM_PACKAGE: runFromPackage ? '1' : '0'
+    // // Deployment mode (optional)
+    // WEBSITE_RUN_FROM_PACKAGE: runFromPackage ? '1' : '0'
 
     // App Insights
     APPLICATIONINSIGHTS_CONNECTION_STRING: appInsightsConnectionString
     ApplicationInsightsAgent_EXTENSION_VERSION: '~3'
 
-    // Extension bundle for Logic Apps actions
-    AzureFunctionsJobHost__extensionBundle__id: extensionBundleId
-    AzureFunctionsJobHost__extensionBundle__version: extensionBundleVersion
+    // // Extension bundle for Logic Apps actions
+    // AzureFunctionsJobHost__extensionBundle__id: extensionBundleId
+    // AzureFunctionsJobHost__extensionBundle__version: extensionBundleVersion
 
-    // Workflow runtime configuration
-    WORKFLOWS_SUBSCRIPTION_ID: subscription().subscriptionId
-    WORKFLOWS_RESOURCE_GROUP_NAME: resourceGroup().name
-    WORKFLOWS_LOCATION_NAME: location
-    WORKFLOWS_TENANT_ID: tenant().tenantId
-    WORKFLOWS_MANAGEMENT_BASE_URI: environment().resourceManager
+    // // Workflow runtime configuration
+    // WORKFLOWS_SUBSCRIPTION_ID: subscription().subscriptionId
+    // WORKFLOWS_RESOURCE_GROUP_NAME: resourceGroup().name
+    // WORKFLOWS_LOCATION_NAME: location
+    // WORKFLOWS_TENANT_ID: tenant().tenantId
+    // WORKFLOWS_MANAGEMENT_BASE_URI: environment().resourceManager
   }
 }
 
