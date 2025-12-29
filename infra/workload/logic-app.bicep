@@ -97,8 +97,10 @@ var extensionBundleVersion = '[1.*, 2.0.0)'
 // Content share name
 var contentShareName = '${logicAppName}-content'
 
-// Storage endpoint for managed identity authentication
-var storageEndpoint = 'https://${workflowStorageAccountName}.blob.${environment().suffixes.storage}'
+// Storage connection string for file share (required for initial setup)
+// Runtime operations will use managed identity via AzureWebJobsStorage__* settings
+var storageKey = listKeys(workflowStorageAccountId, '2025-06-01').keys[0].value
+var storageConnectionString = 'DefaultEndpointsProtocol=https;AccountName=${workflowStorageAccountName};EndpointSuffix=${environment().suffixes.storage};AccountKey=${storageKey}'
 
 // ========== Resources ==========
 
@@ -175,12 +177,14 @@ resource wfConf 'Microsoft.Web/sites/config@2025-03-01' = {
 
     // Required storage settings for Logic Apps Standard host with Managed Identity
     // Note: Requires RBAC role assignments to be complete (storageRoleAssignmentsComplete = ${storageRoleAssignmentsComplete})
+    // AzureWebJobsStorage uses managed identity for runtime operations
     AzureWebJobsStorage__accountName: workflowStorageAccountName
     AzureWebJobsStorage__credential: 'managedidentity'
     AzureWebJobsStorage__clientId: reference(userAssignedIdentityId, '2025-01-31-preview').clientId
-    
+
+    // WEBSITE_CONTENTAZUREFILECONNECTIONSTRING requires full connection string for file share creation
     WEBSITE_CONTENTSHARE: contentShareName
-    WEBSITE_CONTENTAZUREFILECONNECTIONSTRING: 'DefaultEndpointsProtocol=https;AccountName=${workflowStorageAccountName};EndpointSuffix=${environment().suffixes.storage}'
+    WEBSITE_CONTENTAZUREFILECONNECTIONSTRING: storageConnectionString
 
     // Only enable when private storage is correctly configured
     WEBSITE_CONTENTOVERVNET: usePrivateStorage ? '1' : '0'
