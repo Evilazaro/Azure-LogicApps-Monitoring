@@ -29,7 +29,6 @@ Running this script before `preprovision.ps1` and `postprovision.ps1` helps deve
   - [Integration Points](#integration-points)
 - [Troubleshooting](#️-troubleshooting)
   - [Using Verbose Mode](#using-verbose-mode)
-- [Technical Implementation Details](#-technical-implementation-details)
 - [Related Documentation](#-related-documentation)
 - [Security Considerations](#-security-considerations)
 - [Best Practices](#-best-practices)
@@ -502,70 +501,6 @@ For additional diagnostic information, run with verbose mode:
 **Bash:**
 ```bash
 ./check-dev-workstation.sh --verbose
-```
-
----
-
-## 🔧 Technical Implementation Details
-
-This section provides technical insights into the script implementations.
-
-### Script Architecture
-
-**PowerShell Implementation (`check-dev-workstation.ps1`):**
-
-- **Pattern**: Try-catch-finally block for error handling
-- **Structure**: Single execution flow with no helper functions
-- **Error Handling**: `Set-StrictMode -Version Latest` with `$ErrorActionPreference = 'Continue'`
-- **Output Capture**: Uses `& $preprovisionPath -ValidateOnly -InformationAction Continue 2>&1 | Out-String`
-- **Exit Code**: Checks `$LASTEXITCODE` and exits with appropriate code
-
-**Bash Implementation (`check-dev-workstation.sh`):**
-
-- **Pattern**: Trap handlers for cleanup and interrupt handling
-- **Structure**: Main function with inline argument parsing and logging helper functions
-- **Error Handling**: Strict mode (`set -euo pipefail`) with IFS hardening
-- **Output Capture**: Uses command substitution with `"${preprovision_path}" "${validation_args[@]}" 2>&1`
-- **Exit Code**: Captures `$?` and propagates to caller
-
-### Key Implementation Features
-
-**PowerShell:**
-
-```powershell
-# Simple wrapper pattern
-$validationOutput = & $preprovisionPath -ValidateOnly -InformationAction Continue 2>&1 | Out-String
-Write-Output $validationOutput
-
-if ($LASTEXITCODE -eq 0) {
-    Write-Verbose "✓ Workstation validation completed successfully"
-    exit 0
-}
-else {
-    Write-Warning "⚠ Workstation validation completed with issues"
-    exit $LASTEXITCODE
-}
-```
-
-**Bash:**
-
-```bash
-# Capture output and exit code
-if validation_output=$("${preprovision_path}" "${validation_args[@]}" 2>&1); then
-    validation_exit_code=0
-else
-    validation_exit_code=$?
-fi
-
-echo "${validation_output}"
-
-if [[ ${validation_exit_code} -eq 0 ]]; then
-    log_verbose "✓ Workstation validation completed successfully"
-    exit 0
-else
-    log_warning "⚠ Workstation validation completed with issues"
-    exit "${validation_exit_code}"
-fi
 ```
 
 ## 📖 Related Documentation
