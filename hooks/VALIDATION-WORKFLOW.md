@@ -69,7 +69,7 @@ flowchart TB
     end
 
     subgraph PreProvision["2️⃣ Pre-Provisioning (Automatic)"]
-        PreStart["PREPROVISION START<br/>Version 2.0.0 (2025-12-29)"]
+        PreStart["PREPROVISION START<br/>Version 2.0.1 (2025-12-29)"]
         PreStep1["Step 1: PowerShell/Bash Version<br/>PS: 7.0+ | Bash: 4.0+"]
         PreStep2["Step 2: Prerequisites<br/>.NET 10.0+ | azd | Azure CLI 2.60.0+<br/>Bicep 0.30.0+ | 8 Resource Providers"]
         PreStep3["Step 3: Clear User Secrets<br/>Call clean-secrets script"]
@@ -360,8 +360,8 @@ flowchart TD
 
 ### postprovision
 
-**Version:** 2.0.0  
-**Last Modified:** 2025-12-17  
+**Version:** 2.0.1  
+**Last Modified:** 2025-12-29  
 **Purpose:** Configure .NET user secrets with Azure resource information  
 **Execution:** Automatic via azd hooks after provisioning  
 **Duration:** 10-20 seconds  
@@ -437,7 +437,7 @@ flowchart TD
 
 ### clean-secrets
 
-**Version:** 2.0.0  
+**Version:** 2.0.1  
 **Purpose:** Clear .NET user secrets utility  
 **Execution:** Called by preprovision and postprovision scripts  
 **Duration:** 2-4 seconds  
@@ -451,7 +451,7 @@ flowchart TD
 
 ### Generate-Orders
 
-**Version:** 1.0.0  
+**Version:** 2.0.1  
 **Purpose:** Generate test order data for development/testing  
 **Execution:** Manual (optional, not part of deployment workflow)  
 **Duration:** 1-5 seconds  
@@ -651,12 +651,12 @@ This document focuses on the validation workflow. For detailed information about
 
 | Script                      | PowerShell Version | Bash Version       | Last Modified |
 | --------------------------- | ------------------ | ------------------ | ------------- |
-| check-dev-workstation       | 1.0.0              | 1.0.0              | -             |
-| preprovision                | 2.0.0 (2025-12-24) | 2.0.0 (2025-12-29) | Latest        |
-| postprovision               | 2.0.0 (2025-12-17) | 2.0.0              | -             |
-| sql-managed-identity-config | 1.0.0 (2025-12-26) | 1.0.0 (2025-12-29) | Latest        |
-| clean-secrets               | 2.0.0              | 2.0.0              | -             |
-| Generate-Orders             | 1.0.0              | 1.0.0              | -             |
+| check-dev-workstation       | 2.0.1              | 2.0.1              | 2025-12-29    |
+| preprovision                | 2.0.1              | 2.0.1              | 2025-12-29    |
+| postprovision               | 2.0.1              | 2.0.1              | 2025-12-29    |
+| sql-managed-identity-config | 1.0.0              | 1.0.0              | 2025-12-29    |
+| clean-secrets               | 2.0.1              | 2.0.1              | 2025-12-29    |
+| Generate-Orders             | 2.0.1              | 2.0.1              | 2025-12-29    |
 
 ---
 
