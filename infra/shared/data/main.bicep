@@ -69,6 +69,7 @@ param tags tagsType
 var cleanedName string = toLower(replace(replace(replace(name, '-', ''), '_', ''), ' ', ''))
 
 // Generate unique suffix for globally unique resource names
+@description('Unique suffix for globally unique resource names')
 var uniqueSuffix string = uniqueString(resourceGroup().id, name, envName, location)
 
 @description('Storage account for Logic Apps workflows and data')
@@ -110,6 +111,7 @@ resource fileSvc 'Microsoft.Storage/storageAccounts/fileServices@2025-06-01' = {
   name: 'default'
 }
 
+@description('File share name for Logic App workflow state')
 var contentShareName = 'workflowstate'
 
 @description('File share for Logic App content (pre-created to avoid 403 errors)')

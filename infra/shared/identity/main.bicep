@@ -50,6 +50,7 @@ param tags tagsType
 
 // ========== Variables ==========
 
+@description('Unique suffix for resource naming based on subscription, resource group, and parameters')
 var resourceSuffix string = uniqueString(subscription().subscriptionId, resourceGroup().id, name, envName, location)
 
 // ========== Resources ==========
@@ -73,6 +74,7 @@ output MANAGED_IDENTITY_NAME string = mi.name
 
 // Built-in Azure role definition IDs for managed identity
 // These GUIDs are consistent across all Azure subscriptions
+@description('Array of Azure built-in role definition IDs for resource access')
 var roles string[] = [
   '17d1049b-9a84-46fb-8f53-869881c3d3ab' // Storage Account Contributor
   'ba92f5b4-2d11-453d-a403-e96b0029c9fe' // Storage Blob Data Contributor

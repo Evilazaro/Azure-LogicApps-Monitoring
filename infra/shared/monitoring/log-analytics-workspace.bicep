@@ -59,17 +59,21 @@ param tags tagsType
 
 // Remove special characters from name for storage account naming requirements
 // Storage account names must be lowercase alphanumeric only
+@description('Cleaned name with special characters removed for storage account naming requirements')
 var cleanedName string = toLower(replace(replace(replace(name, '-', ''), '_', ''), ' ', ''))
 
 // Generate unique suffix to ensure globally unique resource names
 // Uses resource group ID and deployment parameters to create deterministic but unique names
+@description('Unique suffix for globally unique resource names')
 var uniqueSuffix string = uniqueString(resourceGroup().id, name, envName, location)
 
 // Storage account name must be 3-24 characters, lowercase alphanumeric only
+@description('Storage account name for diagnostic logs (3-24 chars, lowercase alphanumeric)')
 var logsStorageAccountName string = take('${cleanedName}logs${uniqueSuffix}', 24)
 
 // Storage account configuration optimized for log storage
 // Uses LRS for cost optimization, Hot tier for frequent access, and TLS 1.2 for security
+@description('Storage account configuration optimized for diagnostic log storage')
 var storageConfig storageAccountConfig = {
   sku: 'Standard_LRS'
   kind: 'StorageV2'
@@ -212,4 +216,4 @@ output AZURE_LOG_ANALYTICS_WORKSPACE_CUSTOMER_ID string = workspace.properties.c
 output AZURE_LOG_ANALYTICS_WORKSPACE_PRIMARY_KEY string = workspace.listKeys().primarySharedKey
 
 @description('Resource ID of the deployed storage account for logs')
-output AZURE_STOARGE_ACCOUNT_ID_LOGS string = logSA.id
+output AZURE_STORAGE_ACCOUNT_ID_LOGS string = logSA.id

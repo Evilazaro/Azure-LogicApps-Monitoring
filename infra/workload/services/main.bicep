@@ -82,6 +82,7 @@ param tags tagsType
 
 // Generate unique name for Container Apps Environment
 // Uses subscription and resource group for uniqueness across deployments
+@description('Container Apps Environment name with unique suffix')
 var appEnvName string = toLower('${name}-cae-${uniqueString(subscription().id, resourceGroup().id, location, envName)}')
 
 // ========== Resources ==========

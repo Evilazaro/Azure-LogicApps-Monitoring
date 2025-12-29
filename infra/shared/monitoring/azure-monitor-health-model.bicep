@@ -34,6 +34,7 @@ param tags tagsType
 
 // Azure Monitor default root service group (fixed GUID)
 // All custom service groups must be parented under this root
+@description('Azure Monitor default root service group ID (fixed GUID)')
 var rootServiceGroupId string = '0e2ff29e-431a-420b-8a46-c6f39106927b'
 
 // ========== Resources ==========

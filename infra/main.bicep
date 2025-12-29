@@ -53,6 +53,7 @@ param deploymentDate string = utcNow('yyyy-MM-dd')
 // ========== Variables ==========
 
 // Standardized tags applied to all resources for governance and cost tracking
+@description('Core tags applied to all resources for governance and cost tracking')
 var coreTags tagsType = {
   Solution: solutionName
   Environment: envName
@@ -63,6 +64,7 @@ var coreTags tagsType = {
   Repository: 'Azure-LogicApps-Monitoring'
 }
 
+@description('Combined tags including Azure Developer CLI (azd) specific tags')
 var tags tagsType = union(coreTags, {
   'azd-env-name': envName
   'azd-service-name': 'app'
@@ -70,6 +72,7 @@ var tags tagsType = union(coreTags, {
 
 // Resource group naming convention: rg-{solution}-{env}-{location-abbrev}
 // Truncates location to 8 chars to keep names concise
+@description('Resource group name following naming convention: rg-{solution}-{env}-{location-abbrev}')
 var resourceGroupName string = 'rg-${solutionName}-${envName}-${take(location, 8)}'
 
 // ========== Resources ==========
@@ -140,7 +143,7 @@ module workload './workload/main.bicep' = {
     workspaceId: shared.outputs.AZURE_LOG_ANALYTICS_WORKSPACE_ID
     workspacePrimaryKey: shared.outputs.AZURE_LOG_ANALYTICS_WORKSPACE_PRIMARY_KEY
     workspaceCustomerId: shared.outputs.AZURE_LOG_ANALYTICS_WORKSPACE_CUSTOMER_ID
-    storageAccountId: shared.outputs.AZURE_STOARGE_ACCOUNT_ID_LOGS
+    storageAccountId: shared.outputs.AZURE_STORAGE_ACCOUNT_ID_LOGS
     appInsightsConnectionString: shared.outputs.APPLICATIONINSIGHTS_CONNECTION_STRING
     userAssignedIdentityId: shared.outputs.AZURE_MANAGED_IDENTITY_ID
     workflowStorageAccountName: shared.outputs.AZURE_STORAGE_ACCOUNT_NAME_WORKFLOW

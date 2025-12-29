@@ -73,25 +73,28 @@ param appInsightsConnectionString string
 param tags tagsType
 
 // ========== Variables ==========
+@description('Unique suffix for resource naming based on resource group and parameters')
 var resourceSuffix = uniqueString(resourceGroup().id, name, envName, location)
 
+@description('App Service Plan name for Logic Apps Standard')
 var planName = '${name}-${resourceSuffix}-asp'
+@description('Logic App workflow engine name')
 var logicAppName = '${name}-${resourceSuffix}-logicapp'
 
 // Functions/Logic Apps runtime settings
+@description('Azure Functions runtime version')
 var functionsExtensionVersion = '~4'
+@description('Functions worker runtime language')
 var functionsWorkerRuntime = 'dotnet'
 
+@description('Logic Apps extension bundle identifier')
 var extensionBundleId = 'Microsoft.Azure.Functions.ExtensionBundle.Workflows'
+@description('Logic Apps extension bundle version range')
 var extensionBundleVersion = '[1.*, 2.0.0)'
 
 // Content share name
+@description('File share name for Logic App workflow state')
 var contentShareName = 'workflowstate'
-
-// Storage connection string for file share (required for initial setup)
-// Runtime operations will use managed identity via AzureWebJobsStorage__* settings
-var storageKey = listKeys(workflowStorageAccountId, '2025-06-01').keys[0].value
-var storageConnectionString = 'DefaultEndpointsProtocol=https;AccountName=${workflowStorageAccountName};EndpointSuffix=${environment().suffixes.storage};AccountKey=${storageKey}'
 
 // ========== Resources ==========
 
