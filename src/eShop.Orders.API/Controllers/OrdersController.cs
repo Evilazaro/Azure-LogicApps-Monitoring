@@ -52,6 +52,12 @@ public sealed class OrdersController : ControllerBase
     {
         ArgumentNullException.ThrowIfNull(order);
 
+        // ModelState validation is automatically handled by [ApiController] attribute
+        if (!ModelState.IsValid)
+        {
+            return BadRequest(ModelState);
+        }
+
         using var activity = _activitySource.StartActivity("PlaceOrder", ActivityKind.Server);
         activity?.SetTag("order.id", order.Id);
         activity?.SetTag("order.customer_id", order.CustomerId);
@@ -72,7 +78,7 @@ public sealed class OrdersController : ControllerBase
 
         try
         {
-            var placedOrder = await _orderService.PlaceOrderAsync(order, cancellationToken).ConfigureAwait(false);
+            var placedOrder = await _orderService.PlaceOrderAsync(order, cancellationToken);
             activity?.SetStatus(ActivityStatusCode.Ok);
             return CreatedAtAction(nameof(GetOrderById), new { id = placedOrder.Id }, placedOrder);
         }
@@ -138,7 +144,7 @@ public sealed class OrdersController : ControllerBase
 
         try
         {
-            var placedOrders = await _orderService.PlaceOrdersBatchAsync(ordersList, cancellationToken).ConfigureAwait(false);
+            var placedOrders = await _orderService.PlaceOrdersBatchAsync(ordersList, cancellationToken);
             activity?.SetStatus(ActivityStatusCode.Ok);
             return Ok(placedOrders);
         }
@@ -177,7 +183,7 @@ public sealed class OrdersController : ControllerBase
 
         try
         {
-            var orders = await _orderService.GetOrdersAsync(cancellationToken).ConfigureAwait(false);
+            var orders = await _orderService.GetOrdersAsync(cancellationToken);
             activity?.SetStatus(ActivityStatusCode.Ok);
             return Ok(orders);
         }
@@ -228,7 +234,7 @@ public sealed class OrdersController : ControllerBase
 
         try
         {
-            var order = await _orderService.GetOrderByIdAsync(id, cancellationToken).ConfigureAwait(false);
+            var order = await _orderService.GetOrderByIdAsync(id, cancellationToken);
 
             if (order == null)
             {
@@ -287,7 +293,7 @@ public sealed class OrdersController : ControllerBase
         try
         {
             // First check if order exists
-            var order = await _orderService.GetOrderByIdAsync(id, cancellationToken).ConfigureAwait(false);
+            var order = await _orderService.GetOrderByIdAsync(id, cancellationToken);
             if (order == null)
             {
                 activity?.SetStatus(ActivityStatusCode.Error, "Order not found");
@@ -295,7 +301,7 @@ public sealed class OrdersController : ControllerBase
             }
 
             // Delete the order
-            var deleted = await _orderService.DeleteOrderAsync(id, cancellationToken).ConfigureAwait(false);
+            var deleted = await _orderService.DeleteOrderAsync(id, cancellationToken);
 
             if (deleted)
             {
@@ -353,7 +359,7 @@ public sealed class OrdersController : ControllerBase
 
         try
         {
-            var deletedCount = await _orderService.DeleteOrdersBatchAsync(orderIdsList, cancellationToken).ConfigureAwait(false);
+            var deletedCount = await _orderService.DeleteOrdersBatchAsync(orderIdsList, cancellationToken);
             activity?.SetStatus(ActivityStatusCode.Ok);
             _logger.LogInformation("Successfully deleted {DeletedCount} orders out of {TotalCount}", deletedCount, orderIdsList.Count);
             return Ok(deletedCount);

@@ -97,7 +97,7 @@ public sealed class OrderService : IOrderService
             ValidateOrder(order);
 
             // Check if order already exists
-            var existingOrder = await _orderRepository.GetOrderByIdAsync(order.Id, cancellationToken).ConfigureAwait(false);
+            var existingOrder = await _orderRepository.GetOrderByIdAsync(order.Id, cancellationToken);
             if (existingOrder != null)
             {
                 _logger.LogWarning("Order with ID {OrderId} already exists", order.Id);
@@ -105,10 +105,10 @@ public sealed class OrderService : IOrderService
             }
 
             // Save order to repository first
-            await _orderRepository.SaveOrderAsync(order, cancellationToken).ConfigureAwait(false);
+            await _orderRepository.SaveOrderAsync(order, cancellationToken);
 
             // Send message to Service Bus
-            await _ordersMessageHandler.SendOrderMessageAsync(order, cancellationToken).ConfigureAwait(false);
+            await _ordersMessageHandler.SendOrderMessageAsync(order, cancellationToken);
 
             // Record metrics
             var metricTags = new TagList
@@ -194,17 +194,17 @@ public sealed class OrderService : IOrderService
                     var orderStartTime = DateTime.UtcNow;
 
                     // Check if order already exists using scoped repository
-                    var existingOrder = await scopedRepository.GetOrderByIdAsync(order.Id, ct).ConfigureAwait(false);
+                    var existingOrder = await scopedRepository.GetOrderByIdAsync(order.Id, ct);
                     if (existingOrder != null)
                     {
                         throw new InvalidOperationException($"Order with ID {order.Id} already exists");
                     }
 
                     // Save order using scoped repository
-                    await scopedRepository.SaveOrderAsync(order, ct).ConfigureAwait(false);
+                    await scopedRepository.SaveOrderAsync(order, ct);
 
                     // Send message using scoped handler
-                    await scopedMessageHandler.SendOrderMessageAsync(order, ct).ConfigureAwait(false);
+                    await scopedMessageHandler.SendOrderMessageAsync(order, ct);
 
                     // Record metrics
                     var metricTags = new TagList
@@ -271,7 +271,7 @@ public sealed class OrderService : IOrderService
         try
         {
             _logger.LogInformation("Retrieving all orders");
-            var orders = await _orderRepository.GetAllOrdersAsync(cancellationToken).ConfigureAwait(false);
+            var orders = await _orderRepository.GetAllOrdersAsync(cancellationToken);
             var ordersList = orders.ToList();
 
             activity?.SetTag("orders.retrieved.count", ordersList.Count);
@@ -308,7 +308,7 @@ public sealed class OrderService : IOrderService
         try
         {
             _logger.LogInformation("Retrieving order with ID: {OrderId}", orderId);
-            var order = await _orderRepository.GetOrderByIdAsync(orderId, cancellationToken).ConfigureAwait(false);
+            var order = await _orderRepository.GetOrderByIdAsync(orderId, cancellationToken);
 
             if (order == null)
             {
@@ -352,7 +352,7 @@ public sealed class OrderService : IOrderService
             _logger.LogInformation("Deleting order with ID: {OrderId}", orderId);
 
             // First verify the order exists
-            var order = await _orderRepository.GetOrderByIdAsync(orderId, cancellationToken).ConfigureAwait(false);
+            var order = await _orderRepository.GetOrderByIdAsync(orderId, cancellationToken);
             if (order == null)
             {
                 _logger.LogWarning("Order with ID {OrderId} not found for deletion", orderId);
@@ -360,7 +360,7 @@ public sealed class OrderService : IOrderService
             }
 
             // Delete the order from repository
-            var deleted = await _orderRepository.DeleteOrderAsync(orderId, cancellationToken).ConfigureAwait(false);
+            var deleted = await _orderRepository.DeleteOrderAsync(orderId, cancellationToken);
 
             if (deleted)
             {
@@ -419,7 +419,7 @@ public sealed class OrderService : IOrderService
                 var scopedRepository = scope.ServiceProvider.GetRequiredService<IOrderRepository>();
 
                 // First verify the order exists
-                var order = await scopedRepository.GetOrderByIdAsync(orderId, ct).ConfigureAwait(false);
+                var order = await scopedRepository.GetOrderByIdAsync(orderId, ct);
                 if (order == null)
                 {
                     _logger.LogWarning("Order with ID {OrderId} not found for deletion", orderId);
@@ -427,7 +427,7 @@ public sealed class OrderService : IOrderService
                 }
 
                 // Delete the order
-                var deleted = await scopedRepository.DeleteOrderAsync(orderId, ct).ConfigureAwait(false);
+                var deleted = await scopedRepository.DeleteOrderAsync(orderId, ct);
                 if (deleted)
                 {
                     lock (lockObject)
