@@ -259,24 +259,24 @@ flowchart LR
 
 ```mermaid
 flowchart TD
-    CheckDev["1️⃣ check-dev-workstation (.ps1/.sh)<br/>(optional but recommended)<br/>Version: 1.0.0"]
+    CheckDev["1️⃣ check-dev-workstation (.ps1/.sh)<br/>(optional but recommended)<br/>Version: 2.0.1"]
     CheckDev --> AZD
 
     subgraph AZD["Azure Developer CLI (azd)"]
         AzdYaml["azure.yaml<br/>hooks:<br/>  preprovision:<br/>    windows: preprovision.ps1<br/>    posix: preprovision.sh<br/>  postprovision:<br/>    windows: postprovision.ps1<br/>    posix: postprovision.sh"]
         AzdYaml --> AzdCmd["azd provision | azd up"]
-        AzdCmd --> Execute["2️⃣ Execute preprovision (.ps1/.sh)<br/>Version: 2.0.0"]
+        AzdCmd --> Execute["2️⃣ Execute preprovision (.ps1/.sh)<br/>Version: 2.0.1"]
         Execute --> Validate{Validation<br/>passes?}
         Validate -->|✓| Deploy["Continue with deployment<br/>Bicep: infra/main.bicep"]
-        Deploy --> Post["3️⃣ Execute postprovision (.ps1/.sh)<br/>Version: 2.0.0"]
+        Deploy --> Post["3️⃣ Execute postprovision (.ps1/.sh)<br/>Version: 2.0.1"]
         Post --> SqlConfig["4️⃣ Execute sql-managed-identity-config<br/>Version: 1.0.0 (2025-12-29)"]
         SqlConfig --> Ready["✓ Ready for development"]
         Validate -->|✗| Stop["Stop deployment"]
     end
 
     subgraph Utilities["Utility Scripts (Called by others)"]
-        CleanSec["clean-secrets (.ps1/.sh)<br/>Version: 2.0.0<br/>Called by: preprovision & postprovision"]
-        GenOrd["Generate-Orders (.ps1/.sh)<br/>Version: 1.0.0<br/>Manual execution (optional)"]
+        CleanSec["clean-secrets (.ps1/.sh)<br/>Version: 2.0.1<br/>Called by: preprovision & postprovision"]
+        GenOrd["Generate-Orders (.ps1/.sh)<br/>Version: 2.0.1<br/>Manual execution (optional)"]
     end
 
     subgraph GitHub["GitHub Actions Integration"]
@@ -318,7 +318,7 @@ flowchart TD
 
 ### check-dev-workstation
 
-**Version:** 1.0.0  
+**Version:** 2.0.1  
 **Purpose:** Quick prerequisite validation (wrapper around preprovision --validate-only)  
 **Execution:** Manual (recommended before main workflow)  
 **Duration:** 3-5 seconds  
@@ -336,8 +336,8 @@ flowchart TD
 
 ### preprovision
 
-**Version:** 2.0.0  
-**Last Modified:** PowerShell: 2025-12-24 | Bash: 2025-12-29  
+**Version:** 2.0.1  
+**Last Modified:** 2025-12-29  
 **Purpose:** Comprehensive pre-deployment validation and secrets clearing  
 **Execution:** Automatic via azd hooks  
 **Duration:** 14-22 seconds  
@@ -369,12 +369,13 @@ flowchart TD
 
 **Operations:**
 
-1. Validate 26 required environment variables set by azd
+1. Validate environment variables set by azd
 2. Authenticate to Azure Container Registry (if configured)
 3. Clear old secrets via clean-secrets script
-4. Set 26 new secrets across 2 projects:
-   - app.AppHost (14 secrets)
-   - eShop.Orders.API (12 secrets)
+4. Set new secrets across 3 projects:
+   - app.AppHost (23 secrets)
+   - eShop.Orders.API (3+ secrets including ConnectionStrings:OrderDb)
+   - eShop.Web.App (1 secret for Application Insights)
 5. Call sql-managed-identity-config to configure database access
 6. Validate all secrets were set correctly
 
@@ -595,16 +596,17 @@ Legend:
 ┌─────────────────────────────────────────────────────────────────┐
 │  All operations must SUCCEED for successful execution:         │
 │                                                                 │
-│  ✓ All 26 environment variables set by azd                     │
+│  ✓ All environment variables set by azd                        │
 │  ✓ Azure Container Registry authentication (if configured)     │
 │  ✓ Old secrets cleared successfully                            │
-│  ✓ All 26 new secrets set across 2 projects                    │
+│  ✓ All new secrets set across 3 projects                       │
 │  ✓ SQL managed identity configured successfully                │
 │  ✓ All secrets validated after configuration                   │
 │                                                                 │
 │  Configured Projects:                                           │
-│    • app.AppHost: 14 secrets                                   │
-│    • eShop.Orders.API: 12 secrets                              │
+│    • app.AppHost: 23 secrets                                   │
+│    • eShop.Orders.API: 3+ secrets (incl. OrderDb connection)   │
+│    • eShop.Web.App: 1 secret (Application Insights)            │
 │                                                                 │
 │  Result: Exit code 0, application ready for local development  │
 └─────────────────────────────────────────────────────────────────┘
