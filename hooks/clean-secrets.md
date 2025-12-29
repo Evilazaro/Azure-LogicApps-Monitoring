@@ -406,30 +406,6 @@ fi
 ```
 
 ---
-## ⚠️ Troubleshooting
-
-### Using Verbose Mode
-
-The script includes comprehensive error detection and provides clear, actionable guidance when issues occur:
-
-- **Automatic validation** of .NET SDK availability
-- **Project path verification** before attempting operations
-- **Detailed error messages** with resolution steps
-- **Installation links** for missing dependencies
-
-For additional diagnostic information, run with verbose mode:
-
-**PowerShell:**
-```powershell
-.\clean-secrets.ps1 -Verbose
-```
-
-**Bash:**
-```bash
-./clean-secrets.sh --verbose
-```
-
----
 
 ## 📖 Related Documentation
 

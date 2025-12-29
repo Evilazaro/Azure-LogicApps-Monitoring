@@ -648,29 +648,6 @@ flowchart LR
    - Writing to SSD storage improves performance by 20-30% for large batches
    - Avoid network drives or slow storage for output files
 
-## ⚠️ Troubleshooting
-
-### Using Verbose Mode
-
-The script includes built-in validation and error handling:
-
-- **Parameter validation** ensures valid ranges and values
-- **Path verification** checks output directory accessibility
-- **Progress tracking** shows generation status
-- **Error messages** provide clear guidance on resolution
-
-For additional diagnostic information and progress details:
-
-**PowerShell:**
-```powershell
-.\Generate-Orders.ps1 -OrderCount 100 -Verbose
-```
-
-**Bash:**
-```bash
-./Generate-Orders.sh --order-count 100 --verbose
-```
-
 ---
 
 ## 📖 Related Documentation
