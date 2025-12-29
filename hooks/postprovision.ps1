@@ -1,5 +1,7 @@
 #!/usr/bin/env pwsh
 
+#Requires -Version 7.0
+
 <#
 .SYNOPSIS
     Post-provisioning script for Azure Developer CLI (azd).
@@ -44,13 +46,14 @@ param(
     [switch]$Force
 )
 
-#Requires -Version 7.0
-
 # Script configuration
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
 $InformationPreference = 'Continue'
 $ProgressPreference = 'SilentlyContinue'
+
+# Track final process exit code; exit once at the end to ensure finally cleanup runs.
+$script:ExitCode = 0
 
 # Script-level constants
 $script:ScriptVersion = '2.0.1'
@@ -251,7 +254,7 @@ function Get-ApiProjectPath {
             # Get script root directory
             $scriptRoot = $PSScriptRoot
             if ([string]::IsNullOrWhiteSpace($scriptRoot)) {
-                $scriptRoot = Get-Location
+                $scriptRoot = (Get-Location).Path
                 Write-Verbose "PSScriptRoot is empty, using current location: $scriptRoot"
             }
             
@@ -309,7 +312,7 @@ function Get-AppHostProjectPath {
             # Get script root directory
             $scriptRoot = $PSScriptRoot
             if ([string]::IsNullOrWhiteSpace($scriptRoot)) {
-                $scriptRoot = Get-Location
+                $scriptRoot = (Get-Location).Path
                 Write-Verbose "PSScriptRoot is empty, using current location: $scriptRoot"
             }
             
@@ -367,7 +370,7 @@ function Get-WebAppProjectPath {
             # Get script root directory
             $scriptRoot = $PSScriptRoot
             if ([string]::IsNullOrWhiteSpace($scriptRoot)) {
-                $scriptRoot = Get-Location
+                $scriptRoot = (Get-Location).Path
                 Write-Verbose "PSScriptRoot is empty, using current location: $scriptRoot"
             }
             
@@ -899,7 +902,7 @@ try {
         $sqlConfigScriptPath = if ($PSScriptRoot) {
             Join-Path -Path $PSScriptRoot -ChildPath "sql-managed-identity-config.ps1"
         } else {
-            Join-Path -Path (Get-Location) -ChildPath "sql-managed-identity-config.ps1"
+            Join-Path -Path (Get-Location).Path -ChildPath "sql-managed-identity-config.ps1"
         }
         
         if (-not (Test-Path -Path $sqlConfigScriptPath -PathType Leaf)) {
@@ -1255,8 +1258,8 @@ try {
     Write-Information "Duration: $([Math]::Round($executionDuration, 2)) seconds"
     Write-Information ""
     Write-Verbose "Exiting with success code 0"
-    
-    exit 0
+
+    $script:ExitCode = 0
 }
 catch {
     # Comprehensive error reporting
@@ -1323,7 +1326,7 @@ catch {
     Write-Information ""
     
     # Exit with error code
-    exit 1
+    $script:ExitCode = 1
 }
 finally {
     # Cleanup and reset preferences
@@ -1345,6 +1348,8 @@ finally {
     }
     
     Write-Verbose "Script execution completed."
+
+    exit $script:ExitCode
 }
 
 #endregion
