@@ -656,101 +656,25 @@ flowchart LR
 
 ## ⚠️ Troubleshooting
 
-### Common Issues and Solutions
+### Using Verbose Mode
 
-#### Issue: File Access Denied
+The script includes built-in validation and error handling:
 
-**Error Message:**
+- **Parameter validation** ensures valid ranges and values
+- **Path verification** checks output directory accessibility
+- **Progress tracking** shows generation status
+- **Error messages** provide clear guidance on resolution
 
-```
-Access to the path 'Z:\...\ordersBatch.json' is denied
-```
+For additional diagnostic information and progress details:
 
-**Solution:**
-
+**PowerShell:**
 ```powershell
-# Check if file is in use
-Get-Process | Where-Object { $_.Path -like "*code*" } | Stop-Process -Force
-
-# Or save to different location
-.\Generate-Orders.ps1 -OutputPath "C:\temp\orders.json"
+.\Generate-Orders.ps1 -OrderCount 100 -Verbose
 ```
 
----
-
-#### Issue: Invalid Parameter Range
-
-**Error Message:**
-
-```
-Cannot validate argument on parameter 'MinProducts'.
-The 1 argument is less than the minimum allowed range of 2.
-```
-
-**Solution:**
-
-```powershell
-# Ensure MinProducts ≤ MaxProducts
-.\Generate-Orders.ps1 -MinProducts 2 -MaxProducts 5
-
-# Not: -MinProducts 5 -MaxProducts 2  (invalid)
-```
-
----
-
-#### Issue: Out of Memory (Large Datasets)
-
-**Error Message:**
-
-```
-Out of memory exception when generating 10000 orders
-```
-
-**Solution:**
-
-```powershell
-# Generate in smaller batches
-$batchSize = 1000
-$totalOrders = 10000
-
-for ($i = 0; $i -lt $totalOrders; $i += $batchSize) {
-    $outputPath = "orders-batch-$($i / $batchSize).json"
-    .\Generate-Orders.ps1 -OrderCount $batchSize -OutputPath $outputPath
-}
-
-# Merge files afterward
-$allOrders = @()
-Get-ChildItem "orders-batch-*.json" | ForEach-Object {
-    $allOrders += Get-Content $_ | ConvertFrom-Json
-}
-$allOrders | ConvertTo-Json -Depth 10 | Set-Content "all-orders.json"
-```
-
----
-
-#### Issue: JSON Formatting Issues
-
-**Error Message:**
-
-```
-Conversion from JSON failed with error: Invalid JSON
-```
-
-**Solution:**
-
-```powershell
-# Validate generated JSON
-$jsonContent = Get-Content ..\infra\data\ordersBatch.json -Raw
-try {
-    $orders = $jsonContent | ConvertFrom-Json
-    Write-Host "✓ Valid JSON with $($orders.Count) orders"
-}
-catch {
-    Write-Error "Invalid JSON: $_"
-}
-
-# Regenerate if invalid
-.\Generate-Orders.ps1 -OrderCount 50
+**Bash:**
+```bash
+./Generate-Orders.sh --order-count 100 --verbose
 ```
 
 ---

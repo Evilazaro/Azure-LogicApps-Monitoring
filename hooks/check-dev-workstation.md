@@ -480,38 +480,27 @@ done
 
 ---
 
-#### Issue: preprovision script Not Found
+## ⚠️ Troubleshooting
 
-**Error Message:**
+### Using Verbose Mode
 
-```
-ERROR: Cannot find preprovision script in current directory
-```
+The script includes comprehensive error detection and reporting. When issues are encountered, the script provides:
 
-**Solution (PowerShell - Windows):**
+- **Clear error messages** indicating what failed
+- **Actionable guidance** on how to resolve the issue  
+- **Download links** for missing tools
+- **Command examples** for fixing configuration
 
+For additional diagnostic information, run with verbose mode:
+
+**PowerShell:**
 ```powershell
-# Navigate to hooks directory
-cd Z:\Azure-LogicApps-Monitoring\hooks
-
-# Verify preprovision.ps1 exists
-Test-Path .\preprovision.ps1
-
-# Run validation
-.\check-dev-workstation.ps1
+.\check-dev-workstation.ps1 -Verbose
 ```
 
-**Solution (Bash - Linux/macOS):**
-
+**Bash:**
 ```bash
-# Navigate to hooks directory
-cd /path/to/Azure-LogicApps-Monitoring/hooks
-
-# Verify preprovision.sh exists
-ls -la preprovision.sh
-
-# Run validation
-./check-dev-workstation.sh
+./check-dev-workstation.sh --verbose
 ```
 
 ---
