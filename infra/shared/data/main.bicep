@@ -92,11 +92,52 @@ resource wfSA 'Microsoft.Storage/storageAccounts@2025-06-01' = {
     minimumTlsVersion: 'TLS1_2' // Enforce TLS 1.2 minimum for security compliance
     allowBlobPublicAccess: false // Disable anonymous public access
     publicNetworkAccess: 'Enabled' // Allow access from public networks
-    allowSharedKeyAccess: true // Required for Logic Apps Standard storage authentication
+    allowSharedKeyAccess: true // Required for Logic Apps Standard initial connection
     networkAcls: {
       bypass: 'AzureServices'
       defaultAction: 'Allow'
     }
+  }
+}
+
+// Role assignments for managed identity to access storage account
+// Required for Logic Apps Standard runtime with managed identity authentication
+var storageRoles = {
+  StorageBlobDataOwner: 'b7e6dc6d-f1e8-4753-8033-0f276bb0955b'
+  StorageQueueDataContributor: '974c5e8b-45b9-4653-ba55-5f855dd0fb88'
+  StorageTableDataContributor: '0a9a7e1f-b9d0-4cc4-a60d-0319b160aaa3'
+}
+
+@description('Assign Storage Blob Data Owner role to managed identity')
+resource blobOwnerRole 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
+  name: guid(wfSA.id, userAssignedIdentityId, storageRoles.StorageBlobDataOwner)
+  scope: wfSA
+  properties: {
+    principalId: reference(userAssignedIdentityId, '2025-01-31-preview').principalId
+    roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', storageRoles.StorageBlobDataOwner)
+    principalType: 'ServicePrincipal'
+  }
+}
+
+@description('Assign Storage Queue Data Contributor role to managed identity')
+resource queueContributorRole 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
+  name: guid(wfSA.id, userAssignedIdentityId, storageRoles.StorageQueueDataContributor)
+  scope: wfSA
+  properties: {
+    principalId: reference(userAssignedIdentityId, '2025-01-31-preview').principalId
+    roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', storageRoles.StorageQueueDataContributor)
+    principalType: 'ServicePrincipal'
+  }
+}
+
+@description('Assign Storage Table Data Contributor role to managed identity')
+resource tableContributorRole 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
+  name: guid(wfSA.id, userAssignedIdentityId, storageRoles.StorageTableDataContributor)
+  scope: wfSA
+  properties: {
+    principalId: reference(userAssignedIdentityId, '2025-01-31-preview').principalId
+    roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', storageRoles.StorageTableDataContributor)
+    principalType: 'ServicePrincipal'
   }
 }
 

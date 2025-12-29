@@ -179,18 +179,26 @@ resource wfConf 'Microsoft.Web/sites/config@2025-03-01' = {
   properties: {
     FUNCTIONS_EXTENSION_VERSION: functionsExtensionVersion
     FUNCTIONS_WORKER_RUNTIME: functionsWorkerRuntime
+    // Managed identity authentication for storage
     AzureWebJobsStorage__accountName: workflowStorageAccountName
     AzureWebJobsStorage__blobServiceUri: 'https://${workflowStorageAccountName}.blob.${environment().suffixes.storage}'
     AzureWebJobsStorage__queueServiceUri: 'https://${workflowStorageAccountName}.queue.${environment().suffixes.storage}'
     AzureWebJobsStorage__tableServiceUri: 'https://${workflowStorageAccountName}.table.${environment().suffixes.storage}'
-    AzureWebJobsStorage__fileServiceUri: 'https://${workflowStorageAccountName}.file.${environment().suffixes.storage}'
     AzureWebJobsStorage__credential: 'managedidentity'
-    AzureWebJobsStorage__managedIdentityResourceId: userAssignedIdentityId
+    AzureWebJobsStorage__clientId: reference(userAssignedIdentityId, '2025-01-31-preview').clientId
+    // Website content share configuration for Logic Apps
+    WEBSITE_CONTENTOVERVNET: '1'
+    WEBSITE_CONTENTSHARE: '${workflowEngine.name}-content'
+    WEBSITE_CONTENTAZUREFILECONNECTIONSTRING: 'DefaultEndpointsProtocol=https;AccountName=${workflowStorageAccountName};EndpointSuffix=${environment().suffixes.storage};AccountKey=${listKeys(resourceId('Microsoft.Storage/storageAccounts', workflowStorageAccountName), '2025-06-01').keys[0].value}'
+    // Application Insights
     APPLICATIONINSIGHTS_CONNECTION_STRING: appInsightsConnectionString
+    ApplicationInsightsAgent_EXTENSION_VERSION: '~3'
+    // Extension bundle for Logic Apps actions
     AzureFunctionsJobHost__extensionBundle__id: extensionBundleId
     AzureFunctionsJobHost__extensionBundle__version: extensionBundleVersion
+    // Workflow runtime configuration
     WORKFLOWS_SUBSCRIPTION_ID: subscription().subscriptionId
-    WORKFLOWS_AZURE_RESOURCE_GROUP_NAME: resourceGroup().name
+    WORKFLOWS_RESOURCE_GROUP_NAME: resourceGroup().name
     WORKFLOWS_LOCATION_NAME: location
     WORKFLOWS_TENANT_ID: subscription().tenantId
     WORKFLOWS_MANAGEMENT_BASE_URI: environment().resourceManager
