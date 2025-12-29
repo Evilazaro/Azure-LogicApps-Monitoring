@@ -2,6 +2,7 @@ using app.ServiceDefaults.CommonTypes;
 using eShop.Orders.API.Data;
 using eShop.Orders.API.Interfaces;
 using Microsoft.EntityFrameworkCore;
+using System.Diagnostics;
 
 namespace eShop.Orders.API.Repositories;
 
@@ -40,6 +41,21 @@ public sealed class OrderRepository : IOrderRepository
     {
         ArgumentNullException.ThrowIfNull(order);
 
+        using var activity = Activity.Current;
+        activity?.AddEvent(new ActivityEvent("SaveOrderStarted", tags: new ActivityTagsCollection
+        {
+            { "order.id", order.Id },
+            { "order.customer_id", order.CustomerId }
+        }));
+
+        // Add trace context to log scope for correlation
+        using var logScope = _logger.BeginScope(new Dictionary<string, object>
+        {
+            ["TraceId"] = Activity.Current?.TraceId.ToString() ?? "none",
+            ["SpanId"] = Activity.Current?.SpanId.ToString() ?? "none",
+            ["OrderId"] = order.Id
+        });
+
         try
         {
             _logger.LogDebug("Saving order {OrderId} to database", order.Id);
@@ -51,15 +67,28 @@ public sealed class OrderRepository : IOrderRepository
             await _dbContext.Orders.AddAsync(orderEntity, cancellationToken);
             await _dbContext.SaveChangesAsync(cancellationToken);
 
+            activity?.AddEvent(new ActivityEvent("SaveOrderCompleted"));
             _logger.LogDebug("Order {OrderId} saved to database successfully", order.Id);
         }
         catch (DbUpdateException ex) when (IsDuplicateKeyViolation(ex))
         {
+            activity?.AddEvent(new ActivityEvent("SaveOrderFailed", tags: new ActivityTagsCollection
+            {
+                { "error.type", "DuplicateKeyViolation" },
+                { "exception.message", ex.Message },
+                { "exception.type", ex.GetType().FullName ?? ex.GetType().Name }
+            }));
             _logger.LogError(ex, "Failed to save order {OrderId} - duplicate key violation", order.Id);
             throw new InvalidOperationException($"Order with ID {order.Id} already exists", ex);
         }
         catch (Exception ex)
         {
+            activity?.AddEvent(new ActivityEvent("SaveOrderFailed", tags: new ActivityTagsCollection
+            {
+                { "error.type", ex.GetType().Name },
+                { "exception.message", ex.Message },
+                { "exception.type", ex.GetType().FullName ?? ex.GetType().Name }
+            }));
             _logger.LogError(ex, "Failed to save order {OrderId} to database", order.Id);
             throw;
         }
@@ -84,6 +113,16 @@ public sealed class OrderRepository : IOrderRepository
     /// <returns>A collection of all orders.</returns>
     public async Task<IEnumerable<Order>> GetAllOrdersAsync(CancellationToken cancellationToken = default)
     {
+        using var activity = Activity.Current;
+        activity?.AddEvent(new ActivityEvent("GetAllOrdersStarted"));
+
+        // Add trace context to log scope for correlation
+        using var logScope = _logger.BeginScope(new Dictionary<string, object>
+        {
+            ["TraceId"] = Activity.Current?.TraceId.ToString() ?? "none",
+            ["SpanId"] = Activity.Current?.SpanId.ToString() ?? "none"
+        });
+
         try
         {
             _logger.LogDebug("Retrieving all orders from database");
@@ -95,12 +134,24 @@ public sealed class OrderRepository : IOrderRepository
                 .ToListAsync(cancellationToken);
 
             var orders = orderEntities.Select(e => e.ToDomainModel()).ToList();
+            
+            activity?.AddEvent(new ActivityEvent("GetAllOrdersCompleted", tags: new ActivityTagsCollection
+            {
+                { "orders.count", orders.Count }
+            }));
+            
             _logger.LogDebug("Retrieved {Count} orders from database", orders.Count);
 
             return orders;
         }
         catch (Exception ex)
         {
+            activity?.AddEvent(new ActivityEvent("GetAllOrdersFailed", tags: new ActivityTagsCollection
+            {
+                { "error.type", ex.GetType().Name },
+                { "exception.message", ex.Message },
+                { "exception.type", ex.GetType().FullName ?? ex.GetType().Name }
+            }));
             _logger.LogError(ex, "Failed to retrieve all orders from database");
             throw;
         }
@@ -120,6 +171,20 @@ public sealed class OrderRepository : IOrderRepository
             throw new ArgumentException("Order ID cannot be null or empty", nameof(orderId));
         }
 
+        using var activity = Activity.Current;
+        activity?.AddEvent(new ActivityEvent("GetOrderByIdStarted", tags: new ActivityTagsCollection
+        {
+            { "order.id", orderId }
+        }));
+
+        // Add trace context to log scope for correlation
+        using var logScope = _logger.BeginScope(new Dictionary<string, object>
+        {
+            ["TraceId"] = Activity.Current?.TraceId.ToString() ?? "none",
+            ["SpanId"] = Activity.Current?.SpanId.ToString() ?? "none",
+            ["OrderId"] = orderId
+        });
+
         try
         {
             _logger.LogDebug("Retrieving order {OrderId} from database", orderId);
@@ -134,10 +199,18 @@ public sealed class OrderRepository : IOrderRepository
 
             if (order != null)
             {
+                activity?.AddEvent(new ActivityEvent("GetOrderByIdCompleted", tags: new ActivityTagsCollection
+                {
+                    { "order.found", true }
+                }));
                 _logger.LogDebug("Order {OrderId} retrieved successfully from database", orderId);
             }
             else
             {
+                activity?.AddEvent(new ActivityEvent("GetOrderByIdCompleted", tags: new ActivityTagsCollection
+                {
+                    { "order.found", false }
+                }));
                 _logger.LogDebug("Order {OrderId} not found in database", orderId);
             }
 
@@ -145,6 +218,12 @@ public sealed class OrderRepository : IOrderRepository
         }
         catch (Exception ex)
         {
+            activity?.AddEvent(new ActivityEvent("GetOrderByIdFailed", tags: new ActivityTagsCollection
+            {
+                { "error.type", ex.GetType().Name },
+                { "exception.message", ex.Message },
+                { "exception.type", ex.GetType().FullName ?? ex.GetType().Name }
+            }));
             _logger.LogError(ex, "Failed to retrieve order {OrderId} from database", orderId);
             throw;
         }
@@ -164,6 +243,20 @@ public sealed class OrderRepository : IOrderRepository
             throw new ArgumentException("Order ID cannot be null or empty", nameof(orderId));
         }
 
+        using var activity = Activity.Current;
+        activity?.AddEvent(new ActivityEvent("DeleteOrderStarted", tags: new ActivityTagsCollection
+        {
+            { "order.id", orderId }
+        }));
+
+        // Add trace context to log scope for correlation
+        using var logScope = _logger.BeginScope(new Dictionary<string, object>
+        {
+            ["TraceId"] = Activity.Current?.TraceId.ToString() ?? "none",
+            ["SpanId"] = Activity.Current?.SpanId.ToString() ?? "none",
+            ["OrderId"] = orderId
+        });
+
         try
         {
             _logger.LogInformation("Deleting order {OrderId} from database", orderId);
@@ -174,6 +267,11 @@ public sealed class OrderRepository : IOrderRepository
 
             if (orderEntity == null)
             {
+                activity?.AddEvent(new ActivityEvent("DeleteOrderCompleted", tags: new ActivityTagsCollection
+                {
+                    { "order.found", false },
+                    { "order.deleted", false }
+                }));
                 _logger.LogWarning("Order {OrderId} not found in database for deletion", orderId);
                 return false;
             }
@@ -181,11 +279,22 @@ public sealed class OrderRepository : IOrderRepository
             _dbContext.Orders.Remove(orderEntity);
             await _dbContext.SaveChangesAsync(cancellationToken);
 
+            activity?.AddEvent(new ActivityEvent("DeleteOrderCompleted", tags: new ActivityTagsCollection
+            {
+                { "order.found", true },
+                { "order.deleted", true }
+            }));
             _logger.LogInformation("Successfully deleted order {OrderId} from database", orderId);
             return true;
         }
         catch (Exception ex)
         {
+            activity?.AddEvent(new ActivityEvent("DeleteOrderFailed", tags: new ActivityTagsCollection
+            {
+                { "error.type", ex.GetType().Name },
+                { "exception.message", ex.Message },
+                { "exception.type", ex.GetType().FullName ?? ex.GetType().Name }
+            }));
             _logger.LogError(ex, "Error deleting order {OrderId} from database", orderId);
             throw;
         }
