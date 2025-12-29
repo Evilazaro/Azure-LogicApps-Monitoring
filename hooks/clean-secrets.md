@@ -512,9 +512,9 @@ azd up
 | Version   | Date                                 | Changes                                                                        |
 | --------- | ------------------------------------ | ------------------------------------------------------------------------------ |
 | **2.0.1** | 2025-12-29                           | Unified version and documentation update                                       |
-|           |                                      | • Unified PowerShell and Bash version to 2.0.1                                |
-|           |                                      | • Updated .NET requirement to 10.0+ across all platforms                      |
-|           |                                      | • Confirmed support for all 3 projects (AppHost, Orders.API, Web.App)        |
+|           |                                      | • Unified PowerShell and Bash version to 2.0.1                                 |
+|           |                                      | • Updated .NET requirement to 10.0+ across all platforms                       |
+|           |                                      | • Confirmed support for all 3 projects (AppHost, Orders.API, Web.App)          |
 |           |                                      | • Synchronized version numbering with other hook scripts                       |
 | **2.0.0** | 2025-12-24 (PS1)<br/>2025-12-29 (SH) | Production release                                                             |
 |           |                                      | • Complete rewrite with best practices for both PowerShell and Bash            |

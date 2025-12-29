@@ -75,10 +75,10 @@ The Developer Inner Loop consists of iterative cycles through validation, provis
 
 The solution supports two primary development modes:
 
-| Mode | Database | Service Bus | Monitoring | Setup Time | Cost |
-|------|----------|-------------|------------|------------|------|
-| **Local Development** | SQL Server container | Service Bus emulator | Aspire Dashboard | ~1 min | Free |
-| **Azure Deployment** | Azure SQL Database | Azure Service Bus | Application Insights | ~10 min | Pay-per-use |
+| Mode                  | Database             | Service Bus          | Monitoring           | Setup Time | Cost        |
+| --------------------- | -------------------- | -------------------- | -------------------- | ---------- | ----------- |
+| **Local Development** | SQL Server container | Service Bus emulator | Aspire Dashboard     | ~1 min     | Free        |
+| **Azure Deployment**  | Azure SQL Database   | Azure Service Bus    | Application Insights | ~10 min    | Pay-per-use |
 
 ### Local Development Workflow (Inner Loop)
 
@@ -86,13 +86,13 @@ This is the fastest path for daily development, running entirely on your local w
 
 #### Prerequisites
 
-| Component | Version | Purpose | Installation |
-|-----------|---------|---------|--------------|
-| **.NET SDK** | 10.0+ | Application runtime | `winget install Microsoft.DotNet.SDK.10` |
-| **Docker Desktop** | Latest | Container orchestration | [docker.com/products/docker-desktop](https://docker.com/products/docker-desktop) |
-| **.NET Aspire Workload** | 9.5+ | Aspire orchestration | `dotnet workload install aspire` |
-| **Visual Studio 2022** | 17.13+ | IDE (optional) | [visualstudio.com](https://visualstudio.microsoft.com) |
-| **VS Code + C# Extension** | Latest | IDE (optional) | [code.visualstudio.com](https://code.visualstudio.com) |
+| Component                  | Version | Purpose                 | Installation                                                                     |
+| -------------------------- | ------- | ----------------------- | -------------------------------------------------------------------------------- |
+| **.NET SDK**               | 10.0+   | Application runtime     | `winget install Microsoft.DotNet.SDK.10`                                         |
+| **Docker Desktop**         | Latest  | Container orchestration | [docker.com/products/docker-desktop](https://docker.com/products/docker-desktop) |
+| **.NET Aspire Workload**   | 9.5+    | Aspire orchestration    | `dotnet workload install aspire`                                                 |
+| **Visual Studio 2022**     | 17.13+  | IDE (optional)          | [visualstudio.com](https://visualstudio.microsoft.com)                           |
+| **VS Code + C# Extension** | Latest  | IDE (optional)          | [code.visualstudio.com](https://code.visualstudio.com)                           |
 
 #### Quick Start (Local Development)
 
@@ -113,6 +113,7 @@ dotnet run
 ```
 
 **What Happens Automatically:**
+
 - SQL Server container starts with persistent volume
 - Azure Service Bus emulator container starts
 - Database schema is created (`EnsureCreatedAsync()`)
@@ -129,9 +130,9 @@ flowchart LR
     Docker -->|No| StartDocker[Start Docker Desktop]
     Docker -->|Yes| Run
     StartDocker --> Run[Run AppHost<br/>dotnet run]
-    
+
     Run --> Ready([Environment Ready<br/>~30-60 seconds])
-    
+
     Ready --> DevLoop
 
     subgraph DevLoop["🔄 INNER LOOP (10-30 seconds/iteration)"]
@@ -161,18 +162,21 @@ flowchart LR
 #### Local Development Features
 
 **Hot Reload (Built-in .NET 10):**
+
 - C# code changes apply automatically (1-3 seconds)
 - Razor component updates reflect immediately
 - JSON configuration changes reload services
 - No manual restart required for most changes
 
 **Debugging:**
+
 - Set breakpoints in Visual Studio or VS Code
 - Step through code across multiple services
 - Inspect variables, call stacks, and threads
 - Attach debugger to any running service
 
 **Observability (Aspire Dashboard):**
+
 - **Resources Tab**: View all services, containers, status
 - **Logs Tab**: Real-time log streaming with filtering
 - **Traces Tab**: Distributed tracing (OpenTelemetry)
@@ -180,6 +184,7 @@ flowchart LR
 - **Console Tab**: Container stdout/stderr
 
 **Service Discovery:**
+
 - Services reference each other by name (e.g., `orders-api`)
 - Aspire resolves to `http://localhost:<dynamic-port>`
 - No hardcoded URLs needed in code
@@ -187,12 +192,14 @@ flowchart LR
 #### Database Management (Local)
 
 **Automatic Setup:**
+
 ```csharp
 // In Program.cs - runs automatically on startup
 await dbContext.Database.EnsureCreatedAsync();
 ```
 
 **Manual Migrations (if using EF migrations):**
+
 ```powershell
 cd src\eShop.Orders.API
 
@@ -207,6 +214,7 @@ dotnet ef database update PreviousMigrationName
 ```
 
 **View Connection String:**
+
 ```powershell
 # Check what connection string Aspire configured
 dotnet user-secrets list --project src\eShop.Orders.API | Select-String "ConnectionStrings"
@@ -217,6 +225,7 @@ dotnet user-secrets list --project src\eShop.Orders.API | Select-String "Connect
 The Service Bus emulator runs automatically in a container:
 
 **Verify Emulator:**
+
 ```powershell
 # Check if Service Bus emulator is running
 docker ps | Select-String "servicebus"
@@ -226,6 +235,7 @@ docker logs <container-id>
 ```
 
 **Publish Test Message:**
+
 ```powershell
 # Use Orders API endpoint to create order (auto-publishes to Service Bus)
 Invoke-RestMethod -Method Post -Uri "https://localhost:<api-port>/api/orders" `
@@ -234,6 +244,7 @@ Invoke-RestMethod -Method Post -Uri "https://localhost:<api-port>/api/orders" `
 ```
 
 **View Messages in Aspire Dashboard:**
+
 1. Navigate to "Traces" tab
 2. Filter by `Azure.Messaging.ServiceBus`
 3. See message publish and receive traces
@@ -247,7 +258,7 @@ For production-like environments, integration testing, or team collaboration:
 ```mermaid
 flowchart LR
     Start([👨‍💻 Developer Starts Work]) --> ModeChoice{Development<br/>Mode?}
-    
+
     ModeChoice -->|Local| LocalSetup
     ModeChoice -->|Azure| AzureSetup
 
@@ -306,18 +317,18 @@ flowchart LR
 
 ### Comparison: Local vs. Azure Development
 
-| Aspect | Local Development | Azure Development |
-|--------|------------------|-------------------|
-| **Startup Time** | ~1 minute | ~10 minutes |
-| **Database** | SQL Server container | Azure SQL Database |
-| **Authentication** | SQL (sa user) | Entra ID (Managed Identity) |
-| **Service Bus** | Emulator container | Azure Service Bus |
-| **Monitoring** | Aspire Dashboard | Application Insights + Aspire |
-| **Cost** | Free | Azure consumption charges |
-| **Network Latency** | < 1ms (localhost) | 5-50ms (internet) |
-| **Isolation** | Per-developer | Shared (team environment) |
-| **Secrets** | User secrets | User secrets + Key Vault |
-| **Best For** | Daily development, debugging | Integration tests, staging |
+| Aspect              | Local Development            | Azure Development             |
+| ------------------- | ---------------------------- | ----------------------------- |
+| **Startup Time**    | ~1 minute                    | ~10 minutes                   |
+| **Database**        | SQL Server container         | Azure SQL Database            |
+| **Authentication**  | SQL (sa user)                | Entra ID (Managed Identity)   |
+| **Service Bus**     | Emulator container           | Azure Service Bus             |
+| **Monitoring**      | Aspire Dashboard             | Application Insights + Aspire |
+| **Cost**            | Free                         | Azure consumption charges     |
+| **Network Latency** | < 1ms (localhost)            | 5-50ms (internet)             |
+| **Isolation**       | Per-developer                | Shared (team environment)     |
+| **Secrets**         | User secrets                 | User secrets + Key Vault      |
+| **Best For**        | Daily development, debugging | Integration tests, staging    |
 
 ### Hybrid Development Mode
 
@@ -336,12 +347,14 @@ dotnet run
 ```
 
 **Benefits:**
+
 - Fast local debugging with hot reload
 - Real Azure services for integration testing
 - Managed identity testing
 - Firewall and network policy testing
 
 **When to Use:**
+
 - Testing Entra ID authentication flows
 - Validating Azure-specific configurations
 - Reproducing production issues locally

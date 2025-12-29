@@ -649,14 +649,14 @@ This document focuses on the validation workflow. For detailed information about
 
 ### Script Versions Reference
 
-| Script                      | PowerShell Version | Bash Version       | Last Modified |
-| --------------------------- | ------------------ | ------------------ | ------------- |
-| check-dev-workstation       | 2.0.1              | 2.0.1              | 2025-12-29    |
-| preprovision                | 2.0.1              | 2.0.1              | 2025-12-29    |
-| postprovision               | 2.0.1              | 2.0.1              | 2025-12-29    |
-| sql-managed-identity-config | 1.0.0              | 1.0.0              | 2025-12-29    |
-| clean-secrets               | 2.0.1              | 2.0.1              | 2025-12-29    |
-| Generate-Orders             | 2.0.1              | 2.0.1              | 2025-12-29    |
+| Script                      | PowerShell Version | Bash Version | Last Modified |
+| --------------------------- | ------------------ | ------------ | ------------- |
+| check-dev-workstation       | 2.0.1              | 2.0.1        | 2025-12-29    |
+| preprovision                | 2.0.1              | 2.0.1        | 2025-12-29    |
+| postprovision               | 2.0.1              | 2.0.1        | 2025-12-29    |
+| sql-managed-identity-config | 1.0.0              | 1.0.0        | 2025-12-29    |
+| clean-secrets               | 2.0.1              | 2.0.1        | 2025-12-29    |
+| Generate-Orders             | 2.0.1              | 2.0.1        | 2025-12-29    |
 
 ---
 
@@ -678,14 +678,14 @@ The application uses **.NET Aspire** as an orchestration framework that manages 
 
 Before starting local development, ensure you have:
 
-| Tool/Component | Version | Purpose | Validation Command |
-|----------------|---------|---------|-------------------|
-| **.NET SDK** | 10.0+ | Application runtime | `dotnet --version` |
-| **Docker Desktop** | Latest | Container orchestration | `docker --version` |
-| **Visual Studio 2022** or **VS Code** | Latest | IDE with Aspire support | - |
-| **.NET Aspire Workload** | 9.5+ | Aspire orchestration | `dotnet workload list` |
-| **PowerShell** | 7.0+ | Script execution (Windows) | `$PSVersionTable.PSVersion` |
-| **Azure CLI** (Optional) | 2.60.0+ | For Azure integration features | `az --version` |
+| Tool/Component                        | Version | Purpose                        | Validation Command          |
+| ------------------------------------- | ------- | ------------------------------ | --------------------------- |
+| **.NET SDK**                          | 10.0+   | Application runtime            | `dotnet --version`          |
+| **Docker Desktop**                    | Latest  | Container orchestration        | `docker --version`          |
+| **Visual Studio 2022** or **VS Code** | Latest  | IDE with Aspire support        | -                           |
+| **.NET Aspire Workload**              | 9.5+    | Aspire orchestration           | `dotnet workload list`      |
+| **PowerShell**                        | 7.0+    | Script execution (Windows)     | `$PSVersionTable.PSVersion` |
+| **Azure CLI** (Optional)              | 2.60.0+ | For Azure integration features | `az --version`              |
 
 #### Installing .NET Aspire Workload
 
@@ -720,18 +720,21 @@ dotnet build app.sln --no-restore
 The AppHost orchestrates all services and dependencies:
 
 **Option A: Using Visual Studio 2022**
+
 1. Open `app.sln` in Visual Studio 2022
 2. Set `app.AppHost` as the startup project
 3. Press `F5` or click "Start Debugging"
 4. The Aspire Dashboard will open automatically in your browser
 
 **Option B: Using Visual Studio Code**
+
 1. Open the workspace in VS Code
 2. Press `F5` or use "Run and Debug" panel
 3. Select "https" launch profile
 4. The Aspire Dashboard will open at `https://localhost:17267`
 
 **Option C: Using Command Line**
+
 ```powershell
 # Navigate to AppHost project
 cd app.AppHost
@@ -755,6 +758,7 @@ Once the AppHost starts, the **Aspire Dashboard** provides comprehensive observa
 - **Metrics Tab**: Performance metrics and counters
 
 **Monitored Resources:**
+
 - `orders-api` - eShop Orders API service
 - `web-app` - eShop Web Application (Blazor)
 - `OrdersDatabase` - SQL Server container (localhost mode)
@@ -762,19 +766,20 @@ Once the AppHost starts, the **Aspire Dashboard** provides comprehensive observa
 
 #### 4️⃣ Access Application Endpoints
 
-| Service | URL | Description |
-|---------|-----|-------------|
-| **Web App** | `https://localhost:5001` | Blazor web interface |
-| **Orders API** | `https://localhost:7001` | RESTful API with Swagger |
-| **API Swagger UI** | `https://localhost:7001/swagger` | Interactive API documentation |
-| **API Health** | `https://localhost:7001/health` | Health check endpoint |
-| **Aspire Dashboard** | `https://localhost:17267` | Observability dashboard |
+| Service              | URL                              | Description                   |
+| -------------------- | -------------------------------- | ----------------------------- |
+| **Web App**          | `https://localhost:5001`         | Blazor web interface          |
+| **Orders API**       | `https://localhost:7001`         | RESTful API with Swagger      |
+| **API Swagger UI**   | `https://localhost:7001/swagger` | Interactive API documentation |
+| **API Health**       | `https://localhost:7001/health`  | Health check endpoint         |
+| **Aspire Dashboard** | `https://localhost:17267`        | Observability dashboard       |
 
 > **Note**: Exact ports are dynamically assigned by Aspire. Check the Aspire Dashboard "Resources" tab for actual URLs.
 
 #### 5️⃣ Database Management (Local Development)
 
 **Automatic Database Creation:**
+
 - The application uses `EnsureCreatedAsync()` in development mode
 - Database schema is created automatically on first run
 - Located in SQL Server container with persistent volume
@@ -799,6 +804,7 @@ dotnet user-secrets list | Select-String "ConnectionStrings:OrderDb"
 ```
 
 **Connection String Format (Local):**
+
 ```
 Server=localhost,5433;Database=OrderDb;User Id=sa;Password=<generated-password>;TrustServerCertificate=True;
 ```
@@ -806,12 +812,14 @@ Server=localhost,5433;Database=OrderDb;User Id=sa;Password=<generated-password>;
 #### 6️⃣ Service Bus Configuration (Local Development)
 
 **Automatic Emulator Setup:**
+
 - Aspire starts the Azure Service Bus emulator automatically
 - Topic: `OrdersPlaced`
 - Subscription: `OrderProcessingSubscription`
 - Connection managed via Aspire service discovery
 
 **Verify Service Bus Connectivity:**
+
 ```powershell
 # Check if Service Bus emulator container is running
 docker ps | Select-String "servicebus"
@@ -827,7 +835,7 @@ The inner loop represents the rapid code-compile-test cycle during active develo
 ```mermaid
 flowchart LR
     Start([Start Development]) --> Running[AppHost Running]
-    
+
     subgraph InnerLoop["🔄 INNER LOOP (Seconds)"]
         direction TB
         Edit[1. Edit Code<br/>.cs, .razor, .json] --> HotReload[2. Hot Reload<br/>Automatic]
@@ -839,10 +847,10 @@ flowchart LR
         Debug --> Edit
         Continue --> Edit
     end
-    
+
     Running --> InnerLoop
     InnerLoop --> Commit[Commit Changes]
-    
+
     style Start fill:#0078d4,stroke:#005a9e,stroke-width:3px,color:#fff
     style Running fill:#28a745,stroke:#218838,stroke-width:2px,color:#fff
     style InnerLoop fill:#fff3e0,stroke:#ff9800,stroke-width:4px
@@ -857,16 +865,19 @@ flowchart LR
 **Key Inner Loop Features:**
 
 1. **Hot Reload** (.NET 10):
+
    - C# code changes apply without restart
    - Razor component changes reflect immediately
    - Static assets update in real-time
 
 2. **Debugging**:
+
    - Set breakpoints in Visual Studio/VS Code
    - Step through code across services
    - Inspect variables and call stacks
 
 3. **Observability**:
+
    - Real-time logs in Aspire Dashboard
    - Distributed tracing across services
    - Performance metrics monitoring
@@ -881,6 +892,7 @@ flowchart LR
 **.NET User Secrets** are used for local configuration:
 
 **View Current Secrets:**
+
 ```powershell
 # AppHost secrets
 dotnet user-secrets list --project app.AppHost
@@ -893,12 +905,14 @@ dotnet user-secrets list --project src\eShop.Web.App
 ```
 
 **Set Manual Secret (if needed):**
+
 ```powershell
 # Example: Add Application Insights connection string
 dotnet user-secrets set "APPLICATIONINSIGHTS_CONNECTION_STRING" "InstrumentationKey=..." --project app.AppHost
 ```
 
 **Secrets Location:**
+
 - Windows: `%APPDATA%\Microsoft\UserSecrets\<user-secrets-id>\secrets.json`
 - macOS/Linux: `~/.microsoft/usersecrets/<user-secrets-id>/secrets.json`
 
@@ -945,11 +959,13 @@ docker logs <container-id>
 #### Issue: "Service Bus not configured"
 
 The application gracefully handles missing Service Bus:
+
 - A warning is logged: "Service Bus is not configured"
 - NoOpOrdersMessageHandler is used instead
 - Orders API continues to function without message publishing
 
 To enable Service Bus:
+
 ```powershell
 # Ensure Docker is running
 docker ps
@@ -975,18 +991,21 @@ dotnet watch --project app.AppHost
 ### Debugging Best Practices
 
 1. **Set Strategic Breakpoints**:
+
    - Controllers: `OrdersController.cs`
    - Services: `OrderService.cs`, `OrdersMessageHandler.cs`
    - Repository: `OrderRepository.cs`
    - AppHost: `AppHost.cs` (for service configuration)
 
 2. **Use Conditional Breakpoints**:
+
    ```csharp
    // Break only for specific order IDs
    if (orderId == "12345") { }  // Set breakpoint here
    ```
 
 3. **Leverage Aspire Dashboard**:
+
    - Monitor distributed traces to identify slow operations
    - Check logs for exceptions across all services
    - View metrics to detect performance bottlenecks
@@ -1006,16 +1025,16 @@ dotnet watch --project app.AppHost
 
 ### Local vs. Azure Development Comparison
 
-| Aspect | Local Development | Azure Development |
-|--------|------------------|-------------------|
-| **Database** | SQL Server container | Azure SQL Database |
-| **Authentication** | SQL authentication (sa) | Entra ID (Managed Identity) |
-| **Service Bus** | Local emulator | Azure Service Bus |
-| **Monitoring** | Aspire Dashboard | Application Insights |
-| **Cost** | Free (local resources) | Pay-per-use |
-| **Setup Time** | ~2 minutes | ~10 minutes (azd provision) |
-| **Network** | localhost | HTTPS with TLS |
-| **Secrets** | User secrets | Azure Key Vault / User secrets |
+| Aspect             | Local Development       | Azure Development              |
+| ------------------ | ----------------------- | ------------------------------ |
+| **Database**       | SQL Server container    | Azure SQL Database             |
+| **Authentication** | SQL authentication (sa) | Entra ID (Managed Identity)    |
+| **Service Bus**    | Local emulator          | Azure Service Bus              |
+| **Monitoring**     | Aspire Dashboard        | Application Insights           |
+| **Cost**           | Free (local resources)  | Pay-per-use                    |
+| **Setup Time**     | ~2 minutes              | ~10 minutes (azd provision)    |
+| **Network**        | localhost               | HTTPS with TLS                 |
+| **Secrets**        | User secrets            | Azure Key Vault / User secrets |
 
 ### When to Switch from Local to Azure
 
@@ -1028,6 +1047,7 @@ Move from local development to Azure when you need:
 5. **CI/CD Validation**: Test deployment pipelines
 
 **Transition Command:**
+
 ```powershell
 # Provision Azure infrastructure
 azd provision
