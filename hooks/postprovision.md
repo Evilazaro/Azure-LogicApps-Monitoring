@@ -11,7 +11,7 @@
 
 The `postprovision` script is an Azure Developer CLI (azd) hook that automatically configures .NET user secrets with Azure resource information immediately after infrastructure provisioning completes. As the third and final step in the deployment workflow, it bridges the gap between infrastructure deployment and application configuration by extracting Bicep outputs and Azure resource properties to populate connection strings, endpoints, and identifiers.
 
-Available in both PowerShell (`.ps1`) and Bash (`.sh`) versions for cross-platform compatibility, this script automatically runs after `azd provision` or `azd up`, configuring **28 secrets across 2 projects** (app.AppHost and eShop.Orders.API) with comprehensive Azure infrastructure details including SQL Database, Service Bus topics, Container Registry, Container Apps, and monitoring configuration.
+Available in both PowerShell (`.ps1`) and Bash (`.sh`) versions for cross-platform compatibility, this script automatically runs after `azd provision` or `azd up`, configuring **26 secrets across 2 projects** (app.AppHost and eShop.Orders.API) with comprehensive Azure infrastructure details including SQL Database with managed identity access, Service Bus topics, Container Registry, Container Apps, and monitoring configuration.
 
 The script supports the current infrastructure which includes:
 - **SQL Database** with Entra ID authentication
@@ -21,7 +21,7 @@ The script supports the current infrastructure which includes:
 - **Managed Identity** for authentication
 - **Storage accounts** for Logic Apps workflows
 
-With comprehensive validation, error handling, and detailed logging, the script typically completes in 8-15 seconds, providing immediate feedback on configuration success.
+With comprehensive validation, error handling, SQL managed identity configuration, and detailed logging, the script typically completes in 10-20 seconds, providing immediate feedback on configuration success and database access setup.
 
 ## 📑 Table of Contents
 
@@ -54,9 +54,10 @@ This script is **automatically executed** by `azd provision` and `azd up` after 
 
 - ✅ **Validates Environment**: Ensures all required environment variables are set by azd
 - ✅ **Authenticates to Azure**: Handles Azure Container Registry authentication if configured
-- ✅ **Clears Old Secrets**: Removes stale configuration using [clean-secrets.ps1](./clean-secrets.md)
+- ✅ **Configures SQL Access**: Sets up managed identity database access with appropriate roles
+- ✅ **Clears Old Secrets**: Removes stale configuration to ensure clean state
 - ✅ **Sets New Secrets**: Configures user secrets with fresh Azure resource information
-- ✅ **Validates Configuration**: Verifies that all secrets were set correctly
+- ✅ **Validates Configuration**: Verifies that all secrets were set correctly with detailed reporting
 - ✅ **Completes Workflow**: Final step in the deployment automation chain
 
 ## 🏗️ Required Environment Variables
@@ -158,24 +159,30 @@ You can also run the script manually:
 
 **Output:**
 ```
-[10:15:30] Postprovision script v2.0.0
-[10:15:30] ========================================
+[10:15:30] Post-Provisioning Script Started
+[10:15:30] ═══════════════════════════════════════════════════════════
+[10:15:30] Script Version: 2.0.0
 [10:15:30] 
-[10:15:31] ✓ Validated 3 required environment variables
+[10:15:31] ✓ All 3 required environment variables are set
 [10:15:32] ✓ Azure Container Registry authenticated
-[10:15:33] ✓ Cleared existing user secrets
-[10:15:34] 
-[10:15:34] Configuring user secrets...
-[10:15:35] ✓ app.AppHost: 12 secrets configured
-[10:15:36] ✓ eShop.Orders.API: 8 secrets configured
-[10:15:37] ✓ eShop.Web.App: 6 secrets configured
-[10:15:37] 
-[10:15:37] Summary:
-[10:15:37]   Projects: 3
-[10:15:37]   Secrets configured: 26
-[10:15:37]   Errors: 0
-[10:15:37] 
-[10:15:37] ✓ Postprovision completed successfully in 7.2 seconds
+[10:15:33] ✓ SQL Database managed identity configured successfully
+[10:15:34] ✓ User secrets cleared successfully
+[10:15:35] 
+[10:15:35] Configuring user secrets...
+[10:15:36] Configuring AppHost project secrets...
+[10:15:37]   ✓ app.AppHost: 23 secrets configured
+[10:15:38] Configuring API project secrets...
+[10:15:39]   ✓ eShop.Orders.API: 3 secrets configured
+[10:15:40] 
+[10:15:40] Configuration Summary:
+[10:15:40]   • Total secrets defined   : 26
+[10:15:40]   • Successfully configured : 26
+[10:15:40]   • Skipped (empty)         : 0
+[10:15:40]   • Failed                  : 0
+[10:15:40]   Success Rate: 100%
+[10:15:40] 
+[10:15:40] ✓ Post-Provisioning Completed Successfully!
+[10:15:40] Duration: 10 seconds
 ```
 
 ### Verbose Mode
@@ -382,15 +389,39 @@ Enables detailed diagnostic output.
 
 ### eShop.Orders.API Project (3 secrets)
 
+The API project receives minimal configuration as it relies on managed identity for Azure resource access and inherits configuration from the AppHost during development.
+
 | Secret Key | Source | Purpose |
 |------------|--------|---------|
 | `Azure:TenantId` | `AZURE_TENANT_ID` | Azure AD tenant for authentication |
 | `Azure:ClientId` | `AZURE_CLIENT_ID` | Managed Identity client ID |
 | `ApplicationInsights:ConnectionString` | Bicep output | Monitoring and telemetry |
 
-### eShop.Web.App Project (0 secrets)
+## 🔒 SQL Database Managed Identity Configuration
 
-**Note:** The Web App project does not have user secrets configured by this script. All necessary configuration is retrieved from AppHost or environment variables at runtime.
+A critical feature of this script is the automatic configuration of Azure SQL Database access using managed identities. This section executes after secret configuration and performs the following:
+
+### Roles Assigned
+
+**Default Configuration:**
+- `db_datareader` - Read access to all tables
+- `db_datawriter` - Write access to all tables
+
+**For Entity Framework Migrations (Manual):**
+- `db_owner` - Full schema control including CREATE TABLE, ALTER TABLE, foreign keys
+
+### Configuration Process
+
+1. **Validation**: Checks for required parameters (server name, database name, managed identity name)
+2. **Script Execution**: Runs `sql-managed-identity-config.sh/.ps1` to create database user
+3. **Role Assignment**: Grants appropriate database roles
+4. **Error Handling**: Provides detailed guidance for manual configuration if needed
+
+### Important Notes
+
+- **EF Migrations**: If your application uses Entity Framework migrations, you may need to manually grant `db_owner` role
+- **Manual Configuration**: If the script fails, detailed SQL commands are provided for manual setup
+- **Security**: Follows least-privilege principle by defaulting to read/write only
 
 ## 🛠️ How It Works
 
@@ -399,8 +430,31 @@ Enables detailed diagnostic output.
 The script executes a comprehensive post-provisioning configuration workflow:
 
 ```mermaid
-flowchart LR
+flowchart TD
     Start(["🚀 azd provision completes"])
+    Validate["Validate Environment Variables"]
+    ReadVars["Read Azure Configuration"]
+    ACRLogin["Azure Container Registry Login"]
+    VerifyTools["Verify Prerequisites (.NET CLI)"]
+    ResolveProjects["Resolve Project Paths"]
+    ConfigSQL["Configure SQL Managed Identity"]
+    ClearSecrets["Clear Existing User Secrets"]
+    ConfigAppHost["Configure AppHost Secrets (23)"]
+    ConfigAPI["Configure API Secrets (3)"]
+    Report["Generate Configuration Report"]
+    Complete(["✓ Configuration Complete"])
+    
+    Start --> Validate
+    Validate --> ReadVars
+    ReadVars --> ACRLogin
+    ACRLogin --> VerifyTools
+    VerifyTools --> ResolveProjects
+    ResolveProjects --> ConfigSQL
+    ConfigSQL --> ClearSecrets
+    ClearSecrets --> ConfigAppHost
+    ConfigAppHost --> ConfigAPI
+    ConfigAPI --> Report
+    Report --> Complete
     SetEnv["1️⃣ azd Sets Env Variables<br/>• Bicep outputs<br/>• Resource properties<br/>• .env file values"]
     Execute["2️⃣ Execute postprovision<br/>• Called by azd hook<br/>• Environment ready"]
     Validate["3️⃣ Validate Environment<br/>• Required variables<br/>• Subscription ID<br/>• Resource group"]
@@ -441,7 +495,11 @@ flowchart LR
 
 | Aspect | Details |
 |--------|---------|  
+| **Version** | 2.0.0 (PowerShell: 2025-12-17, Bash: 2025-12-29) |
+| **Projects Configured** | • app.AppHost (23 secrets)<br/>• eShop.Orders.API (3 secrets) |
+| **Total Secrets** | 26 secrets across 2 projects |
 | **Called By** | • **Azure Developer CLI (azd)** automatically after `azd provision` or `azd up`<br/>• Developers manually for reconfiguration without reprovisioning<br/>• CI/CD pipelines during automated deployment workflows<br/>• Post-deployment automation scripts for environment setup |
+| **Key Features** | • SQL Database managed identity configuration<br/>• Azure Container Registry authentication<br/>• Comprehensive error handling and reporting<br/>• Success/failure/skip tracking<br/>• Detailed verbose logging |
 | **Calls** | • `clean-secrets.ps1` or `clean-secrets.sh` to clear existing secrets<br/>• `sql-managed-identity-config.ps1` or `sql-managed-identity-config.sh` for SQL Database managed identity configuration<br/>• `dotnet user-secrets set` for each secret configuration<br/>• `az acr login` for Azure Container Registry authentication<br/>• Environment variable reads from azd-set values |
 | **Dependencies** | • **Runtime:** PowerShell 7.0+ or Bash 4.0+<br/>• **.NET SDK:** Version 10.0+ with user-secrets tool<br/>• **Azure CLI:** Version 2.60.0+ for ACR authentication<br/>• **Azure Developer CLI (azd):** For automatic hook execution and environment variables<br/>• **Azure Resources:** Provisioned infrastructure with Bicep outputs<br/>• **clean-secrets script:** Must exist in same hooks directory |
 | **Outputs** | • **User Secrets:** 26 secrets across 2 projects (23 AppHost + 3 API) in local user secrets storage<br/>• **SQL Database:** Managed identity user configured with db_datareader and db_datawriter roles<br/>• **Console Output:** Progress messages, validation results, summary statistics<br/>• **Exit Code:** 0 (success) or 1 (failure with detailed error messages)<br/>• **Verbose Logs:** Detailed diagnostic information for each operation (optional)<br/>• **WhatIf Preview:** Simulated execution plan without making changes (optional) |
@@ -1108,5 +1166,16 @@ jobs:
 **Script Version**: 2.0.0  
 **Compatibility**: PowerShell 7.0+, .NET 10.0+, Azure CLI 2.60.0+
 ---
+
+---
+
+## 📝 Notes
+
+- **Last Updated**: December 29, 2025
+- **PowerShell Version Last Modified**: December 17, 2025
+- **Bash Version Last Modified**: December 29, 2025
+- Both scripts are functionally equivalent with complete feature parity
+- The Bash version includes enhanced SQL managed identity configuration guidance
+- Both scripts implement comprehensive error handling and detailed logging
 
 **Made with ❤️ by Evilazaro | Principal Cloud Solution Architect | Microsoft**
