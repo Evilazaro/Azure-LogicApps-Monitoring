@@ -184,8 +184,8 @@ resource wfConf 'Microsoft.Web/sites/config@2025-03-01' = {
     AzureWebJobsStorage__blobServiceUri: 'https://${workflowStorageAccountName}.blob.${environment().suffixes.storage}'
     AzureWebJobsStorage__queueServiceUri: 'https://${workflowStorageAccountName}.queue.${environment().suffixes.storage}'
     AzureWebJobsStorage__tableServiceUri: 'https://${workflowStorageAccountName}.table.${environment().suffixes.storage}'
-    AzureWebJobsStorage__credential: 'managedidentity'
-    AzureWebJobsStorage__clientId: reference(userAssignedIdentityId, '2025-01-31-preview').clientId
+    AzureWebJobsStorage__credentialType: 'managedIdentity'
+    AzureWebJobsStorage__managedIdentityResourceId: userAssignedIdentityId
     // Website content share configuration for Logic Apps
     WEBSITE_CONTENTOVERVNET: '1'
     WEBSITE_CONTENTSHARE: '${workflowEngine.name}-content'
