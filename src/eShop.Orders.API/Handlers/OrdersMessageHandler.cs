@@ -85,7 +85,7 @@ public sealed class OrdersMessageHandler : IOrdersMessageHandler
                 message.ApplicationProperties["TraceParent"] = activity.Id ?? string.Empty;
             }
 
-            await sender.SendMessageAsync(message, cancellationToken).ConfigureAwait(false);
+            await sender.SendMessageAsync(message, cancellationToken);
 
             activity?.SetStatus(ActivityStatusCode.Ok);
             _logger.LogInformation("Successfully sent order message for order {OrderId} to topic {TopicName}",
@@ -170,7 +170,7 @@ public sealed class OrdersMessageHandler : IOrdersMessageHandler
                 messages.Add(message);
             }
 
-            await sender.SendMessagesAsync(messages, cancellationToken).ConfigureAwait(false);
+            await sender.SendMessagesAsync(messages, cancellationToken);
 
             activity?.SetStatus(ActivityStatusCode.Ok);
             _logger.LogInformation("Successfully sent batch of {Count} order messages to topic {TopicName}",

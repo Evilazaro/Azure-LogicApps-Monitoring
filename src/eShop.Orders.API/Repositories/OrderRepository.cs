@@ -48,12 +48,12 @@ public sealed class OrderRepository : IOrderRepository
             var orderEntity = order.ToEntity();
 
             // Add new order - EF Core will handle duplicate detection via exception
-            await _dbContext.Orders.AddAsync(orderEntity, cancellationToken).ConfigureAwait(false);
-            await _dbContext.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+            await _dbContext.Orders.AddAsync(orderEntity, cancellationToken);
+            await _dbContext.SaveChangesAsync(cancellationToken);
 
             _logger.LogDebug("Order {OrderId} saved to database successfully", order.Id);
         }
-        catch (DbUpdateException ex) when (ex.InnerException?.Message.Contains("duplicate", StringComparison.OrdinalIgnoreCase) == true)
+        catch (DbUpdateException ex) when (IsDuplicateKeyViolation(ex))
         {
             _logger.LogError(ex, "Failed to save order {OrderId} - duplicate key violation", order.Id);
             throw new InvalidOperationException($"Order with ID {order.Id} already exists", ex);
@@ -63,6 +63,18 @@ public sealed class OrderRepository : IOrderRepository
             _logger.LogError(ex, "Failed to save order {OrderId} to database", order.Id);
             throw;
         }
+    }
+
+    /// <summary>
+    /// Checks if a DbUpdateException is caused by a duplicate key violation.
+    /// </summary>
+    /// <param name="ex">The exception to check.</param>
+    /// <returns>True if the exception is a duplicate key violation; otherwise, false.</returns>
+    private static bool IsDuplicateKeyViolation(DbUpdateException ex)
+    {
+        return ex.InnerException?.Message.Contains("duplicate", StringComparison.OrdinalIgnoreCase) == true ||
+               ex.InnerException?.Message.Contains("unique constraint", StringComparison.OrdinalIgnoreCase) == true ||
+               ex.InnerException?.Message.Contains("primary key", StringComparison.OrdinalIgnoreCase) == true;
     }
 
     /// <summary>
@@ -80,8 +92,7 @@ public sealed class OrderRepository : IOrderRepository
                 .Include(o => o.Products)
                 .AsNoTracking()
                 .AsSplitQuery() // Use split query for better performance with multiple includes
-                .ToListAsync(cancellationToken)
-                .ConfigureAwait(false);
+                .ToListAsync(cancellationToken);
 
             var orders = orderEntities.Select(e => e.ToDomainModel()).ToList();
             _logger.LogDebug("Retrieved {Count} orders from database", orders.Count);
@@ -117,8 +128,7 @@ public sealed class OrderRepository : IOrderRepository
                 .Include(o => o.Products)
                 .AsNoTracking()
                 .AsSplitQuery() // Use split query for better performance
-                .FirstOrDefaultAsync(o => o.Id == orderId, cancellationToken)
-                .ConfigureAwait(false);
+                .FirstOrDefaultAsync(o => o.Id == orderId, cancellationToken);
 
             var order = orderEntity?.ToDomainModel();
 
@@ -160,8 +170,7 @@ public sealed class OrderRepository : IOrderRepository
 
             var orderEntity = await _dbContext.Orders
                 .Include(o => o.Products)
-                .FirstOrDefaultAsync(o => o.Id == orderId, cancellationToken)
-                .ConfigureAwait(false);
+                .FirstOrDefaultAsync(o => o.Id == orderId, cancellationToken);
 
             if (orderEntity == null)
             {
@@ -170,7 +179,7 @@ public sealed class OrderRepository : IOrderRepository
             }
 
             _dbContext.Orders.Remove(orderEntity);
-            await _dbContext.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+            await _dbContext.SaveChangesAsync(cancellationToken);
 
             _logger.LogInformation("Successfully deleted order {OrderId} from database", orderId);
             return true;

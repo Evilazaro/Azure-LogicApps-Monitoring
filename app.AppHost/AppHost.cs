@@ -205,7 +205,6 @@ static void ConfigureSQLAzure(
 
     const string DefaultSqlServerName = "OrdersDatabase";
     const string DefaultDatabaseName = "OrderDb";
-    const string DefaultConnectionName = "OrdersDatabase";
 
     // Use null-coalescing operator for cleaner code
     var sqlServerName = builder.Configuration["Azure:SqlServer:Name"] ?? DefaultSqlServerName;
@@ -215,7 +214,7 @@ static void ConfigureSQLAzure(
     if (isLocalMode)
     {
         // Local development mode - use SQL Server container with persistent volume
-        var sqlServer = builder.AddAzureSqlServer(DefaultConnectionName)
+        var sqlServer = builder.AddAzureSqlServer(DefaultSqlServerName)
                                .RunAsContainer(configureContainer =>
                                {
                                    configureContainer.WithDataVolume();
@@ -238,7 +237,7 @@ static void ConfigureSQLAzure(
         }
 
         var sqlServerParam = builder.AddParameter("sql-server", sqlServerName);
-        var sqlServer = builder.AddAzureSqlServer(DefaultConnectionName)
+        var sqlServer = builder.AddAzureSqlServer(DefaultSqlServerName)
                                .RunAsExisting(sqlServerParam, resourceGroupParameter);
 
         var sqlDatabase = sqlServer.AddDatabase(sqlDatabaseName).WithDefaultAzureSku();

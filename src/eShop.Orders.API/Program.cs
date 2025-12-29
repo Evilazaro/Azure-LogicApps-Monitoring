@@ -17,19 +17,15 @@ builder.AddServiceDefaults();
 builder.Services.AddSingleton(new ActivitySource("eShop.Orders.API"));
 builder.Services.AddSingleton(new Meter("eShop.Orders.API"));
 
+var connectionString = builder.Configuration["ConnectionStrings:OrderDb"];
+
 // Configure Entity Framework Core with SQL Server
 builder.Services.AddDbContext<OrderDbContext>(options =>
 {
-    var connectionString = builder.Configuration["ConnectionStrings:OrdersDatabase"];
-
     if (string.IsNullOrWhiteSpace(connectionString))
     {
-        // During manifest generation, we need to provide a minimal valid configuration
-        // This allows the manifest to be generated without throwing exceptions
-        // At runtime, the actual connection string will be provided by Aspire
-        Console.WriteLine("Warning: Connection string 'OrderDb' is not configured yet. Using placeholder configuration.");
-        options.UseSqlServer("Server=.;Database=placeholder;Integrated Security=true;TrustServerCertificate=true;");
-        return;
+        Console.WriteLine("Warning: Connection string 'OrdersDatabase' is not configured yet. Using placeholder configuration.");
+        throw new InvalidOperationException("Connection string 'OrdersDatabase' is not configured. Please set it in the configuration.");
     }
 
     // Use standard UseSqlServer - Aspire automatically configures Azure AD authentication
@@ -61,18 +57,17 @@ builder.Services.AddScoped<IOrderService, OrderService>();
 builder.Services.AddControllers();
 
 // Configure OpenAPI/Swagger for API documentation
-builder.Services.AddOpenApi();
 builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddOpenApi();
 
 builder.Services.AddSwaggerGen(options =>
 {
-    // Include XML comments in Swagger documentation
-    var xmlFile = $"{System.Reflection.Assembly.GetExecutingAssembly().GetName().Name}.xml";
-    var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
-    if (File.Exists(xmlPath))
+    options.SwaggerDoc("v1", new()
     {
-        options.IncludeXmlComments(xmlPath);
-    }
+        Title = "eShop Orders API",
+        Version = "v1",
+        Description = "API for managing orders in the eShop application."
+    });
 });
 
 // Add Azure Service Bus client configuration - only if configured
@@ -128,12 +123,12 @@ _ = Task.Run(async () =>
         try
         {
             var dbContext = services.GetRequiredService<OrderDbContext>();
-            var connectionString = builder.Configuration.GetConnectionString("OrderDb");
+            var connectionString = builder.Configuration.GetConnectionString("OrdersDatabase");
 
             logger.LogInformation("Initializing database (attempt {Attempt}/{MaxRetries})...", attempt, maxRetries);
             logger.LogInformation("Database server: {Server}",
-                connectionString?.Contains("Server=") == true
-                    ? connectionString.Split("Server=")[1].Split(";")[0]
+                connectionString?.Contains("Server=", StringComparison.OrdinalIgnoreCase) == true
+                    ? connectionString.Split("Server=", StringSplitOptions.None)[1].Split(';')[0]
                     : "Not specified");
 
             logger.LogInformation("Ensuring database is created (development mode)...");
@@ -162,7 +157,7 @@ _ = Task.Run(async () =>
                 attempt,
                 maxRetries,
                 ex.Message,
-                !string.IsNullOrWhiteSpace(builder.Configuration.GetConnectionString("OrderDb")),
+                !string.IsNullOrWhiteSpace(builder.Configuration.GetConnectionString("OrdersDatabase")),
                 retryDelay.TotalSeconds);
 
             // Log additional diagnostic information on first failure
@@ -171,7 +166,7 @@ _ = Task.Run(async () =>
                 logger.LogError("Environment: {Environment}", app.Environment.EnvironmentName);
                 logger.LogError("Configuration sources: {Sources}",
                     string.Join(", ", builder.Configuration.AsEnumerable()
-                        .Where(kvp => kvp.Key.Contains("ConnectionStrings"))
+                        .Where(kvp => kvp.Key.Contains("ConnectionStrings", StringComparison.OrdinalIgnoreCase))
                         .Select(kvp => $"{kvp.Key}={(kvp.Value?.Length > 0 ? "***" : "empty")}")));
             }
 
@@ -210,7 +205,20 @@ if (app.Environment.IsDevelopment())
 else
 {
     app.UseExceptionHandler("/error");
-    app.UseHsts(); // Add HSTS for production
+    app.UseHsts();
+}
+
+// Add security headers for production
+if (!app.Environment.IsDevelopment())
+{
+    app.Use(async (context, next) =>
+    {
+        context.Response.Headers["X-Content-Type-Options"] = "nosniff";
+        context.Response.Headers["X-Frame-Options"] = "DENY";
+        context.Response.Headers["X-XSS-Protection"] = "1; mode=block";
+        context.Response.Headers["Referrer-Policy"] = "no-referrer";
+        await next();
+    });
 }
 
 // Global error handler endpoint

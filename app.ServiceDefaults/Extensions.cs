@@ -47,10 +47,10 @@ public static class Extensions
             http.AddStandardResilienceHandler(options =>
             {
                 options.TotalRequestTimeout.Timeout = TimeSpan.FromSeconds(600);
-                options.AttemptTimeout.Timeout = TimeSpan.FromSeconds(600);
+                options.AttemptTimeout.Timeout = TimeSpan.FromSeconds(60);
                 options.Retry.MaxRetryAttempts = 3;
                 options.Retry.BackoffType = Polly.DelayBackoffType.Exponential;
-                options.CircuitBreaker.SamplingDuration = TimeSpan.FromSeconds(1200); // Changed from 600 to 1200 (at least 2x AttemptTimeout)
+                options.CircuitBreaker.SamplingDuration = TimeSpan.FromSeconds(120); // Must be at least 2x AttemptTimeout
             });
 
             // Enable service discovery for HTTP clients
@@ -231,18 +231,19 @@ public static class Extensions
 
                 var credential = new DefaultAzureCredential(new DefaultAzureCredentialOptions
                 {
-                    // Add timeout to prevent hanging
                     Retry = {
                         MaxRetries = 3,
                         NetworkTimeout = TimeSpan.FromSeconds(30)
                     },
+                    // Only use credential types that make sense for Azure environments
                     ExcludeEnvironmentCredential = false,
                     ExcludeManagedIdentityCredential = false,
-                    ExcludeVisualStudioCredential = true,
-                    ExcludeVisualStudioCodeCredential = true,
+                    ExcludeVisualStudioCredential = false,
+                    ExcludeVisualStudioCodeCredential = false,
                     ExcludeAzureCliCredential = false,
                     ExcludeAzurePowerShellCredential = true,
-                    ExcludeInteractiveBrowserCredential = true
+                    ExcludeInteractiveBrowserCredential = true,
+                    ExcludeSharedTokenCacheCredential = false
                 });
 
                 var clientOptions = new ServiceBusClientOptions
