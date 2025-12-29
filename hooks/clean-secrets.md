@@ -2,7 +2,7 @@
 
 ![PowerShell](https://img.shields.io/badge/PowerShell-7.0+-blue.svg)
 ![Bash](https://img.shields.io/badge/Bash-4.0+-green.svg)
-![.NET](https://img.shields.io/badge/.NET-10.0+-purple.svg)
+![.NET](https://img.shields.io/badge/.NET-8.0+-purple.svg)
 ![Cross-Platform](https://img.shields.io/badge/platform-Windows%20%7C%20Linux%20%7C%20macOS-lightgrey.svg)
 ![Version](https://img.shields.io/badge/version-2.0.0-green.svg)
 ![License](https://img.shields.io/badge/license-MIT-orange.svg)
@@ -431,71 +431,233 @@ flowchart LR
 |--------|---------|  
 | **Called By** | • `preprovision.ps1` or `preprovision.sh` before infrastructure provisioning<br/>• `postprovision.ps1` or `postprovision.sh` before setting new secrets<br/>• Developers manually for troubleshooting configuration issues<br/>• CI/CD pipelines during automated deployment workflows |
 | **Calls** | • `dotnet user-secrets clear` for each target project<br/>• `dotnet --version` for SDK validation<br/>• .NET CLI commands to manage local user secrets storage<br/>• No external APIs or network calls |
-| **Dependencies** | • **Runtime:** PowerShell 7.0+ or Bash 4.0+<br/>• **.NET SDK:** Version 10.0+ with user-secrets CLI tool<br/>• **Projects:** app.AppHost, eShop.Orders.API, eShop.Web.App with UserSecretsId configured<br/>• **File System:** Access to user secrets directory (Windows: %APPDATA%, Linux/macOS: ~/.microsoft) |
+| **Dependencies** | • **Runtime:** PowerShell 7.0+ or Bash 4.0+<br/>• **.NET SDK:** Version 8.0+ (PowerShell) or 10.0+ (Bash) with user-secrets CLI tool<br/>• **Projects:** app.AppHost, eShop.Orders.API, eShop.Web.App with UserSecretsId configured<br/>• **File System:** Access to user secrets directory (Windows: %APPDATA%, Linux/macOS: ~/.microsoft) |
 | **Outputs** | • **Exit Code:** `0` (success/user declined) or `1` (failure/errors occurred)<br/>• **Console Output:** Timestamped messages for each operation with success/failure indicators<br/>• **Summary Report:** Total projects processed, success count, error count, execution time<br/>• **Verbose Logs:** Detailed diagnostic information including paths and command execution (optional) |
 | **Integration Role** | Acts as a **state reset utility** ensuring a clean slate for secret management. Prevents stale or conflicting configurations by clearing all local user secrets before provisioning or when troubleshooting. Critical for environment consistency across development, CI/CD, and re-provisioning scenarios. |
 
-#### `Test-DotNetSDK`
+### PowerShell Implementation Functions
+
+#### `Test-DotNetAvailability`
 Validates that .NET SDK is available and accessible.
 
 ```powershell
-function Test-DotNetSDK {
+function Test-DotNetAvailability {
+    [CmdletBinding()]
+    [OutputType([bool])]
+    param()
+    
+    Write-Verbose 'Starting .NET SDK availability check...'
+    
     try {
-        $version = dotnet --version
-        Write-Verbose ".NET SDK version: $version"
+        $dotnetCommand = Get-Command -Name dotnet -ErrorAction SilentlyContinue
+        if (-not $dotnetCommand) {
+            Write-Verbose '.NET command not found in PATH'
+            return $false
+        }
+        
+        Write-Verbose "dotnet command found at: $($dotnetCommand.Source)"
+        
+        $null = & dotnet --version 2>&1
+        if ($LASTEXITCODE -ne 0) {
+            Write-Verbose 'dotnet command failed to execute'
+            return $false
+        }
+        
+        Write-Verbose '.NET SDK is available and functional'
         return $true
     }
     catch {
-        Write-Error ".NET SDK not found. Please install .NET SDK 10.0+"
+        Write-Verbose "Error checking .NET availability: $($_.Exception.Message)"
         return $false
     }
 }
 ```
 
-#### `Clear-ProjectSecrets`
-Clears secrets for a specific project.
+#### `Test-ProjectPath`
+Validates that a project path exists and contains a .csproj file.
 
 ```powershell
-function Clear-ProjectSecrets {
+function Test-ProjectPath {
+    [CmdletBinding()]
+    [OutputType([bool])]
     param(
-        [string]$ProjectName,
-        [string]$ProjectPath
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
+        [string]$Path,
+        
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
+        [string]$Name
     )
     
-    if ($PSCmdlet.ShouldProcess($ProjectName, "Clear User Secrets")) {
-        dotnet user-secrets clear --project $ProjectPath
-        
-        if ($LASTEXITCODE -eq 0) {
-            Write-Information "✓ Cleared secrets for $ProjectName"
-            return $true
-        }
-        else {
-            Write-Warning "Failed to clear secrets for $ProjectName"
+    Write-Verbose "Validating project path for: $Name"
+    
+    try {
+        $resolvedPath = Resolve-Path -Path $Path -ErrorAction SilentlyContinue
+        if (-not $resolvedPath) {
+            Write-Warning "Project path not found: $Path"
             return $false
         }
+        
+        $projectFiles = @(Get-ChildItem -Path $resolvedPath -Filter '*.csproj' -ErrorAction SilentlyContinue)
+        if ($projectFiles.Count -eq 0) {
+            Write-Warning "No .csproj file found in: $Path"
+            return $false
+        }
+        
+        Write-Verbose "Project path validated: $resolvedPath"
+        return $true
+    }
+    catch {
+        Write-Warning "Error validating project path ${Path}: $($_.Exception.Message)"
+        return $false
     }
 }
 ```
 
-#### `Get-ProjectsList`
-Returns array of projects with their paths.
+#### `Clear-ProjectUserSecrets`
+Clears user secrets for a specific project.
 
 ```powershell
-function Get-ProjectsList {
-    return @(
-        @{
-            Name = "app.AppHost"
-            Path = "..\app.AppHost\app.AppHost.csproj"
-        },
-        @{
-            Name = "eShop.Orders.API"
-            Path = "..\src\eShop.Orders.API\eShop.Orders.API.csproj"
-        },
-        @{
-            Name = "eShop.Web.App"
-            Path = "..\src\eShop.Web.App\eShop.Web.App.csproj"
-        }
+function Clear-ProjectUserSecrets {
+    [CmdletBinding(SupportsShouldProcess)]
+    [OutputType([bool])]
+    param(
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
+        [string]$ProjectPath,
+        
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
+        [string]$ProjectName
     )
+    
+    Write-Verbose "Preparing to clear user secrets for: $ProjectName"
+    
+    try {
+        if ($PSCmdlet.ShouldProcess($ProjectName, 'Clear user secrets')) {
+            Write-Information "Clearing user secrets for project: $ProjectName"
+            
+            $output = & dotnet user-secrets clear --project $ProjectPath 2>&1
+            
+            if ($LASTEXITCODE -eq 0) {
+                Write-Information "✓ Successfully cleared user secrets for: $ProjectName"
+                Write-Verbose "Output: $output"
+                return $true
+            }
+            else {
+                Write-Warning "Failed to clear user secrets for ${ProjectName}. Exit code: $LASTEXITCODE"
+                Write-Verbose "Error output: $output"
+                return $false
+            }
+        }
+        else {
+            Write-Verbose "WhatIf: Would clear user secrets for $ProjectName"
+            return $true
+        }
+    }
+    catch {
+        Write-Error "Error clearing user secrets for ${ProjectName}: $($_.Exception.Message)"
+        return $false
+    }
+}
+```
+
+### Bash Implementation Functions
+
+#### `test_dotnet_availability`
+Checks if .NET SDK is available and executable.
+
+```bash
+test_dotnet_availability() {
+    log_verbose "Starting .NET SDK availability check..."
+    
+    if ! command -v dotnet &> /dev/null; then
+        log_verbose ".NET command not found in PATH"
+        return 1
+    fi
+    
+    local dotnet_path
+    dotnet_path=$(command -v dotnet)
+    log_verbose "dotnet command found at: ${dotnet_path}"
+    
+    if ! dotnet --version &> /dev/null; then
+        log_verbose "dotnet command failed to execute"
+        return 1
+    fi
+    
+    log_verbose ".NET SDK is available and functional"
+    return 0
+}
+```
+
+#### `test_project_path`
+Validates that a project path exists and contains a .csproj file.
+
+```bash
+test_project_path() {
+    local project_name="$1"
+    local project_path="$2"
+    
+    log_verbose "Validating project path for: ${project_name}"
+    
+    local abs_path="${SCRIPT_DIR}/${project_path}"
+    log_verbose "Resolved absolute path: ${abs_path}"
+    
+    if [[ ! -d "${abs_path}" ]]; then
+        log_verbose "Project directory not found: ${abs_path}"
+        return 1
+    fi
+    
+    local csproj_count=0
+    while IFS= read -r -d '' file; do
+        ((csproj_count++))
+    done < <(find "${abs_path}" -maxdepth 1 -name "*.csproj" -print0 2>/dev/null)
+    
+    if [[ ${csproj_count} -eq 0 ]]; then
+        log_verbose "No .csproj file found in: ${abs_path}"
+        return 1
+    fi
+    
+    log_verbose "Project path validated successfully (found ${csproj_count} .csproj file(s))"
+    return 0
+}
+```
+
+#### `clear_project_user_secrets`
+Clears user secrets for a specific project.
+
+```bash
+clear_project_user_secrets() {
+    local project_name="$1"
+    local project_path="$2"
+    local abs_path="${SCRIPT_DIR}/${project_path}"
+    
+    log_verbose "Preparing to clear user secrets for: ${project_name}"
+    log_verbose "Project path: ${abs_path}"
+    
+    if [[ "${DRY_RUN}" == true ]]; then
+        log_info "  [DRY-RUN] Would clear user secrets for: ${project_name}"
+        log_verbose "  [DRY-RUN] Command: dotnet user-secrets clear --project ${abs_path}"
+        return 0
+    fi
+    
+    log_info "Clearing user secrets for project: ${project_name}"
+    
+    local output
+    local exit_code=0
+    
+    if output=$(dotnet user-secrets clear --project "${abs_path}" 2>&1); then
+        exit_code=0
+        log_success "✓ Successfully cleared user secrets for: ${project_name}"
+        log_verbose "Command output: ${output}"
+        return 0
+    else
+        exit_code=$?
+        log_warning "Failed to clear user secrets for ${project_name}. Exit code: ${exit_code}"
+        log_verbose "Error output: ${output}"
+        return 1
+    fi
 }
 ```
 
@@ -505,22 +667,33 @@ function Get-ProjectsList {
 
 #### Issue: .NET SDK Not Found
 
-**Error Message:**
+**Error Message (PowerShell):**
 ```
-ERROR: .NET SDK not found
-Please install .NET SDK 10.0+
+ERROR: .NET SDK is not installed or not accessible.
+Please install .NET SDK 8.0 or higher.
+```
+
+**Error Message (Bash):**
+```
+ERROR: .NET SDK is not installed or not accessible.
+Please install .NET SDK 10.0 or higher.
+Download from: https://dotnet.microsoft.com/download/dotnet/10.0
 ```
 
 **Solution:**
 ```powershell
-# Download and install .NET SDK 10.0+
-# https://dotnet.microsoft.com/download
+# PowerShell: Download and install .NET SDK 8.0+
+# https://dotnet.microsoft.com/download/dotnet/8.0
+
+# Bash: Download and install .NET SDK 10.0+
+# https://dotnet.microsoft.com/download/dotnet/10.0
 
 # Verify installation
 dotnet --version
 
 # Restart terminal and try again
-.\clean-secrets.ps1
+.\clean-secrets.ps1  # PowerShell
+./clean-secrets.sh   # Bash
 ```
 
 ---
@@ -851,15 +1024,16 @@ azd up
 
 | Version | Date | Changes |
 |---------|------|---------|
-| **2.0.0** | 2025-12-24 | Production release |
-|           |            | • Complete rewrite with best practices |
-|           |            | • Added comprehensive error handling |
-|           |            | • Implemented validation functions |
-|           |            | • Added WhatIf support |
-|           |            | • Comprehensive logging |
-|           |            | • 420+ lines of production code |
+| **2.0.0** | 2025-12-24 (PS1)<br/>2025-12-29 (SH) | Production release |
+|           |            | • Complete rewrite with best practices for both PowerShell and Bash |
+|           |            | • Added comprehensive error handling with try-catch-finally pattern |
+|           |            | • Implemented validation functions (Test-DotNetAvailability, Test-ProjectPath) |
+|           |            | • Added WhatIf support (PowerShell) and --dry-run (Bash) |
+|           |            | • Comprehensive logging with color-coded output |
+|           |            | • Execution summary with statistics |
+|           |            | • 420+ lines of production code (PowerShell), 600+ lines (Bash) |
 | **1.0.0** | 2025-12-15 | Initial release |
-|           |            | • Basic secret clearing |
+|           |            | • Basic secret clearing functionality |
 
 ##  Quick Links
 
@@ -869,9 +1043,11 @@ azd up
 
 ---
 
-**Last Updated**: December 26, 2025  
+**Last Updated**: December 29, 2025  
 **Script Version**: 2.0.0  
-**Compatibility**: PowerShell 7.0+, .NET 10.0+, Windows/macOS/Linux
+**PowerShell**: Last Modified 2025-12-24 (Requires .NET 8.0+)  
+**Bash**: Last Modified 2025-12-29 (Requires .NET 10.0+)  
+**Compatibility**: PowerShell 7.0+ / Bash 4.0+, Windows/macOS/Linux
 
 ---
 
