@@ -148,7 +148,7 @@ resource workflowEngine 'Microsoft.Web/sites@2025-03-01' = {
   properties: {
     serverFarmId: wfASP.id
     publicNetworkAccess: 'Enabled'
-    storageAccountRequired: true
+    storageAccountRequired: false // Set to false initially to prevent auto-creation of file share
 
     siteConfig: {
       alwaysOn: true
@@ -160,6 +160,66 @@ resource workflowEngine 'Microsoft.Web/sites@2025-03-01' = {
       use32BitWorkerProcess: false
       ftpsState: 'FtpsOnly'
       minTlsVersion: '1.2'
+
+      // Pre-configure app settings during site creation to avoid separate deployment
+      appSettings: [
+        {
+          name: 'FUNCTIONS_EXTENSION_VERSION'
+          value: functionsExtensionVersion
+        }
+        {
+          name: 'FUNCTIONS_WORKER_RUNTIME'
+          value: functionsWorkerRuntime
+        }
+        {
+          name: 'AzureWebJobsStorage__accountName'
+          value: workflowStorageAccountName
+        }
+        {
+          name: 'AzureWebJobsStorage__credentialType'
+          value: 'managedidentity'
+        }
+        {
+          name: 'AzureWebJobsStorage__managedIdentityResourceId'
+          value: userAssignedIdentityId
+        }
+        {
+          name: 'APPLICATIONINSIGHTS_CONNECTION_STRING'
+          value: appInsightsConnectionString
+        }
+        {
+          name: 'ApplicationInsightsAgent_EXTENSION_VERSION'
+          value: '~3'
+        }
+        {
+          name: 'AzureFunctionsJobHost__extensionBundle__id'
+          value: extensionBundleId
+        }
+        {
+          name: 'AzureFunctionsJobHost__extensionBundle__version'
+          value: extensionBundleVersion
+        }
+        {
+          name: 'WORKFLOWS_SUBSCRIPTION_ID'
+          value: subscription().subscriptionId
+        }
+        {
+          name: 'WORKFLOWS_RESOURCE_GROUP_NAME'
+          value: resourceGroup().name
+        }
+        {
+          name: 'WORKFLOWS_LOCATION_NAME'
+          value: location
+        }
+        {
+          name: 'WORKFLOWS_TENANT_ID'
+          value: tenant().tenantId
+        }
+        {
+          name: 'WORKFLOWS_MANAGEMENT_BASE_URI'
+          value: environment().resourceManager
+        }
+      ]
     }
 
     httpsOnly: true
@@ -179,16 +239,13 @@ resource wfConf 'Microsoft.Web/sites/config@2025-03-01' = {
     // Note: Requires RBAC role assignments to be complete (storageRoleAssignmentsComplete = ${storageRoleAssignmentsComplete})
     // AzureWebJobsStorage uses managed identity for runtime operations
     AzureWebJobsStorage__accountName: workflowStorageAccountName
-    AzureWebJobsStorage__credential: 'managedidentity'
-    AzureWebJobsStorage__clientId: reference(userAssignedIdentityId, '2025-01-31-preview').clientId
+    AzureWebJobsStorage__credentialType: 'managedidentity'
+    AzureWebJobsStorage__managedIdentityResourceId: userAssignedIdentityId
 
-    // WEBSITE_CONTENTAZUREFILECONNECTIONSTRING requires full connection string for file share creation
+    // Content share settings required for Logic Apps runtime
+    // The file share is pre-created in the storage module with proper role assignments
     WEBSITE_CONTENTSHARE: contentShareName
     WEBSITE_CONTENTAZUREFILECONNECTIONSTRING: storageConnectionString
-    
-    // Skip content share validation during deployment to avoid 403 errors
-    // The share is pre-created in the storage account module with proper permissions
-    WEBSITE_SKIP_CONTENTSHARE_VALIDATION: '1'
 
     // Only enable when private storage is correctly configured
     WEBSITE_CONTENTOVERVNET: usePrivateStorage ? '1' : '0'
@@ -234,3 +291,5 @@ resource wfDiag 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
 output logicAppName string = workflowEngine.name
 output logicAppId string = workflowEngine.id
 output appServicePlanId string = wfASP.id
+output contentShareName string = contentShareName
+output workflowStorageAccountName string = workflowStorageAccountName
