@@ -78,12 +78,6 @@ resource wfSA 'Microsoft.Storage/storageAccounts@2025-06-01' = {
   sku: {
     name: 'Standard_LRS'
   }
-  identity: {
-    type: 'UserAssigned'
-    userAssignedIdentities: {
-      '${userAssignedIdentityId}': {}
-    }
-  }
   kind: 'StorageV2'
   tags: tags
   properties: {
