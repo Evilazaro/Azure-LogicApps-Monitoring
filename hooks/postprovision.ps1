@@ -908,7 +908,7 @@ try {
                     Write-Verbose "Error details: $($_.Exception.ToString())"
                     Write-Information ""
                     Write-Information "To manually configure database access, run:"
-                    Write-Information "  .\sql-managed-identity-config.ps1 -SqlServerName '$azureSqlServerName' -DatabaseName '$azureSqlDatabaseName' -PrincipalDisplayName '$azureManagedIdentityName'"
+                    Write-Information "  .\sql-managed-identity-config.ps1 -SqlServerName '$azureSqlServerName' -DatabaseName '$azureSqlDatabaseName' -PrincipalDisplayName '$azureManagedIdentityName' -DatabaseRoles @('db_owner')"
                     Write-Information ""
                 }
             }

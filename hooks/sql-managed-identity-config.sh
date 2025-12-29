@@ -150,6 +150,8 @@
 #     Prerequisites:
 #     - Bash 4.0 or higher
 #     - Azure CLI (az) version 2.60.0 or higher with active authentication (az login)
+#     - Environment Variables:
+#       * AZURE_RESOURCE_GROUP: The resource group containing the SQL Server (required for firewall configuration)
 #     - CRITICAL: You must authenticate as an Entra ID administrator of the SQL Server
 #       * Set Entra ID admin: az sql server ad-admin create --resource-group <rg> \
 #         --server-name <server> --display-name <name> --object-id <id>
@@ -1101,6 +1103,62 @@ EOF
         exit 1
     fi
     log_success "sqlcmd utility validated"
+    log_info ""
+    
+    # Step 2.5: Configure firewall rules (if needed)
+    log_info "Detecting current public IP address for firewall configuration..."
+    
+    # Try multiple IP detection services for reliability
+    local current_ip=""
+    local ip_services=("http://ifconfig.me/ip" "https://api.ipify.org?format=text" "https://icanhazip.com")
+    
+    for service in "${ip_services[@]}"; do
+        log_verbose "  Trying: ${service}"
+        if current_ip=$(curl -s --max-time 10 "${service}" 2>/dev/null); then
+            # Validate IP address format
+            if [[ "${current_ip}" =~ ^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$ ]]; then
+                log_info "Found public IP address: ${current_ip}"
+                break
+            fi
+        fi
+        current_ip=""
+    done
+    
+    if [[ -z "${current_ip}" ]]; then
+        log_warning "Could not detect public IP address - firewall rule creation skipped"
+        log_warning "You may need to manually add your IP to the SQL Server firewall rules"
+    else
+        # Get resource group from environment variable
+        log_verbose "Retrieving SQL Server resource group..."
+        local resource_group="${AZURE_RESOURCE_GROUP:-}"
+        
+        if [[ -z "${resource_group}" ]]; then
+            log_warning "AZURE_RESOURCE_GROUP environment variable is not set"
+            log_warning "Firewall rule creation skipped - you may need to add it manually"
+        else
+            local firewall_rule_name="ClientIP-$(date '+%Y%m%d%H%M%S')"
+            
+            log_verbose "  Resource Group: ${resource_group}"
+            log_verbose "  Server Name:    ${SQL_SERVER_NAME}"
+            log_verbose "  Rule Name:      ${firewall_rule_name}"
+            
+            log_info "Adding firewall rule '${firewall_rule_name}' for IP '${current_ip}'..."
+            
+            if az sql server firewall-rule create \
+                --resource-group "${resource_group}" \
+                --server "${SQL_SERVER_NAME}" \
+                --name "${firewall_rule_name}" \
+                --start-ip-address "${current_ip}" \
+                --end-ip-address "${current_ip}" \
+                -o none 2>&1; then
+                log_success "Firewall rule '${firewall_rule_name}' with IP '${current_ip}' has been created."
+            else
+                log_warning "Failed to create firewall rule"
+                log_warning "You may need to manually add IP ${current_ip} to SQL Server firewall rules"
+            fi
+        fi
+    fi
+    
     log_info ""
     
     # Step 3: Construct connection details

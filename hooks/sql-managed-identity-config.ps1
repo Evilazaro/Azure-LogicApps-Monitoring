@@ -109,6 +109,8 @@
     Prerequisites:
     - PowerShell 7.0 or higher
     - Azure CLI (az) version 2.60.0 or higher with active authentication (az login)
+    - Environment Variables:
+      * AZURE_RESOURCE_GROUP: The resource group containing the SQL Server (required for firewall configuration)
     - CRITICAL: You must authenticate as an Entra ID administrator of the SQL Server
       * Set Entra ID admin: az sql server ad-admin create --resource-group <rg> --server-name <server> --display-name <name> --object-id <id>
       * The authenticated user must BE this admin or have equivalent permissions
@@ -637,14 +639,15 @@ try {
             # Define firewall rule name with timestamp (dynamic naming as per example)
             $firewallRuleName = "ClientIP-$(Get-Date -Format 'yyyyMMddHHmmss')"
             
-            # Extract resource group from SQL Server using Azure CLI
+            # Get resource group from environment variable
             Write-Log 'Retrieving SQL Server resource group...' -Level Verbose
-            $serverInfo = az sql server show --name $SqlServerName --query '{rg:resourceGroup}' -o json 2>&1
+            $resourceGroupName = $env:AZURE_RESOURCE_GROUP
             
-            if ($LASTEXITCODE -eq 0) {
-                $serverData = $serverInfo | ConvertFrom-Json
-                $resourceGroupName = $serverData.rg
-                
+            if ([string]::IsNullOrWhiteSpace($resourceGroupName)) {
+                Write-Log "Warning: AZURE_RESOURCE_GROUP environment variable is not set" -Level Warning
+                Write-Log "Firewall rule creation skipped - you may need to add it manually" -Level Warning
+            }
+            else {
                 Write-Log "  Resource Group: $resourceGroupName" -Level Info
                 Write-Log "  Server Name:    $SqlServerName" -Level Info
                 Write-Log "  Rule Name:      $firewallRuleName" -Level Info
@@ -668,10 +671,6 @@ try {
                     Write-Log "Warning: Failed to create firewall rule: $firewallResult" -Level Warning
                     Write-Log "You may need to manually add IP $currentIp to SQL Server firewall rules" -Level Warning
                 }
-            }
-            else {
-                Write-Log "Warning: Could not retrieve SQL Server resource group" -Level Warning
-                Write-Log "Firewall rule creation skipped - you may need to add it manually" -Level Warning
             }
         }
     }
@@ -746,8 +745,6 @@ try {
     #endregion
     
     #region Database Connection and Execution
-    Write-Log "" -Level Info
-    Write-Log "[Step 5/5] Executing SQL script on target database..." -Level Info
     Write-Log "" -Level Info
     Write-Log "[Step 5/5] Executing SQL script on target database..." -Level Info
     
