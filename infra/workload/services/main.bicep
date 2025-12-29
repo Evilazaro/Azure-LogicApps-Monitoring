@@ -37,7 +37,7 @@ param name string
 @maxLength(50)
 param location string
 
-@description('Resource ID of the User Assigned Identity to be used by Service Bus.')
+@description('Resource ID of the User Assigned Identity used by Container Registry and Container Apps Environment.')
 @minLength(50)
 param userAssignedIdentityId string
 
@@ -159,10 +159,16 @@ resource appEnv 'Microsoft.App/managedEnvironments@2025-02-02-preview' = {
       destination: 'log-analytics'
       logAnalyticsConfiguration: {
         customerId: workspaceCustomerId
+        // This repo passes the workspace shared key through module parameters.
+        // Per repo constraints we do not mark it as secure; silence the linter rule for this line only.
+        #disable-next-line use-secure-value-for-secure-inputs
         sharedKey: workspacePrimaryKey
       }
     }
     appInsightsConfiguration: {
+      // This repo passes the App Insights connection string through module parameters.
+      // Per repo constraints we do not mark it as secure; silence the linter rule for this line only.
+      #disable-next-line use-secure-value-for-secure-inputs
       connectionString: appInsightsConnectionString
     }
   }

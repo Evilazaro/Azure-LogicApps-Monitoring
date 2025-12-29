@@ -1,23 +1,20 @@
 /*
   Messaging Infrastructure Module
   ===============================
-  Deploys Service Bus and storage infrastructure for workflow orchestration.
+  Deploys Azure Service Bus infrastructure for message brokering.
   
   Components:
-  1. Service Bus Premium namespace with order queue
-  2. Storage account for Logic Apps runtime (Standard tier requirement)
-  3. Blob containers for processed orders (success/error segregation)
+  1. Service Bus namespace with an orders topic
   
   Key Features:
-  - Premium Service Bus tier for enhanced performance and scalability
+  - Standard Service Bus tier for topic-based messaging
   - Capacity of 16 messaging units
   - Managed identity authentication for Service Bus
-  - Separate containers for success and error order processing
-  - Diagnostic settings for all resources
+  - Topic-based messaging for order processing events
 */
 
 metadata name = 'Messaging Infrastructure'
-metadata description = 'Deploys Service Bus namespace, queues, and workflow storage account'
+metadata description = 'Deploys Service Bus namespace with topics and subscriptions for message brokering'
 
 // ========== Type Definitions ==========
 

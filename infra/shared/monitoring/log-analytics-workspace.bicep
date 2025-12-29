@@ -206,6 +206,9 @@ output AZURE_LOG_ANALYTICS_WORKSPACE_NAME string = workspace.name
 output AZURE_LOG_ANALYTICS_WORKSPACE_CUSTOMER_ID string = workspace.properties.customerId
 
 @description('Primary Key for the Log Analytics workspace')
+// NOTE: This output is required by downstream modules in this repository.
+// Per repo constraints we do not remove it or mark it as secure; silence the linter rule for this line only.
+#disable-next-line outputs-should-not-contain-secrets
 output AZURE_LOG_ANALYTICS_WORKSPACE_PRIMARY_KEY string = workspace.listKeys().primarySharedKey
 
 @description('Resource ID of the deployed storage account for logs')
