@@ -1,4 +1,4 @@
-#!/usr/bin/env pwsh
+﻿#!/usr/bin/env pwsh
 
 #Requires -Version 7.0
 
@@ -51,6 +51,13 @@ Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
 $InformationPreference = 'Continue'
 $ProgressPreference = 'SilentlyContinue'
+
+# -Force is documented as "skip confirmation prompts".
+# In PowerShell, confirmation prompts are controlled by $ConfirmPreference.
+if ($Force) {
+    $ConfirmPreference = 'None'
+    Write-Verbose "Force enabled: confirmation prompts suppressed (ConfirmPreference=None)."
+}
 
 # Track final process exit code; exit once at the end to ensure finally cleanup runs.
 $script:ExitCode = 0
@@ -598,7 +605,7 @@ function Write-SectionHeader {
         }
         catch {
             # Fallback to basic output if Write-Information fails
-            Write-Host $Message -ForegroundColor Cyan
+            Write-Output $Message
         }
     }
     
@@ -1264,24 +1271,27 @@ try {
 catch {
     # Comprehensive error reporting
     Write-SectionHeader -Message "Post-Provisioning Failed!" -Type 'Main'
-    
-    Write-Host "╔══════════════════════════════════════════════════════════════╗" -ForegroundColor Red
-    Write-Host "║                   EXECUTION FAILED                           ║" -ForegroundColor Red
-    Write-Host "╚══════════════════════════════════════════════════════════════╝" -ForegroundColor Red
-    Write-Host ""
-    Write-Host "Error Message:" -ForegroundColor Red
-    Write-Host "  $($_.Exception.Message)" -ForegroundColor Red
-    Write-Host ""
-    Write-Host "Error Type: $($_.Exception.GetType().FullName)" -ForegroundColor Red
-    
+
+    $failureLines = [System.Collections.Generic.List[string]]::new()
+    $failureLines.Add('╔══════════════════════════════════════════════════════════════╗')
+    $failureLines.Add('║                   EXECUTION FAILED                           ║')
+    $failureLines.Add('╚══════════════════════════════════════════════════════════════╝')
+    $failureLines.Add('')
+    $failureLines.Add('Error Message:')
+    $failureLines.Add("  $($_.Exception.Message)")
+    $failureLines.Add('')
+    $failureLines.Add("Error Type: $($_.Exception.GetType().FullName)")
+
     # Position information
     if ($_.InvocationInfo) {
-        Write-Host "" -ForegroundColor Red
-        Write-Host "Location:" -ForegroundColor Red
-        Write-Host "  Script: $($_.InvocationInfo.ScriptName)" -ForegroundColor Red
-        Write-Host "  Line: $($_.InvocationInfo.ScriptLineNumber)" -ForegroundColor Red
-        Write-Host "  Column: $($_.InvocationInfo.OffsetInLine)" -ForegroundColor Red
+        $failureLines.Add('')
+        $failureLines.Add('Location:')
+        $failureLines.Add("  Script: $($_.InvocationInfo.ScriptName)")
+        $failureLines.Add("  Line: $($_.InvocationInfo.ScriptLineNumber)")
+        $failureLines.Add("  Column: $($_.InvocationInfo.OffsetInLine)")
     }
+
+    Write-Error ($failureLines -join "`n")
     
     # Stack trace (verbose only)
     if ($_.ScriptStackTrace) {
