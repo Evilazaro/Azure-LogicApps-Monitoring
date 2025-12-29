@@ -186,13 +186,14 @@ resource wfConf 'Microsoft.Web/sites/config@2025-03-01' = {
     AzureWebJobsStorage__tableServiceUri: 'https://${workflowStorageAccountName}.table.${environment().suffixes.storage}'
     AzureWebJobsStorage__credentialType: 'managedIdentity'
     AzureWebJobsStorage__managedIdentityResourceId: userAssignedIdentityId
-    // Website content share configuration for Logic Apps using managed identity
+    // Website content share configuration for Logic Apps
+    // Note: Connection string required for Logic Apps Standard content share
     WEBSITE_CONTENTOVERVNET: '1'
     WEBSITE_CONTENTSHARE: '${workflowEngine.name}-content'
-    WEBSITE_CONTENTAZUREFILECONNECTIONSTRING__accountName: workflowStorageAccountName
-    WEBSITE_CONTENTAZUREFILECONNECTIONSTRING__fileServiceUri: 'https://${workflowStorageAccountName}.file.${environment().suffixes.storage}'
-    WEBSITE_CONTENTAZUREFILECONNECTIONSTRING__credentialType: 'managedIdentity'
-    WEBSITE_CONTENTAZUREFILECONNECTIONSTRING__managedIdentityResourceId: userAssignedIdentityId
+    WEBSITE_CONTENTAZUREFILECONNECTIONSTRING: 'DefaultEndpointsProtocol=https;AccountName=${workflowStorageAccountName};EndpointSuffix=${environment().suffixes.storage};AccountKey=${listKeys(resourceId('Microsoft.Storage/storageAccounts', workflowStorageAccountName), '2025-06-01').keys[0].value}'
+    // Prevent SCM site from using separate storage to avoid Sentinels path access issues
+    WEBSITE_RUN_FROM_PACKAGE: '1'
+    WEBSITE_ENABLE_SYNC_UPDATE_SITE: 'true'
     // Application Insights
     APPLICATIONINSIGHTS_CONNECTION_STRING: appInsightsConnectionString
     ApplicationInsightsAgent_EXTENSION_VERSION: '~3'
