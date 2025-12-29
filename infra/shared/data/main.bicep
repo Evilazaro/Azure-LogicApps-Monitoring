@@ -114,7 +114,10 @@ resource blobOwnerRole 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
   scope: wfSA
   properties: {
     principalId: reference(userAssignedIdentityId, '2025-01-31-preview').principalId
-    roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', storageRoles.StorageBlobDataOwner)
+    roleDefinitionId: subscriptionResourceId(
+      'Microsoft.Authorization/roleDefinitions',
+      storageRoles.StorageBlobDataOwner
+    )
     principalType: 'ServicePrincipal'
   }
 }
@@ -125,7 +128,10 @@ resource queueContributorRole 'Microsoft.Authorization/roleAssignments@2022-04-0
   scope: wfSA
   properties: {
     principalId: reference(userAssignedIdentityId, '2025-01-31-preview').principalId
-    roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', storageRoles.StorageQueueDataContributor)
+    roleDefinitionId: subscriptionResourceId(
+      'Microsoft.Authorization/roleDefinitions',
+      storageRoles.StorageQueueDataContributor
+    )
     principalType: 'ServicePrincipal'
   }
 }
@@ -136,7 +142,10 @@ resource tableContributorRole 'Microsoft.Authorization/roleAssignments@2022-04-0
   scope: wfSA
   properties: {
     principalId: reference(userAssignedIdentityId, '2025-01-31-preview').principalId
-    roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', storageRoles.StorageTableDataContributor)
+    roleDefinitionId: subscriptionResourceId(
+      'Microsoft.Authorization/roleDefinitions',
+      storageRoles.StorageTableDataContributor
+    )
     principalType: 'ServicePrincipal'
   }
 }
