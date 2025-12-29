@@ -1,4 +1,4 @@
-﻿using app.ServiceDefaults.CommonTypes;
+using app.ServiceDefaults.CommonTypes;
 using System.Diagnostics;
 
 namespace eShop.Web.App.Components.Services;
@@ -81,6 +81,7 @@ public sealed class OrdersAPIService
         catch (HttpRequestException ex)
         {
             activity?.SetStatus(ActivityStatusCode.Error, $"HTTP error: {ex.StatusCode}");
+            activity?.AddException(ex);
             _logger.LogError(ex, "HTTP error while placing order with ID: {OrderId}. Status: {StatusCode}",
                 order.Id, ex.StatusCode);
             throw;
@@ -88,6 +89,7 @@ public sealed class OrdersAPIService
         catch (Exception ex) when (ex is not ArgumentException)
         {
             activity?.SetStatus(ActivityStatusCode.Error, ex.Message);
+            activity?.AddException(ex);
             _logger.LogError(ex, "Unexpected error while placing order with ID: {OrderId}", order.Id);
             throw;
         }
@@ -141,12 +143,14 @@ public sealed class OrdersAPIService
         catch (HttpRequestException ex)
         {
             activity?.SetStatus(ActivityStatusCode.Error, $"HTTP error: {ex.StatusCode}");
+            activity?.AddException(ex);
             _logger.LogError(ex, "HTTP error while placing batch of orders. Status: {StatusCode}", ex.StatusCode);
             throw;
         }
         catch (Exception ex) when (ex is not ArgumentException)
         {
             activity?.SetStatus(ActivityStatusCode.Error, ex.Message);
+            activity?.AddException(ex);
             _logger.LogError(ex, "Unexpected error while placing batch of orders");
             throw;
         }
@@ -182,12 +186,14 @@ public sealed class OrdersAPIService
         catch (HttpRequestException ex)
         {
             activity?.SetStatus(ActivityStatusCode.Error, $"HTTP error: {ex.StatusCode}");
+            activity?.AddException(ex);
             _logger.LogError(ex, "HTTP error while fetching orders from orders-api. Status: {StatusCode}", ex.StatusCode);
             throw;
         }
         catch (Exception ex)
         {
             activity?.SetStatus(ActivityStatusCode.Error, ex.Message);
+            activity?.AddException(ex);
             _logger.LogError(ex, "Unexpected error while fetching orders from orders-api");
             throw;
         }
@@ -238,12 +244,14 @@ public sealed class OrdersAPIService
         catch (HttpRequestException ex) when (ex.StatusCode == System.Net.HttpStatusCode.NotFound)
         {
             activity?.SetStatus(ActivityStatusCode.Error, "Order not found (404)");
+            // 404 is expected, don't record as exception in telemetry
             _logger.LogWarning("Order with ID {OrderId} not found (404)", orderId);
             return null;
         }
         catch (HttpRequestException ex)
         {
             activity?.SetStatus(ActivityStatusCode.Error, $"HTTP error: {ex.StatusCode}");
+            activity?.AddException(ex);
             _logger.LogError(ex, "HTTP error while fetching order {OrderId} from orders-api. Status: {StatusCode}",
                 orderId, ex.StatusCode);
             throw;
@@ -251,6 +259,7 @@ public sealed class OrdersAPIService
         catch (Exception ex) when (ex is not ArgumentException)
         {
             activity?.SetStatus(ActivityStatusCode.Error, ex.Message);
+            activity?.AddException(ex);
             _logger.LogError(ex, "Unexpected error while fetching order {OrderId} from orders-api", orderId);
             throw;
         }
@@ -277,11 +286,15 @@ public sealed class OrdersAPIService
         }
         catch (HttpRequestException ex)
         {
+            activity?.SetStatus(ActivityStatusCode.Error, $"HTTP error: {ex.StatusCode}");
+            activity?.AddException(ex);
             _logger.LogError(ex, "HTTP error while fetching weather forecasts from orders-api. Status: {StatusCode}", ex.StatusCode);
             throw;
         }
         catch (Exception ex)
         {
+            activity?.SetStatus(ActivityStatusCode.Error, ex.Message);
+            activity?.AddException(ex);
             _logger.LogError(ex, "Unexpected error while fetching weather forecasts from orders-api");
             throw;
         }
@@ -328,11 +341,15 @@ public sealed class OrdersAPIService
         }
         catch (HttpRequestException ex)
         {
+            activity?.SetStatus(ActivityStatusCode.Error, $"HTTP error: {ex.StatusCode}");
+            activity?.AddException(ex);
             _logger.LogError(ex, "HTTP error while updating order {OrderId}. Status: {StatusCode}", id, ex.StatusCode);
             throw;
         }
         catch (Exception ex) when (ex is not ArgumentException)
         {
+            activity?.SetStatus(ActivityStatusCode.Error, ex.Message);
+            activity?.AddException(ex);
             _logger.LogError(ex, "Unexpected error while updating order {OrderId}", id);
             throw;
         }
@@ -375,11 +392,15 @@ public sealed class OrdersAPIService
         }
         catch (HttpRequestException ex)
         {
+            activity?.SetStatus(ActivityStatusCode.Error, $"HTTP error: {ex.StatusCode}");
+            activity?.AddException(ex);
             _logger.LogError(ex, "HTTP error while deleting order {OrderId}. Status: {StatusCode}", id, ex.StatusCode);
             throw;
         }
         catch (Exception ex) when (ex is not ArgumentException)
         {
+            activity?.SetStatus(ActivityStatusCode.Error, ex.Message);
+            activity?.AddException(ex);
             _logger.LogError(ex, "Unexpected error while deleting order {OrderId}", id);
             throw;
         }
@@ -432,12 +453,14 @@ public sealed class OrdersAPIService
         catch (HttpRequestException ex)
         {
             activity?.SetStatus(ActivityStatusCode.Error, $"HTTP error: {ex.StatusCode}");
+            activity?.AddException(ex);
             _logger.LogError(ex, "HTTP error while deleting batch of orders. Status: {StatusCode}", ex.StatusCode);
             throw;
         }
         catch (Exception ex) when (ex is not ArgumentException)
         {
             activity?.SetStatus(ActivityStatusCode.Error, ex.Message);
+            activity?.AddException(ex);
             _logger.LogError(ex, "Unexpected error while deleting batch of orders");
             throw;
         }

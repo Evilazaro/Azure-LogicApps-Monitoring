@@ -1,4 +1,4 @@
-﻿using app.ServiceDefaults.CommonTypes;
+using app.ServiceDefaults.CommonTypes;
 using Azure.Messaging.ServiceBus;
 using eShop.Orders.API.Interfaces;
 using System.Diagnostics;
@@ -94,6 +94,7 @@ public sealed class OrdersMessageHandler : IOrdersMessageHandler
         catch (ServiceBusException ex)
         {
             activity?.SetStatus(ActivityStatusCode.Error, ex.Message);
+            activity?.AddException(ex);
             activity?.SetTag("error.type", nameof(ServiceBusException));
             activity?.SetTag("exception.message", ex.Message);
             _logger.LogError(ex, "Failed to send order message for order {OrderId} to topic {TopicName}. Reason: {Reason}",
@@ -103,6 +104,7 @@ public sealed class OrdersMessageHandler : IOrdersMessageHandler
         catch (Exception ex)
         {
             activity?.SetStatus(ActivityStatusCode.Error, ex.Message);
+            activity?.AddException(ex);
             activity?.SetTag("error.type", ex.GetType().Name);
             _logger.LogError(ex, "Unexpected error sending order message for order {OrderId} to topic {TopicName}",
                 order.Id, _topicName);
@@ -179,6 +181,7 @@ public sealed class OrdersMessageHandler : IOrdersMessageHandler
         catch (ServiceBusException ex)
         {
             activity?.SetStatus(ActivityStatusCode.Error, ex.Message);
+            activity?.AddException(ex);
             activity?.SetTag("error.type", nameof(ServiceBusException));
             activity?.SetTag("exception.message", ex.Message);
             _logger.LogError(ex, "Failed to send batch of order messages to topic {TopicName}. Reason: {Reason}",
@@ -188,6 +191,7 @@ public sealed class OrdersMessageHandler : IOrdersMessageHandler
         catch (Exception ex)
         {
             activity?.SetStatus(ActivityStatusCode.Error, ex.Message);
+            activity?.AddException(ex);
             activity?.SetTag("error.type", ex.GetType().Name);
             _logger.LogError(ex, "Unexpected error sending batch of order messages to topic {TopicName}",
                 _topicName);

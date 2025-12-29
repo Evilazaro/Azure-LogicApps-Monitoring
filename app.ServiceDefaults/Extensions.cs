@@ -110,7 +110,13 @@ public static class Extensions
                         {
                             activity.SetTag("http.request.method", httpRequest.Method.ToString());
                         };
-                    });
+                    })
+                    .AddSqlClientInstrumentation(options =>
+                    {
+                        // Add SQL Client instrumentation for additional database telemetry
+                        options.RecordException = true;
+                    })
+                    .AddSource("Azure.Messaging.ServiceBus.*"); // Add Service Bus instrumentation
             });
 
         builder.AddOpenTelemetryExporters();
@@ -242,8 +248,7 @@ public static class Extensions
                     ExcludeVisualStudioCodeCredential = false,
                     ExcludeAzureCliCredential = false,
                     ExcludeAzurePowerShellCredential = true,
-                    ExcludeInteractiveBrowserCredential = true,
-                    ExcludeSharedTokenCacheCredential = false
+                    ExcludeInteractiveBrowserCredential = true
                 });
 
                 var clientOptions = new ServiceBusClientOptions

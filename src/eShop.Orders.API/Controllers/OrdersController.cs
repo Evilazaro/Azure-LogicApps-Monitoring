@@ -86,6 +86,11 @@ public sealed class OrdersController : ControllerBase
         {
             activity?.SetStatus(ActivityStatusCode.Error, "Validation failed");
             activity?.SetTag("error.type", nameof(ArgumentException));
+            activity?.AddEvent(new ActivityEvent("exception", tags: new ActivityTagsCollection
+            {
+                { "exception.type", ex.GetType().FullName ?? ex.GetType().Name },
+                { "exception.message", ex.Message }
+            }));
             _logger.LogWarning(ex, "Invalid order data for order {OrderId}", order.Id);
             return BadRequest(new { error = ex.Message, orderId = order.Id, type = "ValidationError" });
         }
@@ -93,6 +98,11 @@ public sealed class OrdersController : ControllerBase
         {
             activity?.SetStatus(ActivityStatusCode.Error, "Order already exists");
             activity?.SetTag("error.type", nameof(InvalidOperationException));
+            activity?.AddEvent(new ActivityEvent("exception", tags: new ActivityTagsCollection
+            {
+                { "exception.type", ex.GetType().FullName ?? ex.GetType().Name },
+                { "exception.message", ex.Message }
+            }));
             _logger.LogWarning(ex, "Order {OrderId} already exists", order.Id);
             return Conflict(new { error = ex.Message, orderId = order.Id, type = "ConflictError" });
         }
@@ -100,6 +110,11 @@ public sealed class OrdersController : ControllerBase
         {
             activity?.SetStatus(ActivityStatusCode.Error, ex.Message);
             activity?.SetTag("error.type", ex.GetType().Name);
+            activity?.AddEvent(new ActivityEvent("exception", tags: new ActivityTagsCollection
+            {
+                { "exception.type", ex.GetType().FullName ?? ex.GetType().Name },
+                { "exception.message", ex.Message }
+            }));
             _logger.LogError(ex, "Unexpected error while placing order {OrderId}", order.Id);
             return StatusCode(StatusCodes.Status500InternalServerError,
                 new { error = "An error occurred while processing your request", orderId = order.Id, type = "InternalError" });
@@ -152,6 +167,11 @@ public sealed class OrdersController : ControllerBase
         {
             activity?.SetStatus(ActivityStatusCode.Error, ex.Message);
             activity?.SetTag("error.type", ex.GetType().Name);
+            activity?.AddEvent(new ActivityEvent("exception", tags: new ActivityTagsCollection
+            {
+                { "exception.type", ex.GetType().FullName ?? ex.GetType().Name },
+                { "exception.message", ex.Message }
+            }));
             _logger.LogError(ex, "Unexpected error while placing batch of orders");
             return StatusCode(StatusCodes.Status500InternalServerError,
                 new { error = "An error occurred while processing your request", type = "InternalError" });
@@ -191,6 +211,11 @@ public sealed class OrdersController : ControllerBase
         {
             activity?.SetStatus(ActivityStatusCode.Error, ex.Message);
             activity?.SetTag("error.type", ex.GetType().Name);
+            activity?.AddEvent(new ActivityEvent("exception", tags: new ActivityTagsCollection
+            {
+                { "exception.type", ex.GetType().FullName ?? ex.GetType().Name },
+                { "exception.message", ex.Message }
+            }));
             _logger.LogError(ex, "Unexpected error while retrieving orders");
             return StatusCode(StatusCodes.Status500InternalServerError,
                 new { error = "An error occurred while processing your request", type = "InternalError" });
@@ -249,6 +274,11 @@ public sealed class OrdersController : ControllerBase
         {
             activity?.SetStatus(ActivityStatusCode.Error, ex.Message);
             activity?.SetTag("error.type", ex.GetType().Name);
+            activity?.AddEvent(new ActivityEvent("exception", tags: new ActivityTagsCollection
+            {
+                { "exception.type", ex.GetType().FullName ?? ex.GetType().Name },
+                { "exception.message", ex.Message }
+            }));
             _logger.LogError(ex, "Unexpected error while retrieving order {OrderId}", id);
             return StatusCode(StatusCodes.Status500InternalServerError,
                 new { error = "An error occurred while processing your request", orderId = id, type = "InternalError" });
@@ -318,6 +348,11 @@ public sealed class OrdersController : ControllerBase
         {
             activity?.SetStatus(ActivityStatusCode.Error, ex.Message);
             activity?.SetTag("error.type", ex.GetType().Name);
+            activity?.AddEvent(new ActivityEvent("exception", tags: new ActivityTagsCollection
+            {
+                { "exception.type", ex.GetType().FullName ?? ex.GetType().Name },
+                { "exception.message", ex.Message }
+            }));
             _logger.LogError(ex, "Unexpected error while deleting order {OrderId}", id);
             return StatusCode(StatusCodes.Status500InternalServerError,
                 new { error = "An error occurred while processing your request", orderId = id, type = "InternalError" });
@@ -368,6 +403,11 @@ public sealed class OrdersController : ControllerBase
         {
             activity?.SetStatus(ActivityStatusCode.Error, ex.Message);
             activity?.SetTag("error.type", ex.GetType().Name);
+            activity?.AddEvent(new ActivityEvent("exception", tags: new ActivityTagsCollection
+            {
+                { "exception.type", ex.GetType().FullName ?? ex.GetType().Name },
+                { "exception.message", ex.Message }
+            }));
             _logger.LogError(ex, "Failed to delete orders batch");
             return StatusCode(StatusCodes.Status500InternalServerError,
                 new { error = "Failed to delete orders", message = ex.Message, type = "InternalError" });
