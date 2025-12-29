@@ -88,8 +88,11 @@ resource wfSA 'Microsoft.Storage/storageAccounts@2025-06-01' = {
     publicNetworkAccess: 'Enabled' // Allow access from public networks
     allowSharedKeyAccess: true // Required for Logic Apps Standard initial connection
     networkAcls: {
-      bypass: 'AzureServices'
+      bypass: 'AzureServices, Logging, Metrics'
       defaultAction: 'Allow'
+      // Allow Azure datacenter IPs for deployment-time operations
+      ipRules: []
+      virtualNetworkRules: []
     }
   }
 }
@@ -163,6 +166,34 @@ resource fileContributorRole 'Microsoft.Authorization/roleAssignments@2022-04-01
 resource blobSvc 'Microsoft.Storage/storageAccounts/blobServices@2025-06-01' = {
   parent: wfSA
   name: 'default'
+}
+
+// File service for Logic Apps content share
+@description('File service for workflow storage account')
+resource fileSvc 'Microsoft.Storage/storageAccounts/fileServices@2025-06-01' = {
+  parent: wfSA
+  name: 'default'
+}
+
+// Pre-create the Logic App content share to avoid 403 errors during deployment
+// The share name must match what the Logic App expects: {logicAppName}-content
+var logicAppName = '${cleanedName}-${uniqueSuffix}-logicapp'
+var contentShareName = '${logicAppName}-content'
+
+@description('File share for Logic App content (pre-created to avoid 403 errors)')
+resource contentShare 'Microsoft.Storage/storageAccounts/fileServices/shares@2025-06-01' = {
+  parent: fileSvc
+  name: contentShareName
+  properties: {
+    shareQuota: 5120 // 5GB quota
+    enabledProtocols: 'SMB'
+  }
+  dependsOn: [
+    blobOwnerRole
+    queueContributorRole
+    tableContributorRole
+    fileContributorRole
+  ]
 }
 
 // Container for successfully processed orders
