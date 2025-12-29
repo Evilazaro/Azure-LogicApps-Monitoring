@@ -67,9 +67,6 @@ hooks:
         ./hooks/postprovision.ps1 -Force -Verbose    # Configure .NET user secrets and SQL managed identity
         ./hooks/configure-logic-app.ps1               # Configure Logic App content share settings
         ./hooks/Generate-Orders.ps1 -Force -Verbose    # Generate test order data
-        # Note: SQL managed identity configuration is handled within postprovision.ps1
-        # Uncomment the line below only if manual SQL configuration is needed:
-        #./hooks/sql-managed-identity-config.ps1 -SqlServerName $env:AZURE_SQL_SERVER_NAME -DatabaseName $env:AZURE_SQL_DATABASE_NAME -PrincipalDisplayName $env:MANAGED_IDENTITY_NAME -DatabaseRoles @("db_owner")
       continueOnError: false
       interactive: false
 
