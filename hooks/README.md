@@ -43,15 +43,196 @@ By automating environment validation, secret management, SQL managed identity co
 
 ## 🔄 Developer Inner Loop Workflow
 
-The Developer Inner Loop consists of iterative cycles through validation, provisioning, configuration, and testing phases.
+The Developer Inner Loop consists of iterative cycles through validation, provisioning, configuration, and testing phases. This section covers both **Azure deployment workflow** and **local development workflow** using .NET Aspire.
+
+### Development Modes
+
+The solution supports two primary development modes:
+
+| Mode | Database | Service Bus | Monitoring | Setup Time | Cost |
+|------|----------|-------------|------------|------------|------|
+| **Local Development** | SQL Server container | Service Bus emulator | Aspire Dashboard | ~1 min | Free |
+| **Azure Deployment** | Azure SQL Database | Azure Service Bus | Application Insights | ~10 min | Pay-per-use |
+
+### Local Development Workflow (Inner Loop)
+
+This is the fastest path for daily development, running entirely on your local workstation with containerized dependencies.
+
+#### Prerequisites
+
+| Component | Version | Purpose | Installation |
+|-----------|---------|---------|--------------|
+| **.NET SDK** | 10.0+ | Application runtime | `winget install Microsoft.DotNet.SDK.10` |
+| **Docker Desktop** | Latest | Container orchestration | [docker.com/products/docker-desktop](https://docker.com/products/docker-desktop) |
+| **.NET Aspire Workload** | 9.5+ | Aspire orchestration | `dotnet workload install aspire` |
+| **Visual Studio 2022** | 17.13+ | IDE (optional) | [visualstudio.com](https://visualstudio.microsoft.com) |
+| **VS Code + C# Extension** | Latest | IDE (optional) | [code.visualstudio.com](https://code.visualstudio.com) |
+
+#### Quick Start (Local Development)
+
+```powershell
+# 1. Ensure Docker Desktop is running
+docker ps
+
+# 2. Navigate to AppHost project
+cd app.AppHost
+
+# 3. Run the application (starts all services + containers)
+dotnet run
+
+# 4. Access services:
+#    - Aspire Dashboard: https://localhost:17267
+#    - Web App: Check Dashboard for dynamically assigned port
+#    - Orders API: Check Dashboard for dynamically assigned port
+```
+
+**What Happens Automatically:**
+- SQL Server container starts with persistent volume
+- Azure Service Bus emulator container starts
+- Database schema is created (`EnsureCreatedAsync()`)
+- Service Bus topic and subscription are created
+- All services register with service discovery
+- Health checks are configured
+- OpenTelemetry tracing is enabled
+
+#### Local Inner Loop Cycle
+
+```mermaid
+flowchart LR
+    Start([Local Dev Start]) --> Docker[Docker Running?]
+    Docker -->|No| StartDocker[Start Docker Desktop]
+    Docker -->|Yes| Run
+    StartDocker --> Run[Run AppHost<br/>dotnet run]
+    
+    Run --> Ready([Environment Ready<br/>~30-60 seconds])
+    
+    Ready --> DevLoop
+
+    subgraph DevLoop["🔄 INNER LOOP (10-30 seconds/iteration)"]
+        direction TB
+        Code[💻 Edit Code<br/>C#, Razor, JSON] --> HotReload[⚡ Hot Reload<br/>1-3 seconds]
+        HotReload --> Test[🧪 Test Changes<br/>Browser/Postman]
+        Test --> Logs[📊 View Logs<br/>Aspire Dashboard]
+        Logs --> Review{Works?}
+        Review -->|Yes| Code
+        Review -->|No| Debug[🐛 Debug<br/>Breakpoints in IDE]
+        Debug --> Code
+    end
+
+    DevLoop --> Stop[Stop Development<br/>Ctrl+C]
+    Stop --> Cleanup[Docker Auto-Cleanup]
+
+    style Start fill:#0078d4,stroke:#005a9e,stroke-width:3px,color:#fff
+    style Ready fill:#28a745,stroke:#218838,stroke-width:3px,color:#fff
+    style DevLoop fill:#fff3e0,stroke:#ff9800,stroke-width:4px
+    style Code fill:#e3f2fd,stroke:#1976d2,stroke-width:2px
+    style HotReload fill:#e8f5e9,stroke:#4caf50,stroke-width:2px
+    style Test fill:#f3e5f5,stroke:#9c27b0,stroke-width:2px
+    style Logs fill:#fff3e0,stroke:#ff9800,stroke-width:2px
+    style Debug fill:#ffebee,stroke:#f44336,stroke-width:2px
+```
+
+#### Local Development Features
+
+**Hot Reload (Built-in .NET 10):**
+- C# code changes apply automatically (1-3 seconds)
+- Razor component updates reflect immediately
+- JSON configuration changes reload services
+- No manual restart required for most changes
+
+**Debugging:**
+- Set breakpoints in Visual Studio or VS Code
+- Step through code across multiple services
+- Inspect variables, call stacks, and threads
+- Attach debugger to any running service
+
+**Observability (Aspire Dashboard):**
+- **Resources Tab**: View all services, containers, status
+- **Logs Tab**: Real-time log streaming with filtering
+- **Traces Tab**: Distributed tracing (OpenTelemetry)
+- **Metrics Tab**: Performance counters and gauges
+- **Console Tab**: Container stdout/stderr
+
+**Service Discovery:**
+- Services reference each other by name (e.g., `orders-api`)
+- Aspire resolves to `http://localhost:<dynamic-port>`
+- No hardcoded URLs needed in code
+
+#### Database Management (Local)
+
+**Automatic Setup:**
+```csharp
+// In Program.cs - runs automatically on startup
+await dbContext.Database.EnsureCreatedAsync();
+```
+
+**Manual Migrations (if using EF migrations):**
+```powershell
+cd src\eShop.Orders.API
+
+# Add migration after model changes
+dotnet ef migrations add AddNewColumn
+
+# Apply migration
+dotnet ef database update
+
+# Rollback migration
+dotnet ef database update PreviousMigrationName
+```
+
+**View Connection String:**
+```powershell
+# Check what connection string Aspire configured
+dotnet user-secrets list --project src\eShop.Orders.API | Select-String "ConnectionStrings"
+```
+
+#### Service Bus Testing (Local)
+
+The Service Bus emulator runs automatically in a container:
+
+**Verify Emulator:**
+```powershell
+# Check if Service Bus emulator is running
+docker ps | Select-String "servicebus"
+
+# View emulator logs
+docker logs <container-id>
+```
+
+**Publish Test Message:**
+```powershell
+# Use Orders API endpoint to create order (auto-publishes to Service Bus)
+Invoke-RestMethod -Method Post -Uri "https://localhost:<api-port>/api/orders" `
+  -ContentType "application/json" `
+  -Body '{"customerId": "123", "items": [{"productId": "P1", "quantity": 2}]}'
+```
+
+**View Messages in Aspire Dashboard:**
+1. Navigate to "Traces" tab
+2. Filter by `Azure.Messaging.ServiceBus`
+3. See message publish and receive traces
+
+### Azure Deployment Workflow
+
+For production-like environments, integration testing, or team collaboration:
 
 ### Workflow Phases
 
 ```mermaid
 flowchart LR
-    Start([👨‍💻 Developer Starts Work]) --> Validate
+    Start([👨‍💻 Developer Starts Work]) --> ModeChoice{Development<br/>Mode?}
+    
+    ModeChoice -->|Local| LocalSetup
+    ModeChoice -->|Azure| AzureSetup
 
-    subgraph Setup["🔧 ONE-TIME SETUP"]
+    subgraph LocalSetup["🏠 LOCAL DEVELOPMENT (Fast)"]
+        direction TB
+        LocalPrereq["1️⃣ Prerequisites<br/>Docker, .NET 10, Aspire"]
+        LocalPrereq --> LocalRun["2️⃣ Run AppHost<br/>dotnet run (~1 min)"]
+        LocalRun --> LocalReady["✅ Environment Ready<br/>Containers + Services"]
+    end
+
+    subgraph AzureSetup["☁️ AZURE DEPLOYMENT (Complete)"]
         direction TB
         Validate["1️⃣ Validate Environment<br/>check-dev-workstation + preprovision<br/>⏱️ ~20 sec"]
         Validate --> CheckValid{✅ Prerequisites OK?}
@@ -68,10 +249,11 @@ flowchart LR
         Configure["3️⃣ Configure Secrets<br/>postprovision (includes SQL managed identity)<br/>⏱️ ~20-30 sec"]
     end
 
-    Configure --> Ready([✅ Environment Ready])
-    Ready --> DevLoop
+    LocalReady --> LocalLoop([Local Inner Loop])
+    Configure --> AzureReady([✅ Azure Environment Ready])
+    AzureReady --> DevLoop
 
-    subgraph DevLoop["🔄 DEVELOPER INNER LOOP"]
+    subgraph DevLoop["🔄 DEVELOPER INNER LOOP (Both Modes)"]
         direction TB
         Code[💻 Write Code] --> Test[🧪 Test Locally]
         Test --> Review{Works?}
@@ -79,11 +261,15 @@ flowchart LR
         Review --> |Needs Infra Changes| ExitLoop[ ]
     end
 
-    ExitLoop --> Validate
+    ExitLoop --> ModeChoice
+
+    LocalLoop --> Code
 
     style Start fill:#0078d4,stroke:#005a9e,stroke-width:3px,color:#fff
-    style Ready fill:#28a745,stroke:#218838,stroke-width:3px,color:#fff
-    style Setup fill:#f8f9fa,stroke:#6c757d,stroke-width:2px
+    style LocalReady fill:#28a745,stroke:#218838,stroke-width:3px,color:#fff
+    style AzureReady fill:#28a745,stroke:#218838,stroke-width:3px,color:#fff
+    style LocalSetup fill:#e3f2fd,stroke:#1976d2,stroke-width:2px
+    style AzureSetup fill:#f8f9fa,stroke:#6c757d,stroke-width:2px
     style DevLoop fill:#fff3e0,stroke:#ff9800,stroke-width:4px
     style Code fill:#e3f2fd,stroke:#1976d2,stroke-width:2px
     style Test fill:#e8f5e9,stroke:#4caf50,stroke-width:2px
@@ -92,9 +278,170 @@ flowchart LR
     style ExitLoop fill:none,stroke:none
 ```
 
+### Comparison: Local vs. Azure Development
+
+| Aspect | Local Development | Azure Development |
+|--------|------------------|-------------------|
+| **Startup Time** | ~1 minute | ~10 minutes |
+| **Database** | SQL Server container | Azure SQL Database |
+| **Authentication** | SQL (sa user) | Entra ID (Managed Identity) |
+| **Service Bus** | Emulator container | Azure Service Bus |
+| **Monitoring** | Aspire Dashboard | Application Insights + Aspire |
+| **Cost** | Free | Azure consumption charges |
+| **Network Latency** | < 1ms (localhost) | 5-50ms (internet) |
+| **Isolation** | Per-developer | Shared (team environment) |
+| **Secrets** | User secrets | User secrets + Key Vault |
+| **Best For** | Daily development, debugging | Integration tests, staging |
+
+### Hybrid Development Mode
+
+Run locally but connect to Azure resources (best of both worlds):
+
+```powershell
+# 1. Provision Azure resources once
+azd provision
+
+# 2. User secrets are configured automatically by postprovision
+# 3. Start AppHost - it detects Azure config and uses Azure services
+cd app.AppHost
+dotnet run
+
+# Result: Local code execution + Azure SQL + Azure Service Bus
+```
+
+**Benefits:**
+- Fast local debugging with hot reload
+- Real Azure services for integration testing
+- Managed identity testing
+- Firewall and network policy testing
+
+**When to Use:**
+- Testing Entra ID authentication flows
+- Validating Azure-specific configurations
+- Reproducing production issues locally
+- Performance testing with real Azure latency
+
+### Troubleshooting Local Development
+
+#### Issue: "SQL Server container fails to start"
+
+```powershell
+# Check Docker resources (need at least 4GB RAM)
+# Docker Desktop → Settings → Resources
+
+# View container logs
+docker logs <sql-container-id>
+
+# Manually start SQL Server container
+docker run -e "ACCEPT_EULA=Y" -e "SA_PASSWORD=P@ssw0rd!" `
+  -p 1433:1433 --name sqlserver `
+  -d mcr.microsoft.com/mssql/server:2022-latest
+```
+
+#### Issue: "Port already in use (17267)"
+
+```powershell
+# Find process using port
+netstat -ano | findstr :17267
+
+# Kill process (replace <PID>)
+Stop-Process -Id <PID> -Force
+
+# Or edit launchSettings.json to use different port
+```
+
+#### Issue: "Service discovery not working"
+
+```powershell
+# Verify services are registered
+# Check Aspire Dashboard → Resources tab
+
+# Restart AppHost
+# Stop (Ctrl+C) and run again
+dotnet run
+```
+
+#### Issue: "Hot Reload not working"
+
+```powershell
+# Verify .NET SDK version
+dotnet --version  # Must be 10.0+
+
+# Run with explicit watch mode
+dotnet watch --project app.AppHost
+
+# Enable verbose output
+$env:DOTNET_WATCH_SUPPRESS_LAUNCH_BROWSER = "true"
+dotnet watch run
+```
+
+#### Issue: "Database schema not created"
+
+```powershell
+# Check if EnsureCreatedAsync is called in Program.cs
+# src\eShop.Orders.API\Program.cs line ~115
+
+# View database initialization logs
+# Check Aspire Dashboard → Logs → orders-api
+
+# Manually create database
+cd src\eShop.Orders.API
+dotnet ef database update
+```
+
 ---
 
 ## 🚀 Quick Start Guide
+
+### Choose Your Development Path
+
+#### Option 1: Local Development (Fastest - Recommended for Daily Work)
+
+**Prerequisites**: .NET SDK 10.0+, Docker Desktop, Aspire workload
+
+```powershell
+# Windows
+cd Z:\app
+
+# Install .NET Aspire workload (first time only)
+dotnet workload install aspire
+
+# Ensure Docker Desktop is running
+docker ps
+
+# Start application with all dependencies
+cd app.AppHost
+dotnet run
+
+# Access services:
+# - Aspire Dashboard: https://localhost:17267
+# - Services: Check dashboard for dynamic ports
+```
+
+```bash
+# Linux/macOS
+cd /path/to/app
+
+# Install .NET Aspire workload (first time only)
+dotnet workload install aspire
+
+# Ensure Docker is running
+docker ps
+
+# Start application with all dependencies
+cd app.AppHost
+dotnet run
+
+# Access services:
+# - Aspire Dashboard: https://localhost:17267
+# - Services: Check dashboard for dynamic ports
+```
+
+**Result**: Complete development environment in ~1 minute, all dependencies containerized.
+
+#### Option 2: Azure Deployment (Full Cloud Environment)
+
+**Prerequisites**: Azure subscription, Azure CLI, Azure Developer CLI
 
 ### Azure Developer CLI Overview
 
