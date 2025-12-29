@@ -912,34 +912,87 @@ ORDER_JSON
 }
 
 ###############################################################################
-# Main Script
+# Main Script Execution
 ###############################################################################
 
+###############################################################################
+# FUNCTION: parse_arguments
+#
+# SYNOPSIS
+#     Parses and validates command-line arguments.
+#
+# DESCRIPTION
+#     Processes all command-line arguments and sets corresponding global
+#     variables. Handles both long-form GNU-style options (--option) and
+#     displays help for unknown options. Implements parameter validation
+#     and provides verbose logging of parsed values.
+#
+# PARAMETERS
+#     $@ - All command-line arguments passed to script
+#
+# OUTPUTS
+#     Updates global variables: ORDER_COUNT, OUTPUT_PATH, MIN_PRODUCTS,
+#     MAX_PRODUCTS, FORCE, VERBOSE, DRY_RUN
+#
+# OPTIONS
+#     --count COUNT           Set order count (1-10000)
+#     --output-path PATH      Set output file path
+#     --min-products NUM      Set minimum products per order (1-20)
+#     --max-products NUM      Set maximum products per order (1-20)
+#     --force                 Force execution without prompts
+#     --dry-run               Preview without making changes
+#     --verbose               Enable verbose output
+#     --help                  Display help and exit
+#
+# NOTES
+#     - Uses shift to consume processed arguments
+#     - Exits with code 0 for --help
+#     - Exits with code 1 for unknown options
+#     - Verbose logging enabled with --verbose flag
+#
+# EXAMPLES
+#     parse_arguments --count 100 --verbose
+#     parse_arguments --help
+###############################################################################
 parse_arguments() {
+    print_verbose "Parsing command-line arguments..."
+    
+    # Process all arguments using shift to consume them
     while [[ $# -gt 0 ]]; do
         case $1 in
             --count)
                 ORDER_COUNT="$2"
+                print_verbose "  ORDER_COUNT set to: ${ORDER_COUNT}"
                 shift 2
                 ;;
             --output-path)
                 OUTPUT_PATH="$2"
+                print_verbose "  OUTPUT_PATH set to: ${OUTPUT_PATH}"
                 shift 2
                 ;;
             --min-products)
                 MIN_PRODUCTS="$2"
+                print_verbose "  MIN_PRODUCTS set to: ${MIN_PRODUCTS}"
                 shift 2
                 ;;
             --max-products)
                 MAX_PRODUCTS="$2"
+                print_verbose "  MAX_PRODUCTS set to: ${MAX_PRODUCTS}"
                 shift 2
                 ;;
             --force)
                 FORCE=true
+                print_verbose "  FORCE mode enabled"
+                shift
+                ;;
+            --dry-run)
+                DRY_RUN=true
+                print_verbose "  DRY-RUN mode enabled (simulation only)"
                 shift
                 ;;
             --verbose)
                 VERBOSE=true
+                # Verbose logging starts here
                 shift
                 ;;
             --help)
@@ -948,86 +1001,267 @@ parse_arguments() {
                 ;;
             *)
                 print_error "Unknown option: $1"
+                echo ""
                 show_help
                 exit 1
                 ;;
         esac
     done
+    
+    print_verbose "Argument parsing completed successfully"
 }
 
+###############################################################################
+# FUNCTION: main
+#
+# SYNOPSIS
+#     Main script execution coordinator.
+#
+# DESCRIPTION
+#     Orchestrates the complete order generation workflow including argument
+#     parsing, validation, directory creation, order generation, file output,
+#     and summary statistics. Implements comprehensive error handling and
+#     provides detailed progress feedback.
+#
+# PARAMETERS
+#     $@ - All command-line arguments (passed to parse_arguments)
+#
+# WORKFLOW
+#     1. Parse command-line arguments
+#     2. Log execution parameters
+#     3. Validate parameter ranges and relationships
+#     4. Create output directory if needed
+#     5. Handle dry-run mode (simulation)
+#     6. Generate orders with progress tracking
+#     7. Write JSON to output file
+#     8. Calculate and display statistics
+#     9. Display execution summary
+#
+# EXIT CODES
+#     0 - Success
+#     1 - Parameter validation failure
+#     1 - Directory creation failure
+#     1 - File write failure
+#
+# OUTPUTS
+#     - Progress updates during generation
+#     - Success messages with file details
+#     - Summary statistics (orders, file size, products)
+#     - Detailed statistics (revenue, average order value) in verbose mode
+#     - Verbose logging when --verbose flag is set
+#
+# NOTES
+#     - Progress shown at 10% intervals (minimum every order)
+#     - File size calculated in KB with 2 decimal precision
+#     - Supports dry-run mode for testing without file output
+#     - Creates output directory automatically if missing
+#     - All monetary values formatted to 2 decimal places
+#
+# EXAMPLES
+#     main --count 50 --verbose
+#     main --count 100 --output-path "/tmp/orders.json"
+#     main --dry-run --verbose
+###############################################################################
 main() {
+    # Parse command-line arguments and set global variables
     parse_arguments "$@"
     
+    # Log script startup with parameters
+    print_verbose "==========================================================="
     print_verbose "Starting order generation process..."
-    print_verbose "Parameters: OrderCount=${ORDER_COUNT}, MinProducts=${MIN_PRODUCTS}, MaxProducts=${MAX_PRODUCTS}"
+    print_verbose "==========================================================="
+    print_verbose "Execution Parameters:"
+    print_verbose "  Order Count: ${ORDER_COUNT}"
+    print_verbose "  Min Products per Order: ${MIN_PRODUCTS}"
+    print_verbose "  Max Products per Order: ${MAX_PRODUCTS}"
+    print_verbose "  Output Path: ${OUTPUT_PATH}"
+    print_verbose "  Force Mode: ${FORCE}"
+    print_verbose "  Dry-Run Mode: ${DRY_RUN}"
+    print_verbose "  Verbose Mode: ${VERBOSE}"
+    print_verbose "==========================================================="
     
-    # Validate parameters
+    # Phase 1: Parameter Validation
+    print_verbose "Phase 1: Validating parameters..."
+    
+    # Validate numeric parameter ranges
     validate_range "${ORDER_COUNT}" 1 10000 "OrderCount"
     validate_range "${MIN_PRODUCTS}" 1 20 "MinProducts"
     validate_range "${MAX_PRODUCTS}" 1 20 "MaxProducts"
     
+    # Validate logical relationship between min and max products
     if [[ ${MIN_PRODUCTS} -gt ${MAX_PRODUCTS} ]]; then
         print_error "MinProducts (${MIN_PRODUCTS}) cannot be greater than MaxProducts (${MAX_PRODUCTS})"
+        print_error "Please adjust parameters so MinProducts ≤ MaxProducts"
         exit 1
     fi
     
-    # Ensure output directory exists
+    print_verbose "All parameter validations passed"
+    
+    # Phase 2: Output Directory Setup
+    print_verbose "Phase 2: Preparing output directory..."
+    
+    # Resolve output directory path
     local output_dir=$(dirname "${OUTPUT_PATH}")
+    print_verbose "Output directory: ${output_dir}"
+    
+    # Create directory if it doesn't exist
     if [[ ! -d "${output_dir}" ]]; then
-        print_verbose "Creating directory: ${output_dir}"
-        mkdir -p "${output_dir}"
+        print_verbose "Output directory does not exist, creating..."
+        
+        if [[ "${DRY_RUN}" == "true" ]]; then
+            print_info "[DRY-RUN] Would create directory: ${output_dir}"
+        else
+            if mkdir -p "${output_dir}"; then
+                print_verbose "✓ Created output directory successfully"
+            else
+                print_error "Failed to create output directory: ${output_dir}"
+                print_error "Check permissions and path validity"
+                exit 1
+            fi
+        fi
+    else
+        print_verbose "Output directory exists: ${output_dir}"
     fi
     
-    # Generate orders
-    print_verbose "Generating ${ORDER_COUNT} orders..."
+    # Handle dry-run mode (simulation without file creation)
+    if [[ "${DRY_RUN}" == "true" ]]; then
+        print_info ""
+        print_info "==========================================================="
+        print_info "DRY-RUN MODE: Simulating order generation"
+        print_info "==========================================================="
+        print_info "What if: Generating ${ORDER_COUNT} orders with parameters:"
+        print_info "  Min Products: ${MIN_PRODUCTS}"
+        print_info "  Max Products: ${MAX_PRODUCTS}"
+        print_info "  Output Path: ${OUTPUT_PATH}"
+        print_info ""
+        
+        # Calculate estimated statistics
+        local avg_products=$(awk "BEGIN {printf \"%.1f\", (${MIN_PRODUCTS} + ${MAX_PRODUCTS}) / 2}")
+        local min_total_products=$((ORDER_COUNT * MIN_PRODUCTS))
+        local max_total_products=$((ORDER_COUNT * MAX_PRODUCTS))
+        
+        print_info "Estimated Results:"
+        print_info "  Total Products: ${min_total_products}-${max_total_products} (avg: ~$((ORDER_COUNT * (MIN_PRODUCTS + MAX_PRODUCTS) / 2)))"
+        print_info "  Average Products/Order: ${avg_products}"
+        print_info "  Estimated File Size: 40-60 KB (varies with product count)"
+        print_info ""
+        print_info "No files were created or modified."
+        print_info "This was a simulation only."
+        print_info "==========================================================="
+        exit 0
+    fi
     
+    # Phase 3: Order Generation
+    print_verbose "Phase 3: Generating ${ORDER_COUNT} orders..."
+    print_info ""
+    print_info "Generating ${ORDER_COUNT} orders..."
+    
+    # Initialize JSON array structure
     local orders_json="["
+    
+    # Calculate progress reporting interval (10% of total)
+    # Minimum interval is 1 to ensure progress shown for small batches
     local progress_interval=$((ORDER_COUNT / 10))
     if [[ ${progress_interval} -lt 1 ]]; then
         progress_interval=1
     fi
     
+    print_verbose "Progress will be reported every ${progress_interval} orders"
+    
+    # Generate orders with progress tracking
+    local start_time=$(date +%s)
+    
     for ((i=1; i<=ORDER_COUNT; i++)); do
-        # Add comma separator between orders
+        # Add comma separator between JSON objects (not before first)
         if [[ ${i} -gt 1 ]]; then
             orders_json+=","
         fi
         
-        # Generate order and append to JSON
+        # Generate single order and append to JSON array
         orders_json+=$(generate_order ${i} ${MIN_PRODUCTS} ${MAX_PRODUCTS})
         
-        # Show progress
+        # Display progress at calculated intervals and at completion
         if [[ $((i % progress_interval)) -eq 0 ]] || [[ ${i} -eq ${ORDER_COUNT} ]]; then
             local percent=$((i * 100 / ORDER_COUNT))
-            print_verbose "Progress: ${i}/${ORDER_COUNT} orders (${percent}%)"
+            print_info "Progress: ${i}/${ORDER_COUNT} (${percent}%)"
         fi
     done
     
+    # Close JSON array structure
     orders_json+=$'\n'"]"
     
-    # Write to file
-    print_verbose "Exporting ${ORDER_COUNT} orders to JSON..."
-    echo "${orders_json}" > "${OUTPUT_PATH}"
+    local end_time=$(date +%s)
+    local elapsed=$((end_time - start_time))
+    print_verbose "Order generation completed in ${elapsed} seconds"
     
-    # Get file size
+    # Phase 4: File Output
+    print_verbose "Phase 4: Writing JSON to file..."
+    print_info ""
+    
+    # Write generated JSON to output file
+    if echo "${orders_json}" > "${OUTPUT_PATH}"; then
+        print_verbose "✓ Successfully wrote JSON to file"
+    else
+        print_error "Failed to write JSON to file: ${OUTPUT_PATH}"
+        print_error "Check disk space and write permissions"
+        exit 1
+    fi
+    
+    # Phase 5: Calculate Statistics
+    print_verbose "Phase 5: Calculating summary statistics..."
+    
+    # Get file size using platform-appropriate stat command
     local file_size
     if command -v stat &> /dev/null; then
-        # Linux
+        # Try GNU stat (Linux) first, then BSD stat (macOS)
         file_size=$(stat -c%s "${OUTPUT_PATH}" 2>/dev/null || stat -f%z "${OUTPUT_PATH}")
     else
-        # Fallback
+        # Fallback to wc if stat not available
         file_size=$(wc -c < "${OUTPUT_PATH}")
     fi
-    local file_size_kb=$(awk "BEGIN {printf \"%.2f\", ${file_size} / 1024}")
     
-    # Display summary
+    # Convert bytes to KB with 2 decimal precision
+    local file_size_kb=$(awk "BEGIN {printf \"%.2f\", ${file_size} / 1024}")
+    print_verbose "File size: ${file_size} bytes (${file_size_kb} KB)"
+    
+    # Parse JSON to calculate additional statistics (when jq available)
+    if command -v jq &> /dev/null; then
+        print_verbose "jq detected, calculating detailed statistics..."
+        
+        # Calculate total revenue across all orders
+        local total_revenue=$(jq '[.[].totalAmount] | add' "${OUTPUT_PATH}" 2>/dev/null || echo "0")
+        
+        # Calculate average order value
+        local avg_order_value=$(awk "BEGIN {printf \"%.2f\", ${total_revenue} / ${ORDER_COUNT}}")
+        
+        # Count total products across all orders
+        local total_products=$(jq '[.[].products | length] | add' "${OUTPUT_PATH}" 2>/dev/null || echo "0")
+        
+        print_verbose "Statistics calculated: Revenue=\$${total_revenue}, Avg=\$${avg_order_value}, Products=${total_products}"
+    fi
+    
+    # Phase 6: Display Summary
+    print_info ""
     print_success "✓ Successfully generated ${ORDER_COUNT} orders"
+    print_info ""
+    print_info "Summary:"
     print_info "  Output file: ${OUTPUT_PATH}"
     print_info "  File size: ${file_size_kb} KB"
     print_info "  Products per order: ${MIN_PRODUCTS}-${MAX_PRODUCTS}"
     
-    print_verbose "Order generation process completed."
+    # Display detailed statistics if jq is available
+    if command -v jq &> /dev/null && [[ -n "${total_revenue:-}" ]]; then
+        print_info "  Total revenue: \$${total_revenue}"
+        print_info "  Average order value: \$${avg_order_value}"
+        print_info "  Total products: ${total_products}"
+    fi
+    
+    print_info ""
+    print_verbose "==========================================================="
+    print_verbose "Order generation completed successfully in ${elapsed} seconds"
+    print_verbose "==========================================================="
 }
 
-# Execute main function with all arguments
+# Execute main function with all command-line arguments
+# Script entry point
 main "$@"
