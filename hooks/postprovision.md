@@ -14,6 +14,7 @@ The `postprovision` script is an Azure Developer CLI (azd) hook that automatical
 Available in both PowerShell (`.ps1`) and Bash (`.sh`) versions for cross-platform compatibility, this script automatically runs after `azd provision` or `azd up`, configuring **26 secrets across 2 projects** (app.AppHost and eShop.Orders.API) with comprehensive Azure infrastructure details including SQL Database with managed identity access, Service Bus topics, Container Registry, Container Apps, and monitoring configuration.
 
 The script supports the current infrastructure which includes:
+
 - **SQL Database** with Entra ID authentication
 - **Service Bus** with topics and subscriptions
 - **Container Registry** and Container Apps Environment
@@ -64,25 +65,27 @@ This script is **automatically executed** by `azd provision` and `azd up` after 
 
 The script requires the following environment variables to be set by Azure Developer CLI:
 
-| Variable | Description | Example | Set By |
-|----------|-------------|---------|--------|
-| `AZURE_SUBSCRIPTION_ID` | Azure subscription GUID | `12345678-1234-...` | azd |
-| `AZURE_RESOURCE_GROUP` | Resource group name | `rg-logicapps-dev` | azd |
-| `AZURE_LOCATION` | Azure region | `eastus` | azd |
-| `AZURE_CONTAINER_REGISTRY_ENDPOINT` | ACR endpoint (optional) | `myacr.azurecr.io` | azd |
-| `AZURE_SERVICEBUS_NAMESPACE` | Service Bus namespace | `sb-orders-dev` | azd |
-| `AZURE_STORAGE_ACCOUNT_NAME` | Storage account name | `storders001` | azd |
-| `AZURE_APP_INSIGHTS_CONNECTION_STRING` | App Insights connection | `InstrumentationKey=...` | azd |
-| `ORDERS_API_ENDPOINT` | Orders API URL | `https://api.contoso.com` | azd |
+| Variable                               | Description             | Example                   | Set By |
+| -------------------------------------- | ----------------------- | ------------------------- | ------ |
+| `AZURE_SUBSCRIPTION_ID`                | Azure subscription GUID | `12345678-1234-...`       | azd    |
+| `AZURE_RESOURCE_GROUP`                 | Resource group name     | `rg-logicapps-dev`        | azd    |
+| `AZURE_LOCATION`                       | Azure region            | `eastus`                  | azd    |
+| `AZURE_CONTAINER_REGISTRY_ENDPOINT`    | ACR endpoint (optional) | `myacr.azurecr.io`        | azd    |
+| `AZURE_SERVICEBUS_NAMESPACE`           | Service Bus namespace   | `sb-orders-dev`           | azd    |
+| `AZURE_STORAGE_ACCOUNT_NAME`           | Storage account name    | `storders001`             | azd    |
+| `AZURE_APP_INSIGHTS_CONNECTION_STRING` | App Insights connection | `InstrumentationKey=...`  | azd    |
+| `ORDERS_API_ENDPOINT`                  | Orders API URL          | `https://api.contoso.com` | azd    |
 
 ### How azd Sets These Variables
 
 Azure Developer CLI automatically sets environment variables based on:
+
 1. **Bicep outputs** defined in `main.bicep`
 2. **Azure resource properties** discovered during provisioning
 3. **User-defined variables** in `.azure/<environment>/.env`
 
 Example Bicep output:
+
 ```bicep
 output AZURE_STORAGE_ACCOUNT_NAME string = storageAccount.name
 output AZURE_SERVICEBUS_NAMESPACE string = serviceBusNamespace.name
@@ -95,6 +98,7 @@ output AZURE_SERVICEBUS_NAMESPACE string = serviceBusNamespace.name
 The script is **automatically called** by azd:
 
 **PowerShell (Windows):**
+
 ```powershell
 # Script runs automatically after provisioning
 azd provision
@@ -104,6 +108,7 @@ azd up
 ```
 
 **Bash (Linux/macOS):**
+
 ```bash
 # Script runs automatically after provisioning
 azd provision
@@ -113,6 +118,7 @@ azd up
 ```
 
 **azd Execution Flow:**
+
 ```
 azd provision
     │
@@ -126,18 +132,21 @@ azd provision
 You can also run the script manually:
 
 **PowerShell (Windows):**
+
 ```powershell
 # Basic manual execution
 .\postprovision.ps1
 ```
 
 **Bash (Linux/macOS):**
+
 ```bash
 # Basic manual execution
 ./postprovision.sh
 ```
 
 **Use Cases for Manual Execution:**
+
 - Re-configure secrets after environment variable changes
 - Fix configuration issues without re-provisioning
 - Test secret configuration separately
@@ -146,41 +155,44 @@ You can also run the script manually:
 ### Force Mode
 
 **PowerShell (Windows):**
+
 ```powershell
 # Skip confirmation prompts
 .\postprovision.ps1 -Force
 ```
 
 **Bash (Linux/macOS):**
+
 ```bash
 # Skip confirmation prompts
 ./postprovision.sh --force
 ```
 
 **Output:**
+
 ```
 [10:15:30] Post-Provisioning Script Started
 [10:15:30] ═══════════════════════════════════════════════════════════
 [10:15:30] Script Version: 2.0.0
-[10:15:30] 
+[10:15:30]
 [10:15:31] ✓ All 3 required environment variables are set
 [10:15:32] ✓ Azure Container Registry authenticated
 [10:15:33] ✓ SQL Database managed identity configured successfully
 [10:15:34] ✓ User secrets cleared successfully
-[10:15:35] 
+[10:15:35]
 [10:15:35] Configuring user secrets...
 [10:15:36] Configuring AppHost project secrets...
 [10:15:37]   ✓ app.AppHost: 23 secrets configured
 [10:15:38] Configuring API project secrets...
 [10:15:39]   ✓ eShop.Orders.API: 3 secrets configured
-[10:15:40] 
+[10:15:40]
 [10:15:40] Configuration Summary:
 [10:15:40]   • Total secrets defined   : 26
 [10:15:40]   • Successfully configured : 26
 [10:15:40]   • Skipped (empty)         : 0
 [10:15:40]   • Failed                  : 0
 [10:15:40]   Success Rate: 100%
-[10:15:40] 
+[10:15:40]
 [10:15:40] ✓ Post-Provisioning Completed Successfully!
 [10:15:40] Duration: 10 seconds
 ```
@@ -188,18 +200,21 @@ You can also run the script manually:
 ### Verbose Mode
 
 **PowerShell (Windows):**
+
 ```powershell
 # Get detailed diagnostic output
 .\postprovision.ps1 -Verbose
 ```
 
 **Bash (Linux/macOS):**
+
 ```bash
 # Get detailed diagnostic output
 ./postprovision.sh --verbose
 ```
 
 **Output:**
+
 ```
 VERBOSE: Starting postprovision script v2.0.0
 VERBOSE: Validating environment variable: AZURE_SUBSCRIPTION_ID
@@ -225,30 +240,33 @@ VERBOSE: Secret set successfully
 ### Preview Mode (WhatIf)
 
 **PowerShell (Windows):**
+
 ```powershell
 # Preview what would be configured
 .\postprovision.ps1 -WhatIf
 ```
 
 **Bash (Linux/macOS):**
+
 ```bash
 # Preview what would be configured
 ./postprovision.sh --dry-run
 ```
 
 **Output:**
+
 ```
 What if: Performing operation "Configure User Secrets" with configuration:
-  
+
   Environment Variables:
     AZURE_SUBSCRIPTION_ID: 12345678-****
     AZURE_RESOURCE_GROUP: rg-logicapps-dev
     AZURE_LOCATION: eastus
-  
+
   Projects to Configure:
     • app.AppHost (23 secrets)
     • eShop.Orders.API (3 secrets)
-  
+
   Operations:
     1. Validate environment variables
     2. Authenticate to Azure Container Registry
@@ -271,16 +289,19 @@ Skips all confirmation prompts and forces immediate execution.
 **Confirm Impact:** Medium
 
 **PowerShell Example:**
+
 ```powershell
 .\postprovision.ps1 -Force
 ```
 
 **Bash Example:**
+
 ```bash
 ./postprovision.sh --force
 ```
 
 **Use Cases:**
+
 - CI/CD pipelines
 - azd automatic execution
 - Scripted deployments
@@ -297,16 +318,19 @@ Shows what operations would be performed without making actual changes.
 **Default:** `$false` / `false`
 
 **PowerShell Example:**
+
 ```powershell
 .\postprovision.ps1 -WhatIf
 ```
 
 **Bash Example:**
+
 ```bash
 ./postprovision.sh --dry-run
 ```
 
 **Use Cases:**
+
 - Verifying configuration before applying
 - Understanding script behavior
 - Auditing planned changes
@@ -323,6 +347,7 @@ Prompts for confirmation before operations.
 **Default:** `$true` (due to `ConfirmImpact = 'Medium'`)
 
 **Example:**
+
 ```powershell
 # Explicitly request confirmation
 .\postprovision.ps1 -Confirm
@@ -342,16 +367,19 @@ Enables detailed diagnostic output.
 **Default:** `$false` / `false`
 
 **PowerShell Example:**
+
 ```powershell
 .\postprovision.ps1 -Verbose
 ```
 
 **Bash Example:**
+
 ```bash
 ./postprovision.sh --verbose
 ```
 
 **Use Cases:**
+
 - Troubleshooting failures
 - Understanding execution flow
 - Debugging configuration issues
@@ -361,41 +389,41 @@ Enables detailed diagnostic output.
 
 ### app.AppHost Project (23 secrets)
 
-| Secret Key | Source | Purpose |
-|------------|--------|---------|
-| `Azure:TenantId` | `AZURE_TENANT_ID` | Azure AD tenant ID |
-| `Azure:SubscriptionId` | `AZURE_SUBSCRIPTION_ID` | Azure subscription |
-| `Azure:Location` | `AZURE_LOCATION` | Azure region |
-| `Azure:ResourceGroup` | `AZURE_RESOURCE_GROUP` | Resource group name |
-| `ApplicationInsights:Enabled` | Environment | Application Insights feature flag |
-| `Azure:ApplicationInsights:Name` | Bicep output | Application Insights resource name |
-| `ApplicationInsights:ConnectionString` | Bicep output | Telemetry connection string |
-| `Azure:ClientId` | `AZURE_CLIENT_ID` | Managed Identity client ID |
-| `Azure:ManagedIdentity:Name` | Bicep output | Managed Identity display name |
-| `Azure:ServiceBus:HostName` | Bicep output | Service Bus namespace hostname |
-| `Azure:ServiceBus:TopicName` | Bicep output | Service Bus topic name |
-| `Azure:ServiceBus:SubscriptionName` | Bicep output | Service Bus subscription name |
-| `Azure:ServiceBus:Endpoint` | Bicep output | Service Bus endpoint URL |
-| `Azure:SqlServer:Fqdn` | Bicep output | SQL Server FQDN |
-| `Azure:SqlServer:Name` | Bicep output | SQL Server name |
-| `Azure:SqlDatabase:Name` | Bicep output | SQL Database name |
-| `Azure:Storage:AccountName` | Bicep output | Storage account name |
-| `Azure:ContainerRegistry:Endpoint` | Bicep output | ACR login server |
-| `Azure:ContainerRegistry:Name` | Bicep output | ACR name |
-| `Azure:ContainerApps:EnvironmentName` | Bicep output | Container Apps environment name |
-| `Azure:ContainerApps:EnvironmentId` | Bicep output | Container Apps environment resource ID |
-| `Azure:ContainerApps:DefaultDomain` | Bicep output | Container Apps default domain |
-| `Azure:LogAnalytics:WorkspaceName` | Bicep output | Log Analytics workspace name |
+| Secret Key                             | Source                  | Purpose                                |
+| -------------------------------------- | ----------------------- | -------------------------------------- |
+| `Azure:TenantId`                       | `AZURE_TENANT_ID`       | Azure AD tenant ID                     |
+| `Azure:SubscriptionId`                 | `AZURE_SUBSCRIPTION_ID` | Azure subscription                     |
+| `Azure:Location`                       | `AZURE_LOCATION`        | Azure region                           |
+| `Azure:ResourceGroup`                  | `AZURE_RESOURCE_GROUP`  | Resource group name                    |
+| `ApplicationInsights:Enabled`          | Environment             | Application Insights feature flag      |
+| `Azure:ApplicationInsights:Name`       | Bicep output            | Application Insights resource name     |
+| `ApplicationInsights:ConnectionString` | Bicep output            | Telemetry connection string            |
+| `Azure:ClientId`                       | `AZURE_CLIENT_ID`       | Managed Identity client ID             |
+| `Azure:ManagedIdentity:Name`           | Bicep output            | Managed Identity display name          |
+| `Azure:ServiceBus:HostName`            | Bicep output            | Service Bus namespace hostname         |
+| `Azure:ServiceBus:TopicName`           | Bicep output            | Service Bus topic name                 |
+| `Azure:ServiceBus:SubscriptionName`    | Bicep output            | Service Bus subscription name          |
+| `Azure:ServiceBus:Endpoint`            | Bicep output            | Service Bus endpoint URL               |
+| `Azure:SqlServer:Fqdn`                 | Bicep output            | SQL Server FQDN                        |
+| `Azure:SqlServer:Name`                 | Bicep output            | SQL Server name                        |
+| `Azure:SqlDatabase:Name`               | Bicep output            | SQL Database name                      |
+| `Azure:Storage:AccountName`            | Bicep output            | Storage account name                   |
+| `Azure:ContainerRegistry:Endpoint`     | Bicep output            | ACR login server                       |
+| `Azure:ContainerRegistry:Name`         | Bicep output            | ACR name                               |
+| `Azure:ContainerApps:EnvironmentName`  | Bicep output            | Container Apps environment name        |
+| `Azure:ContainerApps:EnvironmentId`    | Bicep output            | Container Apps environment resource ID |
+| `Azure:ContainerApps:DefaultDomain`    | Bicep output            | Container Apps default domain          |
+| `Azure:LogAnalytics:WorkspaceName`     | Bicep output            | Log Analytics workspace name           |
 
 ### eShop.Orders.API Project (3 secrets)
 
 The API project receives minimal configuration as it relies on managed identity for Azure resource access and inherits configuration from the AppHost during development.
 
-| Secret Key | Source | Purpose |
-|------------|--------|---------|
-| `Azure:TenantId` | `AZURE_TENANT_ID` | Azure AD tenant for authentication |
-| `Azure:ClientId` | `AZURE_CLIENT_ID` | Managed Identity client ID |
-| `ApplicationInsights:ConnectionString` | Bicep output | Monitoring and telemetry |
+| Secret Key                             | Source            | Purpose                            |
+| -------------------------------------- | ----------------- | ---------------------------------- |
+| `Azure:TenantId`                       | `AZURE_TENANT_ID` | Azure AD tenant for authentication |
+| `Azure:ClientId`                       | `AZURE_CLIENT_ID` | Managed Identity client ID         |
+| `ApplicationInsights:ConnectionString` | Bicep output      | Monitoring and telemetry           |
 
 ## 🔒 SQL Database Managed Identity Configuration
 
@@ -404,10 +432,12 @@ A critical feature of this script is the automatic configuration of Azure SQL Da
 ### Roles Assigned
 
 **Default Configuration:**
+
 - `db_datareader` - Read access to all tables
 - `db_datawriter` - Write access to all tables
 
 **For Entity Framework Migrations (Manual):**
+
 - `db_owner` - Full schema control including CREATE TABLE, ALTER TABLE, foreign keys
 
 ### Configuration Process
@@ -443,7 +473,7 @@ flowchart TD
     ConfigAPI["Configure API Secrets (3)"]
     Report["Generate Configuration Report"]
     Complete(["✓ Configuration Complete"])
-    
+
     Start --> Validate
     Validate --> ReadVars
     ReadVars --> ACRLogin
@@ -466,7 +496,7 @@ flowchart TD
     Validate2["8️⃣ Validate Configuration<br/>• Verify secrets set<br/>• Check for errors<br/>• Count totals"]
     Summary["9️⃣ Display Summary<br/>• Projects: 2<br/>• Secrets: 26<br/>• Time & status"]
     End(["🏁 Complete"])
-    
+
     Start --> SetEnv
     SetEnv --> Execute
     Execute --> Validate
@@ -479,12 +509,12 @@ flowchart TD
     ConfigLoop --> Validate2
     Validate2 --> Summary
     Summary --> End
-    
+
     classDef startEnd fill:#e8f5e9,stroke:#2e7d32,stroke-width:3px,color:#1b5e20
     classDef process fill:#e3f2fd,stroke:#1976d2,stroke-width:2px,color:#0d47a1
     classDef config fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px,color:#4a148c
     classDef loop fill:#fff3e0,stroke:#f57c00,stroke-width:2px,color:#e65100
-    
+
     class Start,End startEnd
     class SetEnv,Execute,Validate,ACRAuth,Clear,Validate2,Summary process
     class ConfigLoop loop
@@ -493,17 +523,17 @@ flowchart TD
 
 ### Integration Points
 
-| Aspect | Details |
-|--------|---------|  
-| **Version** | 2.0.0 (PowerShell: 2025-12-17, Bash: 2025-12-29) |
-| **Projects Configured** | • app.AppHost (23 secrets)<br/>• eShop.Orders.API (3 secrets) |
-| **Total Secrets** | 26 secrets across 2 projects |
-| **Called By** | • **Azure Developer CLI (azd)** automatically after `azd provision` or `azd up`<br/>• Developers manually for reconfiguration without reprovisioning<br/>• CI/CD pipelines during automated deployment workflows<br/>• Post-deployment automation scripts for environment setup |
-| **Key Features** | • SQL Database managed identity configuration<br/>• Azure Container Registry authentication<br/>• Comprehensive error handling and reporting<br/>• Success/failure/skip tracking<br/>• Detailed verbose logging |
-| **Calls** | • `clean-secrets.ps1` or `clean-secrets.sh` to clear existing secrets<br/>• `sql-managed-identity-config.ps1` or `sql-managed-identity-config.sh` for SQL Database managed identity configuration<br/>• `dotnet user-secrets set` for each secret configuration<br/>• `az acr login` for Azure Container Registry authentication<br/>• Environment variable reads from azd-set values |
-| **Dependencies** | • **Runtime:** PowerShell 7.0+ or Bash 4.0+<br/>• **.NET SDK:** Version 10.0+ with user-secrets tool<br/>• **Azure CLI:** Version 2.60.0+ for ACR authentication<br/>• **Azure Developer CLI (azd):** For automatic hook execution and environment variables<br/>• **Azure Resources:** Provisioned infrastructure with Bicep outputs<br/>• **clean-secrets script:** Must exist in same hooks directory |
-| **Outputs** | • **User Secrets:** 26 secrets across 2 projects (23 AppHost + 3 API) in local user secrets storage<br/>• **SQL Database:** Managed identity user configured with db_datareader and db_datawriter roles<br/>• **Console Output:** Progress messages, validation results, summary statistics<br/>• **Exit Code:** 0 (success) or 1 (failure with detailed error messages)<br/>• **Verbose Logs:** Detailed diagnostic information for each operation (optional)<br/>• **WhatIf Preview:** Simulated execution plan without making changes (optional) |
-| **Integration Role** | Serves as the **critical configuration bridge** between Azure infrastructure provisioning and local application development. Automatically translates Azure resource information into application configuration, enabling immediate local development and testing with real Azure resources. Essential for azd-based development workflows, ensuring seamless transition from deployment to development. |
+| Aspect                  | Details                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
+| ----------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Version**             | 2.0.0 (PowerShell: 2025-12-17, Bash: 2025-12-29)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
+| **Projects Configured** | • app.AppHost (23 secrets)<br/>• eShop.Orders.API (3 secrets)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
+| **Total Secrets**       | 26 secrets across 2 projects                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
+| **Called By**           | • **Azure Developer CLI (azd)** automatically after `azd provision` or `azd up`<br/>• Developers manually for reconfiguration without reprovisioning<br/>• CI/CD pipelines during automated deployment workflows<br/>• Post-deployment automation scripts for environment setup                                                                                                                                                                                                                                                                     |
+| **Key Features**        | • SQL Database managed identity configuration<br/>• Azure Container Registry authentication<br/>• Comprehensive error handling and reporting<br/>• Success/failure/skip tracking<br/>• Detailed verbose logging                                                                                                                                                                                                                                                                                                                                     |
+| **Calls**               | • `clean-secrets.ps1` or `clean-secrets.sh` to clear existing secrets<br/>• `sql-managed-identity-config.ps1` or `sql-managed-identity-config.sh` for SQL Database managed identity configuration<br/>• `dotnet user-secrets set` for each secret configuration<br/>• `az acr login` for Azure Container Registry authentication<br/>• Environment variable reads from azd-set values                                                                                                                                                               |
+| **Dependencies**        | • **Runtime:** PowerShell 7.0+ or Bash 4.0+<br/>• **.NET SDK:** Version 10.0+ with user-secrets tool<br/>• **Azure CLI:** Version 2.60.0+ for ACR authentication<br/>• **Azure Developer CLI (azd):** For automatic hook execution and environment variables<br/>• **Azure Resources:** Provisioned infrastructure with Bicep outputs<br/>• **clean-secrets script:** Must exist in same hooks directory                                                                                                                                            |
+| **Outputs**             | • **User Secrets:** 26 secrets across 2 projects (23 AppHost + 3 API) in local user secrets storage<br/>• **SQL Database:** Managed identity user configured with db_datareader and db_datawriter roles<br/>• **Console Output:** Progress messages, validation results, summary statistics<br/>• **Exit Code:** 0 (success) or 1 (failure with detailed error messages)<br/>• **Verbose Logs:** Detailed diagnostic information for each operation (optional)<br/>• **WhatIf Preview:** Simulated execution plan without making changes (optional) |
+| **Integration Role**    | Serves as the **critical configuration bridge** between Azure infrastructure provisioning and local application development. Automatically translates Azure resource information into application configuration, enabling immediate local development and testing with real Azure resources. Essential for azd-based development workflows, ensuring seamless transition from deployment to development.                                                                                                                                            |
 
 ## 📚 Examples
 
@@ -531,14 +561,14 @@ $ErrorActionPreference = 'Stop'
 try {
     # Postprovision runs automatically with azd provision
     azd provision
-    
+
     # Verify secrets were configured
     $secrets = dotnet user-secrets list --project app.AppHost/app.AppHost.csproj
-    
+
     if ($secrets -notmatch "ConnectionStrings:ServiceBus") {
         throw "Required secrets not configured"
     }
-    
+
     Write-Host "✓ Configuration verified"
 }
 catch {
@@ -556,6 +586,7 @@ catch {
 #### Issue: Required Environment Variable Not Set
 
 **Error Message:**
+
 ```
 ERROR: Required environment variable 'AZURE_SUBSCRIPTION_ID' is not set
 The following variables must be set by Azure Developer CLI:
@@ -565,6 +596,7 @@ The following variables must be set by Azure Developer CLI:
 ```
 
 **Solution:**
+
 ```powershell
 # Ensure you ran azd provision first
 azd provision
@@ -583,12 +615,14 @@ $env:AZURE_LOCATION = "eastus"
 #### Issue: ACR Authentication Failed
 
 **Error Message:**
+
 ```
 WARNING: ACR authentication failed
 Unable to authenticate to Azure Container Registry: myacr.azurecr.io
 ```
 
 **Solution:**
+
 ```powershell
 # Login to Azure first
 az login
@@ -611,11 +645,13 @@ az acr repository list --name myacr
 #### Issue: User Secrets Not Configured
 
 **Error Message:**
+
 ```
 Could not find the global property 'UserSecretsId' in MSBuild project
 ```
 
 **Solution:**
+
 ```powershell
 # Initialize user secrets for the project
 dotnet user-secrets init --project ..\app.AppHost\app.AppHost.csproj
@@ -632,12 +668,14 @@ Select-String -Path ..\app.AppHost\app.AppHost.csproj -Pattern "UserSecretsId"
 #### Issue: .NET SDK Not Found
 
 **Error Message:**
+
 ```
 ERROR: .NET SDK not found
 Unable to execute dotnet user-secrets commands
 ```
 
 **Solution:**
+
 ```powershell
 # Download and install .NET SDK 10.0+
 # https://dotnet.microsoft.com/download
@@ -659,12 +697,14 @@ cd Z:\Azure-LogicApps-Monitoring\hooks
 #### Issue: Project File Not Found
 
 **Error Message:**
+
 ```
 ERROR: Project file not found
 Path: Z:\Azure-LogicApps-Monitoring\app.AppHost\app.AppHost.csproj
 ```
 
 **Solution:**
+
 ```powershell
 # Ensure you're in the hooks directory
 cd Z:\Azure-LogicApps-Monitoring\hooks
@@ -683,6 +723,7 @@ git pull origin main
 ```
 
 ---
+
 ## 🔧 Technical Architecture
 
 This section provides technical details about the postprovision.ps1 implementation.
@@ -690,6 +731,7 @@ This section provides technical details about the postprovision.ps1 implementati
 ### Script Flow
 
 **High-Level Process:**
+
 ```
 postprovision.ps1
 ├── 1. Validate Environment
@@ -715,6 +757,7 @@ postprovision.ps1
 ### Azure Resource Discovery
 
 **Environment Variables Retrieved:**
+
 ```powershell
 # Execute azd env get-values and parse output
 $envVars = azd env get-values | ConvertFrom-StringData
@@ -731,6 +774,7 @@ $containerRegistryName = $envVars['CONTAINER_REGISTRY_NAME']
 **Connection String Retrieval:**
 
 1. **Storage Account:**
+
 ```powershell
 $storageConnString = az storage account show-connection-string `
     --name $storageAccountName `
@@ -740,6 +784,7 @@ $storageConnString = az storage account show-connection-string `
 ```
 
 2. **Service Bus:**
+
 ```powershell
 $serviceBusConnString = az servicebus namespace authorization-rule keys list `
     --namespace-name $serviceBusNamespace `
@@ -750,6 +795,7 @@ $serviceBusConnString = az servicebus namespace authorization-rule keys list `
 ```
 
 3. **Application Insights:**
+
 ```powershell
 $appInsightsConnString = az monitor app-insights component show `
     --app $appInsightsName `
@@ -769,6 +815,7 @@ $appInsightsKey = az monitor app-insights component show `
 **Project-Specific Secrets:**
 
 #### 1. app.AppHost (Aspire Orchestration)
+
 ```powershell
 $projectPath = "app.AppHost/app.AppHost.csproj"
 
@@ -783,6 +830,7 @@ dotnet user-secrets set "Aspire:SubscriptionId" $subscriptionId --project $proje
 ```
 
 #### 2. eShop.Orders.API (Orders Service)
+
 ```powershell
 $projectPath = "src/eShop.Orders.API/eShop.Orders.API.csproj"
 
@@ -800,6 +848,7 @@ dotnet user-secrets set "OrdersApi:ContainerName" "orders" --project $projectPat
 ```
 
 #### 3. eShop.Web.App (Web Frontend)
+
 ```powershell
 $projectPath = "src/eShop.Web.App/eShop.Web.App.csproj"
 
@@ -817,50 +866,52 @@ dotnet user-secrets set "WebApp:ContainerRegistry" $containerRegistryName --proj
 ### Error Handling & Rollback
 
 **Validation Checks:**
+
 ```powershell
 function Test-PrerequisitesFunction {
     $errors = @()
-    
+
     # Check azd
     if (-not (Get-Command azd -ErrorAction SilentlyContinue)) {
         $errors += "Azure Developer CLI (azd) not found"
     }
-    
+
     # Check dotnet
     if (-not (Get-Command dotnet -ErrorAction SilentlyContinue)) {
         $errors += ".NET SDK not found"
     }
-    
+
     # Check azd environment
     $envName = azd env list --output json | ConvertFrom-Json | Select-Object -First 1 -ExpandProperty Name
     if (-not $envName) {
         $errors += "No azd environment found. Run 'azd init' first."
     }
-    
+
     return $errors
 }
 ```
 
 **Rollback Strategy:**
+
 ```powershell
 try {
     # Clear secrets before setting new ones
     .\clean-secrets.ps1 -Force
-    
+
     # Set secrets for all projects
     Set-AppHostSecrets
     Set-OrdersApiSecrets
     Set-WebAppSecrets
-    
+
     Write-Host "[SUCCESS] All secrets configured successfully" -ForegroundColor Green
 }
 catch {
     Write-Error "Failed to set secrets: $_"
-    
+
     # Rollback: Clear partially set secrets
     Write-Warning "Rolling back changes..."
     .\clean-secrets.ps1 -Force
-    
+
     exit 1
 }
 ```
@@ -870,6 +921,7 @@ catch {
 **Secret Protection:**
 
 1. **Never Log Secret Values:**
+
 ```powershell
 # WRONG - logs secret
 Write-Verbose "Connection string: $connString"
@@ -879,6 +931,7 @@ Write-Verbose "Connection string retrieved for: $resourceName"
 ```
 
 2. **Secure Variable Handling:**
+
 ```powershell
 # Use SecureString for sensitive data in memory
 $secureString = ConvertTo-SecureString $connString -AsPlainText -Force
@@ -890,6 +943,7 @@ $serviceBusConnString = $null
 ```
 
 3. **Minimal Permissions:**
+
 ```powershell
 # Script requires only:
 # - Azure Reader role (read resource properties)
@@ -901,20 +955,24 @@ $serviceBusConnString = $null
 **User Secrets Storage:**
 
 **Windows Location:**
+
 ```
 %APPDATA%\Microsoft\UserSecrets\<UserSecretsId>\secrets.json
 ```
 
 **Linux/macOS Location:**
+
 ```
 ~/.microsoft/usersecrets/<UserSecretsId>/secrets.json
 ```
 
 **File Permissions:**
+
 - Windows: Accessible only to current user account
 - Linux/macOS: `chmod 600` (owner read/write only)
 
 **Format (secrets.json):**
+
 ```json
 {
   "ConnectionStrings:ServiceBus": "Endpoint=sb://...",
@@ -931,6 +989,7 @@ $serviceBusConnString = $null
 For production environments, migrate from user secrets to Azure Key Vault:
 
 **Setup Azure Key Vault:**
+
 ```powershell
 # Create Key Vault
 az keyvault create `
@@ -950,6 +1009,7 @@ az keyvault set-policy `
 ```
 
 **Update Application Configuration:**
+
 ```csharp
 // Program.cs
 builder.Configuration.AddAzureKeyVault(
@@ -960,6 +1020,7 @@ builder.Configuration.AddAzureKeyVault(
 ### Performance Metrics
 
 **Execution Time:**
+
 - Environment validation: 1-2s
 - SQL Managed Identity configuration: 3-5s (if configured)
 - Clear secrets: 2-3s
@@ -968,6 +1029,7 @@ builder.Configuration.AddAzureKeyVault(
 - **Total typical runtime:** 11-17s
 
 **Azure CLI Calls:**
+
 - `az acr login`: 1 call (if ACR configured)
 - SQL database operations: 2-3 calls (if SQL configured)
 - **Total Azure API calls:** ~3-4
@@ -977,19 +1039,23 @@ builder.Configuration.AddAzureKeyVault(
 **Common Issues & Solutions:**
 
 1. **"azd environment not found"**
+
    - Run `azd init` to create environment
    - Or run `azd provision` which initializes automatically
 
 2. **"Resource not found"**
+
    - Verify `azd provision` completed successfully
    - Check resource group exists: `az group show --name <rg-name>`
 
 3. **"Access denied to retrieve connection string"**
+
    - Verify Azure RBAC permissions
    - Ensure `az login` session is active
    - Check subscription access: `az account show`
 
 4. **"dotnet user-secrets failed"**
+
    - Verify project has UserSecretsId in .csproj
    - Run `dotnet user-secrets init --project <path>` if missing
    - Check .NET SDK version: `dotnet --version` (need 10.0+)
@@ -1000,6 +1066,7 @@ builder.Configuration.AddAzureKeyVault(
    - Verify secrets exist: `dotnet user-secrets list --project <path>`
 
 ---
+
 ## 📖 Related Documentation
 
 - **[preprovision.ps1](./preprovision.ps1)** - Pre-provisioning validation (runs before)
@@ -1014,6 +1081,7 @@ builder.Configuration.AddAzureKeyVault(
 ### Safe Operations
 
 ✅ **Secure Practices:**
+
 - Secrets stored locally in encrypted user profile
 - Never committed to source control
 - Separate secrets per user/machine
@@ -1023,12 +1091,14 @@ builder.Configuration.AddAzureKeyVault(
 ### What Gets Configured
 
 **Sensitive Data:**
+
 - Connection strings with credentials
 - API keys and tokens
 - Azure resource identifiers
 - Application Insights instrumentation keys
 
 **Non-Sensitive Data:**
+
 - Azure subscription IDs
 - Resource group names
 - Azure regions
@@ -1037,6 +1107,7 @@ builder.Configuration.AddAzureKeyVault(
 ### Storage Location
 
 User secrets are stored in:
+
 - **Windows**: `%APPDATA%\Microsoft\UserSecrets\<id>\secrets.json`
 - **Linux/macOS**: `~/.microsoft/usersecrets/<id>/secrets.json`
 
@@ -1093,23 +1164,24 @@ azd env select dev
 ### CI/CD Integration
 
 **GitHub Actions Example:**
+
 ```yaml
 jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      
+
       - name: Azure Login
         uses: azure/login@v1
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
-      
+
       - name: Provision Infrastructure
         run: |
           azd provision --no-prompt
           # postprovision.ps1 runs automatically
-      
+
       - name: Verify Configuration
         run: |
           dotnet user-secrets list --project app.AppHost/app.AppHost.csproj
@@ -1118,10 +1190,12 @@ jobs:
 ## 📊 Performance
 
 **Execution Time:**
+
 - Environment validation: 0.5 seconds
 - ACR authentication: 2-3 seconds
 - Clear secrets: 2-4 seconds (via clean-secrets.ps1)
 - Configure secrets: 3-5 seconds (3 projects, 26 secrets)
+
 ## 📋 Performance
 
 ### Performance Characteristics
@@ -1136,24 +1210,24 @@ jobs:
 
 ## 🔄 Version History
 
-| Version | Date | Changes |
-|---------|------|---------|
-| **2.0.0** | 2025-12-26 | Updated documentation for actual implementation |
-|           |            | • Corrected secret counts: 23 AppHost + 3 API = 26 total |
-|           |            | • Added SQL Managed Identity configuration documentation |
-|           |            | • Updated secret key tables with actual implementation |
-|           |            | • Web.App project has no secrets configured |
+| Version   | Date       | Changes                                                        |
+| --------- | ---------- | -------------------------------------------------------------- |
+| **2.0.0** | 2025-12-26 | Updated documentation for actual implementation                |
+|           |            | • Corrected secret counts: 23 AppHost + 3 API = 26 total       |
+|           |            | • Added SQL Managed Identity configuration documentation       |
+|           |            | • Updated secret key tables with actual implementation         |
+|           |            | • Web.App project has no secrets configured                    |
 |           |            | • Documented SQL database roles (db_datareader, db_datawriter) |
-| **2.0.0** | 2025-12-24 | Production release |
-|           |            | • Complete rewrite with best practices |
-|           |            | • Comprehensive validation |
-|           |            | • Error handling and logging |
-|           |            | • WhatIf support |
-|           |            | • 1000+ lines of production code |
-| **1.0.0** | 2025-12-15 | Initial release |
-|           |            | • Basic secret configuration |
+| **2.0.0** | 2025-12-24 | Production release                                             |
+|           |            | • Complete rewrite with best practices                         |
+|           |            | • Comprehensive validation                                     |
+|           |            | • Error handling and logging                                   |
+|           |            | • WhatIf support                                               |
+|           |            | • 1000+ lines of production code                               |
+| **1.0.0** | 2025-12-15 | Initial release                                                |
+|           |            | • Basic secret configuration                                   |
 
-##  Quick Links
+## Quick Links
 
 - **Repository**: [Azure-LogicApps-Monitoring](https://github.com/Evilazaro/Azure-LogicApps-Monitoring)
 - **Issues**: [Report Bug](https://github.com/Evilazaro/Azure-LogicApps-Monitoring/issues)
@@ -1165,6 +1239,7 @@ jobs:
 **Last Updated**: December 26, 2025  
 **Script Version**: 2.0.0  
 **Compatibility**: PowerShell 7.0+, .NET 10.0+, Azure CLI 2.60.0+
+
 ---
 
 ---

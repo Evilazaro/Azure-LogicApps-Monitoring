@@ -30,14 +30,14 @@ By automating environment validation, secret management, SQL managed identity co
 
 ### Available Scripts
 
-| Script | PowerShell | Bash | Purpose | Documentation |
-|--------|------------|------|---------|---------------|
-| **Environment Check** | `check-dev-workstation.ps1` | `check-dev-workstation.sh` | Validate workstation prerequisites | [📄 check-dev-workstation.md](./check-dev-workstation.md) |
-| **Pre-Provisioning** | `preprovision.ps1` | `preprovision.sh` | Validate and prepare for deployment | [📄 VALIDATION-WORKFLOW.md](./VALIDATION-WORKFLOW.md) |
-| **Post-Provisioning** | `postprovision.ps1` | `postprovision.sh` | Configure secrets after deployment | [📄 postprovision.md](./postprovision.md) |
-| **SQL Managed Identity** | `sql-managed-identity-config.ps1` | `sql-managed-identity-config.sh` | Configure SQL Database managed identity access | Embedded help (use `--help` or `-Help`) |
-| **Secrets Management** | `clean-secrets.ps1` | `clean-secrets.sh` | Clear .NET user secrets | [📄 clean-secrets.md](./clean-secrets.md) |
-| **Test Data** | `Generate-Orders.ps1` | `Generate-Orders.sh` | Generate sample order data | [📄 Generate-Orders.md](./Generate-Orders.md) |
+| Script                   | PowerShell                        | Bash                             | Purpose                                        | Documentation                                             |
+| ------------------------ | --------------------------------- | -------------------------------- | ---------------------------------------------- | --------------------------------------------------------- |
+| **Environment Check**    | `check-dev-workstation.ps1`       | `check-dev-workstation.sh`       | Validate workstation prerequisites             | [📄 check-dev-workstation.md](./check-dev-workstation.md) |
+| **Pre-Provisioning**     | `preprovision.ps1`                | `preprovision.sh`                | Validate and prepare for deployment            | [📄 VALIDATION-WORKFLOW.md](./VALIDATION-WORKFLOW.md)     |
+| **Post-Provisioning**    | `postprovision.ps1`               | `postprovision.sh`               | Configure secrets after deployment             | [📄 postprovision.md](./postprovision.md)                 |
+| **SQL Managed Identity** | `sql-managed-identity-config.ps1` | `sql-managed-identity-config.sh` | Configure SQL Database managed identity access | Embedded help (use `--help` or `-Help`)                   |
+| **Secrets Management**   | `clean-secrets.ps1`               | `clean-secrets.sh`               | Clear .NET user secrets                        | [📄 clean-secrets.md](./clean-secrets.md)                 |
+| **Test Data**            | `Generate-Orders.ps1`             | `Generate-Orders.sh`             | Generate sample order data                     | [📄 Generate-Orders.md](./Generate-Orders.md)             |
 
 ---
 
@@ -50,27 +50,27 @@ The Developer Inner Loop consists of iterative cycles through validation, provis
 ```mermaid
 flowchart LR
     Start([👨‍💻 Developer Starts Work]) --> Validate
-    
+
     subgraph Setup["🔧 ONE-TIME SETUP"]
         direction TB
-        Validate["1️⃣ Validate Environment<br/>check-dev-workstation + preprovision<br/>⏱️ ~20 sec"] 
+        Validate["1️⃣ Validate Environment<br/>check-dev-workstation + preprovision<br/>⏱️ ~20 sec"]
         Validate --> CheckValid{✅ Prerequisites OK?}
         CheckValid --> |No| Fix[🔧 Install/Update Tools]
         Fix --> Validate
         CheckValid --> |Yes| Provision
-        
+
         Provision["2️⃣ Provision Infrastructure<br/>azd provision<br/>⏱️ ~5-10 min"]
         Provision --> CheckDeploy{✅ Deployed OK?}
         CheckDeploy --> |No| Debug[🐛 Debug & Fix]
         Debug --> Provision
         CheckDeploy --> |Yes| Configure
-        
+
         Configure["3️⃣ Configure Secrets<br/>postprovision (includes SQL managed identity)<br/>⏱️ ~20-30 sec"]
     end
-    
+
     Configure --> Ready([✅ Environment Ready])
     Ready --> DevLoop
-    
+
     subgraph DevLoop["🔄 DEVELOPER INNER LOOP"]
         direction TB
         Code[💻 Write Code] --> Test[🧪 Test Locally]
@@ -78,9 +78,9 @@ flowchart LR
         Review --> |Yes| Code
         Review --> |Needs Infra Changes| ExitLoop[ ]
     end
-    
+
     ExitLoop --> Validate
-    
+
     style Start fill:#0078d4,stroke:#005a9e,stroke-width:3px,color:#fff
     style Ready fill:#28a745,stroke:#218838,stroke-width:3px,color:#fff
     style Setup fill:#f8f9fa,stroke:#6c757d,stroke-width:2px
@@ -138,9 +138,9 @@ metadata:
 # ------------------------------------------------------------------------------
 # Defines how and where infrastructure is defined and deployed
 infra:
-  provider: bicep                      # Infrastructure as Code provider
-  path: infra                          # Directory containing Bicep templates
-  module: main                         # Entry point Bicep module (main.bicep)
+  provider: bicep # Infrastructure as Code provider
+  path: infra # Directory containing Bicep templates
+  module: main # Entry point Bicep module (main.bicep)
 
 # ------------------------------------------------------------------------------
 # Lifecycle Hooks
@@ -152,11 +152,11 @@ hooks:
   # Pre-provisioning validation hook
   # Executes before 'azd provision' to validate workstation prerequisites
   preprovision:
-    posix:                             # Linux/macOS configuration
+    posix: # Linux/macOS configuration
       shell: sh
       run: ./hooks/preprovision.sh
-      continueOnError: false           # Fail fast on validation errors
-    windows:                           # Windows configuration
+      continueOnError: false # Fail fast on validation errors
+    windows: # Windows configuration
       shell: pwsh
       run: ./hooks/preprovision.ps1
       continueOnError: false
@@ -165,13 +165,13 @@ hooks:
   # Executes after 'azd provision' to configure local development secrets
   # and set up SQL Database managed identity access
   postprovision:
-    posix:                             # Linux/macOS configuration
+    posix: # Linux/macOS configuration
       shell: sh
-      run: ./hooks/postprovision.sh    # Configures .NET user secrets & SQL managed identity
+      run: ./hooks/postprovision.sh # Configures .NET user secrets & SQL managed identity
       continueOnError: false
-    windows:                           # Windows configuration
+    windows: # Windows configuration
       shell: pwsh
-      run: ./hooks/postprovision.ps1   # Configures .NET user secrets & SQL managed identity
+      run: ./hooks/postprovision.ps1 # Configures .NET user secrets & SQL managed identity
       continueOnError: false
 
 # ------------------------------------------------------------------------------
@@ -182,9 +182,9 @@ hooks:
 services:
   # .NET Aspire AppHost orchestrating the monitoring solution
   app:
-    language: dotnet                   # Service implementation language
-    project: ./app.AppHost/app.AppHost.csproj  # Path to project file
-    host: containerapp                 # Target hosting platform (Azure Container Apps)
+    language: dotnet # Service implementation language
+    project: ./app.AppHost/app.AppHost.csproj # Path to project file
+    host: containerapp # Target hosting platform (Azure Container Apps)
 ```
 
 For this project, azure.yaml defines the Orders API and Web App services, specifies the Bicep infrastructure templates in the `infra/` directory, and declares preprovision and postprovision hooks that execute platform-specific scripts. The hooks section is particularly powerful because it allows you to inject custom validation, configuration, and data generation logic into the azd workflow without modifying azd itself. This extensibility makes azd suitable for complex enterprise scenarios where standard deployment workflows need augmentation with organization-specific requirements.
@@ -204,31 +204,31 @@ The postprovision hook executes after infrastructure is successfully deployed bu
 ```mermaid
 graph LR
     Start[azd provision] --> PrepHook
-    
+
     subgraph PrepHook["Preprovision Hook"]
         direction LR
         ValidateTools[Validate Tools] --> CheckAuth[Check Azure Auth]
         CheckAuth --> ClearSecrets[Clear Secrets]
     end
-    
+
     PrepHook --> Deploy
-    
+
     subgraph Deploy["Infrastructure Deployment"]
         direction LR
         DeployBicep[Deploy Bicep Templates] --> SetEnvVars[Set Environment Variables]
     end
-    
+
     Deploy --> PostHook
-    
+
     subgraph PostHook["Postprovision Hook"]
         direction LR
         AuthACR[Authenticate ACR] --> ClearStale[Clear Stale Secrets]
         ClearStale --> ConfigSecrets[Configure User Secrets]
         ConfigSecrets --> ConfigSQL[Configure SQL Managed Identity]
     end
-    
+
     PostHook --> Complete[Deployment Complete]
-    
+
     style Start fill:#0078d4,stroke:#005a9e,stroke-width:2px,color:#fff
     style Complete fill:#6f42c1,stroke:#5a32a3,stroke-width:2px,color:#fff
     style PrepHook fill:#fff3cd,stroke:#ff9800,stroke-width:2px
@@ -304,7 +304,7 @@ azd provision
 
 ---
 
-##  CI/CD Pipeline Integration
+## CI/CD Pipeline Integration
 
 ### GitHub Actions
 
@@ -326,7 +326,7 @@ jobs:
       - name: Setup PowerShell
         uses: actions/setup-powershell@v1
         with:
-          pwsh-version: '7.4'
+          pwsh-version: "7.4"
 
       - name: Install Azure Developer CLI
         run: |
@@ -363,31 +363,31 @@ trigger:
       - main
 
 pool:
-  vmImage: 'ubuntu-latest'
+  vmImage: "ubuntu-latest"
 
 steps:
   - task: PowerShell@2
-    displayName: 'Install Azure Developer CLI'
+    displayName: "Install Azure Developer CLI"
     inputs:
-      targetType: 'inline'
+      targetType: "inline"
       script: |
         curl -fsSL https://aka.ms/install-azd.sh | bash
 
   - task: AzureCLI@2
-    displayName: 'Check workstation prerequisites'
+    displayName: "Check workstation prerequisites"
     inputs:
-      azureSubscription: '$(azureServiceConnection)'
-      scriptType: 'bash'
-      scriptLocation: 'scriptPath'
-      scriptPath: 'hooks/check-dev-workstation.sh'
-      arguments: '--verbose'
+      azureSubscription: "$(azureServiceConnection)"
+      scriptType: "bash"
+      scriptLocation: "scriptPath"
+      scriptPath: "hooks/check-dev-workstation.sh"
+      arguments: "--verbose"
 
   - task: AzureCLI@2
-    displayName: 'Provision infrastructure'
+    displayName: "Provision infrastructure"
     inputs:
-      azureSubscription: '$(azureServiceConnection)'
-      scriptType: 'bash'
-      scriptLocation: 'inlineScript'
+      azureSubscription: "$(azureServiceConnection)"
+      scriptType: "bash"
+      scriptLocation: "inlineScript"
       inlineScript: |
         azd provision --no-prompt
     env:
@@ -395,11 +395,11 @@ steps:
       AZURE_LOCATION: eastus
 
   - task: PowerShell@2
-    displayName: 'Generate test data'
+    displayName: "Generate test data"
     inputs:
-      targetType: 'filePath'
-      filePath: 'hooks/Generate-Orders.ps1'
-      arguments: '-OrderCount 100 -Force -Verbose'
+      targetType: "filePath"
+      filePath: "hooks/Generate-Orders.ps1"
+      arguments: "-OrderCount 100 -Force -Verbose"
 ```
 
 ---
@@ -458,6 +458,7 @@ steps:
 #### Issue: "PowerShell version is too old"
 
 **Solution:**
+
 ```powershell
 # Install PowerShell 7.0+
 # Windows:
@@ -470,6 +471,7 @@ winget install Microsoft.PowerShell
 #### Issue: ".NET SDK not found"
 
 **Solution:**
+
 ```bash
 # Install .NET SDK 10.0+
 # Windows:
@@ -482,6 +484,7 @@ winget install Microsoft.DotNet.SDK.10
 #### Issue: "Azure CLI authentication failed"
 
 **Solution:**
+
 ```bash
 # Login to Azure
 az login
@@ -496,6 +499,7 @@ az account show
 #### Issue: "Resource provider not registered"
 
 **Solution:**
+
 ```bash
 # Register required providers
 az provider register --namespace Microsoft.App
@@ -514,6 +518,7 @@ az provider show --namespace Microsoft.App --query "registrationState"
 #### Issue: "Secrets not configured after provisioning"
 
 **Solution:**
+
 ```powershell
 # Manually run postprovision
 .\hooks\postprovision.ps1 -Force -Verbose
@@ -525,6 +530,7 @@ dotnet user-secrets list --project app.AppHost
 #### Issue: "SQL Database managed identity configuration failed"
 
 **Solution:**
+
 ```powershell
 # PowerShell - Manual SQL managed identity configuration
 .\hooks\sql-managed-identity-config.ps1 `
@@ -550,6 +556,7 @@ sqlcmd -?  # Should show version and help
 #### Issue: "Generate-Orders fails with Python error"
 
 **Solution:**
+
 ```bash
 # Install Python 3.8+
 # Windows:
@@ -586,6 +593,7 @@ $VerbosePreference = 'Continue'
 For additional assistance:
 
 1. **Review detailed script documentation**:
+
    - [check-dev-workstation.md](./check-dev-workstation.md)
    - [VALIDATION-WORKFLOW.md](./VALIDATION-WORKFLOW.md)
    - [postprovision.md](./postprovision.md)

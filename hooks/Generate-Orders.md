@@ -48,6 +48,7 @@ With built-in progress tracking, comprehensive validation, and detailed summary 
 ## 🎯 Purpose
 
 This script helps developers and testers:
+
 - 🎲 **Generate Test Data**: Create realistic order data for development and testing
 - 📊 **Load Testing**: Generate large batches of orders for performance testing
 - 🔬 **Scenario Testing**: Create controlled test datasets with specific characteristics
@@ -91,32 +92,33 @@ Each order contains the following structure:
 
 ### Product Catalog (20 Products)
 
-| Product ID | Description | Base Price | Category |
-|------------|-------------|------------|----------|
-| PROD-1001 | Wireless Mouse | $25.99 | Peripherals |
-| PROD-1002 | Mechanical Keyboard | $89.99 | Peripherals |
-| PROD-1003 | USB-C Hub | $34.99 | Accessories |
-| PROD-2001 | Noise Cancelling Headphones | $149.99 | Audio |
-| PROD-2002 | Bluetooth Speaker | $79.99 | Audio |
-| PROD-3001 | External SSD 1TB | $119.99 | Storage |
-| PROD-3002 | Portable Charger | $49.99 | Power |
-| PROD-4001 | Webcam 1080p | $69.99 | Video |
-| PROD-4002 | Laptop Stand | $39.99 | Furniture |
-| PROD-5001 | Cable Organizer | $12.99 | Organization |
-| PROD-5002 | Smartphone Holder | $19.99 | Accessories |
-| PROD-6001 | Monitor 27" 4K | $399.99 | Displays |
-| PROD-6002 | Monitor Arm | $89.99 | Furniture |
-| PROD-7001 | Ergonomic Chair | $299.99 | Furniture |
-| PROD-7002 | Standing Desk | $499.99 | Furniture |
-| PROD-8001 | USB Microphone | $99.99 | Audio |
-| PROD-8002 | Ring Light | $44.99 | Video |
-| PROD-9001 | Graphics Tablet | $199.99 | Creative |
-| PROD-9002 | Drawing Pen Set | $29.99 | Creative |
-| PROD-A001 | Wireless Earbuds | $129.99 | Audio |
+| Product ID | Description                 | Base Price | Category     |
+| ---------- | --------------------------- | ---------- | ------------ |
+| PROD-1001  | Wireless Mouse              | $25.99     | Peripherals  |
+| PROD-1002  | Mechanical Keyboard         | $89.99     | Peripherals  |
+| PROD-1003  | USB-C Hub                   | $34.99     | Accessories  |
+| PROD-2001  | Noise Cancelling Headphones | $149.99    | Audio        |
+| PROD-2002  | Bluetooth Speaker           | $79.99     | Audio        |
+| PROD-3001  | External SSD 1TB            | $119.99    | Storage      |
+| PROD-3002  | Portable Charger            | $49.99     | Power        |
+| PROD-4001  | Webcam 1080p                | $69.99     | Video        |
+| PROD-4002  | Laptop Stand                | $39.99     | Furniture    |
+| PROD-5001  | Cable Organizer             | $12.99     | Organization |
+| PROD-5002  | Smartphone Holder           | $19.99     | Accessories  |
+| PROD-6001  | Monitor 27" 4K              | $399.99    | Displays     |
+| PROD-6002  | Monitor Arm                 | $89.99     | Furniture    |
+| PROD-7001  | Ergonomic Chair             | $299.99    | Furniture    |
+| PROD-7002  | Standing Desk               | $499.99    | Furniture    |
+| PROD-8001  | USB Microphone              | $99.99     | Audio        |
+| PROD-8002  | Ring Light                  | $44.99     | Video        |
+| PROD-9001  | Graphics Tablet             | $199.99    | Creative     |
+| PROD-9002  | Drawing Pen Set             | $29.99     | Creative     |
+| PROD-A001  | Wireless Earbuds            | $129.99    | Audio        |
 
 ### Delivery Addresses (20 Locations)
 
 Global coverage including:
+
 - 🇺🇸 United States (5 locations)
 - 🇬🇧 United Kingdom (2 locations)
 - 🇩🇪 Germany (2 locations)
@@ -129,18 +131,21 @@ Global coverage including:
 ### Basic Usage
 
 **PowerShell (Windows):**
+
 ```powershell
 # Generate 50 orders (default)
 .\Generate-Orders.ps1
 ```
 
 **Bash (Linux/macOS):**
+
 ```bash
 # Generate 50 orders (default)
 ./Generate-Orders.sh
 ```
 
 **Output:**
+
 ```
 Generating 50 orders...
 Progress: 5/50 (10%)
@@ -168,6 +173,7 @@ Summary:
 ### Generate Specific Number of Orders
 
 **PowerShell (Windows):**
+
 ```powershell
 # Generate 100 orders
 .\Generate-Orders.ps1 -OrderCount 100
@@ -180,6 +186,7 @@ Summary:
 ```
 
 **Bash (Linux/macOS):**
+
 ```bash
 # Generate 100 orders
 ./Generate-Orders.sh --order-count 100
@@ -194,6 +201,7 @@ Summary:
 ### Custom Output Path
 
 **PowerShell (Windows):**
+
 ```powershell
 # Save to custom location
 .\Generate-Orders.ps1 -OutputPath "C:\TestData\orders.json"
@@ -204,6 +212,7 @@ $timestamp = Get-Date -Format "yyyyMMdd-HHmmss"
 ```
 
 **Bash (Linux/macOS):**
+
 ```bash
 # Save to custom location
 ./Generate-Orders.sh --output-path "/tmp/TestData/orders.json"
@@ -216,6 +225,7 @@ timestamp=$(date +"%Y%m%d-%H%M%S")
 ### Control Products Per Order
 
 **PowerShell (Windows):**
+
 ```powershell
 # Generate orders with 1-3 products each
 .\Generate-Orders.ps1 -MinProducts 1 -MaxProducts 3
@@ -228,6 +238,7 @@ timestamp=$(date +"%Y%m%d-%H%M%S")
 ```
 
 **Bash (Linux/macOS):**
+
 ```bash
 # Generate orders with 1-3 products each
 ./Generate-Orders.sh --min-products 1 --max-products 3
@@ -242,6 +253,7 @@ timestamp=$(date +"%Y%m%d-%H%M%S")
 ### Combined Options
 
 **PowerShell (Windows):**
+
 ```powershell
 # Custom configuration for load testing
 .\Generate-Orders.ps1 `
@@ -253,6 +265,7 @@ timestamp=$(date +"%Y%m%d-%H%M%S")
 ```
 
 **Bash (Linux/macOS):**
+
 ```bash
 # Custom configuration for load testing
 ./Generate-Orders.sh \
@@ -266,18 +279,21 @@ timestamp=$(date +"%Y%m%d-%H%M%S")
 ### WhatIf Mode
 
 **PowerShell (Windows):**
+
 ```powershell
 # Preview what would be generated
 .\Generate-Orders.ps1 -WhatIf -Verbose
 ```
 
 **Bash (Linux/macOS):**
+
 ```bash
 # Preview what would be generated
 ./Generate-Orders.sh --dry-run --verbose
 ```
 
 **Output:**
+
 ```
 ===========================================================
 DRY-RUN MODE: Simulating order generation
@@ -309,12 +325,14 @@ Number of orders to generate.
 **Valid Range:** `1-10000`
 
 **PowerShell Examples:**
+
 ```powershell
 .\Generate-Orders.ps1 -OrderCount 100
 .\Generate-Orders.ps1 -OrderCount 1000
 ```
 
 **Bash Examples:**
+
 ```bash
 ./Generate-Orders.sh --order-count 100
 ./Generate-Orders.sh --order-count 1000
@@ -331,12 +349,14 @@ File path where the JSON output will be saved.
 **Default:** `../infra/data/ordersBatch.json` (relative to script location)
 
 **PowerShell Examples:**
+
 ```powershell
 .\Generate-Orders.ps1 -OutputPath "C:\temp\orders.json"
 .\Generate-Orders.ps1 -OutputPath ".\my-orders.json"
 ```
 
 **Bash Examples:**
+
 ```bash
 ./Generate-Orders.sh --output-path "/tmp/orders.json"
 ./Generate-Orders.sh --output-path "./my-orders.json"
@@ -356,12 +376,14 @@ Minimum number of products per order.
 **Valid Range:** `1-20`
 
 **PowerShell Examples:**
+
 ```powershell
 .\Generate-Orders.ps1 -MinProducts 2
 .\Generate-Orders.ps1 -MinProducts 5 -MaxProducts 10
 ```
 
 **Bash Examples:**
+
 ```bash
 ./Generate-Orders.sh --min-products 2
 ./Generate-Orders.sh --min-products 5 --max-products 10
@@ -379,12 +401,14 @@ Maximum number of products per order.
 **Valid Range:** `1-20`
 
 **PowerShell Examples:**
+
 ```powershell
 .\Generate-Orders.ps1 -MaxProducts 10
 .\Generate-Orders.ps1 -MinProducts 1 -MaxProducts 3
 ```
 
 **Bash Examples:**
+
 ```bash
 ./Generate-Orders.sh --max-products 10
 ./Generate-Orders.sh --min-products 1 --max-products 3
@@ -403,12 +427,14 @@ Force execution without prompting for confirmation.
 **Default:** `false`
 
 **PowerShell Examples:**
+
 ```powershell
 .\Generate-Orders.ps1 -Force
 .\Generate-Orders.ps1 -OrderCount 1000 -Force
 ```
 
 **Bash Examples:**
+
 ```bash
 ./Generate-Orders.sh --force
 ./Generate-Orders.sh --count 1000 --force
@@ -427,12 +453,14 @@ Enable verbose output for detailed debugging information.
 **Default:** `false`
 
 **PowerShell Examples:**
+
 ```powershell
 .\Generate-Orders.ps1 -Verbose
 .\Generate-Orders.ps1 -OrderCount 100 -Verbose
 ```
 
 **Bash Examples:**
+
 ```bash
 ./Generate-Orders.sh --verbose
 ./Generate-Orders.sh --count 100 --verbose
@@ -445,6 +473,7 @@ Enable verbose output for detailed debugging information.
 ### Example 1: Quick Test Dataset
 
 **PowerShell (Windows):**
+
 ```powershell
 # Generate 10 orders for quick testing
 cd Z:\Azure-LogicApps-Monitoring\hooks
@@ -456,6 +485,7 @@ Write-Host "Generated $($orders.Count) orders"
 ```
 
 **Bash (Linux/macOS):**
+
 ```bash
 # Generate 10 orders for quick testing
 cd /path/to/Azure-LogicApps-Monitoring/hooks
@@ -477,23 +507,23 @@ $ErrorActionPreference = 'Stop'
 try {
     # Generate test data
     & ./hooks/Generate-Orders.ps1 -OrderCount 100 -Verbose
-    
+
     if ($LASTEXITCODE -ne 0) {
         throw "Order generation failed"
     }
-    
+
     # Verify output file
     $outputFile = "./infra/data/ordersBatch.json"
     if (-not (Test-Path $outputFile)) {
         throw "Output file not created"
     }
-    
+
     # Validate JSON
     $orders = Get-Content $outputFile | ConvertFrom-Json
     if ($orders.Count -ne 100) {
         throw "Expected 100 orders, got $($orders.Count)"
     }
-    
+
     Write-Host "✓ Test data generated and validated"
 }
 catch {
@@ -523,7 +553,7 @@ flowchart LR
     WriteJSON["5️⃣ Write Output<br/>• Format JSON<br/>• Write to file<br/>• Create directory"]
     Summary["6️⃣ Display Summary<br/>• Total revenue<br/>• Average order<br/>• File size<br/>• Execution time"]
     End(["🏁 Complete"])
-    
+
     Start --> Validate
     Validate --> Init
     Init --> OrderLoop
@@ -536,13 +566,13 @@ flowchart LR
     OrderLoop --> WriteJSON
     WriteJSON --> Summary
     Summary --> End
-    
+
     classDef startEnd fill:#e8f5e9,stroke:#2e7d32,stroke-width:3px,color:#1b5e20
     classDef process fill:#e3f2fd,stroke:#1976d2,stroke-width:2px,color:#0d47a1
     classDef loop fill:#fff3e0,stroke:#f57c00,stroke-width:2px,color:#e65100
     classDef generate fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px,color:#4a148c
     classDef output fill:#e0f2f1,stroke:#00796b,stroke-width:2px,color:#004d40
-    
+
     class Start,End startEnd
     class Validate,Init,Summary process
     class OrderLoop,ProductLoop loop
@@ -552,13 +582,13 @@ flowchart LR
 
 ### Integration Points
 
-| Aspect | Details |
-|--------|---------|  
-| **Called By** | • Developers manually for test data generation<br/>• CI/CD pipelines during automated testing phases<br/>• Load testing scripts for performance validation<br/>• QA teams for scenario-based testing<br/>• Demo preparation workflows |
-| **Calls** | • No external scripts or services<br/>• File system operations for JSON output<br/>• Built-in randomization functions<br/>• PowerShell/Python core libraries only<br/>• Self-contained data generation logic |
-| **Dependencies** | • **Runtime:** PowerShell 7.0+ or Bash 4.0+<br/>• **Optional:** jq (for enhanced statistics in Bash - total revenue, average order value, product counts)<br/>• **Data:** Internal product catalog (20 items) and address pool (20 locations)<br/>• **File System:** Write access to output directory<br/>• **No External:** No network calls, APIs, or external databases required |
-| **Outputs** | • **Primary:** JSON file with order batch data (default: infra/data/ordersBatch.json)<br/>• **Console:** Progress updates (10% intervals), summary statistics, execution timing<br/>• **Metrics:** Total orders, file size, products per order<br/>• **Enhanced Metrics (Bash with jq):** Total revenue, average order value, total product count<br/>• **Exit Code:** 0 (success) or 1 (failure with error details) |
-| **Integration Role** | Serves as a **standalone test data generator** providing realistic order data for development, testing, and demonstration purposes. Operates independently from the main deployment workflow, enabling on-demand data generation without affecting provisioned resources. Critical for load testing, scenario validation, and demo preparation. |
+| Aspect               | Details                                                                                                                                                                                                                                                                                                                                                                                                              |
+| -------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Called By**        | • Developers manually for test data generation<br/>• CI/CD pipelines during automated testing phases<br/>• Load testing scripts for performance validation<br/>• QA teams for scenario-based testing<br/>• Demo preparation workflows                                                                                                                                                                                |
+| **Calls**            | • No external scripts or services<br/>• File system operations for JSON output<br/>• Built-in randomization functions<br/>• PowerShell/Python core libraries only<br/>• Self-contained data generation logic                                                                                                                                                                                                         |
+| **Dependencies**     | • **Runtime:** PowerShell 7.0+ or Bash 4.0+<br/>• **Optional:** jq (for enhanced statistics in Bash - total revenue, average order value, product counts)<br/>• **Data:** Internal product catalog (20 items) and address pool (20 locations)<br/>• **File System:** Write access to output directory<br/>• **No External:** No network calls, APIs, or external databases required                                  |
+| **Outputs**          | • **Primary:** JSON file with order batch data (default: infra/data/ordersBatch.json)<br/>• **Console:** Progress updates (10% intervals), summary statistics, execution timing<br/>• **Metrics:** Total orders, file size, products per order<br/>• **Enhanced Metrics (Bash with jq):** Total revenue, average order value, total product count<br/>• **Exit Code:** 0 (success) or 1 (failure with error details) |
+| **Integration Role** | Serves as a **standalone test data generator** providing realistic order data for development, testing, and demonstration purposes. Operates independently from the main deployment workflow, enabling on-demand data generation without affecting provisioned resources. Critical for load testing, scenario validation, and demo preparation.                                                                      |
 
 ### Key Algorithms
 
@@ -592,11 +622,11 @@ function New-CustomerId {
 ```powershell
 function Get-VariedPrice {
     param([decimal]$BasePrice)
-    
+
     # Apply ±20% variation
     $variation = (Get-Random -Minimum -20 -Maximum 20) / 100
     $price = $BasePrice * (1 + $variation)
-    
+
     return [Math]::Round($price, 2)
 }
 ```
@@ -611,7 +641,7 @@ function Get-RandomDate {
     $end = [datetime]'2025-12-31'
     $range = ($end - $start).Days
     $randomDays = Get-Random -Minimum 0 -Maximum $range
-    
+
     return $start.AddDays($randomDays).ToString('yyyy-MM-ddTHH:mm:ssZ')
 }
 ```
@@ -622,20 +652,21 @@ function Get-RandomDate {
 
 ### Execution Speed
 
-| Orders | PowerShell | Bash (with jq) | Bash (without jq) |
-|--------|-----------|----------------|-------------------|
-| 10 | <1 second | <1 second | <1 second |
-| 50 | ~2 seconds | ~3 seconds | ~2 seconds |
-| 100 | ~4 seconds | ~5 seconds | ~3 seconds |
-| 500 | ~18 seconds | ~22 seconds | ~15 seconds |
-| 1,000 | ~35 seconds | ~42 seconds | ~28 seconds |
-| 10,000 | ~6 minutes | ~7 minutes | ~4.5 minutes |
+| Orders | PowerShell  | Bash (with jq) | Bash (without jq) |
+| ------ | ----------- | -------------- | ----------------- |
+| 10     | <1 second   | <1 second      | <1 second         |
+| 50     | ~2 seconds  | ~3 seconds     | ~2 seconds        |
+| 100    | ~4 seconds  | ~5 seconds     | ~3 seconds        |
+| 500    | ~18 seconds | ~22 seconds    | ~15 seconds       |
+| 1,000  | ~35 seconds | ~42 seconds    | ~28 seconds       |
+| 10,000 | ~6 minutes  | ~7 minutes     | ~4.5 minutes      |
 
 **Note:** Times are approximate and vary based on system performance. The Bash script with jq calculates detailed statistics (revenue, averages) which adds minimal overhead (~10-15%).
 
 ### Optimization Tips
 
 1. **Batch Processing for Large Datasets:**
+
    ```bash
    # Generate 10,000 orders in 10 batches of 1,000
    for i in {1..10}; do
@@ -644,18 +675,20 @@ function Get-RandomDate {
    ```
 
 2. **Install jq for Enhanced Statistics:**
+
    ```bash
    # Ubuntu/Debian
    sudo apt-get install jq
-   
+
    # macOS
    brew install jq
-   
+
    # Windows (via Chocolatey)
    choco install jq
    ```
 
 3. **Disable Verbose Mode for Speed:**
+
    ```bash
    # Verbose logging adds ~5-10% overhead
    ./Generate-Orders.sh --count 1000  # Faster without --verbose
@@ -672,11 +705,13 @@ function Get-RandomDate {
 #### Issue: File Access Denied
 
 **Error Message:**
+
 ```
 Access to the path 'Z:\...\ordersBatch.json' is denied
 ```
 
 **Solution:**
+
 ```powershell
 # Check if file is in use
 Get-Process | Where-Object { $_.Path -like "*code*" } | Stop-Process -Force
@@ -690,12 +725,14 @@ Get-Process | Where-Object { $_.Path -like "*code*" } | Stop-Process -Force
 #### Issue: Invalid Parameter Range
 
 **Error Message:**
+
 ```
-Cannot validate argument on parameter 'MinProducts'. 
+Cannot validate argument on parameter 'MinProducts'.
 The 1 argument is less than the minimum allowed range of 2.
 ```
 
 **Solution:**
+
 ```powershell
 # Ensure MinProducts ≤ MaxProducts
 .\Generate-Orders.ps1 -MinProducts 2 -MaxProducts 5
@@ -708,11 +745,13 @@ The 1 argument is less than the minimum allowed range of 2.
 #### Issue: Out of Memory (Large Datasets)
 
 **Error Message:**
+
 ```
 Out of memory exception when generating 10000 orders
 ```
 
 **Solution:**
+
 ```powershell
 # Generate in smaller batches
 $batchSize = 1000
@@ -736,11 +775,13 @@ $allOrders | ConvertTo-Json -Depth 10 | Set-Content "all-orders.json"
 #### Issue: JSON Formatting Issues
 
 **Error Message:**
+
 ```
 Conversion from JSON failed with error: Invalid JSON
 ```
 
 **Solution:**
+
 ```powershell
 # Validate generated JSON
 $jsonContent = Get-Content ..\infra\data\ordersBatch.json -Raw
@@ -757,6 +798,7 @@ catch {
 ```
 
 ---
+
 ## 🔧 Technical Implementation
 
 This section provides technical details about the order generation scripts.
@@ -764,6 +806,7 @@ This section provides technical details about the order generation scripts.
 ### Generate-Orders.ps1 (PowerShell)
 
 **Architecture:**
+
 ```powershell
 Generate-Orders.ps1
 ├── Parameter Validation
@@ -792,6 +835,7 @@ Generate-Orders.ps1
 ```
 
 **Key Features:**
+
 - `[CmdletBinding(SupportsShouldProcess)]` - Enables `-WhatIf` and `-Confirm` support
 - Comprehensive XML documentation blocks for all functions
 - Try-catch-finally error handling
@@ -802,6 +846,7 @@ Generate-Orders.ps1
 ### Generate-Orders.sh (Bash)
 
 **Architecture:**
+
 ```bash
 Generate-Orders.sh
 ├── Bash Strict Mode (set -euo pipefail)
@@ -855,6 +900,7 @@ Generate-Orders.sh
 ```
 
 **Key Features:**
+
 - **6-Phase Execution:** Structured workflow with clear separation of concerns
 - **Dry-Run Mode:** `--dry-run` flag for simulation without file creation
 - **Enhanced Statistics:** jq integration for revenue and product analytics
@@ -870,12 +916,13 @@ Generate-Orders.sh
 **Key Functions:**
 
 1. **New-RandomOrder**
+
 ```powershell
 function New-RandomOrder {
     param(
         [int]$MaxProducts = 5
     )
-    
+
     $order = @{
         OrderId = (New-Guid).ToString()
         CustomerId = Get-Random -InputObject $script:Customers
@@ -884,10 +931,10 @@ function New-RandomOrder {
         TotalAmount = 0
         Status = Get-Random -InputObject @('Pending', 'Processing', 'Shipped', 'Delivered')
     }
-    
+
     $productCount = Get-Random -Minimum 1 -Maximum ($MaxProducts + 1)
     $selectedProducts = Get-Random -InputObject $script:Products -Count $productCount
-    
+
     foreach ($product in $selectedProducts) {
         $quantity = Get-Random -Minimum 1 -Maximum 10
         $item = @{
@@ -900,19 +947,20 @@ function New-RandomOrder {
         $order.Items += $item
         $order.TotalAmount += $item.LineTotal
     }
-    
+
     return $order
 }
 ```
 
 2. **Export-OrdersToJson**
+
 ```powershell
 function Export-OrdersToJson {
     param(
         [array]$Orders,
         [string]$OutputPath
     )
-    
+
     $json = $Orders | ConvertTo-Json -Depth 10
     $json | Out-File -FilePath $OutputPath -Encoding UTF8
 }
@@ -921,6 +969,7 @@ function Export-OrdersToJson {
 ### generate_orders_script.py (Python)
 
 **Architecture:**
+
 ```python
 generate_orders_script.py
 ├── Import libraries (json, uuid, datetime, random)
@@ -935,6 +984,7 @@ generate_orders_script.py
 **Key Functions:**
 
 1. **generate_order()**
+
 ```python
 import uuid
 import random
@@ -944,17 +994,17 @@ def generate_order(max_products=5):
     order_id = str(uuid.uuid4())
     customer_id = random.choice(customers)
     order_date = datetime.now() - timedelta(days=random.randint(0, 90))
-    
+
     items = []
     total = 0
-    
+
     num_products = random.randint(1, max_products)
     selected_products = random.sample(products, num_products)
-    
+
     for product in selected_products:
         quantity = random.randint(1, 10)
         line_total = quantity * product['price']
-        
+
         items.append({
             'productId': product['id'],
             'productName': product['name'],
@@ -963,7 +1013,7 @@ def generate_order(max_products=5):
             'lineTotal': line_total
         })
         total += line_total
-    
+
     return {
         'orderId': order_id,
         'customerId': customer_id,
@@ -975,6 +1025,7 @@ def generate_order(max_products=5):
 ```
 
 2. **save_to_json()**
+
 ```python
 import json
 
@@ -986,12 +1037,20 @@ def save_to_json(orders, output_path):
 ### Data Format Specification
 
 **Output JSON Schema:**
+
 ```json
 {
   "type": "array",
   "items": {
     "type": "object",
-    "required": ["orderId", "customerId", "orderDate", "items", "totalAmount", "status"],
+    "required": [
+      "orderId",
+      "customerId",
+      "orderDate",
+      "items",
+      "totalAmount",
+      "status"
+    ],
     "properties": {
       "orderId": {
         "type": "string",
@@ -1012,7 +1071,13 @@ def save_to_json(orders, output_path):
         "minItems": 1,
         "items": {
           "type": "object",
-          "required": ["productId", "productName", "quantity", "unitPrice", "lineTotal"],
+          "required": [
+            "productId",
+            "productName",
+            "quantity",
+            "unitPrice",
+            "lineTotal"
+          ],
           "properties": {
             "productId": {
               "type": "string",
@@ -1056,6 +1121,7 @@ def save_to_json(orders, output_path):
 ```
 
 **Example Output:**
+
 ```json
 [
   {
@@ -1088,22 +1154,23 @@ def save_to_json(orders, output_path):
 
 **Included Products:**
 
-| Product ID | Name | Category | Price Range |
-|------------|------|----------|-------------|
-| PROD-101 | Laptop | Electronics | $800-$1500 |
-| PROD-102 | Desktop | Electronics | $600-$1200 |
-| PROD-103 | Tablet | Electronics | $300-$800 |
-| PROD-201 | Keyboard | Accessories | $50-$150 |
-| PROD-202 | Mouse | Accessories | $20-$80 |
-| PROD-203 | Monitor | Electronics | $200-$600 |
-| PROD-204 | Webcam | Accessories | $40-$150 |
-| PROD-205 | Headset | Accessories | $50-$200 |
-| PROD-301 | Office Chair | Furniture | $150-$500 |
-| PROD-302 | Desk | Furniture | $200-$800 |
+| Product ID | Name         | Category    | Price Range |
+| ---------- | ------------ | ----------- | ----------- |
+| PROD-101   | Laptop       | Electronics | $800-$1500  |
+| PROD-102   | Desktop      | Electronics | $600-$1200  |
+| PROD-103   | Tablet       | Electronics | $300-$800   |
+| PROD-201   | Keyboard     | Accessories | $50-$150    |
+| PROD-202   | Mouse        | Accessories | $20-$80     |
+| PROD-203   | Monitor      | Electronics | $200-$600   |
+| PROD-204   | Webcam       | Accessories | $40-$150    |
+| PROD-205   | Headset      | Accessories | $50-$200    |
+| PROD-301   | Office Chair | Furniture   | $150-$500   |
+| PROD-302   | Desk         | Furniture   | $200-$800   |
 
 ### Logic Apps Integration
 
 **Upload to Storage Account:**
+
 ```powershell
 # Generate orders
 .\Generate-Orders.ps1 -OrderCount 100 -OutputPath "orders.json"
@@ -1117,12 +1184,14 @@ az storage blob upload `
 ```
 
 **Logic App Trigger:**
+
 - Trigger Type: `When a blob is added or modified`
 - Container: `orders`
 - Polling Interval: 1 minute
 - File Pattern: `batch-*.json`
 
 **Processing Flow:**
+
 ```
 1. Blob added to Storage Account
 2. Logic App triggered
@@ -1137,22 +1206,26 @@ az storage blob upload `
 ### Performance Characteristics
 
 **Generation Speed:**
+
 - 10 orders: < 1 second
 - 100 orders: 1-2 seconds
 - 1,000 orders: 5-10 seconds
 - 10,000 orders: 30-60 seconds
 
 **File Size:**
+
 - 10 orders: ~3 KB
 - 100 orders: ~30 KB
 - 1,000 orders: ~300 KB
 - 10,000 orders: ~3 MB
 
 **Memory Usage:**
-- PowerShell: ~50 MB baseline + (orders * 1 KB)
-- Python: ~30 MB baseline + (orders * 0.8 KB)
+
+- PowerShell: ~50 MB baseline + (orders \* 1 KB)
+- Python: ~30 MB baseline + (orders \* 0.8 KB)
 
 ---
+
 ## 📖 Related Documentation
 
 - **[postprovision.ps1](./postprovision.md)** - Uses generated orders during provisioning
@@ -1167,12 +1240,14 @@ az storage blob upload `
 ### Data Privacy
 
 **Generated Data Characteristics:**
+
 - All generated data is **synthetic and fictitious**
 - Customer IDs, order IDs, and addresses are **randomly generated**
 - No personally identifiable information (PII) is used or stored
 - Safe for use in public demos, documentation, and screenshots
 
 **Recommendations:**
+
 ```bash
 # Review generated data before using in production-like environments
 jq '.[0]' ../infra/data/ordersBatch.json
@@ -1184,6 +1259,7 @@ echo "infra/data/ordersBatch.json" >> .gitignore
 ### File System Security
 
 **Output File Permissions:**
+
 ```bash
 # PowerShell - Set restrictive permissions
 $acl = Get-Acl "orders.json"
@@ -1195,6 +1271,7 @@ chmod 600 orders.json
 ```
 
 **Directory Access:**
+
 ```bash
 # Ensure output directory has appropriate permissions
 # Bash script will fail if directory cannot be created
@@ -1204,6 +1281,7 @@ chmod 600 orders.json
 ### Verbose Mode Security
 
 **Verbose Logging Considerations:**
+
 - `--verbose` flag outputs detailed execution information to stderr
 - Verbose logs may include:
   - Full file paths
@@ -1213,6 +1291,7 @@ chmod 600 orders.json
 - **Recommendation:** Avoid verbose mode in production log aggregation systems
 
 **Example:**
+
 ```bash
 # Safe for local development
 ./Generate-Orders.sh --count 100 --verbose
@@ -1224,6 +1303,7 @@ chmod 600 orders.json
 ### Dry-Run Mode Security
 
 **Safe Testing Without Side Effects:**
+
 - `--dry-run` mode performs **zero file system operations**
 - Displays estimated results without creating files
 - Ideal for:
@@ -1233,6 +1313,7 @@ chmod 600 orders.json
   - CI/CD pipeline validation
 
 **Example:**
+
 ```bash
 # Test parameters without file creation
 ./Generate-Orders.sh --count 10000 --dry-run
@@ -1244,6 +1325,7 @@ ls -la ../infra/data/  # No new files
 ### Script Integrity
 
 **Validation:**
+
 ```bash
 # PowerShell - Verify script signature (if signed)
 Get-AuthenticodeSignature .\Generate-Orders.ps1
@@ -1254,6 +1336,7 @@ sha256sum Generate-Orders.sh
 ```
 
 **Best Practices:**
+
 - Review script contents before first execution
 - Store scripts in version-controlled repositories
 - Use code scanning tools to detect malicious modifications
@@ -1262,12 +1345,14 @@ sha256sum Generate-Orders.sh
 ### Network Isolation
 
 **Offline Operation:**
+
 - Scripts operate **completely offline** - no network calls
 - No external API dependencies
 - No telemetry or data transmission
 - Safe for air-gapped or isolated environments
 
 **Verification:**
+
 ```bash
 # Monitor network activity during execution
 # Linux
@@ -1286,13 +1371,13 @@ Get-NetTCPConnection | Where-Object State -eq "Established"
 
 ### Data Generation Guidelines
 
-| Scenario | Recommended Settings |
-|----------|---------------------|
-| **Unit Testing** | 10-20 orders, 1-3 products |
-| **Integration Testing** | 50-100 orders, 1-6 products |
-| **Load Testing** | 1000-5000 orders, 2-8 products |
+| Scenario                | Recommended Settings               |
+| ----------------------- | ---------------------------------- |
+| **Unit Testing**        | 10-20 orders, 1-3 products         |
+| **Integration Testing** | 50-100 orders, 1-6 products        |
+| **Load Testing**        | 1000-5000 orders, 2-8 products     |
 | **Performance Testing** | 5000-10000 orders, varied products |
-| **Demo/Presentation** | 20-50 orders, 2-5 products |
+| **Demo/Presentation**   | 20-50 orders, 2-5 products         |
 
 ### File Management
 
@@ -1306,9 +1391,9 @@ $timestamp = Get-Date -Format "yyyyMMdd-HHmmss"
 .\Generate-Orders.ps1 -OutputPath "$testDataDir\orders-$timestamp.json"
 
 # Clean up old files (keep last 5)
-Get-ChildItem $testDataDir -Filter "orders-*.json" | 
-    Sort-Object LastWriteTime -Descending | 
-    Select-Object -Skip 5 | 
+Get-ChildItem $testDataDir -Filter "orders-*.json" |
+    Sort-Object LastWriteTime -Descending |
+    Select-Object -Skip 5 |
     Remove-Item
 ```
 
@@ -1324,45 +1409,45 @@ infra/data/ordersBatch.json
 
 ### Performance Characteristics
 
-| Characteristic | Details |
-|----------------|---------|
-| **Execution Time** | • 10 orders: ~0.1 seconds<br/>• 50 orders: ~0.3 seconds (default)<br/>• 100 orders: ~0.5 seconds<br/>• 500 orders: ~2.5 seconds<br/>• 1000 orders: ~5 seconds<br/>• 5000 orders: ~25 seconds<br/>• **Scaling:** Linear O(n) with order count |
-| **Resource Usage** | • **Memory:** ~100 MB peak for 1000 orders<br/>• **CPU:** Low-medium utilization during generation<br/>• **Disk I/O:** Single write operation at completion<br/>• **Baseline:** ~20 MB for script initialization |
-| **Network Impact** | • **Zero network calls** - completely offline operation<br/>• **No external dependencies** - self-contained execution<br/>• **No API requests** - uses internal data structures<br/>• **Ideal for airgapped environments** |
-| **Output File Size** | • 10 orders: ~10 KB<br/>• 50 orders: ~45 KB<br/>• 100 orders: ~90 KB<br/>• 500 orders: ~450 KB<br/>• 1000 orders: ~900 KB<br/>• 5000 orders: ~4.5 MB<br/>• **Average:** ~900 bytes per order |
-| **Scalability** | • **Maximum tested:** 10,000 orders (~50 seconds)<br/>• **Recommended batch size:** 100-1000 orders<br/>• **Memory efficient:** Generates orders sequentially<br/>• **No degradation:** Consistent per-order generation time |
-| **Optimization** | • **Fast initialization:** Data structures loaded once<br/>• **Efficient randomization:** Built-in language features<br/>• **Minimal overhead:** Direct JSON serialization<br/>• **Progress tracking:** Optional, minimal impact on speed |
+| Characteristic       | Details                                                                                                                                                                                                                                      |
+| -------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Execution Time**   | • 10 orders: ~0.1 seconds<br/>• 50 orders: ~0.3 seconds (default)<br/>• 100 orders: ~0.5 seconds<br/>• 500 orders: ~2.5 seconds<br/>• 1000 orders: ~5 seconds<br/>• 5000 orders: ~25 seconds<br/>• **Scaling:** Linear O(n) with order count |
+| **Resource Usage**   | • **Memory:** ~100 MB peak for 1000 orders<br/>• **CPU:** Low-medium utilization during generation<br/>• **Disk I/O:** Single write operation at completion<br/>• **Baseline:** ~20 MB for script initialization                             |
+| **Network Impact**   | • **Zero network calls** - completely offline operation<br/>• **No external dependencies** - self-contained execution<br/>• **No API requests** - uses internal data structures<br/>• **Ideal for airgapped environments**                   |
+| **Output File Size** | • 10 orders: ~10 KB<br/>• 50 orders: ~45 KB<br/>• 100 orders: ~90 KB<br/>• 500 orders: ~450 KB<br/>• 1000 orders: ~900 KB<br/>• 5000 orders: ~4.5 MB<br/>• **Average:** ~900 bytes per order                                                 |
+| **Scalability**      | • **Maximum tested:** 10,000 orders (~50 seconds)<br/>• **Recommended batch size:** 100-1000 orders<br/>• **Memory efficient:** Generates orders sequentially<br/>• **No degradation:** Consistent per-order generation time                 |
+| **Optimization**     | • **Fast initialization:** Data structures loaded once<br/>• **Efficient randomization:** Built-in language features<br/>• **Minimal overhead:** Direct JSON serialization<br/>• **Progress tracking:** Optional, minimal impact on speed    |
 
 ## 🔄 Version History
 
-| Version | Date | Changes |
-|---------|------|---------|
-| **1.0.0** | 2025-12-24 | **Initial production release** |
-|           |            | • 20-product catalog with global coverage |
-|           |            | • 20 delivery addresses across 15 countries |
-|           |            | • Price variation algorithm (±20%) |
-|           |            | • Progress tracking with 10% intervals |
-|           |            | • Comprehensive parameter validation |
-|           |            | • PowerShell: 419 lines with XML documentation |
-|           |            | • Bash: ~562 lines with basic documentation |
-| **1.1.0** | 2025-12-29 | **Bash script comprehensive enhancement** |
+| Version   | Date       | Changes                                                       |
+| --------- | ---------- | ------------------------------------------------------------- |
+| **1.0.0** | 2025-12-24 | **Initial production release**                                |
+|           |            | • 20-product catalog with global coverage                     |
+|           |            | • 20 delivery addresses across 15 countries                   |
+|           |            | • Price variation algorithm (±20%)                            |
+|           |            | • Progress tracking with 10% intervals                        |
+|           |            | • Comprehensive parameter validation                          |
+|           |            | • PowerShell: 419 lines with XML documentation                |
+|           |            | • Bash: ~562 lines with basic documentation                   |
+| **1.1.0** | 2025-12-29 | **Bash script comprehensive enhancement**                     |
 |           |            | • Added `--dry-run` mode for simulation without file creation |
-|           |            | • Added `--force` flag for automated scenarios |
-|           |            | • Enhanced verbose logging (~40+ log statements) |
-|           |            | • Implemented 6-phase execution structure |
-|           |            | • Added jq integration for enhanced statistics: |
-|           |            |   - Total revenue calculation |
-|           |            |   - Average order value |
-|           |            |   - Total product count across orders |
-|           |            | • Added comprehensive function documentation blocks |
-|           |            | • Enhanced error messages with actionable guidance |
-|           |            | • Added detailed inline comments for all algorithms |
-|           |            | • Fisher-Yates shuffle algorithm documentation |
-|           |            | • Execution timing with elapsed seconds display |
-|           |            | • Bash script expanded to ~1,250+ lines |
-|           |            | • Feature parity with PowerShell version achieved |
+|           |            | • Added `--force` flag for automated scenarios                |
+|           |            | • Enhanced verbose logging (~40+ log statements)              |
+|           |            | • Implemented 6-phase execution structure                     |
+|           |            | • Added jq integration for enhanced statistics:               |
+|           |            | - Total revenue calculation                                   |
+|           |            | - Average order value                                         |
+|           |            | - Total product count across orders                           |
+|           |            | • Added comprehensive function documentation blocks           |
+|           |            | • Enhanced error messages with actionable guidance            |
+|           |            | • Added detailed inline comments for all algorithms           |
+|           |            | • Fisher-Yates shuffle algorithm documentation                |
+|           |            | • Execution timing with elapsed seconds display               |
+|           |            | • Bash script expanded to ~1,250+ lines                       |
+|           |            | • Feature parity with PowerShell version achieved             |
 
-##  Quick Links
+## Quick Links
 
 - **Repository**: [Azure-LogicApps-Monitoring](https://github.com/Evilazaro/Azure-LogicApps-Monitoring)
 - **Issues**: [Report Bug](https://github.com/Evilazaro/Azure-LogicApps-Monitoring/issues)
