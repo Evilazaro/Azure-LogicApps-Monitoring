@@ -31,7 +31,6 @@ By providing multiple execution modes (interactive, force, preview, verbose), th
 - [Examples](#-examples)
   - [Example 1: Clean Secrets Before Re-provisioning](#example-1-clean-secrets-before-re-provisioning)
   - [Example 2: CI/CD Pipeline Integration](#example-2-cicd-pipeline-integration)
-- [Troubleshooting](#️-troubleshooting)
 - [Related Documentation](#-related-documentation)
 - [Security Considerations](#-security-considerations)
   - [Safe Operations](#safe-operations)

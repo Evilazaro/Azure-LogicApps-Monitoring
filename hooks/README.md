@@ -35,7 +35,7 @@
   - [Secret Management](#secret-management)
   - [Azure Resource Management](#azure-resource-management)
   - [Cross-Platform Development](#cross-platform-development)
-- [Troubleshooting](#️-troubleshooting)
+- [Troubleshooting](#-troubleshooting)
   - [Using Verbose Mode](#using-verbose-mode)
   - [Debug Mode](#debug-mode)
   - [Getting Help](#getting-help)
