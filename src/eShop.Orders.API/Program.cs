@@ -19,7 +19,7 @@ builder.AddServiceDefaults();
 builder.Services.AddSingleton(new ActivitySource("eShop.Orders.API"));
 builder.Services.AddSingleton(new Meter("eShop.Orders.API"));
 
-var sqlServerName = builder.Configuration["Azure:SqlServer:Name"] ?? DefaultSqlServerName;
+var sqlServerName = builder.Configuration["ORDERDB_HOST"] ?? DefaultSqlServerName;
 var connectionString = (sqlServerName != DefaultSqlServerName) ? builder.Configuration["ConnectionStrings:OrdersDatabase"] : builder.Configuration["ConnectionStrings:OrderDb"];
 
 // Configure Entity Framework Core with SQL Server
