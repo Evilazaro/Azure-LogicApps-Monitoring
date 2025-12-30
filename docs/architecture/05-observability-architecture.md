@@ -220,7 +220,7 @@ flowchart LR
 
 ---
 
-## 3. Logging Architecture
+## 6. Logging Architecture
 
 ### Log Levels and Standards
 
@@ -265,7 +265,7 @@ All logs follow a consistent JSON structure:
 
 ---
 
-## 4. Metrics & Monitoring
+## 7. Metrics & Monitoring
 
 ### Key Metrics
 
@@ -313,7 +313,7 @@ private static readonly Counter<long> OrderProcessingErrors = Meter.CreateCounte
 
 ---
 
-## 5. Application Insights Integration
+## 8. Application Insights Integration
 
 ### Instrumentation Approach
 
@@ -363,7 +363,7 @@ public static TBuilder ConfigureOpenTelemetry<TBuilder>(this TBuilder builder)
 
 ---
 
-## 6. Health Monitoring
+## 9. Health Monitoring
 
 ### Health Check Endpoints
 
@@ -417,7 +417,7 @@ flowchart TB
 
 ---
 
-## 7. Alerting Strategy
+## 10. Alerting Strategy
 
 ### Alert Rules
 
@@ -440,7 +440,7 @@ flowchart TB
 
 ---
 
-## 8. Dashboards & Visualization
+## 11. Dashboards & Visualization
 
 ### Dashboard Inventory
 
