@@ -32,31 +32,74 @@ From an architectural perspective, the solution showcases **modern cloud-native 
 ## High-Level Architecture
 
 ```mermaid
-C4Context
-    title Azure Logic Apps Monitoring - System Context
+flowchart TD
+    subgraph Actors["👥 Actors"]
+        User["🧑‍💼 Business User"]
+        Ops["🔧 Operations Team"]
+    end
 
-    Person(user, "Business User", "Manages orders via web interface")
-    Person(ops, "Operations Team", "Monitors health and responds to alerts")
+    subgraph Solution["Azure Logic Apps Monitoring Solution"]
+        subgraph Frontend["Presentation Layer"]
+            WebApp["🌐 eShop Web App<br/>Blazor Server + Fluent UI"]
+        end
 
-    System_Boundary(solution, "Azure Logic Apps Monitoring Solution") {
-        System(webapp, "eShop Web App", "Blazor Server UI for order management")
-        System(api, "Orders API", "RESTful API with distributed tracing")
-        System(logicapps, "Logic Apps Workflows", "Order processing automation")
-    }
+        subgraph Backend["Application Layer"]
+            API["⚙️ Orders API<br/>ASP.NET Core + OpenTelemetry"]
+            ServiceDefaults["📦 Service Defaults<br/>Resilience + Health Checks"]
+        end
 
-    System_Ext(servicebus, "Azure Service Bus", "Async messaging backbone")
-    System_Ext(sql, "Azure SQL Database", "Order data persistence")
-    System_Ext(appinsights, "Application Insights", "Observability platform")
+        subgraph Orchestration["Orchestration Layer"]
+            AppHost["🎯 .NET Aspire AppHost<br/>Service Discovery + Wiring"]
+        end
 
-    Rel(user, webapp, "Places orders", "HTTPS")
-    Rel(ops, appinsights, "Monitors", "Azure Portal")
-    Rel(webapp, api, "API calls", "HTTP/REST")
-    Rel(api, sql, "Persists data", "EF Core")
-    Rel(api, servicebus, "Publishes events", "AMQP")
-    Rel(servicebus, logicapps, "Triggers workflows", "Service Bus Connector")
-    Rel(webapp, appinsights, "Telemetry")
-    Rel(api, appinsights, "Telemetry")
-    Rel(logicapps, appinsights, "Telemetry")
+        subgraph Workflows["Workflow Layer"]
+            LogicApps["🔄 Logic Apps Workflows<br/>Order Processing Automation"]
+        end
+    end
+
+    subgraph Azure["Azure Platform Services"]
+        ServiceBus["📨 Service Bus<br/>ordersplaced topic"]
+        SQL[("🗄️ Azure SQL<br/>Orders Database")]
+        AppInsights["📊 Application Insights<br/>Distributed Tracing"]
+        LogAnalytics["📋 Log Analytics<br/>Centralized Logs"]
+    end
+
+    %% Actor Interactions
+    User -->|"HTTPS"| WebApp
+    Ops -->|"Azure Portal"| AppInsights
+
+    %% Application Flow
+    WebApp -->|"REST/JSON"| API
+    API -->|"EF Core"| SQL
+    API -->|"Publish OrderPlaced"| ServiceBus
+    ServiceBus -->|"Trigger"| LogicApps
+
+    %% Orchestration
+    AppHost -.->|"Configures"| WebApp
+    AppHost -.->|"Configures"| API
+    ServiceDefaults -.->|"Provides"| API
+    ServiceDefaults -.->|"Provides"| WebApp
+
+    %% Observability
+    WebApp -->|"Telemetry"| AppInsights
+    API -->|"Telemetry"| AppInsights
+    LogicApps -->|"Telemetry"| AppInsights
+    AppInsights -->|"Stores"| LogAnalytics
+
+    %% Styling
+    classDef actorStyle fill:#e1f5fe,stroke:#01579b,stroke-width:2px
+    classDef frontendStyle fill:#e8f5e9,stroke:#2e7d32,stroke-width:2px
+    classDef backendStyle fill:#fff3e0,stroke:#ef6c00,stroke-width:2px
+    classDef workflowStyle fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px
+    classDef azureStyle fill:#e3f2fd,stroke:#1565c0,stroke-width:2px
+    classDef orchestrationStyle fill:#fce4ec,stroke:#c2185b,stroke-width:2px
+
+    class User,Ops actorStyle
+    class WebApp frontendStyle
+    class API,ServiceDefaults backendStyle
+    class LogicApps workflowStyle
+    class ServiceBus,SQL,AppInsights,LogAnalytics azureStyle
+    class AppHost orchestrationStyle
 ```
 
 ---
