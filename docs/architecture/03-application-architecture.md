@@ -85,6 +85,30 @@ flowchart TB
     class SQL,SB,AI external
 ```
 
+### Application Inventory
+
+| Application | Layer | Type | Technology | Owner | Status |
+|-------------|-------|------|------------|-------|--------|
+| **eShop.Web.App** | Presentation | Web UI | Blazor Server | Frontend Team | Active |
+| **eShop.Orders.API** | Application | REST API | ASP.NET Core 10 | Orders Team | Active |
+| **OrdersManagement** | Application | Workflow | Logic Apps Standard | Platform Team | Active |
+| **app.AppHost** | Platform | Orchestrator | .NET Aspire 9.x | Platform Team | Active |
+| **app.ServiceDefaults** | Platform | Shared Library | .NET Class Library | Platform Team | Active |
+
+### Application Relationship Matrix
+
+| From | To | Relationship | Protocol | Direction |
+|------|-----|--------------|----------|----------|
+| eShop.Web.App | eShop.Orders.API | Consumes API | HTTP/REST | Sync |
+| eShop.Orders.API | Azure SQL | Persists data | TDS/EF Core | Sync |
+| eShop.Orders.API | Service Bus | Publishes events | AMQP | Async |
+| Service Bus | OrdersManagement | Triggers workflow | Connector | Async |
+| app.AppHost | eShop.Web.App | Orchestrates | .NET Aspire | Config |
+| app.AppHost | eShop.Orders.API | Orchestrates | .NET Aspire | Config |
+| app.ServiceDefaults | eShop.Web.App | Configures | Library Reference | Build |
+| app.ServiceDefaults | eShop.Orders.API | Configures | Library Reference | Build |
+| All Services | App Insights | Reports telemetry | OTLP/HTTP | Push |
+
 ---
 
 ## Service Catalog
@@ -401,6 +425,31 @@ These types ensure consistent serialization and validation across service bounda
 - [x] Cross-architecture relationships linked
 - [x] Component diagrams for each service
 - [x] Service discovery mechanism documented
+- [x] **Application Landscape Map includes all 4 layers**
+- [x] **Color-coding applied consistently by layer**
+- [x] **Application Inventory table provided**
+- [x] **Application Relationship Matrix documented**
+- [x] **Synchronous vs asynchronous flows distinguished**
+- [x] **All protocols labeled on connections**
+
+---
+
+## Application Architecture Anti-Patterns
+
+| ❌ Don't | ✅ Do Instead |
+|----------|---------------|
+| Share databases between services | Each service owns its data (Orders API → SQL) |
+| Synchronous chains > 3 hops | Use async messaging for complex flows (Service Bus) |
+| Hardcode service URLs | Use service discovery (.NET Aspire, Container Apps DNS) |
+| Skip health checks | Implement /health and /alive on all services |
+| Mix concerns in controllers | Use Clean Architecture layers (Controllers → Services → Repos) |
+| Ignore API versioning | Plan for versioned endpoints |
+| Show every class in landscape diagram | Show service-level components only |
+| Use inconsistent diagram colors | Apply color-coding standards by layer |
+| Skip connection labels | Label all connections with protocol (HTTP, AMQP, OTLP) |
+| Forget external dependencies | Include all cloud services in landscape (SQL, Service Bus, App Insights) |
+| Omit inventory table | Always pair landscape diagram with application inventory |
+| Skip relationship matrix | Document all service interactions with direction |
 
 ---
 
