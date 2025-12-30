@@ -1,3 +1,5 @@
+using Microsoft.Extensions.Hosting;
+
 var builder = DistributedApplication.CreateBuilder(args);
 
 // =============================================================================
@@ -49,22 +51,18 @@ static void ConfigureAzureCredentials(IDistributedApplicationBuilder builder, IR
 {
     ArgumentNullException.ThrowIfNull(builder);
 
-    // NOTE: AZURE_CLIENT_ID is automatically set by .NET Aspire when using User Assigned Managed Identity
-    // on the Container App. Setting it manually here causes duplicate environment variables which can
-    // lead to authentication failures if the values conflict.
-    // 
-    // The User Assigned Managed Identity is configured in Bicep infrastructure and assigned to
-    // the Container App, so Aspire's infrastructure automatically picks up the correct client ID.
-    // Only set AZURE_TENANT_ID for local development scenarios where it may not be automatically available.
-
-    if (!string.IsNullOrWhiteSpace(builder.Configuration["Azure:TenantId"]))
+    if (builder.Environment.IsDevelopment())
     {
-        ordersApi.WithEnvironment("AZURE_TENANT_ID", builder.Configuration["Azure:TenantId"]);
-    }
+        if (!string.IsNullOrWhiteSpace(builder.Configuration["Azure:TenantId"]))
+        {
+            ordersApi.WithEnvironment("AZURE_TENANT_ID", builder.Configuration["Azure:TenantId"]);
+        }
 
-    // Do NOT set AZURE_CLIENT_ID here - it conflicts with Aspire's automatic configuration
-    // when using RunAsExisting() for Azure resources. The managed identity client ID is
-    // automatically configured when the Container App has a User Assigned Identity assigned.
+        if (!string.IsNullOrWhiteSpace(builder.Configuration["Azure:ClientId"]))
+        {
+            ordersApi.WithEnvironment("AZURE_CLIENT_ID", builder.Configuration["Azure:ClientId"]);
+        }
+    }
 }
 
 /// <summary>
