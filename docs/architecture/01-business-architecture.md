@@ -204,11 +204,6 @@ flowchart TD
 ---
 
 ← [Architecture Overview](README.md) | [Data Architecture →](02-data-architecture.md)
-    
-    style Observability fill:#f3e5f5
-```
-
----
 
 ## Related Documents
 
