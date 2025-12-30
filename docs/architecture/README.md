@@ -6,6 +6,14 @@
 
 The **Azure Logic Apps Monitoring Solution** is a comprehensive, cloud-native reference application demonstrating best practices for observability, monitoring, and distributed tracing in Azure Logic Apps Standard workflows. Built on .NET Aspire orchestration, this solution showcases enterprise-grade patterns for building observable distributed systems on Azure.
 
+### Purpose
+
+The primary goal of this solution is to provide a **production-ready reference architecture** for organizations adopting Azure Logic Apps Standard who require enterprise-grade observability. Traditional Logic Apps monitoring relies on Azure Portal views and basic Application Insights integration, but modern distributed applications demand end-to-end tracing that correlates user actions in the frontend through backend APIs, message queues, and workflow executions. This solution demonstrates how to achieve complete trace propagation using OpenTelemetry, custom business metrics, structured logging, and health monitoring—all unified in Application Insights.
+
+Beyond observability, this reference implementation addresses the **operational complexity** of running Logic Apps alongside containerized microservices. By leveraging .NET Aspire for service orchestration, developers experience a consistent inner-loop workflow whether running locally with emulators or deploying to Azure. The infrastructure-as-code patterns using Bicep and Azure Developer CLI (azd) provide repeatable deployments with managed identity authentication, eliminating secrets management overhead while demonstrating zero-trust security principles.
+
+The **eShop order management** domain serves as a realistic business context to exercise these patterns. Orders placed through the Blazor frontend flow through an ASP.NET Core API, persist to Azure SQL Database, publish events to Service Bus topics, and trigger Logic Apps workflows—each step instrumented for full observability. This end-to-end scenario allows architects and developers to evaluate the monitoring patterns in a representative workload before applying them to their own applications.
+
 ### Key Architectural Highlights
 
 - **Modern Orchestration**: .NET Aspire AppHost provides unified service orchestration with automatic service discovery, health monitoring, and telemetry correlation
