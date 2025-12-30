@@ -69,42 +69,43 @@ The solution implements an **order management capability** demonstrating cloud-n
 
 ```mermaid
 flowchart TD
-    subgraph CustomerExperience["Customer Experience"]
-        PlaceOrder["Place Order"]
-        ViewOrders["View Orders"]
-        TrackStatus["Track Order Status"]
+    subgraph Enterprise["Azure Logic Apps Monitoring Solution"]
+        subgraph OrderMgmt["Order Management"]
+            PlaceOrder["Place Order"]
+            ViewOrder["View Order"]
+            DeleteOrder["Delete Order"]
+            BatchProcess["Batch Processing"]
+        end
+        
+        subgraph EventProcessing["Event-Driven Processing"]
+            PublishEvents["Publish Order Events"]
+            ConsumeEvents["Consume Events"]
+            DeadLetterMgmt["Failed Message Handling"]
+        end
+        
+        subgraph WorkflowAutomation["Workflow Automation"]
+            ProcessOrders["Process Order Workflows"]
+            RouteSuccess["Route Successful Orders"]
+            RouteErrors["Route Failed Orders"]
+        end
+        
+        subgraph Observability["Observability"]
+            DistributedTracing["Distributed Tracing"]
+            MetricsCollection["Metrics Collection"]
+            LogAggregation["Log Aggregation"]
+            HealthMonitoring["Health Monitoring"]
+        end
     end
-    
-    subgraph OrderManagement["Order Management"]
-        ProcessOrder["Process Orders"]
-        ValidateOrder["Validate Orders"]
-        PersistOrder["Persist Orders"]
-    end
-    
-    subgraph Messaging["Event-Driven Messaging"]
-        PublishEvent["Publish Order Events"]
-        SubscribeEvent["Subscribe to Events"]
-        DeadLetter["Handle Failed Messages"]
-    end
-    
-    subgraph Observability["Observability & Monitoring"]
-        DistributedTrace["Distributed Tracing"]
-        MetricsCapture["Metrics Collection"]
-        LogAggregation["Log Aggregation"]
-        HealthMonitor["Health Monitoring"]
-    end
-    
-    PlaceOrder --> ProcessOrder
-    ProcessOrder --> ValidateOrder
-    ValidateOrder --> PersistOrder
-    PersistOrder --> PublishEvent
-    PublishEvent --> SubscribeEvent
-    
-    ProcessOrder --> DistributedTrace
-    ProcessOrder --> MetricsCapture
-    PersistOrder --> LogAggregation
-    SubscribeEvent --> HealthMonitor
 ```
+
+#### Capability Domain Mapping
+
+| Capability Domain | Source Evidence | Key Files |
+|-------------------|-----------------|-----------|
+| **Order Management** | CRUD operations for orders | [src/eShop.Orders.API/Controllers/OrdersController.cs](src/eShop.Orders.API/Controllers/OrdersController.cs) |
+| **Event-Driven Processing** | Service Bus topic publishing and subscription | [src/eShop.Orders.API/Handlers/OrdersMessageHandler.cs](src/eShop.Orders.API/Handlers/OrdersMessageHandler.cs) |
+| **Workflow Automation** | Logic Apps with success/error routing | [infra/workload/logic-app.bicep](infra/workload/logic-app.bicep), [infra/shared/data/main.bicep](infra/shared/data/main.bicep) |
+| **Observability** | OpenTelemetry, health checks, metrics | [app.ServiceDefaults/Extensions.cs](app.ServiceDefaults/Extensions.cs) |
 
 ### 3.2 Application Architecture
 
