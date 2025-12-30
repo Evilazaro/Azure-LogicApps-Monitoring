@@ -1,5 +1,4 @@
 ﻿using app.ServiceDefaults.CommonTypes;
-using Microsoft.AspNetCore.Mvc;
 
 namespace eShop.Orders.API.Services.Interfaces;
 

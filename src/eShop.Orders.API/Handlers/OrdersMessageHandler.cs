@@ -341,10 +341,10 @@ public sealed class OrdersMessageHandler : IOrdersMessageHandler
             // For this implementation, we'll use a default subscription name
             // In production, you might want to make this configurable or query all subscriptions
             const string defaultSubscriptionName = "OrdersSubscription";
-            
+
             var messages = await ListMessagesFromTopicAsync(
-                defaultSubscriptionName, 
-                maxMessages: 100, 
+                defaultSubscriptionName,
+                maxMessages: 100,
                 cancellationToken);
 
             activity?.SetStatus(ActivityStatusCode.Ok);

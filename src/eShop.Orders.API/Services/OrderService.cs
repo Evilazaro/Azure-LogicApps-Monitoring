@@ -3,7 +3,6 @@ using eShop.Orders.API.Interfaces;
 using eShop.Orders.API.Services.Interfaces;
 using System.Diagnostics;
 using System.Diagnostics.Metrics;
-using Microsoft.AspNetCore.Mvc; // Add this if not already present
 
 namespace eShop.Orders.API.Services;
 
