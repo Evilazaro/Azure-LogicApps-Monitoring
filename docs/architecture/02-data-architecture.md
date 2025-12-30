@@ -272,7 +272,259 @@ message.ApplicationProperties["traceparent"] = activity.Id ?? string.Empty;
 
 ---
 
+## Telemetry Data Mapping
+
+### Three Pillars of Observability
+
+The solution implements all three pillars of observability for comprehensive system insight:
+
+```mermaid
+flowchart TB
+    subgraph Sources["📡 Telemetry Sources"]
+        API["⚙️ Orders API"]
+        Web["🌐 Web App"]
+        LA["🔄 Logic Apps"]
+        SB["📨 Service Bus"]
+        SQL["🗄️ SQL Database"]
+    end
+
+    subgraph Pillars["📊 Three Pillars"]
+        subgraph Traces["📍 Traces"]
+            T1["Request spans"]
+            T2["Database spans"]
+            T3["HTTP client spans"]
+            T4["Messaging spans"]
+        end
+        
+        subgraph Metrics["📈 Metrics"]
+            M1["Request metrics"]
+            M2["Business metrics"]
+            M3["Platform metrics"]
+            M4["Custom metrics"]
+        end
+        
+        subgraph Logs["📝 Logs"]
+            L1["Application logs"]
+            L2["Request logs"]
+            L3["Diagnostic logs"]
+            L4["Audit logs"]
+        end
+    end
+
+    subgraph Storage["📥 Storage"]
+        AI["Application Insights"]
+        LAW["Log Analytics"]
+    end
+
+    API --> T1 & T2 & M1 & M2 & L1 & L2
+    Web --> T3 & M1 & L1 & L2
+    LA --> T4 & M3 & L3
+    SB --> M3 & L3
+    SQL --> M3 & L3
+
+    Traces --> AI
+    Metrics --> AI
+    Logs --> AI
+    Logs --> LAW
+
+    classDef trace fill:#e3f2fd,stroke:#1565c0,stroke-width:2px
+    classDef metric fill:#e8f5e9,stroke:#2e7d32,stroke-width:2px
+    classDef log fill:#fff3e0,stroke:#ef6c00,stroke-width:2px
+
+    class T1,T2,T3,T4 trace
+    class M1,M2,M3,M4 metric
+    class L1,L2,L3,L4 log
+```
+
+| Pillar | Description | Data Type | Use Case | Storage |
+|--------|-------------|-----------|----------|---------||
+| **Traces** | Distributed request flow across services | Spans with TraceId, SpanId, ParentSpanId | End-to-end transaction analysis | Application Insights |
+| **Metrics** | Numeric measurements aggregated over time | Counters, Gauges, Histograms | Dashboards, alerts, capacity planning | Azure Monitor Metrics |
+| **Logs** | Discrete events with contextual information | Structured JSON with properties | Debugging, auditing, investigation | Log Analytics |
+
+### Metrics Inventory
+
+#### Orders API Metrics
+
+| Metric | Type | Description | Dimensions | Alert Threshold |
+|--------|------|-------------|------------|-----------------|
+| `http.server.request.duration` | Histogram | Request latency | http.method, http.route, http.status_code | P95 > 2s |
+| `http.server.active_requests` | UpDownCounter | Concurrent requests | http.method | > 100 |
+| `orders.created` | Counter | Orders created count | - | N/A |
+| `orders.total_value` | Counter | Cumulative order value | currency | N/A |
+| `db.client.operation.duration` | Histogram | Database query time | db.operation, db.name | P95 > 500ms |
+
+#### Service Bus Metrics (Platform)
+
+| Metric | Type | Description | Alert Threshold |
+|--------|------|-------------|-----------------|
+| `ActiveMessages` | Gauge | Messages awaiting delivery | > 1000 |
+| `DeadLetteredMessages` | Gauge | Failed message count | > 0 |
+| `IncomingMessages` | Counter | Messages received | N/A |
+| `OutgoingMessages` | Counter | Messages delivered | N/A |
+
+#### SQL Database Metrics (Platform)
+
+| Metric | Type | Description | Alert Threshold |
+|--------|------|-------------|-----------------|
+| `cpu_percent` | Gauge | CPU utilization | > 80% |
+| `dtu_consumption_percent` | Gauge | DTU usage | > 80% |
+| `connection_successful` | Counter | Successful connections | N/A |
+| `deadlock` | Counter | Deadlock occurrences | > 0 |
+
+#### Logic Apps Metrics (Platform)
+
+| Metric | Type | Description | Alert Threshold |
+|--------|------|-------------|-----------------|
+| `RunsSucceeded` | Counter | Successful workflow runs | N/A |
+| `RunsFailed` | Counter | Failed workflow runs | > 0 |
+| `RunLatency` | Gauge | Workflow execution time | > 5min |
+| `ActionLatency` | Gauge | Individual action time | > 30s |
+
+### Logs Inventory
+
+#### Orders API Logs
+
+| Log Event | Level | Properties | Example |
+|-----------|-------|------------|---------|
+| `OrderCreated` | Information | OrderId, CustomerId, Total | "Order ORD-2025-001 created" |
+| `OrderValidationFailed` | Warning | OrderId, Errors[] | "Validation failed: Address required" |
+| `DatabaseQueryExecuted` | Debug | Query, Duration, RowCount | "SELECT executed in 45ms" |
+| `ServiceBusMessagePublished` | Information | MessageId, Topic, TraceId | "OrderPlaced published" |
+| `UnhandledException` | Error | Exception, StackTrace | Full exception details |
+
+#### Web App Logs
+
+| Log Event | Level | Properties | Example |
+|-----------|-------|------------|---------|
+| `PageLoaded` | Information | PageName, LoadTime | "Orders page loaded in 1.2s" |
+| `ApiCallFailed` | Warning | Endpoint, StatusCode | "GET /api/orders returned 500" |
+| `UserAction` | Information | Action, Component | "User clicked Submit Order" |
+
+#### Logic Apps Logs (Diagnostic)
+
+| Log Event | Level | Table | Properties |
+|-----------|-------|-------|-----------|
+| `WorkflowRunStarted` | Information | AzureDiagnostics | workflowName, runId |
+| `WorkflowRunCompleted` | Information | AzureDiagnostics | runId, status, duration |
+| `WorkflowRunFailed` | Error | AzureDiagnostics | runId, errorCode, errorMessage |
+
+### Structured Logging Format
+
+```json
+{
+  "Timestamp": "2025-12-30T10:30:00.000Z",
+  "Level": "Information",
+  "MessageTemplate": "Order {OrderId} created with total {Total}",
+  "Properties": {
+    "OrderId": "ORD-2025-001",
+    "Total": 149.99,
+    "CustomerId": "CUST-100",
+    "TraceId": "abc123def456...",
+    "SpanId": "789ghi012...",
+    "RequestPath": "/api/orders",
+    "SourceContext": "eShop.Orders.API.Controllers.OrdersController"
+  },
+  "Exception": null
+}
+```
+
+| Property | Required | Purpose | Example |
+|----------|----------|---------|--------|
+| `Timestamp` | ✅ Yes | When event occurred | ISO 8601 UTC |
+| `Level` | ✅ Yes | Severity | Information, Warning, Error |
+| `MessageTemplate` | ✅ Yes | Human-readable message | "Order {OrderId} created" |
+| `TraceId` | ✅ Yes | Correlation | W3C trace ID |
+| `SpanId` | ✅ Yes | Span correlation | W3C span ID |
+| `SourceContext` | Recommended | Origin class | Fully qualified type name |
+| `RequestPath` | Recommended | HTTP context | "/api/orders" |
+
+### Metrics vs Logs Decision Guide
+
+| Question | → Metrics | → Logs |
+|----------|-----------|--------|
+| Is it a number that changes over time? | ✅ | |
+| Do you need to aggregate/calculate percentiles? | ✅ | |
+| Is it a discrete event with context? | | ✅ |
+| Do you need full details for debugging? | | ✅ |
+| Is it used for dashboards/alerts on thresholds? | ✅ | |
+| Is it used for searching/filtering specific events? | | ✅ |
+| Does it have high cardinality (many unique values)? | | ✅ |
+| Is it sampled or aggregated? | ✅ | |
+
+---
+
+## Data Lifecycle States
+
+| Stage | Description | Location | Duration | Transition Trigger |
+|-------|-------------|----------|----------|-------------------|
+| **Creation** | Order submitted via API | Orders API memory | Milliseconds | Validation passes |
+| **Persistence** | Order saved to database | Azure SQL | Indefinite | Transaction commit |
+| **Publication** | Order event published | Service Bus topic | 14 days TTL | Post-commit hook |
+| **Consumption** | Event processed by workflow | Logic App | Minutes | Subscription delivery |
+| **Telemetry** | Operational data captured | App Insights | 90 days | Continuous |
+| **Archival** | Historical order data | Cold storage | 7 years | Age-based policy |
+
+---
+
+## Data Technology Landscape
+
+| Capability | Technology | Tier | Justification | Alternative Considered |
+|------------|------------|------|---------------|------------------------|
+| **Transactional Storage** | Azure SQL Database | General Purpose | ACID compliance, EF Core support | Cosmos DB (rejected: overkill for structured data) |
+| **Event Streaming** | Azure Service Bus | Standard | Reliable messaging, topic/subscription | Event Hubs (rejected: lower throughput needs) |
+| **Workflow State** | Azure Storage | Standard LRS | Logic Apps native integration | N/A (platform requirement) |
+| **APM & Tracing** | Application Insights | Standard | Distributed tracing, correlation | Jaeger (rejected: operational overhead) |
+| **Log Aggregation** | Log Analytics | Standard | KQL queries, Azure integration | ELK Stack (rejected: operational overhead) |
+
+---
+
+## Data Dependencies Map
+
+```mermaid
+flowchart TD
+    subgraph Upstream["⬆️ Upstream Data Producers"]
+        WebApp["🌐 Web App<br/>(Order Input)"]
+    end
+
+    subgraph Core["🎯 Core Data Assets"]
+        OrderDb[("📦 OrderDb<br/>Azure SQL")]
+        EventBus["📨 Service Bus<br/>ordersplaced"]
+    end
+
+    subgraph Downstream["⬇️ Downstream Data Consumers"]
+        LogicApp["🔄 Logic Apps<br/>(Workflow Automation)"]
+        AppInsights["📊 App Insights<br/>(Analytics & Monitoring)"]
+    end
+
+    WebApp -->|"Creates orders"| OrderDb
+    OrderDb -->|"Publishes events"| EventBus
+    EventBus -->|"Triggers workflows"| LogicApp
+    OrderDb -.->|"Emits telemetry"| AppInsights
+    LogicApp -.->|"Emits telemetry"| AppInsights
+
+    classDef upstream fill:#fff3e0,stroke:#ef6c00,stroke-width:2px
+    classDef core fill:#e3f2fd,stroke:#1565c0,stroke-width:2px
+    classDef downstream fill:#e8f5e9,stroke:#2e7d32,stroke-width:2px
+
+    class WebApp upstream
+    class OrderDb,EventBus core
+    class LogicApp,AppInsights downstream
+```
+
+---
+
 ## Data Integration Points
+
+### Data Flow Matrix
+
+| Source | Target | Data Type | Protocol | Pattern | Frequency | Volume |
+|--------|--------|-----------|----------|---------|-----------|--------|
+| Web App | Orders API | Order JSON | HTTPS/REST | Sync Request/Response | On-demand | ~100/hour |
+| Orders API | SQL Database | Order Entity | TDS/EF Core | CRUD | Per request | ~100/hour |
+| Orders API | Service Bus | OrderPlaced Event | AMQP | Async Pub/Sub | Per order | ~100/hour |
+| Service Bus | Logic Apps | OrderPlaced Event | Connector | Event-driven | Per event | ~100/hour |
+| All Services | App Insights | Telemetry | HTTPS/OTLP | Continuous Push | Batched | ~10K/hour |
 
 ### Internal Service Communication
 
@@ -363,6 +615,26 @@ message.ApplicationProperties["traceparent"] = activity.Id ?? string.Empty;
 | **Technology Architecture** | Azure SQL hosts OrderDb; Service Bus transports events | [Technology Architecture](04-technology-architecture.md#infrastructure-components) |
 | **Observability Architecture** | Telemetry data flows to App Insights for monitoring | [Observability Architecture](05-observability-architecture.md#distributed-tracing) |
 | **Security Architecture** | Data classification drives access control policies | [Security Architecture](06-security-architecture.md#data-protection) |
+
+---
+
+## Data Architecture Quality Checklist
+
+- [x] All data stores documented with owner service
+- [x] Data flow diagrams cover write and read paths
+- [x] Data classification applied to all data elements
+- [x] Trace context propagation explained
+- [x] Cross-architecture references included
+- [x] Data landscape map shows all domains
+- [x] Metrics inventory documented by source
+- [x] Logs inventory documented by source
+- [x] Three pillars (traces, metrics, logs) mapped to sources
+- [x] Structured logging format defined
+- [x] Metrics vs logs decision criteria applied
+- [x] Platform metrics from Azure Monitor included
+- [x] Data lifecycle states documented
+- [x] Data technology landscape with justifications
+- [x] Data dependencies map with upstream/downstream
 
 ---
 
