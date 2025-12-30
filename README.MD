@@ -359,9 +359,180 @@ flowchart LR
 
 ---
 
-### Infrastructure Layer
+### Deployment Layer (Infrastructure Layer)
 
-The Infrastructure Layer defines all Azure resources using modular Bicep templates under the `infra/` directory. The main orchestrator (`infra/main.bicep`) deploys at subscription scope, creating a resource group and coordinating two module deployments: `shared/main.bicep` (identity, monitoring, data) and `workload/main.bicep` (messaging, container services, logic apps). All resources include diagnostic settings with `allLogs` and `allMetrics` category groups sent to Log Analytics and Storage Account for comprehensive observability.
+The **Deployment Layer** provisions all Azure components required for the Azure Logic Apps Monitoring Solution. Implemented as modular Bicep Infrastructure as Code (IaC) templates under the `infra/` directory, this layer defines the complete Azure infrastructure from identity management through monitoring, data storage, messaging, container services, and workflow execution. The main orchestrator (`infra/main.bicep`) deploys at subscription scope, creating a resource group (`rg-{solution}-{env}-{location}`) and coordinating two primary module deployments: `shared/main.bicep` for foundational infrastructure (identity, monitoring, data) and `workload/main.bicep` for application-specific resources (messaging, container services, logic apps). All resources include comprehensive diagnostic settings with `allLogs` and `allMetrics` category groups sent to Log Analytics and Storage Account, enabling full observability across the entire deployment.
+
+#### Infrastructure Dependencies and Interactions
+
+The following diagram illustrates all Azure resources deployed by the Infrastructure Layer and their dependencies and interactions:
+
+```mermaid
+flowchart LR
+    subgraph Identity["Identity"]
+        ManagedId["User-Assigned<br/>Managed Identity"]
+    end
+
+    subgraph Monitoring["Monitoring"]
+        LogAnalytics["Log Analytics<br/>Workspace"]
+        AppInsights["Application<br/>Insights"]
+        LogsStorage["Storage Account<br/>Diagnostic Logs"]
+    end
+
+    subgraph Data["Data Storage"]
+        SQLServer["Azure SQL<br/>Server"]
+        SQLDatabase["Azure SQL<br/>Database"]
+        WorkflowStorage["Storage Account<br/>Workflow State"]
+        BlobContainers["Blob Containers<br/>Orders Processed"]
+    end
+
+    subgraph Messaging["Messaging"]
+        ServiceBus["Azure Service Bus<br/>Standard Tier"]
+        Topics["ordersplaced<br/>Topic"]
+        Subscriptions["orderprocessingsub<br/>Subscription"]
+    end
+
+    subgraph Containers["Container Services"]
+        ACR["Azure Container<br/>Registry"]
+        CAE["Container Apps<br/>Environment"]
+        AspireDash[".NET Aspire<br/>Dashboard"]
+    end
+
+    subgraph Workflows["Workflow Engine"]
+        ASP["App Service Plan<br/>WorkflowStandard/WS1"]
+        LogicApps["Azure Logic Apps<br/>Standard"]
+    end
+
+    %% Identity Dependencies
+    ManagedId -->|"RBAC Auth"| SQLServer
+    ManagedId -->|"RBAC Auth"| ServiceBus
+    ManagedId -->|"RBAC Auth"| WorkflowStorage
+    ManagedId -->|"RBAC Auth"| ACR
+    ManagedId -->|"RBAC Auth"| LogicApps
+
+    %% Monitoring Dependencies
+    LogAnalytics -->|"Workspace-based"| AppInsights
+    LogsStorage -->|"Linked Storage"| LogAnalytics
+
+    %% Data Dependencies
+    SQLServer --> SQLDatabase
+    WorkflowStorage --> BlobContainers
+
+    %% Messaging Dependencies
+    ServiceBus --> Topics
+    Topics --> Subscriptions
+
+    %% Container Dependencies
+    CAE --> AspireDash
+    CAE -->|"Pull Images"| ACR
+
+    %% Workflow Dependencies
+    ASP --> LogicApps
+    LogicApps -->|"Triggers"| Subscriptions
+    LogicApps -->|"Store State"| WorkflowStorage
+    LogicApps -->|"Write Results"| BlobContainers
+
+    %% Telemetry Flows
+    LogicApps -.->|"Telemetry"| AppInsights
+    ServiceBus -.->|"Diagnostics"| LogAnalytics
+    SQLDatabase -.->|"Diagnostics"| LogAnalytics
+    CAE -.->|"App Logs"| LogAnalytics
+    ACR -.->|"Diagnostics"| LogAnalytics
+```
+
+#### Azure Resources Deployed
+
+##### Azure Logic Apps Standard
+
+| Attribute | Details |
+|-----------|---------|
+| **Bicep Module** | `workload/logic-app.bicep` |
+| **Role in Architecture** | Executes stateful business workflows for order processing. The `ProcessingOrdersPlaced` workflow is triggered by Service Bus messages, processes orders, and stores results in blob storage. |
+| **Critical Configurations** | **SKU**: WorkflowStandard/WS1, **Elastic Scaling**: Up to 20 workers, **Extension Bundle**: `Microsoft.Azure.Functions.ExtensionBundle.Workflows [1.*, 2.0.0)`, **Runtime**: Functions v4 with dotnet worker |
+| **Documentation** | [Azure Logic Apps Standard](https://learn.microsoft.com/azure/logic-apps/single-tenant-overview-compare) |
+
+##### Azure Service Bus (Topics and Subscriptions)
+
+| Attribute | Details |
+|-----------|---------|
+| **Bicep Module** | `workload/messaging/main.bicep` |
+| **Role in Architecture** | Provides reliable, asynchronous message brokering for order events. The `ordersplaced` Topic enables pub-sub messaging with the `orderprocessingsub` Subscription delivering messages to Logic Apps workflows. |
+| **Critical Configurations** | **SKU**: Standard tier, **Topic**: `ordersplaced`, **Subscription**: `orderprocessingsub` with `maxDeliveryCount: 10`, `lockDuration: PT5M`, `defaultMessageTimeToLive: P14D`, `deadLetteringOnMessageExpiration: true` |
+| **Documentation** | [Azure Service Bus Topics and Subscriptions](https://learn.microsoft.com/azure/service-bus-messaging/service-bus-queues-topics-subscriptions) |
+
+##### Azure SQL Database
+
+| Attribute | Details |
+|-----------|---------|
+| **Bicep Module** | `shared/data/main.bicep` |
+| **Role in Architecture** | Provides persistent relational storage for order data. Stores `OrderEntity` and `OrderProductEntity` tables with Entra ID-only authentication for enhanced security. |
+| **Critical Configurations** | **SKU**: GeneralPurpose GP_Gen5_2 (2 vCores, 32GB), **Authentication**: `azureADOnlyAuthentication: true`, **TLS**: Minimum 1.2, **Firewall**: AllowAllWindowsAzureIps enabled |
+| **Documentation** | [Azure SQL Database](https://learn.microsoft.com/azure/azure-sql/database/sql-database-paas-overview) |
+
+##### Azure Storage Accounts
+
+| Attribute | Details |
+|-----------|---------|
+| **Bicep Modules** | `shared/data/main.bicep` (Workflow Storage), `shared/monitoring/log-analytics-workspace.bicep` (Logs Storage) |
+| **Role in Architecture** | **Workflow Storage**: Provides Azure Files share (`workflowstate`) for Logic App state and Blob containers (`ordersprocessedsuccessfully`, `ordersprocessedwitherrors`) for processed orders. **Logs Storage**: Stores diagnostic logs with 30-day lifecycle management. |
+| **Critical Configurations** | **SKU**: Standard_LRS, **Access Tier**: Hot, **TLS**: Minimum 1.2, **Network**: Azure Services bypass enabled |
+| **Documentation** | [Azure Storage](https://learn.microsoft.com/azure/storage/common/storage-introduction) |
+
+##### Azure Container Apps
+
+| Attribute | Details |
+|-----------|---------|
+| **Bicep Module** | `workload/services/main.bicep` |
+| **Role in Architecture** | Hosts the containerized microservices (`eShop.Orders.API`, `eShop.Web.App`) in a managed serverless environment with automatic scaling and integrated observability. |
+| **Critical Configurations** | **Workload Profile**: Consumption (serverless, scale-to-zero), **Logging**: Log Analytics integration with shared key, **Telemetry**: Application Insights connection string configured, **Component**: .NET Aspire Dashboard (`AspireDashboard`) |
+| **Documentation** | [Azure Container Apps](https://learn.microsoft.com/azure/container-apps/overview) |
+
+##### Azure Container Registry
+
+| Attribute | Details |
+|-----------|---------|
+| **Bicep Module** | `workload/services/main.bicep` |
+| **Role in Architecture** | Stores and manages container images for the solution's microservices. Provides secure, private registry with managed identity authentication for Container Apps image pulls. |
+| **Critical Configurations** | **SKU**: Premium (geo-replication, enhanced throughput, private link support), **Identity**: User-Assigned Managed Identity |
+| **Documentation** | [Azure Container Registry](https://learn.microsoft.com/azure/container-registry/container-registry-intro) |
+
+##### Application Insights
+
+| Attribute | Details |
+|-----------|---------|
+| **Bicep Module** | `shared/monitoring/app-insights.bicep` |
+| **Role in Architecture** | Collects application telemetry including distributed traces, custom metrics, and performance data. Workspace-based configuration ensures all data flows to the central Log Analytics workspace. |
+| **Critical Configurations** | **Type**: Workspace-based (linked to Log Analytics), **Application Type**: Web, **Network Access**: Public ingestion and query enabled |
+| **Documentation** | [Application Insights](https://learn.microsoft.com/azure/azure-monitor/app/app-insights-overview) |
+
+##### Log Analytics Workspace
+
+| Attribute | Details |
+|-----------|---------|
+| **Bicep Module** | `shared/monitoring/log-analytics-workspace.bicep` |
+| **Role in Architecture** | Serves as the central log aggregation and query engine for all Azure resources. Receives diagnostic logs and metrics from every deployed resource, enabling unified observability. |
+| **Critical Configurations** | **Pricing Tier**: PerGB2018 (pay-as-you-go), **Retention**: 30 days with immediate purge enabled, **Linked Storage**: Alerts and Query storage accounts |
+| **Documentation** | [Log Analytics Workspace](https://learn.microsoft.com/azure/azure-monitor/logs/log-analytics-workspace-overview) |
+
+##### User-Assigned Managed Identity
+
+| Attribute | Details |
+|-----------|---------|
+| **Bicep Module** | `shared/identity/main.bicep` |
+| **Role in Architecture** | Provides a single, shared identity for passwordless authentication across all Azure resources. Eliminates the need for connection strings and secrets by using Azure RBAC role assignments. |
+| **Critical Configurations** | **Role Assignments**: Storage Blob Data Contributor, Service Bus Data Owner/Receiver/Sender, ACR Pull/Push, SQL db_datareader/db_datawriter, Monitoring Metrics Publisher |
+| **Documentation** | [User-Assigned Managed Identity](https://learn.microsoft.com/entra/identity/managed-identities-azure-resources/overview) |
+
+##### App Service Plan (Workflow Hosting)
+
+| Attribute | Details |
+|-----------|---------|
+| **Bicep Module** | `workload/logic-app.bicep` |
+| **Role in Architecture** | Provides the compute infrastructure for Azure Logic Apps Standard. Elastic scaling enables automatic worker adjustment based on workflow demand. |
+| **Critical Configurations** | **SKU**: WS1 (WorkflowStandard), **Capacity**: 3 initial workers, **Elastic Scale**: Enabled with max 20 workers, **Kind**: elastic |
+| **Documentation** | [App Service Plan](https://learn.microsoft.com/azure/app-service/overview-hosting-plans) |
+
+#### Bicep Module Structure
 
 ```mermaid
 flowchart LR
@@ -371,15 +542,22 @@ flowchart LR
     MainBicep -->|"Module"| Workload["workload/main.bicep"]
     
     subgraph SharedModule["Shared Infrastructure"]
-        Identity["identity/main.bicep<br/>User-Assigned MI"]
-        Monitoring["monitoring/main.bicep<br/>Log Analytics + App Insights"]
-        DataModule["data/main.bicep<br/>Storage + SQL Server"]
+        Identity["identity/main.bicep<br/>User-Assigned MI + RBAC"]
+        Monitoring["monitoring/main.bicep"]
+        DataModule["data/main.bicep"]
+        
+        subgraph MonitoringChildren["Monitoring Submodules"]
+            LAW["log-analytics-workspace.bicep"]
+            AI["app-insights.bicep"]
+        end
+        
+        Monitoring --> MonitoringChildren
     end
     
     subgraph WorkloadModule["Workload Infrastructure"]
-        MessagingMod["messaging/main.bicep<br/>Service Bus + Topic"]
-        Services["services/main.bicep<br/>ACR + Container Apps"]
-        LogicAppMod["logic-app.bicep<br/>App Service Plan + Logic App"]
+        MessagingMod["messaging/main.bicep<br/>Service Bus + Topics"]
+        Services["services/main.bicep<br/>ACR + Container Apps + Aspire"]
+        LogicAppMod["logic-app.bicep<br/>ASP + Logic App"]
     end
     
     Shared --> SharedModule
@@ -398,29 +576,18 @@ flowchart LR
     Storage["Storage Accounts"] -->|"Metrics<br/>Blob transactions, latency"| LogAnalytics
 ```
 
-#### Azure Resources Deployed
-
-| Resource | Bicep Module | Purpose | Documentation |
-|----------|--------------|---------|---------------|
-| **User-Assigned Managed Identity** | `shared/identity/main.bicep` | Passwordless authentication across all services | [Managed Identity](https://learn.microsoft.com/entra/identity/managed-identities-azure-resources/) |
-| **Log Analytics Workspace** | `shared/monitoring/log-analytics-workspace.bicep` | Centralized log aggregation with 30-day retention | [Log Analytics](https://learn.microsoft.com/azure/azure-monitor/logs/log-analytics-overview) |
-| **Application Insights** | `shared/monitoring/app-insights.bicep` | Application telemetry and distributed tracing | [App Insights](https://learn.microsoft.com/azure/azure-monitor/app/app-insights-overview) |
-| **Azure SQL Server + Database** | `shared/data/main.bicep` | Order persistence with Entra ID authentication | [Azure SQL](https://learn.microsoft.com/azure/azure-sql/) |
-| **Storage Accounts** | `shared/data/main.bicep`, `shared/monitoring/log-analytics-workspace.bicep` | Workflow state, logs, processed orders blobs | [Azure Storage](https://learn.microsoft.com/azure/storage/) |
-| **Azure Service Bus** | `workload/messaging/main.bicep` | Standard tier namespace with ordersplaced topic | [Service Bus](https://learn.microsoft.com/azure/service-bus-messaging/) |
-| **Azure Container Registry** | `workload/services/main.bicep` | Premium tier registry for container images | [ACR](https://learn.microsoft.com/azure/container-registry/) |
-| **Container Apps Environment** | `workload/services/main.bicep` | Consumption workload profile with Aspire Dashboard | [Container Apps](https://learn.microsoft.com/azure/container-apps/) |
-| **Logic Apps Standard** | `workload/logic-app.bicep` | WorkflowStandard/WS1 with elastic scaling | [Logic Apps](https://learn.microsoft.com/azure/logic-apps/) |
-
 #### Best Practices Applied - Infrastructure Layer
 
 | Practice | Description | Reference |
 |----------|-------------|-----------|
-| Infrastructure as Code | Modular Bicep templates with `targetScope = 'subscription'` | [Bicep overview](https://learn.microsoft.com/azure/azure-resource-manager/bicep/overview) |
-| Modular Templates | Separate modules for identity, monitoring, data, messaging, services | [Bicep modules](https://learn.microsoft.com/azure/azure-resource-manager/bicep/modules) |
-| Resource Naming Convention | `{name}{type}{uniqueSuffix}` pattern with `uniqueString()` | [Naming conventions](https://learn.microsoft.com/azure/cloud-adoption-framework/ready/azure-best-practices/resource-naming) |
-| Diagnostic Settings | All resources with `allLogs` and `allMetrics` to Log Analytics | [Diagnostic settings](https://learn.microsoft.com/azure/azure-monitor/essentials/diagnostic-settings) |
-| Resource Tags | `azd-env-name`, `azd-service-name`, Solution, Environment, CostCenter | [Tagging strategy](https://learn.microsoft.com/azure/cloud-adoption-framework/ready/azure-best-practices/resource-tagging) |
+| Infrastructure as Code | Modular Bicep templates with `targetScope = 'subscription'` for repeatable deployments | [Bicep overview](https://learn.microsoft.com/azure/azure-resource-manager/bicep/overview) |
+| Modular Templates | Separate modules for identity, monitoring, data, messaging, services, and workflows | [Bicep modules](https://learn.microsoft.com/azure/azure-resource-manager/bicep/modules) |
+| Resource Naming Convention | `{name}{type}{uniqueSuffix}` pattern with `uniqueString()` for globally unique names | [Naming conventions](https://learn.microsoft.com/azure/cloud-adoption-framework/ready/azure-best-practices/resource-naming) |
+| Diagnostic Settings | All resources configured with `allLogs` and `allMetrics` to Log Analytics and Storage | [Diagnostic settings](https://learn.microsoft.com/azure/azure-monitor/essentials/diagnostic-settings) |
+| Resource Tags | Governance tags: `azd-env-name`, `azd-service-name`, `Solution`, `Environment`, `CostCenter`, `Owner` | [Tagging strategy](https://learn.microsoft.com/azure/cloud-adoption-framework/ready/azure-best-practices/resource-tagging) |
+| Managed Identity Authentication | User-Assigned MI with RBAC role assignments eliminating connection string secrets | [Managed identities best practices](https://learn.microsoft.com/entra/identity/managed-identities-azure-resources/managed-identity-best-practice-recommendations) |
+| Parameter Validation | `@minLength`, `@maxLength`, `@allowed` decorators for input validation | [Bicep parameters](https://learn.microsoft.com/azure/azure-resource-manager/bicep/parameters) |
+| Output Propagation | Outputs flow between modules for resource wiring (e.g., workspace ID to diagnostic settings) | [Bicep outputs](https://learn.microsoft.com/azure/azure-resource-manager/bicep/outputs) |
 
 ---
 
