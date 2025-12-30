@@ -23,6 +23,70 @@ The solution follows a layered architecture with clear separation of concerns:
 
 ---
 
+## Application Architecture Principles
+
+| Principle | Statement | Rationale | Implications |
+|-----------|-----------|-----------|--------------|
+| **Single Responsibility** | Each service has one reason to change | Maintainability, testability | Clear bounded contexts per service |
+| **API-First Design** | All capabilities exposed via REST APIs | Interoperability, reusability | OpenAPI specifications for all endpoints |
+| **Loose Coupling** | Services communicate via events for async operations | Independent deployability | Service Bus for cross-service communication |
+| **High Cohesion** | Related functionality grouped within service boundaries | Understandability, maintainability | Domain-aligned services |
+| **Observability by Design** | All services instrumented from inception | Operational excellence | OpenTelemetry built-in via ServiceDefaults |
+| **Resilience First** | All external calls protected with retry/circuit breaker | Fault tolerance | Polly patterns in shared library |
+
+---
+
+## Application Landscape Map
+
+```mermaid
+flowchart TB
+    subgraph Presentation["🖥️ Presentation Layer"]
+        WebApp["🌐 eShop.Web.App<br/>Blazor Server"]
+    end
+
+    subgraph Application["⚙️ Application Layer"]
+        API["📡 eShop.Orders.API<br/>ASP.NET Core"]
+        LogicApp["🔄 OrdersManagement<br/>Logic Apps Standard"]
+    end
+
+    subgraph Platform["🏗️ Platform Layer"]
+        AppHost["🎯 app.AppHost<br/>.NET Aspire"]
+        ServiceDefaults["📦 app.ServiceDefaults<br/>Shared Configuration"]
+    end
+
+    subgraph External["☁️ External Services"]
+        SQL[("🗄️ Azure SQL")]
+        SB["📨 Service Bus"]
+        AI["📊 App Insights"]
+    end
+
+    WebApp -->|"HTTP/REST"| API
+    API -->|"EF Core"| SQL
+    API -->|"AMQP"| SB
+    SB -->|"Trigger"| LogicApp
+    
+    AppHost -.->|"Orchestrates"| WebApp
+    AppHost -.->|"Orchestrates"| API
+    ServiceDefaults -.->|"Configures"| WebApp
+    ServiceDefaults -.->|"Configures"| API
+    
+    WebApp -.->|"OTLP"| AI
+    API -.->|"OTLP"| AI
+    LogicApp -.->|"Diagnostics"| AI
+
+    classDef presentation fill:#e3f2fd,stroke:#1565c0,stroke-width:2px
+    classDef application fill:#e8f5e9,stroke:#2e7d32,stroke-width:2px
+    classDef platform fill:#fff3e0,stroke:#ef6c00,stroke-width:2px
+    classDef external fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px
+
+    class WebApp presentation
+    class API,LogicApp application
+    class AppHost,ServiceDefaults platform
+    class SQL,SB,AI external
+```
+
+---
+
 ## Service Catalog
 
 | Service | Type | Port (Local) | Dependencies | Health Endpoint |
@@ -221,6 +285,19 @@ In Azure, service discovery uses:
 
 ---
 
+## Application Integration Points
+
+| Source | Target | Protocol | Contract | Pattern |
+|--------|--------|----------|----------|--------|
+| Web App | Orders API | HTTPS/REST | OpenAPI 3.0 | Sync Request/Response |
+| Orders API | SQL Database | TDS | EF Core DbContext | Sync CRUD |
+| Orders API | Service Bus | AMQP | JSON Schema | Async Pub/Sub |
+| Service Bus | Logic Apps | Connector | JSON | Event-driven Trigger |
+| All Services | App Insights | OTLP/HTTP | OpenTelemetry | Continuous Push |
+| Web App | Orders API | HTTP | Health Check | Liveness/Readiness |
+
+---
+
 ## Resilience Patterns
 
 | Pattern | Implementation | Configuration | Source |
@@ -278,6 +355,52 @@ The `app.ServiceDefaults.CommonTypes` namespace defines DTOs shared between serv
 - `WeatherForecast` - Sample type (can be removed)
 
 These types ensure consistent serialization and validation across service boundaries.
+
+---
+
+## Technology Stack Summary
+
+| Layer | Technology | Version | Purpose |
+|-------|------------|---------|--------|
+| **Runtime** | .NET | 10.0 | Application runtime |
+| **Web Framework** | ASP.NET Core | 10.0 | API and web hosting |
+| **Frontend** | Blazor Server | 10.0 | Interactive UI with SignalR |
+| **ORM** | Entity Framework Core | 10.0 | Data access and migrations |
+| **Validation** | FluentValidation | Latest | Request validation |
+| **Messaging** | Azure.Messaging.ServiceBus | Latest | Event publishing |
+| **Telemetry** | OpenTelemetry | Latest | Traces, metrics, logs |
+| **Resilience** | Polly | Latest | Retry, circuit breaker, timeout |
+| **Orchestration** | .NET Aspire | 9.x | Local development orchestration |
+| **Workflow** | Logic Apps Standard | Latest | Serverless workflow automation |
+
+---
+
+## Cross-Architecture Relationships
+
+| Related Architecture | Connection | Reference |
+|---------------------|------------|----------|
+| **Business Architecture** | Services implement Order Fulfillment and Monitoring capabilities | [Business Architecture](01-business-architecture.md#business-capabilities) |
+| **Data Architecture** | Services own data stores per bounded context (Orders API → SQL) | [Data Architecture](02-data-architecture.md#data-domain-catalog) |
+| **Technology Architecture** | Services deployed to Azure Container Apps and Logic Apps | [Technology Architecture](04-technology-architecture.md#infrastructure-components) |
+| **Observability Architecture** | Services emit telemetry via OpenTelemetry to App Insights | [Observability Architecture](05-observability-architecture.md#distributed-tracing) |
+| **Security Architecture** | Services authenticate via Managed Identity | [Security Architecture](06-security-architecture.md#identity-management) |
+
+---
+
+## Application Architecture Quality Checklist
+
+- [x] All services documented in Service Catalog
+- [x] API endpoints documented with HTTP methods and routes
+- [x] Communication patterns identified (sync HTTP vs async Service Bus)
+- [x] Integration points mapped with protocols and contracts
+- [x] Technology stack specified per layer
+- [x] Dependencies documented per service
+- [x] Health check endpoints defined (/health, /alive)
+- [x] Resilience patterns configured (retry, circuit breaker, timeout)
+- [x] Cross-cutting concerns via ServiceDefaults shared library
+- [x] Cross-architecture relationships linked
+- [x] Component diagrams for each service
+- [x] Service discovery mechanism documented
 
 ---
 
