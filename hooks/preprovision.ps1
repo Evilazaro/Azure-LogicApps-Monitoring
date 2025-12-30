@@ -813,7 +813,8 @@ function Install-AzureCLI {
         Installs the Azure CLI on the developer machine.
     
     .DESCRIPTION
-        Downloads and installs Azure CLI using the official installation method.
+        On Windows, installs Azure CLI using winget (preferred) or the MSI installer as fallback.
+        On Linux/macOS, uses the appropriate package manager.
     
     .OUTPUTS
         System.Boolean - Returns $true if installation succeeds, $false otherwise.
@@ -833,20 +834,29 @@ function Install-AzureCLI {
             Write-Information ''
             
             if ($IsWindows -or $env:OS -match 'Windows') {
-                Write-Information '  📥 Installing via winget...'
-                
-                $wingetCmd = Get-Command -Name winget -ErrorAction SilentlyContinue
-                if ($wingetCmd) {
+                # Windows installation - prefer winget
+                if (Test-WingetAvailable) {
+                    Write-Information '  📥 Installing via winget (recommended)...'
+                    Write-Information ''
+                    
                     & winget install Microsoft.AzureCLI --accept-source-agreements --accept-package-agreements
                     
                     if ($LASTEXITCODE -eq 0) {
                         Write-Information ''
-                        Write-Information '  ✓ Azure CLI installed successfully!'
+                        Write-Information '  ✓ Azure CLI installed successfully via winget!'
                         Write-Information ''
                         Write-Information '  ⚠ NOTE: Please restart your terminal for PATH changes.'
                         Write-Information ''
                         return $true
                     }
+                    
+                    Write-Warning '  ⚠ winget installation failed, trying fallback method...'
+                    Write-Information ''
+                }
+                else {
+                    Write-Warning '  ⚠ winget is not available on this system'
+                    Write-Information '     Using fallback installation method...'
+                    Write-Information ''
                 }
                 
                 # Fallback to MSI installer
@@ -910,7 +920,8 @@ function Install-BicepCLI {
         Installs the Bicep CLI on the developer machine.
     
     .DESCRIPTION
-        Installs Bicep CLI via Azure CLI or as a standalone tool.
+        On Windows, installs Bicep CLI using winget (preferred) or via Azure CLI as fallback.
+        On Linux/macOS, uses Azure CLI to install Bicep.
     
     .OUTPUTS
         System.Boolean - Returns $true if installation succeeds, $false otherwise.
@@ -926,18 +937,49 @@ function Install-BicepCLI {
             Write-Information '│                   Bicep CLI Installation                       │'
             Write-Information '└────────────────────────────────────────────────────────────────┘'
             Write-Information ''
-            Write-Information '  Installing Bicep CLI via Azure CLI...'
+            Write-Information '  Installing Bicep CLI...'
             Write-Information ''
             
-            # Check if Azure CLI is available
+            if ($IsWindows -or $env:OS -match 'Windows') {
+                # Windows installation - prefer winget
+                if (Test-WingetAvailable) {
+                    Write-Information '  📥 Installing via winget (recommended)...'
+                    Write-Information ''
+                    
+                    & winget install Microsoft.Bicep --accept-source-agreements --accept-package-agreements
+                    
+                    if ($LASTEXITCODE -eq 0) {
+                        Write-Information ''
+                        Write-Information '  ✓ Bicep CLI installed successfully via winget!'
+                        Write-Information ''
+                        Write-Information '  ⚠ NOTE: Please restart your terminal for PATH changes.'
+                        Write-Information ''
+                        return $true
+                    }
+                    
+                    Write-Warning '  ⚠ winget installation failed, trying fallback method...'
+                    Write-Information ''
+                }
+                else {
+                    Write-Warning '  ⚠ winget is not available on this system'
+                    Write-Information '     Using fallback installation method...'
+                    Write-Information ''
+                }
+            }
+            
+            # Fallback: Install via Azure CLI (works on all platforms)
             $azCommand = Get-Command -Name az -ErrorAction SilentlyContinue
             if (-not $azCommand) {
-                Write-Warning '  ✗ Azure CLI is required to install Bicep'
-                Write-Warning '    Please install Azure CLI first.'
+                Write-Warning '  ✗ Azure CLI is required to install Bicep via fallback method'
+                Write-Warning '    Please install Azure CLI first, or install Bicep manually.'
+                Write-Warning ''
+                Write-Warning '  Manual installation options:'
+                Write-Warning '    - Windows: winget install Microsoft.Bicep'
+                Write-Warning '    - Or download from: https://github.com/Azure/bicep/releases'
                 return $false
             }
             
-            Write-Information '  🔧 Running: az bicep install...'
+            Write-Information '  🔧 Installing via Azure CLI: az bicep install...'
             & az bicep install
             
             if ($LASTEXITCODE -eq 0) {
@@ -960,8 +1002,9 @@ function Install-BicepCLI {
             
             Write-Warning '  ✗ Bicep CLI installation failed'
             Write-Warning ''
-            Write-Warning '  Please install manually with:'
-            Write-Warning '    az bicep install'
+            Write-Warning '  Please install manually:'
+            Write-Warning '    - Windows: winget install Microsoft.Bicep'
+            Write-Warning '    - Or: az bicep install'
             Write-Warning ''
             return $false
         }
