@@ -59,7 +59,7 @@
 .NOTES
     File Name      : preprovision.ps1
     Author         : Azure-LogicApps-Monitoring Team
-    Version        : 2.2.0
+    Version        : 2.3.0
     Last Modified  : 2025-12-30
     Prerequisite   : PowerShell 7.0 or higher
     Prerequisite   : .NET SDK 8.0 or higher
@@ -98,7 +98,7 @@ $ProgressPreference = 'SilentlyContinue'
 $WarningPreference = 'Continue'
 
 # Script-level constants
-$script:ScriptVersion = '2.2.0'
+$script:ScriptVersion = '2.3.0'
 $script:MinimumPowerShellVersion = [version]'7.0'
 $script:MinimumDotNetVersion = [version]'10.0'
 $script:MinimumAzureCLIVersion = [version]'2.60.0'
