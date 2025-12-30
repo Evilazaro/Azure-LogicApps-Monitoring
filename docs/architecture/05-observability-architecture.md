@@ -4,7 +4,20 @@
 
 ---
 
-## 1. Observability Strategy Overview
+## 1. Observability Principles
+
+| # | Principle | Rationale | Implications |
+|---|-----------|-----------|--------------|
+| **O-1** | **Vendor-Neutral Instrumentation** | Avoid lock-in, future flexibility | Use OpenTelemetry SDK exclusively |
+| **O-2** | **Correlation by Default** | End-to-end visibility across services | W3C Trace Context propagation everywhere |
+| **O-3** | **Business-Aligned Metrics** | Connect technology to outcomes | Custom metrics for orders placed, processing time |
+| **O-4** | **Actionable Alerts** | Reduce noise, improve response time | Alert on symptoms with runbooks |
+| **O-5** | **Cost-Aware Telemetry** | Control data volumes and costs | Sampling strategies, retention policies |
+| **O-6** | **Structured Everything** | Enable powerful querying | JSON structured logs, semantic conventions |
+
+---
+
+## 2. Observability Strategy Overview
 
 The solution implements **comprehensive observability** using the three pillars: **Traces**, **Metrics**, and **Logs**. All telemetry flows to Azure Application Insights with Log Analytics for advanced querying.
 
@@ -16,10 +29,51 @@ The solution implements **comprehensive observability** using the three pillars:
 | **Metrics** | OpenTelemetry Metrics + Custom Counters | Performance monitoring | Azure Monitor Metrics |
 | **Logs** | OpenTelemetry Logging + ILogger | Structured event logging | Log Analytics Workspace |
 
+### BDAT Integration View
+
+```mermaid
+flowchart TB
+    subgraph Business["🏢 Business Architecture"]
+        SLO["SLOs & KPIs<br/><i>99.9% availability, <500ms latency</i>"]
+        Process["Business Processes<br/><i>Order fulfillment monitoring</i>"]
+    end
+
+    subgraph Application["🔧 Application Architecture"]
+        Services["Application Services<br/><i>Orders API, Web App</i>"]
+        Instrumentation["Instrumentation Points<br/><i>OpenTelemetry SDK</i>"]
+    end
+
+    subgraph Data["💾 Data Architecture"]
+        TelemetryData["Telemetry Data Model<br/><i>Traces, Metrics, Logs</i>"]
+        Retention["Data Retention<br/><i>30-day logs, 90-day metrics</i>"]
+    end
+
+    subgraph Technology["⚙️ Technology Architecture"]
+        Platforms["Observability Platforms<br/><i>App Insights, Log Analytics</i>"]
+        Tools["Monitoring Tools<br/><i>Azure Monitor, KQL</i>"]
+    end
+
+    SLO -->|"measured by"| Instrumentation
+    Process -->|"monitored via"| Services
+    Services -->|"emit"| TelemetryData
+    Instrumentation -->|"sends to"| Platforms
+    TelemetryData -->|"stored in"| Tools
+    Retention -->|"configured in"| Platforms
+
+    classDef business fill:#e3f2fd,stroke:#1565c0
+    classDef app fill:#e8f5e9,stroke:#2e7d32
+    classDef data fill:#fff3e0,stroke:#ef6c00
+    classDef tech fill:#f3e5f5,stroke:#7b1fa2
+
+    class SLO,Process business
+    class Services,Instrumentation app
+    class TelemetryData,Retention data
+    class Platforms,Tools tech
+```
+
 ### Tooling Decisions
 
 | Capability | Choice | Rationale |
-|------------|--------|-----------|
 | **Instrumentation SDK** | OpenTelemetry | Vendor-neutral, comprehensive auto-instrumentation |
 | **APM Backend** | Application Insights | Native Azure integration, powerful analytics |
 | **Log Aggregation** | Log Analytics | KQL queries, Azure integration, 30-day retention |
@@ -27,7 +81,66 @@ The solution implements **comprehensive observability** using the three pillars:
 
 ---
 
-## 2. Distributed Tracing
+## 3. SLI/SLO Definitions
+
+### Service Level Indicators (SLIs)
+
+| SLI | Definition | Measurement | Data Source |
+|-----|------------|-------------|-------------|
+| **Availability** | % of successful HTTP requests | `successCount / totalCount * 100` | Application Insights `requests` |
+| **Latency** | P95 response time | `percentile(duration, 95)` | Application Insights `requests` |
+| **Throughput** | Orders processed per hour | `count(eShop.orders.placed)` | Custom metrics |
+| **Error Rate** | % of 5xx responses | `5xxCount / totalCount * 100` | Application Insights `requests` |
+| **Queue Latency** | Time message sits in queue | `dequeue_time - enqueue_time` | Service Bus metrics |
+
+### Service Level Objectives (SLOs)
+
+| Service | SLI | SLO Target | Error Budget | Measurement Window |
+|---------|-----|------------|--------------|--------------------|
+| **Orders API** | Availability | 99.9% | 43.2 min/month | Rolling 30 days |
+| **Orders API** | Latency (P95) | < 500ms | N/A | Rolling 24 hours |
+| **Orders API** | Error Rate | < 0.1% | 0.1% of requests | Rolling 24 hours |
+| **Web App** | Availability | 99.9% | 43.2 min/month | Rolling 30 days |
+| **Logic App** | Success Rate | 99.5% | 3.6 hours/month | Rolling 30 days |
+| **Service Bus** | Message Processing | < 5 min | N/A | Per message |
+
+### Error Budget Policy
+
+| Budget Status | Action |
+|---------------|--------|
+| **> 50% remaining** | Normal development velocity |
+| **25-50% remaining** | Prioritize reliability work |
+| **< 25% remaining** | Freeze feature development, focus on stability |
+| **Exhausted** | Incident review required before new deployments |
+
+---
+
+## 4. Telemetry Inventory
+
+### Telemetry Sources Matrix
+
+| Source | Traces | Metrics | Logs | Correlation | Auto-Instrumented |
+|--------|--------|---------|------|-------------|-------------------|
+| **Orders API** | ✅ | ✅ | ✅ | TraceId, SpanId | Yes (ASP.NET Core) |
+| **Web App** | ✅ | ✅ | ✅ | TraceId, SpanId | Yes (Blazor Server) |
+| **Service Bus Publisher** | ✅ | ✅ | ✅ | traceparent header | Manual injection |
+| **Logic App** | ⚠️ Limited | ✅ | ✅ | Run ID, Action ID | Azure Diagnostics |
+| **SQL Database** | ✅ | ✅ | ✅ | N/A | EF Core instrumentation |
+| **Service Bus** | ❌ | ✅ | ✅ | Message ID | Azure Diagnostics |
+
+### Custom Telemetry Inventory
+
+| Name | Type | Source | Description |
+|------|------|--------|-------------|
+| `eShop.orders.placed` | Counter | OrderService | Orders successfully created |
+| `eShop.orders.processing.duration` | Histogram | OrderService | Time to process order |
+| `eShop.orders.processing.errors` | Counter | OrderService | Order processing failures |
+| `eShop.Orders.API` | ActivitySource | OrdersController | Custom trace spans |
+| `eShop.Web.App` | ActivitySource | WebApp | Custom trace spans |
+
+---
+
+## 5. Distributed Tracing
 
 ### Trace Propagation Flow
 
@@ -350,8 +463,101 @@ flowchart TB
 
 ---
 
+## 12. Observability Cost Management
+
+### Data Volume Estimates
+
+| Data Type | Est. Daily Volume | Monthly Cost | Retention |
+|-----------|-------------------|--------------|----------|
+| **Traces** | 500 MB | ~$1.15 | 90 days |
+| **Metrics** | 100 MB | ~$0.25 | 90 days |
+| **Logs** | 1 GB | ~$2.50 | 30 days |
+| **Custom Metrics** | 10 MB | ~$0.10 | 90 days |
+| **Total** | ~1.6 GB/day | **~$4/day** | - |
+
+### Sampling Strategies
+
+| Environment | Sampling Rate | Rationale |
+|-------------|---------------|----------|
+| **Local** | 100% | Full visibility for debugging |
+| **Dev** | 100% | Full visibility for testing |
+| **Staging** | 50% | Balance visibility and cost |
+| **Production** | 25% | Cost optimization at scale |
+
+### Cost Optimization Techniques
+
+| Technique | Potential Savings | Implementation |
+|-----------|-------------------|----------------|
+| **Adaptive sampling** | 30-50% | Configure in App Insights SDK |
+| **Filter health checks** | 10-20% | Exclude `/health`, `/alive` from traces |
+| **Reduce log verbosity** | 20-30% | Set `Warning` level in production |
+| **Shorter retention** | 20-40% | 30 days instead of 90 for logs |
+| **Aggregate metrics** | 10-15% | Use pre-aggregated metrics |
+
+### Retention Policy
+
+| Data Type | Dev Retention | Prod Retention | Archive |
+|-----------|---------------|----------------|--------|
+| **Traces** | 30 days | 90 days | None |
+| **Metrics** | 30 days | 90 days | None |
+| **Logs** | 7 days | 30 days | Blob (optional) |
+| **Alerts** | 30 days | 90 days | None |
+
+---
+
+## 13. Runbooks
+
+### Alert Response Runbooks
+
+| Alert | Runbook | First Steps |
+|-------|---------|-------------|
+| **High API Latency** | [RB-001](#rb-001) | Check App Insights dependency calls, SQL query times |
+| **API Errors Spike** | [RB-002](#rb-002) | Review exceptions in App Insights, check recent deployments |
+| **Service Bus DLQ** | [RB-003](#rb-003) | Inspect dead-letter messages, check Logic App failures |
+| **Logic App Failures** | [RB-004](#rb-004) | Review run history, check trigger conditions |
+| **Health Check Failed** | [RB-005](#rb-005) | Verify dependencies, check container logs |
+
+### Sample KQL Queries
+
+**Find slow requests:**
+```kusto
+requests
+| where duration > 2000
+| project timestamp, name, duration, resultCode, operation_Id
+| order by duration desc
+| take 100
+```
+
+**Trace end-to-end transaction:**
+```kusto
+union requests, dependencies, traces, exceptions
+| where operation_Id == "<your-operation-id>"
+| project timestamp, itemType, name, duration, message
+| order by timestamp asc
+```
+
+**Order processing metrics:**
+```kusto
+customMetrics
+| where name startswith "eShop.orders"
+| summarize sum(valueSum) by name, bin(timestamp, 1h)
+| render timechart
+```
+
+**Failed Logic App runs:**
+```kusto
+AzureDiagnostics
+| where ResourceType == "WORKFLOWS"
+| where status_s == "Failed"
+| project TimeGenerated, workflowName_s, error_message_s
+| order by TimeGenerated desc
+```
+
+---
+
 ## Related Documents
 
+- [Business Architecture](01-business-architecture.md) - Observability value stream
 - [Data Architecture](02-data-architecture.md) - Telemetry data mapping
 - [Application Architecture](03-application-architecture.md) - Service instrumentation
 - [Technology Architecture](04-technology-architecture.md) - Azure Monitor resources
@@ -360,3 +566,5 @@ flowchart TB
 ---
 
 > 💡 **Tip:** Use the Application Map in Azure Portal to quickly understand service dependencies and identify performance bottlenecks.
+
+> ⚠️ **Warning:** Always test sampling configuration changes in non-production environments first to ensure adequate visibility is maintained.
