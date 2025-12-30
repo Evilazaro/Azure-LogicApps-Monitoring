@@ -548,14 +548,58 @@ function Test-BicepCLI {
 
 #region Installation Functions
 
+function Test-WingetAvailable {
+    <#
+    .SYNOPSIS
+        Checks if Windows Package Manager (winget) is available.
+    
+    .DESCRIPTION
+        Validates that winget is installed and functional on the system.
+        Returns $true if winget is available, $false otherwise.
+    
+    .OUTPUTS
+        System.Boolean - Returns $true if winget is available, $false otherwise.
+    
+    .EXAMPLE
+        if (Test-WingetAvailable) { winget install SomePackage }
+    #>
+    [CmdletBinding()]
+    [OutputType([bool])]
+    param()
+
+    process {
+        try {
+            $wingetCmd = Get-Command -Name winget -ErrorAction SilentlyContinue
+            if (-not $wingetCmd) {
+                Write-Verbose 'winget not found in PATH'
+                return $false
+            }
+            
+            # Verify winget can execute
+            $null = & winget --version 2>&1
+            if ($LASTEXITCODE -ne 0) {
+                Write-Verbose 'winget command failed to execute'
+                return $false
+            }
+            
+            Write-Verbose 'winget is available'
+            return $true
+        }
+        catch {
+            Write-Verbose "Error checking winget: $($_.Exception.Message)"
+            return $false
+        }
+    }
+}
+
 function Install-DotNetSDK {
     <#
     .SYNOPSIS
         Installs the .NET SDK on the developer machine.
     
     .DESCRIPTION
-        Downloads and installs the .NET SDK using the official dotnet-install script.
-        Supports Windows and cross-platform installation.
+        On Windows, installs .NET SDK using winget (preferred) or the official dotnet-install script as fallback.
+        On Linux/macOS, uses the official dotnet-install.sh script.
     
     .PARAMETER Version
         The .NET SDK version to install. Defaults to the minimum required version.
@@ -581,8 +625,36 @@ function Install-DotNetSDK {
             Write-Information ''
             
             if ($IsWindows -or $env:OS -match 'Windows') {
-                # Windows installation using dotnet-install.ps1
-                Write-Information '  📥 Downloading .NET SDK installer for Windows...'
+                # Windows installation - prefer winget
+                if (Test-WingetAvailable) {
+                    Write-Information '  📥 Installing via winget (recommended)...'
+                    Write-Information ''
+                    
+                    # Determine the correct winget package ID for .NET SDK version
+                    $wingetPackageId = "Microsoft.DotNet.SDK.$Version"
+                    
+                    & winget install $wingetPackageId --accept-source-agreements --accept-package-agreements
+                    
+                    if ($LASTEXITCODE -eq 0) {
+                        Write-Information ''
+                        Write-Information '  ✓ .NET SDK installed successfully via winget!'
+                        Write-Information ''
+                        Write-Information '  ⚠ NOTE: Please restart your terminal for PATH changes.'
+                        Write-Information ''
+                        return $true
+                    }
+                    
+                    Write-Warning '  ⚠ winget installation failed, trying fallback method...'
+                    Write-Information ''
+                }
+                else {
+                    Write-Warning '  ⚠ winget is not available on this system'
+                    Write-Information '     Using fallback installation method...'
+                    Write-Information ''
+                }
+                
+                # Fallback: Windows installation using dotnet-install.ps1
+                Write-Information '  📥 Downloading .NET SDK installer script...'
                 $installScript = Join-Path $env:TEMP 'dotnet-install.ps1'
                 
                 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
