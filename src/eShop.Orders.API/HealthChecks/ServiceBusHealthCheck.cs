@@ -28,7 +28,7 @@ public sealed class ServiceBusHealthCheck : IHealthCheck
     {
         try
         {
-            var topicName = _configuration["Azure:ServiceBus:TopicName"] ?? "OrdersPlaced";
+            var topicName = _configuration["Azure:ServiceBus:TopicName"] ?? "ordersplaced";
 
             // Try to create a sender to verify connectivity
             // This doesn't send a message, just verifies the client can connect

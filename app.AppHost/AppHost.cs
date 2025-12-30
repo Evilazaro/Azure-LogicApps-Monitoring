@@ -10,8 +10,7 @@ var resourceGroupParameter = CreateResourceGroupParameterIfNeeded(builder);
 // Project Resources Configuration
 // =============================================================================
 
-var ordersApi = builder.AddProject<Projects.eShop_Orders_API>("orders-api")
-                       .WithReplicas(5);
+var ordersApi = builder.AddProject<Projects.eShop_Orders_API>("orders-api");
 
 var webApp = builder.AddProject<Projects.eShop_Web_App>("web-app")
     .WithExternalHttpEndpoints()
@@ -145,8 +144,8 @@ static void ConfigureServiceBus(
 
     const string DefaultNamespaceName = "localhost";
     const string DefaultConnectionStringName = "messaging";
-    const string DefaultTopicName = "OrdersPlaced";
-    const string DefaultSubscriptionName = "OrderProcessingSubscription";
+    const string DefaultTopicName = "ordersplaced";
+    const string DefaultSubscriptionName = "orderprocessingsub";
 
     // Use null-coalescing operator for cleaner code
     var sbHostName = builder.Configuration["Azure:ServiceBus:HostName"] ?? DefaultNamespaceName;

@@ -16,7 +16,7 @@ public sealed class OrdersMessageHandler : IOrdersMessageHandler
     private readonly string _topicName;
     private readonly ActivitySource _activitySource;
 
-    private const string DefaultTopicName = "OrdersPlaced";
+    private const string DefaultTopicName = "ordersplaced";
 
     private static readonly JsonSerializerOptions JsonOptions = new()
     {
@@ -239,17 +239,20 @@ public sealed class OrdersMessageHandler : IOrdersMessageHandler
         activity?.SetTag("messaging.subscription.name", subscriptionName);
         activity?.SetTag("max.messages", maxMessages);
 
+        // Create receiver with PeekLock mode (default) to allow abandoning messages
         await using var receiver = _serviceBusClient.CreateReceiver(_topicName, subscriptionName);
-
         try
         {
-            var peekedMessages = await receiver.PeekMessagesAsync(
+            // Use ReceiveMessagesAsync instead of PeekMessagesAsync for emulator compatibility
+            // Messages will be locked but not removed, then abandoned to return them to the queue
+            var receivedMessages = await receiver.ReceiveMessagesAsync(
                 maxMessages: maxMessages,
+                maxWaitTime: TimeSpan.FromSeconds(5),
                 cancellationToken: cancellationToken);
 
             var ordersWithMetadata = new List<OrderMessageWithMetadata>();
 
-            foreach (var message in peekedMessages)
+            foreach (var message in receivedMessages)
             {
                 try
                 {
@@ -272,19 +275,39 @@ public sealed class OrdersMessageHandler : IOrdersMessageHandler
                         };
 
                         ordersWithMetadata.Add(orderWithMetadata);
-                        activity?.AddEvent(new ActivityEvent("MessagePeeked",
+                        activity?.AddEvent(new ActivityEvent("MessageReceived",
                             tags: new ActivityTagsCollection
                             {
                                 { "message.id", message.MessageId },
                                 { "order.id", order.Id },
                                 { "sequence.number", message.SequenceNumber }
                             }));
+
+                        // Abandon the message to return it to the queue for other consumers
+                        // This simulates peek behavior - read without consuming
+                        await receiver.AbandonMessageAsync(message, cancellationToken: cancellationToken);
                     }
                 }
                 catch (JsonException ex)
                 {
                     _logger.LogWarning(ex,
                         "Failed to deserialize message {MessageId} from subscription {SubscriptionName}",
+                        message.MessageId, subscriptionName);
+                    
+                    // Still abandon malformed messages
+                    try
+                    {
+                        await receiver.AbandonMessageAsync(message, cancellationToken: cancellationToken);
+                    }
+                    catch (Exception abandonEx)
+                    {
+                        _logger.LogWarning(abandonEx, "Failed to abandon message {MessageId}", message.MessageId);
+                    }
+                }
+                catch (ServiceBusException ex)
+                {
+                    _logger.LogWarning(ex,
+                        "Failed to abandon message {MessageId} from subscription {SubscriptionName}",
                         message.MessageId, subscriptionName);
                 }
             }
@@ -308,17 +331,6 @@ public sealed class OrdersMessageHandler : IOrdersMessageHandler
             _logger.LogError(ex,
                 "Failed to list messages from subscription {SubscriptionName} on topic {TopicName}. Reason: {Reason}",
                 subscriptionName, _topicName, ex.Reason);
-            throw;
-        }
-        catch (Exception ex)
-        {
-            activity?.SetStatus(ActivityStatusCode.Error, ex.Message);
-            activity?.AddException(ex);
-            activity?.SetTag("error.type", ex.GetType().Name);
-
-            _logger.LogError(ex,
-                "Unexpected error listing messages from subscription {SubscriptionName} on topic {TopicName}",
-                subscriptionName, _topicName);
             throw;
         }
     }

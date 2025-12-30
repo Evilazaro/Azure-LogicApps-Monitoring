@@ -814,8 +814,8 @@ Server=localhost,5433;Database=OrderDb;User Id=sa;Password=<generated-password>;
 **Automatic Emulator Setup:**
 
 - Aspire starts the Azure Service Bus emulator automatically
-- Topic: `OrdersPlaced`
-- Subscription: `OrderProcessingSubscription`
+- Topic: `ordersplaced`
+- Subscription: `orderprocessingsub`
 - Connection managed via Aspire service discovery
 
 **Verify Service Bus Connectivity:**

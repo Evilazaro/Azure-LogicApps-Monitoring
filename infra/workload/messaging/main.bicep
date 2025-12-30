@@ -114,13 +114,13 @@ output MESSAGING_SERVICEBUSHOSTNAME string = split(replace(broker.properties.ser
 @description('Service Bus Topic for orders placed to be processed')
 resource ordersTopic 'Microsoft.ServiceBus/namespaces/topics@2025-05-01-preview' = {
   parent: broker
-  name: 'OrdersPlaced'
+  name: 'ordersplaced'
 }
 
 @description('Service Bus subscription for processing orders from the topic')
 resource ordersSubscription 'Microsoft.ServiceBus/namespaces/topics/subscriptions@2025-05-01-preview' = {
   parent: ordersTopic
-  name: 'OrderProcessingSubscription'
+  name: 'orderprocessingsub'
   properties: {
     // Maximum delivery attempts before message is moved to dead-letter queue
     maxDeliveryCount: 10
