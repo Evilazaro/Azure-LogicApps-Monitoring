@@ -419,8 +419,150 @@ dotnet run
 
 ---
 
+## 10. Release Management
+
+### Versioning Strategy
+
+| Component | Versioning | Format | Example |
+|-----------|------------|--------|---------|
+| **Applications** | Semantic Versioning | `MAJOR.MINOR.PATCH` | `1.2.3` |
+| **Container Images** | Git SHA + Build ID | `{sha}-{buildId}` | `a1b2c3d-456` |
+| **Bicep Modules** | Date-based | `YYYY.MM.DD` | `2025.12.30` |
+| **Environments** | Named | `{env}-{region}` | `prod-eastus` |
+
+### Deployment Patterns
+
+| Pattern | Use Case | Implementation | Rollback Time |
+|---------|----------|----------------|---------------|
+| **Blue-Green** | Zero-downtime, instant rollback | Container Apps revisions | < 1 min |
+| **Rolling** | Resource-efficient updates | Default Container Apps | 2-5 min |
+| **Canary** | Risk mitigation, gradual rollout | Traffic splitting (future) | < 1 min |
+| **Recreate** | Breaking changes, stateful apps | Scale to zero, redeploy | 5-10 min |
+
+### Release Checklist
+
+| # | Task | Environment | Required |
+|---|------|-------------|----------|
+| 1 | Run unit tests | All | ✅ |
+| 2 | Run integration tests | Dev/Staging | ✅ |
+| 3 | Security scan | All | ✅ |
+| 4 | Update release notes | Staging/Prod | ✅ |
+| 5 | Notify stakeholders | Prod | ✅ |
+| 6 | Obtain approval | Prod | ✅ |
+| 7 | Deploy to environment | All | ✅ |
+| 8 | Verify health checks | All | ✅ |
+| 9 | Run smoke tests | Staging/Prod | ✅ |
+| 10 | Monitor for 15 min | Prod | ✅ |
+
+---
+
+## 11. Operational Procedures
+
+### Deployment Runbook
+
+**Pre-Deployment:**
+1. Verify Azure CLI authentication: `az account show`
+2. Select correct environment: `azd env select {env}`
+3. Review pending changes: `az bicep build --file infra/main.bicep`
+4. Notify team via Slack/Teams
+
+**Deployment:**
+```bash
+# Full deployment
+azd up
+
+# Infrastructure only
+azd provision
+
+# Application only
+azd deploy
+```
+
+**Post-Deployment:**
+1. Verify health endpoints: `curl https://{app-url}/health`
+2. Check Application Insights for errors
+3. Monitor metrics for 15 minutes
+4. Update deployment log
+
+### Rollback Runbook
+
+**Immediate Rollback (< 5 min):**
+```bash
+# List available revisions
+az containerapp revision list --name {app} --resource-group {rg}
+
+# Activate previous revision
+az containerapp revision activate \
+  --name {app} \
+  --resource-group {rg} \
+  --revision {previous-revision}
+```
+
+**Full Rollback (Infrastructure):**
+```bash
+# Redeploy previous infrastructure version
+git checkout {previous-commit}
+azd provision
+
+# Redeploy previous application version
+azd deploy
+```
+
+### Incident Response
+
+| Severity | Response Time | Actions |
+|----------|---------------|---------|
+| **P1 - Critical** | < 15 min | Page on-call, rollback immediately |
+| **P2 - High** | < 1 hour | Notify team, investigate, patch or rollback |
+| **P3 - Medium** | < 4 hours | Investigate, schedule fix |
+| **P4 - Low** | < 24 hours | Log issue, fix in next release |
+
+---
+
+## 12. Security & Compliance
+
+### Secret Management in Deployments
+
+| Secret Type | Storage | Injection Method |
+|-------------|---------|------------------|
+| **Connection Strings** | Azure Key Vault | Bicep `@secure()` parameters |
+| **API Keys** | Azure Key Vault | Environment variables |
+| **Certificates** | Azure Key Vault | Managed Identity access |
+| **Local Dev Secrets** | .NET User Secrets | `postprovision.ps1` |
+
+### Approval Workflows
+
+| Environment | Approvers | Method | SLA |
+|-------------|-----------|--------|-----|
+| **Dev** | Auto-approved | CI/CD | Immediate |
+| **Staging** | Tech Lead | PR approval | < 4 hours |
+| **Production** | Tech Lead + PO | Manual gate | < 24 hours |
+
+### Audit Trail
+
+| Event | Logged To | Retention |
+|-------|-----------|-----------|
+| **Deployment Start** | Azure Activity Log | 90 days |
+| **Resource Changes** | Azure Activity Log | 90 days |
+| **Configuration Changes** | Git History | Forever |
+| **Approval Decisions** | GitHub/Azure DevOps | 2 years |
+| **Rollback Events** | Azure Activity Log | 90 days |
+
+### Compliance Considerations
+
+| Requirement | Implementation |
+|-------------|----------------|
+| **Change Management** | All changes via PR, no direct commits |
+| **Separation of Duties** | Different approvers for code vs. infrastructure |
+| **Audit Trail** | Git history + Azure Activity Log |
+| **Secret Rotation** | Managed Identity eliminates most secrets |
+| **Access Control** | RBAC for Azure resources, branch protection for Git |
+
+---
+
 ## Related Documents
 
+- [Business Architecture](01-business-architecture.md) - Deployment SLAs and constraints
 - [Technology Architecture](04-technology-architecture.md) - Infrastructure details
 - [Security Architecture](06-security-architecture.md) - Secret management in deployment
 - [ADR-001](adr/ADR-001-aspire-orchestration.md) - .NET Aspire decision
@@ -428,3 +570,7 @@ dotnet run
 ---
 
 > 💡 **Tip:** Use `azd env list` to see all configured environments and `azd env select {name}` to switch between them.
+
+> ⚠️ **Warning:** Always run `azd provision` with the correct environment selected. Use `azd env show` to verify before deploying.
+
+> 🔒 **Security:** Never commit secrets to Git. Use `hooks/postprovision.ps1` to configure local secrets after deployment.
