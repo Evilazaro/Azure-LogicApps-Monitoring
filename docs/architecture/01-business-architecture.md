@@ -110,38 +110,42 @@ flowchart TB
 
 ```mermaid
 flowchart LR
-    subgraph Customer["Customer Journey"]
-        A[Browse Products] --> B[Place Order]
-        B --> C[Track Order]
+    subgraph Customer["👤 Customer Journey"]
+        A["Browse Products"] --> B["Place Order"]
+        B --> C["Track Order"]
     end
     
-    subgraph Processing["Order Processing"]
-        D[Validate Order] --> E[Persist Order]
-        E --> F[Publish Event]
-        F --> G[Process Workflow]
+    subgraph Processing["⚙️ Order Processing"]
+        D["Validate Order"] --> E["Persist Order"]
+        E --> F["Publish Event"]
+        F --> G["Process Workflow"]
     end
     
-    subgraph Fulfillment["Fulfillment"]
-        H[Update Status] --> I[Notify Customer]
+    subgraph Fulfillment["📦 Fulfillment"]
+        H["Update Status"] --> I["Notify Customer"]
     end
     
     B --> D
     G --> H
     
-    style Customer fill:#e3f2fd
-    style Processing fill:#e8f5e9
-    style Fulfillment fill:#fff3e0
+    classDef customer fill:#e3f2fd,stroke:#1565c0,stroke-width:2px
+    classDef process fill:#e8f5e9,stroke:#2e7d32,stroke-width:2px
+    classDef fulfill fill:#fff3e0,stroke:#ef6c00,stroke-width:2px
+
+    class A,B,C customer
+    class D,E,F,G process
+    class H,I fulfill
 ```
 
 ### Observability Value Stream
 
 | Stage | Activity | Outcome |
 |-------|----------|---------|
-| **Instrumentation** | Add telemetry to services | Traces, metrics, logs generated |
-| **Collection** | Send data to Application Insights | Centralized telemetry storage |
-| **Correlation** | Link traces across services | End-to-end request visibility |
-| **Analysis** | Query and visualize data | Performance insights, error patterns |
-| **Action** | Alert on anomalies | Proactive incident response |
+| **Instrumentation** | Add OpenTelemetry SDK to services | Traces, metrics, logs generated automatically |
+| **Collection** | Export telemetry to Application Insights | Centralized telemetry storage with correlation |
+| **Correlation** | Link traces using W3C trace context | End-to-end request visibility across services |
+| **Analysis** | Query with KQL, visualize with dashboards | Performance insights, error patterns, SLI tracking |
+| **Action** | Configure alerts and workbooks | Proactive incident response, reduced MTTR |
 
 ---
 
@@ -150,38 +154,56 @@ flowchart LR
 | Attribute | Requirement | Priority | Implementation |
 |-----------|-------------|----------|----------------|
 | **Availability** | 99.9% uptime for order processing | High | Container Apps scaling, health checks, retry policies |
-| **Observability** | End-to-end trace correlation | Critical | OpenTelemetry, Application Insights, W3C trace context |
-| **Scalability** | Handle 1000 orders/minute | Medium | Container Apps autoscaling, Service Bus partitioning |
-| **Performance** | API response < 500ms (p95) | High | SQL connection pooling, async operations |
-| **Security** | No credentials in code | Critical | Managed identities, Azure Key Vault integration ready |
-| **Maintainability** | Modular, testable code | High | Clean architecture, dependency injection, IaC |
-| **Operability** | Rapid incident diagnosis | High | Structured logging, correlation IDs, health endpoints |
+| **Observability** | End-to-end trace correlation across all services | Critical | OpenTelemetry, Application Insights, W3C trace context |
+| **Scalability** | Handle 1000 orders/minute peak load | Medium | Container Apps autoscaling, Service Bus partitioning |
+| **Performance** | API response < 500ms (p95) | High | SQL connection pooling, async operations, caching |
+| **Security** | No credentials in code or config | Critical | Managed identities, Azure Key Vault integration ready |
+| **Maintainability** | Modular, testable code with clear boundaries | High | Clean architecture, dependency injection, IaC |
+| **Operability** | Rapid incident diagnosis < 5 min to root cause | High | Structured logging, correlation IDs, health endpoints |
 
 ---
 
-## Business Process: Order Lifecycle
+## Business Process Flows
+
+### Order Lifecycle Process
 
 ```mermaid
 flowchart TD
-    A[Customer] -->|Places Order| B(Web App)
-    B -->|POST /api/orders| C{Orders API}
-    C -->|Validate| D{Valid?}
-    D -->|No| E[Return Error]
-    D -->|Yes| F[(Save to SQL)]
-    F --> G[Publish to Service Bus]
-    G --> H{Logic App Trigger}
-    H --> I[Process Order]
-    I --> J[Update Order Status]
+    A["Customer"] -->|"Places Order"| B["Web App"]
+    B -->|"POST /api/orders"| C{"Orders API"}
+    C -->|"Validate"| D{"Valid?"}
+    D -->|"No"| E["Return Error"]
+    D -->|"Yes"| F[("Save to SQL")]
+    F --> G["Publish to Service Bus"]
+    G --> H{"Logic App Trigger"}
+    H --> I["Process Order"]
+    I --> J["Update Order Status"]
+    J --> K["Order Complete"]
     
-    subgraph Observability
-        K[Trace Span Created]
-        L[Metrics Recorded]
-        M[Logs Written]
+    subgraph Observability["📊 Observability Layer"]
+        L["Trace Span Created"]
+        M["Metrics Recorded"]
+        N["Logs Written"]
     end
     
-    C -.-> K
-    C -.-> L
-    C -.-> M
+    C -.->|"instrumented"| L
+    C -.->|"measured"| M
+    C -.->|"logged"| N
+
+    classDef primary fill:#e3f2fd,stroke:#1565c0,stroke-width:2px
+    classDef decision fill:#fff3e0,stroke:#ef6c00,stroke-width:2px
+    classDef storage fill:#e8f5e9,stroke:#2e7d32,stroke-width:2px
+    classDef observe fill:#f5f5f5,stroke:#616161,stroke-width:1px
+
+    class A,B,C,G,H,I,J,K primary
+    class D decision
+    class F storage
+    class L,M,N observe
+```
+
+---
+
+← [Architecture Overview](README.md) | [Data Architecture →](02-data-architecture.md)
     
     style Observability fill:#f3e5f5
 ```
