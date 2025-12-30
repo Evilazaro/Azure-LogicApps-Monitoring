@@ -28,6 +28,10 @@
     Uses device code flow for Azure authentication instead of browser-based login.
     Useful for remote sessions, SSH connections, or environments without a browser.
 
+.PARAMETER AutoInstall
+    Automatically installs missing prerequisites without prompting for confirmation.
+    Useful for automated/CI scenarios.
+
 .EXAMPLE
     .\preprovision.ps1
     Runs standard pre-provisioning with confirmation prompts.
@@ -48,10 +52,14 @@
     .\preprovision.ps1 -UseDeviceCodeLogin
     Uses device code flow for Azure login (useful for remote/headless sessions).
 
+.EXAMPLE
+    .\preprovision.ps1 -AutoInstall -Force
+    Automatically installs all missing prerequisites without prompts.
+
 .NOTES
     File Name      : preprovision.ps1
     Author         : Azure-LogicApps-Monitoring Team
-    Version        : 2.1.0
+    Version        : 2.2.0
     Last Modified  : 2025-12-30
     Prerequisite   : PowerShell 7.0 or higher
     Prerequisite   : .NET SDK 8.0 or higher
@@ -90,7 +98,7 @@ $ProgressPreference = 'SilentlyContinue'
 $WarningPreference = 'Continue'
 
 # Script-level constants
-$script:ScriptVersion = '2.1.0'
+$script:ScriptVersion = '2.2.0'
 $script:MinimumPowerShellVersion = [version]'7.0'
 $script:MinimumDotNetVersion = [version]'10.0'
 $script:MinimumAzureCLIVersion = [version]'2.60.0'
@@ -538,6 +546,491 @@ function Test-BicepCLI {
     }
 }
 
+#region Installation Functions
+
+function Install-DotNetSDK {
+    <#
+    .SYNOPSIS
+        Installs the .NET SDK on the developer machine.
+    
+    .DESCRIPTION
+        Downloads and installs the .NET SDK using the official dotnet-install script.
+        Supports Windows and cross-platform installation.
+    
+    .PARAMETER Version
+        The .NET SDK version to install. Defaults to the minimum required version.
+    
+    .OUTPUTS
+        System.Boolean - Returns $true if installation succeeds, $false otherwise.
+    #>
+    [CmdletBinding()]
+    [OutputType([bool])]
+    param(
+        [Parameter(Mandatory = $false)]
+        [string]$Version = $script:MinimumDotNetVersion.Major.ToString() + '.0'
+    )
+
+    process {
+        try {
+            Write-Information ''
+            Write-Information '┌────────────────────────────────────────────────────────────────┐'
+            Write-Information '│                  .NET SDK Installation                         │'
+            Write-Information '└────────────────────────────────────────────────────────────────┘'
+            Write-Information ''
+            Write-Information "  Installing .NET SDK version $Version..."
+            Write-Information ''
+            
+            if ($IsWindows -or $env:OS -match 'Windows') {
+                # Windows installation using dotnet-install.ps1
+                Write-Information '  📥 Downloading .NET SDK installer for Windows...'
+                $installScript = Join-Path $env:TEMP 'dotnet-install.ps1'
+                
+                [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+                Invoke-WebRequest -Uri 'https://dot.net/v1/dotnet-install.ps1' -OutFile $installScript -UseBasicParsing
+                
+                Write-Information '  🔧 Running installer...'
+                Write-Information "     This may take a few minutes..."
+                Write-Information ''
+                
+                & $installScript -Channel $Version -InstallDir "$env:LOCALAPPDATA\Microsoft\dotnet"
+                
+                if ($LASTEXITCODE -eq 0) {
+                    # Add to PATH for current session
+                    $dotnetPath = "$env:LOCALAPPDATA\Microsoft\dotnet"
+                    if ($env:PATH -notlike "*$dotnetPath*") {
+                        $env:PATH = "$dotnetPath;$env:PATH"
+                    }
+                    
+                    Write-Information ''
+                    Write-Information '  ✓ .NET SDK installed successfully!'
+                    Write-Information ''
+                    Write-Information '  ⚠ NOTE: You may need to restart your terminal or IDE'
+                    Write-Information '          for the PATH changes to take effect.'
+                    Write-Information ''
+                    return $true
+                }
+            }
+            else {
+                # Linux/macOS installation using dotnet-install.sh
+                Write-Information '  📥 Downloading .NET SDK installer for Linux/macOS...'
+                $installScript = '/tmp/dotnet-install.sh'
+                
+                Invoke-WebRequest -Uri 'https://dot.net/v1/dotnet-install.sh' -OutFile $installScript -UseBasicParsing
+                chmod +x $installScript
+                
+                Write-Information '  🔧 Running installer...'
+                & bash $installScript --channel $Version
+                
+                if ($LASTEXITCODE -eq 0) {
+                    Write-Information ''
+                    Write-Information '  ✓ .NET SDK installed successfully!'
+                    Write-Information ''
+                    Write-Information '  ⚠ NOTE: Add the following to your shell profile:'
+                    Write-Information '          export PATH="$HOME/.dotnet:$PATH"'
+                    Write-Information ''
+                    return $true
+                }
+            }
+            
+            Write-Warning '  ✗ .NET SDK installation failed'
+            Write-Warning ''
+            Write-Warning '  Please install manually from:'
+            Write-Warning "    https://dotnet.microsoft.com/download/dotnet/$Version"
+            Write-Warning ''
+            return $false
+        }
+        catch {
+            Write-Error "Error installing .NET SDK: $($_.Exception.Message)"
+            return $false
+        }
+    }
+}
+
+function Install-AzureDeveloperCLI {
+    <#
+    .SYNOPSIS
+        Installs the Azure Developer CLI (azd) on the developer machine.
+    
+    .DESCRIPTION
+        Downloads and installs azd using the official installation method.
+    
+    .OUTPUTS
+        System.Boolean - Returns $true if installation succeeds, $false otherwise.
+    #>
+    [CmdletBinding()]
+    [OutputType([bool])]
+    param()
+
+    process {
+        try {
+            Write-Information ''
+            Write-Information '┌────────────────────────────────────────────────────────────────┐'
+            Write-Information '│              Azure Developer CLI Installation                  │'
+            Write-Information '└────────────────────────────────────────────────────────────────┘'
+            Write-Information ''
+            Write-Information '  Installing Azure Developer CLI (azd)...'
+            Write-Information ''
+            
+            if ($IsWindows -or $env:OS -match 'Windows') {
+                Write-Information '  📥 Installing via winget...'
+                
+                # Check if winget is available
+                $wingetCmd = Get-Command -Name winget -ErrorAction SilentlyContinue
+                if ($wingetCmd) {
+                    & winget install Microsoft.Azd --accept-source-agreements --accept-package-agreements
+                    
+                    if ($LASTEXITCODE -eq 0) {
+                        Write-Information ''
+                        Write-Information '  ✓ Azure Developer CLI installed successfully!'
+                        Write-Information ''
+                        Write-Information '  ⚠ NOTE: Please restart your terminal for PATH changes.'
+                        Write-Information ''
+                        return $true
+                    }
+                }
+                
+                # Fallback to PowerShell installer
+                Write-Information '  📥 Installing via PowerShell script...'
+                powershell -ex AllSigned -c "Invoke-RestMethod 'https://aka.ms/install-azd.ps1' | Invoke-Expression"
+                
+                if ($LASTEXITCODE -eq 0) {
+                    Write-Information ''
+                    Write-Information '  ✓ Azure Developer CLI installed successfully!'
+                    Write-Information ''
+                    return $true
+                }
+            }
+            else {
+                Write-Information '  📥 Installing via shell script...'
+                & curl -fsSL https://aka.ms/install-azd.sh | bash
+                
+                if ($LASTEXITCODE -eq 0) {
+                    Write-Information ''
+                    Write-Information '  ✓ Azure Developer CLI installed successfully!'
+                    Write-Information ''
+                    return $true
+                }
+            }
+            
+            Write-Warning '  ✗ Azure Developer CLI installation failed'
+            Write-Warning ''
+            Write-Warning '  Please install manually from:'
+            Write-Warning '    https://aka.ms/azd/install'
+            Write-Warning ''
+            return $false
+        }
+        catch {
+            Write-Error "Error installing Azure Developer CLI: $($_.Exception.Message)"
+            return $false
+        }
+    }
+}
+
+function Install-AzureCLI {
+    <#
+    .SYNOPSIS
+        Installs the Azure CLI on the developer machine.
+    
+    .DESCRIPTION
+        Downloads and installs Azure CLI using the official installation method.
+    
+    .OUTPUTS
+        System.Boolean - Returns $true if installation succeeds, $false otherwise.
+    #>
+    [CmdletBinding()]
+    [OutputType([bool])]
+    param()
+
+    process {
+        try {
+            Write-Information ''
+            Write-Information '┌────────────────────────────────────────────────────────────────┐'
+            Write-Information '│                   Azure CLI Installation                       │'
+            Write-Information '└────────────────────────────────────────────────────────────────┘'
+            Write-Information ''
+            Write-Information '  Installing Azure CLI...'
+            Write-Information ''
+            
+            if ($IsWindows -or $env:OS -match 'Windows') {
+                Write-Information '  📥 Installing via winget...'
+                
+                $wingetCmd = Get-Command -Name winget -ErrorAction SilentlyContinue
+                if ($wingetCmd) {
+                    & winget install Microsoft.AzureCLI --accept-source-agreements --accept-package-agreements
+                    
+                    if ($LASTEXITCODE -eq 0) {
+                        Write-Information ''
+                        Write-Information '  ✓ Azure CLI installed successfully!'
+                        Write-Information ''
+                        Write-Information '  ⚠ NOTE: Please restart your terminal for PATH changes.'
+                        Write-Information ''
+                        return $true
+                    }
+                }
+                
+                # Fallback to MSI installer
+                Write-Information '  📥 Downloading MSI installer...'
+                $msiPath = Join-Path $env:TEMP 'AzureCLI.msi'
+                Invoke-WebRequest -Uri 'https://aka.ms/installazurecliwindows' -OutFile $msiPath -UseBasicParsing
+                
+                Write-Information '  🔧 Running installer (this may require admin privileges)...'
+                Start-Process msiexec.exe -ArgumentList "/i `"$msiPath`" /quiet /norestart" -Wait -Verb RunAs
+                
+                if ($LASTEXITCODE -eq 0) {
+                    Write-Information ''
+                    Write-Information '  ✓ Azure CLI installed successfully!'
+                    Write-Information ''
+                    return $true
+                }
+            }
+            else {
+                Write-Information '  📥 Installing via package manager...'
+                
+                if (Get-Command apt-get -ErrorAction SilentlyContinue) {
+                    # Debian/Ubuntu
+                    & curl -sL https://aka.ms/InstallAzureCLIDeb | sudo bash
+                }
+                elseif (Get-Command brew -ErrorAction SilentlyContinue) {
+                    # macOS
+                    & brew install azure-cli
+                }
+                else {
+                    Write-Warning '  Could not detect package manager.'
+                    Write-Warning '  Please install manually from:'
+                    Write-Warning '    https://docs.microsoft.com/cli/azure/install-azure-cli'
+                    return $false
+                }
+                
+                if ($LASTEXITCODE -eq 0) {
+                    Write-Information ''
+                    Write-Information '  ✓ Azure CLI installed successfully!'
+                    Write-Information ''
+                    return $true
+                }
+            }
+            
+            Write-Warning '  ✗ Azure CLI installation failed'
+            Write-Warning ''
+            Write-Warning '  Please install manually from:'
+            Write-Warning '    https://docs.microsoft.com/cli/azure/install-azure-cli'
+            Write-Warning ''
+            return $false
+        }
+        catch {
+            Write-Error "Error installing Azure CLI: $($_.Exception.Message)"
+            return $false
+        }
+    }
+}
+
+function Install-BicepCLI {
+    <#
+    .SYNOPSIS
+        Installs the Bicep CLI on the developer machine.
+    
+    .DESCRIPTION
+        Installs Bicep CLI via Azure CLI or as a standalone tool.
+    
+    .OUTPUTS
+        System.Boolean - Returns $true if installation succeeds, $false otherwise.
+    #>
+    [CmdletBinding()]
+    [OutputType([bool])]
+    param()
+
+    process {
+        try {
+            Write-Information ''
+            Write-Information '┌────────────────────────────────────────────────────────────────┐'
+            Write-Information '│                   Bicep CLI Installation                       │'
+            Write-Information '└────────────────────────────────────────────────────────────────┘'
+            Write-Information ''
+            Write-Information '  Installing Bicep CLI via Azure CLI...'
+            Write-Information ''
+            
+            # Check if Azure CLI is available
+            $azCommand = Get-Command -Name az -ErrorAction SilentlyContinue
+            if (-not $azCommand) {
+                Write-Warning '  ✗ Azure CLI is required to install Bicep'
+                Write-Warning '    Please install Azure CLI first.'
+                return $false
+            }
+            
+            Write-Information '  🔧 Running: az bicep install...'
+            & az bicep install
+            
+            if ($LASTEXITCODE -eq 0) {
+                Write-Information ''
+                Write-Information '  ✓ Bicep CLI installed successfully!'
+                Write-Information ''
+                return $true
+            }
+            
+            # Try upgrade if install fails (might be already installed but outdated)
+            Write-Information '  🔧 Trying upgrade: az bicep upgrade...'
+            & az bicep upgrade
+            
+            if ($LASTEXITCODE -eq 0) {
+                Write-Information ''
+                Write-Information '  ✓ Bicep CLI upgraded successfully!'
+                Write-Information ''
+                return $true
+            }
+            
+            Write-Warning '  ✗ Bicep CLI installation failed'
+            Write-Warning ''
+            Write-Warning '  Please install manually with:'
+            Write-Warning '    az bicep install'
+            Write-Warning ''
+            return $false
+        }
+        catch {
+            Write-Error "Error installing Bicep CLI: $($_.Exception.Message)"
+            return $false
+        }
+    }
+}
+
+function Register-AzureResourceProviders {
+    <#
+    .SYNOPSIS
+        Registers required Azure resource providers.
+    
+    .DESCRIPTION
+        Registers all required Azure resource providers in the active subscription.
+    
+    .PARAMETER Providers
+        List of providers to register. Defaults to script's required providers.
+    
+    .OUTPUTS
+        System.Boolean - Returns $true if all providers are registered, $false otherwise.
+    #>
+    [CmdletBinding()]
+    [OutputType([bool])]
+    param(
+        [Parameter(Mandatory = $false)]
+        [string[]]$Providers = $script:RequiredResourceProviders
+    )
+
+    process {
+        try {
+            Write-Information ''
+            Write-Information '┌────────────────────────────────────────────────────────────────┐'
+            Write-Information '│             Azure Resource Provider Registration               │'
+            Write-Information '└────────────────────────────────────────────────────────────────┘'
+            Write-Information ''
+            Write-Information '  Registering required Azure resource providers...'
+            Write-Information '  This may take several minutes...'
+            Write-Information ''
+            
+            $allSuccess = $true
+            
+            foreach ($provider in $Providers) {
+                Write-Information "  📝 Registering $provider..."
+                
+                # Check current state
+                $providerInfo = & az provider show --namespace $provider --output json 2>&1 | ConvertFrom-Json
+                
+                if ($providerInfo.registrationState -eq 'Registered') {
+                    Write-Information "     ✓ Already registered"
+                    continue
+                }
+                
+                # Register the provider
+                & az provider register --namespace $provider 2>&1 | Out-Null
+                
+                if ($LASTEXITCODE -ne 0) {
+                    Write-Warning "     ✗ Failed to register $provider"
+                    $allSuccess = $false
+                    continue
+                }
+                
+                # Wait for registration (with timeout)
+                $timeout = 120  # 2 minutes per provider
+                $elapsed = 0
+                $registered = $false
+                
+                while ($elapsed -lt $timeout) {
+                    Start-Sleep -Seconds 5
+                    $elapsed += 5
+                    
+                    $state = (& az provider show --namespace $provider --query registrationState -o tsv 2>&1)
+                    if ($state -eq 'Registered') {
+                        $registered = $true
+                        break
+                    }
+                    
+                    Write-Verbose "     Waiting for $provider... ($elapsed seconds)"
+                }
+                
+                if ($registered) {
+                    Write-Information "     ✓ Registered successfully"
+                }
+                else {
+                    Write-Warning "     ⚠ Registration in progress (may complete in background)"
+                }
+            }
+            
+            Write-Information ''
+            if ($allSuccess) {
+                Write-Information '  ✓ All resource providers registered!'
+            }
+            else {
+                Write-Warning '  ⚠ Some providers may still be registering'
+            }
+            Write-Information ''
+            
+            return $allSuccess
+        }
+        catch {
+            Write-Error "Error registering resource providers: $($_.Exception.Message)"
+            return $false
+        }
+    }
+}
+
+function Request-UserConfirmation {
+    <#
+    .SYNOPSIS
+        Prompts user for confirmation to install a prerequisite.
+    
+    .PARAMETER PrerequisiteName
+        Name of the prerequisite to install.
+    
+    .PARAMETER Force
+        If set, skips the prompt and returns $true.
+    
+    .OUTPUTS
+        System.Boolean - Returns $true if user confirms, $false otherwise.
+    #>
+    [CmdletBinding()]
+    [OutputType([bool])]
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$PrerequisiteName,
+        
+        [Parameter(Mandatory = $false)]
+        [switch]$Force
+    )
+
+    process {
+        if ($Force) {
+            return $true
+        }
+        
+        Write-Information ''
+        $response = Read-Host "  Would you like to install $PrerequisiteName now? (Y/n)"
+        
+        if ([string]::IsNullOrWhiteSpace($response) -or $response -match '^[Yy]') {
+            return $true
+        }
+        
+        return $false
+    }
+}
+
+#endregion
+
 function Test-AzureResourceProviders {
     <#
     .SYNOPSIS
@@ -854,8 +1347,20 @@ try {
     Write-Information '  • Checking .NET SDK...'
     if (-not (Test-DotNetSDK)) {
         Write-Warning "    ✗ .NET SDK $script:MinimumDotNetVersion or higher is required"
-        Write-Warning "      Download from: https://dotnet.microsoft.com/download/dotnet/10.0"
-        $prerequisitesFailed = $true
+        Write-Warning "      Download from: https://dotnet.microsoft.com/download/dotnet/$($script:MinimumDotNetVersion.Major).0"
+        
+        if ($AutoInstall -or (Request-UserConfirmation -PrerequisiteName '.NET SDK' -Force:$Force)) {
+            $installSuccess = Install-DotNetSDK
+            if ($installSuccess -and (Test-DotNetSDK)) {
+                Write-Information '    ✓ .NET SDK installed and verified'
+            }
+            else {
+                $prerequisitesFailed = $true
+            }
+        }
+        else {
+            $prerequisitesFailed = $true
+        }
     }
     else {
         Write-Information '    ✓ .NET SDK is available and compatible'
@@ -867,7 +1372,28 @@ try {
     if (-not (Test-AzureDeveloperCLI)) {
         Write-Warning '    ✗ Azure Developer CLI (azd) is required'
         Write-Warning '      Install from: https://aka.ms/azd/install'
-        $prerequisitesFailed = $true
+        
+        if ($AutoInstall -or (Request-UserConfirmation -PrerequisiteName 'Azure Developer CLI (azd)' -Force:$Force)) {
+            $installSuccess = Install-AzureDeveloperCLI
+            if ($installSuccess) {
+                # Refresh PATH and recheck
+                $env:PATH = [System.Environment]::GetEnvironmentVariable('PATH', 'Machine') + ';' + [System.Environment]::GetEnvironmentVariable('PATH', 'User')
+                if (Test-AzureDeveloperCLI) {
+                    Write-Information '    ✓ Azure Developer CLI installed and verified'
+                }
+                else {
+                    Write-Warning '    ⚠ Azure Developer CLI installed but not in PATH yet'
+                    Write-Warning '      Please restart your terminal and run this script again'
+                    $prerequisitesFailed = $true
+                }
+            }
+            else {
+                $prerequisitesFailed = $true
+            }
+        }
+        else {
+            $prerequisitesFailed = $true
+        }
     }
     else {
         Write-Information '    ✓ Azure Developer CLI is available'
@@ -882,15 +1408,56 @@ try {
         Write-Warning '    ✗ Azure CLI is not installed'
         Write-Warning "      Minimum required version: $script:MinimumAzureCLIVersion"
         Write-Warning '      Install from: https://docs.microsoft.com/cli/azure/install-azure-cli'
-        $prerequisitesFailed = $true
+        
+        if ($AutoInstall -or (Request-UserConfirmation -PrerequisiteName 'Azure CLI' -Force:$Force)) {
+            $installSuccess = Install-AzureCLI
+            if ($installSuccess) {
+                # Refresh PATH and recheck
+                $env:PATH = [System.Environment]::GetEnvironmentVariable('PATH', 'Machine') + ';' + [System.Environment]::GetEnvironmentVariable('PATH', 'User')
+                $azCliResult = Test-AzureCLI
+                if ($azCliResult.IsInstalled) {
+                    Write-Information '    ✓ Azure CLI installed successfully'
+                    # Continue to check authentication below
+                }
+                else {
+                    Write-Warning '    ⚠ Azure CLI installed but not in PATH yet'
+                    Write-Warning '      Please restart your terminal and run this script again'
+                    $prerequisitesFailed = $true
+                }
+            }
+            else {
+                $prerequisitesFailed = $true
+            }
+        }
+        else {
+            $prerequisitesFailed = $true
+        }
     }
-    elseif (-not $azCliResult.IsVersionValid) {
+    
+    # Check version if installed
+    if ($azCliResult.IsInstalled -and -not $azCliResult.IsVersionValid) {
         Write-Warning "    ✗ Azure CLI version $($azCliResult.Version) is below minimum required"
         Write-Warning "      Minimum required version: $script:MinimumAzureCLIVersion"
         Write-Warning '      Update with: az upgrade'
-        $prerequisitesFailed = $true
+        
+        if ($AutoInstall -or (Request-UserConfirmation -PrerequisiteName 'Azure CLI upgrade' -Force:$Force)) {
+            Write-Information '    🔧 Upgrading Azure CLI...'
+            & az upgrade --yes 2>&1 | Out-Null
+            $azCliResult = Test-AzureCLI
+            if ($azCliResult.IsVersionValid) {
+                Write-Information '    ✓ Azure CLI upgraded successfully'
+            }
+            else {
+                $prerequisitesFailed = $true
+            }
+        }
+        else {
+            $prerequisitesFailed = $true
+        }
     }
-    elseif (-not $azCliResult.IsAuthenticated) {
+    
+    # Check authentication if version is valid
+    if ($azCliResult.IsInstalled -and $azCliResult.IsVersionValid -and -not $azCliResult.IsAuthenticated) {
         Write-Warning '    ⚠ Azure CLI is installed but you are not logged in'
         Write-Information ''
         
@@ -905,7 +1472,7 @@ try {
             Write-Information '    ✓ Azure CLI is available and authenticated'
         }
     }
-    else {
+    elseif ($azCliResult.Success) {
         Write-Information '    ✓ Azure CLI is available and authenticated'
     }
     Write-Information ''
@@ -916,20 +1483,52 @@ try {
         Write-Warning "    ✗ Bicep CLI $script:MinimumBicepVersion or higher is required"
         Write-Warning '      Install with Azure CLI: az bicep install'
         Write-Warning '      Or upgrade: az bicep upgrade'
-        $prerequisitesFailed = $true
+        
+        # Only offer to install Bicep if Azure CLI is available
+        if ($azCliResult.IsInstalled -and $azCliResult.IsVersionValid) {
+            if ($AutoInstall -or (Request-UserConfirmation -PrerequisiteName 'Bicep CLI' -Force:$Force)) {
+                $installSuccess = Install-BicepCLI
+                if ($installSuccess -and (Test-BicepCLI)) {
+                    Write-Information '    ✓ Bicep CLI installed and verified'
+                }
+                else {
+                    $prerequisitesFailed = $true
+                }
+            }
+            else {
+                $prerequisitesFailed = $true
+            }
+        }
+        else {
+            Write-Warning '    ⚠ Cannot install Bicep: Azure CLI is required first'
+            $prerequisitesFailed = $true
+        }
     }
     else {
         Write-Information '    ✓ Bicep CLI is available and compatible'
     }
     Write-Information ''
     
-    # Check Azure Resource Providers
-    if (-not $prerequisitesFailed) {
+    # Check Azure Resource Providers (only if we're authenticated)
+    if (-not $prerequisitesFailed -and $azCliResult.IsAuthenticated) {
         Write-Information '  • Checking Azure Resource Provider registration...'
         if (-not (Test-AzureResourceProviders)) {
             Write-Warning '    ✗ Some required Azure resource providers are not registered'
-            Write-Warning '      See warnings above for registration commands'
-            $prerequisitesFailed = $true
+            
+            if ($AutoInstall -or (Request-UserConfirmation -PrerequisiteName 'Azure Resource Provider registration' -Force:$Force)) {
+                $registerSuccess = Register-AzureResourceProviders
+                if ($registerSuccess -and (Test-AzureResourceProviders)) {
+                    Write-Information '    ✓ All required resource providers registered'
+                }
+                else {
+                    Write-Warning '    ⚠ Some providers may still be registering in the background'
+                    # Don't fail - registration can take time
+                }
+            }
+            else {
+                Write-Warning '      See warnings above for registration commands'
+                $prerequisitesFailed = $true
+            }
         }
         else {
             Write-Information '    ✓ All required resource providers are registered'
@@ -941,8 +1540,12 @@ try {
         Test-AzureQuota | Out-Null
         Write-Information ''
     }
-    else {
+    elseif ($prerequisitesFailed) {
         Write-Information '  • Skipping Azure resource provider check (previous validations failed)'
+        Write-Information ''
+    }
+    else {
+        Write-Information '  • Skipping Azure resource provider check (not authenticated)'
         Write-Information ''
     }
     
