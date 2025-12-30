@@ -421,4 +421,53 @@ public sealed class OrdersController : ControllerBase
                 new { error = "Failed to delete orders", message = ex.Message, type = "InternalError" });
         }
     }
+
+    /// <summary>
+    /// Retrieves all messages metadata from topics.
+    /// </summary>
+    /// <param name="cancellationToken">Cancellation token to cancel the operation.</param>
+    /// <returns>A collection of message metadata from all topics.</returns>
+    /// <response code="200">Returns all messages metadata from topics.</response>
+    /// <response code="500">If an internal server error occurs.</response>
+    [HttpGet("messages")]
+    [ProducesResponseType(typeof(IEnumerable<object>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    public async Task<ActionResult<IEnumerable<object>>> ListMessagesFromTopics(CancellationToken cancellationToken)
+    {
+        using var activity = _activitySource.StartActivity("ListMessagesFromTopics", ActivityKind.Server);
+        activity?.SetTag("http.method", "GET");
+        activity?.SetTag("http.route", "/api/orders/messages");
+        activity?.SetTag("http.request.method", "GET");
+        activity?.SetTag("url.path", "/api/orders/messages");
+
+        using var logScope = _logger.BeginScope(new Dictionary<string, object>
+        {
+            ["TraceId"] = Activity.Current?.TraceId.ToString() ?? "none",
+            ["SpanId"] = Activity.Current?.SpanId.ToString() ?? "none"
+        });
+
+        try
+        {
+            var messages = await _orderService.ListMessagesFromTopicsAsync(cancellationToken);
+            activity?.SetStatus(ActivityStatusCode.Ok);
+            int messageCount = messages is ICollection<object> coll ? coll.Count : (messages is not null ? messages.Count() : 0);
+            _logger.LogInformation(
+                "Successfully retrieved {MessageCount} messages from topics",
+                messageCount);
+            return Ok(messages);
+        }
+        catch (Exception ex)
+        {
+            activity?.SetStatus(ActivityStatusCode.Error, ex.Message);
+            activity?.SetTag("error.type", ex.GetType().Name);
+            activity?.AddEvent(new ActivityEvent("exception", tags: new ActivityTagsCollection
+            {
+                { "exception.type", ex.GetType().FullName ?? ex.GetType().Name },
+                { "exception.message", ex.Message }
+            }));
+            _logger.LogError(ex, "Unexpected error while retrieving messages from topics");
+            return StatusCode(StatusCodes.Status500InternalServerError,
+                new { error = "An error occurred while processing your request", type = "InternalError" });
+        }
+    }
 }

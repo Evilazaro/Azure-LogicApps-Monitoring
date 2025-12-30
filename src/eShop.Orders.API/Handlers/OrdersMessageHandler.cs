@@ -211,4 +211,151 @@ public sealed class OrdersMessageHandler : IOrdersMessageHandler
             throw;
         }
     }
+
+    /// <summary>
+    /// Lists all messages from a Service Bus subscription for testing purposes only.
+    /// WARNING: This method is intended for development/testing scenarios only.
+    /// </summary>
+    /// <param name="subscriptionName">The name of the subscription to peek messages from.</param>
+    /// <param name="maxMessages">Maximum number of messages to retrieve (default: 100).</param>
+    /// <param name="cancellationToken">Cancellation token to cancel the operation.</param>
+    /// <returns>A collection of orders with metadata retrieved from the subscription.</returns>
+    /// <exception cref="ArgumentException">Thrown when subscriptionName is null or whitespace.</exception>
+    /// <exception cref="ServiceBusException">Thrown when Service Bus operation fails.</exception>
+    public async Task<IEnumerable<OrderMessageWithMetadata>> ListMessagesFromTopicAsync(
+        string subscriptionName,
+        int maxMessages = 100,
+        CancellationToken cancellationToken = default)
+    {
+        if (string.IsNullOrWhiteSpace(subscriptionName))
+        {
+            throw new ArgumentException("Subscription name cannot be null or empty.", nameof(subscriptionName));
+        }
+
+        using var activity = _activitySource.StartActivity("ListMessagesFromTopic", ActivityKind.Consumer);
+        activity?.SetTag("messaging.system", "servicebus");
+        activity?.SetTag("messaging.destination.name", _topicName);
+        activity?.SetTag("messaging.operation", "peek");
+        activity?.SetTag("messaging.subscription.name", subscriptionName);
+        activity?.SetTag("max.messages", maxMessages);
+
+        await using var receiver = _serviceBusClient.CreateReceiver(_topicName, subscriptionName);
+
+        try
+        {
+            var peekedMessages = await receiver.PeekMessagesAsync(
+                maxMessages: maxMessages,
+                cancellationToken: cancellationToken);
+
+            var ordersWithMetadata = new List<OrderMessageWithMetadata>();
+
+            foreach (var message in peekedMessages)
+            {
+                try
+                {
+                    var messageBody = message.Body.ToString();
+                    var order = JsonSerializer.Deserialize<Order>(messageBody, JsonOptions);
+
+                    if (order != null)
+                    {
+                        var orderWithMetadata = new OrderMessageWithMetadata
+                        {
+                            Order = order,
+                            MessageId = message.MessageId,
+                            SequenceNumber = message.SequenceNumber,
+                            EnqueuedTime = message.EnqueuedTime,
+                            ContentType = message.ContentType,
+                            Subject = message.Subject,
+                            CorrelationId = message.CorrelationId,
+                            MessageSize = message.Body.ToMemory().Length,
+                            ApplicationProperties = message.ApplicationProperties.ToDictionary(kvp => kvp.Key, kvp => kvp.Value)
+                        };
+
+                        ordersWithMetadata.Add(orderWithMetadata);
+                        activity?.AddEvent(new ActivityEvent("MessagePeeked",
+                            tags: new ActivityTagsCollection
+                            {
+                                { "message.id", message.MessageId },
+                                { "order.id", order.Id },
+                                { "sequence.number", message.SequenceNumber }
+                            }));
+                    }
+                }
+                catch (JsonException ex)
+                {
+                    _logger.LogWarning(ex,
+                        "Failed to deserialize message {MessageId} from subscription {SubscriptionName}",
+                        message.MessageId, subscriptionName);
+                }
+            }
+
+            activity?.SetStatus(ActivityStatusCode.Ok);
+            activity?.SetTag("messages.retrieved", ordersWithMetadata.Count);
+
+            _logger.LogInformation(
+                "Retrieved {Count} order messages from subscription {SubscriptionName} on topic {TopicName}",
+                ordersWithMetadata.Count, subscriptionName, _topicName);
+
+            return ordersWithMetadata;
+        }
+        catch (ServiceBusException ex)
+        {
+            activity?.SetStatus(ActivityStatusCode.Error, ex.Message);
+            activity?.AddException(ex);
+            activity?.SetTag("error.type", nameof(ServiceBusException));
+            activity?.SetTag("exception.message", ex.Message);
+
+            _logger.LogError(ex,
+                "Failed to list messages from subscription {SubscriptionName} on topic {TopicName}. Reason: {Reason}",
+                subscriptionName, _topicName, ex.Reason);
+            throw;
+        }
+        catch (Exception ex)
+        {
+            activity?.SetStatus(ActivityStatusCode.Error, ex.Message);
+            activity?.AddException(ex);
+            activity?.SetTag("error.type", ex.GetType().Name);
+
+            _logger.LogError(ex,
+                "Unexpected error listing messages from subscription {SubscriptionName} on topic {TopicName}",
+                subscriptionName, _topicName);
+            throw;
+        }
+    }
+
+    /// <summary>
+    /// Lists all messages from all subscriptions for the configured topic.
+    /// This is a simplified version that retrieves messages from a default subscription.
+    /// </summary>
+    /// <param name="cancellationToken">Cancellation token to cancel the operation.</param>
+    /// <returns>A collection of message metadata from all topics.</returns>
+    public async Task<IEnumerable<object>> ListMessagesAsync(CancellationToken cancellationToken)
+    {
+        using var activity = _activitySource.StartActivity("ListMessages", ActivityKind.Consumer);
+        activity?.SetTag("messaging.system", "servicebus");
+        activity?.SetTag("messaging.destination.name", _topicName);
+        activity?.SetTag("messaging.operation", "peek");
+
+        try
+        {
+            // For this implementation, we'll use a default subscription name
+            // In production, you might want to make this configurable or query all subscriptions
+            const string defaultSubscriptionName = "OrdersSubscription";
+            
+            var messages = await ListMessagesFromTopicAsync(
+                defaultSubscriptionName, 
+                maxMessages: 100, 
+                cancellationToken);
+
+            activity?.SetStatus(ActivityStatusCode.Ok);
+            return messages.Cast<object>();
+        }
+        catch (Exception ex)
+        {
+            activity?.SetStatus(ActivityStatusCode.Error, ex.Message);
+            activity?.AddException(ex);
+            _logger.LogError(ex, "Failed to list messages from topic {TopicName}", _topicName);
+            throw;
+        }
+    }
 }
