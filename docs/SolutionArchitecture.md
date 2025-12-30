@@ -71,6 +71,7 @@ The solution implements an **order management capability** demonstrating cloud-n
 flowchart TD
     subgraph Enterprise["Monitoring Solution"]
         subgraph L1_OrderMgmt["1. Order Management"]
+            L1_Desc["Core business operations:<br/>CRUD for orders"]
             PlaceOrder["Place Order"]
             ViewOrder["View Order"]
             DeleteOrder["Delete Order"]
@@ -78,24 +79,32 @@ flowchart TD
         end
         
         subgraph L2_EventProcessing["2. Event-Driven Processing"]
+            L2_Desc["Async communication:<br/>message pub/sub"]
             PublishEvents["Publish Order Events"]
             ConsumeEvents["Consume Events"]
             DeadLetterMgmt["Failed Message Handling"]
         end
         
         subgraph L3_WorkflowAutomation["3. Workflow Automation"]
+            L3_Desc["Automated processing:<br/>success/error routing"]
             ProcessOrders["Process Order Workflows"]
             RouteSuccess["Route Successful Orders"]
             RouteErrors["Route Failed Orders"]
         end
         
         subgraph L4_Observability["4. Observability"]
+            L4_Desc["Cross-cutting:<br/>monitoring & tracing"]
             DistributedTracing["Distributed Tracing"]
             MetricsCollection["Metrics Collection"]
             LogAggregation["Log Aggregation"]
             HealthMonitoring["Health Monitoring"]
         end
     end
+    
+    style L1_Desc fill:#e1f5fe,stroke:#01579b,color:#01579b
+    style L2_Desc fill:#f3e5f5,stroke:#4a148c,color:#4a148c
+    style L3_Desc fill:#e8f5e9,stroke:#1b5e20,color:#1b5e20
+    style L4_Desc fill:#fff3e0,stroke:#e65100,color:#e65100
 ```
 
 #### Capability Domain Mapping
@@ -109,73 +118,152 @@ flowchart TD
 
 ### 3.2 Application Architecture
 
-The solution follows a **layered microservices architecture** with two primary services orchestrated by .NET Aspire.
-
-#### Service Decomposition
-
-| Service | Responsibility | Key Files |
-|---------|----------------|-----------|
-| **orders-api** | RESTful API for order CRUD operations, Service Bus publishing | [src/eShop.Orders.API/Program.cs](src/eShop.Orders.API/Program.cs) |
-| **web-app** | Blazor Server frontend for order management UI | [src/eShop.Web.App/Program.cs](src/eShop.Web.App/Program.cs) |
-| **AppHost** | .NET Aspire orchestrator managing service wiring | [app.AppHost/AppHost.cs](app.AppHost/AppHost.cs) |
-
-#### API Contracts
-
-The Orders API exposes the following endpoints defined in [src/eShop.Orders.API/Controllers/OrdersController.cs](src/eShop.Orders.API/Controllers/OrdersController.cs):
-
-| Endpoint | Method | Purpose |
-|----------|--------|---------|
-| `/api/orders` | POST | Place single order |
-| `/api/orders/batch` | POST | Place multiple orders |
-| `/api/orders` | GET | List all orders |
-| `/api/orders/{id}` | GET | Get order by ID |
-| `/api/orders/{id}` | DELETE | Delete order |
-| `/health` | GET | Health check endpoint |
-| `/alive` | GET | Liveness probe endpoint |
+The solution follows a **layered microservices architecture** with two primary services orchestrated by .NET Aspire. This section documents the application landscape, service catalog, API contracts, and integration patterns.
 
 #### Application Landscape
 
 ```mermaid
-flowchart TD
-    subgraph External["External Actors"]
-        User["Web User"]
-        Admin["Administrator"]
+flowchart TB
+    subgraph Presentation["Presentation Layer"]
+        direction LR
+        P1["eShop.Web.App"]
+        P1_Desc["Blazor Server + Fluent UI<br/>Customer-facing portal"]
     end
     
-    subgraph FrontendLayer["Frontend Layer"]
-        WebApp["eShop.Web.App<br/>Blazor Server + Fluent UI"]
+    subgraph Application["Application Layer"]
+        direction LR
+        A1["eShop.Orders.API"]
+        A1_Desc["ASP.NET Core Web API<br/>RESTful order operations"]
     end
     
-    subgraph APILayer["API Layer"]
-        OrdersAPI["eShop.Orders.API<br/>ASP.NET Core Web API"]
+    subgraph Domain["Domain Services Layer"]
+        direction LR
+        D1["OrderService"]
+        D1_Desc["Business logic orchestration"]
+        D2["OrdersMessageHandler"]
+        D2_Desc["Service Bus publisher"]
     end
     
-    subgraph ServiceLayer["Service Layer"]
-        OrderService["OrderService<br/>Business Logic"]
-        MessageHandler["OrdersMessageHandler<br/>Service Bus Publisher"]
+    subgraph Integration["Integration Layer"]
+        direction LR
+        I1["Azure Service Bus"]
+        I1_Desc["Topic: ordersplaced<br/>Async event distribution"]
+        I2["Logic Apps Workflow"]
+        I2_Desc["Automated order processing"]
     end
     
-    subgraph DataLayer["Data Access Layer"]
-        OrderRepo["OrderRepository<br/>EF Core Repository"]
-        DbContext["OrderDbContext<br/>Entity Framework"]
+    subgraph Data["Data Layer"]
+        direction LR
+        DA1["OrderRepository"]
+        DA1_Desc["EF Core Repository Pattern"]
+        DA2["OrderDbContext"]
+        DA2_Desc["Database abstraction"]
     end
     
-    subgraph CrossCutting["Cross-Cutting Concerns"]
-        ServiceDefaults["ServiceDefaults<br/>OpenTelemetry, Resilience"]
-        HealthChecks["Health Checks<br/>DB + Service Bus"]
+    subgraph Platform["Platform Services"]
+        direction LR
+        PS1["app.ServiceDefaults"]
+        PS1_Desc["OpenTelemetry + Resilience"]
+        PS2["app.AppHost"]
+        PS2_Desc[".NET Aspire Orchestrator"]
     end
     
-    User --> WebApp
-    Admin --> WebApp
-    WebApp -->|"HTTP + Service Discovery"| OrdersAPI
-    OrdersAPI --> OrderService
-    OrderService --> MessageHandler
-    OrderService --> OrderRepo
-    OrderRepo --> DbContext
+    %% Layer connections (high-level flow)
+    Presentation --> Application
+    Application --> Domain
+    Domain --> Integration
+    Domain --> Data
+    Platform -.->|"Cross-Cutting"| Presentation
+    Platform -.->|"Cross-Cutting"| Application
     
-    OrdersAPI --> ServiceDefaults
-    WebApp --> ServiceDefaults
-    OrdersAPI --> HealthChecks
+    %% Styling
+    style P1_Desc fill:#e3f2fd,stroke:#1565c0,color:#0d47a1
+    style A1_Desc fill:#f3e5f5,stroke:#7b1fa2,color:#4a148c
+    style D1_Desc fill:#e8f5e9,stroke:#388e3c,color:#1b5e20
+    style D2_Desc fill:#e8f5e9,stroke:#388e3c,color:#1b5e20
+    style I1_Desc fill:#fff3e0,stroke:#f57c00,color:#e65100
+    style I2_Desc fill:#fff3e0,stroke:#f57c00,color:#e65100
+    style DA1_Desc fill:#fce4ec,stroke:#c2185b,color:#880e4f
+    style DA2_Desc fill:#fce4ec,stroke:#c2185b,color:#880e4f
+    style PS1_Desc fill:#eceff1,stroke:#546e7a,color:#37474f
+    style PS2_Desc fill:#eceff1,stroke:#546e7a,color:#37474f
+```
+
+#### Service Catalog
+
+| # | Service | Type | Technology Stack | Owner | Status |
+|---|---------|------|------------------|-------|--------|
+| 1 | **eShop.Web.App** | Frontend | Blazor Server, Fluent UI, .NET 10 | Platform Team | Active |
+| 2 | **eShop.Orders.API** | Backend API | ASP.NET Core, EF Core, .NET 10 | Platform Team | Active |
+| 3 | **app.AppHost** | Orchestrator | .NET Aspire 9.5 | Platform Team | Active |
+| 4 | **app.ServiceDefaults** | Shared Library | OpenTelemetry, Resilience | Platform Team | Active |
+| 5 | **OrdersManagementLogicApp** | Workflow | Azure Logic Apps Standard | Platform Team | Active |
+
+#### Service Details
+
+##### eShop.Web.App (Frontend)
+- **Purpose**: Customer-facing web portal for order management
+- **Key Files**: [src/eShop.Web.App/Program.cs](src/eShop.Web.App/Program.cs), [Components/](src/eShop.Web.App/Components/)
+- **Dependencies**: eShop.Orders.API (HTTP), app.ServiceDefaults
+- **Deployment**: Azure Container Apps (Consumption)
+
+##### eShop.Orders.API (Backend)
+- **Purpose**: RESTful API for order CRUD operations and event publishing
+- **Key Files**: [src/eShop.Orders.API/Program.cs](src/eShop.Orders.API/Program.cs), [Controllers/](src/eShop.Orders.API/Controllers/)
+- **Dependencies**: Azure SQL Database, Azure Service Bus, app.ServiceDefaults
+- **Deployment**: Azure Container Apps (Consumption)
+
+##### app.AppHost (Orchestrator)
+- **Purpose**: .NET Aspire orchestrator managing service wiring and resource provisioning
+- **Key Files**: [app.AppHost/AppHost.cs](app.AppHost/AppHost.cs)
+- **Resources Managed**: orders-api, web-app, sql-database, service-bus
+- **Environment**: Local development and cloud deployment coordination
+
+#### API Contracts
+
+The Orders API exposes RESTful endpoints defined in [src/eShop.Orders.API/Controllers/OrdersController.cs](src/eShop.Orders.API/Controllers/OrdersController.cs):
+
+| # | Endpoint | Method | Request Body | Response | Purpose |
+|---|----------|--------|--------------|----------|---------|
+| 1 | `/api/orders` | POST | `Order` JSON | `201 Created` | Place single order |
+| 2 | `/api/orders/batch` | POST | `Order[]` JSON | `201 Created` | Place multiple orders |
+| 3 | `/api/orders` | GET | — | `Order[]` JSON | List all orders |
+| 4 | `/api/orders/{id}` | GET | — | `Order` JSON | Get order by ID |
+| 5 | `/api/orders/{id}` | DELETE | — | `204 No Content` | Delete order |
+| 6 | `/health` | GET | — | Health status | Health check endpoint |
+| 7 | `/alive` | GET | — | `200 OK` | Liveness probe endpoint |
+
+#### Integration Patterns
+
+| # | Pattern | Implementation | Source | Target | Description |
+|---|---------|----------------|--------|--------|-------------|
+| 1 | **Pub/Sub** | Azure Service Bus Topic | Orders API | Logic Apps | Orders published to `ordersplaced` topic |
+| 2 | **Service Discovery** | .NET Aspire | Web App | Orders API | Automatic endpoint resolution via `orders-api` reference |
+| 3 | **Repository** | EF Core | OrderService | SQL Database | Data access abstraction via `OrderRepository` |
+| 4 | **Health Aggregation** | ASP.NET Core | All Services | Orchestrator | `/health` and `/alive` endpoints for monitoring |
+
+#### Communication Flow
+
+```mermaid
+sequenceDiagram
+    participant User as Web User
+    participant Web as eShop.Web.App
+    participant API as eShop.Orders.API
+    participant SB as Azure Service Bus
+    participant Logic as Logic Apps
+    participant DB as Azure SQL
+    
+    User->>Web: Submit Order
+    Web->>API: POST /api/orders
+    API->>DB: Save Order
+    DB-->>API: Order Saved
+    API->>SB: Publish to ordersplaced
+    API-->>Web: 201 Created
+    Web-->>User: Order Confirmed
+    
+    SB->>Logic: Trigger Workflow
+    Logic->>Logic: Process Order
+    Logic-->>SB: Acknowledge
 ```
 
 ### 3.3 Data Architecture
