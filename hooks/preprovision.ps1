@@ -724,7 +724,8 @@ function Install-AzureDeveloperCLI {
         Installs the Azure Developer CLI (azd) on the developer machine.
     
     .DESCRIPTION
-        Downloads and installs azd using the official installation method.
+        On Windows, installs azd using winget (preferred) or the official PowerShell script as fallback.
+        On Linux/macOS, uses the official shell script.
     
     .OUTPUTS
         System.Boolean - Returns $true if installation succeeds, $false otherwise.
@@ -744,21 +745,29 @@ function Install-AzureDeveloperCLI {
             Write-Information ''
             
             if ($IsWindows -or $env:OS -match 'Windows') {
-                Write-Information '  📥 Installing via winget...'
-                
-                # Check if winget is available
-                $wingetCmd = Get-Command -Name winget -ErrorAction SilentlyContinue
-                if ($wingetCmd) {
+                # Windows installation - prefer winget
+                if (Test-WingetAvailable) {
+                    Write-Information '  📥 Installing via winget (recommended)...'
+                    Write-Information ''
+                    
                     & winget install Microsoft.Azd --accept-source-agreements --accept-package-agreements
                     
                     if ($LASTEXITCODE -eq 0) {
                         Write-Information ''
-                        Write-Information '  ✓ Azure Developer CLI installed successfully!'
+                        Write-Information '  ✓ Azure Developer CLI installed successfully via winget!'
                         Write-Information ''
                         Write-Information '  ⚠ NOTE: Please restart your terminal for PATH changes.'
                         Write-Information ''
                         return $true
                     }
+                    
+                    Write-Warning '  ⚠ winget installation failed, trying fallback method...'
+                    Write-Information ''
+                }
+                else {
+                    Write-Warning '  ⚠ winget is not available on this system'
+                    Write-Information '     Using fallback installation method...'
+                    Write-Information ''
                 }
                 
                 # Fallback to PowerShell installer
