@@ -759,8 +759,8 @@ main() {
     local azure_servicebus_endpoint
     azure_servicebus_hostname=$(get_env_var_safe "MESSAGING_SERVICEBUSHOSTNAME")
     # Provide default values for Service Bus topic/subscription names
-    azure_servicebus_topic=$(get_env_var_safe "AZURE_SERVICE_BUS_TOPIC_NAME" "OrdersPlaced")
-    azure_servicebus_subscription=$(get_env_var_safe "AZURE_SERVICE_BUS_SUBSCRIPTION_NAME" "OrderProcessingSubscription")
+    azure_servicebus_topic=$(get_env_var_safe "AZURE_SERVICE_BUS_TOPIC_NAME" "ordersplaced")
+    azure_servicebus_subscription=$(get_env_var_safe "AZURE_SERVICE_BUS_SUBSCRIPTION_NAME" "orderprocessingsub")
     azure_servicebus_endpoint=$(get_env_var_safe "MESSAGING_SERVICEBUSENDPOINT")
     
     # SQL Database configuration (new in current infrastructure)

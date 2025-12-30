@@ -492,4 +492,35 @@ public sealed class OrderService : IOrderService
             throw new ArgumentException("Order must contain at least one product", nameof(order));
         }
     }
+
+    /// <inheritdoc />
+    public async Task<IEnumerable<object>> ListMessagesFromTopicsAsync(CancellationToken cancellationToken)
+    {
+        using var activity = _activitySource.StartActivity("ListMessagesFromTopics", ActivityKind.Internal);
+
+        try
+        {
+            _logger.LogInformation("Retrieving messages from topics");
+            var messages = await _ordersMessageHandler.ListMessagesAsync(cancellationToken);
+            var messagesList = messages.ToList();
+
+            activity?.SetTag("messages.retrieved.count", messagesList.Count);
+            activity?.SetStatus(ActivityStatusCode.Ok);
+            _logger.LogInformation("Retrieved {Count} messages from topics", messagesList.Count);
+
+            return messagesList;
+        }
+        catch (Exception ex)
+        {
+            activity?.SetStatus(ActivityStatusCode.Error, ex.Message);
+            activity?.AddEvent(new ActivityEvent("ListMessagesFromTopicsFailed", tags: new ActivityTagsCollection
+            {
+                { "error.type", ex.GetType().Name },
+                { "exception.message", ex.Message },
+                { "exception.type", ex.GetType().FullName ?? ex.GetType().Name }
+            }));
+            _logger.LogError(ex, "Failed to retrieve messages from topics");
+            throw;
+        }
+    }
 }

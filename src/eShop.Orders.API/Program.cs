@@ -80,12 +80,12 @@ var isServiceBusEnabled = !string.IsNullOrWhiteSpace(serviceBusHostName)
 if (isServiceBusEnabled)
 {
     builder.AddAzureServiceBusClient();
-    builder.Services.AddScoped<IOrdersMessageHandler, OrdersMessageHandler>();
+    builder.Services.AddSingleton<IOrdersMessageHandler, OrdersMessageHandler>();
 }
 else
 {
     // Register a no-op message handler for development without Service Bus
-    builder.Services.AddScoped<IOrdersMessageHandler, NoOpOrdersMessageHandler>();
+    builder.Services.AddSingleton<IOrdersMessageHandler, NoOpOrdersMessageHandler>();
 }
 
 // Configure health checks

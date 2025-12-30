@@ -22,4 +22,11 @@ public interface IOrdersMessageHandler
     /// <param name="cancellationToken">Cancellation token to cancel the operation.</param>
     /// <returns>A task representing the asynchronous operation.</returns>
     Task SendOrdersBatchMessageAsync(IEnumerable<Order> orders, CancellationToken cancellationToken);
+
+    /// <summary>
+    /// Lists all messages from topics asynchronously.
+    /// </summary>
+    /// <param name="cancellationToken">Cancellation token to cancel the operation.</param>
+    /// <returns>A collection of message metadata from all topics.</returns>
+    Task<IEnumerable<object>> ListMessagesAsync(CancellationToken cancellationToken);
 }

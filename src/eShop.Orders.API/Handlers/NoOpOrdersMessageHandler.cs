@@ -30,4 +30,10 @@ public sealed class NoOpOrdersMessageHandler : IOrdersMessageHandler
         _logger.LogInformation("NoOp: Would send batch of {Count} order messages", count);
         return Task.CompletedTask;
     }
+
+    public Task<IEnumerable<object>> ListMessagesAsync(CancellationToken cancellationToken)
+    {
+        _logger.LogInformation("NoOp: Would list messages from topics");
+        return Task.FromResult(Enumerable.Empty<object>());
+    }
 }

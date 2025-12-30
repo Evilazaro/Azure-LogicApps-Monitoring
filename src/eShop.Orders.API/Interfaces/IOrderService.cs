@@ -53,4 +53,11 @@ public interface IOrderService
     /// <param name="cancellationToken">Cancellation token to cancel the operation.</param>
     /// <returns>The number of successfully deleted orders.</returns>
     Task<int> DeleteOrdersBatchAsync(IEnumerable<string> orderIds, CancellationToken cancellationToken);
+
+    /// <summary>
+    /// Lists all messages from topics asynchronously.
+    /// </summary>
+    /// <param name="cancellationToken">Cancellation token to cancel the operation.</param>
+    /// <returns>A collection of message metadata from all topics.</returns>
+    Task<IEnumerable<object>> ListMessagesFromTopicsAsync(CancellationToken cancellationToken);
 }
