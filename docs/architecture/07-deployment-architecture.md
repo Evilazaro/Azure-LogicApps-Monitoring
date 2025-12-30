@@ -40,7 +40,7 @@
 ### Azure Developer CLI Workflow
 
 ```mermaid
-flowchart TD
+flowchart LR
     subgraph Developer["👩‍💻 Developer"]
         Code["Code Changes"]
         AzdUp["azd up"]
@@ -183,7 +183,7 @@ flowchart LR
 ### Provisioning Flow
 
 ```mermaid
-flowchart TD
+flowchart LR
     subgraph Subscription["📋 Subscription Scope"]
         Main["main.bicep"]
         RG["Resource Group"]
