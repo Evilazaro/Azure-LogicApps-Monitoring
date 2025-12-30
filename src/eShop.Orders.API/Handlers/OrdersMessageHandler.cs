@@ -352,7 +352,7 @@ public sealed class OrdersMessageHandler : IOrdersMessageHandler
         {
             // For this implementation, we'll use a default subscription name
             // In production, you might want to make this configurable or query all subscriptions
-            const string defaultSubscriptionName = "OrdersSubscription";
+            const string defaultSubscriptionName = "orderprocessingsub";
 
             var messages = await ListMessagesFromTopicAsync(
                 defaultSubscriptionName,
