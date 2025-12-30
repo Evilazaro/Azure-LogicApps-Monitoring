@@ -70,26 +70,26 @@ The solution implements an **order management capability** demonstrating cloud-n
 ```mermaid
 flowchart TD
     subgraph Enterprise["Monitoring Solution"]
-        subgraph OrderMgmt["Order Management"]
+        subgraph L1_OrderMgmt["1. Order Management"]
             PlaceOrder["Place Order"]
             ViewOrder["View Order"]
             DeleteOrder["Delete Order"]
             BatchProcess["Batch Processing"]
         end
         
-        subgraph EventProcessing["Event-Driven Processing"]
+        subgraph L2_EventProcessing["2. Event-Driven Processing"]
             PublishEvents["Publish Order Events"]
             ConsumeEvents["Consume Events"]
             DeadLetterMgmt["Failed Message Handling"]
         end
         
-        subgraph WorkflowAutomation["Workflow Automation"]
+        subgraph L3_WorkflowAutomation["3. Workflow Automation"]
             ProcessOrders["Process Order Workflows"]
             RouteSuccess["Route Successful Orders"]
             RouteErrors["Route Failed Orders"]
         end
         
-        subgraph Observability["Observability"]
+        subgraph L4_Observability["4. Observability"]
             DistributedTracing["Distributed Tracing"]
             MetricsCollection["Metrics Collection"]
             LogAggregation["Log Aggregation"]
@@ -100,12 +100,12 @@ flowchart TD
 
 #### Capability Domain Mapping
 
-| Capability Domain | Source Evidence | Key Files |
-|-------------------|-----------------|-----------|
-| **Order Management** | CRUD operations for orders | [src/eShop.Orders.API/Controllers/OrdersController.cs](src/eShop.Orders.API/Controllers/OrdersController.cs) |
-| **Event-Driven Processing** | Service Bus topic publishing and subscription | [src/eShop.Orders.API/Handlers/OrdersMessageHandler.cs](src/eShop.Orders.API/Handlers/OrdersMessageHandler.cs) |
-| **Workflow Automation** | Logic Apps with success/error routing | [infra/workload/logic-app.bicep](infra/workload/logic-app.bicep), [infra/shared/data/main.bicep](infra/shared/data/main.bicep) |
-| **Observability** | OpenTelemetry, health checks, metrics | [app.ServiceDefaults/Extensions.cs](app.ServiceDefaults/Extensions.cs) |
+| # | Capability Domain | Description | Key Files |
+|---|-------------------|-------------|-----------|
+| 1 | **Order Management** | Core business operations - create, read, update, delete orders | [src/eShop.Orders.API/Controllers/OrdersController.cs](src/eShop.Orders.API/Controllers/OrdersController.cs) |
+| 2 | **Event-Driven Processing** | Asynchronous communication via message publishing and consumption | [src/eShop.Orders.API/Handlers/OrdersMessageHandler.cs](src/eShop.Orders.API/Handlers/OrdersMessageHandler.cs) |
+| 3 | **Workflow Automation** | Automated processing with success/error routing | [infra/workload/logic-app.bicep](infra/workload/logic-app.bicep) |
+| 4 | **Observability** | Cross-cutting monitoring, tracing, and health checks | [app.ServiceDefaults/Extensions.cs](app.ServiceDefaults/Extensions.cs) |
 
 ### 3.2 Application Architecture
 
