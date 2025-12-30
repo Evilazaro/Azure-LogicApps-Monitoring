@@ -293,7 +293,7 @@ public sealed class OrdersMessageHandler : IOrdersMessageHandler
                     _logger.LogWarning(ex,
                         "Failed to deserialize message {MessageId} from subscription {SubscriptionName}",
                         message.MessageId, subscriptionName);
-                    
+
                     // Still abandon malformed messages
                     try
                     {
