@@ -4,7 +4,70 @@
 
 ---
 
-## 1. Deployment Overview
+## 1. Deployment Principles
+
+| # | Principle | Rationale | Implications |
+|---|-----------|-----------|---------------|
+| **D-1** | **Infrastructure as Code** | Repeatable, auditable deployments | All resources defined in Bicep |
+| **D-2** | **Single Command Deployment** | Reduce human error, accelerate releases | `azd up` provisions and deploys everything |
+| **D-3** | **Environment Parity** | Minimize deployment surprises | Local emulators mirror Azure services |
+| **D-4** | **Immutable Infrastructure** | Predictable, reproducible deployments | Replace resources, don't patch in-place |
+| **D-5** | **Automation First** | Eliminate manual steps | Lifecycle hooks automate configuration |
+| **D-6** | **GitOps** | Version-controlled infrastructure state | Git as single source of truth |
+| **D-7** | **Zero-Downtime Releases** | Business continuity | Blue-green deployments via revisions |
+
+---
+
+## 2. BDAT Integration View
+
+```mermaid
+flowchart TB
+    subgraph Business["🏢 Business Architecture"]
+        SLA["SLAs & Uptime<br/><i>99.9% availability target</i>"]
+        Windows["Maintenance Windows<br/><i>Deployment timing constraints</i>"]
+        Compliance["Compliance Requirements<br/><i>Approval workflows</i>"]
+    end
+
+    subgraph Application["🔧 Application Architecture"]
+        Services["Application Services<br/><i>Orders API, Web App, Logic App</i>"]
+        Dependencies["Service Dependencies<br/><i>Deployment ordering</i>"]
+    end
+
+    subgraph Data["💾 Data Architecture"]
+        Migrations["Data Migrations<br/><i>EF Core migrations</i>"]
+        State["Deployment State<br/><i>azd environment state</i>"]
+    end
+
+    subgraph Technology["⚙️ Technology Architecture"]
+        Pipeline["CI/CD Pipeline<br/><i>azd workflow</i>"]
+        IaC["Infrastructure as Code<br/><i>Bicep modules</i>"]
+        Environments["Environments<br/><i>Local/Dev/Staging/Prod</i>"]
+    end
+
+    SLA -->|"constrains"| Pipeline
+    Windows -->|"schedules"| Pipeline
+    Compliance -->|"requires approvals"| Pipeline
+    Services -->|"deployed by"| Pipeline
+    Dependencies -->|"orders"| Pipeline
+    Migrations -->|"included in"| Pipeline
+    State -->|"tracked by"| IaC
+    Pipeline --> Environments
+    IaC --> Environments
+
+    classDef business fill:#e3f2fd,stroke:#1565c0
+    classDef app fill:#e8f5e9,stroke:#2e7d32
+    classDef data fill:#fff3e0,stroke:#ef6c00
+    classDef tech fill:#f3e5f5,stroke:#7b1fa2
+
+    class SLA,Windows,Compliance business
+    class Services,Dependencies app
+    class Migrations,State data
+    class Pipeline,IaC,Environments tech
+```
+
+---
+
+## 3. Deployment Overview
 
 ### Deployment Philosophy
 
@@ -24,7 +87,7 @@
 
 ---
 
-## 2. Environment Topology
+## 4. Environment Topology
 
 | Environment | Purpose | Azure Subscription | Resource Group Pattern |
 |-------------|---------|-------------------|------------------------|
@@ -33,9 +96,21 @@
 | **staging** | Pre-production | Staging subscription | `rg-orders-staging-{location}` |
 | **prod** | Production | Production subscription | `rg-orders-prod-{location}` |
 
+### Environment Configuration Matrix
+
+| Aspect | Local | Dev | Staging | Production |
+|--------|-------|-----|---------|------------|
+| **Trigger** | Manual | PR merge | Release branch | Manual approval |
+| **Infrastructure** | Emulators | Shared Azure | Dedicated Azure | Dedicated Azure |
+| **Data** | Sample data | Test data | Anonymized prod | Live data |
+| **Scaling** | Single instance | Min replicas | Prod-like | Auto-scale |
+| **Secrets** | User Secrets | Key Vault | Key Vault | Key Vault |
+| **Monitoring** | Aspire Dashboard | Shared App Insights | Dedicated | Dedicated |
+| **Log Level** | Debug | Information | Information | Warning |
+
 ---
 
-## 3. CI/CD Pipeline
+## 5. CI/CD Pipeline
 
 ### Azure Developer CLI Workflow
 
@@ -103,9 +178,22 @@ flowchart LR
 | **Push** | Push images to ACR | Push success |
 | **Deploy** | Update Container Apps | Health check pass |
 
+### Quality Gates
+
+| Gate | Stage | Criteria | Action on Failure |
+|------|-------|----------|-------------------|
+| **Prerequisites** | Pre-provision | Azure CLI installed, subscription access | Block deployment |
+| **Bicep Validation** | Provision | `az bicep build` success | Block deployment |
+| **Resource Deployment** | Provision | All resources created | Rollback |
+| **Build Success** | Build | `dotnet build` exits 0 | Block deployment |
+| **Unit Tests** | Build | All tests pass | Block deployment |
+| **Container Build** | Package | `docker build` success | Block deployment |
+| **Health Check** | Deploy | `/health` returns 200 | Rollback revision |
+| **Smoke Tests** | Deploy | Critical paths functional | Alert + review |
+
 ---
 
-## 4. Azure Developer CLI Integration
+## 6. Azure Developer CLI Integration
 
 ### azd Workflow
 
@@ -178,7 +266,7 @@ flowchart LR
 
 ---
 
-## 5. Infrastructure Provisioning
+## 7. Infrastructure Provisioning
 
 ### Provisioning Flow
 
@@ -226,7 +314,7 @@ flowchart LR
 
 ---
 
-## 6. Application Deployment
+## 8. Application Deployment
 
 ### Container Build Process
 
@@ -288,7 +376,7 @@ flowchart LR
 
 ---
 
-## 7. Local Development
+## 9. Local Development
 
 ### Local Setup Requirements
 
