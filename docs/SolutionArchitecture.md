@@ -69,7 +69,7 @@ The solution implements an **order management capability** demonstrating cloud-n
 
 ```mermaid
 flowchart TD
-    subgraph Enterprise["Azure Logic Apps Monitoring Solution"]
+    subgraph Enterprise["Monitoring Solution"]
         subgraph OrderMgmt["Order Management"]
             PlaceOrder["Place Order"]
             ViewOrder["View Order"]
