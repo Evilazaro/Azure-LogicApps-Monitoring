@@ -36,27 +36,64 @@ The Azure Logic Apps Monitoring Solution provides:
 ## Business Capabilities
 
 ```mermaid
-mindmap
-  root((Azure Logic Apps<br/>Monitoring))
-    Order Management
-      Place Orders
-      View Orders
-      Batch Processing
-      Order Lifecycle
-    Workflow Automation
-      Event Processing
-      Order Orchestration
-      Business Rules
-    Observability
-      Distributed Tracing
-      Metrics Collection
-      Health Monitoring
-      Alerting
-    Infrastructure
-      Container Hosting
-      Message Brokering
-      Data Persistence
-      Identity Management
+flowchart TB
+    subgraph Core["Core Business Capabilities"]
+        direction TB
+        OM["📦 Order Management"]
+        WA["🔄 Workflow Automation"]
+    end
+
+    subgraph Enabling["Enabling Capabilities"]
+        direction TB
+        OBS["📊 Observability"]
+        INF["☁️ Infrastructure"]
+    end
+
+    subgraph OM_Sub["Order Management"]
+        OM1["Place Orders"]
+        OM2["View Orders"]
+        OM3["Batch Processing"]
+        OM4["Order Lifecycle"]
+    end
+
+    subgraph WA_Sub["Workflow Automation"]
+        WA1["Event Processing"]
+        WA2["Order Orchestration"]
+        WA3["Business Rules"]
+    end
+
+    subgraph OBS_Sub["Observability"]
+        OBS1["Distributed Tracing"]
+        OBS2["Metrics Collection"]
+        OBS3["Health Monitoring"]
+        OBS4["Alerting"]
+    end
+
+    subgraph INF_Sub["Infrastructure"]
+        INF1["Container Hosting"]
+        INF2["Message Brokering"]
+        INF3["Data Persistence"]
+        INF4["Identity Management"]
+    end
+
+    OM --> OM_Sub
+    WA --> WA_Sub
+    OBS --> OBS_Sub
+    INF --> INF_Sub
+
+    %% Dependencies
+    OM -.->|"triggers"| WA
+    OM -.->|"monitored by"| OBS
+    WA -.->|"monitored by"| OBS
+    Core -.->|"runs on"| Enabling
+
+    classDef coreStyle fill:#e3f2fd,stroke:#1565c0,stroke-width:2px
+    classDef enableStyle fill:#e8f5e9,stroke:#2e7d32,stroke-width:2px
+    classDef subStyle fill:#fff8e1,stroke:#f57c00,stroke-width:1px
+
+    class OM,WA coreStyle
+    class OBS,INF enableStyle
+    class OM1,OM2,OM3,OM4,WA1,WA2,WA3,OBS1,OBS2,OBS3,OBS4,INF1,INF2,INF3,INF4 subStyle
 ```
 
 ### Capability Descriptions
