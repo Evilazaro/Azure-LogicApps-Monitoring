@@ -150,57 +150,76 @@ sequenceDiagram
 
 ```mermaid
 flowchart LR
-    subgraph Sources["📡 Telemetry Sources"]
+    subgraph Sources["📡 Layer 1: Telemetry Sources"]
         direction TB
-        WebApp["🌐 Web App"]
-        API["⚙️ Orders API"]
-        LA["🔄 Logic Apps"]
+        WebApp["🌐 Web App<br/>(Blazor Server)"]
+        API["⚙️ Orders API<br/>(ASP.NET Core)"]
+        LA["🔄 Logic Apps<br/>(Standard)"]
+        SB["📨 Service Bus"]
+        SQL["🗄️ SQL Database"]
     end
 
-    subgraph Instrumentation["🔧 Instrumentation Layer"]
+    subgraph Instrumentation["🔧 Layer 2: Instrumentation"]
         direction TB
-        OTEL["OpenTelemetry SDK<br/>(Traces, Metrics, Logs)"]
-        AzureDiag["Azure Diagnostics<br/>(Workflow Runs)"]
+        OTEL["OpenTelemetry SDK<br/>───────────<br/>📍 Traces<br/>📊 Metrics<br/>📝 Logs"]
+        AzureDiag["Azure Diagnostics<br/>───────────<br/>📋 Workflow Runs<br/>⚡ Actions"]
+        AzureMon["Azure Monitor<br/>───────────<br/>📈 Platform Metrics"]
     end
 
-    subgraph Collection["📥 Collection Layer"]
+    subgraph Collection["📥 Layer 3: Collection & Storage"]
         direction TB
-        AI["📊 Application Insights<br/>(APM & Traces)"]
-        LAW["📋 Log Analytics<br/>(Logs & Queries)"]
+        AI["📊 Application Insights<br/>───────────<br/>APM • Distributed Traces<br/>90 days retention"]
+        LAW["📋 Log Analytics Workspace<br/>───────────<br/>Centralized Logs • KQL<br/>30 days retention"]
     end
 
-    subgraph Visualization["📈 Visualization Layer"]
+    subgraph Visualization["📈 Layer 4: Visualization & Alerting"]
         direction TB
-        AppMap["Application Map"]
-        TransactionSearch["Transaction Search"]
-        KQL["KQL Queries"]
-        Dashboards["Azure Dashboards"]
+        AppMap["🗺️ Application Map"]
+        TransactionSearch["🔍 Transaction Search"]
+        KQL["📝 KQL Queries"]
+        Dashboards["📊 Azure Dashboards"]
+        Alerts["🚨 Alert Rules"]
     end
 
     WebApp -->|"OTLP/HTTP"| OTEL
     API -->|"OTLP/HTTP"| OTEL
     LA -->|"Built-in"| AzureDiag
+    SB -->|"Metrics"| AzureMon
+    SQL -->|"Metrics"| AzureMon
 
     OTEL -->|"Export"| AI
     AzureDiag -->|"Diagnostics"| LAW
-    AI <-->|"Workspace"| LAW
+    AzureMon -->|"Platform"| LAW
+    AI <-->|"Workspace Link"| LAW
 
     AI --> AppMap
     AI --> TransactionSearch
     LAW --> KQL
     AI --> Dashboards
     LAW --> Dashboards
+    AI --> Alerts
+    LAW --> Alerts
 
     classDef source fill:#fff3e0,stroke:#ef6c00,stroke-width:2px
     classDef instrument fill:#e3f2fd,stroke:#1565c0,stroke-width:2px
     classDef collect fill:#e8f5e9,stroke:#2e7d32,stroke-width:2px
     classDef visual fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px
 
-    class WebApp,API,LA source
-    class OTEL,AzureDiag instrument
+    class WebApp,API,LA,SB,SQL source
+    class OTEL,AzureDiag,AzureMon instrument
     class AI,LAW collect
-    class AppMap,TransactionSearch,KQL,Dashboards visual
+    class AppMap,TransactionSearch,KQL,Dashboards,Alerts visual
 ```
+
+### Telemetry Sources Detail
+
+| Source | Technology | Telemetry Emitted | Instrumentation |
+|--------|------------|-------------------|-----------------|
+| **Web App** | Blazor Server | User interactions, page loads, HTTP client calls | OpenTelemetry SDK (auto) |
+| **Orders API** | ASP.NET Core | Request traces, business metrics, structured logs | OpenTelemetry SDK (auto + manual) |
+| **Logic Apps** | Standard | Workflow runs, action executions, trigger events | Azure Diagnostics (built-in) |
+| **Service Bus** | Standard Tier | Message counts, queue depth, dead-letter metrics | Azure Monitor (platform) |
+| **SQL Database** | Azure SQL | Query performance, DTU usage, connections | Azure Monitor (platform) |
 
 ### Telemetry Data Flow Matrix
 
@@ -213,6 +232,24 @@ flowchart LR
 | All Services | Health Checks | App Insights Availability | HTTP | Endpoint URL |
 
 ### Trace Context Propagation
+
+```mermaid
+flowchart LR
+    subgraph TraceFlow["🔗 W3C Trace Context Propagation"]
+        HTTP["🌐 HTTP Request<br/>───────────<br/>traceparent header<br/>tracestate header"]
+        SBMsg["📨 Service Bus<br/>───────────<br/>TraceId property<br/>SpanId property<br/>traceparent property"]
+        LACorr["🔄 Logic Apps<br/>───────────<br/>x-ms-workflow-run-id<br/>x-ms-client-tracking-id"]
+        AICorr["📊 App Insights<br/>───────────<br/>Operation ID<br/>Parent ID"]
+    end
+
+    HTTP -->|"Inject"| SBMsg
+    SBMsg -->|"Extract & Link"| LACorr
+    HTTP -->|"Auto-capture"| AICorr
+    LACorr -->|"Correlate"| AICorr
+
+    classDef trace fill:#e8f5e9,stroke:#2e7d32,stroke-width:2px
+    class HTTP,SBMsg,LACorr,AICorr trace
+```
 
 The solution implements **W3C Trace Context** for end-to-end distributed tracing across all service boundaries:
 
