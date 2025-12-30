@@ -149,27 +149,57 @@ sequenceDiagram
 ## Monitoring Data Flow Architecture
 
 ```mermaid
-sequenceDiagram
-    autonumber
-    participant App as 🌐 Application Services
-    participant OTEL as 📡 OpenTelemetry SDK
-    participant AI as 📊 Application Insights
-    participant LA as 🔄 Logic Apps
-    participant LAI as 📋 Log Analytics
+flowchart LR
+    subgraph Sources["📡 Telemetry Sources"]
+        direction TB
+        WebApp["🌐 Web App"]
+        API["⚙️ Orders API"]
+        LA["🔄 Logic Apps"]
+    end
 
-    Note over App,LAI: Continuous Telemetry Collection
-    
-    App->>OTEL: Emit Traces, Metrics, Logs
-    OTEL->>AI: OTLP Export (Batched)
-    AI->>LAI: Store in Workspace
-    
-    LA->>AI: Built-in Diagnostic Logging
-    LA->>LAI: Workflow Run History
-    
-    Note over AI,LAI: Correlation via W3C Trace Context
-    
-    AI->>AI: Correlate Spans by TraceId
-    LAI->>LAI: KQL Query Availability
+    subgraph Instrumentation["🔧 Instrumentation Layer"]
+        direction TB
+        OTEL["OpenTelemetry SDK<br/>(Traces, Metrics, Logs)"]
+        AzureDiag["Azure Diagnostics<br/>(Workflow Runs)"]
+    end
+
+    subgraph Collection["📥 Collection Layer"]
+        direction TB
+        AI["📊 Application Insights<br/>(APM & Traces)"]
+        LAW["📋 Log Analytics<br/>(Logs & Queries)"]
+    end
+
+    subgraph Visualization["📈 Visualization Layer"]
+        direction TB
+        AppMap["Application Map"]
+        TransactionSearch["Transaction Search"]
+        KQL["KQL Queries"]
+        Dashboards["Azure Dashboards"]
+    end
+
+    WebApp -->|"OTLP/HTTP"| OTEL
+    API -->|"OTLP/HTTP"| OTEL
+    LA -->|"Built-in"| AzureDiag
+
+    OTEL -->|"Export"| AI
+    AzureDiag -->|"Diagnostics"| LAW
+    AI <-->|"Workspace"| LAW
+
+    AI --> AppMap
+    AI --> TransactionSearch
+    LAW --> KQL
+    AI --> Dashboards
+    LAW --> Dashboards
+
+    classDef source fill:#fff3e0,stroke:#ef6c00,stroke-width:2px
+    classDef instrument fill:#e3f2fd,stroke:#1565c0,stroke-width:2px
+    classDef collect fill:#e8f5e9,stroke:#2e7d32,stroke-width:2px
+    classDef visual fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px
+
+    class WebApp,API,LA source
+    class OTEL,AzureDiag instrument
+    class AI,LAW collect
+    class AppMap,TransactionSearch,KQL,Dashboards visual
 ```
 
 ### Telemetry Data Flow Matrix
