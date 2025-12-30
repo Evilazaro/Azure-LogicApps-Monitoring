@@ -24,6 +24,10 @@
 .PARAMETER ValidateOnly
     Only validates prerequisites without making changes.
 
+.PARAMETER UseDeviceCodeLogin
+    Uses device code flow for Azure authentication instead of browser-based login.
+    Useful for remote sessions, SSH connections, or environments without a browser.
+
 .EXAMPLE
     .\preprovision.ps1
     Runs standard pre-provisioning with confirmation prompts.
@@ -40,11 +44,15 @@
     .\preprovision.ps1 -SkipSecretsClear -Verbose
     Skips secret clearing and shows verbose output.
 
+.EXAMPLE
+    .\preprovision.ps1 -UseDeviceCodeLogin
+    Uses device code flow for Azure login (useful for remote/headless sessions).
+
 .NOTES
     File Name      : preprovision.ps1
     Author         : Azure-LogicApps-Monitoring Team
-    Version        : 2.0.0
-    Last Modified  : 2025-12-24
+    Version        : 2.1.0
+    Last Modified  : 2025-12-30
     Prerequisite   : PowerShell 7.0 or higher
     Prerequisite   : .NET SDK 8.0 or higher
     Prerequisite   : Azure Developer CLI (azd)
@@ -63,7 +71,13 @@ param(
     [switch]$SkipSecretsClear,
 
     [Parameter(Mandatory = $false, HelpMessage = 'Only validate prerequisites without making changes')]
-    [switch]$ValidateOnly
+    [switch]$ValidateOnly,
+
+    [Parameter(Mandatory = $false, HelpMessage = 'Use device code flow for Azure authentication (for remote/headless sessions)')]
+    [switch]$UseDeviceCodeLogin,
+
+    [Parameter(Mandatory = $false, HelpMessage = 'Automatically install missing prerequisites without prompting')]
+    [switch]$AutoInstall
 )
 
 #Requires -Version 7.0
@@ -76,7 +90,7 @@ $ProgressPreference = 'SilentlyContinue'
 $WarningPreference = 'Continue'
 
 # Script-level constants
-$script:ScriptVersion = '2.0.1'
+$script:ScriptVersion = '2.1.0'
 $script:MinimumPowerShellVersion = [version]'7.0'
 $script:MinimumDotNetVersion = [version]'10.0'
 $script:MinimumAzureCLIVersion = [version]'2.60.0'
@@ -266,17 +280,23 @@ function Test-AzureCLI {
     .DESCRIPTION
         Checks if Azure CLI is installed and meets the minimum version requirement.
         Also validates that the user is authenticated to Azure.
-        Returns $true if Azure CLI is available, compatible, and authenticated, $false otherwise.
+        Returns a hashtable with detailed status information.
     
     .OUTPUTS
-        System.Boolean - Returns $true if Azure CLI is available and authenticated, $false otherwise.
+        System.Collections.Hashtable - Returns hashtable with:
+          - IsInstalled: $true if Azure CLI is found
+          - IsVersionValid: $true if version meets requirements
+          - IsAuthenticated: $true if user is logged in
+          - Version: The detected Azure CLI version
+          - AccountInfo: The authenticated account details (if authenticated)
+          - Success: $true if all checks pass
     
     .EXAMPLE
-        Test-AzureCLI
-        Returns $true if Azure CLI 2.60.0 or higher is installed and user is authenticated.
+        $result = Test-AzureCLI
+        if (-not $result.IsAuthenticated) { Invoke-AzureLogin }
     #>
     [CmdletBinding()]
-    [OutputType([bool])]
+    [OutputType([hashtable])]
     param()
 
     begin {
@@ -284,48 +304,162 @@ function Test-AzureCLI {
     }
 
     process {
+        $result = @{
+            IsInstalled     = $false
+            IsVersionValid  = $false
+            IsAuthenticated = $false
+            Version         = $null
+            AccountInfo     = $null
+            Success         = $false
+        }
+        
         try {
             # Check if az command exists
             $azCommand = Get-Command -Name az -ErrorAction SilentlyContinue
             if (-not $azCommand) {
                 Write-Verbose 'Azure CLI not found in PATH'
-                return $false
+                return $result
             }
             
+            $result.IsInstalled = $true
             Write-Verbose "az found at: $($azCommand.Source)"
             
             # Get Azure CLI version
             $versionOutput = & az version --output json 2>&1 | ConvertFrom-Json
             if ($LASTEXITCODE -ne 0) {
                 Write-Verbose 'Failed to retrieve Azure CLI version'
-                return $false
+                return $result
             }
             
             $azVersion = [version]$versionOutput.'azure-cli'
+            $result.Version = $azVersion
             Write-Verbose "Detected Azure CLI version: $azVersion"
             
             if ($azVersion -lt $script:MinimumAzureCLIVersion) {
                 Write-Warning "Current Azure CLI version: $azVersion"
                 Write-Warning "Minimum required version: $script:MinimumAzureCLIVersion"
-                return $false
+                return $result
             }
+            
+            $result.IsVersionValid = $true
             
             # Check if user is authenticated
             Write-Verbose 'Checking Azure authentication...'
             $accountInfo = & az account show --output json 2>&1
             if ($LASTEXITCODE -ne 0) {
                 Write-Verbose 'User is not authenticated to Azure'
-                return $false
+                return $result
             }
             
             $account = $accountInfo | ConvertFrom-Json
+            $result.IsAuthenticated = $true
+            $result.AccountInfo = $account
+            $result.Success = $true
+            
             Write-Verbose "Authenticated as: $($account.user.name)"
             Write-Verbose "Active subscription: $($account.name) ($($account.id))"
             
-            return $true
+            return $result
         }
         catch {
             Write-Verbose "Error validating Azure CLI: $($_.Exception.Message)"
+            return $result
+        }
+    }
+}
+
+function Invoke-AzureLogin {
+    <#
+    .SYNOPSIS
+        Initiates Azure CLI login process with user guidance.
+    
+    .DESCRIPTION
+        Provides clear instructions to the user and initiates the Azure CLI login process.
+        Supports both interactive browser-based login and device code flow.
+        Returns $true if login succeeds, $false otherwise.
+    
+    .PARAMETER UseDeviceCode
+        Uses device code flow instead of browser-based authentication.
+        Useful for remote sessions or environments without a browser.
+    
+    .OUTPUTS
+        System.Boolean - Returns $true if login succeeds, $false otherwise.
+    
+    .EXAMPLE
+        Invoke-AzureLogin
+        Initiates browser-based Azure login.
+    
+    .EXAMPLE
+        Invoke-AzureLogin -UseDeviceCode
+        Initiates device code flow for Azure login.
+    #>
+    [CmdletBinding()]
+    [OutputType([bool])]
+    param(
+        [Parameter(Mandatory = $false)]
+        [switch]$UseDeviceCode
+    )
+
+    process {
+        try {
+            Write-Information ''
+            Write-Information '┌────────────────────────────────────────────────────────────────┐'
+            Write-Information '│                    Azure Authentication Required               │'
+            Write-Information '└────────────────────────────────────────────────────────────────┘'
+            Write-Information ''
+            Write-Information '  You are not currently logged into Azure CLI.'
+            Write-Information '  This script requires Azure authentication to:'
+            Write-Information '    • Verify resource provider registration'
+            Write-Information '    • Check subscription quotas'
+            Write-Information '    • Prepare for Azure resource provisioning'
+            Write-Information ''
+            
+            if ($UseDeviceCode) {
+                Write-Information '  Starting device code authentication...'
+                Write-Information '  Please follow the instructions below to authenticate.'
+                Write-Information ''
+                
+                & az login --use-device-code
+            }
+            else {
+                Write-Information '  Starting browser-based authentication...'
+                Write-Information '  A browser window will open for you to sign in.'
+                Write-Information ''
+                Write-Information '  💡 Tip: If no browser opens or you''re in a remote session,'
+                Write-Information '          re-run with: .\preprovision.ps1 -UseDeviceCodeLogin'
+                Write-Information ''
+                
+                & az login
+            }
+            
+            if ($LASTEXITCODE -eq 0) {
+                Write-Information ''
+                Write-Information '  ✓ Azure login successful!'
+                Write-Information ''
+                
+                # Display account info
+                $accountInfo = & az account show --output json 2>&1 | ConvertFrom-Json
+                if ($LASTEXITCODE -eq 0) {
+                    Write-Information "  Logged in as:      $($accountInfo.user.name)"
+                    Write-Information "  Subscription:      $($accountInfo.name)"
+                    Write-Information "  Subscription ID:   $($accountInfo.id)"
+                    Write-Information ''
+                }
+                
+                return $true
+            }
+            else {
+                Write-Warning ''
+                Write-Warning '  ✗ Azure login failed or was cancelled.'
+                Write-Warning ''
+                Write-Warning '  Please try again or log in manually using:'
+                Write-Warning '    az login'
+                Write-Warning ''
+                return $false
+            }
+        }
+        catch {
+            Write-Error "Error during Azure login: $($_.Exception.Message)"
             return $false
         }
     }
@@ -742,11 +876,34 @@ try {
     
     # Check Azure CLI
     Write-Information '  • Checking Azure CLI...'
-    if (-not (Test-AzureCLI)) {
-        Write-Warning "    ✗ Azure CLI $script:MinimumAzureCLIVersion or higher is required"
+    $azCliResult = Test-AzureCLI
+    
+    if (-not $azCliResult.IsInstalled) {
+        Write-Warning '    ✗ Azure CLI is not installed'
+        Write-Warning "      Minimum required version: $script:MinimumAzureCLIVersion"
         Write-Warning '      Install from: https://docs.microsoft.com/cli/azure/install-azure-cli'
-        Write-Warning '      After installation, authenticate with: az login'
         $prerequisitesFailed = $true
+    }
+    elseif (-not $azCliResult.IsVersionValid) {
+        Write-Warning "    ✗ Azure CLI version $($azCliResult.Version) is below minimum required"
+        Write-Warning "      Minimum required version: $script:MinimumAzureCLIVersion"
+        Write-Warning '      Update with: az upgrade'
+        $prerequisitesFailed = $true
+    }
+    elseif (-not $azCliResult.IsAuthenticated) {
+        Write-Warning '    ⚠ Azure CLI is installed but you are not logged in'
+        Write-Information ''
+        
+        # Attempt to login
+        $loginSuccess = Invoke-AzureLogin -UseDeviceCode:$UseDeviceCodeLogin
+        
+        if (-not $loginSuccess) {
+            Write-Warning '    ✗ Azure authentication is required to continue'
+            $prerequisitesFailed = $true
+        }
+        else {
+            Write-Information '    ✓ Azure CLI is available and authenticated'
+        }
     }
     else {
         Write-Information '    ✓ Azure CLI is available and authenticated'
