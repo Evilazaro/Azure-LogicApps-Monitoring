@@ -50,7 +50,7 @@
 param(
     [Parameter(Mandatory = $false, HelpMessage = "Number of orders to generate")]
     [ValidateRange(1, 10000)]
-    [int]$OrderCount = 50,
+    [int]$OrderCount = 2000,
 
     [Parameter(Mandatory = $false, HelpMessage = "Output file path for generated orders")]
     [ValidateNotNullOrEmpty()]
