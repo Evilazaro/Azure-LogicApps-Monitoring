@@ -51,7 +51,11 @@ static void ConfigureAzureCredentials(IDistributedApplicationBuilder builder, IR
 {
     ArgumentNullException.ThrowIfNull(builder);
 
-    if (builder.Environment.IsDevelopment())
+    // Only configure Azure credentials for local development
+    // In Azure Container Apps deployment, Aspire automatically configures the managed identity
+    // Adding AZURE_CLIENT_ID here would create duplicates and potentially cause authentication failures
+    // if the local dev client ID differs from the deployed managed identity
+    if (builder.Environment.IsDevelopment() && !builder.ExecutionContext.IsPublishMode)
     {
         if (!string.IsNullOrWhiteSpace(builder.Configuration["Azure:TenantId"]))
         {
