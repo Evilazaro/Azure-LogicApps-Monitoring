@@ -186,11 +186,28 @@ output AZURE_CONTAINER_APPS_ENVIRONMENT_ID string = appEnv.id
 output AZURE_CONTAINER_APPS_ENVIRONMENT_DEFAULT_DOMAIN string = appEnv.properties.defaultDomain
 
 // .NET Aspire Dashboard for Application Observability
-@description('.NET Aspire dashboard component for application observability')
-resource dashboard 'Microsoft.App/managedEnvironments/dotNetComponents@2025-10-02-preview' = {
+@description('.NET Aspire dashboard component for application observability and distributed tracing')
+resource dashboard 'Microsoft.App/managedEnvironments/dotNetComponents@2024-10-02-preview' = {
   parent: appEnv
   name: 'aspire-dashboard'
   properties: {
     componentType: 'AspireDashboard'
+    configurations: [
+      {
+        propertyName: 'ASPNETCORE_ENVIRONMENT'
+        value: envName == 'prod' ? 'Production' : 'Development'
+      }
+      {
+        propertyName: 'ASPIRE_ALLOW_UNSECURED_TRANSPORT'
+        value: envName != 'prod' ? 'true' : 'false'
+      }
+    ]
   }
 }
+
+// Dashboard Outputs
+@description('Resource ID of the Aspire Dashboard')
+output ASPIRE_DASHBOARD_ID string = dashboard.id
+
+@description('Name of the Aspire Dashboard component')
+output ASPIRE_DASHBOARD_NAME string = dashboard.name
