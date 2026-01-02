@@ -19,7 +19,7 @@
           "HTTP": {
             "type": "Http",
             "inputs": {
-              "uri": "https://orders-api.mangoisland-6c644933.eastus2.azurecontainerapps.io/api/Orders/process",
+              "uri": "https://[PLACEHOLDER-API]/api/Orders/process",
               "method": "POST",
               "headers": {
                 "accept": "text/plain",
@@ -58,7 +58,7 @@
                   "headers": {
                     "ReadFileMetadataFromServer": true
                   },
-                  "path": "/v2/datasets/@{encodeURIComponent(encodeURIComponent('orderswsamutmrslo2xjhc'))}/files",
+                  "path": "/v2/datasets/@{encodeURIComponent(encodeURIComponent('[PLACEHOLDER-STORAGENAME]'))}/files",
                   "queries": {
                     "folderPath": "/ordersprocessedsuccessfully",
                     "name": "@triggerBody()?['MessageId']",
@@ -87,7 +87,7 @@
                     "headers": {
                       "ReadFileMetadataFromServer": true
                     },
-                    "path": "/v2/datasets/@{encodeURIComponent(encodeURIComponent('orderswsamutmrslo2xjhc'))}/files",
+                    "path": "/v2/datasets/@{encodeURIComponent(encodeURIComponent('[PLACEHOLDER-STORAGENAME]'))}/files",
                     "queries": {
                       "folderPath": "/ordersprocessedwitherrors",
                       "name": "@triggerBody()?['MessageId']",
@@ -124,7 +124,7 @@
                 "headers": {
                   "ReadFileMetadataFromServer": true
                 },
-                "path": "/v2/datasets/@{encodeURIComponent(encodeURIComponent('orderswsamutmrslo2xjhc'))}/files",
+                "path": "/v2/datasets/@{encodeURIComponent(encodeURIComponent('[PLACEHOLDER-STORAGENAME]'))}/files",
                 "queries": {
                   "folderPath": "/ordersprocessedwitherrors",
                   "name": "@triggerBody()?['MessageId']",
