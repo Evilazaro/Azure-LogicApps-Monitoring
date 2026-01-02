@@ -116,11 +116,8 @@ resource mi 'Microsoft.ManagedIdentity/userAssignedIdentities@2025-01-31-preview
   scope: resourceGroup()
 }
 
-@description('Unique suffix for connection naming to avoid conflicts')
-var connectionSuffix = uniqueString(resourceGroup().id, name, envName)
-
 @description('Service Bus connection name with unique suffix')
-var sbConnName = 'servicebus-${connectionSuffix}'
+var sbConnName = 'sb-conn-${resourceSuffix}'
 
 // Note: Microsoft.Web/connections resource type does not have Bicep schema available.
 // This is expected and will not block deployment. The resource deploys correctly.
@@ -162,7 +159,7 @@ resource sbConnectionAccessPolicy 'Microsoft.Web/connections/accessPolicies@2016
 
 // Create a connection for Storage Account using Managed Identity
 resource storageConnection 'Microsoft.Web/connections@2016-06-01' = {
-  name: 'storage-connection-${resourceSuffix}'
+  name: 'blob-conn-${resourceSuffix}'
   location: location
   kind: 'V2'
   properties: {
