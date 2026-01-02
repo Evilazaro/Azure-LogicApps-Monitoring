@@ -192,12 +192,6 @@ resource sbConnection 'Microsoft.Web/connections@2018-07-01-preview' = {
   location: location
   tags: tags
   kind: 'V2'
-  identity: {
-    type: 'UserAssigned'
-    userAssignedIdentities: {
-      '${userAssignedIdentityId}': {}
-    }
-  }
   properties: {
     displayName: '${sbConnName}topicsub'
     statuses: [
@@ -214,6 +208,22 @@ resource sbConnection 'Microsoft.Web/connections@2018-07-01-preview' = {
       type: 'Microsoft.Web/locations/managedApis'
     }
     testLinks: []
+  }
+}
+
+// Define the Access Policy for the Logic App's system-assigned managed identity
+resource conAccessPolicy 'Microsoft.Web/connections/accessPolicies@2018-07-01-preview' = {
+  name: logicAppName // The access policy name is often the Logic App name for readability
+  parent: sbConnection
+  location: location
+  properties: {
+    principal: {
+      type: 'ActiveDirectory'
+      identity: {
+        tenantId: subscription().tenantId
+        objectId: workflowEngine.identity.principalId // Use the principalId of the Logic App's managed identity
+      }
+    }
   }
 }
 
