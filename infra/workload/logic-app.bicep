@@ -265,18 +265,6 @@ resource wfConf 'Microsoft.Web/sites/config@2025-03-01' = {
   parent: workflowEngine
   name: 'appsettings'
   properties: {
-    // // Storage Account connection settings (referenced by connections.json)
-    // STORAGE_API_ID: subscriptionResourceId('Microsoft.Web/locations/managedApis', location, 'azureblob')
-    // STORAGE_CONNECTION_ID: storageConnection.id
-    // STORAGE_RUNTIME_URL: storageConnection.listConnectionKeys().connectionRuntimeUrl
-
-    // // Service Bus API Connection settings (referenced by connections.json)
-    SERVICEBUS_API_ID: subscriptionResourceId('Microsoft.Web/locations/managedApis', location, 'servicebus')
-    SERVICEBUS_CONNECTION_ID: sbConnection.id
-    SERVICEBUS_RUNTIME_URL: sbConnection.listConsentLinks().value[0].link
-    SEVICEBUS_CONNECTION_PROPERTIES_AUTHENTICATION_TYPE: 'ManagedIdentity'
-    SERVICEBUS_CONNECTION_PROPERTIES_AUTHENTICATION_IDENTITY: userAssignedIdentityId
-
     // Functions runtime
     FUNCTIONS_EXTENSION_VERSION: functionsExtensionVersion
     FUNCTIONS_WORKER_RUNTIME: functionsWorkerRuntime
@@ -294,6 +282,12 @@ resource wfConf 'Microsoft.Web/sites/config@2025-03-01' = {
     // Extension bundle for Logic Apps actions
     AzureFunctionsJobHost__extensionBundle__id: extensionBundleId
     AzureFunctionsJobHost__extensionBundle__version: extensionBundleVersion
+    AzureFunctionsJobHost__telemetryMode: 'OpenTelemetry'
+
+    AzureFunctionsManagedApiConnections__servicebus__api__id: subscriptionResourceId('Microsoft.Web/locations/managedApis', location, 'servicebus')
+    AzureFunctionsManagedApiConnections__servicebus__connection__id: sbConnection.id
+    AzureFunctionsManagedApiConnections__azureblob__api__id: subscriptionResourceId('Microsoft.Web/locations/managedApis', location, 'azureblob')
+    AzureFunctionsManagedApiConnections__azureblob__connection__id: storageConnection.id
 
     // Workflow runtime configuration
     WORKFLOWS_SUBSCRIPTION_ID: subscription().subscriptionId
