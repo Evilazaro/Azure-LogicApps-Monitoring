@@ -26,6 +26,7 @@ Each ADR follows the structure:
 | [ADR-001](ADR-001-aspire-orchestration.md) | Use .NET Aspire for Local Development Orchestration | Accepted | 2025-01 |
 | [ADR-002](ADR-002-service-bus-messaging.md) | Use Azure Service Bus for Event-Driven Messaging | Accepted | 2025-01 |
 | [ADR-003](ADR-003-observability-strategy.md) | Use OpenTelemetry with Application Insights | Accepted | 2025-01 |
+| [ADR-004](ADR-004-managed-identity-authentication.md) | Use Managed Identity for Passwordless Authentication | Accepted | 2025-01 |
 
 ---
 
@@ -39,6 +40,9 @@ Each ADR follows the structure:
 
 ### Observability
 - [ADR-003](ADR-003-observability-strategy.md) - OpenTelemetry + App Insights
+
+### Security
+- [ADR-004](ADR-004-managed-identity-authentication.md) - Managed Identity for passwordless auth
 
 ---
 

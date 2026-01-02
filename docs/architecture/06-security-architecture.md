@@ -350,6 +350,7 @@ flowchart TD
 | **Technology Architecture** | Security implemented in Azure PaaS | [04-technology-architecture.md](04-technology-architecture.md) |
 | **Observability Architecture** | Security events logged and monitored | [05-observability-architecture.md](05-observability-architecture.md) |
 | **Deployment Architecture** | Security configured via IaC | [07-deployment-architecture.md](07-deployment-architecture.md) |
+| **ADR-004** | Managed Identity authentication decision | [ADR-004-managed-identity-authentication.md](adr/ADR-004-managed-identity-authentication.md) |
 
 ---
 
