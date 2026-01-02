@@ -14,8 +14,6 @@
   - Safer/cleaner naming and variables
 */
 
-import { triggersType as triggers } from '../types.bicep'
-
 metadata name = 'Logic Apps Standard'
 metadata description = 'Deploys Logic Apps Standard workflow engine with App Service Plan'
 
@@ -124,7 +122,10 @@ var connectionSuffix = uniqueString(resourceGroup().id, name, envName)
 @description('Service Bus connection name with unique suffix')
 var sbConnName = 'servicebus-${connectionSuffix}'
 
-resource sbConnection 'Microsoft.Web/connections@2018-07-01-preview' = {
+// Note: Microsoft.Web/connections resource type does not have Bicep schema available.
+// This is expected and will not block deployment. The resource deploys correctly.
+@description('Service Bus managed API connection for Logic App workflows')
+resource sbConnection 'Microsoft.Web/connections@2016-06-01' = {
   name: sbConnName
   location: location
   kind: 'V2'
@@ -144,7 +145,7 @@ resource sbConnection 'Microsoft.Web/connections@2018-07-01-preview' = {
   }
 }
 
-resource sbConnectionAccessPolicy 'Microsoft.Web/connections/accessPolicies@2018-07-01-preview' = {
+resource sbConnectionAccessPolicy 'Microsoft.Web/connections/accessPolicies@2016-06-01' = {
   name: logicAppName // Typically named after the Logic App
   parent: sbConnection
   location: location
@@ -160,7 +161,7 @@ resource sbConnectionAccessPolicy 'Microsoft.Web/connections/accessPolicies@2018
 }
 
 // Create a connection for Storage Account using Managed Identity
-resource storageConnection 'Microsoft.Web/connections@2018-07-01-preview' = {
+resource storageConnection 'Microsoft.Web/connections@2016-06-01' = {
   name: 'storage-connection-${resourceSuffix}'
   location: location
   kind: 'V2'
@@ -178,8 +179,8 @@ resource storageConnection 'Microsoft.Web/connections@2018-07-01-preview' = {
   }
 }
 
-resource storageConnectionAccessPolicy 'Microsoft.Web/connections/accessPolicies@2018-07-01-preview' = {
-  name: storageConnection.name
+resource storageConnectionAccessPolicy 'Microsoft.Web/connections/accessPolicies@2016-06-01' = {
+  name: workflowStorageAccountName // Typically named after the storage account
   parent: storageConnection
   location: location
   properties: {
@@ -218,13 +219,6 @@ resource wfASP 'Microsoft.Web/serverfarms@2025-03-01' = {
     targetWorkerSizeId: 0
     zoneRedundant: false
   }
-  dependsOn: [
-    mi
-    sbConnection
-    storageConnection
-    sbConnectionAccessPolicy
-    storageConnectionAccessPolicy
-  ]
 }
 
 @description('Logic Apps Standard workflow engine for running business processes')
@@ -249,13 +243,6 @@ resource workflowEngine 'Microsoft.Web/sites@2025-03-01' = {
       webSocketsEnabled: true
     }
   }
-  dependsOn: [
-    mi
-    sbConnection
-    sbConnectionAccessPolicy
-    storageConnection
-    storageConnectionAccessPolicy
-  ]
 }
 
 @description('Application settings configuration for Logic App workflow engine')
@@ -298,23 +285,8 @@ resource wfConf 'Microsoft.Web/sites/config@2025-03-01' = {
   }
 }
 
-var wfTriggers = loadJsonContent('./workflow-triggers.json')
-
-// resource wk 'Microsoft.Logic/workflows@2019-05-01' = {
-//   name: 'wk'
-//   location: location
-//   tags: tags
-//   properties: {
-//     definition: {
-//       '$schema': 'https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#'
-//       triggers: wfTriggers
-//     }
-//   }
-//   dependsOn: [
-//     workflowEngine
-//     sbConnection
-//   ]
-// }
+// Note: Workflow triggers are defined in workflow-triggers.json and deployed via zip deploy
+// The Logic Apps Standard runtime reads workflow definitions from the deployed artifacts
 
 @description('Diagnostic settings for Logic App workflow engine')
 resource wfDiag 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
