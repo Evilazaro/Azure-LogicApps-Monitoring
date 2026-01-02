@@ -192,6 +192,12 @@ resource sbConnection 'Microsoft.Web/connections@2018-07-01-preview' = {
   location: location
   tags: tags
   kind: 'V2'
+  identity: {
+    type: 'UserAssigned'
+    userAssignedIdentities: {
+      '${userAssignedIdentityId}': {}
+    }
+  }
   properties: {
     displayName: '${sbConnName}topicsub'
     statuses: [
@@ -213,21 +219,21 @@ resource sbConnection 'Microsoft.Web/connections@2018-07-01-preview' = {
 
 var wfTriggers = loadJsonContent('./workflow-triggers.json')
 
-resource wk 'Microsoft.Logic/workflows@2019-05-01' = {
-  name: 'wk'
-  location: location
-  tags: tags
-  properties: {
-    definition: {
-      '$schema': 'https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#'
-      triggers: wfTriggers
-    }
-  }
-  dependsOn: [
-    workflowEngine
-    sbConnection
-  ]
-}
+// resource wk 'Microsoft.Logic/workflows@2019-05-01' = {
+//   name: 'wk'
+//   location: location
+//   tags: tags
+//   properties: {
+//     definition: {
+//       '$schema': 'https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#'
+//       triggers: wfTriggers
+//     }
+//   }
+//   dependsOn: [
+//     workflowEngine
+//     sbConnection
+//   ]
+// }
 
 @description('Diagnostic settings for Logic App workflow engine')
 resource wfDiag 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
