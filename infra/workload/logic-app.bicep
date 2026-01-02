@@ -14,6 +14,8 @@
   - Safer/cleaner naming and variables
 */
 
+import { triggersType as triggers } from '../types.bicep'
+
 metadata name = 'Logic Apps Standard'
 metadata description = 'Deploys Logic Apps Standard workflow engine with App Service Plan'
 
@@ -181,6 +183,50 @@ resource wfConf 'Microsoft.Web/sites/config@2025-03-01' = {
     WORKFLOWS_LOCATION_NAME: location
     WORKFLOWS_TENANT_ID: tenant().tenantId
   }
+}
+
+param sbConnName string = 'servicebus'
+
+resource sbConnection 'Microsoft.Web/connections@2018-07-01-preview' = {
+  name: sbConnName
+  location: location
+  tags: tags
+  kind: 'V2'
+  properties: {
+    displayName: '${sbConnName}topicsub'
+    statuses: [
+      {
+        status: 'Ready'
+      }
+    ]
+    customParameterValues: {}
+    api: {
+      name: sbConnName
+      displayName: 'Service Bus'
+      description: 'Connect to Azure Service Bus to send and receive messages. You can perform actions such as send to queue, send to topic, receive from queue, receive from subscription, etc.'
+      id: subscriptionResourceId('Microsoft.Web/locations/managedApis', location, sbConnName)
+      type: 'Microsoft.Web/locations/managedApis'
+    }
+    testLinks: []
+  }
+}
+
+var wfTriggers = loadJsonContent('./workflow-triggers.json')
+
+resource wk 'Microsoft.Logic/workflows@2019-05-01' = {
+  name: 'wk'
+  location: location
+  tags: tags
+  properties: {
+    definition: {
+      '$schema': 'https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#'
+      triggers: wfTriggers
+    }
+  }
+  dependsOn: [
+    workflowEngine
+    sbConnection
+  ]
 }
 
 @description('Diagnostic settings for Logic App workflow engine')

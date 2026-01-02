@@ -58,3 +58,48 @@ type storageAccountConfig = {
   @description('Whether HTTPS traffic only is supported')
   supportsHttpsTrafficOnly: bool
 }
+// ========== Trigger Type Definitions ==========
+
+@description('Connection reference for API connections')
+type connectionType = {
+  referenceName: string
+}
+
+@description('Host configuration for API connection triggers')
+type hostType = {
+  connection: connectionType
+}
+
+@description('Query parameters for the trigger')
+type queriesType = {
+  subscriptionType: string
+}
+
+@description('Input configuration for Service Bus trigger')
+type triggerInputsType = {
+  host: hostType
+  method: string
+  path: string
+  queries: queriesType
+}
+
+@description('Recurrence schedule for the trigger')
+type recurrenceType = {
+  interval: int
+  frequency: 'Second' | 'Minute' | 'Hour' | 'Day' | 'Week' | 'Month'
+  timeZone: string
+}
+
+@description('Service Bus topic subscription trigger (auto-complete)')
+type serviceBusTopicTriggerType = {
+  type: 'ApiConnection'
+  inputs: triggerInputsType
+  recurrence: recurrenceType
+}
+
+@description('Triggers definition for the workflow')
+@export()
+type triggersType = {
+  @description('Trigger that fires when a message is received in a Service Bus topic subscription')
+  'When_a_message_is_received_in_a_topic_subscription_(auto-complete)': serviceBusTopicTriggerType
+}
