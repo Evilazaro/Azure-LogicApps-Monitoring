@@ -271,9 +271,11 @@ resource wfConf 'Microsoft.Web/sites/config@2025-03-01' = {
     // STORAGE_RUNTIME_URL: storageConnection.listConnectionKeys().connectionRuntimeUrl
 
     // // Service Bus API Connection settings (referenced by connections.json)
-    // SERVICEBUS_API_ID: subscriptionResourceId('Microsoft.Web/locations/managedApis', location, 'servicebus')
-    // SERVICEBUS_CONNECTION_ID: sbConnection.id
-    // SERVICEBUS_RUNTIME_URL: sbConnection.listConsentLinks().value[0].link
+    SERVICEBUS_API_ID: subscriptionResourceId('Microsoft.Web/locations/managedApis', location, 'servicebus')
+    SERVICEBUS_CONNECTION_ID: sbConnection.id
+    SERVICEBUS_RUNTIME_URL: sbConnection.listConsentLinks().value[0].link
+    SEVICEBUS_CONNECTION_PROPERTIES_AUTHENTICATION_TYPE: 'ManagedIdentity'
+    SERVICEBUS_CONNECTION_PROPERTIES_AUTHENTICATION_IDENTITY: userAssignedIdentityId
 
     // Functions runtime
     FUNCTIONS_EXTENSION_VERSION: functionsExtensionVersion
@@ -333,4 +335,3 @@ output workflowStorageAccountName string = workflowStorageAccountName
 // Service Bus Connection outputs
 output serviceBusConnectionName string = sbConnection.name
 output serviceBusConnectionId string = sbConnection.id
-output serviceBusConnectionRuntimeUrl string = listConnectionKeys(sbConnection.id, '2016-06-01').connectionRuntimeUrl
