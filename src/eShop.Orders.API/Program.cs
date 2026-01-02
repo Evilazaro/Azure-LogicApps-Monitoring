@@ -171,18 +171,20 @@ static async Task InitializeDatabaseAsync(IServiceProvider serviceProvider, Canc
 
 app.MapDefaultEndpoints();
 
+app.MapOpenApi();
+app.UseSwagger();
+app.UseSwaggerUI(options =>
+{
+    options.SwaggerEndpoint("/openapi/v1.json", "eShop Orders API v1");
+    options.RoutePrefix = string.Empty;
+    options.DocumentTitle = "eShop Orders API";
+});
+app.MapSwagger();
+
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
-    app.MapOpenApi();
-    app.UseSwagger();
-    app.UseSwaggerUI(options =>
-    {
-        options.SwaggerEndpoint("/openapi/v1.json", "eShop Orders API v1");
-        options.RoutePrefix = string.Empty;
-        options.DocumentTitle = "eShop Orders API";
-    });
-    app.MapSwagger();
+    app.UseDeveloperExceptionPage();
 }
 else
 {
