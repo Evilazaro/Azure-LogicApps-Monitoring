@@ -184,7 +184,7 @@ public sealed class OrdersController : ControllerBase
         }
     }
 
-    [HttpPost]
+    [HttpPost("process")]
     [ProducesResponseType(typeof(Order), StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status409Conflict)]
