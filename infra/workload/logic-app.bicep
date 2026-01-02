@@ -223,9 +223,10 @@ resource mi 'Microsoft.ManagedIdentity/userAssignedIdentities@2025-01-31-preview
 
 // Define the Access Policy for the Logic App's system-assigned managed identity
 resource conAccessPolicy 'Microsoft.Web/connections/accessPolicies@2018-07-01-preview' = {
-  name: logicAppName // The access policy name is often the Logic App name for readability
+  name: mi.name // The access policy name is often the Logic App name for readability
   parent: sbConnection
   location: location
+  kind: 'V2'
   properties: {
     principal: {
       type: 'ActiveDirectory'
