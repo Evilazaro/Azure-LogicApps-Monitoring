@@ -14,8 +14,6 @@
   - Safer/cleaner naming and variables
 */
 
-import { triggersType as triggers } from '../types.bicep'
-
 metadata name = 'Logic Apps Standard'
 metadata description = 'Deploys Logic Apps Standard workflow engine with App Service Plan'
 
@@ -118,32 +116,49 @@ resource mi 'Microsoft.ManagedIdentity/userAssignedIdentities@2025-01-31-preview
   scope: resourceGroup()
 }
 
-param sbConnName string = 'servicebus'
+// Use Logic App name as prefix for connections - ensures uniqueness and clear association
+// The Logic App name already contains the unique resourceSuffix
+@description('Service Bus connection name derived from Logic App name')
+var sbConnName = '${logicAppName}-sb'
 
-resource sbConnection 'Microsoft.Web/connections@2018-07-01-preview' = {
+// Note: Microsoft.Web/connections resource type does not have complete Bicep schema available.
+// This is expected and will not block deployment. The resource deploys correctly.
+// For Standard Logic Apps with managed identity authentication, use parameterValueSet with managedIdentityAuth.
+// See: https://learn.microsoft.com/en-us/azure/logic-apps/authenticate-with-managed-identity#arm-template-for-api-connections-and-managed-identities
+@description('Service Bus managed API connection for Logic App workflows with managed identity authentication')
+resource sbConnection 'Microsoft.Web/connections@2016-06-01' = {
   name: sbConnName
   location: location
+  #disable-next-line BCP187
   kind: 'V2'
+  tags: tags
   properties: {
     displayName: 'Service Bus Connection'
     api: {
-      // Reference the managed API in Azure
       id: subscriptionResourceId('Microsoft.Web/locations/managedApis', location, 'servicebus')
       name: 'servicebus'
       type: 'Microsoft.Web/locations/managedApis'
     }
-    // For managed identity authentication
-    customParameterValues: {
-      authenticationType: 'managedIdentityAuth'
-      serviceBusNamespace: '${serviceBusNamespace}.servicebus.windows.net'
+    // For multi-authentication connectors (like Service Bus), use parameterValueSet with managedIdentityAuth
+    // This tells Azure to use managed identity instead of connection string authentication
+    #disable-next-line BCP089
+    parameterValueSet: {
+      name: 'managedIdentityAuth'
+      values: {
+        namespaceEndpoint: {
+          value: 'sb://${serviceBusNamespace}.servicebus.windows.net/'
+        }
+      }
     }
   }
 }
 
-resource sbConnectionAccessPolicy 'Microsoft.Web/connections/accessPolicies@2018-07-01-preview' = {
-  name: workflowEngine.name // Typically named after the Logic App
+// Access policy required for managed identity authentication on API connections
+// This allows the Logic App's managed identity to use the Service Bus connection
+@description('Access policy for Service Bus connection enabling managed identity authentication')
+resource sbConnectionAccessPolicy 'Microsoft.Web/connections/accessPolicies@2016-06-01' = {
+  name: '${logicAppName}-access'
   parent: sbConnection
-  location: location
   properties: {
     principal: {
       type: 'ActiveDirectory'
@@ -155,11 +170,13 @@ resource sbConnectionAccessPolicy 'Microsoft.Web/connections/accessPolicies@2018
   }
 }
 
-// Create a connection for Storage Account using Managed Identity
-resource storageConnection 'Microsoft.Web/connections@2018-07-01-preview' = {
-  name: 'storage-connection-${resourceSuffix}'
+// // Create a connection for Storage Account using Managed Identity
+@description('Azure Blob Storage managed API connection for Logic App workflows')
+resource storageConnection 'Microsoft.Web/connections@2016-06-01' = {
+  name: '${logicAppName}-storage'
   location: location
   kind: 'V2'
+  tags: tags
   properties: {
     displayName: 'Storage Account Connection'
     api: {
@@ -167,17 +184,20 @@ resource storageConnection 'Microsoft.Web/connections@2018-07-01-preview' = {
       name: 'azureblob'
       type: 'Microsoft.Web/locations/managedApis'
     }
-    customParameterValues: {
-      authenticationType: 'managedIdentityAuth'
-      accountName: workflowStorageAccountName
+    // For multi-authentication connectors (like Azure Blob Storage), use parameterValueSet with managedIdentityAuth
+    // The values object should be empty for managed identity authentication
+    // See: https://learn.microsoft.com/en-us/azure/logic-apps/authenticate-with-managed-identity#arm-template-for-api-connections-and-managed-identities
+    #disable-next-line BCP089
+    parameterValueSet: {
+      name: 'managedIdentityAuth'
+      values: {}
     }
   }
 }
 
-resource storageConnectionAccessPolicy 'Microsoft.Web/connections/accessPolicies@2018-07-01-preview' = {
-  name: storageConnection.name
+resource storageConnectionAccessPolicy 'Microsoft.Web/connections/accessPolicies@2016-06-01' = {
+  name: '${logicAppName}-storage-access'
   parent: storageConnection
-  location: location
   properties: {
     principal: {
       type: 'ActiveDirectory'
@@ -245,15 +265,6 @@ resource wfConf 'Microsoft.Web/sites/config@2025-03-01' = {
   parent: workflowEngine
   name: 'appsettings'
   properties: {
-    // Storage Account connection settings (referenced by connections.json)
-    STORAGE_API_ID: subscriptionResourceId('Microsoft.Web/locations/managedApis', location, 'azureblob')
-    STORAGE_CONNECTION_ID: storageConnection.id
-    STORAGE_RUNTIME_URL: storageConnection.properties.connectionRuntimeUrl
-
-    // Service Bus API Connection settings (referenced by connections.json)
-    SERVICEBUS_API_ID: subscriptionResourceId('Microsoft.Web/locations/managedApis', location, 'servicebus')
-    SERVICEBUS_CONNECTION_ID: sbConnection.id
-    SERVICEBUS_RUNTIME_URL: sbConnection.properties.connectionRuntimeUrl
     // Functions runtime
     FUNCTIONS_EXTENSION_VERSION: functionsExtensionVersion
     FUNCTIONS_WORKER_RUNTIME: functionsWorkerRuntime
@@ -271,6 +282,7 @@ resource wfConf 'Microsoft.Web/sites/config@2025-03-01' = {
     // Extension bundle for Logic Apps actions
     AzureFunctionsJobHost__extensionBundle__id: extensionBundleId
     AzureFunctionsJobHost__extensionBundle__version: extensionBundleVersion
+    AzureFunctionsJobHost__telemetryMode: 'OpenTelemetry'
 
     // Workflow runtime configuration
     WORKFLOWS_SUBSCRIPTION_ID: subscription().subscriptionId
@@ -278,28 +290,10 @@ resource wfConf 'Microsoft.Web/sites/config@2025-03-01' = {
     WORKFLOWS_LOCATION_NAME: location
     WORKFLOWS_TENANT_ID: tenant().tenantId
   }
-  dependsOn: [
-    sbConnectionAccessPolicy
-  ]
 }
 
-var wfTriggers = loadJsonContent('./workflow-triggers.json')
-
-// resource wk 'Microsoft.Logic/workflows@2019-05-01' = {
-//   name: 'wk'
-//   location: location
-//   tags: tags
-//   properties: {
-//     definition: {
-//       '$schema': 'https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#'
-//       triggers: wfTriggers
-//     }
-//   }
-//   dependsOn: [
-//     workflowEngine
-//     sbConnection
-//   ]
-// }
+// Note: Workflow triggers are defined in workflow-triggers.json and deployed via zip deploy
+// The Logic Apps Standard runtime reads workflow definitions from the deployed artifacts
 
 @description('Diagnostic settings for Logic App workflow engine')
 resource wfDiag 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
@@ -326,3 +320,7 @@ output logicAppId string = workflowEngine.id
 output appServicePlanId string = wfASP.id
 output contentShareName string = contentShareName
 output workflowStorageAccountName string = workflowStorageAccountName
+
+// Service Bus Connection outputs
+output serviceBusConnectionName string = sbConnection.name
+output serviceBusConnectionId string = sbConnection.id
