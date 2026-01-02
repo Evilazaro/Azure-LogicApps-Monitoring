@@ -284,10 +284,10 @@ resource wfConf 'Microsoft.Web/sites/config@2025-03-01' = {
     AzureFunctionsJobHost__extensionBundle__version: extensionBundleVersion
     AzureFunctionsJobHost__telemetryMode: 'OpenTelemetry'
 
-    AzureFunctionsManagedApiConnections__servicebus__api__id: subscriptionResourceId('Microsoft.Web/locations/managedApis', location, 'servicebus')
-    AzureFunctionsManagedApiConnections__servicebus__connection__id: sbConnection.id
-    AzureFunctionsManagedApiConnections__azureblob__api__id: subscriptionResourceId('Microsoft.Web/locations/managedApis', location, 'azureblob')
-    AzureFunctionsManagedApiConnections__azureblob__connection__id: storageConnection.id
+    AzureFunctionsJobConnections__servicebus__api__id: subscriptionResourceId('Microsoft.Web/locations/managedApis', location, 'servicebus')
+    AzureFunctionsJobConnections__servicebus__connection__id: sbConnection.id
+    AzureFunctionsJobConnections__azureblob__api__id: subscriptionResourceId('Microsoft.Web/locations/managedApis', location, 'azureblob')
+    AzureFunctionsJobConnections__azureblob__connection__id: storageConnection.id
 
     // Workflow runtime configuration
     WORKFLOWS_SUBSCRIPTION_ID: subscription().subscriptionId
