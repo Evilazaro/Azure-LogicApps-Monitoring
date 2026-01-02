@@ -145,7 +145,7 @@ resource sbConnection 'Microsoft.Web/connections@2018-07-01-preview' = {
 }
 
 resource sbConnectionAccessPolicy 'Microsoft.Web/connections/accessPolicies@2018-07-01-preview' = {
-  name: workflowEngine.name // Typically named after the Logic App
+  name: logicAppName // Typically named after the Logic App
   parent: sbConnection
   location: location
   properties: {
@@ -218,6 +218,13 @@ resource wfASP 'Microsoft.Web/serverfarms@2025-03-01' = {
     targetWorkerSizeId: 0
     zoneRedundant: false
   }
+  dependsOn: [
+    mi
+    sbConnection
+    storageConnection
+    sbConnectionAccessPolicy
+    storageConnectionAccessPolicy
+  ]
 }
 
 @description('Logic Apps Standard workflow engine for running business processes')
@@ -242,6 +249,13 @@ resource workflowEngine 'Microsoft.Web/sites@2025-03-01' = {
       webSocketsEnabled: true
     }
   }
+  dependsOn: [
+    mi
+    sbConnection
+    sbConnectionAccessPolicy
+    storageConnection
+    storageConnectionAccessPolicy
+  ]
 }
 
 @description('Application settings configuration for Logic App workflow engine')
@@ -282,9 +296,6 @@ resource wfConf 'Microsoft.Web/sites/config@2025-03-01' = {
     WORKFLOWS_LOCATION_NAME: location
     WORKFLOWS_TENANT_ID: tenant().tenantId
   }
-  dependsOn: [
-    sbConnectionAccessPolicy
-  ]
 }
 
 var wfTriggers = loadJsonContent('./workflow-triggers.json')
