@@ -110,6 +110,9 @@ output MESSAGING_SERVICEBUSENDPOINT string = broker.properties.serviceBusEndpoin
 @description('Service Bus hostname for connection configuration')
 output MESSAGING_SERVICEBUSHOSTNAME string = split(replace(broker.properties.serviceBusEndpoint, 'https://', ''), ':')[0]
 
+@description('Name of the Service Bus namespace')
+output MESSAGING_SERVICEBUSNAME string = broker.name
+
 // Service Bus Topic for order processing workflow
 @description('Service Bus Topic for orders placed to be processed')
 resource ordersTopic 'Microsoft.ServiceBus/namespaces/topics@2025-05-01-preview' = {
