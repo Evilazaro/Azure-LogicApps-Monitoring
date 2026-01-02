@@ -226,13 +226,12 @@ resource conAccessPolicy 'Microsoft.Web/connections/accessPolicies@2018-07-01-pr
   name: mi.name // The access policy name is often the Logic App name for readability
   parent: sbConnection
   location: location
-  kind: 'V2'
   properties: {
     principal: {
       type: 'ActiveDirectory'
       identity: {
         tenantId: subscription().tenantId
-        objectId: mi.properties.clientId // Use the principalId of the Logic App's managed identity
+        objectId: mi.properties.principalId // Use the principalId of the Logic App's managed identity
       }
     }
   }
