@@ -48,6 +48,11 @@ param location string = resourceGroup().location
 @minLength(50)
 param userAssignedIdentityId string
 
+@description('User Assigned Identity name for reference.')
+@minLength(3)
+@maxLength(24)
+param userAssignedIdentityName string
+
 @description('Resource ID of the Log Analytics workspace for diagnostic logs and metrics.')
 @minLength(50)
 param workspaceId string
@@ -211,6 +216,11 @@ resource sbConnection 'Microsoft.Web/connections@2018-07-01-preview' = {
   }
 }
 
+resource mi 'Microsoft.ManagedIdentity/userAssignedIdentities@2025-01-31-preview' existing = {
+  name: userAssignedIdentityName
+  scope: resourceGroup()
+}
+
 // Define the Access Policy for the Logic App's system-assigned managed identity
 resource conAccessPolicy 'Microsoft.Web/connections/accessPolicies@2018-07-01-preview' = {
   name: logicAppName // The access policy name is often the Logic App name for readability
@@ -221,7 +231,7 @@ resource conAccessPolicy 'Microsoft.Web/connections/accessPolicies@2018-07-01-pr
       type: 'ActiveDirectory'
       identity: {
         tenantId: subscription().tenantId
-        objectId: workflowEngine.identity.principalId // Use the principalId of the Logic App's managed identity
+        objectId: mi.properties.clientId // Use the principalId of the Logic App's managed identity
       }
     }
   }

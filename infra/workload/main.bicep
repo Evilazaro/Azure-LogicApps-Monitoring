@@ -49,6 +49,11 @@ param location string = resourceGroup().location
 @minLength(50)
 param userAssignedIdentityId string
 
+@description('User Assigned Identity name for reference.')
+@minLength(3)
+@maxLength(24)
+param userAssignedIdentityName string
+
 @description('Resource ID of the Log Analytics workspace for diagnostic logs and metrics.')
 @minLength(50)
 param workspaceId string
@@ -175,6 +180,7 @@ module workflows 'logic-app.bicep' = {
     metricsSettings: allMetricsSettings
     appInsightsConnectionString: appInsightsConnectionString
     userAssignedIdentityId: userAssignedIdentityId
+    userAssignedIdentityName: userAssignedIdentityName
     workflowStorageAccountId: workflowStorageAccountId
     workflowStorageAccountName: workflowStorageAccountName
     tags: tags
