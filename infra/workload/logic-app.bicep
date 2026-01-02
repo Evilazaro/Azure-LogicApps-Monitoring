@@ -127,6 +127,7 @@ var sbConnName = '${logicAppName}-sb'
 resource sbConnection 'Microsoft.Web/connections@2016-06-01' = {
   name: sbConnName
   location: location
+  kind: 'V2'
   properties: {
     displayName: 'Service Bus Connection'
     api: {
@@ -143,26 +144,27 @@ resource sbConnection 'Microsoft.Web/connections@2016-06-01' = {
   }
 }
 
-resource sbConnectionAccessPolicy 'Microsoft.Web/connections/accessPolicies@2016-06-01' = {
-  name: '${logicAppName}-access'
-  parent: sbConnection
-  location: location
-  properties: {
-    principal: {
-      type: 'ActiveDirectory'
-      identity: {
-        tenantId: subscription().tenantId
-        objectId: mi.properties.principalId // The managed identity's principal ID
-      }
-    }
-  }
-}
+// resource sbConnectionAccessPolicy 'Microsoft.Web/connections/accessPolicies@2016-06-01' = {
+//   name: '${logicAppName}-access'
+//   parent: sbConnection
+//   location: location
+//   properties: {
+//     principal: {
+//       type: 'ActiveDirectory'
+//       identity: {
+//         tenantId: subscription().tenantId
+//         objectId: mi.properties.principalId // The managed identity's principal ID
+//       }
+//     }
+//   }
+// }
 
 // Create a connection for Storage Account using Managed Identity
 @description('Azure Blob Storage managed API connection for Logic App workflows')
 resource storageConnection 'Microsoft.Web/connections@2016-06-01' = {
   name: '${logicAppName}-blob'
   location: location
+  kind: 'V2'
   properties: {
     displayName: 'Storage Account Connection'
     api: {
@@ -177,20 +179,20 @@ resource storageConnection 'Microsoft.Web/connections@2016-06-01' = {
   }
 }
 
-resource storageConnectionAccessPolicy 'Microsoft.Web/connections/accessPolicies@2016-06-01' = {
-  name: '${logicAppName}-access'
-  parent: storageConnection
-  location: location
-  properties: {
-    principal: {
-      type: 'ActiveDirectory'
-      identity: {
-        tenantId: subscription().tenantId
-        objectId: mi.properties.principalId // The managed identity's principal ID
-      }
-    }
-  }
-}
+// resource storageConnectionAccessPolicy 'Microsoft.Web/connections/accessPolicies@2016-06-01' = {
+//   name: '${logicAppName}-access'
+//   parent: storageConnection
+//   location: location
+//   properties: {
+//     principal: {
+//       type: 'ActiveDirectory'
+//       identity: {
+//         tenantId: subscription().tenantId
+//         objectId: mi.properties.principalId // The managed identity's principal ID
+//       }
+//     }
+//   }
+// }
 
 // @description('App Service Plan for Logic Apps Standard with elastic scaling')
 // resource wfASP 'Microsoft.Web/serverfarms@2025-03-01' = {
