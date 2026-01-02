@@ -145,7 +145,7 @@ resource sbConnection 'Microsoft.Web/connections@2016-06-01' = {
 }
 
 resource sbConnectionAccessPolicy 'Microsoft.Web/connections/accessPolicies@2016-06-01' = {
-  name: logicAppName // Typically named after the Logic App
+  name: '${logicAppName}-access'
   parent: sbConnection
   location: location
   properties: {
@@ -180,7 +180,7 @@ resource storageConnection 'Microsoft.Web/connections@2016-06-01' = {
 }
 
 resource storageConnectionAccessPolicy 'Microsoft.Web/connections/accessPolicies@2016-06-01' = {
-  name: workflowStorageAccountName // Typically named after the storage account
+  name: '${logicAppName}-access'
   parent: storageConnection
   location: location
   properties: {
