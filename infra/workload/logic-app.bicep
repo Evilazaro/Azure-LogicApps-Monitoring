@@ -125,7 +125,7 @@ var sbConnName = '${logicAppName}-sb'
 // This is expected and will not block deployment. The resource deploys correctly.
 @description('Service Bus managed API connection for Logic App workflows')
 resource sbConnection 'Microsoft.Web/connections@2016-06-01' = {
-  name: sbConnName
+  name: 'servicebus'
   location: location
   kind: 'V2'
   properties: {
@@ -136,10 +136,13 @@ resource sbConnection 'Microsoft.Web/connections@2016-06-01' = {
       name: 'servicebus'
       type: 'Microsoft.Web/locations/managedApis'
     }
-    // For managed identity authentication
-    customParameterValues: {
+    // // For managed identity authentication
+    // customParameterValues: {
+    //   serviceBusNamespace: '${serviceBusNamespace}.servicebus.windows.net'
+    // }
+    parameterValues: {
       authenticationType: 'managedIdentityAuth'
-      serviceBusNamespace: '${serviceBusNamespace}.servicebus.windows.net'
+      values: '{}'
     }
   }
 }
@@ -162,7 +165,7 @@ resource sbConnection 'Microsoft.Web/connections@2016-06-01' = {
 // Create a connection for Storage Account using Managed Identity
 @description('Azure Blob Storage managed API connection for Logic App workflows')
 resource storageConnection 'Microsoft.Web/connections@2016-06-01' = {
-  name: '${logicAppName}-blob'
+  name: 'azureblob'
   location: location
   kind: 'V2'
   properties: {
@@ -172,10 +175,14 @@ resource storageConnection 'Microsoft.Web/connections@2016-06-01' = {
       name: 'azureblob'
       type: 'Microsoft.Web/locations/managedApis'
     }
-    customParameterValues: {
+    // customParameterValues: {
+    //   //authenticationType: 'managedIdentityAuth'
+    //   accountName: workflowStorageAccountName
+    // }
+    parameterValues: {
       authenticationType: 'managedIdentityAuth'
-      accountName: workflowStorageAccountName
-    }
+      values: '{}'
+  }
   }
 }
 
