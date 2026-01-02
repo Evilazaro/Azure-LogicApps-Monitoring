@@ -121,51 +121,59 @@ resource mi 'Microsoft.ManagedIdentity/userAssignedIdentities@2025-01-31-preview
 @description('Service Bus connection name derived from Logic App name')
 var sbConnName = '${logicAppName}-sb'
 
-// Note: Microsoft.Web/connections resource type does not have Bicep schema available.
+// Note: Microsoft.Web/connections resource type does not have complete Bicep schema available.
 // This is expected and will not block deployment. The resource deploys correctly.
-@description('Service Bus managed API connection for Logic App workflows')
+// For Standard Logic Apps with managed identity authentication, use parameterValueSet with managedIdentityAuth.
+// See: https://learn.microsoft.com/en-us/azure/logic-apps/authenticate-with-managed-identity#arm-template-for-api-connections-and-managed-identities
+@description('Service Bus managed API connection for Logic App workflows with managed identity authentication')
 resource sbConnection 'Microsoft.Web/connections@2016-06-01' = {
-  name: 'servicebus'
+  name: sbConnName
   location: location
+  #disable-next-line BCP187
   kind: 'V2'
+  tags: tags
   properties: {
     displayName: 'Service Bus Connection'
     api: {
-      // Reference the managed API in Azure
       id: subscriptionResourceId('Microsoft.Web/locations/managedApis', location, 'servicebus')
       name: 'servicebus'
       type: 'Microsoft.Web/locations/managedApis'
     }
-    // // For managed identity authentication
-    // customParameterValues: {
-    //   serviceBusNamespace: '${serviceBusNamespace}.servicebus.windows.net'
-    // }
-    parameterValues: {
-      authenticationType: 'managedIdentityAuth'
-      values: '{}'
+    // For multi-authentication connectors (like Service Bus), use parameterValueSet with managedIdentityAuth
+    // This tells Azure to use managed identity instead of connection string authentication
+    #disable-next-line BCP089
+    parameterValueSet: {
+      name: 'managedIdentityAuth'
+      values: {
+        namespaceEndpoint: {
+          value: 'sb://${serviceBusNamespace}.servicebus.windows.net/'
+        }
+      }
     }
   }
 }
 
-// resource sbConnectionAccessPolicy 'Microsoft.Web/connections/accessPolicies@2016-06-01' = {
-//   name: '${logicAppName}-access'
-//   parent: sbConnection
-//   location: location
-//   properties: {
-//     principal: {
-//       type: 'ActiveDirectory'
-//       identity: {
-//         tenantId: subscription().tenantId
-//         objectId: mi.properties.principalId // The managed identity's principal ID
-//       }
-//     }
-//   }
-// }
+// Access policy required for managed identity authentication on API connections
+// This allows the Logic App's managed identity to use the Service Bus connection
+@description('Access policy for Service Bus connection enabling managed identity authentication')
+resource sbConnectionAccessPolicy 'Microsoft.Web/connections/accessPolicies@2016-06-01' = {
+  name: '${logicAppName}-access'
+  parent: sbConnection
+  properties: {
+    principal: {
+      type: 'ActiveDirectory'
+      identity: {
+        tenantId: subscription().tenantId
+        objectId: mi.properties.principalId // The managed identity's principal ID
+      }
+    }
+  }
+}
 
-// Create a connection for Storage Account using Managed Identity
+// // Create a connection for Storage Account using Managed Identity
 @description('Azure Blob Storage managed API connection for Logic App workflows')
 resource storageConnection 'Microsoft.Web/connections@2016-06-01' = {
-  name: 'azureblob'
+  name: workflowStorageAccountName
   location: location
   kind: 'V2'
   properties: {
@@ -175,14 +183,14 @@ resource storageConnection 'Microsoft.Web/connections@2016-06-01' = {
       name: 'azureblob'
       type: 'Microsoft.Web/locations/managedApis'
     }
-    // customParameterValues: {
-    //   //authenticationType: 'managedIdentityAuth'
-    //   accountName: workflowStorageAccountName
-    // }
-    parameterValues: {
-      authenticationType: 'managedIdentityAuth'
-      values: '{}'
-  }
+    parameterValueSet: {
+      name: 'managedIdentityAuth'
+      values: {
+        accountName: {
+          value: workflowStorageAccountName
+        }
+      }
+    }
   }
 }
 
@@ -266,6 +274,7 @@ resource storageConnection 'Microsoft.Web/connections@2016-06-01' = {
 //     SERVICEBUS_API_ID: subscriptionResourceId('Microsoft.Web/locations/managedApis', location, 'servicebus')
 //     SERVICEBUS_CONNECTION_ID: sbConnection.id
 //     SERVICEBUS_RUNTIME_URL: sbConnection.properties.connectionRuntimeUrl
+
 //     // Functions runtime
 //     FUNCTIONS_EXTENSION_VERSION: functionsExtensionVersion
 //     FUNCTIONS_WORKER_RUNTIME: functionsWorkerRuntime
