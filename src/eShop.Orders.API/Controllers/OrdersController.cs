@@ -186,12 +186,14 @@ public sealed class OrdersController : ControllerBase
 
     [HttpPost("process")]
     [ProducesResponseType(typeof(Order), StatusCodes.Status201Created)]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status409Conflict)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public Task<ActionResult<Order>> ProcessOrder([FromBody] Order? order, CancellationToken cancellationToken)
     {
-        return Task.FromResult<ActionResult<Order>>(Ok(order));
+        var action = CreatedAtAction(nameof(PlaceOrder), new { id = order?.Id }, order);
+        return Task.FromResult<ActionResult<Order>>(action);
     }
 
     /// <summary>
