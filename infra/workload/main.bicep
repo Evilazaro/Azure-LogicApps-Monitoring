@@ -188,9 +188,9 @@ module workflows 'logic-app.bicep' = {
   }
 }
 
-// Logic Apps Outputs
-@description('Name of the deployed Logic App')
-output LOGIC_APP_NAME string = workflows.outputs.logicAppName
+// // Logic Apps Outputs
+// @description('Name of the deployed Logic App')
+// output LOGIC_APP_NAME string = workflows.outputs.logicAppName
 
-@description('Content share name for Logic App')
-output CONTENT_SHARE_NAME string = workflows.outputs.contentShareName
+// @description('Content share name for Logic App')
+// output CONTENT_SHARE_NAME string = workflows.outputs.contentShareName

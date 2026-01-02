@@ -35,39 +35,39 @@ infra:
 # Scripts executed at specific points in the azd workflow to automate
 # environment validation, configuration, and data generation
 
-hooks:
-  # Pre-provisioning validation hook
-  # Executes before 'azd provision' to validate workstation prerequisites
-  preprovision:
-    posix:                             # Linux/macOS configuration
-      shell: sh
-      run: ./hooks/preprovision.sh --force --verbose
-      continueOnError: false           # Fail fast on validation errors
-      interactive: true               # Non-interactive execution
-    windows:                           # Windows configuration
-      shell: pwsh
-      run: ./hooks/preprovision.ps1 -Force -Verbose
-      continueOnError: false           # Fail fast on validation errors
-      interactive: true               # Non-interactive execution
+# hooks:
+#   # Pre-provisioning validation hook
+#   # Executes before 'azd provision' to validate workstation prerequisites
+#   preprovision:
+#     posix:                             # Linux/macOS configuration
+#       shell: sh
+#       run: ./hooks/preprovision.sh --force --verbose
+#       continueOnError: false           # Fail fast on validation errors
+#       interactive: true               # Non-interactive execution
+#     windows:                           # Windows configuration
+#       shell: pwsh
+#       run: ./hooks/preprovision.ps1 -Force -Verbose
+#       continueOnError: false           # Fail fast on validation errors
+#       interactive: true               # Non-interactive execution
 
-  # Post-provisioning configuration hook
-  # Executes after 'azd provision' to configure local development secrets
-  # and generate test data for the application
-  postprovision:
-    posix:                             # Linux/macOS configuration
-      shell: sh
-      run: |
-        ./hooks/postprovision.sh --force --verbose    # Configure .NET user secrets
-        ./hooks/Generate-Orders.sh --force --verbose    # Generate test order data
-      continueOnError: false
-      interactive: true
-    windows:                           # Windows configuration
-      shell: pwsh
-      run: |
-        ./hooks/postprovision.ps1 -Force -Verbose    # Configure .NET user secrets and SQL managed identity
-        ./hooks/Generate-Orders.ps1 -Force -Verbose    # Generate test order data
-      continueOnError: false
-      interactive: true
+#   # Post-provisioning configuration hook
+#   # Executes after 'azd provision' to configure local development secrets
+#   # and generate test data for the application
+#   postprovision:
+#     posix:                             # Linux/macOS configuration
+#       shell: sh
+#       run: |
+#         ./hooks/postprovision.sh --force --verbose    # Configure .NET user secrets
+#         ./hooks/Generate-Orders.sh --force --verbose    # Generate test order data
+#       continueOnError: false
+#       interactive: true
+#     windows:                           # Windows configuration
+#       shell: pwsh
+#       run: |
+#         ./hooks/postprovision.ps1 -Force -Verbose    # Configure .NET user secrets and SQL managed identity
+#         ./hooks/Generate-Orders.ps1 -Force -Verbose    # Generate test order data
+#       continueOnError: false
+#       interactive: true
 
 # ------------------------------------------------------------------------------
 # Application Services
