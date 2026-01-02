@@ -195,7 +195,7 @@ flowchart LR
 ### Order Lifecycle Process
 
 ```mermaid
-flowchart TD
+flowchart LR
     Start([Customer Action]) --> Submit[Submit Order via Web UI]
     Submit --> Validate{Validate Order Data}
     
