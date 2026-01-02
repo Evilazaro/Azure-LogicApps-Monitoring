@@ -1,5 +1,6 @@
 ﻿using app.ServiceDefaults.CommonTypes;
 using eShop.Orders.API.Services.Interfaces;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using System.Diagnostics;
 
@@ -181,6 +182,16 @@ public sealed class OrdersController : ControllerBase
             return StatusCode(StatusCodes.Status500InternalServerError,
                 new { error = "An error occurred while processing your request", type = "InternalError" });
         }
+    }
+
+    [HttpPost]
+    [ProducesResponseType(typeof(Order), StatusCodes.Status201Created)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status409Conflict)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    public Task<ActionResult<Order>> ProcessOrder([FromBody] Order? order, CancellationToken cancellationToken)
+    {
+        return Task.FromResult<ActionResult<Order>>(Ok(order));
     }
 
     /// <summary>
