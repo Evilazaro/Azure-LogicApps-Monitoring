@@ -118,7 +118,11 @@ resource mi 'Microsoft.ManagedIdentity/userAssignedIdentities@2025-01-31-preview
   scope: resourceGroup()
 }
 
-param sbConnName string = 'servicebus'
+@description('Unique suffix for connection naming to avoid conflicts')
+var connectionSuffix = uniqueString(resourceGroup().id, name, envName)
+
+@description('Service Bus connection name with unique suffix')
+var sbConnName = 'servicebus-${connectionSuffix}'
 
 resource sbConnection 'Microsoft.Web/connections@2018-07-01-preview' = {
   name: sbConnName
@@ -326,3 +330,8 @@ output logicAppId string = workflowEngine.id
 output appServicePlanId string = wfASP.id
 output contentShareName string = contentShareName
 output workflowStorageAccountName string = workflowStorageAccountName
+
+// Service Bus Connection outputs
+output serviceBusConnectionName string = sbConnection.name
+output serviceBusConnectionId string = sbConnection.id
+output serviceBusConnectionRuntimeUrl string = sbConnection.properties.connectionRuntimeUrl
