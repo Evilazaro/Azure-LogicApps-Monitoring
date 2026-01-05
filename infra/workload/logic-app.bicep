@@ -117,18 +117,13 @@ resource mi 'Microsoft.ManagedIdentity/userAssignedIdentities@2025-01-31-preview
   scope: resourceGroup()
 }
 
-// Use Logic App name as prefix for connections - ensures uniqueness and clear association
-// The Logic App name already contains the unique resourceSuffix
-@description('Service Bus connection name derived from Logic App name')
-var sbConnName = '${logicAppName}-sb'
-
 // Note: Microsoft.Web/connections resource type does not have complete Bicep schema available.
 // This is expected and will not block deployment. The resource deploys correctly.
 // For Standard Logic Apps with managed identity authentication, use parameterValueSet with managedIdentityAuth.
 // See: https://learn.microsoft.com/en-us/azure/logic-apps/authenticate-with-managed-identity#arm-template-for-api-connections-and-managed-identities
 @description('Service Bus managed API connection for Logic App workflows with managed identity authentication')
 resource sbConnection 'Microsoft.Web/connections@2016-06-01' = {
-  name: sbConnName
+  name: 'servicebus'
   location: location
   #disable-next-line BCP187
   kind: 'V2'
@@ -175,7 +170,7 @@ resource sbConnectionAccessPolicy 'Microsoft.Web/connections/accessPolicies@2016
 // // Create a connection for Storage Account using Managed Identity
 @description('Azure Blob Storage managed API connection for Logic App workflows')
 resource storageConnection 'Microsoft.Web/connections@2016-06-01' = {
-  name: '${logicAppName}-storage'
+  name: 'azureblob'
   location: location
   // kind property is valid for V2 API connections but not in Bicep schema (BCP036/BCP037)
   #disable-next-line BCP035 BCP036 BCP037
