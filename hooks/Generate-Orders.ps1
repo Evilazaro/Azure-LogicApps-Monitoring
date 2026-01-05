@@ -1,3 +1,5 @@
+#Requires -Version 7.0
+
 <#
 .SYNOPSIS
     Generates sample order data for testing Azure Logic Apps monitoring.
@@ -6,9 +8,11 @@
     This script generates random e-commerce orders with products, customer information, 
     and delivery addresses. The generated data is saved as JSON for use in testing 
     and demonstration scenarios.
+    
+    Order IDs are generated using GUIDs to ensure uniqueness across multiple runs.
 
 .PARAMETER OrderCount
-    The number of orders to generate. Default is 50.
+    The number of orders to generate. Default is 2000.
 
 .PARAMETER OutputPath
     The path where the JSON file will be saved. 
@@ -22,7 +26,7 @@
 
 .EXAMPLE
     .\Generate-Orders.ps1
-    Generates 50 orders using default settings.
+    Generates 2000 orders using default settings.
 
 .EXAMPLE
     .\Generate-Orders.ps1 -OrderCount 100 -OutputPath "C:\temp\orders.json"
@@ -44,32 +48,34 @@
     https://github.com/Evilazaro/Azure-LogicApps-Monitoring
 #>
 
-#Requires -Version 7.0
-
 [CmdletBinding(SupportsShouldProcess)]
 param(
-    [Parameter(Mandatory = $false, HelpMessage = "Number of orders to generate")]
+    [Parameter(Mandatory = $false, HelpMessage = 'Number of orders to generate')]
     [ValidateRange(1, 10000)]
     [int]$OrderCount = 2000,
 
-    [Parameter(Mandatory = $false, HelpMessage = "Output file path for generated orders")]
+    [Parameter(Mandatory = $false, HelpMessage = 'Output file path for generated orders')]
     [ValidateNotNullOrEmpty()]
-    [string]$OutputPath = (Join-Path $PSScriptRoot '..\infra\data\ordersBatch.json'),
+    [string]$OutputPath = (Join-Path -Path $PSScriptRoot -ChildPath '..\infra\data\ordersBatch.json'),
 
-    [Parameter(Mandatory = $false, HelpMessage = "Minimum products per order")]
+    [Parameter(Mandatory = $false, HelpMessage = 'Minimum products per order')]
     [ValidateRange(1, 20)]
     [int]$MinProducts = 1,
 
-    [Parameter(Mandatory = $false, HelpMessage = "Maximum products per order")]
+    [Parameter(Mandatory = $false, HelpMessage = 'Maximum products per order')]
     [ValidateRange(1, 20)]
     [int]$MaxProducts = 6,
 
-    [Parameter(Mandatory = $false, HelpMessage = "Force execution without prompting")]
+    [Parameter(Mandatory = $false, HelpMessage = 'Force execution without prompting')]
     [switch]$Force
 )
 
+#region Script Configuration
+
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
+
+#endregion Script Configuration
 
 #region Product Catalog
 
@@ -84,7 +90,7 @@ $ErrorActionPreference = 'Stop'
     Price variation is applied during order generation to simulate
     real-world pricing fluctuations, promotions, and discounts.
 #>
-$script:Products = @(
+$Products = @(
     [PSCustomObject]@{ Id = 'PROD-1001'; Description = 'Wireless Mouse'; BasePrice = 25.99 }
     [PSCustomObject]@{ Id = 'PROD-1002'; Description = 'Mechanical Keyboard'; BasePrice = 89.99 }
     [PSCustomObject]@{ Id = 'PROD-1003'; Description = 'USB-C Hub'; BasePrice = 34.99 }
@@ -119,7 +125,7 @@ $script:Products = @(
     selected randomly during order creation to ensure geographic
     distribution in test data.
 #>
-$script:Addresses = @(
+$Addresses = @(
     '221B Baker Street, London, UK'
     '350 Fifth Ave, New York, NY, USA'
     '88 Colin P Kelly Jr St, San Francisco, CA, USA'
@@ -249,7 +255,7 @@ function New-Order {
     $orderDate = Get-RandomDate
     
     # Select random delivery address from the global address pool
-    $deliveryAddress = $script:Addresses | Get-Random
+    $deliveryAddress = $Addresses | Get-Random
     
     # Determine number of products for this order within specified range
     # Note: Maximum parameter is exclusive, so we add 1 to include MaxProductCount
@@ -257,7 +263,7 @@ function New-Order {
 
     # Randomly select products from catalog without replacement
     # Get-Random -Count 1 returns a scalar, so wrap in @() for consistent array semantics.
-    $selectedProducts = @($script:Products | Get-Random -Count $productCount)
+    $selectedProducts = @($Products | Get-Random -Count $productCount)
 
     # Initialize collections for order products and running total
     $orderProducts = [System.Collections.Generic.List[hashtable]]::new($selectedProducts.Count)
@@ -376,7 +382,7 @@ function Export-OrdersToJson {
                     # -Force creates parent directories if needed
                     # $null = suppresses unnecessary output
                     $null = New-Item -Path $directory -ItemType Directory -Force
-                    Write-Verbose "Created directory: $directory"
+                    Write-Verbose -Message "Created directory: $directory"
                 }
             }
             
@@ -389,7 +395,7 @@ function Export-OrdersToJson {
             # UTF-8 without BOM is commonly expected for JSON interoperability.
             if ($PSCmdlet.ShouldProcess($resolvedPath, 'Write orders to JSON file')) {
                 Set-Content -Path $resolvedPath -Value $jsonContent -Encoding utf8NoBOM -Force
-                Write-Verbose "Successfully wrote orders to: $resolvedPath"
+                Write-Verbose -Message "Successfully wrote orders to: $resolvedPath"
                 
                 # Return FileInfo object for pipeline support and further processing
                 return Get-Item -Path $resolvedPath
@@ -412,8 +418,8 @@ try {
         $ConfirmPreference = 'None'
     }
     
-    Write-Verbose "Starting order generation process..."
-    Write-Verbose "Parameters: OrderCount=$OrderCount, MinProducts=$MinProducts, MaxProducts=$MaxProducts"
+    Write-Verbose -Message 'Starting order generation process...'
+    Write-Verbose -Message "Parameters: OrderCount=$OrderCount, MinProducts=$MinProducts, MaxProducts=$MaxProducts"
     
     # Pre-execution parameter validation
     # Catch invalid parameter combinations before processing begins
@@ -460,7 +466,7 @@ try {
     Write-Progress -Activity 'Generating Orders' -Completed
     
     # Export to JSON
-    Write-Verbose "Exporting $($orders.Count) orders to JSON..."
+    Write-Verbose -Message "Exporting $($orders.Count) orders to JSON..."
     $outputFile = Export-OrdersToJson -Orders $orders.ToArray() -Path $OutputPath
 
     # If export was skipped (e.g., -WhatIf or user declined -Confirm), stop cleanly.
@@ -482,7 +488,7 @@ catch {
     throw
 }
 finally {
-    Write-Verbose "Order generation process completed."
+    Write-Verbose -Message 'Order generation process completed.'
 }
 
-#endregion
+#endregion Main Execution

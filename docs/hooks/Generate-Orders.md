@@ -14,7 +14,7 @@ The `Generate-Orders` script is a sophisticated test data generator utility for 
 
 As a standalone utility independent of the main deployment workflow, the script generates orders from a 20-product catalog with global delivery addresses across 15 countries. Each order contains 1-6 products (configurable), realistic pricing with variations, unique identifiers, and comprehensive metadata. The generation process is highly customizable through parameters controlling order count (1-10,000), products per order, and output paths.
 
-With built-in progress tracking, comprehensive validation, and detailed summary statistics, the script typically generates 50 orders in under 5 seconds, providing immediate feedback on total revenue, average order value, and file details. It integrates seamlessly with CI/CD pipelines and supports both interactive and automated testing workflows.
+With built-in progress tracking, comprehensive validation, and detailed summary statistics, the script typically generates 2000 orders in under 30 seconds, providing immediate feedback on total revenue, average order value, and file details. It integrates seamlessly with CI/CD pipelines and supports both interactive and automated testing workflows.
 
 ## 📑 Table of Contents
 
@@ -145,41 +145,41 @@ Global coverage including:
 **PowerShell (Windows):**
 
 ```powershell
-# Generate 50 orders (default)
+# Generate 2000 orders (default)
 .\Generate-Orders.ps1
 ```
 
 **Bash (Linux/macOS):**
 
 ```bash
-# Generate 50 orders (default)
+# Generate 2000 orders (default)
 ./Generate-Orders.sh
 ```
 
 **Output:**
 
 ```
-Generating 50 orders...
-Progress: 5/50 (10%)
-Progress: 10/50 (20%)
-Progress: 15/50 (30%)
-Progress: 20/50 (40%)
-Progress: 25/50 (50%)
-Progress: 30/50 (60%)
-Progress: 35/50 (70%)
-Progress: 40/50 (80%)
-Progress: 45/50 (90%)
-Progress: 50/50 (100%)
+Generating 2000 orders...
+Progress: 200/2000 (10%)
+Progress: 400/2000 (20%)
+Progress: 600/2000 (30%)
+Progress: 800/2000 (40%)
+Progress: 1000/2000 (50%)
+Progress: 1200/2000 (60%)
+Progress: 1400/2000 (70%)
+Progress: 1600/2000 (80%)
+Progress: 1800/2000 (90%)
+Progress: 2000/2000 (100%)
 
-✓ Successfully generated 50 orders
+✓ Successfully generated 2000 orders
 
 Summary:
   Output file: ../infra/data/ordersBatch.json
-  File size: 45.23 KB
+  File size: 1.8 MB
   Products per order: 1-6
-  Total revenue: $14527.33
+  Total revenue: $581093.20
   Average order value: $290.55
-  Total products: 187
+  Total products: 7480
 ```
 
 ### Generate Specific Number of Orders
@@ -310,15 +310,15 @@ timestamp=$(date +"%Y%m%d-%H%M%S")
 ===========================================================
 DRY-RUN MODE: Simulating order generation
 ===========================================================
-What if: Generating 50 orders with parameters:
+What if: Generating 2000 orders with parameters:
   Min Products: 1
   Max Products: 6
   Output Path: ../infra/data/ordersBatch.json
 
 Estimated Results:
-  Total Products: 50-300 (avg: ~175)
+  Total Products: 2000-12000 (avg: ~7000)
   Average Products/Order: 3.5
-  Estimated File Size: 40-60 KB (varies with product count)
+  Estimated File Size: 1.6-2.0 MB (varies with product count)
 
 No files were created or modified.
 This was a simulation only.
@@ -333,7 +333,7 @@ Number of orders to generate.
 
 **Type:** `Int32`  
 **Required:** No  
-**Default:** `50`  
+**Default:** `2000`  
 **Valid Range:** `1-10000`
 
 **PowerShell Examples:**
@@ -839,10 +839,10 @@ infra/data/ordersBatch.json
 
 | Characteristic       | Details                                                                                                                                                                                                                                      |
 | -------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Execution Time**   | • 10 orders: ~0.1 seconds<br/>• 50 orders: ~0.3 seconds (default)<br/>• 100 orders: ~0.5 seconds<br/>• 500 orders: ~2.5 seconds<br/>• 1000 orders: ~5 seconds<br/>• 5000 orders: ~25 seconds<br/>• **Scaling:** Linear O(n) with order count |
+| **Execution Time**   | • 10 orders: ~0.1 seconds<br/>• 50 orders: ~0.3 seconds<br/>• 100 orders: ~0.5 seconds<br/>• 500 orders: ~2.5 seconds<br/>• 1000 orders: ~5 seconds<br/>• 2000 orders: ~10 seconds (default)<br/>• 5000 orders: ~25 seconds<br/>• **Scaling:** Linear O(n) with order count |
 | **Resource Usage**   | • **Memory:** ~100 MB peak for 1000 orders<br/>• **CPU:** Low-medium utilization during generation<br/>• **Disk I/O:** Single write operation at completion<br/>• **Baseline:** ~20 MB for script initialization                             |
 | **Network Impact**   | • **Zero network calls** - completely offline operation<br/>• **No external dependencies** - self-contained execution<br/>• **No API requests** - uses internal data structures<br/>• **Ideal for airgapped environments**                   |
-| **Output File Size** | • 10 orders: ~10 KB<br/>• 50 orders: ~45 KB<br/>• 100 orders: ~90 KB<br/>• 500 orders: ~450 KB<br/>• 1000 orders: ~900 KB<br/>• 5000 orders: ~4.5 MB<br/>• **Average:** ~900 bytes per order                                                 |
+| **Output File Size** | • 10 orders: ~10 KB<br/>• 50 orders: ~45 KB<br/>• 100 orders: ~90 KB<br/>• 500 orders: ~450 KB<br/>• 1000 orders: ~900 KB<br/>• 2000 orders: ~1.8 MB (default)<br/>• 5000 orders: ~4.5 MB<br/>• **Average:** ~900 bytes per order                                                 |
 | **Scalability**      | • **Maximum tested:** 10,000 orders (~50 seconds)<br/>• **Recommended batch size:** 100-1000 orders<br/>• **Memory efficient:** Generates orders sequentially<br/>• **No degradation:** Consistent per-order generation time                 |
 | **Optimization**     | • **Fast initialization:** Data structures loaded once<br/>• **Efficient randomization:** Built-in language features<br/>• **Minimal overhead:** Direct JSON serialization<br/>• **Progress tracking:** Optional, minimal impact on speed    |
 
