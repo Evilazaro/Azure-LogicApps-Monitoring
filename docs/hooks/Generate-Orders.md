@@ -555,29 +555,43 @@ The script executes a comprehensive data generation workflow through distinct ph
 ```mermaid
 flowchart LR
     Start(["🚀 Generate-Orders starts"])
-    Validate["1️⃣ Validate Parameters<br/>• OrderCount: 1-10,000<br/>• MinProducts ≤ MaxProducts<br/>• Output path validity"]
-    Init["2️⃣ Initialize Data<br/>• Load 20-product catalog<br/>• Load 20 addresses<br/>• Prepare orders array"]
-    OrderLoop["3️⃣ Order Generation Loop<br/>For each order"]
-    OrderGen["Generate Order<br/>• Order ID & date<br/>• Customer info<br/>• Random address<br/>• Product count"]
-    ProductLoop["Product Loop<br/>For each product"]
-    ProductGen["Add Product<br/>• Random selection<br/>• Quantity (1-5)<br/>• Price variation<br/>• Calculate total"]
-    Finalize["4️⃣ Finalize Order<br/>• Calculate total<br/>• Set status<br/>• Add to array"]
-    WriteJSON["5️⃣ Write Output<br/>• Format JSON<br/>• Write to file<br/>• Create directory"]
-    Summary["6️⃣ Display Summary<br/>• Total revenue<br/>• Average order<br/>• File size<br/>• Execution time"]
     End(["🏁 Complete"])
 
-    Start --> Validate
-    Validate --> Init
-    Init --> OrderLoop
-    OrderLoop --> OrderGen
-    OrderGen --> ProductLoop
-    ProductLoop --> ProductGen
-    ProductGen --> ProductLoop
-    ProductLoop --> Finalize
-    Finalize --> OrderLoop
-    OrderLoop --> WriteJSON
-    WriteJSON --> Summary
-    Summary --> End
+    Start --> SetupPhase
+
+    subgraph SetupPhase["1️⃣ Setup"]
+        direction TB
+        Validate["Validate Parameters<br/>• OrderCount: 1-10,000<br/>• MinProducts ≤ MaxProducts<br/>• Output path validity"]
+        Init["Initialize Data<br/>• Load 20-product catalog<br/>• Load 20 addresses<br/>• Prepare orders array"]
+        Validate --> Init
+    end
+
+    subgraph GenerationPhase["2️⃣ Order Generation"]
+        direction TB
+        OrderLoop["Order Generation Loop<br/>For each order"]
+        OrderGen["Generate Order<br/>• Order ID & date<br/>• Customer info<br/>• Random address<br/>• Product count"]
+        ProductLoop["Product Loop<br/>For each product"]
+        ProductGen["Add Product<br/>• Random selection<br/>• Quantity (1-5)<br/>• Price variation<br/>• Calculate total"]
+        Finalize["Finalize Order<br/>• Calculate total<br/>• Set status<br/>• Add to array"]
+
+        OrderLoop --> OrderGen
+        OrderGen --> ProductLoop
+        ProductLoop --> ProductGen
+        ProductGen --> ProductLoop
+        ProductLoop --> Finalize
+        Finalize --> OrderLoop
+    end
+
+    subgraph OutputPhase["3️⃣ Output"]
+        direction TB
+        WriteJSON["Write Output<br/>• Format JSON<br/>• Write to file<br/>• Create directory"]
+        Summary["Display Summary<br/>• Total revenue<br/>• Average order<br/>• File size<br/>• Execution time"]
+        WriteJSON --> Summary
+    end
+
+    SetupPhase --> GenerationPhase
+    GenerationPhase --> OutputPhase
+    OutputPhase --> End
 
     classDef startEnd fill:#e8f5e9,stroke:#2e7d32,stroke-width:3px,color:#1b5e20
     classDef process fill:#e3f2fd,stroke:#1976d2,stroke-width:2px,color:#0d47a1

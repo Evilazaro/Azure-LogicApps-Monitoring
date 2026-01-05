@@ -274,18 +274,35 @@ The script executes a streamlined validation workflow through four distinct phas
 ```mermaid
 flowchart LR
     Start(["🚀 check-dev-workstation starts"])
-    Init["1️⃣ Script Initialization<br/>• Set StrictMode<br/>• Configure error preferences<br/>• Validate prerequisites"]
-    Path["2️⃣ Path Resolution<br/>• Locate preprovision script<br/>• Verify script exists<br/>• Prepare execution context"]
-    Delegate["3️⃣ Validation Delegation<br/>• Invoke preprovision -ValidateOnly<br/>• Pass -Verbose flag if set<br/>• Monitor execution"]
-    Check{"All validations<br/>passed?"}
-    Success["✅ Success Path<br/>• Format success message<br/>• Exit code: 0<br/>• Display summary"]
-    Failure["❌ Failure Path<br/>• Format error details<br/>• Exit code: 1<br/>• Show remediation steps"]
     End(["🏁 Script completes"])
 
-    Start --> Init
-    Init --> Path
-    Path --> Delegate
-    Delegate --> Check
+    Start --> Initialization
+
+    subgraph Initialization["1️⃣ Initialization"]
+        direction TB
+        Init["Script Initialization<br/>• Set StrictMode<br/>• Configure error preferences<br/>• Validate prerequisites"]
+    end
+
+    subgraph PathResolution["2️⃣ Path Resolution"]
+        direction TB
+        Path["Locate Scripts<br/>• Locate preprovision script<br/>• Verify script exists<br/>• Prepare execution context"]
+    end
+
+    subgraph ValidationPhase["3️⃣ Validation"]
+        direction TB
+        Delegate["Validation Delegation<br/>• Invoke preprovision -ValidateOnly<br/>• Pass -Verbose flag if set<br/>• Monitor execution"]
+        Check{"All validations<br/>passed?"}
+        Delegate --> Check
+    end
+
+    subgraph ResultPhase["4️⃣ Result"]
+        direction TB
+        Success["✅ Success Path<br/>• Format success message<br/>• Exit code: 0<br/>• Display summary"]
+        Failure["❌ Failure Path<br/>• Format error details<br/>• Exit code: 1<br/>• Show remediation steps"]
+    end
+
+    Initialization --> PathResolution
+    PathResolution --> ValidationPhase
     Check -->|Yes| Success
     Check -->|No| Failure
     Success --> End

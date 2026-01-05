@@ -488,30 +488,47 @@ The script executes a comprehensive post-provisioning configuration workflow:
 ```mermaid
 flowchart LR
     Start(["🚀 azd provision completes"])
-    SetEnv["1️⃣ Set Environment Variables"]
-    Execute["2️⃣ Execute postprovision"]
-    Validate["3️⃣ Validate Environment"]
-    ACRAuth["4️⃣ ACR Authentication"]
-    SQLConfig["5️⃣ SQL Managed Identity"]
-    Clear["6️⃣ Clear Old Secrets"]
-    ConfigLoop["7️⃣ Configure Secrets Loop"]
-    ConfigProject["Set Project Secrets"]
-    Validate2["8️⃣ Validate Configuration"]
-    Summary["9️⃣ Display Summary"]
     Complete(["🏁 Complete"])
 
-    Start --> SetEnv
-    SetEnv --> Execute
-    Execute --> Validate
-    Validate --> ACRAuth
-    ACRAuth --> SQLConfig
-    SQLConfig --> Clear
-    Clear --> ConfigLoop
-    ConfigLoop --> ConfigProject
-    ConfigProject --> ConfigLoop
-    ConfigLoop --> Validate2
-    Validate2 --> Summary
-    Summary --> Complete
+    Start --> EnvironmentSetup
+
+    subgraph EnvironmentSetup["1️⃣ Environment Setup"]
+        direction TB
+        SetEnv["Set Environment Variables"]
+        Execute["Execute postprovision"]
+        Validate["Validate Environment"]
+        SetEnv --> Execute
+        Execute --> Validate
+    end
+
+    subgraph Authentication["2️⃣ Authentication"]
+        direction TB
+        ACRAuth["ACR Authentication"]
+        SQLConfig["SQL Managed Identity"]
+        ACRAuth --> SQLConfig
+    end
+
+    subgraph SecretsConfig["3️⃣ Secrets Configuration"]
+        direction TB
+        Clear["Clear Old Secrets"]
+        ConfigLoop["Configure Secrets Loop"]
+        ConfigProject["Set Project Secrets"]
+        Clear --> ConfigLoop
+        ConfigLoop --> ConfigProject
+        ConfigProject --> ConfigLoop
+    end
+
+    subgraph ValidationPhase["4️⃣ Validation & Summary"]
+        direction TB
+        Validate2["Validate Configuration"]
+        Summary["Display Summary"]
+        Validate2 --> Summary
+    end
+
+    EnvironmentSetup --> Authentication
+    Authentication --> SecretsConfig
+    SecretsConfig --> ValidationPhase
+    ValidationPhase --> Complete
 
     classDef startEnd fill:#e8f5e9,stroke:#2e7d32,stroke-width:3px,color:#1b5e20
     classDef process fill:#e3f2fd,stroke:#1976d2,stroke-width:2px,color:#0d47a1

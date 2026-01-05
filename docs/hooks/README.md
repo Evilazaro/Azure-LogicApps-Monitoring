@@ -126,14 +126,23 @@ dotnet run
 
 ```mermaid
 flowchart LR
-    Start([Local Dev Start]) --> Docker[Docker Running?]
-    Docker -->|No| StartDocker[Start Docker Desktop]
-    Docker -->|Yes| Run
-    StartDocker --> Run[Run AppHost<br/>dotnet run]
+    Start([Local Dev Start])
+    End([Docker Auto-Cleanup])
 
-    Run --> Ready([Environment Ready<br/>~30-60 seconds])
+    Start --> SetupPhase
 
-    Ready --> DevLoop
+    subgraph SetupPhase["1️⃣ Environment Setup"]
+        direction TB
+        Docker[Docker Running?]
+        StartDocker[Start Docker Desktop]
+        Run[Run AppHost<br/>dotnet run]
+        Ready([Environment Ready<br/>~30-60 seconds])
+
+        Docker -->|No| StartDocker
+        Docker -->|Yes| Run
+        StartDocker --> Run
+        Run --> Ready
+    end
 
     subgraph DevLoop["🔄 INNER LOOP (10-30 seconds/iteration)"]
         direction LR
@@ -146,8 +155,14 @@ flowchart LR
         Debug --> Code
     end
 
-    DevLoop --> Stop[Stop Development<br/>Ctrl+C]
-    Stop --> Cleanup[Docker Auto-Cleanup]
+    subgraph ShutdownPhase["3️⃣ Shutdown"]
+        direction TB
+        Stop[Stop Development<br/>Ctrl+C]
+    end
+
+    SetupPhase --> DevLoop
+    DevLoop --> ShutdownPhase
+    ShutdownPhase --> End
 
     classDef startEnd fill:#0078d4,stroke:#005a9e,stroke-width:3px,color:#fff
     classDef ready fill:#28a745,stroke:#218838,stroke-width:3px,color:#fff
@@ -158,9 +173,9 @@ flowchart LR
     classDef debug fill:#ffebee,stroke:#f44336,stroke-width:2px,color:#b71c1c
     classDef decision fill:#fff3e0,stroke:#f57c00,stroke-width:2px,color:#e65100
 
-    class Start startEnd
+    class Start,End startEnd
     class Ready ready
-    class Code,Run,StartDocker,Stop,Cleanup process
+    class Code,Run,StartDocker,Stop process
     class HotReload success
     class Test test
     class Logs,Review loop
