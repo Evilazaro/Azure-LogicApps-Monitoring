@@ -44,27 +44,43 @@ The Azure Logic Apps Monitoring Solution provides a **production-ready reference
 flowchart TB
     subgraph Core["🎯 Core Capabilities"]
         direction LR
-        C1["📦 Order Management<br/><i>Revenue-generating</i>"]
-        C2["🔄 Workflow Automation<br/><i>Process efficiency</i>"]
+        subgraph Revenue["Revenue Generating"]
+            C1["📦 Order Management<br/><i>Revenue-generating</i>"]
+        end
+        subgraph Efficiency["Process Efficiency"]
+            C2["🔄 Workflow Automation<br/><i>Process efficiency</i>"]
+        end
     end
 
     subgraph Enabling["⚙️ Enabling Capabilities"]
         direction LR
-        E1["📊 Observability<br/><i>Operational visibility</i>"]
-        E2["📨 Event Messaging<br/><i>Loose coupling</i>"]
-        E3["🔐 Identity Management<br/><i>Secure access</i>"]
+        subgraph Visibility["Operational Visibility"]
+            E1["📊 Observability<br/><i>Operational visibility</i>"]
+        end
+        subgraph Integration["Integration Services"]
+            E2["📨 Event Messaging<br/><i>Loose coupling</i>"]
+            E3["🔐 Identity Management<br/><i>Secure access</i>"]
+        end
     end
 
     subgraph Foundation["🏗️ Foundation Capabilities"]
         direction LR
-        F1["☁️ Cloud Infrastructure<br/><i>Azure platform</i>"]
-        F2["🚀 Deployment Automation<br/><i>CI/CD pipelines</i>"]
-        F3["💾 Data Persistence<br/><i>State management</i>"]
+        subgraph Infrastructure["Infrastructure"]
+            F1["☁️ Cloud Infrastructure<br/><i>Azure platform</i>"]
+        end
+        subgraph Automation["Automation"]
+            F2["🚀 Deployment Automation<br/><i>CI/CD pipelines</i>"]
+        end
+        subgraph DataServices["Data Services"]
+            F3["💾 Data Persistence<br/><i>State management</i>"]
+        end
     end
 
+    %% Layer dependencies
     Core --> Enabling
     Enabling --> Foundation
 
+    %% Capability relationships
     C1 -.->|"triggers"| C2
     C1 -.->|"publishes to"| E2
     E2 -.->|"triggers"| C2
@@ -86,6 +102,13 @@ flowchart TB
     style Core fill:#e3f2fd22,stroke:#1565c0,stroke-width:2px
     style Enabling fill:#e8f5e922,stroke:#2e7d32,stroke-width:2px
     style Foundation fill:#f5f5f522,stroke:#424242,stroke-width:2px
+    style Revenue fill:#e3f2fd11,stroke:#1565c0,stroke-width:1px,stroke-dasharray:3
+    style Efficiency fill:#e3f2fd11,stroke:#1565c0,stroke-width:1px,stroke-dasharray:3
+    style Visibility fill:#e8f5e911,stroke:#2e7d32,stroke-width:1px,stroke-dasharray:3
+    style Integration fill:#e8f5e911,stroke:#2e7d32,stroke-width:1px,stroke-dasharray:3
+    style Infrastructure fill:#f5f5f511,stroke:#424242,stroke-width:1px,stroke-dasharray:3
+    style Automation fill:#f5f5f511,stroke:#424242,stroke-width:1px,stroke-dasharray:3
+    style DataServices fill:#f5f5f511,stroke:#424242,stroke-width:1px,stroke-dasharray:3
 ```
 
 ### Capability Descriptions
@@ -124,27 +147,33 @@ flowchart TB
 %%{init: {'theme': 'base', 'themeVariables': { 'fontSize': '14px'}}}%%
 flowchart LR
     subgraph Trigger["🎯 Trigger"]
+        direction TB
         T1["Customer<br/>Order Request"]
     end
 
-    subgraph Engage["📝 Engage"]
-        S1["Browse Products<br/><i>Web App</i>"]
+    subgraph CustomerJourney["Customer Journey"]
+        direction LR
+        subgraph Engage["📝 Engage"]
+            S1["Browse Products<br/><i>Web App</i>"]
+        end
+        subgraph Transact["💳 Transact"]
+            S2["Place Order<br/><i>Orders API</i>"]
+        end
     end
 
-    subgraph Transact["💳 Transact"]
-        S2["Place Order<br/><i>Orders API</i>"]
-    end
-
-    subgraph Process["⚙️ Process"]
-        S3["Validate & Persist<br/><i>SQL Database</i>"]
-        S4["Publish Event<br/><i>Service Bus</i>"]
-    end
-
-    subgraph Automate["🔄 Automate"]
-        S5["Execute Workflow<br/><i>Logic Apps</i>"]
+    subgraph BackendProcessing["Backend Processing"]
+        direction LR
+        subgraph Process["⚙️ Process"]
+            S3["Validate & Persist<br/><i>SQL Database</i>"]
+            S4["Publish Event<br/><i>Service Bus</i>"]
+        end
+        subgraph Automate["🔄 Automate"]
+            S5["Execute Workflow<br/><i>Logic Apps</i>"]
+        end
     end
 
     subgraph Outcome["✅ Outcome"]
+        direction TB
         O1["Order<br/>Processed"]
     end
 
@@ -161,11 +190,13 @@ flowchart LR
 
     %% Subgraph container styling for visual phase grouping
     style Trigger fill:#e3f2fd22,stroke:#1565c0,stroke-width:2px
-    style Engage fill:#fff3e022,stroke:#e65100,stroke-width:2px
-    style Transact fill:#fff3e022,stroke:#e65100,stroke-width:2px
-    style Process fill:#fff3e022,stroke:#e65100,stroke-width:2px
-    style Automate fill:#fff3e022,stroke:#e65100,stroke-width:2px
+    style CustomerJourney fill:#fff3e022,stroke:#e65100,stroke-width:2px
+    style BackendProcessing fill:#fff3e022,stroke:#e65100,stroke-width:2px
     style Outcome fill:#e8f5e922,stroke:#2e7d32,stroke-width:2px
+    style Engage fill:#fff3e011,stroke:#e65100,stroke-width:1px,stroke-dasharray:3
+    style Transact fill:#fff3e011,stroke:#e65100,stroke-width:1px,stroke-dasharray:3
+    style Process fill:#fff3e011,stroke:#e65100,stroke-width:1px,stroke-dasharray:3
+    style Automate fill:#fff3e011,stroke:#e65100,stroke-width:1px,stroke-dasharray:3
 ```
 
 #### Value Stream Stages
@@ -183,26 +214,32 @@ flowchart LR
 %%{init: {'theme': 'base', 'themeVariables': { 'fontSize': '14px'}}}%%
 flowchart LR
     subgraph Trigger["🎯 Trigger"]
+        direction TB
         T1["Telemetry<br/>Generated"]
     end
 
-    subgraph Collect["📥 Collect"]
-        S1["Instrument<br/><i>OpenTelemetry</i>"]
+    subgraph DataPipeline["Data Pipeline"]
+        direction LR
+        subgraph Collect["📥 Collect"]
+            S1["Instrument<br/><i>OpenTelemetry</i>"]
+        end
+        subgraph Aggregate["📊 Aggregate"]
+            S2["Export<br/><i>OTLP/Azure</i>"]
+        end
     end
 
-    subgraph Aggregate["📊 Aggregate"]
-        S2["Export<br/><i>OTLP/Azure</i>"]
-    end
-
-    subgraph Analyze["🔍 Analyze"]
-        S3["Store & Index<br/><i>App Insights</i>"]
-    end
-
-    subgraph Act["⚡ Act"]
-        S4["Alert & Visualize<br/><i>Azure Monitor</i>"]
+    subgraph InsightsLayer["Insights Layer"]
+        direction LR
+        subgraph Analyze["🔍 Analyze"]
+            S3["Store & Index<br/><i>App Insights</i>"]
+        end
+        subgraph Act["⚡ Act"]
+            S4["Alert & Visualize<br/><i>Azure Monitor</i>"]
+        end
     end
 
     subgraph Outcome["✅ Outcome"]
+        direction TB
         O1["Issue<br/>Resolved"]
     end
 
@@ -219,17 +256,13 @@ flowchart LR
 
     %% Subgraph container styling for visual phase grouping
     style Trigger fill:#fce4ec22,stroke:#c2185b,stroke-width:2px
-    style Collect fill:#fff3e022,stroke:#e65100,stroke-width:2px
-    style Aggregate fill:#fff3e022,stroke:#e65100,stroke-width:2px
-    style Analyze fill:#fff3e022,stroke:#e65100,stroke-width:2px
-    style Act fill:#fff3e022,stroke:#e65100,stroke-width:2px
+    style DataPipeline fill:#fff3e022,stroke:#e65100,stroke-width:2px
+    style InsightsLayer fill:#fff3e022,stroke:#e65100,stroke-width:2px
     style Outcome fill:#e8f5e922,stroke:#2e7d32,stroke-width:2px
-```
-    classDef outcome fill:#e8f5e9,stroke:#2e7d32
-
-    class T1 trigger
-    class S1,S2,S3,S4 stage
-    class O1 outcome
+    style Collect fill:#fff3e011,stroke:#e65100,stroke-width:1px,stroke-dasharray:3
+    style Aggregate fill:#fff3e011,stroke:#e65100,stroke-width:1px,stroke-dasharray:3
+    style Analyze fill:#fff3e011,stroke:#e65100,stroke-width:1px,stroke-dasharray:3
+    style Act fill:#fff3e011,stroke:#e65100,stroke-width:1px,stroke-dasharray:3
 ```
 
 ---
@@ -256,34 +289,53 @@ flowchart TD
     Start([Customer initiates order])
     
     subgraph WebApp["🌐 Web Application"]
-        A1["Display order form"]
-        A2["Validate input client-side"]
-        A3["Submit order request"]
+        direction TB
+        subgraph UserInput["User Input"]
+            A1["Display order form"]
+            A2["Validate input client-side"]
+        end
+        subgraph Submission["Submission"]
+            A3["Submit order request"]
+        end
     end
     
     subgraph API["📡 Orders API"]
-        B1["Receive order"]
-        B2{"Validate order"}
-        B3["Persist to SQL"]
-        B4["Publish to Service Bus"]
-        B5["Return confirmation"]
+        direction TB
+        subgraph Validation["Validation"]
+            B1["Receive order"]
+            B2{"Validate order"}
+        end
+        subgraph Processing["Processing"]
+            B3["Persist to SQL"]
+            B4["Publish to Service Bus"]
+            B5["Return confirmation"]
+        end
     end
     
     subgraph Workflow["🔄 Logic Apps"]
-        C1["Trigger on message"]
-        C2{"Content type valid?"}
-        C3["Process order"]
-        C4{"Processing successful?"}
-        C5["Store in success blob"]
-        C6["Store in error blob"]
+        direction TB
+        subgraph MessageHandling["Message Handling"]
+            C1["Trigger on message"]
+            C2{"Content type valid?"}
+        end
+        subgraph Execution["Execution"]
+            C3["Process order"]
+            C4{"Processing successful?"}
+        end
+        subgraph Storage["Storage"]
+            C5["Store in success blob"]
+            C6["Store in error blob"]
+        end
     end
     
+    %% Main flow
     Start --> A1 --> A2 --> A3
     A3 --> B1 --> B2
     B2 -->|"Invalid"| Error1["Return 400 Bad Request"]
     B2 -->|"Valid"| B3 --> B4 --> B5
     B5 --> Success1([Order Placed])
     
+    %% Async workflow
     B4 -.->|"Async"| C1
     C1 --> C2
     C2 -->|"Invalid"| C6
@@ -313,6 +365,13 @@ flowchart TD
     style WebApp fill:#e3f2fd22,stroke:#1565c0,stroke-width:2px
     style API fill:#e8f5e922,stroke:#2e7d32,stroke-width:2px
     style Workflow fill:#fff3e022,stroke:#e65100,stroke-width:2px
+    style UserInput fill:#e3f2fd11,stroke:#1565c0,stroke-width:1px,stroke-dasharray:3
+    style Submission fill:#e3f2fd11,stroke:#1565c0,stroke-width:1px,stroke-dasharray:3
+    style Validation fill:#e8f5e911,stroke:#2e7d32,stroke-width:1px,stroke-dasharray:3
+    style Processing fill:#e8f5e911,stroke:#2e7d32,stroke-width:1px,stroke-dasharray:3
+    style MessageHandling fill:#fff3e011,stroke:#e65100,stroke-width:1px,stroke-dasharray:3
+    style Execution fill:#fff3e011,stroke:#e65100,stroke-width:1px,stroke-dasharray:3
+    style Storage fill:#fff3e011,stroke:#e65100,stroke-width:1px,stroke-dasharray:3
 ```
 
 ---
