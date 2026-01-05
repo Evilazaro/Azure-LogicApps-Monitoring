@@ -44,9 +44,63 @@
                                 }
                             ]
                         },
-                        "actions": {},
+                        "actions": {
+                            "Create_Blob_Successfully": {
+                                "type": "ApiConnection",
+                                "inputs": {
+                                    "host": {
+                                        "connection": {
+                                            "referenceName": "azureblob"
+                                        }
+                                    },
+                                    "method": "post",
+                                    "body": "@base64ToBinary(triggerBody()?['ContentData'])",
+                                    "headers": {
+                                        "ReadFileMetadataFromServer": true
+                                    },
+                                    "path": "/v2/datasets/@{encodeURIComponent(encodeURIComponent('orderswsamenhofc4puz4g'))}/files",
+                                    "queries": {
+                                        "folderPath": "/ordersprocessedsuccessfully",
+                                        "name": "@triggerBody()?['MessageId']",
+                                        "queryParametersSingleEncoded": true
+                                    }
+                                },
+                                "runtimeConfiguration": {
+                                    "contentTransfer": {
+                                        "transferMode": "Chunked"
+                                    }
+                                }
+                            }
+                        },
                         "else": {
-                            "actions": {}
+                            "actions": {
+                                "Create_Blob_Errors": {
+                                    "type": "ApiConnection",
+                                    "inputs": {
+                                        "host": {
+                                            "connection": {
+                                                "referenceName": "azureblob"
+                                            }
+                                        },
+                                        "method": "post",
+                                        "body": "@base64ToBinary(triggerBody()?['ContentData'])",
+                                        "headers": {
+                                            "ReadFileMetadataFromServer": true
+                                        },
+                                        "path": "/v2/datasets/@{encodeURIComponent(encodeURIComponent('orderswsamenhofc4puz4g'))}/files",
+                                        "queries": {
+                                            "folderPath": "/ordersprocessedwitherrors",
+                                            "name": "@triggerBody()?['MessageId']",
+                                            "queryParametersSingleEncoded": true
+                                        }
+                                    },
+                                    "runtimeConfiguration": {
+                                        "contentTransfer": {
+                                            "transferMode": "Chunked"
+                                        }
+                                    }
+                                }
+                            }
                         },
                         "runAfter": {
                             "HTTP": [
@@ -56,13 +110,60 @@
                     }
                 },
                 "else": {
-                    "actions": {}
+                    "actions": {
+                        "Create_Blob_Order_Placed_Errors": {
+                            "type": "ApiConnection",
+                            "inputs": {
+                                "host": {
+                                    "connection": {
+                                        "referenceName": "azureblob"
+                                    }
+                                },
+                                "method": "post",
+                                "body": "@base64ToBinary(triggerBody()?['ContentData'])",
+                                "headers": {
+                                    "ReadFileMetadataFromServer": true
+                                },
+                                "path": "/v2/datasets/@{encodeURIComponent(encodeURIComponent('orderswsamenhofc4puz4g'))}/files",
+                                "queries": {
+                                    "folderPath": "/ordersprocessedwitherrors",
+                                    "name": "@triggerBody()?['MessageId']",
+                                    "queryParametersSingleEncoded": true
+                                }
+                            },
+                            "runtimeConfiguration": {
+                                "contentTransfer": {
+                                    "transferMode": "Chunked"
+                                }
+                            }
+                        }
+                    }
                 },
                 "runAfter": {}
             }
         },
         "outputs": {},
-        "triggers": {}
+        "triggers": {
+            "When_a_message_is_received_in_a_topic_subscription_(auto-complete)": {
+                "type": "ApiConnection",
+                "inputs": {
+                    "host": {
+                        "connection": {
+                            "referenceName": "servicebus"
+                        }
+                    },
+                    "method": "get",
+                    "path": "/@{encodeURIComponent(encodeURIComponent('ordersplaced'))}/subscriptions/@{encodeURIComponent('orderprocessingsub')}/messages/head",
+                    "queries": {
+                        "subscriptionType": "Main"
+                    }
+                },
+                "recurrence": {
+                    "interval": 1,
+                    "frequency": "Second"
+                }
+            }
+        }
     },
     "kind": "stateful"
 }
