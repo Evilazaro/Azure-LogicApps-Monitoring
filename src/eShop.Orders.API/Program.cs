@@ -1,3 +1,8 @@
+// =============================================================================
+// eShop Orders API - Entry Point
+// ASP.NET Core Web API for order management with Azure integration
+// =============================================================================
+
 using eShop.Orders.API.Data;
 using eShop.Orders.API.Handlers;
 using eShop.Orders.API.HealthChecks;
@@ -17,7 +22,10 @@ builder.Services.AddSingleton(new ActivitySource("eShop.Orders.API"));
 
 var connectionString = builder.Configuration.GetConnectionString("OrderDb");
 
-// Configure Entity Framework Core with SQL Server
+// =============================================================================
+// Entity Framework Core Configuration
+// Best Practice: Configure EF Core with resilience patterns for Azure SQL
+// =============================================================================
 builder.Services.AddDbContext<OrderDbContext>(options =>
 {
     if (string.IsNullOrWhiteSpace(connectionString))

@@ -1,3 +1,8 @@
+// =============================================================================
+// Database Context Health Check
+// Monitors SQL Server/Azure SQL Database connectivity
+// =============================================================================
+
 using eShop.Orders.API.Data;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 

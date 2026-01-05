@@ -1,3 +1,8 @@
+// =============================================================================
+// Service Bus Health Check
+// Monitors Azure Service Bus connectivity
+// =============================================================================
+
 using Azure.Messaging.ServiceBus;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 

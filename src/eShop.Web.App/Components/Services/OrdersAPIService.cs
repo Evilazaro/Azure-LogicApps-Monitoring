@@ -1,3 +1,9 @@
+// =============================================================================
+// Orders API Service - HTTP Client Layer
+// Provides typed HTTP client for communicating with the Orders API
+// Implements distributed tracing and structured logging
+// =============================================================================
+
 using app.ServiceDefaults.CommonTypes;
 using System.Diagnostics;
 
@@ -14,12 +20,12 @@ public sealed class OrdersAPIService
     private readonly ActivitySource _activitySource;
 
     /// <summary>
-    /// Initializes a new instance of the <see cref=\"OrdersAPIService\"/> class.
+    /// Initializes a new instance of the <see cref="OrdersAPIService"/> class.
     /// </summary>
-    /// <param name=\"httpClient\">The HTTP client for API communication.</param>
-    /// <param name=\"logger\">The logger instance for structured logging.</param>
-    /// <param name=\"activitySource\">The activity source for distributed tracing.</param>
-    /// <exception cref=\"ArgumentNullException\">Thrown when any parameter is null.</exception>
+    /// <param name="httpClient">The HTTP client for API communication.</param>
+    /// <param name="logger">The logger instance for structured logging.</param>
+    /// <param name="activitySource">The activity source for distributed tracing.</param>
+    /// <exception cref="ArgumentNullException">Thrown when any parameter is null.</exception>
     public OrdersAPIService(
         HttpClient httpClient,
         ILogger<OrdersAPIService> logger,

@@ -1,3 +1,8 @@
+// =============================================================================
+// Order Repository Interface
+// Defines the contract for order data persistence operations
+// =============================================================================
+
 using app.ServiceDefaults.CommonTypes;
 
 namespace eShop.Orders.API.Interfaces;

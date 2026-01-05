@@ -1,3 +1,8 @@
+// =============================================================================
+// Order Entity - Database Model
+// Represents an order in the database with EF Core configuration
+// =============================================================================
+
 using System.ComponentModel.DataAnnotations;
 
 namespace eShop.Orders.API.Data.Entities;

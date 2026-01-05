@@ -1,3 +1,8 @@
+// =============================================================================
+// Orders Message Handler - Messaging Layer
+// Handles publishing order messages to Azure Service Bus with distributed tracing
+// =============================================================================
+
 using app.ServiceDefaults.CommonTypes;
 using Azure.Messaging.ServiceBus;
 using eShop.Orders.API.Interfaces;
