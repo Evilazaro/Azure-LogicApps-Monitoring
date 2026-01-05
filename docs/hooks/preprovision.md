@@ -319,52 +319,76 @@ az provider register --namespace Microsoft.Storage --wait
 ```mermaid
 flowchart LR
     Start(["🚀 azd up / azd provision"])
-    ValidateRuntime["Validate Runtime Version"]
-    CheckDotNet["Check .NET SDK"]
-    InstallDotNet{"Install .NET?"}
-    CheckAzd["Check Azure Developer CLI"]
-    InstallAzd{"Install azd?"}
-    CheckAzCLI["Check Azure CLI"]
-    InstallAzCLI{"Install Azure CLI?"}
-    CheckAuth["Check Azure Authentication"]
-    Login{"Login to Azure?"}
-    CheckBicep["Check Bicep CLI"]
-    InstallBicep{"Install Bicep?"}
-    CheckProviders["Check Resource Providers"]
-    RegisterProviders{"Register Providers?"}
-    CheckQuota["Check Quotas (Info)"]
-    ClearSecrets["Clear User Secrets"]
     Complete(["✓ Pre-provisioning Complete"])
     Failed(["✗ Pre-provisioning Failed"])
 
-    Start --> ValidateRuntime
-    ValidateRuntime --> CheckDotNet
-    CheckDotNet -->|Missing| InstallDotNet
-    InstallDotNet -->|Yes| CheckDotNet
+    Start --> RuntimeValidation
+
+    subgraph RuntimeValidation["1️⃣ Runtime Validation"]
+        direction TB
+        ValidateRuntime["Validate Runtime Version"]
+    end
+
+    subgraph Prerequisites["2️⃣ Prerequisites Check"]
+        direction TB
+        CheckDotNet["Check .NET SDK"]
+        InstallDotNet{"Install .NET?"}
+        CheckAzd["Check Azure Developer CLI"]
+        InstallAzd{"Install azd?"}
+        CheckAzCLI["Check Azure CLI"]
+        InstallAzCLI{"Install Azure CLI?"}
+        CheckBicep["Check Bicep CLI"]
+        InstallBicep{"Install Bicep?"}
+
+        CheckDotNet -->|Missing| InstallDotNet
+        InstallDotNet -->|Yes| CheckDotNet
+        CheckDotNet -->|OK| CheckAzd
+        CheckAzd -->|Missing| InstallAzd
+        InstallAzd -->|Yes| CheckAzd
+        CheckAzd -->|OK| CheckAzCLI
+        CheckAzCLI -->|Missing| InstallAzCLI
+        InstallAzCLI -->|Yes| CheckAzCLI
+        CheckAzCLI -->|OK| CheckBicep
+        CheckBicep -->|Missing| InstallBicep
+        InstallBicep -->|Yes| CheckBicep
+    end
+
+    subgraph Authentication["3️⃣ Azure Authentication"]
+        direction TB
+        CheckAuth["Check Azure Authentication"]
+        Login{"Login to Azure?"}
+
+        CheckAuth -->|Not Authenticated| Login
+        Login -->|Yes| CheckAuth
+    end
+
+    subgraph AzureConfig["4️⃣ Azure Configuration"]
+        direction TB
+        CheckProviders["Check Resource Providers"]
+        RegisterProviders{"Register Providers?"}
+        CheckQuota["Check Quotas (Info)"]
+
+        CheckProviders -->|Missing| RegisterProviders
+        RegisterProviders -->|Yes| CheckProviders
+        CheckProviders -->|OK| CheckQuota
+    end
+
+    subgraph Cleanup["5️⃣ Cleanup"]
+        direction TB
+        ClearSecrets["Clear User Secrets"]
+    end
+
+    RuntimeValidation --> Prerequisites
     InstallDotNet -->|No| Failed
-    CheckDotNet -->|OK| CheckAzd
-    CheckAzd -->|Missing| InstallAzd
-    InstallAzd -->|Yes| CheckAzd
     InstallAzd -->|No| Failed
-    CheckAzd -->|OK| CheckAzCLI
-    CheckAzCLI -->|Missing| InstallAzCLI
-    InstallAzCLI -->|Yes| CheckAzCLI
     InstallAzCLI -->|No| Failed
-    CheckAzCLI -->|OK| CheckAuth
-    CheckAuth -->|Not Authenticated| Login
-    Login -->|Yes| CheckAuth
-    Login -->|No| Failed
-    CheckAuth -->|OK| CheckBicep
-    CheckBicep -->|Missing| InstallBicep
-    InstallBicep -->|Yes| CheckBicep
     InstallBicep -->|No| Failed
-    CheckBicep -->|OK| CheckProviders
-    CheckProviders -->|Missing| RegisterProviders
-    RegisterProviders -->|Yes| CheckProviders
+    CheckBicep -->|OK| Authentication
+    Login -->|No| Failed
+    CheckAuth -->|OK| AzureConfig
     RegisterProviders -->|No| Failed
-    CheckProviders -->|OK| CheckQuota
-    CheckQuota --> ClearSecrets
-    ClearSecrets --> Complete
+    CheckQuota --> Cleanup
+    Cleanup --> Complete
 
     classDef startEnd fill:#e8f5e9,stroke:#2e7d32,stroke-width:3px,color:#1b5e20
     classDef process fill:#e3f2fd,stroke:#1976d2,stroke-width:2px,color:#0d47a1

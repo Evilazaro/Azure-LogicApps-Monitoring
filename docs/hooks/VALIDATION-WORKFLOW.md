@@ -61,7 +61,7 @@ flowchart TD
 ### Complete Deployment Flow
 
 ```mermaid
-flowchart TB
+flowchart LR
     Start["🚀 START DEPLOYMENT<br/>Developer runs: azd up"]
 
     subgraph Optional["Optional Pre-Check"]
