@@ -56,6 +56,30 @@ What sets this reference apart is its **zero-secrets architecture** using Azure 
 | **SRE / Operations** | Observability, alerting, health checks, troubleshooting | [Observability Architecture](docs/architecture/05-observability-architecture.md), [Security Architecture](docs/architecture/06-security-architecture.md) |
 | **Technical Leads** | Architecture decisions, trade-offs, team onboarding | [ADR Index](docs/architecture/adr/README.md), [Business Architecture](docs/architecture/01-business-architecture.md) |
 
+### Developer Experience
+
+This solution prioritizes **developer productivity** with a streamlined inner-loop experience that minimizes friction from code change to validation.
+
+| Capability | Local Development | Azure Deployment |
+|------------|-------------------|------------------|
+| **Setup Time** | ~1 minute | ~10 minutes |
+| **Hot Reload** | ✅ C# & Razor (1-3 seconds) | ✅ Container rebuild required |
+| **Debugging** | ✅ Full breakpoint support | ✅ Remote debugging available |
+| **Cost** | Free (Docker containers) | Pay-per-use |
+| **Telemetry** | Aspire Dashboard | Application Insights |
+| **Database** | SQL Server container | Azure SQL + Managed Identity |
+
+| Feature | Description |
+|---------|-------------|
+| **🚀 One-Command Start** | `dotnet run --project app.AppHost` launches all services with dependencies |
+| **📊 Aspire Dashboard** | Real-time traces, logs, and metrics at `https://localhost:17225` |
+| **🔄 Service Discovery** | Reference services by name—no hardcoded URLs or ports |
+| **🐳 Containerized Dependencies** | SQL Server and Service Bus emulator auto-provisioned |
+| **🧪 REST Client Testing** | `.http` files for quick API validation in VS Code |
+| **📝 Structured Logging** | Correlation IDs propagated across all service boundaries |
+
+> 📖 **Learn more:** See [Developer Workflow](docs/hooks/README.md) for comprehensive inner-loop patterns, hybrid development, and troubleshooting.
+
 ---
 
 ## ✨ Key Features
