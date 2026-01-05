@@ -23,6 +23,7 @@ The solution uses **Azure Developer CLI (azd)** for streamlined deployments with
 ## 2. Deployment Pipeline
 
 ```mermaid
+%%{init: {'theme': 'base', 'themeVariables': { 'fontSize': '14px'}}}%%
 flowchart TB
     subgraph Developer["👨‍💻 Developer Workstation"]
         Code["Source Code"]
@@ -64,10 +65,11 @@ flowchart TB
     Update --> API
     Update --> Web
 
-    classDef dev fill:#e3f2fd,stroke:#1565c0
-    classDef provision fill:#e8f5e9,stroke:#2e7d32
-    classDef deploy fill:#fff3e0,stroke:#ef6c00
-    classDef azure fill:#f3e5f5,stroke:#7b1fa2
+    %% Accessible color palette for deployment phases
+    classDef dev fill:#e3f2fd,stroke:#1565c0,stroke-width:2px,color:#0d47a1
+    classDef provision fill:#e8f5e9,stroke:#2e7d32,stroke-width:2px,color:#1b5e20
+    classDef deploy fill:#fff3e0,stroke:#e65100,stroke-width:2px,color:#bf360c
+    classDef azure fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px,color:#4a148c
 
     class Code,AZD dev
     class PreHook,Bicep,ARM,PostHook provision
@@ -181,6 +183,7 @@ Invoke-Sqlcmd -Query $sql -ConnectionString $connectionString
 ## 5. Container Deployment Flow
 
 ```mermaid
+%%{init: {'theme': 'base', 'themeVariables': { 'fontSize': '14px', 'actorBkg': '#e3f2fd', 'actorBorder': '#1565c0', 'actorTextColor': '#0d47a1', 'noteBkgColor': '#e8f5e9', 'noteBorderColor': '#2e7d32'}}}%%
 sequenceDiagram
     autonumber
     participant Dev as Developer
@@ -189,15 +192,27 @@ sequenceDiagram
     participant ACR as Container Registry
     participant CA as Container Apps
 
-    Dev->>AZD: azd deploy
-    AZD->>Docker: Build container image
-    Docker-->>AZD: Image built
-    AZD->>ACR: docker push
-    ACR-->>AZD: Image stored
-    AZD->>CA: Update container revision
-    CA->>ACR: Pull image
-    ACR-->>CA: Image delivered
-    CA-->>AZD: Revision deployed
+    rect rgba(227, 242, 253, 0.5)
+        Note over Dev,Docker: Build Phase
+        Dev->>AZD: azd deploy
+        AZD->>Docker: Build container image
+        Docker-->>AZD: Image built
+    end
+
+    rect rgba(255, 243, 224, 0.5)
+        Note over AZD,ACR: Push Phase
+        AZD->>ACR: docker push
+        ACR-->>AZD: Image stored
+    end
+
+    rect rgba(232, 245, 233, 0.5)
+        Note over AZD,CA: Deploy Phase
+        AZD->>CA: Update container revision
+        CA->>ACR: Pull image
+        ACR-->>CA: Image delivered
+        CA-->>AZD: Revision deployed
+    end
+
     AZD-->>Dev: Deployment complete
 ```
 
@@ -229,6 +244,7 @@ resource rg 'Microsoft.Resources/resourceGroups@2022-09-01' = {
 ### Deployment Sequence
 
 ```mermaid
+%%{init: {'theme': 'base', 'themeVariables': { 'fontSize': '14px'}}}%%
 flowchart TB
     subgraph Phase1["Phase 1: Foundation"]
         RG["Resource Group"]
@@ -268,10 +284,11 @@ flowchart TB
     CAE --> Web
     SB --> LA
 
-    classDef phase1 fill:#e3f2fd,stroke:#1565c0
-    classDef phase2 fill:#e8f5e9,stroke:#2e7d32
-    classDef phase3 fill:#fff3e0,stroke:#ef6c00
-    classDef phase4 fill:#f3e5f5,stroke:#7b1fa2
+    %% Accessible color palette for deployment phases
+    classDef phase1 fill:#e3f2fd,stroke:#1565c0,stroke-width:2px,color:#0d47a1
+    classDef phase2 fill:#e8f5e9,stroke:#2e7d32,stroke-width:2px,color:#1b5e20
+    classDef phase3 fill:#fff3e0,stroke:#e65100,stroke-width:2px,color:#bf360c
+    classDef phase4 fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px,color:#4a148c
 
     class RG,MI phase1
     class LAW,AI,SQL,Storage phase2
@@ -462,6 +479,7 @@ jobs:
 ### Pipeline Stages
 
 ```mermaid
+%%{init: {'theme': 'base', 'themeVariables': { 'fontSize': '14px'}}}%%
 flowchart LR
     subgraph Build["🔨 Build"]
         Checkout["Checkout"]
@@ -485,8 +503,9 @@ flowchart LR
     Provision --> DeployApp
     DeployApp --> Verify
 
-    classDef build fill:#e3f2fd,stroke:#1565c0
-    classDef deploy fill:#e8f5e9,stroke:#2e7d32
+    %% Accessible color palette for pipeline stages
+    classDef build fill:#e3f2fd,stroke:#1565c0,stroke-width:2px,color:#0d47a1
+    classDef deploy fill:#e8f5e9,stroke:#2e7d32,stroke-width:2px,color:#1b5e20
 
     class Checkout,Restore,Compile,Test build
     class Login,Provision,DeployApp,Verify deploy
