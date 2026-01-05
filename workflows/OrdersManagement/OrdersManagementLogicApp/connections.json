@@ -1,0 +1,46 @@
+{
+    "managedApiConnections": {
+        "servicebus": {
+            "api": {
+                "id": "/subscriptions/${AZURE_SUBSCRIPTION_ID}/providers/Microsoft.Web/locations/westus3/managedApis/servicebus"
+            },
+            "connection": {
+                "id": "/subscriptions/${AZURE_SUBSCRIPTION_ID}/resourceGroups/${AZURE_RESOURCE_GROUP}/providers/Microsoft.Web/connections/servicebus"
+            },
+            "authentication": {
+                "type": "ManagedServiceIdentity",
+                "identity": "/subscriptions/${AZURE_SUBSCRIPTION_ID}/resourcegroups/${AZURE_RESOURCE_GROUP}/providers/Microsoft.ManagedIdentity/userAssignedIdentities/${MANAGED_IDENTITY_NAME}"
+            },
+            "connectionRuntimeUrl": "${SERVICE_BUS_CONNECTION_RUNTIME_URL}",
+            "connectionProperties": {
+                "authentication": {
+                    "type": "ManagedServiceIdentity",
+                    "identity": "/subscriptions/${AZURE_SUBSCRIPTION_ID}/resourcegroups/${AZURE_RESOURCE_GROUP}/providers/Microsoft.ManagedIdentity/userAssignedIdentities/${MANAGED_IDENTITY_NAME}",
+                    "audience": "https://servicebus.azure.net"
+                }
+            }
+        },
+        "azureblob": {
+            "api": {
+                "id": "/subscriptions/${AZURE_SUBSCRIPTION_ID}/providers/Microsoft.Web/locations/westus3/managedApis/azureblob"
+            },
+            "connection": {
+                "id": "/subscriptions/${AZURE_SUBSCRIPTION_ID}/resourceGroups/${AZURE_RESOURCE_GROUP}/providers/Microsoft.Web/connections/azureblob"
+            },
+            "authentication": {
+                "type": "ManagedServiceIdentity",
+                "identity": "/subscriptions/${AZURE_SUBSCRIPTION_ID}/resourcegroups/${AZURE_RESOURCE_GROUP}/providers/Microsoft.ManagedIdentity/userAssignedIdentities/${MANAGED_IDENTITY_NAME}"
+            },
+            "connectionRuntimeUrl": "${AZURE_BLOB_CONNECTION_RUNTIME_URL}",
+            "connectionProperties": {
+                "authentication": {
+                    "type": "ManagedServiceIdentity",
+                    "identity": "/subscriptions/${AZURE_SUBSCRIPTION_ID}/resourcegroups/${AZURE_RESOURCE_GROUP}/providers/Microsoft.ManagedIdentity/userAssignedIdentities/${MANAGED_IDENTITY_NAME}",
+                    "audience": "https://storage.azure.com/"
+                }
+            }
+        }
+    },
+    "serviceProviderConnections": {},
+    "agentConnections": {}
+}
