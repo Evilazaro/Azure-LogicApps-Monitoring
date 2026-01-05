@@ -4,6 +4,22 @@
 
 ---
 
+## Table of Contents
+
+- [📋 Executive Summary](#executive-summary)
+- [🏛️ High-Level Architecture Diagram](#high-level-architecture-diagram)
+- [📦 Service Inventory](#service-inventory)
+- [🧭 Document Navigation](#document-navigation)
+  - [📚 TOGAF BDAT Layer Documents](#togaf-bdat-layer-documents)
+  - [📝 Architecture Decision Records](#architecture-decision-records)
+  - [👥 Reading Order by Audience](#reading-order-by-audience)
+- [🔍 Quick Reference](#quick-reference)
+  - [☁️ Key Azure Resources](#key-azure-resources)
+  - [📁 Repository Structure](#repository-structure)
+- [📚 Related Documents](#related-documents)
+
+---
+
 ## Executive Summary
 
 The **Azure Logic Apps Monitoring Solution** is a cloud-native distributed application that demonstrates enterprise-grade observability patterns for Azure Logic Apps Standard workflows. Built on .NET Aspire orchestration, it provides a complete reference implementation for monitoring event-driven applications using Azure's native observability stack.

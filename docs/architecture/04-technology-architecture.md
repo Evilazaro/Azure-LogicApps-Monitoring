@@ -4,6 +4,35 @@
 
 ---
 
+## Table of Contents
+
+- [🏗️ 1. Technology Architecture Overview](#1-technology-architecture-overview)
+  - [📐 Design Principles](#design-principles)
+- [☁️ 2. Azure Resource Topology](#2-azure-resource-topology)
+- [📦 3. Resource Inventory](#3-resource-inventory)
+  - [🔗 Shared Infrastructure](#shared-infrastructure)
+  - [⚙️ Workload Infrastructure](#workload-infrastructure)
+- [📝 4. Infrastructure as Code Structure](#4-infrastructure-as-code-structure)
+  - [🏛️ Bicep Module Hierarchy](#bicep-module-hierarchy)
+  - [🔄 Module Deployment Flow](#module-deployment-flow)
+- [🔧 5. Key Bicep Module Details](#5-key-bicep-module-details)
+  - [🎯 Root Module - main.bicep](#root-module---mainbicep)
+  - [📊 Monitoring Module](#monitoring-module)
+  - [⚡ Logic App Module](#logic-app-module)
+- [🚀 6. Azure Developer CLI Configuration](#6-azure-developer-cli-configuration)
+  - [📋 azure.yaml Structure](#azureyaml-structure)
+  - [🪝 azd Lifecycle Hooks](#azd-lifecycle-hooks)
+- [🐳 7. Container Apps Configuration](#7-container-apps-configuration)
+  - [🌐 Container Apps Environment](#container-apps-environment)
+  - [📦 Container App Configuration](#container-app-configuration)
+- [🌐 8. Network Architecture](#8-network-architecture)
+  - [⚙️ Network Configuration](#network-configuration)
+- [🔐 9. Security Architecture Summary](#9-security-architecture-summary)
+- [🔗 Cross-Architecture Relationships](#cross-architecture-relationships)
+- [📚 Related Documents](#related-documents)
+
+---
+
 ## 1. Technology Architecture Overview
 
 The technology architecture leverages Azure PaaS services deployed via Infrastructure as Code (Bicep) at **subscription scope**. The modular template structure separates shared infrastructure (identity, monitoring, data) from workload-specific resources (messaging, compute, Logic Apps).

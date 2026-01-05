@@ -4,6 +4,26 @@
 
 ---
 
+## Table of Contents
+
+- [🏢 1. Business Context](#1-business-context)
+  - [❓ Problem Statement](#problem-statement)
+  - [💎 Solution Value Proposition](#solution-value-proposition)
+  - [👥 Target Users and Personas](#target-users-and-personas)
+- [🎯 2. Business Capabilities](#2-business-capabilities)
+  - [🗺️ Capability Map](#capability-map)
+  - [📝 Capability Descriptions](#capability-descriptions)
+- [🤝 3. Stakeholder Analysis](#3-stakeholder-analysis)
+- [🔄 4. Value Streams](#4-value-streams)
+  - [📦 Order Fulfillment Value Stream](#order-fulfillment-value-stream)
+  - [📊 Monitoring Value Stream](#monitoring-value-stream)
+- [✅ 5. Quality Attribute Requirements](#5-quality-attribute-requirements)
+- [📋 6. Business Process Flows](#6-business-process-flows)
+- [🔗 Cross-Architecture Relationships](#cross-architecture-relationships)
+- [📚 Related Documents](#related-documents)
+
+---
+
 ## 1. Business Context
 
 ### Problem Statement

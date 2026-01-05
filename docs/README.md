@@ -7,6 +7,27 @@
 
 ---
 
+## Table of Contents
+
+- [📋 Overview](#-overview)
+- [📚 Documentation Structure](#-documentation-structure)
+- [🏗️ Architecture Documentation](#️-architecture-documentation)
+  - [📑 Document Index](#document-index)
+  - [📝 Architecture Decision Records (ADRs)](#architecture-decision-records-adrs)
+- [🔧 Developer Hooks Documentation](#-developer-hooks-documentation)
+  - [📜 Script Index](#script-index)
+  - [🔄 Developer Workflows](#developer-workflows)
+- [🎯 Reading Paths by Role](#-reading-paths-by-role)
+- [🚀 Quick Start](#-quick-start)
+  - [✅ Prerequisites](#prerequisites)
+  - [💻 Local Development](#local-development)
+  - [☁️ Azure Deployment](#azure-deployment)
+- [🔗 Related Resources](#-related-resources)
+  - [📂 Repository Links](#repository-links)
+  - [📖 External Documentation](#external-documentation)
+
+---
+
 ## 📋 Overview
 
 This documentation provides comprehensive technical guidance for the **Azure Logic Apps Monitoring Solution** - a cloud-native reference implementation demonstrating enterprise-grade observability patterns for Azure Logic Apps Standard workflows.

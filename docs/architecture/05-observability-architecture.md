@@ -4,6 +4,46 @@
 
 ---
 
+## Table of Contents
+
+- [👁️ 1. Observability Overview](#1-observability-overview)
+  - [🎯 Observability Strategy](#observability-strategy)
+- [🗺️ 2. Observability Topology](#2-observability-topology)
+- [📡 3. OpenTelemetry Configuration](#3-opentelemetry-configuration)
+  - [⚙️ SDK Setup](#sdk-setup)
+  - [📊 Telemetry Sources](#telemetry-sources)
+- [📏 4. Custom Metrics Inventory](#4-custom-metrics-inventory)
+  - [🔧 Metric Implementation](#metric-implementation)
+- [🔍 5. Distributed Tracing](#5-distributed-tracing)
+  - [🔄 Trace Flow](#trace-flow)
+  - [📌 Activity Sources](#activity-sources)
+  - [🔗 Trace Context Propagation](#trace-context-propagation)
+- [📝 6. Logging Configuration](#6-logging-configuration)
+  - [🏗️ Structured Logging](#structured-logging)
+  - [📁 Log Categories](#log-categories)
+  - [💡 Logging Example](#logging-example)
+- [💚 7. Health Checks](#7-health-checks)
+  - [🌐 Health Endpoints](#health-endpoints)
+  - [⚙️ Health Check Configuration](#health-check-configuration)
+  - [🔧 Custom Health Checks](#custom-health-checks)
+- [📈 8. Application Insights Integration](#8-application-insights-integration)
+  - [☁️ Azure Monitor Exporter](#azure-monitor-exporter)
+  - [✨ Application Insights Features](#application-insights-features)
+- [🔎 9. Log Analytics Queries](#9-log-analytics-queries)
+  - [📋 Sample KQL Queries](#sample-kql-queries)
+- [📊 10. Service Level Indicators (SLIs)](#10-service-level-indicators-slis)
+  - [📉 SLO Dashboard Metrics](#slo-dashboard-metrics)
+- [🚨 11. Alerting Strategy](#11-alerting-strategy)
+  - [🔔 Recommended Alerts](#recommended-alerts)
+  - [⚙️ Alert Configuration (Recommended)](#alert-configuration-recommended)
+- [⚡ 12. Logic Apps Diagnostics](#12-logic-apps-diagnostics)
+  - [🔧 Diagnostic Settings](#diagnostic-settings)
+  - [📜 Logic App Run History](#logic-app-run-history)
+- [🔗 Cross-Architecture Relationships](#cross-architecture-relationships)
+- [📚 Related Documents](#related-documents)
+
+---
+
 ## 1. Observability Overview
 
 The solution implements the **Three Pillars of Observability** using OpenTelemetry for vendor-neutral instrumentation with Azure Monitor as the telemetry backend.

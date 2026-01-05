@@ -4,6 +4,43 @@
 
 ---
 
+## Table of Contents
+
+- [🔐 1. Security Overview](#1-security-overview)
+  - [📐 Security Principles](#security-principles)
+- [🪪 2. Identity Architecture](#2-identity-architecture)
+- [🆔 3. Managed Identity Configuration](#3-managed-identity-configuration)
+  - [👤 User-Assigned Managed Identity](#user-assigned-managed-identity)
+  - [🔗 Identity Assignment](#identity-assignment)
+- [🛡️ 4. RBAC Role Assignments](#4-rbac-role-assignments)
+  - [📋 Role Assignment Matrix](#role-assignment-matrix)
+  - [🗄️ Azure SQL Database Access](#azure-sql-database-access)
+  - [📨 Service Bus RBAC](#service-bus-rbac)
+- [🔄 5. Authentication Flows](#5-authentication-flows)
+  - [📬 Service Bus Authentication](#service-bus-authentication)
+  - [💾 SQL Database Authentication](#sql-database-authentication)
+- [🌐 6. Network Security](#6-network-security)
+  - [⚙️ Current Configuration (Development)](#current-configuration-development)
+  - [🔀 Network Flow](#network-flow)
+  - [🚀 Recommended Production Enhancements](#recommended-production-enhancements)
+- [🔑 7. Secrets Management](#7-secrets-management)
+  - [📊 Current State (Development)](#current-state-development)
+  - [💻 Local Development Secrets](#local-development-secrets)
+  - [🏦 Recommended: Azure Key Vault](#recommended-azure-key-vault)
+- [🛡️ 8. Data Protection](#8-data-protection)
+  - [💾 Data at Rest](#data-at-rest)
+  - [🔒 Data in Transit](#data-in-transit)
+- [✅ 9. Security Controls Summary](#9-security-controls-summary)
+  - [🟢 Implemented Controls](#implemented-controls)
+  - [🔲 Controls to Consider](#controls-to-consider)
+- [📜 10. Compliance Considerations](#10-compliance-considerations)
+  - [📋 Relevant Standards](#relevant-standards)
+  - [📝 Azure Policy Recommendations](#azure-policy-recommendations)
+- [🔗 Cross-Architecture Relationships](#cross-architecture-relationships)
+- [📚 Related Documents](#related-documents)
+
+---
+
 ## 1. Security Overview
 
 The solution implements a **Zero Trust** security model with Azure Managed Identity as the primary authentication mechanism, eliminating stored credentials for service-to-service communication.

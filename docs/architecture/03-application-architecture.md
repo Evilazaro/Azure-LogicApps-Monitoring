@@ -4,6 +4,30 @@
 
 ---
 
+## Table of Contents
+
+- [🏗️ 1. Application Architecture Overview](#1-application-architecture-overview)
+  - [🎨 Architectural Style](#architectural-style)
+  - [🎯 Key Design Decisions](#key-design-decisions)
+- [📐 2. Application Architecture Principles](#2-application-architecture-principles)
+- [🗺️ 3. Application Landscape Map](#3-application-landscape-map)
+- [📋 4. Service Catalog](#4-service-catalog)
+- [🔧 5. Service Details](#5-service-details)
+  - [📦 eShop.Orders.API](#eshopordersapi)
+  - [🌐 eShop.Web.App](#eshopwebapp)
+  - [⚡ OrdersManagement Logic App](#ordersmanagement-logic-app)
+- [🔄 6. Inter-Service Communication](#6-inter-service-communication)
+  - [📡 Communication Patterns](#communication-patterns)
+  - [🔍 Service Discovery](#service-discovery)
+- [🔌 7. Application Integration Points](#7-application-integration-points)
+- [🛡️ 8. Resilience Patterns](#8-resilience-patterns)
+- [✂️ 9. Cross-Cutting Concerns](#9-cross-cutting-concerns)
+- [🛠️ 10. Technology Stack Summary](#10-technology-stack-summary)
+- [🔗 Cross-Architecture Relationships](#cross-architecture-relationships)
+- [📚 Related Documents](#related-documents)
+
+---
+
 ## 1. Application Architecture Overview
 
 The application follows an **event-driven microservices** pattern with clear service boundaries aligned to business capabilities. Services communicate through synchronous HTTP/REST for queries and asynchronous Service Bus messaging for commands/events.

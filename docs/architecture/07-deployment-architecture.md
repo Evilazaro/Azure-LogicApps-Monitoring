@@ -4,6 +4,49 @@
 
 ---
 
+## Table of Contents
+
+- [🚀 1. Deployment Overview](#1-deployment-overview)
+  - [📦 Deployment Stack](#deployment-stack)
+- [🔄 2. Deployment Pipeline](#2-deployment-pipeline)
+- [⚡ 3. Azure Developer CLI Workflow](#3-azure-developer-cli-workflow)
+  - [💻 Core Commands](#core-commands)
+  - [⚙️ azd Configuration](#azd-configuration)
+- [🪝 4. Lifecycle Hooks](#4-lifecycle-hooks)
+  - [🔧 preprovision Hook](#preprovision-hook)
+  - [✅ postprovision Hook](#postprovision-hook)
+  - [🗄️ sql-managed-identity-config Hook](#sql-managed-identity-config-hook)
+- [🐳 5. Container Deployment Flow](#5-container-deployment-flow)
+  - [📋 Container Image Strategy](#container-image-strategy)
+- [🏗️ 6. Infrastructure Deployment](#6-infrastructure-deployment)
+  - [🎯 Deployment Scope](#deployment-scope)
+  - [📊 Deployment Sequence](#deployment-sequence)
+- [🌍 7. Environment Strategy](#7-environment-strategy)
+  - [⚙️ Environment Configuration](#environment-configuration)
+  - [🔧 azd Environment Management](#azd-environment-management)
+  - [📝 Environment Parameters](#environment-parameters)
+- [💻 8. Local Development Setup](#8-local-development-setup)
+  - [✨ .NET Aspire Orchestration](#net-aspire-orchestration)
+  - [☁️ Local to Cloud Transition](#local-to-cloud-transition)
+- [⚡ 9. Logic Apps Deployment](#9-logic-apps-deployment)
+  - [📤 Workflow Deployment](#workflow-deployment)
+  - [📁 Workflow Structure](#workflow-structure)
+  - [📜 Workflow Deployment Script](#workflow-deployment-script)
+- [🔁 10. CI/CD Pipeline (Recommended)](#10-cicd-pipeline-recommended)
+  - [🐙 GitHub Actions Workflow](#github-actions-workflow)
+  - [📊 Pipeline Stages](#pipeline-stages)
+- [⏪ 11. Rollback Strategy](#11-rollback-strategy)
+  - [🔄 Container Apps Revision Management](#container-apps-revision-management)
+  - [💻 Rollback Commands](#rollback-commands)
+- [✅ 12. Deployment Checklist](#12-deployment-checklist)
+  - [🔍 Pre-Deployment](#pre-deployment)
+  - [🚀 Deployment Steps](#deployment-steps)
+  - [✔️ Post-Deployment](#post-deployment)
+- [🔗 Cross-Architecture Relationships](#cross-architecture-relationships)
+- [📚 Related Documents](#related-documents)
+
+---
+
 ## 1. Deployment Overview
 
 The solution uses **Azure Developer CLI (azd)** for streamlined deployments with Bicep Infrastructure as Code. The deployment follows an immutable infrastructure pattern with container-based compute.

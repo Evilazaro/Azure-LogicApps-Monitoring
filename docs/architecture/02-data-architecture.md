@@ -4,6 +4,31 @@
 
 ---
 
+## Table of Contents
+
+- [📊 1. Data Architecture Overview](#1-data-architecture-overview)
+  - [🗄️ Data Stores Inventory](#data-stores-inventory)
+- [📐 2. Data Architecture Principles](#2-data-architecture-principles)
+- [🗺️ 3. Data Landscape Map](#3-data-landscape-map)
+- [📁 4. Data Domain Catalog](#4-data-domain-catalog)
+- [💾 5. Data Store Details](#5-data-store-details)
+- [🔄 6. Data Flow Architecture](#6-data-flow-architecture)
+  - [✏️ Write Path (Order Creation)](#write-path-order-creation)
+  - [📖 Read Path (Order Retrieval)](#read-path-order-retrieval)
+- [📈 7. Monitoring Data Flow Architecture](#7-monitoring-data-flow-architecture)
+- [📡 8. Telemetry Data Mapping](#8-telemetry-data-mapping)
+  - [🏛️ Three Pillars Overview](#three-pillars-overview)
+  - [🔗 Telemetry-to-Source Mapping](#telemetry-to-source-mapping)
+  - [📏 Metrics Inventory by Source](#metrics-inventory-by-source)
+  - [📝 Logs Inventory by Source](#logs-inventory-by-source)
+- [🔍 9. Trace Context Propagation](#9-trace-context-propagation)
+  - [⚙️ Implementation Reference](#implementation-reference)
+- [🕸️ 10. Data Dependencies Map](#10-data-dependencies-map)
+- [🔗 Cross-Architecture Relationships](#cross-architecture-relationships)
+- [📚 Related Documents](#related-documents)
+
+---
+
 ## 1. Data Architecture Overview
 
 The data architecture follows **service-oriented data ownership** principles where each service owns its data store exclusively. Cross-service data access occurs only through well-defined APIs or event-driven messaging.

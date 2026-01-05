@@ -11,7 +11,24 @@ A cloud-native reference implementation demonstrating **enterprise-grade observa
 
 ---
 
-## 📋 Overview
+## � Table of Contents
+
+- [📋 Overview](#-overview)
+- [✨ Key Features](#-key-features)
+- [🏛️ Architecture](#️-architecture)
+- [🛠️ Technology Stack](#️-technology-stack)
+- [📋 Prerequisites](#-prerequisites)
+- [🚀 Quick Start](#-quick-start)
+- [📁 Project Structure](#-project-structure)
+- [⚙️ Configuration](#️-configuration)
+- [📡 API Reference](#-api-reference)
+- [📊 Observability](#-observability)
+- [🔐 Security](#-security)
+- [📚 Documentation](#-documentation)
+
+---
+
+## �📋 Overview
 
 This solution uses an **eShop order management system** as its business scenario, showcasing a realistic enterprise workflow: orders originate from a Blazor Server frontend, flow through an ASP.NET Core REST API for validation and persistence in Azure SQL Database, then publish events to Azure Service Bus topics for asynchronous processing by Logic Apps Standard workflows. Every step is instrumented with W3C Trace Context propagation, enabling correlation of user requests through the entire distributed system—critical for debugging, performance analysis, and compliance auditing.
 
