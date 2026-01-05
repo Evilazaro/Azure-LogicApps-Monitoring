@@ -246,6 +246,7 @@ public sealed class OrderRepository : IOrderRepository
 
     /// <summary>
     /// Deletes an order from the database by its unique identifier.
+    /// Uses an internal timeout to prevent HTTP request cancellation from interrupting database transactions.
     /// </summary>
     /// <param name="orderId">The unique identifier of the order to delete.</param>
     /// <param name="cancellationToken">Cancellation token to cancel the operation.</param>
@@ -272,13 +273,18 @@ public sealed class OrderRepository : IOrderRepository
             ["OrderId"] = orderId
         });
 
+        // Use internal timeout to prevent HTTP cancellation from interrupting database commits
+        // This ensures data consistency even if the HTTP request is cancelled
+        using var dbCts = new CancellationTokenSource(TimeSpan.FromSeconds(30));
+        var dbToken = dbCts.Token;
+
         try
         {
             _logger.LogInformation("Deleting order {OrderId} from database", orderId);
 
             var orderEntity = await _dbContext.Orders
                 .Include(o => o.Products)
-                .FirstOrDefaultAsync(o => o.Id == orderId, cancellationToken);
+                .FirstOrDefaultAsync(o => o.Id == orderId, dbToken);
 
             if (orderEntity == null)
             {
@@ -292,7 +298,7 @@ public sealed class OrderRepository : IOrderRepository
             }
 
             _dbContext.Orders.Remove(orderEntity);
-            await _dbContext.SaveChangesAsync(cancellationToken);
+            await _dbContext.SaveChangesAsync(dbToken);
 
             activity?.AddEvent(new ActivityEvent("DeleteOrderCompleted", tags: new ActivityTagsCollection
             {

@@ -46,7 +46,9 @@ builder.Services.Configure<Microsoft.AspNetCore.Components.Server.CircuitOptions
     options.MaxBufferedUnacknowledgedRenderBatches = 10;
 });
 
-// Configure typed HTTP client for Orders API with resilience and service discovery
+// Configure typed HTTP client for Orders API with service discovery
+// Note: Resilience policies (retry, timeout, circuit breaker) are already configured
+// globally by AddServiceDefaults() with appropriate timeouts for batch operations
 builder.Services.AddHttpClient<OrdersAPIService>(client =>
 {
     var baseAddress = builder.Configuration["services:orders-api:https:0"];
@@ -61,10 +63,9 @@ builder.Services.AddHttpClient<OrdersAPIService>(client =>
     client.BaseAddress = new Uri(baseAddress);
     client.DefaultRequestHeaders.Add("Accept", "application/json");
     client.DefaultRequestHeaders.Add("User-Agent", "eShop.Web.App");
-    client.Timeout = TimeSpan.FromMinutes(5);
+    client.Timeout = TimeSpan.FromMinutes(10); // Allow enough time for batch operations
 })
-.AddServiceDiscovery() // Enables service discovery - must be called before AddStandardResilienceHandler
-.AddStandardResilienceHandler(); // Add retry, timeout, and circuit breaker policies
+.AddServiceDiscovery(); // Service discovery for endpoint resolution
 
 builder.Services.AddFluentUIComponents();
 
