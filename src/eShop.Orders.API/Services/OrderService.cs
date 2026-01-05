@@ -181,6 +181,14 @@ public sealed class OrderService : IOrderService
         _logger.LogInformation("Processing {Count} orders in {BatchCount} batches of max {BatchSize} orders",
             ordersList.Count, processBatches.Count, processBatchSize);
 
+        // Use SemaphoreSlim to limit concurrent database operations - created once for all batches
+        using var semaphore = new SemaphoreSlim(10);
+        
+        // Create a longer timeout for internal operations (5 minutes) to handle Service Bus latency
+        using var internalCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+        internalCts.CancelAfter(TimeSpan.FromMinutes(5));
+        var internalToken = internalCts.Token;
+
         foreach (var (batch, batchIndex) in processBatches.Select((b, i) => (b, i)))
         {
             if (cancellationToken.IsCancellationRequested)
@@ -193,12 +201,18 @@ public sealed class OrderService : IOrderService
             _logger.LogInformation("Processing batch {Current}/{Total} with {Count} orders",
                 batchIndex + 1, processBatches.Count, batch.Count);
 
-            // Use SemaphoreSlim to limit concurrent database operations
-            using var semaphore = new SemaphoreSlim(10);
-
             var tasks = batch.Select(async order =>
             {
-                await semaphore.WaitAsync(cancellationToken);
+                try
+                {
+                    await semaphore.WaitAsync(internalToken);
+                }
+                catch (OperationCanceledException)
+                {
+                    _logger.LogWarning("Semaphore wait cancelled for order {OrderId}", order.Id);
+                    return OrderProcessResult.Failure;
+                }
+                
                 try
                 {
                     // Create a new scope for each order to ensure thread-safe DbContext usage
@@ -206,7 +220,7 @@ public sealed class OrderService : IOrderService
                     var scopedRepository = scope.ServiceProvider.GetRequiredService<IOrderRepository>();
                     var scopedMessageHandler = scope.ServiceProvider.GetRequiredService<IOrdersMessageHandler>();
 
-                    var result = await ProcessSingleOrderAsync(order, scopedRepository, scopedMessageHandler, cancellationToken);
+                    var result = await ProcessSingleOrderAsync(order, scopedRepository, scopedMessageHandler, internalToken);
                     lock (lockObject)
                     {
                         if (result == OrderProcessResult.Success)
@@ -250,11 +264,29 @@ public sealed class OrderService : IOrderService
             // Validate the order
             ValidateOrder(order);
 
-            // Save to database - the repository handles duplicate key violations
+            // Check if order already exists before attempting to save (idempotency check)
+            var existingOrder = await repository.GetOrderByIdAsync(order.Id, cancellationToken);
+            if (existingOrder != null)
+            {
+                _logger.LogDebug("Order {OrderId} already exists in database, skipping (idempotent)", order.Id);
+                return OrderProcessResult.AlreadyExists;
+            }
+
+            // Save to database - the repository handles duplicate key violations as backup
             await repository.SaveOrderAsync(order, cancellationToken);
 
-            // Publish event via message handler
-            await messageHandler.SendOrderMessageAsync(order, cancellationToken);
+            // Publish event via message handler with separate timeout to avoid cancellation
+            try
+            {
+                using var messageCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+                messageCts.CancelAfter(TimeSpan.FromSeconds(30));
+                await messageHandler.SendOrderMessageAsync(order, messageCts.Token);
+            }
+            catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested)
+            {
+                // Message send timed out, but order was saved - log warning but consider success
+                _logger.LogWarning("Service Bus message send timed out for order {OrderId}, but order was saved to database", order.Id);
+            }
 
             return OrderProcessResult.Success;
         }
@@ -263,6 +295,11 @@ public sealed class OrderService : IOrderService
             // Order already exists - this is expected for idempotent operations
             _logger.LogDebug("Order {OrderId} already exists, skipping (idempotent)", order.Id);
             return OrderProcessResult.AlreadyExists;
+        }
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        {
+            _logger.LogWarning("Order {OrderId} processing was cancelled", order.Id);
+            return OrderProcessResult.Failure;
         }
         catch (Exception ex)
         {
