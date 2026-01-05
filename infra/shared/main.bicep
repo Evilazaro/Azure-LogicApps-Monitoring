@@ -64,8 +64,6 @@ module identity 'identity/main.bicep' = {
   }
 }
 
-// ========== Outputs ==========
-
 // Identity Outputs
 @description('Resource ID of the deployed managed identity (internal use only)')
 output AZURE_MANAGED_IDENTITY_ID string = identity.outputs.AZURE_MANAGED_IDENTITY_ID
@@ -86,8 +84,6 @@ module monitoring 'monitoring/main.bicep' = {
     envName: envName
   }
 }
-
-// ========== Outputs ==========
 
 // Log Analytics Workspace Outputs (Microsoft.OperationalInsights/workspaces)
 @description('Resource ID of the Log Analytics workspace for configuring diagnostic settings')

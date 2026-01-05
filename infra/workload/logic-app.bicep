@@ -156,6 +156,7 @@ resource sbConnection 'Microsoft.Web/connections@2016-06-01' = {
 // Access policy required for managed identity authentication on API connections
 // This allows the Logic App's managed identity to use the Service Bus connection
 @description('Access policy for Service Bus connection enabling managed identity authentication')
+#disable-next-line BCP081
 resource sbConnectionAccessPolicy 'Microsoft.Web/connections/accessPolicies@2016-06-01' = {
   name: '${logicAppName}-access'
   parent: sbConnection
@@ -175,6 +176,8 @@ resource sbConnectionAccessPolicy 'Microsoft.Web/connections/accessPolicies@2016
 resource storageConnection 'Microsoft.Web/connections@2016-06-01' = {
   name: '${logicAppName}-storage'
   location: location
+  // kind property is valid for V2 API connections but not in Bicep schema (BCP036/BCP037)
+  #disable-next-line BCP035 BCP036 BCP037
   kind: 'V2'
   tags: tags
   properties: {
@@ -195,6 +198,7 @@ resource storageConnection 'Microsoft.Web/connections@2016-06-01' = {
   }
 }
 
+#disable-next-line BCP081
 resource storageConnectionAccessPolicy 'Microsoft.Web/connections/accessPolicies@2016-06-01' = {
   name: '${logicAppName}-storage-access'
   parent: storageConnection
