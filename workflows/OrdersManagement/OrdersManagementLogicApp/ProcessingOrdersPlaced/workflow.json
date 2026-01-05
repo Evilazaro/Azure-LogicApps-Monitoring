@@ -3,7 +3,7 @@
         "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
         "contentVersion": "1.0.0.0",
         "actions": {
-            "Condition": {
+            "Check_Order_Placed": {
                 "type": "If",
                 "expression": {
                     "and": [
@@ -32,7 +32,7 @@
                             }
                         }
                     },
-                    "Condition_1": {
+                    "Check_Process_Worked": {
                         "type": "If",
                         "expression": {
                             "and": [
