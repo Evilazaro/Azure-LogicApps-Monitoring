@@ -16,7 +16,7 @@ The `sql-managed-identity-config` scripts configure Azure SQL Database users wit
 The scripts follow a structured workflow to ensure secure and reliable database user configuration:
 
 ```mermaid
-flowchart TD
+flowchart LR
     subgraph Init["Initialization"]
         A[Start] --> B{Parse Arguments}
         B -->|Invalid| C[Display Error & Exit]
@@ -76,14 +76,28 @@ flowchart TD
         Z --> AC
     end
 
-    style Init fill:#e1f5fe
-    style Auth fill:#fff3e0
-    style SqlCmd fill:#f3e5f5
-    style Conn fill:#e8f5e9
-    style Token fill:#fff8e1
-    style ScriptGen fill:#fce4ec
-    style Exec fill:#e0f2f1
-    style Result fill:#f5f5f5
+    classDef initClass fill:#e1f5fe,stroke:#0288d1,stroke-width:2px,color:#01579b
+    classDef authClass fill:#fff3e0,stroke:#f57c00,stroke-width:2px,color:#e65100
+    classDef sqlClass fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px,color:#4a148c
+    classDef connClass fill:#e8f5e9,stroke:#388e3c,stroke-width:2px,color:#1b5e20
+    classDef tokenClass fill:#fff8e1,stroke:#fbc02d,stroke-width:2px,color:#f57f17
+    classDef scriptClass fill:#fce4ec,stroke:#c2185b,stroke-width:2px,color:#880e4f
+    classDef execClass fill:#e0f2f1,stroke:#00796b,stroke-width:2px,color:#004d40
+    classDef resultClass fill:#f5f5f5,stroke:#757575,stroke-width:2px,color:#424242
+    classDef errorClass fill:#ffcdd2,stroke:#d32f2f,stroke-width:2px,color:#b71c1c
+    classDef successClass fill:#c8e6c9,stroke:#388e3c,stroke-width:2px,color:#1b5e20
+    classDef decisionClass fill:#fff3e0,stroke:#f57c00,stroke-width:2px,color:#e65100
+
+    class A,D initClass
+    class E,G authClass
+    class I,K sqlClass
+    class L,M,O,P,Q connClass
+    class R,T tokenClass
+    class U,V,W scriptClass
+    class X,AA execClass
+    class AB successClass
+    class C,F,J,S,Y,Z,AC errorClass
+    class B,H,N decisionClass
 ```
 
 ## Parameters
