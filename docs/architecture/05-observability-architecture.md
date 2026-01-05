@@ -4,6 +4,10 @@
 
 ---
 
+The Observability Architecture is the heart of this reference solution, demonstrating enterprise-grade monitoring patterns for Azure Logic Apps Standard workflows. This document details how the Three Pillars of Observability—logs, metrics, and traces—are implemented using OpenTelemetry for vendor-neutral instrumentation with Azure Monitor (Application Insights and Log Analytics) as the telemetry backend. Every service in the solution is instrumented to emit correlated telemetry, enabling operators to trace a single user request from the Blazor frontend through the REST API, into Service Bus, and through Logic Apps workflow execution.
+
+Beyond basic instrumentation, this architecture covers the complete observability lifecycle: custom metrics for business KPIs, structured logging with semantic context, W3C Trace Context propagation across service boundaries, health check endpoints for liveness and readiness probes, and Service Level Indicators (SLIs) for measuring reliability against SLO targets. The document also provides sample KQL queries for common troubleshooting scenarios, recommended alert configurations, and Logic Apps-specific diagnostic settings—giving teams a production-ready observability foundation they can adopt immediately or customize for their specific operational requirements.
+
 ## Table of Contents
 
 - [👁️ 1. Observability Overview](#1-observability-overview)

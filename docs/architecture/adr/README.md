@@ -1,6 +1,18 @@
 # Architecture Decision Records
 
-This folder contains Architecture Decision Records (ADRs) documenting significant architectural decisions for the eShop Orders Management solution.
+Architecture Decision Records (ADRs) capture the key architectural choices made during the design and evolution of the Azure Logic Apps Monitoring Solution. Each ADR documents the context, rationale, and consequences of significant technical decisions—providing a historical record that helps current and future team members understand *why* the system is built the way it is, not just *how* it works.
+
+This structured approach to decision documentation follows the lightweight ADR format popularized by Michael Nygard. By maintaining ADRs alongside the codebase, we ensure architectural knowledge remains accessible, searchable, and version-controlled. Whether you're onboarding to the project, evaluating alternative approaches, or revisiting past decisions during refactoring, these records provide the context needed to make informed choices without repeating past mistakes.
+
+## 📑 Table of Contents
+
+- [📋 ADR Index](#adr-index)
+- [🔄 ADR Process](#adr-process)
+  - [✍️ When to Write an ADR](#when-to-write-an-adr)
+  - [📝 ADR Template](#adr-template)
+  - [🔁 ADR Lifecycle](#adr-lifecycle)
+
+---
 
 ## ADR Index
 

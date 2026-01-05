@@ -4,6 +4,10 @@
 
 ---
 
+The Application Architecture describes the software components, their responsibilities, and how they interact to deliver the Azure Logic Apps Monitoring Solution's functionality. This document catalogs three primary services—eShop.Orders.API (ASP.NET Core REST backend), eShop.Web.App (Blazor Server frontend), and OrdersManagement Logic App (workflow automation)—detailing their internal structures, API contracts, and integration patterns. The architecture follows an event-driven microservices approach with clear service boundaries aligned to business capabilities.
+
+Each service is designed for independent deployment and scalability while maintaining loose coupling through well-defined interfaces. Synchronous HTTP/REST handles queries and immediate responses, while Azure Service Bus pub/sub enables asynchronous command and event processing. This document also covers critical cross-cutting concerns including resilience patterns (retry policies, circuit breakers), service discovery via .NET Aspire, and the OpenTelemetry instrumentation that enables distributed tracing across all service boundaries—ensuring that the application layer fully supports the observability goals defined in the business architecture.
+
 ## Table of Contents
 
 - [🏗️ 1. Application Architecture Overview](#1-application-architecture-overview)

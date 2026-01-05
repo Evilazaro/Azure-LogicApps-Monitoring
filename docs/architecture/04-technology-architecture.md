@@ -4,6 +4,10 @@
 
 ---
 
+The Technology Architecture specifies the Azure platform services, infrastructure patterns, and deployment mechanisms that host and operate the Azure Logic Apps Monitoring Solution. This document provides a complete inventory of Azure resources—from Container Apps Environment and Azure SQL Database to Service Bus namespaces and Logic Apps Standard—along with the modular Bicep templates that provision them. The architecture follows Infrastructure as Code best practices with subscription-scope deployments, separating shared infrastructure (identity, monitoring, data) from workload-specific resources.
+
+A key differentiator of this solution is its developer experience optimization through Azure Developer CLI (azd) integration. The document details the `azure.yaml` configuration, lifecycle hooks (preprovision, postprovision), and the one-command deployment workflow that provisions all resources, configures managed identity RBAC, and sets up local development secrets automatically. Combined with the Container Apps configuration for serverless scaling and the network architecture ensuring secure service communication, this technology foundation enables both rapid local development with .NET Aspire and production-grade Azure deployments.
+
 ## Table of Contents
 
 - [🏗️ 1. Technology Architecture Overview](#1-technology-architecture-overview)

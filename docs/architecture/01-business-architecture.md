@@ -4,6 +4,10 @@
 
 ---
 
+The Business Architecture defines the strategic context, capabilities, and value streams that drive the Azure Logic Apps Monitoring Solution. Following TOGAF principles, this document establishes the *why* behind the technical implementation—articulating the business problems being solved, the stakeholders served, and the measurable outcomes expected. It bridges organizational goals with technical decisions documented in subsequent architecture layers.
+
+At its core, this solution addresses a critical gap in enterprise Azure deployments: the lack of comprehensive, correlated observability across distributed Logic Apps workflows. By defining clear business capabilities (order management, monitoring, platform operations) and mapping them to value streams, this architecture ensures that every technical decision—from OpenTelemetry instrumentation to Service Bus messaging patterns—directly supports business outcomes like reduced mean-time-to-resolution, improved customer experience, and operational efficiency.
+
 ## Table of Contents
 
 - [🏢 1. Business Context](#1-business-context)

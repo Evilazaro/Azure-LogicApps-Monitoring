@@ -4,6 +4,10 @@
 
 ---
 
+The Data Architecture defines how information flows, persists, and transforms across the Azure Logic Apps Monitoring Solution. This document maps the complete data landscape—from transactional order data in Azure SQL Database, through event messages in Service Bus topics, to observability telemetry in Application Insights and Log Analytics. Following service-oriented data ownership principles, each component owns its data store exclusively, with cross-service communication occurring only through well-defined APIs or event-driven messaging patterns.
+
+Central to this architecture is the telemetry data model that enables end-to-end observability. The document details how the Three Pillars of Observability (logs, metrics, traces) are captured from each service, correlated via W3C Trace Context propagation, and stored in Azure Monitor backends. Understanding these data flows is essential for debugging distributed transactions, optimizing query performance, and ensuring that business events can be traced from user interaction through workflow completion—making this architecture the foundation for the solution's monitoring capabilities.
+
 ## Table of Contents
 
 - [📊 1. Data Architecture Overview](#1-data-architecture-overview)

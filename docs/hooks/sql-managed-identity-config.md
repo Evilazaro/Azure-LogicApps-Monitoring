@@ -1,5 +1,41 @@
 # SQL Managed Identity Configuration Scripts
 
+## 📑 Table of Contents
+
+- [📋 Overview](#overview)
+- [📜 Script Versions](#script-versions)
+- [🔄 Workflow](#workflow)
+- [⚙️ Parameters](#parameters)
+  - [✅ Required Parameters](#required-parameters)
+  - [🔧 Optional Parameters](#optional-parameters)
+- [☁️ Azure Environment Endpoints](#azure-environment-endpoints)
+- [🛡️ Common Database Roles](#common-database-roles)
+- [📋 Prerequisites](#prerequisites)
+  - [🔗 Common Requirements](#common-requirements)
+  - [💻 PowerShell-Specific](#powershell-specific)
+  - [🐚 Bash-Specific](#bash-specific)
+- [🚀 Usage Examples](#usage-examples)
+  - [💻 Basic Usage](#basic-usage)
+  - [📝 Custom Roles with Verbose Output](#custom-roles-with-verbose-output)
+  - [🏛️ Azure Government Cloud](#azure-government-cloud)
+  - [🔧 Programmatic Result Handling](#programmatic-result-handling)
+- [📤 Output Format](#output-format)
+  - [✅ Success Response](#success-response)
+  - [❌ Error Response](#error-response)
+- [🔧 Troubleshooting](#troubleshooting)
+  - [🔐 Error: Login Failed (SQL Error 18456)](#error-login-failed-sql-error-18456)
+  - [🔥 Error: Firewall Blocking Connection (SQL Error 40615)](#error-firewall-blocking-connection-sql-error-40615)
+  - [🔍 Error: sqlcmd Not Found (Bash Only)](#error-sqlcmd-not-found-bash-only)
+  - [🔑 Error: Access Token Acquisition Failed](#error-access-token-acquisition-failed)
+  - [👤 Error: User Already Exists (SQL Error 15023)](#error-user-already-exists-sql-error-15023)
+- [🔐 Security Considerations](#security-considerations)
+- [📖 Related Documentation](#related-documentation)
+- [📜 Changelog](#changelog)
+  - [💻 PowerShell Script (sql-managed-identity-config.ps1)](#powershell-script-sql-managed-identity-configps1)
+  - [🐚 Bash Script (sql-managed-identity-config.sh)](#bash-script-sql-managed-identity-configsh)
+
+---
+
 ## Overview
 
 The `sql-managed-identity-config` scripts configure Azure SQL Database users with Microsoft Entra ID (formerly Azure AD) Managed Identity authentication. These scripts create contained database users from external providers and assign specified database roles, enabling secure, passwordless authentication for Azure services.

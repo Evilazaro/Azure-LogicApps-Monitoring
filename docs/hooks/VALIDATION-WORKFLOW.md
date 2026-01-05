@@ -1,5 +1,46 @@
 # Azure Logic Apps Monitoring - Complete Validation Workflow
 
+## 📑 Table of Contents
+
+- [📋 Available Scripts Overview](#-available-scripts-overview)
+  - [🔗 Script Dependencies](#script-dependencies)
+- [🔄 Visual Workflow](#visual-workflow)
+  - [🚀 Complete Deployment Flow](#complete-deployment-flow)
+  - [✅ Pre-Provisioning Validation Flow](#pre-provisioning-validation-flow-preprovisionps1sh)
+  - [🎛️ Parameter Modes](#parameter-modes)
+  - [⚠️ Failure Handling Flow](#failure-handling-flow)
+  - [🔌 Integration Points](#integration-points)
+- [📜 Script Details](#script-details)
+  - [🔍 check-dev-workstation](#check-dev-workstation)
+  - [✅ preprovision](#preprovision)
+  - [⚙️ postprovision](#postprovision)
+  - [🔐 sql-managed-identity-config](#sql-managed-identity-config)
+  - [🧹 clean-secrets](#clean-secrets)
+  - [📊 Generate-Orders](#generate-orders)
+- [📋 Validation Matrix](#validation-matrix)
+- [⏱️ Complete Deployment Timeline](#complete-deployment-timeline)
+- [✅ Success Criteria](#success-criteria)
+  - [🔧 Pre-Provisioning (preprovision)](#pre-provisioning-preprovision)
+  - [⚙️ Post-Provisioning (postprovision)](#post-provisioning-postprovision)
+  - [🔐 SQL Managed Identity Configuration](#sql-managed-identity-configuration-sql-managed-identity-config)
+- [📖 Related Documentation](#related-documentation)
+  - [📜 Script Versions Reference](#script-versions-reference)
+- [💻 Local Developer Workstation Development Workflow](#-local-developer-workstation-development-workflow)
+  - [🏗️ Local Development Architecture](#local-development-architecture)
+  - [📋 Prerequisites for Local Development](#prerequisites-for-local-development)
+  - [🔄 Local Development Workflow Steps](#local-development-workflow-steps)
+  - [🔁 Inner Loop Development Cycle](#inner-loop-development-cycle)
+  - [⚙️ Configuration Management (Local Development)](#configuration-management-local-development)
+  - [🔧 Troubleshooting Local Development](#troubleshooting-local-development)
+  - [🐛 Debugging Best Practices](#debugging-best-practices)
+  - [⚖️ Local vs. Azure Development Comparison](#local-vs-azure-development-comparison)
+  - [🔀 When to Switch from Local to Azure](#when-to-switch-from-local-to-azure)
+  - [🛑 Stopping Local Development](#stopping-local-development)
+  - [🧹 Cleaning Up Local Resources](#cleaning-up-local-resources)
+- [📊 Complete Development Workflow Timeline](#-complete-development-workflow-timeline)
+
+---
+
 **Complete Deployment Workflow Order**:
 
 1. 🔍 **check-dev-workstation** (.ps1 or .sh) - Quick workstation validation (optional but recommended)
