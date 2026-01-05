@@ -81,6 +81,11 @@ flowchart TB
     class C1,C2 core
     class E1,E2,E3 enabling
     class F1,F2,F3 foundation
+
+    %% Subgraph container styling for visual layer grouping
+    style Core fill:#e3f2fd22,stroke:#1565c0,stroke-width:2px
+    style Enabling fill:#e8f5e922,stroke:#2e7d32,stroke-width:2px
+    style Foundation fill:#f5f5f522,stroke:#424242,stroke-width:2px
 ```
 
 ### Capability Descriptions
@@ -153,6 +158,14 @@ flowchart LR
     class T1 trigger
     class S1,S2,S3,S4,S5 stage
     class O1 outcome
+
+    %% Subgraph container styling for visual phase grouping
+    style Trigger fill:#e3f2fd22,stroke:#1565c0,stroke-width:2px
+    style Engage fill:#fff3e022,stroke:#e65100,stroke-width:2px
+    style Transact fill:#fff3e022,stroke:#e65100,stroke-width:2px
+    style Process fill:#fff3e022,stroke:#e65100,stroke-width:2px
+    style Automate fill:#fff3e022,stroke:#e65100,stroke-width:2px
+    style Outcome fill:#e8f5e922,stroke:#2e7d32,stroke-width:2px
 ```
 
 #### Value Stream Stages
@@ -165,6 +178,8 @@ flowchart LR
 | **Automate** | Workflow Automation | ~2 seconds | Business process execution |
 
 ### Monitoring Value Stream
+
+```mermaid
 %%{init: {'theme': 'base', 'themeVariables': { 'fontSize': '14px'}}}%%
 flowchart LR
     subgraph Trigger["🎯 Trigger"]
@@ -197,7 +212,19 @@ flowchart LR
     classDef trigger fill:#fce4ec,stroke:#c2185b,stroke-width:2px,color:#880e4f
     classDef stage fill:#fff3e0,stroke:#e65100,stroke-width:2px,color:#bf360c
     classDef outcome fill:#e8f5e9,stroke:#2e7d32,stroke-width:2px,color:#1b5e20
-    classDef stage fill:#fff3e0,stroke:#ef6c00
+
+    class T1 trigger
+    class S1,S2,S3,S4 stage
+    class O1 outcome
+
+    %% Subgraph container styling for visual phase grouping
+    style Trigger fill:#fce4ec22,stroke:#c2185b,stroke-width:2px
+    style Collect fill:#fff3e022,stroke:#e65100,stroke-width:2px
+    style Aggregate fill:#fff3e022,stroke:#e65100,stroke-width:2px
+    style Analyze fill:#fff3e022,stroke:#e65100,stroke-width:2px
+    style Act fill:#fff3e022,stroke:#e65100,stroke-width:2px
+    style Outcome fill:#e8f5e922,stroke:#2e7d32,stroke-width:2px
+```
     classDef outcome fill:#e8f5e9,stroke:#2e7d32
 
     class T1 trigger
@@ -222,6 +249,8 @@ flowchart LR
 ---
 
 ## 6. Business Process Flows
+
+```mermaid
 %%{init: {'theme': 'base', 'themeVariables': { 'fontSize': '14px'}}}%%
 flowchart TD
     Start([Customer initiates order])
@@ -279,10 +308,11 @@ flowchart TD
     class Error1,End2 errorState
     class Success1,End1 successState
     class Start startEnd
-    class B1,B2,B3,B4,B5 api
-    class C1,C2,C3,C4,C5,C6 workflow
-    class Error1 error
-    class Success1,End1 success
+
+    %% Subgraph container styling for visual layer grouping
+    style WebApp fill:#e3f2fd22,stroke:#1565c0,stroke-width:2px
+    style API fill:#e8f5e922,stroke:#2e7d32,stroke-width:2px
+    style Workflow fill:#fff3e022,stroke:#e65100,stroke-width:2px
 ```
 
 ---
