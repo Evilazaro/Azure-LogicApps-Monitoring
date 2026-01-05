@@ -304,4 +304,112 @@ public sealed class OrderRepository : IOrderRepository
             throw;
         }
     }
+
+    /// <summary>
+    /// Checks if an order exists in the database by its unique identifier.
+    /// This is an optimized operation that performs a simple existence check without loading the entity.
+    /// </summary>
+    /// <param name="orderId">The unique identifier of the order.</param>
+    /// <param name="cancellationToken">Cancellation token to cancel the operation.</param>
+    /// <returns>True if the order exists; otherwise, false.</returns>
+    /// <exception cref="ArgumentException">Thrown when orderId is null or empty.</exception>
+    public async Task<bool> OrderExistsAsync(string orderId, CancellationToken cancellationToken = default)
+    {
+        if (string.IsNullOrWhiteSpace(orderId))
+        {
+            throw new ArgumentException("Order ID cannot be null or empty", nameof(orderId));
+        }
+
+        using var activity = Activity.Current;
+        activity?.AddEvent(new ActivityEvent("OrderExistsCheckStarted", tags: new ActivityTagsCollection
+        {
+            { "order.id", orderId }
+        }));
+
+        try
+        {
+            // Use AnyAsync for efficient existence check - single query, no entity materialization
+            var exists = await _dbContext.Orders
+                .AsNoTracking()
+                .AnyAsync(o => o.Id == orderId, cancellationToken);
+
+            activity?.AddEvent(new ActivityEvent("OrderExistsCheckCompleted", tags: new ActivityTagsCollection
+            {
+                { "order.exists", exists }
+            }));
+
+            _logger.LogDebug("Order existence check for {OrderId}: {Exists}", orderId, exists);
+            return exists;
+        }
+        catch (Exception ex)
+        {
+            activity?.AddEvent(new ActivityEvent("OrderExistsCheckFailed", tags: new ActivityTagsCollection
+            {
+                { "error.type", ex.GetType().Name },
+                { "exception.message", ex.Message }
+            }));
+            _logger.LogError(ex, "Failed to check existence of order {OrderId}", orderId);
+            throw;
+        }
+    }
+
+    /// <summary>
+    /// Checks the existence of multiple orders by their unique identifiers.
+    /// Returns a set of order IDs that exist in the database.
+    /// </summary>
+    /// <param name="orderIds">The collection of unique identifiers of the orders.</param>
+    /// <param name="cancellationToken">Cancellation token to cancel the operation.</param>
+    /// <returns>A set of existing order IDs.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when orderIds is null.</exception>
+    public async Task<HashSet<string>> GetExistingOrderIdsAsync(IEnumerable<string> orderIds, CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(orderIds);
+
+        using var activity = Activity.Current;
+        activity?.AddEvent(new ActivityEvent("GetExistingOrderIdsStarted", tags: new ActivityTagsCollection
+        {
+            { "orderIds.count", orderIds.Count() }
+        }));
+
+        // Add trace context to log scope for correlation
+        using var logScope = _logger.BeginScope(new Dictionary<string, object>
+        {
+            ["TraceId"] = Activity.Current?.TraceId.ToString() ?? "none",
+            ["SpanId"] = Activity.Current?.SpanId.ToString() ?? "none"
+        });
+
+        try
+        {
+            _logger.LogDebug("Checking existence of {Count} orders in database", orderIds.Count());
+
+            var orderIdList = orderIds.ToList();
+
+            // Use a batched query instead of N individual queries
+            var existingIds = await _dbContext.Orders
+                .Where(o => orderIdList.Contains(o.Id))
+                .Select(o => o.Id)
+                .ToListAsync(cancellationToken);
+
+            var existingIdSet = new HashSet<string>(existingIds);
+
+            activity?.AddEvent(new ActivityEvent("GetExistingOrderIdsCompleted", tags: new ActivityTagsCollection
+            {
+                { "existingOrderIds.count", existingIdSet.Count }
+            }));
+
+            _logger.LogDebug("Checked existence of {Count} orders, found {FoundCount} existing", orderIds.Count(), existingIdSet.Count);
+
+            return existingIdSet;
+        }
+        catch (Exception ex)
+        {
+            activity?.AddEvent(new ActivityEvent("GetExistingOrderIdsFailed", tags: new ActivityTagsCollection
+            {
+                { "error.type", ex.GetType().Name },
+                { "exception.message", ex.Message }
+            }));
+            _logger.LogError(ex, "Failed to check existence of orders batch");
+            throw;
+        }
+    }
 }

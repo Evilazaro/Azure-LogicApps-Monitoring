@@ -42,4 +42,13 @@ public interface IOrderRepository
     /// <param name="cancellationToken">Cancellation token to cancel the operation.</param>
     /// <returns>True if the order was successfully deleted; otherwise, false.</returns>
     Task<bool> DeleteOrderAsync(string orderId, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Checks if an order exists in the data store by its unique identifier.
+    /// This is an optimized operation that does not load the full order entity.
+    /// </summary>
+    /// <param name="orderId">The unique identifier of the order.</param>
+    /// <param name="cancellationToken">Cancellation token to cancel the operation.</param>
+    /// <returns>True if the order exists; otherwise, false.</returns>
+    Task<bool> OrderExistsAsync(string orderId, CancellationToken cancellationToken = default);
 }

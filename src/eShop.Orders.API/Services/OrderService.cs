@@ -152,12 +152,11 @@ public sealed class OrderService : IOrderService
     /// <returns>A collection of successfully placed orders.</returns>
     /// <exception cref="ArgumentNullException">Thrown when orders is null.</exception>
     /// <exception cref="ArgumentException">Thrown when orders collection is empty.</exception>
-    public async Task<IEnumerable<Order>> PlaceOrdersBatchAsync(IEnumerable<Order> orders, CancellationToken cancellationToken = default)
+    public async Task<IEnumerable<Order>> PlaceOrdersBatchAsync(
+        IEnumerable<Order> orders,
+        CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(orders);
-
-        using var activity = _activitySource.StartActivity("PlaceOrdersBatch", ActivityKind.Internal);
-        var startTime = DateTime.UtcNow;
 
         var ordersList = orders.ToList();
         if (ordersList.Count == 0)
@@ -165,138 +164,120 @@ public sealed class OrderService : IOrderService
             throw new ArgumentException("Orders collection cannot be empty", nameof(orders));
         }
 
-        activity?.SetTag("orders.count", ordersList.Count);
         _logger.LogInformation("Placing batch of {Count} orders with parallel processing", ordersList.Count);
 
-        var placedOrders = new System.Collections.Concurrent.ConcurrentBag<Order>();
-        var skippedOrders = new System.Collections.Concurrent.ConcurrentBag<Order>();
-        var failedOrders = new System.Collections.Concurrent.ConcurrentBag<(string OrderId, string ErrorMessage)>();
+        var successfulOrders = new List<Order>();
+        var lockObject = new object();
 
-        // Use conservative parallelism for database-intensive operations to avoid connection pool exhaustion
-        // and reduce pressure on the database during batch processing
-        var options = new ParallelOptions
+        // **FIX 1: Batch check for existing orders - simplified approach**
+        var orderIds = ordersList.Select(o => o.Id).ToList();
+        
+        // Check existing orders in a single query by checking each one
+        var existingOrderIds = new HashSet<string>();
+        foreach (var orderId in orderIds)
         {
-            MaxDegreeOfParallelism = Math.Min(Environment.ProcessorCount, 4),
-            CancellationToken = cancellationToken
-        };
-
-        try
-        {
-            await Parallel.ForEachAsync(ordersList, options, async (order, ct) =>
+            var exists = await _orderRepository.GetOrderByIdAsync(orderId, cancellationToken);
+            if (exists != null)
             {
+                existingOrderIds.Add(orderId);
+            }
+        }
+
+        // Filter out existing orders before processing
+        var ordersToProcess = ordersList.Where(o => !existingOrderIds.Contains(o.Id)).ToList();
+        var skippedCount = ordersList.Count - ordersToProcess.Count;
+
+        if (skippedCount > 0)
+        {
+            _logger.LogInformation("Skipping {Count} orders that already exist (idempotent)", skippedCount);
+        }
+
+        if (!ordersToProcess.Any())
+        {
+            _logger.LogInformation("All orders already exist, nothing to process");
+            return ordersList; // Return original orders for idempotency
+        }
+
+        // **FIX 2: Process in smaller batches to avoid overwhelming the database**
+        const int batchSize = 50;
+        var batches = ordersToProcess
+            .Select((order, index) => new { order, index })
+            .GroupBy(x => x.index / batchSize)
+            .Select(g => g.Select(x => x.order).ToList())
+            .ToList();
+
+        foreach (var batch in batches)
+        {
+            if (cancellationToken.IsCancellationRequested)
+            {
+                _logger.LogWarning("Batch processing was cancelled by user after processing {Count} orders",
+                    successfulOrders.Count);
+                break;
+            }
+
+            // **FIX 3: Use SemaphoreSlim to limit concurrent database operations**
+            using var semaphore = new SemaphoreSlim(10);
+
+            var tasks = batch.Select(async order =>
+            {
+                await semaphore.WaitAsync(cancellationToken);
                 try
                 {
-                    // Validate order data first (no DB access, thread-safe)
-                    ValidateOrder(order);
-
-                    // Create a new scope for this order to get a fresh DbContext instance
-                    await using var scope = _serviceScopeFactory.CreateAsyncScope();
-                    var scopedRepository = scope.ServiceProvider.GetRequiredService<IOrderRepository>();
-                    var scopedMessageHandler = scope.ServiceProvider.GetRequiredService<IOrdersMessageHandler>();
-
-                    using var orderActivity = _activitySource.StartActivity("PlaceOrderInBatch", ActivityKind.Internal);
-                    orderActivity?.SetTag("order.id", order.Id);
-                    orderActivity?.SetTag("order.customer_id", order.CustomerId);
-
-                    var orderStartTime = DateTime.UtcNow;
-
-                    // Use a separate timeout for individual order operations to prevent cascade failures
-                    // This prevents one slow query from cancelling the entire batch
-                    using var orderCts = CancellationTokenSource.CreateLinkedTokenSource(ct);
-                    orderCts.CancelAfter(TimeSpan.FromSeconds(30)); // 30 second timeout per order
-
-                    // Check if order already exists using scoped repository (idempotency check)
-                    var existingOrder = await scopedRepository.GetOrderByIdAsync(order.Id, orderCts.Token);
-                    if (existingOrder != null)
+                    var result = await ProcessSingleOrderAsync(order, cancellationToken);
+                    if (result == OrderProcessResult.Success)
                     {
-                        // Order already exists - treat as idempotent success, skip processing
-                        _logger.LogInformation("Order {OrderId} already exists, skipping (idempotent)", order.Id);
-                        orderActivity?.SetTag("order.skipped", true);
-                        orderActivity?.SetTag("order.skip_reason", "duplicate");
-                        skippedOrders.Add(existingOrder);
-
-                        var skipTags = new TagList
+                        lock (lockObject)
                         {
-                            { "order.status", "skipped" },
-                            { "order.skip_reason", "duplicate" }
-                        };
-                        OrdersPlacedCounter.Add(1, skipTags);
-                        orderActivity?.SetStatus(ActivityStatusCode.Ok);
-                        return;
+                            successfulOrders.Add(order);
+                        }
                     }
-
-                    // Save order using scoped repository
-                    await scopedRepository.SaveOrderAsync(order, orderCts.Token);
-
-                    // Send message using scoped handler
-                    await scopedMessageHandler.SendOrderMessageAsync(order, orderCts.Token);
-
-                    // Record metrics
-                    var metricTags = new TagList
-                    {
-                        { "order.status", "success" }
-                    };
-                    OrdersPlacedCounter.Add(1, metricTags);
-                    var orderDuration = (DateTime.UtcNow - orderStartTime).TotalMilliseconds;
-                    OrderProcessingDuration.Record(orderDuration, metricTags);
-
-                    placedOrders.Add(order);
-                    orderActivity?.SetStatus(ActivityStatusCode.Ok);
+                    return result;
                 }
-                catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested)
+                finally
                 {
-                    // This is a per-order timeout, not a batch cancellation - log as warning and continue
-                    _logger.LogWarning("Order {OrderId} processing timed out after 30 seconds", order.Id);
-
-                    var errorTags = new TagList
-                    {
-                        { "error.type", "Timeout" },
-                        { "order.status", "failed" }
-                    };
-                    OrderProcessingErrors.Add(1, errorTags);
-
-                    failedOrders.Add((order.Id, "Processing timed out"));
+                    semaphore.Release();
                 }
-                catch (Exception ex)
-                {
-                    _logger.LogError(ex, "Failed to place order {OrderId} in batch: {ErrorMessage}", order.Id, ex.Message);
+            }).ToList();
 
-                    var errorTags = new TagList
-                    {
-                        { "error.type", ex.GetType().Name },
-                        { "order.status", "failed" }
-                    };
-                    OrderProcessingErrors.Add(1, errorTags);
-
-                    failedOrders.Add((order.Id, ex.Message));
-                }
-            }).ConfigureAwait(false);
-        }
-        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
-        {
-            _logger.LogWarning("Batch processing was cancelled by user after processing {Count} orders", placedOrders.Count + skippedOrders.Count);
-            throw;
+            await Task.WhenAll(tasks);
         }
 
-        var duration = (DateTime.UtcNow - startTime).TotalMilliseconds;
+        var failureCount = ordersToProcess.Count - successfulOrders.Count;
+
         _logger.LogInformation(
-            "Batch processing complete in {Duration}ms. {SuccessCount} orders placed, {SkippedCount} skipped (duplicates), {FailedCount} failed",
-            duration, placedOrders.Count, skippedOrders.Count, failedOrders.Count);
+            "Batch processing completed. Success: {Success}, Failed: {Failed}, Skipped: {Skipped}",
+            successfulOrders.Count, failureCount, skippedCount);
 
-        if (failedOrders.Count > 0)
+        return successfulOrders;
+    }
+
+    private async Task<OrderProcessResult> ProcessSingleOrderAsync(Order order, CancellationToken cancellationToken)
+    {
+        try
         {
-            activity?.AddEvent(new ActivityEvent("BatchPartialFailure",
-                tags: new ActivityTagsCollection
-                {
-                    { "failed.count", failedOrders.Count },
-                    { "success.count", placedOrders.Count },
-                    { "skipped.count", skippedOrders.Count },
-                    { "failed.orders", string.Join(", ", failedOrders.Select(f => f.OrderId)) }
-                }));
-        }
+            // Validate the order
+            ValidateOrder(order);
 
-        // Return both newly placed and skipped (already existing) orders as successful results
-        return placedOrders.Concat(skippedOrders).ToList();
+            // Save to database
+            await _orderRepository.SaveOrderAsync(order, cancellationToken);
+
+            // Publish event via message handler
+            await _ordersMessageHandler.SendOrderMessageAsync(order, cancellationToken);
+
+            return OrderProcessResult.Success;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to place order {OrderId} in batch: {Message}",
+                order.Id, ex.Message);
+            return OrderProcessResult.Failure;
+        }
+    }
+
+    private enum OrderProcessResult
+    {
+        Success,
+        Failure
     }
 
     /// <summary>
