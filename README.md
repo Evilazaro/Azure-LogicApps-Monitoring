@@ -45,6 +45,17 @@ What sets this reference apart is its **zero-secrets architecture** using Azure 
 | **Zero Secrets** | Managed Identity authentication for all Azure services |
 | **Local Development Parity** | Full-fidelity local development with .NET Aspire emulators |
 
+### Target Audience
+
+| Role | Focus Areas | Key Documents |
+|------|-------------|---------------|
+| **Cloud Architects** | System design, integration patterns, scalability decisions | [Architecture Overview](docs/architecture/README.md), [Technology Architecture](docs/architecture/04-technology-architecture.md) |
+| **Platform Engineers** | Infrastructure automation, IaC templates, deployment pipelines | [Deployment Architecture](docs/architecture/07-deployment-architecture.md), [Bicep Modules](infra/) |
+| **Backend Developers** | API development, Service Bus integration, EF Core patterns | [Application Architecture](docs/architecture/03-application-architecture.md), [API Reference](#-api-reference) |
+| **DevOps Engineers** | CI/CD workflows, environment management, azd hooks | [Developer Workflow](docs/hooks/README.md), [Validation Workflow](docs/hooks/VALIDATION-WORKFLOW.md) |
+| **SRE / Operations** | Observability, alerting, health checks, troubleshooting | [Observability Architecture](docs/architecture/05-observability-architecture.md), [Security Architecture](docs/architecture/06-security-architecture.md) |
+| **Technical Leads** | Architecture decisions, trade-offs, team onboarding | [ADR Index](docs/architecture/adr/README.md), [Business Architecture](docs/architecture/01-business-architecture.md) |
+
 ---
 
 ## ✨ Key Features
