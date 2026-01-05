@@ -36,6 +36,7 @@ The data architecture follows **service-oriented data ownership** principles whe
 ## 3. Data Landscape Map
 
 ```mermaid
+%%{init: {'theme': 'base', 'themeVariables': { 'fontSize': '14px'}}}%%
 flowchart LR
     subgraph BusinessDomains["📊 Business Data Domains"]
         Orders["📦 Orders Domain<br/><i>Order lifecycle data</i>"]
@@ -71,9 +72,10 @@ flowchart LR
     LogicApp -.->|"Diagnostics"| AppInsights
     AppInsights --> Dashboard
 
-    classDef domain fill:#e3f2fd,stroke:#1565c0,stroke-width:2px
-    classDef store fill:#fff3e0,stroke:#ef6c00,stroke-width:2px
-    classDef consumer fill:#e8f5e9,stroke:#2e7d32,stroke-width:2px
+    %% Accessible color palette with clear domain separation
+    classDef domain fill:#e3f2fd,stroke:#1565c0,stroke-width:2px,color:#0d47a1
+    classDef store fill:#fff3e0,stroke:#e65100,stroke-width:2px,color:#bf360c
+    classDef consumer fill:#e8f5e9,stroke:#2e7d32,stroke-width:2px,color:#1b5e20
 
     class Orders,Events,Telemetry domain
     class OrderDb,EventStore,WorkflowState,AppInsights store
@@ -111,6 +113,7 @@ flowchart LR
 ### Write Path (Order Creation)
 
 ```mermaid
+%%{init: {'theme': 'base', 'themeVariables': { 'fontSize': '14px', 'actorBkg': '#e3f2fd', 'actorBorder': '#1565c0', 'actorTextColor': '#0d47a1', 'noteBkgColor': '#fff3e0', 'noteBorderColor': '#e65100'}}}%%
 sequenceDiagram
     autonumber
     participant User as 👤 User
@@ -137,15 +140,18 @@ sequenceDiagram
     API-->>Web: 201 Created + Order JSON
     Web-->>User: Success Notification
     
-    Note over SB,LA: Async Processing (1s polling)
-    SB->>LA: Trigger: Message Received
-    LA->>LA: Execute Workflow Actions
-    LA-->>SB: Complete Message
+    rect rgba(232, 245, 233, 0.5)
+        Note over SB,LA: Async Processing (1s polling)
+        SB->>LA: Trigger: Message Received
+        LA->>LA: Execute Workflow Actions
+        LA-->>SB: Complete Message
+    end
 ```
 
 ### Read Path (Order Retrieval)
 
 ```mermaid
+%%{init: {'theme': 'base', 'themeVariables': { 'fontSize': '14px', 'actorBkg': '#e3f2fd', 'actorBorder': '#1565c0', 'actorTextColor': '#0d47a1', 'noteBkgColor': '#fff3e0', 'noteBorderColor': '#e65100'}}}%%
 sequenceDiagram
     autonumber
     participant User as 👤 User
@@ -156,9 +162,11 @@ sequenceDiagram
     User->>Web: Navigate to Orders Page
     Web->>API: GET /api/orders
     
-    Note over API: Query with Include
-    API->>DB: SELECT Orders JOIN Products
-    DB-->>API: Order Collection
+    rect rgba(227, 242, 253, 0.5)
+        Note over API: Query with Include
+        API->>DB: SELECT Orders JOIN Products
+        DB-->>API: Order Collection
+    end
     
     API-->>Web: JSON Array
     Web-->>User: Render Orders Grid
@@ -169,6 +177,7 @@ sequenceDiagram
 ## 7. Monitoring Data Flow Architecture
 
 ```mermaid
+%%{init: {'theme': 'base', 'themeVariables': { 'fontSize': '14px'}}}%%
 flowchart LR
     subgraph Sources["📡 Layer 1: Telemetry Sources"]
         direction TB
@@ -218,10 +227,11 @@ flowchart LR
     LAW --> Alerts
     LAW --> KQL
 
-    classDef source fill:#fff3e0,stroke:#ef6c00,stroke-width:2px
-    classDef instrument fill:#e3f2fd,stroke:#1565c0,stroke-width:2px
-    classDef collect fill:#e8f5e9,stroke:#2e7d32,stroke-width:2px
-    classDef visual fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px
+    %% Accessible color palette with clear layer separation
+    classDef source fill:#fff3e0,stroke:#e65100,stroke-width:2px,color:#bf360c
+    classDef instrument fill:#e3f2fd,stroke:#1565c0,stroke-width:2px,color:#0d47a1
+    classDef collect fill:#e8f5e9,stroke:#2e7d32,stroke-width:2px,color:#1b5e20
+    classDef visual fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px,color:#4a148c
 
     class WebApp,API,LA,SQL,SB source
     class OTEL,AzureDiag,LADiag instrument
@@ -244,6 +254,7 @@ flowchart LR
 ### Telemetry-to-Source Mapping
 
 ```mermaid
+%%{init: {'theme': 'base', 'themeVariables': { 'fontSize': '14px'}}}%%
 flowchart TB
     subgraph Sources["📡 Telemetry Sources"]
         API["⚙️ Orders API"]
@@ -280,13 +291,16 @@ flowchart TB
     SB --> M3 & L3
     SQL --> M3 & L3
 
-    classDef trace fill:#e3f2fd,stroke:#1565c0
-    classDef metric fill:#e8f5e9,stroke:#2e7d32
-    classDef log fill:#fff3e0,stroke:#ef6c00
+    %% Accessible color palette for three pillars
+    classDef trace fill:#e3f2fd,stroke:#1565c0,stroke-width:2px,color:#0d47a1
+    classDef metric fill:#e8f5e9,stroke:#2e7d32,stroke-width:2px,color:#1b5e20
+    classDef log fill:#fff3e0,stroke:#e65100,stroke-width:2px,color:#bf360c
+    classDef source fill:#f5f5f5,stroke:#424242,stroke-width:2px,color:#212121
 
     class T1,T2,T3,T4 trace
     class M1,M2,M3 metric
     class L1,L2,L3 log
+    class API,Web,LA,SB,SQL source
 ```
 
 ### Metrics Inventory by Source
@@ -375,6 +389,7 @@ if (activity != null)
 ## 10. Data Dependencies Map
 
 ```mermaid
+%%{init: {'theme': 'base', 'themeVariables': { 'fontSize': '14px'}}}%%
 flowchart TD
     subgraph Upstream["⬆️ Upstream (Data Producers)"]
         WebApp["🌐 Web App<br/>(User Input)"]
@@ -402,9 +417,10 @@ flowchart TD
     EventBus -.->|"Emits telemetry"| AppInsights
     LogicApp -.->|"Emits telemetry"| AppInsights
 
-    classDef upstream fill:#fff3e0,stroke:#ef6c00,stroke-width:2px
-    classDef core fill:#e3f2fd,stroke:#1565c0,stroke-width:2px
-    classDef downstream fill:#e8f5e9,stroke:#2e7d32,stroke-width:2px
+    %% Accessible color palette with clear data flow direction
+    classDef upstream fill:#fff3e0,stroke:#e65100,stroke-width:2px,color:#bf360c
+    classDef core fill:#e3f2fd,stroke:#1565c0,stroke-width:2px,color:#0d47a1
+    classDef downstream fill:#e8f5e9,stroke:#2e7d32,stroke-width:2px,color:#1b5e20
 
     class WebApp,TestData upstream
     class OrderDb,EventBus core
