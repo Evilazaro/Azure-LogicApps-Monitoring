@@ -642,102 +642,175 @@ Azure-LogicApps-Monitoring/
 
 ## ⚙️ Configuration
 
-This section provides an overview of configuration management. The solution uses a **zero-secrets architecture** with Azure Managed Identity for service authentication, eliminating the need for stored credentials.
+The solution supports two configuration modes: **Local Development** (zero Azure dependency) and **Azure Deployment** (production-ready). Both modes use the same codebase with environment-specific configuration automatically managed by .NET Aspire and Azure Developer CLI.
 
-> 📚 **Complete Guide:** See [postprovision](docs/hooks/postprovision.md) for detailed configuration workflow, secret definitions, and SQL managed identity setup.
+> 📚 **Complete Guide:** See [Developer Inner Loop Workflow](docs/hooks/README.md) for comprehensive configuration workflows, troubleshooting, and hybrid development patterns.
 
-### Configuration Hierarchy
+### Configuration Modes Comparison
 
-The application follows standard .NET configuration precedence:
+| Aspect | Local Development | Azure Deployment |
+|--------|-------------------|------------------|
+| **Database** | SQL Server container (sa auth) | Azure SQL (Managed Identity) |
+| **Service Bus** | Emulator container | Azure Service Bus |
+| **Monitoring** | Aspire Dashboard | Application Insights |
+| **Secrets** | Auto-configured by Aspire | Auto-configured by [`postprovision`](docs/hooks/postprovision.md) |
+| **Setup Time** | ~1 minute | ~10 minutes |
+| **Cost** | Free | Pay-per-use |
+
+> 📖 **Learn more:** See [Local vs Azure Comparison](docs/hooks/README.md#comparison-local-vs-azure-development) for detailed differences and when to use each mode.
+
+---
+
+### 🏠 Local Development Configuration
+
+Local development requires **zero manual configuration**—.NET Aspire automatically provisions and configures all dependencies.
+
+#### What Aspire Configures Automatically
+
+| Component | Configuration | Details |
+|-----------|---------------|---------|
+| **SQL Server** | Container with persistent volume | `mcr.microsoft.com/mssql/server:2022-latest` |
+| **Service Bus** | Emulator container | Topic: `ordersplaced`, Subscription: `orderprocessingsub` |
+| **Connection Strings** | Injected via service discovery | No hardcoded URLs needed |
+| **Health Checks** | Auto-registered | SQL, Service Bus, HTTP endpoints |
+| **OpenTelemetry** | Pre-configured exporters | Traces → Aspire Dashboard |
+
+#### Quick Start (Local)
+
+```powershell
+# Ensure Docker Desktop is running
+docker ps
+
+# Start all services with Aspire orchestration
+dotnet run --project app.AppHost
+
+# Access points (ports assigned dynamically - check Aspire Dashboard):
+#   Aspire Dashboard: https://localhost:17225
+#   Web App: https://localhost:<dynamic>
+#   Orders API: https://localhost:<dynamic>
+```
+
+#### Local Development Features
+
+| Feature | Description |
+|---------|-------------|
+| **Hot Reload** | C# and Razor changes apply in 1-3 seconds without restart |
+| **Debugging** | Full breakpoint support in Visual Studio / VS Code |
+| **Service Discovery** | Reference services by name (e.g., `orders-api`) |
+| **Log Streaming** | Real-time logs in Aspire Dashboard |
+
+> 📖 **Learn more:** See [Local Development Workflow](docs/hooks/README.md#local-development-workflow-inner-loop) for hot reload tips, debugging, and database management.
+
+---
+
+### ☁️ Azure Deployment Configuration
+
+Azure deployment uses **User Secrets** populated automatically from Bicep outputs. The [`postprovision`](docs/hooks/postprovision.md) hook configures all secrets after infrastructure provisioning.
+
+#### Configuration Hierarchy
 
 | Source | Purpose | Priority |
 |--------|---------|----------|
 | `appsettings.json` | Default configuration | Lowest |
 | `appsettings.{Environment}.json` | Environment-specific | Medium |
 | [User Secrets](docs/hooks/postprovision.md#-configured-user-secrets) | Local development secrets | High |
-| Environment Variables | Runtime configuration | Highest |
+| Environment Variables | Runtime/container configuration | Highest |
 
-### Automatic Configuration (Recommended)
-
-The [`postprovision`](docs/hooks/postprovision.md) hook **automatically configures** all secrets after Azure deployment:
+#### Automatic Configuration
 
 ```powershell
-# Secrets are configured automatically during deployment
+# Full deployment - provisions infrastructure + configures secrets
 azd up
 
-# Or manually re-configure after environment changes
-./hooks/postprovision.ps1
+# Or reconfigure secrets after environment changes
+./hooks/postprovision.ps1 -Force
 ```
 
-The script configures **27 secrets across 3 projects**:
+The [`postprovision`](docs/hooks/postprovision.md) script configures **27 secrets across 3 projects**:
 
 | Project | Secrets | Purpose |
 |---------|---------|---------|
-| **app.AppHost** | 23 | Full Azure infrastructure (SQL, Service Bus, ACR, monitoring) |
+| **app.AppHost** | 23 | SQL, Service Bus, ACR, Container Apps, monitoring |
 | **eShop.Orders.API** | 3 | Managed identity and telemetry |
 | **eShop.Web.App** | 1 | Application Insights connection |
 
-> 📖 **Learn more:** See [Configured User Secrets](docs/hooks/postprovision.md#-configured-user-secrets) for the complete secret key reference.
+> 📖 **Learn more:** See [Configured User Secrets](docs/hooks/postprovision.md#-configured-user-secrets) for the complete secret key reference with sources.
 
-### Key Configuration Settings
+#### Key Azure Settings
 
-These settings are **automatically populated** from Bicep outputs during deployment. The JSON structure below shows the configuration schema used by the application:
+These settings are **automatically populated** from Bicep outputs:
 
 ```json
 {
   "Azure": {
     "ServiceBus": {
-      "HostName": "your-namespace.servicebus.windows.net",
+      "HostName": "sb-orders-dev.servicebus.windows.net",
       "TopicName": "ordersplaced",
       "SubscriptionName": "orderprocessingsub"
     },
     "SqlServer": {
-      "Fqdn": "your-server.database.windows.net",
-      "Name": "your-sql-server"
+      "Fqdn": "sql-orders-dev.database.windows.net",
+      "Name": "sql-orders-dev"
     },
     "SqlDatabase": {
       "Name": "OrderDb"
-    },
-    "ApplicationInsights": {
-      "Name": "your-appinsights"
     }
   }
 }
 ```
 
-| Setting | Source | Description |
-|---------|--------|-------------|
-| `Azure:ServiceBus:HostName` | Bicep output | Service Bus namespace FQDN for AMQP connections |
-| `Azure:ServiceBus:TopicName` | Bicep output | Topic name for order events (`ordersplaced`) |
-| `Azure:ServiceBus:SubscriptionName` | Bicep output | Subscription for Logic Apps trigger |
-| `Azure:SqlServer:Fqdn` | Bicep output | SQL Server fully qualified domain name |
-| `Azure:SqlServer:Name` | Bicep output | SQL Server resource name |
-| `Azure:SqlDatabase:Name` | Bicep output | Database name for order storage |
-| `Azure:ApplicationInsights:Name` | Bicep output | Application Insights resource name |
+> 📖 **Learn more:** See [Technology Architecture](docs/architecture/04-technology-architecture.md#3-resource-inventory) for complete Azure resource specifications.
 
-> 📖 **Learn more:** See [Technology Architecture](docs/architecture/04-technology-architecture.md#3-resource-inventory) for complete Azure resource specifications and Bicep module details.
+#### SQL Database Access (Managed Identity)
 
-### SQL Database Access Configuration
-
-The solution uses **Microsoft Entra ID (Azure AD) authentication** for SQL Database access with managed identity:
+Azure deployment uses **Microsoft Entra ID authentication**—no connection strings or passwords:
 
 | Configuration | Value | Purpose |
 |---------------|-------|---------|
-| **Authentication** | User-Assigned Managed Identity | No stored credentials |
+| **Authentication** | User-Assigned Managed Identity | Zero secrets |
 | **Database Role** | `db_owner` | Required for EF Core migrations |
-| **Setup Script** | [`sql-managed-identity-config`](docs/hooks/sql-managed-identity-config.md) | Creates database user with appropriate roles |
+| **Setup Script** | [`sql-managed-identity-config`](docs/hooks/sql-managed-identity-config.md) | Creates DB user with roles |
 
-> 📖 **Learn more:** See [SQL Managed Identity Configuration](docs/hooks/sql-managed-identity-config.md) for detailed setup, troubleshooting, and manual configuration steps.
+> 📖 **Learn more:** See [SQL Managed Identity Configuration](docs/hooks/sql-managed-identity-config.md) for manual setup, troubleshooting, and role assignment details.
 
-### Cleaning Secrets
+---
 
-To reset local development secrets (useful when switching environments):
+### 🔀 Hybrid Development Mode
+
+Run local code against Azure resources for integration testing with real services:
 
 ```powershell
-# Interactive mode - prompts for confirmation
+# 1. Provision Azure resources (one-time)
+azd provision
+
+# 2. Secrets auto-configured by postprovision hook
+
+# 3. Start AppHost - detects Azure config and uses Azure services
+dotnet run --project app.AppHost
+
+# Result: Local debugging + Azure SQL + Azure Service Bus
+```
+
+| Benefit | Description |
+|---------|-------------|
+| **Fast debugging** | Hot reload with real Azure latency |
+| **Managed Identity testing** | Validate Entra ID authentication flows |
+| **Network policy testing** | Test firewall rules and private endpoints |
+| **Production parity** | Reproduce production issues locally |
+
+> 📖 **Learn more:** See [Hybrid Development Mode](docs/hooks/README.md#hybrid-development-mode) for configuration patterns and use cases.
+
+---
+
+### 🧹 Managing Secrets
+
+#### Clean Secrets (Reset Configuration)
+
+```powershell
+# Interactive - prompts for confirmation
 ./hooks/clean-secrets.ps1
 
-# Force mode - skip confirmation (CI/CD)
+# Force mode - CI/CD pipelines
 ./hooks/clean-secrets.ps1 -Force
 
 # Preview mode - see what would be deleted
@@ -746,17 +819,15 @@ To reset local development secrets (useful when switching environments):
 
 > 📖 **Learn more:** See [clean-secrets](docs/hooks/clean-secrets.md) for target projects, storage locations, and workflow integration.
 
-### Security Architecture
+#### Security Architecture
 
-The configuration follows **Zero Trust** security principles:
+The configuration follows **Zero Trust** principles:
 
 | Principle | Implementation | Documentation |
 |-----------|----------------|---------------|
 | **No Secrets** | Managed Identity authentication | [Security Architecture](docs/architecture/06-security-architecture.md#2-identity-architecture) |
 | **Least Privilege** | RBAC role assignments | [RBAC Role Assignments](docs/architecture/06-security-architecture.md#4-rbac-role-assignments) |
 | **Defense in Depth** | Multiple security layers | [Security Architecture](docs/architecture/06-security-architecture.md) |
-
-> 📖 **Learn more:** See [Technology Architecture](docs/architecture/04-technology-architecture.md) for complete Azure resource topology and infrastructure configuration.
 
 ---
 
