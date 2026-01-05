@@ -56,14 +56,14 @@ By automating environment validation, secret management, SQL managed identity co
 
 ### Available Scripts
 
-| Script                   | PowerShell                        | Bash                             | Purpose                                        | Documentation                                             |
-| ------------------------ | --------------------------------- | -------------------------------- | ---------------------------------------------- | --------------------------------------------------------- |
-| **Environment Check**    | `check-dev-workstation.ps1`       | `check-dev-workstation.sh`       | Validate workstation prerequisites             | [📄 check-dev-workstation.md](./check-dev-workstation.md) |
-| **Pre-Provisioning**     | `preprovision.ps1`                | `preprovision.sh`                | Validate and prepare for deployment            | [📄 VALIDATION-WORKFLOW.md](./VALIDATION-WORKFLOW.md)     |
-| **Post-Provisioning**    | `postprovision.ps1`               | `postprovision.sh`               | Configure secrets after deployment             | [📄 postprovision.md](./postprovision.md)                 |
-| **SQL Managed Identity** | `sql-managed-identity-config.ps1` | `sql-managed-identity-config.sh` | Configure SQL Database managed identity access | Embedded help (use `--help` or `-Help`)                   |
-| **Secrets Management**   | `clean-secrets.ps1`               | `clean-secrets.sh`               | Clear .NET user secrets                        | [📄 clean-secrets.md](./clean-secrets.md)                 |
-| **Test Data**            | `Generate-Orders.ps1`             | `Generate-Orders.sh`             | Generate sample order data                     | [📄 Generate-Orders.md](./Generate-Orders.md)             |
+| Script                   | PowerShell                        | Bash                             | Purpose                                        | Documentation                                                       |
+| ------------------------ | --------------------------------- | -------------------------------- | ---------------------------------------------- | ------------------------------------------------------------------- |
+| **Environment Check**    | `check-dev-workstation.ps1`       | `check-dev-workstation.sh`       | Validate workstation prerequisites             | [📄 check-dev-workstation.md](./check-dev-workstation.md)           |
+| **Pre-Provisioning**     | `preprovision.ps1`                | `preprovision.sh`                | Validate and prepare for deployment            | [📄 preprovision.md](./preprovision.md)                             |
+| **Post-Provisioning**    | `postprovision.ps1`               | `postprovision.sh`               | Configure secrets after deployment             | [📄 postprovision.md](./postprovision.md)                           |
+| **SQL Managed Identity** | `sql-managed-identity-config.ps1` | `sql-managed-identity-config.sh` | Configure SQL Database managed identity access | [📄 sql-managed-identity-config.md](./sql-managed-identity-config.md) |
+| **Secrets Management**   | `clean-secrets.ps1`               | `clean-secrets.sh`               | Clear .NET user secrets                        | [📄 clean-secrets.md](./clean-secrets.md)                           |
+| **Test Data**            | `Generate-Orders.ps1`             | `Generate-Orders.sh`             | Generate sample order data                     | [📄 Generate-Orders.md](./Generate-Orders.md)                       |
 
 ---
 
@@ -917,11 +917,12 @@ For additional assistance:
 ### Script Documentation
 
 - [check-dev-workstation.md](./check-dev-workstation.md) - Workstation validation details
-- [VALIDATION-WORKFLOW.md](./VALIDATION-WORKFLOW.md) - Pre-provisioning workflow
+- [preprovision.md](./preprovision.md) - Pre-provisioning validation and deployment preparation
+- [VALIDATION-WORKFLOW.md](./VALIDATION-WORKFLOW.md) - Complete deployment workflow documentation
 - [postprovision.md](./postprovision.md) - Post-provisioning configuration
+- [sql-managed-identity-config.md](./sql-managed-identity-config.md) - SQL Database managed identity configuration
 - [clean-secrets.md](./clean-secrets.md) - Secret management details
 - [Generate-Orders.md](./Generate-Orders.md) - Test data generation details
-- **sql-managed-identity-config** (.ps1/.sh) - SQL Database managed identity configuration (embedded help: use `--help` or `Get-Help`)
 
 ### Azure Documentation
 
