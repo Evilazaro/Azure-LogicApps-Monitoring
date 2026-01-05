@@ -25,21 +25,38 @@ The solution implements a **Zero Trust** security model with Azure Managed Ident
 %%{init: {'theme': 'base', 'themeVariables': { 'fontSize': '14px'}}}%%
 flowchart TB
     subgraph Identity["🔐 Identity Layer"]
-        MI["User-Assigned<br/>Managed Identity"]
-        AAD["Microsoft Entra ID"]
+        direction LR
+        subgraph ManagedIdentities["Managed Identities"]
+            MI["User-Assigned<br/>Managed Identity"]
+        end
+        subgraph IdentityProvider["Identity Provider"]
+            AAD["🔑 Microsoft Entra ID"]
+        end
     end
 
     subgraph Services["🔧 Application Services"]
-        API["Orders API"]
-        Web["Web App"]
-        LA["Logic Apps"]
+        direction LR
+        subgraph CoreServices["Core Services"]
+            API["📡 Orders API"]
+            Web["🌐 Web App"]
+        end
+        subgraph WorkflowServices["Workflow Services"]
+            LA["🔄 Logic Apps"]
+        end
     end
 
     subgraph Resources["☁️ Azure Resources"]
-        SQL["Azure SQL"]
-        SB["Service Bus"]
-        Storage["Storage Account"]
-        AI["App Insights"]
+        direction LR
+        subgraph DataResources["Data Resources"]
+            SQL[("🗄️ Azure SQL")]
+            Storage["📁 Storage Account"]
+        end
+        subgraph MessagingResources["Messaging Resources"]
+            SB["📨 Service Bus"]
+        end
+        subgraph MonitoringResources["Monitoring Resources"]
+            AI["📊 App Insights"]
+        end
     end
 
     %% Identity assignment
@@ -75,6 +92,13 @@ flowchart TB
     style Identity fill:#e8eaf622,stroke:#3f51b5,stroke-width:2px
     style Services fill:#e3f2fd22,stroke:#1565c0,stroke-width:2px
     style Resources fill:#e8f5e922,stroke:#2e7d32,stroke-width:2px
+    style ManagedIdentities fill:#e8eaf611,stroke:#3f51b5,stroke-width:1px,stroke-dasharray:3
+    style IdentityProvider fill:#e8eaf611,stroke:#3f51b5,stroke-width:1px,stroke-dasharray:3
+    style CoreServices fill:#e3f2fd11,stroke:#1565c0,stroke-width:1px,stroke-dasharray:3
+    style WorkflowServices fill:#e3f2fd11,stroke:#1565c0,stroke-width:1px,stroke-dasharray:3
+    style DataResources fill:#e8f5e911,stroke:#2e7d32,stroke-width:1px,stroke-dasharray:3
+    style MessagingResources fill:#e8f5e911,stroke:#2e7d32,stroke-width:1px,stroke-dasharray:3
+    style MonitoringResources fill:#e8f5e911,stroke:#2e7d32,stroke-width:1px,stroke-dasharray:3
 ```
 
 ---
@@ -241,17 +265,31 @@ builder.AddAzureSqlClient("orderDb", configureSettings: settings =>
 %%{init: {'theme': 'base', 'themeVariables': { 'fontSize': '14px'}}}%%
 flowchart LR
     subgraph Internet["🌐 Public Internet"]
-        Users["Users"]
+        direction TB
+        subgraph EndUsers["End Users"]
+            Users["👤 Users"]
+        end
     end
 
     subgraph Azure["☁️ Azure"]
+        direction TB
         subgraph CAE["Container Apps (Managed VNet)"]
-            API["Orders API<br/>External Ingress"]
-            Web["Web App<br/>External Ingress"]
+            direction LR
+            subgraph ExternalIngress["External Ingress"]
+                API["📡 Orders API<br/>External Ingress"]
+                Web["🌐 Web App<br/>External Ingress"]
+            end
         end
         
-        SQL["Azure SQL<br/>Public + Firewall"]
-        SB["Service Bus<br/>Public + RBAC"]
+        subgraph PaaSServices["PaaS Services"]
+            direction LR
+            subgraph DatabaseServices["Database"]
+                SQL[("🗄️ Azure SQL<br/>Public + Firewall")]
+            end
+            subgraph MessagingServices["Messaging"]
+                SB["📨 Service Bus<br/>Public + RBAC"]
+            end
+        end
     end
 
     Users -->|"HTTPS (443)"| API
@@ -270,6 +308,11 @@ flowchart LR
     style Internet fill:#ffebee22,stroke:#c62828,stroke-width:2px
     style Azure fill:#e8f5e922,stroke:#2e7d32,stroke-width:2px
     style CAE fill:#e3f2fd22,stroke:#1565c0,stroke-width:2px
+    style EndUsers fill:#ffebee11,stroke:#c62828,stroke-width:1px,stroke-dasharray:3
+    style ExternalIngress fill:#e3f2fd11,stroke:#1565c0,stroke-width:1px,stroke-dasharray:3
+    style PaaSServices fill:#e8f5e911,stroke:#2e7d32,stroke-width:1px,stroke-dasharray:3
+    style DatabaseServices fill:#e8f5e911,stroke:#2e7d32,stroke-width:1px,stroke-dasharray:3
+    style MessagingServices fill:#e8f5e911,stroke:#2e7d32,stroke-width:1px,stroke-dasharray:3
 ```
 
 ### Recommended Production Enhancements
