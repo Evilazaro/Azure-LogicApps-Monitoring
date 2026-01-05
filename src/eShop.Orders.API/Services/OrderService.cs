@@ -275,17 +275,21 @@ public sealed class OrderService : IOrderService
             // Save to database - the repository handles duplicate key violations as backup
             await repository.SaveOrderAsync(order, cancellationToken);
 
-            // Publish event via message handler with separate timeout to avoid cancellation
+            // Publish event via message handler - the handler manages its own timeout and retry
+            // Pass CancellationToken.None to allow completion even if HTTP request is cancelled
             try
             {
-                using var messageCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
-                messageCts.CancelAfter(TimeSpan.FromSeconds(30));
-                await messageHandler.SendOrderMessageAsync(order, messageCts.Token);
+                await messageHandler.SendOrderMessageAsync(order, CancellationToken.None);
             }
-            catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested)
+            catch (TimeoutException)
             {
                 // Message send timed out, but order was saved - log warning but consider success
                 _logger.LogWarning("Service Bus message send timed out for order {OrderId}, but order was saved to database", order.Id);
+            }
+            catch (Exception msgEx) when (msgEx is not OperationCanceledException)
+            {
+                // Non-cancellation message errors - order was saved, log warning
+                _logger.LogWarning(msgEx, "Failed to send Service Bus message for order {OrderId}, but order was saved to database", order.Id);
             }
 
             return OrderProcessResult.Success;
