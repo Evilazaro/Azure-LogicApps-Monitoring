@@ -291,6 +291,8 @@ resource wfConf 'Microsoft.Web/sites/config@2025-03-01' = {
     WORKFLOWS_RESOURCE_GROUP_NAME: resourceGroup().name
     WORKFLOWS_LOCATION_NAME: location
     WORKFLOWS_TENANT_ID: tenant().tenantId
+    WORKFLOWS_AUTHENTICATION_METHOD: 'managedServiceIdentity'
+    WORKFLOWS_MANAGEMENT_BASE_URI: environment().resourceManager
   }
 }
 

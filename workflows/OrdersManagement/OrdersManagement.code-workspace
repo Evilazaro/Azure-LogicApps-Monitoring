@@ -11,6 +11,7 @@
     },
     "omnisharp.dotNetCliPaths": [
       "C:\\Users\\evalvesd\\.azurelogicapps\\dependencies\\DotNetSDK"
-    ]
+    ],
+    "debug.internalConsoleOptions": "neverOpen"
   }
 }
