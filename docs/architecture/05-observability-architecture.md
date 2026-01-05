@@ -88,6 +88,13 @@ flowchart TB
     class OTLP,Diag collection
     class AI,LAW backend
     class LiveMetrics,AppMap,E2E,Workbooks,Alerts analysis
+
+    %% Subgraph container styling for visual layer grouping
+    style Services fill:#e3f2fd22,stroke:#1565c0,stroke-width:2px
+    style Instrumentation fill:#e8f5e922,stroke:#2e7d32,stroke-width:2px
+    style Collection fill:#fff3e022,stroke:#e65100,stroke-width:2px
+    style Backend fill:#f3e5f522,stroke:#7b1fa2,stroke-width:2px
+    style Analysis fill:#fce4ec22,stroke:#c2185b,stroke-width:2px
 ```
 
 ---

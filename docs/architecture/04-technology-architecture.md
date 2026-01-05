@@ -97,6 +97,15 @@ flowchart TB
     class SQL,Storage data
     class SB,Topic,Sub messaging
     class ACR,CAE,API,Web,LA compute
+
+    %% Subgraph container styling for visual layer grouping
+    style Subscription fill:#fafafa22,stroke:#9e9e9e,stroke-width:2px
+    style RG fill:#f5f5f522,stroke:#757575,stroke-width:2px
+    style Identity fill:#e8eaf622,stroke:#3f51b5,stroke-width:2px
+    style Monitoring fill:#e3f2fd22,stroke:#1565c0,stroke-width:2px
+    style Data fill:#e8f5e922,stroke:#2e7d32,stroke-width:2px
+    style Messaging fill:#fff3e022,stroke:#e65100,stroke-width:2px
+    style Compute fill:#fce4ec22,stroke:#c2185b,stroke-width:2px
 ```
 
 ---
@@ -196,6 +205,11 @@ flowchart TB
     class Params,RG root
     class Identity,Monitoring,Data shared
     class Messaging,Services,LogicApp workload
+
+    %% Subgraph container styling for visual layer grouping
+    style Root fill:#e3f2fd22,stroke:#1565c0,stroke-width:2px
+    style Shared fill:#e8f5e922,stroke:#2e7d32,stroke-width:2px
+    style Workload fill:#fff3e022,stroke:#e65100,stroke-width:2px
 ```
 
 ---
@@ -377,6 +391,12 @@ flowchart TB
 
     class API_Container,API_Ingress,Web_Container,Web_Ingress container
     class ACR,AI,VNet external
+
+    %% Subgraph container styling for visual layer grouping
+    style CAE fill:#e3f2fd22,stroke:#1565c0,stroke-width:2px
+    style API fill:#e8f5e922,stroke:#2e7d32,stroke-width:2px
+    style Web fill:#e8f5e922,stroke:#2e7d32,stroke-width:2px
+    style External fill:#f3e5f522,stroke:#7b1fa2,stroke-width:2px
 ```
 
 ### Container App Configuration
@@ -431,6 +451,13 @@ flowchart TB
     class Users internet
     class API,Web compute
     class SQL,SB,LA paas
+
+    %% Subgraph container styling for visual layer grouping
+    style Internet fill:#e8f5e922,stroke:#2e7d32,stroke-width:2px
+    style Azure fill:#f5f5f522,stroke:#757575,stroke-width:2px
+    style VNet fill:#e3f2fd22,stroke:#1565c0,stroke-width:2px
+    style CAE fill:#e3f2fd22,stroke:#1565c0,stroke-width:2px
+    style PaaS fill:#fff3e022,stroke:#e65100,stroke-width:2px
 ```
 
 ### Network Configuration
