@@ -694,8 +694,6 @@ try {
     Write-Log "  Port:             1433 (default)" -Level Info
     Write-Log "  Encryption:       TLS 1.2+ (enforced)" -Level Info
     #endregion
-
-    #endregion
     
     #region Access Token Acquisition
     Write-Log "" -Level Info
@@ -724,8 +722,6 @@ try {
         Write-Log $errorMessage -Level Error
         throw $errorMessage
     }
-    #endregion
-
     #endregion
     
     #region SQL Script Generation
