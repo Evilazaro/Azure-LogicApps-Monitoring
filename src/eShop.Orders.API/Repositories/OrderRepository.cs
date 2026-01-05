@@ -37,6 +37,7 @@ public sealed class OrderRepository : IOrderRepository
     /// <summary>
     /// Saves an order to the database asynchronously.
     /// Creates a new order if it doesn't exist.
+    /// Uses an internal timeout to prevent HTTP request cancellation from interrupting database transactions.
     /// </summary>
     /// <param name="order">The order to save.</param>
     /// <param name="cancellationToken">Cancellation token to cancel the operation.</param>
@@ -61,6 +62,11 @@ public sealed class OrderRepository : IOrderRepository
             ["OrderId"] = order.Id
         });
 
+        // Use internal timeout to prevent HTTP cancellation from interrupting database commits
+        // This ensures data consistency even if the HTTP request is cancelled
+        using var dbCts = new CancellationTokenSource(TimeSpan.FromSeconds(30));
+        var dbToken = dbCts.Token;
+
         try
         {
             _logger.LogDebug("Saving order {OrderId} to database", order.Id);
@@ -69,8 +75,8 @@ public sealed class OrderRepository : IOrderRepository
             var orderEntity = order.ToEntity();
 
             // Add new order - EF Core will handle duplicate detection via exception
-            await _dbContext.Orders.AddAsync(orderEntity, cancellationToken);
-            await _dbContext.SaveChangesAsync(cancellationToken);
+            await _dbContext.Orders.AddAsync(orderEntity, dbToken);
+            await _dbContext.SaveChangesAsync(dbToken);
 
             activity?.AddEvent(new ActivityEvent("SaveOrderCompleted"));
             _logger.LogDebug("Order {OrderId} saved to database successfully", order.Id);
@@ -190,6 +196,10 @@ public sealed class OrderRepository : IOrderRepository
             ["OrderId"] = orderId
         });
 
+        // Use internal timeout to prevent HTTP cancellation from interrupting database queries
+        using var dbCts = new CancellationTokenSource(TimeSpan.FromSeconds(15));
+        var dbToken = dbCts.Token;
+
         try
         {
             _logger.LogDebug("Retrieving order {OrderId} from database", orderId);
@@ -198,7 +208,7 @@ public sealed class OrderRepository : IOrderRepository
                 .Include(o => o.Products)
                 .AsNoTracking()
                 .AsSplitQuery() // Use split query for better performance
-                .FirstOrDefaultAsync(o => o.Id == orderId, cancellationToken);
+                .FirstOrDefaultAsync(o => o.Id == orderId, dbToken);
 
             var order = orderEntity?.ToDomainModel();
 
