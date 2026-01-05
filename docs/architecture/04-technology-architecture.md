@@ -26,34 +26,56 @@ The technology architecture leverages Azure PaaS services deployed via Infrastru
 %%{init: {'theme': 'base', 'themeVariables': { 'fontSize': '14px'}}}%%
 flowchart TB
     subgraph Subscription["📋 Azure Subscription"]
+        direction TB
         subgraph RG["🗂️ Resource Group: rg-${AZURE_ENV_NAME}"]
-            
+            direction TB
             subgraph Identity["🔐 Identity"]
-                MI["User-Assigned<br/>Managed Identity"]
+                direction LR
+                subgraph IAM["IAM Resources"]
+                    MI["User-Assigned<br/>Managed Identity"]
+                end
             end
 
             subgraph Monitoring["📊 Monitoring"]
-                LAW["Log Analytics<br/>Workspace"]
-                AI["Application<br/>Insights"]
+                direction LR
+                subgraph LogsStorage["Logs & Storage"]
+                    LAW["Log Analytics<br/>Workspace"]
+                end
+                subgraph APM["Application Performance"]
+                    AI["Application<br/>Insights"]
+                end
             end
 
             subgraph Data["💾 Data Tier"]
-                SQL[("Azure SQL<br/>Database")]
-                Storage["Azure Storage<br/>Account"]
+                direction LR
+                subgraph Relational["Relational"]
+                    SQL[("🗄️ Azure SQL<br/>Database")]
+                end
+                subgraph BlobStorage["Blob Storage"]
+                    Storage["📁 Azure Storage<br/>Account"]
+                end
             end
 
             subgraph Messaging["📨 Messaging"]
-                SB["Service Bus<br/>Namespace (Basic)"]
-                Topic["ordersplaced<br/>Topic"]
-                Sub["orderprocessingsub<br/>Subscription"]
+                direction LR
+                subgraph ServiceBusRes["Service Bus Resources"]
+                    SB["Service Bus<br/>Namespace (Basic)"]
+                    Topic["📨 ordersplaced<br/>Topic"]
+                    Sub["📬 orderprocessingsub<br/>Subscription"]
+                end
             end
 
             subgraph Compute["⚡ Compute"]
-                ACR["Azure Container<br/>Registry"]
-                CAE["Container Apps<br/>Environment"]
-                API["Orders API<br/>Container App"]
-                Web["Web App<br/>Container App"]
-                LA["Logic Apps<br/>Standard"]
+                direction LR
+                subgraph ContainerPlatform["Container Platform"]
+                    ACR["Azure Container<br/>Registry"]
+                    CAE["Container Apps<br/>Environment"]
+                end
+                subgraph AppServices["App Services"]
+                    API["📡 Orders API<br/>Container App"]
+                    Web["🌐 Web App<br/>Container App"]
+                    LA["🔄 Logic Apps<br/>Standard"]
+                end
             end
         end
     end
@@ -106,6 +128,14 @@ flowchart TB
     style Data fill:#e8f5e922,stroke:#2e7d32,stroke-width:2px
     style Messaging fill:#fff3e022,stroke:#e65100,stroke-width:2px
     style Compute fill:#fce4ec22,stroke:#c2185b,stroke-width:2px
+    style IAM fill:#e8eaf611,stroke:#3f51b5,stroke-width:1px,stroke-dasharray:3
+    style LogsStorage fill:#e3f2fd11,stroke:#1565c0,stroke-width:1px,stroke-dasharray:3
+    style APM fill:#e3f2fd11,stroke:#1565c0,stroke-width:1px,stroke-dasharray:3
+    style Relational fill:#e8f5e911,stroke:#2e7d32,stroke-width:1px,stroke-dasharray:3
+    style BlobStorage fill:#e8f5e911,stroke:#2e7d32,stroke-width:1px,stroke-dasharray:3
+    style ServiceBusRes fill:#fff3e011,stroke:#e65100,stroke-width:1px,stroke-dasharray:3
+    style ContainerPlatform fill:#fce4ec11,stroke:#c2185b,stroke-width:1px,stroke-dasharray:3
+    style AppServices fill:#fce4ec11,stroke:#c2185b,stroke-width:1px,stroke-dasharray:3
 ```
 
 ---
@@ -170,20 +200,39 @@ infra/
 %%{init: {'theme': 'base', 'themeVariables': { 'fontSize': '14px'}}}%%
 flowchart TB
     subgraph Root["🎯 main.bicep (subscription scope)"]
-        Params["Parameters<br/>AZURE_ENV_NAME, AZURE_LOCATION"]
-        RG["Create Resource Group<br/>rg-\${AZURE_ENV_NAME}"]
+        direction LR
+        subgraph Configuration["Configuration"]
+            Params["Parameters<br/>AZURE_ENV_NAME, AZURE_LOCATION"]
+        end
+        subgraph ResourceCreation["Resource Creation"]
+            RG["Create Resource Group<br/>rg-\${AZURE_ENV_NAME}"]
+        end
     end
 
     subgraph Shared["📦 shared/main.bicep"]
-        Identity["🔐 identity/main.bicep<br/>User-Assigned Identity"]
-        Monitoring["📊 monitoring/main.bicep<br/>LAW + App Insights"]
-        Data["💾 data/main.bicep<br/>SQL + Storage"]
+        direction TB
+        subgraph IdentityLayer["🔐 Identity Layer"]
+            Identity["identity/main.bicep<br/>User-Assigned Identity"]
+        end
+        subgraph MonitoringLayer["📊 Monitoring Layer"]
+            Monitoring["monitoring/main.bicep<br/>LAW + App Insights"]
+        end
+        subgraph DataLayer["💾 Data Layer"]
+            Data["data/main.bicep<br/>SQL + Storage"]
+        end
     end
 
     subgraph Workload["⚡ workload/main.bicep"]
-        Messaging["📨 messaging/main.bicep<br/>Service Bus"]
-        Services["🐳 services/main.bicep<br/>ACR + Container Apps"]
-        LogicApp["🔄 logic-app.bicep<br/>Logic Apps Standard"]
+        direction TB
+        subgraph MessagingLayer["📨 Messaging Layer"]
+            Messaging["messaging/main.bicep<br/>Service Bus"]
+        end
+        subgraph ServicesLayer["🐳 Services Layer"]
+            Services["services/main.bicep<br/>ACR + Container Apps"]
+        end
+        subgraph WorkflowLayer["🔄 Workflow Layer"]
+            LogicApp["logic-app.bicep<br/>Logic Apps Standard"]
+        end
     end
 
     Params --> RG
@@ -210,6 +259,14 @@ flowchart TB
     style Root fill:#e3f2fd22,stroke:#1565c0,stroke-width:2px
     style Shared fill:#e8f5e922,stroke:#2e7d32,stroke-width:2px
     style Workload fill:#fff3e022,stroke:#e65100,stroke-width:2px
+    style Configuration fill:#e3f2fd11,stroke:#1565c0,stroke-width:1px,stroke-dasharray:3
+    style ResourceCreation fill:#e3f2fd11,stroke:#1565c0,stroke-width:1px,stroke-dasharray:3
+    style IdentityLayer fill:#e8f5e911,stroke:#2e7d32,stroke-width:1px,stroke-dasharray:3
+    style MonitoringLayer fill:#e8f5e911,stroke:#2e7d32,stroke-width:1px,stroke-dasharray:3
+    style DataLayer fill:#e8f5e911,stroke:#2e7d32,stroke-width:1px,stroke-dasharray:3
+    style MessagingLayer fill:#fff3e011,stroke:#e65100,stroke-width:1px,stroke-dasharray:3
+    style ServicesLayer fill:#fff3e011,stroke:#e65100,stroke-width:1px,stroke-dasharray:3
+    style WorkflowLayer fill:#fff3e011,stroke:#e65100,stroke-width:1px,stroke-dasharray:3
 ```
 
 ---
@@ -360,23 +417,39 @@ services:
 %%{init: {'theme': 'base', 'themeVariables': { 'fontSize': '14px'}}}%%
 flowchart TB
     subgraph CAE["Container Apps Environment"]
-        subgraph API["orders-api"]
+        direction LR
+        subgraph API["📡 orders-api"]
             direction TB
-            API_Container["Container<br/>eShop.Orders.API"]
-            API_Ingress["Ingress<br/>Port 5001"]
+            subgraph APIRuntime["Runtime"]
+                API_Container["Container<br/>eShop.Orders.API"]
+            end
+            subgraph APINetworking["Networking"]
+                API_Ingress["Ingress<br/>Port 5001"]
+            end
         end
         
-        subgraph Web["web-app"]
+        subgraph Web["🌐 web-app"]
             direction TB
-            Web_Container["Container<br/>eShop.Web.App"]
-            Web_Ingress["Ingress<br/>Port 5002"]
+            subgraph WebRuntime["Runtime"]
+                Web_Container["Container<br/>eShop.Web.App"]
+            end
+            subgraph WebNetworking["Networking"]
+                Web_Ingress["Ingress<br/>Port 5002"]
+            end
         end
     end
 
     subgraph External["External Resources"]
-        ACR["Azure Container Registry"]
-        AI["App Insights"]
-        VNet["Virtual Network"]
+        direction LR
+        subgraph Registry["Container Registry"]
+            ACR["📦 Azure Container Registry"]
+        end
+        subgraph Monitoring["Monitoring"]
+            AI["📊 App Insights"]
+        end
+        subgraph Networking["Networking"]
+            VNet["🌐 Virtual Network"]
+        end
     end
 
     ACR -->|"Pull Images"| API_Container
@@ -397,6 +470,13 @@ flowchart TB
     style API fill:#e8f5e922,stroke:#2e7d32,stroke-width:2px
     style Web fill:#e8f5e922,stroke:#2e7d32,stroke-width:2px
     style External fill:#f3e5f522,stroke:#7b1fa2,stroke-width:2px
+    style APIRuntime fill:#e8f5e911,stroke:#2e7d32,stroke-width:1px,stroke-dasharray:3
+    style APINetworking fill:#e8f5e911,stroke:#2e7d32,stroke-width:1px,stroke-dasharray:3
+    style WebRuntime fill:#e8f5e911,stroke:#2e7d32,stroke-width:1px,stroke-dasharray:3
+    style WebNetworking fill:#e8f5e911,stroke:#2e7d32,stroke-width:1px,stroke-dasharray:3
+    style Registry fill:#f3e5f511,stroke:#7b1fa2,stroke-width:1px,stroke-dasharray:3
+    style Monitoring fill:#f3e5f511,stroke:#7b1fa2,stroke-width:1px,stroke-dasharray:3
+    style Networking fill:#f3e5f511,stroke:#7b1fa2,stroke-width:1px,stroke-dasharray:3
 ```
 
 ### Container App Configuration
@@ -419,21 +499,35 @@ flowchart TB
 %%{init: {'theme': 'base', 'themeVariables': { 'fontSize': '14px'}}}%%
 flowchart TB
     subgraph Internet["🌐 Internet"]
-        Users["End Users"]
+        direction LR
+        subgraph EndUsers["End Users"]
+            Users["👤 Users"]
+        end
     end
 
     subgraph Azure["☁️ Azure"]
+        direction TB
         subgraph VNet["Virtual Network (managed)"]
+            direction LR
             subgraph CAE["Container Apps Environment"]
-                API["Orders API<br/>External Ingress"]
-                Web["Web App<br/>External Ingress"]
+                subgraph PublicIngress["Public Ingress"]
+                    API["📡 Orders API<br/>External Ingress"]
+                    Web["🌐 Web App<br/>External Ingress"]
+                end
             end
         end
         
         subgraph PaaS["PaaS Services"]
-            SQL["Azure SQL<br/>Public Endpoint"]
-            SB["Service Bus<br/>Public Endpoint"]
-            LA["Logic Apps<br/>Public Endpoint"]
+            direction LR
+            subgraph DataServices["Data Services"]
+                SQL[("🗄️ Azure SQL<br/>Public Endpoint")]
+            end
+            subgraph MessagingServices["Messaging Services"]
+                SB["📨 Service Bus<br/>Public Endpoint"]
+            end
+            subgraph WorkflowServices["Workflow Services"]
+                LA["🔄 Logic Apps<br/>Public Endpoint"]
+            end
         end
     end
 
@@ -458,6 +552,11 @@ flowchart TB
     style VNet fill:#e3f2fd22,stroke:#1565c0,stroke-width:2px
     style CAE fill:#e3f2fd22,stroke:#1565c0,stroke-width:2px
     style PaaS fill:#fff3e022,stroke:#e65100,stroke-width:2px
+    style EndUsers fill:#e8f5e911,stroke:#2e7d32,stroke-width:1px,stroke-dasharray:3
+    style PublicIngress fill:#e3f2fd11,stroke:#1565c0,stroke-width:1px,stroke-dasharray:3
+    style DataServices fill:#fff3e011,stroke:#e65100,stroke-width:1px,stroke-dasharray:3
+    style MessagingServices fill:#fff3e011,stroke:#e65100,stroke-width:1px,stroke-dasharray:3
+    style WorkflowServices fill:#fff3e011,stroke:#e65100,stroke-width:1px,stroke-dasharray:3
 ```
 
 ### Network Configuration
