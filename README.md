@@ -13,7 +13,11 @@ A cloud-native reference implementation demonstrating **enterprise-grade observa
 
 ## 📋 Overview
 
-The Azure Logic Apps Monitoring Solution showcases how to build observable, event-driven applications using Azure's native monitoring stack. It uses an **eShop order management system** as the business scenario, demonstrating how orders flow from a Blazor web frontend through an ASP.NET Core API, into Azure SQL Database, then published to Azure Service Bus for asynchronous processing by Logic Apps workflows.
+The **Azure Logic Apps Monitoring Solution** is a cloud-native reference implementation demonstrating **enterprise-grade observability patterns** for Azure Logic Apps Standard workflows. Built on .NET Aspire orchestration with OpenTelemetry instrumentation, this solution provides end-to-end distributed tracing across all service boundaries—from user interactions through asynchronous workflow processing. It serves as both a learning resource and a production-ready template for teams building observable, event-driven applications on Azure.
+
+The solution uses an **eShop order management system** as its business scenario, showcasing a realistic enterprise workflow: orders originate from a Blazor Server frontend, flow through an ASP.NET Core REST API for validation and persistence in Azure SQL Database, then publish events to Azure Service Bus topics for asynchronous processing by Logic Apps Standard workflows. Every step is instrumented with W3C Trace Context propagation, enabling correlation of user requests through the entire distributed system—critical for debugging, performance analysis, and compliance auditing.
+
+What sets this reference apart is its **zero-secrets architecture** using Azure Managed Identity, **local development parity** with .NET Aspire emulators (no Azure subscription required for development), and **one-command deployment** via Azure Developer CLI (`azd`). The modular Bicep templates follow Infrastructure as Code best practices, while the TOGAF-aligned documentation provides architectural context for every design decision. Whether you're modernizing existing workflows or building greenfield event-driven systems, this solution provides battle-tested patterns you can adopt immediately.
 
 ### Why This Solution?
 
@@ -193,7 +197,7 @@ flowchart TB
     AppInsights -.->|"Log Export"| LogAnalytics
 
     %% =====================================================================
-    %% STYLE DEFINITIONS - WCAG AA compliant color palette
+    %% NODE STYLE DEFINITIONS - WCAG AA compliant color palette
     %% Each layer has distinct color for visual hierarchy
     %% =====================================================================
     
@@ -212,9 +216,6 @@ flowchart TB
     %% Observability Layer - Pink theme (monitoring focus)
     classDef observabilityStyle fill:#fce4ec,stroke:#c2185b,stroke-width:2px,color:#880e4f
 
-    %% Top-level grouping - Neutral theme
-    classDef groupStyle fill:#fafafa,stroke:#bdbdbd,stroke-width:1px,stroke-dasharray:5 5,color:#616161
-
     %% =====================================================================
     %% APPLY STYLES TO NODES
     %% =====================================================================
@@ -223,6 +224,37 @@ flowchart TB
     class Aspire,Defaults platformStyle
     class SQL,ServiceBus,Storage dataStyle
     class AppInsights,LogAnalytics observabilityStyle
+
+    %% =====================================================================
+    %% SUBGRAPH GROUPING STYLES - Hierarchical visual containment
+    %% Best Practice: Use semi-transparent fills for containers
+    %% Level 1 (Top): Solid neutral borders, very light fills
+    %% Level 2 (Middle): Layer-colored borders, transparent fills
+    %% Level 3 (Inner): Dashed borders, minimal fills
+    %% =====================================================================
+
+    %% Top-level groupings - Neutral gray with subtle background
+    style Runtime fill:#f5f5f5,stroke:#616161,stroke-width:2px,color:#424242
+    style Infrastructure fill:#f5f5f5,stroke:#616161,stroke-width:2px,color:#424242
+    style ObservabilityStack fill:#f5f5f5,stroke:#616161,stroke-width:2px,color:#424242
+
+    %% Mid-level layer groupings - Match node color themes (semi-transparent)
+    style Presentation fill:#e3f2fd33,stroke:#1565c0,stroke-width:2px,color:#0d47a1
+    style Application fill:#e8f5e933,stroke:#2e7d32,stroke-width:2px,color:#1b5e20
+    style Platform fill:#fff3e033,stroke:#e65100,stroke-width:2px,color:#bf360c
+    style Data fill:#f3e5f533,stroke:#7b1fa2,stroke-width:2px,color:#4a148c
+    style Observability fill:#fce4ec33,stroke:#c2185b,stroke-width:2px,color:#880e4f
+
+    %% Inner-level functional groupings - Dashed borders, minimal fill
+    style APIServices fill:#e8f5e911,stroke:#2e7d32,stroke-width:1px,stroke-dasharray:4 2,color:#1b5e20
+    style WorkflowAutomation fill:#e8f5e911,stroke:#2e7d32,stroke-width:1px,stroke-dasharray:4 2,color:#1b5e20
+    style Orchestration fill:#fff3e011,stroke:#e65100,stroke-width:1px,stroke-dasharray:4 2,color:#bf360c
+    style SharedLibraries fill:#fff3e011,stroke:#e65100,stroke-width:1px,stroke-dasharray:4 2,color:#bf360c
+    style Persistence fill:#f3e5f511,stroke:#7b1fa2,stroke-width:1px,stroke-dasharray:4 2,color:#4a148c
+    style Messaging fill:#f3e5f511,stroke:#7b1fa2,stroke-width:1px,stroke-dasharray:4 2,color:#4a148c
+    style StateStore fill:#f3e5f511,stroke:#7b1fa2,stroke-width:1px,stroke-dasharray:4 2,color:#4a148c
+    style APM fill:#fce4ec11,stroke:#c2185b,stroke-width:1px,stroke-dasharray:4 2,color:#880e4f
+    style Logging fill:#fce4ec11,stroke:#c2185b,stroke-width:1px,stroke-dasharray:4 2,color:#880e4f
 ```
 
 > 📖 **Learn more:** See [Architecture Overview](docs/architecture/README.md) for detailed component diagrams, data flows, and design decisions.
@@ -252,20 +284,81 @@ flowchart TB
 
 ## 📋 Prerequisites
 
-| Tool | Version | Installation |
-|------|---------|--------------|
-| **.NET SDK** | 10.0+ | `winget install Microsoft.DotNet.SDK.10` |
-| **Docker Desktop** | Latest | [docker.com](https://docker.com/products/docker-desktop) |
-| **Azure CLI** | 2.60.0+ | `winget install Microsoft.AzureCLI` |
-| **Azure Developer CLI** | Latest | `winget install Microsoft.Azd` |
-| **Visual Studio 2022** | 17.13+ | [visualstudio.com](https://visualstudio.microsoft.com) (optional) |
-| **VS Code** | Latest | [code.visualstudio.com](https://code.visualstudio.com) (optional) |
+This section lists the minimum requirements for local development and Azure deployment. The validation script automatically checks all prerequisites and can optionally install missing tools.
 
-### Validate Prerequisites
+> 📚 **Complete Guide:** See [check-dev-workstation](docs/hooks/check-dev-workstation.md) for detailed validation output, exit codes, and CI/CD integration patterns.
+
+### Required Tools
+
+| Tool | Version | Purpose | Installation |
+|------|---------|---------|--------------|
+| **.NET SDK** | 10.0+ | Application framework | `winget install Microsoft.DotNet.SDK.10` |
+| **PowerShell** | 7.0+ | Cross-platform scripting | `winget install Microsoft.PowerShell` |
+| **Azure CLI** | 2.60.0+ | Azure resource management | `winget install Microsoft.AzureCLI` |
+| **Azure Developer CLI** | Latest | Deployment automation | `winget install Microsoft.Azd` |
+| **Bicep CLI** | 0.30.0+ | Infrastructure as Code | `az bicep install` |
+| **Docker Desktop** | Latest | Local containers & emulators | [docker.com](https://docker.com/products/docker-desktop) |
+
+### Optional Tools
+
+| Tool | Version | Purpose | Installation |
+|------|---------|---------|--------------|
+| **Visual Studio 2022** | 17.13+ | Full IDE with debugging | [visualstudio.com](https://visualstudio.microsoft.com) |
+| **VS Code** | Latest | Lightweight editor | [code.visualstudio.com](https://code.visualstudio.com) |
+
+### Azure Requirements
+
+| Requirement | Description |
+|-------------|-------------|
+| **Active Subscription** | Azure subscription with billing enabled |
+| **Authentication** | Logged in via `az login` with appropriate permissions |
+| **Resource Providers** | 8 providers auto-registered by [`preprovision`](docs/hooks/preprovision.md) |
+
+The following Azure resource providers are required and automatically registered:
+
+| Provider | Purpose |
+|----------|---------|
+| `Microsoft.App` | Container Apps hosting |
+| `Microsoft.ServiceBus` | Event-driven messaging |
+| `Microsoft.Storage` | Blob storage for Logic Apps |
+| `Microsoft.Web` | Logic Apps Standard |
+| `Microsoft.ContainerRegistry` | Container image registry |
+| `Microsoft.Insights` | Application Insights telemetry |
+| `Microsoft.OperationalInsights` | Log Analytics workspace |
+| `Microsoft.ManagedIdentity` | Zero-secrets authentication |
+
+> 📖 **Learn more:** See [preprovision](docs/hooks/preprovision.md) for auto-installation options, Azure authentication flows, and resource provider registration details.
+
+### Validate Your Environment
+
+Run the validation script before starting development:
 
 ```powershell
-# Run the validation script to check all prerequisites
+# Quick validation (read-only, ~3-5 seconds)
 ./hooks/check-dev-workstation.ps1
+
+# Verbose mode for troubleshooting
+./hooks/check-dev-workstation.ps1 -Verbose
+
+# Auto-install missing prerequisites
+./hooks/preprovision.ps1 -AutoInstall
+```
+
+**Example Output:**
+```
+[12:34:56] ✓ PowerShell 7.4.1 (required: 7.0+)
+[12:34:57] ✓ .NET SDK 10.0.0 (required: 10.0+)
+[12:34:58] ✓ Azure Developer CLI 1.5.0
+[12:34:59] ✓ Azure CLI 2.62.0 (required: 2.60.0+)
+[12:35:00] ✓ Bicep CLI 0.30.23 (required: 0.30.0+)
+[12:35:01] ✓ Azure login verified
+[12:35:02] ✓ All 8 resource providers registered
+
+Validation completed successfully! ✓
+Your workstation is ready for development.
+```
+
+> 📖 **Learn more:** See [Validation Workflow](docs/hooks/VALIDATION-WORKFLOW.md) for the complete validation sequence and troubleshooting guide.
 ```
 
 ---
