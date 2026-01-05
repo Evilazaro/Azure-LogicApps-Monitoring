@@ -169,18 +169,40 @@ public sealed class OrderService : IOrderService
         var successfulOrders = new List<Order>();
         var lockObject = new object();
 
-        // **FIX 1: Batch check for existing orders - simplified approach**
-        var orderIds = ordersList.Select(o => o.Id).ToList();
-        
-        // Check existing orders in a single query by checking each one
+        // Check for existing orders in batches to reduce database load
+        var orderIds = ordersList.Select(o => o.Id).ToHashSet();
         var existingOrderIds = new HashSet<string>();
-        foreach (var orderId in orderIds)
+
+        // Process ID checks in smaller batches to avoid overwhelming the database
+        const int checkBatchSize = 100;
+        var idBatches = orderIds
+            .Select((id, index) => new { id, index })
+            .GroupBy(x => x.index / checkBatchSize)
+            .Select(g => g.Select(x => x.id).ToList())
+            .ToList();
+
+        foreach (var idBatch in idBatches)
         {
-            var exists = await _orderRepository.GetOrderByIdAsync(orderId, cancellationToken);
-            if (exists != null)
+            var checkTasks = idBatch.Select(async id =>
             {
-                existingOrderIds.Add(orderId);
-            }
+                try
+                {
+                    var exists = await _orderRepository.GetOrderByIdAsync(id, cancellationToken);
+                    if (exists != null)
+                    {
+                        lock (lockObject)
+                        {
+                            existingOrderIds.Add(id);
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogWarning(ex, "Failed to check if order {OrderId} exists", id);
+                }
+            });
+
+            await Task.WhenAll(checkTasks);
         }
 
         // Filter out existing orders before processing
@@ -198,15 +220,18 @@ public sealed class OrderService : IOrderService
             return ordersList; // Return original orders for idempotency
         }
 
-        // **FIX 2: Process in smaller batches to avoid overwhelming the database**
-        const int batchSize = 50;
-        var batches = ordersToProcess
+        // Process in smaller batches to avoid overwhelming the database
+        const int processBatchSize = 50;
+        var processBatches = ordersToProcess
             .Select((order, index) => new { order, index })
-            .GroupBy(x => x.index / batchSize)
+            .GroupBy(x => x.index / processBatchSize)
             .Select(g => g.Select(x => x.order).ToList())
             .ToList();
 
-        foreach (var batch in batches)
+        _logger.LogInformation("Processing {Count} orders in {BatchCount} batches of max {BatchSize} orders",
+            ordersToProcess.Count, processBatches.Count, processBatchSize);
+
+        foreach (var (batch, batchIndex) in processBatches.Select((b, i) => (b, i)))
         {
             if (cancellationToken.IsCancellationRequested)
             {
@@ -215,7 +240,10 @@ public sealed class OrderService : IOrderService
                 break;
             }
 
-            // **FIX 3: Use SemaphoreSlim to limit concurrent database operations**
+            _logger.LogInformation("Processing batch {Current}/{Total} with {Count} orders",
+                batchIndex + 1, processBatches.Count, batch.Count);
+
+            // Use SemaphoreSlim to limit concurrent database operations
             using var semaphore = new SemaphoreSlim(10);
 
             var tasks = batch.Select(async order =>
@@ -223,7 +251,12 @@ public sealed class OrderService : IOrderService
                 await semaphore.WaitAsync(cancellationToken);
                 try
                 {
-                    var result = await ProcessSingleOrderAsync(order, cancellationToken);
+                    // Create a new scope for each order to ensure thread-safe DbContext usage
+                    await using var scope = _serviceScopeFactory.CreateAsyncScope();
+                    var scopedRepository = scope.ServiceProvider.GetRequiredService<IOrderRepository>();
+                    var scopedMessageHandler = scope.ServiceProvider.GetRequiredService<IOrdersMessageHandler>();
+
+                    var result = await ProcessSingleOrderAsync(order, scopedRepository, scopedMessageHandler, cancellationToken);
                     if (result == OrderProcessResult.Success)
                     {
                         lock (lockObject)
@@ -251,18 +284,22 @@ public sealed class OrderService : IOrderService
         return successfulOrders;
     }
 
-    private async Task<OrderProcessResult> ProcessSingleOrderAsync(Order order, CancellationToken cancellationToken)
+    private async Task<OrderProcessResult> ProcessSingleOrderAsync(
+        Order order,
+        IOrderRepository repository,
+        IOrdersMessageHandler messageHandler,
+        CancellationToken cancellationToken)
     {
         try
         {
             // Validate the order
             ValidateOrder(order);
 
-            // Save to database
-            await _orderRepository.SaveOrderAsync(order, cancellationToken);
+            // Save to database - the repository should handle transactions properly with retry strategy
+            await repository.SaveOrderAsync(order, cancellationToken);
 
             // Publish event via message handler
-            await _ordersMessageHandler.SendOrderMessageAsync(order, cancellationToken);
+            await messageHandler.SendOrderMessageAsync(order, cancellationToken);
 
             return OrderProcessResult.Success;
         }
