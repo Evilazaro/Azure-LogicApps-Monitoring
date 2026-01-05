@@ -85,13 +85,13 @@ resource broker 'Microsoft.ServiceBus/namespaces@2025-05-01-preview' = {
   name: serviceBusName
   location: location
   // Standard SKU provides:
-  // - Basic message brokering with topics and subscriptions
+  // - Standard message brokering with topics and subscriptions
   // - Suitable for most workloads with moderate throughput requirements
   // - Maximum message size of 256 KB
   // - Capacity is not applicable for Standard tier (auto-managed)
   sku: {
-    name: 'Basic'
-    tier: 'Basic'
+    name: 'Standard'
+    tier: 'Standard'
   }
   tags: tags
   identity: {
