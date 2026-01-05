@@ -13,9 +13,7 @@ A cloud-native reference implementation demonstrating **enterprise-grade observa
 
 ## 📋 Overview
 
-The **Azure Logic Apps Monitoring Solution** is a cloud-native reference implementation demonstrating **enterprise-grade observability patterns** for Azure Logic Apps Standard workflows. Built on .NET Aspire orchestration with OpenTelemetry instrumentation, this solution provides end-to-end distributed tracing across all service boundaries—from user interactions through asynchronous workflow processing. It serves as both a learning resource and a production-ready template for teams building observable, event-driven applications on Azure.
-
-The solution uses an **eShop order management system** as its business scenario, showcasing a realistic enterprise workflow: orders originate from a Blazor Server frontend, flow through an ASP.NET Core REST API for validation and persistence in Azure SQL Database, then publish events to Azure Service Bus topics for asynchronous processing by Logic Apps Standard workflows. Every step is instrumented with W3C Trace Context propagation, enabling correlation of user requests through the entire distributed system—critical for debugging, performance analysis, and compliance auditing.
+This solution uses an **eShop order management system** as its business scenario, showcasing a realistic enterprise workflow: orders originate from a Blazor Server frontend, flow through an ASP.NET Core REST API for validation and persistence in Azure SQL Database, then publish events to Azure Service Bus topics for asynchronous processing by Logic Apps Standard workflows. Every step is instrumented with W3C Trace Context propagation, enabling correlation of user requests through the entire distributed system—critical for debugging, performance analysis, and compliance auditing.
 
 What sets this reference apart is its **zero-secrets architecture** using Azure Managed Identity, **local development parity** with .NET Aspire emulators (no Azure subscription required for development), and **one-command deployment** via Azure Developer CLI (`azd`). The modular Bicep templates follow Infrastructure as Code best practices, while the TOGAF-aligned documentation provides architectural context for every design decision. Whether you're modernizing existing workflows or building greenfield event-driven systems, this solution provides battle-tested patterns you can adopt immediately.
 
@@ -331,35 +329,15 @@ The following Azure resource providers are required and automatically registered
 
 ### Validate Your Environment
 
-Run the validation script before starting development:
-
 ```powershell
 # Quick validation (read-only, ~3-5 seconds)
 ./hooks/check-dev-workstation.ps1
-
-# Verbose mode for troubleshooting
-./hooks/check-dev-workstation.ps1 -Verbose
 
 # Auto-install missing prerequisites
 ./hooks/preprovision.ps1 -AutoInstall
 ```
 
-**Example Output:**
-```
-[12:34:56] ✓ PowerShell 7.4.1 (required: 7.0+)
-[12:34:57] ✓ .NET SDK 10.0.0 (required: 10.0+)
-[12:34:58] ✓ Azure Developer CLI 1.5.0
-[12:34:59] ✓ Azure CLI 2.62.0 (required: 2.60.0+)
-[12:35:00] ✓ Bicep CLI 0.30.23 (required: 0.30.0+)
-[12:35:01] ✓ Azure login verified
-[12:35:02] ✓ All 8 resource providers registered
-
-Validation completed successfully! ✓
-Your workstation is ready for development.
-```
-
-> 📖 **Learn more:** See [Validation Workflow](docs/hooks/VALIDATION-WORKFLOW.md) for the complete validation sequence and troubleshooting guide.
-```
+> 📖 **Learn more:** See [Validation Workflow](docs/hooks/VALIDATION-WORKFLOW.md) for detailed output examples, exit codes, and troubleshooting.
 
 ---
 
@@ -416,26 +394,6 @@ The `azd up` command automatically:
 6. **Deploys application** to Azure Container Apps
 
 > 📖 **Learn more:** See [Azure Deployment Workflow](docs/hooks/README.md#azure-deployment-workflow) for environment management, redeployment, and cleanup.
-
-### Development Mode Comparison
-
-| Mode | Database | Service Bus | Monitoring | Setup | Cost |
-|------|----------|-------------|------------|-------|------|
-| **Local** | SQL Server container | Emulator | Aspire Dashboard | ~1 min | Free |
-| **Azure** | Azure SQL Database | Azure Service Bus | Application Insights | ~10 min | Pay-per-use |
-
-> 📖 **Learn more:** See [Hybrid Development Mode](docs/hooks/README.md#hybrid-development-mode) for running local apps against Azure backend services.
-
-### Validate Your Environment
-
-Before starting, ensure all prerequisites are installed:
-
-```powershell
-# Run the validation script
-./hooks/check-dev-workstation.ps1
-```
-
-> 📖 **Learn more:** See [check-dev-workstation](docs/hooks/check-dev-workstation.md) for detailed prerequisite requirements and auto-installation options.
 
 ---
 
@@ -675,21 +633,6 @@ Local development requires **zero manual configuration**—.NET Aspire automatic
 | **Health Checks** | Auto-registered | SQL, Service Bus, HTTP endpoints |
 | **OpenTelemetry** | Pre-configured exporters | Traces → Aspire Dashboard |
 
-#### Quick Start (Local)
-
-```powershell
-# Ensure Docker Desktop is running
-docker ps
-
-# Start all services with Aspire orchestration
-dotnet run --project app.AppHost
-
-# Access points (ports assigned dynamically - check Aspire Dashboard):
-#   Aspire Dashboard: https://localhost:17225
-#   Web App: https://localhost:<dynamic>
-#   Orders API: https://localhost:<dynamic>
-```
-
 #### Local Development Features
 
 | Feature | Description |
@@ -819,16 +762,6 @@ dotnet run --project app.AppHost
 
 > 📖 **Learn more:** See [clean-secrets](docs/hooks/clean-secrets.md) for target projects, storage locations, and workflow integration.
 
-#### Security Architecture
-
-The configuration follows **Zero Trust** principles:
-
-| Principle | Implementation | Documentation |
-|-----------|----------------|---------------|
-| **No Secrets** | Managed Identity authentication | [Security Architecture](docs/architecture/06-security-architecture.md#2-identity-architecture) |
-| **Least Privilege** | RBAC role assignments | [RBAC Role Assignments](docs/architecture/06-security-architecture.md#4-rbac-role-assignments) |
-| **Defense in Depth** | Multiple security layers | [Security Architecture](docs/architecture/06-security-architecture.md) |
-
 ---
 
 ## 📡 API Reference
@@ -873,11 +806,13 @@ The solution implements the **Three Pillars of Observability** using OpenTelemet
 
 ## 🔐 Security
 
-The solution follows Azure security best practices:
+The solution implements a **Zero Trust** security model with Azure Managed Identity as the primary authentication mechanism:
 
-- **Managed Identity** - All Azure service authentication uses User-Assigned Managed Identity
-- **Zero Secrets** - No connection strings or keys in configuration
-- **RBAC** - Principle of least privilege for all service permissions
+| Principle | Implementation | Details |
+|-----------|----------------|---------|
+| **No Secrets** | Managed Identity authentication | User-Assigned MI for all Azure services |
+| **Zero Secrets** | No connection strings or keys | Configuration via Bicep outputs |
+| **Least Privilege** | RBAC role assignments | Minimal permissions per service |
 
 > 📖 **Learn more:** See [Security Architecture](docs/architecture/06-security-architecture.md) for managed identity configuration, RBAC assignments, and Zero Trust patterns.
 
