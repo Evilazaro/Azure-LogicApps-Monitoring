@@ -23,6 +23,7 @@ The technology architecture leverages Azure PaaS services deployed via Infrastru
 ## 2. Azure Resource Topology
 
 ```mermaid
+%%{init: {'theme': 'base', 'themeVariables': { 'fontSize': '14px'}}}%%
 flowchart TB
     subgraph Subscription["📋 Azure Subscription"]
         subgraph RG["🗂️ Resource Group: rg-${AZURE_ENV_NAME}"]
@@ -84,12 +85,12 @@ flowchart TB
     CAE -->|"Hosts"| API
     CAE -->|"Hosts"| Web
 
-    %% Styling
-    classDef identity fill:#e8eaf6,stroke:#3f51b5
-    classDef monitoring fill:#e3f2fd,stroke:#1565c0
-    classDef data fill:#e8f5e9,stroke:#2e7d32
-    classDef messaging fill:#fff3e0,stroke:#ef6c00
-    classDef compute fill:#fce4ec,stroke:#c2185b
+    %% Accessible color palette with clear resource grouping
+    classDef identity fill:#e8eaf6,stroke:#3f51b5,stroke-width:2px,color:#1a237e
+    classDef monitoring fill:#e3f2fd,stroke:#1565c0,stroke-width:2px,color:#0d47a1
+    classDef data fill:#e8f5e9,stroke:#2e7d32,stroke-width:2px,color:#1b5e20
+    classDef messaging fill:#fff3e0,stroke:#e65100,stroke-width:2px,color:#bf360c
+    classDef compute fill:#fce4ec,stroke:#c2185b,stroke-width:2px,color:#880e4f
 
     class MI identity
     class LAW,AI monitoring
@@ -157,6 +158,7 @@ infra/
 ### Module Deployment Flow
 
 ```mermaid
+%%{init: {'theme': 'base', 'themeVariables': { 'fontSize': '14px'}}}%%
 flowchart TB
     subgraph Root["🎯 main.bicep (subscription scope)"]
         Params["Parameters<br/>AZURE_ENV_NAME, AZURE_LOCATION"]
@@ -186,9 +188,10 @@ flowchart TB
     Messaging --> Services
     Services --> LogicApp
 
-    classDef root fill:#e3f2fd,stroke:#1565c0
-    classDef shared fill:#e8f5e9,stroke:#2e7d32
-    classDef workload fill:#fff3e0,stroke:#ef6c00
+    %% Accessible color palette with clear deployment phases
+    classDef root fill:#e3f2fd,stroke:#1565c0,stroke-width:2px,color:#0d47a1
+    classDef shared fill:#e8f5e9,stroke:#2e7d32,stroke-width:2px,color:#1b5e20
+    classDef workload fill:#fff3e0,stroke:#e65100,stroke-width:2px,color:#bf360c
 
     class Params,RG root
     class Identity,Monitoring,Data shared
@@ -340,6 +343,7 @@ services:
 ### Container Apps Environment
 
 ```mermaid
+%%{init: {'theme': 'base', 'themeVariables': { 'fontSize': '14px'}}}%%
 flowchart TB
     subgraph CAE["Container Apps Environment"]
         subgraph API["orders-api"]
@@ -367,8 +371,9 @@ flowchart TB
     Web_Container -.->|"OTLP"| AI
     CAE -->|"Integrated"| VNet
 
-    classDef container fill:#e3f2fd,stroke:#1565c0
-    classDef external fill:#f3e5f5,stroke:#7b1fa2
+    %% Accessible color palette
+    classDef container fill:#e3f2fd,stroke:#1565c0,stroke-width:2px,color:#0d47a1
+    classDef external fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px,color:#4a148c
 
     class API_Container,API_Ingress,Web_Container,Web_Ingress container
     class ACR,AI,VNet external
@@ -391,6 +396,7 @@ flowchart TB
 ## 8. Network Architecture
 
 ```mermaid
+%%{init: {'theme': 'base', 'themeVariables': { 'fontSize': '14px'}}}%%
 flowchart TB
     subgraph Internet["🌐 Internet"]
         Users["End Users"]
@@ -417,9 +423,10 @@ flowchart TB
     API -->|"AMQP (5671)"| SB
     SB -->|"Trigger"| LA
 
-    classDef internet fill:#e8f5e9,stroke:#2e7d32
-    classDef compute fill:#e3f2fd,stroke:#1565c0
-    classDef paas fill:#fff3e0,stroke:#ef6c00
+    %% Accessible color palette for network zones
+    classDef internet fill:#e8f5e9,stroke:#2e7d32,stroke-width:2px,color:#1b5e20
+    classDef compute fill:#e3f2fd,stroke:#1565c0,stroke-width:2px,color:#0d47a1
+    classDef paas fill:#fff3e0,stroke:#e65100,stroke-width:2px,color:#bf360c
 
     class Users internet
     class API,Web compute
