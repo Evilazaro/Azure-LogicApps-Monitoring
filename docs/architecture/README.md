@@ -25,41 +25,67 @@ The solution uses an **eShop order management system** as the business scenario,
 %%{init: {'theme': 'base', 'themeVariables': { 'fontSize': '14px'}}}%%
 flowchart TD
     subgraph Presentation["🖥️ Presentation Layer"]
+        direction LR
         WebApp["🌐 eShop.Web.App<br/>Blazor Server + Fluent UI"]
     end
 
     subgraph Application["⚙️ Application Layer"]
-        API["📡 eShop.Orders.API<br/>ASP.NET Core Web API"]
-        LogicApp["🔄 OrdersManagement<br/>Logic Apps Standard"]
+        direction LR
+        subgraph AppServices["Core Services"]
+            API["📡 eShop.Orders.API<br/>ASP.NET Core Web API"]
+        end
+        subgraph Workflows["Automation"]
+            LogicApp["🔄 OrdersManagement<br/>Logic Apps Standard"]
+        end
     end
 
     subgraph Platform["🏗️ Platform Layer"]
-        Aspire["🎯 app.AppHost<br/>.NET Aspire Orchestrator"]
-        Defaults["📦 app.ServiceDefaults<br/>Cross-cutting Concerns"]
+        direction LR
+        subgraph Orchestration["Orchestration"]
+            Aspire["🎯 app.AppHost<br/>.NET Aspire Orchestrator"]
+        end
+        subgraph SharedLibraries["Shared Libraries"]
+            Defaults["📦 app.ServiceDefaults<br/>Cross-cutting Concerns"]
+        end
     end
 
     subgraph Data["💾 Data Layer"]
-        SQL[("🗄️ OrderDb<br/>Azure SQL Database")]
-        ServiceBus["📨 ordersplaced<br/>Service Bus Topic"]
-        Storage["📁 Workflow State<br/>Azure Storage"]
+        direction LR
+        subgraph Persistence["Persistence"]
+            SQL[("🗄️ OrderDb<br/>Azure SQL Database")]
+        end
+        subgraph Messaging["Messaging"]
+            ServiceBus["📨 ordersplaced<br/>Service Bus Topic"]
+        end
+        subgraph StateStore["State"]
+            Storage["📁 Workflow State<br/>Azure Storage"]
+        end
     end
 
     subgraph Observability["📊 Observability Layer"]
-        AppInsights["📈 Application Insights<br/>APM & Distributed Tracing"]
-        LogAnalytics["📋 Log Analytics<br/>Centralized Logging"]
+        direction LR
+        subgraph Monitoring["Monitoring"]
+            AppInsights["📈 Application Insights<br/>APM & Distributed Tracing"]
+        end
+        subgraph Logging["Logging"]
+            LogAnalytics["📋 Log Analytics<br/>Centralized Logging"]
+        end
     end
 
+    %% Data flow connections
     WebApp -->|"HTTP/REST"| API
     API -->|"EF Core"| SQL
     API -->|"AMQP"| ServiceBus
     ServiceBus -->|"Trigger"| LogicApp
     LogicApp -->|"State"| Storage
 
+    %% Orchestration connections
     Aspire -.->|"Orchestrates"| WebApp
     Aspire -.->|"Orchestrates"| API
     Defaults -.->|"Configures"| WebApp
     Defaults -.->|"Configures"| API
 
+    %% Telemetry connections
     WebApp -.->|"OTLP"| AppInsights
     API -.->|"OTLP"| AppInsights
     LogicApp -.->|"Diagnostics"| LogAnalytics
@@ -84,6 +110,15 @@ flowchart TD
     style Platform fill:#fff3e022,stroke:#e65100,stroke-width:2px
     style Data fill:#f3e5f522,stroke:#7b1fa2,stroke-width:2px
     style Observability fill:#fce4ec22,stroke:#c2185b,stroke-width:2px
+    style AppServices fill:#e8f5e911,stroke:#2e7d32,stroke-width:1px,stroke-dasharray:3
+    style Workflows fill:#e8f5e911,stroke:#2e7d32,stroke-width:1px,stroke-dasharray:3
+    style Orchestration fill:#fff3e011,stroke:#e65100,stroke-width:1px,stroke-dasharray:3
+    style SharedLibraries fill:#fff3e011,stroke:#e65100,stroke-width:1px,stroke-dasharray:3
+    style Persistence fill:#f3e5f511,stroke:#7b1fa2,stroke-width:1px,stroke-dasharray:3
+    style Messaging fill:#f3e5f511,stroke:#7b1fa2,stroke-width:1px,stroke-dasharray:3
+    style StateStore fill:#f3e5f511,stroke:#7b1fa2,stroke-width:1px,stroke-dasharray:3
+    style Monitoring fill:#fce4ec11,stroke:#c2185b,stroke-width:1px,stroke-dasharray:3
+    style Logging fill:#fce4ec11,stroke:#c2185b,stroke-width:1px,stroke-dasharray:3
 ```
 
 ---
