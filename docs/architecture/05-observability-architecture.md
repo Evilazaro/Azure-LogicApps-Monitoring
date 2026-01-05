@@ -54,11 +54,11 @@ The solution implements the **Three Pillars of Observability** using OpenTelemet
 
 ### Observability Strategy
 
-| Pillar | Technology | Backend | Purpose |
-|--------|------------|---------|---------|
-| **Logs** | OpenTelemetry Logging | Log Analytics Workspace | Debugging, audit trails |
-| **Metrics** | OpenTelemetry Metrics | Application Insights | Performance monitoring, alerting |
-| **Traces** | OpenTelemetry Tracing | Application Insights | Request correlation, latency analysis |
+| Pillar      | Technology            | Backend                 | Purpose                               |
+| ----------- | --------------------- | ----------------------- | ------------------------------------- |
+| **Logs**    | OpenTelemetry Logging | Log Analytics Workspace | Debugging, audit trails               |
+| **Metrics** | OpenTelemetry Metrics | Application Insights    | Performance monitoring, alerting      |
+| **Traces**  | OpenTelemetry Tracing | Application Insights    | Request correlation, latency analysis |
 
 ---
 
@@ -129,7 +129,7 @@ flowchart TB
     Web --> OTEL
     OTEL --> Custom
     OTEL --> Activity
-    
+
     %% Collection flow
     Custom --> OTLP
     Activity --> OTLP
@@ -208,14 +208,14 @@ builder.Services.AddOpenTelemetry()
 
 ### Telemetry Sources
 
-| Source Type | Source Name | Scope |
-|-------------|-------------|-------|
-| **Custom Meter** | `eShop.orders` | Business metrics |
-| **Custom Activity Source** | `eShop.orders` | Business traces |
-| **ASP.NET Core** | `Microsoft.AspNetCore` | HTTP request metrics/traces |
-| **HTTP Client** | `System.Net.Http` | Outbound HTTP calls |
-| **SQL Client** | `Microsoft.Data.SqlClient` | Database queries |
-| **Runtime** | `.NET Runtime` | GC, thread pool metrics |
+| Source Type                | Source Name                | Scope                       |
+| -------------------------- | -------------------------- | --------------------------- |
+| **Custom Meter**           | `eShop.orders`             | Business metrics            |
+| **Custom Activity Source** | `eShop.orders`             | Business traces             |
+| **ASP.NET Core**           | `Microsoft.AspNetCore`     | HTTP request metrics/traces |
+| **HTTP Client**            | `System.Net.Http`          | Outbound HTTP calls         |
+| **SQL Client**             | `Microsoft.Data.SqlClient` | Database queries            |
+| **Runtime**                | `.NET Runtime`             | GC, thread pool metrics     |
 
 ---
 
@@ -223,23 +223,23 @@ builder.Services.AddOpenTelemetry()
 
 Defined in [src/eShop.Orders.API/Services/OrderService.cs](../../src/eShop.Orders.API/Services/OrderService.cs):
 
-| Metric Name | Type | Unit | Description |
-|-------------|------|------|-------------|
-| `eShop.orders.placed` | Counter | `{orders}` | Total orders placed |
-| `eShop.orders.processing.duration` | Histogram | `ms` | Order processing time |
-| `eShop.orders.processing.errors` | Counter | `{errors}` | Order processing failures |
-| `eShop.orders.batch.size` | Histogram | `{orders}` | Batch order count |
+| Metric Name                        | Type      | Unit       | Description               |
+| ---------------------------------- | --------- | ---------- | ------------------------- |
+| `eShop.orders.placed`              | Counter   | `{orders}` | Total orders placed       |
+| `eShop.orders.processing.duration` | Histogram | `ms`       | Order processing time     |
+| `eShop.orders.processing.errors`   | Counter   | `{errors}` | Order processing failures |
+| `eShop.orders.batch.size`          | Histogram | `{orders}` | Batch order count         |
 
 ### Metric Implementation
 
 ```csharp
 // From OrderService.cs
 private static readonly Meter Meter = new("eShop.orders", "1.0.0");
-private static readonly Counter<long> OrdersPlacedCounter = 
+private static readonly Counter<long> OrdersPlacedCounter =
     Meter.CreateCounter<long>("eShop.orders.placed", "{orders}", "Number of orders placed");
-private static readonly Histogram<double> ProcessingDuration = 
+private static readonly Histogram<double> ProcessingDuration =
     Meter.CreateHistogram<double>("eShop.orders.processing.duration", "ms", "Order processing duration");
-private static readonly Counter<long> ProcessingErrors = 
+private static readonly Counter<long> ProcessingErrors =
     Meter.CreateCounter<long>("eShop.orders.processing.errors", "{errors}", "Order processing errors");
 ```
 
@@ -268,20 +268,20 @@ sequenceDiagram
     Note over API: Span: OrdersController.PlaceOrder
     API->>API: Validate Order
     Note over API: Span: OrderService.ProcessOrder
-    
+
     rect rgba(232, 245, 233, 0.5)
         Note over API,DB: Database Operations
         API->>DB: INSERT Order
         Note over API: Span: SQL INSERT
     end
-    
+
     rect rgba(255, 243, 224, 0.5)
         Note over API,SB: Messaging Operations
         API->>SB: Publish OrderPlaced
         Note over API: Span: ServiceBus.Send
         Note over SB: Trace Context in Message Headers
     end
-    
+
     SB-->>LA: Trigger Workflow
     Note over LA: Correlation via traceparent
     API-->>Web: 201 Created
@@ -303,9 +303,9 @@ public async Task<IActionResult> PlaceOrder([FromBody] Order order)
     using var activity = ActivitySource.StartActivity("PlaceOrder", ActivityKind.Server);
     activity?.SetTag("order.customer_id", order.CustomerId);
     activity?.SetTag("order.product_count", order.Products?.Count ?? 0);
-    
+
     // ... order processing
-    
+
     activity?.SetTag("order.id", result.Id);
     activity?.SetStatus(ActivityStatusCode.Ok);
 }
@@ -344,12 +344,12 @@ builder.Logging.AddOpenTelemetry(logging =>
 
 ### Log Categories
 
-| Category | Level | Purpose |
-|----------|-------|---------|
-| `Microsoft.AspNetCore` | Warning | HTTP pipeline |
-| `Microsoft.EntityFrameworkCore` | Warning | Database operations |
-| `Azure.Messaging.ServiceBus` | Information | Message broker |
-| `eShop.Orders` | Information | Application logs |
+| Category                        | Level       | Purpose             |
+| ------------------------------- | ----------- | ------------------- |
+| `Microsoft.AspNetCore`          | Warning     | HTTP pipeline       |
+| `Microsoft.EntityFrameworkCore` | Warning     | Database operations |
+| `Azure.Messaging.ServiceBus`    | Information | Message broker      |
+| `eShop.Orders`                  | Information | Application logs    |
 
 ### Logging Example
 
@@ -366,10 +366,10 @@ _logger.LogInformation(
 
 ### Health Endpoints
 
-| Endpoint | Purpose | Check Type |
-|----------|---------|------------|
+| Endpoint  | Purpose            | Check Type       |
+| --------- | ------------------ | ---------------- |
 | `/health` | Full health status | All dependencies |
-| `/alive` | Liveness probe | Self-check only |
+| `/alive`  | Liveness probe     | Self-check only  |
 
 ### Health Check Configuration
 
@@ -391,10 +391,10 @@ app.MapHealthChecks("/alive", new HealthCheckOptions
 
 From [src/eShop.Orders.API/HealthChecks/](../../src/eShop.Orders.API/HealthChecks/):
 
-| Check | Class | Validates |
-|-------|-------|-----------|
-| **Database** | `DatabaseHealthCheck` | SQL Server connectivity |
-| **Service Bus** | `ServiceBusHealthCheck` | Service Bus namespace |
+| Check           | Class                   | Validates               |
+| --------------- | ----------------------- | ----------------------- |
+| **Database**    | `DatabaseHealthCheck`   | SQL Server connectivity |
+| **Service Bus** | `ServiceBusHealthCheck` | Service Bus namespace   |
 
 ---
 
@@ -416,13 +416,13 @@ if (!string.IsNullOrEmpty(builder.Configuration["APPLICATIONINSIGHTS_CONNECTION_
 
 ### Application Insights Features
 
-| Feature | Usage | Access |
-|---------|-------|--------|
-| **Live Metrics** | Real-time performance | Azure Portal → Live Metrics |
-| **Application Map** | Service dependencies | Azure Portal → Application Map |
-| **Transaction Search** | Trace exploration | Azure Portal → Transaction Search |
-| **Failures** | Error analysis | Azure Portal → Failures |
-| **Performance** | Latency analysis | Azure Portal → Performance |
+| Feature                | Usage                 | Access                            |
+| ---------------------- | --------------------- | --------------------------------- |
+| **Live Metrics**       | Real-time performance | Azure Portal → Live Metrics       |
+| **Application Map**    | Service dependencies  | Azure Portal → Application Map    |
+| **Transaction Search** | Trace exploration     | Azure Portal → Transaction Search |
+| **Failures**           | Error analysis        | Azure Portal → Failures           |
+| **Performance**        | Latency analysis      | Azure Portal → Performance        |
 
 ---
 
@@ -431,6 +431,7 @@ if (!string.IsNullOrEmpty(builder.Configuration["APPLICATIONINSIGHTS_CONNECTION_
 ### Sample KQL Queries
 
 **Request Latency by Operation:**
+
 ```kql
 requests
 | where timestamp > ago(1h)
@@ -439,6 +440,7 @@ requests
 ```
 
 **Order Processing Errors:**
+
 ```kql
 customMetrics
 | where name == "eShop.orders.processing.errors"
@@ -447,6 +449,7 @@ customMetrics
 ```
 
 **Trace Flow Analysis:**
+
 ```kql
 traces
 | where customDimensions.["order.id"] != ""
@@ -455,6 +458,7 @@ traces
 ```
 
 **Service Bus Message Latency:**
+
 ```kql
 dependencies
 | where type == "Azure Service Bus"
@@ -466,21 +470,21 @@ dependencies
 
 ## 10. Service Level Indicators (SLIs)
 
-| SLI | Measurement | Target | Query Basis |
-|-----|-------------|--------|-------------|
-| **Availability** | Successful requests / Total requests | 99.9% | `requests` table |
-| **Latency (p95)** | 95th percentile response time | < 500ms | `requests` table |
-| **Error Rate** | Failed requests / Total requests | < 0.1% | `requests` where `success == false` |
-| **Order Processing** | Orders processed successfully | > 99% | Custom metric |
+| SLI                  | Measurement                          | Target  | Query Basis                         |
+| -------------------- | ------------------------------------ | ------- | ----------------------------------- |
+| **Availability**     | Successful requests / Total requests | 99.9%   | `requests` table                    |
+| **Latency (p95)**    | 95th percentile response time        | < 500ms | `requests` table                    |
+| **Error Rate**       | Failed requests / Total requests     | < 0.1%  | `requests` where `success == false` |
+| **Order Processing** | Orders processed successfully        | > 99%   | Custom metric                       |
 
 ### SLO Dashboard Metrics
 
-| Metric | Formula | SLO |
-|--------|---------|-----|
-| **Request Success Rate** | `count(success=true) / count(*)` | ≥ 99.9% |
-| **P95 Latency** | `percentile(duration, 95)` | ≤ 500ms |
-| **Error Budget** | `100% - SLO` | 0.1% monthly |
-| **Order Throughput** | `count(eShop.orders.placed)` | Varies |
+| Metric                   | Formula                          | SLO          |
+| ------------------------ | -------------------------------- | ------------ |
+| **Request Success Rate** | `count(success=true) / count(*)` | ≥ 99.9%      |
+| **P95 Latency**          | `percentile(duration, 95)`       | ≤ 500ms      |
+| **Error Budget**         | `100% - SLO`                     | 0.1% monthly |
+| **Order Throughput**     | `count(eShop.orders.placed)`     | Varies       |
 
 ---
 
@@ -488,13 +492,13 @@ dependencies
 
 ### Recommended Alerts
 
-| Alert | Condition | Severity | Action |
-|-------|-----------|----------|--------|
-| **High Error Rate** | Error rate > 1% for 5 min | Critical | Page on-call |
-| **High Latency** | P95 > 1s for 10 min | Warning | Notify team |
-| **Service Unhealthy** | Health check failure | Critical | Auto-restart |
-| **Low Availability** | Availability < 99% | Critical | Page on-call |
-| **High Resource Usage** | CPU > 80% for 15 min | Warning | Scale alert |
+| Alert                   | Condition                 | Severity | Action       |
+| ----------------------- | ------------------------- | -------- | ------------ |
+| **High Error Rate**     | Error rate > 1% for 5 min | Critical | Page on-call |
+| **High Latency**        | P95 > 1s for 10 min       | Warning  | Notify team  |
+| **Service Unhealthy**   | Health check failure      | Critical | Auto-restart |
+| **Low Availability**    | Availability < 99%        | Critical | Page on-call |
+| **High Resource Usage** | CPU > 80% for 15 min      | Warning  | Scale alert  |
 
 ### Alert Configuration (Recommended)
 
@@ -530,16 +534,17 @@ resource highErrorRateAlert 'Microsoft.Insights/metricAlerts@2018-03-01' = {
 
 Logic Apps Standard sends telemetry to Log Analytics:
 
-| Log Category | Purpose |
-|--------------|---------|
-| **WorkflowRuntime** | Workflow execution logs |
-| **FunctionAppLogs** | Runtime logs |
-| **AppServiceHTTPLogs** | HTTP request logs |
-| **AppServicePlatformLogs** | Platform events |
+| Log Category               | Purpose                 |
+| -------------------------- | ----------------------- |
+| **WorkflowRuntime**        | Workflow execution logs |
+| **FunctionAppLogs**        | Runtime logs            |
+| **AppServiceHTTPLogs**     | HTTP request logs       |
+| **AppServicePlatformLogs** | Platform events         |
 
 ### Logic App Run History
 
 Access via Azure Portal:
+
 - **Run History:** Individual workflow executions
 - **Trigger History:** Trigger activations
 - **Action Inputs/Outputs:** Per-action data
@@ -548,11 +553,11 @@ Access via Azure Portal:
 
 ## Cross-Architecture Relationships
 
-| Related Architecture | Connection | Reference |
-|---------------------|------------|-----------|
-| **Application Architecture** | Services emit telemetry | [Application Architecture](03-application-architecture.md) |
-| **Technology Architecture** | Azure Monitor resources | [Technology Architecture](04-technology-architecture.md) |
-| **Data Architecture** | Telemetry data model | [Data Architecture](02-data-architecture.md#telemetry-data) |
+| Related Architecture         | Connection              | Reference                                                   |
+| ---------------------------- | ----------------------- | ----------------------------------------------------------- |
+| **Application Architecture** | Services emit telemetry | [Application Architecture](03-application-architecture.md)  |
+| **Technology Architecture**  | Azure Monitor resources | [Technology Architecture](04-technology-architecture.md)    |
+| **Data Architecture**        | Telemetry data model    | [Data Architecture](02-data-architecture.md#telemetry-data) |
 
 ---
 

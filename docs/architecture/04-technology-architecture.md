@@ -43,13 +43,13 @@ The technology architecture leverages Azure PaaS services deployed via Infrastru
 
 ### Design Principles
 
-| Principle | Implementation | Rationale |
-|-----------|----------------|-----------|
-| **Infrastructure as Code** | Bicep templates | Repeatability, version control |
-| **Subscription-Scope Deployment** | Creates resource group | Single deployment entry point |
-| **Modular Templates** | shared/, workload/ folders | Separation of concerns |
-| **Managed Identity** | User-assigned identity | No secrets management |
-| **Cost Optimization** | Basic SKUs, consumption tiers | Development workload |
+| Principle                         | Implementation                | Rationale                      |
+| --------------------------------- | ----------------------------- | ------------------------------ |
+| **Infrastructure as Code**        | Bicep templates               | Repeatability, version control |
+| **Subscription-Scope Deployment** | Creates resource group        | Single deployment entry point  |
+| **Modular Templates**             | shared/, workload/ folders    | Separation of concerns         |
+| **Managed Identity**              | User-assigned identity        | No secrets management          |
+| **Cost Optimization**             | Basic SKUs, consumption tiers | Development workload           |
 
 ---
 
@@ -177,27 +177,27 @@ flowchart TB
 
 ### Shared Infrastructure
 
-| Resource | Type | SKU/Tier | Purpose | Bicep Module |
-|----------|------|----------|---------|--------------|
-| **User-Assigned Identity** | Managed Identity | N/A | Service authentication | `shared/identity/` |
-| **Log Analytics Workspace** | Log Analytics | PerGB2018 | Central log storage | `shared/monitoring/` |
-| **Application Insights** | Application Insights | Web | APM and telemetry | `shared/monitoring/` |
-| **Azure SQL Server** | SQL Server | N/A | Database server | `shared/data/` |
-| **Azure SQL Database** | SQL Database | Basic | Order data | `shared/data/` |
-| **Storage Account** | Storage v2 | Standard_LRS | Logic App state, blobs | `shared/data/` |
+| Resource                    | Type                 | SKU/Tier     | Purpose                | Bicep Module         |
+| --------------------------- | -------------------- | ------------ | ---------------------- | -------------------- |
+| **User-Assigned Identity**  | Managed Identity     | N/A          | Service authentication | `shared/identity/`   |
+| **Log Analytics Workspace** | Log Analytics        | PerGB2018    | Central log storage    | `shared/monitoring/` |
+| **Application Insights**    | Application Insights | Web          | APM and telemetry      | `shared/monitoring/` |
+| **Azure SQL Server**        | SQL Server           | N/A          | Database server        | `shared/data/`       |
+| **Azure SQL Database**      | SQL Database         | Basic        | Order data             | `shared/data/`       |
+| **Storage Account**         | Storage v2           | Standard_LRS | Logic App state, blobs | `shared/data/`       |
 
 ### Workload Infrastructure
 
-| Resource | Type | SKU/Tier | Purpose | Bicep Module |
-|----------|------|----------|---------|--------------|
-| **Service Bus Namespace** | Service Bus | Basic | Event messaging | `workload/messaging/` |
-| **Service Bus Topic** | Topic | N/A | Order events pub/sub | `workload/messaging/` |
-| **Topic Subscription** | Subscription | N/A | Logic App trigger | `workload/messaging/` |
-| **Container Registry** | ACR | Basic | Docker images | `workload/services/` |
-| **Container Apps Environment** | ACA Environment | Consumption | Compute platform | `workload/services/` |
-| **Orders API** | Container App | Consumption | REST API | `workload/services/` |
-| **Web App** | Container App | Consumption | Blazor frontend | `workload/services/` |
-| **Logic App Standard** | Logic Apps | WS1 | Workflow automation | `workload/logic-app.bicep` |
+| Resource                       | Type            | SKU/Tier    | Purpose              | Bicep Module               |
+| ------------------------------ | --------------- | ----------- | -------------------- | -------------------------- |
+| **Service Bus Namespace**      | Service Bus     | Basic       | Event messaging      | `workload/messaging/`      |
+| **Service Bus Topic**          | Topic           | N/A         | Order events pub/sub | `workload/messaging/`      |
+| **Topic Subscription**         | Subscription    | N/A         | Logic App trigger    | `workload/messaging/`      |
+| **Container Registry**         | ACR             | Basic       | Docker images        | `workload/services/`       |
+| **Container Apps Environment** | ACA Environment | Consumption | Compute platform     | `workload/services/`       |
+| **Orders API**                 | Container App   | Consumption | REST API             | `workload/services/`       |
+| **Web App**                    | Container App   | Consumption | Blazor frontend      | `workload/services/`       |
+| **Logic App Standard**         | Logic Apps      | WS1         | Workflow automation  | `workload/logic-app.bicep` |
 
 ---
 
@@ -273,7 +273,7 @@ flowchart TB
     Shared --> Identity
     Identity --> Monitoring
     Monitoring --> Data
-    
+
     Shared --> Workload
     Data --> Messaging
     Messaging --> Services
@@ -435,10 +435,10 @@ services:
 
 ### azd Lifecycle Hooks
 
-| Hook | Script | Purpose |
-|------|--------|---------|
-| **preprovision** | `hooks/preprovision.ps1` | Validate prerequisites, clean secrets |
-| **postprovision** | `hooks/postprovision.ps1` | Configure .NET user secrets |
+| Hook              | Script                    | Purpose                               |
+| ----------------- | ------------------------- | ------------------------------------- |
+| **preprovision**  | `hooks/preprovision.ps1`  | Validate prerequisites, clean secrets |
+| **postprovision** | `hooks/postprovision.ps1` | Configure .NET user secrets           |
 
 ---
 
@@ -460,7 +460,7 @@ flowchart TB
                 API_Ingress["Ingress<br/>Port 5001"]
             end
         end
-        
+
         subgraph Web["🌐 web-app"]
             direction TB
             subgraph WebRuntime["Runtime"]
@@ -514,15 +514,15 @@ flowchart TB
 
 ### Container App Configuration
 
-| Setting | orders-api | web-app |
-|---------|------------|---------|
-| **Min Replicas** | 0 | 0 |
-| **Max Replicas** | 10 | 10 |
-| **CPU** | 0.5 | 0.5 |
-| **Memory** | 1.0 Gi | 1.0 Gi |
-| **Ingress** | External (API) | External (Web) |
-| **Target Port** | 5001 | 5002 |
-| **Transport** | HTTP | HTTP |
+| Setting          | orders-api     | web-app        |
+| ---------------- | -------------- | -------------- |
+| **Min Replicas** | 0              | 0              |
+| **Max Replicas** | 10             | 10             |
+| **CPU**          | 0.5            | 0.5            |
+| **Memory**       | 1.0 Gi         | 1.0 Gi         |
+| **Ingress**      | External (API) | External (Web) |
+| **Target Port**  | 5001           | 5002           |
+| **Transport**    | HTTP           | HTTP           |
 
 ---
 
@@ -549,7 +549,7 @@ flowchart TB
                 end
             end
         end
-        
+
         subgraph PaaS["PaaS Services"]
             direction LR
             subgraph DataServices["Data Services"]
@@ -594,37 +594,37 @@ flowchart TB
 
 ### Network Configuration
 
-| Resource | Endpoint Type | Access | Protocol |
-|----------|---------------|--------|----------|
-| **Container Apps** | External Ingress | Public | HTTPS |
-| **Azure SQL** | Public | Firewall Rules | TDS (1433) |
-| **Service Bus** | Public | Managed Identity | AMQP (5671) |
-| **Logic Apps** | Public | Azure Entra ID | HTTPS |
-| **Storage** | Public | Managed Identity | HTTPS |
+| Resource           | Endpoint Type    | Access           | Protocol    |
+| ------------------ | ---------------- | ---------------- | ----------- |
+| **Container Apps** | External Ingress | Public           | HTTPS       |
+| **Azure SQL**      | Public           | Firewall Rules   | TDS (1433)  |
+| **Service Bus**    | Public           | Managed Identity | AMQP (5671) |
+| **Logic Apps**     | Public           | Azure Entra ID   | HTTPS       |
+| **Storage**        | Public           | Managed Identity | HTTPS       |
 
 ---
 
 ## 9. Security Architecture Summary
 
-| Control | Implementation | Configuration |
-|---------|----------------|---------------|
-| **Identity** | User-Assigned Managed Identity | Single identity for all services |
+| Control            | Implementation                    | Configuration                          |
+| ------------------ | --------------------------------- | -------------------------------------- |
+| **Identity**       | User-Assigned Managed Identity    | Single identity for all services       |
 | **Authentication** | Azure Entra ID (Managed Identity) | Credential-free auth to Azure services |
-| **Authorization** | Azure RBAC | Role assignments per service |
-| **Network** | Public endpoints + firewall | Development configuration |
-| **Secrets** | Azure Key Vault (not deployed) | Future enhancement |
-| **TLS** | Azure-managed certificates | Automatic for Container Apps |
+| **Authorization**  | Azure RBAC                        | Role assignments per service           |
+| **Network**        | Public endpoints + firewall       | Development configuration              |
+| **Secrets**        | Azure Key Vault (not deployed)    | Future enhancement                     |
+| **TLS**            | Azure-managed certificates        | Automatic for Container Apps           |
 
 ---
 
 ## Cross-Architecture Relationships
 
-| Related Architecture | Connection | Reference |
-|---------------------|------------|-----------|
-| **Application Architecture** | Services deployed to Azure resources | [Application Architecture](03-application-architecture.md) |
-| **Security Architecture** | Identity and access controls | [Security Architecture](06-security-architecture.md) |
-| **Deployment Architecture** | IaC templates and CI/CD | [Deployment Architecture](07-deployment-architecture.md) |
-| **Observability Architecture** | Monitoring infrastructure | [Observability Architecture](05-observability-architecture.md) |
+| Related Architecture           | Connection                           | Reference                                                      |
+| ------------------------------ | ------------------------------------ | -------------------------------------------------------------- |
+| **Application Architecture**   | Services deployed to Azure resources | [Application Architecture](03-application-architecture.md)     |
+| **Security Architecture**      | Identity and access controls         | [Security Architecture](06-security-architecture.md)           |
+| **Deployment Architecture**    | IaC templates and CI/CD              | [Deployment Architecture](07-deployment-architecture.md)       |
+| **Observability Architecture** | Monitoring infrastructure            | [Observability Architecture](05-observability-architecture.md) |
 
 ---
 

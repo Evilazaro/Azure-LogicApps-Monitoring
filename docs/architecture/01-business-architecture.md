@@ -4,7 +4,7 @@
 
 ---
 
-The Business Architecture defines the strategic context, capabilities, and value streams that drive the Azure Logic Apps Monitoring Solution. Following TOGAF principles, this document establishes the *why* behind the technical implementation—articulating the business problems being solved, the stakeholders served, and the measurable outcomes expected. It bridges organizational goals with technical decisions documented in subsequent architecture layers.
+The Business Architecture defines the strategic context, capabilities, and value streams that drive the Azure Logic Apps Monitoring Solution. Following TOGAF principles, this document establishes the _why_ behind the technical implementation—articulating the business problems being solved, the stakeholders served, and the measurable outcomes expected. It bridges organizational goals with technical decisions documented in subsequent architecture layers.
 
 At its core, this solution addresses a critical gap in enterprise Azure deployments: the lack of comprehensive, correlated observability across distributed Logic Apps workflows. By defining clear business capabilities (order management, monitoring, platform operations) and mapping them to value streams, this architecture ensures that every technical decision—from OpenTelemetry instrumentation to Service Bus messaging patterns—directly supports business outcomes like reduced mean-time-to-resolution, improved customer experience, and operational efficiency.
 
@@ -50,12 +50,12 @@ The Azure Logic Apps Monitoring Solution provides a **production-ready reference
 
 ### Target Users and Personas
 
-| Persona | Goals | Pain Points Addressed |
-|---------|-------|----------------------|
-| **Platform Engineer** | Deploy consistent monitoring infrastructure | IaC templates eliminate manual configuration |
-| **Application Developer** | Debug distributed transactions | End-to-end traces link all service interactions |
-| **SRE/Operations** | Maintain service reliability | Health models and alerts enable proactive response |
-| **Solution Architect** | Design observable systems | Reference patterns for Azure observability |
+| Persona                   | Goals                                       | Pain Points Addressed                              |
+| ------------------------- | ------------------------------------------- | -------------------------------------------------- |
+| **Platform Engineer**     | Deploy consistent monitoring infrastructure | IaC templates eliminate manual configuration       |
+| **Application Developer** | Debug distributed transactions              | End-to-end traces link all service interactions    |
+| **SRE/Operations**        | Maintain service reliability                | Health models and alerts enable proactive response |
+| **Solution Architect**    | Design observable systems                   | Reference patterns for Azure observability         |
 
 ---
 
@@ -137,29 +137,29 @@ flowchart TB
 
 ### Capability Descriptions
 
-| Capability | Description | Type | Primary Components |
-|------------|-------------|------|-------------------|
-| **Order Management** | End-to-end handling of customer orders including placement, validation, persistence, and status tracking | Core | [eShop.Orders.API](../../src/eShop.Orders.API/), [eShop.Web.App](../../src/eShop.Web.App/) |
-| **Workflow Automation** | Event-driven orchestration of business processes triggered by domain events | Core | [OrdersManagement Logic App](../../workflows/OrdersManagement/) |
-| **Observability** | Comprehensive visibility into system behavior through distributed traces, metrics, and logs | Enabling | [app.ServiceDefaults](../../app.ServiceDefaults/), Application Insights |
-| **Event Messaging** | Asynchronous communication between services via pub/sub message patterns | Enabling | Azure Service Bus, [OrdersMessageHandler](../../src/eShop.Orders.API/Handlers/OrdersMessageHandler.cs) |
-| **Identity Management** | Secure, passwordless authentication for services and users via managed identity | Enabling | Azure Managed Identity, [infra/shared/identity](../../infra/shared/identity/) |
-| **Cloud Infrastructure** | Azure platform services providing compute, storage, and networking | Foundation | [infra/](../../infra/) Bicep templates |
-| **Deployment Automation** | Automated provisioning and deployment via Azure Developer CLI | Foundation | [azure.yaml](../../azure.yaml), [hooks/](../../hooks/) |
-| **Data Persistence** | Reliable storage for orders, workflow state, and telemetry data | Foundation | Azure SQL, Azure Storage, Log Analytics |
+| Capability                | Description                                                                                              | Type       | Primary Components                                                                                     |
+| ------------------------- | -------------------------------------------------------------------------------------------------------- | ---------- | ------------------------------------------------------------------------------------------------------ |
+| **Order Management**      | End-to-end handling of customer orders including placement, validation, persistence, and status tracking | Core       | [eShop.Orders.API](../../src/eShop.Orders.API/), [eShop.Web.App](../../src/eShop.Web.App/)             |
+| **Workflow Automation**   | Event-driven orchestration of business processes triggered by domain events                              | Core       | [OrdersManagement Logic App](../../workflows/OrdersManagement/)                                        |
+| **Observability**         | Comprehensive visibility into system behavior through distributed traces, metrics, and logs              | Enabling   | [app.ServiceDefaults](../../app.ServiceDefaults/), Application Insights                                |
+| **Event Messaging**       | Asynchronous communication between services via pub/sub message patterns                                 | Enabling   | Azure Service Bus, [OrdersMessageHandler](../../src/eShop.Orders.API/Handlers/OrdersMessageHandler.cs) |
+| **Identity Management**   | Secure, passwordless authentication for services and users via managed identity                          | Enabling   | Azure Managed Identity, [infra/shared/identity](../../infra/shared/identity/)                          |
+| **Cloud Infrastructure**  | Azure platform services providing compute, storage, and networking                                       | Foundation | [infra/](../../infra/) Bicep templates                                                                 |
+| **Deployment Automation** | Automated provisioning and deployment via Azure Developer CLI                                            | Foundation | [azure.yaml](../../azure.yaml), [hooks/](../../hooks/)                                                 |
+| **Data Persistence**      | Reliable storage for orders, workflow state, and telemetry data                                          | Foundation | Azure SQL, Azure Storage, Log Analytics                                                                |
 
 ---
 
 ## 3. Stakeholder Analysis
 
-| Stakeholder | Concerns | How Architecture Addresses |
-|-------------|----------|---------------------------|
-| **Business Owner** | Solution demonstrates monitoring best practices for customer adoption | Complete reference implementation with documentation |
-| **Platform Team** | Infrastructure must be repeatable, secure, and cost-effective | Modular Bicep IaC with managed identity; consumption-based pricing |
-| **Development Team** | Easy local development; fast inner-loop iteration | .NET Aspire emulators; hot reload; user secrets |
-| **Operations Team** | Clear health signals; actionable alerts; runbook integration | Health checks; diagnostic settings; Azure Monitor alerts |
-| **Security Team** | No secrets in code; least-privilege access; audit trails | Managed identity everywhere; RBAC; diagnostic logs |
-| **Compliance** | Data retention policies; encryption requirements | Configurable retention; TDE for SQL; TLS 1.2+ |
+| Stakeholder          | Concerns                                                              | How Architecture Addresses                                         |
+| -------------------- | --------------------------------------------------------------------- | ------------------------------------------------------------------ |
+| **Business Owner**   | Solution demonstrates monitoring best practices for customer adoption | Complete reference implementation with documentation               |
+| **Platform Team**    | Infrastructure must be repeatable, secure, and cost-effective         | Modular Bicep IaC with managed identity; consumption-based pricing |
+| **Development Team** | Easy local development; fast inner-loop iteration                     | .NET Aspire emulators; hot reload; user secrets                    |
+| **Operations Team**  | Clear health signals; actionable alerts; runbook integration          | Health checks; diagnostic settings; Azure Monitor alerts           |
+| **Security Team**    | No secrets in code; least-privilege access; audit trails              | Managed identity everywhere; RBAC; diagnostic logs                 |
+| **Compliance**       | Data retention policies; encryption requirements                      | Configurable retention; TDE for SQL; TLS 1.2+                      |
 
 ---
 
@@ -225,12 +225,12 @@ flowchart LR
 
 #### Value Stream Stages
 
-| Stage | Capabilities | Cycle Time | Value-Add |
-|-------|--------------|------------|-----------|
-| **Engage** | Order Management (UI) | ~30 seconds | Customer interaction |
-| **Transact** | Order Management (API) | ~100ms | Order capture |
-| **Process** | Data Persistence, Event Messaging | ~200ms | Data integrity, async handoff |
-| **Automate** | Workflow Automation | ~2 seconds | Business process execution |
+| Stage        | Capabilities                      | Cycle Time  | Value-Add                     |
+| ------------ | --------------------------------- | ----------- | ----------------------------- |
+| **Engage**   | Order Management (UI)             | ~30 seconds | Customer interaction          |
+| **Transact** | Order Management (API)            | ~100ms      | Order capture                 |
+| **Process**  | Data Persistence, Event Messaging | ~200ms      | Data integrity, async handoff |
+| **Automate** | Workflow Automation               | ~2 seconds  | Business process execution    |
 
 ### Monitoring Value Stream
 
@@ -293,15 +293,15 @@ flowchart LR
 
 ## 5. Quality Attribute Requirements
 
-| Attribute | Requirement | Priority | Measurement |
-|-----------|-------------|----------|-------------|
-| **Availability** | 99.9% uptime for API and web app | High | Azure Monitor availability tests |
-| **Observability** | End-to-end distributed tracing across all services | Critical | Trace completion rate > 99% |
-| **Performance** | API P95 latency < 500ms | High | Application Insights metrics |
-| **Scalability** | Handle 1000 orders/minute burst | Medium | Load testing with Container Apps scaling |
-| **Security** | Zero secrets in source code | Critical | Managed identity for all Azure services |
-| **Reliability** | Order processing exactly-once semantics | High | Service Bus deduplication + dead-letter handling |
-| **Maintainability** | Single-command deployment | High | `azd up` deploys entire solution |
+| Attribute           | Requirement                                        | Priority | Measurement                                      |
+| ------------------- | -------------------------------------------------- | -------- | ------------------------------------------------ |
+| **Availability**    | 99.9% uptime for API and web app                   | High     | Azure Monitor availability tests                 |
+| **Observability**   | End-to-end distributed tracing across all services | Critical | Trace completion rate > 99%                      |
+| **Performance**     | API P95 latency < 500ms                            | High     | Application Insights metrics                     |
+| **Scalability**     | Handle 1000 orders/minute burst                    | Medium   | Load testing with Container Apps scaling         |
+| **Security**        | Zero secrets in source code                        | Critical | Managed identity for all Azure services          |
+| **Reliability**     | Order processing exactly-once semantics            | High     | Service Bus deduplication + dead-letter handling |
+| **Maintainability** | Single-command deployment                          | High     | `azd up` deploys entire solution                 |
 
 ---
 
@@ -311,7 +311,7 @@ flowchart LR
 %%{init: {'theme': 'base', 'themeVariables': { 'fontSize': '14px'}}}%%
 flowchart TD
     Start([Customer initiates order])
-    
+
     subgraph WebApp["🌐 Web Application"]
         direction TB
         subgraph UserInput["User Input"]
@@ -322,7 +322,7 @@ flowchart TD
             A3["Submit order request"]
         end
     end
-    
+
     subgraph API["📡 Orders API"]
         direction TB
         subgraph Validation["Validation"]
@@ -335,7 +335,7 @@ flowchart TD
             B5["Return confirmation"]
         end
     end
-    
+
     subgraph Workflow["🔄 Logic Apps"]
         direction TB
         subgraph MessageHandling["Message Handling"]
@@ -351,14 +351,14 @@ flowchart TD
             C6["Store in error blob"]
         end
     end
-    
+
     %% Main flow
     Start --> A1 --> A2 --> A3
     A3 --> B1 --> B2
     B2 -->|"Invalid"| Error1["Return 400 Bad Request"]
     B2 -->|"Valid"| B3 --> B4 --> B5
     B5 --> Success1([Order Placed])
-    
+
     %% Async workflow
     B4 -.->|"Async"| C1
     C1 --> C2
@@ -366,7 +366,7 @@ flowchart TD
     C2 -->|"Valid"| C3 --> C4
     C4 -->|"Success"| C5
     C4 -->|"Failure"| C6
-    
+
     C5 --> End1([Workflow Complete])
     C6 --> End2([Error Logged])
 
@@ -402,11 +402,11 @@ flowchart TD
 
 ## Cross-Architecture Relationships
 
-| Related Architecture | Connection | Reference |
-|---------------------|------------|-----------|
-| **Data Architecture** | Business capabilities define data domain ownership | [Data Architecture](02-data-architecture.md#data-domain-catalog) |
-| **Application Architecture** | Capabilities realized by application services | [Application Architecture](03-application-architecture.md#service-catalog) |
-| **Observability Architecture** | Business metrics tied to capability KPIs | [Observability Architecture](05-observability-architecture.md#business-metrics) |
+| Related Architecture           | Connection                                         | Reference                                                                       |
+| ------------------------------ | -------------------------------------------------- | ------------------------------------------------------------------------------- |
+| **Data Architecture**          | Business capabilities define data domain ownership | [Data Architecture](02-data-architecture.md#data-domain-catalog)                |
+| **Application Architecture**   | Capabilities realized by application services      | [Application Architecture](03-application-architecture.md#service-catalog)      |
+| **Observability Architecture** | Business metrics tied to capability KPIs           | [Observability Architecture](05-observability-architecture.md#business-metrics) |
 
 ---
 

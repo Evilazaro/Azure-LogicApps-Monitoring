@@ -57,13 +57,13 @@ The solution uses **Azure Developer CLI (azd)** for streamlined deployments with
 
 ### Deployment Stack
 
-| Layer | Technology | Purpose |
-|-------|------------|---------|
-| **CLI** | Azure Developer CLI (azd) | Deployment orchestration |
-| **IaC** | Bicep | Infrastructure provisioning |
-| **Container Registry** | Azure Container Registry | Image storage |
-| **Compute** | Azure Container Apps | Application hosting |
-| **Workflows** | Logic Apps Standard | Workflow deployment |
+| Layer                  | Technology                | Purpose                     |
+| ---------------------- | ------------------------- | --------------------------- |
+| **CLI**                | Azure Developer CLI (azd) | Deployment orchestration    |
+| **IaC**                | Bicep                     | Infrastructure provisioning |
+| **Container Registry** | Azure Container Registry  | Image storage               |
+| **Compute**            | Azure Container Apps      | Application hosting         |
+| **Workflows**          | Logic Apps Standard       | Workflow deployment         |
 
 ---
 
@@ -128,7 +128,7 @@ flowchart TB
     Bicep --> ARM
     ARM --> RG
     ARM --> PostHook
-    
+
     AZD --> Build
     Build --> Push
     Push --> ACR
@@ -170,13 +170,13 @@ flowchart TB
 
 ### Core Commands
 
-| Command | Purpose | Actions |
-|---------|---------|---------|
-| `azd init` | Initialize project | Generate azure.yaml |
-| `azd provision` | Deploy infrastructure | Run Bicep templates |
-| `azd deploy` | Deploy applications | Build and push containers |
-| `azd up` | Combined provision + deploy | Full deployment |
-| `azd down` | Destroy resources | Delete resource group |
+| Command         | Purpose                     | Actions                   |
+| --------------- | --------------------------- | ------------------------- |
+| `azd init`      | Initialize project          | Generate azure.yaml       |
+| `azd provision` | Deploy infrastructure       | Run Bicep templates       |
+| `azd deploy`    | Deploy applications         | Build and push containers |
+| `azd up`        | Combined provision + deploy | Full deployment           |
+| `azd down`      | Destroy resources           | Delete resource group     |
 
 ### azd Configuration
 
@@ -305,10 +305,10 @@ sequenceDiagram
 
 ### Container Image Strategy
 
-| Service | Base Image | Build Context |
-|---------|------------|---------------|
+| Service        | Base Image                             | Build Context           |
+| -------------- | -------------------------------------- | ----------------------- |
 | **Orders API** | `mcr.microsoft.com/dotnet/aspnet:10.0` | `src/eShop.Orders.API/` |
-| **Web App** | `mcr.microsoft.com/dotnet/aspnet:10.0` | `src/eShop.Web.App/` |
+| **Web App**    | `mcr.microsoft.com/dotnet/aspnet:10.0` | `src/eShop.Web.App/`    |
 
 ---
 
@@ -423,12 +423,12 @@ flowchart TB
 
 ### Environment Configuration
 
-| Environment | Purpose | Configuration |
-|-------------|---------|---------------|
-| **Local** | Development | .NET Aspire orchestrator, Docker containers |
-| **Dev** | Integration testing | Azure resources, Basic SKUs |
-| **Staging** | Pre-production | Production-like, scaled down |
-| **Production** | Live workloads | Full scale, HA configuration |
+| Environment    | Purpose             | Configuration                               |
+| -------------- | ------------------- | ------------------------------------------- |
+| **Local**      | Development         | .NET Aspire orchestrator, Docker containers |
+| **Dev**        | Integration testing | Azure resources, Basic SKUs                 |
+| **Staging**    | Pre-production      | Production-like, scaled down                |
+| **Production** | Live workloads      | Full scale, HA configuration                |
 
 ### azd Environment Management
 
@@ -494,12 +494,12 @@ var ordersApi = builder.AddProject<Projects.eShop_Orders_API>("orders-api")
 
 ### Local to Cloud Transition
 
-| Resource | Local Mode | Azure Mode |
-|----------|------------|------------|
-| **SQL Database** | Docker container | Azure SQL |
-| **Service Bus** | Emulator | Azure Service Bus |
-| **Storage** | Azurite | Azure Storage |
-| **App Insights** | Local telemetry | Azure App Insights |
+| Resource         | Local Mode       | Azure Mode         |
+| ---------------- | ---------------- | ------------------ |
+| **SQL Database** | Docker container | Azure SQL          |
+| **Service Bus**  | Emulator         | Azure Service Bus  |
+| **Storage**      | Azurite          | Azure Storage      |
+| **App Insights** | Local telemetry  | Azure App Insights |
 
 ---
 
@@ -564,15 +564,15 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      
+
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: '10.0.x'
-      
+          dotnet-version: "10.0.x"
+
       - name: Build
         run: dotnet build --configuration Release
-      
+
       - name: Test
         run: dotnet test --no-build
 
@@ -582,15 +582,15 @@ jobs:
     if: github.ref == 'refs/heads/main'
     steps:
       - uses: actions/checkout@v4
-      
+
       - name: Install azd
         uses: Azure/setup-azd@v1
-      
+
       - name: Azure Login
         uses: azure/login@v1
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
-      
+
       - name: Deploy
         run: azd up --no-prompt
         env:
@@ -659,11 +659,11 @@ flowchart LR
 
 ### Container Apps Revision Management
 
-| Strategy | Implementation | Use Case |
-|----------|----------------|----------|
-| **Traffic Split** | Weighted routing | Canary deployments |
-| **Revision Rollback** | Activate previous revision | Quick rollback |
-| **Full Redeploy** | azd deploy with previous tag | Complete rollback |
+| Strategy              | Implementation               | Use Case           |
+| --------------------- | ---------------------------- | ------------------ |
+| **Traffic Split**     | Weighted routing             | Canary deployments |
+| **Revision Rollback** | Activate previous revision   | Quick rollback     |
+| **Full Redeploy**     | azd deploy with previous tag | Complete rollback  |
 
 ### Rollback Commands
 
@@ -712,11 +712,11 @@ az containerapp ingress traffic set --name orders-api --resource-group rg-dev \
 
 ## Cross-Architecture Relationships
 
-| Related Architecture | Connection | Reference |
-|---------------------|------------|-----------|
-| **Technology Architecture** | Infrastructure targets | [Technology Architecture](04-technology-architecture.md) |
-| **Security Architecture** | Secure deployment | [Security Architecture](06-security-architecture.md) |
-| **Observability Architecture** | Deployment monitoring | [Observability Architecture](05-observability-architecture.md) |
+| Related Architecture           | Connection             | Reference                                                      |
+| ------------------------------ | ---------------------- | -------------------------------------------------------------- |
+| **Technology Architecture**    | Infrastructure targets | [Technology Architecture](04-technology-architecture.md)       |
+| **Security Architecture**      | Secure deployment      | [Security Architecture](06-security-architecture.md)           |
+| **Observability Architecture** | Deployment monitoring  | [Observability Architecture](05-observability-architecture.md) |
 
 ---
 

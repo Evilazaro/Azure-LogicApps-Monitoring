@@ -38,45 +38,45 @@ What sets this reference apart is its **zero-secrets architecture** using Azure 
 
 ### Why This Solution?
 
-| Feature | Description |
-|---------|-------------|
-| **Reference Architecture** | Production-ready patterns for Azure Logic Apps observability |
-| **End-to-End Tracing** | W3C Trace Context propagation across all service boundaries |
-| **Zero Secrets** | Managed Identity authentication for all Azure services |
-| **Local Development Parity** | Full-fidelity local development with .NET Aspire emulators |
+| Feature                      | Description                                                  |
+| ---------------------------- | ------------------------------------------------------------ |
+| **Reference Architecture**   | Production-ready patterns for Azure Logic Apps observability |
+| **End-to-End Tracing**       | W3C Trace Context propagation across all service boundaries  |
+| **Zero Secrets**             | Managed Identity authentication for all Azure services       |
+| **Local Development Parity** | Full-fidelity local development with .NET Aspire emulators   |
 
 ### Target Audience
 
-| Role | Focus Areas | Key Documents |
-|------|-------------|---------------|
-| **Cloud Architects** | System design, integration patterns, scalability decisions | [Architecture Overview](docs/architecture/README.md), [Technology Architecture](docs/architecture/04-technology-architecture.md) |
-| **Platform Engineers** | Infrastructure automation, IaC templates, deployment pipelines | [Deployment Architecture](docs/architecture/07-deployment-architecture.md), [Bicep Modules](infra/) |
-| **Backend Developers** | API development, Service Bus integration, EF Core patterns | [Application Architecture](docs/architecture/03-application-architecture.md), [API Reference](#-api-reference) |
-| **DevOps Engineers** | CI/CD workflows, environment management, azd hooks | [Developer Workflow](docs/hooks/README.md), [Validation Workflow](docs/hooks/VALIDATION-WORKFLOW.md) |
-| **SRE / Operations** | Observability, alerting, health checks, troubleshooting | [Observability Architecture](docs/architecture/05-observability-architecture.md), [Security Architecture](docs/architecture/06-security-architecture.md) |
-| **Technical Leads** | Architecture decisions, trade-offs, team onboarding | [ADR Index](docs/architecture/adr/README.md), [Business Architecture](docs/architecture/01-business-architecture.md) |
+| Role                   | Focus Areas                                                    | Key Documents                                                                                                                                            |
+| ---------------------- | -------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Cloud Architects**   | System design, integration patterns, scalability decisions     | [Architecture Overview](docs/architecture/README.md), [Technology Architecture](docs/architecture/04-technology-architecture.md)                         |
+| **Platform Engineers** | Infrastructure automation, IaC templates, deployment pipelines | [Deployment Architecture](docs/architecture/07-deployment-architecture.md), [Bicep Modules](infra/)                                                      |
+| **Backend Developers** | API development, Service Bus integration, EF Core patterns     | [Application Architecture](docs/architecture/03-application-architecture.md), [API Reference](#-api-reference)                                           |
+| **DevOps Engineers**   | CI/CD workflows, environment management, azd hooks             | [Developer Workflow](docs/hooks/README.md), [Validation Workflow](docs/hooks/VALIDATION-WORKFLOW.md)                                                     |
+| **SRE / Operations**   | Observability, alerting, health checks, troubleshooting        | [Observability Architecture](docs/architecture/05-observability-architecture.md), [Security Architecture](docs/architecture/06-security-architecture.md) |
+| **Technical Leads**    | Architecture decisions, trade-offs, team onboarding            | [ADR Index](docs/architecture/adr/README.md), [Business Architecture](docs/architecture/01-business-architecture.md)                                     |
 
 ### Developer Experience
 
 This solution prioritizes **developer productivity** with a streamlined inner-loop experience that minimizes friction from code change to validation.
 
-| Capability | Local Development | Azure Deployment |
-|------------|-------------------|------------------|
-| **Setup Time** | ~1 minute | ~10 minutes |
+| Capability     | Local Development           | Azure Deployment              |
+| -------------- | --------------------------- | ----------------------------- |
+| **Setup Time** | ~1 minute                   | ~10 minutes                   |
 | **Hot Reload** | ✅ C# & Razor (1-3 seconds) | ✅ Container rebuild required |
-| **Debugging** | ✅ Full breakpoint support | ✅ Remote debugging available |
-| **Cost** | Free (Docker containers) | Pay-per-use |
-| **Telemetry** | Aspire Dashboard | Application Insights |
-| **Database** | SQL Server container | Azure SQL + Managed Identity |
+| **Debugging**  | ✅ Full breakpoint support  | ✅ Remote debugging available |
+| **Cost**       | Free (Docker containers)    | Pay-per-use                   |
+| **Telemetry**  | Aspire Dashboard            | Application Insights          |
+| **Database**   | SQL Server container        | Azure SQL + Managed Identity  |
 
-| Feature | Description |
-|---------|-------------|
-| **🚀 One-Command Start** | `dotnet run --project app.AppHost` launches all services with dependencies |
-| **📊 Aspire Dashboard** | Real-time traces, logs, and metrics at `https://localhost:17225` |
-| **🔄 Service Discovery** | Reference services by name—no hardcoded URLs or ports |
-| **🐳 Containerized Dependencies** | SQL Server and Service Bus emulator auto-provisioned |
-| **🧪 REST Client Testing** | `.http` files for quick API validation in VS Code |
-| **📝 Structured Logging** | Correlation IDs propagated across all service boundaries |
+| Feature                           | Description                                                                |
+| --------------------------------- | -------------------------------------------------------------------------- |
+| **🚀 One-Command Start**          | `dotnet run --project app.AppHost` launches all services with dependencies |
+| **📊 Aspire Dashboard**           | Real-time traces, logs, and metrics at `https://localhost:17225`           |
+| **🔄 Service Discovery**          | Reference services by name—no hardcoded URLs or ports                      |
+| **🐳 Containerized Dependencies** | SQL Server and Service Bus emulator auto-provisioned                       |
+| **🧪 REST Client Testing**        | `.http` files for quick API validation in VS Code                          |
+| **📝 Structured Logging**         | Correlation IDs propagated across all service boundaries                   |
 
 > 📖 **Learn more:** See [Developer Workflow](docs/hooks/README.md) for comprehensive inner-loop patterns, hybrid development, and troubleshooting.
 
@@ -115,10 +115,10 @@ flowchart TB
     %% TOP-LEVEL GROUPING: Runtime Environment
     %% Separates application runtime from supporting infrastructure
     %% =====================================================================
-    
+
     subgraph Runtime["Runtime Environment"]
         direction TB
-        
+
         %% =================================================================
         %% PRESENTATION LAYER - User-facing components
         %% Single entry point for all user interactions
@@ -134,12 +134,12 @@ flowchart TB
         %% =================================================================
         subgraph Application["Application Layer"]
             direction TB
-            
+
             subgraph APIServices["API Services"]
                 direction LR
                 API["eShop.Orders.API\nASP.NET Core Web API"]
             end
-            
+
             subgraph WorkflowAutomation["Workflow Automation"]
                 direction LR
                 LogicApp["OrdersManagement\nLogic Apps Standard"]
@@ -151,22 +151,22 @@ flowchart TB
     %% TOP-LEVEL GROUPING: Supporting Infrastructure
     %% Platform services that enable the runtime environment
     %% =====================================================================
-    
+
     subgraph Infrastructure["Supporting Infrastructure"]
         direction TB
-        
+
         %% =================================================================
         %% PLATFORM LAYER - Orchestration and shared services
         %% Grouped by function: Orchestration vs Shared Libraries
         %% =================================================================
         subgraph Platform["Platform Layer"]
             direction TB
-            
+
             subgraph Orchestration["Orchestration"]
                 direction LR
                 Aspire["app.AppHost\n.NET Aspire Orchestrator"]
             end
-            
+
             subgraph SharedLibraries["Shared Libraries"]
                 direction LR
                 Defaults["app.ServiceDefaults\nCross-cutting Concerns"]
@@ -179,17 +179,17 @@ flowchart TB
         %% =================================================================
         subgraph Data["Data Layer"]
             direction TB
-            
+
             subgraph Persistence["Persistence"]
                 direction LR
                 SQL[("OrderDb\nAzure SQL Database")]
             end
-            
+
             subgraph Messaging["Messaging"]
                 direction LR
                 ServiceBus[["ordersplaced\nService Bus Topic"]]
             end
-            
+
             subgraph StateStore["State Store"]
                 direction LR
                 Storage[("Workflow State\nAzure Storage")]
@@ -201,18 +201,18 @@ flowchart TB
     %% TOP-LEVEL GROUPING: Observability Stack
     %% Monitoring and telemetry infrastructure
     %% =====================================================================
-    
+
     subgraph ObservabilityStack["Observability Stack"]
         direction TB
-        
+
         subgraph Observability["Observability Layer"]
             direction TB
-            
+
             subgraph APM["Application Performance Monitoring"]
                 direction LR
                 AppInsights["Application Insights\nAPM & Distributed Tracing"]
             end
-            
+
             subgraph Logging["Centralized Logging"]
                 direction LR
                 LogAnalytics["Log Analytics\nLog Aggregation & Analysis"]
@@ -252,7 +252,7 @@ flowchart TB
     %% NODE STYLE DEFINITIONS - WCAG AA compliant color palette
     %% Each layer has distinct color for visual hierarchy
     %% =====================================================================
-    
+
     %% Presentation Layer - Blue theme (user interface focus)
     classDef presentationStyle fill:#e3f2fd,stroke:#1565c0,stroke-width:2px,color:#0d47a1
 
@@ -315,22 +315,22 @@ flowchart TB
 
 ## 🛠️ Technology Stack
 
-| Category | Technology | Version | Purpose |
-|----------|------------|---------|---------|
-| **Runtime** | .NET | 10.0 | Application framework |
-| **Orchestration** | .NET Aspire | 9.5.0 | Local development orchestration |
-| **Frontend** | Blazor Server | 10.0 | Interactive web UI |
-| **UI Components** | Fluent UI Blazor | 4.13.2 | Modern UI component library |
-| **Backend** | ASP.NET Core | 10.0 | REST API framework |
-| **ORM** | Entity Framework Core | 9.0 | Data access |
-| **Messaging** | Azure Service Bus | 7.20.1 | Event-driven messaging |
-| **Workflows** | Logic Apps Standard | - | Event processing automation |
-| **Database** | Azure SQL Database | - | Relational data persistence |
-| **Hosting** | Azure Container Apps | - | Serverless container platform |
-| **Observability** | OpenTelemetry | 1.14.0 | Distributed tracing & metrics |
-| **Monitoring** | Application Insights | - | APM and diagnostics |
-| **IaC** | Bicep | - | Infrastructure as Code |
-| **CLI** | Azure Developer CLI | - | Deployment automation |
+| Category          | Technology            | Version | Purpose                         |
+| ----------------- | --------------------- | ------- | ------------------------------- |
+| **Runtime**       | .NET                  | 10.0    | Application framework           |
+| **Orchestration** | .NET Aspire           | 9.5.0   | Local development orchestration |
+| **Frontend**      | Blazor Server         | 10.0    | Interactive web UI              |
+| **UI Components** | Fluent UI Blazor      | 4.13.2  | Modern UI component library     |
+| **Backend**       | ASP.NET Core          | 10.0    | REST API framework              |
+| **ORM**           | Entity Framework Core | 9.0     | Data access                     |
+| **Messaging**     | Azure Service Bus     | 7.20.1  | Event-driven messaging          |
+| **Workflows**     | Logic Apps Standard   | -       | Event processing automation     |
+| **Database**      | Azure SQL Database    | -       | Relational data persistence     |
+| **Hosting**       | Azure Container Apps  | -       | Serverless container platform   |
+| **Observability** | OpenTelemetry         | 1.14.0  | Distributed tracing & metrics   |
+| **Monitoring**    | Application Insights  | -       | APM and diagnostics             |
+| **IaC**           | Bicep                 | -       | Infrastructure as Code          |
+| **CLI**           | Azure Developer CLI   | -       | Deployment automation           |
 
 ---
 
@@ -342,42 +342,42 @@ This section lists the minimum requirements for local development and Azure depl
 
 ### Required Tools
 
-| Tool | Version | Purpose | Installation |
-|------|---------|---------|--------------|
-| **.NET SDK** | 10.0+ | Application framework | `winget install Microsoft.DotNet.SDK.10` |
-| **PowerShell** | 7.0+ | Cross-platform scripting | `winget install Microsoft.PowerShell` |
-| **Azure CLI** | 2.60.0+ | Azure resource management | `winget install Microsoft.AzureCLI` |
-| **Azure Developer CLI** | Latest | Deployment automation | `winget install Microsoft.Azd` |
-| **Bicep CLI** | 0.30.0+ | Infrastructure as Code | `az bicep install` |
-| **Docker Desktop** | Latest | Local containers & emulators | [docker.com](https://docker.com/products/docker-desktop) |
+| Tool                    | Version | Purpose                      | Installation                                             |
+| ----------------------- | ------- | ---------------------------- | -------------------------------------------------------- |
+| **.NET SDK**            | 10.0+   | Application framework        | `winget install Microsoft.DotNet.SDK.10`                 |
+| **PowerShell**          | 7.0+    | Cross-platform scripting     | `winget install Microsoft.PowerShell`                    |
+| **Azure CLI**           | 2.60.0+ | Azure resource management    | `winget install Microsoft.AzureCLI`                      |
+| **Azure Developer CLI** | Latest  | Deployment automation        | `winget install Microsoft.Azd`                           |
+| **Bicep CLI**           | 0.30.0+ | Infrastructure as Code       | `az bicep install`                                       |
+| **Docker Desktop**      | Latest  | Local containers & emulators | [docker.com](https://docker.com/products/docker-desktop) |
 
 ### Optional Tools
 
-| Tool | Version | Purpose | Installation |
-|------|---------|---------|--------------|
-| **Visual Studio 2022** | 17.13+ | Full IDE with debugging | [visualstudio.com](https://visualstudio.microsoft.com) |
-| **VS Code** | Latest | Lightweight editor | [code.visualstudio.com](https://code.visualstudio.com) |
+| Tool                   | Version | Purpose                 | Installation                                           |
+| ---------------------- | ------- | ----------------------- | ------------------------------------------------------ |
+| **Visual Studio 2022** | 17.13+  | Full IDE with debugging | [visualstudio.com](https://visualstudio.microsoft.com) |
+| **VS Code**            | Latest  | Lightweight editor      | [code.visualstudio.com](https://code.visualstudio.com) |
 
 ### Azure Requirements
 
-| Requirement | Description |
-|-------------|-------------|
-| **Active Subscription** | Azure subscription with billing enabled |
-| **Authentication** | Logged in via `az login` with appropriate permissions |
-| **Resource Providers** | 8 providers auto-registered by [`preprovision`](docs/hooks/preprovision.md) |
+| Requirement             | Description                                                                 |
+| ----------------------- | --------------------------------------------------------------------------- |
+| **Active Subscription** | Azure subscription with billing enabled                                     |
+| **Authentication**      | Logged in via `az login` with appropriate permissions                       |
+| **Resource Providers**  | 8 providers auto-registered by [`preprovision`](docs/hooks/preprovision.md) |
 
 The following Azure resource providers are required and automatically registered:
 
-| Provider | Purpose |
-|----------|---------|
-| `Microsoft.App` | Container Apps hosting |
-| `Microsoft.ServiceBus` | Event-driven messaging |
-| `Microsoft.Storage` | Blob storage for Logic Apps |
-| `Microsoft.Web` | Logic Apps Standard |
-| `Microsoft.ContainerRegistry` | Container image registry |
-| `Microsoft.Insights` | Application Insights telemetry |
-| `Microsoft.OperationalInsights` | Log Analytics workspace |
-| `Microsoft.ManagedIdentity` | Zero-secrets authentication |
+| Provider                        | Purpose                        |
+| ------------------------------- | ------------------------------ |
+| `Microsoft.App`                 | Container Apps hosting         |
+| `Microsoft.ServiceBus`          | Event-driven messaging         |
+| `Microsoft.Storage`             | Blob storage for Logic Apps    |
+| `Microsoft.Web`                 | Logic Apps Standard            |
+| `Microsoft.ContainerRegistry`   | Container image registry       |
+| `Microsoft.Insights`            | Application Insights telemetry |
+| `Microsoft.OperationalInsights` | Log Analytics workspace        |
+| `Microsoft.ManagedIdentity`     | Zero-secrets authentication    |
 
 > 📖 **Learn more:** See [preprovision](docs/hooks/preprovision.md) for auto-installation options, Azure authentication flows, and resource provider registration details.
 
@@ -418,6 +418,7 @@ dotnet run --project app.AppHost
 ```
 
 The Aspire dashboard opens automatically at `https://localhost:17225`, providing:
+
 - Real-time service health monitoring
 - Distributed tracing visualization
 - Structured logs across all services
@@ -440,6 +441,7 @@ azd up
 ```
 
 The `azd up` command automatically:
+
 1. **Validates prerequisites** via [`preprovision`](docs/hooks/preprovision.md) hook
 2. **Provisions infrastructure** with Bicep (Container Apps, SQL, Service Bus, App Insights)
 3. **Configures secrets** via [`postprovision`](docs/hooks/postprovision.md) hook
@@ -660,14 +662,14 @@ The solution supports two configuration modes: **Local Development** (zero Azure
 
 ### Configuration Modes Comparison
 
-| Aspect | Local Development | Azure Deployment |
-|--------|-------------------|------------------|
-| **Database** | SQL Server container (sa auth) | Azure SQL (Managed Identity) |
-| **Service Bus** | Emulator container | Azure Service Bus |
-| **Monitoring** | Aspire Dashboard | Application Insights |
-| **Secrets** | Auto-configured by Aspire | Auto-configured by [`postprovision`](docs/hooks/postprovision.md) |
-| **Setup Time** | ~1 minute | ~10 minutes |
-| **Cost** | Free | Pay-per-use |
+| Aspect          | Local Development              | Azure Deployment                                                  |
+| --------------- | ------------------------------ | ----------------------------------------------------------------- |
+| **Database**    | SQL Server container (sa auth) | Azure SQL (Managed Identity)                                      |
+| **Service Bus** | Emulator container             | Azure Service Bus                                                 |
+| **Monitoring**  | Aspire Dashboard               | Application Insights                                              |
+| **Secrets**     | Auto-configured by Aspire      | Auto-configured by [`postprovision`](docs/hooks/postprovision.md) |
+| **Setup Time**  | ~1 minute                      | ~10 minutes                                                       |
+| **Cost**        | Free                           | Pay-per-use                                                       |
 
 > 📖 **Learn more:** See [Local vs Azure Comparison](docs/hooks/README.md#comparison-local-vs-azure-development) for detailed differences and when to use each mode.
 
@@ -679,22 +681,22 @@ Local development requires **zero manual configuration**—.NET Aspire automatic
 
 #### What Aspire Configures Automatically
 
-| Component | Configuration | Details |
-|-----------|---------------|---------|
-| **SQL Server** | Container with persistent volume | `mcr.microsoft.com/mssql/server:2022-latest` |
-| **Service Bus** | Emulator container | Topic: `ordersplaced`, Subscription: `orderprocessingsub` |
-| **Connection Strings** | Injected via service discovery | No hardcoded URLs needed |
-| **Health Checks** | Auto-registered | SQL, Service Bus, HTTP endpoints |
-| **OpenTelemetry** | Pre-configured exporters | Traces → Aspire Dashboard |
+| Component              | Configuration                    | Details                                                   |
+| ---------------------- | -------------------------------- | --------------------------------------------------------- |
+| **SQL Server**         | Container with persistent volume | `mcr.microsoft.com/mssql/server:2022-latest`              |
+| **Service Bus**        | Emulator container               | Topic: `ordersplaced`, Subscription: `orderprocessingsub` |
+| **Connection Strings** | Injected via service discovery   | No hardcoded URLs needed                                  |
+| **Health Checks**      | Auto-registered                  | SQL, Service Bus, HTTP endpoints                          |
+| **OpenTelemetry**      | Pre-configured exporters         | Traces → Aspire Dashboard                                 |
 
 #### Local Development Features
 
-| Feature | Description |
-|---------|-------------|
-| **Hot Reload** | C# and Razor changes apply in 1-3 seconds without restart |
-| **Debugging** | Full breakpoint support in Visual Studio / VS Code |
-| **Service Discovery** | Reference services by name (e.g., `orders-api`) |
-| **Log Streaming** | Real-time logs in Aspire Dashboard |
+| Feature               | Description                                               |
+| --------------------- | --------------------------------------------------------- |
+| **Hot Reload**        | C# and Razor changes apply in 1-3 seconds without restart |
+| **Debugging**         | Full breakpoint support in Visual Studio / VS Code        |
+| **Service Discovery** | Reference services by name (e.g., `orders-api`)           |
+| **Log Streaming**     | Real-time logs in Aspire Dashboard                        |
 
 > 📖 **Learn more:** See [Local Development Workflow](docs/hooks/README.md#local-development-workflow-inner-loop) for hot reload tips, debugging, and database management.
 
@@ -706,12 +708,12 @@ Azure deployment uses **User Secrets** populated automatically from Bicep output
 
 #### Configuration Hierarchy
 
-| Source | Purpose | Priority |
-|--------|---------|----------|
-| `appsettings.json` | Default configuration | Lowest |
-| `appsettings.{Environment}.json` | Environment-specific | Medium |
-| [User Secrets](docs/hooks/postprovision.md#-configured-user-secrets) | Local development secrets | High |
-| Environment Variables | Runtime/container configuration | Highest |
+| Source                                                               | Purpose                         | Priority |
+| -------------------------------------------------------------------- | ------------------------------- | -------- |
+| `appsettings.json`                                                   | Default configuration           | Lowest   |
+| `appsettings.{Environment}.json`                                     | Environment-specific            | Medium   |
+| [User Secrets](docs/hooks/postprovision.md#-configured-user-secrets) | Local development secrets       | High     |
+| Environment Variables                                                | Runtime/container configuration | Highest  |
 
 #### Automatic Configuration
 
@@ -725,11 +727,11 @@ azd up
 
 The [`postprovision`](docs/hooks/postprovision.md) script configures **27 secrets across 3 projects**:
 
-| Project | Secrets | Purpose |
-|---------|---------|---------|
-| **app.AppHost** | 23 | SQL, Service Bus, ACR, Container Apps, monitoring |
-| **eShop.Orders.API** | 3 | Managed identity and telemetry |
-| **eShop.Web.App** | 1 | Application Insights connection |
+| Project              | Secrets | Purpose                                           |
+| -------------------- | ------- | ------------------------------------------------- |
+| **app.AppHost**      | 23      | SQL, Service Bus, ACR, Container Apps, monitoring |
+| **eShop.Orders.API** | 3       | Managed identity and telemetry                    |
+| **eShop.Web.App**    | 1       | Application Insights connection                   |
 
 > 📖 **Learn more:** See [Configured User Secrets](docs/hooks/postprovision.md#-configured-user-secrets) for the complete secret key reference with sources.
 
@@ -762,11 +764,11 @@ These settings are **automatically populated** from Bicep outputs:
 
 Azure deployment uses **Microsoft Entra ID authentication**—no connection strings or passwords:
 
-| Configuration | Value | Purpose |
-|---------------|-------|---------|
-| **Authentication** | User-Assigned Managed Identity | Zero secrets |
-| **Database Role** | `db_owner` | Required for EF Core migrations |
-| **Setup Script** | [`sql-managed-identity-config`](docs/hooks/sql-managed-identity-config.md) | Creates DB user with roles |
+| Configuration      | Value                                                                      | Purpose                         |
+| ------------------ | -------------------------------------------------------------------------- | ------------------------------- |
+| **Authentication** | User-Assigned Managed Identity                                             | Zero secrets                    |
+| **Database Role**  | `db_owner`                                                                 | Required for EF Core migrations |
+| **Setup Script**   | [`sql-managed-identity-config`](docs/hooks/sql-managed-identity-config.md) | Creates DB user with roles      |
 
 > 📖 **Learn more:** See [SQL Managed Identity Configuration](docs/hooks/sql-managed-identity-config.md) for manual setup, troubleshooting, and role assignment details.
 
@@ -788,12 +790,12 @@ dotnet run --project app.AppHost
 # Result: Local debugging + Azure SQL + Azure Service Bus
 ```
 
-| Benefit | Description |
-|---------|-------------|
-| **Fast debugging** | Hot reload with real Azure latency |
-| **Managed Identity testing** | Validate Entra ID authentication flows |
-| **Network policy testing** | Test firewall rules and private endpoints |
-| **Production parity** | Reproduce production issues locally |
+| Benefit                      | Description                               |
+| ---------------------------- | ----------------------------------------- |
+| **Fast debugging**           | Hot reload with real Azure latency        |
+| **Managed Identity testing** | Validate Entra ID authentication flows    |
+| **Network policy testing**   | Test firewall rules and private endpoints |
+| **Production parity**        | Reproduce production issues locally       |
 
 > 📖 **Learn more:** See [Hybrid Development Mode](docs/hooks/README.md#hybrid-development-mode) for configuration patterns and use cases.
 
@@ -822,17 +824,18 @@ dotnet run --project app.AppHost
 
 The Orders API exposes RESTful endpoints for order management:
 
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| `POST` | `/api/orders` | Create a new order |
-| `POST` | `/api/orders/batch` | Create multiple orders in batch |
-| `GET` | `/api/orders` | List all orders |
-| `GET` | `/api/orders/{id}` | Get order by ID |
-| `DELETE` | `/api/orders/{id}` | Delete an order |
+| Method   | Endpoint            | Description                     |
+| -------- | ------------------- | ------------------------------- |
+| `POST`   | `/api/orders`       | Create a new order              |
+| `POST`   | `/api/orders/batch` | Create multiple orders in batch |
+| `GET`    | `/api/orders`       | List all orders                 |
+| `GET`    | `/api/orders/{id}`  | Get order by ID                 |
+| `DELETE` | `/api/orders/{id}`  | Delete an order                 |
 
 ### Swagger Documentation
 
 When running locally, access the interactive API documentation at:
+
 - **Swagger UI:** `https://localhost:{port}/swagger`
 
 ---
@@ -849,10 +852,10 @@ The solution implements the **Three Pillars of Observability** using OpenTelemet
 
 ### Dashboards
 
-| Environment | Dashboard | Access |
-|-------------|-----------|--------|
-| Local | Aspire Dashboard | `https://localhost:17225` |
-| Azure | Application Insights | Azure Portal |
+| Environment | Dashboard            | Access                    |
+| ----------- | -------------------- | ------------------------- |
+| Local       | Aspire Dashboard     | `https://localhost:17225` |
+| Azure       | Application Insights | Azure Portal              |
 
 > 📖 **Learn more:** See [Observability Architecture](docs/architecture/05-observability-architecture.md) for detailed instrumentation patterns, metric definitions, and alerting configuration.
 
@@ -862,11 +865,11 @@ The solution implements the **Three Pillars of Observability** using OpenTelemet
 
 The solution implements a **Zero Trust** security model with Azure Managed Identity as the primary authentication mechanism:
 
-| Principle | Implementation | Details |
-|-----------|----------------|---------|
-| **No Secrets** | Managed Identity authentication | User-Assigned MI for all Azure services |
-| **Zero Secrets** | No connection strings or keys | Configuration via Bicep outputs |
-| **Least Privilege** | RBAC role assignments | Minimal permissions per service |
+| Principle           | Implementation                  | Details                                 |
+| ------------------- | ------------------------------- | --------------------------------------- |
+| **No Secrets**      | Managed Identity authentication | User-Assigned MI for all Azure services |
+| **Zero Secrets**    | No connection strings or keys   | Configuration via Bicep outputs         |
+| **Least Privilege** | RBAC role assignments           | Minimal permissions per service         |
 
 > 📖 **Learn more:** See [Security Architecture](docs/architecture/06-security-architecture.md) for managed identity configuration, RBAC assignments, and Zero Trust patterns.
 
@@ -874,19 +877,19 @@ The solution implements a **Zero Trust** security model with Azure Managed Ident
 
 ## 📚 Documentation
 
-| Document | Description |
-|----------|-------------|
-| [Documentation Index](docs/README.md) | Complete documentation overview |
-| [Architecture Overview](docs/architecture/README.md) | High-level architecture and service inventory |
-| [Business Architecture](docs/architecture/01-business-architecture.md) | Business capabilities and value streams |
-| [Data Architecture](docs/architecture/02-data-architecture.md) | Data domains, stores, and telemetry mapping |
-| [Application Architecture](docs/architecture/03-application-architecture.md) | Service catalog and communication patterns |
-| [Technology Architecture](docs/architecture/04-technology-architecture.md) | Azure infrastructure and Bicep modules |
-| [Observability Architecture](docs/architecture/05-observability-architecture.md) | Distributed tracing, metrics, and alerting |
-| [Security Architecture](docs/architecture/06-security-architecture.md) | Managed identity, RBAC, and data protection |
-| [Deployment Architecture](docs/architecture/07-deployment-architecture.md) | CI/CD pipelines and environment strategy |
-| [Developer Workflow](docs/hooks/README.md) | Inner loop development and azd hooks |
-| [ADR Index](docs/architecture/adr/README.md) | Architecture Decision Records |
+| Document                                                                         | Description                                   |
+| -------------------------------------------------------------------------------- | --------------------------------------------- |
+| [Documentation Index](docs/README.md)                                            | Complete documentation overview               |
+| [Architecture Overview](docs/architecture/README.md)                             | High-level architecture and service inventory |
+| [Business Architecture](docs/architecture/01-business-architecture.md)           | Business capabilities and value streams       |
+| [Data Architecture](docs/architecture/02-data-architecture.md)                   | Data domains, stores, and telemetry mapping   |
+| [Application Architecture](docs/architecture/03-application-architecture.md)     | Service catalog and communication patterns    |
+| [Technology Architecture](docs/architecture/04-technology-architecture.md)       | Azure infrastructure and Bicep modules        |
+| [Observability Architecture](docs/architecture/05-observability-architecture.md) | Distributed tracing, metrics, and alerting    |
+| [Security Architecture](docs/architecture/06-security-architecture.md)           | Managed identity, RBAC, and data protection   |
+| [Deployment Architecture](docs/architecture/07-deployment-architecture.md)       | CI/CD pipelines and environment strategy      |
+| [Developer Workflow](docs/hooks/README.md)                                       | Inner loop development and azd hooks          |
+| [ADR Index](docs/architecture/adr/README.md)                                     | Architecture Decision Records                 |
 
 ---
 

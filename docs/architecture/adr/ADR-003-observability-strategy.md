@@ -7,6 +7,7 @@
 ## Context
 
 The eShop Orders Management solution is a distributed system with multiple services communicating via HTTP and Service Bus. Effective observability is critical for:
+
 - Understanding request flow across services
 - Diagnosing performance issues
 - Monitoring business metrics
@@ -14,23 +15,23 @@ The eShop Orders Management solution is a distributed system with multiple servi
 
 ### Requirements
 
-| Requirement | Priority | Description |
-|-------------|----------|-------------|
-| **Distributed Tracing** | High | Correlate requests across services |
-| **Custom Metrics** | High | Business-level metrics (orders placed, errors) |
-| **Centralized Logging** | High | Aggregated logs with correlation |
-| **Azure Integration** | High | Native Azure Monitor compatibility |
-| **Vendor Neutrality** | Medium | Avoid lock-in to specific APM tool |
-| **Low Overhead** | Medium | Minimal performance impact |
+| Requirement             | Priority | Description                                    |
+| ----------------------- | -------- | ---------------------------------------------- |
+| **Distributed Tracing** | High     | Correlate requests across services             |
+| **Custom Metrics**      | High     | Business-level metrics (orders placed, errors) |
+| **Centralized Logging** | High     | Aggregated logs with correlation               |
+| **Azure Integration**   | High     | Native Azure Monitor compatibility             |
+| **Vendor Neutrality**   | Medium   | Avoid lock-in to specific APM tool             |
+| **Low Overhead**        | Medium   | Minimal performance impact                     |
 
 ### Options Considered
 
-| Option | Pros | Cons |
-|--------|------|------|
-| **OpenTelemetry + Azure Monitor** | Vendor-neutral, .NET native, Azure integration | Configuration complexity |
-| **Application Insights SDK (classic)** | Simple setup, full Azure features | Vendor lock-in, deprecated path |
-| **Prometheus + Grafana** | Open source, powerful | Self-hosted infrastructure |
-| **Datadog/New Relic** | Feature-rich APM | Cost, external dependency |
+| Option                                 | Pros                                           | Cons                            |
+| -------------------------------------- | ---------------------------------------------- | ------------------------------- |
+| **OpenTelemetry + Azure Monitor**      | Vendor-neutral, .NET native, Azure integration | Configuration complexity        |
+| **Application Insights SDK (classic)** | Simple setup, full Azure features              | Vendor lock-in, deprecated path |
+| **Prometheus + Grafana**               | Open source, powerful                          | Self-hosted infrastructure      |
+| **Datadog/New Relic**                  | Feature-rich APM                               | Cost, external dependency       |
 
 ## Decision
 
@@ -77,7 +78,7 @@ builder.Services.AddOpenTelemetry()
                .AddAspNetCoreInstrumentation()
                .AddGrpcClientInstrumentation()
                .AddHttpClientInstrumentation()
-               .AddSqlClientInstrumentation(options => 
+               .AddSqlClientInstrumentation(options =>
                    options.SetDbStatementForText = true);
     });
 
@@ -94,13 +95,13 @@ builder.Services.AddOpenTelemetry()
 ```csharp
 private static readonly Meter Meter = new("eShop.orders", "1.0.0");
 
-private static readonly Counter<long> OrdersPlacedCounter = 
+private static readonly Counter<long> OrdersPlacedCounter =
     Meter.CreateCounter<long>("eShop.orders.placed", "{orders}");
 
-private static readonly Histogram<double> ProcessingDuration = 
+private static readonly Histogram<double> ProcessingDuration =
     Meter.CreateHistogram<double>("eShop.orders.processing.duration", "ms");
 
-private static readonly Counter<long> ProcessingErrors = 
+private static readonly Counter<long> ProcessingErrors =
     Meter.CreateCounter<long>("eShop.orders.processing.errors", "{errors}");
 ```
 
@@ -115,9 +116,9 @@ public async Task<IActionResult> PlaceOrder([FromBody] Order order)
     using var activity = ActivitySource.StartActivity("PlaceOrder", ActivityKind.Server);
     activity?.SetTag("order.customer_id", order.CustomerId);
     activity?.SetTag("order.product_count", order.Products?.Count ?? 0);
-    
+
     // ... processing
-    
+
     activity?.SetTag("order.id", result.Id);
     activity?.SetStatus(ActivityStatusCode.Ok);
 }
@@ -164,23 +165,23 @@ if (Activity.Current != null)
 
 ## Metrics Inventory
 
-| Metric | Type | Unit | Source |
-|--------|------|------|--------|
-| `eShop.orders.placed` | Counter | {orders} | OrderService |
-| `eShop.orders.processing.duration` | Histogram | ms | OrderService |
-| `eShop.orders.processing.errors` | Counter | {errors} | OrderService |
-| `http.server.request.duration` | Histogram | ms | Auto |
-| `http.client.request.duration` | Histogram | ms | Auto |
-| `db.client.operation.duration` | Histogram | ms | Auto |
+| Metric                             | Type      | Unit     | Source       |
+| ---------------------------------- | --------- | -------- | ------------ |
+| `eShop.orders.placed`              | Counter   | {orders} | OrderService |
+| `eShop.orders.processing.duration` | Histogram | ms       | OrderService |
+| `eShop.orders.processing.errors`   | Counter   | {errors} | OrderService |
+| `http.server.request.duration`     | Histogram | ms       | Auto         |
+| `http.client.request.duration`     | Histogram | ms       | Auto         |
+| `db.client.operation.duration`     | Histogram | ms       | Auto         |
 
 ## Trace Sources
 
-| Source | Kind | Tags |
-|--------|------|------|
-| `eShop.orders` | Custom | order.id, customer_id, product_count |
-| `Microsoft.AspNetCore` | Auto | http.method, http.route, http.status_code |
-| `System.Net.Http` | Auto | http.url, http.method |
-| `Microsoft.Data.SqlClient` | Auto | db.statement, db.name |
+| Source                     | Kind   | Tags                                      |
+| -------------------------- | ------ | ----------------------------------------- |
+| `eShop.orders`             | Custom | order.id, customer_id, product_count      |
+| `Microsoft.AspNetCore`     | Auto   | http.method, http.route, http.status_code |
+| `System.Net.Http`          | Auto   | http.url, http.method                     |
+| `Microsoft.Data.SqlClient` | Auto   | db.statement, db.name                     |
 
 ## Dashboard Capabilities
 

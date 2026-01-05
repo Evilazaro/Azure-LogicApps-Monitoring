@@ -36,10 +36,10 @@ The documentation is structured for multiple audiences and learning paths. Archi
 
 The documentation is organized into two main sections:
 
-| Section | Purpose | Primary Audience |
-|---------|---------|------------------|
+| Section                                    | Purpose                                                     | Primary Audience                                |
+| ------------------------------------------ | ----------------------------------------------------------- | ----------------------------------------------- |
 | **[Architecture](architecture/README.md)** | TOGAF BDAT architecture documentation with design decisions | Architects, Technical Leads, Platform Engineers |
-| **[Hooks](hooks/README.md)** | Developer workflow automation and azd lifecycle scripts | Developers, DevOps Engineers, SREs |
+| **[Hooks](hooks/README.md)**               | Developer workflow automation and azd lifecycle scripts     | Developers, DevOps Engineers, SREs              |
 
 ---
 
@@ -83,23 +83,23 @@ The architecture documentation follows the **TOGAF Architecture Development Meth
 
 ### Document Index
 
-| Document | Description | Key Topics |
-|----------|-------------|------------|
-| [**Architecture Overview**](architecture/README.md) | Executive summary and high-level architecture | Solution overview, service inventory, navigation guide |
-| [**Business Architecture**](architecture/01-business-architecture.md) | Business context and capabilities | Value streams, stakeholder analysis, capability mapping |
-| [**Data Architecture**](architecture/02-data-architecture.md) | Data domains and flows | Entity models, telemetry mapping, data ownership |
-| [**Application Architecture**](architecture/03-application-architecture.md) | Service design and APIs | Component diagrams, communication patterns, API specifications |
-| [**Technology Architecture**](architecture/04-technology-architecture.md) | Azure infrastructure | Resource topology, Bicep modules, networking |
-| [**Observability Architecture**](architecture/05-observability-architecture.md) | Monitoring and tracing | OpenTelemetry, Application Insights, alerting |
-| [**Security Architecture**](architecture/06-security-architecture.md) | Identity and access | Managed Identity, RBAC, Zero Trust patterns |
-| [**Deployment Architecture**](architecture/07-deployment-architecture.md) | CI/CD and deployment | Azure Developer CLI, pipelines, environment strategy |
+| Document                                                                        | Description                                   | Key Topics                                                     |
+| ------------------------------------------------------------------------------- | --------------------------------------------- | -------------------------------------------------------------- |
+| [**Architecture Overview**](architecture/README.md)                             | Executive summary and high-level architecture | Solution overview, service inventory, navigation guide         |
+| [**Business Architecture**](architecture/01-business-architecture.md)           | Business context and capabilities             | Value streams, stakeholder analysis, capability mapping        |
+| [**Data Architecture**](architecture/02-data-architecture.md)                   | Data domains and flows                        | Entity models, telemetry mapping, data ownership               |
+| [**Application Architecture**](architecture/03-application-architecture.md)     | Service design and APIs                       | Component diagrams, communication patterns, API specifications |
+| [**Technology Architecture**](architecture/04-technology-architecture.md)       | Azure infrastructure                          | Resource topology, Bicep modules, networking                   |
+| [**Observability Architecture**](architecture/05-observability-architecture.md) | Monitoring and tracing                        | OpenTelemetry, Application Insights, alerting                  |
+| [**Security Architecture**](architecture/06-security-architecture.md)           | Identity and access                           | Managed Identity, RBAC, Zero Trust patterns                    |
+| [**Deployment Architecture**](architecture/07-deployment-architecture.md)       | CI/CD and deployment                          | Azure Developer CLI, pipelines, environment strategy           |
 
 ### Architecture Decision Records (ADRs)
 
-| ADR | Decision | Status |
-|-----|----------|--------|
-| [ADR-001](architecture/adr/ADR-001-aspire-orchestration.md) | .NET Aspire for local service orchestration | ✅ Accepted |
-| [ADR-002](architecture/adr/ADR-002-service-bus-messaging.md) | Azure Service Bus for event-driven messaging | ✅ Accepted |
+| ADR                                                           | Decision                                        | Status      |
+| ------------------------------------------------------------- | ----------------------------------------------- | ----------- |
+| [ADR-001](architecture/adr/ADR-001-aspire-orchestration.md)   | .NET Aspire for local service orchestration     | ✅ Accepted |
+| [ADR-002](architecture/adr/ADR-002-service-bus-messaging.md)  | Azure Service Bus for event-driven messaging    | ✅ Accepted |
 | [ADR-003](architecture/adr/ADR-003-observability-strategy.md) | OpenTelemetry + Azure Monitor for observability | ✅ Accepted |
 
 ---
@@ -110,14 +110,14 @@ The hooks documentation covers Azure Developer CLI (azd) lifecycle scripts that 
 
 ### Script Index
 
-| Script | Documentation | Purpose |
-|--------|---------------|---------|
-| `preprovision.ps1/sh` | [preprovision.md](hooks/preprovision.md) | Pre-deployment validation and environment preparation |
-| `postprovision.ps1/sh` | [postprovision.md](hooks/postprovision.md) | Post-deployment secret configuration |
-| `check-dev-workstation.ps1/sh` | [check-dev-workstation.md](hooks/check-dev-workstation.md) | Workstation prerequisite validation |
-| `sql-managed-identity-config.ps1/sh` | [sql-managed-identity-config.md](hooks/sql-managed-identity-config.md) | SQL Database managed identity setup |
-| `clean-secrets.ps1/sh` | [clean-secrets.md](hooks/clean-secrets.md) | .NET user secrets cleanup |
-| `Generate-Orders.ps1/sh` | [Generate-Orders.md](hooks/Generate-Orders.md) | Test order data generation |
+| Script                               | Documentation                                                          | Purpose                                               |
+| ------------------------------------ | ---------------------------------------------------------------------- | ----------------------------------------------------- |
+| `preprovision.ps1/sh`                | [preprovision.md](hooks/preprovision.md)                               | Pre-deployment validation and environment preparation |
+| `postprovision.ps1/sh`               | [postprovision.md](hooks/postprovision.md)                             | Post-deployment secret configuration                  |
+| `check-dev-workstation.ps1/sh`       | [check-dev-workstation.md](hooks/check-dev-workstation.md)             | Workstation prerequisite validation                   |
+| `sql-managed-identity-config.ps1/sh` | [sql-managed-identity-config.md](hooks/sql-managed-identity-config.md) | SQL Database managed identity setup                   |
+| `clean-secrets.ps1/sh`               | [clean-secrets.md](hooks/clean-secrets.md)                             | .NET user secrets cleanup                             |
+| `Generate-Orders.ps1/sh`             | [Generate-Orders.md](hooks/Generate-Orders.md)                         | Test order data generation                            |
 
 ### Developer Workflows
 
@@ -132,13 +132,13 @@ The [hooks README](hooks/README.md) provides comprehensive guidance for:
 
 ## 🎯 Reading Paths by Role
 
-| Role | Recommended Reading Path |
-|------|-------------------------|
-| **Solution Architect** | [Architecture Overview](architecture/README.md) → [Business](architecture/01-business-architecture.md) → [Technology](architecture/04-technology-architecture.md) → [ADRs](architecture/adr/README.md) |
-| **Platform Engineer** | [Architecture Overview](architecture/README.md) → [Technology](architecture/04-technology-architecture.md) → [Deployment](architecture/07-deployment-architecture.md) → [Hooks](hooks/README.md) |
+| Role                      | Recommended Reading Path                                                                                                                                                                                     |
+| ------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| **Solution Architect**    | [Architecture Overview](architecture/README.md) → [Business](architecture/01-business-architecture.md) → [Technology](architecture/04-technology-architecture.md) → [ADRs](architecture/adr/README.md)       |
+| **Platform Engineer**     | [Architecture Overview](architecture/README.md) → [Technology](architecture/04-technology-architecture.md) → [Deployment](architecture/07-deployment-architecture.md) → [Hooks](hooks/README.md)             |
 | **Application Developer** | [Hooks README](hooks/README.md) → [Application](architecture/03-application-architecture.md) → [Data](architecture/02-data-architecture.md) → [Observability](architecture/05-observability-architecture.md) |
-| **DevOps Engineer** | [Hooks README](hooks/README.md) → [Deployment](architecture/07-deployment-architecture.md) → [Security](architecture/06-security-architecture.md) |
-| **SRE/Operations** | [Observability](architecture/05-observability-architecture.md) → [Deployment](architecture/07-deployment-architecture.md) → [Technology](architecture/04-technology-architecture.md) |
+| **DevOps Engineer**       | [Hooks README](hooks/README.md) → [Deployment](architecture/07-deployment-architecture.md) → [Security](architecture/06-security-architecture.md)                                                            |
+| **SRE/Operations**        | [Observability](architecture/05-observability-architecture.md) → [Deployment](architecture/07-deployment-architecture.md) → [Technology](architecture/04-technology-architecture.md)                         |
 
 ---
 
@@ -146,12 +146,12 @@ The [hooks README](hooks/README.md) provides comprehensive guidance for:
 
 ### Prerequisites
 
-| Tool | Version | Installation |
-|------|---------|--------------|
-| .NET SDK | 10.0+ | `winget install Microsoft.DotNet.SDK.10` |
-| Docker Desktop | Latest | [docker.com](https://docker.com/products/docker-desktop) |
-| Azure CLI | 2.60.0+ | `winget install Microsoft.AzureCLI` |
-| Azure Developer CLI | Latest | `winget install Microsoft.Azd` |
+| Tool                | Version | Installation                                             |
+| ------------------- | ------- | -------------------------------------------------------- |
+| .NET SDK            | 10.0+   | `winget install Microsoft.DotNet.SDK.10`                 |
+| Docker Desktop      | Latest  | [docker.com](https://docker.com/products/docker-desktop) |
+| Azure CLI           | 2.60.0+ | `winget install Microsoft.AzureCLI`                      |
+| Azure Developer CLI | Latest  | `winget install Microsoft.Azd`                           |
 
 ### Local Development
 
@@ -209,4 +209,3 @@ For detailed instructions, see the [Developer Inner Loop Workflow](hooks/README.
 [⬆ Back to Top](#-azure-logic-apps-monitoring-solution)
 
 </div>
-

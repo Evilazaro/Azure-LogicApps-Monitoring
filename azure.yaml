@@ -25,9 +25,9 @@ metadata:
 # ------------------------------------------------------------------------------
 # Defines how and where infrastructure is defined and deployed
 infra:
-  provider: bicep                      # Infrastructure as Code provider
-  path: infra                          # Directory containing Bicep templates
-  module: main                         # Entry point Bicep module (main.bicep)
+  provider: bicep # Infrastructure as Code provider
+  path: infra # Directory containing Bicep templates
+  module: main # Entry point Bicep module (main.bicep)
 
 # ------------------------------------------------------------------------------
 # Lifecycle Hooks
@@ -39,29 +39,29 @@ hooks:
   # Pre-provisioning validation hook
   # Executes before 'azd provision' to validate workstation prerequisites
   preprovision:
-    posix:                             # Linux/macOS configuration
+    posix: # Linux/macOS configuration
       shell: sh
       run: ./hooks/preprovision.sh --force --verbose
-      continueOnError: false           # Fail fast on validation errors
-      interactive: true               # Non-interactive execution
-    windows:                           # Windows configuration
+      continueOnError: false # Fail fast on validation errors
+      interactive: true # Non-interactive execution
+    windows: # Windows configuration
       shell: pwsh
       run: ./hooks/preprovision.ps1 -Force -Verbose
-      continueOnError: false           # Fail fast on validation errors
-      interactive: true               # Non-interactive execution
+      continueOnError: false # Fail fast on validation errors
+      interactive: true # Non-interactive execution
 
   # Post-provisioning configuration hook
   # Executes after 'azd provision' to configure local development secrets
   # and generate test data for the application
   postprovision:
-    posix:                             # Linux/macOS configuration
+    posix: # Linux/macOS configuration
       shell: sh
       run: |
         ./hooks/postprovision.sh --force --verbose    # Configure .NET user secrets
         ./hooks/Generate-Orders.sh --force --verbose    # Generate test order data
       continueOnError: false
       interactive: true
-    windows:                           # Windows configuration
+    windows: # Windows configuration
       shell: pwsh
       run: |
         ./hooks/postprovision.ps1 -Force -Verbose    # Configure .NET user secrets and SQL managed identity
@@ -77,6 +77,6 @@ hooks:
 services:
   # .NET Aspire AppHost orchestrating the monitoring solution
   app:
-    language: dotnet                   # Service implementation language
-    project: ./app.AppHost/app.AppHost.csproj  # Path to project file
-    host: containerapp                 # Target hosting platform (Azure Container Apps)
+    language: dotnet # Service implementation language
+    project: ./app.AppHost/app.AppHost.csproj # Path to project file
+    host: containerapp # Target hosting platform (Azure Container Apps)

@@ -851,14 +851,14 @@ infra/data/ordersBatch.json
 
 ### Performance Characteristics
 
-| Characteristic       | Details                                                                                                                                                                                                                                      |
-| -------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Characteristic       | Details                                                                                                                                                                                                                                                                     |
+| -------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **Execution Time**   | • 10 orders: ~0.1 seconds<br/>• 50 orders: ~0.3 seconds<br/>• 100 orders: ~0.5 seconds<br/>• 500 orders: ~2.5 seconds<br/>• 1000 orders: ~5 seconds<br/>• 2000 orders: ~10 seconds (default)<br/>• 5000 orders: ~25 seconds<br/>• **Scaling:** Linear O(n) with order count |
-| **Resource Usage**   | • **Memory:** ~100 MB peak for 1000 orders<br/>• **CPU:** Low-medium utilization during generation<br/>• **Disk I/O:** Single write operation at completion<br/>• **Baseline:** ~20 MB for script initialization                             |
-| **Network Impact**   | • **Zero network calls** - completely offline operation<br/>• **No external dependencies** - self-contained execution<br/>• **No API requests** - uses internal data structures<br/>• **Ideal for airgapped environments**                   |
-| **Output File Size** | • 10 orders: ~10 KB<br/>• 50 orders: ~45 KB<br/>• 100 orders: ~90 KB<br/>• 500 orders: ~450 KB<br/>• 1000 orders: ~900 KB<br/>• 2000 orders: ~1.8 MB (default)<br/>• 5000 orders: ~4.5 MB<br/>• **Average:** ~900 bytes per order                                                 |
-| **Scalability**      | • **Maximum tested:** 10,000 orders (~50 seconds)<br/>• **Recommended batch size:** 100-1000 orders<br/>• **Memory efficient:** Generates orders sequentially<br/>• **No degradation:** Consistent per-order generation time                 |
-| **Optimization**     | • **Fast initialization:** Data structures loaded once<br/>• **Efficient randomization:** Built-in language features<br/>• **Minimal overhead:** Direct JSON serialization<br/>• **Progress tracking:** Optional, minimal impact on speed    |
+| **Resource Usage**   | • **Memory:** ~100 MB peak for 1000 orders<br/>• **CPU:** Low-medium utilization during generation<br/>• **Disk I/O:** Single write operation at completion<br/>• **Baseline:** ~20 MB for script initialization                                                            |
+| **Network Impact**   | • **Zero network calls** - completely offline operation<br/>• **No external dependencies** - self-contained execution<br/>• **No API requests** - uses internal data structures<br/>• **Ideal for airgapped environments**                                                  |
+| **Output File Size** | • 10 orders: ~10 KB<br/>• 50 orders: ~45 KB<br/>• 100 orders: ~90 KB<br/>• 500 orders: ~450 KB<br/>• 1000 orders: ~900 KB<br/>• 2000 orders: ~1.8 MB (default)<br/>• 5000 orders: ~4.5 MB<br/>• **Average:** ~900 bytes per order                                           |
+| **Scalability**      | • **Maximum tested:** 10,000 orders (~50 seconds)<br/>• **Recommended batch size:** 100-1000 orders<br/>• **Memory efficient:** Generates orders sequentially<br/>• **No degradation:** Consistent per-order generation time                                                |
+| **Optimization**     | • **Fast initialization:** Data structures loaded once<br/>• **Efficient randomization:** Built-in language features<br/>• **Minimal overhead:** Direct JSON serialization<br/>• **Progress tracking:** Optional, minimal impact on speed                                   |
 
 ## Quick Links
 

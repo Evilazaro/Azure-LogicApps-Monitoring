@@ -74,14 +74,14 @@ Beyond basic validation, the preprovision script offers intelligent automation f
 
 ### Required Tools
 
-| Tool | Minimum Version | Purpose |
-|------|-----------------|---------|
-| **PowerShell** | 7.0+ | Script runtime (Windows/macOS/Linux) |
-| **Bash** | 4.0+ | Script runtime (macOS/Linux) |
-| **.NET SDK** | 10.0+ | Building and managing .NET projects |
-| **Azure CLI** | 2.60.0+ | Azure resource management |
-| **Azure Developer CLI (azd)** | Latest | Azure deployment automation |
-| **Bicep CLI** | 0.30.0+ | Infrastructure as Code |
+| Tool                          | Minimum Version | Purpose                              |
+| ----------------------------- | --------------- | ------------------------------------ |
+| **PowerShell**                | 7.0+            | Script runtime (Windows/macOS/Linux) |
+| **Bash**                      | 4.0+            | Script runtime (macOS/Linux)         |
+| **.NET SDK**                  | 10.0+           | Building and managing .NET projects  |
+| **Azure CLI**                 | 2.60.0+         | Azure resource management            |
+| **Azure Developer CLI (azd)** | Latest          | Azure deployment automation          |
+| **Bicep CLI**                 | 0.30.0+         | Infrastructure as Code               |
 
 ### Azure Requirements
 
@@ -95,27 +95,27 @@ Beyond basic validation, the preprovision script offers intelligent automation f
 
 ### PowerShell (`preprovision.ps1`)
 
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| `-Force` | Switch | Skip confirmation prompts and force execution |
-| `-SkipSecretsClear` | Switch | Skip the user secrets clearing step |
-| `-ValidateOnly` | Switch | Only validate prerequisites without making changes |
-| `-UseDeviceCodeLogin` | Switch | Use device code flow for Azure authentication |
-| `-AutoInstall` | Switch | Automatically install missing prerequisites |
-| `-Verbose` | Switch | Enable verbose output |
-| `-WhatIf` | Switch | Show what would happen without making changes |
+| Parameter             | Type   | Description                                        |
+| --------------------- | ------ | -------------------------------------------------- |
+| `-Force`              | Switch | Skip confirmation prompts and force execution      |
+| `-SkipSecretsClear`   | Switch | Skip the user secrets clearing step                |
+| `-ValidateOnly`       | Switch | Only validate prerequisites without making changes |
+| `-UseDeviceCodeLogin` | Switch | Use device code flow for Azure authentication      |
+| `-AutoInstall`        | Switch | Automatically install missing prerequisites        |
+| `-Verbose`            | Switch | Enable verbose output                              |
+| `-WhatIf`             | Switch | Show what would happen without making changes      |
 
 ### Bash (`preprovision.sh`)
 
-| Parameter | Description |
-|-----------|-------------|
-| `--force` | Skip confirmation prompts and force execution |
-| `--skip-secrets-clear` | Skip the user secrets clearing step |
-| `--validate-only` | Only validate prerequisites without making changes |
-| `--use-device-code-login` | Use device code flow for Azure authentication |
-| `--auto-install` | Automatically install missing prerequisites |
-| `--verbose` | Enable verbose output |
-| `--help` | Display help message |
+| Parameter                 | Description                                        |
+| ------------------------- | -------------------------------------------------- |
+| `--force`                 | Skip confirmation prompts and force execution      |
+| `--skip-secrets-clear`    | Skip the user secrets clearing step                |
+| `--validate-only`         | Only validate prerequisites without making changes |
+| `--use-device-code-login` | Use device code flow for Azure authentication      |
+| `--auto-install`          | Automatically install missing prerequisites        |
+| `--verbose`               | Enable verbose output                              |
+| `--help`                  | Display help message                               |
 
 ---
 
@@ -198,10 +198,12 @@ Beyond basic validation, the preprovision script offers intelligent automation f
 ### Execution Flow
 
 1. **Validate Runtime Version**
+
    - PowerShell: Validates PowerShell 7.0+
    - Bash: Validates Bash 4.0+
 
 2. **Validate Prerequisites**
+
    - Check .NET SDK version (10.0+)
    - Check Azure Developer CLI (azd)
    - Check Azure CLI version (2.60.0+)
@@ -209,10 +211,12 @@ Beyond basic validation, the preprovision script offers intelligent automation f
    - Check Bicep CLI version (0.30.0+)
 
 3. **Azure Resource Providers** (if authenticated)
+
    - Validate required providers are registered
    - Optionally register missing providers
 
 4. **Azure Quota Check** (informational)
+
    - Display quota requirements
    - Guide users to check current quotas
 
@@ -257,6 +261,7 @@ The script performs a comprehensive Azure CLI check:
 ### Bicep CLI Validation
 
 Checks for Bicep CLI in two locations:
+
 1. Standalone installation (`bicep` command)
 2. Azure CLI integration (`az bicep version`)
 
@@ -268,12 +273,12 @@ Checks for Bicep CLI in two locations:
 
 When `--auto-install` or `-AutoInstall` is specified, the script can install missing prerequisites:
 
-| Tool | Windows | Linux/macOS |
-|------|---------|-------------|
-| .NET SDK | winget / dotnet-install.ps1 | dotnet-install.sh |
-| Azure CLI | winget / MSI installer | apt-get / brew / yum |
-| Azure Developer CLI | winget / PowerShell script | curl installer |
-| Bicep CLI | winget / az bicep install | az bicep install |
+| Tool                | Windows                     | Linux/macOS          |
+| ------------------- | --------------------------- | -------------------- |
+| .NET SDK            | winget / dotnet-install.ps1 | dotnet-install.sh    |
+| Azure CLI           | winget / MSI installer      | apt-get / brew / yum |
+| Azure Developer CLI | winget / PowerShell script  | curl installer       |
+| Bicep CLI           | winget / az bicep install   | az bicep install     |
 
 ### Manual Installation
 
@@ -318,16 +323,16 @@ Device code flow displays a code and URL for authentication on another device.
 
 The script validates registration of these Azure resource providers:
 
-| Provider | Service |
-|----------|---------|
-| `Microsoft.App` | Azure Container Apps |
-| `Microsoft.ServiceBus` | Azure Service Bus |
-| `Microsoft.Storage` | Azure Storage |
-| `Microsoft.Web` | Azure App Service & Logic Apps |
-| `Microsoft.ContainerRegistry` | Azure Container Registry |
-| `Microsoft.Insights` | Application Insights |
-| `Microsoft.OperationalInsights` | Log Analytics |
-| `Microsoft.ManagedIdentity` | Managed Identities |
+| Provider                        | Service                        |
+| ------------------------------- | ------------------------------ |
+| `Microsoft.App`                 | Azure Container Apps           |
+| `Microsoft.ServiceBus`          | Azure Service Bus              |
+| `Microsoft.Storage`             | Azure Storage                  |
+| `Microsoft.Web`                 | Azure App Service & Logic Apps |
+| `Microsoft.ContainerRegistry`   | Azure Container Registry       |
+| `Microsoft.Insights`            | Application Insights           |
+| `Microsoft.OperationalInsights` | Log Analytics                  |
+| `Microsoft.ManagedIdentity`     | Managed Identities             |
 
 ### Manual Registration
 
@@ -433,12 +438,12 @@ flowchart LR
 
 ### Integration Points
 
-| Aspect | Details |
-|--------|---------|
-| **Version** | 2.3.0 (PowerShell: 2025-12-30, Bash: 2025-12-30) |
-| **Called By** | • **Azure Developer CLI (azd)** automatically before `azd provision` or `azd up`<br/>• Developers manually for environment validation<br/>• CI/CD pipelines during automated deployment workflows |
-| **Calls** | • `clean-secrets.ps1` or `clean-secrets.sh` for secret clearing<br/>• `az login` for Azure authentication<br/>• `az provider register` for resource provider registration<br/>• Installation scripts for missing prerequisites |
-| **Dependencies** | • **Runtime:** PowerShell 7.0+ or Bash 4.0+<br/>• **.NET SDK:** Version 10.0+<br/>• **Azure CLI:** Version 2.60.0+<br/>• **Azure Developer CLI (azd)**<br/>• **Bicep CLI:** Version 0.30.0+ |
+| Aspect           | Details                                                                                                                                                                                                                        |
+| ---------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| **Version**      | 2.3.0 (PowerShell: 2025-12-30, Bash: 2025-12-30)                                                                                                                                                                               |
+| **Called By**    | • **Azure Developer CLI (azd)** automatically before `azd provision` or `azd up`<br/>• Developers manually for environment validation<br/>• CI/CD pipelines during automated deployment workflows                              |
+| **Calls**        | • `clean-secrets.ps1` or `clean-secrets.sh` for secret clearing<br/>• `az login` for Azure authentication<br/>• `az provider register` for resource provider registration<br/>• Installation scripts for missing prerequisites |
+| **Dependencies** | • **Runtime:** PowerShell 7.0+ or Bash 4.0+<br/>• **.NET SDK:** Version 10.0+<br/>• **Azure CLI:** Version 2.60.0+<br/>• **Azure Developer CLI (azd)**<br/>• **Bicep CLI:** Version 0.30.0+                                    |
 
 ---
 
@@ -446,17 +451,18 @@ flowchart LR
 
 ### Error Categories
 
-| Category | Behavior | Recovery |
-|----------|----------|----------|
-| **Missing Prerequisites** | Offer to install or display instructions | Install manually or use `--auto-install` |
-| **Version Mismatch** | Display current vs required version | Upgrade tool |
-| **Authentication Failure** | Prompt for Azure login | Run `az login` manually |
-| **Provider Registration** | Display registration commands | Run commands manually |
-| **Clean Secrets Failure** | Warning (non-fatal) | Continue with deployment |
+| Category                   | Behavior                                 | Recovery                                 |
+| -------------------------- | ---------------------------------------- | ---------------------------------------- |
+| **Missing Prerequisites**  | Offer to install or display instructions | Install manually or use `--auto-install` |
+| **Version Mismatch**       | Display current vs required version      | Upgrade tool                             |
+| **Authentication Failure** | Prompt for Azure login                   | Run `az login` manually                  |
+| **Provider Registration**  | Display registration commands            | Run commands manually                    |
+| **Clean Secrets Failure**  | Warning (non-fatal)                      | Continue with deployment                 |
 
 ### Error Messages
 
 The scripts provide detailed error messages with:
+
 - Current state vs expected state
 - Specific remediation steps
 - Download/installation URLs
@@ -466,12 +472,12 @@ The scripts provide detailed error messages with:
 
 ## Exit Codes
 
-| Code | Meaning |
-|------|---------|
-| `0` | Success - All validations passed |
-| `1` | Failure - Prerequisites missing or validation failed |
-| `2` | Invalid arguments (Bash only) |
-| `130` | User interruption (Ctrl+C) |
+| Code  | Meaning                                              |
+| ----- | ---------------------------------------------------- |
+| `0`   | Success - All validations passed                     |
+| `1`   | Failure - Prerequisites missing or validation failed |
+| `2`   | Invalid arguments (Bash only)                        |
+| `130` | User interruption (Ctrl+C)                           |
 
 ---
 
@@ -535,21 +541,21 @@ For detailed diagnostic information:
 
 ## Performance Characteristics
 
-| Characteristic | Details |
-|----------------|---------|
+| Characteristic     | Details                                                                                                                                                                      |
+| ------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **Execution Time** | • **With all prerequisites:** 5-10 seconds<br/>• **With installations:** 2-10 minutes (depending on downloads)<br/>• **Provider registration:** Up to 2 minutes per provider |
-| **Resource Usage** | • **Memory:** ~30 MB peak<br/>• **CPU:** Low utilization<br/>• **Network:** Download bandwidth for installations |
-| **Scalability** | • Linear with number of prerequisites to install<br/>• Provider registration is parallelizable |
+| **Resource Usage** | • **Memory:** ~30 MB peak<br/>• **CPU:** Low utilization<br/>• **Network:** Download bandwidth for installations                                                             |
+| **Scalability**    | • Linear with number of prerequisites to install<br/>• Provider registration is parallelizable                                                                               |
 
 ---
 
 ## 🔄 Version History
 
-| Version | Date | Changes |
-|---------|------|---------|
+| Version   | Date       | Changes                                                                                                                                                                                                                                             |
+| --------- | ---------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **2.3.0** | 2025-12-30 | • Added `--auto-install` parameter<br/>• Added `--use-device-code-login` parameter<br/>• Added installation functions for all prerequisites<br/>• Added Azure resource provider registration<br/>• Synchronized PowerShell and Bash implementations |
-| **2.0.0** | 2025-12-29 | • Complete rewrite with comprehensive validation<br/>• Added Bicep CLI validation<br/>• Added Azure authentication check<br/>• Added quota information |
-| **1.0.0** | 2025-12-01 | • Initial release with basic validation |
+| **2.0.0** | 2025-12-29 | • Complete rewrite with comprehensive validation<br/>• Added Bicep CLI validation<br/>• Added Azure authentication check<br/>• Added quota information                                                                                              |
+| **1.0.0** | 2025-12-01 | • Initial release with basic validation                                                                                                                                                                                                             |
 
 ---
 
