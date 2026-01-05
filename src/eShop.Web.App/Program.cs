@@ -12,6 +12,21 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.AddServiceDefaults();
 
+// Configure distributed memory cache for session state
+// In production with multiple instances, consider using Redis or SQL Server
+builder.Services.AddDistributedMemoryCache();
+
+// Configure session management
+builder.Services.AddSession(options =>
+{
+    options.IdleTimeout = TimeSpan.FromMinutes(30);
+    options.Cookie.Name = ".eShop.Session";
+    options.Cookie.HttpOnly = true;
+    options.Cookie.IsEssential = true;
+    options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
+    options.Cookie.SameSite = SameSiteMode.Strict;
+});
+
 // Register observability components for dependency injection
 builder.Services.AddSingleton(new ActivitySource("eShop.Web.App"));
 
@@ -86,6 +101,8 @@ else
 }
 
 app.UseHttpsRedirection();
+
+app.UseSession();
 
 app.UseAntiforgery();
 
