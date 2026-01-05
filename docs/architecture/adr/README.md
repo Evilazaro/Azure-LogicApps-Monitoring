@@ -72,6 +72,6 @@ What becomes easier or more difficult because of this change?
 
 **Made with ❤️ by Evilazaro | Principal Cloud Solution Architect | Microsoft**
 
-[⬆ Back to Top](#-azure-logic-apps-monitoring-solution)
+[⬆ Back to Top](#architecture-decision-records)
 
 </div>

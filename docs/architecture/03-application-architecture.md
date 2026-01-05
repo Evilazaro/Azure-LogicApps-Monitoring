@@ -552,6 +552,6 @@ Provided by [app.ServiceDefaults](../../app.ServiceDefaults/):
 
 **Made with ❤️ by Evilazaro | Principal Cloud Solution Architect | Microsoft**
 
-[⬆ Back to Top](#-azure-logic-apps-monitoring-solution)
+[⬆ Back to Top](#application-architecture)
 
 </div>

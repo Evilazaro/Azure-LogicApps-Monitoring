@@ -206,6 +206,6 @@ For detailed instructions, see the [Developer Inner Loop Workflow](hooks/README.
 
 **Made with ❤️ by Evilazaro | Principal Cloud Solution Architect | Microsoft**
 
-[⬆ Back to Top](#-azure-logic-apps-monitoring-solution)
+[⬆ Back to Top](#azure-logic-apps-monitoring---documentation)
 
 </div>
