@@ -75,6 +75,12 @@ flowchart TB
     class PreHook,Bicep,ARM,PostHook provision
     class Build,Push,Update deploy
     class RG,ACR,CAE,API,Web azure
+
+    %% Subgraph container styling for visual layer grouping
+    style Developer fill:#e3f2fd22,stroke:#1565c0,stroke-width:2px
+    style Provision fill:#e8f5e922,stroke:#2e7d32,stroke-width:2px
+    style Deploy fill:#fff3e022,stroke:#e65100,stroke-width:2px
+    style Azure fill:#f3e5f522,stroke:#7b1fa2,stroke-width:2px
 ```
 
 ---
@@ -294,6 +300,12 @@ flowchart TB
     class LAW,AI,SQL,Storage phase2
     class SB,ACR,CAE phase3
     class API,Web,LA phase4
+
+    %% Subgraph container styling for visual layer grouping
+    style Phase1 fill:#e3f2fd22,stroke:#1565c0,stroke-width:2px
+    style Phase2 fill:#e8f5e922,stroke:#2e7d32,stroke-width:2px
+    style Phase3 fill:#fff3e022,stroke:#e65100,stroke-width:2px
+    style Phase4 fill:#f3e5f522,stroke:#7b1fa2,stroke-width:2px
 ```
 
 ---
@@ -509,6 +521,10 @@ flowchart LR
 
     class Checkout,Restore,Compile,Test build
     class Login,Provision,DeployApp,Verify deploy
+
+    %% Subgraph container styling for visual layer grouping
+    style Build fill:#e3f2fd22,stroke:#1565c0,stroke-width:2px
+    style Deploy fill:#e8f5e922,stroke:#2e7d32,stroke-width:2px
 ```
 
 ---
