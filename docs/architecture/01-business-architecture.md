@@ -40,6 +40,7 @@ The Azure Logic Apps Monitoring Solution provides a **production-ready reference
 ### Capability Map
 
 ```mermaid
+%%{init: {'theme': 'base', 'themeVariables': { 'fontSize': '14px'}}}%%
 flowchart TB
     subgraph Core["🎯 Core Capabilities"]
         direction LR
@@ -72,9 +73,10 @@ flowchart TB
     C1 -.->|"authenticated by"| E3
     C2 -.->|"authenticated by"| E3
 
-    classDef core fill:#e3f2fd,stroke:#1565c0,stroke-width:2px
-    classDef enabling fill:#e8f5e9,stroke:#2e7d32,stroke-width:2px
-    classDef foundation fill:#f5f5f5,stroke:#616161,stroke-width:2px
+    %% Accessible color palette with sufficient contrast
+    classDef core fill:#e3f2fd,stroke:#1565c0,stroke-width:2px,color:#0d47a1
+    classDef enabling fill:#e8f5e9,stroke:#2e7d32,stroke-width:2px,color:#1b5e20
+    classDef foundation fill:#f5f5f5,stroke:#424242,stroke-width:2px,color:#212121
 
     class C1,C2 core
     class E1,E2,E3 enabling
@@ -114,6 +116,7 @@ flowchart TB
 ### Order Fulfillment Value Stream
 
 ```mermaid
+%%{init: {'theme': 'base', 'themeVariables': { 'fontSize': '14px'}}}%%
 flowchart LR
     subgraph Trigger["🎯 Trigger"]
         T1["Customer<br/>Order Request"]
@@ -142,9 +145,10 @@ flowchart LR
 
     T1 --> S1 --> S2 --> S3 --> S4 --> S5 --> O1
 
-    classDef trigger fill:#e3f2fd,stroke:#1565c0
-    classDef stage fill:#fff3e0,stroke:#ef6c00
-    classDef outcome fill:#e8f5e9,stroke:#2e7d32
+    %% Accessible color palette with clear visual progression
+    classDef trigger fill:#e3f2fd,stroke:#1565c0,stroke-width:2px,color:#0d47a1
+    classDef stage fill:#fff3e0,stroke:#e65100,stroke-width:2px,color:#bf360c
+    classDef outcome fill:#e8f5e9,stroke:#2e7d32,stroke-width:2px,color:#1b5e20
 
     class T1 trigger
     class S1,S2,S3,S4,S5 stage
@@ -161,8 +165,7 @@ flowchart LR
 | **Automate** | Workflow Automation | ~2 seconds | Business process execution |
 
 ### Monitoring Value Stream
-
-```mermaid
+%%{init: {'theme': 'base', 'themeVariables': { 'fontSize': '14px'}}}%%
 flowchart LR
     subgraph Trigger["🎯 Trigger"]
         T1["Telemetry<br/>Generated"]
@@ -190,7 +193,10 @@ flowchart LR
 
     T1 --> S1 --> S2 --> S3 --> S4 --> O1
 
-    classDef trigger fill:#e3f2fd,stroke:#1565c0
+    %% Accessible color palette with clear visual progression
+    classDef trigger fill:#fce4ec,stroke:#c2185b,stroke-width:2px,color:#880e4f
+    classDef stage fill:#fff3e0,stroke:#e65100,stroke-width:2px,color:#bf360c
+    classDef outcome fill:#e8f5e9,stroke:#2e7d32,stroke-width:2px,color:#1b5e20
     classDef stage fill:#fff3e0,stroke:#ef6c00
     classDef outcome fill:#e8f5e9,stroke:#2e7d32
 
@@ -216,59 +222,63 @@ flowchart LR
 ---
 
 ## 6. Business Process Flows
-
-### Order Lifecycle Process
-
-```mermaid
+%%{init: {'theme': 'base', 'themeVariables': { 'fontSize': '14px'}}}%%
 flowchart TD
     Start([Customer initiates order])
     
     subgraph WebApp["🌐 Web Application"]
-        A1[Display order form]
-        A2[Validate input client-side]
-        A3[Submit order request]
+        A1["Display order form"]
+        A2["Validate input client-side"]
+        A3["Submit order request"]
     end
     
     subgraph API["📡 Orders API"]
-        B1[Receive order]
-        B2{Validate order}
-        B3[Persist to SQL]
-        B4[Publish to Service Bus]
-        B5[Return confirmation]
+        B1["Receive order"]
+        B2{"Validate order"}
+        B3["Persist to SQL"]
+        B4["Publish to Service Bus"]
+        B5["Return confirmation"]
     end
     
     subgraph Workflow["🔄 Logic Apps"]
-        C1[Trigger on message]
-        C2{Content type valid?}
-        C3[Process order]
-        C4{Processing successful?}
-        C5[Store in success blob]
-        C6[Store in error blob]
+        C1["Trigger on message"]
+        C2{"Content type valid?"}
+        C3["Process order"]
+        C4{"Processing successful?"}
+        C5["Store in success blob"]
+        C6["Store in error blob"]
     end
     
     Start --> A1 --> A2 --> A3
     A3 --> B1 --> B2
-    B2 -->|Invalid| Error1[Return 400 Bad Request]
-    B2 -->|Valid| B3 --> B4 --> B5
+    B2 -->|"Invalid"| Error1["Return 400 Bad Request"]
+    B2 -->|"Valid"| B3 --> B4 --> B5
     B5 --> Success1([Order Placed])
     
-    B4 -.->|Async| C1
+    B4 -.->|"Async"| C1
     C1 --> C2
-    C2 -->|Invalid| C6
-    C2 -->|Valid| C3 --> C4
-    C4 -->|Success| C5
-    C4 -->|Failure| C6
+    C2 -->|"Invalid"| C6
+    C2 -->|"Valid"| C3 --> C4
+    C4 -->|"Success"| C5
+    C4 -->|"Failure"| C6
     
     C5 --> End1([Workflow Complete])
     C6 --> End2([Error Logged])
 
-    classDef webapp fill:#e3f2fd,stroke:#1565c0
-    classDef api fill:#e8f5e9,stroke:#2e7d32
-    classDef workflow fill:#fff3e0,stroke:#ef6c00
-    classDef error fill:#ffebee,stroke:#c62828
-    classDef success fill:#e8f5e9,stroke:#2e7d32
+    %% Accessible color palette with clear layer separation
+    classDef webapp fill:#e3f2fd,stroke:#1565c0,stroke-width:2px,color:#0d47a1
+    classDef api fill:#e8f5e9,stroke:#2e7d32,stroke-width:2px,color:#1b5e20
+    classDef workflow fill:#fff3e0,stroke:#e65100,stroke-width:2px,color:#bf360c
+    classDef errorState fill:#ffebee,stroke:#c62828,stroke-width:2px,color:#b71c1c
+    classDef successState fill:#e8f5e9,stroke:#2e7d32,stroke-width:2px,color:#1b5e20
+    classDef startEnd fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px,color:#4a148c
 
     class A1,A2,A3 webapp
+    class B1,B2,B3,B4,B5 api
+    class C1,C2,C3,C4,C5,C6 workflow
+    class Error1,End2 errorState
+    class Success1,End1 successState
+    class Start startEnd
     class B1,B2,B3,B4,B5 api
     class C1,C2,C3,C4,C5,C6 workflow
     class Error1 error
