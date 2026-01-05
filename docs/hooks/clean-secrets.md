@@ -527,6 +527,6 @@ azd up
 
 **Made with ❤️ by Evilazaro | Principal Cloud Solution Architect | Microsoft**
 
-[⬆ Back to Top](#-azure-logic-apps-monitoring-solution)
+[⬆ Back to Top](#clean-secrets-ps1--sh)
 
 </div>
