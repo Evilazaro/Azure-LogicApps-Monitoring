@@ -13,3 +13,4 @@ __azurite_db*__.json
 workflow-designtime/
 
 *.code-workspace
+connections.json
