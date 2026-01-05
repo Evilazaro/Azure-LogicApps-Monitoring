@@ -4,19 +4,66 @@
 
 ---
 
+The Deployment Architecture provides a comprehensive guide to deploying the Azure Logic Apps Monitoring Solution using the **Azure Developer CLI (azd)**, demonstrating Infrastructure as Code (IaC) best practices with Bicep templates and automated lifecycle hooks. This document covers the complete deployment pipeline from local development with .NET Aspire orchestration through production deployment on Azure, including container image strategies, environment management, and the seamless transition from local emulators to cloud-hosted services.
+
+Beyond initial provisioning, this architecture details advanced deployment patterns: lifecycle hooks for pre/post-provisioning automation (environment validation, SQL Managed Identity configuration, .NET User Secrets setup), container deployment flows with Azure Container Registry integration, Logic Apps workflow deployment via dedicated PowerShell scripts, and CI/CD pipeline recommendations using GitHub Actions. The document also provides rollback strategies leveraging Container Apps revision management and a comprehensive deployment checklist ensuring consistent, repeatable deployments across development, staging, and production environments.
+
+## Table of Contents
+
+- [🚀 1. Deployment Overview](#1-deployment-overview)
+  - [📦 Deployment Stack](#deployment-stack)
+- [🔄 2. Deployment Pipeline](#2-deployment-pipeline)
+- [⚡ 3. Azure Developer CLI Workflow](#3-azure-developer-cli-workflow)
+  - [💻 Core Commands](#core-commands)
+  - [⚙️ azd Configuration](#azd-configuration)
+- [🪝 4. Lifecycle Hooks](#4-lifecycle-hooks)
+  - [🔧 preprovision Hook](#preprovision-hook)
+  - [✅ postprovision Hook](#postprovision-hook)
+  - [🗄️ sql-managed-identity-config Hook](#sql-managed-identity-config-hook)
+- [🐳 5. Container Deployment Flow](#5-container-deployment-flow)
+  - [📋 Container Image Strategy](#container-image-strategy)
+- [🏗️ 6. Infrastructure Deployment](#6-infrastructure-deployment)
+  - [🎯 Deployment Scope](#deployment-scope)
+  - [📊 Deployment Sequence](#deployment-sequence)
+- [🌍 7. Environment Strategy](#7-environment-strategy)
+  - [⚙️ Environment Configuration](#environment-configuration)
+  - [🔧 azd Environment Management](#azd-environment-management)
+  - [📝 Environment Parameters](#environment-parameters)
+- [💻 8. Local Development Setup](#8-local-development-setup)
+  - [✨ .NET Aspire Orchestration](#net-aspire-orchestration)
+  - [☁️ Local to Cloud Transition](#local-to-cloud-transition)
+- [⚡ 9. Logic Apps Deployment](#9-logic-apps-deployment)
+  - [📤 Workflow Deployment](#workflow-deployment)
+  - [📁 Workflow Structure](#workflow-structure)
+  - [📜 Workflow Deployment Script](#workflow-deployment-script)
+- [🔁 10. CI/CD Pipeline (Recommended)](#10-cicd-pipeline-recommended)
+  - [🐙 GitHub Actions Workflow](#github-actions-workflow)
+  - [📊 Pipeline Stages](#pipeline-stages)
+- [⏪ 11. Rollback Strategy](#11-rollback-strategy)
+  - [🔄 Container Apps Revision Management](#container-apps-revision-management)
+  - [💻 Rollback Commands](#rollback-commands)
+- [✅ 12. Deployment Checklist](#12-deployment-checklist)
+  - [🔍 Pre-Deployment](#pre-deployment)
+  - [🚀 Deployment Steps](#deployment-steps)
+  - [✔️ Post-Deployment](#post-deployment)
+- [🔗 Cross-Architecture Relationships](#cross-architecture-relationships)
+- [📚 Related Documents](#related-documents)
+
+---
+
 ## 1. Deployment Overview
 
 The solution uses **Azure Developer CLI (azd)** for streamlined deployments with Bicep Infrastructure as Code. The deployment follows an immutable infrastructure pattern with container-based compute.
 
 ### Deployment Stack
 
-| Layer | Technology | Purpose |
-|-------|------------|---------|
-| **CLI** | Azure Developer CLI (azd) | Deployment orchestration |
-| **IaC** | Bicep | Infrastructure provisioning |
-| **Container Registry** | Azure Container Registry | Image storage |
-| **Compute** | Azure Container Apps | Application hosting |
-| **Workflows** | Logic Apps Standard | Workflow deployment |
+| Layer                  | Technology                | Purpose                     |
+| ---------------------- | ------------------------- | --------------------------- |
+| **CLI**                | Azure Developer CLI (azd) | Deployment orchestration    |
+| **IaC**                | Bicep                     | Infrastructure provisioning |
+| **Container Registry** | Azure Container Registry  | Image storage               |
+| **Compute**            | Azure Container Apps      | Application hosting         |
+| **Workflows**          | Logic Apps Standard       | Workflow deployment         |
 
 ---
 
@@ -81,7 +128,7 @@ flowchart TB
     Bicep --> ARM
     ARM --> RG
     ARM --> PostHook
-    
+
     AZD --> Build
     Build --> Push
     Push --> ACR
@@ -123,13 +170,13 @@ flowchart TB
 
 ### Core Commands
 
-| Command | Purpose | Actions |
-|---------|---------|---------|
-| `azd init` | Initialize project | Generate azure.yaml |
-| `azd provision` | Deploy infrastructure | Run Bicep templates |
-| `azd deploy` | Deploy applications | Build and push containers |
-| `azd up` | Combined provision + deploy | Full deployment |
-| `azd down` | Destroy resources | Delete resource group |
+| Command         | Purpose                     | Actions                   |
+| --------------- | --------------------------- | ------------------------- |
+| `azd init`      | Initialize project          | Generate azure.yaml       |
+| `azd provision` | Deploy infrastructure       | Run Bicep templates       |
+| `azd deploy`    | Deploy applications         | Build and push containers |
+| `azd up`        | Combined provision + deploy | Full deployment           |
+| `azd down`      | Destroy resources           | Delete resource group     |
 
 ### azd Configuration
 
@@ -258,10 +305,10 @@ sequenceDiagram
 
 ### Container Image Strategy
 
-| Service | Base Image | Build Context |
-|---------|------------|---------------|
+| Service        | Base Image                             | Build Context           |
+| -------------- | -------------------------------------- | ----------------------- |
 | **Orders API** | `mcr.microsoft.com/dotnet/aspnet:10.0` | `src/eShop.Orders.API/` |
-| **Web App** | `mcr.microsoft.com/dotnet/aspnet:10.0` | `src/eShop.Web.App/` |
+| **Web App**    | `mcr.microsoft.com/dotnet/aspnet:10.0` | `src/eShop.Web.App/`    |
 
 ---
 
@@ -376,12 +423,12 @@ flowchart TB
 
 ### Environment Configuration
 
-| Environment | Purpose | Configuration |
-|-------------|---------|---------------|
-| **Local** | Development | .NET Aspire orchestrator, Docker containers |
-| **Dev** | Integration testing | Azure resources, Basic SKUs |
-| **Staging** | Pre-production | Production-like, scaled down |
-| **Production** | Live workloads | Full scale, HA configuration |
+| Environment    | Purpose             | Configuration                               |
+| -------------- | ------------------- | ------------------------------------------- |
+| **Local**      | Development         | .NET Aspire orchestrator, Docker containers |
+| **Dev**        | Integration testing | Azure resources, Basic SKUs                 |
+| **Staging**    | Pre-production      | Production-like, scaled down                |
+| **Production** | Live workloads      | Full scale, HA configuration                |
 
 ### azd Environment Management
 
@@ -447,12 +494,12 @@ var ordersApi = builder.AddProject<Projects.eShop_Orders_API>("orders-api")
 
 ### Local to Cloud Transition
 
-| Resource | Local Mode | Azure Mode |
-|----------|------------|------------|
-| **SQL Database** | Docker container | Azure SQL |
-| **Service Bus** | Emulator | Azure Service Bus |
-| **Storage** | Azurite | Azure Storage |
-| **App Insights** | Local telemetry | Azure App Insights |
+| Resource         | Local Mode       | Azure Mode         |
+| ---------------- | ---------------- | ------------------ |
+| **SQL Database** | Docker container | Azure SQL          |
+| **Service Bus**  | Emulator         | Azure Service Bus  |
+| **Storage**      | Azurite          | Azure Storage      |
+| **App Insights** | Local telemetry  | Azure App Insights |
 
 ---
 
@@ -517,15 +564,15 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      
+
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: '10.0.x'
-      
+          dotnet-version: "10.0.x"
+
       - name: Build
         run: dotnet build --configuration Release
-      
+
       - name: Test
         run: dotnet test --no-build
 
@@ -535,15 +582,15 @@ jobs:
     if: github.ref == 'refs/heads/main'
     steps:
       - uses: actions/checkout@v4
-      
+
       - name: Install azd
         uses: Azure/setup-azd@v1
-      
+
       - name: Azure Login
         uses: azure/login@v1
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
-      
+
       - name: Deploy
         run: azd up --no-prompt
         env:
@@ -612,11 +659,11 @@ flowchart LR
 
 ### Container Apps Revision Management
 
-| Strategy | Implementation | Use Case |
-|----------|----------------|----------|
-| **Traffic Split** | Weighted routing | Canary deployments |
-| **Revision Rollback** | Activate previous revision | Quick rollback |
-| **Full Redeploy** | azd deploy with previous tag | Complete rollback |
+| Strategy              | Implementation               | Use Case           |
+| --------------------- | ---------------------------- | ------------------ |
+| **Traffic Split**     | Weighted routing             | Canary deployments |
+| **Revision Rollback** | Activate previous revision   | Quick rollback     |
+| **Full Redeploy**     | azd deploy with previous tag | Complete rollback  |
 
 ### Rollback Commands
 
@@ -665,11 +712,11 @@ az containerapp ingress traffic set --name orders-api --resource-group rg-dev \
 
 ## Cross-Architecture Relationships
 
-| Related Architecture | Connection | Reference |
-|---------------------|------------|-----------|
-| **Technology Architecture** | Infrastructure targets | [Technology Architecture](04-technology-architecture.md) |
-| **Security Architecture** | Secure deployment | [Security Architecture](06-security-architecture.md) |
-| **Observability Architecture** | Deployment monitoring | [Observability Architecture](05-observability-architecture.md) |
+| Related Architecture           | Connection             | Reference                                                      |
+| ------------------------------ | ---------------------- | -------------------------------------------------------------- |
+| **Technology Architecture**    | Infrastructure targets | [Technology Architecture](04-technology-architecture.md)       |
+| **Security Architecture**      | Secure deployment      | [Security Architecture](06-security-architecture.md)           |
+| **Observability Architecture** | Deployment monitoring  | [Observability Architecture](05-observability-architecture.md) |
 
 ---
 
@@ -681,4 +728,10 @@ az containerapp ingress traffic set --name orders-api --resource-group rg-dev \
 
 ---
 
+<div align="center">
+
 **Made with ❤️ by Evilazaro | Principal Cloud Solution Architect | Microsoft**
+
+[⬆ Back to Top](#-azure-logic-apps-monitoring-solution)
+
+</div>

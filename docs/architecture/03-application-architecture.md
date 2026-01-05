@@ -4,6 +4,34 @@
 
 ---
 
+The Application Architecture describes the software components, their responsibilities, and how they interact to deliver the Azure Logic Apps Monitoring Solution's functionality. This document catalogs three primary services—eShop.Orders.API (ASP.NET Core REST backend), eShop.Web.App (Blazor Server frontend), and OrdersManagement Logic App (workflow automation)—detailing their internal structures, API contracts, and integration patterns. The architecture follows an event-driven microservices approach with clear service boundaries aligned to business capabilities.
+
+Each service is designed for independent deployment and scalability while maintaining loose coupling through well-defined interfaces. Synchronous HTTP/REST handles queries and immediate responses, while Azure Service Bus pub/sub enables asynchronous command and event processing. This document also covers critical cross-cutting concerns including resilience patterns (retry policies, circuit breakers), service discovery via .NET Aspire, and the OpenTelemetry instrumentation that enables distributed tracing across all service boundaries—ensuring that the application layer fully supports the observability goals defined in the business architecture.
+
+## Table of Contents
+
+- [🏗️ 1. Application Architecture Overview](#1-application-architecture-overview)
+  - [🎨 Architectural Style](#architectural-style)
+  - [🎯 Key Design Decisions](#key-design-decisions)
+- [📐 2. Application Architecture Principles](#2-application-architecture-principles)
+- [🗺️ 3. Application Landscape Map](#3-application-landscape-map)
+- [📋 4. Service Catalog](#4-service-catalog)
+- [🔧 5. Service Details](#5-service-details)
+  - [📦 eShop.Orders.API](#eshopordersapi)
+  - [🌐 eShop.Web.App](#eshopwebapp)
+  - [⚡ OrdersManagement Logic App](#ordersmanagement-logic-app)
+- [🔄 6. Inter-Service Communication](#6-inter-service-communication)
+  - [📡 Communication Patterns](#communication-patterns)
+  - [🔍 Service Discovery](#service-discovery)
+- [🔌 7. Application Integration Points](#7-application-integration-points)
+- [🛡️ 8. Resilience Patterns](#8-resilience-patterns)
+- [✂️ 9. Cross-Cutting Concerns](#9-cross-cutting-concerns)
+- [🛠️ 10. Technology Stack Summary](#10-technology-stack-summary)
+- [🔗 Cross-Architecture Relationships](#cross-architecture-relationships)
+- [📚 Related Documents](#related-documents)
+
+---
+
 ## 1. Application Architecture Overview
 
 The application follows an **event-driven microservices** pattern with clear service boundaries aligned to business capabilities. Services communicate through synchronous HTTP/REST for queries and asynchronous Service Bus messaging for commands/events.
@@ -17,24 +45,24 @@ The application follows an **event-driven microservices** pattern with clear ser
 
 ### Key Design Decisions
 
-| Decision | Choice | Rationale |
-|----------|--------|-----------|
+| Decision              | Choice                               | Rationale                             |
+| --------------------- | ------------------------------------ | ------------------------------------- |
 | Service Communication | HTTP for sync, Service Bus for async | Loose coupling for event-driven flows |
-| Data Access | Entity Framework Core | Productivity, migration support |
-| Resilience | Polly via ServiceDefaults | Retry, circuit breaker, timeout |
-| Observability | OpenTelemetry + Azure Monitor | Vendor-neutral instrumentation |
+| Data Access           | Entity Framework Core                | Productivity, migration support       |
+| Resilience            | Polly via ServiceDefaults            | Retry, circuit breaker, timeout       |
+| Observability         | OpenTelemetry + Azure Monitor        | Vendor-neutral instrumentation        |
 
 ---
 
 ## 2. Application Architecture Principles
 
-| Principle | Statement | Rationale | Implications |
-|-----------|-----------|-----------|--------------|
-| **Single Responsibility** | Each service has one reason to change | Maintainability, testability | Clear bounded contexts |
-| **API-First Design** | All capabilities exposed via APIs | Interoperability, reusability | OpenAPI specifications |
-| **Loose Coupling** | Services communicate via events | Independent deployability | Service Bus for async flows |
-| **High Cohesion** | Related functionality grouped | Understandability | Domain-aligned services |
-| **Observability by Design** | All services instrumented | Operational excellence | OpenTelemetry built-in |
+| Principle                   | Statement                             | Rationale                     | Implications                |
+| --------------------------- | ------------------------------------- | ----------------------------- | --------------------------- |
+| **Single Responsibility**   | Each service has one reason to change | Maintainability, testability  | Clear bounded contexts      |
+| **API-First Design**        | All capabilities exposed via APIs     | Interoperability, reusability | OpenAPI specifications      |
+| **Loose Coupling**          | Services communicate via events       | Independent deployability     | Service Bus for async flows |
+| **High Cohesion**           | Related functionality grouped         | Understandability             | Domain-aligned services     |
+| **Observability by Design** | All services instrumented             | Operational excellence        | OpenTelemetry built-in      |
 
 ---
 
@@ -129,13 +157,13 @@ flowchart TB
 
 ## 4. Service Catalog
 
-| Service | Type | Port | Dependencies | Health Endpoint | Status |
-|---------|------|------|--------------|-----------------|--------|
-| **eShop.Web.App** | Blazor Server | 5002 | Orders API | `/health`, `/alive` | Active |
-| **eShop.Orders.API** | REST API | 5001 | SQL, Service Bus | `/health`, `/alive` | Active |
-| **OrdersManagement** | Logic Apps Workflow | N/A | Service Bus, Storage | Azure Portal | Active |
-| **app.AppHost** | Orchestrator | N/A | All services | N/A | Active |
-| **app.ServiceDefaults** | Class Library | N/A | None | N/A | Active |
+| Service                 | Type                | Port | Dependencies         | Health Endpoint     | Status |
+| ----------------------- | ------------------- | ---- | -------------------- | ------------------- | ------ |
+| **eShop.Web.App**       | Blazor Server       | 5002 | Orders API           | `/health`, `/alive` | Active |
+| **eShop.Orders.API**    | REST API            | 5001 | SQL, Service Bus     | `/health`, `/alive` | Active |
+| **OrdersManagement**    | Logic Apps Workflow | N/A  | Service Bus, Storage | Azure Portal        | Active |
+| **app.AppHost**         | Orchestrator        | N/A  | All services         | N/A                 | Active |
+| **app.ServiceDefaults** | Class Library       | N/A  | None                 | N/A                 | Active |
 
 ---
 
@@ -146,6 +174,7 @@ flowchart TB
 **Location:** [src/eShop.Orders.API/](../../src/eShop.Orders.API/)
 
 **Responsibilities:**
+
 - Order CRUD operations (Create, Read, Update, Delete)
 - Order validation and business rules
 - Service Bus message publishing for order events
@@ -153,16 +182,16 @@ flowchart TB
 
 #### API Endpoints
 
-| Method | Route | Description | Request | Response |
-|--------|-------|-------------|---------|----------|
-| `POST` | `/api/orders` | Place a new order | `Order` JSON | `201` + `Order` |
-| `POST` | `/api/orders/batch` | Place multiple orders | `Order[]` JSON | `200` + `Order[]` |
-| `GET` | `/api/orders` | Get all orders | - | `200` + `Order[]` |
-| `GET` | `/api/orders/{id}` | Get order by ID | - | `200` + `Order` |
-| `DELETE` | `/api/orders/{id}` | Delete order | - | `204` |
-| `DELETE` | `/api/orders` | Delete all orders | - | `204` |
-| `GET` | `/health` | Health check | - | `200` |
-| `GET` | `/alive` | Liveness check | - | `200` |
+| Method   | Route               | Description           | Request        | Response          |
+| -------- | ------------------- | --------------------- | -------------- | ----------------- |
+| `POST`   | `/api/orders`       | Place a new order     | `Order` JSON   | `201` + `Order`   |
+| `POST`   | `/api/orders/batch` | Place multiple orders | `Order[]` JSON | `200` + `Order[]` |
+| `GET`    | `/api/orders`       | Get all orders        | -              | `200` + `Order[]` |
+| `GET`    | `/api/orders/{id}`  | Get order by ID       | -              | `200` + `Order`   |
+| `DELETE` | `/api/orders/{id}`  | Delete order          | -              | `204`             |
+| `DELETE` | `/api/orders`       | Delete all orders     | -              | `204`             |
+| `GET`    | `/health`           | Health check          | -              | `200`             |
+| `GET`    | `/alive`            | Liveness check        | -              | `200`             |
 
 #### Component Diagram
 
@@ -222,13 +251,13 @@ flowchart TB
 
 #### Key Patterns Implemented
 
-| Pattern | Implementation | Location |
-|---------|----------------|----------|
-| Repository | `IOrderRepository` / `OrderRepository` | [Repositories/](../../src/eShop.Orders.API/Repositories/) |
-| Service Layer | `IOrderService` / `OrderService` | [Services/](../../src/eShop.Orders.API/Services/) |
-| Dependency Injection | Constructor injection | [Program.cs](../../src/eShop.Orders.API/Program.cs) |
-| Health Checks | `IHealthCheck` implementations | [HealthChecks/](../../src/eShop.Orders.API/HealthChecks/) |
-| Distributed Tracing | `ActivitySource` spans | Throughout all classes |
+| Pattern              | Implementation                         | Location                                                  |
+| -------------------- | -------------------------------------- | --------------------------------------------------------- |
+| Repository           | `IOrderRepository` / `OrderRepository` | [Repositories/](../../src/eShop.Orders.API/Repositories/) |
+| Service Layer        | `IOrderService` / `OrderService`       | [Services/](../../src/eShop.Orders.API/Services/)         |
+| Dependency Injection | Constructor injection                  | [Program.cs](../../src/eShop.Orders.API/Program.cs)       |
+| Health Checks        | `IHealthCheck` implementations         | [HealthChecks/](../../src/eShop.Orders.API/HealthChecks/) |
+| Distributed Tracing  | `ActivitySource` spans                 | Throughout all classes                                    |
 
 ---
 
@@ -237,17 +266,18 @@ flowchart TB
 **Location:** [src/eShop.Web.App/](../../src/eShop.Web.App/)
 
 **Responsibilities:**
+
 - Interactive order management dashboard
 - Order placement and viewing
 - Real-time UI updates via SignalR (Blazor Server)
 
 #### UI Components Overview
 
-| Component | Purpose | Location |
-|-----------|---------|----------|
-| `App.razor` | Root application component | [Components/App.razor](../../src/eShop.Web.App/Components/App.razor) |
-| `MainLayout.razor` | Application shell layout | [Components/Layout/](../../src/eShop.Web.App/Components/Layout/) |
-| `OrdersAPIService` | Typed HTTP client | [Components/Services/](../../src/eShop.Web.App/Components/Services/) |
+| Component          | Purpose                    | Location                                                             |
+| ------------------ | -------------------------- | -------------------------------------------------------------------- |
+| `App.razor`        | Root application component | [Components/App.razor](../../src/eShop.Web.App/Components/App.razor) |
+| `MainLayout.razor` | Application shell layout   | [Components/Layout/](../../src/eShop.Web.App/Components/Layout/)     |
+| `OrdersAPIService` | Typed HTTP client          | [Components/Services/](../../src/eShop.Web.App/Components/Services/) |
 
 #### Component Diagram
 
@@ -298,6 +328,7 @@ flowchart TB
 **Location:** [workflows/OrdersManagement/](../../workflows/OrdersManagement/)
 
 **Responsibilities:**
+
 - Process order events from Service Bus
 - Validate message content type
 - Forward orders to API for processing
@@ -305,8 +336,8 @@ flowchart TB
 
 #### Workflow Inventory
 
-| Workflow | Trigger | Purpose |
-|----------|---------|---------|
+| Workflow                   | Trigger                          | Purpose                         |
+| -------------------------- | -------------------------------- | ------------------------------- |
 | **ProcessingOrdersPlaced** | Service Bus Topic (ordersplaced) | Process incoming order messages |
 
 #### Workflow Definition
@@ -320,18 +351,18 @@ flowchart TD
         direction TB
         Trigger["📨 Service Bus Trigger<br/><i>Poll every 1 second</i>"]
     end
-    
+
     subgraph ValidationStage["✅ Validation Stage"]
         direction TB
         Condition1{"Content-Type<br/>= application/json?"}
     end
-    
+
     subgraph ProcessingStage["⚙️ Processing Stage"]
         direction TB
         HTTP["🌐 HTTP POST<br/>/api/Orders/process"]
         Condition2{"HTTP Status<br/>= 201?"}
     end
-    
+
     subgraph OutputStage["💾 Output Stage"]
         direction LR
         subgraph Success["Success Path"]
@@ -416,30 +447,30 @@ flowchart LR
 
 ### Communication Patterns
 
-| Pattern | Usage | Implementation | Example |
-|---------|-------|----------------|---------|
-| **Request/Response** | UI to API queries | HTTP REST | `GET /api/orders` |
-| **Publish/Subscribe** | Order events | Service Bus Topic | `OrderPlaced` message |
-| **Event-Driven** | Workflow triggers | Service Bus Subscription | Logic App activation |
+| Pattern               | Usage             | Implementation           | Example               |
+| --------------------- | ----------------- | ------------------------ | --------------------- |
+| **Request/Response**  | UI to API queries | HTTP REST                | `GET /api/orders`     |
+| **Publish/Subscribe** | Order events      | Service Bus Topic        | `OrderPlaced` message |
+| **Event-Driven**      | Workflow triggers | Service Bus Subscription | Logic App activation  |
 
 ### Service Discovery
 
-| Environment | Mechanism | Configuration |
-|-------------|-----------|---------------|
-| **Local Development** | .NET Aspire service discovery | `WithReference()` in AppHost |
-| **Azure Container Apps** | Internal DNS | `{service-name}.internal.{env}.azurecontainerapps.io` |
+| Environment              | Mechanism                     | Configuration                                         |
+| ------------------------ | ----------------------------- | ----------------------------------------------------- |
+| **Local Development**    | .NET Aspire service discovery | `WithReference()` in AppHost                          |
+| **Azure Container Apps** | Internal DNS                  | `{service-name}.internal.{env}.azurecontainerapps.io` |
 
 ---
 
 ## 7. Application Integration Points
 
-| Source | Target | Protocol | Contract | Pattern |
-|--------|--------|----------|----------|---------|
-| Web App | Orders API | HTTPS/REST | OpenAPI 3.0 | Sync Request/Response |
-| Orders API | SQL Database | TDS | EF Core Model | Sync CRUD |
-| Orders API | Service Bus | AMQP | JSON Message | Async Pub/Sub |
-| Service Bus | Logic Apps | Connector | Service Bus Message | Event-Driven |
-| All Services | App Insights | HTTPS/OTLP | OpenTelemetry | Continuous Push |
+| Source       | Target       | Protocol   | Contract            | Pattern               |
+| ------------ | ------------ | ---------- | ------------------- | --------------------- |
+| Web App      | Orders API   | HTTPS/REST | OpenAPI 3.0         | Sync Request/Response |
+| Orders API   | SQL Database | TDS        | EF Core Model       | Sync CRUD             |
+| Orders API   | Service Bus  | AMQP       | JSON Message        | Async Pub/Sub         |
+| Service Bus  | Logic Apps   | Connector  | Service Bus Message | Event-Driven          |
+| All Services | App Insights | HTTPS/OTLP | OpenTelemetry       | Continuous Push       |
 
 ---
 
@@ -447,12 +478,12 @@ flowchart LR
 
 Configured in [app.ServiceDefaults/Extensions.cs](../../app.ServiceDefaults/Extensions.cs):
 
-| Pattern | Implementation | Configuration | Purpose |
-|---------|----------------|---------------|---------|
-| **Retry** | Polly | 3 attempts, exponential backoff | Transient failure recovery |
-| **Circuit Breaker** | Polly | 120s sampling duration | Prevent cascading failures |
-| **Timeout** | HttpClient | 60s per attempt, 600s total | Prevent hung requests |
-| **Health Checks** | ASP.NET Core | `/health`, `/alive` | Container orchestration probes |
+| Pattern             | Implementation | Configuration                   | Purpose                        |
+| ------------------- | -------------- | ------------------------------- | ------------------------------ |
+| **Retry**           | Polly          | 3 attempts, exponential backoff | Transient failure recovery     |
+| **Circuit Breaker** | Polly          | 120s sampling duration          | Prevent cascading failures     |
+| **Timeout**         | HttpClient     | 60s per attempt, 600s total     | Prevent hung requests          |
+| **Health Checks**   | ASP.NET Core   | `/health`, `/alive`             | Container orchestration probes |
 
 ```csharp
 // From Extensions.cs
@@ -472,40 +503,40 @@ http.AddStandardResilienceHandler(options =>
 
 Provided by [app.ServiceDefaults](../../app.ServiceDefaults/):
 
-| Concern | Implementation | Consumer Services |
-|---------|----------------|-------------------|
-| **Telemetry** | OpenTelemetry + Azure Monitor Exporter | All services |
-| **Health Checks** | ASP.NET Core Health Checks | API, Web App |
-| **Service Discovery** | .NET Aspire Service Discovery | All services |
-| **HTTP Resilience** | Polly via `AddStandardResilienceHandler` | Web App (to API) |
-| **Azure Service Bus Client** | `ServiceBusClient` with Managed Identity | Orders API |
+| Concern                      | Implementation                           | Consumer Services |
+| ---------------------------- | ---------------------------------------- | ----------------- |
+| **Telemetry**                | OpenTelemetry + Azure Monitor Exporter   | All services      |
+| **Health Checks**            | ASP.NET Core Health Checks               | API, Web App      |
+| **Service Discovery**        | .NET Aspire Service Discovery            | All services      |
+| **HTTP Resilience**          | Polly via `AddStandardResilienceHandler` | Web App (to API)  |
+| **Azure Service Bus Client** | `ServiceBusClient` with Managed Identity | Orders API        |
 
 ---
 
 ## 10. Technology Stack Summary
 
-| Layer | Technology | Version | Purpose |
-|-------|------------|---------|---------|
-| **Runtime** | .NET | 10.0 | Application runtime |
-| **Web Framework** | ASP.NET Core | 10.0 | API and web hosting |
-| **Frontend** | Blazor Server | 10.0 | Interactive UI |
-| **UI Components** | Fluent UI Blazor | Latest | Design system |
-| **ORM** | Entity Framework Core | 10.0 | Data access |
-| **Messaging** | Azure.Messaging.ServiceBus | 7.20.1 | Event publishing |
-| **Telemetry** | OpenTelemetry | 1.14.0 | Distributed tracing |
-| **Orchestration** | .NET Aspire | 9.x | Local development |
-| **Workflows** | Logic Apps Standard | Latest | Process automation |
+| Layer             | Technology                 | Version | Purpose             |
+| ----------------- | -------------------------- | ------- | ------------------- |
+| **Runtime**       | .NET                       | 10.0    | Application runtime |
+| **Web Framework** | ASP.NET Core               | 10.0    | API and web hosting |
+| **Frontend**      | Blazor Server              | 10.0    | Interactive UI      |
+| **UI Components** | Fluent UI Blazor           | Latest  | Design system       |
+| **ORM**           | Entity Framework Core      | 10.0    | Data access         |
+| **Messaging**     | Azure.Messaging.ServiceBus | 7.20.1  | Event publishing    |
+| **Telemetry**     | OpenTelemetry              | 1.14.0  | Distributed tracing |
+| **Orchestration** | .NET Aspire                | 9.x     | Local development   |
+| **Workflows**     | Logic Apps Standard        | Latest  | Process automation  |
 
 ---
 
 ## Cross-Architecture Relationships
 
-| Related Architecture | Connection | Reference |
-|---------------------|------------|-----------|
-| **Business Architecture** | Services implement business capabilities | [Business Architecture](01-business-architecture.md#business-capabilities) |
-| **Data Architecture** | Services own data stores per bounded context | [Data Architecture](02-data-architecture.md#data-domain-catalog) |
-| **Technology Architecture** | Services deployed to infrastructure | [Technology Architecture](04-technology-architecture.md) |
-| **Observability Architecture** | Services emit telemetry | [Observability Architecture](05-observability-architecture.md) |
+| Related Architecture           | Connection                                   | Reference                                                                  |
+| ------------------------------ | -------------------------------------------- | -------------------------------------------------------------------------- |
+| **Business Architecture**      | Services implement business capabilities     | [Business Architecture](01-business-architecture.md#business-capabilities) |
+| **Data Architecture**          | Services own data stores per bounded context | [Data Architecture](02-data-architecture.md#data-domain-catalog)           |
+| **Technology Architecture**    | Services deployed to infrastructure          | [Technology Architecture](04-technology-architecture.md)                   |
+| **Observability Architecture** | Services emit telemetry                      | [Observability Architecture](05-observability-architecture.md)             |
 
 ---
 
@@ -517,4 +548,10 @@ Provided by [app.ServiceDefaults](../../app.ServiceDefaults/):
 
 ---
 
+<div align="center">
+
 **Made with ❤️ by Evilazaro | Principal Cloud Solution Architect | Microsoft**
+
+[⬆ Back to Top](#-azure-logic-apps-monitoring-solution)
+
+</div>

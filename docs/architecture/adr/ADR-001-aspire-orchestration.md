@@ -7,11 +7,13 @@
 ## Context
 
 The eShop Orders Management solution consists of multiple services:
+
 - **eShop.Orders.API** - REST API with SQL and Service Bus dependencies
 - **eShop.Web.App** - Blazor Server frontend
 - **OrdersManagement Logic App** - Workflow automation
 
 Developing and debugging this distributed system locally presents challenges:
+
 1. **Service Dependencies** - Each service requires external dependencies (SQL, Service Bus, Storage)
 2. **Configuration Management** - Connection strings and settings must be consistent across services
 3. **Service Discovery** - Services need to locate each other during development
@@ -20,12 +22,12 @@ Developing and debugging this distributed system locally presents challenges:
 
 ### Options Considered
 
-| Option | Pros | Cons |
-|--------|------|------|
-| **Docker Compose** | Industry standard, flexible | Manual configuration, no .NET integration |
-| **.NET Aspire** | .NET-native, automatic configuration, built-in observability | Newer technology, .NET-specific |
-| **Tye (deprecated)** | Similar goals to Aspire | Microsoft deprecated in favor of Aspire |
-| **Manual Scripts** | Full control | High maintenance, error-prone |
+| Option               | Pros                                                         | Cons                                      |
+| -------------------- | ------------------------------------------------------------ | ----------------------------------------- |
+| **Docker Compose**   | Industry standard, flexible                                  | Manual configuration, no .NET integration |
+| **.NET Aspire**      | .NET-native, automatic configuration, built-in observability | Newer technology, .NET-specific           |
+| **Tye (deprecated)** | Similar goals to Aspire                                      | Microsoft deprecated in favor of Aspire   |
+| **Manual Scripts**   | Full control                                                 | High maintenance, error-prone             |
 
 ## Decision
 
@@ -61,13 +63,13 @@ Cross-cutting concerns (observability, health checks, resilience) are encapsulat
 
 ### Key Capabilities Used
 
-| Capability | Usage |
-|------------|-------|
-| **Service Discovery** | `WithReference()` enables automatic URL resolution |
-| **Container Management** | `RunAsEmulator()` for Service Bus emulator |
+| Capability                | Usage                                                |
+| ------------------------- | ---------------------------------------------------- |
+| **Service Discovery**     | `WithReference()` enables automatic URL resolution   |
+| **Container Management**  | `RunAsEmulator()` for Service Bus emulator           |
 | **Persistent Containers** | `WithLifetime(ContainerLifetime.Persistent)` for SQL |
-| **Dashboard** | Built-in observability dashboard at localhost:15888 |
-| **Azure Integration** | `RunAsExisting()` for Azure mode |
+| **Dashboard**             | Built-in observability dashboard at localhost:15888  |
+| **Azure Integration**     | `RunAsExisting()` for Azure mode                     |
 
 ## Consequences
 
@@ -97,6 +99,7 @@ Cross-cutting concerns (observability, health checks, resilience) are encapsulat
 ### Docker Compose
 
 Docker Compose was considered but rejected because:
+
 - Requires manual configuration of service discovery
 - No automatic configuration injection
 - Missing integrated observability dashboard
@@ -105,6 +108,7 @@ Docker Compose was considered but rejected because:
 ### Manual Local Setup
 
 Running dependencies manually was rejected because:
+
 - Inconsistent developer environments
 - Time-consuming setup process
 - No automatic service discovery
@@ -123,4 +127,10 @@ Running dependencies manually was rejected because:
 
 ---
 
+<div align="center">
+
 **Made with ❤️ by Evilazaro | Principal Cloud Solution Architect | Microsoft**
+
+[⬆ Back to Top](#-azure-logic-apps-monitoring-solution)
+
+</div>

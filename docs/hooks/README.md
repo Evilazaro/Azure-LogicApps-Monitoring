@@ -9,40 +9,40 @@
 
 ## 📋 Table of Contents
 
-- [Overview](#-overview)
-  - [Available Scripts](#available-scripts)
-- [Developer Inner Loop Workflow](#-developer-inner-loop-workflow)
-  - [Development Modes](#development-modes)
-  - [Local Development Workflow (Inner Loop)](#local-development-workflow-inner-loop)
-  - [Azure Deployment Workflow](#azure-deployment-workflow)
-  - [Workflow Phases](#workflow-phases)
-  - [Comparison: Local vs. Azure Development](#comparison-local-vs-azure-development)
-  - [Hybrid Development Mode](#hybrid-development-mode)
-  - [Troubleshooting Local Development](#troubleshooting-local-development)
-- [Quick Start Guide](#-quick-start-guide)
-  - [Choose Your Development Path](#choose-your-development-path)
-  - [Azure Developer CLI Overview](#azure-developer-cli-overview)
-  - [azd Lifecycle Hooks](#azd-lifecycle-hooks)
-  - [First-Time Setup](#first-time-setup)
-  - [Subsequent Development Cycles](#subsequent-development-cycles)
-  - [Manual Secret Management](#manual-secret-management)
-- [CI/CD Pipeline Integration](#-cicd-pipeline-integration)
-  - [GitHub Actions](#github-actions)
-  - [Azure DevOps](#azure-devops)
-- [Best Practices](#-best-practices)
-  - [Development Workflow](#development-workflow)
-  - [Script Execution](#script-execution)
-  - [Secret Management](#secret-management)
-  - [Azure Resource Management](#azure-resource-management)
-  - [Cross-Platform Development](#cross-platform-development)
-- [Troubleshooting](#-troubleshooting)
-  - [Using Verbose Mode](#using-verbose-mode)
-  - [Debug Mode](#debug-mode)
-  - [Getting Help](#getting-help)
-- [Related Documentation](#-related-documentation)
-  - [Script Documentation](#script-documentation)
-  - [Azure Documentation](#azure-documentation)
-  - [Repository Documentation](#repository-documentation)
+- [🎯 Overview](#-overview)
+  - [📜 Available Scripts](#available-scripts)
+- [🔄 Developer Inner Loop Workflow](#-developer-inner-loop-workflow)
+  - [💻 Development Modes](#development-modes)
+  - [🏠 Local Development Workflow (Inner Loop)](#local-development-workflow-inner-loop)
+  - [☁️ Azure Deployment Workflow](#azure-deployment-workflow)
+  - [📊 Workflow Phases](#workflow-phases)
+  - [⚖️ Comparison: Local vs. Azure Development](#comparison-local-vs-azure-development)
+  - [🔀 Hybrid Development Mode](#hybrid-development-mode)
+  - [🔧 Troubleshooting Local Development](#troubleshooting-local-development)
+- [🚀 Quick Start Guide](#-quick-start-guide)
+  - [🛤️ Choose Your Development Path](#choose-your-development-path)
+  - [⚡ Azure Developer CLI Overview](#azure-developer-cli-overview)
+  - [🪝 azd Lifecycle Hooks](#azd-lifecycle-hooks)
+  - [🆕 First-Time Setup](#first-time-setup)
+  - [🔁 Subsequent Development Cycles](#subsequent-development-cycles)
+  - [🔐 Manual Secret Management](#manual-secret-management)
+- [🔁 CI/CD Pipeline Integration](#cicd-pipeline-integration)
+  - [🐙 GitHub Actions](#github-actions)
+  - [🔷 Azure DevOps](#azure-devops)
+- [✅ Best Practices](#-best-practices)
+  - [🔄 Development Workflow](#development-workflow)
+  - [⚙️ Script Execution](#script-execution)
+  - [🔒 Secret Management](#secret-management)
+  - [☁️ Azure Resource Management](#azure-resource-management)
+  - [🌐 Cross-Platform Development](#cross-platform-development)
+- [🛠️ Troubleshooting](#-troubleshooting)
+  - [📝 Using Verbose Mode](#using-verbose-mode)
+  - [🐛 Debug Mode](#debug-mode)
+  - [❓ Getting Help](#getting-help)
+- [📖 Related Documentation](#-related-documentation)
+  - [📜 Script Documentation](#script-documentation)
+  - [☁️ Azure Documentation](#azure-documentation)
+  - [📂 Repository Documentation](#repository-documentation)
 
 ---
 
@@ -56,14 +56,14 @@ By automating environment validation, secret management, SQL managed identity co
 
 ### Available Scripts
 
-| Script                   | PowerShell                        | Bash                             | Purpose                                        | Documentation                                                       |
-| ------------------------ | --------------------------------- | -------------------------------- | ---------------------------------------------- | ------------------------------------------------------------------- |
-| **Environment Check**    | `check-dev-workstation.ps1`       | `check-dev-workstation.sh`       | Validate workstation prerequisites             | [📄 check-dev-workstation.md](./check-dev-workstation.md)           |
-| **Pre-Provisioning**     | `preprovision.ps1`                | `preprovision.sh`                | Validate and prepare for deployment            | [📄 preprovision.md](./preprovision.md)                             |
-| **Post-Provisioning**    | `postprovision.ps1`               | `postprovision.sh`               | Configure secrets after deployment             | [📄 postprovision.md](./postprovision.md)                           |
+| Script                   | PowerShell                        | Bash                             | Purpose                                        | Documentation                                                         |
+| ------------------------ | --------------------------------- | -------------------------------- | ---------------------------------------------- | --------------------------------------------------------------------- |
+| **Environment Check**    | `check-dev-workstation.ps1`       | `check-dev-workstation.sh`       | Validate workstation prerequisites             | [📄 check-dev-workstation.md](./check-dev-workstation.md)             |
+| **Pre-Provisioning**     | `preprovision.ps1`                | `preprovision.sh`                | Validate and prepare for deployment            | [📄 preprovision.md](./preprovision.md)                               |
+| **Post-Provisioning**    | `postprovision.ps1`               | `postprovision.sh`               | Configure secrets after deployment             | [📄 postprovision.md](./postprovision.md)                             |
 | **SQL Managed Identity** | `sql-managed-identity-config.ps1` | `sql-managed-identity-config.sh` | Configure SQL Database managed identity access | [📄 sql-managed-identity-config.md](./sql-managed-identity-config.md) |
-| **Secrets Management**   | `clean-secrets.ps1`               | `clean-secrets.sh`               | Clear .NET user secrets                        | [📄 clean-secrets.md](./clean-secrets.md)                           |
-| **Test Data**            | `Generate-Orders.ps1`             | `Generate-Orders.sh`             | Generate sample order data                     | [📄 Generate-Orders.md](./Generate-Orders.md)                       |
+| **Secrets Management**   | `clean-secrets.ps1`               | `clean-secrets.sh`               | Clear .NET user secrets                        | [📄 clean-secrets.md](./clean-secrets.md)                             |
+| **Test Data**            | `Generate-Orders.ps1`             | `Generate-Orders.sh`             | Generate sample order data                     | [📄 Generate-Orders.md](./Generate-Orders.md)                         |
 
 ---
 
@@ -940,4 +940,10 @@ For additional assistance:
 
 ---
 
+<div align="center">
+
 **Made with ❤️ by Evilazaro | Principal Cloud Solution Architect | Microsoft**
+
+[⬆ Back to Top](#-azure-logic-apps-monitoring-solution)
+
+</div>

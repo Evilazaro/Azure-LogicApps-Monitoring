@@ -1,5 +1,52 @@
 # Azure Logic Apps Monitoring - Complete Validation Workflow
 
+## 📑 Table of Contents
+
+- [📋 Available Scripts Overview](#-available-scripts-overview)
+  - [🔗 Script Dependencies](#script-dependencies)
+- [🔄 Visual Workflow](#visual-workflow)
+  - [🚀 Complete Deployment Flow](#complete-deployment-flow)
+  - [✅ Pre-Provisioning Validation Flow](#pre-provisioning-validation-flow-preprovisionps1sh)
+  - [🎛️ Parameter Modes](#parameter-modes)
+  - [⚠️ Failure Handling Flow](#failure-handling-flow)
+  - [🔌 Integration Points](#integration-points)
+- [📜 Script Details](#script-details)
+  - [🔍 check-dev-workstation](#check-dev-workstation)
+  - [✅ preprovision](#preprovision)
+  - [⚙️ postprovision](#postprovision)
+  - [🔐 sql-managed-identity-config](#sql-managed-identity-config)
+  - [🧹 clean-secrets](#clean-secrets)
+  - [📊 Generate-Orders](#generate-orders)
+- [📋 Validation Matrix](#validation-matrix)
+- [⏱️ Complete Deployment Timeline](#complete-deployment-timeline)
+- [✅ Success Criteria](#success-criteria)
+  - [🔧 Pre-Provisioning (preprovision)](#pre-provisioning-preprovision)
+  - [⚙️ Post-Provisioning (postprovision)](#post-provisioning-postprovision)
+  - [🔐 SQL Managed Identity Configuration](#sql-managed-identity-configuration-sql-managed-identity-config)
+- [📖 Related Documentation](#related-documentation)
+  - [📜 Script Versions Reference](#script-versions-reference)
+- [💻 Local Developer Workstation Development Workflow](#-local-developer-workstation-development-workflow)
+  - [🏗️ Local Development Architecture](#local-development-architecture)
+  - [📋 Prerequisites for Local Development](#prerequisites-for-local-development)
+  - [🔄 Local Development Workflow Steps](#local-development-workflow-steps)
+  - [🔁 Inner Loop Development Cycle](#inner-loop-development-cycle)
+  - [⚙️ Configuration Management (Local Development)](#configuration-management-local-development)
+  - [🔧 Troubleshooting Local Development](#troubleshooting-local-development)
+  - [🐛 Debugging Best Practices](#debugging-best-practices)
+  - [⚖️ Local vs. Azure Development Comparison](#local-vs-azure-development-comparison)
+  - [🔀 When to Switch from Local to Azure](#when-to-switch-from-local-to-azure)
+  - [🛑 Stopping Local Development](#stopping-local-development)
+  - [🧹 Cleaning Up Local Resources](#cleaning-up-local-resources)
+- [📊 Complete Development Workflow Timeline](#-complete-development-workflow-timeline)
+
+---
+
+This document provides a comprehensive guide to the complete validation and deployment workflow for the Azure Logic Apps Monitoring Solution, orchestrating all lifecycle hooks into a cohesive end-to-end process. From initial workstation validation through Azure infrastructure provisioning, post-deployment configuration, and test data generation, this workflow ensures consistent, repeatable deployments across development teams using the Azure Developer CLI (azd) automation framework.
+
+Beyond deployment automation, this guide covers the complete local development workflow using .NET Aspire orchestration with Docker containers and emulators, enabling developers to build and test the solution without Azure costs. The document includes detailed Mermaid diagrams visualizing each workflow stage, a validation matrix mapping checks to tools, timeline estimates for planning, success criteria for each phase, and troubleshooting guidance for common issues—making it the definitive reference for both new team members onboarding and experienced developers optimizing their development cycle.
+
+---
+
 **Complete Deployment Workflow Order**:
 
 1. 🔍 **check-dev-workstation** (.ps1 or .sh) - Quick workstation validation (optional but recommended)
@@ -1219,4 +1266,10 @@ docker ps -a --filter "name=aspire" --format "{{.ID}}" | ForEach-Object { docker
 
 ---
 
+<div align="center">
+
 **Made with ❤️ by Evilazaro | Principal Cloud Solution Architect | Microsoft**
+
+[⬆ Back to Top](#-azure-logic-apps-monitoring-solution)
+
+</div>

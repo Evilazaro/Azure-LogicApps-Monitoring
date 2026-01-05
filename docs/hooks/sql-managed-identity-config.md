@@ -1,15 +1,53 @@
 # SQL Managed Identity Configuration Scripts
 
+## 📑 Table of Contents
+
+- [📋 Overview](#overview)
+- [📜 Script Versions](#script-versions)
+- [🔄 Workflow](#workflow)
+- [⚙️ Parameters](#parameters)
+  - [✅ Required Parameters](#required-parameters)
+  - [🔧 Optional Parameters](#optional-parameters)
+- [☁️ Azure Environment Endpoints](#azure-environment-endpoints)
+- [🛡️ Common Database Roles](#common-database-roles)
+- [📋 Prerequisites](#prerequisites)
+  - [🔗 Common Requirements](#common-requirements)
+  - [💻 PowerShell-Specific](#powershell-specific)
+  - [🐚 Bash-Specific](#bash-specific)
+- [🚀 Usage Examples](#usage-examples)
+  - [💻 Basic Usage](#basic-usage)
+  - [📝 Custom Roles with Verbose Output](#custom-roles-with-verbose-output)
+  - [🏛️ Azure Government Cloud](#azure-government-cloud)
+  - [🔧 Programmatic Result Handling](#programmatic-result-handling)
+- [📤 Output Format](#output-format)
+  - [✅ Success Response](#success-response)
+  - [❌ Error Response](#error-response)
+- [🔧 Troubleshooting](#troubleshooting)
+  - [🔐 Error: Login Failed (SQL Error 18456)](#error-login-failed-sql-error-18456)
+  - [🔥 Error: Firewall Blocking Connection (SQL Error 40615)](#error-firewall-blocking-connection-sql-error-40615)
+  - [🔍 Error: sqlcmd Not Found (Bash Only)](#error-sqlcmd-not-found-bash-only)
+  - [🔑 Error: Access Token Acquisition Failed](#error-access-token-acquisition-failed)
+  - [👤 Error: User Already Exists (SQL Error 15023)](#error-user-already-exists-sql-error-15023)
+- [🔐 Security Considerations](#security-considerations)
+- [📖 Related Documentation](#related-documentation)
+- [📜 Changelog](#changelog)
+  - [💻 PowerShell Script (sql-managed-identity-config.ps1)](#powershell-script-sql-managed-identity-configps1)
+  - [🐚 Bash Script (sql-managed-identity-config.sh)](#bash-script-sql-managed-identity-configsh)
+
+---
+
 ## Overview
 
-The `sql-managed-identity-config` scripts configure Azure SQL Database users with Microsoft Entra ID (formerly Azure AD) Managed Identity authentication. These scripts create contained database users from external providers and assign specified database roles, enabling secure, passwordless authentication for Azure services.
+The **sql-managed-identity-config** scripts are essential post-provisioning utilities that establish passwordless, credential-free authentication between Azure services and Azure SQL Database using Microsoft Entra ID (formerly Azure AD) Managed Identities. These scripts create contained database users from external identity providers and assign appropriate database roles (db_datareader, db_datawriter), enabling the Orders API and other application services to connect securely without storing connection strings containing passwords or secrets.
+
+Available in both PowerShell and Bash variants for cross-platform compatibility, these scripts integrate seamlessly into the Azure Developer CLI (azd) postprovision hook workflow. They support multiple Azure environments (Public, Government, China clouds), provide structured JSON output for programmatic result handling in CI/CD pipelines, and include comprehensive error handling with specific troubleshooting guidance for common issues like firewall rules, token acquisition failures, and pre-existing users. This Zero Trust approach to database authentication is a cornerstone of the solution's security architecture.
 
 ## Script Versions
 
-| Script | Version | Platform | Purpose |
-|--------|---------|----------|---------|
-| `sql-managed-identity-config.ps1` | 1.0.0 | PowerShell 7.0+ | Windows, Linux, macOS |
-| `sql-managed-identity-config.sh` | 1.1.0 | Bash 4.0+ | Linux, macOS, WSL |
+| Script                            | Version | Platform        | Purpose               |
+| --------------------------------- | ------- | --------------- | --------------------- |
+| `sql-managed-identity-config.ps1` | 1.0.0   | PowerShell 7.0+ | Windows, Linux, macOS |
+| `sql-managed-identity-config.sh`  | 1.1.0   | Bash 4.0+       | Linux, macOS, WSL     |
 
 ## Workflow
 
@@ -104,40 +142,40 @@ flowchart LR
 
 ### Required Parameters
 
-| Parameter | PowerShell | Bash | Description |
-|-----------|------------|------|-------------|
-| SQL Server Name | `-SqlServerName` | `--sql-server-name` | Azure SQL Server logical name (without `.database.windows.net` suffix). Must be 1-63 characters, lowercase letters, numbers, and hyphens only. |
-| Database Name | `-DatabaseName` | `--database-name` | Target database where the user will be created. Cannot be `master`. |
-| Principal Name | `-PrincipalDisplayName` | `--principal-name` | Display name of the managed identity or service principal as shown in Microsoft Entra ID. Case-sensitive. |
+| Parameter       | PowerShell              | Bash                | Description                                                                                                                                    |
+| --------------- | ----------------------- | ------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
+| SQL Server Name | `-SqlServerName`        | `--sql-server-name` | Azure SQL Server logical name (without `.database.windows.net` suffix). Must be 1-63 characters, lowercase letters, numbers, and hyphens only. |
+| Database Name   | `-DatabaseName`         | `--database-name`   | Target database where the user will be created. Cannot be `master`.                                                                            |
+| Principal Name  | `-PrincipalDisplayName` | `--principal-name`  | Display name of the managed identity or service principal as shown in Microsoft Entra ID. Case-sensitive.                                      |
 
 ### Optional Parameters
 
-| Parameter | PowerShell | Bash | Default | Description |
-|-----------|------------|------|---------|-------------|
-| Database Roles | `-DatabaseRoles` | `--database-roles` | `db_datareader,db_datawriter` | Array/comma-separated list of database roles to assign (1-20 roles). |
-| Azure Environment | `-AzureEnvironment` | `--azure-environment` | `AzureCloud` | Azure cloud environment: `AzureCloud`, `AzureUSGovernment`, `AzureChinaCloud`, `AzureGermanCloud`. |
-| Command Timeout | `-CommandTimeout` | `--command-timeout` | `120` | SQL command timeout in seconds (30-600). |
-| Verbose | `-Verbose` | `--verbose` | Disabled | Enable detailed diagnostic output. |
-| Help | - | `--help` | - | Display help message (Bash only). |
+| Parameter         | PowerShell          | Bash                  | Default                       | Description                                                                                        |
+| ----------------- | ------------------- | --------------------- | ----------------------------- | -------------------------------------------------------------------------------------------------- |
+| Database Roles    | `-DatabaseRoles`    | `--database-roles`    | `db_datareader,db_datawriter` | Array/comma-separated list of database roles to assign (1-20 roles).                               |
+| Azure Environment | `-AzureEnvironment` | `--azure-environment` | `AzureCloud`                  | Azure cloud environment: `AzureCloud`, `AzureUSGovernment`, `AzureChinaCloud`, `AzureGermanCloud`. |
+| Command Timeout   | `-CommandTimeout`   | `--command-timeout`   | `120`                         | SQL command timeout in seconds (30-600).                                                           |
+| Verbose           | `-Verbose`          | `--verbose`           | Disabled                      | Enable detailed diagnostic output.                                                                 |
+| Help              | -                   | `--help`              | -                             | Display help message (Bash only).                                                                  |
 
 ## Azure Environment Endpoints
 
-| Environment | SQL Endpoint Suffix |
-|-------------|---------------------|
-| `AzureCloud` | `database.windows.net` |
+| Environment         | SQL Endpoint Suffix          |
+| ------------------- | ---------------------------- |
+| `AzureCloud`        | `database.windows.net`       |
 | `AzureUSGovernment` | `database.usgovcloudapi.net` |
-| `AzureChinaCloud` | `database.chinacloudapi.cn` |
-| `AzureGermanCloud` | `database.cloudapi.de` |
+| `AzureChinaCloud`   | `database.chinacloudapi.cn`  |
+| `AzureGermanCloud`  | `database.cloudapi.de`       |
 
 ## Common Database Roles
 
-| Role | Permission |
-|------|------------|
-| `db_datareader` | Read all data from all user tables |
-| `db_datawriter` | Add, delete, or modify data in all user tables |
-| `db_ddladmin` | Run DDL commands (CREATE, ALTER, DROP) |
-| `db_owner` | Full permissions in the database |
-| `db_securityadmin` | Modify role membership and manage permissions |
+| Role               | Permission                                     |
+| ------------------ | ---------------------------------------------- |
+| `db_datareader`    | Read all data from all user tables             |
+| `db_datawriter`    | Add, delete, or modify data in all user tables |
+| `db_ddladmin`      | Run DDL commands (CREATE, ALTER, DROP)         |
+| `db_owner`         | Full permissions in the database               |
+| `db_securityadmin` | Modify role membership and manage permissions  |
 
 ## Prerequisites
 
@@ -166,6 +204,7 @@ flowchart LR
 ### Basic Usage
 
 **PowerShell:**
+
 ```powershell
 # Configure managed identity with default roles
 .\sql-managed-identity-config.ps1 `
@@ -175,6 +214,7 @@ flowchart LR
 ```
 
 **Bash:**
+
 ```bash
 # Configure managed identity with default roles
 ./sql-managed-identity-config.sh \
@@ -186,6 +226,7 @@ flowchart LR
 ### Custom Roles with Verbose Output
 
 **PowerShell:**
+
 ```powershell
 .\sql-managed-identity-config.ps1 `
     -SqlServerName "contoso-sql-server" `
@@ -196,6 +237,7 @@ flowchart LR
 ```
 
 **Bash:**
+
 ```bash
 ./sql-managed-identity-config.sh \
     --sql-server-name "contoso-sql-server" \
@@ -208,6 +250,7 @@ flowchart LR
 ### Azure Government Cloud
 
 **PowerShell:**
+
 ```powershell
 .\sql-managed-identity-config.ps1 `
     -SqlServerName "gov-sql-server" `
@@ -217,6 +260,7 @@ flowchart LR
 ```
 
 **Bash:**
+
 ```bash
 ./sql-managed-identity-config.sh \
     --sql-server-name "gov-sql-server" \
@@ -228,6 +272,7 @@ flowchart LR
 ### Programmatic Result Handling
 
 **PowerShell:**
+
 ```powershell
 $result = .\sql-managed-identity-config.ps1 `
     -SqlServerName "myserver" `
@@ -243,6 +288,7 @@ if ($result.Success) {
 ```
 
 **Bash:**
+
 ```bash
 result=$(./sql-managed-identity-config.sh \
     --sql-server-name "myserver" \
@@ -263,6 +309,7 @@ fi
 Both scripts return a structured JSON object:
 
 ### Success Response
+
 ```json
 {
   "Success": true,
@@ -275,6 +322,7 @@ Both scripts return a structured JSON object:
 ```
 
 ### Error Response
+
 ```json
 {
   "Success": false,
@@ -295,11 +343,13 @@ Both scripts return a structured JSON object:
 **Root Cause:** The authenticated Azure CLI user is not an Entra ID administrator of the SQL Server.
 
 **Solution:**
+
 1. Set an Entra ID Admin on the SQL Server:
+
    ```bash
    # Get your current user details
    me=$(az ad signed-in-user show --query '{name:userPrincipalName,id:id}' -o json)
-   
+
    # Set yourself as Entra ID admin
    az sql server ad-admin create \
        --resource-group <your-rg> \
@@ -309,6 +359,7 @@ Both scripts return a structured JSON object:
    ```
 
 2. Verify the admin is set:
+
    ```bash
    az sql server ad-admin list --resource-group <rg> --server-name <server>
    ```
@@ -324,12 +375,14 @@ Both scripts return a structured JSON object:
 **Symptom:** Connection times out or is refused.
 
 **Solution:**
+
 1. Ensure `AZURE_RESOURCE_GROUP` environment variable is set for automatic firewall rule creation.
 2. Manually add your IP if automatic creation fails:
+
    ```bash
    # Get your public IP
    curl ifconfig.me
-   
+
    # Add firewall rule
    az sql server firewall-rule create \
        --resource-group <rg> \
@@ -344,6 +397,7 @@ Both scripts return a structured JSON object:
 **Symptom:** Script fails at Step 2 with "sqlcmd is not installed" error.
 
 **Solution:**
+
 - **Ubuntu/Debian:**
   ```bash
   # Follow Microsoft's installation guide
@@ -361,11 +415,13 @@ Both scripts return a structured JSON object:
 **Symptom:** Script fails to acquire Entra ID access token.
 
 **Possible Causes:**
+
 1. Azure CLI session expired
 2. Insufficient permissions
 3. Network connectivity issues
 
 **Solution:**
+
 1. Re-authenticate: `az login`
 2. Verify account: `az account show`
 3. Check network connectivity to Azure
@@ -396,17 +452,23 @@ Both scripts return a structured JSON object:
 
 ### PowerShell Script (sql-managed-identity-config.ps1)
 
-| Version | Date | Changes |
-|---------|------|---------|
-| 1.0.0 | 2025-12-29 | Initial release |
+| Version | Date       | Changes         |
+| ------- | ---------- | --------------- |
+| 1.0.0   | 2025-12-29 | Initial release |
 
 ### Bash Script (sql-managed-identity-config.sh)
 
-| Version | Date | Changes |
-|---------|------|---------|
-| 1.1.0 | 2025-01-08 | Updated step numbering to 6 steps for clarity |
-| 1.0.0 | 2025-12-29 | Initial release |
+| Version | Date       | Changes                                       |
+| ------- | ---------- | --------------------------------------------- |
+| 1.1.0   | 2025-01-08 | Updated step numbering to 6 steps for clarity |
+| 1.0.0   | 2025-12-29 | Initial release                               |
 
 ---
 
+<div align="center">
+
 **Made with ❤️ by Evilazaro | Principal Cloud Solution Architect | Microsoft**
+
+[⬆ Back to Top](#-azure-logic-apps-monitoring-solution)
+
+</div>

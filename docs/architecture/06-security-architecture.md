@@ -4,18 +4,59 @@
 
 ---
 
+The Security Architecture establishes a **Zero Trust** security posture for the Azure Logic Apps Monitoring Solution, demonstrating how to eliminate stored credentials through Azure Managed Identity and enforce least-privilege access via Role-Based Access Control (RBAC). This document provides a comprehensive blueprint for securing cloud-native applications on Azure, covering identity architecture, authentication flows, network boundaries, and data protection—all implemented without hardcoded secrets or connection strings in application code.
+
+Beyond foundational identity controls, this architecture addresses the complete security lifecycle: from RBAC role assignment matrices that map services to specific Azure resource permissions, through network security configurations for development and production environments, to secrets management strategies using .NET User Secrets locally and Azure Key Vault recommendations for production. The document also covers data protection (encryption at rest and in transit), compliance considerations aligned with Azure Security Benchmark, and a prioritized roadmap for production hardening including Private Endpoints, Web Application Firewall (WAF), and Microsoft Defender for Cloud integration.
+
+## Table of Contents
+
+- [🔐 1. Security Overview](#1-security-overview)
+  - [📐 Security Principles](#security-principles)
+- [🪪 2. Identity Architecture](#2-identity-architecture)
+- [🆔 3. Managed Identity Configuration](#3-managed-identity-configuration)
+  - [👤 User-Assigned Managed Identity](#user-assigned-managed-identity)
+  - [🔗 Identity Assignment](#identity-assignment)
+- [🛡️ 4. RBAC Role Assignments](#4-rbac-role-assignments)
+  - [📋 Role Assignment Matrix](#role-assignment-matrix)
+  - [🗄️ Azure SQL Database Access](#azure-sql-database-access)
+  - [📨 Service Bus RBAC](#service-bus-rbac)
+- [🔄 5. Authentication Flows](#5-authentication-flows)
+  - [📬 Service Bus Authentication](#service-bus-authentication)
+  - [💾 SQL Database Authentication](#sql-database-authentication)
+- [🌐 6. Network Security](#6-network-security)
+  - [⚙️ Current Configuration (Development)](#current-configuration-development)
+  - [🔀 Network Flow](#network-flow)
+  - [🚀 Recommended Production Enhancements](#recommended-production-enhancements)
+- [🔑 7. Secrets Management](#7-secrets-management)
+  - [📊 Current State (Development)](#current-state-development)
+  - [💻 Local Development Secrets](#local-development-secrets)
+  - [🏦 Recommended: Azure Key Vault](#recommended-azure-key-vault)
+- [🛡️ 8. Data Protection](#8-data-protection)
+  - [💾 Data at Rest](#data-at-rest)
+  - [🔒 Data in Transit](#data-in-transit)
+- [✅ 9. Security Controls Summary](#9-security-controls-summary)
+  - [🟢 Implemented Controls](#implemented-controls)
+  - [🔲 Controls to Consider](#controls-to-consider)
+- [📜 10. Compliance Considerations](#10-compliance-considerations)
+  - [📋 Relevant Standards](#relevant-standards)
+  - [📝 Azure Policy Recommendations](#azure-policy-recommendations)
+- [🔗 Cross-Architecture Relationships](#cross-architecture-relationships)
+- [📚 Related Documents](#related-documents)
+
+---
+
 ## 1. Security Overview
 
 The solution implements a **Zero Trust** security model with Azure Managed Identity as the primary authentication mechanism, eliminating stored credentials for service-to-service communication.
 
 ### Security Principles
 
-| Principle | Implementation | Status |
-|-----------|----------------|--------|
-| **No Secrets** | Managed Identity authentication | ✅ Implemented |
-| **Least Privilege** | RBAC role assignments | ✅ Implemented |
-| **Defense in Depth** | Multiple security layers | 🔄 Partial |
-| **Zero Trust** | Verify every access | 🔄 Partial |
+| Principle            | Implementation                  | Status         |
+| -------------------- | ------------------------------- | -------------- |
+| **No Secrets**       | Managed Identity authentication | ✅ Implemented |
+| **Least Privilege**  | RBAC role assignments           | ✅ Implemented |
+| **Defense in Depth** | Multiple security layers        | 🔄 Partial     |
+| **Zero Trust**       | Verify every access             | 🔄 Partial     |
 
 ---
 
@@ -119,6 +160,7 @@ resource managedIdentity 'Microsoft.ManagedIdentity/userAssignedIdentities@2023-
 ### Identity Assignment
 
 **Container Apps (API, Web):**
+
 ```bicep
 identity: {
   type: 'UserAssigned'
@@ -129,6 +171,7 @@ identity: {
 ```
 
 **Logic Apps:**
+
 ```bicep
 identity: {
   type: 'UserAssigned'
@@ -144,13 +187,13 @@ identity: {
 
 ### Role Assignment Matrix
 
-| Service | Resource | Role | Purpose |
-|---------|----------|------|---------|
-| **Orders API** | Azure SQL | db_datareader, db_datawriter | Database CRUD |
-| **Orders API** | Service Bus | Azure Service Bus Data Sender | Publish messages |
-| **Logic Apps** | Service Bus | Azure Service Bus Data Receiver | Receive messages |
-| **Logic Apps** | Storage | Storage Blob Data Contributor | Write blobs |
-| **All Services** | App Insights | Monitoring Metrics Publisher | Send telemetry |
+| Service          | Resource     | Role                            | Purpose          |
+| ---------------- | ------------ | ------------------------------- | ---------------- |
+| **Orders API**   | Azure SQL    | db_datareader, db_datawriter    | Database CRUD    |
+| **Orders API**   | Service Bus  | Azure Service Bus Data Sender   | Publish messages |
+| **Logic Apps**   | Service Bus  | Azure Service Bus Data Receiver | Receive messages |
+| **Logic Apps**   | Storage      | Storage Blob Data Contributor   | Write blobs      |
+| **All Services** | App Insights | Monitoring Metrics Publisher    | Send telemetry   |
 
 ### Azure SQL Database Access
 
@@ -251,13 +294,13 @@ builder.AddAzureSqlClient("orderDb", configureSettings: settings =>
 
 ### Current Configuration (Development)
 
-| Resource | Endpoint | Access | Notes |
-|----------|----------|--------|-------|
-| **Container Apps** | Public | External ingress | HTTPS enforced |
-| **Azure SQL** | Public | Firewall rules | Azure services allowed |
-| **Service Bus** | Public | RBAC | Managed Identity only |
-| **Storage** | Public | RBAC | Managed Identity only |
-| **Logic Apps** | Public | Azure Entra ID | System auth |
+| Resource           | Endpoint | Access           | Notes                  |
+| ------------------ | -------- | ---------------- | ---------------------- |
+| **Container Apps** | Public   | External ingress | HTTPS enforced         |
+| **Azure SQL**      | Public   | Firewall rules   | Azure services allowed |
+| **Service Bus**    | Public   | RBAC             | Managed Identity only  |
+| **Storage**        | Public   | RBAC             | Managed Identity only  |
+| **Logic Apps**     | Public   | Azure Entra ID   | System auth            |
 
 ### Network Flow
 
@@ -280,7 +323,7 @@ flowchart LR
                 Web["🌐 Web App<br/>External Ingress"]
             end
         end
-        
+
         subgraph PaaSServices["PaaS Services"]
             direction LR
             subgraph DatabaseServices["Database"]
@@ -317,12 +360,12 @@ flowchart LR
 
 ### Recommended Production Enhancements
 
-| Control | Current | Recommended |
-|---------|---------|-------------|
-| **Network Isolation** | Public endpoints | Private Endpoints |
-| **WAF** | None | Azure Front Door + WAF |
-| **DDoS Protection** | Basic | Standard |
-| **SQL Firewall** | Allow Azure services | Private Endpoint only |
+| Control               | Current              | Recommended            |
+| --------------------- | -------------------- | ---------------------- |
+| **Network Isolation** | Public endpoints     | Private Endpoints      |
+| **WAF**               | None                 | Azure Front Door + WAF |
+| **DDoS Protection**   | Basic                | Standard               |
+| **SQL Firewall**      | Allow Azure services | Private Endpoint only  |
 
 ---
 
@@ -330,12 +373,12 @@ flowchart LR
 
 ### Current State (Development)
 
-| Secret Type | Storage | Usage |
-|-------------|---------|-------|
-| **Azure credentials** | Managed Identity | No secrets stored |
-| **SQL Connection** | User Secrets (local) | Development only |
-| **Service Bus Connection** | User Secrets (local) | Development only |
-| **App Insights Key** | Environment variable | Auto-configured |
+| Secret Type                | Storage              | Usage             |
+| -------------------------- | -------------------- | ----------------- |
+| **Azure credentials**      | Managed Identity     | No secrets stored |
+| **SQL Connection**         | User Secrets (local) | Development only  |
+| **Service Bus Connection** | User Secrets (local) | Development only  |
+| **App Insights Key**       | Environment variable | Auto-configured   |
 
 ### Local Development Secrets
 
@@ -372,21 +415,21 @@ resource keyVault 'Microsoft.KeyVault/vaults@2023-07-01' = {
 
 ### Data at Rest
 
-| Data | Encryption | Key Management |
-|------|------------|----------------|
-| **SQL Database** | TDE (AES-256) | Microsoft-managed |
-| **Service Bus** | SSE (AES-256) | Microsoft-managed |
+| Data                | Encryption    | Key Management    |
+| ------------------- | ------------- | ----------------- |
+| **SQL Database**    | TDE (AES-256) | Microsoft-managed |
+| **Service Bus**     | SSE (AES-256) | Microsoft-managed |
 | **Storage Account** | SSE (AES-256) | Microsoft-managed |
-| **App Insights** | SSE (AES-256) | Microsoft-managed |
+| **App Insights**    | SSE (AES-256) | Microsoft-managed |
 
 ### Data in Transit
 
-| Path | Protocol | Encryption |
-|------|----------|------------|
-| **Client → Container Apps** | HTTPS | TLS 1.2+ |
-| **Container Apps → SQL** | TDS | TLS 1.2 |
-| **Container Apps → Service Bus** | AMQP | TLS 1.2 |
-| **Logic Apps → Storage** | HTTPS | TLS 1.2 |
+| Path                             | Protocol | Encryption |
+| -------------------------------- | -------- | ---------- |
+| **Client → Container Apps**      | HTTPS    | TLS 1.2+   |
+| **Container Apps → SQL**         | TDS      | TLS 1.2    |
+| **Container Apps → Service Bus** | AMQP     | TLS 1.2    |
+| **Logic Apps → Storage**         | HTTPS    | TLS 1.2    |
 
 ---
 
@@ -394,23 +437,23 @@ resource keyVault 'Microsoft.KeyVault/vaults@2023-07-01' = {
 
 ### Implemented Controls
 
-| Control | Implementation | Evidence |
-|---------|----------------|----------|
-| ✅ **Authentication** | Managed Identity | All Azure service connections |
-| ✅ **Authorization** | Azure RBAC | Role assignments per service |
-| ✅ **Encryption at Rest** | Platform SSE | Default for all Azure PaaS |
-| ✅ **Encryption in Transit** | TLS 1.2+ | HTTPS/AMQP/TDS |
-| ✅ **No Hardcoded Secrets** | User secrets + MI | Connection strings not in code |
+| Control                      | Implementation    | Evidence                       |
+| ---------------------------- | ----------------- | ------------------------------ |
+| ✅ **Authentication**        | Managed Identity  | All Azure service connections  |
+| ✅ **Authorization**         | Azure RBAC        | Role assignments per service   |
+| ✅ **Encryption at Rest**    | Platform SSE      | Default for all Azure PaaS     |
+| ✅ **Encryption in Transit** | TLS 1.2+          | HTTPS/AMQP/TDS                 |
+| ✅ **No Hardcoded Secrets**  | User secrets + MI | Connection strings not in code |
 
 ### Controls to Consider
 
-| Control | Recommendation | Priority |
-|---------|----------------|----------|
-| 🔲 **Private Endpoints** | Network isolation | High (Production) |
-| 🔲 **Key Vault** | Centralized secrets | Medium |
-| 🔲 **WAF** | Application firewall | High (Production) |
-| 🔲 **Diagnostic Settings** | Security logging | Medium |
-| 🔲 **Microsoft Defender** | Threat protection | High (Production) |
+| Control                    | Recommendation       | Priority          |
+| -------------------------- | -------------------- | ----------------- |
+| 🔲 **Private Endpoints**   | Network isolation    | High (Production) |
+| 🔲 **Key Vault**           | Centralized secrets  | Medium            |
+| 🔲 **WAF**                 | Application firewall | High (Production) |
+| 🔲 **Diagnostic Settings** | Security logging     | Medium            |
+| 🔲 **Microsoft Defender**  | Threat protection    | High (Production) |
 
 ---
 
@@ -418,31 +461,31 @@ resource keyVault 'Microsoft.KeyVault/vaults@2023-07-01' = {
 
 ### Relevant Standards
 
-| Standard | Relevance | Notes |
-|----------|-----------|-------|
-| **Azure Security Benchmark** | All services | Platform baseline |
-| **GDPR** | If handling EU PII | Data residency |
-| **SOC 2** | Enterprise deployments | Audit controls |
-| **PCI DSS** | If processing payments | Not current scope |
+| Standard                     | Relevance              | Notes             |
+| ---------------------------- | ---------------------- | ----------------- |
+| **Azure Security Benchmark** | All services           | Platform baseline |
+| **GDPR**                     | If handling EU PII     | Data residency    |
+| **SOC 2**                    | Enterprise deployments | Audit controls    |
+| **PCI DSS**                  | If processing payments | Not current scope |
 
 ### Azure Policy Recommendations
 
-| Policy | Purpose | Scope |
-|--------|---------|-------|
-| **Require HTTPS** | Force TLS | Container Apps |
-| **Require MI** | No credentials | All compute |
-| **Audit public access** | Network visibility | All PaaS |
-| **Require encryption** | Data protection | Storage/SQL |
+| Policy                  | Purpose            | Scope          |
+| ----------------------- | ------------------ | -------------- |
+| **Require HTTPS**       | Force TLS          | Container Apps |
+| **Require MI**          | No credentials     | All compute    |
+| **Audit public access** | Network visibility | All PaaS       |
+| **Require encryption**  | Data protection    | Storage/SQL    |
 
 ---
 
 ## Cross-Architecture Relationships
 
-| Related Architecture | Connection | Reference |
-|---------------------|------------|-----------|
-| **Technology Architecture** | Security infrastructure | [Technology Architecture](04-technology-architecture.md) |
-| **Application Architecture** | Secure service design | [Application Architecture](03-application-architecture.md) |
-| **Deployment Architecture** | Secure CI/CD | [Deployment Architecture](07-deployment-architecture.md) |
+| Related Architecture         | Connection              | Reference                                                  |
+| ---------------------------- | ----------------------- | ---------------------------------------------------------- |
+| **Technology Architecture**  | Security infrastructure | [Technology Architecture](04-technology-architecture.md)   |
+| **Application Architecture** | Secure service design   | [Application Architecture](03-application-architecture.md) |
+| **Deployment Architecture**  | Secure CI/CD            | [Deployment Architecture](07-deployment-architecture.md)   |
 
 ---
 
@@ -453,4 +496,10 @@ resource keyVault 'Microsoft.KeyVault/vaults@2023-07-01' = {
 
 ---
 
+<div align="center">
+
 **Made with ❤️ by Evilazaro | Principal Cloud Solution Architect | Microsoft**
+
+[⬆ Back to Top](#-azure-logic-apps-monitoring-solution)
+
+</div>

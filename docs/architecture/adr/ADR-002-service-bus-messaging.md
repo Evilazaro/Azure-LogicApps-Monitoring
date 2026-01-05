@@ -7,6 +7,7 @@
 ## Context
 
 The eShop Orders Management solution requires asynchronous communication between services:
+
 - **Orders API** needs to notify downstream systems when orders are placed
 - **Logic Apps** workflows need to process order events
 - The system must support multiple subscribers to order events
@@ -14,24 +15,24 @@ The eShop Orders Management solution requires asynchronous communication between
 
 ### Requirements
 
-| Requirement | Priority | Description |
-|-------------|----------|-------------|
-| **Pub/Sub Pattern** | High | Multiple subscribers to order events |
-| **Reliable Delivery** | High | At-least-once message delivery |
-| **Azure Native** | High | First-party Azure service for integration |
-| **Managed Identity** | High | No credential storage |
-| **Logic Apps Integration** | Medium | Native connector support |
-| **Cost Effective** | Medium | Development workload pricing |
+| Requirement                | Priority | Description                               |
+| -------------------------- | -------- | ----------------------------------------- |
+| **Pub/Sub Pattern**        | High     | Multiple subscribers to order events      |
+| **Reliable Delivery**      | High     | At-least-once message delivery            |
+| **Azure Native**           | High     | First-party Azure service for integration |
+| **Managed Identity**       | High     | No credential storage                     |
+| **Logic Apps Integration** | Medium   | Native connector support                  |
+| **Cost Effective**         | Medium   | Development workload pricing              |
 
 ### Options Considered
 
-| Option | Pros | Cons |
-|--------|------|------|
-| **Azure Service Bus** | Native Logic Apps connector, Topics/Subscriptions, Managed Identity | Learning curve, Basic tier limitations |
-| **Azure Event Grid** | Push-based, serverless pricing | Less control over delivery, no message queuing |
-| **Azure Event Hubs** | High throughput, partitioning | Overkill for order volumes, retention limits |
-| **Azure Storage Queues** | Simple, cheap | No pub/sub, no Logic Apps trigger |
-| **RabbitMQ (self-hosted)** | Full control, feature-rich | Operational overhead, no managed service |
+| Option                     | Pros                                                                | Cons                                           |
+| -------------------------- | ------------------------------------------------------------------- | ---------------------------------------------- |
+| **Azure Service Bus**      | Native Logic Apps connector, Topics/Subscriptions, Managed Identity | Learning curve, Basic tier limitations         |
+| **Azure Event Grid**       | Push-based, serverless pricing                                      | Less control over delivery, no message queuing |
+| **Azure Event Hubs**       | High throughput, partitioning                                       | Overkill for order volumes, retention limits   |
+| **Azure Storage Queues**   | Simple, cheap                                                       | No pub/sub, no Logic Apps trigger              |
+| **RabbitMQ (self-hosted)** | Full control, feature-rich                                          | Operational overhead, no managed service       |
 
 ## Decision
 
@@ -110,9 +111,9 @@ public async Task PublishOrderPlacedAsync(Order order)
 
 All Service Bus access uses **Managed Identity** with RBAC:
 
-| Role | Principal | Purpose |
-|------|-----------|---------|
-| Azure Service Bus Data Sender | Orders API | Publish messages |
+| Role                            | Principal  | Purpose          |
+| ------------------------------- | ---------- | ---------------- |
+| Azure Service Bus Data Sender   | Orders API | Publish messages |
 | Azure Service Bus Data Receiver | Logic Apps | Receive messages |
 
 ## Consequences
@@ -133,18 +134,19 @@ All Service Bus access uses **Managed Identity** with RBAC:
    - No Partitioning (scale limits)
    - Limited message size (256 KB)
    - No duplicate detection
-   
 2. **Cost at Scale** - Per-message pricing can increase with volume
 3. **Regional Dependency** - Single-region deployment (no geo-DR)
 
 ### Tier Selection Rationale
 
 **Basic tier** was chosen for this development/demo workload because:
+
 - Lower cost for development
 - Sufficient features for simple pub/sub
 - Easy upgrade path to Standard/Premium
 
 **Production Recommendation:** Upgrade to **Standard** or **Premium** tier for:
+
 - Larger message sizes
 - Duplicate detection
 - Message sessions
@@ -175,12 +177,12 @@ All Service Bus access uses **Managed Identity** with RBAC:
 
 ### Message Properties
 
-| Property | Value | Purpose |
-|----------|-------|---------|
-| `ContentType` | `application/json` | Message format |
-| `Subject` | `OrderPlaced` | Event type |
-| `MessageId` | GUID | Idempotency key |
-| `traceparent` | W3C Trace Context | Distributed tracing |
+| Property      | Value              | Purpose             |
+| ------------- | ------------------ | ------------------- |
+| `ContentType` | `application/json` | Message format      |
+| `Subject`     | `OrderPlaced`      | Event type          |
+| `MessageId`   | GUID               | Idempotency key     |
+| `traceparent` | W3C Trace Context  | Distributed tracing |
 
 ---
 
@@ -196,4 +198,10 @@ All Service Bus access uses **Managed Identity** with RBAC:
 
 ---
 
+<div align="center">
+
 **Made with ❤️ by Evilazaro | Principal Cloud Solution Architect | Microsoft**
+
+[⬆ Back to Top](#-azure-logic-apps-monitoring-solution)
+
+</div>

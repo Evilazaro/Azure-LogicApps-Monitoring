@@ -16,30 +16,30 @@ Running this script before `preprovision.ps1` and `postprovision.ps1` helps deve
 
 ## 📑 Table of Contents
 
-- [Overview](#-overview)
-- [Purpose](#-purpose)
-- [What It Validates](#-what-it-validates)
-  - [Azure Resource Providers Validated](#azure-resource-providers-validated)
-- [Usage](#-usage)
-  - [Basic Usage](#basic-usage)
-  - [Verbose Mode](#verbose-mode)
-- [Exit Codes](#-exit-codes)
-- [Parameters](#-parameters)
-- [Examples](#-examples)
-- [How It Works](#️-how-it-works)
-  - [Internal Process Flow](#internal-process-flow)
-  - [Integration Points](#integration-points)
-- [Related Documentation](#-related-documentation)
-- [Security Considerations](#-security-considerations)
-  - [Safe Operations](#safe-operations)
-  - [Authentication Requirements](#authentication-requirements)
-- [Best Practices](#-best-practices)
-  - [When to Use This Script](#when-to-use-this-script)
-  - [Development Workflow Integration](#development-workflow-integration)
-  - [Team Standards](#team-standards)
-- [Performance](#-performance)
-  - [Performance Characteristics](#performance-characteristics)
-- [Version History](#-version-history)
+- [📋 Overview](#-overview)
+- [🎯 Purpose](#-purpose)
+- [🔍 What It Validates](#-what-it-validates)
+  - [☁️ Azure Resource Providers Validated](#azure-resource-providers-validated)
+- [🚀 Usage](#-usage)
+  - [💻 Basic Usage](#basic-usage)
+  - [📝 Verbose Mode](#verbose-mode)
+- [📊 Exit Codes](#-exit-codes)
+- [🔧 Parameters](#-parameters)
+- [📚 Examples](#-examples)
+- [🛠️ How It Works](#️-how-it-works)
+  - [🔄 Internal Process Flow](#internal-process-flow)
+  - [🔗 Integration Points](#integration-points)
+- [📖 Related Documentation](#-related-documentation)
+- [🔐 Security Considerations](#-security-considerations)
+  - [✅ Safe Operations](#safe-operations)
+  - [🔑 Authentication Requirements](#authentication-requirements)
+- [🎓 Best Practices](#-best-practices)
+  - [⏰ When to Use This Script](#when-to-use-this-script)
+  - [🔄 Development Workflow Integration](#development-workflow-integration)
+  - [👥 Team Standards](#team-standards)
+- [📊 Performance](#-performance)
+  - [⚡ Performance Characteristics](#performance-characteristics)
+- [📜 Version History](#-version-history)
 
 ## 🎯 Purpose
 
@@ -441,4 +441,10 @@ azd up
 
 ---
 
+<div align="center">
+
 **Made with ❤️ by Evilazaro | Principal Cloud Solution Architect | Microsoft**
+
+[⬆ Back to Top](#-azure-logic-apps-monitoring-solution)
+
+</div>
