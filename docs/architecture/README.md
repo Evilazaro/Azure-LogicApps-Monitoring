@@ -22,6 +22,7 @@ The solution uses an **eShop order management system** as the business scenario,
 ## High-Level Architecture Diagram
 
 ```mermaid
+%%{init: {'theme': 'base', 'themeVariables': { 'fontSize': '14px'}}}%%
 flowchart TD
     subgraph Presentation["🖥️ Presentation Layer"]
         WebApp["🌐 eShop.Web.App<br/>Blazor Server + Fluent UI"]
@@ -64,11 +65,12 @@ flowchart TD
     LogicApp -.->|"Diagnostics"| LogAnalytics
     AppInsights -.->|"Exports"| LogAnalytics
 
-    classDef presentation fill:#e3f2fd,stroke:#1565c0,stroke-width:2px
-    classDef application fill:#e8f5e9,stroke:#2e7d32,stroke-width:2px
-    classDef platform fill:#fff3e0,stroke:#ef6c00,stroke-width:2px
-    classDef data fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px
-    classDef observability fill:#fce4ec,stroke:#c2185b,stroke-width:2px
+    %% Accessible color palette with explicit text colors for WCAG compliance
+    classDef presentation fill:#e3f2fd,stroke:#1565c0,stroke-width:2px,color:#0d47a1
+    classDef application fill:#e8f5e9,stroke:#2e7d32,stroke-width:2px,color:#1b5e20
+    classDef platform fill:#fff3e0,stroke:#e65100,stroke-width:2px,color:#bf360c
+    classDef data fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px,color:#4a148c
+    classDef observability fill:#fce4ec,stroke:#c2185b,stroke-width:2px,color:#880e4f
 
     class WebApp presentation
     class API,LogicApp application
