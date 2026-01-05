@@ -19,7 +19,7 @@
           "HTTP": {
             "type": "Http",
             "inputs": {
-              "uri": "https://[PLACEHOLDER-API]/api/Orders/process",
+              "uri": "https://orders-api.ashysand-1b545f53.westus3.azurecontainerapps.io/api/Orders/process",
               "method": "POST",
               "headers": {
                 "accept": "text/plain",
@@ -45,7 +45,7 @@
               ]
             },
             "actions": {
-              "Create_blob_(V2)": {
+              "Create_blob_(V2)_1": {
                 "type": "ApiConnection",
                 "inputs": {
                   "host": {
@@ -54,11 +54,11 @@
                     }
                   },
                   "method": "post",
-                  "body": "@body('HTTP')",
+                  "body": "@base64ToBinary(triggerBody()?['ContentData'])",
                   "headers": {
                     "ReadFileMetadataFromServer": true
                   },
-                  "path": "/v2/datasets/@{encodeURIComponent(encodeURIComponent('[PLACEHOLDER-STORAGENAME]'))}/files",
+                  "path": "/v2/datasets/@{encodeURIComponent(encodeURIComponent('orderswsabj5m3r7ygzkxa'))}/files",
                   "queries": {
                     "folderPath": "/ordersprocessedsuccessfully",
                     "name": "@triggerBody()?['MessageId']",
@@ -74,7 +74,7 @@
             },
             "else": {
               "actions": {
-                "Create_blob_(V2)_1": {
+                "Create_blob_(V2)-2": {
                   "type": "ApiConnection",
                   "inputs": {
                     "host": {
@@ -83,11 +83,11 @@
                       }
                     },
                     "method": "post",
-                    "body": "@body('HTTP')",
+                    "body": "@base64ToBinary(triggerBody()?['ContentData'])",
                     "headers": {
                       "ReadFileMetadataFromServer": true
                     },
-                    "path": "/v2/datasets/@{encodeURIComponent(encodeURIComponent('[PLACEHOLDER-STORAGENAME]'))}/files",
+                    "path": "/v2/datasets/@{encodeURIComponent(encodeURIComponent('orderswsabj5m3r7ygzkxa'))}/files",
                     "queries": {
                       "folderPath": "/ordersprocessedwitherrors",
                       "name": "@triggerBody()?['MessageId']",
@@ -111,7 +111,7 @@
         },
         "else": {
           "actions": {
-            "Create_blob_(V2)_2": {
+            "Create_blob_(V2)": {
               "type": "ApiConnection",
               "inputs": {
                 "host": {
@@ -124,7 +124,7 @@
                 "headers": {
                   "ReadFileMetadataFromServer": true
                 },
-                "path": "/v2/datasets/@{encodeURIComponent(encodeURIComponent('[PLACEHOLDER-STORAGENAME]'))}/files",
+                "path": "/v2/datasets/@{encodeURIComponent(encodeURIComponent('orderswsabj5m3r7ygzkxa'))}/files",
                 "queries": {
                   "folderPath": "/ordersprocessedwitherrors",
                   "name": "@triggerBody()?['MessageId']",
@@ -160,8 +160,7 @@
         },
         "recurrence": {
           "interval": 1,
-          "frequency": "Second",
-          "timeZone": "Central Standard Time"
+          "frequency": "Second"
         }
       }
     }
