@@ -26,29 +26,53 @@ The solution uses **Azure Developer CLI (azd)** for streamlined deployments with
 %%{init: {'theme': 'base', 'themeVariables': { 'fontSize': '14px'}}}%%
 flowchart TB
     subgraph Developer["👨‍💻 Developer Workstation"]
-        Code["Source Code"]
-        AZD["azd CLI"]
+        direction LR
+        subgraph SourceControl["Source Control"]
+            Code["📄 Source Code"]
+        end
+        subgraph CLI["CLI Tools"]
+            AZD["⚙️ azd CLI"]
+        end
     end
 
     subgraph Provision["📦 azd provision"]
-        PreHook["preprovision.ps1<br/><i>Validate & Clean</i>"]
-        Bicep["Bicep Templates<br/><i>infra/main.bicep</i>"]
-        ARM["ARM Deployment<br/><i>Subscription Scope</i>"]
-        PostHook["postprovision.ps1<br/><i>Configure Secrets</i>"]
+        direction TB
+        subgraph Validation["Validation"]
+            PreHook["✅ preprovision.ps1<br/><i>Validate & Clean</i>"]
+        end
+        subgraph Infrastructure["Infrastructure"]
+            Bicep["📜 Bicep Templates<br/><i>infra/main.bicep</i>"]
+            ARM["☁️ ARM Deployment<br/><i>Subscription Scope</i>"]
+        end
+        subgraph Configuration["Configuration"]
+            PostHook["🔧 postprovision.ps1<br/><i>Configure Secrets</i>"]
+        end
     end
 
     subgraph Deploy["🚀 azd deploy"]
-        Build["Docker Build<br/><i>Container Images</i>"]
-        Push["ACR Push<br/><i>Registry Upload</i>"]
-        Update["Container Apps Update<br/><i>New Revision</i>"]
+        direction TB
+        subgraph ContainerBuild["Container Build"]
+            Build["🐳 Docker Build<br/><i>Container Images</i>"]
+        end
+        subgraph ContainerRegistry["Container Registry"]
+            Push["📤 ACR Push<br/><i>Registry Upload</i>"]
+        end
+        subgraph AppDeployment["App Deployment"]
+            Update["🔄 Container Apps Update<br/><i>New Revision</i>"]
+        end
     end
 
     subgraph Azure["☁️ Azure"]
-        RG["Resource Group"]
-        ACR["Container Registry"]
-        CAE["Container Apps<br/>Environment"]
-        API["Orders API"]
-        Web["Web App"]
+        direction LR
+        subgraph AzureInfra["Infrastructure"]
+            RG["🗂️ Resource Group"]
+            ACR["📦 Container Registry"]
+            CAE["⚙️ Container Apps<br/>Environment"]
+        end
+        subgraph AzureApps["Applications"]
+            API["📡 Orders API"]
+            Web["🌐 Web App"]
+        end
     end
 
     Code --> AZD
@@ -81,6 +105,16 @@ flowchart TB
     style Provision fill:#e8f5e922,stroke:#2e7d32,stroke-width:2px
     style Deploy fill:#fff3e022,stroke:#e65100,stroke-width:2px
     style Azure fill:#f3e5f522,stroke:#7b1fa2,stroke-width:2px
+    style SourceControl fill:#e3f2fd11,stroke:#1565c0,stroke-width:1px,stroke-dasharray:3
+    style CLI fill:#e3f2fd11,stroke:#1565c0,stroke-width:1px,stroke-dasharray:3
+    style Validation fill:#e8f5e911,stroke:#2e7d32,stroke-width:1px,stroke-dasharray:3
+    style Infrastructure fill:#e8f5e911,stroke:#2e7d32,stroke-width:1px,stroke-dasharray:3
+    style Configuration fill:#e8f5e911,stroke:#2e7d32,stroke-width:1px,stroke-dasharray:3
+    style ContainerBuild fill:#fff3e011,stroke:#e65100,stroke-width:1px,stroke-dasharray:3
+    style ContainerRegistry fill:#fff3e011,stroke:#e65100,stroke-width:1px,stroke-dasharray:3
+    style AppDeployment fill:#fff3e011,stroke:#e65100,stroke-width:1px,stroke-dasharray:3
+    style AzureInfra fill:#f3e5f511,stroke:#7b1fa2,stroke-width:1px,stroke-dasharray:3
+    style AzureApps fill:#f3e5f511,stroke:#7b1fa2,stroke-width:1px,stroke-dasharray:3
 ```
 
 ---
@@ -253,27 +287,47 @@ resource rg 'Microsoft.Resources/resourceGroups@2022-09-01' = {
 %%{init: {'theme': 'base', 'themeVariables': { 'fontSize': '14px'}}}%%
 flowchart TB
     subgraph Phase1["Phase 1: Foundation"]
-        RG["Resource Group"]
-        MI["Managed Identity"]
+        direction LR
+        subgraph ResourceGroup["Resource Group"]
+            RG["🗂️ Resource Group"]
+        end
+        subgraph Identity["Identity"]
+            MI["🔐 Managed Identity"]
+        end
     end
 
     subgraph Phase2["Phase 2: Shared Services"]
-        LAW["Log Analytics"]
-        AI["App Insights"]
-        SQL["SQL Database"]
-        Storage["Storage Account"]
+        direction LR
+        subgraph Monitoring["Monitoring"]
+            LAW["📊 Log Analytics"]
+            AI["📊 App Insights"]
+        end
+        subgraph DataServices["Data Services"]
+            SQL[("🗄️ SQL Database")]
+            Storage["📁 Storage Account"]
+        end
     end
 
     subgraph Phase3["Phase 3: Workload"]
-        SB["Service Bus"]
-        ACR["Container Registry"]
-        CAE["Container Apps Environment"]
+        direction LR
+        subgraph Messaging["Messaging"]
+            SB["📨 Service Bus"]
+        end
+        subgraph ContainerPlatform["Container Platform"]
+            ACR["📦 Container Registry"]
+            CAE["⚙️ Container Apps Environment"]
+        end
     end
 
     subgraph Phase4["Phase 4: Applications"]
-        API["Orders API"]
-        Web["Web App"]
-        LA["Logic Apps"]
+        direction LR
+        subgraph ContainerApps["Container Apps"]
+            API["📡 Orders API"]
+            Web["🌐 Web App"]
+        end
+        subgraph Workflows["Workflows"]
+            LA["🔄 Logic Apps"]
+        end
     end
 
     RG --> MI
@@ -306,6 +360,14 @@ flowchart TB
     style Phase2 fill:#e8f5e922,stroke:#2e7d32,stroke-width:2px
     style Phase3 fill:#fff3e022,stroke:#e65100,stroke-width:2px
     style Phase4 fill:#f3e5f522,stroke:#7b1fa2,stroke-width:2px
+    style ResourceGroup fill:#e3f2fd11,stroke:#1565c0,stroke-width:1px,stroke-dasharray:3
+    style Identity fill:#e3f2fd11,stroke:#1565c0,stroke-width:1px,stroke-dasharray:3
+    style Monitoring fill:#e8f5e911,stroke:#2e7d32,stroke-width:1px,stroke-dasharray:3
+    style DataServices fill:#e8f5e911,stroke:#2e7d32,stroke-width:1px,stroke-dasharray:3
+    style Messaging fill:#fff3e011,stroke:#e65100,stroke-width:1px,stroke-dasharray:3
+    style ContainerPlatform fill:#fff3e011,stroke:#e65100,stroke-width:1px,stroke-dasharray:3
+    style ContainerApps fill:#f3e5f511,stroke:#7b1fa2,stroke-width:1px,stroke-dasharray:3
+    style Workflows fill:#f3e5f511,stroke:#7b1fa2,stroke-width:1px,stroke-dasharray:3
 ```
 
 ---
@@ -494,17 +556,29 @@ jobs:
 %%{init: {'theme': 'base', 'themeVariables': { 'fontSize': '14px'}}}%%
 flowchart LR
     subgraph Build["🔨 Build"]
-        Checkout["Checkout"]
-        Restore["Restore"]
-        Compile["Compile"]
-        Test["Test"]
+        direction TB
+        subgraph SourcePrep["Source Preparation"]
+            Checkout["📄 Checkout"]
+            Restore["📦 Restore"]
+        end
+        subgraph Compilation["Compilation"]
+            Compile["⚙️ Compile"]
+            Test["✅ Test"]
+        end
     end
 
     subgraph Deploy["🚀 Deploy"]
-        Login["Azure Login"]
-        Provision["azd provision"]
-        DeployApp["azd deploy"]
-        Verify["Health Check"]
+        direction TB
+        subgraph Authentication["Authentication"]
+            Login["🔑 Azure Login"]
+        end
+        subgraph AzureDeployment["Azure Deployment"]
+            Provision["🏗️ azd provision"]
+            DeployApp["📤 azd deploy"]
+        end
+        subgraph Verification["Verification"]
+            Verify["💚 Health Check"]
+        end
     end
 
     Checkout --> Restore
@@ -525,6 +599,11 @@ flowchart LR
     %% Subgraph container styling for visual layer grouping
     style Build fill:#e3f2fd22,stroke:#1565c0,stroke-width:2px
     style Deploy fill:#e8f5e922,stroke:#2e7d32,stroke-width:2px
+    style SourcePrep fill:#e3f2fd11,stroke:#1565c0,stroke-width:1px,stroke-dasharray:3
+    style Compilation fill:#e3f2fd11,stroke:#1565c0,stroke-width:1px,stroke-dasharray:3
+    style Authentication fill:#e8f5e911,stroke:#2e7d32,stroke-width:1px,stroke-dasharray:3
+    style AzureDeployment fill:#e8f5e911,stroke:#2e7d32,stroke-width:1px,stroke-dasharray:3
+    style Verification fill:#e8f5e911,stroke:#2e7d32,stroke-width:1px,stroke-dasharray:3
 ```
 
 ---
