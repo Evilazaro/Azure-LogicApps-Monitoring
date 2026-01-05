@@ -24,33 +24,60 @@ The solution implements the **Three Pillars of Observability** using OpenTelemet
 %%{init: {'theme': 'base', 'themeVariables': { 'fontSize': '14px'}}}%%
 flowchart TB
     subgraph Services["🔧 Application Services"]
-        API["Orders API<br/><i>Instrumented</i>"]
-        Web["Web App<br/><i>Instrumented</i>"]
-        LA["Logic Apps<br/><i>Built-in Diagnostics</i>"]
+        direction LR
+        subgraph InstrumentedServices["Instrumented Services"]
+            API["📡 Orders API<br/><i>Instrumented</i>"]
+            Web["🌐 Web App<br/><i>Instrumented</i>"]
+        end
+        subgraph PlatformServices["Platform Services"]
+            LA["🔄 Logic Apps<br/><i>Built-in Diagnostics</i>"]
+        end
     end
 
     subgraph Instrumentation["📊 Instrumentation Layer"]
-        OTEL["OpenTelemetry SDK<br/><i>.NET 10</i>"]
-        Custom["Custom Metrics<br/><i>eShop.orders.*</i>"]
-        Activity["Activity Sources<br/><i>System.Diagnostics</i>"]
+        direction LR
+        subgraph SDKLayer["SDK Layer"]
+            OTEL["OpenTelemetry SDK<br/><i>.NET 10</i>"]
+        end
+        subgraph CustomInstrumentation["Custom Instrumentation"]
+            Custom["Custom Metrics<br/><i>eShop.orders.*</i>"]
+            Activity["Activity Sources<br/><i>System.Diagnostics</i>"]
+        end
     end
 
     subgraph Collection["📡 Collection Layer"]
-        OTLP["OTLP Exporter<br/><i>Azure Monitor</i>"]
-        Diag["Diagnostic Settings<br/><i>Logic Apps</i>"]
+        direction LR
+        subgraph OTLPCollection["OTLP Collection"]
+            OTLP["OTLP Exporter<br/><i>Azure Monitor</i>"]
+        end
+        subgraph DiagnosticCollection["Diagnostic Collection"]
+            Diag["Diagnostic Settings<br/><i>Logic Apps</i>"]
+        end
     end
 
     subgraph Backend["☁️ Azure Monitor"]
-        AI["Application Insights"]
-        LAW["Log Analytics<br/>Workspace"]
+        direction LR
+        subgraph APM["Application Performance"]
+            AI["📈 Application Insights"]
+        end
+        subgraph LogStorage["Log Storage"]
+            LAW["📋 Log Analytics<br/>Workspace"]
+        end
     end
 
     subgraph Analysis["📈 Analysis"]
-        LiveMetrics["Live Metrics"]
-        AppMap["Application Map"]
-        E2E["End-to-End Transactions"]
-        Workbooks["Workbooks"]
-        Alerts["Alerts"]
+        direction LR
+        subgraph RealTime["Real-Time Analysis"]
+            LiveMetrics["⚡ Live Metrics"]
+            AppMap["🗺️ Application Map"]
+        end
+        subgraph DeepAnalysis["Deep Analysis"]
+            E2E["🔍 End-to-End Transactions"]
+            Workbooks["📊 Workbooks"]
+        end
+        subgraph Alerting["Alerting"]
+            Alerts["🚨 Alerts"]
+        end
     end
 
     %% Instrumentation flow
@@ -95,6 +122,17 @@ flowchart TB
     style Collection fill:#fff3e022,stroke:#e65100,stroke-width:2px
     style Backend fill:#f3e5f522,stroke:#7b1fa2,stroke-width:2px
     style Analysis fill:#fce4ec22,stroke:#c2185b,stroke-width:2px
+    style InstrumentedServices fill:#e3f2fd11,stroke:#1565c0,stroke-width:1px,stroke-dasharray:3
+    style PlatformServices fill:#e3f2fd11,stroke:#1565c0,stroke-width:1px,stroke-dasharray:3
+    style SDKLayer fill:#e8f5e911,stroke:#2e7d32,stroke-width:1px,stroke-dasharray:3
+    style CustomInstrumentation fill:#e8f5e911,stroke:#2e7d32,stroke-width:1px,stroke-dasharray:3
+    style OTLPCollection fill:#fff3e011,stroke:#e65100,stroke-width:1px,stroke-dasharray:3
+    style DiagnosticCollection fill:#fff3e011,stroke:#e65100,stroke-width:1px,stroke-dasharray:3
+    style APM fill:#f3e5f511,stroke:#7b1fa2,stroke-width:1px,stroke-dasharray:3
+    style LogStorage fill:#f3e5f511,stroke:#7b1fa2,stroke-width:1px,stroke-dasharray:3
+    style RealTime fill:#fce4ec11,stroke:#c2185b,stroke-width:1px,stroke-dasharray:3
+    style DeepAnalysis fill:#fce4ec11,stroke:#c2185b,stroke-width:1px,stroke-dasharray:3
+    style Alerting fill:#fce4ec11,stroke:#c2185b,stroke-width:1px,stroke-dasharray:3
 ```
 
 ---
