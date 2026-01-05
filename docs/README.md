@@ -179,18 +179,3 @@ For detailed instructions, see the [Developer Inner Loop Workflow](hooks/README.
 
 ---
 
-## 📝 Contributing to Documentation
-
-When contributing to documentation:
-
-1. **Follow TOGAF BDAT structure** for architecture documents
-2. **Use Mermaid diagrams** for visual representations
-3. **Include navigation links** at the top of each document
-4. **Update this index** when adding new documents
-5. **Follow ADR process** for architectural decisions
-
-See [CONTRIBUTING.md](../CONTRIBUTING.md) for general contribution guidelines.
-
----
-
-> 💡 **Tip:** Use the document navigation links at the top of each architecture document to move sequentially through the BDAT layers.
