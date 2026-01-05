@@ -507,26 +507,6 @@ azd up
 | **Scalability**    | • **Consistent per-project time:** No degradation with secrets count<br/>• **Parallel safe:** Can run in multiple terminals (different projects)<br/>• **No locking issues:** Each project has unique secret storage<br/>• **Fast completion:** 3 projects cleared in under 5 seconds                       |
 | **Optimization**   | • **Sequential processing:** Projects cleared one at a time<br/>• **No redundant checks:** Direct dotnet CLI invocation<br/>• **Minimal validation:** Only checks .NET SDK availability<br/>• **Efficient operation:** Single delete per project<br/>• **No caching needed:** Direct file system operations |
 
-## 🔄 Version History
-
-| Version   | Date                                 | Changes                                                                        |
-| --------- | ------------------------------------ | ------------------------------------------------------------------------------ |
-| **2.0.1** | 2025-12-29                           | Unified version and documentation update                                       |
-|           |                                      | • Unified PowerShell and Bash version to 2.0.1                                 |
-|           |                                      | • Updated .NET requirement to 10.0+ across all platforms                       |
-|           |                                      | • Confirmed support for all 3 projects (AppHost, Orders.API, Web.App)          |
-|           |                                      | • Synchronized version numbering with other hook scripts                       |
-| **2.0.0** | 2025-12-24 (PS1)<br/>2025-12-29 (SH) | Production release                                                             |
-|           |                                      | • Complete rewrite with best practices for both PowerShell and Bash            |
-|           |                                      | • Added comprehensive error handling with try-catch-finally pattern            |
-|           |                                      | • Implemented validation functions (Test-DotNetAvailability, Test-ProjectPath) |
-|           |                                      | • Added WhatIf support (PowerShell) and --dry-run (Bash)                       |
-|           |                                      | • Comprehensive logging with color-coded output                                |
-|           |                                      | • Execution summary with statistics                                            |
-|           |                                      | • 420+ lines of production code (PowerShell), 600+ lines (Bash)                |
-| **1.0.0** | 2025-12-15                           | Initial release                                                                |
-|           |                                      | • Basic secret clearing functionality                                          |
-
 ## Quick Links
 
 - **Repository**: [Azure-LogicApps-Monitoring](https://github.com/Evilazaro/Azure-LogicApps-Monitoring)

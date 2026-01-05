@@ -846,35 +846,6 @@ infra/data/ordersBatch.json
 | **Scalability**      | • **Maximum tested:** 10,000 orders (~50 seconds)<br/>• **Recommended batch size:** 100-1000 orders<br/>• **Memory efficient:** Generates orders sequentially<br/>• **No degradation:** Consistent per-order generation time                 |
 | **Optimization**     | • **Fast initialization:** Data structures loaded once<br/>• **Efficient randomization:** Built-in language features<br/>• **Minimal overhead:** Direct JSON serialization<br/>• **Progress tracking:** Optional, minimal impact on speed    |
 
-## 🔄 Version History
-
-| Version   | Date       | Changes                                                       |
-| --------- | ---------- | ------------------------------------------------------------- |
-| **1.0.0** | 2025-12-24 | **Initial production release**                                |
-|           |            | • 20-product catalog with global coverage                     |
-|           |            | • 20 delivery addresses across 15 countries                   |
-|           |            | • Price variation algorithm (±20%)                            |
-|           |            | • Progress tracking with 10% intervals                        |
-|           |            | • Comprehensive parameter validation                          |
-|           |            | • PowerShell: 419 lines with XML documentation                |
-|           |            | • Bash: ~562 lines with basic documentation                   |
-| **1.1.0** | 2025-12-29 | **Bash script comprehensive enhancement**                     |
-|           |            | • Added `--dry-run` mode for simulation without file creation |
-|           |            | • Added `--force` flag for automated scenarios                |
-|           |            | • Enhanced verbose logging (~40+ log statements)              |
-|           |            | • Implemented 6-phase execution structure                     |
-|           |            | • Added jq integration for enhanced statistics:               |
-|           |            | - Total revenue calculation                                   |
-|           |            | - Average order value                                         |
-|           |            | - Total product count across orders                           |
-|           |            | • Added comprehensive function documentation blocks           |
-|           |            | • Enhanced error messages with actionable guidance            |
-|           |            | • Added detailed inline comments for all algorithms           |
-|           |            | • Fisher-Yates shuffle algorithm documentation                |
-|           |            | • Execution timing with elapsed seconds display               |
-|           |            | • Bash script expanded to ~1,250+ lines                       |
-|           |            | • Feature parity with PowerShell version achieved             |
-
 ## Quick Links
 
 - **Repository**: [Azure-LogicApps-Monitoring](https://github.com/Evilazaro/Azure-LogicApps-Monitoring)
@@ -887,10 +858,6 @@ infra/data/ordersBatch.json
 **Script Version**: 1.1.0 (Bash), 1.0.0 (PowerShell)  
 **Compatibility**: PowerShell 7.0+, Bash 4.0+, Windows/macOS/Linux  
 **Optional Dependencies**: jq (for enhanced Bash statistics)
-
----
-
-**Made with ❤️ by Evilazaro | Principal Cloud Solution Architect | Microsoft**
 
 ---
 

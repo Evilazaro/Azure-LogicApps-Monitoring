@@ -317,7 +317,7 @@ az provider register --namespace Microsoft.Storage --wait
 ### Workflow Diagram
 
 ```mermaid
-flowchart TB
+flowchart LR
     Start(["🚀 azd up / azd provision"])
     ValidateRuntime["Validate Runtime Version"]
     CheckDotNet["Check .NET SDK"]

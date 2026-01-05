@@ -414,23 +414,6 @@ azd up
 | **Scalability**    | • **Consistent performance:** Same execution time regardless of repository size<br/>• **No degradation:** Independent of project complexity<br/>• **Parallel safe:** Can run simultaneously in multiple terminals<br/>• **Cache benefits:** Azure CLI caches authentication tokens                                                                          |
 | **Optimization**   | • **Delegation pattern:** Leverages existing preprovision script logic<br/>• **No redundancy:** Single validation pass with -ValidateOnly flag<br/>• **Early exit:** Stops immediately on critical failures<br/>• **Efficient checks:** Version comparisons use native commands                                                                             |
 
-## 🔄 Version History
-
-| Version   | Date                                 | Changes                                                       |
-| --------- | ------------------------------------ | ------------------------------------------------------------- |
-| **1.0.0** | 2025-12-24 (PS1)<br/>2025-12-29 (SH) | Initial production release                                    |
-|           |                                      | • PowerShell and Bash implementations                         |
-|           |                                      | • Full validation suite via preprovision wrapper              |
-|           |                                      | • Comprehensive error handling with try-catch-finally pattern |
-|           |                                      | • Verbose logging support (`-Verbose` / `--verbose`)          |
-|           |                                      | • Exit code propagation from preprovision scripts             |
-
-## Quick Links
-
-- **Repository**: [Azure-LogicApps-Monitoring](https://github.com/Evilazaro/Azure-LogicApps-Monitoring)
-- **Issues**: [Report Bug](https://github.com/Evilazaro/Azure-LogicApps-Monitoring/issues)
-- **Documentation**: [Main Docs](../README.md)
-
 ---
 
 **Last Updated**: December 29, 2025  

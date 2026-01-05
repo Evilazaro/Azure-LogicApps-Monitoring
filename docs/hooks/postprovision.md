@@ -787,42 +787,12 @@ jobs:
 | **Scalability** | • **Linear with projects:** O(n) scaling with number of projects<br/>• **Linear with secrets:** O(m) scaling with secrets per project<br/>• **Sequential processing:** Projects configured one at a time<br/>• **No degradation:** Consistent per-secret configuration time<br/>• **Tested configuration:** 3 projects, 27 secrets completes in <22s |
 | **Optimization** | • **Batch validation:** All environment variables checked upfront<br/>• **Conditional ACR:** Skips authentication if not configured<br/>• **Conditional SQL:** Skips managed identity setup if not configured<br/>• **Efficient clearing:** Delegates to optimized clean-secrets script<br/>• **Error handling:** Early exit on critical failures<br/>• **Minimal overhead:** Direct dotnet CLI invocations |
 
-## 🔄 Version History
-
-| Version   | Date       | Changes                                                        |
-| --------- | ---------- | -------------------------------------------------------------- |
-| **2.0.1** | 2025-12-29 | Corrected project configuration to include all 3 projects      |
-|           |            | • Added eShop.Web.App project secrets configuration            |
-|           |            | • Fixed connection string key: ConnectionStrings:OrderDb       |
-|           |            | • Unified version across PowerShell and Bash implementations   |
-|           |            | • Total: 23 AppHost + 3+ API + 1 WebApp secrets                |
-| **2.0.0** | 2025-12-26 | Updated documentation for actual implementation                |
-|           |            | • Corrected secret counts: 23 AppHost + 3 API = 26 total       |
-|           |            | • Added SQL Managed Identity configuration documentation       |
-|           |            | • Updated secret key tables with actual implementation         |
-|           |            | • Web.App project has no secrets configured                    |
-|           |            | • Documented SQL database roles (db_datareader, db_datawriter) |
-| **2.0.0** | 2025-12-24 | Production release                                             |
-|           |            | • Complete rewrite with best practices                         |
-|           |            | • Comprehensive validation                                     |
-|           |            | • Error handling and logging                                   |
-|           |            | • WhatIf support                                               |
-|           |            | • 1000+ lines of production code                               |
-| **1.0.0** | 2025-12-15 | Initial release                                                |
-|           |            | • Basic secret configuration                                   |
-
 ## Quick Links
 
 - **Repository**: [Azure-LogicApps-Monitoring](https://github.com/Evilazaro/Azure-LogicApps-Monitoring)
 - **Issues**: [Report Bug](https://github.com/Evilazaro/Azure-LogicApps-Monitoring/issues)
 - **Azure Developer CLI**: [Learn More](https://learn.microsoft.com/azure/developer/azure-developer-cli/)
 - **User Secrets**: [Microsoft Learn](https://learn.microsoft.com/aspnet/core/security/app-secrets)
-
----
-
-**Last Updated**: December 29, 2025  
-**Script Version**: 2.0.1  
-**Compatibility**: PowerShell 7.0+, .NET 10.0+, Azure CLI 2.60.0+
 
 ---
 
