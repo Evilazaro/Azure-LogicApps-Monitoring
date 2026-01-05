@@ -149,14 +149,23 @@ flowchart LR
     DevLoop --> Stop[Stop Development<br/>Ctrl+C]
     Stop --> Cleanup[Docker Auto-Cleanup]
 
-    style Start fill:#0078d4,stroke:#005a9e,stroke-width:3px,color:#fff
-    style Ready fill:#28a745,stroke:#218838,stroke-width:3px,color:#fff
-    style DevLoop fill:#fff3e0,stroke:#ff9800,stroke-width:4px
-    style Code fill:#e3f2fd,stroke:#1976d2,stroke-width:2px
-    style HotReload fill:#e8f5e9,stroke:#4caf50,stroke-width:2px
-    style Test fill:#f3e5f5,stroke:#9c27b0,stroke-width:2px
-    style Logs fill:#fff3e0,stroke:#ff9800,stroke-width:2px
-    style Debug fill:#ffebee,stroke:#f44336,stroke-width:2px
+    classDef startEnd fill:#0078d4,stroke:#005a9e,stroke-width:3px,color:#fff
+    classDef ready fill:#28a745,stroke:#218838,stroke-width:3px,color:#fff
+    classDef process fill:#e3f2fd,stroke:#1976d2,stroke-width:2px,color:#0d47a1
+    classDef success fill:#e8f5e9,stroke:#4caf50,stroke-width:2px,color:#1b5e20
+    classDef test fill:#f3e5f5,stroke:#9c27b0,stroke-width:2px,color:#4a148c
+    classDef loop fill:#fff3e0,stroke:#ff9800,stroke-width:2px,color:#e65100
+    classDef debug fill:#ffebee,stroke:#f44336,stroke-width:2px,color:#b71c1c
+    classDef decision fill:#fff3e0,stroke:#f57c00,stroke-width:2px,color:#e65100
+
+    class Start startEnd
+    class Ready ready
+    class Code,Run,StartDocker,Stop,Cleanup process
+    class HotReload success
+    class Test test
+    class Logs,Review loop
+    class Debug debug
+    class Docker decision
 ```
 
 #### Local Development Features
@@ -302,17 +311,21 @@ flowchart LR
 
     LocalLoop --> Code
 
-    style Start fill:#0078d4,stroke:#005a9e,stroke-width:3px,color:#fff
-    style LocalReady fill:#28a745,stroke:#218838,stroke-width:3px,color:#fff
-    style AzureReady fill:#28a745,stroke:#218838,stroke-width:3px,color:#fff
-    style LocalSetup fill:#e3f2fd,stroke:#1976d2,stroke-width:2px
-    style AzureSetup fill:#f8f9fa,stroke:#6c757d,stroke-width:2px
-    style DevLoop fill:#fff3e0,stroke:#ff9800,stroke-width:4px
-    style Code fill:#e3f2fd,stroke:#1976d2,stroke-width:2px
-    style Test fill:#e8f5e9,stroke:#4caf50,stroke-width:2px
-    style Fix fill:#ffebee,stroke:#f44336,stroke-width:2px
-    style Debug fill:#ffebee,stroke:#f44336,stroke-width:2px
-    style ExitLoop fill:none,stroke:none
+    classDef startEnd fill:#0078d4,stroke:#005a9e,stroke-width:3px,color:#fff
+    classDef ready fill:#28a745,stroke:#218838,stroke-width:3px,color:#fff
+    classDef process fill:#e3f2fd,stroke:#1976d2,stroke-width:2px,color:#0d47a1
+    classDef success fill:#e8f5e9,stroke:#4caf50,stroke-width:2px,color:#1b5e20
+    classDef decision fill:#fff3e0,stroke:#f57c00,stroke-width:2px,color:#e65100
+    classDef debug fill:#ffebee,stroke:#f44336,stroke-width:2px,color:#b71c1c
+    classDef invisible fill:none,stroke:none
+
+    class Start startEnd
+    class LocalReady,AzureReady,LocalLoop ready
+    class LocalPrereq,LocalRun,Validate,Provision,Configure,Code process
+    class Test success
+    class ModeChoice,CheckValid,CheckDeploy,Review decision
+    class Fix,Debug debug
+    class ExitLoop invisible
 ```
 
 ### Comparison: Local vs. Azure Development
@@ -588,7 +601,7 @@ The postprovision hook executes after infrastructure is successfully deployed bu
 #### Execution Flow
 
 ```mermaid
-graph LR
+flowchart LR
     Start[azd provision] --> PrepHook
 
     subgraph PrepHook["Preprovision Hook"]
@@ -615,11 +628,13 @@ graph LR
 
     PostHook --> Complete[Deployment Complete]
 
-    style Start fill:#0078d4,stroke:#005a9e,stroke-width:2px,color:#fff
-    style Complete fill:#6f42c1,stroke:#5a32a3,stroke-width:2px,color:#fff
-    style PrepHook fill:#fff3cd,stroke:#ff9800,stroke-width:2px
-    style Deploy fill:#d4edda,stroke:#218838,stroke-width:2px
-    style PostHook fill:#cfe2ff,stroke:#138496,stroke-width:2px
+    classDef startNode fill:#0078d4,stroke:#005a9e,stroke-width:2px,color:#fff
+    classDef completeNode fill:#6f42c1,stroke:#5a32a3,stroke-width:2px,color:#fff
+    classDef process fill:#e3f2fd,stroke:#1976d2,stroke-width:2px,color:#0d47a1
+
+    class Start startNode
+    class Complete completeNode
+    class ValidateTools,CheckAuth,ClearSecrets,DeployBicep,SetEnvVars,AuthACR,ClearStale,ConfigSecrets,ConfigSQL process
 ```
 
 ### First-Time Setup
