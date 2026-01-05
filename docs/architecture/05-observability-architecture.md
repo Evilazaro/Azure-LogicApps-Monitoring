@@ -21,6 +21,7 @@ The solution implements the **Three Pillars of Observability** using OpenTelemet
 ## 2. Observability Topology
 
 ```mermaid
+%%{init: {'theme': 'base', 'themeVariables': { 'fontSize': '14px'}}}%%
 flowchart TB
     subgraph Services["🔧 Application Services"]
         API["Orders API<br/><i>Instrumented</i>"]
@@ -75,11 +76,12 @@ flowchart TB
     LAW --> Workbooks
     AI --> Alerts
 
-    classDef service fill:#e3f2fd,stroke:#1565c0
-    classDef instrumentation fill:#e8f5e9,stroke:#2e7d32
-    classDef collection fill:#fff3e0,stroke:#ef6c00
-    classDef backend fill:#f3e5f5,stroke:#7b1fa2
-    classDef analysis fill:#fce4ec,stroke:#c2185b
+    %% Accessible color palette for observability layers
+    classDef service fill:#e3f2fd,stroke:#1565c0,stroke-width:2px,color:#0d47a1
+    classDef instrumentation fill:#e8f5e9,stroke:#2e7d32,stroke-width:2px,color:#1b5e20
+    classDef collection fill:#fff3e0,stroke:#e65100,stroke-width:2px,color:#bf360c
+    classDef backend fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px,color:#4a148c
+    classDef analysis fill:#fce4ec,stroke:#c2185b,stroke-width:2px,color:#880e4f
 
     class API,Web,LA service
     class OTEL,Custom,Activity instrumentation
@@ -159,6 +161,7 @@ private static readonly Counter<long> ProcessingErrors =
 ### Trace Flow
 
 ```mermaid
+%%{init: {'theme': 'base', 'themeVariables': { 'fontSize': '14px', 'actorBkg': '#e3f2fd', 'actorBorder': '#1565c0', 'actorTextColor': '#0d47a1', 'noteBkgColor': '#fff3e0', 'noteBorderColor': '#e65100'}}}%%
 sequenceDiagram
     autonumber
     participant User as 👤 User
@@ -176,11 +179,20 @@ sequenceDiagram
     Note over API: Span: OrdersController.PlaceOrder
     API->>API: Validate Order
     Note over API: Span: OrderService.ProcessOrder
-    API->>DB: INSERT Order
-    Note over API: Span: SQL INSERT
-    API->>SB: Publish OrderPlaced
-    Note over API: Span: ServiceBus.Send
-    Note over SB: Trace Context in Message Headers
+    
+    rect rgba(232, 245, 233, 0.5)
+        Note over API,DB: Database Operations
+        API->>DB: INSERT Order
+        Note over API: Span: SQL INSERT
+    end
+    
+    rect rgba(255, 243, 224, 0.5)
+        Note over API,SB: Messaging Operations
+        API->>SB: Publish OrderPlaced
+        Note over API: Span: ServiceBus.Send
+        Note over SB: Trace Context in Message Headers
+    end
+    
     SB-->>LA: Trigger Workflow
     Note over LA: Correlation via traceparent
     API-->>Web: 201 Created
