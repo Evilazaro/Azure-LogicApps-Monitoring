@@ -169,6 +169,7 @@ public sealed class OrderService : IOrderService
         _logger.LogInformation("Placing batch of {Count} orders with parallel processing", ordersList.Count);
 
         var placedOrders = new System.Collections.Concurrent.ConcurrentBag<Order>();
+        var skippedOrders = new System.Collections.Concurrent.ConcurrentBag<Order>();
         var failedOrders = new System.Collections.Concurrent.ConcurrentBag<(string OrderId, string ErrorMessage)>();
 
         // Use more conservative parallelism for resource-intensive operations
@@ -198,11 +199,24 @@ public sealed class OrderService : IOrderService
 
                     var orderStartTime = DateTime.UtcNow;
 
-                    // Check if order already exists using scoped repository
+                    // Check if order already exists using scoped repository (idempotency check)
                     var existingOrder = await scopedRepository.GetOrderByIdAsync(order.Id, ct);
                     if (existingOrder != null)
                     {
-                        throw new InvalidOperationException($"Order with ID {order.Id} already exists");
+                        // Order already exists - treat as idempotent success, skip processing
+                        _logger.LogInformation("Order {OrderId} already exists, skipping (idempotent)", order.Id);
+                        orderActivity?.SetTag("order.skipped", true);
+                        orderActivity?.SetTag("order.skip_reason", "duplicate");
+                        skippedOrders.Add(existingOrder);
+                        
+                        var skipTags = new TagList
+                        {
+                            { "order.status", "skipped" },
+                            { "order.skip_reason", "duplicate" }
+                        };
+                        OrdersPlacedCounter.Add(1, skipTags);
+                        orderActivity?.SetStatus(ActivityStatusCode.Ok);
+                        return;
                     }
 
                     // Save order using scoped repository
@@ -240,14 +254,14 @@ public sealed class OrderService : IOrderService
         }
         catch (OperationCanceledException)
         {
-            _logger.LogWarning("Batch processing was cancelled after processing {Count} orders", placedOrders.Count);
+            _logger.LogWarning("Batch processing was cancelled after processing {Count} orders", placedOrders.Count + skippedOrders.Count);
             throw;
         }
 
         var duration = (DateTime.UtcNow - startTime).TotalMilliseconds;
         _logger.LogInformation(
-            "Batch processing complete in {Duration}ms. {SuccessCount} orders placed successfully, {FailedCount} failed",
-            duration, placedOrders.Count, failedOrders.Count);
+            "Batch processing complete in {Duration}ms. {SuccessCount} orders placed, {SkippedCount} skipped (duplicates), {FailedCount} failed",
+            duration, placedOrders.Count, skippedOrders.Count, failedOrders.Count);
 
         if (failedOrders.Count > 0)
         {
@@ -256,11 +270,13 @@ public sealed class OrderService : IOrderService
                 {
                     { "failed.count", failedOrders.Count },
                     { "success.count", placedOrders.Count },
+                    { "skipped.count", skippedOrders.Count },
                     { "failed.orders", string.Join(", ", failedOrders.Select(f => f.OrderId)) }
                 }));
         }
 
-        return placedOrders.ToList();
+        // Return both newly placed and skipped (already existing) orders as successful results
+        return placedOrders.Concat(skippedOrders).ToList();
     }
 
     /// <summary>
