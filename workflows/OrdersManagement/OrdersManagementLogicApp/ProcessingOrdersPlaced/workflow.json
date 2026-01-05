@@ -1,169 +1,68 @@
 {
-  "definition": {
-    "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
-    "contentVersion": "1.0.0.0",
-    "actions": {
-      "Condition": {
-        "type": "If",
-        "expression": {
-          "and": [
-            {
-              "equals": [
-                "@triggerBody()?['ContentType']",
-                "application/json"
-              ]
-            }
-          ]
-        },
+    "definition": {
+        "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+        "contentVersion": "1.0.0.0",
         "actions": {
-          "HTTP": {
-            "type": "Http",
-            "inputs": {
-              "uri": "https://orders-api.proudfield-6198cc18.eastus2.azurecontainerapps.io/api/Orders/process",
-              "method": "POST",
-              "headers": {
-                "accept": "text/plain",
-                "Content-type": "application/json"
-              }
-            },
-            "runtimeConfiguration": {
-              "contentTransfer": {
-                "transferMode": "Chunked"
-              }
-            }
-          },
-          "Condition_1": {
-            "type": "If",
-            "expression": {
-              "and": [
-                {
-                  "equals": [
-                    "@outputs('HTTP')?['statusCode']",
-                    201
-                  ]
-                }
-              ]
-            },
-            "actions": {
-              "Create_blob_(V2)_1": {
-                "type": "ApiConnection",
-                "inputs": {
-                  "host": {
-                    "connection": {
-                      "referenceName": "azureblob"
-                    }
-                  },
-                  "method": "post",
-                  "body": "@base64ToBinary(triggerBody()?['ContentData'])",
-                  "headers": {
-                    "ReadFileMetadataFromServer": true
-                  },
-                  "path": "/v2/datasets/@{encodeURIComponent(encodeURIComponent('orderswsamutmrslo2xjhc'))}/files",
-                  "queries": {
-                    "folderPath": "/ordersprocessedsuccessfully",
-                    "name": "@triggerBody()?['MessageId']",
-                    "queryParametersSingleEncoded": true
-                  }
+            "Condition": {
+                "type": "If",
+                "expression": {
+                    "and": [
+                        {
+                            "equals": [
+                                "@triggerBody()?['ContentType']",
+                                "application/json"
+                            ]
+                        }
+                    ]
                 },
-                "runtimeConfiguration": {
-                  "contentTransfer": {
-                    "transferMode": "Chunked"
-                  }
-                }
-              }
-            },
-            "else": {
-              "actions": {
-                "Create_blob_(V2)-2": {
-                  "type": "ApiConnection",
-                  "inputs": {
-                    "host": {
-                      "connection": {
-                        "referenceName": "azureblob"
-                      }
+                "actions": {
+                    "HTTP": {
+                        "type": "Http",
+                        "inputs": {
+                            "uri": "https://orders-api.proudfield-6198cc18.eastus2.azurecontainerapps.io/api/Orders/process",
+                            "method": "POST",
+                            "headers": {
+                                "accept": "text/plain",
+                                "Content-type": "application/json"
+                            }
+                        },
+                        "runtimeConfiguration": {
+                            "contentTransfer": {
+                                "transferMode": "Chunked"
+                            }
+                        }
                     },
-                    "method": "post",
-                    "body": "@base64ToBinary(triggerBody()?['ContentData'])",
-                    "headers": {
-                      "ReadFileMetadataFromServer": true
-                    },
-                    "path": "/v2/datasets/@{encodeURIComponent(encodeURIComponent('orderswsamutmrslo2xjhc'))}/files",
-                    "queries": {
-                      "folderPath": "/ordersprocessedwitherrors",
-                      "name": "@triggerBody()?['MessageId']",
-                      "queryParametersSingleEncoded": true
+                    "Condition_1": {
+                        "type": "If",
+                        "expression": {
+                            "and": [
+                                {
+                                    "equals": [
+                                        "@outputs('HTTP')?['statusCode']",
+                                        201
+                                    ]
+                                }
+                            ]
+                        },
+                        "actions": {},
+                        "else": {
+                            "actions": {}
+                        },
+                        "runAfter": {
+                            "HTTP": [
+                                "SUCCEEDED"
+                            ]
+                        }
                     }
-                  },
-                  "runtimeConfiguration": {
-                    "contentTransfer": {
-                      "transferMode": "Chunked"
-                    }
-                  }
-                }
-              }
-            },
-            "runAfter": {
-              "HTTP": [
-                "SUCCEEDED"
-              ]
-            }
-          }
-        },
-        "else": {
-          "actions": {
-            "Create_blob_(V2)": {
-              "type": "ApiConnection",
-              "inputs": {
-                "host": {
-                  "connection": {
-                    "referenceName": "azureblob"
-                  }
                 },
-                "method": "post",
-                "body": "@base64ToBinary(triggerBody()?['ContentData'])",
-                "headers": {
-                  "ReadFileMetadataFromServer": true
+                "else": {
+                    "actions": {}
                 },
-                "path": "/v2/datasets/@{encodeURIComponent(encodeURIComponent('orderswsamutmrslo2xjhc'))}/files",
-                "queries": {
-                  "folderPath": "/ordersprocessedwitherrors",
-                  "name": "@triggerBody()?['MessageId']",
-                  "queryParametersSingleEncoded": true
-                }
-              },
-              "runtimeConfiguration": {
-                "contentTransfer": {
-                  "transferMode": "Chunked"
-                }
-              }
+                "runAfter": {}
             }
-          }
         },
-        "runAfter": {}
-      }
+        "outputs": {},
+        "triggers": {}
     },
-    "outputs": {},
-    "triggers": {
-      "When_a_message_is_received_in_a_topic_subscription_(auto-complete)": {
-        "type": "ApiConnection",
-        "inputs": {
-          "host": {
-            "connection": {
-              "referenceName": "servicebus"
-            }
-          },
-          "method": "get",
-          "path": "/@{encodeURIComponent(encodeURIComponent('ordersplaced'))}/subscriptions/@{encodeURIComponent('orderprocessingsub')}/messages/head",
-          "queries": {
-            "subscriptionType": "Main"
-          }
-        },
-        "recurrence": {
-          "interval": 1,
-          "frequency": "Second"
-        }
-      }
-    }
-  },
-  "kind": "stateful"
+    "kind": "stateful"
 }

@@ -4,5 +4,13 @@
       "name": "OrdersManagementLogicApp",
       "path": "./OrdersManagementLogicApp"
     }
-  ]
+  ],
+  "settings": {
+    "terminal.integrated.env.windows": {
+      "PATH": "C:\\Users\\evalvesd\\.azurelogicapps\\dependencies\\DotNetSDK;${env:PATH}"
+    },
+    "omnisharp.dotNetCliPaths": [
+      "C:\\Users\\evalvesd\\.azurelogicapps\\dependencies\\DotNetSDK"
+    ]
+  }
 }
