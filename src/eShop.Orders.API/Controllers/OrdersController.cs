@@ -5,7 +5,6 @@
 
 using app.ServiceDefaults.CommonTypes;
 using eShop.Orders.API.Services.Interfaces;
-using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using System.Diagnostics;
 
