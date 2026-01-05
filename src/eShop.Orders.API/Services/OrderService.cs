@@ -175,16 +175,21 @@ public sealed class OrderService : IOrderService
 
         // Process ID checks in smaller batches to avoid overwhelming the database
         const int checkBatchSize = 100;
+        const int maxConcurrentChecks = 10; // Limit concurrent database operations
         var idBatches = orderIds
             .Select((id, index) => new { id, index })
             .GroupBy(x => x.index / checkBatchSize)
             .Select(g => g.Select(x => x.id).ToList())
             .ToList();
 
+        // Use a semaphore to limit concurrent database connections during ID checks
+        using var checkSemaphore = new SemaphoreSlim(maxConcurrentChecks);
+
         foreach (var idBatch in idBatches)
         {
             var checkTasks = idBatch.Select(async id =>
             {
+                await checkSemaphore.WaitAsync(cancellationToken);
                 try
                 {
                     // Create a new scope for each parallel check to ensure thread-safe DbContext usage
@@ -200,9 +205,18 @@ public sealed class OrderService : IOrderService
                         }
                     }
                 }
+                catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+                {
+                    // Propagate cancellation - don't log as warning
+                    throw;
+                }
                 catch (Exception ex)
                 {
                     _logger.LogWarning(ex, "Failed to check if order {OrderId} exists", id);
+                }
+                finally
+                {
+                    checkSemaphore.Release();
                 }
             });
 
