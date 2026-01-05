@@ -187,7 +187,11 @@ public sealed class OrderService : IOrderService
             {
                 try
                 {
-                    var exists = await _orderRepository.GetOrderByIdAsync(id, cancellationToken);
+                    // Create a new scope for each parallel check to ensure thread-safe DbContext usage
+                    await using var scope = _serviceScopeFactory.CreateAsyncScope();
+                    var scopedRepository = scope.ServiceProvider.GetRequiredService<IOrderRepository>();
+                    
+                    var exists = await scopedRepository.GetOrderByIdAsync(id, cancellationToken);
                     if (exists != null)
                     {
                         lock (lockObject)
