@@ -37,6 +37,7 @@ public sealed class OrderRepository : IOrderRepository
     /// <summary>
     /// Saves an order to the database asynchronously.
     /// Creates a new order if it doesn't exist.
+    /// Uses an internal timeout to prevent HTTP request cancellation from interrupting database transactions.
     /// </summary>
     /// <param name="order">The order to save.</param>
     /// <param name="cancellationToken">Cancellation token to cancel the operation.</param>
@@ -61,6 +62,11 @@ public sealed class OrderRepository : IOrderRepository
             ["OrderId"] = order.Id
         });
 
+        // Use internal timeout to prevent HTTP cancellation from interrupting database commits
+        // This ensures data consistency even if the HTTP request is cancelled
+        using var dbCts = new CancellationTokenSource(TimeSpan.FromSeconds(30));
+        var dbToken = dbCts.Token;
+
         try
         {
             _logger.LogDebug("Saving order {OrderId} to database", order.Id);
@@ -69,8 +75,8 @@ public sealed class OrderRepository : IOrderRepository
             var orderEntity = order.ToEntity();
 
             // Add new order - EF Core will handle duplicate detection via exception
-            await _dbContext.Orders.AddAsync(orderEntity, cancellationToken);
-            await _dbContext.SaveChangesAsync(cancellationToken);
+            await _dbContext.Orders.AddAsync(orderEntity, dbToken);
+            await _dbContext.SaveChangesAsync(dbToken);
 
             activity?.AddEvent(new ActivityEvent("SaveOrderCompleted"));
             _logger.LogDebug("Order {OrderId} saved to database successfully", order.Id);
@@ -190,6 +196,10 @@ public sealed class OrderRepository : IOrderRepository
             ["OrderId"] = orderId
         });
 
+        // Use internal timeout to prevent HTTP cancellation from interrupting database queries
+        using var dbCts = new CancellationTokenSource(TimeSpan.FromSeconds(15));
+        var dbToken = dbCts.Token;
+
         try
         {
             _logger.LogDebug("Retrieving order {OrderId} from database", orderId);
@@ -198,7 +208,7 @@ public sealed class OrderRepository : IOrderRepository
                 .Include(o => o.Products)
                 .AsNoTracking()
                 .AsSplitQuery() // Use split query for better performance
-                .FirstOrDefaultAsync(o => o.Id == orderId, cancellationToken);
+                .FirstOrDefaultAsync(o => o.Id == orderId, dbToken);
 
             var order = orderEntity?.ToDomainModel();
 
@@ -236,6 +246,7 @@ public sealed class OrderRepository : IOrderRepository
 
     /// <summary>
     /// Deletes an order from the database by its unique identifier.
+    /// Uses an internal timeout to prevent HTTP request cancellation from interrupting database transactions.
     /// </summary>
     /// <param name="orderId">The unique identifier of the order to delete.</param>
     /// <param name="cancellationToken">Cancellation token to cancel the operation.</param>
@@ -262,13 +273,18 @@ public sealed class OrderRepository : IOrderRepository
             ["OrderId"] = orderId
         });
 
+        // Use internal timeout to prevent HTTP cancellation from interrupting database commits
+        // This ensures data consistency even if the HTTP request is cancelled
+        using var dbCts = new CancellationTokenSource(TimeSpan.FromSeconds(30));
+        var dbToken = dbCts.Token;
+
         try
         {
             _logger.LogInformation("Deleting order {OrderId} from database", orderId);
 
             var orderEntity = await _dbContext.Orders
                 .Include(o => o.Products)
-                .FirstOrDefaultAsync(o => o.Id == orderId, cancellationToken);
+                .FirstOrDefaultAsync(o => o.Id == orderId, dbToken);
 
             if (orderEntity == null)
             {
@@ -282,7 +298,7 @@ public sealed class OrderRepository : IOrderRepository
             }
 
             _dbContext.Orders.Remove(orderEntity);
-            await _dbContext.SaveChangesAsync(cancellationToken);
+            await _dbContext.SaveChangesAsync(dbToken);
 
             activity?.AddEvent(new ActivityEvent("DeleteOrderCompleted", tags: new ActivityTagsCollection
             {
@@ -301,6 +317,114 @@ public sealed class OrderRepository : IOrderRepository
                 { "exception.type", ex.GetType().FullName ?? ex.GetType().Name }
             }));
             _logger.LogError(ex, "Error deleting order {OrderId} from database", orderId);
+            throw;
+        }
+    }
+
+    /// <summary>
+    /// Checks if an order exists in the database by its unique identifier.
+    /// This is an optimized operation that performs a simple existence check without loading the entity.
+    /// </summary>
+    /// <param name="orderId">The unique identifier of the order.</param>
+    /// <param name="cancellationToken">Cancellation token to cancel the operation.</param>
+    /// <returns>True if the order exists; otherwise, false.</returns>
+    /// <exception cref="ArgumentException">Thrown when orderId is null or empty.</exception>
+    public async Task<bool> OrderExistsAsync(string orderId, CancellationToken cancellationToken = default)
+    {
+        if (string.IsNullOrWhiteSpace(orderId))
+        {
+            throw new ArgumentException("Order ID cannot be null or empty", nameof(orderId));
+        }
+
+        using var activity = Activity.Current;
+        activity?.AddEvent(new ActivityEvent("OrderExistsCheckStarted", tags: new ActivityTagsCollection
+        {
+            { "order.id", orderId }
+        }));
+
+        try
+        {
+            // Use AnyAsync for efficient existence check - single query, no entity materialization
+            var exists = await _dbContext.Orders
+                .AsNoTracking()
+                .AnyAsync(o => o.Id == orderId, cancellationToken);
+
+            activity?.AddEvent(new ActivityEvent("OrderExistsCheckCompleted", tags: new ActivityTagsCollection
+            {
+                { "order.exists", exists }
+            }));
+
+            _logger.LogDebug("Order existence check for {OrderId}: {Exists}", orderId, exists);
+            return exists;
+        }
+        catch (Exception ex)
+        {
+            activity?.AddEvent(new ActivityEvent("OrderExistsCheckFailed", tags: new ActivityTagsCollection
+            {
+                { "error.type", ex.GetType().Name },
+                { "exception.message", ex.Message }
+            }));
+            _logger.LogError(ex, "Failed to check existence of order {OrderId}", orderId);
+            throw;
+        }
+    }
+
+    /// <summary>
+    /// Checks the existence of multiple orders by their unique identifiers.
+    /// Returns a set of order IDs that exist in the database.
+    /// </summary>
+    /// <param name="orderIds">The collection of unique identifiers of the orders.</param>
+    /// <param name="cancellationToken">Cancellation token to cancel the operation.</param>
+    /// <returns>A set of existing order IDs.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when orderIds is null.</exception>
+    public async Task<HashSet<string>> GetExistingOrderIdsAsync(IEnumerable<string> orderIds, CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(orderIds);
+
+        using var activity = Activity.Current;
+        activity?.AddEvent(new ActivityEvent("GetExistingOrderIdsStarted", tags: new ActivityTagsCollection
+        {
+            { "orderIds.count", orderIds.Count() }
+        }));
+
+        // Add trace context to log scope for correlation
+        using var logScope = _logger.BeginScope(new Dictionary<string, object>
+        {
+            ["TraceId"] = Activity.Current?.TraceId.ToString() ?? "none",
+            ["SpanId"] = Activity.Current?.SpanId.ToString() ?? "none"
+        });
+
+        try
+        {
+            _logger.LogDebug("Checking existence of {Count} orders in database", orderIds.Count());
+
+            var orderIdList = orderIds.ToList();
+
+            // Use a batched query instead of N individual queries
+            var existingIds = await _dbContext.Orders
+                .Where(o => orderIdList.Contains(o.Id))
+                .Select(o => o.Id)
+                .ToListAsync(cancellationToken);
+
+            var existingIdSet = new HashSet<string>(existingIds);
+
+            activity?.AddEvent(new ActivityEvent("GetExistingOrderIdsCompleted", tags: new ActivityTagsCollection
+            {
+                { "existingOrderIds.count", existingIdSet.Count }
+            }));
+
+            _logger.LogDebug("Checked existence of {Count} orders, found {FoundCount} existing", orderIds.Count(), existingIdSet.Count);
+
+            return existingIdSet;
+        }
+        catch (Exception ex)
+        {
+            activity?.AddEvent(new ActivityEvent("GetExistingOrderIdsFailed", tags: new ActivityTagsCollection
+            {
+                { "error.type", ex.GetType().Name },
+                { "exception.message", ex.Message }
+            }));
+            _logger.LogError(ex, "Failed to check existence of orders batch");
             throw;
         }
     }

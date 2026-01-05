@@ -12,6 +12,21 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.AddServiceDefaults();
 
+// Configure distributed memory cache for session state
+// In production with multiple instances, consider using Redis or SQL Server
+builder.Services.AddDistributedMemoryCache();
+
+// Configure session management
+builder.Services.AddSession(options =>
+{
+    options.IdleTimeout = TimeSpan.FromMinutes(30);
+    options.Cookie.Name = ".eShop.Session";
+    options.Cookie.HttpOnly = true;
+    options.Cookie.IsEssential = true;
+    options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
+    options.Cookie.SameSite = SameSiteMode.Strict;
+});
+
 // Register observability components for dependency injection
 builder.Services.AddSingleton(new ActivitySource("eShop.Web.App"));
 
@@ -46,7 +61,9 @@ builder.Services.Configure<Microsoft.AspNetCore.Components.Server.CircuitOptions
     options.MaxBufferedUnacknowledgedRenderBatches = 10;
 });
 
-// Configure typed HTTP client for Orders API with resilience and service discovery
+// Configure typed HTTP client for Orders API with service discovery
+// Note: Resilience policies (retry, timeout, circuit breaker) are already configured
+// globally by AddServiceDefaults() with appropriate timeouts for batch operations
 builder.Services.AddHttpClient<OrdersAPIService>(client =>
 {
     var baseAddress = builder.Configuration["services:orders-api:https:0"];
@@ -61,10 +78,9 @@ builder.Services.AddHttpClient<OrdersAPIService>(client =>
     client.BaseAddress = new Uri(baseAddress);
     client.DefaultRequestHeaders.Add("Accept", "application/json");
     client.DefaultRequestHeaders.Add("User-Agent", "eShop.Web.App");
-    client.Timeout = TimeSpan.FromMinutes(5);
+    client.Timeout = TimeSpan.FromMinutes(10); // Allow enough time for batch operations
 })
-.AddServiceDiscovery() // Enables service discovery - must be called before AddStandardResilienceHandler
-.AddStandardResilienceHandler(); // Add retry, timeout, and circuit breaker policies
+.AddServiceDiscovery(); // Service discovery for endpoint resolution
 
 builder.Services.AddFluentUIComponents();
 
@@ -85,6 +101,8 @@ else
 }
 
 app.UseHttpsRedirection();
+
+app.UseSession();
 
 app.UseAntiforgery();
 

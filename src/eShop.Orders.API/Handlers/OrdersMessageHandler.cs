@@ -55,6 +55,7 @@ public sealed class OrdersMessageHandler : IOrdersMessageHandler
 
     /// <summary>
     /// Sends a single order message to the Service Bus topic asynchronously.
+    /// Uses an independent timeout to prevent HTTP request cancellation from affecting message delivery.
     /// </summary>
     /// <param name="order">The order to be published.</param>
     /// <param name="cancellationToken">Cancellation token to cancel the operation.</param>
@@ -98,7 +99,35 @@ public sealed class OrdersMessageHandler : IOrdersMessageHandler
                 }
             }
 
-            await sender.SendMessageAsync(message, cancellationToken);
+            // Use independent timeout to prevent HTTP cancellation from interrupting Service Bus operations
+            // This ensures messages are sent even if the HTTP request is cancelled by client/load balancer
+            using var sendCts = new CancellationTokenSource(TimeSpan.FromSeconds(30));
+
+            const int maxRetries = 3;
+            var retryDelayMs = 500;
+
+            for (var attempt = 1; attempt <= maxRetries; attempt++)
+            {
+                try
+                {
+                    await sender.SendMessageAsync(message, sendCts.Token);
+                    break; // Success, exit retry loop
+                }
+                catch (ServiceBusException sbEx) when (sbEx.IsTransient && attempt < maxRetries)
+                {
+                    _logger.LogWarning("Transient Service Bus error on attempt {Attempt}/{MaxRetries} for order {OrderId}: {Message}",
+                        attempt, maxRetries, order.Id, sbEx.Message);
+                    await Task.Delay(retryDelayMs, CancellationToken.None);
+                    retryDelayMs *= 2; // Exponential backoff
+                }
+                catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested && !sendCts.IsCancellationRequested)
+                {
+                    // HTTP request was cancelled, but our send timeout hasn't expired - continue sending
+                    _logger.LogWarning("HTTP request cancelled during Service Bus send for order {OrderId}, continuing with internal timeout", order.Id);
+                    await sender.SendMessageAsync(message, sendCts.Token);
+                    break;
+                }
+            }
 
             activity?.SetStatus(ActivityStatusCode.Ok);
             _logger.LogInformation("Successfully sent order message for order {OrderId} to topic {TopicName}",
@@ -113,6 +142,15 @@ public sealed class OrdersMessageHandler : IOrdersMessageHandler
             _logger.LogError(ex, "Failed to send order message for order {OrderId} to topic {TopicName}. Reason: {Reason}",
                 order.Id, _topicName, ex.Reason);
             throw;
+        }
+        catch (OperationCanceledException ex) when (!cancellationToken.IsCancellationRequested)
+        {
+            // Internal timeout expired
+            activity?.SetStatus(ActivityStatusCode.Error, "Service Bus send timeout");
+            activity?.SetTag("error.type", "Timeout");
+            _logger.LogError(ex, "Timeout sending order message for order {OrderId} to topic {TopicName} after 30 seconds",
+                order.Id, _topicName);
+            throw new TimeoutException($"Timeout sending order message for order {order.Id}", ex);
         }
         catch (Exception ex)
         {
