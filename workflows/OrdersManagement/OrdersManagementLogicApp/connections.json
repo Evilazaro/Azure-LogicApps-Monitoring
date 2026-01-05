@@ -2,40 +2,40 @@
     "managedApiConnections": {
         "servicebus": {
             "api": {
-                "id": "/subscriptions/6a4029ea-399b-4933-9701-436db72883d4/providers/Microsoft.Web/locations/westus3/managedApis/servicebus"
+                "id": "/subscriptions/${AZURE_SUBSCRIPTION_ID}/providers/Microsoft.Web/locations/westus3/managedApis/servicebus"
             },
             "connection": {
-                "id": "/subscriptions/6a4029ea-399b-4933-9701-436db72883d4/resourceGroups/rg-orders-staging-westus3/providers/Microsoft.Web/connections/servicebus"
+                "id": "/subscriptions/${AZURE_SUBSCRIPTION_ID}/resourceGroups/${AZURE_RESOURCE_GROUP}/providers/Microsoft.Web/connections/servicebus"
             },
             "authentication": {
                 "type": "ManagedServiceIdentity",
-                "identity": "/subscriptions/6a4029ea-399b-4933-9701-436db72883d4/resourcegroups/rg-orders-staging-westus3/providers/Microsoft.ManagedIdentity/userAssignedIdentities/orders-m2jnrlj5t3ejc-mi"
+                "identity": "/subscriptions/${AZURE_SUBSCRIPTION_ID}/resourcegroups/${AZURE_RESOURCE_GROUP}/providers/Microsoft.ManagedIdentity/userAssignedIdentities/${MANAGED_IDENTITY_NAME}"
             },
-            "connectionRuntimeUrl": "https://5a6ae91ddbd8ab93.19.common.logic-westus3.azure-apihub.net/apim/servicebus/4884506c72744ae28a5362cc483d1ae3",
+            "connectionRuntimeUrl": "${SERVICE_BUS_CONNECTION_RUNTIME_URL}",
             "connectionProperties": {
                 "authentication": {
                     "type": "ManagedServiceIdentity",
-                    "identity": "/subscriptions/6a4029ea-399b-4933-9701-436db72883d4/resourcegroups/rg-orders-staging-westus3/providers/Microsoft.ManagedIdentity/userAssignedIdentities/orders-m2jnrlj5t3ejc-mi",
+                    "identity": "/subscriptions/${AZURE_SUBSCRIPTION_ID}/resourcegroups/${AZURE_RESOURCE_GROUP}/providers/Microsoft.ManagedIdentity/userAssignedIdentities/${MANAGED_IDENTITY_NAME}",
                     "audience": "https://servicebus.azure.net"
                 }
             }
         },
         "azureblob": {
             "api": {
-                "id": "/subscriptions/6a4029ea-399b-4933-9701-436db72883d4/providers/Microsoft.Web/locations/westus3/managedApis/azureblob"
+                "id": "/subscriptions/${AZURE_SUBSCRIPTION_ID}/providers/Microsoft.Web/locations/westus3/managedApis/azureblob"
             },
             "connection": {
-                "id": "/subscriptions/6a4029ea-399b-4933-9701-436db72883d4/resourceGroups/rg-orders-staging-westus3/providers/Microsoft.Web/connections/azureblob"
+                "id": "/subscriptions/${AZURE_SUBSCRIPTION_ID}/resourceGroups/${AZURE_RESOURCE_GROUP}/providers/Microsoft.Web/connections/azureblob"
             },
             "authentication": {
                 "type": "ManagedServiceIdentity",
-                "identity": "/subscriptions/6a4029ea-399b-4933-9701-436db72883d4/resourcegroups/rg-orders-staging-westus3/providers/Microsoft.ManagedIdentity/userAssignedIdentities/orders-m2jnrlj5t3ejc-mi"
+                "identity": "/subscriptions/${AZURE_SUBSCRIPTION_ID}/resourcegroups/${AZURE_RESOURCE_GROUP}/providers/Microsoft.ManagedIdentity/userAssignedIdentities/${MANAGED_IDENTITY_NAME}"
             },
-            "connectionRuntimeUrl": "https://5a6ae91ddbd8ab93.19.common.logic-westus3.azure-apihub.net/apim/azureblob/638858d8dcf54c8aba2bfce9c89f9f1a",
+            "connectionRuntimeUrl": "${AZURE_BLOB_CONNECTION_RUNTIME_URL}",
             "connectionProperties": {
                 "authentication": {
                     "type": "ManagedServiceIdentity",
-                    "identity": "/subscriptions/6a4029ea-399b-4933-9701-436db72883d4/resourcegroups/rg-orders-staging-westus3/providers/Microsoft.ManagedIdentity/userAssignedIdentities/orders-m2jnrlj5t3ejc-mi",
+                    "identity": "/subscriptions/${AZURE_SUBSCRIPTION_ID}/resourcegroups/${AZURE_RESOURCE_GROUP}/providers/Microsoft.ManagedIdentity/userAssignedIdentities/${MANAGED_IDENTITY_NAME}",
                     "audience": "https://storage.azure.com/"
                 }
             }
