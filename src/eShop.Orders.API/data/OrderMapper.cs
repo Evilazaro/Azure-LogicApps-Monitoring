@@ -1,3 +1,8 @@
+// =============================================================================
+// Order Mapper - Domain-Entity Mapping
+// Provides mapping between domain models and database entities
+// =============================================================================
+
 using app.ServiceDefaults.CommonTypes;
 using eShop.Orders.API.Data.Entities;
 

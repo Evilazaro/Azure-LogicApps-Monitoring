@@ -1,3 +1,8 @@
+// =============================================================================
+// Order Product Entity - Database Model
+// Represents a product item within an order in the database
+// =============================================================================
+
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 

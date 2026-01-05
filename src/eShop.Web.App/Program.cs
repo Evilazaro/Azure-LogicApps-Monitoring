@@ -1,3 +1,8 @@
+// =============================================================================
+// eShop Web App - Entry Point
+// Blazor Server application for eShop order management UI
+// =============================================================================
+
 using eShop.Web.App.Components;
 using eShop.Web.App.Components.Services;
 using Microsoft.FluentUI.AspNetCore.Components;

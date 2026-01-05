@@ -85,7 +85,7 @@ IFS=$' \t\n'
 #==============================================================================
 
 # Script version following semantic versioning (MAJOR.MINOR.PATCH)
-readonly SCRIPT_VERSION="2.0.0"
+readonly SCRIPT_VERSION="2.0.1"
 
 # Script name for consistent logging and error messages
 readonly SCRIPT_NAME="clean-secrets.sh"

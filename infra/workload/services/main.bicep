@@ -104,7 +104,7 @@ resource registry 'Microsoft.ContainerRegistry/registries@2025-11-01' = {
   // - Advanced security features including content trust
   // - Private link support for network isolation
   sku: {
-    name: 'Premium'
+    name: 'Basic'
   }
 }
 

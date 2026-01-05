@@ -1,3 +1,22 @@
+/*
+  Shared Infrastructure Module
+  ============================
+  Orchestrates deployment of shared infrastructure components.
+  
+  Components:
+  - Identity: User-assigned managed identity with role assignments
+  - Monitoring: Log Analytics workspace and Application Insights
+  - Data: Storage accounts and SQL Server database
+  
+  Deployment Order:
+  - Identity first (required by other modules)
+  - Monitoring second (provides workspace IDs for diagnostics)
+  - Data last (depends on identity and monitoring outputs)
+*/
+
+metadata name = 'Shared Infrastructure'
+metadata description = 'Deploys identity, monitoring, and data infrastructure for the solution'
+
 // ========== Type Definitions ==========
 
 import { tagsType } from '../types.bicep'
@@ -64,9 +83,8 @@ module identity 'identity/main.bicep' = {
   }
 }
 
-// ========== Outputs ==========
+// ========== Identity Outputs ==========
 
-// Identity Outputs
 @description('Resource ID of the deployed managed identity (internal use only)')
 output AZURE_MANAGED_IDENTITY_ID string = identity.outputs.AZURE_MANAGED_IDENTITY_ID
 
@@ -87,7 +105,7 @@ module monitoring 'monitoring/main.bicep' = {
   }
 }
 
-// ========== Outputs ==========
+// ========== Monitoring Outputs ==========
 
 // Log Analytics Workspace Outputs (Microsoft.OperationalInsights/workspaces)
 @description('Resource ID of the Log Analytics workspace for configuring diagnostic settings')
@@ -132,6 +150,8 @@ module data 'data/main.bicep' = {
     tags: tags
   }
 }
+
+// ========== Data Outputs ==========
 
 @description('Storage account name for Logic Apps workflows and data')
 output AZURE_STORAGE_ACCOUNT_NAME_WORKFLOW string = data.outputs.AZURE_STORAGE_ACCOUNT_NAME_WORKFLOW

@@ -1,4 +1,9 @@
-﻿using app.ServiceDefaults.CommonTypes;
+﻿// =============================================================================
+// Order Service Interface
+// Defines the contract for order business logic operations
+// =============================================================================
+
+using app.ServiceDefaults.CommonTypes;
 
 namespace eShop.Orders.API.Services.Interfaces;
 

@@ -40,6 +40,7 @@ With comprehensive validation, error handling, SQL managed identity configuratio
 - [Configured User Secrets](#-configured-user-secrets)
   - [app.AppHost Project (23 secrets)](#appapphost-project-23-secrets)
   - [eShop.Orders.API Project (3 secrets)](#eshopordersapi-project-3-secrets)
+  - [eShop.Web.App Project (1 secret)](#eshopwebapp-project-1-secret)
 - [SQL Database Managed Identity Configuration](#-sql-database-managed-identity-configuration)
   - [Roles Assigned](#roles-assigned)
   - [Configuration Process](#configuration-process)
@@ -287,7 +288,7 @@ What if: Performing operation "Configure User Secrets" with configuration:
     2. Authenticate to Azure Container Registry
     3. Clear existing secrets
     4. Configure SQL Database Managed Identity
-    5. Configure 26 new secrets across 2 projects
+    5. Configure 27 new secrets across 3 projects
 
 No changes were made. This was a simulation.
 ```
@@ -440,6 +441,14 @@ The API project receives minimal configuration as it relies on managed identity 
 | `Azure:ClientId`                       | `AZURE_CLIENT_ID` | Managed Identity client ID         |
 | `ApplicationInsights:ConnectionString` | Bicep output      | Monitoring and telemetry           |
 
+### eShop.Web.App Project (1 secret)
+
+The Web App project receives minimal configuration for frontend monitoring and telemetry.
+
+| Secret Key                             | Source       | Purpose                  |
+| -------------------------------------- | ------------ | ------------------------ |
+| `ApplicationInsights:ConnectionString` | Bicep output | Monitoring and telemetry |
+
 ## 🔒 SQL Database Managed Identity Configuration
 
 A critical feature of this script is the automatic configuration of Azure SQL Database access using managed identities. This section executes after secret configuration and performs the following:
@@ -479,61 +488,55 @@ The script executes a comprehensive post-provisioning configuration workflow:
 ```mermaid
 flowchart LR
     Start(["🚀 azd provision completes"])
-    Validate["Validate Environment Variables"]
-    ReadVars["Read Azure Configuration"]
-    ACRLogin["Azure Container Registry Login"]
-    VerifyTools["Verify Prerequisites (.NET CLI)"]
-    ResolveProjects["Resolve Project Paths"]
-    ConfigSQL["Configure SQL Managed Identity"]
-    ClearSecrets["Clear Existing User Secrets"]
-    ConfigAppHost["Configure AppHost Secrets (23)"]
-    ConfigAPI["Configure API Secrets (3)"]
-    Report["Generate Configuration Report"]
-    Complete(["✓ Configuration Complete"])
+    Complete(["🏁 Complete"])
 
-    Start --> Validate
-    Validate --> ReadVars
-    ReadVars --> ACRLogin
-    ACRLogin --> VerifyTools
-    VerifyTools --> ResolveProjects
-    ResolveProjects --> ConfigSQL
-    ConfigSQL --> ClearSecrets
-    ClearSecrets --> ConfigAppHost
-    ConfigAppHost --> ConfigAPI
-    ConfigAPI --> Report
-    Report --> Complete
-    SetEnv["1️⃣ azd Sets Env Variables<br/>• Bicep outputs<br/>• Resource properties<br/>• .env file values"]
-    Execute["2️⃣ Execute postprovision<br/>• Called by azd hook<br/>• Environment ready"]
-    Validate["3️⃣ Validate Environment<br/>• Required variables<br/>• Subscription ID<br/>• Resource group"]
-    ACRAuth["4️⃣ ACR Authentication<br/>• Check ACR endpoint<br/>• az acr login<br/>• Graceful skip if N/A"]
-    SQLConfig["5️⃣ SQL Managed Identity<br/>• Configure SQL database user<br/>• Assign db_datareader role<br/>• Assign db_datawriter role"]
-    Clear["6️⃣ Clear Old Secrets<br/>• Run clean-secrets.ps1<br/>• Clean slate<br/>• 2 projects"]
-    ConfigLoop["7️⃣ Configure Secrets Loop<br/>For each project"]
-    ConfigProject["Set Project Secrets<br/>• app.AppHost: 23<br/>• Orders.API: 3"]
-    Validate2["8️⃣ Validate Configuration<br/>• Verify secrets set<br/>• Check for errors<br/>• Count totals"]
-    Summary["9️⃣ Display Summary<br/>• Projects: 2<br/>• Secrets: 26<br/>• Time & status"]
-    End(["🏁 Complete"])
+    Start --> EnvironmentSetup
 
-    Start --> SetEnv
-    SetEnv --> Execute
-    Execute --> Validate
-    Validate --> ACRAuth
-    ACRAuth --> SQLConfig
-    SQLConfig --> Clear
-    Clear --> ConfigLoop
-    ConfigLoop --> ConfigProject
-    ConfigProject --> ConfigLoop
-    ConfigLoop --> Validate2
-    Validate2 --> Summary
-    Summary --> End
+    subgraph EnvironmentSetup["1️⃣ Environment Setup"]
+        direction TB
+        SetEnv["Set Environment Variables"]
+        Execute["Execute postprovision"]
+        Validate["Validate Environment"]
+        SetEnv --> Execute
+        Execute --> Validate
+    end
+
+    subgraph Authentication["2️⃣ Authentication"]
+        direction TB
+        ACRAuth["ACR Authentication"]
+        SQLConfig["SQL Managed Identity"]
+        ACRAuth --> SQLConfig
+    end
+
+    subgraph SecretsConfig["3️⃣ Secrets Configuration"]
+        direction TB
+        Clear["Clear Old Secrets"]
+        ConfigLoop["Configure Secrets Loop"]
+        ConfigProject["Set Project Secrets"]
+        Clear --> ConfigLoop
+        ConfigLoop --> ConfigProject
+        ConfigProject --> ConfigLoop
+    end
+
+    subgraph ValidationPhase["4️⃣ Validation & Summary"]
+        direction TB
+        Validate2["Validate Configuration"]
+        Summary["Display Summary"]
+        Validate2 --> Summary
+    end
+
+    EnvironmentSetup --> Authentication
+    Authentication --> SecretsConfig
+    SecretsConfig --> ValidationPhase
+    ValidationPhase --> Complete
 
     classDef startEnd fill:#e8f5e9,stroke:#2e7d32,stroke-width:3px,color:#1b5e20
     classDef process fill:#e3f2fd,stroke:#1976d2,stroke-width:2px,color:#0d47a1
     classDef config fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px,color:#4a148c
     classDef loop fill:#fff3e0,stroke:#f57c00,stroke-width:2px,color:#e65100
 
-    class Start,End startEnd
-    class SetEnv,Execute,Validate,ACRAuth,Clear,Validate2,Summary process
+    class Start,Complete startEnd
+    class SetEnv,Execute,Validate,ACRAuth,SQLConfig,Clear,Validate2,Summary process
     class ConfigLoop loop
     class ConfigProject config
 ```
@@ -604,7 +607,7 @@ catch {
 - SQL Managed Identity configuration: 3-5s (if configured)
 - Clear secrets: 2-3s
 - Retrieve Azure resources: Minimal (environment variables already set by azd)
-- Set secrets (2 projects, 26 total): 3-5s
+- Set secrets (3 projects, 27 total): 3-6s
 - **Total typical runtime:** 11-17s
 
 **Azure CLI Calls:**
@@ -762,7 +765,7 @@ jobs:
 - Environment validation: 0.5 seconds
 - ACR authentication: 2-3 seconds
 - Clear secrets: 2-4 seconds (via clean-secrets.ps1)
-- Configure secrets: 3-5 seconds (3 projects, 26 secrets)
+- Configure secrets: 3-6 seconds (3 projects, 27 secrets)
 
 ## 📋 Performance
 
@@ -770,35 +773,11 @@ jobs:
 
 | Characteristic | Details |
 |----------------|---------||
-| **Execution Time** | • **Environment validation:** 1-2 seconds<br/>• **ACR authentication:** 2-3 seconds (if configured)<br/>• **SQL Managed Identity config:** 3-5 seconds (if configured)<br/>• **Clear secrets:** 2-4 seconds (calls clean-secrets.ps1)<br/>• **Configure secrets:** 3-6 seconds (26 secrets across 2 projects)<br/>• **Total standard:** 11-20 seconds<br/>• **With -Verbose:** 14-24 seconds |
+| **Execution Time** | • **Environment validation:** 1-2 seconds<br/>• **ACR authentication:** 2-3 seconds (if configured)<br/>• **SQL Managed Identity config:** 3-5 seconds (if configured)<br/>• **Clear secrets:** 2-4 seconds (calls clean-secrets.ps1)<br/>• **Configure secrets:** 3-6 seconds (27 secrets across 3 projects)<br/>• **Total standard:** 12-22 seconds<br/>• **With -Verbose:** 15-26 seconds |
 | **Resource Usage** | • **Memory:** ~50 MB peak during execution<br/>• **CPU:** Low utilization - dotnet CLI and az CLI operations<br/>• **Disk I/O:** Moderate - writes to secrets.json files<br/>• **Process spawning:** 30+ child processes (dotnet user-secrets commands)<br/>• **Baseline:** Lightweight orchestration script |
 | **Network Impact** | • **ACR authentication:** Single API call to Azure Container Registry<br/>• **SQL configuration:** 2-3 API calls for managed identity setup<br/>• **Azure CLI:** Minimal network usage for authentication token refresh<br/>• **Environment variables:** Read from local azd context (no network)<br/>• **Secret storage:** Local file system only (no network)<br/>• **Bandwidth:** < 20 KB total (primarily ACR + SQL operations) |
-| **Scalability** | • **Linear with projects:** O(n) scaling with number of projects<br/>• **Linear with secrets:** O(m) scaling with secrets per project<br/>• **Sequential processing:** Projects configured one at a time<br/>• **No degradation:** Consistent per-secret configuration time<br/>• **Tested configuration:** 2 projects, 26 secrets completes in <20s |
+| **Scalability** | • **Linear with projects:** O(n) scaling with number of projects<br/>• **Linear with secrets:** O(m) scaling with secrets per project<br/>• **Sequential processing:** Projects configured one at a time<br/>• **No degradation:** Consistent per-secret configuration time<br/>• **Tested configuration:** 3 projects, 27 secrets completes in <22s |
 | **Optimization** | • **Batch validation:** All environment variables checked upfront<br/>• **Conditional ACR:** Skips authentication if not configured<br/>• **Conditional SQL:** Skips managed identity setup if not configured<br/>• **Efficient clearing:** Delegates to optimized clean-secrets script<br/>• **Error handling:** Early exit on critical failures<br/>• **Minimal overhead:** Direct dotnet CLI invocations |
-
-## 🔄 Version History
-
-| Version   | Date       | Changes                                                        |
-| --------- | ---------- | -------------------------------------------------------------- |
-| **2.0.1** | 2025-12-29 | Corrected project configuration to include all 3 projects      |
-|           |            | • Added eShop.Web.App project secrets configuration            |
-|           |            | • Fixed connection string key: ConnectionStrings:OrderDb       |
-|           |            | • Unified version across PowerShell and Bash implementations   |
-|           |            | • Total: 23 AppHost + 3+ API + 1 WebApp secrets                |
-| **2.0.0** | 2025-12-26 | Updated documentation for actual implementation                |
-|           |            | • Corrected secret counts: 23 AppHost + 3 API = 26 total       |
-|           |            | • Added SQL Managed Identity configuration documentation       |
-|           |            | • Updated secret key tables with actual implementation         |
-|           |            | • Web.App project has no secrets configured                    |
-|           |            | • Documented SQL database roles (db_datareader, db_datawriter) |
-| **2.0.0** | 2025-12-24 | Production release                                             |
-|           |            | • Complete rewrite with best practices                         |
-|           |            | • Comprehensive validation                                     |
-|           |            | • Error handling and logging                                   |
-|           |            | • WhatIf support                                               |
-|           |            | • 1000+ lines of production code                               |
-| **1.0.0** | 2025-12-15 | Initial release                                                |
-|           |            | • Basic secret configuration                                   |
 
 ## Quick Links
 
@@ -806,12 +785,6 @@ jobs:
 - **Issues**: [Report Bug](https://github.com/Evilazaro/Azure-LogicApps-Monitoring/issues)
 - **Azure Developer CLI**: [Learn More](https://learn.microsoft.com/azure/developer/azure-developer-cli/)
 - **User Secrets**: [Microsoft Learn](https://learn.microsoft.com/aspnet/core/security/app-secrets)
-
----
-
-**Last Updated**: December 29, 2025  
-**Script Version**: 2.0.1  
-**Compatibility**: PowerShell 7.0+, .NET 10.0+, Azure CLI 2.60.0+
 
 ---
 

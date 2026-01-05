@@ -1,5 +1,7 @@
 #!/usr/bin/env pwsh
 
+#Requires -Version 7.0
+
 <#
 .SYNOPSIS
     Clears .NET user secrets for all projects in the solution.
@@ -53,34 +55,46 @@ param(
     [switch]$Force
 )
 
-#Requires -Version 7.0
+#region Script Configuration
 
-# Script configuration
+# Enable strict mode for robust error handling
 Set-StrictMode -Version Latest
-$script:OriginalErrorActionPreference = $ErrorActionPreference
-$script:OriginalInformationPreference = $InformationPreference
-$script:OriginalProgressPreference = $ProgressPreference
+
+# Store original preferences to restore in finally block
+$OriginalErrorActionPreference = $ErrorActionPreference
+$OriginalInformationPreference = $InformationPreference
+$OriginalProgressPreference = $ProgressPreference
+
+# Set script preferences for consistent behavior
 $ErrorActionPreference = 'Stop'
 $InformationPreference = 'Continue'
 $ProgressPreference = 'SilentlyContinue'
 
-# Script-level constants
-$script:ScriptVersion = '2.0.1'
-$script:MinimumDotNetMajorVersion = 10
-$script:Projects = @(
+#endregion Script Configuration
+
+#region Script Constants
+
+# Script metadata constants
+$ScriptVersion = '2.0.1'
+$MinimumDotNetMajorVersion = 10
+
+# Project configuration - paths relative to script location
+$Projects = @(
     @{
         Name = 'app.AppHost'
-        Path = Join-Path $PSScriptRoot '..\app.AppHost\'
+        Path = Join-Path -Path $PSScriptRoot -ChildPath '..\app.AppHost\'
     },
     @{
         Name = 'eShop.Orders.API'
-        Path = Join-Path $PSScriptRoot '..\src\eShop.Orders.API\'
+        Path = Join-Path -Path $PSScriptRoot -ChildPath '..\src\eShop.Orders.API\'
     },
     @{
         Name = 'eShop.Web.App'
-        Path = Join-Path $PSScriptRoot '..\src\eShop.Web.App\'
+        Path = Join-Path -Path $PSScriptRoot -ChildPath '..\src\eShop.Web.App\'
     }
 )
+
+#endregion Script Constants
 
 #region Functions
 
@@ -105,14 +119,14 @@ function Test-DotNetAvailability {
     param()
 
     begin {
-        Write-Verbose 'Starting .NET SDK availability check...'
+        Write-Verbose -Message 'Starting .NET SDK availability check...'
     }
 
     process {
         try {
             $dotnetCommand = Get-Command -Name dotnet -ErrorAction SilentlyContinue
             if (-not $dotnetCommand) {
-                Write-Verbose '.NET command not found in PATH'
+                Write-Verbose -Message '.NET command not found in PATH'
                 return [pscustomobject]@{
                     IsAvailable = $false
                     Version     = $null
@@ -120,12 +134,12 @@ function Test-DotNetAvailability {
                 }
             }
             
-            Write-Verbose "dotnet command found at: $($dotnetCommand.Source)"
+            Write-Verbose -Message "dotnet command found at: $($dotnetCommand.Source)"
             
             # Verify dotnet can execute
             $dotnetVersion = & dotnet --version 2>$null
             if ($LASTEXITCODE -ne 0) {
-                Write-Verbose 'dotnet command failed to execute'
+                Write-Verbose -Message 'dotnet command failed to execute'
                 return [pscustomobject]@{
                     IsAvailable = $false
                     Version     = $null
@@ -152,15 +166,15 @@ function Test-DotNetAvailability {
                 }
             }
 
-            if ($major -lt $script:MinimumDotNetMajorVersion) {
+            if ($major -lt $MinimumDotNetMajorVersion) {
                 return [pscustomobject]@{
                     IsAvailable = $false
                     Version     = $dotnetVersion
-                    Reason      = "dotnet SDK major version $major is less than required $script:MinimumDotNetMajorVersion"
+                    Reason      = "dotnet SDK major version $major is less than required $MinimumDotNetMajorVersion"
                 }
             }
             
-            Write-Verbose '.NET SDK is available and functional'
+            Write-Verbose -Message '.NET SDK is available and functional'
             return [pscustomobject]@{
                 IsAvailable = $true
                 Version     = $dotnetVersion
@@ -168,7 +182,7 @@ function Test-DotNetAvailability {
             }
         }
         catch {
-            Write-Verbose "Error checking .NET availability: $($_.Exception.Message)"
+            Write-Verbose -Message "Error checking .NET availability: $($_.Exception.Message)"
             return [pscustomobject]@{
                 IsAvailable = $false
                 Version     = $null
@@ -211,14 +225,14 @@ function Test-ProjectPath {
     )
 
     begin {
-        Write-Verbose "Validating project path for: $Name"
+        Write-Verbose -Message "Validating project path for: $Name"
     }
 
     process {
         try {
             $resolvedPath = Resolve-Path -Path $Path -ErrorAction SilentlyContinue
             if (-not $resolvedPath) {
-                Write-Warning "Project path not found: $Path"
+                Write-Warning -Message "Project path not found: $Path"
                 return $null
             }
 
@@ -227,19 +241,19 @@ function Test-ProjectPath {
             # Check if directory contains a .csproj file
             $projectFiles = @(Get-ChildItem -Path $resolvedDirectory -Filter '*.csproj' -File -ErrorAction SilentlyContinue)
             if ($projectFiles.Count -eq 0) {
-                Write-Warning "No .csproj file found in: $Path"
+                Write-Warning -Message "No .csproj file found in: $Path"
                 return $null
             }
 
             if ($projectFiles.Count -gt 1) {
-                Write-Warning "Multiple .csproj files found in: $resolvedDirectory. Using first match: $($projectFiles[0].Name)"
+                Write-Warning -Message "Multiple .csproj files found in: $resolvedDirectory. Using first match: $($projectFiles[0].Name)"
             }
             
-            Write-Verbose "Project path validated: $resolvedDirectory"
+            Write-Verbose -Message "Project path validated: $resolvedDirectory"
             return $projectFiles[0].FullName
         }
         catch {
-            Write-Warning "Error validating project path ${Path}: $($_.Exception.Message)"
+            Write-Warning -Message "Error validating project path ${Path}: $($_.Exception.Message)"
             return $null
         }
     }
@@ -279,40 +293,40 @@ function Clear-ProjectUserSecrets {
     )
 
     begin {
-        Write-Verbose "Preparing to clear user secrets for: $ProjectName"
+        Write-Verbose -Message "Preparing to clear user secrets for: $ProjectName"
     }
 
     process {
         try {
             if (-not (Test-Path -LiteralPath $ProjectPath -PathType Leaf)) {
-                Write-Warning "Project file not found for ${ProjectName}: $ProjectPath"
+                Write-Warning -Message "Project file not found for ${ProjectName}: $ProjectPath"
                 return $false
             }
 
             if ($PSCmdlet.ShouldProcess($ProjectName, 'Clear user secrets')) {
-                Write-Information "Clearing user secrets for project: $ProjectName"
+                Write-Information -MessageData "Clearing user secrets for project: $ProjectName"
                 
                 # Execute dotnet user-secrets clear
                 $output = & dotnet user-secrets clear --project $ProjectPath 2>&1
                 
                 if ($LASTEXITCODE -eq 0) {
-                    Write-Information "✓ Successfully cleared user secrets for: $ProjectName"
-                    Write-Verbose "Output: $output"
+                    Write-Information -MessageData "✓ Successfully cleared user secrets for: $ProjectName"
+                    Write-Verbose -Message "Output: $output"
                     return $true
                 }
                 else {
-                    Write-Warning "Failed to clear user secrets for ${ProjectName}. Exit code: $LASTEXITCODE"
-                    Write-Verbose "Error output: $output"
+                    Write-Warning -Message "Failed to clear user secrets for ${ProjectName}. Exit code: $LASTEXITCODE"
+                    Write-Verbose -Message "Error output: $output"
                     return $false
                 }
             }
             else {
-                Write-Verbose "WhatIf: Would clear user secrets for $ProjectName"
+                Write-Verbose -Message "WhatIf: Would clear user secrets for $ProjectName"
                 return $true
             }
         }
         catch {
-            Write-Error "Error clearing user secrets for ${ProjectName}: $($_.Exception.Message)"
+            Write-Error -Message "Error clearing user secrets for ${ProjectName}: $($_.Exception.Message)"
             return $false
         }
     }
@@ -333,12 +347,12 @@ function Write-ScriptHeader {
     param()
 
     process {
-        Write-Information ''
-        Write-Information '================================================================='
-        Write-Information "  Clean .NET User Secrets - Version $script:ScriptVersion"
-        Write-Information '  Azure Logic Apps Monitoring Project'
-        Write-Information '================================================================='
-        Write-Information ''
+        Write-Information -MessageData ''
+        Write-Information -MessageData '================================================================='
+        Write-Information -MessageData "  Clean .NET User Secrets - Version $ScriptVersion"
+        Write-Information -MessageData '  Azure Logic Apps Monitoring Project'
+        Write-Information -MessageData '================================================================='
+        Write-Information -MessageData ''
     }
 }
 
@@ -375,19 +389,19 @@ function Write-ScriptSummary {
     )
 
     process {
-        Write-Information ''
-        Write-Information '================================================================='
-        Write-Information '  Execution Summary'
-        Write-Information '================================================================='
-        Write-Information "  Total projects:      $TotalCount"
-        Write-Information "  Successfully cleared: $SuccessCount"
-        Write-Information "  Failed:              $FailureCount"
-        Write-Information '================================================================='
-        Write-Information ''
+        Write-Information -MessageData ''
+        Write-Information -MessageData '================================================================='
+        Write-Information -MessageData '  Execution Summary'
+        Write-Information -MessageData '================================================================='
+        Write-Information -MessageData "  Total projects:      $TotalCount"
+        Write-Information -MessageData "  Successfully cleared: $SuccessCount"
+        Write-Information -MessageData "  Failed:              $FailureCount"
+        Write-Information -MessageData '================================================================='
+        Write-Information -MessageData ''
     }
 }
 
-#endregion
+#endregion Functions
 
 #region Main Execution
 
@@ -396,20 +410,20 @@ try {
     Write-ScriptHeader
     
     # Step 1: Validate .NET SDK availability
-    Write-Information 'Step 1: Validating .NET SDK availability...'
+    Write-Information -MessageData 'Step 1: Validating .NET SDK availability...'
     $dotnetCheck = Test-DotNetAvailability
     if (-not $dotnetCheck.IsAvailable) {
         $reason = if ($dotnetCheck.Reason) { $dotnetCheck.Reason } else { 'Unknown reason' }
-        throw ".NET SDK is not installed, not accessible, or does not meet requirements. Required: .NET SDK $script:MinimumDotNetMajorVersion.0 or higher. Details: $reason"
+        throw ".NET SDK is not installed, not accessible, or does not meet requirements. Required: .NET SDK $MinimumDotNetMajorVersion.0 or higher. Details: $reason"
     }
-    Write-Information "✓ .NET SDK is available (version: $($dotnetCheck.Version))"
-    Write-Information ''
+    Write-Information -MessageData "✓ .NET SDK is available (version: $($dotnetCheck.Version))"
+    Write-Information -MessageData ''
     
     # Step 2: Validate project paths
-    Write-Information 'Step 2: Validating project paths...'
+    Write-Information -MessageData 'Step 2: Validating project paths...'
     $validProjects = [System.Collections.Generic.List[hashtable]]::new()
     
-    foreach ($project in $script:Projects) {
+    foreach ($project in $Projects) {
         $projectFile = Test-ProjectPath -Path $project.Path -Name $project.Name
         if ($projectFile) {
             $validProjects.Add(@{
@@ -417,10 +431,10 @@ try {
                 Path = $project.Path
                 ProjectFile = $projectFile
             })
-            Write-Information "  ✓ $($project.Name)"
+            Write-Information -MessageData "  ✓ $($project.Name)"
         }
         else {
-            Write-Warning "  ✗ $($project.Name) - Path not found or invalid"
+            Write-Warning -Message "  ✗ $($project.Name) - Path not found or invalid"
         }
     }
     
@@ -428,18 +442,18 @@ try {
         throw 'No valid project paths found. Please ensure the repository structure is intact and the expected project folders exist relative to this script.'
     }
     
-    Write-Information ''
-    Write-Information "Found $($validProjects.Count) valid project(s)"
-    Write-Information ''
+    Write-Information -MessageData ''
+    Write-Information -MessageData "Found $($validProjects.Count) valid project(s)"
+    Write-Information -MessageData ''
     
     # Respect PowerShell native confirmation model; -Force disables confirmation prompts.
     if ($Force) {
         $ConfirmPreference = 'None'
     }
     
-    # Step 4: Clear user secrets
-    Write-Information 'Step 3: Clearing user secrets...'
-    Write-Information ''
+    # Step 3: Clear user secrets
+    Write-Information -MessageData 'Step 3: Clearing user secrets...'
+    Write-Information -MessageData ''
     
     $successCount = 0
     $failureCount = 0
@@ -459,24 +473,24 @@ try {
     
     # Exit with appropriate code
     if ($failureCount -gt 0) {
-        Write-Warning 'Script completed with errors.'
+        Write-Warning -Message 'Script completed with errors.'
         exit 1
     }
     else {
-        Write-Information 'Script completed successfully.'
+        Write-Information -MessageData 'Script completed successfully.'
         exit 0
     }
 }
 catch {
-    Write-Error "Fatal error: $($_.Exception.Message)"
-    Write-Verbose "Stack trace: $($_.ScriptStackTrace)"
+    Write-Error -Message "Fatal error: $($_.Exception.Message)"
+    Write-Verbose -Message "Stack trace: $($_.ScriptStackTrace)"
     exit 1
 }
 finally {
-    # Reset preferences
-    $ErrorActionPreference = $script:OriginalErrorActionPreference
-    $InformationPreference = $script:OriginalInformationPreference
-    $ProgressPreference = $script:OriginalProgressPreference
+    # Cleanup - restore original preferences
+    $ErrorActionPreference = $OriginalErrorActionPreference
+    $InformationPreference = $OriginalInformationPreference
+    $ProgressPreference = $OriginalProgressPreference
 }
 
-#endregion
+#endregion Main Execution

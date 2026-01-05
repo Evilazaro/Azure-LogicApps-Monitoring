@@ -1,4 +1,9 @@
-﻿using app.ServiceDefaults.CommonTypes;
+﻿// =============================================================================
+// Orders Message Handler Interface
+// Defines the contract for order message publishing operations
+// =============================================================================
+
+using app.ServiceDefaults.CommonTypes;
 
 namespace eShop.Orders.API.Interfaces;
 

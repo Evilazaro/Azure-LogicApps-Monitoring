@@ -348,6 +348,21 @@ get_api_project_path() {
     echo "$project_path"
 }
 
+# Get the path to the Web App .csproj file
+# Returns:
+#   Absolute path to src/eShop.Web.App/eShop.Web.App.csproj
+# Note: Uses script directory as reference point for relative path resolution
+get_webapp_project_path() {
+    verbose "Determining Web App project path..."
+    
+    local project_path
+    # Navigate from hooks/ to root, then to src/eShop.Web.App/
+    project_path="$(cd "$SCRIPT_DIR/.." && pwd)/src/eShop.Web.App/eShop.Web.App.csproj"
+    
+    verbose "Resolved Web App project path: $project_path"
+    echo "$project_path"
+}
+
 #----------------------------------------------------------------------------
 # Azure Container Registry Authentication
 #----------------------------------------------------------------------------
@@ -841,8 +856,10 @@ main() {
     
     local apphost_project_path
     local api_project_path
+    local webapp_project_path
     apphost_project_path=$(get_apphost_project_path)
     api_project_path=$(get_api_project_path)
+    webapp_project_path=$(get_webapp_project_path)
     
     info "  AppHost Project: $apphost_project_path"
     
@@ -852,7 +869,7 @@ main() {
         verbose "✓ AppHost project file verified"
     fi
     
-    success "✓ API Project Path: $api_project_path"
+    info "  API Project: $api_project_path"
     
     if [[ ! -f "$api_project_path" ]]; then
         error "API project file not found at: $api_project_path"
@@ -861,7 +878,19 @@ main() {
         exit 1
     fi
     
-    success "✓ API project file verified."
+    verbose "✓ API project file verified"
+    
+    info "  Web App Project: $webapp_project_path"
+    
+    if [[ ! -f "$webapp_project_path" ]]; then
+        warning "Web App project file not found at: $webapp_project_path"
+        warning "Web App secrets will be skipped."
+        webapp_project_path=""
+    else
+        verbose "✓ Web App project file verified"
+    fi
+    
+    success "✓ All project paths verified."
     
     # Configure SQL Database Managed Identity
     # IMPORTANT: The managed identity requires appropriate database roles for:
@@ -1006,16 +1035,19 @@ main() {
         info "  The AppHost project is used for local orchestration and development."
     }
     
-    # Configure user secrets for both projects
-    # Secrets are organized per project based on what each project needs to function
-    # AppHost needs full Azure configuration for orchestration
-    # API needs minimal configuration for runtime operations
-    write_section_header "Configuring User Secrets" "sub"
+    # Clear Web App secrets (if project exists)
+    if [[ -n "$webapp_project_path" ]] && [[ -f "$webapp_project_path" ]]; then
+        clear_user_secrets "$webapp_project_path" "Web App" || {
+            warning "Could not clear Web App user secrets (may not be initialized yet)"
+            info "  Web App user secrets may not be initialized - this is not an error."
+        }
+    fi
     
-    # Configure user secrets for both projects
+    # Configure user secrets for all projects
     # Secrets are organized per project based on what each project needs to function
     # AppHost needs full Azure configuration for orchestration
     # API needs minimal configuration for runtime operations
+    # Web App needs minimal configuration for frontend
     write_section_header "Configuring User Secrets" "sub"
     
     # Define AppHost secrets (EXACTLY matches PowerShell configuration)
@@ -1056,13 +1088,23 @@ main() {
         "ApplicationInsights:ConnectionString=$app_insights_conn_str"
     )
     
-    # Calculate total secrets for progress tracking and reporting
-    TOTAL_SECRETS=$((${#apphost_secrets[@]} + ${#api_secrets[@]}))
+    # Define Web App secrets (EXACTLY matches PowerShell configuration)
+    # Web App only needs minimal secrets for frontend operations
+    local webapp_secrets=(
+        "ApplicationInsights:ConnectionString=$app_insights_conn_str"
+    )
     
-    info "Preparing to configure user secrets for both projects..."
+    # Calculate total secrets for progress tracking and reporting
+    local webapp_secret_count=0
+    if [[ -n "$webapp_project_path" ]]; then
+        webapp_secret_count=${#webapp_secrets[@]}
+    fi
+    TOTAL_SECRETS=$((${#apphost_secrets[@]} + ${#api_secrets[@]} + webapp_secret_count))
+    
+    info "Preparing to configure user secrets for all projects..."
     info "  - AppHost: ${#apphost_secrets[@]} secret(s)"
     info "  - API: ${#api_secrets[@]} secret(s)"
-    info "  - Total: $TOTAL_SECRETS secret(s)"
+    info "  - Web App: ${webapp_secret_count} secret(s)"
     echo ""
     
     # Configure AppHost secrets first (orchestrator project)
@@ -1072,6 +1114,15 @@ main() {
     # Configure API secrets second (application project)
     # This configures the runtime application secrets
     configure_user_secrets "$api_project_path" "API" "${api_secrets[@]}"
+    
+    # Configure Web App secrets (if project exists)
+    if [[ -n "$webapp_project_path" ]]; then
+        configure_user_secrets "$webapp_project_path" "Web App" "${webapp_secrets[@]}"
+    else
+        info ""
+        info "Skipping Web App secrets configuration (project not found)"
+        ((SKIPPED_COUNT += ${#webapp_secrets[@]}))
+    fi
     
     # Report comprehensive results with statistics
     # This provides visibility into what was configured and any issues

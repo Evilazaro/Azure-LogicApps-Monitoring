@@ -1,9 +1,15 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿// =============================================================================
+// Common Types - Shared Domain Models
+// Contains shared data models used across the eShop distributed application
+// =============================================================================
+
+using System.ComponentModel.DataAnnotations;
 
 namespace app.ServiceDefaults.CommonTypes;
 
 /// <summary>
 /// Represents a weather forecast with temperature and condition information.
+/// Used for demonstration and health check purposes.
 /// </summary>
 public sealed class WeatherForecast
 {

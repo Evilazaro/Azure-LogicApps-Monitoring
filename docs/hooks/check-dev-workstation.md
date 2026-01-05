@@ -3,14 +3,14 @@
 ![PowerShell](https://img.shields.io/badge/PowerShell-7.0+-blue.svg)
 ![Bash](https://img.shields.io/badge/Bash-4.0+-green.svg)
 ![Cross-Platform](https://img.shields.io/badge/platform-Windows%20%7C%20Linux%20%7C%20macOS-lightgrey.svg)
-![Version](https://img.shields.io/badge/version-2.0.1-green.svg)
+![Version](https://img.shields.io/badge/version-1.0.0-green.svg)
 ![License](https://img.shields.io/badge/license-MIT-orange.svg)
 
 ## 📋 Overview
 
 The `check-dev-workstation` script is a critical first-step validation tool in the Developer Inner Loop Workflow for Azure Logic Apps Monitoring. It performs comprehensive environment validation to ensure your workstation meets all prerequisites before development begins. Available in both PowerShell (`.ps1`) and Bash (`.sh`) versions, this script provides cross-platform compatibility for Windows, Linux, and macOS environments.
 
-As a lightweight wrapper around the preprovision script (version 2.0.1) in validation-only mode, it executes read-only checks without modifying any configuration. The script validates essential components including PowerShell 7.0+, .NET SDK 10.0+, Azure CLI 2.60.0+, Bicep CLI 0.30.0+, Azure authentication status, and registration of eight critical Azure resource providers. This non-destructive validation typically completes in 3-5 seconds, providing immediate feedback on environment readiness.
+As a lightweight wrapper around the preprovision script in validation-only mode, it executes read-only checks without modifying any configuration. The script validates essential components including PowerShell 7.0+, .NET SDK 10.0+, Azure CLI 2.60.0+, Bicep CLI 0.30.0+, Azure authentication status, and registration of eight critical Azure resource providers. This non-destructive validation typically completes in 3-5 seconds, providing immediate feedback on environment readiness.
 
 Running this script before `preprovision.ps1` and `postprovision.ps1` helps developers identify configuration issues early, avoid deployment failures, and save valuable development time by ensuring all prerequisites are properly installed and configured.
 
@@ -274,18 +274,35 @@ The script executes a streamlined validation workflow through four distinct phas
 ```mermaid
 flowchart LR
     Start(["🚀 check-dev-workstation starts"])
-    Init["1️⃣ Script Initialization<br/>• Set StrictMode<br/>• Configure error preferences<br/>• Validate prerequisites"]
-    Path["2️⃣ Path Resolution<br/>• Locate preprovision script<br/>• Verify script exists<br/>• Prepare execution context"]
-    Delegate["3️⃣ Validation Delegation<br/>• Invoke preprovision -ValidateOnly<br/>• Pass -Verbose flag if set<br/>• Monitor execution"]
-    Check{"All validations<br/>passed?"}
-    Success["✅ Success Path<br/>• Format success message<br/>• Exit code: 0<br/>• Display summary"]
-    Failure["❌ Failure Path<br/>• Format error details<br/>• Exit code: 1<br/>• Show remediation steps"]
     End(["🏁 Script completes"])
 
-    Start --> Init
-    Init --> Path
-    Path --> Delegate
-    Delegate --> Check
+    Start --> Initialization
+
+    subgraph Initialization["1️⃣ Initialization"]
+        direction TB
+        Init["Script Initialization<br/>• Set StrictMode<br/>• Configure error preferences<br/>• Validate prerequisites"]
+    end
+
+    subgraph PathResolution["2️⃣ Path Resolution"]
+        direction TB
+        Path["Locate Scripts<br/>• Locate preprovision script<br/>• Verify script exists<br/>• Prepare execution context"]
+    end
+
+    subgraph ValidationPhase["3️⃣ Validation"]
+        direction TB
+        Delegate["Validation Delegation<br/>• Invoke preprovision -ValidateOnly<br/>• Pass -Verbose flag if set<br/>• Monitor execution"]
+        Check{"All validations<br/>passed?"}
+        Delegate --> Check
+    end
+
+    subgraph ResultPhase["4️⃣ Result"]
+        direction TB
+        Success["✅ Success Path<br/>• Format success message<br/>• Exit code: 0<br/>• Display summary"]
+        Failure["❌ Failure Path<br/>• Format error details<br/>• Exit code: 1<br/>• Show remediation steps"]
+    end
+
+    Initialization --> PathResolution
+    PathResolution --> ValidationPhase
     Check -->|Yes| Success
     Check -->|No| Failure
     Success --> End
@@ -413,23 +430,6 @@ azd up
 | **Network Impact** | • **Azure CLI queries:** Authentication status and resource provider registration<br/>• **API calls:** Read-only operations via Azure CLI<br/>• **Bandwidth:** < 1 KB for provider status checks<br/>• **Offline mode:** Partial - local tools validated, Azure checks fail gracefully<br/>• **No modifications:** Zero write operations to Azure resources |
 | **Scalability**    | • **Consistent performance:** Same execution time regardless of repository size<br/>• **No degradation:** Independent of project complexity<br/>• **Parallel safe:** Can run simultaneously in multiple terminals<br/>• **Cache benefits:** Azure CLI caches authentication tokens                                                                          |
 | **Optimization**   | • **Delegation pattern:** Leverages existing preprovision script logic<br/>• **No redundancy:** Single validation pass with -ValidateOnly flag<br/>• **Early exit:** Stops immediately on critical failures<br/>• **Efficient checks:** Version comparisons use native commands                                                                             |
-
-## 🔄 Version History
-
-| Version   | Date                                 | Changes                                                       |
-| --------- | ------------------------------------ | ------------------------------------------------------------- |
-| **1.0.0** | 2025-12-24 (PS1)<br/>2025-12-29 (SH) | Initial production release                                    |
-|           |                                      | • PowerShell and Bash implementations                         |
-|           |                                      | • Full validation suite via preprovision wrapper              |
-|           |                                      | • Comprehensive error handling with try-catch-finally pattern |
-|           |                                      | • Verbose logging support (`-Verbose` / `--verbose`)          |
-|           |                                      | • Exit code propagation from preprovision scripts             |
-
-## Quick Links
-
-- **Repository**: [Azure-LogicApps-Monitoring](https://github.com/Evilazaro/Azure-LogicApps-Monitoring)
-- **Issues**: [Report Bug](https://github.com/Evilazaro/Azure-LogicApps-Monitoring/issues)
-- **Documentation**: [Main Docs](../README.md)
 
 ---
 

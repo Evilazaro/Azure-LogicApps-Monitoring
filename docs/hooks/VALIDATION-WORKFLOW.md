@@ -28,26 +28,41 @@ This workflow uses multiple automation scripts from the hooks directory:
 
 ```mermaid
 flowchart TD
-    CheckDev[check-dev-workstation]
-    PreProv[preprovision]
-    CleanSecrets1[clean-secrets]
-    AzdProv[azd provision]
-    PostProv[postprovision]
-    CleanSecrets2[clean-secrets]
-    SqlConfig[sql-managed-identity-config]
-    GenOrders[Generate-Orders]
+    subgraph PreProvGroup["🛠️ Pre-Provisioning"]
+        direction TB
+        CheckDev[check-dev-workstation]
+        PreProv[preprovision]
+        CleanSecrets1[clean-secrets]
+        CheckDev -.optional.-> PreProv
+        PreProv --> CleanSecrets1
+    end
 
-    CheckDev -.optional.-> PreProv
-    PreProv --> CleanSecrets1
+    subgraph ProvGroup["☁️ Azure Provisioning"]
+        direction TB
+        AzdProv[azd provision]
+    end
+
+    subgraph PostProvGroup["⚙️ Post-Provisioning"]
+        direction TB
+        PostProv[postprovision]
+        CleanSecrets2[clean-secrets]
+        SqlConfig[sql-managed-identity-config]
+        PostProv --> CleanSecrets2
+        PostProv --> SqlConfig
+    end
+
+    subgraph OptionalGroup["📊 Optional"]
+        direction TB
+        GenOrders[Generate-Orders]
+    end
+
     CleanSecrets1 --> AzdProv
     AzdProv --> PostProv
-    PostProv --> CleanSecrets2
-    PostProv --> SqlConfig
     GenOrders -.optional manual.-> PostProv
 
-    classDef optionalClass fill:#fff3cd,stroke:#ffc107,stroke-width:2px,stroke-dasharray: 5 5
-    classDef automaticClass fill:#d4edda,stroke:#28a745,stroke-width:2px
-    classDef utilityClass fill:#e2e3e5,stroke:#6c757d,stroke-width:2px
+    classDef optionalClass fill:#fff3cd,stroke:#ffc107,stroke-width:2px,stroke-dasharray: 5 5,color:#856404
+    classDef automaticClass fill:#d4edda,stroke:#28a745,stroke-width:2px,color:#155724
+    classDef utilityClass fill:#e2e3e5,stroke:#6c757d,stroke-width:2px,color:#383d41
 
     class CheckDev,GenOrders optionalClass
     class PreProv,AzdProv,PostProv,SqlConfig automaticClass
@@ -61,7 +76,7 @@ flowchart TD
 ### Complete Deployment Flow
 
 ```mermaid
-flowchart TB
+flowchart LR
     Start["🚀 START DEPLOYMENT<br/>Developer runs: azd up"]
 
     subgraph Optional["Optional Pre-Check"]
@@ -144,11 +159,11 @@ flowchart TB
 
     Complete["✅ DEPLOYMENT COMPLETE<br/>Environment ready for development"]
 
-    classDef successClass fill:#d4edda,stroke:#28a745,stroke-width:2px
-    classDef errorClass fill:#f8d7da,stroke:#dc3545,stroke-width:2px
-    classDef processClass fill:#cfe2ff,stroke:#0d6efd,stroke-width:2px
-    classDef decisionClass fill:#fff3cd,stroke:#ffc107,stroke-width:2px
-    classDef optionalClass fill:#e2e3e5,stroke:#6c757d,stroke-width:2px,stroke-dasharray: 5 5
+    classDef successClass fill:#d4edda,stroke:#28a745,stroke-width:2px,color:#155724
+    classDef errorClass fill:#f8d7da,stroke:#dc3545,stroke-width:2px,color:#721c24
+    classDef processClass fill:#cfe2ff,stroke:#0d6efd,stroke-width:2px,color:#084298
+    classDef decisionClass fill:#fff3cd,stroke:#ffc107,stroke-width:2px,color:#856404
+    classDef optionalClass fill:#e2e3e5,stroke:#6c757d,stroke-width:2px,stroke-dasharray: 5 5,color:#383d41
 
     class Start,PreReady,PostReady,SqlReady,Complete successClass
     class PreError1,PreError2,PostError1,SqlError1,SqlError2,SqlError3 errorClass
@@ -164,31 +179,56 @@ flowchart TB
 ```mermaid
 flowchart LR
     Start["PREPROVISION (.PS1/.SH) START<br/>Version 2.0.1<br/>Last Modified: 2025-12-29"]
-    Start --> Step1["STEP 1: Runtime Version<br/>PowerShell: 7.0+ | Bash: 4.0+"]
 
-    Step1 --> Decision1{Pass?}
-    Decision1 -->|✓ PASS| Step2["STEP 2: Prerequisites Validation"]
-    Decision1 -->|✗ FAIL| Error1["ERROR: Upgrade PowerShell"]
+    subgraph RuntimeCheck["1️⃣ Runtime Validation"]
+        direction TB
+        Step1["Runtime Version<br/>PowerShell: 7.0+ | Bash: 4.0+"]
+        Decision1{Pass?}
+        Error1["ERROR: Upgrade PowerShell"]
+        Step1 --> Decision1
+        Decision1 -->|✗ FAIL| Error1
+    end
 
-    Step2 --> Prereqs["Validate Prerequisites:<br/>2.1 .NET SDK (10.0+)<br/>2.2 Azure Developer CLI<br/>2.3 Azure CLI (2.60.0+)<br/>2.4 Bicep CLI (0.30.0+)<br/>2.5 Resource Providers (8)<br/>2.6 Azure Quota (info)"]
+    subgraph PrereqCheck["2️⃣ Prerequisites Validation"]
+        direction TB
+        Step2["Prerequisites Validation"]
+        Prereqs["Validate Prerequisites:<br/>2.1 .NET SDK (10.0+)<br/>2.2 Azure Developer CLI<br/>2.3 Azure CLI (2.60.0+)<br/>2.4 Bicep CLI (0.30.0+)<br/>2.5 Resource Providers (8)<br/>2.6 Azure Quota (info)"]
+        Decision2{All Pass?}
+        Error2["ERROR: Fix prerequisites"]
+        Step2 --> Prereqs
+        Prereqs --> Decision2
+        Decision2 -->|✗ ANY FAIL| Error2
+    end
 
-    Prereqs --> Decision2{All Pass?}
-    Decision2 -->|✓ ALL PASS| Step3["STEP 3: Clear User Secrets<br/>Execute: clean-secrets.ps1<br/>Projects: Orders.API, Web.App, AppHost"]
-    Decision2 -->|✗ ANY FAIL| Error2["ERROR: Fix prerequisites"]
+    subgraph SecretsPhase["3️⃣ Clear User Secrets"]
+        direction TB
+        Step3["Clear User Secrets<br/>Execute: clean-secrets.ps1<br/>Projects: Orders.API, Web.App, AppHost"]
+        Decision3{Skip?}
+        ClearSecrets["Clear all project secrets"]
+        Skip["SKIPPED<br/>--validate-only<br/>--skip-secrets-clear<br/>--dry-run"]
+        Step3 --> Decision3
+        Decision3 -->|No| ClearSecrets
+        Decision3 -->|Yes| Skip
+    end
 
-    Step3 --> Decision3{Skip?}
-    Decision3 -->|No| ClearSecrets["Clear all project secrets"]
-    Decision3 -->|Yes| Skip["SKIPPED<br/>--validate-only<br/>--skip-secrets-clear<br/>--dry-run"]
+    subgraph ResultPhase["4️⃣ Result"]
+        direction TB
+        Summary["EXECUTION SUMMARY<br/>Status: ✓ SUCCESS<br/>Duration: 14-22 seconds<br/>Exit Code: 0"]
+        Ready["READY FOR DEPLOYMENT<br/>azd provision | azd up"]
+        Summary --> Ready
+    end
 
-    ClearSecrets --> Summary["EXECUTION SUMMARY<br/>Status: ✓ SUCCESS<br/>Duration: 14-22 seconds<br/>Exit Code: 0"]
-    Skip --> Summary
-    Summary --> Ready["READY FOR DEPLOYMENT<br/>azd provision | azd up"]
+    Start --> RuntimeCheck
+    Decision1 -->|✓ PASS| PrereqCheck
+    Decision2 -->|✓ ALL PASS| SecretsPhase
+    ClearSecrets --> ResultPhase
+    Skip --> ResultPhase
 
-    classDef successClass fill:#d4edda,stroke:#28a745,stroke-width:2px
-    classDef errorClass fill:#f8d7da,stroke:#dc3545,stroke-width:2px
-    classDef processClass fill:#cfe2ff,stroke:#0d6efd,stroke-width:2px
-    classDef decisionClass fill:#fff3cd,stroke:#ffc107,stroke-width:2px
-    classDef skipClass fill:#e2e3e5,stroke:#6c757d,stroke-width:2px
+    classDef successClass fill:#d4edda,stroke:#28a745,stroke-width:2px,color:#155724
+    classDef errorClass fill:#f8d7da,stroke:#dc3545,stroke-width:2px,color:#721c24
+    classDef processClass fill:#cfe2ff,stroke:#0d6efd,stroke-width:2px,color:#084298
+    classDef decisionClass fill:#fff3cd,stroke:#ffc107,stroke-width:2px,color:#856404
+    classDef skipClass fill:#e2e3e5,stroke:#6c757d,stroke-width:2px,color:#383d41
 
     class Start,Summary,Ready successClass
     class Error1,Error2 errorClass
@@ -232,7 +272,7 @@ flowchart TD
         V1 --> V2 --> V3
     end
 
-    classDef paramClass fill:#e2d5f1,stroke:#6f42c1,stroke-width:2px
+    classDef paramClass fill:#e2d5f1,stroke:#6f42c1,stroke-width:2px,color:#432874
     class ValidateOnly,SkipSecretsClear,Force,WhatIf,Verbose paramClass
 ```
 
@@ -240,16 +280,34 @@ flowchart TD
 
 ```mermaid
 flowchart LR
-    Failure["Validation Failure<br/>in Step 2"]
-    Failure --> Display["Display error with ✗ symbol"]
-    Display --> Instructions["Show installation/fix instructions"]
-    Instructions --> SetFlag["Set prerequisitesFailed = true"]
-    SetFlag --> Continue["Continue checking remaining"]
-    Continue --> ThrowError["After all checks:<br/>Throw error and exit code 1"]
-    ThrowError --> FailureSummary["Display failure summary<br/>with duration"]
+    subgraph Detection["🔍 Detection"]
+        direction TB
+        Failure["Validation Failure<br/>in Step 2"]
+    end
 
-    classDef failureClass fill:#f8d7da,stroke:#dc3545,stroke-width:2px
-    classDef processClass fill:#fff3cd,stroke:#ffc107,stroke-width:2px
+    subgraph Reporting["📝 Reporting"]
+        direction TB
+        Display["Display error with ✗ symbol"]
+        Instructions["Show installation/fix instructions"]
+        SetFlag["Set prerequisitesFailed = true"]
+        Continue["Continue checking remaining"]
+        Display --> Instructions
+        Instructions --> SetFlag
+        SetFlag --> Continue
+    end
+
+    subgraph ExitPhase["🚪 Exit"]
+        direction TB
+        ThrowError["After all checks:<br/>Throw error and exit code 1"]
+        FailureSummary["Display failure summary<br/>with duration"]
+        ThrowError --> FailureSummary
+    end
+
+    Detection --> Reporting
+    Reporting --> ExitPhase
+
+    classDef failureClass fill:#f8d7da,stroke:#dc3545,stroke-width:2px,color:#721c24
+    classDef processClass fill:#fff3cd,stroke:#ffc107,stroke-width:2px,color:#856404
 
     class Failure,ThrowError,FailureSummary failureClass
     class Display,Instructions,SetFlag,Continue processClass
@@ -851,15 +909,24 @@ flowchart LR
     Running --> InnerLoop
     InnerLoop --> Commit[Commit Changes]
 
-    style Start fill:#0078d4,stroke:#005a9e,stroke-width:3px,color:#fff
-    style Running fill:#28a745,stroke:#218838,stroke-width:2px,color:#fff
-    style InnerLoop fill:#fff3e0,stroke:#ff9800,stroke-width:4px
-    style Edit fill:#e3f2fd,stroke:#1976d2,stroke-width:2px
-    style HotReload fill:#e8f5e9,stroke:#4caf50,stroke-width:2px
-    style Test fill:#f3e5f5,stroke:#9c27b0,stroke-width:2px
-    style Observe fill:#fff3e0,stroke:#ff9800,stroke-width:2px
-    style Debug fill:#ffebee,stroke:#f44336,stroke-width:2px
-    style Commit fill:#e0f2f1,stroke:#009688,stroke-width:2px
+    classDef startEnd fill:#0078d4,stroke:#005a9e,stroke-width:3px,color:#fff
+    classDef running fill:#28a745,stroke:#218838,stroke-width:2px,color:#fff
+    classDef process fill:#e3f2fd,stroke:#1976d2,stroke-width:2px,color:#0d47a1
+    classDef success fill:#e8f5e9,stroke:#4caf50,stroke-width:2px,color:#1b5e20
+    classDef test fill:#f3e5f5,stroke:#9c27b0,stroke-width:2px,color:#4a148c
+    classDef loop fill:#fff3e0,stroke:#ff9800,stroke-width:2px,color:#e65100
+    classDef debug fill:#ffebee,stroke:#f44336,stroke-width:2px,color:#b71c1c
+    classDef commit fill:#e0f2f1,stroke:#009688,stroke-width:2px,color:#004d40
+    classDef decision fill:#fff3e0,stroke:#f57c00,stroke-width:2px,color:#e65100
+
+    class Start startEnd
+    class Running running
+    class Edit,Continue process
+    class HotReload success
+    class Test test
+    class Observe,Decision loop
+    class Debug debug
+    class Commit commit
 ```
 
 **Key Inner Loop Features:**

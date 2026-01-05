@@ -1,4 +1,9 @@
-﻿using app.ServiceDefaults.CommonTypes;
+﻿// =============================================================================
+// Order Service - Business Logic Layer
+// Implements order management operations with comprehensive observability
+// =============================================================================
+
+using app.ServiceDefaults.CommonTypes;
 using eShop.Orders.API.Interfaces;
 using eShop.Orders.API.Services.Interfaces;
 using System.Diagnostics;
@@ -73,7 +78,7 @@ public sealed class OrderService : IOrderService
         ArgumentNullException.ThrowIfNull(order);
 
         using var activity = _activitySource.StartActivity("PlaceOrder", ActivityKind.Internal);
-        var startTime = DateTime.UtcNow;
+        var stopwatch = Stopwatch.StartNew();
 
         try
         {
@@ -106,10 +111,11 @@ public sealed class OrderService : IOrderService
                 { "order.status", "success" }
             };
             OrdersPlacedCounter.Add(1, metricTags);
-            var duration = (DateTime.UtcNow - startTime).TotalMilliseconds;
+            stopwatch.Stop();
+            var duration = stopwatch.Elapsed.TotalMilliseconds;
             OrderProcessingDuration.Record(duration, metricTags);
 
-            _logger.LogInformation("Order {OrderId} placed successfully in {Duration}ms", order.Id, duration);
+            _logger.LogInformation("Order {OrderId} placed successfully in {Duration:F2}ms", order.Id, duration);
             return order;
         }
         catch (Exception ex)

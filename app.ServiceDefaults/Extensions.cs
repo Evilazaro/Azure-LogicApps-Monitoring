@@ -1,3 +1,9 @@
+// =============================================================================
+// Service Defaults Extensions
+// Provides cross-cutting concerns for .NET Aspire services including
+// OpenTelemetry, health checks, service discovery, and resilience patterns
+// =============================================================================
+
 using Azure.Identity;
 using Azure.Messaging.ServiceBus;
 using Azure.Monitor.OpenTelemetry.Exporter;
@@ -43,14 +49,19 @@ public static class Extensions
         builder.Services.ConfigureHttpClientDefaults(http =>
         {
             // Add resilience handler with retry, timeout, and circuit breaker policies
-            // Configure for typical microservice scenarios
+            // Best Practice: Configure resilience patterns for distributed systems
+            // - TotalRequestTimeout: Maximum time for entire request including retries
+            // - AttemptTimeout: Maximum time for each individual attempt
+            // - Retry: Exponential backoff with jitter for transient failures
+            // - CircuitBreaker: Prevents cascading failures by failing fast
             http.AddStandardResilienceHandler(options =>
             {
                 options.TotalRequestTimeout.Timeout = TimeSpan.FromSeconds(600);
                 options.AttemptTimeout.Timeout = TimeSpan.FromSeconds(60);
                 options.Retry.MaxRetryAttempts = 3;
                 options.Retry.BackoffType = Polly.DelayBackoffType.Exponential;
-                options.CircuitBreaker.SamplingDuration = TimeSpan.FromSeconds(120); // Must be at least 2x AttemptTimeout
+                // CircuitBreaker SamplingDuration must be at least 2x AttemptTimeout
+                options.CircuitBreaker.SamplingDuration = TimeSpan.FromSeconds(120);
             });
 
             // Enable service discovery for HTTP clients

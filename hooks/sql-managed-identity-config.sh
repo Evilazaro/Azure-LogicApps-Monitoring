@@ -142,7 +142,7 @@
 #     fi
 #
 # NOTES:
-#     Version:        1.0.0
+#     Version:        1.1.0
 #     Author:         Evilazaro
 #     Creation Date:  2025-12-29
 #     Purpose:        Post-provisioning SQL Database managed identity configuration
@@ -195,7 +195,7 @@ set -euo pipefail
 # Define script-level constants for versioning and configuration
 
 # Script version following semantic versioning (major.minor.patch)
-readonly SCRIPT_VERSION="1.0.0"
+readonly SCRIPT_VERSION="1.1.0"
 
 # Minimum required Azure CLI version for full compatibility
 readonly MINIMUM_AZCLI_VERSION="2.60.0"
@@ -1052,7 +1052,7 @@ main() {
     log_info ""
     
     # Step 1: Validate Azure CLI authentication
-    log_info "[Step 1/5] Validating Azure authentication..."
+    log_info "[Step 1/6] Validating Azure authentication..."
     if ! test_azure_context; then
         log_error ""
         log_error "===================================================================="
@@ -1079,7 +1079,7 @@ EOF
     log_info ""
     
     # Step 2: Validate sqlcmd utility availability
-    log_info "[Step 2/5] Validating sqlcmd utility..."
+    log_info "[Step 2/6] Validating sqlcmd utility..."
     if ! check_sqlcmd; then
         log_error ""
         log_error "===================================================================="
@@ -1105,7 +1105,10 @@ EOF
     log_success "sqlcmd utility validated"
     log_info ""
     
-    # Step 2.5: Configure firewall rules (if needed)
+    # Step 3: Construct connection details
+    log_info "[Step 3/6] Constructing connection details..."
+    
+    # Configure firewall rules (if needed)
     log_info "Detecting current public IP address for firewall configuration..."
     
     # Try multiple IP detection services for reliability
@@ -1161,8 +1164,8 @@ EOF
     
     log_info ""
     
-    # Step 3: Construct connection details
-    log_info "[Step 3/5] Constructing connection details..."
+    # Step 4: Construct connection details
+    log_info "[Step 4/6] Constructing connection details..."
     
     # Get SQL endpoint suffix for the specified Azure environment
     local sql_suffix
@@ -1179,8 +1182,8 @@ EOF
     log_success "Connection details constructed"
     log_info ""
     
-    # Step 4: Acquire Azure AD access token
-    log_info "[Step 4/5] Acquiring Entra ID access token for Azure SQL Database..."
+    # Step 5: Acquire Azure AD access token
+    log_info "[Step 5/6] Acquiring Entra ID access token for Azure SQL Database..."
     
     local access_token
     if ! access_token=$(get_sql_access_token "${sql_suffix}"); then
@@ -1208,8 +1211,8 @@ EOF
     log_success "Access token acquired successfully"
     log_info ""
     
-    # Step 5: Generate and execute SQL configuration script
-    log_info "[Step 5/5] Generating and executing SQL configuration script..."
+    # Step 6: Generate and execute SQL configuration script
+    log_info "[Step 6/6] Generating and executing SQL configuration script..."
     
     # Generate T-SQL script for user creation and role assignments
     log_verbose "Generating SQL script..."

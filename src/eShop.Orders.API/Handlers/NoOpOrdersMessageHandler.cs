@@ -1,3 +1,8 @@
+// =============================================================================
+// No-Op Orders Message Handler
+// Stub implementation for development environments without Service Bus
+// =============================================================================
+
 using app.ServiceDefaults.CommonTypes;
 using eShop.Orders.API.Interfaces;
 

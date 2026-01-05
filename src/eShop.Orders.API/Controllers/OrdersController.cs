@@ -1,6 +1,10 @@
-﻿using app.ServiceDefaults.CommonTypes;
+﻿// =============================================================================
+// Orders Controller - API Layer
+// RESTful API endpoints for order management operations
+// =============================================================================
+
+using app.ServiceDefaults.CommonTypes;
 using eShop.Orders.API.Services.Interfaces;
-using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using System.Diagnostics;
 

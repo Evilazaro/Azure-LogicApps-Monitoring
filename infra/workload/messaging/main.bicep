@@ -90,8 +90,8 @@ resource broker 'Microsoft.ServiceBus/namespaces@2025-05-01-preview' = {
   // - Maximum message size of 256 KB
   // - Capacity is not applicable for Standard tier (auto-managed)
   sku: {
-    name: 'Standard'
-    tier: 'Standard'
+    name: 'Basic'
+    tier: 'Basic'
   }
   tags: tags
   identity: {

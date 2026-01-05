@@ -19,7 +19,7 @@
 #
 # PARAMETERS
 #     --count COUNT
-#         The number of orders to generate. Default is 50.
+#         The number of orders to generate. Default is 2000.
 #         Valid range: 1-10000
 #
 #     --output-path PATH
@@ -45,7 +45,7 @@
 #
 # EXAMPLES
 #     ./Generate-Orders.sh
-#         Generates 50 orders using default settings.
+#         Generates 2000 orders using default settings.
 #
 #     ./Generate-Orders.sh --count 100 --output-path "/tmp/orders.json"
 #         Generates 100 orders and saves to a custom path.
@@ -79,7 +79,7 @@ set -euo pipefail
 readonly SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 # Default parameters
-ORDER_COUNT=50
+ORDER_COUNT=2000
 OUTPUT_PATH="${SCRIPT_DIR}/../infra/data/ordersBatch.json"
 MIN_PRODUCTS=1
 MAX_PRODUCTS=6
@@ -404,7 +404,7 @@ Usage: $(basename "$0") [OPTIONS]
 Generates sample order data for testing Azure Logic Apps monitoring.
 
 OPTIONS:
-    --count COUNT           Number of orders to generate (default: 50, range: 1-10000)
+    --count COUNT           Number of orders to generate (default: 2000, range: 1-10000)
     --output-path PATH      Output file path (default: ../infra/data/ordersBatch.json)
     --min-products NUM      Minimum products per order (default: 1, range: 1-20)
     --max-products NUM      Maximum products per order (default: 6, range: 1-20)
@@ -415,7 +415,7 @@ OPTIONS:
 
 EXAMPLES:
     $(basename "$0")
-        Generate 50 orders with default settings
+        Generate 2000 orders with default settings
 
     $(basename "$0") --count 100 --output-path "/tmp/orders.json"
         Generate 100 orders to custom location

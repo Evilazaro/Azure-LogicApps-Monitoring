@@ -1,5 +1,7 @@
 #!/usr/bin/env pwsh
 
+#Requires -Version 7.0
+
 <#
 .SYNOPSIS
     Validates developer workstation prerequisites for Azure Logic Apps Monitoring solution.
@@ -65,50 +67,55 @@
 [CmdletBinding()]
 param()
 
-#Requires -Version 7.0
+#region Script Configuration
 
-# Script configuration
+# Enable strict mode for robust error handling
 Set-StrictMode -Version Latest
 
+# Store original preference to restore in finally block
 $originalErrorActionPreference = $ErrorActionPreference
 $ErrorActionPreference = 'Stop'
 
-# Script metadata
-$script:ScriptVersion = '1.0.0'
-$script:ScriptName = 'check-dev-workstation.ps1'
+# Script metadata constants
+$ScriptVersion = '1.0.0'
+$ScriptName = 'check-dev-workstation.ps1'
+
+#endregion Script Configuration
 
 #region Main Execution
 
 try {
-    # Validate preprovision.ps1 exists
-    $preprovisionPath = Join-Path $PSScriptRoot 'preprovision.ps1'
+    # Validate that preprovision.ps1 exists in the same directory
+    $preprovisionPath = Join-Path -Path $PSScriptRoot -ChildPath 'preprovision.ps1'
+    
     if (-not (Test-Path -Path $preprovisionPath -PathType Leaf)) {
         throw "Required script not found: $preprovisionPath`nThis script requires preprovision.ps1 to be in the same directory."
     }
 
-    Write-Verbose "Starting developer workstation validation..."
-    Write-Verbose "Using validation script: $preprovisionPath"
-    Write-Verbose "Script version: $script:ScriptVersion"
+    Write-Verbose -Message "Starting developer workstation validation..."
+    Write-Verbose -Message "Using validation script: $preprovisionPath"
+    Write-Verbose -Message "Script version: $ScriptVersion"
     
-    # Execute preprovision.ps1 in ValidateOnly mode.
-    # Run in a child pwsh process so that any `exit` in preprovision.ps1
-    # does not terminate this wrapper, and so the exit code can be trusted.
-
+    # Resolve PowerShell executable path for child process execution
+    # Run in a child pwsh process so that any exit in preprovision.ps1
+    # does not terminate this wrapper, and so the exit code can be trusted
     $pwshPath = $null
     $pwshCommand = Get-Command -Name 'pwsh' -ErrorAction SilentlyContinue
+    
     if ($null -ne $pwshCommand -and $pwshCommand.CommandType -in @('Application', 'ExternalScript')) {
         $pwshPath = $pwshCommand.Source
     }
-    elseif (Test-Path -Path (Join-Path $PSHOME 'pwsh') -PathType Leaf) {
-        $pwshPath = Join-Path $PSHOME 'pwsh'
+    elseif (Test-Path -Path (Join-Path -Path $PSHOME -ChildPath 'pwsh') -PathType Leaf) {
+        $pwshPath = Join-Path -Path $PSHOME -ChildPath 'pwsh'
     }
-    elseif (Test-Path -Path (Join-Path $PSHOME 'pwsh.exe') -PathType Leaf) {
-        $pwshPath = Join-Path $PSHOME 'pwsh.exe'
+    elseif (Test-Path -Path (Join-Path -Path $PSHOME -ChildPath 'pwsh.exe') -PathType Leaf) {
+        $pwshPath = Join-Path -Path $PSHOME -ChildPath 'pwsh.exe'
     }
     else {
         throw "Unable to locate 'pwsh' to run preprovision.ps1 in a child process."
     }
 
+    # Build arguments for preprovision.ps1 execution in ValidateOnly mode
     $preprovisionArgs = @(
         '-NoProfile',
         '-NonInteractive',
@@ -117,40 +124,43 @@ try {
         '-InformationAction', 'Continue'
     )
 
+    # Add ExecutionPolicy bypass on Windows for script execution
     if ($IsWindows) {
         $preprovisionArgs = @('-ExecutionPolicy', 'Bypass') + $preprovisionArgs
     }
 
-    Write-Verbose "Executing: $pwshPath $($preprovisionArgs -join ' ')"
+    Write-Verbose -Message "Executing: $pwshPath $($preprovisionArgs -join ' ')"
 
-    # Stream output to the caller while also capturing it if needed.
+    # Execute preprovision.ps1 and stream output to caller while capturing it
     $null = & $pwshPath @preprovisionArgs 2>&1 | Tee-Object -Variable validationOutput
 
     # Check if validation was successful by examining the child process exit code
     if ($LASTEXITCODE -eq 0) {
-        Write-Verbose "✓ Workstation validation completed successfully"
-        Write-Verbose "Your development environment is properly configured for Azure deployment"
+        Write-Verbose -Message '✓ Workstation validation completed successfully'
+        Write-Verbose -Message 'Your development environment is properly configured for Azure deployment'
         exit 0
     }
     else {
-        Write-Warning "⚠ Workstation validation completed with issues"
-        Write-Warning "Please address the warnings/errors above before proceeding with development"
+        Write-Warning -Message '⚠ Workstation validation completed with issues'
+        Write-Warning -Message 'Please address the warnings/errors above before proceeding with development'
         exit $LASTEXITCODE
     }
 }
 catch {
     # Handle unexpected errors during validation
-    Write-Error "Workstation validation failed with error: $($_.Exception.Message)"
+    Write-Error -Message "Workstation validation failed with error: $($_.Exception.Message)"
+    
     if ($_.ScriptStackTrace) {
-        Write-Error "Stack trace: $($_.ScriptStackTrace)"
+        Write-Error -Message "Stack trace: $($_.ScriptStackTrace)"
     }
-    Write-Verbose "Please ensure preprovision.ps1 is available and executable"
+    
+    Write-Verbose -Message 'Please ensure preprovision.ps1 is available and executable'
     exit 1
 }
 finally {
-    # Cleanup - ensure error preference is restored
+    # Cleanup - restore error preference to original value
     $ErrorActionPreference = $originalErrorActionPreference
-    Write-Verbose "Workstation validation process completed"
+    Write-Verbose -Message 'Workstation validation process completed'
 }
 
-#endregion
+#endregion Main Execution

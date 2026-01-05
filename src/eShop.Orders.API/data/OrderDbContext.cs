@@ -1,3 +1,8 @@
+// =============================================================================
+// Order Database Context
+// Entity Framework Core DbContext for order management
+// =============================================================================
+
 using eShop.Orders.API.Data.Entities;
 using Microsoft.EntityFrameworkCore;
 

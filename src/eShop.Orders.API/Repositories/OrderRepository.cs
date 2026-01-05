@@ -1,3 +1,8 @@
+// =============================================================================
+// Order Repository - Data Access Layer
+// Provides Entity Framework Core-based persistence for order data
+// =============================================================================
+
 using app.ServiceDefaults.CommonTypes;
 using eShop.Orders.API.Data;
 using eShop.Orders.API.Interfaces;
