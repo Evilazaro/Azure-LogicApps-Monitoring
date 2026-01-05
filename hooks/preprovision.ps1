@@ -62,7 +62,7 @@
     Version        : 2.3.0
     Last Modified  : 2025-12-30
     Prerequisite   : PowerShell 7.0 or higher
-    Prerequisite   : .NET SDK 8.0 or higher
+    Prerequisite   : .NET SDK 10.0 or higher
     Prerequisite   : Azure Developer CLI (azd)
     Copyright      : (c) 2025. All rights reserved.
 

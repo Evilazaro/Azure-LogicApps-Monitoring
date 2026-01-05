@@ -23,11 +23,13 @@
 #     - Provides detailed logging and error handling
 #
 # PARAMETERS:
-#     --force                 Skip confirmation prompts and force execution
-#     --skip-secrets-clear    Skip the user secrets clearing step
-#     --validate-only         Only validate prerequisites without making changes
-#     --verbose               Enable verbose output
-#     --help                  Display this help message
+#     --force                     Skip confirmation prompts and force execution
+#     --skip-secrets-clear        Skip the user secrets clearing step
+#     --validate-only             Only validate prerequisites without making changes
+#     --use-device-code-login     Use device code flow for Azure authentication
+#     --auto-install              Automatically install missing prerequisites
+#     --verbose                   Enable verbose output
+#     --help                      Display this help message
 #
 # EXAMPLES:
 #     ./preprovision.sh
@@ -42,11 +44,17 @@
 #     ./preprovision.sh --skip-secrets-clear --verbose
 #         Skips secret clearing and shows verbose output.
 #
+#     ./preprovision.sh --use-device-code-login
+#         Uses device code flow for Azure login (useful for remote/headless sessions).
+#
+#     ./preprovision.sh --auto-install --force
+#         Automatically installs all missing prerequisites without prompts.
+#
 # NOTES:
 #     File Name      : preprovision.sh
 #     Author         : Azure-LogicApps-Monitoring Team
-#     Version        : 2.0.0
-#     Last Modified  : 2025-12-29
+#     Version        : 2.3.0
+#     Last Modified  : 2025-12-30
 #     Prerequisite   : Bash 4.0 or higher
 #     Prerequisite   : .NET SDK 10.0 or higher
 #     Prerequisite   : Azure Developer CLI (azd)
@@ -71,7 +79,7 @@ set -euo pipefail
 # These values are used for validation and compatibility checks
 
 # Script version following semantic versioning (major.minor.patch)
-readonly SCRIPT_VERSION="2.0.0"
+readonly SCRIPT_VERSION="2.3.0"
 
 # Minimum Bash version required (4.0 for associative arrays and other features)
 readonly MINIMUM_BASH_VERSION="4.0"
@@ -116,6 +124,12 @@ OPT_SKIP_SECRETS_CLEAR=false
 
 # Only validate prerequisites without making any changes (dry-run mode)
 OPT_VALIDATE_ONLY=false
+
+# Use device code flow for Azure authentication (for remote/headless sessions)
+OPT_USE_DEVICE_CODE_LOGIN=false
+
+# Automatically install missing prerequisites without prompting
+OPT_AUTO_INSTALL=false
 
 # Enable verbose output for detailed diagnostic information
 OPT_VERBOSE=false
@@ -247,11 +261,14 @@ DESCRIPTION:
     state by clearing user secrets.
 
 OPTIONS:
-    --force                 Skip confirmation prompts and force execution
-    --skip-secrets-clear    Skip the user secrets clearing step
-    --validate-only         Only validate prerequisites without making changes
-    --verbose               Enable verbose output
-    --help                  Display this help message
+    --force                     Skip confirmation prompts and force execution
+    --skip-secrets-clear        Skip the user secrets clearing step
+    --validate-only             Only validate prerequisites without making changes
+    --use-device-code-login     Use device code flow for Azure authentication
+                                (useful for remote/headless sessions)
+    --auto-install              Automatically install missing prerequisites
+    --verbose                   Enable verbose output
+    --help                      Display this help message
 
 EXAMPLES:
     ${0##*/}
@@ -265,6 +282,12 @@ EXAMPLES:
 
     ${0##*/} --skip-secrets-clear --verbose
         Skips secret clearing and shows verbose output.
+
+    ${0##*/} --use-device-code-login
+        Uses device code flow for Azure login (useful for remote/headless sessions).
+
+    ${0##*/} --auto-install --force
+        Automatically installs all missing prerequisites without prompts.
 
 PREREQUISITES:
     - Bash 4.0 or higher
@@ -661,6 +684,330 @@ check_azure_quota() {
 }
 
 ################################################################################
+# Installation Functions
+################################################################################
+# Functions for installing missing prerequisites
+# These functions provide automated installation of required tools
+# Supports Linux/macOS environments with appropriate package managers
+
+# Request user confirmation to install a prerequisite
+# Parameters:
+#   $1 - Name of the prerequisite to install
+# Returns: 0 if user confirms, 1 otherwise
+# Note: Returns 0 automatically if OPT_FORCE or OPT_AUTO_INSTALL is true
+request_user_confirmation() {
+    local prerequisite_name=$1
+    
+    # Skip prompt if force or auto-install is enabled
+    if [[ "${OPT_FORCE}" == "true" ]] || [[ "${OPT_AUTO_INSTALL}" == "true" ]]; then
+        return 0
+    fi
+    
+    echo ""
+    read -r -p "  Would you like to install ${prerequisite_name} now? (Y/n) " response
+    
+    # Accept empty response or Y/y as confirmation
+    if [[ -z "${response}" ]] || [[ "${response}" =~ ^[Yy]$ ]]; then
+        return 0
+    fi
+    
+    return 1
+}
+
+# Install .NET SDK on Linux/macOS
+# Uses the official dotnet-install.sh script
+# Returns: 0 if installation succeeds, 1 otherwise
+install_dotnet_sdk() {
+    local version="${MINIMUM_DOTNET_VERSION%%.*}.0"
+    
+    echo ""
+    echo "┌────────────────────────────────────────────────────────────────┐"
+    echo "│                  .NET SDK Installation                         │"
+    echo "└────────────────────────────────────────────────────────────────┘"
+    echo ""
+    echo "  Installing .NET SDK version ${version}..."
+    echo ""
+    
+    # Download and run the official dotnet-install.sh script
+    local install_script="/tmp/dotnet-install.sh"
+    
+    print_info "  📥 Downloading .NET SDK installer..."
+    if ! curl -fsSL https://dot.net/v1/dotnet-install.sh -o "${install_script}"; then
+        print_error "  Failed to download .NET SDK installer"
+        return 1
+    fi
+    
+    chmod +x "${install_script}"
+    
+    print_info "  🔧 Running installer..."
+    if bash "${install_script}" --channel "${version}"; then
+        echo ""
+        print_success "  .NET SDK installed successfully!"
+        echo ""
+        print_warning "  ⚠ NOTE: Add the following to your shell profile:"
+        echo '          export PATH="$HOME/.dotnet:$PATH"'
+        echo ""
+        return 0
+    else
+        print_error "  .NET SDK installation failed"
+        echo ""
+        print_warning "  Please install manually from:"
+        echo "    https://dotnet.microsoft.com/download/dotnet/${version}"
+        echo ""
+        return 1
+    fi
+}
+
+# Install Azure Developer CLI (azd) on Linux/macOS
+# Uses the official installation script
+# Returns: 0 if installation succeeds, 1 otherwise
+install_azure_developer_cli() {
+    echo ""
+    echo "┌────────────────────────────────────────────────────────────────┐"
+    echo "│              Azure Developer CLI Installation                  │"
+    echo "└────────────────────────────────────────────────────────────────┘"
+    echo ""
+    echo "  Installing Azure Developer CLI (azd)..."
+    echo ""
+    
+    print_info "  📥 Installing via shell script..."
+    if curl -fsSL https://aka.ms/install-azd.sh | bash; then
+        echo ""
+        print_success "  Azure Developer CLI installed successfully!"
+        echo ""
+        return 0
+    else
+        print_error "  Azure Developer CLI installation failed"
+        echo ""
+        print_warning "  Please install manually from:"
+        echo "    https://aka.ms/azd/install"
+        echo ""
+        return 1
+    fi
+}
+
+# Install Azure CLI on Linux/macOS
+# Uses appropriate package manager or official installer
+# Returns: 0 if installation succeeds, 1 otherwise
+install_azure_cli() {
+    echo ""
+    echo "┌────────────────────────────────────────────────────────────────┐"
+    echo "│                   Azure CLI Installation                       │"
+    echo "└────────────────────────────────────────────────────────────────┘"
+    echo ""
+    echo "  Installing Azure CLI..."
+    echo ""
+    
+    # Detect package manager and install accordingly
+    if command -v apt-get &> /dev/null; then
+        # Debian/Ubuntu
+        print_info "  📥 Installing via apt (Debian/Ubuntu)..."
+        if curl -sL https://aka.ms/InstallAzureCLIDeb | sudo bash; then
+            echo ""
+            print_success "  Azure CLI installed successfully!"
+            echo ""
+            return 0
+        fi
+    elif command -v brew &> /dev/null; then
+        # macOS with Homebrew
+        print_info "  📥 Installing via Homebrew..."
+        if brew install azure-cli; then
+            echo ""
+            print_success "  Azure CLI installed successfully!"
+            echo ""
+            return 0
+        fi
+    elif command -v yum &> /dev/null; then
+        # RHEL/CentOS/Fedora
+        print_info "  📥 Installing via yum (RHEL/CentOS)..."
+        if sudo rpm --import https://packages.microsoft.com/keys/microsoft.asc && \
+           sudo dnf install -y azure-cli; then
+            echo ""
+            print_success "  Azure CLI installed successfully!"
+            echo ""
+            return 0
+        fi
+    fi
+    
+    print_error "  Azure CLI installation failed"
+    echo ""
+    print_warning "  Please install manually from:"
+    echo "    https://docs.microsoft.com/cli/azure/install-azure-cli"
+    echo ""
+    return 1
+}
+
+# Install Bicep CLI via Azure CLI
+# Uses az bicep install command
+# Returns: 0 if installation succeeds, 1 otherwise
+install_bicep_cli() {
+    echo ""
+    echo "┌────────────────────────────────────────────────────────────────┐"
+    echo "│                   Bicep CLI Installation                       │"
+    echo "└────────────────────────────────────────────────────────────────┘"
+    echo ""
+    echo "  Installing Bicep CLI..."
+    echo ""
+    
+    # Check if Azure CLI is available
+    if ! command -v az &> /dev/null; then
+        print_error "  Azure CLI is required to install Bicep"
+        print_warning "  Please install Azure CLI first"
+        return 1
+    fi
+    
+    print_info "  🔧 Installing via Azure CLI: az bicep install..."
+    if az bicep install 2>&1; then
+        echo ""
+        print_success "  Bicep CLI installed successfully!"
+        echo ""
+        return 0
+    fi
+    
+    # Try upgrade if install fails (might be already installed but outdated)
+    print_info "  🔧 Trying upgrade: az bicep upgrade..."
+    if az bicep upgrade 2>&1; then
+        echo ""
+        print_success "  Bicep CLI upgraded successfully!"
+        echo ""
+        return 0
+    fi
+    
+    print_error "  Bicep CLI installation failed"
+    echo ""
+    print_warning "  Please install manually:"
+    echo "    az bicep install"
+    echo ""
+    return 1
+}
+
+# Register required Azure resource providers
+# Parameters:
+#   None (uses REQUIRED_RESOURCE_PROVIDERS array)
+# Returns: 0 if all providers registered, 1 otherwise
+register_azure_resource_providers() {
+    echo ""
+    echo "┌────────────────────────────────────────────────────────────────┐"
+    echo "│             Azure Resource Provider Registration               │"
+    echo "└────────────────────────────────────────────────────────────────┘"
+    echo ""
+    echo "  Registering required Azure resource providers..."
+    echo "  This may take several minutes..."
+    echo ""
+    
+    local all_success=true
+    
+    for provider in "${REQUIRED_RESOURCE_PROVIDERS[@]}"; do
+        echo "  📝 Registering ${provider}..."
+        
+        # Check current state
+        local provider_info
+        if provider_info=$(az provider show --namespace "${provider}" --output json 2>&1); then
+            local state
+            state=$(echo "${provider_info}" | grep -o '"registrationState": "[^"]*"' | cut -d'"' -f4)
+            
+            if [[ "${state}" == "Registered" ]]; then
+                echo "     ✓ Already registered"
+                continue
+            fi
+        fi
+        
+        # Register the provider
+        if ! az provider register --namespace "${provider}" 2>&1 | head -n1; then
+            print_warning "     ✗ Failed to register ${provider}"
+            all_success=false
+            continue
+        fi
+        
+        echo "     ⏳ Registration initiated (may complete in background)"
+    done
+    
+    echo ""
+    if [[ "${all_success}" == "true" ]]; then
+        print_success "  All resource providers registered!"
+    else
+        print_warning "  Some providers may still be registering"
+    fi
+    echo ""
+    
+    return 0
+}
+
+# Invoke Azure CLI login process
+# Supports both interactive and device code authentication
+# Returns: 0 if login succeeds, 1 otherwise
+invoke_azure_login() {
+    echo ""
+    echo "┌────────────────────────────────────────────────────────────────┐"
+    echo "│                    Azure Authentication Required               │"
+    echo "└────────────────────────────────────────────────────────────────┘"
+    echo ""
+    echo "  You are not currently logged into Azure CLI."
+    echo "  This script requires Azure authentication to:"
+    echo "    • Verify resource provider registration"
+    echo "    • Check subscription quotas"
+    echo "    • Prepare for Azure resource provisioning"
+    echo ""
+    
+    if [[ "${OPT_USE_DEVICE_CODE_LOGIN}" == "true" ]]; then
+        echo "  Starting device code authentication..."
+        echo "  Please follow the instructions below to authenticate."
+        echo ""
+        
+        if az login --use-device-code; then
+            echo ""
+            print_success "  Azure login successful!"
+            echo ""
+            
+            # Display account info
+            local account_info
+            if account_info=$(az account show --output json 2>&1); then
+                local user_name subscription_name subscription_id
+                user_name=$(echo "${account_info}" | grep -o '"name": "[^"]*"' | head -n1 | cut -d'"' -f4)
+                subscription_id=$(echo "${account_info}" | grep -o '"id": "[^"]*"' | head -n1 | cut -d'"' -f4)
+                echo "  Logged in as:      ${user_name}"
+                echo "  Subscription ID:   ${subscription_id}"
+                echo ""
+            fi
+            return 0
+        fi
+    else
+        echo "  Starting browser-based authentication..."
+        echo "  A browser window will open for you to sign in."
+        echo ""
+        print_info "  💡 Tip: If no browser opens or you're in a remote session,"
+        echo "          re-run with: ./preprovision.sh --use-device-code-login"
+        echo ""
+        
+        if az login; then
+            echo ""
+            print_success "  Azure login successful!"
+            echo ""
+            
+            # Display account info
+            local account_info
+            if account_info=$(az account show --output json 2>&1); then
+                local user_name subscription_name subscription_id
+                user_name=$(echo "${account_info}" | grep -o '"name": "[^"]*"' | head -n1 | cut -d'"' -f4)
+                subscription_id=$(echo "${account_info}" | grep -o '"id": "[^"]*"' | head -n1 | cut -d'"' -f4)
+                echo "  Logged in as:      ${user_name}"
+                echo "  Subscription ID:   ${subscription_id}"
+                echo ""
+            fi
+            return 0
+        fi
+    fi
+    
+    print_warning ""
+    print_warning "  ✗ Azure login failed or was cancelled."
+    print_warning ""
+    print_warning "  Please try again or log in manually using:"
+    echo "    az login"
+    echo ""
+    return 1
+}
+
+################################################################################
 # User Secrets Functions
 ################################################################################
 # Functions for managing .NET user secrets
@@ -817,6 +1164,14 @@ parse_arguments() {
                 OPT_VALIDATE_ONLY=true
                 shift
                 ;;
+            --use-device-code-login)
+                OPT_USE_DEVICE_CODE_LOGIN=true
+                shift
+                ;;
+            --auto-install)
+                OPT_AUTO_INSTALL=true
+                shift
+                ;;
             --verbose)
                 OPT_VERBOSE=true
                 shift
@@ -873,12 +1228,24 @@ main() {
     echo "Step 2: Validating prerequisites..."
     echo ""
     
+    # Track Azure CLI authentication status for later checks
+    local az_cli_authenticated=false
+    
     # Check .NET SDK
     echo "  • Checking .NET SDK..."
     if ! validate_dotnet_sdk; then
         print_warning "    ✗ .NET SDK ${MINIMUM_DOTNET_VERSION} or higher is required"
         print_warning "      Download from: https://dotnet.microsoft.com/download/dotnet/10.0"
-        PREREQUISITES_FAILED=true
+        
+        if request_user_confirmation ".NET SDK"; then
+            if install_dotnet_sdk && validate_dotnet_sdk; then
+                echo "    ✓ .NET SDK installed and verified"
+            else
+                PREREQUISITES_FAILED=true
+            fi
+        else
+            PREREQUISITES_FAILED=true
+        fi
     else
         echo "    ✓ .NET SDK is available and compatible"
     fi
@@ -889,7 +1256,24 @@ main() {
     if ! validate_azure_developer_cli; then
         print_warning "    ✗ Azure Developer CLI (azd) is required"
         print_warning "      Install from: https://aka.ms/azd/install"
-        PREREQUISITES_FAILED=true
+        
+        if request_user_confirmation "Azure Developer CLI (azd)"; then
+            if install_azure_developer_cli; then
+                # Refresh PATH and recheck
+                export PATH="${HOME}/.azd/bin:${PATH}"
+                if validate_azure_developer_cli; then
+                    echo "    ✓ Azure Developer CLI installed and verified"
+                else
+                    print_warning "    ⚠ Azure Developer CLI installed but not in PATH yet"
+                    print_warning "      Please restart your terminal and run this script again"
+                    PREREQUISITES_FAILED=true
+                fi
+            else
+                PREREQUISITES_FAILED=true
+            fi
+        else
+            PREREQUISITES_FAILED=true
+        fi
     else
         echo "    ✓ Azure Developer CLI is available"
     fi
@@ -897,13 +1281,65 @@ main() {
     
     # Check Azure CLI
     echo "  • Checking Azure CLI..."
-    if ! validate_azure_cli; then
-        print_warning "    ✗ Azure CLI ${MINIMUM_AZURE_CLI_VERSION} or higher is required"
+    if ! command -v az &> /dev/null; then
+        print_warning "    ✗ Azure CLI is not installed"
+        print_warning "      Minimum required version: ${MINIMUM_AZURE_CLI_VERSION}"
         print_warning "      Install from: https://docs.microsoft.com/cli/azure/install-azure-cli"
-        print_warning "      After installation, authenticate with: az login"
-        PREREQUISITES_FAILED=true
-    else
-        echo "    ✓ Azure CLI is available and authenticated"
+        
+        if request_user_confirmation "Azure CLI"; then
+            if install_azure_cli; then
+                echo "    ✓ Azure CLI installed successfully"
+                # Continue to check authentication below
+            else
+                PREREQUISITES_FAILED=true
+            fi
+        else
+            PREREQUISITES_FAILED=true
+        fi
+    fi
+    
+    # Check Azure CLI version and authentication if installed
+    if command -v az &> /dev/null && [[ "${PREREQUISITES_FAILED}" != "true" ]]; then
+        # Get version and check if meets minimum
+        local az_version
+        if az_version=$(az version --output json 2>&1 | grep -o '"azure-cli": "[^"]*"' | cut -d'"' -f4); then
+            if ! version_greater_equal "${az_version}" "${MINIMUM_AZURE_CLI_VERSION}"; then
+                print_warning "    ✗ Azure CLI version ${az_version} is below minimum required"
+                print_warning "      Minimum required version: ${MINIMUM_AZURE_CLI_VERSION}"
+                print_warning "      Upgrade with: az upgrade"
+                
+                if request_user_confirmation "Azure CLI upgrade"; then
+                    print_info "    🔧 Upgrading Azure CLI..."
+                    if az upgrade --yes 2>&1 | tail -n5; then
+                        echo "    ✓ Azure CLI upgraded successfully"
+                    else
+                        PREREQUISITES_FAILED=true
+                    fi
+                else
+                    PREREQUISITES_FAILED=true
+                fi
+            fi
+        fi
+        
+        # Check authentication
+        if [[ "${PREREQUISITES_FAILED}" != "true" ]]; then
+            if ! az account show --output json &> /dev/null; then
+                print_warning "    ⚠ Azure CLI is installed but you are not logged in"
+                echo ""
+                
+                # Attempt to login
+                if invoke_azure_login; then
+                    echo "    ✓ Azure CLI is available and authenticated"
+                    az_cli_authenticated=true
+                else
+                    print_warning "    ✗ Azure authentication is required to continue"
+                    PREREQUISITES_FAILED=true
+                fi
+            else
+                echo "    ✓ Azure CLI is available and authenticated"
+                az_cli_authenticated=true
+            fi
+        fi
     fi
     echo ""
     
@@ -913,19 +1349,44 @@ main() {
         print_warning "    ✗ Bicep CLI ${MINIMUM_BICEP_VERSION} or higher is required"
         print_warning "      Install with Azure CLI: az bicep install"
         print_warning "      Or upgrade: az bicep upgrade"
-        PREREQUISITES_FAILED=true
+        
+        # Only offer to install Bicep if Azure CLI is available
+        if command -v az &> /dev/null; then
+            if request_user_confirmation "Bicep CLI"; then
+                if install_bicep_cli && validate_bicep_cli; then
+                    echo "    ✓ Bicep CLI installed and verified"
+                else
+                    PREREQUISITES_FAILED=true
+                fi
+            else
+                PREREQUISITES_FAILED=true
+            fi
+        else
+            print_warning "    ⚠ Cannot install Bicep: Azure CLI is required first"
+            PREREQUISITES_FAILED=true
+        fi
     else
         echo "    ✓ Bicep CLI is available and compatible"
     fi
     echo ""
     
-    # Check Azure Resource Providers
-    if [[ "${PREREQUISITES_FAILED}" != "true" ]]; then
+    # Check Azure Resource Providers (only if authenticated)
+    if [[ "${PREREQUISITES_FAILED}" != "true" ]] && [[ "${az_cli_authenticated}" == "true" ]]; then
         echo "  • Checking Azure Resource Provider registration..."
         if ! validate_azure_resource_providers; then
             print_warning "    ✗ Some required Azure resource providers are not registered"
-            print_warning "      See warnings above for registration commands"
-            PREREQUISITES_FAILED=true
+            
+            if request_user_confirmation "Azure Resource Provider registration"; then
+                if register_azure_resource_providers && validate_azure_resource_providers; then
+                    echo "    ✓ All required resource providers registered"
+                else
+                    print_warning "    ⚠ Some providers may still be registering in the background"
+                    # Don't fail - registration can take time
+                fi
+            else
+                print_warning "      See warnings above for registration commands"
+                PREREQUISITES_FAILED=true
+            fi
         else
             echo "    ✓ All required resource providers are registered"
         fi
@@ -935,8 +1396,11 @@ main() {
         echo "  • Checking Azure subscription quotas..."
         check_azure_quota
         echo ""
-    else
+    elif [[ "${PREREQUISITES_FAILED}" == "true" ]]; then
         echo "  • Skipping Azure resource provider check (previous validations failed)"
+        echo ""
+    else
+        echo "  • Skipping Azure resource provider check (not authenticated)"
         echo ""
     fi
     
@@ -971,15 +1435,8 @@ main() {
         
         # Execute clean-secrets.sh script
         if ! invoke_clean_secrets; then
-            print_error "Failed to clear user secrets"
-            
-            # Calculate execution duration for summary
-            local end_time
-            end_time=$(date +%s)
-            local duration=$((end_time - EXECUTION_START_TIME))
-            
-            write_summary "${duration}" "false"
-            exit 1
+            print_warning "User secrets clearing completed with warnings."
+            print_warning "This may not affect deployment, but should be investigated."
         fi
         
         echo ""
