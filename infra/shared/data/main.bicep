@@ -65,12 +65,18 @@ param metricsSettings object[]
 @description('Resource tags applied to Service Bus resources.')
 param tags tagsType
 
+// ========== Variables ==========
+
 // Remove special characters for naming compliance
+// Storage account names must be lowercase alphanumeric only
+@description('Cleaned name with special characters removed for Azure naming requirements')
 var cleanedName string = toLower(replace(replace(replace(name, '-', ''), '_', ''), ' ', ''))
 
 // Generate unique suffix for globally unique resource names
 @description('Unique suffix for globally unique resource names')
 var uniqueSuffix string = uniqueString(resourceGroup().id, name, envName, location)
+
+// ========== Storage Resources ==========
 
 @description('Storage account for Logic Apps workflows and data')
 resource wfSA 'Microsoft.Storage/storageAccounts@2025-06-01' = {
@@ -158,12 +164,17 @@ resource saDiag 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
   }
 }
 
+// ========== Storage Outputs ==========
+
 @description('Name of the deployed storage account for Logic Apps workflows')
 output AZURE_STORAGE_ACCOUNT_NAME_WORKFLOW string = wfSA.name
 
 @description('Resource ID of the deployed storage account for Logic Apps workflows')
 output AZURE_STORAGE_ACCOUNT_ID_WORKFLOW string = wfSA.id
 
+// ========== SQL Server Resources ==========
+
+@description('SQL Server instance for application database with Entra ID authentication')
 resource sqlServer 'Microsoft.Sql/servers@2024-11-01-preview' = {
   name: toLower('${cleanedName}server${uniqueSuffix}')
   location: location
@@ -245,8 +256,12 @@ resource sqlDb 'Microsoft.Sql/servers/databases@2024-11-01-preview' = {
   tags: tags
 }
 
+// ========== SQL Outputs ==========
+
 @description('Name of the deployed SQL Database')
 output AZURE_SQL_DATABASE_NAME string = sqlDb.name
+
+// ========== Diagnostic Settings ==========
 
 // Enable diagnostic settings for SQL Database
 @description('Diagnostic settings for SQL Database')
