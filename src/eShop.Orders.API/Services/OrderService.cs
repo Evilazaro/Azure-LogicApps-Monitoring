@@ -172,10 +172,11 @@ public sealed class OrderService : IOrderService
         var skippedOrders = new System.Collections.Concurrent.ConcurrentBag<Order>();
         var failedOrders = new System.Collections.Concurrent.ConcurrentBag<(string OrderId, string ErrorMessage)>();
 
-        // Use more conservative parallelism for resource-intensive operations
+        // Use conservative parallelism for database-intensive operations to avoid connection pool exhaustion
+        // and reduce pressure on the database during batch processing
         var options = new ParallelOptions
         {
-            MaxDegreeOfParallelism = Math.Min(Environment.ProcessorCount, 10),
+            MaxDegreeOfParallelism = Math.Min(Environment.ProcessorCount, 4),
             CancellationToken = cancellationToken
         };
 
@@ -199,8 +200,13 @@ public sealed class OrderService : IOrderService
 
                     var orderStartTime = DateTime.UtcNow;
 
+                    // Use a separate timeout for individual order operations to prevent cascade failures
+                    // This prevents one slow query from cancelling the entire batch
+                    using var orderCts = CancellationTokenSource.CreateLinkedTokenSource(ct);
+                    orderCts.CancelAfter(TimeSpan.FromSeconds(30)); // 30 second timeout per order
+
                     // Check if order already exists using scoped repository (idempotency check)
-                    var existingOrder = await scopedRepository.GetOrderByIdAsync(order.Id, ct);
+                    var existingOrder = await scopedRepository.GetOrderByIdAsync(order.Id, orderCts.Token);
                     if (existingOrder != null)
                     {
                         // Order already exists - treat as idempotent success, skip processing
@@ -208,7 +214,7 @@ public sealed class OrderService : IOrderService
                         orderActivity?.SetTag("order.skipped", true);
                         orderActivity?.SetTag("order.skip_reason", "duplicate");
                         skippedOrders.Add(existingOrder);
-                        
+
                         var skipTags = new TagList
                         {
                             { "order.status", "skipped" },
@@ -220,10 +226,10 @@ public sealed class OrderService : IOrderService
                     }
 
                     // Save order using scoped repository
-                    await scopedRepository.SaveOrderAsync(order, ct);
+                    await scopedRepository.SaveOrderAsync(order, orderCts.Token);
 
                     // Send message using scoped handler
-                    await scopedMessageHandler.SendOrderMessageAsync(order, ct);
+                    await scopedMessageHandler.SendOrderMessageAsync(order, orderCts.Token);
 
                     // Record metrics
                     var metricTags = new TagList
@@ -236,6 +242,20 @@ public sealed class OrderService : IOrderService
 
                     placedOrders.Add(order);
                     orderActivity?.SetStatus(ActivityStatusCode.Ok);
+                }
+                catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested)
+                {
+                    // This is a per-order timeout, not a batch cancellation - log as warning and continue
+                    _logger.LogWarning("Order {OrderId} processing timed out after 30 seconds", order.Id);
+
+                    var errorTags = new TagList
+                    {
+                        { "error.type", "Timeout" },
+                        { "order.status", "failed" }
+                    };
+                    OrderProcessingErrors.Add(1, errorTags);
+
+                    failedOrders.Add((order.Id, "Processing timed out"));
                 }
                 catch (Exception ex)
                 {
@@ -252,9 +272,9 @@ public sealed class OrderService : IOrderService
                 }
             }).ConfigureAwait(false);
         }
-        catch (OperationCanceledException)
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
         {
-            _logger.LogWarning("Batch processing was cancelled after processing {Count} orders", placedOrders.Count + skippedOrders.Count);
+            _logger.LogWarning("Batch processing was cancelled by user after processing {Count} orders", placedOrders.Count + skippedOrders.Count);
             throw;
         }
 
