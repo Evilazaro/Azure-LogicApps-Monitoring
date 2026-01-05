@@ -516,3 +516,7 @@ Access via Azure Portal:
 
 - [Technology Architecture](04-technology-architecture.md) - Azure Monitor infrastructure
 - [ADR-003: Observability Strategy](adr/ADR-003-observability-strategy.md) - Decision rationale
+
+---
+
+**Made with ❤️ by Evilazaro | Principal Cloud Solution Architect | Microsoft**

@@ -193,3 +193,7 @@ All Service Bus access uses **Managed Identity** with RBAC:
 - [Azure Service Bus Documentation](https://learn.microsoft.com/azure/service-bus-messaging/)
 - [Service Bus Tiers Comparison](https://learn.microsoft.com/azure/service-bus-messaging/service-bus-premium-messaging)
 - [W3C Trace Context](https://www.w3.org/TR/trace-context/)
+
+---
+
+**Made with ❤️ by Evilazaro | Principal Cloud Solution Architect | Microsoft**

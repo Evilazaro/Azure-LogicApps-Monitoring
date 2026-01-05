@@ -48,3 +48,7 @@ What becomes easier or more difficult because of this change?
 ---
 
 ← [Architecture Index](../README.md)
+
+---
+
+**Made with ❤️ by Evilazaro | Principal Cloud Solution Architect | Microsoft**

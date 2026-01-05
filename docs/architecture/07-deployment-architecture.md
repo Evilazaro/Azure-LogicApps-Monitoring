@@ -678,3 +678,7 @@ az containerapp ingress traffic set --name orders-api --resource-group rg-dev \
 - [Technology Architecture](04-technology-architecture.md) - Infrastructure details
 - [Security Architecture](06-security-architecture.md) - Secure deployment practices
 - [ADR-001: Aspire Orchestration](adr/ADR-001-aspire-orchestration.md) - Local development
+
+---
+
+**Made with ❤️ by Evilazaro | Principal Cloud Solution Architect | Microsoft**

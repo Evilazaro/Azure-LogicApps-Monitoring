@@ -391,3 +391,7 @@ flowchart TD
 - [Data Architecture](02-data-architecture.md) - Data domains supporting capabilities
 - [Application Architecture](03-application-architecture.md) - Services implementing capabilities
 - [ADR-001: Aspire Orchestration](adr/ADR-001-aspire-orchestration.md) - Orchestration decision rationale
+
+---
+
+**Made with ❤️ by Evilazaro | Principal Cloud Solution Architect | Microsoft**

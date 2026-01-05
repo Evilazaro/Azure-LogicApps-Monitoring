@@ -210,3 +210,7 @@ if (Activity.Current != null)
 - [OpenTelemetry .NET Documentation](https://opentelemetry.io/docs/languages/net/)
 - [Azure Monitor OpenTelemetry](https://learn.microsoft.com/azure/azure-monitor/app/opentelemetry-enable)
 - [.NET Aspire Telemetry](https://learn.microsoft.com/dotnet/aspire/fundamentals/telemetry)
+
+---
+
+**Made with ❤️ by Evilazaro | Principal Cloud Solution Architect | Microsoft**

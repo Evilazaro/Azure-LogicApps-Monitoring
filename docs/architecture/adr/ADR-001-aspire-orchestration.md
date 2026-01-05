@@ -120,3 +120,7 @@ Running dependencies manually was rejected because:
 
 - [.NET Aspire Documentation](https://learn.microsoft.com/dotnet/aspire/)
 - [Aspire Service Discovery](https://learn.microsoft.com/dotnet/aspire/service-discovery/overview)
+
+---
+
+**Made with ❤️ by Evilazaro | Principal Cloud Solution Architect | Microsoft**

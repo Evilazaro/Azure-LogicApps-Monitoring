@@ -600,3 +600,7 @@ flowchart TB
 - [Security Architecture](06-security-architecture.md) - Identity and access details
 - [Deployment Architecture](07-deployment-architecture.md) - CI/CD and deployment flows
 - [ADR-001: Aspire Orchestration](adr/ADR-001-aspire-orchestration.md) - Local orchestration decision
+
+---
+
+**Made with ❤️ by Evilazaro | Principal Cloud Solution Architect | Microsoft**

@@ -369,3 +369,7 @@ Azure-LogicApps-Monitoring/
 ---
 
 > 💡 **Tip:** Use the navigation links at the top of each document to move between BDAT layers sequentially.
+
+---
+
+**Made with ❤️ by Evilazaro | Principal Cloud Solution Architect | Microsoft**

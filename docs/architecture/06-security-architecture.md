@@ -450,3 +450,7 @@ resource keyVault 'Microsoft.KeyVault/vaults@2023-07-01' = {
 
 - [Technology Architecture](04-technology-architecture.md) - Identity infrastructure
 - [Deployment Architecture](07-deployment-architecture.md) - Secure deployment practices
+
+---
+
+**Made with ❤️ by Evilazaro | Principal Cloud Solution Architect | Microsoft**

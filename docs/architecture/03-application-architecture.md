@@ -514,3 +514,7 @@ Provided by [app.ServiceDefaults](../../app.ServiceDefaults/):
 - [Data Architecture](02-data-architecture.md) - Data flow details
 - [Technology Architecture](04-technology-architecture.md) - Infrastructure for services
 - [ADR-001: Aspire Orchestration](adr/ADR-001-aspire-orchestration.md) - Why .NET Aspire
+
+---
+
+**Made with ❤️ by Evilazaro | Principal Cloud Solution Architect | Microsoft**

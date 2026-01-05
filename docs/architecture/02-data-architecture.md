@@ -559,3 +559,7 @@ flowchart TD
 - [Application Architecture](03-application-architecture.md) - Services that manage this data
 - [Observability Architecture](05-observability-architecture.md) - Telemetry data details
 - [ADR-002: Service Bus Messaging](adr/ADR-002-service-bus-messaging.md) - Messaging design decisions
+
+---
+
+**Made with ❤️ by Evilazaro | Principal Cloud Solution Architect | Microsoft**

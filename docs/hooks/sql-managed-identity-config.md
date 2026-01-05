@@ -406,3 +406,7 @@ Both scripts return a structured JSON object:
 |---------|------|---------|
 | 1.1.0 | 2025-01-08 | Updated step numbering to 6 steps for clarity |
 | 1.0.0 | 2025-12-29 | Initial release |
+
+---
+
+**Made with ❤️ by Evilazaro | Principal Cloud Solution Architect | Microsoft**
