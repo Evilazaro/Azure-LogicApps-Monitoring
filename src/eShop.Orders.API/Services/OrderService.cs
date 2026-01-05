@@ -167,87 +167,19 @@ public sealed class OrderService : IOrderService
         _logger.LogInformation("Placing batch of {Count} orders with parallel processing", ordersList.Count);
 
         var successfulOrders = new List<Order>();
+        var skippedOrders = new List<Order>();
         var lockObject = new object();
-
-        // Check for existing orders in batches to reduce database load
-        var orderIds = ordersList.Select(o => o.Id).ToHashSet();
-        var existingOrderIds = new HashSet<string>();
-
-        // Process ID checks in smaller batches to avoid overwhelming the database
-        const int checkBatchSize = 100;
-        const int maxConcurrentChecks = 10; // Limit concurrent database operations
-        var idBatches = orderIds
-            .Select((id, index) => new { id, index })
-            .GroupBy(x => x.index / checkBatchSize)
-            .Select(g => g.Select(x => x.id).ToList())
-            .ToList();
-
-        // Use a semaphore to limit concurrent database connections during ID checks
-        using var checkSemaphore = new SemaphoreSlim(maxConcurrentChecks);
-
-        foreach (var idBatch in idBatches)
-        {
-            var checkTasks = idBatch.Select(async id =>
-            {
-                await checkSemaphore.WaitAsync(cancellationToken);
-                try
-                {
-                    // Create a new scope for each parallel check to ensure thread-safe DbContext usage
-                    await using var scope = _serviceScopeFactory.CreateAsyncScope();
-                    var scopedRepository = scope.ServiceProvider.GetRequiredService<IOrderRepository>();
-                    
-                    var exists = await scopedRepository.GetOrderByIdAsync(id, cancellationToken);
-                    if (exists != null)
-                    {
-                        lock (lockObject)
-                        {
-                            existingOrderIds.Add(id);
-                        }
-                    }
-                }
-                catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
-                {
-                    // Propagate cancellation - don't log as warning
-                    throw;
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogWarning(ex, "Failed to check if order {OrderId} exists", id);
-                }
-                finally
-                {
-                    checkSemaphore.Release();
-                }
-            });
-
-            await Task.WhenAll(checkTasks);
-        }
-
-        // Filter out existing orders before processing
-        var ordersToProcess = ordersList.Where(o => !existingOrderIds.Contains(o.Id)).ToList();
-        var skippedCount = ordersList.Count - ordersToProcess.Count;
-
-        if (skippedCount > 0)
-        {
-            _logger.LogInformation("Skipping {Count} orders that already exist (idempotent)", skippedCount);
-        }
-
-        if (!ordersToProcess.Any())
-        {
-            _logger.LogInformation("All orders already exist, nothing to process");
-            return ordersList; // Return original orders for idempotency
-        }
 
         // Process in smaller batches to avoid overwhelming the database
         const int processBatchSize = 50;
-        var processBatches = ordersToProcess
+        var processBatches = ordersList
             .Select((order, index) => new { order, index })
             .GroupBy(x => x.index / processBatchSize)
             .Select(g => g.Select(x => x.order).ToList())
             .ToList();
 
         _logger.LogInformation("Processing {Count} orders in {BatchCount} batches of max {BatchSize} orders",
-            ordersToProcess.Count, processBatches.Count, processBatchSize);
+            ordersList.Count, processBatches.Count, processBatchSize);
 
         foreach (var (batch, batchIndex) in processBatches.Select((b, i) => (b, i)))
         {
@@ -275,11 +207,15 @@ public sealed class OrderService : IOrderService
                     var scopedMessageHandler = scope.ServiceProvider.GetRequiredService<IOrdersMessageHandler>();
 
                     var result = await ProcessSingleOrderAsync(order, scopedRepository, scopedMessageHandler, cancellationToken);
-                    if (result == OrderProcessResult.Success)
+                    lock (lockObject)
                     {
-                        lock (lockObject)
+                        if (result == OrderProcessResult.Success)
                         {
                             successfulOrders.Add(order);
+                        }
+                        else if (result == OrderProcessResult.AlreadyExists)
+                        {
+                            skippedOrders.Add(order);
                         }
                     }
                     return result;
@@ -293,13 +229,14 @@ public sealed class OrderService : IOrderService
             await Task.WhenAll(tasks);
         }
 
-        var failureCount = ordersToProcess.Count - successfulOrders.Count;
+        var failureCount = ordersList.Count - successfulOrders.Count - skippedOrders.Count;
 
         _logger.LogInformation(
-            "Batch processing completed. Success: {Success}, Failed: {Failed}, Skipped: {Skipped}",
-            successfulOrders.Count, failureCount, skippedCount);
+            "Batch processing completed. Success: {Success}, Failed: {Failed}, Skipped (already existed): {Skipped}",
+            successfulOrders.Count, failureCount, skippedOrders.Count);
 
-        return successfulOrders;
+        // Return both successful and skipped orders for idempotency
+        return successfulOrders.Concat(skippedOrders);
     }
 
     private async Task<OrderProcessResult> ProcessSingleOrderAsync(
@@ -313,13 +250,19 @@ public sealed class OrderService : IOrderService
             // Validate the order
             ValidateOrder(order);
 
-            // Save to database - the repository should handle transactions properly with retry strategy
+            // Save to database - the repository handles duplicate key violations
             await repository.SaveOrderAsync(order, cancellationToken);
 
             // Publish event via message handler
             await messageHandler.SendOrderMessageAsync(order, cancellationToken);
 
             return OrderProcessResult.Success;
+        }
+        catch (InvalidOperationException ex) when (ex.Message.Contains("already exists", StringComparison.OrdinalIgnoreCase))
+        {
+            // Order already exists - this is expected for idempotent operations
+            _logger.LogDebug("Order {OrderId} already exists, skipping (idempotent)", order.Id);
+            return OrderProcessResult.AlreadyExists;
         }
         catch (Exception ex)
         {
@@ -332,7 +275,8 @@ public sealed class OrderService : IOrderService
     private enum OrderProcessResult
     {
         Success,
-        Failure
+        Failure,
+        AlreadyExists
     }
 
     /// <summary>
