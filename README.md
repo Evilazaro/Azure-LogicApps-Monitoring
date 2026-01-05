@@ -84,14 +84,16 @@ This solution prioritizes **developer productivity** with a streamlined inner-lo
 
 ## ✨ Key Features
 
-- 🔭 **Full Observability Stack** - OpenTelemetry integration with Application Insights and Log Analytics
-- 📨 **Event-Driven Architecture** - Azure Service Bus pub/sub with topic subscriptions
-- 🔄 **Logic Apps Workflows** - Stateful workflow processing with Service Bus triggers
-- 🐳 **Containerized Deployment** - Azure Container Apps with automatic scaling
-- 🏗️ **Infrastructure as Code** - Modular Bicep templates with subscription-scope deployment
-- 🚀 **One-Command Deployment** - Azure Developer CLI (`azd`) for streamlined provisioning
-- 🔐 **Managed Identity** - Zero-secrets architecture with Entra ID authentication
-- 📊 **Distributed Tracing** - Trace correlation across HTTP, SQL, and Service Bus operations
+| Feature                          | Description                                                                                                                                                                                 |
+| -------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 🔭 **Full Observability Stack**  | Complete telemetry pipeline using OpenTelemetry for vendor-neutral instrumentation, with Azure Application Insights for APM and Log Analytics for centralized log aggregation and querying. |
+| 📨 **Event-Driven Architecture** | Loosely coupled services communicating through Azure Service Bus topics and subscriptions, enabling reliable asynchronous message processing with guaranteed delivery.                      |
+| 🔄 **Logic Apps Workflows**      | Stateful workflow automation using Logic Apps Standard with Service Bus triggers, providing visual workflow design with enterprise integration capabilities.                                |
+| 🐳 **Containerized Deployment**  | Production hosting on Azure Container Apps with automatic horizontal scaling, revision management, and built-in ingress with HTTPS termination.                                             |
+| 🏗️ **Infrastructure as Code**    | Modular Bicep templates organized by responsibility (shared, workload, monitoring), enabling repeatable deployments with subscription-scope orchestration.                                  |
+| 🚀 **One-Command Deployment**    | Azure Developer CLI (`azd`) integration with lifecycle hooks for validation, provisioning, and configuration—deploy the entire solution with `azd up`.                                      |
+| 🔐 **Managed Identity**          | Zero-secrets architecture using User-Assigned Managed Identity for all Azure service authentication, eliminating connection strings and API keys from code.                                 |
+| 📊 **Distributed Tracing**       | End-to-end request correlation using W3C Trace Context standard, enabling trace propagation across HTTP calls, SQL queries, and Service Bus messages.                                       |
 
 ---
 
