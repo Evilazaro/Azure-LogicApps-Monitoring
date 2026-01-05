@@ -102,10 +102,10 @@ public sealed class OrdersMessageHandler : IOrdersMessageHandler
             // Use independent timeout to prevent HTTP cancellation from interrupting Service Bus operations
             // This ensures messages are sent even if the HTTP request is cancelled by client/load balancer
             using var sendCts = new CancellationTokenSource(TimeSpan.FromSeconds(30));
-            
+
             const int maxRetries = 3;
             var retryDelayMs = 500;
-            
+
             for (var attempt = 1; attempt <= maxRetries; attempt++)
             {
                 try

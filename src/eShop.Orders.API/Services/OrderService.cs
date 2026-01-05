@@ -183,7 +183,7 @@ public sealed class OrderService : IOrderService
 
         // Use SemaphoreSlim to limit concurrent database operations - created once for all batches
         using var semaphore = new SemaphoreSlim(10);
-        
+
         // Create a longer timeout for internal operations (5 minutes) to handle Service Bus latency
         using var internalCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
         internalCts.CancelAfter(TimeSpan.FromMinutes(5));
@@ -212,7 +212,7 @@ public sealed class OrderService : IOrderService
                     _logger.LogWarning("Semaphore wait cancelled for order {OrderId}", order.Id);
                     return OrderProcessResult.Failure;
                 }
-                
+
                 try
                 {
                     // Create a new scope for each order to ensure thread-safe DbContext usage
