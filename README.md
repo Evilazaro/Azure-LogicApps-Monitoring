@@ -42,47 +42,187 @@ The Azure Logic Apps Monitoring Solution showcases how to build observable, even
 ## 🏛️ Architecture
 
 ```mermaid
-flowchart TD
-    subgraph Presentation["🖥️ Presentation Layer"]
-        WebApp["🌐 eShop.Web.App<br/>Blazor Server + Fluent UI"]
+%%{init: {
+  'theme': 'base',
+  'themeVariables': {
+    'fontSize': '14px',
+    'fontFamily': 'Segoe UI, Arial, sans-serif',
+    'primaryColor': '#e3f2fd',
+    'primaryBorderColor': '#1565c0',
+    'lineColor': '#546e7a',
+    'textColor': '#212121'
+  }
+}}%%
+
+flowchart TB
+    %% =====================================================================
+    %% TOP-LEVEL GROUPING: Runtime Environment
+    %% Separates application runtime from supporting infrastructure
+    %% =====================================================================
+    
+    subgraph Runtime["Runtime Environment"]
+        direction TB
+        
+        %% =================================================================
+        %% PRESENTATION LAYER - User-facing components
+        %% Single entry point for all user interactions
+        %% =================================================================
+        subgraph Presentation["Presentation Layer"]
+            direction LR
+            WebApp["eShop.Web.App\nBlazor Server + Fluent UI"]
+        end
+
+        %% =================================================================
+        %% APPLICATION LAYER - Business logic and workflow automation
+        %% Grouped by responsibility: API Services vs Workflow Automation
+        %% =================================================================
+        subgraph Application["Application Layer"]
+            direction TB
+            
+            subgraph APIServices["API Services"]
+                direction LR
+                API["eShop.Orders.API\nASP.NET Core Web API"]
+            end
+            
+            subgraph WorkflowAutomation["Workflow Automation"]
+                direction LR
+                LogicApp["OrdersManagement\nLogic Apps Standard"]
+            end
+        end
     end
 
-    subgraph Application["⚙️ Application Layer"]
-        API["📡 eShop.Orders.API<br/>ASP.NET Core Web API"]
-        LogicApp["🔄 OrdersManagement<br/>Logic Apps Standard"]
+    %% =====================================================================
+    %% TOP-LEVEL GROUPING: Supporting Infrastructure
+    %% Platform services that enable the runtime environment
+    %% =====================================================================
+    
+    subgraph Infrastructure["Supporting Infrastructure"]
+        direction TB
+        
+        %% =================================================================
+        %% PLATFORM LAYER - Orchestration and shared services
+        %% Grouped by function: Orchestration vs Shared Libraries
+        %% =================================================================
+        subgraph Platform["Platform Layer"]
+            direction TB
+            
+            subgraph Orchestration["Orchestration"]
+                direction LR
+                Aspire["app.AppHost\n.NET Aspire Orchestrator"]
+            end
+            
+            subgraph SharedLibraries["Shared Libraries"]
+                direction LR
+                Defaults["app.ServiceDefaults\nCross-cutting Concerns"]
+            end
+        end
+
+        %% =================================================================
+        %% DATA LAYER - Persistence, messaging, and state management
+        %% Grouped by data pattern: Persistence vs Messaging vs State
+        %% =================================================================
+        subgraph Data["Data Layer"]
+            direction TB
+            
+            subgraph Persistence["Persistence"]
+                direction LR
+                SQL[("OrderDb\nAzure SQL Database")]
+            end
+            
+            subgraph Messaging["Messaging"]
+                direction LR
+                ServiceBus[["ordersplaced\nService Bus Topic"]]
+            end
+            
+            subgraph StateStore["State Store"]
+                direction LR
+                Storage[("Workflow State\nAzure Storage")]
+            end
+        end
     end
 
-    subgraph Platform["🏗️ Platform Layer"]
-        Aspire["🎯 app.AppHost<br/>.NET Aspire Orchestrator"]
-        Defaults["📦 app.ServiceDefaults<br/>Cross-cutting Concerns"]
+    %% =====================================================================
+    %% TOP-LEVEL GROUPING: Observability Stack
+    %% Monitoring and telemetry infrastructure
+    %% =====================================================================
+    
+    subgraph ObservabilityStack["Observability Stack"]
+        direction TB
+        
+        subgraph Observability["Observability Layer"]
+            direction TB
+            
+            subgraph APM["Application Performance Monitoring"]
+                direction LR
+                AppInsights["Application Insights\nAPM & Distributed Tracing"]
+            end
+            
+            subgraph Logging["Centralized Logging"]
+                direction LR
+                LogAnalytics["Log Analytics\nLog Aggregation & Analysis"]
+            end
+        end
     end
 
-    subgraph Data["💾 Data Layer"]
-        SQL[("🗄️ OrderDb<br/>Azure SQL Database")]
-        ServiceBus["📨 ordersplaced<br/>Service Bus Topic"]
-        Storage["📁 Workflow State<br/>Azure Storage"]
-    end
-
-    subgraph Observability["📊 Observability Layer"]
-        AppInsights["📈 Application Insights<br/>APM & Distributed Tracing"]
-        LogAnalytics["📋 Log Analytics<br/>Centralized Logging"]
-    end
-
+    %% =====================================================================
+    %% DATA FLOW CONNECTIONS - Solid lines for primary data paths
+    %% Follows the order processing flow from user to storage
+    %% =====================================================================
     WebApp -->|"HTTP/REST"| API
     API -->|"EF Core"| SQL
-    API -->|"AMQP"| ServiceBus
+    API -->|"AMQP Publish"| ServiceBus
     ServiceBus -->|"Trigger"| LogicApp
-    LogicApp -->|"State"| Storage
+    LogicApp -->|"State Persistence"| Storage
 
+    %% =====================================================================
+    %% ORCHESTRATION CONNECTIONS - Dashed lines for control plane
+    %% Shows how platform layer configures runtime components
+    %% =====================================================================
     Aspire -.->|"Orchestrates"| WebApp
     Aspire -.->|"Orchestrates"| API
     Defaults -.->|"Configures"| WebApp
     Defaults -.->|"Configures"| API
 
-    WebApp -.->|"OTLP"| AppInsights
-    API -.->|"OTLP"| AppInsights
+    %% =====================================================================
+    %% TELEMETRY CONNECTIONS - Dotted lines for observability data
+    %% Shows telemetry flow from components to monitoring
+    %% =====================================================================
+    WebApp -.->|"OTLP Traces"| AppInsights
+    API -.->|"OTLP Traces"| AppInsights
     LogicApp -.->|"Diagnostics"| LogAnalytics
-    AppInsights -.->|"Exports"| LogAnalytics
+    AppInsights -.->|"Log Export"| LogAnalytics
+
+    %% =====================================================================
+    %% STYLE DEFINITIONS - WCAG AA compliant color palette
+    %% Each layer has distinct color for visual hierarchy
+    %% =====================================================================
+    
+    %% Presentation Layer - Blue theme (user interface focus)
+    classDef presentationStyle fill:#e3f2fd,stroke:#1565c0,stroke-width:2px,color:#0d47a1
+
+    %% Application Layer - Green theme (business logic focus)
+    classDef applicationStyle fill:#e8f5e9,stroke:#2e7d32,stroke-width:2px,color:#1b5e20
+
+    %% Platform Layer - Orange theme (infrastructure focus)
+    classDef platformStyle fill:#fff3e0,stroke:#e65100,stroke-width:2px,color:#bf360c
+
+    %% Data Layer - Purple theme (persistence focus)
+    classDef dataStyle fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px,color:#4a148c
+
+    %% Observability Layer - Pink theme (monitoring focus)
+    classDef observabilityStyle fill:#fce4ec,stroke:#c2185b,stroke-width:2px,color:#880e4f
+
+    %% Top-level grouping - Neutral theme
+    classDef groupStyle fill:#fafafa,stroke:#bdbdbd,stroke-width:1px,stroke-dasharray:5 5,color:#616161
+
+    %% =====================================================================
+    %% APPLY STYLES TO NODES
+    %% =====================================================================
+    class WebApp presentationStyle
+    class API,LogicApp applicationStyle
+    class Aspire,Defaults platformStyle
+    class SQL,ServiceBus,Storage dataStyle
+    class AppInsights,LogAnalytics observabilityStyle
 ```
 
 > 📖 **Learn more:** See [Architecture Overview](docs/architecture/README.md) for detailed component diagrams, data flows, and design decisions.
@@ -132,9 +272,13 @@ flowchart TD
 
 ## 🚀 Quick Start
 
+This section provides streamlined instructions to get started quickly. For comprehensive workflows, troubleshooting, and advanced scenarios, refer to the detailed documentation.
+
+> 📚 **Complete Guide:** See [Developer Inner Loop Workflow](docs/hooks/README.md) for development modes comparison, hybrid development, CI/CD integration, and troubleshooting.
+
 ### Option 1: Local Development with .NET Aspire
 
-The fastest path for development—runs entirely on your local machine with containerized dependencies.
+The fastest path for development—runs entirely on your local machine with containerized dependencies (~1 min setup, free).
 
 ```powershell
 # 1. Clone the repository
@@ -142,6 +286,7 @@ git clone https://github.com/Evilazaro/Azure-LogicApps-Monitoring.git
 cd Azure-LogicApps-Monitoring
 
 # 2. Ensure Docker Desktop is running
+docker ps
 
 # 3. Run with .NET Aspire
 dotnet run --project app.AppHost
@@ -153,9 +298,13 @@ The Aspire dashboard opens automatically at `https://localhost:17225`, providing
 - Structured logs across all services
 - Container and emulator status
 
+**What starts automatically:** SQL Server container, Service Bus emulator, database schema creation, topic/subscription setup, and OpenTelemetry tracing.
+
+> 📖 **Learn more:** See [Local Development Workflow](docs/hooks/README.md#local-development-workflow-inner-loop) for hot reload, debugging tips, and container management.
+
 ### Option 2: Deploy to Azure
 
-Full cloud deployment with all Azure services provisioned automatically.
+Full cloud deployment with all Azure services provisioned automatically (~10 min setup, pay-per-use).
 
 ```powershell
 # 1. Authenticate with Azure
@@ -166,13 +315,34 @@ azd up
 ```
 
 The `azd up` command automatically:
-1. Validates prerequisites via `preprovision` hook
-2. Provisions all Azure infrastructure with Bicep
-3. Configures .NET user secrets via `postprovision` hook
-4. Generates test data for the application
-5. Deploys the application to Azure Container Apps
+1. **Validates prerequisites** via [`preprovision`](docs/hooks/preprovision.md) hook
+2. **Provisions infrastructure** with Bicep (Container Apps, SQL, Service Bus, App Insights)
+3. **Configures secrets** via [`postprovision`](docs/hooks/postprovision.md) hook
+4. **Sets up SQL access** via [`sql-managed-identity-config`](docs/hooks/sql-managed-identity-config.md)
+5. **Generates test data** via [`Generate-Orders`](docs/hooks/Generate-Orders.md)
+6. **Deploys application** to Azure Container Apps
 
-> 📖 **Learn more:** See [Developer Inner Loop Workflow](docs/hooks/README.md) for detailed development workflows, hybrid modes, and troubleshooting guides.
+> 📖 **Learn more:** See [Azure Deployment Workflow](docs/hooks/README.md#azure-deployment-workflow) for environment management, redeployment, and cleanup.
+
+### Development Mode Comparison
+
+| Mode | Database | Service Bus | Monitoring | Setup | Cost |
+|------|----------|-------------|------------|-------|------|
+| **Local** | SQL Server container | Emulator | Aspire Dashboard | ~1 min | Free |
+| **Azure** | Azure SQL Database | Azure Service Bus | Application Insights | ~10 min | Pay-per-use |
+
+> 📖 **Learn more:** See [Hybrid Development Mode](docs/hooks/README.md#hybrid-development-mode) for running local apps against Azure backend services.
+
+### Validate Your Environment
+
+Before starting, ensure all prerequisites are installed:
+
+```powershell
+# Run the validation script
+./hooks/check-dev-workstation.ps1
+```
+
+> 📖 **Learn more:** See [check-dev-workstation](docs/hooks/check-dev-workstation.md) for detailed prerequisite requirements and auto-installation options.
 
 ---
 
@@ -181,64 +351,244 @@ The `azd up` command automatically:
 ```
 Azure-LogicApps-Monitoring/
 │
-├── 📁 app.AppHost/                    # .NET Aspire orchestrator
-│   ├── AppHost.cs                     # Service orchestration & resource wiring
-│   └── appsettings.json               # Aspire configuration
+├── � .github/                                    # GitHub configuration
+│   └── workflows/                                 # GitHub Actions CI/CD workflows
 │
-├── 📁 app.ServiceDefaults/            # Shared cross-cutting concerns
-│   ├── Extensions.cs                  # OpenTelemetry, resilience, health checks
-│   └── CommonTypes.cs                 # Shared DTOs (Order, OrderProduct)
+├── 📂 .vscode/                                    # VS Code workspace settings
 │
-├── 📁 src/
-│   ├── 📁 eShop.Orders.API/           # Order management REST API
-│   │   ├── Controllers/               # API endpoints
-│   │   ├── Services/                  # Business logic with metrics
-│   │   ├── Handlers/                  # Service Bus message publishing
-│   │   ├── Repositories/              # EF Core data access
-│   │   └── Migrations/                # Database migrations
+├── 📂 app.AppHost/                                # .NET Aspire Orchestrator
+│   ├── AppHost.cs                                 # Service orchestration & resource wiring
+│   ├── app.AppHost.csproj                         # Project file (Aspire.AppHost.Sdk 9.5.0)
+│   ├── appsettings.json                           # Default configuration
+│   ├── appsettings.Development.json               # Development overrides
+│   └── Properties/
+│       └── launchSettings.json                    # Debug launch profiles
+│
+├── 📂 app.ServiceDefaults/                        # Shared Cross-cutting Concerns
+│   ├── Extensions.cs                              # OpenTelemetry, resilience, health checks
+│   ├── CommonTypes.cs                             # Shared DTOs (Order, OrderProduct)
+│   └── app.ServiceDefaults.csproj                 # Project file (.NET 10.0)
+│
+├── 📂 src/                                        # Application Source Code
 │   │
-│   └── 📁 eShop.Web.App/              # Blazor Server frontend
-│       ├── Components/                # Razor components
-│       └── wwwroot/                   # Static assets
+│   ├── 📂 eShop.Orders.API/                       # Order Management REST API
+│   │   ├── Program.cs                             # API entry point & DI configuration
+│   │   ├── eShop.Orders.API.csproj                # Project file (ASP.NET Core 10.0)
+│   │   ├── eShop.Orders.API.http                  # REST Client test file
+│   │   ├── MIGRATION_GUIDE.md                     # Database migration guide
+│   │   ├── Setup-Database.ps1                     # Database setup script
+│   │   ├── appsettings.json                       # Default configuration
+│   │   ├── appsettings.Development.json           # Development overrides
+│   │   │
+│   │   ├── Controllers/                           # API Endpoints
+│   │   │   ├── OrdersController.cs                # Order CRUD operations
+│   │   │   └── WeatherForecastController.cs       # Health check demo endpoint
+│   │   │
+│   │   ├── Services/                              # Business Logic Layer
+│   │   │   ├── OrderService.cs                    # Order processing with metrics
+│   │   │   └── OrdersWrapper.cs                   # Service wrapper utilities
+│   │   │
+│   │   ├── Handlers/                              # Message Publishing
+│   │   │   ├── OrdersMessageHandler.cs            # Service Bus publisher
+│   │   │   ├── NoOpOrdersMessageHandler.cs        # No-op for local dev
+│   │   │   └── OrderMessageWithMetadata.cs        # Message envelope DTO
+│   │   │
+│   │   ├── Repositories/                          # Data Access Layer
+│   │   │   └── OrderRepository.cs                 # EF Core repository
+│   │   │
+│   │   ├── Interfaces/                            # Abstractions
+│   │   │   ├── IOrderService.cs                   # Service interface
+│   │   │   ├── IOrderRepository.cs                # Repository interface
+│   │   │   └── IOrdersMessageHandler.cs           # Message handler interface
+│   │   │
+│   │   ├── HealthChecks/                          # Custom Health Checks
+│   │   │   ├── DbContextHealthCheck.cs            # SQL Database health
+│   │   │   └── ServiceBusHealthCheck.cs           # Service Bus health
+│   │   │
+│   │   ├── Migrations/                            # EF Core Migrations
+│   │   ├── data/                                  # Data context & entities
+│   │   └── Properties/
+│   │       └── launchSettings.json                # Debug launch profiles
+│   │
+│   └── 📂 eShop.Web.App/                          # Blazor Server Frontend
+│       ├── Program.cs                             # Web app entry point
+│       ├── eShop.Web.App.csproj                   # Project file (Blazor Server)
+│       ├── appsettings.json                       # Default configuration
+│       ├── appsettings.Development.json           # Development overrides
+│       │
+│       ├── Components/                            # Blazor Components
+│       │   ├── App.razor                          # Root component
+│       │   ├── Routes.razor                       # Routing configuration
+│       │   ├── _Imports.razor                     # Global using directives
+│       │   │
+│       │   ├── Layout/                            # Layout Components
+│       │   │   ├── MainLayout.razor               # Main page layout
+│       │   │   ├── MainLayout.razor.css           # Layout styles
+│       │   │   ├── NavMenu.razor                  # Navigation menu
+│       │   │   └── NavMenu.razor.css              # Navigation styles
+│       │   │
+│       │   ├── Pages/                             # Page Components
+│       │   │   ├── Home.razor                     # Home page
+│       │   │   ├── ListAllOrders.razor            # Orders list view
+│       │   │   ├── PlaceOrder.razor               # Single order form
+│       │   │   ├── PlaceOrdersBatch.razor         # Batch order form
+│       │   │   ├── ViewOrder.razor                # Order details view
+│       │   │   ├── WeatherForecasts.razor         # Demo page
+│       │   │   └── Error.razor                    # Error page
+│       │   │
+│       │   ├── Services/                          # Client Services
+│       │   │   └── OrdersAPIService.cs            # HTTP client for Orders API
+│       │   │
+│       │   └── Shared/                            # Shared Components
+│       │
+│       ├── Shared/                                # Legacy shared components
+│       │
+│       ├── wwwroot/                               # Static Assets
+│       │   ├── app.css                            # Application styles
+│       │   ├── favicon.png                        # Site favicon
+│       │   ├── css/                               # Additional stylesheets
+│       │   └── lib/                               # Client-side libraries
+│       │
+│       └── Properties/
+│           └── launchSettings.json                # Debug launch profiles
 │
-├── 📁 workflows/                      # Logic Apps Standard workflows
-│   └── OrdersManagement/
-│       └── ProcessingOrdersPlaced/    # Order processing workflow
+├── 📂 workflows/                                  # Logic Apps Standard Workflows
+│   └── OrdersManagement/                          # Order Processing Workspace
+│       ├── OrdersManagement.code-workspace        # VS Code workspace file
+│       └── OrdersManagementLogicApp/              # Logic App Project
+│           ├── host.json                          # Functions host configuration
+│           ├── .funcignore                        # Functions ignore patterns
+│           ├── .gitignore                         # Git ignore patterns
+│           └── ProcessingOrdersPlaced/            # Workflow Definition
+│               └── workflow.json                  # Stateful workflow (Service Bus trigger)
 │
-├── 📁 infra/                          # Bicep infrastructure templates
-│   ├── main.bicep                     # Root deployment orchestrator
-│   ├── shared/                        # Identity, monitoring, data modules
-│   └── workload/                      # Messaging, services, Logic Apps
+├── 📂 infra/                                      # Bicep Infrastructure as Code
+│   ├── main.bicep                                 # Root deployment orchestrator
+│   ├── main.parameters.json                       # Deployment parameters
+│   ├── types.bicep                                # Shared type definitions
+│   │
+│   ├── data/                                      # Sample Data
+│   │   └── ordersBatch.json                       # Generated test orders
+│   │
+│   ├── shared/                                    # Shared Infrastructure Modules
+│   │   ├── main.bicep                             # Shared module orchestrator
+│   │   ├── identity/
+│   │   │   └── main.bicep                         # User-assigned managed identity
+│   │   ├── monitoring/
+│   │   │   ├── main.bicep                         # Monitoring orchestrator
+│   │   │   ├── log-analytics-workspace.bicep      # Log Analytics workspace
+│   │   │   ├── app-insights.bicep                 # Application Insights
+│   │   │   └── azure-monitor-health-model.bicep   # Health model alerts
+│   │   └── data/
+│   │       └── main.bicep                         # SQL Database & Storage
+│   │
+│   └── workload/                                  # Workload Infrastructure Modules
+│       ├── main.bicep                             # Workload orchestrator
+│       ├── logic-app.bicep                        # Logic Apps Standard
+│       ├── messaging/
+│       │   └── main.bicep                         # Service Bus namespace & topics
+│       └── services/
+│           └── main.bicep                         # Container Apps environment
 │
-├── 📁 hooks/                          # azd lifecycle automation scripts
-│   ├── preprovision.ps1/.sh           # Pre-deployment validation
-│   ├── postprovision.ps1/.sh          # Post-deployment configuration
-│   └── Generate-Orders.ps1/.sh        # Test data generation
+├── 📂 hooks/                                      # Azure Developer CLI Lifecycle Scripts
+│   ├── preprovision.ps1                           # Pre-deployment validation (Windows)
+│   ├── preprovision.sh                            # Pre-deployment validation (Linux/macOS)
+│   ├── postprovision.ps1                          # Post-deployment config (Windows)
+│   ├── postprovision.sh                           # Post-deployment config (Linux/macOS)
+│   ├── check-dev-workstation.ps1                  # Prerequisite validation (Windows)
+│   ├── check-dev-workstation.sh                   # Prerequisite validation (Linux/macOS)
+│   ├── sql-managed-identity-config.ps1            # SQL MI setup (Windows)
+│   ├── sql-managed-identity-config.sh             # SQL MI setup (Linux/macOS)
+│   ├── clean-secrets.ps1                          # Secrets cleanup (Windows)
+│   ├── clean-secrets.sh                           # Secrets cleanup (Linux/macOS)
+│   ├── Generate-Orders.ps1                        # Test data generation (Windows)
+│   ├── Generate-Orders.sh                         # Test data generation (Linux/macOS)
+│   └── deploy-workflows.ps1                       # Logic Apps deployment
 │
-├── 📁 docs/                           # Architecture documentation
-│   ├── architecture/                  # TOGAF BDAT documentation
-│   └── hooks/                         # Developer workflow guides
+├── 📂 docs/                                       # Documentation
+│   ├── README.md                                  # Documentation index
+│   │
+│   ├── architecture/                              # TOGAF BDAT Architecture Docs
+│   │   ├── README.md                              # Architecture overview
+│   │   ├── 01-business-architecture.md            # Business capabilities
+│   │   ├── 02-data-architecture.md                # Data domains & flows
+│   │   ├── 03-application-architecture.md         # Service catalog & APIs
+│   │   ├── 04-technology-architecture.md          # Azure infrastructure
+│   │   ├── 05-observability-architecture.md       # Monitoring & tracing
+│   │   ├── 06-security-architecture.md            # Identity & access
+│   │   ├── 07-deployment-architecture.md          # CI/CD & deployment
+│   │   │
+│   │   └── adr/                                   # Architecture Decision Records
+│   │       ├── README.md                          # ADR index & process
+│   │       ├── ADR-001-aspire-orchestration.md    # .NET Aspire decision
+│   │       ├── ADR-002-service-bus-messaging.md   # Service Bus decision
+│   │       └── ADR-003-observability-strategy.md  # OpenTelemetry decision
+│   │
+│   └── hooks/                                     # Developer Workflow Guides
+│       ├── README.md                              # Inner loop workflow guide
+│       ├── preprovision.md                        # Preprovision script docs
+│       ├── postprovision.md                       # Postprovision script docs
+│       ├── check-dev-workstation.md               # Workstation validation docs
+│       ├── sql-managed-identity-config.md         # SQL MI config docs
+│       ├── clean-secrets.md                       # Secrets cleanup docs
+│       ├── Generate-Orders.md                     # Test data generation docs
+│       └── VALIDATION-WORKFLOW.md                 # Validation workflow guide
 │
-├── azure.yaml                         # Azure Developer CLI configuration
-└── app.sln                            # .NET solution file
+├── .gitignore                                     # Git ignore patterns
+├── app.sln                                        # .NET solution file
+├── azure.yaml                                     # Azure Developer CLI configuration
+├── CODE_OF_CONDUCT.md                             # Community guidelines
+├── CONTRIBUTING.md                                # Contribution guidelines
+├── LICENSE                                        # MIT License
+├── LICENSE.md                                     # License details
+├── README.md                                      # This file
+└── SECURITY.md                                    # Security policy
 ```
 
 ---
 
 ## ⚙️ Configuration
 
-### Environment Variables
+This section provides an overview of configuration management. The solution uses a **zero-secrets architecture** with Azure Managed Identity for service authentication, eliminating the need for stored credentials.
 
-The application uses the following configuration hierarchy:
+> 📚 **Complete Guide:** See [postprovision](docs/hooks/postprovision.md) for detailed configuration workflow, secret definitions, and SQL managed identity setup.
+
+### Configuration Hierarchy
+
+The application follows standard .NET configuration precedence:
 
 | Source | Purpose | Priority |
 |--------|---------|----------|
 | `appsettings.json` | Default configuration | Lowest |
 | `appsettings.{Environment}.json` | Environment-specific | Medium |
-| User Secrets | Local development secrets | High |
+| [User Secrets](docs/hooks/postprovision.md#-configured-user-secrets) | Local development secrets | High |
 | Environment Variables | Runtime configuration | Highest |
 
+### Automatic Configuration (Recommended)
+
+The [`postprovision`](docs/hooks/postprovision.md) hook **automatically configures** all secrets after Azure deployment:
+
+```powershell
+# Secrets are configured automatically during deployment
+azd up
+
+# Or manually re-configure after environment changes
+./hooks/postprovision.ps1
+```
+
+The script configures **27 secrets across 3 projects**:
+
+| Project | Secrets | Purpose |
+|---------|---------|---------|
+| **app.AppHost** | 23 | Full Azure infrastructure (SQL, Service Bus, ACR, monitoring) |
+| **eShop.Orders.API** | 3 | Managed identity and telemetry |
+| **eShop.Web.App** | 1 | Application Insights connection |
+
+> 📖 **Learn more:** See [Configured User Secrets](docs/hooks/postprovision.md#-configured-user-secrets) for the complete secret key reference.
+
 ### Key Configuration Settings
+
+These settings are **automatically populated** from Bicep outputs during deployment. The JSON structure below shows the configuration schema used by the application:
 
 ```json
 {
@@ -249,8 +599,11 @@ The application uses the following configuration hierarchy:
       "SubscriptionName": "orderprocessingsub"
     },
     "SqlServer": {
-      "Name": "your-sql-server",
-      "DatabaseName": "OrderDb"
+      "Fqdn": "your-server.database.windows.net",
+      "Name": "your-sql-server"
+    },
+    "SqlDatabase": {
+      "Name": "OrderDb"
     },
     "ApplicationInsights": {
       "Name": "your-appinsights"
@@ -259,7 +612,58 @@ The application uses the following configuration hierarchy:
 }
 ```
 
-> 💡 **Tip:** The `postprovision` hook automatically configures user secrets after Azure deployment, so manual configuration is typically not needed.
+| Setting | Source | Description |
+|---------|--------|-------------|
+| `Azure:ServiceBus:HostName` | Bicep output | Service Bus namespace FQDN for AMQP connections |
+| `Azure:ServiceBus:TopicName` | Bicep output | Topic name for order events (`ordersplaced`) |
+| `Azure:ServiceBus:SubscriptionName` | Bicep output | Subscription for Logic Apps trigger |
+| `Azure:SqlServer:Fqdn` | Bicep output | SQL Server fully qualified domain name |
+| `Azure:SqlServer:Name` | Bicep output | SQL Server resource name |
+| `Azure:SqlDatabase:Name` | Bicep output | Database name for order storage |
+| `Azure:ApplicationInsights:Name` | Bicep output | Application Insights resource name |
+
+> 📖 **Learn more:** See [Technology Architecture](docs/architecture/04-technology-architecture.md#3-resource-inventory) for complete Azure resource specifications and Bicep module details.
+
+### SQL Database Access Configuration
+
+The solution uses **Microsoft Entra ID (Azure AD) authentication** for SQL Database access with managed identity:
+
+| Configuration | Value | Purpose |
+|---------------|-------|---------|
+| **Authentication** | User-Assigned Managed Identity | No stored credentials |
+| **Database Role** | `db_owner` | Required for EF Core migrations |
+| **Setup Script** | [`sql-managed-identity-config`](docs/hooks/sql-managed-identity-config.md) | Creates database user with appropriate roles |
+
+> 📖 **Learn more:** See [SQL Managed Identity Configuration](docs/hooks/sql-managed-identity-config.md) for detailed setup, troubleshooting, and manual configuration steps.
+
+### Cleaning Secrets
+
+To reset local development secrets (useful when switching environments):
+
+```powershell
+# Interactive mode - prompts for confirmation
+./hooks/clean-secrets.ps1
+
+# Force mode - skip confirmation (CI/CD)
+./hooks/clean-secrets.ps1 -Force
+
+# Preview mode - see what would be deleted
+./hooks/clean-secrets.ps1 -WhatIf
+```
+
+> 📖 **Learn more:** See [clean-secrets](docs/hooks/clean-secrets.md) for target projects, storage locations, and workflow integration.
+
+### Security Architecture
+
+The configuration follows **Zero Trust** security principles:
+
+| Principle | Implementation | Documentation |
+|-----------|----------------|---------------|
+| **No Secrets** | Managed Identity authentication | [Security Architecture](docs/architecture/06-security-architecture.md#2-identity-architecture) |
+| **Least Privilege** | RBAC role assignments | [RBAC Role Assignments](docs/architecture/06-security-architecture.md#4-rbac-role-assignments) |
+| **Defense in Depth** | Multiple security layers | [Security Architecture](docs/architecture/06-security-architecture.md) |
+
+> 📖 **Learn more:** See [Technology Architecture](docs/architecture/04-technology-architecture.md) for complete Azure resource topology and infrastructure configuration.
 
 ---
 
@@ -330,49 +734,6 @@ The solution follows Azure security best practices:
 | [Deployment Architecture](docs/architecture/07-deployment-architecture.md) | CI/CD pipelines and environment strategy |
 | [Developer Workflow](docs/hooks/README.md) | Inner loop development and azd hooks |
 | [ADR Index](docs/architecture/adr/README.md) | Architecture Decision Records |
-
----
-
-## 🤝 Contributing
-
-Contributions are welcome! Please see our contributing guidelines for details on:
-
-- Code of conduct
-- Development workflow
-- Pull request process
-- Coding standards
-
----
-
-## 📄 License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-```
-MIT License
-
-Copyright (c) 2025 Evilázaro Alves
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-```
-
----
-
-## 🙏 Acknowledgments
-
-- [.NET Aspire](https://learn.microsoft.com/dotnet/aspire/) - Cloud-native application orchestration
-- [Azure Logic Apps](https://learn.microsoft.com/azure/logic-apps/) - Workflow automation platform
-- [OpenTelemetry](https://opentelemetry.io/) - Observability framework
-- [Fluent UI Blazor](https://www.fluentui-blazor.net/) - UI component library
-- [Azure Developer CLI](https://learn.microsoft.com/azure/developer/azure-developer-cli/) - Developer productivity tool
 
 ---
 
