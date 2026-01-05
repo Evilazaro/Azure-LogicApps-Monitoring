@@ -70,6 +70,11 @@ flowchart TB
     class MI,AAD identity
     class API,Web,LA service
     class SQL,SB,Storage,AI resource
+
+    %% Subgraph container styling for visual layer grouping
+    style Identity fill:#e8eaf622,stroke:#3f51b5,stroke-width:2px
+    style Services fill:#e3f2fd22,stroke:#1565c0,stroke-width:2px
+    style Resources fill:#e8f5e922,stroke:#2e7d32,stroke-width:2px
 ```
 
 ---
@@ -260,6 +265,11 @@ flowchart LR
 
     class Users public
     class API,Web,SQL,SB protected
+
+    %% Subgraph container styling for visual layer grouping
+    style Internet fill:#ffebee22,stroke:#c62828,stroke-width:2px
+    style Azure fill:#e8f5e922,stroke:#2e7d32,stroke-width:2px
+    style CAE fill:#e3f2fd22,stroke:#1565c0,stroke-width:2px
 ```
 
 ### Recommended Production Enhancements
