@@ -22,6 +22,7 @@ The solution implements a **Zero Trust** security model with Azure Managed Ident
 ## 2. Identity Architecture
 
 ```mermaid
+%%{init: {'theme': 'base', 'themeVariables': { 'fontSize': '14px'}}}%%
 flowchart TB
     subgraph Identity["🔐 Identity Layer"]
         MI["User-Assigned<br/>Managed Identity"]
@@ -61,9 +62,10 @@ flowchart TB
     LA -->|"Token Auth"| Storage
     API -->|"Token Auth"| AI
 
-    classDef identity fill:#e8eaf6,stroke:#3f51b5
-    classDef service fill:#e3f2fd,stroke:#1565c0
-    classDef resource fill:#e8f5e9,stroke:#2e7d32
+    %% Accessible color palette for security layers
+    classDef identity fill:#e8eaf6,stroke:#3f51b5,stroke-width:2px,color:#1a237e
+    classDef service fill:#e3f2fd,stroke:#1565c0,stroke-width:2px,color:#0d47a1
+    classDef resource fill:#e8f5e9,stroke:#2e7d32,stroke-width:2px,color:#1b5e20
 
     class MI,AAD identity
     class API,Web,LA service
@@ -173,6 +175,7 @@ resource receiverRoleAssignment 'Microsoft.Authorization/roleAssignments@2022-04
 ### Service Bus Authentication
 
 ```mermaid
+%%{init: {'theme': 'base', 'themeVariables': { 'fontSize': '14px', 'actorBkg': '#e8eaf6', 'actorBorder': '#3f51b5', 'actorTextColor': '#1a237e', 'noteBkgColor': '#e8f5e9', 'noteBorderColor': '#2e7d32'}}}%%
 sequenceDiagram
     autonumber
     participant API as Orders API
@@ -180,14 +183,21 @@ sequenceDiagram
     participant AAD as Microsoft Entra ID
     participant SB as Service Bus
 
-    API->>MI: Request token for Service Bus
-    MI->>AAD: Authenticate (certificate)
-    AAD-->>MI: Access token (JWT)
-    MI-->>API: Access token
-    API->>SB: Send message + Bearer token
-    SB->>AAD: Validate token
-    AAD-->>SB: Token valid
-    SB-->>API: Message accepted
+    rect rgba(232, 234, 246, 0.5)
+        Note over API,AAD: Token Acquisition
+        API->>MI: Request token for Service Bus
+        MI->>AAD: Authenticate (certificate)
+        AAD-->>MI: Access token (JWT)
+        MI-->>API: Access token
+    end
+
+    rect rgba(232, 245, 233, 0.5)
+        Note over API,SB: Secure Message Delivery
+        API->>SB: Send message + Bearer token
+        SB->>AAD: Validate token
+        AAD-->>SB: Token valid
+        SB-->>API: Message accepted
+    end
 ```
 
 ### SQL Database Authentication
@@ -223,6 +233,7 @@ builder.AddAzureSqlClient("orderDb", configureSettings: settings =>
 ### Network Flow
 
 ```mermaid
+%%{init: {'theme': 'base', 'themeVariables': { 'fontSize': '14px'}}}%%
 flowchart LR
     subgraph Internet["🌐 Public Internet"]
         Users["Users"]
@@ -243,8 +254,9 @@ flowchart LR
     API -->|"TDS (1433)"| SQL
     API -->|"AMQP (5671)"| SB
 
-    classDef public fill:#ffebee,stroke:#c62828
-    classDef protected fill:#e8f5e9,stroke:#2e7d32
+    %% Accessible color palette for network zones
+    classDef public fill:#ffebee,stroke:#c62828,stroke-width:2px,color:#b71c1c
+    classDef protected fill:#e8f5e9,stroke:#2e7d32,stroke-width:2px,color:#1b5e20
 
     class Users public
     class API,Web,SQL,SB protected
