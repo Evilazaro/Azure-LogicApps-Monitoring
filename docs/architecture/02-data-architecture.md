@@ -39,34 +39,56 @@ The data architecture follows **service-oriented data ownership** principles whe
 %%{init: {'theme': 'base', 'themeVariables': { 'fontSize': '14px'}}}%%
 flowchart LR
     subgraph BusinessDomains["📊 Business Data Domains"]
-        Orders["📦 Orders Domain<br/><i>Order lifecycle data</i>"]
-        Events["📨 Order Events Domain<br/><i>Immutable event stream</i>"]
-        Telemetry["📈 Telemetry Domain<br/><i>Operational data</i>"]
+        direction TB
+        subgraph CoreDomain["Core Business"]
+            Orders["📦 Orders Domain<br/><i>Order lifecycle data</i>"]
+        end
+        subgraph IntegrationDomain["Integration"]
+            Events["📨 Order Events Domain<br/><i>Immutable event stream</i>"]
+        end
+        subgraph OperationalDomain["Operational"]
+            Telemetry["📈 Telemetry Domain<br/><i>Operational data</i>"]
+        end
     end
 
     subgraph DataStores["🗄️ Data Stores"]
-        OrderDb[("OrderDb<br/>Azure SQL")]
-        EventStore["ordersplaced<br/>Service Bus Topic"]
-        WorkflowState["Workflow State<br/>Azure Storage"]
-        AppInsights["App Insights<br/>Log Analytics"]
+        direction TB
+        subgraph TransactionalStores["Transactional"]
+            OrderDb[("OrderDb<br/>Azure SQL")]
+        end
+        subgraph MessagingStores["Messaging"]
+            EventStore["ordersplaced<br/>Service Bus Topic"]
+        end
+        subgraph StateStores["State & Analytics"]
+            WorkflowState["Workflow State<br/>Azure Storage"]
+            AppInsights["App Insights<br/>Log Analytics"]
+        end
     end
 
     subgraph Consumers["👥 Data Consumers"]
-        API["📡 Orders API"]
-        WebApp["🌐 Web App"]
-        LogicApp["🔄 Logic Apps"]
-        Dashboard["📊 Azure Portal"]
+        direction TB
+        subgraph ApplicationConsumers["Applications"]
+            API["📡 Orders API"]
+            WebApp["🌐 Web App"]
+            LogicApp["🔄 Logic Apps"]
+        end
+        subgraph AnalyticsConsumers["Analytics"]
+            Dashboard["📊 Azure Portal"]
+        end
     end
 
+    %% Domain to Store mappings
     Orders --> OrderDb
     Events --> EventStore
     Telemetry --> AppInsights
 
+    %% Store to Consumer flows
     OrderDb --> API
     API --> WebApp
     EventStore --> LogicApp
     LogicApp --> WorkflowState
     
+    %% Telemetry flows (dotted for observability)
     API -.->|"Telemetry"| AppInsights
     WebApp -.->|"Telemetry"| AppInsights
     LogicApp -.->|"Diagnostics"| AppInsights
@@ -85,6 +107,14 @@ flowchart LR
     style BusinessDomains fill:#e3f2fd22,stroke:#1565c0,stroke-width:2px
     style DataStores fill:#fff3e022,stroke:#e65100,stroke-width:2px
     style Consumers fill:#e8f5e922,stroke:#2e7d32,stroke-width:2px
+    style CoreDomain fill:#e3f2fd11,stroke:#1565c0,stroke-width:1px,stroke-dasharray:3
+    style IntegrationDomain fill:#e3f2fd11,stroke:#1565c0,stroke-width:1px,stroke-dasharray:3
+    style OperationalDomain fill:#e3f2fd11,stroke:#1565c0,stroke-width:1px,stroke-dasharray:3
+    style TransactionalStores fill:#fff3e011,stroke:#e65100,stroke-width:1px,stroke-dasharray:3
+    style MessagingStores fill:#fff3e011,stroke:#e65100,stroke-width:1px,stroke-dasharray:3
+    style StateStores fill:#fff3e011,stroke:#e65100,stroke-width:1px,stroke-dasharray:3
+    style ApplicationConsumers fill:#e8f5e911,stroke:#2e7d32,stroke-width:1px,stroke-dasharray:3
+    style AnalyticsConsumers fill:#e8f5e911,stroke:#2e7d32,stroke-width:1px,stroke-dasharray:3
 ```
 
 ---
@@ -186,18 +216,28 @@ sequenceDiagram
 flowchart LR
     subgraph Sources["📡 Layer 1: Telemetry Sources"]
         direction TB
-        WebApp["🌐 Web App<br/>Blazor Server"]
-        API["📡 Orders API<br/>ASP.NET Core"]
-        LA["🔄 Logic Apps<br/>Standard"]
-        SQL["🗄️ SQL Database"]
-        SB["📨 Service Bus"]
+        subgraph AppSources["Application Services"]
+            direction LR
+            WebApp["🌐 Web App<br/>Blazor Server"]
+            API["📡 Orders API<br/>ASP.NET Core"]
+            LA["🔄 Logic Apps<br/>Standard"]
+        end
+        subgraph PlatformSources["Platform Services"]
+            direction LR
+            SQL["🗄️ SQL Database"]
+            SB["📨 Service Bus"]
+        end
     end
 
     subgraph Instrumentation["🔧 Layer 2: Instrumentation"]
         direction TB
-        OTEL["OpenTelemetry SDK<br/>.NET Auto-instrumentation"]
-        AzureDiag["Azure Diagnostics<br/>Platform Telemetry"]
-        LADiag["Logic Apps Diagnostics<br/>Run History"]
+        subgraph SDKInstrumentation["SDK-based"]
+            OTEL["OpenTelemetry SDK<br/>.NET Auto-instrumentation"]
+        end
+        subgraph PlatformInstrumentation["Platform-native"]
+            AzureDiag["Azure Diagnostics<br/>Platform Telemetry"]
+            LADiag["Logic Apps Diagnostics<br/>Run History"]
+        end
     end
 
     subgraph Collection["📥 Layer 3: Collection"]
@@ -208,24 +248,33 @@ flowchart LR
 
     subgraph Visualization["📈 Layer 4: Visualization"]
         direction TB
-        AppMap["Application Map"]
-        TxSearch["Transaction Search"]
-        Dashboards["Azure Dashboards"]
-        Alerts["Alert Rules"]
-        KQL["KQL Queries"]
+        subgraph RealTime["Real-time Analysis"]
+            direction LR
+            AppMap["Application Map"]
+            TxSearch["Transaction Search"]
+        end
+        subgraph Reporting["Reporting & Alerting"]
+            direction LR
+            Dashboards["Azure Dashboards"]
+            Alerts["Alert Rules"]
+            KQL["KQL Queries"]
+        end
     end
 
+    %% Source to Instrumentation flows
     WebApp -->|"OTLP/HTTP"| OTEL
     API -->|"OTLP/HTTP"| OTEL
     SQL -->|"Built-in"| AzureDiag
     SB -->|"Built-in"| AzureDiag
     LA -->|"Diagnostics"| LADiag
 
+    %% Instrumentation to Collection flows
     OTEL -->|"Export"| AI
     AzureDiag -->|"Push"| LAW
     LADiag -->|"Push"| LAW
     AI -->|"Linked"| LAW
 
+    %% Collection to Visualization flows
     AI --> AppMap
     AI --> TxSearch
     LAW --> Dashboards
@@ -248,6 +297,12 @@ flowchart LR
     style Instrumentation fill:#e3f2fd22,stroke:#1565c0,stroke-width:2px
     style Collection fill:#e8f5e922,stroke:#2e7d32,stroke-width:2px
     style Visualization fill:#f3e5f522,stroke:#7b1fa2,stroke-width:2px
+    style AppSources fill:#fff3e011,stroke:#e65100,stroke-width:1px,stroke-dasharray:3
+    style PlatformSources fill:#fff3e011,stroke:#e65100,stroke-width:1px,stroke-dasharray:3
+    style SDKInstrumentation fill:#e3f2fd11,stroke:#1565c0,stroke-width:1px,stroke-dasharray:3
+    style PlatformInstrumentation fill:#e3f2fd11,stroke:#1565c0,stroke-width:1px,stroke-dasharray:3
+    style RealTime fill:#f3e5f511,stroke:#7b1fa2,stroke-width:1px,stroke-dasharray:3
+    style Reporting fill:#f3e5f511,stroke:#7b1fa2,stroke-width:1px,stroke-dasharray:3
 ```
 
 ---
@@ -268,15 +323,22 @@ flowchart LR
 %%{init: {'theme': 'base', 'themeVariables': { 'fontSize': '14px'}}}%%
 flowchart TB
     subgraph Sources["📡 Telemetry Sources"]
-        API["⚙️ Orders API"]
-        Web["🌐 Web App"]
-        LA["🔄 Logic Apps"]
-        SB["📨 Service Bus"]
-        SQL["🗄️ SQL Database"]
+        direction LR
+        subgraph AppServices["Application Services"]
+            API["⚙️ Orders API"]
+            Web["🌐 Web App"]
+        end
+        subgraph PlatformServices["Platform Services"]
+            LA["🔄 Logic Apps"]
+            SB["📨 Service Bus"]
+            SQL["🗄️ SQL Database"]
+        end
     end
 
     subgraph Pillars["📊 Three Pillars"]
+        direction TB
         subgraph Traces["📍 Traces"]
+            direction LR
             T1["HTTP Request Spans"]
             T2["Database Query Spans"]
             T3["Service Bus Spans"]
@@ -284,18 +346,21 @@ flowchart TB
         end
         
         subgraph Metrics["📈 Metrics"]
+            direction LR
             M1["Request Metrics"]
             M2["Business Metrics"]
             M3["Platform Metrics"]
         end
         
         subgraph Logs["📝 Logs"]
+            direction LR
             L1["Application Logs"]
             L2["Request Logs"]
             L3["Diagnostic Logs"]
         end
     end
 
+    %% Source to Pillar mappings
     API --> T1 & T2 & T3 & M1 & M2 & L1 & L2
     Web --> T4 & M1 & L1 & L2
     LA --> M3 & L3
@@ -319,6 +384,8 @@ flowchart TB
     style Traces fill:#e3f2fd22,stroke:#1565c0,stroke-width:2px
     style Metrics fill:#e8f5e922,stroke:#2e7d32,stroke-width:2px
     style Logs fill:#fff3e022,stroke:#e65100,stroke-width:2px
+    style AppServices fill:#f5f5f511,stroke:#424242,stroke-width:1px,stroke-dasharray:3
+    style PlatformServices fill:#f5f5f511,stroke:#424242,stroke-width:1px,stroke-dasharray:3
 ```
 
 ### Metrics Inventory by Source
@@ -410,27 +477,44 @@ if (activity != null)
 %%{init: {'theme': 'base', 'themeVariables': { 'fontSize': '14px'}}}%%
 flowchart TD
     subgraph Upstream["⬆️ Upstream (Data Producers)"]
-        WebApp["🌐 Web App<br/>(User Input)"]
-        TestData["📄 ordersBatch.json<br/>(Test Data)"]
+        direction LR
+        subgraph UserInput["User Generated"]
+            WebApp["🌐 Web App<br/>(User Input)"]
+        end
+        subgraph SystemInput["System Generated"]
+            TestData["📄 ordersBatch.json<br/>(Test Data)"]
+        end
     end
 
     subgraph Core["🎯 Core Data Assets"]
-        OrderDb[("📦 OrderDb<br/>Azure SQL")]
-        EventBus["📨 Service Bus<br/>ordersplaced"]
+        direction LR
+        subgraph Transactional["Transactional Store"]
+            OrderDb[("📦 OrderDb<br/>Azure SQL")]
+        end
+        subgraph EventStream["Event Stream"]
+            EventBus["📨 Service Bus<br/>ordersplaced"]
+        end
     end
 
     subgraph Downstream["⬇️ Downstream (Data Consumers)"]
-        LogicApp["🔄 Logic Apps<br/>(Workflow)"]
-        AppInsights["📊 App Insights<br/>(Analytics)"]
-        Blob["📁 Azure Blob<br/>(Processed Orders)"]
+        direction LR
+        subgraph Processing["Processing"]
+            LogicApp["🔄 Logic Apps<br/>(Workflow)"]
+        end
+        subgraph Analytics["Analytics & Storage"]
+            AppInsights["📊 App Insights<br/>(Analytics)"]
+            Blob["📁 Azure Blob<br/>(Processed Orders)"]
+        end
     end
 
+    %% Data flow connections
     WebApp -->|"Creates orders"| OrderDb
     TestData -->|"Batch import"| OrderDb
     OrderDb -->|"Triggers publish"| EventBus
     EventBus -->|"Triggers"| LogicApp
     LogicApp -->|"Stores results"| Blob
     
+    %% Telemetry flows (dotted)
     OrderDb -.->|"Emits telemetry"| AppInsights
     EventBus -.->|"Emits telemetry"| AppInsights
     LogicApp -.->|"Emits telemetry"| AppInsights
@@ -448,6 +532,12 @@ flowchart TD
     style Upstream fill:#fff3e022,stroke:#e65100,stroke-width:2px
     style Core fill:#e3f2fd22,stroke:#1565c0,stroke-width:2px
     style Downstream fill:#e8f5e922,stroke:#2e7d32,stroke-width:2px
+    style UserInput fill:#fff3e011,stroke:#e65100,stroke-width:1px,stroke-dasharray:3
+    style SystemInput fill:#fff3e011,stroke:#e65100,stroke-width:1px,stroke-dasharray:3
+    style Transactional fill:#e3f2fd11,stroke:#1565c0,stroke-width:1px,stroke-dasharray:3
+    style EventStream fill:#e3f2fd11,stroke:#1565c0,stroke-width:1px,stroke-dasharray:3
+    style Processing fill:#e8f5e911,stroke:#2e7d32,stroke-width:1px,stroke-dasharray:3
+    style Analytics fill:#e8f5e911,stroke:#2e7d32,stroke-width:1px,stroke-dasharray:3
 ```
 
 ---
