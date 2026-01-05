@@ -45,26 +45,40 @@ The application follows an **event-driven microservices** pattern with clear ser
 flowchart TB
     subgraph Presentation["🖥️ Presentation Layer"]
         direction LR
-        WebApp["🌐 eShop.Web.App<br/>Blazor Server + Fluent UI<br/>Port: 5002"]
+        subgraph UserInterface["User Interface"]
+            WebApp["🌐 eShop.Web.App<br/>Blazor Server + Fluent UI<br/>Port: 5002"]
+        end
     end
 
     subgraph Application["⚙️ Application Layer"]
         direction LR
-        API["📡 eShop.Orders.API<br/>ASP.NET Core Web API<br/>Port: 5001"]
-        Workflow["🔄 OrdersManagement<br/>Logic Apps Standard"]
+        subgraph CoreServices["Core Services"]
+            API["📡 eShop.Orders.API<br/>ASP.NET Core Web API<br/>Port: 5001"]
+        end
+        subgraph WorkflowServices["Workflow Services"]
+            Workflow["🔄 OrdersManagement<br/>Logic Apps Standard"]
+        end
     end
 
     subgraph Platform["🏗️ Platform Layer"]
         direction LR
-        Orchestrator["🎯 app.AppHost<br/>.NET Aspire 9.x"]
-        SharedLib["📦 app.ServiceDefaults<br/>Cross-cutting Concerns"]
+        subgraph Orchestration["Orchestration"]
+            Orchestrator["🎯 app.AppHost<br/>.NET Aspire 9.x"]
+        end
+        subgraph SharedLibraries["Shared Libraries"]
+            SharedLib["📦 app.ServiceDefaults<br/>Cross-cutting Concerns"]
+        end
     end
 
     subgraph External["☁️ External Services"]
         direction LR
-        DB[("🗄️ OrderDb<br/>Azure SQL")]
-        Queue["📨 Service Bus<br/>ordersplaced topic"]
-        Monitor["📊 App Insights<br/>Telemetry Backend"]
+        subgraph DataServices["Data Services"]
+            DB[("🗄️ OrderDb<br/>Azure SQL")]
+            Queue["📨 Service Bus<br/>ordersplaced topic"]
+        end
+        subgraph Monitoring["Monitoring"]
+            Monitor["📊 App Insights<br/>Telemetry Backend"]
+        end
     end
 
     %% Synchronous flows
@@ -102,6 +116,13 @@ flowchart TB
     style Application fill:#e8f5e922,stroke:#2e7d32,stroke-width:2px
     style Platform fill:#fff3e022,stroke:#e65100,stroke-width:2px
     style External fill:#f3e5f522,stroke:#7b1fa2,stroke-width:2px
+    style UserInterface fill:#e3f2fd11,stroke:#1565c0,stroke-width:1px,stroke-dasharray:3
+    style CoreServices fill:#e8f5e911,stroke:#2e7d32,stroke-width:1px,stroke-dasharray:3
+    style WorkflowServices fill:#e8f5e911,stroke:#2e7d32,stroke-width:1px,stroke-dasharray:3
+    style Orchestration fill:#fff3e011,stroke:#e65100,stroke-width:1px,stroke-dasharray:3
+    style SharedLibraries fill:#fff3e011,stroke:#e65100,stroke-width:1px,stroke-dasharray:3
+    style DataServices fill:#f3e5f511,stroke:#7b1fa2,stroke-width:1px,stroke-dasharray:3
+    style Monitoring fill:#f3e5f511,stroke:#7b1fa2,stroke-width:1px,stroke-dasharray:3
 ```
 
 ---
@@ -149,16 +170,30 @@ flowchart TB
 %%{init: {'theme': 'base', 'themeVariables': { 'fontSize': '14px'}}}%%
 flowchart TB
     subgraph API["eShop.Orders.API"]
-        Controller["OrdersController<br/><i>API Layer</i>"]
-        Service["OrderService<br/><i>Business Logic</i>"]
-        Repository["OrderRepository<br/><i>Data Access</i>"]
-        Handler["OrdersMessageHandler<br/><i>Messaging</i>"]
-        HealthChecks["Health Checks<br/><i>DB + ServiceBus</i>"]
+        direction TB
+        subgraph APILayer["API Layer"]
+            Controller["OrdersController<br/><i>API Layer</i>"]
+        end
+        subgraph BusinessLogic["Business Logic"]
+            Service["OrderService<br/><i>Business Logic</i>"]
+        end
+        subgraph DataAccess["Data Access"]
+            Repository["OrderRepository<br/><i>Data Access</i>"]
+        end
+        subgraph Integration["Integration"]
+            Handler["OrdersMessageHandler<br/><i>Messaging</i>"]
+            HealthChecks["Health Checks<br/><i>DB + ServiceBus</i>"]
+        end
     end
 
     subgraph External["External Dependencies"]
-        DB[("SQL Database")]
-        SB["Service Bus"]
+        direction LR
+        subgraph DataStores["Data Stores"]
+            DB[("🗄️ SQL Database")]
+        end
+        subgraph Messaging["Messaging"]
+            SB["📨 Service Bus"]
+        end
     end
 
     Controller --> Service
@@ -177,6 +212,12 @@ flowchart TB
     %% Subgraph container styling for visual layer grouping
     style API fill:#e8f5e922,stroke:#2e7d32,stroke-width:2px
     style External fill:#f3e5f522,stroke:#7b1fa2,stroke-width:2px
+    style APILayer fill:#e8f5e911,stroke:#2e7d32,stroke-width:1px,stroke-dasharray:3
+    style BusinessLogic fill:#e8f5e911,stroke:#2e7d32,stroke-width:1px,stroke-dasharray:3
+    style DataAccess fill:#e8f5e911,stroke:#2e7d32,stroke-width:1px,stroke-dasharray:3
+    style Integration fill:#e8f5e911,stroke:#2e7d32,stroke-width:1px,stroke-dasharray:3
+    style DataStores fill:#f3e5f511,stroke:#7b1fa2,stroke-width:1px,stroke-dasharray:3
+    style Messaging fill:#f3e5f511,stroke:#7b1fa2,stroke-width:1px,stroke-dasharray:3
 ```
 
 #### Key Patterns Implemented
@@ -214,13 +255,21 @@ flowchart TB
 %%{init: {'theme': 'base', 'themeVariables': { 'fontSize': '14px'}}}%%
 flowchart TB
     subgraph WebApp["eShop.Web.App"]
-        Pages["Razor Pages<br/><i>UI Components</i>"]
-        Layout["MainLayout<br/><i>Shell</i>"]
-        APIService["OrdersAPIService<br/><i>HTTP Client</i>"]
+        direction TB
+        subgraph UIComponents["UI Components"]
+            Pages["Razor Pages<br/><i>UI Components</i>"]
+            Layout["MainLayout<br/><i>Shell</i>"]
+        end
+        subgraph ClientServices["Client Services"]
+            APIService["OrdersAPIService<br/><i>HTTP Client</i>"]
+        end
     end
 
     subgraph External["External"]
-        API["Orders API"]
+        direction LR
+        subgraph BackendServices["Backend Services"]
+            API["📡 Orders API"]
+        end
     end
 
     Pages --> Layout
@@ -237,6 +286,9 @@ flowchart TB
     %% Subgraph container styling for visual layer grouping
     style WebApp fill:#e3f2fd22,stroke:#1565c0,stroke-width:2px
     style External fill:#e8f5e922,stroke:#2e7d32,stroke-width:2px
+    style UIComponents fill:#e3f2fd11,stroke:#1565c0,stroke-width:1px,stroke-dasharray:3
+    style ClientServices fill:#e3f2fd11,stroke:#1565c0,stroke-width:1px,stroke-dasharray:3
+    style BackendServices fill:#e8f5e911,stroke:#2e7d32,stroke-width:1px,stroke-dasharray:3
 ```
 
 ---
@@ -264,17 +316,32 @@ From [workflow.json](../../workflows/OrdersManagement/OrdersManagementLogicApp/P
 ```mermaid
 %%{init: {'theme': 'base', 'themeVariables': { 'fontSize': '14px'}}}%%
 flowchart TD
-    Trigger["📨 Service Bus Trigger<br/><i>Poll every 1 second</i>"]
+    subgraph TriggerStage["📥 Trigger Stage"]
+        direction TB
+        Trigger["📨 Service Bus Trigger<br/><i>Poll every 1 second</i>"]
+    end
     
-    Condition1{"Content-Type<br/>= application/json?"}
+    subgraph ValidationStage["✅ Validation Stage"]
+        direction TB
+        Condition1{"Content-Type<br/>= application/json?"}
+    end
     
-    HTTP["🌐 HTTP POST<br/>/api/Orders/process"]
+    subgraph ProcessingStage["⚙️ Processing Stage"]
+        direction TB
+        HTTP["🌐 HTTP POST<br/>/api/Orders/process"]
+        Condition2{"HTTP Status<br/>= 201?"}
+    end
     
-    Condition2{"HTTP Status<br/>= 201?"}
-    
-    SuccessBlob["✅ Create Blob<br/>/ordersprocessedsuccessfully"]
-    ErrorBlob1["❌ Create Blob<br/>/ordersprocessedwitherrors"]
-    ErrorBlob2["❌ Create Blob<br/>/ordersprocessedwitherrors"]
+    subgraph OutputStage["💾 Output Stage"]
+        direction LR
+        subgraph Success["Success Path"]
+            SuccessBlob["✅ Create Blob<br/>/ordersprocessedsuccessfully"]
+        end
+        subgraph ErrorHandling["Error Handling"]
+            ErrorBlob1["❌ Create Blob<br/>/ordersprocessedwitherrors"]
+            ErrorBlob2["❌ Create Blob<br/>/ordersprocessedwitherrors"]
+        end
+    end
 
     Trigger --> Condition1
     Condition1 -->|"Yes"| HTTP
@@ -293,6 +360,14 @@ flowchart TD
     class Condition1,Condition2 condition
     class HTTP,SuccessBlob success
     class ErrorBlob1,ErrorBlob2 errorState
+
+    %% Subgraph container styling
+    style TriggerStage fill:#e3f2fd22,stroke:#1565c0,stroke-width:2px
+    style ValidationStage fill:#fff3e022,stroke:#e65100,stroke-width:2px
+    style ProcessingStage fill:#e8f5e922,stroke:#2e7d32,stroke-width:2px
+    style OutputStage fill:#f5f5f522,stroke:#424242,stroke-width:2px
+    style Success fill:#e8f5e911,stroke:#2e7d32,stroke-width:1px,stroke-dasharray:3
+    style ErrorHandling fill:#ffebee11,stroke:#c62828,stroke-width:1px,stroke-dasharray:3
 ```
 
 ---
@@ -303,14 +378,24 @@ flowchart TD
 %%{init: {'theme': 'base', 'themeVariables': { 'fontSize': '14px'}}}%%
 flowchart LR
     subgraph Sync["🔗 Synchronous (HTTP/REST)"]
-        Web["Web App"] -->|"GET/POST"| API["Orders API"]
-        API -->|"SELECT/INSERT"| DB["SQL Database"]
+        direction TB
+        subgraph RequestResponse["Request/Response"]
+            Web["🌐 Web App"] -->|"GET/POST"| API["📡 Orders API"]
+        end
+        subgraph DataAccess["Data Access"]
+            API -->|"SELECT/INSERT"| DB[("🗄️ SQL Database")]
+        end
     end
 
     subgraph Async["📨 Asynchronous (Service Bus)"]
-        API2["Orders API"] -->|"Publish"| Topic["ordersplaced topic"]
-        Topic -->|"Subscribe"| Sub["orderprocessingsub"]
-        Sub -->|"Trigger"| LA["Logic Apps"]
+        direction TB
+        subgraph Publishing["Publishing"]
+            API2["📡 Orders API"] -->|"Publish"| Topic["📨 ordersplaced topic"]
+        end
+        subgraph Consumption["Consumption"]
+            Topic -->|"Subscribe"| Sub["📬 orderprocessingsub"]
+            Sub -->|"Trigger"| LA["🔄 Logic Apps"]
+        end
     end
 
     %% Accessible color palette for communication patterns
@@ -323,6 +408,10 @@ flowchart LR
     %% Subgraph container styling for visual layer grouping
     style Sync fill:#e3f2fd22,stroke:#1565c0,stroke-width:2px
     style Async fill:#e8f5e922,stroke:#2e7d32,stroke-width:2px
+    style RequestResponse fill:#e3f2fd11,stroke:#1565c0,stroke-width:1px,stroke-dasharray:3
+    style DataAccess fill:#e3f2fd11,stroke:#1565c0,stroke-width:1px,stroke-dasharray:3
+    style Publishing fill:#e8f5e911,stroke:#2e7d32,stroke-width:1px,stroke-dasharray:3
+    style Consumption fill:#e8f5e911,stroke:#2e7d32,stroke-width:1px,stroke-dasharray:3
 ```
 
 ### Communication Patterns
