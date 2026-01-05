@@ -365,6 +365,16 @@ flowchart LR
     CheckProviders -->|OK| CheckQuota
     CheckQuota --> ClearSecrets
     ClearSecrets --> Complete
+
+    classDef startEnd fill:#e8f5e9,stroke:#2e7d32,stroke-width:3px,color:#1b5e20
+    classDef process fill:#e3f2fd,stroke:#1976d2,stroke-width:2px,color:#0d47a1
+    classDef decision fill:#fff3e0,stroke:#f57c00,stroke-width:2px,color:#e65100
+    classDef failure fill:#ffcdd2,stroke:#d32f2f,stroke-width:2px,color:#b71c1c
+
+    class Start,Complete startEnd
+    class ValidateRuntime,CheckDotNet,CheckAzd,CheckAzCLI,CheckAuth,CheckBicep,CheckProviders,CheckQuota,ClearSecrets process
+    class InstallDotNet,InstallAzd,InstallAzCLI,Login,InstallBicep,RegisterProviders decision
+    class Failed failure
 ```
 
 ### Integration Points

@@ -488,42 +488,17 @@ The script executes a comprehensive post-provisioning configuration workflow:
 ```mermaid
 flowchart LR
     Start(["🚀 azd provision completes"])
-    Validate["Validate Environment Variables"]
-    ReadVars["Read Azure Configuration"]
-    ACRLogin["Azure Container Registry Login"]
-    VerifyTools["Verify Prerequisites (.NET CLI)"]
-    ResolveProjects["Resolve Project Paths"]
-    ConfigSQL["Configure SQL Managed Identity"]
-    ClearSecrets["Clear Existing User Secrets"]
-    ConfigAppHost["Configure AppHost Secrets (23)"]
-    ConfigAPI["Configure API Secrets (3)"]
-    ConfigWebApp["Configure Web App Secrets (1)"]
-    Report["Generate Configuration Report"]
-    Complete(["✓ Configuration Complete"])
-
-    Start --> Validate
-    Validate --> ReadVars
-    ReadVars --> ACRLogin
-    ACRLogin --> VerifyTools
-    VerifyTools --> ResolveProjects
-    ResolveProjects --> ConfigSQL
-    ConfigSQL --> ClearSecrets
-    ClearSecrets --> ConfigAppHost
-    ConfigAppHost --> ConfigAPI
-    ConfigAPI --> ConfigWebApp
-    ConfigWebApp --> Report
-    Report --> Complete
-    SetEnv["1️⃣ azd Sets Env Variables<br/>• Bicep outputs<br/>• Resource properties<br/>• .env file values"]
-    Execute["2️⃣ Execute postprovision<br/>• Called by azd hook<br/>• Environment ready"]
-    Validate["3️⃣ Validate Environment<br/>• Required variables<br/>• Subscription ID<br/>• Resource group"]
-    ACRAuth["4️⃣ ACR Authentication<br/>• Check ACR endpoint<br/>• az acr login<br/>• Graceful skip if N/A"]
-    SQLConfig["5️⃣ SQL Managed Identity<br/>• Configure SQL database user<br/>• Assign db_datareader role<br/>• Assign db_datawriter role"]
-    Clear["6️⃣ Clear Old Secrets<br/>• Run clean-secrets.ps1<br/>• Clean slate<br/>• 3 projects"]
-    ConfigLoop["7️⃣ Configure Secrets Loop<br/>For each project"]
-    ConfigProject["Set Project Secrets<br/>• app.AppHost: 23<br/>• Orders.API: 3<br/>• Web.App: 1"]
-    Validate2["8️⃣ Validate Configuration<br/>• Verify secrets set<br/>• Check for errors<br/>• Count totals"]
-    Summary["9️⃣ Display Summary<br/>• Projects: 3<br/>• Secrets: 27<br/>• Time & status"]
-    End(["🏁 Complete"])
+    SetEnv["1️⃣ Set Environment Variables"]
+    Execute["2️⃣ Execute postprovision"]
+    Validate["3️⃣ Validate Environment"]
+    ACRAuth["4️⃣ ACR Authentication"]
+    SQLConfig["5️⃣ SQL Managed Identity"]
+    Clear["6️⃣ Clear Old Secrets"]
+    ConfigLoop["7️⃣ Configure Secrets Loop"]
+    ConfigProject["Set Project Secrets"]
+    Validate2["8️⃣ Validate Configuration"]
+    Summary["9️⃣ Display Summary"]
+    Complete(["🏁 Complete"])
 
     Start --> SetEnv
     SetEnv --> Execute
@@ -536,15 +511,15 @@ flowchart LR
     ConfigProject --> ConfigLoop
     ConfigLoop --> Validate2
     Validate2 --> Summary
-    Summary --> End
+    Summary --> Complete
 
     classDef startEnd fill:#e8f5e9,stroke:#2e7d32,stroke-width:3px,color:#1b5e20
     classDef process fill:#e3f2fd,stroke:#1976d2,stroke-width:2px,color:#0d47a1
     classDef config fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px,color:#4a148c
     classDef loop fill:#fff3e0,stroke:#f57c00,stroke-width:2px,color:#e65100
 
-    class Start,End startEnd
-    class SetEnv,Execute,Validate,ACRAuth,Clear,Validate2,Summary process
+    class Start,Complete startEnd
+    class SetEnv,Execute,Validate,ACRAuth,SQLConfig,Clear,Validate2,Summary process
     class ConfigLoop loop
     class ConfigProject config
 ```
