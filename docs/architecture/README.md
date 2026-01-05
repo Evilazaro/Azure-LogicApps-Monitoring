@@ -77,6 +77,13 @@ flowchart TD
     class Aspire,Defaults platform
     class SQL,ServiceBus,Storage data
     class AppInsights,LogAnalytics observability
+
+    %% Subgraph container styling for visual layer grouping
+    style Presentation fill:#e3f2fd22,stroke:#1565c0,stroke-width:2px
+    style Application fill:#e8f5e922,stroke:#2e7d32,stroke-width:2px
+    style Platform fill:#fff3e022,stroke:#e65100,stroke-width:2px
+    style Data fill:#f3e5f522,stroke:#7b1fa2,stroke-width:2px
+    style Observability fill:#fce4ec22,stroke:#c2185b,stroke-width:2px
 ```
 
 ---
