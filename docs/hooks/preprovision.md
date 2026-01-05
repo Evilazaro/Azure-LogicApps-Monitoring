@@ -55,7 +55,9 @@
 
 ## Overview
 
-The **pre-provisioning script** is an Azure Developer CLI (azd) hook that runs **before** Azure resources are provisioned. It validates the development environment, ensures all prerequisites are installed and configured, and prepares the workspace for deployment.
+The **preprovision** hook is a critical first step in the Azure Developer CLI (azd) deployment lifecycle, executing automatically before any Azure infrastructure is provisioned. This script ensures your development workstation meets all requirements for a successful deployment by validating installed tools (.NET SDK 10.0+, Azure CLI, Bicep), authenticating with Azure, registering required resource providers, and preparing a clean workspace state. Available in both PowerShell and Bash variants, it provides cross-platform support for Windows, macOS, and Linux environments.
+
+Beyond basic validation, the preprovision script offers intelligent automation features that streamline the developer experience: automatic installation of missing prerequisites (with user consent), device code authentication for headless/remote sessions, verbose logging for troubleshooting, and a validate-only mode for CI/CD pipelines. The script also clears .NET User Secrets to ensure fresh deployments don't inherit stale connection strings from previous environments, preventing subtle configuration conflicts that can be difficult to diagnose.
 
 ### Key Features
 

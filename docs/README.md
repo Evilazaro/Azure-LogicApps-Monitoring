@@ -30,7 +30,9 @@
 
 ## 📋 Overview
 
-This documentation provides comprehensive technical guidance for the **Azure Logic Apps Monitoring Solution** - a cloud-native reference implementation demonstrating enterprise-grade observability patterns for Azure Logic Apps Standard workflows.
+Welcome to the comprehensive documentation hub for the **Azure Logic Apps Monitoring Solution**—a cloud-native reference implementation showcasing enterprise-grade observability patterns for Azure Logic Apps Standard workflows. This documentation provides everything teams need to understand, deploy, and extend the solution: from high-level architecture diagrams following the TOGAF BDAT framework, through detailed API and data models, to step-by-step deployment automation using Azure Developer CLI (azd) lifecycle hooks.
+
+The documentation is structured for multiple audiences and learning paths. Architects and technical leads will find strategic context in the architecture documents, while developers and DevOps engineers can dive directly into the hooks documentation for deployment automation and local development workflows. Whether you're evaluating the solution for your organization, onboarding new team members, or troubleshooting a specific deployment issue, this documentation hub serves as your central starting point with clear navigation to specialized topics.
 
 The documentation is organized into two main sections:
 

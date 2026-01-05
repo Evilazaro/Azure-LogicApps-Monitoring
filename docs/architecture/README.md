@@ -4,6 +4,10 @@
 
 ---
 
+This Architecture Overview serves as the central navigation hub for the Azure Logic Apps Monitoring Solution's comprehensive technical documentation, organized following the **TOGAF BDAT framework** (Business, Data, Application, Technology) with additional layers for Observability, Security, and Deployment. The documentation provides a complete blueprint for building enterprise-grade, cloud-native monitoring solutions on Azure, demonstrating how to instrument distributed systems using OpenTelemetry, Azure Monitor, and .NET Aspire orchestration.
+
+The architecture documents are designed for multiple audiences—from architects seeking high-level design patterns to developers implementing specific components. Each document builds upon the previous, starting with business context and stakeholder needs, progressing through data models and application design, and culminating in deployment automation with Azure Developer CLI (azd). The accompanying Architecture Decision Records (ADRs) capture the rationale behind key technical choices, ensuring transparency and enabling future teams to understand the "why" behind each architectural decision.
+
 ## Table of Contents
 
 - [📋 Executive Summary](#executive-summary)

@@ -4,6 +4,10 @@
 
 ---
 
+The Deployment Architecture provides a comprehensive guide to deploying the Azure Logic Apps Monitoring Solution using the **Azure Developer CLI (azd)**, demonstrating Infrastructure as Code (IaC) best practices with Bicep templates and automated lifecycle hooks. This document covers the complete deployment pipeline from local development with .NET Aspire orchestration through production deployment on Azure, including container image strategies, environment management, and the seamless transition from local emulators to cloud-hosted services.
+
+Beyond initial provisioning, this architecture details advanced deployment patterns: lifecycle hooks for pre/post-provisioning automation (environment validation, SQL Managed Identity configuration, .NET User Secrets setup), container deployment flows with Azure Container Registry integration, Logic Apps workflow deployment via dedicated PowerShell scripts, and CI/CD pipeline recommendations using GitHub Actions. The document also provides rollback strategies leveraging Container Apps revision management and a comprehensive deployment checklist ensuring consistent, repeatable deployments across development, staging, and production environments.
+
 ## Table of Contents
 
 - [🚀 1. Deployment Overview](#1-deployment-overview)

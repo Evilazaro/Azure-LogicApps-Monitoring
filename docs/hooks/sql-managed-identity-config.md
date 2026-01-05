@@ -38,7 +38,9 @@
 
 ## Overview
 
-The `sql-managed-identity-config` scripts configure Azure SQL Database users with Microsoft Entra ID (formerly Azure AD) Managed Identity authentication. These scripts create contained database users from external providers and assign specified database roles, enabling secure, passwordless authentication for Azure services.
+The **sql-managed-identity-config** scripts are essential post-provisioning utilities that establish passwordless, credential-free authentication between Azure services and Azure SQL Database using Microsoft Entra ID (formerly Azure AD) Managed Identities. These scripts create contained database users from external identity providers and assign appropriate database roles (db_datareader, db_datawriter), enabling the Orders API and other application services to connect securely without storing connection strings containing passwords or secrets.
+
+Available in both PowerShell and Bash variants for cross-platform compatibility, these scripts integrate seamlessly into the Azure Developer CLI (azd) postprovision hook workflow. They support multiple Azure environments (Public, Government, China clouds), provide structured JSON output for programmatic result handling in CI/CD pipelines, and include comprehensive error handling with specific troubleshooting guidance for common issues like firewall rules, token acquisition failures, and pre-existing users. This Zero Trust approach to database authentication is a cornerstone of the solution's security architecture.
 
 ## Script Versions
 

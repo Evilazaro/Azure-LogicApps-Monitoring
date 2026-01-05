@@ -41,6 +41,12 @@
 
 ---
 
+This document provides a comprehensive guide to the complete validation and deployment workflow for the Azure Logic Apps Monitoring Solution, orchestrating all lifecycle hooks into a cohesive end-to-end process. From initial workstation validation through Azure infrastructure provisioning, post-deployment configuration, and test data generation, this workflow ensures consistent, repeatable deployments across development teams using the Azure Developer CLI (azd) automation framework.
+
+Beyond deployment automation, this guide covers the complete local development workflow using .NET Aspire orchestration with Docker containers and emulators, enabling developers to build and test the solution without Azure costs. The document includes detailed Mermaid diagrams visualizing each workflow stage, a validation matrix mapping checks to tools, timeline estimates for planning, success criteria for each phase, and troubleshooting guidance for common issues—making it the definitive reference for both new team members onboarding and experienced developers optimizing their development cycle.
+
+---
+
 **Complete Deployment Workflow Order**:
 
 1. 🔍 **check-dev-workstation** (.ps1 or .sh) - Quick workstation validation (optional but recommended)

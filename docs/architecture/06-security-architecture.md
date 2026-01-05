@@ -4,6 +4,10 @@
 
 ---
 
+The Security Architecture establishes a **Zero Trust** security posture for the Azure Logic Apps Monitoring Solution, demonstrating how to eliminate stored credentials through Azure Managed Identity and enforce least-privilege access via Role-Based Access Control (RBAC). This document provides a comprehensive blueprint for securing cloud-native applications on Azure, covering identity architecture, authentication flows, network boundaries, and data protection—all implemented without hardcoded secrets or connection strings in application code.
+
+Beyond foundational identity controls, this architecture addresses the complete security lifecycle: from RBAC role assignment matrices that map services to specific Azure resource permissions, through network security configurations for development and production environments, to secrets management strategies using .NET User Secrets locally and Azure Key Vault recommendations for production. The document also covers data protection (encryption at rest and in transit), compliance considerations aligned with Azure Security Benchmark, and a prioritized roadmap for production hardening including Private Endpoints, Web Application Firewall (WAF), and Microsoft Defender for Cloud integration.
+
 ## Table of Contents
 
 - [🔐 1. Security Overview](#1-security-overview)

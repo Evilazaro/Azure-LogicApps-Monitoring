@@ -28,7 +28,9 @@ A cloud-native reference implementation demonstrating **enterprise-grade observa
 
 ---
 
-## �📋 Overview
+## 📋 Overview
+
+The **Azure Logic Apps Monitoring Solution** is a comprehensive cloud-native reference implementation that demonstrates how to build enterprise-grade observability into distributed systems powered by Azure Logic Apps Standard workflows. Built on **.NET 10.0** and **.NET Aspire 9.x** orchestration, this solution provides a complete blueprint for instrumenting event-driven architectures with the **Three Pillars of Observability**—logs, metrics, and traces—using OpenTelemetry as the vendor-neutral instrumentation layer and Azure Monitor (Application Insights + Log Analytics) as the telemetry backend.
 
 This solution uses an **eShop order management system** as its business scenario, showcasing a realistic enterprise workflow: orders originate from a Blazor Server frontend, flow through an ASP.NET Core REST API for validation and persistence in Azure SQL Database, then publish events to Azure Service Bus topics for asynchronous processing by Logic Apps Standard workflows. Every step is instrumented with W3C Trace Context propagation, enabling correlation of user requests through the entire distributed system—critical for debugging, performance analysis, and compliance auditing.
 
