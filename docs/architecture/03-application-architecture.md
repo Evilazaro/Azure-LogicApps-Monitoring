@@ -41,6 +41,7 @@ The application follows an **event-driven microservices** pattern with clear ser
 ## 3. Application Landscape Map
 
 ```mermaid
+%%{init: {'theme': 'base', 'themeVariables': { 'fontSize': '14px'}}}%%
 flowchart TB
     subgraph Presentation["🖥️ Presentation Layer"]
         direction LR
@@ -85,11 +86,11 @@ flowchart TB
     API -.->|"OTLP"| Monitor
     Workflow -.->|"Diagnostics"| Monitor
 
-    %% Styling
-    classDef presentation fill:#e3f2fd,stroke:#1565c0,stroke-width:2px
-    classDef application fill:#e8f5e9,stroke:#2e7d32,stroke-width:2px
-    classDef platform fill:#fff3e0,stroke:#ef6c00,stroke-width:2px
-    classDef external fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px
+    %% Accessible color palette with clear layer separation
+    classDef presentation fill:#e3f2fd,stroke:#1565c0,stroke-width:2px,color:#0d47a1
+    classDef application fill:#e8f5e9,stroke:#2e7d32,stroke-width:2px,color:#1b5e20
+    classDef platform fill:#fff3e0,stroke:#e65100,stroke-width:2px,color:#bf360c
+    classDef external fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px,color:#4a148c
 
     class WebApp presentation
     class API,Workflow application
@@ -139,6 +140,7 @@ flowchart TB
 #### Component Diagram
 
 ```mermaid
+%%{init: {'theme': 'base', 'themeVariables': { 'fontSize': '14px'}}}%%
 flowchart TB
     subgraph API["eShop.Orders.API"]
         Controller["OrdersController<br/><i>API Layer</i>"]
@@ -159,8 +161,9 @@ flowchart TB
     Repository --> DB
     Handler --> SB
 
-    classDef internal fill:#e8f5e9,stroke:#2e7d32
-    classDef external fill:#f3e5f5,stroke:#7b1fa2
+    %% Accessible color palette
+    classDef internal fill:#e8f5e9,stroke:#2e7d32,stroke-width:2px,color:#1b5e20
+    classDef external fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px,color:#4a148c
 
     class Controller,Service,Repository,Handler,HealthChecks internal
     class DB,SB external
@@ -198,6 +201,7 @@ flowchart TB
 #### Component Diagram
 
 ```mermaid
+%%{init: {'theme': 'base', 'themeVariables': { 'fontSize': '14px'}}}%%
 flowchart TB
     subgraph WebApp["eShop.Web.App"]
         Pages["Razor Pages<br/><i>UI Components</i>"]
@@ -213,8 +217,9 @@ flowchart TB
     Pages --> APIService
     APIService -->|"HTTP/REST"| API
 
-    classDef internal fill:#e3f2fd,stroke:#1565c0
-    classDef external fill:#e8f5e9,stroke:#2e7d32
+    %% Accessible color palette
+    classDef internal fill:#e3f2fd,stroke:#1565c0,stroke-width:2px,color:#0d47a1
+    classDef external fill:#e8f5e9,stroke:#2e7d32,stroke-width:2px,color:#1b5e20
 
     class Pages,Layout,APIService internal
     class API external
@@ -243,6 +248,7 @@ flowchart TB
 From [workflow.json](../../workflows/OrdersManagement/OrdersManagementLogicApp/ProcessingOrdersPlaced/workflow.json):
 
 ```mermaid
+%%{init: {'theme': 'base', 'themeVariables': { 'fontSize': '14px'}}}%%
 flowchart TD
     Trigger["📨 Service Bus Trigger<br/><i>Poll every 1 second</i>"]
     
@@ -257,21 +263,22 @@ flowchart TD
     ErrorBlob2["❌ Create Blob<br/>/ordersprocessedwitherrors"]
 
     Trigger --> Condition1
-    Condition1 -->|Yes| HTTP
-    Condition1 -->|No| ErrorBlob2
+    Condition1 -->|"Yes"| HTTP
+    Condition1 -->|"No"| ErrorBlob2
     HTTP --> Condition2
-    Condition2 -->|Yes| SuccessBlob
-    Condition2 -->|No| ErrorBlob1
+    Condition2 -->|"Yes"| SuccessBlob
+    Condition2 -->|"No"| ErrorBlob1
 
-    classDef trigger fill:#e3f2fd,stroke:#1565c0
-    classDef condition fill:#fff3e0,stroke:#ef6c00
-    classDef success fill:#e8f5e9,stroke:#2e7d32
-    classDef error fill:#ffebee,stroke:#c62828
+    %% Accessible color palette for workflow states
+    classDef trigger fill:#e3f2fd,stroke:#1565c0,stroke-width:2px,color:#0d47a1
+    classDef condition fill:#fff3e0,stroke:#e65100,stroke-width:2px,color:#bf360c
+    classDef success fill:#e8f5e9,stroke:#2e7d32,stroke-width:2px,color:#1b5e20
+    classDef errorState fill:#ffebee,stroke:#c62828,stroke-width:2px,color:#b71c1c
 
     class Trigger trigger
     class Condition1,Condition2 condition
     class HTTP,SuccessBlob success
-    class ErrorBlob1,ErrorBlob2 error
+    class ErrorBlob1,ErrorBlob2 errorState
 ```
 
 ---
@@ -279,6 +286,7 @@ flowchart TD
 ## 6. Inter-Service Communication
 
 ```mermaid
+%%{init: {'theme': 'base', 'themeVariables': { 'fontSize': '14px'}}}%%
 flowchart LR
     subgraph Sync["🔗 Synchronous (HTTP/REST)"]
         Web["Web App"] -->|"GET/POST"| API["Orders API"]
@@ -291,8 +299,9 @@ flowchart LR
         Sub -->|"Trigger"| LA["Logic Apps"]
     end
 
-    classDef sync fill:#e3f2fd,stroke:#1565c0
-    classDef async fill:#e8f5e9,stroke:#2e7d32
+    %% Accessible color palette for communication patterns
+    classDef sync fill:#e3f2fd,stroke:#1565c0,stroke-width:2px,color:#0d47a1
+    classDef async fill:#e8f5e9,stroke:#2e7d32,stroke-width:2px,color:#1b5e20
 
     class Web,API,DB sync
     class API2,Topic,Sub,LA async
