@@ -96,6 +96,12 @@ flowchart TB
     class API,Workflow application
     class Orchestrator,SharedLib platform
     class DB,Queue,Monitor external
+
+    %% Subgraph container styling for visual layer grouping
+    style Presentation fill:#e3f2fd22,stroke:#1565c0,stroke-width:2px
+    style Application fill:#e8f5e922,stroke:#2e7d32,stroke-width:2px
+    style Platform fill:#fff3e022,stroke:#e65100,stroke-width:2px
+    style External fill:#f3e5f522,stroke:#7b1fa2,stroke-width:2px
 ```
 
 ---
@@ -167,6 +173,10 @@ flowchart TB
 
     class Controller,Service,Repository,Handler,HealthChecks internal
     class DB,SB external
+
+    %% Subgraph container styling for visual layer grouping
+    style API fill:#e8f5e922,stroke:#2e7d32,stroke-width:2px
+    style External fill:#f3e5f522,stroke:#7b1fa2,stroke-width:2px
 ```
 
 #### Key Patterns Implemented
@@ -223,6 +233,10 @@ flowchart TB
 
     class Pages,Layout,APIService internal
     class API external
+
+    %% Subgraph container styling for visual layer grouping
+    style WebApp fill:#e3f2fd22,stroke:#1565c0,stroke-width:2px
+    style External fill:#e8f5e922,stroke:#2e7d32,stroke-width:2px
 ```
 
 ---
@@ -305,6 +319,10 @@ flowchart LR
 
     class Web,API,DB sync
     class API2,Topic,Sub,LA async
+
+    %% Subgraph container styling for visual layer grouping
+    style Sync fill:#e3f2fd22,stroke:#1565c0,stroke-width:2px
+    style Async fill:#e8f5e922,stroke:#2e7d32,stroke-width:2px
 ```
 
 ### Communication Patterns

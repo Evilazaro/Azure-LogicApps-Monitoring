@@ -80,6 +80,11 @@ flowchart LR
     class Orders,Events,Telemetry domain
     class OrderDb,EventStore,WorkflowState,AppInsights store
     class API,WebApp,LogicApp,Dashboard consumer
+
+    %% Subgraph container styling for visual layer grouping
+    style BusinessDomains fill:#e3f2fd22,stroke:#1565c0,stroke-width:2px
+    style DataStores fill:#fff3e022,stroke:#e65100,stroke-width:2px
+    style Consumers fill:#e8f5e922,stroke:#2e7d32,stroke-width:2px
 ```
 
 ---
@@ -237,6 +242,12 @@ flowchart LR
     class OTEL,AzureDiag,LADiag instrument
     class AI,LAW collect
     class AppMap,TxSearch,Dashboards,Alerts,KQL visual
+
+    %% Subgraph container styling for visual layer grouping
+    style Sources fill:#fff3e022,stroke:#e65100,stroke-width:2px
+    style Instrumentation fill:#e3f2fd22,stroke:#1565c0,stroke-width:2px
+    style Collection fill:#e8f5e922,stroke:#2e7d32,stroke-width:2px
+    style Visualization fill:#f3e5f522,stroke:#7b1fa2,stroke-width:2px
 ```
 
 ---
@@ -301,6 +312,13 @@ flowchart TB
     class M1,M2,M3 metric
     class L1,L2,L3 log
     class API,Web,LA,SB,SQL source
+
+    %% Subgraph container styling for visual layer grouping
+    style Sources fill:#f5f5f522,stroke:#424242,stroke-width:2px
+    style Pillars fill:#fafafa22,stroke:#9e9e9e,stroke-width:2px
+    style Traces fill:#e3f2fd22,stroke:#1565c0,stroke-width:2px
+    style Metrics fill:#e8f5e922,stroke:#2e7d32,stroke-width:2px
+    style Logs fill:#fff3e022,stroke:#e65100,stroke-width:2px
 ```
 
 ### Metrics Inventory by Source
@@ -425,6 +443,11 @@ flowchart TD
     class WebApp,TestData upstream
     class OrderDb,EventBus core
     class LogicApp,AppInsights,Blob downstream
+
+    %% Subgraph container styling for visual layer grouping
+    style Upstream fill:#fff3e022,stroke:#e65100,stroke-width:2px
+    style Core fill:#e3f2fd22,stroke:#1565c0,stroke-width:2px
+    style Downstream fill:#e8f5e922,stroke:#2e7d32,stroke-width:2px
 ```
 
 ---
