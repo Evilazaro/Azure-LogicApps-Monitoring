@@ -1,3 +1,5 @@
+#!/usr/bin/env pwsh
+
 #Requires -Version 7.0
 
 <#
@@ -114,7 +116,7 @@ $script:Products = @(
     [PSCustomObject]@{ Id = 'PROD-A001'; Description = 'Wireless Earbuds'; BasePrice = 129.99 }
 )
 
-#endregion
+#endregion Product Catalog
 
 #region Delivery Addresses
 
@@ -492,4 +494,4 @@ finally {
     Write-Verbose -Message 'Order generation process completed.'
 }
 
-#endregion Main Execution
+#endregion Main Script
