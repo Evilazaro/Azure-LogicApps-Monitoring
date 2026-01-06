@@ -1,24 +1,70 @@
-# deploy-workflow Script
+# deploy-workflow (.ps1)
 
 ![PowerShell](https://img.shields.io/badge/PowerShell-7.0+-blue.svg)
-![Azure CLI](https://img.shields.io/badge/Azure%20CLI-Required-blue.svg)
+![Azure CLI](https://img.shields.io/badge/Azure%20CLI-2.60+-blue.svg)
 ![Azure Developer CLI](https://img.shields.io/badge/azd-Required-orange.svg)
+![Version](https://img.shields.io/badge/version-1.1.0-green.svg)
+![License](https://img.shields.io/badge/license-MIT-orange.svg)
 
 ## 📋 Overview
 
-The `deploy-workflow.ps1` script deploys Azure Logic Apps Standard workflows with automatic placeholder replacement. It uses Azure CLI zip deployment to deploy workflow definitions and connection configurations to Azure.
+The `deploy-workflow` script is a comprehensive deployment utility for Azure Logic Apps Standard workflows that automates the complete deployment lifecycle. As a PowerShell-based tool integrated with Azure Developer CLI (azd), it handles environment configuration, placeholder replacement, and Azure CLI zip deployment in a single, streamlined operation.
+
+This script performs intelligent placeholder replacement in both workflow.json and connections.json files, substituting environment variable tokens with actual values from the active azd environment. It then packages the workflow artifacts and deploys them to Azure Logic Apps Standard using the reliable zip deployment method, ensuring consistent and reproducible deployments across development, staging, and production environments.
+
+With built-in WhatIf mode for deployment previews, comprehensive error handling, and detailed progress reporting across five distinct phases, the script typically completes in 30-60 seconds. It supports both automated CI/CD pipeline integration and manual execution, providing flexibility for various deployment workflows while maintaining a Zero Trust security approach through managed identity authentication.
+
+## 📑 Table of Contents
+
+- [📋 Overview](#-overview)
+- [🎯 Purpose](#-purpose)
+- [📦 Placeholders Replaced](#-placeholders-replaced)
+  - [🔄 Workflow Placeholders](#workflow-placeholders-workflowjson)
+  - [🔗 Connection Placeholders](#connection-placeholders-connectionsjson)
+- [🚀 Usage](#-usage)
+  - [💻 Basic Usage](#basic-usage)
+  - [⚡ Force Mode](#force-mode)
+  - [👁️ Preview Mode (WhatIf)](#preview-mode-whatif)
+  - [📝 Verbose Mode](#verbose-mode)
+  - [🔀 Skip Placeholder Replacement](#skip-placeholder-replacement)
+- [🔧 Parameters](#-parameters)
+- [📚 Examples](#-examples)
+  - [✅ Example 1: Standard Deployment](#example-1-standard-deployment)
+  - [🔁 Example 2: CI/CD Integration](#example-2-cicd-integration)
+- [🛠️ How It Works](#️-how-it-works)
+  - [📊 Workflow Diagram](#workflow-diagram)
+  - [🔗 Integration Points](#integration-points)
+  - [🏗️ Deployment Process](#deployment-process)
+- [📋 Prerequisites](#-prerequisites)
+  - [🔧 Required Tools](#required-tools)
+  - [🔑 Authentication](#authentication)
+  - [📝 Required Environment Variables](#required-environment-variables)
+- [🐛 Troubleshooting](#-troubleshooting)
+  - [❓ Common Issues](#common-issues)
+  - [🔧 Debug Mode](#debug-mode)
+- [📖 Related Documentation](#-related-documentation)
+- [🔐 Security Considerations](#-security-considerations)
+  - [✅ Safe Operations](#safe-operations)
+  - [🔑 Authentication Security](#authentication-security)
+- [🎓 Best Practices](#-best-practices)
+  - [📋 When to Use This Script](#when-to-use-this-script)
+  - [🔄 Development Workflow Integration](#development-workflow-integration)
+- [📊 Performance](#-performance)
+  - [⚡ Performance Characteristics](#performance-characteristics)
+- [📜 Version History](#-version-history)
 
 ---
 
 ## 🎯 Purpose
 
-The script performs the following operations:
+This script helps developers and operators:
 
-1. **Loads azd environment variables** from the active Azure Developer CLI environment
-2. **Validates Azure CLI connection** to ensure authentication
-3. **Validates required environment variables** are set
-4. **Replaces placeholders** in workflow.json and connections.json
-5. **Deploys the workflow** to Azure Logic Apps Standard using zip deployment
+- ✅ **Deploy Workflows**: Deploy Logic Apps Standard workflows using Azure CLI zip deployment
+- ✅ **Replace Placeholders**: Automatically substitute placeholder tokens with environment values
+- ✅ **Load azd Environment**: Automatically load variables from the active azd environment
+- ✅ **Validate Configuration**: Ensure Azure CLI connection and environment variables before deployment
+- ✅ **Preview Deployments**: Use WhatIf mode to see changes without deploying
+- ✅ **CI/CD Integration**: Seamlessly integrate with automated deployment pipelines
 
 ---
 
