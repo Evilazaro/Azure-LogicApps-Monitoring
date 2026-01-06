@@ -50,6 +50,7 @@
 #>
 
 [CmdletBinding(SupportsShouldProcess = $true, ConfirmImpact = 'Medium')]
+[OutputType([System.Void])]
 param(
     [Parameter(Mandatory = $false, ValueFromPipeline = $false)]
     [ValidateNotNullOrEmpty()]

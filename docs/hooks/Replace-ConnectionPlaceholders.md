@@ -519,10 +519,19 @@ flowchart LR
 
 ---
 
+## 📜 Version History
+
+| Version   | Date       | Changes                                                                                     |
+| --------- | ---------- | ------------------------------------------------------------------------------------------- |
+| **1.1.0** | 2026-01-06 | • Applied PowerShell best practices (OutputType on script block)<br/>• Documentation updates |
+| **1.0.0** | 2025-12-15 | • Initial release with placeholder replacement functionality                                |
+
+---
+
 <div align="center">
 
 **Made with ❤️ by Evilazaro | Principal Cloud Solution Architect | Microsoft**
 
-[⬆ Back to Top](#check-dev-workstation-ps1--sh)
+[⬆ Back to Top](#replace-connectionplaceholders-ps1--sh)
 
 </div>
