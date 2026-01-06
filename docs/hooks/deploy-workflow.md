@@ -83,6 +83,7 @@ This script helps developers and operators:
 | Placeholder                             | Environment Variable                 | Description                             |
 | --------------------------------------- | ------------------------------------ | --------------------------------------- |
 | `${AZURE_SUBSCRIPTION_ID}`              | `AZURE_SUBSCRIPTION_ID`              | Azure subscription ID                   |
+| `${AZURE_LOCATION}`                     | `AZURE_LOCATION`                     | Azure region/location                   |
 | `${AZURE_RESOURCE_GROUP}`               | `AZURE_RESOURCE_GROUP`               | Azure resource group name               |
 | `${MANAGED_IDENTITY_NAME}`              | `MANAGED_IDENTITY_NAME`              | User-assigned managed identity name     |
 | `${SERVICE_BUS_CONNECTION_RUNTIME_URL}` | `SERVICE_BUS_CONNECTION_RUNTIME_URL` | Service Bus API connection runtime URL  |
@@ -294,6 +295,7 @@ No changes were made. This was a simulation.
     AZURE_STORAGE_ACCOUNT_NAME_WORKFLOW: stlogicappdev
   Connection Variables:
     AZURE_SUBSCRIPTION_ID: 12345678-****
+    AZURE_LOCATION: eastus
     AZURE_RESOURCE_GROUP: rg-logicapps-dev
     MANAGED_IDENTITY_NAME: id-logicapps-dev
     SERVICE_BUS_CONNECTION_RUNTIME_URL: https://servicebus-****

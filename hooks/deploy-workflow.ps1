@@ -167,12 +167,14 @@ function Initialize-AzdEnvironment {
 
         $loadedCount = 0
         foreach ($line in $azdEnvOutput) {
-            # Match pattern: VARNAME="value" or VARNAME=value (properly handle quotes)
-            if ($line -match '^([A-Z_][A-Z0-9_]*)=("?)(.*)("?)$') {
+            # Match pattern: VARNAME=\"value\" or VARNAME=value (handle quoted values properly)
+            if ($line -match '^([A-Z_][A-Z0-9_]*)=(.*)$') {
                 $varName = $Matches[1]
-                $varValue = $Matches[3]
-                # Remove surrounding quotes if present
-                $varValue = $varValue -replace '^"|"$', ''
+                $varValue = $Matches[2]
+                # Remove surrounding double quotes if present
+                if ($varValue -match '^"(.*)"$') {
+                    $varValue = $Matches[1]
+                }
                 [System.Environment]::SetEnvironmentVariable($varName, $varValue, [System.EnvironmentVariableTarget]::Process)
                 $loadedCount++
                 Write-Verbose "Set environment variable: $varName"
@@ -624,7 +626,7 @@ try {
     Write-Host ''
     Write-Host '╔══════════════════════════════════════════════════════════════╗' -ForegroundColor Cyan
     Write-Host '║     Azure Logic Apps Workflow Deployment Script              ║' -ForegroundColor Cyan
-    Write-Host "║     Version: $script:ScriptVersion                                          ║" -ForegroundColor Cyan
+    Write-Host "║     Version: $($script:ScriptVersion.PadRight(47))║" -ForegroundColor Cyan
     Write-Host '║     (Using Azure CLI and Azure Developer CLI)                ║' -ForegroundColor Cyan
     Write-Host '╚══════════════════════════════════════════════════════════════╝' -ForegroundColor Cyan
     Write-Host ''

@@ -715,7 +715,7 @@ main() {
     echo ""
     log_info "╔══════════════════════════════════════════════════════════════╗"
     log_info "║     Azure Logic Apps Workflow Deployment Script              ║"
-    log_info "║     Version: ${SCRIPT_VERSION}                                          ║"
+    printf "${COLOR_CYAN}║     Version: %-47s║${COLOR_RESET}\n" "${SCRIPT_VERSION}"
     log_info "║     (Using Azure CLI and Azure Developer CLI)                ║"
     log_info "╚══════════════════════════════════════════════════════════════╝"
     echo ""
@@ -728,14 +728,16 @@ main() {
 
     # Resolve LogicAppName from environment if not provided via command line
     # Note: LOGIC_APP_NAME may be set by initialize_azd_environment
-    if [[ -z "${LOGIC_APP_NAME:-}" ]]; then
+    if [[ -z "${LOGIC_APP_NAME}" ]]; then
         LOGIC_APP_NAME="${LOGIC_APP_NAME:-}"
         if [[ -z "${LOGIC_APP_NAME}" ]]; then
             log_error "LogicAppName parameter is required or LOGIC_APP_NAME environment variable must be set."
             exit 1
         fi
+        log_gray "Using Logic App from environment: ${LOGIC_APP_NAME}"
+    else
+        log_gray "Using Logic App: ${LOGIC_APP_NAME}"
     fi
-    log_gray "Using Logic App: ${LOGIC_APP_NAME}"
 
     # Resolve ResourceGroupName from environment if not provided via command line
     if [[ -z "${RESOURCE_GROUP_NAME:-}" ]]; then
