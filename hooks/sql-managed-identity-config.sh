@@ -655,12 +655,16 @@ test_azure_context() {
 # SQL Tools Validation
 ################################################################################
 
-# Validate sqlcmd utility availability and version
+# Global variable to store which sqlcmd variant is detected
+# Values: "go" for sqlcmd (Go), "odbc" for sqlcmd (ODBC/mssql-tools)
+SQLCMD_VARIANT=""
+
+# Validate sqlcmd utility availability and detect version variant
 # Checks if sqlcmd is installed and accessible for SQL Database operations
-# sqlcmd is required for executing SQL commands with Azure AD token authentication
+# Also detects whether it's sqlcmd (Go) or sqlcmd (ODBC) for proper auth handling
 # Parameters: None
 # Returns: 0 if sqlcmd is available, 1 otherwise
-# Output: Logs validation status and sqlcmd location
+# Output: Logs validation status, sqlcmd location, and sets SQLCMD_VARIANT global
 check_sqlcmd() {
     log_verbose "Validating sqlcmd utility..."
     
@@ -670,14 +674,14 @@ check_sqlcmd() {
         log_error "sqlcmd is required for SQL Database operations"
         log_error ""
         log_error "Installation instructions:"
-        log_error "  Ubuntu/Debian:"
-        log_error "    https://learn.microsoft.com/sql/linux/sql-server-linux-setup-tools"
-        log_error "  macOS:"
-        log_error "    brew install mssql-tools"
-        log_error "  Windows:"
-        log_error "    Download from: https://aka.ms/msodbcsql"
+        log_error "  Option 1 - sqlcmd (Go) - Recommended for Azure AD:"
+        log_error "    https://learn.microsoft.com/sql/tools/sqlcmd/go-sqlcmd-utility"
+        log_error "    curl -sSL https://aka.ms/InstallAzureCLIDeb | sudo bash"
+        log_error "    Or: go install github.com/microsoft/go-sqlcmd/cmd/sqlcmd@latest"
         log_error ""
-        log_error "Note: mssql-tools18 is recommended for TLS 1.2+ support"
+        log_error "  Option 2 - sqlcmd (ODBC) / mssql-tools18:"
+        log_error "    https://learn.microsoft.com/sql/linux/sql-server-linux-setup-tools"
+        log_error ""
         return 1
     fi
     
@@ -685,19 +689,46 @@ check_sqlcmd() {
     sqlcmd_path=$(command -v sqlcmd)
     log_verbose "sqlcmd found at: ${sqlcmd_path}"
     
-    # Try to get sqlcmd version information (not all versions support -?)
-    local version_info
-    if version_info=$(sqlcmd -? 2>&1 | head -n 2); then
-        log_verbose "sqlcmd version info: $(echo "${version_info}" | tr '\n' ' ')"
+    # Detect sqlcmd variant (Go vs ODBC)
+    # sqlcmd (Go) shows version info with --version or has different help output
+    # sqlcmd (ODBC) shows version with -? and mentions "Microsoft ODBC Driver"
+    local version_output
+    version_output=$(sqlcmd --version 2>&1 || sqlcmd -? 2>&1 | head -n 5)
+    
+    if echo "${version_output}" | grep -qi "go-sqlcmd\|go version\|sqlcmd: version"; then
+        SQLCMD_VARIANT="go"
+        log_verbose "Detected sqlcmd variant: Go (go-sqlcmd)"
+        log_verbose "Authentication method: ActiveDirectoryDefault (Azure CLI credentials)"
+    elif echo "${version_output}" | grep -qi "odbc\|microsoft.*driver\|mssql-tools"; then
+        SQLCMD_VARIANT="odbc"
+        log_verbose "Detected sqlcmd variant: ODBC (mssql-tools)"
+        log_verbose "Authentication method: Token file (UTF-16LE format)"
+    else
+        # Default to ODBC if we can't determine
+        SQLCMD_VARIANT="odbc"
+        log_verbose "Could not determine sqlcmd variant, assuming ODBC"
+        log_verbose "Version output: ${version_output}"
     fi
     
-    log_success "sqlcmd utility validated"
+    log_success "sqlcmd utility validated (variant: ${SQLCMD_VARIANT})"
     return 0
 }
 
 # Validate iconv utility availability for UTF-16LE encoding
 # iconv is required to convert the Azure AD access token to UTF-16LE format
-# which is the required format for sqlcmd token file authentication on Linux/macOS
+# which is the required format for sqlcmd (ODBC) token file authentication on Linux/macOS
+# Note: Not required for sqlcmd (Go) which uses ActiveDirectoryDefault
+# Parameters: None
+# Returns: 0 if iconv is available and supports UTF-16LE, 1 otherwise
+# Output: Logs validation status
+check_iconv() {
+    # Skip iconv check if using sqlcmd (Go) - it doesn't need token files
+    if [[ "${SQLCMD_VARIANT}" == "go" ]]; then
+        log_verbose "Skipping iconv check - sqlcmd (Go) uses ActiveDirectoryDefault auth"
+        return 0
+    fi
+    
+    log_verbose "Validating iconv utility for UTF-16LE encoding..."
 # Parameters: None
 # Returns: 0 if iconv is available and supports UTF-16LE, 1 otherwise
 # Output: Logs validation status
