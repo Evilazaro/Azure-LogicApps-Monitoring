@@ -183,6 +183,9 @@ output AZURE_CONTAINER_APPS_ENVIRONMENT_ID string = workload.outputs.AZURE_CONTA
 @description('Default domain for the Container Apps Environment')
 output AZURE_CONTAINER_APPS_ENVIRONMENT_DEFAULT_DOMAIN string = workload.outputs.AZURE_CONTAINER_APPS_ENVIRONMENT_DEFAULT_DOMAIN
 
+@description('URL for the Orders API deployed in Container Apps')
+output ORDERS_API_URL string = workload.outputs.AZURE_CONTAINER_APPS_ENVIRONMENT_DEFAULT_DOMAIN
+
 // Logic Apps Outputs
 @description('Name of the deployed Logic App')
 output LOGIC_APP_NAME string = workload.outputs.LOGIC_APP_NAME
@@ -198,3 +201,7 @@ output AZURE_BLOB_CONNECTION_RUNTIME_URL string = workload.outputs.AZURE_BLOB_CO
 
 @description('Azure Tenant ID for Container Apps authentication')
 output AZURE_TENANT_ID string = tenant().tenantId
+
+@description('Storage account name for Logic Apps workflows and data')
+output AZURE_STORAGE_ACCOUNT_NAME_WORKFLOW string = workload.outputs.AZURE_STORAGE_ACCOUNT_NAME_WORKFLOW
+

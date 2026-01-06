@@ -200,3 +200,6 @@ output SERVICE_BUS_CONNECTION_RUNTIME_URL string = workflows.outputs.SERVICE_BUS
 
 @description('Runtime URL of the Azure Blob Storage API connection')
 output AZURE_BLOB_CONNECTION_RUNTIME_URL string = workflows.outputs.AZURE_BLOB_CONNECTION_RUNTIME_URL
+
+@description('Storage account name for Logic Apps workflows and data')
+output AZURE_STORAGE_ACCOUNT_NAME_WORKFLOW string = workflows.outputs.workflowStorageAccountName

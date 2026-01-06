@@ -76,7 +76,7 @@ $ErrorActionPreference = 'Stop'
 # Define placeholders for workflow.json
 [System.Collections.Generic.List[hashtable]]$script:WorkflowPlaceholders = @(
     @{ Placeholder = '${ORDERS_API_URL}'; EnvVar = 'ORDERS_API_URL' }
-    @{ Placeholder = '${STORAGE_ACCOUNT_NAME}'; EnvVar = 'STORAGE_ACCOUNT_NAME' }
+    @{ Placeholder = '${AZURE_STORAGE_ACCOUNT_NAME_WORKFLOW}'; EnvVar = 'AZURE_STORAGE_ACCOUNT_NAME_WORKFLOW' }
 )
 
 # Define placeholders for connections.json
