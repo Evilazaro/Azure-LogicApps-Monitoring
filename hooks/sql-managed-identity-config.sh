@@ -729,11 +729,6 @@ check_iconv() {
     fi
     
     log_verbose "Validating iconv utility for UTF-16LE encoding..."
-# Parameters: None
-# Returns: 0 if iconv is available and supports UTF-16LE, 1 otherwise
-# Output: Logs validation status
-check_iconv() {
-    log_verbose "Validating iconv utility for UTF-16LE encoding..."
     
     # Check if iconv command is available in PATH
     if ! command -v iconv &> /dev/null; then

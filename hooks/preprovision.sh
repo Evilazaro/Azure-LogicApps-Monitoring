@@ -982,8 +982,9 @@ install_bicep_cli() {
     return 1
 }
 
-# Install sqlcmd utility (mssql-tools18) on Linux
-# Uses Microsoft package repository for installation
+# Install sqlcmd utility with Azure AD support
+# Prefers sqlcmd (Go) for better Azure AD authentication
+# Falls back to mssql-tools18 (ODBC) if Go version installation fails
 # Returns: 0 if installation succeeds, 1 otherwise
 install_sqlcmd() {
     echo ""
@@ -991,7 +992,40 @@ install_sqlcmd() {
     echo "│                   sqlcmd Installation                          │"
     echo "└────────────────────────────────────────────────────────────────┘"
     echo ""
-    echo "  Installing Microsoft SQL Server tools (mssql-tools18)..."
+    
+    # Try to install sqlcmd (Go) first - it has better Azure AD support
+    # and uses Azure CLI credentials directly with --authentication-method
+    print_info "  Attempting to install sqlcmd (Go) for better Azure AD support..."
+    echo ""
+    
+    local go_install_success=false
+    
+    # Check if Go is installed and try to install sqlcmd (Go)
+    if command -v go &> /dev/null; then
+        print_verbose "  Go is installed, attempting installation via go install..."
+        if go install github.com/microsoft/go-sqlcmd/cmd/sqlcmd@latest 2>/dev/null; then
+            # Add Go bin to PATH if not already there
+            if [[ -d "${HOME}/go/bin" ]] && [[ ":${PATH}:" != *":${HOME}/go/bin:"* ]]; then
+                export PATH="${HOME}/go/bin:${PATH}"
+            fi
+            if command -v sqlcmd &> /dev/null; then
+                print_success "  sqlcmd (Go) installed successfully via go install!"
+                go_install_success=true
+            fi
+        fi
+    fi
+    
+    # If Go installation succeeded, we're done
+    if [[ "${go_install_success}" == "true" ]]; then
+        echo ""
+        print_info "  sqlcmd (Go) provides better Azure AD authentication support."
+        print_info "  It uses Azure CLI credentials directly with --authentication-method ActiveDirectoryDefault"
+        echo ""
+        return 0
+    fi
+    
+    # Fall back to installing mssql-tools18 (ODBC version)
+    print_info "  Installing mssql-tools18 (ODBC version) as fallback..."
     echo ""
     
     # Detect OS and install accordingly
@@ -1023,7 +1057,7 @@ install_sqlcmd() {
                 sudo apt-get update -qq
                 if sudo ACCEPT_EULA=Y apt-get install -y mssql-tools18 unixodbc-dev > /dev/null 2>&1; then
                     echo ""
-                    print_success "  sqlcmd installed successfully!"
+                    print_success "  sqlcmd (ODBC) installed successfully!"
                     echo ""
                     
                     # Add to PATH for current session
@@ -1031,6 +1065,9 @@ install_sqlcmd() {
                     
                     print_warning "  ⚠ NOTE: Add the following to your shell profile:"
                     echo '          export PATH="/opt/mssql-tools18/bin:$PATH"'
+                    echo ""
+                    print_info "  For better Azure AD support, consider installing sqlcmd (Go):"
+                    echo "    go install github.com/microsoft/go-sqlcmd/cmd/sqlcmd@latest"
                     echo ""
                     return 0
                 fi
@@ -1048,7 +1085,7 @@ install_sqlcmd() {
                 print_info "  Installing mssql-tools18..."
                 if sudo ACCEPT_EULA=Y yum install -y mssql-tools18 unixODBC-devel > /dev/null 2>&1; then
                     echo ""
-                    print_success "  sqlcmd installed successfully!"
+                    print_success "  sqlcmd (ODBC) installed successfully!"
                     echo ""
                     
                     # Add to PATH for current session
@@ -1081,7 +1118,7 @@ install_sqlcmd() {
            brew update && \
            HOMEBREW_ACCEPT_EULA=Y brew install mssql-tools18 2>/dev/null; then
             echo ""
-            print_success "  sqlcmd installed successfully!"
+            print_success "  sqlcmd (ODBC) installed successfully!"
             echo ""
             return 0
         fi
@@ -1090,9 +1127,12 @@ install_sqlcmd() {
     print_error "  sqlcmd installation failed"
     echo ""
     print_warning "  Please install manually:"
-    echo "    Ubuntu/Debian: https://learn.microsoft.com/sql/linux/sql-server-linux-setup-tools"
-    echo "    macOS: brew install mssql-tools18"
-    echo "    Windows: https://aka.ms/msodbcsql"
+    echo "    Option 1 - sqlcmd (Go) - Recommended for Azure AD:"
+    echo "      go install github.com/microsoft/go-sqlcmd/cmd/sqlcmd@latest"
+    echo ""
+    echo "    Option 2 - mssql-tools18 (ODBC):"
+    echo "      Ubuntu/Debian: https://learn.microsoft.com/sql/linux/sql-server-linux-setup-tools"
+    echo "      macOS: brew install mssql-tools18"
     echo ""
     return 1
 }
