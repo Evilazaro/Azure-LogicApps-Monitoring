@@ -58,7 +58,7 @@
 #
 # NOTES
 #     File Name      : Generate-Orders.sh
-#     Author         :Evilazaro | Principal Cloud Solution Architect | Microsoft
+#     Author         : Evilazaro | Principal Cloud Solution Architect | Microsoft
 #     Prerequisite   : Bash 4.0 or higher
 #     Optional       : jq (for optimized JSON generation)
 #     

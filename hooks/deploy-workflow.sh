@@ -42,7 +42,7 @@
 #
 # NOTES
 #     File Name      : deploy-workflow.sh
-#     Author         :Evilazaro | Principal Cloud Solution Architect | Microsoft
+#     Author         : Evilazaro | Principal Cloud Solution Architect | Microsoft
 #     Version        : 1.1.0
 #     Last Modified  : 2026-01-06
 #     Prerequisite   : Bash 4.0+, Azure CLI (az), Azure Developer CLI (azd)

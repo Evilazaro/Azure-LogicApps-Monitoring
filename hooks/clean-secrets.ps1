@@ -39,7 +39,7 @@
 
 .NOTES
     File Name      : clean-secrets.ps1
-    Author         :Evilazaro | Principal Cloud Solution Architect | Microsoft
+    Author         : Evilazaro | Principal Cloud Solution Architect | Microsoft
     Version        : 2.0.1
     Last Modified  : 2026-01-06
     Prerequisite   : .NET SDK 10.0 or higher

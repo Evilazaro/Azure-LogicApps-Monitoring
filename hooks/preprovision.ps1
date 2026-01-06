@@ -58,7 +58,7 @@
 
 .NOTES
     File Name      : preprovision.ps1
-    Author         :Evilazaro | Principal Cloud Solution Architect | Microsoft
+    Author         : Evilazaro | Principal Cloud Solution Architect | Microsoft
     Version        : 2.3.0
     Last Modified  : 2026-01-06
     Prerequisite   : PowerShell 7.0 or higher

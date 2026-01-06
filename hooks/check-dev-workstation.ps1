@@ -41,7 +41,7 @@
 
 .NOTES
     File Name      : check-dev-workstation.ps1
-    Author         :Evilazaro | Principal Cloud Solution Architect | Microsoft
+    Author         : Evilazaro | Principal Cloud Solution Architect | Microsoft
     Version        : 1.0.0
     Last Modified  : 2026-01-07
     Prerequisite   : PowerShell 7.0+, preprovision.ps1
