@@ -54,13 +54,13 @@
 #     File Name      : preprovision.sh
 #     Author         : Azure-LogicApps-Monitoring Team
 #     Version        : 2.3.0
-#     Last Modified  : 2025-12-30
+#     Last Modified  : 2026-01-06
 #     Prerequisite   : Bash 4.0 or higher
 #     Prerequisite   : .NET SDK 10.0 or higher
 #     Prerequisite   : Azure Developer CLI (azd)
 #     Prerequisite   : Azure CLI 2.60.0 or higher
 #     Prerequisite   : Bicep CLI 0.30.0 or higher
-#     Copyright      : (c) 2025. All rights reserved.
+#     Copyright      : (c) 2025-2026. All rights reserved.
 #
 # LINK:
 #     https://github.com/Evilazaro/Azure-LogicApps-Monitoring

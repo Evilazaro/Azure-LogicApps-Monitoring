@@ -60,17 +60,18 @@
     File Name      : preprovision.ps1
     Author         : Azure-LogicApps-Monitoring Team
     Version        : 2.3.0
-    Last Modified  : 2025-12-30
+    Last Modified  : 2026-01-06
     Prerequisite   : PowerShell 7.0 or higher
     Prerequisite   : .NET SDK 10.0 or higher
     Prerequisite   : Azure Developer CLI (azd)
-    Copyright      : (c) 2025. All rights reserved.
+    Copyright      : (c) 2025-2026. All rights reserved.
 
 .LINK
     https://github.com/Evilazaro/Azure-LogicApps-Monitoring
 #>
 
 [CmdletBinding(SupportsShouldProcess, ConfirmImpact = 'Medium')]
+[OutputType([System.Void])]
 param(
     [Parameter(Mandatory = $false, HelpMessage = 'Skip confirmation prompts')]
     [switch]$Force,
