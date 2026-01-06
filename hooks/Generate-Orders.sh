@@ -540,14 +540,17 @@ random_float() {
     local max=$2
     local decimals=$3
     
-    # Scale to integer range for random generation
-    # Example: for decimals=2, multiply by 100
-    local range_int=$((max * 10**decimals - min * 10**decimals))
-    local random_int=$((RANDOM % range_int + min * 10**decimals))
-    
-    # Use awk for accurate floating-point division
-    # Ensures proper decimal formatting
-    awk "BEGIN {printf \"%.${decimals}f\", ${random_int} / (10^${decimals})}"
+    # Use awk for all floating-point arithmetic since bash only supports integers
+    # Generate a random number using $RANDOM (0-32767) scaled to the desired range
+    awk -v min="$min" -v max="$max" -v decimals="$decimals" -v seed="$RANDOM" \
+        'BEGIN {
+            # Scale RANDOM (0-32767) to range [0,1), then to [min,max)
+            range = max - min
+            value = min + (seed / 32768.0) * range
+            # Build format string using sprintf for dynamic decimal precision
+            fmt = sprintf("%%.%df", decimals)
+            printf fmt, value
+        }'
 }
 
 ###############################################################################
