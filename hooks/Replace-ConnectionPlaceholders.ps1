@@ -1,3 +1,5 @@
+#!/usr/bin/env pwsh
+
 #Requires -Version 7.0
 
 <#
@@ -8,41 +10,66 @@
     This script reads the connections.json file and replaces all ${VARIABLE_NAME} 
     placeholders with the corresponding environment variable values.
     Supports -WhatIf and -Confirm for safe execution.
+    
+    The script integrates with Azure Developer CLI (azd) to automatically load
+    environment variables from the active azd environment.
 
 .PARAMETER ConnectionsFilePath
     Path to the connections.json file. Defaults to the OrdersManagement Logic App connections file.
+    Alias: PSPath (for pipeline compatibility).
 
 .PARAMETER OutputFilePath
     Optional output file path. If not specified, the original file will be overwritten.
 
 .EXAMPLE
     ./Replace-ConnectionPlaceholders.ps1
-    
+    Replaces placeholders using environment variables from the active azd environment.
+
 .EXAMPLE
     ./Replace-ConnectionPlaceholders.ps1 -ConnectionsFilePath "./custom/connections.json" -OutputFilePath "./output/connections.json"
+    Processes a custom connections file and outputs to a specified location.
 
 .EXAMPLE
     ./Replace-ConnectionPlaceholders.ps1 -WhatIf
     Shows what changes would be made without actually modifying any files.
 
+.OUTPUTS
+    None. This script writes directly to files.
+
 .NOTES
-    Author: Azure Logic Apps Team
-    Requires: PowerShell 7.0 or later
+    File Name      : Replace-ConnectionPlaceholders.ps1
+    Author         : Azure Logic Apps Monitoring Team
+    Version        : 1.1.0
+    Last Modified  : 2026-01-06
+    Prerequisite   : PowerShell 7.0 or later
+    Prerequisite   : Azure Developer CLI (azd)
+    Copyright      : (c) 2025-2026. All rights reserved.
+
+.LINK
+    https://github.com/Evilazaro/Azure-LogicApps-Monitoring
 #>
 
 [CmdletBinding(SupportsShouldProcess = $true, ConfirmImpact = 'Medium')]
 param(
-    [Parameter(Mandatory = $false)]
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false)]
     [ValidateNotNullOrEmpty()]
+    [Alias('PSPath', 'Path')]
     [string]$ConnectionsFilePath = "$PSScriptRoot/../workflows/OrdersManagement/OrdersManagementLogicApp/connections.json",
 
     [Parameter(Mandatory = $false)]
     [ValidateNotNullOrEmpty()]
+    [Alias('Output', 'Destination')]
     [string]$OutputFilePath
 )
 
+# Script configuration
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
+$InformationPreference = 'Continue'
+$ProgressPreference = 'SilentlyContinue'
+
+# Script-level constants
+$script:ScriptVersion = '1.1.0'
 
 # Load azd environment variables if not already set
 # This ensures the script works both when called from azd hooks and standalone
@@ -65,7 +92,7 @@ if ($LASTEXITCODE -eq 0 -and $azdEnvOutput) {
 }
 
 # Define the required environment variables and their placeholder names
-[System.Collections.Generic.List[hashtable]]$script:Placeholders = @(
+[hashtable[]]$script:Placeholders = @(
     @{ Placeholder = '${AZURE_SUBSCRIPTION_ID}'; EnvVar = 'AZURE_SUBSCRIPTION_ID' }
     @{ Placeholder = '${AZURE_RESOURCE_GROUP}'; EnvVar = 'AZURE_RESOURCE_GROUP' }
     @{ Placeholder = '${MANAGED_IDENTITY_NAME}'; EnvVar = 'MANAGED_IDENTITY_NAME' }
@@ -77,22 +104,34 @@ function Test-RequiredEnvironmentVariables {
     <#
     .SYNOPSIS
         Validates that all required environment variables are set.
+    
+    .DESCRIPTION
+        Checks each placeholder configuration to verify that the corresponding
+        environment variable is set and has a non-empty value.
+    
+    .PARAMETER PlaceholderList
+        An array of hashtables containing Placeholder and EnvVar keys.
+    
     .OUTPUTS
-        System.Boolean
+        System.Boolean - Returns $true if all variables are set, $false otherwise.
+    
+    .EXAMPLE
+        Test-RequiredEnvironmentVariables -PlaceholderList $script:Placeholders
     #>
     [CmdletBinding()]
     [OutputType([bool])]
     param(
         [Parameter(Mandatory = $true)]
-        [System.Collections.Generic.List[hashtable]]$PlaceholderList
+        [ValidateNotNull()]
+        [hashtable[]]$PlaceholderList
     )
 
-    [System.Collections.Generic.List[string]]$missingVars = [System.Collections.Generic.List[string]]::new()
+    [string[]]$missingVars = @()
     
     foreach ($item in $PlaceholderList) {
         $envValue = [System.Environment]::GetEnvironmentVariable($item.EnvVar)
         if ([string]::IsNullOrWhiteSpace($envValue)) {
-            $missingVars.Add($item.EnvVar)
+            $missingVars += $item.EnvVar
         }
     }
 
@@ -109,8 +148,22 @@ function Update-PlaceholderContent {
     <#
     .SYNOPSIS
         Replaces placeholders in the content with environment variable values.
+    
+    .DESCRIPTION
+        Iterates through the placeholder list and replaces each placeholder
+        pattern with the corresponding environment variable value.
+    
+    .PARAMETER Content
+        The content string containing placeholders to replace.
+    
+    .PARAMETER PlaceholderList
+        An array of hashtables containing Placeholder and EnvVar keys.
+    
     .OUTPUTS
-        System.String
+        System.String - The content with all placeholders replaced.
+    
+    .EXAMPLE
+        Update-PlaceholderContent -Content $json -PlaceholderList $script:Placeholders
     #>
     [CmdletBinding()]
     [OutputType([string])]
@@ -120,7 +173,8 @@ function Update-PlaceholderContent {
         [string]$Content,
 
         [Parameter(Mandatory = $true)]
-        [System.Collections.Generic.List[hashtable]]$PlaceholderList
+        [ValidateNotNull()]
+        [hashtable[]]$PlaceholderList
     )
 
     $result = $Content
@@ -140,8 +194,22 @@ function Get-MaskedValue {
     <#
     .SYNOPSIS
         Returns a masked version of sensitive values for display purposes.
+    
+    .DESCRIPTION
+        Masks sensitive values (URLs, secrets, keys, passwords, connections) 
+        to prevent accidental exposure in logs or console output.
+    
+    .PARAMETER Value
+        The value to potentially mask.
+    
+    .PARAMETER VariableName
+        The name of the variable, used to determine if masking is needed.
+    
     .OUTPUTS
-        System.String
+        System.String - The masked or original value.
+    
+    .EXAMPLE
+        Get-MaskedValue -Value $secret -VariableName 'SERVICE_BUS_CONNECTION_RUNTIME_URL'
     #>
     [CmdletBinding()]
     [OutputType([string])]
@@ -172,11 +240,22 @@ function Write-ReplacementSummary {
     <#
     .SYNOPSIS
         Displays a summary of the placeholder replacements.
+    
+    .DESCRIPTION
+        Outputs a formatted summary showing each environment variable
+        and its masked value for verification purposes.
+    
+    .PARAMETER PlaceholderList
+        An array of hashtables containing Placeholder and EnvVar keys.
+    
+    .EXAMPLE
+        Write-ReplacementSummary -PlaceholderList $script:Placeholders
     #>
     [CmdletBinding()]
     param(
         [Parameter(Mandatory = $true)]
-        [System.Collections.Generic.List[hashtable]]$PlaceholderList
+        [ValidateNotNull()]
+        [hashtable[]]$PlaceholderList
     )
 
     Write-Host '=== Replacement Summary ===' -ForegroundColor Cyan
@@ -187,7 +266,8 @@ function Write-ReplacementSummary {
     }
 }
 
-# Main execution
+#region Main Execution
+
 try {
     Write-Host '=== Connection Placeholders Replacement Script ===' -ForegroundColor Cyan
     Write-Host ''
@@ -264,3 +344,4 @@ catch {
     Write-Error -Message "Script execution failed: $($_.Exception.Message)" -Exception $_.Exception
     throw
 }
+#endregion Main Execution
