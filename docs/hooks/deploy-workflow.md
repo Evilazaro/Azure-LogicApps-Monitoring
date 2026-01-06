@@ -96,23 +96,50 @@ This script helps developers and operators:
 
 **PowerShell (Windows/Linux/macOS):**
 
+### PowerShell
+
 ```powershell
 # Deploy using environment variables from azd
 .\deploy-workflow.ps1
 ```
 
+### Bash
+
+```bash
+# Deploy using environment variables from azd
+./deploy-workflow.sh
+```
+
 ### Force Mode
+
+**PowerShell:**
 
 ```powershell
 # Skip confirmation prompts
 .\deploy-workflow.ps1 -Confirm:$false
 ```
 
-### Preview Mode (WhatIf)
+**Bash:**
+
+```bash
+# Bash does not prompt for confirmation by default
+./deploy-workflow.sh
+```
+
+### Preview Mode (WhatIf / Dry-Run)
+
+**PowerShell:**
 
 ```powershell
 # Preview deployment without making changes
 .\deploy-workflow.ps1 -WhatIf
+```
+
+**Bash:**
+
+```bash
+# Preview deployment without making changes
+./deploy-workflow.sh --dry-run
 ```
 
 **Output:**
@@ -141,19 +168,39 @@ No changes were made. This was a simulation.
 
 ### Verbose Mode
 
+**PowerShell:**
+
 ```powershell
 # Enable detailed logging
 .\deploy-workflow.ps1 -Verbose
 ```
 
+**Bash:**
+
+```bash
+# Enable detailed logging
+./deploy-workflow.sh --verbose
+```
+
 ### Skip Placeholder Replacement
+
+**PowerShell:**
 
 ```powershell
 # Skip placeholder replacement (files already processed)
 .\deploy-workflow.ps1 -SkipPlaceholderReplacement
 ```
 
+**Bash:**
+
+```bash
+# Skip placeholder replacement (files already processed)
+./deploy-workflow.sh --skip-placeholder
+```
+
 ### Custom Deployment
+
+**PowerShell:**
 
 ```powershell
 # Deploy to specific Logic App and Resource Group
@@ -166,9 +213,24 @@ No changes were made. This was a simulation.
 .\deploy-workflow.ps1 -WorkflowBasePath "./custom/path"
 ```
 
+**Bash:**
+
+```bash
+# Deploy to specific Logic App and Resource Group
+./deploy-workflow.sh --logic-app-name 'my-logic-app' --resource-group 'my-rg'
+
+# Deploy a specific workflow
+./deploy-workflow.sh --workflow-name 'MyCustomWorkflow'
+
+# Specify custom workflow base path
+./deploy-workflow.sh --workflow-base-path './custom/path'
+```
+
 ---
 
 ## 🔧 Parameters
+
+### PowerShell Parameters
 
 | Parameter                     | Type   | Required | Default                             | Description                                         |
 | ----------------------------- | ------ | -------- | ----------------------------------- | --------------------------------------------------- |
@@ -178,6 +240,19 @@ No changes were made. This was a simulation.
 | `-WorkflowBasePath`           | String | No       | `../workflows/OrdersManagement/...` | Base path to the Logic App workflow files           |
 | `-SkipPlaceholderReplacement` | Switch | No       | -                                   | Skip placeholder replacement if files are processed |
 | `-WhatIf`                     | Switch | No       | -                                   | Shows what changes would be made without deploying  |
+
+### Bash Options
+
+| Option                           | Short | Required | Default                             | Description                                         |
+| -------------------------------- | ----- | -------- | ----------------------------------- | --------------------------------------------------- |
+| `--logic-app-name <name>`        | `-l`  | No       | From `LOGIC_APP_NAME` env var       | The name of the Azure Logic Apps Standard resource  |
+| `--resource-group <name>`        | `-g`  | No       | From `AZURE_RESOURCE_GROUP` env var | The name of the Azure resource group                |
+| `--workflow-name <name>`         | `-w`  | No       | `ProcessingOrdersPlaced`            | The name of the workflow to deploy                  |
+| `--workflow-base-path <path>`    | `-p`  | No       | `../workflows/OrdersManagement/...` | Base path to the Logic App workflow files           |
+| `--skip-placeholder`             | `-s`  | No       | -                                   | Skip placeholder replacement if files are processed |
+| `--dry-run`                      | `-n`  | No       | -                                   | Shows what changes would be made without deploying  |
+| `--verbose`                      | `-v`  | No       | -                                   | Enable detailed diagnostic output                   |
+| `--help`                         | `-h`  | No       | -                                   | Display help message and exit                       |
 | `-Confirm`                    | Switch | No       | -                                   | Prompts for confirmation before deploying           |
 | `-Verbose`                    | Switch | No       | -                                   | Enables detailed logging                            |
 
@@ -606,6 +681,7 @@ flowchart LR
 | ------- | ---------- | ------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | 1.0.0   | 2025-12-20 | Azure Logic Apps Monitoring Team | • Initial release<br/>• Basic workflow deployment with placeholder replacement<br/>• Azure CLI zip deployment integration                                                              |
 | 1.1.0   | 2026-01-06 | Azure Logic Apps Monitoring Team | • Added WhatIf/Confirm support<br/>• Enhanced environment variable validation<br/>• Improved error handling and logging<br/>• Added OutputType attribute for best practices compliance |
+| 1.2.0   | 2026-01-06 | Azure Logic Apps Monitoring Team | • Added Bash implementation (deploy-workflow.sh)<br/>• Cross-platform support for Linux and macOS<br/>• Updated documentation to cover both PowerShell and Bash versions |
 
 ---
 
@@ -613,7 +689,7 @@ flowchart LR
 
 **Made with ❤️ by Evilazaro | Principal Cloud Solution Architect | Microsoft**
 
-[⬆ Back to Top](#check-dev-workstation-ps1--sh)
+[⬆ Back to Top](#deploy-workflow-ps1--sh)
 
 </div>
 
