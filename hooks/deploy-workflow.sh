@@ -341,6 +341,12 @@ EOF
 # ARGUMENT PARSING
 #==============================================================================
 
+#------------------------------------------------------------------------------
+# Function: parse_arguments
+# Description: Parses command-line arguments and sets global variables.
+# Arguments:
+#   $@ - All command-line arguments
+#------------------------------------------------------------------------------
 parse_arguments() {
     while [[ $# -gt 0 ]]; do
         case "$1" in
@@ -391,8 +397,13 @@ parse_arguments() {
             -h|--help)
                 show_help
                 ;;
-            *)
+            -*)
                 log_error "Unknown option: $1"
+                echo "Use --help for usage information." >&2
+                exit 1
+                ;;
+            *)
+                log_error "Unexpected argument: $1"
                 echo "Use --help for usage information." >&2
                 exit 1
                 ;;
