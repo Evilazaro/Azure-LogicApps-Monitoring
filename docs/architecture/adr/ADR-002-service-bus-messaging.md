@@ -152,6 +152,102 @@ All Service Bus access uses **Managed Identity** with RBAC:
 - Message sessions
 - Geo-disaster recovery
 
+### Production Tier Upgrade Decision Matrix
+
+Use the following decision matrix to determine when to upgrade from Basic tier:
+
+```mermaid
+%%{init: {'theme': 'base', 'themeVariables': { 'fontSize': '14px'}}}%%
+flowchart TB
+    Start["🤔 Evaluate Service Bus Tier"] --> Q1{"Message size > 256 KB?"}
+    Q1 -->|Yes| Premium["💎 Premium Tier"]
+    Q1 -->|No| Q2{"Need ordered processing<br/>(Sessions)?"}
+    Q2 -->|Yes| Standard["⭐ Standard Tier"]
+    Q2 -->|No| Q3{"Need duplicate detection?"}
+    Q3 -->|Yes| Standard
+    Q3 -->|No| Q4{"Message volume<br/>> 10K/day?"}
+    Q4 -->|Yes| Q5{"Need geo-DR or<br/>Private Endpoints?"}
+    Q4 -->|No| Basic["📦 Basic Tier"]
+    Q5 -->|Yes| Premium
+    Q5 -->|No| Standard
+
+    classDef basic fill:#e8f5e9,stroke:#2e7d32,stroke-width:2px,color:#1b5e20
+    classDef standard fill:#fff3e0,stroke:#e65100,stroke-width:2px,color:#bf360c
+    classDef premium fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px,color:#4a148c
+    classDef decision fill:#e3f2fd,stroke:#1565c0,stroke-width:2px,color:#0d47a1
+
+    class Basic basic
+    class Standard standard
+    class Premium premium
+    class Q1,Q2,Q3,Q4,Q5 decision
+```
+
+### Tier Comparison Matrix
+
+| Feature                   | Basic         | Standard      | Premium     |
+| ------------------------- | ------------- | ------------- | ----------- |
+| **Max Message Size**      | 256 KB        | 256 KB        | 100 MB      |
+| **Topics/Subscriptions**  | ✅            | ✅            | ✅          |
+| **Message Sessions**      | ❌            | ✅            | ✅          |
+| **Duplicate Detection**   | ❌            | ✅            | ✅          |
+| **Transactions**          | ❌            | ✅            | ✅          |
+| **Auto-forwarding**       | ❌            | ✅            | ✅          |
+| **Scheduled Messages**    | ❌            | ✅            | ✅          |
+| **Dead-letter Queue**     | ✅            | ✅            | ✅          |
+| **Geo-DR**                | ❌            | ✅ (Metadata) | ✅ (Full)   |
+| **Private Endpoints**     | ❌            | ❌            | ✅          |
+| **Customer-managed Keys** | ❌            | ❌            | ✅          |
+| **Dedicated Capacity**    | ❌            | ❌            | ✅          |
+| **Pricing Model**         | Per operation | Per operation | Per MU/hour |
+
+### Upgrade Triggers
+
+Upgrade to **Standard** tier when:
+
+- [ ] Message ordering is required (Sessions)
+- [ ] Duplicate detection needed for idempotency
+- [ ] Scheduled/deferred messages required
+- [ ] Auto-forwarding between queues/topics
+- [ ] Transaction support needed
+- [ ] Metadata-level geo-disaster recovery
+
+Upgrade to **Premium** tier when:
+
+- [ ] Messages exceed 256 KB
+- [ ] Private network isolation required
+- [ ] Predictable performance needed (dedicated resources)
+- [ ] Customer-managed encryption keys required
+- [ ] Full geo-disaster recovery with data replication
+- [ ] High-throughput scenarios (> 1000 msg/sec sustained)
+
+### Migration Path
+
+```powershell
+# Step 1: Create new Standard/Premium namespace
+az servicebus namespace create \
+    --name "{namespace}-standard" \
+    --resource-group "rg-{env}" \
+    --sku Standard \
+    --location "{location}"
+
+# Step 2: Recreate topic and subscription
+az servicebus topic create \
+    --namespace-name "{namespace}-standard" \
+    --name "ordersplaced" \
+    --resource-group "rg-{env}"
+
+az servicebus topic subscription create \
+    --namespace-name "{namespace}-standard" \
+    --topic-name "ordersplaced" \
+    --name "orderprocessingsub" \
+    --resource-group "rg-{env}"
+
+# Step 3: Update RBAC assignments for Managed Identity
+# Step 4: Update application configuration
+# Step 5: Drain old namespace and switch traffic
+# Step 6: Delete old Basic namespace
+```
+
 ## Message Contract
 
 ### OrderPlaced Message

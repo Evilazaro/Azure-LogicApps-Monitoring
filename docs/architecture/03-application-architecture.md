@@ -472,6 +472,184 @@ flowchart LR
 | Service Bus  | Logic Apps   | Connector  | Service Bus Message | Event-Driven          |
 | All Services | App Insights | HTTPS/OTLP | OpenTelemetry       | Continuous Push       |
 
+### Batch Order Processing Flow
+
+The batch order endpoint (`POST /api/orders/batch`) processes multiple orders with optimized database operations and parallel message publishing:
+
+```mermaid
+%%{init: {'theme': 'base', 'themeVariables': { 'fontSize': '14px', 'actorBkg': '#e3f2fd', 'actorBorder': '#1565c0', 'actorTextColor': '#0d47a1', 'noteBkgColor': '#fff3e0', 'noteBorderColor': '#e65100'}}}%%
+sequenceDiagram
+    autonumber
+    participant Client as 👤 Client
+    participant API as 📡 Orders API
+    participant Service as ⚙️ OrderService
+    participant DB as 🗄️ SQL Database
+    participant Handler as 📨 MessageHandler
+    participant SB as 📬 Service Bus
+
+    Client->>API: POST /api/orders/batch<br/>[Order1, Order2, ..., OrderN]
+
+    Note over API: Start Activity: PlaceOrdersBatch
+    API->>API: Validate batch (max 100 orders)
+
+    API->>Service: PlaceOrdersBatchAsync(orders)
+
+    Note over Service: Start batch processing
+    Service->>Service: CreateCounter(eShop.orders.batch.size)
+
+    loop For each order in batch
+        Service->>Service: ValidateOrder()
+        Service->>Service: GenerateOrderId()
+    end
+
+    Note over Service,DB: Single transaction for all orders
+    Service->>DB: BEGIN TRANSACTION
+    Service->>DB: INSERT Orders (bulk)
+    Service->>DB: INSERT OrderProducts (bulk)
+    Service->>DB: COMMIT
+    DB-->>Service: Success (N rows affected)
+
+    Note over Service,SB: Parallel message publishing
+    Service->>Handler: PublishOrderPlacedBatchAsync(orders)
+
+    par Parallel Publishing
+        Handler->>SB: SendMessage(Order1) + TraceContext
+        Handler->>SB: SendMessage(Order2) + TraceContext
+        Handler->>SB: SendMessage(OrderN) + TraceContext
+    end
+
+    SB-->>Handler: All messages confirmed
+    Handler-->>Service: Batch published
+
+    Service->>Service: RecordMetric(orders.placed, N)
+    Service->>Service: RecordHistogram(processing.duration)
+
+    Service-->>API: BatchResult { Success: N, Failed: 0 }
+    API-->>Client: 200 OK + Order[]
+
+    Note over Client,SB: All orders persisted and events published
+```
+
+### Error Handling and Retry Flow
+
+The solution implements comprehensive error handling with automatic retries and circuit breaker patterns:
+
+```mermaid
+%%{init: {'theme': 'base', 'themeVariables': { 'fontSize': '14px', 'actorBkg': '#e3f2fd', 'actorBorder': '#1565c0', 'actorTextColor': '#0d47a1', 'noteBkgColor': '#ffebee', 'noteBorderColor': '#c62828'}}}%%
+sequenceDiagram
+    autonumber
+    participant Client as 👤 Client
+    participant Web as 🌐 Web App
+    participant Polly as 🛡️ Polly Handler
+    participant API as 📡 Orders API
+    participant DB as 🗄️ SQL Database
+    participant AI as 📊 App Insights
+
+    Client->>Web: Submit Order
+    Web->>Polly: POST /api/orders
+
+    Note over Polly: Attempt 1
+    Polly->>API: HTTP POST
+    API->>DB: INSERT Order
+    DB--xAPI: ❌ Connection timeout
+    API--xPolly: 500 Internal Server Error
+
+    Note over Polly: Log exception, wait 2s
+    Polly->>AI: Track Exception (attempt 1)
+
+    Note over Polly: Attempt 2 (exponential backoff)
+    Polly->>API: HTTP POST (retry)
+    API->>DB: INSERT Order
+    DB--xAPI: ❌ Connection timeout
+    API--xPolly: 500 Internal Server Error
+
+    Note over Polly: Log exception, wait 4s
+    Polly->>AI: Track Exception (attempt 2)
+
+    Note over Polly: Attempt 3
+    Polly->>API: HTTP POST (retry)
+    API->>DB: INSERT Order
+    DB-->>API: ✅ Success
+    API-->>Polly: 201 Created
+
+    Polly-->>Web: 201 Created + Order
+    Web-->>Client: Order Confirmed
+
+    Note over Polly: Circuit breaker monitors failure rate<br/>Opens after sustained failures (120s window)
+```
+
+### Circuit Breaker State Diagram
+
+```mermaid
+%%{init: {'theme': 'base', 'themeVariables': { 'fontSize': '14px'}}}%%
+stateDiagram-v2
+    [*] --> Closed: Initial State
+
+    Closed --> Closed: Success / Reset Counter
+    Closed --> Open: Failure Threshold Exceeded<br/>(>10% failures in 120s)
+
+    Open --> Open: Request → Reject Immediately
+    Open --> HalfOpen: Break Duration Elapsed<br/>(30s default)
+
+    HalfOpen --> Closed: Probe Request Succeeds
+    HalfOpen --> Open: Probe Request Fails
+
+    note right of Closed
+        Normal operation
+        All requests pass through
+    end note
+
+    note right of Open
+        Circuit tripped
+        Requests fail fast
+        Prevents cascade
+    end note
+
+    note right of HalfOpen
+        Testing recovery
+        Single request allowed
+    end note
+```
+
+### Service Bus Message Processing with Dead-Letter Handling
+
+```mermaid
+%%{init: {'theme': 'base', 'themeVariables': { 'fontSize': '14px', 'actorBkg': '#e8f5e9', 'actorBorder': '#2e7d32', 'actorTextColor': '#1b5e20', 'noteBkgColor': '#fff3e0', 'noteBorderColor': '#e65100'}}}%%
+sequenceDiagram
+    autonumber
+    participant SB as 📬 Service Bus
+    participant LA as 🔄 Logic App
+    participant API as 📡 Orders API
+    participant Blob as 💾 Blob Storage
+    participant DLQ as ☠️ Dead-Letter Queue
+
+    SB->>LA: Message Available (peek-lock)
+    LA->>LA: Parse message body
+
+    alt Content-Type = application/json
+        LA->>API: HTTP POST /api/Orders/process
+
+        alt HTTP 201 (Success)
+            API-->>LA: Order processed
+            LA->>Blob: Create blob (success folder)
+            LA->>SB: Complete message
+            Note over LA,SB: Message removed from queue
+        else HTTP 4xx/5xx (Error)
+            API-->>LA: Error response
+            LA->>Blob: Create blob (error folder)
+            LA->>SB: Complete message
+            Note over LA: Error logged, message completed<br/>to prevent infinite retry
+        end
+    else Invalid Content-Type
+        LA->>Blob: Create blob (error folder)
+        LA->>SB: Complete message
+        Note over LA: Malformed message handled
+    end
+
+    Note over SB,DLQ: If message abandoned 10 times<br/>→ Moved to Dead-Letter Queue
+    SB-->>DLQ: MaxDeliveryCount exceeded
+```
+
 ---
 
 ## 8. Resilience Patterns

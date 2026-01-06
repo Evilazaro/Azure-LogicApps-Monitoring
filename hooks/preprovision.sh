@@ -678,6 +678,109 @@ validate_azure_resource_providers() {
     return 0
 }
 
+# Validate sqlcmd utility availability
+# Checks if sqlcmd (mssql-tools or mssql-tools18) is installed and accessible
+# Returns: 0 if sqlcmd is available, 1 otherwise
+# Note: Required for SQL Database managed identity configuration
+validate_sqlcmd() {
+    print_verbose "Validating sqlcmd utility..."
+    
+    # Check if sqlcmd command exists in PATH
+    if command -v sqlcmd &> /dev/null; then
+        local sqlcmd_path
+        sqlcmd_path=$(command -v sqlcmd)
+        print_verbose "sqlcmd found at: ${sqlcmd_path}"
+        
+        # Get version info (optional - some versions may not support --version)
+        local version_output
+        if version_output=$(sqlcmd -? 2>&1 | head -n1); then
+            print_verbose "sqlcmd version info: ${version_output}"
+        fi
+        
+        return 0
+    fi
+    
+    # Check common installation paths for mssql-tools
+    local common_paths=(
+        "/opt/mssql-tools18/bin"
+        "/opt/mssql-tools/bin"
+    )
+    
+    for bin_path in "${common_paths[@]}"; do
+        if [[ -x "${bin_path}/sqlcmd" ]]; then
+            print_verbose "sqlcmd found at: ${bin_path}/sqlcmd"
+            print_verbose "Automatically adding ${bin_path} to PATH"
+            
+            # Add to PATH for current session
+            export PATH="${bin_path}:${PATH}"
+            
+            print_info "Added ${bin_path} to PATH for this session"
+            return 0
+        fi
+    done
+    
+    print_error "sqlcmd is not installed"
+    print_error "sqlcmd is required for SQL Database managed identity configuration"
+    return 1
+}
+
+# Validate iconv utility availability for UTF-16LE encoding
+# Checks if iconv is installed and supports UTF-16LE encoding
+# Required for Azure AD access token file format (used by sqlcmd)
+# Returns: 0 if iconv is available with UTF-16LE support, 1 otherwise
+# Note: iconv is typically pre-installed on Linux (glibc) and macOS
+validate_iconv() {
+    print_verbose "Validating iconv utility..."
+    
+    # Check if iconv command exists in PATH
+    if ! command -v iconv &> /dev/null; then
+        print_error "iconv is not installed"
+        print_error "iconv is required for Azure AD token encoding (UTF-16LE)"
+        return 1
+    fi
+    
+    local iconv_path
+    iconv_path=$(command -v iconv)
+    print_verbose "iconv found at: ${iconv_path}"
+    
+    # Verify iconv supports UTF-16LE encoding
+    if ! echo "test" | iconv -f UTF-8 -t UTF-16LE &> /dev/null; then
+        print_error "iconv does not support UTF-16LE encoding"
+        print_error "UTF-16LE encoding is required for Azure AD token files"
+        return 1
+    fi
+    
+    print_verbose "iconv supports UTF-16LE encoding"
+    return 0
+}
+
+# Validate zip utility availability
+# Checks if zip command is installed and accessible
+# Returns: 0 if zip is available, 1 otherwise
+# Note: Required for Logic Apps workflow deployment (zip deploy)
+validate_zip() {
+    print_verbose "Validating zip utility..."
+    
+    # Check if zip command exists in PATH
+    if command -v zip &> /dev/null; then
+        local zip_path
+        zip_path=$(command -v zip)
+        print_verbose "zip found at: ${zip_path}"
+        
+        # Get version info
+        local version_output
+        if version_output=$(zip --version 2>&1 | head -n2); then
+            print_verbose "zip version info: ${version_output}"
+        fi
+        
+        return 0
+    fi
+    
+    print_error "zip is not installed"
+    print_error "zip is required for Logic Apps workflow deployment"
+    return 1
+}
+
 # Check Azure subscription quotas (informational only)
 # Provides informational guidance about common quota limits
 # Returns: Always returns 0 (does not fail validation)
@@ -902,6 +1005,262 @@ install_bicep_cli() {
     echo ""
     print_warning "  Please install manually:"
     echo "    az bicep install"
+    echo ""
+    return 1
+}
+
+# Install sqlcmd utility with Azure AD support
+# Prefers sqlcmd (Go) for better Azure AD authentication
+# Falls back to mssql-tools18 (ODBC) if Go version installation fails
+# Returns: 0 if installation succeeds, 1 otherwise
+install_sqlcmd() {
+    echo ""
+    echo "┌────────────────────────────────────────────────────────────────┐"
+    echo "│                   sqlcmd Installation                          │"
+    echo "└────────────────────────────────────────────────────────────────┘"
+    echo ""
+    
+    # Try to install sqlcmd (Go) first - it has better Azure AD support
+    # and uses Azure CLI credentials directly with --authentication-method
+    print_info "  Attempting to install sqlcmd (Go) for better Azure AD support..."
+    echo ""
+    
+    local go_install_success=false
+    
+    # Check if Go is installed and try to install sqlcmd (Go)
+    if command -v go &> /dev/null; then
+        print_verbose "  Go is installed, attempting installation via go install..."
+        if go install github.com/microsoft/go-sqlcmd/cmd/sqlcmd@latest 2>/dev/null; then
+            # Add Go bin to PATH if not already there
+            if [[ -d "${HOME}/go/bin" ]] && [[ ":${PATH}:" != *":${HOME}/go/bin:"* ]]; then
+                export PATH="${HOME}/go/bin:${PATH}"
+            fi
+            if command -v sqlcmd &> /dev/null; then
+                print_success "  sqlcmd (Go) installed successfully via go install!"
+                go_install_success=true
+            fi
+        fi
+    fi
+    
+    # If Go installation succeeded, we're done
+    if [[ "${go_install_success}" == "true" ]]; then
+        echo ""
+        print_info "  sqlcmd (Go) provides better Azure AD authentication support."
+        print_info "  It uses Azure CLI credentials directly with --authentication-method ActiveDirectoryDefault"
+        echo ""
+        return 0
+    fi
+    
+    # Fall back to installing mssql-tools18 (ODBC version)
+    print_info "  Installing mssql-tools18 (ODBC version) as fallback..."
+    echo ""
+    
+    # Detect OS and install accordingly
+    if [[ -f /etc/os-release ]]; then
+        # shellcheck disable=SC1091
+        source /etc/os-release
+        
+        case "${ID}" in
+            ubuntu|debian)
+                print_info "  📥 Installing on ${PRETTY_NAME}..."
+                echo ""
+                
+                # Import Microsoft GPG key
+                print_info "  Adding Microsoft package repository..."
+                if ! curl -fsSL https://packages.microsoft.com/keys/microsoft.asc | sudo gpg --dearmor -o /usr/share/keyrings/microsoft-prod.gpg 2>/dev/null; then
+                    print_error "  Failed to import Microsoft GPG key"
+                    return 1
+                fi
+                
+                # Add Microsoft repository
+                local repo_url="https://packages.microsoft.com/config/${ID}/${VERSION_ID}/prod.list"
+                if ! curl -fsSL "${repo_url}" | sudo tee /etc/apt/sources.list.d/mssql-release.list > /dev/null 2>&1; then
+                    print_error "  Failed to add Microsoft repository"
+                    return 1
+                fi
+                
+                # Update and install
+                print_info "  Installing mssql-tools18..."
+                sudo apt-get update -qq
+                if sudo ACCEPT_EULA=Y apt-get install -y mssql-tools18 unixodbc-dev > /dev/null 2>&1; then
+                    echo ""
+                    print_success "  sqlcmd (ODBC) installed successfully!"
+                    echo ""
+                    
+                    # Add to PATH for current session
+                    export PATH="/opt/mssql-tools18/bin:${PATH}"
+                    
+                    print_warning "  ⚠ NOTE: Add the following to your shell profile:"
+                    echo '          export PATH="/opt/mssql-tools18/bin:$PATH"'
+                    echo ""
+                    print_info "  For better Azure AD support, consider installing sqlcmd (Go):"
+                    echo "    go install github.com/microsoft/go-sqlcmd/cmd/sqlcmd@latest"
+                    echo ""
+                    return 0
+                fi
+                ;;
+                
+            fedora|rhel|centos|rocky|almalinux)
+                print_info "  📥 Installing on ${PRETTY_NAME}..."
+                echo ""
+                
+                # Add Microsoft repository
+                print_info "  Adding Microsoft package repository..."
+                sudo curl -fsSL -o /etc/yum.repos.d/mssql-release.repo https://packages.microsoft.com/config/rhel/8/prod.repo 2>/dev/null
+                
+                # Install
+                print_info "  Installing mssql-tools18..."
+                if sudo ACCEPT_EULA=Y yum install -y mssql-tools18 unixODBC-devel > /dev/null 2>&1; then
+                    echo ""
+                    print_success "  sqlcmd (ODBC) installed successfully!"
+                    echo ""
+                    
+                    # Add to PATH for current session
+                    export PATH="/opt/mssql-tools18/bin:${PATH}"
+                    
+                    print_warning "  ⚠ NOTE: Add the following to your shell profile:"
+                    echo '          export PATH="/opt/mssql-tools18/bin:$PATH"'
+                    echo ""
+                    return 0
+                fi
+                ;;
+                
+            *)
+                print_warning "  Unsupported Linux distribution: ${ID}"
+                ;;
+        esac
+    elif [[ "$(uname)" == "Darwin" ]]; then
+        # macOS installation via Homebrew
+        print_info "  📥 Installing on macOS via Homebrew..."
+        
+        if ! command -v brew &> /dev/null; then
+            print_error "  Homebrew is required for macOS installation"
+            print_warning "  Install Homebrew from: https://brew.sh"
+            return 1
+        fi
+        
+        # Tap Microsoft repository and install
+        print_info "  Installing mssql-tools18..."
+        if brew tap microsoft/mssql-release https://github.com/Microsoft/homebrew-mssql-release 2>/dev/null && \
+           brew update && \
+           HOMEBREW_ACCEPT_EULA=Y brew install mssql-tools18 2>/dev/null; then
+            echo ""
+            print_success "  sqlcmd (ODBC) installed successfully!"
+            echo ""
+            return 0
+        fi
+    fi
+    
+    print_error "  sqlcmd installation failed"
+    echo ""
+    print_warning "  Please install manually:"
+    echo "    Option 1 - sqlcmd (Go) - Recommended for Azure AD:"
+    echo "      go install github.com/microsoft/go-sqlcmd/cmd/sqlcmd@latest"
+    echo ""
+    echo "    Option 2 - mssql-tools18 (ODBC):"
+    echo "      Ubuntu/Debian: https://learn.microsoft.com/sql/linux/sql-server-linux-setup-tools"
+    echo "      macOS: brew install mssql-tools18"
+    echo ""
+    return 1
+}
+
+# Install zip utility
+# Installs zip package using the appropriate package manager
+# Returns: 0 if installation succeeds, 1 otherwise
+install_zip() {
+    echo ""
+    echo "┌────────────────────────────────────────────────────────────────┐"
+    echo "│                    zip Installation                            │"
+    echo "└────────────────────────────────────────────────────────────────┘"
+    echo ""
+    
+    print_info "  Installing zip utility..."
+    echo ""
+    
+    # Detect OS and install accordingly
+    if [[ -f /etc/os-release ]]; then
+        # shellcheck disable=SC1091
+        source /etc/os-release
+        
+        case "${ID}" in
+            ubuntu|debian)
+                print_info "  📥 Installing on ${PRETTY_NAME}..."
+                echo ""
+                
+                if sudo apt-get update > /dev/null 2>&1 && sudo apt-get install -y zip > /dev/null 2>&1; then
+                    echo ""
+                    print_success "  zip installed successfully!"
+                    echo ""
+                    return 0
+                fi
+                ;;
+                
+            fedora|rhel|centos|rocky|almalinux)
+                print_info "  📥 Installing on ${PRETTY_NAME}..."
+                echo ""
+                
+                if sudo dnf install -y zip > /dev/null 2>&1 || sudo yum install -y zip > /dev/null 2>&1; then
+                    echo ""
+                    print_success "  zip installed successfully!"
+                    echo ""
+                    return 0
+                fi
+                ;;
+                
+            arch|manjaro)
+                print_info "  📥 Installing on ${PRETTY_NAME}..."
+                echo ""
+                
+                if sudo pacman -S --noconfirm zip > /dev/null 2>&1; then
+                    echo ""
+                    print_success "  zip installed successfully!"
+                    echo ""
+                    return 0
+                fi
+                ;;
+                
+            alpine)
+                print_info "  📥 Installing on ${PRETTY_NAME}..."
+                echo ""
+                
+                if sudo apk add zip > /dev/null 2>&1; then
+                    echo ""
+                    print_success "  zip installed successfully!"
+                    echo ""
+                    return 0
+                fi
+                ;;
+                
+            *)
+                print_warning "  Unsupported Linux distribution: ${ID}"
+                ;;
+        esac
+    elif [[ "$(uname)" == "Darwin" ]]; then
+        # macOS - zip is typically pre-installed, but install via brew if needed
+        print_info "  📥 Installing on macOS via Homebrew..."
+        
+        if ! command -v brew &> /dev/null; then
+            print_warning "  zip is typically pre-installed on macOS"
+            print_warning "  If needed, install Homebrew from: https://brew.sh"
+            return 1
+        fi
+        
+        if brew install zip 2>/dev/null; then
+            echo ""
+            print_success "  zip installed successfully!"
+            echo ""
+            return 0
+        fi
+    fi
+    
+    print_error "  zip installation failed"
+    echo ""
+    print_warning "  Please install manually:"
+    echo "    Ubuntu/Debian: sudo apt-get install zip"
+    echo "    RHEL/CentOS:   sudo dnf install zip"
+    echo "    Arch Linux:    sudo pacman -S zip"
+    echo "    Alpine:        sudo apk add zip"
+    echo "    macOS:         brew install zip (or pre-installed)"
     echo ""
     return 1
 }
@@ -1150,7 +1509,7 @@ EOF
     
     # Display appropriate completion message based on success status
     if [[ "${success}" == "true" ]]; then
-        echo "║   Pre-provisioning completed successfully!                    ║"
+        echo "║   Pre-provisioning completed successfully!                     ║"
     else
         echo "║   Pre-provisioning completed with errors.                     ║"
     fi
@@ -1402,6 +1761,83 @@ main() {
         fi
     else
         echo "    ✓ Bicep CLI is available and compatible"
+    fi
+    echo ""
+    
+    # Check sqlcmd utility (required for SQL managed identity configuration)
+    echo "  • Checking sqlcmd utility..."
+    if ! validate_sqlcmd; then
+        print_warning "    ✗ sqlcmd is required for SQL Database managed identity configuration"
+        print_warning "      See: https://learn.microsoft.com/sql/linux/sql-server-linux-setup-tools"
+        
+        if request_user_confirmation "sqlcmd (mssql-tools18)"; then
+            if install_sqlcmd; then
+                # Refresh PATH to include newly installed sqlcmd
+                export PATH="/opt/mssql-tools18/bin:${PATH}"
+                
+                if validate_sqlcmd; then
+                    echo "    ✓ sqlcmd installed and verified"
+                else
+                    print_warning "    ⚠ sqlcmd installed but not detected in PATH"
+                    print_warning "      Add to PATH: export PATH=\"/opt/mssql-tools18/bin:\$PATH\""
+                    # Don't fail - user can add to PATH manually
+                fi
+            else
+                print_warning "    ⚠ sqlcmd installation failed"
+                print_warning "      SQL managed identity configuration will be skipped during post-provisioning"
+                # Don't fail - this is optional for deployment
+            fi
+        else
+            print_warning "    ⚠ sqlcmd not installed - SQL managed identity will need manual configuration"
+            # Don't fail - this is optional for deployment
+        fi
+    else
+        echo "    ✓ sqlcmd is available"
+    fi
+    echo ""
+    
+    # Check iconv utility (required for Azure AD token encoding)
+    echo "  • Checking iconv utility..."
+    if ! validate_iconv; then
+        print_warning "    ✗ iconv is required for Azure AD token encoding (UTF-16LE)"
+        print_warning "      iconv is typically pre-installed on Linux (glibc) and macOS"
+        print_warning ""
+        print_warning "      Installation instructions:"
+        print_warning "        Ubuntu/Debian: sudo apt-get install libc-bin"
+        print_warning "        RHEL/CentOS:   sudo dnf install glibc-common"
+        print_warning "        macOS:         Pre-installed with macOS"
+        print_warning ""
+        print_warning "      SQL managed identity configuration will fail without iconv"
+        # Don't fail the whole validation - this is typically pre-installed
+    else
+        echo "    ✓ iconv is available with UTF-16LE support"
+    fi
+    echo ""
+    
+    # Check zip utility (required for Logic Apps workflow deployment)
+    echo "  • Checking zip utility..."
+    if ! validate_zip; then
+        print_warning "    ✗ zip is required for Logic Apps workflow deployment"
+        print_warning "      See: https://linux.die.net/man/1/zip"
+        
+        if request_user_confirmation "zip"; then
+            if install_zip; then
+                if validate_zip; then
+                    echo "    ✓ zip installed and verified"
+                else
+                    print_warning "    ⚠ zip installed but not detected in PATH"
+                    PREREQUISITES_FAILED=true
+                fi
+            else
+                print_warning "    ⚠ zip installation failed"
+                PREREQUISITES_FAILED=true
+            fi
+        else
+            print_warning "    ⚠ zip not installed - Logic Apps workflow deployment will fail"
+            PREREQUISITES_FAILED=true
+        fi
+    else
+        echo "    ✓ zip is available"
     fi
     echo ""
     

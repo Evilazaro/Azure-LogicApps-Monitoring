@@ -289,7 +289,9 @@ test_required_env_var() {
         return 1
     fi
     
-    verbose "Environment variable '$var_name' is set with value length: ${#!var_name}"
+    # Get value length using indirect expansion (two-step to avoid syntax error)
+    local var_value="${!var_name}"
+    verbose "Environment variable '$var_name' is set with value length: ${#var_value}"
     return 0
 }
 
@@ -659,20 +661,20 @@ configure_user_secrets() {
             # This happens when optional environment variables aren't set
             if [[ -z "$value" ]]; then
                 verbose "  Skipping secret '$key' - value is null or empty"
-                ((project_skipped++))
-                ((SKIPPED_COUNT++))
+                project_skipped=$((project_skipped + 1))
+                SKIPPED_COUNT=$((SKIPPED_COUNT + 1))
                 continue
             fi
             
             # Attempt to set the secret and track result
             verbose "  Processing secret: $key"
             if set_dotnet_user_secret "$key" "$value" "$project_path"; then
-                ((project_success++))
-                ((SUCCESS_COUNT++))
+                project_success=$((project_success + 1))
+                SUCCESS_COUNT=$((SUCCESS_COUNT + 1))
                 success "  ✓ Set: $key"
             else
-                ((project_failed++))
-                ((FAILED_COUNT++))
+                project_failed=$((project_failed + 1))
+                FAILED_COUNT=$((FAILED_COUNT + 1))
                 warning "  Failed to set secret '$key'"
             fi
         fi
@@ -910,6 +912,18 @@ main() {
         info "  Database: $azure_sql_database_name"
         info "  Managed Identity: $azure_managed_identity_name"
         
+        # Ensure sqlcmd is in PATH (check common installation locations)
+        if ! command -v sqlcmd &> /dev/null; then
+            local sqlcmd_paths=("/opt/mssql-tools18/bin" "/opt/mssql-tools/bin")
+            for sqlcmd_path in "${sqlcmd_paths[@]}"; do
+                if [[ -x "${sqlcmd_path}/sqlcmd" ]]; then
+                    verbose "Adding ${sqlcmd_path} to PATH for sqlcmd"
+                    export PATH="${sqlcmd_path}:${PATH}"
+                    break
+                fi
+            done
+        fi
+        
         # Locate the SQL configuration script
         # This script performs the actual database user creation and role assignment
         local sql_config_script="$SCRIPT_DIR/sql-managed-identity-config.sh"
@@ -936,41 +950,29 @@ main() {
             # Execute SQL configuration unless in dry-run mode
             if [[ "$DRY_RUN" == "false" ]]; then
                 info "Executing SQL managed identity configuration..."
-                info "  Granting database roles: db_datareader, db_datawriter"
+                info "  Granting database role: db_owner"
                 info ""
-                info "NOTE: This grants basic read/write access. If your application performs Entity Framework"
-                info "migrations or schema changes, you may need to manually grant the db_owner role."
-                info "For migration scenarios, run:"
-                info "  $sql_config_script --server-name '$azure_sql_server_name' --database-name '$azure_sql_database_name' --principal-name '$azure_managed_identity_name' --roles 'db_owner'"
+                info "NOTE: Using db_owner role for full schema management and CRUD operations."
+                info "This is required for Entity Framework migrations and EnsureCreatedAsync operations."
                 info ""
                 
                 # Make script executable if needed
                 chmod +x "$sql_config_script" 2>/dev/null || true
                 
                 # Execute with database roles
-                # Using db_datareader and db_datawriter as default
-                # For Entity Framework migrations, users need to manually grant db_owner
+                # Using db_owner for full schema management and CRUD operations
+                # Required for Entity Framework migrations and EnsureCreatedAsync operations
                 if bash "$sql_config_script" \
-                    --server-name "$azure_sql_server_name" \
+                    --sql-server-name "$azure_sql_server_name" \
                     --database-name "$azure_sql_database_name" \
                     --principal-name "$azure_managed_identity_name" \
-                    --roles "db_datareader,db_datawriter" 2>&1 | tee >(cat >&2); then
+                    --database-roles "db_owner" 2>&1 | tee >(cat >&2); then
                     
                     # Check if command actually succeeded (script may have warnings)
                     local sql_exit_code=${PIPESTATUS[0]}
                     if [[ $sql_exit_code -eq 0 ]]; then
                         success "✓ SQL Database managed identity configured successfully"
-                        verbose "Assigned roles: db_datareader, db_datawriter"
-                        info ""
-                        info "SUCCESS: Database access has been configured for the managed identity."
-                        info ""
-                        info "IMPORTANT: If your application performs schema migrations (Entity Framework), you may need to"
-                        info "manually grant the db_owner role for the managed identity. This provides full control over"
-                        info "the database schema and is required for CREATE TABLE, ALTER TABLE, and foreign key operations."
-                        info ""
-                        info "To grant db_owner role, run:"
-                        info "  $sql_config_script --server-name '$azure_sql_server_name' --database-name '$azure_sql_database_name' --principal-name '$azure_managed_identity_name' --roles 'db_owner'"
-                        info ""
+                        verbose "Assigned role: db_owner"
                     else
                         warning "SQL configuration script completed with warnings or errors (exit code: $sql_exit_code)"
                         warning "The application may not have database access. Manual configuration may be required."
@@ -981,10 +983,7 @@ main() {
                     warning "The application may not have database access. Manual configuration may be required."
                     info ""
                     info "To manually configure database access, run:"
-                    info "  $sql_config_script --server-name '$azure_sql_server_name' --database-name '$azure_sql_database_name' --principal-name '$azure_managed_identity_name' --roles 'db_datareader,db_datawriter'"
-                    info ""
-                    info "For Entity Framework migrations, you may need db_owner role:"
-                    info "  $sql_config_script --server-name '$azure_sql_server_name' --database-name '$azure_sql_database_name' --principal-name '$azure_managed_identity_name' --roles 'db_owner'"
+                    info "  $sql_config_script --sql-server-name '$azure_sql_server_name' --database-name '$azure_sql_database_name' --principal-name '$azure_managed_identity_name' --database-roles 'db_owner'"
                     info ""
                 fi
             else
@@ -992,9 +991,7 @@ main() {
                 info "  Server: $azure_sql_server_name"
                 info "  Database: $azure_sql_database_name"
                 info "  Principal: $azure_managed_identity_name"
-                info "  Roles: db_datareader, db_datawriter"
-                info ""
-                info "Note: For Entity Framework migrations, db_owner role would be required."
+                info "  Role: db_owner"
             fi
         fi
     else

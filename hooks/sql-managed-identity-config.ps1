@@ -67,16 +67,22 @@
     None. You cannot pipe objects to this script.
 
 .OUTPUTS
-    System.Collections.Hashtable
+    PSCustomObject
     
-    Returns a hashtable with the following keys:
+    Returns a PSCustomObject with PSTypeName 'SqlManagedIdentityConfiguration.Result' containing:
     - Success (Boolean): True if configuration succeeded, False otherwise
     - Principal (String): The principal display name
     - Server (String): The server FQDN
     - Database (String): The database name
     - Roles (Array): The assigned roles
+    - RowsAffected (Int): Number of rows affected (on success)
+    - ExecutionTimeSeconds (Double): Execution duration (on success)
+    - Timestamp (String): ISO 8601 timestamp
     - Message (String): Success message (on success)
+    - ScriptVersion (String): Script version
     - Error (String): Error message (on failure)
+    - ErrorType (String): Exception type (on failure)
+    - InnerError (String): Inner exception message (on failure)
 
 .EXAMPLE
     .\sql-managed-identity-config.ps1 -SqlServerName "myserver" -DatabaseName "mydb" -PrincipalDisplayName "my-app-identity"
@@ -144,7 +150,7 @@
 #Requires -Version 7.0
 
 [CmdletBinding(SupportsShouldProcess = $false)]
-[OutputType([System.Collections.Hashtable])]
+[OutputType([PSCustomObject])]
 param(
     [Parameter(
         Mandatory = $true,
@@ -231,9 +237,60 @@ $ErrorActionPreference = 'Stop'
 $ProgressPreference = 'SilentlyContinue'
 $InformationPreference = 'Continue'
 
+# Load Microsoft.Data.SqlClient assembly for cross-platform SQL Server connectivity
+# This provides better support for Azure AD/Entra ID authentication in PowerShell Core
+try {
+    # Try to load from GAC or installed NuGet package
+    $null = [Microsoft.Data.SqlClient.SqlConnection]
+}
+catch {
+    # Assembly not loaded, try to find and load it
+    $sqlClientPath = $null
+    
+    # Check common NuGet package locations
+    $nugetPaths = @(
+        "$env:USERPROFILE\.nuget\packages\microsoft.data.sqlclient"
+        "$HOME/.nuget/packages/microsoft.data.sqlclient"
+    )
+    
+    foreach ($basePath in $nugetPaths) {
+        if (Test-Path -Path $basePath -ErrorAction SilentlyContinue) {
+            # Find the latest version
+            $latestVersion = Get-ChildItem -Path $basePath -Directory -ErrorAction SilentlyContinue |
+                Sort-Object { [Version]$_.Name } -Descending |
+                Select-Object -First 1
+            
+            if ($latestVersion) {
+                # Try netstandard2.1 first (PowerShell Core), then netstandard2.0
+                $dllPaths = @(
+                    Join-Path -Path $latestVersion.FullName -ChildPath 'lib\netstandard2.1\Microsoft.Data.SqlClient.dll'
+                    Join-Path -Path $latestVersion.FullName -ChildPath 'lib\net6.0\Microsoft.Data.SqlClient.dll'
+                    Join-Path -Path $latestVersion.FullName -ChildPath 'lib\netstandard2.0\Microsoft.Data.SqlClient.dll'
+                )
+                
+                foreach ($dllPath in $dllPaths) {
+                    if (Test-Path -Path $dllPath -ErrorAction SilentlyContinue) {
+                        $sqlClientPath = $dllPath
+                        break
+                    }
+                }
+            }
+            if ($sqlClientPath) { break }
+        }
+    }
+    
+    if ($sqlClientPath) {
+        Add-Type -Path $sqlClientPath -ErrorAction Stop
+    }
+    else {
+        # Fallback: try to install via NuGet if available
+        Write-Warning 'Microsoft.Data.SqlClient assembly not found. Attempting to use System.Data.SqlClient as fallback.'
+        Write-Warning 'For best results, install Microsoft.Data.SqlClient NuGet package.'
+    }
+}
+
 # Script constants
 $script:ScriptVersion = '1.0.0'
-$script:MinimumAzCliVersion = '2.60.0'
 
 # Azure SQL endpoint mapping for different cloud environments
 # These suffixes are appended to the SQL Server logical name to form the FQDN
@@ -292,11 +349,9 @@ function Write-Log {
                 Write-Debug -Message $formattedMessage
             }
             'Warning' {
-                Write-Warning -Message $Message
                 Write-Host $formattedMessage -ForegroundColor Yellow
             }
             'Error' {
-                Write-Error -Message $Message -ErrorAction Continue
                 Write-Host $formattedMessage -ForegroundColor Red
             }
             'Success' {
@@ -681,7 +736,6 @@ try {
         Write-Log "Warning: Firewall configuration failed: $($_.Exception.Message)" -Level Warning
         Write-Log 'Continuing with connection attempt - you may need to add firewall rule manually if connection fails' -Level Warning
     }
-
     
     # Get SQL endpoint suffix for the specified Azure environment
     if (-not $script:SqlEndpoints.ContainsKey($AzureEnvironment)) {
@@ -754,7 +808,7 @@ try {
     
     try {
         # Build secure connection string with encryption enforced
-        # Note: System.Data.SqlClient supports Azure AD token authentication
+        # Note: Microsoft.Data.SqlClient provides cross-platform support for Azure AD token authentication
         $connectionString = @(
             "Server=tcp:${serverFqdn},1433"
             "Initial Catalog=${DatabaseName}"
@@ -766,10 +820,9 @@ try {
         
         Write-Log "  Connection string: $($connectionString.Replace($DatabaseName, '***'))" -Level Verbose
         
-        # Create SQL connection object
+        # Create SQL connection object using Microsoft.Data.SqlClient for cross-platform support
         Write-Log 'Creating database connection...' -Level Verbose
-        $connection = New-Object -TypeName System.Data.SqlClient.SqlConnection
-        $connection.ConnectionString = $connectionString
+        $connection = [Microsoft.Data.SqlClient.SqlConnection]::new($connectionString)
         $connection.AccessToken = $accessToken  # Use Azure AD token instead of SQL auth
         
         # Open connection with retry logic
@@ -849,7 +902,7 @@ try {
         # Return the result object
         return $result
     }
-    catch [System.Data.SqlClient.SqlException] {
+    catch [Microsoft.Data.SqlClient.SqlException] {
         # Handle SQL-specific exceptions with detailed error information
         $sqlEx = $_.Exception
         $errorDetails = @(
@@ -961,7 +1014,7 @@ try {
         
         if ($connection) {
             try {
-                if ($connection.State -eq [System.Data.ConnectionState]::Open) {
+                if ($connection.State -eq 'Open') {
                     $connection.Close()
                     Write-Log 'Database connection closed' -Level Verbose
                 }

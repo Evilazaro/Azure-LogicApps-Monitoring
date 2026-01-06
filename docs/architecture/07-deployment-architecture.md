@@ -1,6 +1,6 @@
 # Deployment Architecture
 
-← [Security Architecture](06-security-architecture.md) | [Index](README.md)
+← [Security Architecture](06-security-architecture.md) | [Index](README.md) | [Operations Runbook →](08-operations-runbook.md)
 
 ---
 

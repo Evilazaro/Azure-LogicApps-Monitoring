@@ -169,6 +169,8 @@ flowchart TD
 | [05-observability-architecture.md](05-observability-architecture.md) | Distributed tracing, metrics, alerting                     | SRE, Operations Teams                  |
 | [06-security-architecture.md](06-security-architecture.md)           | Managed identity, RBAC, data protection                    | Security Engineers, Architects         |
 | [07-deployment-architecture.md](07-deployment-architecture.md)       | CI/CD, azd workflows, environment strategy                 | DevOps, Platform Engineers             |
+| [08-operations-runbook.md](08-operations-runbook.md)                 | Troubleshooting, KQL queries, incident response            | SRE, Operations Teams                  |
+| [09-glossary.md](09-glossary.md)                                     | Key terms, acronyms, and concept definitions               | All Audiences                          |
 
 ### Architecture Decision Records
 
@@ -180,12 +182,12 @@ flowchart TD
 
 ### Reading Order by Audience
 
-| Audience               | Recommended Path                                      |
-| ---------------------- | ----------------------------------------------------- |
-| **Cloud Architects**   | README → Business → Technology → Observability → ADRs |
-| **Platform Engineers** | README → Technology → Deployment → Observability      |
-| **Developers**         | README → Application → Data → Observability           |
-| **DevOps/SRE**         | README → Deployment → Observability → Technology      |
+| Audience               | Recommended Path                                                      |
+| ---------------------- | --------------------------------------------------------------------- |
+| **Cloud Architects**   | README → Business → Technology → Observability → ADRs                 |
+| **Platform Engineers** | README → Technology → Deployment → Observability → Operations Runbook |
+| **Developers**         | README → Application → Data → Observability → Glossary                |
+| **DevOps/SRE**         | README → Deployment → Observability → Operations Runbook → Technology |
 
 ---
 
@@ -341,6 +343,8 @@ Azure-LogicApps-Monitoring/
 │   │   ├── 05-observability-architecture.md  # Distributed tracing & metrics
 │   │   ├── 06-security-architecture.md  # Identity & access management
 │   │   ├── 07-deployment-architecture.md  # CI/CD & deployment strategy
+│   │   ├── 08-operations-runbook.md     # Troubleshooting & incident response
+│   │   ├── 09-glossary.md               # Key terms & acronym definitions
 │   │   └── 📁 adr/                      # Architecture Decision Records
 │   │       ├── README.md                # ADR index
 │   │       ├── ADR-001-aspire-orchestration.md
