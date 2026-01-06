@@ -661,16 +661,13 @@ function Get-EnvironmentVariableSafe {
                 return $DefaultValue
             }
             
+            Write-Verbose "Environment variable '$Name' retrieved successfully (length: $($value.Length))."
             return $value
         }
         catch {
             Write-Verbose "Error retrieving environment variable '$Name': $($_.Exception.Message)"
             return $DefaultValue
         }
-    }
-    
-    end {
-        Write-Verbose "Environment variable retrieval completed for: $Name"
     }
 }
 
@@ -707,7 +704,7 @@ try {
     foreach ($varName in $script:RequiredEnvironmentVariables) {
         Write-Verbose "Validating: $varName"
         if (-not (Test-RequiredEnvironmentVariable -Name $varName)) {
-            # Add to error collection (method returns void, hence $null assignment)
+            # Add to error collection using $null = pattern for performance (method returns void)
             $null = $validationErrors.Add($varName)
         }
         else {

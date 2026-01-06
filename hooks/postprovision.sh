@@ -950,41 +950,29 @@ main() {
             # Execute SQL configuration unless in dry-run mode
             if [[ "$DRY_RUN" == "false" ]]; then
                 info "Executing SQL managed identity configuration..."
-                info "  Granting database roles: db_datareader, db_datawriter"
+                info "  Granting database role: db_owner"
                 info ""
-                info "NOTE: This grants basic read/write access. If your application performs Entity Framework"
-                info "migrations or schema changes, you may need to manually grant the db_owner role."
-                info "For migration scenarios, run:"
-                info "  $sql_config_script --sql-server-name '$azure_sql_server_name' --database-name '$azure_sql_database_name' --principal-name '$azure_managed_identity_name' --database-roles 'db_owner'"
+                info "NOTE: Using db_owner role for full schema management and CRUD operations."
+                info "This is required for Entity Framework migrations and EnsureCreatedAsync operations."
                 info ""
                 
                 # Make script executable if needed
                 chmod +x "$sql_config_script" 2>/dev/null || true
                 
                 # Execute with database roles
-                # Using db_datareader and db_datawriter as default
-                # For Entity Framework migrations, users need to manually grant db_owner
+                # Using db_owner for full schema management and CRUD operations
+                # Required for Entity Framework migrations and EnsureCreatedAsync operations
                 if bash "$sql_config_script" \
                     --sql-server-name "$azure_sql_server_name" \
                     --database-name "$azure_sql_database_name" \
                     --principal-name "$azure_managed_identity_name" \
-                    --database-roles "db_datareader,db_datawriter" 2>&1 | tee >(cat >&2); then
+                    --database-roles "db_owner" 2>&1 | tee >(cat >&2); then
                     
                     # Check if command actually succeeded (script may have warnings)
                     local sql_exit_code=${PIPESTATUS[0]}
                     if [[ $sql_exit_code -eq 0 ]]; then
                         success "✓ SQL Database managed identity configured successfully"
-                        verbose "Assigned roles: db_datareader, db_datawriter"
-                        info ""
-                        info "SUCCESS: Database access has been configured for the managed identity."
-                        info ""
-                        info "IMPORTANT: If your application performs schema migrations (Entity Framework), you may need to"
-                        info "manually grant the db_owner role for the managed identity. This provides full control over"
-                        info "the database schema and is required for CREATE TABLE, ALTER TABLE, and foreign key operations."
-                        info ""
-                        info "To grant db_owner role, run:"
-                        info "  $sql_config_script --sql-server-name '$azure_sql_server_name' --database-name '$azure_sql_database_name' --principal-name '$azure_managed_identity_name' --database-roles 'db_owner'"
-                        info ""
+                        verbose "Assigned role: db_owner"
                     else
                         warning "SQL configuration script completed with warnings or errors (exit code: $sql_exit_code)"
                         warning "The application may not have database access. Manual configuration may be required."
@@ -995,9 +983,6 @@ main() {
                     warning "The application may not have database access. Manual configuration may be required."
                     info ""
                     info "To manually configure database access, run:"
-                    info "  $sql_config_script --sql-server-name '$azure_sql_server_name' --database-name '$azure_sql_database_name' --principal-name '$azure_managed_identity_name' --database-roles 'db_datareader,db_datawriter'"
-                    info ""
-                    info "For Entity Framework migrations, you may need db_owner role:"
                     info "  $sql_config_script --sql-server-name '$azure_sql_server_name' --database-name '$azure_sql_database_name' --principal-name '$azure_managed_identity_name' --database-roles 'db_owner'"
                     info ""
                 fi
@@ -1006,9 +991,7 @@ main() {
                 info "  Server: $azure_sql_server_name"
                 info "  Database: $azure_sql_database_name"
                 info "  Principal: $azure_managed_identity_name"
-                info "  Roles: db_datareader, db_datawriter"
-                info ""
-                info "Note: For Entity Framework migrations, db_owner role would be required."
+                info "  Role: db_owner"
             fi
         fi
     else
