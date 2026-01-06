@@ -957,23 +957,19 @@ GO
 # SQL Script Execution
 ################################################################################
 
-# Execute SQL script on Azure SQL Database using Azure AD token authentication
-# Connects to SQL Database with Entra ID token and executes T-SQL commands
-# Uses sqlcmd utility with -G flag for Azure AD authentication
-#
-# For mssql-tools on Linux/macOS, Azure AD access tokens must be passed via a
-# token file in UTF-16LE format (no BOM) as documented in Microsoft docs:
-# https://learn.microsoft.com/en-us/sql/tools/sqlcmd/sqlcmd-utility
+# Execute SQL script on Azure SQL Database using Azure AD authentication
+# Automatically selects the appropriate authentication method based on sqlcmd variant:
+# - sqlcmd (Go): Uses --authentication-method ActiveDirectoryDefault (Azure CLI creds)
+# - sqlcmd (ODBC): Uses token file in UTF-16LE format with -G -P flags
 #
 # Parameters:
 #   $1 - SQL Server FQDN (e.g., "server.database.windows.net")
 #   $2 - Database name
-#   $3 - Azure AD access token for authentication
+#   $3 - Azure AD access token for authentication (used only for ODBC variant)
 #   $4 - SQL script content to execute
 #   $5 - Command timeout in seconds
 # Returns: 0 if execution succeeds, 1 otherwise
 # Output: Logs execution status and SQL command results
-# Note: Creates temporary files for SQL script and token, ensures cleanup in all cases
 execute_sql_script() {
     local server_fqdn="$1"
     local database="$2"
@@ -985,11 +981,10 @@ execute_sql_script() {
     log_verbose "Server: ${server_fqdn}"
     log_verbose "Database: ${database}"
     log_verbose "Timeout: ${timeout}s"
-    log_verbose "Authentication: Azure AD access token (Entra ID)"
+    log_verbose "sqlcmd variant: ${SQLCMD_VARIANT}"
     log_verbose "Encryption: TLS 1.2+ enforced"
     
     # Create temporary file for SQL script
-    # Using mktemp ensures secure temporary file creation with proper permissions
     local sql_file
     if ! sql_file=$(mktemp --suffix=".sql"); then
         log_error "Failed to create temporary file for SQL script"
@@ -998,77 +993,99 @@ execute_sql_script() {
     
     log_verbose "SQL script saved to temporary file: ${sql_file}"
     
-    # Create temporary file for access token
-    # For mssql-tools on Linux/macOS with -G (Azure AD), the -P parameter must
-    # point to a file containing the access token in UTF-16LE format (no BOM)
-    # This is the documented method per Microsoft sqlcmd documentation
-    local token_file
-    if ! token_file=$(mktemp --suffix=".token"); then
-        log_error "Failed to create temporary file for access token"
+    # Write SQL script to temporary file
+    if ! echo "${sql_script}" > "${sql_file}"; then
+        log_error "Failed to write SQL script to temporary file"
         rm -f "${sql_file}"
         return 1
     fi
     
-    log_verbose "Token file created: ${token_file}"
-    log_verbose "Temporary files will be securely removed after execution"
-    
-    # Write SQL script to temporary file
-    if ! echo "${sql_script}" > "${sql_file}"; then
-        log_error "Failed to write SQL script to temporary file"
-        rm -f "${sql_file}" "${token_file}"
-        return 1
-    fi
-    
-    # Write access token to file in UTF-16LE format (no BOM) as required by sqlcmd
-    # The token is converted from ASCII/UTF-8 to UTF-16LE using iconv
-    # printf without newline ensures exact token format
-    if ! printf '%s' "${access_token}" | iconv -f UTF-8 -t UTF-16LE > "${token_file}"; then
-        log_error "Failed to write access token to temporary file"
-        log_error "iconv may not be installed or UTF-16LE conversion failed"
-        rm -f "${sql_file}" "${token_file}"
-        return 1
-    fi
-    
-    # Set restrictive permissions on token file (owner read/write only)
-    chmod 600 "${token_file}"
-    
-    log_verbose "Token file written in UTF-16LE format (no BOM)"
-    log_verbose "Token file permissions set to 600 (owner read/write only)"
-    
-    # Execute SQL script with sqlcmd using Azure AD token file authentication
-    # sqlcmd flags for mssql-tools on Linux/macOS with Azure AD:
-    #   -S: Server name (FQDN with port, using tcp: prefix)
-    #   -d: Database name
-    #   -G: Use Azure AD authentication (ActiveDirectoryAccessToken mode)
-    #   -P: Path to token file in UTF-16LE format (when -G is used without -U)
-    #   -i: Input file (SQL script)
-    #   -t: Query timeout in seconds
-    #   -b: Terminate batch on error
-    #   -r 1: Redirect error messages to stderr
-    #   -N: Encrypt connection (required for Azure SQL)
-    #   -C: Trust server certificate (for self-signed certs in some environments)
-    # Note: When using -G without -U, sqlcmd expects the access token in the -P file
     local output
     local exit_code=0
     local start_time
+    local token_file=""
     start_time=$(date +%s)
     
     log_verbose "Executing SQL commands via sqlcmd..."
-    log_verbose "Using Azure AD access token file authentication"
     
-    # Execute sqlcmd and capture output
-    # -G without -U enables Azure AD access token mode where -P is the token file
-    if output=$(sqlcmd -S "tcp:${server_fqdn},1433" \
-                       -d "${database}" \
-                       -G \
-                       -P "${token_file}" \
-                       -i "${sql_file}" \
-                       -t "${timeout}" \
-                       -b \
-                       -r 1 \
-                       -N \
-                       -C 2>&1); then
+    if [[ "${SQLCMD_VARIANT}" == "go" ]]; then
+        # ============================================================
+        # sqlcmd (Go) - Use ActiveDirectoryDefault authentication
+        # This automatically uses Azure CLI credentials (az login)
+        # ============================================================
+        log_verbose "Using ActiveDirectoryDefault authentication (Azure CLI credentials)"
         
+        # Execute sqlcmd (Go) with ActiveDirectoryDefault
+        # --authentication-method: Specify Azure AD auth method
+        # -S: Server name (FQDN)
+        # -d: Database name
+        # -i: Input file (SQL script)
+        # -t: Query timeout in seconds (note: sqlcmd Go uses different flag)
+        if output=$(sqlcmd -S "${server_fqdn}" \
+                           -d "${database}" \
+                           --authentication-method ActiveDirectoryDefault \
+                           -i "${sql_file}" 2>&1); then
+            exit_code=0
+        else
+            exit_code=$?
+        fi
+        
+    else
+        # ============================================================
+        # sqlcmd (ODBC) - Use token file authentication
+        # Token must be in UTF-16LE format (no BOM)
+        # ============================================================
+        log_verbose "Using token file authentication (UTF-16LE format)"
+        
+        # Create temporary file for access token
+        if ! token_file=$(mktemp --suffix=".token"); then
+            log_error "Failed to create temporary file for access token"
+            rm -f "${sql_file}"
+            return 1
+        fi
+        
+        log_verbose "Token file created: ${token_file}"
+        
+        # Write access token to file in UTF-16LE format (no BOM) as required by sqlcmd ODBC
+        if ! printf '%s' "${access_token}" | iconv -f UTF-8 -t UTF-16LE > "${token_file}"; then
+            log_error "Failed to write access token to temporary file"
+            log_error "iconv may not be installed or UTF-16LE conversion failed"
+            rm -f "${sql_file}" "${token_file}"
+            return 1
+        fi
+        
+        # Set restrictive permissions on token file
+        chmod 600 "${token_file}"
+        
+        log_verbose "Token file written in UTF-16LE format (no BOM)"
+        
+        # Execute sqlcmd (ODBC) with token file
+        # -S: Server name (FQDN with tcp: prefix and port)
+        # -d: Database name
+        # -G: Enable Azure AD authentication
+        # -P: Path to token file (when -G without -U)
+        # -i: Input file (SQL script)
+        # -t: Query timeout in seconds
+        # -b: Exit on error
+        # -N: Encrypt connection
+        # -C: Trust server certificate
+        if output=$(sqlcmd -S "tcp:${server_fqdn},1433" \
+                           -d "${database}" \
+                           -G \
+                           -P "${token_file}" \
+                           -i "${sql_file}" \
+                           -t "${timeout}" \
+                           -b \
+                           -N \
+                           -C 2>&1); then
+            exit_code=0
+        else
+            exit_code=$?
+        fi
+    fi
+    
+    # Process result
+    if [[ ${exit_code} -eq 0 ]]; then
         local end_time
         end_time=$(date +%s)
         local duration=$((end_time - start_time))
@@ -1085,8 +1102,6 @@ execute_sql_script() {
         log_verbose "───────────────────────────────────────────────────────"
         
     else
-        exit_code=$?
-        
         log_error "SQL execution failed with exit code: ${exit_code}"
         log_error ""
         log_error "This typically indicates one of the following issues:"
@@ -1121,39 +1136,38 @@ execute_sql_script() {
             log_error "  - Run: az account get-access-token --resource https://database.windows.net/"
         fi
         
-        # Securely clean up temporary files before returning error
-        # Use shred if available for secure deletion, otherwise just rm
-        if command -v shred &> /dev/null; then
-            shred -u "${token_file}" 2>/dev/null || rm -f "${token_file}"
-        else
-            rm -f "${token_file}"
-        fi
-        rm -f "${sql_file}"
+        # Clean up and return error
+        cleanup_temp_files "${sql_file}" "${token_file}"
         return 1
     fi
     
-    # Securely clean up temporary files on success
-    # Use shred if available for secure deletion of token file
-    if command -v shred &> /dev/null; then
-        if shred -u "${token_file}" 2>/dev/null; then
-            log_verbose "Token file securely removed (shred)"
-        else
-            rm -f "${token_file}"
-            log_verbose "Token file removed"
-        fi
-    else
-        rm -f "${token_file}"
-        log_verbose "Token file removed"
-    fi
-    
-    if rm -f "${sql_file}"; then
-        log_verbose "SQL script file removed successfully"
-    else
-        log_warning "Failed to remove temporary SQL file: ${sql_file}"
-        log_warning "File may need to be manually deleted"
-    fi
+    # Clean up temporary files on success
+    cleanup_temp_files "${sql_file}" "${token_file}"
     
     return 0
+}
+
+# Helper function to securely clean up temporary files
+# Uses shred for secure deletion if available
+# Parameters:
+#   $@ - List of file paths to remove
+cleanup_temp_files() {
+    for file in "$@"; do
+        if [[ -n "${file}" ]] && [[ -f "${file}" ]]; then
+            # Use shred for secure deletion if available (especially for token files)
+            if command -v shred &> /dev/null && [[ "${file}" == *.token ]]; then
+                if shred -u "${file}" 2>/dev/null; then
+                    log_verbose "File securely removed (shred): ${file}"
+                else
+                    rm -f "${file}"
+                    log_verbose "File removed: ${file}"
+                fi
+            else
+                rm -f "${file}"
+                log_verbose "File removed: ${file}"
+            fi
+        fi
+    done
 }
 
 ################################################################################
@@ -1349,21 +1363,26 @@ EOF
     log_success "Connection details constructed"
     log_info ""
     
-    # Step 6: Acquire Azure AD access token
-    log_info "[Step 6/7] Acquiring Entra ID access token for Azure SQL Database..."
-    
-    local access_token
-    if ! access_token=$(get_sql_access_token "${sql_suffix}"); then
-        log_error ""
-        log_error "===================================================================="
-        log_error "CONFIGURATION FAILED: Access Token Acquisition Error"
-        log_error "===================================================================="
-        log_error "Failed to acquire access token for Azure SQL Database."
-        log_error "This may indicate authentication or authorization issues."
-        log_error ""
+    # Step 6: Acquire Azure AD access token (only needed for ODBC variant)
+    local access_token=""
+    if [[ "${SQLCMD_VARIANT}" == "go" ]]; then
+        log_info "[Step 6/7] Skipping token acquisition (sqlcmd Go uses Azure CLI credentials)..."
+        log_verbose "sqlcmd (Go) with ActiveDirectoryDefault automatically uses Azure CLI credentials"
+        log_success "Using Azure CLI credentials for authentication"
+    else
+        log_info "[Step 6/7] Acquiring Entra ID access token for Azure SQL Database..."
         
-        # Return structured error result as JSON
-        cat << EOF
+        if ! access_token=$(get_sql_access_token "${sql_suffix}"); then
+            log_error ""
+            log_error "===================================================================="
+            log_error "CONFIGURATION FAILED: Access Token Acquisition Error"
+            log_error "===================================================================="
+            log_error "Failed to acquire access token for Azure SQL Database."
+            log_error "This may indicate authentication or authorization issues."
+            log_error ""
+            
+            # Return structured error result as JSON
+            cat << EOF
 {
   "Success": false,
   "Principal": "${PRINCIPAL_NAME}",
@@ -1373,9 +1392,10 @@ EOF
   "Error": "Failed to acquire access token. Verify authentication and permissions."
 }
 EOF
-        exit 1
+            exit 1
+        fi
+        log_success "Access token acquired successfully"
     fi
-    log_success "Access token acquired successfully"
     log_info ""
     
     # Step 7: Generate and execute SQL configuration script
