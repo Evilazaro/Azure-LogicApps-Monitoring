@@ -4,7 +4,7 @@
 ![Bash](https://img.shields.io/badge/Bash-4.0+-green.svg)
 ![Azure CLI](https://img.shields.io/badge/Azure%20CLI-2.60+-blue.svg)
 ![Azure Developer CLI](https://img.shields.io/badge/azd-Required-orange.svg)
-![Version](https://img.shields.io/badge/version-1.1.0-green.svg)
+![Version](https://img.shields.io/badge/version-1.2.0-green.svg)
 ![License](https://img.shields.io/badge/license-MIT-orange.svg)
 
 ## 📋 Overview
@@ -486,18 +486,20 @@ azd env select <env-name>
 
 The following environment variables must be set (via azd or manually):
 
-| Variable                              | Description                             | Required |
-| ------------------------------------- | --------------------------------------- | -------- |
-| `LOGIC_APP_NAME`                      | Logic App resource name (or parameter)  | Yes\*    |
-| `AZURE_RESOURCE_GROUP`                | Resource group name (or parameter)      | Yes\*    |
-| `ORDERS_API_URL`                      | Orders API endpoint URL                 | Yes      |
-| `AZURE_STORAGE_ACCOUNT_NAME_WORKFLOW` | Storage account for workflow state      | Yes      |
-| `AZURE_SUBSCRIPTION_ID`               | Azure subscription GUID                 | Yes      |
-| `MANAGED_IDENTITY_NAME`               | Managed identity display name           | Yes      |
-| `SERVICE_BUS_CONNECTION_RUNTIME_URL`  | Service Bus API connection runtime URL  | Yes      |
-| `AZURE_BLOB_CONNECTION_RUNTIME_URL`   | Blob Storage API connection runtime URL | Yes      |
+| Variable                              | Description                               | Required |
+| ------------------------------------- | ----------------------------------------- | -------- |
+| `AZURE_ENV_NAME`                      | azd environment name for variable loading | No\*     |
+| `LOGIC_APP_NAME`                      | Logic App resource name (or parameter)    | Yes\*    |
+| `AZURE_RESOURCE_GROUP`                | Resource group name (or parameter)        | Yes\*    |
+| `ORDERS_API_URL`                      | Orders API endpoint URL                   | Yes      |
+| `AZURE_STORAGE_ACCOUNT_NAME_WORKFLOW` | Storage account for workflow state        | Yes      |
+| `AZURE_SUBSCRIPTION_ID`               | Azure subscription GUID                   | Yes      |
+| `MANAGED_IDENTITY_NAME`               | Managed identity display name             | Yes      |
+| `SERVICE_BUS_CONNECTION_RUNTIME_URL`  | Service Bus API connection runtime URL    | Yes      |
+| `AZURE_BLOB_CONNECTION_RUNTIME_URL`   | Blob Storage API connection runtime URL   | Yes      |
 
 \*Can be passed as parameters instead of environment variables.
+\*\*If `AZURE_ENV_NAME` is set, the script will load variables from that specific azd environment.
 
 ---
 
@@ -677,11 +679,11 @@ flowchart LR
 
 ## 📜 Version History
 
-| Version | Date       | Author                           | Changes                                                                                                                                                                                |
-| ------- | ---------- | -------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 1.0.0   | 2025-12-20 | Azure Logic Apps Monitoring Team | • Initial release<br/>• Basic workflow deployment with placeholder replacement<br/>• Azure CLI zip deployment integration                                                              |
-| 1.1.0   | 2026-01-06 | Azure Logic Apps Monitoring Team | • Added WhatIf/Confirm support<br/>• Enhanced environment variable validation<br/>• Improved error handling and logging<br/>• Added OutputType attribute for best practices compliance |
-| 1.2.0   | 2026-01-06 | Azure Logic Apps Monitoring Team | • Added Bash implementation (deploy-workflow.sh)<br/>• Cross-platform support for Linux and macOS<br/>• Updated documentation to cover both PowerShell and Bash versions               |
+| Version | Date       | Author                           | Changes                                                                                                                                                                                                                                                                           |
+| ------- | ---------- | -------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1.0.0   | 2025-12-20 | Azure Logic Apps Monitoring Team | • Initial release<br/>• Basic workflow deployment with placeholder replacement<br/>• Azure CLI zip deployment integration                                                                                                                                                         |
+| 1.1.0   | 2026-01-06 | Azure Logic Apps Monitoring Team | • Added WhatIf/Confirm support<br/>• Enhanced environment variable validation<br/>• Improved error handling and logging<br/>• Added OutputType attribute for best practices compliance                                                                                            |
+| 1.2.0   | 2026-01-06 | Azure Logic Apps Monitoring Team | • Added AZURE_ENV_NAME support for azd environment selection<br/>• Improved regex matching for environment variable parsing<br/>• Enhanced JSON parsing with jq fallback in Bash<br/>• Fixed PowerShell best practices compliance<br/>• Improved error handling and documentation |
 
 ---
 

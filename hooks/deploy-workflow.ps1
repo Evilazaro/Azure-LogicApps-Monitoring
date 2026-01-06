@@ -411,33 +411,33 @@ function Deploy-LogicAppWorkflow {
     <#
     .SYNOPSIS
         Deploys a workflow to Azure Logic Apps Standard using zip deployment.
-    
+
     .DESCRIPTION
         Creates a deployment package containing the workflow definition and
         connections configuration, then deploys it to Azure Logic Apps Standard
         using the Azure CLI zip deploy command.
-    
+
     .PARAMETER ResourceGroupName
         The name of the Azure resource group containing the Logic App.
-    
+
     .PARAMETER LogicAppName
         The name of the Azure Logic App resource.
-    
+
     .PARAMETER WorkflowName
         The name of the workflow to deploy.
-    
+
     .PARAMETER WorkflowBasePath
         The base path containing the workflow files.
-    
+
     .PARAMETER WorkflowContent
         The processed workflow.json content.
-    
+
     .PARAMETER ConnectionsContent
         The processed connections.json content.
-    
+
     .OUTPUTS
         PSCustomObject - Deployment result with Success, WorkflowName, and Response properties.
-    
+
     .EXAMPLE
         Deploy-LogicAppWorkflow -ResourceGroupName 'my-rg' -LogicAppName 'my-logic-app' ...
     #>
@@ -470,11 +470,14 @@ function Deploy-LogicAppWorkflow {
     )
 
     if ($PSCmdlet.ShouldProcess("$LogicAppName/$WorkflowName", 'Deploy workflow via zip deploy')) {
+        $tempDir = $null
+        $zipPath = $null
+
         try {
             # Create a temporary directory for the deployment package
             $tempDir = Join-Path -Path ([System.IO.Path]::GetTempPath()) -ChildPath "logicapp-deploy-$(Get-Random)"
             $null = New-Item -ItemType Directory -Path $tempDir -Force
-            
+
             # Create workflow directory structure
             $workflowDir = Join-Path -Path $tempDir -ChildPath $WorkflowName
             $null = New-Item -ItemType Directory -Path $workflowDir -Force
@@ -491,21 +494,21 @@ function Deploy-LogicAppWorkflow {
 
             # Copy host.json if it exists in the source
             $sourceHostJson = Join-Path -Path $WorkflowBasePath -ChildPath 'host.json'
-            if (Test-Path -Path $sourceHostJson) {
+            if (Test-Path -Path $sourceHostJson -PathType Leaf) {
                 $destHostJson = Join-Path -Path $tempDir -ChildPath 'host.json'
                 Copy-Item -Path $sourceHostJson -Destination $destHostJson
-                Write-Verbose "Copied host.json"
+                Write-Verbose 'Copied host.json'
             }
 
             # Create zip file
             $zipPath = Join-Path -Path ([System.IO.Path]::GetTempPath()) -ChildPath "logicapp-deploy-$(Get-Random).zip"
-            Write-Host "  Creating deployment package..." -ForegroundColor Gray
+            Write-Host '  Creating deployment package...' -ForegroundColor Gray
             Compress-Archive -Path "$tempDir\*" -DestinationPath $zipPath -Force
             Write-Verbose "Created zip file: $zipPath"
 
             # Deploy using Azure CLI
-            Write-Host "  Deploying to Logic App via zip deploy..." -ForegroundColor Gray
-            $deployOutput = az logicapp deployment source config-zip `
+            Write-Host '  Deploying to Logic App via zip deploy...' -ForegroundColor Gray
+            $deployOutput = & az logicapp deployment source config-zip `
                 --resource-group $ResourceGroupName `
                 --name $LogicAppName `
                 --src $zipPath `
@@ -513,21 +516,25 @@ function Deploy-LogicAppWorkflow {
 
             if ($LASTEXITCODE -ne 0) {
                 # Try alternative deployment method using webapp deploy
-                Write-Verbose "Trying alternative deployment method..."
-                $deployOutput = az webapp deployment source config-zip `
+                Write-Verbose 'Trying alternative deployment method...'
+                $deployOutput = & az webapp deployment source config-zip `
                     --resource-group $ResourceGroupName `
                     --name $LogicAppName `
                     --src $zipPath `
                     --output json 2>&1
-                
+
                 if ($LASTEXITCODE -ne 0) {
                     throw "Deployment failed: $deployOutput"
                 }
             }
 
             # Cleanup temporary files
-            Remove-Item -Path $tempDir -Recurse -Force -ErrorAction SilentlyContinue
-            Remove-Item -Path $zipPath -Force -ErrorAction SilentlyContinue
+            if ($tempDir -and (Test-Path -Path $tempDir)) {
+                Remove-Item -Path $tempDir -Recurse -Force -ErrorAction SilentlyContinue
+            }
+            if ($zipPath -and (Test-Path -Path $zipPath)) {
+                Remove-Item -Path $zipPath -Force -ErrorAction SilentlyContinue
+            }
 
             return [PSCustomObject]@{
                 Success      = $true
