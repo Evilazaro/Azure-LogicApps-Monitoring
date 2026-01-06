@@ -949,6 +949,121 @@ install_bicep_cli() {
     return 1
 }
 
+# Install sqlcmd utility (mssql-tools18) on Linux
+# Uses Microsoft package repository for installation
+# Returns: 0 if installation succeeds, 1 otherwise
+install_sqlcmd() {
+    echo ""
+    echo "┌────────────────────────────────────────────────────────────────┐"
+    echo "│                   sqlcmd Installation                          │"
+    echo "└────────────────────────────────────────────────────────────────┘"
+    echo ""
+    echo "  Installing Microsoft SQL Server tools (mssql-tools18)..."
+    echo ""
+    
+    # Detect OS and install accordingly
+    if [[ -f /etc/os-release ]]; then
+        # shellcheck disable=SC1091
+        source /etc/os-release
+        
+        case "${ID}" in
+            ubuntu|debian)
+                print_info "  📥 Installing on ${PRETTY_NAME}..."
+                echo ""
+                
+                # Import Microsoft GPG key
+                print_info "  Adding Microsoft package repository..."
+                if ! curl -fsSL https://packages.microsoft.com/keys/microsoft.asc | sudo gpg --dearmor -o /usr/share/keyrings/microsoft-prod.gpg 2>/dev/null; then
+                    print_error "  Failed to import Microsoft GPG key"
+                    return 1
+                fi
+                
+                # Add Microsoft repository
+                local repo_url="https://packages.microsoft.com/config/${ID}/${VERSION_ID}/prod.list"
+                if ! curl -fsSL "${repo_url}" | sudo tee /etc/apt/sources.list.d/mssql-release.list > /dev/null 2>&1; then
+                    print_error "  Failed to add Microsoft repository"
+                    return 1
+                fi
+                
+                # Update and install
+                print_info "  Installing mssql-tools18..."
+                sudo apt-get update -qq
+                if sudo ACCEPT_EULA=Y apt-get install -y mssql-tools18 unixodbc-dev > /dev/null 2>&1; then
+                    echo ""
+                    print_success "  sqlcmd installed successfully!"
+                    echo ""
+                    
+                    # Add to PATH for current session
+                    export PATH="/opt/mssql-tools18/bin:${PATH}"
+                    
+                    print_warning "  ⚠ NOTE: Add the following to your shell profile:"
+                    echo '          export PATH="/opt/mssql-tools18/bin:$PATH"'
+                    echo ""
+                    return 0
+                fi
+                ;;
+                
+            fedora|rhel|centos|rocky|almalinux)
+                print_info "  📥 Installing on ${PRETTY_NAME}..."
+                echo ""
+                
+                # Add Microsoft repository
+                print_info "  Adding Microsoft package repository..."
+                sudo curl -fsSL -o /etc/yum.repos.d/mssql-release.repo https://packages.microsoft.com/config/rhel/8/prod.repo 2>/dev/null
+                
+                # Install
+                print_info "  Installing mssql-tools18..."
+                if sudo ACCEPT_EULA=Y yum install -y mssql-tools18 unixODBC-devel > /dev/null 2>&1; then
+                    echo ""
+                    print_success "  sqlcmd installed successfully!"
+                    echo ""
+                    
+                    # Add to PATH for current session
+                    export PATH="/opt/mssql-tools18/bin:${PATH}"
+                    
+                    print_warning "  ⚠ NOTE: Add the following to your shell profile:"
+                    echo '          export PATH="/opt/mssql-tools18/bin:$PATH"'
+                    echo ""
+                    return 0
+                fi
+                ;;
+                
+            *)
+                print_warning "  Unsupported Linux distribution: ${ID}"
+                ;;
+        esac
+    elif [[ "$(uname)" == "Darwin" ]]; then
+        # macOS installation via Homebrew
+        print_info "  📥 Installing on macOS via Homebrew..."
+        
+        if ! command -v brew &> /dev/null; then
+            print_error "  Homebrew is required for macOS installation"
+            print_warning "  Install Homebrew from: https://brew.sh"
+            return 1
+        fi
+        
+        # Tap Microsoft repository and install
+        print_info "  Installing mssql-tools18..."
+        if brew tap microsoft/mssql-release https://github.com/Microsoft/homebrew-mssql-release 2>/dev/null && \
+           brew update && \
+           HOMEBREW_ACCEPT_EULA=Y brew install mssql-tools18 2>/dev/null; then
+            echo ""
+            print_success "  sqlcmd installed successfully!"
+            echo ""
+            return 0
+        fi
+    fi
+    
+    print_error "  sqlcmd installation failed"
+    echo ""
+    print_warning "  Please install manually:"
+    echo "    Ubuntu/Debian: https://learn.microsoft.com/sql/linux/sql-server-linux-setup-tools"
+    echo "    macOS: brew install mssql-tools18"
+    echo "    Windows: https://aka.ms/msodbcsql"
+    echo ""
+    return 1
+}
+
 # Register required Azure resource providers
 # Parameters:
 #   None (uses REQUIRED_RESOURCE_PROVIDERS array)
