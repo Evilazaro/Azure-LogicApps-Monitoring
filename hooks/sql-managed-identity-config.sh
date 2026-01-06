@@ -22,17 +22,17 @@
 #   and role memberships.
 #
 # PARAMETERS
-#   --server, -s           The Azure SQL Server name (without suffix) [Required]
-#   --database, -d         The database name [Required]
-#   --principal, -p        The managed identity display name [Required]
-#   --roles, -r            Comma-separated database roles (default: db_datareader,db_datawriter)
+#   --sql-server-name, -s  The Azure SQL Server name (without suffix) [Required]
+#   --database-name, -d    The database name [Required]
+#   --principal-name, -p   The managed identity display name [Required]
+#   --database-roles, -r   Comma-separated database roles (default: db_datareader,db_datawriter)
 #   --environment, -e      Azure environment (default: AzureCloud)
 #   --timeout, -t          SQL command timeout in seconds (default: 120)
 #   --verbose, -v          Enable verbose output
 #   --help, -h             Display help message
 #
 # EXAMPLES
-#   ./sql-managed-identity-config.sh --server myserver --database mydb --principal my-app-identity
+#   ./sql-managed-identity-config.sh --sql-server-name myserver --database-name mydb --principal-name my-app-identity
 #   
 #   ./sql-managed-identity-config.sh -s myserver -d mydb -p my-app-identity -r "db_datareader,db_datawriter,db_ddladmin" -v
 #
@@ -150,24 +150,24 @@ USAGE:
     ${SCRIPT_NAME} [OPTIONS]
 
 REQUIRED OPTIONS:
-    --server, -s <name>       Azure SQL Server name (without .database.windows.net suffix)
-    --database, -d <name>     Database name (cannot be 'master')
-    --principal, -p <name>    Managed identity or service principal display name
+    --sql-server-name, -s <name>    Azure SQL Server name (without .database.windows.net suffix)
+    --database-name, -d <name>      Database name (cannot be 'master')
+    --principal-name, -p <name>     Managed identity or service principal display name
 
 OPTIONAL OPTIONS:
-    --roles, -r <roles>       Comma-separated database roles
-                              (default: db_datareader,db_datawriter)
-                              Valid roles: ${VALID_ROLES}
-    --environment, -e <env>   Azure environment
-                              (default: AzureCloud)
-                              Valid: AzureCloud, AzureUSGovernment, AzureChinaCloud, AzureGermanCloud
-    --timeout, -t <seconds>   SQL command timeout (30-600, default: 120)
-    --verbose, -v             Enable verbose output
-    --help, -h                Display this help message
+    --database-roles, -r <roles>    Comma-separated database roles
+                                    (default: db_datareader,db_datawriter)
+                                    Valid roles: ${VALID_ROLES}
+    --environment, -e <env>         Azure environment
+                                    (default: AzureCloud)
+                                    Valid: AzureCloud, AzureUSGovernment, AzureChinaCloud, AzureGermanCloud
+    --timeout, -t <seconds>         SQL command timeout (30-600, default: 120)
+    --verbose, -v                   Enable verbose output
+    --help, -h                      Display this help message
 
 EXAMPLES:
     # Basic usage with default roles
-    ${SCRIPT_NAME} --server myserver --database mydb --principal my-app-identity
+    ${SCRIPT_NAME} --sql-server-name myserver --database-name mydb --principal-name my-app-identity
 
     # With custom roles and verbose output
     ${SCRIPT_NAME} -s myserver -d mydb -p my-app-identity -r "db_datareader,db_datawriter,db_ddladmin" -v
@@ -193,7 +193,7 @@ validate_parameters() {
     local errors=0
 
     if [[ -z "$SQL_SERVER_NAME" ]]; then
-        log_error "SQL Server name is required (--server, -s)"
+        log_error "SQL Server name is required (--sql-server-name, -s)"
         errors=$((errors + 1))
     elif ! [[ "$SQL_SERVER_NAME" =~ ^[a-z0-9]([a-z0-9-]*[a-z0-9])?$ ]]; then
         log_error "SQL Server name must contain only lowercase letters, numbers, and hyphens"
@@ -201,7 +201,7 @@ validate_parameters() {
     fi
 
     if [[ -z "$DATABASE_NAME" ]]; then
-        log_error "Database name is required (--database, -d)"
+        log_error "Database name is required (--database-name, -d)"
         errors=$((errors + 1))
     elif [[ "$DATABASE_NAME" == "master" ]]; then
         log_error "Cannot configure managed identity users in the 'master' database"
@@ -209,7 +209,7 @@ validate_parameters() {
     fi
 
     if [[ -z "$PRINCIPAL_DISPLAY_NAME" ]]; then
-        log_error "Principal display name is required (--principal, -p)"
+        log_error "Principal display name is required (--principal-name, -p)"
         errors=$((errors + 1))
     fi
 
@@ -553,19 +553,19 @@ main() {
     # Parse command-line arguments
     while [[ $# -gt 0 ]]; do
         case $1 in
-            --server|-s)
+            --sql-server-name|--server|-s)
                 SQL_SERVER_NAME="$2"
                 shift 2
                 ;;
-            --database|-d)
+            --database-name|--database|-d)
                 DATABASE_NAME="$2"
                 shift 2
                 ;;
-            --principal|-p)
+            --principal-name|--principal|-p)
                 PRINCIPAL_DISPLAY_NAME="$2"
                 shift 2
                 ;;
-            --roles|-r)
+            --database-roles|--roles|-r)
                 DATABASE_ROLES="$2"
                 shift 2
                 ;;
