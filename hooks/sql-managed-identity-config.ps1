@@ -237,11 +237,15 @@ $ErrorActionPreference = 'Stop'
 $ProgressPreference = 'SilentlyContinue'
 $InformationPreference = 'Continue'
 
+# Script-level variable to track which SQL client is being used
+$script:UseMicrosoftDataSqlClient = $false
+
 # Load Microsoft.Data.SqlClient assembly for cross-platform SQL Server connectivity
 # This provides better support for Azure AD/Entra ID authentication in PowerShell Core
 try {
     # Try to load from GAC or installed NuGet package
     $null = [Microsoft.Data.SqlClient.SqlConnection]
+    $script:UseMicrosoftDataSqlClient = $true
 }
 catch {
     # Assembly not loaded, try to find and load it
@@ -280,12 +284,20 @@ catch {
     }
     
     if ($sqlClientPath) {
-        Add-Type -Path $sqlClientPath -ErrorAction Stop
+        try {
+            Add-Type -Path $sqlClientPath -ErrorAction Stop
+            $script:UseMicrosoftDataSqlClient = $true
+        }
+        catch {
+            Write-Warning "Failed to load Microsoft.Data.SqlClient from $sqlClientPath : $($_.Exception.Message)"
+            $script:UseMicrosoftDataSqlClient = $false
+        }
     }
     else {
-        # Fallback: try to install via NuGet if available
-        Write-Warning 'Microsoft.Data.SqlClient assembly not found. Attempting to use System.Data.SqlClient as fallback.'
-        Write-Warning 'For best results, install Microsoft.Data.SqlClient NuGet package.'
+        # Microsoft.Data.SqlClient not found - will use System.Data.SqlClient as fallback
+        Write-Warning 'Microsoft.Data.SqlClient assembly not found. Will use System.Data.SqlClient as fallback.'
+        Write-Warning 'For best results with Azure AD authentication, install Microsoft.Data.SqlClient NuGet package.'
+        $script:UseMicrosoftDataSqlClient = $false
     }
 }
 
@@ -820,10 +832,38 @@ try {
         
         Write-Log "  Connection string: $($connectionString.Replace($DatabaseName, '***'))" -Level Verbose
         
-        # Create SQL connection object using Microsoft.Data.SqlClient for cross-platform support
+        # Create SQL connection object using the available SQL client
         Write-Log 'Creating database connection...' -Level Verbose
-        $connection = [Microsoft.Data.SqlClient.SqlConnection]::new($connectionString)
-        $connection.AccessToken = $accessToken  # Use Azure AD token instead of SQL auth
+        
+        if ($script:UseMicrosoftDataSqlClient) {
+            Write-Log 'Using Microsoft.Data.SqlClient for connection' -Level Verbose
+            $connection = [Microsoft.Data.SqlClient.SqlConnection]::new($connectionString)
+            $connection.AccessToken = $accessToken  # Use Azure AD token instead of SQL auth
+        }
+        else {
+            Write-Log 'Using System.Data.SqlClient for connection (fallback)' -Level Verbose
+            # For System.Data.SqlClient, we need to include the access token in the connection string
+            # Note: System.Data.SqlClient has limited Azure AD support in PowerShell Core
+            $connectionStringWithToken = $connectionString + ";Authentication=Active Directory Access Token"
+            try {
+                $connection = [System.Data.SqlClient.SqlConnection]::new($connectionString)
+                # System.Data.SqlClient requires setting AccessToken via credential property or connection string builder
+                $connectionBuilder = [System.Data.SqlClient.SqlConnectionStringBuilder]::new($connectionString)
+                $connection = [System.Data.SqlClient.SqlConnection]::new($connectionBuilder.ConnectionString)
+                $connection.AccessToken = $accessToken
+            }
+            catch {
+                # If System.Data.SqlClient doesn't support AccessToken property, throw a helpful error
+                $errorMessage = "Neither Microsoft.Data.SqlClient nor System.Data.SqlClient with Azure AD support is available. " +
+                    "Please install Microsoft.Data.SqlClient NuGet package: dotnet add package Microsoft.Data.SqlClient"
+                Write-Log $errorMessage -Level Error
+                throw $errorMessage
+            }
+        }
+        
+        if ($null -eq $connection) {
+            throw 'Failed to create SQL connection object - connection is null'
+        }
         
         # Open connection with retry logic
         $maxRetries = 3
@@ -902,100 +942,106 @@ try {
         # Return the result object
         return $result
     }
-    catch [Microsoft.Data.SqlClient.SqlException] {
-        # Handle SQL-specific exceptions with detailed error information
-        $sqlEx = $_.Exception
-        $errorDetails = @(
-            "SQL Error occurred during script execution"
-            "  Error Number:       $($sqlEx.Number)"
-            "  Error Message:      $($sqlEx.Message)"
-            "  Severity:           $($sqlEx.Class)"
-            "  State:              $($sqlEx.State)"
-            "  Line Number:        $($sqlEx.LineNumber)"
-            "  Procedure:          $($sqlEx.Procedure)"
-            "  Server:             $($sqlEx.Server)"
-        )
-        
-        foreach ($line in $errorDetails) {
-            Write-Log $line -Level Error
-        }
-        
-        # Common SQL error numbers and their meanings
-        # Display guidance using Write-Host for immediate visibility (not buffered)
-        Write-Host '' -ForegroundColor Yellow
-        Write-Host '═══════════════════════════════════════════════════════════════════' -ForegroundColor Yellow
-        Write-Host 'TROUBLESHOOTING GUIDANCE' -ForegroundColor Yellow
-        Write-Host '═══════════════════════════════════════════════════════════════════' -ForegroundColor Yellow
-        
-        switch ($sqlEx.Number) {
-            18456 { 
-                Write-Host ''
-                Write-Host 'ERROR: Login failed - Authentication succeeded but user lacks SQL Server permissions' -ForegroundColor Red
-                Write-Host ''
-                Write-Host 'ROOT CAUSE:' -ForegroundColor Yellow
-                Write-Host '  To create database users via Entra ID, you MUST authenticate as an' -ForegroundColor White
-                Write-Host '  Entra ID administrator of the SQL Server.' -ForegroundColor White
-                Write-Host ''
-                Write-Host 'SOLUTION - Follow these steps:' -ForegroundColor Yellow
-                Write-Host ''
-                Write-Host '1. Set an Entra ID Admin on the SQL Server (if not already set):' -ForegroundColor Cyan
-                Write-Host ''
-                Write-Host '   az sql server ad-admin create \' -ForegroundColor White
-                Write-Host '     --resource-group <your-rg> \' -ForegroundColor White
-                Write-Host "     --server-name $SqlServerName \" -ForegroundColor White
-                Write-Host '     --display-name <admin-user-or-identity-name> \' -ForegroundColor White
-                Write-Host '     --object-id <admin-object-id>' -ForegroundColor White
-                Write-Host ''
-                Write-Host '   Example (using your current user):' -ForegroundColor Gray
-                Write-Host "   `$me = az ad signed-in-user show --query '{name:userPrincipalName,id:id}' -o json | ConvertFrom-Json" -ForegroundColor Gray
-                Write-Host "   az sql server ad-admin create --resource-group <rg> --server-name $SqlServerName --display-name `$me.name --object-id `$me.id" -ForegroundColor Gray
-                Write-Host ''
-                Write-Host '2. Verify the admin is set:' -ForegroundColor Cyan
-                Write-Host "   az sql server ad-admin list --resource-group <rg> --server-name $SqlServerName" -ForegroundColor White
-                Write-Host ''
-                Write-Host '3. Ensure you are authenticated as that admin:' -ForegroundColor Cyan
-                Write-Host '   az account show    # Check current identity' -ForegroundColor White
-                Write-Host '   az login           # Re-authenticate if needed' -ForegroundColor White
-                Write-Host ''
-                Write-Host '4. Re-run the provisioning:' -ForegroundColor Cyan
-                Write-Host '   azd provision' -ForegroundColor White
-                Write-Host ''
-                Write-Host 'More info: https://learn.microsoft.com/azure/azure-sql/database/authentication-aad-configure' -ForegroundColor Gray
-            }
-            40615 { 
-                Write-Host 'Firewall rule blocking connection - add client IP to SQL firewall' -ForegroundColor Yellow
-            }
-            40613 { 
-                Write-Host 'Database not available - check database exists and is online' -ForegroundColor Yellow
-            }
-            33134 { 
-                Write-Host 'User already exists - this is usually safe to ignore' -ForegroundColor Green
-            }
-            15023 { 
-                Write-Host 'User, group, or role already exists in database' -ForegroundColor Green
-            }
-            default { 
-                Write-Host 'Check SQL Server logs and Azure AD configuration' -ForegroundColor Yellow
-            }
-        }
-        
-        Write-Host ''
-        Write-Host '═══════════════════════════════════════════════════════════════════' -ForegroundColor Yellow
-        Write-Host ''
-        
-        throw
-    }
-    catch [System.InvalidOperationException] {
-        # Handle connection state exceptions
-        Write-Log "Connection state error: $($_.Exception.Message)" -Level Error
-        Write-Log 'This usually indicates an authentication or network connectivity issue' -Level Error
-        throw
-    }
     catch {
-        # Handle all other exceptions
-        Write-Log "Unexpected error during SQL execution: $($_.Exception.Message)" -Level Error
-        Write-Log "Exception type: $($_.Exception.GetType().FullName)" -Level Error
-        throw
+        # Check if this is a SQL exception (from either Microsoft.Data.SqlClient or System.Data.SqlClient)
+        $sqlEx = $_.Exception
+        $isSqlException = $sqlEx.GetType().Name -eq 'SqlException' -or 
+                          $sqlEx.GetType().FullName -like '*SqlException*'
+        
+        if ($isSqlException) {
+            # Handle SQL-specific exceptions with detailed error information
+            $errorDetails = @(
+                "SQL Error occurred during script execution"
+                "  Error Number:       $($sqlEx.Number)"
+                "  Error Message:      $($sqlEx.Message)"
+                "  Severity:           $($sqlEx.Class)"
+                "  State:              $($sqlEx.State)"
+                "  Line Number:        $($sqlEx.LineNumber)"
+                "  Procedure:          $($sqlEx.Procedure)"
+                "  Server:             $($sqlEx.Server)"
+            )
+            
+            foreach ($line in $errorDetails) {
+                Write-Log $line -Level Error
+            }
+        
+            # Common SQL error numbers and their meanings
+            # Display guidance using Write-Host for immediate visibility (not buffered)
+            Write-Host '' -ForegroundColor Yellow
+            Write-Host '═══════════════════════════════════════════════════════════════════' -ForegroundColor Yellow
+            Write-Host 'TROUBLESHOOTING GUIDANCE' -ForegroundColor Yellow
+            Write-Host '═══════════════════════════════════════════════════════════════════' -ForegroundColor Yellow
+            
+            switch ($sqlEx.Number) {
+                18456 { 
+                    Write-Host ''
+                    Write-Host 'ERROR: Login failed - Authentication succeeded but user lacks SQL Server permissions' -ForegroundColor Red
+                    Write-Host ''
+                    Write-Host 'ROOT CAUSE:' -ForegroundColor Yellow
+                    Write-Host '  To create database users via Entra ID, you MUST authenticate as an' -ForegroundColor White
+                    Write-Host '  Entra ID administrator of the SQL Server.' -ForegroundColor White
+                    Write-Host ''
+                    Write-Host 'SOLUTION - Follow these steps:' -ForegroundColor Yellow
+                    Write-Host ''
+                    Write-Host '1. Set an Entra ID Admin on the SQL Server (if not already set):' -ForegroundColor Cyan
+                    Write-Host ''
+                    Write-Host '   az sql server ad-admin create \' -ForegroundColor White
+                    Write-Host '     --resource-group <your-rg> \' -ForegroundColor White
+                    Write-Host "     --server-name $SqlServerName \" -ForegroundColor White
+                    Write-Host '     --display-name <admin-user-or-identity-name> \' -ForegroundColor White
+                    Write-Host '     --object-id <admin-object-id>' -ForegroundColor White
+                    Write-Host ''
+                    Write-Host '   Example (using your current user):' -ForegroundColor Gray
+                    Write-Host "   `$me = az ad signed-in-user show --query '{name:userPrincipalName,id:id}' -o json | ConvertFrom-Json" -ForegroundColor Gray
+                    Write-Host "   az sql server ad-admin create --resource-group <rg> --server-name $SqlServerName --display-name `$me.name --object-id `$me.id" -ForegroundColor Gray
+                    Write-Host ''
+                    Write-Host '2. Verify the admin is set:' -ForegroundColor Cyan
+                    Write-Host "   az sql server ad-admin list --resource-group <rg> --server-name $SqlServerName" -ForegroundColor White
+                    Write-Host ''
+                    Write-Host '3. Ensure you are authenticated as that admin:' -ForegroundColor Cyan
+                    Write-Host '   az account show    # Check current identity' -ForegroundColor White
+                    Write-Host '   az login           # Re-authenticate if needed' -ForegroundColor White
+                    Write-Host ''
+                    Write-Host '4. Re-run the provisioning:' -ForegroundColor Cyan
+                    Write-Host '   azd provision' -ForegroundColor White
+                    Write-Host ''
+                    Write-Host 'More info: https://learn.microsoft.com/azure/azure-sql/database/authentication-aad-configure' -ForegroundColor Gray
+                }
+                40615 { 
+                    Write-Host 'Firewall rule blocking connection - add client IP to SQL firewall' -ForegroundColor Yellow
+                }
+                40613 { 
+                    Write-Host 'Database not available - check database exists and is online' -ForegroundColor Yellow
+                }
+                33134 { 
+                    Write-Host 'User already exists - this is usually safe to ignore' -ForegroundColor Green
+                }
+                15023 { 
+                    Write-Host 'User, group, or role already exists in database' -ForegroundColor Green
+                }
+                default { 
+                    Write-Host 'Check SQL Server logs and Azure AD configuration' -ForegroundColor Yellow
+                }
+            }
+            
+            Write-Host ''
+            Write-Host '═══════════════════════════════════════════════════════════════════' -ForegroundColor Yellow
+            Write-Host ''
+            
+            throw
+        }
+        elseif ($_.Exception -is [System.InvalidOperationException]) {
+            # Handle connection state exceptions
+            Write-Log "Connection state error: $($_.Exception.Message)" -Level Error
+            Write-Log 'This usually indicates an authentication or network connectivity issue' -Level Error
+            throw
+        }
+        else {
+            # Handle all other exceptions
+            Write-Log "Unexpected error during SQL execution: $($_.Exception.Message)" -Level Error
+            Write-Log "Exception type: $($_.Exception.GetType().FullName)" -Level Error
+            throw
+        }
     }
     finally {
         # Ensure proper cleanup of database resources
