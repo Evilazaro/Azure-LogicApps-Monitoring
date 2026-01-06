@@ -81,15 +81,15 @@ hooks:
     posix:
       shell: sh
       run: |
-        ./hooks/replace-connection-placeholders.sh
-        ./hooks/deploy-workflow.sh
+        ./hooks/replace-connection-placeholders.sh --verbose
+        ./hooks/deploy-workflow.sh --verbose
       continueOnError: false
       interactive: false # Non-interactive for CI/CD compatibility
     windows:
       shell: pwsh
       run: |
-        ./hooks/Replace-ConnectionPlaceholders.ps1
-        ./hooks/deploy-workflow.ps1
+        ./hooks/Replace-ConnectionPlaceholders.ps1 -Verbose
+        ./hooks/deploy-workflow.ps1 -Verbose
       continueOnError: false
       interactive: false # Non-interactive for CI/CD compatibility
 
