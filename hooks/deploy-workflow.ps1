@@ -143,40 +143,48 @@ function Initialize-AzdEnvironment {
     [OutputType([bool])]
     param()
 
-    Write-Host '  Loading azd environment variables...' -ForegroundColor Gray
+    Write-Information '  Loading azd environment variables...'
 
     # Get the environment name from AZURE_ENV_NAME
     $envName = $env:AZURE_ENV_NAME
     $azdEnvOutput = $null
 
-    if ([string]::IsNullOrWhiteSpace($envName)) {
-        Write-Warning 'AZURE_ENV_NAME environment variable is not set. Trying to get values from default environment.'
-        $azdEnvOutput = & azd env get-values 2>&1
-    }
-    else {
-        Write-Host "  Using azd environment: $envName" -ForegroundColor Gray
-        $azdEnvOutput = & azd env get-values --environment $envName 2>&1
-    }
+    try {
+        if ([string]::IsNullOrWhiteSpace($envName)) {
+            Write-Warning 'AZURE_ENV_NAME environment variable is not set. Trying to get values from default environment.'
+            $azdEnvOutput = & azd env get-values 2>&1
+        }
+        else {
+            Write-Information "  Using azd environment: $envName"
+            $azdEnvOutput = & azd env get-values --environment $envName 2>&1
+        }
 
-    if ($LASTEXITCODE -ne 0 -or -not $azdEnvOutput) {
-        Write-Warning 'Could not load azd environment variables. Ensure azd environment is configured.'
+        if ($LASTEXITCODE -ne 0 -or [string]::IsNullOrWhiteSpace($azdEnvOutput)) {
+            Write-Warning 'Could not load azd environment variables. Ensure azd environment is configured.'
+            return $false
+        }
+
+        $loadedCount = 0
+        foreach ($line in $azdEnvOutput) {
+            # Match pattern: VARNAME="value" or VARNAME=value (properly handle quotes)
+            if ($line -match '^([A-Z_][A-Z0-9_]*)=("?)(.*)("?)$') {
+                $varName = $Matches[1]
+                $varValue = $Matches[3]
+                # Remove surrounding quotes if present
+                $varValue = $varValue -replace '^"|"$', ''
+                [System.Environment]::SetEnvironmentVariable($varName, $varValue, [System.EnvironmentVariableTarget]::Process)
+                $loadedCount++
+                Write-Verbose "Set environment variable: $varName"
+            }
+        }
+
+        Write-Host "  Loaded $loadedCount environment variables from azd." -ForegroundColor Green
+        return $true
+    }
+    catch {
+        Write-Warning "Failed to load azd environment: $($_.Exception.Message)"
         return $false
     }
-
-    $loadedCount = 0
-    foreach ($line in $azdEnvOutput) {
-        # Match pattern: VARNAME="value" or VARNAME=value
-        if ($line -match '^([A-Z_][A-Z0-9_]*)="?(.*)"?$') {
-            $varName = $Matches[1]
-            $varValue = $Matches[2] -replace '"$', ''
-            [System.Environment]::SetEnvironmentVariable($varName, $varValue)
-            $loadedCount++
-            Write-Verbose "Set environment variable: $varName"
-        }
-    }
-
-    Write-Host "  Loaded $loadedCount environment variables from azd." -ForegroundColor Green
-    return $true
 }
 
 function Test-RequiredEnvironmentVariables {
@@ -202,10 +210,10 @@ function Test-RequiredEnvironmentVariables {
     param(
         [Parameter(Mandatory = $true)]
         [ValidateNotNull()]
-        [hashtable[]]$PlaceholderList
+        [System.Collections.IEnumerable]$PlaceholderList
     )
 
-    [System.Collections.Generic.List[string]]$missingVars = @()
+    $missingVars = [System.Collections.Generic.List[string]]::new()
 
     foreach ($item in $PlaceholderList) {
         $envValue = [System.Environment]::GetEnvironmentVariable($item.EnvVar)
