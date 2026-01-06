@@ -260,14 +260,14 @@ function Update-PlaceholderContent {
 
         [Parameter(Mandatory = $true)]
         [ValidateNotNull()]
-        [hashtable[]]$PlaceholderList
+        [System.Collections.IEnumerable]$PlaceholderList
     )
 
     $result = $Content
 
     foreach ($item in $PlaceholderList) {
         $envValue = [System.Environment]::GetEnvironmentVariable($item.EnvVar)
-        if ($null -ne $envValue) {
+        if (-not [string]::IsNullOrEmpty($envValue)) {
             $result = $result.Replace($item.Placeholder, $envValue)
             Write-Verbose "Replaced $($item.Placeholder) with value from $($item.EnvVar)"
         }
@@ -310,13 +310,14 @@ function Get-MaskedValue {
         [string]$VariableName
     )
 
-    if ([string]::IsNullOrEmpty($Value)) {
+    if ([string]::IsNullOrWhiteSpace($Value)) {
         return '[Not Set]'
     }
 
+    # Mask sensitive values that match common patterns
     if ($VariableName -match 'URL|SECRET|KEY|PASSWORD|CONNECTION') {
-        $maxLength = [Math]::Min(30, $Value.Length)
-        return "$($Value.Substring(0, $maxLength))..."
+        $maskLength = [System.Math]::Min(30, $Value.Length)
+        return "$($Value.Substring(0, $maskLength))..."
     }
 
     return $Value
@@ -355,7 +356,7 @@ function Invoke-PlaceholderReplacement {
 
         [Parameter(Mandatory = $true)]
         [ValidateNotNull()]
-        [hashtable[]]$PlaceholderList,
+        [System.Collections.IEnumerable]$PlaceholderList,
 
         [Parameter(Mandatory = $false)]
         [string]$OutputPath
@@ -365,18 +366,18 @@ function Invoke-PlaceholderReplacement {
         throw [System.IO.FileNotFoundException]::new("File not found: $FilePath")
     }
 
-    Write-Host "  Processing: $FilePath" -ForegroundColor Gray
+    Write-Information "  Processing: $FilePath"
 
-    $content = Get-Content -Path $FilePath -Raw -Encoding UTF8
+    $content = Get-Content -Path $FilePath -Raw -Encoding UTF8 -ErrorAction Stop
     $updatedContent = Update-PlaceholderContent -Content $content -PlaceholderList $PlaceholderList
 
-    if (-not [string]::IsNullOrEmpty($OutputPath)) {
+    if (-not [string]::IsNullOrWhiteSpace($OutputPath)) {
         $outputDir = Split-Path -Path $OutputPath -Parent
-        if (-not [string]::IsNullOrEmpty($outputDir) -and -not (Test-Path -Path $outputDir)) {
-            $null = New-Item -ItemType Directory -Path $outputDir -Force
+        if (-not [string]::IsNullOrWhiteSpace($outputDir) -and -not (Test-Path -Path $outputDir)) {
+            $null = New-Item -ItemType Directory -Path $outputDir -Force -ErrorAction Stop
         }
-        $updatedContent | Set-Content -Path $OutputPath -Encoding UTF8 -NoNewline
-        Write-Host "  Output: $OutputPath" -ForegroundColor Gray
+        $updatedContent | Set-Content -Path $OutputPath -Encoding UTF8 -NoNewline -Force -ErrorAction Stop
+        Write-Information "  Output: $OutputPath"
     }
 
     return $updatedContent
@@ -403,22 +404,18 @@ function Test-AzureCLIConnection {
     [OutputType([PSCustomObject])]
     param()
 
-    try {
-        $accountJson = & az account show --output json 2>&1
-        if ($LASTEXITCODE -ne 0 -or -not $accountJson) {
-            throw 'Not connected to Azure. Please run "az login" first.'
-        }
-
-        $account = $accountJson | ConvertFrom-Json
-        return [PSCustomObject]@{
-            AccountId        = $account.user.name
-            SubscriptionId   = $account.id
-            SubscriptionName = $account.name
-            TenantId         = $account.tenantId
-        }
+    $accountJson = & az account show --output json 2>&1
+    if ($LASTEXITCODE -ne 0 -or [string]::IsNullOrWhiteSpace($accountJson)) {
+        throw 'Not connected to Azure. Please run "az login" first.'
     }
-    catch {
-        throw "Azure CLI connection validation failed: $($_.Exception.Message)"
+
+    $account = $accountJson | ConvertFrom-Json -ErrorAction Stop
+    
+    return [PSCustomObject]@{
+        AccountId        = $account.user.name
+        SubscriptionId   = $account.id
+        SubscriptionName = $account.name
+        TenantId         = $account.tenantId
     }
 }
 
@@ -490,39 +487,39 @@ function Deploy-LogicAppWorkflow {
 
         try {
             # Create a temporary directory for the deployment package
-            $tempDir = Join-Path -Path ([System.IO.Path]::GetTempPath()) -ChildPath "logicapp-deploy-$(Get-Random)"
-            $null = New-Item -ItemType Directory -Path $tempDir -Force
+            $tempDir = Join-Path -Path ([System.IO.Path]::GetTempPath()) -ChildPath "logicapp-deploy-$([System.Guid]::NewGuid().ToString('N').Substring(0, 8))"
+            $null = New-Item -ItemType Directory -Path $tempDir -Force -ErrorAction Stop
 
             # Create workflow directory structure
             $workflowDir = Join-Path -Path $tempDir -ChildPath $WorkflowName
-            $null = New-Item -ItemType Directory -Path $workflowDir -Force
+            $null = New-Item -ItemType Directory -Path $workflowDir -Force -ErrorAction Stop
 
             # Write workflow.json
             $workflowFilePath = Join-Path -Path $workflowDir -ChildPath 'workflow.json'
-            $WorkflowContent | Set-Content -Path $workflowFilePath -Encoding UTF8 -NoNewline
+            $WorkflowContent | Set-Content -Path $workflowFilePath -Encoding UTF8 -NoNewline -Force -ErrorAction Stop
             Write-Verbose "Created workflow file: $workflowFilePath"
 
             # Write connections.json at root level
             $connectionsFilePath = Join-Path -Path $tempDir -ChildPath 'connections.json'
-            $ConnectionsContent | Set-Content -Path $connectionsFilePath -Encoding UTF8 -NoNewline
+            $ConnectionsContent | Set-Content -Path $connectionsFilePath -Encoding UTF8 -NoNewline -Force -ErrorAction Stop
             Write-Verbose "Created connections file: $connectionsFilePath"
 
             # Copy host.json if it exists in the source
             $sourceHostJson = Join-Path -Path $WorkflowBasePath -ChildPath 'host.json'
             if (Test-Path -Path $sourceHostJson -PathType Leaf) {
                 $destHostJson = Join-Path -Path $tempDir -ChildPath 'host.json'
-                Copy-Item -Path $sourceHostJson -Destination $destHostJson
+                Copy-Item -Path $sourceHostJson -Destination $destHostJson -Force -ErrorAction Stop
                 Write-Verbose 'Copied host.json'
             }
 
-            # Create zip file
-            $zipPath = Join-Path -Path ([System.IO.Path]::GetTempPath()) -ChildPath "logicapp-deploy-$(Get-Random).zip"
-            Write-Host '  Creating deployment package...' -ForegroundColor Gray
-            Compress-Archive -Path "$tempDir\*" -DestinationPath $zipPath -Force
+            # Create zip file using GUID for unique naming
+            $zipPath = Join-Path -Path ([System.IO.Path]::GetTempPath()) -ChildPath "logicapp-deploy-$([System.Guid]::NewGuid().ToString('N').Substring(0, 8)).zip"
+            Write-Information '  Creating deployment package...'
+            Compress-Archive -Path (Join-Path -Path $tempDir -ChildPath '*') -DestinationPath $zipPath -Force -ErrorAction Stop
             Write-Verbose "Created zip file: $zipPath"
 
             # Deploy using Azure CLI
-            Write-Host '  Deploying to Logic App via zip deploy...' -ForegroundColor Gray
+            Write-Information '  Deploying to Logic App via zip deploy...'
             $deployOutput = & az logicapp deployment source config-zip `
                 --resource-group $ResourceGroupName `
                 --name $LogicAppName `
@@ -543,29 +540,20 @@ function Deploy-LogicAppWorkflow {
                 }
             }
 
-            # Cleanup temporary files
-            if ($tempDir -and (Test-Path -Path $tempDir)) {
-                Remove-Item -Path $tempDir -Recurse -Force -ErrorAction SilentlyContinue
-            }
-            if ($zipPath -and (Test-Path -Path $zipPath)) {
-                Remove-Item -Path $zipPath -Force -ErrorAction SilentlyContinue
-            }
-
             return [PSCustomObject]@{
                 Success      = $true
                 WorkflowName = $WorkflowName
                 Response     = $deployOutput
             }
         }
-        catch {
-            # Cleanup on error
+        finally {
+            # Cleanup temporary files (always runs, even on error)
             if ($tempDir -and (Test-Path -Path $tempDir)) {
                 Remove-Item -Path $tempDir -Recurse -Force -ErrorAction SilentlyContinue
             }
             if ($zipPath -and (Test-Path -Path $zipPath)) {
                 Remove-Item -Path $zipPath -Force -ErrorAction SilentlyContinue
             }
-            throw "Failed to deploy workflow '$WorkflowName': $($_.Exception.Message)"
         }
     }
 
@@ -602,11 +590,11 @@ function Write-DeploymentSummary {
     param(
         [Parameter(Mandatory = $true)]
         [ValidateNotNull()]
-        [hashtable[]]$WorkflowPlaceholders,
+        [System.Collections.IEnumerable]$WorkflowPlaceholders,
 
         [Parameter(Mandatory = $true)]
         [ValidateNotNull()]
-        [hashtable[]]$ConnectionPlaceholders
+        [System.Collections.IEnumerable]$ConnectionPlaceholders
     )
 
     Write-Host ''
