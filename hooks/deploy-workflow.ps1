@@ -11,7 +11,8 @@
     1. Loads azd environment variables
     2. Validates required environment variables
     3. Replaces placeholders in workflow.json and connections.json
-    4. Deploys the workflow to Azure Logic Apps Standard using Azure CLI zip deploy
+    4. Optionally persists the modified connections.json to disk (like Replace-ConnectionPlaceholders.ps1)
+    5. Deploys the workflow to Azure Logic Apps Standard using Azure CLI zip deploy
 
 .PARAMETER LogicAppName
     The name of the Azure Logic Apps Standard resource. 
@@ -29,6 +30,16 @@
 
 .PARAMETER SkipPlaceholderReplacement
     Skip placeholder replacement if files are already processed.
+
+.PARAMETER PersistConnectionsFile
+    Persist the modified connections.json back to the original file location after placeholder replacement.
+    This provides the same functionality as Replace-ConnectionPlaceholders.ps1.
+    Alias: Persist
+
+.PARAMETER ConnectionsOutputFilePath
+    Optional output file path for the processed connections.json.
+    If not specified and -PersistConnectionsFile is used, the original file will be overwritten.
+    Alias: Output, Destination
 
 .PARAMETER WhatIf
     Shows what changes would be made without actually deploying.
@@ -50,6 +61,15 @@
 .EXAMPLE
     ./deploy-workflow.ps1 -WhatIf
     Shows what would be deployed without making changes.
+
+.EXAMPLE
+    ./deploy-workflow.ps1 -PersistConnectionsFile
+    Deploys the workflow and also persists the modified connections.json to the original file.
+    This combines deploy-workflow.ps1 and Replace-ConnectionPlaceholders.ps1 functionality.
+
+.EXAMPLE
+    ./deploy-workflow.ps1 -PersistConnectionsFile -ConnectionsOutputFilePath "./output/connections.json"
+    Deploys the workflow and saves the processed connections.json to a custom location.
 
 .NOTES
     File Name      : deploy-workflow.ps1
@@ -84,7 +104,16 @@ param(
     [string]$WorkflowBasePath = "$PSScriptRoot/../workflows/OrdersManagement/OrdersManagementLogicApp",
 
     [Parameter(Mandatory = $false)]
-    [switch]$SkipPlaceholderReplacement
+    [switch]$SkipPlaceholderReplacement,
+
+    [Parameter(Mandatory = $false)]
+    [Alias('Persist')]
+    [switch]$PersistConnectionsFile,
+
+    [Parameter(Mandatory = $false)]
+    [ValidateNotNullOrEmpty()]
+    [Alias('Output', 'Destination')]
+    [string]$ConnectionsOutputFilePath
 )
 
 # Script configuration
@@ -561,6 +590,41 @@ function Deploy-LogicAppWorkflow {
     }
 }
 
+function Write-ReplacementSummary {
+    <#
+    .SYNOPSIS
+        Displays a summary of the placeholder replacements.
+
+    .DESCRIPTION
+        Outputs a formatted summary showing each environment variable
+        and its masked value for verification purposes.
+        This function provides the same output as Replace-ConnectionPlaceholders.ps1.
+
+    .PARAMETER PlaceholderList
+        An array of hashtables containing Placeholder and EnvVar keys.
+
+    .OUTPUTS
+        System.Void - Outputs to console only.
+
+    .EXAMPLE
+        Write-ReplacementSummary -PlaceholderList $script:ConnectionPlaceholders
+    #>
+    [CmdletBinding()]
+    [OutputType([System.Void])]
+    param(
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNull()]
+        [hashtable[]]$PlaceholderList
+    )
+
+    Write-Host '=== Replacement Summary ===' -ForegroundColor Cyan
+    foreach ($item in $PlaceholderList) {
+        $envValue = [System.Environment]::GetEnvironmentVariable($item.EnvVar)
+        $displayValue = Get-MaskedValue -Value $envValue -VariableName $item.EnvVar
+        Write-Host "  $($item.EnvVar): $displayValue" -ForegroundColor Gray
+    }
+}
+
 function Write-DeploymentSummary {
     <#
     .SYNOPSIS
@@ -703,6 +767,37 @@ try {
     }
 
     Write-Host '  Files processed successfully.' -ForegroundColor Green
+
+    # Persist connections.json if requested (same functionality as Replace-ConnectionPlaceholders.ps1)
+    if ($PersistConnectionsFile -and -not $SkipPlaceholderReplacement) {
+        Write-Host ''
+        Write-Host '=== Persisting Connection Placeholders ===' -ForegroundColor Cyan
+        
+        # Determine output path
+        $outputPath = if ($ConnectionsOutputFilePath) { $ConnectionsOutputFilePath } else { $resolvedConnectionsPath.Path }
+        
+        # Ensure output directory exists
+        $outputDir = Split-Path -Path $outputPath -Parent
+        if (-not [string]::IsNullOrEmpty($outputDir) -and -not (Test-Path -Path $outputDir)) {
+            if ($PSCmdlet.ShouldProcess($outputDir, 'Create directory')) {
+                $null = New-Item -ItemType Directory -Path $outputDir -Force
+            }
+        }
+        
+        # Write the updated connections content
+        if ($PSCmdlet.ShouldProcess($outputPath, 'Write updated connections file')) {
+            Write-Host "  Writing updated connections file to: $outputPath" -ForegroundColor Yellow
+            $connectionsContent | Set-Content -Path $outputPath -Encoding UTF8 -NoNewline
+            Write-Host '  Successfully replaced all placeholders in connections.json' -ForegroundColor Green
+            Write-Host ''
+            
+            # Display replacement summary (same output as Replace-ConnectionPlaceholders.ps1)
+            Write-ReplacementSummary -PlaceholderList $script:ConnectionPlaceholders
+        }
+        else {
+            Write-Host '  WhatIf: No changes were made to the connections file.' -ForegroundColor Yellow
+        }
+    }
 
     # Step 5: Deploy workflow via zip deploy
     Write-Host ''
