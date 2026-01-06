@@ -56,16 +56,16 @@ By automating environment validation, secret management, SQL managed identity co
 
 ### Available Scripts
 
-| Script                   | PowerShell                        | Bash                             | Purpose                                        | Documentation                                                         |
-| ------------------------ | --------------------------------- | ---------------------------------------- | ---------------------------------------------- | --------------------------------------------------------------------- |
-| **Environment Check**    | `check-dev-workstation.ps1`       | `check-dev-workstation.sh`               | Validate workstation prerequisites             | [📄 check-dev-workstation.md](./check-dev-workstation.md)             |
-| **Pre-Provisioning**     | `preprovision.ps1`                | `preprovision.sh`                        | Validate and prepare for deployment            | [📄 preprovision.md](./preprovision.md)                               |
-| **Post-Provisioning**    | `postprovision.ps1`               | `postprovision.sh`                       | Configure secrets after deployment             | [📄 postprovision.md](./postprovision.md)                             |
-| **SQL Managed Identity** | `sql-managed-identity-config.ps1` | `sql-managed-identity-config.sh`         | Configure SQL Database managed identity access | [📄 sql-managed-identity-config.md](./sql-managed-identity-config.md) |
-| **Secrets Management**   | `clean-secrets.ps1`               | `clean-secrets.sh`                       | Clear .NET user secrets                        | [📄 clean-secrets.md](./clean-secrets.md)                             |
-| **Test Data**            | `Generate-Orders.ps1`             | `Generate-Orders.sh`                     | Generate sample order data                     | [📄 Generate-Orders.md](./Generate-Orders.md)                         |
+| Script                      | PowerShell                           | Bash                                 | Purpose                                        | Documentation                                                               |
+| --------------------------- | ------------------------------------ | ------------------------------------ | ---------------------------------------------- | --------------------------------------------------------------------------- |
+| **Environment Check**       | `check-dev-workstation.ps1`          | `check-dev-workstation.sh`           | Validate workstation prerequisites             | [📄 check-dev-workstation.md](./check-dev-workstation.md)                   |
+| **Pre-Provisioning**        | `preprovision.ps1`                   | `preprovision.sh`                    | Validate and prepare for deployment            | [📄 preprovision.md](./preprovision.md)                                     |
+| **Post-Provisioning**       | `postprovision.ps1`                  | `postprovision.sh`                   | Configure secrets after deployment             | [📄 postprovision.md](./postprovision.md)                                   |
+| **SQL Managed Identity**    | `sql-managed-identity-config.ps1`    | `sql-managed-identity-config.sh`     | Configure SQL Database managed identity access | [📄 sql-managed-identity-config.md](./sql-managed-identity-config.md)       |
+| **Secrets Management**      | `clean-secrets.ps1`                  | `clean-secrets.sh`                   | Clear .NET user secrets                        | [📄 clean-secrets.md](./clean-secrets.md)                                   |
+| **Test Data**               | `Generate-Orders.ps1`                | `Generate-Orders.sh`                 | Generate sample order data                     | [📄 Generate-Orders.md](./Generate-Orders.md)                               |
 | **Connection Placeholders** | `Replace-ConnectionPlaceholders.ps1` | `replace-connection-placeholders.sh` | Replace placeholder tokens in connections.json | [📄 Replace-ConnectionPlaceholders.md](./Replace-ConnectionPlaceholders.md) |
-| **Workflow Deployment**  | `deploy-workflow.ps1`             | -                                        | Deploy Logic Apps Standard workflows           | [📄 deploy-workflow.md](./deploy-workflow.md)                         |
+| **Workflow Deployment**     | `deploy-workflow.ps1`                | `deploy-workflow.sh`                 | Deploy Logic Apps Standard workflows           | [📄 deploy-workflow.md](./deploy-workflow.md)                               |
 
 ---
 
@@ -537,22 +537,24 @@ The `azure.yaml` file serves as the central configuration for Azure Developer CL
 # setup, provisioning, and post-deployment configuration.
 #
 # Documentation: https://learn.microsoft.com/azure/developer/azure-developer-cli/
+# Last Modified: 2026-01-06
 # ==============================================================================
 
 # ------------------------------------------------------------------------------
 # Project Metadata
 # ------------------------------------------------------------------------------
-# Unique identifier for this azd template
 name: azure-logicapps-monitoring
 
-# Template version and metadata for azd template gallery
 metadata:
-  template: azure-logicapps-monitoring@0.0.1
+  template: azure-logicapps-monitoring@1.0.0
+
+# Minimum azd version required for this project
+requiredVersions:
+  azd: ">= 1.9.0"
 
 # ------------------------------------------------------------------------------
 # Infrastructure Configuration
 # ------------------------------------------------------------------------------
-# Defines how and where infrastructure is defined and deployed
 infra:
   provider: bicep # Infrastructure as Code provider
   path: infra # Directory containing Bicep templates
@@ -561,49 +563,63 @@ infra:
 # ------------------------------------------------------------------------------
 # Lifecycle Hooks
 # ------------------------------------------------------------------------------
-# Scripts executed at specific points in the azd workflow to automate
-# environment validation, configuration, and data generation
-
 hooks:
-  # Pre-provisioning validation hook
-  # Executes before 'azd provision' to validate workstation prerequisites
   preprovision:
-    posix: # Linux/macOS configuration
+    posix:
       shell: sh
-      run: ./hooks/preprovision.sh
-      continueOnError: false # Fail fast on validation errors
-    windows: # Windows configuration
-      shell: pwsh
-      run: ./hooks/preprovision.ps1
+      run: ./hooks/preprovision.sh --force --verbose
       continueOnError: false
+      interactive: true
+    windows:
+      shell: pwsh
+      run: ./hooks/preprovision.ps1 -Force -Verbose
+      continueOnError: false
+      interactive: true
 
-  # Post-provisioning configuration hook
-  # Executes after 'azd provision' to configure local development secrets
-  # and set up SQL Database managed identity access
   postprovision:
-    posix: # Linux/macOS configuration
+    posix:
       shell: sh
-      run: ./hooks/postprovision.sh # Configures .NET user secrets & SQL managed identity
+      run: |
+        ./hooks/postprovision.sh --force --verbose
+        ./hooks/Generate-Orders.sh --force --verbose
       continueOnError: false
-    windows: # Windows configuration
+      interactive: true
+    windows:
       shell: pwsh
-      run: ./hooks/postprovision.ps1 # Configures .NET user secrets & SQL managed identity
+      run: |
+        ./hooks/postprovision.ps1 -Force -Verbose
+        ./hooks/Generate-Orders.ps1 -Force -Verbose
       continueOnError: false
+      interactive: true
+
+  predeploy:
+    posix:
+      shell: sh
+      run: |
+        ./hooks/replace-connection-placeholders.sh
+        ./hooks/deploy-workflow.sh
+      continueOnError: false
+      interactive: false
+    windows:
+      shell: pwsh
+      run: |
+        ./hooks/Replace-ConnectionPlaceholders.ps1
+        ./hooks/deploy-workflow.ps1
+      continueOnError: false
+      interactive: false
 
 # ------------------------------------------------------------------------------
 # Application Services
 # ------------------------------------------------------------------------------
-# Defines the application components to be deployed to Azure
-
 services:
   # .NET Aspire AppHost orchestrating the monitoring solution
   app:
-    language: dotnet # Service implementation language
-    project: ./app.AppHost/app.AppHost.csproj # Path to project file
-    host: containerapp # Target hosting platform (Azure Container Apps)
+    language: dotnet
+    project: ./app.AppHost/app.AppHost.csproj
+    host: containerapp
 ```
 
-For this project, azure.yaml defines the Orders API and Web App services, specifies the Bicep infrastructure templates in the `infra/` directory, and declares preprovision and postprovision hooks that execute platform-specific scripts. The hooks section is particularly powerful because it allows you to inject custom validation, configuration, and data generation logic into the azd workflow without modifying azd itself. This extensibility makes azd suitable for complex enterprise scenarios where standard deployment workflows need augmentation with organization-specific requirements.
+For this project, azure.yaml defines the .NET Aspire AppHost which internally orchestrates the Orders API and Web App services, specifies the Bicep infrastructure templates in the `infra/` directory, and declares preprovision, postprovision, and predeploy hooks that execute platform-specific scripts. The hooks section is particularly powerful because it allows you to inject custom validation, configuration, and data generation logic into the azd workflow without modifying azd itself. This extensibility makes azd suitable for complex enterprise scenarios where standard deployment workflows need augmentation with organization-specific requirements.
 
 The azure.yaml format supports both Windows (PowerShell) and POSIX (Bash) environments, allowing the same configuration file to work seamlessly across developer workstations regardless of operating system. This cross-platform support, combined with the ability to define custom hooks, makes azd an ideal orchestrator for complex, multi-service applications that require careful coordination of infrastructure, configuration, and application deployment.
 

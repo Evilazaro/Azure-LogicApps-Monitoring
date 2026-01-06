@@ -1,4 +1,4 @@
-﻿#!/usr/bin/env pwsh
+#!/usr/bin/env pwsh
 
 #Requires -Version 7.0
 
@@ -36,11 +36,13 @@
     Prerequisite   : .NET SDK, Azure Developer CLI, Azure CLI
     Required Env   : AZURE_SUBSCRIPTION_ID, AZURE_RESOURCE_GROUP, AZURE_LOCATION
     Author         : Azure DevOps Team
-    Last Modified  : 2025-12-29
+    Last Modified  : 2026-01-06
     Version        : 2.0.1
+    
 #>
 
 [CmdletBinding(SupportsShouldProcess, ConfirmImpact = 'Medium')]
+[OutputType([System.Void])]
 param(
     [Parameter(Mandatory = $false, HelpMessage = 'Skip confirmation prompts')]
     [switch]$Force

@@ -39,17 +39,18 @@
 
 .NOTES
     File Name      : clean-secrets.ps1
-    Author         : Azure-LogicApps-Monitoring Team
+    Author         : Evilazaro | Principal Cloud Solution Architect | Microsoft
     Version        : 2.0.1
-    Last Modified  : 2025-12-29
+    Last Modified  : 2026-01-06
     Prerequisite   : .NET SDK 10.0 or higher
-    Copyright      : (c) 2025. All rights reserved.
+    
 
 .LINK
     https://github.com/Evilazaro/Azure-LogicApps-Monitoring
 #>
 
 [CmdletBinding(SupportsShouldProcess, ConfirmImpact = 'High')]
+[OutputType([System.Void])]
 param(
     [Parameter(Mandatory = $false, HelpMessage = 'Skip confirmation prompts')]
     [switch]$Force
@@ -74,12 +75,12 @@ $ProgressPreference = 'SilentlyContinue'
 
 #region Script Constants
 
-# Script metadata constants
-$ScriptVersion = '2.0.1'
-$MinimumDotNetMajorVersion = 10
+# Script metadata constants with script scope for proper accessibility
+$script:ScriptVersion = '2.0.1'
+$script:MinimumDotNetMajorVersion = 10
 
 # Project configuration - paths relative to script location
-$Projects = @(
+$script:Projects = @(
     @{
         Name = 'app.AppHost'
         Path = Join-Path -Path $PSScriptRoot -ChildPath '..\app.AppHost\'
@@ -166,11 +167,11 @@ function Test-DotNetAvailability {
                 }
             }
 
-            if ($major -lt $MinimumDotNetMajorVersion) {
+            if ($major -lt $script:MinimumDotNetMajorVersion) {
                 return [pscustomobject]@{
                     IsAvailable = $false
                     Version     = $dotnetVersion
-                    Reason      = "dotnet SDK major version $major is less than required $MinimumDotNetMajorVersion"
+                    Reason      = "dotnet SDK major version $major is less than required $script:MinimumDotNetMajorVersion"
                 }
             }
             
@@ -349,7 +350,7 @@ function Write-ScriptHeader {
     process {
         Write-Information -MessageData ''
         Write-Information -MessageData '================================================================='
-        Write-Information -MessageData "  Clean .NET User Secrets - Version $ScriptVersion"
+        Write-Information -MessageData "  Clean .NET User Secrets - Version $script:ScriptVersion"
         Write-Information -MessageData '  Azure Logic Apps Monitoring Project'
         Write-Information -MessageData '================================================================='
         Write-Information -MessageData ''
@@ -414,7 +415,7 @@ try {
     $dotnetCheck = Test-DotNetAvailability
     if (-not $dotnetCheck.IsAvailable) {
         $reason = if ($dotnetCheck.Reason) { $dotnetCheck.Reason } else { 'Unknown reason' }
-        throw ".NET SDK is not installed, not accessible, or does not meet requirements. Required: .NET SDK $MinimumDotNetMajorVersion.0 or higher. Details: $reason"
+        throw ".NET SDK is not installed, not accessible, or does not meet requirements. Required: .NET SDK $script:MinimumDotNetMajorVersion.0 or higher. Details: $reason"
     }
     Write-Information -MessageData "✓ .NET SDK is available (version: $($dotnetCheck.Version))"
     Write-Information -MessageData ''
@@ -423,7 +424,7 @@ try {
     Write-Information -MessageData 'Step 2: Validating project paths...'
     $validProjects = [System.Collections.Generic.List[hashtable]]::new()
     
-    foreach ($project in $Projects) {
+    foreach ($project in $script:Projects) {
         $projectFile = Test-ProjectPath -Path $project.Path -Name $project.Name
         if ($projectFile) {
             $validProjects.Add(@{

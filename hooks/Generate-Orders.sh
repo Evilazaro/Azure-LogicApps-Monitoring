@@ -15,7 +15,7 @@
 #     2.0.1
 #
 # LAST MODIFIED
-#     2025-12-29
+#     2026-01-06
 #
 # PARAMETERS
 #     --count COUNT
@@ -58,10 +58,10 @@
 #
 # NOTES
 #     File Name      : Generate-Orders.sh
-#     Author         : Azure Logic Apps Monitoring Team
+#     Author         : Evilazaro | Principal Cloud Solution Architect | Microsoft
 #     Prerequisite   : Bash 4.0 or higher
 #     Optional       : jq (for optimized JSON generation)
-#     Copyright      : (c) 2025. All rights reserved.
+#     
 #
 # LINK
 #     https://github.com/Evilazaro/Azure-LogicApps-Monitoring

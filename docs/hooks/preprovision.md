@@ -1,7 +1,7 @@
 # 🚀 Pre-Provisioning Script Documentation
 
 > **Version:** 2.3.0  
-> **Last Updated:** 2025-12-30  
+> **Last Updated:** 2026-01-06  
 > **Scripts:** `preprovision.ps1` (PowerShell) | `preprovision.sh` (Bash)
 
 ## 📋 Table of Contents
@@ -553,6 +553,7 @@ For detailed diagnostic information:
 
 | Version   | Date       | Changes                                                                                                                                                                                                                                             |
 | --------- | ---------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **2.3.0** | 2026-01-06 | • Applied PowerShell best practices (OutputType on script block)<br/>• Updated copyright to 2025-2026<br/>• Documentation updates                                                                                                                   |
 | **2.3.0** | 2025-12-30 | • Added `--auto-install` parameter<br/>• Added `--use-device-code-login` parameter<br/>• Added installation functions for all prerequisites<br/>• Added Azure resource provider registration<br/>• Synchronized PowerShell and Bash implementations |
 | **2.0.0** | 2025-12-29 | • Complete rewrite with comprehensive validation<br/>• Added Bicep CLI validation<br/>• Added Azure authentication check<br/>• Added quota information                                                                                              |
 | **1.0.0** | 2025-12-01 | • Initial release with basic validation                                                                                                                                                                                                             |

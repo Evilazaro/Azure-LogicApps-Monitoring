@@ -53,19 +53,20 @@
 
 .NOTES
     File Name      : deploy-workflow.ps1
-    Author         : Azure Logic Apps Monitoring Team
+    Author         : Evilazaro | Principal Cloud Solution Architect | Microsoft
     Version        : 1.1.0
     Last Modified  : 2026-01-06
     Prerequisite   : PowerShell 7.0 or later
     Prerequisite   : Azure CLI (az)
     Prerequisite   : Azure Developer CLI (azd)
-    Copyright      : (c) 2025-2026. All rights reserved.
+    
 
 .LINK
     https://github.com/Evilazaro/Azure-LogicApps-Monitoring
 #>
 
 [CmdletBinding(SupportsShouldProcess = $true, ConfirmImpact = 'High')]
+[OutputType([System.Void])]
 param(
     [Parameter(Mandatory = $false)]
     [ValidateNotNullOrEmpty()]

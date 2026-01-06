@@ -143,9 +143,11 @@
 #
 # NOTES:
 #     Version:        1.1.0
-#     Author:         Evilazaro
+#     Author          Evilazaro | Principal Cloud Solution Architect | Microsoft
 #     Creation Date:  2025-12-29
+#     Last Modified:  2026-01-06
 #     Purpose:        Post-provisioning SQL Database managed identity configuration
+#     Copyright:      (c) 2025-2026. All rights reserved.
 #     
 #     Prerequisites:
 #     - Bash 4.0 or higher

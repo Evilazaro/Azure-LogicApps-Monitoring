@@ -860,6 +860,14 @@ infra/data/ordersBatch.json
 | **Scalability**      | • **Maximum tested:** 10,000 orders (~50 seconds)<br/>• **Recommended batch size:** 100-1000 orders<br/>• **Memory efficient:** Generates orders sequentially<br/>• **No degradation:** Consistent per-order generation time                                                |
 | **Optimization**     | • **Fast initialization:** Data structures loaded once<br/>• **Efficient randomization:** Built-in language features<br/>• **Minimal overhead:** Direct JSON serialization<br/>• **Progress tracking:** Optional, minimal impact on speed                                   |
 
+## 📜 Version History
+
+| Version | Date       | Author                           | Changes                                                                                                                                                                                |
+| ------- | ---------- | -------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1.0.0   | 2025-01-15 | Azure Logic Apps Monitoring Team | • Initial release<br/>• Basic order generation with fixed product count<br/>• PowerShell implementation                                                                                |
+| 2.0.0   | 2025-06-01 | Azure Logic Apps Monitoring Team | • Added Bash implementation<br/>• Introduced configurable product count (MinProducts/MaxProducts)<br/>• Enhanced price variation logic<br/>• Added WhatIf/dry-run support              |
+| 2.0.1   | 2026-01-06 | Azure Logic Apps Monitoring Team | • Applied PowerShell best practices (OutputType, $script: scope prefix)<br/>• Synchronized dates/copyright across PowerShell and Bash<br/>• Updated documentation with Version History |
+
 ## Quick Links
 
 - **Repository**: [Azure-LogicApps-Monitoring](https://github.com/Evilazaro/Azure-LogicApps-Monitoring)
@@ -868,8 +876,8 @@ infra/data/ordersBatch.json
 
 ---
 
-**Last Updated**: December 29, 2025  
-**Script Version**: 1.1.0 (Bash), 1.0.0 (PowerShell)  
+**Last Updated**: January 6, 2026  
+**Script Version**: 2.0.1 (PowerShell), 2.0.1 (Bash)  
 **Compatibility**: PowerShell 7.0+, Bash 4.0+, Windows/macOS/Linux  
 **Optional Dependencies**: jq (for enhanced Bash statistics)
 
