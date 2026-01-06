@@ -2,7 +2,7 @@
     "managedApiConnections": {
         "servicebus": {
             "api": {
-                "id": "/subscriptions/${AZURE_SUBSCRIPTION_ID}/providers/Microsoft.Web/locations/westus3/managedApis/servicebus"
+                "id": "/subscriptions/${AZURE_SUBSCRIPTION_ID}/providers/Microsoft.Web/locations/${AZURE_LOCATION}/managedApis/servicebus"
             },
             "connection": {
                 "id": "/subscriptions/${AZURE_SUBSCRIPTION_ID}/resourceGroups/${AZURE_RESOURCE_GROUP}/providers/Microsoft.Web/connections/servicebus"
@@ -22,7 +22,7 @@
         },
         "azureblob": {
             "api": {
-                "id": "/subscriptions/${AZURE_SUBSCRIPTION_ID}/providers/Microsoft.Web/locations/westus3/managedApis/azureblob"
+                "id": "/subscriptions/${AZURE_SUBSCRIPTION_ID}/providers/Microsoft.Web/locations/${AZURE_LOCATION}/managedApis/azureblob"
             },
             "connection": {
                 "id": "/subscriptions/${AZURE_SUBSCRIPTION_ID}/resourceGroups/${AZURE_RESOURCE_GROUP}/providers/Microsoft.Web/connections/azureblob"
