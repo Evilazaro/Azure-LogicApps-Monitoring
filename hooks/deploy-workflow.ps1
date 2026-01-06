@@ -292,45 +292,16 @@ function Test-AzureCLIConnection {
     }
 }
 
-function Get-AzureCLIAccessToken {
-    <#
-    .SYNOPSIS
-        Gets an access token for Azure Management API using Azure CLI.
-    .OUTPUTS
-        System.String
-    #>
-    [CmdletBinding()]
-    [OutputType([string])]
-    param()
-
-    try {
-        $tokenJson = az account get-access-token --resource 'https://management.azure.com/' --output json 2>$null
-        if ($LASTEXITCODE -ne 0 -or -not $tokenJson) {
-            throw 'Failed to get access token from Azure CLI.'
-        }
-        
-        $tokenData = $tokenJson | ConvertFrom-Json
-        return $tokenData.accessToken
-    }
-    catch {
-        throw "Failed to get access token: $($_.Exception.Message)"
-    }
-}
-
 function Deploy-LogicAppWorkflow {
     <#
     .SYNOPSIS
-        Deploys a workflow to Azure Logic Apps Standard using the REST API.
+        Deploys a workflow to Azure Logic Apps Standard using zip deployment via Kudu API.
     .OUTPUTS
         PSCustomObject
     #>
     [CmdletBinding(SupportsShouldProcess = $true)]
     [OutputType([PSCustomObject])]
     param(
-        [Parameter(Mandatory = $true)]
-        [ValidateNotNullOrEmpty()]
-        [string]$SubscriptionId,
-
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
         [string]$ResourceGroupName,
@@ -345,50 +316,92 @@ function Deploy-LogicAppWorkflow {
 
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
-        [string]$WorkflowDefinition,
+        [string]$WorkflowBasePath,
 
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
-        [string]$AccessToken
+        [string]$WorkflowContent,
+
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
+        [string]$ConnectionsContent
     )
 
-    $apiVersion = '2023-01-01'
-    $uri = "https://management.azure.com/subscriptions/$SubscriptionId/resourceGroups/$ResourceGroupName/providers/Microsoft.Web/sites/$LogicAppName/hostruntime/runtime/webhooks/workflow/api/management/workflows/$WorkflowName`?api-version=$apiVersion"
-
-    $headers = @{
-        'Authorization' = "Bearer $AccessToken"
-        'Content-Type'  = 'application/json'
-    }
-
-    # Parse the workflow definition to create the request body
-    $workflowObject = $WorkflowDefinition | ConvertFrom-Json -Depth 100
-    $requestBody = @{
-        properties = @{
-            definition = $workflowObject.definition
-        }
-        kind       = $workflowObject.kind
-    } | ConvertTo-Json -Depth 100 -Compress
-
-    if ($PSCmdlet.ShouldProcess("$LogicAppName/$WorkflowName", 'Deploy workflow')) {
+    if ($PSCmdlet.ShouldProcess("$LogicAppName/$WorkflowName", 'Deploy workflow via zip deploy')) {
         try {
-            Write-Verbose "Deploying workflow to: $uri"
-            $response = Invoke-RestMethod -Uri $uri -Method Put -Headers $headers -Body $requestBody -ErrorAction Stop
+            # Create a temporary directory for the deployment package
+            $tempDir = Join-Path -Path ([System.IO.Path]::GetTempPath()) -ChildPath "logicapp-deploy-$(Get-Random)"
+            $null = New-Item -ItemType Directory -Path $tempDir -Force
+            
+            # Create workflow directory structure
+            $workflowDir = Join-Path -Path $tempDir -ChildPath $WorkflowName
+            $null = New-Item -ItemType Directory -Path $workflowDir -Force
+
+            # Write workflow.json
+            $workflowFilePath = Join-Path -Path $workflowDir -ChildPath 'workflow.json'
+            $WorkflowContent | Set-Content -Path $workflowFilePath -Encoding UTF8 -NoNewline
+            Write-Verbose "Created workflow file: $workflowFilePath"
+
+            # Write connections.json at root level
+            $connectionsFilePath = Join-Path -Path $tempDir -ChildPath 'connections.json'
+            $ConnectionsContent | Set-Content -Path $connectionsFilePath -Encoding UTF8 -NoNewline
+            Write-Verbose "Created connections file: $connectionsFilePath"
+
+            # Copy host.json if it exists in the source
+            $sourceHostJson = Join-Path -Path $WorkflowBasePath -ChildPath 'host.json'
+            if (Test-Path -Path $sourceHostJson) {
+                $destHostJson = Join-Path -Path $tempDir -ChildPath 'host.json'
+                Copy-Item -Path $sourceHostJson -Destination $destHostJson
+                Write-Verbose "Copied host.json"
+            }
+
+            # Create zip file
+            $zipPath = Join-Path -Path ([System.IO.Path]::GetTempPath()) -ChildPath "logicapp-deploy-$(Get-Random).zip"
+            Write-Host "  Creating deployment package..." -ForegroundColor Gray
+            Compress-Archive -Path "$tempDir\*" -DestinationPath $zipPath -Force
+            Write-Verbose "Created zip file: $zipPath"
+
+            # Deploy using Azure CLI
+            Write-Host "  Deploying to Logic App via zip deploy..." -ForegroundColor Gray
+            $deployOutput = az logicapp deployment source config-zip `
+                --resource-group $ResourceGroupName `
+                --name $LogicAppName `
+                --src $zipPath `
+                --output json 2>&1
+
+            if ($LASTEXITCODE -ne 0) {
+                # Try alternative deployment method using webapp deploy
+                Write-Verbose "Trying alternative deployment method..."
+                $deployOutput = az webapp deployment source config-zip `
+                    --resource-group $ResourceGroupName `
+                    --name $LogicAppName `
+                    --src $zipPath `
+                    --output json 2>&1
+                
+                if ($LASTEXITCODE -ne 0) {
+                    throw "Deployment failed: $deployOutput"
+                }
+            }
+
+            # Cleanup temporary files
+            Remove-Item -Path $tempDir -Recurse -Force -ErrorAction SilentlyContinue
+            Remove-Item -Path $zipPath -Force -ErrorAction SilentlyContinue
+
             return [PSCustomObject]@{
                 Success      = $true
                 WorkflowName = $WorkflowName
-                Response     = $response
+                Response     = $deployOutput
             }
         }
         catch {
-            $errorDetails = $null
-            try {
-                $errorDetails = $_.ErrorDetails.Message | ConvertFrom-Json
+            # Cleanup on error
+            if ($tempDir -and (Test-Path -Path $tempDir)) {
+                Remove-Item -Path $tempDir -Recurse -Force -ErrorAction SilentlyContinue
             }
-            catch {
-                # Ignore JSON parse errors
+            if ($zipPath -and (Test-Path -Path $zipPath)) {
+                Remove-Item -Path $zipPath -Force -ErrorAction SilentlyContinue
             }
-            $errorMessage = if ($errorDetails) { $errorDetails.error.message } else { $_.Exception.Message }
-            throw "Failed to deploy workflow '$WorkflowName': $errorMessage"
+            throw "Failed to deploy workflow '$WorkflowName': $($_.Exception.Message)"
         }
     }
 
@@ -444,7 +457,7 @@ try {
     Write-Host ''
 
     # Step 1: Load azd environment variables
-    Write-Host '[1/6] Loading azd environment...' -ForegroundColor Yellow
+    Write-Host '[1/5] Loading azd environment...' -ForegroundColor Yellow
     $azdLoaded = Initialize-AzdEnvironment
     if (-not $azdLoaded) {
         Write-Warning 'azd environment not loaded. Using existing environment variables.'
@@ -469,14 +482,14 @@ try {
 
     # Step 2: Validate Azure CLI connection
     Write-Host ''
-    Write-Host '[2/6] Validating Azure CLI connection...' -ForegroundColor Yellow
+    Write-Host '[2/5] Validating Azure CLI connection...' -ForegroundColor Yellow
     $azAccount = Test-AzureCLIConnection
     Write-Host "  Connected as: $($azAccount.AccountId)" -ForegroundColor Green
     Write-Host "  Subscription: $($azAccount.SubscriptionName) ($($azAccount.SubscriptionId))" -ForegroundColor Green
 
     # Step 3: Validate environment variables
     Write-Host ''
-    Write-Host '[3/6] Validating environment variables...' -ForegroundColor Yellow
+    Write-Host '[3/5] Validating environment variables...' -ForegroundColor Yellow
     
     if (-not $SkipPlaceholderReplacement) {
         $allPlaceholders = @()
@@ -495,7 +508,7 @@ try {
 
     # Step 4: Resolve file paths and process placeholders
     Write-Host ''
-    Write-Host '[4/6] Processing workflow files...' -ForegroundColor Yellow
+    Write-Host '[4/5] Processing workflow files...' -ForegroundColor Yellow
 
     $workflowFilePath = Join-Path -Path $WorkflowBasePath -ChildPath "$WorkflowName/workflow.json"
     $connectionsFilePath = Join-Path -Path $WorkflowBasePath -ChildPath 'connections.json'
@@ -523,29 +536,26 @@ try {
 
     Write-Host '  Files processed successfully.' -ForegroundColor Green
 
-    # Step 5: Get access token using Azure CLI
+    # Step 5: Deploy workflow via zip deploy
     Write-Host ''
-    Write-Host '[5/6] Acquiring Azure access token via Azure CLI...' -ForegroundColor Yellow
-    $accessToken = Get-AzureCLIAccessToken
-    Write-Host '  Access token acquired.' -ForegroundColor Green
-
-    # Step 6: Deploy workflow
-    Write-Host ''
-    Write-Host '[6/6] Deploying workflow to Azure Logic Apps...' -ForegroundColor Yellow
+    Write-Host '[5/5] Deploying workflow to Azure Logic Apps via zip deploy...' -ForegroundColor Yellow
     Write-Host "  Logic App: $LogicAppName" -ForegroundColor Gray
     Write-Host "  Resource Group: $ResourceGroupName" -ForegroundColor Gray
     Write-Host "  Workflow: $WorkflowName" -ForegroundColor Gray
 
+    # Resolve the base path for deployment
+    $resolvedBasePath = Resolve-Path -Path $WorkflowBasePath -ErrorAction Stop
+
     $deploymentResult = Deploy-LogicAppWorkflow `
-        -SubscriptionId $azAccount.SubscriptionId `
         -ResourceGroupName $ResourceGroupName `
         -LogicAppName $LogicAppName `
         -WorkflowName $WorkflowName `
-        -WorkflowDefinition $workflowContent `
-        -AccessToken $accessToken
+        -WorkflowBasePath $resolvedBasePath `
+        -WorkflowContent $workflowContent `
+        -ConnectionsContent $connectionsContent
 
     if ($deploymentResult.Success) {
-        if ($deploymentResult.WhatIf) {
+        if ($deploymentResult.PSObject.Properties['WhatIf'] -and $deploymentResult.WhatIf) {
             Write-Host '  WhatIf: Workflow deployment would succeed.' -ForegroundColor Yellow
         }
         else {
