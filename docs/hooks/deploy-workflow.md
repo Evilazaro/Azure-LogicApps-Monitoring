@@ -271,6 +271,7 @@ No changes were made. This was a simulation.
 ```
 ╔══════════════════════════════════════════════════════════════╗
 ║     Azure Logic Apps Workflow Deployment Script              ║
+║     Version: 1.3.0                                          ║
 ║     (Using Azure CLI and Azure Developer CLI)                ║
 ╚══════════════════════════════════════════════════════════════╝
 
@@ -320,7 +321,6 @@ No changes were made. This was a simulation.
 
 ╔══════════════════════════════════════════════════════════════╗
 ║              Deployment Completed Successfully!              ║
-║              Duration: 45 seconds                            ║
 ╚══════════════════════════════════════════════════════════════╝
 ```
 
@@ -679,11 +679,12 @@ flowchart LR
 
 ## 📜 Version History
 
-| Version | Date       | Author                           | Changes                                                                                                                                                                                                                                                                           |
-| ------- | ---------- | -------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 1.0.0   | 2025-12-20 | Azure Logic Apps Monitoring Team | • Initial release<br/>• Basic workflow deployment with placeholder replacement<br/>• Azure CLI zip deployment integration                                                                                                                                                         |
-| 1.1.0   | 2026-01-06 | Azure Logic Apps Monitoring Team | • Added WhatIf/Confirm support<br/>• Enhanced environment variable validation<br/>• Improved error handling and logging<br/>• Added OutputType attribute for best practices compliance                                                                                            |
-| 1.2.0   | 2026-01-06 | Azure Logic Apps Monitoring Team | • Added AZURE_ENV_NAME support for azd environment selection<br/>• Improved regex matching for environment variable parsing<br/>• Enhanced JSON parsing with jq fallback in Bash<br/>• Fixed PowerShell best practices compliance<br/>• Improved error handling and documentation |
+| Version | Date       | Author                                                  | Changes                                                                                                                                                                                                                                                                                                                                             |
+| ------- | ---------- | ------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1.0.0   | 2025-12-20 | Evilazaro \| Principal Cloud Solution Architect         | • Initial release<br/>• Basic workflow deployment with placeholder replacement<br/>• Azure CLI zip deployment integration                                                                                                                                                                                                                          |
+| 1.1.0   | 2026-01-06 | Evilazaro \| Principal Cloud Solution Architect         | • Added WhatIf/Confirm support<br/>• Enhanced environment variable validation<br/>• Improved error handling and logging<br/>• Added OutputType attribute for best practices compliance                                                                                                                                                             |
+| 1.2.0   | 2026-01-06 | Evilazaro \| Principal Cloud Solution Architect         | • Added AZURE_ENV_NAME support for azd environment selection<br/>• Improved regex matching for environment variable parsing<br/>• Enhanced JSON parsing with jq fallback in Bash<br/>• Fixed PowerShell best practices compliance<br/>• Improved error handling and documentation                                                                  |
+| 1.3.0   | 2026-01-06 | Evilazaro \| Principal Cloud Solution Architect         | • Applied PowerShell best practices (PSScriptAnalyzer compliance)<br/>• Changed to `Write-Information` for informational messages<br/>• Improved environment variable parsing with proper quote handling<br/>• Added `try/finally` for cleanup reliability<br/>• Used GUID for unique temp file naming<br/>• Enhanced function documentation in Bash |
 
 ---
 
