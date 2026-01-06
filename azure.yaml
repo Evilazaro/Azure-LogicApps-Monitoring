@@ -74,13 +74,14 @@ hooks:
     posix:
       shell: sh
       run: echo "No pre-deployment actions defined."
-      continueOnError: true
+      continueOnError: false
       interactive: false
     windows:
       shell: pwsh
       run: |
         ./hooks/Replace-ConnectionPlaceholders.ps1
-      continueOnError: true
+        ./hooks/deploy-workflow.ps1
+      continueOnError: false
       interactive: false
 
 # ------------------------------------------------------------------------------
