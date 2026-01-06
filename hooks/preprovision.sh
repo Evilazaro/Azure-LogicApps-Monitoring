@@ -678,6 +678,49 @@ validate_azure_resource_providers() {
     return 0
 }
 
+# Validate sqlcmd utility availability
+# Checks if sqlcmd (mssql-tools or mssql-tools18) is installed and accessible
+# Returns: 0 if sqlcmd is available, 1 otherwise
+# Note: Required for SQL Database managed identity configuration
+validate_sqlcmd() {
+    print_verbose "Validating sqlcmd utility..."
+    
+    # Check if sqlcmd command exists in PATH
+    if command -v sqlcmd &> /dev/null; then
+        local sqlcmd_path
+        sqlcmd_path=$(command -v sqlcmd)
+        print_verbose "sqlcmd found at: ${sqlcmd_path}"
+        
+        # Get version info (optional - some versions may not support --version)
+        local version_output
+        if version_output=$(sqlcmd -? 2>&1 | head -n1); then
+            print_verbose "sqlcmd version info: ${version_output}"
+        fi
+        
+        return 0
+    fi
+    
+    # Check common installation paths for mssql-tools
+    local common_paths=(
+        "/opt/mssql-tools18/bin/sqlcmd"
+        "/opt/mssql-tools/bin/sqlcmd"
+        "/usr/local/bin/sqlcmd"
+    )
+    
+    for path in "${common_paths[@]}"; do
+        if [[ -x "${path}" ]]; then
+            print_verbose "sqlcmd found at: ${path}"
+            print_warning "sqlcmd is installed but not in PATH"
+            print_info "Add to PATH with: export PATH=\"\$(dirname ${path}):\$PATH\""
+            return 0
+        fi
+    done
+    
+    print_error "sqlcmd is not installed"
+    print_error "sqlcmd is required for SQL Database managed identity configuration"
+    return 1
+}
+
 # Check Azure subscription quotas (informational only)
 # Provides informational guidance about common quota limits
 # Returns: Always returns 0 (does not fail validation)
