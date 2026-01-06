@@ -41,16 +41,17 @@
     Author         : Azure Logic Apps Monitoring Team
     Prerequisite   : PowerShell 7.0 or higher
     Version        : 2.0.1
-    Last Modified  : 2025-12-29
-    Copyright      : (c) 2025. All rights reserved.
+    Last Modified  : 2026-01-06
+    Copyright      : (c) 2025-2026. All rights reserved.
 
 .LINK
     https://github.com/Evilazaro/Azure-LogicApps-Monitoring
 #>
 
 [CmdletBinding(SupportsShouldProcess)]
+[OutputType([System.Void])]
 param(
-    [Parameter(Mandatory = $false, HelpMessage = 'Number of orders to generate')]
+    [Parameter(Mandatory = $false, HelpMessage = 'Number of orders to generate'))
     [ValidateRange(1, 10000)]
     [int]$OrderCount = 2000,
 
@@ -90,7 +91,7 @@ $ErrorActionPreference = 'Stop'
     Price variation is applied during order generation to simulate
     real-world pricing fluctuations, promotions, and discounts.
 #>
-$Products = @(
+$script:Products = @(
     [PSCustomObject]@{ Id = 'PROD-1001'; Description = 'Wireless Mouse'; BasePrice = 25.99 }
     [PSCustomObject]@{ Id = 'PROD-1002'; Description = 'Mechanical Keyboard'; BasePrice = 89.99 }
     [PSCustomObject]@{ Id = 'PROD-1003'; Description = 'USB-C Hub'; BasePrice = 34.99 }
@@ -125,7 +126,7 @@ $Products = @(
     selected randomly during order creation to ensure geographic
     distribution in test data.
 #>
-$Addresses = @(
+$script:Addresses = @(
     '221B Baker Street, London, UK'
     '350 Fifth Ave, New York, NY, USA'
     '88 Colin P Kelly Jr St, San Francisco, CA, USA'
@@ -255,7 +256,7 @@ function New-Order {
     $orderDate = Get-RandomDate
     
     # Select random delivery address from the global address pool
-    $deliveryAddress = $Addresses | Get-Random
+    $deliveryAddress = $script:Addresses | Get-Random
     
     # Determine number of products for this order within specified range
     # Note: Maximum parameter is exclusive, so we add 1 to include MaxProductCount
@@ -263,7 +264,7 @@ function New-Order {
 
     # Randomly select products from catalog without replacement
     # Get-Random -Count 1 returns a scalar, so wrap in @() for consistent array semantics.
-    $selectedProducts = @($Products | Get-Random -Count $productCount)
+    $selectedProducts = @($script:Products | Get-Random -Count $productCount)
 
     # Initialize collections for order products and running total
     $orderProducts = [System.Collections.Generic.List[hashtable]]::new($selectedProducts.Count)
