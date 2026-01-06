@@ -611,7 +611,6 @@ function Write-DeploymentSummary {
         Write-Host "    $($item.EnvVar): $displayValue" -ForegroundColor Gray
     }
 }
-}
 
 #endregion Helper Functions
 
