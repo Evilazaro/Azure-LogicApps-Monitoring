@@ -869,6 +869,7 @@ try {
         $maxRetries = 3
         $retryCount = 0
         $connected = $false
+        $lastConnectionError = $null
         
         while (-not $connected -and $retryCount -lt $maxRetries) {
             try {
@@ -881,6 +882,7 @@ try {
                 Write-Log "  Database:           $($connection.Database)" -Level Verbose
             }
             catch {
+                $lastConnectionError = $_
                 $retryCount++
                 if ($retryCount -lt $maxRetries) {
                     $waitTime = [Math]::Pow(2, $retryCount)  # Exponential backoff: 2, 4, 8 seconds
@@ -888,10 +890,22 @@ try {
                     Write-Log "Retrying in $waitTime seconds..." -Level Info
                     Start-Sleep -Seconds $waitTime
                 }
-                else {
-                    throw
-                }
             }
+        }
+        
+        # Verify connection was established successfully
+        if (-not $connected) {
+            $errorMsg = "Failed to establish database connection after $maxRetries attempts."
+            if ($lastConnectionError) {
+                $errorMsg += " Last error: $($lastConnectionError.Exception.Message)"
+            }
+            Write-Log $errorMsg -Level Error
+            throw $errorMsg
+        }
+        
+        # Additional validation: ensure connection is open and valid
+        if ($null -eq $connection -or $connection.State -ne [System.Data.ConnectionState]::Open) {
+            throw "Database connection is not in a valid state. Current state: $(if ($null -eq $connection) { 'null' } else { $connection.State })"
         }
         
         # Create and configure SQL command

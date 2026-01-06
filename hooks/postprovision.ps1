@@ -986,9 +986,20 @@ try {
                     # Non-fatal error - log warning but continue with provisioning
                     # The database connection string will still be configured in user secrets
                     # Manual intervention may be required for database access
-                    Write-Warning "Failed to configure SQL database managed identity: $($_.Exception.Message)"
+                    $errorMessage = if ($_.Exception) { 
+                        $_.Exception.Message 
+                    } elseif ($_ -is [string]) {
+                        $_
+                    } else {
+                        $_.ToString()
+                    }
+                    Write-Warning "Failed to configure SQL database managed identity: $errorMessage"
                     Write-Warning "The application may not have database access. Manual configuration may be required."
-                    Write-Verbose "Error details: $($_.Exception.ToString())"
+                    if ($_.Exception) {
+                        Write-Verbose "Error details: $($_.Exception.ToString())"
+                    } else {
+                        Write-Verbose "Error details: $($_.ToString())"
+                    }
                     Write-Information ""
                     Write-Information "To manually configure database access, run:"
                     Write-Information "  .\sql-managed-identity-config.ps1 -SqlServerName '$azureSqlServerName' -DatabaseName '$azureSqlDatabaseName' -PrincipalDisplayName '$azureManagedIdentityName' -DatabaseRoles @('db_owner')"
