@@ -341,11 +341,11 @@ output serviceBusConnectionName string = sbConnection.name
 
 @description('Runtime URL of the Service Bus API connection')
 #disable-next-line outputs-should-not-contain-secrets
-output SERVICE_BUS_CONNECTION_RUNTIME_URL string = listConnectionKeys(sbConnection.id, sbConnection.apiVersion, { validityTimeSpan: '7.00:00:00' }).connectionRuntimeUrl
+output SERVICE_BUS_CONNECTION_RUNTIME_URL string = listConnectionKeys(sbConnection.id, sbConnection.apiVersion, { validityTimeSpan: '7.00:00:00' }).runtimeUrls[0]
 
 @description('Runtime URL of the Azure Blob Storage API connection')
 #disable-next-line outputs-should-not-contain-secrets
-output AZURE_BLOB_CONNECTION_RUNTIME_URL string = listConnectionKeys(storageConnection.id, storageConnection.apiVersion, { validityTimeSpan: '7.00:00:00' }).connectionRuntimeUrl
+output AZURE_BLOB_CONNECTION_RUNTIME_URL string = listConnectionKeys(storageConnection.id, storageConnection.apiVersion, { validityTimeSpan: '7.00:00:00' }).runtimeUrls[0]
 
 @description('Resource ID of the Service Bus API connection')
 output serviceBusConnectionId string = sbConnection.id
