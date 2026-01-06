@@ -66,6 +66,7 @@
 #>
 
 [CmdletBinding(SupportsShouldProcess = $true, ConfirmImpact = 'High')]
+[OutputType([System.Void])]
 param(
     [Parameter(Mandatory = $false)]
     [ValidateNotNullOrEmpty()]

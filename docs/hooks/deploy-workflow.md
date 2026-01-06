@@ -599,6 +599,13 @@ flowchart LR
 | **Local Processing**  | < 5 seconds   | Placeholder replacement            |
 | **Azure Operations**  | ~25-50 seconds| Deployment and validation          |
 
+## 📜 Version History
+
+| Version | Date       | Author                          | Changes                                                                                                                                                                                |
+| ------- | ---------- | ------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1.0.0   | 2025-12-20 | Azure Logic Apps Monitoring Team | • Initial release<br/>• Basic workflow deployment with placeholder replacement<br/>• Azure CLI zip deployment integration                                                              |
+| 1.1.0   | 2026-01-06 | Azure Logic Apps Monitoring Team | • Added WhatIf/Confirm support<br/>• Enhanced environment variable validation<br/>• Improved error handling and logging<br/>• Added OutputType attribute for best practices compliance |
+
 ---
 
 <div align="center">
