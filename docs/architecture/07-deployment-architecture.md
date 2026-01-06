@@ -183,34 +183,67 @@ flowchart TB
 From [azure.yaml](../../azure.yaml):
 
 ```yaml
-name: app
+name: azure-logicapps-monitoring
 metadata:
-  template: azd-init@1.11.0
+  template: azure-logicapps-monitoring@1.0.0
+
+# Minimum azd version required
+requiredVersions:
+  azd: ">= 1.9.0"
+
+infra:
+  provider: bicep
+  path: infra
+  module: main
 
 hooks:
   preprovision:
     windows:
       shell: pwsh
-      run: ./hooks/preprovision.ps1
+      run: ./hooks/preprovision.ps1 -Force -Verbose
+      continueOnError: false
+      interactive: true
     posix:
       shell: sh
-      run: ./hooks/preprovision.sh
+      run: ./hooks/preprovision.sh --force --verbose
+      continueOnError: false
+      interactive: true
   postprovision:
     windows:
       shell: pwsh
-      run: ./hooks/postprovision.ps1
+      run: |
+        ./hooks/postprovision.ps1 -Force -Verbose
+        ./hooks/Generate-Orders.ps1 -Force -Verbose
+      continueOnError: false
+      interactive: true
     posix:
       shell: sh
-      run: ./hooks/postprovision.sh
+      run: |
+        ./hooks/postprovision.sh --force --verbose
+        ./hooks/Generate-Orders.sh --force --verbose
+      continueOnError: false
+      interactive: true
+  predeploy:
+    windows:
+      shell: pwsh
+      run: |
+        ./hooks/Replace-ConnectionPlaceholders.ps1
+        ./hooks/deploy-workflow.ps1
+      continueOnError: false
+      interactive: false
+    posix:
+      shell: sh
+      run: |
+        ./hooks/replace-connection-placeholders.sh
+        ./hooks/deploy-workflow.sh
+      continueOnError: false
+      interactive: false
 
 services:
-  orders-api:
-    project: ./src/eShop.Orders.API
+  # .NET Aspire AppHost orchestrating the monitoring solution
+  app:
     language: dotnet
-    host: containerapp
-  web-app:
-    project: ./src/eShop.Web.App
-    language: dotnet
+    project: ./app.AppHost/app.AppHost.csproj
     host: containerapp
 ```
 
