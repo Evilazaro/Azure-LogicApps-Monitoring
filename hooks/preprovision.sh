@@ -1077,7 +1077,7 @@ write_header() {
     cat << EOF
 
 ╔════════════════════════════════════════════════════════════════╗
-║          Azure Pre-Provisioning Script                        ║
+║          Azure Pre-Provisioning Script                         ║
 ╚════════════════════════════════════════════════════════════════╝
 
   Version:          ${SCRIPT_VERSION}

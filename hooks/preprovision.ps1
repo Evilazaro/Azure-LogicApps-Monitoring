@@ -1380,7 +1380,7 @@ function Write-PreProvisionHeader {
         
         Write-Information ''
         Write-Information '╔════════════════════════════════════════════════════════════════╗'
-        Write-Information '║          Azure Pre-Provisioning Script                        ║'
+        Write-Information '║          Azure Pre-Provisioning Script                         ║'
         Write-Information '╚════════════════════════════════════════════════════════════════╝'
         Write-Information ''
         Write-Information "  Version:          $script:ScriptVersion"
