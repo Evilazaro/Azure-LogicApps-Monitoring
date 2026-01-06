@@ -623,7 +623,25 @@ deploy_logic_app_workflow() {
     ZIP_PATH=$(mktemp).zip
     log_gray "Creating deployment package..."
     
-    (cd "${TEMP_DIR}" && zip -r "${ZIP_PATH}" . >/dev/null 2>&1)
+    # Check if zip command is available
+    if ! command -v zip &>/dev/null; then
+        log_error "zip command not found. Please install zip (e.g., 'sudo apt install zip')"
+        return 1
+    fi
+    
+    # Create zip file with error handling
+    local zip_output
+    if ! zip_output=$(cd "${TEMP_DIR}" && zip -r "${ZIP_PATH}" . 2>&1); then
+        log_error "Failed to create zip file: ${zip_output}"
+        return 1
+    fi
+    log_verbose "Zip output: ${zip_output}"
+    
+    # Verify zip file was created
+    if [[ ! -f "${ZIP_PATH}" ]]; then
+        log_error "Zip file was not created at: ${ZIP_PATH}"
+        return 1
+    fi
     log_verbose "Created zip file: ${ZIP_PATH}"
     
     # Deploy using Azure CLI
