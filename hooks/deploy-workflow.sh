@@ -105,6 +105,7 @@ readonly -a WORKFLOW_PLACEHOLDERS=(
 # Connection placeholders (connections.json) - ReadOnly arrays for immutability
 readonly -a CONNECTION_PLACEHOLDERS=(
     'AZURE_SUBSCRIPTION_ID'
+    'AZURE_LOCATION'
     'AZURE_RESOURCE_GROUP'
     'MANAGED_IDENTITY_NAME'
     'SERVICE_BUS_CONNECTION_RUNTIME_URL'
@@ -311,6 +312,7 @@ PLACEHOLDERS REPLACED
 
     Connection Variables (connections.json):
     • AZURE_SUBSCRIPTION_ID
+    • AZURE_LOCATION
     • AZURE_RESOURCE_GROUP
     • MANAGED_IDENTITY_NAME
     • SERVICE_BUS_CONNECTION_RUNTIME_URL

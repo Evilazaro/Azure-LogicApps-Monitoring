@@ -114,6 +114,7 @@ $script:WorkflowPlaceholders = [System.Collections.ObjectModel.ReadOnlyCollectio
 [System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseDeclaredVarsMoreThanAssignments', '')]
 $script:ConnectionPlaceholders = [System.Collections.ObjectModel.ReadOnlyCollection[hashtable]]@(
     @{ Placeholder = '${AZURE_SUBSCRIPTION_ID}'; EnvVar = 'AZURE_SUBSCRIPTION_ID' }
+    @{ Placeholder = '${AZURE_LOCATION}'; EnvVar = 'AZURE_LOCATION' }
     @{ Placeholder = '${AZURE_RESOURCE_GROUP}'; EnvVar = 'AZURE_RESOURCE_GROUP' }
     @{ Placeholder = '${MANAGED_IDENTITY_NAME}'; EnvVar = 'MANAGED_IDENTITY_NAME' }
     @{ Placeholder = '${SERVICE_BUS_CONNECTION_RUNTIME_URL}'; EnvVar = 'SERVICE_BUS_CONNECTION_RUNTIME_URL' }
