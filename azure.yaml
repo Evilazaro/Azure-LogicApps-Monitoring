@@ -80,15 +80,12 @@ hooks:
   predeploy:
     posix:
       shell: sh
-      run: |
-        ./hooks/replace-connection-placeholders.sh --verbose
-        ./hooks/deploy-workflow.sh --verbose
+      run: ./hooks/deploy-workflow.sh
       continueOnError: false
       interactive: false # Non-interactive for CI/CD compatibility
     windows:
       shell: pwsh
-      run: |
-        ./hooks/deploy-workflow.ps1 -PersistConnectionsFile
+      run: ./hooks/deploy-workflow.ps1
       continueOnError: false
       interactive: false # Non-interactive for CI/CD compatibility
 
