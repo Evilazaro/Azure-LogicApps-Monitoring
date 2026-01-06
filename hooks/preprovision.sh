@@ -1563,6 +1563,38 @@ main() {
     fi
     echo ""
     
+    # Check sqlcmd utility (required for SQL managed identity configuration)
+    echo "  • Checking sqlcmd utility..."
+    if ! validate_sqlcmd; then
+        print_warning "    ✗ sqlcmd is required for SQL Database managed identity configuration"
+        print_warning "      See: https://learn.microsoft.com/sql/linux/sql-server-linux-setup-tools"
+        
+        if request_user_confirmation "sqlcmd (mssql-tools18)"; then
+            if install_sqlcmd; then
+                # Refresh PATH to include newly installed sqlcmd
+                export PATH="/opt/mssql-tools18/bin:${PATH}"
+                
+                if validate_sqlcmd; then
+                    echo "    ✓ sqlcmd installed and verified"
+                else
+                    print_warning "    ⚠ sqlcmd installed but not detected in PATH"
+                    print_warning "      Add to PATH: export PATH=\"/opt/mssql-tools18/bin:\$PATH\""
+                    # Don't fail - user can add to PATH manually
+                fi
+            else
+                print_warning "    ⚠ sqlcmd installation failed"
+                print_warning "      SQL managed identity configuration will be skipped during post-provisioning"
+                # Don't fail - this is optional for deployment
+            fi
+        else
+            print_warning "    ⚠ sqlcmd not installed - SQL managed identity will need manual configuration"
+            # Don't fail - this is optional for deployment
+        fi
+    else
+        echo "    ✓ sqlcmd is available"
+    fi
+    echo ""
+    
     # Check Azure Resource Providers (only if authenticated)
     if [[ "${PREREQUISITES_FAILED}" != "true" ]] && [[ "${az_cli_authenticated}" == "true" ]]; then
         echo "  • Checking Azure Resource Provider registration..."
