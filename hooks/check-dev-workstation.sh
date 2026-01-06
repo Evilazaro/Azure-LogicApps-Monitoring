@@ -53,10 +53,10 @@
 #     File Name      : check-dev-workstation.sh
 #     Author         : Azure-LogicApps-Monitoring Team
 #     Version        : 1.0.0
-#     Last Modified  : 2025-12-29
+#     Last Modified  : 2026-01-07
 #     Prerequisite   : Bash 4.0+, preprovision.sh
 #     Purpose        : Development environment validation wrapper
-#     Copyright      : (c) 2025. All rights reserved.
+#     Copyright      : (c) 2025-2026. All rights reserved.
 #
 # LINKS
 #     https://github.com/Evilazaro/Azure-LogicApps-Monitoring
@@ -272,7 +272,7 @@ AUTHOR
     Azure-LogicApps-Monitoring Team
 
 COPYRIGHT
-    (c) 2025. All rights reserved.
+    (c) 2025-2026. All rights reserved.
 
 SEE ALSO
     preprovision.sh - The underlying validation script

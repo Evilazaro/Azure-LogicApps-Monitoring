@@ -69,6 +69,22 @@ hooks:
       continueOnError: false
       interactive: true
 
+  predeploy: # Placeholder for pre-deployment hooks
+    posix:
+      shell: sh
+      run: |
+        ./hooks/replace-connection-placeholders.sh
+        ./hooks/deploy-workflow.sh
+      continueOnError: false
+      interactive: false
+    windows:
+      shell: pwsh
+      run: |
+        ./hooks/Replace-ConnectionPlaceholders.ps1
+        ./hooks/deploy-workflow.ps1
+      continueOnError: false
+      interactive: false
+
 # ------------------------------------------------------------------------------
 # Application Services
 # ------------------------------------------------------------------------------
