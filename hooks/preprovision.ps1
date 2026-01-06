@@ -1169,7 +1169,7 @@ function Install-Zip {
                 if (Get-Command -Name apt-get -ErrorAction SilentlyContinue) {
                     # Debian/Ubuntu
                     Write-Information '  📥 Installing via apt-get...'
-                    & sudo apt-get update 2>&1 | Out-Null
+                    $null = & sudo apt-get update 2>&1
                     & sudo apt-get install -y zip
                     
                     if ($LASTEXITCODE -eq 0) {
@@ -1292,7 +1292,7 @@ function Register-AzureResourceProviders {
                 }
                 
                 # Register the provider
-                & az provider register --namespace $provider 2>&1 | Out-Null
+                $null = & az provider register --namespace $provider 2>&1
                 
                 if ($LASTEXITCODE -ne 0) {
                     Write-Warning "     ✗ Failed to register $provider"
@@ -1797,7 +1797,7 @@ try {
         
         if ($AutoInstall -or (Request-UserConfirmation -PrerequisiteName 'Azure CLI upgrade' -Force:$Force)) {
             Write-Information '    🔧 Upgrading Azure CLI...'
-            & az upgrade --yes 2>&1 | Out-Null
+            $null = & az upgrade --yes 2>&1
             $azCliResult = Test-AzureCLI
             if ($azCliResult.IsVersionValid) {
                 Write-Information '    ✓ Azure CLI upgraded successfully'
@@ -1918,7 +1918,7 @@ try {
         
         # Check quotas (informational only)
         Write-Information '  • Checking Azure subscription quotas...'
-        Test-AzureQuota | Out-Null
+        $null = Test-AzureQuota
         Write-Information ''
     }
     elseif ($prerequisitesFailed) {
