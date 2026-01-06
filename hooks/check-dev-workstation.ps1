@@ -43,10 +43,10 @@
     File Name      : check-dev-workstation.ps1
     Author         : Azure-LogicApps-Monitoring Team
     Version        : 1.0.0
-    Last Modified  : 2025-12-24
+    Last Modified  : 2026-01-07
     Prerequisite   : PowerShell 7.0+, preprovision.ps1
     Purpose        : Development environment validation wrapper
-    Copyright      : (c) 2025. All rights reserved.
+    Copyright      : (c) 2025-2026. All rights reserved.
 
 .LINK
     https://github.com/Evilazaro/Azure-LogicApps-Monitoring
@@ -65,6 +65,7 @@
 #>
 
 [CmdletBinding()]
+[OutputType([System.Void])]
 param()
 
 #region Script Configuration
@@ -76,9 +77,9 @@ Set-StrictMode -Version Latest
 $originalErrorActionPreference = $ErrorActionPreference
 $ErrorActionPreference = 'Stop'
 
-# Script metadata constants
-$ScriptVersion = '1.0.0'
-$ScriptName = 'check-dev-workstation.ps1'
+# Script metadata constants with script scope for proper accessibility
+$script:ScriptVersion = '1.0.0'
+$script:ScriptName = 'check-dev-workstation.ps1'
 
 #endregion Script Configuration
 
@@ -94,7 +95,7 @@ try {
 
     Write-Verbose -Message "Starting developer workstation validation..."
     Write-Verbose -Message "Using validation script: $preprovisionPath"
-    Write-Verbose -Message "Script version: $ScriptVersion"
+    Write-Verbose -Message "Script version: $script:ScriptVersion"
     
     # Resolve PowerShell executable path for child process execution
     # Run in a child pwsh process so that any exit in preprovision.ps1

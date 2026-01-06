@@ -431,6 +431,13 @@ azd up
 | **Scalability**    | • **Consistent performance:** Same execution time regardless of repository size<br/>• **No degradation:** Independent of project complexity<br/>• **Parallel safe:** Can run simultaneously in multiple terminals<br/>• **Cache benefits:** Azure CLI caches authentication tokens                                                                          |
 | **Optimization**   | • **Delegation pattern:** Leverages existing preprovision script logic<br/>• **No redundancy:** Single validation pass with -ValidateOnly flag<br/>• **Early exit:** Stops immediately on critical failures<br/>• **Efficient checks:** Version comparisons use native commands                                                                             |
 
+## 📜 Version History
+
+| Version | Date       | Author                          | Changes                                                                                                                                                                                |
+| ------- | ---------- | ------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1.0.0   | 2025-12-24 | Azure-LogicApps-Monitoring Team | • Initial release<br/>• Cross-platform validation wrapper for preprovision scripts<br/>• Support for -Verbose/-v flag<br/>• Bash and PowerShell implementations |
+| 1.0.0   | 2026-01-07 | Azure-LogicApps-Monitoring Team | • Applied PowerShell best practices (OutputType attribute, $script: scope prefix)<br/>• Updated copyright years<br/>• Synchronized documentation |
+
 ---
 
 <div align="center">
