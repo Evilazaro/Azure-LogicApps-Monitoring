@@ -239,6 +239,75 @@ $InformationPreference = 'Continue'
 
 # Script-level variable to track which SQL client is being used
 $script:UseMicrosoftDataSqlClient = $false
+$script:SqlClientLoadError = $null
+
+# Function to attempt installing Microsoft.Data.SqlClient via NuGet
+function Install-MicrosoftDataSqlClient {
+    [CmdletBinding()]
+    param()
+    
+    Write-Host "Attempting to install Microsoft.Data.SqlClient..." -ForegroundColor Yellow
+    
+    # Create a temporary directory for the package
+    $tempDir = Join-Path -Path $env:TEMP -ChildPath "MicrosoftDataSqlClient_$(Get-Date -Format 'yyyyMMddHHmmss')"
+    $null = New-Item -ItemType Directory -Path $tempDir -Force
+    
+    try {
+        # Try using nuget.exe if available
+        $nugetExe = Get-Command nuget.exe -ErrorAction SilentlyContinue
+        if ($nugetExe) {
+            Write-Host "Using nuget.exe to install package..." -ForegroundColor Cyan
+            & nuget.exe install Microsoft.Data.SqlClient -OutputDirectory $tempDir -NonInteractive 2>&1 | Out-Null
+        }
+        else {
+            # Try using dotnet CLI
+            $dotnetExe = Get-Command dotnet -ErrorAction SilentlyContinue
+            if ($dotnetExe) {
+                Write-Host "Using dotnet CLI to restore package..." -ForegroundColor Cyan
+                # Create a minimal project to restore the package
+                $projectDir = Join-Path -Path $tempDir -ChildPath "temp_project"
+                $null = New-Item -ItemType Directory -Path $projectDir -Force
+                
+                $csprojContent = @"
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net6.0</TargetFramework>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Data.SqlClient" Version="5.*" />
+  </ItemGroup>
+</Project>
+"@
+                $csprojPath = Join-Path -Path $projectDir -ChildPath "temp.csproj"
+                Set-Content -Path $csprojPath -Value $csprojContent
+                
+                Push-Location $projectDir
+                try {
+                    & dotnet restore --verbosity quiet 2>&1 | Out-Null
+                }
+                finally {
+                    Pop-Location
+                }
+            }
+            else {
+                Write-Warning "Neither nuget.exe nor dotnet CLI found. Cannot auto-install Microsoft.Data.SqlClient."
+                return $false
+            }
+        }
+        
+        return $true
+    }
+    catch {
+        Write-Warning "Failed to install Microsoft.Data.SqlClient: $($_.Exception.Message)"
+        return $false
+    }
+    finally {
+        # Cleanup temp directory
+        if (Test-Path -Path $tempDir) {
+            Remove-Item -Path $tempDir -Recurse -Force -ErrorAction SilentlyContinue
+        }
+    }
+}
 
 # Load Microsoft.Data.SqlClient assembly for cross-platform SQL Server connectivity
 # This provides better support for Azure AD/Entra ID authentication in PowerShell Core
@@ -246,6 +315,7 @@ try {
     # Try to load from GAC or installed NuGet package
     $null = [Microsoft.Data.SqlClient.SqlConnection]
     $script:UseMicrosoftDataSqlClient = $true
+    Write-Verbose "Microsoft.Data.SqlClient already loaded"
 }
 catch {
     # Assembly not loaded, try to find and load it
@@ -261,20 +331,32 @@ catch {
         if (Test-Path -Path $basePath -ErrorAction SilentlyContinue) {
             # Find the latest version
             $latestVersion = Get-ChildItem -Path $basePath -Directory -ErrorAction SilentlyContinue |
-                Sort-Object { [Version]$_.Name } -Descending |
+                Sort-Object { 
+                    try { [Version]$_.Name } catch { [Version]"0.0.0" }
+                } -Descending |
                 Select-Object -First 1
             
             if ($latestVersion) {
-                # Try netstandard2.1 first (PowerShell Core), then netstandard2.0
+                # Get PowerShell's .NET runtime version to pick the best matching TFM
+                $runtimeVersion = [System.Environment]::Version
+                Write-Verbose "PowerShell .NET runtime version: $runtimeVersion"
+                
+                # Order of preference: match runtime version, then fallback to older/compatible versions
                 $dllPaths = @(
-                    Join-Path -Path $latestVersion.FullName -ChildPath 'lib\netstandard2.1\Microsoft.Data.SqlClient.dll'
+                    # Try exact or close .NET version matches first
+                    Join-Path -Path $latestVersion.FullName -ChildPath 'lib\net9.0\Microsoft.Data.SqlClient.dll'
+                    Join-Path -Path $latestVersion.FullName -ChildPath 'lib\net8.0\Microsoft.Data.SqlClient.dll'
+                    Join-Path -Path $latestVersion.FullName -ChildPath 'lib\net7.0\Microsoft.Data.SqlClient.dll'
                     Join-Path -Path $latestVersion.FullName -ChildPath 'lib\net6.0\Microsoft.Data.SqlClient.dll'
+                    # Fallback to netstandard (more compatible but potentially less optimized)
+                    Join-Path -Path $latestVersion.FullName -ChildPath 'lib\netstandard2.1\Microsoft.Data.SqlClient.dll'
                     Join-Path -Path $latestVersion.FullName -ChildPath 'lib\netstandard2.0\Microsoft.Data.SqlClient.dll'
                 )
                 
                 foreach ($dllPath in $dllPaths) {
                     if (Test-Path -Path $dllPath -ErrorAction SilentlyContinue) {
                         $sqlClientPath = $dllPath
+                        Write-Verbose "Found Microsoft.Data.SqlClient at: $sqlClientPath"
                         break
                     }
                 }
@@ -287,16 +369,29 @@ catch {
         try {
             Add-Type -Path $sqlClientPath -ErrorAction Stop
             $script:UseMicrosoftDataSqlClient = $true
+            Write-Verbose "Loaded Microsoft.Data.SqlClient from: $sqlClientPath"
         }
         catch {
-            Write-Warning "Failed to load Microsoft.Data.SqlClient from $sqlClientPath : $($_.Exception.Message)"
+            $script:SqlClientLoadError = "Failed to load Microsoft.Data.SqlClient from $sqlClientPath : $($_.Exception.Message)"
+            Write-Warning $script:SqlClientLoadError
             $script:UseMicrosoftDataSqlClient = $false
         }
     }
     else {
-        # Microsoft.Data.SqlClient not found - will use System.Data.SqlClient as fallback
-        Write-Warning 'Microsoft.Data.SqlClient assembly not found. Will use System.Data.SqlClient as fallback.'
-        Write-Warning 'For best results with Azure AD authentication, install Microsoft.Data.SqlClient NuGet package.'
+        # Microsoft.Data.SqlClient not found
+        $script:SqlClientLoadError = @"
+Microsoft.Data.SqlClient assembly not found in NuGet cache.
+This assembly is required for Azure AD/Entra ID authentication with Azure SQL.
+
+To install Microsoft.Data.SqlClient:
+  Option 1: Run 'dotnet add package Microsoft.Data.SqlClient' in a .NET project
+  Option 2: Run 'Install-Package Microsoft.Data.SqlClient' in PowerShell (requires NuGet provider)
+  Option 3: Download from https://www.nuget.org/packages/Microsoft.Data.SqlClient
+
+After installing, run this script again.
+"@
+        Write-Warning 'Microsoft.Data.SqlClient assembly not found.'
+        Write-Warning 'Azure AD authentication requires this package. System.Data.SqlClient fallback will NOT work.'
         $script:UseMicrosoftDataSqlClient = $false
     }
 }
@@ -835,35 +930,64 @@ try {
         # Create SQL connection object using the available SQL client
         Write-Log 'Creating database connection...' -Level Verbose
         
+        $connection = $null
+        
         if ($script:UseMicrosoftDataSqlClient) {
             Write-Log 'Using Microsoft.Data.SqlClient for connection' -Level Verbose
             $connection = [Microsoft.Data.SqlClient.SqlConnection]::new($connectionString)
             $connection.AccessToken = $accessToken  # Use Azure AD token instead of SQL auth
+            Write-Log 'Microsoft.Data.SqlClient connection object created with AccessToken' -Level Verbose
         }
         else {
-            Write-Log 'Using System.Data.SqlClient for connection (fallback)' -Level Verbose
+            Write-Log 'System.Data.SqlClient fallback is not supported for Azure AD authentication' -Level Error
             # For System.Data.SqlClient, we need to include the access token in the connection string
             # Note: System.Data.SqlClient has limited Azure AD support in PowerShell Core
-            $connectionStringWithToken = $connectionString + ";Authentication=Active Directory Access Token"
-            try {
-                $connection = [System.Data.SqlClient.SqlConnection]::new($connectionString)
-                # System.Data.SqlClient requires setting AccessToken via credential property or connection string builder
-                $connectionBuilder = [System.Data.SqlClient.SqlConnectionStringBuilder]::new($connectionString)
-                $connection = [System.Data.SqlClient.SqlConnection]::new($connectionBuilder.ConnectionString)
-                $connection.AccessToken = $accessToken
+            
+            # System.Data.SqlClient in .NET Core/PowerShell Core does NOT support AccessToken property
+            # We need to use Microsoft.Data.SqlClient for Azure AD authentication
+            $errorMessage = @"
+Azure AD authentication requires Microsoft.Data.SqlClient which is not available.
+System.Data.SqlClient does not support the AccessToken property in PowerShell Core.
+
+"@
+            if ($script:SqlClientLoadError) {
+                $errorMessage += @"
+Original load error:
+$script:SqlClientLoadError
+
+"@
             }
-            catch {
-                # If System.Data.SqlClient doesn't support AccessToken property, throw a helpful error
-                $errorMessage = "Neither Microsoft.Data.SqlClient nor System.Data.SqlClient with Azure AD support is available. " +
-                    "Please install Microsoft.Data.SqlClient NuGet package: dotnet add package Microsoft.Data.SqlClient"
-                Write-Log $errorMessage -Level Error
-                throw $errorMessage
-            }
+            
+            $errorMessage += @"
+To fix this issue, install Microsoft.Data.SqlClient using one of these methods:
+
+Method 1 - Using dotnet CLI (recommended):
+  cd $PSScriptRoot
+  dotnet new console -n TempProject -o TempProject
+  cd TempProject
+  dotnet add package Microsoft.Data.SqlClient
+  dotnet restore
+  cd ..
+  Remove-Item -Recurse -Force TempProject
+
+Method 2 - Using PowerShell:
+  Install-Package Microsoft.Data.SqlClient -Source nuget.org -Destination "$env:USERPROFILE\.nuget\packages"
+
+Method 3 - Manual download:
+  Download from https://www.nuget.org/packages/Microsoft.Data.SqlClient
+  Extract and copy to: $env:USERPROFILE\.nuget\packages\microsoft.data.sqlclient\<version>\
+
+After installing, run this script again.
+"@
+            Write-Log $errorMessage -Level Error
+            throw $errorMessage
         }
         
         if ($null -eq $connection) {
             throw 'Failed to create SQL connection object - connection is null'
         }
+        
+        Write-Log "Connection object created. Initial state: $($connection.State)" -Level Verbose
         
         # Open connection with retry logic
         $maxRetries = 3
