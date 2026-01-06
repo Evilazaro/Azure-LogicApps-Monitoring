@@ -1433,10 +1433,10 @@ function Write-PreProvisionSummary {
         Write-Information ''
         Write-Information '╔════════════════════════════════════════════════════════════════╗'
         if ($Success) {
-            Write-Information '║   Pre-provisioning completed successfully!                    ║'
+            Write-Information '║   Pre-provisioning completed successfully!                     ║'
         }
         else {
-            Write-Information '║   Pre-provisioning completed with errors.                     ║'
+            Write-Information '║   Pre-provisioning completed with errors.                      ║'
         }
         Write-Information '╚════════════════════════════════════════════════════════════════╝'
         Write-Information ''
