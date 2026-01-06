@@ -289,7 +289,9 @@ test_required_env_var() {
         return 1
     fi
     
-    verbose "Environment variable '$var_name' is set with value length: ${#!var_name}"
+    # Get value length using indirect expansion (two-step to avoid syntax error)
+    local var_value="${!var_name}"
+    verbose "Environment variable '$var_name' is set with value length: ${#var_value}"
     return 0
 }
 
@@ -659,20 +661,20 @@ configure_user_secrets() {
             # This happens when optional environment variables aren't set
             if [[ -z "$value" ]]; then
                 verbose "  Skipping secret '$key' - value is null or empty"
-                ((project_skipped++))
-                ((SKIPPED_COUNT++))
+                project_skipped=$((project_skipped + 1))
+                SKIPPED_COUNT=$((SKIPPED_COUNT + 1))
                 continue
             fi
             
             # Attempt to set the secret and track result
             verbose "  Processing secret: $key"
             if set_dotnet_user_secret "$key" "$value" "$project_path"; then
-                ((project_success++))
-                ((SUCCESS_COUNT++))
+                project_success=$((project_success + 1))
+                SUCCESS_COUNT=$((SUCCESS_COUNT + 1))
                 success "  ✓ Set: $key"
             else
-                ((project_failed++))
-                ((FAILED_COUNT++))
+                project_failed=$((project_failed + 1))
+                FAILED_COUNT=$((FAILED_COUNT + 1))
                 warning "  Failed to set secret '$key'"
             fi
         fi
@@ -941,7 +943,7 @@ main() {
                 info "NOTE: This grants basic read/write access. If your application performs Entity Framework"
                 info "migrations or schema changes, you may need to manually grant the db_owner role."
                 info "For migration scenarios, run:"
-                info "  $sql_config_script --server-name '$azure_sql_server_name' --database-name '$azure_sql_database_name' --principal-name '$azure_managed_identity_name' --roles 'db_owner'"
+                info "  $sql_config_script --sql-server-name '$azure_sql_server_name' --database-name '$azure_sql_database_name' --principal-name '$azure_managed_identity_name' --database-roles 'db_owner'"
                 info ""
                 
                 # Make script executable if needed
@@ -951,10 +953,10 @@ main() {
                 # Using db_datareader and db_datawriter as default
                 # For Entity Framework migrations, users need to manually grant db_owner
                 if bash "$sql_config_script" \
-                    --server-name "$azure_sql_server_name" \
+                    --sql-server-name "$azure_sql_server_name" \
                     --database-name "$azure_sql_database_name" \
                     --principal-name "$azure_managed_identity_name" \
-                    --roles "db_datareader,db_datawriter" 2>&1 | tee >(cat >&2); then
+                    --database-roles "db_datareader,db_datawriter" 2>&1 | tee >(cat >&2); then
                     
                     # Check if command actually succeeded (script may have warnings)
                     local sql_exit_code=${PIPESTATUS[0]}
@@ -969,7 +971,7 @@ main() {
                         info "the database schema and is required for CREATE TABLE, ALTER TABLE, and foreign key operations."
                         info ""
                         info "To grant db_owner role, run:"
-                        info "  $sql_config_script --server-name '$azure_sql_server_name' --database-name '$azure_sql_database_name' --principal-name '$azure_managed_identity_name' --roles 'db_owner'"
+                        info "  $sql_config_script --sql-server-name '$azure_sql_server_name' --database-name '$azure_sql_database_name' --principal-name '$azure_managed_identity_name' --database-roles 'db_owner'"
                         info ""
                     else
                         warning "SQL configuration script completed with warnings or errors (exit code: $sql_exit_code)"
@@ -981,10 +983,10 @@ main() {
                     warning "The application may not have database access. Manual configuration may be required."
                     info ""
                     info "To manually configure database access, run:"
-                    info "  $sql_config_script --server-name '$azure_sql_server_name' --database-name '$azure_sql_database_name' --principal-name '$azure_managed_identity_name' --roles 'db_datareader,db_datawriter'"
+                    info "  $sql_config_script --sql-server-name '$azure_sql_server_name' --database-name '$azure_sql_database_name' --principal-name '$azure_managed_identity_name' --database-roles 'db_datareader,db_datawriter'"
                     info ""
                     info "For Entity Framework migrations, you may need db_owner role:"
-                    info "  $sql_config_script --server-name '$azure_sql_server_name' --database-name '$azure_sql_database_name' --principal-name '$azure_managed_identity_name' --roles 'db_owner'"
+                    info "  $sql_config_script --sql-server-name '$azure_sql_server_name' --database-name '$azure_sql_database_name' --principal-name '$azure_managed_identity_name' --database-roles 'db_owner'"
                     info ""
                 fi
             else
