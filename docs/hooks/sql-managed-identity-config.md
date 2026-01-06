@@ -454,12 +454,14 @@ Both scripts return a structured JSON object:
 
 | Version | Date       | Changes         |
 | ------- | ---------- | --------------- |
+| 1.0.0   | 2026-01-06 | Applied PowerShell best practices (OutputType on script block), documentation updates |
 | 1.0.0   | 2025-12-29 | Initial release |
 
 ### Bash Script (sql-managed-identity-config.sh)
 
 | Version | Date       | Changes                                       |
 | ------- | ---------- | --------------------------------------------- |
+| 1.1.0   | 2026-01-06 | Added Last Modified and Copyright metadata    |
 | 1.1.0   | 2025-01-08 | Updated step numbering to 6 steps for clarity |
 | 1.0.0   | 2025-12-29 | Initial release                               |
 

@@ -104,7 +104,9 @@
     Version:        1.0.0
     Author:         Evilazaro
     Creation Date:  2025-12-26
+    Last Modified:  2026-01-06
     Purpose:        Post-provisioning SQL Database managed identity configuration
+    Copyright:      (c) 2025-2026. All rights reserved.
     
     Prerequisites:
     - PowerShell 7.0 or higher
@@ -142,6 +144,7 @@
 #Requires -Version 7.0
 
 [CmdletBinding(SupportsShouldProcess = $false)]
+[OutputType([System.Collections.Hashtable])]
 param(
     [Parameter(
         Mandatory = $true,
