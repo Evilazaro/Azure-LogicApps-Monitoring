@@ -51,7 +51,7 @@
 [CmdletBinding(SupportsShouldProcess)]
 [OutputType([System.Void])]
 param(
-    [Parameter(Mandatory = $false, HelpMessage = 'Number of orders to generate'))
+    [Parameter(Mandatory = $false, HelpMessage = 'Number of orders to generate')]
     [ValidateRange(1, 10000)]
     [int]$OrderCount = 2000,
 
