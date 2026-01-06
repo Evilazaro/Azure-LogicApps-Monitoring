@@ -1164,6 +1164,107 @@ install_sqlcmd() {
     return 1
 }
 
+# Install zip utility
+# Installs zip package using the appropriate package manager
+# Returns: 0 if installation succeeds, 1 otherwise
+install_zip() {
+    echo ""
+    echo "┌────────────────────────────────────────────────────────────────┐"
+    echo "│                    zip Installation                            │"
+    echo "└────────────────────────────────────────────────────────────────┘"
+    echo ""
+    
+    print_info "  Installing zip utility..."
+    echo ""
+    
+    # Detect OS and install accordingly
+    if [[ -f /etc/os-release ]]; then
+        # shellcheck disable=SC1091
+        source /etc/os-release
+        
+        case "${ID}" in
+            ubuntu|debian)
+                print_info "  📥 Installing on ${PRETTY_NAME}..."
+                echo ""
+                
+                if sudo apt-get update > /dev/null 2>&1 && sudo apt-get install -y zip > /dev/null 2>&1; then
+                    echo ""
+                    print_success "  zip installed successfully!"
+                    echo ""
+                    return 0
+                fi
+                ;;
+                
+            fedora|rhel|centos|rocky|almalinux)
+                print_info "  📥 Installing on ${PRETTY_NAME}..."
+                echo ""
+                
+                if sudo dnf install -y zip > /dev/null 2>&1 || sudo yum install -y zip > /dev/null 2>&1; then
+                    echo ""
+                    print_success "  zip installed successfully!"
+                    echo ""
+                    return 0
+                fi
+                ;;
+                
+            arch|manjaro)
+                print_info "  📥 Installing on ${PRETTY_NAME}..."
+                echo ""
+                
+                if sudo pacman -S --noconfirm zip > /dev/null 2>&1; then
+                    echo ""
+                    print_success "  zip installed successfully!"
+                    echo ""
+                    return 0
+                fi
+                ;;
+                
+            alpine)
+                print_info "  📥 Installing on ${PRETTY_NAME}..."
+                echo ""
+                
+                if sudo apk add zip > /dev/null 2>&1; then
+                    echo ""
+                    print_success "  zip installed successfully!"
+                    echo ""
+                    return 0
+                fi
+                ;;
+                
+            *)
+                print_warning "  Unsupported Linux distribution: ${ID}"
+                ;;
+        esac
+    elif [[ "$(uname)" == "Darwin" ]]; then
+        # macOS - zip is typically pre-installed, but install via brew if needed
+        print_info "  📥 Installing on macOS via Homebrew..."
+        
+        if ! command -v brew &> /dev/null; then
+            print_warning "  zip is typically pre-installed on macOS"
+            print_warning "  If needed, install Homebrew from: https://brew.sh"
+            return 1
+        fi
+        
+        if brew install zip 2>/dev/null; then
+            echo ""
+            print_success "  zip installed successfully!"
+            echo ""
+            return 0
+        fi
+    fi
+    
+    print_error "  zip installation failed"
+    echo ""
+    print_warning "  Please install manually:"
+    echo "    Ubuntu/Debian: sudo apt-get install zip"
+    echo "    RHEL/CentOS:   sudo dnf install zip"
+    echo "    Arch Linux:    sudo pacman -S zip"
+    echo "    Alpine:        sudo apk add zip"
+    echo "    macOS:         brew install zip (or pre-installed)"
+    echo ""
+    return 1
+}
+
 # Register required Azure resource providers
 # Parameters:
 #   None (uses REQUIRED_RESOURCE_PROVIDERS array)
@@ -1710,6 +1811,33 @@ main() {
         # Don't fail the whole validation - this is typically pre-installed
     else
         echo "    ✓ iconv is available with UTF-16LE support"
+    fi
+    echo ""
+    
+    # Check zip utility (required for Logic Apps workflow deployment)
+    echo "  • Checking zip utility..."
+    if ! validate_zip; then
+        print_warning "    ✗ zip is required for Logic Apps workflow deployment"
+        print_warning "      See: https://linux.die.net/man/1/zip"
+        
+        if request_user_confirmation "zip"; then
+            if install_zip; then
+                if validate_zip; then
+                    echo "    ✓ zip installed and verified"
+                else
+                    print_warning "    ⚠ zip installed but not detected in PATH"
+                    PREREQUISITES_FAILED=true
+                fi
+            else
+                print_warning "    ⚠ zip installation failed"
+                PREREQUISITES_FAILED=true
+            fi
+        else
+            print_warning "    ⚠ zip not installed - Logic Apps workflow deployment will fail"
+            PREREQUISITES_FAILED=true
+        fi
+    else
+        echo "    ✓ zip is available"
     fi
     echo ""
     
