@@ -124,8 +124,8 @@ function Initialize-AzdEnvironment {
         Loads azd environment variables into the current session.
     
     .DESCRIPTION
-        Retrieves environment variables from the active Azure Developer CLI
-        environment and sets them in the current PowerShell session.
+        Retrieves environment variables from the Azure Developer CLI
+        environment specified by AZURE_ENV_NAME and sets them in the current PowerShell session.
     
     .OUTPUTS
         System.Boolean - Returns $true if variables were loaded successfully.
@@ -139,7 +139,17 @@ function Initialize-AzdEnvironment {
 
     Write-Host '  Loading azd environment variables...' -ForegroundColor Gray
     
-    $azdEnvOutput = azd env get-values 2>$null
+    # Get the environment name from AZURE_ENV_NAME
+    $envName = $env:AZURE_ENV_NAME
+    if ([string]::IsNullOrWhiteSpace($envName)) {
+        Write-Warning 'AZURE_ENV_NAME environment variable is not set. Trying to get values from default environment.'
+        $azdEnvOutput = azd env get-values 2>$null
+    }
+    else {
+        Write-Host "  Using azd environment: $envName" -ForegroundColor Gray
+        $azdEnvOutput = azd env get-values --environment $envName 2>$null
+    }
+    
     if ($LASTEXITCODE -ne 0 -or -not $azdEnvOutput) {
         Write-Warning 'Could not load azd environment variables. Ensure azd environment is configured.'
         return $false

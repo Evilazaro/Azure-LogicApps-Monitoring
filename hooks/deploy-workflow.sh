@@ -347,6 +347,7 @@ parse_arguments() {
 #------------------------------------------------------------------------------
 # Function: initialize_azd_environment
 # Description: Loads azd environment variables into the current session.
+#              Uses AZURE_ENV_NAME to specify the environment if set.
 # Returns:
 #   0 - Variables loaded successfully
 #   1 - Failed to load variables
@@ -355,9 +356,20 @@ initialize_azd_environment() {
     log_gray "Loading azd environment variables..."
     
     local azd_output
-    if ! azd_output=$(azd env get-values 2>/dev/null); then
-        log_warning "Could not load azd environment variables. Ensure azd environment is configured."
-        return 1
+    local env_name="${AZURE_ENV_NAME:-}"
+    
+    if [[ -z "${env_name}" ]]; then
+        log_warning "AZURE_ENV_NAME environment variable is not set. Trying to get values from default environment."
+        if ! azd_output=$(azd env get-values 2>/dev/null); then
+            log_warning "Could not load azd environment variables. Ensure azd environment is configured."
+            return 1
+        fi
+    else
+        log_gray "Using azd environment: ${env_name}"
+        if ! azd_output=$(azd env get-values --environment "${env_name}" 2>/dev/null); then
+            log_warning "Could not load azd environment variables. Ensure azd environment is configured."
+            return 1
+        fi
     fi
     
     if [[ -z "${azd_output}" ]]; then
