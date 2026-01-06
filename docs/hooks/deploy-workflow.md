@@ -601,9 +601,11 @@ flowchart LR
 
 ---
 
-## 📜 Version History
+<div align="center">
 
-| Version | Date       | Changes                                                    |
-| ------- | ---------- | ---------------------------------------------------------- |
-| 1.1.0   | 2026-01-06 | Improved documentation, added workflow diagram             |
-| 1.0.0   | 2025-12-15 | Initial implementation with azd integration and zip deploy |
+**Made with ❤️ by Evilazaro | Principal Cloud Solution Architect | Microsoft**
+
+[⬆ Back to Top](#check-dev-workstation-ps1--sh)
+
+</div>
+

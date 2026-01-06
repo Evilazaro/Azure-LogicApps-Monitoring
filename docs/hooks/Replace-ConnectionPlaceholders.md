@@ -34,7 +34,13 @@ With built-in WhatIf/dry-run mode for previewing changes, verbose logging for tr
 - [🛠️ How It Works](#️-how-it-works)
   - [📊 Workflow Diagram](#workflow-diagram)
   - [🔗 Integration Points](#integration-points)
-- [📖 Related Documentation](#-related-documentation)
+- [� Prerequisites](#-prerequisites)
+  - [🔧 Required Tools](#required-tools)
+  - [📝 Required Environment Variables](#required-environment-variables)
+- [🐛 Troubleshooting](#-troubleshooting)
+  - [❓ Common Issues](#common-issues)
+  - [🔧 Debug Mode](#debug-mode)
+- [�📖 Related Documentation](#-related-documentation)
 - [🔐 Security Considerations](#-security-considerations)
   - [✅ Safe Operations](#safe-operations)
   - [🔑 Sensitive Value Handling](#sensitive-value-handling)
@@ -513,9 +519,10 @@ flowchart LR
 
 ---
 
-## 📜 Version History
+<div align="center">
 
-| Version | Date       | Changes                                                 |
-| ------- | ---------- | ------------------------------------------------------- |
-| 1.1.0   | 2026-01-06 | Added Bash implementation, improved documentation       |
-| 1.0.0   | 2025-12-15 | Initial PowerShell implementation with azd integration  |
+**Made with ❤️ by Evilazaro | Principal Cloud Solution Architect | Microsoft**
+
+[⬆ Back to Top](#check-dev-workstation-ps1--sh)
+
+</div>

@@ -433,14 +433,6 @@ azd up
 
 ---
 
-**Last Updated**: December 29, 2025  
-**Script Version**: 1.0.0  
-**PowerShell**: Last Modified 2025-12-24  
-**Bash**: Last Modified 2025-12-29  
-**Compatibility**: PowerShell 7.0+ / Bash 4.0+, Windows/macOS/Linux
-
----
-
 <div align="center">
 
 **Made with ❤️ by Evilazaro | Principal Cloud Solution Architect | Microsoft**
