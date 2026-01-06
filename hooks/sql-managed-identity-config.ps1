@@ -327,6 +327,13 @@ catch {
         "$HOME/.nuget/packages/microsoft.data.sqlclient"
     )
     
+    # Determine the runtime identifier (RID) for platform-specific assemblies
+    $rid = if ($IsWindows -or $env:OS -eq 'Windows_NT') { 'win' } elseif ($IsMacOS) { 'osx' } else { 'unix' }
+    $arch = if ([System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture -eq 'X64') { 'x64' } 
+            elseif ([System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture -eq 'Arm64') { 'arm64' } 
+            else { 'x86' }
+    Write-Verbose "Detected runtime: $rid-$arch"
+    
     foreach ($basePath in $nugetPaths) {
         if (Test-Path -Path $basePath -ErrorAction SilentlyContinue) {
             # Find the latest version
@@ -341,14 +348,16 @@ catch {
                 $runtimeVersion = [System.Environment]::Version
                 Write-Verbose "PowerShell .NET runtime version: $runtimeVersion"
                 
-                # Order of preference: match runtime version, then fallback to older/compatible versions
+                # IMPORTANT: Use runtime-specific assemblies from 'runtimes\{rid}\lib\{tfm}' folder
+                # The assemblies in 'lib\{tfm}' are reference assemblies and will fail with
+                # "Microsoft.Data.SqlClient is not supported on this platform" error
                 $dllPaths = @(
-                    # Try exact or close .NET version matches first
-                    Join-Path -Path $latestVersion.FullName -ChildPath 'lib\net9.0\Microsoft.Data.SqlClient.dll'
-                    Join-Path -Path $latestVersion.FullName -ChildPath 'lib\net8.0\Microsoft.Data.SqlClient.dll'
-                    Join-Path -Path $latestVersion.FullName -ChildPath 'lib\net7.0\Microsoft.Data.SqlClient.dll'
-                    Join-Path -Path $latestVersion.FullName -ChildPath 'lib\net6.0\Microsoft.Data.SqlClient.dll'
-                    # Fallback to netstandard (more compatible but potentially less optimized)
+                    # Try runtime-specific assemblies first (required for actual execution)
+                    Join-Path -Path $latestVersion.FullName -ChildPath "runtimes\$rid\lib\net9.0\Microsoft.Data.SqlClient.dll"
+                    Join-Path -Path $latestVersion.FullName -ChildPath "runtimes\$rid\lib\net8.0\Microsoft.Data.SqlClient.dll"
+                    Join-Path -Path $latestVersion.FullName -ChildPath "runtimes\$rid\lib\net7.0\Microsoft.Data.SqlClient.dll"
+                    Join-Path -Path $latestVersion.FullName -ChildPath "runtimes\$rid\lib\net6.0\Microsoft.Data.SqlClient.dll"
+                    # Fallback to generic lib folder (may not work but better than nothing)
                     Join-Path -Path $latestVersion.FullName -ChildPath 'lib\netstandard2.1\Microsoft.Data.SqlClient.dll'
                     Join-Path -Path $latestVersion.FullName -ChildPath 'lib\netstandard2.0\Microsoft.Data.SqlClient.dll'
                 )
@@ -367,6 +376,38 @@ catch {
     
     if ($sqlClientPath) {
         try {
+            # Load native SNI dependency first (required on Windows)
+            if ($rid -eq 'win') {
+                $sqlClientVersion = (Get-Item $sqlClientPath).Directory.Parent.Parent.Parent.Name
+                Write-Verbose "Microsoft.Data.SqlClient version: $sqlClientVersion"
+                
+                # Find matching SNI runtime package
+                $sniBasePaths = @(
+                    "$env:USERPROFILE\.nuget\packages\microsoft.data.sqlclient.sni.runtime"
+                    "$HOME/.nuget/packages/microsoft.data.sqlclient.sni.runtime"
+                )
+                
+                foreach ($sniBasePath in $sniBasePaths) {
+                    if (Test-Path -Path $sniBasePath -ErrorAction SilentlyContinue) {
+                        $sniLatestVersion = Get-ChildItem -Path $sniBasePath -Directory -ErrorAction SilentlyContinue |
+                            Sort-Object { try { [Version]$_.Name } catch { [Version]"0.0.0" } } -Descending |
+                            Select-Object -First 1
+                        
+                        if ($sniLatestVersion) {
+                            $sniDllPath = Join-Path -Path $sniLatestVersion.FullName -ChildPath "runtimes\win-$arch\native\Microsoft.Data.SqlClient.SNI.dll"
+                            if (Test-Path -Path $sniDllPath -ErrorAction SilentlyContinue) {
+                                Write-Verbose "Loading native SNI dependency from: $sniDllPath"
+                                # Add the SNI directory to the DLL search path
+                                $sniDir = Split-Path -Parent $sniDllPath
+                                $env:PATH = "$sniDir;$env:PATH"
+                                Write-Verbose "Added SNI directory to PATH: $sniDir"
+                                break
+                            }
+                        }
+                    }
+                }
+            }
+            
             Add-Type -Path $sqlClientPath -ErrorAction Stop
             $script:UseMicrosoftDataSqlClient = $true
             Write-Verbose "Loaded Microsoft.Data.SqlClient from: $sqlClientPath"
