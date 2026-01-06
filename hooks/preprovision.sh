@@ -702,16 +702,19 @@ validate_sqlcmd() {
     
     # Check common installation paths for mssql-tools
     local common_paths=(
-        "/opt/mssql-tools18/bin/sqlcmd"
-        "/opt/mssql-tools/bin/sqlcmd"
-        "/usr/local/bin/sqlcmd"
+        "/opt/mssql-tools18/bin"
+        "/opt/mssql-tools/bin"
     )
     
-    for path in "${common_paths[@]}"; do
-        if [[ -x "${path}" ]]; then
-            print_verbose "sqlcmd found at: ${path}"
-            print_warning "sqlcmd is installed but not in PATH"
-            print_info "Add to PATH with: export PATH=\"\$(dirname ${path}):\$PATH\""
+    for bin_path in "${common_paths[@]}"; do
+        if [[ -x "${bin_path}/sqlcmd" ]]; then
+            print_verbose "sqlcmd found at: ${bin_path}/sqlcmd"
+            print_verbose "Automatically adding ${bin_path} to PATH"
+            
+            # Add to PATH for current session
+            export PATH="${bin_path}:${PATH}"
+            
+            print_info "Added ${bin_path} to PATH for this session"
             return 0
         fi
     done
