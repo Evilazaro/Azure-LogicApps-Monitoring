@@ -754,6 +754,33 @@ validate_iconv() {
     return 0
 }
 
+# Validate zip utility availability
+# Checks if zip command is installed and accessible
+# Returns: 0 if zip is available, 1 otherwise
+# Note: Required for Logic Apps workflow deployment (zip deploy)
+validate_zip() {
+    print_verbose "Validating zip utility..."
+    
+    # Check if zip command exists in PATH
+    if command -v zip &> /dev/null; then
+        local zip_path
+        zip_path=$(command -v zip)
+        print_verbose "zip found at: ${zip_path}"
+        
+        # Get version info
+        local version_output
+        if version_output=$(zip --version 2>&1 | head -n2); then
+            print_verbose "zip version info: ${version_output}"
+        fi
+        
+        return 0
+    fi
+    
+    print_error "zip is not installed"
+    print_error "zip is required for Logic Apps workflow deployment"
+    return 1
+}
+
 # Check Azure subscription quotas (informational only)
 # Provides informational guidance about common quota limits
 # Returns: Always returns 0 (does not fail validation)
