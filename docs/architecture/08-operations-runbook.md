@@ -580,6 +580,13 @@ flowchart TB
     class Logs,Metrics,Trace investigate
     class Identify,Fix,Verify mitigate
     class Document,RCA,Improve resolve
+
+    %% Subgraph container styling for visual phase grouping
+    style Detection fill:#ffcdd222,stroke:#c62828,stroke-width:2px
+    style Triage fill:#fff3e022,stroke:#e65100,stroke-width:2px
+    style Investigate fill:#e3f2fd22,stroke:#1565c0,stroke-width:2px
+    style Mitigate fill:#e8f5e922,stroke:#2e7d32,stroke-width:2px
+    style Resolve fill:#f3e5f522,stroke:#7b1fa2,stroke-width:2px
 ```
 
 ### Escalation Matrix
