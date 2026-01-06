@@ -65,7 +65,7 @@ By automating environment validation, secret management, SQL managed identity co
 | **Secrets Management**   | `clean-secrets.ps1`               | `clean-secrets.sh`                       | Clear .NET user secrets                        | [📄 clean-secrets.md](./clean-secrets.md)                             |
 | **Test Data**            | `Generate-Orders.ps1`             | `Generate-Orders.sh`                     | Generate sample order data                     | [📄 Generate-Orders.md](./Generate-Orders.md)                         |
 | **Connection Placeholders** | `Replace-ConnectionPlaceholders.ps1` | `replace-connection-placeholders.sh` | Replace placeholder tokens in connections.json | [📄 Replace-ConnectionPlaceholders.md](./Replace-ConnectionPlaceholders.md) |
-| **Workflow Deployment**  | `deploy-workflow.ps1`             | -                                        | Deploy Logic Apps Standard workflows           | [📄 deploy-workflow.md](./deploy-workflow.md)                         |
+| **Workflow Deployment**  | `deploy-workflow.ps1`             | `deploy-workflow.sh`                     | Deploy Logic Apps Standard workflows           | [📄 deploy-workflow.md](./deploy-workflow.md)                         |
 
 ---
 
