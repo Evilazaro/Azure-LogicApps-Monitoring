@@ -57,7 +57,7 @@
 .NOTES
     File Name      : deploy-workflow.ps1
     Author         : Evilazaro | Principal Cloud Solution Architect | Microsoft
-    Version        : 1.2.0
+    Version        : 1.3.0
     Last Modified  : 2026-01-06
     Prerequisite   : PowerShell 7.0 or later
     Prerequisite   : Azure CLI (az)
@@ -68,6 +68,8 @@
 #>
 
 [CmdletBinding(SupportsShouldProcess = $true, ConfirmImpact = 'High')]
+[Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseDeclaredVarsMoreThanAssignments', '', 
+    Justification = 'Script-scoped variables are used across functions')]
 [OutputType([System.Void])]
 param(
     [Parameter(Mandatory = $false)]
@@ -84,7 +86,7 @@ param(
 
     [Parameter(Mandatory = $false)]
     [ValidateNotNullOrEmpty()]
-    [string]$WorkflowBasePath = "$PSScriptRoot/../workflows/OrdersManagement/OrdersManagementLogicApp",
+    [string]$WorkflowBasePath = (Join-Path -Path $PSScriptRoot -ChildPath '../workflows/OrdersManagement/OrdersManagementLogicApp'),
 
     [Parameter(Mandatory = $false)]
     [switch]$SkipPlaceholderReplacement
@@ -97,18 +99,20 @@ $InformationPreference = 'Continue'
 $ProgressPreference = 'SilentlyContinue'
 
 # Script-level constants
-$script:ScriptVersion = '1.2.0'
+$script:ScriptVersion = '1.3.0'
 
 #region Configuration
 
-# Define placeholders for workflow.json
-[hashtable[]]$script:WorkflowPlaceholders = @(
+# Define placeholders for workflow.json (using ReadOnly for immutability)
+[System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseDeclaredVarsMoreThanAssignments', '')]
+$script:WorkflowPlaceholders = [System.Collections.ObjectModel.ReadOnlyCollection[hashtable]]@(
     @{ Placeholder = '${ORDERS_API_URL}'; EnvVar = 'ORDERS_API_URL' }
     @{ Placeholder = '${AZURE_STORAGE_ACCOUNT_NAME_WORKFLOW}'; EnvVar = 'AZURE_STORAGE_ACCOUNT_NAME_WORKFLOW' }
 )
 
-# Define placeholders for connections.json
-[hashtable[]]$script:ConnectionPlaceholders = @(
+# Define placeholders for connections.json (using ReadOnly for immutability)
+[System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseDeclaredVarsMoreThanAssignments', '')]
+$script:ConnectionPlaceholders = [System.Collections.ObjectModel.ReadOnlyCollection[hashtable]]@(
     @{ Placeholder = '${AZURE_SUBSCRIPTION_ID}'; EnvVar = 'AZURE_SUBSCRIPTION_ID' }
     @{ Placeholder = '${AZURE_RESOURCE_GROUP}'; EnvVar = 'AZURE_RESOURCE_GROUP' }
     @{ Placeholder = '${MANAGED_IDENTITY_NAME}'; EnvVar = 'MANAGED_IDENTITY_NAME' }
