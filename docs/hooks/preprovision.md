@@ -314,7 +314,7 @@ If auto-install is not used, the script provides download links:
 - **Azure CLI**: https://docs.microsoft.com/cli/azure/install-azure-cli
 - **Azure Developer CLI**: https://aka.ms/azd/install
 - **Bicep CLI**: `az bicep install` or https://github.com/Azure/bicep/releases
-- **zip**: 
+- **zip**:
   - Windows: Built-in via `Compress-Archive` cmdlet (PowerShell 5.0+)
   - Ubuntu/Debian: `sudo apt-get install zip`
   - RHEL/CentOS: `sudo dnf install zip`

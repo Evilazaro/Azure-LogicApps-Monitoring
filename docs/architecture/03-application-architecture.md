@@ -488,42 +488,42 @@ sequenceDiagram
     participant SB as 📬 Service Bus
 
     Client->>API: POST /api/orders/batch<br/>[Order1, Order2, ..., OrderN]
-    
+
     Note over API: Start Activity: PlaceOrdersBatch
     API->>API: Validate batch (max 100 orders)
-    
+
     API->>Service: PlaceOrdersBatchAsync(orders)
-    
+
     Note over Service: Start batch processing
     Service->>Service: CreateCounter(eShop.orders.batch.size)
-    
+
     loop For each order in batch
         Service->>Service: ValidateOrder()
         Service->>Service: GenerateOrderId()
     end
-    
+
     Note over Service,DB: Single transaction for all orders
     Service->>DB: BEGIN TRANSACTION
     Service->>DB: INSERT Orders (bulk)
     Service->>DB: INSERT OrderProducts (bulk)
     Service->>DB: COMMIT
     DB-->>Service: Success (N rows affected)
-    
+
     Note over Service,SB: Parallel message publishing
     Service->>Handler: PublishOrderPlacedBatchAsync(orders)
-    
+
     par Parallel Publishing
         Handler->>SB: SendMessage(Order1) + TraceContext
         Handler->>SB: SendMessage(Order2) + TraceContext
         Handler->>SB: SendMessage(OrderN) + TraceContext
     end
-    
+
     SB-->>Handler: All messages confirmed
     Handler-->>Service: Batch published
-    
+
     Service->>Service: RecordMetric(orders.placed, N)
     Service->>Service: RecordHistogram(processing.duration)
-    
+
     Service-->>API: BatchResult { Success: N, Failed: 0 }
     API-->>Client: 200 OK + Order[]
 
@@ -547,31 +547,31 @@ sequenceDiagram
 
     Client->>Web: Submit Order
     Web->>Polly: POST /api/orders
-    
+
     Note over Polly: Attempt 1
     Polly->>API: HTTP POST
     API->>DB: INSERT Order
     DB--xAPI: ❌ Connection timeout
     API--xPolly: 500 Internal Server Error
-    
+
     Note over Polly: Log exception, wait 2s
     Polly->>AI: Track Exception (attempt 1)
-    
+
     Note over Polly: Attempt 2 (exponential backoff)
     Polly->>API: HTTP POST (retry)
     API->>DB: INSERT Order
     DB--xAPI: ❌ Connection timeout
     API--xPolly: 500 Internal Server Error
-    
+
     Note over Polly: Log exception, wait 4s
     Polly->>AI: Track Exception (attempt 2)
-    
+
     Note over Polly: Attempt 3
     Polly->>API: HTTP POST (retry)
     API->>DB: INSERT Order
     DB-->>API: ✅ Success
     API-->>Polly: 201 Created
-    
+
     Polly-->>Web: 201 Created + Order
     Web-->>Client: Order Confirmed
 
@@ -584,27 +584,27 @@ sequenceDiagram
 %%{init: {'theme': 'base', 'themeVariables': { 'fontSize': '14px'}}}%%
 stateDiagram-v2
     [*] --> Closed: Initial State
-    
+
     Closed --> Closed: Success / Reset Counter
     Closed --> Open: Failure Threshold Exceeded<br/>(>10% failures in 120s)
-    
+
     Open --> Open: Request → Reject Immediately
     Open --> HalfOpen: Break Duration Elapsed<br/>(30s default)
-    
+
     HalfOpen --> Closed: Probe Request Succeeds
     HalfOpen --> Open: Probe Request Fails
-    
+
     note right of Closed
         Normal operation
         All requests pass through
     end note
-    
+
     note right of Open
         Circuit tripped
         Requests fail fast
         Prevents cascade
     end note
-    
+
     note right of HalfOpen
         Testing recovery
         Single request allowed
@@ -625,10 +625,10 @@ sequenceDiagram
 
     SB->>LA: Message Available (peek-lock)
     LA->>LA: Parse message body
-    
+
     alt Content-Type = application/json
         LA->>API: HTTP POST /api/Orders/process
-        
+
         alt HTTP 201 (Success)
             API-->>LA: Order processed
             LA->>Blob: Create blob (success folder)
@@ -645,7 +645,7 @@ sequenceDiagram
         LA->>SB: Complete message
         Note over LA: Malformed message handled
     end
-    
+
     Note over SB,DLQ: If message abandoned 10 times<br/>→ Moved to Dead-Letter Queue
     SB-->>DLQ: MaxDeliveryCount exceeded
 ```
