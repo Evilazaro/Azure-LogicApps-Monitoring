@@ -51,10 +51,10 @@ This script performs the following operations:
 
 ## 🏗️ Required Environment Variables
 
-| Variable | Description | Required | Set By |
-|----------|-------------|----------|--------|
-| `AZURE_RESOURCE_GROUP` | Resource group containing the SQL Server | Yes (for firewall) | azd |
-| `AZURE_SUBSCRIPTION_ID` | Azure subscription GUID | Optional | azd |
+| Variable                | Description                              | Required           | Set By |
+| ----------------------- | ---------------------------------------- | ------------------ | ------ |
+| `AZURE_RESOURCE_GROUP`  | Resource group containing the SQL Server | Yes (for firewall) | azd    |
+| `AZURE_SUBSCRIPTION_ID` | Azure subscription GUID                  | Optional           | azd    |
 
 ### How Environment Variables Are Set
 
@@ -68,27 +68,27 @@ When running via Azure Developer CLI (`azd`), these variables are automatically 
 
 ### PowerShell Parameters
 
-| Parameter | Type | Required | Default | Description |
-|-----------|------|----------|---------|-------------|
-| `-SqlServerName` | String | Yes | - | Azure SQL Server name (without `.database.windows.net` suffix) |
-| `-DatabaseName` | String | Yes | - | Target database name (cannot be 'master') |
-| `-PrincipalDisplayName` | String | Yes | - | Managed identity display name from Entra ID |
-| `-DatabaseRoles` | String[] | No | `@('db_datareader', 'db_datawriter')` | Database roles to assign |
-| `-AzureEnvironment` | String | No | `AzureCloud` | Azure cloud environment |
-| `-CommandTimeout` | Int | No | `120` | SQL command timeout in seconds (30-600) |
+| Parameter               | Type     | Required | Default                               | Description                                                    |
+| ----------------------- | -------- | -------- | ------------------------------------- | -------------------------------------------------------------- |
+| `-SqlServerName`        | String   | Yes      | -                                     | Azure SQL Server name (without `.database.windows.net` suffix) |
+| `-DatabaseName`         | String   | Yes      | -                                     | Target database name (cannot be 'master')                      |
+| `-PrincipalDisplayName` | String   | Yes      | -                                     | Managed identity display name from Entra ID                    |
+| `-DatabaseRoles`        | String[] | No       | `@('db_datareader', 'db_datawriter')` | Database roles to assign                                       |
+| `-AzureEnvironment`     | String   | No       | `AzureCloud`                          | Azure cloud environment                                        |
+| `-CommandTimeout`       | Int      | No       | `120`                                 | SQL command timeout in seconds (30-600)                        |
 
 ### Bash Parameters
 
-| Parameter | Short | Required | Default | Description |
-|-----------|-------|----------|---------|-------------|
-| `--server` | `-s` | Yes | - | Azure SQL Server name (without suffix) |
-| `--database` | `-d` | Yes | - | Target database name (cannot be 'master') |
-| `--principal` | `-p` | Yes | - | Managed identity display name |
-| `--roles` | `-r` | No | `db_datareader,db_datawriter` | Comma-separated database roles |
-| `--environment` | `-e` | No | `AzureCloud` | Azure cloud environment |
-| `--timeout` | `-t` | No | `120` | SQL command timeout in seconds |
-| `--verbose` | `-v` | No | - | Enable verbose output |
-| `--help` | `-h` | No | - | Display help message |
+| Parameter       | Short | Required | Default                       | Description                               |
+| --------------- | ----- | -------- | ----------------------------- | ----------------------------------------- |
+| `--server`      | `-s`  | Yes      | -                             | Azure SQL Server name (without suffix)    |
+| `--database`    | `-d`  | Yes      | -                             | Target database name (cannot be 'master') |
+| `--principal`   | `-p`  | Yes      | -                             | Managed identity display name             |
+| `--roles`       | `-r`  | No       | `db_datareader,db_datawriter` | Comma-separated database roles            |
+| `--environment` | `-e`  | No       | `AzureCloud`                  | Azure cloud environment                   |
+| `--timeout`     | `-t`  | No       | `120`                         | SQL command timeout in seconds            |
+| `--verbose`     | `-v`  | No       | -                             | Enable verbose output                     |
+| `--help`        | `-h`  | No       | -                             | Display help message                      |
 
 ## 🚀 Usage
 
@@ -163,17 +163,17 @@ if ($result.Success) {
 
 The following built-in database roles can be assigned:
 
-| Role | Description |
-|------|-------------|
-| `db_owner` | Full permissions in the database |
-| `db_datareader` | Read all data from all user tables |
-| `db_datawriter` | Add, delete, or modify data in all user tables |
-| `db_ddladmin` | Run DDL commands (CREATE, ALTER, DROP) |
-| `db_backupoperator` | Can back up the database |
-| `db_securityadmin` | Modify role membership and manage permissions |
-| `db_accessadmin` | Add or remove database access |
-| `db_denydatareader` | Cannot read any data in the database |
-| `db_denydatawriter` | Cannot modify any data in the database |
+| Role                | Description                                    |
+| ------------------- | ---------------------------------------------- |
+| `db_owner`          | Full permissions in the database               |
+| `db_datareader`     | Read all data from all user tables             |
+| `db_datawriter`     | Add, delete, or modify data in all user tables |
+| `db_ddladmin`       | Run DDL commands (CREATE, ALTER, DROP)         |
+| `db_backupoperator` | Can back up the database                       |
+| `db_securityadmin`  | Modify role membership and manage permissions  |
+| `db_accessadmin`    | Add or remove database access                  |
+| `db_denydatareader` | Cannot read any data in the database           |
+| `db_denydatawriter` | Cannot modify any data in the database         |
 
 **Default Roles:** `db_datareader`, `db_datawriter`
 
@@ -203,16 +203,19 @@ flowchart TD
 ### Technical Details
 
 1. **Authentication Flow:**
+
    - Uses Azure CLI (`az account get-access-token`) to acquire Azure AD access token
    - Token is scoped to Azure SQL Database resource
    - No SQL passwords are used or stored
 
 2. **SQL Script Generation:**
+
    - Creates idempotent T-SQL script with IF EXISTS checks
    - Uses `CREATE USER ... FROM EXTERNAL PROVIDER` for Entra ID users
    - Sanitizes input to prevent SQL injection
 
 3. **Connection:**
+
    - PowerShell uses `Microsoft.Data.SqlClient` for cross-platform support
    - Bash uses `sqlcmd` utility with Azure AD token authentication
    - TLS 1.2+ encryption is enforced
@@ -226,12 +229,12 @@ flowchart TD
 
 The script supports multiple Azure cloud environments:
 
-| Environment | SQL Endpoint Suffix | Description |
-|-------------|---------------------|-------------|
-| `AzureCloud` | `.database.windows.net` | Public Azure (default) |
-| `AzureUSGovernment` | `.database.usgovcloudapi.net` | Azure Government |
-| `AzureChinaCloud` | `.database.chinacloudapi.cn` | Azure China (21Vianet) |
-| `AzureGermanCloud` | `.database.cloudapi.de` | Azure Germany |
+| Environment         | SQL Endpoint Suffix           | Description            |
+| ------------------- | ----------------------------- | ---------------------- |
+| `AzureCloud`        | `.database.windows.net`       | Public Azure (default) |
+| `AzureUSGovernment` | `.database.usgovcloudapi.net` | Azure Government       |
+| `AzureChinaCloud`   | `.database.chinacloudapi.cn`  | Azure China (21Vianet) |
+| `AzureGermanCloud`  | `.database.cloudapi.de`       | Azure Germany          |
 
 ## 🔐 Security Considerations
 
@@ -251,22 +254,22 @@ The script supports multiple Azure cloud environments:
 
 ### What the Script Creates
 
-| Resource | Details |
-|----------|---------|
-| Database User | Contained user from external provider |
-| Role Memberships | Specified database roles assigned to user |
-| Firewall Rule | Temporary rule for client IP (if configured) |
+| Resource         | Details                                      |
+| ---------------- | -------------------------------------------- |
+| Database User    | Contained user from external provider        |
+| Role Memberships | Specified database roles assigned to user    |
+| Firewall Rule    | Temporary rule for client IP (if configured) |
 
 ## 🔧 Troubleshooting
 
 ### Common Errors
 
-| Error | Cause | Solution |
-|-------|-------|----------|
-| `18456 - Login failed` | Not authenticated as Entra ID admin | Set Entra ID admin on SQL Server |
-| `40615 - Firewall rule blocking` | Client IP not allowed | Add IP to SQL Server firewall |
-| `40613 - Database not available` | Database offline or doesn't exist | Verify database exists and is online |
-| `33134 - User already exists` | User was previously created | Safe to ignore (idempotent) |
+| Error                            | Cause                               | Solution                             |
+| -------------------------------- | ----------------------------------- | ------------------------------------ |
+| `18456 - Login failed`           | Not authenticated as Entra ID admin | Set Entra ID admin on SQL Server     |
+| `40615 - Firewall rule blocking` | Client IP not allowed               | Add IP to SQL Server firewall        |
+| `40613 - Database not available` | Database offline or doesn't exist   | Verify database exists and is online |
+| `33134 - User already exists`    | User was previously created         | Safe to ignore (idempotent)          |
 
 ### Setting Entra ID Admin
 
@@ -303,9 +306,9 @@ az sql server ad-admin list \
 
 ## 📜 Version History
 
-| Version | Date | Changes |
-|---------|------|---------|
-| 1.0.0 | 2026-01-06 | Initial release with PowerShell Core and Bash support |
+| Version | Date       | Changes                                               |
+| ------- | ---------- | ----------------------------------------------------- |
+| 1.0.0   | 2026-01-06 | Initial release with PowerShell Core and Bash support |
 
 ---
 
@@ -316,4 +319,3 @@ az sql server ad-admin list \
 [⬆ Back to Top](#-pre-provisioning-script-documentation)
 
 </div>
-
