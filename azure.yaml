@@ -69,6 +69,20 @@ hooks:
       continueOnError: false
       interactive: true
 
+
+  predeploy: # Placeholder for pre-deployment hooks
+    posix:
+      shell: sh
+      run: echo "No pre-deployment actions defined."
+      continueOnError: true
+      interactive: false
+    windows:
+      shell: pwsh
+      run: |
+        ./hooks/Replace-ConnectionPlaceholders.ps1
+      continueOnError: true
+      interactive: false
+
 # ------------------------------------------------------------------------------
 # Application Services
 # ------------------------------------------------------------------------------
