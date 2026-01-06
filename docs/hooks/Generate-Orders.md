@@ -91,17 +91,17 @@ Each generated order follows this structure:
 
 The script includes 20 predefined products spanning electronics, office equipment, and accessories:
 
-| Category         | Products                                      | Price Range     |
-| ---------------- | --------------------------------------------- | --------------- |
-| **Input**        | Wireless Mouse, Mechanical Keyboard           | $25.99 - $89.99 |
-| **Connectivity** | USB-C Hub, Portable Charger                   | $34.99 - $49.99 |
+| Category         | Products                                                         | Price Range      |
+| ---------------- | ---------------------------------------------------------------- | ---------------- |
+| **Input**        | Wireless Mouse, Mechanical Keyboard                              | $25.99 - $89.99  |
+| **Connectivity** | USB-C Hub, Portable Charger                                      | $34.99 - $49.99  |
 | **Audio**        | Noise Cancelling Headphones, Bluetooth Speaker, Wireless Earbuds | $79.99 - $149.99 |
-| **Storage**      | External SSD 1TB                              | $119.99         |
-| **Video**        | Webcam 1080p, Ring Light                      | $44.99 - $69.99 |
-| **Displays**     | Monitor 27" 4K, Monitor Arm                   | $89.99 - $399.99|
-| **Furniture**    | Ergonomic Chair, Standing Desk, Laptop Stand  | $39.99 - $499.99|
-| **Creative**     | Graphics Tablet, Drawing Pen Set, USB Microphone | $29.99 - $199.99|
-| **Accessories**  | Cable Organizer, Smartphone Holder            | $12.99 - $19.99 |
+| **Storage**      | External SSD 1TB                                                 | $119.99          |
+| **Video**        | Webcam 1080p, Ring Light                                         | $44.99 - $69.99  |
+| **Displays**     | Monitor 27" 4K, Monitor Arm                                      | $89.99 - $399.99 |
+| **Furniture**    | Ergonomic Chair, Standing Desk, Laptop Stand                     | $39.99 - $499.99 |
+| **Creative**     | Graphics Tablet, Drawing Pen Set, USB Microphone                 | $29.99 - $199.99 |
+| **Accessories**  | Cable Organizer, Smartphone Holder                               | $12.99 - $19.99  |
 
 **Price Variation**: Each order applies ±20% variation to base prices to simulate real-world pricing fluctuations.
 
@@ -522,14 +522,14 @@ ls -lh ../infra/data/ordersBatch.json
 
 ### When to Use This Script
 
-| Situation                    | Recommendation    |
-| ---------------------------- | ----------------- |
-| **Setting up dev environment** | ✅ Recommended  |
-| **Before running Logic Apps tests** | ✅ Recommended |
-| **Load testing preparation** | ✅ Recommended    |
-| **Demo/presentation setup**  | ✅ Recommended    |
-| **CI/CD test data setup**    | ✅ Recommended    |
-| **Production data**          | ❌ Not recommended |
+| Situation                           | Recommendation     |
+| ----------------------------------- | ------------------ |
+| **Setting up dev environment**      | ✅ Recommended     |
+| **Before running Logic Apps tests** | ✅ Recommended     |
+| **Load testing preparation**        | ✅ Recommended     |
+| **Demo/presentation setup**         | ✅ Recommended     |
+| **CI/CD test data setup**           | ✅ Recommended     |
+| **Production data**                 | ❌ Not recommended |
 
 ### Data Generation Guidelines
 
@@ -558,12 +558,12 @@ ls -lh ../infra/data/ordersBatch.json
 
 ### Performance Characteristics
 
-| Characteristic     | Details                                                                                                                                                                                                                                                                                   |
-| ------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Execution Time** | • **100 orders:** ~1 second<br/>• **2000 orders (default):** ~5-10 seconds<br/>• **10000 orders:** ~30-60 seconds<br/>• **Scaling:** Linear O(n) with order count                                                                                                                          |
-| **Resource Usage** | • **Memory:** ~50-100 MB peak during execution<br/>• **CPU:** Moderate utilization (GUID generation, JSON serialization)<br/>• **Disk I/O:** Single write operation at completion<br/>• **Process spawning:** None (pure PowerShell/Bash)                                                  |
-| **Output Size**    | • **Per order:** ~500-800 bytes (varies by product count)<br/>• **100 orders:** ~50-80 KB<br/>• **2000 orders:** ~1-2 MB<br/>• **10000 orders:** ~5-8 MB                                                                                                                                   |
-| **Network Impact** | • **Zero network calls** - completely offline operation<br/>• **No Azure connections** - local file system only<br/>• **No API requests** - uses local random generation<br/>• **Ideal for disconnected environments**                                                                    |
+| Characteristic     | Details                                                                                                                                                                                                                                   |
+| ------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Execution Time** | • **100 orders:** ~1 second<br/>• **2000 orders (default):** ~5-10 seconds<br/>• **10000 orders:** ~30-60 seconds<br/>• **Scaling:** Linear O(n) with order count                                                                         |
+| **Resource Usage** | • **Memory:** ~50-100 MB peak during execution<br/>• **CPU:** Moderate utilization (GUID generation, JSON serialization)<br/>• **Disk I/O:** Single write operation at completion<br/>• **Process spawning:** None (pure PowerShell/Bash) |
+| **Output Size**    | • **Per order:** ~500-800 bytes (varies by product count)<br/>• **100 orders:** ~50-80 KB<br/>• **2000 orders:** ~1-2 MB<br/>• **10000 orders:** ~5-8 MB                                                                                  |
+| **Network Impact** | • **Zero network calls** - completely offline operation<br/>• **No Azure connections** - local file system only<br/>• **No API requests** - uses local random generation<br/>• **Ideal for disconnected environments**                    |
 
 ### Optimization Tips
 
@@ -574,11 +574,11 @@ ls -lh ../infra/data/ordersBatch.json
 
 ## 📜 Version History
 
-| Version | Date       | Author                          | Changes                                                                                                                                                    |
-| ------- | ---------- | ------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 1.0.0   | 2025-12-01 | Azure-LogicApps-Monitoring Team | • Initial release<br/>• Basic order generation with fixed structure<br/>• PowerShell implementation only                                                   |
-| 2.0.0   | 2025-12-15 | Azure-LogicApps-Monitoring Team | • Added GUID-based order IDs<br/>• Added price variation simulation<br/>• Enhanced product catalog<br/>• Added global address pool                         |
-| 2.0.1   | 2026-01-06 | Azure-LogicApps-Monitoring Team | • Added Bash implementation<br/>• Added -WhatIf/--dry-run support<br/>• Enhanced documentation<br/>• Applied PowerShell best practices<br/>• Bug fixes     |
+| Version | Date       | Author                          | Changes                                                                                                                                                |
+| ------- | ---------- | ------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| 1.0.0   | 2025-12-01 | Azure-LogicApps-Monitoring Team | • Initial release<br/>• Basic order generation with fixed structure<br/>• PowerShell implementation only                                               |
+| 2.0.0   | 2025-12-15 | Azure-LogicApps-Monitoring Team | • Added GUID-based order IDs<br/>• Added price variation simulation<br/>• Enhanced product catalog<br/>• Added global address pool                     |
+| 2.0.1   | 2026-01-06 | Azure-LogicApps-Monitoring Team | • Added Bash implementation<br/>• Added -WhatIf/--dry-run support<br/>• Enhanced documentation<br/>• Applied PowerShell best practices<br/>• Bug fixes |
 
 ## Quick Links
 
