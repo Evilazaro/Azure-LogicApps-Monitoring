@@ -623,6 +623,7 @@ try {
     Write-Host ''
     Write-Host '╔══════════════════════════════════════════════════════════════╗' -ForegroundColor Cyan
     Write-Host '║     Azure Logic Apps Workflow Deployment Script              ║' -ForegroundColor Cyan
+    Write-Host "║     Version: $script:ScriptVersion                                          ║" -ForegroundColor Cyan
     Write-Host '║     (Using Azure CLI and Azure Developer CLI)                ║' -ForegroundColor Cyan
     Write-Host '╚══════════════════════════════════════════════════════════════╝' -ForegroundColor Cyan
     Write-Host ''
@@ -635,20 +636,20 @@ try {
     }
 
     # Resolve LogicAppName and ResourceGroupName from environment if not provided
-    if (-not $LogicAppName) {
+    if ([string]::IsNullOrWhiteSpace($LogicAppName)) {
         $LogicAppName = [System.Environment]::GetEnvironmentVariable('LOGIC_APP_NAME')
-        if (-not $LogicAppName) {
+        if ([string]::IsNullOrWhiteSpace($LogicAppName)) {
             throw 'LogicAppName parameter is required or LOGIC_APP_NAME environment variable must be set.'
         }
-        Write-Host "  Using Logic App from environment: $LogicAppName" -ForegroundColor Gray
+        Write-Information "  Using Logic App from environment: $LogicAppName"
     }
 
-    if (-not $ResourceGroupName) {
+    if ([string]::IsNullOrWhiteSpace($ResourceGroupName)) {
         $ResourceGroupName = [System.Environment]::GetEnvironmentVariable('AZURE_RESOURCE_GROUP')
-        if (-not $ResourceGroupName) {
+        if ([string]::IsNullOrWhiteSpace($ResourceGroupName)) {
             throw 'ResourceGroupName parameter is required or AZURE_RESOURCE_GROUP environment variable must be set.'
         }
-        Write-Host "  Using Resource Group from environment: $ResourceGroupName" -ForegroundColor Gray
+        Write-Information "  Using Resource Group from environment: $ResourceGroupName"
     }
 
     # Step 2: Validate Azure CLI connection
@@ -663,9 +664,13 @@ try {
     Write-Host '[3/5] Validating environment variables...' -ForegroundColor Yellow
     
     if (-not $SkipPlaceholderReplacement) {
-        $allPlaceholders = @()
-        $allPlaceholders += $script:WorkflowPlaceholders
-        $allPlaceholders += $script:ConnectionPlaceholders
+        $allPlaceholders = [System.Collections.Generic.List[hashtable]]::new()
+        foreach ($placeholder in $script:WorkflowPlaceholders) {
+            $allPlaceholders.Add($placeholder)
+        }
+        foreach ($placeholder in $script:ConnectionPlaceholders) {
+            $allPlaceholders.Add($placeholder)
+        }
 
         if (-not (Test-RequiredEnvironmentVariables -PlaceholderList $allPlaceholders)) {
             throw 'Required environment variables are missing. Please set all required variables or run "azd provision" first.'
@@ -674,7 +679,7 @@ try {
         Write-DeploymentSummary -WorkflowPlaceholders $script:WorkflowPlaceholders -ConnectionPlaceholders $script:ConnectionPlaceholders
     }
     else {
-        Write-Host '  Skipping environment variable validation (placeholder replacement disabled).' -ForegroundColor Gray
+        Write-Information '  Skipping environment variable validation (placeholder replacement disabled).'
     }
 
     # Step 4: Resolve file paths and process placeholders
@@ -688,20 +693,20 @@ try {
     $resolvedWorkflowPath = Resolve-Path -Path $workflowFilePath -ErrorAction Stop
     $resolvedConnectionsPath = Resolve-Path -Path $connectionsFilePath -ErrorAction Stop
 
-    Write-Host "  Workflow file: $resolvedWorkflowPath" -ForegroundColor Gray
-    Write-Host "  Connections file: $resolvedConnectionsPath" -ForegroundColor Gray
+    Write-Information "  Workflow file: $resolvedWorkflowPath"
+    Write-Information "  Connections file: $resolvedConnectionsPath"
 
     # Process files
     if ($SkipPlaceholderReplacement) {
-        Write-Host '  Reading files without placeholder replacement...' -ForegroundColor Gray
-        $workflowContent = Get-Content -Path $resolvedWorkflowPath -Raw -Encoding UTF8
-        $connectionsContent = Get-Content -Path $resolvedConnectionsPath -Raw -Encoding UTF8
+        Write-Information '  Reading files without placeholder replacement...'
+        $workflowContent = Get-Content -Path $resolvedWorkflowPath -Raw -Encoding UTF8 -ErrorAction Stop
+        $connectionsContent = Get-Content -Path $resolvedConnectionsPath -Raw -Encoding UTF8 -ErrorAction Stop
     }
     else {
-        Write-Host '  Replacing placeholders in workflow.json...' -ForegroundColor Gray
+        Write-Information '  Replacing placeholders in workflow.json...'
         $workflowContent = Invoke-PlaceholderReplacement -FilePath $resolvedWorkflowPath -PlaceholderList $script:WorkflowPlaceholders
 
-        Write-Host '  Replacing placeholders in connections.json...' -ForegroundColor Gray
+        Write-Information '  Replacing placeholders in connections.json...'
         $connectionsContent = Invoke-PlaceholderReplacement -FilePath $resolvedConnectionsPath -PlaceholderList $script:ConnectionPlaceholders
     }
 
@@ -710,9 +715,9 @@ try {
     # Step 5: Deploy workflow via zip deploy
     Write-Host ''
     Write-Host '[5/5] Deploying workflow to Azure Logic Apps via zip deploy...' -ForegroundColor Yellow
-    Write-Host "  Logic App: $LogicAppName" -ForegroundColor Gray
-    Write-Host "  Resource Group: $ResourceGroupName" -ForegroundColor Gray
-    Write-Host "  Workflow: $WorkflowName" -ForegroundColor Gray
+    Write-Information "  Logic App: $LogicAppName"
+    Write-Information "  Resource Group: $ResourceGroupName"
+    Write-Information "  Workflow: $WorkflowName"
 
     # Resolve the base path for deployment
     $resolvedBasePath = Resolve-Path -Path $WorkflowBasePath -ErrorAction Stop
@@ -737,9 +742,9 @@ try {
     # Post-deployment notes
     Write-Host ''
     Write-Host '=== Post-Deployment Notes ===' -ForegroundColor Cyan
-    Write-Host '  - Connections are configured in connections.json' -ForegroundColor Gray
-    Write-Host '  - Ensure API connections are authorized in Azure Portal' -ForegroundColor Gray
-    Write-Host '  - Verify managed identity has required permissions' -ForegroundColor Gray
+    Write-Information '  - Connections are configured in connections.json'
+    Write-Information '  - Ensure API connections are authorized in Azure Portal'
+    Write-Information '  - Verify managed identity has required permissions'
 
     Write-Host ''
     Write-Host '╔══════════════════════════════════════════════════════════════╗' -ForegroundColor Green
