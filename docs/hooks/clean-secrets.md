@@ -509,12 +509,12 @@ azd up
 
 ## 📜 Version History
 
-| Version | Date       | Author                          | Changes                                                                                                                                                                                |
-| ------- | ---------- | ------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 1.0.0   | 2025-12-01 | Azure-LogicApps-Monitoring Team | • Initial release<br/>• Basic user secrets clearing for 3 projects<br/>• Cross-platform PowerShell and Bash implementations                                                           |
-| 2.0.0   | 2025-12-15 | Azure-LogicApps-Monitoring Team | • Added -WhatIf/-Confirm support (PowerShell)<br/>• Added --dry-run mode (Bash)<br/>• Enhanced logging and error handling<br/>• Added execution summary statistics                    |
-| 2.0.1   | 2025-12-29 | Azure-LogicApps-Monitoring Team | • Bug fixes and documentation improvements<br/>• Enhanced .NET SDK version validation                                                                                                 |
-| 2.0.1   | 2026-01-06 | Azure-LogicApps-Monitoring Team | • Applied PowerShell best practices (OutputType attribute, $script: scope prefix)<br/>• Updated copyright years<br/>• Synchronized documentation                                      |
+| Version | Date       | Author                          | Changes                                                                                                                                                            |
+| ------- | ---------- | ------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| 1.0.0   | 2025-12-01 | Azure-LogicApps-Monitoring Team | • Initial release<br/>• Basic user secrets clearing for 3 projects<br/>• Cross-platform PowerShell and Bash implementations                                        |
+| 2.0.0   | 2025-12-15 | Azure-LogicApps-Monitoring Team | • Added -WhatIf/-Confirm support (PowerShell)<br/>• Added --dry-run mode (Bash)<br/>• Enhanced logging and error handling<br/>• Added execution summary statistics |
+| 2.0.1   | 2025-12-29 | Azure-LogicApps-Monitoring Team | • Bug fixes and documentation improvements<br/>• Enhanced .NET SDK version validation                                                                              |
+| 2.0.1   | 2026-01-06 | Azure-LogicApps-Monitoring Team | • Applied PowerShell best practices (OutputType attribute, $script: scope prefix)<br/>• Updated copyright years<br/>• Synchronized documentation                   |
 
 ## Quick Links
 
