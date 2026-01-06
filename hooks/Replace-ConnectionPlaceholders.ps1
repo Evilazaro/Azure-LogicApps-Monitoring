@@ -44,6 +44,26 @@ param(
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
 
+# Load azd environment variables if not already set
+# This ensures the script works both when called from azd hooks and standalone
+Write-Host "Loading azd environment variables..." -ForegroundColor Cyan
+$azdEnvOutput = azd env get-values 2>$null
+if ($LASTEXITCODE -eq 0 -and $azdEnvOutput) {
+    foreach ($line in $azdEnvOutput) {
+        if ($line -match '^([^=]+)="?([^"]*)"?$') {
+            $varName = $matches[1]
+            $varValue = $matches[2]
+            if (-not [System.Environment]::GetEnvironmentVariable($varName)) {
+                [System.Environment]::SetEnvironmentVariable($varName, $varValue)
+                Write-Verbose "Set environment variable: $varName"
+            }
+        }
+    }
+    Write-Host "azd environment variables loaded successfully." -ForegroundColor Green
+} else {
+    Write-Warning "Could not load azd environment variables. Ensure 'azd env' is configured."
+}
+
 # Define the required environment variables and their placeholder names
 [System.Collections.Generic.List[hashtable]]$script:Placeholders = @(
     @{ Placeholder = '${AZURE_SUBSCRIPTION_ID}'; EnvVar = 'AZURE_SUBSCRIPTION_ID' }
