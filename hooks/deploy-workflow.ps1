@@ -54,12 +54,11 @@
 .NOTES
     File Name      : deploy-workflow.ps1
     Author         : Evilazaro | Principal Cloud Solution Architect | Microsoft
-    Version        : 1.1.0
+    Version        : 1.2.0
     Last Modified  : 2026-01-06
     Prerequisite   : PowerShell 7.0 or later
     Prerequisite   : Azure CLI (az)
     Prerequisite   : Azure Developer CLI (azd)
-    
 
 .LINK
     https://github.com/Evilazaro/Azure-LogicApps-Monitoring
@@ -95,7 +94,7 @@ $InformationPreference = 'Continue'
 $ProgressPreference = 'SilentlyContinue'
 
 # Script-level constants
-$script:ScriptVersion = '1.1.0'
+$script:ScriptVersion = '1.2.0'
 
 #region Configuration
 
@@ -122,14 +121,14 @@ function Initialize-AzdEnvironment {
     <#
     .SYNOPSIS
         Loads azd environment variables into the current session.
-    
+
     .DESCRIPTION
         Retrieves environment variables from the Azure Developer CLI
         environment specified by AZURE_ENV_NAME and sets them in the current PowerShell session.
-    
+
     .OUTPUTS
         System.Boolean - Returns $true if variables were loaded successfully.
-    
+
     .EXAMPLE
         $success = Initialize-AzdEnvironment
     #>
@@ -138,18 +137,20 @@ function Initialize-AzdEnvironment {
     param()
 
     Write-Host '  Loading azd environment variables...' -ForegroundColor Gray
-    
+
     # Get the environment name from AZURE_ENV_NAME
     $envName = $env:AZURE_ENV_NAME
+    $azdEnvOutput = $null
+
     if ([string]::IsNullOrWhiteSpace($envName)) {
         Write-Warning 'AZURE_ENV_NAME environment variable is not set. Trying to get values from default environment.'
-        $azdEnvOutput = azd env get-values 2>$null
+        $azdEnvOutput = & azd env get-values 2>&1
     }
     else {
         Write-Host "  Using azd environment: $envName" -ForegroundColor Gray
-        $azdEnvOutput = azd env get-values --environment $envName 2>$null
+        $azdEnvOutput = & azd env get-values --environment $envName 2>&1
     }
-    
+
     if ($LASTEXITCODE -ne 0 -or -not $azdEnvOutput) {
         Write-Warning 'Could not load azd environment variables. Ensure azd environment is configured.'
         return $false
@@ -157,9 +158,10 @@ function Initialize-AzdEnvironment {
 
     $loadedCount = 0
     foreach ($line in $azdEnvOutput) {
-        if ($line -match '^([^=]+)="?([^"]*)"?$') {
-            $varName = $matches[1]
-            $varValue = $matches[2]
+        # Match pattern: VARNAME="value" or VARNAME=value
+        if ($line -match '^([A-Z_][A-Z0-9_]*)="?(.*)"?$') {
+            $varName = $Matches[1]
+            $varValue = $Matches[2] -replace '"$', ''
             [System.Environment]::SetEnvironmentVariable($varName, $varValue)
             $loadedCount++
             Write-Verbose "Set environment variable: $varName"
@@ -174,17 +176,17 @@ function Test-RequiredEnvironmentVariables {
     <#
     .SYNOPSIS
         Validates that all required environment variables are set.
-    
+
     .DESCRIPTION
         Checks each placeholder configuration to verify that the corresponding
         environment variable is set and has a non-empty value.
-    
+
     .PARAMETER PlaceholderList
         An array of hashtables containing Placeholder and EnvVar keys.
-    
+
     .OUTPUTS
         System.Boolean - Returns $true if all variables are set.
-    
+
     .EXAMPLE
         Test-RequiredEnvironmentVariables -PlaceholderList $script:WorkflowPlaceholders
     #>
@@ -196,12 +198,12 @@ function Test-RequiredEnvironmentVariables {
         [hashtable[]]$PlaceholderList
     )
 
-    [string[]]$missingVars = @()
-    
+    [System.Collections.Generic.List[string]]$missingVars = @()
+
     foreach ($item in $PlaceholderList) {
         $envValue = [System.Environment]::GetEnvironmentVariable($item.EnvVar)
         if ([string]::IsNullOrWhiteSpace($envValue)) {
-            $missingVars += $item.EnvVar
+            $missingVars.Add($item.EnvVar)
         }
     }
 
@@ -217,20 +219,20 @@ function Update-PlaceholderContent {
     <#
     .SYNOPSIS
         Replaces placeholders in the content with environment variable values.
-    
+
     .DESCRIPTION
         Iterates through the placeholder list and replaces each placeholder
         pattern with the corresponding environment variable value.
-    
+
     .PARAMETER Content
         The content string containing placeholders to replace.
-    
+
     .PARAMETER PlaceholderList
         An array of hashtables containing Placeholder and EnvVar keys.
-    
+
     .OUTPUTS
         System.String - The content with all placeholders replaced.
-    
+
     .EXAMPLE
         Update-PlaceholderContent -Content $json -PlaceholderList $script:WorkflowPlaceholders
     #>
@@ -263,20 +265,20 @@ function Get-MaskedValue {
     <#
     .SYNOPSIS
         Returns a masked version of sensitive values for display purposes.
-    
+
     .DESCRIPTION
-        Masks sensitive values (URLs, secrets, keys, passwords, connections) 
+        Masks sensitive values (URLs, secrets, keys, passwords, connections)
         to prevent accidental exposure in logs or console output.
-    
+
     .PARAMETER Value
         The value to potentially mask.
-    
+
     .PARAMETER VariableName
         The name of the variable, used to determine if masking is needed.
-    
+
     .OUTPUTS
         System.String - The masked or original value.
-    
+
     .EXAMPLE
         Get-MaskedValue -Value $secret -VariableName 'SERVICE_BUS_CONNECTION_RUNTIME_URL'
     #>
@@ -309,23 +311,23 @@ function Invoke-PlaceholderReplacement {
     <#
     .SYNOPSIS
         Replaces placeholders in a file and returns the updated content.
-    
+
     .DESCRIPTION
         Reads a file, replaces all placeholder patterns with their corresponding
         environment variable values, and optionally writes to an output file.
-    
+
     .PARAMETER FilePath
         The path to the file containing placeholders.
-    
+
     .PARAMETER PlaceholderList
         An array of hashtables containing Placeholder and EnvVar keys.
-    
+
     .PARAMETER OutputPath
         Optional path to write the processed content.
-    
+
     .OUTPUTS
         System.String - The content with all placeholders replaced.
-    
+
     .EXAMPLE
         Invoke-PlaceholderReplacement -FilePath './workflow.json' -PlaceholderList $placeholders
     #>
@@ -344,16 +346,16 @@ function Invoke-PlaceholderReplacement {
         [string]$OutputPath
     )
 
-    if (-not (Test-Path -Path $FilePath)) {
+    if (-not (Test-Path -Path $FilePath -PathType Leaf)) {
         throw [System.IO.FileNotFoundException]::new("File not found: $FilePath")
     }
 
     Write-Host "  Processing: $FilePath" -ForegroundColor Gray
-    
+
     $content = Get-Content -Path $FilePath -Raw -Encoding UTF8
     $updatedContent = Update-PlaceholderContent -Content $content -PlaceholderList $PlaceholderList
 
-    if ($OutputPath) {
+    if (-not [string]::IsNullOrEmpty($OutputPath)) {
         $outputDir = Split-Path -Path $OutputPath -Parent
         if (-not [string]::IsNullOrEmpty($outputDir) -and -not (Test-Path -Path $outputDir)) {
             $null = New-Item -ItemType Directory -Path $outputDir -Force
@@ -369,15 +371,15 @@ function Test-AzureCLIConnection {
     <#
     .SYNOPSIS
         Validates Azure CLI connection and returns account information.
-    
+
     .DESCRIPTION
         Checks if the Azure CLI is authenticated and returns the current
         account information including subscription and tenant details.
-    
+
     .OUTPUTS
-        PSCustomObject - Account information with AccountId, SubscriptionId, 
+        PSCustomObject - Account information with AccountId, SubscriptionId,
                          SubscriptionName, and TenantId properties.
-    
+
     .EXAMPLE
         $account = Test-AzureCLIConnection
         Write-Host "Connected as: $($account.AccountId)"
@@ -387,11 +389,11 @@ function Test-AzureCLIConnection {
     param()
 
     try {
-        $accountJson = az account show --output json 2>$null
+        $accountJson = & az account show --output json 2>&1
         if ($LASTEXITCODE -ne 0 -or -not $accountJson) {
             throw 'Not connected to Azure. Please run "az login" first.'
         }
-        
+
         $account = $accountJson | ConvertFrom-Json
         return [PSCustomObject]@{
             AccountId        = $account.user.name
@@ -556,21 +558,25 @@ function Write-DeploymentSummary {
     <#
     .SYNOPSIS
         Displays a deployment summary with environment variable values.
-    
+
     .DESCRIPTION
         Outputs a formatted summary showing both workflow and connection
         environment variables and their masked values for verification.
-    
+
     .PARAMETER WorkflowPlaceholders
         An array of hashtables containing workflow placeholder configurations.
-    
+
     .PARAMETER ConnectionPlaceholders
         An array of hashtables containing connection placeholder configurations.
-    
+
+    .OUTPUTS
+        System.Void - Outputs to console only.
+
     .EXAMPLE
         Write-DeploymentSummary -WorkflowPlaceholders $workflow -ConnectionPlaceholders $connections
     #>
     [CmdletBinding()]
+    [OutputType([System.Void])]
     param(
         [Parameter(Mandatory = $true)]
         [ValidateNotNull()]
@@ -583,7 +589,7 @@ function Write-DeploymentSummary {
 
     Write-Host ''
     Write-Host '=== Environment Variables Summary ===' -ForegroundColor Cyan
-    
+
     Write-Host '  Workflow Variables:' -ForegroundColor Yellow
     foreach ($item in $WorkflowPlaceholders) {
         $envValue = [System.Environment]::GetEnvironmentVariable($item.EnvVar)
@@ -597,6 +603,7 @@ function Write-DeploymentSummary {
         $displayValue = Get-MaskedValue -Value $envValue -VariableName $item.EnvVar
         Write-Host "    $($item.EnvVar): $displayValue" -ForegroundColor Gray
     }
+}
 }
 
 #endregion Helper Functions
