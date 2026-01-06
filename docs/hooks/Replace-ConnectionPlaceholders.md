@@ -259,9 +259,9 @@ Operation completed successfully in 1.2 seconds.
 
 ```yaml
 - task: PowerShell@2
-  displayName: 'Replace Connection Placeholders'
+  displayName: "Replace Connection Placeholders"
   inputs:
-    filePath: './hooks/Replace-ConnectionPlaceholders.ps1'
+    filePath: "./hooks/Replace-ConnectionPlaceholders.ps1"
     pwsh: true
 ```
 
@@ -317,11 +317,11 @@ flowchart LR
 
 ### Integration Points
 
-| Integration       | Description                                          |
-| ----------------- | ---------------------------------------------------- |
-| **azd Hooks**     | Can be configured as a predeploy hook in azure.yaml  |
-| **CI/CD**         | Supports GitHub Actions, Azure DevOps, Jenkins       |
-| **Local Dev**     | Manual execution for local testing and development   |
+| Integration         | Description                                           |
+| ------------------- | ----------------------------------------------------- |
+| **azd Hooks**       | Can be configured as a predeploy hook in azure.yaml   |
+| **CI/CD**           | Supports GitHub Actions, Azure DevOps, Jenkins        |
+| **Local Dev**       | Manual execution for local testing and development    |
 | **deploy-workflow** | Called by deploy-workflow.ps1 for workflow deployment |
 
 ---
@@ -330,23 +330,23 @@ flowchart LR
 
 ### Required Tools
 
-| Tool                   | Version | Purpose                          | Installation                          |
-| ---------------------- | ------- | -------------------------------- | ------------------------------------- |
-| **PowerShell Core**    | 7.0+    | Script execution (PowerShell)    | `winget install Microsoft.PowerShell` |
-| **Bash**               | 4.0+    | Script execution (Bash)          | Included in Linux/macOS               |
-| **Azure Developer CLI**| Latest  | Environment variable management  | `winget install Microsoft.Azd`        |
+| Tool                    | Version | Purpose                         | Installation                          |
+| ----------------------- | ------- | ------------------------------- | ------------------------------------- |
+| **PowerShell Core**     | 7.0+    | Script execution (PowerShell)   | `winget install Microsoft.PowerShell` |
+| **Bash**                | 4.0+    | Script execution (Bash)         | Included in Linux/macOS               |
+| **Azure Developer CLI** | Latest  | Environment variable management | `winget install Microsoft.Azd`        |
 
 ### Required Environment Variables
 
 The following environment variables must be set (via azd or manually):
 
-| Variable                             | Description                             | Set By                |
-| ------------------------------------ | --------------------------------------- | --------------------- |
-| `AZURE_SUBSCRIPTION_ID`              | Azure subscription GUID                 | azd / manual          |
-| `AZURE_RESOURCE_GROUP`               | Resource group name                     | azd / manual          |
-| `MANAGED_IDENTITY_NAME`              | Managed identity display name           | azd / manual          |
-| `SERVICE_BUS_CONNECTION_RUNTIME_URL` | Service Bus API connection runtime URL  | azd / manual          |
-| `AZURE_BLOB_CONNECTION_RUNTIME_URL`  | Blob Storage API connection runtime URL | azd / manual          |
+| Variable                             | Description                             | Set By       |
+| ------------------------------------ | --------------------------------------- | ------------ |
+| `AZURE_SUBSCRIPTION_ID`              | Azure subscription GUID                 | azd / manual |
+| `AZURE_RESOURCE_GROUP`               | Resource group name                     | azd / manual |
+| `MANAGED_IDENTITY_NAME`              | Managed identity display name           | azd / manual |
+| `SERVICE_BUS_CONNECTION_RUNTIME_URL` | Service Bus API connection runtime URL  | azd / manual |
+| `AZURE_BLOB_CONNECTION_RUNTIME_URL`  | Blob Storage API connection runtime URL | azd / manual |
 
 ### Environment Setup
 
@@ -478,13 +478,13 @@ The script handles sensitive values appropriately:
 
 ### When to Use This Script
 
-| Scenario                  | Recommendation                                       |
-| ------------------------- | ---------------------------------------------------- |
-| **azd provision**         | Automatically via hooks or manually after provision  |
-| **Local Development**     | Run manually after selecting azd environment         |
-| **CI/CD Pipeline**        | Include in deployment steps with force mode          |
-| **Environment Switch**    | Run after `azd env select <env-name>`                |
-| **Troubleshooting**       | Use `-Verbose` flag for detailed output              |
+| Scenario               | Recommendation                                      |
+| ---------------------- | --------------------------------------------------- |
+| **azd provision**      | Automatically via hooks or manually after provision |
+| **Local Development**  | Run manually after selecting azd environment        |
+| **CI/CD Pipeline**     | Include in deployment steps with force mode         |
+| **Environment Switch** | Run after `azd env select <env-name>`               |
+| **Troubleshooting**    | Use `-Verbose` flag for detailed output             |
 
 ### Development Workflow Integration
 
@@ -510,21 +510,21 @@ flowchart LR
 
 ### Performance Characteristics
 
-| Metric               | Value        | Notes                          |
-| -------------------- | ------------ | ------------------------------ |
-| **Typical Duration** | 1-2 seconds  | Depends on file size           |
-| **Memory Usage**     | < 50 MB      | File loaded into memory        |
-| **CPU Usage**        | Minimal      | String replacement operations  |
-| **File I/O**         | 2 operations | Read input, write output       |
+| Metric               | Value        | Notes                         |
+| -------------------- | ------------ | ----------------------------- |
+| **Typical Duration** | 1-2 seconds  | Depends on file size          |
+| **Memory Usage**     | < 50 MB      | File loaded into memory       |
+| **CPU Usage**        | Minimal      | String replacement operations |
+| **File I/O**         | 2 operations | Read input, write output      |
 
 ---
 
 ## 📜 Version History
 
-| Version   | Date       | Changes                                                                                     |
-| --------- | ---------- | ------------------------------------------------------------------------------------------- |
+| Version   | Date       | Changes                                                                                      |
+| --------- | ---------- | -------------------------------------------------------------------------------------------- |
 | **1.1.0** | 2026-01-06 | • Applied PowerShell best practices (OutputType on script block)<br/>• Documentation updates |
-| **1.0.0** | 2025-12-15 | • Initial release with placeholder replacement functionality                                |
+| **1.0.0** | 2025-12-15 | • Initial release with placeholder replacement functionality                                 |
 
 ---
 

@@ -781,11 +781,11 @@ jobs:
 
 ## 📜 Version History
 
-| Version | Date | Changes |
-|---------|------|---------|
-| **v1.0.0** | 2025-11-20 | Initial release with basic user secrets configuration |
+| Version    | Date       | Changes                                                                                |
+| ---------- | ---------- | -------------------------------------------------------------------------------------- |
+| **v1.0.0** | 2025-11-20 | Initial release with basic user secrets configuration                                  |
 | **v2.0.0** | 2025-12-15 | Added SQL managed identity configuration, ACR authentication, comprehensive validation |
-| **v2.0.1** | 2026-01-06 | Applied PowerShell best practices (OutputType on script block), documentation updates |
+| **v2.0.1** | 2026-01-06 | Applied PowerShell best practices (OutputType on script block), documentation updates  |
 
 ## Quick Links
 

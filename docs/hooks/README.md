@@ -56,16 +56,16 @@ By automating environment validation, secret management, SQL managed identity co
 
 ### Available Scripts
 
-| Script                   | PowerShell                        | Bash                             | Purpose                                        | Documentation                                                         |
-| ------------------------ | --------------------------------- | ---------------------------------------- | ---------------------------------------------- | --------------------------------------------------------------------- |
-| **Environment Check**    | `check-dev-workstation.ps1`       | `check-dev-workstation.sh`               | Validate workstation prerequisites             | [📄 check-dev-workstation.md](./check-dev-workstation.md)             |
-| **Pre-Provisioning**     | `preprovision.ps1`                | `preprovision.sh`                        | Validate and prepare for deployment            | [📄 preprovision.md](./preprovision.md)                               |
-| **Post-Provisioning**    | `postprovision.ps1`               | `postprovision.sh`                       | Configure secrets after deployment             | [📄 postprovision.md](./postprovision.md)                             |
-| **SQL Managed Identity** | `sql-managed-identity-config.ps1` | `sql-managed-identity-config.sh`         | Configure SQL Database managed identity access | [📄 sql-managed-identity-config.md](./sql-managed-identity-config.md) |
-| **Secrets Management**   | `clean-secrets.ps1`               | `clean-secrets.sh`                       | Clear .NET user secrets                        | [📄 clean-secrets.md](./clean-secrets.md)                             |
-| **Test Data**            | `Generate-Orders.ps1`             | `Generate-Orders.sh`                     | Generate sample order data                     | [📄 Generate-Orders.md](./Generate-Orders.md)                         |
+| Script                      | PowerShell                           | Bash                                 | Purpose                                        | Documentation                                                               |
+| --------------------------- | ------------------------------------ | ------------------------------------ | ---------------------------------------------- | --------------------------------------------------------------------------- |
+| **Environment Check**       | `check-dev-workstation.ps1`          | `check-dev-workstation.sh`           | Validate workstation prerequisites             | [📄 check-dev-workstation.md](./check-dev-workstation.md)                   |
+| **Pre-Provisioning**        | `preprovision.ps1`                   | `preprovision.sh`                    | Validate and prepare for deployment            | [📄 preprovision.md](./preprovision.md)                                     |
+| **Post-Provisioning**       | `postprovision.ps1`                  | `postprovision.sh`                   | Configure secrets after deployment             | [📄 postprovision.md](./postprovision.md)                                   |
+| **SQL Managed Identity**    | `sql-managed-identity-config.ps1`    | `sql-managed-identity-config.sh`     | Configure SQL Database managed identity access | [📄 sql-managed-identity-config.md](./sql-managed-identity-config.md)       |
+| **Secrets Management**      | `clean-secrets.ps1`                  | `clean-secrets.sh`                   | Clear .NET user secrets                        | [📄 clean-secrets.md](./clean-secrets.md)                                   |
+| **Test Data**               | `Generate-Orders.ps1`                | `Generate-Orders.sh`                 | Generate sample order data                     | [📄 Generate-Orders.md](./Generate-Orders.md)                               |
 | **Connection Placeholders** | `Replace-ConnectionPlaceholders.ps1` | `replace-connection-placeholders.sh` | Replace placeholder tokens in connections.json | [📄 Replace-ConnectionPlaceholders.md](./Replace-ConnectionPlaceholders.md) |
-| **Workflow Deployment**  | `deploy-workflow.ps1`             | `deploy-workflow.sh`                     | Deploy Logic Apps Standard workflows           | [📄 deploy-workflow.md](./deploy-workflow.md)                         |
+| **Workflow Deployment**     | `deploy-workflow.ps1`                | `deploy-workflow.sh`                 | Deploy Logic Apps Standard workflows           | [📄 deploy-workflow.md](./deploy-workflow.md)                               |
 
 ---
 

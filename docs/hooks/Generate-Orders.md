@@ -862,10 +862,10 @@ infra/data/ordersBatch.json
 
 ## 📜 Version History
 
-| Version | Date       | Author                          | Changes                                                                                                                                                                                |
-| ------- | ---------- | ------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Version | Date       | Author                           | Changes                                                                                                                                                                                |
+| ------- | ---------- | -------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | 1.0.0   | 2025-01-15 | Azure Logic Apps Monitoring Team | • Initial release<br/>• Basic order generation with fixed product count<br/>• PowerShell implementation                                                                                |
-| 2.0.0   | 2025-06-01 | Azure Logic Apps Monitoring Team | • Added Bash implementation<br/>• Introduced configurable product count (MinProducts/MaxProducts)<br/>• Enhanced price variation logic<br/>• Added WhatIf/dry-run support             |
+| 2.0.0   | 2025-06-01 | Azure Logic Apps Monitoring Team | • Added Bash implementation<br/>• Introduced configurable product count (MinProducts/MaxProducts)<br/>• Enhanced price variation logic<br/>• Added WhatIf/dry-run support              |
 | 2.0.1   | 2026-01-06 | Azure Logic Apps Monitoring Team | • Applied PowerShell best practices (OutputType, $script: scope prefix)<br/>• Synchronized dates/copyright across PowerShell and Bash<br/>• Updated documentation with Version History |
 
 ## Quick Links

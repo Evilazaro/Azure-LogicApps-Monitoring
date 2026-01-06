@@ -452,10 +452,10 @@ Both scripts return a structured JSON object:
 
 ### PowerShell Script (sql-managed-identity-config.ps1)
 
-| Version | Date       | Changes         |
-| ------- | ---------- | --------------- |
+| Version | Date       | Changes                                                                               |
+| ------- | ---------- | ------------------------------------------------------------------------------------- |
 | 1.0.0   | 2026-01-06 | Applied PowerShell best practices (OutputType on script block), documentation updates |
-| 1.0.0   | 2025-12-29 | Initial release |
+| 1.0.0   | 2025-12-29 | Initial release                                                                       |
 
 ### Bash Script (sql-managed-identity-config.sh)
 

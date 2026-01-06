@@ -73,20 +73,20 @@ This script helps developers and operators:
 
 ### Workflow Placeholders (workflow.json)
 
-| Placeholder                              | Environment Variable                   | Description                        |
-| ---------------------------------------- | -------------------------------------- | ---------------------------------- |
-| `${ORDERS_API_URL}`                      | `ORDERS_API_URL`                       | Orders API endpoint URL            |
-| `${AZURE_STORAGE_ACCOUNT_NAME_WORKFLOW}` | `AZURE_STORAGE_ACCOUNT_NAME_WORKFLOW`  | Storage account for workflow state |
+| Placeholder                              | Environment Variable                  | Description                        |
+| ---------------------------------------- | ------------------------------------- | ---------------------------------- |
+| `${ORDERS_API_URL}`                      | `ORDERS_API_URL`                      | Orders API endpoint URL            |
+| `${AZURE_STORAGE_ACCOUNT_NAME_WORKFLOW}` | `AZURE_STORAGE_ACCOUNT_NAME_WORKFLOW` | Storage account for workflow state |
 
 ### Connection Placeholders (connections.json)
 
-| Placeholder                              | Environment Variable                   | Description                             |
-| ---------------------------------------- | -------------------------------------- | --------------------------------------- |
-| `${AZURE_SUBSCRIPTION_ID}`               | `AZURE_SUBSCRIPTION_ID`                | Azure subscription ID                   |
-| `${AZURE_RESOURCE_GROUP}`                | `AZURE_RESOURCE_GROUP`                 | Azure resource group name               |
-| `${MANAGED_IDENTITY_NAME}`               | `MANAGED_IDENTITY_NAME`                | User-assigned managed identity name     |
-| `${SERVICE_BUS_CONNECTION_RUNTIME_URL}`  | `SERVICE_BUS_CONNECTION_RUNTIME_URL`   | Service Bus API connection runtime URL  |
-| `${AZURE_BLOB_CONNECTION_RUNTIME_URL}`   | `AZURE_BLOB_CONNECTION_RUNTIME_URL`    | Blob Storage API connection runtime URL |
+| Placeholder                             | Environment Variable                 | Description                             |
+| --------------------------------------- | ------------------------------------ | --------------------------------------- |
+| `${AZURE_SUBSCRIPTION_ID}`              | `AZURE_SUBSCRIPTION_ID`              | Azure subscription ID                   |
+| `${AZURE_RESOURCE_GROUP}`               | `AZURE_RESOURCE_GROUP`               | Azure resource group name               |
+| `${MANAGED_IDENTITY_NAME}`              | `MANAGED_IDENTITY_NAME`              | User-assigned managed identity name     |
+| `${SERVICE_BUS_CONNECTION_RUNTIME_URL}` | `SERVICE_BUS_CONNECTION_RUNTIME_URL` | Service Bus API connection runtime URL  |
+| `${AZURE_BLOB_CONNECTION_RUNTIME_URL}`  | `AZURE_BLOB_CONNECTION_RUNTIME_URL`  | Blob Storage API connection runtime URL |
 
 ---
 
@@ -243,16 +243,16 @@ No changes were made. This was a simulation.
 
 ### Bash Options
 
-| Option                           | Short | Required | Default                             | Description                                         |
-| -------------------------------- | ----- | -------- | ----------------------------------- | --------------------------------------------------- |
-| `--logic-app-name <name>`        | `-l`  | No       | From `LOGIC_APP_NAME` env var       | The name of the Azure Logic Apps Standard resource  |
-| `--resource-group <name>`        | `-g`  | No       | From `AZURE_RESOURCE_GROUP` env var | The name of the Azure resource group                |
-| `--workflow-name <name>`         | `-w`  | No       | `ProcessingOrdersPlaced`            | The name of the workflow to deploy                  |
-| `--workflow-base-path <path>`    | `-p`  | No       | `../workflows/OrdersManagement/...` | Base path to the Logic App workflow files           |
-| `--skip-placeholder`             | `-s`  | No       | -                                   | Skip placeholder replacement if files are processed |
-| `--dry-run`                      | `-n`  | No       | -                                   | Shows what changes would be made without deploying  |
-| `--verbose`                      | `-v`  | No       | -                                   | Enable detailed diagnostic output                   |
-| `--help`                         | `-h`  | No       | -                                   | Display help message and exit                       |
+| Option                        | Short  | Required | Default                             | Description                                         |
+| ----------------------------- | ------ | -------- | ----------------------------------- | --------------------------------------------------- |
+| `--logic-app-name <name>`     | `-l`   | No       | From `LOGIC_APP_NAME` env var       | The name of the Azure Logic Apps Standard resource  |
+| `--resource-group <name>`     | `-g`   | No       | From `AZURE_RESOURCE_GROUP` env var | The name of the Azure resource group                |
+| `--workflow-name <name>`      | `-w`   | No       | `ProcessingOrdersPlaced`            | The name of the workflow to deploy                  |
+| `--workflow-base-path <path>` | `-p`   | No       | `../workflows/OrdersManagement/...` | Base path to the Logic App workflow files           |
+| `--skip-placeholder`          | `-s`   | No       | -                                   | Skip placeholder replacement if files are processed |
+| `--dry-run`                   | `-n`   | No       | -                                   | Shows what changes would be made without deploying  |
+| `--verbose`                   | `-v`   | No       | -                                   | Enable detailed diagnostic output                   |
+| `--help`                      | `-h`   | No       | -                                   | Display help message and exit                       |
 | `-Confirm`                    | Switch | No       | -                                   | Prompts for confirmation before deploying           |
 | `-Verbose`                    | Switch | No       | -                                   | Enables detailed logging                            |
 
@@ -334,12 +334,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      
+
       - name: Azure Login
         uses: azure/login@v1
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
-      
+
       - name: Deploy Logic App Workflow
         run: |
           pwsh -NoProfile -File ./hooks/deploy-workflow.ps1 `
@@ -356,13 +356,13 @@ jobs:
 ```yaml
 steps:
   - task: AzureCLI@2
-    displayName: 'Deploy Logic App Workflow'
+    displayName: "Deploy Logic App Workflow"
     inputs:
-      azureSubscription: 'AzureServiceConnection'
-      scriptType: 'pscore'
-      scriptLocation: 'scriptPath'
-      scriptPath: './hooks/deploy-workflow.ps1'
-      arguments: '-Confirm:$false'
+      azureSubscription: "AzureServiceConnection"
+      scriptType: "pscore"
+      scriptLocation: "scriptPath"
+      scriptPath: "./hooks/deploy-workflow.ps1"
+      arguments: "-Confirm:$false"
 ```
 
 ---
@@ -434,12 +434,12 @@ flowchart LR
 
 ### Integration Points
 
-| Integration       | Description                                                 |
-| ----------------- | ----------------------------------------------------------- |
-| **azd Hooks**     | Can be configured as a predeploy/postdeploy hook            |
-| **CI/CD**         | Supports GitHub Actions, Azure DevOps, Jenkins              |
-| **Azure CLI**     | Uses `az logicapp deployment source config-zip` for deploy  |
-| **Local Dev**     | Manual execution for local testing and development          |
+| Integration   | Description                                                |
+| ------------- | ---------------------------------------------------------- |
+| **azd Hooks** | Can be configured as a predeploy/postdeploy hook           |
+| **CI/CD**     | Supports GitHub Actions, Azure DevOps, Jenkins             |
+| **Azure CLI** | Uses `az logicapp deployment source config-zip` for deploy |
+| **Local Dev** | Manual execution for local testing and development         |
 
 ### Deployment Process
 
@@ -461,11 +461,11 @@ This approach is reliable and consistent with Azure Logic Apps Standard deployme
 
 ### Required Tools
 
-| Tool                   | Version | Purpose                           | Installation                          |
-| ---------------------- | ------- | --------------------------------- | ------------------------------------- |
-| **PowerShell Core**    | 7.0+    | Script execution                  | `winget install Microsoft.PowerShell` |
-| **Azure CLI**          | 2.60+   | Azure resource management         | `winget install Microsoft.AzureCLI`   |
-| **Azure Developer CLI**| Latest  | Environment variable management   | `winget install Microsoft.Azd`        |
+| Tool                    | Version | Purpose                         | Installation                          |
+| ----------------------- | ------- | ------------------------------- | ------------------------------------- |
+| **PowerShell Core**     | 7.0+    | Script execution                | `winget install Microsoft.PowerShell` |
+| **Azure CLI**           | 2.60+   | Azure resource management       | `winget install Microsoft.AzureCLI`   |
+| **Azure Developer CLI** | Latest  | Environment variable management | `winget install Microsoft.Azd`        |
 
 ### Authentication
 
@@ -486,18 +486,18 @@ azd env select <env-name>
 
 The following environment variables must be set (via azd or manually):
 
-| Variable                               | Description                             | Required |
-| -------------------------------------- | --------------------------------------- | -------- |
-| `LOGIC_APP_NAME`                       | Logic App resource name (or parameter)  | Yes*     |
-| `AZURE_RESOURCE_GROUP`                 | Resource group name (or parameter)      | Yes*     |
-| `ORDERS_API_URL`                       | Orders API endpoint URL                 | Yes      |
-| `AZURE_STORAGE_ACCOUNT_NAME_WORKFLOW`  | Storage account for workflow state      | Yes      |
-| `AZURE_SUBSCRIPTION_ID`                | Azure subscription GUID                 | Yes      |
-| `MANAGED_IDENTITY_NAME`                | Managed identity display name           | Yes      |
-| `SERVICE_BUS_CONNECTION_RUNTIME_URL`   | Service Bus API connection runtime URL  | Yes      |
-| `AZURE_BLOB_CONNECTION_RUNTIME_URL`    | Blob Storage API connection runtime URL | Yes      |
+| Variable                              | Description                             | Required |
+| ------------------------------------- | --------------------------------------- | -------- |
+| `LOGIC_APP_NAME`                      | Logic App resource name (or parameter)  | Yes\*    |
+| `AZURE_RESOURCE_GROUP`                | Resource group name (or parameter)      | Yes\*    |
+| `ORDERS_API_URL`                      | Orders API endpoint URL                 | Yes      |
+| `AZURE_STORAGE_ACCOUNT_NAME_WORKFLOW` | Storage account for workflow state      | Yes      |
+| `AZURE_SUBSCRIPTION_ID`               | Azure subscription GUID                 | Yes      |
+| `MANAGED_IDENTITY_NAME`               | Managed identity display name           | Yes      |
+| `SERVICE_BUS_CONNECTION_RUNTIME_URL`  | Service Bus API connection runtime URL  | Yes      |
+| `AZURE_BLOB_CONNECTION_RUNTIME_URL`   | Blob Storage API connection runtime URL | Yes      |
 
-*Can be passed as parameters instead of environment variables.
+\*Can be passed as parameters instead of environment variables.
 
 ---
 
@@ -634,13 +634,13 @@ The script performs safe deployment operations:
 
 ### When to Use This Script
 
-| Scenario                  | Recommendation                                       |
-| ------------------------- | ---------------------------------------------------- |
-| **After azd provision**   | Deploy workflows to newly provisioned Logic App      |
-| **CI/CD Pipeline**        | Include in deployment steps with `-Confirm:$false`   |
-| **Workflow Updates**      | Deploy changes to workflow definitions               |
-| **Environment Switch**    | Run after `azd env select <env-name>`                |
-| **Troubleshooting**       | Use `-WhatIf -Verbose` for detailed diagnostics      |
+| Scenario                | Recommendation                                     |
+| ----------------------- | -------------------------------------------------- |
+| **After azd provision** | Deploy workflows to newly provisioned Logic App    |
+| **CI/CD Pipeline**      | Include in deployment steps with `-Confirm:$false` |
+| **Workflow Updates**    | Deploy changes to workflow definitions             |
+| **Environment Switch**  | Run after `azd env select <env-name>`              |
+| **Troubleshooting**     | Use `-WhatIf -Verbose` for detailed diagnostics    |
 
 ### Development Workflow Integration
 
@@ -668,20 +668,20 @@ flowchart LR
 
 ### Performance Characteristics
 
-| Metric                | Value         | Notes                              |
-| --------------------- | ------------- | ---------------------------------- |
-| **Typical Duration**  | 30-60 seconds | Includes zip upload and deployment |
-| **Network I/O**       | ~50-200 KB    | Zip package upload                 |
-| **Local Processing**  | < 5 seconds   | Placeholder replacement            |
-| **Azure Operations**  | ~25-50 seconds| Deployment and validation          |
+| Metric               | Value          | Notes                              |
+| -------------------- | -------------- | ---------------------------------- |
+| **Typical Duration** | 30-60 seconds  | Includes zip upload and deployment |
+| **Network I/O**      | ~50-200 KB     | Zip package upload                 |
+| **Local Processing** | < 5 seconds    | Placeholder replacement            |
+| **Azure Operations** | ~25-50 seconds | Deployment and validation          |
 
 ## 📜 Version History
 
-| Version | Date       | Author                          | Changes                                                                                                                                                                                |
-| ------- | ---------- | ------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Version | Date       | Author                           | Changes                                                                                                                                                                                |
+| ------- | ---------- | -------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | 1.0.0   | 2025-12-20 | Azure Logic Apps Monitoring Team | • Initial release<br/>• Basic workflow deployment with placeholder replacement<br/>• Azure CLI zip deployment integration                                                              |
 | 1.1.0   | 2026-01-06 | Azure Logic Apps Monitoring Team | • Added WhatIf/Confirm support<br/>• Enhanced environment variable validation<br/>• Improved error handling and logging<br/>• Added OutputType attribute for best practices compliance |
-| 1.2.0   | 2026-01-06 | Azure Logic Apps Monitoring Team | • Added Bash implementation (deploy-workflow.sh)<br/>• Cross-platform support for Linux and macOS<br/>• Updated documentation to cover both PowerShell and Bash versions |
+| 1.2.0   | 2026-01-06 | Azure Logic Apps Monitoring Team | • Added Bash implementation (deploy-workflow.sh)<br/>• Cross-platform support for Linux and macOS<br/>• Updated documentation to cover both PowerShell and Bash versions               |
 
 ---
 
@@ -692,4 +692,3 @@ flowchart LR
 [⬆ Back to Top](#deploy-workflow-ps1--sh)
 
 </div>
-
