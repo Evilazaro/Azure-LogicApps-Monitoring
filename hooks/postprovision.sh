@@ -912,6 +912,18 @@ main() {
         info "  Database: $azure_sql_database_name"
         info "  Managed Identity: $azure_managed_identity_name"
         
+        # Ensure sqlcmd is in PATH (check common installation locations)
+        if ! command -v sqlcmd &> /dev/null; then
+            local sqlcmd_paths=("/opt/mssql-tools18/bin" "/opt/mssql-tools/bin")
+            for sqlcmd_path in "${sqlcmd_paths[@]}"; do
+                if [[ -x "${sqlcmd_path}/sqlcmd" ]]; then
+                    verbose "Adding ${sqlcmd_path} to PATH for sqlcmd"
+                    export PATH="${sqlcmd_path}:${PATH}"
+                    break
+                fi
+            done
+        fi
+        
         # Locate the SQL configuration script
         # This script performs the actual database user creation and role assignment
         local sql_config_script="$SCRIPT_DIR/sql-managed-identity-config.sh"
