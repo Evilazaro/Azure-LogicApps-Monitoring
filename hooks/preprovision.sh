@@ -1150,7 +1150,7 @@ EOF
     
     # Display appropriate completion message based on success status
     if [[ "${success}" == "true" ]]; then
-        echo "║   Pre-provisioning completed successfully!                    ║"
+        echo "║   Pre-provisioning completed successfully!                     ║"
     else
         echo "║   Pre-provisioning completed with errors.                     ║"
     fi
