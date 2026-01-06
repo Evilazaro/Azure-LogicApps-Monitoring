@@ -88,8 +88,7 @@ hooks:
     windows:
       shell: pwsh
       run: |
-        ./hooks/Replace-ConnectionPlaceholders.ps1 -Verbose
-        ./hooks/deploy-workflow.ps1 -Verbose
+         ./deploy-workflow.ps1 -PersistConnectionsFile -ConnectionsOutputFilePath "./output/connections.json"
       continueOnError: false
       interactive: false # Non-interactive for CI/CD compatibility
 

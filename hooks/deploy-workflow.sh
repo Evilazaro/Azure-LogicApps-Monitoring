@@ -43,7 +43,7 @@
 # NOTES
 #     File Name      : deploy-workflow.sh
 #     Author         : Evilazaro | Principal Cloud Solution Architect | Microsoft
-#     Version        : 1.1.0
+#     Version        : 1.2.0
 #     Last Modified  : 2026-01-06
 #     Prerequisite   : Bash 4.0+, Azure CLI (az), Azure Developer CLI (azd)
 #     Purpose        : Deploy Logic Apps Standard workflows via zip deployment
@@ -81,7 +81,7 @@ IFS=$' \t\n'
 #==============================================================================
 
 # Script version following semantic versioning (MAJOR.MINOR.PATCH)
-readonly SCRIPT_VERSION="1.1.0"
+readonly SCRIPT_VERSION="1.2.0"
 
 # Script name for consistent logging and error messages
 readonly SCRIPT_NAME="deploy-workflow.sh"
@@ -347,35 +347,50 @@ parse_arguments() {
 #------------------------------------------------------------------------------
 # Function: initialize_azd_environment
 # Description: Loads azd environment variables into the current session.
+#              Uses AZURE_ENV_NAME to specify the environment if set.
 # Returns:
 #   0 - Variables loaded successfully
 #   1 - Failed to load variables
 #------------------------------------------------------------------------------
 initialize_azd_environment() {
     log_gray "Loading azd environment variables..."
-    
+
     local azd_output
-    if ! azd_output=$(azd env get-values 2>/dev/null); then
-        log_warning "Could not load azd environment variables. Ensure azd environment is configured."
-        return 1
+    local env_name="${AZURE_ENV_NAME:-}"
+
+    if [[ -z "${env_name}" ]]; then
+        log_warning "AZURE_ENV_NAME environment variable is not set. Trying to get values from default environment."
+        if ! azd_output=$(azd env get-values 2>/dev/null); then
+            log_warning "Could not load azd environment variables. Ensure azd environment is configured."
+            return 1
+        fi
+    else
+        log_gray "Using azd environment: ${env_name}"
+        if ! azd_output=$(azd env get-values --environment "${env_name}" 2>/dev/null); then
+            log_warning "Could not load azd environment variables. Ensure azd environment is configured."
+            return 1
+        fi
     fi
-    
+
     if [[ -z "${azd_output}" ]]; then
         log_warning "azd environment returned empty output."
         return 1
     fi
-    
+
     local loaded_count=0
     while IFS= read -r line; do
-        if [[ "${line}" =~ ^([^=]+)=\"?([^\"]*)\"?$ ]]; then
+        # Match pattern: VARNAME="value" or VARNAME=value
+        if [[ "${line}" =~ ^([A-Z_][A-Z0-9_]*)=\"?(.*)\"?$ ]]; then
             local var_name="${BASH_REMATCH[1]}"
             local var_value="${BASH_REMATCH[2]}"
+            # Remove trailing quote if present
+            var_value="${var_value%\"}"
             export "${var_name}=${var_value}"
             ((loaded_count++))
             log_verbose "Set environment variable: ${var_name}"
         fi
     done <<< "${azd_output}"
-    
+
     log_success "  Loaded ${loaded_count} environment variables from azd."
     return 0
 }
@@ -476,12 +491,19 @@ test_azure_cli_connection() {
         log_error "Not connected to Azure. Please run 'az login' first."
         return 1
     fi
-    
-    # Parse account information
-    AZURE_ACCOUNT_ID=$(echo "${account_json}" | grep -o '"name"[[:space:]]*:[[:space:]]*"[^"]*"' | head -1 | sed 's/.*: *"\([^"]*\)".*/\1/' || echo "unknown")
-    AZURE_USER_NAME=$(echo "${account_json}" | grep -o '"user"[[:space:]]*:[[:space:]]*{[^}]*}' | grep -o '"name"[[:space:]]*:[[:space:]]*"[^"]*"' | sed 's/.*: *"\([^"]*\)".*/\1/' || echo "unknown")
-    AZURE_SUBSCRIPTION_ID_CURRENT=$(echo "${account_json}" | grep -o '"id"[[:space:]]*:[[:space:]]*"[^"]*"' | head -1 | sed 's/.*: *"\([^"]*\)".*/\1/' || echo "unknown")
-    
+
+    # Parse account information using jq if available, fallback to grep/sed
+    if command -v jq &>/dev/null; then
+        AZURE_ACCOUNT_ID=$(echo "${account_json}" | jq -r '.name // "unknown"')
+        AZURE_USER_NAME=$(echo "${account_json}" | jq -r '.user.name // "unknown"')
+        AZURE_SUBSCRIPTION_ID_CURRENT=$(echo "${account_json}" | jq -r '.id // "unknown"')
+    else
+        # Fallback to grep/sed parsing
+        AZURE_ACCOUNT_ID=$(echo "${account_json}" | grep -o '"name"[[:space:]]*:[[:space:]]*"[^"]*"' | head -1 | sed 's/.*: *"\([^"]*\)".*/\1/' || echo "unknown")
+        AZURE_USER_NAME=$(echo "${account_json}" | grep -o '"user"[[:space:]]*:[[:space:]]*{[^}]*}' | grep -o '"name"[[:space:]]*:[[:space:]]*"[^"]*"' | sed 's/.*: *"\([^"]*\)".*/\1/' || echo "unknown")
+        AZURE_SUBSCRIPTION_ID_CURRENT=$(echo "${account_json}" | grep -o '"id"[[:space:]]*:[[:space:]]*"[^"]*"' | head -1 | sed 's/.*: *"\([^"]*\)".*/\1/' || echo "unknown")
+    fi
+
     return 0
 }
 
@@ -605,17 +627,16 @@ main() {
     if ! initialize_azd_environment; then
         log_warning "azd environment not loaded. Using existing environment variables."
     fi
-    
-    # Resolve LogicAppName and ResourceGroupName from environment if not provided
+
+    # Resolve LogicAppName from environment if not provided via command line
+    # Note: LOGIC_APP_NAME may be set by initialize_azd_environment
     if [[ -z "${LOGIC_APP_NAME}" ]]; then
-        LOGIC_APP_NAME="${LOGIC_APP_NAME:-}"
-        if [[ -z "${LOGIC_APP_NAME}" ]]; then
-            log_error "LogicAppName parameter is required or LOGIC_APP_NAME environment variable must be set."
-            exit 1
-        fi
-        log_gray "Using Logic App from environment: ${LOGIC_APP_NAME}"
+        log_error "LogicAppName parameter is required or LOGIC_APP_NAME environment variable must be set."
+        exit 1
     fi
-    
+    log_gray "Using Logic App: ${LOGIC_APP_NAME}"
+
+    # Resolve ResourceGroupName from environment if not provided via command line
     if [[ -z "${RESOURCE_GROUP_NAME}" ]]; then
         RESOURCE_GROUP_NAME="${AZURE_RESOURCE_GROUP:-}"
         if [[ -z "${RESOURCE_GROUP_NAME}" ]]; then
@@ -623,6 +644,8 @@ main() {
             exit 1
         fi
         log_gray "Using Resource Group from environment: ${RESOURCE_GROUP_NAME}"
+    else
+        log_gray "Using Resource Group: ${RESOURCE_GROUP_NAME}"
     fi
     
     # Step 2: Validate Azure CLI connection
