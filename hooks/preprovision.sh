@@ -413,48 +413,66 @@ validate_bash_version() {
 validate_dotnet_sdk() {
     print_verbose "Validating .NET SDK..."
     
-    # Check if dotnet command exists in PATH
-    if ! command -v dotnet &> /dev/null; then
-        print_error ".NET SDK not found"
-        print_error "Install .NET SDK ${MINIMUM_DOTNET_VERSION} or higher from: https://dotnet.microsoft.com/download"
-        return 1
-    fi
-    
-    # Get full path to dotnet executable for diagnostics
-    local dotnet_path
-    dotnet_path=$(command -v dotnet)
-    print_verbose "dotnet found at: ${dotnet_path}"
-    
-    # Get .NET SDK version
-    local version_output
-    if ! version_output=$(dotnet --version 2>&1); then
-        print_error "Failed to get .NET SDK version"
-        print_error "Command output: ${version_output}"
-        return 1
-    fi
-    
-    # Parse version string and remove whitespace
-    local dotnet_version
-    dotnet_version=$(echo "${version_output}" | head -n1 | tr -d '[:space:]')
-    print_verbose "Detected .NET SDK version: ${dotnet_version}"
-    
-    # Extract major version for comparison
-    # Using major version only for flexibility with minor/patch versions
-    local major_version
-    major_version=$(echo "${dotnet_version}" | cut -d. -f1)
+    local dotnet_cmd=""
+    local dotnet_version=""
+    local major_version=""
     local min_major_version
     min_major_version=$(echo "${MINIMUM_DOTNET_VERSION}" | cut -d. -f1)
     
-    # Compare major versions numerically
-    if [[ ${major_version} -lt ${min_major_version} ]]; then
-        print_error ".NET SDK version ${dotnet_version} is not supported"
-        print_error "Minimum required version: ${MINIMUM_DOTNET_VERSION}"
-        print_error "Download from: https://dotnet.microsoft.com/download/dotnet/${min_major_version}.0"
-        return 1
+    # First, check if dotnet exists in PATH
+    if command -v dotnet &> /dev/null; then
+        dotnet_cmd=$(command -v dotnet)
+        print_verbose "dotnet found in PATH at: ${dotnet_cmd}"
+        
+        # Get version from PATH dotnet
+        if dotnet_version=$(dotnet --version 2>&1); then
+            dotnet_version=$(echo "${dotnet_version}" | head -n1 | tr -d '[:space:]')
+            major_version=$(echo "${dotnet_version}" | cut -d. -f1)
+            print_verbose "PATH dotnet version: ${dotnet_version}"
+            
+            # If PATH version is sufficient, we're done
+            if [[ ${major_version} -ge ${min_major_version} ]]; then
+                print_verbose ".NET SDK version ${dotnet_version} is compatible"
+                return 0
+            fi
+            print_verbose "PATH dotnet version ${dotnet_version} is below minimum ${MINIMUM_DOTNET_VERSION}"
+        fi
     fi
     
-    print_verbose ".NET SDK version ${dotnet_version} is compatible"
-    return 0
+    # Check if .NET SDK is installed in user's home directory (common install location)
+    local home_dotnet="${HOME}/.dotnet/dotnet"
+    if [[ -x "${home_dotnet}" ]]; then
+        print_verbose "Checking user-installed dotnet at: ${home_dotnet}"
+        
+        if dotnet_version=$("${home_dotnet}" --version 2>&1); then
+            dotnet_version=$(echo "${dotnet_version}" | head -n1 | tr -d '[:space:]')
+            major_version=$(echo "${dotnet_version}" | cut -d. -f1)
+            print_verbose "User dotnet version: ${dotnet_version}"
+            
+            if [[ ${major_version} -ge ${min_major_version} ]]; then
+                print_verbose "Found compatible .NET SDK ${dotnet_version} at ${home_dotnet}"
+                print_verbose "Updating PATH to use user-installed .NET SDK"
+                
+                # Update PATH and DOTNET_ROOT to use the user-installed version
+                export DOTNET_ROOT="${HOME}/.dotnet"
+                export PATH="${HOME}/.dotnet:${PATH}"
+                
+                print_verbose ".NET SDK version ${dotnet_version} is compatible (from ${home_dotnet})"
+                return 0
+            fi
+        fi
+    fi
+    
+    # No compatible version found
+    if [[ -z "${dotnet_cmd}" ]] && [[ ! -x "${home_dotnet}" ]]; then
+        print_error ".NET SDK not found"
+        print_error "Install .NET SDK ${MINIMUM_DOTNET_VERSION} or higher from: https://dotnet.microsoft.com/download"
+    else
+        print_error ".NET SDK version ${dotnet_version:-unknown} is not supported"
+        print_error "Minimum required version: ${MINIMUM_DOTNET_VERSION}"
+        print_error "Download from: https://dotnet.microsoft.com/download/dotnet/${min_major_version}.0"
+    fi
+    return 1
 }
 
 # Validate Azure Developer CLI (azd) availability
@@ -703,8 +721,15 @@ request_user_confirmation() {
         return 0
     fi
     
+    # Check if stdin is a terminal
+    if [[ ! -t 0 ]]; then
+        print_warning "  Cannot prompt for input (not running in interactive terminal)"
+        print_warning "  Use --auto-install flag to install automatically"
+        return 1
+    fi
+    
     echo ""
-    read -r -p "  Would you like to install ${prerequisite_name} now? (Y/n) " response
+    read -r -p "  Would you like to install ${prerequisite_name} now? (Y/n) " response </dev/tty
     
     # Accept empty response or Y/y as confirmation
     if [[ -z "${response}" ]] || [[ "${response}" =~ ^[Yy]$ ]]; then
@@ -1238,8 +1263,18 @@ main() {
         print_warning "      Download from: https://dotnet.microsoft.com/download/dotnet/10.0"
         
         if request_user_confirmation ".NET SDK"; then
-            if install_dotnet_sdk && validate_dotnet_sdk; then
-                echo "    ✓ .NET SDK installed and verified"
+            if install_dotnet_sdk; then
+                # Refresh PATH to include newly installed .NET SDK
+                export DOTNET_ROOT="${HOME}/.dotnet"
+                export PATH="${HOME}/.dotnet:${PATH}"
+                
+                if validate_dotnet_sdk; then
+                    echo "    ✓ .NET SDK installed and verified"
+                else
+                    print_warning "    ⚠ .NET SDK installed but not detected in PATH"
+                    print_warning "      Please restart your terminal and run this script again"
+                    PREREQUISITES_FAILED=true
+                fi
             else
                 PREREQUISITES_FAILED=true
             fi

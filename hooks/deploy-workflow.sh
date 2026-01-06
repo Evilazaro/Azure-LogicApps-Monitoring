@@ -10,8 +10,11 @@
 #     This script performs the following operations:
 #     1. Loads azd environment variables
 #     2. Validates required environment variables
-#     3. Replaces placeholders in workflow.json and connections.json
+#     3. Replaces placeholders in workflow.json and connections.json (in memory only)
 #     4. Deploys the workflow to Azure Logic Apps Standard using Azure CLI zip deploy
+#
+#     Note: Placeholder replacement happens in memory only. The original source files
+#     (workflow.json and connections.json) retain their placeholders for future deployments.
 #
 # USAGE
 #     ./deploy-workflow.sh [OPTIONS]
@@ -43,7 +46,7 @@
 # NOTES
 #     File Name      : deploy-workflow.sh
 #     Author         : Evilazaro | Principal Cloud Solution Architect | Microsoft
-#     Version        : 1.2.0
+#     Version        : 1.3.0
 #     Last Modified  : 2026-01-06
 #     Prerequisite   : Bash 4.0+, Azure CLI (az), Azure Developer CLI (azd)
 #     Purpose        : Deploy Logic Apps Standard workflows via zip deployment
@@ -81,7 +84,7 @@ IFS=$' \t\n'
 #==============================================================================
 
 # Script version following semantic versioning (MAJOR.MINOR.PATCH)
-readonly SCRIPT_VERSION="1.2.0"
+readonly SCRIPT_VERSION="1.3.0"
 
 # Script name for consistent logging and error messages
 readonly SCRIPT_NAME="deploy-workflow.sh"
@@ -93,13 +96,13 @@ readonly SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 # PLACEHOLDER CONFIGURATION
 #==============================================================================
 
-# Workflow placeholders (workflow.json)
+# Workflow placeholders (workflow.json) - ReadOnly arrays for immutability
 readonly -a WORKFLOW_PLACEHOLDERS=(
     'ORDERS_API_URL'
     'AZURE_STORAGE_ACCOUNT_NAME_WORKFLOW'
 )
 
-# Connection placeholders (connections.json)
+# Connection placeholders (connections.json) - ReadOnly arrays for immutability
 readonly -a CONNECTION_PLACEHOLDERS=(
     'AZURE_SUBSCRIPTION_ID'
     'AZURE_RESOURCE_GROUP'
@@ -112,7 +115,7 @@ readonly -a CONNECTION_PLACEHOLDERS=(
 # GLOBAL VARIABLES
 #==============================================================================
 
-# Command-line options with defaults
+# Command-line options with defaults (use Join-Path equivalent for cross-platform)
 LOGIC_APP_NAME=""
 RESOURCE_GROUP_NAME=""
 WORKFLOW_NAME="ProcessingOrdersPlaced"
@@ -120,6 +123,11 @@ WORKFLOW_BASE_PATH="${SCRIPT_DIR}/../workflows/OrdersManagement/OrdersManagement
 SKIP_PLACEHOLDER_REPLACEMENT=false
 DRY_RUN=false
 VERBOSE=false
+
+# Azure account information (populated by test_azure_cli_connection)
+AZURE_ACCOUNT_ID=""
+AZURE_USER_NAME=""
+AZURE_SUBSCRIPTION_ID_CURRENT=""
 
 #==============================================================================
 # COLOR CODES FOR OUTPUT
@@ -141,14 +149,19 @@ readonly COLOR_BOLD='\033[1m'
 TEMP_DIR=""
 ZIP_PATH=""
 
+#------------------------------------------------------------------------------
+# Function: cleanup
+# Description: Cleans up temporary files on script exit.
+#              Called automatically via trap on EXIT.
+#------------------------------------------------------------------------------
 cleanup() {
     local exit_code=$?
     
     # Remove temporary files
-    if [[ -n "${TEMP_DIR}" && -d "${TEMP_DIR}" ]]; then
+    if [[ -n "${TEMP_DIR:-}" && -d "${TEMP_DIR}" ]]; then
         rm -rf "${TEMP_DIR}" 2>/dev/null || true
     fi
-    if [[ -n "${ZIP_PATH}" && -f "${ZIP_PATH}" ]]; then
+    if [[ -n "${ZIP_PATH:-}" && -f "${ZIP_PATH}" ]]; then
         rm -f "${ZIP_PATH}" 2>/dev/null || true
     fi
     
@@ -157,6 +170,10 @@ cleanup() {
 
 trap cleanup EXIT
 
+#------------------------------------------------------------------------------
+# Function: handle_interrupt
+# Description: Handles script interruption (Ctrl+C or SIGTERM).
+#------------------------------------------------------------------------------
 handle_interrupt() {
     echo "" >&2
     log_error "Script interrupted by user"
@@ -169,26 +186,62 @@ trap handle_interrupt INT TERM
 # LOGGING FUNCTIONS
 #==============================================================================
 
+#------------------------------------------------------------------------------
+# Function: log_error
+# Description: Logs an error message to stderr in red.
+# Arguments:
+#   $@ - Message to log
+#------------------------------------------------------------------------------
 log_error() {
     echo -e "${COLOR_RED}ERROR: $*${COLOR_RESET}" >&2
 }
 
+#------------------------------------------------------------------------------
+# Function: log_warning
+# Description: Logs a warning message to stderr in yellow.
+# Arguments:
+#   $@ - Message to log
+#------------------------------------------------------------------------------
 log_warning() {
     echo -e "${COLOR_YELLOW}WARNING: $*${COLOR_RESET}" >&2
 }
 
+#------------------------------------------------------------------------------
+# Function: log_success
+# Description: Logs a success message in green.
+# Arguments:
+#   $@ - Message to log
+#------------------------------------------------------------------------------
 log_success() {
     echo -e "${COLOR_GREEN}$*${COLOR_RESET}"
 }
 
+#------------------------------------------------------------------------------
+# Function: log_info
+# Description: Logs an informational message in cyan.
+# Arguments:
+#   $@ - Message to log
+#------------------------------------------------------------------------------
 log_info() {
     echo -e "${COLOR_CYAN}$*${COLOR_RESET}"
 }
 
+#------------------------------------------------------------------------------
+# Function: log_gray
+# Description: Logs a message in gray with indentation.
+# Arguments:
+#   $@ - Message to log
+#------------------------------------------------------------------------------
 log_gray() {
     echo -e "${COLOR_GRAY}  $*${COLOR_RESET}"
 }
 
+#------------------------------------------------------------------------------
+# Function: log_verbose
+# Description: Logs a verbose message if VERBOSE mode is enabled.
+# Arguments:
+#   $@ - Message to log
+#------------------------------------------------------------------------------
 log_verbose() {
     if [[ "${VERBOSE}" == "true" ]]; then
         echo "[VERBOSE] $*" >&2
@@ -199,6 +252,10 @@ log_verbose() {
 # HELP AND USAGE
 #==============================================================================
 
+#------------------------------------------------------------------------------
+# Function: show_help
+# Description: Displays comprehensive help information and exits.
+#------------------------------------------------------------------------------
 show_help() {
     cat << EOF
 deploy-workflow.sh - Azure Logic Apps Workflow Deployment Tool
@@ -214,8 +271,11 @@ DESCRIPTION
     The script performs the following operations:
     1. Loads azd environment variables
     2. Validates required environment variables
-    3. Replaces placeholders in workflow.json and connections.json
+    3. Replaces placeholders in workflow.json and connections.json (in memory only)
     4. Deploys the workflow to Azure Logic Apps Standard using Azure CLI zip deploy
+
+    Note: Placeholder replacement happens in memory only. The original source files
+    (workflow.json and connections.json) retain their placeholders for future deployments.
 
 OPTIONS
     -l, --logic-app-name <name>       The name of the Azure Logic Apps Standard resource
@@ -264,7 +324,7 @@ VERSION
     ${SCRIPT_VERSION}
 
 AUTHOR
-    Azure Logic Apps Monitoring Team
+    Evilazaro | Principal Cloud Solution Architect | Microsoft
 
 COPYRIGHT
     (c) 2025-2026. All rights reserved.
@@ -281,6 +341,12 @@ EOF
 # ARGUMENT PARSING
 #==============================================================================
 
+#------------------------------------------------------------------------------
+# Function: parse_arguments
+# Description: Parses command-line arguments and sets global variables.
+# Arguments:
+#   $@ - All command-line arguments
+#------------------------------------------------------------------------------
 parse_arguments() {
     while [[ $# -gt 0 ]]; do
         case "$1" in
@@ -331,8 +397,13 @@ parse_arguments() {
             -h|--help)
                 show_help
                 ;;
-            *)
+            -*)
                 log_error "Unknown option: $1"
+                echo "Use --help for usage information." >&2
+                exit 1
+                ;;
+            *)
+                log_error "Unexpected argument: $1"
                 echo "Use --help for usage information." >&2
                 exit 1
                 ;;
@@ -610,6 +681,12 @@ write_deployment_summary() {
 # MAIN EXECUTION
 #==============================================================================
 
+#------------------------------------------------------------------------------
+# Function: main
+# Description: Main entry point for the script. Orchestrates the deployment workflow.
+# Arguments:
+#   $@ - All command-line arguments passed to the script
+#------------------------------------------------------------------------------
 main() {
     # Parse command-line arguments
     parse_arguments "$@"
@@ -618,6 +695,7 @@ main() {
     echo ""
     log_info "╔══════════════════════════════════════════════════════════════╗"
     log_info "║     Azure Logic Apps Workflow Deployment Script              ║"
+    log_info "║     Version: ${SCRIPT_VERSION}                                          ║"
     log_info "║     (Using Azure CLI and Azure Developer CLI)                ║"
     log_info "╚══════════════════════════════════════════════════════════════╝"
     echo ""
@@ -630,14 +708,17 @@ main() {
 
     # Resolve LogicAppName from environment if not provided via command line
     # Note: LOGIC_APP_NAME may be set by initialize_azd_environment
-    if [[ -z "${LOGIC_APP_NAME}" ]]; then
-        log_error "LogicAppName parameter is required or LOGIC_APP_NAME environment variable must be set."
-        exit 1
+    if [[ -z "${LOGIC_APP_NAME:-}" ]]; then
+        LOGIC_APP_NAME="${LOGIC_APP_NAME:-}"
+        if [[ -z "${LOGIC_APP_NAME}" ]]; then
+            log_error "LogicAppName parameter is required or LOGIC_APP_NAME environment variable must be set."
+            exit 1
+        fi
     fi
     log_gray "Using Logic App: ${LOGIC_APP_NAME}"
 
     # Resolve ResourceGroupName from environment if not provided via command line
-    if [[ -z "${RESOURCE_GROUP_NAME}" ]]; then
+    if [[ -z "${RESOURCE_GROUP_NAME:-}" ]]; then
         RESOURCE_GROUP_NAME="${AZURE_RESOURCE_GROUP:-}"
         if [[ -z "${RESOURCE_GROUP_NAME}" ]]; then
             log_error "ResourceGroupName parameter is required or AZURE_RESOURCE_GROUP environment variable must be set."

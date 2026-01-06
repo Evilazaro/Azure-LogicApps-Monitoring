@@ -4,14 +4,14 @@
 ![Bash](https://img.shields.io/badge/Bash-4.0+-green.svg)
 ![Azure CLI](https://img.shields.io/badge/Azure%20CLI-2.60+-blue.svg)
 ![Azure Developer CLI](https://img.shields.io/badge/azd-Required-orange.svg)
-![Version](https://img.shields.io/badge/version-1.2.0-green.svg)
+![Version](https://img.shields.io/badge/version-1.3.0-green.svg)
 ![License](https://img.shields.io/badge/license-MIT-orange.svg)
 
 ## 📋 Overview
 
 The `deploy-workflow` scripts are comprehensive deployment utilities for Azure Logic Apps Standard workflows that automate the complete deployment lifecycle. Available in both PowerShell and Bash implementations, they integrate with Azure Developer CLI (azd) to handle environment configuration, placeholder replacement, and Azure CLI zip deployment in a single, streamlined operation.
 
-These scripts perform intelligent placeholder replacement in both workflow.json and connections.json files, substituting environment variable tokens with actual values from the active azd environment. They then package the workflow artifacts and deploy them to Azure Logic Apps Standard using the reliable zip deployment method, ensuring consistent and reproducible deployments across development, staging, and production environments.
+These scripts perform intelligent placeholder replacement in both workflow.json and connections.json files **in memory only**, substituting environment variable tokens with actual values from the active azd environment. The original source files retain their placeholders for future deployments. They then package the workflow artifacts and deploy them to Azure Logic Apps Standard using the reliable zip deployment method, ensuring consistent and reproducible deployments across development, staging, and production environments.
 
 With built-in WhatIf/dry-run mode for deployment previews, comprehensive error handling, and detailed progress reporting across five distinct phases, the scripts typically complete in 30-60 seconds. They support both automated CI/CD pipeline integration and manual execution, providing flexibility for various deployment workflows while maintaining a Zero Trust security approach through managed identity authentication.
 
@@ -271,6 +271,7 @@ No changes were made. This was a simulation.
 ```
 ╔══════════════════════════════════════════════════════════════╗
 ║     Azure Logic Apps Workflow Deployment Script              ║
+║     Version: 1.3.0                                          ║
 ║     (Using Azure CLI and Azure Developer CLI)                ║
 ╚══════════════════════════════════════════════════════════════╝
 
@@ -320,7 +321,6 @@ No changes were made. This was a simulation.
 
 ╔══════════════════════════════════════════════════════════════╗
 ║              Deployment Completed Successfully!              ║
-║              Duration: 45 seconds                            ║
 ╚══════════════════════════════════════════════════════════════╝
 ```
 
@@ -679,11 +679,12 @@ flowchart LR
 
 ## 📜 Version History
 
-| Version | Date       | Author                           | Changes                                                                                                                                                                                                                                                                           |
-| ------- | ---------- | -------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 1.0.0   | 2025-12-20 | Azure Logic Apps Monitoring Team | • Initial release<br/>• Basic workflow deployment with placeholder replacement<br/>• Azure CLI zip deployment integration                                                                                                                                                         |
-| 1.1.0   | 2026-01-06 | Azure Logic Apps Monitoring Team | • Added WhatIf/Confirm support<br/>• Enhanced environment variable validation<br/>• Improved error handling and logging<br/>• Added OutputType attribute for best practices compliance                                                                                            |
-| 1.2.0   | 2026-01-06 | Azure Logic Apps Monitoring Team | • Added AZURE_ENV_NAME support for azd environment selection<br/>• Improved regex matching for environment variable parsing<br/>• Enhanced JSON parsing with jq fallback in Bash<br/>• Fixed PowerShell best practices compliance<br/>• Improved error handling and documentation |
+| Version | Date       | Author                                          | Changes                                                                                                                                                                                                                                                                                                                                              |
+| ------- | ---------- | ----------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1.0.0   | 2025-12-20 | Evilazaro \| Principal Cloud Solution Architect | • Initial release<br/>• Basic workflow deployment with placeholder replacement<br/>• Azure CLI zip deployment integration                                                                                                                                                                                                                            |
+| 1.1.0   | 2026-01-06 | Evilazaro \| Principal Cloud Solution Architect | • Added WhatIf/Confirm support<br/>• Enhanced environment variable validation<br/>• Improved error handling and logging<br/>• Added OutputType attribute for best practices compliance                                                                                                                                                               |
+| 1.2.0   | 2026-01-06 | Evilazaro \| Principal Cloud Solution Architect | • Added AZURE_ENV_NAME support for azd environment selection<br/>• Improved regex matching for environment variable parsing<br/>• Enhanced JSON parsing with jq fallback in Bash<br/>• Fixed PowerShell best practices compliance<br/>• Improved error handling and documentation                                                                    |
+| 1.3.0   | 2026-01-06 | Evilazaro \| Principal Cloud Solution Architect | • Applied PowerShell best practices (PSScriptAnalyzer compliance)<br/>• Changed to `Write-Information` for informational messages<br/>• Improved environment variable parsing with proper quote handling<br/>• Added `try/finally` for cleanup reliability<br/>• Used GUID for unique temp file naming<br/>• Enhanced function documentation in Bash |
 
 ---
 
