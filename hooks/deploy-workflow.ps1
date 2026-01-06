@@ -53,7 +53,7 @@
 
 .NOTES
     File Name      : deploy-workflow.ps1
-    Author         : Azure Logic Apps Monitoring Team
+    Author         :Evilazaro | Principal Cloud Solution Architect | Microsoft
     Version        : 1.1.0
     Last Modified  : 2026-01-06
     Prerequisite   : PowerShell 7.0 or later

@@ -33,7 +33,7 @@
 #
 # NOTES:
 #     File Name      : replace-connection-placeholders.sh
-#     Author         : Azure Logic Apps Monitoring Team
+#     Author         :Evilazaro | Principal Cloud Solution Architect | Microsoft
 #     Version        : 1.1.0
 #     Last Modified  : 2026-01-06
 #     Prerequisite   : Bash 4.0 or higher
