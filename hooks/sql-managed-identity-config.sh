@@ -937,12 +937,13 @@ execute_sql_script() {
     #   -S: Server name (FQDN)
     #   -d: Database name
     #   -G: Use Azure AD authentication
-    #   -P: Access token (passed as password when using -G)
     #   -i: Input file (SQL script)
     #   -t: Query timeout in seconds
     #   -b: Terminate batch on error
     #   -e: Echo input
     #   -r 1: Redirect error messages to stderr
+    # Note: Access token is passed via SQLCMDPASSWORD environment variable
+    #       because -P has a 128 character limit which is too short for AAD tokens
     local output
     local exit_code=0
     local start_time
@@ -951,8 +952,8 @@ execute_sql_script() {
     log_verbose "Executing SQL commands via sqlcmd..."
     
     # Execute sqlcmd and capture output
-    # Note: Access token is passed securely via command-line (not logged)
-    if output=$(sqlcmd -S "${server_fqdn}" -d "${database}" -G -P "${access_token}" \
+    # Access token is passed via environment variable to avoid command-line length limits
+    if output=$(SQLCMDPASSWORD="${access_token}" sqlcmd -S "${server_fqdn}" -d "${database}" -G \
                        -i "${sql_file}" -t "${timeout}" -b -e -r 1 2>&1); then
         
         local end_time
