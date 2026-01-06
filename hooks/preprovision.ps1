@@ -58,13 +58,13 @@
 
 .NOTES
     File Name      : preprovision.ps1
-    Author         : Azure-LogicApps-Monitoring Team
+    Author         :Evilazaro | Principal Cloud Solution Architect | Microsoft
     Version        : 2.3.0
     Last Modified  : 2026-01-06
     Prerequisite   : PowerShell 7.0 or higher
     Prerequisite   : .NET SDK 10.0 or higher
     Prerequisite   : Azure Developer CLI (azd)
-    Copyright      : (c) 2025-2026. All rights reserved.
+    
 
 .LINK
     https://github.com/Evilazaro/Azure-LogicApps-Monitoring

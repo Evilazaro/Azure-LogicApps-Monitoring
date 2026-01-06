@@ -38,7 +38,7 @@
 #     Last Modified  : 2026-01-06
 #     Prerequisite   : Bash 4.0 or higher
 #     Prerequisite   : Azure Developer CLI (azd)
-#     Copyright      : (c) 2025-2026. All rights reserved.
+#     
 #
 # LINK:
 #     https://github.com/Evilazaro/Azure-LogicApps-Monitoring

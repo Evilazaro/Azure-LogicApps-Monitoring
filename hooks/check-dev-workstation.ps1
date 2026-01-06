@@ -41,12 +41,12 @@
 
 .NOTES
     File Name      : check-dev-workstation.ps1
-    Author         : Azure-LogicApps-Monitoring Team
+    Author         :Evilazaro | Principal Cloud Solution Architect | Microsoft
     Version        : 1.0.0
     Last Modified  : 2026-01-07
     Prerequisite   : PowerShell 7.0+, preprovision.ps1
     Purpose        : Development environment validation wrapper
-    Copyright      : (c) 2025-2026. All rights reserved.
+    
 
 .LINK
     https://github.com/Evilazaro/Azure-LogicApps-Monitoring

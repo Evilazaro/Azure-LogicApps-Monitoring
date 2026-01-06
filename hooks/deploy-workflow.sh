@@ -47,7 +47,7 @@
 #     Last Modified  : 2026-01-06
 #     Prerequisite   : Bash 4.0+, Azure CLI (az), Azure Developer CLI (azd)
 #     Purpose        : Deploy Logic Apps Standard workflows via zip deployment
-#     Copyright      : (c) 2025-2026. All rights reserved.
+#     
 #
 # LINKS
 #     https://github.com/Evilazaro/Azure-LogicApps-Monitoring

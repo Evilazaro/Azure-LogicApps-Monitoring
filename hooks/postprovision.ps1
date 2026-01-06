@@ -38,7 +38,7 @@
     Author         : Azure DevOps Team
     Last Modified  : 2026-01-06
     Version        : 2.0.1
-    Copyright      : (c) 2025-2026. All rights reserved.
+    
 #>
 
 [CmdletBinding(SupportsShouldProcess, ConfirmImpact = 'Medium')]

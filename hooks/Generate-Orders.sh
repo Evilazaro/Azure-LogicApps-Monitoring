@@ -61,7 +61,7 @@
 #     Author         :Evilazaro | Principal Cloud Solution Architect | Microsoft
 #     Prerequisite   : Bash 4.0 or higher
 #     Optional       : jq (for optimized JSON generation)
-#     Copyright      : (c) 2025-2026. All rights reserved.
+#     
 #
 # LINK
 #     https://github.com/Evilazaro/Azure-LogicApps-Monitoring

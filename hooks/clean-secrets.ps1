@@ -39,11 +39,11 @@
 
 .NOTES
     File Name      : clean-secrets.ps1
-    Author         : Azure-LogicApps-Monitoring Team
+    Author         :Evilazaro | Principal Cloud Solution Architect | Microsoft
     Version        : 2.0.1
     Last Modified  : 2026-01-06
     Prerequisite   : .NET SDK 10.0 or higher
-    Copyright      : (c) 2025-2026. All rights reserved.
+    
 
 .LINK
     https://github.com/Evilazaro/Azure-LogicApps-Monitoring

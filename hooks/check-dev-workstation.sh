@@ -51,12 +51,12 @@
 #
 # NOTES
 #     File Name      : check-dev-workstation.sh
-#     Author         : Azure-LogicApps-Monitoring Team
+#     Author         :Evilazaro | Principal Cloud Solution Architect | Microsoft
 #     Version        : 1.0.0
 #     Last Modified  : 2026-01-07
 #     Prerequisite   : Bash 4.0+, preprovision.sh
 #     Purpose        : Development environment validation wrapper
-#     Copyright      : (c) 2025-2026. All rights reserved.
+#     
 #
 # LINKS
 #     https://github.com/Evilazaro/Azure-LogicApps-Monitoring

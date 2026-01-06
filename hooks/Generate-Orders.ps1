@@ -42,7 +42,7 @@
     Prerequisite   : PowerShell 7.0 or higher
     Version        : 2.0.1
     Last Modified  : 2026-01-06
-    Copyright      : (c) 2025-2026. All rights reserved.
+    
 
 .LINK
     https://github.com/Evilazaro/Azure-LogicApps-Monitoring

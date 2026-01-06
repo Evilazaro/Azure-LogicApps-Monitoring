@@ -59,7 +59,7 @@
     Prerequisite   : PowerShell 7.0 or later
     Prerequisite   : Azure CLI (az)
     Prerequisite   : Azure Developer CLI (azd)
-    Copyright      : (c) 2025-2026. All rights reserved.
+    
 
 .LINK
     https://github.com/Evilazaro/Azure-LogicApps-Monitoring
