@@ -779,13 +779,16 @@ try {
         # Ensure output directory exists
         $outputDir = Split-Path -Path $outputPath -Parent
         if (-not [string]::IsNullOrEmpty($outputDir) -and -not (Test-Path -Path $outputDir)) {
-            if ($PSCmdlet.ShouldProcess($outputDir, 'Create directory')) {
+            # Check if WhatIf is active (handle both interactive and non-interactive contexts)
+            $shouldCreateDir = if ($WhatIfPreference) { $false } else { $true }
+            if ($shouldCreateDir) {
                 $null = New-Item -ItemType Directory -Path $outputDir -Force
             }
         }
         
-        # Write the updated connections content
-        if ($PSCmdlet.ShouldProcess($outputPath, 'Write updated connections file')) {
+        # Write the updated connections content (handle both interactive and non-interactive contexts)
+        $shouldWriteFile = if ($WhatIfPreference) { $false } else { $true }
+        if ($shouldWriteFile) {
             Write-Host "  Writing updated connections file to: $outputPath" -ForegroundColor Yellow
             $connectionsContent | Set-Content -Path $outputPath -Encoding UTF8 -NoNewline
             Write-Host '  Successfully replaced all placeholders in connections.json' -ForegroundColor Green
