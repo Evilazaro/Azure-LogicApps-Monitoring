@@ -82,6 +82,7 @@ Beyond basic validation, the preprovision script offers intelligent automation f
 | **Azure CLI**                 | 2.60.0+         | Azure resource management            |
 | **Azure Developer CLI (azd)** | Latest          | Azure deployment automation          |
 | **Bicep CLI**                 | 0.30.0+         | Infrastructure as Code               |
+| **zip**                       | Any             | Logic Apps workflow deployment       |
 
 ### Azure Requirements
 
@@ -209,6 +210,7 @@ Beyond basic validation, the preprovision script offers intelligent automation f
    - Check Azure CLI version (2.60.0+)
    - Check Azure CLI authentication
    - Check Bicep CLI version (0.30.0+)
+   - Check zip utility (required for Logic Apps workflow deployment)
 
 3. **Azure Resource Providers** (if authenticated)
 
@@ -265,6 +267,29 @@ Checks for Bicep CLI in two locations:
 1. Standalone installation (`bicep` command)
 2. Azure CLI integration (`az bicep version`)
 
+### zip Utility Validation
+
+The zip utility is required for Logic Apps workflow deployment. The script validates availability based on the platform:
+
+- **Windows**: Checks for `Compress-Archive` cmdlet (built-in to PowerShell 5.0+)
+- **Linux**: Checks for `zip` command in PATH
+- **macOS**: Checks for `zip` command (typically pre-installed)
+
+```powershell
+# PowerShell validation logic (Windows)
+$compressCmd = Get-Command -Name Compress-Archive -ErrorAction SilentlyContinue
+if ($compressCmd) {
+    # zip capability available via PowerShell cmdlet
+}
+```
+
+```bash
+# Bash validation logic (Linux/macOS)
+if command -v zip &>/dev/null; then
+    # zip command available
+fi
+```
+
 ---
 
 ## Installation Functions
@@ -279,6 +304,7 @@ When `--auto-install` or `-AutoInstall` is specified, the script can install mis
 | Azure CLI           | winget / MSI installer      | apt-get / brew / yum |
 | Azure Developer CLI | winget / PowerShell script  | curl installer       |
 | Bicep CLI           | winget / az bicep install   | az bicep install     |
+| zip                 | Built-in (Compress-Archive) | apt-get / dnf / brew |
 
 ### Manual Installation
 
@@ -288,6 +314,11 @@ If auto-install is not used, the script provides download links:
 - **Azure CLI**: https://docs.microsoft.com/cli/azure/install-azure-cli
 - **Azure Developer CLI**: https://aka.ms/azd/install
 - **Bicep CLI**: `az bicep install` or https://github.com/Azure/bicep/releases
+- **zip**: 
+  - Windows: Built-in via `Compress-Archive` cmdlet (PowerShell 5.0+)
+  - Ubuntu/Debian: `sudo apt-get install zip`
+  - RHEL/CentOS: `sudo dnf install zip`
+  - macOS: Pre-installed or `brew install zip`
 
 ---
 
