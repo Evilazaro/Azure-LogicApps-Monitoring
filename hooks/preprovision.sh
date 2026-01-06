@@ -1238,8 +1238,18 @@ main() {
         print_warning "      Download from: https://dotnet.microsoft.com/download/dotnet/10.0"
         
         if request_user_confirmation ".NET SDK"; then
-            if install_dotnet_sdk && validate_dotnet_sdk; then
-                echo "    ✓ .NET SDK installed and verified"
+            if install_dotnet_sdk; then
+                # Refresh PATH to include newly installed .NET SDK
+                export DOTNET_ROOT="${HOME}/.dotnet"
+                export PATH="${HOME}/.dotnet:${PATH}"
+                
+                if validate_dotnet_sdk; then
+                    echo "    ✓ .NET SDK installed and verified"
+                else
+                    print_warning "    ⚠ .NET SDK installed but not detected in PATH"
+                    print_warning "      Please restart your terminal and run this script again"
+                    PREREQUISITES_FAILED=true
+                fi
             else
                 PREREQUISITES_FAILED=true
             fi
