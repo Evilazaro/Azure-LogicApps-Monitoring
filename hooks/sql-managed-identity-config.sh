@@ -695,6 +695,45 @@ check_sqlcmd() {
     return 0
 }
 
+# Validate iconv utility availability for UTF-16LE encoding
+# iconv is required to convert the Azure AD access token to UTF-16LE format
+# which is the required format for sqlcmd token file authentication on Linux/macOS
+# Parameters: None
+# Returns: 0 if iconv is available and supports UTF-16LE, 1 otherwise
+# Output: Logs validation status
+check_iconv() {
+    log_verbose "Validating iconv utility for UTF-16LE encoding..."
+    
+    # Check if iconv command is available in PATH
+    if ! command -v iconv &> /dev/null; then
+        log_error "iconv is not installed or not in PATH"
+        log_error "iconv is required for Azure AD token file encoding"
+        log_error ""
+        log_error "Installation instructions:"
+        log_error "  Ubuntu/Debian: apt-get install libc-bin (usually pre-installed)"
+        log_error "  RHEL/CentOS/Fedora: dnf install glibc-common (usually pre-installed)"
+        log_error "  macOS: Pre-installed with macOS"
+        log_error ""
+        return 1
+    fi
+    
+    local iconv_path
+    iconv_path=$(command -v iconv)
+    log_verbose "iconv found at: ${iconv_path}"
+    
+    # Verify iconv supports UTF-16LE encoding (required for sqlcmd token files)
+    if ! echo "test" | iconv -f UTF-8 -t UTF-16LE &> /dev/null; then
+        log_error "iconv does not support UTF-16LE encoding"
+        log_error "UTF-16LE encoding is required for Azure AD token file format"
+        log_error "Please ensure glibc is properly installed with encoding support"
+        return 1
+    fi
+    
+    log_verbose "iconv supports UTF-16LE encoding"
+    log_success "iconv utility validated"
+    return 0
+}
+
 ################################################################################
 # Access Token Management
 ################################################################################
@@ -890,6 +929,11 @@ GO
 # Execute SQL script on Azure SQL Database using Azure AD token authentication
 # Connects to SQL Database with Entra ID token and executes T-SQL commands
 # Uses sqlcmd utility with -G flag for Azure AD authentication
+#
+# For mssql-tools on Linux/macOS, Azure AD access tokens must be passed via a
+# token file in UTF-16LE format (no BOM) as documented in Microsoft docs:
+# https://learn.microsoft.com/en-us/sql/tools/sqlcmd/sqlcmd-utility
+#
 # Parameters:
 #   $1 - SQL Server FQDN (e.g., "server.database.windows.net")
 #   $2 - Database name
@@ -898,7 +942,7 @@ GO
 #   $5 - Command timeout in seconds
 # Returns: 0 if execution succeeds, 1 otherwise
 # Output: Logs execution status and SQL command results
-# Note: Creates temporary file for SQL script, ensures cleanup in all cases
+# Note: Creates temporary files for SQL script and token, ensures cleanup in all cases
 execute_sql_script() {
     local server_fqdn="$1"
     local database="$2"
@@ -910,51 +954,89 @@ execute_sql_script() {
     log_verbose "Server: ${server_fqdn}"
     log_verbose "Database: ${database}"
     log_verbose "Timeout: ${timeout}s"
-    log_verbose "Authentication: Azure AD token (Entra ID)"
+    log_verbose "Authentication: Azure AD access token (Entra ID)"
     log_verbose "Encryption: TLS 1.2+ enforced"
     
     # Create temporary file for SQL script
     # Using mktemp ensures secure temporary file creation with proper permissions
     local sql_file
-    if ! sql_file=$(mktemp); then
+    if ! sql_file=$(mktemp --suffix=".sql"); then
         log_error "Failed to create temporary file for SQL script"
         return 1
     fi
     
     log_verbose "SQL script saved to temporary file: ${sql_file}"
-    log_verbose "Temporary file will be removed after execution"
     
-    # Write SQL script to temporary file
-    # Using echo instead of here-doc to preserve exact formatting
-    if ! echo "${sql_script}" > "${sql_file}"; then
-        log_error "Failed to write SQL script to temporary file"
+    # Create temporary file for access token
+    # For mssql-tools on Linux/macOS with -G (Azure AD), the -P parameter must
+    # point to a file containing the access token in UTF-16LE format (no BOM)
+    # This is the documented method per Microsoft sqlcmd documentation
+    local token_file
+    if ! token_file=$(mktemp --suffix=".token"); then
+        log_error "Failed to create temporary file for access token"
         rm -f "${sql_file}"
         return 1
     fi
     
-    # Execute SQL script with sqlcmd using Azure AD token authentication
-    # sqlcmd flags:
-    #   -S: Server name (FQDN)
+    log_verbose "Token file created: ${token_file}"
+    log_verbose "Temporary files will be securely removed after execution"
+    
+    # Write SQL script to temporary file
+    if ! echo "${sql_script}" > "${sql_file}"; then
+        log_error "Failed to write SQL script to temporary file"
+        rm -f "${sql_file}" "${token_file}"
+        return 1
+    fi
+    
+    # Write access token to file in UTF-16LE format (no BOM) as required by sqlcmd
+    # The token is converted from ASCII/UTF-8 to UTF-16LE using iconv
+    # printf without newline ensures exact token format
+    if ! printf '%s' "${access_token}" | iconv -f UTF-8 -t UTF-16LE > "${token_file}"; then
+        log_error "Failed to write access token to temporary file"
+        log_error "iconv may not be installed or UTF-16LE conversion failed"
+        rm -f "${sql_file}" "${token_file}"
+        return 1
+    fi
+    
+    # Set restrictive permissions on token file (owner read/write only)
+    chmod 600 "${token_file}"
+    
+    log_verbose "Token file written in UTF-16LE format (no BOM)"
+    log_verbose "Token file permissions set to 600 (owner read/write only)"
+    
+    # Execute SQL script with sqlcmd using Azure AD token file authentication
+    # sqlcmd flags for mssql-tools on Linux/macOS with Azure AD:
+    #   -S: Server name (FQDN with port, using tcp: prefix)
     #   -d: Database name
-    #   -G: Use Azure AD authentication
+    #   -G: Use Azure AD authentication (ActiveDirectoryAccessToken mode)
+    #   -P: Path to token file in UTF-16LE format (when -G is used without -U)
     #   -i: Input file (SQL script)
     #   -t: Query timeout in seconds
     #   -b: Terminate batch on error
-    #   -e: Echo input
     #   -r 1: Redirect error messages to stderr
-    # Note: Access token is passed via SQLCMDPASSWORD environment variable
-    #       because -P has a 128 character limit which is too short for AAD tokens
+    #   -N: Encrypt connection (required for Azure SQL)
+    #   -C: Trust server certificate (for self-signed certs in some environments)
+    # Note: When using -G without -U, sqlcmd expects the access token in the -P file
     local output
     local exit_code=0
     local start_time
     start_time=$(date +%s)
     
     log_verbose "Executing SQL commands via sqlcmd..."
+    log_verbose "Using Azure AD access token file authentication"
     
     # Execute sqlcmd and capture output
-    # Access token is passed via environment variable to avoid command-line length limits
-    if output=$(SQLCMDPASSWORD="${access_token}" sqlcmd -S "${server_fqdn}" -d "${database}" -G \
-                       -i "${sql_file}" -t "${timeout}" -b -e -r 1 2>&1); then
+    # -G without -U enables Azure AD access token mode where -P is the token file
+    if output=$(sqlcmd -S "tcp:${server_fqdn},1433" \
+                       -d "${database}" \
+                       -G \
+                       -P "${token_file}" \
+                       -i "${sql_file}" \
+                       -t "${timeout}" \
+                       -b \
+                       -r 1 \
+                       -N \
+                       -C 2>&1); then
         
         local end_time
         end_time=$(date +%s)
@@ -1001,16 +1083,40 @@ execute_sql_script() {
             log_error "Insufficient permissions. Verify:"
             log_error "  - Authenticated user has db_owner or equivalent role"
             log_error "  - User can create users and assign roles in the database"
+        elif echo "${output}" | grep -qi "token\|utf\|encoding"; then
+            log_error "Token format error. Verify:"
+            log_error "  - iconv is installed and supports UTF-16LE encoding"
+            log_error "  - Token was obtained correctly from Azure CLI"
+            log_error "  - Run: az account get-access-token --resource https://database.windows.net/"
         fi
         
-        # Clean up temporary file before returning error
+        # Securely clean up temporary files before returning error
+        # Use shred if available for secure deletion, otherwise just rm
+        if command -v shred &> /dev/null; then
+            shred -u "${token_file}" 2>/dev/null || rm -f "${token_file}"
+        else
+            rm -f "${token_file}"
+        fi
         rm -f "${sql_file}"
         return 1
     fi
     
-    # Clean up temporary file on success
+    # Securely clean up temporary files on success
+    # Use shred if available for secure deletion of token file
+    if command -v shred &> /dev/null; then
+        if shred -u "${token_file}" 2>/dev/null; then
+            log_verbose "Token file securely removed (shred)"
+        else
+            rm -f "${token_file}"
+            log_verbose "Token file removed"
+        fi
+    else
+        rm -f "${token_file}"
+        log_verbose "Token file removed"
+    fi
+    
     if rm -f "${sql_file}"; then
-        log_verbose "Temporary SQL file removed successfully"
+        log_verbose "SQL script file removed successfully"
     else
         log_warning "Failed to remove temporary SQL file: ${sql_file}"
         log_warning "File may need to be manually deleted"
@@ -1055,7 +1161,7 @@ main() {
     log_info ""
     
     # Step 1: Validate Azure CLI authentication
-    log_info "[Step 1/6] Validating Azure authentication..."
+    log_info "[Step 1/7] Validating Azure authentication..."
     if ! test_azure_context; then
         log_error ""
         log_error "===================================================================="
@@ -1082,7 +1188,7 @@ EOF
     log_info ""
     
     # Step 2: Validate sqlcmd utility availability
-    log_info "[Step 2/6] Validating sqlcmd utility..."
+    log_info "[Step 2/7] Validating sqlcmd utility..."
     if ! check_sqlcmd; then
         log_error ""
         log_error "===================================================================="
@@ -1108,8 +1214,35 @@ EOF
     log_success "sqlcmd utility validated"
     log_info ""
     
-    # Step 3: Construct connection details
-    log_info "[Step 3/6] Constructing connection details..."
+    # Step 3: Validate iconv utility for token encoding
+    log_info "[Step 3/7] Validating iconv utility..."
+    if ! check_iconv; then
+        log_error ""
+        log_error "===================================================================="
+        log_error "CONFIGURATION FAILED: iconv Utility Not Found"
+        log_error "===================================================================="
+        log_error "iconv is required for Azure AD token file encoding."
+        log_error "iconv converts the access token to UTF-16LE format for sqlcmd."
+        log_error ""
+        
+        # Return structured error result as JSON
+        cat << EOF
+{
+  "Success": false,
+  "Principal": "${PRINCIPAL_NAME}",
+  "Server": "${SQL_SERVER_NAME}",
+  "Database": "${DATABASE_NAME}",
+  "Roles": "${DATABASE_ROLES}",
+  "Error": "iconv utility not found or does not support UTF-16LE encoding."
+}
+EOF
+        exit 1
+    fi
+    log_success "iconv utility validated"
+    log_info ""
+    
+    # Step 4: Configure firewall rules (if needed)
+    log_info "[Step 4/7] Configuring firewall rules..."
     
     # Configure firewall rules (if needed)
     log_info "Detecting current public IP address for firewall configuration..."
@@ -1167,8 +1300,8 @@ EOF
     
     log_info ""
     
-    # Step 4: Construct connection details
-    log_info "[Step 4/6] Constructing connection details..."
+    # Step 5: Construct connection details
+    log_info "[Step 5/7] Constructing connection details..."
     
     # Get SQL endpoint suffix for the specified Azure environment
     local sql_suffix
@@ -1185,8 +1318,8 @@ EOF
     log_success "Connection details constructed"
     log_info ""
     
-    # Step 5: Acquire Azure AD access token
-    log_info "[Step 5/6] Acquiring Entra ID access token for Azure SQL Database..."
+    # Step 6: Acquire Azure AD access token
+    log_info "[Step 6/7] Acquiring Entra ID access token for Azure SQL Database..."
     
     local access_token
     if ! access_token=$(get_sql_access_token "${sql_suffix}"); then
@@ -1214,8 +1347,8 @@ EOF
     log_success "Access token acquired successfully"
     log_info ""
     
-    # Step 6: Generate and execute SQL configuration script
-    log_info "[Step 6/6] Generating and executing SQL configuration script..."
+    # Step 7: Generate and execute SQL configuration script
+    log_info "[Step 7/7] Generating and executing SQL configuration script..."
     
     # Generate T-SQL script for user creation and role assignments
     log_verbose "Generating SQL script..."

@@ -724,6 +724,36 @@ validate_sqlcmd() {
     return 1
 }
 
+# Validate iconv utility availability for UTF-16LE encoding
+# Checks if iconv is installed and supports UTF-16LE encoding
+# Required for Azure AD access token file format (used by sqlcmd)
+# Returns: 0 if iconv is available with UTF-16LE support, 1 otherwise
+# Note: iconv is typically pre-installed on Linux (glibc) and macOS
+validate_iconv() {
+    print_verbose "Validating iconv utility..."
+    
+    # Check if iconv command exists in PATH
+    if ! command -v iconv &> /dev/null; then
+        print_error "iconv is not installed"
+        print_error "iconv is required for Azure AD token encoding (UTF-16LE)"
+        return 1
+    fi
+    
+    local iconv_path
+    iconv_path=$(command -v iconv)
+    print_verbose "iconv found at: ${iconv_path}"
+    
+    # Verify iconv supports UTF-16LE encoding
+    if ! echo "test" | iconv -f UTF-8 -t UTF-16LE &> /dev/null; then
+        print_error "iconv does not support UTF-16LE encoding"
+        print_error "UTF-16LE encoding is required for Azure AD token files"
+        return 1
+    fi
+    
+    print_verbose "iconv supports UTF-16LE encoding"
+    return 0
+}
+
 # Check Azure subscription quotas (informational only)
 # Provides informational guidance about common quota limits
 # Returns: Always returns 0 (does not fail validation)
@@ -1595,6 +1625,24 @@ main() {
         fi
     else
         echo "    ✓ sqlcmd is available"
+    fi
+    echo ""
+    
+    # Check iconv utility (required for Azure AD token encoding)
+    echo "  • Checking iconv utility..."
+    if ! validate_iconv; then
+        print_warning "    ✗ iconv is required for Azure AD token encoding (UTF-16LE)"
+        print_warning "      iconv is typically pre-installed on Linux (glibc) and macOS"
+        print_warning ""
+        print_warning "      Installation instructions:"
+        print_warning "        Ubuntu/Debian: sudo apt-get install libc-bin"
+        print_warning "        RHEL/CentOS:   sudo dnf install glibc-common"
+        print_warning "        macOS:         Pre-installed with macOS"
+        print_warning ""
+        print_warning "      SQL managed identity configuration will fail without iconv"
+        # Don't fail the whole validation - this is typically pre-installed
+    else
+        echo "    ✓ iconv is available with UTF-16LE support"
     fi
     echo ""
     
