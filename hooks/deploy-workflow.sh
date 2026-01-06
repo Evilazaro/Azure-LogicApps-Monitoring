@@ -681,6 +681,12 @@ write_deployment_summary() {
 # MAIN EXECUTION
 #==============================================================================
 
+#------------------------------------------------------------------------------
+# Function: main
+# Description: Main entry point for the script. Orchestrates the deployment workflow.
+# Arguments:
+#   $@ - All command-line arguments passed to the script
+#------------------------------------------------------------------------------
 main() {
     # Parse command-line arguments
     parse_arguments "$@"
@@ -689,6 +695,7 @@ main() {
     echo ""
     log_info "╔══════════════════════════════════════════════════════════════╗"
     log_info "║     Azure Logic Apps Workflow Deployment Script              ║"
+    log_info "║     Version: ${SCRIPT_VERSION}                                          ║"
     log_info "║     (Using Azure CLI and Azure Developer CLI)                ║"
     log_info "╚══════════════════════════════════════════════════════════════╝"
     echo ""
@@ -701,14 +708,17 @@ main() {
 
     # Resolve LogicAppName from environment if not provided via command line
     # Note: LOGIC_APP_NAME may be set by initialize_azd_environment
-    if [[ -z "${LOGIC_APP_NAME}" ]]; then
-        log_error "LogicAppName parameter is required or LOGIC_APP_NAME environment variable must be set."
-        exit 1
+    if [[ -z "${LOGIC_APP_NAME:-}" ]]; then
+        LOGIC_APP_NAME="${LOGIC_APP_NAME:-}"
+        if [[ -z "${LOGIC_APP_NAME}" ]]; then
+            log_error "LogicAppName parameter is required or LOGIC_APP_NAME environment variable must be set."
+            exit 1
+        fi
     fi
     log_gray "Using Logic App: ${LOGIC_APP_NAME}"
 
     # Resolve ResourceGroupName from environment if not provided via command line
-    if [[ -z "${RESOURCE_GROUP_NAME}" ]]; then
+    if [[ -z "${RESOURCE_GROUP_NAME:-}" ]]; then
         RESOURCE_GROUP_NAME="${AZURE_RESOURCE_GROUP:-}"
         if [[ -z "${RESOURCE_GROUP_NAME}" ]]; then
             log_error "ResourceGroupName parameter is required or AZURE_RESOURCE_GROUP environment variable must be set."

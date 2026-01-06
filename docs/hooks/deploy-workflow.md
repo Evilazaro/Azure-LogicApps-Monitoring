@@ -4,14 +4,14 @@
 ![Bash](https://img.shields.io/badge/Bash-4.0+-green.svg)
 ![Azure CLI](https://img.shields.io/badge/Azure%20CLI-2.60+-blue.svg)
 ![Azure Developer CLI](https://img.shields.io/badge/azd-Required-orange.svg)
-![Version](https://img.shields.io/badge/version-1.2.0-green.svg)
+![Version](https://img.shields.io/badge/version-1.3.0-green.svg)
 ![License](https://img.shields.io/badge/license-MIT-orange.svg)
 
 ## 📋 Overview
 
 The `deploy-workflow` scripts are comprehensive deployment utilities for Azure Logic Apps Standard workflows that automate the complete deployment lifecycle. Available in both PowerShell and Bash implementations, they integrate with Azure Developer CLI (azd) to handle environment configuration, placeholder replacement, and Azure CLI zip deployment in a single, streamlined operation.
 
-These scripts perform intelligent placeholder replacement in both workflow.json and connections.json files, substituting environment variable tokens with actual values from the active azd environment. They then package the workflow artifacts and deploy them to Azure Logic Apps Standard using the reliable zip deployment method, ensuring consistent and reproducible deployments across development, staging, and production environments.
+These scripts perform intelligent placeholder replacement in both workflow.json and connections.json files **in memory only**, substituting environment variable tokens with actual values from the active azd environment. The original source files retain their placeholders for future deployments. They then package the workflow artifacts and deploy them to Azure Logic Apps Standard using the reliable zip deployment method, ensuring consistent and reproducible deployments across development, staging, and production environments.
 
 With built-in WhatIf/dry-run mode for deployment previews, comprehensive error handling, and detailed progress reporting across five distinct phases, the scripts typically complete in 30-60 seconds. They support both automated CI/CD pipeline integration and manual execution, providing flexibility for various deployment workflows while maintaining a Zero Trust security approach through managed identity authentication.
 
