@@ -547,6 +547,81 @@ function Test-BicepCLI {
     }
 }
 
+function Test-Zip {
+    <#
+    .SYNOPSIS
+        Validates zip utility availability.
+    
+    .DESCRIPTION
+        Checks if the zip command is available for Logic Apps workflow deployment.
+        On Windows, checks for Compress-Archive cmdlet (built-in).
+        On Linux/macOS, checks for the zip command.
+        Returns $true if zip capability is available, $false otherwise.
+    
+    .OUTPUTS
+        System.Boolean - Returns $true if zip capability is available, $false otherwise.
+    
+    .EXAMPLE
+        Test-Zip
+        Returns $true if zip capability is available.
+    #>
+    [CmdletBinding()]
+    [OutputType([bool])]
+    param()
+
+    begin {
+        Write-Verbose 'Validating zip utility...'
+    }
+
+    process {
+        try {
+            if ($IsWindows -or $env:OS -match 'Windows') {
+                # On Windows, check for Compress-Archive cmdlet (always available in PowerShell 5.0+)
+                $compressCmd = Get-Command -Name Compress-Archive -ErrorAction SilentlyContinue
+                if ($compressCmd) {
+                    Write-Verbose 'Compress-Archive cmdlet is available (Windows built-in)'
+                    return $true
+                }
+                
+                # Fallback: check for zip.exe
+                $zipCommand = Get-Command -Name zip -ErrorAction SilentlyContinue
+                if ($zipCommand) {
+                    Write-Verbose "zip found at: $($zipCommand.Source)"
+                    return $true
+                }
+                
+                Write-Verbose 'No zip capability found on Windows'
+                return $false
+            }
+            else {
+                # On Linux/macOS, check for zip command
+                $zipCommand = Get-Command -Name zip -ErrorAction SilentlyContinue
+                if (-not $zipCommand) {
+                    Write-Verbose 'zip command not found in PATH'
+                    return $false
+                }
+                
+                Write-Verbose "zip found at: $($zipCommand.Source)"
+                
+                # Verify zip can execute
+                $versionOutput = & zip --version 2>&1
+                if ($LASTEXITCODE -ne 0) {
+                    Write-Verbose 'zip command failed to execute'
+                    return $false
+                }
+                
+                $versionLine = ($versionOutput | Select-Object -First 2) -join ' '
+                Write-Verbose "zip version: $versionLine"
+                return $true
+            }
+        }
+        catch {
+            Write-Verbose "Error validating zip utility: $($_.Exception.Message)"
+            return $false
+        }
+    }
+}
+
 #region Installation Functions
 
 function Test-WingetAvailable {
@@ -1011,6 +1086,161 @@ function Install-BicepCLI {
         }
         catch {
             Write-Error "Error installing Bicep CLI: $($_.Exception.Message)"
+            return $false
+        }
+    }
+}
+
+function Install-Zip {
+    <#
+    .SYNOPSIS
+        Installs the zip utility on the developer machine.
+    
+    .DESCRIPTION
+        On Windows, zip capability is provided by Compress-Archive cmdlet (built-in).
+        On Linux, installs zip using the appropriate package manager.
+        On macOS, zip is typically pre-installed.
+    
+    .OUTPUTS
+        System.Boolean - Returns $true if installation succeeds or already available, $false otherwise.
+    #>
+    [CmdletBinding()]
+    [OutputType([bool])]
+    param()
+
+    process {
+        try {
+            Write-Information ''
+            Write-Information '┌────────────────────────────────────────────────────────────────┐'
+            Write-Information '│                     zip Installation                           │'
+            Write-Information '└────────────────────────────────────────────────────────────────┘'
+            Write-Information ''
+            
+            if ($IsWindows -or $env:OS -match 'Windows') {
+                # On Windows, Compress-Archive is built into PowerShell
+                $compressCmd = Get-Command -Name Compress-Archive -ErrorAction SilentlyContinue
+                if ($compressCmd) {
+                    Write-Information '  ✓ zip capability is available via Compress-Archive cmdlet (built-in)'
+                    Write-Information ''
+                    return $true
+                }
+                
+                Write-Warning '  ⚠ Compress-Archive cmdlet not found. This is unexpected on PowerShell 5.0+'
+                Write-Warning '    Please ensure you are running PowerShell 5.0 or higher'
+                Write-Warning ''
+                return $false
+            }
+            elseif ($IsMacOS) {
+                # macOS typically has zip pre-installed
+                Write-Information '  📥 Checking zip on macOS...'
+                
+                $zipCommand = Get-Command -Name zip -ErrorAction SilentlyContinue
+                if ($zipCommand) {
+                    Write-Information '  ✓ zip is already available on macOS (pre-installed)'
+                    Write-Information ''
+                    return $true
+                }
+                
+                # Try installing via Homebrew
+                $brewCommand = Get-Command -Name brew -ErrorAction SilentlyContinue
+                if ($brewCommand) {
+                    Write-Information '  📥 Installing zip via Homebrew...'
+                    & brew install zip
+                    
+                    if ($LASTEXITCODE -eq 0) {
+                        Write-Information ''
+                        Write-Information '  ✓ zip installed successfully!'
+                        Write-Information ''
+                        return $true
+                    }
+                }
+                
+                Write-Warning '  ⚠ zip not found and could not be installed'
+                Write-Warning '    Please install manually via Homebrew: brew install zip'
+                Write-Warning ''
+                return $false
+            }
+            else {
+                # Linux installation
+                Write-Information '  📥 Installing zip on Linux...'
+                Write-Information ''
+                
+                # Detect package manager and install
+                if (Get-Command -Name apt-get -ErrorAction SilentlyContinue) {
+                    # Debian/Ubuntu
+                    Write-Information '  📥 Installing via apt-get...'
+                    & sudo apt-get update 2>&1 | Out-Null
+                    & sudo apt-get install -y zip
+                    
+                    if ($LASTEXITCODE -eq 0) {
+                        Write-Information ''
+                        Write-Information '  ✓ zip installed successfully!'
+                        Write-Information ''
+                        return $true
+                    }
+                }
+                elseif (Get-Command -Name dnf -ErrorAction SilentlyContinue) {
+                    # Fedora/RHEL 8+
+                    Write-Information '  📥 Installing via dnf...'
+                    & sudo dnf install -y zip
+                    
+                    if ($LASTEXITCODE -eq 0) {
+                        Write-Information ''
+                        Write-Information '  ✓ zip installed successfully!'
+                        Write-Information ''
+                        return $true
+                    }
+                }
+                elseif (Get-Command -Name yum -ErrorAction SilentlyContinue) {
+                    # CentOS/RHEL 7
+                    Write-Information '  📥 Installing via yum...'
+                    & sudo yum install -y zip
+                    
+                    if ($LASTEXITCODE -eq 0) {
+                        Write-Information ''
+                        Write-Information '  ✓ zip installed successfully!'
+                        Write-Information ''
+                        return $true
+                    }
+                }
+                elseif (Get-Command -Name pacman -ErrorAction SilentlyContinue) {
+                    # Arch Linux
+                    Write-Information '  📥 Installing via pacman...'
+                    & sudo pacman -S --noconfirm zip
+                    
+                    if ($LASTEXITCODE -eq 0) {
+                        Write-Information ''
+                        Write-Information '  ✓ zip installed successfully!'
+                        Write-Information ''
+                        return $true
+                    }
+                }
+                elseif (Get-Command -Name apk -ErrorAction SilentlyContinue) {
+                    # Alpine Linux
+                    Write-Information '  📥 Installing via apk...'
+                    & sudo apk add zip
+                    
+                    if ($LASTEXITCODE -eq 0) {
+                        Write-Information ''
+                        Write-Information '  ✓ zip installed successfully!'
+                        Write-Information ''
+                        return $true
+                    }
+                }
+                
+                Write-Warning '  ✗ zip installation failed'
+                Write-Warning ''
+                Write-Warning '  Please install manually:'
+                Write-Warning '    Ubuntu/Debian: sudo apt-get install zip'
+                Write-Warning '    RHEL/CentOS:   sudo dnf install zip'
+                Write-Warning '    Arch Linux:    sudo pacman -S zip'
+                Write-Warning '    Alpine:        sudo apk add zip'
+                Write-Warning ''
+                return $false
+            }
+        }
+        catch {
+            Write-Error "Error installing zip: $($_.Exception.Message)"
             return $false
         }
     }
@@ -1631,6 +1861,32 @@ try {
     }
     else {
         Write-Information '    ✓ Bicep CLI is available and compatible'
+    }
+    Write-Information ''
+    
+    # Check zip utility (required for Logic Apps workflow deployment)
+    Write-Information '  • Checking zip utility...'
+    if (-not (Test-Zip)) {
+        Write-Warning '    ✗ zip is required for Logic Apps workflow deployment'
+        Write-Warning '      See: https://linux.die.net/man/1/zip'
+        
+        if ($AutoInstall -or (Request-UserConfirmation -PrerequisiteName 'zip' -Force:$Force)) {
+            $installSuccess = Install-Zip
+            if ($installSuccess -and (Test-Zip)) {
+                Write-Information '    ✓ zip installed and verified'
+            }
+            else {
+                Write-Warning '    ⚠ zip installation failed'
+                $prerequisitesFailed = $true
+            }
+        }
+        else {
+            Write-Warning '    ⚠ zip not installed - Logic Apps workflow deployment will fail'
+            $prerequisitesFailed = $true
+        }
+    }
+    else {
+        Write-Information '    ✓ zip is available'
     }
     Write-Information ''
     
