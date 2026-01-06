@@ -779,6 +779,14 @@ jobs:
 | **Scalability** | • **Linear with projects:** O(n) scaling with number of projects<br/>• **Linear with secrets:** O(m) scaling with secrets per project<br/>• **Sequential processing:** Projects configured one at a time<br/>• **No degradation:** Consistent per-secret configuration time<br/>• **Tested configuration:** 3 projects, 27 secrets completes in <22s |
 | **Optimization** | • **Batch validation:** All environment variables checked upfront<br/>• **Conditional ACR:** Skips authentication if not configured<br/>• **Conditional SQL:** Skips managed identity setup if not configured<br/>• **Efficient clearing:** Delegates to optimized clean-secrets script<br/>• **Error handling:** Early exit on critical failures<br/>• **Minimal overhead:** Direct dotnet CLI invocations |
 
+## 📜 Version History
+
+| Version | Date | Changes |
+|---------|------|---------|
+| **v1.0.0** | 2025-11-20 | Initial release with basic user secrets configuration |
+| **v2.0.0** | 2025-12-15 | Added SQL managed identity configuration, ACR authentication, comprehensive validation |
+| **v2.0.1** | 2026-01-06 | Applied PowerShell best practices (OutputType on script block), documentation updates |
+
 ## Quick Links
 
 - **Repository**: [Azure-LogicApps-Monitoring](https://github.com/Evilazaro/Azure-LogicApps-Monitoring)
@@ -792,9 +800,9 @@ jobs:
 
 ## 📝 Notes
 
-- **Last Updated**: December 29, 2025
-- **PowerShell Version**: 2.0.1 (Last Modified: December 29, 2025)
-- **Bash Version**: 2.0.1 (Last Modified: December 29, 2025)
+- **Last Updated**: January 6, 2026
+- **PowerShell Version**: 2.0.1 (Last Modified: January 6, 2026)
+- **Bash Version**: 2.0.1 (Last Modified: January 6, 2026)
 - Both scripts are functionally equivalent with complete feature parity
 - Configures secrets across 3 projects (AppHost, Orders.API, Web.App)
 - Both scripts implement comprehensive error handling and detailed logging
