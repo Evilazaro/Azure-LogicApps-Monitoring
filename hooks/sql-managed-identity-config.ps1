@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
     Configures Azure SQL Database user with Managed Identity authentication.
 
@@ -246,7 +246,7 @@ function Install-MicrosoftDataSqlClient {
     [CmdletBinding()]
     param()
     
-    Write-Host "Attempting to install Microsoft.Data.SqlClient..." -ForegroundColor Yellow
+    Write-Warning 'Attempting to install Microsoft.Data.SqlClient...'
     
     # Create a temporary directory for the package
     $tempDir = Join-Path -Path $env:TEMP -ChildPath "MicrosoftDataSqlClient_$(Get-Date -Format 'yyyyMMddHHmmss')"
@@ -256,14 +256,14 @@ function Install-MicrosoftDataSqlClient {
         # Try using nuget.exe if available
         $nugetExe = Get-Command nuget.exe -ErrorAction SilentlyContinue
         if ($nugetExe) {
-            Write-Host "Using nuget.exe to install package..." -ForegroundColor Cyan
+            Write-Information -MessageData 'Using nuget.exe to install package...' -InformationAction Continue
             & nuget.exe install Microsoft.Data.SqlClient -OutputDirectory $tempDir -NonInteractive 2>&1 | Out-Null
         }
         else {
             # Try using dotnet CLI
             $dotnetExe = Get-Command dotnet -ErrorAction SilentlyContinue
             if ($dotnetExe) {
-                Write-Host "Using dotnet CLI to restore package..." -ForegroundColor Cyan
+                Write-Information -MessageData 'Using dotnet CLI to restore package...' -InformationAction Continue
                 # Create a minimal project to restore the package
                 $projectDir = Join-Path -Path $tempDir -ChildPath "temp_project"
                 $null = New-Item -ItemType Directory -Path $projectDir -Force
@@ -449,7 +449,7 @@ $script:SqlEndpoints = @{
     'AzureGermanCloud'  = 'database.cloudapi.de'
 }
 
-function Write-Log {
+function Write-LogMessage {
     <#
     .SYNOPSIS
         Writes formatted log messages to the console and PowerShell streams.
@@ -465,10 +465,10 @@ function Write-Log {
         The severity level of the message.
     
     .EXAMPLE
-        Write-Log "Processing started" -Level Info
+        Write-LogMessage "Processing started" -Level Info
     
     .EXAMPLE
-        Write-Log "Operation completed successfully" -Level Success
+        Write-LogMessage "Operation completed successfully" -Level Success
     #>
     [CmdletBinding()]
     [OutputType([void])]
@@ -488,7 +488,11 @@ function Write-Log {
     }
     
     process {
-        # Route to appropriate PowerShell stream
+        # Route to appropriate PowerShell stream using Write-Information for PSScriptAnalyzer compliance
+        # ANSI escape sequences provide colored output in modern terminals
+        $esc = [char]27
+        $resetColor = "$esc[0m"
+        
         switch ($Level) {
             'Verbose' {
                 Write-Verbose -Message $formattedMessage
@@ -497,18 +501,20 @@ function Write-Log {
                 Write-Debug -Message $formattedMessage
             }
             'Warning' {
-                Write-Host $formattedMessage -ForegroundColor Yellow
+                $yellowColor = "$esc[33m"
+                Write-Information -MessageData "${yellowColor}${formattedMessage}${resetColor}" -InformationAction Continue
             }
             'Error' {
-                Write-Host $formattedMessage -ForegroundColor Red
+                $redColor = "$esc[31m"
+                Write-Information -MessageData "${redColor}${formattedMessage}${resetColor}" -InformationAction Continue
             }
             'Success' {
-                Write-Information -MessageData $formattedMessage -InformationAction Continue
-                Write-Host $formattedMessage -ForegroundColor Green
+                $greenColor = "$esc[32m"
+                Write-Information -MessageData "${greenColor}${formattedMessage}${resetColor}" -InformationAction Continue
             }
             default { # Info
-                Write-Information -MessageData $formattedMessage -InformationAction Continue
-                Write-Host $formattedMessage -ForegroundColor Cyan
+                $cyanColor = "$esc[36m"
+                Write-Information -MessageData "${cyanColor}${formattedMessage}${resetColor}" -InformationAction Continue
             }
         }
     }
@@ -537,7 +543,7 @@ function Test-AzureCliAvailability {
     param()
     
     begin {
-        Write-Log 'Checking Azure CLI availability...' -Level Verbose
+        Write-LogMessage 'Checking Azure CLI availability...' -Level Verbose
     }
     
     process {
@@ -546,43 +552,43 @@ function Test-AzureCliAvailability {
             $azCommand = Get-Command -Name az -ErrorAction SilentlyContinue
             
             if (-not $azCommand) {
-                Write-Log 'Azure CLI (az) is not installed or not in PATH' -Level Error
-                Write-Log 'Install from: https://learn.microsoft.com/cli/azure/install-azure-cli' -Level Error
+                Write-LogMessage 'Azure CLI (az) is not installed or not in PATH' -Level Error
+                Write-LogMessage 'Install from: https://learn.microsoft.com/cli/azure/install-azure-cli' -Level Error
                 return $false
             }
             
-            Write-Log "Azure CLI found at: $($azCommand.Source)" -Level Verbose
+            Write-LogMessage "Azure CLI found at: $($azCommand.Source)" -Level Verbose
             
             # Check Azure CLI version
             $versionOutput = az version --query '"azure-cli"' -o tsv 2>&1
             if ($LASTEXITCODE -eq 0 -and $versionOutput) {
-                Write-Log "Azure CLI version: $versionOutput" -Level Verbose
+                Write-LogMessage "Azure CLI version: $versionOutput" -Level Verbose
             }
             
             # Check if logged in
             $accountCheck = az account show 2>&1
             if ($LASTEXITCODE -ne 0) {
-                Write-Log 'Not authenticated to Azure CLI' -Level Error
-                Write-Log 'Run: az login' -Level Error
+                Write-LogMessage 'Not authenticated to Azure CLI' -Level Error
+                Write-LogMessage 'Run: az login' -Level Error
                 return $false
             }
             
             # Parse account information
             $accountInfo = $accountCheck | ConvertFrom-Json -ErrorAction SilentlyContinue
             if ($accountInfo -and $accountInfo.name) {
-                Write-Log "Azure CLI authenticated: Subscription=$($accountInfo.name)" -Level Success
+                Write-LogMessage "Azure CLI authenticated: Subscription=$($accountInfo.name)" -Level Success
             }
             
             return $true
         }
         catch {
-            Write-Log "Azure CLI validation failed: $($_.Exception.Message)" -Level Error
+            Write-LogMessage "Azure CLI validation failed: $($_.Exception.Message)" -Level Error
             return $false
         }
     }
     
     end {
-        Write-Log 'Azure CLI availability check completed' -Level Verbose
+        Write-LogMessage 'Azure CLI availability check completed' -Level Verbose
     }
 }
 
@@ -616,12 +622,12 @@ function Get-AzureSqlAccessToken {
     )
     
     begin {
-        Write-Log "Acquiring access token for resource: $ResourceUrl" -Level Verbose
+        Write-LogMessage "Acquiring access token for resource: $ResourceUrl" -Level Verbose
     }
     
     process {
         try {
-            Write-Log 'Attempting token acquisition via Azure CLI...' -Level Verbose
+            Write-LogMessage 'Attempting token acquisition via Azure CLI...' -Level Verbose
             
             # Execute Azure CLI command to get access token
             $cliOutput = az account get-access-token --resource $ResourceUrl --query accessToken -o tsv 2>&1
@@ -636,22 +642,22 @@ function Get-AzureSqlAccessToken {
             }
             
             $accessToken = $cliOutput.Trim()
-            Write-Log 'Token acquired successfully via Azure CLI' -Level Success
+            Write-LogMessage 'Token acquired successfully via Azure CLI' -Level Success
             return $accessToken
         }
         catch {
             $errorMessage = "Azure CLI token acquisition failed: $($_.Exception.Message)"
-            Write-Log $errorMessage -Level Error
+            Write-LogMessage $errorMessage -Level Error
             throw $errorMessage
         }
     }
     
     end {
-        Write-Log 'Token acquisition completed' -Level Verbose
+        Write-LogMessage 'Token acquisition completed' -Level Verbose
     }
 }
 
-function New-SqlIdentityScript {
+function Get-SqlIdentityScript {
     <#
     .SYNOPSIS
         Generates T-SQL script to create a database user and assign roles.
@@ -673,7 +679,7 @@ function New-SqlIdentityScript {
         Returns the T-SQL script as a string.
     
     .EXAMPLE
-        $script = New-SqlIdentityScript -PrincipalName 'my-identity' -Roles @('db_datareader', 'db_datawriter')
+        $script = Get-SqlIdentityScript -PrincipalName 'my-identity' -Roles @('db_datareader', 'db_datawriter')
     #>
     [CmdletBinding()]
     [OutputType([string])]
@@ -688,7 +694,7 @@ function New-SqlIdentityScript {
     )
     
     begin {
-        Write-Log 'Generating SQL script for managed identity configuration...' -Level Verbose
+        Write-LogMessage 'Generating SQL script for managed identity configuration...' -Level Verbose
         $scriptParts = [System.Collections.Generic.List[string]]::new()
         
         # Sanitize principal name to prevent SQL injection
@@ -757,36 +763,36 @@ END;
         # Combine all script parts
         $fullScript = $scriptParts -join "`n"
         
-        Write-Log "Generated SQL script with $($Roles.Count) role assignment(s)" -Level Verbose
+        Write-LogMessage "Generated SQL script with $($Roles.Count) role assignment(s)" -Level Verbose
         return $fullScript
     }
     
     end {
-        Write-Log 'SQL script generation completed' -Level Verbose
+        Write-LogMessage 'SQL script generation completed' -Level Verbose
     }
 }
 
 try {
     #region Script Initialization
-    Write-Log "====================================================================" -Level Info
-    Write-Log "SQL Managed Identity Configuration Script v$script:ScriptVersion" -Level Info
-    Write-Log "====================================================================" -Level Info
-    Write-Log "Starting Azure SQL Database managed identity configuration..." -Level Info
-    Write-Log "" -Level Info
+    Write-LogMessage "====================================================================" -Level Info
+    Write-LogMessage "SQL Managed Identity Configuration Script v$script:ScriptVersion" -Level Info
+    Write-LogMessage "====================================================================" -Level Info
+    Write-LogMessage "Starting Azure SQL Database managed identity configuration..." -Level Info
+    Write-LogMessage "" -Level Info
     
     # Log input parameters (mask sensitive data)
-    Write-Log "Configuration Parameters:" -Level Info
-    Write-Log "  SQL Server Name:    $SqlServerName" -Level Info
-    Write-Log "  Database Name:      $DatabaseName" -Level Info
-    Write-Log "  Principal Name:     $PrincipalDisplayName" -Level Info
-    Write-Log "  Database Roles:     $($DatabaseRoles -join ', ')" -Level Info
-    Write-Log "  Azure Environment:  $AzureEnvironment" -Level Info
-    Write-Log "  Command Timeout:    ${CommandTimeout}s" -Level Info
-    Write-Log "" -Level Info
+    Write-LogMessage "Configuration Parameters:" -Level Info
+    Write-LogMessage "  SQL Server Name:    $SqlServerName" -Level Info
+    Write-LogMessage "  Database Name:      $DatabaseName" -Level Info
+    Write-LogMessage "  Principal Name:     $PrincipalDisplayName" -Level Info
+    Write-LogMessage "  Database Roles:     $($DatabaseRoles -join ', ')" -Level Info
+    Write-LogMessage "  Azure Environment:  $AzureEnvironment" -Level Info
+    Write-LogMessage "  Command Timeout:    ${CommandTimeout}s" -Level Info
+    Write-LogMessage "" -Level Info
     #endregion
     
     #region Azure Authentication Validation
-    Write-Log "[Step 1/5] Validating Azure authentication..." -Level Info
+    Write-LogMessage "[Step 1/5] Validating Azure authentication..." -Level Info
     
     # Validate Azure CLI is available and authenticated
     if (-not (Test-AzureCliAvailability)) {
@@ -801,15 +807,15 @@ try {
         throw $errorMessage
     }
     
-    Write-Log 'Using Azure CLI for authentication' -Level Success
+    Write-LogMessage 'Using Azure CLI for authentication' -Level Success
     #endregion
     
     #region Connection Details
-    Write-Log "" -Level Info
-    Write-Log "[Step 2/5] Constructing connection details..." -Level Info
+    Write-LogMessage "" -Level Info
+    Write-LogMessage "[Step 2/5] Constructing connection details..." -Level Info
 
     # Get current public IP address to add to SQL Server firewall rules
-    Write-Log 'Detecting current public IP address for firewall configuration...' -Level Info
+    Write-LogMessage 'Detecting current public IP address for firewall configuration...' -Level Info
 
     try {
         # Try multiple IP detection services for reliability (similar to example pattern)
@@ -822,45 +828,45 @@ try {
         $currentIp = $null
         foreach ($service in $ipDetectionServices) {
             try {
-                Write-Log "  Trying: $service" -Level Verbose
+                Write-LogMessage "  Trying: $service" -Level Verbose
                 $currentIp = (Invoke-WebRequest -Uri $service -UseBasicParsing -TimeoutSec 10 -ErrorAction Stop).Content.Trim()
                 
                 # Validate IP address format
                 if ($currentIp -match '^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$') {
-                    Write-Log "Found public IP address: $currentIp" -Level Info
+                    Write-LogMessage "Found public IP address: $currentIp" -Level Info
                     break
                 }
             }
             catch {
-                Write-Log "  Failed to detect IP from $service" -Level Verbose
+                Write-LogMessage "  Failed to detect IP from $service" -Level Verbose
                 continue
             }
         }
         
         if (-not $currentIp) {
-            Write-Log 'Warning: Could not detect public IP address - firewall rule creation skipped' -Level Warning
-            Write-Log 'You may need to manually add your IP to the SQL Server firewall rules' -Level Warning
+            Write-LogMessage 'Warning: Could not detect public IP address - firewall rule creation skipped' -Level Warning
+            Write-LogMessage 'You may need to manually add your IP to the SQL Server firewall rules' -Level Warning
         }
         else {
             # Define firewall rule name with timestamp (dynamic naming as per example)
             $firewallRuleName = "ClientIP-$(Get-Date -Format 'yyyyMMddHHmmss')"
             
             # Get resource group from environment variable
-            Write-Log 'Retrieving SQL Server resource group...' -Level Verbose
+            Write-LogMessage 'Retrieving SQL Server resource group...' -Level Verbose
             $resourceGroupName = $env:AZURE_RESOURCE_GROUP
             
             if ([string]::IsNullOrWhiteSpace($resourceGroupName)) {
-                Write-Log "Warning: AZURE_RESOURCE_GROUP environment variable is not set" -Level Warning
-                Write-Log "Firewall rule creation skipped - you may need to add it manually" -Level Warning
+                Write-LogMessage "Warning: AZURE_RESOURCE_GROUP environment variable is not set" -Level Warning
+                Write-LogMessage "Firewall rule creation skipped - you may need to add it manually" -Level Warning
             }
             else {
-                Write-Log "  Resource Group: $resourceGroupName" -Level Info
-                Write-Log "  Server Name:    $SqlServerName" -Level Info
-                Write-Log "  Rule Name:      $firewallRuleName" -Level Info
+                Write-LogMessage "  Resource Group: $resourceGroupName" -Level Info
+                Write-LogMessage "  Server Name:    $SqlServerName" -Level Info
+                Write-LogMessage "  Rule Name:      $firewallRuleName" -Level Info
                 
                 # Add the IP address to the Azure SQL Server firewall rules using Azure CLI
                 # This follows the exact pattern from the example
-                Write-Log "Adding firewall rule '$firewallRuleName' for IP '$currentIp'..." -Level Info
+                Write-LogMessage "Adding firewall rule '$firewallRuleName' for IP '$currentIp'..." -Level Info
                 
                 $firewallResult = az sql server firewall-rule create `
                     --resource-group $resourceGroupName `
@@ -871,18 +877,18 @@ try {
                     -o none 2>&1
                 
                 if ($LASTEXITCODE -eq 0) {
-                    Write-Log "Firewall rule '$firewallRuleName' with IP '$currentIp' has been created." -Level Success
+                    Write-LogMessage "Firewall rule '$firewallRuleName' with IP '$currentIp' has been created." -Level Success
                 }
                 else {
-                    Write-Log "Warning: Failed to create firewall rule: $firewallResult" -Level Warning
-                    Write-Log "You may need to manually add IP $currentIp to SQL Server firewall rules" -Level Warning
+                    Write-LogMessage "Warning: Failed to create firewall rule: $firewallResult" -Level Warning
+                    Write-LogMessage "You may need to manually add IP $currentIp to SQL Server firewall rules" -Level Warning
                 }
             }
         }
     }
     catch {
-        Write-Log "Warning: Firewall configuration failed: $($_.Exception.Message)" -Level Warning
-        Write-Log 'Continuing with connection attempt - you may need to add firewall rule manually if connection fails' -Level Warning
+        Write-LogMessage "Warning: Firewall configuration failed: $($_.Exception.Message)" -Level Warning
+        Write-LogMessage 'Continuing with connection attempt - you may need to add firewall rule manually if connection fails' -Level Warning
     }
     
     # Get SQL endpoint suffix for the specified Azure environment
@@ -894,60 +900,60 @@ try {
     $serverFqdn = "${SqlServerName}.${sqlSuffix}"
     $resourceUrl = "https://${sqlSuffix}/"
     
-    Write-Log "  Server FQDN:      $serverFqdn" -Level Info
-    Write-Log "  Resource URL:     $resourceUrl" -Level Info
-    Write-Log "  Port:             1433 (default)" -Level Info
-    Write-Log "  Encryption:       TLS 1.2+ (enforced)" -Level Info
+    Write-LogMessage "  Server FQDN:      $serverFqdn" -Level Info
+    Write-LogMessage "  Resource URL:     $resourceUrl" -Level Info
+    Write-LogMessage "  Port:             1433 (default)" -Level Info
+    Write-LogMessage "  Encryption:       TLS 1.2+ (enforced)" -Level Info
     #endregion
     
     #region Access Token Acquisition
-    Write-Log "" -Level Info
-    Write-Log "[Step 3/5] Acquiring Entra ID access token for Azure SQL..." -Level Info
+    Write-LogMessage "" -Level Info
+    Write-LogMessage "[Step 3/5] Acquiring Entra ID access token for Azure SQL..." -Level Info
     
     try {
         $accessToken = Get-AzureSqlAccessToken -ResourceUrl $resourceUrl
         
         # Validate token format (JWT tokens are base64-encoded and contain dots)
         if ($accessToken -notmatch '^[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+$') {
-            Write-Log 'Warning: Access token does not appear to be a valid JWT format' -Level Warning
+            Write-LogMessage 'Warning: Access token does not appear to be a valid JWT format' -Level Warning
         }
         
         # Mask token in logs (show only first 10 and last 10 characters)
         $tokenLength = $accessToken.Length
         if ($tokenLength -gt 20) {
             $maskedToken = "$($accessToken.Substring(0, 10))...$($accessToken.Substring($tokenLength - 10))"
-            Write-Log "  Token length:     $tokenLength characters" -Level Verbose
-            Write-Log "  Token preview:    $maskedToken" -Level Verbose
+            Write-LogMessage "  Token length:     $tokenLength characters" -Level Verbose
+            Write-LogMessage "  Token preview:    $maskedToken" -Level Verbose
         }
         
-        Write-Log 'Access token acquired and validated successfully' -Level Success
+        Write-LogMessage 'Access token acquired and validated successfully' -Level Success
     }
     catch {
         $errorMessage = "Failed to acquire access token: $($_.Exception.Message)"
-        Write-Log $errorMessage -Level Error
+        Write-LogMessage $errorMessage -Level Error
         throw $errorMessage
     }
     #endregion
     
     #region SQL Script Generation
-    Write-Log "" -Level Info
-    Write-Log "[Step 4/5] Generating SQL configuration script..." -Level Info
+    Write-LogMessage "" -Level Info
+    Write-LogMessage "[Step 4/5] Generating SQL configuration script..." -Level Info
     
     try {
-        $sqlScript = New-SqlIdentityScript -PrincipalName $PrincipalDisplayName -Roles $DatabaseRoles
-        Write-Log "SQL script generated successfully ($($sqlScript.Length) characters)" -Level Success
-        Write-Log "Script will create user and assign $($DatabaseRoles.Count) role(s)" -Level Verbose
+        $sqlScript = Get-SqlIdentityScript -PrincipalName $PrincipalDisplayName -Roles $DatabaseRoles
+        Write-LogMessage "SQL script generated successfully ($($sqlScript.Length) characters)" -Level Success
+        Write-LogMessage "Script will create user and assign $($DatabaseRoles.Count) role(s)" -Level Verbose
     }
     catch {
         $errorMessage = "Failed to generate SQL script: $($_.Exception.Message)"
-        Write-Log $errorMessage -Level Error
+        Write-LogMessage $errorMessage -Level Error
         throw $errorMessage
     }
     #endregion
     
     #region Database Connection and Execution
-    Write-Log "" -Level Info
-    Write-Log "[Step 5/5] Executing SQL script on target database..." -Level Info
+    Write-LogMessage "" -Level Info
+    Write-LogMessage "[Step 5/5] Executing SQL script on target database..." -Level Info
     
     # Initialize connection variables for proper cleanup in finally block
     $connection = $null
@@ -966,21 +972,21 @@ try {
             "MultipleActiveResultSets=False"    # MARS not needed for this script
         ) -join ';'
         
-        Write-Log "  Connection string: $($connectionString.Replace($DatabaseName, '***'))" -Level Verbose
+        Write-LogMessage "  Connection string: $($connectionString.Replace($DatabaseName, '***'))" -Level Verbose
         
         # Create SQL connection object using the available SQL client
-        Write-Log 'Creating database connection...' -Level Verbose
+        Write-LogMessage 'Creating database connection...' -Level Verbose
         
         $connection = $null
         
         if ($script:UseMicrosoftDataSqlClient) {
-            Write-Log 'Using Microsoft.Data.SqlClient for connection' -Level Verbose
+            Write-LogMessage 'Using Microsoft.Data.SqlClient for connection' -Level Verbose
             $connection = [Microsoft.Data.SqlClient.SqlConnection]::new($connectionString)
             $connection.AccessToken = $accessToken  # Use Azure AD token instead of SQL auth
-            Write-Log 'Microsoft.Data.SqlClient connection object created with AccessToken' -Level Verbose
+            Write-LogMessage 'Microsoft.Data.SqlClient connection object created with AccessToken' -Level Verbose
         }
         else {
-            Write-Log 'System.Data.SqlClient fallback is not supported for Azure AD authentication' -Level Error
+            Write-LogMessage 'System.Data.SqlClient fallback is not supported for Azure AD authentication' -Level Error
             # For System.Data.SqlClient, we need to include the access token in the connection string
             # Note: System.Data.SqlClient has limited Azure AD support in PowerShell Core
             
@@ -1020,7 +1026,7 @@ Method 3 - Manual download:
 
 After installing, run this script again.
 "@
-            Write-Log $errorMessage -Level Error
+            Write-LogMessage $errorMessage -Level Error
             throw $errorMessage
         }
         
@@ -1028,7 +1034,7 @@ After installing, run this script again.
             throw 'Failed to create SQL connection object - connection is null'
         }
         
-        Write-Log "Connection object created. Initial state: $($connection.State)" -Level Verbose
+        Write-LogMessage "Connection object created. Initial state: $($connection.State)" -Level Verbose
         
         # Open connection with retry logic
         $maxRetries = 3
@@ -1038,21 +1044,21 @@ After installing, run this script again.
         
         while (-not $connected -and $retryCount -lt $maxRetries) {
             try {
-                Write-Log "Opening database connection (attempt $($retryCount + 1)/$maxRetries)..." -Level Verbose
+                Write-LogMessage "Opening database connection (attempt $($retryCount + 1)/$maxRetries)..." -Level Verbose
                 $connection.Open()
                 $connected = $true
-                Write-Log 'Database connection established successfully' -Level Success
-                Write-Log "  Connection state:   $($connection.State)" -Level Verbose
-                Write-Log "  Server version:     $($connection.ServerVersion)" -Level Verbose
-                Write-Log "  Database:           $($connection.Database)" -Level Verbose
+                Write-LogMessage 'Database connection established successfully' -Level Success
+                Write-LogMessage "  Connection state:   $($connection.State)" -Level Verbose
+                Write-LogMessage "  Server version:     $($connection.ServerVersion)" -Level Verbose
+                Write-LogMessage "  Database:           $($connection.Database)" -Level Verbose
             }
             catch {
                 $lastConnectionError = $_
                 $retryCount++
                 if ($retryCount -lt $maxRetries) {
                     $waitTime = [Math]::Pow(2, $retryCount)  # Exponential backoff: 2, 4, 8 seconds
-                    Write-Log "Connection attempt failed: $($_.Exception.Message)" -Level Warning
-                    Write-Log "Retrying in $waitTime seconds..." -Level Info
+                    Write-LogMessage "Connection attempt failed: $($_.Exception.Message)" -Level Warning
+                    Write-LogMessage "Retrying in $waitTime seconds..." -Level Info
                     Start-Sleep -Seconds $waitTime
                 }
             }
@@ -1064,7 +1070,7 @@ After installing, run this script again.
             if ($lastConnectionError) {
                 $errorMsg += " Last error: $($lastConnectionError.Exception.Message)"
             }
-            Write-Log $errorMsg -Level Error
+            Write-LogMessage $errorMsg -Level Error
             throw $errorMsg
         }
         
@@ -1074,34 +1080,34 @@ After installing, run this script again.
         }
         
         # Create and configure SQL command
-        Write-Log 'Creating SQL command...' -Level Verbose
+        Write-LogMessage 'Creating SQL command...' -Level Verbose
         $command = $connection.CreateCommand()
         $command.CommandText = $sqlScript
         $command.CommandTimeout = $CommandTimeout
         $command.CommandType = [System.Data.CommandType]::Text
         
-        Write-Log "  Command timeout:    ${CommandTimeout}s" -Level Verbose
-        Write-Log "  Command type:       Text" -Level Verbose
+        Write-LogMessage "  Command timeout:    ${CommandTimeout}s" -Level Verbose
+        Write-LogMessage "  Command type:       Text" -Level Verbose
         
         # Execute SQL script
-        Write-Log 'Executing T-SQL script...' -Level Info
-        Write-Log "Script creates user [$PrincipalDisplayName] and assigns roles: $($DatabaseRoles -join ', ')" -Level Info
+        Write-LogMessage 'Executing T-SQL script...' -Level Info
+        Write-LogMessage "Script creates user [$PrincipalDisplayName] and assigns roles: $($DatabaseRoles -join ', ')" -Level Info
         
         # Use ExecuteNonQuery for DDL/DML commands (CREATE USER, ALTER ROLE)
         $rowsAffected = $command.ExecuteNonQuery()
         $commandEndTime = Get-Date
         $executionDuration = ($commandEndTime - $commandStartTime).TotalSeconds
         
-        Write-Log "" -Level Info
-        Write-Log "====================================================================" -Level Success
-        Write-Log "SQL SCRIPT EXECUTION COMPLETED SUCCESSFULLY" -Level Success
-        Write-Log "====================================================================" -Level Success
-        Write-Log "  Rows affected:      $rowsAffected" -Level Success
-        Write-Log "  Execution time:     $([Math]::Round($executionDuration, 2))s" -Level Success
-        Write-Log "  Principal:          $PrincipalDisplayName" -Level Success
-        Write-Log "  Database:           $DatabaseName" -Level Success
-        Write-Log "  Roles assigned:     $($DatabaseRoles -join ', ')" -Level Success
-        Write-Log "" -Level Info
+        Write-LogMessage "" -Level Info
+        Write-LogMessage "====================================================================" -Level Success
+        Write-LogMessage "SQL SCRIPT EXECUTION COMPLETED SUCCESSFULLY" -Level Success
+        Write-LogMessage "====================================================================" -Level Success
+        Write-LogMessage "  Rows affected:      $rowsAffected" -Level Success
+        Write-LogMessage "  Execution time:     $([Math]::Round($executionDuration, 2))s" -Level Success
+        Write-LogMessage "  Principal:          $PrincipalDisplayName" -Level Success
+        Write-LogMessage "  Database:           $DatabaseName" -Level Success
+        Write-LogMessage "  Roles assigned:     $($DatabaseRoles -join ', ')" -Level Success
+        Write-LogMessage "" -Level Info
         
         # Build success result object with comprehensive information
         $result = [PSCustomObject]@{
@@ -1141,7 +1147,7 @@ After installing, run this script again.
             )
             
             foreach ($line in $errorDetails) {
-                Write-Log $line -Level Error
+                Write-LogMessage $line -Level Error
             }
         
             # Common SQL error numbers and their meanings
@@ -1211,29 +1217,29 @@ After installing, run this script again.
         }
         elseif ($_.Exception -is [System.InvalidOperationException]) {
             # Handle connection state exceptions
-            Write-Log "Connection state error: $($_.Exception.Message)" -Level Error
-            Write-Log 'This usually indicates an authentication or network connectivity issue' -Level Error
+            Write-LogMessage "Connection state error: $($_.Exception.Message)" -Level Error
+            Write-LogMessage 'This usually indicates an authentication or network connectivity issue' -Level Error
             throw
         }
         else {
             # Handle all other exceptions
-            Write-Log "Unexpected error during SQL execution: $($_.Exception.Message)" -Level Error
-            Write-Log "Exception type: $($_.Exception.GetType().FullName)" -Level Error
+            Write-LogMessage "Unexpected error during SQL execution: $($_.Exception.Message)" -Level Error
+            Write-LogMessage "Exception type: $($_.Exception.GetType().FullName)" -Level Error
             throw
         }
     }
     finally {
         # Ensure proper cleanup of database resources
         # This block always executes, even if exceptions occur
-        Write-Log 'Cleaning up database resources...' -Level Verbose
+        Write-LogMessage 'Cleaning up database resources...' -Level Verbose
         
         if ($command) {
             try {
                 $command.Dispose()
-                Write-Log 'SQL command disposed' -Level Verbose
+                Write-LogMessage 'SQL command disposed' -Level Verbose
             }
             catch {
-                Write-Log "Warning: Failed to dispose command: $($_.Exception.Message)" -Level Warning
+                Write-LogMessage "Warning: Failed to dispose command: $($_.Exception.Message)" -Level Warning
             }
         }
         
@@ -1241,17 +1247,17 @@ After installing, run this script again.
             try {
                 if ($connection.State -eq 'Open') {
                     $connection.Close()
-                    Write-Log 'Database connection closed' -Level Verbose
+                    Write-LogMessage 'Database connection closed' -Level Verbose
                 }
                 $connection.Dispose()
-                Write-Log 'Connection object disposed' -Level Verbose
+                Write-LogMessage 'Connection object disposed' -Level Verbose
             }
             catch {
-                Write-Log "Warning: Failed to dispose connection: $($_.Exception.Message)" -Level Warning
+                Write-LogMessage "Warning: Failed to dispose connection: $($_.Exception.Message)" -Level Warning
             }
         }
         
-        Write-Log 'Resource cleanup completed' -Level Verbose
+        Write-LogMessage 'Resource cleanup completed' -Level Verbose
     }
     #endregion
 }
@@ -1259,29 +1265,29 @@ catch {
     # Top-level exception handler for the entire script
     # This catches any unhandled exceptions from the main execution block
     
-    Write-Log "" -Level Error
-    Write-Log "====================================================================" -Level Error
-    Write-Log "SCRIPT EXECUTION FAILED" -Level Error
-    Write-Log "====================================================================" -Level Error
-    Write-Log "Error message:      $($_.Exception.Message)" -Level Error
-    Write-Log "Error type:         $($_.Exception.GetType().FullName)" -Level Error
-    Write-Log "Error source:       $($_.Exception.Source)" -Level Error
+    Write-LogMessage "" -Level Error
+    Write-LogMessage "====================================================================" -Level Error
+    Write-LogMessage "SCRIPT EXECUTION FAILED" -Level Error
+    Write-LogMessage "====================================================================" -Level Error
+    Write-LogMessage "Error message:      $($_.Exception.Message)" -Level Error
+    Write-LogMessage "Error type:         $($_.Exception.GetType().FullName)" -Level Error
+    Write-LogMessage "Error source:       $($_.Exception.Source)" -Level Error
     
     # Include inner exception details if available
     if ($_.Exception.InnerException) {
-        Write-Log "Inner exception:    $($_.Exception.InnerException.Message)" -Level Error
+        Write-LogMessage "Inner exception:    $($_.Exception.InnerException.Message)" -Level Error
     }
     
     # Include script stack trace for debugging
     if ($_.ScriptStackTrace) {
-        Write-Log "" -Level Error
-        Write-Log "Stack trace:" -Level Error
+        Write-LogMessage "" -Level Error
+        Write-LogMessage "Stack trace:" -Level Error
         $_.ScriptStackTrace -split "`n" | ForEach-Object {
-            Write-Log "  $_" -Level Error
+            Write-LogMessage "  $_" -Level Error
         }
     }
     
-    Write-Log "" -Level Error
+    Write-LogMessage "" -Level Error
     
     # Build detailed error result object
     $errorResult = [PSCustomObject]@{
