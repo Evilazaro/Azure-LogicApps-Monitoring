@@ -37,55 +37,78 @@ The solution uses an **eShop order management system** as a representative busin
 
 ```mermaid
 flowchart TB
-    subgraph Core["🎯 Core Business Capabilities"]
+    subgraph Business[" "]
         direction TB
-        OrderMgmt["Order<br/>Management"]
-        ProductCatalog["Product Catalog<br/>Management"]
-        CustomerExp["Customer<br/>Experience"]
+        subgraph Core["🎯 Core Business Capabilities"]
+            direction LR
+            OrderMgmt["Order<br/>Management"]
+            ProductCatalog["Product Catalog<br/>Management"]
+            CustomerExp["Customer<br/>Experience"]
+        end
     end
 
-    subgraph Supporting["🔧 Supporting Capabilities"]
+    subgraph Foundation[" "]
         direction TB
-        MsgBroker["Message<br/>Brokering"]
-        DataPersist["Data<br/>Persistence"]
-        EventProcess["Event<br/>Processing"]
+        subgraph Supporting["🔧 Supporting Capabilities"]
+            direction LR
+            MsgBroker["Message<br/>Brokering"]
+            DataPersist["Data<br/>Persistence"]
+            EventProcess["Event<br/>Processing"]
+        end
     end
 
-    subgraph Observability["📊 Observability Capabilities"]
+    subgraph Enabling[" "]
         direction TB
-        Tracing["Distributed<br/>Tracing"]
-        Metrics["Metrics<br/>Collection"]
-        Logging["Centralized<br/>Logging"]
-        Alerting["Proactive<br/>Alerting"]
-        Diagnostics["Diagnostic<br/>Analysis"]
+        subgraph Observability["📊 Observability Capabilities"]
+            direction LR
+            Tracing["Distributed<br/>Tracing"]
+            Metrics["Metrics<br/>Collection"]
+            Logging["Centralized<br/>Logging"]
+            Alerting["Proactive<br/>Alerting"]
+            Diagnostics["Diagnostic<br/>Analysis"]
+        end
+
+        subgraph Operations["⚙️ Operational Capabilities"]
+            direction LR
+            Deploy["Automated<br/>Deployment"]
+            Config["Configuration<br/>Management"]
+            SecMgmt["Security<br/>Management"]
+            CapPlan["Capacity<br/>Planning"]
+        end
+
+        subgraph Integration["🔗 Integration Capabilities"]
+            direction LR
+            APIGateway["API<br/>Management"]
+            WorkflowOrch["Workflow<br/>Orchestration"]
+            DataSync["Data<br/>Synchronization"]
+        end
     end
 
-    subgraph Operations["⚙️ Operational Capabilities"]
-        direction TB
-        Deploy["Automated<br/>Deployment"]
-        Config["Configuration<br/>Management"]
-        SecMgmt["Security<br/>Management"]
-        CapPlan["Capacity<br/>Planning"]
-    end
+    %% TOGAF BDAT Standard Color Scheme
+    %% Core Business: Warm amber/orange - Strategic, customer-facing
+    %% Supporting: Neutral green - Foundational, stable
+    %% Enabling (IT/Tech): Professional blue/purple - Technical, cross-cutting
 
-    subgraph Integration["🔗 Integration Capabilities"]
-        direction TB
-        APIGateway["API<br/>Management"]
-        WorkflowOrch["Workflow<br/>Orchestration"]
-        DataSync["Data<br/>Synchronization"]
-    end
+    classDef coreStyle fill:#FFD699,stroke:#CC8800,stroke-width:4px,color:#000,font-weight:bold,font-size:14px
+    classDef supportStyle fill:#C9E4CA,stroke:#6BAA75,stroke-width:3px,color:#000,font-weight:bold,font-size:14px
+    classDef obsStyle fill:#C9DAF8,stroke:#6D9EEB,stroke-width:3px,color:#000,font-weight:bold,font-size:14px
+    classDef opsStyle fill:#D9D2E9,stroke:#8E7CC3,stroke-width:3px,color:#000,font-weight:bold,font-size:14px
+    classDef integStyle fill:#B4D7FF,stroke:#5B9BD5,stroke-width:3px,color:#000,font-weight:bold,font-size:14px
 
-    classDef coreStyle fill:#FFE6CC,stroke:#D79B00,stroke-width:3px,color:#000,font-weight:bold
-    classDef supportStyle fill:#D5E8D4,stroke:#82B366,stroke-width:2px,color:#000,font-weight:bold
-    classDef obsStyle fill:#E1D5E7,stroke:#9673A6,stroke-width:2px,color:#000,font-weight:bold
-    classDef opsStyle fill:#F8CECC,stroke:#B85450,stroke-width:2px,color:#000,font-weight:bold
-    classDef integStyle fill:#DAE8FC,stroke:#6C8EBF,stroke-width:2px,color:#000,font-weight:bold
+    %% Subgraph container styles
+    classDef businessGroup fill:#FFF9E6,stroke:#CC8800,stroke-width:2px,stroke-dasharray:5 5
+    classDef foundationGroup fill:#F0F8F0,stroke:#6BAA75,stroke-width:2px,stroke-dasharray:5 5
+    classDef enablingGroup fill:#F0F5FF,stroke:#6D9EEB,stroke-width:2px,stroke-dasharray:5 5
 
     class OrderMgmt,ProductCatalog,CustomerExp coreStyle
     class MsgBroker,DataPersist,EventProcess supportStyle
     class Tracing,Metrics,Logging,Alerting,Diagnostics obsStyle
     class Deploy,Config,SecMgmt,CapPlan opsStyle
     class APIGateway,WorkflowOrch,DataSync integStyle
+
+    class Business businessGroup
+    class Foundation foundationGroup
+    class Enabling enablingGroup
 ```
 
 ### Capability Descriptions
