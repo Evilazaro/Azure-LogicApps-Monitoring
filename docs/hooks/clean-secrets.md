@@ -40,9 +40,6 @@ By providing multiple execution modes (interactive, force, preview, verbose), th
   - [📋 When to Use This Script](#when-to-use-this-script)
   - [🔄 Development Workflow Integration](#development-workflow-integration)
   - [👥 Team Standards](#team-standards)
-- [📊 Performance](#-performance)
-  - [⚡ Performance Characteristics](#performance-characteristics)
-- [📜 Version History](#-version-history)
 
 ## 🎯 Purpose
 
@@ -591,27 +588,6 @@ azd up
 3. **Error Handling**: Always check exit codes
 4. **Verbose Logging**: Use `-Verbose` in CI/CD for audit trails
 5. **Regular Execution**: Clear secrets before each provisioning
-
-## 📊 Performance
-
-### Performance Characteristics
-
-| Characteristic     | Details                                                                                                                                                                                                                                                                                                     |
-| ------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Execution Time** | • **Standard execution:** 2-4 seconds (3 projects)<br/>• **With -Verbose flag:** 3-5 seconds<br/>• **Large number of secrets:** 5-8 seconds<br/>• **Per-project time:** ~1 second (dotnet user-secrets clear)<br/>• **Scaling:** Linear O(n) with number of projects                                        |
-| **Resource Usage** | • **Memory:** ~30 MB peak during execution<br/>• **CPU:** Low utilization - dotnet CLI operations only<br/>• **Disk I/O:** Minimal delete operations on secrets.json files<br/>• **Process spawning:** 3 dotnet CLI child processes<br/>• **Baseline:** Lightweight script with minimal overhead            |
-| **Network Impact** | • **Zero network calls** - completely offline operation<br/>• **No Azure connections** - local file system only<br/>• **No API requests** - uses .NET SDK local commands<br/>• **Ideal for disconnected environments**<br/>• **No bandwidth consumption**                                                   |
-| **Scalability**    | • **Consistent per-project time:** No degradation with secrets count<br/>• **Parallel safe:** Can run in multiple terminals (different projects)<br/>• **No locking issues:** Each project has unique secret storage<br/>• **Fast completion:** 3 projects cleared in under 5 seconds                       |
-| **Optimization**   | • **Sequential processing:** Projects cleared one at a time<br/>• **No redundant checks:** Direct dotnet CLI invocation<br/>• **Minimal validation:** Only checks .NET SDK availability<br/>• **Efficient operation:** Single delete per project<br/>• **No caching needed:** Direct file system operations |
-
-## 📜 Version History
-
-| Version | Date       | Author                          | Changes                                                                                                                                                            |
-| ------- | ---------- | ------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| 1.0.0   | 2025-12-01 | Azure-LogicApps-Monitoring Team | • Initial release<br/>• Basic user secrets clearing for 3 projects<br/>• Cross-platform PowerShell and Bash implementations                                        |
-| 2.0.0   | 2025-12-15 | Azure-LogicApps-Monitoring Team | • Added -WhatIf/-Confirm support (PowerShell)<br/>• Added --dry-run mode (Bash)<br/>• Enhanced logging and error handling<br/>• Added execution summary statistics |
-| 2.0.1   | 2025-12-29 | Azure-LogicApps-Monitoring Team | • Bug fixes and documentation improvements<br/>• Enhanced .NET SDK version validation                                                                              |
-| 2.0.1   | 2026-01-06 | Azure-LogicApps-Monitoring Team | • Applied PowerShell best practices (OutputType attribute, $script: scope prefix)<br/>• Updated copyright years<br/>• Synchronized documentation                   |
 
 ## Quick Links
 

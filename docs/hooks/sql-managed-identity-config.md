@@ -31,7 +31,6 @@
   - [Common Errors](#common-errors)
   - [Setting Entra ID Admin](#setting-entra-id-admin)
 - [📖 Related Documentation](#-related-documentation)
-- [📜 Version History](#-version-history)
 
 ---
 
@@ -338,13 +337,6 @@ az sql server ad-admin list \
 - [Database-Level Roles](https://learn.microsoft.com/sql/relational-databases/security/authentication-access/database-level-roles)
 - [Azure CLI SQL Commands](https://learn.microsoft.com/cli/azure/sql)
 - [postprovision Hook Documentation](./postprovision.md)
-
-## 📜 Version History
-
-| Version | Date       | Changes                                                                     |
-| ------- | ---------- | --------------------------------------------------------------------------- |
-| 1.0.1   | 2025-01-13 | PSScriptAnalyzer compliance: renamed functions, improved logging, UTF-8 BOM |
-| 1.0.0   | 2026-01-06 | Initial release with PowerShell Core and Bash support                       |
 
 ---
 

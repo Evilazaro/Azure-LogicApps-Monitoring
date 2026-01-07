@@ -34,9 +34,6 @@ Running this script before `preprovision.ps1` and `postprovision.ps1` helps deve
   - [⏰ When to Use This Script](#when-to-use-this-script)
   - [🔄 Development Workflow Integration](#development-workflow-integration)
   - [👥 Team Standards](#team-standards)
-- [📊 Performance](#-performance)
-  - [⚡ Performance Characteristics](#performance-characteristics)
-- [📜 Version History](#-version-history)
 
 ## 🎯 Purpose
 
@@ -351,7 +348,7 @@ fi
 echo "Environment validated - proceeding with build..."
 ```
 
-##  Related Documentation
+## Related Documentation
 
 - **[preprovision.ps1](./preprovision.ps1)** - Comprehensive pre-provisioning validation (called by this script)
 - **[VALIDATION-WORKFLOW.md](./VALIDATION-WORKFLOW.md)** - Visual workflow diagrams
@@ -431,25 +428,6 @@ azd up
 2. **Pull Request Checks**: Include in PR validation
 3. **Sprint Kickoff**: Validate at beginning of each sprint
 4. **Onboarding Docs**: Link in team onboarding documentation
-
-## 📊 Performance
-
-### Performance Characteristics
-
-| Characteristic     | Details                                                                                                                                                                                                                                                                                                                                                     |
-| ------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Execution Time** | • **Standard validation:** 3-5 seconds<br/>• **With -Verbose flag:** 5-8 seconds<br/>• **With slow network:** 10-15 seconds (Azure provider checks)<br/>• **Fast path:** Sub-second for local tool checks only<br/>• **Blocking operations:** Azure CLI queries for authentication and provider status                                                      |
-| **Resource Usage** | • **Memory:** ~50 MB peak during execution<br/>• **CPU:** Low utilization - validation checks only<br/>• **Disk I/O:** Minimal - reads preprovision script, no writes<br/>• **Baseline:** Lightweight wrapper with minimal overhead                                                                                                                         |
-| **Network Impact** | • **Azure CLI queries:** Authentication status and resource provider registration<br/>• **API calls:** Read-only operations via Azure CLI<br/>• **Bandwidth:** < 1 KB for provider status checks<br/>• **Offline mode:** Partial - local tools validated, Azure checks fail gracefully<br/>• **No modifications:** Zero write operations to Azure resources |
-| **Scalability**    | • **Consistent performance:** Same execution time regardless of repository size<br/>• **No degradation:** Independent of project complexity<br/>• **Parallel safe:** Can run simultaneously in multiple terminals<br/>• **Cache benefits:** Azure CLI caches authentication tokens                                                                          |
-| **Optimization**   | • **Delegation pattern:** Leverages existing preprovision script logic<br/>• **No redundancy:** Single validation pass with -ValidateOnly flag<br/>• **Early exit:** Stops immediately on critical failures<br/>• **Efficient checks:** Version comparisons use native commands                                                                             |
-
-## 📜 Version History
-
-| Version | Date       | Author                          | Changes                                                                                                                                                         |
-| ------- | ---------- | ------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 1.0.0   | 2025-12-24 | Azure-LogicApps-Monitoring Team | • Initial release<br/>• Cross-platform validation wrapper for preprovision scripts<br/>• Support for -Verbose/-v flag<br/>• Bash and PowerShell implementations |
-| 1.0.0   | 2026-01-07 | Azure-LogicApps-Monitoring Team | • Applied PowerShell best practices (OutputType attribute, $script: scope prefix)<br/>• Updated copyright years<br/>• Synchronized documentation                |
 
 ---
 

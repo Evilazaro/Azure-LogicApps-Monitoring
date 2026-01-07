@@ -58,9 +58,6 @@ With comprehensive validation, error handling, SQL managed identity configuratio
   - [🔄 Development Workflow](#development-workflow)
   - [🌍 Multi-Environment Management](#multi-environment-management)
   - [🔁 CI/CD Integration](#cicd-integration)
-- [📊 Performance](#-performance)
-  - [⚡ Performance Characteristics](#performance-characteristics)
-- [📜 Version History](#-version-history)
 
 ## 🎯 Purpose
 
@@ -537,7 +534,7 @@ The application uses Entity Framework with `EnsureCreatedAsync()` which requires
 - **Manual Configuration**: If the script fails, detailed SQL commands are provided for manual setup
 - **Security**: While `db_owner` provides full control, this is necessary for applications that manage their own schema
 
-##  Examples
+## Examples
 
 ### Example 1: Standard azd Provisioning
 
@@ -739,35 +736,6 @@ jobs:
         run: |
           dotnet user-secrets list --project app.AppHost/app.AppHost.csproj
 ```
-
-## 📊 Performance
-
-**Execution Time:**
-
-- Environment validation: 0.5 seconds
-- ACR authentication: 2-3 seconds
-- Clear secrets: 2-4 seconds (via clean-secrets.ps1)
-- Configure secrets: 3-6 seconds (3 projects, 27 secrets)
-
-## 📋 Performance
-
-### Performance Characteristics
-
-| Characteristic | Details |
-|----------------|---------||
-| **Execution Time** | • **Environment validation:** 1-2 seconds<br/>• **ACR authentication:** 2-3 seconds (if configured)<br/>• **SQL Managed Identity config:** 3-5 seconds (if configured)<br/>• **Clear secrets:** 2-4 seconds (calls clean-secrets.ps1)<br/>• **Configure secrets:** 3-6 seconds (27 secrets across 3 projects)<br/>• **Total standard:** 12-22 seconds<br/>• **With -Verbose:** 15-26 seconds |
-| **Resource Usage** | • **Memory:** ~50 MB peak during execution<br/>• **CPU:** Low utilization - dotnet CLI and az CLI operations<br/>• **Disk I/O:** Moderate - writes to secrets.json files<br/>• **Process spawning:** 30+ child processes (dotnet user-secrets commands)<br/>• **Baseline:** Lightweight orchestration script |
-| **Network Impact** | • **ACR authentication:** Single API call to Azure Container Registry<br/>• **SQL configuration:** 2-3 API calls for managed identity setup<br/>• **Azure CLI:** Minimal network usage for authentication token refresh<br/>• **Environment variables:** Read from local azd context (no network)<br/>• **Secret storage:** Local file system only (no network)<br/>• **Bandwidth:** < 20 KB total (primarily ACR + SQL operations) |
-| **Scalability** | • **Linear with projects:** O(n) scaling with number of projects<br/>• **Linear with secrets:** O(m) scaling with secrets per project<br/>• **Sequential processing:** Projects configured one at a time<br/>• **No degradation:** Consistent per-secret configuration time<br/>• **Tested configuration:** 3 projects, 27 secrets completes in <22s |
-| **Optimization** | • **Batch validation:** All environment variables checked upfront<br/>• **Conditional ACR:** Skips authentication if not configured<br/>• **Conditional SQL:** Skips managed identity setup if not configured<br/>• **Efficient clearing:** Delegates to optimized clean-secrets script<br/>• **Error handling:** Early exit on critical failures<br/>• **Minimal overhead:** Direct dotnet CLI invocations |
-
-## 📜 Version History
-
-| Version    | Date       | Changes                                                                                |
-| ---------- | ---------- | -------------------------------------------------------------------------------------- |
-| **v1.0.0** | 2025-11-20 | Initial release with basic user secrets configuration                                  |
-| **v2.0.0** | 2025-12-15 | Added SQL managed identity configuration, ACR authentication, comprehensive validation |
-| **v2.0.1** | 2026-01-06 | Applied PowerShell best practices (OutputType on script block), documentation updates  |
 
 ## Quick Links
 

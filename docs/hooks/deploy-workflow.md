@@ -33,8 +33,7 @@
 - [🔧 Troubleshooting](#-troubleshooting)
   - [❓ Common Issues](#-common-issues)
   - [📝 Verbose Mode](#-verbose-mode)
-- [🔄 Version History](#-version-history)
-- [📚 Related Documentation](#-related-documentation)
+- [ Related Documentation](#-related-documentation)
 
 ---
 
@@ -384,16 +383,7 @@ For detailed logging during execution:
 
 ---
 
-## 🔄 Version History
-
-| Version | Date       | Changes                                            |
-| ------- | ---------- | -------------------------------------------------- |
-| 2.0.1   | 2026-01-07 | PSScriptAnalyzer compliance, added Bash equivalent |
-| 2.0.0   | -          | Initial release with environment variable support  |
-
----
-
-## 📚 Related Documentation
+## Related Documentation
 
 ### 📜 Script Documentation
 

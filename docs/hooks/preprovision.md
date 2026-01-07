@@ -44,9 +44,7 @@
 - [🔧 Troubleshooting](#troubleshooting)
   - [❓ Common Issues](#common-issues)
   - [📝 Verbose Mode](#verbose-mode)
-- [📊 Performance Characteristics](#performance-characteristics)
-- [🔄 Version History](#-version-history)
-- [📚 Related Documentation](#related-documentation)
+- [ Related Documentation](#related-documentation)
 
 ---
 
@@ -551,27 +549,6 @@ For detailed diagnostic information:
 # Bash
 ./preprovision.sh --verbose
 ```
-
----
-
-## Performance Characteristics
-
-| Characteristic     | Details                                                                                                                                                                      |
-| ------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Execution Time** | • **With all prerequisites:** 5-10 seconds<br/>• **With installations:** 2-10 minutes (depending on downloads)<br/>• **Provider registration:** Up to 2 minutes per provider |
-| **Resource Usage** | • **Memory:** ~30 MB peak<br/>• **CPU:** Low utilization<br/>• **Network:** Download bandwidth for installations                                                             |
-| **Scalability**    | • Linear with number of prerequisites to install<br/>• Provider registration is parallelizable                                                                               |
-
----
-
-## 🔄 Version History
-
-| Version   | Date       | Changes                                                                                                                                                                                                                                             |
-| --------- | ---------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **2.3.0** | 2026-01-06 | • Applied PowerShell best practices (OutputType on script block)<br/>• Updated copyright to 2025-2026<br/>• Documentation updates                                                                                                                   |
-| **2.3.0** | 2025-12-30 | • Added `--auto-install` parameter<br/>• Added `--use-device-code-login` parameter<br/>• Added installation functions for all prerequisites<br/>• Added Azure resource provider registration<br/>• Synchronized PowerShell and Bash implementations |
-| **2.0.0** | 2025-12-29 | • Complete rewrite with comprehensive validation<br/>• Added Bicep CLI validation<br/>• Added Azure authentication check<br/>• Added quota information                                                                                              |
-| **1.0.0** | 2025-12-01 | • Initial release with basic validation                                                                                                                                                                                                             |
 
 ---
 

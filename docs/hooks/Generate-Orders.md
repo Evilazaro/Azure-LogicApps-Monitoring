@@ -38,8 +38,6 @@ By supporting multiple execution modes (interactive, force, preview, verbose), t
 - [📖 Related Documentation](#-related-documentation)
 - [🔐 Security Considerations](#-security-considerations)
 - [🎓 Best Practices](#-best-practices)
-- [📊 Performance](#-performance)
-- [📜 Version History](#-version-history)
 
 ## 🎯 Purpose
 
@@ -657,32 +655,6 @@ ls -lh ../infra/data/ordersBatch.json
 # Step 3: Test Logic Apps with generated data
 # ...
 ```
-
-## 📊 Performance
-
-### Performance Characteristics
-
-| Characteristic     | Details                                                                                                                                                                                                                                   |
-| ------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Execution Time** | • **100 orders:** ~1 second<br/>• **2000 orders (default):** ~5-10 seconds<br/>• **10000 orders:** ~30-60 seconds<br/>• **Scaling:** Linear O(n) with order count                                                                         |
-| **Resource Usage** | • **Memory:** ~50-100 MB peak during execution<br/>• **CPU:** Moderate utilization (GUID generation, JSON serialization)<br/>• **Disk I/O:** Single write operation at completion<br/>• **Process spawning:** None (pure PowerShell/Bash) |
-| **Output Size**    | • **Per order:** ~500-800 bytes (varies by product count)<br/>• **100 orders:** ~50-80 KB<br/>• **2000 orders:** ~1-2 MB<br/>• **10000 orders:** ~5-8 MB                                                                                  |
-| **Network Impact** | • **Zero network calls** - completely offline operation<br/>• **No Azure connections** - local file system only<br/>• **No API requests** - uses local random generation<br/>• **Ideal for disconnected environments**                    |
-
-### Optimization Tips
-
-- Use `-Force` in scripts to skip confirmation overhead
-- Progress updates every 10 orders minimize console I/O
-- JSON serialization uses efficient depth setting
-- Generic lists used for memory-efficient collection building
-
-## 📜 Version History
-
-| Version | Date       | Author                          | Changes                                                                                                                                                |
-| ------- | ---------- | ------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| 1.0.0   | 2025-12-01 | Azure-LogicApps-Monitoring Team | • Initial release<br/>• Basic order generation with fixed structure<br/>• PowerShell implementation only                                               |
-| 2.0.0   | 2025-12-15 | Azure-LogicApps-Monitoring Team | • Added GUID-based order IDs<br/>• Added price variation simulation<br/>• Enhanced product catalog<br/>• Added global address pool                     |
-| 2.0.1   | 2026-01-06 | Azure-LogicApps-Monitoring Team | • Added Bash implementation<br/>• Added -WhatIf/--dry-run support<br/>• Enhanced documentation<br/>• Applied PowerShell best practices<br/>• Bug fixes |
 
 ## Quick Links
 
