@@ -7,6 +7,7 @@ The Azure Logic Apps Monitoring Solution demonstrates comprehensive observabilit
 The solution delivers measurable operational value by reducing mean time to resolution through W3C-standard distributed tracing, enabling proactive failure detection through integrated health monitoring, and eliminating secrets management through Azure Managed Identity. OpenTelemetry provides vendor-neutral instrumentation, while .NET Aspire enables local development without cloud dependencies.
 
 **Key Architectural Decisions:**
+
 1. **.NET Aspire Orchestration**: Dual-mode operation supporting local emulators for development and Azure services for production without code changes
 2. **Zero-Secrets Architecture**: User-Assigned Managed Identity for all service-to-service authentication eliminates connection strings from code and configuration
 3. **Event-Driven Decoupling**: Service Bus topics enable asynchronous communication between Orders API and Logic Apps workflows
@@ -144,53 +145,55 @@ This architecture documentation follows the TOGAF Building Blocks for Distribute
 ### Repository Structure
 
 ```
-├── app.AppHost/               # .NET Aspire orchestration host
-│   └── AppHost.cs             # Service configuration and dependency orchestration
-├── app.ServiceDefaults/       # Shared cross-cutting concerns library
-│   ├── Extensions.cs          # OpenTelemetry, health checks, resilience
-│   └── CommonTypes.cs         # Shared domain models (Order, OrderProduct)
+
+├── app.AppHost/ # .NET Aspire orchestration host
+│ └── AppHost.cs # Service configuration and dependency orchestration
+├── app.ServiceDefaults/ # Shared cross-cutting concerns library
+│ ├── Extensions.cs # OpenTelemetry, health checks, resilience
+│ └── CommonTypes.cs # Shared domain models (Order, OrderProduct)
 ├── src/
-│   ├── eShop.Orders.API/      # Order management REST API
-│   │   ├── Controllers/       # API endpoints (CRUD operations)
-│   │   ├── Services/          # Business logic with observability
-│   │   ├── Repositories/      # EF Core data access layer
-│   │   ├── Data/              # DbContext and entity configurations
-│   │   ├── Handlers/          # Service Bus message publishing
-│   │   └── HealthChecks/      # Custom health check implementations
-│   └── eShop.Web.App/         # Blazor Server frontend
-│       ├── Components/        # Razor components and pages
-│       │   ├── Pages/         # Routable UI pages
-│       │   └── Services/      # HTTP client services with Polly
-│       └── Shared/            # Shared UI components
+│ ├── eShop.Orders.API/ # Order management REST API
+│ │ ├── Controllers/ # API endpoints (CRUD operations)
+│ │ ├── Services/ # Business logic with observability
+│ │ ├── Repositories/ # EF Core data access layer
+│ │ ├── Data/ # DbContext and entity configurations
+│ │ ├── Handlers/ # Service Bus message publishing
+│ │ └── HealthChecks/ # Custom health check implementations
+│ └── eShop.Web.App/ # Blazor Server frontend
+│ ├── Components/ # Razor components and pages
+│ │ ├── Pages/ # Routable UI pages
+│ │ └── Services/ # HTTP client services with Polly
+│ └── Shared/ # Shared UI components
 ├── workflows/
-│   └── OrdersManagement/
-│       └── OrdersManagementLogicApp/
-│           ├── OrdersPlacedProcess/         # Service Bus trigger workflow
-│           │   └── workflow.json            # Workflow definition
-│           ├── OrdersPlacedCompleteProcess/ # Completion workflow
-│           │   └── workflow.json
-│           └── connections.json             # Managed Identity API connections
-├── infra/                     # Infrastructure as Code (Bicep)
-│   ├── main.bicep             # Subscription-scope orchestrator
-│   ├── types.bicep            # Shared type definitions
-│   ├── shared/                # Shared infrastructure
-│   │   ├── identity/          # Managed Identity and role assignments
-│   │   ├── monitoring/        # Log Analytics, Application Insights
-│   │   └── data/              # Storage accounts, SQL Server
-│   └── workload/              # Workload infrastructure
-│       ├── messaging/         # Service Bus namespace and topics
-│       ├── services/          # Container Registry, Container Apps Environment
-│       └── logic-app.bicep    # Logic Apps Standard deployment
-├── hooks/                     # azd lifecycle automation scripts
-│   ├── preprovision.ps1       # Pre-deployment validation
-│   ├── postprovision.ps1      # Secret configuration
-│   ├── sql-managed-identity-config.ps1  # Database Entra ID setup
-│   ├── deploy-workflow.ps1    # Logic Apps deployment
-│   └── Generate-Orders.ps1    # Test data generation
+│ └── OrdersManagement/
+│ └── OrdersManagementLogicApp/
+│ ├── OrdersPlacedProcess/ # Service Bus trigger workflow
+│ │ └── workflow.json # Workflow definition
+│ ├── OrdersPlacedCompleteProcess/ # Completion workflow
+│ │ └── workflow.json
+│ └── connections.json # Managed Identity API connections
+├── infra/ # Infrastructure as Code (Bicep)
+│ ├── main.bicep # Subscription-scope orchestrator
+│ ├── types.bicep # Shared type definitions
+│ ├── shared/ # Shared infrastructure
+│ │ ├── identity/ # Managed Identity and role assignments
+│ │ ├── monitoring/ # Log Analytics, Application Insights
+│ │ └── data/ # Storage accounts, SQL Server
+│ └── workload/ # Workload infrastructure
+│ ├── messaging/ # Service Bus namespace and topics
+│ ├── services/ # Container Registry, Container Apps Environment
+│ └── logic-app.bicep # Logic Apps Standard deployment
+├── hooks/ # azd lifecycle automation scripts
+│ ├── preprovision.ps1 # Pre-deployment validation
+│ ├── postprovision.ps1 # Secret configuration
+│ ├── sql-managed-identity-config.ps1 # Database Entra ID setup
+│ ├── deploy-workflow.ps1 # Logic Apps deployment
+│ └── Generate-Orders.ps1 # Test data generation
 ├── docs/
-│   ├── architecture/          # This directory - TOGAF BDAT documentation
-│   └── hooks/                 # Developer workflow guides
-└── azure.yaml                 # Azure Developer CLI configuration
+│ ├── architecture/ # This directory - TOGAF BDAT documentation
+│ └── hooks/ # Developer workflow guides
+└── azure.yaml # Azure Developer CLI configuration
+
 ```
 
 ### Folder Descriptions
@@ -209,7 +212,8 @@ This architecture documentation follows the TOGAF Building Blocks for Distribute
 
 ---
 
-**Document Version:** 1.0.0  
-**Last Updated:** 2026-01-07  
-**Maintained By:** Platform Engineering Team  
+**Document Version:** 1.0.0
+**Last Updated:** 2026-01-07
+**Maintained By:** Platform Engineering Team
 **Review Cycle:** Quarterly or upon significant architectural changes
+```
