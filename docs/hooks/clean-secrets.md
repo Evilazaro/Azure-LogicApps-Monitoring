@@ -31,10 +31,7 @@ By providing multiple execution modes (interactive, force, preview, verbose), th
 - [📚 Examples](#-examples)
   - [🔄 Example 1: Clean Secrets Before Re-provisioning](#example-1-clean-secrets-before-re-provisioning)
   - [🔁 Example 2: CI/CD Pipeline Integration](#example-2-cicd-pipeline-integration)
-- [�️ How It Works](#️-how-it-works)
-  - [🔄 Internal Process Flow](#internal-process-flow)
-  - [🔗 Integration Points](#integration-points)
-- [�📖 Related Documentation](#-related-documentation)
+- [📖 Related Documentation](#-related-documentation)
 - [🔐 Security Considerations](#-security-considerations)
   - [✅ Safe Operations](#safe-operations)
   - [🗑️ What Gets Deleted](#what-gets-deleted)
@@ -57,6 +54,103 @@ This script helps developers and operators:
 - ✅ **Safe Execution**: Validate .NET SDK availability before making changes
 - 📊 **Detailed Logging**: Track which secrets are cleared and provide execution summary
 - 🔗 **Workflow Integration**: Automatically invoked by preprovision and postprovision scripts
+
+### 🔄 Internal Process Flow
+
+The script executes a systematic workflow through four distinct phases:
+
+```mermaid
+%%{init: {'theme': 'base', 'themeVariables': { 'primaryColor': '#e3f2fd', 'primaryTextColor': '#0d47a1', 'primaryBorderColor': '#1976d2', 'lineColor': '#64b5f6', 'secondaryColor': '#fff3e0', 'tertiaryColor': '#e8f5e9'}}}%%
+flowchart LR
+    %% ===================================================================
+    %% WORKFLOW: clean-secrets Process Flow
+    %% Description: Clears .NET user secrets from configured projects
+    %% ===================================================================
+
+    %% --- Entry and Exit Points ---
+    Start(["🚀 clean-secrets starts"])
+    End(["🏁 Script completes"])
+
+    Start --> Initialization
+
+    %% --- Phase 1: Initialization & Validation ---
+    subgraph Initialization["1️⃣ Initialization Phase"]
+        direction TB
+        Init["Script Initialization"]
+        InitDetails["• Set StrictMode/strict mode<br/>• Parse command-line args<br/>• Configure preferences"]
+        DotNet["Validate .NET SDK"]
+        DotNetDetails["• Check dotnet in PATH<br/>• Verify version ≥ 10.0<br/>• Test SDK execution"]
+        Init --> InitDetails
+        InitDetails --> DotNet
+        DotNet --> DotNetDetails
+    end
+
+    %% --- Phase 2: Project Discovery ---
+    subgraph Discovery["2️⃣ Discovery Phase"]
+        direction TB
+        Projects["Discover Projects"]
+        ProjectDetails["• app.AppHost<br/>• eShop.Orders.API<br/>• eShop.Web.App"]
+        Validate["Validate Paths"]
+        ValidateDetails["• Check directory exists<br/>• Locate .csproj files<br/>• Build valid project list"]
+        Projects --> ProjectDetails
+        ProjectDetails --> Validate
+        Validate --> ValidateDetails
+    end
+
+    %% --- Phase 3: Confirmation ---
+    subgraph Confirmation["3️⃣ Confirmation Phase"]
+        direction TB
+        CheckForce{"Force mode<br/>enabled?"}
+        Prompt["Prompt User"]
+        PromptDetails["• Display project list<br/>• Request confirmation<br/>• Handle user response"]
+        Skip["Skip Confirmation"]
+        CheckForce -->|"No"| Prompt
+        CheckForce -->|"Yes"| Skip
+        Prompt --> PromptDetails
+    end
+
+    %% --- Phase 4: Execution ---
+    subgraph Execution["4️⃣ Execution Phase"]
+        direction TB
+        Clear["Clear Secrets"]
+        ClearDetails["• Execute dotnet user-secrets clear<br/>• Track success/failure<br/>• Log results"]
+        Summary["Display Summary"]
+        SummaryDetails["• Total projects<br/>• Successfully cleared<br/>• Failed operations"]
+        Clear --> ClearDetails
+        ClearDetails --> Summary
+        Summary --> SummaryDetails
+    end
+
+    %% --- Flow Connections ---
+    Initialization --> Discovery
+    Discovery --> Confirmation
+    PromptDetails --> Execution
+    Skip --> Execution
+    SummaryDetails --> End
+
+    %% --- Style Definitions ---
+    %% Color palette follows Material Design guidelines
+    %% Green: Success states | Blue: Process steps | Orange: Decisions | Purple: .NET operations
+    classDef startEndStyle fill:#e8f5e9,stroke:#2e7d32,stroke-width:3px,color:#1b5e20
+    classDef processStyle fill:#e3f2fd,stroke:#1976d2,stroke-width:2px,color:#0d47a1
+    classDef detailStyle fill:#f5f5f5,stroke:#9e9e9e,stroke-width:1px,color:#424242
+    classDef decisionStyle fill:#fff3e0,stroke:#f57c00,stroke-width:2px,color:#e65100
+    classDef dotnetStyle fill:#e1bee7,stroke:#7b1fa2,stroke-width:2px,color:#4a148c
+
+    %% --- Apply Styles ---
+    class Start,End startEndStyle
+    class Init,Projects,Validate,Prompt,Skip,Clear,Summary processStyle
+    class InitDetails,DotNetDetails,ProjectDetails,ValidateDetails,PromptDetails,ClearDetails,SummaryDetails detailStyle
+    class CheckForce decisionStyle
+    class DotNet dotnetStyle
+```
+
+**Process Details:**
+
+1. **Initialization Phase**: Sets strict mode, parses command-line arguments (`-Force`, `-WhatIf`, `-Verbose`), validates .NET SDK availability and version (≥10.0)
+2. **Discovery Phase**: Locates configured projects (app.AppHost, eShop.Orders.API, eShop.Web.App), validates paths exist, and identifies `.csproj` files
+3. **Confirmation Phase**: Unless `-Force` is specified, prompts user for confirmation before clearing secrets
+4. **Execution Phase**: Executes `dotnet user-secrets clear` for each valid project, tracks results, and displays execution summary
 
 ## 🏗️ Target Projects
 
@@ -409,116 +503,7 @@ fi
 
 ---
 
-## �️ How It Works
-
-### Internal Process Flow
-
-The script executes a systematic workflow through four distinct phases:
-
-```mermaid
-%%{init: {'theme': 'base', 'themeVariables': { 'primaryColor': '#e3f2fd', 'primaryTextColor': '#0d47a1', 'primaryBorderColor': '#1976d2', 'lineColor': '#64b5f6', 'secondaryColor': '#fff3e0', 'tertiaryColor': '#e8f5e9'}}}%%
-flowchart LR
-    %% ===================================================================
-    %% WORKFLOW: clean-secrets Process Flow
-    %% Description: Clears .NET user secrets from configured projects
-    %% ===================================================================
-
-    %% --- Entry and Exit Points ---
-    Start(["🚀 clean-secrets starts"])
-    End(["🏁 Script completes"])
-
-    Start --> Initialization
-
-    %% --- Phase 1: Initialization & Validation ---
-    subgraph Initialization["1️⃣ Initialization Phase"]
-        direction TB
-        Init["Script Initialization"]
-        InitDetails["• Set StrictMode/strict mode<br/>• Parse command-line args<br/>• Configure preferences"]
-        DotNet["Validate .NET SDK"]
-        DotNetDetails["• Check dotnet in PATH<br/>• Verify version ≥ 10.0<br/>• Test SDK execution"]
-        Init --> InitDetails
-        InitDetails --> DotNet
-        DotNet --> DotNetDetails
-    end
-
-    %% --- Phase 2: Project Discovery ---
-    subgraph Discovery["2️⃣ Discovery Phase"]
-        direction TB
-        Projects["Discover Projects"]
-        ProjectDetails["• app.AppHost<br/>• eShop.Orders.API<br/>• eShop.Web.App"]
-        Validate["Validate Paths"]
-        ValidateDetails["• Check directory exists<br/>• Locate .csproj files<br/>• Build valid project list"]
-        Projects --> ProjectDetails
-        ProjectDetails --> Validate
-        Validate --> ValidateDetails
-    end
-
-    %% --- Phase 3: Confirmation ---
-    subgraph Confirmation["3️⃣ Confirmation Phase"]
-        direction TB
-        CheckForce{"Force mode<br/>enabled?"}
-        Prompt["Prompt User"]
-        PromptDetails["• Display project list<br/>• Request confirmation<br/>• Handle user response"]
-        Skip["Skip Confirmation"]
-        CheckForce -->|"No"| Prompt
-        CheckForce -->|"Yes"| Skip
-        Prompt --> PromptDetails
-    end
-
-    %% --- Phase 4: Execution ---
-    subgraph Execution["4️⃣ Execution Phase"]
-        direction TB
-        Clear["Clear Secrets"]
-        ClearDetails["• Execute dotnet user-secrets clear<br/>• Track success/failure<br/>• Log results"]
-        Summary["Display Summary"]
-        SummaryDetails["• Total projects<br/>• Successfully cleared<br/>• Failed operations"]
-        Clear --> ClearDetails
-        ClearDetails --> Summary
-        Summary --> SummaryDetails
-    end
-
-    %% --- Flow Connections ---
-    Initialization --> Discovery
-    Discovery --> Confirmation
-    PromptDetails --> Execution
-    Skip --> Execution
-    SummaryDetails --> End
-
-    %% --- Style Definitions ---
-    %% Color palette follows Material Design guidelines
-    %% Green: Success states | Blue: Process steps | Orange: Decisions | Purple: .NET operations
-    classDef startEndStyle fill:#e8f5e9,stroke:#2e7d32,stroke-width:3px,color:#1b5e20
-    classDef processStyle fill:#e3f2fd,stroke:#1976d2,stroke-width:2px,color:#0d47a1
-    classDef detailStyle fill:#f5f5f5,stroke:#9e9e9e,stroke-width:1px,color:#424242
-    classDef decisionStyle fill:#fff3e0,stroke:#f57c00,stroke-width:2px,color:#e65100
-    classDef dotnetStyle fill:#e1bee7,stroke:#7b1fa2,stroke-width:2px,color:#4a148c
-
-    %% --- Apply Styles ---
-    class Start,End startEndStyle
-    class Init,Projects,Validate,Prompt,Skip,Clear,Summary processStyle
-    class InitDetails,DotNetDetails,ProjectDetails,ValidateDetails,PromptDetails,ClearDetails,SummaryDetails detailStyle
-    class CheckForce decisionStyle
-    class DotNet dotnetStyle
-```
-
-**Process Details:**
-
-1. **Initialization Phase**: Sets strict mode, parses command-line arguments (`-Force`, `-WhatIf`, `-Verbose`), validates .NET SDK availability and version (≥10.0)
-2. **Discovery Phase**: Locates configured projects (app.AppHost, eShop.Orders.API, eShop.Web.App), validates paths exist, and identifies `.csproj` files
-3. **Confirmation Phase**: Unless `-Force` is specified, prompts user for confirmation before clearing secrets
-4. **Execution Phase**: Executes `dotnet user-secrets clear` for each valid project, tracks results, and displays execution summary
-
-### Integration Points
-
-| Aspect           | Details                                                                                                                                                                                                                         |
-| ---------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Called By**    | • `preprovision.ps1/.sh` - Clears secrets before infrastructure provisioning<br/>• `postprovision.ps1/.sh` - Clears before setting new secrets<br/>• Manual execution for troubleshooting<br/>• CI/CD pipelines for clean state |
-| **Calls**        | • `dotnet user-secrets clear --project <path>` - Core operation<br/>• `dotnet --version` - SDK validation                                                                                                                       |
-| **Dependencies** | • **Runtime:** .NET SDK 10.0+ (required)<br/>• **Tools:** dotnet CLI in PATH<br/>• **Projects:** Valid .csproj files with UserSecretsId                                                                                         |
-| **Outputs**      | • **Exit Code:** `0` (success) or `1` (failure)<br/>• **Console Output:** Progress messages and summary<br/>• **Side Effect:** Deleted secrets.json files from user secrets storage                                             |
-| **Storage**      | • **Windows:** `%APPDATA%\Microsoft\UserSecrets\<id>\secrets.json`<br/>• **Linux/macOS:** `~/.microsoft/usersecrets/<id>/secrets.json`                                                                                          |
-
-## �📖 Related Documentation
+## 📖 Related Documentation
 
 - **[postprovision.ps1](./postprovision.md)** - Sets user secrets after provisioning (inverse operation)
 - **[preprovision.ps1](./preprovision.ps1)** - Calls this script during pre-provisioning
