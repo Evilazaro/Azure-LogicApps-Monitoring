@@ -272,53 +272,81 @@ echo "Environment validated - proceeding with build..."
 The script executes a streamlined validation workflow through four distinct phases:
 
 ```mermaid
+%%{init: {'theme': 'base', 'themeVariables': { 'primaryColor': '#e3f2fd', 'primaryTextColor': '#0d47a1', 'primaryBorderColor': '#1976d2', 'lineColor': '#64b5f6', 'secondaryColor': '#fff3e0', 'tertiaryColor': '#e8f5e9'}}}%%
 flowchart LR
+    %% ===================================================================
+    %% WORKFLOW: check-dev-workstation Process Flow
+    %% Description: Validates developer workstation prerequisites
+    %% ===================================================================
+
+    %% --- Entry and Exit Points ---
     Start(["🚀 check-dev-workstation starts"])
     End(["🏁 Script completes"])
 
     Start --> Initialization
 
-    subgraph Initialization["1️⃣ Initialization"]
+    %% --- Phase 1: Initialization ---
+    subgraph Initialization["1️⃣ Initialization Phase"]
         direction TB
-        Init["Script Initialization<br/>• Set StrictMode<br/>• Configure error preferences<br/>• Validate prerequisites"]
+        Init["Script Initialization"]
+        InitDetails["• Set StrictMode/strict mode<br/>• Configure error preferences<br/>• Validate prerequisites"]
+        Init --> InitDetails
     end
 
-    subgraph PathResolution["2️⃣ Path Resolution"]
+    %% --- Phase 2: Path Resolution ---
+    subgraph PathResolution["2️⃣ Path Resolution Phase"]
         direction TB
-        Path["Locate Scripts<br/>• Locate preprovision script<br/>• Verify script exists<br/>• Prepare execution context"]
+        Path["Locate Scripts"]
+        PathDetails["• Locate preprovision script<br/>• Verify script exists<br/>• Prepare execution context"]
+        Path --> PathDetails
     end
 
-    subgraph ValidationPhase["3️⃣ Validation"]
+    %% --- Phase 3: Validation Execution ---
+    subgraph ValidationPhase["3️⃣ Validation Phase"]
         direction TB
-        Delegate["Validation Delegation<br/>• Invoke preprovision -ValidateOnly<br/>• Pass -Verbose flag if set<br/>• Monitor execution"]
+        Delegate["Validation Delegation"]
+        DelegateDetails["• Invoke preprovision -ValidateOnly<br/>• Pass -Verbose flag if set<br/>• Monitor execution"]
         Check{"All validations<br/>passed?"}
-        Delegate --> Check
+        Delegate --> DelegateDetails
+        DelegateDetails --> Check
     end
 
-    subgraph ResultPhase["4️⃣ Result"]
+    %% --- Phase 4: Result Processing ---
+    subgraph ResultPhase["4️⃣ Result Phase"]
         direction TB
-        Success["✅ Success Path<br/>• Format success message<br/>• Exit code: 0<br/>• Display summary"]
-        Failure["❌ Failure Path<br/>• Format error details<br/>• Exit code: 1<br/>• Show remediation steps"]
+        Success["✅ Success Path"]
+        SuccessDetails["• Format success message<br/>• Exit code: 0<br/>• Display summary"]
+        Failure["❌ Failure Path"]
+        FailureDetails["• Format error details<br/>• Exit code: non-zero<br/>• Show remediation steps"]
+        Success --> SuccessDetails
+        Failure --> FailureDetails
     end
 
+    %% --- Flow Connections ---
     Initialization --> PathResolution
     PathResolution --> ValidationPhase
-    Check -->|Yes| Success
-    Check -->|No| Failure
-    Success --> End
-    Failure --> End
+    Check -->|"Yes"| Success
+    Check -->|"No"| Failure
+    SuccessDetails --> End
+    FailureDetails --> End
 
-    classDef startEnd fill:#e8f5e9,stroke:#2e7d32,stroke-width:3px,color:#1b5e20
-    classDef process fill:#e3f2fd,stroke:#1976d2,stroke-width:2px,color:#0d47a1
-    classDef decision fill:#fff3e0,stroke:#f57c00,stroke-width:2px,color:#e65100
-    classDef success fill:#c8e6c9,stroke:#388e3c,stroke-width:2px,color:#1b5e20
-    classDef failure fill:#ffcdd2,stroke:#d32f2f,stroke-width:2px,color:#b71c1c
+    %% --- Style Definitions ---
+    %% Color palette follows Material Design guidelines
+    %% Green: Success states | Blue: Process steps | Orange: Decisions | Red: Failures
+    classDef startEndStyle fill:#e8f5e9,stroke:#2e7d32,stroke-width:3px,color:#1b5e20
+    classDef processStyle fill:#e3f2fd,stroke:#1976d2,stroke-width:2px,color:#0d47a1
+    classDef detailStyle fill:#f5f5f5,stroke:#9e9e9e,stroke-width:1px,color:#424242
+    classDef decisionStyle fill:#fff3e0,stroke:#f57c00,stroke-width:2px,color:#e65100
+    classDef successStyle fill:#c8e6c9,stroke:#388e3c,stroke-width:2px,color:#1b5e20
+    classDef failureStyle fill:#ffcdd2,stroke:#d32f2f,stroke-width:2px,color:#b71c1c
 
-    class Start,End startEnd
-    class Init,Path,Delegate process
-    class Check decision
-    class Success success
-    class Failure failure
+    %% --- Apply Styles ---
+    class Start,End startEndStyle
+    class Init,Path,Delegate processStyle
+    class InitDetails,PathDetails,DelegateDetails,SuccessDetails,FailureDetails detailStyle
+    class Check decisionStyle
+    class Success successStyle
+    class Failure failureStyle
 ```
 
 **Process Details:**

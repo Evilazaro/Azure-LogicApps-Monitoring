@@ -56,7 +56,6 @@
 #     Last Modified  : 2026-01-07
 #     Prerequisite   : Bash 4.0+, preprovision.sh
 #     Purpose        : Development environment validation wrapper
-#     
 #
 # LINKS
 #     https://github.com/Evilazaro/Azure-LogicApps-Monitoring
@@ -94,16 +93,9 @@ IFS=$' \t\n'
 # Script version following semantic versioning (MAJOR.MINOR.PATCH)
 readonly SCRIPT_VERSION="1.0.0"
 
-# Script name for consistent logging and error messages
-readonly SCRIPT_NAME="check-dev-workstation.sh"
-
 # Resolve script directory for reliable path operations
 # Using BASH_SOURCE[0] instead of $0 for sourcing compatibility
 readonly SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-
-# Error action preference - mimics PowerShell behavior
-# "Continue" allows script to complete even if preprovision has warnings
-readonly ERROR_ACTION_PREFERENCE="Continue"
 
 #==============================================================================
 # GLOBAL VARIABLES
