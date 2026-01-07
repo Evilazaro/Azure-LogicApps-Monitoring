@@ -52,14 +52,14 @@ The script is typically called by the `postprovision` hook after Azure infrastru
 
 This script performs the following operations:
 
-| Operation                                  | Description                                              |
-| ------------------------------------------ | -------------------------------------------------------- |
-| ✅ **Validates Azure CLI authentication**  | Ensures user is logged in                                |
-| ✅ **Configures firewall rules**           | Automatically adds client IP to SQL Server firewall      |
-| ✅ **Acquires access token**               | Gets Azure AD token for SQL Database authentication      |
-| ✅ **Creates database user**               | Creates contained user from external provider (Entra ID) |
-| ✅ **Assigns database roles**              | Grants specified permissions to the managed identity     |
-| ✅ **Returns structured results**          | Provides JSON output for programmatic handling           |
+| Operation                                 | Description                                              |
+| ----------------------------------------- | -------------------------------------------------------- |
+| ✅ **Validates Azure CLI authentication** | Ensures user is logged in                                |
+| ✅ **Configures firewall rules**          | Automatically adds client IP to SQL Server firewall      |
+| ✅ **Acquires access token**              | Gets Azure AD token for SQL Database authentication      |
+| ✅ **Creates database user**              | Creates contained user from external provider (Entra ID) |
+| ✅ **Assigns database roles**             | Grants specified permissions to the managed identity     |
+| ✅ **Returns structured results**         | Provides JSON output for programmatic handling           |
 
 ## 🏗️ Required Environment Variables
 
@@ -176,7 +176,7 @@ if ($result.Success) {
 The following built-in database roles can be assigned:
 
 | Role                | Description                                    |
-| ------------------- | ---------------------------------------------- |
+| ------------------- | ---------------------------------------------- | --------- |
 | `db_owner`          | Full permissions in the database               | 🔴 High   |
 | `db_datareader`     | Read all data from all user tables             | 🟢 Low    |
 | `db_datawriter`     | Add, delete, or modify data in all user tables | 🟡 Medium |
@@ -197,10 +197,10 @@ The following built-in database roles can be assigned:
 
 ```mermaid
 %%{init: {'theme': 'base', 'themeVariables': { 'primaryColor': '#4285f4', 'primaryTextColor': '#fff', 'primaryBorderColor': '#2d6ecf', 'lineColor': '#5c6bc0', 'secondaryColor': '#81c784', 'tertiaryColor': '#fff3e0'}}}%%
-flowchart TD
+flowchart LR
     %% Start node
     A["🚀 Start"]:::startNode
-    
+
     %% Validation Phase
     subgraph validation["🔍 Phase 1: Validation"]
         direction TB
@@ -208,7 +208,7 @@ flowchart TD
         C["Check Azure CLI Auth"]:::processNode
         D{"Authenticated?"}:::decisionNode
     end
-    
+
     %% Configuration Phase
     subgraph config["⚙️ Phase 2: Configuration"]
         direction TB
@@ -216,7 +216,7 @@ flowchart TD
         G["Acquire Access Token"]:::processNode
         H["Generate SQL Script"]:::processNode
     end
-    
+
     %% Execution Phase
     subgraph execution["▶️ Phase 3: Execution"]
         direction TB
@@ -224,14 +224,14 @@ flowchart TD
         J["Execute SQL Script"]:::processNode
         K{"Success?"}:::decisionNode
     end
-    
+
     %% Result Nodes
     E["❌ Exit with Error"]:::errorNode
     L["📋 Show Troubleshooting"]:::warningNode
     M["❌ Return Error Result"]:::errorNode
     N["✅ Return Success Result"]:::successNode
     O["🏁 End"]:::endNode
-    
+
     %% Flow connections
     A --> validation
     B --> C
@@ -249,7 +249,7 @@ flowchart TD
     M --> O
     N --> O
     E --> O
-    
+
     %% Styling classes
     classDef startNode fill:#4caf50,stroke:#2e7d32,stroke-width:2px,color:#fff
     classDef endNode fill:#607d8b,stroke:#455a64,stroke-width:2px,color:#fff
@@ -258,7 +258,7 @@ flowchart TD
     classDef errorNode fill:#f44336,stroke:#c62828,stroke-width:2px,color:#fff
     classDef successNode fill:#4caf50,stroke:#2e7d32,stroke-width:2px,color:#fff
     classDef warningNode fill:#ffeb3b,stroke:#f9a825,stroke-width:2px,color:#333
-    
+
     %% Subgraph styling
     style validation fill:#e3f2fd,stroke:#1976d2,stroke-width:2px
     style config fill:#fff3e0,stroke:#ff9800,stroke-width:2px
@@ -269,11 +269,11 @@ flowchart TD
 
 #### Authentication Flow
 
-| Step | Action                                                                    |
-| ---- | ------------------------------------------------------------------------- |
-| 1    | Uses Azure CLI (`az account get-access-token`) to acquire Azure AD token  |
-| 2    | Token is scoped to Azure SQL Database resource                            |
-| 3    | No SQL passwords are used or stored                                       |
+| Step | Action                                                                   |
+| ---- | ------------------------------------------------------------------------ |
+| 1    | Uses Azure CLI (`az account get-access-token`) to acquire Azure AD token |
+| 2    | Token is scoped to Azure SQL Database resource                           |
+| 3    | No SQL passwords are used or stored                                      |
 
 #### SQL Script Generation
 
@@ -291,14 +291,14 @@ flowchart TD
 | **Authentication** | Azure AD token via `AccessToken` property | `-G` flag + token |
 | **Encryption**     | TLS 1.2+ enforced                         | TLS 1.2+ enforced |
 
-   - PowerShell uses `Microsoft.Data.SqlClient` for cross-platform support
-   - Bash uses `sqlcmd` utility with Azure AD token authentication
-   - TLS 1.2+ encryption is enforced
+#### Firewall Configuration
 
-4. **Firewall Configuration:**
-   - Automatically detects client public IP
-   - Creates temporary firewall rule for script execution
-   - Rule name includes timestamp for uniqueness
+| Aspect        | Details                                         |
+| ------------- | ----------------------------------------------- |
+| IP Detection  | Automatically detects client public IP          |
+| Rule Creation | Creates temporary firewall rule for execution   |
+| Rule Naming   | Includes timestamp for uniqueness               |
+| Auto-Cleanup  | Rule removed after script completion (optional) |
 
 ## ☁️ Azure Environments
 
@@ -381,9 +381,10 @@ az sql server ad-admin list \
 
 ## 📜 Version History
 
-| Version | Date       | Changes                                               |
-| ------- | ---------- | ----------------------------------------------------- |
-| 1.0.0   | 2026-01-06 | Initial release with PowerShell Core and Bash support |
+| Version | Date       | Changes                                                                     |
+| ------- | ---------- | --------------------------------------------------------------------------- |
+| 1.0.1   | 2025-01-13 | PSScriptAnalyzer compliance: renamed functions, improved logging, UTF-8 BOM |
+| 1.0.0   | 2026-01-06 | Initial release with PowerShell Core and Bash support                       |
 
 ---
 
