@@ -1,96 +1,70 @@
-# Azure Logic Apps Monitoring Solution - Architecture Documentation
+# Architecture Overview
 
 ## 1. Executive Summary
 
-The Azure Logic Apps Monitoring Solution demonstrates enterprise-grade observability patterns for cloud-native distributed applications on Microsoft Azure. This reference architecture addresses the critical challenge of end-to-end visibility across microservices, serverless workflows, and event-driven systems.
+The Azure Logic Apps Monitoring Solution demonstrates comprehensive observability patterns for event-driven distributed applications. This reference architecture addresses operational visibility challenges across microservices, message-driven workflows, and serverless compute while using an eShop order management domain as the business context.
 
-The solution delivers measurable business value through:
+The solution delivers measurable operational value by reducing mean time to resolution through W3C-standard distributed tracing, enabling proactive failure detection through integrated health monitoring, and eliminating secrets management through Azure Managed Identity. OpenTelemetry provides vendor-neutral instrumentation, while .NET Aspire enables local development without cloud dependencies.
 
-- **Proactive Issue Detection**: Comprehensive telemetry collection and correlation across all application tiers enables early identification of performance degradation and failures before customer impact
-- **Operational Excellence**: Standardized monitoring patterns reduce mean time to resolution (MTTR) by providing distributed trace context that spans HTTP calls, database operations, and message queue interactions
-- **Zero-Secret Architecture**: Managed Identity integration eliminates credential management overhead and security risks associated with connection strings and API keys
-- **Development Velocity**: Local development parity through .NET Aspire orchestration enables full-fidelity testing without Azure dependencies, accelerating inner-loop development cycles
-- **Cloud-Native Scalability**: Azure Container Apps provide automatic horizontal scaling with built-in ingress, while Logic Apps Standard offers visual workflow design with enterprise integration capabilities
+**Key Architectural Decisions:**
+1. **.NET Aspire Orchestration**: Dual-mode operation supporting local emulators for development and Azure services for production without code changes
+2. **Zero-Secrets Architecture**: User-Assigned Managed Identity for all service-to-service authentication eliminates connection strings from code and configuration
+3. **Event-Driven Decoupling**: Service Bus topics enable asynchronous communication between Orders API and Logic Apps workflows
+4. **Modular Infrastructure**: Subscription-scoped Bicep templates separate shared infrastructure (identity, monitoring, data) from workload resources (messaging, compute, workflows)
+5. **Observability First**: OpenTelemetry SDK with W3C Trace Context propagation across HTTP, SQL, and Service Bus boundaries
 
-Key architectural decisions include:
-
-- W3C Trace Context propagation for distributed correlation across HTTP, Service Bus, and SQL boundaries
-- OpenTelemetry as the vendor-neutral instrumentation layer, ensuring portability and future-proofing telemetry investments
-- Subscription-scoped Bicep orchestration with modular separation of shared infrastructure, workload resources, and monitoring components
-- Event-driven decoupling via Service Bus topics enabling independent service evolution and horizontal scalability
-- Infrastructure as Code with lifecycle hooks automating environment validation, secret management, and database configuration
-
-Target deployment environments span Azure regions worldwide with support for multi-region active-active topologies through Azure Front Door integration.
+**Target Deployment Environments:**  
+Azure regions worldwide with single-region deployment in reference implementation, extensible to multi-region active-active topologies.
 
 ## 2. High-Level Architecture Diagram
 
 ```mermaid
 flowchart TD
-    subgraph Users["External Actors"]
-        WebUser[Web Browser User]
-        APIConsumer[API Consumer]
+    subgraph Actors["User Layer"]
+        WebUser[Web User]
+        APIUser[API Consumer]
     end
 
-    subgraph Frontend["Presentation Layer"]
-        BlazorApp[Blazor Server Web App<br/>SignalR Real-time Updates]
+    subgraph CoreServices["Core Business Services"]
+        WebApp[Web Application]
+        OrdersAPI[Orders API]
+        LogicWorkflow[Logic Apps Workflows]
     end
 
-    subgraph Services["Core Business Services"]
-        OrdersAPI[Orders REST API<br/>Order Management CRUD]
-        LogicApp[Logic Apps Standard<br/>Order Processing Workflows]
+    subgraph SupportServices["Supporting Services"]
+        SQL[(SQL Database)]
+        ServiceBus[Service Bus]
+        BlobStorage[Blob Storage]
     end
 
-    subgraph Supporting["Supporting Services"]
-        Database[(Azure SQL Database<br/>Order Persistence)]
-        ServiceBus[Azure Service Bus<br/>Event Broker]
-        Storage[Blob Storage<br/>Workflow Artifacts]
+    subgraph Observability["Observability Services"]
+        AppInsights[Application Insights]
+        LogAnalytics[Log Analytics]
     end
 
-    subgraph Observability["Observability Platform"]
-        AppInsights[Application Insights<br/>APM & Telemetry]
-        LogAnalytics[Log Analytics<br/>Centralized Logs]
-        Dashboard[Aspire Dashboard<br/>Local Telemetry]
-    end
-
-    subgraph Orchestration["Orchestration & Runtime"]
-        Aspire[.NET Aspire AppHost<br/>Service Orchestration]
-        ContainerApps[Azure Container Apps<br/>Serverless Containers]
-    end
-
-    WebUser --> BlazorApp
-    APIConsumer --> OrdersAPI
-    BlazorApp --> OrdersAPI
-    OrdersAPI --> Database
+    WebUser --> WebApp
+    APIUser --> OrdersAPI
+    WebApp --> OrdersAPI
+    OrdersAPI --> SQL
     OrdersAPI --> ServiceBus
-    ServiceBus --> LogicApp
-    LogicApp --> OrdersAPI
-    LogicApp --> Storage
+    ServiceBus --> LogicWorkflow
+    LogicWorkflow --> OrdersAPI
+    LogicWorkflow --> BlobStorage
 
-    BlazorApp -.telemetry.-> AppInsights
+    WebApp -.telemetry.-> AppInsights
     OrdersAPI -.telemetry.-> AppInsights
-    LogicApp -.telemetry.-> AppInsights
+    LogicWorkflow -.telemetry.-> AppInsights
     AppInsights --> LogAnalytics
-    Aspire -.local dev.-> Dashboard
-    Aspire -.orchestrates.-> BlazorApp
-    Aspire -.orchestrates.-> OrdersAPI
-    ContainerApps -.hosts.-> BlazorApp
-    ContainerApps -.hosts.-> OrdersAPI
 
-    classDef userClass fill:#E1F5FF,stroke:#01579B,stroke-width:2px,color:#000
-    classDef coreClass fill:#E8F5E9,stroke:#1B5E20,stroke-width:2px,color:#000
-    classDef supportClass fill:#FFF3E0,stroke:#E65100,stroke-width:2px,color:#000
-    classDef observeClass fill:#F3E5F5,stroke:#4A148C,stroke-width:2px,color:#000
-    classDef orchestrateClass fill:#E0F2F1,stroke:#004D40,stroke-width:2px,color:#000
+    classDef actorStyle fill:#E8EAF6,stroke:#3F51B5,stroke-width:2px,color:#000
+    classDef coreStyle fill:#E1F5FF,stroke:#0277BD,stroke-width:2px,color:#000
+    classDef supportStyle fill:#F1F8E9,stroke:#558B2F,stroke-width:2px,color:#000
+    classDef observeStyle fill:#FFF9C4,stroke:#F57F17,stroke-width:2px,color:#000
 
-    class WebUser,APIConsumer userClass
-    class BlazorApp,OrdersAPI,LogicApp coreClass
-    class Database,ServiceBus,Storage supportClass
-    class AppInsights,LogAnalytics,Dashboard observeClass
-    class Aspire,ContainerApps orchestrateClass
-```
-
-## 3. Service Inventory
-
+    class WebUser,APIUser actorStyle
+    class WebApp,OrdersAPI,LogicWorkflow coreStyle
+    class SQL,ServiceBus,BlobStorage supportStyle
+    class AppInsights,LogAnalytics observeStyle
 | Service                        | Type                               | Responsibility                                                                             | Technology                 |
 | ------------------------------ | ---------------------------------- | ------------------------------------------------------------------------------------------ | -------------------------- |
 | **Orders API**                 | REST API                           | Order lifecycle management including creation, retrieval, validation, and event publishing | ASP.NET Core 10.0 Web API  |
