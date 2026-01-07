@@ -32,28 +32,25 @@ This solution delivers measurable business value through:
 ```mermaid
 flowchart TB
     subgraph CoreBusiness["Core Business Capabilities"]
-        direction TB
         OC[Order Capture]
         OP[Order Processing]
         OF[Order Fulfillment Tracking]
     end
 
     subgraph Enabling["Enabling Capabilities"]
-        direction TB
         IM[Identity Management]
         SM[Secrets Management]
         CM[Configuration Management]
     end
 
     subgraph Supporting["Supporting Capabilities"]
-        direction TB
         OBS[Operational Observability]
         EM[Event Management]
         DM[Data Management]
     end
 
-    classDef core fill:#BBDEFB,stroke:#1565C0,color:#0D47A1
-    classDef enabling fill:#B2DFDB,stroke:#00695C,color:#004D40
+    classDef core fill:#BBDEFB,stroke:#1565C0,color:#212121
+    classDef enabling fill:#B2DFDB,stroke:#00695C,color:#212121
     classDef supporting fill:#E0E0E0,stroke:#616161,color:#212121
 
     class OC,OP,OF core
@@ -105,7 +102,7 @@ flowchart LR
 
     VS1 --> VS2 --> VS3 --> VS4 --> VS5 --> VS6 --> VS7
 
-    classDef stage fill:#C8E6C9,stroke:#2E7D32,color:#1B5E20
+    classDef stage fill:#C8E6C9,stroke:#2E7D32,color:#212121
 
     class VS1,VS2,VS3,VS4,VS5,VS6,VS7 stage
 ```
@@ -123,7 +120,7 @@ flowchart LR
 
     MV1 --> MV2 --> MV3 --> MV4 --> MV5 --> MV6
 
-    classDef stage fill:#C8E6C9,stroke:#2E7D32,color:#1B5E20
+    classDef stage fill:#C8E6C9,stroke:#2E7D32,color:#212121
 
     class MV1,MV2,MV3,MV4,MV5,MV6 stage
 ```
@@ -181,11 +178,11 @@ flowchart LR
     C3 -->|Yes| D1
     C3 -->|No| D2
 
-    classDef capture fill:#BBDEFB,stroke:#1565C0,color:#0D47A1
-    classDef persist fill:#C8E6C9,stroke:#2E7D32,color:#1B5E20
-    classDef process fill:#FFF9C4,stroke:#F9A825,color:#F57F17
+    classDef capture fill:#BBDEFB,stroke:#1565C0,color:#212121
+    classDef persist fill:#C8E6C9,stroke:#2E7D32,color:#212121
+    classDef process fill:#E0E0E0,stroke:#616161,color:#212121
     classDef complete fill:#E0E0E0,stroke:#616161,color:#212121
-    classDef error fill:#FFCDD2,stroke:#C62828,color:#B71C1C
+    classDef error stroke:#C62828,color:#212121
 
     class A1,A2,A3 capture
     class B1,B2 persist

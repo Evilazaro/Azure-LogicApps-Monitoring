@@ -65,10 +65,10 @@ flowchart TD
     WEB -.-> ID
     WF -.-> ID
 
-    classDef users fill:#E3F2FD,stroke:#1565C0,color:#0D47A1
-    classDef core fill:#E8F5E9,stroke:#2E7D32,color:#1B5E20
-    classDef supporting fill:#FFF3E0,stroke:#EF6C00,color:#E65100
-    classDef shared fill:#F3E5F5,stroke:#7B1FA2,color:#4A148C
+    classDef users fill:#E3F2FD,stroke:#1565C0,color:#212121
+    classDef core fill:#BBDEFB,stroke:#1565C0,color:#212121
+    classDef supporting fill:#E0E0E0,stroke:#616161,color:#212121
+    classDef shared fill:#B2DFDB,stroke:#00695C,color:#212121
 
     class U1 users
     class WEB,API,WF core

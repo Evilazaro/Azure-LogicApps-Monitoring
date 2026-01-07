@@ -90,15 +90,15 @@ flowchart TB
     WF -.-> AIS
     AIS --> LAW
 
-    classDef core fill:#BBDEFB,stroke:#1565C0,color:#0D47A1
-    classDef workflow fill:#B2DFDB,stroke:#00695C,color:#004D40
-    classDef telemetry fill:#C8E6C9,stroke:#2E7D32,color:#1B5E20
-    classDef service fill:#E0E0E0,stroke:#616161,color:#212121
+    classDef core fill:#BBDEFB,stroke:#1565C0,color:#212121
+    classDef shared fill:#B2DFDB,stroke:#00695C,color:#212121
+    classDef telemetry fill:#C8E6C9,stroke:#2E7D32,color:#212121
+    classDef supporting fill:#E0E0E0,stroke:#616161,color:#212121
 
     class ODB,OMQ core
-    class WFS,WSS,WES workflow
+    class WFS,WSS,WES shared
     class LAW,AIS telemetry
-    class API,WF service
+    class API,WF supporting
 ```
 
 ---
@@ -206,9 +206,9 @@ flowchart LR
     C1 --> V2
     C2 --> V3
 
-    classDef source fill:#BBDEFB,stroke:#1565C0,color:#0D47A1
-    classDef instrument fill:#B2DFDB,stroke:#00695C,color:#004D40
-    classDef collect fill:#C8E6C9,stroke:#2E7D32,color:#1B5E20
+    classDef source fill:#BBDEFB,stroke:#1565C0,color:#212121
+    classDef instrument fill:#B2DFDB,stroke:#00695C,color:#212121
+    classDef collect fill:#C8E6C9,stroke:#2E7D32,color:#212121
     classDef visual fill:#E0E0E0,stroke:#616161,color:#212121
 
     class S1,S2,S3,S4,S5 source
@@ -276,9 +276,9 @@ flowchart TB
     PL --> LA
     AI --> LA
 
-    classDef app fill:#BBDEFB,stroke:#1565C0,color:#0D47A1
-    classDef platform fill:#B2DFDB,stroke:#00695C,color:#004D40
-    classDef collect fill:#C8E6C9,stroke:#2E7D32,color:#1B5E20
+    classDef app fill:#BBDEFB,stroke:#1565C0,color:#212121
+    classDef platform fill:#B2DFDB,stroke:#00695C,color:#212121
+    classDef collect fill:#C8E6C9,stroke:#2E7D32,color:#212121
 
     class AT,AM,AL app
     class PT,PM,PL platform
