@@ -60,7 +60,6 @@
 #     Prerequisite   : Azure Developer CLI (azd)
 #     Prerequisite   : Azure CLI 2.60.0 or higher
 #     Prerequisite   : Bicep CLI 0.30.0 or higher
-#     
 #
 # LINK:
 #     https://github.com/Evilazaro/Azure-LogicApps-Monitoring

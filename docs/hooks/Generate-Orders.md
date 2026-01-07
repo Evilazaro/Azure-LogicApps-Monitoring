@@ -35,7 +35,10 @@ By supporting multiple execution modes (interactive, force, preview, verbose), t
   - [🔄 Example 1: Generate Test Data for Development](#example-1-generate-test-data-for-development)
   - [🔁 Example 2: CI/CD Pipeline Integration](#example-2-cicd-pipeline-integration)
   - [📊 Example 3: Load Testing Data Generation](#example-3-load-testing-data-generation)
-- [📖 Related Documentation](#-related-documentation)
+- [� How It Works](#-how-it-works)
+  - [🔄 Internal Process Flow](#internal-process-flow)
+  - [🔗 Integration Points](#integration-points)
+- [�📖 Related Documentation](#-related-documentation)
 - [🔐 Security Considerations](#-security-considerations)
 - [🎓 Best Practices](#-best-practices)
 - [📊 Performance](#-performance)
@@ -478,7 +481,123 @@ Get-Item ..\infra\data\ordersBatch.json | Select-Object Length, @{N='SizeKB';E={
 ls -lh ../infra/data/ordersBatch.json
 ```
 
-## 📖 Related Documentation
+## � How It Works
+
+### Internal Process Flow
+
+The script executes a systematic workflow through four distinct phases:
+
+```mermaid
+%%{init: {'theme': 'base', 'themeVariables': { 'primaryColor': '#e3f2fd', 'primaryTextColor': '#0d47a1', 'primaryBorderColor': '#1976d2', 'lineColor': '#64b5f6', 'secondaryColor': '#fff3e0', 'tertiaryColor': '#e8f5e9'}}}%%
+flowchart LR
+    %% ===================================================================
+    %% WORKFLOW: Generate-Orders Process Flow
+    %% Description: Generates sample e-commerce order data for testing
+    %% ===================================================================
+
+    %% --- Entry and Exit Points ---
+    Start(["🚀 Generate-Orders starts"])
+    End(["🏁 Script completes"])
+
+    Start --> Initialization
+
+    %% --- Phase 1: Initialization & Validation ---
+    subgraph Initialization["1️⃣ Initialization Phase"]
+        direction TB
+        Init["Script Initialization"]
+        InitDetails["• Parse command-line args<br/>• Set StrictMode/strict mode<br/>• Configure preferences"]
+        Validate["Parameter Validation"]
+        ValidateDetails["• Validate OrderCount range<br/>• Validate Min/Max products<br/>• Verify output path"]
+        Init --> InitDetails
+        InitDetails --> Validate
+        Validate --> ValidateDetails
+    end
+
+    %% --- Phase 2: Data Preparation ---
+    subgraph Preparation["2️⃣ Preparation Phase"]
+        direction TB
+        Catalog["Load Product Catalog"]
+        CatalogDetails["• 20 predefined products<br/>• Base prices configured<br/>• Product IDs assigned"]
+        Addresses["Load Address Pool"]
+        AddressDetails["• 20 global addresses<br/>• Major cities worldwide<br/>• Geographic diversity"]
+        Catalog --> CatalogDetails
+        CatalogDetails --> Addresses
+        Addresses --> AddressDetails
+    end
+
+    %% --- Phase 3: Order Generation ---
+    subgraph Generation["3️⃣ Generation Phase"]
+        direction TB
+        Loop["Order Generation Loop"]
+        LoopDetails["• Generate GUID-based Order ID<br/>• Create Customer ID<br/>• Random date timestamp"]
+        Products["Product Selection"]
+        ProductDetails["• Random product count<br/>• Apply ±20% price variation<br/>• Calculate line totals"]
+        Progress["Progress Tracking"]
+        ProgressDetails["• Update every 10 orders<br/>• Display percentage<br/>• Show current count"]
+        Loop --> LoopDetails
+        LoopDetails --> Products
+        Products --> ProductDetails
+        ProductDetails --> Progress
+        Progress --> ProgressDetails
+    end
+
+    %% --- Phase 4: Export ---
+    subgraph Export["4️⃣ Export Phase"]
+        direction TB
+        Serialize["JSON Serialization"]
+        SerializeDetails["• Convert to JSON format<br/>• Depth 10 for nesting<br/>• UTF-8 encoding"]
+        Write["Write to File"]
+        WriteDetails["• Create directory if needed<br/>• Write JSON content<br/>• Display file size"]
+        Summary["Display Summary"]
+        SummaryDetails["• Total orders generated<br/>• Output file path<br/>• Products per order range"]
+        Serialize --> SerializeDetails
+        SerializeDetails --> Write
+        Write --> WriteDetails
+        WriteDetails --> Summary
+        Summary --> SummaryDetails
+    end
+
+    %% --- Flow Connections ---
+    Initialization --> Preparation
+    Preparation --> Generation
+    Generation --> Export
+    SummaryDetails --> End
+
+    %% --- Style Definitions ---
+    %% Color palette follows Material Design guidelines
+    %% Green: Success states | Blue: Process steps | Orange: Data ops | Purple: Generation
+    classDef startEndStyle fill:#e8f5e9,stroke:#2e7d32,stroke-width:3px,color:#1b5e20
+    classDef processStyle fill:#e3f2fd,stroke:#1976d2,stroke-width:2px,color:#0d47a1
+    classDef detailStyle fill:#f5f5f5,stroke:#9e9e9e,stroke-width:1px,color:#424242
+    classDef dataStyle fill:#fff3e0,stroke:#f57c00,stroke-width:2px,color:#e65100
+    classDef generateStyle fill:#e1bee7,stroke:#7b1fa2,stroke-width:2px,color:#4a148c
+
+    %% --- Apply Styles ---
+    class Start,End startEndStyle
+    class Init,Validate,Serialize,Write,Summary processStyle
+    class InitDetails,ValidateDetails,CatalogDetails,AddressDetails,LoopDetails,ProductDetails,ProgressDetails,SerializeDetails,WriteDetails,SummaryDetails detailStyle
+    class Catalog,Addresses dataStyle
+    class Loop,Products,Progress generateStyle
+```
+
+**Process Details:**
+
+1. **Initialization Phase**: Parses command-line arguments (`-OrderCount`, `-OutputPath`, `-MinProducts`, `-MaxProducts`, `-Force`), sets strict mode, and validates all parameters are within acceptable ranges
+2. **Preparation Phase**: Loads the 20-product catalog with base prices and the 20-address global pool for geographic diversity
+3. **Generation Phase**: Iterates through order count, generating unique GUID-based IDs, random timestamps (2024-2025), random product selections with ±20% price variations, and tracks progress every 10 orders
+4. **Export Phase**: Serializes orders to JSON format with proper depth, writes to file (creating directories as needed), and displays execution summary
+
+### Integration Points
+
+| Aspect           | Details                                                                                                                                                                                                                                         |
+| ---------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Called By**    | • `deploy-workflow.ps1/.sh` - Generates test data before deployment<br/>• Manual execution for development testing<br/>• CI/CD pipelines for automated test data setup                                                                          |
+| **Calls**        | • `New-Guid` / `uuidgen` - Unique ID generation<br/>• `Get-Random` / `$RANDOM` - Random number generation<br/>• `ConvertTo-Json` / `jq` - JSON serialization                                                                                     |
+| **Dependencies** | • **Runtime:** PowerShell 7.0+ or Bash 4.0+<br/>• **Tools:** `jq` required for Bash version<br/>• **Output Directory:** Auto-created if missing                                                                                                  |
+| **Outputs**      | • **Exit Code:** `0` (success) or `1` (failure)<br/>• **File:** JSON array of order objects<br/>• **Console:** Progress updates and summary                                                                                                      |
+| **Data Schema**  | • **Order ID:** `ORD-{12 hex chars}`<br/>• **Customer ID:** `CUST-{8 hex chars}`<br/>• **Product ID:** `OP-{12 hex chars}`<br/>• **Date Range:** 2024-01-01 to 2025-12-31                                                                         |
+
+## �📖 Related Documentation
 
 - **[postprovision.md](./postprovision.md)** - Configures secrets after Azure deployment
 - **[deploy-workflow.md](./deploy-workflow.md)** - Deploys Logic Apps workflows (uses generated data)

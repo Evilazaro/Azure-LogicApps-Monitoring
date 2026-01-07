@@ -46,7 +46,6 @@
     Last Modified  : 2026-01-07
     Prerequisite   : PowerShell 7.0+, preprovision.ps1
     Purpose        : Development environment validation wrapper
-    
 
 .LINK
     https://github.com/Evilazaro/Azure-LogicApps-Monitoring
@@ -79,7 +78,6 @@ $ErrorActionPreference = 'Stop'
 
 # Script metadata constants with script scope for proper accessibility
 $script:ScriptVersion = '1.0.0'
-$script:ScriptName = 'check-dev-workstation.ps1'
 
 #endregion Script Configuration
 
@@ -132,8 +130,9 @@ try {
 
     Write-Verbose -Message "Executing: $pwshPath $($preprovisionArgs -join ' ')"
 
-    # Execute preprovision.ps1 and stream output to caller while capturing it
-    $null = & $pwshPath @preprovisionArgs 2>&1 | Tee-Object -Variable validationOutput
+    # Execute preprovision.ps1 and stream output directly to console
+    # Note: Output streams to caller in real-time; exit code determines success
+    & $pwshPath @preprovisionArgs
 
     # Check if validation was successful by examining the child process exit code
     if ($LASTEXITCODE -eq 0) {

@@ -50,7 +50,6 @@
 #     Last Modified  : 2026-01-06
 #     Prerequisite   : .NET SDK 10.0 or higher
 #     Purpose        : Clean .NET user secrets before deployment
-#     
 #
 # LINKS
 #     https://github.com/Evilazaro/Azure-LogicApps-Monitoring
@@ -87,7 +86,7 @@ IFS=$' \t\n'
 # Script version following semantic versioning (MAJOR.MINOR.PATCH)
 readonly SCRIPT_VERSION="2.0.1"
 
-# Script name for consistent logging and error messages
+# Script name for consistent logging and help text
 readonly SCRIPT_NAME="clean-secrets.sh"
 
 # Resolve script directory for reliable path operations
