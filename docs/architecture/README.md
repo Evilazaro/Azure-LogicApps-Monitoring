@@ -66,18 +66,17 @@ flowchart TD
     class WebApp,OrdersAPI,LogicWorkflow coreStyle
     class SQL,ServiceBus,BlobStorage supportStyle
     class AppInsights,LogAnalytics observeStyle
-| Service                        | Type                               | Responsibility                                                                             | Technology                 |
-| ------------------------------ | ---------------------------------- | ------------------------------------------------------------------------------------------ | -------------------------- |
-| **Orders API**                 | REST API                           | Order lifecycle management including creation, retrieval, validation, and event publishing | ASP.NET Core 10.0 Web API  |
-| **Web App**                    | User Interface                     | Customer-facing order management interface with real-time updates                          | Blazor Server with SignalR |
-| **Order Processing Workflows** | Workflow Automation                | Asynchronous order validation, enrichment, and routing based on business rules             | Azure Logic Apps Standard  |
-| **Order Database**             | Relational Data Store              | Transactional storage for order entities with ACID guarantees                              | Azure SQL Database         |
-| **Message Broker**             | Event Bus                          | Reliable asynchronous message delivery with topic-based pub/sub                            | Azure Service Bus          |
-| **Application Insights**       | Application Performance Management | Distributed tracing, metrics collection, and anomaly detection                             | Azure Monitor component    |
-| **Log Analytics**              | Log Aggregation                    | Centralized query engine for structured logs and custom analytics                          | Azure Monitor component    |
-| **Container Registry**         | Artifact Repository                | Secure storage for container images with vulnerability scanning                            | Azure Container Registry   |
-| **Container Environment**      | Compute Platform                   | Serverless container hosting with auto-scaling and ingress management                      | Azure Container Apps       |
-| **AppHost Orchestrator**       | Development Orchestration          | Local service discovery and dependency orchestration for inner-loop development            | .NET Aspire 9.x            |
+| Component | Type | Key Responsibilities | Technology Stack |
+|-----------|------|---------------------|------------------|
+| **Orders API** | REST API | Order CRUD, validation, Service Bus publishing | ASP.NET Core 10, EF Core, OpenTelemetry |
+| **Web App** | User Interface | Customer order management, real-time updates | Blazor Server, SignalR, Fluent UI |
+| **Logic Apps Workflows** | Workflow Engine | Event-driven order processing, enrichment | Logic Apps Standard (App Service Plan) |
+| **SQL Database** | Relational Database | Order persistence, ACID transactions | Azure SQL Database (serverless) |
+| **Service Bus** | Message Broker | Async messaging, pub/sub topics | Azure Service Bus (Standard tier) |
+| **Application Insights** | APM | Distributed tracing, metrics, logs | OpenTelemetry Protocol receiver |
+| **Managed Identity** | Identity Provider | Zero-secrets authentication | User-Assigned Managed Identity |
+| **Container Apps** | Compute | Serverless container hosting | Azure Container Apps |
+| **.NET Aspire** | Orchestration | Local development, service discovery | .NET Aspire 9.x |
 
 ## 4. Document Navigation
 
