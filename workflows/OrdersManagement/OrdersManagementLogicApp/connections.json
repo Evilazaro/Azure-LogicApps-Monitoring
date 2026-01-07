@@ -12,7 +12,7 @@
       "connectionProperties": {
         "authentication": {
           "type": "ManagedServiceIdentity",
-          "identity": "/subscriptions/${AZURE_SUBSCRIPTION_ID}/resourcegroups/${AZURE_RESOURCE_GROUP}/providers/Microsoft.ManagedIdentity/userAssignedIdentities/${MANAGED_IDENTITY_NAME}",
+          "identity": "/subscriptions/${WORKFLOWS_SUBSCRIPTION_ID}/resourcegroups/${AZURE_RESOURCE_GROUP}/providers/Microsoft.ManagedIdentity/userAssignedIdentities/${MANAGED_IDENTITY_NAME}",
           "audience": "https://servicebus.azure.net"
         }
       }
@@ -29,7 +29,7 @@
       "connectionProperties": {
         "authentication": {
           "type": "ManagedServiceIdentity",
-          "identity": "/subscriptions/${AZURE_SUBSCRIPTION_ID}/resourcegroups/${AZURE_RESOURCE_GROUP}/providers/Microsoft.ManagedIdentity/userAssignedIdentities/${MANAGED_IDENTITY_NAME}",
+          "identity": "/subscriptions/${WORKFLOWS_SUBSCRIPTION_ID}/resourcegroups/${AZURE_RESOURCE_GROUP}/providers/Microsoft.ManagedIdentity/userAssignedIdentities/${MANAGED_IDENTITY_NAME}",
           "audience": "https://storage.azure.com/"
         }
       }
