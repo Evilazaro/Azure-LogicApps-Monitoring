@@ -157,30 +157,49 @@ flowchart TB
 
 ```mermaid
 flowchart LR
-    Initiate["Order<br/>Initiation"]
-    Capture["Order<br/>Capture"]
-    Validate["Order<br/>Validation"]
-    Confirm["Order<br/>Confirmation"]
-    Process["Order<br/>Processing"]
-    Fulfill["Order<br/>Fulfillment"]
-    Track["Order<br/>Tracking"]
+    subgraph Trigger["Trigger Stage"]
+        Initiate["Order<br/>Initiation"]
+    end
 
-    Initiate ==> Capture
-    Capture ==> Validate
-    Validate ==> Confirm
+    subgraph Capture["Capture & Validate Stage"]
+        CaptureData["Order<br/>Capture"]
+        ValidateData["Order<br/>Validation"]
+    end
+
+    subgraph Execute["Execute Stage"]
+        Confirm["Order<br/>Confirmation"]
+        Process["Order<br/>Processing"]
+    end
+
+    subgraph Deliver["Deliver Stage"]
+        Fulfill["Order<br/>Fulfillment"]
+        Track["Order<br/>Tracking"]
+    end
+
+    Initiate ==> CaptureData
+    CaptureData ==> ValidateData
+    ValidateData ==> Confirm
     Confirm ==> Process
     Process ==> Fulfill
     Fulfill ==> Track
 
-    classDef initiateStyle fill:#FFE6CC,stroke:#D79B00,stroke-width:3px,color:#000,font-weight:bold
-    classDef captureStyle fill:#DAE8FC,stroke:#6C8EBF,stroke-width:3px,color:#000,font-weight:bold
-    classDef processStyle fill:#D5E8D4,stroke:#82B366,stroke-width:3px,color:#000,font-weight:bold
-    classDef completeStyle fill:#E1D5E7,stroke:#9673A6,stroke-width:3px,color:#000,font-weight:bold
+    %% TOGAF BDAT Value Stream Color Progression
+    %% Warm (amber/orange) -> Cool (blue) -> Success (green)
+    %% Represents: Initiation -> Validation -> Execution -> Delivery
 
-    class Initiate initiateStyle
-    class Capture,Validate captureStyle
-    class Confirm,Process,Fulfill processStyle
-    class Track completeStyle
+    classDef triggerStyle fill:#FFD699,stroke:#CC8800,stroke-width:4px,color:#000,font-weight:bold,font-size:13px
+    classDef captureStyle fill:#B4D7FF,stroke:#5B9BD5,stroke-width:3px,color:#000,font-weight:bold,font-size:13px
+    classDef executeStyle fill:#9FC5E8,stroke:#3C78D8,stroke-width:3px,color:#000,font-weight:bold,font-size:13px
+    classDef deliverStyle fill:#B6D7A8,stroke:#6AA84F,stroke-width:3px,color:#000,font-weight:bold,font-size:13px
+
+    classDef stageGroup fill:#FFFFFF,stroke:#999999,stroke-width:2px,stroke-dasharray:3 3,color:#666666
+
+    class Initiate triggerStyle
+    class CaptureData,ValidateData captureStyle
+    class Confirm,Process executeStyle
+    class Fulfill,Track deliverStyle
+
+    class Trigger,Capture,Execute,Deliver stageGroup
 ```
 
 **Value Delivered**: End-to-end order lifecycle from customer initiation through fulfillment tracking, delivering seamless customer experience with full transparency and compliance-ready audit trails.
@@ -191,30 +210,44 @@ flowchart LR
 
 ```mermaid
 flowchart LR
-    Instrument["Telemetry<br/>Instrumentation"]
-    Collect["Data<br/>Collection"]
-    Correlate["Context<br/>Correlation"]
-    Detect["Anomaly<br/>Detection"]
-    Alert["Proactive<br/>Alerting"]
-    Diagnose["Root Cause<br/>Diagnosis"]
-    Resolve["Issue<br/>Resolution"]
+    subgraph Establish["Establish Stage"]
+        Instrument["Telemetry<br/>Instrumentation"]
+        Collect["Data<br/>Collection"]
+    end
+
+    subgraph Monitor["Monitor Stage"]
+        Correlate["Context<br/>Correlation"]
+        Detect["Anomaly<br/>Detection"]
+        Alert["Proactive<br/>Alerting"]
+    end
+
+    subgraph Resolve["Resolve Stage"]
+        Diagnose["Root Cause<br/>Diagnosis"]
+        Act["Issue<br/>Resolution"]
+    end
 
     Instrument ==> Collect
     Collect ==> Correlate
     Correlate ==> Detect
     Detect ==> Alert
     Alert ==> Diagnose
-    Diagnose ==> Resolve
+    Diagnose ==> Act
 
-    classDef instrumentStyle fill:#E1D5E7,stroke:#9673A6,stroke-width:3px,color:#000,font-weight:bold
-    classDef collectStyle fill:#DAE8FC,stroke:#6C8EBF,stroke-width:3px,color:#000,font-weight:bold
-    classDef detectStyle fill:#FFE6CC,stroke:#D79B00,stroke-width:3px,color:#000,font-weight:bold
-    classDef resolveStyle fill:#D5E8D4,stroke:#82B366,stroke-width:3px,color:#000,font-weight:bold
+    %% TOGAF BDAT Value Stream Color Progression
+    %% Foundation (blue) -> Detection (amber/orange) -> Resolution (green)
+    %% Represents: Setup -> Monitor -> Act
 
-    class Instrument instrumentStyle
-    class Collect,Correlate collectStyle
-    class Detect,Alert detectStyle
-    class Diagnose,Resolve resolveStyle
+    classDef establishStyle fill:#B4D7FF,stroke:#5B9BD5,stroke-width:3px,color:#000,font-weight:bold,font-size:13px
+    classDef monitorStyle fill:#FFD699,stroke:#CC8800,stroke-width:4px,color:#000,font-weight:bold,font-size:13px
+    classDef resolveStyle fill:#B6D7A8,stroke:#6AA84F,stroke-width:3px,color:#000,font-weight:bold,font-size:13px
+
+    classDef stageGroup fill:#FFFFFF,stroke:#999999,stroke-width:2px,stroke-dasharray:3 3,color:#666666
+
+    class Instrument,Collect establishStyle
+    class Correlate,Detect,Alert monitorStyle
+    class Diagnose,Act resolveStyle
+
+    class Establish,Monitor,Resolve stageGroup
 ```
 
 **Value Delivered**: Continuous system health visibility enabling sub-minute detection and resolution of issues before customer impact, reducing MTTR by 50-70% through automated correlation and contextual diagnostics.
