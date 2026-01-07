@@ -74,6 +74,66 @@ This script is **automatically executed** by `azd provision` and `azd up` after 
 - ✅ **Validates Configuration**: Verifies that all secrets were set correctly with detailed reporting
 - ✅ **Completes Workflow**: Final step in the deployment automation chain
 
+### 📊 Workflow Diagram
+
+The script executes a comprehensive post-provisioning configuration workflow:
+
+```mermaid
+flowchart LR
+    Start(["🚀 azd provision completes"])
+    Complete(["🏁 Complete"])
+
+    Start --> EnvironmentSetup
+
+    subgraph EnvironmentSetup["1️⃣ Environment Setup"]
+        direction TB
+        SetEnv["Set Environment Variables"]
+        Execute["Execute postprovision"]
+        Validate["Validate Environment"]
+        SetEnv --> Execute
+        Execute --> Validate
+    end
+
+    subgraph Authentication["2️⃣ Authentication"]
+        direction TB
+        ACRAuth["ACR Authentication"]
+        SQLConfig["SQL Managed Identity"]
+        ACRAuth --> SQLConfig
+    end
+
+    subgraph SecretsConfig["3️⃣ Secrets Configuration"]
+        direction TB
+        Clear["Clear Old Secrets"]
+        ConfigLoop["Configure Secrets Loop"]
+        ConfigProject["Set Project Secrets"]
+        Clear --> ConfigLoop
+        ConfigLoop --> ConfigProject
+        ConfigProject --> ConfigLoop
+    end
+
+    subgraph ValidationPhase["4️⃣ Validation & Summary"]
+        direction TB
+        Validate2["Validate Configuration"]
+        Summary["Display Summary"]
+        Validate2 --> Summary
+    end
+
+    EnvironmentSetup --> Authentication
+    Authentication --> SecretsConfig
+    SecretsConfig --> ValidationPhase
+    ValidationPhase --> Complete
+
+    classDef startEnd fill:#e8f5e9,stroke:#2e7d32,stroke-width:3px,color:#1b5e20
+    classDef process fill:#e3f2fd,stroke:#1976d2,stroke-width:2px,color:#0d47a1
+    classDef config fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px,color:#4a148c
+    classDef loop fill:#fff3e0,stroke:#f57c00,stroke-width:2px,color:#e65100
+
+    class Start,Complete startEnd
+    class SetEnv,Execute,Validate,ACRAuth,SQLConfig,Clear,Validate2,Summary process
+    class ConfigLoop loop
+    class ConfigProject config
+```
+
 ## 🏗️ Required Environment Variables
 
 The script requires the following environment variables to be set by Azure Developer CLI:
