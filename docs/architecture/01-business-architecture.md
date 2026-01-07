@@ -86,15 +86,12 @@ flowchart TB
 | **Observability**       | Distributed tracing, metrics collection, centralized logging         | Operational excellence and rapid troubleshooting   |
 | **Identity & Security** | Zero-trust authentication using managed identities                   | Security posture and compliance adherence          |
 | **DevOps & Deployment** | Infrastructure as Code, automated deployment pipelines               | Deployment velocity and environment consistency    |
-| **Observability**       | Distributed tracing, metrics collection, centralized logging         | OpenTelemetry, Application Insights, Log Analytics |
-| **Identity & Security** | Zero-trust authentication using managed identities                   | User-Assigned Managed Identity, Entra ID           |
-| **DevOps & Deployment** | Infrastructure as Code, automated deployment pipelines               | Bicep, Azure Developer CLI, azd hooks              |
 
 ---
 
-## Stakeholder Analysis
+## 3. Stakeholder Analysis
 
-| Stakeholder               | Key Concerns                                              | How Architecture Addresses                                                                                   |
+| Stakeholder               | Concerns                                                  | How Architecture Addresses                                                                                   |
 | ------------------------- | --------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------ |
 | **Enterprise Architects** | Pattern applicability, scalability limits, vendor lock-in | Modular design with Azure Verified Modules, OpenTelemetry for vendor-neutral instrumentation                 |
 | **Security Officers**     | Data protection, access control, audit compliance         | Managed Identity (no secrets), Entra ID authentication, comprehensive diagnostic logging                     |
@@ -105,7 +102,7 @@ flowchart TB
 
 ---
 
-## Value Streams
+## 4. Value Streams
 
 ### Order Management Value Stream
 
@@ -220,9 +217,9 @@ flowchart LR
 
 ---
 
-## Quality Attribute Requirements
+## 5. Quality Attribute Requirements
 
-| Attribute           | Requirement                              | Priority | Implementation                                                         |
+| Attribute           | Requirement                              | Priority |
 | ------------------- | ---------------------------------------- | -------- | ---------------------------------------------------------------------- |
 | **Availability**    | 99.9% uptime for order processing        | High     | Azure Container Apps multi-replica, Service Bus guaranteed delivery    |
 | **Observability**   | End-to-end distributed tracing           | Critical | OpenTelemetry with W3C Trace Context, Application Insights correlation |
@@ -235,7 +232,7 @@ flowchart LR
 
 ---
 
-## Business Process Flows
+## 6. Business Process Flows
 
 ### Order Lifecycle Process
 
