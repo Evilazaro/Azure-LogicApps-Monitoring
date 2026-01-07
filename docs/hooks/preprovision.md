@@ -37,9 +37,6 @@
 - [📦 Resource Provider Registration](#resource-provider-registration)
   - [📋 Required Providers](#required-providers)
   - [🔧 Manual Registration](#manual-registration)
-- [🛠️ How It Works](#️-how-it-works)
-  - [📊 Workflow Diagram](#workflow-diagram)
-  - [🔗 Integration Points](#integration-points)
 - [⚠️ Error Handling](#error-handling)
   - [📁 Error Categories](#error-categories)
   - [💬 Error Messages](#error-messages)
@@ -67,6 +64,93 @@ Beyond basic validation, the preprovision script offers intelligent automation f
 - 📝 **Resource Provider Registration**: Ensures Azure providers are registered
 - 🧹 **Clean State**: Clears .NET user secrets for fresh deployment
 - 📊 **Detailed Logging**: Provides verbose output for troubleshooting
+
+### 📊 Workflow Diagram
+
+```mermaid
+flowchart LR
+    Start(["🚀 azd up / azd provision"])
+    Complete(["✓ Pre-provisioning Complete"])
+    Failed(["✗ Pre-provisioning Failed"])
+
+    Start --> RuntimeValidation
+
+    subgraph RuntimeValidation["1️⃣ Runtime Validation"]
+        direction TB
+        ValidateRuntime["Validate Runtime Version"]
+    end
+
+    subgraph Prerequisites["2️⃣ Prerequisites Check"]
+        direction TB
+        CheckDotNet["Check .NET SDK"]
+        InstallDotNet{"Install .NET?"}
+        CheckAzd["Check Azure Developer CLI"]
+        InstallAzd{"Install azd?"}
+        CheckAzCLI["Check Azure CLI"]
+        InstallAzCLI{"Install Azure CLI?"}
+        CheckBicep["Check Bicep CLI"]
+        InstallBicep{"Install Bicep?"}
+
+        CheckDotNet -->|Missing| InstallDotNet
+        InstallDotNet -->|Yes| CheckDotNet
+        CheckDotNet -->|OK| CheckAzd
+        CheckAzd -->|Missing| InstallAzd
+        InstallAzd -->|Yes| CheckAzd
+        CheckAzd -->|OK| CheckAzCLI
+        CheckAzCLI -->|Missing| InstallAzCLI
+        InstallAzCLI -->|Yes| CheckAzCLI
+        CheckAzCLI -->|OK| CheckBicep
+        CheckBicep -->|Missing| InstallBicep
+        InstallBicep -->|Yes| CheckBicep
+    end
+
+    subgraph Authentication["3️⃣ Azure Authentication"]
+        direction TB
+        CheckAuth["Check Azure Authentication"]
+        Login{"Login to Azure?"}
+
+        CheckAuth -->|Not Authenticated| Login
+        Login -->|Yes| CheckAuth
+    end
+
+    subgraph AzureConfig["4️⃣ Azure Configuration"]
+        direction TB
+        CheckProviders["Check Resource Providers"]
+        RegisterProviders{"Register Providers?"}
+        CheckQuota["Check Quotas (Info)"]
+
+        CheckProviders -->|Missing| RegisterProviders
+        RegisterProviders -->|Yes| CheckProviders
+        CheckProviders -->|OK| CheckQuota
+    end
+
+    subgraph Cleanup["5️⃣ Cleanup"]
+        direction TB
+        ClearSecrets["Clear User Secrets"]
+    end
+
+    RuntimeValidation --> Prerequisites
+    InstallDotNet -->|No| Failed
+    InstallAzd -->|No| Failed
+    InstallAzCLI -->|No| Failed
+    InstallBicep -->|No| Failed
+    CheckBicep -->|OK| Authentication
+    Login -->|No| Failed
+    CheckAuth -->|OK| AzureConfig
+    RegisterProviders -->|No| Failed
+    CheckQuota --> Cleanup
+    Cleanup --> Complete
+
+    classDef startEnd fill:#e8f5e9,stroke:#2e7d32,stroke-width:3px,color:#1b5e20
+    classDef process fill:#e3f2fd,stroke:#1976d2,stroke-width:2px,color:#0d47a1
+    classDef decision fill:#fff3e0,stroke:#f57c00,stroke-width:2px,color:#e65100
+    classDef failure fill:#ffcdd2,stroke:#d32f2f,stroke-width:2px,color:#b71c1c
+
+    class Start,Complete startEnd
+    class ValidateRuntime,CheckDotNet,CheckAzd,CheckAzCLI,CheckAuth,CheckBicep,CheckProviders,CheckQuota,ClearSecrets process
+    class InstallDotNet,InstallAzd,InstallAzCLI,Login,InstallBicep,RegisterProviders decision
+    class Failed failure
+```
 
 ---
 
@@ -375,106 +459,6 @@ az provider register --namespace Microsoft.ServiceBus --wait
 az provider register --namespace Microsoft.Storage --wait
 # ... etc
 ```
-
----
-
-## 🛠️ How It Works
-
-### Workflow Diagram
-
-```mermaid
-flowchart LR
-    Start(["🚀 azd up / azd provision"])
-    Complete(["✓ Pre-provisioning Complete"])
-    Failed(["✗ Pre-provisioning Failed"])
-
-    Start --> RuntimeValidation
-
-    subgraph RuntimeValidation["1️⃣ Runtime Validation"]
-        direction TB
-        ValidateRuntime["Validate Runtime Version"]
-    end
-
-    subgraph Prerequisites["2️⃣ Prerequisites Check"]
-        direction TB
-        CheckDotNet["Check .NET SDK"]
-        InstallDotNet{"Install .NET?"}
-        CheckAzd["Check Azure Developer CLI"]
-        InstallAzd{"Install azd?"}
-        CheckAzCLI["Check Azure CLI"]
-        InstallAzCLI{"Install Azure CLI?"}
-        CheckBicep["Check Bicep CLI"]
-        InstallBicep{"Install Bicep?"}
-
-        CheckDotNet -->|Missing| InstallDotNet
-        InstallDotNet -->|Yes| CheckDotNet
-        CheckDotNet -->|OK| CheckAzd
-        CheckAzd -->|Missing| InstallAzd
-        InstallAzd -->|Yes| CheckAzd
-        CheckAzd -->|OK| CheckAzCLI
-        CheckAzCLI -->|Missing| InstallAzCLI
-        InstallAzCLI -->|Yes| CheckAzCLI
-        CheckAzCLI -->|OK| CheckBicep
-        CheckBicep -->|Missing| InstallBicep
-        InstallBicep -->|Yes| CheckBicep
-    end
-
-    subgraph Authentication["3️⃣ Azure Authentication"]
-        direction TB
-        CheckAuth["Check Azure Authentication"]
-        Login{"Login to Azure?"}
-
-        CheckAuth -->|Not Authenticated| Login
-        Login -->|Yes| CheckAuth
-    end
-
-    subgraph AzureConfig["4️⃣ Azure Configuration"]
-        direction TB
-        CheckProviders["Check Resource Providers"]
-        RegisterProviders{"Register Providers?"}
-        CheckQuota["Check Quotas (Info)"]
-
-        CheckProviders -->|Missing| RegisterProviders
-        RegisterProviders -->|Yes| CheckProviders
-        CheckProviders -->|OK| CheckQuota
-    end
-
-    subgraph Cleanup["5️⃣ Cleanup"]
-        direction TB
-        ClearSecrets["Clear User Secrets"]
-    end
-
-    RuntimeValidation --> Prerequisites
-    InstallDotNet -->|No| Failed
-    InstallAzd -->|No| Failed
-    InstallAzCLI -->|No| Failed
-    InstallBicep -->|No| Failed
-    CheckBicep -->|OK| Authentication
-    Login -->|No| Failed
-    CheckAuth -->|OK| AzureConfig
-    RegisterProviders -->|No| Failed
-    CheckQuota --> Cleanup
-    Cleanup --> Complete
-
-    classDef startEnd fill:#e8f5e9,stroke:#2e7d32,stroke-width:3px,color:#1b5e20
-    classDef process fill:#e3f2fd,stroke:#1976d2,stroke-width:2px,color:#0d47a1
-    classDef decision fill:#fff3e0,stroke:#f57c00,stroke-width:2px,color:#e65100
-    classDef failure fill:#ffcdd2,stroke:#d32f2f,stroke-width:2px,color:#b71c1c
-
-    class Start,Complete startEnd
-    class ValidateRuntime,CheckDotNet,CheckAzd,CheckAzCLI,CheckAuth,CheckBicep,CheckProviders,CheckQuota,ClearSecrets process
-    class InstallDotNet,InstallAzd,InstallAzCLI,Login,InstallBicep,RegisterProviders decision
-    class Failed failure
-```
-
-### Integration Points
-
-| Aspect           | Details                                                                                                                                                                                                                        |
-| ---------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| **Version**      | 2.3.0 (PowerShell: 2025-12-30, Bash: 2025-12-30)                                                                                                                                                                               |
-| **Called By**    | • **Azure Developer CLI (azd)** automatically before `azd provision` or `azd up`<br/>• Developers manually for environment validation<br/>• CI/CD pipelines during automated deployment workflows                              |
-| **Calls**        | • `clean-secrets.ps1` or `clean-secrets.sh` for secret clearing<br/>• `az login` for Azure authentication<br/>• `az provider register` for resource provider registration<br/>• Installation scripts for missing prerequisites |
-| **Dependencies** | • **Runtime:** PowerShell 7.0+ or Bash 4.0+<br/>• **.NET SDK:** Version 10.0+<br/>• **Azure CLI:** Version 2.60.0+<br/>• **Azure Developer CLI (azd)**<br/>• **Bicep CLI:** Version 0.30.0+                                    |
 
 ---
 
