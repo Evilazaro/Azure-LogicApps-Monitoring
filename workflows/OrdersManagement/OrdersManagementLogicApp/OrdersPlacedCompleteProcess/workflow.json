@@ -42,7 +42,7 @@
                             "path": "/v2/datasets/@{encodeURIComponent(encodeURIComponent('${AZURE_STORAGE_ACCOUNT_NAME_WORKFLOW} '))}/copyFile",
                             "queries": {
                                 "source": "@item()?['Path']",
-                                "destination": "https://${AZURE_STORAGE_ACCOUNT_NAME_WORKFLOW}.blob.core.windows.net/ordersprocessedcompleted@{item()?['Id']}",
+                                "destination": "https://${AZURE_STORAGE_ACCOUNT_NAME_WORKFLOW}.blob.core.windows.net/ordersprocessedcompleted/@{item()?['Id']}",
                                 "overwrite": true,
                                 "queryParametersSingleEncoded": true
                             }

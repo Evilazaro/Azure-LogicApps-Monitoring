@@ -252,13 +252,13 @@ flowchart LR
 
 #### 📋 Phase Descriptions
 
-| Phase | Name | Description |
-|-------|------|-------------|
-| **1** | 🔧 Initialization | Set up environment aliases and validate required configuration |
-| **2** | 🔎 Discovery | Locate workflow project and discover all deployable workflows |
-| **3** | 📦 Preparation | Resolve placeholders, stage files, and create deployment package |
-| **4** | 🚀 Deployment | Update Azure settings and deploy the ZIP package |
-| **5** | ✨ Completion | Clean up temporary files and report success |
+| Phase | Name              | Description                                                      |
+| ----- | ----------------- | ---------------------------------------------------------------- |
+| **1** | 🔧 Initialization | Set up environment aliases and validate required configuration   |
+| **2** | 🔎 Discovery      | Locate workflow project and discover all deployable workflows    |
+| **3** | 📦 Preparation    | Resolve placeholders, stage files, and create deployment package |
+| **4** | 🚀 Deployment     | Update Azure settings and deploy the ZIP package                 |
+| **5** | ✨ Completion     | Clean up temporary files and report success                      |
 
 ---
 
