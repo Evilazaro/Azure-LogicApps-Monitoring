@@ -76,16 +76,16 @@ flowchart TB
 
 ### Capability Descriptions
 
-| Capability              | Description                                                          | Business Outcome                                   |
-| ----------------------- | -------------------------------------------------------------------- | -------------------------------------------------- |
-| **Order Management**    | Create, read, update, delete customer orders with product line items | Revenue generation through order fulfillment       |
-| **Customer Experience** | Interactive web interface for browsing, placing, and tracking orders | Customer satisfaction and self-service enablement  |
-| **Event Messaging**     | Reliable asynchronous message delivery using publish-subscribe       | System resilience and workload decoupling          |
-| **Workflow Automation** | Stateful business process orchestration triggered by events          | Operational efficiency and process consistency     |
-| **Data Persistence**    | Transactional storage of orders with referential integrity           | Data accuracy and audit compliance                 |
-| **Observability**       | Distributed tracing, metrics collection, centralized logging         | Operational excellence and rapid troubleshooting   |
-| **Identity & Security** | Zero-trust authentication using managed identities                   | Security posture and compliance adherence          |
-| **DevOps & Deployment** | Infrastructure as Code, automated deployment pipelines               | Deployment velocity and environment consistency    |
+| Capability              | Description                                                          | Business Outcome                                  |
+| ----------------------- | -------------------------------------------------------------------- | ------------------------------------------------- |
+| **Order Management**    | Create, read, update, delete customer orders with product line items | Revenue generation through order fulfillment      |
+| **Customer Experience** | Interactive web interface for browsing, placing, and tracking orders | Customer satisfaction and self-service enablement |
+| **Event Messaging**     | Reliable asynchronous message delivery using publish-subscribe       | System resilience and workload decoupling         |
+| **Workflow Automation** | Stateful business process orchestration triggered by events          | Operational efficiency and process consistency    |
+| **Data Persistence**    | Transactional storage of orders with referential integrity           | Data accuracy and audit compliance                |
+| **Observability**       | Distributed tracing, metrics collection, centralized logging         | Operational excellence and rapid troubleshooting  |
+| **Identity & Security** | Zero-trust authentication using managed identities                   | Security posture and compliance adherence         |
+| **DevOps & Deployment** | Infrastructure as Code, automated deployment pipelines               | Deployment velocity and environment consistency   |
 
 ---
 
@@ -220,15 +220,15 @@ flowchart LR
 ## 5. Quality Attribute Requirements
 
 | Attribute           | Requirement                              | Priority |
-| ------------------- | ---------------------------------------- | -------- | ---------------------------------------------------------------------- |
-| **Availability**    | 99.9% uptime for order processing        | High     | Azure Container Apps multi-replica, Service Bus guaranteed delivery    |
-| **Observability**   | End-to-end distributed tracing           | Critical | OpenTelemetry with W3C Trace Context, Application Insights correlation |
-| **Scalability**     | Handle 1000+ orders/minute burst         | Medium   | Container Apps auto-scaling, Service Bus Standard tier throughput      |
-| **Security**        | Zero secrets in code/config              | Critical | User-Assigned Managed Identity, Entra ID authentication                |
-| **Reliability**     | No message loss during processing        | High     | Service Bus dead-letter queues, Logic Apps retry policies              |
-| **Maintainability** | < 1 hour onboarding for new developers   | Medium   | .NET Aspire local dev, comprehensive documentation                     |
-| **Deployability**   | Single-command deployment                | High     | Azure Developer CLI with lifecycle hooks                               |
-| **Testability**     | Isolated testing without cloud resources | Medium   | .NET Aspire emulators (SQL, Service Bus)                               |
+| ------------------- | ---------------------------------------- | -------- |
+| **Availability**    | 99.9% uptime for order processing        | High     |
+| **Observability**   | End-to-end distributed tracing           | Critical |
+| **Scalability**     | Handle 1000+ orders/minute burst         | Medium   |
+| **Security**        | Zero secrets in code/config              | Critical |
+| **Reliability**     | No message loss during processing        | High     |
+| **Maintainability** | < 1 hour onboarding for new developers   | Medium   |
+| **Deployability**   | Single-command deployment                | High     |
+| **Testability**     | Isolated testing without cloud resources | Medium   |
 
 ---
 
@@ -292,14 +292,3 @@ flowchart TD
     class TriggerLA async
 ```
 
----
-
-## Key Business Decisions
-
-| Decision                            | Rationale                                                        | Trade-offs                                            |
-| ----------------------------------- | ---------------------------------------------------------------- | ----------------------------------------------------- |
-| **Event-driven architecture**       | Decouples order placement from processing, enables async scaling | Adds complexity, requires message handling patterns   |
-| **Logic Apps for workflows**        | Visual designer, built-in connectors, managed service            | Limited custom code options, vendor-specific          |
-| **Managed Identity authentication** | Eliminates secrets, reduces security attack surface              | Requires Azure environment, more complex local dev    |
-| **Single-region deployment**        | Simplifies architecture, reduces costs                           | No geo-redundancy, potential latency for global users |
-| **.NET Aspire orchestration**       | Unified dev/prod experience, built-in observability              | Newer technology, limited community resources         |

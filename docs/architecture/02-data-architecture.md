@@ -1,6 +1,6 @@
 # Data Architecture
 
-## Data Architecture Overview
+## 1. Data Architecture Overview
 
 The Azure Logic Apps Monitoring Solution implements a **service-oriented data architecture** where each service owns its data and exposes it through well-defined APIs. This approach ensures loose coupling, independent scalability, and clear data ownership boundaries.
 
@@ -25,7 +25,7 @@ The Azure Logic Apps Monitoring Solution implements a **service-oriented data ar
 
 ---
 
-## Data Architecture Principles
+## 2. Data Architecture Principles
 
 | Principle                         | Statement                                                  | Rationale                                                    | Implications                                               |
 | --------------------------------- | ---------------------------------------------------------- | ------------------------------------------------------------ | ---------------------------------------------------------- |
@@ -38,7 +38,7 @@ The Azure Logic Apps Monitoring Solution implements a **service-oriented data ar
 
 ---
 
-## Data Landscape Map
+## 3. Data Landscape Map
 
 ```mermaid
 flowchart TB
@@ -125,7 +125,7 @@ flowchart TB
 
 ---
 
-## Data Domain Catalog
+## 4. Data Domain Catalog
 
 | Domain                | Bounded Context  | Primary Store                | Data Steward          | Description                                           |
 | --------------------- | ---------------- | ---------------------------- | --------------------- | ----------------------------------------------------- |
@@ -136,7 +136,7 @@ flowchart TB
 
 ---
 
-## Data Store Details
+## 5. Data Store Details
 
 | Store                           | Technology               | Purpose                                                | Owner Service               | Location                |
 | ------------------------------- | ------------------------ | ------------------------------------------------------ | --------------------------- | ----------------------- |
@@ -175,7 +175,7 @@ erDiagram
 
 ---
 
-## Data Flow Architecture
+## 6. Data Flow Architecture
 
 ### End-to-End Data Flow
 
@@ -243,7 +243,7 @@ sequenceDiagram
 
 ---
 
-## Monitoring Data Flow Architecture
+## 7. Monitoring Data Flow Architecture
 
 ### Four-Layer Observability Model
 
@@ -315,7 +315,7 @@ flowchart LR
 
 ---
 
-## Telemetry Data Mapping
+## 8. Telemetry Data Mapping
 
 ### Three Pillars Overview
 
@@ -424,7 +424,7 @@ flowchart TB
 
 ---
 
-## Cross-Architecture Relationships
+## 9. Cross-Architecture Relationships
 
 ### Data ↔ Business Architecture
 
