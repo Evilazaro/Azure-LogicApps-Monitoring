@@ -42,7 +42,7 @@
                         }
                     },
                     "method": "get",
-                    "path": "/v2/datasets/@{encodeURIComponent(encodeURIComponent('orderswsaa6p5hofvqw2yq'))}/foldersV2/@{encodeURIComponent(encodeURIComponent('JTJmb3JkZXJzcHJvY2Vzc2Vkc3VjY2Vzc2Z1bGx5'))}",
+                    "path": "/v2/datasets/@{encodeURIComponent(encodeURIComponent('${AZURE_STORAGE_ACCOUNT_NAME_WORKFLOW}'))}/foldersV2/@{encodeURIComponent(encodeURIComponent('JTJmb3JkZXJzcHJvY2Vzc2Vkc3VjY2Vzc2Z1bGx5'))}",
                     "queries": {
                         "nextPageMarker": "",
                         "useFlatListing": true
@@ -66,7 +66,7 @@
                                 }
                             },
                             "method": "get",
-                            "path": "/v2/datasets/@{encodeURIComponent(encodeURIComponent('orderswsaa6p5hofvqw2yq'))}/files/@{encodeURIComponent(encodeURIComponent(item()?['Path']))}"
+                            "path": "/v2/datasets/@{encodeURIComponent(encodeURIComponent('${AZURE_STORAGE_ACCOUNT_NAME_WORKFLOW}'))}/files/@{encodeURIComponent(encodeURIComponent(item()?['Path']))}"
                         }
                     },
                     "Delete_blob_(V2)": {
@@ -81,7 +81,7 @@
                             "headers": {
                                 "SkipDeleteIfFileNotFoundOnServer": false
                             },
-                            "path": "/v2/datasets/@{encodeURIComponent(encodeURIComponent('orderswsaa6p5hofvqw2yq'))}/files/@{encodeURIComponent(encodeURIComponent(body('Get_Blob_Metadata_(V2)')?['Path']))}"
+                            "path": "/v2/datasets/@{encodeURIComponent(encodeURIComponent('${AZURE_STORAGE_ACCOUNT_NAME_WORKFLOW}'))}/files/@{encodeURIComponent(encodeURIComponent(body('Get_Blob_Metadata_(V2)')?['Path']))}"
                         },
                         "runAfter": {
                             "Get_Blob_Metadata_(V2)": [
