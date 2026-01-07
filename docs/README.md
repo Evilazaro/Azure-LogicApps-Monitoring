@@ -72,6 +72,7 @@ docs/
     ├── sql-managed-identity-config.md  # SQL managed identity setup
     ├── clean-secrets.md                # Secret cleanup utility
     ├── Generate-Orders.md              # Test data generation script
+    ├── deploy-workflow.md              # Logic Apps workflow deployment
     └── VALIDATION-WORKFLOW.md          # Validation workflow guide
 ```
 
@@ -118,6 +119,7 @@ The hooks documentation covers Azure Developer CLI (azd) lifecycle scripts that 
 | `sql-managed-identity-config.ps1/sh` | [sql-managed-identity-config.md](hooks/sql-managed-identity-config.md) | SQL Database managed identity setup                   |
 | `clean-secrets.ps1/sh`               | [clean-secrets.md](hooks/clean-secrets.md)                             | .NET user secrets cleanup                             |
 | `Generate-Orders.ps1/sh`             | [Generate-Orders.md](hooks/Generate-Orders.md)                         | Test order data generation                            |
+| `deploy-workflow.ps1/sh`             | [deploy-workflow.md](hooks/deploy-workflow.md)                         | Deploy Logic Apps Standard workflows                  |
 
 ### Developer Workflows
 
