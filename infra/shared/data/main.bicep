@@ -31,12 +31,6 @@ param name string
 @description('Environment name suffix to ensure uniqueness.')
 @minLength(2)
 @maxLength(10)
-@allowed([
-  'local'
-  'dev'
-  'staging'
-  'prod'
-])
 param envName string
 
 @description('Azure region for Service Bus deployment.')
@@ -147,6 +141,17 @@ resource poSuccess 'Microsoft.Storage/storageAccounts/blobServices/containers@20
 resource poFailed 'Microsoft.Storage/storageAccounts/blobServices/containers@2025-06-01' = {
   parent: blobSvc
   name: 'ordersprocessedwitherrors'
+  properties: {
+    publicAccess: 'None'
+  }
+}
+
+// Container for completed order processing
+// Enables tracking of all completed orders
+@description('Blob container for orders processed with errors')
+resource poCompleted 'Microsoft.Storage/storageAccounts/blobServices/containers@2025-06-01' = {
+  parent: blobSvc
+  name: 'ordersprocessedcompleted'
   properties: {
     publicAccess: 'None'
   }

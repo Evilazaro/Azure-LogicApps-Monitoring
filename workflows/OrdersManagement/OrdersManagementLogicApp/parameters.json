@@ -1,0 +1,32 @@
+{
+  "servicebus-ConnectionRuntimeUrl": {
+    "type": "String",
+    "value": "@appsetting('servicebus-ConnectionRuntimeUrl')"
+  },
+  "servicebus-Authentication": {
+    "type": "Object",
+    "value": {
+      "type": "ManagedServiceIdentity",
+      "identity": "/subscriptions/${AZURE_SUBSCRIPTION_ID}/resourcegroups/${AZURE_RESOURCE_GROUP}/providers/Microsoft.ManagedIdentity/userAssignedIdentities/${MANAGED_IDENTITY_NAME}"
+    }
+  },
+  "azureblob-ConnectionRuntimeUrl": {
+    "type": "String",
+    "value": "@appsetting('azureblob-ConnectionRuntimeUrl')"
+  },
+  "azureblob-Authentication": {
+    "type": "Object",
+    "value": {
+      "type": "ManagedServiceIdentity",
+      "identity": "/subscriptions/${AZURE_SUBSCRIPTION_ID}/resourcegroups/${AZURE_RESOURCE_GROUP}/providers/Microsoft.ManagedIdentity/userAssignedIdentities/${MANAGED_IDENTITY_NAME}"
+    }
+  },
+  "AZURE_STORAGE_ACCOUNT_NAME_WORKFLOW": {
+    "type": "String",
+    "value": "${AZURE_STORAGE_ACCOUNT_NAME_WORKFLOW}"
+  },
+  "ORDERS_API_URL": {
+    "type": "String",
+    "value": "${ORDERS_API_URL}"
+  }
+}

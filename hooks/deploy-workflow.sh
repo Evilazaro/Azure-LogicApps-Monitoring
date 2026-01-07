@@ -1,861 +1,365 @@
 #!/usr/bin/env bash
-
-################################################################################
+#
 # deploy-workflow.sh
 #
 # SYNOPSIS
-#     Deploys an Azure Logic Apps Standard workflow with placeholder replacement.
+#   Deploys Logic Apps Standard workflows to Azure.
 #
 # DESCRIPTION
-#     This script performs the following operations:
-#     1. Loads azd environment variables
-#     2. Validates required environment variables
-#     3. Replaces placeholders in workflow.json and connections.json (in memory only)
-#     4. Deploys the workflow to Azure Logic Apps Standard using Azure CLI zip deploy
-#
-#     Note: Placeholder replacement happens in memory only. The original source files
-#     (workflow.json and connections.json) retain their placeholders for future deployments.
+#   Deploys workflow definitions from OrdersManagement Logic App to Azure.
+#   Runs as azd predeploy hook - environment variables are already loaded.
 #
 # USAGE
-#     ./deploy-workflow.sh [OPTIONS]
+#   ./deploy-workflow.sh [workflow_path]
 #
-# OPTIONS
-#     -l, --logic-app-name <name>       The name of the Azure Logic Apps Standard resource
-#     -g, --resource-group <name>       The name of the Azure resource group
-#     -w, --workflow-name <name>        The name of the workflow to deploy (default: ProcessingOrdersPlaced)
-#     -p, --workflow-base-path <path>   Base path to workflow files
-#     -s, --skip-placeholder            Skip placeholder replacement
-#     -n, --dry-run                     Show what would be deployed without making changes
-#     -v, --verbose                     Display detailed diagnostic information
-#     -h, --help                        Display this help message and exit
-#
-# EXAMPLES
-#     ./deploy-workflow.sh
-#         Deploys the workflow using environment variables from the active azd environment.
-#
-#     ./deploy-workflow.sh --logic-app-name 'my-logic-app' --resource-group 'my-rg'
-#         Deploys to a specific Logic App in a specific resource group.
-#
-#     ./deploy-workflow.sh --dry-run
-#         Shows what would be deployed without making changes.
-#
-# EXIT CODES
-#     0    Success - Deployment completed successfully
-#     1    Error - Deployment failed or validation error
+# PARAMETERS
+#   workflow_path   Optional path to the workflow project directory.
 #
 # NOTES
-#     File Name      : deploy-workflow.sh
-#     Author         : Evilazaro | Principal Cloud Solution Architect | Microsoft
-#     Version        : 1.3.0
-#     Last Modified  : 2026-01-06
-#     Prerequisite   : Bash 4.0+, Azure CLI (az), Azure Developer CLI (azd)
-#     Purpose        : Deploy Logic Apps Standard workflows via zip deployment
-#     
+#   Version: 2.0.1
+#   Requires: Azure CLI 2.50+, Bash 4.0+, jq
 #
-# LINKS
-#     https://github.com/Evilazaro/Azure-LogicApps-Monitoring
-#
-# COMPONENT
-#     Azure Logic Apps Monitoring - Deployment Tools
-#
-# ROLE
-#     Workflow Deployment
-#
-# FUNCTIONALITY
-#     Deploys Logic Apps Standard workflows with placeholder replacement
-#
-################################################################################
 
-#==============================================================================
-# STRICT MODE AND ERROR HANDLING
-#==============================================================================
-
-# Enable Bash strict mode for robust error handling
-# -e: Exit immediately if any command exits with non-zero status
-# -u: Treat unset variables as errors
-# -o pipefail: Propagate errors through pipes
 set -euo pipefail
 
-# Set Internal Field Separator to default (space, tab, newline)
-IFS=$' \t\n'
+# Script directory for relative path resolution
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-#==============================================================================
-# SCRIPT METADATA AND CONSTANTS
-#==============================================================================
+# Placeholder pattern for ${VARIABLE} substitution
+readonly PLACEHOLDER_PATTERN='\$\{([A-Z_][A-Z0-9_]*)\}'
 
-# Script version following semantic versioning (MAJOR.MINOR.PATCH)
-readonly SCRIPT_VERSION="1.3.0"
+# Files to exclude from deployment (per .funcignore)
+readonly EXCLUDE_PATTERNS=('.debug' '.git*' '.vscode' '__azurite*' '__blobstorage__' '__queuestorage__' 'local.settings.json' 'test' 'workflow-designtime')
 
-# Script name for consistent logging and error messages
-readonly SCRIPT_NAME="deploy-workflow.sh"
+#region Helper Functions
 
-# Resolve script directory for reliable path operations
-readonly SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+write_log() {
+    local message="$1"
+    local level="${2:-Info}"
+    local prefix color reset
+    
+    reset='\033[0m'
+    
+    case "$level" in
+        Info)
+            prefix="[i]"
+            color='\033[0;36m' # Cyan
+            ;;
+        Success)
+            prefix="[✓]"
+            color='\033[0;32m' # Green
+            ;;
+        Warning)
+            prefix="[!]"
+            color='\033[0;33m' # Yellow
+            ;;
+        Error)
+            prefix="[✗]"
+            color='\033[0;31m' # Red
+            ;;
+        *)
+            prefix="[i]"
+            color='\033[0;36m'
+            ;;
+    esac
+    
+    echo -e "${color}$(date '+%H:%M:%S') ${prefix} ${message}${reset}"
+}
 
-#==============================================================================
-# PLACEHOLDER CONFIGURATION
-#==============================================================================
+get_environment_value() {
+    local name="$1"
+    local default="${2:-}"
+    local value
+    
+    value="${!name:-}"
+    if [[ -n "$value" ]]; then
+        echo "$value"
+    else
+        echo "$default"
+    fi
+}
 
-# Workflow placeholders (workflow.json) - ReadOnly arrays for immutability
-readonly -a WORKFLOW_PLACEHOLDERS=(
-    'ORDERS_API_URL'
-    'AZURE_STORAGE_ACCOUNT_NAME_WORKFLOW'
-)
+set_workflow_environment_aliases() {
+    # Map WORKFLOWS_* variables to AZURE_* equivalents for connections.json compatibility
+    declare -A mappings=(
+        ["WORKFLOWS_SUBSCRIPTION_ID"]="AZURE_SUBSCRIPTION_ID"
+        ["WORKFLOWS_RESOURCE_GROUP_NAME"]="AZURE_RESOURCE_GROUP"
+        ["WORKFLOWS_LOCATION_NAME"]="AZURE_LOCATION"
+    )
+    
+    for key in "${!mappings[@]}"; do
+        local source_key="${mappings[$key]}"
+        if [[ -z "${!key:-}" ]] && [[ -n "${!source_key:-}" ]]; then
+            export "$key"="${!source_key}"
+        fi
+    done
+}
 
-# Connection placeholders (connections.json) - ReadOnly arrays for immutability
-readonly -a CONNECTION_PLACEHOLDERS=(
-    'AZURE_SUBSCRIPTION_ID'
-    'AZURE_LOCATION'
-    'AZURE_RESOURCE_GROUP'
-    'MANAGED_IDENTITY_NAME'
-    'SERVICE_BUS_CONNECTION_RUNTIME_URL'
-    'AZURE_BLOB_CONNECTION_RUNTIME_URL'
-)
+resolve_placeholders() {
+    local content="$1"
+    local filename="$2"
+    local resolved="$content"
+    local unresolved=()
+    
+    # Find all ${VARIABLE} patterns and replace them
+    while IFS= read -r match; do
+        if [[ -n "$match" ]]; then
+            # Extract variable name from ${VAR_NAME}
+            local var_name="${match:2:-1}"
+            local var_value="${!var_name:-}"
+            
+            if [[ -n "$var_value" ]]; then
+                resolved="${resolved//$match/$var_value}"
+            else
+                unresolved+=("$var_name")
+            fi
+        fi
+    done < <(grep -oE '\$\{[A-Z_][A-Z0-9_]*\}' <<< "$content" | sort -u)
+    
+    if [[ ${#unresolved[@]} -gt 0 ]]; then
+        write_log "Unresolved in ${filename}: $(IFS=', '; echo "${unresolved[*]}")" Warning
+    fi
+    
+    echo "$resolved"
+}
 
-#==============================================================================
-# GLOBAL VARIABLES
-#==============================================================================
+get_connection_runtime_url() {
+    local connection_name="$1"
+    local resource_group="$2"
+    local subscription_id="$3"
+    
+    local uri="https://management.azure.com/subscriptions/${subscription_id}/resourceGroups/${resource_group}/providers/Microsoft.Web/connections/${connection_name}/listConnectionKeys?api-version=2016-06-01"
+    
+    local result
+    if result=$(az rest --method POST --uri "$uri" --output json 2>/dev/null); then
+        local runtime_url
+        runtime_url=$(echo "$result" | jq -r '.runtimeUrls[0] // empty' 2>/dev/null)
+        if [[ -n "$runtime_url" ]]; then
+            echo "$runtime_url"
+            return 0
+        fi
+    fi
+    
+    return 1
+}
 
-# Command-line options with defaults (use Join-Path equivalent for cross-platform)
-LOGIC_APP_NAME=""
-RESOURCE_GROUP_NAME=""
-WORKFLOW_NAME="ProcessingOrdersPlaced"
-WORKFLOW_BASE_PATH="${SCRIPT_DIR}/../workflows/OrdersManagement/OrdersManagementLogicApp"
-SKIP_PLACEHOLDER_REPLACEMENT=false
-DRY_RUN=false
-VERBOSE=false
-
-# Azure account information (populated by test_azure_cli_connection)
-AZURE_ACCOUNT_ID=""
-AZURE_USER_NAME=""
-AZURE_SUBSCRIPTION_ID_CURRENT=""
-
-#==============================================================================
-# COLOR CODES FOR OUTPUT
-#==============================================================================
-
-readonly COLOR_RESET='\033[0m'
-readonly COLOR_RED='\033[0;31m'
-readonly COLOR_GREEN='\033[0;32m'
-readonly COLOR_YELLOW='\033[0;33m'
-readonly COLOR_CYAN='\033[0;36m'
-readonly COLOR_GRAY='\033[0;90m'
-readonly COLOR_BOLD='\033[1m'
-
-#==============================================================================
-# ERROR HANDLING AND CLEANUP
-#==============================================================================
-
-# Temporary directory for deployment package
-TEMP_DIR=""
-ZIP_PATH=""
-
-#------------------------------------------------------------------------------
-# Function: cleanup
-# Description: Cleans up temporary files on script exit.
-#              Called automatically via trap on EXIT.
-#------------------------------------------------------------------------------
 cleanup() {
     local exit_code=$?
     
-    # Remove temporary files
-    if [[ -n "${TEMP_DIR:-}" && -d "${TEMP_DIR}" ]]; then
-        rm -rf "${TEMP_DIR}" 2>/dev/null || true
-    fi
-    if [[ -n "${ZIP_PATH:-}" && -f "${ZIP_PATH}" ]]; then
-        rm -f "${ZIP_PATH}" 2>/dev/null || true
+    # Clean up staging directory if it exists
+    if [[ -n "${STAGING_DIR:-}" ]] && [[ -d "$STAGING_DIR" ]]; then
+        rm -rf "$STAGING_DIR"
     fi
     
-    return "${exit_code}"
-}
-
-trap cleanup EXIT
-
-#------------------------------------------------------------------------------
-# Function: handle_interrupt
-# Description: Handles script interruption (Ctrl+C or SIGTERM).
-#------------------------------------------------------------------------------
-handle_interrupt() {
-    echo "" >&2
-    log_error "Script interrupted by user"
-    exit 130
-}
-
-trap handle_interrupt INT TERM
-
-#==============================================================================
-# LOGGING FUNCTIONS
-#==============================================================================
-
-#------------------------------------------------------------------------------
-# Function: log_error
-# Description: Logs an error message to stderr in red.
-# Arguments:
-#   $@ - Message to log
-#------------------------------------------------------------------------------
-log_error() {
-    echo -e "${COLOR_RED}ERROR: $*${COLOR_RESET}" >&2
-}
-
-#------------------------------------------------------------------------------
-# Function: log_warning
-# Description: Logs a warning message to stderr in yellow.
-# Arguments:
-#   $@ - Message to log
-#------------------------------------------------------------------------------
-log_warning() {
-    echo -e "${COLOR_YELLOW}WARNING: $*${COLOR_RESET}" >&2
-}
-
-#------------------------------------------------------------------------------
-# Function: log_success
-# Description: Logs a success message in green.
-# Arguments:
-#   $@ - Message to log
-#------------------------------------------------------------------------------
-log_success() {
-    echo -e "${COLOR_GREEN}$*${COLOR_RESET}"
-}
-
-#------------------------------------------------------------------------------
-# Function: log_info
-# Description: Logs an informational message in cyan.
-# Arguments:
-#   $@ - Message to log
-#------------------------------------------------------------------------------
-log_info() {
-    echo -e "${COLOR_CYAN}$*${COLOR_RESET}"
-}
-
-#------------------------------------------------------------------------------
-# Function: log_gray
-# Description: Logs a message in gray with indentation.
-# Arguments:
-#   $@ - Message to log
-#------------------------------------------------------------------------------
-log_gray() {
-    echo -e "${COLOR_GRAY}  $*${COLOR_RESET}"
-}
-
-#------------------------------------------------------------------------------
-# Function: log_verbose
-# Description: Logs a verbose message if VERBOSE mode is enabled.
-# Arguments:
-#   $@ - Message to log
-#------------------------------------------------------------------------------
-log_verbose() {
-    if [[ "${VERBOSE}" == "true" ]]; then
-        echo "[VERBOSE] $*" >&2
-    fi
-}
-
-#==============================================================================
-# HELP AND USAGE
-#==============================================================================
-
-#------------------------------------------------------------------------------
-# Function: show_help
-# Description: Displays comprehensive help information and exits.
-#------------------------------------------------------------------------------
-show_help() {
-    cat << EOF
-deploy-workflow.sh - Azure Logic Apps Workflow Deployment Tool
-
-SYNOPSIS
-    ${SCRIPT_NAME} [OPTIONS]
-
-DESCRIPTION
-    Deploys an Azure Logic Apps Standard workflow with placeholder replacement.
-    Uses Azure Developer CLI (azd) for environment variables and Azure CLI
-    for zip deployment.
-
-    The script performs the following operations:
-    1. Loads azd environment variables
-    2. Validates required environment variables
-    3. Replaces placeholders in workflow.json and connections.json (in memory only)
-    4. Deploys the workflow to Azure Logic Apps Standard using Azure CLI zip deploy
-
-    Note: Placeholder replacement happens in memory only. The original source files
-    (workflow.json and connections.json) retain their placeholders for future deployments.
-
-OPTIONS
-    -l, --logic-app-name <name>       The name of the Azure Logic Apps Standard resource
-                                      (default: from LOGIC_APP_NAME env var)
-    -g, --resource-group <name>       The name of the Azure resource group
-                                      (default: from AZURE_RESOURCE_GROUP env var)
-    -w, --workflow-name <name>        The name of the workflow to deploy
-                                      (default: ProcessingOrdersPlaced)
-    -p, --workflow-base-path <path>   Base path to the Logic App workflow files
-                                      (default: ../workflows/OrdersManagement/OrdersManagementLogicApp)
-    -s, --skip-placeholder            Skip placeholder replacement if files are already processed
-    -n, --dry-run                     Show what would be deployed without making changes
-    -v, --verbose                     Display detailed diagnostic information
-    -h, --help                        Display this help message and exit
-
-EXAMPLES
-    ${SCRIPT_NAME}
-        Deploys the workflow using environment variables from the active azd environment.
-
-    ${SCRIPT_NAME} --logic-app-name 'my-logic-app' --resource-group 'my-rg'
-        Deploys to a specific Logic App in a specific resource group.
-
-    ${SCRIPT_NAME} --dry-run
-        Shows what would be deployed without making changes.
-
-    ${SCRIPT_NAME} --workflow-name 'MyCustomWorkflow' --verbose
-        Deploys a custom workflow with verbose logging.
-
-PLACEHOLDERS REPLACED
-    Workflow Variables (workflow.json):
-    • ORDERS_API_URL
-    • AZURE_STORAGE_ACCOUNT_NAME_WORKFLOW
-
-    Connection Variables (connections.json):
-    • AZURE_SUBSCRIPTION_ID
-    • AZURE_LOCATION
-    • AZURE_RESOURCE_GROUP
-    • MANAGED_IDENTITY_NAME
-    • SERVICE_BUS_CONNECTION_RUNTIME_URL
-    • AZURE_BLOB_CONNECTION_RUNTIME_URL
-
-EXIT CODES
-    0    Success - Deployment completed successfully
-    1    Error - Deployment failed or validation error
-
-VERSION
-    ${SCRIPT_VERSION}
-
-AUTHOR
-    Evilazaro | Principal Cloud Solution Architect | Microsoft
-
-COPYRIGHT
-    (c) 2025-2026. All rights reserved.
-
-SEE ALSO
-    deploy-workflow.ps1 - PowerShell version of this script
-    https://github.com/Evilazaro/Azure-LogicApps-Monitoring
-
-EOF
-    exit 0
-}
-
-#==============================================================================
-# ARGUMENT PARSING
-#==============================================================================
-
-#------------------------------------------------------------------------------
-# Function: parse_arguments
-# Description: Parses command-line arguments and sets global variables.
-# Arguments:
-#   $@ - All command-line arguments
-#------------------------------------------------------------------------------
-parse_arguments() {
-    while [[ $# -gt 0 ]]; do
-        case "$1" in
-            -l|--logic-app-name)
-                if [[ -z "${2:-}" ]]; then
-                    log_error "Option $1 requires an argument"
-                    exit 1
-                fi
-                LOGIC_APP_NAME="$2"
-                shift 2
-                ;;
-            -g|--resource-group)
-                if [[ -z "${2:-}" ]]; then
-                    log_error "Option $1 requires an argument"
-                    exit 1
-                fi
-                RESOURCE_GROUP_NAME="$2"
-                shift 2
-                ;;
-            -w|--workflow-name)
-                if [[ -z "${2:-}" ]]; then
-                    log_error "Option $1 requires an argument"
-                    exit 1
-                fi
-                WORKFLOW_NAME="$2"
-                shift 2
-                ;;
-            -p|--workflow-base-path)
-                if [[ -z "${2:-}" ]]; then
-                    log_error "Option $1 requires an argument"
-                    exit 1
-                fi
-                WORKFLOW_BASE_PATH="$2"
-                shift 2
-                ;;
-            -s|--skip-placeholder)
-                SKIP_PLACEHOLDER_REPLACEMENT=true
-                shift
-                ;;
-            -n|--dry-run)
-                DRY_RUN=true
-                shift
-                ;;
-            -v|--verbose)
-                VERBOSE=true
-                shift
-                ;;
-            -h|--help)
-                show_help
-                ;;
-            -*)
-                log_error "Unknown option: $1"
-                echo "Use --help for usage information." >&2
-                exit 1
-                ;;
-            *)
-                log_error "Unexpected argument: $1"
-                echo "Use --help for usage information." >&2
-                exit 1
-                ;;
-        esac
-    done
-}
-
-#==============================================================================
-# HELPER FUNCTIONS
-#==============================================================================
-
-#------------------------------------------------------------------------------
-# Function: initialize_azd_environment
-# Description: Loads azd environment variables into the current session.
-#              Uses AZURE_ENV_NAME to specify the environment if set.
-# Returns:
-#   0 - Variables loaded successfully
-#   1 - Failed to load variables
-#------------------------------------------------------------------------------
-initialize_azd_environment() {
-    log_gray "Loading azd environment variables..."
-
-    local azd_output
-    local env_name="${AZURE_ENV_NAME:-}"
-
-    if [[ -z "${env_name}" ]]; then
-        log_warning "AZURE_ENV_NAME environment variable is not set. Trying to get values from default environment."
-        if ! azd_output=$(azd env get-values 2>/dev/null); then
-            log_warning "Could not load azd environment variables. Ensure azd environment is configured."
-            return 1
-        fi
-    else
-        log_gray "Using azd environment: ${env_name}"
-        if ! azd_output=$(azd env get-values --environment "${env_name}" 2>/dev/null); then
-            log_warning "Could not load azd environment variables. Ensure azd environment is configured."
-            return 1
-        fi
-    fi
-
-    if [[ -z "${azd_output}" ]]; then
-        log_warning "azd environment returned empty output."
-        return 1
-    fi
-
-    local loaded_count=0
-    while IFS= read -r line; do
-        # Match pattern: VARNAME="value" or VARNAME=value
-        if [[ "${line}" =~ ^([A-Z_][A-Z0-9_]*)=\"?(.*)\"?$ ]]; then
-            local var_name="${BASH_REMATCH[1]}"
-            local var_value="${BASH_REMATCH[2]}"
-            # Remove trailing quote if present
-            var_value="${var_value%\"}"
-            export "${var_name}=${var_value}"
-            ((loaded_count++))
-            log_verbose "Set environment variable: ${var_name}"
-        fi
-    done <<< "${azd_output}"
-
-    log_success "  Loaded ${loaded_count} environment variables from azd."
-    return 0
-}
-
-#------------------------------------------------------------------------------
-# Function: test_required_environment_variables
-# Description: Validates that all required environment variables are set.
-# Arguments:
-#   $@ - Array of variable names to check
-# Returns:
-#   0 - All variables are set
-#   1 - One or more variables are missing
-#------------------------------------------------------------------------------
-test_required_environment_variables() {
-    local -a var_names=("$@")
-    local -a missing_vars=()
-    
-    for var_name in "${var_names[@]}"; do
-        local var_value="${!var_name:-}"
-        if [[ -z "${var_value}" ]]; then
-            missing_vars+=("${var_name}")
-        fi
-    done
-    
-    if [[ ${#missing_vars[@]} -gt 0 ]]; then
-        log_warning "Missing environment variables: ${missing_vars[*]}"
-        return 1
+    # Clean up zip file if it exists
+    if [[ -n "${ZIP_PATH:-}" ]] && [[ -f "$ZIP_PATH" ]]; then
+        rm -f "$ZIP_PATH"
     fi
     
-    return 0
+    exit $exit_code
 }
 
-#------------------------------------------------------------------------------
-# Function: get_masked_value
-# Description: Returns a masked version of sensitive values for display.
-# Arguments:
-#   $1 - Value to mask
-#   $2 - Variable name (for determining if masking is needed)
-# Returns:
-#   Masked or original value via stdout
-#------------------------------------------------------------------------------
-get_masked_value() {
-    local value="${1:-}"
-    local var_name="${2:-}"
-    
-    if [[ -z "${value}" ]]; then
-        echo "[Not Set]"
-        return
-    fi
-    
-    if [[ "${var_name}" =~ URL|SECRET|KEY|PASSWORD|CONNECTION ]]; then
-        local max_length=30
-        if [[ ${#value} -lt ${max_length} ]]; then
-            max_length=${#value}
-        fi
-        echo "${value:0:${max_length}}..."
-    else
-        echo "${value}"
-    fi
-}
+#endregion
 
-#------------------------------------------------------------------------------
-# Function: update_placeholder_content
-# Description: Replaces placeholders in content with environment variable values.
-# Arguments:
-#   $1 - Content to process
-#   $@ - Variable names for placeholders
-# Returns:
-#   Updated content via stdout
-#------------------------------------------------------------------------------
-update_placeholder_content() {
-    local content="$1"
-    shift
-    local -a var_names=("$@")
-    
-    for var_name in "${var_names[@]}"; do
-        local placeholder="\${${var_name}}"
-        local env_value="${!var_name:-}"
-        if [[ -n "${env_value}" ]]; then
-            content="${content//\$\{${var_name}\}/${env_value}}"
-            log_verbose "Replaced \${${var_name}} with value from ${var_name}"
-        fi
-    done
-    
-    echo "${content}"
-}
+#region Main
 
-#------------------------------------------------------------------------------
-# Function: test_azure_cli_connection
-# Description: Validates Azure CLI connection and returns account information.
-# Returns:
-#   0 - Connected and authenticated
-#   1 - Not connected
-#------------------------------------------------------------------------------
-test_azure_cli_connection() {
-    local account_json
-    if ! account_json=$(az account show --output json 2>/dev/null); then
-        log_error "Not connected to Azure. Please run 'az login' first."
-        return 1
-    fi
-
-    # Parse account information using jq if available, fallback to grep/sed
-    if command -v jq &>/dev/null; then
-        AZURE_ACCOUNT_ID=$(echo "${account_json}" | jq -r '.name // "unknown"')
-        AZURE_USER_NAME=$(echo "${account_json}" | jq -r '.user.name // "unknown"')
-        AZURE_SUBSCRIPTION_ID_CURRENT=$(echo "${account_json}" | jq -r '.id // "unknown"')
-    else
-        # Fallback to grep/sed parsing
-        AZURE_ACCOUNT_ID=$(echo "${account_json}" | grep -o '"name"[[:space:]]*:[[:space:]]*"[^"]*"' | head -1 | sed 's/.*: *"\([^"]*\)".*/\1/' || echo "unknown")
-        AZURE_USER_NAME=$(echo "${account_json}" | grep -o '"user"[[:space:]]*:[[:space:]]*{[^}]*}' | grep -o '"name"[[:space:]]*:[[:space:]]*"[^"]*"' | sed 's/.*: *"\([^"]*\)".*/\1/' || echo "unknown")
-        AZURE_SUBSCRIPTION_ID_CURRENT=$(echo "${account_json}" | grep -o '"id"[[:space:]]*:[[:space:]]*"[^"]*"' | head -1 | sed 's/.*: *"\([^"]*\)".*/\1/' || echo "unknown")
-    fi
-
-    return 0
-}
-
-#------------------------------------------------------------------------------
-# Function: deploy_logic_app_workflow
-# Description: Deploys workflow to Azure Logic Apps Standard using zip deployment.
-# Returns:
-#   0 - Deployment successful
-#   1 - Deployment failed
-#------------------------------------------------------------------------------
-deploy_logic_app_workflow() {
-    local workflow_content="$1"
-    local connections_content="$2"
-    
-    if [[ "${DRY_RUN}" == "true" ]]; then
-        log_info "  [DRY-RUN] Would deploy workflow '${WORKFLOW_NAME}' to Logic App '${LOGIC_APP_NAME}'"
-        log_verbose "  [DRY-RUN] Resource Group: ${RESOURCE_GROUP_NAME}"
-        log_verbose "  [DRY-RUN] Would create zip package and deploy via az logicapp deployment"
-        return 0
-    fi
-    
-    # Create temporary directory for deployment package
-    TEMP_DIR=$(mktemp -d)
-    log_verbose "Created temporary directory: ${TEMP_DIR}"
-    
-    # Create workflow directory structure
-    local workflow_dir="${TEMP_DIR}/${WORKFLOW_NAME}"
-    mkdir -p "${workflow_dir}"
-    
-    # Write workflow.json
-    echo "${workflow_content}" > "${workflow_dir}/workflow.json"
-    log_verbose "Created workflow file: ${workflow_dir}/workflow.json"
-    
-    # Write connections.json at root level
-    echo "${connections_content}" > "${TEMP_DIR}/connections.json"
-    log_verbose "Created connections file: ${TEMP_DIR}/connections.json"
-    
-    # Copy host.json if it exists
-    local source_host_json="${WORKFLOW_BASE_PATH}/host.json"
-    if [[ -f "${source_host_json}" ]]; then
-        cp "${source_host_json}" "${TEMP_DIR}/host.json"
-        log_verbose "Copied host.json"
-    fi
-    
-    # Create zip file
-    ZIP_PATH=$(mktemp).zip
-    log_gray "Creating deployment package..."
-    
-    # Check if zip command is available
-    if ! command -v zip &>/dev/null; then
-        log_error "zip command not found. Please install zip (e.g., 'sudo apt install zip')"
-        return 1
-    fi
-    
-    # Create zip file with error handling
-    local zip_output
-    if ! zip_output=$(cd "${TEMP_DIR}" && zip -r "${ZIP_PATH}" . 2>&1); then
-        log_error "Failed to create zip file: ${zip_output}"
-        return 1
-    fi
-    log_verbose "Zip output: ${zip_output}"
-    
-    # Verify zip file was created
-    if [[ ! -f "${ZIP_PATH}" ]]; then
-        log_error "Zip file was not created at: ${ZIP_PATH}"
-        return 1
-    fi
-    log_verbose "Created zip file: ${ZIP_PATH}"
-    
-    # Deploy using Azure CLI
-    log_gray "Deploying to Logic App via zip deploy..."
-    
-    local deploy_output
-    if ! deploy_output=$(az logicapp deployment source config-zip \
-        --resource-group "${RESOURCE_GROUP_NAME}" \
-        --name "${LOGIC_APP_NAME}" \
-        --src "${ZIP_PATH}" \
-        --output json 2>&1); then
-        
-        # Try alternative deployment method
-        log_verbose "Trying alternative deployment method..."
-        if ! deploy_output=$(az webapp deployment source config-zip \
-            --resource-group "${RESOURCE_GROUP_NAME}" \
-            --name "${LOGIC_APP_NAME}" \
-            --src "${ZIP_PATH}" \
-            --output json 2>&1); then
-            log_error "Deployment failed: ${deploy_output}"
-            return 1
-        fi
-    fi
-    
-    log_verbose "Deployment output: ${deploy_output}"
-    return 0
-}
-
-#------------------------------------------------------------------------------
-# Function: write_deployment_summary
-# Description: Displays deployment summary with environment variable values.
-#------------------------------------------------------------------------------
-write_deployment_summary() {
-    echo ""
-    log_info "=== Environment Variables Summary ==="
-    
-    echo -e "${COLOR_YELLOW}  Workflow Variables:${COLOR_RESET}"
-    for var_name in "${WORKFLOW_PLACEHOLDERS[@]}"; do
-        local env_value="${!var_name:-}"
-        local display_value
-        display_value=$(get_masked_value "${env_value}" "${var_name}")
-        log_gray "  ${var_name}: ${display_value}"
-    done
-    
-    echo -e "${COLOR_YELLOW}  Connection Variables:${COLOR_RESET}"
-    for var_name in "${CONNECTION_PLACEHOLDERS[@]}"; do
-        local env_value="${!var_name:-}"
-        local display_value
-        display_value=$(get_masked_value "${env_value}" "${var_name}")
-        log_gray "  ${var_name}: ${display_value}"
-    done
-}
-
-#==============================================================================
-# MAIN EXECUTION
-#==============================================================================
-
-#------------------------------------------------------------------------------
-# Function: main
-# Description: Main entry point for the script. Orchestrates the deployment workflow.
-# Arguments:
-#   $@ - All command-line arguments passed to the script
-#------------------------------------------------------------------------------
 main() {
-    # Parse command-line arguments
-    parse_arguments "$@"
+    local workflow_path="${1:-}"
     
-    # Display header
+    # Set up cleanup trap
+    trap cleanup EXIT
+    
     echo ""
-    log_info "╔══════════════════════════════════════════════════════════════╗"
-    log_info "║     Azure Logic Apps Workflow Deployment Script              ║"
-    printf "${COLOR_CYAN}║     Version: %-47s║${COLOR_RESET}\n" "${SCRIPT_VERSION}"
-    log_info "║     (Using Azure CLI and Azure Developer CLI)                ║"
-    log_info "╚══════════════════════════════════════════════════════════════╝"
+    echo -e '\033[0;36m╔════════════════════════════════════════════════════════╗\033[0m'
+    echo -e '\033[0;36m║     Logic Apps Standard Workflow Deployment            ║\033[0m'
+    echo -e '\033[0;36m╚════════════════════════════════════════════════════════╝\033[0m'
     echo ""
     
-    # Step 1: Load azd environment variables
-    echo -e "${COLOR_YELLOW}[1/5] Loading azd environment...${COLOR_RESET}"
-    if ! initialize_azd_environment; then
-        log_warning "azd environment not loaded. Using existing environment variables."
-    fi
-
-    # Resolve LogicAppName from environment if not provided via command line
-    # Note: LOGIC_APP_NAME may be set by initialize_azd_environment
-    if [[ -z "${LOGIC_APP_NAME}" ]]; then
-        LOGIC_APP_NAME="${LOGIC_APP_NAME:-}"
-        if [[ -z "${LOGIC_APP_NAME}" ]]; then
-            log_error "LogicAppName parameter is required or LOGIC_APP_NAME environment variable must be set."
-            exit 1
-        fi
-        log_gray "Using Logic App from environment: ${LOGIC_APP_NAME}"
-    else
-        log_gray "Using Logic App: ${LOGIC_APP_NAME}"
-    fi
-
-    # Resolve ResourceGroupName from environment if not provided via command line
-    if [[ -z "${RESOURCE_GROUP_NAME:-}" ]]; then
-        RESOURCE_GROUP_NAME="${AZURE_RESOURCE_GROUP:-}"
-        if [[ -z "${RESOURCE_GROUP_NAME}" ]]; then
-            log_error "ResourceGroupName parameter is required or AZURE_RESOURCE_GROUP environment variable must be set."
-            exit 1
-        fi
-        log_gray "Using Resource Group from environment: ${RESOURCE_GROUP_NAME}"
-    else
-        log_gray "Using Resource Group: ${RESOURCE_GROUP_NAME}"
-    fi
+    # Set up environment variable aliases for connections.json compatibility
+    set_workflow_environment_aliases
     
-    # Step 2: Validate Azure CLI connection
-    echo ""
-    echo -e "${COLOR_YELLOW}[2/5] Validating Azure CLI connection...${COLOR_RESET}"
-    if ! test_azure_cli_connection; then
+    # Load required configuration from environment
+    local subscription_id resource_group logic_app_name location
+    local service_bus_runtime_url blob_runtime_url
+    
+    subscription_id=$(get_environment_value 'AZURE_SUBSCRIPTION_ID')
+    resource_group=$(get_environment_value 'AZURE_RESOURCE_GROUP')
+    logic_app_name=$(get_environment_value 'LOGIC_APP_NAME')
+    location=$(get_environment_value 'AZURE_LOCATION' 'westus3')
+    service_bus_runtime_url=$(get_environment_value 'SERVICE_BUS_CONNECTION_RUNTIME_URL')
+    blob_runtime_url=$(get_environment_value 'AZURE_BLOB_CONNECTION_RUNTIME_URL')
+    
+    # Validate required values
+    local missing=()
+    [[ -z "$subscription_id" ]] && missing+=('AZURE_SUBSCRIPTION_ID')
+    [[ -z "$resource_group" ]] && missing+=('AZURE_RESOURCE_GROUP')
+    [[ -z "$logic_app_name" ]] && missing+=('LOGIC_APP_NAME')
+    
+    if [[ ${#missing[@]} -gt 0 ]]; then
+        write_log "Missing environment variables: $(IFS=', '; echo "${missing[*]}")" Error
         exit 1
     fi
-    log_success "  Connected as: ${AZURE_USER_NAME}"
-    log_success "  Subscription: ${AZURE_ACCOUNT_ID} (${AZURE_SUBSCRIPTION_ID_CURRENT})"
     
-    # Step 3: Validate environment variables
-    echo ""
-    echo -e "${COLOR_YELLOW}[3/5] Validating environment variables...${COLOR_RESET}"
+    write_log "Target: ${logic_app_name} in ${resource_group}"
     
-    if [[ "${SKIP_PLACEHOLDER_REPLACEMENT}" != "true" ]]; then
-        local -a all_placeholders=("${WORKFLOW_PLACEHOLDERS[@]}" "${CONNECTION_PLACEHOLDERS[@]}")
+    # Find workflow project
+    local project_path
+    if [[ -n "$workflow_path" ]] && [[ -d "$workflow_path" ]]; then
+        project_path="$workflow_path"
+    else
+        local search_path="${SCRIPT_DIR}/../workflows/OrdersManagement/OrdersManagementLogicApp"
+        if [[ -d "$search_path" ]]; then
+            project_path="$(cd "$search_path" && pwd)"
+        else
+            write_log "Workflow project not found" Error
+            exit 1
+        fi
+    fi
+    
+    write_log "Source: ${project_path}"
+    
+    # Discover workflows
+    local workflows=()
+    while IFS= read -r -d '' dir; do
+        local dir_name
+        dir_name="$(basename "$dir")"
         
-        if ! test_required_environment_variables "${all_placeholders[@]}"; then
-            log_error "Required environment variables are missing. Please set all required variables or run 'azd provision' first."
-            exit 1
+        # Check if workflow.json exists
+        if [[ ! -f "${dir}/workflow.json" ]]; then
+            continue
         fi
-        log_success "  All required environment variables are set."
-        write_deployment_summary
-    else
-        log_gray "Skipping environment variable validation (placeholder replacement disabled)."
-    fi
-    
-    # Step 4: Resolve file paths and process placeholders
-    echo ""
-    echo -e "${COLOR_YELLOW}[4/5] Processing workflow files...${COLOR_RESET}"
-    
-    local workflow_file_path="${WORKFLOW_BASE_PATH}/${WORKFLOW_NAME}/workflow.json"
-    local connections_file_path="${WORKFLOW_BASE_PATH}/connections.json"
-    
-    # Validate files exist
-    if [[ ! -f "${workflow_file_path}" ]]; then
-        log_error "Workflow file not found: ${workflow_file_path}"
-        exit 1
-    fi
-    if [[ ! -f "${connections_file_path}" ]]; then
-        log_error "Connections file not found: ${connections_file_path}"
-        exit 1
-    fi
-    
-    log_gray "Workflow file: ${workflow_file_path}"
-    log_gray "Connections file: ${connections_file_path}"
-    
-    # Process files
-    local workflow_content
-    local connections_content
-    
-    if [[ "${SKIP_PLACEHOLDER_REPLACEMENT}" == "true" ]]; then
-        log_gray "Reading files without placeholder replacement..."
-        workflow_content=$(cat "${workflow_file_path}")
-        connections_content=$(cat "${connections_file_path}")
-    else
-        log_gray "Replacing placeholders in workflow.json..."
-        workflow_content=$(cat "${workflow_file_path}")
-        workflow_content=$(update_placeholder_content "${workflow_content}" "${WORKFLOW_PLACEHOLDERS[@]}")
         
-        log_gray "Replacing placeholders in connections.json..."
-        connections_content=$(cat "${connections_file_path}")
-        connections_content=$(update_placeholder_content "${connections_content}" "${CONNECTION_PLACEHOLDERS[@]}")
-    fi
+        # Check against exclude patterns
+        local excluded=false
+        for pattern in "${EXCLUDE_PATTERNS[@]}"; do
+            # shellcheck disable=SC2053
+            if [[ "$dir_name" == $pattern ]]; then
+                excluded=true
+                break
+            fi
+        done
+        
+        if [[ "$excluded" == false ]]; then
+            workflows+=("$dir")
+        fi
+    done < <(find "$project_path" -mindepth 1 -maxdepth 1 -type d -print0)
     
-    log_success "  Files processed successfully."
-    
-    # Step 5: Deploy workflow via zip deploy
-    echo ""
-    echo -e "${COLOR_YELLOW}[5/5] Deploying workflow to Azure Logic Apps via zip deploy...${COLOR_RESET}"
-    log_gray "Logic App: ${LOGIC_APP_NAME}"
-    log_gray "Resource Group: ${RESOURCE_GROUP_NAME}"
-    log_gray "Workflow: ${WORKFLOW_NAME}"
-    
-    if ! deploy_logic_app_workflow "${workflow_content}" "${connections_content}"; then
-        echo ""
-        echo -e "${COLOR_RED}╔══════════════════════════════════════════════════════════════╗${COLOR_RESET}"
-        echo -e "${COLOR_RED}║                    Deployment Failed                         ║${COLOR_RESET}"
-        echo -e "${COLOR_RED}╚══════════════════════════════════════════════════════════════╝${COLOR_RESET}"
-        echo ""
+    if [[ ${#workflows[@]} -eq 0 ]]; then
+        write_log "No workflows found" Error
         exit 1
     fi
     
-    if [[ "${DRY_RUN}" == "true" ]]; then
-        log_success "  WhatIf: Workflow deployment would succeed."
-    else
-        log_success "  Workflow deployed successfully!"
+    local workflow_names=()
+    for wf in "${workflows[@]}"; do
+        workflow_names+=("$(basename "$wf")")
+    done
+    write_log "Workflows: $(IFS=', '; echo "${workflow_names[*]}")" Success
+    
+    # Get connection runtime URLs if not in environment
+    if [[ -z "$service_bus_runtime_url" ]]; then
+        write_log "Fetching Service Bus connection runtime URL..."
+        service_bus_runtime_url=$(get_connection_runtime_url 'servicebus' "$resource_group" "$subscription_id" || true)
     fi
     
-    # Post-deployment notes
-    echo ""
-    log_info "=== Post-Deployment Notes ==="
-    log_gray "- Connections are configured in connections.json"
-    log_gray "- Ensure API connections are authorized in Azure Portal"
-    log_gray "- Verify managed identity has required permissions"
+    if [[ -z "$blob_runtime_url" ]]; then
+        write_log "Fetching Azure Blob connection runtime URL..."
+        blob_runtime_url=$(get_connection_runtime_url 'azureblob' "$resource_group" "$subscription_id" || true)
+    fi
+    
+    # Create staging directory
+    STAGING_DIR=$(mktemp -d)
+    
+    # Copy host.json
+    cp "${project_path}/host.json" "${STAGING_DIR}/"
+    
+    # Process connections.json
+    local connections_file="${project_path}/connections.json"
+    if [[ -f "$connections_file" ]]; then
+        local content
+        content=$(<"$connections_file")
+        local resolved
+        resolved=$(resolve_placeholders "$content" "connections.json")
+        echo "$resolved" > "${STAGING_DIR}/connections.json"
+    fi
+    
+    # Process parameters.json
+    local parameters_file="${project_path}/parameters.json"
+    if [[ -f "$parameters_file" ]]; then
+        local content
+        content=$(<"$parameters_file")
+        local resolved
+        resolved=$(resolve_placeholders "$content" "parameters.json")
+        echo "$resolved" > "${STAGING_DIR}/parameters.json"
+    fi
+    
+    # Process workflow folders
+    for wf in "${workflows[@]}"; do
+        local wf_name
+        wf_name="$(basename "$wf")"
+        local dest_dir="${STAGING_DIR}/${wf_name}"
+        mkdir -p "$dest_dir"
+        
+        local wf_file="${wf}/workflow.json"
+        local content
+        content=$(<"$wf_file")
+        local resolved
+        resolved=$(resolve_placeholders "$content" "${wf_name}/workflow.json")
+        echo "$resolved" > "${dest_dir}/workflow.json"
+    done
+    
+    # Create zip package
+    ZIP_PATH=$(mktemp --suffix=.zip)
+    (cd "$STAGING_DIR" && zip -r -q "$ZIP_PATH" .)
+    
+    local zip_size
+    zip_size=$(du -k "$ZIP_PATH" | cut -f1)
+    write_log "Package: ${zip_size} KB" Success
+    
+    # Update app settings with connection runtime URLs
+    write_log "Updating application settings..."
+    local settings=()
+    [[ -n "$service_bus_runtime_url" ]] && settings+=("servicebus-ConnectionRuntimeUrl=${service_bus_runtime_url}")
+    [[ -n "$blob_runtime_url" ]] && settings+=("azureblob-ConnectionRuntimeUrl=${blob_runtime_url}")
+    
+    if [[ ${#settings[@]} -gt 0 ]]; then
+        if ! az functionapp config appsettings set \
+            --name "$logic_app_name" \
+            --resource-group "$resource_group" \
+            --subscription "$subscription_id" \
+            --settings "${settings[@]}" \
+            --output none 2>/dev/null; then
+            write_log "Failed to update application settings" Warning
+        fi
+    fi
+    
+    # Deploy
+    write_log "Deploying workflows..."
+    local start_time
+    start_time=$(date +%s)
+    
+    if ! az functionapp deployment source config-zip \
+        --name "$logic_app_name" \
+        --resource-group "$resource_group" \
+        --subscription "$subscription_id" \
+        --src "$ZIP_PATH" \
+        --output none; then
+        write_log "Deployment failed" Error
+        exit 1
+    fi
+    
+    local end_time duration
+    end_time=$(date +%s)
+    duration=$((end_time - start_time))
+    write_log "Deployed in ${duration} seconds" Success
     
     echo ""
-    echo -e "${COLOR_GREEN}╔══════════════════════════════════════════════════════════════╗${COLOR_RESET}"
-    echo -e "${COLOR_GREEN}║              Deployment Completed Successfully!              ║${COLOR_RESET}"
-    echo -e "${COLOR_GREEN}╚══════════════════════════════════════════════════════════════╝${COLOR_RESET}"
+    echo -e '\033[0;32m╔════════════════════════════════════════════════════════╗\033[0m'
+    echo -e '\033[0;32m║              Deployment Complete                       ║\033[0m'
+    echo -e '\033[0;32m╚════════════════════════════════════════════════════════╝\033[0m'
     echo ""
 }
 
-#==============================================================================
-# SCRIPT ENTRY POINT
-#==============================================================================
+#endregion
 
-log_verbose "Script started: ${SCRIPT_NAME} version ${SCRIPT_VERSION}"
+# Run main with all arguments
 main "$@"

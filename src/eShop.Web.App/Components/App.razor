@@ -12,7 +12,7 @@
     <link rel="stylesheet" href="css/fluent-overrides.css" />
     <link rel="stylesheet" href="eShop.Web.App.styles.css" />
     <link rel="icon" type="image/png" href="favicon.png" />
-    <HeadOutlet />
+    <HeadOutlet @rendermode="InteractiveServer" />
 </head>
 
 <body>
@@ -20,8 +20,8 @@
 
     <Routes @rendermode="InteractiveServer" />
 
-    <script src="_content/Microsoft.FluentUI.AspNetCore.Components/Microsoft.FluentUI.AspNetCore.Components.lib.module.js" type="module"></script>
     <script src="_framework/blazor.web.js"></script>
+    <script src="_content/Microsoft.FluentUI.AspNetCore.Components/Microsoft.FluentUI.AspNetCore.Components.lib.module.js" type="module"></script>
 </body>
 
 </html>

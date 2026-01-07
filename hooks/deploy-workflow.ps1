@@ -1,768 +1,319 @@
 #!/usr/bin/env pwsh
-
-#Requires -Version 7.0
-
 <#
 .SYNOPSIS
-    Deploys an Azure Logic Apps Standard workflow with placeholder replacement.
+    Deploys Logic Apps Standard workflows to Azure.
 
 .DESCRIPTION
-    This script performs the following operations:
-    1. Loads azd environment variables
-    2. Validates required environment variables
-    3. Replaces placeholders in workflow.json and connections.json (in memory only)
-    4. Deploys the workflow to Azure Logic Apps Standard using Azure CLI zip deploy
-    
-    Note: Placeholder replacement happens in memory only. The original source files
-    (workflow.json and connections.json) retain their placeholders for future deployments.
+    Deploys workflow definitions from OrdersManagement Logic App to Azure.
+    Runs as azd predeploy hook - environment variables are already loaded.
 
-.PARAMETER LogicAppName
-    The name of the Azure Logic Apps Standard resource. 
-    If not provided, uses LOGIC_APP_NAME from azd environment.
-
-.PARAMETER ResourceGroupName
-    The name of the Azure resource group containing the Logic App. 
-    If not provided, uses AZURE_RESOURCE_GROUP from azd environment.
-
-.PARAMETER WorkflowName
-    The name of the workflow to deploy. Defaults to 'ProcessingOrdersPlaced'.
-
-.PARAMETER WorkflowBasePath
-    Base path to the Logic App workflow files. Defaults to the OrdersManagement folder.
-
-.PARAMETER SkipPlaceholderReplacement
-    Skip placeholder replacement if files are already processed.
-
-.PARAMETER WhatIf
-    Shows what changes would be made without actually deploying.
-
-.PARAMETER Confirm
-    Prompts for confirmation before deploying.
-
-.OUTPUTS
-    None. Deploys workflow to Azure and outputs status messages.
+.PARAMETER WorkflowPath
+    Optional path to the workflow project directory. If not specified, defaults to
+    '../workflows/OrdersManagement/OrdersManagementLogicApp' relative to script location.
 
 .EXAMPLE
     ./deploy-workflow.ps1
-    Deploys the workflow using environment variables from the active azd environment.
+    Deploys workflows using default path and environment variables from azd.
 
 .EXAMPLE
-    ./deploy-workflow.ps1 -LogicAppName 'my-logic-app' -ResourceGroupName 'my-rg'
-    Deploys to a specific Logic App in a specific resource group.
-
-.EXAMPLE
-    ./deploy-workflow.ps1 -WhatIf
-    Shows what would be deployed without making changes.
+    ./deploy-workflow.ps1 -WorkflowPath "C:\MyWorkflows\LogicApp"
+    Deploys workflows from a custom path.
 
 .NOTES
-    File Name      : deploy-workflow.ps1
-    Author         : Evilazaro | Principal Cloud Solution Architect | Microsoft
-    Version        : 1.3.0
-    Last Modified  : 2026-01-06
-    Prerequisite   : PowerShell 7.0 or later
-    Prerequisite   : Azure CLI (az)
-    Prerequisite   : Azure Developer CLI (azd)
-
-.LINK
-    https://github.com/Evilazaro/Azure-LogicApps-Monitoring
+    Version: 2.0.1
+    Requires: Azure CLI 2.50+, PowerShell Core 7.0+
 #>
 
-[CmdletBinding(SupportsShouldProcess = $true, ConfirmImpact = 'High')]
-[Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseDeclaredVarsMoreThanAssignments', '', 
-    Justification = 'Script-scoped variables are used across functions')]
-[OutputType([System.Void])]
+#Requires -Version 7.0
+
+[CmdletBinding()]
 param(
-    [Parameter(Mandatory = $false)]
-    [ValidateNotNullOrEmpty()]
-    [string]$LogicAppName,
-
-    [Parameter(Mandatory = $false)]
-    [ValidateNotNullOrEmpty()]
-    [string]$ResourceGroupName,
-
-    [Parameter(Mandatory = $false)]
-    [ValidateNotNullOrEmpty()]
-    [string]$WorkflowName = 'ProcessingOrdersPlaced',
-
-    [Parameter(Mandatory = $false)]
-    [ValidateNotNullOrEmpty()]
-    [string]$WorkflowBasePath = (Join-Path -Path $PSScriptRoot -ChildPath '../workflows/OrdersManagement/OrdersManagementLogicApp'),
-
-    [Parameter(Mandatory = $false)]
-    [switch]$SkipPlaceholderReplacement
+    [Parameter(Position = 0)]
+    [ValidateScript({ $_ -eq '' -or (Test-Path -Path $_ -PathType Container) })]
+    [string]$WorkflowPath
 )
 
-# Script configuration
-Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
-$InformationPreference = 'Continue'
 $ProgressPreference = 'SilentlyContinue'
 
-# Script-level constants
-$script:ScriptVersion = '1.3.0'
+# Placeholder pattern for ${VARIABLE} substitution
+$PlaceholderPattern = '\$\{([A-Z_][A-Z0-9_]*)\}'
 
-#region Configuration
-
-# Define placeholders for workflow.json (using ReadOnly for immutability)
-[System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseDeclaredVarsMoreThanAssignments', '')]
-$script:WorkflowPlaceholders = [System.Collections.ObjectModel.ReadOnlyCollection[hashtable]]@(
-    @{ Placeholder = '${ORDERS_API_URL}'; EnvVar = 'ORDERS_API_URL' }
-    @{ Placeholder = '${AZURE_STORAGE_ACCOUNT_NAME_WORKFLOW}'; EnvVar = 'AZURE_STORAGE_ACCOUNT_NAME_WORKFLOW' }
-)
-
-# Define placeholders for connections.json (using ReadOnly for immutability)
-[System.Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseDeclaredVarsMoreThanAssignments', '')]
-$script:ConnectionPlaceholders = [System.Collections.ObjectModel.ReadOnlyCollection[hashtable]]@(
-    @{ Placeholder = '${AZURE_SUBSCRIPTION_ID}'; EnvVar = 'AZURE_SUBSCRIPTION_ID' }
-    @{ Placeholder = '${AZURE_LOCATION}'; EnvVar = 'AZURE_LOCATION' }
-    @{ Placeholder = '${AZURE_RESOURCE_GROUP}'; EnvVar = 'AZURE_RESOURCE_GROUP' }
-    @{ Placeholder = '${MANAGED_IDENTITY_NAME}'; EnvVar = 'MANAGED_IDENTITY_NAME' }
-    @{ Placeholder = '${SERVICE_BUS_CONNECTION_RUNTIME_URL}'; EnvVar = 'SERVICE_BUS_CONNECTION_RUNTIME_URL' }
-    @{ Placeholder = '${AZURE_BLOB_CONNECTION_RUNTIME_URL}'; EnvVar = 'AZURE_BLOB_CONNECTION_RUNTIME_URL' }
-)
-
-#endregion Configuration
+# Files to exclude from deployment (per .funcignore)
+$ExcludePatterns = @('.debug', '.git*', '.vscode', '__azurite*', '__blobstorage__', '__queuestorage__', 'local.settings.json', 'test', 'workflow-designtime')
 
 #region Helper Functions
 
-function Initialize-AzdEnvironment {
-    <#
-    .SYNOPSIS
-        Loads azd environment variables into the current session.
+function Write-Log {
+    param([string]$Message, [ValidateSet('Info','Success','Warning','Error')][string]$Level = 'Info')
+    $prefix = @{ Info = '[i]'; Success = '[✓]'; Warning = '[!]'; Error = '[✗]' }[$Level]
+    $color = @{ Info = 'Cyan'; Success = 'Green'; Warning = 'Yellow'; Error = 'Red' }[$Level]
+    Write-Host "$(Get-Date -Format 'HH:mm:ss') $prefix $Message" -ForegroundColor $color
+}
 
-    .DESCRIPTION
-        Retrieves environment variables from the Azure Developer CLI
-        environment specified by AZURE_ENV_NAME and sets them in the current PowerShell session.
-
-    .OUTPUTS
-        System.Boolean - Returns $true if variables were loaded successfully.
-
-    .EXAMPLE
-        $success = Initialize-AzdEnvironment
-    #>
+function Get-EnvironmentValue {
     [CmdletBinding()]
-    [OutputType([bool])]
+    [OutputType([string])]
+    param(
+        [Parameter(Mandatory)]
+        [string]$Name,
+        
+        [Parameter()]
+        [string]$Default = ''
+    )
+    
+    $value = [Environment]::GetEnvironmentVariable($Name)
+    if (-not [string]::IsNullOrEmpty($value)) {
+        return $value
+    }
+    return $Default
+}
+
+function Set-WorkflowEnvironmentAliases {
+    [CmdletBinding()]
+    [OutputType([void])]
     param()
-
-    Write-Information '  Loading azd environment variables...'
-
-    # Get the environment name from AZURE_ENV_NAME
-    $envName = $env:AZURE_ENV_NAME
-    $azdEnvOutput = $null
-
-    try {
-        if ([string]::IsNullOrWhiteSpace($envName)) {
-            Write-Warning 'AZURE_ENV_NAME environment variable is not set. Trying to get values from default environment.'
-            $azdEnvOutput = & azd env get-values 2>&1
-        }
-        else {
-            Write-Information "  Using azd environment: $envName"
-            $azdEnvOutput = & azd env get-values --environment $envName 2>&1
-        }
-
-        if ($LASTEXITCODE -ne 0 -or [string]::IsNullOrWhiteSpace($azdEnvOutput)) {
-            Write-Warning 'Could not load azd environment variables. Ensure azd environment is configured.'
-            return $false
-        }
-
-        $loadedCount = 0
-        foreach ($line in $azdEnvOutput) {
-            # Match pattern: VARNAME=\"value\" or VARNAME=value (handle quoted values properly)
-            if ($line -match '^([A-Z_][A-Z0-9_]*)=(.*)$') {
-                $varName = $Matches[1]
-                $varValue = $Matches[2]
-                # Remove surrounding double quotes if present
-                if ($varValue -match '^"(.*)"$') {
-                    $varValue = $Matches[1]
-                }
-                [System.Environment]::SetEnvironmentVariable($varName, $varValue, [System.EnvironmentVariableTarget]::Process)
-                $loadedCount++
-                Write-Verbose "Set environment variable: $varName"
+    
+    # Map WORKFLOWS_* variables to AZURE_* equivalents for connections.json compatibility
+    $mappings = @{
+        'WORKFLOWS_SUBSCRIPTION_ID'     = 'AZURE_SUBSCRIPTION_ID'
+        'WORKFLOWS_RESOURCE_GROUP_NAME' = 'AZURE_RESOURCE_GROUP'
+        'WORKFLOWS_LOCATION_NAME'       = 'AZURE_LOCATION'
+    }
+    
+    foreach ($key in $mappings.Keys) {
+        $existingValue = [Environment]::GetEnvironmentVariable($key)
+        if ([string]::IsNullOrEmpty($existingValue)) {
+            $sourceValue = [Environment]::GetEnvironmentVariable($mappings[$key])
+            if (-not [string]::IsNullOrEmpty($sourceValue)) {
+                [Environment]::SetEnvironmentVariable($key, $sourceValue)
             }
         }
+    }
+}
 
-        Write-Host "  Loaded $loadedCount environment variables from azd." -ForegroundColor Green
-        return $true
+function Resolve-Placeholders {
+    [CmdletBinding()]
+    [OutputType([string])]
+    param(
+        [Parameter(Mandatory)]
+        [AllowEmptyString()]
+        [string]$Content,
+        
+        [Parameter(Mandatory)]
+        [string]$FileName
+    )
+    
+    $resolved = $Content
+    $unresolved = [System.Collections.Generic.List[string]]::new()
+    
+    [regex]::Matches($Content, $PlaceholderPattern) | ForEach-Object {
+        $key = $_.Groups[1].Value
+        $value = [Environment]::GetEnvironmentVariable($key)
+        if (-not [string]::IsNullOrEmpty($value)) {
+            $resolved = $resolved.Replace($_.Value, $value)
+        }
+        else {
+            $unresolved.Add($key)
+        }
+    }
+    
+    if ($unresolved.Count -gt 0) {
+        Write-Log -Message "Unresolved in ${FileName}: $($unresolved -join ', ')" -Level Warning
+    }
+    return $resolved
+}
+
+function Get-ConnectionRuntimeUrl {
+    [CmdletBinding()]
+    [OutputType([string])]
+    param(
+        [Parameter(Mandatory)]
+        [string]$ConnectionName,
+        
+        [Parameter(Mandatory)]
+        [string]$ResourceGroup,
+        
+        [Parameter(Mandatory)]
+        [string]$SubscriptionId
+    )
+    
+    try {
+        $uri = "https://management.azure.com/subscriptions/$SubscriptionId/resourceGroups/$ResourceGroup/providers/Microsoft.Web/connections/$ConnectionName/listConnectionKeys?api-version=2016-06-01"
+        $jsonOutput = az rest --method POST --uri $uri --output json 2>&1
+        
+        if ($LASTEXITCODE -ne 0) {
+            Write-Verbose "Failed to get runtime URL for connection '$ConnectionName': $jsonOutput"
+            return $null
+        }
+        
+        $result = $jsonOutput | ConvertFrom-Json
+        if ($null -ne $result.runtimeUrls -and $result.runtimeUrls.Count -gt 0) {
+            return $result.runtimeUrls[0]
+        }
     }
     catch {
-        Write-Warning "Failed to load azd environment: $($_.Exception.Message)"
-        return $false
+        Write-Verbose "Exception getting runtime URL for connection '$ConnectionName': $($_.Exception.Message)"
     }
+    return $null
 }
 
-function Test-RequiredEnvironmentVariables {
-    <#
-    .SYNOPSIS
-        Validates that all required environment variables are set.
+#endregion
 
-    .DESCRIPTION
-        Checks each placeholder configuration to verify that the corresponding
-        environment variable is set and has a non-empty value.
+#region Main
 
-    .PARAMETER PlaceholderList
-        An array of hashtables containing Placeholder and EnvVar keys.
+Write-Host "`n╔════════════════════════════════════════════════════════╗" -ForegroundColor Cyan
+Write-Host "║     Logic Apps Standard Workflow Deployment            ║" -ForegroundColor Cyan
+Write-Host "╚════════════════════════════════════════════════════════╝`n" -ForegroundColor Cyan
 
-    .OUTPUTS
-        System.Boolean - Returns $true if all variables are set.
+# Set up environment variable aliases for connections.json compatibility
+Set-WorkflowEnvironmentAliases
 
-    .EXAMPLE
-        Test-RequiredEnvironmentVariables -PlaceholderList $script:WorkflowPlaceholders
-    #>
-    [CmdletBinding()]
-    [OutputType([bool])]
-    param(
-        [Parameter(Mandatory = $true)]
-        [ValidateNotNull()]
-        [System.Collections.IEnumerable]$PlaceholderList
-    )
-
-    $missingVars = [System.Collections.Generic.List[string]]::new()
-
-    foreach ($item in $PlaceholderList) {
-        $envValue = [System.Environment]::GetEnvironmentVariable($item.EnvVar)
-        if ([string]::IsNullOrWhiteSpace($envValue)) {
-            $missingVars.Add($item.EnvVar)
-        }
-    }
-
-    if ($missingVars.Count -gt 0) {
-        Write-Warning "Missing environment variables: $($missingVars -join ', ')"
-        return $false
-    }
-
-    return $true
+# Load required configuration from environment
+$config = @{
+    SubscriptionId     = Get-EnvironmentValue 'AZURE_SUBSCRIPTION_ID'
+    ResourceGroup      = Get-EnvironmentValue 'AZURE_RESOURCE_GROUP'
+    LogicAppName       = Get-EnvironmentValue 'LOGIC_APP_NAME'
+    Location           = Get-EnvironmentValue 'AZURE_LOCATION' 'westus3'
+    ServiceBusRuntimeUrl = Get-EnvironmentValue 'SERVICE_BUS_CONNECTION_RUNTIME_URL'
+    BlobRuntimeUrl     = Get-EnvironmentValue 'AZURE_BLOB_CONNECTION_RUNTIME_URL'
 }
 
-function Update-PlaceholderContent {
-    <#
-    .SYNOPSIS
-        Replaces placeholders in the content with environment variable values.
-
-    .DESCRIPTION
-        Iterates through the placeholder list and replaces each placeholder
-        pattern with the corresponding environment variable value.
-
-    .PARAMETER Content
-        The content string containing placeholders to replace.
-
-    .PARAMETER PlaceholderList
-        An array of hashtables containing Placeholder and EnvVar keys.
-
-    .OUTPUTS
-        System.String - The content with all placeholders replaced.
-
-    .EXAMPLE
-        Update-PlaceholderContent -Content $json -PlaceholderList $script:WorkflowPlaceholders
-    #>
-    [CmdletBinding()]
-    [OutputType([string])]
-    param(
-        [Parameter(Mandatory = $true)]
-        [ValidateNotNullOrEmpty()]
-        [string]$Content,
-
-        [Parameter(Mandatory = $true)]
-        [ValidateNotNull()]
-        [System.Collections.IEnumerable]$PlaceholderList
-    )
-
-    $result = $Content
-
-    foreach ($item in $PlaceholderList) {
-        $envValue = [System.Environment]::GetEnvironmentVariable($item.EnvVar)
-        if (-not [string]::IsNullOrEmpty($envValue)) {
-            $result = $result.Replace($item.Placeholder, $envValue)
-            Write-Verbose "Replaced $($item.Placeholder) with value from $($item.EnvVar)"
-        }
-    }
-
-    return $result
-}
-
-function Get-MaskedValue {
-    <#
-    .SYNOPSIS
-        Returns a masked version of sensitive values for display purposes.
-
-    .DESCRIPTION
-        Masks sensitive values (URLs, secrets, keys, passwords, connections)
-        to prevent accidental exposure in logs or console output.
-
-    .PARAMETER Value
-        The value to potentially mask.
-
-    .PARAMETER VariableName
-        The name of the variable, used to determine if masking is needed.
-
-    .OUTPUTS
-        System.String - The masked or original value.
-
-    .EXAMPLE
-        Get-MaskedValue -Value $secret -VariableName 'SERVICE_BUS_CONNECTION_RUNTIME_URL'
-    #>
-    [CmdletBinding()]
-    [OutputType([string])]
-    param(
-        [Parameter(Mandatory = $false)]
-        [AllowNull()]
-        [AllowEmptyString()]
-        [string]$Value,
-
-        [Parameter(Mandatory = $true)]
-        [ValidateNotNullOrEmpty()]
-        [string]$VariableName
-    )
-
-    if ([string]::IsNullOrWhiteSpace($Value)) {
-        return '[Not Set]'
-    }
-
-    # Mask sensitive values that match common patterns
-    if ($VariableName -match 'URL|SECRET|KEY|PASSWORD|CONNECTION') {
-        $maskLength = [System.Math]::Min(30, $Value.Length)
-        return "$($Value.Substring(0, $maskLength))..."
-    }
-
-    return $Value
-}
-
-function Invoke-PlaceholderReplacement {
-    <#
-    .SYNOPSIS
-        Replaces placeholders in a file and returns the updated content.
-
-    .DESCRIPTION
-        Reads a file, replaces all placeholder patterns with their corresponding
-        environment variable values, and optionally writes to an output file.
-
-    .PARAMETER FilePath
-        The path to the file containing placeholders.
-
-    .PARAMETER PlaceholderList
-        An array of hashtables containing Placeholder and EnvVar keys.
-
-    .PARAMETER OutputPath
-        Optional path to write the processed content.
-
-    .OUTPUTS
-        System.String - The content with all placeholders replaced.
-
-    .EXAMPLE
-        Invoke-PlaceholderReplacement -FilePath './workflow.json' -PlaceholderList $placeholders
-    #>
-    [CmdletBinding()]
-    [OutputType([string])]
-    param(
-        [Parameter(Mandatory = $true)]
-        [ValidateNotNullOrEmpty()]
-        [string]$FilePath,
-
-        [Parameter(Mandatory = $true)]
-        [ValidateNotNull()]
-        [System.Collections.IEnumerable]$PlaceholderList,
-
-        [Parameter(Mandatory = $false)]
-        [string]$OutputPath
-    )
-
-    if (-not (Test-Path -Path $FilePath -PathType Leaf)) {
-        throw [System.IO.FileNotFoundException]::new("File not found: $FilePath")
-    }
-
-    Write-Information "  Processing: $FilePath"
-
-    $content = Get-Content -Path $FilePath -Raw -Encoding UTF8 -ErrorAction Stop
-    $updatedContent = Update-PlaceholderContent -Content $content -PlaceholderList $PlaceholderList
-
-    if (-not [string]::IsNullOrWhiteSpace($OutputPath)) {
-        $outputDir = Split-Path -Path $OutputPath -Parent
-        if (-not [string]::IsNullOrWhiteSpace($outputDir) -and -not (Test-Path -Path $outputDir)) {
-            $null = New-Item -ItemType Directory -Path $outputDir -Force -ErrorAction Stop
-        }
-        $updatedContent | Set-Content -Path $OutputPath -Encoding UTF8 -NoNewline -Force -ErrorAction Stop
-        Write-Information "  Output: $OutputPath"
-    }
-
-    return $updatedContent
-}
-
-function Test-AzureCLIConnection {
-    <#
-    .SYNOPSIS
-        Validates Azure CLI connection and returns account information.
-
-    .DESCRIPTION
-        Checks if the Azure CLI is authenticated and returns the current
-        account information including subscription and tenant details.
-
-    .OUTPUTS
-        PSCustomObject - Account information with AccountId, SubscriptionId,
-                         SubscriptionName, and TenantId properties.
-
-    .EXAMPLE
-        $account = Test-AzureCLIConnection
-        Write-Host "Connected as: $($account.AccountId)"
-    #>
-    [CmdletBinding()]
-    [OutputType([PSCustomObject])]
-    param()
-
-    $accountJson = & az account show --output json 2>&1
-    if ($LASTEXITCODE -ne 0 -or [string]::IsNullOrWhiteSpace($accountJson)) {
-        throw 'Not connected to Azure. Please run "az login" first.'
-    }
-
-    $account = $accountJson | ConvertFrom-Json -ErrorAction Stop
-    
-    return [PSCustomObject]@{
-        AccountId        = $account.user.name
-        SubscriptionId   = $account.id
-        SubscriptionName = $account.name
-        TenantId         = $account.tenantId
-    }
-}
-
-function Deploy-LogicAppWorkflow {
-    <#
-    .SYNOPSIS
-        Deploys a workflow to Azure Logic Apps Standard using zip deployment.
-
-    .DESCRIPTION
-        Creates a deployment package containing the workflow definition and
-        connections configuration, then deploys it to Azure Logic Apps Standard
-        using the Azure CLI zip deploy command.
-
-    .PARAMETER ResourceGroupName
-        The name of the Azure resource group containing the Logic App.
-
-    .PARAMETER LogicAppName
-        The name of the Azure Logic App resource.
-
-    .PARAMETER WorkflowName
-        The name of the workflow to deploy.
-
-    .PARAMETER WorkflowBasePath
-        The base path containing the workflow files.
-
-    .PARAMETER WorkflowContent
-        The processed workflow.json content.
-
-    .PARAMETER ConnectionsContent
-        The processed connections.json content.
-
-    .OUTPUTS
-        PSCustomObject - Deployment result with Success, WorkflowName, and Response properties.
-
-    .EXAMPLE
-        Deploy-LogicAppWorkflow -ResourceGroupName 'my-rg' -LogicAppName 'my-logic-app' ...
-    #>
-    [CmdletBinding(SupportsShouldProcess = $true)]
-    [OutputType([PSCustomObject])]
-    param(
-        [Parameter(Mandatory = $true)]
-        [ValidateNotNullOrEmpty()]
-        [string]$ResourceGroupName,
-
-        [Parameter(Mandatory = $true)]
-        [ValidateNotNullOrEmpty()]
-        [string]$LogicAppName,
-
-        [Parameter(Mandatory = $true)]
-        [ValidateNotNullOrEmpty()]
-        [string]$WorkflowName,
-
-        [Parameter(Mandatory = $true)]
-        [ValidateNotNullOrEmpty()]
-        [string]$WorkflowBasePath,
-
-        [Parameter(Mandatory = $true)]
-        [ValidateNotNullOrEmpty()]
-        [string]$WorkflowContent,
-
-        [Parameter(Mandatory = $true)]
-        [ValidateNotNullOrEmpty()]
-        [string]$ConnectionsContent
-    )
-
-    if ($PSCmdlet.ShouldProcess("$LogicAppName/$WorkflowName", 'Deploy workflow via zip deploy')) {
-        $tempDir = $null
-        $zipPath = $null
-
-        try {
-            # Create a temporary directory for the deployment package
-            $tempDir = Join-Path -Path ([System.IO.Path]::GetTempPath()) -ChildPath "logicapp-deploy-$([System.Guid]::NewGuid().ToString('N').Substring(0, 8))"
-            $null = New-Item -ItemType Directory -Path $tempDir -Force -ErrorAction Stop
-
-            # Create workflow directory structure
-            $workflowDir = Join-Path -Path $tempDir -ChildPath $WorkflowName
-            $null = New-Item -ItemType Directory -Path $workflowDir -Force -ErrorAction Stop
-
-            # Write workflow.json
-            $workflowFilePath = Join-Path -Path $workflowDir -ChildPath 'workflow.json'
-            $WorkflowContent | Set-Content -Path $workflowFilePath -Encoding UTF8 -NoNewline -Force -ErrorAction Stop
-            Write-Verbose "Created workflow file: $workflowFilePath"
-
-            # Write connections.json at root level
-            $connectionsFilePath = Join-Path -Path $tempDir -ChildPath 'connections.json'
-            $ConnectionsContent | Set-Content -Path $connectionsFilePath -Encoding UTF8 -NoNewline -Force -ErrorAction Stop
-            Write-Verbose "Created connections file: $connectionsFilePath"
-
-            # Copy host.json if it exists in the source
-            $sourceHostJson = Join-Path -Path $WorkflowBasePath -ChildPath 'host.json'
-            if (Test-Path -Path $sourceHostJson -PathType Leaf) {
-                $destHostJson = Join-Path -Path $tempDir -ChildPath 'host.json'
-                Copy-Item -Path $sourceHostJson -Destination $destHostJson -Force -ErrorAction Stop
-                Write-Verbose 'Copied host.json'
-            }
-
-            # Create zip file using GUID for unique naming
-            $zipPath = Join-Path -Path ([System.IO.Path]::GetTempPath()) -ChildPath "logicapp-deploy-$([System.Guid]::NewGuid().ToString('N').Substring(0, 8)).zip"
-            Write-Information '  Creating deployment package...'
-            Compress-Archive -Path (Join-Path -Path $tempDir -ChildPath '*') -DestinationPath $zipPath -Force -ErrorAction Stop
-            Write-Verbose "Created zip file: $zipPath"
-
-            # Deploy using Azure CLI
-            Write-Information '  Deploying to Logic App via zip deploy...'
-            $deployOutput = & az logicapp deployment source config-zip `
-                --resource-group $ResourceGroupName `
-                --name $LogicAppName `
-                --src $zipPath `
-                --output json 2>&1
-
-            if ($LASTEXITCODE -ne 0) {
-                # Try alternative deployment method using webapp deploy
-                Write-Verbose 'Trying alternative deployment method...'
-                $deployOutput = & az webapp deployment source config-zip `
-                    --resource-group $ResourceGroupName `
-                    --name $LogicAppName `
-                    --src $zipPath `
-                    --output json 2>&1
-
-                if ($LASTEXITCODE -ne 0) {
-                    throw "Deployment failed: $deployOutput"
-                }
-            }
-
-            return [PSCustomObject]@{
-                Success      = $true
-                WorkflowName = $WorkflowName
-                Response     = $deployOutput
-            }
-        }
-        finally {
-            # Cleanup temporary files (always runs, even on error)
-            if ($tempDir -and (Test-Path -Path $tempDir)) {
-                Remove-Item -Path $tempDir -Recurse -Force -ErrorAction SilentlyContinue
-            }
-            if ($zipPath -and (Test-Path -Path $zipPath)) {
-                Remove-Item -Path $zipPath -Force -ErrorAction SilentlyContinue
-            }
-        }
-    }
-
-    return [PSCustomObject]@{
-        Success      = $true
-        WorkflowName = $WorkflowName
-        WhatIf       = $true
-    }
-}
-
-function Write-DeploymentSummary {
-    <#
-    .SYNOPSIS
-        Displays a deployment summary with environment variable values.
-
-    .DESCRIPTION
-        Outputs a formatted summary showing both workflow and connection
-        environment variables and their masked values for verification.
-
-    .PARAMETER WorkflowPlaceholders
-        An array of hashtables containing workflow placeholder configurations.
-
-    .PARAMETER ConnectionPlaceholders
-        An array of hashtables containing connection placeholder configurations.
-
-    .OUTPUTS
-        System.Void - Outputs to console only.
-
-    .EXAMPLE
-        Write-DeploymentSummary -WorkflowPlaceholders $workflow -ConnectionPlaceholders $connections
-    #>
-    [CmdletBinding()]
-    [OutputType([System.Void])]
-    param(
-        [Parameter(Mandatory = $true)]
-        [ValidateNotNull()]
-        [System.Collections.IEnumerable]$WorkflowPlaceholders,
-
-        [Parameter(Mandatory = $true)]
-        [ValidateNotNull()]
-        [System.Collections.IEnumerable]$ConnectionPlaceholders
-    )
-
-    Write-Host ''
-    Write-Host '=== Environment Variables Summary ===' -ForegroundColor Cyan
-
-    Write-Host '  Workflow Variables:' -ForegroundColor Yellow
-    foreach ($item in $WorkflowPlaceholders) {
-        $envValue = [System.Environment]::GetEnvironmentVariable($item.EnvVar)
-        $displayValue = Get-MaskedValue -Value $envValue -VariableName $item.EnvVar
-        Write-Host "    $($item.EnvVar): $displayValue" -ForegroundColor Gray
-    }
-
-    Write-Host '  Connection Variables:' -ForegroundColor Yellow
-    foreach ($item in $ConnectionPlaceholders) {
-        $envValue = [System.Environment]::GetEnvironmentVariable($item.EnvVar)
-        $displayValue = Get-MaskedValue -Value $envValue -VariableName $item.EnvVar
-        Write-Host "    $($item.EnvVar): $displayValue" -ForegroundColor Gray
-    }
-}
-
-#endregion Helper Functions
-
-#region Main Execution
-
-try {
-    Write-Host ''
-    Write-Host '╔══════════════════════════════════════════════════════════════╗' -ForegroundColor Cyan
-    Write-Host '║     Azure Logic Apps Workflow Deployment Script              ║' -ForegroundColor Cyan
-    Write-Host "║     Version: $($script:ScriptVersion.PadRight(47))║" -ForegroundColor Cyan
-    Write-Host '║     (Using Azure CLI and Azure Developer CLI)                ║' -ForegroundColor Cyan
-    Write-Host '╚══════════════════════════════════════════════════════════════╝' -ForegroundColor Cyan
-    Write-Host ''
-
-    # Step 1: Load azd environment variables
-    Write-Host '[1/5] Loading azd environment...' -ForegroundColor Yellow
-    $azdLoaded = Initialize-AzdEnvironment
-    if (-not $azdLoaded) {
-        Write-Warning 'azd environment not loaded. Using existing environment variables.'
-    }
-
-    # Resolve LogicAppName and ResourceGroupName from environment if not provided
-    if ([string]::IsNullOrWhiteSpace($LogicAppName)) {
-        $LogicAppName = [System.Environment]::GetEnvironmentVariable('LOGIC_APP_NAME')
-        if ([string]::IsNullOrWhiteSpace($LogicAppName)) {
-            throw 'LogicAppName parameter is required or LOGIC_APP_NAME environment variable must be set.'
-        }
-        Write-Information "  Using Logic App from environment: $LogicAppName"
-    }
-
-    if ([string]::IsNullOrWhiteSpace($ResourceGroupName)) {
-        $ResourceGroupName = [System.Environment]::GetEnvironmentVariable('AZURE_RESOURCE_GROUP')
-        if ([string]::IsNullOrWhiteSpace($ResourceGroupName)) {
-            throw 'ResourceGroupName parameter is required or AZURE_RESOURCE_GROUP environment variable must be set.'
-        }
-        Write-Information "  Using Resource Group from environment: $ResourceGroupName"
-    }
-
-    # Step 2: Validate Azure CLI connection
-    Write-Host ''
-    Write-Host '[2/5] Validating Azure CLI connection...' -ForegroundColor Yellow
-    $azAccount = Test-AzureCLIConnection
-    Write-Host "  Connected as: $($azAccount.AccountId)" -ForegroundColor Green
-    Write-Host "  Subscription: $($azAccount.SubscriptionName) ($($azAccount.SubscriptionId))" -ForegroundColor Green
-
-    # Step 3: Validate environment variables
-    Write-Host ''
-    Write-Host '[3/5] Validating environment variables...' -ForegroundColor Yellow
-    
-    if (-not $SkipPlaceholderReplacement) {
-        $allPlaceholders = [System.Collections.Generic.List[hashtable]]::new()
-        foreach ($placeholder in $script:WorkflowPlaceholders) {
-            $allPlaceholders.Add($placeholder)
-        }
-        foreach ($placeholder in $script:ConnectionPlaceholders) {
-            $allPlaceholders.Add($placeholder)
-        }
-
-        if (-not (Test-RequiredEnvironmentVariables -PlaceholderList $allPlaceholders)) {
-            throw 'Required environment variables are missing. Please set all required variables or run "azd provision" first.'
-        }
-        Write-Host '  All required environment variables are set.' -ForegroundColor Green
-        Write-DeploymentSummary -WorkflowPlaceholders $script:WorkflowPlaceholders -ConnectionPlaceholders $script:ConnectionPlaceholders
-    }
-    else {
-        Write-Information '  Skipping environment variable validation (placeholder replacement disabled).'
-    }
-
-    # Step 4: Resolve file paths and process placeholders
-    Write-Host ''
-    Write-Host '[4/5] Processing workflow files...' -ForegroundColor Yellow
-
-    $workflowFilePath = Join-Path -Path $WorkflowBasePath -ChildPath "$WorkflowName/workflow.json"
-    $connectionsFilePath = Join-Path -Path $WorkflowBasePath -ChildPath 'connections.json'
-
-    # Resolve paths
-    $resolvedWorkflowPath = Resolve-Path -Path $workflowFilePath -ErrorAction Stop
-    $resolvedConnectionsPath = Resolve-Path -Path $connectionsFilePath -ErrorAction Stop
-
-    Write-Information "  Workflow file: $resolvedWorkflowPath"
-    Write-Information "  Connections file: $resolvedConnectionsPath"
-
-    # Process files
-    if ($SkipPlaceholderReplacement) {
-        Write-Information '  Reading files without placeholder replacement...'
-        $workflowContent = Get-Content -Path $resolvedWorkflowPath -Raw -Encoding UTF8 -ErrorAction Stop
-        $connectionsContent = Get-Content -Path $resolvedConnectionsPath -Raw -Encoding UTF8 -ErrorAction Stop
-    }
-    else {
-        Write-Information '  Replacing placeholders in workflow.json...'
-        $workflowContent = Invoke-PlaceholderReplacement -FilePath $resolvedWorkflowPath -PlaceholderList $script:WorkflowPlaceholders
-
-        Write-Information '  Replacing placeholders in connections.json...'
-        $connectionsContent = Invoke-PlaceholderReplacement -FilePath $resolvedConnectionsPath -PlaceholderList $script:ConnectionPlaceholders
-    }
-
-    Write-Host '  Files processed successfully.' -ForegroundColor Green
-
-    # Step 5: Deploy workflow via zip deploy
-    Write-Host ''
-    Write-Host '[5/5] Deploying workflow to Azure Logic Apps via zip deploy...' -ForegroundColor Yellow
-    Write-Information "  Logic App: $LogicAppName"
-    Write-Information "  Resource Group: $ResourceGroupName"
-    Write-Information "  Workflow: $WorkflowName"
-
-    # Resolve the base path for deployment
-    $resolvedBasePath = Resolve-Path -Path $WorkflowBasePath -ErrorAction Stop
-
-    $deploymentResult = Deploy-LogicAppWorkflow `
-        -ResourceGroupName $ResourceGroupName `
-        -LogicAppName $LogicAppName `
-        -WorkflowName $WorkflowName `
-        -WorkflowBasePath $resolvedBasePath `
-        -WorkflowContent $workflowContent `
-        -ConnectionsContent $connectionsContent
-
-    if ($deploymentResult.Success) {
-        if ($deploymentResult.PSObject.Properties['WhatIf'] -and $deploymentResult.WhatIf) {
-            Write-Host '  WhatIf: Workflow deployment would succeed.' -ForegroundColor Yellow
-        }
-        else {
-            Write-Host '  Workflow deployed successfully!' -ForegroundColor Green
-        }
-    }
-
-    # Post-deployment notes
-    Write-Host ''
-    Write-Host '=== Post-Deployment Notes ===' -ForegroundColor Cyan
-    Write-Information '  - Connections are configured in connections.json'
-    Write-Information '  - Ensure API connections are authorized in Azure Portal'
-    Write-Information '  - Verify managed identity has required permissions'
-
-    Write-Host ''
-    Write-Host '╔══════════════════════════════════════════════════════════════╗' -ForegroundColor Green
-    Write-Host '║              Deployment Completed Successfully!              ║' -ForegroundColor Green
-    Write-Host '╚══════════════════════════════════════════════════════════════╝' -ForegroundColor Green
-    Write-Host ''
-}
-catch {
-    Write-Host ''
-    Write-Host '╔══════════════════════════════════════════════════════════════╗' -ForegroundColor Red
-    Write-Host '║                    Deployment Failed                         ║' -ForegroundColor Red
-    Write-Host '╚══════════════════════════════════════════════════════════════╝' -ForegroundColor Red
-    Write-Host ''
-    Write-Error "Deployment failed: $($_.Exception.Message)"
+# Validate required values
+$missing = @()
+if (-not $config.SubscriptionId) { $missing += 'AZURE_SUBSCRIPTION_ID' }
+if (-not $config.ResourceGroup) { $missing += 'AZURE_RESOURCE_GROUP' }
+if (-not $config.LogicAppName) { $missing += 'LOGIC_APP_NAME' }
+
+if ($missing.Count -gt 0) {
+    Write-Log -Message "Missing environment variables: $($missing -join ', ')" -Level Error
     exit 1
 }
 
-#endregion Main Execution
+Write-Log -Message "Target: $($config.LogicAppName) in $($config.ResourceGroup)"
+
+# Find workflow project
+$projectPath = if ($WorkflowPath -and (Test-Path $WorkflowPath)) {
+    $WorkflowPath
+} else {
+    $searchPath = Join-Path $PSScriptRoot '..\workflows\OrdersManagement\OrdersManagementLogicApp'
+    if (Test-Path $searchPath) { (Resolve-Path $searchPath).Path }
+    else { throw 'Workflow project not found' }
+}
+Write-Log -Message "Source: $projectPath"
+
+# Discover workflows
+$workflows = Get-ChildItem -Path $projectPath -Directory | Where-Object {
+    (Test-Path (Join-Path $_.FullName 'workflow.json')) -and
+    ($ExcludePatterns | ForEach-Object { $_.Name -notlike $_ } | Where-Object { $_ } | Select-Object -First 1)
+}
+
+if ($workflows.Count -eq 0) { throw 'No workflows found' }
+Write-Log -Message "Workflows: $($workflows.Name -join ', ')" -Level Success
+
+# Get connection runtime URLs if not in environment
+if ([string]::IsNullOrEmpty($config.ServiceBusRuntimeUrl)) {
+    Write-Log -Message 'Fetching Service Bus connection runtime URL...'
+    $config.ServiceBusRuntimeUrl = Get-ConnectionRuntimeUrl -ConnectionName 'servicebus' -ResourceGroup $config.ResourceGroup -SubscriptionId $config.SubscriptionId
+}
+if ([string]::IsNullOrEmpty($config.BlobRuntimeUrl)) {
+    Write-Log -Message 'Fetching Azure Blob connection runtime URL...'
+    $config.BlobRuntimeUrl = Get-ConnectionRuntimeUrl -ConnectionName 'azureblob' -ResourceGroup $config.ResourceGroup -SubscriptionId $config.SubscriptionId
+}
+
+# Create staging directory
+$stagingDir = Join-Path ([IO.Path]::GetTempPath()) "logicapp-$(Get-Random)"
+New-Item -ItemType Directory -Path $stagingDir -Force | Out-Null
+
+try {
+    # Copy host.json
+    Copy-Item (Join-Path $projectPath 'host.json') $stagingDir
+
+    # Process connections.json
+    $connectionsFile = Join-Path $projectPath 'connections.json'
+    if (Test-Path $connectionsFile) {
+        $content = Get-Content $connectionsFile -Raw
+        $resolved = Resolve-Placeholders $content 'connections.json'
+        Set-Content (Join-Path $stagingDir 'connections.json') $resolved
+    }
+
+    # Process parameters.json
+    $parametersFile = Join-Path $projectPath 'parameters.json'
+    if (Test-Path $parametersFile) {
+        $content = Get-Content $parametersFile -Raw
+        $resolved = Resolve-Placeholders $content 'parameters.json'
+        Set-Content (Join-Path $stagingDir 'parameters.json') $resolved
+    }
+
+    # Process workflow folders
+    foreach ($wf in $workflows) {
+        $destDir = Join-Path $stagingDir $wf.Name
+        New-Item -ItemType Directory -Path $destDir -Force | Out-Null
+        
+        $wfFile = Join-Path $wf.FullName 'workflow.json'
+        $content = Get-Content $wfFile -Raw
+        $resolved = Resolve-Placeholders $content "$($wf.Name)/workflow.json"
+        Set-Content (Join-Path $destDir 'workflow.json') $resolved
+    }
+
+    # Create zip package
+    $zipPath = Join-Path ([IO.Path]::GetTempPath()) "logicapp-deploy.zip"
+    Compress-Archive -Path "$stagingDir\*" -DestinationPath $zipPath -Force
+    Write-Log -Message "Package: $([math]::Round((Get-Item $zipPath).Length / 1KB, 1)) KB" -Level Success
+
+    # Update app settings with connection runtime URLs
+    Write-Log -Message 'Updating application settings...'
+    $settings = @()
+    if ($config.ServiceBusRuntimeUrl) { $settings += "servicebus-ConnectionRuntimeUrl=$($config.ServiceBusRuntimeUrl)" }
+    if ($config.BlobRuntimeUrl) { $settings += "azureblob-ConnectionRuntimeUrl=$($config.BlobRuntimeUrl)" }
+    
+    if ($settings.Count -gt 0) {
+        $settingsArgs = @(
+            'functionapp', 'config', 'appsettings', 'set'
+            '--name', $config.LogicAppName
+            '--resource-group', $config.ResourceGroup
+            '--subscription', $config.SubscriptionId
+            '--settings'
+        ) + $settings + @('--output', 'none')
+        
+        $null = az @settingsArgs 2>&1
+        
+        if ($LASTEXITCODE -ne 0) {
+            Write-Log -Message 'Failed to update application settings' -Level Warning
+        }
+    }
+
+    # Deploy
+    Write-Log -Message 'Deploying workflows...'
+    $startTime = Get-Date
+    
+    $deployArgs = @(
+        'functionapp', 'deployment', 'source', 'config-zip'
+        '--name', $config.LogicAppName
+        '--resource-group', $config.ResourceGroup
+        '--subscription', $config.SubscriptionId
+        '--src', $zipPath
+        '--output', 'none'
+    )
+    
+    az @deployArgs
+    
+    if ($LASTEXITCODE -ne 0) {
+        throw 'Deployment failed with exit code: {0}' -f $LASTEXITCODE
+    }
+
+    $duration = [math]::Round(((Get-Date) - $startTime).TotalSeconds, 1)
+    Write-Log -Message "Deployed in $duration seconds" -Level Success
+
+    # Cleanup
+    Remove-Item $zipPath -Force -ErrorAction SilentlyContinue
+}
+finally {
+    Remove-Item $stagingDir -Recurse -Force -ErrorAction SilentlyContinue
+}
+
+Write-Host "`n╔════════════════════════════════════════════════════════╗" -ForegroundColor Green
+Write-Host "║              Deployment Complete                       ║" -ForegroundColor Green
+Write-Host "╚════════════════════════════════════════════════════════╝`n" -ForegroundColor Green
+
+#endregion

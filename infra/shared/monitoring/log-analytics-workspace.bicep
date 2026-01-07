@@ -33,12 +33,6 @@ param name string
 @description('Environment name suffix to ensure uniqueness.')
 @minLength(2)
 @maxLength(10)
-@allowed([
-  'local'
-  'dev'
-  'staging'
-  'prod'
-])
 param envName string
 
 @description('Azure region for the Log Analytics workspace deployment.')
