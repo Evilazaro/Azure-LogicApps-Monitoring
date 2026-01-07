@@ -17,8 +17,7 @@ var resourceGroupParameter = CreateResourceGroupParameterIfNeeded(builder);
 // Project Resources Configuration
 // =============================================================================
 
-var ordersApi = builder.AddProject<Projects.eShop_Orders_API>("orders-api")
-                       .WithExternalHttpEndpoints();
+var ordersApi = builder.AddProject<Projects.eShop_Orders_API>("orders-api");
 
 var webApp = builder.AddProject<Projects.eShop_Web_App>("web-app")
     .WithExternalHttpEndpoints()
