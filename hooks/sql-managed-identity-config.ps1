@@ -155,9 +155,7 @@ param(
     [Parameter(
         Mandatory = $true,
         Position = 0,
-        HelpMessage = "Enter the Azure SQL Server name (without suffix)",
-        ValueFromPipeline = $false,
-        ValueFromPipelineByPropertyName = $true
+        HelpMessage = "Enter the Azure SQL Server name (without suffix)"
     )]
     [ValidateNotNullOrEmpty()]
     [ValidateLength(1, 63)]
@@ -168,9 +166,7 @@ param(
     [Parameter(
         Mandatory = $true,
         Position = 1,
-        HelpMessage = "Enter the database name",
-        ValueFromPipeline = $false,
-        ValueFromPipelineByPropertyName = $true
+        HelpMessage = "Enter the database name"
     )]
     [ValidateNotNullOrEmpty()]
     [ValidateLength(1, 128)]
@@ -184,9 +180,7 @@ param(
     [Parameter(
         Mandatory = $true,
         Position = 2,
-        HelpMessage = "Enter the managed identity or service principal display name from Entra ID",
-        ValueFromPipeline = $false,
-        ValueFromPipelineByPropertyName = $true
+        HelpMessage = "Enter the managed identity or service principal display name from Entra ID"
     )]
     [ValidateNotNullOrEmpty()]
     [ValidateLength(1, 128)]
@@ -195,9 +189,7 @@ param(
 
     [Parameter(
         Mandatory = $false,
-        HelpMessage = "Enter database roles to assign (default: db_datareader, db_datawriter)",
-        ValueFromPipeline = $false,
-        ValueFromPipelineByPropertyName = $true
+        HelpMessage = "Enter database roles to assign (default: db_datareader, db_datawriter)"
     )]
     [ValidateNotNullOrEmpty()]
     [ValidateCount(1, 20)]
@@ -1202,67 +1194,67 @@ After installing, run this script again.
             }
         
             # Common SQL error numbers and their meanings
-            # Display guidance using Write-Host for immediate visibility (not buffered)
-            Write-Host '' -ForegroundColor Yellow
-            Write-Host '═══════════════════════════════════════════════════════════════════' -ForegroundColor Yellow
-            Write-Host 'TROUBLESHOOTING GUIDANCE' -ForegroundColor Yellow
-            Write-Host '═══════════════════════════════════════════════════════════════════' -ForegroundColor Yellow
+            # Display guidance using Write-ColoredOutput for PSScriptAnalyzer compliance
+            Write-ColoredOutput
+            Write-ColoredOutput -Message '═══════════════════════════════════════════════════════════════════' -Color Yellow
+            Write-ColoredOutput -Message 'TROUBLESHOOTING GUIDANCE' -Color Yellow
+            Write-ColoredOutput -Message '═══════════════════════════════════════════════════════════════════' -Color Yellow
             
             switch ($sqlEx.Number) {
                 18456 { 
-                    Write-Host ''
-                    Write-Host 'ERROR: Login failed - Authentication succeeded but user lacks SQL Server permissions' -ForegroundColor Red
-                    Write-Host ''
-                    Write-Host 'ROOT CAUSE:' -ForegroundColor Yellow
-                    Write-Host '  To create database users via Entra ID, you MUST authenticate as an' -ForegroundColor White
-                    Write-Host '  Entra ID administrator of the SQL Server.' -ForegroundColor White
-                    Write-Host ''
-                    Write-Host 'SOLUTION - Follow these steps:' -ForegroundColor Yellow
-                    Write-Host ''
-                    Write-Host '1. Set an Entra ID Admin on the SQL Server (if not already set):' -ForegroundColor Cyan
-                    Write-Host ''
-                    Write-Host '   az sql server ad-admin create \' -ForegroundColor White
-                    Write-Host '     --resource-group <your-rg> \' -ForegroundColor White
-                    Write-Host "     --server-name $SqlServerName \" -ForegroundColor White
-                    Write-Host '     --display-name <admin-user-or-identity-name> \' -ForegroundColor White
-                    Write-Host '     --object-id <admin-object-id>' -ForegroundColor White
-                    Write-Host ''
-                    Write-Host '   Example (using your current user):' -ForegroundColor Gray
-                    Write-Host "   `$me = az ad signed-in-user show --query '{name:userPrincipalName,id:id}' -o json | ConvertFrom-Json" -ForegroundColor Gray
-                    Write-Host "   az sql server ad-admin create --resource-group <rg> --server-name $SqlServerName --display-name `$me.name --object-id `$me.id" -ForegroundColor Gray
-                    Write-Host ''
-                    Write-Host '2. Verify the admin is set:' -ForegroundColor Cyan
-                    Write-Host "   az sql server ad-admin list --resource-group <rg> --server-name $SqlServerName" -ForegroundColor White
-                    Write-Host ''
-                    Write-Host '3. Ensure you are authenticated as that admin:' -ForegroundColor Cyan
-                    Write-Host '   az account show    # Check current identity' -ForegroundColor White
-                    Write-Host '   az login           # Re-authenticate if needed' -ForegroundColor White
-                    Write-Host ''
-                    Write-Host '4. Re-run the provisioning:' -ForegroundColor Cyan
-                    Write-Host '   azd provision' -ForegroundColor White
-                    Write-Host ''
-                    Write-Host 'More info: https://learn.microsoft.com/azure/azure-sql/database/authentication-aad-configure' -ForegroundColor Gray
+                    Write-ColoredOutput
+                    Write-ColoredOutput -Message 'ERROR: Login failed - Authentication succeeded but user lacks SQL Server permissions' -Color Red
+                    Write-ColoredOutput
+                    Write-ColoredOutput -Message 'ROOT CAUSE:' -Color Yellow
+                    Write-ColoredOutput -Message '  To create database users via Entra ID, you MUST authenticate as an' -Color White
+                    Write-ColoredOutput -Message '  Entra ID administrator of the SQL Server.' -Color White
+                    Write-ColoredOutput
+                    Write-ColoredOutput -Message 'SOLUTION - Follow these steps:' -Color Yellow
+                    Write-ColoredOutput
+                    Write-ColoredOutput -Message '1. Set an Entra ID Admin on the SQL Server (if not already set):' -Color Cyan
+                    Write-ColoredOutput
+                    Write-ColoredOutput -Message '   az sql server ad-admin create \' -Color White
+                    Write-ColoredOutput -Message '     --resource-group <your-rg> \' -Color White
+                    Write-ColoredOutput -Message "     --server-name $SqlServerName \" -Color White
+                    Write-ColoredOutput -Message '     --display-name <admin-user-or-identity-name> \' -Color White
+                    Write-ColoredOutput -Message '     --object-id <admin-object-id>' -Color White
+                    Write-ColoredOutput
+                    Write-ColoredOutput -Message '   Example (using your current user):' -Color Gray
+                    Write-ColoredOutput -Message "   `$me = az ad signed-in-user show --query '{name:userPrincipalName,id:id}' -o json | ConvertFrom-Json" -Color Gray
+                    Write-ColoredOutput -Message "   az sql server ad-admin create --resource-group <rg> --server-name $SqlServerName --display-name `$me.name --object-id `$me.id" -Color Gray
+                    Write-ColoredOutput
+                    Write-ColoredOutput -Message '2. Verify the admin is set:' -Color Cyan
+                    Write-ColoredOutput -Message "   az sql server ad-admin list --resource-group <rg> --server-name $SqlServerName" -Color White
+                    Write-ColoredOutput
+                    Write-ColoredOutput -Message '3. Ensure you are authenticated as that admin:' -Color Cyan
+                    Write-ColoredOutput -Message '   az account show    # Check current identity' -Color White
+                    Write-ColoredOutput -Message '   az login           # Re-authenticate if needed' -Color White
+                    Write-ColoredOutput
+                    Write-ColoredOutput -Message '4. Re-run the provisioning:' -Color Cyan
+                    Write-ColoredOutput -Message '   azd provision' -Color White
+                    Write-ColoredOutput
+                    Write-ColoredOutput -Message 'More info: https://learn.microsoft.com/azure/azure-sql/database/authentication-aad-configure' -Color Gray
                 }
                 40615 { 
-                    Write-Host 'Firewall rule blocking connection - add client IP to SQL firewall' -ForegroundColor Yellow
+                    Write-ColoredOutput -Message 'Firewall rule blocking connection - add client IP to SQL firewall' -Color Yellow
                 }
                 40613 { 
-                    Write-Host 'Database not available - check database exists and is online' -ForegroundColor Yellow
+                    Write-ColoredOutput -Message 'Database not available - check database exists and is online' -Color Yellow
                 }
                 33134 { 
-                    Write-Host 'User already exists - this is usually safe to ignore' -ForegroundColor Green
+                    Write-ColoredOutput -Message 'User already exists - this is usually safe to ignore' -Color Green
                 }
                 15023 { 
-                    Write-Host 'User, group, or role already exists in database' -ForegroundColor Green
+                    Write-ColoredOutput -Message 'User, group, or role already exists in database' -Color Green
                 }
                 default { 
-                    Write-Host 'Check SQL Server logs and Azure AD configuration' -ForegroundColor Yellow
+                    Write-ColoredOutput -Message 'Check SQL Server logs and Azure AD configuration' -Color Yellow
                 }
             }
             
-            Write-Host ''
-            Write-Host '═══════════════════════════════════════════════════════════════════' -ForegroundColor Yellow
-            Write-Host ''
+            Write-ColoredOutput
+            Write-ColoredOutput -Message '═══════════════════════════════════════════════════════════════════' -Color Yellow
+            Write-ColoredOutput
             
             throw
         }
