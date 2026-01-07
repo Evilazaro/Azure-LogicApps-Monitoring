@@ -520,6 +520,57 @@ function Write-LogMessage {
     }
 }
 
+function Write-ColoredOutput {
+    <#
+    .SYNOPSIS
+        Writes colored output using ANSI escape sequences via Write-Information.
+    
+    .DESCRIPTION
+        Provides colored console output that is PSScriptAnalyzer compliant by using
+        Write-Information with ANSI escape codes instead of Write-Host.
+    
+    .PARAMETER Message
+        The message to display.
+    
+    .PARAMETER Color
+        The color to use. Supports: Red, Green, Yellow, Cyan, White, Gray.
+    
+    .EXAMPLE
+        Write-ColoredOutput -Message "Success!" -Color Green
+    #>
+    [CmdletBinding()]
+    [OutputType([void])]
+    param(
+        [Parameter(Mandatory = $false, Position = 0)]
+        [AllowEmptyString()]
+        [string]$Message = '',
+        
+        [Parameter(Mandatory = $false)]
+        [ValidateSet('Red', 'Green', 'Yellow', 'Cyan', 'White', 'Gray', 'Default')]
+        [string]$Color = 'Default'
+    )
+    
+    $esc = [char]27
+    $resetColor = "$esc[0m"
+    
+    $colorCode = switch ($Color) {
+        'Red'     { "$esc[31m" }
+        'Green'   { "$esc[32m" }
+        'Yellow'  { "$esc[33m" }
+        'Cyan'    { "$esc[36m" }
+        'White'   { "$esc[37m" }
+        'Gray'    { "$esc[90m" }
+        default   { '' }
+    }
+    
+    if ($colorCode) {
+        Write-Information -MessageData "${colorCode}${Message}${resetColor}" -InformationAction Continue
+    }
+    else {
+        Write-Information -MessageData $Message -InformationAction Continue
+    }
+}
+
 function Test-AzureCliAvailability {
     <#
     .SYNOPSIS
