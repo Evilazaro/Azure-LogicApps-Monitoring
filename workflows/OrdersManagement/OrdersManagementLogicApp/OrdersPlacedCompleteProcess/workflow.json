@@ -1,0 +1,92 @@
+{
+    "definition": {
+        "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+        "contentVersion": "1.0.0.0",
+        "actions": {
+            "Lists_blobs_(V2)": {
+                "type": "ApiConnection",
+                "inputs": {
+                    "host": {
+                        "connection": {
+                            "referenceName": "azureblob-1"
+                        }
+                    },
+                    "method": "get",
+                    "path": "/v2/datasets/@{encodeURIComponent(encodeURIComponent('${AZURE_STORAGE_ACCOUNT_NAME_WORKFLOW}'))}/foldersV2/@{encodeURIComponent(encodeURIComponent('JTJmb3JkZXJzcHJvY2Vzc2Vkc3VjY2Vzc2Z1bGx5'))}",
+                    "queries": {
+                        "nextPageMarker": "",
+                        "useFlatListing": true
+                    }
+                },
+                "runAfter": {},
+                "metadata": {
+                    "JTJmb3JkZXJzcHJvY2Vzc2Vkc3VjY2Vzc2Z1bGx5": "/ordersprocessedsuccessfully"
+                }
+            },
+            "For_each": {
+                "type": "Foreach",
+                "foreach": "@body('Lists_blobs_(V2)')?['value']",
+                "actions": {
+                    "Copy_blob_(V2)": {
+                        "type": "ApiConnection",
+                        "inputs": {
+                            "host": {
+                                "connection": {
+                                    "referenceName": "azureblob-1"
+                                }
+                            },
+                            "method": "post",
+                            "headers": {
+                                "ReadFileMetadataFromServer": true
+                            },
+                            "path": "/v2/datasets/@{encodeURIComponent(encodeURIComponent('${AZURE_STORAGE_ACCOUNT_NAME_WORKFLOW} '))}/copyFile",
+                            "queries": {
+                                "source": "@item()?['Path']",
+                                "destination": "https://${AZURE_STORAGE_ACCOUNT_NAME_WORKFLOW}.blob.core.windows.net/ordersprocessedcompleted@{item()?['Id']}",
+                                "overwrite": true,
+                                "queryParametersSingleEncoded": true
+                            }
+                        }
+                    },
+                    "Delete_blob_(V2)": {
+                        "type": "ApiConnection",
+                        "inputs": {
+                            "host": {
+                                "connection": {
+                                    "referenceName": "azureblob-1"
+                                }
+                            },
+                            "method": "delete",
+                            "headers": {
+                                "SkipDeleteIfFileNotFoundOnServer": false
+                            },
+                            "path": "/v2/datasets/@{encodeURIComponent(encodeURIComponent('${AZURE_STORAGE_ACCOUNT_NAME_WORKFLOW}'))}/files/@{encodeURIComponent(encodeURIComponent(body('Copy_blob_(V2)')?['Path']))}"
+                        },
+                        "runAfter": {
+                            "Copy_blob_(V2)": [
+                                "SUCCEEDED"
+                            ]
+                        }
+                    }
+                },
+                "runAfter": {
+                    "Lists_blobs_(V2)": [
+                        "SUCCEEDED"
+                    ]
+                }
+            }
+        },
+        "outputs": {},
+        "triggers": {
+            "Recurrence": {
+                "type": "Recurrence",
+                "recurrence": {
+                    "interval": 1,
+                    "frequency": "Minute",
+                    "timeZone": "Central Standard Time"
+                }
+            }
+        }
+    },
+    "kind": "stateful"
+}

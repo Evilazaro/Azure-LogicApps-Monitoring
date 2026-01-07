@@ -33,6 +33,23 @@
           "audience": "https://storage.azure.com/"
         }
       }
+    },
+    "azureblob-1": {
+      "api": {
+        "id": "/subscriptions/@{appsetting('WORKFLOWS_SUBSCRIPTION_ID')}/providers/Microsoft.Web/locations/@{appsetting('WORKFLOWS_LOCATION_NAME')}/managedApis/azureblob"
+      },
+      "connection": {
+        "id": "/subscriptions/@{appsetting('WORKFLOWS_SUBSCRIPTION_ID')}/resourceGroups/@{appsetting('WORKFLOWS_RESOURCE_GROUP_NAME')}/providers/Microsoft.Web/connections/azureblob"
+      },
+      "authentication": "@parameters('azureblob-Authentication')",
+      "connectionRuntimeUrl": "@parameters('azureblob-ConnectionRuntimeUrl')",
+      "connectionProperties": {
+        "authentication": {
+          "type": "ManagedServiceIdentity",
+          "identity": "/subscriptions/${WORKFLOWS_SUBSCRIPTION_ID}/resourcegroups/${AZURE_RESOURCE_GROUP}/providers/Microsoft.ManagedIdentity/userAssignedIdentities/${MANAGED_IDENTITY_NAME}",
+          "audience": "https://storage.azure.com/"
+        }
+      }
     }
   },
   "serviceProviderConnections": {},
