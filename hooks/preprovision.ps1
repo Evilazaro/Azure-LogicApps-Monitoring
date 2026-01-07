@@ -1,4 +1,4 @@
-#!/usr/bin/env pwsh
+﻿#!/usr/bin/env pwsh
 
 <#
 .SYNOPSIS
@@ -64,7 +64,6 @@
     Prerequisite   : PowerShell 7.0 or higher
     Prerequisite   : .NET SDK 10.0 or higher
     Prerequisite   : Azure Developer CLI (azd)
-    
 
 .LINK
     https://github.com/Evilazaro/Azure-LogicApps-Monitoring
@@ -1260,6 +1259,7 @@ function Register-AzureResourceProviders {
     .OUTPUTS
         System.Boolean - Returns $true if all providers are registered, $false otherwise.
     #>
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseSingularNouns', '', Justification = 'Registers multiple Azure resource providers')]
     [CmdletBinding()]
     [OutputType([bool])]
     param(
@@ -1403,6 +1403,7 @@ function Test-AzureResourceProviders {
         Test-AzureResourceProviders
         Checks registration status of all required Azure resource providers.
     #>
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseSingularNouns', '', Justification = 'Tests multiple Azure resource providers')]
     [CmdletBinding()]
     [OutputType([bool])]
     param()
@@ -1523,6 +1524,7 @@ function Invoke-CleanSecrets {
         Invoke-CleanSecrets -Force
         Clears all user secrets without confirmation.
     #>
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseSingularNouns', '', Justification = 'Clears multiple user secrets across projects')]
     [CmdletBinding(SupportsShouldProcess)]
     [OutputType([bool])]
     param(
