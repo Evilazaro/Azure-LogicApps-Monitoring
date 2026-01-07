@@ -38,66 +38,54 @@ The solution uses an **eShop order management system** as a representative busin
 ```mermaid
 flowchart TB
     subgraph Core["🎯 Core Business Capabilities"]
-        OrderMgmt["Order Management"]
-        ProductCatalog["Product Catalog Management"]
-        CustomerExp["Customer Experience"]
+        direction TB
+        OrderMgmt["Order<br/>Management"]
+        ProductCatalog["Product Catalog<br/>Management"]
+        CustomerExp["Customer<br/>Experience"]
     end
 
     subgraph Supporting["🔧 Supporting Capabilities"]
-        MsgBroker["Message Brokering"]
-        DataPersist["Data Persistence"]
-        EventProcess["Event Processing"]
+        direction TB
+        MsgBroker["Message<br/>Brokering"]
+        DataPersist["Data<br/>Persistence"]
+        EventProcess["Event<br/>Processing"]
     end
 
     subgraph Observability["📊 Observability Capabilities"]
-        Tracing["Distributed Tracing"]
-        Metrics["Metrics Collection"]
-        Logging["Centralized Logging"]
-        Alerting["Proactive Alerting"]
-        Diagnostics["Diagnostic Analysis"]
+        direction TB
+        Tracing["Distributed<br/>Tracing"]
+        Metrics["Metrics<br/>Collection"]
+        Logging["Centralized<br/>Logging"]
+        Alerting["Proactive<br/>Alerting"]
+        Diagnostics["Diagnostic<br/>Analysis"]
     end
 
     subgraph Operations["⚙️ Operational Capabilities"]
-        Deploy["Automated Deployment"]
-        Config["Configuration Management"]
-        SecMgmt["Security Management"]
-        CapPlan["Capacity Planning"]
+        direction TB
+        Deploy["Automated<br/>Deployment"]
+        Config["Configuration<br/>Management"]
+        SecMgmt["Security<br/>Management"]
+        CapPlan["Capacity<br/>Planning"]
     end
 
     subgraph Integration["🔗 Integration Capabilities"]
-        APIGateway["API Management"]
-        WorkflowOrch["Workflow Orchestration"]
-        DataSync["Data Synchronization"]
+        direction TB
+        APIGateway["API<br/>Management"]
+        WorkflowOrch["Workflow<br/>Orchestration"]
+        DataSync["Data<br/>Synchronization"]
     end
 
-    OrderMgmt --> MsgBroker
-    OrderMgmt --> DataPersist
-    OrderMgmt --> Tracing
-    ProductCatalog --> DataPersist
-    CustomerExp --> OrderMgmt
-    EventProcess --> MsgBroker
-    WorkflowOrch --> EventProcess
+    classDef coreStyle fill:#FFE6CC,stroke:#D79B00,stroke-width:3px,color:#000,font-weight:bold
+    classDef supportStyle fill:#D5E8D4,stroke:#82B366,stroke-width:2px,color:#000,font-weight:bold
+    classDef obsStyle fill:#E1D5E7,stroke:#9673A6,stroke-width:2px,color:#000,font-weight:bold
+    classDef opsStyle fill:#F8CECC,stroke:#B85450,stroke-width:2px,color:#000,font-weight:bold
+    classDef integStyle fill:#DAE8FC,stroke:#6C8EBF,stroke-width:2px,color:#000,font-weight:bold
 
-    Tracing --> Diagnostics
-    Metrics --> CapPlan
-    Logging --> Diagnostics
-    Alerting --> Diagnostics
-
-    Deploy --> Config
-    SecMgmt --> Deploy
-    APIGateway --> OrderMgmt
-
-    classDef coreStyle fill:#fff4e6,stroke:#ff8c00,stroke-width:3px,color:#000
-    classDef supportStyle fill:#e6f4ea,stroke:#34a853,stroke-width:2px,color:#000
-    classDef obsStyle fill:#f3e5f5,stroke:#9c27b0,stroke-width:2px,color:#000
-    classDef opsStyle fill:#fce4ec,stroke:#e91e63,stroke-width:2px,color:#000
-    classDef integStyle fill:#e1f5ff,stroke:#0078d4,stroke-width:2px,color:#000
-
-    class Core,OrderMgmt,ProductCatalog,CustomerExp coreStyle
-    class Supporting,MsgBroker,DataPersist,EventProcess supportStyle
-    class Observability,Tracing,Metrics,Logging,Alerting,Diagnostics obsStyle
-    class Operations,Deploy,Config,SecMgmt,CapPlan opsStyle
-    class Integration,APIGateway,WorkflowOrch,DataSync integStyle
+    class OrderMgmt,ProductCatalog,CustomerExp coreStyle
+    class MsgBroker,DataPersist,EventProcess supportStyle
+    class Tracing,Metrics,Logging,Alerting,Diagnostics obsStyle
+    class Deploy,Config,SecMgmt,CapPlan opsStyle
+    class APIGateway,WorkflowOrch,DataSync integStyle
 ```
 
 ### Capability Descriptions
@@ -146,33 +134,33 @@ flowchart TB
 
 ```mermaid
 flowchart LR
-    Trigger["Customer Initiates<br/>Order"]
-    Validate["Validate Order<br/>Data"]
-    Persist["Persist to<br/>Database"]
-    Publish["Publish Order<br/>Event"]
-    Process["Workflow<br/>Processing"]
-    Audit["Store Audit<br/>Trail"]
-    Notify["Notify<br/>Customer"]
-    Complete["Order<br/>Fulfilled"]
+    Initiate["Order<br/>Initiation"]
+    Capture["Order<br/>Capture"]
+    Validate["Order<br/>Validation"]
+    Confirm["Order<br/>Confirmation"]
+    Process["Order<br/>Processing"]
+    Fulfill["Order<br/>Fulfillment"]
+    Track["Order<br/>Tracking"]
 
-    Trigger --> Validate
-    Validate --> Persist
-    Persist --> Publish
-    Publish --> Process
-    Process --> Audit
-    Audit --> Notify
-    Notify --> Complete
+    Initiate ==> Capture
+    Capture ==> Validate
+    Validate ==> Confirm
+    Confirm ==> Process
+    Process ==> Fulfill
+    Fulfill ==> Track
 
-    classDef triggerStyle fill:#fff4e6,stroke:#ff8c00,stroke-width:2px,color:#000
-    classDef processStyle fill:#e6f4ea,stroke:#34a853,stroke-width:2px,color:#000
-    classDef completeStyle fill:#e1f5ff,stroke:#0078d4,stroke-width:2px,color:#000
+    classDef initiateStyle fill:#FFE6CC,stroke:#D79B00,stroke-width:3px,color:#000,font-weight:bold
+    classDef captureStyle fill:#DAE8FC,stroke:#6C8EBF,stroke-width:3px,color:#000,font-weight:bold
+    classDef processStyle fill:#D5E8D4,stroke:#82B366,stroke-width:3px,color:#000,font-weight:bold
+    classDef completeStyle fill:#E1D5E7,stroke:#9673A6,stroke-width:3px,color:#000,font-weight:bold
 
-    class Trigger triggerStyle
-    class Validate,Persist,Publish,Process,Audit processStyle
-    class Notify,Complete completeStyle
+    class Initiate initiateStyle
+    class Capture,Validate captureStyle
+    class Confirm,Process,Fulfill processStyle
+    class Track completeStyle
 ```
 
-**Value Delivered**: Customer receives order confirmation within seconds, with system automatically initiating fulfillment workflows and maintaining complete audit trail for compliance and customer service inquiries.
+**Value Delivered**: End-to-end order lifecycle from customer initiation through fulfillment tracking, delivering seamless customer experience with full transparency and compliance-ready audit trails.
 
 ---
 
@@ -180,33 +168,33 @@ flowchart LR
 
 ```mermaid
 flowchart LR
-    Instrument["Instrument<br/>Application Code"]
-    Collect["Collect Telemetry<br/>Data"]
-    Aggregate["Aggregate in Log<br/>Analytics"]
-    Analyze["Analyze Traces<br/>& Metrics"]
-    Detect["Detect<br/>Anomalies"]
-    Alert["Trigger<br/>Alerts"]
-    Respond["Incident<br/>Response"]
-    Resolve["Issue<br/>Resolved"]
+    Instrument["Telemetry<br/>Instrumentation"]
+    Collect["Data<br/>Collection"]
+    Correlate["Context<br/>Correlation"]
+    Detect["Anomaly<br/>Detection"]
+    Alert["Proactive<br/>Alerting"]
+    Diagnose["Root Cause<br/>Diagnosis"]
+    Resolve["Issue<br/>Resolution"]
 
-    Instrument --> Collect
-    Collect --> Aggregate
-    Aggregate --> Analyze
-    Analyze --> Detect
-    Detect --> Alert
-    Alert --> Respond
-    Respond --> Resolve
+    Instrument ==> Collect
+    Collect ==> Correlate
+    Correlate ==> Detect
+    Detect ==> Alert
+    Alert ==> Diagnose
+    Diagnose ==> Resolve
 
-    classDef codeStyle fill:#f3e5f5,stroke:#9c27b0,stroke-width:2px,color:#000
-    classDef dataStyle fill:#e6f4ea,stroke:#34a853,stroke-width:2px,color:#000
-    classDef opsStyle fill:#fce4ec,stroke:#e91e63,stroke-width:2px,color:#000
+    classDef instrumentStyle fill:#E1D5E7,stroke:#9673A6,stroke-width:3px,color:#000,font-weight:bold
+    classDef collectStyle fill:#DAE8FC,stroke:#6C8EBF,stroke-width:3px,color:#000,font-weight:bold
+    classDef detectStyle fill:#FFE6CC,stroke:#D79B00,stroke-width:3px,color:#000,font-weight:bold
+    classDef resolveStyle fill:#D5E8D4,stroke:#82B366,stroke-width:3px,color:#000,font-weight:bold
 
-    class Instrument codeStyle
-    class Collect,Aggregate,Analyze dataStyle
-    class Detect,Alert,Respond,Resolve opsStyle
+    class Instrument instrumentStyle
+    class Collect,Correlate collectStyle
+    class Detect,Alert detectStyle
+    class Diagnose,Resolve resolveStyle
 ```
 
-**Value Delivered**: Operations team receives automated alerts with contextual traces before customers experience degraded service, enabling proactive resolution and maintaining high customer satisfaction.
+**Value Delivered**: Continuous system health visibility enabling sub-minute detection and resolution of issues before customer impact, reducing MTTR by 50-70% through automated correlation and contextual diagnostics.
 
 ---
 
