@@ -1,4 +1,4 @@
-#!/usr/bin/env pwsh
+﻿#!/usr/bin/env pwsh
 
 #Requires -Version 7.0
 
@@ -38,7 +38,6 @@
     Author         : Azure DevOps Team
     Last Modified  : 2026-01-06
     Version        : 2.0.1
-    
 #>
 
 [CmdletBinding(SupportsShouldProcess, ConfirmImpact = 'Medium')]
