@@ -8,9 +8,9 @@
 
 <!-- Hero Section -->
 <FluentStack Orientation="Orientation.Vertical" VerticalGap="0" Class="hero-section">
-    <FluentStack Orientation="Orientation.Vertical" VerticalGap="@(int.Parse(FluentDesignSystem.Spacing.XLarge))"
+    <FluentStack Orientation="Orientation.Vertical" VerticalGap="32"
         Style="padding: 4rem 2rem; text-align: center; background: linear-gradient(135deg, var(--accent-fill-rest) 0%, var(--accent-fill-active) 100%); color: white;">
-        <FluentStack Orientation="Orientation.Vertical" VerticalGap="@(int.Parse(FluentDesignSystem.Spacing.Medium))">
+        <FluentStack Orientation="Orientation.Vertical" VerticalGap="16">
             <FluentLabel Typo="Typography.H2" Style="font-size: 3rem; font-weight: 700; color: white;">
                 Welcome to eShop Orders Management
             </FluentLabel>
@@ -21,7 +21,7 @@
         </FluentStack>
 
         <FluentStack Orientation="Orientation.Horizontal"
-            HorizontalGap="@(int.Parse(FluentDesignSystem.Spacing.Medium))"
+            HorizontalGap="16"
             HorizontalAlignment="HorizontalAlignment.Center" Wrap="true">
             <FluentButton Appearance="Appearance.Lightweight"
                 OnClick="@(() => navigationManager.NavigateTo("/vieworder"))"
@@ -37,11 +37,11 @@
 </FluentStack>
 
 <!-- Key Features Section -->
-<FluentStack Orientation="Orientation.Vertical" VerticalGap="@(int.Parse(FluentDesignSystem.Spacing.XXLarge))"
+<FluentStack Orientation="Orientation.Vertical" VerticalGap="48"
     Style="padding: 4rem 2rem; max-width: 1400px; margin: 0 auto;">
 
     <!-- Section Header -->
-    <FluentStack Orientation="Orientation.Vertical" VerticalGap="@(int.Parse(FluentDesignSystem.Spacing.Small))"
+    <FluentStack Orientation="Orientation.Vertical" VerticalGap="8" 
         Style="text-align: center;">
         <FluentLabel Typo="Typography.H3"
             Style="font-size: 2.5rem; font-weight: 700; color: var(--neutral-foreground-rest);">
@@ -57,8 +57,7 @@
     <div class="features-grid">
         <!-- Feature 1: Real-time Order Tracking -->
         <FluentCard Style="padding: 2rem; height: 100%; animation: fadeInUp 0.6s ease-out;">
-            <FluentStack Orientation="Orientation.Vertical"
-                VerticalGap="@(int.Parse(FluentDesignSystem.Spacing.Medium))">
+            <FluentStack Orientation="Orientation.Vertical" VerticalGap="16">   
                 <div class="feature-icon"
                     style="background: var(--accent-fill-rest); width: 64px; height: 64px; border-radius: 12px; display: flex; align-items: center; justify-content: center;">
                     <span style="font-size: 32px; color: white;">📋</span>
