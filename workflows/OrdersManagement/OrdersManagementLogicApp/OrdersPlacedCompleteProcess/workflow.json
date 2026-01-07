@@ -26,7 +26,7 @@
             "Recurrence": {
                 "type": "Recurrence",
                 "recurrence": {
-                    "interval": 1,
+                    "interval": 10,
                     "frequency": "Second",
                     "timeZone": "Central Standard Time"
                 }
@@ -67,6 +67,26 @@
                             },
                             "method": "get",
                             "path": "/v2/datasets/@{encodeURIComponent(encodeURIComponent('orderswsaa6p5hofvqw2yq'))}/files/@{encodeURIComponent(encodeURIComponent(item()?['Path']))}"
+                        }
+                    },
+                    "Delete_blob_(V2)": {
+                        "type": "ApiConnection",
+                        "inputs": {
+                            "host": {
+                                "connection": {
+                                    "referenceName": "azureblob"
+                                }
+                            },
+                            "method": "delete",
+                            "headers": {
+                                "SkipDeleteIfFileNotFoundOnServer": false
+                            },
+                            "path": "/v2/datasets/@{encodeURIComponent(encodeURIComponent('orderswsaa6p5hofvqw2yq'))}/files/@{encodeURIComponent(encodeURIComponent(body('Get_Blob_Metadata_(V2)')?['Path']))}"
+                        },
+                        "runAfter": {
+                            "Get_Blob_Metadata_(V2)": [
+                                "SUCCEEDED"
+                            ]
                         }
                     }
                 },
