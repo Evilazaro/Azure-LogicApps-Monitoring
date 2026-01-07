@@ -94,6 +94,11 @@
                     "Lists_blobs_(V2)": [
                         "SUCCEEDED"
                     ]
+                },
+                "runtimeConfiguration": {
+                    "concurrency": {
+                        "repetitions": 20
+                    }
                 }
             }
         },
