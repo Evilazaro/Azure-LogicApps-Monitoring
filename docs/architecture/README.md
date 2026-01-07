@@ -2,22 +2,25 @@
 
 ## Executive Summary
 
-The **Azure Logic Apps Monitoring Solution** is a cloud-native reference architecture demonstrating enterprise-grade observability patterns for distributed applications on Azure. This solution uses an eShop order management system as its business scenario, showcasing how to instrument event-driven architectures with OpenTelemetry and Azure Monitor for comprehensive distributed tracing.
+The **Azure Logic Apps Monitoring Solution** is a cloud-native reference architecture demonstrating enterprise-grade observability patterns for distributed applications on Azure. Built on **.NET 10** and **.NET Aspire 9.x**, it uses an eShop order management scenario to showcase OpenTelemetry instrumentation across event-driven architectures with Azure Monitor integration.
 
-Built on **.NET 10** and **.NET Aspire 9.x** orchestration, the solution provides a complete blueprint for achieving end-to-end traceability from user interactions through API calls, message processing, and workflow execution—critical for debugging, performance analysis, and compliance auditing in modern distributed systems.
+The solution provides end-to-end traceability from user interactions through API calls, message processing, and workflow execution—essential for debugging distributed systems, performance analysis, and compliance auditing.
 
-**Key Architectural Highlights:**
+## Solution Summary
 
-| Capability                         | Implementation                                                                |
-| ---------------------------------- | ----------------------------------------------------------------------------- |
-| **Orchestration**                  | .NET Aspire AppHost with unified local/cloud development                      |
-| **Event-Driven**                   | Azure Service Bus topics for reliable async messaging                         |
-| **Serverless Workflows**           | Azure Logic Apps Standard for business process automation                     |
-| **Defense-in-Depth Observability** | Four-layer telemetry (Sources → Instrumentation → Collection → Visualization) |
-| **Zero-Secrets Architecture**      | Managed Identity authentication for all Azure services                        |
-| **Infrastructure as Code**         | Modular Bicep templates with subscription-scope orchestration                 |
+| Capability           | Implementation                                         |
+| -------------------- | ------------------------------------------------------ |
+| **Runtime Platform** | .NET 10, ASP.NET Core, Blazor Server                   |
+| **Orchestration**    | .NET Aspire 9.x AppHost (local/cloud parity)           |
+| **Compute**          | Azure Container Apps (Consumption profile)             |
+| **Messaging**        | Azure Service Bus Standard (topics/subscriptions)      |
+| **Workflows**        | Azure Logic Apps Standard (WS1 App Service Plan)       |
+| **Data**             | Azure SQL Database (Entra ID auth), Azure Blob Storage |
+| **Observability**    | Application Insights, Log Analytics, OpenTelemetry     |
+| **Security**         | User-Assigned Managed Identity (zero-secrets)          |
+| **IaC**              | Bicep (subscription-scope), Azure Developer CLI        |
 
-**Target Deployment Environments:** Azure Container Apps (production), Local Docker with .NET Aspire emulators (development)
+**Target Environments:** Azure Container Apps (production), Local Docker with .NET Aspire emulators (development)
 
 ---
 
@@ -128,10 +131,10 @@ flowchart TD
 
 This architecture documentation follows **TOGAF BDAT (Business, Data, Application, Technology)** framework principles:
 
-| Document                                                   | Description                                                                | Primary Audience                        |
-| ---------------------------------------------------------- | -------------------------------------------------------------------------- | --------------------------------------- |
+| Document                                                   | Description                                                                | Primary Audience                           |
+| ---------------------------------------------------------- | -------------------------------------------------------------------------- | ------------------------------------------ |
 | [01-business-architecture.md](01-business-architecture.md) | Business context, capabilities, stakeholders, value streams, process flows | Enterprise Architects, Solution Architects |
-| [02-data-architecture.md](02-data-architecture.md)         | Data stores, flows, telemetry mapping, monitoring data architecture        | Data Engineers, Platform Engineers, SRE |
+| [02-data-architecture.md](02-data-architecture.md)         | Data stores, flows, telemetry mapping, monitoring data architecture        | Data Engineers, Platform Engineers, SRE    |
 
 ### Reading Order by Audience
 
@@ -199,5 +202,33 @@ Azure-LogicApps-Monitoring/
 | **Database**      | Azure SQL Database            | -        |
 | **Containers**    | Azure Container Apps          | -        |
 | **Observability** | OpenTelemetry + Azure Monitor | -        |
-| **IaC**           | Bicep                         | Latest   |
-| **Deployment**    | Azure Developer CLI (azd)     | ≥1.9.0   |
+
+---
+
+## Deployment Prerequisites
+
+| Prerequisite        | Minimum Version | Purpose                                    |
+| ------------------- | --------------- | ------------------------------------------ |
+| Azure Subscription  | -               | Target deployment environment              |
+| Azure Developer CLI | ≥1.9.0          | Infrastructure provisioning and deployment |
+| .NET SDK            | 10.0            | Build and run applications                 |
+| Docker Desktop      | Latest          | Local development with Aspire emulators    |
+| Visual Studio Code  | Latest          | IDE with recommended extensions            |
+
+---
+
+## Getting Started
+
+```bash
+# Clone and provision
+azd init
+azd up
+
+# Local development
+dotnet restore
+dotnet run --project app.AppHost
+```
+
+For detailed setup, see the main [README.md](../../README.md).
+| **IaC** | Bicep | Latest |
+| **Deployment** | Azure Developer CLI (azd) | ≥1.9.0 |
