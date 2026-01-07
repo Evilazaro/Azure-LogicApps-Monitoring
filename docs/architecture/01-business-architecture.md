@@ -30,32 +30,45 @@ This solution delivers measurable business value through:
 ## 2. Business Capabilities
 
 ```mermaid
-flowchart TB
-    subgraph CoreBusiness["Core Business Capabilities"]
-        OC[Order Capture]
-        OP[Order Processing]
-        OF[Order Fulfillment Tracking]
+block-beta
+    columns 3
+
+    block:core:1
+        columns 1
+        CoreLabel["Core Business"]
+        OC["Order Capture"]
+        OP["Order Processing"]
+        OF["Order Fulfillment Tracking"]
     end
 
-    subgraph Enabling["Enabling Capabilities"]
-        IM[Identity Management]
-        SM[Secrets Management]
-        CM[Configuration Management]
+    block:enabling:1
+        columns 1
+        EnablingLabel["Enabling"]
+        IM["Identity Management"]
+        SM["Secrets Management"]
+        CM["Configuration Management"]
     end
 
-    subgraph Supporting["Supporting Capabilities"]
-        OBS[Operational Observability]
-        EM[Event Management]
-        DM[Data Management]
+    block:supporting:1
+        columns 1
+        SupportingLabel["Supporting"]
+        OBS["Operational Observability"]
+        EM["Event Management"]
+        DM["Data Management"]
     end
 
-    classDef core fill:#BBDEFB,stroke:#1565C0,color:#212121
-    classDef enabling fill:#B2DFDB,stroke:#00695C,color:#212121
-    classDef supporting fill:#E0E0E0,stroke:#616161,color:#212121
-
-    class OC,OP,OF core
-    class IM,SM,CM enabling
-    class OBS,EM,DM supporting
+    style CoreLabel fill:#BBDEFB,stroke:#1565C0,color:#212121
+    style OC fill:#BBDEFB,stroke:#1565C0,color:#212121
+    style OP fill:#BBDEFB,stroke:#1565C0,color:#212121
+    style OF fill:#BBDEFB,stroke:#1565C0,color:#212121
+    style EnablingLabel fill:#B2DFDB,stroke:#00695C,color:#212121
+    style IM fill:#B2DFDB,stroke:#00695C,color:#212121
+    style SM fill:#B2DFDB,stroke:#00695C,color:#212121
+    style CM fill:#B2DFDB,stroke:#00695C,color:#212121
+    style SupportingLabel fill:#E0E0E0,stroke:#616161,color:#212121
+    style OBS fill:#E0E0E0,stroke:#616161,color:#212121
+    style EM fill:#E0E0E0,stroke:#616161,color:#212121
+    style DM fill:#E0E0E0,stroke:#616161,color:#212121
 ```
 
 ### Capability Descriptions
@@ -92,13 +105,13 @@ flowchart TB
 
 ```mermaid
 flowchart LR
-    VS1[Customer<br/>Need Identified]
-    VS2[Order<br/>Submitted]
-    VS3[Order<br/>Validated]
-    VS4[Order<br/>Persisted]
-    VS5[Processing<br/>Initiated]
-    VS6[Processing<br/>Completed]
-    VS7[Customer<br/>Notified]
+    VS1[Customer Need Identified]
+    VS2[Order Submitted]
+    VS3[Order Validated]
+    VS4[Order Persisted]
+    VS5[Processing Initiated]
+    VS6[Processing Completed]
+    VS7[Customer Notified]
 
     VS1 --> VS2 --> VS3 --> VS4 --> VS5 --> VS6 --> VS7
 
@@ -111,12 +124,12 @@ flowchart LR
 
 ```mermaid
 flowchart LR
-    MV1[Telemetry<br/>Emitted]
-    MV2[Signals<br/>Collected]
-    MV3[Data<br/>Correlated]
-    MV4[Insights<br/>Visualized]
-    MV5[Anomalies<br/>Detected]
-    MV6[Issues<br/>Resolved]
+    MV1[Telemetry Emitted]
+    MV2[Signals Collected]
+    MV3[Data Correlated]
+    MV4[Insights Visualized]
+    MV5[Anomalies Detected]
+    MV6[Issues Resolved]
 
     MV1 --> MV2 --> MV3 --> MV4 --> MV5 --> MV6
 
@@ -180,9 +193,9 @@ flowchart LR
 
     classDef capture fill:#BBDEFB,stroke:#1565C0,color:#212121
     classDef persist fill:#C8E6C9,stroke:#2E7D32,color:#212121
-    classDef process fill:#E0E0E0,stroke:#616161,color:#212121
+    classDef process fill:#B2DFDB,stroke:#00695C,color:#212121
     classDef complete fill:#E0E0E0,stroke:#616161,color:#212121
-    classDef error stroke:#C62828,color:#212121
+    classDef error fill:#FFCDD2,stroke:#C62828,color:#212121
 
     class A1,A2,A3 capture
     class B1,B2 persist

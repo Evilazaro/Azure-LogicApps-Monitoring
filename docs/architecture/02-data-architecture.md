@@ -90,15 +90,15 @@ flowchart TB
     WF -.-> AIS
     AIS --> LAW
 
-    classDef core fill:#BBDEFB,stroke:#1565C0,color:#212121
-    classDef shared fill:#B2DFDB,stroke:#00695C,color:#212121
-    classDef telemetry fill:#C8E6C9,stroke:#2E7D32,color:#212121
-    classDef supporting fill:#E0E0E0,stroke:#616161,color:#212121
+    classDef orderDomain fill:#BBDEFB,stroke:#1565C0,color:#212121
+    classDef workflowDomain fill:#B2DFDB,stroke:#00695C,color:#212121
+    classDef telemetryDomain fill:#C8E6C9,stroke:#2E7D32,color:#212121
+    classDef service fill:#E0E0E0,stroke:#616161,color:#212121
 
-    class ODB,OMQ core
-    class WFS,WSS,WES shared
-    class LAW,AIS telemetry
-    class API,WF supporting
+    class ODB,OMQ orderDomain
+    class WFS,WSS,WES workflowDomain
+    class LAW,AIS telemetryDomain
+    class API,WF service
 ```
 
 ---
