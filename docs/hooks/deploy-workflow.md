@@ -59,13 +59,13 @@ The script handles the complete deployment lifecycle: discovering workflows, res
 
 ### 🔧 Required Tools
 
-| Tool           | Minimum Version | Purpose                              | Installation                         |
-|----------------|-----------------|--------------------------------------|--------------------------------------|
-| **PowerShell** | 7.0+            | Script runtime (Windows/macOS/Linux) | `winget install Microsoft.PowerShell`|
-| **Bash**       | 4.0+            | Script runtime (macOS/Linux)         | Pre-installed on most systems        |
-| **Azure CLI**  | 2.50+           | Azure resource management            | `winget install Microsoft.AzureCLI`  |
-| **jq**         | Any             | JSON parsing (Bash only)             | `apt install jq` / `brew install jq` |
-| **zip**        | Any             | Archive creation (Bash only)         | Pre-installed on most systems        |
+| Tool           | Minimum Version | Purpose                              | Installation                          |
+| -------------- | --------------- | ------------------------------------ | ------------------------------------- |
+| **PowerShell** | 7.0+            | Script runtime (Windows/macOS/Linux) | `winget install Microsoft.PowerShell` |
+| **Bash**       | 4.0+            | Script runtime (macOS/Linux)         | Pre-installed on most systems         |
+| **Azure CLI**  | 2.50+           | Azure resource management            | `winget install Microsoft.AzureCLI`   |
+| **jq**         | Any             | JSON parsing (Bash only)             | `apt install jq` / `brew install jq`  |
+| **zip**        | Any             | Archive creation (Bash only)         | Pre-installed on most systems         |
 
 ### ☁️ Azure Requirements
 
@@ -78,10 +78,10 @@ The script handles the complete deployment lifecycle: discovering workflows, res
 
 ## 📁 Files
 
-| File                   | Platform            | Description                  |
-|------------------------|---------------------|------------------------------|
-| `deploy-workflow.ps1`  | Windows/Linux/macOS | PowerShell Core implementation |
-| `deploy-workflow.sh`   | Linux/macOS         | Bash implementation          |
+| File                  | Platform            | Description                    |
+| --------------------- | ------------------- | ------------------------------ |
+| `deploy-workflow.ps1` | Windows/Linux/macOS | PowerShell Core implementation |
+| `deploy-workflow.sh`  | Linux/macOS         | Bash implementation            |
 
 ---
 
@@ -89,15 +89,15 @@ The script handles the complete deployment lifecycle: discovering workflows, res
 
 ### 💻 PowerShell (`deploy-workflow.ps1`)
 
-| Parameter       | Type   | Required | Default                                              | Description                          |
-|-----------------|--------|----------|------------------------------------------------------|--------------------------------------|
+| Parameter       | Type   | Required | Default                                                  | Description                        |
+| --------------- | ------ | -------- | -------------------------------------------------------- | ---------------------------------- |
 | `-WorkflowPath` | String | No       | `../workflows/OrdersManagement/OrdersManagementLogicApp` | Path to workflow project directory |
 
 ### 🐚 Bash (`deploy-workflow.sh`)
 
-| Argument        | Type   | Required | Default                                              | Description                          |
-|-----------------|--------|----------|------------------------------------------------------|--------------------------------------|
-| `$1`            | String | No       | `../workflows/OrdersManagement/OrdersManagementLogicApp` | Path to workflow project directory |
+| Argument | Type   | Required | Default                                                  | Description                        |
+| -------- | ------ | -------- | -------------------------------------------------------- | ---------------------------------- |
+| `$1`     | String | No       | `../workflows/OrdersManagement/OrdersManagementLogicApp` | Path to workflow project directory |
 
 ---
 
@@ -150,29 +150,29 @@ hooks:
 
 ### 📌 Required Variables
 
-| Variable                | Description                          | Source    |
-|-------------------------|--------------------------------------|-----------|
-| `AZURE_SUBSCRIPTION_ID` | Azure subscription ID                | azd env   |
-| `AZURE_RESOURCE_GROUP`  | Target resource group name           | azd env   |
+| Variable                | Description                             | Source  |
+| ----------------------- | --------------------------------------- | ------- |
+| `AZURE_SUBSCRIPTION_ID` | Azure subscription ID                   | azd env |
+| `AZURE_RESOURCE_GROUP`  | Target resource group name              | azd env |
 | `LOGIC_APP_NAME`        | Name of the Logic App Standard resource | azd env |
 
 ### 📝 Optional Variables
 
-| Variable                            | Description                        | Default     |
-|-------------------------------------|------------------------------------|-------------|
-| `AZURE_LOCATION`                    | Azure region                       | `westus3`   |
-| `SERVICE_BUS_CONNECTION_RUNTIME_URL`| Service Bus connection runtime URL | Auto-fetched|
-| `AZURE_BLOB_CONNECTION_RUNTIME_URL` | Blob storage connection runtime URL| Auto-fetched|
+| Variable                             | Description                         | Default      |
+| ------------------------------------ | ----------------------------------- | ------------ |
+| `AZURE_LOCATION`                     | Azure region                        | `westus3`    |
+| `SERVICE_BUS_CONNECTION_RUNTIME_URL` | Service Bus connection runtime URL  | Auto-fetched |
+| `AZURE_BLOB_CONNECTION_RUNTIME_URL`  | Blob storage connection runtime URL | Auto-fetched |
 
 ### 🔗 Auto-Generated Aliases
 
 The script automatically creates these aliases for `connections.json` compatibility:
 
-| Alias Variable                  | Source Variable          |
-|---------------------------------|--------------------------|
-| `WORKFLOWS_SUBSCRIPTION_ID`     | `AZURE_SUBSCRIPTION_ID`  |
-| `WORKFLOWS_RESOURCE_GROUP_NAME` | `AZURE_RESOURCE_GROUP`   |
-| `WORKFLOWS_LOCATION_NAME`       | `AZURE_LOCATION`         |
+| Alias Variable                  | Source Variable         |
+| ------------------------------- | ----------------------- |
+| `WORKFLOWS_SUBSCRIPTION_ID`     | `AZURE_SUBSCRIPTION_ID` |
+| `WORKFLOWS_RESOURCE_GROUP_NAME` | `AZURE_RESOURCE_GROUP`  |
+| `WORKFLOWS_LOCATION_NAME`       | `AZURE_LOCATION`        |
 
 ---
 
@@ -192,26 +192,73 @@ The script automatically creates these aliases for `connections.json` compatibil
 
 ### 📊 Workflow Diagram
 
+```mermaid
+%%{init: {'theme': 'base', 'themeVariables': { 'primaryColor': '#4a90d9', 'primaryTextColor': '#ffffff', 'primaryBorderColor': '#2c5aa0', 'lineColor': '#5c6bc0', 'secondaryColor': '#81c784', 'tertiaryColor': '#ffb74d'}}}%%
+flowchart LR
+    %% ===== PHASE 1: INITIALIZATION =====
+    subgraph phase1["🔧 Initialization"]
+        direction LR
+        A["🚀 Start"]:::startNode --> B["📋 Environment<br/>Setup"]:::processNode
+        B --> C["✅ Validate<br/>Config"]:::validationNode
+    end
+
+    %% ===== PHASE 2: DISCOVERY =====
+    subgraph phase2["🔎 Discovery"]
+        direction LR
+        D["📂 Find Workflow<br/>Project"]:::processNode --> E["🔍 Discover<br/>Workflows"]:::processNode
+        E --> F["🔗 Fetch Connection<br/>URLs"]:::azureNode
+    end
+
+    %% ===== PHASE 3: PREPARATION =====
+    subgraph phase3["📦 Preparation"]
+        direction LR
+        G["🔀 Resolve<br/>Placeholders"]:::processNode --> H["📁 Stage<br/>Files"]:::processNode
+        H --> I["🗜️ Create ZIP<br/>Package"]:::processNode
+    end
+
+    %% ===== PHASE 4: DEPLOYMENT =====
+    subgraph phase4["🚀 Deployment"]
+        direction LR
+        J["⚙️ Update App<br/>Settings"]:::azureNode --> K["☁️ Deploy ZIP<br/>to Azure"]:::azureNode
+        K --> L["🧹 Cleanup<br/>Temp Files"]:::processNode
+    end
+
+    %% ===== PHASE 5: COMPLETION =====
+    subgraph phase5["✨ Completion"]
+        direction LR
+        M["✅ Deployment<br/>Complete"]:::successNode
+    end
+
+    %% ===== INTER-PHASE CONNECTIONS =====
+    phase1 --> phase2
+    phase2 --> phase3
+    phase3 --> phase4
+    phase4 --> phase5
+
+    %% ===== STYLES =====
+    classDef startNode fill:#5c6bc0,stroke:#3949ab,stroke-width:2px,color:#ffffff,font-weight:bold
+    classDef processNode fill:#42a5f5,stroke:#1976d2,stroke-width:2px,color:#ffffff
+    classDef validationNode fill:#66bb6a,stroke:#388e3c,stroke-width:2px,color:#ffffff
+    classDef azureNode fill:#0078d4,stroke:#005a9e,stroke-width:2px,color:#ffffff
+    classDef successNode fill:#4caf50,stroke:#2e7d32,stroke-width:3px,color:#ffffff,font-weight:bold
+
+    %% ===== SUBGRAPH STYLES =====
+    style phase1 fill:#e3f2fd,stroke:#1976d2,stroke-width:2px,rx:10
+    style phase2 fill:#e8f5e9,stroke:#388e3c,stroke-width:2px,rx:10
+    style phase3 fill:#fff3e0,stroke:#f57c00,stroke-width:2px,rx:10
+    style phase4 fill:#e1f5fe,stroke:#0288d1,stroke-width:2px,rx:10
+    style phase5 fill:#e8f5e9,stroke:#2e7d32,stroke-width:2px,rx:10
 ```
-┌─────────────────┐     ┌─────────────────┐     ┌─────────────────┐
-│  Environment    │────▶│  Validate       │────▶│  Discover       │
-│  Setup          │     │  Config         │     │  Workflows      │
-└─────────────────┘     └─────────────────┘     └─────────────────┘
-                                                        │
-        ┌───────────────────────────────────────────────┘
-        ▼
-┌─────────────────┐     ┌─────────────────┐     ┌─────────────────┐
-│  Fetch          │────▶│  Resolve        │────▶│  Create         │
-│  Connection URLs│     │  Placeholders   │     │  ZIP Package    │
-└─────────────────┘     └─────────────────┘     └─────────────────┘
-                                                        │
-        ┌───────────────────────────────────────────────┘
-        ▼
-┌─────────────────┐     ┌─────────────────┐     ┌─────────────────┐
-│  Update App     │────▶│  Deploy ZIP     │────▶│  Cleanup        │
-│  Settings       │     │  Package        │     │  Temp Files     │
-└─────────────────┘     └─────────────────┘     └─────────────────┘
-```
+
+#### 📋 Phase Descriptions
+
+| Phase | Name | Description |
+|-------|------|-------------|
+| **1** | 🔧 Initialization | Set up environment aliases and validate required configuration |
+| **2** | 🔎 Discovery | Locate workflow project and discover all deployable workflows |
+| **3** | 📦 Preparation | Resolve placeholders, stage files, and create deployment package |
+| **4** | 🚀 Deployment | Update Azure settings and deploy the ZIP package |
+| **5** | ✨ Completion | Clean up temporary files and report success |
 
 ---
 
@@ -229,17 +276,17 @@ The script automatically discovers workflows by:
 
 The following patterns are excluded from deployment (per `.funcignore`):
 
-| Pattern              | Description                    |
-|----------------------|--------------------------------|
-| `.debug`             | Debug configuration files      |
-| `.git*`              | Git repository files           |
-| `.vscode`            | VS Code configuration          |
-| `__azurite*`         | Azurite emulator files         |
-| `__blobstorage__`    | Local blob storage emulator    |
-| `__queuestorage__`   | Local queue storage emulator   |
-| `local.settings.json`| Local settings file            |
-| `test`               | Test directories               |
-| `workflow-designtime`| Design-time workflow files     |
+| Pattern               | Description                  |
+| --------------------- | ---------------------------- |
+| `.debug`              | Debug configuration files    |
+| `.git*`               | Git repository files         |
+| `.vscode`             | VS Code configuration        |
+| `__azurite*`          | Azurite emulator files       |
+| `__blobstorage__`     | Local blob storage emulator  |
+| `__queuestorage__`    | Local queue storage emulator |
+| `local.settings.json` | Local settings file          |
+| `test`                | Test directories             |
+| `workflow-designtime` | Design-time workflow files   |
 
 ---
 
@@ -247,11 +294,11 @@ The following patterns are excluded from deployment (per `.funcignore`):
 
 The script resolves `${VARIABLE_NAME}` placeholders in the following files:
 
-| File               | Description                          |
-|--------------------|--------------------------------------|
-| `connections.json` | API connection configurations        |
-| `parameters.json`  | Workflow parameters                  |
-| `workflow.json`    | Workflow definitions (per workflow)  |
+| File               | Description                         |
+| ------------------ | ----------------------------------- |
+| `connections.json` | API connection configurations       |
+| `parameters.json`  | Workflow parameters                 |
+| `workflow.json`    | Workflow definitions (per workflow) |
 
 > ⚠️ **Note:** Unresolved placeholders generate warnings but don't fail the deployment.
 
@@ -259,13 +306,13 @@ The script resolves `${VARIABLE_NAME}` placeholders in the following files:
 
 ## 🔢 Exit Codes
 
-| Code | Description                          |
-|------|--------------------------------------|
-| `0`  | ✅ Deployment successful             |
+| Code | Description                               |
+| ---- | ----------------------------------------- |
+| `0`  | ✅ Deployment successful                  |
 | `1`  | ❌ Missing required environment variables |
-| `1`  | ❌ Workflow project not found        |
-| `1`  | ❌ No workflows discovered           |
-| `1`  | ❌ Deployment command failed         |
+| `1`  | ❌ Workflow project not found             |
+| `1`  | ❌ No workflows discovered                |
+| `1`  | ❌ Deployment command failed              |
 
 ---
 
@@ -339,10 +386,10 @@ For detailed logging during execution:
 
 ## 🔄 Version History
 
-| Version | Date       | Changes                                              |
-|---------|------------|------------------------------------------------------|
-| 2.0.1   | 2026-01-07 | PSScriptAnalyzer compliance, added Bash equivalent   |
-| 2.0.0   | -          | Initial release with environment variable support    |
+| Version | Date       | Changes                                            |
+| ------- | ---------- | -------------------------------------------------- |
+| 2.0.1   | 2026-01-07 | PSScriptAnalyzer compliance, added Bash equivalent |
+| 2.0.0   | -          | Initial release with environment variable support  |
 
 ---
 
