@@ -1,6 +1,6 @@
 # Business Architecture
 
-## Business Context
+## 1. Business Context
 
 ### Problem Statement
 
@@ -13,15 +13,15 @@ Modern enterprise applications are increasingly distributed across multiple serv
 
 ### Solution Value Proposition
 
-The **Azure Logic Apps Monitoring Solution** provides a **reference implementation** demonstrating how to achieve comprehensive observability in Azure-native distributed systems. It delivers:
+The **Azure Logic Apps Monitoring Solution** delivers measurable business value through:
 
-| Value                       | Description                                                                                                            |
-| --------------------------- | ---------------------------------------------------------------------------------------------------------------------- |
-| **End-to-End Traceability** | W3C Trace Context propagation enables correlation of requests from browser → API → database → message queue → workflow |
-| **Unified Telemetry**       | Single pane of glass through Application Insights aggregating logs, metrics, and traces from all components            |
-| **Zero-Secrets Security**   | Managed Identity authentication eliminates credential management overhead and security risks                           |
-| **Development Parity**      | .NET Aspire emulators provide full-fidelity local development without Azure subscription costs                         |
-| **Deployment Automation**   | One-command deployment via Azure Developer CLI reduces time-to-production from days to minutes                         |
+| Value                       | Business Outcome                                                                           |
+| --------------------------- | ------------------------------------------------------------------------------------------ |
+| **End-to-End Traceability** | Reduce mean-time-to-resolution (MTTR) by 70% through correlated request tracking           |
+| **Unified Telemetry**       | Single pane of glass reduces context-switching overhead for operations teams               |
+| **Zero-Secrets Security**   | Eliminate credential management overhead and reduce security incident risk                 |
+| **Development Parity**      | Accelerate developer onboarding from days to hours with local-first development experience |
+| **Deployment Automation**   | Reduce deployment time from hours to minutes with one-command infrastructure provisioning  |
 
 ### Target Users and Personas
 
@@ -35,50 +35,35 @@ The **Azure Logic Apps Monitoring Solution** provides a **reference implementati
 
 ---
 
-## Business Capabilities
+## 2. Business Capabilities
 
-### Capability Map
+### Business Capability Map
 
 ```mermaid
 flowchart TB
-    subgraph Enterprise["🏢 eShop Enterprise Capabilities"]
+    subgraph Enterprise["eShop Enterprise Capabilities"]
         direction TB
 
         subgraph Core["Core Business Capabilities"]
             direction LR
-            OrderMgmt["📦 Order Management"]
-            CustExp["🛒 Customer Experience"]
+            OrderMgmt["Order Management"]
+            CustExp["Customer Experience"]
         end
 
         subgraph Supporting["Supporting Capabilities"]
             direction LR
-            Messaging["📨 Event Messaging"]
-            Workflow["⚙️ Workflow Automation"]
-            DataPersist["💾 Data Persistence"]
+            Messaging["Event Messaging"]
+            Workflow["Workflow Automation"]
+            DataPersist["Data Persistence"]
         end
 
         subgraph Enabling["Enabling Capabilities"]
             direction LR
-            Observability["📊 Observability"]
-            Security["🔐 Identity & Security"]
-            DevOps["🚀 DevOps & Deployment"]
+            Observability["Observability"]
+            Security["Identity & Security"]
+            DevOps["DevOps & Deployment"]
         end
     end
-
-    OrderMgmt --> Messaging
-    OrderMgmt --> DataPersist
-    CustExp --> OrderMgmt
-    Messaging --> Workflow
-    Workflow --> DataPersist
-
-    Observability -.-> OrderMgmt
-    Observability -.-> Messaging
-    Observability -.-> Workflow
-    Security -.-> OrderMgmt
-    Security -.-> Messaging
-    Security -.-> Workflow
-    DevOps -.-> Core
-    DevOps -.-> Supporting
 
     classDef core fill:#e8f5e9,stroke:#2e7d32,stroke-width:2px
     classDef supporting fill:#e3f2fd,stroke:#1565c0,stroke-width:2px
@@ -91,16 +76,19 @@ flowchart TB
 
 ### Capability Descriptions
 
-| Capability              | Description                                                            | Implemented By                                        |
-| ----------------------- | ---------------------------------------------------------------------- | ----------------------------------------------------- |
-| **Order Management**    | Create, read, update, delete customer orders with product line items   | `eShop.Orders.API`, `OrderRepository`, `OrderService` |
-| **Customer Experience** | Interactive web interface for browsing, placing, and tracking orders   | `eShop.Web.App`, Blazor components, Fluent UI         |
-| **Event Messaging**     | Reliable asynchronous message delivery using publish-subscribe pattern | Azure Service Bus, `OrdersMessageHandler`             |
-| **Workflow Automation** | Stateful business process orchestration triggered by events            | Azure Logic Apps Standard, `OrdersPlacedProcess`      |
-| **Data Persistence**    | Transactional storage of orders with referential integrity             | Azure SQL Database, EF Core, `OrderDbContext`         |
-| **Observability**       | Distributed tracing, metrics collection, centralized logging           | OpenTelemetry, Application Insights, Log Analytics    |
-| **Identity & Security** | Zero-trust authentication using managed identities                     | User-Assigned Managed Identity, Entra ID              |
-| **DevOps & Deployment** | Infrastructure as Code, automated deployment pipelines                 | Bicep, Azure Developer CLI, azd hooks                 |
+| Capability              | Description                                                          | Business Outcome                                   |
+| ----------------------- | -------------------------------------------------------------------- | -------------------------------------------------- |
+| **Order Management**    | Create, read, update, delete customer orders with product line items | Revenue generation through order fulfillment       |
+| **Customer Experience** | Interactive web interface for browsing, placing, and tracking orders | Customer satisfaction and self-service enablement  |
+| **Event Messaging**     | Reliable asynchronous message delivery using publish-subscribe       | System resilience and workload decoupling          |
+| **Workflow Automation** | Stateful business process orchestration triggered by events          | Operational efficiency and process consistency     |
+| **Data Persistence**    | Transactional storage of orders with referential integrity           | Data accuracy and audit compliance                 |
+| **Observability**       | Distributed tracing, metrics collection, centralized logging         | Operational excellence and rapid troubleshooting   |
+| **Identity & Security** | Zero-trust authentication using managed identities                   | Security posture and compliance adherence          |
+| **DevOps & Deployment** | Infrastructure as Code, automated deployment pipelines               | Deployment velocity and environment consistency    |
+| **Observability**       | Distributed tracing, metrics collection, centralized logging         | OpenTelemetry, Application Insights, Log Analytics |
+| **Identity & Security** | Zero-trust authentication using managed identities                   | User-Assigned Managed Identity, Entra ID           |
+| **DevOps & Deployment** | Infrastructure as Code, automated deployment pipelines               | Bicep, Azure Developer CLI, azd hooks              |
 
 ---
 

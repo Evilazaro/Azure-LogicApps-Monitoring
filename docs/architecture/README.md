@@ -1,10 +1,10 @@
-# Azure Logic Apps Monitoring Solution - Architecture Overview
+# Architecture Overview
 
 ## Executive Summary
 
-The **Azure Logic Apps Monitoring Solution** is a cloud-native reference architecture demonstrating enterprise-grade observability patterns for distributed applications on Azure. Built on .NET Aspire orchestration, it showcases comprehensive monitoring, tracing, and alerting across microservices, serverless workflows, and messaging systems.
+The **Azure Logic Apps Monitoring Solution** is a cloud-native reference architecture demonstrating enterprise-grade observability patterns for distributed applications on Azure. This solution uses an eShop order management system as its business scenario, showcasing how to instrument event-driven architectures with OpenTelemetry and Azure Monitor for comprehensive distributed tracing.
 
-This solution addresses the critical challenge of maintaining visibility into complex distributed systems where traditional monitoring approaches fall short. By leveraging Azure Monitor, Application Insights, and OpenTelemetry, it provides **end-to-end traceability** from user interactions through API calls, message processing, and workflow execution—enabling correlation of requests across the entire distributed system for debugging, performance analysis, and compliance auditing.
+Built on **.NET 10** and **.NET Aspire 9.x** orchestration, the solution provides a complete blueprint for achieving end-to-end traceability from user interactions through API calls, message processing, and workflow execution—critical for debugging, performance analysis, and compliance auditing in modern distributed systems.
 
 **Key Architectural Highlights:**
 
@@ -128,10 +128,10 @@ flowchart TD
 
 This architecture documentation follows **TOGAF BDAT (Business, Data, Application, Technology)** framework principles:
 
-| Document                                                   | Description                                                         | Primary Audience                        |
-| ---------------------------------------------------------- | ------------------------------------------------------------------- | --------------------------------------- |
-| [01-business-architecture.md](01-business-architecture.md) | Business context, capabilities, stakeholders, value streams         | Cloud Architects, Technical Leads       |
-| [02-data-architecture.md](02-data-architecture.md)         | Data stores, flows, telemetry mapping, monitoring data architecture | Data Engineers, Platform Engineers, SRE |
+| Document                                                   | Description                                                                | Primary Audience                        |
+| ---------------------------------------------------------- | -------------------------------------------------------------------------- | --------------------------------------- |
+| [01-business-architecture.md](01-business-architecture.md) | Business context, capabilities, stakeholders, value streams, process flows | Enterprise Architects, Solution Architects |
+| [02-data-architecture.md](02-data-architecture.md)         | Data stores, flows, telemetry mapping, monitoring data architecture        | Data Engineers, Platform Engineers, SRE |
 
 ### Reading Order by Audience
 
