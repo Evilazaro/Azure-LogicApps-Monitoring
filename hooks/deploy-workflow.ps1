@@ -7,13 +7,29 @@
     Deploys workflow definitions from OrdersManagement Logic App to Azure.
     Runs as azd predeploy hook - environment variables are already loaded.
 
+.PARAMETER WorkflowPath
+    Optional path to the workflow project directory. If not specified, defaults to
+    '../workflows/OrdersManagement/OrdersManagementLogicApp' relative to script location.
+
+.EXAMPLE
+    ./deploy-workflow.ps1
+    Deploys workflows using default path and environment variables from azd.
+
+.EXAMPLE
+    ./deploy-workflow.ps1 -WorkflowPath "C:\MyWorkflows\LogicApp"
+    Deploys workflows from a custom path.
+
 .NOTES
-    Version: 2.0.0
+    Version: 2.0.1
     Requires: Azure CLI 2.50+, PowerShell Core 7.0+
 #>
 
+#Requires -Version 7.0
+
 [CmdletBinding()]
 param(
+    [Parameter(Position = 0)]
+    [ValidateScript({ $_ -eq '' -or (Test-Path -Path $_ -PathType Container) })]
     [string]$WorkflowPath
 )
 
@@ -36,57 +52,109 @@ function Write-Log {
 }
 
 function Get-EnvironmentValue {
-    param([string]$Name, [string]$Default)
+    [CmdletBinding()]
+    [OutputType([string])]
+    param(
+        [Parameter(Mandatory)]
+        [string]$Name,
+        
+        [Parameter()]
+        [string]$Default = ''
+    )
+    
     $value = [Environment]::GetEnvironmentVariable($Name)
-    if ($value) { return $value }
+    if (-not [string]::IsNullOrEmpty($value)) {
+        return $value
+    }
     return $Default
 }
 
 function Set-WorkflowEnvironmentAliases {
+    [CmdletBinding()]
+    [OutputType([void])]
+    param()
+    
     # Map WORKFLOWS_* variables to AZURE_* equivalents for connections.json compatibility
     $mappings = @{
         'WORKFLOWS_SUBSCRIPTION_ID'     = 'AZURE_SUBSCRIPTION_ID'
         'WORKFLOWS_RESOURCE_GROUP_NAME' = 'AZURE_RESOURCE_GROUP'
         'WORKFLOWS_LOCATION_NAME'       = 'AZURE_LOCATION'
     }
+    
     foreach ($key in $mappings.Keys) {
-        if (-not [Environment]::GetEnvironmentVariable($key)) {
-            $value = [Environment]::GetEnvironmentVariable($mappings[$key])
-            if ($value) { [Environment]::SetEnvironmentVariable($key, $value) }
+        $existingValue = [Environment]::GetEnvironmentVariable($key)
+        if ([string]::IsNullOrEmpty($existingValue)) {
+            $sourceValue = [Environment]::GetEnvironmentVariable($mappings[$key])
+            if (-not [string]::IsNullOrEmpty($sourceValue)) {
+                [Environment]::SetEnvironmentVariable($key, $sourceValue)
+            }
         }
     }
 }
 
 function Resolve-Placeholders {
-    param([string]$Content, [string]$FileName)
+    [CmdletBinding()]
+    [OutputType([string])]
+    param(
+        [Parameter(Mandatory)]
+        [AllowEmptyString()]
+        [string]$Content,
+        
+        [Parameter(Mandatory)]
+        [string]$FileName
+    )
     
     $resolved = $Content
-    $unresolved = @()
+    $unresolved = [System.Collections.Generic.List[string]]::new()
     
     [regex]::Matches($Content, $PlaceholderPattern) | ForEach-Object {
         $key = $_.Groups[1].Value
         $value = [Environment]::GetEnvironmentVariable($key)
-        if ($value) {
+        if (-not [string]::IsNullOrEmpty($value)) {
             $resolved = $resolved.Replace($_.Value, $value)
-        } else {
-            $unresolved += $key
+        }
+        else {
+            $unresolved.Add($key)
         }
     }
     
     if ($unresolved.Count -gt 0) {
-        Write-Log "Unresolved in ${FileName}: $($unresolved -join ', ')" -Level Warning
+        Write-Log -Message "Unresolved in ${FileName}: $($unresolved -join ', ')" -Level Warning
     }
     return $resolved
 }
 
 function Get-ConnectionRuntimeUrl {
-    param([string]$ConnectionName, [string]$ResourceGroup, [string]$SubscriptionId)
+    [CmdletBinding()]
+    [OutputType([string])]
+    param(
+        [Parameter(Mandatory)]
+        [string]$ConnectionName,
+        
+        [Parameter(Mandatory)]
+        [string]$ResourceGroup,
+        
+        [Parameter(Mandatory)]
+        [string]$SubscriptionId
+    )
     
     try {
         $uri = "https://management.azure.com/subscriptions/$SubscriptionId/resourceGroups/$ResourceGroup/providers/Microsoft.Web/connections/$ConnectionName/listConnectionKeys?api-version=2016-06-01"
-        $result = az rest --method POST --uri $uri --output json 2>$null | ConvertFrom-Json
-        if ($result.runtimeUrls) { return $result.runtimeUrls[0] }
-    } catch { }
+        $jsonOutput = az rest --method POST --uri $uri --output json 2>&1
+        
+        if ($LASTEXITCODE -ne 0) {
+            Write-Verbose "Failed to get runtime URL for connection '$ConnectionName': $jsonOutput"
+            return $null
+        }
+        
+        $result = $jsonOutput | ConvertFrom-Json
+        if ($null -ne $result.runtimeUrls -and $result.runtimeUrls.Count -gt 0) {
+            return $result.runtimeUrls[0]
+        }
+    }
+    catch {
+        Write-Verbose "Exception getting runtime URL for connection '$ConnectionName': $($_.Exception.Message)"
+    }
     return $null
 }
 
@@ -118,11 +186,11 @@ if (-not $config.ResourceGroup) { $missing += 'AZURE_RESOURCE_GROUP' }
 if (-not $config.LogicAppName) { $missing += 'LOGIC_APP_NAME' }
 
 if ($missing.Count -gt 0) {
-    Write-Log "Missing environment variables: $($missing -join ', ')" -Level Error
+    Write-Log -Message "Missing environment variables: $($missing -join ', ')" -Level Error
     exit 1
 }
 
-Write-Log "Target: $($config.LogicAppName) in $($config.ResourceGroup)"
+Write-Log -Message "Target: $($config.LogicAppName) in $($config.ResourceGroup)"
 
 # Find workflow project
 $projectPath = if ($WorkflowPath -and (Test-Path $WorkflowPath)) {
@@ -132,7 +200,7 @@ $projectPath = if ($WorkflowPath -and (Test-Path $WorkflowPath)) {
     if (Test-Path $searchPath) { (Resolve-Path $searchPath).Path }
     else { throw 'Workflow project not found' }
 }
-Write-Log "Source: $projectPath"
+Write-Log -Message "Source: $projectPath"
 
 # Discover workflows
 $workflows = Get-ChildItem -Path $projectPath -Directory | Where-Object {
@@ -141,16 +209,16 @@ $workflows = Get-ChildItem -Path $projectPath -Directory | Where-Object {
 }
 
 if ($workflows.Count -eq 0) { throw 'No workflows found' }
-Write-Log "Workflows: $($workflows.Name -join ', ')" -Level Success
+Write-Log -Message "Workflows: $($workflows.Name -join ', ')" -Level Success
 
 # Get connection runtime URLs if not in environment
-if (-not $config.ServiceBusRuntimeUrl) {
-    Write-Log "Fetching Service Bus connection runtime URL..."
-    $config.ServiceBusRuntimeUrl = Get-ConnectionRuntimeUrl 'servicebus' $config.ResourceGroup $config.SubscriptionId
+if ([string]::IsNullOrEmpty($config.ServiceBusRuntimeUrl)) {
+    Write-Log -Message 'Fetching Service Bus connection runtime URL...'
+    $config.ServiceBusRuntimeUrl = Get-ConnectionRuntimeUrl -ConnectionName 'servicebus' -ResourceGroup $config.ResourceGroup -SubscriptionId $config.SubscriptionId
 }
-if (-not $config.BlobRuntimeUrl) {
-    Write-Log "Fetching Azure Blob connection runtime URL..."
-    $config.BlobRuntimeUrl = Get-ConnectionRuntimeUrl 'azureblob' $config.ResourceGroup $config.SubscriptionId
+if ([string]::IsNullOrEmpty($config.BlobRuntimeUrl)) {
+    Write-Log -Message 'Fetching Azure Blob connection runtime URL...'
+    $config.BlobRuntimeUrl = Get-ConnectionRuntimeUrl -ConnectionName 'azureblob' -ResourceGroup $config.ResourceGroup -SubscriptionId $config.SubscriptionId
 }
 
 # Create staging directory
@@ -191,40 +259,51 @@ try {
     # Create zip package
     $zipPath = Join-Path ([IO.Path]::GetTempPath()) "logicapp-deploy.zip"
     Compress-Archive -Path "$stagingDir\*" -DestinationPath $zipPath -Force
-    Write-Log "Package: $([math]::Round((Get-Item $zipPath).Length / 1KB, 1)) KB" -Level Success
+    Write-Log -Message "Package: $([math]::Round((Get-Item $zipPath).Length / 1KB, 1)) KB" -Level Success
 
     # Update app settings with connection runtime URLs
-    Write-Log "Updating application settings..."
+    Write-Log -Message 'Updating application settings...'
     $settings = @()
     if ($config.ServiceBusRuntimeUrl) { $settings += "servicebus-ConnectionRuntimeUrl=$($config.ServiceBusRuntimeUrl)" }
     if ($config.BlobRuntimeUrl) { $settings += "azureblob-ConnectionRuntimeUrl=$($config.BlobRuntimeUrl)" }
     
     if ($settings.Count -gt 0) {
-        az functionapp config appsettings set `
-            --name $config.LogicAppName `
-            --resource-group $config.ResourceGroup `
-            --subscription $config.SubscriptionId `
-            --settings @settings `
-            --output none 2>&1 | Out-Null
+        $settingsArgs = @(
+            'functionapp', 'config', 'appsettings', 'set'
+            '--name', $config.LogicAppName
+            '--resource-group', $config.ResourceGroup
+            '--subscription', $config.SubscriptionId
+            '--settings'
+        ) + $settings + @('--output', 'none')
+        
+        $null = az @settingsArgs 2>&1
+        
+        if ($LASTEXITCODE -ne 0) {
+            Write-Log -Message 'Failed to update application settings' -Level Warning
+        }
     }
 
     # Deploy
-    Write-Log "Deploying workflows..."
+    Write-Log -Message 'Deploying workflows...'
     $startTime = Get-Date
     
-    az functionapp deployment source config-zip `
-        --name $config.LogicAppName `
-        --resource-group $config.ResourceGroup `
-        --subscription $config.SubscriptionId `
-        --src $zipPath `
-        --output none
-
+    $deployArgs = @(
+        'functionapp', 'deployment', 'source', 'config-zip'
+        '--name', $config.LogicAppName
+        '--resource-group', $config.ResourceGroup
+        '--subscription', $config.SubscriptionId
+        '--src', $zipPath
+        '--output', 'none'
+    )
+    
+    az @deployArgs
+    
     if ($LASTEXITCODE -ne 0) {
-        throw "Deployment failed"
+        throw 'Deployment failed with exit code: {0}' -f $LASTEXITCODE
     }
 
     $duration = [math]::Round(((Get-Date) - $startTime).TotalSeconds, 1)
-    Write-Log "Deployed in $duration seconds" -Level Success
+    Write-Log -Message "Deployed in $duration seconds" -Level Success
 
     # Cleanup
     Remove-Item $zipPath -Force -ErrorAction SilentlyContinue
