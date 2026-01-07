@@ -58,6 +58,78 @@ This script performs the following operations:
 | ✅ **Assigns database roles**             | Grants specified permissions to the managed identity     |
 | ✅ **Returns structured results**         | Provides JSON output for programmatic handling           |
 
+### Workflow Diagram
+
+```mermaid
+%%{init: {'theme': 'base', 'themeVariables': { 'primaryColor': '#4285f4', 'primaryTextColor': '#fff', 'primaryBorderColor': '#2d6ecf', 'lineColor': '#5c6bc0', 'secondaryColor': '#81c784', 'tertiaryColor': '#fff3e0'}}}%%
+flowchart LR
+    %% Start node
+    A["🚀 Start"]:::startNode
+
+    %% Validation Phase
+    subgraph validation["🔍 Phase 1: Validation"]
+        direction TB
+        B["Validate Parameters"]:::processNode
+        C["Check Azure CLI Auth"]:::processNode
+        D{"Authenticated?"}:::decisionNode
+    end
+
+    %% Configuration Phase
+    subgraph config["⚙️ Phase 2: Configuration"]
+        direction TB
+        F["Configure Firewall"]:::processNode
+        G["Acquire Access Token"]:::processNode
+        H["Generate SQL Script"]:::processNode
+    end
+
+    %% Execution Phase
+    subgraph execution["▶️ Phase 3: Execution"]
+        direction TB
+        I["Connect to Database"]:::processNode
+        J["Execute SQL Script"]:::processNode
+        K{"Success?"}:::decisionNode
+    end
+
+    %% Result Nodes
+    E["❌ Exit with Error"]:::errorNode
+    L["📋 Show Troubleshooting"]:::warningNode
+    M["❌ Return Error Result"]:::errorNode
+    N["✅ Return Success Result"]:::successNode
+    O["🏁 End"]:::endNode
+
+    %% Flow connections
+    A --> validation
+    B --> C
+    C --> D
+    D -->|No| E
+    D -->|Yes| config
+    F --> G
+    G --> H
+    H --> execution
+    I --> J
+    J --> K
+    K -->|No| L
+    L --> M
+    K -->|Yes| N
+    M --> O
+    N --> O
+    E --> O
+
+    %% Styling classes
+    classDef startNode fill:#4caf50,stroke:#2e7d32,stroke-width:2px,color:#fff
+    classDef endNode fill:#607d8b,stroke:#455a64,stroke-width:2px,color:#fff
+    classDef processNode fill:#2196f3,stroke:#1565c0,stroke-width:2px,color:#fff
+    classDef decisionNode fill:#ff9800,stroke:#ef6c00,stroke-width:2px,color:#fff
+    classDef errorNode fill:#f44336,stroke:#c62828,stroke-width:2px,color:#fff
+    classDef successNode fill:#4caf50,stroke:#2e7d32,stroke-width:2px,color:#fff
+    classDef warningNode fill:#ffeb3b,stroke:#f9a825,stroke-width:2px,color:#333
+
+    %% Subgraph styling
+    style validation fill:#e3f2fd,stroke:#1976d2,stroke-width:2px
+    style config fill:#fff3e0,stroke:#ff9800,stroke-width:2px
+    style execution fill:#e8f5e9,stroke:#4caf50,stroke-width:2px
+```
+
 ## 🏗️ Required Environment Variables
 
 | Variable                | Description                              | Required           | Set By |
