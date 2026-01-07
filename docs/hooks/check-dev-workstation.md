@@ -26,10 +26,7 @@ Running this script before `preprovision.ps1` and `postprovision.ps1` helps deve
 - [📊 Exit Codes](#-exit-codes)
 - [🔧 Parameters](#-parameters)
 - [📚 Examples](#-examples)
-- [🛠️ How It Works](#️-how-it-works)
-  - [🔄 Internal Process Flow](#internal-process-flow)
-  - [🔗 Integration Points](#integration-points)
-- [📖 Related Documentation](#-related-documentation)
+- [ Related Documentation](#-related-documentation)
 - [🔐 Security Considerations](#-security-considerations)
   - [✅ Safe Operations](#safe-operations)
   - [🔑 Authentication Requirements](#authentication-requirements)
@@ -50,6 +47,95 @@ This script helps developers:
 - ✅ **Save Time**: Avoid deployment failures due to missing prerequisites
 - ✅ **Non-Destructive**: Performs read-only checks without modifying any configuration
 - ✅ **Fast Validation**: Quick prerequisite check before running `preprovision.ps1`
+
+### 🔄 Internal Process Flow
+
+The script executes a streamlined validation workflow through four distinct phases:
+
+```mermaid
+%%{init: {'theme': 'base', 'themeVariables': { 'primaryColor': '#e3f2fd', 'primaryTextColor': '#0d47a1', 'primaryBorderColor': '#1976d2', 'lineColor': '#64b5f6', 'secondaryColor': '#fff3e0', 'tertiaryColor': '#e8f5e9'}}}%%
+flowchart LR
+    %% ===================================================================
+    %% WORKFLOW: check-dev-workstation Process Flow
+    %% Description: Validates developer workstation prerequisites
+    %% ===================================================================
+
+    %% --- Entry and Exit Points ---
+    Start(["🚀 check-dev-workstation starts"])
+    End(["🏁 Script completes"])
+
+    Start --> Initialization
+
+    %% --- Phase 1: Initialization ---
+    subgraph Initialization["1️⃣ Initialization Phase"]
+        direction TB
+        Init["Script Initialization"]
+        InitDetails["• Set StrictMode/strict mode<br/>• Configure error preferences<br/>• Validate prerequisites"]
+        Init --> InitDetails
+    end
+
+    %% --- Phase 2: Path Resolution ---
+    subgraph PathResolution["2️⃣ Path Resolution Phase"]
+        direction TB
+        Path["Locate Scripts"]
+        PathDetails["• Locate preprovision script<br/>• Verify script exists<br/>• Prepare execution context"]
+        Path --> PathDetails
+    end
+
+    %% --- Phase 3: Validation Execution ---
+    subgraph ValidationPhase["3️⃣ Validation Phase"]
+        direction TB
+        Delegate["Validation Delegation"]
+        DelegateDetails["• Invoke preprovision -ValidateOnly<br/>• Pass -Verbose flag if set<br/>• Monitor execution"]
+        Check{"All validations<br/>passed?"}
+        Delegate --> DelegateDetails
+        DelegateDetails --> Check
+    end
+
+    %% --- Phase 4: Result Processing ---
+    subgraph ResultPhase["4️⃣ Result Phase"]
+        direction TB
+        Success["✅ Success Path"]
+        SuccessDetails["• Format success message<br/>• Exit code: 0<br/>• Display summary"]
+        Failure["❌ Failure Path"]
+        FailureDetails["• Format error details<br/>• Exit code: non-zero<br/>• Show remediation steps"]
+        Success --> SuccessDetails
+        Failure --> FailureDetails
+    end
+
+    %% --- Flow Connections ---
+    Initialization --> PathResolution
+    PathResolution --> ValidationPhase
+    Check -->|"Yes"| Success
+    Check -->|"No"| Failure
+    SuccessDetails --> End
+    FailureDetails --> End
+
+    %% --- Style Definitions ---
+    %% Color palette follows Material Design guidelines
+    %% Green: Success states | Blue: Process steps | Orange: Decisions | Red: Failures
+    classDef startEndStyle fill:#e8f5e9,stroke:#2e7d32,stroke-width:3px,color:#1b5e20
+    classDef processStyle fill:#e3f2fd,stroke:#1976d2,stroke-width:2px,color:#0d47a1
+    classDef detailStyle fill:#f5f5f5,stroke:#9e9e9e,stroke-width:1px,color:#424242
+    classDef decisionStyle fill:#fff3e0,stroke:#f57c00,stroke-width:2px,color:#e65100
+    classDef successStyle fill:#c8e6c9,stroke:#388e3c,stroke-width:2px,color:#1b5e20
+    classDef failureStyle fill:#ffcdd2,stroke:#d32f2f,stroke-width:2px,color:#b71c1c
+
+    %% --- Apply Styles ---
+    class Start,End startEndStyle
+    class Init,Path,Delegate processStyle
+    class InitDetails,PathDetails,DelegateDetails,SuccessDetails,FailureDetails detailStyle
+    class Check decisionStyle
+    class Success successStyle
+    class Failure failureStyle
+```
+
+**Process Details:**
+
+1. **Script Initialization**: Establishes strict error handling (PowerShell: `Set-StrictMode -Version Latest`, Bash: `set -euo pipefail`) and sets error action preference to `Continue`
+2. **Path Resolution**: Validates that the preprovision script exists in the same directory (`$PSScriptRoot/preprovision.ps1` or `$SCRIPT_DIR/preprovision.sh`)
+3. **Validation Delegation**: Executes preprovision with `-ValidateOnly` (PowerShell) or `--validate-only` (Bash) flag, capturing all output via stream redirection (`2>&1`)
+4. **Result Processing**: Captures exit code, displays formatted output to stdout, and exits with appropriate status code (0 for success, error code for failure)
 
 ## 🔍 What It Validates
 
@@ -265,108 +351,7 @@ fi
 echo "Environment validated - proceeding with build..."
 ```
 
-## 🛠️ How It Works
-
-### Internal Process Flow
-
-The script executes a streamlined validation workflow through four distinct phases:
-
-```mermaid
-%%{init: {'theme': 'base', 'themeVariables': { 'primaryColor': '#e3f2fd', 'primaryTextColor': '#0d47a1', 'primaryBorderColor': '#1976d2', 'lineColor': '#64b5f6', 'secondaryColor': '#fff3e0', 'tertiaryColor': '#e8f5e9'}}}%%
-flowchart LR
-    %% ===================================================================
-    %% WORKFLOW: check-dev-workstation Process Flow
-    %% Description: Validates developer workstation prerequisites
-    %% ===================================================================
-
-    %% --- Entry and Exit Points ---
-    Start(["🚀 check-dev-workstation starts"])
-    End(["🏁 Script completes"])
-
-    Start --> Initialization
-
-    %% --- Phase 1: Initialization ---
-    subgraph Initialization["1️⃣ Initialization Phase"]
-        direction TB
-        Init["Script Initialization"]
-        InitDetails["• Set StrictMode/strict mode<br/>• Configure error preferences<br/>• Validate prerequisites"]
-        Init --> InitDetails
-    end
-
-    %% --- Phase 2: Path Resolution ---
-    subgraph PathResolution["2️⃣ Path Resolution Phase"]
-        direction TB
-        Path["Locate Scripts"]
-        PathDetails["• Locate preprovision script<br/>• Verify script exists<br/>• Prepare execution context"]
-        Path --> PathDetails
-    end
-
-    %% --- Phase 3: Validation Execution ---
-    subgraph ValidationPhase["3️⃣ Validation Phase"]
-        direction TB
-        Delegate["Validation Delegation"]
-        DelegateDetails["• Invoke preprovision -ValidateOnly<br/>• Pass -Verbose flag if set<br/>• Monitor execution"]
-        Check{"All validations<br/>passed?"}
-        Delegate --> DelegateDetails
-        DelegateDetails --> Check
-    end
-
-    %% --- Phase 4: Result Processing ---
-    subgraph ResultPhase["4️⃣ Result Phase"]
-        direction TB
-        Success["✅ Success Path"]
-        SuccessDetails["• Format success message<br/>• Exit code: 0<br/>• Display summary"]
-        Failure["❌ Failure Path"]
-        FailureDetails["• Format error details<br/>• Exit code: non-zero<br/>• Show remediation steps"]
-        Success --> SuccessDetails
-        Failure --> FailureDetails
-    end
-
-    %% --- Flow Connections ---
-    Initialization --> PathResolution
-    PathResolution --> ValidationPhase
-    Check -->|"Yes"| Success
-    Check -->|"No"| Failure
-    SuccessDetails --> End
-    FailureDetails --> End
-
-    %% --- Style Definitions ---
-    %% Color palette follows Material Design guidelines
-    %% Green: Success states | Blue: Process steps | Orange: Decisions | Red: Failures
-    classDef startEndStyle fill:#e8f5e9,stroke:#2e7d32,stroke-width:3px,color:#1b5e20
-    classDef processStyle fill:#e3f2fd,stroke:#1976d2,stroke-width:2px,color:#0d47a1
-    classDef detailStyle fill:#f5f5f5,stroke:#9e9e9e,stroke-width:1px,color:#424242
-    classDef decisionStyle fill:#fff3e0,stroke:#f57c00,stroke-width:2px,color:#e65100
-    classDef successStyle fill:#c8e6c9,stroke:#388e3c,stroke-width:2px,color:#1b5e20
-    classDef failureStyle fill:#ffcdd2,stroke:#d32f2f,stroke-width:2px,color:#b71c1c
-
-    %% --- Apply Styles ---
-    class Start,End startEndStyle
-    class Init,Path,Delegate processStyle
-    class InitDetails,PathDetails,DelegateDetails,SuccessDetails,FailureDetails detailStyle
-    class Check decisionStyle
-    class Success successStyle
-    class Failure failureStyle
-```
-
-**Process Details:**
-
-1. **Script Initialization**: Establishes strict error handling (PowerShell: `Set-StrictMode -Version Latest`, Bash: `set -euo pipefail`) and sets error action preference to `Continue`
-2. **Path Resolution**: Validates that the preprovision script exists in the same directory (`$PSScriptRoot/preprovision.ps1` or `$SCRIPT_DIR/preprovision.sh`)
-3. **Validation Delegation**: Executes preprovision with `-ValidateOnly` (PowerShell) or `--validate-only` (Bash) flag, capturing all output via stream redirection (`2>&1`)
-4. **Result Processing**: Captures exit code, displays formatted output to stdout, and exits with appropriate status code (0 for success, error code for failure)
-
-### Integration Points
-
-| Aspect               | Details                                                                                                                                                                                                                                                  |
-| -------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Called By**        | • Manual execution by developers during workstation setup<br/>• CI/CD pipelines for environment pre-flight checks<br/>• Automated scripts and scheduled tasks<br/>• Team onboarding workflows                                                            |
-| **Calls**            | • `preprovision.ps1` with `-ValidateOnly` flag (PowerShell)<br/>• `preprovision.sh` with `--validate-only` flag (Bash)<br/>• All validation logic delegated to preprovision scripts                                                                      |
-| **Dependencies**     | • **Runtime:** PowerShell 7.0+ (cross-platform)<br/>• **Scripts:** preprovision script in same directory<br/>• **Tools:** Azure CLI, .NET SDK 10.0+, Bicep CLI, Azure Developer CLI<br/>• **Azure:** Active Azure subscription and authentication        |
-| **Outputs**          | • **Exit Code:** `0` (success) or `1` (failure)<br/>• **Console Output:** Formatted validation messages with timestamps<br/>• **Verbose Logs:** Detailed diagnostic information (optional)<br/>• **Summary:** Pass/fail status for each validation check |
-| **Integration Role** | Acts as a **gateway validation layer** ensuring environment readiness before any provisioning or deployment operations. Provides fail-fast feedback to prevent downstream errors in the development workflow.                                            |
-
-## 📖 Related Documentation
+##  Related Documentation
 
 - **[preprovision.ps1](./preprovision.ps1)** - Comprehensive pre-provisioning validation (called by this script)
 - **[VALIDATION-WORKFLOW.md](./VALIDATION-WORKFLOW.md)** - Visual workflow diagrams
