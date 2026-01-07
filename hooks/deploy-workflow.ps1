@@ -42,6 +42,21 @@ function Get-EnvironmentValue {
     return $Default
 }
 
+function Set-WorkflowEnvironmentAliases {
+    # Map WORKFLOWS_* variables to AZURE_* equivalents for connections.json compatibility
+    $mappings = @{
+        'WORKFLOWS_SUBSCRIPTION_ID'     = 'AZURE_SUBSCRIPTION_ID'
+        'WORKFLOWS_RESOURCE_GROUP_NAME' = 'AZURE_RESOURCE_GROUP'
+        'WORKFLOWS_LOCATION_NAME'       = 'AZURE_LOCATION'
+    }
+    foreach ($key in $mappings.Keys) {
+        if (-not [Environment]::GetEnvironmentVariable($key)) {
+            $value = [Environment]::GetEnvironmentVariable($mappings[$key])
+            if ($value) { [Environment]::SetEnvironmentVariable($key, $value) }
+        }
+    }
+}
+
 function Resolve-Placeholders {
     param([string]$Content, [string]$FileName)
     
@@ -82,6 +97,9 @@ function Get-ConnectionRuntimeUrl {
 Write-Host "`n╔════════════════════════════════════════════════════════╗" -ForegroundColor Cyan
 Write-Host "║     Logic Apps Standard Workflow Deployment            ║" -ForegroundColor Cyan
 Write-Host "╚════════════════════════════════════════════════════════╝`n" -ForegroundColor Cyan
+
+# Set up environment variable aliases for connections.json compatibility
+Set-WorkflowEnvironmentAliases
 
 # Load required configuration from environment
 $config = @{
