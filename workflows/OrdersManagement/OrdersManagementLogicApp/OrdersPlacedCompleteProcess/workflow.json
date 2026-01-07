@@ -2,9 +2,39 @@
     "definition": {
         "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
         "contentVersion": "1.0.0.0",
-        "actions": {},
+        "actions": {
+            "Lists_blobs_(V2)": {
+                "type": "ApiConnection",
+                "inputs": {
+                    "host": {
+                        "connection": {
+                            "referenceName": "azureblob-1"
+                        }
+                    },
+                    "method": "get",
+                    "path": "/v2/datasets/@{encodeURIComponent(encodeURIComponent('orderswsaa6p5hofvqw2yq'))}/foldersV2/@{encodeURIComponent(encodeURIComponent('JTJmb3JkZXJzcHJvY2Vzc2Vkc3VjY2Vzc2Z1bGx5'))}",
+                    "queries": {
+                        "nextPageMarker": "",
+                        "useFlatListing": false
+                    }
+                },
+                "runAfter": {},
+                "metadata": {
+                    "JTJmb3JkZXJzcHJvY2Vzc2Vkc3VjY2Vzc2Z1bGx5": "/ordersprocessedsuccessfully"
+                }
+            }
+        },
         "outputs": {},
-        "triggers": {}
+        "triggers": {
+            "Recurrence": {
+                "type": "Recurrence",
+                "recurrence": {
+                    "interval": 1,
+                    "frequency": "Second",
+                    "timeZone": "Central Standard Time"
+                }
+            }
+        }
     },
-    "kind": "stateful"
+    "kind": "Stateful"
 }
