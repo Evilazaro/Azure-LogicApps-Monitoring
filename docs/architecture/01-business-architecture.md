@@ -292,101 +292,246 @@ flowchart LR
 
 ---
 
-## Business Processes (Logical Only)
+## Business Decision Models (NON-SEQUENTIAL ONLY)
 
-Business processes represent logical sequences of business decisions and state transitions. These are technology-agnostic and describe business intent, not operational mechanics.
+Business Decision Models represent independent decision contexts required in order management. These models describe business intent, decision criteria, and possible outcomes without implying execution sequence or workflow.
 
-### Process 1: Order Commitment
+**Critical Distinction:**
+Decision models are **conceptual frameworks**, not procedural workflows. Each decision exists as an independent business judgment context. No ordering, sequencing, or progression is implied between decisions.
 
-**Business Purpose:**
-Convert customer commercial intent into formal business obligation with defined fulfillment commitment.
+### Decision Model 1: Obligation Commitment Decision
 
-**Business Decisions:**
+**Business Intent:**
+Determine whether business will establish binding commercial obligation based on customer expressed intent.
+
+**Decision Context:**
+Business faces customer commercial intent and must determine commitment acceptability.
+
+**Business Criteria:**
+- Intent completeness for obligation formation
+- Commercial terms alignment with business policy
+- Fulfillment capability confidence
+
+**Possible Business Outcomes:**
 
 ```mermaid
 %%{init: {'theme':'base', 'themeVariables': {'primaryColor':'#e8f4f8','primaryTextColor':'#1a1a1a','primaryBorderColor':'#4a90a4','lineColor':'#4a90a4'}}}%%
-flowchart TB
-    Start([Customer Intent Expressed]) --> Accept{Business Determines<br/>Intent Acceptability}
-    Accept -->|Acceptable| Commit[Business Commits<br/>to Obligation]
-    Accept -->|Unacceptable| Decline[Business Declines<br/>Commitment]
-    Commit --> Record[Business Records<br/>Obligation Evidence]
-    Record --> Inform[Business Communicates<br/>Commitment]
-    Inform --> End([Obligation Established])
-    Decline --> Explain[Business Explains<br/>Declination]
-    Explain --> End2([Intent Declined])
-
-    classDef process fill:#e8f4f8,stroke:#4a90a4,stroke-width:2px,color:#1a1a1a
-    classDef decision fill:#fff4e6,stroke:#d4a574,stroke-width:2px,color:#1a1a1a
-
-    class Start,Commit,Record,Inform,End,Decline,Explain,End2 process
-    class Accept decision
+graph TB
+    subgraph Decision["Obligation Commitment Decision"]
+        Intent[Customer Intent Context]
+        
+        subgraph Outcomes["Possible Business Outcomes"]
+            Commit[Obligation Established]
+            Decline[Commitment Declined]
+        end
+    end
+    
+    classDef context fill:#e8f4f8,stroke:#4a90a4,stroke-width:2px,color:#1a1a1a
+    classDef outcome fill:#fff4e6,stroke:#d4a574,stroke-width:2px,color:#1a1a1a
+    
+    class Intent context
+    class Commit,Decline outcome
 ```
 
-**Business Decision Points:**
+**Outcome States:**
+- **Obligation Established** — Business commits to fulfillment, evidence created, customer informed
+- **Commitment Declined** — Business declines obligation, rationale documented, customer informed
 
-- **Intent Acceptability Determination** — Business determines whether customer intent aligns with commercial terms and business policy
-- **Obligation Commitment** — Business commits to fulfillment based on acceptability determination
-- **Evidence Recording** — Business establishes permanent record of commercial commitment
-- **Commitment Communication** — Business informs customer of obligation and fulfillment commitment
+---
 
-### Process 2: Exception Determination
+### Decision Model 2: Commercial Ambiguity Decision
 
-**Business Purpose:**
-Resolve ambiguous commercial situations through business authority and context.
+**Business Intent:**
+Determine appropriate business position when commercial relationship context is unclear or contradictory.
 
-**Business Decisions:**
+**Decision Context:**
+Business faces commercial situation where intent, policy, or obligation state lacks clarity sufficient for confident business action.
+
+**Business Criteria:**
+- Commercial relationship significance
+- Ambiguity impact on business or customer
+- Policy guidance availability
+- Authority level appropriate to complexity
+
+**Possible Business Outcomes:**
 
 ```mermaid
 %%{init: {'theme':'base', 'themeVariables': {'primaryColor':'#fff4e6','primaryTextColor':'#1a1a1a','primaryBorderColor':'#d4a574','lineColor':'#d4a574'}}}%%
-flowchart TB
-    Start([Exception Identified]) --> Context[Business Assembles<br/>Decision Context]
-    Context --> Authority[Business Authority<br/>Determines Resolution]
-    Authority --> Record[Business Records<br/>Determination]
-    Record --> Apply[Business Applies<br/>Resolution]
-    Apply --> Inform[Business Communicates<br/>Outcome]
-    Inform --> End([Exception Resolved])
-
-    classDef process fill:#fff4e6,stroke:#d4a574,stroke-width:2px,color:#1a1a1a
-    class Start,Context,Authority,Record,Apply,Inform,End process
+graph TB
+    subgraph Decision["Commercial Ambiguity Decision"]
+        Ambiguity[Ambiguous Context]
+        
+        subgraph Outcomes["Possible Business Outcomes"]
+            Resolve[Clarity Established]
+            Escalate[Authority Escalation]
+            Policy[Policy Enhancement]
+        end
+    end
+    
+    classDef context fill:#fff4e6,stroke:#d4a574,stroke-width:2px,color:#1a1a1a
+    classDef outcome fill:#e8f4f8,stroke:#4a90a4,stroke-width:2px,color:#1a1a1a
+    
+    class Ambiguity context
+    class Resolve,Escalate,Policy outcome
 ```
 
-**Business Decision Points:**
+**Outcome States:**
+- **Clarity Established** — Authority renders determination, commercial relationship proceeds, rationale documented
+- **Authority Escalation** — Higher authority required, context preserved, escalation justified
+- **Policy Enhancement** — Pattern recognized requiring policy evolution, business learning captured
 
-- **Context Assembly** — Business gathers information relevant to exception determination
-- **Authority Determination** — Appropriate business authority renders resolution decision
-- **Determination Recording** — Business documents resolution decision and rationale
-- **Resolution Application** — Business adjusts commercial relationship per determination
-- **Outcome Communication** — Business informs affected parties of resolution
+---
 
-### Process 3: Relationship Inquiry
+### Decision Model 3: Information Access Decision
 
-**Business Purpose:**
-Provide transparency into commercial relationship state and obligation status.
+**Business Intent:**
+Determine whether inquiring party possesses authorization for commercial relationship information.
 
-**Business Decisions:**
+**Decision Context:**
+Business receives inquiry regarding commercial relationship state or obligation information.
+
+**Business Criteria:**
+- Inquirer identity and relationship to commercial relationship
+- Information sensitivity and regulatory requirements
+- Business policy on information disclosure
+- Customer privacy expectations
+
+**Possible Business Outcomes:**
 
 ```mermaid
 %%{init: {'theme':'base', 'themeVariables': {'primaryColor':'#f0f0f0','primaryTextColor':'#1a1a1a','primaryBorderColor':'#6b6b6b','lineColor':'#6b6b6b'}}}%%
-flowchart TB
-    Start([Inquiry Received]) --> Validate{Business Determines<br/>Inquiry Authority}
-    Validate -->|Authorized| Retrieve[Business Provides<br/>Relationship Context]
-    Validate -->|Unauthorized| Deny[Business Denies<br/>Information]
-    Retrieve --> Present[Business Presents<br/>State Information]
-    Present --> End([Inquiry Satisfied])
-    Deny --> End2([Inquiry Denied])
-
-    classDef process fill:#f0f0f0,stroke:#6b6b6b,stroke-width:2px,color:#1a1a1a
-    classDef decision fill:#fff4e6,stroke:#d4a574,stroke-width:2px,color:#1a1a1a
-
-    class Start,Retrieve,Present,End,Deny,End2 process
-    class Validate decision
+graph TB
+    subgraph Decision["Information Access Decision"]
+        Inquiry[Information Inquiry Context]
+        
+        subgraph Outcomes["Possible Business Outcomes"]
+            Grant[Information Provided]
+            Deny[Access Denied]
+            Partial[Limited Disclosure]
+        end
+    end
+    
+    classDef context fill:#f0f0f0,stroke:#6b6b6b,stroke-width:2px,color:#1a1a1a
+    classDef outcome fill:#e8f4f8,stroke:#4a90a4,stroke-width:2px,color:#1a1a1a
+    
+    class Inquiry context
+    class Grant,Deny,Partial outcome
 ```
 
-**Business Decision Points:**
+**Outcome States:**
+- **Information Provided** — Inquirer authorized, complete relationship information disclosed
+- **Access Denied** — Inquirer lacks authorization, denial documented, rationale preserved
+- **Limited Disclosure** — Partial authorization exists, appropriate subset disclosed, boundaries documented
 
-- **Inquiry Authority Determination** — Business determines whether inquirer has right to relationship information
-- **Context Provision** — Business provides current state of commercial relationship
-- **Information Presentation** — Business communicates relationship state in understandable form
+---
+
+### Decision Model 4: Obligation Modification Decision
+
+**Business Intent:**
+Determine whether established commercial obligation can be altered and under what terms.
+
+**Decision Context:**
+Request exists to modify terms, scope, or state of established business obligation.
+
+**Business Criteria:**
+- Obligation permanence policy
+- Mutual agreement requirement
+- Regulatory modification constraints
+- Customer confidence impact
+
+**Possible Business Outcomes:**
+
+```mermaid
+%%{init: {'theme':'base', 'themeVariables': {'primaryColor':'#e8f4f8','primaryTextColor':'#1a1a1a','primaryBorderColor':'#4a90a4','lineColor':'#4a90a4'}}}%%
+graph TB
+    subgraph Decision["Obligation Modification Decision"]
+        Modification[Modification Request Context]
+        
+        subgraph Outcomes["Possible Business Outcomes"]
+            Approve[Modification Authorized]
+            Deny[Modification Denied]
+            Replace[New Obligation Required]
+        end
+    end
+    
+    classDef context fill:#e8f4f8,stroke:#4a90a4,stroke-width:2px,color:#1a1a1a
+    classDef outcome fill:#fff4e6,stroke:#d4a574,stroke-width:2px,color:#1a1a1a
+    
+    class Modification context
+    class Approve,Deny,Replace outcome
+```
+
+**Outcome States:**
+- **Modification Authorized** — Change acceptable, modified obligation documented, parties informed
+- **Modification Denied** — Change violates policy or regulation, original obligation preserved, rationale communicated
+- **New Obligation Required** — Modification scope requires obligation termination and new commitment, transition path defined
+
+---
+
+### Decision Model 5: Evidence Retention Decision
+
+**Business Intent:**
+Determine retention duration and disposition for commercial obligation evidence.
+
+**Decision Context:**
+Obligation evidence exists and business must determine retention requirements and eventual disposition.
+
+**Business Criteria:**
+- Regulatory retention mandates
+- Business policy requirements
+- Ongoing commercial relationship state
+- Audit and examination needs
+
+**Possible Business Outcomes:**
+
+```mermaid
+%%{init: {'theme':'base', 'themeVariables': {'primaryColor':'#f0f0f0','primaryTextColor':'#1a1a1a','primaryBorderColor':'#6b6b6b','lineColor':'#6b6b6b'}}}%%
+graph TB
+    subgraph Decision["Evidence Retention Decision"]
+        Evidence[Evidence Context]
+        
+        subgraph Outcomes["Possible Business Outcomes"]
+            Retain[Continued Retention]
+            Archive[Archival Transition]
+            Dispose[Evidence Disposition]
+        end
+    end
+    
+    classDef context fill:#f0f0f0,stroke:#6b6b6b,stroke-width:2px,color:#1a1a1a
+    classDef outcome fill:#e8f4f8,stroke:#4a90a4,stroke-width:2px,color:#1a1a1a
+    
+    class Evidence context
+    class Retain,Archive,Dispose outcome
+```
+
+**Outcome States:**
+- **Continued Retention** — Active retention requirements persist, evidence maintained in operational form
+- **Archival Transition** — Active retention period concluded, evidence transitioned to long-term archive
+- **Evidence Disposition** — All retention requirements satisfied, evidence securely disposed, disposition documented
+
+---
+
+### Decision Independence Statement
+
+**Critical Architectural Principle:**
+
+All business decisions described above are **independent decision contexts**. They do NOT form sequences, workflows, or ordered progressions. Each decision may occur:
+- Zero times
+- One time
+- Multiple times
+- In any order
+- Concurrently with other decisions
+
+The business architecture makes no assertion about decision ordering, frequency, or relationships beyond conceptual domain alignment.
+
+**Forbidden Interpretations:**
+- These decisions do NOT form a process
+- These decisions do NOT imply execution steps
+- These decisions do NOT suggest workflow automation
+- These decisions do NOT represent operational procedures
+
+**Correct Interpretation:**
+These decisions represent the fundamental business judgment contexts required to support order management business capabilities, expressed at strategic abstraction level suitable for capability investment, policy definition, and business transformation planning.
 
 ---
 
@@ -517,7 +662,7 @@ The information supporting business determination including business policy, com
 - Value streams from customer intent to business obligation evidence
 - Business rules governing commercial relationships
 - Business information structures for commercial interactions
-- Business decision frameworks for obligation formation and exception resolution
+- Business decision models for obligation formation and exception resolution
 
 **Out of Scope:**
 
@@ -626,7 +771,7 @@ Business capabilities support commercial relationships across jurisdictions with
 
 ## Traceability Matrix
 
-This matrix establishes traceability between business goals, capabilities, value streams, and processes, demonstrating alignment and completeness.
+This matrix establishes traceability between business goals, capabilities, value streams, and decision models, demonstrating alignment and completeness.
 
 ### Goals to Capabilities Mapping
 
@@ -652,18 +797,19 @@ This matrix establishes traceability between business goals, capabilities, value
 | Business Policy          | Commercial Obligation | Exception Resolution    |
 | Relationship State       | Commercial Obligation | Exception Resolution    |
 
-### Capabilities to Processes Mapping
+### Capabilities to Decision Models Mapping
 
-| Business Capability      | Primary Process      | Supporting Processes    |
-| ------------------------ | -------------------- | ----------------------- |
-| Intent Capture           | Order Commitment     | Relationship Inquiry    |
-| Obligation Establishment | Order Commitment     | Exception Determination |
-| Relationship Formation   | Order Commitment     | —                       |
-| Commercial Terms         | Order Commitment     | Exception Determination |
-| Party Identity           | Order Commitment     | Relationship Inquiry    |
-| Obligation Evidence      | Order Commitment     | Relationship Inquiry    |
-| Business Policy          | Order Commitment     | Exception Determination |
-| Relationship State       | Relationship Inquiry | Exception Determination |
+| Business Capability      | Primary Decision Models                              | Supporting Decision Models                      |
+| ------------------------ | ---------------------------------------------------- | ----------------------------------------------- |
+| Intent Capture           | Obligation Commitment                                | Information Access                              |
+| Obligation Establishment | Obligation Commitment                                | Commercial Ambiguity, Obligation Modification   |
+| Relationship Formation   | Obligation Commitment                                | Obligation Modification                         |
+| Commercial Terms         | Obligation Commitment                                | Commercial Ambiguity                            |
+| Party Identity           | Obligation Commitment, Information Access            | —                                               |
+| Obligation Evidence      | Obligation Commitment, Evidence Retention            | Information Access                              |
+| Business Policy          | Obligation Commitment, Commercial Ambiguity          | All Decision Models                             |
+| Relationship State       | Information Access                                   | Obligation Modification, Commercial Ambiguity   |
+| Compliance Retention     | Evidence Retention                                   | Information Access                              |
 
 ### Goals to Value Streams Mapping
 
