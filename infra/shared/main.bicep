@@ -153,7 +153,8 @@ module data 'data/main.bicep' = {
     storageAccountId: monitoring.outputs.AZURE_STORAGE_ACCOUNT_ID_LOGS
     logsSettings: allLogsSettings
     metricsSettings: allMetricsSettings
-    apiSubnetId: network.outputs.API_SUBNET_ID
+    dataSubnetId: network.outputs.DATA_SUBNET_ID
+    vnetId: network.outputs.VNET_ID
     tags: tags
   }
 }
