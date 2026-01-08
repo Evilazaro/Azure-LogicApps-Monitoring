@@ -37,9 +37,9 @@ properties:
           - name: HTTP_PORTS
             value: '{{ targetPortOrDefault 0 }}'
           - name: ORDERS_API_HTTP
-            value: http://orders-api.internal.{{ .Env.AZURE_CONTAINER_APPS_ENVIRONMENT_DEFAULT_DOMAIN }}
+            value: http://orders-api.{{ .Env.AZURE_CONTAINER_APPS_ENVIRONMENT_DEFAULT_DOMAIN }}
           - name: ORDERS_API_HTTPS
-            value: https://orders-api.internal.{{ .Env.AZURE_CONTAINER_APPS_ENVIRONMENT_DEFAULT_DOMAIN }}
+            value: https://orders-api.{{ .Env.AZURE_CONTAINER_APPS_ENVIRONMENT_DEFAULT_DOMAIN }}
           - name: OTEL_DOTNET_EXPERIMENTAL_OTLP_EMIT_EVENT_LOG_ATTRIBUTES
             value: "true"
           - name: OTEL_DOTNET_EXPERIMENTAL_OTLP_EMIT_EXCEPTION_LOG_ATTRIBUTES
@@ -47,9 +47,9 @@ properties:
           - name: OTEL_DOTNET_EXPERIMENTAL_OTLP_RETRY
             value: in_memory
           - name: services__orders-api__http__0
-            value: http://orders-api.internal.{{ .Env.AZURE_CONTAINER_APPS_ENVIRONMENT_DEFAULT_DOMAIN }}
+            value: http://orders-api.{{ .Env.AZURE_CONTAINER_APPS_ENVIRONMENT_DEFAULT_DOMAIN }}
           - name: services__orders-api__https__0
-            value: https://orders-api.internal.{{ .Env.AZURE_CONTAINER_APPS_ENVIRONMENT_DEFAULT_DOMAIN }}
+            value: https://orders-api.{{ .Env.AZURE_CONTAINER_APPS_ENVIRONMENT_DEFAULT_DOMAIN }}
           - name: APPLICATIONINSIGHTS_CONNECTION_STRING
             secretRef: applicationinsights-connection-string
     scale:

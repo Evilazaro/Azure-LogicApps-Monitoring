@@ -26,7 +26,7 @@
             "Recurrence": {
                 "type": "Recurrence",
                 "recurrence": {
-                    "interval": 30,
+                    "interval": 3,
                     "frequency": "Second",
                     "timeZone": "Central Standard Time"
                 }
