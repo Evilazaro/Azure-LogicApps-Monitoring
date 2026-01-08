@@ -42,7 +42,7 @@ flowchart LR
 
     subgraph DataStores["🗄️ Data Stores"]
         direction TB
-        OrderDb[("OrderDb<br/>Azure SQL<br/><i>ACID transactions</i>")]
+        OrderDb[("OrderDb<br/>Azure SQL<br/>ACID transactions")]
         EventStore["ordersplaced<br/>Service Bus Topic<br/><i>14-day TTL</i>"]
         WorkflowState["Workflow State<br/>Azure Storage<br/><i>File shares</i>")]
         AppInsights["App Insights<br/><i>90-day retention</i>"]
