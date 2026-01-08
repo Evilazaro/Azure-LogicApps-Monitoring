@@ -31,6 +31,8 @@ resource vnet 'Microsoft.Network/virtualNetworks@2025-01-01' = {
         name: 'data-subnet'
         properties: {
           addressPrefix: '10.0.2.0/24'
+          privateEndpointNetworkPolicies: 'Disabled'
+          privateLinkServiceNetworkPolicies: 'Enabled'
         }
       }
       {
@@ -53,4 +55,6 @@ resource vnet 'Microsoft.Network/virtualNetworks@2025-01-01' = {
 
 output API_SUBNET_ID string = vnet.properties.subnets[0].id
 output WEB_APP_SUBNET_ID string = vnet.properties.subnets[1].id
+output DATA_SUBNET_ID string = vnet.properties.subnets[1].id
 output logicappSubnetId string = vnet.properties.subnets[2].id
+output VNET_ID string = vnet.id
