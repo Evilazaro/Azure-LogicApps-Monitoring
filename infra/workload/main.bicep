@@ -55,6 +55,8 @@ param workspaceId string
 @description('Log Analytics Workspace Customer ID.')
 param workspaceCustomerId string
 
+param apiSubnetId string
+
 @description('Primary Key for Log Analytics workspace.')
 param workspacePrimaryKey string
 
@@ -132,6 +134,7 @@ module services 'services/main.bicep' = {
     workspaceId: workspaceId
     workspaceCustomerId: workspaceCustomerId
     workspacePrimaryKey: workspacePrimaryKey
+    apiSubnetId: apiSubnetId
     storageAccountId: storageAccountId
     logsSettings: allLogsSettings
     metricsSettings: allMetricsSettings

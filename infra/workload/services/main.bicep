@@ -56,6 +56,8 @@ param workspaceCustomerId string
 @description('Primary Key for Log Analytics workspace.')
 param workspacePrimaryKey string
 
+param apiSubnetId string
+
 @description('Storage Account ID for diagnostic logs and metrics.')
 @minLength(50)
 param storageAccountId string
@@ -139,6 +141,9 @@ resource appEnv 'Microsoft.App/managedEnvironments@2025-02-02-preview' = {
     }
   }
   properties: {
+    vnetConfiguration: {
+      infrastructureSubnetId: apiSubnetId
+    }
     // Consumption workload profile provides:
     // - Serverless, pay-per-use pricing model (only pay for actual resource usage)
     // - Automatic scaling from 0 to meet demand
