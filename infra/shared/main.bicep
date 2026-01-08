@@ -88,6 +88,14 @@ output MANAGED_IDENTITY_CLIENT_ID string = identity.outputs.MANAGED_IDENTITY_CLI
 @description('Name of the managed identity resource')
 output MANAGED_IDENTITY_NAME string = identity.outputs.MANAGED_IDENTITY_NAME
 
+module network 'network/main.bicep' = {
+  params: {
+    name: '${name}-vnet-${envName}'
+    location: location
+    tags: tags
+  }
+}
+
 // Monitoring Module: Deploys Log Analytics workspace and Application Insights
 // Provides centralized logging and telemetry infrastructure
 @description('Deploys Log Analytics workspace and Application Insights for centralized monitoring')
