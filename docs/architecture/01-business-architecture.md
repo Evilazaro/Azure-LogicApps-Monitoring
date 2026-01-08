@@ -214,14 +214,11 @@ flowchart LR
         Operational --> Foundation
     end
 
-    classDef level1 fill:#f5f5f5,stroke:#616161,stroke-width:2px
+    classDef level1 fill:#f5f5f5,stroke:#616161,stroke-width:3px
     classDef level2 fill:#e3f2fd,stroke:#1976d2,stroke-width:2px
-    classDef level3 fill:#ffffff,stroke:#90caf9,stroke-width:1px
-    classDef node fill:#bbdefb,stroke:#1565c0,stroke-width:1px
 
     class Business_Value level1
     class Strategic,Operational,Foundation level2
-    class SO1,SO2,SO3,OO1,OO2,OO3,FO1,FO2,FO3 node
 ```
 
 ---
@@ -477,12 +474,9 @@ flowchart LR
 
     classDef level1 fill:#f5f5f5,stroke:#616161,stroke-width:3px
     classDef level2 fill:#e8f5e9,stroke:#388e3c,stroke-width:2px
-    classDef level3 fill:#ffffff,stroke:#81c784,stroke-width:1px
-    classDef node fill:#c8e6c9,stroke:#2e7d32,stroke-width:1px
 
     class Order_Value level1
     class Intent,Commitment,Obligation,Assurance level2
-    class CI,CC,BO,RA node
 ```
 
 #### Value State Definitions
@@ -579,12 +573,9 @@ flowchart TB
 
     classDef level1 fill:#f5f5f5,stroke:#616161,stroke-width:3px
     classDef level2 fill:#fff3e0,stroke:#f57c00,stroke-width:2px
-    classDef level3 fill:#ffffff,stroke:#ffb74d,stroke-width:1px
-    classDef node fill:#ffe0b2,stroke:#e65100,stroke-width:1px
 
     class Commitment_Decision level1
     class Context,Intent,Outcomes level2
-    class DC,BI,O1,O2,O3 node
 ```
 
 ### Obligation Priority Decision
@@ -948,12 +939,9 @@ flowchart TB
 
     classDef level1 fill:#f5f5f5,stroke:#616161,stroke-width:3px
     classDef level2 fill:#e0f2f1,stroke:#00796b,stroke-width:2px
-    classDef level3 fill:#ffffff,stroke:#4db6ac,stroke-width:1px
-    classDef concept fill:#b2dfdb,stroke:#00695c,stroke-width:1px
 
     class Information_Domain level1
     class Commercial_Concepts,Obligation_Concepts,Evidence_Concepts level2
-    class Customer,Order,Product,Obligation,Status,Priority,Evidence,History concept
 ```
 
 ---
