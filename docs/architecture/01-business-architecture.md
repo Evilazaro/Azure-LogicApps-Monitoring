@@ -484,7 +484,7 @@ flowchart TB
 **Participants:** Order Management, Customer Service, Fulfillment, Compliance
 
 ```mermaid
-%%{init: {'theme':'base', 'themeVariables': { 'primaryColor':'e1f5fe','primaryTextColor':'#01579b','primaryBorderColor':'#0277bd','lineColor':'#0277bd','secondaryColor':'#fff3e0','tertiaryColor':'#f3e5f5'}}}%%
+%%{init: {'theme':'base', 'themeVariables': { 'primaryColor':'#e1f5fe','primaryTextColor':'#01579b','primaryBorderColor':'#0277bd','lineColor':'#0277bd','secondaryColor':'#fff3e0','tertiaryColor':'#f3e5f5'}}}%%
 flowchart TB
     Start([Exception Occurs])
 
