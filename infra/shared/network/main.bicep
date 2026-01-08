@@ -1,3 +1,9 @@
+// ========== Type Definitions ==========
+
+import { tagsType } from '../../types.bicep'
+
+// ========== Parameters ==========
+
 @description('Name of the virtual network')
 @minLength(1)
 @maxLength(64)
@@ -9,7 +15,7 @@ param name string
 param location string
 
 @description('Resource tags applied to the virtual network')
-param tags object
+param tags tagsType
 
 resource vnet 'Microsoft.Network/virtualNetworks@2025-01-01' = {
   name: name

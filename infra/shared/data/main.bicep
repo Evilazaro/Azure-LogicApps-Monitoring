@@ -160,7 +160,7 @@ resource poFailed 'Microsoft.Storage/storageAccounts/blobServices/containers@202
 
 // Container for completed order processing
 // Enables tracking of all completed orders
-@description('Blob container for orders processed with errors')
+@description('Blob container for completed order processing')
 resource poCompleted 'Microsoft.Storage/storageAccounts/blobServices/containers@2025-06-01' = {
   parent: blobSvc
   name: 'ordersprocessedcompleted'

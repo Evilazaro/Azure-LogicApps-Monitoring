@@ -26,12 +26,12 @@ import { tagsType } from '../../types.bicep'
 
 // ========== Parameters ==========
 
-@description('Base name for all monitoring resources.')
+@description('Base name for all monitoring resources')
 @minLength(3)
 @maxLength(20)
 param name string
 
-@description('Environment name suffix to ensure uniqueness.')
+@description('Environment name suffix to ensure uniqueness')
 @minLength(2)
 @maxLength(10)
 param envName string
@@ -41,7 +41,7 @@ param envName string
 @maxLength(50)
 param location string
 
-@description('Resource tags applied to all monitoring resources.')
+@description('Resource tags applied to all monitoring resources')
 param tags tagsType
 
 // ========== Variables ==========

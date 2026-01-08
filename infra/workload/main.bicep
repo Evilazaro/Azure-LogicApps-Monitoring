@@ -203,4 +203,4 @@ output SERVICE_BUS_CONNECTION_RUNTIME_URL string = workflows.outputs.SERVICE_BUS
 output AZURE_BLOB_CONNECTION_RUNTIME_URL string = workflows.outputs.AZURE_BLOB_CONNECTION_RUNTIME_URL
 
 @description('Storage account name for Logic Apps workflows and data')
-output AZURE_STORAGE_ACCOUNT_NAME_WORKFLOW string = workflows.outputs.workflowStorageAccountName
+output AZURE_STORAGE_ACCOUNT_NAME_WORKFLOW string = workflowStorageAccountName

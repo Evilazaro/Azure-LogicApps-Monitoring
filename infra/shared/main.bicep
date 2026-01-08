@@ -23,22 +23,22 @@ import { tagsType } from '../types.bicep'
 
 // ========== Parameters ==========
 
-@description('Base name for the managed identity.')
+@description('Base name for the managed identity')
 @minLength(3)
 @maxLength(20)
 param name string
 
-@description('Azure region for managed identity deployment.')
+@description('Azure region for managed identity deployment')
 @minLength(3)
 @maxLength(50)
 param location string
 
-@description('Environment name suffix to ensure uniqueness.')
+@description('Environment name suffix to ensure uniqueness')
 @minLength(2)
 @maxLength(10)
 param envName string
 
-@description('Resource tags applied to the managed identity.')
+@description('Resource tags applied to the managed identity')
 param tags tagsType
 
 // ========== Variables ==========
