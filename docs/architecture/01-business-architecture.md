@@ -455,36 +455,40 @@ flowchart TB
 
 ### Definition
 
-Value Streams represent states of value realization, expressed as noun phrases. They do NOT represent workflows, processes, or execution stages.
+Value Streams represent the sequential progression of how value is delivered to stakeholders, expressed through value stages. They describe WHAT value is delivered, TO WHOM, and IN WHAT ORDER value accumulates. They do NOT represent workflows, processes, or execution.
 
 ### Order Value Stream
 
-The Order Value Stream represents the progression of value states from commercial intent through revenue realization.
+The Order Value Stream represents the sequential accumulation of value from initial customer engagement through revenue realization.
 
 ```mermaid
-flowchart TB
+flowchart LR
     subgraph Order_Value["Order Value Realization"]
         direction LR
 
-        subgraph Intent["Commercial Intent"]
+        subgraph Intent["Purchase Opportunity"]
             direction TB
-            CI["Customer Intent"]
+            CI["Opportunity<br/>Established"]
         end
 
-        subgraph Commitment["Commercial Commitment"]
+        subgraph Commitment["Commercial Agreement"]
             direction TB
-            CC["Validated Commitment"]
+            CC["Commitment<br/>Established"]
         end
 
-        subgraph Obligation["Business Obligation"]
+        subgraph Obligation["Fulfillment Promise"]
             direction TB
-            BO["Fulfillment Obligation"]
+            BO["Obligation<br/>Visible"]
         end
 
-        subgraph Assurance["Revenue Assurance"]
+        subgraph Assurance["Value Realized"]
             direction TB
-            RA["Revenue Confidence"]
+            RA["Revenue<br/>Assured"]
         end
+
+        Intent --> Commitment
+        Commitment --> Obligation
+        Obligation --> Assurance
     end
 
     classDef level1 fill:#f5f5f5,stroke:#616161,stroke-width:3px
@@ -494,35 +498,35 @@ flowchart TB
     class Intent,Commitment,Obligation,Assurance level2
 ```
 
-#### Value State Definitions
+#### Value Stage Definitions
 
-**Commercial Intent Existence**
+**Opportunity Established**
 
-- **State Definition:** A customer has formed purchase intent
-- **Business Significance:** Revenue opportunity awareness
-- **Prerequisites:** None — initial state
+- **Value Delivered:** Customer has recognized purchase opportunity
+- **Stakeholder:** Customer
+- **Business Significance:** Revenue opportunity awareness exists
 - **Value Evidence:** Customer interaction artifacts
 
-**Validated Commitment Evidence**
+**Commitment Established**
 
-- **State Definition:** Purchase intent has met business acceptance criteria
-- **Business Significance:** Commercial relationship establishment
-- **Prerequisites:** Commercial Intent Existence
-- **Value Evidence:** Commitment validation artifacts
+- **Value Delivered:** Customer and business have mutual commercial agreement
+- **Stakeholder:** Customer + Business
+- **Business Significance:** Binding commercial relationship exists
+- **Value Evidence:** Order record, commitment documentation
 
-**Fulfillment Obligation Awareness**
+**Obligation Visible**
 
-- **State Definition:** Business recognizes delivery commitment
-- **Business Significance:** Obligation tracking and fulfillment planning
-- **Prerequisites:** Validated Commitment Evidence
-- **Value Evidence:** Obligation registration artifacts
+- **Value Delivered:** Customer has visibility into fulfillment commitments
+- **Stakeholder:** Customer
+- **Business Significance:** Transparency and trust in delivery promise
+- **Value Evidence:** Obligation status, delivery promise awareness
 
-**Revenue Recognition Confidence**
+**Revenue Assured**
 
-- **State Definition:** Business has assurance of revenue realization
-- **Business Significance:** Financial commitment and reporting confidence
-- **Prerequisites:** Fulfillment Obligation Awareness
-- **Value Evidence:** Revenue assurance artifacts
+- **Value Delivered:** Business has confidence in revenue recognition
+- **Stakeholder:** Business
+- **Business Significance:** Financial value realized from customer relationship
+- **Value Evidence:** Revenue accounting readiness, fulfillment completion
 
 ---
 
@@ -1348,35 +1352,102 @@ _"Would this diagram still be clear if viewed briefly in a document review meeti
 
 If NO → simplify or regenerate. Do NOT output diagrams that fail this test.
 
-### v2.1 Non-Sequential Semantics Enforcement
+### BDAT Value Stream Rules (AUTHORITATIVE)
 
-**CRITICAL: Value Stream and Decision Model diagrams MUST NOT imply sequence or flow.**
+**CRITICAL: Value Streams ARE sequential by definition.**
 
-**Non-Sequential Visual Rules (MANDATORY)**
+**Value Stream Definition (TOGAF BDAT)**
 
-Business Value Stream and Business Decision Model diagrams MUST:
+A **Value Stream** is a **sequential representation of how value is delivered to a stakeholder**, expressed through **value stages**.
 
-- Represent concepts as **peer structures** without directional relationships
+Value Streams describe:
+- WHAT value is delivered
+- TO WHOM value is delivered  
+- IN WHAT ORDER value accumulates
+
+They do NOT describe:
+- How work is performed
+- How systems operate
+- How processes execute
+
+**Sequential ≠ Executable** - Value Streams MUST be sequential but NOT executable.
+
+**Value Stream Visual Rules (MANDATORY)**
+
+Value Stream diagrams MUST:
+
+- Use **directional arrows** to show value accumulation order
+- Flow **linearly** (single primary path)
+- Contain NO branches, loops, or conditional logic
+- Represent **value outcomes**, not activities or capabilities
+
+**Value Stage Requirements (STRICT)**
+
+Each Value Stage MUST:
+
+- Answer: "What value now exists for the stakeholder?"
+- Be meaningful to external or internal stakeholder
+- Represent value outcome, NOT work being done
+
+**Allowed Value Stage Patterns:**
+
+- ✅ Commitment Established
+- ✅ Access Enabled
+- ✅ Outcome Delivered
+- ✅ Confidence Achieved
+- ✅ Value Realized
+
+**Forbidden Value Stage Patterns:**
+
+- ❌ Processing (activity, not value)
+- ❌ Validation (work, not outcome)
+- ❌ Assessment (work, not outcome)
+- ❌ Execution (work, not outcome)
+
+**Capability Separation Rule (CRITICAL)**
+
+Value Streams MUST NOT mirror Business Capabilities.
+
+- Capabilities = what the business can do
+- Value Streams = how value is realized over time
+
+If a Value Stream stage could be renamed as a Capability → INVALID.
+
+**Non-Executability Gate**
+
+Although sequential, Value Streams MUST NOT be executable:
+
+- ❌ NO conditional branching
+- ❌ NO loops or retries
+- ❌ NO decision diamonds
+- ❌ NO exception paths
+
+**Validation:** Value Stream is VALID only if sequence is explicit, stages deliver stakeholder value, no stage describes activity, and diagram is sequential but NOT executable.
+
+### v2.1 Decision Model Non-Sequential Rules
+
+**CRITICAL: Decision Model diagrams MUST NOT imply sequence or flow.**
+
+**Decision Model Visual Rules (MANDATORY)**
+
+Business Decision Model diagrams MUST:
+
+- Represent decision contexts as **peer structures** without directional relationships
 - Use **grouping only** to show conceptual organization
-- NEVER use arrows between groups (even with noun labels)
-- Avoid visual patterns suggesting progression, dependency, or execution order
+- NEVER use arrows between decision groups
+- Avoid visual patterns suggesting progression or execution order
 
 **Prohibited Patterns:**
 
-- ❌ `A --> B` (directional flow)
-- ❌ `A -.-> B` (dotted progression)
-- ❌ Left-to-right layouts suggesting sequence
-- ❌ Cascading structures implying order
+- ❌ `Context --> Intent --> Outcomes` (sequential flow)
+- ❌ Cascading structures implying decision order
 
 **Allowed Patterns:**
 
 - ✅ Grouped peer concepts without connectors
-- ✅ Parallel vertical/horizontal layouts
-- ✅ Conceptual containment (subgraphs only)
+- ✅ Parallel layouts
 
-**Rationale:** Value Streams represent states of value existence, NOT workflows. Decision Models represent decision contexts, NOT decision processes.
-
-**Enforcement:** Any diagram violating non-sequential semantics is INVALID and must be regenerated at higher abstraction.
+**Rationale:** Decision Models represent decision contexts and possible states, NOT decision processes or execution flow.
 
 ### Notation Rules
 
@@ -1388,9 +1459,9 @@ Business Value Stream and Business Decision Model diagrams MUST:
 
 **Arrows**
 
-- Represent relationships, dependencies, or conceptual progression
-- Do NOT represent sequence, flow, or execution
-- Direction shows dependency or relationship nature
+- **Value Streams:** Show value accumulation sequence (REQUIRED)
+- **Other diagrams:** Show relationships or dependencies (NOT sequence)
+- Do NOT represent execution flow or process steps
 
 **Grouping (Subgraphs)**
 
