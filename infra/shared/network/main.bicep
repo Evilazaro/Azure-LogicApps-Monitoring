@@ -1,9 +1,12 @@
 param name string
 param location string
+param envName string
 param tags object
 
+var vnetName = '${name}-${uniqueString(resourceGroup().id, name, location, envName)}-vnet'
+
 resource vnet 'Microsoft.Network/virtualNetworks@2025-01-01' = {
-  name: name
+  name: vnetName
   location: location
   tags: tags
   properties: {
