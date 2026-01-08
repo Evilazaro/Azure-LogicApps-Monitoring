@@ -1320,6 +1320,54 @@ Each grouping level uses the SAME colors across ALL diagrams to enforce visual h
 3. Each level is immediately distinguishable from adjacent levels
 4. High contrast maintained for GitHub rendering
 
+### Diagram Density and Readability Enforcement
+
+**CRITICAL: Readability is a non-negotiable architectural requirement.**
+
+All diagrams MUST pass these hard invariants:
+
+**Density Limits (MANDATORY)**
+
+- Maximum nodes per diagram: **12**
+- Preferred nodes per diagram: **6–10**
+- Maximum subgraphs per diagram: **5**
+- Violation → diagram is INVALID, must be split or simplified
+
+**Readability Invariants (MANDATORY)**
+
+A diagram MUST:
+
+- Be readable at GitHub default zoom (100%) without strain
+- Be understandable by business stakeholder in **5–10 seconds**
+- Fit within single laptop screen without scrolling
+- Require NO verbal explanation to grasp intent
+
+**Label Enforcement (STRICT)**
+
+- Maximum label length: **5 words**
+- Preferred label length: **2–4 words**
+- Labels MUST use common business language only
+- Labels MUST NOT include: compound concepts, explanations, parenthetical clarifications
+
+**Cognitive Load Gate (MANDATORY)**
+
+If diagram contains:
+
+- Too many nodes to scan comfortably
+- Too many groups to hold in short-term memory
+- Visual competition between elements
+
+→ Reduce detail, split diagram, or elevate abstraction  
+→ **Clarity ALWAYS overrides completeness**
+
+**Final Readability Gate**
+
+Before outputting ANY diagram, internally answer:
+
+_"Would this diagram still be clear if viewed briefly in a document review meeting?"_
+
+If NO → simplify or regenerate. Do NOT output diagrams that fail this test.
+
 ### Notation Rules
 
 **Boxes**
