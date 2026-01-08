@@ -94,26 +94,13 @@ resource wfSA 'Microsoft.Storage/storageAccounts@2025-06-01' = {
     supportsHttpsTrafficOnly: true // Require secure connections
     minimumTlsVersion: 'TLS1_2' // Enforce TLS 1.2 minimum for security compliance
     allowBlobPublicAccess: false // Disable anonymous public blob access for security
-    publicNetworkAccess: 'Enabled' // Allow access from public networks
+    publicNetworkAccess: 'Disabled' // Disable public access, use private endpoints only
     allowSharedKeyAccess: true // Required for Logic Apps Standard initial connection
     networkAcls: {
-      bypass: 'AzureServices, Logging, Metrics'
-      defaultAction: 'Deny' // Deny by default, explicitly allow trusted sources
-      // IP rules for specific IP addresses or ranges
-      ipRules: [
-        // Add specific IP addresses here, e.g.:
-        // {
-        //   value: '203.0.113.0/24'
-        //   action: 'Allow'
-        // }
-      ]
-      virtualNetworkRules: [
-        // Add VNet subnet resource IDs here, e.g.:
-        // {
-        //   id: '/subscriptions/{sub}/resourceGroups/{rg}/providers/Microsoft.Network/virtualNetworks/{vnet}/subnets/{subnet}'
-        //   action: 'Allow'
-        // }
-      ]
+      bypass: 'AzureServices, Logging, Metrics' // Allow trusted Azure services
+      defaultAction: 'Deny' // Deny by default, access only through private endpoints
+      ipRules: []
+      virtualNetworkRules: []
     }
   }
 }
@@ -186,6 +173,244 @@ resource saDiag 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
     storageAccountId: storageAccountId
     logAnalyticsDestinationType: 'Dedicated'
     metrics: metricsSettings
+  }
+}
+
+// ========== Private Endpoint Resources for Storage ==========
+
+@description('Private DNS Zone for Storage Blob')
+resource blobPrivateDnsZone 'Microsoft.Network/privateDnsZones@2024-06-01' = {
+  name: 'privatelink.blob.${environment().suffixes.storage}'
+  location: 'global'
+  tags: tags
+}
+
+@description('Link blob DNS zone to virtual network')
+resource blobPrivateDnsZoneLink 'Microsoft.Network/privateDnsZones/virtualNetworkLinks@2024-06-01' = {
+  parent: blobPrivateDnsZone
+  name: '${blobPrivateDnsZone.name}-link'
+  location: 'global'
+  properties: {
+    registrationEnabled: false
+    virtualNetwork: {
+      id: vnetId
+    }
+  }
+}
+
+@description('Private endpoint for Storage Blob')
+resource blobPrivateEndpoint 'Microsoft.Network/privateEndpoints@2025-01-01' = {
+  name: '${wfSA.name}-blob-pe'
+  location: location
+  tags: tags
+  properties: {
+    subnet: {
+      id: dataSubnetId
+    }
+    privateLinkServiceConnections: [
+      {
+        name: '${wfSA.name}-blob-pe-connection'
+        properties: {
+          privateLinkServiceId: wfSA.id
+          groupIds: [
+            'blob'
+          ]
+        }
+      }
+    ]
+  }
+}
+
+@description('Private DNS zone group for blob private endpoint')
+resource blobPrivateDnsZoneGroup 'Microsoft.Network/privateEndpoints/privateDnsZoneGroups@2025-01-01' = {
+  parent: blobPrivateEndpoint
+  name: 'default'
+  properties: {
+    privateDnsZoneConfigs: [
+      {
+        name: 'privatelink-blob-core-windows-net'
+        properties: {
+          privateDnsZoneId: blobPrivateDnsZone.id
+        }
+      }
+    ]
+  }
+}
+
+@description('Private DNS Zone for Storage File')
+resource filePrivateDnsZone 'Microsoft.Network/privateDnsZones@2024-06-01' = {
+  name: 'privatelink.file.${environment().suffixes.storage}'
+  location: 'global'
+  tags: tags
+}
+
+@description('Link file DNS zone to virtual network')
+resource filePrivateDnsZoneLink 'Microsoft.Network/privateDnsZones/virtualNetworkLinks@2024-06-01' = {
+  parent: filePrivateDnsZone
+  name: '${filePrivateDnsZone.name}-link'
+  location: 'global'
+  properties: {
+    registrationEnabled: false
+    virtualNetwork: {
+      id: vnetId
+    }
+  }
+}
+
+@description('Private endpoint for Storage File')
+resource filePrivateEndpoint 'Microsoft.Network/privateEndpoints@2025-01-01' = {
+  name: '${wfSA.name}-file-pe'
+  location: location
+  tags: tags
+  properties: {
+    subnet: {
+      id: dataSubnetId
+    }
+    privateLinkServiceConnections: [
+      {
+        name: '${wfSA.name}-file-pe-connection'
+        properties: {
+          privateLinkServiceId: wfSA.id
+          groupIds: [
+            'file'
+          ]
+        }
+      }
+    ]
+  }
+}
+
+@description('Private DNS zone group for file private endpoint')
+resource filePrivateDnsZoneGroup 'Microsoft.Network/privateEndpoints/privateDnsZoneGroups@2025-01-01' = {
+  parent: filePrivateEndpoint
+  name: 'default'
+  properties: {
+    privateDnsZoneConfigs: [
+      {
+        name: 'privatelink-file-core-windows-net'
+        properties: {
+          privateDnsZoneId: filePrivateDnsZone.id
+        }
+      }
+    ]
+  }
+}
+
+@description('Private DNS Zone for Storage Table')
+resource tablePrivateDnsZone 'Microsoft.Network/privateDnsZones@2024-06-01' = {
+  name: 'privatelink.table.${environment().suffixes.storage}'
+  location: 'global'
+  tags: tags
+}
+
+@description('Link table DNS zone to virtual network')
+resource tablePrivateDnsZoneLink 'Microsoft.Network/privateDnsZones/virtualNetworkLinks@2024-06-01' = {
+  parent: tablePrivateDnsZone
+  name: '${tablePrivateDnsZone.name}-link'
+  location: 'global'
+  properties: {
+    registrationEnabled: false
+    virtualNetwork: {
+      id: vnetId
+    }
+  }
+}
+
+@description('Private endpoint for Storage Table')
+resource tablePrivateEndpoint 'Microsoft.Network/privateEndpoints@2025-01-01' = {
+  name: '${wfSA.name}-table-pe'
+  location: location
+  tags: tags
+  properties: {
+    subnet: {
+      id: dataSubnetId
+    }
+    privateLinkServiceConnections: [
+      {
+        name: '${wfSA.name}-table-pe-connection'
+        properties: {
+          privateLinkServiceId: wfSA.id
+          groupIds: [
+            'table'
+          ]
+        }
+      }
+    ]
+  }
+}
+
+@description('Private DNS zone group for table private endpoint')
+resource tablePrivateDnsZoneGroup 'Microsoft.Network/privateEndpoints/privateDnsZoneGroups@2025-01-01' = {
+  parent: tablePrivateEndpoint
+  name: 'default'
+  properties: {
+    privateDnsZoneConfigs: [
+      {
+        name: 'privatelink-table-core-windows-net'
+        properties: {
+          privateDnsZoneId: tablePrivateDnsZone.id
+        }
+      }
+    ]
+  }
+}
+
+@description('Private DNS Zone for Storage Queue')
+resource queuePrivateDnsZone 'Microsoft.Network/privateDnsZones@2024-06-01' = {
+  name: 'privatelink.queue.${environment().suffixes.storage}'
+  location: 'global'
+  tags: tags
+}
+
+@description('Link queue DNS zone to virtual network')
+resource queuePrivateDnsZoneLink 'Microsoft.Network/privateDnsZones/virtualNetworkLinks@2024-06-01' = {
+  parent: queuePrivateDnsZone
+  name: '${queuePrivateDnsZone.name}-link'
+  location: 'global'
+  properties: {
+    registrationEnabled: false
+    virtualNetwork: {
+      id: vnetId
+    }
+  }
+}
+
+@description('Private endpoint for Storage Queue')
+resource queuePrivateEndpoint 'Microsoft.Network/privateEndpoints@2025-01-01' = {
+  name: '${wfSA.name}-queue-pe'
+  location: location
+  tags: tags
+  properties: {
+    subnet: {
+      id: dataSubnetId
+    }
+    privateLinkServiceConnections: [
+      {
+        name: '${wfSA.name}-queue-pe-connection'
+        properties: {
+          privateLinkServiceId: wfSA.id
+          groupIds: [
+            'queue'
+          ]
+        }
+      }
+    ]
+  }
+}
+
+@description('Private DNS zone group for queue private endpoint')
+resource queuePrivateDnsZoneGroup 'Microsoft.Network/privateEndpoints/privateDnsZoneGroups@2025-01-01' = {
+  parent: queuePrivateEndpoint
+  name: 'default'
+  properties: {
+    privateDnsZoneConfigs: [
+      {
+        name: 'privatelink-queue-core-windows-net'
+        properties: {
+          privateDnsZoneId: queuePrivateDnsZone.id
+        }
+      }
+    ]
   }
 }
 
