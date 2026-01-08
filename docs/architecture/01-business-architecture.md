@@ -57,11 +57,9 @@ Business Capabilities represent **what the business must be able to do** to deli
 
 ```mermaid
 graph TB
-    subgraph "Enterprise Business Capabilities"
-        OM[Order Management]
-        CE[Customer Engagement]
-        OF[Order Fulfillment]
-    end
+    OM[Order Management]
+    CE[Customer Engagement]
+    OF[Order Fulfillment]
 
     style OM fill:#e1f5ff
     style CE fill:#e1f5ff
