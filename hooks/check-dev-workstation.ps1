@@ -99,19 +99,25 @@ try {
     # Run in a child pwsh process so that any exit in preprovision.ps1
     # does not terminate this wrapper, and so the exit code can be trusted
     $pwshPath = $null
-    $pwshCommand = Get-Command -Name 'pwsh' -ErrorAction SilentlyContinue
     
-    if ($null -ne $pwshCommand -and $pwshCommand.CommandType -in @('Application', 'ExternalScript')) {
+    # Try Get-Command first (most reliable)
+    $pwshCommand = Get-Command -Name 'pwsh' -CommandType Application, ExternalScript -ErrorAction SilentlyContinue
+    
+    if ($null -ne $pwshCommand) {
         $pwshPath = $pwshCommand.Source
+        Write-Verbose -Message "Found pwsh via Get-Command: $pwshPath"
     }
+    # Try $PSHOME directory (PowerShell installation directory)
     elseif (Test-Path -Path (Join-Path -Path $PSHOME -ChildPath 'pwsh') -PathType Leaf) {
         $pwshPath = Join-Path -Path $PSHOME -ChildPath 'pwsh'
+        Write-Verbose -Message "Found pwsh in PSHOME: $pwshPath"
     }
     elseif (Test-Path -Path (Join-Path -Path $PSHOME -ChildPath 'pwsh.exe') -PathType Leaf) {
         $pwshPath = Join-Path -Path $PSHOME -ChildPath 'pwsh.exe'
+        Write-Verbose -Message "Found pwsh.exe in PSHOME: $pwshPath"
     }
     else {
-        throw "Unable to locate 'pwsh' to run preprovision.ps1 in a child process."
+        throw "Unable to locate 'pwsh' executable to run preprovision.ps1 in a child process. Please ensure PowerShell Core is properly installed."
     }
 
     # Build arguments for preprovision.ps1 execution in ValidateOnly mode
@@ -126,16 +132,22 @@ try {
     # Add ExecutionPolicy bypass on Windows for script execution
     if ($IsWindows) {
         $preprovisionArgs = @('-ExecutionPolicy', 'Bypass') + $preprovisionArgs
+        Write-Verbose -Message "Added ExecutionPolicy bypass for Windows"
     }
 
-    Write-Verbose -Message "Executing: $pwshPath $($preprovisionArgs -join ' ')"
+    Write-Verbose -Message "Executing preprovision script with arguments:"
+    Write-Verbose -Message "  Command: $pwshPath"
+    Write-Verbose -Message "  Arguments: $($preprovisionArgs -join ' ')"
 
     # Execute preprovision.ps1 and stream output directly to console
     # Note: Output streams to caller in real-time; exit code determines success
     & $pwshPath @preprovisionArgs
+    
+    # Capture exit code immediately to prevent it from being overwritten
+    $validationExitCode = $LASTEXITCODE
 
     # Check if validation was successful by examining the child process exit code
-    if ($LASTEXITCODE -eq 0) {
+    if ($validationExitCode -eq 0) {
         Write-Verbose -Message '✓ Workstation validation completed successfully'
         Write-Verbose -Message 'Your development environment is properly configured for Azure deployment'
         exit 0
@@ -143,18 +155,32 @@ try {
     else {
         Write-Warning -Message '⚠ Workstation validation completed with issues'
         Write-Warning -Message 'Please address the warnings/errors above before proceeding with development'
-        exit $LASTEXITCODE
+        Write-Verbose -Message "Exit code from preprovision: $validationExitCode"
+        exit $validationExitCode
     }
 }
 catch {
     # Handle unexpected errors during validation
     Write-Error -Message "Workstation validation failed with error: $($_.Exception.Message)"
     
-    if ($_.ScriptStackTrace) {
-        Write-Error -Message "Stack trace: $($_.ScriptStackTrace)"
+    # Display additional context for troubleshooting
+    if ($_.Exception.InnerException) {
+        Write-Verbose -Message "Inner exception: $($_.Exception.InnerException.Message)"
     }
     
-    Write-Verbose -Message 'Please ensure preprovision.ps1 is available and executable'
+    if ($_.ScriptStackTrace) {
+        Write-Verbose -Message "Stack trace: $($_.ScriptStackTrace)"
+    }
+    
+    # Provide actionable guidance for resolution
+    Write-Information -Message ''
+    Write-Information -Message 'Troubleshooting steps:'
+    Write-Information -Message '  1. Ensure preprovision.ps1 is in the same directory as this script'
+    Write-Information -Message '  2. Verify PowerShell Core 7.0+ is properly installed'
+    Write-Information -Message '  3. Check that you have execute permissions on the scripts'
+    Write-Information -Message '  4. Run with -Verbose flag for detailed diagnostic information'
+    Write-Information -Message ''
+    
     exit 1
 }
 finally {
