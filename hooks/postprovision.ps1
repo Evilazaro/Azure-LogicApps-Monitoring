@@ -478,9 +478,16 @@ function Invoke-AzureContainerRegistryLogin {
             try {
                 $azVersionJson = & az version --output json 2>&1
                 $azVersionExitCode = $LASTEXITCODE
-                if ($azVersionExitCode -eq 0) {
-                    $azVersion = $azVersionJson | ConvertFrom-Json
-                    Write-Verbose "Azure CLI version: $($azVersion.'azure-cli')"
+                if ($azVersionExitCode -eq 0 -and $azVersionJson) {
+                    try {
+                        $azVersion = $azVersionJson | ConvertFrom-Json -ErrorAction Stop
+                        if ($azVersion.'azure-cli') {
+                            Write-Verbose "Azure CLI version: $($azVersion.'azure-cli')"
+                        }
+                    }
+                    catch {
+                        Write-Verbose "Could not parse Azure CLI version: $($_.Exception.Message)"
+                    }
                 }
                 else {
                     Write-Verbose "Could not determine Azure CLI version (exit code: $azVersionExitCode)"
@@ -499,7 +506,9 @@ function Invoke-AzureContainerRegistryLogin {
                 Write-Warning "Not authenticated with Azure CLI. Skipping ACR authentication."
                 Write-Information "  Run 'az login' to authenticate with Azure."
                 Write-Verbose "az account show exit code: $accountExitCode"
-                Write-Verbose "az account show output: $accountOutput"
+                if ($accountOutput) {
+                    Write-Verbose "az account show output: $($accountOutput -join ' ')"
+                }
                 return
             }
             
@@ -514,12 +523,16 @@ function Invoke-AzureContainerRegistryLogin {
                 Write-Warning "Failed to login to Azure Container Registry '$registryName'."
                 Write-Information "  This may not affect deployment if using managed identity."
                 Write-Verbose "Exit code: $acrLoginExitCode"
-                Write-Verbose "Output: $($acrLoginOutput -join "`n")"
+                if ($acrLoginOutput) {
+                    Write-Verbose "Output: $($acrLoginOutput -join ' ')"
+                }
                 return
             }
             
             Write-Information "✓ Successfully authenticated to Azure Container Registry: $registryName"
-            Write-Verbose "ACR login output: $($acrLoginOutput -join "`n")"
+            if ($acrLoginOutput) {
+                Write-Verbose "ACR login output: $($acrLoginOutput -join ' ')"
+            }
         }
         catch {
             Write-Warning "Azure Container Registry login encountered an error: $($_.Exception.Message)"
@@ -1115,7 +1128,7 @@ try {
     # Define secrets for API project (Service Bus and Database configuration)
     $apiSecrets = [ordered]@{
         'Azure:TenantId'                   = $azureTenantId
-        'Azure:ClientId'   = $azureClientId
+        'Azure:ClientId'                   = $azureClientId
         'ApplicationInsights:ConnectionString' = $applicationInsightsConnectionString
     }
     
@@ -1142,6 +1155,16 @@ try {
     $totalSuccessCount = 0
     $totalSkippedCount = 0
     $failedSecrets = [System.Collections.Generic.List[PSCustomObject]]::new()
+    
+    # Add SQL connection string to API secrets if SQL Database is configured
+    # IMPORTANT: This must be added BEFORE the configuration loop
+    # Connection string key must match Program.cs: 'ConnectionStrings:OrderDb'
+    # Uses Azure Active Directory authentication with the managed identity
+    if ($azureSqlServerFqdn -and $azureSqlDatabaseName) {
+        $sqlConnectionString = "Server=tcp:$azureSqlServerFqdn,1433;Initial Catalog=$azureSqlDatabaseName;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;Authentication=Active Directory Default;"
+        $apiSecrets['ConnectionStrings:OrderDb'] = $sqlConnectionString
+        Write-Verbose "Added SQL connection string to API secrets (Key: ConnectionStrings:OrderDb)"
+    }
     
     # Configure AppHost project secrets
     Write-Information ""

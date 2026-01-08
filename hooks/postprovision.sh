@@ -1085,6 +1085,15 @@ main() {
         "ApplicationInsights:ConnectionString=$app_insights_conn_str"
     )
     
+    # Add SQL connection string if Azure SQL is configured (matches PowerShell logic)
+    # IMPORTANT: Connection string key must match Program.cs: 'ConnectionStrings:OrderDb'
+    # Uses Azure Active Directory authentication with the managed identity
+    if [[ -n "$azure_sql_server_fqdn" ]] && [[ -n "$azure_sql_database_name" ]]; then
+        local sql_connection_string="Server=tcp:$azure_sql_server_fqdn,1433;Initial Catalog=$azure_sql_database_name;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;Authentication=Active Directory Default;"
+        api_secrets+=("ConnectionStrings:OrderDb=$sql_connection_string")
+        verbose "Added SQL connection string for standalone API execution (Key: ConnectionStrings:OrderDb)"
+    fi
+    
     # Define Web App secrets (EXACTLY matches PowerShell configuration)
     # Web App only needs minimal secrets for frontend operations
     local webapp_secrets=(
