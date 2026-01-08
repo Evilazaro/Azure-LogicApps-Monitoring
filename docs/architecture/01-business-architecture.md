@@ -151,6 +151,10 @@ graph LR
 
 Value Streams describe **how value is delivered to stakeholders** through sequential stages. Each stage represents a meaningful value outcome.
 
+**BDAT Grouping Principle:** Value Streams are organized **by stakeholder first**. Each stream represents value delivered to one primary stakeholder through a sequential flow of value outcomes.
+
+---
+
 ### 3.1 Customer Order Value Stream
 
 **Stakeholder:** Customer  
