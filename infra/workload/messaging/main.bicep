@@ -22,40 +22,40 @@ import { tagsType } from '../../types.bicep'
 
 // ========== Parameters ==========
 
-@description('Base name for Service Bus namespace.')
+@description('Base name for Service Bus namespace')
 @minLength(3)
 @maxLength(20)
 param name string
 
-@description('Environment name suffix to ensure uniqueness.')
+@description('Environment name suffix to ensure uniqueness')
 @minLength(2)
 @maxLength(10)
 param envName string
 
-@description('Azure region for Service Bus deployment.')
+@description('Azure region for Service Bus deployment')
 @minLength(3)
 @maxLength(50)
 param location string = resourceGroup().location
 
-@description('Resource ID of the User Assigned Identity to be used by Service Bus.')
+@description('Resource ID of the User Assigned Identity to be used by Service Bus')
 @minLength(50)
 param userAssignedIdentityId string
 
-@description('Resource ID of the Log Analytics workspace for diagnostic logs and metrics.')
+@description('Resource ID of the Log Analytics workspace for diagnostic logs and metrics')
 @minLength(50)
 param workspaceId string
 
-@description('Storage Account ID for diagnostic logs and metrics.')
+@description('Storage Account ID for diagnostic logs and metrics')
 @minLength(50)
 param storageAccountId string
 
-@description('Logs settings for the Log Analytics workspace.')
+@description('Logs settings for the Log Analytics workspace')
 param logsSettings object[]
 
-@description('Metrics settings for the Log Analytics workspace.')
+@description('Metrics settings for the Log Analytics workspace')
 param metricsSettings object[]
 
-@description('Resource tags applied to Service Bus resources.')
+@description('Resource tags applied to Service Bus resources')
 param tags tagsType
 
 // ========== Variables ==========

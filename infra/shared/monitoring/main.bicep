@@ -26,22 +26,22 @@ import { tagsType } from '../../types.bicep'
 
 // ========== Parameters ==========
 
-@description('Base name for all monitoring resources.')
+@description('Base name for all monitoring resources')
 @minLength(3)
 @maxLength(20)
 param name string
 
-@description('Environment name suffix to ensure uniqueness.')
+@description('Environment name suffix to ensure uniqueness')
 @minLength(2)
 @maxLength(10)
 param envName string
 
-@description('Azure region for monitoring resources deployment.')
+@description('Azure region for monitoring resources deployment')
 @minLength(3)
 @maxLength(50)
-param location string = resourceGroup().location
+param location string
 
-@description('Resource tags applied to all monitoring resources.')
+@description('Resource tags applied to all monitoring resources')
 param tags tagsType
 
 // ========== Variables ==========

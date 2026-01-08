@@ -27,49 +27,53 @@ import { tagsType } from '../../types.bicep'
 
 // ========== Parameters ==========
 
-@description('Base name for the container services.')
+@description('Base name for the container services')
 @minLength(3)
 @maxLength(20)
 param name string
 
-@description('Azure region for container services deployment.')
+@description('Azure region for container services deployment')
 @minLength(3)
 @maxLength(50)
 param location string
 
-@description('Resource ID of the User Assigned Identity used by Container Registry and Container Apps Environment.')
+@description('Resource ID of the User Assigned Identity used by Container Registry and Container Apps Environment')
 @minLength(50)
 param userAssignedIdentityId string
 
-@description('Environment name suffix to ensure uniqueness.')
+@description('Environment name suffix to ensure uniqueness')
 @minLength(2)
 @maxLength(10)
 param envName string
 
-@description('Resource ID of the Log Analytics workspace for diagnostic logs and metrics.')
+@description('Resource ID of the Log Analytics workspace for diagnostic logs and metrics')
 @minLength(50)
 param workspaceId string
 
-@description('Log Analytics Workspace Customer ID.')
+@description('Log Analytics Workspace Customer ID')
 param workspaceCustomerId string
 
-@description('Primary Key for Log Analytics workspace.')
+@description('Primary Key for Log Analytics workspace')
 param workspacePrimaryKey string
 
-@description('Storage Account ID for diagnostic logs and metrics.')
+@description('Resource ID of the API subnet for Container Apps infrastructure')
+@minLength(50)
+param apiSubnetId string
+
+@description('Storage Account ID for diagnostic logs and metrics')
 @minLength(50)
 param storageAccountId string
 
-@description('Logs settings for the Log Analytics workspace.')
+@description('Logs settings for the Log Analytics workspace')
 param logsSettings object[]
 
-@description('Metrics settings for the Log Analytics workspace.')
+@description('Metrics settings for the Log Analytics workspace')
 param metricsSettings object[]
 
-@description('Connection string for Application Insights instance.')
+@description('Connection string for Application Insights instance')
 param appInsightsConnectionString string
 
-@description('Resource tags applied to container services.')
+@description('Resource tags applied to container services')
 param tags tagsType
 
 // ========== Variables ==========
@@ -139,6 +143,9 @@ resource appEnv 'Microsoft.App/managedEnvironments@2025-02-02-preview' = {
     }
   }
   properties: {
+    vnetConfiguration: {
+      infrastructureSubnetId: apiSubnetId
+    }
     // Consumption workload profile provides:
     // - Serverless, pay-per-use pricing model (only pay for actual resource usage)
     // - Automatic scaling from 0 to meet demand

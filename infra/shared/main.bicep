@@ -88,12 +88,21 @@ output MANAGED_IDENTITY_CLIENT_ID string = identity.outputs.MANAGED_IDENTITY_CLI
 @description('Name of the managed identity resource')
 output MANAGED_IDENTITY_NAME string = identity.outputs.MANAGED_IDENTITY_NAME
 
+module network 'network/main.bicep' = {
+  params: {
+    name: '${name}-vnet-${envName}'
+    location: location
+    tags: tags
+  }
+}
+
 // Monitoring Module: Deploys Log Analytics workspace and Application Insights
 // Provides centralized logging and telemetry infrastructure
 @description('Deploys Log Analytics workspace and Application Insights for centralized monitoring')
 module monitoring 'monitoring/main.bicep' = {
   params: {
     name: name
+    location: location
     tags: tags
     envName: envName
   }
@@ -161,3 +170,11 @@ output AZURE_SQL_SERVER_NAME string = data.outputs.AZURE_SQL_SERVER_NAME
 
 @description('Name of the deployed SQL Database')
 output AZURE_SQL_DATABASE_NAME string = data.outputs.AZURE_SQL_DATABASE_NAME
+
+// ========== Network Outputs ==========
+
+@description('Resource ID of the API subnet for workload resources')
+output API_SUBNET_ID string = network.outputs.apiSubnetId
+
+@description('Resource ID of the Web App subnet for workload resources')
+output WEBAPP_SUBNET_ID string = network.outputs.webapiSubnetId
