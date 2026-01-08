@@ -143,6 +143,7 @@ module workload './workload/main.bicep' = {
     userAssignedIdentityName: shared.outputs.MANAGED_IDENTITY_NAME
     workflowStorageAccountName: shared.outputs.AZURE_STORAGE_ACCOUNT_NAME_WORKFLOW
     workflowStorageAccountId: shared.outputs.AZURE_STORAGE_ACCOUNT_ID_WORKFLOW
+    apiSubnetId: shared.outputs.API_SUBNET_ID
     tags: tags
   }
 }

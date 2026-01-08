@@ -169,3 +169,11 @@ output AZURE_SQL_SERVER_NAME string = data.outputs.AZURE_SQL_SERVER_NAME
 
 @description('Name of the deployed SQL Database')
 output AZURE_SQL_DATABASE_NAME string = data.outputs.AZURE_SQL_DATABASE_NAME
+
+// ========== Network Outputs ==========
+
+@description('Resource ID of the API subnet for workload resources')
+output API_SUBNET_ID string = network.outputs.apiSubnetId
+
+@description('Resource ID of the Web App subnet for workload resources')
+output WEBAPP_SUBNET_ID string = network.outputs.webapiSubnetId
