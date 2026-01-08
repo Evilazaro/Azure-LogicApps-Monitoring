@@ -98,7 +98,7 @@ resource wfSA 'Microsoft.Storage/storageAccounts@2025-06-01' = {
     allowSharedKeyAccess: true // Required for Logic Apps Standard initial connection
     networkAcls: {
       bypass: 'AzureServices, Logging, Metrics' // Allow trusted Azure services
-      defaultAction: 'Deny' // Deny by default, access only through private endpoints
+      defaultAction: 'Allow' // Allow public access for development environments
       ipRules: []
       virtualNetworkRules: []
     }
