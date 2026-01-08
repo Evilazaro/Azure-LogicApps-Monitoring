@@ -181,7 +181,7 @@ output AZURE_SQL_DATABASE_NAME string = data.outputs.AZURE_SQL_DATABASE_NAME
 output API_SUBNET_ID string = network.outputs.apiSubnetId
 
 @description('Resource ID of the Web App subnet for workload resources')
-output WEBAPP_SUBNET_ID string = network.outputs.webapiSubnetId
+output WEBAPP_SUBNET_ID string = network.outputs.webAppSubnetId
 
 @description('Resource ID of the Logic App subnet for Logic Apps Standard')
 output LOGICAPP_SUBNET_ID string = network.outputs.logicappSubnetId

@@ -28,7 +28,7 @@ resource vnet 'Microsoft.Network/virtualNetworks@2025-01-01' = {
         }
       }
       {
-        name: 'webapp-subnet'
+        name: 'data-subnet'
         properties: {
           addressPrefix: '10.0.2.0/24'
         }
@@ -52,5 +52,5 @@ resource vnet 'Microsoft.Network/virtualNetworks@2025-01-01' = {
 }
 
 output apiSubnetId string = vnet.properties.subnets[0].id
-output webapiSubnetId string = vnet.properties.subnets[1].id
+output webAppSubnetId string = vnet.properties.subnets[1].id
 output logicappSubnetId string = vnet.properties.subnets[2].id
