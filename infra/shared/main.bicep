@@ -153,7 +153,7 @@ module data 'data/main.bicep' = {
     storageAccountId: monitoring.outputs.AZURE_STORAGE_ACCOUNT_ID_LOGS
     logsSettings: allLogsSettings
     metricsSettings: allMetricsSettings
-    apiSubnetId: network.outputs.apiSubnetId
+    apiSubnetId: network.outputs.API_SUBNET_ID
     tags: tags
   }
 }
@@ -178,10 +178,10 @@ output AZURE_SQL_DATABASE_NAME string = data.outputs.AZURE_SQL_DATABASE_NAME
 // ========== Network Outputs ==========
 
 @description('Resource ID of the API subnet for workload resources')
-output API_SUBNET_ID string = network.outputs.apiSubnetId
+output API_SUBNET_ID string = network.outputs.API_SUBNET_ID
 
 @description('Resource ID of the Web App subnet for workload resources')
-output WEBAPP_SUBNET_ID string = network.outputs.webAppSubnetId
+output WEBAPP_SUBNET_ID string = network.outputs.WEB_APP_SUBNET_ID
 
 @description('Resource ID of the Logic App subnet for Logic Apps Standard')
 output LOGICAPP_SUBNET_ID string = network.outputs.logicappSubnetId

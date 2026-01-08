@@ -51,6 +51,6 @@ resource vnet 'Microsoft.Network/virtualNetworks@2025-01-01' = {
   }
 }
 
-output apiSubnetId string = vnet.properties.subnets[0].id
-output webAppSubnetId string = vnet.properties.subnets[1].id
+output API_SUBNET_ID string = vnet.properties.subnets[0].id
+output WEB_APP_SUBNET_ID string = vnet.properties.subnets[1].id
 output logicappSubnetId string = vnet.properties.subnets[2].id
