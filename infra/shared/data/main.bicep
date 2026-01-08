@@ -221,7 +221,7 @@ resource sqlServer 'Microsoft.Sql/servers@2024-11-01-preview' = {
       sid: deployer().objectId
       tenantId: tenant().tenantId
     }
-    publicNetworkAccess: 'Disabled' // Restrict to private endpoint only
+    publicNetworkAccess: 'Enabled'
     minimalTlsVersion: '1.2'
   }
   tags: tags
