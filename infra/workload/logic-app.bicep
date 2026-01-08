@@ -255,7 +255,6 @@ resource workflowEngine 'Microsoft.Web/sites@2025-03-01' = {
     siteConfig: {
       alwaysOn: true
       webSocketsEnabled: true
-      vnetRouteAllEnabled: true
       ipSecurityRestrictions: []
       ipSecurityRestrictionsDefaultAction: 'Allow'
       scmIpSecurityRestrictions: []
@@ -276,9 +275,16 @@ resource wfConf 'Microsoft.Web/sites/config@2025-03-01' = {
 
     AzureWebJobsStorage__managedIdentityResourceId: userAssignedIdentityId
     AzureWebJobsStorage__credential: 'managedIdentity'
+
+    // Storage endpoints configuration for private endpoint connectivity
+    // These FQDNs resolve to private IPs via Private DNS zones (privatelink.blob/queue/table.core.windows.net)
+    // Traffic is routed through VNet private endpoints, not public internet
     AzureWebJobsStorage__blobServiceUri: 'https://${workflowStorageAccountName}.blob.${environment().suffixes.storage}/'
     AzureWebJobsStorage__queueServiceUri: 'https://${workflowStorageAccountName}.queue.${environment().suffixes.storage}/'
     AzureWebJobsStorage__tableServiceUri: 'https://${workflowStorageAccountName}.table.${environment().suffixes.storage}/'
+
+    // Enable VNet content share access for private endpoint connectivity
+    WEBSITE_CONTENTOVERVNET: '1'
 
     // App Insights
     APPLICATIONINSIGHTS_CONNECTION_STRING: appInsightsConnectionString
