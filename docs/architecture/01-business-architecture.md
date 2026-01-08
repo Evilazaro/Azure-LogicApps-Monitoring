@@ -9,7 +9,7 @@
 
 ## Executive Summary
 
-This Business Architecture defines the foundational capabilities, value streams, and information concepts required for the organization to fulfill customer commitments through order-based commerce. The architecture establishes a stable, technology-agnostic view of what the business must be able to do to create and sustain stakeholder value.
+This Business Architecture defines the foundational capabilities, value streams, and information concepts required for the organization to manage customer orders from placement through fulfillment. The architecture establishes a stable, technology-agnostic view of what the business must be able to do to create and sustain stakeholder value.
 
 This document conforms to TOGAF Business Architecture Domain (BDAT) principles and provides the business foundation upon which application, data, and technology architectures may be designed.
 
@@ -21,35 +21,31 @@ This document conforms to TOGAF Business Architecture Domain (BDAT) principles a
 
 The organization exists to:
 
-- Enable customers to articulate and formalize commercial commitments
-- Ensure commitments are honored through structured fulfillment
-- Maintain visibility into commitment status throughout its lifecycle
+- Enable customers to place and manage orders
+- Ensure orders are fulfilled reliably
+- Maintain visibility into order status throughout its lifecycle
 - Build confidence through transparent accountability
 
 ### 1.2 Business Goals
 
 **Primary Goals:**
 
-1. **Commitment Certainty** — Customers can establish binding commitments with confidence
-2. **Fulfillment Assurance** — Obligations are met reliably and predictably
-3. **Transparency** — Stakeholders maintain continuous awareness of commitment states
-4. **Adaptive Resilience** — The business adapts to changing conditions while preserving value delivery
+1. **Order Certainty** — Customers can place orders with confidence they will be fulfilled
+2. **Fulfillment Reliability** — Orders are fulfilled consistently and predictably
+3. **Order Visibility** — Stakeholders maintain awareness of order states
 
 **Success Outcomes:**
 
-- Customers trust the organization to honor commitments
-- Stakeholders make informed decisions based on accurate business state
-- The organization responds to market dynamics without disrupting value delivery
-- Business continuity is maintained through operational awareness
+- Customers trust the organization to fulfill orders
+- Stakeholders make informed decisions based on order state
+- Order fulfillment continues reliably
 
 ### 1.3 Stakeholder Value Expectations
 
-| Stakeholder | Primary Value Expected                       |
-| ----------- | -------------------------------------------- |
-| Customer    | Certainty that commitment will be honored    |
-| Operations  | Visibility into commitment fulfillment state |
-| Leadership  | Insight into business performance patterns   |
-| Partners    | Predictable and accountable collaboration    |
+| Stakeholder | Primary Value Expected                  |
+| ----------- | --------------------------------------- |
+| Customer    | Certainty that orders will be fulfilled |
+| Operations  | Visibility into order fulfillment state |
 
 ---
 
@@ -62,163 +58,94 @@ Business Capabilities represent **what the business must be able to do** to deli
 ```mermaid
 graph TB
     subgraph "Enterprise Business Capabilities"
-        CM[Commitment Management]
+        OM[Order Management]
         CE[Customer Engagement]
-        CF[Commitment Fulfillment]
-        BP[Business Performance Insight]
-        OC[Operational Continuity]
+        OF[Order Fulfillment]
     end
 
-    style CM fill:#e1f5ff
+    style OM fill:#e1f5ff
     style CE fill:#e1f5ff
-    style CF fill:#e1f5ff
-    style BP fill:#fff4e1
-    style OC fill:#fff4e1
+    style OF fill:#e1f5ff
 ```
 
 ### 2.2 Capability Definitions
 
-#### 2.2.1 Commitment Management
+#### 2.2.1 Order Management
 
-**Definition:** The ability to establish, maintain, and conclude formal business commitments between the organization and its customers.
+**Definition:** The ability to receive, track, and maintain customer orders throughout their lifecycle.
 
-**Purpose:** Enable the creation of binding obligations that define expectations, terms, and fulfillment requirements.
+**Purpose:** Enable customers to place orders and the organization to manage them through completion.
 
-**Business Value:** Provides the foundation for commercial relationships and accountability.
+**Business Value:** Provides the foundation for commercial transactions and customer satisfaction.
 
 ---
 
 #### 2.2.2 Customer Engagement
 
-**Definition:** The ability to interact with customers, understand their needs, and establish mutually beneficial relationships.
+**Definition:** The ability to interact with customers and understand their needs.
 
-**Purpose:** Create pathways for customers to articulate intent and initiate commitments.
+**Purpose:** Enable customers to express requirements and place orders.
 
-**Business Value:** Builds trust and enables demand expression.
-
----
-
-#### 2.2.3 Commitment Fulfillment
-
-**Definition:** The ability to satisfy obligations defined within commitments through coordinated delivery of goods or services.
-
-**Purpose:** Honor customer expectations and complete the value exchange.
-
-**Business Value:** Transforms commitment into realized value, building reputation and retention.
+**Business Value:** Builds trust and enables order placement.
 
 ---
 
-#### 2.2.4 Business Performance Insight
+#### 2.2.3 Order Fulfillment
 
-**Definition:** The ability to understand, interpret, and communicate the state and performance of business operations.
+**Definition:** The ability to complete customer orders by delivering requested products.
 
-**Purpose:** Enable informed decision-making by providing visibility into business outcomes.
+**Purpose:** Satisfy customer orders and complete the transaction.
 
-**Business Value:** Supports strategic adaptation and operational improvement.
-
----
-
-#### 2.2.5 Operational Continuity
-
-**Definition:** The ability to sustain business operations through changing conditions, exceptions, and unexpected events.
-
-**Purpose:** Maintain value delivery resilience regardless of internal or external disruption.
-
-**Business Value:** Protects stakeholder confidence and minimizes value interruption.
+**Business Value:** Transforms orders into realized value, building reputation and retention.
 
 ---
 
 ### 2.3 Level 2 Capability Decomposition
 
-#### Commitment Management (Level 2)
+#### Order Management (Level 2)
 
 ```mermaid
 graph LR
-    CM[Commitment Management] --> CR[Commitment Establishment]
-    CM --> CS[Commitment State Awareness]
-    CM --> CV[Commitment Integrity]
+    OM[Order Management] --> OC[Order Capture]
+    OM --> OS[Order State Awareness]
 
-    style CM fill:#e1f5ff
-    style CR fill:#f0f9ff
-    style CS fill:#f0f9ff
-    style CV fill:#f0f9ff
+    style OM fill:#e1f5ff
+    style OC fill:#f0f9ff
+    style OS fill:#f0f9ff
 ```
 
-- **Commitment Establishment** — The ability to formalize binding agreements
-- **Commitment State Awareness** — The ability to know the current condition of commitments
-- **Commitment Integrity** — The ability to ensure commitments remain valid and complete
+- **Order Capture** — The ability to receive and record customer orders
+- **Order State Awareness** — The ability to know the current status of orders
 
 #### Customer Engagement (Level 2)
 
 ```mermaid
 graph LR
     CE[Customer Engagement] --> CN[Customer Need Understanding]
-    CE --> CI[Commitment Origination]
-    CE --> CC[Customer Relationship]
+    CE --> OI[Order Initiation]
 
     style CE fill:#e1f5ff
     style CN fill:#f0f9ff
-    style CI fill:#f0f9ff
-    style CC fill:#f0f9ff
+    style OI fill:#f0f9ff
 ```
 
 - **Customer Need Understanding** — The ability to comprehend customer requirements
-- **Commitment Origination** — The ability to begin formal commitments with customers
-- **Customer Relationship** — The ability to maintain ongoing connections with customers
+- **Order Initiation** — The ability to begin order placement with customers
 
-#### Commitment Fulfillment (Level 2)
+#### Order Fulfillment (Level 2)
 
 ```mermaid
 graph LR
-    CF[Commitment Fulfillment] --> FC[Fulfillment Orchestration]
-    CF --> FS[Fulfillment State Awareness]
-    CF --> FD[Value Transfer]
+    OF[Order Fulfillment] --> FP[Fulfillment Processing]
+    OF --> FS[Fulfillment State Awareness]
 
-    style CF fill:#e1f5ff
-    style FC fill:#f0f9ff
+    style OF fill:#e1f5ff
+    style FP fill:#f0f9ff
     style FS fill:#f0f9ff
-    style FD fill:#f0f9ff
 ```
 
-- **Fulfillment Orchestration** — The ability to align resources toward obligation satisfaction
-- **Fulfillment State Awareness** — The ability to know the current state of fulfillment
-- **Value Transfer** — The ability to deliver value to customers
-
-#### Business Performance Insight (Level 2)
-
-```mermaid
-graph LR
-    BP[Business Performance Insight] --> PE[Performance Evidence Availability]
-    BP --> PA[Performance Interpretation]
-    BP --> PV[Performance Transparency]
-
-    style BP fill:#fff4e1
-    style PE fill:#fffbf0
-    style PA fill:#fffbf0
-    style PV fill:#fffbf0
-```
-
-- **Performance Evidence Availability** — The ability to possess indicators of business state
-- **Performance Interpretation** — The ability to derive meaning from evidence
-- **Performance Transparency** — The ability to make insight accessible to stakeholders
-
-#### Operational Continuity (Level 2)
-
-```mermaid
-graph LR
-    OC[Operational Continuity] --> OA[Operational Health Awareness]
-    OC --> OR[Operational Adaptability]
-    OC --> OI[Operational Resilience]
-
-    style OC fill:#fff4e1
-    style OA fill:#fffbf0
-    style OR fill:#fffbf0
-    style OI fill:#fffbf0
-```
-
-- **Operational Health Awareness** — The ability to know the condition of operations
-- **Operational Adaptability** — The ability to adjust to exceptions and disruptions
-- **Operational Resilience** — The ability to maintain capability during change
+- **Fulfillment Processing** — The ability to execute order completion
+- **Fulfillment State Awareness** — The ability to know the current state of order fulfillment
 
 ---
 
@@ -226,90 +153,58 @@ graph LR
 
 Value Streams describe **how value is delivered to stakeholders** through sequential stages. Each stage represents a meaningful value outcome.
 
-### 3.1 Customer Commitment Value Stream
+### 3.1 Customer Order Value Stream
 
 **Stakeholder:** Customer  
-**Value Delivered:** Fulfilled commercial commitment  
-**Purpose:** Enable customers to establish commitments and receive value
+**Value Delivered:** Fulfilled order  
+**Purpose:** Enable customers to place orders and receive products
 
 ```mermaid
 graph LR
-    A[Need Understood] --> B[Commitment Secured]
-    B --> C[Fulfillment Assured]
-    C --> D[Obligation Satisfied]
-    D --> E[Value Received]
+    A[Need Recognized] --> B[Order Placed]
+    B --> C[Order Confirmed]
+    C --> D[Products Received]
 
     style A fill:#e8f5e9
     style B fill:#c8e6c9
     style C fill:#a5d6a7
     style D fill:#81c784
-    style E fill:#66bb6a
 ```
 
 **Value Stage Definitions:**
 
-| Stage                    | Value Outcome                          | Stakeholder Benefit                   |
-| ------------------------ | -------------------------------------- | ------------------------------------- |
-| **Need Understood**      | Clarity on what customer requires      | Customer can articulate intent        |
-| **Commitment Secured**   | Binding agreement in place             | Customer has certainty of fulfillment |
-| **Fulfillment Assured**  | Confidence that obligation will be met | Customer trusts completion will occur |
-| **Obligation Satisfied** | What was promised has been delivered   | Customer expectation has been met     |
-| **Value Received**       | Customer possesses benefit sought      | Customer relationship strengthened    |
+| Stage                 | Value Outcome                   | Stakeholder Benefit               |
+| --------------------- | ------------------------------- | --------------------------------- |
+| **Need Recognized**   | Customer knows what they want   | Customer ready to order           |
+| **Order Placed**      | Order submitted to organization | Customer has initiated purchase   |
+| **Order Confirmed**   | Organization acknowledges order | Customer has certainty of receipt |
+| **Products Received** | Customer has ordered products   | Customer need satisfied           |
 
 ---
 
-### 3.2 Business Oversight Value Stream
+### 3.2 Operations Order Visibility Value Stream
 
-**Stakeholder:** Leadership / Operations Management  
-**Value Delivered:** Informed understanding of business state  
-**Purpose:** Enable evidence-based decision-making
+**Stakeholder:** Operations  
+**Value Delivered:** Awareness of order state  
+**Purpose:** Enable operations to monitor and respond to order activity
 
 ```mermaid
 graph LR
-    A[Business State Known] --> B[Performance Understood]
-    B --> C[Strategic Clarity Achieved]
-    C --> D[Confidence Established]
+    A[Orders Visible] --> B[Order State Known]
+    B --> C[Response Capability Maintained]
 
     style A fill:#fff9c4
     style B fill:#fff59d
     style C fill:#fff176
-    style D fill:#ffee58
 ```
 
 **Value Stage Definitions:**
 
-| Stage                          | Value Outcome                          | Stakeholder Benefit                      |
-| ------------------------------ | -------------------------------------- | ---------------------------------------- |
-| **Business State Known**       | Current operational condition visible  | Leadership knows what is happening       |
-| **Performance Understood**     | Meaning of business state comprehended | Leadership understands implications      |
-| **Strategic Clarity Achieved** | Path forward is evident                | Leadership knows what should happen next |
-| **Confidence Established**     | Decision risk is minimized             | Leadership can commit to direction       |
-
----
-
-### 3.3 Operational Resilience Value Stream
-
-**Stakeholder:** Operations / Support Teams  
-**Value Delivered:** Sustained operational capability  
-**Purpose:** Maintain business continuity through exceptions
-
-```mermaid
-graph LR
-    A[Risk Recognized] --> B[Impact Understood]
-    B --> C[Continuity Assured]
-
-    style A fill:#ffccbc
-    style B fill:#ffab91
-    style C fill:#ff8a65
-```
-
-**Value Stage Definitions:**
-
-| Stage                  | Value Outcome                    | Stakeholder Benefit                    |
-| ---------------------- | -------------------------------- | -------------------------------------- |
-| **Risk Recognized**    | Threat to operations is known    | Operations aware of what could fail    |
-| **Impact Understood**  | Consequence of risk comprehended | Operations knows severity and scope    |
-| **Continuity Assured** | Value delivery remains intact    | Stakeholders protected from disruption |
+| Stage                              | Value Outcome                      | Stakeholder Benefit                |
+| ---------------------------------- | ---------------------------------- | ---------------------------------- |
+| **Orders Visible**                 | Orders can be observed             | Operations aware of activity       |
+| **Order State Known**              | Current order status understood    | Operations knows what's happening  |
+| **Response Capability Maintained** | Ability to act on orders preserved | Operations can intervene if needed |
 
 ---
 
@@ -319,18 +214,18 @@ Business Information Concepts represent the **things the business must know abou
 
 ### 4.1 Core Concepts
 
-#### 4.1.1 Commitment
+#### 4.1.1 Order
 
-**Definition:** A binding agreement between the organization and a customer defining mutual obligations and expectations.
+**Definition:** A customer request for products to be delivered.
 
 **Characteristics:**
 
-- Identifies parties to the agreement
-- Specifies obligations to be fulfilled
-- Defines terms and conditions
+- Identifies the customer
+- Specifies products requested
+- Contains quantities
 - Possesses a lifecycle state
 
-**Purpose:** Formalizes the value exchange relationship.
+**Purpose:** Represents the customer's purchase intent.
 
 ---
 
@@ -349,63 +244,33 @@ Business Information Concepts represent the **things the business must know abou
 
 ---
 
-#### 4.1.3 Obligation
+#### 4.1.3 Product
 
-**Definition:** A specific requirement within a commitment that must be satisfied to honor the agreement.
+**Definition:** An item that can be ordered by customers.
 
 **Characteristics:**
 
-- Describes what must be delivered
-- Defines fulfillment criteria
-- Contains quantity or measure
-- Has a state of completion
+- Has an identifier
+- Has a description
+- Can be quantified
+- Included in orders
 
-**Purpose:** Defines the actionable components of a commitment.
+**Purpose:** Represents what customers can purchase.
 
 ---
 
 #### 4.1.4 Fulfillment
 
-**Definition:** The act or state of satisfying obligations defined within a commitment.
+**Definition:** The completion of an order by delivering products to the customer.
 
 **Characteristics:**
 
-- Progresses through stages
-- Can be confirmed or verified
-- Results in value transfer
-- Concludes commitment lifecycle
+- Associated with a specific order
+- Progresses through states
+- Results in product delivery
+- Completes the order lifecycle
 
-**Purpose:** Represents the realization of value promised in a commitment.
-
----
-
-#### 4.1.5 Performance Evidence
-
-**Definition:** Recorded indication of business activity, state, or outcome used to assess operational health.
-
-**Characteristics:**
-
-- Captures business events
-- Reflects state at a point in time
-- Enables interpretation
-- Informs decision-making
-
-**Purpose:** Provides the foundation for business insight and oversight.
-
----
-
-#### 4.1.6 Business State
-
-**Definition:** The collective condition of capabilities, commitments, and operations at a given moment.
-
-**Characteristics:**
-
-- Observable through evidence
-- Changes over time
-- Influences decisions
-- Reflects health and risk
-
-**Purpose:** Enables situational awareness and adaptive response.
+**Purpose:** Represents the execution of order completion.
 
 ---
 
@@ -413,29 +278,21 @@ Business Information Concepts represent the **things the business must know abou
 
 ```mermaid
 graph TB
-    Customer -->|Establishes| Commitment
-    Commitment -->|Contains| Obligation
-    Obligation -->|Satisfied by| Fulfillment
-    Fulfillment -->|Produces| PerformanceEvidence[Performance Evidence]
-    PerformanceEvidence -->|Reflects| BusinessState[Business State]
-    BusinessState -->|Informs| Customer
+    Customer -->|Places| Order
+    Order -->|Contains| Product
+    Order -->|Completed by| Fulfillment
 
     style Customer fill:#e3f2fd
-    style Commitment fill:#bbdefb
-    style Obligation fill:#90caf9
+    style Order fill:#bbdefb
+    style Product fill:#90caf9
     style Fulfillment fill:#64b5f6
-    style PerformanceEvidence fill:#fff9c4
-    style BusinessState fill:#fff59d
 ```
 
 **Relationship Semantics:**
 
-- **Customer ↔ Commitment:** Customers establish one or many commitments
-- **Commitment ↔ Obligation:** A commitment contains one or many obligations
-- **Obligation ↔ Fulfillment:** Each obligation is satisfied by fulfillment activity
-- **Fulfillment → Performance Evidence:** Fulfillment generates evidence of business activity
-- **Performance Evidence → Business State:** Evidence reflects the current business state
-- **Business State → Customer:** Business state informs customer awareness
+- **Customer ↔ Order:** Customers place one or many orders
+- **Order ↔ Product:** An order contains one or many products
+- **Order ↔ Fulfillment:** Each order is completed by fulfillment
 
 ---
 
@@ -443,32 +300,22 @@ graph TB
 
 This section illustrates which capabilities enable which value stages.
 
-### 5.1 Customer Commitment Value Stream Enablement
+### 5.1 Customer Order Value Stream Enablement
 
-| Value Stage          | Enabled By Capabilities                            |
-| -------------------- | -------------------------------------------------- |
-| Need Understood      | Customer Engagement (Customer Need Understanding)  |
-| Commitment Secured   | Commitment Management (Commitment Establishment)   |
-| Fulfillment Assured  | Commitment Fulfillment (Fulfillment Orchestration) |
-| Obligation Satisfied | Commitment Fulfillment (Value Transfer)            |
-| Value Received       | Customer Engagement (Customer Relationship)        |
+| Value Stage       | Enabled By Capabilities                           |
+| ----------------- | ------------------------------------------------- |
+| Need Recognized   | Customer Engagement (Customer Need Understanding) |
+| Order Placed      | Customer Engagement (Order Initiation)            |
+| Order Confirmed   | Order Management (Order Capture)                  |
+| Products Received | Order Fulfillment (Fulfillment Processing)        |
 
-### 5.2 Business Oversight Value Stream Enablement
+### 5.2 Operations Order Visibility Value Stream Enablement
 
-| Value Stage                | Enabled By Capabilities                                          |
-| -------------------------- | ---------------------------------------------------------------- |
-| Business State Known       | Business Performance Insight (Performance Evidence Availability) |
-| Performance Understood     | Business Performance Insight (Performance Interpretation)        |
-| Strategic Clarity Achieved | Business Performance Insight (Performance Transparency)          |
-| Confidence Established     | Operational Continuity (Operational Adaptability)                |
-
-### 5.3 Operational Resilience Value Stream Enablement
-
-| Value Stage        | Enabled By Capabilities                                   |
-| ------------------ | --------------------------------------------------------- |
-| Risk Recognized    | Operational Continuity (Operational Health Awareness)     |
-| Impact Understood  | Business Performance Insight (Performance Interpretation) |
-| Continuity Assured | Operational Continuity (Operational Resilience)           |
+| Value Stage                    | Enabled By Capabilities                         |
+| ------------------------------ | ----------------------------------------------- |
+| Orders Visible                 | Order Management (Order State Awareness)        |
+| Order State Known              | Order Management (Order State Awareness)        |
+| Response Capability Maintained | Order Fulfillment (Fulfillment State Awareness) |
 
 ---
 
@@ -476,31 +323,31 @@ This section illustrates which capabilities enable which value stages.
 
 Business Principles guide decision-making across all architecture domains.
 
-### 6.1 Commitment Integrity
+### 6.1 Order Integrity
 
-**Principle:** Every commitment made must be honored or explicitly renegotiated.
+**Principle:** Every order placed must be fulfilled or explicitly communicated as unfulfillable.
 
-**Rationale:** Stakeholder trust depends on predictable fulfillment of obligations.
+**Rationale:** Customer trust depends on reliable order fulfillment.
 
 **Implications:**
 
-- Capabilities must support commitment state visibility
-- Exceptions must be communicated proactively
+- Capabilities must support order state visibility
+- Order status must be accessible to customers
 - Fulfillment must be verifiable
 
 ---
 
-### 6.2 Stakeholder Transparency
+### 6.2 Order Visibility
 
-**Principle:** Stakeholders maintain continuous awareness of relevant business state.
+**Principle:** Stakeholders maintain awareness of order state.
 
-**Rationale:** Informed stakeholders make better decisions and maintain confidence.
+**Rationale:** Visibility enables appropriate response and maintains confidence.
 
 **Implications:**
 
-- Performance evidence must be accessible
-- Business state must be interpretable
-- Communication must be timely and meaningful
+- Order state must be accessible
+- Order information must be interpretable
+- Status updates must be timely
 
 ---
 
@@ -515,20 +362,6 @@ Business Principles guide decision-making across all architecture domains.
 - Capabilities are defined by value, not implementation
 - Organizational restructuring does not eliminate capabilities
 - Technology evolution does not redefine what the business does
-
----
-
-### 6.4 Value-Driven Sequencing
-
-**Principle:** Value streams reflect stakeholder value accumulation, not internal process.
-
-**Rationale:** The business exists to serve stakeholders, not to execute tasks.
-
-**Implications:**
-
-- Value stages must be meaningful to stakeholders
-- Internal complexity is abstracted from value streams
-- Measurement focuses on value delivered, not activity performed
 
 ---
 
@@ -570,16 +403,16 @@ This Business Architecture serves as the foundation for:
 
 ## Appendix A: Glossary
 
-| Term                     | Definition                                                      |
-| ------------------------ | --------------------------------------------------------------- |
-| **Capability**           | What the business must be able to do to create value            |
-| **Value Stream**         | Sequential representation of value delivery to a stakeholder    |
-| **Value Stage**          | A point in a value stream where meaningful value outcome exists |
-| **Commitment**           | Binding agreement defining mutual obligations                   |
-| **Fulfillment**          | Act of satisfying obligations within a commitment               |
-| **Performance Evidence** | Recorded indication of business activity or state               |
-| **Business State**       | Collective condition of capabilities and operations             |
-| **Stakeholder**          | Party who receives or depends on business value                 |
+| Term             | Definition                                                      |
+| ---------------- | --------------------------------------------------------------- |
+| **Capability**   | What the business must be able to do to create value            |
+| **Value Stream** | Sequential representation of value delivery to a stakeholder    |
+| **Value Stage**  | A point in a value stream where meaningful value outcome exists |
+| **Order**        | Customer request for products                                   |
+| **Product**      | Item that can be ordered                                        |
+| **Customer**     | Party who places orders                                         |
+| **Fulfillment**  | Act of completing an order                                      |
+| **Stakeholder**  | Party who receives or depends on business value                 |
 
 ---
 
