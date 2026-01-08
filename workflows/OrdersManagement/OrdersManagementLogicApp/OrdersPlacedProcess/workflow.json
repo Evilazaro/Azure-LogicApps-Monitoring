@@ -19,7 +19,7 @@
                     "HTTP": {
                         "type": "Http",
                         "inputs": {
-                            "uri": "https://orders-api.internal.${ORDERS_API_URL}/api/Orders/process",
+                            "uri": "https://orders-api.${ORDERS_API_URL}/api/Orders/process",
                             "method": "POST",
                             "headers": {
                                 "accept": "text/plain",
