@@ -26,21 +26,22 @@ import { tagsType } from './types.bicep'
 
 // ========== Parameters ==========
 
-@description('Base name for the solution. Used as prefix for all resource names.')
+@description('Base name for the solution - used as prefix for all resource names')
 @minLength(3)
 @maxLength(20)
 param solutionName string = 'orders'
 
-@description('Azure region where all resources will be deployed.')
+@description('Azure region where all resources will be deployed')
 @minLength(3)
 @maxLength(50)
 param location string
 
-@description('Environment name to differentiate deployments.')
+@description('Environment name to differentiate deployments')
+@minLength(2)
 @maxLength(10)
 param envName string
 
-@description('Deployment timestamp for tracking purposes.')
+@description('Deployment timestamp for tracking purposes')
 @maxLength(10)
 param deploymentDate string = utcNow('yyyy-MM-dd')
 

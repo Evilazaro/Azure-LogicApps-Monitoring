@@ -1,5 +1,14 @@
+@description('Name of the virtual network')
+@minLength(1)
+@maxLength(64)
 param name string
+
+@description('Azure region for virtual network deployment')
+@minLength(3)
+@maxLength(50)
 param location string
+
+@description('Resource tags applied to the virtual network')
 param tags object
 
 resource vnet 'Microsoft.Network/virtualNetworks@2025-01-01' = {

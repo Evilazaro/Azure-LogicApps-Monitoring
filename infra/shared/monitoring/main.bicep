@@ -36,10 +36,10 @@ param name string
 @maxLength(10)
 param envName string
 
-@description('Azure region for monitoring resources deployment.')
+@description('Azure region for monitoring resources deployment')
 @minLength(3)
 @maxLength(50)
-param location string = resourceGroup().location
+param location string
 
 @description('Resource tags applied to all monitoring resources.')
 param tags tagsType

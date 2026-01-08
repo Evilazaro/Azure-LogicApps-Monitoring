@@ -24,57 +24,61 @@ import { tagsType } from '../types.bicep'
 
 // ========== Parameters ==========
 
-@description('Base name for Logic App and App Service Plan resources.')
+@description('Base name for Logic App and App Service Plan resources')
 @minLength(3)
 @maxLength(20)
 param name string
 
-@description('Environment name suffix to ensure uniqueness.')
+@description('Environment name suffix to ensure uniqueness')
 @minLength(2)
 @maxLength(10)
 param envName string
 
-@description('Azure region for Logic App deployment.')
+@description('Azure region for Logic App deployment')
 @minLength(3)
 @maxLength(50)
 param location string = resourceGroup().location
 
-@description('Resource ID of the User Assigned Identity to be used by workload resources.')
+@description('Resource ID of the User Assigned Identity to be used by workload resources')
 @minLength(50)
 param userAssignedIdentityId string
 
-@description('User Assigned Identity name for reference.')
+@description('User Assigned Identity name for reference')
 @minLength(3)
 @maxLength(24)
 param userAssignedIdentityName string
 
-@description('Resource ID of the Log Analytics workspace for diagnostic logs and metrics.')
+@description('Resource ID of the Log Analytics workspace for diagnostic logs and metrics')
 @minLength(50)
 param workspaceId string
 
-@description('Log Analytics Workspace Customer ID.')
+@description('Log Analytics Workspace Customer ID')
 param workspaceCustomerId string
 
+@description('Resource ID of the API subnet for Container Apps infrastructure')
+@minLength(50)
 param apiSubnetId string
 
-@description('Primary Key for Log Analytics workspace.')
+@description('Primary Key for Log Analytics workspace')
 param workspacePrimaryKey string
 
-@description('Storage Account ID for diagnostic logs and metrics.')
+@description('Storage Account ID for diagnostic logs and metrics')
 @minLength(50)
 param storageAccountId string
 
-@description('Connection string for Application Insights instance.')
+@description('Connection string for Application Insights instance')
 param appInsightsConnectionString string
 
-@description('Workflow Storage Account Name for Logic Apps runtime.')
+@description('Workflow Storage Account Name for Logic Apps runtime')
+@minLength(3)
+@maxLength(24)
 param workflowStorageAccountName string
 
-@description('Workflow Storage Account ID for Logic Apps runtime.')
+@description('Workflow Storage Account ID for Logic Apps runtime')
 @minLength(50)
 param workflowStorageAccountId string
 
-@description('Resource tags applied to all workload resources.')
+@description('Resource tags applied to all workload resources')
 param tags tagsType
 
 // ========== Variables ==========

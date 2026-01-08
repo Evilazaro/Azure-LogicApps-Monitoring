@@ -102,6 +102,7 @@ module network 'network/main.bicep' = {
 module monitoring 'monitoring/main.bicep' = {
   params: {
     name: name
+    location: location
     tags: tags
     envName: envName
   }

@@ -21,44 +21,44 @@ metadata description = 'Deploys Logic Apps Standard workflow engine with App Ser
 import { tagsType } from '../types.bicep'
 
 // ========== Parameters ==========
-@description('Base name for Logic App and App Service Plan resources.')
+@description('Base name for Logic App and App Service Plan resources')
 @minLength(3)
 @maxLength(20)
 param name string
 
-@description('Environment name suffix to ensure uniqueness.')
+@description('Environment name suffix to ensure uniqueness')
 @minLength(2)
 @maxLength(10)
 param envName string
 
-@description('Azure region for Logic App deployment.')
+@description('Azure region for Logic App deployment')
 @minLength(3)
 @maxLength(50)
 param location string = resourceGroup().location
 
-@description('Resource ID of the User Assigned Identity to be used by the Logic App.')
+@description('Resource ID of the User Assigned Identity to be used by the Logic App')
 @minLength(50)
 param userAssignedIdentityId string
 
-@description('User Assigned Identity name for reference.')
+@description('User Assigned Identity name for reference')
 @minLength(3)
 @maxLength(24)
 param userAssignedIdentityName string
 
-@description('Service Bus Namespace to be used by the Logic App.')
+@description('Service Bus Namespace to be used by the Logic App')
 @minLength(3)
 @maxLength(50)
 param serviceBusNamespace string
 
-@description('Resource ID of the Log Analytics workspace for diagnostic logs and metrics.')
+@description('Resource ID of the Log Analytics workspace for diagnostic logs and metrics')
 @minLength(50)
 param workspaceId string
 
-@description('Resource ID of the storage account used for diagnostic logs and metrics.')
+@description('Resource ID of the storage account used for diagnostic logs and metrics')
 @minLength(50)
 param diagnosticsStorageAccountId string
 
-@description('Metrics settings for diagnostic configurations.')
+@description('Metrics settings for diagnostic configurations')
 param metricsSettings object[]
 
 // workflowStorageAccountId is passed from parent module but not currently used
@@ -68,15 +68,15 @@ param metricsSettings object[]
 #disable-next-line no-unused-params
 param workflowStorageAccountId string
 
-@description('Name of the existing storage account required by Logic Apps Standard runtime.')
+@description('Name of the existing storage account required by Logic Apps Standard runtime')
 @minLength(3)
 @maxLength(24)
 param workflowStorageAccountName string
 
-@description('Connection string for Application Insights instance.')
+@description('Connection string for Application Insights instance')
 param appInsightsConnectionString string
 
-@description('Resource tags applied to all resources.')
+@description('Resource tags applied to all resources')
 param tags tagsType
 
 // ========== Variables ==========
