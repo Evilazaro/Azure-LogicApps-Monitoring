@@ -24,12 +24,12 @@ The eShop Orders solution consists of multiple services (Web App, Orders API, Lo
 
 ## Decision Drivers
 
-* **Developer Onboarding**: Minimize time from repo clone to running application
-* **Inner Loop Speed**: Fast feedback cycles during development
-* **Observability**: Telemetry visibility during local debugging
-* **Production Parity**: Local behavior matches Azure deployment
-* **Azure Integration**: Seamless transition from local to cloud resources
-* **Multi-Service Debugging**: Step through code across service boundaries
+- **Developer Onboarding**: Minimize time from repo clone to running application
+- **Inner Loop Speed**: Fast feedback cycles during development
+- **Observability**: Telemetry visibility during local debugging
+- **Production Parity**: Local behavior matches Azure deployment
+- **Azure Integration**: Seamless transition from local to cloud resources
+- **Multi-Service Debugging**: Step through code across service boundaries
 
 ---
 
@@ -40,12 +40,14 @@ The eShop Orders solution consists of multiple services (Web App, Orders API, Lo
 **Description**: Use Docker Compose to orchestrate services and dependencies.
 
 **Pros**:
+
 - Industry-standard tool with broad adoption
 - Simple YAML configuration
 - Cross-platform support
 - Integrates with VS Code Docker extension
 
 **Cons**:
+
 - Limited observability (no built-in dashboard)
 - Manual setup for Application Insights local testing
 - No native .NET debugging integration
@@ -57,12 +59,14 @@ The eShop Orders solution consists of multiple services (Web App, Orders API, Lo
 **Description**: Microsoft's experimental orchestration tool for .NET microservices.
 
 **Pros**:
+
 - Native .NET debugging support
 - Built-in service discovery
 - Simple YAML configuration
 - OpenTelemetry integration
 
 **Cons**:
+
 - ⚠️ **Archived project** (no longer maintained)
 - Limited community support
 - Missing features (no dashboard)
@@ -73,6 +77,7 @@ The eShop Orders solution consists of multiple services (Web App, Orders API, Lo
 **Description**: Microsoft's cloud-ready stack for building distributed applications with built-in orchestration, observability, and Azure integration.
 
 **Pros**:
+
 - ✅ **Active development** by Microsoft (.NET team)
 - ✅ **Built-in dashboard** with telemetry visualization (traces, metrics, logs)
 - ✅ **Native Azure integration** (seamless local-to-cloud transition)
@@ -83,6 +88,7 @@ The eShop Orders solution consists of multiple services (Web App, Orders API, Lo
 - ✅ **OpenTelemetry** out-of-the-box
 
 **Cons**:
+
 - Requires .NET 8+ (acceptable for greenfield projects)
 - Steeper learning curve than Docker Compose (mitigated by documentation)
 - Tied to .NET ecosystem (not an issue for .NET projects)
@@ -94,6 +100,7 @@ The eShop Orders solution consists of multiple services (Web App, Orders API, Lo
 **Chosen option**: **".NET Aspire for Local Development Orchestration"**
 
 **Justification**:
+
 - Provides superior developer experience with built-in dashboard and telemetry
 - Future-proof solution with active Microsoft support
 - Seamless Azure integration aligns with production deployment (Container Apps)
@@ -158,6 +165,7 @@ public static IHostApplicationBuilder AddServiceDefaults(this IHostApplicationBu
 **URL**: `http://localhost:15888` (launched automatically)
 
 **Capabilities**:
+
 - Real-time trace visualization (distributed tracing)
 - Metrics charts (HTTP requests, SQL queries, Service Bus messages)
 - Structured logs with correlation
@@ -171,16 +179,19 @@ public static IHostApplicationBuilder AddServiceDefaults(this IHostApplicationBu
 ### ✅ Positive
 
 1. **Improved Developer Productivity**
+
    - One-command startup: `dotnet run --project app.AppHost`
    - Automatic dependency provisioning (SQL container, Service Bus emulator)
    - Integrated debugging across services
 
 2. **Enhanced Observability**
+
    - Dashboard provides immediate telemetry feedback
    - Distributed tracing works locally without Azure
    - Developers see traces/metrics before pushing to cloud
 
 3. **Production Parity**
+
    - Same OpenTelemetry configuration used locally and in Azure
    - Aspire's Azure integration maps directly to Container Apps deployment
    - Consistent service discovery patterns
@@ -193,11 +204,13 @@ public static IHostApplicationBuilder AddServiceDefaults(this IHostApplicationBu
 ### ⚠️ Negative
 
 1. **Learning Curve**
+
    - Developers unfamiliar with Aspire require onboarding
    - C# configuration (vs YAML) may be unfamiliar to DevOps-first teams
    - **Mitigation**: Documentation + training sessions
 
 2. **.NET Ecosystem Lock-In**
+
    - Not suitable for polyglot architectures (non-.NET services)
    - **Mitigation**: Acceptable for .NET-focused solution
 
@@ -209,6 +222,7 @@ public static IHostApplicationBuilder AddServiceDefaults(this IHostApplicationBu
 ### 🔄 Neutral
 
 1. **Azure Developer CLI (azd) Integration**
+
    - Aspire encourages azd usage for deployment
    - Aligns with our IaC strategy (Bicep + azd)
 
@@ -222,16 +236,17 @@ public static IHostApplicationBuilder AddServiceDefaults(this IHostApplicationBu
 
 ### Success Metrics
 
-| Metric | Target | Actual | Status |
-|--------|--------|--------|--------|
-| Time to first run | < 5 min (after repo clone) | ~3 min | ✅ |
-| Services orchestrated | 5+ (Web, API, SQL, Service Bus, Insights) | 5 | ✅ |
-| Trace visibility | 100% of HTTP/SQL/Service Bus | 100% | ✅ |
-| Developer satisfaction | > 80% | TBD | 🔄 |
+| Metric                 | Target                                    | Actual | Status |
+| ---------------------- | ----------------------------------------- | ------ | ------ |
+| Time to first run      | < 5 min (after repo clone)                | ~3 min | ✅     |
+| Services orchestrated  | 5+ (Web, API, SQL, Service Bus, Insights) | 5      | ✅     |
+| Trace visibility       | 100% of HTTP/SQL/Service Bus              | 100%   | ✅     |
+| Developer satisfaction | > 80%                                     | TBD    | 🔄     |
 
 ### Validation Tests
 
 1. **New Developer Onboarding** (2024-12-15)
+
    - ✅ Clone repo → Run AppHost → Access dashboard: **4 minutes**
    - ✅ All services started without errors
    - ✅ Traces visible in dashboard
@@ -245,10 +260,10 @@ public static IHostApplicationBuilder AddServiceDefaults(this IHostApplicationBu
 
 ## Related ADRs
 
-| ADR | Relationship |
-|-----|--------------|
-| [ADR-002: Service Bus Messaging](ADR-002-service-bus-messaging.md) | Aspire's Service Bus emulator supports this decision |
-| [ADR-003: Observability Strategy](ADR-003-observability-strategy.md) | Aspire dashboard consumes OpenTelemetry data |
+| ADR                                                                  | Relationship                                         |
+| -------------------------------------------------------------------- | ---------------------------------------------------- |
+| [ADR-002: Service Bus Messaging](ADR-002-service-bus-messaging.md)   | Aspire's Service Bus emulator supports this decision |
+| [ADR-003: Observability Strategy](ADR-003-observability-strategy.md) | Aspire dashboard consumes OpenTelemetry data         |
 
 ---
 

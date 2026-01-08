@@ -4,13 +4,13 @@
 
 ## 1. Observability Principles
 
-| # | Principle | Rationale | Implications |
-|---|-----------|-----------|--------------|
-| **O-1** | Vendor-Neutral Instrumentation | Avoid lock-in, future flexibility | Use OpenTelemetry standard |
-| **O-2** | Correlation by Default | End-to-end visibility | W3C Trace Context propagation mandatory |
-| **O-3** | Business-Aligned Metrics | Connect tech to outcomes | Custom metrics for order KPIs |
-| **O-4** | Actionable Alerts | Reduce noise, improve response | Alert on symptoms, not causes |
-| **O-5** | Cost-Aware Telemetry | Control data volumes | Sampling and filtering strategies |
+| #       | Principle                      | Rationale                         | Implications                            |
+| ------- | ------------------------------ | --------------------------------- | --------------------------------------- |
+| **O-1** | Vendor-Neutral Instrumentation | Avoid lock-in, future flexibility | Use OpenTelemetry standard              |
+| **O-2** | Correlation by Default         | End-to-end visibility             | W3C Trace Context propagation mandatory |
+| **O-3** | Business-Aligned Metrics       | Connect tech to outcomes          | Custom metrics for order KPIs           |
+| **O-4** | Actionable Alerts              | Reduce noise, improve response    | Alert on symptoms, not causes           |
+| **O-5** | Cost-Aware Telemetry           | Control data volumes              | Sampling and filtering strategies       |
 
 ---
 
@@ -26,12 +26,12 @@
 
 ### 2.2 SLI/SLO Definitions
 
-| SLI | Definition | Measurement | SLO | Error Budget |
-|-----|------------|-------------|-----|--------------|
-| **Availability** | % of successful requests | `successCount / totalCount` | 99.9% | 43.2 min/month |
-| **Latency** | P95 response time | `percentile(duration, 95)` | <500ms | N/A |
-| **Throughput** | Orders processed/hour | `count(orders.placed)` | >500/hr | N/A |
-| **Error Rate** | % of 5xx responses | `errorCount / totalCount` | <0.1% | N/A |
+| SLI              | Definition               | Measurement                 | SLO     | Error Budget   |
+| ---------------- | ------------------------ | --------------------------- | ------- | -------------- |
+| **Availability** | % of successful requests | `successCount / totalCount` | 99.9%   | 43.2 min/month |
+| **Latency**      | P95 response time        | `percentile(duration, 95)`  | <500ms  | N/A            |
+| **Throughput**   | Orders processed/hour    | `count(orders.placed)`      | >500/hr | N/A            |
+| **Error Rate**   | % of 5xx responses       | `errorCount / totalCount`   | <0.1%   | N/A            |
 
 ---
 
@@ -72,12 +72,12 @@ flowchart TB
 
 ### 3.2 Instrumentation Standards
 
-| Standard | Technology | Purpose |
-|----------|------------|---------|
-| **OpenTelemetry** | .NET SDK | Traces, metrics, logs |
-| **W3C Trace Context** | traceparent header | Cross-service correlation |
-| **Semantic Conventions** | OpenTelemetry | Standardized attribute names |
-| **Structured Logging** | JSON format | Queryable log properties |
+| Standard                 | Technology         | Purpose                      |
+| ------------------------ | ------------------ | ---------------------------- |
+| **OpenTelemetry**        | .NET SDK           | Traces, metrics, logs        |
+| **W3C Trace Context**    | traceparent header | Cross-service correlation    |
+| **Semantic Conventions** | OpenTelemetry      | Standardized attribute names |
+| **Structured Logging**   | JSON format        | Queryable log properties     |
 
 ### 3.3 Correlation Strategy
 
@@ -110,13 +110,13 @@ message.ApplicationProperties["SpanId"] = activity.SpanId.ToString();
 
 ### 4.1 Span Inventory
 
-| Span Name | Source | Kind | Attributes |
-|-----------|--------|------|------------|
-| `PlaceOrder` | Orders API | Server | order.id, order.total |
-| `SendOrderMessage` | Orders API | Producer | messaging.destination.name |
-| `OrdersPlacedProcess` | Logic App | Consumer | workflow.run_id |
-| `HTTP /api/orders` | Web App | Client | http.method, http.url |
-| `SELECT Orders` | Orders API | Client | db.system, db.operation |
+| Span Name             | Source     | Kind     | Attributes                 |
+| --------------------- | ---------- | -------- | -------------------------- |
+| `PlaceOrder`          | Orders API | Server   | order.id, order.total      |
+| `SendOrderMessage`    | Orders API | Producer | messaging.destination.name |
+| `OrdersPlacedProcess` | Logic App  | Consumer | workflow.run_id            |
+| `HTTP /api/orders`    | Web App    | Client   | http.method, http.url      |
+| `SELECT Orders`       | Orders API | Client   | db.system, db.operation    |
 
 ### 4.2 Context Propagation Implementation
 
@@ -147,6 +147,7 @@ if (activity != null)
 **Reference**: [Data Architecture - Metrics Inventory](02-data-architecture.md#metrics-inventory)
 
 Key metrics:
+
 - `http.server.request.duration` - API latency (Histogram)
 - `eShop.orders.placed` - Business throughput (Counter)
 - `servicebus.messages.active` - Queue backlog (Gauge)
@@ -174,12 +175,12 @@ _ordersPlacedCounter.Add(1, new KeyValuePair<string, object>("customer_id", orde
 
 ### 6.1 Logging Standards
 
-| Aspect | Standard | Example |
-|--------|----------|---------|
-| **Format** | Structured JSON | `{"Timestamp":"...","Properties":{...}}` |
-| **Levels** | Serilog levels | Verbose, Debug, Information, Warning, Error, Fatal |
-| **Correlation** | TraceId/SpanId in all entries | `"TraceId": "abc123"` |
-| **Sensitive Data** | Never log PII | Mask customer email/address |
+| Aspect             | Standard                      | Example                                            |
+| ------------------ | ----------------------------- | -------------------------------------------------- |
+| **Format**         | Structured JSON               | `{"Timestamp":"...","Properties":{...}}`           |
+| **Levels**         | Serilog levels                | Verbose, Debug, Information, Warning, Error, Fatal |
+| **Correlation**    | TraceId/SpanId in all entries | `"TraceId": "abc123"`                              |
+| **Sensitive Data** | Never log PII                 | Mask customer email/address                        |
 
 ### 6.2 Log Categories
 
@@ -191,26 +192,26 @@ _ordersPlacedCounter.Add(1, new KeyValuePair<string, object>("customer_id", orde
 
 ### 7.1 Collection Layer
 
-| Component | Technology | Purpose |
-|-----------|------------|---------|
-| **OpenTelemetry SDK** | .NET | Auto-instrumentation + manual spans |
-| **Azure Diagnostics** | Built-in | Platform metrics from Service Bus, SQL |
+| Component             | Technology | Purpose                                |
+| --------------------- | ---------- | -------------------------------------- |
+| **OpenTelemetry SDK** | .NET       | Auto-instrumentation + manual spans    |
+| **Azure Diagnostics** | Built-in   | Platform metrics from Service Bus, SQL |
 
 ### 7.2 Storage Layer
 
-| Component | Retention | Query Language | Cost |
-|-----------|-----------|----------------|------|
-| **Application Insights** | 90 days | KQL | Per GB ingested |
-| **Log Analytics** | 30 days | KQL | Per GB ingested |
+| Component                | Retention | Query Language | Cost            |
+| ------------------------ | --------- | -------------- | --------------- |
+| **Application Insights** | 90 days   | KQL            | Per GB ingested |
+| **Log Analytics**        | 30 days   | KQL            | Per GB ingested |
 
 ### 7.3 Visualization Layer
 
-| Tool | Purpose | Users |
-|------|---------|-------|
-| **Application Map** | Service dependency visualization | Developers, SRE |
-| **Transaction Search** | End-to-end trace analysis | Developers |
-| **Azure Dashboards** | Operational overview | Operations, Management |
-| **KQL Queries** | Ad-hoc investigation | Developers, SRE |
+| Tool                   | Purpose                          | Users                  |
+| ---------------------- | -------------------------------- | ---------------------- |
+| **Application Map**    | Service dependency visualization | Developers, SRE        |
+| **Transaction Search** | End-to-end trace analysis        | Developers             |
+| **Azure Dashboards**   | Operational overview             | Operations, Management |
+| **KQL Queries**        | Ad-hoc investigation             | Developers, SRE        |
 
 ---
 
@@ -218,13 +219,13 @@ _ordersPlacedCounter.Add(1, new KeyValuePair<string, object>("customer_id", orde
 
 ### 8.1 Alert Rules Catalog
 
-| Alert | Severity | Condition | Response | Runbook |
-|-------|----------|-----------|----------|---------|
-| **API Latency High** | Warning | P95 > 2s for 5 min | Investigate slow queries | [Perf Troubleshooting](#) |
-| **API Errors Spike** | Critical | Error rate > 5% for 5 min | Page on-call | [Error Investigation](#) |
-| **Queue Depth Growing** | Warning | Depth > 1000 for 10 min | Scale consumers | [Scaling Guide](#) |
-| **Database DTU High** | Warning | DTU > 80% for 15 min | Consider scaling | [SQL Optimization](#) |
-| **Failed Workflow Runs** | Critical | >3 failures in 5 min | Check Logic App logs | [Workflow Debug](#) |
+| Alert                    | Severity | Condition                 | Response                 | Runbook                   |
+| ------------------------ | -------- | ------------------------- | ------------------------ | ------------------------- |
+| **API Latency High**     | Warning  | P95 > 2s for 5 min        | Investigate slow queries | [Perf Troubleshooting](#) |
+| **API Errors Spike**     | Critical | Error rate > 5% for 5 min | Page on-call             | [Error Investigation](#)  |
+| **Queue Depth Growing**  | Warning  | Depth > 1000 for 10 min   | Scale consumers          | [Scaling Guide](#)        |
+| **Database DTU High**    | Warning  | DTU > 80% for 15 min      | Consider scaling         | [SQL Optimization](#)     |
+| **Failed Workflow Runs** | Critical | >3 failures in 5 min      | Check Logic App logs     | [Workflow Debug](#)       |
 
 ### 8.2 Escalation Procedures
 
@@ -243,12 +244,12 @@ flowchart LR
 
 ### 9.1 Dashboard Inventory
 
-| Dashboard | Audience | Refresh | Widgets |
-|-----------|----------|---------|---------|
-| **Application Overview** | Operations | 5 min | Request rate, latency, errors, availability |
-| **Order Processing** | Business | 15 min | Orders/hour, total value, success rate |
-| **Infrastructure Health** | SRE | 1 min | CPU, memory, DTU, queue depth |
-| **SLA Compliance** | Management | 1 hour | SLO attainment, error budget burn rate |
+| Dashboard                 | Audience   | Refresh | Widgets                                     |
+| ------------------------- | ---------- | ------- | ------------------------------------------- |
+| **Application Overview**  | Operations | 5 min   | Request rate, latency, errors, availability |
+| **Order Processing**      | Business   | 15 min  | Orders/hour, total value, success rate      |
+| **Infrastructure Health** | SRE        | 1 min   | CPU, memory, DTU, queue depth               |
+| **SLA Compliance**        | Management | 1 hour  | SLO attainment, error budget burn rate      |
 
 ### 9.2 Key Visualizations
 
@@ -274,40 +275,40 @@ flowchart LR
 
 ### 10.1 Data Volume Estimates
 
-| Source | Daily Volume | Monthly Cost |
-|--------|--------------|--------------|
-| Orders API Traces | 100 MB | $2 |
-| Web App Traces | 80 MB | $1.60 |
-| Application Logs | 200 MB | $4 |
-| Platform Metrics | 50 MB | $1 |
-| **Total** | **430 MB/day** | **~$8.60/month** |
+| Source            | Daily Volume   | Monthly Cost     |
+| ----------------- | -------------- | ---------------- |
+| Orders API Traces | 100 MB         | $2               |
+| Web App Traces    | 80 MB          | $1.60            |
+| Application Logs  | 200 MB         | $4               |
+| Platform Metrics  | 50 MB          | $1               |
+| **Total**         | **430 MB/day** | **~$8.60/month** |
 
 ### 10.2 Sampling Strategies
 
-| Telemetry Type | Strategy | Configuration |
-|----------------|----------|---------------|
-| **Traces** | Adaptive sampling | 10% in production, 100% in dev |
-| **Metrics** | Full capture | No sampling (low volume) |
-| **Logs** | Level-based | Debug excluded in prod |
+| Telemetry Type | Strategy          | Configuration                  |
+| -------------- | ----------------- | ------------------------------ |
+| **Traces**     | Adaptive sampling | 10% in production, 100% in dev |
+| **Metrics**    | Full capture      | No sampling (low volume)       |
+| **Logs**       | Level-based       | Debug excluded in prod         |
 
 ### 10.3 Retention Policies
 
-| Data Type | Retention | Archive Strategy |
-|-----------|-----------|------------------|
-| Application Insights | 90 days | Export to Storage after 30 days |
-| Log Analytics | 30 days | Continuous export (future) |
-| Metrics | 93 days | Included |
+| Data Type            | Retention | Archive Strategy                |
+| -------------------- | --------- | ------------------------------- |
+| Application Insights | 90 days   | Export to Storage after 30 days |
+| Log Analytics        | 30 days   | Continuous export (future)      |
+| Metrics              | 93 days   | Included                        |
 
 ---
 
 ## Cross-Architecture Relationships
 
-| Related Architecture | Connection | Reference |
-|---------------------|------------|-----------|
-| **Business Architecture** | SLOs mapped to business outcomes | [Business Architecture](01-business-architecture.md#quality-attribute-requirements) |
-| **Data Architecture** | Telemetry data flows documented | [Data Architecture](02-data-architecture.md#monitoring-data-flow-architecture) |
-| **Application Architecture** | Services instrumented via ServiceDefaults | [Application Architecture](03-application-architecture.md#cross-cutting-concerns) |
-| **Technology Architecture** | Observability platform components | [Technology Architecture](04-technology-architecture.md#observability-platform) |
+| Related Architecture         | Connection                                | Reference                                                                           |
+| ---------------------------- | ----------------------------------------- | ----------------------------------------------------------------------------------- |
+| **Business Architecture**    | SLOs mapped to business outcomes          | [Business Architecture](01-business-architecture.md#quality-attribute-requirements) |
+| **Data Architecture**        | Telemetry data flows documented           | [Data Architecture](02-data-architecture.md#monitoring-data-flow-architecture)      |
+| **Application Architecture** | Services instrumented via ServiceDefaults | [Application Architecture](03-application-architecture.md#cross-cutting-concerns)   |
+| **Technology Architecture**  | Observability platform components         | [Technology Architecture](04-technology-architecture.md#observability-platform)     |
 
 ---
 

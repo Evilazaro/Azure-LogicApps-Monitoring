@@ -25,13 +25,13 @@ The Orders API needs to notify downstream systems (Logic Apps) when orders are p
 
 ## Decision Drivers
 
-* **Azure Native**: Prefer managed Azure services (reduce operational overhead)
-* **Message Durability**: At-least-once delivery guarantee
-* **Topic/Subscription Model**: Support publish-subscribe pattern
-* **Dead Letter Queue**: Handle poison messages gracefully
-* **Distributed Tracing**: W3C Trace Context propagation
-* **Cost Efficiency**: Optimize for development/testing workloads
-* **Local Development**: Emulator support for inner loop
+- **Azure Native**: Prefer managed Azure services (reduce operational overhead)
+- **Message Durability**: At-least-once delivery guarantee
+- **Topic/Subscription Model**: Support publish-subscribe pattern
+- **Dead Letter Queue**: Handle poison messages gracefully
+- **Distributed Tracing**: W3C Trace Context propagation
+- **Cost Efficiency**: Optimize for development/testing workloads
+- **Local Development**: Emulator support for inner loop
 
 ---
 
@@ -42,12 +42,14 @@ The Orders API needs to notify downstream systems (Logic Apps) when orders are p
 **Description**: Simple message queue backed by Azure Storage.
 
 **Pros**:
+
 - Lowest cost (pennies per million messages)
 - Simple API (REST-based)
 - No dedicated namespace required
 - Built-in geo-replication
 
 **Cons**:
+
 - **No topics/subscriptions** (1:1 queue-to-consumer)
 - **Limited message size** (64 KB)
 - No built-in dead letter queue
@@ -61,12 +63,14 @@ The Orders API needs to notify downstream systems (Logic Apps) when orders are p
 **Description**: Event routing service for reactive programming.
 
 **Pros**:
+
 - Push-based delivery (low latency)
 - Built-in filtering and routing
 - Supports multiple event schemas
 - Native Logic Apps integration
 
 **Cons**:
+
 - **Event delivery** model (not message queue)
 - More complex setup (domains, topics, subscriptions)
 - Higher cost for high-throughput scenarios
@@ -80,6 +84,7 @@ The Orders API needs to notify downstream systems (Logic Apps) when orders are p
 **Description**: Enterprise messaging service with queues and publish-subscribe topics.
 
 **Pros**:
+
 - ✅ **Topic/Subscription model** (publish-subscribe)
 - ✅ **Dead Letter Queue** (poison message handling)
 - ✅ **Message sessions** (ordering guarantees)
@@ -90,6 +95,7 @@ The Orders API needs to notify downstream systems (Logic Apps) when orders are p
 - ✅ **Managed Identity** integration
 
 **Cons**:
+
 - Higher cost than Storage Queues (~$0.05/million operations)
 - Requires dedicated namespace
 - More configuration complexity (mitigated by Aspire integration)
@@ -101,11 +107,13 @@ The Orders API needs to notify downstream systems (Logic Apps) when orders are p
 **Description**: Big data streaming platform for telemetry ingestion.
 
 **Pros**:
+
 - Massive throughput (millions of events/sec)
 - Log-based partitioning
 - Long retention (7-90 days)
 
 **Cons**:
+
 - **Streaming model** (not transactional messaging)
 - No built-in dead letter queue
 - Overkill for order processing (designed for telemetry)
@@ -120,6 +128,7 @@ The Orders API needs to notify downstream systems (Logic Apps) when orders are p
 **Chosen option**: **"Azure Service Bus with Topic/Subscription Pattern"**
 
 **Justification**:
+
 - Topic/subscription model enables multiple consumers (current: Logic Apps; future: analytics, notifications)
 - Dead letter queue provides resilience for message processing failures
 - W3C Trace Context propagation aligns with observability strategy (ADR-003)
@@ -237,6 +246,7 @@ public async Task PublishOrderCreatedEventAsync(Order order, CancellationToken c
 ```
 
 **Message Processing**:
+
 1. Logic App triggered by new message
 2. Deserialize JSON payload
 3. HTTP POST to external webhook (order fulfillment)
@@ -250,21 +260,25 @@ public async Task PublishOrderCreatedEventAsync(Order order, CancellationToken c
 ### ✅ Positive
 
 1. **Loose Coupling**
+
    - Orders API unaware of downstream consumers
    - Add new subscribers without API changes
    - Example: Analytics service subscribes to `orders-events` topic independently
 
 2. **Reliability**
+
    - At-least-once delivery guarantee
    - Dead letter queue captures poison messages
    - Configurable retry policies (10 max delivery count)
 
 3. **Scalability**
+
    - Service Bus handles traffic spikes transparently
    - Standard tier supports 1,000 brokered connections
    - Auto-scale Logic Apps based on queue depth
 
 4. **Observability**
+
    - Trace ID propagation enables end-to-end correlation
    - Example: Order creation → Service Bus publish → Logic App execution (single trace)
    - Azure Monitor metrics: Message count, dead letters, throughput
@@ -277,11 +291,13 @@ public async Task PublishOrderCreatedEventAsync(Order order, CancellationToken c
 ### ⚠️ Negative
 
 1. **Cost Overhead**
+
    - Standard tier: ~$10/month + $0.05 per million operations
    - Storage Queues would be cheaper (~$0.0003/10K operations)
    - **Mitigation**: Features justify cost; shared namespace reduces overhead
 
 2. **Complexity**
+
    - Topics/subscriptions require more configuration vs simple queue
    - **Mitigation**: Bicep templates automate setup; Aspire emulator simplifies local dev
 
@@ -293,6 +309,7 @@ public async Task PublishOrderCreatedEventAsync(Order order, CancellationToken c
 ### 🔄 Neutral
 
 1. **Message Size Limits**
+
    - 256 KB in Standard tier (sufficient for order events)
    - Premium tier offers 100 MB if needed (future upgrade path)
 
@@ -306,21 +323,23 @@ public async Task PublishOrderCreatedEventAsync(Order order, CancellationToken c
 
 ### Success Metrics
 
-| Metric | Target | Actual | Status |
-|--------|--------|--------|--------|
-| Message delivery latency | < 1 second (P95) | ~200ms | ✅ |
-| Dead letter rate | < 1% | 0% (no poison messages yet) | ✅ |
-| Trace propagation success | 100% | 100% | ✅ |
-| Multi-consumer support | 2+ subscriptions | 1 (Logic Apps) | 🔄 |
+| Metric                    | Target           | Actual                      | Status |
+| ------------------------- | ---------------- | --------------------------- | ------ |
+| Message delivery latency  | < 1 second (P95) | ~200ms                      | ✅     |
+| Dead letter rate          | < 1%             | 0% (no poison messages yet) | ✅     |
+| Trace propagation success | 100%             | 100%                        | ✅     |
+| Multi-consumer support    | 2+ subscriptions | 1 (Logic Apps)              | 🔄     |
 
 ### Test Scenarios
 
 1. **Message Reliability** (2024-12-15)
+
    - ✅ Sent 1,000 test orders via API
    - ✅ All messages delivered to subscription (0 lost)
    - ✅ Dead letter queue empty
 
 2. **Distributed Tracing** (2024-12-18)
+
    - ✅ Created order via Web App → API → Service Bus → Logic App
    - ✅ Single trace ID spans all components
    - ✅ Application Insights shows end-to-end transaction map
@@ -336,29 +355,29 @@ public async Task PublishOrderCreatedEventAsync(Order order, CancellationToken c
 
 ### Potential Upgrades
 
-| Scenario | Solution |
-|----------|----------|
-| **Higher throughput** | Upgrade to Premium tier (partitioning, 80GB messages) |
-| **Strict ordering** | Enable message sessions on topic |
-| **Long retention** | Increase message TTL (default 14 days) |
-| **Hybrid connectivity** | Service Bus Relay for on-premises integration |
+| Scenario                | Solution                                              |
+| ----------------------- | ----------------------------------------------------- |
+| **Higher throughput**   | Upgrade to Premium tier (partitioning, 80GB messages) |
+| **Strict ordering**     | Enable message sessions on topic                      |
+| **Long retention**      | Increase message TTL (default 14 days)                |
+| **Hybrid connectivity** | Service Bus Relay for on-premises integration         |
 
 ### Alternative Patterns
 
-| Pattern | When to Use |
-|---------|-------------|
-| **Queue** | Single consumer (1:1), simpler setup |
+| Pattern        | When to Use                                    |
+| -------------- | ---------------------------------------------- |
+| **Queue**      | Single consumer (1:1), simpler setup           |
 | **Event Grid** | Event-driven reactions, multiple handler types |
-| **Event Hubs** | High-throughput telemetry streaming |
+| **Event Hubs** | High-throughput telemetry streaming            |
 
 ---
 
 ## Related ADRs
 
-| ADR | Relationship |
-|-----|--------------|
-| [ADR-001: Aspire Orchestration](ADR-001-aspire-orchestration.md) | Aspire provides Service Bus emulator for local dev |
-| [ADR-003: Observability Strategy](ADR-003-observability-strategy.md) | W3C Trace Context propagation via Service Bus |
+| ADR                                                                  | Relationship                                       |
+| -------------------------------------------------------------------- | -------------------------------------------------- |
+| [ADR-001: Aspire Orchestration](ADR-001-aspire-orchestration.md)     | Aspire provides Service Bus emulator for local dev |
+| [ADR-003: Observability Strategy](ADR-003-observability-strategy.md) | W3C Trace Context propagation via Service Bus      |
 
 ---
 

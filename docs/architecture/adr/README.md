@@ -7,6 +7,7 @@
 This directory contains Architecture Decision Records (ADRs) documenting key technical decisions made during the design and implementation of the Azure Logic Apps Monitoring Solution.
 
 **Purpose**: Capture context, reasoning, and consequences of architectural decisions to:
+
 - Provide historical context for future maintainers
 - Document alternatives considered
 - Enable informed decision-making
@@ -18,11 +19,11 @@ This directory contains Architecture Decision Records (ADRs) documenting key tec
 
 ## Decision Log
 
-| ID | Title | Status | Date | Impact |
-|----|-------|--------|------|--------|
-| [ADR-001](ADR-001-aspire-orchestration.md) | .NET Aspire for Local Orchestration | ✅ Accepted | 2024-Q4 | High |
-| [ADR-002](ADR-002-service-bus-messaging.md) | Azure Service Bus for Async Messaging | ✅ Accepted | 2024-Q4 | High |
-| [ADR-003](ADR-003-observability-strategy.md) | OpenTelemetry-based Observability | ✅ Accepted | 2024-Q4 | High |
+| ID                                           | Title                                 | Status      | Date    | Impact |
+| -------------------------------------------- | ------------------------------------- | ----------- | ------- | ------ |
+| [ADR-001](ADR-001-aspire-orchestration.md)   | .NET Aspire for Local Orchestration   | ✅ Accepted | 2024-Q4 | High   |
+| [ADR-002](ADR-002-service-bus-messaging.md)  | Azure Service Bus for Async Messaging | ✅ Accepted | 2024-Q4 | High   |
+| [ADR-003](ADR-003-observability-strategy.md) | OpenTelemetry-based Observability     | ✅ Accepted | 2024-Q4 | High   |
 
 ---
 
@@ -42,13 +43,13 @@ stateDiagram-v2
 
 ### Status Definitions
 
-| Status | Definition |
-|--------|------------|
-| **Proposed** | Under discussion, not yet finalized |
-| **Accepted** | Decision made and implemented |
+| Status         | Definition                              |
+| -------------- | --------------------------------------- |
+| **Proposed**   | Under discussion, not yet finalized     |
+| **Accepted**   | Decision made and implemented           |
 | **Deprecated** | No longer recommended, but still in use |
-| **Superseded** | Replaced by a newer ADR |
-| **Rejected** | Considered but not chosen |
+| **Superseded** | Replaced by a newer ADR                 |
+| **Rejected**   | Considered but not chosen               |
 
 ---
 
@@ -56,10 +57,10 @@ stateDiagram-v2
 
 ### Architecture Decisions
 
-| Category | ADRs | Focus |
-|----------|------|-------|
-| **Development Experience** | ADR-001 | Local orchestration, multi-service debugging |
-| **Integration Patterns** | ADR-002 | Async messaging, event-driven architecture |
+| Category                   | ADRs    | Focus                                          |
+| -------------------------- | ------- | ---------------------------------------------- |
+| **Development Experience** | ADR-001 | Local orchestration, multi-service debugging   |
+| **Integration Patterns**   | ADR-002 | Async messaging, event-driven architecture     |
 | **Cross-Cutting Concerns** | ADR-003 | Observability, distributed tracing, monitoring |
 
 ---
@@ -84,13 +85,13 @@ Copy the template structure:
 
 ## Decision Drivers
 
-* [Driver 1]
-* [Driver 2]
+- [Driver 1]
+- [Driver 2]
 
 ## Considered Options
 
-* [Option 1]
-* [Option 2]
+- [Option 1]
+- [Option 2]
 
 ## Decision Outcome
 
@@ -98,16 +99,16 @@ Chosen option: "[Option X]", because [justification].
 
 ### Consequences
 
-* Good: [Positive outcome]
-* Bad: [Negative outcome/trade-off]
-* Neutral: [Other implications]
+- Good: [Positive outcome]
+- Bad: [Negative outcome/trade-off]
+- Neutral: [Other implications]
 
 ## Pros and Cons of the Options
 
 ### [Option 1]
 
-* Good: [Benefit]
-* Bad: [Drawback]
+- Good: [Benefit]
+- Bad: [Drawback]
 
 ## More Information
 
@@ -130,12 +131,12 @@ Chosen option: "[Option X]", because [justification].
 
 ## Related Documentation
 
-| Document | Relationship |
-|----------|--------------|
-| [Architecture Overview](../README.md) | Context for all ADRs |
-| [Application Architecture](../03-application-architecture.md) | Service design decisions |
-| [Technology Architecture](../04-technology-architecture.md) | Technology selection rationale |
-| [Deployment Architecture](../07-deployment-architecture.md) | Deployment tooling decisions |
+| Document                                                      | Relationship                   |
+| ------------------------------------------------------------- | ------------------------------ |
+| [Architecture Overview](../README.md)                         | Context for all ADRs           |
+| [Application Architecture](../03-application-architecture.md) | Service design decisions       |
+| [Technology Architecture](../04-technology-architecture.md)   | Technology selection rationale |
+| [Deployment Architecture](../07-deployment-architecture.md)   | Deployment tooling decisions   |
 
 ---
 
