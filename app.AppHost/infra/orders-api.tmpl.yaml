@@ -13,7 +13,7 @@ properties:
       dotnet:
         autoConfigureDataProtection: true
     ingress:
-      external: true
+      external: false
       targetPort: {{ targetPortOrDefault 8080 }}
       transport: http
       allowInsecure: true
