@@ -20,6 +20,7 @@ This document conforms to TOGAF Business Architecture Domain (BDAT) principles a
 ### 1.1 Business Purpose
 
 The organization exists to:
+
 - Enable customers to articulate and formalize commercial commitments
 - Ensure commitments are honored through structured fulfillment
 - Maintain visibility into commitment status throughout its lifecycle
@@ -28,12 +29,14 @@ The organization exists to:
 ### 1.2 Business Goals
 
 **Primary Goals:**
+
 1. **Commitment Certainty** — Customers can establish binding commitments with confidence
 2. **Fulfillment Assurance** — Obligations are met reliably and predictably
 3. **Transparency** — Stakeholders maintain continuous awareness of commitment states
 4. **Adaptive Resilience** — The business adapts to changing conditions while preserving value delivery
 
 **Success Outcomes:**
+
 - Customers trust the organization to honor commitments
 - Stakeholders make informed decisions based on accurate business state
 - The organization responds to market dynamics without disrupting value delivery
@@ -41,12 +44,12 @@ The organization exists to:
 
 ### 1.3 Stakeholder Value Expectations
 
-| Stakeholder | Primary Value Expected |
-|-------------|------------------------|
-| Customer | Certainty that commitment will be honored |
-| Operations | Visibility into commitment fulfillment state |
-| Leadership | Insight into business performance patterns |
-| Partners | Predictable and accountable collaboration |
+| Stakeholder | Primary Value Expected                       |
+| ----------- | -------------------------------------------- |
+| Customer    | Certainty that commitment will be honored    |
+| Operations  | Visibility into commitment fulfillment state |
+| Leadership  | Insight into business performance patterns   |
+| Partners    | Predictable and accountable collaboration    |
 
 ---
 
@@ -65,7 +68,7 @@ graph TB
         BP[Business Performance Insight]
         OC[Operational Continuity]
     end
-    
+
     style CM fill:#e1f5ff
     style CE fill:#e1f5ff
     style CF fill:#e1f5ff
@@ -76,6 +79,7 @@ graph TB
 ### 2.2 Capability Definitions
 
 #### 2.2.1 Commitment Management
+
 **Definition:** The ability to establish, maintain, and conclude formal business commitments between the organization and its customers.
 
 **Purpose:** Enable the creation of binding obligations that define expectations, terms, and fulfillment requirements.
@@ -85,6 +89,7 @@ graph TB
 ---
 
 #### 2.2.2 Customer Engagement
+
 **Definition:** The ability to interact with customers, understand their needs, and establish mutually beneficial relationships.
 
 **Purpose:** Create pathways for customers to articulate intent and initiate commitments.
@@ -94,6 +99,7 @@ graph TB
 ---
 
 #### 2.2.3 Commitment Fulfillment
+
 **Definition:** The ability to satisfy obligations defined within commitments through coordinated delivery of goods or services.
 
 **Purpose:** Honor customer expectations and complete the value exchange.
@@ -103,6 +109,7 @@ graph TB
 ---
 
 #### 2.2.4 Business Performance Insight
+
 **Definition:** The ability to understand, interpret, and communicate the state and performance of business operations.
 
 **Purpose:** Enable informed decision-making by providing visibility into business outcomes.
@@ -112,6 +119,7 @@ graph TB
 ---
 
 #### 2.2.5 Operational Continuity
+
 **Definition:** The ability to sustain business operations through changing conditions, exceptions, and unexpected events.
 
 **Purpose:** Maintain value delivery resilience regardless of internal or external disruption.
@@ -129,7 +137,7 @@ graph LR
     CM[Commitment Management] --> CR[Commitment Recording]
     CM --> CS[Commitment State Management]
     CM --> CV[Commitment Verification]
-    
+
     style CM fill:#e1f5ff
     style CR fill:#f0f9ff
     style CS fill:#f0f9ff
@@ -147,7 +155,7 @@ graph LR
     CE[Customer Engagement] --> CN[Customer Need Articulation]
     CE --> CI[Commitment Initiation]
     CE --> CC[Customer Communication]
-    
+
     style CE fill:#e1f5ff
     style CN fill:#f0f9ff
     style CI fill:#f0f9ff
@@ -165,7 +173,7 @@ graph LR
     CF[Commitment Fulfillment] --> FC[Fulfillment Coordination]
     CF --> FS[Fulfillment Status Confirmation]
     CF --> FD[Fulfillment Delivery]
-    
+
     style CF fill:#e1f5ff
     style FC fill:#f0f9ff
     style FS fill:#f0f9ff
@@ -183,7 +191,7 @@ graph LR
     BP[Business Performance Insight] --> PE[Performance Evidence Capture]
     BP --> PA[Performance Analysis]
     BP --> PV[Performance Visibility]
-    
+
     style BP fill:#fff4e1
     style PE fill:#fffbf0
     style PA fill:#fffbf0
@@ -201,7 +209,7 @@ graph LR
     OC[Operational Continuity] --> OA[Operational Awareness]
     OC --> OR[Operational Response]
     OC --> OI[Operational Integrity]
-    
+
     style OC fill:#fff4e1
     style OA fill:#fffbf0
     style OR fill:#fffbf0
@@ -231,7 +239,7 @@ graph LR
     C --> D[Status Confirmed]
     D --> E[Outcome Delivered]
     E --> F[Value Realized]
-    
+
     style A fill:#e8f5e9
     style B fill:#c8e6c9
     style C fill:#a5d6a7
@@ -242,14 +250,14 @@ graph LR
 
 **Value Stage Definitions:**
 
-| Stage | Value Outcome | Stakeholder Benefit |
-|-------|---------------|---------------------|
-| **Need Expressed** | Customer need is understood | Clarity of intent achieved |
-| **Commitment Established** | Binding agreement exists | Certainty of fulfillment obtained |
-| **Fulfillment Initiated** | Obligation satisfaction begins | Confidence in progress gained |
-| **Status Confirmed** | Current fulfillment state known | Awareness maintained |
-| **Outcome Delivered** | Obligation satisfied | Expectation met |
-| **Value Realized** | Commitment complete | Business relationship strengthened |
+| Stage                      | Value Outcome                   | Stakeholder Benefit                |
+| -------------------------- | ------------------------------- | ---------------------------------- |
+| **Need Expressed**         | Customer need is understood     | Clarity of intent achieved         |
+| **Commitment Established** | Binding agreement exists        | Certainty of fulfillment obtained  |
+| **Fulfillment Initiated**  | Obligation satisfaction begins  | Confidence in progress gained      |
+| **Status Confirmed**       | Current fulfillment state known | Awareness maintained               |
+| **Outcome Delivered**      | Obligation satisfied            | Expectation met                    |
+| **Value Realized**         | Commitment complete             | Business relationship strengthened |
 
 ---
 
@@ -264,7 +272,7 @@ graph LR
     A[Performance Evidence Exists] --> B[Insight Generated]
     B --> C[Decision Informed]
     C --> D[Action Enabled]
-    
+
     style A fill:#fff9c4
     style B fill:#fff59d
     style C fill:#fff176
@@ -273,12 +281,12 @@ graph LR
 
 **Value Stage Definitions:**
 
-| Stage | Value Outcome | Stakeholder Benefit |
-|-------|---------------|---------------------|
-| **Performance Evidence Exists** | Business activity captured | Foundation for understanding established |
-| **Insight Generated** | Evidence interpreted into meaning | Understanding of state achieved |
-| **Decision Informed** | Insight applied to choices | Confidence in direction gained |
-| **Action Enabled** | Capability to respond activated | Adaptation made possible |
+| Stage                           | Value Outcome                     | Stakeholder Benefit                      |
+| ------------------------------- | --------------------------------- | ---------------------------------------- |
+| **Performance Evidence Exists** | Business activity captured        | Foundation for understanding established |
+| **Insight Generated**           | Evidence interpreted into meaning | Understanding of state achieved          |
+| **Decision Informed**           | Insight applied to choices        | Confidence in direction gained           |
+| **Action Enabled**              | Capability to respond activated   | Adaptation made possible                 |
 
 ---
 
@@ -293,7 +301,7 @@ graph LR
     A[Condition Detected] --> B[Context Understood]
     B --> C[Response Coordinated]
     C --> D[Continuity Preserved]
-    
+
     style A fill:#ffccbc
     style B fill:#ffab91
     style C fill:#ff8a65
@@ -302,12 +310,12 @@ graph LR
 
 **Value Stage Definitions:**
 
-| Stage | Value Outcome | Stakeholder Benefit |
-|-------|---------------|---------------------|
-| **Condition Detected** | Operational state awareness achieved | Visibility obtained |
-| **Context Understood** | Condition meaning interpreted | Appropriate response possible |
-| **Response Coordinated** | Action aligned with need | Effective intervention enabled |
-| **Continuity Preserved** | Value delivery sustained | Stakeholder impact minimized |
+| Stage                    | Value Outcome                        | Stakeholder Benefit            |
+| ------------------------ | ------------------------------------ | ------------------------------ |
+| **Condition Detected**   | Operational state awareness achieved | Visibility obtained            |
+| **Context Understood**   | Condition meaning interpreted        | Appropriate response possible  |
+| **Response Coordinated** | Action aligned with need             | Effective intervention enabled |
+| **Continuity Preserved** | Value delivery sustained             | Stakeholder impact minimized   |
 
 ---
 
@@ -318,9 +326,11 @@ Business Information Concepts represent the **things the business must know abou
 ### 4.1 Core Concepts
 
 #### 4.1.1 Commitment
+
 **Definition:** A binding agreement between the organization and a customer defining mutual obligations and expectations.
 
 **Characteristics:**
+
 - Identifies parties to the agreement
 - Specifies obligations to be fulfilled
 - Defines terms and conditions
@@ -331,9 +341,11 @@ Business Information Concepts represent the **things the business must know abou
 ---
 
 #### 4.1.2 Customer
+
 **Definition:** A party with whom the organization establishes commitments for the exchange of value.
 
 **Characteristics:**
+
 - Possesses identity
 - Articulates needs
 - Receives value
@@ -344,9 +356,11 @@ Business Information Concepts represent the **things the business must know abou
 ---
 
 #### 4.1.3 Obligation
+
 **Definition:** A specific requirement within a commitment that must be satisfied to honor the agreement.
 
 **Characteristics:**
+
 - Describes what must be delivered
 - Defines fulfillment criteria
 - Contains quantity or measure
@@ -357,9 +371,11 @@ Business Information Concepts represent the **things the business must know abou
 ---
 
 #### 4.1.4 Fulfillment
+
 **Definition:** The act or state of satisfying obligations defined within a commitment.
 
 **Characteristics:**
+
 - Progresses through stages
 - Can be confirmed or verified
 - Results in value transfer
@@ -370,9 +386,11 @@ Business Information Concepts represent the **things the business must know abou
 ---
 
 #### 4.1.5 Performance Evidence
+
 **Definition:** Recorded indication of business activity, state, or outcome used to assess operational health.
 
 **Characteristics:**
+
 - Captures business events
 - Reflects state at a point in time
 - Enables interpretation
@@ -383,9 +401,11 @@ Business Information Concepts represent the **things the business must know abou
 ---
 
 #### 4.1.6 Business State
+
 **Definition:** The collective condition of capabilities, commitments, and operations at a given moment.
 
 **Characteristics:**
+
 - Observable through evidence
 - Changes over time
 - Influences decisions
@@ -405,7 +425,7 @@ graph TB
     Fulfillment -->|Produces| PerformanceEvidence[Performance Evidence]
     PerformanceEvidence -->|Reflects| BusinessState[Business State]
     BusinessState -->|Informs| Customer
-    
+
     style Customer fill:#e3f2fd
     style Commitment fill:#bbdefb
     style Obligation fill:#90caf9
@@ -415,6 +435,7 @@ graph TB
 ```
 
 **Relationship Semantics:**
+
 - **Customer ↔ Commitment:** Customers establish one or many commitments
 - **Commitment ↔ Obligation:** A commitment contains one or many obligations
 - **Obligation ↔ Fulfillment:** Each obligation is satisfied by fulfillment activity
@@ -430,32 +451,32 @@ This section illustrates which capabilities enable which value stages.
 
 ### 5.1 Customer Commitment Value Stream Enablement
 
-| Value Stage | Enabled By Capabilities |
-|-------------|-------------------------|
-| Need Expressed | Customer Engagement (Customer Need Articulation) |
-| Commitment Established | Commitment Management (Commitment Recording) |
-| Fulfillment Initiated | Commitment Fulfillment (Fulfillment Coordination) |
-| Status Confirmed | Commitment Management (Commitment State Management) |
-| Outcome Delivered | Commitment Fulfillment (Fulfillment Delivery) |
-| Value Realized | Customer Engagement (Customer Communication) |
+| Value Stage            | Enabled By Capabilities                             |
+| ---------------------- | --------------------------------------------------- |
+| Need Expressed         | Customer Engagement (Customer Need Articulation)    |
+| Commitment Established | Commitment Management (Commitment Recording)        |
+| Fulfillment Initiated  | Commitment Fulfillment (Fulfillment Coordination)   |
+| Status Confirmed       | Commitment Management (Commitment State Management) |
+| Outcome Delivered      | Commitment Fulfillment (Fulfillment Delivery)       |
+| Value Realized         | Customer Engagement (Customer Communication)        |
 
 ### 5.2 Business Oversight Value Stream Enablement
 
-| Value Stage | Enabled By Capabilities |
-|-------------|-------------------------|
+| Value Stage                 | Enabled By Capabilities                                     |
+| --------------------------- | ----------------------------------------------------------- |
 | Performance Evidence Exists | Business Performance Insight (Performance Evidence Capture) |
-| Insight Generated | Business Performance Insight (Performance Analysis) |
-| Decision Informed | Business Performance Insight (Performance Visibility) |
-| Action Enabled | Operational Continuity (Operational Response) |
+| Insight Generated           | Business Performance Insight (Performance Analysis)         |
+| Decision Informed           | Business Performance Insight (Performance Visibility)       |
+| Action Enabled              | Operational Continuity (Operational Response)               |
 
 ### 5.3 Operational Resilience Value Stream Enablement
 
-| Value Stage | Enabled By Capabilities |
-|-------------|-------------------------|
-| Condition Detected | Operational Continuity (Operational Awareness) |
-| Context Understood | Business Performance Insight (Performance Analysis) |
-| Response Coordinated | Operational Continuity (Operational Response) |
-| Continuity Preserved | Operational Continuity (Operational Integrity) |
+| Value Stage          | Enabled By Capabilities                             |
+| -------------------- | --------------------------------------------------- |
+| Condition Detected   | Operational Continuity (Operational Awareness)      |
+| Context Understood   | Business Performance Insight (Performance Analysis) |
+| Response Coordinated | Operational Continuity (Operational Response)       |
+| Continuity Preserved | Operational Continuity (Operational Integrity)      |
 
 ---
 
@@ -464,11 +485,13 @@ This section illustrates which capabilities enable which value stages.
 Business Principles guide decision-making across all architecture domains.
 
 ### 6.1 Commitment Integrity
+
 **Principle:** Every commitment made must be honored or explicitly renegotiated.
 
 **Rationale:** Stakeholder trust depends on predictable fulfillment of obligations.
 
 **Implications:**
+
 - Capabilities must support commitment state visibility
 - Exceptions must be communicated proactively
 - Fulfillment must be verifiable
@@ -476,11 +499,13 @@ Business Principles guide decision-making across all architecture domains.
 ---
 
 ### 6.2 Stakeholder Transparency
+
 **Principle:** Stakeholders maintain continuous awareness of relevant business state.
 
 **Rationale:** Informed stakeholders make better decisions and maintain confidence.
 
 **Implications:**
+
 - Performance evidence must be accessible
 - Business state must be interpretable
 - Communication must be timely and meaningful
@@ -488,11 +513,13 @@ Business Principles guide decision-making across all architecture domains.
 ---
 
 ### 6.3 Capability Stability
+
 **Principle:** Business capabilities remain stable regardless of organizational or technological change.
 
 **Rationale:** Stability enables continuity through transformation.
 
 **Implications:**
+
 - Capabilities are defined by value, not implementation
 - Organizational restructuring does not eliminate capabilities
 - Technology evolution does not redefine what the business does
@@ -500,11 +527,13 @@ Business Principles guide decision-making across all architecture domains.
 ---
 
 ### 6.4 Value-Driven Sequencing
+
 **Principle:** Value streams reflect stakeholder value accumulation, not internal process.
 
 **Rationale:** The business exists to serve stakeholders, not to execute tasks.
 
 **Implications:**
+
 - Value stages must be meaningful to stakeholders
 - Internal complexity is abstracted from value streams
 - Measurement focuses on value delivered, not activity performed
@@ -521,7 +550,7 @@ This Business Architecture conforms to TOGAF Business Architecture Domain (BDAT)
 ✅ **Value Streams** are sequential and stakeholder-oriented  
 ✅ **Value Stages** represent outcomes, not tasks or activities  
 ✅ **Information Concepts** use ubiquitous business language  
-✅ **No implementation details** are included in business definitions  
+✅ **No implementation details** are included in business definitions
 
 ### 7.2 Validation Checklist
 
@@ -549,24 +578,24 @@ This Business Architecture serves as the foundation for:
 
 ## Appendix A: Glossary
 
-| Term | Definition |
-|------|------------|
-| **Capability** | What the business must be able to do to create value |
-| **Value Stream** | Sequential representation of value delivery to a stakeholder |
-| **Value Stage** | A point in a value stream where meaningful value outcome exists |
-| **Commitment** | Binding agreement defining mutual obligations |
-| **Fulfillment** | Act of satisfying obligations within a commitment |
-| **Performance Evidence** | Recorded indication of business activity or state |
-| **Business State** | Collective condition of capabilities and operations |
-| **Stakeholder** | Party who receives or depends on business value |
+| Term                     | Definition                                                      |
+| ------------------------ | --------------------------------------------------------------- |
+| **Capability**           | What the business must be able to do to create value            |
+| **Value Stream**         | Sequential representation of value delivery to a stakeholder    |
+| **Value Stage**          | A point in a value stream where meaningful value outcome exists |
+| **Commitment**           | Binding agreement defining mutual obligations                   |
+| **Fulfillment**          | Act of satisfying obligations within a commitment               |
+| **Performance Evidence** | Recorded indication of business activity or state               |
+| **Business State**       | Collective condition of capabilities and operations             |
+| **Stakeholder**          | Party who receives or depends on business value                 |
 
 ---
 
 ## Document Control
 
-| Version | Date | Author | Changes |
-|---------|------|--------|---------|
-| 1.0 | 2026-01-08 | Enterprise Architecture | Initial TOGAF BDAT business architecture |
+| Version | Date       | Author                  | Changes                                  |
+| ------- | ---------- | ----------------------- | ---------------------------------------- |
+| 1.0     | 2026-01-08 | Enterprise Architecture | Initial TOGAF BDAT business architecture |
 
 ---
 
@@ -576,4 +605,4 @@ This Business Architecture serves as the foundation for:
 
 ---
 
-*This document describes WHAT the business must be capable of and WHY. It does not describe HOW capabilities are realized. Application, data, and technology architectures derive from this foundation.*
+_This document describes WHAT the business must be capable of and WHY. It does not describe HOW capabilities are realized. Application, data, and technology architectures derive from this foundation._
