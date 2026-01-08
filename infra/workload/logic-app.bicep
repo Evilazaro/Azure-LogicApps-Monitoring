@@ -256,28 +256,10 @@ resource workflowEngine 'Microsoft.Web/sites@2025-03-01' = {
       alwaysOn: true
       webSocketsEnabled: true
       vnetRouteAllEnabled: true
-      ipSecurityRestrictions: [
-        {
-          ipAddress: '10.0.0.0/16'
-          action: 'Allow'
-          tag: 'Default'
-          priority: 100
-          name: 'AllowVirtualNetwork'
-          description: 'Allow traffic from Virtual Network'
-        }
-      ]
-      ipSecurityRestrictionsDefaultAction: 'Deny'
-      scmIpSecurityRestrictions: [
-        {
-          ipAddress: '10.0.0.0/16'
-          action: 'Allow'
-          tag: 'Default'
-          priority: 100
-          name: 'AllowVirtualNetworkSCM'
-          description: 'Allow SCM traffic from Virtual Network'
-        }
-      ]
-      scmIpSecurityRestrictionsDefaultAction: 'Deny'
+      ipSecurityRestrictions: []
+      ipSecurityRestrictionsDefaultAction: 'Allow'
+      scmIpSecurityRestrictions: []
+      scmIpSecurityRestrictionsDefaultAction: 'Allow'
       scmIpSecurityRestrictionsUseMain: false
     }
   }
