@@ -50,6 +50,8 @@ param workspaceId string
 @minLength(50)
 param storageAccountId string
 
+param apiSubnetId string
+
 @description('Logs settings for the Log Analytics workspace')
 param logsSettings object[]
 

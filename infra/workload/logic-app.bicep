@@ -265,14 +265,6 @@ resource workflowEngine 'Microsoft.Web/sites@2025-03-01' = {
           name: 'AllowVirtualNetwork'
           description: 'Allow traffic from Virtual Network'
         }
-        {
-          vnetSubnetResourceId: apiSubnetId
-          action: 'Allow'
-          tag: 'ServiceTag'
-          priority: 200
-          name: 'AllowAzureServices'
-          description: 'Allow Azure services'
-        }
       ]
       ipSecurityRestrictionsDefaultAction: 'Deny'
       scmIpSecurityRestrictions: [

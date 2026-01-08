@@ -59,6 +59,10 @@ param workspaceCustomerId string
 @minLength(50)
 param apiSubnetId string
 
+@description('Resource ID of the Logic App subnet for Logic Apps Standard')
+@minLength(50)
+param logicappSubnetId string
+
 @description('Primary Key for Log Analytics workspace')
 param workspacePrimaryKey string
 
@@ -185,7 +189,7 @@ module workflows 'logic-app.bicep' = {
     workflowStorageAccountId: workflowStorageAccountId
     workflowStorageAccountName: workflowStorageAccountName
     serviceBusNamespace: messaging.outputs.MESSAGING_SERVICEBUSNAME
-    apiSubnetId: apiSubnetId
+    apiSubnetId: logicappSubnetId
     tags: tags
   }
 }
