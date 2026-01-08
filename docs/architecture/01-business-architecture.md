@@ -191,23 +191,23 @@ flowchart LR
 
         subgraph Strategic["Strategic Outcomes"]
             direction LR
-            SO1["Commercial<br/>Confidence"]
-            SO2["Customer<br/>Trust"]
-            SO3["Business<br/>Resilience"]
+            SO1["Commercial Confidence"]
+            SO2["Customer Trust"]
+            SO3["Business Resilience"]
         end
 
         subgraph Operational["Operational Outcomes"]
             direction LR
-            OO1["Revenue<br/>Assurance"]
-            OO2["Obligation<br/>Visibility"]
-            OO3["Commitment<br/>Transparency"]
+            OO1["Revenue Assurance"]
+            OO2["Obligation Visibility"]
+            OO3["Commitment Transparency"]
         end
 
         subgraph Foundation["Foundation Outcomes"]
             direction LR
-            FO1["Regulatory<br/>Alignment"]
-            FO2["Business<br/>Continuity"]
-            FO3["Information<br/>Confidence"]
+            FO1["Regulatory Alignment"]
+            FO2["Business Continuity"]
+            FO3["Information Confidence"]
         end
 
         Strategic --> Operational
@@ -285,37 +285,37 @@ flowchart TB
 
         subgraph Commercial["Commercial Commitment"]
             direction TB
-            CC1["Commitment<br/>Reception"]
-            CC2["Commitment<br/>Validation"]
-            CC3["Commitment<br/>Recording"]
+            CC1["Reception"]
+            CC2["Validation"]
+            CC3["Recording"]
         end
 
         subgraph Obligation["Obligation Awareness"]
             direction TB
-            OA1["Obligation<br/>Visibility"]
-            OA2["Obligation<br/>Status"]
-            OA3["Obligation<br/>History"]
+            OA1["Visibility"]
+            OA2["Status"]
+            OA3["History"]
         end
 
         subgraph Customer["Customer Interaction"]
             direction TB
-            CI1["Commitment<br/>Initiation"]
-            CI2["Obligation<br/>Inquiry"]
-            CI3["Customer<br/>Guidance"]
+            CI1["Initiation"]
+            CI2["Inquiry"]
+            CI3["Guidance"]
         end
 
         subgraph Information["Business Information"]
             direction TB
-            BI1["Information<br/>Structure"]
-            BI2["Information<br/>Persistence"]
-            BI3["Information<br/>Retrieval"]
+            BI1["Structure"]
+            BI2["Persistence"]
+            BI3["Retrieval"]
         end
 
         subgraph Continuity["Business Continuity"]
             direction TB
-            BC1["Capability<br/>Availability"]
-            BC2["Business<br/>Evidence"]
-            BC3["Capacity<br/>Assurance"]
+            BC1["Availability"]
+            BC2["Evidence"]
+            BC3["Capacity"]
         end
     end
 
@@ -449,22 +449,22 @@ flowchart LR
 
         subgraph Intent["Commercial Intent"]
             direction TB
-            CI["Customer<br/>Intent<br/>Existence"]
+            CI["Customer Intent"]
         end
 
         subgraph Commitment["Commercial Commitment"]
             direction TB
-            CC["Validated<br/>Commitment<br/>Evidence"]
+            CC["Validated Commitment"]
         end
 
         subgraph Obligation["Business Obligation"]
             direction TB
-            BO["Fulfillment<br/>Obligation<br/>Awareness"]
+            BO["Fulfillment Obligation"]
         end
 
         subgraph Assurance["Revenue Assurance"]
             direction TB
-            RA["Revenue<br/>Recognition<br/>Confidence"]
+            RA["Revenue Confidence"]
         end
 
         Intent --> Commitment
@@ -552,19 +552,19 @@ flowchart TB
 
         subgraph Context["Decision Context"]
             direction LR
-            DC["Customer Purchase<br/>Intent Exists"]
+            DC["Purchase Intent"]
         end
 
         subgraph Intent["Business Intent"]
             direction TB
-            BI["Commitment<br/>Quality<br/>Assurance"]
+            BI["Quality Assurance"]
         end
 
         subgraph Outcomes["Possible Business States"]
             direction TB
-            O1["Commitment<br/>Accepted<br/>State"]
-            O2["Commitment<br/>Declined<br/>State"]
-            O3["Commitment<br/>Deferred<br/>State"]
+            O1["Accepted"]
+            O2["Declined"]
+            O3["Deferred"]
         end
 
         Context --> Intent
@@ -643,26 +643,26 @@ flowchart TB
 
         subgraph Commitment_Context["Commitment Decision Domain"]
             direction TB
-            CD1["Commitment<br/>Acceptance"]
-            CD2["Commitment<br/>Quality"]
+            CD1["Acceptance"]
+            CD2["Quality"]
         end
 
         subgraph Obligation_Context["Obligation Decision Domain"]
             direction TB
-            OD1["Obligation<br/>Priority"]
-            OD2["Obligation<br/>Visibility"]
+            OD1["Priority"]
+            OD2["Visibility"]
         end
 
         subgraph Customer_Context["Customer Decision Domain"]
             direction TB
-            CUD1["Inquiry<br/>Response"]
-            CUD2["Information<br/>Disclosure"]
+            CUD1["Response"]
+            CUD2["Disclosure"]
         end
 
         subgraph Business_Foundation["Business Foundation"]
             direction LR
-            BF1["Business<br/>Policy"]
-            BF2["Business<br/>Information"]
+            BF1["Policy"]
+            BF2["Information"]
         end
 
         Business_Foundation --> Commitment_Context
@@ -764,23 +764,23 @@ flowchart TB
 
         subgraph Regulatory["Regulatory Policy Domain"]
             direction LR
-            RP1["Compliance<br/>Boundary"]
-            RP2["Retention<br/>Obligation"]
-            RP3["Privacy<br/>Boundary"]
+            RP1["Compliance"]
+            RP2["Retention"]
+            RP3["Privacy"]
         end
 
         subgraph Operational["Operational Policy Domain"]
             direction LR
-            OP1["Commitment<br/>Standard"]
-            OP2["Priority<br/>Policy"]
-            OP3["Availability<br/>Assurance"]
+            OP1["Standards"]
+            OP2["Priority"]
+            OP3["Availability"]
         end
 
         subgraph Quality["Quality Policy Domain"]
             direction LR
-            QP1["Information<br/>Accuracy"]
-            QP2["Evidence<br/>Completeness"]
-            QP3["Customer<br/>Trust"]
+            QP1["Accuracy"]
+            QP2["Completeness"]
+            QP3["Trust"]
         end
 
         Regulatory --> Operational
@@ -928,13 +928,13 @@ flowchart TB
             History["Obligation History"]
         end
 
-        Customer -->|Initiates| Order
-        Order -->|Contains| Product
-        Order -->|Establishes| Obligation
-        Obligation -->|Has| Status
-        Obligation -->|Has| Priority
-        Order -->|Documented by| Evidence
-        Obligation -->|Documented by| History
+        Customer --> Order
+        Order --> Product
+        Order --> Obligation
+        Obligation --> Status
+        Obligation --> Priority
+        Order --> Evidence
+        Obligation --> History
     end
 
     classDef level1 fill:#f5f5f5,stroke:#616161,stroke-width:3px
