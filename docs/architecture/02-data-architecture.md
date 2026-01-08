@@ -44,7 +44,7 @@ flowchart LR
         direction TB
         OrderDb[("OrderDb<br/>Azure SQL<br/>ACID transactions")]
         EventStore["ordersplaced<br/>Service Bus Topic<br/><i>14-day TTL</i>"]
-        WorkflowState["Workflow State<br/>Azure Storage<br/><i>File shares</i>")]
+        WorkflowState["Workflow State<br/>Azure Storage<br/><i>File shares</i>"]
         AppInsights["App Insights<br/><i>90-day retention</i>"]
         LogAnalytics["Log Analytics<br/><i>30-day retention</i>"]
     end
