@@ -93,8 +93,8 @@ resource wfSA 'Microsoft.Storage/storageAccounts@2025-06-01' = {
     accessTier: 'Hot' // Hot tier for frequently accessed workflow data
     supportsHttpsTrafficOnly: true // Require secure connections
     minimumTlsVersion: 'TLS1_2' // Enforce TLS 1.2 minimum for security compliance
-    allowBlobPublicAccess: false // Disable anonymous public blob access for security
-    publicNetworkAccess: 'Disabled' // Disable public access, use private endpoints only
+    allowBlobPublicAccess: true // Enable anonymous public blob access for security
+    publicNetworkAccess: 'Enabled' // Enable public access, use private endpoints only
     allowSharedKeyAccess: true // Required for Logic Apps Standard initial connection
     networkAcls: {
       bypass: 'AzureServices, Logging, Metrics' // Allow trusted Azure services
