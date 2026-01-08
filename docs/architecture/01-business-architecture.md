@@ -278,9 +278,11 @@ Each capability represents a fundamental business ability that:
 
 ### Level 2 Capability Decomposition
 
+#### Core Business Capabilities
+
 ```mermaid
 flowchart TB
-    subgraph Business_Capabilities["eShop Business Capability Model"]
+    subgraph Core_Capabilities["Core Business Capabilities"]
         direction TB
 
         subgraph Commercial["Commercial Commitment"]
@@ -303,6 +305,23 @@ flowchart TB
             CI2["Inquiry"]
             CI3["Guidance"]
         end
+    end
+
+    classDef level1 fill:#f5f5f5,stroke:#616161,stroke-width:3px
+    classDef level2 fill:#e3f2fd,stroke:#1976d2,stroke-width:2px
+    classDef level3 fill:#ffffff,stroke:#90caf9,stroke-width:1px
+
+    class Core_Capabilities level1
+    class Commercial,Obligation,Customer level2
+    class CC1,CC2,CC3,OA1,OA2,OA3,CI1,CI2,CI3 level3
+```
+
+#### Enabling Capabilities
+
+```mermaid
+flowchart TB
+    subgraph Enabling_Capabilities["Enabling Capabilities"]
+        direction TB
 
         subgraph Information["Business Information"]
             direction TB
@@ -323,9 +342,9 @@ flowchart TB
     classDef level2 fill:#e3f2fd,stroke:#1976d2,stroke-width:2px
     classDef level3 fill:#ffffff,stroke:#90caf9,stroke-width:1px
 
-    class Business_Capabilities level1
-    class Commercial,Obligation,Customer,Information,Continuity level2
-    class CC1,CC2,CC3,OA1,OA2,OA3,CI1,CI2,CI3,BI1,BI2,BI3,BC1,BC2,BC3 level3
+    class Enabling_Capabilities level1
+    class Information,Continuity level2
+    class BI1,BI2,BI3,BC1,BC2,BC3 level3
 ```
 
 ### Capability Detail
