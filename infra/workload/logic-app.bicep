@@ -255,7 +255,6 @@ resource workflowEngine 'Microsoft.Web/sites@2025-03-01' = {
     siteConfig: {
       alwaysOn: true
       webSocketsEnabled: true
-      vnetRouteAllEnabled: true
       ipSecurityRestrictions: []
       ipSecurityRestrictionsDefaultAction: 'Allow'
       scmIpSecurityRestrictions: []

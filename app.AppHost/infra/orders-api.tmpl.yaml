@@ -13,7 +13,7 @@ properties:
       dotnet:
         autoConfigureDataProtection: true
     ingress:
-      external: false
+      external: true
       targetPort: {{ targetPortOrDefault 8080 }}
       transport: http
       allowInsecure: true
@@ -65,7 +65,7 @@ properties:
           - name: ConnectionStrings__messaging
             secretRef: connectionstrings--messaging
     scale:
-      minReplicas: 1
+      minReplicas: 10
 tags:
   azd-service-name: orders-api
   aspire-resource-name: orders-api

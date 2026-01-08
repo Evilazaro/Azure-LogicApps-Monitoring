@@ -17,6 +17,8 @@ properties:
       targetPort: {{ targetPortOrDefault 8080 }}
       transport: http
       allowInsecure: false
+      stickySessions:
+        affinity: sticky
     registries:
       - server: {{ .Env.AZURE_CONTAINER_REGISTRY_ENDPOINT }}
         identity: {{ .Env.AZURE_CONTAINER_REGISTRY_MANAGED_IDENTITY_ID }}
@@ -51,7 +53,7 @@ properties:
           - name: APPLICATIONINSIGHTS_CONNECTION_STRING
             secretRef: applicationinsights-connection-string
     scale:
-      minReplicas: 1
+      minReplicas: 5
 tags:
   azd-service-name: web-app
   aspire-resource-name: web-app
