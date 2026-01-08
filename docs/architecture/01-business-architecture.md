@@ -107,13 +107,13 @@ Implementing structured order management capabilities enables the business to:
 
 ### Strategic Business Goals
 
-| Goal ID   | Business Goal                     | Business Outcome                       | KPI                                                                       |
-| --------- | --------------------------------- | -------------------------------------- | ------------------------------------------------------------------------- |
-| **BG-01** | Deliver reliable order acceptance | Customers trust order submission       | Order acceptance rate > 99%, Customer satisfaction score > 4.5/5          |
-| **BG-02** | Enable complete order fulfillment | Orders progress to completion          | Order completion rate > 95%, Time to fulfillment < SLA                    |
-| **BG-03** | Provide operational transparency  | Stakeholders understand business state | Exception resolution time < target, Audit readiness score = 100%          |
-| **BG-04** | Ensure regulatory compliance      | Business meets legal obligations       | Audit trail completeness = 100%, Retention compliance = 100%              |
-| **BG-05** | Support business growth           | Order capacity scales with demand      | Order handling capacity growth > revenue growth, Cost per order declining |
+| Goal ID   | Business Goal                     | Business Outcome                       | KPI                                                                      |
+| --------- | --------------------------------- | -------------------------------------- | ------------------------------------------------------------------------ |
+| **BG-01** | Deliver reliable order acceptance | Customers trust order submission       | Customers confident in order acceptance, Customer satisfaction sustained |
+| **BG-02** | Enable complete order fulfillment | Orders progress to completion          | Orders reach completion, Fulfillment within customer expectations        |
+| **BG-03** | Provide operational transparency  | Stakeholders understand business state | Exceptions addressed promptly, Audit readiness maintained                |
+| **BG-04** | Ensure regulatory compliance      | Business meets legal obligations       | Audit trails complete, Retention obligations met                         |
+| **BG-05** | Support business growth           | Order capacity scales with demand      | Capacity grows with business, Efficiency improves with scale             |
 
 ### Derived Business Objectives
 
@@ -137,47 +137,42 @@ flowchart TB
     subgraph "Order Management Business Capabilities"
         direction TB
 
-        subgraph CORE["Core Customer-Facing Capabilities"]
+        subgraph CORE["Core Customer Capabilities"]
             OA[Order Acceptance]
             OI[Order Inquiry]
-            ON[Order Notification]
+            CS[Customer Service]
         end
 
         subgraph FULFILLMENT["Order Fulfillment Capabilities"]
-            OF[Order Fulfillment Coordination]
-            OS[Order Status Management]
+            OF[Order Fulfillment]
             OC[Order Completion]
         end
 
-        subgraph EXCEPTION["Exception Management Capabilities"]
-            EI[Exception Identification]
+        subgraph EXCEPTION["Exception Handling Capabilities"]
             ER[Exception Resolution]
-            EC[Exception Communication]
         end
 
         subgraph GOVERNANCE["Governance and Compliance Capabilities"]
-            AR[Audit Record Management]
+            RR[Record Retention]
             RC[Regulatory Compliance]
-            DG[Data Governance]
+            DS[Data Stewardship]
         end
 
         subgraph INTELLIGENCE["Business Intelligence Capabilities"]
-            BO[Business Outcome Reporting]
-            PA[Performance Analysis]
-            TD[Trend Detection]
+            BP[Business Intelligence Provision]
         end
     end
 
     classDef bizCap fill:#e3f2fd,stroke:#0277bd,stroke-width:2px,color:#01579b
     classDef boundary fill:#fff3e0,stroke:#f57c00,stroke-width:2px,color:#e65100
 
-    class OA,OI,ON,OF,OS,OC,EI,ER,EC,AR,RC,DG,BO,PA,TD bizCap
+    class OA,OI,CS,OF,OC,ER,RR,RC,DS,BP bizCap
     class CORE,FULFILLMENT,EXCEPTION,GOVERNANCE,INTELLIGENCE boundary
 ```
 
 ### Capability Definitions
 
-#### Core Customer-Facing Capabilities
+#### Core Customer Capabilities
 
 **Order Acceptance**
 
@@ -191,91 +186,61 @@ flowchart TB
 - **Business Value:** Builds customer trust and reduces support burden
 - **Maturity Level:** Established
 
-**Order Notification**
+**Customer Service**
 
-- **Definition:** Communicate order status changes to relevant stakeholders
-- **Business Value:** Maintains customer confidence and enables proactive management
-- **Maturity Level:** Developing
+- **Definition:** Serve customers throughout the order lifecycle
+- **Business Value:** Maintains customer satisfaction and loyalty
+- **Maturity Level:** Established
 
 #### Order Fulfillment Capabilities
 
-**Order Fulfillment Coordination**
+**Order Fulfillment**
 
-- **Definition:** Coordinate activities required to complete order obligations
-- **Business Value:** Ensures orders progress toward completion
-- **Maturity Level:** Established
-
-**Order Status Management**
-
-- **Definition:** Track and manage order progression through business states
-- **Business Value:** Enables visibility and decision-making
+- **Definition:** Fulfill customer orders according to business commitments
+- **Business Value:** Delivers customer value and realizes revenue
 - **Maturity Level:** Established
 
 **Order Completion**
 
-- **Definition:** Finalize order records and confirm business obligations met
-- **Business Value:** Closes revenue cycle and enables measurement
+- **Definition:** Complete orders and confirm business obligations met
+- **Business Value:** Closes revenue cycle and satisfies customer expectations
 - **Maturity Level:** Established
 
-#### Exception Management Capabilities
-
-**Exception Identification**
-
-- **Definition:** Recognize orders requiring special attention or resolution
-- **Business Value:** Prevents customer impact and revenue loss
-- **Maturity Level:** Developing
+#### Exception Handling Capabilities
 
 **Exception Resolution**
 
-- **Definition:** Address order exceptions to enable continued fulfillment
+- **Definition:** Resolve order exceptions to enable continued fulfillment
 - **Business Value:** Recovers revenue and maintains customer satisfaction
 - **Maturity Level:** Developing
 
-**Exception Communication**
-
-- **Definition:** Inform stakeholders of exceptions requiring action or awareness
-- **Business Value:** Enables coordinated resolution and customer communication
-- **Maturity Level:** Initial
-
 #### Governance and Compliance Capabilities
 
-**Audit Record Management**
+**Record Retention**
 
-- **Definition:** Maintain complete, immutable records of business transactions
-- **Business Value:** Supports compliance and business intelligence
+- **Definition:** Retain business records according to regulatory and business requirements
+- **Business Value:** Supports compliance and business continuity
 - **Maturity Level:** Established
 
 **Regulatory Compliance**
 
-- **Definition:** Ensure business operations meet legal and regulatory requirements
-- **Business Value:** Reduces business risk and maintains operating license
+- **Definition:** Comply with legal and regulatory requirements
+- **Business Value:** Maintains operating license and reduces business risk
 - **Maturity Level:** Established
 
-**Data Governance**
+**Data Stewardship**
 
-- **Definition:** Manage information quality, lifecycle, and access
-- **Business Value:** Ensures trustworthy business decisions and compliance
+- **Definition:** Steward business information as a strategic asset
+- **Business Value:** Enables trustworthy business decisions and protects customer data
 - **Maturity Level:** Developing
 
 #### Business Intelligence Capabilities
 
-**Business Outcome Reporting**
+**Business Intelligence Provision**
 
-- **Definition:** Provide stakeholders with business performance information
-- **Business Value:** Enables informed strategic decisions
+- **Definition:** Provide business intelligence to support strategic and operational decisions
+- **Business Value:** Enables informed decision-making and business improvement
 - **Maturity Level:** Developing
-
-**Performance Analysis**
-
-- **Definition:** Analyze business outcomes to identify improvement opportunities
-- **Business Value:** Drives operational excellence
-- **Maturity Level:** Initial
-
-**Trend Detection**
-
-- **Definition:** Identify patterns in business outcomes requiring attention
-- **Business Value:** Enables proactive business management
-- **Maturity Level:** Initial
 
 ---
 
@@ -291,13 +256,13 @@ flowchart LR
     V1[Order Intent Expressed]
     V2[Order Accepted]
     V3[Order Confirmed]
-    V4[Order Fulfilled]
-    V5[Order Completed]
+    V4[Customer Need Satisfied]
+    V5[Revenue Realized]
 
-    V1 -->|Customer value realized: Confidence| V2
-    V2 -->|Customer value realized: Commitment| V3
-    V3 -->|Customer value realized: Progress| V4
-    V4 -->|Customer value realized: Satisfaction| V5
+    V1 -->|Customer value: Confidence| V2
+    V2 -->|Customer value: Commitment| V3
+    V3 -->|Customer value: Progress| V4
+    V4 -->|Business value: Revenue| V5
 
     classDef value fill:#e8f5e9,stroke:#388e3c,stroke-width:3px,color:#1b5e20
     class V1,V2,V3,V4,V5 value
@@ -313,26 +278,26 @@ flowchart LR
 
 2. **Order Accepted**
 
-   - **Value:** Business has confirmed ability to fulfill
+   - **Value:** Business commitment established
    - **Stakeholder:** Customer, Business
-   - **Outcome:** Binding business commitment established
+   - **Outcome:** Binding business obligation in place
 
 3. **Order Confirmed**
 
-   - **Value:** Order details validated and fulfillment initiated
+   - **Value:** Order accuracy assured
    - **Stakeholder:** Customer, Fulfillment
-   - **Outcome:** Customer confidence in order accuracy
+   - **Outcome:** Customer confidence in order details
 
-4. **Order Fulfilled**
+4. **Customer Need Satisfied**
 
-   - **Value:** Customer receives ordered products
+   - **Value:** Customer possesses ordered products
    - **Stakeholder:** Customer
-   - **Outcome:** Customer need satisfied
+   - **Outcome:** Customer need met
 
-5. **Order Completed**
-   - **Value:** Business obligations met and recorded
+5. **Revenue Realized**
+   - **Value:** Business revenue recognized and obligations discharged
    - **Stakeholder:** Business, Compliance
-   - **Outcome:** Revenue realized, compliance achieved
+   - **Outcome:** Business value captured
 
 ### Secondary Value Stream: Exception Resolution
 
@@ -341,12 +306,12 @@ flowchart LR
 flowchart LR
     E1[Exception Recognized]
     E2[Exception Understood]
-    E3[Exception Resolved]
-    E4[Order Recovered]
+    E3[Order Continuity Assured]
+    E4[Revenue Protected]
 
     E1 -->|Business value: Awareness| E2
     E2 -->|Business value: Context| E3
-    E3 -->|Business value: Continuity| E4
+    E3 -->|Business value: Preservation| E4
 
     classDef value fill:#fff3e0,stroke:#f57c00,stroke-width:3px,color:#e65100
     class E1,E2,E3,E4 value
@@ -356,26 +321,26 @@ flowchart LR
 
 1. **Exception Recognized**
 
-   - **Value:** Business aware of order requiring attention
+   - **Value:** Business awareness of order requiring attention
    - **Stakeholder:** Operations
-   - **Outcome:** Exception not overlooked
+   - **Outcome:** Exception visibility established
 
 2. **Exception Understood**
 
-   - **Value:** Business understands exception context and impact
+   - **Value:** Business understanding of exception context and impact
    - **Stakeholder:** Operations, Customer Service
-   - **Outcome:** Informed resolution possible
+   - **Outcome:** Resolution path clear
 
-3. **Exception Resolved**
+3. **Order Continuity Assured**
 
-   - **Value:** Exception addressed and order can continue
+   - **Value:** Order path to fulfillment restored
    - **Stakeholder:** Customer, Operations
    - **Outcome:** Customer impact minimized
 
-4. **Order Recovered**
-   - **Value:** Order returned to normal fulfillment path
+4. **Revenue Protected**
+   - **Value:** Business revenue preserved through exception handling
    - **Stakeholder:** Customer, Business
-   - **Outcome:** Revenue preserved, customer satisfaction maintained
+   - **Outcome:** Revenue and customer satisfaction maintained
 
 ---
 
@@ -401,16 +366,17 @@ flowchart TB
     P4[Confirm Acceptance to Customer]
     P5[Record Order for Fulfillment]
 
-    End([Order Accepted])
+    End1([Order Accepted])
+    End2([Awaiting Customer Response])
 
     Start --> P1
     P1 --> D1
     D1 -->|No| P2
-    P2 --> P1
+    P2 --> End2
     D1 -->|Yes| P3
     P3 --> P4
     P4 --> P5
-    P5 --> End
+    P5 --> End1
 
     classDef process fill:#e1f5fe,stroke:#0277bd,stroke-width:2px,color:#01579b
     classDef decision fill:#fff3e0,stroke:#f57c00,stroke-width:2px,color:#e65100
@@ -418,14 +384,14 @@ flowchart TB
 
     class P1,P2,P3,P4,P5 process
     class D1 decision
-    class Start,End terminal
+    class Start,End1,End2 terminal
 ```
 
 **Process Steps:**
 
 1. **Receive Order:** Capture customer order intent and details
 2. **Decision: Order Complete?** Determine if order contains all required information
-3. **Request Additional Information:** Obtain missing details from customer (if needed)
+3. **Request Additional Information:** Obtain missing details from customer (process waits for customer response as separate business event)
 4. **Accept Order:** Commit business to fulfill order
 5. **Confirm Acceptance to Customer:** Communicate business commitment to customer
 6. **Record Order for Fulfillment:** Make order available to fulfillment functions
@@ -442,40 +408,38 @@ flowchart TB
     Start([Order Accepted])
 
     P1[Confirm Order Details]
-    P2[Coordinate Fulfillment Activities]
+    P2[Fulfill Order]
     D1{Fulfillment Complete?}
-    P3[Update Order Status]
-    P4[Finalize Order]
-    P5[Notify Customer of Completion]
+    P3[Finalize Order]
+    P4[Notify Customer]
 
-    End([Order Completed])
+    End1([Order Completed])
+    End2([Order In Fulfillment])
 
     Start --> P1
     P1 --> P2
     P2 --> D1
-    D1 -->|No| P3
-    P3 --> P2
-    D1 -->|Yes| P4
-    P4 --> P5
-    P5 --> End
+    D1 -->|No| End2
+    D1 -->|Yes| P3
+    P3 --> P4
+    P4 --> End1
 
     classDef process fill:#e1f5fe,stroke:#0277bd,stroke-width:2px,color:#01579b
     classDef decision fill:#fff3e0,stroke:#f57c00,stroke-width:2px,color:#e65100
     classDef terminal fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px,color:#4a148c
 
-    class P1,P2,P3,P4,P5 process
+    class P1,P2,P3,P4 process
     class D1 decision
-    class Start,End terminal
+    class Start,End1,End2 terminal
 ```
 
 **Process Steps:**
 
 1. **Confirm Order Details:** Verify order information is accurate and complete
-2. **Coordinate Fulfillment Activities:** Direct activities required for order completion
+2. **Fulfill Order:** Execute fulfillment of customer order
 3. **Decision: Fulfillment Complete?** Determine if order obligations are met
-4. **Update Order Status:** Record fulfillment progress (if not complete)
-5. **Finalize Order:** Complete order record and close fulfillment cycle
-6. **Notify Customer of Completion:** Inform customer of successful fulfillment
+4. **Finalize Order:** Complete order record and close fulfillment cycle
+5. **Notify Customer:** Inform customer of successful fulfillment
 
 ### Process 3: Exception Resolution Process
 
@@ -762,47 +726,47 @@ Non-functional requirements define quality attributes and constraints from a bus
 
 ### Customer Experience Requirements
 
-| Req ID      | Requirement                                                       | Business Rationale                                         | Measurement                                                    |
-| ----------- | ----------------------------------------------------------------- | ---------------------------------------------------------- | -------------------------------------------------------------- |
-| **NFR-001** | Order acceptance must be confirmed with customer-acceptable speed | Maintain customer confidence and reduce abandonment        | Customer satisfaction, acceptance confirmation time within SLA |
-| **NFR-002** | Order status must be available to customers on demand             | Enable customer self-service and reduce support burden     | Status query success rate, customer inquiry frequency          |
-| **NFR-003** | Exception notifications must be proactive                         | Minimize customer surprise and enable timely communication | Notification timeliness, customer awareness of exceptions      |
-| **NFR-004** | Order inquiry must provide complete, accurate information         | Build customer trust and reduce support escalations        | Inquiry accuracy rate, support contact rate                    |
+| Req ID      | Requirement                                                       | Business Rationale                                         | Measurement                                           |
+| ----------- | ----------------------------------------------------------------- | ---------------------------------------------------------- | ----------------------------------------------------- |
+| **NFR-001** | Order acceptance must be confirmed with customer-acceptable speed | Maintain customer confidence and reduce abandonment        | Customer confidence maintained, Abandonment minimized |
+| **NFR-002** | Order status must be available to customers on demand             | Enable customer self-service and reduce support burden     | Customer self-service enabled, Support burden reduced |
+| **NFR-003** | Exception notifications must be proactive                         | Minimize customer surprise and enable timely communication | Customer awareness sustained, Communication timely    |
+| **NFR-004** | Order inquiry must provide complete, accurate information         | Build customer trust and reduce support escalations        | Customer trust maintained, Escalations minimized      |
 
 ### Operational Excellence Requirements
 
-| Req ID      | Requirement                                                            | Business Rationale                                 | Measurement                                                 |
-| ----------- | ---------------------------------------------------------------------- | -------------------------------------------------- | ----------------------------------------------------------- |
-| **NFR-005** | Exception resolution must occur within business-acceptable timeframes  | Minimize customer impact and revenue loss          | Mean time to resolution, exception age distribution         |
-| **NFR-006** | Order fulfillment coordination must handle business volume efficiently | Control operational costs and enable profitability | Cost per order, fulfillment capacity utilization            |
-| **NFR-007** | Business outcomes must be visible to stakeholders in near-real-time    | Enable timely decisions and proactive management   | Report timeliness, stakeholder satisfaction with visibility |
-| **NFR-008** | Exception patterns must be identifiable for improvement                | Support continuous operational improvement         | Exception trend identification, improvement action rate     |
+| Req ID      | Requirement                                                            | Business Rationale                                 | Measurement                                                         |
+| ----------- | ---------------------------------------------------------------------- | -------------------------------------------------- | ------------------------------------------------------------------- |
+| **NFR-005** | Exception resolution must occur within business-acceptable timeframes  | Minimize customer impact and revenue loss          | Customer impact minimized, Revenue protected                        |
+| **NFR-006** | Order fulfillment coordination must handle business volume efficiently | Control operational costs and enable profitability | Operational costs controlled, Profitability maintained              |
+| **NFR-007** | Business outcomes must be visible to stakeholders in near-real-time    | Enable timely decisions and proactive management   | Stakeholder decision-making enabled, Proactive management supported |
+| **NFR-008** | Exception patterns must be identifiable for improvement                | Support continuous operational improvement         | Improvement opportunities identified, Actions prioritized           |
 
 ### Compliance and Governance Requirements
 
-| Req ID      | Requirement                                                | Business Rationale                                   | Measurement                                              |
-| ----------- | ---------------------------------------------------------- | ---------------------------------------------------- | -------------------------------------------------------- |
-| **NFR-009** | Audit records must be complete and immutable               | Ensure regulatory compliance and support examination | Audit trail completeness, immutability verification      |
-| **NFR-010** | Order records must be retained per regulatory requirements | Meet legal obligations and avoid penalties           | Retention compliance rate, records accessible per policy |
-| **NFR-011** | Customer data must be protected throughout order lifecycle | Maintain customer trust and regulatory compliance    | Data protection compliance, privacy incident rate        |
-| **NFR-012** | Business policies must be enforced consistently            | Ensure predictable business behavior and compliance  | Policy adherence rate, exception policy variance         |
+| Req ID      | Requirement                                                | Business Rationale                                   | Measurement                                                 |
+| ----------- | ---------------------------------------------------------- | ---------------------------------------------------- | ----------------------------------------------------------- |
+| **NFR-009** | Audit records must be complete and immutable               | Ensure regulatory compliance and support examination | Audit integrity assured, Examination readiness maintained   |
+| **NFR-010** | Order records must be retained per regulatory requirements | Meet legal obligations and avoid penalties           | Retention obligations met, Regulatory confidence maintained |
+| **NFR-011** | Customer data must be protected throughout order lifecycle | Maintain customer trust and regulatory compliance    | Data protection assured, Customer trust preserved           |
+| **NFR-012** | Business policies must be enforced consistently            | Ensure predictable business behavior and compliance  | Policy adherence sustained, Business predictability assured |
 
 ### Business Continuity Requirements
 
-| Req ID      | Requirement                                                                    | Business Rationale                                 | Measurement                                                          |
-| ----------- | ------------------------------------------------------------------------------ | -------------------------------------------------- | -------------------------------------------------------------------- |
-| **NFR-013** | Order acceptance must remain available during business hours                   | Prevent revenue loss and customer frustration      | Acceptance availability percentage, revenue impact of unavailability |
-| **NFR-014** | Order information must be protected from loss                                  | Ensure business continuity and customer confidence | Data loss incidents, recovery success rate                           |
-| **NFR-015** | Business operations must recover from disruptions within acceptable timeframes | Minimize business impact and customer disruption   | Recovery time, business impact of disruptions                        |
-| **NFR-016** | Critical business functions must continue during partial disruptions           | Maintain revenue and customer service              | Function availability during degradation, customer impact            |
+| Req ID      | Requirement                                                                    | Business Rationale                                 | Measurement                                                   |
+| ----------- | ------------------------------------------------------------------------------ | -------------------------------------------------- | ------------------------------------------------------------- |
+| **NFR-013** | Order acceptance must remain available during business hours                   | Prevent revenue loss and customer frustration      | Revenue protected, Customer access assured                    |
+| **NFR-014** | Order information must be protected from loss                                  | Ensure business continuity and customer confidence | Business continuity maintained, Customer confidence preserved |
+| **NFR-015** | Business operations must recover from disruptions within acceptable timeframes | Minimize business impact and customer disruption   | Business impact minimized, Customer disruption limited        |
+| **NFR-016** | Critical business functions must continue during partial disruptions           | Maintain revenue and customer service              | Revenue maintained, Customer service sustained                |
 
 ### Scalability and Growth Requirements
 
 | Req ID      | Requirement                                                       | Business Rationale                                          | Measurement                                                       |
 | ----------- | ----------------------------------------------------------------- | ----------------------------------------------------------- | ----------------------------------------------------------------- |
-| **NFR-017** | Order handling capacity must scale with business volume           | Support business growth without proportional cost increases | Capacity headroom, cost per order trend                           |
-| **NFR-018** | New business requirements must be accommodated without disruption | Enable business agility and competitive response            | Time to capability deployment, business disruption during changes |
-| **NFR-019** | Business intelligence must scale with information volume          | Maintain decision quality as business grows                 | Report performance at scale, stakeholder satisfaction             |
+| **NFR-017** | Order handling capacity must scale with business volume           | Support business growth without proportional cost increases | Business growth supported, Efficiency gains realized              |
+| **NFR-018** | New business requirements must be accommodated without disruption | Enable business agility and competitive response            | Business agility maintained, Competitive responsiveness sustained |
+| **NFR-019** | Business intelligence must scale with information volume          | Maintain decision quality as business grows                 | Decision quality sustained, Stakeholder confidence maintained     |
 
 ---
 
@@ -812,49 +776,48 @@ This matrix ensures architectural alignment from business goals through executio
 
 ### Goals to Capabilities Mapping
 
-| Goal                                  | Capabilities Required                                                                           | Capability Maturity                    | Investment Priority |
-| ------------------------------------- | ----------------------------------------------------------------------------------------------- | -------------------------------------- | ------------------- |
-| **BG-01: Reliable Order Acceptance**  | Order Acceptance, Order Notification, Exception Communication                                   | Established / Developing / Initial     | High                |
-| **BG-02: Complete Order Fulfillment** | Order Fulfillment Coordination, Order Status Management, Order Completion, Exception Resolution | Established / Developing               | High                |
-| **BG-03: Operational Transparency**   | Business Outcome Reporting, Performance Analysis, Audit Record Management                       | Developing / Initial / Established     | Medium              |
-| **BG-04: Regulatory Compliance**      | Audit Record Management, Regulatory Compliance, Data Governance                                 | Established / Established / Developing | High                |
-| **BG-05: Business Growth**            | All capabilities require scalability                                                            | Varies                                 | Medium              |
+| Goal                                  | Capabilities Required                                     | Capability Maturity                    | Investment Priority |
+| ------------------------------------- | --------------------------------------------------------- | -------------------------------------- | ------------------- |
+| **BG-01: Reliable Order Acceptance**  | Order Acceptance, Customer Service                        | Established / Established              | High                |
+| **BG-02: Complete Order Fulfillment** | Order Fulfillment, Order Completion, Exception Resolution | Established / Established / Developing | High                |
+| **BG-03: Operational Transparency**   | Business Intelligence Provision, Record Retention         | Developing / Established               | Medium              |
+| **BG-04: Regulatory Compliance**      | Record Retention, Regulatory Compliance, Data Stewardship | Established / Established / Developing | High                |
+| **BG-05: Business Growth**            | All capabilities require scalability                      | Varies                                 | Medium              |
 
 ### Capabilities to Value Streams Mapping
 
-| Capability                     | Primary Value Stream       | Value Stage Enabled                                         |
-| ------------------------------ | -------------------------- | ----------------------------------------------------------- |
-| Order Acceptance               | Customer Order Fulfillment | Order Intent Expressed → Order Accepted                     |
-| Order Fulfillment Coordination | Customer Order Fulfillment | Order Accepted → Order Fulfilled                            |
-| Order Completion               | Customer Order Fulfillment | Order Fulfilled → Order Completed                           |
-| Exception Identification       | Exception Resolution       | Exception Recognized                                        |
-| Exception Resolution           | Exception Resolution       | Exception Recognized → Exception Resolved → Order Recovered |
-| Audit Record Management        | Both                       | Supports all stages with compliance evidence                |
+| Capability           | Primary Value Stream       | Value Stage Enabled                                         |
+| -------------------- | -------------------------- | ----------------------------------------------------------- |
+| Order Acceptance     | Customer Order Fulfillment | Order Intent Expressed → Order Accepted                     |
+| Order Fulfillment    | Customer Order Fulfillment | Order Accepted → Order Fulfilled                            |
+| Order Completion     | Customer Order Fulfillment | Order Fulfilled → Order Completed                           |
+| Exception Resolution | Exception Resolution       | Exception Recognized → Exception Resolved → Order Recovered |
+| Record Retention     | Both                       | Supports all stages with compliance evidence                |
 
 ### Value Streams to Processes Mapping
 
-| Value Stream                   | Business Processes Required                                      |
-| ------------------------------ | ---------------------------------------------------------------- |
-| **Customer Order Fulfillment** | Order Acceptance Process, Order Fulfillment Coordination Process |
-| **Exception Resolution**       | Exception Resolution Process                                     |
+| Value Stream                   | Business Processes Required                         |
+| ------------------------------ | --------------------------------------------------- |
+| **Customer Order Fulfillment** | Order Acceptance Process, Order Fulfillment Process |
+| **Exception Resolution**       | Exception Resolution Process                        |
 
 ### Processes to Business Rules Mapping
 
-| Process                                    | Governing Business Rules       |
-| ------------------------------------------ | ------------------------------ |
-| **Order Acceptance Process**               | BR-001, BR-002, BR-003, BR-004 |
-| **Order Fulfillment Coordination Process** | BR-005, BR-006, BR-007, BR-008 |
-| **Exception Resolution Process**           | BR-009, BR-010, BR-011, BR-012 |
+| Process                          | Governing Business Rules       |
+| -------------------------------- | ------------------------------ |
+| **Order Acceptance Process**     | BR-001, BR-002, BR-003, BR-004 |
+| **Order Fulfillment Process**    | BR-005, BR-006, BR-007, BR-008 |
+| **Exception Resolution Process** | BR-009, BR-010, BR-011, BR-012 |
 
 ### NFRs to Capabilities Mapping
 
-| NFR Category                  | Capabilities Affected                                                            | Priority    |
-| ----------------------------- | -------------------------------------------------------------------------------- | ----------- |
-| **Customer Experience**       | Order Acceptance, Order Inquiry, Order Notification, Exception Communication     | High        |
-| **Operational Excellence**    | Order Fulfillment Coordination, Exception Resolution, Business Outcome Reporting | Medium-High |
-| **Compliance and Governance** | Audit Record Management, Regulatory Compliance, Data Governance                  | High        |
-| **Business Continuity**       | All capabilities require continuity considerations                               | High        |
-| **Scalability and Growth**    | All capabilities require scalability considerations                              | Medium      |
+| NFR Category                  | Capabilities Affected                                                    | Priority    |
+| ----------------------------- | ------------------------------------------------------------------------ | ----------- |
+| **Customer Experience**       | Order Acceptance, Order Inquiry, Customer Service                        | High        |
+| **Operational Excellence**    | Order Fulfillment, Exception Resolution, Business Intelligence Provision | Medium-High |
+| **Compliance and Governance** | Record Retention, Regulatory Compliance, Data Stewardship                | High        |
+| **Business Continuity**       | All capabilities require continuity considerations                       | High        |
+| **Scalability and Growth**    | All capabilities require scalability considerations                      | Medium      |
 
 ### Complete Traceability View
 
@@ -869,9 +832,9 @@ flowchart TB
 
     subgraph CAPS["Business Capabilities"]
         C1[Order Acceptance]
-        C2[Order Fulfillment Coordination]
+        C2[Order Fulfillment]
         C3[Exception Resolution]
-        C4[Business Outcome Reporting]
+        C4[Business Intelligence Provision]
     end
 
     subgraph VS["Value Streams"]
