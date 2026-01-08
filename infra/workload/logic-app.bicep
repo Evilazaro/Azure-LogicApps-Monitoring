@@ -40,6 +40,8 @@ param location string = resourceGroup().location
 @minLength(50)
 param userAssignedIdentityId string
 
+param apiSubnetId string
+
 @description('User Assigned Identity name for reference')
 @minLength(3)
 @maxLength(24)
@@ -229,6 +231,9 @@ resource wfASP 'Microsoft.Web/serverfarms@2025-03-01' = {
     targetWorkerCount: 0
     targetWorkerSizeId: 0
     zoneRedundant: false
+    network: {
+      virtualNetworkSubnetId: apiSubnetId
+    }
   }
 }
 
@@ -262,7 +267,7 @@ resource workflowEngine 'Microsoft.Web/sites@2025-03-01' = {
           description: 'Allow traffic from Virtual Network'
         }
         {
-          vnetSubnetResourceId: ''
+          vnetSubnetResourceId: apiSubnetId
           action: 'Allow'
           tag: 'ServiceTag'
           priority: 200

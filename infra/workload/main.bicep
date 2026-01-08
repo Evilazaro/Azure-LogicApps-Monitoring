@@ -185,6 +185,7 @@ module workflows 'logic-app.bicep' = {
     workflowStorageAccountId: workflowStorageAccountId
     workflowStorageAccountName: workflowStorageAccountName
     serviceBusNamespace: messaging.outputs.MESSAGING_SERVICEBUSNAME
+    apiSubnetId: apiSubnetId
     tags: tags
   }
 }
