@@ -102,6 +102,7 @@ module network 'network/main.bicep' = {
 module monitoring 'monitoring/main.bicep' = {
   params: {
     name: name
+    location: location
     tags: tags
     envName: envName
   }
@@ -176,5 +177,4 @@ output AZURE_SQL_DATABASE_NAME string = data.outputs.AZURE_SQL_DATABASE_NAME
 output API_SUBNET_ID string = network.outputs.apiSubnetId
 
 @description('Resource ID of the Web App subnet for workload resources')
-output WEBAPP_SUBNET_ID string = network.outputs.webapiSubnetId
 output WEBAPP_SUBNET_ID string = network.outputs.webapiSubnetId
