@@ -12,30 +12,53 @@ resource vnet 'Microsoft.Network/virtualNetworks@2025-01-01' = {
         '10.0.0.0/16'
       ]
     }
-    subnets: [
+  }
+}
+
+resource apiSubnet 'Microsoft.Network/virtualNetworks/subnets@2025-01-01' = {
+  parent: vnet
+  name: 'api-subnet'
+  properties: {
+    addressPrefix: '10.0.1.0/24'
+    delegations: [
       {
-        name: 'api-subnet'
+        name: 'Microsoft.App.environments'
         properties: {
-          addressPrefix: '10.0.1.0/24'
-          delegations: [
-            {
-              name: 'Microsoft.App.environments'
-              properties: {
-                serviceName: 'Microsoft.App/environments'
-              }
-            }
-          ]
-        }
-      }
-      {
-        name: 'webapp-subnet'
-        properties: {
-          addressPrefix: '10.0.2.0/24'
+          serviceName: 'Microsoft.App/environments'
         }
       }
     ]
   }
 }
 
-output apiSubnetId string = vnet.properties.subnets[0].id
-output webapiSubnetId string = vnet.properties.subnets[1].id
+resource dataSubnet 'Microsoft.Network/virtualNetworks/subnets@2025-01-01' = {
+  parent: vnet
+  name: 'data-subnet'
+  properties: {
+    addressPrefix: '10.0.2.0/24'
+    privateEndpointNetworkPolicies: 'Disabled'
+    privateLinkServiceNetworkPolicies: 'Enabled'
+  }
+}
+
+resource logicappSubnet 'Microsoft.Network/virtualNetworks/subnets@2025-01-01' = {
+  parent: vnet
+  name: 'logicapp-subnet'
+  properties: {
+    addressPrefix: '10.0.3.0/24'
+    delegations: [
+      {
+        name: 'Microsoft.Web.serverFarms'
+        properties: {
+          serviceName: 'Microsoft.Web/serverFarms'
+        }
+      }
+    ]
+  }
+}
+
+output API_SUBNET_ID string = apiSubnet.id
+output WEB_APP_SUBNET_ID string = dataSubnet.id
+output DATA_SUBNET_ID string = dataSubnet.id
+output logicappSubnetId string = logicappSubnet.id
+output VNET_ID string = vnet.id

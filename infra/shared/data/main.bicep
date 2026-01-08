@@ -50,6 +50,14 @@ param workspaceId string
 @minLength(50)
 param storageAccountId string
 
+@description('Resource ID of the data subnet for private endpoints')
+@minLength(50)
+param dataSubnetId string
+
+@description('Resource ID of the virtual network for private DNS zone linking')
+@minLength(50)
+param vnetId string
+
 @description('Logs settings for the Log Analytics workspace')
 param logsSettings object[]
 
@@ -213,7 +221,7 @@ resource sqlServer 'Microsoft.Sql/servers@2024-11-01-preview' = {
       sid: deployer().objectId
       tenantId: tenant().tenantId
     }
-    publicNetworkAccess: 'Enabled' // Can be restricted based on requirements
+    publicNetworkAccess: 'Enabled'
     minimalTlsVersion: '1.2'
   }
   tags: tags
@@ -236,7 +244,68 @@ resource entraOnlyAuth 'Microsoft.Sql/servers/azureADOnlyAuthentications@2024-11
   }
 }
 
-@description('Allow Azure services to access SQL Server')
+// ========== Private Endpoint Resources ==========
+
+@description('Private DNS Zone for SQL Server private endpoint')
+resource sqlPrivateDnsZone 'Microsoft.Network/privateDnsZones@2024-06-01' = {
+  name: 'privatelink${environment().suffixes.sqlServerHostname}'
+  location: 'global'
+  tags: tags
+}
+
+@description('Link private DNS zone to virtual network')
+resource sqlPrivateDnsZoneLink 'Microsoft.Network/privateDnsZones/virtualNetworkLinks@2024-06-01' = {
+  parent: sqlPrivateDnsZone
+  name: '${sqlPrivateDnsZone.name}-link'
+  location: 'global'
+  properties: {
+    registrationEnabled: false
+    virtualNetwork: {
+      id: vnetId
+    }
+  }
+}
+
+@description('Private endpoint for SQL Server')
+resource sqlPrivateEndpoint 'Microsoft.Network/privateEndpoints@2025-01-01' = {
+  name: '${sqlServer.name}-pe'
+  location: location
+  tags: tags
+  properties: {
+    subnet: {
+      id: dataSubnetId
+    }
+    privateLinkServiceConnections: [
+      {
+        name: '${sqlServer.name}-pe-connection'
+        properties: {
+          privateLinkServiceId: sqlServer.id
+          groupIds: [
+            'sqlServer'
+          ]
+        }
+      }
+    ]
+  }
+}
+
+@description('Private DNS zone group for SQL Server private endpoint')
+resource sqlPrivateDnsZoneGroup 'Microsoft.Network/privateEndpoints/privateDnsZoneGroups@2025-01-01' = {
+  parent: sqlPrivateEndpoint
+  name: 'default'
+  properties: {
+    privateDnsZoneConfigs: [
+      {
+        name: 'privatelink-database-windows-net'
+        properties: {
+          privateDnsZoneId: sqlPrivateDnsZone.id
+        }
+      }
+    ]
+  }
+}
+
+@description('Allow Azure services to access SQL Server - removed as using private endpoint')
 resource allowAzureServices 'Microsoft.Sql/servers/firewallRules@2024-11-01-preview' = {
   parent: sqlServer
   name: 'AllowAllWindowsAzureIps'

@@ -59,6 +59,10 @@ param workspaceCustomerId string
 @minLength(50)
 param apiSubnetId string
 
+@description('Resource ID of the Logic App subnet for Logic Apps Standard')
+@minLength(50)
+param logicappSubnetId string
+
 @description('Primary Key for Log Analytics workspace')
 param workspacePrimaryKey string
 
@@ -84,7 +88,7 @@ param tags tagsType
 // ========== Variables ==========
 
 @description('Diagnostic settings configuration for capturing all log categories')
-var allLogsSettings object[] = [
+var allLogsSettings array = [
   {
     categoryGroup: 'allLogs'
     enabled: true
@@ -92,7 +96,7 @@ var allLogsSettings object[] = [
 ]
 
 @description('Diagnostic settings configuration for capturing all metric categories')
-var allMetricsSettings object[] = [
+var allMetricsSettings array = [
   {
     categoryGroup: 'allMetrics'
     enabled: true
@@ -185,7 +189,7 @@ module workflows 'logic-app.bicep' = {
     workflowStorageAccountId: workflowStorageAccountId
     workflowStorageAccountName: workflowStorageAccountName
     serviceBusNamespace: messaging.outputs.MESSAGING_SERVICEBUSNAME
-    apiSubnetId: apiSubnetId
+    apiSubnetId: logicappSubnetId
     tags: tags
   }
 }
