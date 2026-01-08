@@ -97,6 +97,12 @@ $InformationPreference = 'Continue'
 $ProgressPreference = 'SilentlyContinue'
 $WarningPreference = 'Continue'
 
+# Force parameter handling - suppress confirmation prompts
+if ($Force) {
+    $ConfirmPreference = 'None'
+    Write-Verbose "Force enabled: confirmation prompts suppressed (ConfirmPreference=None)."
+}
+
 # Script-level constants
 $script:ScriptVersion = '2.3.0'
 $script:MinimumPowerShellVersion = [version]'7.0'
@@ -333,15 +339,23 @@ function Test-AzureCLI {
             Write-Verbose "az found at: $($azCommand.Source)"
             
             # Get Azure CLI version
-            $versionOutput = & az version --output json 2>&1 | ConvertFrom-Json
-            if ($LASTEXITCODE -ne 0) {
+            $versionOutput = & az version --output json 2>&1
+            $azVersionExitCode = $LASTEXITCODE
+            if ($azVersionExitCode -ne 0) {
                 Write-Verbose 'Failed to retrieve Azure CLI version'
                 return $result
             }
             
-            $azVersion = [version]$versionOutput.'azure-cli'
-            $result.Version = $azVersion
-            Write-Verbose "Detected Azure CLI version: $azVersion"
+            try {
+                $versionJson = $versionOutput | ConvertFrom-Json -ErrorAction Stop
+                $azVersion = [version]$versionJson.'azure-cli'
+                $result.Version = $azVersion
+                Write-Verbose "Detected Azure CLI version: $azVersion"
+            }
+            catch {
+                Write-Verbose "Failed to parse Azure CLI version JSON: $($_.Exception.Message)"
+                return $result
+            }
             
             if ($azVersion -lt $script:MinimumAzureCLIVersion) {
                 Write-Warning "Current Azure CLI version: $azVersion"
@@ -354,18 +368,25 @@ function Test-AzureCLI {
             # Check if user is authenticated
             Write-Verbose 'Checking Azure authentication...'
             $accountInfo = & az account show --output json 2>&1
-            if ($LASTEXITCODE -ne 0) {
+            $accountExitCode = $LASTEXITCODE
+            if ($accountExitCode -ne 0) {
                 Write-Verbose 'User is not authenticated to Azure'
                 return $result
             }
             
-            $account = $accountInfo | ConvertFrom-Json
-            $result.IsAuthenticated = $true
-            $result.AccountInfo = $account
-            $result.Success = $true
-            
-            Write-Verbose "Authenticated as: $($account.user.name)"
-            Write-Verbose "Active subscription: $($account.name) ($($account.id))"
+            try {
+                $account = $accountInfo | ConvertFrom-Json -ErrorAction Stop
+                $result.IsAuthenticated = $true
+                $result.AccountInfo = $account
+                $result.Success = $true
+                
+                Write-Verbose "Authenticated as: $($account.user.name)"
+                Write-Verbose "Active subscription: $($account.name) ($($account.id))"
+            }
+            catch {
+                Write-Verbose "Failed to parse account information: $($_.Exception.Message)"
+                return $result
+            }
             
             return $result
         }
@@ -446,12 +467,19 @@ function Invoke-AzureLogin {
                 Write-Information ''
                 
                 # Display account info
-                $accountInfo = & az account show --output json 2>&1 | ConvertFrom-Json
-                if ($LASTEXITCODE -eq 0) {
-                    Write-Information "  Logged in as:      $($accountInfo.user.name)"
-                    Write-Information "  Subscription:      $($accountInfo.name)"
-                    Write-Information "  Subscription ID:   $($accountInfo.id)"
-                    Write-Information ''
+                $accountInfo = & az account show --output json 2>&1
+                $accountExitCode = $LASTEXITCODE
+                if ($accountExitCode -eq 0) {
+                    try {
+                        $account = $accountInfo | ConvertFrom-Json -ErrorAction Stop
+                        Write-Information "  Logged in as:      $($account.user.name)"
+                        Write-Information "  Subscription:      $($account.name)"
+                        Write-Information "  Subscription ID:   $($account.id)"
+                        Write-Information ''
+                    }
+                    catch {
+                        Write-Verbose "Could not parse account information: $($_.Exception.Message)"
+                    }
                 }
                 
                 return $true

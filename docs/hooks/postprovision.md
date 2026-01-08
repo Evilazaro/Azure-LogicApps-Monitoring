@@ -39,7 +39,7 @@ With comprehensive validation, error handling, SQL managed identity configuratio
 - [🔧 Parameters](#-parameters)
 - [📚 Configured User Secrets](#-configured-user-secrets)
   - [🏠 app.AppHost Project (23 secrets)](#appapphost-project-23-secrets)
-  - [📦 eShop.Orders.API Project (3 secrets)](#eshopordersapi-project-3-secrets)
+  - [📦 eShop.Orders.API Project (3-4 secrets)](#eshopordersapi-project-3-4-secrets)
   - [🌐 eShop.Web.App Project (1 secret)](#eshopwebapp-project-1-secret)
 - [🔒 SQL Database Managed Identity Configuration](#-sql-database-managed-identity-configuration)
   - [🛡️ Roles Assigned](#roles-assigned)
@@ -200,11 +200,11 @@ You can also run the script manually:
 [10:15:36] Configuring AppHost project secrets...
 [10:15:37]   ✓ app.AppHost: 23 secrets configured
 [10:15:38] Configuring API project secrets...
-[10:15:39]   ✓ eShop.Orders.API: 3 secrets configured
+[10:15:39]   ✓ eShop.Orders.API: 4 secrets configured
 [10:15:40]
 [10:15:40] Configuration Summary:
-[10:15:40]   • Total secrets defined   : 26
-[10:15:40]   • Successfully configured : 26
+[10:15:40]   • Total secrets defined   : 27
+[10:15:40]   • Successfully configured : 27
 [10:15:40]   • Skipped (empty)         : 0
 [10:15:40]   • Failed                  : 0
 [10:15:40]   Success Rate: 100%
@@ -281,14 +281,14 @@ What if: Performing operation "Configure User Secrets" with configuration:
 
   Projects to Configure:
     • app.AppHost (23 secrets)
-    • eShop.Orders.API (3 secrets)
+    • eShop.Orders.API (4 secrets)
 
   Operations:
     1. Validate environment variables
     2. Authenticate to Azure Container Registry
     3. Clear existing secrets
     4. Configure SQL Database Managed Identity
-    5. Configure 27 new secrets across 3 projects
+    5. Configure 28 new secrets across 3 projects
 
 No changes were made. This was a simulation.
 ```
@@ -431,15 +431,18 @@ Enables detailed diagnostic output.
 | `Azure:ContainerApps:DefaultDomain`    | Bicep output            | Container Apps default domain          |
 | `Azure:LogAnalytics:WorkspaceName`     | Bicep output            | Log Analytics workspace name           |
 
-### eShop.Orders.API Project (3 secrets)
+### eShop.Orders.API Project (3-4 secrets)
 
-The API project receives minimal configuration as it relies on managed identity for Azure resource access and inherits configuration from the AppHost during development.
+The API project receives minimal configuration as it relies on managed identity for Azure resource access and inherits configuration from the AppHost during development. When SQL Database is configured, an additional connection string secret is automatically added.
 
-| Secret Key                             | Source            | Purpose                            |
-| -------------------------------------- | ----------------- | ---------------------------------- |
-| `Azure:TenantId`                       | `AZURE_TENANT_ID` | Azure AD tenant for authentication |
-| `Azure:ClientId`                       | `AZURE_CLIENT_ID` | Managed Identity client ID         |
-| `ApplicationInsights:ConnectionString` | Bicep output      | Monitoring and telemetry           |
+| Secret Key                             | Source            | Purpose                            | Conditional               |
+| -------------------------------------- | ----------------- | ---------------------------------- | ------------------------- |
+| `Azure:TenantId`                       | `AZURE_TENANT_ID` | Azure AD tenant for authentication | Always                    |
+| `Azure:ClientId`                       | `AZURE_CLIENT_ID` | Managed Identity client ID         | Always                    |
+| `ApplicationInsights:ConnectionString` | Bicep output      | Monitoring and telemetry           | Always                    |
+| `ConnectionStrings:OrderDb`            | Computed          | SQL Database connection string     | When SQL DB is configured |
+
+**Note:** The `ConnectionStrings:OrderDb` secret is automatically added when both `ORDERSDATABASE_SQLSERVERFQDN` and `AZURE_SQL_DATABASE_NAME` environment variables are set. It uses Azure Active Directory authentication with managed identity.
 
 ### eShop.Web.App Project (1 secret)
 

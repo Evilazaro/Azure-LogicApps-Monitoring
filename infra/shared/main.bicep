@@ -67,8 +67,9 @@ var allMetricsSettings array = [
 
 module network 'network/main.bicep' = {
   params: {
-    name: '${name}-vnet-${envName}'
+    name: name
     location: location
+    envName: envName
     tags: tags
   }
 }

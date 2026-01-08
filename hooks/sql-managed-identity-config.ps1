@@ -604,22 +604,36 @@ function Test-AzureCliAvailability {
             
             # Check Azure CLI version
             $versionOutput = az version --query '"azure-cli"' -o tsv 2>&1
-            if ($LASTEXITCODE -eq 0 -and $versionOutput) {
+            $versionExitCode = $LASTEXITCODE
+            
+            if ($versionExitCode -eq 0 -and $versionOutput) {
                 Write-LogMessage "Azure CLI version: $versionOutput" -Level Verbose
             }
             
             # Check if logged in
             $accountCheck = az account show 2>&1
-            if ($LASTEXITCODE -ne 0) {
+            $accountExitCode = $LASTEXITCODE
+            
+            if ($accountExitCode -ne 0) {
                 Write-LogMessage 'Not authenticated to Azure CLI' -Level Error
                 Write-LogMessage 'Run: az login' -Level Error
                 return $false
             }
             
-            # Parse account information
-            $accountInfo = $accountCheck | ConvertFrom-Json -ErrorAction SilentlyContinue
-            if ($accountInfo -and $accountInfo.name) {
-                Write-LogMessage "Azure CLI authenticated: Subscription=$($accountInfo.name)" -Level Success
+            # Parse account information with proper error handling
+            try {
+                $accountInfo = $accountCheck | ConvertFrom-Json -ErrorAction Stop
+                
+                if ($accountInfo -and $accountInfo.name) {
+                    Write-LogMessage "Azure CLI authenticated: Subscription=$($accountInfo.name)" -Level Success
+                }
+                else {
+                    Write-LogMessage 'Azure CLI authenticated but subscription details unavailable' -Level Warning
+                }
+            }
+            catch {
+                Write-LogMessage "Warning: Could not parse Azure CLI account information: $($_.Exception.Message)" -Level Warning
+                Write-LogMessage 'Continuing with authentication - connection may still succeed' -Level Info
             }
             
             return $true
@@ -671,26 +685,39 @@ function Get-AzureSqlAccessToken {
     process {
         try {
             Write-LogMessage 'Attempting token acquisition via Azure CLI...' -Level Verbose
+            Write-LogMessage "  Resource URL: $ResourceUrl" -Level Verbose
             
             # Execute Azure CLI command to get access token
             $cliOutput = az account get-access-token --resource $ResourceUrl --query accessToken -o tsv 2>&1
+            
+            # Capture exit code immediately to prevent race condition
             $cliExitCode = $LASTEXITCODE
             
             if ($cliExitCode -ne 0) {
-                throw "Azure CLI returned exit code $cliExitCode. Output: $cliOutput"
+                $errorDetails = if ($cliOutput) { "Output: $cliOutput" } else { 'No error output available' }
+                throw "Azure CLI returned exit code $cliExitCode. $errorDetails"
             }
             
             if ([string]::IsNullOrWhiteSpace($cliOutput)) {
-                throw 'Azure CLI returned an empty token'
+                throw 'Azure CLI returned an empty token. Verify Azure authentication with: az login'
             }
             
             $accessToken = $cliOutput.Trim()
+            
+            # Validate token format (basic check)
+            if ($accessToken.Length -lt 50) {
+                throw "Token appears invalid (length: $($accessToken.Length) characters). Expected JWT token."
+            }
+            
             Write-LogMessage 'Token acquired successfully via Azure CLI' -Level Success
+            Write-LogMessage "  Token length: $($accessToken.Length) characters" -Level Verbose
+            
             return $accessToken
         }
         catch {
             $errorMessage = "Azure CLI token acquisition failed: $($_.Exception.Message)"
             Write-LogMessage $errorMessage -Level Error
+            Write-LogMessage 'Ensure you are authenticated to Azure CLI: az login' -Level Error
             throw $errorMessage
         }
     }
@@ -919,11 +946,17 @@ try {
                     --end-ip-address $currentIp `
                     -o none 2>&1
                 
-                if ($LASTEXITCODE -eq 0) {
+                # Capture exit code immediately to prevent race condition
+                $firewallExitCode = $LASTEXITCODE
+                
+                if ($firewallExitCode -eq 0) {
                     Write-LogMessage "Firewall rule '$firewallRuleName' with IP '$currentIp' has been created." -Level Success
                 }
+                elseif ($firewallExitCode -eq 1 -and $firewallResult -like '*already exists*') {
+                    Write-LogMessage "Firewall rule for IP '$currentIp' already exists - continuing" -Level Info
+                }
                 else {
-                    Write-LogMessage "Warning: Failed to create firewall rule: $firewallResult" -Level Warning
+                    Write-LogMessage "Warning: Failed to create firewall rule (exit code: $firewallExitCode): $firewallResult" -Level Warning
                     Write-LogMessage "You may need to manually add IP $currentIp to SQL Server firewall rules" -Level Warning
                 }
             }
@@ -1110,16 +1143,33 @@ After installing, run this script again.
         # Verify connection was established successfully
         if (-not $connected) {
             $errorMsg = "Failed to establish database connection after $maxRetries attempts."
+            
             if ($lastConnectionError) {
-                $errorMsg += " Last error: $($lastConnectionError.Exception.Message)"
+                $errorMsg += "`n  Last error: $($lastConnectionError.Exception.Message)"
+                
+                # Add additional context based on common error types
+                if ($lastConnectionError.Exception.Message -like '*firewall*') {
+                    $errorMsg += "`n  Hint: Check SQL Server firewall rules. Your IP may need to be added."
+                }
+                elseif ($lastConnectionError.Exception.Message -like '*login*' -or $lastConnectionError.Exception.Message -like '*authentication*') {
+                    $errorMsg += "`n  Hint: Ensure you are authenticated as an Entra ID administrator of the SQL Server."
+                    $errorMsg += "`n  Run: az sql server ad-admin list --resource-group <rg> --server-name $SqlServerName"
+                }
+                elseif ($lastConnectionError.Exception.Message -like '*timeout*') {
+                    $errorMsg += "`n  Hint: Connection timeout - check network connectivity and SQL Server availability."
+                }
             }
+            
             Write-LogMessage $errorMsg -Level Error
             throw $errorMsg
         }
         
         # Additional validation: ensure connection is open and valid
         if ($null -eq $connection -or $connection.State -ne [System.Data.ConnectionState]::Open) {
-            throw "Database connection is not in a valid state. Current state: $(if ($null -eq $connection) { 'null' } else { $connection.State })"
+            $currentState = if ($null -eq $connection) { 'null' } else { $connection.State }
+            $errorMsg = "Database connection is not in a valid state. Current state: $currentState"
+            Write-LogMessage $errorMsg -Level Error
+            throw $errorMsg
         }
         
         # Create and configure SQL command

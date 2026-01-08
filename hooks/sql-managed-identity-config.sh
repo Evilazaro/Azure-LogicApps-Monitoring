@@ -297,22 +297,37 @@ get_sql_access_token() {
     local resource_url="$1"
     
     log_verbose "Acquiring access token for resource: $resource_url"
+    log_verbose "  Using Azure CLI authentication"
 
     local token
     token=$(az account get-access-token --resource "$resource_url" --query accessToken -o tsv 2>&1)
     local exit_code=$?
 
     if [[ $exit_code -ne 0 ]]; then
-        log_error "Failed to acquire access token: $token"
+        local error_details
+        if [[ -n "$token" ]]; then
+            error_details="Output: $token"
+        else
+            error_details="No error output available"
+        fi
+        log_error "Azure CLI returned exit code $exit_code. $error_details"
+        log_error "Ensure you are authenticated to Azure CLI: az login"
         return 1
     fi
 
     if [[ -z "$token" ]]; then
-        log_error "Azure CLI returned an empty token"
+        log_error "Azure CLI returned an empty token. Verify Azure authentication with: az login"
+        return 1
+    fi
+    
+    # Validate token format (basic check)
+    if [[ ${#token} -lt 50 ]]; then
+        log_error "Token appears invalid (length: ${#token} characters). Expected JWT token."
         return 1
     fi
 
     log_success "Token acquired successfully via Azure CLI"
+    log_verbose "  Token length: ${#token} characters"
     echo "$token"
 }
 
@@ -430,16 +445,23 @@ configure_firewall() {
     log_info "  Rule Name:      $firewall_rule_name"
     log_info "Adding firewall rule '$firewall_rule_name' for IP '$current_ip'..."
 
-    if az sql server firewall-rule create \
+    # Create firewall rule and capture output for better error handling
+    local firewall_output
+    firewall_output=$(az sql server firewall-rule create \
         --resource-group "$resource_group" \
         --server "$SQL_SERVER_NAME" \
         --name "$firewall_rule_name" \
         --start-ip-address "$current_ip" \
         --end-ip-address "$current_ip" \
-        -o none 2>/dev/null; then
+        -o none 2>&1)
+    local firewall_exit_code=$?
+    
+    if [[ $firewall_exit_code -eq 0 ]]; then
         log_success "Firewall rule '$firewall_rule_name' with IP '$current_ip' has been created."
+    elif [[ $firewall_exit_code -eq 1 ]] && [[ "$firewall_output" == *"already exists"* ]]; then
+        log_info "Firewall rule for IP '$current_ip' already exists - continuing"
     else
-        log_warning "Failed to create firewall rule"
+        log_warning "Failed to create firewall rule (exit code: $firewall_exit_code): $firewall_output"
         log_warning "You may need to manually add IP $current_ip to SQL Server firewall rules"
     fi
 }
