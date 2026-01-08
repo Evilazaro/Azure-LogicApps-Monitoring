@@ -88,7 +88,7 @@ param tags tagsType
 // ========== Variables ==========
 
 @description('Diagnostic settings configuration for capturing all log categories')
-var allLogsSettings object[] = [
+var allLogsSettings array = [
   {
     categoryGroup: 'allLogs'
     enabled: true
@@ -96,7 +96,7 @@ var allLogsSettings object[] = [
 ]
 
 @description('Diagnostic settings configuration for capturing all metric categories')
-var allMetricsSettings object[] = [
+var allMetricsSettings array = [
   {
     categoryGroup: 'allMetrics'
     enabled: true
