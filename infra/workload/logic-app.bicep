@@ -231,9 +231,6 @@ resource wfASP 'Microsoft.Web/serverfarms@2025-03-01' = {
     targetWorkerCount: 0
     targetWorkerSizeId: 0
     zoneRedundant: false
-    network: {
-      virtualNetworkSubnetId: apiSubnetId
-    }
   }
 }
 
@@ -254,9 +251,11 @@ resource workflowEngine 'Microsoft.Web/sites@2025-03-01' = {
   properties: {
     serverFarmId: wfASP.id
     publicNetworkAccess: 'Enabled'
+    virtualNetworkSubnetId: apiSubnetId
     siteConfig: {
       alwaysOn: true
       webSocketsEnabled: true
+      vnetRouteAllEnabled: true
       ipSecurityRestrictions: [
         {
           ipAddress: '10.0.0.0/16'
