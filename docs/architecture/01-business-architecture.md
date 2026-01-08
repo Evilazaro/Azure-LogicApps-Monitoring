@@ -359,42 +359,36 @@ Business processes describe the logical sequence of business decisions and activ
 flowchart TB
     Start([Customer Submits Order])
 
-    P1[Receive Order]
-    D1{Order Complete?}
-    P2[Request Additional Information]
-    P3[Accept Order]
-    P4[Confirm Acceptance to Customer]
-    P5[Record Order for Fulfillment]
+    P1[Order Intake]
+    D1{Complete?}
+    P2[Customer Clarification]
+    P3[Business Commitment]
 
     End1([Order Accepted])
-    End2([Awaiting Customer Response])
+    End2([Awaiting Customer])
 
     Start --> P1
     P1 --> D1
     D1 -->|No| P2
     P2 --> End2
     D1 -->|Yes| P3
-    P3 --> P4
-    P4 --> P5
-    P5 --> End1
+    P3 --> End1
 
     classDef process fill:#e1f5fe,stroke:#0277bd,stroke-width:2px,color:#01579b
     classDef decision fill:#fff3e0,stroke:#f57c00,stroke-width:2px,color:#e65100
     classDef terminal fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px,color:#4a148c
 
-    class P1,P2,P3,P4,P5 process
+    class P1,P2,P3 process
     class D1 decision
     class Start,End1,End2 terminal
 ```
 
 **Process Steps:**
 
-1. **Receive Order:** Capture customer order intent and details
-2. **Decision: Order Complete?** Determine if order contains all required information
-3. **Request Additional Information:** Obtain missing details from customer (process waits for customer response as separate business event)
-4. **Accept Order:** Commit business to fulfill order
-5. **Confirm Acceptance to Customer:** Communicate business commitment to customer
-6. **Record Order for Fulfillment:** Make order available to fulfillment functions
+1. **Order Intake:** Business receives customer order intent
+2. **Decision: Complete?** Business determines order completeness
+3. **Customer Clarification:** Business obtains missing information from customer
+4. **Business Commitment:** Business commits to fulfill order
 
 ### Process 2: Order Fulfillment Coordination Process
 
@@ -407,39 +401,36 @@ flowchart TB
 flowchart TB
     Start([Order Accepted])
 
-    P1[Confirm Order Details]
-    P2[Fulfill Order]
-    D1{Fulfillment Complete?}
-    P3[Finalize Order]
-    P4[Notify Customer]
+    P1[Order Preparation]
+    P2[Order Fulfillment]
+    D1{Obligations Met?}
+    P3[Order Closure]
 
-    End1([Order Completed])
-    End2([Order In Fulfillment])
+    End1([Revenue Realized])
+    End2([Fulfillment Underway])
 
     Start --> P1
     P1 --> P2
     P2 --> D1
     D1 -->|No| End2
     D1 -->|Yes| P3
-    P3 --> P4
-    P4 --> End1
+    P3 --> End1
 
     classDef process fill:#e1f5fe,stroke:#0277bd,stroke-width:2px,color:#01579b
     classDef decision fill:#fff3e0,stroke:#f57c00,stroke-width:2px,color:#e65100
     classDef terminal fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px,color:#4a148c
 
-    class P1,P2,P3,P4 process
+    class P1,P2,P3 process
     class D1 decision
     class Start,End1,End2 terminal
 ```
 
 **Process Steps:**
 
-1. **Confirm Order Details:** Verify order information is accurate and complete
-2. **Fulfill Order:** Execute fulfillment of customer order
-3. **Decision: Fulfillment Complete?** Determine if order obligations are met
-4. **Finalize Order:** Complete order record and close fulfillment cycle
-5. **Notify Customer:** Inform customer of successful fulfillment
+1. **Order Preparation:** Business prepares order for fulfillment
+2. **Order Fulfillment:** Business fulfills customer order
+3. **Decision: Obligations Met?** Business determines if commitments are satisfied
+4. **Order Closure:** Business concludes order and realizes revenue
 
 ### Process 3: Exception Resolution Process
 
@@ -452,48 +443,39 @@ flowchart TB
 flowchart TB
     Start([Exception Occurs])
 
-    P1[Recognize Exception]
-    P2[Assess Exception Impact]
-    D1{Resolution Possible?}
-    P3[Resolve Exception]
-    P4[Communicate Exception to Customer]
-    P5[Record Exception and Outcome]
-    P6[Return Order to Fulfillment]
-    P7[Handle Unfulfillable Order]
+    P1[Exception Recognition]
+    P2[Exception Assessment]
+    D1{Recoverable?}
+    P3[Exception Resolution]
+    P4[Order Discontinuation]
 
-    End1([Order Recovered])
+    End1([Revenue Protected])
     End2([Order Cancelled])
 
     Start --> P1
     P1 --> P2
     P2 --> D1
     D1 -->|Yes| P3
-    P3 --> P5
-    P5 --> P6
-    P6 --> End1
+    P3 --> End1
     D1 -->|No| P4
-    P4 --> P7
-    P7 --> End2
+    P4 --> End2
 
     classDef process fill:#e1f5fe,stroke:#0277bd,stroke-width:2px,color:#01579b
     classDef decision fill:#fff3e0,stroke:#f57c00,stroke-width:2px,color:#e65100
     classDef terminal fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px,color:#4a148c
 
-    class P1,P2,P3,P4,P5,P6,P7 process
+    class P1,P2,P3,P4 process
     class D1 decision
     class Start,End1,End2 terminal
 ```
 
 **Process Steps:**
 
-1. **Recognize Exception:** Identify order requiring special attention
-2. **Assess Exception Impact:** Understand exception context and customer impact
-3. **Decision: Resolution Possible?** Determine if order can be recovered
-4. **Resolve Exception:** Address exception cause and enable continued fulfillment (if possible)
-5. **Communicate Exception to Customer:** Inform customer of exception and resolution
-6. **Record Exception and Outcome:** Document exception for compliance and analysis
-7. **Return Order to Fulfillment:** Move recovered order back to normal fulfillment (if resolved)
-8. **Handle Unfulfillable Order:** Process order cancellation and customer communication (if unresolved)
+1. **Exception Recognition:** Business becomes aware of order exception
+2. **Exception Assessment:** Business evaluates exception and recovery potential
+3. **Decision: Recoverable?** Business determines if order can continue
+4. **Exception Resolution:** Business resolves exception and enables order continuation
+5. **Order Discontinuation:** Business discontinues unfulfillable order
 
 ---
 
