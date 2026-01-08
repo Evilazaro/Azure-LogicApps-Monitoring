@@ -473,7 +473,7 @@ flowchart LR
     end
 
     classDef level1 fill:#f5f5f5,stroke:#616161,stroke-width:3px
-    classDef level2 fill:#e8f5e9,stroke:#388e3c,stroke-width:2px
+    classDef level2 fill:#e3f2fd,stroke:#1976d2,stroke-width:2px
 
     class Order_Value level1
     class Intent,Commitment,Obligation,Assurance level2
@@ -572,7 +572,7 @@ flowchart TB
     end
 
     classDef level1 fill:#f5f5f5,stroke:#616161,stroke-width:3px
-    classDef level2 fill:#fff3e0,stroke:#f57c00,stroke-width:2px
+    classDef level2 fill:#e3f2fd,stroke:#1976d2,stroke-width:2px
 
     class Commitment_Decision level1
     class Context,Intent,Outcomes level2
@@ -671,9 +671,9 @@ flowchart TB
     end
 
     classDef level1 fill:#f5f5f5,stroke:#616161,stroke-width:3px
-    classDef level2 fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px
-    classDef level3 fill:#ffffff,stroke:#ba68c8,stroke-width:1px
-    classDef level4 fill:#e1bee7,stroke:#6a1b9a,stroke-width:1px
+    classDef level2 fill:#e3f2fd,stroke:#1976d2,stroke-width:2px
+    classDef level3 fill:#ffffff,stroke:#90caf9,stroke-width:1px
+    classDef level4 fill:#e1f5fe,stroke:#0288d1,stroke-width:1px
 
     class Decision_Ecosystem level1
     class Commitment_Context,Obligation_Context,Customer_Context level2
@@ -788,8 +788,8 @@ flowchart TB
     end
 
     classDef level1 fill:#f5f5f5,stroke:#616161,stroke-width:3px
-    classDef level2 fill:#fce4ec,stroke:#c2185b,stroke-width:2px
-    classDef level3 fill:#ffffff,stroke:#f06292,stroke-width:1px
+    classDef level2 fill:#e3f2fd,stroke:#1976d2,stroke-width:2px
+    classDef level3 fill:#ffffff,stroke:#90caf9,stroke-width:1px
 
     class Policy_Framework level1
     class Regulatory,Operational,Quality level2
@@ -910,22 +910,22 @@ flowchart TB
 
         subgraph Commercial_Concepts["Commercial Concept Group"]
             direction TB
-            Customer["Customer<br/><i>Intent Originator</i>"]
-            Order["Order<br/><i>Validated Commitment</i>"]
-            Product["Product Commitment<br/><i>Fulfillment Unit</i>"]
+            Customer["Customer"]
+            Order["Order"]
+            Product["Product Commitment"]
         end
 
         subgraph Obligation_Concepts["Obligation Concept Group"]
             direction TB
-            Obligation["Obligation<br/><i>Fulfillment Responsibility</i>"]
-            Status["Obligation Status<br/><i>State Representation</i>"]
-            Priority["Obligation Priority<br/><i>Relative Importance</i>"]
+            Obligation["Obligation"]
+            Status["Obligation Status"]
+            Priority["Obligation Priority"]
         end
 
         subgraph Evidence_Concepts["Evidence Concept Group"]
             direction TB
-            Evidence["Commitment Evidence<br/><i>Auditable Artifact</i>"]
-            History["Obligation History<br/><i>Lifecycle Record</i>"]
+            Evidence["Commitment Evidence"]
+            History["Obligation History"]
         end
 
         Customer -->|Initiates| Order
@@ -938,7 +938,7 @@ flowchart TB
     end
 
     classDef level1 fill:#f5f5f5,stroke:#616161,stroke-width:3px
-    classDef level2 fill:#e0f2f1,stroke:#00796b,stroke-width:2px
+    classDef level2 fill:#e3f2fd,stroke:#1976d2,stroke-width:2px
 
     class Information_Domain level1
     class Commercial_Concepts,Obligation_Concepts,Evidence_Concepts level2
@@ -1256,31 +1256,50 @@ All diagrams in this Business Architecture follow strict architectural conventio
 - Notation: Boxes represent business concepts (ubiquitous language)
 - Reading: Arrows show concept relationships, not data flow
 
-### Color Coding by Grouping Level
+### Global Color Coding System
+
+**CRITICAL: All diagrams use a standardized, globally-consistent color palette.**
+
+Each grouping level uses the SAME colors across ALL diagrams to enforce visual hierarchy and architectural consistency.
 
 **Level 1 — Overall Business Boundary**
 
 - Background: `#f5f5f5` (very light gray)
 - Border: `#616161` (dark gray)
+- Stroke Width: 3px
 - Purpose: Establish architectural scope
+- **Used in:** ALL diagrams (exactly one Level 1 per diagram)
 
 **Level 2 — Business Domain / Value Area**
 
-- Background: Soft color families (`#e3f2fd` blue, `#e8f5e9` green, `#fff3e0` orange, `#f3e5f5` purple, `#fce4ec` pink, `#e0f2f1` teal)
-- Border: Darker shade of same color family
+- Background: `#e3f2fd` (light blue)
+- Border: `#1976d2` (blue)
+- Stroke Width: 2px
 - Purpose: Separate major business concerns
+- **Used in:** ALL diagrams (represents domains, value areas, major responsibility boundaries)
 
 **Level 3 — Capability / Value / Decision Group**
 
-- Background: Very light tint of parent color or white
-- Border: Subtle but visible
+- Background: `#ffffff` (white)
+- Border: `#90caf9` (light blue)
+- Stroke Width: 1px
 - Purpose: Show architectural structure detail
+- **Used in:** Capability Map, Decision Ecosystem, Policy Framework
 
 **Level 4 — Conceptual Detail** (used sparingly)
 
-- Background: White or near-white
-- Border: Light gray or inherited color
+- Background: `#e1f5fe` (very light blue)
+- Border: `#0288d1` (darker blue)
+- Stroke Width: 1px
 - Purpose: Clarify without expanding abstraction
+- **Used in:** Decision Ecosystem only
+
+**Color Hierarchy Invariants:**
+
+1. Visual "weight" decreases with depth (Level 1 is darkest, Level 4 is lightest)
+2. All colors remain in the blue-gray family for professional consistency
+3. Each level is immediately distinguishable from adjacent levels
+4. High contrast maintained for GitHub rendering
 
 ### Notation Rules
 
