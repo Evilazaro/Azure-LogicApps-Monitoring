@@ -146,6 +146,7 @@ resource appEnv 'Microsoft.App/managedEnvironments@2025-02-02-preview' = {
     vnetConfiguration: {
       infrastructureSubnetId: apiSubnetId
     }
+    publicNetworkAccess: 'Enabled' // Enable public access, use private endpoints only
     // Consumption workload profile provides:
     // - Serverless, pay-per-use pricing model (only pay for actual resource usage)
     // - Automatic scaling from 0 to meet demand
