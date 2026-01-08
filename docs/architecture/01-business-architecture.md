@@ -134,9 +134,9 @@ graph TB
 
 ```mermaid
 graph LR
-    CM[Commitment Management] --> CR[Commitment Recording]
-    CM --> CS[Commitment State Management]
-    CM --> CV[Commitment Verification]
+    CM[Commitment Management] --> CR[Commitment Establishment]
+    CM --> CS[Commitment State Awareness]
+    CM --> CV[Commitment Integrity]
 
     style CM fill:#e1f5ff
     style CR fill:#f0f9ff
@@ -144,17 +144,17 @@ graph LR
     style CV fill:#f0f9ff
 ```
 
-- **Commitment Recording** — Capture and formalize commitment details
-- **Commitment State Management** — Track commitment lifecycle progression
-- **Commitment Verification** — Ensure commitment integrity and completeness
+- **Commitment Establishment** — The ability to formalize binding agreements
+- **Commitment State Awareness** — The ability to know the current condition of commitments
+- **Commitment Integrity** — The ability to ensure commitments remain valid and complete
 
 #### Customer Engagement (Level 2)
 
 ```mermaid
 graph LR
-    CE[Customer Engagement] --> CN[Customer Need Articulation]
-    CE --> CI[Commitment Initiation]
-    CE --> CC[Customer Communication]
+    CE[Customer Engagement] --> CN[Customer Need Understanding]
+    CE --> CI[Commitment Origination]
+    CE --> CC[Customer Relationship]
 
     style CE fill:#e1f5ff
     style CN fill:#f0f9ff
@@ -162,17 +162,17 @@ graph LR
     style CC fill:#f0f9ff
 ```
 
-- **Customer Need Articulation** — Enable customers to express requirements
-- **Commitment Initiation** — Facilitate the start of formal commitments
-- **Customer Communication** — Maintain dialogue and information exchange
+- **Customer Need Understanding** — The ability to comprehend customer requirements
+- **Commitment Origination** — The ability to begin formal commitments with customers
+- **Customer Relationship** — The ability to maintain ongoing connections with customers
 
 #### Commitment Fulfillment (Level 2)
 
 ```mermaid
 graph LR
-    CF[Commitment Fulfillment] --> FC[Fulfillment Coordination]
-    CF --> FS[Fulfillment Status Confirmation]
-    CF --> FD[Fulfillment Delivery]
+    CF[Commitment Fulfillment] --> FC[Fulfillment Orchestration]
+    CF --> FS[Fulfillment State Awareness]
+    CF --> FD[Value Transfer]
 
     style CF fill:#e1f5ff
     style FC fill:#f0f9ff
@@ -180,17 +180,17 @@ graph LR
     style FD fill:#f0f9ff
 ```
 
-- **Fulfillment Coordination** — Orchestrate resources to satisfy obligations
-- **Fulfillment Status Confirmation** — Validate fulfillment progress
-- **Fulfillment Delivery** — Execute the transfer of value to customer
+- **Fulfillment Orchestration** — The ability to align resources toward obligation satisfaction
+- **Fulfillment State Awareness** — The ability to know the current state of fulfillment
+- **Value Transfer** — The ability to deliver value to customers
 
 #### Business Performance Insight (Level 2)
 
 ```mermaid
 graph LR
-    BP[Business Performance Insight] --> PE[Performance Evidence Capture]
-    BP --> PA[Performance Analysis]
-    BP --> PV[Performance Visibility]
+    BP[Business Performance Insight] --> PE[Performance Evidence Availability]
+    BP --> PA[Performance Interpretation]
+    BP --> PV[Performance Transparency]
 
     style BP fill:#fff4e1
     style PE fill:#fffbf0
@@ -198,17 +198,17 @@ graph LR
     style PV fill:#fffbf0
 ```
 
-- **Performance Evidence Capture** — Collect indicators of business state
-- **Performance Analysis** — Interpret evidence to generate insight
-- **Performance Visibility** — Communicate insight to stakeholders
+- **Performance Evidence Availability** — The ability to possess indicators of business state
+- **Performance Interpretation** — The ability to derive meaning from evidence
+- **Performance Transparency** — The ability to make insight accessible to stakeholders
 
 #### Operational Continuity (Level 2)
 
 ```mermaid
 graph LR
-    OC[Operational Continuity] --> OA[Operational Awareness]
-    OC --> OR[Operational Response]
-    OC --> OI[Operational Integrity]
+    OC[Operational Continuity] --> OA[Operational Health Awareness]
+    OC --> OR[Operational Adaptability]
+    OC --> OI[Operational Resilience]
 
     style OC fill:#fff4e1
     style OA fill:#fffbf0
@@ -216,9 +216,9 @@ graph LR
     style OI fill:#fffbf0
 ```
 
-- **Operational Awareness** — Maintain visibility into operational health
-- **Operational Response** — Adapt to exceptions and disruptions
-- **Operational Integrity** — Preserve business capability during change
+- **Operational Health Awareness** — The ability to know the condition of operations
+- **Operational Adaptability** — The ability to adjust to exceptions and disruptions
+- **Operational Resilience** — The ability to maintain capability during change
 
 ---
 
@@ -234,30 +234,27 @@ Value Streams describe **how value is delivered to stakeholders** through sequen
 
 ```mermaid
 graph LR
-    A[Need Expressed] --> B[Commitment Established]
-    B --> C[Fulfillment Initiated]
-    C --> D[Status Confirmed]
-    D --> E[Outcome Delivered]
-    E --> F[Value Realized]
+    A[Need Understood] --> B[Commitment Secured]
+    B --> C[Fulfillment Assured]
+    C --> D[Obligation Satisfied]
+    D --> E[Value Received]
 
     style A fill:#e8f5e9
     style B fill:#c8e6c9
     style C fill:#a5d6a7
     style D fill:#81c784
     style E fill:#66bb6a
-    style F fill:#4caf50
 ```
 
 **Value Stage Definitions:**
 
-| Stage                      | Value Outcome                   | Stakeholder Benefit                |
-| -------------------------- | ------------------------------- | ---------------------------------- |
-| **Need Expressed**         | Customer need is understood     | Clarity of intent achieved         |
-| **Commitment Established** | Binding agreement exists        | Certainty of fulfillment obtained  |
-| **Fulfillment Initiated**  | Obligation satisfaction begins  | Confidence in progress gained      |
-| **Status Confirmed**       | Current fulfillment state known | Awareness maintained               |
-| **Outcome Delivered**      | Obligation satisfied            | Expectation met                    |
-| **Value Realized**         | Commitment complete             | Business relationship strengthened |
+| Stage                    | Value Outcome                          | Stakeholder Benefit                   |
+| ------------------------ | -------------------------------------- | ------------------------------------- |
+| **Need Understood**      | Clarity on what customer requires      | Customer can articulate intent        |
+| **Commitment Secured**   | Binding agreement in place             | Customer has certainty of fulfillment |
+| **Fulfillment Assured**  | Confidence that obligation will be met | Customer trusts completion will occur |
+| **Obligation Satisfied** | What was promised has been delivered   | Customer expectation has been met     |
+| **Value Received**       | Customer possesses benefit sought      | Customer relationship strengthened    |
 
 ---
 
@@ -269,9 +266,9 @@ graph LR
 
 ```mermaid
 graph LR
-    A[Performance Evidence Exists] --> B[Insight Generated]
-    B --> C[Decision Informed]
-    C --> D[Action Enabled]
+    A[Business State Known] --> B[Performance Understood]
+    B --> C[Strategic Clarity Achieved]
+    C --> D[Confidence Established]
 
     style A fill:#fff9c4
     style B fill:#fff59d
@@ -281,12 +278,12 @@ graph LR
 
 **Value Stage Definitions:**
 
-| Stage                           | Value Outcome                     | Stakeholder Benefit                      |
-| ------------------------------- | --------------------------------- | ---------------------------------------- |
-| **Performance Evidence Exists** | Business activity captured        | Foundation for understanding established |
-| **Insight Generated**           | Evidence interpreted into meaning | Understanding of state achieved          |
-| **Decision Informed**           | Insight applied to choices        | Confidence in direction gained           |
-| **Action Enabled**              | Capability to respond activated   | Adaptation made possible                 |
+| Stage                          | Value Outcome                          | Stakeholder Benefit                      |
+| ------------------------------ | -------------------------------------- | ---------------------------------------- |
+| **Business State Known**       | Current operational condition visible  | Leadership knows what is happening       |
+| **Performance Understood**     | Meaning of business state comprehended | Leadership understands implications      |
+| **Strategic Clarity Achieved** | Path forward is evident                | Leadership knows what should happen next |
+| **Confidence Established**     | Decision risk is minimized             | Leadership can commit to direction       |
 
 ---
 
@@ -298,24 +295,21 @@ graph LR
 
 ```mermaid
 graph LR
-    A[Condition Detected] --> B[Context Understood]
-    B --> C[Response Coordinated]
-    C --> D[Continuity Preserved]
+    A[Risk Recognized] --> B[Impact Understood]
+    B --> C[Continuity Assured]
 
     style A fill:#ffccbc
     style B fill:#ffab91
     style C fill:#ff8a65
-    style D fill:#ff7043
 ```
 
 **Value Stage Definitions:**
 
-| Stage                    | Value Outcome                        | Stakeholder Benefit            |
-| ------------------------ | ------------------------------------ | ------------------------------ |
-| **Condition Detected**   | Operational state awareness achieved | Visibility obtained            |
-| **Context Understood**   | Condition meaning interpreted        | Appropriate response possible  |
-| **Response Coordinated** | Action aligned with need             | Effective intervention enabled |
-| **Continuity Preserved** | Value delivery sustained             | Stakeholder impact minimized   |
+| Stage                  | Value Outcome                    | Stakeholder Benefit                    |
+| ---------------------- | -------------------------------- | -------------------------------------- |
+| **Risk Recognized**    | Threat to operations is known    | Operations aware of what could fail    |
+| **Impact Understood**  | Consequence of risk comprehended | Operations knows severity and scope    |
+| **Continuity Assured** | Value delivery remains intact    | Stakeholders protected from disruption |
 
 ---
 
@@ -451,32 +445,30 @@ This section illustrates which capabilities enable which value stages.
 
 ### 5.1 Customer Commitment Value Stream Enablement
 
-| Value Stage            | Enabled By Capabilities                             |
-| ---------------------- | --------------------------------------------------- |
-| Need Expressed         | Customer Engagement (Customer Need Articulation)    |
-| Commitment Established | Commitment Management (Commitment Recording)        |
-| Fulfillment Initiated  | Commitment Fulfillment (Fulfillment Coordination)   |
-| Status Confirmed       | Commitment Management (Commitment State Management) |
-| Outcome Delivered      | Commitment Fulfillment (Fulfillment Delivery)       |
-| Value Realized         | Customer Engagement (Customer Communication)        |
+| Value Stage          | Enabled By Capabilities                            |
+| -------------------- | -------------------------------------------------- |
+| Need Understood      | Customer Engagement (Customer Need Understanding)  |
+| Commitment Secured   | Commitment Management (Commitment Establishment)   |
+| Fulfillment Assured  | Commitment Fulfillment (Fulfillment Orchestration) |
+| Obligation Satisfied | Commitment Fulfillment (Value Transfer)            |
+| Value Received       | Customer Engagement (Customer Relationship)        |
 
 ### 5.2 Business Oversight Value Stream Enablement
 
-| Value Stage                 | Enabled By Capabilities                                     |
-| --------------------------- | ----------------------------------------------------------- |
-| Performance Evidence Exists | Business Performance Insight (Performance Evidence Capture) |
-| Insight Generated           | Business Performance Insight (Performance Analysis)         |
-| Decision Informed           | Business Performance Insight (Performance Visibility)       |
-| Action Enabled              | Operational Continuity (Operational Response)               |
+| Value Stage                | Enabled By Capabilities                                          |
+| -------------------------- | ---------------------------------------------------------------- |
+| Business State Known       | Business Performance Insight (Performance Evidence Availability) |
+| Performance Understood     | Business Performance Insight (Performance Interpretation)        |
+| Strategic Clarity Achieved | Business Performance Insight (Performance Transparency)          |
+| Confidence Established     | Operational Continuity (Operational Adaptability)                |
 
 ### 5.3 Operational Resilience Value Stream Enablement
 
-| Value Stage          | Enabled By Capabilities                             |
-| -------------------- | --------------------------------------------------- |
-| Condition Detected   | Operational Continuity (Operational Awareness)      |
-| Context Understood   | Business Performance Insight (Performance Analysis) |
-| Response Coordinated | Operational Continuity (Operational Response)       |
-| Continuity Preserved | Operational Continuity (Operational Integrity)      |
+| Value Stage        | Enabled By Capabilities                                   |
+| ------------------ | --------------------------------------------------------- |
+| Risk Recognized    | Operational Continuity (Operational Health Awareness)     |
+| Impact Understood  | Business Performance Insight (Performance Interpretation) |
+| Continuity Assured | Operational Continuity (Operational Resilience)           |
 
 ---
 
