@@ -462,7 +462,7 @@ Value Streams represent states of value realization, expressed as noun phrases. 
 The Order Value Stream represents the progression of value states from commercial intent through revenue realization.
 
 ```mermaid
-flowchart LR
+flowchart TB
     subgraph Order_Value["Order Value Realization"]
         direction LR
 
@@ -485,10 +485,6 @@ flowchart LR
             direction TB
             RA["Revenue Confidence"]
         end
-
-        Intent --> Commitment
-        Commitment --> Obligation
-        Obligation --> Assurance
     end
 
     classDef level1 fill:#f5f5f5,stroke:#616161,stroke-width:3px
@@ -585,9 +581,6 @@ flowchart TB
             O2["Declined"]
             O3["Deferred"]
         end
-
-        Context --> Intent
-        Intent --> Outcomes
     end
 
     classDef level1 fill:#f5f5f5,stroke:#616161,stroke-width:3px
@@ -678,26 +671,20 @@ flowchart TB
             CUD2["Disclosure"]
         end
 
-        subgraph Business_Foundation["Business Foundation"]
+        subgraph Foundation_Context["Foundation Domain"]
             direction LR
             BF1["Policy"]
             BF2["Information"]
         end
-
-        Business_Foundation --> Commitment_Context
-        Business_Foundation --> Obligation_Context
-        Business_Foundation --> Customer_Context
     end
 
     classDef level1 fill:#f5f5f5,stroke:#616161,stroke-width:3px
     classDef level2 fill:#e3f2fd,stroke:#1976d2,stroke-width:2px
     classDef level3 fill:#ffffff,stroke:#90caf9,stroke-width:1px
-    classDef level4 fill:#e1f5fe,stroke:#0288d1,stroke-width:1px
 
     class Decision_Ecosystem level1
-    class Commitment_Context,Obligation_Context,Customer_Context level2
-    class Business_Foundation level3
-    class CD1,CD2,OD1,OD2,CUD1,CUD2,BF1,BF2 level4
+    class Commitment_Context,Obligation_Context,Customer_Context,Foundation_Context level2
+    class CD1,CD2,OD1,OD2,CUD1,CUD2,BF1,BF2 level3
 ```
 
 ---
@@ -1078,9 +1065,9 @@ The business requires confidence in regulatory and policy adherence.
 
 #### Scalability
 
-The business requires capabilities to maintain effectiveness as business volume changes.
+The business requires confidence that capabilities remain effective as business needs evolve.
 
-**Business Value:** Supports business growth and prevents capacity constraints.
+**Business Value:** Supports business growth confidence and operational predictability.
 
 **Applies To:** Commercial Commitment, Obligation Awareness, Business Information
 
@@ -1090,16 +1077,16 @@ The business requires capabilities to maintain effectiveness as business volume 
 Business capabilities must maintain availability sufficient for business needs under normal business conditions.
 
 **BQR-002: Information Currency Assurance**  
-Business information must reflect business reality within timeframes appropriate for business decisions.
+Business information must reflect business reality with sufficient currency for business decisions.
 
 **BQR-003: Customer Response Predictability**  
-Customer interactions must receive responses within timeframes that maintain customer trust.
+Customer interactions must receive responses with predictability that maintains customer trust.
 
 **BQR-004: Evidence Completeness Assurance**  
 Business evidence must be complete enough to support compliance confidence and dispute resolution.
 
 **BQR-005: Business Capacity Awareness**  
-The business must have visibility into capability capacity relative to current and anticipated demand.
+The business must have visibility into capability readiness relative to business obligations.
 
 **BQR-006: Privacy Protection Confidence**  
 Customer information handling must provide confidence in privacy boundary respect.
@@ -1305,17 +1292,9 @@ Each grouping level uses the SAME colors across ALL diagrams to enforce visual h
 - Purpose: Show architectural structure detail
 - **Used in:** Capability Map, Decision Ecosystem, Policy Framework
 
-**Level 4 — Conceptual Detail** (used sparingly)
-
-- Background: `#e1f5fe` (very light blue)
-- Border: `#0288d1` (darker blue)
-- Stroke Width: 1px
-- Purpose: Clarify without expanding abstraction
-- **Used in:** Decision Ecosystem only
-
 **Color Hierarchy Invariants:**
 
-1. Visual "weight" decreases with depth (Level 1 is darkest, Level 4 is lightest)
+1. Visual "weight" decreases with depth (Level 1 is darkest, Level 3 is lightest)
 2. All colors remain in the blue-gray family for professional consistency
 3. Each level is immediately distinguishable from adjacent levels
 4. High contrast maintained for GitHub rendering
@@ -1331,6 +1310,7 @@ All diagrams MUST pass these hard invariants:
 - Maximum nodes per diagram: **12**
 - Preferred nodes per diagram: **6–10**
 - Maximum subgraphs per diagram: **5**
+- Maximum grouping depth: **3 levels** (Level 4 DISALLOWED)
 - Violation → diagram is INVALID, must be split or simplified
 
 **Readability Invariants (MANDATORY)**
@@ -1367,6 +1347,36 @@ Before outputting ANY diagram, internally answer:
 _"Would this diagram still be clear if viewed briefly in a document review meeting?"_
 
 If NO → simplify or regenerate. Do NOT output diagrams that fail this test.
+
+### v2.1 Non-Sequential Semantics Enforcement
+
+**CRITICAL: Value Stream and Decision Model diagrams MUST NOT imply sequence or flow.**
+
+**Non-Sequential Visual Rules (MANDATORY)**
+
+Business Value Stream and Business Decision Model diagrams MUST:
+
+- Represent concepts as **peer structures** without directional relationships
+- Use **grouping only** to show conceptual organization
+- NEVER use arrows between groups (even with noun labels)
+- Avoid visual patterns suggesting progression, dependency, or execution order
+
+**Prohibited Patterns:**
+
+- ❌ `A --> B` (directional flow)
+- ❌ `A -.-> B` (dotted progression)
+- ❌ Left-to-right layouts suggesting sequence
+- ❌ Cascading structures implying order
+
+**Allowed Patterns:**
+
+- ✅ Grouped peer concepts without connectors
+- ✅ Parallel vertical/horizontal layouts
+- ✅ Conceptual containment (subgraphs only)
+
+**Rationale:** Value Streams represent states of value existence, NOT workflows. Decision Models represent decision contexts, NOT decision processes.
+
+**Enforcement:** Any diagram violating non-sequential semantics is INVALID and must be regenerated at higher abstraction.
 
 ### Notation Rules
 
