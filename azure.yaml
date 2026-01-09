@@ -89,6 +89,18 @@ hooks:
       continueOnError: false
       interactive: false # Non-interactive for CI/CD compatibility
 
+  postinfradelete: 
+    posix:
+      shell: sh
+      run: ./hooks/postinfradelete.sh --force --verbose
+      continueOnError: true # Continue even if cleanup fails
+      interactive: false
+    windows:
+      shell: pwsh
+      run: ./hooks/postinfradelete.ps1 -Force -Verbose
+      continueOnError: true # Continue even if cleanup fails
+      interactive: false
+
 # ------------------------------------------------------------------------------
 # Application Services
 # ------------------------------------------------------------------------------
