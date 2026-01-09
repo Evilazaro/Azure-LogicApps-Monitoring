@@ -55,6 +55,7 @@ Beyond deployment automation, this guide covers the complete local development w
 4. ⚙️ **postprovision** (.ps1 or .sh) - Configure .NET user secrets (automatic)
 5. 🔐 **sql-managed-identity-config** (.ps1 or .sh) - Configure SQL Database managed identity access (automatic)
 6. 📊 **Generate-Orders** (.ps1 or .sh) - Generate test data (optional, manual)
+7. 🗑️ **postinfradelete** (.ps1 or .sh) - Purge soft-deleted Logic Apps after azd down (automatic)
 
 ---
 
@@ -64,9 +65,10 @@ This workflow uses multiple automation scripts from the hooks directory:
 
 | Script                          | Version | Purpose                                      | Execution               | Duration  |
 | ------------------------------- | ------- | -------------------------------------------- | ----------------------- | --------- |
-| **check-dev-workstation**       | 2.0.1   | Validate workstation prerequisites           | Manual (recommended)    | 3-5 sec   |
-| **preprovision**                | 2.0.1   | Pre-deployment validation & secrets clearing | Automatic via azd       | 14-22 sec |
+| **check-dev-workstation**       | 1.0.0   | Validate workstation prerequisites           | Manual (recommended)    | 3-5 sec   |
+| **preprovision**                | 2.3.0   | Pre-deployment validation & secrets clearing | Automatic via azd       | 14-22 sec |
 | **postprovision**               | 2.0.1   | Configure .NET user secrets post-deployment  | Automatic via azd       | 10-20 sec |
+| **postinfradelete**             | 2.0.0   | Purge soft-deleted Logic Apps after azd down | Automatic via azd       | 5-15 sec  |
 | **sql-managed-identity-config** | 1.0.0   | Configure SQL Database managed identity      | Called by postprovision | 5-10 sec  |
 | **clean-secrets**               | 2.0.1   | Clear .NET user secrets utility              | Called by other scripts | 2-4 sec   |
 | **Generate-Orders**             | 2.0.1   | Generate test order data                     | Manual (optional)       | 1-5 sec   |
@@ -98,6 +100,13 @@ flowchart TD
         PostProv --> SqlConfig
     end
 
+    subgraph DeleteGroup["🗑️ Infrastructure Deletion"]
+        direction TB
+        AzdDown[azd down]
+        PostInfraDelete[postinfradelete]
+        AzdDown --> PostInfraDelete
+    end
+
     subgraph OptionalGroup["📊 Optional"]
         direction TB
         GenOrders[Generate-Orders]
@@ -110,10 +119,12 @@ flowchart TD
     classDef optionalClass fill:#fff3cd,stroke:#ffc107,stroke-width:2px,stroke-dasharray: 5 5,color:#856404
     classDef automaticClass fill:#d4edda,stroke:#28a745,stroke-width:2px,color:#155724
     classDef utilityClass fill:#e2e3e5,stroke:#6c757d,stroke-width:2px,color:#383d41
+    classDef deleteClass fill:#f8d7da,stroke:#dc3545,stroke-width:2px,color:#721c24
 
     class CheckDev,GenOrders optionalClass
     class PreProv,AzdProv,PostProv,SqlConfig automaticClass
     class CleanSecrets1,CleanSecrets2 utilityClass
+    class AzdDown,PostInfraDelete deleteClass
 ```
 
 ---
@@ -131,7 +142,7 @@ flowchart LR
     end
 
     subgraph PreProvision["2️⃣ Pre-Provisioning (Automatic)"]
-        PreStart["PREPROVISION START<br/>Version 2.0.1 (2025-12-29)"]
+        PreStart["PREPROVISION START<br/>Version 2.3.0 (2026-01-06)"]
         PreStep1["Step 1: PowerShell/Bash Version<br/>PS: 7.0+ | Bash: 4.0+"]
         PreStep2["Step 2: Prerequisites<br/>.NET 10.0+ | azd | Azure CLI 2.60.0+<br/>Bicep 0.30.0+ | 8 Resource Providers"]
         PreStep3["Step 3: Clear User Secrets<br/>Call clean-secrets script"]
@@ -169,7 +180,7 @@ flowchart LR
     end
 
     subgraph SqlConfig["🔐 SQL Managed Identity Configuration"]
-        SqlStart["SQL-MANAGED-IDENTITY-CONFIG<br/>Version 1.0.0 (2025-12-29)"]
+        SqlStart["SQL-MANAGED-IDENTITY-CONFIG<br/>Version 1.0.0 (2026-01-06)"]
         SqlStep1["Step 1: Validate Azure Auth"]
         SqlStep2["Step 2: Validate sqlcmd"]
         SqlStep3["Step 3: Construct Connection"]
@@ -225,7 +236,7 @@ flowchart LR
 
 ```mermaid
 flowchart LR
-    Start["PREPROVISION (.PS1/.SH) START<br/>Version 2.0.1<br/>Last Modified: 2025-12-29"]
+    Start["PREPROVISION (.PS1/.SH) START<br/>Version 2.3.0<br/>Last Modified: 2026-01-06"]
 
     subgraph RuntimeCheck["1️⃣ Runtime Validation"]
         direction TB
@@ -364,17 +375,17 @@ flowchart LR
 
 ```mermaid
 flowchart TD
-    CheckDev["1️⃣ check-dev-workstation (.ps1/.sh)<br/>(optional but recommended)<br/>Version: 2.0.1"]
+    CheckDev["1️⃣ check-dev-workstation (.ps1/.sh)<br/>(optional but recommended)<br/>Version: 1.0.0"]
     CheckDev --> AZD
 
     subgraph AZD["Azure Developer CLI (azd)"]
         AzdYaml["azure.yaml<br/>hooks:<br/>  preprovision:<br/>    windows: preprovision.ps1<br/>    posix: preprovision.sh<br/>  postprovision:<br/>    windows: postprovision.ps1<br/>    posix: postprovision.sh"]
         AzdYaml --> AzdCmd["azd provision | azd up"]
-        AzdCmd --> Execute["2️⃣ Execute preprovision (.ps1/.sh)<br/>Version: 2.0.1"]
+        AzdCmd --> Execute["2️⃣ Execute preprovision (.ps1/.sh)<br/>Version: 2.3.0"]
         Execute --> Validate{Validation<br/>passes?}
         Validate -->|✓| Deploy["Continue with deployment<br/>Bicep: infra/main.bicep"]
         Deploy --> Post["3️⃣ Execute postprovision (.ps1/.sh)<br/>Version: 2.0.1"]
-        Post --> SqlConfig["4️⃣ Execute sql-managed-identity-config<br/>Version: 1.0.0 (2025-12-29)"]
+        Post --> SqlConfig["4️⃣ Execute sql-managed-identity-config<br/>Version: 1.0.0 (2026-01-06)"]
         SqlConfig --> Ready["✓ Ready for development"]
         Validate -->|✗| Stop["Stop deployment"]
     end
@@ -423,7 +434,7 @@ flowchart TD
 
 ### check-dev-workstation
 
-**Version:** 2.0.1  
+**Version:** 1.0.0  
 **Purpose:** Quick prerequisite validation (wrapper around preprovision --validate-only)  
 **Execution:** Manual (recommended before main workflow)  
 **Duration:** 3-5 seconds  
@@ -441,8 +452,8 @@ flowchart TD
 
 ### preprovision
 
-**Version:** 2.0.1  
-**Last Modified:** 2025-12-29  
+**Version:** 2.3.0  
+**Last Modified:** 2026-01-06  
 **Purpose:** Comprehensive pre-deployment validation and secrets clearing  
 **Execution:** Automatic via azd hooks  
 **Duration:** 14-22 seconds  
@@ -466,7 +477,7 @@ flowchart TD
 ### postprovision
 
 **Version:** 2.0.1  
-**Last Modified:** 2025-12-29  
+**Last Modified:** 2026-01-06  
 **Purpose:** Configure .NET user secrets with Azure resource information  
 **Execution:** Automatic via azd hooks after provisioning  
 **Duration:** 10-20 seconds  
@@ -497,11 +508,11 @@ flowchart TD
 ### sql-managed-identity-config
 
 **Version:** 1.0.0  
-**Last Modified:** PowerShell: 2025-12-26 | Bash: 2025-12-29  
+**Last Modified:** 2026-01-06  
 **Purpose:** Configure SQL Database user with managed identity authentication  
 **Execution:** Automatic via postprovision script  
 **Duration:** 5-10 seconds  
-**Documentation:** No dedicated markdown (embedded help in scripts)
+**Documentation:** [sql-managed-identity-config.md](./sql-managed-identity-config.md)
 
 **Operations:**
 
@@ -570,6 +581,32 @@ flowchart TD
 - Configurable products per order (1-6)
 - JSON output format
 - Progress tracking and statistics
+
+### postinfradelete
+
+**Version:** 2.0.0  
+**Last Modified:** 2026-01-09  
+**Purpose:** Purge soft-deleted Logic Apps Standard after azd down  
+**Execution:** Automatic via azd hooks after infrastructure deletion  
+**Duration:** 5-15 seconds  
+**Documentation:** [postinfradelete.md](./postinfradelete.md)
+
+**Operations:**
+
+1. Validate required environment variables (AZURE_SUBSCRIPTION_ID, AZURE_LOCATION)
+2. Verify Azure CLI installation and authentication
+3. Query Azure REST API for soft-deleted Logic Apps in the region
+4. Filter by resource group or Logic App name pattern (optional)
+5. Purge matching soft-deleted Logic Apps permanently
+6. Report results with detailed logging
+
+**Features:**
+
+- Automatic soft-delete recovery bypass
+- Resource group and name pattern filtering
+- Cross-platform execution (Windows, Linux, macOS)
+- CI/CD integration with force mode
+- WhatIf/dry-run support (PowerShell)
 
 ---
 
@@ -748,20 +785,26 @@ This document focuses on the validation workflow. For detailed information about
 
 - **[README.md](./README.md)** - Complete hooks directory overview and developer inner loop workflow
 - **[check-dev-workstation.md](./check-dev-workstation.md)** - Workstation validation script documentation
+- **[preprovision.md](./preprovision.md)** - Pre-provisioning validation script documentation
 - **[postprovision.md](./postprovision.md)** - Post-provisioning configuration script documentation
+- **[postinfradelete.md](./postinfradelete.md)** - Post-infrastructure delete cleanup script documentation
+- **[sql-managed-identity-config.md](./sql-managed-identity-config.md)** - SQL managed identity configuration documentation
 - **[clean-secrets.md](./clean-secrets.md)** - Secrets management utility documentation
+- **[deploy-workflow.md](./deploy-workflow.md)** - Logic Apps workflow deployment documentation
 - **[Generate-Orders.md](./Generate-Orders.md)** - Test data generation script documentation
 
 ### Script Versions Reference
 
 | Script                      | PowerShell Version | Bash Version | Last Modified |
 | --------------------------- | ------------------ | ------------ | ------------- |
-| check-dev-workstation       | 2.0.1              | 2.0.1        | 2025-12-29    |
-| preprovision                | 2.0.1              | 2.0.1        | 2025-12-29    |
-| postprovision               | 2.0.1              | 2.0.1        | 2025-12-29    |
-| sql-managed-identity-config | 1.0.0              | 1.0.0        | 2025-12-29    |
-| clean-secrets               | 2.0.1              | 2.0.1        | 2025-12-29    |
-| Generate-Orders             | 2.0.1              | 2.0.1        | 2025-12-29    |
+| check-dev-workstation       | 1.0.0              | 1.0.0        | 2026-01-07    |
+| preprovision                | 2.3.0              | 2.3.0        | 2026-01-06    |
+| postprovision               | 2.0.1              | 2.0.1        | 2026-01-06    |
+| postinfradelete             | 2.0.0              | 2.0.0        | 2026-01-09    |
+| sql-managed-identity-config | 1.0.0              | 1.0.0        | 2026-01-06    |
+| clean-secrets               | 2.0.1              | 2.0.1        | 2026-01-06    |
+| Generate-Orders             | 2.0.1              | 2.0.1        | 2026-01-06    |
+| deploy-workflow             | 2.0.1              | 2.0.1        | 2026-01-07    |
 
 ---
 

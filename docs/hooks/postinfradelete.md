@@ -180,27 +180,123 @@ See what would be purged without making changes (PowerShell only):
 ### 📊 Workflow Diagram
 
 ```mermaid
-flowchart TD
-    A[azd down completes] --> B[postinfradelete hook triggered]
-    B --> C{Validate Prerequisites}
-    C -->|Fail| D[Exit with warning]
-    C -->|Pass| E[Check Environment Variables]
-    E -->|Missing| F[Skip - Exit 0]
-    E -->|Valid| G[Query Deleted Sites API]
-    G --> H{Deleted Logic Apps found?}
-    H -->|No| I[Exit successfully]
-    H -->|Yes| J{Filter by Resource Group?}
-    J -->|Yes| K[Apply RG filter]
-    J -->|No| L{Filter by Name?}
+flowchart LR
+    %% =====================================================
+    %% Style Definitions
+    %% =====================================================
+    classDef trigger fill:#4A90D9,stroke:#2E5A8B,color:#FFFFFF,stroke-width:2px,font-weight:bold
+    classDef validation fill:#F5A623,stroke:#C78419,color:#FFFFFF,stroke-width:2px
+    classDef decision fill:#9B59B6,stroke:#7D3C98,color:#FFFFFF,stroke-width:2px
+    classDef process fill:#3498DB,stroke:#2471A3,color:#FFFFFF,stroke-width:2px
+    classDef success fill:#27AE60,stroke:#1E8449,color:#FFFFFF,stroke-width:2px,font-weight:bold
+    classDef warning fill:#E67E22,stroke:#BA6418,color:#FFFFFF,stroke-width:2px
+    classDef error fill:#E74C3C,stroke:#B83A2F,color:#FFFFFF,stroke-width:2px
+
+    %% =====================================================
+    %% Trigger Phase
+    %% =====================================================
+    subgraph TRIGGER["🚀 Trigger"]
+        direction TB
+        A[/"azd down completes"/]
+        B["postinfradelete hook"]
+    end
+
+    %% =====================================================
+    %% Validation Phase
+    %% =====================================================
+    subgraph VALIDATION["🔍 Validation"]
+        direction TB
+        C{"Prerequisites?"}
+        E{"Env Variables?"}
+    end
+
+    %% =====================================================
+    %% Query Phase
+    %% =====================================================
+    subgraph QUERY["📡 Azure API"]
+        direction TB
+        G[["Query Deleted Sites"]]
+        H{"Logic Apps Found?"}
+    end
+
+    %% =====================================================
+    %% Filter Phase
+    %% =====================================================
+    subgraph FILTER["🔎 Filtering"]
+        direction TB
+        J{"Resource Group?"}
+        K["Apply RG Filter"]
+        L{"Name Pattern?"}
+        M["Apply Name Filter"]
+    end
+
+    %% =====================================================
+    %% Execution Phase
+    %% =====================================================
+    subgraph EXECUTE["⚡ Execution"]
+        direction TB
+        N["List Logic Apps"]
+        O{"Confirm Purge?"}
+        Q[["Purge Logic Apps"]]
+        R["Report Summary"]
+    end
+
+    %% =====================================================
+    %% Exit States
+    %% =====================================================
+    subgraph EXIT["🏁 Exit"]
+        direction TB
+        D[/"⚠️ Exit: Warning"/]
+        F[/"⏭️ Exit: Skip"/]
+        I[/"✅ Exit: No Apps"/]
+        P[/"🚫 Exit: Cancelled"/]
+        S[/"✅ Exit: Success"/]
+    end
+
+    %% =====================================================
+    %% Flow Connections
+    %% =====================================================
+    A --> B
+    B --> C
+    C -->|"❌ Fail"| D
+    C -->|"✅ Pass"| E
+    E -->|"❌ Missing"| F
+    E -->|"✅ Valid"| G
+    G --> H
+    H -->|"❌ None"| I
+    H -->|"✅ Found"| J
+    J -->|"✅ Yes"| K
+    J -->|"❌ No"| L
     K --> L
-    L -->|Yes| M[Apply name filter]
-    L -->|No| N[List Logic Apps to purge]
+    L -->|"✅ Yes"| M
+    L -->|"❌ No"| N
     M --> N
-    N --> O{Confirm purge?}
-    O -->|No| P[Exit - cancelled]
-    O -->|Yes| Q[Purge each Logic App]
-    Q --> R[Report summary]
-    R --> S[Exit]
+    N --> O
+    O -->|"❌ No"| P
+    O -->|"✅ Yes"| Q
+    Q --> R
+    R --> S
+
+    %% =====================================================
+    %% Apply Styles
+    %% =====================================================
+    class A,B trigger
+    class C,E validation
+    class H,J,L,O decision
+    class G,K,M,N,Q,R process
+    class I,S success
+    class D,F warning
+    class P error
+
+    %% =====================================================
+    %% Subgraph Styling
+    %% =====================================================
+    style TRIGGER fill:#E8F4FD,stroke:#4A90D9,stroke-width:2px
+    style VALIDATION fill:#FFF3E0,stroke:#F5A623,stroke-width:2px
+    style QUERY fill:#E3F2FD,stroke:#3498DB,stroke-width:2px
+    style FILTER fill:#F3E5F5,stroke:#9B59B6,stroke-width:2px
+    style EXECUTE fill:#E8F5E9,stroke:#27AE60,stroke-width:2px
+    style EXIT fill:#FAFAFA,stroke:#9E9E9E,stroke-width:2px
 ```
 
 ### 🔗 Azure REST API Operations
