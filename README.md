@@ -79,6 +79,18 @@ flowchart TD
     WebApp -.->|"OTLP"| AppInsights
     API -.->|"OTLP"| AppInsights
     LogicApp -.->|"Diagnostics"| LogAnalytics
+
+    classDef presentation fill:#e3f2fd,stroke:#1565c0,stroke-width:2px
+    classDef application fill:#e8f5e9,stroke:#2e7d32,stroke-width:2px
+    classDef platform fill:#fff3e0,stroke:#ef6c00,stroke-width:2px
+    classDef data fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px
+    classDef observability fill:#fce4ec,stroke:#c2185b,stroke-width:2px
+
+    class WebApp presentation
+    class API,LogicApp application
+    class Aspire,Defaults platform
+    class SQL,ServiceBus,Storage data
+    class AppInsights,LogAnalytics observability
 ```
 
 > 📖 **Learn more:** See [Architecture Overview](docs/architecture/README.md) for detailed service inventory, data flows, and component interactions.
