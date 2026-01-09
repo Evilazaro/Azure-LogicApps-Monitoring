@@ -72,10 +72,11 @@ flowchart TB
     classDef platform fill:#fff3e0,stroke:#ef6c00,stroke-width:2px
     classDef data fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px
     classDef observability fill:#fce4ec,stroke:#c2185b,stroke-width:2px
-    style Data fill:#FFFFFF
-    style Platform fill:#FFFFFF
+    style Data fill:#FFFFFF,stroke:#000000
+    style Platform fill:#FFFFFF,stroke:#000000
     style Application fill:#FFFFFF
-    style Observability color:#FFFFFF
+    style Observability color:#000000,fill:#FFFFFF,stroke:#000000
+    style Presentation stroke:#000000,fill:#FFFFFF
 ```
 
 ---
