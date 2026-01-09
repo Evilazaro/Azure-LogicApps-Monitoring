@@ -40,40 +40,44 @@ The **Azure Logic Apps Monitoring Solution** delivers a reference architecture d
 
 ```mermaid
 flowchart TB
-    subgraph Core["🎯 Core Capabilities"]
-        direction LR
-        C1["📦 Order Management<br/><i>Revenue-enabling</i>"]
-        C2["🔄 Workflow Automation<br/><i>Process efficiency</i>"]
-    end
-
-    subgraph Enabling["⚙️ Enabling Capabilities"]
-        direction LR
-        E1["📊 Observability<br/><i>Operational visibility</i>"]
-        E2["🔐 Identity Management<br/><i>Access control</i>"]
-        E3["📨 Event Distribution<br/><i>Async communication</i>"]
-    end
-
-    subgraph Foundation["🏗️ Foundation Capabilities"]
-        direction LR
-        F1["☁️ Cloud Infrastructure<br/><i>Compute & storage</i>"]
-        F2["🔒 Security<br/><i>Data protection</i>"]
-        F3["🚀 Deployment Automation<br/><i>CI/CD pipeline</i>"]
-    end
-
+ subgraph Core["🎯 Core Capabilities"]
+    direction LR
+        C1["📦 Order Management<br><i>Revenue-enabling</i>"]
+        C2["🔄 Workflow Automation<br><i>Process efficiency</i>"]
+  end
+ subgraph Enabling["⚙️ Enabling Capabilities"]
+    direction LR
+        E1["📊 Observability<br><i>Operational visibility</i>"]
+        E2["🔐 Identity Management<br><i>Access control</i>"]
+        E3["📨 Event Distribution<br><i>Async communication</i>"]
+  end
+ subgraph Foundation["🏗️ Foundation Capabilities"]
+    direction LR
+        F1["☁️ Cloud Infrastructure<br><i>Compute &amp; storage</i>"]
+        F2["🔒 Security<br><i>Data protection</i>"]
+        F3["🚀 Deployment Automation<br><i>CI/CD pipeline</i>"]
+  end
     Core --> Enabling
     Enabling --> Foundation
-    C1 -.->|"publishes events"| E3
-    C2 -.->|"consumes events"| E3
-    C1 -.->|"instrumented by"| E1
-    C2 -.->|"instrumented by"| E1
+    C1 -. publishes events .-> E3
+    C2 -. consumes events .-> E3
+    C1 -. instrumented by .-> E1
+    C2 -. instrumented by .-> E1
 
+     C1:::core
+     C2:::core
+     E1:::enabling
+     E2:::enabling
+     E3:::enabling
+     F1:::foundation
+     F2:::foundation
+     F3:::foundation
     classDef core fill:#e3f2fd,stroke:#1565c0,stroke-width:2px
     classDef enabling fill:#e8f5e9,stroke:#2e7d32,stroke-width:2px
     classDef foundation fill:#f5f5f5,stroke:#616161,stroke-width:2px
-
-    class C1,C2 core
-    class E1,E2,E3 enabling
-    class F1,F2,F3 foundation
+    style Core stroke:#000000,fill:#FFFFFF
+    style Enabling stroke:#000000,fill:#FFFFFF
+    style Foundation stroke:#000000,fill:#FFFFFF
 ```
 
 ### Capability Descriptions
@@ -109,40 +113,48 @@ flowchart TB
 
 ```mermaid
 flowchart LR
-    subgraph Trigger["🎯 Trigger"]
-        T1["Customer Order<br/>Request"]
-    end
+ subgraph Trigger["🎯 Trigger"]
+        T1["Customer Order<br>Request"]
+  end
+ subgraph Engage["📝 Engage"]
+        S1["Place Order<br><i>Web App</i>"]
+  end
+ subgraph Transact["💳 Transact"]
+        S2["Validate &amp; Persist<br><i>Orders API</i>"]
+  end
+ subgraph Process["⚙️ Process"]
+        S3["Publish Event<br><i>Service Bus</i>"]
+        S4["Execute Workflow<br><i>Logic Apps</i>"]
+  end
+ subgraph Archive["📁 Archive"]
+        S5["Store Result<br><i>Blob Storage</i>"]
+  end
+ subgraph Outcome["✅ Outcome"]
+        O1["Order Processed<br>&amp; Archived"]
+  end
+    T1 --> S1
+    S1 --> S2
+    S2 --> S3
+    S3 --> S4
+    S4 --> S5
+    S5 --> O1
 
-    subgraph Engage["📝 Engage"]
-        S1["Place Order<br/><i>Web App</i>"]
-    end
-
-    subgraph Transact["💳 Transact"]
-        S2["Validate & Persist<br/><i>Orders API</i>"]
-    end
-
-    subgraph Process["⚙️ Process"]
-        S3["Publish Event<br/><i>Service Bus</i>"]
-        S4["Execute Workflow<br/><i>Logic Apps</i>"]
-    end
-
-    subgraph Archive["📁 Archive"]
-        S5["Store Result<br/><i>Blob Storage</i>"]
-    end
-
-    subgraph Outcome["✅ Outcome"]
-        O1["Order Processed<br/>& Archived"]
-    end
-
-    T1 --> S1 --> S2 --> S3 --> S4 --> S5 --> O1
-
+     T1:::trigger
+     S1:::stage
+     S2:::stage
+     S3:::stage
+     S4:::stage
+     S5:::stage
+     O1:::outcome
     classDef trigger fill:#e3f2fd,stroke:#1565c0
     classDef stage fill:#fff3e0,stroke:#ef6c00
     classDef outcome fill:#e8f5e9,stroke:#2e7d32
-
-    class T1 trigger
-    class S1,S2,S3,S4,S5 stage
-    class O1 outcome
+    style Trigger stroke:#000000,fill:#FFFFFF
+    style Engage stroke:#000000,fill:#FFFFFF
+    style Transact stroke:#000000,fill:#FFFFFF
+    style Process stroke:#000000,fill:#FFFFFF
+    style Archive stroke:#000000,fill:#FFFFFF
+    style Outcome stroke:#000000,fill:#FFFFFF
 ```
 
 ### Value Stream Metrics
@@ -159,38 +171,44 @@ flowchart LR
 
 ```mermaid
 flowchart LR
-    subgraph Sources["📡 Telemetry Sources"]
+ subgraph Sources["📡 Telemetry Sources"]
         Src1["Application Services"]
         Src2["Azure Platform"]
-    end
-
-    subgraph Collect["📥 Collection"]
+  end
+ subgraph Collect["📥 Collection"]
         Col1["OpenTelemetry SDK"]
         Col2["Azure Diagnostics"]
-    end
-
-    subgraph Store["💾 Storage"]
+  end
+ subgraph Store["💾 Storage"]
         Sto1["Application Insights"]
         Sto2["Log Analytics"]
-    end
-
-    subgraph Consume["👁️ Consumption"]
+  end
+ subgraph Consume["👁️ Consumption"]
         Con1["Dashboards"]
         Con2["Alerts"]
         Con3["Investigation"]
-    end
+  end
+    Sources --> Collect
+    Collect --> Store
+    Store --> Consume
 
-    Sources --> Collect --> Store --> Consume
-
+     Src1:::source
+     Src2:::source
+     Col1:::collect
+     Col2:::collect
+     Sto1:::store
+     Sto2:::store
+     Con1:::consume
+     Con2:::consume
+     Con3:::consume
     classDef source fill:#fff3e0,stroke:#ef6c00
     classDef collect fill:#e3f2fd,stroke:#1565c0
     classDef store fill:#e8f5e9,stroke:#2e7d32
     classDef consume fill:#f3e5f5,stroke:#7b1fa2
-
-    class Src1,Src2 source
-    class Col1,Col2 collect
-    class Sto1,Sto2 store
-    class Con1,Con2,Con3 consume
+    style Sources stroke:#000000,fill:#FFFFFF
+    style Collect stroke:#000000,fill:#FFFFFF
+    style Store stroke:#000000,fill:#FFFFFF
+    style Consume stroke:#000000,fill:#FFFFFF
 ```
 
 ---

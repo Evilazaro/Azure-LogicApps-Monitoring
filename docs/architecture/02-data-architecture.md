@@ -37,38 +37,40 @@ The data architecture follows **service-oriented data ownership**, where each se
 
 ```mermaid
 flowchart LR
-    subgraph BusinessDomains["📊 Business Data Domains"]
+ subgraph BusinessDomains["📊 Business Data Domains"]
         Orders["📦 Orders Domain"]
         Events["📨 Order Events Domain"]
-    end
-
-    subgraph DataStores["🗄️ Data Stores"]
-        OrderDb[("OrderDb<br/>Azure SQL")]
-        EventStore["ordersplaced<br/>Service Bus Topic"]
-        WorkflowState["Workflow State<br/>Azure Storage"]
-    end
-
-    subgraph Consumers["👥 Data Consumers"]
+  end
+ subgraph DataStores["🗄️ Data Stores"]
+        OrderDb[("OrderDb<br>Azure SQL")]
+        EventStore["ordersplaced<br>Service Bus Topic"]
+        WorkflowState["Workflow State<br>Azure Storage"]
+  end
+ subgraph Consumers["👥 Data Consumers"]
         API["Orders API"]
         LogicApp["Logic Apps"]
         Analytics["App Insights"]
-    end
-
-    Orders --> OrderDb
-    Orders --> EventStore
+  end
+    Orders --> OrderDb & EventStore
     OrderDb --> API
     EventStore --> LogicApp
     API --> Analytics
-    LogicApp --> Analytics
-    LogicApp --> WorkflowState
+    LogicApp --> Analytics & WorkflowState
 
+     Orders:::domain
+     Events:::domain
+     OrderDb:::store
+     EventStore:::store
+     WorkflowState:::store
+     API:::consumer
+     LogicApp:::consumer
+     Analytics:::consumer
     classDef domain fill:#e3f2fd,stroke:#1565c0,stroke-width:2px
     classDef store fill:#fff3e0,stroke:#ef6c00,stroke-width:2px
     classDef consumer fill:#e8f5e9,stroke:#2e7d32,stroke-width:2px
-
-    class Orders,Events domain
-    class OrderDb,EventStore,WorkflowState store
-    class API,LogicApp,Analytics consumer
+    style Consumers stroke:#000000,fill:#FFFFFF
+    style BusinessDomains stroke:#000000,fill:#FFFFFF
+    style DataStores stroke:#000000,fill:#FFFFFF
 ```
 
 ---
@@ -174,58 +176,60 @@ sequenceDiagram
 
 ```mermaid
 flowchart LR
-    subgraph Sources["📡 Layer 1: Telemetry Sources"]
-        direction TB
+ subgraph Sources["📡 1: Telemetry Sources"]
+    direction TB
         API["⚙️ Orders API"]
         Web["🌐 Web App"]
         LA["🔄 Logic Apps"]
         SB["📨 Service Bus"]
         SQL["🗄️ SQL Database"]
-    end
-
-    subgraph Instrumentation["🔧 Layer 2: Instrumentation"]
-        direction TB
+  end
+ subgraph Instrumentation["🔧 2: Instrumentation"]
+    direction TB
         OTEL["OpenTelemetry SDK"]
         AzDiag["Azure Diagnostics"]
-    end
-
-    subgraph Collection["📥 Layer 3: Collection"]
-        direction TB
+  end
+ subgraph Collection["📥 3: Collection"]
+    direction TB
         AI["Application Insights"]
         LAW["Log Analytics Workspace"]
-    end
-
-    subgraph Visualization["📈 Layer 4: Visualization"]
-        direction TB
+  end
+ subgraph Visualization["📈 4: Visualization"]
+    direction TB
         Dash["Dashboards"]
         Alerts["Alert Rules"]
         KQL["KQL Queries"]
-    end
-
-    API -->|"OTLP/HTTP"| OTEL
-    Web -->|"OTLP/HTTP"| OTEL
-    LA -->|"Built-in"| AzDiag
-    SB -->|"Metrics API"| AzDiag
-    SQL -->|"Metrics API"| AzDiag
-
-    OTEL -->|"Export"| AI
-    AzDiag -->|"Diagnostic Settings"| LAW
-    AzDiag -->|"Diagnostic Settings"| AI
-
-    AI --> Dash
-    AI --> Alerts
+  end
+    API -- OTLP/HTTP --> OTEL
+    Web -- OTLP/HTTP --> OTEL
+    LA -- "Built-in" --> AzDiag
+    SB -- Metrics API --> AzDiag
+    SQL -- Metrics API --> AzDiag
+    OTEL -- Export --> AI
+    AzDiag -- Diagnostic Settings --> LAW & AI
+    AI --> Dash & Alerts & KQL
     LAW --> KQL
-    AI --> KQL
 
+     API:::source
+     Web:::source
+     LA:::source
+     SB:::source
+     SQL:::source
+     OTEL:::instrument
+     AzDiag:::instrument
+     AI:::collect
+     LAW:::collect
+     Dash:::visual
+     Alerts:::visual
+     KQL:::visual
     classDef source fill:#fff3e0,stroke:#ef6c00,stroke-width:2px
     classDef instrument fill:#e3f2fd,stroke:#1565c0,stroke-width:2px
     classDef collect fill:#e8f5e9,stroke:#2e7d32,stroke-width:2px
     classDef visual fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px
-
-    class API,Web,LA,SB,SQL source
-    class OTEL,AzDiag instrument
-    class AI,LAW collect
-    class Dash,Alerts,KQL visual
+    style Sources stroke:#000000,fill:#FFFFFF
+    style Instrumentation stroke:#000000,fill:#FFFFFF
+    style Collection stroke:#000000,fill:#FFFFFF
+    style Visualization stroke:#000000,fill:#FFFFFF
 ```
 
 ---
@@ -244,57 +248,61 @@ flowchart LR
 
 ```mermaid
 flowchart TB
-    subgraph Sources["📡 Telemetry Sources"]
+ subgraph Sources["📡 Telemetry Sources"]
         API["⚙️ Orders API"]
         Web["🌐 Web App"]
         LA["🔄 Logic Apps"]
         SB["📨 Service Bus"]
         SQL["🗄️ SQL Database"]
-    end
-
-    subgraph Pillars["📊 Three Pillars"]
-        subgraph Traces["📍 Traces"]
-            T1["HTTP Request Spans"]
-            T2["Database Spans"]
-            T3["Messaging Spans"]
-        end
-
-        subgraph Metrics["📈 Metrics"]
-            M1["Request Metrics"]
-            M2["Business Metrics"]
-            M3["Platform Metrics"]
-        end
-
-        subgraph Logs["📝 Logs"]
-            L1["Application Logs"]
-            L2["Request Logs"]
-            L3["Diagnostic Logs"]
-        end
-    end
-
-    subgraph Storage["📥 Storage"]
+  end
+ subgraph Traces["📍 Traces"]
+        T1["HTTP Request Spans"]
+        T2["Database Spans"]
+        T3["Messaging Spans"]
+  end
+ subgraph Metrics["📈 Metrics"]
+        M1["Request Metrics"]
+        M2["Business Metrics"]
+        M3["Platform Metrics"]
+  end
+ subgraph Logs["📝 Logs"]
+        L1["Application Logs"]
+        L2["Request Logs"]
+        L3["Diagnostic Logs"]
+  end
+ subgraph Pillars["📊 Three Pillars"]
+        Traces
+        Metrics
+        Logs
+  end
+ subgraph Storage["📥 Storage"]
         AI["Application Insights"]
         LAW["Log Analytics"]
-    end
-
+  end
     API --> T1 & T2 & M1 & M2 & L1 & L2
     Web --> T1 & M1 & L1 & L2
     LA --> T3 & M3 & L3
     SB --> M3 & L3
     SQL --> M3 & L3
-
     Traces --> AI
     Metrics --> AI
-    Logs --> AI
-    Logs --> LAW
+    Logs --> AI & LAW
 
+     T1:::trace
+     T2:::trace
+     T3:::trace
+     M1:::metric
+     M2:::metric
+     M3:::metric
+     L1:::log
+     L2:::log
+     L3:::log
     classDef trace fill:#e3f2fd,stroke:#1565c0
     classDef metric fill:#e8f5e9,stroke:#2e7d32
     classDef log fill:#fff3e0,stroke:#ef6c00
-
-    class T1,T2,T3 trace
-    class M1,M2,M3 metric
-    class L1,L2,L3 log
+    style Sources stroke:#000000,fill:#FFFFFF
+    style Pillars stroke:#000000,fill:#FFFFFF
+    style Storage stroke:#000000,fill:#FFFFFF
 ```
 
 ### Metrics Inventory
@@ -367,36 +375,38 @@ message.ApplicationProperties["traceparent"] = activity.Id ?? string.Empty;
 ## 10. Data Dependencies Map
 
 ```mermaid
-flowchart TD
-    subgraph Upstream["⬆️ Upstream (Data Producers)"]
-        WebApp["🌐 Web App<br/>(Order Input)"]
-    end
+flowchart TB
+ subgraph Upstream["⬆️ Upstream (Data Producers)"]
+        WebApp["🌐 Web App<br>(Order Input)"]
+  end
+ subgraph Core["🎯 Core Data Assets"]
+        OrderDb[("🗄️ OrderDb<br>Azure SQL")]
+        EventBus["📨 Service Bus<br>ordersplaced"]
+  end
+ subgraph Downstream["⬇️ Downstream (Data Consumers)"]
+        LogicApp["🔄 Logic Apps<br>(Workflow Automation)"]
+        AppInsights["📊 App Insights<br>(Analytics &amp; Monitoring)"]
+        BlobStorage["📁 Blob Storage<br>(Order Archives)"]
+  end
+    WebApp -- Creates orders --> OrderDb
+    OrderDb -- Publishes events --> EventBus
+    EventBus -- Triggers workflows --> LogicApp
+    LogicApp -- Archives results --> BlobStorage
+    OrderDb -. Emits telemetry .-> AppInsights
+    LogicApp -. Emits telemetry .-> AppInsights
 
-    subgraph Core["🎯 Core Data Assets"]
-        OrderDb[("🗄️ OrderDb<br/>Azure SQL")]
-        EventBus["📨 Service Bus<br/>ordersplaced"]
-    end
-
-    subgraph Downstream["⬇️ Downstream (Data Consumers)"]
-        LogicApp["🔄 Logic Apps<br/>(Workflow Automation)"]
-        AppInsights["📊 App Insights<br/>(Analytics & Monitoring)"]
-        BlobStorage["📁 Blob Storage<br/>(Order Archives)"]
-    end
-
-    WebApp -->|"Creates orders"| OrderDb
-    OrderDb -->|"Publishes events"| EventBus
-    EventBus -->|"Triggers workflows"| LogicApp
-    LogicApp -->|"Archives results"| BlobStorage
-    OrderDb -.->|"Emits telemetry"| AppInsights
-    LogicApp -.->|"Emits telemetry"| AppInsights
-
+     WebApp:::upstream
+     OrderDb:::core
+     EventBus:::core
+     LogicApp:::downstream
+     AppInsights:::downstream
+     BlobStorage:::downstream
     classDef upstream fill:#fff3e0,stroke:#ef6c00,stroke-width:2px
     classDef core fill:#e3f2fd,stroke:#1565c0,stroke-width:2px
     classDef downstream fill:#e8f5e9,stroke:#2e7d32,stroke-width:2px
-
-    class WebApp upstream
-    class OrderDb,EventBus core
-    class LogicApp,AppInsights,BlobStorage downstream
+    style Upstream stroke:#000000,fill:#FFFFFF
+    style Core stroke:#000000,fill:#FFFFFF
+    style Downstream stroke:#000000,fill:#FFFFFF
 ```
 
 ---
