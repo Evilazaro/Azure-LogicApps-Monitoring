@@ -65,6 +65,7 @@ By automating environment validation, secret management, SQL managed identity co
 | **Secrets Management**   | `clean-secrets.ps1`               | `clean-secrets.sh`               | Clear .NET user secrets                        | [📄 clean-secrets.md](./clean-secrets.md)                             |
 | **Test Data**            | `Generate-Orders.ps1`             | `Generate-Orders.sh`             | Generate sample order data                     | [📄 Generate-Orders.md](./Generate-Orders.md)                         |
 | **Workflow Deployment**  | `deploy-workflow.ps1`             | `deploy-workflow.sh`             | Deploy Logic Apps Standard workflows           | [📄 deploy-workflow.md](./deploy-workflow.md)                         |
+| **Infra Delete Cleanup** | `postinfradelete.ps1`             | `postinfradelete.sh`             | Purge soft-deleted Logic Apps after azd down   | [📄 postinfradelete.md](./postinfradelete.md)                         |
 
 ---
 

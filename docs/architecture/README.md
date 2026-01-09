@@ -135,19 +135,19 @@ flowchart TD
 ### Repository Structure
 
 ```
-├── app.AppHost/              # .NET Aspire orchestrator
-├── app.ServiceDefaults/      # Shared cross-cutting concerns
-├── src/
-│   ├── eShop.Orders.API/     # Orders REST API
-│   └── eShop.Web.App/        # Blazor Server frontend
-├── workflows/
-│   └── OrdersManagement/     # Logic Apps workflows
-├── infra/                    # Bicep IaC templates
-│   ├── shared/               # Monitoring, identity, networking
-│   └── workload/             # Services, messaging, Logic Apps
-├── hooks/                    # azd lifecycle scripts
-└── docs/
-    └── architecture/         # This documentation
+├── 🎯 app.AppHost/              # .NET Aspire orchestrator
+├── 📦 app.ServiceDefaults/      # Shared cross-cutting concerns
+├── 📂 src/
+│   ├── 📡 eShop.Orders.API/     # Orders REST API
+│   └── 🌐 eShop.Web.App/        # Blazor Server frontend
+├── 🔄 workflows/
+│   └── OrdersManagement/        # Logic Apps workflows
+├── 🏗️ infra/                    # Bicep IaC templates
+│   ├── shared/                  # Monitoring, identity, networking
+│   └── workload/                # Services, messaging, Logic Apps
+├── 🔧 hooks/                    # azd lifecycle scripts
+└── 📚 docs/
+    └── architecture/            # This documentation
 ```
 
 ---
