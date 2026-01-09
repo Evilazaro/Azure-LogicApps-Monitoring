@@ -6,11 +6,11 @@
 
 ## Metadata
 
-| Field | Value |
-|-------|-------|
-| **Status** | ✅ Accepted |
-| **Date** | 2024-01-01 |
-| **Deciders** | Architecture Team |
+| Field          | Value                              |
+| -------------- | ---------------------------------- |
+| **Status**     | ✅ Accepted                        |
+| **Date**       | 2024-01-01                         |
+| **Deciders**   | Architecture Team                  |
 | **Categories** | Messaging, Integration, Decoupling |
 
 ---
@@ -28,14 +28,14 @@ The Orders API needs to communicate order events to downstream systems (Logic Ap
 
 ### Requirements
 
-| Requirement | Priority | Description |
-|-------------|----------|-------------|
-| **R1** | Must Have | Asynchronous, non-blocking event delivery |
-| **R2** | Must Have | At-least-once delivery guarantee |
-| **R3** | Must Have | Message ordering within partition |
-| **R4** | Should Have | Dead-letter queue for failed messages |
-| **R5** | Should Have | Support for multiple subscribers (fan-out) |
-| **R6** | Should Have | Distributed trace context propagation |
+| Requirement | Priority    | Description                                |
+| ----------- | ----------- | ------------------------------------------ |
+| **R1**      | Must Have   | Asynchronous, non-blocking event delivery  |
+| **R2**      | Must Have   | At-least-once delivery guarantee           |
+| **R3**      | Must Have   | Message ordering within partition          |
+| **R4**      | Should Have | Dead-letter queue for failed messages      |
+| **R5**      | Should Have | Support for multiple subscribers (fan-out) |
+| **R6**      | Should Have | Distributed trace context propagation      |
 
 ### Integration Points
 
@@ -114,18 +114,19 @@ flowchart TB
 
 ### Message Properties
 
-| Property | Type | Purpose |
-|----------|------|---------|
-| `ContentType` | string | `application/json` |
-| `MessageId` | string | Unique message identifier |
-| `CorrelationId` | string | Business correlation (Order ID) |
-| `ApplicationProperties.traceparent` | string | W3C Trace Context |
-| `ApplicationProperties.TraceId` | string | OpenTelemetry Trace ID |
-| `ApplicationProperties.SpanId` | string | OpenTelemetry Span ID |
+| Property                            | Type   | Purpose                         |
+| ----------------------------------- | ------ | ------------------------------- |
+| `ContentType`                       | string | `application/json`              |
+| `MessageId`                         | string | Unique message identifier       |
+| `CorrelationId`                     | string | Business correlation (Order ID) |
+| `ApplicationProperties.traceparent` | string | W3C Trace Context               |
+| `ApplicationProperties.TraceId`     | string | OpenTelemetry Trace ID          |
+| `ApplicationProperties.SpanId`      | string | OpenTelemetry Span ID           |
 
 ### Implementation
 
 **Publisher** ([OrdersMessageHandler.cs](../../../src/eShop.Orders.API/Handlers/OrdersMessageHandler.cs)):
+
 ```csharp
 public async Task PublishOrderCreatedAsync(Order order)
 {
@@ -150,6 +151,7 @@ public async Task PublishOrderCreatedAsync(Order order)
 ```
 
 **Subscriber** ([workflow.json](../../../workflows/OrdersManagement/OrdersManagementLogicApp/OrdersPlacedProcess/workflow.json)):
+
 - Logic App triggers on Service Bus subscription
 - Processes message and archives to Blob Storage
 - Routes to success/error folders based on outcome
@@ -160,31 +162,31 @@ public async Task PublishOrderCreatedAsync(Order order)
 
 ### Positive
 
-| Outcome | Impact | Measurement |
-|---------|--------|-------------|
-| **Loose coupling** | High | API and Logic App evolve independently |
-| **Reliable delivery** | High | At-least-once with retry and DLQ |
-| **Scalability** | High | Parallel subscription processing |
-| **Fan-out capability** | Medium | Multiple subscribers per topic |
-| **Trace propagation** | High | End-to-end distributed tracing |
+| Outcome                | Impact | Measurement                            |
+| ---------------------- | ------ | -------------------------------------- |
+| **Loose coupling**     | High   | API and Logic App evolve independently |
+| **Reliable delivery**  | High   | At-least-once with retry and DLQ       |
+| **Scalability**        | High   | Parallel subscription processing       |
+| **Fan-out capability** | Medium | Multiple subscribers per topic         |
+| **Trace propagation**  | High   | End-to-end distributed tracing         |
 
 ### Negative
 
-| Outcome | Impact | Mitigation |
-|---------|--------|------------|
-| **Added complexity** | Medium | Managed service, minimal ops |
-| **Eventual consistency** | Medium | Design for idempotency |
-| **Additional cost** | Low | Standard tier, pay-per-operation |
-| **Message ordering** | Medium | Session-based ordering if needed |
+| Outcome                  | Impact | Mitigation                       |
+| ------------------------ | ------ | -------------------------------- |
+| **Added complexity**     | Medium | Managed service, minimal ops     |
+| **Eventual consistency** | Medium | Design for idempotency           |
+| **Additional cost**      | Low    | Standard tier, pay-per-operation |
+| **Message ordering**     | Medium | Session-based ordering if needed |
 
 ### Operational Considerations
 
-| Aspect | Configuration | Rationale |
-|--------|---------------|-----------|
-| **Tier** | Standard | Topics/subscriptions, DLQ support |
-| **Max Delivery Count** | 10 | Balance retries vs. fast failure |
-| **Lock Duration** | 5 minutes | Allow for workflow processing |
-| **TTL** | 14 days | Standard retention |
+| Aspect                 | Configuration | Rationale                         |
+| ---------------------- | ------------- | --------------------------------- |
+| **Tier**               | Standard      | Topics/subscriptions, DLQ support |
+| **Max Delivery Count** | 10            | Balance retries vs. fast failure  |
+| **Lock Duration**      | 5 minutes     | Allow for workflow processing     |
+| **TTL**                | 14 days       | Standard retention                |
 
 ---
 
@@ -192,46 +194,46 @@ public async Task PublishOrderCreatedAsync(Order order)
 
 ### Alternative 1: Azure Event Grid
 
-| Aspect | Assessment |
-|--------|------------|
-| **Pros** | Serverless, event-native, cheaper at scale |
-| **Cons** | At-most-once delivery, no DLQ built-in |
+| Aspect      | Assessment                                     |
+| ----------- | ---------------------------------------------- |
+| **Pros**    | Serverless, event-native, cheaper at scale     |
+| **Cons**    | At-most-once delivery, no DLQ built-in         |
 | **Verdict** | ❌ Rejected - Reliability requirements not met |
 
 ### Alternative 2: Azure Event Hubs
 
-| Aspect | Assessment |
-|--------|------------|
-| **Pros** | High throughput, partitioned streams |
-| **Cons** | Over-provisioned for order volumes, complex consumer groups |
-| **Verdict** | ❌ Rejected - Wrong fit for message-based workloads |
+| Aspect      | Assessment                                                  |
+| ----------- | ----------------------------------------------------------- |
+| **Pros**    | High throughput, partitioned streams                        |
+| **Cons**    | Over-provisioned for order volumes, complex consumer groups |
+| **Verdict** | ❌ Rejected - Wrong fit for message-based workloads         |
 
 ### Alternative 3: Direct HTTP Calls
 
-| Aspect | Assessment |
-|--------|------------|
-| **Pros** | Simple, synchronous, immediate feedback |
-| **Cons** | Tight coupling, failure propagation, no buffering |
-| **Verdict** | ❌ Rejected - Violates decoupling principles |
+| Aspect      | Assessment                                        |
+| ----------- | ------------------------------------------------- |
+| **Pros**    | Simple, synchronous, immediate feedback           |
+| **Cons**    | Tight coupling, failure propagation, no buffering |
+| **Verdict** | ❌ Rejected - Violates decoupling principles      |
 
 ### Alternative 4: Azure Storage Queues
 
-| Aspect | Assessment |
-|--------|------------|
-| **Pros** | Simple, cost-effective |
-| **Cons** | No topics/subscriptions, limited features |
+| Aspect      | Assessment                                      |
+| ----------- | ----------------------------------------------- |
+| **Pros**    | Simple, cost-effective                          |
+| **Cons**    | No topics/subscriptions, limited features       |
 | **Verdict** | ❌ Rejected - Fan-out requirement not supported |
 
 ### Decision Matrix
 
-| Criterion | Weight | Service Bus | Event Grid | Event Hubs | Storage Queue |
-|-----------|--------|-------------|------------|------------|---------------|
-| Reliability | 30% | 5 | 3 | 5 | 4 |
-| Fan-out | 25% | 5 | 4 | 3 | 1 |
-| Logic App Integration | 20% | 5 | 4 | 3 | 4 |
-| Cost Efficiency | 15% | 4 | 5 | 2 | 5 |
-| Complexity | 10% | 4 | 4 | 2 | 5 |
-| **Weighted Score** | | **4.75** | 3.85 | 3.35 | 3.4 |
+| Criterion             | Weight | Service Bus | Event Grid | Event Hubs | Storage Queue |
+| --------------------- | ------ | ----------- | ---------- | ---------- | ------------- |
+| Reliability           | 30%    | 5           | 3          | 5          | 4             |
+| Fan-out               | 25%    | 5           | 4          | 3          | 1             |
+| Logic App Integration | 20%    | 5           | 4          | 3          | 4             |
+| Cost Efficiency       | 15%    | 4           | 5          | 2          | 5             |
+| Complexity            | 10%    | 4           | 4          | 2          | 5             |
+| **Weighted Score**    |        | **4.75**    | 3.85       | 3.35       | 3.4           |
 
 ---
 
@@ -255,7 +257,7 @@ sequenceDiagram
 
     SB->>LA: Trigger: ordersplaced subscription
     LA->>LA: Parse message + extract trace
-    
+
     alt Success
         LA->>Storage: Archive to success/
         LA->>SB: Complete message
