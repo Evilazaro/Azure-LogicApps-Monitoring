@@ -1,0 +1,393 @@
+# Application Architecture
+
+[← Data Architecture](02-data-architecture.md) | **Application Architecture** | [Technology Architecture →](04-technology-architecture.md)
+
+---
+
+## 1. Application Architecture Overview
+
+The solution follows a **modular monolith** approach with clear bounded contexts, evolving toward microservices through event-driven patterns. Services communicate synchronously via HTTP/REST for queries and commands, while using Azure Service Bus for asynchronous event propagation.
+
+### Service Decomposition Rationale
+
+- **eShop.Orders.API:** Owns the Order bounded context—validation, persistence, and event publishing
+- **eShop.Web.App:** Presentation layer with typed HTTP clients for API consumption
+- **OrdersManagement Logic App:** Workflow automation triggered by domain events
+- **app.ServiceDefaults:** Shared library for cross-cutting concerns (not a service)
+
+### Architectural Style
+
+| Pattern          | Implementation                    | Benefit                                  |
+| ---------------- | --------------------------------- | ---------------------------------------- |
+| **Event-Driven** | Service Bus pub/sub               | Decoupled services, temporal flexibility |
+| **Layered**      | Controller → Service → Repository | Separation of concerns, testability      |
+| **API-First**    | OpenAPI/Swagger documentation     | Interoperability, contract-first design  |
+
+---
+
+## 2. Application Architecture Principles
+
+| Principle                   | Statement                                | Rationale                     | Implications                              |
+| --------------------------- | ---------------------------------------- | ----------------------------- | ----------------------------------------- |
+| **Single Responsibility**   | Each service has one reason to change    | Maintainability, testability  | Clear bounded contexts                    |
+| **API-First Design**        | All capabilities exposed via REST APIs   | Interoperability, reusability | OpenAPI specifications for all endpoints  |
+| **Loose Coupling**          | Services communicate via events          | Independent deployability     | Service Bus for async cross-service flows |
+| **High Cohesion**           | Related functionality grouped together   | Understandability             | Domain-aligned service boundaries         |
+| **Observability by Design** | All services instrumented from inception | Operational excellence        | OpenTelemetry built into ServiceDefaults  |
+
+---
+
+## 3. Application Landscape Map
+
+```mermaid
+flowchart TB
+    subgraph Presentation["🖥️ Presentation Layer"]
+        direction LR
+        WebApp["🌐 eShop.Web.App<br/>Blazor Server + Fluent UI<br/><i>Port 5002</i>"]
+    end
+
+    subgraph Application["⚙️ Application Layer"]
+        direction LR
+        API["📡 eShop.Orders.API<br/>ASP.NET Core 10<br/><i>Port 5001</i>"]
+        Workflow["🔄 OrdersManagement<br/>Logic Apps Standard"]
+    end
+
+    subgraph Platform["🏗️ Platform Layer"]
+        direction LR
+        Orchestrator["🎯 app.AppHost<br/>.NET Aspire"]
+        SharedLib["📦 app.ServiceDefaults<br/>Cross-cutting Library"]
+    end
+
+    subgraph External["☁️ External Services"]
+        direction LR
+        DB[("🗄️ Azure SQL<br/>OrderDb")]
+        Queue["📨 Service Bus<br/>ordersplaced Topic"]
+        Storage["📁 Azure Storage<br/>Workflow State"]
+        Monitor["📊 Application Insights"]
+    end
+
+    WebApp -->|"HTTP/REST"| API
+    API -->|"EF Core"| DB
+    API -->|"AMQP"| Queue
+    Queue -->|"Trigger"| Workflow
+    Workflow -->|"HTTP"| API
+    Workflow -->|"Blob API"| Storage
+
+    Orchestrator -.->|"Orchestrates"| WebApp
+    Orchestrator -.->|"Orchestrates"| API
+    SharedLib -.->|"Configures"| WebApp
+    SharedLib -.->|"Configures"| API
+
+    WebApp -.->|"OTLP"| Monitor
+    API -.->|"OTLP"| Monitor
+    Workflow -.->|"Diagnostics"| Monitor
+
+    classDef presentation fill:#e3f2fd,stroke:#1565c0,stroke-width:2px
+    classDef application fill:#e8f5e9,stroke:#2e7d32,stroke-width:2px
+    classDef platform fill:#fff3e0,stroke:#ef6c00,stroke-width:2px
+    classDef external fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px
+
+    class WebApp presentation
+    class API,Workflow application
+    class Orchestrator,SharedLib platform
+    class DB,Queue,Storage,Monitor external
+```
+
+---
+
+## 4. Service Catalog
+
+| Service              | Type         | Port | Dependencies                     | Health Endpoint     | Technology          |
+| -------------------- | ------------ | ---- | -------------------------------- | ------------------- | ------------------- |
+| **eShop.Orders.API** | REST API     | 5001 | SQL Database, Service Bus        | `/health`, `/alive` | ASP.NET Core 10     |
+| **eShop.Web.App**    | Web UI       | 5002 | eShop.Orders.API                 | `/health`, `/alive` | Blazor Server       |
+| **OrdersManagement** | Workflow     | N/A  | Service Bus, Storage, Orders API | Azure-managed       | Logic Apps Standard |
+| **app.AppHost**      | Orchestrator | N/A  | All services                     | N/A                 | .NET Aspire         |
+
+---
+
+## 5. Service Details
+
+### eShop.Orders.API
+
+**Responsibilities:**
+
+- Order validation and business rule enforcement
+- Order persistence to SQL Database via Entity Framework Core
+- OrderPlaced event publishing to Service Bus
+- RESTful API endpoints for order CRUD operations
+
+**Component Diagram:**
+
+```mermaid
+flowchart TB
+    subgraph API["eShop.Orders.API"]
+        Controller["OrdersController<br/><i>API Layer</i>"]
+        Service["OrderService<br/><i>Business Logic</i>"]
+        Repository["OrderRepository<br/><i>Data Access</i>"]
+        Handler["OrdersMessageHandler<br/><i>Messaging</i>"]
+        DbContext["OrderDbContext<br/><i>EF Core</i>"]
+    end
+
+    subgraph External["External Dependencies"]
+        SQL[("SQL Database")]
+        SB["Service Bus"]
+    end
+
+    Controller --> Service
+    Service --> Repository
+    Service --> Handler
+    Repository --> DbContext
+    DbContext --> SQL
+    Handler --> SB
+
+    classDef internal fill:#e8f5e9,stroke:#2e7d32
+    classDef external fill:#f3e5f5,stroke:#7b1fa2
+
+    class Controller,Service,Repository,Handler,DbContext internal
+    class SQL,SB external
+```
+
+**API Endpoints:**
+
+| Method   | Route                 | Description                           | Request        | Response                |
+| -------- | --------------------- | ------------------------------------- | -------------- | ----------------------- |
+| `POST`   | `/api/orders`         | Place a new order                     | `Order` JSON   | `201 Created` + Order   |
+| `GET`    | `/api/orders`         | List all orders                       | Query params   | `200 OK` + Order[]      |
+| `GET`    | `/api/orders/{id}`    | Get order by ID                       | Path param     | `200 OK` + Order        |
+| `DELETE` | `/api/orders/{id}`    | Delete an order                       | Path param     | `204 No Content`        |
+| `POST`   | `/api/orders/batch`   | Place multiple orders                 | `Order[]` JSON | `201 Created` + Order[] |
+| `POST`   | `/api/orders/process` | Process an order (Logic App callback) | Order JSON     | `201 Created`           |
+
+**Key Patterns:**
+
+- Repository pattern for data access abstraction
+- Dependency injection for testability
+- Activity-based distributed tracing
+- Retry policies for database operations
+
+> **Reference:** [Program.cs](../../src/eShop.Orders.API/Program.cs), [OrdersController.cs](../../src/eShop.Orders.API/Controllers/OrdersController.cs)
+
+---
+
+### eShop.Web.App
+
+**Responsibilities:**
+
+- Interactive order management UI
+- Real-time updates via SignalR (Blazor Server)
+- Typed HTTP client for Orders API communication
+
+**Component Diagram:**
+
+```mermaid
+flowchart TB
+    subgraph WebApp["eShop.Web.App"]
+        Pages["Razor Pages<br/><i>Home, PlaceOrder, ListOrders</i>"]
+        Components["Blazor Components<br/><i>Layout, Forms</i>"]
+        ApiService["OrdersAPIService<br/><i>Typed HTTP Client</i>"]
+    end
+
+    subgraph External["External"]
+        API["Orders API"]
+    end
+
+    Pages --> Components
+    Pages --> ApiService
+    ApiService -->|"HTTP/REST"| API
+
+    classDef internal fill:#e3f2fd,stroke:#1565c0
+    classDef external fill:#f3e5f5,stroke:#7b1fa2
+
+    class Pages,Components,ApiService internal
+    class API external
+```
+
+**UI Pages:**
+
+| Page             | Route                 | Purpose                      |
+| ---------------- | --------------------- | ---------------------------- |
+| Home             | `/`                   | Dashboard overview           |
+| PlaceOrder       | `/place-order`        | Single order submission form |
+| PlaceOrdersBatch | `/place-orders-batch` | Bulk order submission        |
+| ListAllOrders    | `/orders`             | Order listing grid           |
+| ViewOrder        | `/orders/{id}`        | Order detail view            |
+
+> **Reference:** [Program.cs](../../src/eShop.Web.App/Program.cs), [OrdersAPIService.cs](../../src/eShop.Web.App/Components/Services/OrdersAPIService.cs)
+
+---
+
+### Logic Apps Workflows
+
+**Workflow Inventory:**
+
+| Workflow                        | Trigger             | Purpose                             |
+| ------------------------------- | ------------------- | ----------------------------------- |
+| **OrdersPlacedProcess**         | Service Bus message | Process new orders, archive results |
+| **OrdersPlacedCompleteProcess** | Service Bus message | Complete order processing workflow  |
+
+**OrdersPlacedProcess Flow:**
+
+```mermaid
+flowchart TD
+    Trigger["📨 Service Bus Trigger<br/><i>ordersplaced topic</i>"]
+    Check["🔍 Check Content Type<br/><i>application/json?</i>"]
+    CallAPI["📡 HTTP POST<br/><i>/api/orders/process</i>"]
+    CheckResult["✅ Check Status Code<br/><i>201?</i>"]
+    ArchiveSuccess["📁 Create Blob<br/><i>/ordersprocessedsuccessfully</i>"]
+    ArchiveError["⚠️ Create Blob<br/><i>/ordersprocessedwitherrors</i>"]
+
+    Trigger --> Check
+    Check -->|Yes| CallAPI
+    CallAPI --> CheckResult
+    CheckResult -->|Success| ArchiveSuccess
+    CheckResult -->|Failure| ArchiveError
+
+    classDef trigger fill:#e3f2fd,stroke:#1565c0
+    classDef action fill:#e8f5e9,stroke:#2e7d32
+    classDef decision fill:#fff3e0,stroke:#ef6c00
+
+    class Trigger trigger
+    class CallAPI,ArchiveSuccess,ArchiveError action
+    class Check,CheckResult decision
+```
+
+**Integration Points:**
+
+| Connector   | Connection   | Purpose                  |
+| ----------- | ------------ | ------------------------ |
+| Service Bus | `servicebus` | Receive order messages   |
+| Azure Blob  | `azureblob`  | Archive processed orders |
+| HTTP        | Native       | Call Orders API          |
+
+> **Reference:** [workflow.json](../../workflows/OrdersManagement/OrdersManagementLogicApp/OrdersPlacedProcess/workflow.json)
+
+---
+
+## 6. Inter-Service Communication
+
+### Communication Patterns
+
+```mermaid
+flowchart LR
+    subgraph Sync["🔄 Synchronous (HTTP/REST)"]
+        Web["Web App"] -->|"GET/POST"| API["Orders API"]
+        LA["Logic Apps"] -->|"POST"| API
+    end
+
+    subgraph Async["📨 Asynchronous (Service Bus)"]
+        API2["Orders API"] -->|"Publish"| SB["Service Bus"]
+        SB -->|"Subscribe"| LA2["Logic Apps"]
+    end
+
+    classDef sync fill:#e3f2fd,stroke:#1565c0
+    classDef async fill:#e8f5e9,stroke:#2e7d32
+
+    class Web,API,LA sync
+    class API2,SB,LA2 async
+```
+
+### Pattern Summary
+
+| Pattern               | Usage             | Implementation               | Example                 |
+| --------------------- | ----------------- | ---------------------------- | ----------------------- |
+| **Request/Response**  | Queries, commands | HTTP/REST with typed clients | Web App → Orders API    |
+| **Publish/Subscribe** | Domain events     | Service Bus topics           | Orders API → Logic Apps |
+| **Callback**          | Workflow results  | HTTP POST                    | Logic Apps → Orders API |
+
+### Service Discovery
+
+| Environment           | Mechanism          | Configuration                                   |
+| --------------------- | ------------------ | ----------------------------------------------- |
+| **Local Development** | .NET Aspire        | `WithReference()` in AppHost                    |
+| **Azure**             | Container Apps DNS | Service discovery via `services:{name}:https:0` |
+
+---
+
+## 7. Application Integration Points
+
+| Source      | Target       | Protocol  | Contract          | Pattern          |
+| ----------- | ------------ | --------- | ----------------- | ---------------- |
+| Web App     | Orders API   | HTTPS     | OpenAPI v1        | Request/Response |
+| Orders API  | SQL Database | TDS       | EF Core DbContext | CRUD             |
+| Orders API  | Service Bus  | AMQP      | OrderPlaced JSON  | Pub/Sub          |
+| Service Bus | Logic Apps   | Connector | ServiceBusMessage | Event-driven     |
+| Logic Apps  | Orders API   | HTTPS     | OpenAPI v1        | Callback         |
+| Logic Apps  | Blob Storage | REST      | Azure Blob API    | Write            |
+
+---
+
+## 8. Resilience Patterns
+
+| Pattern             | Implementation                           | Configuration                   | Source                                                           |
+| ------------------- | ---------------------------------------- | ------------------------------- | ---------------------------------------------------------------- |
+| **Retry**           | Polly via `AddStandardResilienceHandler` | 3 attempts, exponential backoff | [Extensions.cs](../../app.ServiceDefaults/Extensions.cs#L52-L60) |
+| **Circuit Breaker** | Polly                                    | 120s sampling duration          | [Extensions.cs](../../app.ServiceDefaults/Extensions.cs#L58)     |
+| **Timeout**         | HttpClient + Polly                       | 60s per attempt, 600s total     | [Extensions.cs](../../app.ServiceDefaults/Extensions.cs#L53-L54) |
+| **Database Retry**  | EF Core `EnableRetryOnFailure`           | 5 attempts, 30s max delay       | [Program.cs](../../src/eShop.Orders.API/Program.cs#L38-L41)      |
+
+**Configuration Example:**
+
+```csharp
+// From Extensions.cs
+http.AddStandardResilienceHandler(options =>
+{
+    options.TotalRequestTimeout.Timeout = TimeSpan.FromSeconds(600);
+    options.AttemptTimeout.Timeout = TimeSpan.FromSeconds(60);
+    options.Retry.MaxRetryAttempts = 3;
+    options.Retry.BackoffType = Polly.DelayBackoffType.Exponential;
+    options.CircuitBreaker.SamplingDuration = TimeSpan.FromSeconds(120);
+});
+```
+
+---
+
+## 9. Cross-Cutting Concerns
+
+The `app.ServiceDefaults` library provides shared functionality consumed by all services:
+
+| Concern               | Implementation                          | Benefit                             |
+| --------------------- | --------------------------------------- | ----------------------------------- |
+| **Telemetry**         | OpenTelemetry with Azure Monitor export | Unified observability               |
+| **Health Checks**     | ASP.NET Core Health Checks              | Kubernetes/Container Apps readiness |
+| **Resilience**        | Polly policies                          | Fault tolerance                     |
+| **Service Discovery** | .NET Aspire integration                 | Environment-agnostic endpoints      |
+
+**Usage Pattern:**
+
+```csharp
+// From any service's Program.cs
+builder.AddServiceDefaults();  // Single line enables all cross-cutting concerns
+```
+
+> **Reference:** [Extensions.cs](../../app.ServiceDefaults/Extensions.cs)
+
+---
+
+## 10. Technology Stack Summary
+
+| Layer             | Technology                 | Version | Purpose             |
+| ----------------- | -------------------------- | ------- | ------------------- |
+| **Runtime**       | .NET                       | 10.0    | Application runtime |
+| **Web Framework** | ASP.NET Core               | 10.0    | API and web hosting |
+| **Frontend**      | Blazor Server              | 10.0    | Interactive UI      |
+| **UI Components** | Fluent UI Blazor           | Latest  | Design system       |
+| **ORM**           | Entity Framework Core      | 10.0    | Data access         |
+| **Messaging**     | Azure.Messaging.ServiceBus | Latest  | Event publishing    |
+| **Telemetry**     | OpenTelemetry              | Latest  | Instrumentation     |
+| **Orchestration** | .NET Aspire                | 9.x     | Local development   |
+
+---
+
+## 11. Cross-Architecture Relationships
+
+| Related Architecture           | Connection                                   | Reference                                                                    |
+| ------------------------------ | -------------------------------------------- | ---------------------------------------------------------------------------- |
+| **Business Architecture**      | Services implement business capabilities     | [Business Capabilities](01-business-architecture.md#2-business-capabilities) |
+| **Data Architecture**          | Services own data stores per bounded context | [Data Stores](02-data-architecture.md#5-data-store-details)                  |
+| **Technology Architecture**    | Services deployed to Container Apps          | [Technology Architecture](04-technology-architecture.md)                     |
+| **Observability Architecture** | Services emit telemetry via ServiceDefaults  | [Observability Architecture](05-observability-architecture.md)               |
+
+---
+
+**Next:** [Technology Architecture →](04-technology-architecture.md)
