@@ -240,6 +240,7 @@ public async Task PublishOrderCreatedAsync(Order order)
 ## Message Flow Sequence
 
 ```mermaid
+%%{init: {'theme': 'base', 'themeVariables': { 'primaryColor': '#e3f2fd', 'primaryTextColor': '#0d47a1', 'primaryBorderColor': '#1565c0', 'lineColor': '#1976d2', 'secondaryColor': '#e8f5e9', 'tertiaryColor': '#fff3e0', 'actorBkg': '#e3f2fd', 'actorBorder': '#1565c0', 'actorTextColor': '#0d47a1', 'noteBkgColor': '#fff3e0', 'noteBorderColor': '#ef6c00'}}}%%
 sequenceDiagram
     participant API as Orders API
     participant Handler as MessageHandler
