@@ -15,8 +15,8 @@
     the purge operation to ensure complete cleanup.
     
     The script performs the following operations:
-    - Validates required environment variables (subscription, resource group, location)
-    - Authenticates to Azure using the current session
+    - Validates required environment variables (subscription, location)
+    - Authenticates to Azure using the current CLI session
     - Retrieves the list of soft-deleted Logic Apps in the specified location
     - Purges any Logic Apps that match the resource group naming pattern
 
@@ -41,10 +41,10 @@
 .NOTES
     File Name      : postinfradelete.ps1
     Author         : Evilazaro | Principal Cloud Solution Architect | Microsoft
-    Version        : 1.0.0
+    Version        : 2.0.0
     Last Modified  : 2026-01-09
     Prerequisite   : Azure CLI 2.50+, PowerShell Core 7.0+
-    Required Env   : AZURE_SUBSCRIPTION_ID, AZURE_LOCATION
+    Required Env   : AZURE_SUBSCRIPTION_ID, AZURE_LOCATION (set by azd)
 
 .LINK
     https://github.com/Evilazaro/Azure-LogicApps-Monitoring
@@ -79,7 +79,7 @@ $script:ExitCode = 0
 # Handle -Force parameter for confirmation prompts
 if ($Force) {
     $ConfirmPreference = 'None'
-    Write-Verbose "Force enabled: confirmation prompts suppressed (ConfirmPreference=None)."
+    Write-Verbose -Message 'Force enabled: confirmation prompts suppressed (ConfirmPreference=None).'
 }
 
 #endregion Script Configuration
@@ -87,19 +87,16 @@ if ($Force) {
 #region Script Constants
 
 # Script metadata constants
-$script:ScriptVersion = '1.0.0'
+$script:ScriptVersion = '2.0.0'
 
-# Required environment variables for script execution
+# Required environment variables for script execution (set by azd)
 $script:RequiredEnvironmentVariables = @(
     'AZURE_SUBSCRIPTION_ID',
     'AZURE_LOCATION'
 )
 
-# Optional environment variable for filtering
-$script:OptionalEnvironmentVariables = @(
-    'AZURE_RESOURCE_GROUP',
-    'LOGIC_APP_NAME'
-)
+# Azure REST API version for deleted sites operations
+$script:AzureApiVersion = '2023-12-01'
 
 #endregion Script Constants
 
@@ -112,42 +109,61 @@ function Write-Log {
     
     .DESCRIPTION
         Outputs timestamped, color-coded log messages with level indicators.
+        Provides consistent logging format across the script.
     
     .PARAMETER Message
-        The message to write.
+        The message to write. Must not be null or empty.
     
     .PARAMETER Level
-        The log level: Info, Success, Warning, or Error.
+        The log level: Info, Success, Warning, or Error. Defaults to Info.
     
     .EXAMPLE
-        Write-Log -Message "Operation completed" -Level Success
+        Write-Log -Message 'Operation completed' -Level Success
+        
+    .EXAMPLE
+        Write-Log -Message 'Starting process...'
+        
+    .NOTES
+        This function does not throw exceptions.
     #>
     [CmdletBinding()]
     [OutputType([void])]
     param(
-        [Parameter(Mandatory = $true)]
+        [Parameter(Mandatory = $true, Position = 0, ValueFromPipeline = $false)]
+        [ValidateNotNullOrEmpty()]
         [string]$Message,
         
-        [Parameter(Mandatory = $false)]
+        [Parameter(Mandatory = $false, Position = 1)]
         [ValidateSet('Info', 'Success', 'Warning', 'Error')]
         [string]$Level = 'Info'
     )
     
-    $prefix = @{
-        Info    = '[i]'
-        Success = '[✓]'
-        Warning = '[!]'
-        Error   = '[✗]'
-    }[$Level]
+    begin {
+        Write-Verbose -Message "Logging message at level: $Level"
+    }
     
-    $color = @{
-        Info    = 'Cyan'
-        Success = 'Green'
-        Warning = 'Yellow'
-        Error   = 'Red'
-    }[$Level]
+    process {
+        $prefix = @{
+            Info    = '[i]'
+            Success = '[✓]'
+            Warning = '[!]'
+            Error   = '[✗]'
+        }[$Level]
+        
+        $color = @{
+            Info    = 'Cyan'
+            Success = 'Green'
+            Warning = 'Yellow'
+            Error   = 'Red'
+        }[$Level]
+        
+        $timestamp = Get-Date -Format 'HH:mm:ss'
+        Write-Host -Object "$timestamp $prefix $Message" -ForegroundColor $color
+    }
     
-    Write-Host "$(Get-Date -Format 'HH:mm:ss') $prefix $Message" -ForegroundColor $color
+    end {
+        Write-Verbose -Message 'Log message written'
+    }
 }
 
 function Test-RequiredEnvironmentVariable {
@@ -157,31 +173,53 @@ function Test-RequiredEnvironmentVariable {
     
     .DESCRIPTION
         Checks if the specified environment variable exists and has a non-empty value.
+        Environment variables are expected to be set by azd during hook execution.
     
     .PARAMETER Name
-        The name of the environment variable to validate.
+        The name of the environment variable to validate. Must not be null or empty.
     
     .OUTPUTS
         System.Boolean - Returns $true if variable is set and non-empty, $false otherwise.
     
     .EXAMPLE
         Test-RequiredEnvironmentVariable -Name 'AZURE_SUBSCRIPTION_ID'
+        
+    .NOTES
+        This function does not throw exceptions; it returns a boolean result.
     #>
     [CmdletBinding()]
     [OutputType([bool])]
     param(
-        [Parameter(Mandatory = $true)]
+        [Parameter(Mandatory = $true, Position = 0, ValueFromPipeline = $false)]
+        [ValidateNotNullOrEmpty()]
         [string]$Name
     )
     
-    $value = [Environment]::GetEnvironmentVariable($Name)
-    if ([string]::IsNullOrWhiteSpace($value)) {
-        Write-Log -Message "Environment variable '$Name' is not set or empty" -Level Warning
-        return $false
+    begin {
+        Write-Verbose -Message "Starting environment variable validation for: $Name"
     }
     
-    Write-Verbose "Environment variable '$Name' is set"
-    return $true
+    process {
+        try {
+            $value = [Environment]::GetEnvironmentVariable($Name)
+            
+            if ([string]::IsNullOrWhiteSpace($value)) {
+                Write-Warning -Message "Required environment variable '$Name' is not set or is empty."
+                return $false
+            }
+            
+            Write-Verbose -Message "Environment variable '$Name' is set with value length: $($value.Length)"
+            return $true
+        }
+        catch {
+            Write-Warning -Message "Error checking environment variable '$Name': $($_.Exception.Message)"
+            return $false
+        }
+    }
+    
+    end {
+        Write-Verbose -Message "Completed environment variable validation for: $Name"
+    }
 }
 
 function Get-EnvironmentValue {
@@ -191,35 +229,64 @@ function Get-EnvironmentValue {
     
     .DESCRIPTION
         Gets the value of the specified environment variable, returning the default
-        if the variable is not set or empty.
+        if the variable is not set or empty. Environment variables are typically
+        set by azd during hook execution.
     
     .PARAMETER Name
-        The name of the environment variable.
+        The name of the environment variable. Must not be null or empty.
     
     .PARAMETER Default
-        The default value to return if the variable is not set.
+        The default value to return if the variable is not set. Defaults to empty string.
     
     .OUTPUTS
         System.String - The environment variable value or default.
     
     .EXAMPLE
         Get-EnvironmentValue -Name 'AZURE_LOCATION' -Default 'eastus2'
+        
+    .EXAMPLE
+        $subscriptionId = Get-EnvironmentValue -Name 'AZURE_SUBSCRIPTION_ID'
+        
+    .NOTES
+        This function does not throw exceptions.
     #>
     [CmdletBinding()]
     [OutputType([string])]
     param(
-        [Parameter(Mandatory = $true)]
+        [Parameter(Mandatory = $true, Position = 0, ValueFromPipeline = $false)]
+        [ValidateNotNullOrEmpty()]
         [string]$Name,
         
-        [Parameter(Mandatory = $false)]
+        [Parameter(Mandatory = $false, Position = 1)]
+        [AllowEmptyString()]
         [string]$Default = ''
     )
     
-    $value = [Environment]::GetEnvironmentVariable($Name)
-    if (-not [string]::IsNullOrWhiteSpace($value)) {
-        return $value
+    begin {
+        Write-Verbose -Message "Retrieving environment variable: $Name"
     }
-    return $Default
+    
+    process {
+        try {
+            $value = [Environment]::GetEnvironmentVariable($Name)
+            
+            if (-not [string]::IsNullOrWhiteSpace($value)) {
+                Write-Verbose -Message "Environment variable '$Name' found with value length: $($value.Length)"
+                return $value
+            }
+            
+            Write-Verbose -Message "Environment variable '$Name' not set, returning default"
+            return $Default
+        }
+        catch {
+            Write-Verbose -Message "Error retrieving environment variable '$Name': $($_.Exception.Message)"
+            return $Default
+        }
+    }
+    
+    end {
+        Write-Verbose -Message "Completed retrieval of environment variable: $Name"
+    }
 }
 
 function Test-AzureCliInstalled {
@@ -229,25 +296,46 @@ function Test-AzureCliInstalled {
     
     .DESCRIPTION
         Validates that the 'az' command is available in the system PATH.
+        Azure CLI is required for making REST API calls to Azure.
     
     .OUTPUTS
-        System.Boolean - Returns $true if Azure CLI is installed.
+        System.Boolean - Returns $true if Azure CLI is installed, $false otherwise.
     
     .EXAMPLE
-        if (Test-AzureCliInstalled) { Write-Host "Azure CLI is available" }
+        if (Test-AzureCliInstalled) { Write-Host 'Azure CLI is available' }
+        
+    .NOTES
+        This function does not throw exceptions; it returns a boolean result.
     #>
     [CmdletBinding()]
     [OutputType([bool])]
     param()
     
-    $azCommand = Get-Command -Name 'az' -ErrorAction SilentlyContinue
-    if (-not $azCommand) {
-        Write-Log -Message "Azure CLI (az) is not installed or not in PATH" -Level Error
-        return $false
+    begin {
+        Write-Verbose -Message 'Checking Azure CLI installation...'
     }
     
-    Write-Verbose "Azure CLI found at: $($azCommand.Source)"
-    return $true
+    process {
+        try {
+            $azCommand = Get-Command -Name 'az' -ErrorAction SilentlyContinue
+            
+            if (-not $azCommand) {
+                Write-Log -Message 'Azure CLI (az) is not installed or not in PATH' -Level Error
+                return $false
+            }
+            
+            Write-Verbose -Message "Azure CLI found at: $($azCommand.Source)"
+            return $true
+        }
+        catch {
+            Write-Log -Message "Error checking Azure CLI: $($_.Exception.Message)" -Level Error
+            return $false
+        }
+    }
+    
+    end {
+        Write-Verbose -Message 'Azure CLI installation check completed'
+    }
 }
 
 function Test-AzureCliLoggedIn {
@@ -257,28 +345,47 @@ function Test-AzureCliLoggedIn {
     
     .DESCRIPTION
         Validates the current Azure CLI session by checking the account information.
+        The azd tool typically handles authentication before running hooks.
     
     .OUTPUTS
-        System.Boolean - Returns $true if logged in.
+        System.Boolean - Returns $true if logged in, $false otherwise.
     
     .EXAMPLE
-        if (Test-AzureCliLoggedIn) { Write-Host "Azure session is active" }
+        if (Test-AzureCliLoggedIn) { Write-Host 'Azure session is active' }
+        
+    .NOTES
+        This function does not throw exceptions; it returns a boolean result.
     #>
     [CmdletBinding()]
     [OutputType([bool])]
     param()
     
-    try {
-        $null = az account show --output none 2>&1
-        if ($LASTEXITCODE -ne 0) {
-            Write-Log -Message "Not logged in to Azure CLI. Run 'az login' first." -Level Error
+    begin {
+        Write-Verbose -Message 'Checking Azure CLI login status...'
+    }
+    
+    process {
+        try {
+            # Use --output none to suppress output, capture stderr
+            $null = az account show --output none 2>&1
+            $exitCode = $LASTEXITCODE
+            
+            if ($exitCode -ne 0) {
+                Write-Log -Message "Not logged in to Azure CLI. Run 'az login' first." -Level Error
+                return $false
+            }
+            
+            Write-Verbose -Message 'Azure CLI login verified'
+            return $true
+        }
+        catch {
+            Write-Log -Message "Failed to check Azure CLI login status: $($_.Exception.Message)" -Level Error
             return $false
         }
-        return $true
     }
-    catch {
-        Write-Log -Message "Failed to check Azure CLI login status: $($_.Exception.Message)" -Level Error
-        return $false
+    
+    end {
+        Write-Verbose -Message 'Azure CLI login check completed'
     }
 }
 
@@ -289,68 +396,88 @@ function Get-DeletedLogicApps {
     
     .DESCRIPTION
         Queries the Azure REST API to get all Logic Apps Standard in a soft-deleted
-        state within the specified subscription and location.
+        state within the specified subscription and location. Uses Azure CLI's
+        'az rest' command for authenticated API calls.
     
     .PARAMETER SubscriptionId
-        The Azure subscription ID to query.
+        The Azure subscription ID to query. Must not be null or empty.
     
     .PARAMETER Location
-        The Azure region to search for deleted Logic Apps.
+        The Azure region to search for deleted Logic Apps. Must not be null or empty.
     
     .OUTPUTS
-        System.Object[] - Array of deleted Logic App objects.
+        System.Object[] - Array of deleted Logic App objects, or empty array if none found.
     
     .EXAMPLE
-        Get-DeletedLogicApps -SubscriptionId "12345-..." -Location "eastus2"
+        Get-DeletedLogicApps -SubscriptionId '12345678-...' -Location 'eastus2'
+        
+    .NOTES
+        Returns an empty array on error rather than throwing exceptions.
     #>
     [CmdletBinding()]
     [OutputType([object[]])]
     param(
-        [Parameter(Mandatory = $true)]
+        [Parameter(Mandatory = $true, Position = 0, ValueFromPipeline = $false)]
+        [ValidateNotNullOrEmpty()]
         [string]$SubscriptionId,
         
-        [Parameter(Mandatory = $true)]
+        [Parameter(Mandatory = $true, Position = 1, ValueFromPipeline = $false)]
+        [ValidateNotNullOrEmpty()]
         [string]$Location
     )
     
-    Write-Log -Message "Querying for soft-deleted Logic Apps in location '$Location'..." -Level Info
-    
-    try {
-        # Use the Azure REST API to list deleted sites (includes Logic Apps Standard)
-        $uri = "https://management.azure.com/subscriptions/$SubscriptionId/providers/Microsoft.Web/locations/$Location/deletedSites?api-version=2023-12-01"
-        
-        Write-Verbose "Calling REST API: $uri"
-        
-        $jsonOutput = az rest --method GET --uri $uri --output json 2>&1
-        
-        if ($LASTEXITCODE -ne 0) {
-            Write-Log -Message "Failed to query deleted sites: $jsonOutput" -Level Warning
-            return @()
-        }
-        
-        $result = $jsonOutput | ConvertFrom-Json
-        
-        if (-not $result.value -or $result.value.Count -eq 0) {
-            Write-Log -Message "No soft-deleted sites found in location '$Location'" -Level Info
-            return @()
-        }
-        
-        # Filter for Logic Apps (kind contains 'workflowapp' or 'functionapp,workflowapp')
-        $deletedLogicApps = $result.value | Where-Object {
-            $_.properties.kind -match 'workflowapp'
-        }
-        
-        if ($deletedLogicApps.Count -eq 0) {
-            Write-Log -Message "No soft-deleted Logic Apps found in location '$Location'" -Level Info
-            return @()
-        }
-        
-        Write-Log -Message "Found $($deletedLogicApps.Count) soft-deleted Logic App(s)" -Level Info
-        return $deletedLogicApps
+    begin {
+        Write-Verbose -Message "Starting query for deleted Logic Apps in location: $Location"
     }
-    catch {
-        Write-Log -Message "Error querying deleted Logic Apps: $($_.Exception.Message)" -Level Error
-        return @()
+    
+    process {
+        Write-Log -Message "Querying for soft-deleted Logic Apps in location '$Location'..." -Level Info
+        
+        try {
+            # Build the Azure REST API URI for listing deleted sites
+            $uri = "https://management.azure.com/subscriptions/$SubscriptionId/providers/Microsoft.Web/locations/$Location/deletedSites?api-version=$script:AzureApiVersion"
+            
+            Write-Verbose -Message "Calling REST API: $uri"
+            
+            # Execute the REST API call using Azure CLI
+            $jsonOutput = az rest --method GET --uri $uri --output json 2>&1
+            $exitCode = $LASTEXITCODE
+            
+            if ($exitCode -ne 0) {
+                Write-Log -Message "Failed to query deleted sites: $jsonOutput" -Level Warning
+                return @()
+            }
+            
+            # Parse the JSON response
+            $result = $jsonOutput | ConvertFrom-Json
+            
+            if (-not $result.value -or $result.value.Count -eq 0) {
+                Write-Log -Message "No soft-deleted sites found in location '$Location'" -Level Info
+                return @()
+            }
+            
+            # Filter for Logic Apps Standard (kind contains 'workflowapp')
+            $deletedLogicApps = @($result.value | Where-Object {
+                $_.properties.kind -match 'workflowapp'
+            })
+            
+            if ($deletedLogicApps.Count -eq 0) {
+                Write-Log -Message "No soft-deleted Logic Apps found in location '$Location'" -Level Info
+                return @()
+            }
+            
+            Write-Log -Message "Found $($deletedLogicApps.Count) soft-deleted Logic App(s)" -Level Info
+            return $deletedLogicApps
+        }
+        catch {
+            Write-Log -Message "Error querying deleted Logic Apps: $($_.Exception.Message)" -Level Error
+            Write-Verbose -Message "Stack trace: $($_.ScriptStackTrace)"
+            return @()
+        }
+    }
+    
+    end {
+        Write-Verbose -Message 'Completed query for deleted Logic Apps'
     }
 }
 
@@ -361,58 +488,78 @@ function Remove-DeletedLogicApp {
     
     .DESCRIPTION
         Calls the Azure REST API to permanently delete (purge) a soft-deleted
-        Logic App Standard, removing it from the soft-delete state.
+        Logic App Standard, removing it from the soft-delete state. This action
+        is irreversible.
     
     .PARAMETER DeletedSiteId
         The resource ID of the deleted site in the deletedSites collection.
+        Must not be null or empty.
     
     .PARAMETER SiteName
-        The name of the Logic App for logging purposes.
+        The name of the Logic App for logging purposes. Must not be null or empty.
     
     .OUTPUTS
-        System.Boolean - Returns $true if purge was successful.
+        System.Boolean - Returns $true if purge was successful, $false otherwise.
     
     .EXAMPLE
-        Remove-DeletedLogicApp -DeletedSiteId "/subscriptions/.../deletedSites/123" -SiteName "my-logic-app"
+        Remove-DeletedLogicApp -DeletedSiteId '/subscriptions/.../deletedSites/123' -SiteName 'my-logic-app'
+        
+    .NOTES
+        Supports -WhatIf and -Confirm through ShouldProcess.
     #>
     [CmdletBinding(SupportsShouldProcess)]
     [OutputType([bool])]
     param(
-        [Parameter(Mandatory = $true)]
+        [Parameter(Mandatory = $true, Position = 0, ValueFromPipeline = $false)]
+        [ValidateNotNullOrEmpty()]
         [string]$DeletedSiteId,
         
-        [Parameter(Mandatory = $true)]
+        [Parameter(Mandatory = $true, Position = 1, ValueFromPipeline = $false)]
+        [ValidateNotNullOrEmpty()]
         [string]$SiteName
     )
     
-    if ($PSCmdlet.ShouldProcess($SiteName, "Purge soft-deleted Logic App")) {
-        try {
-            Write-Log -Message "Purging Logic App: $SiteName" -Level Info
-            Write-Verbose "Deleted site ID: $DeletedSiteId"
-            
-            # Use the DELETE method on the deletedSites resource to permanently purge
-            $uri = "https://management.azure.com$DeletedSiteId?api-version=2023-12-01"
-            
-            Write-Verbose "Calling REST API: DELETE $uri"
-            
-            $output = az rest --method DELETE --uri $uri 2>&1
-            
-            if ($LASTEXITCODE -ne 0) {
-                Write-Log -Message "Failed to purge Logic App '$SiteName': $output" -Level Error
+    begin {
+        Write-Verbose -Message "Preparing to purge Logic App: $SiteName"
+    }
+    
+    process {
+        if ($PSCmdlet.ShouldProcess($SiteName, 'Purge soft-deleted Logic App')) {
+            try {
+                Write-Log -Message "Purging Logic App: $SiteName" -Level Info
+                Write-Verbose -Message "Deleted site ID: $DeletedSiteId"
+                
+                # Build the DELETE URI for purging the deleted site
+                $uri = "https://management.azure.com$DeletedSiteId`?api-version=$script:AzureApiVersion"
+                
+                Write-Verbose -Message "Calling REST API: DELETE $uri"
+                
+                # Execute the DELETE request using Azure CLI
+                $output = az rest --method DELETE --uri $uri 2>&1
+                $exitCode = $LASTEXITCODE
+                
+                if ($exitCode -ne 0) {
+                    Write-Log -Message "Failed to purge Logic App '$SiteName': $output" -Level Error
+                    return $false
+                }
+                
+                Write-Log -Message "Successfully purged Logic App: $SiteName" -Level Success
+                return $true
+            }
+            catch {
+                Write-Log -Message "Error purging Logic App '$SiteName': $($_.Exception.Message)" -Level Error
+                Write-Verbose -Message "Stack trace: $($_.ScriptStackTrace)"
                 return $false
             }
-            
-            Write-Log -Message "Successfully purged Logic App: $SiteName" -Level Success
+        }
+        else {
+            Write-Log -Message "Would purge Logic App: $SiteName (WhatIf)" -Level Info
             return $true
         }
-        catch {
-            Write-Log -Message "Error purging Logic App '$SiteName': $($_.Exception.Message)" -Level Error
-            return $false
-        }
     }
-    else {
-        Write-Log -Message "Would purge Logic App: $SiteName (WhatIf)" -Level Info
-        return $true
+    
+    end {
+        Write-Verbose -Message "Completed purge operation for: $SiteName"
     }
 }
 
@@ -423,100 +570,121 @@ function Invoke-LogicAppPurge {
     
     .DESCRIPTION
         Validates prerequisites, retrieves deleted Logic Apps, and purges them.
-        Optionally filters by resource group or Logic App name.
+        Optionally filters by resource group or Logic App name pattern.
     
     .PARAMETER SubscriptionId
-        The Azure subscription ID.
+        The Azure subscription ID. Must not be null or empty.
     
     .PARAMETER Location
-        The Azure region to search.
+        The Azure region to search. Must not be null or empty.
     
     .PARAMETER ResourceGroup
         Optional resource group name to filter by.
     
     .PARAMETER LogicAppName
-        Optional Logic App name to filter by.
+        Optional Logic App name pattern to filter by.
     
     .OUTPUTS
         System.Int32 - Number of Logic Apps successfully purged.
     
     .EXAMPLE
-        Invoke-LogicAppPurge -SubscriptionId "12345-..." -Location "eastus2"
+        Invoke-LogicAppPurge -SubscriptionId '12345678-...' -Location 'eastus2'
+        
+    .EXAMPLE
+        Invoke-LogicAppPurge -SubscriptionId '12345678-...' -Location 'eastus2' -ResourceGroup 'rg-myapp'
+        
+    .NOTES
+        Supports -WhatIf and -Confirm through ShouldProcess.
     #>
     [CmdletBinding(SupportsShouldProcess)]
     [OutputType([int])]
     param(
-        [Parameter(Mandatory = $true)]
+        [Parameter(Mandatory = $true, Position = 0, ValueFromPipeline = $false)]
+        [ValidateNotNullOrEmpty()]
         [string]$SubscriptionId,
         
-        [Parameter(Mandatory = $true)]
+        [Parameter(Mandatory = $true, Position = 1, ValueFromPipeline = $false)]
+        [ValidateNotNullOrEmpty()]
         [string]$Location,
         
-        [Parameter(Mandatory = $false)]
+        [Parameter(Mandatory = $false, Position = 2)]
+        [AllowEmptyString()]
+        [AllowNull()]
         [string]$ResourceGroup,
         
-        [Parameter(Mandatory = $false)]
+        [Parameter(Mandatory = $false, Position = 3)]
+        [AllowEmptyString()]
+        [AllowNull()]
         [string]$LogicAppName
     )
     
-    $purgedCount = 0
-    
-    # Get all deleted Logic Apps
-    $deletedLogicApps = Get-DeletedLogicApps -SubscriptionId $SubscriptionId -Location $Location
-    
-    if ($deletedLogicApps.Count -eq 0) {
-        Write-Log -Message "No Logic Apps to purge" -Level Success
-        return 0
+    begin {
+        Write-Verbose -Message 'Starting Logic App purge orchestration...'
+        $purgedCount = 0
     }
     
-    # Filter by resource group if specified
-    if (-not [string]::IsNullOrWhiteSpace($ResourceGroup)) {
-        Write-Verbose "Filtering by resource group: $ResourceGroup"
-        $deletedLogicApps = $deletedLogicApps | Where-Object {
-            $_.properties.resourceGroup -eq $ResourceGroup
-        }
+    process {
+        # Get all deleted Logic Apps in the specified location
+        $deletedLogicApps = Get-DeletedLogicApps -SubscriptionId $SubscriptionId -Location $Location
         
         if ($deletedLogicApps.Count -eq 0) {
-            Write-Log -Message "No deleted Logic Apps found matching resource group '$ResourceGroup'" -Level Info
+            Write-Log -Message 'No Logic Apps to purge' -Level Success
             return 0
         }
-    }
-    
-    # Filter by Logic App name if specified
-    if (-not [string]::IsNullOrWhiteSpace($LogicAppName)) {
-        Write-Verbose "Filtering by Logic App name: $LogicAppName"
-        $deletedLogicApps = $deletedLogicApps | Where-Object {
-            $_.properties.deletedSiteName -like "*$LogicAppName*"
+        
+        # Filter by resource group if specified
+        if (-not [string]::IsNullOrWhiteSpace($ResourceGroup)) {
+            Write-Verbose -Message "Filtering by resource group: $ResourceGroup"
+            $deletedLogicApps = @($deletedLogicApps | Where-Object {
+                $_.properties.resourceGroup -eq $ResourceGroup
+            })
+            
+            if ($deletedLogicApps.Count -eq 0) {
+                Write-Log -Message "No deleted Logic Apps found matching resource group '$ResourceGroup'" -Level Info
+                return 0
+            }
         }
         
-        if ($deletedLogicApps.Count -eq 0) {
-            Write-Log -Message "No deleted Logic Apps found matching name pattern '$LogicAppName'" -Level Info
-            return 0
+        # Filter by Logic App name pattern if specified
+        if (-not [string]::IsNullOrWhiteSpace($LogicAppName)) {
+            Write-Verbose -Message "Filtering by Logic App name pattern: $LogicAppName"
+            $deletedLogicApps = @($deletedLogicApps | Where-Object {
+                $_.properties.deletedSiteName -like "*$LogicAppName*"
+            })
+            
+            if ($deletedLogicApps.Count -eq 0) {
+                Write-Log -Message "No deleted Logic Apps found matching name pattern '$LogicAppName'" -Level Info
+                return 0
+            }
         }
-    }
-    
-    Write-Log -Message "Found $($deletedLogicApps.Count) Logic App(s) to purge" -Level Info
-    
-    # List Logic Apps to be purged
-    foreach ($logicApp in $deletedLogicApps) {
-        $name = $logicApp.properties.deletedSiteName
-        $deletedTime = $logicApp.properties.deletedTimestamp
-        $rg = $logicApp.properties.resourceGroup
-        Write-Log -Message "  - $name (Resource Group: $rg, Deleted: $deletedTime)" -Level Info
-    }
-    
-    # Purge each Logic App
-    foreach ($logicApp in $deletedLogicApps) {
-        $name = $logicApp.properties.deletedSiteName
-        $deletedSiteId = $logicApp.id
         
-        $success = Remove-DeletedLogicApp -DeletedSiteId $deletedSiteId -SiteName $name
-        if ($success) {
-            $purgedCount++
+        Write-Log -Message "Found $($deletedLogicApps.Count) Logic App(s) to purge" -Level Info
+        
+        # List Logic Apps to be purged
+        foreach ($logicApp in $deletedLogicApps) {
+            $name = $logicApp.properties.deletedSiteName
+            $deletedTime = $logicApp.properties.deletedTimestamp
+            $rg = $logicApp.properties.resourceGroup
+            Write-Log -Message "  - $name (Resource Group: $rg, Deleted: $deletedTime)" -Level Info
         }
+        
+        # Purge each Logic App
+        foreach ($logicApp in $deletedLogicApps) {
+            $name = $logicApp.properties.deletedSiteName
+            $deletedSiteId = $logicApp.id
+            
+            $success = Remove-DeletedLogicApp -DeletedSiteId $deletedSiteId -SiteName $name
+            if ($success) {
+                $purgedCount++
+            }
+        }
+        
+        return $purgedCount
     }
     
-    return $purgedCount
+    end {
+        Write-Verbose -Message "Logic App purge orchestration completed. Purged: $purgedCount"
+    }
 }
 
 #endregion Helper Functions
@@ -530,84 +698,100 @@ function Main {
     
     .DESCRIPTION
         Orchestrates the Logic App purge process with proper error handling
-        and exit code management.
+        and exit code management. This function is called automatically when
+        the script runs as an azd hook.
+        
+    .NOTES
+        Supports -WhatIf and -Confirm through ShouldProcess.
     #>
     [CmdletBinding(SupportsShouldProcess)]
     [OutputType([void])]
     param()
     
-    Write-Log -Message "========================================" -Level Info
-    Write-Log -Message "Post-Infrastructure Delete Hook v$script:ScriptVersion" -Level Info
-    Write-Log -Message "Logic Apps Purge Script" -Level Info
-    Write-Log -Message "========================================" -Level Info
-    
-    try {
-        # Validate Azure CLI installation
-        Write-Log -Message "Validating prerequisites..." -Level Info
-        
-        if (-not (Test-AzureCliInstalled)) {
-            $script:ExitCode = 1
-            return
-        }
-        
-        if (-not (Test-AzureCliLoggedIn)) {
-            $script:ExitCode = 1
-            return
-        }
-        
-        Write-Log -Message "Azure CLI prerequisites validated" -Level Success
-        
-        # Validate required environment variables
-        $allValid = $true
-        foreach ($varName in $script:RequiredEnvironmentVariables) {
-            if (-not (Test-RequiredEnvironmentVariable -Name $varName)) {
-                $allValid = $false
-            }
-        }
-        
-        if (-not $allValid) {
-            Write-Log -Message "Missing required environment variables. Skipping purge." -Level Warning
-            Write-Log -Message "Hint: This script is designed to run as an azd hook where environment variables are set." -Level Info
-            $script:ExitCode = 0  # Don't fail the hook, just skip
-            return
-        }
-        
-        # Get environment values
-        $subscriptionId = Get-EnvironmentValue -Name 'AZURE_SUBSCRIPTION_ID'
-        $location = Get-EnvironmentValue -Name 'AZURE_LOCATION'
-        $resourceGroup = Get-EnvironmentValue -Name 'AZURE_RESOURCE_GROUP'
-        $logicAppName = Get-EnvironmentValue -Name 'LOGIC_APP_NAME'
-        
-        Write-Log -Message "Configuration:" -Level Info
-        Write-Log -Message "  Subscription: $subscriptionId" -Level Info
-        Write-Log -Message "  Location: $location" -Level Info
-        if (-not [string]::IsNullOrWhiteSpace($resourceGroup)) {
-            Write-Log -Message "  Resource Group Filter: $resourceGroup" -Level Info
-        }
-        if (-not [string]::IsNullOrWhiteSpace($logicAppName)) {
-            Write-Log -Message "  Logic App Name Filter: $logicAppName" -Level Info
-        }
-        
-        # Execute purge
-        Write-Log -Message "Starting Logic App purge process..." -Level Info
-        
-        $purgedCount = Invoke-LogicAppPurge `
-            -SubscriptionId $subscriptionId `
-            -Location $location `
-            -ResourceGroup $resourceGroup `
-            -LogicAppName $logicAppName
-        
-        Write-Log -Message "========================================" -Level Info
-        Write-Log -Message "Purge Summary" -Level Info
-        Write-Log -Message "========================================" -Level Info
-        Write-Log -Message "Logic Apps purged: $purgedCount" -Level Success
-        
-        $script:ExitCode = 0
+    begin {
+        Write-Verbose -Message 'Initializing post-infrastructure-delete hook...'
     }
-    catch {
-        Write-Log -Message "Unexpected error during purge: $($_.Exception.Message)" -Level Error
-        Write-Verbose "Stack trace: $($_.ScriptStackTrace)"
-        $script:ExitCode = 1
+    
+    process {
+        Write-Log -Message '========================================' -Level Info
+        Write-Log -Message "Post-Infrastructure Delete Hook v$script:ScriptVersion" -Level Info
+        Write-Log -Message 'Logic Apps Purge Script' -Level Info
+        Write-Log -Message '========================================' -Level Info
+        
+        try {
+            # Validate Azure CLI installation
+            Write-Log -Message 'Validating prerequisites...' -Level Info
+            
+            if (-not (Test-AzureCliInstalled)) {
+                $script:ExitCode = 1
+                return
+            }
+            
+            if (-not (Test-AzureCliLoggedIn)) {
+                $script:ExitCode = 1
+                return
+            }
+            
+            Write-Log -Message 'Azure CLI prerequisites validated' -Level Success
+            
+            # Validate required environment variables (set by azd)
+            $allValid = $true
+            foreach ($varName in $script:RequiredEnvironmentVariables) {
+                if (-not (Test-RequiredEnvironmentVariable -Name $varName)) {
+                    $allValid = $false
+                }
+            }
+            
+            if (-not $allValid) {
+                Write-Log -Message 'Missing required environment variables. Skipping purge.' -Level Warning
+                Write-Log -Message 'Hint: This script is designed to run as an azd hook where environment variables are set.' -Level Info
+                $script:ExitCode = 0  # Don't fail the hook, just skip
+                return
+            }
+            
+            # Get environment values (set by azd)
+            $subscriptionId = Get-EnvironmentValue -Name 'AZURE_SUBSCRIPTION_ID'
+            $location = Get-EnvironmentValue -Name 'AZURE_LOCATION'
+            $resourceGroup = Get-EnvironmentValue -Name 'AZURE_RESOURCE_GROUP'
+            $logicAppName = Get-EnvironmentValue -Name 'LOGIC_APP_NAME'
+            
+            Write-Log -Message 'Configuration:' -Level Info
+            Write-Log -Message "  Subscription: $subscriptionId" -Level Info
+            Write-Log -Message "  Location: $location" -Level Info
+            
+            if (-not [string]::IsNullOrWhiteSpace($resourceGroup)) {
+                Write-Log -Message "  Resource Group Filter: $resourceGroup" -Level Info
+            }
+            
+            if (-not [string]::IsNullOrWhiteSpace($logicAppName)) {
+                Write-Log -Message "  Logic App Name Filter: $logicAppName" -Level Info
+            }
+            
+            # Execute purge
+            Write-Log -Message 'Starting Logic App purge process...' -Level Info
+            
+            $purgedCount = Invoke-LogicAppPurge `
+                -SubscriptionId $subscriptionId `
+                -Location $location `
+                -ResourceGroup $resourceGroup `
+                -LogicAppName $logicAppName
+            
+            Write-Log -Message '========================================' -Level Info
+            Write-Log -Message 'Purge Summary' -Level Info
+            Write-Log -Message '========================================' -Level Info
+            Write-Log -Message "Logic Apps purged: $purgedCount" -Level Success
+            
+            $script:ExitCode = 0
+        }
+        catch {
+            Write-Log -Message "Unexpected error during purge: $($_.Exception.Message)" -Level Error
+            Write-Verbose -Message "Stack trace: $($_.ScriptStackTrace)"
+            $script:ExitCode = 1
+        }
+    }
+    
+    end {
+        Write-Verbose -Message 'Post-infrastructure-delete hook completed'
     }
 }
 
