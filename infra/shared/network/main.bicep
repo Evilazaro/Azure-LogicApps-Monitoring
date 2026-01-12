@@ -4,6 +4,7 @@ param envName string
 param tags object
 
 var vnetName = '${name}-${uniqueString(resourceGroup().id, name, location, envName)}-vnet'
+var subnetName = '${name}-${uniqueString(resourceGroup().id, name, location, envName)}'
 
 resource vnet 'Microsoft.Network/virtualNetworks@2025-01-01' = {
   name: vnetName
@@ -20,7 +21,7 @@ resource vnet 'Microsoft.Network/virtualNetworks@2025-01-01' = {
 
 resource apiSubnet 'Microsoft.Network/virtualNetworks/subnets@2025-01-01' = {
   parent: vnet
-  name: 'api-subnet'
+  name: 'api-${subnetName}-subnet'
   properties: {
     addressPrefix: '10.0.1.0/24'
     delegations: [
@@ -36,7 +37,7 @@ resource apiSubnet 'Microsoft.Network/virtualNetworks/subnets@2025-01-01' = {
 
 resource dataSubnet 'Microsoft.Network/virtualNetworks/subnets@2025-01-01' = {
   parent: vnet
-  name: 'data-subnet'
+  name: 'data-${subnetName}-subnet'
   properties: {
     addressPrefix: '10.0.2.0/24'
     privateEndpointNetworkPolicies: 'Disabled'
@@ -46,7 +47,7 @@ resource dataSubnet 'Microsoft.Network/virtualNetworks/subnets@2025-01-01' = {
 
 resource logicappSubnet 'Microsoft.Network/virtualNetworks/subnets@2025-01-01' = {
   parent: vnet
-  name: 'logicapp-subnet'
+  name: 'logicapp-${subnetName}-subnet'
   properties: {
     addressPrefix: '10.0.3.0/24'
     delegations: [
