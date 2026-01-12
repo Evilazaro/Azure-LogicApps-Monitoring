@@ -8,7 +8,6 @@ using eShop.Orders.API.HealthChecks;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Logging;
-using Moq;
 
 namespace eShop.Orders.API.Tests.HealthChecks;
 

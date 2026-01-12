@@ -9,7 +9,6 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Logging;
-using Moq;
 
 namespace eShop.Orders.API.Tests.HealthChecks;
 
@@ -31,7 +30,8 @@ public sealed class DbContextHealthCheckTests
         // Create a mock of OrderDbContext without requiring actual DbContextOptions
         // Use MockBehavior.Loose to allow unmocked members to return defaults
         _dbContextMock = new Mock<OrderDbContext>(
-            new DbContextOptions<OrderDbContext>()) { CallBase = false };
+            new DbContextOptions<OrderDbContext>())
+        { CallBase = false };
         _loggerMock = new Mock<ILogger<DbContextHealthCheck>>();
         _databaseFacadeMock = new Mock<DatabaseFacade>(_dbContextMock.Object);
 

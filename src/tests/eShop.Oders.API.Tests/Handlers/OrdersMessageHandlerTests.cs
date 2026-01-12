@@ -9,7 +9,6 @@ using eShop.Orders.API.Handlers;
 using eShop.Orders.API.Interfaces;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
-using Moq;
 using System.Diagnostics;
 
 namespace eShop.Orders.API.Tests.Handlers;
@@ -166,7 +165,7 @@ public sealed class OrdersMessageHandlerTests
         // Arrange
         var order = CreateTestOrder();
         var senderMock = new Mock<ServiceBusSender>();
-        
+
         senderMock
             .Setup(s => s.SendMessageAsync(It.IsAny<ServiceBusMessage>(), It.IsAny<CancellationToken>()))
             .Returns(Task.CompletedTask);
@@ -183,8 +182,8 @@ public sealed class OrdersMessageHandlerTests
         // Assert
         senderMock.Verify(
             s => s.SendMessageAsync(
-                It.Is<ServiceBusMessage>(m => 
-                    m.MessageId == order.Id && 
+                It.Is<ServiceBusMessage>(m =>
+                    m.MessageId == order.Id &&
                     m.Subject == "OrderPlaced" &&
                     m.ContentType == "application/json"),
                 It.IsAny<CancellationToken>()),
@@ -263,7 +262,7 @@ public sealed class OrdersMessageHandlerTests
         // Arrange
         var order = CreateTestOrder();
         var senderMock = new Mock<ServiceBusSender>();
-        
+
         senderMock
             .Setup(s => s.SendMessageAsync(It.IsAny<ServiceBusMessage>(), It.IsAny<CancellationToken>()))
             .Returns(Task.CompletedTask);
@@ -304,7 +303,7 @@ public sealed class OrdersMessageHandlerTests
         };
 
         var senderMock = new Mock<ServiceBusSender>();
-        
+
         senderMock
             .Setup(s => s.SendMessagesAsync(It.IsAny<IEnumerable<ServiceBusMessage>>(), It.IsAny<CancellationToken>()))
             .Returns(Task.CompletedTask);
@@ -467,7 +466,7 @@ public sealed class OrdersMessageHandlerTests
     {
         // Arrange
         var receiverMock = new Mock<ServiceBusReceiver>();
-        
+
         receiverMock
             .Setup(r => r.ReceiveMessagesAsync(
                 It.IsAny<int>(),
@@ -542,7 +541,7 @@ public sealed class OrdersMessageHandlerTests
         // Assert
         Assert.IsNotNull(capturedMessage);
         // Trace context properties should be present
-        Assert.IsTrue(capturedMessage.ApplicationProperties.ContainsKey("TraceId") || 
+        Assert.IsTrue(capturedMessage.ApplicationProperties.ContainsKey("TraceId") ||
                      capturedMessage.ApplicationProperties.ContainsKey("traceparent"),
             "Message should contain trace context properties");
     }
