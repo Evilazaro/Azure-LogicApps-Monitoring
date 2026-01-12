@@ -93,12 +93,12 @@ hooks:
     posix:
       shell: sh
       run: ./hooks/postinfradelete.sh --force --verbose
-      continueOnError: true # Continue even if cleanup fails
+      continueOnError: false # Fail fast on cleanup errors
       interactive: false
     windows:
       shell: pwsh
       run: ./hooks/postinfradelete.ps1 -Force -Verbose
-      continueOnError: true # Continue even if cleanup fails
+      continueOnError: false # Fail fast on cleanup errors
       interactive: false
 
 # ------------------------------------------------------------------------------
