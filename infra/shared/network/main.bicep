@@ -3,8 +3,8 @@ param location string
 param envName string
 param tags object
 
-var vnetName = '${name}-${uniqueString(resourceGroup().id, name, location, envName)}-vnet'
-var subnetName = '-${uniqueString(resourceGroup().id, name, location, envName)}-subnet'
+var vnetName = '${name}-${uniqueString(subscription().id, resourceGroup().id, name, location, envName)}-vnet'
+var subnetName = '-${uniqueString(subscription().id, resourceGroup().id, name, location, envName)}-subnet'
 
 resource vnet 'Microsoft.Network/virtualNetworks@2025-01-01' = {
   name: vnetName
