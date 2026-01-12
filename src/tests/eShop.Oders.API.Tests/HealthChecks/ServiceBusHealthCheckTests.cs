@@ -106,7 +106,7 @@ public sealed class ServiceBusHealthCheckTests
             _loggerMock.Object,
             _configurationMock.Object);
 
-        var context = CreateHealthCheckContext();
+        var context = CreateHealthCheckContext(_healthCheck);
 
         // Act
         var result = await _healthCheck.CheckHealthAsync(context, CancellationToken.None);
@@ -135,7 +135,7 @@ public sealed class ServiceBusHealthCheckTests
             _loggerMock.Object,
             _configurationMock.Object);
 
-        var context = CreateHealthCheckContext();
+        var context = CreateHealthCheckContext(_healthCheck);
 
         // Act
         var result = await _healthCheck.CheckHealthAsync(context, CancellationToken.None);
@@ -160,7 +160,7 @@ public sealed class ServiceBusHealthCheckTests
             _loggerMock.Object,
             _configurationMock.Object);
 
-        var context = CreateHealthCheckContext(HealthStatus.Unhealthy);
+        var context = CreateHealthCheckContext(_healthCheck, HealthStatus.Unhealthy);
 
         // Act
         var result = await _healthCheck.CheckHealthAsync(context, CancellationToken.None);
@@ -186,7 +186,7 @@ public sealed class ServiceBusHealthCheckTests
             _loggerMock.Object,
             _configurationMock.Object);
 
-        var context = CreateHealthCheckContext(HealthStatus.Unhealthy);
+        var context = CreateHealthCheckContext(_healthCheck, HealthStatus.Unhealthy);
 
         // Act
         await _healthCheck.CheckHealthAsync(context, CancellationToken.None);
@@ -218,7 +218,7 @@ public sealed class ServiceBusHealthCheckTests
             _configurationMock.Object);
 
         // Configure with Degraded as failure status
-        var context = CreateHealthCheckContext(HealthStatus.Degraded);
+        var context = CreateHealthCheckContext(_healthCheck, HealthStatus.Degraded);
 
         // Act
         var result = await _healthCheck.CheckHealthAsync(context, CancellationToken.None);
@@ -242,7 +242,7 @@ public sealed class ServiceBusHealthCheckTests
             _loggerMock.Object,
             _configurationMock.Object);
 
-        var context = CreateHealthCheckContext(HealthStatus.Unhealthy);
+        var context = CreateHealthCheckContext(_healthCheck, HealthStatus.Unhealthy);
 
         // Act
         var result = await _healthCheck.CheckHealthAsync(context, CancellationToken.None);
@@ -268,7 +268,7 @@ public sealed class ServiceBusHealthCheckTests
             _loggerMock.Object,
             _configurationMock.Object);
 
-        var context = CreateHealthCheckContext(HealthStatus.Unhealthy);
+        var context = CreateHealthCheckContext(_healthCheck, HealthStatus.Unhealthy);
 
         // Act
         var result = await _healthCheck.CheckHealthAsync(context, CancellationToken.None);
@@ -293,7 +293,7 @@ public sealed class ServiceBusHealthCheckTests
             _loggerMock.Object,
             _configurationMock.Object);
 
-        var context = CreateHealthCheckContext();
+        var context = CreateHealthCheckContext(_healthCheck);
 
         // Act
         await _healthCheck.CheckHealthAsync(context, CancellationToken.None);
@@ -324,7 +324,7 @@ public sealed class ServiceBusHealthCheckTests
             _loggerMock.Object,
             _configurationMock.Object);
 
-        var context = CreateHealthCheckContext();
+        var context = CreateHealthCheckContext(_healthCheck);
 
         // Act
         var result = await _healthCheck.CheckHealthAsync(context, CancellationToken.None);
@@ -350,7 +350,7 @@ public sealed class ServiceBusHealthCheckTests
             _loggerMock.Object,
             _configurationMock.Object);
 
-        var context = CreateHealthCheckContext(HealthStatus.Unhealthy);
+        var context = CreateHealthCheckContext(_healthCheck, HealthStatus.Unhealthy);
 
         // Act
         var result = await _healthCheck.CheckHealthAsync(context, CancellationToken.None);
@@ -376,7 +376,7 @@ public sealed class ServiceBusHealthCheckTests
             _loggerMock.Object,
             _configurationMock.Object);
 
-        var context = CreateHealthCheckContext(HealthStatus.Unhealthy);
+        var context = CreateHealthCheckContext(_healthCheck, HealthStatus.Unhealthy);
 
         // Act
         var result = await _healthCheck.CheckHealthAsync(context, CancellationToken.None);
@@ -406,13 +406,13 @@ public sealed class ServiceBusHealthCheckTests
 
     #region Helper Methods
 
-    private static HealthCheckContext CreateHealthCheckContext(HealthStatus failureStatus = HealthStatus.Unhealthy)
+    private static HealthCheckContext CreateHealthCheckContext(IHealthCheck healthCheck, HealthStatus failureStatus = HealthStatus.Unhealthy)
     {
         return new HealthCheckContext
         {
             Registration = new HealthCheckRegistration(
                 name: "ServiceBus",
-                instance: null!,
+                instance: healthCheck,
                 failureStatus: failureStatus,
                 tags: null)
         };
