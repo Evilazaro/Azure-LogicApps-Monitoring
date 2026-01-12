@@ -84,9 +84,6 @@ module identity 'identity/main.bicep' = {
     tags: tags
     envName: envName
   }
-  dependsOn: [
-    network
-  ]
 }
 
 // ========== Identity Outputs ==========
@@ -110,6 +107,9 @@ module monitoring 'monitoring/main.bicep' = {
     tags: tags
     envName: envName
   }
+  dependsOn: [
+    network
+  ]
 }
 
 // ========== Monitoring Outputs ==========

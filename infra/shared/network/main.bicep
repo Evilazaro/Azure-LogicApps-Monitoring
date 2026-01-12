@@ -50,14 +50,6 @@ resource logicappSubnet 'Microsoft.Network/virtualNetworks/subnets@2025-01-01' =
   name: 'logicapp-${subnetName}-subnet'
   properties: {
     addressPrefix: '10.0.3.0/24'
-    delegations: [
-      {
-        name: 'Microsoft.Web.serverFarms'
-        properties: {
-          serviceName: 'Microsoft.Web/serverFarms'
-        }
-      }
-    ]
   }
 }
 
