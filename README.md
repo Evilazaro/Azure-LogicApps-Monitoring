@@ -2,7 +2,7 @@
 
 ![Azure](https://img.shields.io/badge/Azure-0078D4?logo=microsoftazure&logoColor=white)
 ![.NET](https://img.shields.io/badge/.NET-10.0-512BD4?logo=dotnet&logoColor=white)
-![.NET Aspire](https://img.shields.io/badge/.NET%20Aspire-9.1-512BD4?logo=dotnet&logoColor=white)
+![.NET Aspire](https://img.shields.io/badge/.NET%20Aspire-9.x-512BD4?logo=dotnet&logoColor=white)
 ![Logic Apps](https://img.shields.io/badge/Logic%20Apps-Standard-0062AD?logo=azure-devops&logoColor=white)
 ![Bicep](https://img.shields.io/badge/Bicep-IaC-f9d423?logo=azure-devops&logoColor=black)
 ![License](https://img.shields.io/badge/license-MIT-green.svg)
@@ -98,20 +98,20 @@ flowchart TB
 
 ## 🛠️ Technology Stack
 
-| Layer              | Technology                    | Version            | Purpose                         |
-| ------------------ | ----------------------------- | ------------------ | ------------------------------- |
-| **Runtime**        | .NET                          | 10.0               | Application runtime             |
-| **Orchestration**  | .NET Aspire                   | 9.1.0 (SDK 13.1.0) | Service composition & local dev |
-| **Web UI**         | Blazor Server                 | 10.0               | Interactive frontend            |
-| **API**            | ASP.NET Core                  | 10.0               | REST API endpoints              |
-| **Data Access**    | Entity Framework Core         | 9.0                | ORM for SQL Server              |
-| **Database**       | Azure SQL Database            | Standard S1        | Order persistence               |
-| **Messaging**      | Azure Service Bus             | Standard           | Event-driven messaging          |
-| **Workflows**      | Azure Logic Apps Standard     | WS1                | Automated order processing      |
-| **Compute**        | Azure Container Apps          | Consumption        | Serverless containers           |
-| **Telemetry**      | OpenTelemetry + Azure Monitor | Latest             | Distributed tracing & metrics   |
-| **Infrastructure** | Bicep                         | Latest             | Infrastructure as Code          |
-| **Deployment**     | Azure Developer CLI (azd)     | ≥1.9.0             | End-to-end deployment           |
+| Layer              | Technology                    | Version          | Purpose                         |
+| ------------------ | ----------------------------- | ---------------- | ------------------------------- |
+| **Runtime**        | .NET                          | 10.0             | Application runtime             |
+| **Orchestration**  | .NET Aspire                   | 9.x (SDK 13.1.0) | Service composition & local dev |
+| **Web UI**         | Blazor Server                 | 10.0             | Interactive frontend            |
+| **API**            | ASP.NET Core                  | 10.0             | REST API endpoints              |
+| **Data Access**    | Entity Framework Core         | 9.0              | ORM for SQL Server              |
+| **Database**       | Azure SQL Database            | Standard S1      | Order persistence               |
+| **Messaging**      | Azure Service Bus             | Standard         | Event-driven messaging          |
+| **Workflows**      | Azure Logic Apps Standard     | WS1              | Automated order processing      |
+| **Compute**        | Azure Container Apps          | Consumption      | Serverless containers           |
+| **Telemetry**      | OpenTelemetry + Azure Monitor | Latest           | Distributed tracing & metrics   |
+| **Infrastructure** | Bicep                         | Latest           | Infrastructure as Code          |
+| **Deployment**     | Azure Developer CLI (azd)     | ≥1.9.0           | End-to-end deployment           |
 
 ---
 
@@ -214,26 +214,36 @@ Azure-LogicApps-Monitoring/
 ├── 📂 src/
 │   ├── eShop.Orders.API/            # Orders REST API service
 │   │   ├── Controllers/             # API endpoints
-│   │   ├── Services/                # Business logic
-│   │   ├── Repositories/            # Data access layer
-│   │   └── Migrations/              # EF Core migrations
+│   │   ├── Services/                # Business logic & Service Bus publishing
+│   │   ├── Repositories/            # EF Core data access layer
+│   │   ├── Handlers/                # Service Bus message handlers
+│   │   ├── HealthChecks/            # Custom health checks (SQL, Service Bus)
+│   │   └── Migrations/              # EF Core database migrations
 │   │
-│   └── eShop.Web.App/               # Blazor Server frontend
-│       ├── Components/Pages/        # Razor pages
-│       └── Components/Services/     # API client services
+│   ├── eShop.Web.App/               # Blazor Server frontend
+│   │   ├── Components/Pages/        # Razor pages (Home, PlaceOrder, ListAllOrders, ViewOrder)
+│   │   ├── Components/Services/     # HTTP client for Orders API
+│   │   └── Components/Layout/       # Fluent UI layout components
+│   │
+│   └── tests/                       # Unit and integration tests
+│       └── eShop.Orders.API.Tests/  # Orders API test suite
 │
 ├── 🔄 workflows/                    # Azure Logic Apps Standard
 │   └── OrdersManagement/            # Order processing workflows
+│       ├── OrdersPlacedProcess/     # Main order processing workflow
+│       └── OrdersPlacedCompleteProcess/  # Order completion workflow
 │
 ├── 🏗️ infra/                        # Bicep IaC templates
 │   ├── main.bicep                   # Root orchestrator (subscription scope)
-│   ├── shared/                      # Shared infrastructure modules
-│   └── workload/                    # Application workload modules
+│   ├── shared/                      # Shared infrastructure (monitoring, network, identity)
+│   └── workload/                    # Application workload (Logic Apps, messaging, services)
 │
 ├── 🔧 hooks/                        # azd lifecycle automation scripts
-│   ├── preprovision.*               # Pre-deployment validation
-│   ├── postprovision.*              # Post-deployment configuration
-│   └── deploy-workflow.*            # Logic Apps deployment
+│   ├── preprovision.*               # Pre-deployment validation (v2.3.0)
+│   ├── postprovision.*              # Post-deployment configuration (v2.0.1)
+│   ├── deploy-workflow.*            # Logic Apps workflow deployment (v2.0.1)
+│   ├── check-dev-workstation.*      # Prerequisites validation (v1.0.0)
+│   └── Generate-Orders.*            # Test data generation (v2.0.1)
 │
 └── 📚 docs/                         # Comprehensive documentation
     ├── architecture/                # TOGAF BDAT architecture docs
