@@ -36,51 +36,52 @@
 
 ```mermaid
 flowchart TB
-    subgraph Compute["🖥️ Compute Platform"]
-        ACA["Azure Container Apps<br/><i>API + Web App</i>"]
-        LA["Logic Apps Standard<br/><i>Workflow Engine</i>"]
-    end
+ subgraph Compute["🖥️ Compute Platform"]
+        ACA["Azure Container Apps<br><i>API + Web App</i>"]
+        LA["Logic Apps Standard<br><i>Workflow Engine</i>"]
+  end
+ subgraph Data["💾 Data Platform"]
+        SQL["Azure SQL Database<br><i>Order Persistence</i>"]
+        SB["Azure Service Bus<br><i>Event Messaging</i>"]
+        Storage["Azure Storage<br><i>Workflow State</i>"]
+  end
+ subgraph Observability["📊 Observability Platform"]
+        AI["Application Insights<br><i>APM &amp; Traces</i>"]
+        LAW["Log Analytics<br><i>Centralized Logs</i>"]
+  end
+ subgraph Identity["🔐 Identity Platform"]
+        MI["Managed Identity<br><i>Service Auth</i>"]
+        RBAC["Azure RBAC<br><i>Access Control</i>"]
+  end
+ subgraph Network["🌐 Network Platform"]
+        VNet["Virtual Network<br><i>Network Isolation</i>"]
+        Subnets["Subnets<br><i>API, Logic App</i>"]
+  end
+    Compute --> Data & Observability & Identity
+    Data --> Observability & Identity
+    Network -.-> Compute & Data
 
-    subgraph Data["💾 Data Platform"]
-        SQL["Azure SQL Database<br/><i>Order Persistence</i>"]
-        SB["Azure Service Bus<br/><i>Event Messaging</i>"]
-        Storage["Azure Storage<br/><i>Workflow State</i>"]
-    end
-
-    subgraph Observability["📊 Observability Platform"]
-        AI["Application Insights<br/><i>APM & Traces</i>"]
-        LAW["Log Analytics<br/><i>Centralized Logs</i>"]
-    end
-
-    subgraph Identity["🔐 Identity Platform"]
-        MI["Managed Identity<br/><i>Service Auth</i>"]
-        RBAC["Azure RBAC<br/><i>Access Control</i>"]
-    end
-
-    subgraph Network["🌐 Network Platform"]
-        VNet["Virtual Network<br/><i>Network Isolation</i>"]
-        Subnets["Subnets<br/><i>API, Logic App</i>"]
-    end
-
-    Compute --> Data
-    Compute --> Observability
-    Compute --> Identity
-    Data --> Observability
-    Data --> Identity
-    Network -.-> Compute
-    Network -.-> Data
-
+     ACA:::compute
+     LA:::compute
+     SQL:::data
+     SB:::data
+     Storage:::data
+     AI:::observability
+     LAW:::observability
+     MI:::identity
+     RBAC:::identity
+     VNet:::network
+     Subnets:::network
     classDef compute fill:#e3f2fd,stroke:#1565c0,stroke-width:2px
     classDef data fill:#fff3e0,stroke:#ef6c00,stroke-width:2px
     classDef observability fill:#e8f5e9,stroke:#2e7d32,stroke-width:2px
     classDef identity fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px
     classDef network fill:#fce4ec,stroke:#c2185b,stroke-width:2px
-
-    class ACA,LA compute
-    class SQL,SB,Storage data
-    class AI,LAW observability
-    class MI,RBAC identity
-    class VNet,Subnets network
+    style Compute stroke:#000000,fill:#FFFFFF
+    style Data stroke:#000000,fill:#FFFFFF
+    style Observability stroke:#000000,fill:#FFFFFF
+    style Identity stroke:#000000,fill:#FFFFFF
+    style Network stroke:#000000,fill:#FFFFFF
 ```
 
 ---
@@ -88,78 +89,108 @@ flowchart TB
 ## 4. Azure Resource Topology
 
 ```mermaid
-flowchart TD
-    subgraph Subscription["Azure Subscription"]
-        subgraph RG["Resource Group: rg-orders-{env}-{region}"]
-            subgraph Compute["Compute Resources"]
-                ACR["🐳 Container Registry<br/>orders-*-acr"]
-                CAE["📦 Container Apps Environment<br/>orders-*-cae"]
-                CA1["🌐 Container App: web-app"]
-                CA2["📡 Container App: orders-api"]
-                ASP["⚙️ App Service Plan: WS1"]
-                LogicApp["🔄 Logic App: orders-*-logicapp"]
-            end
-
-            subgraph Data["Data Resources"]
-                SQLServer["🗄️ SQL Server<br/>orders-*-sql"]
-                SQLDB["📊 SQL Database: OrderDb"]
-                SBNamespace["📨 Service Bus Namespace<br/>orders-*-sb"]
-                SBTopic["📬 Topic: ordersplaced"]
-                SBSub["📥 Subscription: orderprocessingsub"]
-                StorageAccount["📁 Storage Account<br/>orders-*-st"]
-            end
-
-            subgraph Monitoring["Monitoring Resources"]
-                AppInsights["📈 Application Insights<br/>orders-*-appinsights"]
-                LogAnalytics["📋 Log Analytics Workspace<br/>orders-*-law"]
-            end
-
-            subgraph Identity["Identity Resources"]
-                ManagedIdentity["🔑 Managed Identity<br/>orders-*-mi"]
-            end
-
-            subgraph Network["Network Resources"]
-                VNet["🌐 Virtual Network"]
-                APISubnet["Subnet: api"]
-                LASubnet["Subnet: logicapp"]
-            end
-        end
-    end
-
-    CAE --> CA1
-    CAE --> CA2
+flowchart TB
+ subgraph Compute["Compute Resources"]
+        ACR["🐳 Container Registry<br>orders-*-acr"]
+        CAE["📦 Container Apps Environment<br>orders-*-cae"]
+        CA1["🌐 Container App: web-app"]
+        CA2["📡 Container App: orders-api"]
+        ASP["⚙️ App Service Plan: WS1"]
+        LogicApp["🔄 Logic App: orders-*-logicapp"]
+  end
+ subgraph Data["Data Resources"]
+        SQLServer["🗄️ SQL Server<br>orders-*-sql"]
+        SQLDB["📊 SQL Database: OrderDb"]
+        SBNamespace["📨 Service Bus Namespace<br>orders-*-sb"]
+        SBTopic["📬 Topic: ordersplaced"]
+        SBSub["📥 Subscription: orderprocessingsub"]
+        StorageAccount["📁 Storage Account<br>orders-*-st"]
+  end
+ subgraph Monitoring["Monitoring Resources"]
+        AppInsights["📈 Application Insights<br>orders-*-appinsights"]
+        LogAnalytics["📋 Log Analytics Workspace<br>orders-*-law"]
+  end
+ subgraph Identity["Identity Resources"]
+        ManagedIdentity["🔑 Managed Identity<br>orders-*-mi"]
+  end
+ subgraph Network["Network Resources"]
+        VNet["🌐 Virtual Network"]
+        APISubnet["Subnet: api"]
+        LASubnet["Subnet: logicapp"]
+  end
+ subgraph RG["Resource Group: rg-orders-{env}-{region}"]
+        Compute
+        Data
+        Monitoring
+        Identity
+        Network
+  end
+ subgraph Subscription["Azure Subscription"]
+        RG
+  end
+    CAE --> CA1 & CA2
     CA1 --> CA2
-    CA2 --> SQLDB
-    CA2 --> SBTopic
+    CA2 --> SQLDB & SBTopic
     SBTopic --> SBSub
     SBSub --> LogicApp
     LogicApp --> StorageAccount
     SQLServer --> SQLDB
-
     CA1 -.-> AppInsights
     CA2 -.-> AppInsights
-    LogicApp -.-> LogAnalytics
+    LogicApp -.-> LogAnalytics & LASubnet
     AppInsights --> LogAnalytics
-
-    ManagedIdentity -.-> CA2
-    ManagedIdentity -.-> LogicApp
-
-    VNet --> APISubnet
-    VNet --> LASubnet
+    ManagedIdentity -.-> CA2 & LogicApp
+    VNet --> APISubnet & LASubnet
     CAE -.-> APISubnet
-    LogicApp -.-> LASubnet
 
+     ACR:::compute
+     CAE:::compute
+     CA1:::compute
+     CA2:::compute
+     ASP:::compute
+     LogicApp:::compute
+     SQLServer:::data
+     SQLDB:::data
+     SBNamespace:::data
+     SBTopic:::data
+     SBSub:::data
+     StorageAccount:::data
+     AppInsights:::monitoring
+     LogAnalytics:::monitoring
+     ManagedIdentity:::identity
+     VNet:::network
+     APISubnet:::network
+     LASubnet:::network
     classDef compute fill:#e3f2fd,stroke:#1565c0
     classDef data fill:#fff3e0,stroke:#ef6c00
     classDef monitoring fill:#e8f5e9,stroke:#2e7d32
     classDef identity fill:#f3e5f5,stroke:#7b1fa2
     classDef network fill:#fce4ec,stroke:#c2185b
-
-    class ACR,CAE,CA1,CA2,ASP,LogicApp compute
-    class SQLServer,SQLDB,SBNamespace,SBTopic,SBSub,StorageAccount data
-    class AppInsights,LogAnalytics monitoring
-    class ManagedIdentity identity
-    class VNet,APISubnet,LASubnet network
+    style ACR stroke:#00C853,fill:#C8E6C9
+    style CAE fill:#C8E6C9,stroke:#00C853
+    style CA1 stroke:#00C853,fill:#C8E6C9
+    style CA2 stroke:#00C853,fill:#C8E6C9
+    style ASP stroke:#00C853,fill:#C8E6C9
+    style LogicApp stroke:#00C853,fill:#C8E6C9
+    style SQLServer stroke:#FF6D00,fill:#FFE0B2
+    style SQLDB stroke:#FF6D00,fill:#FFE0B2
+    style SBNamespace stroke:#FF6D00,fill:#FFE0B2
+    style SBTopic stroke:#FF6D00,fill:#FFE0B2
+    style SBSub stroke:#FF6D00,fill:#FFE0B2
+    style StorageAccount stroke:#FF6D00,fill:#FFE0B2
+    style AppInsights fill:#E1BEE7,stroke:#AA00FF
+    style LogAnalytics stroke:#AA00FF,fill:#E1BEE7
+    style ManagedIdentity fill:#FFF9C4,stroke:#FFD600
+    style VNet fill:#FFCDD2
+    style APISubnet fill:#FFCDD2
+    style LASubnet fill:#FFCDD2
+    style Compute fill:#BBDEFB,stroke:#2962FF,color:#000000
+    style Data fill:#BBDEFB,stroke:#2962FF
+    style Monitoring fill:#BBDEFB,stroke:#2962FF
+    style Identity fill:#BBDEFB,stroke:#2962FF
+    style Network fill:#BBDEFB,stroke:#2962FF
+    style RG fill:#2962FF,stroke:#000000,color:#FFFFFF
+    style Subscription fill:#FFD600,stroke:#000000
 ```
 
 ---

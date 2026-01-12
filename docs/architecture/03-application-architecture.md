@@ -41,56 +41,56 @@ The solution follows a **modular monolith** approach with clear bounded contexts
 
 ```mermaid
 flowchart TB
-    subgraph Presentation["🖥️ Presentation Layer"]
-        direction LR
-        WebApp["🌐 eShop.Web.App<br/>Blazor Server + Fluent UI<br/><i>Port 5002</i>"]
-    end
-
-    subgraph Application["⚙️ Application Layer"]
-        direction LR
-        API["📡 eShop.Orders.API<br/>ASP.NET Core 10<br/><i>Port 5001</i>"]
-        Workflow["🔄 OrdersManagement<br/>Logic Apps Standard"]
-    end
-
-    subgraph Platform["🏗️ Platform Layer"]
-        direction LR
-        Orchestrator["🎯 app.AppHost<br/>.NET Aspire"]
-        SharedLib["📦 app.ServiceDefaults<br/>Cross-cutting Library"]
-    end
-
-    subgraph External["☁️ External Services"]
-        direction LR
-        DB[("🗄️ Azure SQL<br/>OrderDb")]
-        Queue["📨 Service Bus<br/>ordersplaced Topic"]
-        Storage["📁 Azure Storage<br/>Workflow State"]
+ subgraph Presentation["🖥️ Presentation Layer"]
+    direction LR
+        WebApp["🌐 eShop.Web.App<br>Blazor Server + Fluent UI<br><i>Port 5002</i>"]
+  end
+ subgraph Application["⚙️ Application Layer"]
+    direction LR
+        API["📡 eShop.Orders.API<br>ASP.NET Core 10<br><i>Port 5001</i>"]
+        Workflow["🔄 OrdersManagement<br>Logic Apps Standard"]
+  end
+ subgraph Platform["🏗️ Platform Layer"]
+    direction LR
+        Orchestrator["🎯 app.AppHost<br>.NET Aspire"]
+        SharedLib["📦 app.ServiceDefaults<br>Cross-cutting Library"]
+  end
+ subgraph External["☁️ External Services"]
+    direction LR
+        DB[("🗄️ Azure SQL<br>OrderDb")]
+        Queue["📨 Service Bus<br>ordersplaced Topic"]
+        Storage["📁 Azure Storage<br>Workflow State"]
         Monitor["📊 Application Insights"]
-    end
+  end
+    WebApp -- HTTP/REST --> API
+    API -- EF Core --> DB
+    API -- AMQP --> Queue
+    Queue -- Trigger --> Workflow
+    Workflow -- HTTP --> API
+    Workflow -- Blob API --> Storage
+    Orchestrator -. Orchestrates .-> WebApp & API
+    SharedLib -. Configures .-> WebApp & API
+    WebApp -. OTLP .-> Monitor
+    API -. OTLP .-> Monitor
+    Workflow -. Diagnostics .-> Monitor
 
-    WebApp -->|"HTTP/REST"| API
-    API -->|"EF Core"| DB
-    API -->|"AMQP"| Queue
-    Queue -->|"Trigger"| Workflow
-    Workflow -->|"HTTP"| API
-    Workflow -->|"Blob API"| Storage
-
-    Orchestrator -.->|"Orchestrates"| WebApp
-    Orchestrator -.->|"Orchestrates"| API
-    SharedLib -.->|"Configures"| WebApp
-    SharedLib -.->|"Configures"| API
-
-    WebApp -.->|"OTLP"| Monitor
-    API -.->|"OTLP"| Monitor
-    Workflow -.->|"Diagnostics"| Monitor
-
+     WebApp:::presentation
+     API:::application
+     Workflow:::application
+     Orchestrator:::platform
+     SharedLib:::platform
+     DB:::external
+     Queue:::external
+     Storage:::external
+     Monitor:::external
     classDef presentation fill:#e3f2fd,stroke:#1565c0,stroke-width:2px
     classDef application fill:#e8f5e9,stroke:#2e7d32,stroke-width:2px
     classDef platform fill:#fff3e0,stroke:#ef6c00,stroke-width:2px
     classDef external fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px
-
-    class WebApp presentation
-    class API,Workflow application
-    class Orchestrator,SharedLib platform
-    class DB,Queue,Storage,Monitor external
+    style Platform stroke:#000000,fill:#FFFFFF
+    style Presentation stroke:#000000,fill:#FFFFFF
+    style Application stroke:#000000,fill:#FFFFFF
+    style External stroke:#000000,fill:#FFFFFF
 ```
 
 ---
@@ -121,31 +121,34 @@ flowchart TB
 
 ```mermaid
 flowchart TB
-    subgraph API["eShop.Orders.API"]
-        Controller["OrdersController<br/><i>API Layer</i>"]
-        Service["OrderService<br/><i>Business Logic</i>"]
-        Repository["OrderRepository<br/><i>Data Access</i>"]
-        Handler["OrdersMessageHandler<br/><i>Messaging</i>"]
-        DbContext["OrderDbContext<br/><i>EF Core</i>"]
-    end
-
-    subgraph External["External Dependencies"]
+ subgraph API["eShop.Orders.API"]
+        Controller["OrdersController<br><i>API Layer</i>"]
+        Service["OrderService<br><i>Business Logic</i>"]
+        Repository["OrderRepository<br><i>Data Access</i>"]
+        Handler["OrdersMessageHandler<br><i>Messaging</i>"]
+        DbContext["OrderDbContext<br><i>EF Core</i>"]
+  end
+ subgraph External["External Dependencies"]
         SQL[("SQL Database")]
         SB["Service Bus"]
-    end
-
+  end
     Controller --> Service
-    Service --> Repository
-    Service --> Handler
+    Service --> Repository & Handler
     Repository --> DbContext
     DbContext --> SQL
     Handler --> SB
 
+     Controller:::internal
+     Service:::internal
+     Repository:::internal
+     Handler:::internal
+     DbContext:::internal
+     SQL:::external
+     SB:::external
     classDef internal fill:#e8f5e9,stroke:#2e7d32
     classDef external fill:#f3e5f5,stroke:#7b1fa2
-
-    class Controller,Service,Repository,Handler,DbContext internal
-    class SQL,SB external
+    style API stroke:#000000,fill:#FFFFFF
+    style External stroke:#000000,fill:#FFFFFF
 ```
 
 **API Endpoints:**
@@ -182,25 +185,25 @@ flowchart TB
 
 ```mermaid
 flowchart TB
-    subgraph WebApp["eShop.Web.App"]
-        Pages["Razor Pages<br/><i>Home, PlaceOrder, ListOrders</i>"]
-        Components["Blazor Components<br/><i>Layout, Forms</i>"]
-        ApiService["OrdersAPIService<br/><i>Typed HTTP Client</i>"]
-    end
-
-    subgraph External["External"]
+ subgraph WebApp["eShop.Web.App"]
+        Pages["Razor Pages<br><i>Home, PlaceOrder, ListOrders</i>"]
+        Components["Blazor Components<br><i>Layout, Forms</i>"]
+        ApiService["OrdersAPIService<br><i>Typed HTTP Client</i>"]
+  end
+ subgraph External["External"]
         API["Orders API"]
-    end
+  end
+    Pages --> Components & ApiService
+    ApiService -- HTTP/REST --> API
 
-    Pages --> Components
-    Pages --> ApiService
-    ApiService -->|"HTTP/REST"| API
-
+     Pages:::internal
+     Components:::internal
+     ApiService:::internal
+     API:::external
     classDef internal fill:#e3f2fd,stroke:#1565c0
     classDef external fill:#f3e5f5,stroke:#7b1fa2
-
-    class Pages,Components,ApiService internal
-    class API external
+    style WebApp stroke:#000000,fill:#FFFFFF
+    style External stroke:#000000,fill:#FFFFFF
 ```
 
 **UI Pages:**
@@ -270,21 +273,31 @@ flowchart TD
 
 ```mermaid
 flowchart LR
-    subgraph Sync["🔄 Synchronous (HTTP/REST)"]
-        Web["Web App"] -->|"GET/POST"| API["Orders API"]
-        LA["Logic Apps"] -->|"POST"| API
-    end
+ subgraph Sync["🔄 Sync (HTTP/REST)"]
+        API["Orders API"]
+        Web["Web App"]
+        LA["Logic Apps"]
+  end
+ subgraph Async["📨 Async (Service Bus)"]
+        SB["Service Bus"]
+        API2["Orders API"]
+        LA2["Logic Apps"]
+  end
+    Web -- GET/POST --> API
+    LA -- POST --> API
+    API2 -- Publish --> SB
+    SB -- Subscribe --> LA2
 
-    subgraph Async["📨 Asynchronous (Service Bus)"]
-        API2["Orders API"] -->|"Publish"| SB["Service Bus"]
-        SB -->|"Subscribe"| LA2["Logic Apps"]
-    end
-
+     API:::sync
+     Web:::sync
+     LA:::sync
+     SB:::async
+     API2:::async
+     LA2:::async
     classDef sync fill:#e3f2fd,stroke:#1565c0
     classDef async fill:#e8f5e9,stroke:#2e7d32
-
-    class Web,API,LA sync
-    class API2,SB,LA2 async
+    style Async stroke:#000000,fill:#FFFFFF
+    style Sync stroke:#000000,fill:#FFFFFF
 ```
 
 ### Pattern Summary

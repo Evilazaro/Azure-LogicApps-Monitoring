@@ -38,59 +38,58 @@ The **Azure Logic Apps Monitoring Solution** is a comprehensive, cloud-native re
 ## 🏛️ Architecture
 
 ```mermaid
-flowchart TD
-    subgraph Presentation["🖥️ Presentation Layer"]
-        WebApp["🌐 eShop.Web.App<br/>Blazor Server + Fluent UI"]
-    end
+flowchart TB
+ subgraph Presentation["🖥️ Presentation Layer"]
+        WebApp["🌐 eShop.Web.App<br>Blazor Server + Fluent UI"]
+  end
+ subgraph Application["⚙️ Application Layer"]
+        API["📡 eShop.Orders.API<br>ASP.NET Core REST API"]
+        LogicApp["🔄 OrdersManagement<br>Logic Apps Standard"]
+  end
+ subgraph Platform["🏗️ Platform Layer"]
+        Aspire["🎯 app.AppHost<br>.NET Aspire Orchestrator"]
+        Defaults["📦 app.ServiceDefaults<br>Shared Cross-cutting Concerns"]
+  end
+ subgraph Data["💾 Data Layer"]
+        SQL[("🗄️ Azure SQL Database<br>Order Persistence")]
+        ServiceBus["📨 Azure Service Bus<br>ordersplaced Topic"]
+        Storage["📁 Azure Storage<br>Workflow State"]
+  end
+ subgraph Observability["📊 Observability Layer"]
+        AppInsights["📈 Application Insights<br>Distributed Tracing"]
+        LogAnalytics["📋 Log Analytics<br>Centralized Logs"]
+  end
+    WebApp -- HTTP/REST --> API
+    API -- EF Core --> SQL
+    API -- AMQP --> ServiceBus
+    ServiceBus -- Trigger --> LogicApp
+    LogicApp -- HTTP --> API
+    LogicApp -- Blob API --> Storage
+    Aspire -. Orchestrates .-> WebApp & API
+    Defaults -. Configures .-> WebApp & API
+    WebApp -. OTLP .-> AppInsights
+    API -. OTLP .-> AppInsights
+    LogicApp -. Diagnostics .-> LogAnalytics
 
-    subgraph Application["⚙️ Application Layer"]
-        API["📡 eShop.Orders.API<br/>ASP.NET Core REST API"]
-        LogicApp["🔄 OrdersManagement<br/>Logic Apps Standard"]
-    end
-
-    subgraph Platform["🏗️ Platform Layer"]
-        Aspire["🎯 app.AppHost<br/>.NET Aspire Orchestrator"]
-        Defaults["📦 app.ServiceDefaults<br/>Shared Cross-cutting Concerns"]
-    end
-
-    subgraph Data["💾 Data Layer"]
-        SQL[("🗄️ Azure SQL Database<br/>Order Persistence")]
-        ServiceBus["📨 Azure Service Bus<br/>ordersplaced Topic"]
-        Storage["📁 Azure Storage<br/>Workflow State"]
-    end
-
-    subgraph Observability["📊 Observability Layer"]
-        AppInsights["📈 Application Insights<br/>Distributed Tracing"]
-        LogAnalytics["📋 Log Analytics<br/>Centralized Logs"]
-    end
-
-    WebApp -->|"HTTP/REST"| API
-    API -->|"EF Core"| SQL
-    API -->|"AMQP"| ServiceBus
-    ServiceBus -->|"Trigger"| LogicApp
-    LogicApp -->|"HTTP"| API
-    LogicApp -->|"Blob API"| Storage
-
-    Aspire -.->|"Orchestrates"| WebApp
-    Aspire -.->|"Orchestrates"| API
-    Defaults -.->|"Configures"| WebApp
-    Defaults -.->|"Configures"| API
-
-    WebApp -.->|"OTLP"| AppInsights
-    API -.->|"OTLP"| AppInsights
-    LogicApp -.->|"Diagnostics"| LogAnalytics
-
+     WebApp:::presentation
+     API:::application
+     LogicApp:::application
+     Aspire:::platform
+     Defaults:::platform
+     SQL:::data
+     ServiceBus:::data
+     Storage:::data
+     AppInsights:::observability
+     LogAnalytics:::observability
     classDef presentation fill:#e3f2fd,stroke:#1565c0,stroke-width:2px
     classDef application fill:#e8f5e9,stroke:#2e7d32,stroke-width:2px
     classDef platform fill:#fff3e0,stroke:#ef6c00,stroke-width:2px
     classDef data fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px
     classDef observability fill:#fce4ec,stroke:#c2185b,stroke-width:2px
-
-    class WebApp presentation
-    class API,LogicApp application
-    class Aspire,Defaults platform
-    class SQL,ServiceBus,Storage data
-    class AppInsights,LogAnalytics observability
+    style Platform stroke:#000000,fill:#FFFFFF
+    style Application stroke:#000000,fill:#FFFFFF
+    style Data stroke:#000000,fill:#FFFFFF
+    style Observability stroke:#000000,fill:#FFFFFF
 ```
 
 > 📖 **Learn more:** See [Architecture Overview](docs/architecture/README.md) for detailed service inventory, data flows, and component interactions.
