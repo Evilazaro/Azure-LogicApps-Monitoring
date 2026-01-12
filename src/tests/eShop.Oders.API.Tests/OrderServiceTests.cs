@@ -1,7 +1,6 @@
 using app.ServiceDefaults.CommonTypes;
 using eShop.Orders.API.Interfaces;
 using eShop.Orders.API.Services;
-using eShop.Orders.API.Services.Interfaces;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using System.Diagnostics;
