@@ -392,7 +392,139 @@ builder.AddServiceDefaults();  // Single line enables all cross-cutting concerns
 
 ---
 
-## 11. Cross-Architecture Relationships
+## 11. Test Architecture
+
+The solution includes a comprehensive unit test suite ensuring reliability and maintainability of the Orders API through automated testing.
+
+### Test Project Structure
+
+| Folder                            | Purpose                                                                               |
+| --------------------------------- | ------------------------------------------------------------------------------------- |
+| `src/tests/eShop.Oders.API.Tests` | MSTest unit tests for eShop.Orders.API with Moq mocking and EF Core InMemory provider |
+
+### Testing Frameworks & Dependencies
+
+| Package                                    | Version | Purpose                                    |
+| ------------------------------------------ | ------- | ------------------------------------------ |
+| **MSTest.Sdk**                             | 3.6.4   | Test framework and runner                  |
+| **Moq**                                    | 4.20.72 | Mocking framework for dependency isolation |
+| **Microsoft.EntityFrameworkCore.InMemory** | 9.0.0   | In-memory database provider for testing    |
+
+### Test Class Coverage
+
+| Component        | Test Class                      | Test Count | Coverage Focus                                                              |
+| ---------------- | ------------------------------- | ---------- | --------------------------------------------------------------------------- |
+| **Handlers**     | `OrdersMessageHandlerTests`     | ~25        | Azure Service Bus message publishing, batch operations, distributed tracing |
+|                  | `NoOpOrdersMessageHandlerTests` | ~15        | No-op handler for local development without Service Bus                     |
+| **Services**     | `OrderServiceTests`             | ~25        | Order CRUD operations, repository interactions, message handler integration |
+|                  | `OrdersWrapperTests`            | ~15        | Order collection wrapper initialization and manipulation                    |
+| **Repositories** | `OrderRepositoryTests`          | ~30        | EF Core persistence operations, CRUD, entity mapping, database interactions |
+| **HealthChecks** | `DbContextHealthCheckTests`     | ~10        | Database connectivity health check, degraded/healthy/unhealthy states       |
+|                  | `ServiceBusHealthCheckTests`    | ~20        | Azure Service Bus connectivity health check, topic availability             |
+
+### Test Architecture Diagram
+
+```mermaid
+flowchart TB
+ subgraph TestProject["🧪 eShop.Oders.API.Tests"]
+    direction TB
+        subgraph Handlers["Handlers Tests"]
+            OMHT["OrdersMessageHandlerTests<br/><i>Service Bus Publishing</i>"]
+            NOMHT["NoOpOrdersMessageHandlerTests<br/><i>Local Dev Handler</i>"]
+        end
+        subgraph Services["Services Tests"]
+            OST["OrderServiceTests<br/><i>Business Logic</i>"]
+            OWT["OrdersWrapperTests<br/><i>Collection Wrapper</i>"]
+        end
+        subgraph Repositories["Repositories Tests"]
+            ORT["OrderRepositoryTests<br/><i>Data Persistence</i>"]
+        end
+        subgraph HealthChecks["HealthChecks Tests"]
+            DCHT["DbContextHealthCheckTests<br/><i>Database Health</i>"]
+            SBHT["ServiceBusHealthCheckTests<br/><i>Service Bus Health</i>"]
+        end
+  end
+ subgraph Mocking["🎭 Test Doubles"]
+        MockLogger["Mock&lt;ILogger&gt;"]
+        MockRepo["Mock&lt;IOrderRepository&gt;"]
+        MockHandler["Mock&lt;IOrdersMessageHandler&gt;"]
+        MockSBClient["Mock&lt;ServiceBusClient&gt;"]
+        InMemoryDb["InMemory DbContext"]
+  end
+    OMHT --> MockLogger & MockSBClient
+    NOMHT --> MockLogger
+    OST --> MockLogger & MockRepo & MockHandler
+    OWT -.-> None["No Dependencies"]
+    ORT --> MockLogger & InMemoryDb
+    DCHT --> MockLogger & InMemoryDb
+    SBHT --> MockLogger & MockSBClient
+
+     OMHT:::test
+     NOMHT:::test
+     OST:::test
+     OWT:::test
+     ORT:::test
+     DCHT:::test
+     SBHT:::test
+     MockLogger:::mock
+     MockRepo:::mock
+     MockHandler:::mock
+     MockSBClient:::mock
+     InMemoryDb:::mock
+    classDef test fill:#e8f5e9,stroke:#2e7d32,stroke-width:2px
+    classDef mock fill:#e3f2fd,stroke:#1565c0,stroke-width:2px
+    style TestProject stroke:#000000,fill:#FFFFFF
+    style Mocking stroke:#000000,fill:#FFFFFF
+    style Handlers stroke:#000000,fill:#FFFFFF
+    style Services stroke:#000000,fill:#FFFFFF
+    style Repositories stroke:#000000,fill:#FFFFFF
+    style HealthChecks stroke:#000000,fill:#FFFFFF
+```
+
+### Testing Patterns Used
+
+| Pattern                      | Description                                           | Example Usage                                       |
+| ---------------------------- | ----------------------------------------------------- | --------------------------------------------------- |
+| **Arrange-Act-Assert (AAA)** | Standard test structure for clarity                   | All test methods follow AAA pattern                 |
+| **Mock-based Isolation**     | Dependencies mocked to isolate unit under test        | `Mock<IOrderRepository>`, `Mock<ServiceBusClient>`  |
+| **In-memory Database**       | EF Core InMemory provider for repository tests        | `UseInMemoryDatabase(Guid.NewGuid().ToString())`    |
+| **Constructor Validation**   | Tests verify null argument handling in constructors   | `Assert.ThrowsException<ArgumentNullException>()`   |
+| **Async Testing**            | Full async/await support for asynchronous operations  | `async Task TestMethod()` with `await`              |
+| **Test Lifecycle**           | `TestInitialize`/`TestCleanup` for setup and teardown | Fresh mock instances per test, resource disposal    |
+| **Region Organization**      | Tests grouped by functionality using `#region` blocks | Constructor Tests, CRUD Tests, Error Handling Tests |
+
+### Test Execution
+
+```powershell
+# Run all tests from solution root
+dotnet test
+
+# Run with detailed output
+dotnet test --logger "console;verbosity=detailed"
+
+# Run specific test class
+dotnet test --filter "FullyQualifiedName~OrderServiceTests"
+
+# Generate code coverage report
+dotnet test --collect:"XPlat Code Coverage"
+```
+
+### Test Coverage Focus Areas
+
+| Area                    | Coverage Scope                                      |
+| ----------------------- | --------------------------------------------------- |
+| **Constructor Guards**  | Null parameter validation for all constructors      |
+| **Happy Path**          | Successful execution of all operations              |
+| **Error Handling**      | Exception scenarios and graceful degradation        |
+| **Edge Cases**          | Empty collections, null values, boundary conditions |
+| **Distributed Tracing** | ActivitySource span creation and propagation        |
+| **Health States**       | Healthy, Degraded, and Unhealthy status returns     |
+
+> **Reference:** [eShop.Oders.API.Tests](../../src/tests/eShop.Oders.API.Tests/)
+
+---
+
+## 12. Cross-Architecture Relationships
 
 | Related Architecture           | Connection                                   | Reference                                                                    |
 | ------------------------------ | -------------------------------------------- | ---------------------------------------------------------------------------- |

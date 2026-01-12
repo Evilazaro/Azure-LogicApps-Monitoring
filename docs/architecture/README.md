@@ -97,15 +97,15 @@ flowchart TB
 
 ### TOGAF BDAT Layers
 
-| Document                                                            | Focus                                     | Recommended For                        |
-| ------------------------------------------------------------------- | ----------------------------------------- | -------------------------------------- |
-| [01 - Business Architecture](01-business-architecture.md)           | Capabilities, value streams, stakeholders | Solution Architects, Business Analysts |
-| [02 - Data Architecture](02-data-architecture.md)                   | Data flows, stores, telemetry mapping     | Data Engineers, Platform Engineers     |
-| [03 - Application Architecture](03-application-architecture.md)     | Service design, APIs, communication       | Developers, Technical Leads            |
-| [04 - Technology Architecture](04-technology-architecture.md)       | Azure resources, infrastructure topology  | Platform Engineers, Cloud Architects   |
-| [05 - Observability Architecture](05-observability-architecture.md) | Traces, metrics, logs, alerting           | SRE Teams, DevOps Engineers            |
-| [06 - Security Architecture](06-security-architecture.md)           | Identity, secrets, network controls       | Security Engineers, Compliance         |
-| [07 - Deployment Architecture](07-deployment-architecture.md)       | CI/CD, IaC, environments                  | DevOps Engineers, Release Managers     |
+| Document                                                            | Focus                                            | Recommended For                        |
+| ------------------------------------------------------------------- | ------------------------------------------------ | -------------------------------------- |
+| [01 - Business Architecture](01-business-architecture.md)           | Capabilities, value streams, stakeholders        | Solution Architects, Business Analysts |
+| [02 - Data Architecture](02-data-architecture.md)                   | Data flows, stores, telemetry mapping            | Data Engineers, Platform Engineers     |
+| [03 - Application Architecture](03-application-architecture.md)     | Service design, APIs, communication, **testing** | Developers, Technical Leads            |
+| [04 - Technology Architecture](04-technology-architecture.md)       | Azure resources, infrastructure topology         | Platform Engineers, Cloud Architects   |
+| [05 - Observability Architecture](05-observability-architecture.md) | Traces, metrics, logs, alerting                  | SRE Teams, DevOps Engineers            |
+| [06 - Security Architecture](06-security-architecture.md)           | Identity, secrets, network controls              | Security Engineers, Compliance         |
+| [07 - Deployment Architecture](07-deployment-architecture.md)       | CI/CD, IaC, environments                         | DevOps Engineers, Release Managers     |
 
 ### Architecture Decision Records
 
@@ -139,7 +139,9 @@ flowchart TB
 ├── 📦 app.ServiceDefaults/      # Shared cross-cutting concerns
 ├── 📂 src/
 │   ├── 📡 eShop.Orders.API/     # Orders REST API
-│   └── 🌐 eShop.Web.App/        # Blazor Server frontend
+│   ├── 🌐 eShop.Web.App/        # Blazor Server frontend
+│   └── 🧪 tests/                # Unit test projects
+│       └── eShop.Oders.API.Tests/  # MSTest + Moq + EF InMemory
 ├── 🔄 workflows/
 │   └── OrdersManagement/        # Logic Apps workflows
 ├── 🏗️ infra/                    # Bicep IaC templates
