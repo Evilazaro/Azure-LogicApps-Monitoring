@@ -84,6 +84,9 @@ module identity 'identity/main.bicep' = {
     tags: tags
     envName: envName
   }
+  dependsOn: [
+    network
+  ]
 }
 
 // ========== Identity Outputs ==========

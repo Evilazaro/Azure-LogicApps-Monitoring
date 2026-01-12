@@ -47,7 +47,7 @@ resource dataSubnet 'Microsoft.Network/virtualNetworks/subnets@2025-01-01' = {
 
 resource logicappSubnet 'Microsoft.Network/virtualNetworks/subnets@2025-01-01' = {
   parent: vnet
-  name: 'logicapp${subnetName}'
+  name: 'workflows${subnetName}'
   properties: {
     addressPrefix: '10.0.3.0/24'
     delegations: [
