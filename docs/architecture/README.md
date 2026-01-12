@@ -136,20 +136,51 @@ flowchart TB
 
 ```
 ├── 🎯 app.AppHost/              # .NET Aspire orchestrator
+│   ├── AppHost.cs               # Service composition & configuration
+│   └── infra/                   # Container Apps manifest templates
 ├── 📦 app.ServiceDefaults/      # Shared cross-cutting concerns
+│   ├── Extensions.cs            # OpenTelemetry, health checks, resilience
+│   └── CommonTypes.cs           # Shared DTOs (Order, Product)
 ├── 📂 src/
 │   ├── 📡 eShop.Orders.API/     # Orders REST API
+│   │   ├── Controllers/         # API endpoints
+│   │   ├── Services/            # Business logic layer
+│   │   ├── Repositories/        # Data access layer
+│   │   ├── Handlers/            # Message publishing (Service Bus)
+│   │   ├── HealthChecks/        # Database & Service Bus health
+│   │   └── data/                # EF Core DbContext & entities
 │   ├── 🌐 eShop.Web.App/        # Blazor Server frontend
+│   │   ├── Components/          # Razor components & pages
+│   │   └── Shared/              # Fluent UI design system
 │   └── 🧪 tests/                # Unit test projects
 │       └── eShop.Oders.API.Tests/  # MSTest + Moq + EF InMemory
+│           ├── Handlers/        # Message handler tests
+│           ├── Services/        # Business logic tests
+│           ├── Repositories/    # Data access tests
+│           └── HealthChecks/    # Health check tests
 ├── 🔄 workflows/
 │   └── OrdersManagement/        # Logic Apps workflows
+│       └── OrdersManagementLogicApp/
+│           ├── OrdersPlacedProcess/      # Main order processing workflow
+│           └── OrdersPlacedCompleteProcess/ # Completion workflow
 ├── 🏗️ infra/                    # Bicep IaC templates
-│   ├── shared/                  # Monitoring, identity, networking
+│   ├── main.bicep               # Entry point (subscription scope)
+│   ├── shared/                  # Monitoring, identity, networking, data
+│   │   ├── identity/            # Managed Identity & RBAC
+│   │   ├── monitoring/          # App Insights, Log Analytics
+│   │   ├── network/             # VNet, Subnets
+│   │   └── data/                # Azure SQL Server & Database
 │   └── workload/                # Services, messaging, Logic Apps
+│       ├── messaging/           # Service Bus namespace, topics
+│       ├── services/            # Container Apps, ACR
+│       └── logic-app.bicep      # Logic Apps Standard
 ├── 🔧 hooks/                    # azd lifecycle scripts
+│   ├── preprovision.*           # Prerequisites validation
+│   ├── postprovision.*          # Secrets & sample data setup
+│   └── deploy-workflow.*        # Logic Apps deployment
 └── 📚 docs/
-    └── architecture/            # This documentation
+    ├── architecture/            # This documentation (TOGAF BDAT)
+    └── hooks/                   # Hook script documentation
 ```
 
 ---
