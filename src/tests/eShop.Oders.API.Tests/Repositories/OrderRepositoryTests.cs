@@ -5,11 +5,9 @@
 
 using app.ServiceDefaults.CommonTypes;
 using eShop.Orders.API.Data;
-using eShop.Orders.API.Data.Entities;
 using eShop.Orders.API.Repositories;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using Moq;
 
 namespace eShop.Orders.API.Tests.Repositories;
 
