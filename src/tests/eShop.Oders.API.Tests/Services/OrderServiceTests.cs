@@ -5,7 +5,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using System.Diagnostics;
 
-namespace eShop.Orders.API.Tests;
+namespace eShop.Oders.API.Tests.Services;
 
 [TestClass]
 public sealed class OrderServiceTests
