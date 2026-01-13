@@ -502,162 +502,212 @@ gantt
 
 ### Fase 1 – Definição dos contratos de integração (1–2 semanas)
 
-**Objetivo**
-
-- Transformar integrações implícitas em contratos explícitos e governáveis.
+| Aspecto       | Descrição                                                                         |
+| ------------- | --------------------------------------------------------------------------------- |
+| **Objetivo**  | Transformar integrações implícitas em contratos explícitos e governáveis          |
+| **Valor BDM** | Redução de ambiguidades; homologação mais rápida; evolução controlada             |
+| **Valor TDM** | Contratos como fonte de verdade; base para testes automatizados e compatibilidade |
 
 **Principais atividades**
 
-- Definir endpoints e modelos (DTOs) por fluxo.
-- Padronizar erros (códigos, mensagens, campos) e versionamento.
-- Definir idempotência (chaves e comportamento) por fluxo.
-- Definir autenticação/autorização e requisitos de segurança.
+| Atividade                                     | Responsável         | Entregável                           |
+| --------------------------------------------- | ------------------- | ------------------------------------ |
+| Definir endpoints e modelos (DTOs) por fluxo  | TDM (Néctar)        | Especificação OpenAPI v1             |
+| Padronizar erros (códigos, mensagens, campos) | TDM (Néctar)        | Taxonomia de erros documentada       |
+| Definir estratégia de versionamento           | TDM (Néctar)        | Guideline de versionamento           |
+| Definir idempotência por fluxo                | TDM (Néctar)        | Documento de padrões de idempotência |
+| Definir autenticação/autorização              | TDM (Néctar + Coop) | Requisitos de segurança aprovados    |
 
-**Entregáveis**
+**Critérios de aceite (Exit Criteria)**
 
-- OpenAPI v1 (contratos iniciais) + guidelines de versionamento.
-- Guia de padrões de integração (erros, idempotência, headers, correlação).
-
-**Exit Criteria**
-
-- Contratos aprovados por Néctar e Cooperflora para o piloto.
-- Plano de testes de contrato definido (mínimo) para o piloto.
+| Critério                                  | Validador            |
+| ----------------------------------------- | -------------------- |
+| Contratos OpenAPI aprovados para o piloto | Cooperflora + Néctar |
+| Padrões de integração documentados        | TDM (Néctar)         |
+| Plano de testes de contrato definido      | TDM (Néctar)         |
 
 **Riscos e mitigação**
 
-- Contratos mal definidos → workshops com exemplos reais do legado e validação com dados amostrados.
-- Mudanças frequentes → governança de breaking changes e compatibilidade.
+| Risco                             | Probabilidade | Impacto | Mitigação                                          |
+| --------------------------------- | ------------- | ------- | -------------------------------------------------- |
+| Contratos mal definidos           | Média         | Alto    | Workshops com exemplos reais + validação com dados |
+| Mudanças frequentes nos contratos | Média         | Médio   | Governança de breaking changes + compatibilidade   |
 
 ### Fase 2 – Fundação da API (2–3 semanas)
 
-**Objetivo**
-
-- Disponibilizar a infraestrutura e o esqueleto técnico da API com padrões operacionais.
+| Aspecto       | Descrição                                                                             |
+| ------------- | ------------------------------------------------------------------------------------- |
+| **Objetivo**  | Disponibilizar a infraestrutura e o esqueleto técnico da API com padrões operacionais |
+| **Valor BDM** | Infraestrutura pronta para receber o piloto; redução de risco técnico                 |
+| **Valor TDM** | Arquitetura estabelecida; padrões de qualidade definidos; pipeline automatizado       |
 
 **Principais atividades**
 
-- Estrutura de solução (camadas), DI, validação, logging estruturado.
-- Health checks, métricas, correlação e rastreabilidade.
-- Conectividade segura com o ERP e ambientes (DEV/HML/PRD).
-- Pipeline CI/CD e padrões de configuração/segredos.
+| Atividade                                     | Responsável         | Entregável                                 |
+| --------------------------------------------- | ------------------- | ------------------------------------------ |
+| Estrutura de solução (camadas, DI, validação) | TDM (Néctar)        | Código-fonte da API base                   |
+| Logging estruturado e correlação              | TDM (Néctar)        | Padrões de observabilidade implementados   |
+| Health checks e métricas                      | TDM (Néctar)        | Endpoints de saúde + métricas expostas     |
+| Conectividade segura com ERP                  | TDM (Néctar + Coop) | Conexão validada em DEV/HML                |
+| Pipeline CI/CD                                | TDM (Néctar)        | Pipeline funcional com deploy automatizado |
+| Configuração de ambientes (DEV/HML/PRD)       | TDM (Néctar + Coop) | Ambientes provisionados e documentados     |
 
-**Entregáveis**
+**Critérios de aceite (Exit Criteria)**
 
-- API em DEV/HML com documentação Swagger.
-- Padrões de logs/métricas e dashboards iniciais.
-
-**Exit Criteria**
-
-- API pronta para implementar o piloto com observabilidade mínima.
-- Pipeline e ambientes validados com uma chamada de ponta a ponta (smoke test).
+| Critério                                 | Validador           |
+| ---------------------------------------- | ------------------- |
+| API em DEV/HML com documentação Swagger  | TDM (Néctar)        |
+| Smoke test de ponta a ponta bem-sucedido | TDM (Néctar + Coop) |
+| Pipeline CI/CD validado                  | TDM (Néctar)        |
+| Dashboards básicos de observabilidade    | TDM (Néctar)        |
 
 **Riscos e mitigação**
 
-- Atraso em ambientes/infra → planejar setup em paralelo com Fase 1.
-- Falhas de conectividade → testes antecipados e alinhamento de rede/segurança.
+| Risco                                 | Probabilidade | Impacto | Mitigação                                         |
+| ------------------------------------- | ------------- | ------- | ------------------------------------------------- |
+| Atraso em provisão de ambientes/infra | Média         | Alto    | Iniciar setup em paralelo com Fase 1              |
+| Falhas de conectividade com ERP       | Média         | Alto    | Testes antecipados + alinhamento de rede/firewall |
 
 ### Fase 3 – Fluxo Piloto (2–4 semanas)
 
-**Objetivo**
+| Aspecto       | Descrição                                                                                |
+| ------------- | ---------------------------------------------------------------------------------------- |
+| **Objetivo**  | Implementar o primeiro fluxo via API em produção, com governança, rollback e aprendizado |
+| **Valor BDM** | **Primeiro valor em produção**; validação da abordagem; redução de risco para escala     |
+| **Valor TDM** | Padrões validados em ambiente real; blueprint repetível para demais fluxos               |
 
-- Implementar o primeiro fluxo via API em produção, com governança, rollback e aprendizado.
-
-**Principais atividades**
-
-- Seleção do fluxo (recomendado: **Pessoas**) e definição de critérios de sucesso.
-- Implementação do fluxo na API (validação, idempotência, auditoria).
-- Ajustes no legado para convivência (quando necessário) e desligamento controlado do timer do fluxo.
-- Homologação e entrada em produção com janela de estabilização.
-
-**Entregáveis**
-
-- Fluxo piloto em produção via API.
-- Runbook do fluxo e alertas/dashboards.
-- Relatório de lições aprendidas e ajustes de padrão.
-
-**Exit Criteria**
-
-- Estabilização com indicadores aceitáveis (erro/latência/incidentes) por período acordado.
-- Processo de rollback testado (ao menos em ambiente de homologação).
-
-**Riscos e mitigação**
-
-- Incidentes no piloto → rollout progressivo, feature flags e rollback rápido.
-- Divergência de dados → auditoria por transação e reprocessamento idempotente.
-
-### Fase 4 – Operação híbrida (1–3 meses)
-
-**Objetivo**
-
-- Escalar migração fluxo a fluxo, mantendo operação contínua e reduzindo progressivamente o legado.
+> **Recomendação**: O fluxo **Cadastro de Pessoas** é ideal para piloto por ter alto valor, risco controlado e não afetar transações financeiras críticas.
 
 **Principais atividades**
 
-- Migração por domínio com backlog priorizado (cadastros → transacionais).
-- Eliminação gradual de timers e integrações diretas por fluxo.
-- Fortalecimento de observabilidade e procedimentos de reprocessamento.
-- Gestão de mudanças e comunicação por lote de migrações.
+| Atividade                                   | Responsável         | Entregável                                    |
+| ------------------------------------------- | ------------------- | --------------------------------------------- |
+| Seleção e definição de critérios de sucesso | BDM + TDM           | Critérios de aceite do piloto                 |
+| Implementação do fluxo na API               | TDM (Néctar)        | Endpoint funcional com validação/idempotência |
+| Ajustes no legado para convivência          | TDM (Néctar)        | Legado adaptado (quando necessário)           |
+| Testes de integração e E2E                  | TDM (Néctar + Coop) | Evidências de testes                          |
+| Homologação com usuários                    | BDM (Cooperflora)   | Aceite de homologação                         |
+| Go-live com janela de estabilização         | TDM + BDM           | Fluxo em produção                             |
+| Elaboração de runbook e alertas             | TDM (Néctar)        | Runbook operacional + dashboards              |
 
-**Entregáveis**
+**Critérios de aceite (Exit Criteria)**
 
-- Fluxos críticos migrados.
-- Matriz de fluxos (status: legado/híbrido/API) atualizada.
-
-**Exit Criteria**
-
-- Principais fluxos em API e timers relevantes desativados.
-- Operação com suporte e governança estabelecidos.
+| Critério                         | Validador    | Métrica                                |
+| -------------------------------- | ------------ | -------------------------------------- |
+| Fluxo piloto estável em produção | TDM + BDM    | ≥ 2 semanas sem incidentes críticos    |
+| Indicadores dentro do aceitável  | TDM (Néctar) | Erro < 1%, latência p95 < SLA definido |
+| Processo de rollback testado     | TDM (Néctar) | Rollback executado em HML com sucesso  |
+| Lições aprendidas documentadas   | TDM (Néctar) | Relatório de lições aprendidas         |
 
 **Riscos e mitigação**
 
-- Volume/complexidade do legado → decomposição do backlog e buffers.
-- Fadiga operacional → cadência de migração com janelas e comunicação.
+| Risco                               | Probabilidade | Impacto | Mitigação                                             |
+| ----------------------------------- | ------------- | ------- | ----------------------------------------------------- |
+| Incidentes em produção              | Média         | Alto    | Rollout progressivo + feature flags + rollback rápido |
+| Divergência de dados entre sistemas | Média         | Alto    | Auditoria por transação + reprocessamento idempotente |
+| Resistência do usuário              | Baixa         | Médio   | Comunicação antecipada + acompanhamento pós-go-live   |
+
+### Fase 4 – Migração por fluxo / Operação híbrida (1–3 meses)
+
+| Aspecto       | Descrição                                                                                        |
+| ------------- | ------------------------------------------------------------------------------------------------ |
+| **Objetivo**  | Escalar migração fluxo a fluxo, mantendo operação contínua e reduzindo progressivamente o legado |
+| **Valor BDM** | Fluxos críticos migrados; redução de risco operacional; menor dependência do legado              |
+| **Valor TDM** | Timers desativados; operação híbrida governada; padrões consolidados                             |
+
+**Ondas de migração sugeridas**
+
+| Onda | Domínio                 | Fluxos                                 | Prioridade  | Critério de Conclusão                        |
+| ---- | ----------------------- | -------------------------------------- | ----------- | -------------------------------------------- |
+| 1    | Cadastros (Master Data) | Pessoas (piloto), Produtos, Auxiliares | Alta        | Todos os cadastros via API + timers inativos |
+| 2    | Comercial               | Pedidos, Movimentos                    | Média       | Fluxos transacionais via API                 |
+| 3    | Fiscal/Faturamento      | Notas, Faturamento                     | Média-Baixa | Compliance validado + auditoria              |
+
+**Principais atividades**
+
+| Atividade                                 | Responsável  | Entregável                             |
+| ----------------------------------------- | ------------ | -------------------------------------- |
+| Migração por domínio (backlog priorizado) | TDM (Néctar) | Fluxos implementados por onda          |
+| Desativação de timers por fluxo migrado   | TDM (Néctar) | Timers desligados + evidência          |
+| Fortalecimento de observabilidade         | TDM (Néctar) | Dashboards e alertas por fluxo         |
+| Gestão de mudanças e comunicação por onda | BDM + TDM    | Comunicados + aceite por onda          |
+| Atualização da matriz de fluxos           | TDM (Néctar) | Matriz (legado/híbrido/API) atualizada |
+
+**Critérios de aceite (Exit Criteria)**
+
+| Critério                                        | Validador         |
+| ----------------------------------------------- | ----------------- |
+| Principais fluxos em API (≥80%)                 | TDM + BDM         |
+| Timers de fluxos migrados desativados           | TDM (Néctar)      |
+| Operação com suporte e governança estabelecidos | BDM (Cooperflora) |
+| Matriz de fluxos atualizada e validada          | TDM + BDM         |
+
+**Riscos e mitigação**
+
+| Risco                                  | Probabilidade | Impacto | Mitigação                                            |
+| -------------------------------------- | ------------- | ------- | ---------------------------------------------------- |
+| Volume/complexidade maior que estimado | Média         | Médio   | Decomposição do backlog + buffers no cronograma      |
+| Fadiga operacional                     | Média         | Médio   | Cadência de migração com janelas + comunicação clara |
+| Regressões em fluxos já migrados       | Baixa         | Alto    | Testes de regressão + monitoramento contínuo         |
 
 ### Fase 5 – Simplificação do legado (1–2 meses)
 
-**Objetivo**
-
-- Reduzir o módulo Access/VBA ao mínimo necessário, removendo responsabilidades de integração e diminuindo custo de manutenção.
+| Aspecto       | Descrição                                                                                      |
+| ------------- | ---------------------------------------------------------------------------------------------- |
+| **Objetivo**  | Reduzir o módulo Access/VBA ao mínimo necessário, removendo responsabilidades de integração    |
+| **Valor BDM** | Custo de manutenção reduzido; menor risco operacional; equipe liberada para outras iniciativas |
+| **Valor TDM** | Código legado simplificado; documentação final; menor superfície de suporte                    |
 
 **Principais atividades**
 
-- Remoção de formulários/rotinas de integração obsoletas.
-- Refatoração do VBA remanescente e documentação mínima.
-- Ajustes finais de operação (runbooks, dashboards, alertas).
+| Atividade                                              | Responsável  | Entregável                      |
+| ------------------------------------------------------ | ------------ | ------------------------------- |
+| Remoção de formulários/rotinas de integração obsoletas | TDM (Néctar) | Legado sem código de integração |
+| Refatoração do VBA remanescente                        | TDM (Néctar) | Código simplificado             |
+| Documentação mínima do legado                          | TDM (Néctar) | Documentação operacional        |
+| Ajustes finais de runbooks e alertas                   | TDM (Néctar) | Runbooks atualizados            |
+| Treinamento de suporte (se necessário)                 | TDM (Néctar) | Equipe capacitada               |
 
-**Entregáveis**
+**Critérios de aceite (Exit Criteria)**
 
-- Legado simplificado e estável.
-- Documentação operacional final.
-
-**Exit Criteria**
-
-- Legado não executa integrações críticas.
-- Suporte tem visibilidade e procedimentos claros.
+| Critério                                        | Validador         |
+| ----------------------------------------------- | ----------------- |
+| Legado não executa integrações críticas         | TDM (Néctar)      |
+| Suporte tem visibilidade e procedimentos claros | BDM (Cooperflora) |
+| Documentação operacional entregue               | TDM + BDM         |
 
 **Riscos e mitigação**
 
-- Dependências remanescentes → checklist por fluxo antes de remover rotinas.
+| Risco                                   | Probabilidade | Impacto | Mitigação                                      |
+| --------------------------------------- | ------------- | ------- | ---------------------------------------------- |
+| Dependências remanescentes não mapeadas | Baixa         | Alto    | Checklist por fluxo antes de remover rotinas   |
+| Perda de conhecimento institucional     | Média         | Médio   | Documentação mínima + sessões de transferência |
 
 ### Fase 6 – Evolução opcional (contínuo)
 
-**Objetivo**
+| Aspecto       | Descrição                                                                                        |
+| ------------- | ------------------------------------------------------------------------------------------------ |
+| **Objetivo**  | Evoluir a integração para suportar novos requisitos e maior desacoplamento, conforme necessidade |
+| **Valor BDM** | Novas capacidades de negócio habilitadas; preparação para iniciativas estratégicas (ex.: Nimbus) |
+| **Valor TDM** | Arquitetura event-driven quando justificado; maior resiliência e escalabilidade                  |
 
-- Evoluir integração para suportar novos requisitos e maior desacoplamento, conforme necessidade.
+> **Nota**: Esta fase é **opcional** e executada **por demanda**. Cada iniciativa deve ser justificada por ROI/valor de negócio e aprovada em governança antes da execução.
 
-**Principais atividades**
+**Possíveis iniciativas**
 
-- Introdução de mensageria (ex.: Service Bus) em cenários adequados.
-- Modelagem de eventos e padrões de consistência.
-- Preparação para iniciativas futuras (ex.: Nimbus).
+| Iniciativa                       | Gatilho                                      | Benefício                                     |
+| -------------------------------- | -------------------------------------------- | --------------------------------------------- |
+| Mensageria (Service Bus)         | Picos de carga ou necessidade de assíncrono  | Desacoplamento; resiliência a falhas          |
+| Modelagem de eventos por domínio | Necessidade de integração com novos sistemas | Extensibilidade; consistência eventual        |
+| Preparação para Nimbus           | Decisão estratégica de migração              | Roadmap técnico; redução de risco de migração |
 
-**Entregáveis**
+**Critérios de aceite (Exit Criteria)**
 
-- Roadmap evolutivo e protótipos (quando aplicável).
-
-**Exit Criteria**
-
-- Iniciativas opcionais aprovadas por governança e justificadas por valor/ROI.
+| Critério                                             | Validador         |
+| ---------------------------------------------------- | ----------------- |
+| ROI/valor justificado antes de cada iniciativa       | BDM (Cooperflora) |
+| Iniciativa aprovada em governança                    | BDM + TDM         |
+| Entrega validada com critérios de aceite específicos | TDM + BDM         |
 
 ## Integração entre Sistemas (Padrões e Decisões)
 
