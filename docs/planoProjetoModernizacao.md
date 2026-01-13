@@ -288,6 +288,123 @@ Os princípios abaixo orientam as decisões técnicas do projeto, organizados co
 | **Segurança por design**             | Autenticação, autorização e hardening desde o início | Redução de risco de exposição                | OAuth2/API Key/mTLS; TLS; rate limiting         |
 | **Preparação para nuvem/segregação** | Integração funciona sem co-localização de banco      | Habilita iniciativas futuras de modernização | API REST/JSON; sem dependência de rede local    |
 
+### Padrões técnicos de integração
+
+Esta subseção detalha os **padrões técnicos** que operacionalizam os princípios arquiteturais definidos acima. Enquanto os princípios orientam "o quê" e "por quê", os padrões definem "como" implementar.
+
+#### Padrão de API e contratos
+
+| Aspecto           | Padrão Definido                                                                     |
+| ----------------- | ----------------------------------------------------------------------------------- |
+| **Estilo**        | REST/JSON como protocolo de integração                                              |
+| **Contratos**     | OpenAPI/Swagger como fonte de verdade; especificação versionada por fluxo           |
+| **Versionamento** | Versão no path (`/v1`, `/v2`); política de compatibilidade e deprecação documentada |
+| **Geração**       | Clientes gerados a partir do contrato quando aplicável (SDK, tipos)                 |
+
+#### Tratamento de erros
+
+| Código HTTP | Categoria          | Uso                                                      |
+| ----------- | ------------------ | -------------------------------------------------------- |
+| 4xx         | Erros de validação | Payload inválido, campos obrigatórios, regras de negócio |
+| 401         | Autenticação       | Token ausente ou inválido                                |
+| 403         | Autorização        | Permissão negada para a operação                         |
+| 409         | Conflito           | Violação de idempotência ou estado inconsistente         |
+| 503         | Indisponibilidade  | ERP ou dependência fora do ar                            |
+
+**Payload de erro padrão:**
+
+```json
+{
+  "code": "VALIDATION_ERROR",
+  "message": "Descrição legível do erro",
+  "details": [{ "field": "campo", "issue": "descrição" }],
+  "correlationId": "uuid-da-transacao"
+}
+```
+
+#### Idempotência e reprocessamento
+
+| Aspecto           | Padrão                                                                                |
+| ----------------- | ------------------------------------------------------------------------------------- |
+| **Chave**         | Header `Idempotency-Key` ou chave de negócio + origem (ex.: `pedido-123-cooperflora`) |
+| **Comportamento** | Reenvio retorna mesmo resultado sem duplicar efeitos colaterais                       |
+| **Auditoria**     | Resultado do reprocessamento registrado com correlation-id                            |
+| **Janela**        | Idempotência garantida por período configurável (ex.: 24h)                            |
+
+#### Propriedade de dados (source of truth)
+
+| Domínio     | Source of Truth | Direção do Fluxo                       | Observação        |
+| ----------- | --------------- | -------------------------------------- | ----------------- |
+| Pessoas     | A definir       | Cooperflora → ERP ou ERP → Cooperflora | Validar na Fase 0 |
+| Produtos    | A definir       | A definir                              | Validar na Fase 0 |
+| Pedidos     | A definir       | A definir                              | Validar na Fase 0 |
+| Faturamento | A definir       | A definir                              | Validar na Fase 0 |
+
+> **Regra**: Evitar dual-write. Quando inevitável durante transição, exigir governança explícita e trilha de auditoria.
+
+#### Evolução para event-driven
+
+| Critério para adoção                        | Padrão                             |
+| ------------------------------------------- | ---------------------------------- |
+| Picos de carga que exigem desacoplamento    | Considerar fila (ex.: Service Bus) |
+| Latência tolerável (não crítico tempo-real) | Candidato a assíncrono             |
+| Múltiplos consumidores                      | Modelar como evento publicado      |
+
+**Padrões obrigatórios para event-driven:**
+
+- Dead Letter Queue (DLQ) para mensagens não processadas
+- Retries com backoff exponencial
+- Tratamento de poison messages
+- Preservação de correlation-id entre eventos
+
+### Diretrizes de arquitetura e desenvolvimento
+
+#### Arquitetura em camadas
+
+```
+┌─────────────────────────────────────────┐
+│           API (Controllers)             │  ← Validação de entrada, auth, rate limiting
+├─────────────────────────────────────────┤
+│         Aplicação (Services)            │  ← Orquestração, mapeamento, casos de uso
+├─────────────────────────────────────────┤
+│           Domínio (Entities)            │  ← Regras de negócio, validações de domínio
+├─────────────────────────────────────────┤
+│      Infraestrutura (Repositories)      │  ← Acesso a dados, gateways externos
+└─────────────────────────────────────────┘
+```
+
+| Diretriz                       | Descrição                                          |
+| ------------------------------ | -------------------------------------------------- |
+| Validação na borda             | Validar entrada na camada API antes de propagar    |
+| Regras de integração testáveis | Lógica em serviços com injeção de dependência      |
+| Desacoplamento do ERP          | Acesso ao ERP via gateways/repositórios abstraídos |
+
+#### Estratégia de testes
+
+| Tipo           | Escopo                           | Ferramenta/Abordagem                    |
+| -------------- | -------------------------------- | --------------------------------------- |
+| **Unitário**   | Regras de validação e mapeamento | xUnit/NUnit + mocks                     |
+| **Integração** | API ↔ ERP (ou mocks controlados) | TestServer + dados de referência        |
+| **Contrato**   | Validação do OpenAPI             | Mock server / consumer-driven contracts |
+| **E2E**        | Cenários por fluxo               | Auditoria de efeitos + correlation-id   |
+
+#### DevOps e ambientes
+
+| Ambiente | Propósito                          | Dados                                |
+| -------- | ---------------------------------- | ------------------------------------ |
+| **DEV**  | Desenvolvimento e testes unitários | Dados sintéticos ou anonimizados     |
+| **HML**  | Homologação com stakeholders       | Dados representativos (anonimizados) |
+| **PRD**  | Produção                           | Dados reais                          |
+
+**Pipeline CI/CD:**
+
+1. Build + lint
+2. Testes unitários
+3. Validação de contrato OpenAPI
+4. Testes de integração
+5. Deploy para ambiente alvo
+6. Smoke test pós-deploy
+
 ## Abordagem de Modernização
 
 A estratégia adotada é **Strangler Pattern**, com extração gradual da lógica de integração do legado e introdução de uma camada de serviço moderna.
@@ -708,55 +825,6 @@ gantt
 | ROI/valor justificado antes de cada iniciativa       | BDM (Cooperflora) |
 | Iniciativa aprovada em governança                    | BDM + TDM         |
 | Entrega validada com critérios de aceite específicos | TDM + BDM         |
-
-## Integração entre Sistemas (Padrões e Decisões)
-
-### Padrão de API
-
-- **Estilo**: REST/JSON.
-- **Contrato**: OpenAPI como fonte de verdade; geração de clientes quando aplicável.
-- **Versionamento**: versionar no path (`/v1`) e definir política de compatibilidade.
-
-### Tratamento de erros
-
-- Erros padronizados por tipo: validação (4xx), autenticação/autorização (401/403), conflitos (409), indisponibilidade (503).
-- Payload de erro com campos mínimos: `code`, `message`, `details`, `correlationId`.
-
-### Idempotência e reprocessamento
-
-- Definir **idempotency key** por operação (ex.: `Idempotency-Key` header ou chave de negócio + origem).
-- A API deve suportar reenvio sem duplicar efeitos, com auditoria do resultado.
-
-### Propriedade de dados e direção do fluxo
-
-- Formalizar “source of truth” por domínio (pessoas/produtos/pedidos etc.).
-- Evitar dual-write; quando inevitável durante transição, exigir governança e trilha de auditoria.
-
-### Evolução para event-driven (quando fizer sentido)
-
-- Migrar gradualmente de síncrono para assíncrono apenas onde houver ganho claro (picos, desacoplamento, latência tolerável).
-- Eventual adoção de fila deve preservar contratos e observabilidade (DLQ, retries, poison messages).
-
-## Arquitetura e Desenvolvimento de Software
-
-### Diretrizes de arquitetura
-
-- Camadas claras (ex.: API → aplicação → domínio → infraestrutura).
-- Validação de entrada na borda (API) e regras de integração testáveis.
-- Redução de acoplamento com o ERP por meio de gateways/repositórios.
-
-### Estratégia de testes
-
-- **Unitários**: regras de validação e mapeamento.
-- **Integração**: API ↔ ERP (ou mocks controlados), com dados de referência.
-- **Contrato**: validação do OpenAPI (mock server/consumer-driven quando possível).
-- **E2E**: cenários por fluxo com auditoria de efeitos.
-
-### DevOps e ambientes
-
-- Ambientes: DEV → HML → PRD.
-- Pipeline CI/CD com validação de contrato, lint, testes e deploy.
-- Configuração por ambiente e gestão de segredos.
 
 ## Gestão do Projeto (Governança, Stakeholders e Controle)
 
