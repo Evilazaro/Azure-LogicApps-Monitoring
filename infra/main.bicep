@@ -1,17 +1,17 @@
 /*
-  Azure Logic Apps Monitoring Solution
-  ====================================
-  Main deployment orchestrator for the complete monitoring infrastructure.
-  
-  Purpose:
-  - Deploys monitoring infrastructure (Log Analytics, Application Insights)
-  - Deploys workload infrastructure (Identity, Messaging, Container Services, Logic Apps)
-  - Orchestrates resource group creation at subscription scope
-  
-  Dependencies:
-  - ./monitoring/main.bicep: Monitoring infrastructure module
-  - ./workload/main.bicep: Workload infrastructure module
-  - ./types.bicep: Shared type definitions
+Azure Logic Apps Monitoring Solution
+====================================
+Main deployment orchestrator for the complete monitoring infrastructure.
+
+Purpose:
+- Deploys monitoring infrastructure (Log Analytics, Application Insights)
+- Deploys workload infrastructure (Identity, Messaging, Container Services, Logic Apps)
+- Orchestrates resource group creation at subscription scope
+
+Dependencies:
+- ./monitoring/main.bicep: Monitoring infrastructure module
+- ./workload/main.bicep: Workload infrastructure module
+- ./types.bicep: Shared type definitions
 */
 
 targetScope = 'subscription'

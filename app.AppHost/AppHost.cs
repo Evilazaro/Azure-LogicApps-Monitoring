@@ -20,10 +20,10 @@ var resourceGroupParameter = CreateResourceGroupParameterIfNeeded(builder);
 var ordersApi = builder.AddProject<Projects.eShop_Orders_API>("orders-api");
 
 var webApp = builder.AddProject<Projects.eShop_Web_App>("web-app")
-    .WithExternalHttpEndpoints()
-    .WithHttpHealthCheck("/health")
-    .WithReference(ordersApi)
-    .WaitFor(ordersApi);
+.WithExternalHttpEndpoints()
+.WithHttpHealthCheck("/health")
+.WithReference(ordersApi)
+.WaitFor(ordersApi);
 
 ConfigureAzureCredentials(builder, ordersApi);
 
@@ -81,7 +81,7 @@ static void ConfigureAzureCredentials(IDistributedApplicationBuilder builder, IR
 /// <param name="builder">The distributed application builder.</param>
 /// <returns>The resource group parameter builder, or null if not in Azure mode.</returns>
 static IResourceBuilder<ParameterResource>? CreateResourceGroupParameterIfNeeded(
-    IDistributedApplicationBuilder builder)
+IDistributedApplicationBuilder builder)
 {
     ArgumentNullException.ThrowIfNull(builder);
 
@@ -105,9 +105,9 @@ static IResourceBuilder<ParameterResource>? CreateResourceGroupParameterIfNeeded
 /// <param name="resourceGroupParameter">The Azure resource group parameter.</param>
 /// <param name="projects">The project resources to configure with Application Insights.</param>
 static void ConfigureApplicationInsights(
-    IDistributedApplicationBuilder builder,
-    IResourceBuilder<ParameterResource>? resourceGroupParameter,
-    params IResourceBuilder<ProjectResource>[] projects)
+IDistributedApplicationBuilder builder,
+IResourceBuilder<ParameterResource>? resourceGroupParameter,
+params IResourceBuilder<ProjectResource>[] projects)
 {
     ArgumentNullException.ThrowIfNull(builder);
     ArgumentNullException.ThrowIfNull(projects);
@@ -128,8 +128,8 @@ static void ConfigureApplicationInsights(
         if (resourceGroupParameter is null)
         {
             throw new InvalidOperationException(
-                "Azure Resource Group configuration is required when using Azure Application Insights. " +
-                "Please configure 'Azure:ResourceGroup' in your application settings.");
+            "Azure Resource Group configuration is required when using Azure Application Insights. " +
+            "Please configure 'Azure:ResourceGroup' in your application settings.");
         }
 
         var appInsightsParam = builder.AddParameter("app-insights", appInsightsName);
@@ -149,9 +149,9 @@ static void ConfigureApplicationInsights(
 /// <param name="ordersApi">The orders API project resource to configure with Service Bus.</param>
 /// <param name="resourceGroupParameter">The shared Azure resource group parameter.</param>
 static void ConfigureServiceBus(
-    IDistributedApplicationBuilder builder,
-    IResourceBuilder<ProjectResource> ordersApi,
-    IResourceBuilder<ParameterResource>? resourceGroupParameter)
+IDistributedApplicationBuilder builder,
+IResourceBuilder<ProjectResource> ordersApi,
+IResourceBuilder<ParameterResource>? resourceGroupParameter)
 {
     ArgumentNullException.ThrowIfNull(builder);
     ArgumentNullException.ThrowIfNull(ordersApi);
@@ -175,15 +175,15 @@ static void ConfigureServiceBus(
     if (isLocalMode)
     {
         serviceBusResource = builder.AddAzureServiceBus(DefaultConnectionStringName)
-            .RunAsEmulator();
+        .RunAsEmulator();
     }
     else
     {
         if (resourceGroupParameter is null)
         {
             throw new InvalidOperationException(
-                "Azure Resource Group configuration is required when using Azure Service Bus. " +
-                "Please configure 'Azure:ResourceGroup' in your application settings.");
+            "Azure Resource Group configuration is required when using Azure Service Bus. " +
+            "Please configure 'Azure:ResourceGroup' in your application settings.");
         }
 
         var dotIndex = sbHostName.IndexOf('.', StringComparison.Ordinal);
@@ -191,7 +191,7 @@ static void ConfigureServiceBus(
         var sbParam = builder.AddParameter("service-bus", serviceBusName);
 
         serviceBusResource = builder.AddAzureServiceBus(DefaultConnectionStringName)
-            .AsExisting(sbParam, resourceGroupParameter);
+        .AsExisting(sbParam, resourceGroupParameter);
     }
 
     // Configure Service Bus topology
@@ -200,7 +200,7 @@ static void ConfigureServiceBus(
 
     // Add Service Bus reference to orders API
     ordersApi.WithReference(serviceBusResource)
-             .WaitFor(serviceBusResource);
+    .WaitFor(serviceBusResource);
 }
 
 /// <summary>
@@ -212,9 +212,9 @@ static void ConfigureServiceBus(
 /// <param name="ordersApi">The orders API project resource to configure with SQL Database.</param>
 /// <param name="resourceGroupParameter">The shared Azure resource group parameter.</param>
 static void ConfigureSQLAzure(
-    IDistributedApplicationBuilder builder,
-    IResourceBuilder<ProjectResource> ordersApi,
-    IResourceBuilder<ParameterResource>? resourceGroupParameter)
+IDistributedApplicationBuilder builder,
+IResourceBuilder<ProjectResource> ordersApi,
+IResourceBuilder<ParameterResource>? resourceGroupParameter)
 {
     ArgumentNullException.ThrowIfNull(builder);
     ArgumentNullException.ThrowIfNull(ordersApi);
@@ -231,15 +231,15 @@ static void ConfigureSQLAzure(
     {
         // Local development mode - use SQL Server container with persistent volume
         var sqlServer = builder.AddAzureSqlServer(DefaultSqlServerName)
-                               .RunAsContainer(configureContainer =>
-                               {
-                                   configureContainer.WithDataVolume();
-                               });
+        .RunAsContainer(configureContainer =>
+        {
+            configureContainer.WithDataVolume();
+        });
 
         var sqlDatabase = sqlServer.AddDatabase(DefaultDatabaseName);
 
         ordersApi.WithReference(sqlDatabase)
-                 .WaitFor(sqlDatabase);
+        .WaitFor(sqlDatabase);
     }
     else
     {
@@ -248,17 +248,17 @@ static void ConfigureSQLAzure(
         if (resourceGroupParameter is null)
         {
             throw new InvalidOperationException(
-                "Azure Resource Group configuration is required when using Azure SQL Database. " +
-                "Please configure 'Azure:ResourceGroup' in your application settings.");
+            "Azure Resource Group configuration is required when using Azure SQL Database. " +
+            "Please configure 'Azure:ResourceGroup' in your application settings.");
         }
 
         var sqlServerParam = builder.AddParameter("sql-server", sqlServerName);
         var sqlServer = builder.AddAzureSqlServer(DefaultSqlServerName)
-                               .RunAsExisting(sqlServerParam, resourceGroupParameter);
+        .RunAsExisting(sqlServerParam, resourceGroupParameter);
 
         var sqlDatabase = sqlServer.AddDatabase(sqlDatabaseName).WithDefaultAzureSku();
 
         ordersApi.WithReference(sqlDatabase)
-                 .WaitFor(sqlDatabase);
+        .WaitFor(sqlDatabase);
     }
 }
