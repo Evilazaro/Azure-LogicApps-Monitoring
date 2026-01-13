@@ -2550,53 +2550,53 @@ pie showData
 
 ## �💰 Estimativa de Custos do Projeto
 
-Esta seção apresenta a **estimativa de custos** do projeto, considerando exclusivamente os **recursos da Néctar** alocados para a execução. Os valores são baseados no cronograma macro definido (28 semanas para Fases 0–5), na participação percentual de cada recurso e no valor hora padrão de **R$ 150,00**.
+Esta seção apresenta a **estimativa de custos** do projeto, derivada diretamente do [Detalhamento da Estimativa de Horas](#-detalhamento-da-estimativa-de-horas). Os valores são baseados nas **1.600 horas estimadas** (bottom-up, por atividade) e no valor hora padrão de **R$ 150,00**.
 
 ### 👥 Composição do Time Néctar
 
-| Recurso                  | Papel no Projeto                                                  | Participação (%) | Justificativa da Alocação                                                      |
-| ------------------------ | ----------------------------------------------------------------- | :--------------: | ------------------------------------------------------------------------------ |
-| **Gerente de Projeto**   | Coordenação, gestão de riscos, comunicação com stakeholders       |       30%        | Atuação transversal em todas as fases; maior intensidade em gates e cerimônias |
-| **Arquiteto de Solução** | Definição de padrões, validação de arquitetura, decisões técnicas |       50%        | Forte atuação nas Fases 0–3; suporte consultivo nas Fases 4–5                  |
-| **Desenvolvedor Sênior** | Implementação de endpoints, testes, documentação técnica          |       100%       | Dedicação integral; principal executor das entregas técnicas                   |
-| **Desenvolvedor Pleno**  | Implementação, testes unitários, suporte ao Sênior                |       100%       | Dedicação integral; trabalha em par com o Sênior                               |
+| Recurso                  | Papel no Projeto                                                  | Horas Estimadas | Justificativa da Alocação                                                      |
+| ------------------------ | ----------------------------------------------------------------- | :-------------: | ------------------------------------------------------------------------------ |
+| **Gerente de Projeto**   | Coordenação, gestão de riscos, comunicação com stakeholders       |      264h       | Atuação transversal em todas as fases; maior intensidade em gates e cerimônias |
+| **Arquiteto de Solução** | Definição de padrões, validação de arquitetura, decisões técnicas |      220h       | Forte atuação nas Fases 0–3; suporte consultivo nas Fases 4–5                  |
+| **Desenvolvedor Sênior** | Implementação de endpoints, testes, documentação técnica          |      672h       | Principal executor das entregas técnicas (42% do esforço total)                |
+| **Desenvolvedor Pleno**  | Implementação, testes unitários, suporte ao Sênior                |      444h       | Trabalha em par com o Sênior nas implementações                                |
 
 ### 📊 Cálculo do Custo por Recurso
 
 **Premissas de cálculo:**
 
+- **Total de horas estimadas (bottom-up):** 1.600 horas
 - **Duração do projeto (Fases 0–5):** 28 semanas
-- **Horas por semana (tempo integral):** 40 horas
-- **Total de horas do projeto (100% dedicação):** 28 × 40 = **1.120 horas**
-- **Valor hora:** R$ 150,00
+- **Valor hora (todos os recursos):** R$ 150,00
 
-| Recurso                  | Participação (%) | Horas Alocadas | Valor Hora (R$) | Custo Total (R$) |
-| ------------------------ | :--------------: | :------------: | :-------------: | ---------------: |
-| **Gerente de Projeto**   |       30%        |      336       |     150,00      |        50.400,00 |
-| **Arquiteto de Solução** |       50%        |      560       |     150,00      |        84.000,00 |
-| **Desenvolvedor Sênior** |       100%       |     1.120      |     150,00      |       168.000,00 |
-| **Desenvolvedor Pleno**  |       100%       |     1.120      |     150,00      |       168.000,00 |
+| Recurso                  | Horas Estimadas | Valor Hora (R$) | Custo Total (R$) |
+| ------------------------ | :-------------: | :-------------: | ---------------: |
+| **Gerente de Projeto**   |       264       |     150,00      |        39.600,00 |
+| **Arquiteto de Solução** |       220       |     150,00      |        33.000,00 |
+| **Desenvolvedor Sênior** |       672       |     150,00      |       100.800,00 |
+| **Desenvolvedor Pleno**  |       444       |     150,00      |        66.600,00 |
+| **TOTAL**                |    **1.600**    |        —        |   **240.000,00** |
 
 ### 💵 Resumo Financeiro
 
 | Descrição                              |        Valor (R$) |
 | -------------------------------------- | ----------------: |
-| **Total de Horas Alocadas**            |   **3.136 horas** |
-| **Custo Total de Recursos Néctar**     | **R$ 470.400,00** |
-| **Custo Médio por Semana**             |      R$ 16.800,00 |
-| **Custo Médio por Mês (4,33 semanas)** |      R$ 72.744,00 |
+| **Total de Horas Estimadas**           |   **1.600 horas** |
+| **Custo Total de Recursos Néctar**     | **R$ 240.000,00** |
+| **Custo Médio por Semana**             |       R$ 8.571,43 |
+| **Custo Médio por Mês (4,33 semanas)** |      R$ 37.114,29 |
 
 ### 📈 Distribuição de Custos por Fase
 
-| Fase | Nome                    | Duração (sem) | % do Custo | Custo Estimado (R$) |
-| ---: | ----------------------- | :-----------: | :--------: | ------------------: |
-|    0 | Alinhamento e contenção |       2       |     7%     |           33.600,00 |
-|    1 | Definição de contratos  |       2       |     7%     |           33.600,00 |
-|    2 | Fundação da API         |       3       |    11%     |           50.400,00 |
-|    3 | Fluxo piloto            |       4       |    14%     |           67.200,00 |
-|    4 | Migração por fluxo      |      12       |    43%     |          201.600,00 |
-|    5 | Simplificação do legado |       5       |    18%     |           84.000,00 |
-|      | **TOTAL**               |    **28**     |  **100%**  |   **R$ 470.400,00** |
+| Fase | Nome                    | Duração (sem) |   Horas   | % do Custo | Custo Estimado (R$) |
+| ---: | ----------------------- | :-----------: | :-------: | :--------: | ------------------: |
+|    0 | Alinhamento e contenção |       2       |    112    |     7%     |           16.800,00 |
+|    1 | Definição de contratos  |       2       |    112    |     7%     |           16.800,00 |
+|    2 | Fundação da API         |       3       |    168    |    11%     |           25.200,00 |
+|    3 | Fluxo piloto            |       4       |    240    |    15%     |           36.000,00 |
+|    4 | Migração por fluxo      |      12       |    780    |    49%     |          117.000,00 |
+|    5 | Simplificação do legado |       5       |    188    |    12%     |           28.200,00 |
+|      | **TOTAL**               |    **28**     | **1.600** |  **100%**  |   **R$ 240.000,00** |
 
 ### 💳 Cronograma de Pagamento
 
@@ -2604,14 +2604,14 @@ O pagamento do projeto será realizado conforme o fluxo abaixo, vinculado aos ma
 
 | Evento de Pagamento                            | % do Total |     Valor (R$) | Condição de Faturamento                                   |
 | ---------------------------------------------- | :--------: | -------------: | --------------------------------------------------------- |
-| 📋 **Aceite do Projeto**                       |    30%     |     141.120,00 | Imediatamente após assinatura do contrato e aceite formal |
-| 🔍 **Conclusão Fase 0** (Alinhamento)          |    10%     |      47.040,00 | Entrega do inventário técnico e backlog priorizado        |
-| 📝 **Conclusão Fase 1** (Contratos)            |    10%     |      47.040,00 | Contratos OpenAPI aprovados e governança definida         |
-| 🏗️ **Conclusão Fase 2** (Fundação API)         |    10%     |      47.040,00 | API em DEV/HML com pipeline CI/CD funcional               |
-| 🚀 **Conclusão Fase 3** (Fluxo Piloto)         |    15%     |      70.560,00 | Primeiro fluxo em produção com critérios de estabilização |
-| 🔄 **Conclusão Fase 4** (Migração por Fluxo)   |    15%     |      70.560,00 | Fluxos críticos migrados e operação híbrida governada     |
-| ✅ **Conclusão Fase 5** (Simplificação Legado) |    10%     |      47.040,00 | Rotinas de integração removidas e documentação final      |
-| 💰 **TOTAL**                                   |  **100%**  | **470.400,00** |                                                           |
+| 📋 **Aceite do Projeto**                       |    30%     |      72.000,00 | Imediatamente após assinatura do contrato e aceite formal |
+| 🔍 **Conclusão Fase 0** (Alinhamento)          |    10%     |      24.000,00 | Entrega do inventário técnico e backlog priorizado        |
+| 📝 **Conclusão Fase 1** (Contratos)            |    10%     |      24.000,00 | Contratos OpenAPI aprovados e governança definida         |
+| 🏗️ **Conclusão Fase 2** (Fundação API)         |    10%     |      24.000,00 | API em DEV/HML com pipeline CI/CD funcional               |
+| 🚀 **Conclusão Fase 3** (Fluxo Piloto)         |    15%     |      36.000,00 | Primeiro fluxo em produção com critérios de estabilização |
+| 🔄 **Conclusão Fase 4** (Migração por Fluxo)   |    15%     |      36.000,00 | Fluxos críticos migrados e operação híbrida governada     |
+| ✅ **Conclusão Fase 5** (Simplificação Legado) |    10%     |      24.000,00 | Rotinas de integração removidas e documentação final      |
+| 💰 **TOTAL**                                   |  **100%**  | **240.000,00** |                                                           |
 
 #### 📋 Condições Gerais de Pagamento
 
@@ -2634,15 +2634,15 @@ O pagamento do projeto será realizado conforme o fluxo abaixo, vinculado aos ma
 timeline
     title 💳 Cronograma de Pagamento do Projeto
     section 📋 Início
-        Aceite do Projeto : 💰 30% – R$ 141.120,00 : Assinatura e aceite formal
+        Aceite do Projeto : 💰 30% – R$ 72.000,00 : Assinatura e aceite formal
     section 🏗️ Fases 0–2 (Fundação)
-        Fase 0 : 💰 10% – R$ 47.040,00 : Inventário técnico
-        Fase 1 : 💰 10% – R$ 47.040,00 : Contratos OpenAPI
-        Fase 2 : 💰 10% – R$ 47.040,00 : API em DEV/HML
+        Fase 0 : 💰 10% – R$ 24.000,00 : Inventário técnico
+        Fase 1 : 💰 10% – R$ 24.000,00 : Contratos OpenAPI
+        Fase 2 : 💰 10% – R$ 24.000,00 : API em DEV/HML
     section 🚀 Fases 3–5 (Execução)
-        Fase 3 : 💰 15% – R$ 70.560,00 : Fluxo piloto em PRD
-        Fase 4 : 💰 15% – R$ 70.560,00 : Migração completa
-        Fase 5 : 💰 10% – R$ 47.040,00 : Simplificação legado
+        Fase 3 : 💰 15% – R$ 36.000,00 : Fluxo piloto em PRD
+        Fase 4 : 💰 15% – R$ 36.000,00 : Migração completa
+        Fase 5 : 💰 10% – R$ 24.000,00 : Simplificação legado
 ```
 
 ```mermaid
