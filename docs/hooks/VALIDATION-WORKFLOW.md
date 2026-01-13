@@ -379,7 +379,7 @@ flowchart TD
     CheckDev --> AZD
 
     subgraph AZD["Azure Developer CLI (azd)"]
-        AzdYaml["azure.yaml<br/>hooks:<br/>  preprovision:<br/>    windows: preprovision.ps1<br/>    posix: preprovision.sh<br/>  postprovision:<br/>    windows: postprovision.ps1<br/>    posix: postprovision.sh"]
+        AzdYaml["azure.yaml<br/>hooks:<br/>  preprovision: (build + validate)<br/>  postprovision: (secrets + data)<br/>  predeploy: (Logic Apps)<br/>  postdeploy: (validation)<br/>  postinfradelete: (cleanup)"]
         AzdYaml --> AzdCmd["azd provision | azd up"]
         AzdCmd --> Execute["2️⃣ Execute preprovision (.ps1/.sh)<br/>Version: 2.3.0"]
         Execute --> Validate{Validation<br/>passes?}
@@ -1168,6 +1168,7 @@ dotnet watch --project app.AppHost
    - View metrics to detect performance bottlenecks
 
 4. **Enable Detailed Logging**:
+
    ```json
    // appsettings.Development.json
    {

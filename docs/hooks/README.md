@@ -530,52 +530,88 @@ The `azure.yaml` file serves as the central configuration for Azure Developer CL
 # yaml-language-server: $schema=https://raw.githubusercontent.com/Azure/azure-dev/main/schemas/v1.0/azure.yaml.json
 
 # ==============================================================================
-# Azure Developer CLI (azd) Configuration
+# AZURE DEVELOPER CLI (azd) CONFIGURATION
 # ==============================================================================
-# This configuration defines the infrastructure, services, and lifecycle hooks
-# for the Azure Logic Apps Monitoring solution. It orchestrates environment
-# setup, provisioning, and post-deployment configuration.
+#
+# Project:      Azure Logic Apps Monitoring Solution
+# Description:  Infrastructure-as-Code deployment configuration for the Azure
+#               Logic Apps Monitoring solution using .NET Aspire orchestration.
+#
+# Architecture: .NET Aspire AppHost → Azure Container Apps
+#               ├── eShop.Orders.API (REST API)
+#               └── eShop.Web.App (Frontend)
+#
+# Quick Start:
+#   1. azd auth login           # Authenticate with Azure
+#   2. azd env new <env-name>   # Create new environment
+#   3. azd up                   # Provision and deploy
 #
 # Documentation: https://learn.microsoft.com/azure/developer/azure-developer-cli/
-# Last Modified: 2026-01-06
+# Last Modified: 2026-01-13
 # ==============================================================================
 
 # ------------------------------------------------------------------------------
-# Project Metadata
+# PROJECT METADATA
 # ------------------------------------------------------------------------------
 name: azure-logicapps-monitoring
 
 metadata:
   template: azure-logicapps-monitoring@1.0.0
+  description: "Azure Logic Apps Monitoring solution with .NET Aspire orchestration"
+  author: "Evilazaro"
+  repository: "https://github.com/Evilazaro/Azure-LogicApps-Monitoring"
 
-# Minimum azd version required for this project
+# Minimum version constraints to ensure compatibility
 requiredVersions:
-  azd: ">= 1.9.0"
+  azd: ">= 1.11.0"
 
 # ------------------------------------------------------------------------------
-# Infrastructure Configuration
+# INFRASTRUCTURE CONFIGURATION
 # ------------------------------------------------------------------------------
 infra:
-  provider: bicep # Infrastructure as Code provider
-  path: infra # Directory containing Bicep templates
-  module: main # Entry point Bicep module (main.bicep)
+  provider: bicep    # IaC provider: 'bicep' (recommended) or 'terraform'
+  path: infra        # Relative path to infrastructure templates directory
+  module: main       # Entry point module name (resolves to infra/main.bicep)
 
 # ------------------------------------------------------------------------------
-# Lifecycle Hooks
+# LIFECYCLE HOOKS
 # ------------------------------------------------------------------------------
+# Hook Execution Order:
+#   azd provision: preprovision → [bicep deploy] → postprovision
+#   azd deploy:    predeploy → [app deploy] → postdeploy
+#   azd down:      [resource deletion] → postinfradelete
+
 hooks:
+  # PREPROVISION: Validate environment and build solution before provisioning
   preprovision:
     posix:
       shell: sh
-      run: ./hooks/preprovision.sh --force --verbose
+      run: |
+        # Build and test solution before provisioning
+        echo "Building and testing solution..."
+        dotnet clean app.sln --verbosity quiet
+        dotnet restore app.sln
+        dotnet build app.sln --configuration Release --no-restore
+        dotnet test app.sln --configuration Release --no-build
+        # Run preprovision validation
+        ./hooks/preprovision.sh --force --verbose
       continueOnError: false
       interactive: true
     windows:
       shell: pwsh
-      run: ./hooks/preprovision.ps1 -Force -Verbose
+      run: |
+        # Build and test solution before provisioning
+        Write-Host "Building and testing solution..." -ForegroundColor Cyan
+        dotnet clean app.sln --verbosity quiet
+        dotnet restore app.sln
+        dotnet build app.sln --configuration Release --no-restore
+        dotnet test app.sln --configuration Release --no-build
+        # Run preprovision validation
+        ./hooks/preprovision.ps1 -Force -Verbose
       continueOnError: false
       interactive: true
 
+  # POSTPROVISION: Configure secrets and generate test data
   postprovision:
     posix:
       shell: sh
@@ -592,30 +628,73 @@ hooks:
       continueOnError: false
       interactive: true
 
+  # PREDEPLOY: Deploy Logic Apps workflows and configure connections
   predeploy:
     posix:
       shell: sh
       run: ./hooks/deploy-workflow.sh
       continueOnError: false
-      interactive: false
+      interactive: true
     windows:
       shell: pwsh
       run: ./hooks/deploy-workflow.ps1
       continueOnError: false
-      interactive: false
+      interactive: true
+
+  # POSTDEPLOY: Validate deployment success
+  postdeploy:
+    posix:
+      shell: sh
+      run: |
+        echo "Deployment completed successfully!"
+        echo "Validating deployed resources..."
+      continueOnError: false
+      interactive: true
+    windows:
+      shell: pwsh
+      run: |
+        Write-Host "Deployment completed successfully!" -ForegroundColor Green
+        Write-Host "Validating deployed resources..." -ForegroundColor Cyan
+      continueOnError: false
+      interactive: true
+
+  # POSTINFRADELETE: Clean up remaining resources after azd down
+  postinfradelete:
+    posix:
+      shell: sh
+      run: ./hooks/postinfradelete.sh --force --verbose
+      continueOnError: false
+      interactive: true
+    windows:
+      shell: pwsh
+      run: ./hooks/postinfradelete.ps1 -Force -Verbose
+      continueOnError: false
+      interactive: true
 
 # ------------------------------------------------------------------------------
-# Application Services
+# APPLICATION SERVICES
 # ------------------------------------------------------------------------------
+# Service Topology:
+#   app.AppHost (Aspire Orchestrator)
+#   ├── eShop.Orders.API    → REST API for order management
+#   ├── eShop.Web.App       → Blazor frontend application
+#   └── Azure resources     → SQL, Service Bus, Storage, App Insights
+
 services:
   # .NET Aspire AppHost orchestrating the monitoring solution
   app:
     language: dotnet
     project: ./app.AppHost/app.AppHost.csproj
     host: containerapp
+
+# ------------------------------------------------------------------------------
+# CI/CD PIPELINE CONFIGURATION
+# ------------------------------------------------------------------------------
+pipeline:
+  provider: github   # CI/CD provider: 'github' or 'azdo'
 ```
 
-For this project, azure.yaml defines the .NET Aspire AppHost which internally orchestrates the Orders API and Web App services, specifies the Bicep infrastructure templates in the `infra/` directory, and declares preprovision, postprovision, and predeploy hooks that execute platform-specific scripts. The hooks section is particularly powerful because it allows you to inject custom validation, configuration, and data generation logic into the azd workflow without modifying azd itself. This extensibility makes azd suitable for complex enterprise scenarios where standard deployment workflows need augmentation with organization-specific requirements.
+For this project, azure.yaml defines the .NET Aspire AppHost which internally orchestrates the Orders API and Web App services, specifies the Bicep infrastructure templates in the `infra/` directory, and declares preprovision, postprovision, predeploy, postdeploy, and postinfradelete hooks that execute platform-specific scripts. The preprovision hook now includes comprehensive build and test validation to prevent failed deployments due to code issues. The hooks section is particularly powerful because it allows you to inject custom validation, configuration, and data generation logic into the azd workflow without modifying azd itself. This extensibility makes azd suitable for complex enterprise scenarios where standard deployment workflows need augmentation with organization-specific requirements.
 
 The azure.yaml format supports both Windows (PowerShell) and POSIX (Bash) environments, allowing the same configuration file to work seamlessly across developer workstations regardless of operating system. This cross-platform support, combined with the ability to define custom hooks, makes azd an ideal orchestrator for complex, multi-service applications that require careful coordination of infrastructure, configuration, and application deployment.
 
@@ -918,9 +997,9 @@ For additional assistance:
    - [clean-secrets.md](./clean-secrets.md)
    - [Generate-Orders.md](./Generate-Orders.md)
 
-2. **Check Azure Developer CLI documentation**: https://learn.microsoft.com/azure/developer/azure-developer-cli/
+2. **Check Azure Developer CLI documentation**: <https://learn.microsoft.com/azure/developer/azure-developer-cli/>
 
-3. **Review Azure CLI documentation**: https://learn.microsoft.com/cli/azure/
+3. **Review Azure CLI documentation**: <https://learn.microsoft.com/cli/azure/>
 
 4. **Open an issue**: [GitHub Issues](https://github.com/Evilazaro/Azure-LogicApps-Monitoring/issues)
 

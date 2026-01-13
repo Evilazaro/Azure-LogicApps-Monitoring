@@ -114,9 +114,13 @@ hooks:
     windows:
       shell: pwsh
       run: ./hooks/deploy-workflow.ps1
+      continueOnError: false
+      interactive: true
     posix:
-      shell: bash
+      shell: sh
       run: ./hooks/deploy-workflow.sh
+      continueOnError: false
+      interactive: true
 ```
 
 ### 💻 Manual Execution
