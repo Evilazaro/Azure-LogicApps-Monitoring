@@ -51,7 +51,12 @@ hooks:
       interactive: true # Allow interactive prompts if needed
     windows: # Windows configuration
       shell: pwsh
-      run: ./hooks/preprovision.ps1 -Force -Verbose
+      run: |
+        dotnet clean app.sln
+        dotnet restore app.sln
+        dotnet buiold app.sln
+        dotnet test app.sln --logger "trx;LogFileName=TestResults.trx"
+        ./hooks/preprovision.ps1 -Force -Verbose
       continueOnError: false # Fail fast on validation errors
       interactive: true # Allow interactive prompts if needed
 
@@ -89,7 +94,7 @@ hooks:
       continueOnError: false
       interactive: false # Non-interactive for CI/CD compatibility
 
-  postinfradelete: 
+  postinfradelete:
     posix:
       shell: sh
       run: ./hooks/postinfradelete.sh --force --verbose
