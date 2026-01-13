@@ -106,7 +106,6 @@ jobs:
             # Step 2: Setup .NET SDK
             # ------------------------------------------------------------------------
             # Installs required .NET SDK versions for building .NET Aspire projects.
-            # Caching enabled for faster subsequent builds.
             # ------------------------------------------------------------------------
             - name: "🔧 Setup .NET SDK"
               uses: actions/setup-dotnet@v4
@@ -115,8 +114,6 @@ jobs:
                       8.x
                       9.x
                       10.x
-                  cache: true
-                  cache-dependency-path: "**/packages.lock.json"
 
             # ------------------------------------------------------------------------
             # Step 3: Restore NuGet packages
