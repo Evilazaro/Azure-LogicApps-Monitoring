@@ -1,14 +1,16 @@
-# Plano de Projeto – Modernização do Módulo Integrador do Sistema Néctar (Cooperflora)
+# 📄 Plano de Projeto – Modernização do Módulo Integrador do Sistema Néctar (Cooperflora)
 
-> Data de referência: **13 de janeiro de 2026**
+> 📅 **Data de referência:** 13 de janeiro de 2026
 
-## Introdução
+---
+
+## 🎯 Introdução
 
 Este projeto visa modernizar o **Módulo Integrador/Interface (Access + VBA)** utilizado pela Cooperflora para integrar com o ERP Néctar, substituindo o modelo de **acesso direto ao SQL Server** por uma **camada de serviços (API)** com contratos explícitos, segurança e observabilidade. A modernização será conduzida de forma **incremental**, por fluxo, seguindo o **Strangler Pattern**, permitindo convivência controlada com o legado até estabilização e migração completa.
 
 Ao final, espera-se uma integração com **contratos OpenAPI versionados**, **controle de acesso**, e **rastreabilidade de ponta a ponta** (logs estruturados, métricas e auditoria por transação). Para BDMs, isso significa menor risco operacional e maior agilidade; para TDMs, uma base técnica governável e preparada para cenários segregados ou em nuvem.
 
-### Objetivo
+### 🎯 Objetivo
 
 Este documento consolida o **plano de projeto** para modernização do Módulo Integrador/Interface da Cooperflora, orientando a transição de uma integração baseada em **banco de dados como interface** para uma **camada de serviços (API)**. Ele estrutura o **porquê** (necessidade e urgência), o **o quê** (escopo e entregáveis) e o **como** (estratégia incremental, cronograma, governança e mitigação de riscos).
 
@@ -19,7 +21,7 @@ Este documento consolida o **plano de projeto** para modernização do Módulo I
 
 O documento serve como **referência de acompanhamento**, com critérios de aceite e pontos de controle para garantir previsibilidade durante a execução.
 
-### Situação atual e motivação
+### ⚠️ Situação atual e motivação
 
 A integração atual entre o sistema da Cooperflora e o ERP Néctar depende de **acesso direto ao SQL Server**, que opera como "hub" de integração. O módulo legado (Access + VBA) e rotinas SINC leem e escrevem diretamente em tabelas do ERP, criando contratos implícitos baseados em schema e convenções históricas — o que eleva risco operacional, custo de suporte e dificulta evolução.
 
@@ -35,9 +37,9 @@ O cenário futuro **não prevê banco compartilhado** nem acesso direto entre am
 | Baixa visibilidade operacional (observabilidade e rastreabilidade)      | Falhas podem ser percebidas tardiamente, e o rastreio depende de logs esparsos, estados em tabelas ou investigação manual no banco/Access.<br><br>A ausência de correlação de transações torna difícil identificar o que foi recebido, processado, rejeitado, reprocessado ou duplicado.                                                                                                          | Aumenta MTTR e impacto de incidentes, reduz transparência para gestão e suporte, dificulta governança e tomada de decisão baseada em dados.                                                      | Implementar observabilidade (logs estruturados, métricas, auditoria e correlação por transação), com dashboards/alertas por fluxo para operação e governança.                                       |
 | Modelo limita evolução para ambientes segregados/nuvem                  | A arquitetura atual depende de proximidade física e acesso ao SQL Server; se houver isolamento de rede, segregação de credenciais ou nuvem, a integração pode simplesmente não funcionar.<br><br>Além disso, o legado tem limitações tecnológicas e custos crescentes de manutenção.                                                                                                              | Bloqueia iniciativas de modernização/segregação, aumenta risco de ruptura em mudanças de infraestrutura e reduz flexibilidade para novas integrações e expansão.                                 | Preparar a integração para operar com segurança em cenários segregados/nuvem, preservando continuidade do negócio e abrindo caminho para evoluções futuras (incl. mensageria quando fizer sentido). |
 
-## Visão Geral da Arquitetura Atual e Alvo
+## 🏗️ Visão Geral da Arquitetura Atual e Alvo
 
-### Arquitetura atual
+### 🟠 Arquitetura atual
 
 A Cooperflora utiliza um **Módulo Integrador/Interface (Access + VBA)** com o componente **SINC**, operando por **acesso direto ao SQL Server** do ERP. A integração é implementada via leitura/escrita em tabelas compartilhadas, com timers/polling que varrem registros "novos" e persistem resultados — o banco assume papel de "barramento" através de flags/status e convenções históricas.
 
@@ -106,7 +108,7 @@ flowchart LR
   style Nectar fill:#F8FAFC,stroke:#94A3B8,stroke-width:1px
 ```
 
-### Arquitetura alvo
+### 🟢 Arquitetura alvo
 
 A arquitetura alvo introduz uma **API de Integração (.NET Web API)** como fronteira explícita entre Cooperflora e ERP Néctar, eliminando o banco como mecanismo de integração. O cliente passa a integrar por **HTTP/REST + JSON**, com a API concentrando validação, mapeamento, regras de integração e persistência interna — tudo com **contratos OpenAPI** versionados, idempotência e resiliência (timeouts/retries).
 
@@ -187,7 +189,7 @@ flowchart LR
   style Plataforma fill:#FDF2F8,stroke:#DB2777,stroke-width:2px
 ```
 
-### Visão geral comparativa
+### 🔄 Visão geral comparativa
 
 Esta tabela sintetiza as diferenças entre a arquitetura atual e a arquitetura alvo, destacando os benefícios esperados para cada dimensão.
 
@@ -202,7 +204,7 @@ Esta tabela sintetiza as diferenças entre a arquitetura atual e a arquitetura a
 | Resiliência, idempotência e reprocessamento | Tratamento de falhas "informal": retries manuais/rotinas; risco de duplicidade e inconsistência em reprocessos.                       | Timeouts/retries controlados, idempotência por chave, políticas de erro padronizadas e trilha de reprocessamento auditável.        | Elimina duplicidades e inconsistências; aumenta robustez frente a falhas de rede/ERP; reprocessamento seguro e auditável.                                   |
 | Evolução e governança de mudança            | Evolução lenta e arriscada; dependência de especialistas no legado; mudanças no banco podem quebrar integrações sem sinalização.      | Migração incremental (strangler) por fluxo; feature flags e rollback; governança de contrato/escopo e padrões repetíveis.          | Acelera evolução com risco controlado; reduz dependência do legado; centraliza regras em serviços governáveis; viabiliza migração incremental com rollback. |
 
-### Princípios arquiteturais
+### 📜 Princípios arquiteturais
 
 Os princípios a seguir, organizados conforme o modelo **BDAT** (Business, Data, Application, Technology), orientam todas as decisões técnicas deste projeto. Cada princípio endereça diretamente os problemas da situação atual e sua aderência é **obrigatória** em todas as fases, verificada nos gates de decisão.
 
@@ -256,7 +258,7 @@ Segurança por design significa que autenticação, autorização e hardening s�
 | **Segurança por design**             | Autenticação, autorização e hardening desde o início | OAuth2/API Key + mTLS (quando aplicável); TLS obrigatório; rate limiting |
 | **Preparação para nuvem/segregação** | Integração funciona sem co-localização de banco      | API REST/JSON; sem dependência de rede local                             |
 
-### Padrões técnicos de integração
+### 🛠️ Padrões técnicos de integração
 
 Esta subseção detalha os **padrões técnicos** que operacionalizam os princípios arquiteturais definidos acima. Enquanto os princípios orientam "o quê" e "por quê", os padrões definem "como" implementar. A aderência a esses padrões é verificada nos critérios de aceite de cada fase e nos code reviews.
 
@@ -327,7 +329,7 @@ Os padrões abrangem definição de contratos (OpenAPI), tratamento de erros, id
 - Tratamento de poison messages
 - Preservação de correlation-id entre eventos
 
-### Diretrizes de arquitetura e desenvolvimento
+### 📐 Diretrizes de arquitetura e desenvolvimento
 
 #### Arquitetura em camadas
 
@@ -413,7 +415,7 @@ block-beta
 5. Deploy para ambiente alvo
 6. Smoke test pós-deploy
 
-### Escopo do Projeto
+### 🎯 Escopo do Projeto
 
 Esta seção define os **entregáveis e limites** do projeto de modernização do Módulo Integrador/Interface. A tabela a seguir apresenta o que será implementado: transição do modelo "banco como integração" para camada de serviços, contratos OpenAPI, segurança, observabilidade e operação híbrida por fluxo — tudo dentro das premissas de migração incremental e continuidade operacional.
 
@@ -602,13 +604,13 @@ Delimitar explicitamente o que está **fora do escopo** é uma boa prática de g
 | Mudanças funcionais profundas no processo de negócio | O foco é modernização técnica e redução de risco, mantendo comportamento funcional compatível                         |
 | Novas integrações não listadas                       | Qualquer fluxo não explicitado na tabela de entregáveis deve passar por controle de mudanças antes de ser incorporado |
 
-## Fases do Projeto e Cronograma Macro
+## 📅 Fases do Projeto e Cronograma Macro
 
 Esta seção apresenta o **roadmap de execução** do projeto, organizado em 7 fases (Fase 0 a Fase 6), com cronograma estimado, marcos de decisão e critérios de aceite. A estrutura foi desenhada para dar visibilidade a **BDMs** (valor entregue, riscos de negócio, pontos de decisão) e **TDMs** (dependências técnicas, entregáveis, critérios de qualidade).
 
 Cada fase possui **gates de decisão** que funcionam como checkpoints obrigatórios antes de avançar para a próxima etapa. O modelo incremental permite ajustes de rota com base em aprendizados, sem comprometer as entregas já estabilizadas. O cronograma é uma estimativa inicial que será refinada na Fase 0 com base no inventário técnico completo.
 
-### Estratégia de modernização: Strangler Pattern
+### 🔄 Estratégia de modernização: Strangler Pattern
 
 A abordagem adotada é o **Strangler Pattern**, com extração gradual da lógica de integração do legado e introdução de uma camada de serviço moderna. O processo é executado **fluxo a fluxo**, garantindo continuidade operacional e redução de risco. Cada fluxo migrado passa por um ciclo completo de validação antes de desativar a rotina equivalente no legado.
 
@@ -784,12 +786,13 @@ gantt
 
 **Critérios de aceite (Exit Criteria)**
 
-| Critério                                             | Validador            |
-| ---------------------------------------------------- | -------------------- |
-| Fluxos e dependências mapeados e validados           | Cooperflora + Néctar |
-| Matriz de propriedade de dados aprovada              | BDM (Cooperflora)    |
-| Backlog priorizado com critérios do piloto definidos | BDM + TDM            |
-| Riscos documentados com plano de mitigação           | TDM (Néctar)         |
+| Critério                                              | Validador            |
+| ----------------------------------------------------- | -------------------- |
+| Fluxos e dependências mapeados e validados            | Cooperflora + Néctar |
+| Matriz de propriedade de dados aprovada               | BDM (Cooperflora)    |
+| Backlog priorizado com critérios do piloto definidos  | BDM + TDM            |
+| Riscos documentados com plano de mitigação            | TDM (Néctar)         |
+| **EMV: Inventário de timers aprovado (2 dias úteis)** | BDM (Cooperflora)    |
 
 **Riscos e mitigação**
 
@@ -818,11 +821,12 @@ gantt
 
 **Critérios de aceite (Exit Criteria)**
 
-| Critério                                  | Validador            |
-| ----------------------------------------- | -------------------- |
-| Contratos OpenAPI aprovados para o piloto | Cooperflora + Néctar |
-| Padrões de integração documentados        | TDM (Néctar)         |
-| Plano de testes de contrato definido      | TDM (Néctar)         |
+| Critério                                                  | Validador            |
+| --------------------------------------------------------- | -------------------- |
+| Contratos OpenAPI aprovados para o piloto                 | Cooperflora + Néctar |
+| Padrões de integração documentados                        | TDM (Néctar)         |
+| Plano de testes de contrato definido                      | TDM (Néctar)         |
+| **EMV: Especificação OpenAPI v1 aprovada (2 dias úteis)** | BDM (Cooperflora)    |
 
 **Riscos e mitigação**
 
@@ -852,12 +856,13 @@ gantt
 
 **Critérios de aceite (Exit Criteria)**
 
-| Critério                                 | Validador           |
-| ---------------------------------------- | ------------------- |
-| API em DEV/HML com documentação Swagger  | TDM (Néctar)        |
-| Smoke test de ponta a ponta bem-sucedido | TDM (Néctar + Coop) |
-| Pipeline CI/CD validado                  | TDM (Néctar)        |
-| Dashboards básicos de observabilidade    | TDM (Néctar)        |
+| Critério                                                        | Validador           |
+| --------------------------------------------------------------- | ------------------- |
+| API em DEV/HML com documentação Swagger                         | TDM (Néctar)        |
+| Smoke test de ponta a ponta bem-sucedido                        | TDM (Néctar + Coop) |
+| Pipeline CI/CD validado                                         | TDM (Néctar)        |
+| Dashboards básicos de observabilidade                           | TDM (Néctar)        |
+| **EMV: Health check + Swagger + Auth aprovados (2 dias úteis)** | BDM (Cooperflora)   |
 
 **Riscos e mitigação**
 
@@ -890,12 +895,13 @@ gantt
 
 **Critérios de aceite (Exit Criteria)**
 
-| Critério                         | Validador    | Métrica                                |
-| -------------------------------- | ------------ | -------------------------------------- |
-| Fluxo piloto estável em produção | TDM + BDM    | ≥ 2 semanas sem incidentes críticos    |
-| Indicadores dentro do aceitável  | TDM (Néctar) | Erro < 1%, latência p95 < SLA definido |
-| Processo de rollback testado     | TDM (Néctar) | Rollback executado em HML com sucesso  |
-| Lições aprendidas documentadas   | TDM (Néctar) | Relatório de lições aprendidas         |
+| Critério                                                            | Validador         | Métrica                                |
+| ------------------------------------------------------------------- | ----------------- | -------------------------------------- |
+| Fluxo piloto estável em produção                                    | TDM + BDM         | ≥ 2 semanas sem incidentes críticos    |
+| Indicadores dentro do aceitável                                     | TDM (Néctar)      | Erro < 1%, latência p95 < SLA definido |
+| Processo de rollback testado                                        | TDM (Néctar)      | Rollback executado em HML com sucesso  |
+| Lições aprendidas documentadas                                      | TDM (Néctar)      | Relatório de lições aprendidas         |
+| **EMV: Piloto + Feature Flag + Dashboard aprovados (2 dias úteis)** | BDM (Cooperflora) | —                                      |
 
 **Riscos e mitigação**
 
@@ -935,12 +941,13 @@ gantt
 
 **Critérios de aceite (Exit Criteria)**
 
-| Critério                                        | Validador         |
-| ----------------------------------------------- | ----------------- |
-| Principais fluxos em API (≥80%)                 | TDM + BDM         |
-| Timers de fluxos migrados desativados           | TDM (Néctar)      |
-| Operação com suporte e governança estabelecidos | BDM (Cooperflora) |
-| Matriz de fluxos atualizada e validada          | TDM + BDM         |
+| Critério                                               | Validador         |
+| ------------------------------------------------------ | ----------------- |
+| Principais fluxos em API (≥80%)                        | TDM + BDM         |
+| Timers de fluxos migrados desativados                  | TDM (Néctar)      |
+| Operação com suporte e governança estabelecidos        | BDM (Cooperflora) |
+| Matriz de fluxos atualizada e validada                 | TDM + BDM         |
+| **EMVs de cada onda aprovados (2 dias úteis por EMV)** | BDM (Cooperflora) |
 
 **Riscos e mitigação**
 
@@ -1228,15 +1235,16 @@ As premissas são condições assumidas como verdadeiras para fins de planejamen
 >
 > O não cumprimento de premissas sob responsabilidade da Cooperflora pode gerar os seguintes impactos financeiros:
 >
-> | Tipo de Impacto          | Descrição                                                         | Estimativa de Custo                                           |
-> | ------------------------ | ----------------------------------------------------------------- | ------------------------------------------------------------- |
-> | **Ociosidade de equipe** | Profissionais Néctar alocados aguardando insumos/aprovações       | Custo/hora × horas de espera × número de profissionais        |
-> | **Extensão de fase**     | Fases estendidas além do planejado por atrasos do cliente         | Custo mensal da equipe × meses adicionais                     |
-> | **Retrabalho**           | Refazer atividades por mudanças tardias ou informações incorretas | 20-50% do esforço original da atividade                       |
-> | **Remobilização**        | Desmobilizar e remobilizar equipe por pausas não planejadas       | Custo de transição + perda de contexto (estimado 1-2 semanas) |
-> | **Suporte emergencial**  | Correções urgentes fora do horário comercial                      | Custo premium (1,5x a 2x do valor hora normal)                |
+> | Tipo de Impacto               | Descrição                                                         | Estimativa de Custo                                           |
+> | ----------------------------- | ----------------------------------------------------------------- | ------------------------------------------------------------- |
+> | **Ociosidade de equipe**      | Profissionais Néctar alocados aguardando insumos/aprovações       | Custo/hora × horas de espera × número de profissionais        |
+> | **Extensão de fase**          | Fases estendidas além do planejado por atrasos do cliente         | Custo mensal da equipe × meses adicionais                     |
+> | **Retrabalho**                | Refazer atividades por mudanças tardias ou informações incorretas | 20-50% do esforço original da atividade                       |
+> | **Remobilização**             | Desmobilizar e remobilizar equipe por pausas não planejadas       | Custo de transição + perda de contexto (estimado 1-2 semanas) |
+> | **Suporte emergencial**       | Correções urgentes fora do horário comercial                      | Custo premium (1,5x a 2x do valor hora normal)                |
+> | **Ajustes pós-aprovação EMV** | Solicitações após prazo de 2 dias ou aprovação tácita             | Tratado como mudança de escopo (custo + prazo adicional)      |
 >
-> **Recomendação**: Premissas P01, P06, P08, P12 e P16 são as mais críticas para o cronograma e devem ter acompanhamento semanal no Comitê de Projeto.
+> **Recomendação**: Premissas P01, P06, P08, P12, P16 e **P28** são as mais críticas para o cronograma e devem ter acompanhamento semanal no Comitê de Projeto.
 
 #### Restrições
 
