@@ -276,12 +276,12 @@ Os padrões abrangem definição de contratos (OpenAPI), tratamento de erros, id
 #### ⚠️ Tratamento de erros
 
 | Código HTTP | Categoria          | Uso                                                      |
-| ----------- | ------------------ | -------------------------------------------------------- |
-| 4xx         | Erros de validação | Payload inválido, campos obrigatórios, regras de negócio |
-| 401         | Autenticação       | Token ausente ou inválido                                |
-| 403         | Autorização        | Permissão negada para a operação                         |
-| 409         | Conflito           | Violação de idempotência ou estado inconsistente         |
-| 503         | Indisponibilidade  | ERP ou dependência fora do ar                            |
+| :---------: | ------------------ | -------------------------------------------------------- |
+|     4xx     | Erros de validação | Payload inválido, campos obrigatórios, regras de negócio |
+|     401     | Autenticação       | Token ausente ou inválido                                |
+|     403     | Autorização        | Permissão negada para a operação                         |
+|     409     | Conflito           | Violação de idempotência ou estado inconsistente         |
+|     503     | Indisponibilidade  | ERP ou dependência fora do ar                            |
 
 **Payload de erro padrão:**
 
@@ -635,7 +635,7 @@ As premissas abaixo são **específicas para cada item de escopo** e complementa
 | :--: | ---------------------------------------------------------------------------------------------- | -------------------- | ------------------------------------------------------------- | :----------: | ------------------------------- |
 | PE27 | Critérios para adoção de mensageria serão definidos antes de qualquer implementação assíncrona | Néctar + Cooperflora | Adoção prematura ou injustificada; complexidade desnecessária | 🟡 **Médio** | —                               |
 | PE28 | Padrões de DLQ, retry e idempotência para eventos serão documentados como guideline            | Néctar               | Inconsistência em implementações futuras; poison messages     | 🟡 **Médio** | —                               |
-| PE29 | ROI de cada iniciativa event-driven será justificado antes da aprovação de escopo              | Cooperflora          | Investimento sem retorno mensurável                           | � **Baixo**  | —                               |
+| PE29 | ROI de cada iniciativa event-driven será justificado antes da aprovação de escopo              | Cooperflora          | Investimento sem retorno mensurável                           | 🟢 **Baixo** | —                               |
 
 > **Resumo das Premissas Específicas por Área**
 >
@@ -744,13 +744,13 @@ flowchart TB
 **Ciclo de execução por fluxo:**
 
 | Etapa | Ação                                  | Entregável                                      |
-| ----- | ------------------------------------- | ----------------------------------------------- |
-| 1     | Mapear fluxo e dependências no legado | Diagrama de fluxo + inventário de dependências  |
-| 2     | Definir contrato OpenAPI              | Especificação versionada                        |
-| 3     | Implementar fluxo na API              | Endpoint com validação, idempotência, auditoria |
-| 4     | Roteamento híbrido (legado → API)     | Feature flag ativa + fallback configurado       |
-| 5     | Estabilização e desativação do timer  | Métricas OK + timer desligado                   |
-| 6     | Repetir para próximo fluxo            | Padrões consolidados                            |
+| :---: | ------------------------------------- | ----------------------------------------------- |
+|   1   | Mapear fluxo e dependências no legado | Diagrama de fluxo + inventário de dependências  |
+|   2   | Definir contrato OpenAPI              | Especificação versionada                        |
+|   3   | Implementar fluxo na API              | Endpoint com validação, idempotência, auditoria |
+|   4   | Roteamento híbrido (legado → API)     | Feature flag ativa + fallback configurado       |
+|   5   | Estabilização e desativação do timer  | Métricas OK + timer desligado                   |
+|   6   | Repetir para próximo fluxo            | Padrões consolidados                            |
 
 ### ⚖️ Operação híbrida e ciclo de estados
 
@@ -1049,11 +1049,11 @@ gantt
 
 **Riscos e mitigação**
 
-| Risco                               | Probabilidade | Impacto | Severidade  | Mitigação                                             |
-| ----------------------------------- | :-----------: | :-----: | :---------: | ----------------------------------------------------- |
-| Incidentes em produção              |     Média     |  Alto   | 🟠 **Alto** | Rollout progressivo + feature flags + rollback rápido |
-| Divergência de dados entre sistemas |     Média     |  Alto   | 🟠 **Alto** | Auditoria por transação + reprocessamento idempotente |
-| Resistência do usuário              |     Baixa     |  Médio  | � **Baixo** | Comunicação antecipada + acompanhamento pós-go-live   |
+| Risco                               | Probabilidade | Impacto |  Severidade  | Mitigação                                             |
+| ----------------------------------- | :-----------: | :-----: | :----------: | ----------------------------------------------------- |
+| Incidentes em produção              |     Média     |  Alto   | 🟠 **Alto**  | Rollout progressivo + feature flags + rollback rápido |
+| Divergência de dados entre sistemas |     Média     |  Alto   | 🟠 **Alto**  | Auditoria por transação + reprocessamento idempotente |
+| Resistência do usuário              |     Baixa     |  Médio  | 🟢 **Baixo** | Comunicação antecipada + acompanhamento pós-go-live   |
 
 ### 4️⃣ Fase 4 – Migração por fluxo / Operação híbrida (1–3 meses)
 
@@ -1066,12 +1066,12 @@ gantt
 **Ondas de migração sugeridas**
 
 | Onda | Domínio                 | Fluxos                                 | Prioridade  | Critério de Conclusão                        |
-| ---- | ----------------------- | -------------------------------------- | ----------- | -------------------------------------------- |
-| 1    | Cadastros (Master Data) | Pessoas (piloto), Produtos, Auxiliares | Alta        | Todos os cadastros via API + timers inativos |
-| 2    | Comercial               | Pedidos, Movimentos                    | Média       | Fluxos transacionais via API                 |
-| 3    | Fiscal/Faturamento      | Notas, Faturamento                     | Média-Baixa | Compliance validado + auditoria              |
-| 4    | Financeiro              | Contas a pagar/receber, Conciliação    | Média-Baixa | Fluxos financeiros via API + auditoria       |
-| 5    | Estoque                 | Movimentações, Inventário              | Média-Baixa | Fluxos de estoque via API + timers inativos  |
+| :--: | ----------------------- | -------------------------------------- | ----------- | -------------------------------------------- |
+|  1   | Cadastros (Master Data) | Pessoas (piloto), Produtos, Auxiliares | Alta        | Todos os cadastros via API + timers inativos |
+|  2   | Comercial               | Pedidos, Movimentos                    | Média       | Fluxos transacionais via API                 |
+|  3   | Fiscal/Faturamento      | Notas, Faturamento                     | Média-Baixa | Compliance validado + auditoria              |
+|  4   | Financeiro              | Contas a pagar/receber, Conciliação    | Média-Baixa | Fluxos financeiros via API + auditoria       |
+|  5   | Estoque                 | Movimentações, Inventário              | Média-Baixa | Fluxos de estoque via API + timers inativos  |
 
 **Principais atividades**
 
@@ -1520,7 +1520,7 @@ A matriz de riscos segue a escala: **Probabilidade** (Baixa/Média/Alta) × **Im
 | R04 | Scope creep e priorização instável                            |     Média     |  Alto   |  🟠 **Alto**   | Baseline de escopo; processo de change control; governança formal                    | Gerente de Projeto | Aberto |
 | R05 | Comportamento do legado diverge do esperado em produção       |     Média     |  Alto   |  🟠 **Alto**   | Testes E2E extensivos; piloto com monitoramento intensivo; rollback preparado        | Tech Lead          | Aberto |
 | R06 | Indisponibilidade de ambiente ou acessos                      |     Média     |  Médio  |  🟡 **Médio**  | Solicitar acessos antecipadamente; ambientes de DEV/HML independentes                | TI Cooperflora     | Aberto |
-| R07 | Falhas de comunicação entre equipes                           |     Baixa     |  Médio  |  � **Baixo**   | Plano de comunicação; cerimônias regulares; canais definidos                         | Gerente de Projeto | Aberto |
+| R07 | Falhas de comunicação entre equipes                           |     Baixa     |  Médio  |  🟢 **Baixo**  | Plano de comunicação; cerimônias regulares; canais definidos                         | Gerente de Projeto | Aberto |
 | R08 | Resistência à mudança por parte dos usuários                  |     Média     |  Médio  |  🟡 **Médio**  | Envolvimento do PO; demonstrações frequentes; treinamento antes do go-live           | PO                 | Aberto |
 | R09 | Performance da API inferior ao legado em cenários específicos |     Baixa     |  Alto   |  🟡 **Médio**  | Testes de carga; otimização; cache quando aplicável; métricas de baseline            | Arquiteto          | Aberto |
 | R10 | Mudanças no ERP Néctar durante o projeto                      |     Baixa     | Crítico |  🟠 **Alto**   | Comunicação prévia obrigatória; versionamento de contratos; testes de regressão      | Arquiteto          | Aberto |
