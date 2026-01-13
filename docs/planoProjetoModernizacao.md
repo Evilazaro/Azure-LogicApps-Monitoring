@@ -430,6 +430,59 @@ Esta seção define os **entregáveis e limites** do projeto de modernização d
 | Segurança da API — autenticação, autorização e hardening | Definir e implementar autenticação/autorização para consumo da API e padrões de segurança operacional.<br><br>Inclui: mecanismo de auth (ex.: OAuth2, API Key, mTLS conforme restrição), segregação de ambientes/segredos, validação de payload, rate limiting e práticas de hardening de endpoints.<br><br>Também inclui padrões mínimos de acesso a dados internos (princípio do menor privilégio) para reduzir risco de exposição.                                                                                                                   | Reduz risco de exposição e substitui o “acesso ao banco” como mecanismo de integração; habilita cenários com rede/credenciais segregadas. |
 | Preparação para evolução event-driven (opcional)         | Planejar (sem implantar obrigatoriamente) a evolução para assíncrono onde fizer sentido.<br><br>Inclui: modelagem de eventos por domínio, critérios para quando usar síncrono vs assíncrono, desenho de padrões (retry, DLQ, idempotência, ordenação), e requisitos para adoção futura de fila (ex.: Service Bus).<br><br>Entregável: guideline técnico e backlog priorizado para evolução, sem desviar do foco do MVP (API + fluxos críticos).                                                                                                         | Evita “becos sem saída” arquiteturais e preserva foco no essencial, mantendo caminho claro para evoluções futuras.                        |
 
+#### Entregáveis Mínimos Validáveis (EMV)
+
+Para cada item de escopo, a Néctar produzirá um **Entregável Mínimo Validável (EMV)** que permite à Cooperflora validar e aprovar o item de forma objetiva e imediata. Este modelo garante transparência, acelera feedback e reduz risco de retrabalho.
+
+> **⚠️ Regra de Aprovação Tácita**
+>
+> A Cooperflora terá **2 (dois) dias úteis** para validar e aprovar cada EMV a partir da data de entrega formal. Após esse prazo:
+>
+> - O EMV será considerado **automaticamente aprovado** (aprovação tácita)
+> - Qualquer solicitação de ajuste posterior será tratada como **mudança de escopo**
+> - Mudanças de escopo impactarão **custos e prazos** conforme processo de Change Control
+>
+> **Justificativa**: Esta regra evita bloqueios no cronograma por atrasos de validação e garante cadência previsível de entregas. O prazo de 2 dias é suficiente para revisão técnica e de negócio, mantendo o projeto em ritmo saudável.
+
+| Item de Escopo                           | Entregável Mínimo Validável (EMV)                                                                 | Critério de Aceite do EMV                                                                     | Fase |
+| ---------------------------------------- | ------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------- | :--: |
+| **API de Integração (.NET Web API)**     | Endpoint `/health` funcional em DEV com Swagger, arquitetura em camadas, logging e correlation-id | Health check = 200 OK; Swagger UI acessível; logs com correlation-id; arquitetura documentada |  2   |
+| **Contratos OpenAPI**                    | Especificação OpenAPI v1 do fluxo piloto (Pessoas) com payloads, erros e exemplos                 | Especificação válida; payloads documentados; taxonomia de erros; exemplos incluídos           |  1   |
+| **Fluxo piloto (Cadastro de Pessoas)**   | Endpoint de cadastro funcional em HML com validação, idempotência, auditoria e testes             | Cadastro cria registro no ERP; reenvio não duplica; auditoria; testes ≥90%                    |  3   |
+| **Operação híbrida por fluxo**           | Feature flag do piloto com roteamento Legado/API e rollback testado em HML                        | Flag alterna fluxo; rollback OK em HML; procedimento documentado                              |  3   |
+| **Descomissionamento de timers/polling** | Inventário de timers com criticidade e roadmap de desligamento                                    | Lista com descrição, frequência, criticidade; dependências; roadmap com datas                 |  0   |
+| **Observabilidade e auditoria**          | Dashboard operacional básico + logs com correlation-id para o piloto                              | Dashboard com métricas; logs por correlation-id; alertas configurados                         |  3   |
+| **Segurança da API**                     | Autenticação (API Key/OAuth2) + rate limiting para o piloto                                       | Sem credencial = 401; rate limiting funcional; credenciais segregadas                         |  2   |
+| **Preparação event-driven (opcional)**   | Guideline técnico com critérios de adoção, padrões DLQ/retry e backlog de candidatos              | Documento com critérios; padrões definidos; ≥3 candidatos priorizados                         |  4   |
+
+**Fluxo de Validação dos EMVs:**
+
+```mermaid
+flowchart LR
+    A["📦 Néctar entrega\nEMV"] --> B["📧 Notificação\nformal ao cliente"]
+    B --> C{"⏱️ Validação em\n2 dias úteis?"}
+    C -->|"✅ Sim"| D["📝 Feedback\nrecebido"]
+    C -->|"❌ Não"| E["✅ Aprovação\nTácita"]
+    D --> F{"🔍 Aprovado?"}
+    F -->|"✅ Sim"| G["✅ EMV\nAprovado"]
+    F -->|"❌ Não"| H["📋 Ajustes\ndentro do escopo"]
+    H --> A
+    E --> G
+    G --> I["➡️ Próxima\netapa"]
+
+    classDef delivery fill:#4F46E5,stroke:#312E81,color:#FFFFFF
+    classDef decision fill:#FEF3C7,stroke:#D97706,color:#78350F
+    classDef approved fill:#10B981,stroke:#065F46,color:#FFFFFF
+    classDef process fill:#E0E7FF,stroke:#4F46E5,color:#1E1B4B
+
+    class A,B delivery
+    class C,F decision
+    class E,G approved
+    class D,H,I process
+```
+
+> **Nota**: Os EMVs são **marcos de validação intermediários** — não substituem os critérios de aceite completos de cada fase. Servem para garantir alinhamento contínuo e detectar desvios cedo, reduzindo risco de retrabalho ao final das fases.
+
 #### Premissas Específicas por Item de Escopo
 
 As premissas abaixo são **específicas para cada item de escopo** e complementam as premissas gerais do projeto. Cada premissa está diretamente vinculada a um entregável e define condições técnicas ou operacionais que devem ser verdadeiras para o sucesso do item.
@@ -516,7 +569,7 @@ As premissas abaixo são **específicas para cada item de escopo** e complementa
 > | Segurança                 |     4     | Cooperflora + Néctar  | Fases 1–2          |
 > | Event-Driven (Opcional)   |     3     | Cooperflora           | Fase 6             |
 >
-> **Total**: 29 premissas específicas de escopo (PE01–PE29), complementando as 27 premissas gerais do projeto (P01–P27).
+> **Total**: 29 premissas específicas de escopo (PE01–PE29), complementando as 28 premissas gerais do projeto (P01–P28).
 
 #### Escopo por domínio de negócio
 
@@ -999,6 +1052,7 @@ A matriz abaixo define as responsabilidades (**R**esponsável, **A**provador, **
 | Entregável / Decisão                 | Sponsor | Gerente Projeto | PO  | Arquiteto | Dev Team | Operação | TI Cooperflora |
 | ------------------------------------ | :-----: | :-------------: | :-: | :-------: | :------: | :------: | :------------: |
 | Aprovação de escopo e baseline       |    A    |        R        |  C  |     C     |    I     |    I     |       C        |
+| **Validação de EMVs (2 dias úteis)** |    I    |        R        |  A  |     C     |    I     |    I     |       C        |
 | Definição de contratos OpenAPI       |    I    |        C        |  A  |     R     |    C     |    I     |       C        |
 | Implementação de fluxos              |    I    |        C        |  A  |     C     |    R     |    I     |       I        |
 | Decisões de arquitetura              |    I    |        C        |  C  |     A     |    R     |    C     |       I        |
@@ -1085,15 +1139,16 @@ flowchart LR
 
 A comunicação eficaz é crítica para o sucesso do projeto. O plano abaixo define os canais, frequência e responsáveis por cada tipo de comunicação.
 
-| Comunicação                       | Público-Alvo                 | Canal               | Frequência        | Responsável        |
-| --------------------------------- | ---------------------------- | ------------------- | ----------------- | ------------------ |
-| **Status Report Executivo**       | Sponsor, Gestão Cooperflora  | E-mail + Reunião    | Mensal            | Gerente de Projeto |
-| **Status Report Semanal**         | Comitê de Projeto            | E-mail + Teams/Meet | Semanal           | Gerente de Projeto |
-| **Comunicado de Release**         | Todos os stakeholders        | E-mail              | Por release       | Gerente de Projeto |
-| **Alerta de Risco/Issue Crítico** | Sponsor, PO, Gerente         | E-mail + Telefone   | Imediato (ad-hoc) | Gerente de Projeto |
-| **Documentação Técnica**          | Dev Team, Arquitetura, TI    | Wiki/Repositório    | Contínuo          | Tech Lead          |
-| **Ata de Reunião**                | Participantes da reunião     | E-mail              | Após cada reunião | Organizador        |
-| **Relatório de Incidentes**       | PO, Operação, TI Cooperflora | E-mail + Ticket     | Por incidente     | Operação           |
+| Comunicação                           | Público-Alvo                 | Canal               | Frequência        | Responsável        |
+| ------------------------------------- | ---------------------------- | ------------------- | ----------------- | ------------------ |
+| **Status Report Executivo**           | Sponsor, Gestão Cooperflora  | E-mail + Reunião    | Mensal            | Gerente de Projeto |
+| **Status Report Semanal**             | Comitê de Projeto            | E-mail + Teams/Meet | Semanal           | Gerente de Projeto |
+| **Comunicado de Release**             | Todos os stakeholders        | E-mail              | Por release       | Gerente de Projeto |
+| **Entrega de EMV (aprovação tácita)** | PO, TI Cooperflora           | E-mail formal       | Por EMV           | Gerente de Projeto |
+| **Alerta de Risco/Issue Crítico**     | Sponsor, PO, Gerente         | E-mail + Telefone   | Imediato (ad-hoc) | Gerente de Projeto |
+| **Documentação Técnica**              | Dev Team, Arquitetura, TI    | Wiki/Repositório    | Contínuo          | Tech Lead          |
+| **Ata de Reunião**                    | Participantes da reunião     | E-mail              | Após cada reunião | Organizador        |
+| **Relatório de Incidentes**           | PO, Operação, TI Cooperflora | E-mail + Ticket     | Por incidente     | Operação           |
 
 ### Premissas e Restrições do Projeto
 
@@ -1162,11 +1217,12 @@ As premissas são condições assumidas como verdadeiras para fins de planejamen
 
 ##### Premissas Transversais (Aplicáveis a Todas as Fases)
 
-|  ID | Premissa                                                            | Responsável          | Impacto se Falsa                            | Impacto em Custos (Cooperflora)                                        |
-| --: | ------------------------------------------------------------------- | -------------------- | ------------------------------------------- | ---------------------------------------------------------------------- |
-| P25 | O escopo aprovado será respeitado, com mudanças via controle formal | Néctar + Cooperflora | Scope creep, atraso e estouro de orçamento  | **Renegociação contratual**: custos adicionais para mudanças de escopo |
-| P26 | Reuniões de governança terão quórum mínimo para tomada de decisão   | Néctar + Cooperflora | Decisões postergadas; atrasos em aprovações | —                                                                      |
-| P27 | Comunicação entre equipes seguirá canais e SLAs definidos           | Néctar + Cooperflora | Falhas de comunicação; retrabalho           | —                                                                      |
+|  ID | Premissa                                                               | Responsável          | Impacto se Falsa                                      | Impacto em Custos (Cooperflora)                                        |
+| --: | ---------------------------------------------------------------------- | -------------------- | ----------------------------------------------------- | ---------------------------------------------------------------------- |
+| P25 | O escopo aprovado será respeitado, com mudanças via controle formal    | Néctar + Cooperflora | Scope creep, atraso e estouro de orçamento            | **Renegociação contratual**: custos adicionais para mudanças de escopo |
+| P26 | Reuniões de governança terão quórum mínimo para tomada de decisão      | Néctar + Cooperflora | Decisões postergadas; atrasos em aprovações           | —                                                                      |
+| P27 | Comunicação entre equipes seguirá canais e SLAs definidos              | Néctar + Cooperflora | Falhas de comunicação; retrabalho                     | —                                                                      |
+| P28 | EMVs serão validados em **2 dias úteis**; após prazo, aprovação tácita | Cooperflora          | Aprovação automática; ajustes viram mudança de escopo | **Custos adicionais**: solicitações pós-aprovação impactam prazo/custo |
 
 > **⚠️ Impacto Financeiro para Premissas Não Cumpridas pela Cooperflora**
 >
@@ -1200,16 +1256,17 @@ As restrições são limitações conhecidas que moldam as decisões do projeto.
 
 Os critérios abaixo definem como o sucesso do projeto será medido ao final de cada fase e ao término do projeto.
 
-| Critério                             | Meta                                             | Medição                                     |
-| ------------------------------------ | ------------------------------------------------ | ------------------------------------------- |
-| **Fluxos migrados para API**         | 100% dos fluxos críticos em escopo               | Contagem de fluxos em estado "API" vs total |
-| **Disponibilidade da integração**    | ≥ 99,5% no horário comercial                     | Monitoramento de uptime                     |
-| **Taxa de erro em produção**         | < 1% por fluxo após estabilização                | Métricas de erro por endpoint               |
-| **Tempo de resposta (p95)**          | < 2 segundos para operações síncronas            | APM / métricas de latência                  |
-| **Incidentes críticos pós-migração** | Zero incidentes P1 causados pela nova integração | Registro de incidentes                      |
-| **Satisfação do cliente (PO)**       | Aceite formal de todas as entregas               | Termo de aceite por fase                    |
-| **Aderência ao cronograma**          | Desvio máximo de 15% em relação ao baseline      | Comparativo planejado vs realizado          |
-| **Aderência ao orçamento**           | Desvio máximo de 10% em relação ao baseline      | Comparativo planejado vs realizado          |
+| Critério                             | Meta                                             | Medição                                      |
+| ------------------------------------ | ------------------------------------------------ | -------------------------------------------- |
+| **Fluxos migrados para API**         | 100% dos fluxos críticos em escopo               | Contagem de fluxos em estado "API" vs total  |
+| **Disponibilidade da integração**    | ≥ 99,5% no horário comercial                     | Monitoramento de uptime                      |
+| **Taxa de erro em produção**         | < 1% por fluxo após estabilização                | Métricas de erro por endpoint                |
+| **Tempo de resposta (p95)**          | < 2 segundos para operações síncronas            | APM / métricas de latência                   |
+| **Incidentes críticos pós-migração** | Zero incidentes P1 causados pela nova integração | Registro de incidentes                       |
+| **Satisfação do cliente (PO)**       | Aceite formal de todas as entregas               | Termo de aceite por fase                     |
+| **EMVs aprovados no prazo**          | ≥ 80% dos EMVs validados em 2 dias úteis         | Contagem de aprovações vs aprovações tácitas |
+| **Aderência ao cronograma**          | Desvio máximo de 15% em relação ao baseline      | Comparativo planejado vs realizado           |
+| **Aderência ao orçamento**           | Desvio máximo de 10% em relação ao baseline      | Comparativo planejado vs realizado           |
 
 ## Riscos (RAID) e Mitigações
 
@@ -1283,6 +1340,7 @@ Além dos critérios de sucesso, os seguintes KPIs serão monitorados continuame
 | MTTR (tempo médio de recuperação) | < 1h para P1, < 4h para P2 | Por incidente         | Operação           |
 | Burndown/Burnup do sprint         | Tendência estável          | Semanal               | Tech Lead          |
 | Desvio de cronograma              | < 15% do baseline          | Semanal               | Gerente de Projeto |
+| EMVs com aprovação tácita         | < 20% do total de EMVs     | Por fase              | Gerente de Projeto |
 
 ## Operação, Implantação e Suporte
 
