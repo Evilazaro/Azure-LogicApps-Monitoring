@@ -238,11 +238,11 @@ Os princípios de aplicação definem a estrutura de **desacoplamento e separaç
 
 A idempotência como requisito obrigatório elimina problemas de duplicidade em reprocessamentos, enquanto a separação entre UI, regras de integração e domínio reduz a dependência de especialistas no legado e viabiliza testes automatizados.
 
-| Princípio                                       | Descrição                                       | Justificativa Técnica                              |
-| ----------------------------------------------- | ----------------------------------------------- | -------------------------------------------------- |
-| **Desacoplamento (sem acesso direto ao banco)** | Sistema do cliente não depende do schema do ERP | API como fronteira; banco interno ao ERP           |
-| **Separação de responsabilidades**              | UI, regras de integração e domínio separados    | Lógica em serviços testáveis; legado reduzido a UI |
-| **Idempotência e resiliência**                  | Reprocessamentos não corrompem dados            | Chaves de idempotência; retries controlados        |
+| Princípio                                       | Descrição                                       | Justificativa Técnica                                                   |
+| ----------------------------------------------- | ----------------------------------------------- | ----------------------------------------------------------------------- |
+| **Desacoplamento (sem acesso direto ao banco)** | Sistema do cliente não depende do schema do ERP | API como fronteira; banco interno ao ERP                                |
+| **Separação de responsabilidades**              | UI, regras de integração e domínio separados    | Lógica em serviços testáveis ou stored procedures; legado reduzido a UI |
+| **Idempotência e resiliência**                  | Reprocessamentos não corrompem dados            | Chaves de idempotência; retries controlados                             |
 
 #### Princípios de Tecnologia (Technology)
 
@@ -250,11 +250,11 @@ Os princípios de tecnologia garantem que a solução seja **observável, segura
 
 Segurança por design significa que autenticação, autorização e hardening são implementados desde a primeira linha de código, não como "camada adicional" posterior. A independência de co-localização de banco é requisito arquitetural para habilitar iniciativas futuras de modernização.
 
-| Princípio                            | Descrição                                            | Justificativa Técnica                           |
-| ------------------------------------ | ---------------------------------------------------- | ----------------------------------------------- |
-| **Observabilidade como requisito**   | Tudo que integra deve ser monitorável e auditável    | Logs estruturados; métricas; dashboards/alertas |
-| **Segurança por design**             | Autenticação, autorização e hardening desde o início | OAuth2/API Key/mTLS; TLS; rate limiting         |
-| **Preparação para nuvem/segregação** | Integração funciona sem co-localização de banco      | API REST/JSON; sem dependência de rede local    |
+| Princípio                            | Descrição                                            | Justificativa Técnica                                                    |
+| ------------------------------------ | ---------------------------------------------------- | ------------------------------------------------------------------------ |
+| **Observabilidade como requisito**   | Tudo que integra deve ser monitorável e auditável    | Logs estruturados; métricas; dashboards/alertas                          |
+| **Segurança por design**             | Autenticação, autorização e hardening desde o início | OAuth2/API Key + mTLS (quando aplicável); TLS obrigatório; rate limiting |
+| **Preparação para nuvem/segregação** | Integração funciona sem co-localização de banco      | API REST/JSON; sem dependência de rede local                             |
 
 ### Padrões técnicos de integração
 
@@ -444,6 +444,8 @@ A tabela acima detalha os entregáveis técnicos. Abaixo, a mesma visão é orga
 | **Cadastros (Master Data)** | Pessoas (piloto), Produtos, Tabelas auxiliares                   | Aumenta previsibilidade e reduz incidentes cadastrais; ideal para validar padrões sem afetar transações de alta criticidade | Alta (Fase 3–4)        |
 | **Comercial**               | Pedidos e movimentos                                             | Melhora rastreio operacional e reduz retrabalho; exige governança de consistência (correlation-id, auditoria)               | Média (Fase 4)         |
 | **Fiscal/Faturamento**      | Faturamento, notas fiscais                                       | Reduz risco de falhas silenciosas; recomendado após consolidação do padrão nos cadastros                                    | Média-Baixa (Fase 4–5) |
+| **Financeiro**              | Contas a pagar/receber, conciliação                              | Reduz inconsistências e conciliações manuais; requer auditoria rigorosa                                                     | Média-Baixa (Fase 4–5) |
+| **Estoque**                 | Movimentações, inventário                                        | Melhora rastreabilidade e reduz divergências; integração com outros domínios                                                | Média-Baixa (Fase 5)   |
 | **Operação e Governança**   | Runbooks, dashboards, alertas, gestão de mudanças                | Garante continuidade e capacidade de suporte durante operação híbrida                                                       | Contínuo               |
 
 #### Fora do escopo
@@ -505,6 +507,16 @@ flowchart TB
   style Antes fill:#FFF7ED,stroke:#FB923C,stroke-width:2px
   style Depois fill:#EEF2FF,stroke:#4F46E5,stroke-width:2px
 ```
+
+**Mudança fundamental na direção da integração:**
+
+| Modelo Atual (Legado)                                    | Modelo Alvo (API)                                      |
+| -------------------------------------------------------- | ------------------------------------------------------ |
+| Access **busca** os dados diretamente nas tabelas do ERP | Sistema do cliente **envia** os dados para a API       |
+| Integração disparada por timers (polling)                | Integração transacional (request/response)             |
+| Responsabilidade difusa entre sistemas                   | Responsabilidade clara: API é o ponto único de entrada |
+
+> **Vantagem**: Sem timers, sem race conditions, responsabilidade clara.
 
 **Ciclo de execução por fluxo:**
 
@@ -769,6 +781,8 @@ gantt
 | 1    | Cadastros (Master Data) | Pessoas (piloto), Produtos, Auxiliares | Alta        | Todos os cadastros via API + timers inativos |
 | 2    | Comercial               | Pedidos, Movimentos                    | Média       | Fluxos transacionais via API                 |
 | 3    | Fiscal/Faturamento      | Notas, Faturamento                     | Média-Baixa | Compliance validado + auditoria              |
+| 4    | Financeiro              | Contas a pagar/receber, Conciliação    | Média-Baixa | Fluxos financeiros via API + auditoria       |
+| 5    | Estoque                 | Movimentações, Inventário              | Média-Baixa | Fluxos de estoque via API + timers inativos  |
 
 **Principais atividades**
 
@@ -804,6 +818,23 @@ gantt
 | **Objetivo**  | Reduzir o módulo Access/VBA ao mínimo necessário, removendo responsabilidades de integração    |
 | **Valor BDM** | Custo de manutenção reduzido; menor risco operacional; equipe liberada para outras iniciativas |
 | **Valor TDM** | Código legado simplificado; documentação final; menor superfície de suporte                    |
+
+**Responsabilidades do módulo legado após simplificação**
+
+O módulo Access/VBA, após a modernização, **deve** se limitar a:
+
+- Exibir informações ao usuário
+- Executar código local (validações de UI)
+- Invocar a API de integração quando necessário
+
+O módulo **não deve** mais conter:
+
+- Regras de negócio complexas em eventos de formulário
+- Funções longas controlando integração
+- Acesso direto ao SQL Server do ERP para integrações
+- Timers/polling para sincronização de dados
+
+> **Diretriz técnica**: Lógica complexa remanescente deve ser movida para stored procedures (quando necessário manter no banco) ou para a API de integração.
 
 **Principais atividades**
 
@@ -996,12 +1027,13 @@ As premissas são condições assumidas como verdadeiras para fins de planejamen
 
 As restrições são limitações conhecidas que moldam as decisões do projeto.
 
-|  ID | Restrição                                                              | Implicação                                                 |
-| --: | ---------------------------------------------------------------------- | ---------------------------------------------------------- |
-|  R1 | A operação não pode ser interrompida durante a migração                | Obriga operação híbrida e rollback por fluxo               |
-|  R2 | O sistema legado (Access) não será descontinuado até migração completa | Necessário manter convivência e sincronização              |
-|  R3 | Orçamento e equipe são fixos para o escopo definido                    | Mudanças de escopo exigem trade-off ou aprovação adicional |
-|  R4 | Dependência de janelas de homologação da Cooperflora                   | Cronograma deve prever buffers para disponibilidade        |
+|  ID | Restrição                                                              | Implicação                                                        |
+| --: | ---------------------------------------------------------------------- | ----------------------------------------------------------------- |
+|  R1 | A operação não pode ser interrompida durante a migração                | Obriga operação híbrida e rollback por fluxo                      |
+|  R2 | O sistema legado (Access) não será descontinuado até migração completa | Necessário manter convivência e sincronização                     |
+|  R3 | Orçamento e equipe são fixos para o escopo definido                    | Mudanças de escopo exigem trade-off ou aprovação adicional        |
+|  R4 | Dependência de janelas de homologação da Cooperflora                   | Cronograma deve prever buffers para disponibilidade               |
+|  R5 | Não devem ser criadas novas regras de negócio complexas em VBA         | Novas lógicas devem ser implementadas na API ou stored procedures |
 
 ### Critérios de Sucesso do Projeto
 
@@ -1041,16 +1073,30 @@ A matriz de riscos segue a escala: **Probabilidade** (Baixa/Média/Alta) × **Im
 
 ### Matriz de Severidade
 
-```
-                    IMPACTO
-              Baixo   Médio   Alto   Crítico
-         ┌─────────┬─────────┬─────────┬─────────┐
-  Alta   │  Médio  │  Alto   │ Crítico │ Crítico │
-         ├─────────┼─────────┼─────────┼─────────┤
-P Média  │  Baixo  │  Médio  │  Alto   │ Crítico │
-R        ├─────────┼─────────┼─────────┼─────────┤
-O Baixa  │  Baixo  │  Baixo  │  Médio  │  Alto   │
-B        └─────────┴─────────┴─────────┴─────────┘
+```mermaid
+---
+title: "Matriz de Severidade (Probabilidade × Impacto)"
+---
+block-beta
+  columns 5
+
+  space:1 B["Baixo"]:1 M["Médio"]:1 A["Alto"]:1 C["Crítico"]:1
+
+  PA["Alta"]:1 PA_B["Médio"]:1 PA_M["Alto"]:1 PA_A["Crítico"]:1 PA_C["Crítico"]:1
+  PM["Média"]:1 PM_B["Baixo"]:1 PM_M["Médio"]:1 PM_A["Alto"]:1 PM_C["Crítico"]:1
+  PB["Baixa"]:1 PB_B["Baixo"]:1 PB_M["Baixo"]:1 PB_A["Médio"]:1 PB_C["Alto"]:1
+
+  classDef header fill:#334155,stroke:#1E293B,color:#FFFFFF,font-weight:bold
+  classDef baixo fill:#10B981,stroke:#065F46,color:#FFFFFF
+  classDef medio fill:#F59E0B,stroke:#92400E,color:#FFFFFF
+  classDef alto fill:#F97316,stroke:#C2410C,color:#FFFFFF
+  classDef critico fill:#EF4444,stroke:#B91C1C,color:#FFFFFF
+
+  class B,M,A,C,PA,PM,PB header
+  class PA_B,PM_B,PB_B,PB_M baixo
+  class PA_M,PM_M,PB_A medio
+  class PA_A,PM_A,PB_C alto
+  class PA_C,PM_C critico
 ```
 
 ### Plano de Contingência para Riscos Críticos
@@ -1081,17 +1127,55 @@ Além dos critérios de sucesso, os seguintes KPIs serão monitorados continuame
 
 ### Estratégia de implantação
 
-- Deploy progressivo por fluxo (feature flags).
-- Validação pós-deploy (smoke tests e dashboards).
-- Plano de rollback por fluxo e comunicação.
+| Aspecto               | Descrição                                                            |
+| --------------------- | -------------------------------------------------------------------- |
+| **Ambientes**         | DEV → HML → PRD (progressão controlada)                              |
+| **CI/CD**             | Pipeline automatizado com build, testes e deploy                     |
+| **Versionamento API** | Versão no path (`/v1`, `/v2`) com política de deprecação documentada |
+| **Feature Flags**     | Roteamento por fluxo (Legado/Híbrido/API) com rollback configurável  |
+| **Validação**         | Smoke tests e dashboards pós-deploy obrigatórios                     |
+
+### Operação híbrida
+
+| Elemento                  | Descrição                                                             |
+| ------------------------- | --------------------------------------------------------------------- |
+| Mapa de fluxos migrados   | Matriz atualizada indicando estado de cada fluxo (Legado/Híbrido/API) |
+| Alertas separados         | Monitoramento distinto para API e legado durante convivência          |
+| Procedimentos de rollback | Documentados por fluxo, com critérios de acionamento                  |
+| Janela de estabilização   | 2 semanas por fluxo com monitoramento reforçado                       |
 
 ### Runbooks e suporte
 
-- Runbooks por fluxo (o que monitorar, como reprocessar, quando escalar).
-- Rotina de revisão pós-incidente (RCA) e melhoria contínua.
+- **Runbooks por fluxo**: o que monitorar, como reprocessar, quando escalar
+- **Revisão pós-incidente (RCA)**: obrigatória para P1/P2, com ações documentadas
+- **Melhoria contínua**: ajustes em runbooks e alertas conforme aprendizados
+- **Matriz de escalação**: definida por severidade e horário (comercial vs. plantão)
 
-## Próximos Passos
+### Treinamento
+
+| Público      | Conteúdo                                                   | Momento               |
+| ------------ | ---------------------------------------------------------- | --------------------- |
+| **Técnicos** | API, logs estruturados, suporte L2/L3                      | Antes do piloto       |
+| **Operação** | Dashboards, runbooks, procedimentos de escalação           | Antes de cada go-live |
+| **Negócio**  | Mudanças de comportamento, novos fluxos, pontos de atenção | Por onda de migração  |
+
+## Próximos Passos e Evolução Futura
+
+### Ações imediatas (Fase 0)
 
 1. Validar com Cooperflora: **fluxo piloto**, matriz de propriedade de dados e restrições de rede/segurança.
 2. Confirmar governança e calendário de homologação.
 3. Iniciar Fase 0 com inventário técnico e backlog priorizado.
+4. Realizar congelamento de tabelas e VBA relevantes para integração.
+
+### Migração futura ao Nimbus
+
+- APIs já preparadas como contratos formais (OpenAPI versionado).
+- Modelo de integração moderno e desacoplado.
+- Planejamento de módulos candidatos à migração conforme roadmap estratégico.
+
+### Arquitetura orientada a eventos (evolução opcional)
+
+- Introdução de Service Bus quando justificado por picos de carga ou desacoplamento.
+- Modelagem de eventos por domínio (ex.: `PedidoCriado`, `NotaFiscalEmitida`).
+- Transformação de integrações síncronas em assíncronas quando houver ganho claro.
