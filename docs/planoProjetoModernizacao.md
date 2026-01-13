@@ -59,7 +59,7 @@ flowchart LR
   subgraph Cooperflora ["🏢 Cooperflora (Cliente)"]
     direction TB
     CLIENTE["📱 Sistema do Cliente"]
-    ACCESS["🖥️ Módulo Interface\nAccess + VBA"]
+    ACCESS["🖥️ Módulo Interface<br>Access + VBA"]
     TIMER["⏱️ Timers / Polling"]
     SINC["🔄 SINC"]
     TIMER -->|"dispara"| ACCESS
@@ -68,7 +68,7 @@ flowchart LR
   subgraph SQL ["🗄️ SQL Server (Hub de Integração)"]
     direction TB
     DB[("💾 Banco SQL Server")]
-    TSHARED["📋 Tabelas compartilhadas\n+ contratos implícitos"]
+    TSHARED["📋 Tabelas compartilhadas<br>+ contratos implícitos"]
     DB --- TSHARED
   end
 
@@ -77,9 +77,9 @@ flowchart LR
   end
 
   %% Fluxos de dados (acesso direto ao banco)
-  ACCESS -->|"SQL direto\n(INSERT/UPDATE/SELECT)"| DB
-  SINC -->|"SQL direto\n(INSERT/UPDATE/SELECT)"| DB
-  DB <-->|"Dados e estados\ncompartilhados"| ERP
+  ACCESS -->|"SQL direto<br>(INSERT/UPDATE/SELECT)"| DB
+  SINC -->|"SQL direto<br>(INSERT/UPDATE/SELECT)"| DB
+  DB <-->|"Dados e estados<br>compartilhados"| ERP
 
   %% ═══════════════════════════════════════════════════════════════
   %% FLUXO SIMPLIFICADO
@@ -127,31 +127,31 @@ flowchart LR
   %% ═══════════════════════════════════════════════════════════════
 
   subgraph Cooperflora ["🏢 Cooperflora (Cliente)"]
-    CLIENTE["📱 Sistema do Cliente\n(Cooperflora)"]
+    CLIENTE["📱 Sistema do Cliente<br>(Cooperflora)"]
   end
 
   subgraph Integracao ["🔗 Camada de Integração"]
-    API["🚀 API de Integração\n.NET Web API"]
+    API["🚀 API de Integração<br>.NET Web API"]
   end
 
   subgraph Nectar ["📦 ERP Néctar"]
     ERP["⚙️ ERP Néctar"]
-    DBERP[("💾 Banco do ERP\n(interno)")]
-    ERP -->|"persistência\ninterna"| DBERP
+    DBERP[("💾 Banco do ERP<br>(interno)")]
+    ERP -->|"persistência<br>interna"| DBERP
   end
 
   subgraph Plataforma ["📊 Operação e Evolução"]
-    OBS["📈 Observabilidade\nLogs + Métricas + Auditoria"]
-    FUTURO["📨 Mensageria\n(Service Bus - Futuro)"]
+    OBS["📈 Observabilidade<br>Logs + Métricas + Auditoria"]
+    FUTURO["📨 Mensageria<br>(Service Bus - Futuro)"]
   end
 
   %% Fluxo principal (síncrono)
-  CLIENTE -->|"HTTP/REST + JSON\n(contrato OpenAPI v1)"| API
-  API -->|"Validação → Mapeamento\n→ Regras de integração"| ERP
+  CLIENTE -->|"HTTP/REST + JSON<br>(contrato OpenAPI v1)"| API
+  API -->|"Validação → Mapeamento<br>→ Regras de integração"| ERP
 
   %% Fluxos auxiliares (observabilidade e evolução)
-  API -.->|"logs estruturados\n+ correlation-id"| OBS
-  API -.->|"eventos/filas\n(evolução opcional)"| FUTURO
+  API -.->|"logs estruturados<br>+ correlation-id"| OBS
+  API -.->|"eventos/filas<br>(evolução opcional)"| FUTURO
 
   %% ═══════════════════════════════════════════════════════════════
   %% FLUXO SIMPLIFICADO
@@ -497,9 +497,9 @@ flowchart LR
     %% FASE 1: Entrega (Néctar → Cooperflora)
     %% ───────────────────────────────────────────────────────────────
     subgraph entrega ["📤 Entrega"]
-        direction TB
-        A["📦 Néctar entrega\nEMV"]
-        B["📧 Notificação\nformal ao cliente"]
+        direction LR
+        A["📦 Néctar entrega<br>EMV"]
+        B["📧 Notificação<br>formal ao cliente"]
         A --> B
     end
 
@@ -507,10 +507,10 @@ flowchart LR
     %% FASE 2: Validação (Cooperflora - prazo de 2 dias úteis)
     %% ───────────────────────────────────────────────────────────────
     subgraph validacao ["⏱️ Validação (2 dias úteis)"]
-        direction TB
-        C{"⏱️ Validação em\n2 dias úteis?"}
-        D["📝 Feedback\nrecebido"]
-        E["✅ Aprovação\nTácita"]
+        direction LR
+        C{"⏱️ Validação em<br>2 dias úteis?"}
+        D["📝 Feedback<br>recebido"]
+        E["✅ Aprovação<br>Tácita"]
         C -->|"✅ Sim"| D
         C -->|"❌ Não"| E
     end
@@ -519,11 +519,11 @@ flowchart LR
     %% FASE 3: Decisão e Resultado
     %% ───────────────────────────────────────────────────────────────
     subgraph resultado ["📋 Resultado"]
-        direction TB
+        direction LR
         F{"🔍 Aprovado?"}
-        G["✅ EMV\nAprovado"]
-        H["📋 Ajustes\ndentro do escopo"]
-        I["➡️ Próxima\netapa"]
+        G["✅ EMV<br>Aprovado"]
+        H["📋 Ajustes<br>dentro do escopo"]
+        I["➡️ Próxima<br>etapa"]
         F -->|"✅ Sim"| G
         F -->|"❌ Não"| H
         G --> I
@@ -702,33 +702,82 @@ O padrão Strangler foi escolhido porque permite **evolução sem "big bang"**: 
 ---
 title: "Strangler Pattern – Migração Fluxo a Fluxo"
 ---
-flowchart TB
-  subgraph Antes ["⚠️ ANTES (Legado)"]
-    direction TB
-    A1["⏱️ Access/VBA\nTimer"] -->|"polling"| A2["📋 Leitura tabelas\n'novos dados'"]
-    A2 -->|"processa"| A3["⚙️ Regras de integração\nno VBA/SQL"]
-    A3 -->|"SQL direto"| A4["💾 Escrita direta\nno SQL do ERP"]
-  end
+flowchart LR
+    %% ═══════════════════════════════════════════════════════════════
+    %% DIAGRAMA: Strangler Pattern – Comparação Antes vs Depois
+    %% PROPÓSITO: Ilustrar a transformação da arquitetura de integração
+    %%            de um modelo baseado em polling/SQL direto para uma
+    %%            camada de serviços (API) com contratos explícitos
+    %% PADRÃO: Strangler Pattern (migração incremental por fluxo)
+    %% ═══════════════════════════════════════════════════════════════
 
-  subgraph Depois ["✅ DEPOIS (Com API)"]
-    direction TB
-    B1["📱 Sistema do Cliente\nou Access em modo UI"] -->|"HTTP POST/PUT"| B2["🚀 API de Integração"]
-    B2 -->|"validação"| B3["⚙️ Validação +\nMapeamento +\nIdempotência"]
-    B3 -->|"persistência\ncontrolada"| B4["📦 ERP Néctar"]
-  end
+    %% ───────────────────────────────────────────────────────────────
+    %% ESTADO ATUAL: Integração via polling e acesso direto ao banco
+    %% - Timers disparam periodicamente
+    %% - Access/VBA varre tabelas buscando "novos" registros
+    %% - Regras de negócio embarcadas no código legado
+    %% - Escrita direta no SQL Server (acoplamento forte)
+    %% ───────────────────────────────────────────────────────────────
+    subgraph legado ["⚠️ ANTES (Legado)"]
+        direction LR
+        A1["⏱️ Access/VBA<br>Timer"]
+        A2["📋 Leitura tabelas<br>'novos dados'"]
+        A3["⚙️ Regras de integração<br>no VBA/SQL"]
+        A4["💾 Escrita direta<br>no SQL do ERP"]
 
-  Antes ==>|"🔄 Strangler Pattern\nmigrar fluxo a fluxo"| Depois
+        A1 -->|"polling"| A2
+        A2 -->|"processa"| A3
+        A3 -->|"SQL direto"| A4
+    end
 
-  classDef legacy fill:#FFEDD5,stroke:#F97316,color:#431407,stroke-width:2px;
-  classDef modern fill:#E0E7FF,stroke:#4F46E5,color:#111827,stroke-width:2px;
-  classDef api fill:#4F46E5,stroke:#312E81,color:#FFFFFF,stroke-width:2px;
+    %% ───────────────────────────────────────────────────────────────
+    %% ESTADO ALVO: Integração via API com contratos explícitos
+    %% - Cliente envia dados proativamente (push, não pull)
+    %% - API centraliza validação, mapeamento e idempotência
+    %% - Persistência controlada com auditoria
+    %% - Desacoplamento: cliente não conhece schema do ERP
+    %% ───────────────────────────────────────────────────────────────
+    subgraph moderno ["✅ DEPOIS (Com API)"]
+        direction LR
+        B1["📱 Sistema do Cliente<br>ou Access em modo UI"]
+        B2["🚀 API de Integração"]
+        B3["⚙️ Validação +<br>Mapeamento +<br>Idempotência"]
+        B4["📦 ERP Néctar"]
 
-  class A1,A2,A3,A4 legacy
-  class B1,B3,B4 modern
-  class B2 api
+        B1 -->|"HTTP POST/PUT"| B2
+        B2 -->|"validação"| B3
+        B3 -->|"persistência<br>controlada"| B4
+    end
 
-  style Antes fill:#FFF7ED,stroke:#FB923C,stroke-width:2px
-  style Depois fill:#EEF2FF,stroke:#4F46E5,stroke-width:2px
+    %% ───────────────────────────────────────────────────────────────
+    %% TRANSIÇÃO: Strangler Pattern (migração incremental)
+    %% - Cada fluxo é migrado independentemente
+    %% - Feature flags permitem rollback a qualquer momento
+    %% - Legado e API coexistem durante a transição
+    %% ───────────────────────────────────────────────────────────────
+    legado ==>|"🔄 Strangler Pattern<br>migrar fluxo a fluxo"| moderno
+
+    %% ═══════════════════════════════════════════════════════════════
+    %% DEFINIÇÃO DE ESTILOS
+    %% ═══════════════════════════════════════════════════════════════
+
+    %% Paleta de cores: Legado (laranja/warning)
+    classDef legacy fill:#FFEDD5,stroke:#F97316,color:#431407,stroke-width:2px
+
+    %% Paleta de cores: Moderno (indigo/success)
+    classDef modern fill:#E0E7FF,stroke:#4F46E5,color:#111827,stroke-width:2px
+
+    %% Paleta de cores: API (destaque principal)
+    classDef api fill:#4F46E5,stroke:#312E81,color:#FFFFFF,stroke-width:2px
+
+    %% Aplicação de classes aos nós
+    class A1,A2,A3,A4 legacy
+    class B1,B3,B4 modern
+    class B2 api
+
+    %% Estilização dos subgraphs
+    style legado fill:#FFF7ED,stroke:#FB923C,stroke-width:2px
+    style moderno fill:#EEF2FF,stroke:#4F46E5,stroke-width:2px
 ```
 
 **Mudança fundamental na direção da integração:**
@@ -802,19 +851,19 @@ stateDiagram-v2
     %% ───────────────────────────────────────────────────────────────
     %% TRANSIÇÕES DE AVANÇO (caminho feliz)
     %% ───────────────────────────────────────────────────────────────
-    Legado --> Hibrido: Migração aprovada\n(contrato + API implementada)
-    Hibrido --> API: Estabilização concluída\n(≥2 semanas sem incidentes P1)
+    Legado --> Hibrido: Migração aprovada<br>(contrato + API implementada)
+    Hibrido --> API: Estabilização concluída<br>(≥2 semanas sem incidentes P1)
 
     %% ───────────────────────────────────────────────────────────────
     %% TRANSIÇÕES DE ROLLBACK (caminho de contingência)
     %% ───────────────────────────────────────────────────────────────
-    Hibrido --> Legado: ❌ Rollback controlado\n(feature flag OFF)
-    API --> Hibrido: ⚠️ Rollback excepcional\n(+ análise RCA obrigatória)
+    Hibrido --> Legado: ❌ Rollback controlado<br>(feature flag OFF)
+    API --> Hibrido: ⚠️ Rollback excepcional<br>(+ análise RCA obrigatória)
 
     %% ───────────────────────────────────────────────────────────────
     %% ESTADO FINAL (migração completa)
     %% ───────────────────────────────────────────────────────────────
-    API --> [*]: Fluxo migrado\n(aceite formal)
+    API --> [*]: Fluxo migrado<br>(aceite formal)
 
     %% ───────────────────────────────────────────────────────────────
     %% NOTAS EXPLICATIVAS
@@ -876,26 +925,73 @@ stateDiagram-v2
 title: "Roadmap de Fases – Visão Temporal"
 ---
 gantt
+    %% ═══════════════════════════════════════════════════════════════
+    %% DIAGRAMA: Roadmap de Fases do Projeto de Modernização
+    %% PROPÓSITO: Visualizar a linha do tempo das fases do projeto,
+    %%            dependências entre atividades e marcos de decisão
+    %% PADRÃO: Strangler Pattern (migração incremental por fluxo)
+    %% ═══════════════════════════════════════════════════════════════
+
+    %% ───────────────────────────────────────────────────────────────
+    %% CONFIGURAÇÃO DO GRÁFICO
+    %% - dateFormat: formato de entrada das datas (YYYY-MM-DD)
+    %% - axisFormat: formato de exibição no eixo (dia/mês)
+    %% - tickInterval: intervalo entre marcações (1 semana)
+    %% - todayMarker: linha indicando a data atual
+    %% ───────────────────────────────────────────────────────────────
     dateFormat YYYY-MM-DD
     axisFormat %d/%m
     tickInterval 1week
+    todayMarker stroke-width:2px,stroke:#4F46E5,opacity:0.7
 
-    section Preparação
-    Fase 0 - Alinhamento          :f0, 2026-01-13, 2w
-    Fase 1 - Contratos            :f1, after f0, 2w
+    %% ───────────────────────────────────────────────────────────────
+    %% SEÇÃO: PREPARAÇÃO
+    %% Objetivo: Estabelecer base de governança e contratos
+    %% - Fase 0: Alinhamento, inventário técnico, backlog
+    %% - Fase 1: Definição de contratos OpenAPI e padrões
+    %% ───────────────────────────────────────────────────────────────
+    section 📋 Preparação
+    Fase 0 - Alinhamento e Riscos    :active, f0, 2026-01-13, 2w
+    Gate Go/No-Go                    :milestone, m0, after f0, 0d
+    Fase 1 - Contratos OpenAPI       :f1, after f0, 2w
+    Gate Aprovação Contratos         :milestone, m1, after f1, 0d
 
-    section Fundação
-    Fase 2 - API                  :f2, after f1, 3w
+    %% ───────────────────────────────────────────────────────────────
+    %% SEÇÃO: FUNDAÇÃO
+    %% Objetivo: Construir infraestrutura base da API
+    %% - Fase 2: API scaffold, CI/CD, observabilidade básica
+    %% ───────────────────────────────────────────────────────────────
+    section 🏗️ Fundação
+    Fase 2 - API e Infraestrutura    :f2, after f1, 3w
+    Checkpoint Infra OK              :milestone, m2, after f2, 0d
 
-    section Piloto
-    Fase 3 - Fluxo Piloto         :crit, f3, after f2, 4w
+    %% ───────────────────────────────────────────────────────────────
+    %% SEÇÃO: PILOTO
+    %% Objetivo: Validar padrões com primeiro fluxo em produção
+    %% - Fase 3: Fluxo piloto (Cadastro de Pessoas) - CRÍTICO
+    %% ───────────────────────────────────────────────────────────────
+    section 🚀 Piloto
+    Fase 3 - Fluxo Piloto (Pessoas)  :crit, f3, after f2, 4w
+    Go-Live Piloto                   :milestone, crit, m3, after f3, 0d
 
-    section Migração
-    Fase 4 - Operação Híbrida     :f4, after f3, 12w
-    Fase 5 - Simplificação        :f5, 2026-05-25, 8w
+    %% ───────────────────────────────────────────────────────────────
+    %% SEÇÃO: MIGRAÇÃO
+    %% Objetivo: Escalar migração fluxo a fluxo
+    %% - Fase 4: Operação híbrida (legado + API coexistem)
+    %% - Fase 5: Simplificação do legado (remoção de timers)
+    %% ───────────────────────────────────────────────────────────────
+    section 🔄 Migração
+    Fase 4 - Operação Híbrida        :f4, after f3, 12w
+    Fase 5 - Simplificação Legado    :f5, 2026-05-25, 8w
+    Aceite Final                     :milestone, m5, after f5, 0d
 
-    section Evolução
-    Fase 6 - Opcional             :milestone, f6, after f5, 0d
+    %% ───────────────────────────────────────────────────────────────
+    %% SEÇÃO: EVOLUÇÃO
+    %% Objetivo: Evoluções opcionais por demanda
+    %% - Fase 6: Mensageria, eventos, preparação Nimbus (sob ROI)
+    %% ───────────────────────────────────────────────────────────────
+    section ✨ Evolução
+    Fase 6 - Evolução Opcional       :milestone, f6, after f5, 0d
 ```
 
 | Janela (semanas) | Fase   | Dependências  | Gate de Decisão                                                  |
@@ -1265,9 +1361,9 @@ flowchart LR
     %% FASE 1: Solicitação e Análise
     %% ───────────────────────────────────────────────────────────────
     subgraph solicitacao ["📥 Solicitação"]
-        direction TB
-        A["📝 Solicitação\nde Mudança"]
-        B["📊 Análise\nde Impacto"]
+        direction LR
+        A["📝 Solicitação<br>de Mudança"]
+        B["📊 Análise<br>de Impacto"]
         A --> B
     end
 
@@ -1275,21 +1371,21 @@ flowchart LR
     %% FASE 2: Triagem e Roteamento
     %% ───────────────────────────────────────────────────────────────
     subgraph triagem ["🔀 Triagem"]
-        direction TB
-        C{"🔍 Impacto\nSignificativo?"}
-        D["👥 Comitê\nExecutivo"]
-        E["👤 Gerente\nde Projeto"]
-        C -->|"✅ Sim\n(>2 sem ou >10%)"| D
-        C -->|"❌ Não\n(menor impacto)"| E
+        direction LR
+        C{"🔍 Impacto<br>Significativo?"}
+        D["👥 Comitê<br>Executivo"]
+        E["👤 Gerente<br>de Projeto"]
+        C -->|"✅ Sim<br>(>2 sem ou >10%)"| D
+        C -->|"❌ Não<br>(menor impacto)"| E
     end
 
     %% ───────────────────────────────────────────────────────────────
     %% FASE 3: Decisão
     %% ───────────────────────────────────────────────────────────────
     subgraph decisao ["⚖️ Decisão"]
-        direction TB
+        direction LR
         F{"✅ Aprovado?"}
-        H["❌ Registrar\nDecisão"]
+        H["❌ Registrar<br>Decisão"]
         F -->|"❌ Não"| H
     end
 
@@ -1297,8 +1393,8 @@ flowchart LR
     %% FASE 4: Execução
     %% ───────────────────────────────────────────────────────────────
     subgraph execucao ["🚀 Execução"]
-        direction TB
-        G["📋 Atualizar\nBaseline"]
+        direction LR
+        G["📋 Atualizar<br>Baseline"]
         I["🚀 Implementar"]
         G --> I
     end
