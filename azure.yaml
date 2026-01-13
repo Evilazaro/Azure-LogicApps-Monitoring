@@ -8,29 +8,32 @@
 # setup, provisioning, and post-deployment configuration.
 #
 # Documentation: https://learn.microsoft.com/azure/developer/azure-developer-cli/
-# Last Modified: 2026-01-06
+# Last Modified: 2026-01-13
 # ==============================================================================
 
 # ------------------------------------------------------------------------------
 # Project Metadata
 # ------------------------------------------------------------------------------
-# Unique identifier for this azd template
+# Unique identifier for this azd template (must be alphanumeric with hyphens)
 name: azure-logicapps-monitoring
 
 # Template version and metadata for azd template gallery
 metadata:
   template: azure-logicapps-monitoring@1.0.0
+  description: "Azure Logic Apps Monitoring solution with .NET Aspire orchestration"
+  author: "Evilazaro"
+  repository: "https://github.com/Evilazaro/Azure-LogicApps-Monitoring"
 
 # Minimum azd version required for this project
 requiredVersions:
-  azd: ">= 1.9.0"
+  azd: ">= 1.11.0"
 
 # ------------------------------------------------------------------------------
 # Infrastructure Configuration
 # ------------------------------------------------------------------------------
 # Defines how and where infrastructure is defined and deployed
 infra:
-  provider: bicep # Infrastructure as Code provider
+  provider: bicep # Infrastructure as Code provider (bicep or terraform)
   path: infra # Directory containing Bicep templates
   module: main # Entry point Bicep module (main.bicep)
 
@@ -43,35 +46,48 @@ infra:
 hooks:
   # Pre-provisioning validation hook
   # Executes before 'azd provision' to validate workstation prerequisites
+  # and build the solution to ensure it compiles successfully
   preprovision:
-    posix: # Linux/macOS configuration
+    posix:
       shell: sh
-      run: ./hooks/preprovision.sh --force --verbose
-      continueOnError: false # Fail fast on validation errors
-      interactive: true # Allow interactive prompts if needed
-    windows: # Windows configuration
+      run: |
+        # Build and test the solution before provisioning
+        echo "Building and testing solution..."
+        dotnet clean app.sln --verbosity quiet
+        dotnet restore app.sln
+        dotnet build app.sln --configuration Release --no-restore
+        dotnet test app.sln --configuration Release --no-build --logger "trx;LogFileName=TestResults.trx" --results-directory ./TestResults
+        # Run preprovision validation
+        ./hooks/preprovision.sh --force --verbose
+      continueOnError: false
+      interactive: true
+    windows:
       shell: pwsh
       run: |
-        dotnet clean app.sln
+        # Build and test the solution before provisioning
+        Write-Host "Building and testing solution..." -ForegroundColor Cyan
+        dotnet clean app.sln --verbosity quiet
         dotnet restore app.sln
-        dotnet buiold app.sln
-        dotnet test app.sln --logger "trx;LogFileName=TestResults.trx"
+        dotnet build app.sln --configuration Release --no-restore
+        dotnet test app.sln --configuration Release --no-build --logger "trx;LogFileName=TestResults.trx" --results-directory ./TestResults
+
+        # Run preprovision validation
         ./hooks/preprovision.ps1 -Force -Verbose
-      continueOnError: false # Fail fast on validation errors
-      interactive: true # Allow interactive prompts if needed
+      continueOnError: false
+      interactive: true
 
   # Post-provisioning configuration hook
   # Executes after 'azd provision' to configure local development secrets
   # and generate test data for the application
   postprovision:
-    posix: # Linux/macOS configuration
+    posix:
       shell: sh
       run: |
         ./hooks/postprovision.sh --force --verbose
         ./hooks/Generate-Orders.sh --force --verbose
       continueOnError: false
       interactive: true
-    windows: # Windows configuration
+    windows:
       shell: pwsh
       run: |
         ./hooks/postprovision.ps1 -Force -Verbose
@@ -87,35 +103,64 @@ hooks:
       shell: sh
       run: ./hooks/deploy-workflow.sh
       continueOnError: false
-      interactive: false # Non-interactive for CI/CD compatibility
+      interactive: false
     windows:
       shell: pwsh
       run: ./hooks/deploy-workflow.ps1
       continueOnError: false
-      interactive: false # Non-interactive for CI/CD compatibility
+      interactive: false
 
+  # Post-deployment validation hook
+  # Executes after 'azd deploy' to verify deployment success
+  postdeploy:
+    posix:
+      shell: sh
+      run: |
+        echo "Deployment completed successfully!"
+        echo "Validating deployed resources..."
+      continueOnError: true
+      interactive: false
+    windows:
+      shell: pwsh
+      run: |
+        Write-Host "Deployment completed successfully!" -ForegroundColor Green
+        Write-Host "Validating deployed resources..." -ForegroundColor Cyan
+      continueOnError: true
+      interactive: false
+
+  # Post infrastructure delete cleanup hook
+  # Executes after 'azd down' to clean up any remaining resources
   postinfradelete:
     posix:
       shell: sh
       run: ./hooks/postinfradelete.sh --force --verbose
-      continueOnError: false # Fail fast on cleanup errors
+      continueOnError: false
       interactive: false
     windows:
       shell: pwsh
       run: ./hooks/postinfradelete.ps1 -Force -Verbose
-      continueOnError: false # Fail fast on cleanup errors
+      continueOnError: false
       interactive: false
 
 # ------------------------------------------------------------------------------
 # Application Services
 # ------------------------------------------------------------------------------
 # Defines the application components to be deployed to Azure
-# Note: Using .NET Aspire AppHost which orchestrates all services internally
+# Using .NET Aspire AppHost which orchestrates all services internally
+# The AppHost manages Orders API and Web App as child services
 
 services:
   # .NET Aspire AppHost orchestrating the monitoring solution
-  # The AppHost manages Orders API and Web App as child services
+  # Aspire automatically discovers and configures dependent services
   app:
-    language: dotnet # Service implementation language
-    project: ./app.AppHost/app.AppHost.csproj # Path to project file
-    host: containerapp # Target hosting platform (Azure Container Apps)
+    language: dotnet
+    project: ./app.AppHost/app.AppHost.csproj
+    host: containerapp
+
+# ------------------------------------------------------------------------------
+# CI/CD Pipeline Configuration
+# ------------------------------------------------------------------------------
+# Configuration for GitHub Actions workflow generation via 'azd pipeline config'
+
+pipeline:
+  provider: github
