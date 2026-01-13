@@ -2,32 +2,63 @@
 
 > 📅 **Data de referência:** 13 de janeiro de 2026
 
+### 📋 Controle do Documento
+
+| Campo                 | Valor             |
+| --------------------- | ----------------- |
+| **Código do Projeto** | COOP-2026-MOD-INT |
+| **Versão**            | 1.0               |
+| **Status**            | Em elaboração     |
+| **Autor**             | Néctar            |
+| **Cliente**           | Cooperflora       |
+| **Classificação**     | Confidencial      |
+
+#### 📜 Histórico de Revisões
+
+| Versão | Data       | Autor  | Descrição da Alteração                                                 |
+| :----: | ---------- | ------ | ---------------------------------------------------------------------- |
+|  0.1   | 06/01/2026 | Néctar | Versão inicial – estrutura e escopo                                    |
+|  0.2   | 10/01/2026 | Néctar | Adição de arquitetura, cronograma e riscos                             |
+|  0.3   | 12/01/2026 | Néctar | Detalhamento de estimativa de horas (WBS) e custos                     |
+|  1.0   | 13/01/2026 | Néctar | Versão consolidada para aprovação – ajustes de organização e navegação |
+
+#### ✍️ Aprovações
+
+| Papel                    | Nome | Organização | Data | Assinatura |
+| ------------------------ | ---- | ----------- | ---- | ---------- |
+| **Sponsor Executivo**    |      | Cooperflora |      |            |
+| **Product Owner**        |      | Cooperflora |      |            |
+| **Gerente de Projeto**   |      | Néctar      |      |            |
+| **Arquiteto de Solução** |      | Néctar      |      |            |
+
 ---
 
 ## 📑 Sumário e Guia de Navegação
 
 Este documento está organizado em **três partes** para atender às necessidades de diferentes stakeholders. Utilize este guia para navegar diretamente às seções mais relevantes para sua função.
 
-| Parte                          | Seções                                             | Público Principal | Tempo de Leitura |
-| ------------------------------ | -------------------------------------------------- | ----------------- | :--------------: |
-| **I – VISÃO EXECUTIVA**        | Introdução, Escopo, Cronograma, Governança, Riscos | BDMs              |   ~20 minutos    |
-| **II – EXECUÇÃO DO PROJETO**   | Fases detalhadas, Premissas/Restrições, Operação   | BDMs + TDMs       |   ~30 minutos    |
-| **III – FUNDAMENTOS TÉCNICOS** | Arquitetura, Padrões técnicos, Evolução futura     | TDMs              |   ~25 minutos    |
+| Parte                          | Seções                                                           | Público Principal | Tempo de Leitura |
+| ------------------------------ | ---------------------------------------------------------------- | ----------------- | :--------------: |
+| **I – VISÃO EXECUTIVA**        | Introdução, Escopo, Cronograma, Governança, Riscos               | BDMs              |   ~20 minutos    |
+| **II – EXECUÇÃO DO PROJETO**   | Fases detalhadas, Premissas/Restrições, Gestão, Custos, Operação | BDMs + TDMs       |   ~40 minutos    |
+| **III – FUNDAMENTOS TÉCNICOS** | Arquitetura, Padrões técnicos, Evolução futura                   | TDMs              |   ~25 minutos    |
 
 ### 🎯 Acesso Rápido por Interesse
 
-| Se você precisa de...                    | Vá para a seção...                                     |
-| ---------------------------------------- | ------------------------------------------------------ |
-| Entender o problema e a solução proposta | [Introdução](#-introdução)                             |
-| Saber o que será entregue                | [Escopo do Projeto](#-escopo-do-projeto)               |
-| Ver prazos e marcos                      | [Cronograma Macro](#-cronograma-macro)                 |
-| Entender quem decide o quê               | [Governança](#-gestão-do-projeto)                      |
-| Avaliar riscos do projeto                | [Riscos e Mitigações](#️-riscos-raid-e-mitigações)     |
-| Detalhes de cada fase                    | [Fases do Projeto](#-fases-do-projeto)                 |
-| Premissas e dependências                 | [Premissas e Restrições](#-premissas-e-restrições)     |
-| Como será a operação pós-implantação     | [Operação e Suporte](#-operação-implantação-e-suporte) |
-| Arquitetura técnica detalhada            | [Arquitetura](#️-arquitetura-e-padrões-técnicos)       |
-| Roadmap de evolução futura               | [Evolução Futura](#-evolução-futura)                   |
+| Se você precisa de...                     | Vá para a seção...                                                       |
+| ----------------------------------------- | ------------------------------------------------------------------------ |
+| Entender o problema e a solução proposta  | [Introdução](#-introdução)                                               |
+| Saber o que será entregue                 | [Escopo do Projeto](#-escopo-do-projeto)                                 |
+| Ver prazos e marcos                       | [Cronograma Macro](#-cronograma-macro)                                   |
+| Entender quem decide o quê                | [Governança](#-gestão-do-projeto-governança-stakeholders-e-controle)     |
+| Avaliar riscos do projeto                 | [Riscos e Mitigações](#%EF%B8%8F-riscos-raid-e-mitigações)               |
+| Detalhes de cada fase                     | [Fases do Projeto](#-fases-do-projeto-e-cronograma-macro)                |
+| Premissas e dependências                  | [Premissas e Restrições](#-premissas-e-restrições-do-projeto)            |
+| Como será a operação pós-implantação      | [Operação e Suporte](#-operação-implantação-e-suporte)                   |
+| **Ver estimativa de horas por atividade** | [Detalhamento de Horas](#-detalhamento-da-estimativa-de-horas)           |
+| **Ver custos e cronograma de pagamentos** | [Estimativa de Custos](#-estimativa-de-custos-do-projeto)                |
+| Arquitetura técnica detalhada             | [Arquitetura](#%EF%B8%8F-arquitetura-e-padrões-técnicos)                 |
+| Roadmap de evolução futura                | [Próximos Passos e Evolução Futura](#-próximos-passos-e-evolução-futura) |
 
 ---
 
@@ -176,7 +207,7 @@ gantt
     Fase 6 - Evolução Opcional       :milestone, f6, after f5, 0d
 ```
 
-> 📘 **Para detalhamento de cada fase**, consulte a seção [Fases do Projeto](#-fases-do-projeto) na Parte II.
+> 📘 **Para detalhamento de cada fase**, consulte a seção [Fases do Projeto](#-fases-do-projeto-e-cronograma-macro) na Parte II.
 
 ---
 
@@ -227,7 +258,7 @@ gantt
 | Scope creep e priorização instável                      | Média |  Alto   |  🟠 **Alto**   | Baseline de escopo; processo de change control        |
 | Comportamento do legado diverge do esperado             | Média |  Alto   |  🟠 **Alto**   | Testes E2E extensivos; rollback preparado             |
 
-> 📘 **Para registro completo de riscos**, consulte a seção [Riscos e Mitigações](#️-riscos-raid-e-mitigações) na Parte II.
+> 📘 **Para registro completo de riscos**, consulte a seção [Riscos e Mitigações](#%EF%B8%8F-riscos-raid-e-mitigações) na Parte II.
 
 ### 🏆 Critérios de Sucesso
 
@@ -375,6 +406,16 @@ flowchart LR
     style Nectar fill:#F8FAFC,stroke:#94A3B8,stroke-width:1px
 
 ```
+
+---
+
+# PARTE III – FUNDAMENTOS TÉCNICOS
+
+> 🎯 **Para TDMs**: Esta parte apresenta a arquitetura técnica, princípios e padrões de desenvolvimento. Tempo estimado: 25 minutos.
+
+---
+
+## 🏗️ Arquitetura e Padrões Técnicos
 
 ### 🟢 Arquitetura alvo
 
@@ -714,15 +755,9 @@ block-beta
 
 ---
 
-# PARTE II – EXECUÇÃO DO PROJETO
+### 📝 Detalhamento Técnico dos Entregáveis
 
-> 🎯 **Para BDMs e TDMs**: Esta parte detalha a execução, com fases, premissas e operação. Tempo estimado: 30 minutos.
-
----
-
-## 📋 Fases do Projeto
-
-Esta seção define os **entregáveis e limites** do projeto de modernização do Módulo Integrador/Interface. A tabela a seguir apresenta o que será implementado: transição do modelo "banco como integração" para camada de serviços, contratos OpenAPI, segurança, observabilidade e operação híbrida por fluxo — tudo dentro das premissas de migração incremental e continuidade operacional.
+Esta subseção detalha os **entregáveis técnicos** do projeto de modernização do Módulo Integrador/Interface. A tabela a seguir apresenta o que será implementado: transição do modelo "banco como integração" para camada de serviços, contratos OpenAPI, segurança, observabilidade e operação híbrida por fluxo — tudo dentro das premissas de migração incremental e continuidade operacional.
 
 > **Nota**: A coluna **Benefícios Esperados** está diretamente vinculada aos **Objetivos (negócio e técnico)** definidos na seção "Situação atual e motivação". Cada benefício endereça um ou mais objetivos estratégicos identificados na análise da situação atual.
 
@@ -968,6 +1003,14 @@ Delimitar explicitamente o que está **fora do escopo** é uma boa prática de g
 | Projeto integral de migração para Nimbus             | O escopo contempla preparação arquitetural e roadmap, não a migração completa                                         |
 | Mudanças funcionais profundas no processo de negócio | O foco é modernização técnica e redução de risco, mantendo comportamento funcional compatível                         |
 | Novas integrações não listadas                       | Qualquer fluxo não explicitado na tabela de entregáveis deve passar por controle de mudanças antes de ser incorporado |
+
+---
+
+# PARTE II – EXECUÇÃO DO PROJETO (continuação)
+
+> 🎯 **Para BDMs e TDMs**: Esta parte continua com o detalhamento das fases de execução.
+
+---
 
 ## 📅 Fases do Projeto e Cronograma Macro
 
@@ -1481,16 +1524,6 @@ flowchart LR
 | Requisitos não funcionais e restrições                 | TDM (Néctar + Coop) | Lista de requisitos e restrições  |
 | Priorização de fluxos para migração                    | BDM (Cooperflora)   | Backlog priorizado                |
 
-**Critérios de aceite (Exit Criteria)**
-
-| Critério                                              | Validador            |
-| ----------------------------------------------------- | -------------------- |
-| Fluxos e dependências mapeados e validados            | Cooperflora + Néctar |
-| Matriz de propriedade de dados aprovada               | BDM (Cooperflora)    |
-| Backlog priorizado com critérios do piloto definidos  | BDM + TDM            |
-| Riscos documentados com plano de mitigação            | TDM (Néctar)         |
-| **EMV: Inventário de timers aprovado (2 dias úteis)** | BDM (Cooperflora)    |
-
 **Riscos e mitigação**
 
 | Risco                                    | Probabilidade | Impacto |   Severidade   | Mitigação                                              |
@@ -1515,15 +1548,6 @@ flowchart LR
 | Definir estratégia de versionamento           | TDM (Néctar)        | Guideline de versionamento           |
 | Definir idempotência por fluxo                | TDM (Néctar)        | Documento de padrões de idempotência |
 | Definir autenticação/autorização              | TDM (Néctar + Coop) | Requisitos de segurança aprovados    |
-
-**Critérios de aceite (Exit Criteria)**
-
-| Critério                                                  | Validador            |
-| --------------------------------------------------------- | -------------------- |
-| Contratos OpenAPI aprovados para o piloto                 | Cooperflora + Néctar |
-| Padrões de integração documentados                        | TDM (Néctar)         |
-| Plano de testes de contrato definido                      | TDM (Néctar)         |
-| **EMV: Especificação OpenAPI v1 aprovada (2 dias úteis)** | BDM (Cooperflora)    |
 
 **Riscos e mitigação**
 
@@ -1550,16 +1574,6 @@ flowchart LR
 | Conectividade segura com ERP                  | TDM (Néctar + Coop) | Conexão validada em DEV/HML                |
 | Pipeline CI/CD                                | TDM (Néctar)        | Pipeline funcional com deploy automatizado |
 | Configuração de ambientes (DEV/HML/PRD)       | TDM (Néctar + Coop) | Ambientes provisionados e documentados     |
-
-**Critérios de aceite (Exit Criteria)**
-
-| Critério                                                        | Validador           |
-| --------------------------------------------------------------- | ------------------- |
-| API em DEV/HML com documentação Swagger                         | TDM (Néctar)        |
-| Smoke test de ponta a ponta bem-sucedido                        | TDM (Néctar + Coop) |
-| Pipeline CI/CD validado                                         | TDM (Néctar)        |
-| Dashboards básicos de observabilidade                           | TDM (Néctar)        |
-| **EMV: Health check + Swagger + Auth aprovados (2 dias úteis)** | BDM (Cooperflora)   |
 
 **Riscos e mitigação**
 
@@ -1589,16 +1603,6 @@ flowchart LR
 | Homologação com usuários                    | BDM (Cooperflora)   | Aceite de homologação                         |
 | Go-live com janela de estabilização         | TDM + BDM           | Fluxo em produção                             |
 | Elaboração de runbook e alertas             | TDM (Néctar)        | Runbook operacional + dashboards              |
-
-**Critérios de aceite (Exit Criteria)**
-
-| Critério                                                            | Validador         | Métrica                                |
-| ------------------------------------------------------------------- | ----------------- | -------------------------------------- |
-| Fluxo piloto estável em produção                                    | TDM + BDM         | ≥ 2 semanas sem incidentes críticos    |
-| Indicadores dentro do aceitável                                     | TDM (Néctar)      | Erro < 1%, latência p95 < SLA definido |
-| Processo de rollback testado                                        | TDM (Néctar)      | Rollback executado em HML com sucesso  |
-| Lições aprendidas documentadas                                      | TDM (Néctar)      | Relatório de lições aprendidas         |
-| **EMV: Piloto + Feature Flag + Dashboard aprovados (2 dias úteis)** | BDM (Cooperflora) | —                                      |
 
 **Riscos e mitigação**
 
@@ -1635,16 +1639,6 @@ flowchart LR
 | Fortalecimento de observabilidade         | TDM (Néctar) | Dashboards e alertas por fluxo         |
 | Gestão de mudanças e comunicação por onda | BDM + TDM    | Comunicados + aceite por onda          |
 | Atualização da matriz de fluxos           | TDM (Néctar) | Matriz (legado/híbrido/API) atualizada |
-
-**Critérios de aceite (Exit Criteria)**
-
-| Critério                                               | Validador         |
-| ------------------------------------------------------ | ----------------- |
-| Principais fluxos em API (≥80%)                        | TDM + BDM         |
-| Timers de fluxos migrados desativados                  | TDM (Néctar)      |
-| Operação com suporte e governança estabelecidos        | BDM (Cooperflora) |
-| Matriz de fluxos atualizada e validada                 | TDM + BDM         |
-| **EMVs de cada onda aprovados (2 dias úteis por EMV)** | BDM (Cooperflora) |
 
 **Riscos e mitigação**
 
@@ -1689,14 +1683,6 @@ O módulo **não deve** mais conter:
 | Ajustes finais de runbooks e alertas                   | TDM (Néctar) | Runbooks atualizados            |
 | Treinamento de suporte (se necessário)                 | TDM (Néctar) | Equipe capacitada               |
 
-**Critérios de aceite (Exit Criteria)**
-
-| Critério                                        | Validador         |
-| ----------------------------------------------- | ----------------- |
-| Legado não executa integrações críticas         | TDM (Néctar)      |
-| Suporte tem visibilidade e procedimentos claros | BDM (Cooperflora) |
-| Documentação operacional entregue               | TDM + BDM         |
-
 **Riscos e mitigação**
 
 | Risco                                   | Probabilidade | Impacto |  Severidade  | Mitigação                                      |
@@ -1722,14 +1708,6 @@ O módulo **não deve** mais conter:
 | Modelagem de eventos por domínio | Necessidade de integração com novos sistemas | Extensibilidade; consistência eventual        |
 | Preparação para Nimbus           | Decisão estratégica de migração              | Roadmap técnico; redução de risco de migração |
 
-**Critérios de aceite (Exit Criteria)**
-
-| Critério                                             | Validador         |
-| ---------------------------------------------------- | ----------------- |
-| ROI/valor justificado antes de cada iniciativa       | BDM (Cooperflora) |
-| Iniciativa aprovada em governança                    | BDM + TDM         |
-| Entrega validada com critérios de aceite específicos | TDM + BDM         |
-
 ## 👥 Gestão do Projeto (Governança, Stakeholders e Controle)
 
 Esta seção define a estrutura de **governança, papéis, comunicação e controle** do projeto de modernização do Módulo Integrador. O modelo é **híbrido** — combina práticas formais (controle de mudanças, gestão de riscos, gates de decisão) com elementos ágeis (entregas incrementais, feedback contínuo) para garantir previsibilidade sem perder capacidade de adaptação.
@@ -1750,19 +1728,39 @@ A identificação clara dos stakeholders e seus papéis é fundamental para comu
 
 #### 📋 Matriz RACI por Entregável
 
-A matriz abaixo define as responsabilidades (**R**esponsável, **A**provador, **C**onsultado, **I**nformado) para cada entregável do projeto.
+A matriz abaixo define as responsabilidades para cada entregável do projeto, utilizando a notação RACI:
 
-| Entregável / Decisão                 | Sponsor | Gerente Projeto | PO  | Arquiteto | Dev Team | TI Cooperflora |
-| ------------------------------------ | :-----: | :-------------: | :-: | :-------: | :------: | :------------: |
-| Aprovação de escopo e baseline       |    A    |        R        |  C  |     C     |    I     |       C        |
-| **Validação de EMVs (2 dias úteis)** |    I    |        R        |  A  |     C     |    I     |       C        |
-| Definição de contratos OpenAPI       |    I    |        C        |  A  |     R     |    C     |       C        |
-| Implementação de fluxos              |    I    |        C        |  A  |     C     |    R     |       I        |
-| Decisões de arquitetura              |    I    |        C        |  C  |     A     |    R     |       I        |
-| Aprovação de go-live por fluxo       |    A    |        R        |  A  |     C     |    C     |       C        |
-| Gestão de mudanças (change requests) |    A    |        R        |  C  |     C     |    I     |       C        |
-| Monitoramento e alertas              |    I    |        I        |  I  |     C     |    R     |       C        |
-| Rollback e gestão de incidentes      |    I    |        C        |  A  |     C     |    R     |       C        |
+|  Código  | Papel           | Descrição                                                 |
+| :------: | --------------- | --------------------------------------------------------- |
+| **🔴 R** | **Responsible** | Executa a tarefa — quem "põe a mão na massa"              |
+| **🟢 A** | **Accountable** | Aprova e responde pelo resultado — apenas **1 por linha** |
+| **🟡 C** | **Consulted**   | Consultado antes da execução — comunicação bidirecional   |
+| **🔵 I** | **Informed**    | Informado após conclusão — comunicação unidirecional      |
+
+> **Convenção visual**: Células destacadas indicam o papel dominante. Cada linha possui exatamente **um Accountable (A)**.
+
+| Entregável / Decisão                 | 👔 Sponsor |  📊 GP   |  🎯 PO   |  🏗️ Arq  |  💻 Dev  | 🖥️ TI Coop |
+| ------------------------------------ | :--------: | :------: | :------: | :------: | :------: | :--------: |
+| Aprovação de escopo e baseline       |  🟢 **A**  | 🔴 **R** |   🟡 C   |   🟡 C   |   🔵 I   |    🟡 C    |
+| Validação de EMVs (2 dias úteis)     |    🔵 I    | 🔴 **R** | 🟢 **A** |   🟡 C   |   🔵 I   |    🟡 C    |
+| Definição de contratos OpenAPI       |    🔵 I    |   🟡 C   | 🟢 **A** | 🔴 **R** |   🟡 C   |    🟡 C    |
+| Implementação de fluxos              |    🔵 I    |   🟡 C   | 🟢 **A** |   🟡 C   | 🔴 **R** |    🔵 I    |
+| Decisões de arquitetura              |    🔵 I    |   🟡 C   |   🟡 C   | 🟢 **A** | 🔴 **R** |    🔵 I    |
+| Aprovação de go-live por fluxo       |  🟢 **A**  | 🔴 **R** |   🟡 C   |   🟡 C   |   🟡 C   |    🟡 C    |
+| Gestão de mudanças (change requests) |  🟢 **A**  | 🔴 **R** |   🟡 C   |   🟡 C   |   🔵 I   |    🟡 C    |
+| Monitoramento e alertas              |    🔵 I    |   🔵 I   |   🔵 I   |   🟡 C   | 🔴 **R** |  🟢 **A**  |
+| Rollback e gestão de incidentes      |    🔵 I    |   🟡 C   | 🟢 **A** |   🟡 C   | 🔴 **R** |    🟡 C    |
+
+**Resumo de responsabilidades por papel:**
+
+| Papel                 | Total R | Total A | Foco Principal                                      |
+| --------------------- | :-----: | :-----: | --------------------------------------------------- |
+| 👔 Sponsor            |    0    |    3    | Aprovações estratégicas (escopo, go-live, mudanças) |
+| 📊 Gerente de Projeto |    5    |    0    | Execução e coordenação operacional                  |
+| 🎯 Product Owner      |    0    |    4    | Aprovação de entregas e decisões de negócio         |
+| 🏗️ Arquiteto          |    1    |    1    | Padrões técnicos e contratos                        |
+| 💻 Dev Team           |    3    |    0    | Implementação técnica                               |
+| 🖥️ TI Cooperflora     |    0    |    1    | Infraestrutura e monitoramento                      |
 
 ### 🏛️ Estrutura de Governança e Fóruns de Decisão
 
@@ -2249,7 +2247,7 @@ Além dos critérios de sucesso, os seguintes KPIs serão monitorados continuame
 
 ---
 
-## � Detalhamento da Estimativa de Horas
+## 📊 Detalhamento da Estimativa de Horas
 
 Esta seção apresenta a **fundamentação técnica** da estimativa de esforço para o projeto, elaborada pelos recursos da Néctar com base na experiência em projetos similares de modernização e integração. O detalhamento permite rastreabilidade completa entre atividades, horas estimadas e responsáveis.
 
@@ -2548,7 +2546,7 @@ pie showData
 
 ---
 
-## �💰 Estimativa de Custos do Projeto
+## 💰 Estimativa de Custos do Projeto
 
 Esta seção apresenta a **estimativa de custos** do projeto, derivada diretamente do [Detalhamento da Estimativa de Horas](#-detalhamento-da-estimativa-de-horas). Os valores são baseados nas **1.600 horas estimadas** (bottom-up, por atividade) e no valor hora padrão de **R$ 150,00**.
 
@@ -2621,7 +2619,7 @@ O pagamento do projeto será realizado conforme o fluxo abaixo, vinculado aos ma
 
 3. **Primeiro pagamento (30%):** Devido imediatamente após o aceite formal do projeto, independente do início da execução.
 
-4. **Pagamentos subsequentes:** Condicionados à conclusão e aceite dos critérios de cada fase, conforme definido na seção [Fases do Projeto](#-fases-do-projeto).
+4. **Pagamentos subsequentes:** Condicionados à conclusão e aceite dos critérios de cada fase, conforme definido na seção [Fases do Projeto](#-fases-do-projeto-e-cronograma-macro).
 
 5. **Atrasos por parte do cliente:** Caso haja atraso na validação de entregas ou fornecimento de insumos pela Cooperflora que impacte o cronograma, os pagamentos seguirão o calendário original, não sendo postergados.
 
