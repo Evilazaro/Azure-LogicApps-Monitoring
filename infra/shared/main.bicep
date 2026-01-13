@@ -34,8 +34,13 @@ param name string
 param location string
 
 @description('Environment name suffix to ensure uniqueness.')
-@minLength(2)
 @maxLength(10)
+@allowed([
+  'dev'
+  'test'
+  'prod'
+  'staging'
+])
 param envName string
 
 @description('Resource tags applied to the managed identity.')
