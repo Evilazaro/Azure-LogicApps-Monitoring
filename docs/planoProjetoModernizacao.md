@@ -39,26 +39,26 @@ Além disso, o cenário futuro **não prevê banco compartilhado** nem acesso di
 | Baixa visibilidade operacional (observabilidade e rastreabilidade)      | Falhas podem ser percebidas tardiamente, e o rastreio depende de logs esparsos, estados em tabelas ou investigação manual no banco/Access.<br><br>A ausência de correlação de transações torna difícil identificar o que foi recebido, processado, rejeitado, reprocessado ou duplicado.                                                                                                          | Aumenta MTTR e impacto de incidentes, reduz transparência para gestão e suporte, dificulta governança e tomada de decisão baseada em dados.                                                      | Implementar observabilidade (logs estruturados, métricas, auditoria e correlação por transação), com dashboards/alertas por fluxo para operação e governança.                                       |
 | Modelo limita evolução para ambientes segregados/nuvem                  | A arquitetura atual depende de proximidade física e acesso ao SQL Server; se houver isolamento de rede, segregação de credenciais ou nuvem, a integração pode simplesmente não funcionar.<br><br>Além disso, o legado tem limitações tecnológicas e custos crescentes de manutenção.                                                                                                              | Bloqueia iniciativas de modernização/segregação, aumenta risco de ruptura em mudanças de infraestrutura e reduz flexibilidade para novas integrações e expansão.                                 | Preparar a integração para operar com segurança em cenários segregados/nuvem, preservando continuidade do negócio e abrindo caminho para evoluções futuras (incl. mensageria quando fizer sentido). |
 
-### Escopo da modernização do Módulo Integrador
+### Escopo do Projeto
 
 Esta seção define a **Declaração de Escopo** do projeto (referência PMBOK): descreve o que será entregue, os limites do trabalho e o que será considerado sucesso. Ela funciona como **baseline** para planejamento e controle — orienta cronograma, custos, governança e critérios de aceite, e reduz ambiguidades durante a execução.
 
 Os itens listados na tabela a seguir representam os **entregáveis e capacidades em escopo** para modernização do Módulo Integrador/Interface, incluindo a transição do modelo “banco como integração” para uma camada de serviços, com contratos, segurança, observabilidade e operação híbrida. Em outras palavras: o que está descrito aqui é aquilo que o projeto se compromete a implementar, dentro das premissas e restrições do contexto (legado em produção, migração incremental por fluxo e continuidade operacional).
 
-Regra de governança do escopo: **tudo o que não estiver descrito nesta seção 1.3 é automaticamente considerado fora de escopo**. Isso inclui, por padrão, qualquer iniciativa adicional não explicitada (ex.: reimplementar o ERP, substituir o sistema do cliente, mudanças amplas de infraestrutura não necessárias ao integrador, ou novos fluxos/funcionalidades não listados), mesmo que correlata ao tema. Essa regra evita “scope creep” e preserva previsibilidade de prazo e investimento.
+Regra de governança do escopo: **tudo o que não estiver descrito nesta seção é automaticamente considerado fora de escopo**. Isso inclui, por padrão, qualquer iniciativa adicional não explicitada (ex.: reimplementar o ERP, substituir o sistema do cliente, mudanças amplas de infraestrutura não necessárias ao integrador, ou novos fluxos/funcionalidades não listados), mesmo que correlata ao tema. Essa regra evita "scope creep" e preserva previsibilidade de prazo e investimento.
 
 Qualquer necessidade nova ou ajuste relevante deve seguir **controle de mudanças**: registrar a solicitação, avaliar impacto (prazo/custo/risco/arquitetura/operação), obter aprovação e, somente então, atualizar esta seção (baseline) e os planos associados.
 
-| Item de Escopo (foco TDM)                                | Descrição Detalhada (foco TDM)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          | Benefícios esperados                                                                                                                                                                                                                                                                         |
-| -------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| API de Integração (.NET Web API) — fundação técnica      | Implementar a **camada intermediária** responsável por expor endpoints/consumers e centralizar a lógica de integração.<br><br>Inclui (mínimo): estrutura de solução e arquitetura (camadas/limites), validação de entrada, padronização de erros, resiliência (timeouts/retries controlados), health checks, logging estruturado e correlação por transação (correlation-id).<br><br>Integração com o ERP via componentes definidos (ex.: chamadas ao ERP e/ou acesso ao SQL Server do ERP quando aplicável), sem expor o banco como interface externa. | Reduz dependência de co-localização e do banco como “hub”, elevando governança e previsibilidade.<br><br>Alinhado aos Objetivos da 1.2: **substituir o “hub” no banco por uma camada de serviços** e **preparar operação em cenários segregados/nuvem**.                                     |
-| Contratos OpenAPI — governança e versionamento           | Definir contratos por domínio/fluxo (ex.: pessoas, produtos, pedidos), com **OpenAPI/Swagger** como fonte de verdade.<br><br>Inclui: modelagem de payloads, validações, códigos de retorno, taxonomia de erros, regras de breaking change, estratégia de versionamento (ex.: `/v1`, `/v2`) e requisitos mínimos por fluxo (idempotência, limites e SLAs alvo quando aplicável).<br><br>Artefatos gerados: especificação OpenAPI versionada e checklist de conformidade por endpoint (DoD de contrato).                                                  | Reduz ambiguidades, acelera homologação e viabiliza evolução controlada por versão.<br><br>Alinhado aos Objetivos da 1.2: **formalizar contratos e padrões (OpenAPI, versionamento e erros)** e reduzir “contratos implícitos”.                                                              |
-| Fluxo piloto end-to-end — “Cadastro de Pessoas”          | Selecionar e implementar um fluxo piloto de alto valor e risco controlado, com execução completa via API.<br><br>Inclui: mapeamento do fluxo no legado (VBA/SQL/SINC), contrato OpenAPI, validações, idempotência, instrumentação (logs/métricas/auditoria), testes (unitário/integração/E2E quando aplicável), e plano de estabilização em produção (janela, métricas de sucesso, rollback).<br><br>Resultado esperado: blueprint repetível para os demais fluxos.                                                                                     | Entrega valor cedo com risco controlado, provando padrões e acelerando a migração por ondas.<br><br>Alinhado aos Objetivos da 1.2: **migração incremental com risco controlado** e redução de regressões/instabilidade do legado.                                                            |
-| Operação híbrida por fluxo — roteamento e rollback       | Definir e implementar convivência **por fluxo** (Legado/Híbrido/API), com roteamento explícito e governado.<br><br>Inclui: feature flags por fluxo, critérios de cutover, procedimentos de fallback/rollback, trilha de decisão (quem aprova e quando), e observabilidade comparativa (legado vs API) para detectar desvios.<br><br>Premissa operacional: evitar dual-write e reduzir conflitos com regras claras de propriedade do dado por domínio.                                                                                                   | Mantém continuidade do negócio durante a transição e reduz custo de incidentes em mudanças.<br><br>Alinhado aos Objetivos da 1.2: **definir governança/source of truth** e suportar migração por fluxo com menor risco operacional.                                                          |
-| Descomissionamento de timers/polling e acessos diretos   | Reduzir progressivamente timers do Access/VBA e rotinas que leem/escrevem direto no SQL do ERP.<br><br>Inclui: inventário e classificação de timers, substituição por chamadas transacionais via API, definição de controles (idempotência/reprocessamento), e roadmap de desligamento com critérios de aceite por fluxo.<br><br>Durante transição, timers remanescentes devem ser tratados como temporários e monitorados (alertas/telemetria).                                                                                                        | Reduz atrasos variáveis, duplicidades e fragilidade por concorrência; aumenta previsibilidade operacional.<br><br>Alinhado aos Objetivos da 1.2: **reduzir polling/timers** e eliminar dependência de schema/tabelas como mecanismo de orquestração.                                         |
-| Observabilidade e auditoria por transação                | Implementar capacidade de operação e diagnóstico por fluxo: logs estruturados, métricas (latência, taxa de erro, volume), auditoria por transação e correlação ponta a ponta (correlation-id propagado).<br><br>Inclui: dashboards e alertas operacionais, trilha de reprocessamento e evidências para suporte/auditoria, com visão por ambiente e criticidade.<br><br>Objetivo técnico: reduzir investigação manual em banco/Access e tornar falhas detectáveis rapidamente.                                                                           | Reduz MTTR, melhora governança e dá transparência para gestão e operação.<br><br>Alinhado aos Objetivos da 1.2: **implementar observabilidade e rastreabilidade** e reduzir impactos de falhas silenciosas.                                                                                  |
-| Segurança da API — autenticação, autorização e hardening | Definir e implementar autenticação/autorização para consumo da API e padrões de segurança operacional.<br><br>Inclui: mecanismo de auth (ex.: OAuth2, API Key, mTLS conforme restrição), segregação de ambientes/segredos, validação de payload, rate limiting e práticas de hardening de endpoints.<br><br>Também inclui padrões mínimos de acesso a dados internos (princípio do menor privilégio) para reduzir risco de exposição.                                                                                                                   | Reduz risco de exposição e substitui o “acesso ao banco” como mecanismo de integração; habilita cenários com rede/credenciais segregadas.<br><br>Alinhado aos Objetivos da 1.2: **camada de serviços com controle de acesso e governança** e **preparação para ambientes segregados/nuvem**. |
-| Preparação para evolução event-driven (opcional)         | Planejar (sem implantar obrigatoriamente) a evolução para assíncrono onde fizer sentido.<br><br>Inclui: modelagem de eventos por domínio, critérios para quando usar síncrono vs assíncrono, desenho de padrões (retry, DLQ, idempotência, ordenação), e requisitos para adoção futura de fila (ex.: Service Bus).<br><br>Entregável: guideline técnico e backlog priorizado para evolução, sem desviar do foco do MVP (API + fluxos críticos).                                                                                                         | Evita “becos sem saída” arquiteturais e preserva foco no essencial, mantendo caminho claro para evoluções futuras.<br><br>Alinhado aos Objetivos da 1.2: **preparar integração para evoluções futuras (incl. mensageria quando fizer sentido)** e reforçar desacoplamento.                   |
+| Item de Escopo                                           | Descrição Detalhada                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     | Benefícios Esperados                                                                                                                      |
+| -------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
+| API de Integração (.NET Web API) — fundação técnica      | Implementar a **camada intermediária** responsável por expor endpoints/consumers e centralizar a lógica de integração.<br><br>Inclui (mínimo): estrutura de solução e arquitetura (camadas/limites), validação de entrada, padronização de erros, resiliência (timeouts/retries controlados), health checks, logging estruturado e correlação por transação (correlation-id).<br><br>Integração com o ERP via componentes definidos (ex.: chamadas ao ERP e/ou acesso ao SQL Server do ERP quando aplicável), sem expor o banco como interface externa. | Reduz dependência de co-localização e do banco como “hub”, elevando governança e previsibilidade.                                         |
+| Contratos OpenAPI — governança e versionamento           | Definir contratos por domínio/fluxo (ex.: pessoas, produtos, pedidos), com **OpenAPI/Swagger** como fonte de verdade.<br><br>Inclui: modelagem de payloads, validações, códigos de retorno, taxonomia de erros, regras de breaking change, estratégia de versionamento (ex.: `/v1`, `/v2`) e requisitos mínimos por fluxo (idempotência, limites e SLAs alvo quando aplicável).<br><br>Artefatos gerados: especificação OpenAPI versionada e checklist de conformidade por endpoint (DoD de contrato).                                                  | Reduz ambiguidades, acelera homologação e viabiliza evolução controlada por versão.                                                       |
+| Fluxo piloto end-to-end — “Cadastro de Pessoas”          | Selecionar e implementar um fluxo piloto de alto valor e risco controlado, com execução completa via API.<br><br>Inclui: mapeamento do fluxo no legado (VBA/SQL/SINC), contrato OpenAPI, validações, idempotência, instrumentação (logs/métricas/auditoria), testes (unitário/integração/E2E quando aplicável), e plano de estabilização em produção (janela, métricas de sucesso, rollback).<br><br>Resultado esperado: blueprint repetível para os demais fluxos.                                                                                     | Entrega valor cedo com risco controlado, provando padrões e acelerando a migração por ondas.                                              |
+| Operação híbrida por fluxo — roteamento e rollback       | Definir e implementar convivência **por fluxo** (Legado/Híbrido/API), com roteamento explícito e governado.<br><br>Inclui: feature flags por fluxo, critérios de cutover, procedimentos de fallback/rollback, trilha de decisão (quem aprova e quando), e observabilidade comparativa (legado vs API) para detectar desvios.<br><br>Premissa operacional: evitar dual-write e reduzir conflitos com regras claras de propriedade do dado por domínio.                                                                                                   | Mantém continuidade do negócio durante a transição e reduz custo de incidentes em mudanças.                                               |
+| Descomissionamento de timers/polling e acessos diretos   | Reduzir progressivamente timers do Access/VBA e rotinas que leem/escrevem direto no SQL do ERP.<br><br>Inclui: inventário e classificação de timers, substituição por chamadas transacionais via API, definição de controles (idempotência/reprocessamento), e roadmap de desligamento com critérios de aceite por fluxo.<br><br>Durante transição, timers remanescentes devem ser tratados como temporários e monitorados (alertas/telemetria).                                                                                                        | Reduz atrasos variáveis, duplicidades e fragilidade por concorrência; aumenta previsibilidade operacional.                                |
+| Observabilidade e auditoria por transação                | Implementar capacidade de operação e diagnóstico por fluxo: logs estruturados, métricas (latência, taxa de erro, volume), auditoria por transação e correlação ponta a ponta (correlation-id propagado).<br><br>Inclui: dashboards e alertas operacionais, trilha de reprocessamento e evidências para suporte/auditoria, com visão por ambiente e criticidade.<br><br>Objetivo técnico: reduzir investigação manual em banco/Access e tornar falhas detectáveis rapidamente.                                                                           | Reduz MTTR, melhora governança e dá transparência para gestão e operação.                                                                 |
+| Segurança da API — autenticação, autorização e hardening | Definir e implementar autenticação/autorização para consumo da API e padrões de segurança operacional.<br><br>Inclui: mecanismo de auth (ex.: OAuth2, API Key, mTLS conforme restrição), segregação de ambientes/segredos, validação de payload, rate limiting e práticas de hardening de endpoints.<br><br>Também inclui padrões mínimos de acesso a dados internos (princípio do menor privilégio) para reduzir risco de exposição.                                                                                                                   | Reduz risco de exposição e substitui o “acesso ao banco” como mecanismo de integração; habilita cenários com rede/credenciais segregadas. |
+| Preparação para evolução event-driven (opcional)         | Planejar (sem implantar obrigatoriamente) a evolução para assíncrono onde fizer sentido.<br><br>Inclui: modelagem de eventos por domínio, critérios para quando usar síncrono vs assíncrono, desenho de padrões (retry, DLQ, idempotência, ordenação), e requisitos para adoção futura de fila (ex.: Service Bus).<br><br>Entregável: guideline técnico e backlog priorizado para evolução, sem desviar do foco do MVP (API + fluxos críticos).                                                                                                         | Evita “becos sem saída” arquiteturais e preserva foco no essencial, mantendo caminho claro para evoluções futuras.                        |
 
 #### Escopo por domínio de negócio
 
@@ -288,53 +288,6 @@ Os princípios abaixo orientam as decisões técnicas do projeto, organizados co
 | **Segurança por design**             | Autenticação, autorização e hardening desde o início | Redução de risco de exposição                | OAuth2/API Key/mTLS; TLS; rate limiting         |
 | **Preparação para nuvem/segregação** | Integração funciona sem co-localização de banco      | Habilita iniciativas futuras de modernização | API REST/JSON; sem dependência de rede local    |
 
-## Escopo do Projeto
-
-### Itens dentro do escopo
-
-Abaixo, os itens em escopo são organizados por domínio, explicitando o valor de negócio/técnico e como contribuem para a arquitetura alvo.
-
-#### Fundação de Plataforma de Integração
-
-- **API de Integração (.NET Web API)**: entrega a camada de serviço que substitui o banco como “hub”, habilitando o cenário futuro sem acesso direto.
-- **Contratos e versionamento (OpenAPI)**: reduz risco de regressão e melhora previsibilidade de homologação.
-- **Observabilidade (logs, métricas, auditoria)**: torna a integração operável, suportando operação híbrida e suporte.
-- **Segurança (autenticação/autorização, TLS, rate limit)**: habilita integrações em redes segregadas e reduz riscos de acesso indevido.
-
-#### Cadastros (Master Data)
-
-- **Pessoas (piloto recomendado)**: fluxo ideal para validar contratos, idempotência e padrões de erro sem afetar transações financeiras de alta criticidade.
-- **Produtos e tabelas auxiliares**: reduz dependência do legado, melhora consistência e prepara o terreno para processos de pedidos/faturamento.
-
-Valor: aumenta previsibilidade de integração e reduz incidentes decorrentes de inconsistências cadastrais.
-
-#### Comercial (Pedidos / Movimentos)
-
-- **Pedidos**: migrar integrações transacionais exige governança de consistência e rastreabilidade (correlation-id, auditoria por pedido).
-
-Valor: melhora rastreio operacional e reduz retrabalho, garantindo contratos e tratamento de erro padronizado.
-
-#### Fiscal/Faturamento e Financeiro (quando aplicável)
-
-- **Faturamento / notas**: migração deve considerar compliance e criticidade; recomendada após consolidação do padrão no piloto e nos cadastros.
-
-Valor: reduz risco de falhas silenciosas e aumenta visibilidade por transação, essencial para áreas de negócio.
-
-#### Operação, Suporte e Governança
-
-- **Runbooks, dashboards e alertas**: suporte operacional para operação híbrida e migração por fluxo.
-- **Gestão de mudanças e janela de estabilização**: garante continuidade e mitigação de risco.
-
-### Fora do escopo
-
-- **Reescrita completa do ERP Néctar**: fora do escopo por ser um programa maior e não necessário para remover o acoplamento de integração.
-- **Reescrita completa do sistema do cliente**: o projeto foca no integrador e na camada de serviços; mudanças no cliente serão restritas ao necessário para consumir a API.
-- **Migração completa para arquitetura event-driven**: a fase 6 prevê evolução opcional; o objetivo principal é remover o banco como camada de integração.
-- **Projeto integral de migração para Nimbus**: o escopo contempla preparação arquitetural e roadmap, não a migração completa.
-- **Mudanças funcionais profundas no processo de negócio**: o foco é modernização técnica e redução de risco, mantendo comportamento funcional compatível.
-
-Delimitar fora do escopo mantém o projeto gerenciável, reduz deriva de escopo e preserva foco na modernização incremental com entregas verificáveis.
-
 ## Abordagem de Modernização
 
 A estratégia adotada é **Strangler Pattern**, com extração gradual da lógica de integração do legado e introdução de uma camada de serviço moderna.
@@ -454,50 +407,98 @@ flowchart LR
 
 ## Fases do Projeto e Cronograma Macro
 
-As fases abaixo seguem o roadmap existente (Fase 0 a Fase 6), refinadas com práticas de cronograma e governança.
+Esta seção apresenta o **roadmap de execução** do projeto, organizado em 7 fases (Fase 0 a Fase 6), com cronograma estimado, marcos de decisão e critérios de aceite. A estrutura foi desenhada para dar visibilidade a **BDMs** (valor entregue, riscos de negócio, pontos de decisão) e **TDMs** (dependências técnicas, entregáveis, critérios de qualidade).
+
+### Visão executiva do roadmap
+
+| Fase | Nome                    | Duração Estimada | Marco de Negócio (BDM)                                 | Marco Técnico (TDM)                                    |
+| ---- | ----------------------- | ---------------- | ------------------------------------------------------ | ------------------------------------------------------ |
+| 0    | Alinhamento e contenção | 1–2 semanas      | Acordo sobre escopo, riscos mapeados                   | Inventário técnico completo, backlog priorizado        |
+| 1    | Definição de contratos  | 1–2 semanas      | Contratos aprovados, governança definida               | OpenAPI v1, padrões de integração documentados         |
+| 2    | Fundação da API         | 2–3 semanas      | Infraestrutura pronta para piloto                      | API em DEV/HML, pipeline CI/CD, observabilidade básica |
+| 3    | Fluxo piloto            | 2–4 semanas      | **Primeiro fluxo em produção**, valor demonstrado      | Piloto estável, padrões validados, lições aprendidas   |
+| 4    | Migração por fluxo      | 1–3 meses        | Fluxos críticos migrados, redução de risco operacional | Timers desativados, operação híbrida governada         |
+| 5    | Simplificação do legado | 1–2 meses        | Custo de manutenção reduzido, legado estável           | Rotinas de integração removidas, documentação final    |
+| 6    | Evolução opcional       | Contínuo         | Novas capacidades habilitadas (quando justificado)     | Mensageria, eventos, preparação para Nimbus            |
 
 ### Cronograma macro (referência por semanas)
 
-> Observação: a duração é estimada e depende do volume de fluxos, disponibilidade para homologação e complexidade do legado.
+> **Nota para BDMs**: O cronograma abaixo é uma estimativa baseada em premissas iniciais. Ajustes serão propostos conforme descobertas na Fase 0 e validados em governança antes de impactar prazos/investimento.
 
-| Janela (semanas) | Fase   | Dependências principais | Observações                                                                          |
-| ---------------: | ------ | ----------------------- | ------------------------------------------------------------------------------------ |
-|              1–2 | Fase 0 | –                       | Preparação e contenção de riscos; base para todo o restante.                         |
-|              3–4 | Fase 1 | F0                      | Contratos e decisões de governança; pode avançar em paralelo com setup de ambientes. |
-|              5–7 | Fase 2 | F1 (parcial)            | Fundação da API; deve estar pronta antes do piloto.                                  |
-|             8–11 | Fase 3 | F2                      | Piloto em produção + estabilização; aprendizado antes de escalar.                    |
-|            12–24 | Fase 4 | F3                      | Migração por fluxo; parte do trabalho pode rodar em paralelo por domínios.           |
-|            18–28 | Fase 5 | F4 (parcial)            | Simplificação do legado ocorre conforme fluxos migram.                               |
-|         Contínuo | Fase 6 | F4/F5                   | Evolução opcional (event-driven, etc.).                                              |
+> **Nota para TDMs**: As dependências indicam sequência mínima. Algumas atividades podem ser paralelizadas (ex.: setup de infra durante Fase 1), desde que não comprometam qualidade ou criem débito técnico.
+
+```mermaid
+---
+title: "Roadmap de Fases – Visão Temporal"
+---
+gantt
+    dateFormat YYYY-MM-DD
+    axisFormat %d/%m
+    tickInterval 1week
+
+    section Preparação
+    Fase 0 - Alinhamento          :f0, 2026-01-13, 2w
+    Fase 1 - Contratos            :f1, after f0, 2w
+
+    section Fundação
+    Fase 2 - API                  :f2, after f1, 3w
+
+    section Piloto
+    Fase 3 - Fluxo Piloto         :crit, f3, after f2, 4w
+
+    section Migração
+    Fase 4 - Operação Híbrida     :f4, after f3, 12w
+    Fase 5 - Simplificação        :f5, 2026-05-25, 8w
+
+    section Evolução
+    Fase 6 - Opcional             :milestone, f6, after f5, 0d
+```
+
+| Janela (semanas) | Fase   | Dependências  | Gate de Decisão                                                  |
+| ---------------: | ------ | ------------- | ---------------------------------------------------------------- |
+|              1–2 | Fase 0 | —             | **Go/No-Go**: escopo validado, riscos aceitáveis                 |
+|              3–4 | Fase 1 | Fase 0        | **Aprovação**: contratos e governança de mudanças                |
+|              5–7 | Fase 2 | Fase 1        | **Checkpoint**: infra pronta, smoke test OK                      |
+|             8–11 | Fase 3 | Fase 2        | **Go-Live Piloto**: critérios de estabilização atingidos         |
+|            12–24 | Fase 4 | Fase 3        | **Checkpoints por onda**: cada domínio migrado tem aceite formal |
+|            20–28 | Fase 5 | Fase 4 (80%+) | **Aceite final**: legado simplificado, operação estável          |
+|         Contínuo | Fase 6 | Fase 4/5      | **Por demanda**: aprovação de ROI/valor antes de cada iniciativa |
+
+---
 
 ### Fase 0 – Alinhamento e contenção de riscos (1–2 semanas)
 
-**Objetivo**
+| Aspecto       | Descrição                                                                                        |
+| ------------- | ------------------------------------------------------------------------------------------------ |
+| **Objetivo**  | Criar base de governança, reduzir riscos imediatos e mapear integralmente dependências do legado |
+| **Valor BDM** | Visibilidade de riscos e escopo; decisão informada sobre investimento e prioridades              |
+| **Valor TDM** | Inventário técnico completo; base para estimativas e arquitetura                                 |
 
-- Criar base de governança, reduzir riscos imediatos e mapear integralmente dependências do legado.
+**Principais atividades**
 
-**Principais atividades (WBS alto nível)**
+| Atividade                                              | Responsável         | Entregável                        |
+| ------------------------------------------------------ | ------------------- | --------------------------------- |
+| Inventário técnico do módulo Access/VBA e rotinas SINC | TDM (Néctar)        | Documento de inventário           |
+| Mapeamento de pontos de integração                     | TDM (Néctar)        | Diagrama de fluxos e dependências |
+| Matriz de propriedade de dados (source of truth)       | BDM + TDM           | Matriz aprovada por domínio       |
+| Requisitos não funcionais e restrições                 | TDM (Néctar + Coop) | Lista de requisitos e restrições  |
+| Priorização de fluxos para migração                    | BDM (Cooperflora)   | Backlog priorizado                |
 
-- Inventário técnico do módulo Access/VBA e rotinas SINC.
-- Mapeamento de pontos de integração (entrada/saída, tabelas, triggers, jobs).
-- Matriz de propriedade de dados (source of truth) por domínio.
-- Requisitos não funcionais e restrições (rede, segurança, ambientes).
+**Critérios de aceite (Exit Criteria)**
 
-**Entregáveis**
-
-- Inventário de integrações e dependências.
-- Matriz de propriedade de dados.
-- Backlog priorizado de fluxos (piloto + sequência).
-
-**Critérios de conclusão (Exit Criteria)**
-
-- Fluxos e dependências mapeados e validados com Cooperflora.
-- Acordo sobre domínios priorizados e critérios do piloto.
+| Critério                                             | Validador            |
+| ---------------------------------------------------- | -------------------- |
+| Fluxos e dependências mapeados e validados           | Cooperflora + Néctar |
+| Matriz de propriedade de dados aprovada              | BDM (Cooperflora)    |
+| Backlog priorizado com critérios do piloto definidos | BDM + TDM            |
+| Riscos documentados com plano de mitigação           | TDM (Néctar)         |
 
 **Riscos e mitigação**
 
-- Dependências ocultas no VBA/SQL → sessões de engenharia reversa + validação com operação.
-- Escopo difuso → baseline de escopo e controle de mudanças.
+| Risco                                    | Probabilidade | Impacto | Mitigação                                              |
+| ---------------------------------------- | ------------- | ------- | ------------------------------------------------------ |
+| Dependências ocultas no VBA/SQL          | Alta          | Alto    | Sessões de engenharia reversa + validação com operação |
+| Escopo difuso ou expansão não controlada | Média         | Alto    | Baseline de escopo formal + controle de mudanças       |
 
 ### Fase 1 – Definição dos contratos de integração (1–2 semanas)
 
