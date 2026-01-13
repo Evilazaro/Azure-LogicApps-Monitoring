@@ -37,11 +37,11 @@
 
 Este documento está organizado em **três partes** para atender às necessidades de diferentes stakeholders. Utilize este guia para navegar diretamente às seções mais relevantes para sua função.
 
-| Parte                          | Seções                                                           | Público Principal | Tempo de Leitura |
-| ------------------------------ | ---------------------------------------------------------------- | ----------------- | :--------------: |
-| **I – VISÃO EXECUTIVA**        | Introdução, Escopo, Cronograma, Governança, Riscos               | BDMs              |   ~20 minutos    |
-| **II – EXECUÇÃO DO PROJETO**   | Fases detalhadas, Premissas/Restrições, Gestão, Custos, Operação | BDMs + TDMs       |   ~40 minutos    |
-| **III – FUNDAMENTOS TÉCNICOS** | Arquitetura, Padrões técnicos, Evolução futura                   | TDMs              |   ~25 minutos    |
+| Parte                          | Seções                                                                  | Público Principal | Tempo de Leitura |
+| ------------------------------ | ----------------------------------------------------------------------- | ----------------- | :--------------: |
+| **I – VISÃO EXECUTIVA**        | Introdução, Escopo, Cronograma, Governança, Riscos                      | BDMs              |   ~20 minutos    |
+| **II – EXECUÇÃO DO PROJETO**   | Fases detalhadas, Premissas/Restrições, Gestão, Investimentos, Operação | BDMs + TDMs       |   ~40 minutos    |
+| **III – FUNDAMENTOS TÉCNICOS** | Arquitetura, Padrões técnicos, Evolução futura                          | TDMs              |   ~25 minutos    |
 
 ### 🎯 Acesso Rápido por Interesse
 
@@ -49,16 +49,17 @@ Este documento está organizado em **três partes** para atender às necessidade
 | ----------------------------------------- | ------------------------------------------------------------------------ |
 | Entender o problema e a solução proposta  | [Introdução](#-introdução)                                               |
 | Saber o que será entregue                 | [Escopo do Projeto](#-escopo-do-projeto)                                 |
-| Ver prazos e marcos                       | [Cronograma Macro](#-cronograma-macro)                                   |
+| Ver prazos e marcos                       | [Cronograma Macro](#-fases-do-projeto-e-cronograma-macro)                |
 | Entender quem decide o quê                | [Governança](#-gestão-do-projeto-governança-stakeholders-e-controle)     |
 | Avaliar riscos do projeto                 | [Riscos e Mitigações](#%EF%B8%8F-riscos-raid-e-mitigações)               |
 | Detalhes de cada fase                     | [Fases do Projeto](#-fases-do-projeto-e-cronograma-macro)                |
 | Premissas e dependências                  | [Premissas e Restrições](#-premissas-e-restrições-do-projeto)            |
 | Como será a operação pós-implantação      | [Operação e Suporte](#-operação-implantação-e-suporte)                   |
 | **Ver estimativa de horas por atividade** | [Detalhamento de Horas](#-detalhamento-da-estimativa-de-horas)           |
-| **Ver custos e cronograma de pagamentos** | [Estimativa de Custos](#-estimativa-de-custos-do-projeto)                |
+| **Ver custos e cronograma de pagamentos** | [Estimativa de Investimentos](#-estimativa-de-investimentos-do-projeto)  |
 | Arquitetura técnica detalhada             | [Arquitetura](#%EF%B8%8F-arquitetura-e-padrões-técnicos)                 |
 | Roadmap de evolução futura                | [Próximos Passos e Evolução Futura](#-próximos-passos-e-evolução-futura) |
+| Definições de termos técnicos             | [Glossário](#-glossário)                                                 |
 
 ---
 
@@ -91,15 +92,15 @@ A integração atual entre o sistema da Cooperflora e o ERP Néctar depende de *
 
 O cenário futuro **não prevê banco compartilhado** nem acesso direto entre ambientes, tornando a abordagem atual um bloqueio para segregação de rede/credenciais e evolução para nuvem. A motivação central é migrar para uma **camada de serviços** com contratos explícitos e observabilidade, permitindo modernização **fluxo a fluxo** com risco controlado.
 
-| Aspecto da Situação Atual (resumo executivo)                            | Descrição Detalhada                                                                                                                                                                                                                                                                                                                                                                               | Impacto (negócio)                                                                                                                                                                                | Objetivo (negócio e técnico)                                                                                                                                                                        |
-| ----------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Integração acoplada ao banco do ERP (SQL Server como “hub”)             | A integração ocorre por **acesso direto às tabelas** do banco do ERP, com leituras/escritas que funcionam porque os sistemas estão no mesmo servidor e o SQL Server atua como camada de integração.<br><br>Na prática, o banco de dados vira um barramento: o módulo Access/VBA e/ou o SINC operam sobre tabelas compartilhadas e estados de processamento, sem uma camada explícita de serviços. | Aumenta risco de indisponibilidade e incidentes em mudanças (schema/infra), eleva custo de suporte e dificulta escalar/segregar ambientes; limita decisões de arquitetura e iniciativas futuras. | Substituir o “hub” no banco por uma camada de serviços (API) com controle de acesso e governança, reduzindo dependência de co-localização e viabilizando o cenário sem banco compartilhado.         |
-| Contratos de integração implícitos (regras “de fato”, não formalizadas) | Dados e estados de integração são representados por tabelas e colunas cuja semântica é conhecida “por tradição” e por comportamento do código legado, não por contratos formais versionados.<br><br>O comportamento depende de detalhes de schema e de convenções de preenchimento, frequentemente sem documentação suficiente e com alto risco de regressões.                                    | Homologação mais lenta e imprevisível, maior chance de retrabalho e regressões, divergência de entendimento entre áreas e aumento de incidentes em mudanças.                                     | Formalizar contratos e padrões (ex.: OpenAPI, versionamento e erros), reduzindo ambiguidades e permitindo evolução controlada por versão/fluxo.                                                     |
-| Orquestração por timers/polling                                         | O módulo Access/VBA executa rotinas por **timers**, que varrem dados “novos”, aplicam regras e persistem resultados, com janela de tempo como mecanismo de orquestração.<br><br>Esse padrão tende a gerar concorrência, duplicidades e dependência de intervalos de execução, além de dificultar rastreio de causa raiz.                                                                          | Gera atrasos variáveis, duplicidades e janelas operacionais difíceis de gerenciar; aumenta impacto de falhas silenciosas e dificulta cumprir SLAs por fluxo.                                     | Migrar gradualmente para integrações orientadas a transação/serviço, reduzindo polling e estabelecendo controles (idempotência, reprocessamento) com previsibilidade operacional.                   |
-| Regras críticas no legado (VBA/rotinas de tela)                         | Parte relevante da lógica de integração e validações está implementada em eventos de formulários e rotinas VBA, misturando UI, regras e integração em um único lugar.<br><br>Isso cria um monólito difícil de testar e evoluir, com maior chance de efeitos colaterais e dependência de especialistas no legado.                                                                                  | Eleva custo e risco de mudanças, cria dependência de conhecimento específico, dificulta escalabilidade do time e aumenta probabilidade de regressões em produção.                                | Centralizar regras de integração em serviços testáveis e governáveis, reduzindo acoplamento com a UI e melhorando capacidade de evolução com segurança.                                             |
-| Governança de dados pouco definida (source of truth)                    | Não há uma matriz formal de “quem é dono” (source of truth) de cada dado/domínio, o que dificulta decisões sobre direção do fluxo e tratamentos de conflito.<br><br>Na prática, as rotinas podem realizar dual-write ou assumir precedência baseada em convenções não documentadas.                                                                                                               | Aumenta inconsistências e conciliações manuais, gera conflitos entre sistemas e amplia risco operacional e de auditoria durante operação híbrida.                                                | Definir propriedade e direção do fluxo por domínio, com critérios claros de resolução de conflitos, suportando migração por fluxo com menor risco.                                                  |
-| Baixa visibilidade operacional (observabilidade e rastreabilidade)      | Falhas podem ser percebidas tardiamente, e o rastreio depende de logs esparsos, estados em tabelas ou investigação manual no banco/Access.<br><br>A ausência de correlação de transações torna difícil identificar o que foi recebido, processado, rejeitado, reprocessado ou duplicado.                                                                                                          | Aumenta MTTR e impacto de incidentes, reduz transparência para gestão e suporte, dificulta governança e tomada de decisão baseada em dados.                                                      | Implementar observabilidade (logs estruturados, métricas, auditoria e correlação por transação), com dashboards/alertas por fluxo para operação e governança.                                       |
-| Modelo limita evolução para ambientes segregados/nuvem                  | A arquitetura atual depende de proximidade física e acesso ao SQL Server; se houver isolamento de rede, segregação de credenciais ou nuvem, a integração pode simplesmente não funcionar.<br><br>Além disso, o legado tem limitações tecnológicas e custos crescentes de manutenção.                                                                                                              | Bloqueia iniciativas de modernização/segregação, aumenta risco de ruptura em mudanças de infraestrutura e reduz flexibilidade para novas integrações e expansão.                                 | Preparar a integração para operar com segurança em cenários segregados/nuvem, preservando continuidade do negócio e abrindo caminho para evoluções futuras (incl. mensageria quando fizer sentido). |
+| Aspecto da Situação Atual                                               | Descrição Resumida                                                                                                               | Impacto (negócio)                                                                                                                                                                                | Objetivo (negócio e técnico)                                                                                                                                                                        |
+| ----------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Integração acoplada ao banco do ERP (SQL Server como “hub”)             | Acesso direto às tabelas do ERP via SQL Server como camada de integração; Access/VBA e SINC operam sobre tabelas compartilhadas. | Aumenta risco de indisponibilidade e incidentes em mudanças (schema/infra), eleva custo de suporte e dificulta escalar/segregar ambientes; limita decisões de arquitetura e iniciativas futuras. | Substituir o “hub” no banco por uma camada de serviços (API) com controle de acesso e governança, reduzindo dependência de co-localização e viabilizando o cenário sem banco compartilhado.         |
+| Contratos de integração implícitos (regras “de fato”, não formalizadas) | Semântica de dados conhecida "por tradição" e código legado, sem contratos formais versionados; alto risco de regressões.        | Homologação mais lenta e imprevisível, maior chance de retrabalho e regressões, divergência de entendimento entre áreas e aumento de incidentes em mudanças.                                     | Formalizar contratos e padrões (ex.: OpenAPI, versionamento e erros), reduzindo ambiguidades e permitindo evolução controlada por versão/fluxo.                                                     |
+| Orquestração por timers/polling                                         | Rotinas VBA por timers varrem dados "novos" periodicamente; gera concorrência, duplicidades e dificulta rastreio.                | Gera atrasos variáveis, duplicidades e janelas operacionais difíceis de gerenciar; aumenta impacto de falhas silenciosas e dificulta cumprir SLAs por fluxo.                                     | Migrar gradualmente para integrações orientadas a transação/serviço, reduzindo polling e estabelecendo controles (idempotência, reprocessamento) com previsibilidade operacional.                   |
+| Regras críticas no legado (VBA/rotinas de tela)                         | Lógica de integração misturada com UI em eventos de formulários VBA; monólito difícil de testar e evoluir.                       | Eleva custo e risco de mudanças, cria dependência de conhecimento específico, dificulta escalabilidade do time e aumenta probabilidade de regressões em produção.                                | Centralizar regras de integração em serviços testáveis e governáveis, reduzindo acoplamento com a UI e melhorando capacidade de evolução com segurança.                                             |
+| Governança de dados pouco definida (source of truth)                    | Sem matriz formal de propriedade de dados por domínio; rotinas podem realizar dual-write com precedência não documentada.        | Aumenta inconsistências e conciliações manuais, gera conflitos entre sistemas e amplia risco operacional e de auditoria durante operação híbrida.                                                | Definir propriedade e direção do fluxo por domínio, com critérios claros de resolução de conflitos, suportando migração por fluxo com menor risco.                                                  |
+| Baixa visibilidade operacional (observabilidade e rastreabilidade)      | Falhas percebidas tardiamente; rastreio depende de logs esparsos e investigação manual; sem correlação de transações.            | Aumenta MTTR e impacto de incidentes, reduz transparência para gestão e suporte, dificulta governança e tomada de decisão baseada em dados.                                                      | Implementar observabilidade (logs estruturados, métricas, auditoria e correlação por transação), com dashboards/alertas por fluxo para operação e governança.                                       |
+| Modelo limita evolução para ambientes segregados/nuvem                  | Arquitetura depende de proximidade física e acesso ao SQL Server; isolamento de rede ou nuvem pode quebrar a integração.         | Bloqueia iniciativas de modernização/segregação, aumenta risco de ruptura em mudanças de infraestrutura e reduz flexibilidade para novas integrações e expansão.                                 | Preparar a integração para operar com segurança em cenários segregados/nuvem, preservando continuidade do negócio e abrindo caminho para evoluções futuras (incl. mensageria quando fizer sentido). |
 
 > 📘 **Para detalhes técnicos da arquitetura atual e alvo**, consulte a [Parte III – Fundamentos Técnicos](#parte-iii--fundamentos-técnicos).
 
@@ -134,80 +135,6 @@ Esta seção define os **entregáveis e limites** do projeto de modernização d
 | **Fiscal/Faturamento**      | Faturamento, notas fiscais                                       | Média-Baixa (4–5) |
 | **Financeiro**              | Contas a pagar/receber, conciliação                              | Média-Baixa (4–5) |
 | **Estoque**                 | Movimentações, inventário                                        | Média-Baixa (5)   |
-
-### 🚫 Fora do Escopo
-
-| Item fora do escopo                                  | Justificativa                                                                                       |
-| ---------------------------------------------------- | --------------------------------------------------------------------------------------------------- |
-| Reescrita completa do ERP Néctar                     | Programa maior e não necessário para remover o acoplamento de integração                            |
-| Reescrita completa do sistema do cliente             | O projeto foca no integrador; mudanças no cliente serão restritas ao necessário para consumir a API |
-| Migração completa para arquitetura event-driven      | A Fase 6 prevê evolução opcional; o objetivo principal é remover o banco como camada de integração  |
-| Projeto integral de migração para Nimbus             | O escopo contempla preparação arquitetural e roadmap, não a migração completa                       |
-| Mudanças funcionais profundas no processo de negócio | O foco é modernização técnica e redução de risco, mantendo comportamento funcional compatível       |
-| Novas integrações não listadas                       | Qualquer fluxo não explicitado deve passar por controle de mudanças antes de ser incorporado        |
-
----
-
-## 📅 Cronograma Macro
-
-### 🗺️ Visão Executiva do Roadmap
-
-| Fase | Nome                    | Duração Estimada | Marco de Negócio (BDM)                                 | Marco Técnico (TDM)                                    |
-| ---: | ----------------------- | :--------------: | ------------------------------------------------------ | ------------------------------------------------------ |
-|    0 | Alinhamento e contenção |   1–2 semanas    | Acordo sobre escopo, riscos mapeados                   | Inventário técnico completo, backlog priorizado        |
-|    1 | Definição de contratos  |   1–2 semanas    | Contratos aprovados, governança definida               | OpenAPI v1, padrões de integração documentados         |
-|    2 | Fundação da API         |   2–3 semanas    | Infraestrutura pronta para piloto                      | API em DEV/HML, pipeline CI/CD, observabilidade básica |
-|    3 | Fluxo piloto            |   2–4 semanas    | **Primeiro fluxo em produção**, valor demonstrado      | Piloto estável, padrões validados, lições aprendidas   |
-|    4 | Migração por fluxo      |    1–3 meses     | Fluxos críticos migrados, redução de risco operacional | Timers desativados, operação híbrida governada         |
-|    5 | Simplificação do legado |    1–2 meses     | Custo de manutenção reduzido, legado estável           | Rotinas de integração removidas, documentação final    |
-|    6 | Evolução opcional       |     Contínuo     | Novas capacidades habilitadas (quando justificado)     | Mensageria, eventos, preparação para Nimbus            |
-
-### 📆 Cronograma por Semanas
-
-| Janela (semanas) | Fase   | Dependências  | Gate de Decisão                                                  |
-| ---------------: | ------ | ------------- | ---------------------------------------------------------------- |
-|              1–2 | Fase 0 | —             | **Go/No-Go**: escopo validado, riscos aceitáveis                 |
-|              3–4 | Fase 1 | Fase 0        | **Aprovação**: contratos e governança de mudanças                |
-|              5–7 | Fase 2 | Fase 1        | **Checkpoint**: infra pronta, smoke test OK                      |
-|             8–11 | Fase 3 | Fase 2        | **Go-Live Piloto**: critérios de estabilização atingidos         |
-|            12–24 | Fase 4 | Fase 3        | **Checkpoints por onda**: cada domínio migrado tem aceite formal |
-|            20–28 | Fase 5 | Fase 4 (80%+) | **Aceite final**: legado simplificado, operação estável          |
-|         Contínuo | Fase 6 | Fase 4/5      | **Por demanda**: aprovação de ROI/valor antes de cada iniciativa |
-
-```mermaid
----
-title: "Roadmap de Fases – Visão Temporal"
----
-gantt
-    dateFormat YYYY-MM-DD
-    axisFormat %d/%m
-    tickInterval 1week
-    todayMarker stroke-width:2px,stroke:#4F46E5,opacity:0.7
-
-    section 📋 Preparação
-    Fase 0 - Alinhamento e Riscos    :active, f0, 2026-01-13, 2w
-    Gate Go/No-Go                    :milestone, m0, after f0, 0d
-    Fase 1 - Contratos OpenAPI       :f1, after f0, 2w
-    Gate Aprovação Contratos         :milestone, m1, after f1, 0d
-
-    section 🏗️ Fundação
-    Fase 2 - API e Infraestrutura    :f2, after f1, 3w
-    Checkpoint Infra OK              :milestone, m2, after f2, 0d
-
-    section 🚀 Piloto
-    Fase 3 - Fluxo Piloto (Pessoas)  :crit, f3, after f2, 4w
-    Go-Live Piloto                   :milestone, crit, m3, after f3, 0d
-
-    section 🔄 Migração
-    Fase 4 - Operação Híbrida        :f4, after f3, 12w
-    Fase 5 - Simplificação Legado    :f5, 2026-05-25, 8w
-    Aceite Final                     :milestone, m5, after f5, 0d
-
-    section ✨ Evolução
-    Fase 6 - Evolução Opcional       :milestone, f6, after f5, 0d
-```
-
-> 📘 **Para detalhamento de cada fase**, consulte a seção [Fases do Projeto](#-fases-do-projeto-e-cronograma-macro) na Parte II.
 
 ---
 
@@ -270,142 +197,6 @@ gantt
 | **Tempo de resposta (p95)**          | < 2 segundos para operações síncronas            | APM / métricas de latência                  |
 | **Incidentes críticos pós-migração** | Zero incidentes P1 causados pela nova integração | Registro de incidentes                      |
 | **Aderência ao cronograma**          | Desvio máximo de 15% em relação ao baseline      | Comparativo planejado vs realizado          |
-
----
-
-# PARTE II – EXECUÇÃO DO PROJETO
-
-> 🎯 **Para BDMs e TDMs**: Esta parte detalha as fases de execução, premissas, operação e suporte. Tempo estimado: 30 minutos.
-
----
-
-## 📋 Detalhamento do Escopo
-
-### 📦 Entregáveis Mínimos Validáveis (EMV)
-
-Para cada item de escopo, a Néctar produzirá um **Entregável Mínimo Validável (EMV)** que permite à Cooperflora validar e aprovar o item de forma objetiva e imediata. Este modelo garante transparência, acelera feedback e reduz risco de retrabalho.
-
-> **⚠️ Regra de Aprovação Tácita**
->
-> A Cooperflora terá **2 (dois) dias úteis** para validar e aprovar cada EMV a partir da data de entrega formal. Após esse prazo:
->
-> - O EMV será considerado **automaticamente aprovado** (aprovação tácita)
-> - Qualquer solicitação de ajuste posterior será tratada como **mudança de escopo**
-> - Mudanças de escopo impactarão **custos e prazos** conforme processo de Change Control
-
-| Item de Escopo                           | Entregável Mínimo Validável (EMV)                                                                 | Critério de Aceite do EMV                                                                     | Fase |
-| ---------------------------------------- | ------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------- | :--: |
-| **API de Integração (.NET Web API)**     | Endpoint `/health` funcional em DEV com Swagger, arquitetura em camadas, logging e correlation-id | Health check = 200 OK; Swagger UI acessível; logs com correlation-id; arquitetura documentada |  2   |
-| **Contratos OpenAPI**                    | Especificação OpenAPI v1 do fluxo piloto (Pessoas) com payloads, erros e exemplos                 | Especificação válida; payloads documentados; taxonomia de erros; exemplos incluídos           |  1   |
-| **Fluxo piloto (Cadastro de Pessoas)**   | Endpoint de cadastro funcional em HML com validação, idempotência, auditoria e testes             | Cadastro cria registro no ERP; reenvio não duplica; auditoria; testes ≥90%                    |  3   |
-| **Operação híbrida por fluxo**           | Feature flag do piloto com roteamento Legado/API e rollback testado em HML                        | Flag alterna fluxo; rollback OK em HML; procedimento documentado                              |  3   |
-| **Descomissionamento de timers/polling** | Inventário de timers com criticidade e roadmap de desligamento                                    | Lista com descrição, frequência, criticidade; dependências; roadmap com datas                 |  0   |
-| **Observabilidade e auditoria**          | Dashboard operacional básico + logs com correlation-id para o piloto                              | Dashboard com métricas; logs por correlation-id; alertas configurados                         |  3   |
-| **Segurança da API**                     | Autenticação (API Key/OAuth2) + rate limiting para o piloto                                       | Sem credencial = 401; rate limiting funcional; credenciais segregadas                         |  2   |
-| **Preparação event-driven (opcional)**   | Guideline técnico com critérios de adoção, padrões DLQ/retry e backlog de candidatos              | Documento com critérios; padrões definidos; ≥3 candidatos priorizados                         |  4   |
-
----
-
-### 🔄 Estratégia de Modernização: Strangler Pattern
-
-Esta seção apresenta o **roadmap de execução** do projeto, organizado em 7 fases (Fase 0 a Fase 6), com cronograma estimado, marcos de decisão e critérios de aceite. A estrutura foi desenhada para dar visibilidade a **BDMs** (valor entregue, riscos de negócio, pontos de decisão) e **TDMs** (dependências técnicas, entregáveis, critérios de qualidade).
-
-Cada fase possui **gates de decisão** que funcionam como checkpoints obrigatórios antes de avançar para a próxima etapa. O modelo incremental permite ajustes de rota com base em aprendizados, sem comprometer as entregas já estabilizadas.
-
-A abordagem adotada é o **Strangler Pattern**, com extração gradual da lógica de integração do legado e introdução de uma camada de serviço moderna. O processo é executado **fluxo a fluxo**, garantindo continuidade operacional e redução de risco.
-
-```mermaid
----
-title: "Strangler Pattern – Migração Fluxo a Fluxo"
----
-flowchart LR
-    subgraph legado ["⚠️ ANTES (Legado)"]
-        direction LR
-        A1["⏱️ Access/VBA<br>Timer"]
-        A2["📋 Leitura tabelas"]
-        A3["⚙️ Regras VBA/SQL"]
-        A4["💾 Escrita SQL"]
-        A1 -->|"polling"| A2
-        A2 -->|"processa"| A3
-        A3 -->|"SQL"| A4
-    end
-
-    subgraph moderno ["✅ DEPOIS (Com API)"]
-        direction LR
-        B1["📱 Cliente"]
-        B2["🚀 API"]
-        B3["⚙️ Validação"]
-        B4["📦 ERP"]
-        B1 -->|"HTTP"| B2
-        B2 --> B3
-        B3 --> B4
-    end
-
-    legado ==>|"🔄 Strangler"| moderno
-
-    classDef legacy fill:#FFEDD5,stroke:#F97316
-    classDef modern fill:#E0E7FF,stroke:#4F46E5
-    class A1,A2,A3,A4 legacy
-    class B1,B2,B3,B4 modern
-```
-
-| Modelo Atual (Legado)                     | Modelo Alvo (API)                          |
-| ----------------------------------------- | ------------------------------------------ |
-| Access **busca** dados nas tabelas do ERP | Cliente **envia** dados para a API         |
-| Integração por timers (polling)           | Integração transacional (request/response) |
-| Responsabilidade difusa                   | API é ponto único de entrada               |
-
-### ⚖️ Operação Híbrida
-
-A convivência é gerenciada **por fluxo**. Cada fluxo transita por três estados:
-
-| Estado      | Descrição                            | Critério de Transição                    |
-| ----------- | ------------------------------------ | ---------------------------------------- |
-| **Legado**  | Fluxo via timers/polling             | Contrato aprovado + API implementada     |
-| **Híbrido** | API ativa + legado como fallback     | ≥2 semanas sem incidentes críticos       |
-| **API**     | Fluxo 100% via API, timer desativado | Aceite formal + evidência de desativação |
-
-> 📘 **Para detalhes completos da arquitetura e diagramas**, consulte a [Parte III – Fundamentos Técnicos](#parte-iii--fundamentos-técnicos).
-
-```mermaid
-flowchart LR
-    subgraph Cooperflora ["🏢 Cooperflora (Cliente)"]
-        direction LR
-        CLIENTE["📱 Sistema do Cliente"]
-        ACCESS["🖥️ Módulo Interface<br/>Access + VBA"]
-        TIMER["⏱️ Timers / Polling"]
-        SINC["🔄 SINC"]
-        TIMER -->|"dispara"| ACCESS
-    end
-
-    subgraph SQL ["🗄️ SQL Server (Hub de Integração)"]
-        direction LR
-        DB[("💾 Banco SQL Server")]
-        TSHARED["📋 Tabelas compartilhadas<br/>+ contratos implícitos"]
-        DB --- TSHARED
-    end
-
-    subgraph Nectar ["📦 ERP Néctar"]
-        ERP["⚙️ ERP Néctar"]
-    end
-
-    ACCESS -->|"SQL direto<br/>(INSERT/UPDATE/SELECT)"| DB
-    SINC -->|"SQL direto<br/>(INSERT/UPDATE/SELECT)"| DB
-    DB <-->|"Dados e estados<br/>compartilhados"| ERP
-
-    classDef legacy fill:#FFEDD5,stroke:#F97316,color:#431407,stroke-width:2px
-    classDef datastore fill:#E2E8F0,stroke:#475569,color:#0F172A,stroke-width:2px
-    classDef system fill:#F8FAFC,stroke:#334155,color:#0F172A,stroke-width:1px
-
-    class ACCESS,TIMER,SINC legacy
-    class DB,TSHARED datastore
-    class CLIENTE,ERP system
-
-    style Cooperflora fill:#FFF7ED,stroke:#FB923C,stroke-width:2px
-    style SQL fill:#F1F5F9,stroke:#64748B,stroke-width:2px
-    style Nectar fill:#F8FAFC,stroke:#94A3B8,stroke-width:1px
-
-```
 
 ---
 
@@ -761,7 +552,7 @@ Esta subseção detalha os **entregáveis técnicos** do projeto de modernizaç�
 
 > **Nota**: A coluna **Benefícios Esperados** está diretamente vinculada aos **Objetivos (negócio e técnico)** definidos na seção "Situação atual e motivação". Cada benefício endereça um ou mais objetivos estratégicos identificados na análise da situação atual.
 
-| Item de Escopo                                           | Descrição Detalhada                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     | Benefícios Esperados (→ Objetivo)                                                                                                         |
+| Item de Escopo                                           | Descrição Resumida                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      | Benefícios Esperados (→ Objetivo)                                                                                                         |
 | -------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
 | API de Integração (.NET Web API) — fundação técnica      | Implementar a **camada intermediária** responsável por expor endpoints/consumers e centralizar a lógica de integração.<br><br>Inclui (mínimo): estrutura de solução e arquitetura (camadas/limites), validação de entrada, padronização de erros, resiliência (timeouts/retries controlados), health checks, logging estruturado e correlação por transação (correlation-id).<br><br>Integração com o ERP via componentes definidos (ex.: chamadas ao ERP e/ou acesso ao SQL Server do ERP quando aplicável), sem expor o banco como interface externa. | Reduz dependência de co-localização e do banco como “hub”, elevando governança e previsibilidade.                                         |
 | Contratos OpenAPI — governança e versionamento           | Definir contratos por domínio/fluxo (ex.: pessoas, produtos, pedidos), com **OpenAPI/Swagger** como fonte de verdade.<br><br>Inclui: modelagem de payloads, validações, códigos de retorno, taxonomia de erros, regras de breaking change, estratégia de versionamento (ex.: `/v1`, `/v2`) e requisitos mínimos por fluxo (idempotência, limites e SLAs alvo quando aplicável).<br><br>Artefatos gerados: especificação OpenAPI versionada e checklist de conformidade por endpoint (DoD de contrato).                                                  | Reduz ambiguidades, acelera homologação e viabiliza evolução controlada por versão.                                                       |
@@ -888,7 +679,7 @@ As premissas abaixo são **específicas para cada item de escopo** e complementa
 
 ##### API de Integração (.NET Web API)
 
-|  ID  | Premissa                                                                                              | Responsável | Impacto se Falsa                                                 |  Severidade  | Impacto em Custos (Cooperflora)                                              |
+|  ID  | Premissa                                                                                              | Responsável | Impacto se Falsa                                                 |  Severidade  | Impacto em Investimentos (Cooperflora)                                       |
 | :--: | ----------------------------------------------------------------------------------------------------- | ----------- | ---------------------------------------------------------------- | :----------: | ---------------------------------------------------------------------------- |
 | PE01 | Arquitetura de referência (.NET Web API com camadas) será aprovada antes do início do desenvolvimento | Néctar      | Retrabalho estrutural; débito técnico acumulado                  | 🟠 **Alto**  | —                                                                            |
 | PE02 | Componentes de integração com ERP (SDK/bibliotecas) estarão disponíveis e documentados                | Néctar      | Atraso no desenvolvimento; necessidade de engenharia reversa     | 🟠 **Alto**  | —                                                                            |
@@ -897,7 +688,7 @@ As premissas abaixo são **específicas para cada item de escopo** e complementa
 
 ##### Contratos OpenAPI
 
-|  ID  | Premissa                                                                                   | Responsável          | Impacto se Falsa                                                     |   Severidade   | Impacto em Custos (Cooperflora)                                             |
+|  ID  | Premissa                                                                                   | Responsável          | Impacto se Falsa                                                     |   Severidade   | Impacto em Investimentos (Cooperflora)                                      |
 | :--: | ------------------------------------------------------------------------------------------ | -------------------- | -------------------------------------------------------------------- | :------------: | --------------------------------------------------------------------------- |
 | PE05 | Regras de negócio de cada fluxo serão documentadas pelo PO antes da modelagem do contrato  | Cooperflora          | Contratos incompletos ou incorretos; retrabalho em fases posteriores | 🔴 **Crítico** | **Retrabalho de workshops**: custo de reagendamento e mobilização de equipe |
 | PE06 | Taxonomia de erros será padronizada e aprovada antes da implementação do primeiro endpoint | Néctar + Cooperflora | Inconsistência de mensagens de erro; dificuldade de diagnóstico      |  🟡 **Médio**  | —                                                                           |
@@ -906,7 +697,7 @@ As premissas abaixo são **específicas para cada item de escopo** e complementa
 
 ##### Fluxo Piloto (Cadastro de Pessoas)
 
-|  ID  | Premissa                                                                                             | Responsável          | Impacto se Falsa                                             |   Severidade   | Impacto em Custos (Cooperflora)                                      |
+|  ID  | Premissa                                                                                             | Responsável          | Impacto se Falsa                                             |   Severidade   | Impacto em Investimentos (Cooperflora)                               |
 | :--: | ---------------------------------------------------------------------------------------------------- | -------------------- | ------------------------------------------------------------ | :------------: | -------------------------------------------------------------------- |
 | PE09 | Fluxo de cadastro de pessoas no legado será congelado durante a migração (sem novas funcionalidades) | Cooperflora          | Divergência entre legado e API; necessidade de reconciliação | 🔴 **Crítico** | **Retrabalho de sincronização**: custo de análise e ajuste de regras |
 | PE10 | Dados de teste representativos (anonimizados) estarão disponíveis para validação do piloto           | Cooperflora          | Testes não representam cenários reais; defeitos em produção  |  🟠 **Alto**   | **Correções emergenciais**: custo premium de suporte fora do horário |
@@ -915,7 +706,7 @@ As premissas abaixo são **específicas para cada item de escopo** e complementa
 
 ##### Operação Híbrida
 
-|  ID  | Premissa                                                                                       | Responsável | Impacto se Falsa                                       |   Severidade   | Impacto em Custos (Cooperflora)                                          |
+|  ID  | Premissa                                                                                       | Responsável | Impacto se Falsa                                       |   Severidade   | Impacto em Investimentos (Cooperflora)                                   |
 | :--: | ---------------------------------------------------------------------------------------------- | ----------- | ------------------------------------------------------ | :------------: | ------------------------------------------------------------------------ |
 | PE13 | Feature flags por fluxo serão implementadas com capacidade de rollback em tempo real           | Néctar      | Rollback lento ou manual; aumento de MTTR              |  🟠 **Alto**   | —                                                                        |
 | PE14 | Matriz de propriedade de dados (source of truth) será validada antes de cada migração de fluxo | Cooperflora | Conflitos de dados; dual-write não governado           | 🔴 **Crítico** | **Reconciliação manual**: custo de análise e correção de inconsistências |
@@ -924,7 +715,7 @@ As premissas abaixo são **específicas para cada item de escopo** e complementa
 
 ##### Descomissionamento de Timers/Polling
 
-|  ID  | Premissa                                                                                         | Responsável          | Impacto se Falsa                                               |   Severidade   | Impacto em Custos (Cooperflora)                             |
+|  ID  | Premissa                                                                                         | Responsável          | Impacto se Falsa                                               |   Severidade   | Impacto em Investimentos (Cooperflora)                      |
 | :--: | ------------------------------------------------------------------------------------------------ | -------------------- | -------------------------------------------------------------- | :------------: | ----------------------------------------------------------- |
 | PE17 | Inventário completo de timers e rotinas de polling será entregue na Fase 0                       | Néctar               | Timers não mapeados causam efeitos colaterais durante migração | 🔴 **Crítico** | —                                                           |
 | PE18 | Cada timer desativado terá critérios de aceite definidos (volume processado via API, zero erros) | Néctar + Cooperflora | Desativação prematura; falhas silenciosas                      |  🟠 **Alto**   | **Reativação emergencial**: custo de diagnóstico e rollback |
@@ -932,7 +723,7 @@ As premissas abaixo são **específicas para cada item de escopo** e complementa
 
 ##### Observabilidade e Auditoria
 
-|  ID  | Premissa                                                                                 | Responsável          | Impacto se Falsa                                  |  Severidade  | Impacto em Custos (Cooperflora)                                      |
+|  ID  | Premissa                                                                                 | Responsável          | Impacto se Falsa                                  |  Severidade  | Impacto em Investimentos (Cooperflora)                               |
 | :--: | ---------------------------------------------------------------------------------------- | -------------------- | ------------------------------------------------- | :----------: | -------------------------------------------------------------------- |
 | PE20 | Ferramenta de APM/logging será definida e provisionada antes da Fase 2                   | Néctar + Cooperflora | Logs não estruturados; dificuldade de diagnóstico | 🟠 **Alto**  | **Licenciamento de ferramentas**: possível custo de aquisição de APM |
 | PE21 | Padrão de correlation-id será implementado em todas as camadas desde o primeiro endpoint | Néctar               | Rastreabilidade comprometida; investigação manual | 🟠 **Alto**  | —                                                                    |
@@ -940,7 +731,7 @@ As premissas abaixo são **específicas para cada item de escopo** e complementa
 
 ##### Segurança da API
 
-|  ID  | Premissa                                                                                | Responsável          | Impacto se Falsa                                         |   Severidade   | Impacto em Custos (Cooperflora)                                        |
+|  ID  | Premissa                                                                                | Responsável          | Impacto se Falsa                                         |   Severidade   | Impacto em Investimentos (Cooperflora)                                 |
 | :--: | --------------------------------------------------------------------------------------- | -------------------- | -------------------------------------------------------- | :------------: | ---------------------------------------------------------------------- |
 | PE23 | Mecanismo de autenticação (OAuth2/API Key/mTLS) será definido e aprovado na Fase 1      | Cooperflora + Néctar | Bloqueio de implementação; decisões tardias de segurança | 🔴 **Crítico** | **Custo de adequação**: possível investimento em infraestrutura de IdP |
 | PE24 | Políticas de rate limiting e throttling serão definidas por fluxo/consumidor            | Néctar               | Sobrecarga não controlada; degradação de performance     |  🟡 **Médio**  | —                                                                      |
@@ -949,11 +740,11 @@ As premissas abaixo são **específicas para cada item de escopo** e complementa
 
 ##### Preparação para Event-Driven (Opcional)
 
-|  ID  | Premissa                                                                                       | Responsável          | Impacto se Falsa                                              |  Severidade  | Impacto em Custos (Cooperflora) |
-| :--: | ---------------------------------------------------------------------------------------------- | -------------------- | ------------------------------------------------------------- | :----------: | ------------------------------- |
-| PE27 | Critérios para adoção de mensageria serão definidos antes de qualquer implementação assíncrona | Néctar + Cooperflora | Adoção prematura ou injustificada; complexidade desnecessária | 🟡 **Médio** | —                               |
-| PE28 | Padrões de DLQ, retry e idempotência para eventos serão documentados como guideline            | Néctar               | Inconsistência em implementações futuras; poison messages     | 🟡 **Médio** | —                               |
-| PE29 | ROI de cada iniciativa event-driven será justificado antes da aprovação de escopo              | Cooperflora          | Investimento sem retorno mensurável                           | 🟢 **Baixo** | —                               |
+|  ID  | Premissa                                                                                       | Responsável          | Impacto se Falsa                                              |  Severidade  | Impacto em Investimentos (Cooperflora) |
+| :--: | ---------------------------------------------------------------------------------------------- | -------------------- | ------------------------------------------------------------- | :----------: | -------------------------------------- |
+| PE27 | Critérios para adoção de mensageria serão definidos antes de qualquer implementação assíncrona | Néctar + Cooperflora | Adoção prematura ou injustificada; complexidade desnecessária | 🟡 **Médio** | —                                      |
+| PE28 | Padrões de DLQ, retry e idempotência para eventos serão documentados como guideline            | Néctar               | Inconsistência em implementações futuras; poison messages     | 🟡 **Médio** | —                                      |
+| PE29 | ROI de cada iniciativa event-driven será justificado antes da aprovação de escopo              | Cooperflora          | Investimento sem retorno mensurável                           | 🟢 **Baixo** | —                                      |
 
 > **Resumo das Premissas Específicas por Área**
 >
@@ -1006,9 +797,9 @@ Delimitar explicitamente o que está **fora do escopo** é uma boa prática de g
 
 ---
 
-# PARTE II – EXECUÇÃO DO PROJETO (continuação)
+# PARTE II – EXECUÇÃO DO PROJETO
 
-> 🎯 **Para BDMs e TDMs**: Esta parte continua com o detalhamento das fases de execução.
+> 🎯 **Para BDMs e TDMs**: Esta parte detalha as fases de execução, premissas, governança, riscos, investimentos e operação. Tempo estimado: 40 minutos.
 
 ---
 
@@ -1932,7 +1723,7 @@ As premissas são condições assumidas como verdadeiras para fins de planejamen
 
 ##### Fase 0 – Alinhamento e Contenção de Riscos
 
-|  ID | Premissa                                                                                        | Responsável          | Impacto se Falsa                                      |   Severidade   | Impacto em Custos (Cooperflora)                                                                                     |
+|  ID | Premissa                                                                                        | Responsável          | Impacto se Falsa                                      |   Severidade   | Impacto em Investimentos (Cooperflora)                                                                              |
 | --: | ----------------------------------------------------------------------------------------------- | -------------------- | ----------------------------------------------------- | :------------: | ------------------------------------------------------------------------------------------------------------------- |
 | P01 | Cooperflora designará interlocutores técnicos e de negócio com autonomia para tomada de decisão | Cooperflora          | Atraso em validações e aprovações; bloqueio de Fase 0 | 🔴 **Crítico** | **Ociosidade da equipe Néctar**: custo de espera estimado em X h/dia por profissional alocado aguardando definições |
 | P02 | Cooperflora proverá acesso ao ambiente de produção/homologação para mapeamento do legado        | Cooperflora          | Inventário técnico incompleto; riscos não mapeados    |  🟠 **Alto**   | **Retrabalho**: custo adicional de 20-40% nas fases seguintes por descobertas tardias                               |
@@ -1941,7 +1732,7 @@ As premissas são condições assumidas como verdadeiras para fins de planejamen
 
 ##### Fase 1 – Definição dos Contratos de Integração
 
-|  ID | Premissa                                                                             | Responsável | Impacto se Falsa                                         |   Severidade   | Impacto em Custos (Cooperflora)                                                                          |
+|  ID | Premissa                                                                             | Responsável | Impacto se Falsa                                         |   Severidade   | Impacto em Investimentos (Cooperflora)                                                                   |
 | --: | ------------------------------------------------------------------------------------ | ----------- | -------------------------------------------------------- | :------------: | -------------------------------------------------------------------------------------------------------- |
 | P05 | Cooperflora participará ativamente dos workshops de definição de contratos           | Cooperflora | Contratos mal definidos; retrabalho em fases posteriores |  🟠 **Alto**   | **Reagendamento de workshops**: custo de mobilização de equipe técnica Néctar (especialistas/arquitetos) |
 | P06 | Requisitos de negócio para cada fluxo serão validados pelo PO dentro de 5 dias úteis | Cooperflora | Atraso na aprovação de contratos OpenAPI                 | 🔴 **Crítico** | **Ociosidade**: equipe técnica aguardando validação; custo de alocação sem produtividade                 |
@@ -1949,7 +1740,7 @@ As premissas são condições assumidas como verdadeiras para fins de planejamen
 
 ##### Fase 2 – Fundação da API
 
-|  ID | Premissa                                                                                         | Responsável          | Impacto se Falsa                         |   Severidade   | Impacto em Custos (Cooperflora)                                                     |
+|  ID | Premissa                                                                                         | Responsável          | Impacto se Falsa                         |   Severidade   | Impacto em Investimentos (Cooperflora)                                              |
 | --: | ------------------------------------------------------------------------------------------------ | -------------------- | ---------------------------------------- | :------------: | ----------------------------------------------------------------------------------- |
 | P08 | Acessos e credenciais para ambientes DEV/HML serão providos em até 5 dias úteis após solicitação | Cooperflora          | Bloqueio de desenvolvimento e testes     | 🔴 **Crítico** | **Ociosidade de desenvolvedores**: custo diário da equipe de desenvolvimento parada |
 | P09 | Infraestrutura de rede/firewall será configurada para comunicação API ↔ ERP                      | Cooperflora          | Impossibilidade de validar conectividade |  🟠 **Alto**   | **Atraso em smoke tests**: reprogramação de atividades e possível extensão de fase  |
@@ -1958,7 +1749,7 @@ As premissas são condições assumidas como verdadeiras para fins de planejamen
 
 ##### Fase 3 – Fluxo Piloto
 
-|  ID | Premissa                                                                                     | Responsável | Impacto se Falsa                           |   Severidade   | Impacto em Custos (Cooperflora)                                                               |
+|  ID | Premissa                                                                                     | Responsável | Impacto se Falsa                           |   Severidade   | Impacto em Investimentos (Cooperflora)                                                        |
 | --: | -------------------------------------------------------------------------------------------- | ----------- | ------------------------------------------ | :------------: | --------------------------------------------------------------------------------------------- |
 | P12 | Cooperflora disponibilizará recursos para homologação nas janelas definidas (mín. 4h/semana) | Cooperflora | Atraso em validação e go-live do piloto    | 🔴 **Crítico** | **Extensão de fase**: custo de equipe Néctar alocada além do previsto; possível remobilização |
 | P13 | Dados de teste representativos serão fornecidos ou autorizados para uso                      | Cooperflora | Testes não representam cenários reais      |  🟠 **Alto**   | **Retrabalho pós-produção**: correções emergenciais com custo premium                         |
@@ -1967,7 +1758,7 @@ As premissas são condições assumidas como verdadeiras para fins de planejamen
 
 ##### Fase 4 – Migração por Fluxo / Operação Híbrida
 
-|  ID | Premissa                                                                    | Responsável | Impacto se Falsa                                    |   Severidade   | Impacto em Custos (Cooperflora)                                                            |
+|  ID | Premissa                                                                    | Responsável | Impacto se Falsa                                    |   Severidade   | Impacto em Investimentos (Cooperflora)                                                     |
 | --: | --------------------------------------------------------------------------- | ----------- | --------------------------------------------------- | :------------: | ------------------------------------------------------------------------------------------ |
 | P16 | Janelas de homologação serão respeitadas conforme calendário acordado       | Cooperflora | Atraso em ondas de migração                         | 🔴 **Crítico** | **Extensão de projeto**: custo mensal adicional de equipe alocada; renegociação contratual |
 | P17 | Comunicação de mudanças será feita aos usuários finais pela Cooperflora     | Cooperflora | Resistência à mudança; incidentes por uso incorreto |  🟡 **Médio**  | —                                                                                          |
@@ -1976,7 +1767,7 @@ As premissas são condições assumidas como verdadeiras para fins de planejamen
 
 ##### Fase 5 – Simplificação do Legado
 
-|  ID | Premissa                                                                       | Responsável | Impacto se Falsa                                     |  Severidade  | Impacto em Custos (Cooperflora)                                         |
+|  ID | Premissa                                                                       | Responsável | Impacto se Falsa                                     |  Severidade  | Impacto em Investimentos (Cooperflora)                                  |
 | --: | ------------------------------------------------------------------------------ | ----------- | ---------------------------------------------------- | :----------: | ----------------------------------------------------------------------- |
 | P20 | Cooperflora autorizará a remoção de rotinas de integração obsoletas            | Cooperflora | Legado não simplificado; custo de manutenção mantido | 🟡 **Médio** | —                                                                       |
 | P21 | Conhecimento do legado será transferido para documentação antes da remoção     | Néctar      | Perda de conhecimento institucional                  | 🟡 **Médio** | —                                                                       |
@@ -1984,19 +1775,19 @@ As premissas são condições assumidas como verdadeiras para fins de planejamen
 
 ##### Fase 6 – Evolução Opcional
 
-|  ID | Premissa                                                                        | Responsável | Impacto se Falsa                    |  Severidade  | Impacto em Custos (Cooperflora) |
-| --: | ------------------------------------------------------------------------------- | ----------- | ----------------------------------- | :----------: | ------------------------------- |
-| P23 | Iniciativas de evolução serão aprovadas com justificativa de ROI                | Cooperflora | Investimento sem retorno mensurável | 🟡 **Médio** | —                               |
-| P24 | Decisões estratégicas (ex.: migração Nimbus) serão comunicadas com antecedência | Cooperflora | Falta de preparação arquitetural    | 🟡 **Médio** | —                               |
+|  ID | Premissa                                                                        | Responsável | Impacto se Falsa                    |  Severidade  | Impacto em Investimentos (Cooperflora) |
+| --: | ------------------------------------------------------------------------------- | ----------- | ----------------------------------- | :----------: | -------------------------------------- |
+| P23 | Iniciativas de evolução serão aprovadas com justificativa de ROI                | Cooperflora | Investimento sem retorno mensurável | 🟡 **Médio** | —                                      |
+| P24 | Decisões estratégicas (ex.: migração Nimbus) serão comunicadas com antecedência | Cooperflora | Falta de preparação arquitetural    | 🟡 **Médio** | —                                      |
 
 ##### Premissas Transversais (Aplicáveis a Todas as Fases)
 
-|  ID | Premissa                                                               | Responsável          | Impacto se Falsa                                      |   Severidade   | Impacto em Custos (Cooperflora)                                        |
-| --: | ---------------------------------------------------------------------- | -------------------- | ----------------------------------------------------- | :------------: | ---------------------------------------------------------------------- |
-| P25 | O escopo aprovado será respeitado, com mudanças via controle formal    | Néctar + Cooperflora | Scope creep, atraso e estouro de orçamento            | 🔴 **Crítico** | **Renegociação contratual**: custos adicionais para mudanças de escopo |
-| P26 | Reuniões de governança terão quórum mínimo para tomada de decisão      | Néctar + Cooperflora | Decisões postergadas; atrasos em aprovações           |  🟠 **Alto**   | —                                                                      |
-| P27 | Comunicação entre equipes seguirá canais e SLAs definidos              | Néctar + Cooperflora | Falhas de comunicação; retrabalho                     |  🟡 **Médio**  | —                                                                      |
-| P28 | EMVs serão validados em **2 dias úteis**; após prazo, aprovação tácita | Cooperflora          | Aprovação automática; ajustes viram mudança de escopo | 🔴 **Crítico** | **Custos adicionais**: solicitações pós-aprovação impactam prazo/custo |
+|  ID | Premissa                                                               | Responsável          | Impacto se Falsa                                      |   Severidade   | Impacto em Investimentos (Cooperflora)                                        |
+| --: | ---------------------------------------------------------------------- | -------------------- | ----------------------------------------------------- | :------------: | ----------------------------------------------------------------------------- |
+| P25 | O escopo aprovado será respeitado, com mudanças via controle formal    | Néctar + Cooperflora | Scope creep, atraso e estouro de orçamento            | 🔴 **Crítico** | **Renegociação contratual**: custos adicionais para mudanças de escopo        |
+| P26 | Reuniões de governança terão quórum mínimo para tomada de decisão      | Néctar + Cooperflora | Decisões postergadas; atrasos em aprovações           |  🟠 **Alto**   | —                                                                             |
+| P27 | Comunicação entre equipes seguirá canais e SLAs definidos              | Néctar + Cooperflora | Falhas de comunicação; retrabalho                     |  🟡 **Médio**  | —                                                                             |
+| P28 | EMVs serão validados em **2 dias úteis**; após prazo, aprovação tácita | Cooperflora          | Aprovação automática; ajustes viram mudança de escopo | 🔴 **Crítico** | **Investimentos adicionais**: solicitações pós-aprovação impactam prazo/custo |
 
 > **⚠️ Impacto Financeiro para Premissas Não Cumpridas pela Cooperflora**
 >
@@ -2546,7 +2337,7 @@ pie showData
 
 ---
 
-## 💰 Estimativa de Custos do Projeto
+## 💰 Estimativa de Investimentos do Projeto
 
 Esta seção apresenta a **estimativa de custos** do projeto, derivada diretamente do [Detalhamento da Estimativa de Horas](#-detalhamento-da-estimativa-de-horas). Os valores são baseados nas **1.600 horas estimadas** (bottom-up, por atividade) e no valor hora padrão de **R$ 150,00**.
 
@@ -2567,34 +2358,34 @@ Esta seção apresenta a **estimativa de custos** do projeto, derivada diretamen
 - **Duração do projeto (Fases 0–5):** 28 semanas
 - **Valor hora (todos os recursos):** R$ 150,00
 
-| Recurso                  | Horas Estimadas | Valor Hora (R$) | Custo Total (R$) |
-| ------------------------ | :-------------: | :-------------: | ---------------: |
-| **Gerente de Projeto**   |       264       |     150,00      |        39.600,00 |
-| **Arquiteto de Solução** |       220       |     150,00      |        33.000,00 |
-| **Desenvolvedor Sênior** |       672       |     150,00      |       100.800,00 |
-| **Desenvolvedor Pleno**  |       444       |     150,00      |        66.600,00 |
-| **TOTAL**                |    **1.600**    |        —        |   **240.000,00** |
+| Recurso                  | Horas Estimadas | Valor Hora (R$) | Investimento Total (R$) |
+| ------------------------ | :-------------: | :-------------: | ----------------------: |
+| **Gerente de Projeto**   |       264       |     150,00      |               39.600,00 |
+| **Arquiteto de Solução** |       220       |     150,00      |               33.000,00 |
+| **Desenvolvedor Sênior** |       672       |     150,00      |              100.800,00 |
+| **Desenvolvedor Pleno**  |       444       |     150,00      |               66.600,00 |
+| **TOTAL**                |    **1.600**    |        —        |          **240.000,00** |
 
 ### 💵 Resumo Financeiro
 
-| Descrição                              |        Valor (R$) |
-| -------------------------------------- | ----------------: |
-| **Total de Horas Estimadas**           |   **1.600 horas** |
-| **Custo Total de Recursos Néctar**     | **R$ 240.000,00** |
-| **Custo Médio por Semana**             |       R$ 8.571,43 |
-| **Custo Médio por Mês (4,33 semanas)** |      R$ 37.114,29 |
+| Descrição                                     |        Valor (R$) |
+| --------------------------------------------- | ----------------: |
+| **Total de Horas Estimadas**                  |   **1.600 horas** |
+| **Investimento Total de Recursos Néctar**     | **R$ 240.000,00** |
+| **Investimento Médio por Semana**             |       R$ 8.571,43 |
+| **Investimento Médio por Mês (4,33 semanas)** |      R$ 37.114,29 |
 
-### 📈 Distribuição de Custos por Fase
+### 📈 Distribuição de Investimentos por Fase
 
-| Fase | Nome                    | Duração (sem) |   Horas   | % do Custo | Custo Estimado (R$) |
-| ---: | ----------------------- | :-----------: | :-------: | :--------: | ------------------: |
-|    0 | Alinhamento e contenção |       2       |    112    |     7%     |           16.800,00 |
-|    1 | Definição de contratos  |       2       |    112    |     7%     |           16.800,00 |
-|    2 | Fundação da API         |       3       |    168    |    11%     |           25.200,00 |
-|    3 | Fluxo piloto            |       4       |    240    |    15%     |           36.000,00 |
-|    4 | Migração por fluxo      |      12       |    780    |    49%     |          117.000,00 |
-|    5 | Simplificação do legado |       5       |    188    |    12%     |           28.200,00 |
-|      | **TOTAL**               |    **28**     | **1.600** |  **100%**  |   **R$ 240.000,00** |
+| Fase | Nome                    | Duração (sem) |   Horas   | % do Custo | Investimento Estimado (R$) |
+| ---: | ----------------------- | :-----------: | :-------: | :--------: | -------------------------: |
+|    0 | Alinhamento e contenção |       2       |    112    |     7%     |                  16.800,00 |
+|    1 | Definição de contratos  |       2       |    112    |     7%     |                  16.800,00 |
+|    2 | Fundação da API         |       3       |    168    |    11%     |                  25.200,00 |
+|    3 | Fluxo piloto            |       4       |    240    |    15%     |                  36.000,00 |
+|    4 | Migração por fluxo      |      12       |    780    |    49%     |                 117.000,00 |
+|    5 | Simplificação do legado |       5       |    188    |    12%     |                  28.200,00 |
+|      | **TOTAL**               |    **28**     | **1.600** |  **100%**  |          **R$ 240.000,00** |
 
 ### 💳 Cronograma de Pagamento
 
@@ -2670,7 +2461,7 @@ pie showData
 
 2. **Contingência não incluída:** Recomenda-se reserva de 15–20% para contingências, o que elevaria o investimento total para aproximadamente **R$ 276.000,00 a R$ 288.000,00**.
 
-3. **Custos não contemplados:**
+3. **Investimentos não contemplados:**
 
    - Licenciamento de ferramentas (APM, Service Bus, etc.) — responsabilidade da Cooperflora conforme premissas
    - Infraestrutura de ambientes (DEV/HML/PRD)
@@ -2689,3 +2480,92 @@ pie showData
 > | **Total de Horas**         | 1.600 horas           |
 > | **Com Contingência (15%)** | R$ 276.000,00         |
 > | **Com Contingência (20%)** | R$ 288.000,00         |
+
+---
+
+## 📖 Glossário
+
+Esta seção define os termos técnicos e siglas utilizados neste documento para garantir entendimento comum entre todos os stakeholders.
+
+### Termos de Negócio
+
+| Termo           | Definição                                                                            |
+| --------------- | ------------------------------------------------------------------------------------ |
+| **BDM**         | Business Decision Maker – tomador de decisão de negócio (ex.: Sponsor, PO, Gestores) |
+| **TDM**         | Technical Decision Maker – tomador de decisão técnica (ex.: Arquiteto, Tech Lead)    |
+| **Cooperflora** | Cliente – cooperativa agrícola que utiliza o módulo integrador                       |
+| **Néctar**      | Fornecedor – empresa responsável pelo ERP e pela modernização                        |
+| **ERP**         | Enterprise Resource Planning – sistema de gestão empresarial Néctar                  |
+| **PO**          | Product Owner – responsável por priorizar backlog e aceitar entregas                 |
+| **ROI**         | Return on Investment – retorno sobre o investimento                                  |
+| **SLA**         | Service Level Agreement – acordo de nível de serviço                                 |
+
+### Termos Técnicos
+
+| Termo              | Definição                                                                     |
+| ------------------ | ----------------------------------------------------------------------------- |
+| **API**            | Application Programming Interface – interface para comunicação entre sistemas |
+| **REST**           | Representational State Transfer – estilo arquitetural para APIs web           |
+| **OpenAPI**        | Especificação para documentar APIs REST (anteriormente Swagger)               |
+| **VBA**            | Visual Basic for Applications – linguagem de programação do Microsoft Access  |
+| **SQL Server**     | Sistema de gerenciamento de banco de dados relacional da Microsoft            |
+| **JSON**           | JavaScript Object Notation – formato de troca de dados                        |
+| **Endpoint**       | Ponto de acesso de uma API (URL específica para uma operação)                 |
+| **Idempotência**   | Propriedade onde múltiplas execuções produzem o mesmo resultado               |
+| **Correlation-ID** | Identificador único para rastrear uma transação entre sistemas                |
+| **Feature Flag**   | Chave de configuração para habilitar/desabilitar funcionalidades              |
+
+### Termos de Arquitetura
+
+| Termo                  | Definição                                                             |
+| ---------------------- | --------------------------------------------------------------------- |
+| **Strangler Pattern**  | Padrão de migração incremental que "estrangula" o sistema legado      |
+| **Clean Architecture** | Arquitetura em camadas com separação de responsabilidades             |
+| **Event-Driven**       | Arquitetura orientada a eventos para comunicação assíncrona           |
+| **Service Bus**        | Infraestrutura de mensageria para comunicação entre serviços          |
+| **DLQ**                | Dead Letter Queue – fila para mensagens que falharam no processamento |
+| **Source of Truth**    | Sistema autoritativo para um determinado dado/domínio                 |
+| **Dual-Write**         | Escrita simultânea em dois sistemas (antipadrão a ser evitado)        |
+
+### Termos de Projeto
+
+| Termo      | Definição                                                                   |
+| ---------- | --------------------------------------------------------------------------- |
+| **WBS**    | Work Breakdown Structure – estrutura analítica do projeto                   |
+| **EMV**    | Entregável Mínimo Validável – entrega verificável pelo cliente              |
+| **RACI**   | Responsible, Accountable, Consulted, Informed – matriz de responsabilidades |
+| **RAID**   | Risks, Actions, Issues, Decisions – registro de gestão de projetos          |
+| **MoSCoW** | Must, Should, Could, Won't – técnica de priorização                         |
+| **CI/CD**  | Continuous Integration/Continuous Delivery – práticas de automação          |
+| **RCA**    | Root Cause Analysis – análise de causa raiz de incidentes                   |
+| **MTTR**   | Mean Time to Recovery – tempo médio de recuperação                          |
+
+### Termos de Observabilidade
+
+| Termo                 | Definição                                                                                 |
+| --------------------- | ----------------------------------------------------------------------------------------- |
+| **APM**               | Application Performance Monitoring – monitoramento de performance                         |
+| **Logs Estruturados** | Registros de eventos em formato parseável (ex.: JSON)                                     |
+| **p95**               | Percentil 95 – métrica que indica o valor abaixo do qual 95% das observações se encontram |
+| **Health Check**      | Verificação automática de saúde de um serviço                                             |
+| **Dashboard**         | Painel visual com métricas e indicadores                                                  |
+
+---
+
+## 📝 Histórico de Alterações do Documento
+
+> Esta seção complementa o [Histórico de Revisões](#-histórico-de-revisões) com detalhes das principais alterações estruturais.
+
+| Data       | Versão | Alteração                                                                                |
+| ---------- | ------ | ---------------------------------------------------------------------------------------- |
+| 13/01/2026 | 1.0    | Versão consolidada para aprovação                                                        |
+| 13/01/2026 | 1.0    | Adição de Glossário                                                                      |
+| 13/01/2026 | 1.0    | Reorganização da estrutura em 3 partes (Visão Executiva, Execução, Fundamentos Técnicos) |
+| 13/01/2026 | 1.0    | Remoção de duplicações de conteúdo                                                       |
+
+---
+
+**📄 Fim do Documento**
+
+_Plano de Projeto – Modernização do Módulo Integrador do Sistema Néctar (Cooperflora)_
+_Versão 1.0 | Janeiro de 2026 | Néctar_
