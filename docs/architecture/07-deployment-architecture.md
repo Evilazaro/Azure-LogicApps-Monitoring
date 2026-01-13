@@ -245,7 +245,7 @@ flowchart TD
 **Validations:**
 
 - Azure CLI installed and logged in
-- Azure Developer CLI version ≥ 1.9.0
+- Azure Developer CLI version ≥ 1.11.0
 - .NET SDK 10.0+
 - Azure Functions Core Tools (optional)
 - Required VS Code extensions
@@ -306,13 +306,13 @@ flowchart TD
 
 ### Prerequisites
 
-| Tool                | Version | Purpose                      |
-| ------------------- | ------- | ---------------------------- |
-| .NET SDK            | 10.0+   | Build and run applications   |
-| Azure CLI           | Latest  | Azure authentication         |
-| Azure Developer CLI | ≥ 1.9.0 | Environment orchestration    |
-| VS Code             | Latest  | IDE with extensions          |
-| Docker Desktop      | Latest  | Container runtime (optional) |
+| Tool                | Version  | Purpose                      |
+| ------------------- | -------- | ---------------------------- |
+| .NET SDK            | 10.0+    | Build and run applications   |
+| Azure CLI           | Latest   | Azure authentication         |
+| Azure Developer CLI | ≥ 1.11.0 | Environment orchestration    |
+| VS Code             | Latest   | IDE with extensions          |
+| Docker Desktop      | Latest   | Container runtime (optional) |
 
 ### Quick Start
 

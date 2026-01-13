@@ -349,7 +349,9 @@ output workflowStorageAccountName string = workflowStorageAccountName
 output serviceBusConnectionName string = sbConnection.name
 
 @description('Runtime URL of the Service Bus API connection')
-#disable-next-line outputs-should-not-contain-secrets
+// Note: listConnectionKeys is required for API connections as there's no direct property access
+// The function returns runtime URLs needed for Logic App workflow configuration
+#disable-next-line outputs-should-not-contain-secrets use-resource-symbol-reference
 output SERVICE_BUS_CONNECTION_RUNTIME_URL string = listConnectionKeys(
   sbConnection.id,
   sbConnection.apiVersion,
@@ -357,7 +359,9 @@ output SERVICE_BUS_CONNECTION_RUNTIME_URL string = listConnectionKeys(
 ).runtimeUrls[0]
 
 @description('Runtime URL of the Azure Blob Storage API connection')
-#disable-next-line outputs-should-not-contain-secrets
+// Note: listConnectionKeys is required for API connections as there's no direct property access
+// The function returns runtime URLs needed for Logic App workflow configuration
+#disable-next-line outputs-should-not-contain-secrets use-resource-symbol-reference
 output AZURE_BLOB_CONNECTION_RUNTIME_URL string = listConnectionKeys(
   storageConnection.id,
   storageConnection.apiVersion,
