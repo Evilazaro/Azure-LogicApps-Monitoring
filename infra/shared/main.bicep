@@ -34,8 +34,13 @@ param name string
 param location string
 
 @description('Environment name suffix to ensure uniqueness.')
-@minLength(2)
 @maxLength(10)
+@allowed([
+  'dev'
+  'test'
+  'prod'
+  'staging'
+])
 param envName string
 
 @description('Resource tags applied to the managed identity.')
@@ -186,4 +191,4 @@ output API_SUBNET_ID string = network.outputs.API_SUBNET_ID
 output WEBAPP_SUBNET_ID string = network.outputs.WEB_APP_SUBNET_ID
 
 @description('Resource ID of the Logic App subnet for Logic Apps Standard')
-output LOGICAPP_SUBNET_ID string = network.outputs.logicappSubnetId
+output LOGICAPP_SUBNET_ID string = network.outputs.LOGICAPP_SUBNET_ID

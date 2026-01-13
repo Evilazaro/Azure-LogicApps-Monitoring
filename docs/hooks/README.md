@@ -815,7 +815,16 @@ azd provision
 
 ## CI/CD Pipeline Integration
 
+The repository includes production-ready GitHub Actions workflows for continuous integration and deployment:
+
+| Workflow | File | Purpose |
+|----------|------|---------|
+| **CI - Build Validation** | [`.github/workflows/ci.yml`](../../.github/workflows/ci.yml) | Validates .NET and Bicep code on every push and PR |
+| **Azure Developer CLI** | [`.github/workflows/azure-dev.yml`](../../.github/workflows/azure-dev.yml) | Provisions infrastructure and deploys to Azure |
+
 ### GitHub Actions
+
+Example workflow using the hooks scripts:
 
 ```yaml
 name: Deploy to Azure

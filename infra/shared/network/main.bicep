@@ -36,9 +36,14 @@ param name string
 @maxLength(50)
 param location string
 
-@description('Environment name suffix to ensure uniqueness')
-@minLength(2)
+@description('Environment name to differentiate deployments.')
 @maxLength(10)
+@allowed([
+  'dev'
+  'test'
+  'prod'
+  'staging'
+])
 param envName string
 
 @description('Resource tags applied to network resources')
@@ -132,7 +137,7 @@ output WEB_APP_SUBNET_ID string = dataSubnet.id
 output DATA_SUBNET_ID string = dataSubnet.id
 
 @description('Resource ID of the Logic Apps subnet for workflow hosting')
-output logicappSubnetId string = logicappSubnet.id
+output LOGICAPP_SUBNET_ID string = logicappSubnet.id
 
 @description('Resource ID of the virtual network')
 output VNET_ID string = vnet.id

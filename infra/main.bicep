@@ -38,6 +38,12 @@ param location string
 
 @description('Environment name to differentiate deployments.')
 @maxLength(10)
+@allowed([
+  'dev'
+  'test'
+  'prod'
+  'staging'
+])
 param envName string
 
 @description('Deployment timestamp for tracking purposes.')

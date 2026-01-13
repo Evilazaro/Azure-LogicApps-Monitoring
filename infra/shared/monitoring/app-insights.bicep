@@ -34,9 +34,14 @@ param name string
 @maxLength(50)
 param location string = resourceGroup().location
 
-@description('Environment name suffix to ensure uniqueness.')
-@minLength(2)
+@description('Environment name to differentiate deployments.')
 @maxLength(10)
+@allowed([
+  'dev'
+  'test'
+  'prod'
+  'staging'
+])
 param envName string
 
 @description('Resource ID of the Log Analytics workspace for workspace-based Application Insights integration.')
