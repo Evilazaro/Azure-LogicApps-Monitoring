@@ -430,6 +430,94 @@ Esta seção define os **entregáveis e limites** do projeto de modernização d
 | Segurança da API — autenticação, autorização e hardening | Definir e implementar autenticação/autorização para consumo da API e padrões de segurança operacional.<br><br>Inclui: mecanismo de auth (ex.: OAuth2, API Key, mTLS conforme restrição), segregação de ambientes/segredos, validação de payload, rate limiting e práticas de hardening de endpoints.<br><br>Também inclui padrões mínimos de acesso a dados internos (princípio do menor privilégio) para reduzir risco de exposição.                                                                                                                   | Reduz risco de exposição e substitui o “acesso ao banco” como mecanismo de integração; habilita cenários com rede/credenciais segregadas. |
 | Preparação para evolução event-driven (opcional)         | Planejar (sem implantar obrigatoriamente) a evolução para assíncrono onde fizer sentido.<br><br>Inclui: modelagem de eventos por domínio, critérios para quando usar síncrono vs assíncrono, desenho de padrões (retry, DLQ, idempotência, ordenação), e requisitos para adoção futura de fila (ex.: Service Bus).<br><br>Entregável: guideline técnico e backlog priorizado para evolução, sem desviar do foco do MVP (API + fluxos críticos).                                                                                                         | Evita “becos sem saída” arquiteturais e preserva foco no essencial, mantendo caminho claro para evoluções futuras.                        |
 
+#### Premissas Específicas por Item de Escopo
+
+As premissas abaixo são **específicas para cada item de escopo** e complementam as premissas gerais do projeto. Cada premissa está diretamente vinculada a um entregável e define condições técnicas ou operacionais que devem ser verdadeiras para o sucesso do item.
+
+##### API de Integração (.NET Web API)
+
+|  ID  | Premissa                                                                                              | Responsável | Impacto se Falsa                                                 | Impacto em Custos (Cooperflora)                                              |
+| :--: | ----------------------------------------------------------------------------------------------------- | ----------- | ---------------------------------------------------------------- | ---------------------------------------------------------------------------- |
+| PE01 | Arquitetura de referência (.NET Web API com camadas) será aprovada antes do início do desenvolvimento | Néctar      | Retrabalho estrutural; débito técnico acumulado                  | —                                                                            |
+| PE02 | Componentes de integração com ERP (SDK/bibliotecas) estarão disponíveis e documentados                | Néctar      | Atraso no desenvolvimento; necessidade de engenharia reversa     | —                                                                            |
+| PE03 | Padrões de resiliência (circuit breaker, retry, timeout) serão definidos na Fase 1                    | Néctar      | Falhas em cascata; comportamento inconsistente sob carga         | —                                                                            |
+| PE04 | Ambiente de execução suportará .NET 6+ (ou versão acordada)                                           | Cooperflora | Limitações de runtime; impossibilidade de usar recursos modernos | **Custo de adequação de infraestrutura** se ambiente legado for incompatível |
+
+##### Contratos OpenAPI
+
+|  ID  | Premissa                                                                                   | Responsável          | Impacto se Falsa                                                     | Impacto em Custos (Cooperflora)                                             |
+| :--: | ------------------------------------------------------------------------------------------ | -------------------- | -------------------------------------------------------------------- | --------------------------------------------------------------------------- |
+| PE05 | Regras de negócio de cada fluxo serão documentadas pelo PO antes da modelagem do contrato  | Cooperflora          | Contratos incompletos ou incorretos; retrabalho em fases posteriores | **Retrabalho de workshops**: custo de reagendamento e mobilização de equipe |
+| PE06 | Taxonomia de erros será padronizada e aprovada antes da implementação do primeiro endpoint | Néctar + Cooperflora | Inconsistência de mensagens de erro; dificuldade de diagnóstico      | —                                                                           |
+| PE07 | Política de versionamento e breaking changes será acordada antes do piloto                 | Néctar + Cooperflora | Contratos quebrados sem governança; impacto em consumidores          | —                                                                           |
+| PE08 | SLAs de latência e disponibilidade serão definidos por fluxo antes da implementação        | Cooperflora          | Expectativas desalinhadas; discussões pós-implantação                | **Renegociação de SLA**: possível custo de ajustes contratuais              |
+
+##### Fluxo Piloto (Cadastro de Pessoas)
+
+|  ID  | Premissa                                                                                             | Responsável          | Impacto se Falsa                                             | Impacto em Custos (Cooperflora)                                      |
+| :--: | ---------------------------------------------------------------------------------------------------- | -------------------- | ------------------------------------------------------------ | -------------------------------------------------------------------- |
+| PE09 | Fluxo de cadastro de pessoas no legado será congelado durante a migração (sem novas funcionalidades) | Cooperflora          | Divergência entre legado e API; necessidade de reconciliação | **Retrabalho de sincronização**: custo de análise e ajuste de regras |
+| PE10 | Dados de teste representativos (anonimizados) estarão disponíveis para validação do piloto           | Cooperflora          | Testes não representam cenários reais; defeitos em produção  | **Correções emergenciais**: custo premium de suporte fora do horário |
+| PE11 | Critérios de rollback e janela de estabilização serão definidos antes do go-live do piloto           | Néctar + Cooperflora | Rollback desorganizado; tempo de recuperação elevado         | —                                                                    |
+| PE12 | Métricas de baseline do legado (volume, latência, erros) serão coletadas antes da migração           | Néctar               | Impossibilidade de comparar performance; falta de baseline   | —                                                                    |
+
+##### Operação Híbrida
+
+|  ID  | Premissa                                                                                       | Responsável | Impacto se Falsa                                       | Impacto em Custos (Cooperflora)                                          |
+| :--: | ---------------------------------------------------------------------------------------------- | ----------- | ------------------------------------------------------ | ------------------------------------------------------------------------ |
+| PE13 | Feature flags por fluxo serão implementadas com capacidade de rollback em tempo real           | Néctar      | Rollback lento ou manual; aumento de MTTR              | —                                                                        |
+| PE14 | Matriz de propriedade de dados (source of truth) será validada antes de cada migração de fluxo | Cooperflora | Conflitos de dados; dual-write não governado           | **Reconciliação manual**: custo de análise e correção de inconsistências |
+| PE15 | Procedimentos de cutover e fallback serão documentados e testados em HML antes de PRD          | Néctar      | Incidentes em produção por procedimentos não validados | —                                                                        |
+| PE16 | Comunicação de mudança de fluxo será feita aos usuários com antecedência mínima de 1 semana    | Cooperflora | Resistência à mudança; erros por desconhecimento       | —                                                                        |
+
+##### Descomissionamento de Timers/Polling
+
+|  ID  | Premissa                                                                                         | Responsável          | Impacto se Falsa                                               | Impacto em Custos (Cooperflora)                             |
+| :--: | ------------------------------------------------------------------------------------------------ | -------------------- | -------------------------------------------------------------- | ----------------------------------------------------------- |
+| PE17 | Inventário completo de timers e rotinas de polling será entregue na Fase 0                       | Néctar               | Timers não mapeados causam efeitos colaterais durante migração | —                                                           |
+| PE18 | Cada timer desativado terá critérios de aceite definidos (volume processado via API, zero erros) | Néctar + Cooperflora | Desativação prematura; falhas silenciosas                      | **Reativação emergencial**: custo de diagnóstico e rollback |
+| PE19 | Timers remanescentes durante transição serão monitorados com alertas específicos                 | Néctar               | Falhas em timers não detectadas; impacto em dados              | —                                                           |
+
+##### Observabilidade e Auditoria
+
+|  ID  | Premissa                                                                                 | Responsável          | Impacto se Falsa                                  | Impacto em Custos (Cooperflora)                                      |
+| :--: | ---------------------------------------------------------------------------------------- | -------------------- | ------------------------------------------------- | -------------------------------------------------------------------- |
+| PE20 | Ferramenta de APM/logging será definida e provisionada antes da Fase 2                   | Néctar + Cooperflora | Logs não estruturados; dificuldade de diagnóstico | **Licenciamento de ferramentas**: possível custo de aquisição de APM |
+| PE21 | Padrão de correlation-id será implementado em todas as camadas desde o primeiro endpoint | Néctar               | Rastreabilidade comprometida; investigação manual | —                                                                    |
+| PE22 | Dashboards operacionais serão entregues junto com cada fluxo migrado                     | Néctar               | Operação sem visibilidade; aumento de MTTR        | —                                                                    |
+
+##### Segurança da API
+
+|  ID  | Premissa                                                                                | Responsável          | Impacto se Falsa                                         | Impacto em Custos (Cooperflora)                                        |
+| :--: | --------------------------------------------------------------------------------------- | -------------------- | -------------------------------------------------------- | ---------------------------------------------------------------------- |
+| PE23 | Mecanismo de autenticação (OAuth2/API Key/mTLS) será definido e aprovado na Fase 1      | Cooperflora + Néctar | Bloqueio de implementação; decisões tardias de segurança | **Custo de adequação**: possível investimento em infraestrutura de IdP |
+| PE24 | Políticas de rate limiting e throttling serão definidas por fluxo/consumidor            | Néctar               | Sobrecarga não controlada; degradação de performance     | —                                                                      |
+| PE25 | Segregação de segredos (API keys, connection strings) será implementada por ambiente    | Néctar + Cooperflora | Vazamento de credenciais; risco de segurança             | —                                                                      |
+| PE26 | Hardening de endpoints seguirá checklist de segurança (OWASP) validado antes do go-live | Néctar               | Vulnerabilidades expostas; risco de ataques              | —                                                                      |
+
+##### Preparação para Event-Driven (Opcional)
+
+|  ID  | Premissa                                                                                       | Responsável          | Impacto se Falsa                                              | Impacto em Custos (Cooperflora) |
+| :--: | ---------------------------------------------------------------------------------------------- | -------------------- | ------------------------------------------------------------- | ------------------------------- |
+| PE27 | Critérios para adoção de mensageria serão definidos antes de qualquer implementação assíncrona | Néctar + Cooperflora | Adoção prematura ou injustificada; complexidade desnecessária | —                               |
+| PE28 | Padrões de DLQ, retry e idempotência para eventos serão documentados como guideline            | Néctar               | Inconsistência em implementações futuras; poison messages     | —                               |
+| PE29 | ROI de cada iniciativa event-driven será justificado antes da aprovação de escopo              | Cooperflora          | Investimento sem retorno mensurável                           | —                               |
+
+> **Resumo das Premissas Específicas por Área**
+>
+> | Área de Escopo            | Premissas | Responsável Principal | Fase(s) Crítica(s) |
+> | ------------------------- | :-------: | --------------------- | ------------------ |
+> | API de Integração         |     4     | Néctar                | Fases 1–2          |
+> | Contratos OpenAPI         |     4     | Néctar + Cooperflora  | Fase 1             |
+> | Fluxo Piloto              |     4     | Cooperflora           | Fase 3             |
+> | Operação Híbrida          |     4     | Cooperflora           | Fases 3–4          |
+> | Descomissionamento Timers |     3     | Néctar                | Fases 0, 4         |
+> | Observabilidade           |     3     | Néctar                | Fases 2–4          |
+> | Segurança                 |     4     | Cooperflora + Néctar  | Fases 1–2          |
+> | Event-Driven (Opcional)   |     3     | Cooperflora           | Fase 6             |
+>
+> **Total**: 29 premissas específicas de escopo (PE01–PE29), complementando as 27 premissas gerais do projeto (P01–P27).
+
 #### Escopo por domínio de negócio
 
 A tabela acima detalha os entregáveis técnicos. Abaixo, a mesma visão é organizada por **domínio de negócio**, facilitando o entendimento dos stakeholders sobre quais áreas serão impactadas e em qual sequência.
