@@ -336,58 +336,45 @@ A convivência é gerenciada **por fluxo**. Cada fluxo transita por três estado
 
 > 📘 **Para detalhes completos da arquitetura e diagramas**, consulte a [Parte III – Fundamentos Técnicos](#parte-iii--fundamentos-técnicos).
 
-subgraph Cooperflora ["🏢 Cooperflora (Cliente)"]
-direction TB
-CLIENTE["📱 Sistema do Cliente"]
-ACCESS["🖥️ Módulo Interface<br>Access + VBA"]
-TIMER["⏱️ Timers / Polling"]
-SINC["🔄 SINC"]
-TIMER -->|"dispara"| ACCESS
-end
+```mermaid
+flowchart LR
+    subgraph Cooperflora ["🏢 Cooperflora (Cliente)"]
+        direction LR
+        CLIENTE["📱 Sistema do Cliente"]
+        ACCESS["🖥️ Módulo Interface<br/>Access + VBA"]
+        TIMER["⏱️ Timers / Polling"]
+        SINC["🔄 SINC"]
+        TIMER -->|"dispara"| ACCESS
+    end
 
-subgraph SQL ["🗄️ SQL Server (Hub de Integração)"]
-direction TB
-DB[("💾 Banco SQL Server")]
-TSHARED["📋 Tabelas compartilhadas<br>+ contratos implícitos"]
-DB --- TSHARED
-end
+    subgraph SQL ["🗄️ SQL Server (Hub de Integração)"]
+        direction LR
+        DB[("💾 Banco SQL Server")]
+        TSHARED["📋 Tabelas compartilhadas<br/>+ contratos implícitos"]
+        DB --- TSHARED
+    end
 
-subgraph Nectar ["📦 ERP Néctar"]
-ERP["⚙️ ERP Néctar"]
-end
+    subgraph Nectar ["📦 ERP Néctar"]
+        ERP["⚙️ ERP Néctar"]
+    end
 
-%% Fluxos de dados (acesso direto ao banco)
-ACCESS -->|"SQL direto<br>(INSERT/UPDATE/SELECT)"| DB
-SINC -->|"SQL direto<br>(INSERT/UPDATE/SELECT)"| DB
-DB <-->|"Dados e estados<br>compartilhados"| ERP
+    ACCESS -->|"SQL direto<br/>(INSERT/UPDATE/SELECT)"| DB
+    SINC -->|"SQL direto<br/>(INSERT/UPDATE/SELECT)"| DB
+    DB <-->|"Dados e estados<br/>compartilhados"| ERP
 
-%% ═══════════════════════════════════════════════════════════════
-%% FLUXO SIMPLIFICADO
-%% 1. Timers disparam periodicamente o Access/VBA
-%% 2. Access e SINC leem/escrevem diretamente no SQL Server
-%% 3. ERP Néctar compartilha o mesmo banco como "hub"
-%% ➡️ Problema: acoplamento forte via schema/tabelas
-%% ═══════════════════════════════════════════════════════════════
+    classDef legacy fill:#FFEDD5,stroke:#F97316,color:#431407,stroke-width:2px
+    classDef datastore fill:#E2E8F0,stroke:#475569,color:#0F172A,stroke-width:2px
+    classDef system fill:#F8FAFC,stroke:#334155,color:#0F172A,stroke-width:1px
 
-%% ═══════════════════════════════════════════════════════════════
-%% LEGENDA DE CORES
-%% - Laranja: Componentes legado/integração atual
-%% - Cinza: Armazenamento de dados
-%% - Neutro: Sistemas externos
-%% ═══════════════════════════════════════════════════════════════
-classDef legacy fill:#FFEDD5,stroke:#F97316,color:#431407,stroke-width:2px;
-classDef datastore fill:#E2E8F0,stroke:#475569,color:#0F172A,stroke-width:2px;
-classDef system fill:#F8FAFC,stroke:#334155,color:#0F172A,stroke-width:1px;
+    class ACCESS,TIMER,SINC legacy
+    class DB,TSHARED datastore
+    class CLIENTE,ERP system
 
-class ACCESS,TIMER,SINC legacy
-class DB,TSHARED datastore
-class CLIENTE,ERP system
+    style Cooperflora fill:#FFF7ED,stroke:#FB923C,stroke-width:2px
+    style SQL fill:#F1F5F9,stroke:#64748B,stroke-width:2px
+    style Nectar fill:#F8FAFC,stroke:#94A3B8,stroke-width:1px
 
-style Cooperflora fill:#FFF7ED,stroke:#FB923C,stroke-width:2px
-style SQL fill:#F1F5F9,stroke:#64748B,stroke-width:2px
-style Nectar fill:#F8FAFC,stroke:#94A3B8,stroke-width:1px
-
-````
+```
 
 ### 🟢 Arquitetura alvo
 
@@ -468,7 +455,7 @@ flowchart LR
   style Integracao fill:#EEF2FF,stroke:#4F46E5,stroke-width:2px
   style Nectar fill:#F0FDF4,stroke:#10B981,stroke-width:2px
   style Plataforma fill:#FDF2F8,stroke:#DB2777,stroke-width:2px
-````
+```
 
 ### 🔄 Visão geral comparativa
 
@@ -1216,9 +1203,23 @@ stateDiagram-v2
 
 > **Nota para TDMs**: As dependências indicam sequência mínima. Algumas atividades podem ser paralelizadas (ex.: setup de infra durante Fase 1), desde que não comprometam qualidade ou criem débito técnico.
 
+Esta seção apresenta **três visualizações complementares** do cronograma, cada uma otimizada para diferentes necessidades:
+
+|     Visualização      |   Público-Alvo   | O que Mostra                                      |
+| :-------------------: | :--------------: | :------------------------------------------------ |
+|     📊 **Gantt**      |  TDMs + Gestão   | Duração das fases, dependências, caminho crítico  |
+|    🚦 **Timeline**    | BDMs + Executivo | Marcos de decisão, datas-chave                    |
+| 🔀 **Fluxo de Gates** |    Governança    | Pontos de decisão, caminhos de aprovação/bloqueio |
+
+---
+
+#### 📊 Visão Detalhada – Diagrama de Gantt
+
+O Gantt é a **visão principal** do cronograma, mostrando duração, dependências e o caminho crítico do projeto.
+
 ```mermaid
 ---
-title: "Roadmap de Fases – Visão Temporal"
+title: "📅 Roadmap de Fases – Visão Temporal"
 ---
 gantt
     %% ═══════════════════════════════════════════════════════════════
@@ -1231,64 +1232,224 @@ gantt
     %% ───────────────────────────────────────────────────────────────
     %% CONFIGURAÇÃO DO GRÁFICO
     %% - dateFormat: formato de entrada das datas (YYYY-MM-DD)
-    %% - axisFormat: formato de exibição no eixo (dia/mês)
-    %% - tickInterval: intervalo entre marcações (1 semana)
-    %% - todayMarker: linha indicando a data atual
+    %% - axisFormat: formato de exibição no eixo (dia/mês/ano)
+    %% - tickInterval: intervalo entre marcações (2 semanas)
+    %% - todayMarker: linha vermelha indicando a data atual
     %% ───────────────────────────────────────────────────────────────
     dateFormat YYYY-MM-DD
-    axisFormat %d/%m
-    tickInterval 1week
-    todayMarker stroke-width:2px,stroke:#4F46E5,opacity:0.7
+    axisFormat %d/%m/%y
+    tickInterval 2week
+    todayMarker stroke-width:3px,stroke:#EF4444,opacity:0.8
 
     %% ───────────────────────────────────────────────────────────────
-    %% SEÇÃO: PREPARAÇÃO
+    %% SEÇÃO: PREPARAÇÃO (Semanas 1–4)
     %% Objetivo: Estabelecer base de governança e contratos
-    %% - Fase 0: Alinhamento, inventário técnico, backlog
-    %% - Fase 1: Definição de contratos OpenAPI e padrões
     %% ───────────────────────────────────────────────────────────────
     section 📋 Preparação
-    Fase 0 - Alinhamento e Riscos    :active, f0, 2026-01-13, 2w
-    Gate Go/No-Go                    :milestone, m0, after f0, 0d
-    Fase 1 - Contratos OpenAPI       :f1, after f0, 2w
-    Gate Aprovação Contratos         :milestone, m1, after f1, 0d
+    Fase 0 – Alinhamento e Riscos       :active, f0, 2026-01-13, 2w
+    🚦 Gate Go/No-Go                    :milestone, m0, after f0, 0d
+    Fase 1 – Contratos OpenAPI          :f1, after f0, 2w
+    🚦 Aprovação Contratos              :milestone, m1, after f1, 0d
 
     %% ───────────────────────────────────────────────────────────────
-    %% SEÇÃO: FUNDAÇÃO
+    %% SEÇÃO: FUNDAÇÃO (Semanas 5–7)
     %% Objetivo: Construir infraestrutura base da API
-    %% - Fase 2: API scaffold, CI/CD, observabilidade básica
     %% ───────────────────────────────────────────────────────────────
     section 🏗️ Fundação
-    Fase 2 - API e Infraestrutura    :f2, after f1, 3w
-    Checkpoint Infra OK              :milestone, m2, after f2, 0d
+    Fase 2 – API e Infraestrutura       :f2, after f1, 3w
+    🚦 Checkpoint Infra OK              :milestone, m2, after f2, 0d
 
     %% ───────────────────────────────────────────────────────────────
-    %% SEÇÃO: PILOTO
+    %% SEÇÃO: PILOTO (Semanas 8–11) — CRÍTICO
     %% Objetivo: Validar padrões com primeiro fluxo em produção
-    %% - Fase 3: Fluxo piloto (Cadastro de Pessoas) - CRÍTICO
     %% ───────────────────────────────────────────────────────────────
     section 🚀 Piloto
-    Fase 3 - Fluxo Piloto (Pessoas)  :crit, f3, after f2, 4w
-    Go-Live Piloto                   :milestone, crit, m3, after f3, 0d
+    Fase 3 – Fluxo Piloto (Pessoas)     :crit, f3, after f2, 4w
+    🚦 Go-Live Piloto                   :milestone, crit, m3, after f3, 0d
 
     %% ───────────────────────────────────────────────────────────────
-    %% SEÇÃO: MIGRAÇÃO
+    %% SEÇÃO: MIGRAÇÃO (Semanas 12–28)
     %% Objetivo: Escalar migração fluxo a fluxo
-    %% - Fase 4: Operação híbrida (legado + API coexistem)
-    %% - Fase 5: Simplificação do legado (remoção de timers)
     %% ───────────────────────────────────────────────────────────────
     section 🔄 Migração
-    Fase 4 - Operação Híbrida        :f4, after f3, 12w
-    Fase 5 - Simplificação Legado    :f5, 2026-05-25, 8w
-    Aceite Final                     :milestone, m5, after f5, 0d
+    Fase 4 – Operação Híbrida           :f4, after f3, 12w
+    Fase 5 – Simplificação Legado       :f5, after f4, 8w
+    🏁 Aceite Final                     :milestone, m5, after f5, 0d
 
     %% ───────────────────────────────────────────────────────────────
-    %% SEÇÃO: EVOLUÇÃO
+    %% SEÇÃO: EVOLUÇÃO (Pós-projeto)
     %% Objetivo: Evoluções opcionais por demanda
-    %% - Fase 6: Mensageria, eventos, preparação Nimbus (sob ROI)
     %% ───────────────────────────────────────────────────────────────
     section ✨ Evolução
-    Fase 6 - Evolução Opcional       :milestone, f6, after f5, 0d
+    Fase 6 – Evoluções Opcionais        :done, f6, after f5, 4w
 ```
+
+> **Legenda de Cores**:
+>
+> - 🔴 **Vermelho (crit)**: Caminho crítico – atrasos impactam diretamente a data final
+> - 🔵 **Azul (active)**: Fase em andamento
+> - ⚫ **Cinza (done)**: Fase opcional/futura
+> - 🔷 **Losango**: Marco de decisão (gate)
+
+---
+
+#### 🚦 Visão Executiva – Timeline de Marcos
+
+O Timeline apresenta uma **visão simplificada** focada nas datas-chave e decisões de negócio.
+
+```mermaid
+%%{init: {
+    'theme': 'base',
+    'themeVariables': {
+        'cScale0': '#10B981',
+        'cScale1': '#3B82F6',
+        'cScale2': '#EF4444',
+        'cScale3': '#A855F7',
+        'cScale4': '#10B981',
+        'cScaleLabel0': '#ffffff',
+        'cScaleLabel1': '#ffffff',
+        'cScaleLabel2': '#ffffff',
+        'cScaleLabel3': '#ffffff',
+        'cScaleLabel4': '#ffffff'
+    }
+}}%%
+timeline
+    title 🚦 Marcos de Decisão – Visão Executiva
+    section 📋 Q1/2026
+        13/Jan : 🚀 Kick-off Projeto
+                : Fase 0 inicia
+        27/Jan : 🚦 Gate Go/No-Go
+                : Decisão de continuidade
+        10/Fev : 📋 Contratos Aprovados
+                : OpenAPI v1 validada
+    section 🏗️ Fev-Mar/2026
+        03/Mar : 🏗️ Infraestrutura Pronta
+                : API em DEV/HML
+    section 🚀 Mar-Abr/2026
+        31/Mar : 🎯 Go-Live Piloto
+                : Primeiro fluxo em PRD
+    section 🔄 Abr-Jul/2026
+        23/Jun : 🔄 Migração Concluída
+                : Fluxos críticos OK
+    section 🏁 Jul-Set/2026
+        18/Ago : 🏁 Aceite Final
+                : Projeto encerrado
+```
+
+> **Paleta de Cores por Seção**:
+>
+> - 🟢 **Verde**: Preparação e Evolução (baixo risco)
+> - 🔵 **Azul**: Fundação (construção técnica)
+> - 🔴 **Vermelho**: Piloto (caminho crítico)
+> - 🟣 **Roxo**: Migração (maior complexidade)
+
+---
+
+#### 🔀 Fluxo de Decisão – Gates e Aprovações
+
+O fluxograma mostra o **processo de governança**, evidenciando pontos de decisão e caminhos de bloqueio.
+
+```mermaid
+%%{init: {
+    'theme': 'base',
+    'themeVariables': {
+        'primaryColor': '#4F46E5',
+        'primaryTextColor': '#ffffff',
+        'primaryBorderColor': '#312E81',
+        'lineColor': '#6B7280',
+        'textColor': '#1F2937'
+    }
+}}%%
+flowchart LR
+    %% ═══════════════════════════════════════════════════════════════
+    %% DIAGRAMA: Fluxo de Gates e Decisões do Projeto
+    %% PROPÓSITO: Visualizar pontos de decisão e caminhos de aprovação
+    %% ═══════════════════════════════════════════════════════════════
+
+    subgraph prep ["📋 PREPARAÇÃO"]
+        direction LR
+        F0["🔍 Fase 0<br/>Alinhamento"]
+        G0{{"🚦 Go/No-Go"}}
+        F1["📝 Fase 1<br/>Contratos"]
+        G1{{"🚦 Aprovação"}}
+        F0 --> G0
+        G0 -->|"✅ Aprovado"| F1
+        F1 --> G1
+    end
+
+    subgraph fund ["🏗️ FUNDAÇÃO"]
+        direction LR
+        F2["⚙️ Fase 2<br/>API + Infra"]
+        G2{{"🚦 Checkpoint"}}
+        F2 --> G2
+    end
+
+    subgraph pilot ["🚀 PILOTO"]
+        direction LR
+        F3["🎯 Fase 3<br/>Fluxo Piloto"]
+        G3{{"🚦 Go-Live"}}
+        F3 --> G3
+    end
+
+    subgraph migr ["🔄 MIGRAÇÃO"]
+        direction LR
+        F4["🔄 Fase 4<br/>Op. Híbrida"]
+        F5["🧹 Fase 5<br/>Simplificação"]
+        G5{{"🏁 Aceite"}}
+        F4 --> F5
+        F5 --> G5
+    end
+
+    subgraph evol ["✨ EVOLUÇÃO"]
+        direction LR
+        F6["📈 Fase 6<br/>Opcional"]
+    end
+
+    %% Conexões entre grupos (caminho feliz)
+    G1 -->|"✅ Aprovado"| F2
+    G2 -->|"✅ OK"| F3
+    G3 -->|"✅ Estável"| F4
+    G5 -->|"✅ Concluído"| F6
+
+    %% Caminhos de bloqueio/rollback
+    G0 -.->|"❌ Bloqueado"| STOP1(("⛔"))
+    G1 -.->|"❌ Bloqueado"| STOP2(("⛔"))
+    G2 -.->|"❌ Falha"| STOP3(("⛔"))
+    G3 -.->|"❌ Instável"| F3
+
+    %% ═══════════════════════════════════════════════════════════════
+    %% DEFINIÇÃO DE ESTILOS
+    %% ═══════════════════════════════════════════════════════════════
+    classDef phase fill:#EEF2FF,stroke:#4F46E5,stroke-width:2px,color:#1E1B4B
+    classDef gate fill:#FEF3C7,stroke:#F59E0B,stroke-width:2px,color:#78350F
+    classDef critical fill:#FEE2E2,stroke:#EF4444,stroke-width:2px,color:#7F1D1D
+    classDef stop fill:#FEE2E2,stroke:#EF4444,stroke-width:2px,color:#991B1B
+
+    class F0,F1,F2,F4,F5,F6 phase
+    class F3 critical
+    class G0,G1,G2,G3,G5 gate
+    class STOP1,STOP2,STOP3 stop
+
+    %% Cores dos grupos
+    style prep fill:#F0FDF4,stroke:#10B981,stroke-width:2px
+    style fund fill:#EFF6FF,stroke:#3B82F6,stroke-width:2px
+    style pilot fill:#FEF2F2,stroke:#EF4444,stroke-width:2px
+    style migr fill:#FDF4FF,stroke:#A855F7,stroke-width:2px
+    style evol fill:#ECFDF5,stroke:#10B981,stroke-width:2px
+```
+
+> **Legenda de Elementos**:
+> | Forma | Significado |
+> |:-----:|:------------|
+> | 📦 **Retângulo** | Fase de trabalho |
+> | 🔶 **Hexágono** | Gate de decisão |
+> | ⭕ **Círculo vermelho** | Ponto de bloqueio |
+> | ➡️ **Seta sólida** | Caminho de aprovação |
+> | ➡️ **Seta pontilhada** | Caminho de bloqueio/rollback |
+
+---
+
+#### 📋 Resumo Consolidado de Datas
 
 | Janela (semanas) | Fase   | Dependências  | Gate de Decisão                                                  |
 | ---------------: | ------ | ------------- | ---------------------------------------------------------------- |
@@ -2088,7 +2249,306 @@ Além dos critérios de sucesso, os seguintes KPIs serão monitorados continuame
 
 ---
 
-## 💰 Estimativa de Custos do Projeto
+## � Detalhamento da Estimativa de Horas
+
+Esta seção apresenta a **fundamentação técnica** da estimativa de esforço para o projeto, elaborada pelos recursos da Néctar com base na experiência em projetos similares de modernização e integração. O detalhamento permite rastreabilidade completa entre atividades, horas estimadas e responsáveis.
+
+### 🎯 Metodologia de Estimativa
+
+A estimativa foi construída utilizando a técnica de **decomposição por atividades (WBS)**, combinada com **estimativas de três pontos** (otimista, mais provável, pessimista) para atividades de maior incerteza. O valor final considera o cenário **mais provável** para o planejamento base.
+
+| Critério                   | Descrição                                               |
+| :------------------------- | :------------------------------------------------------ |
+| **Técnica**                | Work Breakdown Structure (WBS) + Estimativa Paramétrica |
+| **Base de referência**     | Projetos anteriores de modernização de legado Néctar    |
+| **Fator de complexidade**  | 1.2x (integração com VBA/Access + convivência híbrida)  |
+| **Buffer de contingência** | 15–20% recomendado (não incluído na estimativa base)    |
+
+---
+
+### 📋 Fase 0 – Alinhamento e Contenção de Riscos (2 semanas)
+
+**Objetivo:** Criar base de governança, mapear dependências e reduzir riscos imediatos.
+
+| Atividade                                      |      Responsável       |    Horas | Justificativa                            |
+| :--------------------------------------------- | :--------------------: | -------: | :--------------------------------------- |
+| Kick-off e alinhamento com stakeholders        |        GP + Arq        |       8h | Reuniões iniciais + preparação           |
+| Inventário técnico do módulo Access/VBA        | Dev Sênior + Dev Pleno |      24h | Análise de código legado (~3.000 LOC)    |
+| Inventário de rotinas SINC                     |       Dev Sênior       |      16h | Mapeamento de jobs e dependências        |
+| Mapeamento de pontos de integração             |    Arq + Dev Sênior    |      16h | Diagramas C4 + documentação              |
+| Análise de tabelas compartilhadas (SQL Server) | Dev Sênior + Dev Pleno |      16h | Schema, triggers, constraints            |
+| Matriz de propriedade de dados                 |        GP + Arq        |       8h | Definição de source of truth por domínio |
+| Requisitos não funcionais e restrições         |          Arq           |       8h | SLAs, volumetria, janelas de manutenção  |
+| Priorização de fluxos (backlog)                |           GP           |       8h | Critérios MoSCoW + riscos                |
+| Documentação e revisão                         |           GP           |       8h | Consolidação de artefatos Fase 0         |
+| **Subtotal Fase 0**                            |                        | **112h** |                                          |
+
+**Distribuição por recurso (Fase 0):**
+
+| Recurso              | Horas | % da Fase |
+| :------------------- | ----: | --------: |
+| Gerente de Projeto   |   24h |       21% |
+| Arquiteto de Solução |   32h |       29% |
+| Desenvolvedor Sênior |   40h |       36% |
+| Desenvolvedor Pleno  |   16h |       14% |
+
+---
+
+### 📝 Fase 1 – Definição dos Contratos de Integração (2 semanas)
+
+**Objetivo:** Transformar integrações implícitas em contratos explícitos e governáveis.
+
+| Atividade                                       |      Responsável       |    Horas | Justificativa                          |
+| :---------------------------------------------- | :--------------------: | -------: | :------------------------------------- |
+| Workshop de levantamento de regras de negócio   |        GP + Arq        |      12h | 3 sessões de 4h com PO Cooperflora     |
+| Modelagem de domínios e entidades               |    Arq + Dev Sênior    |      16h | DTOs, agregados, limites de contexto   |
+| Definição de endpoints (fluxo piloto – Pessoas) |    Arq + Dev Sênior    |      12h | CRUD + operações específicas           |
+| Especificação OpenAPI v1                        | Dev Sênior + Dev Pleno |      24h | Payloads, validações, exemplos         |
+| Taxonomia de erros padronizada                  |          Arq           |       8h | Códigos, mensagens, campos de erro     |
+| Política de versionamento                       |          Arq           |       4h | Estratégia /v1, /v2, breaking changes  |
+| Definição de idempotência por operação          |    Arq + Dev Sênior    |       8h | Chaves naturais, deduplicação          |
+| Requisitos de autenticação/autorização          |        Arq + GP        |       8h | OAuth2 / API Key – decisão com cliente |
+| Validação e aprovação dos contratos             |           GP           |       8h | Apresentação + coleta de aceite        |
+| Documentação e revisão                          |    GP + Dev Sênior     |      12h | Consolidação de artefatos Fase 1       |
+| **Subtotal Fase 1**                             |                        | **112h** |                                        |
+
+**Distribuição por recurso (Fase 1):**
+
+| Recurso              | Horas | % da Fase |
+| :------------------- | ----: | --------: |
+| Gerente de Projeto   |   28h |       25% |
+| Arquiteto de Solução |   40h |       36% |
+| Desenvolvedor Sênior |   32h |       29% |
+| Desenvolvedor Pleno  |   12h |       11% |
+
+---
+
+### 🏗️ Fase 2 – Fundação da API (3 semanas)
+
+**Objetivo:** Disponibilizar infraestrutura e esqueleto técnico da API com padrões operacionais.
+
+| Atividade                                     |      Responsável       |    Horas | Justificativa                              |
+| :-------------------------------------------- | :--------------------: | -------: | :----------------------------------------- |
+| Setup de solução .NET (estrutura de projetos) |       Dev Sênior       |       8h | Camadas, DI, organização de código         |
+| Implementação de arquitetura base             |    Arq + Dev Sênior    |      24h | Middleware, validação, tratamento de erros |
+| Logging estruturado + correlation-id          | Dev Sênior + Dev Pleno |      16h | Serilog/Seq + propagação de contexto       |
+| Health checks e métricas                      |       Dev Sênior       |       8h | /health, /ready, métricas Prometheus       |
+| Integração com ERP Néctar (conectividade)     | Dev Sênior + Dev Pleno |      24h | Componentes SDK, connection pooling        |
+| Swagger/OpenAPI setup                         |       Dev Pleno        |       8h | Documentação auto-gerada                   |
+| Pipeline CI/CD                                | Dev Sênior + Dev Pleno |      16h | Build, test, deploy automatizado           |
+| Configuração de ambientes (DEV/HML)           |       Dev Sênior       |      12h | Variáveis, secrets, configurações          |
+| Testes de conectividade e smoke tests         | Dev Sênior + Dev Pleno |      16h | Validação ponta a ponta                    |
+| Code review e ajustes de arquitetura          |          Arq           |      12h | Revisão de padrões e boas práticas         |
+| Documentação técnica da fundação              |       Dev Sênior       |       8h | ADRs, README, guias de contribuição        |
+| Coordenação e acompanhamento                  |           GP           |      16h | Dailies, gestão de impedimentos            |
+| **Subtotal Fase 2**                           |                        | **168h** |                                            |
+
+**Distribuição por recurso (Fase 2):**
+
+| Recurso              | Horas | % da Fase |
+| :------------------- | ----: | --------: |
+| Gerente de Projeto   |   16h |       10% |
+| Arquiteto de Solução |   36h |       21% |
+| Desenvolvedor Sênior |   68h |       40% |
+| Desenvolvedor Pleno  |   48h |       29% |
+
+---
+
+### 🚀 Fase 3 – Fluxo Piloto (4 semanas)
+
+**Objetivo:** Implementar o primeiro fluxo via API em produção, validando padrões e processos.
+
+| Atividade                                    |      Responsável       |    Horas | Justificativa                          |
+| :------------------------------------------- | :--------------------: | -------: | :------------------------------------- |
+| Análise detalhada do fluxo Pessoas no legado | Dev Sênior + Dev Pleno |      24h | Mapeamento de regras, edge cases       |
+| Implementação de endpoints (CRUD Pessoas)    | Dev Sênior + Dev Pleno |      48h | Controllers, services, repositories    |
+| Validações de negócio                        |       Dev Sênior       |      16h | FluentValidation, regras complexas     |
+| Idempotência e deduplicação                  |       Dev Sênior       |      12h | Mecanismo de chaves únicas             |
+| Auditoria por transação                      |       Dev Pleno        |      12h | Log de operações, rastreabilidade      |
+| Testes unitários                             |       Dev Pleno        |      24h | xUnit, cobertura ≥90%                  |
+| Testes de integração                         | Dev Sênior + Dev Pleno |      20h | TestContainers, cenários E2E           |
+| Implementação de feature flag                |       Dev Sênior       |       8h | Roteamento Legado/API                  |
+| Ajustes no legado para convivência           | Dev Sênior + Dev Pleno |      16h | Adaptações mínimas no Access/VBA       |
+| Homologação com usuários                     |    GP + Dev Sênior     |      16h | Sessões de validação                   |
+| Runbook operacional                          |       Dev Sênior       |       8h | Procedimentos de operação              |
+| Dashboards e alertas                         |       Dev Pleno        |      12h | Grafana/Application Insights           |
+| Go-live piloto + estabilização               |    GP + Dev Sênior     |      16h | Acompanhamento das 2 primeiras semanas |
+| Documentação de lições aprendidas            |           GP           |       8h | Retrospectiva e ajustes de processo    |
+| **Subtotal Fase 3**                          |                        | **240h** |                                        |
+
+**Distribuição por recurso (Fase 3):**
+
+| Recurso              | Horas | % da Fase |
+| :------------------- | ----: | --------: |
+| Gerente de Projeto   |   40h |       17% |
+| Arquiteto de Solução |   16h |        7% |
+| Desenvolvedor Sênior |  112h |       47% |
+| Desenvolvedor Pleno  |   72h |       30% |
+
+---
+
+### 🔄 Fase 4 – Migração por Fluxo (12 semanas)
+
+**Objetivo:** Escalar a migração para os demais fluxos críticos, mantendo operação híbrida governada.
+
+> **Nota:** A estimativa considera a migração de **5 fluxos adicionais** além do piloto, com complexidade variada. O esforço médio por fluxo é de ~120h, considerando reuso de padrões da Fase 3.
+
+| Atividade                              |      Responsável       |    Horas | Justificativa                   |
+| :------------------------------------- | :--------------------: | -------: | :------------------------------ |
+| **Fluxo 2 – Produtos**                 |                        |          |                                 |
+| › Análise e mapeamento                 |       Dev Sênior       |      16h | Catálogo, categorias, atributos |
+| › Implementação                        | Dev Sênior + Dev Pleno |      56h | Endpoints + validações          |
+| › Testes e homologação                 |     Dev Pleno + GP     |      32h | Unitários, integração, aceite   |
+| **Fluxo 3 – Pedidos**                  |                        |          |                                 |
+| › Análise e mapeamento                 |       Dev Sênior       |      20h | Fluxo complexo, estados, regras |
+| › Implementação                        | Dev Sênior + Dev Pleno |      72h | Endpoints + validações + saga   |
+| › Testes e homologação                 |     Dev Pleno + GP     |      40h | Cenários de negócio variados    |
+| **Fluxo 4 – Faturamento**              |                        |          |                                 |
+| › Análise e mapeamento                 |       Dev Sênior       |      16h | NF-e, integrações fiscais       |
+| › Implementação                        | Dev Sênior + Dev Pleno |      56h | Endpoints + validações          |
+| › Testes e homologação                 |     Dev Pleno + GP     |      32h | Cenários fiscais críticos       |
+| **Fluxo 5 – Financeiro (Contas)**      |                        |          |                                 |
+| › Análise e mapeamento                 |       Dev Sênior       |      16h | A pagar, a receber, conciliação |
+| › Implementação                        | Dev Sênior + Dev Pleno |      56h | Endpoints + validações          |
+| › Testes e homologação                 |     Dev Pleno + GP     |      32h | Integração contábil             |
+| **Fluxo 6 – Estoque**                  |                        |          |                                 |
+| › Análise e mapeamento                 |       Dev Sênior       |      12h | Movimentações, inventário       |
+| › Implementação                        | Dev Sênior + Dev Pleno |      48h | Endpoints + validações          |
+| › Testes e homologação                 |     Dev Pleno + GP     |      24h | Cenários de movimentação        |
+| **Atividades transversais**            |                        |          |                                 |
+| Gestão de feature flags (5 fluxos)     |       Dev Sênior       |      20h | Configuração por fluxo          |
+| Monitoramento e ajustes de performance | Dev Sênior + Dev Pleno |      40h | Otimizações, índices, cache     |
+| Coordenação e acompanhamento           |           GP           |      96h | Gestão contínua (~8h/sem)       |
+| Revisões de arquitetura                |          Arq           |      48h | Validação de padrões (~4h/sem)  |
+| Documentação contínua                  |       Dev Pleno        |      24h | Atualização de specs e runbooks |
+| Checkpoints por onda (3 ondas)         |        GP + Arq        |      24h | Apresentações e aceites         |
+| **Subtotal Fase 4**                    |                        | **780h** |                                 |
+
+**Distribuição por recurso (Fase 4):**
+
+| Recurso              | Horas | % da Fase |
+| :------------------- | ----: | --------: |
+| Gerente de Projeto   |  120h |       15% |
+| Arquiteto de Solução |   72h |        9% |
+| Desenvolvedor Sênior |  340h |       44% |
+| Desenvolvedor Pleno  |  248h |       32% |
+
+---
+
+### 🧹 Fase 5 – Simplificação do Legado (5 semanas)
+
+**Objetivo:** Descomissionar rotinas de integração legadas e consolidar documentação final.
+
+| Atividade                         |      Responsável       |    Horas | Justificativa                     |
+| :-------------------------------- | :--------------------: | -------: | :-------------------------------- |
+| Inventário final de timers ativos |       Dev Sênior       |       8h | Validação do que foi migrado      |
+| Desativação de timers (por fluxo) | Dev Sênior + Dev Pleno |      24h | 6 fluxos × 4h (com validação)     |
+| Remoção de código VBA obsoleto    |       Dev Pleno        |      16h | Limpeza de rotinas não utilizadas |
+| Ajustes em tabelas de staging     |       Dev Sênior       |      12h | Remoção de tabelas temporárias    |
+| Validação de integridade de dados | Dev Sênior + Dev Pleno |      24h | Reconciliação final               |
+| Monitoramento pós-desativação     |       Dev Sênior       |      16h | 2 semanas de observação           |
+| Documentação de arquitetura final |    Arq + Dev Sênior    |      24h | Diagramas C4 atualizados          |
+| Runbooks de operação consolidados |       Dev Sênior       |      12h | Procedimentos unificados          |
+| Guia de troubleshooting           | Dev Sênior + Dev Pleno |      16h | FAQ técnico + scripts             |
+| Handover para operação            |    GP + Dev Sênior     |      16h | Sessões de transferência          |
+| Relatório de encerramento         |           GP           |      12h | Métricas, lições, recomendações   |
+| Aceite final e encerramento       |           GP           |       8h | Apresentação executiva            |
+| **Subtotal Fase 5**               |                        | **188h** |                                   |
+
+**Distribuição por recurso (Fase 5):**
+
+| Recurso              | Horas | % da Fase |
+| :------------------- | ----: | --------: |
+| Gerente de Projeto   |   36h |       19% |
+| Arquiteto de Solução |   24h |       13% |
+| Desenvolvedor Sênior |   80h |       43% |
+| Desenvolvedor Pleno  |   48h |       26% |
+
+---
+
+### 📊 Consolidação da Estimativa de Horas
+
+#### Por Fase
+
+| Fase | Nome                    |  Duração   | Horas Estimadas | % do Total |
+| ---: | :---------------------- | :--------: | --------------: | ---------: |
+|    0 | Alinhamento e contenção |   2 sem    |            112h |         7% |
+|    1 | Definição de contratos  |   2 sem    |            112h |         7% |
+|    2 | Fundação da API         |   3 sem    |            168h |        11% |
+|    3 | Fluxo piloto            |   4 sem    |            240h |        15% |
+|    4 | Migração por fluxo      |   12 sem   |            780h |        49% |
+|    5 | Simplificação do legado |   5 sem    |            188h |        12% |
+|      | **TOTAL**               | **28 sem** |      **1.600h** |   **100%** |
+
+#### Por Recurso (Total do Projeto)
+
+| Recurso              |   Fase 0 |   Fase 1 |   Fase 2 |   Fase 3 |   Fase 4 |   Fase 5 |  **Total** |    **%** |
+| :------------------- | -------: | -------: | -------: | -------: | -------: | -------: | ---------: | -------: |
+| Gerente de Projeto   |      24h |      28h |      16h |      40h |     120h |      36h |   **264h** |      17% |
+| Arquiteto de Solução |      32h |      40h |      36h |      16h |      72h |      24h |   **220h** |      14% |
+| Desenvolvedor Sênior |      40h |      32h |      68h |     112h |     340h |      80h |   **672h** |      42% |
+| Desenvolvedor Pleno  |      16h |      12h |      48h |      72h |     248h |      48h |   **444h** |      28% |
+| **TOTAL**            | **112h** | **112h** | **168h** | **240h** | **780h** | **188h** | **1.600h** | **100%** |
+
+```mermaid
+%%{init: { 'theme': 'base', 'themeVariables': {
+    'pie1': '#10B981',
+    'pie2': '#3B82F6',
+    'pie3': '#4F46E5',
+    'pie4': '#8B5CF6'
+} } }%%
+pie showData
+    title 📊 Distribuição de Horas por Recurso
+    "Gerente de Projeto (17%)" : 264
+    "Arquiteto de Solução (14%)" : 220
+    "Desenvolvedor Sênior (42%)" : 672
+    "Desenvolvedor Pleno (28%)" : 444
+```
+
+```mermaid
+%%{init: { 'theme': 'base', 'themeVariables': {
+    'pie1': '#F0FDF4',
+    'pie2': '#DCFCE7',
+    'pie3': '#BBF7D0',
+    'pie4': '#86EFAC',
+    'pie5': '#4ADE80',
+    'pie6': '#22C55E'
+} } }%%
+pie showData
+    title 📈 Distribuição de Horas por Fase
+    "Fase 0 – Alinhamento (7%)" : 112
+    "Fase 1 – Contratos (7%)" : 112
+    "Fase 2 – Fundação (11%)" : 168
+    "Fase 3 – Piloto (15%)" : 240
+    "Fase 4 – Migração (49%)" : 780
+    "Fase 5 – Simplificação (12%)" : 188
+```
+
+---
+
+### 🔍 Premissas da Estimativa
+
+| ID  | Premissa                                               | Impacto se Falsa                    |
+| :-: | :----------------------------------------------------- | :---------------------------------- |
+| E01 | Código legado VBA está acessível e documentável        | +20% em Fase 0                      |
+| E02 | Schema do SQL Server está estabilizado (sem mudanças)  | Retrabalho em mapeamentos           |
+| E03 | Cooperflora fornece SME para workshops em até 48h      | Atraso em Fase 1                    |
+| E04 | Ambientes DEV/HML disponíveis até início da Fase 2     | Bloqueio de desenvolvimento         |
+| E05 | Fluxos de migração são independentes (sem acoplamento) | +30% em Fase 4 se acoplados         |
+| E06 | Não há mudanças funcionais durante a migração          | Escopo adicional via Change Control |
+
+### ⚠️ Riscos que Podem Afetar a Estimativa
+
+| Risco                                        | Probabilidade | Impacto (Horas) | Mitigação                   |
+| :------------------------------------------- | :-----------: | --------------: | :-------------------------- |
+| Descoberta de regras não documentadas no VBA |     Alta      |    +80h a +160h | Buffer de 15% recomendado   |
+| Fluxos mais complexos que o esperado         |     Média     |  +40h por fluxo | Reavaliação por onda        |
+| Indisponibilidade de SMEs do cliente         |     Média     |  +20h em espera | Acordar agenda na Fase 0    |
+| Problemas de performance em produção         |     Baixa     |            +40h | Testes de carga antecipados |
+
+---
+
+## �💰 Estimativa de Custos do Projeto
 
 Esta seção apresenta a **estimativa de custos** do projeto, considerando exclusivamente os **recursos da Néctar** alocados para a execução. Os valores são baseados no cronograma macro definido (28 semanas para Fases 0–5), na participação percentual de cada recurso e no valor hora padrão de **R$ 150,00**.
 
@@ -2142,16 +2602,16 @@ Esta seção apresenta a **estimativa de custos** do projeto, considerando exclu
 
 O pagamento do projeto será realizado conforme o fluxo abaixo, vinculado aos marcos de entrega de cada fase:
 
-| Evento de Pagamento                         | % do Total |     Valor (R$) | Condição de Faturamento                                   |
-| ------------------------------------------- | :--------: | -------------: | --------------------------------------------------------- |
-| **Aceite do Projeto**                       |    30%     |     141.120,00 | Imediatamente após assinatura do contrato e aceite formal |
-| **Conclusão Fase 0** (Alinhamento)          |    10%     |      47.040,00 | Entrega do inventário técnico e backlog priorizado        |
-| **Conclusão Fase 1** (Contratos)            |    10%     |      47.040,00 | Contratos OpenAPI aprovados e governança definida         |
-| **Conclusão Fase 2** (Fundação API)         |    10%     |      47.040,00 | API em DEV/HML com pipeline CI/CD funcional               |
-| **Conclusão Fase 3** (Fluxo Piloto)         |    15%     |      70.560,00 | Primeiro fluxo em produção com critérios de estabilização |
-| **Conclusão Fase 4** (Migração por Fluxo)   |    15%     |      70.560,00 | Fluxos críticos migrados e operação híbrida governada     |
-| **Conclusão Fase 5** (Simplificação Legado) |    10%     |      47.040,00 | Rotinas de integração removidas e documentação final      |
-| **TOTAL**                                   |  **100%**  | **470.400,00** |                                                           |
+| Evento de Pagamento                            | % do Total |     Valor (R$) | Condição de Faturamento                                   |
+| ---------------------------------------------- | :--------: | -------------: | --------------------------------------------------------- |
+| 📋 **Aceite do Projeto**                       |    30%     |     141.120,00 | Imediatamente após assinatura do contrato e aceite formal |
+| 🔍 **Conclusão Fase 0** (Alinhamento)          |    10%     |      47.040,00 | Entrega do inventário técnico e backlog priorizado        |
+| 📝 **Conclusão Fase 1** (Contratos)            |    10%     |      47.040,00 | Contratos OpenAPI aprovados e governança definida         |
+| 🏗️ **Conclusão Fase 2** (Fundação API)         |    10%     |      47.040,00 | API em DEV/HML com pipeline CI/CD funcional               |
+| 🚀 **Conclusão Fase 3** (Fluxo Piloto)         |    15%     |      70.560,00 | Primeiro fluxo em produção com critérios de estabilização |
+| 🔄 **Conclusão Fase 4** (Migração por Fluxo)   |    15%     |      70.560,00 | Fluxos críticos migrados e operação híbrida governada     |
+| ✅ **Conclusão Fase 5** (Simplificação Legado) |    10%     |      47.040,00 | Rotinas de integração removidas e documentação final      |
+| 💰 **TOTAL**                                   |  **100%**  | **470.400,00** |                                                           |
 
 #### 📋 Condições Gerais de Pagamento
 
@@ -2166,25 +2626,51 @@ O pagamento do projeto será realizado conforme o fluxo abaixo, vinculado aos ma
 5. **Atrasos por parte do cliente:** Caso haja atraso na validação de entregas ou fornecimento de insumos pela Cooperflora que impacte o cronograma, os pagamentos seguirão o calendário original, não sendo postergados.
 
 ```mermaid
----
-title: "Fluxo de Pagamento por Marco"
----
+%%{init: { 'theme': 'base', 'themeVariables': {
+    'cScale0': '#10B981', 'cScaleLabel0': '#ffffff',
+    'cScale1': '#4F46E5', 'cScaleLabel1': '#ffffff',
+    'cScale2': '#F59E0B', 'cScaleLabel2': '#ffffff'
+} } }%%
+timeline
+    title 💳 Cronograma de Pagamento do Projeto
+    section 📋 Início
+        Aceite do Projeto : 💰 30% – R$ 141.120,00 : Assinatura e aceite formal
+    section 🏗️ Fases 0–2 (Fundação)
+        Fase 0 : 💰 10% – R$ 47.040,00 : Inventário técnico
+        Fase 1 : 💰 10% – R$ 47.040,00 : Contratos OpenAPI
+        Fase 2 : 💰 10% – R$ 47.040,00 : API em DEV/HML
+    section 🚀 Fases 3–5 (Execução)
+        Fase 3 : 💰 15% – R$ 70.560,00 : Fluxo piloto em PRD
+        Fase 4 : 💰 15% – R$ 70.560,00 : Migração completa
+        Fase 5 : 💰 10% – R$ 47.040,00 : Simplificação legado
+```
+
+```mermaid
+%%{init: { 'theme': 'base', 'themeVariables': {
+    'pie1': '#10B981',
+    'pie2': '#4F46E5',
+    'pie3': '#6366F1',
+    'pie4': '#818CF8',
+    'pie5': '#F59E0B',
+    'pie6': '#FBBF24',
+    'pie7': '#FCD34D'
+} } }%%
 pie showData
-    title Distribuição dos Pagamentos
-    "Aceite do Projeto (30%)" : 141120
-    "Fase 0 - Alinhamento (10%)" : 47040
-    "Fase 1 - Contratos (10%)" : 47040
-    "Fase 2 - Fundação API (10%)" : 47040
-    "Fase 3 - Fluxo Piloto (15%)" : 70560
-    "Fase 4 - Migração (15%)" : 70560
-    "Fase 5 - Simplificação (10%)" : 47040
+    title 📊 Distribuição dos Pagamentos (R$)
+    "Aceite (30%)" : 72000
+    "Fase 0 (10%)" : 24000
+    "Fase 1 (10%)" : 24000
+    "Fase 2 (10%)" : 24000
+    "Fase 3 (15%)" : 36000
+    "Fase 4 (15%)" : 36000
+    "Fase 5 (10%)" : 24000
 ```
 
 ### ⚠️ Observações Importantes
 
 1. **Fase 6 (Evolução opcional)** não está incluída nesta estimativa por ser executada sob demanda, com escopo e custos a serem definidos caso a caso.
 
-2. **Contingência não incluída:** Recomenda-se reserva de 15–20% para contingências, o que elevaria o investimento total para aproximadamente **R$ 540.960,00 a R$ 564.480,00**.
+2. **Contingência não incluída:** Recomenda-se reserva de 15–20% para contingências, o que elevaria o investimento total para aproximadamente **R$ 276.000,00 a R$ 288.000,00**.
 
 3. **Custos não contemplados:**
 
@@ -2198,10 +2684,10 @@ pie showData
 >
 > | Métrica                    | Valor                 |
 > | -------------------------- | --------------------- |
-> | **Investimento Total**     | **R$ 470.400,00**     |
+> | **Investimento Total**     | **R$ 240.000,00**     |
 > | **Duração**                | 28 semanas (~7 meses) |
 > | **Valor Hora Base**        | R$ 150,00             |
 > | **Recursos Alocados**      | 4 profissionais       |
-> | **Total de Horas**         | 3.136 horas           |
-> | **Com Contingência (15%)** | R$ 540.960,00         |
-> | **Com Contingência (20%)** | R$ 564.480,00         |
+> | **Total de Horas**         | 1.600 horas           |
+> | **Com Contingência (15%)** | R$ 276.000,00         |
+> | **Com Contingência (20%)** | R$ 288.000,00         |
