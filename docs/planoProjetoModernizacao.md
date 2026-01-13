@@ -489,89 +489,94 @@ flowchart LR
 
 As premissas abaixo são **específicas para cada item de escopo** e complementam as premissas gerais do projeto. Cada premissa está diretamente vinculada a um entregável e define condições técnicas ou operacionais que devem ser verdadeiras para o sucesso do item.
 
+> **🎯 Legenda de Severidade** — Consulte a seção [Premissas e Restrições do Projeto](#-premissas-e-restrições-do-projeto) para definição completa dos níveis.
+
 ##### API de Integração (.NET Web API)
 
-|  ID  | Premissa                                                                                              | Responsável | Impacto se Falsa                                                 | Impacto em Custos (Cooperflora)                                              |
-| :--: | ----------------------------------------------------------------------------------------------------- | ----------- | ---------------------------------------------------------------- | ---------------------------------------------------------------------------- |
-| PE01 | Arquitetura de referência (.NET Web API com camadas) será aprovada antes do início do desenvolvimento | Néctar      | Retrabalho estrutural; débito técnico acumulado                  | —                                                                            |
-| PE02 | Componentes de integração com ERP (SDK/bibliotecas) estarão disponíveis e documentados                | Néctar      | Atraso no desenvolvimento; necessidade de engenharia reversa     | —                                                                            |
-| PE03 | Padrões de resiliência (circuit breaker, retry, timeout) serão definidos na Fase 1                    | Néctar      | Falhas em cascata; comportamento inconsistente sob carga         | —                                                                            |
-| PE04 | Ambiente de execução suportará .NET 6+ (ou versão acordada)                                           | Cooperflora | Limitações de runtime; impossibilidade de usar recursos modernos | **Custo de adequação de infraestrutura** se ambiente legado for incompatível |
+|  ID  | Premissa                                                                                              | Responsável | Impacto se Falsa                                                 |  Severidade  | Impacto em Custos (Cooperflora)                                              |
+| :--: | ----------------------------------------------------------------------------------------------------- | ----------- | ---------------------------------------------------------------- | :----------: | ---------------------------------------------------------------------------- |
+| PE01 | Arquitetura de referência (.NET Web API com camadas) será aprovada antes do início do desenvolvimento | Néctar      | Retrabalho estrutural; débito técnico acumulado                  | 🟠 **Alto**  | —                                                                            |
+| PE02 | Componentes de integração com ERP (SDK/bibliotecas) estarão disponíveis e documentados                | Néctar      | Atraso no desenvolvimento; necessidade de engenharia reversa     | 🟠 **Alto**  | —                                                                            |
+| PE03 | Padrões de resiliência (circuit breaker, retry, timeout) serão definidos na Fase 1                    | Néctar      | Falhas em cascata; comportamento inconsistente sob carga         | 🟠 **Alto**  | —                                                                            |
+| PE04 | Ambiente de execução suportará .NET 6+ (ou versão acordada)                                           | Cooperflora | Limitações de runtime; impossibilidade de usar recursos modernos | 🟡 **Médio** | **Custo de adequação de infraestrutura** se ambiente legado for incompatível |
 
 ##### Contratos OpenAPI
 
-|  ID  | Premissa                                                                                   | Responsável          | Impacto se Falsa                                                     | Impacto em Custos (Cooperflora)                                             |
-| :--: | ------------------------------------------------------------------------------------------ | -------------------- | -------------------------------------------------------------------- | --------------------------------------------------------------------------- |
-| PE05 | Regras de negócio de cada fluxo serão documentadas pelo PO antes da modelagem do contrato  | Cooperflora          | Contratos incompletos ou incorretos; retrabalho em fases posteriores | **Retrabalho de workshops**: custo de reagendamento e mobilização de equipe |
-| PE06 | Taxonomia de erros será padronizada e aprovada antes da implementação do primeiro endpoint | Néctar + Cooperflora | Inconsistência de mensagens de erro; dificuldade de diagnóstico      | —                                                                           |
-| PE07 | Política de versionamento e breaking changes será acordada antes do piloto                 | Néctar + Cooperflora | Contratos quebrados sem governança; impacto em consumidores          | —                                                                           |
-| PE08 | SLAs de latência e disponibilidade serão definidos por fluxo antes da implementação        | Cooperflora          | Expectativas desalinhadas; discussões pós-implantação                | **Renegociação de SLA**: possível custo de ajustes contratuais              |
+|  ID  | Premissa                                                                                   | Responsável          | Impacto se Falsa                                                     |   Severidade   | Impacto em Custos (Cooperflora)                                             |
+| :--: | ------------------------------------------------------------------------------------------ | -------------------- | -------------------------------------------------------------------- | :------------: | --------------------------------------------------------------------------- |
+| PE05 | Regras de negócio de cada fluxo serão documentadas pelo PO antes da modelagem do contrato  | Cooperflora          | Contratos incompletos ou incorretos; retrabalho em fases posteriores | 🔴 **Crítico** | **Retrabalho de workshops**: custo de reagendamento e mobilização de equipe |
+| PE06 | Taxonomia de erros será padronizada e aprovada antes da implementação do primeiro endpoint | Néctar + Cooperflora | Inconsistência de mensagens de erro; dificuldade de diagnóstico      |  🟡 **Médio**  | —                                                                           |
+| PE07 | Política de versionamento e breaking changes será acordada antes do piloto                 | Néctar + Cooperflora | Contratos quebrados sem governança; impacto em consumidores          |  🟠 **Alto**   | —                                                                           |
+| PE08 | SLAs de latência e disponibilidade serão definidos por fluxo antes da implementação        | Cooperflora          | Expectativas desalinhadas; discussões pós-implantação                |  🟡 **Médio**  | **Renegociação de SLA**: possível custo de ajustes contratuais              |
 
 ##### Fluxo Piloto (Cadastro de Pessoas)
 
-|  ID  | Premissa                                                                                             | Responsável          | Impacto se Falsa                                             | Impacto em Custos (Cooperflora)                                      |
-| :--: | ---------------------------------------------------------------------------------------------------- | -------------------- | ------------------------------------------------------------ | -------------------------------------------------------------------- |
-| PE09 | Fluxo de cadastro de pessoas no legado será congelado durante a migração (sem novas funcionalidades) | Cooperflora          | Divergência entre legado e API; necessidade de reconciliação | **Retrabalho de sincronização**: custo de análise e ajuste de regras |
-| PE10 | Dados de teste representativos (anonimizados) estarão disponíveis para validação do piloto           | Cooperflora          | Testes não representam cenários reais; defeitos em produção  | **Correções emergenciais**: custo premium de suporte fora do horário |
-| PE11 | Critérios de rollback e janela de estabilização serão definidos antes do go-live do piloto           | Néctar + Cooperflora | Rollback desorganizado; tempo de recuperação elevado         | —                                                                    |
-| PE12 | Métricas de baseline do legado (volume, latência, erros) serão coletadas antes da migração           | Néctar               | Impossibilidade de comparar performance; falta de baseline   | —                                                                    |
+|  ID  | Premissa                                                                                             | Responsável          | Impacto se Falsa                                             |   Severidade   | Impacto em Custos (Cooperflora)                                      |
+| :--: | ---------------------------------------------------------------------------------------------------- | -------------------- | ------------------------------------------------------------ | :------------: | -------------------------------------------------------------------- |
+| PE09 | Fluxo de cadastro de pessoas no legado será congelado durante a migração (sem novas funcionalidades) | Cooperflora          | Divergência entre legado e API; necessidade de reconciliação | 🔴 **Crítico** | **Retrabalho de sincronização**: custo de análise e ajuste de regras |
+| PE10 | Dados de teste representativos (anonimizados) estarão disponíveis para validação do piloto           | Cooperflora          | Testes não representam cenários reais; defeitos em produção  |  🟠 **Alto**   | **Correções emergenciais**: custo premium de suporte fora do horário |
+| PE11 | Critérios de rollback e janela de estabilização serão definidos antes do go-live do piloto           | Néctar + Cooperflora | Rollback desorganizado; tempo de recuperação elevado         |  🟠 **Alto**   | —                                                                    |
+| PE12 | Métricas de baseline do legado (volume, latência, erros) serão coletadas antes da migração           | Néctar               | Impossibilidade de comparar performance; falta de baseline   |  🟡 **Médio**  | —                                                                    |
 
 ##### Operação Híbrida
 
-|  ID  | Premissa                                                                                       | Responsável | Impacto se Falsa                                       | Impacto em Custos (Cooperflora)                                          |
-| :--: | ---------------------------------------------------------------------------------------------- | ----------- | ------------------------------------------------------ | ------------------------------------------------------------------------ |
-| PE13 | Feature flags por fluxo serão implementadas com capacidade de rollback em tempo real           | Néctar      | Rollback lento ou manual; aumento de MTTR              | —                                                                        |
-| PE14 | Matriz de propriedade de dados (source of truth) será validada antes de cada migração de fluxo | Cooperflora | Conflitos de dados; dual-write não governado           | **Reconciliação manual**: custo de análise e correção de inconsistências |
-| PE15 | Procedimentos de cutover e fallback serão documentados e testados em HML antes de PRD          | Néctar      | Incidentes em produção por procedimentos não validados | —                                                                        |
-| PE16 | Comunicação de mudança de fluxo será feita aos usuários com antecedência mínima de 1 semana    | Cooperflora | Resistência à mudança; erros por desconhecimento       | —                                                                        |
+|  ID  | Premissa                                                                                       | Responsável | Impacto se Falsa                                       |   Severidade   | Impacto em Custos (Cooperflora)                                          |
+| :--: | ---------------------------------------------------------------------------------------------- | ----------- | ------------------------------------------------------ | :------------: | ------------------------------------------------------------------------ |
+| PE13 | Feature flags por fluxo serão implementadas com capacidade de rollback em tempo real           | Néctar      | Rollback lento ou manual; aumento de MTTR              |  🟠 **Alto**   | —                                                                        |
+| PE14 | Matriz de propriedade de dados (source of truth) será validada antes de cada migração de fluxo | Cooperflora | Conflitos de dados; dual-write não governado           | 🔴 **Crítico** | **Reconciliação manual**: custo de análise e correção de inconsistências |
+| PE15 | Procedimentos de cutover e fallback serão documentados e testados em HML antes de PRD          | Néctar      | Incidentes em produção por procedimentos não validados |  🟠 **Alto**   | —                                                                        |
+| PE16 | Comunicação de mudança de fluxo será feita aos usuários com antecedência mínima de 1 semana    | Cooperflora | Resistência à mudança; erros por desconhecimento       |  🟡 **Médio**  | —                                                                        |
 
 ##### Descomissionamento de Timers/Polling
 
-|  ID  | Premissa                                                                                         | Responsável          | Impacto se Falsa                                               | Impacto em Custos (Cooperflora)                             |
-| :--: | ------------------------------------------------------------------------------------------------ | -------------------- | -------------------------------------------------------------- | ----------------------------------------------------------- |
-| PE17 | Inventário completo de timers e rotinas de polling será entregue na Fase 0                       | Néctar               | Timers não mapeados causam efeitos colaterais durante migração | —                                                           |
-| PE18 | Cada timer desativado terá critérios de aceite definidos (volume processado via API, zero erros) | Néctar + Cooperflora | Desativação prematura; falhas silenciosas                      | **Reativação emergencial**: custo de diagnóstico e rollback |
-| PE19 | Timers remanescentes durante transição serão monitorados com alertas específicos                 | Néctar               | Falhas em timers não detectadas; impacto em dados              | —                                                           |
+|  ID  | Premissa                                                                                         | Responsável          | Impacto se Falsa                                               |   Severidade   | Impacto em Custos (Cooperflora)                             |
+| :--: | ------------------------------------------------------------------------------------------------ | -------------------- | -------------------------------------------------------------- | :------------: | ----------------------------------------------------------- |
+| PE17 | Inventário completo de timers e rotinas de polling será entregue na Fase 0                       | Néctar               | Timers não mapeados causam efeitos colaterais durante migração | 🔴 **Crítico** | —                                                           |
+| PE18 | Cada timer desativado terá critérios de aceite definidos (volume processado via API, zero erros) | Néctar + Cooperflora | Desativação prematura; falhas silenciosas                      |  🟠 **Alto**   | **Reativação emergencial**: custo de diagnóstico e rollback |
+| PE19 | Timers remanescentes durante transição serão monitorados com alertas específicos                 | Néctar               | Falhas em timers não detectadas; impacto em dados              |  🟡 **Médio**  | —                                                           |
 
 ##### Observabilidade e Auditoria
 
-|  ID  | Premissa                                                                                 | Responsável          | Impacto se Falsa                                  | Impacto em Custos (Cooperflora)                                      |
-| :--: | ---------------------------------------------------------------------------------------- | -------------------- | ------------------------------------------------- | -------------------------------------------------------------------- |
-| PE20 | Ferramenta de APM/logging será definida e provisionada antes da Fase 2                   | Néctar + Cooperflora | Logs não estruturados; dificuldade de diagnóstico | **Licenciamento de ferramentas**: possível custo de aquisição de APM |
-| PE21 | Padrão de correlation-id será implementado em todas as camadas desde o primeiro endpoint | Néctar               | Rastreabilidade comprometida; investigação manual | —                                                                    |
-| PE22 | Dashboards operacionais serão entregues junto com cada fluxo migrado                     | Néctar               | Operação sem visibilidade; aumento de MTTR        | —                                                                    |
+|  ID  | Premissa                                                                                 | Responsável          | Impacto se Falsa                                  |  Severidade  | Impacto em Custos (Cooperflora)                                      |
+| :--: | ---------------------------------------------------------------------------------------- | -------------------- | ------------------------------------------------- | :----------: | -------------------------------------------------------------------- |
+| PE20 | Ferramenta de APM/logging será definida e provisionada antes da Fase 2                   | Néctar + Cooperflora | Logs não estruturados; dificuldade de diagnóstico | 🟠 **Alto**  | **Licenciamento de ferramentas**: possível custo de aquisição de APM |
+| PE21 | Padrão de correlation-id será implementado em todas as camadas desde o primeiro endpoint | Néctar               | Rastreabilidade comprometida; investigação manual | 🟠 **Alto**  | —                                                                    |
+| PE22 | Dashboards operacionais serão entregues junto com cada fluxo migrado                     | Néctar               | Operação sem visibilidade; aumento de MTTR        | 🟡 **Médio** | —                                                                    |
 
 ##### Segurança da API
 
-|  ID  | Premissa                                                                                | Responsável          | Impacto se Falsa                                         | Impacto em Custos (Cooperflora)                                        |
-| :--: | --------------------------------------------------------------------------------------- | -------------------- | -------------------------------------------------------- | ---------------------------------------------------------------------- |
-| PE23 | Mecanismo de autenticação (OAuth2/API Key/mTLS) será definido e aprovado na Fase 1      | Cooperflora + Néctar | Bloqueio de implementação; decisões tardias de segurança | **Custo de adequação**: possível investimento em infraestrutura de IdP |
-| PE24 | Políticas de rate limiting e throttling serão definidas por fluxo/consumidor            | Néctar               | Sobrecarga não controlada; degradação de performance     | —                                                                      |
-| PE25 | Segregação de segredos (API keys, connection strings) será implementada por ambiente    | Néctar + Cooperflora | Vazamento de credenciais; risco de segurança             | —                                                                      |
-| PE26 | Hardening de endpoints seguirá checklist de segurança (OWASP) validado antes do go-live | Néctar               | Vulnerabilidades expostas; risco de ataques              | —                                                                      |
+|  ID  | Premissa                                                                                | Responsável          | Impacto se Falsa                                         |   Severidade   | Impacto em Custos (Cooperflora)                                        |
+| :--: | --------------------------------------------------------------------------------------- | -------------------- | -------------------------------------------------------- | :------------: | ---------------------------------------------------------------------- |
+| PE23 | Mecanismo de autenticação (OAuth2/API Key/mTLS) será definido e aprovado na Fase 1      | Cooperflora + Néctar | Bloqueio de implementação; decisões tardias de segurança | 🔴 **Crítico** | **Custo de adequação**: possível investimento em infraestrutura de IdP |
+| PE24 | Políticas de rate limiting e throttling serão definidas por fluxo/consumidor            | Néctar               | Sobrecarga não controlada; degradação de performance     |  🟡 **Médio**  | —                                                                      |
+| PE25 | Segregação de segredos (API keys, connection strings) será implementada por ambiente    | Néctar + Cooperflora | Vazamento de credenciais; risco de segurança             | 🔴 **Crítico** | —                                                                      |
+| PE26 | Hardening de endpoints seguirá checklist de segurança (OWASP) validado antes do go-live | Néctar               | Vulnerabilidades expostas; risco de ataques              |  🟠 **Alto**   | —                                                                      |
 
 ##### Preparação para Event-Driven (Opcional)
 
-|  ID  | Premissa                                                                                       | Responsável          | Impacto se Falsa                                              | Impacto em Custos (Cooperflora) |
-| :--: | ---------------------------------------------------------------------------------------------- | -------------------- | ------------------------------------------------------------- | ------------------------------- |
-| PE27 | Critérios para adoção de mensageria serão definidos antes de qualquer implementação assíncrona | Néctar + Cooperflora | Adoção prematura ou injustificada; complexidade desnecessária | —                               |
-| PE28 | Padrões de DLQ, retry e idempotência para eventos serão documentados como guideline            | Néctar               | Inconsistência em implementações futuras; poison messages     | —                               |
-| PE29 | ROI de cada iniciativa event-driven será justificado antes da aprovação de escopo              | Cooperflora          | Investimento sem retorno mensurável                           | —                               |
+|  ID  | Premissa                                                                                       | Responsável          | Impacto se Falsa                                              |  Severidade  | Impacto em Custos (Cooperflora) |
+| :--: | ---------------------------------------------------------------------------------------------- | -------------------- | ------------------------------------------------------------- | :----------: | ------------------------------- |
+| PE27 | Critérios para adoção de mensageria serão definidos antes de qualquer implementação assíncrona | Néctar + Cooperflora | Adoção prematura ou injustificada; complexidade desnecessária | 🟡 **Médio** | —                               |
+| PE28 | Padrões de DLQ, retry e idempotência para eventos serão documentados como guideline            | Néctar               | Inconsistência em implementações futuras; poison messages     | 🟡 **Médio** | —                               |
+| PE29 | ROI de cada iniciativa event-driven será justificado antes da aprovação de escopo              | Cooperflora          | Investimento sem retorno mensurável                           | 🛢 **Baixo**  | —                               |
 
 > **Resumo das Premissas Específicas por Área**
 >
-> | Área de Escopo            | Premissas | Responsável Principal | Fase(s) Crítica(s) |
-> | ------------------------- | :-------: | --------------------- | ------------------ |
-> | API de Integração         |     4     | Néctar                | Fases 1–2          |
-> | Contratos OpenAPI         |     4     | Néctar + Cooperflora  | Fase 1             |
-> | Fluxo Piloto              |     4     | Cooperflora           | Fase 3             |
-> | Operação Híbrida          |     4     | Cooperflora           | Fases 3–4          |
-> | Descomissionamento Timers |     3     | Néctar                | Fases 0, 4         |
-> | Observabilidade           |     3     | Néctar                | Fases 2–4          |
-> | Segurança                 |     4     | Cooperflora + Néctar  | Fases 1–2          |
-> | Event-Driven (Opcional)   |     3     | Cooperflora           | Fase 6             |
+> | Área de Escopo            | Premissas | 🔴 Crítico | 🟠 Alto | 🟡 Médio | 🟢 Baixo | Responsável Principal | Fase(s) Crítica(s) |
+> | ------------------------- | :-------: | :--------: | :-----: | :------: | :------: | --------------------- | ------------------ |
+> | API de Integração         |     4     |     0      |    3    |    1     |    0     | Néctar                | Fases 1–2          |
+> | Contratos OpenAPI         |     4     |     1      |    1    |    2     |    0     | Néctar + Cooperflora  | Fase 1             |
+> | Fluxo Piloto              |     4     |     1      |    2    |    1     |    0     | Cooperflora           | Fase 3             |
+> | Operação Híbrida          |     4     |     1      |    2    |    1     |    0     | Cooperflora           | Fases 3–4          |
+> | Descomissionamento Timers |     3     |     1      |    1    |    1     |    0     | Néctar                | Fases 0, 4         |
+> | Observabilidade           |     3     |     0      |    2    |    1     |    0     | Néctar                | Fases 2–4          |
+> | Segurança                 |     4     |     2      |    1    |    1     |    0     | Cooperflora + Néctar  | Fases 1–2          |
+> | Event-Driven (Opcional)   |     3     |     0      |    0    |    2     |    1     | Cooperflora           | Fase 6             |
+> | **TOTAL**                 |  **29**   |   **6**    | **12**  |  **10**  |  **1**   | —                     | —                  |
 >
 > **Total**: 29 premissas específicas de escopo (PE01–PE29), complementando as 28 premissas gerais do projeto (P01–P28).
+>
+> **Distribuição de Severidade**: 🔴 6 Críticas (21%) | 🟠 12 Altas (41%) | 🟡 10 Médias (34%) | 🟢 1 Baixa (3%)
 
 #### 🎯 Escopo por domínio de negócio
 
@@ -1163,73 +1168,82 @@ A comunicação eficaz é crítica para o sucesso do projeto. O plano abaixo def
 
 As premissas são condições assumidas como verdadeiras para fins de planejamento. Se alguma premissa se mostrar falsa, deve ser tratada como **risco materializado** e seguir o processo de gestão de riscos. As premissas estão organizadas por **fase do ciclo de vida** do projeto e **responsável**, com destaque para impactos financeiros quando aplicável.
 
+> **🎯 Legenda de Severidade** (Probabilidade de Falha × Impacto no Projeto)
+>
+> |   Severidade   | Descrição                                                          | Ação Requerida                                                     |
+> | :------------: | ------------------------------------------------------------------ | ------------------------------------------------------------------ |
+> | 🔴 **Crítico** | Alta probabilidade de falha com impacto severo no cronograma/custo | Monitoramento semanal no Comitê; plano de contingência obrigatório |
+> |  🟠 **Alto**   | Probabilidade média-alta com impacto significativo                 | Acompanhamento quinzenal; mitigação documentada                    |
+> |  🟡 **Médio**  | Probabilidade média com impacto moderado                           | Monitoramento mensal; tratamento quando materializado              |
+> |  🟢 **Baixo**  | Baixa probabilidade ou impacto controlável                         | Revisão periódica; sem ação imediata necessária                    |
+
 ##### Fase 0 – Alinhamento e Contenção de Riscos
 
-|  ID | Premissa                                                                                        | Responsável          | Impacto se Falsa                                      | Impacto em Custos (Cooperflora)                                                                                     |
-| --: | ----------------------------------------------------------------------------------------------- | -------------------- | ----------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------- |
-| P01 | Cooperflora designará interlocutores técnicos e de negócio com autonomia para tomada de decisão | Cooperflora          | Atraso em validações e aprovações; bloqueio de Fase 0 | **Ociosidade da equipe Néctar**: custo de espera estimado em X h/dia por profissional alocado aguardando definições |
-| P02 | Cooperflora proverá acesso ao ambiente de produção/homologação para mapeamento do legado        | Cooperflora          | Inventário técnico incompleto; riscos não mapeados    | **Retrabalho**: custo adicional de 20-40% nas fases seguintes por descobertas tardias                               |
-| P03 | O legado (Access/VBA) permanecerá estável durante a fase de mapeamento                          | Néctar + Cooperflora | Retrabalho em mapeamento; documentação desatualizada  | —                                                                                                                   |
-| P04 | Documentação existente do legado será disponibilizada (se houver)                               | Cooperflora          | Maior esforço de engenharia reversa                   | **Horas adicionais de análise**: 30-50% a mais de esforço na Fase 0                                                 |
+|  ID | Premissa                                                                                        | Responsável          | Impacto se Falsa                                      |   Severidade   | Impacto em Custos (Cooperflora)                                                                                     |
+| --: | ----------------------------------------------------------------------------------------------- | -------------------- | ----------------------------------------------------- | :------------: | ------------------------------------------------------------------------------------------------------------------- |
+| P01 | Cooperflora designará interlocutores técnicos e de negócio com autonomia para tomada de decisão | Cooperflora          | Atraso em validações e aprovações; bloqueio de Fase 0 | 🔴 **Crítico** | **Ociosidade da equipe Néctar**: custo de espera estimado em X h/dia por profissional alocado aguardando definições |
+| P02 | Cooperflora proverá acesso ao ambiente de produção/homologação para mapeamento do legado        | Cooperflora          | Inventário técnico incompleto; riscos não mapeados    |  🟠 **Alto**   | **Retrabalho**: custo adicional de 20-40% nas fases seguintes por descobertas tardias                               |
+| P03 | O legado (Access/VBA) permanecerá estável durante a fase de mapeamento                          | Néctar + Cooperflora | Retrabalho em mapeamento; documentação desatualizada  |  🟡 **Médio**  | —                                                                                                                   |
+| P04 | Documentação existente do legado será disponibilizada (se houver)                               | Cooperflora          | Maior esforço de engenharia reversa                   |  🟡 **Médio**  | **Horas adicionais de análise**: 30-50% a mais de esforço na Fase 0                                                 |
 
 ##### Fase 1 – Definição dos Contratos de Integração
 
-|  ID | Premissa                                                                             | Responsável | Impacto se Falsa                                         | Impacto em Custos (Cooperflora)                                                                          |
-| --: | ------------------------------------------------------------------------------------ | ----------- | -------------------------------------------------------- | -------------------------------------------------------------------------------------------------------- |
-| P05 | Cooperflora participará ativamente dos workshops de definição de contratos           | Cooperflora | Contratos mal definidos; retrabalho em fases posteriores | **Reagendamento de workshops**: custo de mobilização de equipe técnica Néctar (especialistas/arquitetos) |
-| P06 | Requisitos de negócio para cada fluxo serão validados pelo PO dentro de 5 dias úteis | Cooperflora | Atraso na aprovação de contratos OpenAPI                 | **Ociosidade**: equipe técnica aguardando validação; custo de alocação sem produtividade                 |
-| P07 | Requisitos de segurança e autenticação serão definidos pela TI Cooperflora           | Cooperflora | Bloqueio na definição de padrões de API                  | **Atraso cascateado**: impacto em Fase 2 e 3                                                             |
+|  ID | Premissa                                                                             | Responsável | Impacto se Falsa                                         |   Severidade   | Impacto em Custos (Cooperflora)                                                                          |
+| --: | ------------------------------------------------------------------------------------ | ----------- | -------------------------------------------------------- | :------------: | -------------------------------------------------------------------------------------------------------- |
+| P05 | Cooperflora participará ativamente dos workshops de definição de contratos           | Cooperflora | Contratos mal definidos; retrabalho em fases posteriores |  🟠 **Alto**   | **Reagendamento de workshops**: custo de mobilização de equipe técnica Néctar (especialistas/arquitetos) |
+| P06 | Requisitos de negócio para cada fluxo serão validados pelo PO dentro de 5 dias úteis | Cooperflora | Atraso na aprovação de contratos OpenAPI                 | 🔴 **Crítico** | **Ociosidade**: equipe técnica aguardando validação; custo de alocação sem produtividade                 |
+| P07 | Requisitos de segurança e autenticação serão definidos pela TI Cooperflora           | Cooperflora | Bloqueio na definição de padrões de API                  |  🟠 **Alto**   | **Atraso cascateado**: impacto em Fase 2 e 3                                                             |
 
 ##### Fase 2 – Fundação da API
 
-|  ID | Premissa                                                                                         | Responsável          | Impacto se Falsa                         | Impacto em Custos (Cooperflora)                                                     |
-| --: | ------------------------------------------------------------------------------------------------ | -------------------- | ---------------------------------------- | ----------------------------------------------------------------------------------- |
-| P08 | Acessos e credenciais para ambientes DEV/HML serão providos em até 5 dias úteis após solicitação | Cooperflora          | Bloqueio de desenvolvimento e testes     | **Ociosidade de desenvolvedores**: custo diário da equipe de desenvolvimento parada |
-| P09 | Infraestrutura de rede/firewall será configurada para comunicação API ↔ ERP                      | Cooperflora          | Impossibilidade de validar conectividade | **Atraso em smoke tests**: reprogramação de atividades e possível extensão de fase  |
-| P10 | Não haverá mudanças estruturais no ERP Néctar durante a fundação                                 | Néctar               | Impacto em conectividade e contratos     | —                                                                                   |
-| P11 | Ambiente de HML representará adequadamente o ambiente de produção                                | Néctar + Cooperflora | Defeitos descobertos apenas em PRD       | —                                                                                   |
+|  ID | Premissa                                                                                         | Responsável          | Impacto se Falsa                         |   Severidade   | Impacto em Custos (Cooperflora)                                                     |
+| --: | ------------------------------------------------------------------------------------------------ | -------------------- | ---------------------------------------- | :------------: | ----------------------------------------------------------------------------------- |
+| P08 | Acessos e credenciais para ambientes DEV/HML serão providos em até 5 dias úteis após solicitação | Cooperflora          | Bloqueio de desenvolvimento e testes     | 🔴 **Crítico** | **Ociosidade de desenvolvedores**: custo diário da equipe de desenvolvimento parada |
+| P09 | Infraestrutura de rede/firewall será configurada para comunicação API ↔ ERP                      | Cooperflora          | Impossibilidade de validar conectividade |  🟠 **Alto**   | **Atraso em smoke tests**: reprogramação de atividades e possível extensão de fase  |
+| P10 | Não haverá mudanças estruturais no ERP Néctar durante a fundação                                 | Néctar               | Impacto em conectividade e contratos     |  🟡 **Médio**  | —                                                                                   |
+| P11 | Ambiente de HML representará adequadamente o ambiente de produção                                | Néctar + Cooperflora | Defeitos descobertos apenas em PRD       |  🟠 **Alto**   | —                                                                                   |
 
 ##### Fase 3 – Fluxo Piloto
 
-|  ID | Premissa                                                                                     | Responsável | Impacto se Falsa                           | Impacto em Custos (Cooperflora)                                                               |
-| --: | -------------------------------------------------------------------------------------------- | ----------- | ------------------------------------------ | --------------------------------------------------------------------------------------------- |
-| P12 | Cooperflora disponibilizará recursos para homologação nas janelas definidas (mín. 4h/semana) | Cooperflora | Atraso em validação e go-live do piloto    | **Extensão de fase**: custo de equipe Néctar alocada além do previsto; possível remobilização |
-| P13 | Dados de teste representativos serão fornecidos ou autorizados para uso                      | Cooperflora | Testes não representam cenários reais      | **Retrabalho pós-produção**: correções emergenciais com custo premium                         |
-| P14 | Usuários-chave estarão disponíveis para validação funcional                                  | Cooperflora | Homologação incompleta; riscos em produção | **Atraso de go-live**: custo de sustentação do piloto em HML por período estendido            |
-| P15 | Critérios de aceite serão definidos e aprovados antes do início da homologação               | Cooperflora | Divergências sobre conclusão da fase       | —                                                                                             |
+|  ID | Premissa                                                                                     | Responsável | Impacto se Falsa                           |   Severidade   | Impacto em Custos (Cooperflora)                                                               |
+| --: | -------------------------------------------------------------------------------------------- | ----------- | ------------------------------------------ | :------------: | --------------------------------------------------------------------------------------------- |
+| P12 | Cooperflora disponibilizará recursos para homologação nas janelas definidas (mín. 4h/semana) | Cooperflora | Atraso em validação e go-live do piloto    | 🔴 **Crítico** | **Extensão de fase**: custo de equipe Néctar alocada além do previsto; possível remobilização |
+| P13 | Dados de teste representativos serão fornecidos ou autorizados para uso                      | Cooperflora | Testes não representam cenários reais      |  🟠 **Alto**   | **Retrabalho pós-produção**: correções emergenciais com custo premium                         |
+| P14 | Usuários-chave estarão disponíveis para validação funcional                                  | Cooperflora | Homologação incompleta; riscos em produção |  🟠 **Alto**   | **Atraso de go-live**: custo de sustentação do piloto em HML por período estendido            |
+| P15 | Critérios de aceite serão definidos e aprovados antes do início da homologação               | Cooperflora | Divergências sobre conclusão da fase       |  🟡 **Médio**  | —                                                                                             |
 
 ##### Fase 4 – Migração por Fluxo / Operação Híbrida
 
-|  ID | Premissa                                                                    | Responsável | Impacto se Falsa                                    | Impacto em Custos (Cooperflora)                                                            |
-| --: | --------------------------------------------------------------------------- | ----------- | --------------------------------------------------- | ------------------------------------------------------------------------------------------ |
-| P16 | Janelas de homologação serão respeitadas conforme calendário acordado       | Cooperflora | Atraso em ondas de migração                         | **Extensão de projeto**: custo mensal adicional de equipe alocada; renegociação contratual |
-| P17 | Comunicação de mudanças será feita aos usuários finais pela Cooperflora     | Cooperflora | Resistência à mudança; incidentes por uso incorreto | —                                                                                          |
-| P18 | O legado permanecerá estável (sem novas funcionalidades de integração)      | Cooperflora | Divergência entre legado e API; retrabalho          | **Retrabalho de mapeamento**: custo de análise e ajuste de contratos já definidos          |
-| P19 | Incidentes em produção terão resposta da operação Cooperflora dentro do SLA | Cooperflora | Aumento de MTTR; impacto em estabilização           | —                                                                                          |
+|  ID | Premissa                                                                    | Responsável | Impacto se Falsa                                    |   Severidade   | Impacto em Custos (Cooperflora)                                                            |
+| --: | --------------------------------------------------------------------------- | ----------- | --------------------------------------------------- | :------------: | ------------------------------------------------------------------------------------------ |
+| P16 | Janelas de homologação serão respeitadas conforme calendário acordado       | Cooperflora | Atraso em ondas de migração                         | 🔴 **Crítico** | **Extensão de projeto**: custo mensal adicional de equipe alocada; renegociação contratual |
+| P17 | Comunicação de mudanças será feita aos usuários finais pela Cooperflora     | Cooperflora | Resistência à mudança; incidentes por uso incorreto |  🟡 **Médio**  | —                                                                                          |
+| P18 | O legado permanecerá estável (sem novas funcionalidades de integração)      | Cooperflora | Divergência entre legado e API; retrabalho          |  🟠 **Alto**   | **Retrabalho de mapeamento**: custo de análise e ajuste de contratos já definidos          |
+| P19 | Incidentes em produção terão resposta da operação Cooperflora dentro do SLA | Cooperflora | Aumento de MTTR; impacto em estabilização           |  🟠 **Alto**   | —                                                                                          |
 
 ##### Fase 5 – Simplificação do Legado
 
-|  ID | Premissa                                                                       | Responsável | Impacto se Falsa                                     | Impacto em Custos (Cooperflora)                                         |
-| --: | ------------------------------------------------------------------------------ | ----------- | ---------------------------------------------------- | ----------------------------------------------------------------------- |
-| P20 | Cooperflora autorizará a remoção de rotinas de integração obsoletas            | Cooperflora | Legado não simplificado; custo de manutenção mantido | —                                                                       |
-| P21 | Conhecimento do legado será transferido para documentação antes da remoção     | Néctar      | Perda de conhecimento institucional                  | —                                                                       |
-| P22 | Treinamento de suporte será realizado com participação da operação Cooperflora | Cooperflora | Operação não preparada para novo modelo              | **Incidentes evitáveis**: custo de suporte reativo ao invés de proativo |
+|  ID | Premissa                                                                       | Responsável | Impacto se Falsa                                     |  Severidade  | Impacto em Custos (Cooperflora)                                         |
+| --: | ------------------------------------------------------------------------------ | ----------- | ---------------------------------------------------- | :----------: | ----------------------------------------------------------------------- |
+| P20 | Cooperflora autorizará a remoção de rotinas de integração obsoletas            | Cooperflora | Legado não simplificado; custo de manutenção mantido | 🟡 **Médio** | —                                                                       |
+| P21 | Conhecimento do legado será transferido para documentação antes da remoção     | Néctar      | Perda de conhecimento institucional                  | 🟡 **Médio** | —                                                                       |
+| P22 | Treinamento de suporte será realizado com participação da operação Cooperflora | Cooperflora | Operação não preparada para novo modelo              | 🟠 **Alto**  | **Incidentes evitáveis**: custo de suporte reativo ao invés de proativo |
 
 ##### Fase 6 – Evolução Opcional
 
-|  ID | Premissa                                                                        | Responsável | Impacto se Falsa                    | Impacto em Custos (Cooperflora) |
-| --: | ------------------------------------------------------------------------------- | ----------- | ----------------------------------- | ------------------------------- |
-| P23 | Iniciativas de evolução serão aprovadas com justificativa de ROI                | Cooperflora | Investimento sem retorno mensurável | —                               |
-| P24 | Decisões estratégicas (ex.: migração Nimbus) serão comunicadas com antecedência | Cooperflora | Falta de preparação arquitetural    | —                               |
+|  ID | Premissa                                                                        | Responsável | Impacto se Falsa                    |  Severidade  | Impacto em Custos (Cooperflora) |
+| --: | ------------------------------------------------------------------------------- | ----------- | ----------------------------------- | :----------: | ------------------------------- |
+| P23 | Iniciativas de evolução serão aprovadas com justificativa de ROI                | Cooperflora | Investimento sem retorno mensurável | 🟡 **Médio** | —                               |
+| P24 | Decisões estratégicas (ex.: migração Nimbus) serão comunicadas com antecedência | Cooperflora | Falta de preparação arquitetural    | 🟡 **Médio** | —                               |
 
 ##### Premissas Transversais (Aplicáveis a Todas as Fases)
 
-|  ID | Premissa                                                               | Responsável          | Impacto se Falsa                                      | Impacto em Custos (Cooperflora)                                        |
-| --: | ---------------------------------------------------------------------- | -------------------- | ----------------------------------------------------- | ---------------------------------------------------------------------- |
-| P25 | O escopo aprovado será respeitado, com mudanças via controle formal    | Néctar + Cooperflora | Scope creep, atraso e estouro de orçamento            | **Renegociação contratual**: custos adicionais para mudanças de escopo |
-| P26 | Reuniões de governança terão quórum mínimo para tomada de decisão      | Néctar + Cooperflora | Decisões postergadas; atrasos em aprovações           | —                                                                      |
-| P27 | Comunicação entre equipes seguirá canais e SLAs definidos              | Néctar + Cooperflora | Falhas de comunicação; retrabalho                     | —                                                                      |
-| P28 | EMVs serão validados em **2 dias úteis**; após prazo, aprovação tácita | Cooperflora          | Aprovação automática; ajustes viram mudança de escopo | **Custos adicionais**: solicitações pós-aprovação impactam prazo/custo |
+|  ID | Premissa                                                               | Responsável          | Impacto se Falsa                                      |   Severidade   | Impacto em Custos (Cooperflora)                                        |
+| --: | ---------------------------------------------------------------------- | -------------------- | ----------------------------------------------------- | :------------: | ---------------------------------------------------------------------- |
+| P25 | O escopo aprovado será respeitado, com mudanças via controle formal    | Néctar + Cooperflora | Scope creep, atraso e estouro de orçamento            | 🔴 **Crítico** | **Renegociação contratual**: custos adicionais para mudanças de escopo |
+| P26 | Reuniões de governança terão quórum mínimo para tomada de decisão      | Néctar + Cooperflora | Decisões postergadas; atrasos em aprovações           |  🟠 **Alto**   | —                                                                      |
+| P27 | Comunicação entre equipes seguirá canais e SLAs definidos              | Néctar + Cooperflora | Falhas de comunicação; retrabalho                     |  🟡 **Médio**  | —                                                                      |
+| P28 | EMVs serão validados em **2 dias úteis**; após prazo, aprovação tácita | Cooperflora          | Aprovação automática; ajustes viram mudança de escopo | 🔴 **Crítico** | **Custos adicionais**: solicitações pós-aprovação impactam prazo/custo |
 
 > **⚠️ Impacto Financeiro para Premissas Não Cumpridas pela Cooperflora**
 >
@@ -1244,7 +1258,9 @@ As premissas são condições assumidas como verdadeiras para fins de planejamen
 > | **Suporte emergencial**       | Correções urgentes fora do horário comercial                      | Custo premium (1,5x a 2x do valor hora normal)                |
 > | **Ajustes pós-aprovação EMV** | Solicitações após prazo de 2 dias ou aprovação tácita             | Tratado como mudança de escopo (custo + prazo adicional)      |
 >
-> **Recomendação**: Premissas P01, P06, P08, P12, P16 e **P28** são as mais críticas para o cronograma e devem ter acompanhamento semanal no Comitê de Projeto.
+> **📊 Distribuição de Severidade (P01–P28)**: 🔴 6 Críticas (21%) | 🟠 8 Altas (29%) | 🟡 14 Médias (50%)
+>
+> **⚠️ Premissas Críticas (🔴)**: P01, P06, P08, P12, P16, P25 e P28 — requerem acompanhamento **semanal** no Comitê de Projeto.
 
 #### ⛔ Restrições
 
