@@ -870,45 +870,226 @@ gantt
 
 ## Gestão do Projeto (Governança, Stakeholders e Controle)
 
-### Stakeholders
+Esta seção estabelece a estrutura de **governança, papéis e responsabilidades, comunicação e controle** que sustenta a execução do projeto. A abordagem combina práticas do PMBOK (governança formal, controle de mudanças, gestão de riscos) com elementos ágeis (entregas incrementais, cerimônias de feedback, adaptação contínua), configurando um modelo **híbrido** adequado à natureza do projeto: modernização de sistema crítico com necessidade de previsibilidade e continuidade operacional.
 
-- **Néctar**: Produto, Arquitetura, Desenvolvimento, Suporte/Operação.
-- **Cooperflora**: TI, Operação, Áreas de negócio impactadas (cadastro, comercial, fiscal/financeiro).
+A governança é essencial para assegurar que decisões sejam tomadas no fórum correto, mudanças sejam avaliadas antes de impactar escopo/prazo/custo, e que todos os stakeholders tenham visibilidade adequada do progresso e dos riscos.
 
-### Governança e ritos
+### Stakeholders e Matriz RACI
 
-- Kickoff do projeto.
-- Cerimônias semanais/quinzenais (modelo híbrido: agile para entrega + governança para riscos).
-- Comitê executivo (steering) mensal para decisões e prioridades.
-- Comitês técnicos de arquitetura (quando necessário) para decisões de padrão.
+A identificação clara dos stakeholders e seus papéis é fundamental para comunicação eficaz e tomada de decisão. A tabela abaixo apresenta os principais grupos de stakeholders e suas responsabilidades no projeto.
 
-### Gestão de mudanças (Change Control)
+| Stakeholder              | Organização | Papel no Projeto                                          | Interesse Principal                                        |
+| ------------------------ | ----------- | --------------------------------------------------------- | ---------------------------------------------------------- |
+| **Sponsor Executivo**    | Cooperflora | Patrocinador; aprova investimento e decisões estratégicas | ROI, continuidade do negócio, redução de riscos            |
+| **Gerente de Projeto**   | Néctar      | Coordena execução, reporta progresso, gerencia riscos     | Entregas no prazo, qualidade, satisfação do cliente        |
+| **Product Owner (PO)**   | Cooperflora | Define prioridades, aceita entregas, representa o negócio | Valor entregue, aderência às necessidades operacionais     |
+| **Arquiteto de Solução** | Néctar      | Define padrões técnicos, valida decisões de arquitetura   | Qualidade técnica, aderência aos princípios arquiteturais  |
+| **Tech Lead / Dev Team** | Néctar      | Implementa, testa, documenta e entrega os componentes     | Viabilidade técnica, qualidade de código, sustentabilidade |
+| **Operação/Suporte**     | Néctar      | Monitora, opera e suporta a solução em produção           | Estabilidade, observabilidade, capacidade de diagnóstico   |
+| **TI Cooperflora**       | Cooperflora | Infraestrutura, acessos, integrações do lado cliente      | Segurança, conformidade, impacto mínimo em outros sistemas |
+| **Áreas de Negócio**     | Cooperflora | Cadastro, Comercial, Fiscal/Financeiro — usuários finais  | Continuidade operacional, usabilidade, correção funcional  |
 
-- Mudanças em contratos e escopo passam por avaliação de impacto (custo, risco, cronograma).
-- Backlog priorizado e aprovado em governança.
+#### Matriz RACI por Entregável
+
+A matriz RACI define quem é **Responsável (R)**, **Aprovador (A)**, **Consultado (C)** e **Informado (I)** para cada entregável principal.
+
+| Entregável / Decisão                 | Sponsor | Gerente Projeto | PO  | Arquiteto | Dev Team | Operação | TI Cooperflora |
+| ------------------------------------ | ------- | --------------- | --- | --------- | -------- | -------- | -------------- |
+| Aprovação de escopo e baseline       | A       | R               | C   | C         | I        | I        | C              |
+| Definição de contratos OpenAPI       | I       | C               | A   | R         | C        | I        | C              |
+| Implementação de fluxos              | I       | C               | A   | C         | R        | I        | I              |
+| Decisões de arquitetura              | I       | C               | C   | A         | R        | C        | I              |
+| Aprovação de go-live por fluxo       | A       | R               | A   | C         | C        | C        | C              |
+| Gestão de mudanças (change requests) | A       | R               | C   | C         | I        | I        | C              |
+| Monitoramento e alertas              | I       | I               | I   | C         | C        | R        | C              |
+| Rollback e gestão de incidentes      | I       | C               | A   | C         | C        | R        | C              |
+
+### Estrutura de Governança e Fóruns de Decisão
+
+A governança do projeto é organizada em três níveis, cada um com responsabilidades, participantes e frequência definidos.
+
+#### Nível Estratégico: Comitê Executivo (Steering Committee)
+
+| Aspecto           | Definição                                                                                              |
+| ----------------- | ------------------------------------------------------------------------------------------------------ |
+| **Objetivo**      | Decisões estratégicas, aprovação de mudanças de escopo/prazo/custo, resolução de impedimentos críticos |
+| **Participantes** | Sponsor Executivo, Gerente de Projeto, PO, Arquiteto (quando necessário)                               |
+| **Frequência**    | Mensal ou sob demanda para decisões urgentes                                                           |
+| **Artefatos**     | Ata de reunião, registro de decisões, atualização de riscos estratégicos                               |
+
+#### Nível Tático: Comitê de Projeto
+
+| Aspecto           | Definição                                                                                        |
+| ----------------- | ------------------------------------------------------------------------------------------------ |
+| **Objetivo**      | Acompanhamento de progresso, gestão de riscos, priorização de backlog, coordenação entre equipes |
+| **Participantes** | Gerente de Projeto, PO, Arquiteto, Tech Lead, representante de Operação                          |
+| **Frequência**    | Semanal                                                                                          |
+| **Artefatos**     | Status report, burndown/burnup, registro de riscos e issues, backlog atualizado                  |
+
+#### Nível Operacional: Cerimônias Ágeis
+
+| Cerimônia           | Objetivo                                            | Participantes              | Frequência       |
+| ------------------- | --------------------------------------------------- | -------------------------- | ---------------- |
+| **Daily Standup**   | Sincronização da equipe, identificação de bloqueios | Dev Team, Tech Lead        | Diária (15 min)  |
+| **Sprint Planning** | Planejamento da iteração, compromisso de entrega    | PO, Dev Team, Arquiteto    | Início de sprint |
+| **Sprint Review**   | Demonstração de entregas, feedback do PO            | PO, Dev Team, Stakeholders | Fim de sprint    |
+| **Retrospectiva**   | Melhoria contínua do processo                       | Dev Team, Tech Lead        | Fim de sprint    |
+
+### Gestão de Mudanças (Change Control)
+
+Todo projeto está sujeito a mudanças. O processo de controle de mudanças garante que alterações sejam avaliadas, aprovadas e implementadas de forma controlada, sem comprometer a baseline do projeto.
+
+#### Processo de Change Request
+
+```mermaid
+flowchart LR
+    A["📝 Solicitação\nde Mudança"] --> B["📊 Análise\nde Impacto"]
+    B --> C{"🔍 Impacto\nSignificativo?"}
+    C -->|"Sim"| D["👥 Comitê\nExecutivo"]
+    C -->|"Não"| E["👤 Gerente\nde Projeto"]
+    D --> F{"✅ Aprovado?"}
+    E --> F
+    F -->|"Sim"| G["📋 Atualizar\nBaseline"]
+    F -->|"Não"| H["❌ Registrar\nDecisão"]
+    G --> I["🚀 Implementar"]
+
+    classDef process fill:#E0E7FF,stroke:#4F46E5,color:#1E1B4B
+    classDef decision fill:#FEF3C7,stroke:#D97706,color:#78350F
+    classDef action fill:#D1FAE5,stroke:#059669,color:#064E3B
+
+    class A,B,G,I process
+    class C,F decision
+    class D,E,H action
+```
+
+| Etapa                   | Responsável                    | Prazo Alvo                | Artefato                                        |
+| ----------------------- | ------------------------------ | ------------------------- | ----------------------------------------------- |
+| Registro da solicitação | Qualquer stakeholder           | Imediato                  | Formulário de Change Request                    |
+| Análise de impacto      | Gerente de Projeto + Arquiteto | 2-5 dias úteis            | Documento de impacto (escopo/prazo/custo/risco) |
+| Decisão                 | Comitê apropriado              | Próxima reunião ou ad-hoc | Ata com decisão documentada                     |
+| Atualização de baseline | Gerente de Projeto             | 2 dias úteis              | Plano de projeto atualizado                     |
+| Comunicação             | Gerente de Projeto             | Imediato                  | Comunicado aos stakeholders afetados            |
+
+#### Critérios para Escalação ao Comitê Executivo
+
+- Impacto em prazo superior a **2 semanas**
+- Impacto em custo superior a **10% do orçamento** da fase
+- Mudança em **princípios arquiteturais** ou decisões estratégicas
+- Adição de **novos fluxos** não previstos no escopo original
+- Conflitos entre stakeholders que não podem ser resolvidos no nível tático
+
+### Plano de Comunicação
+
+A comunicação eficaz é crítica para o sucesso do projeto. O plano abaixo define os canais, frequência e responsáveis por cada tipo de comunicação.
+
+| Comunicação                       | Público-Alvo                 | Canal               | Frequência        | Responsável        |
+| --------------------------------- | ---------------------------- | ------------------- | ----------------- | ------------------ |
+| **Status Report Executivo**       | Sponsor, Gestão Cooperflora  | E-mail + Reunião    | Mensal            | Gerente de Projeto |
+| **Status Report Semanal**         | Comitê de Projeto            | E-mail + Teams/Meet | Semanal           | Gerente de Projeto |
+| **Comunicado de Release**         | Todos os stakeholders        | E-mail              | Por release       | Gerente de Projeto |
+| **Alerta de Risco/Issue Crítico** | Sponsor, PO, Gerente         | E-mail + Telefone   | Imediato (ad-hoc) | Gerente de Projeto |
+| **Documentação Técnica**          | Dev Team, Arquitetura, TI    | Wiki/Repositório    | Contínuo          | Tech Lead          |
+| **Ata de Reunião**                | Participantes da reunião     | E-mail              | Após cada reunião | Organizador        |
+| **Relatório de Incidentes**       | PO, Operação, TI Cooperflora | E-mail + Ticket     | Por incidente     | Operação           |
+
+### Premissas e Restrições do Projeto
+
+#### Premissas
+
+As premissas são condições assumidas como verdadeiras para fins de planejamento. Se alguma premissa se mostrar falsa, deve ser tratada como risco materializado.
+
+| ID  | Premissa                                                                    | Impacto se Falsa                                    |
+| --- | --------------------------------------------------------------------------- | --------------------------------------------------- |
+| P1  | Cooperflora disponibilizará recursos para homologação nas janelas definidas | Atraso em validação e go-live                       |
+| P2  | O legado (Access/VBA) permanecerá estável durante a migração                | Retrabalho em mapeamento e testes                   |
+| P3  | Não haverá mudanças estruturais no ERP Néctar durante o projeto             | Impacto em contratos e integrações já desenvolvidas |
+| P4  | Acessos e credenciais necessários serão providos em tempo hábil             | Bloqueio de desenvolvimento e testes                |
+| P5  | O escopo aprovado será respeitado, com mudanças via controle formal         | Scope creep, atraso e estouro de orçamento          |
+
+#### Restrições
+
+As restrições são limitações conhecidas que moldam as decisões do projeto.
+
+| ID  | Restrição                                                              | Implicação                                                 |
+| --- | ---------------------------------------------------------------------- | ---------------------------------------------------------- |
+| R1  | A operação não pode ser interrompida durante a migração                | Obriga operação híbrida e rollback por fluxo               |
+| R2  | O sistema legado (Access) não será descontinuado até migração completa | Necessário manter convivência e sincronização              |
+| R3  | Orçamento e equipe são fixos para o escopo definido                    | Mudanças de escopo exigem trade-off ou aprovação adicional |
+| R4  | Dependência de janelas de homologação da Cooperflora                   | Cronograma deve prever buffers para disponibilidade        |
+
+### Critérios de Sucesso do Projeto
+
+Os critérios abaixo definem como o sucesso do projeto será medido ao final de cada fase e ao término do projeto.
+
+| Critério                             | Meta                                             | Medição                                     |
+| ------------------------------------ | ------------------------------------------------ | ------------------------------------------- |
+| **Fluxos migrados para API**         | 100% dos fluxos críticos em escopo               | Contagem de fluxos em estado "API" vs total |
+| **Disponibilidade da integração**    | ≥ 99,5% no horário comercial                     | Monitoramento de uptime                     |
+| **Taxa de erro em produção**         | < 1% por fluxo após estabilização                | Métricas de erro por endpoint               |
+| **Tempo de resposta (p95)**          | < 2 segundos para operações síncronas            | APM / métricas de latência                  |
+| **Incidentes críticos pós-migração** | Zero incidentes P1 causados pela nova integração | Registro de incidentes                      |
+| **Satisfação do cliente (PO)**       | Aceite formal de todas as entregas               | Termo de aceite por fase                    |
+| **Aderência ao cronograma**          | Desvio máximo de 15% em relação ao baseline      | Comparativo planejado vs realizado          |
+| **Aderência ao orçamento**           | Desvio máximo de 10% em relação ao baseline      | Comparativo planejado vs realizado          |
 
 ## Riscos (RAID) e Mitigações
 
-### Principais riscos
+O gerenciamento de riscos é contínuo ao longo do projeto. Esta seção apresenta o registro inicial de **Riscos, Ações, Issues e Decisões (RAID)**, que será atualizado nas reuniões semanais do Comitê de Projeto. Cada risco é classificado por probabilidade e impacto, com responsável e plano de mitigação definidos.
 
-- Dependências ocultas no legado (VBA/SQL) e comportamento não documentado.
-- Inconsistência de dados durante operação híbrida.
-- Atrasos em homologação por disponibilidade do negócio.
-- Escopo mutável e priorização instável.
+A matriz de riscos segue a escala: **Probabilidade** (Baixa/Média/Alta) × **Impacto** (Baixo/Médio/Alto/Crítico), gerando uma classificação de severidade que orienta a priorização das ações de mitigação.
 
-### Mitigações
+### Registro de Riscos
 
-- Inventário e engenharia reversa no início (Fase 0) + validação com operação.
-- Definir propriedade de dados e idempotência por fluxo.
-- Cronograma com buffers e janelas de estabilização.
-- Governança de mudanças e baseline de escopo.
+| ID  | Risco                                                         | Probabilidade | Impacto | Severidade  | Mitigação                                                                            | Responsável        | Status |
+| --- | ------------------------------------------------------------- | ------------- | ------- | ----------- | ------------------------------------------------------------------------------------ | ------------------ | ------ |
+| R01 | Dependências ocultas no legado (VBA/SQL) não documentadas     | Alta          | Alto    | **Crítico** | Inventário e engenharia reversa na Fase 0; validação com operação                    | Arquiteto          | Aberto |
+| R02 | Inconsistência de dados durante operação híbrida              | Média         | Alto    | **Alto**    | Definir source of truth por domínio; idempotência obrigatória; auditoria comparativa | Tech Lead          | Aberto |
+| R03 | Atrasos em homologação por indisponibilidade do negócio       | Alta          | Médio   | **Alto**    | Cronograma com buffers; janelas pré-acordadas; escalação ao Sponsor se necessário    | Gerente de Projeto | Aberto |
+| R04 | Scope creep e priorização instável                            | Média         | Alto    | **Alto**    | Baseline de escopo; processo de change control; governança formal                    | Gerente de Projeto | Aberto |
+| R05 | Comportamento do legado diverge do esperado em produção       | Média         | Alto    | **Alto**    | Testes E2E extensivos; piloto com monitoramento intensivo; rollback preparado        | Tech Lead          | Aberto |
+| R06 | Indisponibilidade de ambiente ou acessos                      | Média         | Médio   | **Médio**   | Solicitar acessos antecipadamente; ambientes de DEV/HML independentes                | TI Cooperflora     | Aberto |
+| R07 | Falhas de comunicação entre equipes                           | Baixa         | Médio   | **Médio**   | Plano de comunicação; cerimônias regulares; canais definidos                         | Gerente de Projeto | Aberto |
+| R08 | Resistência à mudança por parte dos usuários                  | Média         | Médio   | **Médio**   | Envolvimento do PO; demonstrações frequentes; treinamento antes do go-live           | PO                 | Aberto |
+| R09 | Performance da API inferior ao legado em cenários específicos | Baixa         | Alto    | **Médio**   | Testes de carga; otimização; cache quando aplicável; métricas de baseline            | Arquiteto          | Aberto |
+| R10 | Mudanças no ERP Néctar durante o projeto                      | Baixa         | Crítico | **Alto**    | Comunicação prévia obrigatória; versionamento de contratos; testes de regressão      | Arquiteto          | Aberto |
 
-### KPIs sugeridos
+### Matriz de Severidade
 
-- Percentual de fluxos migrados (legado → híbrido → API).
-- Taxa de erro por fluxo e por ambiente.
-- Latência p95 por endpoint e taxa de timeout.
-- Incidentes por mês e tempo médio de recuperação (MTTR).
+```
+                    IMPACTO
+              Baixo   Médio   Alto   Crítico
+         ┌─────────┬─────────┬─────────┬─────────┐
+  Alta   │  Médio  │  Alto   │ Crítico │ Crítico │
+         ├─────────┼─────────┼─────────┼─────────┤
+P Média  │  Baixo  │  Médio  │  Alto   │ Crítico │
+R        ├─────────┼─────────┼─────────┼─────────┤
+O Baixa  │  Baixo  │  Baixo  │  Médio  │  Alto   │
+B        └─────────┴─────────┴─────────┴─────────┘
+```
+
+### Plano de Contingência para Riscos Críticos
+
+| Risco | Gatilho de Ativação                               | Plano de Contingência                                                 |
+| ----- | ------------------------------------------------- | --------------------------------------------------------------------- |
+| R01   | Descoberta de dependência não mapeada em produção | Rollback imediato do fluxo; análise RCA; replanejar migração          |
+| R02   | Divergência de dados detectada entre sistemas     | Pausar migração do fluxo; reconciliação manual; correção e re-teste   |
+| R05   | Falha crítica em produção pós-migração            | Ativar rollback via feature flag; restaurar fluxo legado; análise RCA |
+| R10   | Mudança no ERP quebra contrato existente          | Versionar contrato; manter versão anterior; migração gradual          |
+
+### KPIs de Monitoramento do Projeto
+
+Além dos critérios de sucesso, os seguintes KPIs serão monitorados continuamente para detecção precoce de problemas:
+
+| KPI                               | Meta                       | Frequência de Medição | Responsável        |
+| --------------------------------- | -------------------------- | --------------------- | ------------------ |
+| Percentual de fluxos migrados     | Conforme roadmap por fase  | Semanal               | Gerente de Projeto |
+| Taxa de erro por fluxo e ambiente | < 1% após estabilização    | Diária                | Operação           |
+| Latência p95 por endpoint         | < 2s (síncrono)            | Contínua (APM)        | Operação           |
+| Taxa de timeout                   | < 0,1%                     | Contínua              | Operação           |
+| Incidentes por mês (P1/P2/P3)     | 0 P1, < 2 P2               | Mensal                | Operação           |
+| MTTR (tempo médio de recuperação) | < 1h para P1, < 4h para P2 | Por incidente         | Operação           |
+| Burndown/Burnup do sprint         | Tendência estável          | Semanal               | Tech Lead          |
+| Desvio de cronograma              | < 15% do baseline          | Semanal               | Gerente de Projeto |
 
 ## Operação, Implantação e Suporte
 
