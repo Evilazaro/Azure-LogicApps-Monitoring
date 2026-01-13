@@ -361,16 +361,50 @@ Esta subseção detalha os **padrões técnicos** que operacionalizam os princí
 
 #### Arquitetura em camadas
 
-```
-┌─────────────────────────────────────────┐
-│           API (Controllers)             │  ← Validação de entrada, auth, rate limiting
-├─────────────────────────────────────────┤
-│         Aplicação (Services)            │  ← Orquestração, mapeamento, casos de uso
-├─────────────────────────────────────────┤
-│           Domínio (Entities)            │  ← Regras de negócio, validações de domínio
-├─────────────────────────────────────────┤
-│      Infraestrutura (Repositories)      │  ← Acesso a dados, gateways externos
-└─────────────────────────────────────────┘
+```mermaid
+---
+title: "Arquitetura em Camadas – API de Integração"
+---
+block-beta
+  columns 1
+
+  block:api["🌐 API (Controllers)"]:1
+    columns 1
+    api_desc["Validação de entrada | Autenticação | Rate limiting"]
+  end
+
+  down1<["&nbsp;"]>(down)
+
+  block:app["⚙️ Aplicação (Services)"]:1
+    columns 1
+    app_desc["Orquestração | Mapeamento | Casos de uso"]
+  end
+
+  down2<["&nbsp;"]>(down)
+
+  block:domain["📦 Domínio (Entities)"]:1
+    columns 1
+    domain_desc["Regras de negócio | Validações de domínio"]
+  end
+
+  down3<["&nbsp;"]>(down)
+
+  block:infra["🗄️ Infraestrutura (Repositories)"]:1
+    columns 1
+    infra_desc["Acesso a dados | Gateways externos | ERP"]
+  end
+
+  classDef apiStyle fill:#4F46E5,stroke:#312E81,color:#FFFFFF
+  classDef appStyle fill:#7C3AED,stroke:#4C1D95,color:#FFFFFF
+  classDef domainStyle fill:#10B981,stroke:#065F46,color:#FFFFFF
+  classDef infraStyle fill:#F59E0B,stroke:#92400E,color:#FFFFFF
+  classDef descStyle fill:#F8FAFC,stroke:#94A3B8,color:#334155
+
+  class api apiStyle
+  class app appStyle
+  class domain domainStyle
+  class infra infraStyle
+  class api_desc,app_desc,domain_desc,infra_desc descStyle
 ```
 
 | Diretriz                       | Descrição                                          |
@@ -405,32 +439,19 @@ Esta subseção detalha os **padrões técnicos** que operacionalizam os princí
 5. Deploy para ambiente alvo
 6. Smoke test pós-deploy
 
-## Abordagem de Modernização
+## Fases do Projeto e Cronograma Macro
 
-A estratégia adotada é **Strangler Pattern**, com extração gradual da lógica de integração do legado e introdução de uma camada de serviço moderna.
+Esta seção apresenta o **roadmap de execução** do projeto, organizado em 7 fases (Fase 0 a Fase 6), com cronograma estimado, marcos de decisão e critérios de aceite. A estrutura foi desenhada para dar visibilidade a **BDMs** (valor entregue, riscos de negócio, pontos de decisão) e **TDMs** (dependências técnicas, entregáveis, critérios de qualidade).
 
-### Estratégia (visão geral)
+### Estratégia de modernização: Strangler Pattern
 
-1. **Mapear fluxos e dependências** no Access/VBA/SINC e no SQL.
-2. **Definir contratos explícitos** (OpenAPI) por fluxo.
-3. **Implementar o fluxo na API**, com validação, idempotência, logging e auditoria.
-4. **Roteamento híbrido**: o legado passa a chamar a API (ou o cliente chama diretamente), mantendo fallback controlado.
-5. **Desativação progressiva**: timers e integrações diretas daquele fluxo são desligados.
-6. **Repetir** para o próximo fluxo, preservando padrões, automação e governança.
-
-### Migração por fluxo (antes/depois)
+A abordagem adotada é o **Strangler Pattern**, com extração gradual da lógica de integração do legado e introdução de uma camada de serviço moderna. O processo é executado **fluxo a fluxo**, garantindo continuidade operacional e redução de risco.
 
 ```mermaid
 ---
 title: "Strangler Pattern – Migração Fluxo a Fluxo"
 ---
 flowchart TB
-  %% ═══════════════════════════════════════════════════════════════
-  %% DIAGRAMA: Comparativo Antes/Depois por fluxo
-  %% PROPÓSITO: Ilustrar a estratégia de migração incremental
-  %%            (Strangler Pattern) aplicada a cada fluxo
-  %% ═══════════════════════════════════════════════════════════════
-
   subgraph Antes ["⚠️ ANTES (Legado)"]
     direction TB
     A1["⏱️ Access/VBA\nTimer"] -->|"polling"| A2["📋 Leitura tabelas\n'novos dados'"]
@@ -447,16 +468,6 @@ flowchart TB
 
   Antes ==>|"🔄 Strangler Pattern\nmigrar fluxo a fluxo"| Depois
 
-  %% ═══════════════════════════════════════════════════════════════
-  %% FLUXO SIMPLIFICADO
-  %% ANTES: Timer → Polling → Regras VBA/SQL → Escrita direta
-  %% DEPOIS: Cliente → HTTP → API (validação) → ERP
-  %% 🔄 Transição: um fluxo por vez (Strangler Pattern)
-  %% ═══════════════════════════════════════════════════════════════
-
-  %% ═══════════════════════════════════════════════════════════════
-  %% LEGENDA: Laranja = Legado | Indigo = Moderno/API
-  %% ═══════════════════════════════════════════════════════════════
   classDef legacy fill:#FFEDD5,stroke:#F97316,color:#431407,stroke-width:2px;
   classDef modern fill:#E0E7FF,stroke:#4F46E5,color:#111827,stroke-width:2px;
   classDef api fill:#4F46E5,stroke:#312E81,color:#FFFFFF,stroke-width:2px;
@@ -469,43 +480,32 @@ flowchart TB
   style Depois fill:#EEF2FF,stroke:#4F46E5,stroke-width:2px
 ```
 
-### Operação híbrida (convivência controlada)
+**Ciclo de execução por fluxo:**
 
-- A convivência é por **fluxo**, não por “meio sistema”. Cada fluxo tem um estado: _Legado_, _Híbrido_, _API_.
-- A troca de estado exige checklist (contrato, testes, observabilidade, rollback) e janela de estabilização.
+| Etapa | Ação                                  | Entregável                                      |
+| ----- | ------------------------------------- | ----------------------------------------------- |
+| 1     | Mapear fluxo e dependências no legado | Diagrama de fluxo + inventário de dependências  |
+| 2     | Definir contrato OpenAPI              | Especificação versionada                        |
+| 3     | Implementar fluxo na API              | Endpoint com validação, idempotência, auditoria |
+| 4     | Roteamento híbrido (legado → API)     | Feature flag ativa + fallback configurado       |
+| 5     | Estabilização e desativação do timer  | Métricas OK + timer desligado                   |
+| 6     | Repetir para próximo fluxo            | Padrões consolidados                            |
+
+### Operação híbrida e ciclo de estados
+
+A convivência é gerenciada **por fluxo**, não por "sistema inteiro". Cada fluxo transita por três estados, com critérios de transição e possibilidade de rollback.
 
 ```mermaid
 ---
 title: "Ciclo de Estados por Fluxo – Operação Híbrida"
 ---
 flowchart LR
-  %% ═══════════════════════════════════════════════════════════════
-  %% DIAGRAMA: Máquina de estados por fluxo de integração
-  %% PROPÓSITO: Documentar os estados possíveis de cada fluxo
-  %%            durante a migração e os critérios de transição
-  %% ═══════════════════════════════════════════════════════════════
-
   L["🟠 LEGADO\nFluxo no Legado"] ==>|"migração\naprovada"| H["🟡 HÍBRIDO\nOperação Híbrida"]
   H ==>|"estabilização\nconcluída"| N["🟢 API\nFluxo 100% via API"]
 
-  %% Rollback (fluxos de exceção)
   H -.->|"❌ Rollback controlado\n(feature flag)"| L
   N -.->|"⚠️ Rollback excepcional\n+ análise RCA"| H
 
-  %% ═══════════════════════════════════════════════════════════════
-  %% FLUXO SIMPLIFICADO
-  %% 1. LEGADO: fluxo operando apenas via timers/polling
-  %% 2. HÍBRIDO: API ativa + legado ainda funcional (fallback)
-  %% 3. API: fluxo 100% migrado, legado desativado
-  %% ↩️ Rollback: possível em qualquer etapa via feature flag
-  %% ═══════════════════════════════════════════════════════════════
-
-  %% ═══════════════════════════════════════════════════════════════
-  %% LEGENDA DE ESTADOS
-  %% 🟠 Laranja: Legado (timers/polling ativos)
-  %% 🟡 Amarelo: Híbrido (API + legado convivendo)
-  %% 🟢 Indigo: API (fluxo 100% modernizado)
-  %% ═══════════════════════════════════════════════════════════════
   classDef legacy fill:#FFEDD5,stroke:#F97316,color:#431407,stroke-width:2px;
   classDef hybrid fill:#FEF9C3,stroke:#EAB308,color:#422006,stroke-width:2px;
   classDef modern fill:#E0E7FF,stroke:#4F46E5,color:#111827,stroke-width:2px;
@@ -515,16 +515,20 @@ flowchart LR
   class N modern
 ```
 
-### Estratégias de rollback e mitigação em produção
+| Estado      | Descrição                                  | Critério de Transição                                 |
+| ----------- | ------------------------------------------ | ----------------------------------------------------- |
+| **Legado**  | Fluxo operando via timers/polling          | Contrato aprovado + API implementada                  |
+| **Híbrido** | API ativa + legado funcional como fallback | Estabilização OK (≥2 semanas sem incidentes críticos) |
+| **API**     | Fluxo 100% via API, timer desativado       | Aceite formal + evidência de desativação              |
 
-- **Feature flags por fluxo** e roteamento configurável.
-- **Janela de estabilização** (ex.: 2 semanas) com monitoramento reforçado.
-- **Reprocessamento**: mecanismos de reenvio/replay com idempotência.
-- **Plano de comunicação**: avisos e critérios de acionamento de rollback.
+**Estratégias de rollback:**
 
-## Fases do Projeto e Cronograma Macro
+- Feature flags por fluxo com roteamento configurável
+- Janela de estabilização (ex.: 2 semanas) com monitoramento reforçado
+- Reprocessamento via mecanismos de reenvio/replay com idempotência
+- Plano de comunicação com critérios de acionamento de rollback
 
-Esta seção apresenta o **roadmap de execução** do projeto, organizado em 7 fases (Fase 0 a Fase 6), com cronograma estimado, marcos de decisão e critérios de aceite. A estrutura foi desenhada para dar visibilidade a **BDMs** (valor entregue, riscos de negócio, pontos de decisão) e **TDMs** (dependências técnicas, entregáveis, critérios de qualidade).
+---
 
 ### Visão executiva do roadmap
 
