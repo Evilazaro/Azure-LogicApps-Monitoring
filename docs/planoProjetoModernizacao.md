@@ -210,7 +210,7 @@ Os princípios a seguir, organizados conforme o modelo **BDAT** (Business, Data,
 
 Desvios requerem aprovação formal com justificativa documentada e análise de impacto. As tabelas apresentam cada princípio, descrição e justificativa técnica.
 
-#### Princípios de Negócio (Business)
+#### 💼 Princípios de Negócio (Business)
 
 Os princípios de negócio garantem que a modernização preserve a **continuidade operacional** e entregue valor de forma incremental. Eles refletem o compromisso do projeto em minimizar riscos de transição, manter a previsibilidade para stakeholders e assegurar que mudanças sigam governança formal.
 
@@ -222,7 +222,7 @@ A abordagem incremental (Strangler Pattern) é o pilar central, permitindo que c
 | **Evolução incremental**     | Migração fluxo a fluxo (Strangler Pattern), sem "big bang"          | Feature flags; convivência legado/API por fluxo                   |
 | **Governança de mudanças**   | Mudanças seguem controle formal com critérios de aceite             | Versionamento de contratos; breaking changes controlados          |
 
-#### Princípios de Dados (Data)
+#### 🗃️ Princípios de Dados (Data)
 
 Os princípios de dados asseguram **governança clara** sobre quem é dono de cada informação (source of truth), eliminando ambiguidades que hoje causam conflitos e conciliações manuais. Com contratos explícitos e rastreabilidade por transação, o projeto habilita auditoria eficiente e diagnóstico rápido de problemas.
 
@@ -234,7 +234,7 @@ A formalização via OpenAPI e o uso de correlation-id ponta a ponta transformam
 | **Contratos explícitos (OpenAPI)** | Payloads, erros e versões documentados formalmente       | OpenAPI como fonte de verdade; testes de contrato |
 | **Rastreabilidade por transação**  | Toda operação é rastreável ponta a ponta                 | Correlation-id propagado; logs estruturados       |
 
-#### Princípios de Aplicação (Application)
+#### ⚙️ Princípios de Aplicação (Application)
 
 Os princípios de aplicação definem a estrutura de **desacoplamento e separação de responsabilidades** que permite evoluir a integração de forma independente do ERP e do sistema do cliente. Com a API como fronteira, mudanças no schema do banco não propagam mais para os consumidores.
 
@@ -246,7 +246,7 @@ A idempotência como requisito obrigatório elimina problemas de duplicidade em 
 | **Separação de responsabilidades**              | UI, regras de integração e domínio separados    | Lógica em serviços testáveis ou stored procedures; legado reduzido a UI |
 | **Idempotência e resiliência**                  | Reprocessamentos não corrompem dados            | Chaves de idempotência; retries controlados                             |
 
-#### Princípios de Tecnologia (Technology)
+#### 💻 Princípios de Tecnologia (Technology)
 
 Os princípios de tecnologia garantem que a solução seja **observável, segura e preparável para cenários futuros** de segregação de ambientes ou evolução para nuvem. Observabilidade não é opcional: tudo que integra deve produzir métricas, logs estruturados e alertas acionáveis.
 
@@ -264,7 +264,7 @@ Esta subseção detalha os **padrões técnicos** que operacionalizam os princí
 
 Os padrões abrangem definição de contratos (OpenAPI), tratamento de erros, idempotpência, propriedade de dados e critérios para evolução event-driven. Cada padrão foi selecionado para endereçar riscos específicos identificados na situação atual e garantir consistência entre os fluxos migrados.
 
-#### Padrão de API e contratos
+#### 📝 Padrão de API e contratos
 
 | Aspecto           | Padrão Definido                                                                     |
 | ----------------- | ----------------------------------------------------------------------------------- |
@@ -273,7 +273,7 @@ Os padrões abrangem definição de contratos (OpenAPI), tratamento de erros, id
 | **Versionamento** | Versão no path (`/v1`, `/v2`); política de compatibilidade e deprecação documentada |
 | **Geração**       | Clientes gerados a partir do contrato quando aplicável (SDK, tipos)                 |
 
-#### Tratamento de erros
+#### ⚠️ Tratamento de erros
 
 | Código HTTP | Categoria          | Uso                                                      |
 | ----------- | ------------------ | -------------------------------------------------------- |
@@ -294,7 +294,7 @@ Os padrões abrangem definição de contratos (OpenAPI), tratamento de erros, id
 }
 ```
 
-#### Idempotência e reprocessamento
+#### 🔄 Idempotência e reprocessamento
 
 | Aspecto           | Padrão                                                                                |
 | ----------------- | ------------------------------------------------------------------------------------- |
@@ -303,7 +303,7 @@ Os padrões abrangem definição de contratos (OpenAPI), tratamento de erros, id
 | **Auditoria**     | Resultado do reprocessamento registrado com correlation-id                            |
 | **Janela**        | Idempotência garantida por período configurável (ex.: 24h)                            |
 
-#### Propriedade de dados (source of truth)
+#### 🗂️ Propriedade de dados (source of truth)
 
 | Domínio     | Source of Truth | Direção do Fluxo                       | Observação        |
 | ----------- | --------------- | -------------------------------------- | ----------------- |
@@ -314,7 +314,7 @@ Os padrões abrangem definição de contratos (OpenAPI), tratamento de erros, id
 
 > **Regra**: Evitar dual-write. Quando inevitável durante transição, exigir governança explícita e trilha de auditoria.
 
-#### Evolução para event-driven
+#### 📡 Evolução para event-driven
 
 | Critério para adoção                        | Padrão                             |
 | ------------------------------------------- | ---------------------------------- |
@@ -331,7 +331,7 @@ Os padrões abrangem definição de contratos (OpenAPI), tratamento de erros, id
 
 ### 📐 Diretrizes de arquitetura e desenvolvimento
 
-#### Arquitetura em camadas
+#### 🏛️ Arquitetura em camadas
 
 A arquitetura em camadas organiza a API de Integração em **quatro níveis de responsabilidade** distintos: API (Controllers), Aplicação (Services), Domínio (Entities) e Infraestrutura (Repositories). Essa separação garante que cada camada tenha uma única razão para mudar, facilitando manutenção, testes e evolução independente.
 
@@ -389,7 +389,7 @@ block-beta
 | Regras de integração testáveis | Lógica em serviços com injeção de dependência      |
 | Desacoplamento do ERP          | Acesso ao ERP via gateways/repositórios abstraídos |
 
-#### Estratégia de testes
+#### 🧪 Estratégia de testes
 
 | Tipo           | Escopo                           | Ferramenta/Abordagem                    |
 | -------------- | -------------------------------- | --------------------------------------- |
@@ -398,7 +398,7 @@ block-beta
 | **Contrato**   | Validação do OpenAPI             | Mock server / consumer-driven contracts |
 | **E2E**        | Cenários por fluxo               | Auditoria de efeitos + correlation-id   |
 
-#### DevOps e ambientes
+#### 🚀 DevOps e ambientes
 
 | Ambiente | Propósito                          | Dados                                |
 | -------- | ---------------------------------- | ------------------------------------ |
@@ -432,7 +432,7 @@ Esta seção define os **entregáveis e limites** do projeto de modernização d
 | Segurança da API — autenticação, autorização e hardening | Definir e implementar autenticação/autorização para consumo da API e padrões de segurança operacional.<br><br>Inclui: mecanismo de auth (ex.: OAuth2, API Key, mTLS conforme restrição), segregação de ambientes/segredos, validação de payload, rate limiting e práticas de hardening de endpoints.<br><br>Também inclui padrões mínimos de acesso a dados internos (princípio do menor privilégio) para reduzir risco de exposição.                                                                                                                   | Reduz risco de exposição e substitui o “acesso ao banco” como mecanismo de integração; habilita cenários com rede/credenciais segregadas. |
 | Preparação para evolução event-driven (opcional)         | Planejar (sem implantar obrigatoriamente) a evolução para assíncrono onde fizer sentido.<br><br>Inclui: modelagem de eventos por domínio, critérios para quando usar síncrono vs assíncrono, desenho de padrões (retry, DLQ, idempotência, ordenação), e requisitos para adoção futura de fila (ex.: Service Bus).<br><br>Entregável: guideline técnico e backlog priorizado para evolução, sem desviar do foco do MVP (API + fluxos críticos).                                                                                                         | Evita “becos sem saída” arquiteturais e preserva foco no essencial, mantendo caminho claro para evoluções futuras.                        |
 
-#### Entregáveis Mínimos Validáveis (EMV)
+#### 📦 Entregáveis Mínimos Validáveis (EMV)
 
 Para cada item de escopo, a Néctar produzirá um **Entregável Mínimo Validável (EMV)** que permite à Cooperflora validar e aprovar o item de forma objetiva e imediata. Este modelo garante transparência, acelera feedback e reduz risco de retrabalho.
 
@@ -485,7 +485,7 @@ flowchart LR
 
 > **Nota**: Os EMVs são **marcos de validação intermediários** — não substituem os critérios de aceite completos de cada fase. Servem para garantir alinhamento contínuo e detectar desvios cedo, reduzindo risco de retrabalho ao final das fases.
 
-#### Premissas Específicas por Item de Escopo
+#### 📦 Premissas Específicas por Item de Escopo
 
 As premissas abaixo são **específicas para cada item de escopo** e complementam as premissas gerais do projeto. Cada premissa está diretamente vinculada a um entregável e define condições técnicas ou operacionais que devem ser verdadeiras para o sucesso do item.
 
@@ -573,7 +573,7 @@ As premissas abaixo são **específicas para cada item de escopo** e complementa
 >
 > **Total**: 29 premissas específicas de escopo (PE01–PE29), complementando as 28 premissas gerais do projeto (P01–P28).
 
-#### Escopo por domínio de negócio
+#### 🎯 Escopo por domínio de negócio
 
 A tabela acima detalha os entregáveis técnicos. Abaixo, a mesma visão é organizada por **domínio de negócio**, facilitando o entendimento dos stakeholders sobre quais áreas serão impactadas e em qual sequência.
 
@@ -589,7 +589,7 @@ A tabela acima detalha os entregáveis técnicos. Abaixo, a mesma visão é orga
 | **Estoque**                 | Movimentações, inventário                                        | Melhora rastreabilidade e reduz divergências; integração com outros domínios                                                | Média-Baixa (Fase 5)   |
 | **Operação e Governança**   | Runbooks, dashboards, alertas, gestão de mudanças                | Garante continuidade e capacidade de suporte durante operação híbrida                                                       | Contínuo               |
 
-#### Fora do escopo
+#### 🚫 Fora do escopo
 
 Delimitar explicitamente o que está **fora do escopo** é uma boa prática de gestão de projetos (PMBOK, Change Control). Isso evita "scope creep", mantém o projeto gerenciável e preserva foco na modernização incremental com entregas verificáveis.
 
@@ -670,7 +670,7 @@ flowchart TB
 | 5     | Estabilização e desativação do timer  | Métricas OK + timer desligado                   |
 | 6     | Repetir para próximo fluxo            | Padrões consolidados                            |
 
-### Operação híbrida e ciclo de estados
+### ⚖️ Operação híbrida e ciclo de estados
 
 A convivência é gerenciada **por fluxo**, não por "sistema inteiro". Cada fluxo transita por três estados, com critérios de transição e possibilidade de rollback.
 
@@ -709,7 +709,7 @@ flowchart LR
 
 ---
 
-### Visão executiva do roadmap
+### 🗺️ Visão executiva do roadmap
 
 | Fase | Nome                    | Duração Estimada | Marco de Negócio (BDM)                                 | Marco Técnico (TDM)                                    |
 | ---: | ----------------------- | :--------------: | ------------------------------------------------------ | ------------------------------------------------------ |
@@ -721,7 +721,7 @@ flowchart LR
 |    5 | Simplificação do legado |    1–2 meses     | Custo de manutenção reduzido, legado estável           | Rotinas de integração removidas, documentação final    |
 |    6 | Evolução opcional       |     Contínuo     | Novas capacidades habilitadas (quando justificado)     | Mensageria, eventos, preparação para Nimbus            |
 
-### Cronograma macro (referência por semanas)
+### 📆 Cronograma macro (referência por semanas)
 
 > **Nota para BDMs**: O cronograma abaixo é uma estimativa baseada em premissas iniciais. Ajustes serão propostos conforme descobertas na Fase 0 e validados em governança antes de impactar prazos/investimento.
 
@@ -766,7 +766,7 @@ gantt
 
 ---
 
-### Fase 0 – Alinhamento e contenção de riscos (1–2 semanas)
+### 0️⃣ Fase 0 – Alinhamento e contenção de riscos (1–2 semanas)
 
 | Aspecto       | Descrição                                                                                        |
 | ------------- | ------------------------------------------------------------------------------------------------ |
@@ -801,7 +801,7 @@ gantt
 | Dependências ocultas no VBA/SQL          | Alta          | Alto    | Sessões de engenharia reversa + validação com operação |
 | Escopo difuso ou expansão não controlada | Média         | Alto    | Baseline de escopo formal + controle de mudanças       |
 
-### Fase 1 – Definição dos contratos de integração (1–2 semanas)
+### 1️⃣ Fase 1 – Definição dos contratos de integração (1–2 semanas)
 
 | Aspecto       | Descrição                                                                         |
 | ------------- | --------------------------------------------------------------------------------- |
@@ -835,7 +835,7 @@ gantt
 | Contratos mal definidos           | Média         | Alto    | Workshops com exemplos reais + validação com dados |
 | Mudanças frequentes nos contratos | Média         | Médio   | Governança de breaking changes + compatibilidade   |
 
-### Fase 2 – Fundação da API (2–3 semanas)
+### 2️⃣ Fase 2 – Fundação da API (2–3 semanas)
 
 | Aspecto       | Descrição                                                                             |
 | ------------- | ------------------------------------------------------------------------------------- |
@@ -871,7 +871,7 @@ gantt
 | Atraso em provisão de ambientes/infra | Média         | Alto    | Iniciar setup em paralelo com Fase 1              |
 | Falhas de conectividade com ERP       | Média         | Alto    | Testes antecipados + alinhamento de rede/firewall |
 
-### Fase 3 – Fluxo Piloto (2–4 semanas)
+### 3️⃣ Fase 3 – Fluxo Piloto (2–4 semanas)
 
 | Aspecto       | Descrição                                                                                |
 | ------------- | ---------------------------------------------------------------------------------------- |
@@ -911,7 +911,7 @@ gantt
 | Divergência de dados entre sistemas | Média         | Alto    | Auditoria por transação + reprocessamento idempotente |
 | Resistência do usuário              | Baixa         | Médio   | Comunicação antecipada + acompanhamento pós-go-live   |
 
-### Fase 4 – Migração por fluxo / Operação híbrida (1–3 meses)
+### 4️⃣ Fase 4 – Migração por fluxo / Operação híbrida (1–3 meses)
 
 | Aspecto       | Descrição                                                                                        |
 | ------------- | ------------------------------------------------------------------------------------------------ |
@@ -957,7 +957,7 @@ gantt
 | Fadiga operacional                     | Média         | Médio   | Cadência de migração com janelas + comunicação clara |
 | Regressões em fluxos já migrados       | Baixa         | Alto    | Testes de regressão + monitoramento contínuo         |
 
-### Fase 5 – Simplificação do legado (1–2 meses)
+### 5️⃣ Fase 5 – Simplificação do legado (1–2 meses)
 
 | Aspecto       | Descrição                                                                                      |
 | ------------- | ---------------------------------------------------------------------------------------------- |
@@ -1007,7 +1007,7 @@ O módulo **não deve** mais conter:
 | Dependências remanescentes não mapeadas | Baixa         | Alto    | Checklist por fluxo antes de remover rotinas   |
 | Perda de conhecimento institucional     | Média         | Médio   | Documentação mínima + sessões de transferência |
 
-### Fase 6 – Evolução opcional (contínuo)
+### 6️⃣ Fase 6 – Evolução opcional (contínuo)
 
 | Aspecto       | Descrição                                                                                        |
 | ------------- | ------------------------------------------------------------------------------------------------ |
@@ -1033,11 +1033,11 @@ O módulo **não deve** mais conter:
 | Iniciativa aprovada em governança                    | BDM + TDM         |
 | Entrega validada com critérios de aceite específicos | TDM + BDM         |
 
-## Gestão do Projeto (Governança, Stakeholders e Controle)
+## 👥 Gestão do Projeto (Governança, Stakeholders e Controle)
 
 Esta seção define a estrutura de **governança, papéis, comunicação e controle** do projeto de modernização do Módulo Integrador. O modelo é **híbrido** — combina práticas formais (controle de mudanças, gestão de riscos, gates de decisão) com elementos ágeis (entregas incrementais, feedback contínuo) para garantir previsibilidade sem perder capacidade de adaptação.
 
-### Stakeholders e Matriz RACI
+### 💼 Stakeholders e Matriz RACI
 
 A identificação clara dos stakeholders e seus papéis é fundamental para comunicação eficaz e tomada de decisão. A tabela abaixo apresenta os principais grupos de stakeholders e suas responsabilidades no projeto.
 
@@ -1052,7 +1052,7 @@ A identificação clara dos stakeholders e seus papéis é fundamental para comu
 | **TI Cooperflora**       | Cooperflora | Infraestrutura, acessos, integrações do lado cliente      | Segurança, conformidade, impacto mínimo em outros sistemas |
 | **Áreas de Negócio**     | Cooperflora | Cadastro, Comercial, Fiscal/Financeiro — usuários finais  | Continuidade operacional, usabilidade, correção funcional  |
 
-#### Matriz RACI por Entregável
+#### 📋 Matriz RACI por Entregável
 
 A matriz abaixo define as responsabilidades (**R**esponsável, **A**provador, **C**onsultado, **I**nformado) para cada entregável do projeto.
 
@@ -1068,11 +1068,11 @@ A matriz abaixo define as responsabilidades (**R**esponsável, **A**provador, **
 | Monitoramento e alertas              |    I    |        I        |  I  |     C     |    C     |    R     |       C        |
 | Rollback e gestão de incidentes      |    I    |        C        |  A  |     C     |    C     |    R     |       C        |
 
-### Estrutura de Governança e Fóruns de Decisão
+### 🏛️ Estrutura de Governança e Fóruns de Decisão
 
 A governança do projeto é organizada em três níveis, cada um com responsabilidades, participantes e frequência definidos.
 
-#### Nível Estratégico: Comitê Executivo (Steering Committee)
+#### 🏛️ Nível Estratégico: Comitê Executivo (Steering Committee)
 
 | Aspecto           | Definição                                                                                              |
 | ----------------- | ------------------------------------------------------------------------------------------------------ |
@@ -1081,7 +1081,7 @@ A governança do projeto é organizada em três níveis, cada um com responsabil
 | **Frequência**    | Mensal ou sob demanda para decisões urgentes                                                           |
 | **Artefatos**     | Ata de reunião, registro de decisões, atualização de riscos estratégicos                               |
 
-#### Nível Tático: Comitê de Projeto
+#### ⚙️ Nível Tático: Comitê de Projeto
 
 | Aspecto           | Definição                                                                                        |
 | ----------------- | ------------------------------------------------------------------------------------------------ |
@@ -1090,7 +1090,7 @@ A governança do projeto é organizada em três níveis, cada um com responsabil
 | **Frequência**    | Semanal                                                                                          |
 | **Artefatos**     | Status report, burndown/burnup, registro de riscos e issues, backlog atualizado                  |
 
-#### Nível Operacional: Cerimônias Ágeis
+#### 🎹 Nível Operacional: Cerimônias Ágeis
 
 | Cerimônia           | Objetivo                                            | Participantes              | Frequência       |
 | ------------------- | --------------------------------------------------- | -------------------------- | ---------------- |
@@ -1099,11 +1099,11 @@ A governança do projeto é organizada em três níveis, cada um com responsabil
 | **Sprint Review**   | Demonstração de entregas, feedback do PO            | PO, Dev Team, Stakeholders | Fim de sprint    |
 | **Retrospectiva**   | Melhoria contínua do processo                       | Dev Team, Tech Lead        | Fim de sprint    |
 
-### Gestão de Mudanças (Change Control)
+### 🔄 Gestão de Mudanças (Change Control)
 
 Todo projeto está sujeito a mudanças. O processo de controle de mudanças garante que alterações sejam avaliadas, aprovadas e implementadas de forma controlada, sem comprometer a baseline do projeto.
 
-#### Processo de Change Request
+#### 📝 Processo de Change Request
 
 ```mermaid
 flowchart LR
@@ -1134,7 +1134,7 @@ flowchart LR
 | Atualização de baseline | Gerente de Projeto             | 2 dias úteis              | Plano de projeto atualizado                     |
 | Comunicação             | Gerente de Projeto             | Imediato                  | Comunicado aos stakeholders afetados            |
 
-#### Critérios para Escalação ao Comitê Executivo
+#### 🚨 Critérios para Escalação ao Comitê Executivo
 
 - Impacto em prazo superior a **2 semanas**
 - Impacto em custo superior a **10% do orçamento** da fase
@@ -1142,7 +1142,7 @@ flowchart LR
 - Adição de **novos fluxos** não previstos no escopo original
 - Conflitos entre stakeholders que não podem ser resolvidos no nível tático
 
-### Plano de Comunicação
+### 📣 Plano de Comunicação
 
 A comunicação eficaz é crítica para o sucesso do projeto. O plano abaixo define os canais, frequência e responsáveis por cada tipo de comunicação.
 
@@ -1157,9 +1157,9 @@ A comunicação eficaz é crítica para o sucesso do projeto. O plano abaixo def
 | **Ata de Reunião**                    | Participantes da reunião     | E-mail              | Após cada reunião | Organizador        |
 | **Relatório de Incidentes**           | PO, Operação, TI Cooperflora | E-mail + Ticket     | Por incidente     | Operação           |
 
-### Premissas e Restrições do Projeto
+### 📋 Premissas e Restrições do Projeto
 
-#### Premissas
+#### ✅ Premissas
 
 As premissas são condições assumidas como verdadeiras para fins de planejamento. Se alguma premissa se mostrar falsa, deve ser tratada como **risco materializado** e seguir o processo de gestão de riscos. As premissas estão organizadas por **fase do ciclo de vida** do projeto e **responsável**, com destaque para impactos financeiros quando aplicável.
 
@@ -1246,7 +1246,7 @@ As premissas são condições assumidas como verdadeiras para fins de planejamen
 >
 > **Recomendação**: Premissas P01, P06, P08, P12, P16 e **P28** são as mais críticas para o cronograma e devem ter acompanhamento semanal no Comitê de Projeto.
 
-#### Restrições
+#### ⛔ Restrições
 
 As restrições são limitações conhecidas que moldam as decisões do projeto. Diferente das premissas, restrições são fatos aceitos que não podem ser alterados.
 
@@ -1260,7 +1260,7 @@ As restrições são limitações conhecidas que moldam as decisões do projeto.
 |  R6 | Acesso ao banco do ERP será restrito/eliminado após migração           | Néctar (Arquitetura)   | API deve ser autossuficiente para todas as integrações            | Fases 2, 3, 4, 5   |
 |  R7 | Políticas de segurança da Cooperflora devem ser respeitadas            | Cooperflora (TI)       | Autenticação e hardening conforme padrões do cliente              | Fases 1, 2         |
 
-### Critérios de Sucesso do Projeto
+### 🏆 Critérios de Sucesso do Projeto
 
 Os critérios abaixo definem como o sucesso do projeto será medido ao final de cada fase e ao término do projeto.
 
@@ -1276,13 +1276,13 @@ Os critérios abaixo definem como o sucesso do projeto será medido ao final de 
 | **Aderência ao cronograma**          | Desvio máximo de 15% em relação ao baseline      | Comparativo planejado vs realizado           |
 | **Aderência ao orçamento**           | Desvio máximo de 10% em relação ao baseline      | Comparativo planejado vs realizado           |
 
-## Riscos (RAID) e Mitigações
+## ⚠️ Riscos (RAID) e Mitigações
 
 O gerenciamento de riscos é contínuo ao longo do projeto. Esta seção apresenta o registro inicial de **Riscos, Ações, Issues e Decisões (RAID)**, que será atualizado nas reuniões semanais do Comitê de Projeto. Cada risco é classificado por probabilidade e impacto, com responsável e plano de mitigação definidos.
 
 A matriz de riscos segue a escala: **Probabilidade** (Baixa/Média/Alta) × **Impacto** (Baixo/Médio/Alto/Crítico), gerando uma classificação de severidade que orienta a priorização das ações de mitigação.
 
-### Registro de Riscos
+### 📝 Registro de Riscos
 
 |  ID | Risco                                                         | Probabilidade | Impacto | Severidade  | Mitigação                                                                            | Responsável        | Status |
 | --: | ------------------------------------------------------------- | :-----------: | :-----: | :---------: | ------------------------------------------------------------------------------------ | ------------------ | :----: |
@@ -1297,7 +1297,7 @@ A matriz de riscos segue a escala: **Probabilidade** (Baixa/Média/Alta) × **Im
 | R09 | Performance da API inferior ao legado em cenários específicos |     Baixa     |  Alto   |  **Médio**  | Testes de carga; otimização; cache quando aplicável; métricas de baseline            | Arquiteto          | Aberto |
 | R10 | Mudanças no ERP Néctar durante o projeto                      |     Baixa     | Crítico |  **Alto**   | Comunicação prévia obrigatória; versionamento de contratos; testes de regressão      | Arquiteto          | Aberto |
 
-### Matriz de Severidade
+### 🎯 Matriz de Severidade
 
 ```mermaid
 ---
@@ -1325,7 +1325,7 @@ block-beta
   class PA_C,PM_C critico
 ```
 
-### Plano de Contingência para Riscos Críticos
+### 🚨 Plano de Contingência para Riscos Críticos
 
 | Risco | Gatilho de Ativação                               | Plano de Contingência                                                 |
 | ----- | ------------------------------------------------- | --------------------------------------------------------------------- |
@@ -1334,7 +1334,7 @@ block-beta
 | R05   | Falha crítica em produção pós-migração            | Ativar rollback via feature flag; restaurar fluxo legado; análise RCA |
 | R10   | Mudança no ERP quebra contrato existente          | Versionar contrato; manter versão anterior; migração gradual          |
 
-### KPIs de Monitoramento do Projeto
+### 📊 KPIs de Monitoramento do Projeto
 
 Além dos critérios de sucesso, os seguintes KPIs serão monitorados continuamente para detecção precoce de problemas:
 
@@ -1350,9 +1350,9 @@ Além dos critérios de sucesso, os seguintes KPIs serão monitorados continuame
 | Desvio de cronograma              | < 15% do baseline          | Semanal               | Gerente de Projeto |
 | EMVs com aprovação tácita         | < 20% do total de EMVs     | Por fase              | Gerente de Projeto |
 
-## Operação, Implantação e Suporte
+## 🚀 Operação, Implantação e Suporte
 
-### Estratégia de implantação
+### 🛸 Estratégia de implantação
 
 | Aspecto               | Descrição                                                            |
 | --------------------- | -------------------------------------------------------------------- |
@@ -1362,7 +1362,7 @@ Além dos critérios de sucesso, os seguintes KPIs serão monitorados continuame
 | **Feature Flags**     | Roteamento por fluxo (Legado/Híbrido/API) com rollback configurável  |
 | **Validação**         | Smoke tests e dashboards pós-deploy obrigatórios                     |
 
-### Operação híbrida
+### ⚖️ Operação híbrida
 
 | Elemento                  | Descrição                                                             |
 | ------------------------- | --------------------------------------------------------------------- |
@@ -1371,14 +1371,14 @@ Além dos critérios de sucesso, os seguintes KPIs serão monitorados continuame
 | Procedimentos de rollback | Documentados por fluxo, com critérios de acionamento                  |
 | Janela de estabilização   | 2 semanas por fluxo com monitoramento reforçado                       |
 
-### Runbooks e suporte
+### 📖 Runbooks e suporte
 
 - **Runbooks por fluxo**: o que monitorar, como reprocessar, quando escalar
 - **Revisão pós-incidente (RCA)**: obrigatória para P1/P2, com ações documentadas
 - **Melhoria contínua**: ajustes em runbooks e alertas conforme aprendizados
 - **Matriz de escalação**: definida por severidade e horário (comercial vs. plantão)
 
-### Treinamento
+### 🎓 Treinamento
 
 | Público      | Conteúdo                                                   | Momento               |
 | ------------ | ---------------------------------------------------------- | --------------------- |
@@ -1386,22 +1386,22 @@ Além dos critérios de sucesso, os seguintes KPIs serão monitorados continuame
 | **Operação** | Dashboards, runbooks, procedimentos de escalação           | Antes de cada go-live |
 | **Negócio**  | Mudanças de comportamento, novos fluxos, pontos de atenção | Por onda de migração  |
 
-## Próximos Passos e Evolução Futura
+## 🔮 Próximos Passos e Evolução Futura
 
-### Ações imediatas (Fase 0)
+### 🎯 Ações imediatas (Fase 0)
 
 1. Validar com Cooperflora: **fluxo piloto**, matriz de propriedade de dados e restrições de rede/segurança.
 2. Confirmar governança e calendário de homologação.
 3. Iniciar Fase 0 com inventário técnico e backlog priorizado.
 4. Realizar congelamento de tabelas e VBA relevantes para integração.
 
-### Migração futura ao Nimbus
+### ☁️ Migração futura ao Nimbus
 
 - APIs já preparadas como contratos formais (OpenAPI versionado).
 - Modelo de integração moderno e desacoplado.
 - Planejamento de módulos candidatos à migração conforme roadmap estratégico.
 
-### Arquitetura orientada a eventos (evolução opcional)
+### 📡 Arquitetura orientada a eventos (evolução opcional)
 
 - Introdução de Service Bus quando justificado por picos de carga ou desacoplamento.
 - Modelagem de eventos por domínio (ex.: `PedidoCriado`, `NotaFiscalEmitida`).
