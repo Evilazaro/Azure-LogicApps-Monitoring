@@ -4,11 +4,9 @@
 
 ## Introdução
 
-Este projeto visa modernizar o **Módulo Integrador/Interface (Access + VBA)** utilizado pela Cooperflora para integrar com o ERP Néctar, reduzindo a dependência de **acesso direto ao SQL Server** (banco como “hub” de integração). O objetivo é assegurar **continuidade operacional** e **previsibilidade** para o negócio, ao mesmo tempo em que se prepara a integração para cenários em que **não haverá banco compartilhado** e onde podem existir **restrições de rede/credenciais** e evolução para nuvem.
+Este projeto visa modernizar o **Módulo Integrador/Interface (Access + VBA)** utilizado pela Cooperflora para integrar com o ERP Néctar, substituindo o modelo de **acesso direto ao SQL Server** por uma **camada de serviços (API)** com contratos explícitos, segurança e observabilidade. A modernização será conduzida de forma **incremental**, por fluxo, seguindo o **Strangler Pattern**, permitindo convivência controlada com o legado até estabilização e migração completa.
 
-A modernização será conduzida de forma **incremental**, por fluxo, seguindo o **Strangler Pattern**: seleciona-se um fluxo piloto, implementa-se via API com contratos e observabilidade, e mantém-se convivência controlada com o legado até estabilização. Essa estratégia reduz risco de transição, melhora governança (definição de dono do dado, versionamento e critérios de aceite) e aumenta a capacidade de resposta a mudanças sem impacto desproporcional em operação e suporte.
-
-Ao final, espera-se uma integração com **contratos explícitos** (OpenAPI), **segurança e controle de acesso**, e **rastreabilidade de ponta a ponta** (logs estruturados, métricas e auditoria por transação). Para BDMs, isso se traduz em menor risco operacional, menor custo de incidentes e maior agilidade para habilitar novos fluxos e evoluções; para TDMs, em uma base técnica governável e sustentável para evolução contínua.
+Ao final, espera-se uma integração com **contratos OpenAPI versionados**, **controle de acesso**, e **rastreabilidade de ponta a ponta** (logs estruturados, métricas e auditoria por transação). Para BDMs, isso significa menor risco operacional e maior agilidade; para TDMs, uma base técnica governável e preparada para cenários segregados ou em nuvem.
 
 ### Objetivo
 
@@ -23,11 +21,9 @@ O documento serve como **referência de acompanhamento**, com critérios de acei
 
 ### Situação atual e motivação
 
-Hoje, a integração entre o sistema da Cooperflora e o ERP Néctar depende de **co-localização** e de **acesso direto ao SQL Server**, que acaba operando como “hub” de integração. O módulo legado (Access + VBA) e rotinas auxiliares (SINC) leem e escrevem diretamente em tabelas do ERP, usando estados e convenções para orquestrar fluxos.
+A integração atual entre o sistema da Cooperflora e o ERP Néctar depende de **acesso direto ao SQL Server**, que opera como "hub" de integração. O módulo legado (Access + VBA) e rotinas SINC leem e escrevem diretamente em tabelas do ERP, criando contratos implícitos baseados em schema e convenções históricas — o que eleva risco operacional, custo de suporte e dificulta evolução.
 
-Embora viável no cenário atual, esse modelo cria dependências difíceis de governar: o banco vira a “interface” e os contratos passam a ser definidos pelo schema e por comportamento histórico. Para o negócio, isso se traduz em **maior risco operacional** (incidentes quando há mudanças de estrutura/infra), **custo de suporte elevado** e **baixa previsibilidade** em homologação e evolução, pois faltam contratos versionados e rastreabilidade por transação.
-
-Além disso, o cenário futuro **não prevê banco compartilhado** nem acesso direto entre ambientes, o que torna a abordagem atual um bloqueio para evolução (segregação de rede/credenciais e eventual nuvem). A motivação central é migrar para uma **camada de serviços** com contratos explícitos, controle de acesso e observabilidade, permitindo modernização **fluxo a fluxo** com risco controlado e operação contínua.
+O cenário futuro **não prevê banco compartilhado** nem acesso direto entre ambientes, tornando a abordagem atual um bloqueio para segregação de rede/credenciais e evolução para nuvem. A motivação central é migrar para uma **camada de serviços** com contratos explícitos e observabilidade, permitindo modernização **fluxo a fluxo** com risco controlado.
 
 | Aspecto da Situação Atual (resumo executivo)                            | Descrição Detalhada                                                                                                                                                                                                                                                                                                                                                                               | Impacto (negócio)                                                                                                                                                                                | Objetivo (negócio e técnico)                                                                                                                                                                        |
 | ----------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -41,13 +37,9 @@ Além disso, o cenário futuro **não prevê banco compartilhado** nem acesso di
 
 ### Escopo do Projeto
 
-Esta seção define a **Declaração de Escopo** do projeto (referência PMBOK): descreve o que será entregue, os limites do trabalho e o que será considerado sucesso. Ela funciona como **baseline** para planejamento e controle — orienta cronograma, custos, governança e critérios de aceite, e reduz ambiguidades durante a execução.
+Esta seção define os **entregáveis e limites** do projeto de modernização do Módulo Integrador/Interface. A tabela a seguir apresenta o que será implementado: transição do modelo "banco como integração" para camada de serviços, contratos OpenAPI, segurança, observabilidade e operação híbrida por fluxo — tudo dentro das premissas de migração incremental e continuidade operacional.
 
-Os itens listados na tabela a seguir representam os **entregáveis e capacidades em escopo** para modernização do Módulo Integrador/Interface, incluindo a transição do modelo “banco como integração” para uma camada de serviços, com contratos, segurança, observabilidade e operação híbrida. Em outras palavras: o que está descrito aqui é aquilo que o projeto se compromete a implementar, dentro das premissas e restrições do contexto (legado em produção, migração incremental por fluxo e continuidade operacional).
-
-Regra de governança do escopo: **tudo o que não estiver descrito nesta seção é automaticamente considerado fora de escopo**. Isso inclui, por padrão, qualquer iniciativa adicional não explicitada (ex.: reimplementar o ERP, substituir o sistema do cliente, mudanças amplas de infraestrutura não necessárias ao integrador, ou novos fluxos/funcionalidades não listados), mesmo que correlata ao tema. Essa regra evita "scope creep" e preserva previsibilidade de prazo e investimento.
-
-Qualquer necessidade nova ou ajuste relevante deve seguir **controle de mudanças**: registrar a solicitação, avaliar impacto (prazo/custo/risco/arquitetura/operação), obter aprovação e, somente então, atualizar esta seção (baseline) e os planos associados.
+**Regra de governança**: tudo que não estiver descrito nesta seção é automaticamente considerado fora de escopo. Qualquer necessidade nova deve seguir **controle de mudanças** (registrar solicitação, avaliar impacto, obter aprovação) antes de atualizar o baseline.
 
 > **Nota**: A coluna **Benefícios Esperados** está diretamente vinculada aos **Objetivos (negócio e técnico)** definidos na seção "Situação atual e motivação". Cada benefício endereça um ou mais objetivos estratégicos identificados na análise da situação atual.
 
@@ -95,11 +87,9 @@ Delimitar explicitamente o que está **fora do escopo** é uma boa prática de g
 
 ### Arquitetura atual
 
-A Cooperflora utiliza um **Módulo Integrador/Interface (Access + VBA)**, com apoio do componente **SINC**, operando com forte dependência do **SQL Server** do ERP como ambiente de integração. Na prática, a integração é implementada como **acesso direto a tabelas** (leitura e escrita), com o banco assumindo o papel de “barramento” através de tabelas compartilhadas, flags/status e convenções que representam estados do processo.
+A Cooperflora utiliza um **Módulo Integrador/Interface (Access + VBA)** com o componente **SINC**, operando por **acesso direto ao SQL Server** do ERP. A integração é implementada via leitura/escrita em tabelas compartilhadas, com timers/polling que varrem registros "novos" e persistem resultados — o banco assume papel de "barramento" através de flags/status e convenções históricas.
 
-O modelo é sustentado por **timers/polling**: rotinas periódicas varrem registros “novos”, aplicam validações/regras e persistem resultados no banco do ERP, em geral sem uma fronteira de serviço explícita. Do ponto de vista técnico, isso aumenta o acoplamento ao schema e cria dependência de comportamentos históricos (contratos implícitos), além de dificultar isolamento de responsabilidades entre UI/legado, regras de integração e persistência.
-
-Essa topologia funciona sobretudo por **co-localização** (mesmo servidor ou rede com acesso amplo) e por credenciais/acessos permissivos ao SQL Server. Em cenários com segregação de rede, credenciais e ambientes (ou evolução para nuvem), o padrão tende a falhar ou exigir exceções arquiteturais, elevando risco operacional e complexidade de manutenção.
+Essa topologia funciona por **co-localização** e credenciais permissivas ao SQL Server. Em cenários com segregação de rede ou evolução para nuvem, o padrão tende a falhar, elevando risco operacional e complexidade de manutenção.
 
 ```mermaid
 ---
@@ -166,11 +156,9 @@ flowchart LR
 
 ### Arquitetura alvo
 
-A arquitetura alvo introduz uma **API de Integração (.NET Web API)** como fronteira explícita entre o sistema da Cooperflora e o ERP Néctar, eliminando o banco como mecanismo de integração. O cliente passa a integrar por **HTTP/REST + JSON**, e a API concentra responsabilidades de integração: validação, normalização/mapeamento, aplicação de regras de integração, orquestração e persistência através de mecanismos internos (ex.: chamadas ao ERP e/ou acesso ao SQL do ERP quando aplicável), sem expor o banco como interface.
+A arquitetura alvo introduz uma **API de Integração (.NET Web API)** como fronteira explícita entre Cooperflora e ERP Néctar, eliminando o banco como mecanismo de integração. O cliente passa a integrar por **HTTP/REST + JSON**, com a API concentrando validação, mapeamento, regras de integração e persistência interna — tudo com **contratos OpenAPI** versionados, idempotência e resiliência (timeouts/retries).
 
-Do ponto de vista de engenharia, a API estabelece padrões essenciais: **contratos OpenAPI** versionados, taxonomia de erros, idempotência por chave, e controles de resiliência (timeouts/retries), reduzindo duplicidades e inconsistências em reprocessamentos. A convivência com o legado é suportada por operação híbrida por fluxo (feature flags/roteamento), permitindo migração incremental com rollback controlado.
-
-Como requisito operacional, a arquitetura alvo incorpora **observabilidade** (logs estruturados, métricas, auditoria e correlation-id) e prepara o caminho para evolução assíncrona (ex.: fila/eventos) onde houver ganho claro, mantendo o princípio central: **a integração não depende de acesso direto ao banco do ERP** e pode operar em cenários segregados/nuvem.
+A arquitetura incorpora **observabilidade** (logs estruturados, métricas, correlation-id) e suporta operação híbrida por fluxo (feature flags), permitindo migração incremental com rollback. O princípio central: **a integração não depende de acesso direto ao banco do ERP** e pode operar em cenários segregados/nuvem.
 
 ```mermaid
 ---
@@ -264,9 +252,9 @@ Esta tabela sintetiza as diferenças entre a arquitetura atual e a arquitetura a
 
 ### Princípios arquiteturais
 
-Os princípios arquiteturais estabelecem as **diretrizes fundamentais** que orientam todas as decisões técnicas do projeto de modernização. Organizados conforme o modelo **BDAT** (Business, Data, Application, Technology) do framework TOGAF, esses princípios garantem consistência entre as escolhas de arquitetura e os objetivos de negócio. Cada princípio foi selecionado para endereçar diretamente os problemas identificados na "Situação atual e motivação", assegurando que a solução técnica produza os benefícios esperados.
+Os princípios a seguir, organizados conforme o modelo **BDAT** (Business, Data, Application, Technology), orientam todas as decisões técnicas deste projeto. Cada princípio endereça diretamente os problemas da situação atual e sua aderência é **obrigatória** em todas as fases, verificada nos gates de decisão.
 
-A aderência a esses princípios é **obrigatória** em todas as fases do projeto e deve ser verificada nos gates de decisão. Desvios requerem aprovação formal com justificativa documentada, análise de impacto e plano de mitigação de riscos. A tabela de cada domínio apresenta o princípio, sua descrição e a justificativa técnica que fundamenta sua adoção.
+Desvios requerem aprovação formal com justificativa documentada e análise de impacto. As tabelas apresentam cada princípio, descrição e justificativa técnica.
 
 #### Princípios de Negócio (Business)
 
@@ -571,14 +559,14 @@ flowchart LR
 ### Visão executiva do roadmap
 
 | Fase | Nome                    | Duração Estimada | Marco de Negócio (BDM)                                 | Marco Técnico (TDM)                                    |
-| ---- | ----------------------- | ---------------- | ------------------------------------------------------ | ------------------------------------------------------ |
-| 0    | Alinhamento e contenção | 1–2 semanas      | Acordo sobre escopo, riscos mapeados                   | Inventário técnico completo, backlog priorizado        |
-| 1    | Definição de contratos  | 1–2 semanas      | Contratos aprovados, governança definida               | OpenAPI v1, padrões de integração documentados         |
-| 2    | Fundação da API         | 2–3 semanas      | Infraestrutura pronta para piloto                      | API em DEV/HML, pipeline CI/CD, observabilidade básica |
-| 3    | Fluxo piloto            | 2–4 semanas      | **Primeiro fluxo em produção**, valor demonstrado      | Piloto estável, padrões validados, lições aprendidas   |
-| 4    | Migração por fluxo      | 1–3 meses        | Fluxos críticos migrados, redução de risco operacional | Timers desativados, operação híbrida governada         |
-| 5    | Simplificação do legado | 1–2 meses        | Custo de manutenção reduzido, legado estável           | Rotinas de integração removidas, documentação final    |
-| 6    | Evolução opcional       | Contínuo         | Novas capacidades habilitadas (quando justificado)     | Mensageria, eventos, preparação para Nimbus            |
+| ---: | ----------------------- | :--------------: | ------------------------------------------------------ | ------------------------------------------------------ |
+|    0 | Alinhamento e contenção |   1–2 semanas    | Acordo sobre escopo, riscos mapeados                   | Inventário técnico completo, backlog priorizado        |
+|    1 | Definição de contratos  |   1–2 semanas    | Contratos aprovados, governança definida               | OpenAPI v1, padrões de integração documentados         |
+|    2 | Fundação da API         |   2–3 semanas    | Infraestrutura pronta para piloto                      | API em DEV/HML, pipeline CI/CD, observabilidade básica |
+|    3 | Fluxo piloto            |   2–4 semanas    | **Primeiro fluxo em produção**, valor demonstrado      | Piloto estável, padrões validados, lições aprendidas   |
+|    4 | Migração por fluxo      |    1–3 meses     | Fluxos críticos migrados, redução de risco operacional | Timers desativados, operação híbrida governada         |
+|    5 | Simplificação do legado |    1–2 meses     | Custo de manutenção reduzido, legado estável           | Rotinas de integração removidas, documentação final    |
+|    6 | Evolução opcional       |     Contínuo     | Novas capacidades habilitadas (quando justificado)     | Mensageria, eventos, preparação para Nimbus            |
 
 ### Cronograma macro (referência por semanas)
 
@@ -870,9 +858,7 @@ gantt
 
 ## Gestão do Projeto (Governança, Stakeholders e Controle)
 
-Esta seção estabelece a estrutura de **governança, papéis e responsabilidades, comunicação e controle** que sustenta a execução do projeto. A abordagem combina práticas do PMBOK (governança formal, controle de mudanças, gestão de riscos) com elementos ágeis (entregas incrementais, cerimônias de feedback, adaptação contínua), configurando um modelo **híbrido** adequado à natureza do projeto: modernização de sistema crítico com necessidade de previsibilidade e continuidade operacional.
-
-A governança é essencial para assegurar que decisões sejam tomadas no fórum correto, mudanças sejam avaliadas antes de impactar escopo/prazo/custo, e que todos os stakeholders tenham visibilidade adequada do progresso e dos riscos.
+Esta seção define a estrutura de **governança, papéis, comunicação e controle** do projeto de modernização do Módulo Integrador. O modelo é **híbrido** — combina práticas formais (controle de mudanças, gestão de riscos, gates de decisão) com elementos ágeis (entregas incrementais, feedback contínuo) para garantir previsibilidade sem perder capacidade de adaptação.
 
 ### Stakeholders e Matriz RACI
 
@@ -891,18 +877,18 @@ A identificação clara dos stakeholders e seus papéis é fundamental para comu
 
 #### Matriz RACI por Entregável
 
-A matriz RACI define quem é **Responsável (R)**, **Aprovador (A)**, **Consultado (C)** e **Informado (I)** para cada entregável principal.
+A matriz abaixo define as responsabilidades (**R**esponsável, **A**provador, **C**onsultado, **I**nformado) para cada entregável do projeto.
 
 | Entregável / Decisão                 | Sponsor | Gerente Projeto | PO  | Arquiteto | Dev Team | Operação | TI Cooperflora |
-| ------------------------------------ | ------- | --------------- | --- | --------- | -------- | -------- | -------------- |
-| Aprovação de escopo e baseline       | A       | R               | C   | C         | I        | I        | C              |
-| Definição de contratos OpenAPI       | I       | C               | A   | R         | C        | I        | C              |
-| Implementação de fluxos              | I       | C               | A   | C         | R        | I        | I              |
-| Decisões de arquitetura              | I       | C               | C   | A         | R        | C        | I              |
-| Aprovação de go-live por fluxo       | A       | R               | A   | C         | C        | C        | C              |
-| Gestão de mudanças (change requests) | A       | R               | C   | C         | I        | I        | C              |
-| Monitoramento e alertas              | I       | I               | I   | C         | C        | R        | C              |
-| Rollback e gestão de incidentes      | I       | C               | A   | C         | C        | R        | C              |
+| ------------------------------------ | :-----: | :-------------: | :-: | :-------: | :------: | :------: | :------------: |
+| Aprovação de escopo e baseline       |    A    |        R        |  C  |     C     |    I     |    I     |       C        |
+| Definição de contratos OpenAPI       |    I    |        C        |  A  |     R     |    C     |    I     |       C        |
+| Implementação de fluxos              |    I    |        C        |  A  |     C     |    R     |    I     |       I        |
+| Decisões de arquitetura              |    I    |        C        |  C  |     A     |    R     |    C     |       I        |
+| Aprovação de go-live por fluxo       |    A    |        R        |  A  |     C     |    C     |    C     |       C        |
+| Gestão de mudanças (change requests) |    A    |        R        |  C  |     C     |    I     |    I     |       C        |
+| Monitoramento e alertas              |    I    |        I        |  I  |     C     |    C     |    R     |       C        |
+| Rollback e gestão de incidentes      |    I    |        C        |  A  |     C     |    C     |    R     |       C        |
 
 ### Estrutura de Governança e Fóruns de Decisão
 
@@ -998,24 +984,24 @@ A comunicação eficaz é crítica para o sucesso do projeto. O plano abaixo def
 
 As premissas são condições assumidas como verdadeiras para fins de planejamento. Se alguma premissa se mostrar falsa, deve ser tratada como risco materializado.
 
-| ID  | Premissa                                                                    | Impacto se Falsa                                    |
-| --- | --------------------------------------------------------------------------- | --------------------------------------------------- |
-| P1  | Cooperflora disponibilizará recursos para homologação nas janelas definidas | Atraso em validação e go-live                       |
-| P2  | O legado (Access/VBA) permanecerá estável durante a migração                | Retrabalho em mapeamento e testes                   |
-| P3  | Não haverá mudanças estruturais no ERP Néctar durante o projeto             | Impacto em contratos e integrações já desenvolvidas |
-| P4  | Acessos e credenciais necessários serão providos em tempo hábil             | Bloqueio de desenvolvimento e testes                |
-| P5  | O escopo aprovado será respeitado, com mudanças via controle formal         | Scope creep, atraso e estouro de orçamento          |
+|  ID | Premissa                                                                    | Impacto se Falsa                                    |
+| --: | --------------------------------------------------------------------------- | --------------------------------------------------- |
+|  P1 | Cooperflora disponibilizará recursos para homologação nas janelas definidas | Atraso em validação e go-live                       |
+|  P2 | O legado (Access/VBA) permanecerá estável durante a migração                | Retrabalho em mapeamento e testes                   |
+|  P3 | Não haverá mudanças estruturais no ERP Néctar durante o projeto             | Impacto em contratos e integrações já desenvolvidas |
+|  P4 | Acessos e credenciais necessários serão providos em tempo hábil             | Bloqueio de desenvolvimento e testes                |
+|  P5 | O escopo aprovado será respeitado, com mudanças via controle formal         | Scope creep, atraso e estouro de orçamento          |
 
 #### Restrições
 
 As restrições são limitações conhecidas que moldam as decisões do projeto.
 
-| ID  | Restrição                                                              | Implicação                                                 |
-| --- | ---------------------------------------------------------------------- | ---------------------------------------------------------- |
-| R1  | A operação não pode ser interrompida durante a migração                | Obriga operação híbrida e rollback por fluxo               |
-| R2  | O sistema legado (Access) não será descontinuado até migração completa | Necessário manter convivência e sincronização              |
-| R3  | Orçamento e equipe são fixos para o escopo definido                    | Mudanças de escopo exigem trade-off ou aprovação adicional |
-| R4  | Dependência de janelas de homologação da Cooperflora                   | Cronograma deve prever buffers para disponibilidade        |
+|  ID | Restrição                                                              | Implicação                                                 |
+| --: | ---------------------------------------------------------------------- | ---------------------------------------------------------- |
+|  R1 | A operação não pode ser interrompida durante a migração                | Obriga operação híbrida e rollback por fluxo               |
+|  R2 | O sistema legado (Access) não será descontinuado até migração completa | Necessário manter convivência e sincronização              |
+|  R3 | Orçamento e equipe são fixos para o escopo definido                    | Mudanças de escopo exigem trade-off ou aprovação adicional |
+|  R4 | Dependência de janelas de homologação da Cooperflora                   | Cronograma deve prever buffers para disponibilidade        |
 
 ### Critérios de Sucesso do Projeto
 
@@ -1040,18 +1026,18 @@ A matriz de riscos segue a escala: **Probabilidade** (Baixa/Média/Alta) × **Im
 
 ### Registro de Riscos
 
-| ID  | Risco                                                         | Probabilidade | Impacto | Severidade  | Mitigação                                                                            | Responsável        | Status |
-| --- | ------------------------------------------------------------- | ------------- | ------- | ----------- | ------------------------------------------------------------------------------------ | ------------------ | ------ |
-| R01 | Dependências ocultas no legado (VBA/SQL) não documentadas     | Alta          | Alto    | **Crítico** | Inventário e engenharia reversa na Fase 0; validação com operação                    | Arquiteto          | Aberto |
-| R02 | Inconsistência de dados durante operação híbrida              | Média         | Alto    | **Alto**    | Definir source of truth por domínio; idempotência obrigatória; auditoria comparativa | Tech Lead          | Aberto |
-| R03 | Atrasos em homologação por indisponibilidade do negócio       | Alta          | Médio   | **Alto**    | Cronograma com buffers; janelas pré-acordadas; escalação ao Sponsor se necessário    | Gerente de Projeto | Aberto |
-| R04 | Scope creep e priorização instável                            | Média         | Alto    | **Alto**    | Baseline de escopo; processo de change control; governança formal                    | Gerente de Projeto | Aberto |
-| R05 | Comportamento do legado diverge do esperado em produção       | Média         | Alto    | **Alto**    | Testes E2E extensivos; piloto com monitoramento intensivo; rollback preparado        | Tech Lead          | Aberto |
-| R06 | Indisponibilidade de ambiente ou acessos                      | Média         | Médio   | **Médio**   | Solicitar acessos antecipadamente; ambientes de DEV/HML independentes                | TI Cooperflora     | Aberto |
-| R07 | Falhas de comunicação entre equipes                           | Baixa         | Médio   | **Médio**   | Plano de comunicação; cerimônias regulares; canais definidos                         | Gerente de Projeto | Aberto |
-| R08 | Resistência à mudança por parte dos usuários                  | Média         | Médio   | **Médio**   | Envolvimento do PO; demonstrações frequentes; treinamento antes do go-live           | PO                 | Aberto |
-| R09 | Performance da API inferior ao legado em cenários específicos | Baixa         | Alto    | **Médio**   | Testes de carga; otimização; cache quando aplicável; métricas de baseline            | Arquiteto          | Aberto |
-| R10 | Mudanças no ERP Néctar durante o projeto                      | Baixa         | Crítico | **Alto**    | Comunicação prévia obrigatória; versionamento de contratos; testes de regressão      | Arquiteto          | Aberto |
+|  ID | Risco                                                         | Probabilidade | Impacto | Severidade  | Mitigação                                                                            | Responsável        | Status |
+| --: | ------------------------------------------------------------- | :-----------: | :-----: | :---------: | ------------------------------------------------------------------------------------ | ------------------ | :----: |
+| R01 | Dependências ocultas no legado (VBA/SQL) não documentadas     |     Alta      |  Alto   | **Crítico** | Inventário e engenharia reversa na Fase 0; validação com operação                    | Arquiteto          | Aberto |
+| R02 | Inconsistência de dados durante operação híbrida              |     Média     |  Alto   |  **Alto**   | Definir source of truth por domínio; idempotência obrigatória; auditoria comparativa | Tech Lead          | Aberto |
+| R03 | Atrasos em homologação por indisponibilidade do negócio       |     Alta      |  Médio  |  **Alto**   | Cronograma com buffers; janelas pré-acordadas; escalação ao Sponsor se necessário    | Gerente de Projeto | Aberto |
+| R04 | Scope creep e priorização instável                            |     Média     |  Alto   |  **Alto**   | Baseline de escopo; processo de change control; governança formal                    | Gerente de Projeto | Aberto |
+| R05 | Comportamento do legado diverge do esperado em produção       |     Média     |  Alto   |  **Alto**   | Testes E2E extensivos; piloto com monitoramento intensivo; rollback preparado        | Tech Lead          | Aberto |
+| R06 | Indisponibilidade de ambiente ou acessos                      |     Média     |  Médio  |  **Médio**  | Solicitar acessos antecipadamente; ambientes de DEV/HML independentes                | TI Cooperflora     | Aberto |
+| R07 | Falhas de comunicação entre equipes                           |     Baixa     |  Médio  |  **Médio**  | Plano de comunicação; cerimônias regulares; canais definidos                         | Gerente de Projeto | Aberto |
+| R08 | Resistência à mudança por parte dos usuários                  |     Média     |  Médio  |  **Médio**  | Envolvimento do PO; demonstrações frequentes; treinamento antes do go-live           | PO                 | Aberto |
+| R09 | Performance da API inferior ao legado em cenários específicos |     Baixa     |  Alto   |  **Médio**  | Testes de carga; otimização; cache quando aplicável; métricas de baseline            | Arquiteto          | Aberto |
+| R10 | Mudanças no ERP Néctar durante o projeto                      |     Baixa     | Crítico |  **Alto**   | Comunicação prévia obrigatória; versionamento de contratos; testes de regressão      | Arquiteto          | Aberto |
 
 ### Matriz de Severidade
 
