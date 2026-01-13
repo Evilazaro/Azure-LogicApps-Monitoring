@@ -558,7 +558,7 @@ As premissas abaixo são **específicas para cada item de escopo** e complementa
 | :--: | ---------------------------------------------------------------------------------------------- | -------------------- | ------------------------------------------------------------- | :----------: | ------------------------------- |
 | PE27 | Critérios para adoção de mensageria serão definidos antes de qualquer implementação assíncrona | Néctar + Cooperflora | Adoção prematura ou injustificada; complexidade desnecessária | 🟡 **Médio** | —                               |
 | PE28 | Padrões de DLQ, retry e idempotência para eventos serão documentados como guideline            | Néctar               | Inconsistência em implementações futuras; poison messages     | 🟡 **Médio** | —                               |
-| PE29 | ROI de cada iniciativa event-driven será justificado antes da aprovação de escopo              | Cooperflora          | Investimento sem retorno mensurável                           | 🛢 **Baixo**  | —                               |
+| PE29 | ROI de cada iniciativa event-driven será justificado antes da aprovação de escopo              | Cooperflora          | Investimento sem retorno mensurável                           | � **Baixo**  | —                               |
 
 > **Resumo das Premissas Específicas por Área**
 >
@@ -801,10 +801,10 @@ gantt
 
 **Riscos e mitigação**
 
-| Risco                                    | Probabilidade | Impacto | Mitigação                                              |
-| ---------------------------------------- | ------------- | ------- | ------------------------------------------------------ |
-| Dependências ocultas no VBA/SQL          | Alta          | Alto    | Sessões de engenharia reversa + validação com operação |
-| Escopo difuso ou expansão não controlada | Média         | Alto    | Baseline de escopo formal + controle de mudanças       |
+| Risco                                    | Probabilidade | Impacto |   Severidade   | Mitigação                                              |
+| ---------------------------------------- | :-----------: | :-----: | :------------: | ------------------------------------------------------ |
+| Dependências ocultas no VBA/SQL          |     Alta      |  Alto   | 🔴 **Crítico** | Sessões de engenharia reversa + validação com operação |
+| Escopo difuso ou expansão não controlada |     Média     |  Alto   |  🟠 **Alto**   | Baseline de escopo formal + controle de mudanças       |
 
 ### 1️⃣ Fase 1 – Definição dos contratos de integração (1–2 semanas)
 
@@ -835,10 +835,10 @@ gantt
 
 **Riscos e mitigação**
 
-| Risco                             | Probabilidade | Impacto | Mitigação                                          |
-| --------------------------------- | ------------- | ------- | -------------------------------------------------- |
-| Contratos mal definidos           | Média         | Alto    | Workshops com exemplos reais + validação com dados |
-| Mudanças frequentes nos contratos | Média         | Médio   | Governança de breaking changes + compatibilidade   |
+| Risco                             | Probabilidade | Impacto |  Severidade  | Mitigação                                          |
+| --------------------------------- | :-----------: | :-----: | :----------: | -------------------------------------------------- |
+| Contratos mal definidos           |     Média     |  Alto   | 🟠 **Alto**  | Workshops com exemplos reais + validação com dados |
+| Mudanças frequentes nos contratos |     Média     |  Médio  | 🟡 **Médio** | Governança de breaking changes + compatibilidade   |
 
 ### 2️⃣ Fase 2 – Fundação da API (2–3 semanas)
 
@@ -871,10 +871,10 @@ gantt
 
 **Riscos e mitigação**
 
-| Risco                                 | Probabilidade | Impacto | Mitigação                                         |
-| ------------------------------------- | ------------- | ------- | ------------------------------------------------- |
-| Atraso em provisão de ambientes/infra | Média         | Alto    | Iniciar setup em paralelo com Fase 1              |
-| Falhas de conectividade com ERP       | Média         | Alto    | Testes antecipados + alinhamento de rede/firewall |
+| Risco                                 | Probabilidade | Impacto | Severidade  | Mitigação                                         |
+| ------------------------------------- | :-----------: | :-----: | :---------: | ------------------------------------------------- |
+| Atraso em provisão de ambientes/infra |     Média     |  Alto   | 🟠 **Alto** | Iniciar setup em paralelo com Fase 1              |
+| Falhas de conectividade com ERP       |     Média     |  Alto   | 🟠 **Alto** | Testes antecipados + alinhamento de rede/firewall |
 
 ### 3️⃣ Fase 3 – Fluxo Piloto (2–4 semanas)
 
@@ -910,11 +910,11 @@ gantt
 
 **Riscos e mitigação**
 
-| Risco                               | Probabilidade | Impacto | Mitigação                                             |
-| ----------------------------------- | ------------- | ------- | ----------------------------------------------------- |
-| Incidentes em produção              | Média         | Alto    | Rollout progressivo + feature flags + rollback rápido |
-| Divergência de dados entre sistemas | Média         | Alto    | Auditoria por transação + reprocessamento idempotente |
-| Resistência do usuário              | Baixa         | Médio   | Comunicação antecipada + acompanhamento pós-go-live   |
+| Risco                               | Probabilidade | Impacto | Severidade  | Mitigação                                             |
+| ----------------------------------- | :-----------: | :-----: | :---------: | ----------------------------------------------------- |
+| Incidentes em produção              |     Média     |  Alto   | 🟠 **Alto** | Rollout progressivo + feature flags + rollback rápido |
+| Divergência de dados entre sistemas |     Média     |  Alto   | 🟠 **Alto** | Auditoria por transação + reprocessamento idempotente |
+| Resistência do usuário              |     Baixa     |  Médio  | � **Baixo** | Comunicação antecipada + acompanhamento pós-go-live   |
 
 ### 4️⃣ Fase 4 – Migração por fluxo / Operação híbrida (1–3 meses)
 
@@ -956,11 +956,11 @@ gantt
 
 **Riscos e mitigação**
 
-| Risco                                  | Probabilidade | Impacto | Mitigação                                            |
-| -------------------------------------- | ------------- | ------- | ---------------------------------------------------- |
-| Volume/complexidade maior que estimado | Média         | Médio   | Decomposição do backlog + buffers no cronograma      |
-| Fadiga operacional                     | Média         | Médio   | Cadência de migração com janelas + comunicação clara |
-| Regressões em fluxos já migrados       | Baixa         | Alto    | Testes de regressão + monitoramento contínuo         |
+| Risco                                  | Probabilidade | Impacto |  Severidade  | Mitigação                                            |
+| -------------------------------------- | :-----------: | :-----: | :----------: | ---------------------------------------------------- |
+| Volume/complexidade maior que estimado |     Média     |  Médio  | 🟡 **Médio** | Decomposição do backlog + buffers no cronograma      |
+| Fadiga operacional                     |     Média     |  Médio  | 🟡 **Médio** | Cadência de migração com janelas + comunicação clara |
+| Regressões em fluxos já migrados       |     Baixa     |  Alto   | 🟡 **Médio** | Testes de regressão + monitoramento contínuo         |
 
 ### 5️⃣ Fase 5 – Simplificação do legado (1–2 meses)
 
@@ -1007,10 +1007,10 @@ O módulo **não deve** mais conter:
 
 **Riscos e mitigação**
 
-| Risco                                   | Probabilidade | Impacto | Mitigação                                      |
-| --------------------------------------- | ------------- | ------- | ---------------------------------------------- |
-| Dependências remanescentes não mapeadas | Baixa         | Alto    | Checklist por fluxo antes de remover rotinas   |
-| Perda de conhecimento institucional     | Média         | Médio   | Documentação mínima + sessões de transferência |
+| Risco                                   | Probabilidade | Impacto |  Severidade  | Mitigação                                      |
+| --------------------------------------- | :-----------: | :-----: | :----------: | ---------------------------------------------- |
+| Dependências remanescentes não mapeadas |     Baixa     |  Alto   | 🟡 **Médio** | Checklist por fluxo antes de remover rotinas   |
+| Perda de conhecimento institucional     |     Média     |  Médio  | 🟡 **Médio** | Documentação mínima + sessões de transferência |
 
 ### 6️⃣ Fase 6 – Evolução opcional (contínuo)
 
@@ -1298,20 +1298,31 @@ O gerenciamento de riscos é contínuo ao longo do projeto. Esta seção apresen
 
 A matriz de riscos segue a escala: **Probabilidade** (Baixa/Média/Alta) × **Impacto** (Baixo/Médio/Alto/Crítico), gerando uma classificação de severidade que orienta a priorização das ações de mitigação.
 
+> **🎯 Legenda de Severidade** (Probabilidade × Impacto)
+>
+> |   Severidade   | Descrição                                        | Ação Requerida                                           |
+> | :------------: | ------------------------------------------------ | -------------------------------------------------------- |
+> | 🔴 **Crítico** | Alta probabilidade × Impacto alto/crítico        | Monitoramento semanal; plano de contingência obrigatório |
+> |  🟠 **Alto**   | Probabilidade média-alta × Impacto significativo | Acompanhamento quinzenal; mitigação ativa                |
+> |  🟡 **Médio**  | Probabilidade média × Impacto moderado           | Monitoramento mensal; tratamento quando materializado    |
+> |  🟢 **Baixo**  | Baixa probabilidade ou impacto controlável       | Revisão periódica; sem ação imediata                     |
+
 ### 📝 Registro de Riscos
 
-|  ID | Risco                                                         | Probabilidade | Impacto | Severidade  | Mitigação                                                                            | Responsável        | Status |
-| --: | ------------------------------------------------------------- | :-----------: | :-----: | :---------: | ------------------------------------------------------------------------------------ | ------------------ | :----: |
-| R01 | Dependências ocultas no legado (VBA/SQL) não documentadas     |     Alta      |  Alto   | **Crítico** | Inventário e engenharia reversa na Fase 0; validação com operação                    | Arquiteto          | Aberto |
-| R02 | Inconsistência de dados durante operação híbrida              |     Média     |  Alto   |  **Alto**   | Definir source of truth por domínio; idempotência obrigatória; auditoria comparativa | Tech Lead          | Aberto |
-| R03 | Atrasos em homologação por indisponibilidade do negócio       |     Alta      |  Médio  |  **Alto**   | Cronograma com buffers; janelas pré-acordadas; escalação ao Sponsor se necessário    | Gerente de Projeto | Aberto |
-| R04 | Scope creep e priorização instável                            |     Média     |  Alto   |  **Alto**   | Baseline de escopo; processo de change control; governança formal                    | Gerente de Projeto | Aberto |
-| R05 | Comportamento do legado diverge do esperado em produção       |     Média     |  Alto   |  **Alto**   | Testes E2E extensivos; piloto com monitoramento intensivo; rollback preparado        | Tech Lead          | Aberto |
-| R06 | Indisponibilidade de ambiente ou acessos                      |     Média     |  Médio  |  **Médio**  | Solicitar acessos antecipadamente; ambientes de DEV/HML independentes                | TI Cooperflora     | Aberto |
-| R07 | Falhas de comunicação entre equipes                           |     Baixa     |  Médio  |  **Médio**  | Plano de comunicação; cerimônias regulares; canais definidos                         | Gerente de Projeto | Aberto |
-| R08 | Resistência à mudança por parte dos usuários                  |     Média     |  Médio  |  **Médio**  | Envolvimento do PO; demonstrações frequentes; treinamento antes do go-live           | PO                 | Aberto |
-| R09 | Performance da API inferior ao legado em cenários específicos |     Baixa     |  Alto   |  **Médio**  | Testes de carga; otimização; cache quando aplicável; métricas de baseline            | Arquiteto          | Aberto |
-| R10 | Mudanças no ERP Néctar durante o projeto                      |     Baixa     | Crítico |  **Alto**   | Comunicação prévia obrigatória; versionamento de contratos; testes de regressão      | Arquiteto          | Aberto |
+|  ID | Risco                                                         | Probabilidade | Impacto |   Severidade   | Mitigação                                                                            | Responsável        | Status |
+| --: | ------------------------------------------------------------- | :-----------: | :-----: | :------------: | ------------------------------------------------------------------------------------ | ------------------ | :----: |
+| R01 | Dependências ocultas no legado (VBA/SQL) não documentadas     |     Alta      |  Alto   | 🔴 **Crítico** | Inventário e engenharia reversa na Fase 0; validação com operação                    | Arquiteto          | Aberto |
+| R02 | Inconsistência de dados durante operação híbrida              |     Média     |  Alto   |  🟠 **Alto**   | Definir source of truth por domínio; idempotência obrigatória; auditoria comparativa | Tech Lead          | Aberto |
+| R03 | Atrasos em homologação por indisponibilidade do negócio       |     Alta      |  Médio  |  🟠 **Alto**   | Cronograma com buffers; janelas pré-acordadas; escalação ao Sponsor se necessário    | Gerente de Projeto | Aberto |
+| R04 | Scope creep e priorização instável                            |     Média     |  Alto   |  🟠 **Alto**   | Baseline de escopo; processo de change control; governança formal                    | Gerente de Projeto | Aberto |
+| R05 | Comportamento do legado diverge do esperado em produção       |     Média     |  Alto   |  🟠 **Alto**   | Testes E2E extensivos; piloto com monitoramento intensivo; rollback preparado        | Tech Lead          | Aberto |
+| R06 | Indisponibilidade de ambiente ou acessos                      |     Média     |  Médio  |  🟡 **Médio**  | Solicitar acessos antecipadamente; ambientes de DEV/HML independentes                | TI Cooperflora     | Aberto |
+| R07 | Falhas de comunicação entre equipes                           |     Baixa     |  Médio  |  � **Baixo**   | Plano de comunicação; cerimônias regulares; canais definidos                         | Gerente de Projeto | Aberto |
+| R08 | Resistência à mudança por parte dos usuários                  |     Média     |  Médio  |  🟡 **Médio**  | Envolvimento do PO; demonstrações frequentes; treinamento antes do go-live           | PO                 | Aberto |
+| R09 | Performance da API inferior ao legado em cenários específicos |     Baixa     |  Alto   |  🟡 **Médio**  | Testes de carga; otimização; cache quando aplicável; métricas de baseline            | Arquiteto          | Aberto |
+| R10 | Mudanças no ERP Néctar durante o projeto                      |     Baixa     | Crítico |  🟠 **Alto**   | Comunicação prévia obrigatória; versionamento de contratos; testes de regressão      | Arquiteto          | Aberto |
+
+> **📊 Distribuição de Severidade (R01–R10)**: 🔴 1 Crítico (10%) | 🟠 5 Altos (50%) | 🟡 3 Médios (30%) | 🟢 1 Baixo (10%)
 
 ### 🎯 Matriz de Severidade
 
