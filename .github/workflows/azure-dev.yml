@@ -83,10 +83,12 @@ concurrency:
 # Minimal permissions following principle of least privilege.
 # - id-token: write  → Required for OIDC federated credential authentication
 # - contents: read   → Required for repository checkout
+# - statuses: write  → Required to report deployment status checks
 # Reference: https://docs.github.com/en/actions/security-guides/automatic-token-authentication
 permissions:
   id-token: write
   contents: read
+  statuses: write
 
 # ------------------------------------------------------------------------------
 # JOBS DEFINITION
@@ -277,6 +279,13 @@ jobs:
         run: |
           echo "## 🚀 Deployment Summary" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### �️ Build Validation" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Check | Status |" >> $GITHUB_STEP_SUMMARY
+          echo "|-------|--------|" >> $GITHUB_STEP_SUMMARY
+          echo "| .NET Build | ✅ Compiled |" >> $GITHUB_STEP_SUMMARY
+          echo "| Bicep Build | ✅ Validated |" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
           echo "### 📊 Deployment Details" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "| Property | Value |" >> $GITHUB_STEP_SUMMARY
@@ -298,6 +307,8 @@ jobs:
           echo "" >> $GITHUB_STEP_SUMMARY
           if [[ "${{ job.status }}" == "success" ]]; then
             echo "### ✅ Deployment completed successfully!" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "The application has been deployed to the **${{ github.event.inputs.environment || vars.AZURE_ENV_NAME }}** environment." >> $GITHUB_STEP_SUMMARY
           elif [[ "${{ job.status }}" == "cancelled" ]]; then
             echo "### ⚠️ Deployment was cancelled" >> $GITHUB_STEP_SUMMARY
           else

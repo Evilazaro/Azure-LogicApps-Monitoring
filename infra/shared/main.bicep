@@ -191,4 +191,4 @@ output API_SUBNET_ID string = network.outputs.API_SUBNET_ID
 output WEBAPP_SUBNET_ID string = network.outputs.WEB_APP_SUBNET_ID
 
 @description('Resource ID of the Logic App subnet for Logic Apps Standard')
-output LOGICAPP_SUBNET_ID string = network.outputs.logicappSubnetId
+output LOGICAPP_SUBNET_ID string = network.outputs.LOGICAPP_SUBNET_ID

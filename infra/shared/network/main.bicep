@@ -137,7 +137,7 @@ output WEB_APP_SUBNET_ID string = dataSubnet.id
 output DATA_SUBNET_ID string = dataSubnet.id
 
 @description('Resource ID of the Logic Apps subnet for workflow hosting')
-output logicappSubnetId string = logicappSubnet.id
+output LOGICAPP_SUBNET_ID string = logicappSubnet.id
 
 @description('Resource ID of the virtual network')
 output VNET_ID string = vnet.id

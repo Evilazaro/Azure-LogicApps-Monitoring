@@ -201,18 +201,18 @@ flowchart TD
 
 ### Module Responsibilities
 
-| Module                       | Scope          | Resources                   | Dependencies        |
-| ---------------------------- | -------------- | --------------------------- | ------------------- |
-| **infra/main.bicep**         | Subscription   | Resource Group              | None                |
-| **shared/main.bicep**        | Resource Group | Shared services             | Resource Group      |
-| **shared/identity**          | Resource Group | Managed Identity, RBAC      | None                |
-| **shared/monitoring**        | Resource Group | Log Analytics, App Insights | Identity            |
-| **shared/network**           | Resource Group | VNet, Subnets               | None                |
-| **shared/data**              | Resource Group | SQL Server, Database        | Identity, Network   |
-| **workload/main.bicep**      | Resource Group | Workload services           | Shared              |
-| **workload/messaging**       | Resource Group | Service Bus, Topics         | Identity            |
-| **workload/services**        | Resource Group | Container Apps              | Identity, Messaging |
-| **workload/logic-app.bicep** | Resource Group | Logic App Standard          | Identity, Messaging |
+| Module                       | Scope          | Resources                                         | Dependencies        |
+| ---------------------------- | -------------- | ------------------------------------------------- | ------------------- |
+| **infra/main.bicep**         | Subscription   | Resource Group                                    | None                |
+| **shared/main.bicep**        | Resource Group | Shared services orchestration                     | Resource Group      |
+| **shared/identity**          | Resource Group | Managed Identity, RBAC role assignments           | None                |
+| **shared/monitoring**        | Resource Group | Log Analytics, App Insights, Health Model         | Identity            |
+| **shared/network**           | Resource Group | VNet, Subnets (API, Data, Logic App)              | None                |
+| **shared/data**              | Resource Group | Storage Accounts, SQL Server, Private Endpoints   | Identity, Network   |
+| **workload/main.bicep**      | Resource Group | Workload services orchestration                   | Shared              |
+| **workload/messaging**       | Resource Group | Service Bus Namespace, Topics, Subscriptions      | Identity            |
+| **workload/services**        | Resource Group | Container Registry, Container Apps Environment    | Identity, Messaging |
+| **workload/logic-app.bicep** | Resource Group | App Service Plan, Logic App, API Connections      | Identity, Messaging |
 
 ### Key Bicep Parameters
 
