@@ -205,11 +205,11 @@ gantt
 
 ### 🏛️ Fóruns de Decisão
 
-| Fórum                 | Participantes                          | Frequência | Propósito                                       |
-| --------------------- | -------------------------------------- | ---------- | ----------------------------------------------- |
-| **Comitê Executivo**  | Sponsor, Ger. Projeto, PO              | Mensal     | Decisões estratégicas, mudanças de escopo/custo |
-| **Comitê de Projeto** | Ger. Projeto, PO, Arquiteto, Tech Lead | Semanal    | Progresso, riscos, priorização                  |
-| **Daily Standup**     | Dev Team, Tech Lead                    | Diária     | Sincronização, bloqueios                        |
+| Fórum                 | Participantes               | Frequência | Propósito                                       |
+| --------------------- | --------------------------- | ---------- | ----------------------------------------------- |
+| **Comitê Executivo**  | Sponsor, Ger. Projeto, PO   | Mensal     | Decisões estratégicas, mudanças de escopo/custo |
+| **Comitê de Projeto** | Ger. Projeto, PO, Arquiteto | Semanal    | Progresso, riscos, priorização                  |
+| **Daily Standup**     | Dev Team                    | Diária     | Sincronização, bloqueios                        |
 
 > 📘 **Para detalhes completos de governança**, consulte a seção [Gestão do Projeto](#-gestão-do-projeto-governança-stakeholders-e-controle) na Parte II.
 
@@ -1583,8 +1583,7 @@ A identificação clara dos stakeholders e seus papéis é fundamental para comu
 | **Gerente de Projeto**   | Néctar      | Coordena execução, reporta progresso, gerencia riscos     | Entregas no prazo, qualidade, satisfação do cliente        |
 | **Product Owner (PO)**   | Cooperflora | Define prioridades, aceita entregas, representa o negócio | Valor entregue, aderência às necessidades operacionais     |
 | **Arquiteto de Solução** | Néctar      | Define padrões técnicos, valida decisões de arquitetura   | Qualidade técnica, aderência aos princípios arquiteturais  |
-| **Tech Lead / Dev Team** | Néctar      | Implementa, testa, documenta e entrega os componentes     | Viabilidade técnica, qualidade de código, sustentabilidade |
-| **Operação/Suporte**     | Néctar      | Monitora, opera e suporta a solução em produção           | Estabilidade, observabilidade, capacidade de diagnóstico   |
+| **Dev Team**             | Néctar      | Implementa, testa, documenta e entrega os componentes     | Viabilidade técnica, qualidade de código, sustentabilidade |
 | **TI Cooperflora**       | Cooperflora | Infraestrutura, acessos, integrações do lado cliente      | Segurança, conformidade, impacto mínimo em outros sistemas |
 | **Áreas de Negócio**     | Cooperflora | Cadastro, Comercial, Fiscal/Financeiro — usuários finais  | Continuidade operacional, usabilidade, correção funcional  |
 
@@ -1592,17 +1591,17 @@ A identificação clara dos stakeholders e seus papéis é fundamental para comu
 
 A matriz abaixo define as responsabilidades (**R**esponsável, **A**provador, **C**onsultado, **I**nformado) para cada entregável do projeto.
 
-| Entregável / Decisão                 | Sponsor | Gerente Projeto | PO  | Arquiteto | Dev Team | Operação | TI Cooperflora |
-| ------------------------------------ | :-----: | :-------------: | :-: | :-------: | :------: | :------: | :------------: |
-| Aprovação de escopo e baseline       |    A    |        R        |  C  |     C     |    I     |    I     |       C        |
-| **Validação de EMVs (2 dias úteis)** |    I    |        R        |  A  |     C     |    I     |    I     |       C        |
-| Definição de contratos OpenAPI       |    I    |        C        |  A  |     R     |    C     |    I     |       C        |
-| Implementação de fluxos              |    I    |        C        |  A  |     C     |    R     |    I     |       I        |
-| Decisões de arquitetura              |    I    |        C        |  C  |     A     |    R     |    C     |       I        |
-| Aprovação de go-live por fluxo       |    A    |        R        |  A  |     C     |    C     |    C     |       C        |
-| Gestão de mudanças (change requests) |    A    |        R        |  C  |     C     |    I     |    I     |       C        |
-| Monitoramento e alertas              |    I    |        I        |  I  |     C     |    C     |    R     |       C        |
-| Rollback e gestão de incidentes      |    I    |        C        |  A  |     C     |    C     |    R     |       C        |
+| Entregável / Decisão                 | Sponsor | Gerente Projeto | PO  | Arquiteto | Dev Team | TI Cooperflora |
+| ------------------------------------ | :-----: | :-------------: | :-: | :-------: | :------: | :------------: |
+| Aprovação de escopo e baseline       |    A    |        R        |  C  |     C     |    I     |       C        |
+| **Validação de EMVs (2 dias úteis)** |    I    |        R        |  A  |     C     |    I     |       C        |
+| Definição de contratos OpenAPI       |    I    |        C        |  A  |     R     |    C     |       C        |
+| Implementação de fluxos              |    I    |        C        |  A  |     C     |    R     |       I        |
+| Decisões de arquitetura              |    I    |        C        |  C  |     A     |    R     |       I        |
+| Aprovação de go-live por fluxo       |    A    |        R        |  A  |     C     |    C     |       C        |
+| Gestão de mudanças (change requests) |    A    |        R        |  C  |     C     |    I     |       C        |
+| Monitoramento e alertas              |    I    |        I        |  I  |     C     |    R     |       C        |
+| Rollback e gestão de incidentes      |    I    |        C        |  A  |     C     |    R     |       C        |
 
 ### 🏛️ Estrutura de Governança e Fóruns de Decisão
 
@@ -1622,7 +1621,7 @@ A governança do projeto é organizada em três níveis, cada um com responsabil
 | Aspecto           | Definição                                                                                        |
 | ----------------- | ------------------------------------------------------------------------------------------------ |
 | **Objetivo**      | Acompanhamento de progresso, gestão de riscos, priorização de backlog, coordenação entre equipes |
-| **Participantes** | Gerente de Projeto, PO, Arquiteto, Tech Lead, representante de Operação                          |
+| **Participantes** | Gerente de Projeto, PO, Arquiteto, Dev Sênior                                                    |
 | **Frequência**    | Semanal                                                                                          |
 | **Artefatos**     | Status report, burndown/burnup, registro de riscos e issues, backlog atualizado                  |
 
@@ -1630,10 +1629,10 @@ A governança do projeto é organizada em três níveis, cada um com responsabil
 
 | Cerimônia           | Objetivo                                            | Participantes              | Frequência       |
 | ------------------- | --------------------------------------------------- | -------------------------- | ---------------- |
-| **Daily Standup**   | Sincronização da equipe, identificação de bloqueios | Dev Team, Tech Lead        | Diária (15 min)  |
+| **Daily Standup**   | Sincronização da equipe, identificação de bloqueios | Dev Team                   | Diária (15 min)  |
 | **Sprint Planning** | Planejamento da iteração, compromisso de entrega    | PO, Dev Team, Arquiteto    | Início de sprint |
 | **Sprint Review**   | Demonstração de entregas, feedback do PO            | PO, Dev Team, Stakeholders | Fim de sprint    |
-| **Retrospectiva**   | Melhoria contínua do processo                       | Dev Team, Tech Lead        | Fim de sprint    |
+| **Retrospectiva**   | Melhoria contínua do processo                       | Dev Team, Arquiteto        | Fim de sprint    |
 
 ### 🔄 Gestão de Mudanças (Change Control)
 
@@ -2138,6 +2137,48 @@ Esta seção apresenta a **estimativa de custos** do projeto, considerando exclu
 |    4 | Migração por fluxo      |      12       |    43%     |          201.600,00 |
 |    5 | Simplificação do legado |       5       |    18%     |           84.000,00 |
 |      | **TOTAL**               |    **28**     |  **100%**  |   **R$ 470.400,00** |
+
+### 💳 Cronograma de Pagamento
+
+O pagamento do projeto será realizado conforme o fluxo abaixo, vinculado aos marcos de entrega de cada fase:
+
+| Evento de Pagamento                         | % do Total |     Valor (R$) | Condição de Faturamento                                   |
+| ------------------------------------------- | :--------: | -------------: | --------------------------------------------------------- |
+| **Aceite do Projeto**                       |    30%     |     141.120,00 | Imediatamente após assinatura do contrato e aceite formal |
+| **Conclusão Fase 0** (Alinhamento)          |    10%     |      47.040,00 | Entrega do inventário técnico e backlog priorizado        |
+| **Conclusão Fase 1** (Contratos)            |    10%     |      47.040,00 | Contratos OpenAPI aprovados e governança definida         |
+| **Conclusão Fase 2** (Fundação API)         |    10%     |      47.040,00 | API em DEV/HML com pipeline CI/CD funcional               |
+| **Conclusão Fase 3** (Fluxo Piloto)         |    15%     |      70.560,00 | Primeiro fluxo em produção com critérios de estabilização |
+| **Conclusão Fase 4** (Migração por Fluxo)   |    15%     |      70.560,00 | Fluxos críticos migrados e operação híbrida governada     |
+| **Conclusão Fase 5** (Simplificação Legado) |    10%     |      47.040,00 | Rotinas de integração removidas e documentação final      |
+| **TOTAL**                                   |  **100%**  | **470.400,00** |                                                           |
+
+#### 📋 Condições Gerais de Pagamento
+
+1. **Prazo de pagamento:** 10 dias úteis após emissão da Nota Fiscal correspondente ao marco.
+
+2. **Faturamento:** A Néctar emitirá a NF após validação formal do marco pela Cooperflora (aceite do EMV correspondente ou aprovação tácita após 2 dias úteis).
+
+3. **Primeiro pagamento (30%):** Devido imediatamente após o aceite formal do projeto, independente do início da execução.
+
+4. **Pagamentos subsequentes:** Condicionados à conclusão e aceite dos critérios de cada fase, conforme definido na seção [Fases do Projeto](#-fases-do-projeto).
+
+5. **Atrasos por parte do cliente:** Caso haja atraso na validação de entregas ou fornecimento de insumos pela Cooperflora que impacte o cronograma, os pagamentos seguirão o calendário original, não sendo postergados.
+
+```mermaid
+---
+title: "Fluxo de Pagamento por Marco"
+---
+pie showData
+    title Distribuição dos Pagamentos
+    "Aceite do Projeto (30%)" : 141120
+    "Fase 0 - Alinhamento (10%)" : 47040
+    "Fase 1 - Contratos (10%)" : 47040
+    "Fase 2 - Fundação API (10%)" : 47040
+    "Fase 3 - Fluxo Piloto (15%)" : 70560
+    "Fase 4 - Migração (15%)" : 70560
+    "Fase 5 - Simplificação (10%)" : 47040
+```
 
 ### ⚠️ Observações Importantes
 
