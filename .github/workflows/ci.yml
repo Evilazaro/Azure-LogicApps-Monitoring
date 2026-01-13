@@ -167,16 +167,18 @@ jobs:
               uses: actions/checkout@v4
 
             # ------------------------------------------------------------------------
-            # Step 2: Setup Azure CLI
+            # Step 2: Setup Azure CLI and install Bicep
             # ------------------------------------------------------------------------
-            # Azure CLI includes the Bicep CLI for template compilation.
+            # Azure CLI Docker image doesn't include Bicep by default.
+            # Install Bicep CLI for template compilation.
             # No authentication needed - only local compilation.
             # ------------------------------------------------------------------------
-            - name: "🔧 Setup Azure CLI"
+            - name: "🔧 Setup Azure CLI and Bicep"
               uses: azure/cli@v2
               with:
                   inlineScript: |
                       az --version
+                      az bicep install
                       az bicep version
 
             # ------------------------------------------------------------------------
@@ -190,6 +192,7 @@ jobs:
               uses: azure/cli@v2
               with:
                   inlineScript: |
+                      az bicep install
                       echo "Building infra/main.bicep..."
                       az bicep build --file infra/main.bicep --stdout > /dev/null
                       echo "✅ infra/main.bicep compiled successfully"
