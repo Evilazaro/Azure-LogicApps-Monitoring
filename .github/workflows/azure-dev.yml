@@ -1,36 +1,183 @@
-# Run when commits are pushed to feature/cicd
+# ==============================================================================
+# AZURE DEVELOPER CLI (azd) CI/CD PIPELINE
+# ==============================================================================
+#
+# Purpose:      Automated infrastructure provisioning and application deployment
+#               for the Azure Logic Apps Monitoring solution.
+#
+# Triggers:     - Push to main branch (continuous deployment)
+#               - Manual workflow dispatch (on-demand deployment)
+#
+# Architecture: Uses Azure Developer CLI (azd) with .NET Aspire for:
+#               ├── Infrastructure provisioning (Bicep/ARM)
+#               └── Application deployment (Container Apps)
+#
+# Security:     Implements OIDC federated credentials (passwordless auth)
+#               No secrets stored in GitHub - uses Azure Managed Identity
+#
+# Prerequisites:
+#   GitHub Repository Variables (Settings → Secrets and Variables → Actions):
+#   - AZURE_CLIENT_ID       : Service Principal/App Registration Client ID
+#   - AZURE_TENANT_ID       : Azure AD Tenant ID
+#   - AZURE_SUBSCRIPTION_ID : Target Azure Subscription ID
+#   - AZURE_LOCATION        : Azure region for deployment (e.g., eastus2)
+#   - AZURE_ENV_NAME        : Environment name (e.g., dev, staging, prod)
+#
+# Documentation:
+#   - azd:  https://learn.microsoft.com/azure/developer/azure-developer-cli/
+#   - OIDC: https://learn.microsoft.com/azure/developer/github/connect-from-azure
+#
+# Author:       Evilazaro
+# Repository:   https://github.com/Evilazaro/Azure-LogicApps-Monitoring
+# ==============================================================================
+
+# ------------------------------------------------------------------------------
+# WORKFLOW METADATA
+# ------------------------------------------------------------------------------
+name: "Azure Developer CLI - Provision & Deploy"
+
+# ------------------------------------------------------------------------------
+# TRIGGER CONFIGURATION
+# ------------------------------------------------------------------------------
+# Workflow executes on:
+#   1. Push events to the main branch (automated CI/CD)
+#   2. Manual trigger via GitHub Actions UI (workflow_dispatch)
 on:
   workflow_dispatch:
+    # Manual trigger with optional inputs for flexibility
+    inputs:
+      environment:
+        description: "Target deployment environment"
+        required: false
+        default: "dev"
+        type: choice
+        options:
+          - dev
+          - staging
+          - prod
 
-# Set up permissions for deploying with secretless Azure federated credentials
-# https://learn.microsoft.com/en-us/azure/developer/github/connect-from-azure?tabs=azure-portal%2Clinux#set-up-azure-login-with-openid-connect-authentication
+  push:
+    # Trigger on commits to the mainline branch
+    branches:
+      - main
+    # Optimize by ignoring non-code changes
+    paths-ignore:
+      - "**.md"
+      - "docs/**"
+      - ".gitignore"
+      - "LICENSE"
+
+# ------------------------------------------------------------------------------
+# CONCURRENCY CONTROL
+# ------------------------------------------------------------------------------
+# Prevents concurrent deployments to the same environment.
+# Queues new runs and cancels in-progress runs for the same branch.
+# This ensures infrastructure consistency and prevents race conditions.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+# ------------------------------------------------------------------------------
+# SECURITY PERMISSIONS
+# ------------------------------------------------------------------------------
+# Minimal permissions following principle of least privilege.
+# - id-token: write  → Required for OIDC federated credential authentication
+# - contents: read   → Required for repository checkout
+# Reference: https://docs.github.com/en/actions/security-guides/automatic-token-authentication
 permissions:
   id-token: write
   contents: read
 
+# ------------------------------------------------------------------------------
+# JOBS DEFINITION
+# ------------------------------------------------------------------------------
 jobs:
-  build:
+  # ============================================================================
+  # JOB: provision-and-deploy
+  # ============================================================================
+  # Provisions Azure infrastructure and deploys the application using azd.
+  # Combines both operations in a single job for efficiency with azd workflows.
+  # ============================================================================
+  provision-and-deploy:
+    name: "🚀 Provision & Deploy to Azure"
     runs-on: ubuntu-latest
+
+    # --------------------------------------------------------------------------
+    # Job timeout - Prevents runaway jobs from consuming resources
+    # Infrastructure provisioning may take 15-20 minutes for complex deployments
+    # --------------------------------------------------------------------------
+    timeout-minutes: 45
+
+    # --------------------------------------------------------------------------
+    # Environment configuration for deployment protection rules
+    # Enables environment-specific secrets and approval workflows
+    # --------------------------------------------------------------------------
+    environment:
+      name: ${{ github.event.inputs.environment || 'dev' }}
+      url: ${{ steps.deploy.outputs.webapp_url }}
+
+    # --------------------------------------------------------------------------
+    # Environment variables from GitHub repository variables
+    # These are NOT secrets - they are configuration values
+    # --------------------------------------------------------------------------
     env:
       AZURE_CLIENT_ID: ${{ vars.AZURE_CLIENT_ID }}
       AZURE_TENANT_ID: ${{ vars.AZURE_TENANT_ID }}
       AZURE_SUBSCRIPTION_ID: ${{ vars.AZURE_SUBSCRIPTION_ID }}
       AZURE_LOCATION: ${{ vars.AZURE_LOCATION }}
       AZURE_ENV_NAME: ${{ vars.AZURE_ENV_NAME }}
+
     steps:
-      - name: Checkout
+      # ------------------------------------------------------------------------
+      # Step 1: Checkout repository
+      # ------------------------------------------------------------------------
+      # Clones the repository code for build and deployment.
+      # fetch-depth: 0 provides full history for version detection if needed.
+      # ------------------------------------------------------------------------
+      - name: "📥 Checkout repository"
         uses: actions/checkout@v4
-      - name: Install azd
-        uses: Azure/setup-azd@v2
-      - name: Setup .NET
+        with:
+          fetch-depth: 0
+
+      # ------------------------------------------------------------------------
+      # Step 2: Setup .NET SDK
+      # ------------------------------------------------------------------------
+      # Installs required .NET SDK versions for building .NET Aspire projects.
+      # Multiple versions support different project target frameworks.
+      # Cache is automatically enabled by the action for NuGet packages.
+      # ------------------------------------------------------------------------
+      - name: "🔧 Setup .NET SDK"
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: |
             8.x
             9.x
             10.x
+          cache: true
+          cache-dependency-path: "**/packages.lock.json"
 
-      - name: Log in with Azure (Federated Credentials)
+      # ------------------------------------------------------------------------
+      # Step 3: Install Azure Developer CLI (azd)
+      # ------------------------------------------------------------------------
+      # Installs the latest version of azd for infrastructure management.
+      # azd provides a unified experience for provisioning and deployment.
+      # ------------------------------------------------------------------------
+      - name: "🛠️ Install Azure Developer CLI"
+        uses: Azure/setup-azd@v2
+
+      # ------------------------------------------------------------------------
+      # Step 4: Authenticate with Azure using OIDC
+      # ------------------------------------------------------------------------
+      # Uses OpenID Connect (OIDC) federated credentials for passwordless auth.
+      # No secrets are stored in GitHub - authentication is handled via
+      # Azure AD workload identity federation.
+      #
+      # Prerequisites:
+      #   1. App Registration with Federated Credential configured
+      #   2. Federated credential subject: repo:<owner>/<repo>:ref:refs/heads/main
+      #   3. Service Principal with appropriate RBAC roles
+      # ------------------------------------------------------------------------
+      - name: "🔐 Authenticate with Azure (OIDC)"
         run: |
           azd auth login `
             --client-id "$Env:AZURE_CLIENT_ID" `
@@ -38,8 +185,63 @@ jobs:
             --tenant-id "$Env:AZURE_TENANT_ID"
         shell: pwsh
 
-      - name: Provision Infrastructure
+      # ------------------------------------------------------------------------
+      # Step 5: Provision Azure Infrastructure
+      # ------------------------------------------------------------------------
+      # Deploys infrastructure using Bicep templates defined in /infra.
+      # --no-prompt: Runs non-interactively for CI/CD automation.
+      #
+      # Resources provisioned (defined in infra/main.bicep):
+      #   - Azure Container Apps Environment
+      #   - Azure Container Registry
+      #   - Azure Key Vault
+      #   - Azure Logic Apps (Standard)
+      #   - Supporting networking and monitoring resources
+      # ------------------------------------------------------------------------
+      - name: "☁️ Provision Azure Infrastructure"
         run: azd provision --no-prompt
+        env:
+          # Override environment name if provided via workflow dispatch
+          AZURE_ENV_NAME: ${{ github.event.inputs.environment || vars.AZURE_ENV_NAME }}
 
-      - name: Deploy Application
-        run: azd deploy --no-prompt
+      # ------------------------------------------------------------------------
+      # Step 6: Deploy Application
+      # ------------------------------------------------------------------------
+      # Deploys application code to provisioned Azure resources.
+      # Uses .NET Aspire manifest for service discovery and configuration.
+      #
+      # Deployed services (defined in azure.yaml):
+      #   - eShop.Orders.API: REST API for order management
+      #   - eShop.Web.App: Frontend web application
+      # ------------------------------------------------------------------------
+      - name: "🚢 Deploy Application"
+        id: deploy
+        run: |
+          azd deploy --no-prompt
+          # Output the web app URL for environment link
+          echo "webapp_url=$(azd env get-values --output json | jq -r '.WEBAPP_URL // empty')" >> $GITHUB_OUTPUT
+        shell: bash
+        env:
+          AZURE_ENV_NAME: ${{ github.event.inputs.environment || vars.AZURE_ENV_NAME }}
+
+      # ------------------------------------------------------------------------
+      # Step 7: Generate Deployment Summary
+      # ------------------------------------------------------------------------
+      # Creates a GitHub Actions job summary with deployment details.
+      # Provides visibility into what was deployed and where.
+      # ------------------------------------------------------------------------
+      - name: "📋 Generate Deployment Summary"
+        run: |
+          echo "## 🚀 Deployment Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Property | Value |" >> $GITHUB_STEP_SUMMARY
+          echo "|----------|-------|" >> $GITHUB_STEP_SUMMARY
+          echo "| **Environment** | \`${{ github.event.inputs.environment || vars.AZURE_ENV_NAME }}\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Region** | \`${{ vars.AZURE_LOCATION }}\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Subscription** | \`${{ vars.AZURE_SUBSCRIPTION_ID }}\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Triggered By** | @${{ github.actor }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Commit SHA** | \`${{ github.sha }}\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Workflow Run** | [#${{ github.run_number }}](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}) |" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### ✅ Deployment completed successfully!" >> $GITHUB_STEP_SUMMARY
+        shell: bash
