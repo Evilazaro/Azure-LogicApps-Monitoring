@@ -43,6 +43,9 @@ resource dataSubnet 'Microsoft.Network/virtualNetworks/subnets@2025-01-01' = {
     privateEndpointNetworkPolicies: 'Disabled'
     privateLinkServiceNetworkPolicies: 'Enabled'
   }
+  dependsOn: [
+    apiSubnet
+  ]
 }
 
 resource logicappSubnet 'Microsoft.Network/virtualNetworks/subnets@2025-01-01' = {
@@ -59,6 +62,9 @@ resource logicappSubnet 'Microsoft.Network/virtualNetworks/subnets@2025-01-01' =
       }
     ]
   }
+  dependsOn: [
+    dataSubnet
+  ]
 }
 
 output API_SUBNET_ID string = apiSubnet.id
