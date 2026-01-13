@@ -2086,3 +2086,81 @@ Além dos critérios de sucesso, os seguintes KPIs serão monitorados continuame
 - Introdução de Service Bus quando justificado por picos de carga ou desacoplamento.
 - Modelagem de eventos por domínio (ex.: `PedidoCriado`, `NotaFiscalEmitida`).
 - Transformação de integrações síncronas em assíncronas quando houver ganho claro.
+
+---
+
+## 💰 Estimativa de Custos do Projeto
+
+Esta seção apresenta a **estimativa de custos** do projeto, considerando exclusivamente os **recursos da Néctar** alocados para a execução. Os valores são baseados no cronograma macro definido (28 semanas para Fases 0–5), na participação percentual de cada recurso e no valor hora padrão de **R$ 150,00**.
+
+### 👥 Composição do Time Néctar
+
+| Recurso                  | Papel no Projeto                                                  | Participação (%) | Justificativa da Alocação                                                      |
+| ------------------------ | ----------------------------------------------------------------- | :--------------: | ------------------------------------------------------------------------------ |
+| **Gerente de Projeto**   | Coordenação, gestão de riscos, comunicação com stakeholders       |       30%        | Atuação transversal em todas as fases; maior intensidade em gates e cerimônias |
+| **Arquiteto de Solução** | Definição de padrões, validação de arquitetura, decisões técnicas |       50%        | Forte atuação nas Fases 0–3; suporte consultivo nas Fases 4–5                  |
+| **Desenvolvedor Sênior** | Implementação de endpoints, testes, documentação técnica          |       100%       | Dedicação integral; principal executor das entregas técnicas                   |
+| **Desenvolvedor Pleno**  | Implementação, testes unitários, suporte ao Sênior                |       100%       | Dedicação integral; trabalha em par com o Sênior                               |
+
+### 📊 Cálculo do Custo por Recurso
+
+**Premissas de cálculo:**
+
+- **Duração do projeto (Fases 0–5):** 28 semanas
+- **Horas por semana (tempo integral):** 40 horas
+- **Total de horas do projeto (100% dedicação):** 28 × 40 = **1.120 horas**
+- **Valor hora:** R$ 150,00
+
+| Recurso                  | Participação (%) | Horas Alocadas | Valor Hora (R$) | Custo Total (R$) |
+| ------------------------ | :--------------: | :------------: | :-------------: | ---------------: |
+| **Gerente de Projeto**   |       30%        |      336       |     150,00      |        50.400,00 |
+| **Arquiteto de Solução** |       50%        |      560       |     150,00      |        84.000,00 |
+| **Desenvolvedor Sênior** |       100%       |     1.120      |     150,00      |       168.000,00 |
+| **Desenvolvedor Pleno**  |       100%       |     1.120      |     150,00      |       168.000,00 |
+
+### 💵 Resumo Financeiro
+
+| Descrição                              |        Valor (R$) |
+| -------------------------------------- | ----------------: |
+| **Total de Horas Alocadas**            |   **3.136 horas** |
+| **Custo Total de Recursos Néctar**     | **R$ 470.400,00** |
+| **Custo Médio por Semana**             |      R$ 16.800,00 |
+| **Custo Médio por Mês (4,33 semanas)** |      R$ 72.744,00 |
+
+### 📈 Distribuição de Custos por Fase
+
+| Fase | Nome                    | Duração (sem) | % do Custo | Custo Estimado (R$) |
+| ---: | ----------------------- | :-----------: | :--------: | ------------------: |
+|    0 | Alinhamento e contenção |       2       |     7%     |           33.600,00 |
+|    1 | Definição de contratos  |       2       |     7%     |           33.600,00 |
+|    2 | Fundação da API         |       3       |    11%     |           50.400,00 |
+|    3 | Fluxo piloto            |       4       |    14%     |           67.200,00 |
+|    4 | Migração por fluxo      |      12       |    43%     |          201.600,00 |
+|    5 | Simplificação do legado |       5       |    18%     |           84.000,00 |
+|      | **TOTAL**               |    **28**     |  **100%**  |   **R$ 470.400,00** |
+
+### ⚠️ Observações Importantes
+
+1. **Fase 6 (Evolução opcional)** não está incluída nesta estimativa por ser executada sob demanda, com escopo e custos a serem definidos caso a caso.
+
+2. **Contingência não incluída:** Recomenda-se reserva de 15–20% para contingências, o que elevaria o investimento total para aproximadamente **R$ 540.960,00 a R$ 564.480,00**.
+
+3. **Custos não contemplados:**
+
+   - Licenciamento de ferramentas (APM, Service Bus, etc.) — responsabilidade da Cooperflora conforme premissas
+   - Infraestrutura de ambientes (DEV/HML/PRD)
+   - Eventuais horas extras ou alocação emergencial
+
+4. **Valores válidos para o escopo definido:** Mudanças de escopo podem impactar custos conforme processo de Change Control.
+
+> **📋 Resumo Executivo de Investimento**
+>
+> | Métrica                    | Valor                 |
+> | -------------------------- | --------------------- |
+> | **Investimento Total**     | **R$ 470.400,00**     |
+> | **Duração**                | 28 semanas (~7 meses) |
+> | **Valor Hora Base**        | R$ 150,00             |
+> | **Recursos Alocados**      | 4 profissionais       |
+> | **Total de Horas**         | 3.136 horas           |
+> | **Com Contingência (15%)** | R$ 540.960,00         |
+> | **Com Contingência (20%)** | R$ 564.480,00         |
