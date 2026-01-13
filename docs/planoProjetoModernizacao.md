@@ -229,71 +229,39 @@ flowchart LR
 
 ### Princípios arquiteturais
 
-#### Desacoplamento entre sistemas (sem acesso direto ao banco)
+Os princípios abaixo orientam as decisões técnicas do projeto, organizados conforme o modelo **BDAT** (Business, Data, Application, Technology) do framework TOGAF. Cada princípio inclui a razão de negócio (BDM) e as implicações técnicas (TDM).
 
-**O que significa no projeto**: o sistema do cliente não depende de schema/tabelas do ERP, e o ERP não expõe o banco como interface de integração.
+#### Princípios de Negócio (Business)
 
-**Como será aplicado**: toda integração passa por endpoints/consumers da API; o banco deixa de ser “camada de integração” e passa a ser apenas persistência interna do ERP.
+| Princípio                    | Descrição                                                           | Implicação para BDMs                                    | Implicação para TDMs                                     |
+| ---------------------------- | ------------------------------------------------------------------- | ------------------------------------------------------- | -------------------------------------------------------- |
+| **Continuidade operacional** | A integração deve funcionar sem interrupções durante a modernização | Operações não param; risco de transição mitigado        | Operação híbrida por fluxo; rollback controlado          |
+| **Evolução incremental**     | Migração fluxo a fluxo (Strangler Pattern), sem "big bang"          | Entregas frequentes; valor demonstrado progressivamente | Feature flags; convivência legado/API por fluxo          |
+| **Governança de mudanças**   | Mudanças seguem controle formal com critérios de aceite             | Previsibilidade de prazo/custo; escopo protegido        | Versionamento de contratos; breaking changes controlados |
 
-**Benefícios (antes vs depois)**
+#### Princípios de Dados (Data)
 
-- Antes: Access/VBA e SINC lendo/escrevendo tabelas diretamente; mudanças de schema com risco alto.
-- Depois: fronteira em API com contratos versionados; mudanças controladas e testáveis.
+| Princípio                          | Descrição                                                | Implicação para BDMs                        | Implicação para TDMs                              |
+| ---------------------------------- | -------------------------------------------------------- | ------------------------------------------- | ------------------------------------------------- |
+| **Source of truth definido**       | Cada domínio tem um dono claro (quem é fonte de verdade) | Reduz conflitos e conciliações manuais      | Direção de fluxo explícita; sem dual-write        |
+| **Contratos explícitos (OpenAPI)** | Payloads, erros e versões documentados formalmente       | Homologação mais rápida; menos ambiguidades | OpenAPI como fonte de verdade; testes de contrato |
+| **Rastreabilidade por transação**  | Toda operação é rastreável ponta a ponta                 | Auditoria facilitada; diagnóstico rápido    | Correlation-id propagado; logs estruturados       |
 
-#### Contratos explícitos e versionamento (OpenAPI)
+#### Princípios de Aplicação (Application)
 
-**O que significa no projeto**: payloads, erros, regras e versões são documentados e validados, com alinhamento formal entre Néctar e Cooperflora.
+| Princípio                                       | Descrição                                       | Implicação para BDMs                         | Implicação para TDMs                               |
+| ----------------------------------------------- | ----------------------------------------------- | -------------------------------------------- | -------------------------------------------------- |
+| **Desacoplamento (sem acesso direto ao banco)** | Sistema do cliente não depende do schema do ERP | Mudanças no ERP não quebram integrações      | API como fronteira; banco interno ao ERP           |
+| **Separação de responsabilidades**              | UI, regras de integração e domínio separados    | Menor dependência de especialistas no legado | Lógica em serviços testáveis; legado reduzido a UI |
+| **Idempotência e resiliência**                  | Reprocessamentos não corrompem dados            | Menos incidentes por duplicidade             | Chaves de idempotência; retries controlados        |
 
-**Como será aplicado**: OpenAPI como fonte de verdade; regras de breaking change; versionamento (ex.: `/v1`, `/v2`) e compatibilidade planejada.
+#### Princípios de Tecnologia (Technology)
 
-**Benefícios (antes vs depois)**
-
-- Antes: contratos implícitos em colunas e convenções.
-- Depois: contratos explícitos, facilitando homologação, automação de testes e governança de mudanças.
-
-#### Separação de responsabilidades (UI, integração, domínio)
-
-**O que significa no projeto**: UI/legado não implementa regras de integração complexas; integração e regras ficam centralizadas em serviços testáveis.
-
-**Como será aplicado**: API implementa lógica de integração, validações e orquestração; legado reduzido a funções de interface/operacional onde necessário.
-
-**Benefícios (antes vs depois)**
-
-- Antes: regras em eventos de tela (VBA), com baixa testabilidade.
-- Depois: serviços com testes unitários/integração, melhor manutenção e previsibilidade.
-
-#### Resiliência e idempotência
-
-**O que significa no projeto**: a integração deve suportar falhas de rede, reprocessamentos e duplicidades sem corromper dados.
-
-**Como será aplicado**: timeouts e retries controlados, idempotência por chave de negócio/cliente, políticas de erro e mecanismos de reprocessamento/auditoria.
-
-**Benefícios (antes vs depois)**
-
-- Antes: reprocessamentos dependem de tabelas e rotinas; duplicidades podem ocorrer com timers.
-- Depois: chamadas com idempotência e rastreabilidade, reduzindo incidentes e inconsistências.
-
-#### Observabilidade e operação como requisito
-
-**O que significa no projeto**: tudo o que integra precisa ser monitorável e auditável.
-
-**Como será aplicado**: logs estruturados, correlation-id, métricas por endpoint/fluxo, dashboards e alertas; runbooks e KPIs.
-
-**Benefícios (antes vs depois)**
-
-- Antes: difícil rastrear transações e diagnosticar falhas.
-- Depois: visibilidade ponta a ponta, reduzindo MTTR e suportando evolução.
-
-#### Evolução incremental (Strangler Pattern)
-
-**O que significa no projeto**: substituir gradualmente fluxos do legado por equivalentes modernos, mantendo estabilidade operacional.
-
-**Como será aplicado**: migração por domínio/fluxo com feature flags, janela de estabilização e rollback; operação híbrida controlada.
-
-**Benefícios (antes vs depois)**
-
-- Antes: modernização exigiria big bang (alto risco).
-- Depois: entregas incrementais, aprendizado contínuo e risco distribuído no tempo.
+| Princípio                            | Descrição                                            | Implicação para BDMs                         | Implicação para TDMs                            |
+| ------------------------------------ | ---------------------------------------------------- | -------------------------------------------- | ----------------------------------------------- |
+| **Observabilidade como requisito**   | Tudo que integra deve ser monitorável e auditável    | Visibilidade operacional; MTTR reduzido      | Logs estruturados; métricas; dashboards/alertas |
+| **Segurança por design**             | Autenticação, autorização e hardening desde o início | Redução de risco de exposição                | OAuth2/API Key/mTLS; TLS; rate limiting         |
+| **Preparação para nuvem/segregação** | Integração funciona sem co-localização de banco      | Habilita iniciativas futuras de modernização | API REST/JSON; sem dependência de rede local    |
 
 ## Escopo do Projeto
 
