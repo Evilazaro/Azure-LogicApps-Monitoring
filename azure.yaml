@@ -103,12 +103,12 @@ hooks:
       shell: sh
       run: ./hooks/deploy-workflow.sh
       continueOnError: false
-      interactive: false
+      interactive: true
     windows:
       shell: pwsh
       run: ./hooks/deploy-workflow.ps1
       continueOnError: false
-      interactive: false
+      interactive: true
 
   # Post-deployment validation hook
   # Executes after 'azd deploy' to verify deployment success
@@ -118,15 +118,15 @@ hooks:
       run: |
         echo "Deployment completed successfully!"
         echo "Validating deployed resources..."
-      continueOnError: true
-      interactive: false
+      continueOnError: false
+      interactive: true
     windows:
       shell: pwsh
       run: |
         Write-Host "Deployment completed successfully!" -ForegroundColor Green
         Write-Host "Validating deployed resources..." -ForegroundColor Cyan
-      continueOnError: true
-      interactive: false
+      continueOnError: false
+      interactive: true
 
   # Post infrastructure delete cleanup hook
   # Executes after 'azd down' to clean up any remaining resources
@@ -135,12 +135,12 @@ hooks:
       shell: sh
       run: ./hooks/postinfradelete.sh --force --verbose
       continueOnError: false
-      interactive: false
+      interactive: true
     windows:
       shell: pwsh
       run: ./hooks/postinfradelete.ps1 -Force -Verbose
       continueOnError: false
-      interactive: false
+      interactive: true
 
 # ------------------------------------------------------------------------------
 # Application Services
