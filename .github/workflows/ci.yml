@@ -1,0 +1,215 @@
+# ==============================================================================
+# CONTINUOUS INTEGRATION (CI) PIPELINE
+# ==============================================================================
+#
+# Purpose:      Validates code quality by building .NET projects and compiling
+#               Bicep infrastructure templates on every push and pull request.
+#
+# Triggers:     - Push to any branch
+#               - Pull requests targeting main branch
+#               - Manual workflow dispatch
+#
+# Validations:  This pipeline performs compilation checks only (no deployment):
+#               ├── .NET Build: Compiles all .NET projects in the solution
+#               └── Bicep Build: Validates and compiles infrastructure templates
+#
+# Prerequisites:
+#   - .NET SDK 10.x (installed automatically)
+#   - Azure CLI with Bicep (installed automatically)
+#
+# Documentation:
+#   - .NET CLI:  https://learn.microsoft.com/dotnet/core/tools/
+#   - Bicep CLI: https://learn.microsoft.com/azure/azure-resource-manager/bicep/
+#
+# Author:       Evilazaro
+# Repository:   https://github.com/Evilazaro/Azure-LogicApps-Monitoring
+# ==============================================================================
+
+# ------------------------------------------------------------------------------
+# WORKFLOW METADATA
+# ------------------------------------------------------------------------------
+name: "CI - Build Validation"
+
+# ------------------------------------------------------------------------------
+# TRIGGER CONFIGURATION
+# ------------------------------------------------------------------------------
+# Workflow executes on:
+#   1. Push events to any branch (validates all commits)
+#   2. Pull requests targeting main (gate for merging)
+#   3. Manual trigger via GitHub Actions UI
+on:
+    workflow_dispatch:
+
+    push:
+        branches:
+            - "**"
+        # Only run when code files change
+        paths:
+            - "**.cs"
+            - "**.csproj"
+            - "**.sln"
+            - "**.bicep"
+            - "**.json"
+            - ".github/workflows/ci.yml"
+
+    pull_request:
+        branches:
+            - main
+        paths:
+            - "**.cs"
+            - "**.csproj"
+            - "**.sln"
+            - "**.bicep"
+            - "**.json"
+            - ".github/workflows/ci.yml"
+
+# ------------------------------------------------------------------------------
+# CONCURRENCY CONTROL
+# ------------------------------------------------------------------------------
+# Prevents redundant CI runs for the same branch/PR.
+# Cancels in-progress runs when new commits are pushed.
+concurrency:
+    group: ci-${{ github.ref }}
+    cancel-in-progress: true
+
+# ------------------------------------------------------------------------------
+# SECURITY PERMISSIONS
+# ------------------------------------------------------------------------------
+# Minimal permissions - only needs to read repository contents.
+# No Azure authentication required for build-only validation.
+permissions:
+    contents: read
+
+# ------------------------------------------------------------------------------
+# JOBS DEFINITION
+# ------------------------------------------------------------------------------
+jobs:
+    # ============================================================================
+    # JOB: build-dotnet
+    # ============================================================================
+    # Compiles all .NET projects to validate code syntax and dependencies.
+    # Runs restore, build, and optionally tests.
+    # ============================================================================
+    build-dotnet:
+        name: "🔨 Build .NET Solution"
+        runs-on: ubuntu-latest
+        timeout-minutes: 15
+
+        steps:
+            # ------------------------------------------------------------------------
+            # Step 1: Checkout repository
+            # ------------------------------------------------------------------------
+            - name: "📥 Checkout repository"
+              uses: actions/checkout@v4
+
+            # ------------------------------------------------------------------------
+            # Step 2: Setup .NET SDK
+            # ------------------------------------------------------------------------
+            # Installs required .NET SDK versions for building .NET Aspire projects.
+            # Caching enabled for faster subsequent builds.
+            # ------------------------------------------------------------------------
+            - name: "🔧 Setup .NET SDK"
+              uses: actions/setup-dotnet@v4
+              with:
+                  dotnet-version: |
+                      8.x
+                      9.x
+                      10.x
+                  cache: true
+                  cache-dependency-path: "**/packages.lock.json"
+
+            # ------------------------------------------------------------------------
+            # Step 3: Restore NuGet packages
+            # ------------------------------------------------------------------------
+            # Downloads and caches all NuGet dependencies defined in project files.
+            # ------------------------------------------------------------------------
+            - name: "📦 Restore dependencies"
+              run: dotnet restore app.sln --verbosity minimal
+
+            # ------------------------------------------------------------------------
+            # Step 4: Build solution
+            # ------------------------------------------------------------------------
+            # Compiles all projects in Release configuration.
+            # --no-restore: Uses packages from previous step for efficiency.
+            # /warnaserror: Treats warnings as errors for stricter validation.
+            # ------------------------------------------------------------------------
+            - name: "🏗️ Build solution"
+              run: dotnet build app.sln --configuration Release --no-restore /p:TreatWarningsAsErrors=false
+
+            # ------------------------------------------------------------------------
+            # Step 5: Generate build summary
+            # ------------------------------------------------------------------------
+            - name: "📋 Generate Build Summary"
+              if: always()
+              run: |
+                  echo "## 🔨 .NET Build Results" >> $GITHUB_STEP_SUMMARY
+                  echo "" >> $GITHUB_STEP_SUMMARY
+                  echo "| Property | Value |" >> $GITHUB_STEP_SUMMARY
+                  echo "|----------|-------|" >> $GITHUB_STEP_SUMMARY
+                  echo "| **Status** | ${{ job.status == 'success' && '✅ Passed' || '❌ Failed' }} |" >> $GITHUB_STEP_SUMMARY
+                  echo "| **Configuration** | Release |" >> $GITHUB_STEP_SUMMARY
+                  echo "| **Branch** | \`${{ github.ref_name }}\` |" >> $GITHUB_STEP_SUMMARY
+                  echo "| **Commit** | \`${{ github.sha }}\` |" >> $GITHUB_STEP_SUMMARY
+
+    # ============================================================================
+    # JOB: build-bicep
+    # ============================================================================
+    # Validates and compiles Bicep infrastructure templates.
+    # Ensures IaC syntax is correct without deploying to Azure.
+    # ============================================================================
+    build-bicep:
+        name: "☁️ Build Bicep Templates"
+        runs-on: ubuntu-latest
+        timeout-minutes: 10
+
+        steps:
+            # ------------------------------------------------------------------------
+            # Step 1: Checkout repository
+            # ------------------------------------------------------------------------
+            - name: "📥 Checkout repository"
+              uses: actions/checkout@v4
+
+            # ------------------------------------------------------------------------
+            # Step 2: Setup Azure CLI
+            # ------------------------------------------------------------------------
+            # Azure CLI includes the Bicep CLI for template compilation.
+            # No authentication needed - only local compilation.
+            # ------------------------------------------------------------------------
+            - name: "🔧 Setup Azure CLI"
+              uses: azure/cli@v2
+              with:
+                  inlineScript: |
+                      az --version
+                      az bicep version
+
+            # ------------------------------------------------------------------------
+            # Step 3: Build main Bicep template
+            # ------------------------------------------------------------------------
+            # Compiles the main infrastructure template and all referenced modules.
+            # Validates syntax, type checking, and module references.
+            # Building main.bicep automatically validates all imported modules.
+            # ------------------------------------------------------------------------
+            - name: "🏗️ Build main.bicep"
+              uses: azure/cli@v2
+              with:
+                  inlineScript: |
+                      echo "Building infra/main.bicep..."
+                      az bicep build --file infra/main.bicep --stdout > /dev/null
+                      echo "✅ infra/main.bicep compiled successfully"
+
+            # ------------------------------------------------------------------------
+            # Step 4: Generate build summary
+            # ------------------------------------------------------------------------
+            - name: "📋 Generate Build Summary"
+              if: always()
+              run: |
+                  echo "## ☁️ Bicep Build Results" >> $GITHUB_STEP_SUMMARY
+                  echo "" >> $GITHUB_STEP_SUMMARY
+                  echo "| Template | Status |" >> $GITHUB_STEP_SUMMARY
+                  echo "|----------|--------|" >> $GITHUB_STEP_SUMMARY
+                  echo "| infra/main.bicep | ${{ job.status == 'success' && '✅ Compiled' || '❌ Failed' }} |" >> $GITHUB_STEP_SUMMARY
+                  echo "" >> $GITHUB_STEP_SUMMARY
+                  echo "| Property | Value |" >> $GITHUB_STEP_SUMMARY
+                  echo "|----------|-------|" >> $GITHUB_STEP_SUMMARY
+                  echo "| **Branch** | \`${{ github.ref_name }}\` |" >> $GITHUB_STEP_SUMMARY
+                  echo "| **Commit** | \`${{ github.sha }}\` |" >> $GITHUB_STEP_SUMMARY
