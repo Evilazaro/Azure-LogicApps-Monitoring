@@ -53,6 +53,9 @@ param tags tagsType
 ])
 param deployerPrincipalType string = 'User'
 
+@description('Whether to deploy Azure Monitor Health Model (requires tenant-level permissions)')
+param deployHealthModel bool = true
+
 // ========== Variables ==========
 
 // Diagnostic settings for comprehensive logging across all resources
@@ -119,6 +122,7 @@ module monitoring 'monitoring/main.bicep' = {
     location: location
     tags: tags
     envName: envName
+    deployHealthModel: deployHealthModel
   }
   dependsOn: [
     network

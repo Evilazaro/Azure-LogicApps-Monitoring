@@ -150,11 +150,10 @@ jobs:
             # Step 5: Run unit tests
             # ------------------------------------------------------------------------
             # Executes all unit tests in the solution.
-            # --no-build: Uses build output from previous step for efficiency.
             # --logger trx: Generates test results in TRX format for reporting.
             # ------------------------------------------------------------------------
             - name: "🧪 Run unit tests"
-              run: dotnet test app.sln --configuration Release --no-build --verbosity normal --logger "trx" --results-directory TestResults
+              run: dotnet test app.sln --configuration Release --verbosity normal --logger "trx" --results-directory TestResults
 
             # ------------------------------------------------------------------------
             # Step 6: Upload test results

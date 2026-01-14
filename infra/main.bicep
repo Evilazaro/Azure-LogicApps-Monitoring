@@ -57,6 +57,9 @@ param deploymentDate string = utcNow('yyyy-MM-dd')
 ])
 param deployerPrincipalType string = 'User'
 
+@description('Whether to deploy Azure Monitor Health Model (requires tenant-level permissions, disable for CI/CD)')
+param deployHealthModel bool = true
+
 // ========== Variables ==========
 
 // Standardized tags applied to all resources for governance and cost tracking
@@ -104,6 +107,7 @@ module shared 'shared/main.bicep' = {
     tags: tags
     envName: envName
     deployerPrincipalType: deployerPrincipalType
+    deployHealthModel: deployHealthModel
   }
 }
 
