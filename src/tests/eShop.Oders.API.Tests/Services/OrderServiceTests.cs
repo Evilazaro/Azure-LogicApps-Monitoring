@@ -46,7 +46,7 @@ public sealed class OrderServiceTests
     public void Constructor_WithNullLogger_ThrowsArgumentNullException()
     {
         // Act & Assert
-        Assert.ThrowsException<ArgumentNullException>(() => new OrderService(
+        Assert.ThrowsExactly<ArgumentNullException>(() => new OrderService(
             null!,
             _orderRepositoryMock.Object,
             _ordersMessageHandlerMock.Object,
@@ -58,7 +58,7 @@ public sealed class OrderServiceTests
     public void Constructor_WithNullRepository_ThrowsArgumentNullException()
     {
         // Act & Assert
-        Assert.ThrowsException<ArgumentNullException>(() => new OrderService(
+        Assert.ThrowsExactly<ArgumentNullException>(() => new OrderService(
             _loggerMock.Object,
             null!,
             _ordersMessageHandlerMock.Object,
@@ -70,7 +70,7 @@ public sealed class OrderServiceTests
     public void Constructor_WithNullMessageHandler_ThrowsArgumentNullException()
     {
         // Act & Assert
-        Assert.ThrowsException<ArgumentNullException>(() => new OrderService(
+        Assert.ThrowsExactly<ArgumentNullException>(() => new OrderService(
             _loggerMock.Object,
             _orderRepositoryMock.Object,
             null!,
@@ -82,7 +82,7 @@ public sealed class OrderServiceTests
     public void Constructor_WithNullServiceScopeFactory_ThrowsArgumentNullException()
     {
         // Act & Assert
-        Assert.ThrowsException<ArgumentNullException>(() => new OrderService(
+        Assert.ThrowsExactly<ArgumentNullException>(() => new OrderService(
             _loggerMock.Object,
             _orderRepositoryMock.Object,
             _ordersMessageHandlerMock.Object,
@@ -94,7 +94,7 @@ public sealed class OrderServiceTests
     public void Constructor_WithNullActivitySource_ThrowsArgumentNullException()
     {
         // Act & Assert
-        Assert.ThrowsException<ArgumentNullException>(() => new OrderService(
+        Assert.ThrowsExactly<ArgumentNullException>(() => new OrderService(
             _loggerMock.Object,
             _orderRepositoryMock.Object,
             _ordersMessageHandlerMock.Object,
@@ -132,7 +132,7 @@ public sealed class OrderServiceTests
     public async Task PlaceOrderAsync_WithNullOrder_ThrowsArgumentNullException()
     {
         // Act & Assert
-        await Assert.ThrowsExceptionAsync<ArgumentNullException>(
+        await Assert.ThrowsExactlyAsync<ArgumentNullException>(
             () => _orderService.PlaceOrderAsync(null!));
     }
 
@@ -145,7 +145,7 @@ public sealed class OrderServiceTests
             .ReturnsAsync(order);
 
         // Act & Assert
-        var exception = await Assert.ThrowsExceptionAsync<InvalidOperationException>(
+        var exception = await Assert.ThrowsExactlyAsync<InvalidOperationException>(
             () => _orderService.PlaceOrderAsync(order));
         Assert.IsTrue(exception.Message.Contains("already exists"));
     }
@@ -157,7 +157,7 @@ public sealed class OrderServiceTests
         var order = CreateOrderWithEmptyId();
 
         // Act & Assert
-        await Assert.ThrowsExceptionAsync<ArgumentException>(
+        await Assert.ThrowsExactlyAsync<ArgumentException>(
             () => _orderService.PlaceOrderAsync(order));
     }
 
@@ -170,7 +170,7 @@ public sealed class OrderServiceTests
             .ReturnsAsync((Order?)null);
 
         // Act & Assert
-        await Assert.ThrowsExceptionAsync<ArgumentException>(
+        await Assert.ThrowsExactlyAsync<ArgumentException>(
             () => _orderService.PlaceOrderAsync(order));
     }
 
@@ -183,7 +183,7 @@ public sealed class OrderServiceTests
             .ReturnsAsync((Order?)null);
 
         // Act & Assert
-        await Assert.ThrowsExceptionAsync<ArgumentException>(
+        await Assert.ThrowsExactlyAsync<ArgumentException>(
             () => _orderService.PlaceOrderAsync(order));
     }
 
@@ -196,7 +196,7 @@ public sealed class OrderServiceTests
             .ReturnsAsync((Order?)null);
 
         // Act & Assert
-        await Assert.ThrowsExceptionAsync<ArgumentException>(
+        await Assert.ThrowsExactlyAsync<ArgumentException>(
             () => _orderService.PlaceOrderAsync(order));
     }
 
@@ -208,7 +208,7 @@ public sealed class OrderServiceTests
     public async Task PlaceOrdersBatchAsync_WithNullOrders_ThrowsArgumentNullException()
     {
         // Act & Assert
-        await Assert.ThrowsExceptionAsync<ArgumentNullException>(
+        await Assert.ThrowsExactlyAsync<ArgumentNullException>(
             () => _orderService.PlaceOrdersBatchAsync(null!));
     }
 
@@ -216,7 +216,7 @@ public sealed class OrderServiceTests
     public async Task PlaceOrdersBatchAsync_WithEmptyOrders_ThrowsArgumentException()
     {
         // Act & Assert
-        await Assert.ThrowsExceptionAsync<ArgumentException>(
+        await Assert.ThrowsExactlyAsync<ArgumentException>(
             () => _orderService.PlaceOrdersBatchAsync([]));
     }
 
@@ -249,7 +249,7 @@ public sealed class OrderServiceTests
             .ThrowsAsync(new InvalidOperationException("Database error"));
 
         // Act & Assert
-        await Assert.ThrowsExceptionAsync<InvalidOperationException>(
+        await Assert.ThrowsExactlyAsync<InvalidOperationException>(
             () => _orderService.GetOrdersAsync());
     }
 
@@ -291,7 +291,7 @@ public sealed class OrderServiceTests
     public async Task GetOrderByIdAsync_WithNullOrderId_ThrowsArgumentException()
     {
         // Act & Assert
-        await Assert.ThrowsExceptionAsync<ArgumentException>(
+        await Assert.ThrowsExactlyAsync<ArgumentException>(
             () => _orderService.GetOrderByIdAsync(null!));
     }
 
@@ -299,7 +299,7 @@ public sealed class OrderServiceTests
     public async Task GetOrderByIdAsync_WithEmptyOrderId_ThrowsArgumentException()
     {
         // Act & Assert
-        await Assert.ThrowsExceptionAsync<ArgumentException>(
+        await Assert.ThrowsExactlyAsync<ArgumentException>(
             () => _orderService.GetOrderByIdAsync(string.Empty));
     }
 
@@ -307,7 +307,7 @@ public sealed class OrderServiceTests
     public async Task GetOrderByIdAsync_WithWhitespaceOrderId_ThrowsArgumentException()
     {
         // Act & Assert
-        await Assert.ThrowsExceptionAsync<ArgumentException>(
+        await Assert.ThrowsExactlyAsync<ArgumentException>(
             () => _orderService.GetOrderByIdAsync("   "));
     }
 
@@ -352,7 +352,7 @@ public sealed class OrderServiceTests
     public async Task DeleteOrderAsync_WithNullOrderId_ThrowsArgumentException()
     {
         // Act & Assert
-        await Assert.ThrowsExceptionAsync<ArgumentException>(
+        await Assert.ThrowsExactlyAsync<ArgumentException>(
             () => _orderService.DeleteOrderAsync(null!));
     }
 
@@ -360,7 +360,7 @@ public sealed class OrderServiceTests
     public async Task DeleteOrderAsync_WithEmptyOrderId_ThrowsArgumentException()
     {
         // Act & Assert
-        await Assert.ThrowsExceptionAsync<ArgumentException>(
+        await Assert.ThrowsExactlyAsync<ArgumentException>(
             () => _orderService.DeleteOrderAsync(string.Empty));
     }
 
@@ -372,7 +372,7 @@ public sealed class OrderServiceTests
     public async Task DeleteOrdersBatchAsync_WithNullOrderIds_ThrowsArgumentNullException()
     {
         // Act & Assert
-        await Assert.ThrowsExceptionAsync<ArgumentNullException>(
+        await Assert.ThrowsExactlyAsync<ArgumentNullException>(
             () => _orderService.DeleteOrdersBatchAsync(null!, CancellationToken.None));
     }
 
@@ -414,7 +414,7 @@ public sealed class OrderServiceTests
             .ThrowsAsync(new InvalidOperationException("Service Bus error"));
 
         // Act & Assert
-        await Assert.ThrowsExceptionAsync<InvalidOperationException>(
+        await Assert.ThrowsExactlyAsync<InvalidOperationException>(
             () => _orderService.ListMessagesFromTopicsAsync(CancellationToken.None));
     }
 

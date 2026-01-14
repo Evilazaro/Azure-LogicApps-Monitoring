@@ -59,7 +59,7 @@ public sealed class DbContextHealthCheckTests
     public void Constructor_WithNullDbContext_ThrowsArgumentNullException()
     {
         // Act & Assert
-        var ex = Assert.ThrowsException<ArgumentNullException>(
+        var ex = Assert.ThrowsExactly<ArgumentNullException>(
             () => new DbContextHealthCheck(null!, _loggerMock.Object));
         Assert.AreEqual("dbContext", ex.ParamName);
     }
@@ -68,7 +68,7 @@ public sealed class DbContextHealthCheckTests
     public void Constructor_WithNullLogger_ThrowsArgumentNullException()
     {
         // Act & Assert
-        var ex = Assert.ThrowsException<ArgumentNullException>(
+        var ex = Assert.ThrowsExactly<ArgumentNullException>(
             () => new DbContextHealthCheck(_dbContext, null!));
         Assert.AreEqual("logger", ex.ParamName);
     }

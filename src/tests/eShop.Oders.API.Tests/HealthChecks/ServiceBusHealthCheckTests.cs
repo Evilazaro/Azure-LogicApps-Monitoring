@@ -55,36 +55,36 @@ public sealed class ServiceBusHealthCheckTests
     }
 
     [TestMethod]
-    [ExpectedException(typeof(ArgumentNullException))]
     public void Constructor_WithNullServiceBusClient_ThrowsArgumentNullException()
     {
-        // Act
-        _ = new ServiceBusHealthCheck(
-            null!,
-            _loggerMock.Object,
-            _configurationMock.Object);
+        // Act & Assert
+        Assert.ThrowsExactly<ArgumentNullException>(
+            () => _ = new ServiceBusHealthCheck(
+                null!,
+                _loggerMock.Object,
+                _configurationMock.Object));
     }
 
     [TestMethod]
-    [ExpectedException(typeof(ArgumentNullException))]
     public void Constructor_WithNullLogger_ThrowsArgumentNullException()
     {
-        // Act
-        _ = new ServiceBusHealthCheck(
-            _serviceBusClientMock.Object,
-            null!,
-            _configurationMock.Object);
+        // Act & Assert
+        Assert.ThrowsExactly<ArgumentNullException>(
+            () => _ = new ServiceBusHealthCheck(
+                _serviceBusClientMock.Object,
+                null!,
+                _configurationMock.Object));
     }
 
     [TestMethod]
-    [ExpectedException(typeof(ArgumentNullException))]
     public void Constructor_WithNullConfiguration_ThrowsArgumentNullException()
     {
-        // Act
-        _ = new ServiceBusHealthCheck(
-            _serviceBusClientMock.Object,
-            _loggerMock.Object,
-            null!);
+        // Act & Assert
+        Assert.ThrowsExactly<ArgumentNullException>(
+            () => _ = new ServiceBusHealthCheck(
+                _serviceBusClientMock.Object,
+                _loggerMock.Object,
+                null!));
     }
 
     #endregion

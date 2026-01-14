@@ -65,51 +65,51 @@ public sealed class OrdersMessageHandlerTests
     }
 
     [TestMethod]
-    [ExpectedException(typeof(ArgumentNullException))]
     public void Constructor_WithNullLogger_ThrowsArgumentNullException()
     {
-        // Act
-        _ = new OrdersMessageHandler(
-            null!,
-            _serviceBusClientMock.Object,
-            _configurationMock.Object,
-            _activitySource);
+        // Act & Assert
+        Assert.ThrowsExactly<ArgumentNullException>(
+            () => _ = new OrdersMessageHandler(
+                null!,
+                _serviceBusClientMock.Object,
+                _configurationMock.Object,
+                _activitySource));
     }
 
     [TestMethod]
-    [ExpectedException(typeof(ArgumentNullException))]
     public void Constructor_WithNullServiceBusClient_ThrowsArgumentNullException()
     {
-        // Act
-        _ = new OrdersMessageHandler(
-            _loggerMock.Object,
-            null!,
-            _configurationMock.Object,
-            _activitySource);
+        // Act & Assert
+        Assert.ThrowsExactly<ArgumentNullException>(
+            () => _ = new OrdersMessageHandler(
+                _loggerMock.Object,
+                null!,
+                _configurationMock.Object,
+                _activitySource));
     }
 
     [TestMethod]
-    [ExpectedException(typeof(ArgumentNullException))]
     public void Constructor_WithNullConfiguration_ThrowsArgumentNullException()
     {
-        // Act
-        _ = new OrdersMessageHandler(
-            _loggerMock.Object,
-            _serviceBusClientMock.Object,
-            null!,
-            _activitySource);
+        // Act & Assert
+        Assert.ThrowsExactly<ArgumentNullException>(
+            () => _ = new OrdersMessageHandler(
+                _loggerMock.Object,
+                _serviceBusClientMock.Object,
+                null!,
+                _activitySource));
     }
 
     [TestMethod]
-    [ExpectedException(typeof(ArgumentNullException))]
     public void Constructor_WithNullActivitySource_ThrowsArgumentNullException()
     {
-        // Act
-        _ = new OrdersMessageHandler(
-            _loggerMock.Object,
-            _serviceBusClientMock.Object,
-            _configurationMock.Object,
-            null!);
+        // Act & Assert
+        Assert.ThrowsExactly<ArgumentNullException>(
+            () => _ = new OrdersMessageHandler(
+                _loggerMock.Object,
+                _serviceBusClientMock.Object,
+                _configurationMock.Object,
+                null!));
     }
 
     [TestMethod]
@@ -191,14 +191,14 @@ public sealed class OrdersMessageHandlerTests
     }
 
     [TestMethod]
-    [ExpectedException(typeof(ArgumentNullException))]
     public async Task SendOrderMessageAsync_WithNullOrder_ThrowsArgumentNullException()
     {
         // Arrange
         _handler = CreateHandler();
 
-        // Act
-        await _handler.SendOrderMessageAsync(null!, CancellationToken.None);
+        // Act & Assert
+        await Assert.ThrowsExactlyAsync<ArgumentNullException>(
+            async () => await _handler.SendOrderMessageAsync(null!, CancellationToken.None));
     }
 
     [TestMethod]
@@ -252,7 +252,7 @@ public sealed class OrdersMessageHandlerTests
         _handler = CreateHandler();
 
         // Act & Assert
-        await Assert.ThrowsExceptionAsync<ServiceBusException>(
+        await Assert.ThrowsExactlyAsync<ServiceBusException>(
             () => _handler.SendOrderMessageAsync(order, CancellationToken.None));
     }
 
@@ -326,14 +326,14 @@ public sealed class OrdersMessageHandlerTests
     }
 
     [TestMethod]
-    [ExpectedException(typeof(ArgumentNullException))]
     public async Task SendOrdersBatchMessageAsync_WithNullOrders_ThrowsArgumentNullException()
     {
         // Arrange
         _handler = CreateHandler();
 
-        // Act
-        await _handler.SendOrdersBatchMessageAsync(null!, CancellationToken.None);
+        // Act & Assert
+        await Assert.ThrowsExactlyAsync<ArgumentNullException>(
+            async () => await _handler.SendOrdersBatchMessageAsync(null!, CancellationToken.None));
     }
 
     [TestMethod]
@@ -385,7 +385,7 @@ public sealed class OrdersMessageHandlerTests
         _handler = CreateHandler();
 
         // Act & Assert
-        await Assert.ThrowsExceptionAsync<ServiceBusException>(
+        await Assert.ThrowsExactlyAsync<ServiceBusException>(
             () => _handler.SendOrdersBatchMessageAsync(orders, CancellationToken.None));
     }
 
@@ -425,36 +425,36 @@ public sealed class OrdersMessageHandlerTests
     #region ListMessagesFromTopicAsync Tests
 
     [TestMethod]
-    [ExpectedException(typeof(ArgumentException))]
     public async Task ListMessagesFromTopicAsync_WithNullSubscription_ThrowsArgumentException()
     {
         // Arrange
         _handler = CreateHandler();
 
-        // Act
-        await _handler.ListMessagesFromTopicAsync(null!);
+        // Act & Assert
+        await Assert.ThrowsExactlyAsync<ArgumentException>(
+            async () => await _handler.ListMessagesFromTopicAsync(null!));
     }
 
     [TestMethod]
-    [ExpectedException(typeof(ArgumentException))]
     public async Task ListMessagesFromTopicAsync_WithEmptySubscription_ThrowsArgumentException()
     {
         // Arrange
         _handler = CreateHandler();
 
-        // Act
-        await _handler.ListMessagesFromTopicAsync(string.Empty);
+        // Act & Assert
+        await Assert.ThrowsExactlyAsync<ArgumentException>(
+            async () => await _handler.ListMessagesFromTopicAsync(string.Empty));
     }
 
     [TestMethod]
-    [ExpectedException(typeof(ArgumentException))]
     public async Task ListMessagesFromTopicAsync_WithWhitespaceSubscription_ThrowsArgumentException()
     {
         // Arrange
         _handler = CreateHandler();
 
-        // Act
-        await _handler.ListMessagesFromTopicAsync("   ");
+        // Act & Assert
+        await Assert.ThrowsExactlyAsync<ArgumentException>(
+            async () => await _handler.ListMessagesFromTopicAsync("   "));
     }
 
     #endregion

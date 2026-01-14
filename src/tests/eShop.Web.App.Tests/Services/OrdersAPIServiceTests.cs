@@ -61,27 +61,27 @@ public sealed class OrdersAPIServiceTests
     }
 
     [TestMethod]
-    [ExpectedException(typeof(ArgumentNullException))]
     public void Constructor_WithNullHttpClient_ThrowsArgumentNullException()
     {
-        // Act
-        _ = new OrdersAPIService(null!, _loggerMock.Object, _activitySource);
+        // Act & Assert
+        Assert.ThrowsExactly<ArgumentNullException>(
+            () => _ = new OrdersAPIService(null!, _loggerMock.Object, _activitySource));
     }
 
     [TestMethod]
-    [ExpectedException(typeof(ArgumentNullException))]
     public void Constructor_WithNullLogger_ThrowsArgumentNullException()
     {
-        // Act
-        _ = new OrdersAPIService(_httpClient, null!, _activitySource);
+        // Act & Assert
+        Assert.ThrowsExactly<ArgumentNullException>(
+            () => _ = new OrdersAPIService(_httpClient, null!, _activitySource));
     }
 
     [TestMethod]
-    [ExpectedException(typeof(ArgumentNullException))]
     public void Constructor_WithNullActivitySource_ThrowsArgumentNullException()
     {
-        // Act
-        _ = new OrdersAPIService(_httpClient, _loggerMock.Object, null!);
+        // Act & Assert
+        Assert.ThrowsExactly<ArgumentNullException>(
+            () => _ = new OrdersAPIService(_httpClient, _loggerMock.Object, null!));
     }
 
     #endregion
@@ -111,18 +111,17 @@ public sealed class OrdersAPIServiceTests
     }
 
     [TestMethod]
-    [ExpectedException(typeof(ArgumentNullException))]
     public async Task PlaceOrderAsync_WithNullOrder_ThrowsArgumentNullException()
     {
         // Arrange
         _service = CreateService();
 
-        // Act
-        await _service.PlaceOrderAsync(null!, CancellationToken.None);
+        // Act & Assert
+        await Assert.ThrowsExactlyAsync<ArgumentNullException>(
+            async () => await _service.PlaceOrderAsync(null!, CancellationToken.None));
     }
 
     [TestMethod]
-    [ExpectedException(typeof(ArgumentException))]
     public async Task PlaceOrderAsync_WithEmptyOrderId_ThrowsArgumentException()
     {
         // Arrange
@@ -137,12 +136,12 @@ public sealed class OrdersAPIServiceTests
 
         _service = CreateService();
 
-        // Act
-        await _service.PlaceOrderAsync(order, CancellationToken.None);
+        // Act & Assert
+        await Assert.ThrowsExactlyAsync<ArgumentException>(
+            async () => await _service.PlaceOrderAsync(order, CancellationToken.None));
     }
 
     [TestMethod]
-    [ExpectedException(typeof(ArgumentException))]
     public async Task PlaceOrderAsync_WithWhitespaceOrderId_ThrowsArgumentException()
     {
         // Arrange
@@ -157,8 +156,9 @@ public sealed class OrdersAPIServiceTests
 
         _service = CreateService();
 
-        // Act
-        await _service.PlaceOrderAsync(order, CancellationToken.None);
+        // Act & Assert
+        await Assert.ThrowsExactlyAsync<ArgumentException>(
+            async () => await _service.PlaceOrderAsync(order, CancellationToken.None));
     }
 
     [TestMethod]
@@ -172,7 +172,7 @@ public sealed class OrdersAPIServiceTests
         _service = CreateService();
 
         // Act & Assert
-        await Assert.ThrowsExceptionAsync<HttpRequestException>(
+        await Assert.ThrowsExactlyAsync<HttpRequestException>(
             () => _service.PlaceOrderAsync(order, CancellationToken.None));
     }
 
@@ -187,7 +187,7 @@ public sealed class OrdersAPIServiceTests
         _service = CreateService();
 
         // Act & Assert
-        await Assert.ThrowsExceptionAsync<HttpRequestException>(
+        await Assert.ThrowsExactlyAsync<HttpRequestException>(
             () => _service.PlaceOrderAsync(order, CancellationToken.None));
     }
 
@@ -228,7 +228,7 @@ public sealed class OrdersAPIServiceTests
         _service = CreateService();
 
         // Act & Assert
-        await Assert.ThrowsExceptionAsync<InvalidOperationException>(
+        await Assert.ThrowsExactlyAsync<InvalidOperationException>(
             () => _service.PlaceOrderAsync(order, CancellationToken.None));
     }
 
@@ -262,18 +262,17 @@ public sealed class OrdersAPIServiceTests
     }
 
     [TestMethod]
-    [ExpectedException(typeof(ArgumentNullException))]
     public async Task PlaceOrdersBatchAsync_WithNullOrders_ThrowsArgumentNullException()
     {
         // Arrange
         _service = CreateService();
 
-        // Act
-        await _service.PlaceOrdersBatchAsync(null!, CancellationToken.None);
+        // Act & Assert
+        await Assert.ThrowsExactlyAsync<ArgumentNullException>(
+            async () => await _service.PlaceOrdersBatchAsync(null!, CancellationToken.None));
     }
 
     [TestMethod]
-    [ExpectedException(typeof(ArgumentException))]
     public async Task PlaceOrdersBatchAsync_WithEmptyOrders_ThrowsArgumentException()
     {
         // Arrange
@@ -281,8 +280,9 @@ public sealed class OrdersAPIServiceTests
 
         _service = CreateService();
 
-        // Act
-        await _service.PlaceOrdersBatchAsync(orders, CancellationToken.None);
+        // Act & Assert
+        await Assert.ThrowsExactlyAsync<ArgumentException>(
+            async () => await _service.PlaceOrdersBatchAsync(orders, CancellationToken.None));
     }
 
     [TestMethod]
@@ -296,7 +296,7 @@ public sealed class OrdersAPIServiceTests
         _service = CreateService();
 
         // Act & Assert
-        await Assert.ThrowsExceptionAsync<HttpRequestException>(
+        await Assert.ThrowsExactlyAsync<HttpRequestException>(
             () => _service.PlaceOrdersBatchAsync(orders, CancellationToken.None));
     }
 
@@ -413,7 +413,7 @@ public sealed class OrdersAPIServiceTests
         _service = CreateService();
 
         // Act & Assert
-        await Assert.ThrowsExceptionAsync<HttpRequestException>(
+        await Assert.ThrowsExactlyAsync<HttpRequestException>(
             () => _service.GetOrdersAsync(CancellationToken.None));
     }
 
@@ -468,36 +468,36 @@ public sealed class OrdersAPIServiceTests
     }
 
     [TestMethod]
-    [ExpectedException(typeof(ArgumentException))]
     public async Task GetOrderByIdAsync_WithNullId_ThrowsArgumentException()
     {
         // Arrange
         _service = CreateService();
 
-        // Act
-        await _service.GetOrderByIdAsync(null!, CancellationToken.None);
+        // Act & Assert
+        await Assert.ThrowsExactlyAsync<ArgumentException>(
+            async () => await _service.GetOrderByIdAsync(null!, CancellationToken.None));
     }
 
     [TestMethod]
-    [ExpectedException(typeof(ArgumentException))]
     public async Task GetOrderByIdAsync_WithEmptyId_ThrowsArgumentException()
     {
         // Arrange
         _service = CreateService();
 
-        // Act
-        await _service.GetOrderByIdAsync("", CancellationToken.None);
+        // Act & Assert
+        await Assert.ThrowsExactlyAsync<ArgumentException>(
+            async () => await _service.GetOrderByIdAsync("", CancellationToken.None));
     }
 
     [TestMethod]
-    [ExpectedException(typeof(ArgumentException))]
     public async Task GetOrderByIdAsync_WithWhitespaceId_ThrowsArgumentException()
     {
         // Arrange
         _service = CreateService();
 
-        // Act
-        await _service.GetOrderByIdAsync("   ", CancellationToken.None);
+        // Act & Assert
+        await Assert.ThrowsExactlyAsync<ArgumentException>(
+            async () => await _service.GetOrderByIdAsync("   ", CancellationToken.None));
     }
 
     [TestMethod]
@@ -546,7 +546,7 @@ public sealed class OrdersAPIServiceTests
         _service = CreateService();
 
         // Act & Assert
-        await Assert.ThrowsExceptionAsync<HttpRequestException>(
+        await Assert.ThrowsExactlyAsync<HttpRequestException>(
             () => _service.GetOrderByIdAsync("order-123", CancellationToken.None));
     }
 
@@ -587,7 +587,7 @@ public sealed class OrdersAPIServiceTests
         _service = CreateService();
 
         // Act & Assert
-        await Assert.ThrowsExceptionAsync<HttpRequestException>(
+        await Assert.ThrowsExactlyAsync<HttpRequestException>(
             () => _service.GetWeatherForecastAsync(CancellationToken.None));
     }
 
@@ -659,7 +659,6 @@ public sealed class OrdersAPIServiceTests
     }
 
     [TestMethod]
-    [ExpectedException(typeof(ArgumentException))]
     public async Task UpdateOrderAsync_WithNullId_ThrowsArgumentException()
     {
         // Arrange
@@ -667,12 +666,12 @@ public sealed class OrdersAPIServiceTests
 
         _service = CreateService();
 
-        // Act
-        await _service.UpdateOrderAsync(null!, order, CancellationToken.None);
+        // Act & Assert
+        await Assert.ThrowsExactlyAsync<ArgumentException>(
+            async () => await _service.UpdateOrderAsync(null!, order, CancellationToken.None));
     }
 
     [TestMethod]
-    [ExpectedException(typeof(ArgumentException))]
     public async Task UpdateOrderAsync_WithEmptyId_ThrowsArgumentException()
     {
         // Arrange
@@ -680,19 +679,20 @@ public sealed class OrdersAPIServiceTests
 
         _service = CreateService();
 
-        // Act
-        await _service.UpdateOrderAsync("", order, CancellationToken.None);
+        // Act & Assert
+        await Assert.ThrowsExactlyAsync<ArgumentException>(
+            async () => await _service.UpdateOrderAsync("", order, CancellationToken.None));
     }
 
     [TestMethod]
-    [ExpectedException(typeof(ArgumentNullException))]
     public async Task UpdateOrderAsync_WithNullOrder_ThrowsArgumentNullException()
     {
         // Arrange
         _service = CreateService();
 
-        // Act
-        await _service.UpdateOrderAsync("order-123", null!, CancellationToken.None);
+        // Act & Assert
+        await Assert.ThrowsExactlyAsync<ArgumentNullException>(
+            async () => await _service.UpdateOrderAsync("order-123", null!, CancellationToken.None));
     }
 
     [TestMethod]
@@ -778,36 +778,36 @@ public sealed class OrdersAPIServiceTests
     }
 
     [TestMethod]
-    [ExpectedException(typeof(ArgumentException))]
     public async Task DeleteOrderAsync_WithNullId_ThrowsArgumentException()
     {
         // Arrange
         _service = CreateService();
 
-        // Act
-        await _service.DeleteOrderAsync(null!, CancellationToken.None);
+        // Act & Assert
+        await Assert.ThrowsExactlyAsync<ArgumentException>(
+            async () => await _service.DeleteOrderAsync(null!, CancellationToken.None));
     }
 
     [TestMethod]
-    [ExpectedException(typeof(ArgumentException))]
     public async Task DeleteOrderAsync_WithEmptyId_ThrowsArgumentException()
     {
         // Arrange
         _service = CreateService();
 
-        // Act
-        await _service.DeleteOrderAsync("", CancellationToken.None);
+        // Act & Assert
+        await Assert.ThrowsExactlyAsync<ArgumentException>(
+            async () => await _service.DeleteOrderAsync("", CancellationToken.None));
     }
 
     [TestMethod]
-    [ExpectedException(typeof(ArgumentException))]
     public async Task DeleteOrderAsync_WithWhitespaceId_ThrowsArgumentException()
     {
         // Arrange
         _service = CreateService();
 
-        // Act
-        await _service.DeleteOrderAsync("   ", CancellationToken.None);
+        // Act & Assert
+        await Assert.ThrowsExactlyAsync<ArgumentException>(
+            async () => await _service.DeleteOrderAsync("   ", CancellationToken.None));
     }
 
     [TestMethod]
@@ -876,18 +876,17 @@ public sealed class OrdersAPIServiceTests
     }
 
     [TestMethod]
-    [ExpectedException(typeof(ArgumentNullException))]
     public async Task DeleteOrdersBatchAsync_WithNullIds_ThrowsArgumentNullException()
     {
         // Arrange
         _service = CreateService();
 
-        // Act
-        await _service.DeleteOrdersBatchAsync(null!, CancellationToken.None);
+        // Act & Assert
+        await Assert.ThrowsExactlyAsync<ArgumentNullException>(
+            async () => await _service.DeleteOrdersBatchAsync(null!, CancellationToken.None));
     }
 
     [TestMethod]
-    [ExpectedException(typeof(ArgumentException))]
     public async Task DeleteOrdersBatchAsync_WithEmptyIds_ThrowsArgumentException()
     {
         // Arrange
@@ -895,8 +894,9 @@ public sealed class OrdersAPIServiceTests
 
         _service = CreateService();
 
-        // Act
-        await _service.DeleteOrdersBatchAsync(orderIds, CancellationToken.None);
+        // Act & Assert
+        await Assert.ThrowsExactlyAsync<ArgumentException>(
+            async () => await _service.DeleteOrdersBatchAsync(orderIds, CancellationToken.None));
     }
 
     [TestMethod]
@@ -910,7 +910,7 @@ public sealed class OrdersAPIServiceTests
         _service = CreateService();
 
         // Act & Assert
-        await Assert.ThrowsExceptionAsync<HttpRequestException>(
+        await Assert.ThrowsExactlyAsync<HttpRequestException>(
             () => _service.DeleteOrdersBatchAsync(orderIds, CancellationToken.None));
     }
 
@@ -1055,7 +1055,7 @@ public sealed class OrdersAPIServiceTests
         _service = CreateService();
 
         // Act & Assert
-        await Assert.ThrowsExceptionAsync<InvalidOperationException>(
+        await Assert.ThrowsExactlyAsync<InvalidOperationException>(
             () => _service.GetOrdersAsync(CancellationToken.None));
 
         // Verify error logging
@@ -1086,7 +1086,7 @@ public sealed class OrdersAPIServiceTests
         _service = CreateService();
 
         // Act & Assert
-        await Assert.ThrowsExceptionAsync<TaskCanceledException>(
+        await Assert.ThrowsExactlyAsync<TaskCanceledException>(
             () => _service.PlaceOrderAsync(order, cts.Token));
     }
 

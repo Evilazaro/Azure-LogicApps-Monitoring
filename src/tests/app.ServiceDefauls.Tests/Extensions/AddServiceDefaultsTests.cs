@@ -21,7 +21,7 @@ public sealed class AddServiceDefaultsTests
         IHostApplicationBuilder builder = null!;
 
         // Act & Assert
-        var exception = Assert.ThrowsException<ArgumentNullException>(
+        var exception = Assert.ThrowsExactly<ArgumentNullException>(
             () => builder.AddServiceDefaults());
 
         Assert.AreEqual("builder", exception.ParamName);

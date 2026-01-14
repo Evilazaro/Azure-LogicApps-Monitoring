@@ -47,7 +47,7 @@ public sealed class OrderRepositoryTests : IDisposable
     public void Constructor_WithNullLogger_ThrowsArgumentNullException()
     {
         // Arrange & Act & Assert
-        var exception = Assert.ThrowsException<ArgumentNullException>(
+        var exception = Assert.ThrowsExactly<ArgumentNullException>(
             () => new OrderRepository(null!, _dbContext));
 
         Assert.AreEqual("logger", exception.ParamName);
@@ -57,7 +57,7 @@ public sealed class OrderRepositoryTests : IDisposable
     public void Constructor_WithNullDbContext_ThrowsArgumentNullException()
     {
         // Arrange & Act & Assert
-        var exception = Assert.ThrowsException<ArgumentNullException>(
+        var exception = Assert.ThrowsExactly<ArgumentNullException>(
             () => new OrderRepository(_loggerMock.Object, null!));
 
         Assert.AreEqual("dbContext", exception.ParamName);
@@ -103,7 +103,7 @@ public sealed class OrderRepositoryTests : IDisposable
     public async Task SaveOrderAsync_WithNullOrder_ThrowsArgumentNullException()
     {
         // Arrange & Act & Assert
-        await Assert.ThrowsExceptionAsync<ArgumentNullException>(
+        await Assert.ThrowsExactlyAsync<ArgumentNullException>(
             () => _repository.SaveOrderAsync(null!));
     }
 
@@ -123,7 +123,7 @@ public sealed class OrderRepositoryTests : IDisposable
         // Note: InMemory provider throws ArgumentException for duplicate keys,
         // whereas SQL Server would cause DbUpdateException leading to InvalidOperationException
         // from the repository's duplicate key handling
-        var exception = await Assert.ThrowsExceptionAsync<ArgumentException>(
+        var exception = await Assert.ThrowsExactlyAsync<ArgumentException>(
             () => _repository.SaveOrderAsync(duplicateOrder));
 
         Assert.IsTrue(exception.Message.Contains("duplicate-order") ||
@@ -200,7 +200,7 @@ public sealed class OrderRepositoryTests : IDisposable
         cts.Cancel();
 
         // Act & Assert
-        await Assert.ThrowsExceptionAsync<OperationCanceledException>(
+        await Assert.ThrowsExactlyAsync<OperationCanceledException>(
             () => _repository.GetAllOrdersAsync(cts.Token));
     }
 
@@ -238,7 +238,7 @@ public sealed class OrderRepositoryTests : IDisposable
     public async Task GetOrderByIdAsync_WithNullOrderId_ThrowsArgumentException()
     {
         // Act & Assert
-        await Assert.ThrowsExceptionAsync<ArgumentException>(
+        await Assert.ThrowsExactlyAsync<ArgumentException>(
             () => _repository.GetOrderByIdAsync(null!));
     }
 
@@ -246,7 +246,7 @@ public sealed class OrderRepositoryTests : IDisposable
     public async Task GetOrderByIdAsync_WithEmptyOrderId_ThrowsArgumentException()
     {
         // Act & Assert
-        await Assert.ThrowsExceptionAsync<ArgumentException>(
+        await Assert.ThrowsExactlyAsync<ArgumentException>(
             () => _repository.GetOrderByIdAsync(string.Empty));
     }
 
@@ -254,7 +254,7 @@ public sealed class OrderRepositoryTests : IDisposable
     public async Task GetOrderByIdAsync_WithWhitespaceOrderId_ThrowsArgumentException()
     {
         // Act & Assert
-        await Assert.ThrowsExceptionAsync<ArgumentException>(
+        await Assert.ThrowsExactlyAsync<ArgumentException>(
             () => _repository.GetOrderByIdAsync("   "));
     }
 
@@ -320,7 +320,7 @@ public sealed class OrderRepositoryTests : IDisposable
     public async Task DeleteOrderAsync_WithNullOrderId_ThrowsArgumentException()
     {
         // Act & Assert
-        await Assert.ThrowsExceptionAsync<ArgumentException>(
+        await Assert.ThrowsExactlyAsync<ArgumentException>(
             () => _repository.DeleteOrderAsync(null!));
     }
 
@@ -328,7 +328,7 @@ public sealed class OrderRepositoryTests : IDisposable
     public async Task DeleteOrderAsync_WithEmptyOrderId_ThrowsArgumentException()
     {
         // Act & Assert
-        await Assert.ThrowsExceptionAsync<ArgumentException>(
+        await Assert.ThrowsExactlyAsync<ArgumentException>(
             () => _repository.DeleteOrderAsync(string.Empty));
     }
 
@@ -336,7 +336,7 @@ public sealed class OrderRepositoryTests : IDisposable
     public async Task DeleteOrderAsync_WithWhitespaceOrderId_ThrowsArgumentException()
     {
         // Act & Assert
-        await Assert.ThrowsExceptionAsync<ArgumentException>(
+        await Assert.ThrowsExactlyAsync<ArgumentException>(
             () => _repository.DeleteOrderAsync("   "));
     }
 
@@ -390,7 +390,7 @@ public sealed class OrderRepositoryTests : IDisposable
     public async Task OrderExistsAsync_WithNullOrderId_ThrowsArgumentException()
     {
         // Act & Assert
-        await Assert.ThrowsExceptionAsync<ArgumentException>(
+        await Assert.ThrowsExactlyAsync<ArgumentException>(
             () => _repository.OrderExistsAsync(null!));
     }
 
@@ -398,7 +398,7 @@ public sealed class OrderRepositoryTests : IDisposable
     public async Task OrderExistsAsync_WithEmptyOrderId_ThrowsArgumentException()
     {
         // Act & Assert
-        await Assert.ThrowsExceptionAsync<ArgumentException>(
+        await Assert.ThrowsExactlyAsync<ArgumentException>(
             () => _repository.OrderExistsAsync(string.Empty));
     }
 
@@ -406,7 +406,7 @@ public sealed class OrderRepositoryTests : IDisposable
     public async Task OrderExistsAsync_WithWhitespaceOrderId_ThrowsArgumentException()
     {
         // Act & Assert
-        await Assert.ThrowsExceptionAsync<ArgumentException>(
+        await Assert.ThrowsExactlyAsync<ArgumentException>(
             () => _repository.OrderExistsAsync("   "));
     }
 
@@ -465,7 +465,7 @@ public sealed class OrderRepositoryTests : IDisposable
     public async Task GetExistingOrderIdsAsync_WithNullInput_ThrowsArgumentNullException()
     {
         // Act & Assert
-        await Assert.ThrowsExceptionAsync<ArgumentNullException>(
+        await Assert.ThrowsExactlyAsync<ArgumentNullException>(
             () => _repository.GetExistingOrderIdsAsync(null!));
     }
 

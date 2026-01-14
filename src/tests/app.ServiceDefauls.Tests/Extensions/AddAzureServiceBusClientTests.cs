@@ -22,7 +22,7 @@ public sealed class AddAzureServiceBusClientTests
         IHostApplicationBuilder builder = null!;
 
         // Act & Assert
-        var exception = Assert.ThrowsException<ArgumentNullException>(
+        var exception = Assert.ThrowsExactly<ArgumentNullException>(
             () => builder.AddAzureServiceBusClient());
 
         Assert.AreEqual("builder", exception.ParamName);
@@ -83,7 +83,7 @@ public sealed class AddAzureServiceBusClientTests
         var serviceProvider = builder.Services.BuildServiceProvider();
 
         // Act & Assert - Should throw when trying to resolve the client
-        var exception = Assert.ThrowsException<InvalidOperationException>(
+        var exception = Assert.ThrowsExactly<InvalidOperationException>(
             () => serviceProvider.GetRequiredService<ServiceBusClient>());
 
         Assert.IsTrue(exception.Message.Contains("MESSAGING_HOST"));
@@ -105,7 +105,7 @@ public sealed class AddAzureServiceBusClientTests
         var serviceProvider = builder.Services.BuildServiceProvider();
 
         // Act & Assert
-        var exception = Assert.ThrowsException<InvalidOperationException>(
+        var exception = Assert.ThrowsExactly<InvalidOperationException>(
             () => serviceProvider.GetRequiredService<ServiceBusClient>());
 
         Assert.IsTrue(exception.Message.Contains("ConnectionStrings:messaging"));

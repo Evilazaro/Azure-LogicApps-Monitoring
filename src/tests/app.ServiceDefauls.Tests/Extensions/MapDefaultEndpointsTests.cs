@@ -23,7 +23,7 @@ public sealed class MapDefaultEndpointsTests
         WebApplication app = null!;
 
         // Act & Assert
-        var exception = Assert.ThrowsException<ArgumentNullException>(
+        var exception = Assert.ThrowsExactly<ArgumentNullException>(
             () => app.MapDefaultEndpoints());
 
         Assert.AreEqual("app", exception.ParamName);

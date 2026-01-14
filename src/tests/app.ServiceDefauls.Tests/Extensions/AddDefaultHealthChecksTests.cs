@@ -22,7 +22,7 @@ public sealed class AddDefaultHealthChecksTests
         IHostApplicationBuilder builder = null!;
 
         // Act & Assert
-        var exception = Assert.ThrowsException<ArgumentNullException>(
+        var exception = Assert.ThrowsExactly<ArgumentNullException>(
             () => builder.AddDefaultHealthChecks());
 
         Assert.AreEqual("builder", exception.ParamName);

@@ -23,7 +23,7 @@ public sealed class NoOpOrdersMessageHandlerTests
     public void Constructor_WithNullLogger_ThrowsArgumentNullException()
     {
         // Act & Assert
-        Assert.ThrowsException<ArgumentNullException>(() => new NoOpOrdersMessageHandler(null!));
+        Assert.ThrowsExactly<ArgumentNullException>(() => new NoOpOrdersMessageHandler(null!));
     }
 
     [TestMethod]
@@ -64,7 +64,7 @@ public sealed class NoOpOrdersMessageHandlerTests
     public async Task SendOrderMessageAsync_WithNullOrder_ThrowsArgumentNullException()
     {
         // Act & Assert
-        await Assert.ThrowsExceptionAsync<ArgumentNullException>(
+        await Assert.ThrowsExactlyAsync<ArgumentNullException>(
             () => _handler.SendOrderMessageAsync(null!, CancellationToken.None));
     }
 
@@ -110,7 +110,7 @@ public sealed class NoOpOrdersMessageHandlerTests
     public async Task SendOrdersBatchMessageAsync_WithNullOrders_ThrowsArgumentNullException()
     {
         // Act & Assert
-        await Assert.ThrowsExceptionAsync<ArgumentNullException>(
+        await Assert.ThrowsExactlyAsync<ArgumentNullException>(
             () => _handler.SendOrdersBatchMessageAsync(null!, CancellationToken.None));
     }
 
