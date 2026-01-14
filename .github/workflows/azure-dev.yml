@@ -260,13 +260,17 @@ jobs:
       # ------------------------------------------------------------------------
       # Step 8: Run unit tests
       # ------------------------------------------------------------------------
-      # Executes all unit tests to validate code correctness before deployment.
+      # Executes unit tests to validate code correctness before deployment.
       # Gates deployment - tests must pass before provisioning expensive resources.
       # Uses dual TRX generation strategy:
       #   --logger "trx": For classic SDK test projects
       #   -- --report-trx: For MSTest SDK test projects (output in bin/<config>/<tfm>/TestResults/)
       # Collects TRX files from various locations into a single TestResults folder.
       # continue-on-error: Allows subsequent steps to parse and report results.
+      #
+      # NOTE: app.Host.Tests is excluded because it contains .NET Aspire integration
+      # tests that require Docker containers. These tests run locally with Docker
+      # Desktop but fail in CI without proper container infrastructure.
       # ------------------------------------------------------------------------
       - name: "🧪 Run unit tests"
         id: test
@@ -275,9 +279,10 @@ jobs:
           # Create TestResults directory to ensure it exists
           mkdir -p TestResults
 
-          # Run all tests in the solution with both TRX loggers:
+          # Run unit tests excluding Aspire integration tests (app.Host.Tests)
+          # which require Docker containers that aren't available in CI.
           # - --logger "trx" for classic SDK projects (e.g., eShop.Oders.API.Tests)
-          # - -- --report-trx for MSTest SDK projects (e.g., app.Host.Tests, app.ServiceDefauls.Tests, eShop.Web.App.Tests)
+          # - -- --report-trx for MSTest SDK projects (e.g., app.ServiceDefauls.Tests, eShop.Web.App.Tests)
           # Note: MSTest SDK projects generate TRX in bin/<config>/<tfm>/TestResults/
           dotnet test app.sln \
             --configuration Release \
@@ -285,6 +290,7 @@ jobs:
             --verbosity normal \
             --logger "trx" \
             --results-directory TestResults \
+            --filter "FullyQualifiedName!~app.Host.Tests" \
             -- --report-trx
 
           TEST_EXIT_CODE=$?
