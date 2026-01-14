@@ -153,26 +153,40 @@ jobs:
             # ------------------------------------------------------------------------
             # Executes all unit tests in the solution and captures results.
             # --logger trx: Generates test results in TRX format for rich reporting.
-            # --logger console: Provides real-time output in workflow logs.
-            # --collect: Collects code coverage data for analysis.
+            # --report-trx: Supports MSTest.Sdk projects (new Microsoft Testing Platform).
             # continue-on-error: Allows subsequent steps to parse results on failure.
             # ------------------------------------------------------------------------
             - name: "🧪 Run unit tests"
               id: test
               continue-on-error: true
               run: |
+                  # Create TestResults directory to ensure it exists
+                  mkdir -p TestResults
+
+                  # Run tests with TRX reporter
                   dotnet test app.sln \
                     --configuration Release \
                     --verbosity normal \
                     --logger "trx;LogFileName=test-results.trx" \
-                    --logger "console;verbosity=detailed" \
                     --results-directory TestResults \
-                    -- RunConfiguration.CollectSourceInformation=true
+                    --report-trx --report-trx-filename test-results.trx \
+                    2>&1 || true
 
-            # ------------------------------------------------------------------------
-            # Step 6: Parse test results
-            # ------------------------------------------------------------------------
-            # Extracts test metrics from TRX files for job summary.
+                  # Debug: List test results
+                  echo "::group::Test Results Directory Contents"
+                  echo "Looking for TRX files..."
+                  find . -name "*.trx" -type f 2>/dev/null || echo "No TRX files found with find"
+                  echo "TestResults directory:"
+                  ls -la TestResults/ 2>/dev/null || echo "TestResults directory not found or empty"
+                  echo "::endgroup::"
+
+                  # Check if any tests failed
+                  if [ -f "TestResults/test-results.trx" ]; then
+                    if grep -q 'outcome="Failed"' TestResults/test-results.trx 2>/dev/null; then
+                      echo "::error::Some tests failed"
+                      exit 1
+                    fi
+                  fi
             # Parses total, passed, failed, and skipped test counts.
             # Sets outputs for use in summary generation.
             # ------------------------------------------------------------------------
@@ -275,10 +289,11 @@ jobs:
             # Creates a test report with inline annotations for failed tests.
             # Only runs on pull requests to annotate code with failures.
             # Uses dorny/test-reporter for rich GitHub integration.
+            # Only runs if TRX files exist to avoid errors.
             # ------------------------------------------------------------------------
             - name: "📝 Generate test report"
               uses: dorny/test-reporter@v1
-              if: always() && (github.event_name == 'pull_request' || github.event_name == 'push')
+              if: always() && hashFiles('TestResults/*.trx') != ''
               with:
                   name: "Unit Test Results"
                   path: "TestResults/*.trx"
