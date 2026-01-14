@@ -12,6 +12,7 @@
 - [📚 Data Domain Catalog](#-4-data-domain-catalog)
 - [🗄️ Data Store Details](#%EF%B8%8F-5-data-store-details)
 - [🔄 Data Flow Architecture](#-6-data-flow-architecture)
+  - [🔄 Logic Apps Workflow Data Flows](#logic-apps-workflow-data-flows)
 - [📊 Monitoring Data Flow Architecture](#-7-monitoring-data-flow-architecture)
 - [📡 Telemetry Data Mapping](#-8-telemetry-data-mapping)
 - [🔗 Trace Context Propagation](#-9-trace-context-propagation)
@@ -167,6 +168,72 @@ sequenceDiagram
     API-->>Web: JSON Order Collection
     Web-->>User: Render Orders Grid
 ```
+
+### Logic Apps Workflow Data Flows
+
+The **OrdersManagement** Logic App contains two workflows that interact with the data layer:
+
+#### OrdersPlacedProcess Data Flow
+
+```mermaid
+sequenceDiagram
+    autonumber
+    participant SB as Service Bus<br/>ordersplaced topic
+    participant LA as OrdersPlacedProcess<br/>Logic App
+    participant API as eShop.Orders.API
+    participant Blob as Azure Blob Storage
+
+    SB->>LA: Trigger: Message received<br/>(1s polling interval)
+    LA->>LA: Validate ContentType = application/json
+
+    alt Valid JSON Content
+        LA->>API: POST /api/Orders/process
+        alt HTTP 201 Created
+            LA->>Blob: Create blob in<br/>/ordersprocessedsuccessfully/{MessageId}
+        else HTTP Error
+            LA->>Blob: Create blob in<br/>/ordersprocessedwitherrors/{MessageId}
+        end
+    else Invalid Content
+        LA->>Blob: Create blob in<br/>/ordersprocessedwitherrors/{MessageId}
+    end
+
+    LA->>SB: Auto-complete message
+```
+
+> **Source**: [OrdersPlacedProcess/workflow.json](../../workflows/OrdersManagement/OrdersManagementLogicApp/OrdersPlacedProcess/workflow.json)
+
+#### OrdersPlacedCompleteProcess Data Flow
+
+```mermaid
+sequenceDiagram
+    autonumber
+    participant Timer as Recurrence Trigger<br/>(every 3 seconds)
+    participant LA as OrdersPlacedCompleteProcess<br/>Logic App
+    participant Blob as Azure Blob Storage
+
+    Timer->>LA: Trigger recurrence
+    LA->>Blob: List blobs (V2)<br/>/ordersprocessedsuccessfully
+    Blob-->>LA: Blob collection
+
+    loop For each blob (20 parallel)
+        LA->>Blob: Get blob metadata (V2)
+        Blob-->>LA: Blob path
+        LA->>Blob: Delete blob (V2)
+        Blob-->>LA: Deletion confirmed
+    end
+```
+
+> **Source**: [OrdersPlacedCompleteProcess/workflow.json](../../workflows/OrdersManagement/OrdersManagementLogicApp/OrdersPlacedCompleteProcess/workflow.json)
+
+#### Workflow Data Store Interactions
+
+| Workflow                        | Data Store   | Operation      | Path/Topic                        | Frequency   |
+| ------------------------------- | ------------ | -------------- | --------------------------------- | ----------- |
+| **OrdersPlacedProcess**         | Service Bus  | Read (Trigger) | `ordersplaced/orderprocessingsub` | 1s polling  |
+| **OrdersPlacedProcess**         | Blob Storage | Write          | `/ordersprocessedsuccessfully`    | Per message |
+| **OrdersPlacedProcess**         | Blob Storage | Write          | `/ordersprocessedwitherrors`      | On error    |
+| **OrdersPlacedCompleteProcess** | Blob Storage | Read           | `/ordersprocessedsuccessfully`    | 3s polling  |
+| **OrdersPlacedCompleteProcess** | Blob Storage | Delete         | `/ordersprocessedsuccessfully`    | Per blob    |
 
 ---
 

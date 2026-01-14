@@ -12,6 +12,7 @@
 - [🔄 Value Streams](#-4-value-streams)
 - [✅ Quality Attribute Requirements](#-5-quality-attribute-requirements)
 - [📊 Business Process Flows](#-6-business-process-flows)
+  - [🔄 Logic Apps Workflow Inventory](#logic-apps-workflow-inventory)
 - [🔗 Cross-Architecture Relationships](#-cross-architecture-relationships)
 
 ---
@@ -257,6 +258,41 @@ flowchart TD
     class StoreSuccess success
     class Reject,StoreError error
 ```
+
+### Logic Apps Workflow Inventory
+
+The order processing automation is implemented through two Azure Logic Apps Standard workflows:
+
+| Workflow                        | Business Purpose                                           | Trigger                   | Frequency  |
+| ------------------------------- | ---------------------------------------------------------- | ------------------------- | ---------- |
+| **OrdersPlacedProcess**         | Processes new orders from Service Bus and calls Orders API | Service Bus topic message | 1s polling |
+| **OrdersPlacedCompleteProcess** | Cleans up successfully processed orders from blob storage  | Recurrence timer          | Every 3s   |
+
+#### OrdersPlacedProcess
+
+**Business Function:** This workflow implements the core order processing automation. When a new order event is published to the Service Bus `ordersplaced` topic, it:
+
+1. Validates the message content type (JSON)
+2. Calls the Orders API `/api/Orders/process` endpoint
+3. Stores the result in either the success or error blob container
+
+**Business Value:** Enables real-time, event-driven order processing with automatic error handling and result tracking.
+
+> **Source**: [OrdersPlacedProcess/workflow.json](../../workflows/OrdersManagement/OrdersManagementLogicApp/OrdersPlacedProcess/workflow.json)
+
+#### OrdersPlacedCompleteProcess
+
+**Business Function:** This workflow handles post-processing cleanup. Every 3 seconds, it:
+
+1. Scans the `/ordersprocessedsuccessfully` blob container
+2. Deletes processed order blobs to free storage
+3. Runs 20 parallel operations for high throughput
+
+**Business Value:** Maintains storage hygiene and prevents accumulation of processed order records, reducing storage costs and improving system performance.
+
+> **Source**: [OrdersPlacedCompleteProcess/workflow.json](../../workflows/OrdersManagement/OrdersManagementLogicApp/OrdersPlacedCompleteProcess/workflow.json)
+
+---
 
 ### Key Process Metrics
 

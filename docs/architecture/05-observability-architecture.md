@@ -10,7 +10,8 @@
 - [🎯 Observability Strategy](#-2-observability-strategy)
 - [📊 Telemetry Architecture](#-3-telemetry-architecture)
 - [🔍 Distributed Tracing](#-4-distributed-tracing)
-- [📈 Metrics](#-5-metrics)
+- [� Logic Apps Workflow Observability](#-logic-apps-workflow-observability)
+- [�📈 Metrics](#-5-metrics)
 - [📝 Logs](#-6-logs)
 - [⚙️ Platform Components](#%EF%B8%8F-7-platform-components)
 - [🚨 Alerting and Incident Response](#-8-alerting-and-incident-response)
@@ -178,6 +179,86 @@ if (activity != null)
 
 ---
 
+## � Logic Apps Workflow Observability
+
+### Workflow Telemetry Overview
+
+The **OrdersManagement** Logic App workflows emit telemetry through Azure's built-in diagnostics integration with Application Insights and Log Analytics.
+
+| Workflow                        | Telemetry Type      | Destination   | Correlation Method   |
+| ------------------------------- | ------------------- | ------------- | -------------------- |
+| **OrdersPlacedProcess**         | Run history, traces | Log Analytics | x-ms-workflow-run-id |
+| **OrdersPlacedCompleteProcess** | Run history, traces | Log Analytics | x-ms-workflow-run-id |
+| Both                            | Platform metrics    | Azure Monitor | Resource ID          |
+
+### OrdersPlacedProcess Observability
+
+**Purpose:** Processes incoming order messages from Service Bus and stores results in blob storage.
+
+| Metric/Log      | Type    | Description                              | Alert Threshold  |
+| --------------- | ------- | ---------------------------------------- | ---------------- |
+| `RunsSucceeded` | Counter | Number of successful workflow executions | N/A              |
+| `RunsFailed`    | Counter | Number of failed workflow executions     | > 5/min          |
+| `RunLatency`    | Timer   | Time from trigger to completion          | > 30s P95        |
+| `ActionsFailed` | Counter | Individual action failures (HTTP, Blob)  | > 10/min         |
+| `TriggersFired` | Counter | Service Bus trigger activations          | Monitor for gaps |
+
+**Key Monitoring Points:**
+
+- Service Bus trigger polling (1 second interval)
+- HTTP POST to Orders API (status code 201 expected)
+- Blob creation in success/error containers
+
+> **Source**: [OrdersPlacedProcess/workflow.json](../../workflows/OrdersManagement/OrdersManagementLogicApp/OrdersPlacedProcess/workflow.json)
+
+### OrdersPlacedCompleteProcess Observability
+
+**Purpose:** Cleanup workflow that deletes processed order blobs every 3 seconds.
+
+| Metric/Log          | Type    | Description                                  | Alert Threshold     |
+| ------------------- | ------- | -------------------------------------------- | ------------------- |
+| `RunsSucceeded`     | Counter | Number of successful cleanup cycles          | N/A                 |
+| `RunsFailed`        | Counter | Number of failed cleanup cycles              | > 3/min             |
+| `BlobsDeleted`      | Counter | Count of blobs removed per run               | Monitor for backlog |
+| `ForEachIterations` | Counter | Parallel blob processing (max 20 concurrent) | N/A                 |
+
+**Key Monitoring Points:**
+
+- Recurrence trigger (3 second interval, Central Standard Time)
+- Blob listing from `/ordersprocessedsuccessfully`
+- Parallel blob deletion (20 concurrent operations)
+
+> **Source**: [OrdersPlacedCompleteProcess/workflow.json](../../workflows/OrdersManagement/OrdersManagementLogicApp/OrdersPlacedCompleteProcess/workflow.json)
+
+### Workflow KQL Queries
+
+**Query: Workflow Run Success Rate**
+
+```kusto
+AzureDiagnostics
+| where ResourceType == "WORKFLOWS"
+| where OperationName == "Microsoft.Logic/workflows/workflowRunCompleted"
+| summarize
+    SuccessCount = countif(status_s == "Succeeded"),
+    FailedCount = countif(status_s == "Failed"),
+    TotalCount = count()
+    by bin(TimeGenerated, 1h), resource_workflowName_s
+| extend SuccessRate = round(100.0 * SuccessCount / TotalCount, 2)
+```
+
+**Query: Average Workflow Duration by Workflow Name**
+
+```kusto
+AzureDiagnostics
+| where ResourceType == "WORKFLOWS"
+| where OperationName == "Microsoft.Logic/workflows/workflowRunCompleted"
+| extend DurationMs = datetime_diff('millisecond', endTime_t, startTime_t)
+| summarize AvgDurationMs = avg(DurationMs), P95DurationMs = percentile(DurationMs, 95)
+    by resource_workflowName_s
+```
+
+---
+
 ## 📈 5. Metrics
 
 ### Metrics Strategy
@@ -185,6 +266,7 @@ if (activity != null)
 - **Request Metrics**: Auto-instrumented via OpenTelemetry ASP.NET Core instrumentation
 - **Business Metrics**: Custom counters and histograms for order operations
 - **Platform Metrics**: Azure Monitor metrics from managed services
+- **Workflow Metrics**: Logic Apps built-in metrics for OrdersPlacedProcess and OrdersPlacedCompleteProcess
 
 ### Metrics Catalog
 
