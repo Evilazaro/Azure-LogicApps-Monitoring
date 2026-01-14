@@ -1,0 +1,383 @@
+# Observability Architecture
+
+[← Technology Architecture](04-technology-architecture.md) | [Index](README.md) | [Security Architecture →](06-security-architecture.md)
+
+---
+
+## 1. Observability Principles
+
+| #       | Principle                          | Statement                           | Rationale                         | Implications                       |
+| ------- | ---------------------------------- | ----------------------------------- | --------------------------------- | ---------------------------------- |
+| **O-1** | **Vendor-Neutral Instrumentation** | Use OpenTelemetry for all telemetry | Avoid lock-in, future flexibility | OTLP export to any backend         |
+| **O-2** | **Correlation by Default**         | W3C Trace Context propagation       | End-to-end visibility             | All services propagate traceparent |
+| **O-3** | **Business-Aligned Metrics**       | Custom metrics for KPIs             | Connect tech to outcomes          | eShop.orders.placed counter        |
+| **O-4** | **Actionable Alerts**              | Alert on symptoms, not causes       | Reduce noise, improve MTTR        | SLO-based alerting                 |
+| **O-5** | **Cost-Aware Telemetry**           | Sampling and filtering              | Control data volumes              | Exclude health check traces        |
+
+---
+
+## 2. Observability Strategy
+
+### Goals and Objectives
+
+1. **End-to-end transaction visibility** across all services including Logic Apps workflows
+2. **Proactive issue detection** through SLO-based alerting
+3. **Fast root cause analysis** with correlated traces, metrics, and logs
+4. **Business metrics tracking** for order throughput and processing efficiency
+
+### SLI/SLO Definitions
+
+| SLI                  | Definition                   | Measurement                  | SLO      | Error Budget   |
+| -------------------- | ---------------------------- | ---------------------------- | -------- | -------------- |
+| **Availability**     | % of successful API requests | `successCount / totalCount`  | 99.9%    | 43.2 min/month |
+| **Latency**          | P95 API response time        | `percentile(duration, 95)`   | < 500ms  | N/A            |
+| **Throughput**       | Orders processed per hour    | `count(eShop.orders.placed)` | > 500/hr | N/A            |
+| **Error Rate**       | % of 5xx responses           | `errorCount / totalCount`    | < 0.1%   | N/A            |
+| **Workflow Success** | Logic App run success rate   | `RunsSucceeded / TotalRuns`  | > 99%    | N/A            |
+
+---
+
+## 3. Telemetry Architecture
+
+### Three Pillars Overview
+
+```mermaid
+flowchart TB
+    subgraph Pillars["📊 Three Pillars of Observability"]
+        direction LR
+        Traces["🔍 Traces<br/><i>Distributed request flow</i>"]
+        Metrics["📈 Metrics<br/><i>Quantitative measurements</i>"]
+        Logs["📝 Logs<br/><i>Discrete event records</i>"]
+    end
+
+    subgraph Collection["📥 Collection Layer"]
+        OTEL["OpenTelemetry SDK"]
+        AzDiag["Azure Diagnostics"]
+    end
+
+    subgraph Backend["💾 Backend Layer"]
+        AI["Application Insights"]
+        LAW["Log Analytics"]
+    end
+
+    subgraph Consumption["👁️ Consumption Layer"]
+        Dashboards["Dashboards"]
+        Alerts["Alerts"]
+        Queries["KQL Queries"]
+    end
+
+    Traces & Metrics & Logs --> OTEL
+    OTEL --> AI
+    AzDiag --> LAW
+    AI & LAW --> Dashboards & Alerts & Queries
+
+    classDef pillars fill:#e3f2fd,stroke:#1565c0
+    classDef collection fill:#e8f5e9,stroke:#2e7d32
+    classDef backend fill:#fff3e0,stroke:#ef6c00
+    classDef consumption fill:#f3e5f5,stroke:#7b1fa2
+
+    class Traces,Metrics,Logs pillars
+    class OTEL,AzDiag collection
+    class AI,LAW backend
+    class Dashboards,Alerts,Queries consumption
+```
+
+### Instrumentation Standards
+
+| Component               | Instrumentation                          | Auto/Manual | Source                                                                     |
+| ----------------------- | ---------------------------------------- | ----------- | -------------------------------------------------------------------------- |
+| **ASP.NET Core**        | OpenTelemetry.Instrumentation.AspNetCore | Auto        | [Extensions.cs](../../app.ServiceDefaults/Extensions.cs#L100-L115)         |
+| **HttpClient**          | OpenTelemetry.Instrumentation.Http       | Auto        | [Extensions.cs](../../app.ServiceDefaults/Extensions.cs#L116-L122)         |
+| **SQL Client**          | OpenTelemetry.Instrumentation.SqlClient  | Auto        | [Extensions.cs](../../app.ServiceDefaults/Extensions.cs#L123-L126)         |
+| **Service Bus**         | Azure.Messaging.ServiceBus source        | Auto        | [Extensions.cs](../../app.ServiceDefaults/Extensions.cs#L99)               |
+| **Business Operations** | Custom ActivitySource                    | Manual      | [OrderService.cs](../../src/eShop.Orders.API/Services/OrderService.cs#L78) |
+
+---
+
+## 4. Distributed Tracing
+
+### Trace Context Propagation
+
+```mermaid
+flowchart LR
+    subgraph WebApp["🌐 Web App"]
+        W1["HTTP Request<br/>traceparent: auto"]
+    end
+
+    subgraph API["⚙️ Orders API"]
+        A1["Extract traceparent"]
+        A2["Create child span"]
+        A3["Propagate to Service Bus"]
+    end
+
+    subgraph ServiceBus["📨 Service Bus"]
+        SB1["ApplicationProperties<br/>TraceId, SpanId, traceparent"]
+    end
+
+    subgraph LogicApp["🔄 Logic App"]
+        LA1["Extract correlation"]
+        LA2["x-ms-workflow-run-id"]
+    end
+
+    subgraph AppInsights["📊 App Insights"]
+        AI1["Correlated traces<br/>Operation ID"]
+    end
+
+    W1 -->|"traceparent header"| A1
+    A1 --> A2 --> A3
+    A3 -->|"AMQP properties"| SB1
+    SB1 --> LA1 --> LA2
+    W1 -.-> AI1
+    A2 -.-> AI1
+    LA2 -.-> AI1
+```
+
+### Span Inventory
+
+| Span Name          | Kind     | Source               | Attributes                                   |
+| ------------------ | -------- | -------------------- | -------------------------------------------- |
+| `PlaceOrder`       | Server   | OrdersController     | order.id, order.total, order.products.count  |
+| `PlaceOrder`       | Internal | OrderService         | order.id, order.status                       |
+| `SendOrderMessage` | Producer | OrdersMessageHandler | messaging.system, messaging.destination.name |
+| `GET /api/orders`  | Client   | Web App              | http.method, http.url                        |
+| `SQL Database`     | Client   | EF Core              | db.operation, db.name                        |
+
+### Context Propagation Implementation
+
+```csharp
+// From OrdersMessageHandler.cs - Service Bus trace context
+if (activity != null)
+{
+    message.ApplicationProperties["TraceId"] = activity.TraceId.ToString();
+    message.ApplicationProperties["SpanId"] = activity.SpanId.ToString();
+    message.ApplicationProperties["traceparent"] = activity.Id ?? string.Empty;
+    if (!string.IsNullOrWhiteSpace(activity.TraceStateString))
+    {
+        message.ApplicationProperties["tracestate"] = activity.TraceStateString;
+    }
+}
+```
+
+> **Source**: [OrdersMessageHandler.cs](../../src/eShop.Orders.API/Handlers/OrdersMessageHandler.cs#L87-L96)
+
+---
+
+## 5. Metrics
+
+### Metrics Strategy
+
+- **Request Metrics**: Auto-instrumented via OpenTelemetry ASP.NET Core instrumentation
+- **Business Metrics**: Custom counters and histograms for order operations
+- **Platform Metrics**: Azure Monitor metrics from managed services
+
+### Metrics Catalog
+
+| Metric Name                        | Type          | Source       | Unit  | Business Meaning      |
+| ---------------------------------- | ------------- | ------------ | ----- | --------------------- |
+| `http.server.request.duration`     | Histogram     | ASP.NET Core | ms    | API responsiveness    |
+| `http.server.active_requests`      | UpDownCounter | ASP.NET Core | count | Concurrent load       |
+| `eShop.orders.placed`              | Counter       | Custom       | count | Business throughput   |
+| `eShop.orders.processing.duration` | Histogram     | Custom       | ms    | Processing efficiency |
+| `eShop.orders.processing.errors`   | Counter       | Custom       | count | Error rate tracking   |
+| `eShop.orders.deleted`             | Counter       | Custom       | count | Cleanup operations    |
+
+### Custom Metrics Implementation
+
+```csharp
+// From OrderService.cs - Custom business metrics
+private static readonly Meter Meter = new("eShop.Orders.API");
+
+private static readonly Counter<long> OrdersPlacedCounter = Meter.CreateCounter<long>(
+    "eShop.orders.placed",
+    unit: "order",
+    description: "Total number of orders successfully placed");
+
+private static readonly Histogram<double> OrderProcessingDuration = Meter.CreateHistogram<double>(
+    "eShop.orders.processing.duration",
+    unit: "ms",
+    description: "Time taken to process order operations");
+```
+
+> **Source**: [OrderService.cs](../../src/eShop.Orders.API/Services/OrderService.cs#L28-L42)
+
+---
+
+## 6. Logs
+
+### Logging Standards
+
+| Standard               | Implementation               | Configuration               |
+| ---------------------- | ---------------------------- | --------------------------- |
+| **Structured Logging** | Serilog-style templates      | `{OrderId}` placeholders    |
+| **Log Levels**         | Microsoft.Extensions.Logging | Information, Warning, Error |
+| **Correlation**        | OpenTelemetry integration    | TraceId, SpanId in scope    |
+| **Sensitive Data**     | Excluded from logs           | No PII in log messages      |
+
+### Log Categories
+
+| Category              | Level       | Purpose         | Example                               |
+| --------------------- | ----------- | --------------- | ------------------------------------- |
+| **Request Logs**      | Information | API traffic     | "Placing order with ID: {OrderId}"    |
+| **Business Events**   | Information | Order lifecycle | "Order {OrderId} placed successfully" |
+| **Validation Errors** | Warning     | Input issues    | "Order validation failed: {Errors}"   |
+| **Exceptions**        | Error       | System failures | Full exception with stack trace       |
+| **Health Checks**     | Debug       | Diagnostics     | Excluded from production              |
+
+### Structured Log Example
+
+```csharp
+// From OrderService.cs - Structured logging with correlation
+using var logScope = _logger.BeginScope(new Dictionary<string, object>
+{
+    ["TraceId"] = Activity.Current?.TraceId.ToString() ?? "none",
+    ["SpanId"] = Activity.Current?.SpanId.ToString() ?? "none",
+    ["OrderId"] = order.Id
+});
+
+_logger.LogInformation("Order {OrderId} placed successfully in {Duration:F2}ms",
+    order.Id, duration);
+```
+
+---
+
+## 7. Platform Components
+
+### Collection Layer
+
+| Component                  | Technology                                   | Purpose                 |
+| -------------------------- | -------------------------------------------- | ----------------------- |
+| **OpenTelemetry SDK**      | OpenTelemetry.NET                            | Unified instrumentation |
+| **Azure Monitor Exporter** | Azure.Monitor.OpenTelemetry.Exporter         | App Insights export     |
+| **OTLP Exporter**          | OpenTelemetry.Exporter.OpenTelemetryProtocol | Local dev export        |
+
+### Storage Layer
+
+| Component                   | Purpose                 | Retention | Query Language   |
+| --------------------------- | ----------------------- | --------- | ---------------- |
+| **Application Insights**    | APM, distributed traces | 90 days   | KQL              |
+| **Log Analytics Workspace** | Centralized logs        | 30 days   | KQL              |
+| **Azure Monitor Metrics**   | Time-series metrics     | 93 days   | Metrics Explorer |
+
+### Visualization Layer
+
+| Tool                   | Purpose                          | Users                  |
+| ---------------------- | -------------------------------- | ---------------------- |
+| **Application Map**    | Service dependency visualization | Developers, SRE        |
+| **Transaction Search** | End-to-end trace analysis        | Developers             |
+| **Azure Dashboards**   | Operational overview             | Operations, Management |
+| **Workbooks**          | Custom analytics                 | SRE, Analysts          |
+
+---
+
+## 8. Alerting and Incident Response
+
+### Alert Rules Catalog
+
+| Alert                   | Severity | Condition                 | Action             | Runbook             |
+| ----------------------- | -------- | ------------------------- | ------------------ | ------------------- |
+| **High API Latency**    | Warning  | P95 > 2s for 5 min        | Email notification | Check slow queries  |
+| **API Error Spike**     | Critical | Error rate > 5% for 5 min | Page on-call       | [Error Runbook](#)  |
+| **Queue Depth Growing** | Warning  | Depth > 1000 for 10 min   | Scale consumers    | Check Logic Apps    |
+| **Database DTU High**   | Warning  | DTU > 80% for 15 min      | Consider scaling   | [DB Runbook](#)     |
+| **Workflow Failures**   | Critical | > 3 failures in 5 min     | Page on-call       | Check workflow logs |
+
+### Escalation Procedures
+
+1. **Level 1**: Automated alerts to team channel
+2. **Level 2**: On-call engineer page (15 min no response)
+3. **Level 3**: Team lead escalation (30 min no resolution)
+
+---
+
+## 9. Health Checks
+
+### Health Check Architecture
+
+```mermaid
+flowchart LR
+    subgraph Endpoints["Health Endpoints"]
+        Health["/health<br/>All checks"]
+        Alive["/alive<br/>Liveness only"]
+    end
+
+    subgraph Checks["Health Checks"]
+        Self["Self Check"]
+        DB["Database Check"]
+        SB["Service Bus Check"]
+    end
+
+    subgraph Status["Status"]
+        Healthy["✅ Healthy"]
+        Degraded["⚠️ Degraded"]
+        Unhealthy["❌ Unhealthy"]
+    end
+
+    Health --> Self & DB & SB
+    Alive --> Self
+    Self --> Healthy
+    DB --> Healthy & Degraded & Unhealthy
+    SB --> Healthy & Unhealthy
+```
+
+### Health Check Inventory
+
+| Check           | Endpoint        | Tags              | Purpose             | Source                                                                                       |
+| --------------- | --------------- | ----------------- | ------------------- | -------------------------------------------------------------------------------------------- |
+| **Self**        | /health, /alive | live              | Application running | [Extensions.cs](../../app.ServiceDefaults/Extensions.cs#L170)                                |
+| **Database**    | /health         | ready, db         | SQL connectivity    | [DbContextHealthCheck.cs](../../src/eShop.Orders.API/HealthChecks/DbContextHealthCheck.cs)   |
+| **Service Bus** | /health         | ready, servicebus | Topic availability  | [ServiceBusHealthCheck.cs](../../src/eShop.Orders.API/HealthChecks/ServiceBusHealthCheck.cs) |
+
+---
+
+## 10. OpenTelemetry Configuration
+
+### Configuration Overview
+
+```csharp
+// From Extensions.cs - OpenTelemetry configuration
+builder.Services.AddOpenTelemetry()
+    .WithMetrics(metrics =>
+    {
+        metrics.AddAspNetCoreInstrumentation()
+            .AddHttpClientInstrumentation()
+            .AddRuntimeInstrumentation()
+            .AddMeter("eShop.Orders.API")
+            .AddMeter("eShop.Web.App");
+    })
+    .WithTracing(tracing =>
+    {
+        tracing.AddSource("eShop.Orders.API")
+            .AddSource("eShop.Web.App")
+            .AddSource("Azure.Messaging.ServiceBus")
+            .AddAspNetCoreInstrumentation()
+            .AddHttpClientInstrumentation()
+            .AddSqlClientInstrumentation();
+    });
+```
+
+### Trace Filtering
+
+Health check endpoints are excluded from tracing to reduce noise:
+
+```csharp
+options.Filter = context =>
+    !context.Request.Path.StartsWithSegments("/health")
+    && !context.Request.Path.StartsWithSegments("/alive");
+```
+
+> **Source**: [Extensions.cs](../../app.ServiceDefaults/Extensions.cs#L103-L105)
+
+---
+
+## Cross-Architecture Relationships
+
+| Related Architecture         | Connection                              | Reference                                                                           |
+| ---------------------------- | --------------------------------------- | ----------------------------------------------------------------------------------- |
+| **Business Architecture**    | SLOs aligned with business requirements | [Business Architecture](01-business-architecture.md#quality-attribute-requirements) |
+| **Data Architecture**        | Telemetry data mapping                  | [Data Architecture](02-data-architecture.md#telemetry-data-mapping)                 |
+| **Application Architecture** | Services emit telemetry                 | [Application Architecture](03-application-architecture.md)                          |
+| **Technology Architecture**  | Monitoring platform services            | [Technology Architecture](04-technology-architecture.md)                            |
+
+---
+
+[← Technology Architecture](04-technology-architecture.md) | [Index](README.md) | [Security Architecture →](06-security-architecture.md)
