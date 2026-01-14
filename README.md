@@ -163,9 +163,9 @@ dotnet run --project app.AppHost/app.AppHost.csproj
 
 | Service              | URL                     | Description                 |
 | -------------------- | ----------------------- | --------------------------- |
-| **Aspire Dashboard** | https://localhost:17225 | Service monitoring & traces |
-| **Web App**          | https://localhost:5002  | Order management UI         |
-| **Orders API**       | https://localhost:5001  | REST API + Swagger          |
+| **Aspire Dashboard** | <https://localhost:17225> | Service monitoring & traces |
+| **Web App**          | <https://localhost:5002>  | Order management UI         |
+| **Orders API**       | <https://localhost:5001>  | REST API + Swagger          |
 
 ### Option 2: Deploy to Azure
 
@@ -226,7 +226,10 @@ Azure-LogicApps-Monitoring/
 │   │   └── Components/Layout/       # Fluent UI layout components
 │   │
 │   └── tests/                       # Unit and integration tests
-│       └── eShop.Orders.API.Tests/  # Orders API test suite
+│       ├── app.Host.Tests/          # AppHost integration tests
+│       ├── app.ServiceDefauls.Tests/ # Service defaults tests
+│       ├── eShop.Oders.API.Tests/   # Orders API test suite
+│       └── eShop.Web.App.Tests/     # Web App tests
 │
 ├── 🔄 workflows/                    # Azure Logic Apps Standard
 │   └── OrdersManagement/            # Order processing workflows
