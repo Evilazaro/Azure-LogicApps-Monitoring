@@ -230,11 +230,27 @@ jobs:
       - name: "🧪 Run unit tests"
         id: test
         continue-on-error: true
-        env:
-          DOTNET_CLI_TESTINGPLATFORM_ENABLE: "1"
         run: |
           # Create TestResults directory to ensure it exists
           mkdir -p TestResults
+
+          # Configure .NET 10 SDK to use Microsoft.Testing.Platform mode
+          # This is required for MSTest.Sdk projects on .NET 10+
+          # See: https://aka.ms/dotnet-test-mtp-error
+          if [ ! -f global.json ]; then
+            echo '{"sdk":{"version":"10.0.102","rollForward":"latestFeature"},"test":{"runner":"Microsoft.Testing.Platform"}}' > global.json
+            echo "Created global.json with MTP test runner configuration"
+          else
+            # Update existing global.json to add test runner config
+            # Use jq if available, otherwise create new file
+            if command -v jq &> /dev/null; then
+              jq '. + {"test":{"runner":"Microsoft.Testing.Platform"}}' global.json > global.json.tmp && mv global.json.tmp global.json
+              echo "Updated global.json with MTP test runner configuration"
+            else
+              echo "Warning: jq not available, global.json may need manual update"
+            fi
+          fi
+          cat global.json
 
           echo "::group::Environment Information"
           echo "Working directory: $(pwd)"
@@ -250,7 +266,9 @@ jobs:
           # problematic project is never loaded.
           echo "::group::Running Tests"
 
-          # Run tests for each project separately (dotnet test doesn't support multiple projects)
+          # Run tests for each project separately using .NET 10 MTP mode syntax
+          # Note: In MTP mode, use --project instead of positional argument
+          # and --report-trx without the extra -- prefix
           TEST_EXIT_CODE=0
 
           for project in \
@@ -258,20 +276,19 @@ jobs:
             "src/tests/eShop.Web.App.Tests/eShop.Web.App.Tests.csproj" \
             "src/tests/app.ServiceDefauls.Tests/app.ServiceDefauls.Tests.csproj"; do
             echo "Running tests for: $project"
-            dotnet test "$project" \
+            dotnet test --project "$project" \
               --configuration Release \
               --no-build \
               --verbosity normal \
-              --logger "console;verbosity=detailed" \
-              -- --report-trx || TEST_EXIT_CODE=$?
+              --report-trx \
+              --results-directory TestResults || TEST_EXIT_CODE=$?
           done
           echo "Test exit code: $TEST_EXIT_CODE"
           echo "::endgroup::"
 
-          # Collect TRX files from bin directories into TestResults folder
-          echo "::group::Collecting TRX Files"
-          find . -path "*/bin/*/TestResults/*.trx" -type f -exec cp -v {} TestResults/ \; 2>/dev/null || true
-          echo ""
+          # List TRX files in TestResults directory
+          # With --results-directory, TRX files are written directly to TestResults/
+          echo "::group::TRX Files"
           echo "TRX files in TestResults directory:"
           ls -la TestResults/*.trx 2>/dev/null || echo "No TRX files found in TestResults/"
           echo "::endgroup::"
