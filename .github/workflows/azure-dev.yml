@@ -221,7 +221,7 @@ jobs:
       # Step 5: Cache NuGet packages
       # ------------------------------------------------------------------------
       # Caches NuGet packages to speed up subsequent builds.
-      # Key includes OS and solution hash for cache invalidation.
+      # Cache key includes OS and hash of project/solution files for invalidation.
       # ------------------------------------------------------------------------
       - name: "💾 Cache NuGet packages"
         uses: actions/cache@v4
