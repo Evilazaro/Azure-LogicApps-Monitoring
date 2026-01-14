@@ -953,7 +953,14 @@ public sealed class OrdersAPIServiceTests
         {
             ShouldListenTo = source => source.Name == TestActivitySourceName,
             Sample = (ref ActivityCreationOptions<ActivityContext> _) => ActivitySamplingResult.AllData,
-            ActivityStarted = activity => capturedActivity = activity
+            ActivityStarted = activity =>
+            {
+                // Only capture PlaceOrder activity to avoid race conditions with parallel tests
+                if (activity.OperationName == "PlaceOrder")
+                {
+                    capturedActivity = activity;
+                }
+            }
         };
         ActivitySource.AddActivityListener(activityListener);
 
@@ -967,7 +974,7 @@ public sealed class OrdersAPIServiceTests
         await _service.PlaceOrderAsync(order, CancellationToken.None);
 
         // Assert
-        Assert.IsNotNull(capturedActivity);
+        Assert.IsNotNull(capturedActivity, "PlaceOrder activity should have been created");
         Assert.AreEqual("PlaceOrder", capturedActivity.OperationName);
     }
 
