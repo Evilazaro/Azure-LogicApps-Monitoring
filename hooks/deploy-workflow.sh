@@ -308,7 +308,11 @@ main() {
     done
     
     # Create zip package
-    ZIP_PATH=$(mktemp --suffix=.zip)
+    # mktemp creates an empty file; we need to remove it first so zip can create a fresh archive
+    local temp_base
+    temp_base=$(mktemp)
+    rm -f "$temp_base"
+    ZIP_PATH="${temp_base}.zip"
     (cd "$STAGING_DIR" && zip -r -q "$ZIP_PATH" .)
     
     local zip_size
