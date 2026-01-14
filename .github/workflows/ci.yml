@@ -154,9 +154,7 @@ jobs:
             # --logger trx: Generates test results in TRX format for reporting.
             # ------------------------------------------------------------------------
             - name: "🧪 Run unit tests"
-              run: |
-                  mkdir -p ${{ github.workspace }}/TestResults
-                  dotnet test app.sln --configuration Release --no-build --verbosity normal --logger "trx;LogFileName=test-results.trx" --results-directory ${{ github.workspace }}/TestResults
+              run: dotnet test app.sln --configuration Release --no-build --verbosity normal --logger "trx" --results-directory TestResults
 
             # ------------------------------------------------------------------------
             # Step 6: Upload test results
@@ -169,7 +167,7 @@ jobs:
               if: always()
               with:
                   name: test-results
-                  path: ${{ github.workspace }}/TestResults/**/*.trx
+                  path: TestResults
                   retention-days: 7
                   if-no-files-found: ignore
 
