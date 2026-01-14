@@ -208,44 +208,15 @@ jobs:
           # Create TestResults directory to ensure it exists
           mkdir -p TestResults
 
-          # Initialize overall test exit code
-          OVERALL_EXIT_CODE=0
+          # Run all tests in the solution
+          dotnet test app.sln \
+            --configuration Release \
+            --no-build \
+            --verbosity normal \
+            --logger "trx" \
+            --results-directory TestResults
 
-          # Run tests for each test project separately to get individual TRX files
-          TEST_PROJECTS=(
-            "src/tests/app.Host.Tests/app.Host.Tests.csproj"
-            "src/tests/app.ServiceDefauls.Tests/app.ServiceDefauls.Tests.csproj"
-            "src/tests/eShop.Oders.API.Tests/eShop.Oders.API.Tests.csproj"
-            "src/tests/eShop.Web.App.Tests/eShop.Web.App.Tests.csproj"
-          )
-
-          for PROJECT in "${TEST_PROJECTS[@]}"; do
-            if [ -f "$PROJECT" ]; then
-              # Extract project name for TRX filename
-              PROJECT_NAME=$(basename "$PROJECT" .csproj)
-              echo "::group::Running tests for $PROJECT_NAME"
-              
-              # Run test and capture exit code (don't fail immediately)
-              set +e
-              dotnet test "$PROJECT" \
-                --configuration Release \
-                --no-build \
-                --verbosity normal \
-                --logger "trx;LogFileName=${PROJECT_NAME}.trx" \
-                --results-directory TestResults
-              
-              PROJECT_EXIT_CODE=$?
-              set -e
-              
-              if [ $PROJECT_EXIT_CODE -ne 0 ]; then
-                echo "::warning::Tests failed or errored for $PROJECT_NAME (exit code: $PROJECT_EXIT_CODE)"
-                OVERALL_EXIT_CODE=$PROJECT_EXIT_CODE
-              fi
-              echo "::endgroup::"
-            else
-              echo "::warning::Test project not found: $PROJECT"
-            fi
-          done
+          TEST_EXIT_CODE=$?
 
           # Debug: List test results
           echo "::group::Test Results Directory Contents"
@@ -255,7 +226,7 @@ jobs:
           ls -la TestResults/ 2>/dev/null || echo "TestResults directory not found or empty"
           echo "::endgroup::"
 
-          exit $OVERALL_EXIT_CODE
+          exit $TEST_EXIT_CODE
       # Parses total, passed, failed, and skipped test counts per project.
       # ------------------------------------------------------------------------
       - name: "📊 Parse test results"
