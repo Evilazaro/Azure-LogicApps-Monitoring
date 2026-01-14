@@ -274,19 +274,28 @@ jobs:
           find . -name "*.Tests.csproj" -type f | head -20
           echo "::endgroup::"
 
-          # Run unit tests excluding Aspire integration tests (app.Host.Tests)
-          # which require Docker containers that aren't available in CI.
-          # All projects use MSTest.Sdk - TRX output via --report-trx
+          # Run unit tests on specific projects, excluding app.Host.Tests which:
+          # 1. Contains .NET Aspire integration tests requiring Docker (not available in CI)
+          # 2. Has package version mismatches that cause TypeLoadException during test loading
+          # Using explicit project paths instead of solution-level filtering ensures the
+          # problematic project is never loaded.
           echo "::group::Running Tests"
-          dotnet test app.sln \
-            --configuration Release \
-            --no-build \
-            --verbosity normal \
-            --logger "console;verbosity=detailed" \
-            --filter "FullyQualifiedName!~app.Host.Tests" \
-            -- --report-trx
 
-          TEST_EXIT_CODE=$?
+          # Run tests for each project separately (dotnet test doesn't support multiple projects)
+          TEST_EXIT_CODE=0
+
+          for project in \
+            "src/tests/eShop.Oders.API.Tests/eShop.Oders.API.Tests.csproj" \
+            "src/tests/eShop.Web.App.Tests/eShop.Web.App.Tests.csproj" \
+            "src/tests/app.ServiceDefauls.Tests/app.ServiceDefauls.Tests.csproj"; do
+            echo "Running tests for: $project"
+            dotnet test "$project" \
+              --configuration Release \
+              --no-build \
+              --verbosity normal \
+              --logger "console;verbosity=detailed" \
+              -- --report-trx || TEST_EXIT_CODE=$?
+          done
           echo "Test exit code: $TEST_EXIT_CODE"
           echo "::endgroup::"
 
