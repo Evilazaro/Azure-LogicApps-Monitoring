@@ -50,6 +50,13 @@ param envName string
 @maxLength(10)
 param deploymentDate string = utcNow('yyyy-MM-dd')
 
+@description('Principal type of the deployer (User for interactive, ServicePrincipal for CI/CD)')
+@allowed([
+  'User'
+  'ServicePrincipal'
+])
+param deployerPrincipalType string = 'User'
+
 // ========== Variables ==========
 
 // Standardized tags applied to all resources for governance and cost tracking
@@ -96,6 +103,7 @@ module shared 'shared/main.bicep' = {
     location: location
     tags: tags
     envName: envName
+    deployerPrincipalType: deployerPrincipalType
   }
 }
 

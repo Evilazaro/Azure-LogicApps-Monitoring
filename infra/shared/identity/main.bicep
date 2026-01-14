@@ -47,6 +47,13 @@ param envName string
 @description('Resource tags applied to the managed identity')
 param tags tagsType
 
+@description('Principal type of the deployer (User for interactive, ServicePrincipal for CI/CD)')
+@allowed([
+  'User'
+  'ServicePrincipal'
+])
+param deployerPrincipalType string = 'User'
+
 // ========== Variables ==========
 
 @description('Unique suffix for resource naming based on subscription, resource group, and parameters')
@@ -125,7 +132,7 @@ resource userRA 'Microsoft.Authorization/roleAssignments@2022-04-01' = [
     properties: {
       principalId: deployer().objectId
       roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', role)
-      principalType: 'User'
+      principalType: deployerPrincipalType
     }
   }
 ]

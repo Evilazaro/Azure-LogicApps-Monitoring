@@ -7,6 +7,9 @@
     },
     "envName": {
       "value": "${AZURE_ENV_NAME}"
+    },
+    "deployerPrincipalType": {
+      "value": "${DEPLOYER_PRINCIPAL_TYPE=User}"
     }
   }
 }

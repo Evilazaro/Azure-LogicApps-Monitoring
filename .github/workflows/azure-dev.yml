@@ -128,6 +128,7 @@ jobs:
       AZURE_SUBSCRIPTION_ID: ${{ vars.AZURE_SUBSCRIPTION_ID }}
       AZURE_LOCATION: ${{ vars.AZURE_LOCATION }}
       AZURE_ENV_NAME: ${{ vars.AZURE_ENV_NAME }}
+      DEPLOYER_PRINCIPAL_TYPE: ServicePrincipal
 
     steps:
       # ------------------------------------------------------------------------
@@ -179,7 +180,9 @@ jobs:
       # Fails fast to prevent expensive provisioning if tests fail.
       # ------------------------------------------------------------------------
       - name: "🧪 Run unit tests"
-        run: dotnet test app.sln --configuration Release --no-build --verbosity normal --logger "trx;LogFileName=test-results.trx" --results-directory ./TestResults
+        run: |
+          mkdir -p ${{ github.workspace }}/TestResults
+          dotnet test app.sln --configuration Release --no-build --verbosity normal --logger "trx;LogFileName=test-results.trx" --results-directory ${{ github.workspace }}/TestResults
 
       # ------------------------------------------------------------------------
       # Step 6: Upload test results
@@ -192,8 +195,9 @@ jobs:
         if: always()
         with:
           name: deployment-test-results
-          path: ./TestResults/*.trx
+          path: ${{ github.workspace }}/TestResults/**/*.trx
           retention-days: 7
+          if-no-files-found: ignore
 
       # ------------------------------------------------------------------------
       # Step 7: Setup Azure CLI and Bicep
@@ -233,7 +237,20 @@ jobs:
         uses: Azure/setup-azd@v2
 
       # ------------------------------------------------------------------------
-      # Step 10: Make hook scripts executable
+      # Step 10: Install sqlcmd utility
+      # ------------------------------------------------------------------------
+      # Installs the Go version of sqlcmd for SQL Database managed identity
+      # configuration in post-provisioning hooks.
+      # ------------------------------------------------------------------------
+      - name: "🛠️ Install sqlcmd"
+        run: |
+          curl https://packages.microsoft.com/keys/microsoft.asc | sudo tee /etc/apt/trusted.gpg.d/microsoft.asc
+          sudo add-apt-repository "$(wget -qO- https://packages.microsoft.com/config/ubuntu/$(lsb_release -rs)/prod.list)"
+          sudo apt-get update
+          sudo apt-get install -y sqlcmd || echo "sqlcmd installation failed, continuing..."
+
+      # ------------------------------------------------------------------------
+      # Step 11: Make hook scripts executable
       # ------------------------------------------------------------------------
       # Ensures shell scripts in hooks directory have execute permissions.
       # Required for azd lifecycle hooks to run on Linux runners.
@@ -242,7 +259,7 @@ jobs:
         run: chmod +x ./hooks/*.sh
 
       # ------------------------------------------------------------------------
-      # Step 11: Authenticate with Azure using OIDC
+      # Step 12: Authenticate with Azure using OIDC
       # ------------------------------------------------------------------------
       # Uses OpenID Connect (OIDC) federated credentials for passwordless auth.
       # No secrets are stored in GitHub - authentication is handled via
@@ -269,7 +286,7 @@ jobs:
         shell: pwsh
 
       # ------------------------------------------------------------------------
-      # Step 12: Provision Azure Infrastructure
+      # Step 13: Provision Azure Infrastructure
       # ------------------------------------------------------------------------
       # Deploys infrastructure using Bicep templates defined in /infra.
       # --no-prompt: Runs non-interactively for CI/CD automation.
@@ -288,7 +305,7 @@ jobs:
           AZURE_ENV_NAME: ${{ github.event.inputs.environment || vars.AZURE_ENV_NAME }}
 
       # ------------------------------------------------------------------------
-      # Step 13: Deploy Application
+      # Step 14: Deploy Application
       # ------------------------------------------------------------------------
       # Deploys application code to provisioned Azure resources.
       # Uses .NET Aspire manifest for service discovery and configuration.
@@ -308,7 +325,7 @@ jobs:
           AZURE_ENV_NAME: ${{ github.event.inputs.environment || vars.AZURE_ENV_NAME }}
 
       # ------------------------------------------------------------------------
-      # Step 14: Generate Deployment Summary
+      # Step 15: Generate Deployment Summary
       # ------------------------------------------------------------------------
       # Creates a GitHub Actions job summary with deployment details.
       # Runs always to provide visibility even on failures.

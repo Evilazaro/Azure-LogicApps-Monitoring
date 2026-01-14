@@ -46,6 +46,13 @@ param envName string
 @description('Resource tags applied to the managed identity.')
 param tags tagsType
 
+@description('Principal type of the deployer (User for interactive, ServicePrincipal for CI/CD)')
+@allowed([
+  'User'
+  'ServicePrincipal'
+])
+param deployerPrincipalType string = 'User'
+
 // ========== Variables ==========
 
 // Diagnostic settings for comprehensive logging across all resources
@@ -88,6 +95,7 @@ module identity 'identity/main.bicep' = {
     location: location
     tags: tags
     envName: envName
+    deployerPrincipalType: deployerPrincipalType
   }
 }
 
