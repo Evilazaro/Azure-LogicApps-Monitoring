@@ -208,15 +208,39 @@ jobs:
           # Create TestResults directory to ensure it exists
           mkdir -p TestResults
 
-          # Run tests with TRX logger - each project generates its own TRX file
-          dotnet test app.sln \
-            --configuration Release \
-            --no-build \
-            --verbosity normal \
-            --logger "trx" \
-            --results-directory TestResults
+          # Initialize overall test exit code
+          OVERALL_EXIT_CODE=0
 
-          TEST_EXIT_CODE=$?
+          # Run tests for each test project separately to get individual TRX files
+          TEST_PROJECTS=(
+            "src/tests/app.Host.Tests/app.Host.Tests.csproj"
+            "src/tests/app.ServiceDefauls.Tests/app.ServiceDefauls.Tests.csproj"
+            "src/tests/eShop.Oders.API.Tests/eShop.Oders.API.Tests.csproj"
+            "src/tests/eShop.Web.App.Tests/eShop.Web.App.Tests.csproj"
+          )
+
+          for PROJECT in "${TEST_PROJECTS[@]}"; do
+            if [ -f "$PROJECT" ]; then
+              # Extract project name for TRX filename
+              PROJECT_NAME=$(basename "$PROJECT" .csproj)
+              echo "::group::Running tests for $PROJECT_NAME"
+              
+              dotnet test "$PROJECT" \
+                --configuration Release \
+                --no-build \
+                --verbosity normal \
+                --logger "trx;LogFileName=${PROJECT_NAME}.trx" \
+                --results-directory TestResults
+              
+              PROJECT_EXIT_CODE=$?
+              if [ $PROJECT_EXIT_CODE -ne 0 ]; then
+                OVERALL_EXIT_CODE=$PROJECT_EXIT_CODE
+              fi
+              echo "::endgroup::"
+            else
+              echo "::warning::Test project not found: $PROJECT"
+            fi
+          done
 
           # Debug: List test results
           echo "::group::Test Results Directory Contents"
@@ -226,7 +250,7 @@ jobs:
           ls -la TestResults/ 2>/dev/null || echo "TestResults directory not found or empty"
           echo "::endgroup::"
 
-          exit $TEST_EXIT_CODE
+          exit $OVERALL_EXIT_CODE
       # Parses total, passed, failed, and skipped test counts per project.
       # ------------------------------------------------------------------------
       - name: "📊 Parse test results"
@@ -246,10 +270,9 @@ jobs:
           if [ -d "TestResults" ]; then
             for trx in TestResults/*.trx; do
               if [ -f "$trx" ]; then
-                # Extract project name from TRX filename
+                # Extract project name from TRX filename (format: ProjectName.trx)
                 FILENAME=$(basename "$trx" .trx)
-                # Clean up the project name (remove guid suffix if present)
-                PROJECT_NAME=$(echo "$FILENAME" | sed 's/_[a-f0-9\-]*$//' | sed 's/_net[0-9]*_[0-9]*$//')
+                PROJECT_NAME="$FILENAME"
                 
                 echo "Parsing: $trx (Project: $PROJECT_NAME)"
                 

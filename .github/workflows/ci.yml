@@ -39,30 +39,30 @@ name: "CI - Build Validation"
 #   2. Pull requests targeting main (gate for merging)
 #   3. Manual trigger via GitHub Actions UI
 on:
-    workflow_dispatch:
+  workflow_dispatch:
 
-    push:
-        branches:
-            - "**"
-        # Only run when code files change
-        paths:
-            - "**.cs"
-            - "**.csproj"
-            - "**.sln"
-            - "**.bicep"
-            - "**.json"
-            - ".github/workflows/ci.yml"
+  push:
+    branches:
+      - "**"
+    # Only run when code files change
+    paths:
+      - "**.cs"
+      - "**.csproj"
+      - "**.sln"
+      - "**.bicep"
+      - "**.json"
+      - ".github/workflows/ci.yml"
 
-    pull_request:
-        branches:
-            - main
-        paths:
-            - "**.cs"
-            - "**.csproj"
-            - "**.sln"
-            - "**.bicep"
-            - "**.json"
-            - ".github/workflows/ci.yml"
+  pull_request:
+    branches:
+      - main
+    paths:
+      - "**.cs"
+      - "**.csproj"
+      - "**.sln"
+      - "**.bicep"
+      - "**.json"
+      - ".github/workflows/ci.yml"
 
 # ------------------------------------------------------------------------------
 # CONCURRENCY CONTROL
@@ -71,8 +71,8 @@ on:
 # Cancels in-progress runs when new commits are pushed.
 # For PRs, uses PR number to allow parallel runs across different PRs.
 concurrency:
-    group: ci-${{ github.event.pull_request.number || github.ref }}
-    cancel-in-progress: true
+  group: ci-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
 
 # ------------------------------------------------------------------------------
 # SECURITY PERMISSIONS
@@ -83,486 +83,485 @@ concurrency:
 # - statuses: write    → Required to report commit status checks
 # - checks: write      → Required for test-reporter to create check runs
 permissions:
-    contents: read
-    pull-requests: read
-    statuses: write
-    checks: write
+  contents: read
+  pull-requests: read
+  statuses: write
+  checks: write
 
 # ------------------------------------------------------------------------------
 # JOBS DEFINITION
 # ------------------------------------------------------------------------------
 jobs:
-    # ============================================================================
-    # JOB: build-dotnet
-    # ============================================================================
-    # Compiles all .NET projects to validate code syntax and dependencies.
-    # Runs restore, build, and optionally tests.
-    # ============================================================================
-    build-dotnet:
-        name: "🔨 Build .NET Solution"
-        runs-on: ubuntu-latest
-        timeout-minutes: 15
+  # ============================================================================
+  # JOB: build-dotnet
+  # ============================================================================
+  # Compiles all .NET projects to validate code syntax and dependencies.
+  # Runs restore, build, and optionally tests.
+  # ============================================================================
+  build-dotnet:
+    name: "🔨 Build .NET Solution"
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
 
-        # --------------------------------------------------------------------------
-        # Job outputs - Available for downstream jobs or workflows
-        # --------------------------------------------------------------------------
-        outputs:
-            dotnet-version: ${{ steps.setup-dotnet.outputs.dotnet-version }}
+    # --------------------------------------------------------------------------
+    # Job outputs - Available for downstream jobs or workflows
+    # --------------------------------------------------------------------------
+    outputs:
+      dotnet-version: ${{ steps.setup-dotnet.outputs.dotnet-version }}
 
-        steps:
-            # ------------------------------------------------------------------------
-            # Step 1: Checkout repository
-            # ------------------------------------------------------------------------
-            - name: "📥 Checkout repository"
-              uses: actions/checkout@v4
+    steps:
+      # ------------------------------------------------------------------------
+      # Step 1: Checkout repository
+      # ------------------------------------------------------------------------
+      - name: "📥 Checkout repository"
+        uses: actions/checkout@v4
 
-            # ------------------------------------------------------------------------
-            # Step 2: Setup .NET SDK
-            # ------------------------------------------------------------------------
-            # Installs required .NET SDK versions for building .NET Aspire projects.
-            # ------------------------------------------------------------------------
-            - name: "🔧 Setup .NET SDK"
-              id: setup-dotnet
-              uses: actions/setup-dotnet@v4
-              with:
-                  dotnet-version: |
-                      8.x
-                      9.x
-                      10.x
+      # ------------------------------------------------------------------------
+      # Step 2: Setup .NET SDK
+      # ------------------------------------------------------------------------
+      # Installs required .NET SDK versions for building .NET Aspire projects.
+      # ------------------------------------------------------------------------
+      - name: "🔧 Setup .NET SDK"
+        id: setup-dotnet
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: |
+            8.x
+            9.x
+            10.x
 
-            # ------------------------------------------------------------------------
-            # Step 2.5: Cache NuGet packages
-            # ------------------------------------------------------------------------
-            # Caches NuGet packages to speed up subsequent builds.
-            # Key includes OS, solution hash for cache invalidation.
-            # ------------------------------------------------------------------------
-            - name: "💾 Cache NuGet packages"
-              uses: actions/cache@v4
-              with:
-                  path: ~/.nuget/packages
-                  key: ${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj', '**/*.sln') }}
-                  restore-keys: |
-                      ${{ runner.os }}-nuget-
+      # ------------------------------------------------------------------------
+      # Step 2.5: Cache NuGet packages
+      # ------------------------------------------------------------------------
+      # Caches NuGet packages to speed up subsequent builds.
+      # Key includes OS, solution hash for cache invalidation.
+      # ------------------------------------------------------------------------
+      - name: "💾 Cache NuGet packages"
+        uses: actions/cache@v4
+        with:
+          path: ~/.nuget/packages
+          key: ${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj', '**/*.sln') }}
+          restore-keys: |
+            ${{ runner.os }}-nuget-
 
-            # ------------------------------------------------------------------------
-            # Step 3: Restore NuGet packages
-            # ------------------------------------------------------------------------
-            # Downloads and caches all NuGet dependencies defined in project files.
-            # ------------------------------------------------------------------------
-            - name: "📦 Restore dependencies"
-              run: dotnet restore app.sln --verbosity minimal
+      # ------------------------------------------------------------------------
+      # Step 3: Restore NuGet packages
+      # ------------------------------------------------------------------------
+      # Downloads and caches all NuGet dependencies defined in project files.
+      # ------------------------------------------------------------------------
+      - name: "📦 Restore dependencies"
+        run: dotnet restore app.sln --verbosity minimal
 
-            # ------------------------------------------------------------------------
-            # Step 4: Build solution
-            # ------------------------------------------------------------------------
-            # Compiles all projects in Release configuration.
-            # --no-restore: Uses packages from previous step for efficiency.
-            # /warnaserror: Treats warnings as errors for stricter validation.
-            # ------------------------------------------------------------------------
-            - name: "🏗️ Build solution"
-              run: dotnet build app.sln --configuration Release --no-restore /p:TreatWarningsAsErrors=false
+      # ------------------------------------------------------------------------
+      # Step 4: Build solution
+      # ------------------------------------------------------------------------
+      # Compiles all projects in Release configuration.
+      # --no-restore: Uses packages from previous step for efficiency.
+      # /warnaserror: Treats warnings as errors for stricter validation.
+      # ------------------------------------------------------------------------
+      - name: "🏗️ Build solution"
+        run: dotnet build app.sln --configuration Release --no-restore /p:TreatWarningsAsErrors=false
 
-            # ------------------------------------------------------------------------
-            # Step 5: Run unit tests
-            # ------------------------------------------------------------------------
-            # Executes all unit tests in the solution and captures results.
-            # Uses --logger trx for standard VSTest TRX output.
-            # Each test project generates its own TRX file for detailed reporting.
-            # continue-on-error: Allows subsequent steps to parse results on failure.
-            # ------------------------------------------------------------------------
-            - name: "🧪 Run unit tests"
-              id: test
-              continue-on-error: true
-              run: |
-                  # Create TestResults directory to ensure it exists
-                  mkdir -p TestResults
+      # ------------------------------------------------------------------------
+      # Step 5: Run unit tests
+      # ------------------------------------------------------------------------
+      # Executes all unit tests in the solution and captures results.
+      # Uses --logger trx for standard VSTest TRX output.
+      # Each test project generates its own TRX file for detailed reporting.
+      # continue-on-error: Allows subsequent steps to parse results on failure.
+      # ------------------------------------------------------------------------
+      - name: "🧪 Run unit tests"
+        id: test
+        continue-on-error: true
+        run: |
+          # Create TestResults directory to ensure it exists
+          mkdir -p TestResults
 
-                  # Run tests with TRX logger - each project generates its own TRX file
-                  dotnet test app.sln \
-                    --configuration Release \
-                    --no-build \
-                    --verbosity normal \
-                    --logger "trx" \
-                    --results-directory TestResults
+          # Initialize overall test exit code
+          OVERALL_EXIT_CODE=0
 
-                  TEST_EXIT_CODE=$?
+          # Run tests for each test project separately to get individual TRX files
+          TEST_PROJECTS=(
+            "src/tests/app.Host.Tests/app.Host.Tests.csproj"
+            "src/tests/app.ServiceDefauls.Tests/app.ServiceDefauls.Tests.csproj"
+            "src/tests/eShop.Oders.API.Tests/eShop.Oders.API.Tests.csproj"
+            "src/tests/eShop.Web.App.Tests/eShop.Web.App.Tests.csproj"
+          )
 
-                  # Debug: List test results
-                  echo "::group::Test Results Directory Contents"
-                  echo "Looking for TRX files..."
-                  find . -name "*.trx" -type f 2>/dev/null || echo "No TRX files found with find"
-                  echo "TestResults directory:"
-                  ls -la TestResults/ 2>/dev/null || echo "TestResults directory not found or empty"
-                  echo "::endgroup::"
+          for PROJECT in "${TEST_PROJECTS[@]}"; do
+            if [ -f "$PROJECT" ]; then
+              # Extract project name for TRX filename
+              PROJECT_NAME=$(basename "$PROJECT" .csproj)
+              echo "::group::Running tests for $PROJECT_NAME"
+              
+              dotnet test "$PROJECT" \
+                --configuration Release \
+                --no-build \
+                --verbosity normal \
+                --logger "trx;LogFileName=${PROJECT_NAME}.trx" \
+                --results-directory TestResults
+              
+              PROJECT_EXIT_CODE=$?
+              if [ $PROJECT_EXIT_CODE -ne 0 ]; then
+                OVERALL_EXIT_CODE=$PROJECT_EXIT_CODE
+              fi
+              echo "::endgroup::"
+            else
+              echo "::warning::Test project not found: $PROJECT"
+            fi
+          done
 
-                  exit $TEST_EXIT_CODE
+          # Debug: List test results
+          echo "::group::Test Results Directory Contents"
+          echo "Looking for TRX files..."
+          find . -name "*.trx" -type f 2>/dev/null || echo "No TRX files found with find"
+          echo "TestResults directory:"
+          ls -la TestResults/ 2>/dev/null || echo "TestResults directory not found or empty"
+          echo "::endgroup::"
 
-            # ------------------------------------------------------------------------
-            # Step 6: Parse test results
-            # ------------------------------------------------------------------------
-            # Extracts test metrics from TRX files for job summary.
-            # Parses total, passed, failed, and skipped test counts per project.
-            # Sets outputs for use in summary generation.
-            # ------------------------------------------------------------------------
-            - name: "📊 Parse test results"
-              id: test-results
-              if: always()
-              run: |
-                  # Initialize counters
-                  TOTAL=0
-                  PASSED=0
-                  FAILED=0
-                  SKIPPED=0
+          exit $OVERALL_EXIT_CODE
 
-                  # Arrays for per-project results (stored as delimited strings for GITHUB_OUTPUT)
-                  PROJECT_RESULTS=""
-
-                  # Find and parse TRX files
-                  if [ -d "TestResults" ]; then
-                    for trx in TestResults/*.trx; do
-                      if [ -f "$trx" ]; then
-                        # Extract project name from TRX filename
-                        FILENAME=$(basename "$trx" .trx)
-                        # Clean up the project name (remove guid suffix if present)
-                        PROJECT_NAME=$(echo "$FILENAME" | sed 's/_[a-f0-9\-]*$//' | sed 's/_net[0-9]*_[0-9]*$//')
-                        
-                        echo "Parsing: $trx (Project: $PROJECT_NAME)"
-                        
-                        # Extract test counts using grep and sed
-                        COUNTERS=$(grep -oP '<Counters[^>]+>' "$trx" | head -1 || echo "")
-                        
-                        if [ -n "$COUNTERS" ]; then
-                          FILE_TOTAL=$(echo "$COUNTERS" | grep -oP 'total="\K[0-9]+' || echo "0")
-                          FILE_PASSED=$(echo "$COUNTERS" | grep -oP 'passed="\K[0-9]+' || echo "0")
-                          FILE_FAILED=$(echo "$COUNTERS" | grep -oP 'failed="\K[0-9]+' || echo "0")
-                          FILE_SKIPPED=$(echo "$COUNTERS" | grep -oP 'notExecuted="\K[0-9]+' || echo "0")
-                          
-                          TOTAL=$((TOTAL + FILE_TOTAL))
-                          PASSED=$((PASSED + FILE_PASSED))
-                          FAILED=$((FAILED + FILE_FAILED))
-                          SKIPPED=$((SKIPPED + FILE_SKIPPED))
-                          
-                          # Store per-project results
-                          if [ -n "$PROJECT_RESULTS" ]; then
-                            PROJECT_RESULTS="${PROJECT_RESULTS}|"
-                          fi
-                          PROJECT_RESULTS="${PROJECT_RESULTS}${PROJECT_NAME}:${FILE_TOTAL}:${FILE_PASSED}:${FILE_FAILED}:${FILE_SKIPPED}"
-                        fi
-                      fi
-                    done
-                  fi
-
-                  # Set outputs
-                  echo "total=$TOTAL" >> $GITHUB_OUTPUT
-                  echo "passed=$PASSED" >> $GITHUB_OUTPUT
-                  echo "failed=$FAILED" >> $GITHUB_OUTPUT
-                  echo "skipped=$SKIPPED" >> $GITHUB_OUTPUT
-                  echo "project_results=$PROJECT_RESULTS" >> $GITHUB_OUTPUT
-
-                  # Log results
-                  echo "::group::Test Results Summary"
-                  echo "Total:   $TOTAL"
-                  echo "Passed:  $PASSED"
-                  echo "Failed:  $FAILED"
-                  echo "Skipped: $SKIPPED"
-                  echo "Projects: $PROJECT_RESULTS"
-                  echo "::endgroup::"
-
-                  # Set job status based on test results
-                  if [ "$FAILED" -gt 0 ]; then
-                    echo "::error::$FAILED test(s) failed"
-                    echo "test-status=failed" >> $GITHUB_OUTPUT
-                  elif [ "$TOTAL" -eq 0 ]; then
-                    echo "::warning::No tests were found"
-                    echo "test-status=no-tests" >> $GITHUB_OUTPUT
-                  else
-                    echo "::notice::All $PASSED tests passed"
-                    echo "test-status=passed" >> $GITHUB_OUTPUT
-                  fi
-
-            # ------------------------------------------------------------------------
-            # Step 7: Upload test results artifact
-            # ------------------------------------------------------------------------
-            # Uploads TRX files as artifacts for download and analysis.
-            # Runs always to capture results even on test failures.
-            # ------------------------------------------------------------------------
-            - name: "📤 Upload test results"
-              uses: actions/upload-artifact@v4
-              if: always()
-              with:
-                  name: test-results
-                  path: TestResults
-                  retention-days: 14
-                  if-no-files-found: warn
-
-            # ------------------------------------------------------------------------
-            # Step 8: Generate test report (PR annotations)
-            # ------------------------------------------------------------------------
-            # Creates a test report with inline annotations for failed tests.
-            # Only runs on pull requests to annotate code with failures.
-            # Uses dorny/test-reporter for rich GitHub integration.
-            # Only runs if TRX files exist to avoid errors.
-            # ------------------------------------------------------------------------
-            - name: "📝 Generate test report"
-              uses: dorny/test-reporter@v1
-              if: always() && hashFiles('TestResults/*.trx') != ''
-              with:
-                  name: "Unit Test Results"
-                  path: "TestResults/*.trx"
-                  reporter: dotnet-trx
-                  fail-on-error: false
-
-            # ------------------------------------------------------------------------
-            # Step 9: Generate build summary
-            # ------------------------------------------------------------------------
-            # Creates a GitHub Actions job summary with build and test results.
-            # Displays actual test metrics from TRX parsing including per-project breakdown.
-            # Runs always to provide visibility even on failures.
-            # ------------------------------------------------------------------------
-            - name: "📋 Generate Build Summary"
-              if: always()
-              run: |
-                  # Get test results from previous step
-                  TOTAL="${{ steps.test-results.outputs.total || '0' }}"
-                  PASSED="${{ steps.test-results.outputs.passed || '0' }}"
-                  FAILED="${{ steps.test-results.outputs.failed || '0' }}"
-                  SKIPPED="${{ steps.test-results.outputs.skipped || '0' }}"
-                  PROJECT_RESULTS="${{ steps.test-results.outputs.project_results || '' }}"
-
-                  # Determine test status icon
-                  if [ "$FAILED" -gt 0 ]; then
-                    TEST_ICON="❌"
-                    TEST_STATUS_TEXT="Failed"
-                  elif [ "$TOTAL" -eq 0 ]; then
-                    TEST_ICON="⚠️"
-                    TEST_STATUS_TEXT="No Tests"
-                  else
-                    TEST_ICON="✅"
-                    TEST_STATUS_TEXT="Passed"
-                  fi
-
-                  # Build summary header
-                  echo "## 🔨 .NET Build & Test Results" >> $GITHUB_STEP_SUMMARY
-                  echo "" >> $GITHUB_STEP_SUMMARY
-
-                  # Build status
-                  echo "### 🏗️ Build Status" >> $GITHUB_STEP_SUMMARY
-                  echo "" >> $GITHUB_STEP_SUMMARY
-                  echo "| Property | Value |" >> $GITHUB_STEP_SUMMARY
-                  echo "|----------|-------|" >> $GITHUB_STEP_SUMMARY
-                  echo "| **Status** | ${{ job.status == 'success' && '✅ Passed' || job.status == 'cancelled' && '⚠️ Cancelled' || '❌ Failed' }} |" >> $GITHUB_STEP_SUMMARY
-                  echo "| **Configuration** | Release |" >> $GITHUB_STEP_SUMMARY
-                  echo "| **Solution** | \`app.sln\` |" >> $GITHUB_STEP_SUMMARY
-                  echo "" >> $GITHUB_STEP_SUMMARY
-
-                  # Test results section
-                  echo "### 🧪 Test Results Summary" >> $GITHUB_STEP_SUMMARY
-                  echo "" >> $GITHUB_STEP_SUMMARY
-                  echo "| Metric | Count |" >> $GITHUB_STEP_SUMMARY
-                  echo "|--------|-------|" >> $GITHUB_STEP_SUMMARY
-                  echo "| **Total Tests** | $TOTAL |" >> $GITHUB_STEP_SUMMARY
-                  echo "| **✅ Passed** | $PASSED |" >> $GITHUB_STEP_SUMMARY
-                  echo "| **❌ Failed** | $FAILED |" >> $GITHUB_STEP_SUMMARY
-                  echo "| **⏭️ Skipped** | $SKIPPED |" >> $GITHUB_STEP_SUMMARY
-                  echo "| **Status** | $TEST_ICON $TEST_STATUS_TEXT |" >> $GITHUB_STEP_SUMMARY
-                  echo "" >> $GITHUB_STEP_SUMMARY
-
-                  # Test result visualization
-                  if [ "$TOTAL" -gt 0 ]; then
-                    PASS_PCT=$((PASSED * 100 / TOTAL))
-                    echo "**Pass Rate:** $PASS_PCT% ($PASSED/$TOTAL)" >> $GITHUB_STEP_SUMMARY
-                    echo "" >> $GITHUB_STEP_SUMMARY
-                  fi
-
-                  # Per-project test breakdown
-                  if [ -n "$PROJECT_RESULTS" ]; then
-                    echo "### 📂 Test Results by Project" >> $GITHUB_STEP_SUMMARY
-                    echo "" >> $GITHUB_STEP_SUMMARY
-                    echo "| Test Project | Total | ✅ Passed | ❌ Failed | ⏭️ Skipped | Status |" >> $GITHUB_STEP_SUMMARY
-                    echo "|--------------|-------|-----------|-----------|------------|--------|" >> $GITHUB_STEP_SUMMARY
-                    
-                    # Parse project results (format: project:total:passed:failed:skipped|...)
-                    echo "$PROJECT_RESULTS" | tr '|' '\n' | while IFS=':' read -r proj total passed failed skipped; do
-                      if [ -n "$proj" ]; then
-                        if [ "$failed" -gt 0 ]; then
-                          STATUS="❌ Failed"
-                        elif [ "$total" -eq 0 ]; then
-                          STATUS="⚠️ Empty"
-                        else
-                          STATUS="✅ Passed"
-                        fi
-                        echo "| \`$proj\` | $total | $passed | $failed | $skipped | $STATUS |" >> $GITHUB_STEP_SUMMARY
-                      fi
-                    done
-                    echo "" >> $GITHUB_STEP_SUMMARY
-                  fi
-
-                  # Test project inventory
-                  echo "### 📋 Test Projects" >> $GITHUB_STEP_SUMMARY
-                  echo "" >> $GITHUB_STEP_SUMMARY
-                  echo "| Project | Description |" >> $GITHUB_STEP_SUMMARY
-                  echo "|---------|-------------|" >> $GITHUB_STEP_SUMMARY
-                  echo "| \`app.Host.Tests\` | .NET Aspire AppHost configuration tests |" >> $GITHUB_STEP_SUMMARY
-                  echo "| \`app.ServiceDefauls.Tests\` | Service defaults, health checks, telemetry tests |" >> $GITHUB_STEP_SUMMARY
-                  echo "| \`eShop.Oders.API.Tests\` | Orders API services, repositories, handlers tests |" >> $GITHUB_STEP_SUMMARY
-                  echo "| \`eShop.Web.App.Tests\` | Web App UI services tests |" >> $GITHUB_STEP_SUMMARY
-                  echo "" >> $GITHUB_STEP_SUMMARY
-
-                  # Run information
-                  echo "### 📊 Run Information" >> $GITHUB_STEP_SUMMARY
-                  echo "" >> $GITHUB_STEP_SUMMARY
-                  echo "| Property | Value |" >> $GITHUB_STEP_SUMMARY
-                  echo "|----------|-------|" >> $GITHUB_STEP_SUMMARY
-                  echo "| **Branch** | \`${{ github.ref_name }}\` |" >> $GITHUB_STEP_SUMMARY
-                  echo "| **Commit** | [\`${GITHUB_SHA:0:7}\`](${{ github.server_url }}/${{ github.repository }}/commit/${{ github.sha }}) |" >> $GITHUB_STEP_SUMMARY
-                  echo "| **Triggered By** | @${{ github.actor }} |" >> $GITHUB_STEP_SUMMARY
-                  echo "| **Workflow Run** | [#${{ github.run_number }}](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}) |" >> $GITHUB_STEP_SUMMARY
-                  echo "" >> $GITHUB_STEP_SUMMARY
-
-                  # Conditional messages
-                  if [ "$FAILED" -gt 0 ]; then
-                    echo "### ❌ Test Failures Detected" >> $GITHUB_STEP_SUMMARY
-                    echo "" >> $GITHUB_STEP_SUMMARY
-                    echo "> **Action Required:** Review the test report above for details on failed tests." >> $GITHUB_STEP_SUMMARY
-                    echo "> Download the \`test-results\` artifact for full TRX files." >> $GITHUB_STEP_SUMMARY
-                  elif [ "${{ job.status }}" != "success" ]; then
-                    echo "> **Note:** Check the build logs above for detailed error information." >> $GITHUB_STEP_SUMMARY
-                  fi
-
-            # ------------------------------------------------------------------------
-            # Step 10: Fail job if tests failed
-            # ------------------------------------------------------------------------
-            # Ensures the job fails if any tests failed.
-            # This step runs after summary generation to preserve visibility.
-            # ------------------------------------------------------------------------
-            - name: "🚨 Check test results"
-              if: always() && steps.test.outcome == 'failure'
-              run: |
-                  echo "::error::Unit tests failed. See test report for details."
-                  exit 1
-
-    # ============================================================================
-    # JOB: build-bicep
-    # ============================================================================
-    # Validates and compiles Bicep infrastructure templates.
-    # Ensures IaC syntax is correct without deploying to Azure.
-    # ============================================================================
-    build-bicep:
-        name: "☁️ Build Bicep Templates"
-        runs-on: ubuntu-latest
-        timeout-minutes: 10
-
-        steps:
-            # ------------------------------------------------------------------------
-            # Step 1: Checkout repository
-            # ------------------------------------------------------------------------
-            - name: "📥 Checkout repository"
-              uses: actions/checkout@v4
-
-            # ------------------------------------------------------------------------
-            # Step 2: Setup Azure CLI and install Bicep
-            # ------------------------------------------------------------------------
-            # Azure CLI Docker image doesn't include Bicep by default.
-            # Install Bicep CLI for template compilation.
-            # No authentication needed - only local compilation.
-            # ------------------------------------------------------------------------
-            - name: "🔧 Setup Azure CLI and Bicep"
-              uses: azure/cli@v2
-              with:
-                  inlineScript: |
-                      az --version
-                      az bicep install
-                      az bicep version
-
-            # ------------------------------------------------------------------------
-            # Step 3: Build main Bicep template
-            # ------------------------------------------------------------------------
-            # Compiles the main infrastructure template and all referenced modules.
-            # Validates syntax, type checking, and module references.
-            # Building main.bicep automatically validates all imported modules.
-            # ------------------------------------------------------------------------
-            - name: "🏗️ Build main.bicep"
-              uses: azure/cli@v2
-              with:
-                  inlineScript: |
-                      az bicep install
-                      echo "Building infra/main.bicep..."
-                      az bicep build --file infra/main.bicep --stdout > /dev/null
-                      echo "✅ infra/main.bicep compiled successfully"
-
-            # ------------------------------------------------------------------------
-            # Step 4: Generate build summary
-            # ------------------------------------------------------------------------
-            # Creates a GitHub Actions job summary with Bicep compilation results.
-            # Runs always to provide visibility even on failures.
-            # ------------------------------------------------------------------------
-            - name: "📋 Generate Build Summary"
-              if: always()
-              run: |
-                  echo "## ☁️ Bicep Build Results" >> $GITHUB_STEP_SUMMARY
-                  echo "" >> $GITHUB_STEP_SUMMARY
-                  echo "| Template | Status |" >> $GITHUB_STEP_SUMMARY
-                  echo "|----------|--------|" >> $GITHUB_STEP_SUMMARY
-                  echo "| \`infra/main.bicep\` | ${{ job.status == 'success' && '✅ Compiled' || job.status == 'cancelled' && '⚠️ Cancelled' || '❌ Failed' }} |" >> $GITHUB_STEP_SUMMARY
-                  echo "" >> $GITHUB_STEP_SUMMARY
-                  echo "| Property | Value |" >> $GITHUB_STEP_SUMMARY
-                  echo "|----------|-------|" >> $GITHUB_STEP_SUMMARY
-                  echo "| **Status** | ${{ job.status == 'success' && '✅ Passed' || job.status == 'cancelled' && '⚠️ Cancelled' || '❌ Failed' }} |" >> $GITHUB_STEP_SUMMARY
-                  echo "| **Branch** | \`${{ github.ref_name }}\` |" >> $GITHUB_STEP_SUMMARY
-                  echo "| **Commit** | [\`${GITHUB_SHA:0:7}\`](${{ github.server_url }}/${{ github.repository }}/commit/${{ github.sha }}) |" >> $GITHUB_STEP_SUMMARY
-                  echo "| **Triggered By** | @${{ github.actor }} |" >> $GITHUB_STEP_SUMMARY
-                  echo "" >> $GITHUB_STEP_SUMMARY
-                  if [ "${{ job.status }}" != "success" ]; then
-                    echo "> **Note:** Check the Bicep compilation logs above for detailed error information." >> $GITHUB_STEP_SUMMARY
-                  fi
-
-    # ============================================================================
-    # JOB: ci-summary
-    # ============================================================================
-    # Aggregates results from all CI jobs and provides a unified status.
-    # This job is used as a single status check for branch protection rules.
-    # ============================================================================
-    ci-summary:
-        name: "✅ CI Summary"
-        runs-on: ubuntu-latest
-        needs: [build-dotnet, build-bicep]
+      # ------------------------------------------------------------------------
+      # Step 6: Parse test results
+      # ------------------------------------------------------------------------
+      # Extracts test metrics from TRX files for job summary.
+      # Parses total, passed, failed, and skipped test counts per project.
+      # Sets outputs for use in summary generation.
+      # ------------------------------------------------------------------------
+      - name: "📊 Parse test results"
+        id: test-results
         if: always()
-        timeout-minutes: 5
+        run: |
+          # Initialize counters
+          TOTAL=0
+          PASSED=0
+          FAILED=0
+          SKIPPED=0
 
-        steps:
-            # ------------------------------------------------------------------------
-            # Step 1: Check job results
-            # ------------------------------------------------------------------------
-            # Evaluates the status of all dependent jobs and fails if any failed.
-            # This provides a single status check for branch protection rules.
-            # ------------------------------------------------------------------------
-            - name: "🔍 Evaluate CI Results"
-              run: |
-                  echo "## 🏁 CI Pipeline Summary" >> $GITHUB_STEP_SUMMARY
-                  echo "" >> $GITHUB_STEP_SUMMARY
-                  echo "| Job | Status |" >> $GITHUB_STEP_SUMMARY
-                  echo "|-----|--------|" >> $GITHUB_STEP_SUMMARY
-                  echo "| .NET Build | ${{ needs.build-dotnet.result == 'success' && '✅ Passed' || needs.build-dotnet.result == 'skipped' && '⏭️ Skipped' || needs.build-dotnet.result == 'cancelled' && '⚠️ Cancelled' || '❌ Failed' }} |" >> $GITHUB_STEP_SUMMARY
-                  echo "| Bicep Build | ${{ needs.build-bicep.result == 'success' && '✅ Passed' || needs.build-bicep.result == 'skipped' && '⏭️ Skipped' || needs.build-bicep.result == 'cancelled' && '⚠️ Cancelled' || '❌ Failed' }} |" >> $GITHUB_STEP_SUMMARY
-                  echo "" >> $GITHUB_STEP_SUMMARY
-                  echo "| Property | Value |" >> $GITHUB_STEP_SUMMARY
-                  echo "|----------|-------|" >> $GITHUB_STEP_SUMMARY
-                  echo "| **Workflow** | \`${{ github.workflow }}\` |" >> $GITHUB_STEP_SUMMARY
-                  echo "| **Run Number** | [#${{ github.run_number }}](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}) |" >> $GITHUB_STEP_SUMMARY
-                  echo "| **Branch** | \`${{ github.ref_name }}\` |" >> $GITHUB_STEP_SUMMARY
-                  echo "| **Commit** | [\`${GITHUB_SHA:0:7}\`](${{ github.server_url }}/${{ github.repository }}/commit/${{ github.sha }}) |" >> $GITHUB_STEP_SUMMARY
-                  echo "| **Triggered By** | @${{ github.actor }} |" >> $GITHUB_STEP_SUMMARY
-                  echo "| **Event** | \`${{ github.event_name }}\` |" >> $GITHUB_STEP_SUMMARY
-                  echo "" >> $GITHUB_STEP_SUMMARY
+          # Arrays for per-project results (stored as delimited strings for GITHUB_OUTPUT)
+          PROJECT_RESULTS=""
 
-                  # Determine overall status
-                  if [ "${{ needs.build-dotnet.result }}" = "success" ] && [ "${{ needs.build-bicep.result }}" = "success" ]; then
-                    echo "### ✅ All CI checks passed!" >> $GITHUB_STEP_SUMMARY
-                    echo "" >> $GITHUB_STEP_SUMMARY
-                    echo "This branch is ready for deployment." >> $GITHUB_STEP_SUMMARY
-                  else
-                    echo "### ❌ CI checks failed" >> $GITHUB_STEP_SUMMARY
-                    echo "" >> $GITHUB_STEP_SUMMARY
-                    echo "> **Action Required:** Fix the failing jobs before merging." >> $GITHUB_STEP_SUMMARY
-                    exit 1
-                  fi
+          # Find and parse TRX files
+          if [ -d "TestResults" ]; then
+            for trx in TestResults/*.trx; do
+              if [ -f "$trx" ]; then
+                        # Extract project name from TRX filename (format: ProjectName.trx)
+                        FILENAME=$(basename "$trx" .trx)
+                        PROJECT_NAME="$FILENAME"
+            done
+          fi
+
+          # Set outputs
+          echo "total=$TOTAL" >> $GITHUB_OUTPUT
+          echo "passed=$PASSED" >> $GITHUB_OUTPUT
+          echo "failed=$FAILED" >> $GITHUB_OUTPUT
+          echo "skipped=$SKIPPED" >> $GITHUB_OUTPUT
+          echo "project_results=$PROJECT_RESULTS" >> $GITHUB_OUTPUT
+
+          # Log results
+          echo "::group::Test Results Summary"
+          echo "Total:   $TOTAL"
+          echo "Passed:  $PASSED"
+          echo "Failed:  $FAILED"
+          echo "Skipped: $SKIPPED"
+          echo "Projects: $PROJECT_RESULTS"
+          echo "::endgroup::"
+
+          # Set job status based on test results
+          if [ "$FAILED" -gt 0 ]; then
+            echo "::error::$FAILED test(s) failed"
+            echo "test-status=failed" >> $GITHUB_OUTPUT
+          elif [ "$TOTAL" -eq 0 ]; then
+            echo "::warning::No tests were found"
+            echo "test-status=no-tests" >> $GITHUB_OUTPUT
+          else
+            echo "::notice::All $PASSED tests passed"
+            echo "test-status=passed" >> $GITHUB_OUTPUT
+          fi
+
+      # ------------------------------------------------------------------------
+      # Step 7: Upload test results artifact
+      # ------------------------------------------------------------------------
+      # Uploads TRX files as artifacts for download and analysis.
+      # Runs always to capture results even on test failures.
+      # ------------------------------------------------------------------------
+      - name: "📤 Upload test results"
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: test-results
+          path: TestResults
+          retention-days: 14
+          if-no-files-found: warn
+
+      # ------------------------------------------------------------------------
+      # Step 8: Generate test report (PR annotations)
+      # ------------------------------------------------------------------------
+      # Creates a test report with inline annotations for failed tests.
+      # Only runs on pull requests to annotate code with failures.
+      # Uses dorny/test-reporter for rich GitHub integration.
+      # Only runs if TRX files exist to avoid errors.
+      # ------------------------------------------------------------------------
+      - name: "📝 Generate test report"
+        uses: dorny/test-reporter@v1
+        if: always() && hashFiles('TestResults/*.trx') != ''
+        with:
+          name: "Unit Test Results"
+          path: "TestResults/*.trx"
+          reporter: dotnet-trx
+          fail-on-error: false
+
+      # ------------------------------------------------------------------------
+      # Step 9: Generate build summary
+      # ------------------------------------------------------------------------
+      # Creates a GitHub Actions job summary with build and test results.
+      # Displays actual test metrics from TRX parsing including per-project breakdown.
+      # Runs always to provide visibility even on failures.
+      # ------------------------------------------------------------------------
+      - name: "📋 Generate Build Summary"
+        if: always()
+        run: |
+          # Get test results from previous step
+          TOTAL="${{ steps.test-results.outputs.total || '0' }}"
+          PASSED="${{ steps.test-results.outputs.passed || '0' }}"
+          FAILED="${{ steps.test-results.outputs.failed || '0' }}"
+          SKIPPED="${{ steps.test-results.outputs.skipped || '0' }}"
+          PROJECT_RESULTS="${{ steps.test-results.outputs.project_results || '' }}"
+
+          # Determine test status icon
+          if [ "$FAILED" -gt 0 ]; then
+            TEST_ICON="❌"
+            TEST_STATUS_TEXT="Failed"
+          elif [ "$TOTAL" -eq 0 ]; then
+            TEST_ICON="⚠️"
+            TEST_STATUS_TEXT="No Tests"
+          else
+            TEST_ICON="✅"
+            TEST_STATUS_TEXT="Passed"
+          fi
+
+          # Build summary header
+          echo "## 🔨 .NET Build & Test Results" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          # Build status
+          echo "### 🏗️ Build Status" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Property | Value |" >> $GITHUB_STEP_SUMMARY
+          echo "|----------|-------|" >> $GITHUB_STEP_SUMMARY
+          echo "| **Status** | ${{ job.status == 'success' && '✅ Passed' || job.status == 'cancelled' && '⚠️ Cancelled' || '❌ Failed' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Configuration** | Release |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Solution** | \`app.sln\` |" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          # Test results section
+          echo "### 🧪 Test Results Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Metric | Count |" >> $GITHUB_STEP_SUMMARY
+          echo "|--------|-------|" >> $GITHUB_STEP_SUMMARY
+          echo "| **Total Tests** | $TOTAL |" >> $GITHUB_STEP_SUMMARY
+          echo "| **✅ Passed** | $PASSED |" >> $GITHUB_STEP_SUMMARY
+          echo "| **❌ Failed** | $FAILED |" >> $GITHUB_STEP_SUMMARY
+          echo "| **⏭️ Skipped** | $SKIPPED |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Status** | $TEST_ICON $TEST_STATUS_TEXT |" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          # Test result visualization
+          if [ "$TOTAL" -gt 0 ]; then
+            PASS_PCT=$((PASSED * 100 / TOTAL))
+            echo "**Pass Rate:** $PASS_PCT% ($PASSED/$TOTAL)" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+          fi
+
+          # Per-project test breakdown
+          if [ -n "$PROJECT_RESULTS" ]; then
+            echo "### 📂 Test Results by Project" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "| Test Project | Total | ✅ Passed | ❌ Failed | ⏭️ Skipped | Status |" >> $GITHUB_STEP_SUMMARY
+            echo "|--------------|-------|-----------|-----------|------------|--------|" >> $GITHUB_STEP_SUMMARY
+            
+            # Parse project results (format: project:total:passed:failed:skipped|...)
+            echo "$PROJECT_RESULTS" | tr '|' '\n' | while IFS=':' read -r proj total passed failed skipped; do
+              if [ -n "$proj" ]; then
+                if [ "$failed" -gt 0 ]; then
+                  STATUS="❌ Failed"
+                elif [ "$total" -eq 0 ]; then
+                  STATUS="⚠️ Empty"
+                else
+                  STATUS="✅ Passed"
+                fi
+                echo "| \`$proj\` | $total | $passed | $failed | $skipped | $STATUS |" >> $GITHUB_STEP_SUMMARY
+              fi
+            done
+            echo "" >> $GITHUB_STEP_SUMMARY
+          fi
+
+          # Test project inventory
+          echo "### 📋 Test Projects" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Project | Description |" >> $GITHUB_STEP_SUMMARY
+          echo "|---------|-------------|" >> $GITHUB_STEP_SUMMARY
+          echo "| \`app.Host.Tests\` | .NET Aspire AppHost configuration tests |" >> $GITHUB_STEP_SUMMARY
+          echo "| \`app.ServiceDefauls.Tests\` | Service defaults, health checks, telemetry tests |" >> $GITHUB_STEP_SUMMARY
+          echo "| \`eShop.Oders.API.Tests\` | Orders API services, repositories, handlers tests |" >> $GITHUB_STEP_SUMMARY
+          echo "| \`eShop.Web.App.Tests\` | Web App UI services tests |" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          # Run information
+          echo "### 📊 Run Information" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Property | Value |" >> $GITHUB_STEP_SUMMARY
+          echo "|----------|-------|" >> $GITHUB_STEP_SUMMARY
+          echo "| **Branch** | \`${{ github.ref_name }}\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Commit** | [\`${GITHUB_SHA:0:7}\`](${{ github.server_url }}/${{ github.repository }}/commit/${{ github.sha }}) |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Triggered By** | @${{ github.actor }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Workflow Run** | [#${{ github.run_number }}](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}) |" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          # Conditional messages
+          if [ "$FAILED" -gt 0 ]; then
+            echo "### ❌ Test Failures Detected" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "> **Action Required:** Review the test report above for details on failed tests." >> $GITHUB_STEP_SUMMARY
+            echo "> Download the \`test-results\` artifact for full TRX files." >> $GITHUB_STEP_SUMMARY
+          elif [ "${{ job.status }}" != "success" ]; then
+            echo "> **Note:** Check the build logs above for detailed error information." >> $GITHUB_STEP_SUMMARY
+          fi
+
+      # ------------------------------------------------------------------------
+      # Step 10: Fail job if tests failed
+      # ------------------------------------------------------------------------
+      # Ensures the job fails if any tests failed.
+      # This step runs after summary generation to preserve visibility.
+      # ------------------------------------------------------------------------
+      - name: "🚨 Check test results"
+        if: always() && steps.test.outcome == 'failure'
+        run: |
+          echo "::error::Unit tests failed. See test report for details."
+          exit 1
+
+  # ============================================================================
+  # JOB: build-bicep
+  # ============================================================================
+  # Validates and compiles Bicep infrastructure templates.
+  # Ensures IaC syntax is correct without deploying to Azure.
+  # ============================================================================
+  build-bicep:
+    name: "☁️ Build Bicep Templates"
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      # ------------------------------------------------------------------------
+      # Step 1: Checkout repository
+      # ------------------------------------------------------------------------
+      - name: "📥 Checkout repository"
+        uses: actions/checkout@v4
+
+      # ------------------------------------------------------------------------
+      # Step 2: Setup Azure CLI and install Bicep
+      # ------------------------------------------------------------------------
+      # Azure CLI Docker image doesn't include Bicep by default.
+      # Install Bicep CLI for template compilation.
+      # No authentication needed - only local compilation.
+      # ------------------------------------------------------------------------
+      - name: "🔧 Setup Azure CLI and Bicep"
+        uses: azure/cli@v2
+        with:
+          inlineScript: |
+            az --version
+            az bicep install
+            az bicep version
+
+      # ------------------------------------------------------------------------
+      # Step 3: Build main Bicep template
+      # ------------------------------------------------------------------------
+      # Compiles the main infrastructure template and all referenced modules.
+      # Validates syntax, type checking, and module references.
+      # Building main.bicep automatically validates all imported modules.
+      # ------------------------------------------------------------------------
+      - name: "🏗️ Build main.bicep"
+        uses: azure/cli@v2
+        with:
+          inlineScript: |
+            az bicep install
+            echo "Building infra/main.bicep..."
+            az bicep build --file infra/main.bicep --stdout > /dev/null
+            echo "✅ infra/main.bicep compiled successfully"
+
+      # ------------------------------------------------------------------------
+      # Step 4: Generate build summary
+      # ------------------------------------------------------------------------
+      # Creates a GitHub Actions job summary with Bicep compilation results.
+      # Runs always to provide visibility even on failures.
+      # ------------------------------------------------------------------------
+      - name: "📋 Generate Build Summary"
+        if: always()
+        run: |
+          echo "## ☁️ Bicep Build Results" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Template | Status |" >> $GITHUB_STEP_SUMMARY
+          echo "|----------|--------|" >> $GITHUB_STEP_SUMMARY
+          echo "| \`infra/main.bicep\` | ${{ job.status == 'success' && '✅ Compiled' || job.status == 'cancelled' && '⚠️ Cancelled' || '❌ Failed' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Property | Value |" >> $GITHUB_STEP_SUMMARY
+          echo "|----------|-------|" >> $GITHUB_STEP_SUMMARY
+          echo "| **Status** | ${{ job.status == 'success' && '✅ Passed' || job.status == 'cancelled' && '⚠️ Cancelled' || '❌ Failed' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Branch** | \`${{ github.ref_name }}\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Commit** | [\`${GITHUB_SHA:0:7}\`](${{ github.server_url }}/${{ github.repository }}/commit/${{ github.sha }}) |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Triggered By** | @${{ github.actor }} |" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          if [ "${{ job.status }}" != "success" ]; then
+            echo "> **Note:** Check the Bicep compilation logs above for detailed error information." >> $GITHUB_STEP_SUMMARY
+          fi
+
+  # ============================================================================
+  # JOB: ci-summary
+  # ============================================================================
+  # Aggregates results from all CI jobs and provides a unified status.
+  # This job is used as a single status check for branch protection rules.
+  # ============================================================================
+  ci-summary:
+    name: "✅ CI Summary"
+    runs-on: ubuntu-latest
+    needs: [build-dotnet, build-bicep]
+    if: always()
+    timeout-minutes: 5
+
+    steps:
+      # ------------------------------------------------------------------------
+      # Step 1: Check job results
+      # ------------------------------------------------------------------------
+      # Evaluates the status of all dependent jobs and fails if any failed.
+      # This provides a single status check for branch protection rules.
+      # ------------------------------------------------------------------------
+      - name: "🔍 Evaluate CI Results"
+        run: |
+          echo "## 🏁 CI Pipeline Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Job | Status |" >> $GITHUB_STEP_SUMMARY
+          echo "|-----|--------|" >> $GITHUB_STEP_SUMMARY
+          echo "| .NET Build | ${{ needs.build-dotnet.result == 'success' && '✅ Passed' || needs.build-dotnet.result == 'skipped' && '⏭️ Skipped' || needs.build-dotnet.result == 'cancelled' && '⚠️ Cancelled' || '❌ Failed' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Bicep Build | ${{ needs.build-bicep.result == 'success' && '✅ Passed' || needs.build-bicep.result == 'skipped' && '⏭️ Skipped' || needs.build-bicep.result == 'cancelled' && '⚠️ Cancelled' || '❌ Failed' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Property | Value |" >> $GITHUB_STEP_SUMMARY
+          echo "|----------|-------|" >> $GITHUB_STEP_SUMMARY
+          echo "| **Workflow** | \`${{ github.workflow }}\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Run Number** | [#${{ github.run_number }}](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}) |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Branch** | \`${{ github.ref_name }}\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Commit** | [\`${GITHUB_SHA:0:7}\`](${{ github.server_url }}/${{ github.repository }}/commit/${{ github.sha }}) |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Triggered By** | @${{ github.actor }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Event** | \`${{ github.event_name }}\` |" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          # Determine overall status
+          if [ "${{ needs.build-dotnet.result }}" = "success" ] && [ "${{ needs.build-bicep.result }}" = "success" ]; then
+            echo "### ✅ All CI checks passed!" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "This branch is ready for deployment." >> $GITHUB_STEP_SUMMARY
+          else
+            echo "### ❌ CI checks failed" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "> **Action Required:** Fix the failing jobs before merging." >> $GITHUB_STEP_SUMMARY
+            exit 1
+          fi
