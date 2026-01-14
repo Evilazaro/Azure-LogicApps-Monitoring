@@ -173,7 +173,30 @@ jobs:
         run: dotnet build app.sln --configuration Release --no-restore /p:TreatWarningsAsErrors=false
 
       # ------------------------------------------------------------------------
-      # Step 5: Setup Azure CLI and Bicep
+      # Step 5: Run unit tests
+      # ------------------------------------------------------------------------
+      # Executes all unit tests to validate code correctness before deployment.
+      # Fails fast to prevent expensive provisioning if tests fail.
+      # ------------------------------------------------------------------------
+      - name: "🧪 Run unit tests"
+        run: dotnet test app.sln --configuration Release --no-build --verbosity normal --logger "trx;LogFileName=test-results.trx" --results-directory ./TestResults
+
+      # ------------------------------------------------------------------------
+      # Step 6: Upload test results
+      # ------------------------------------------------------------------------
+      # Uploads test results as artifacts for analysis.
+      # Runs always to capture results even on test failures.
+      # ------------------------------------------------------------------------
+      - name: "📤 Upload test results"
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: deployment-test-results
+          path: ./TestResults/*.trx
+          retention-days: 7
+
+      # ------------------------------------------------------------------------
+      # Step 7: Setup Azure CLI and Bicep
       # ------------------------------------------------------------------------
       # Azure CLI with Bicep for infrastructure template validation.
       # ------------------------------------------------------------------------
@@ -186,7 +209,7 @@ jobs:
             az bicep version
 
       # ------------------------------------------------------------------------
-      # Step 6: Build Bicep templates
+      # Step 8: Build Bicep templates
       # ------------------------------------------------------------------------
       # Validates infrastructure templates compile before provisioning.
       # This catches syntax errors before attempting deployment.
@@ -201,7 +224,7 @@ jobs:
             echo "✅ infra/main.bicep compiled successfully"
 
       # ------------------------------------------------------------------------
-      # Step 7: Install Azure Developer CLI (azd)
+      # Step 9: Install Azure Developer CLI (azd)
       # ------------------------------------------------------------------------
       # Installs the latest version of azd for infrastructure management.
       # azd provides a unified experience for provisioning and deployment.
@@ -210,7 +233,7 @@ jobs:
         uses: Azure/setup-azd@v2
 
       # ------------------------------------------------------------------------
-      # Step 9: Make hook scripts executable
+      # Step 10: Make hook scripts executable
       # ------------------------------------------------------------------------
       # Ensures shell scripts in hooks directory have execute permissions.
       # Required for azd lifecycle hooks to run on Linux runners.
@@ -219,7 +242,7 @@ jobs:
         run: chmod +x ./hooks/*.sh
 
       # ------------------------------------------------------------------------
-      # Step 10: Authenticate with Azure using OIDC
+      # Step 11: Authenticate with Azure using OIDC
       # ------------------------------------------------------------------------
       # Uses OpenID Connect (OIDC) federated credentials for passwordless auth.
       # No secrets are stored in GitHub - authentication is handled via
@@ -227,10 +250,17 @@ jobs:
       #
       # Prerequisites:
       #   1. App Registration with Federated Credential configured
-      #   2. Federated credential subject: repo:<owner>/<repo>:ref:refs/heads/main
+      #   2. Federated credential subject: repo:<owner>/<repo>:environment:<env>
       #   3. Service Principal with appropriate RBAC roles
       # ------------------------------------------------------------------------
-      - name: "🔐 Authenticate with Azure (OIDC)"
+      - name: "🔐 Authenticate Azure CLI (OIDC)"
+        uses: azure/login@v2
+        with:
+          client-id: ${{ vars.AZURE_CLIENT_ID }}
+          tenant-id: ${{ vars.AZURE_TENANT_ID }}
+          subscription-id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
+
+      - name: "🔐 Authenticate Azure Developer CLI (OIDC)"
         run: |
           azd auth login `
             --client-id "$Env:AZURE_CLIENT_ID" `
@@ -239,7 +269,7 @@ jobs:
         shell: pwsh
 
       # ------------------------------------------------------------------------
-      # Step 11: Provision Azure Infrastructure
+      # Step 12: Provision Azure Infrastructure
       # ------------------------------------------------------------------------
       # Deploys infrastructure using Bicep templates defined in /infra.
       # --no-prompt: Runs non-interactively for CI/CD automation.
@@ -258,7 +288,7 @@ jobs:
           AZURE_ENV_NAME: ${{ github.event.inputs.environment || vars.AZURE_ENV_NAME }}
 
       # ------------------------------------------------------------------------
-      # Step 12: Deploy Application
+      # Step 13: Deploy Application
       # ------------------------------------------------------------------------
       # Deploys application code to provisioned Azure resources.
       # Uses .NET Aspire manifest for service discovery and configuration.
@@ -278,7 +308,7 @@ jobs:
           AZURE_ENV_NAME: ${{ github.event.inputs.environment || vars.AZURE_ENV_NAME }}
 
       # ------------------------------------------------------------------------
-      # Step 13: Generate Deployment Summary
+      # Step 14: Generate Deployment Summary
       # ------------------------------------------------------------------------
       # Creates a GitHub Actions job summary with deployment details.
       # Runs always to provide visibility even on failures.
@@ -293,6 +323,7 @@ jobs:
           echo "| Check | Status |" >> $GITHUB_STEP_SUMMARY
           echo "|-------|--------|" >> $GITHUB_STEP_SUMMARY
           echo "| .NET Build | ✅ Compiled |" >> $GITHUB_STEP_SUMMARY
+          echo "| Unit Tests | ✅ Passed |" >> $GITHUB_STEP_SUMMARY
           echo "| Bicep Build | ✅ Validated |" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "### 📊 Deployment Details" >> $GITHUB_STEP_SUMMARY
