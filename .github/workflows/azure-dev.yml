@@ -212,10 +212,12 @@ jobs:
       # Updates .NET workloads (including Aspire) to ensure all required
       # components are available for building the solution.
       # ------------------------------------------------------------------------
-      - name: "🛠️ Update .NET Workloads"
+      - name: "🛠️ Install .NET Aspire and update Workloads"
         run: |
+          echo "Installing .NET Aspire workload:"
+          sudo dotnet workload install aspire --skip-manifest-update || echo "Aspire workload already installed"
           echo "Updating .NET Workloads:"
-          dotnet workload update
+          sudo dotnet workload update
 
       # ------------------------------------------------------------------------
       # Step 5: Cache NuGet packages
