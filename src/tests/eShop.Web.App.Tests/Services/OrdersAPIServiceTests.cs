@@ -8,7 +8,6 @@ using eShop.Web.App.Components.Services;
 using Microsoft.Extensions.Logging;
 using System.Diagnostics;
 using System.Net;
-using System.Net.Http.Json;
 using System.Text.Json;
 
 namespace eShop.Web.App.Tests.Services;
