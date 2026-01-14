@@ -53,6 +53,7 @@ The data architecture follows a **service-oriented data ownership model** where 
 
 ```mermaid
 flowchart LR
+    %% Data Landscape Map - Shows relationship between domains, stores, and consumers
     subgraph BusinessDomains["📊 Business Data Domains"]
         Orders["📦 Orders Domain"]
         Events["📨 Order Events Domain"]
@@ -73,10 +74,12 @@ flowchart LR
         Alerts["Alert Rules"]
     end
 
+    %% Domain to store relationships
     Orders --> OrderDb
     Events --> EventStore
     Telemetry --> AIStore
 
+    %% Store to consumer relationships
     OrderDb --> API
     EventStore --> LogicApp
     LogicApp --> WorkflowState
@@ -84,9 +87,10 @@ flowchart LR
     AIStore --> Alerts
     API -.->|"emits"| AIStore
 
-    classDef domain fill:#e3f2fd,stroke:#1565c0,stroke-width:2px
-    classDef store fill:#fff3e0,stroke:#ef6c00,stroke-width:2px
-    classDef consumer fill:#e8f5e9,stroke:#2e7d32,stroke-width:2px
+    %% Modern color palette - WCAG AA compliant
+    classDef domain fill:#EEF2FF,stroke:#4F46E5,stroke-width:2px,color:#312E81
+    classDef store fill:#FEF3C7,stroke:#F59E0B,stroke-width:2px,color:#92400E
+    classDef consumer fill:#D1FAE5,stroke:#10B981,stroke-width:2px,color:#065F46
 
     class Orders,Events,Telemetry domain
     class OrderDb,EventStore,WorkflowState,AIStore store
@@ -241,6 +245,7 @@ sequenceDiagram
 
 ```mermaid
 flowchart LR
+    %% Monitoring Data Flow - 4-layer telemetry architecture
     subgraph Sources["📡 Layer 1: Telemetry Sources"]
         direction TB
         WebApp["🌐 eShop.Web.App<br/>Blazor Server"]
@@ -270,25 +275,29 @@ flowchart LR
         Alerts["Alert Rules"]
     end
 
+    %% Source to instrumentation
     WebApp -->|"OTLP/HTTP"| OTEL
     API -->|"OTLP/HTTP"| OTEL
     LogicApp -->|"Built-in"| AzDiag
     SQL -->|"Built-in"| AzDiag
     SB -->|"Built-in"| AzDiag
 
+    %% Instrumentation to collection
     OTEL -->|"Export"| AI
     AzDiag -->|"Export"| LAW
 
+    %% Collection to visualization
     AI --> AppMap
     AI --> TxSearch
     AI --> Dashboards
     LAW --> Dashboards
     AI --> Alerts
 
-    classDef source fill:#fff3e0,stroke:#ef6c00,stroke-width:2px
-    classDef instrument fill:#e3f2fd,stroke:#1565c0,stroke-width:2px
-    classDef collect fill:#e8f5e9,stroke:#2e7d32,stroke-width:2px
-    classDef visual fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px
+    %% Modern color palette - WCAG AA compliant
+    classDef source fill:#FEF3C7,stroke:#F59E0B,stroke-width:2px,color:#92400E
+    classDef instrument fill:#EEF2FF,stroke:#4F46E5,stroke-width:2px,color:#312E81
+    classDef collect fill:#D1FAE5,stroke:#10B981,stroke-width:2px,color:#065F46
+    classDef visual fill:#F3E8FF,stroke:#A855F7,stroke-width:2px,color:#581C87
 
     class WebApp,API,LogicApp,SQL,SB source
     class OTEL,AzDiag instrument
@@ -312,6 +321,7 @@ flowchart LR
 
 ```mermaid
 flowchart TB
+    %% Telemetry-to-Source Mapping - Shows which sources emit which pillar data
     subgraph Sources["📡 Telemetry Sources"]
         API["⚙️ Orders API"]
         Web["🌐 Web App"]
@@ -340,15 +350,17 @@ flowchart TB
         end
     end
 
+    %% Source to pillar mappings
     API --> T1 & T2 & T3 & M1 & M2 & L1
     Web --> T1 & M1 & L1
     LA --> M3 & L2
     SB --> M3 & L2
     SQL --> M3 & L2
 
-    classDef trace fill:#e3f2fd,stroke:#1565c0
-    classDef metric fill:#e8f5e9,stroke:#2e7d32
-    classDef log fill:#fff3e0,stroke:#ef6c00
+    %% Modern color palette - WCAG AA compliant
+    classDef trace fill:#EEF2FF,stroke:#4F46E5,stroke-width:2px,color:#312E81
+    classDef metric fill:#D1FAE5,stroke:#10B981,stroke-width:2px,color:#065F46
+    classDef log fill:#FEF3C7,stroke:#F59E0B,stroke-width:2px,color:#92400E
 
     class T1,T2,T3 trace
     class M1,M2,M3 metric
@@ -418,6 +430,7 @@ The solution implements **W3C Trace Context** for cross-service correlation:
 
 ```mermaid
 flowchart LR
+    %% W3C Trace Context Propagation Flow
     subgraph TraceContext["🔗 W3C Trace Context Flow"]
         direction LR
         HTTP["HTTP Request<br/>traceparent header"]
@@ -426,6 +439,7 @@ flowchart LR
         AI["App Insights<br/>Operation ID"]
     end
 
+    %% Propagation paths
     HTTP -->|"Propagate"| SB
     SB -->|"Extract"| LA
     HTTP -->|"Auto-capture"| AI
@@ -452,6 +466,7 @@ if (activity != null)
 
 ```mermaid
 flowchart TD
+    %% Data Dependencies - Shows upstream/downstream data flow relationships
     subgraph Upstream["⬆️ Upstream (Data Producers)"]
         WebApp["eShop.Web.App<br/>(Order Input)"]
     end
@@ -466,15 +481,17 @@ flowchart TD
         AppInsights["App Insights<br/>(Analytics)"]
     end
 
+    %% Data flow connections
     WebApp -->|"Creates orders"| OrderDb
     OrderDb -->|"Publishes events"| EventBus
     EventBus -->|"Triggers workflows"| LogicApp
     OrderDb -.->|"Emits telemetry"| AppInsights
     LogicApp -.->|"Emits telemetry"| AppInsights
 
-    classDef upstream fill:#fff3e0,stroke:#ef6c00
-    classDef core fill:#e3f2fd,stroke:#1565c0
-    classDef downstream fill:#e8f5e9,stroke:#2e7d32
+    %% Modern color palette - WCAG AA compliant
+    classDef upstream fill:#FEF3C7,stroke:#F59E0B,stroke-width:2px,color:#92400E
+    classDef core fill:#EEF2FF,stroke:#4F46E5,stroke-width:2px,color:#312E81
+    classDef downstream fill:#D1FAE5,stroke:#10B981,stroke-width:2px,color:#065F46
 
     class WebApp upstream
     class OrderDb,EventBus core

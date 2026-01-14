@@ -60,6 +60,7 @@
 
 ```mermaid
 flowchart TB
+    %% Three Pillars of Observability - Telemetry collection architecture
     subgraph Pillars["📊 Three Pillars of Observability"]
         direction LR
         Traces["🔍 Traces<br/><i>Distributed request flow</i>"]
@@ -83,15 +84,17 @@ flowchart TB
         Queries["KQL Queries"]
     end
 
+    %% Data flow
     Traces & Metrics & Logs --> OTEL
     OTEL --> AI
     AzDiag --> LAW
     AI & LAW --> Dashboards & Alerts & Queries
 
-    classDef pillars fill:#e3f2fd,stroke:#1565c0
-    classDef collection fill:#e8f5e9,stroke:#2e7d32
-    classDef backend fill:#fff3e0,stroke:#ef6c00
-    classDef consumption fill:#f3e5f5,stroke:#7b1fa2
+    %% Modern color palette - WCAG AA compliant
+    classDef pillars fill:#EEF2FF,stroke:#4F46E5,stroke-width:2px,color:#312E81
+    classDef collection fill:#D1FAE5,stroke:#10B981,stroke-width:2px,color:#065F46
+    classDef backend fill:#FEF3C7,stroke:#F59E0B,stroke-width:2px,color:#92400E
+    classDef consumption fill:#F3E8FF,stroke:#A855F7,stroke-width:2px,color:#581C87
 
     class Traces,Metrics,Logs pillars
     class OTEL,AzDiag collection
@@ -117,6 +120,7 @@ flowchart TB
 
 ```mermaid
 flowchart LR
+    %% Distributed Trace Context Propagation Flow
     subgraph WebApp["🌐 Web App"]
         W1["HTTP Request<br/>traceparent: auto"]
     end
@@ -140,6 +144,7 @@ flowchart LR
         AI1["Correlated traces<br/>Operation ID"]
     end
 
+    %% Flow connections
     W1 -->|"traceparent header"| A1
     A1 --> A2 --> A3
     A3 -->|"AMQP properties"| SB1
@@ -393,6 +398,7 @@ _logger.LogInformation("Order {OrderId} placed successfully in {Duration:F2}ms",
 
 ```mermaid
 flowchart LR
+    %% Health Check Architecture - Endpoint and check relationships
     subgraph Endpoints["Health Endpoints"]
         Health["/health<br/>All checks"]
         Alive["/alive<br/>Liveness only"]
@@ -410,6 +416,7 @@ flowchart LR
         Unhealthy["❌ Unhealthy"]
     end
 
+    %% Check relationships
     Health --> Self & DB & SB
     Alive --> Self
     Self --> Healthy

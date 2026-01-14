@@ -48,6 +48,7 @@ The **Azure Logic Apps Monitoring Solution** provides a reference architecture d
 
 ```mermaid
 flowchart TB
+    %% Business Capability Map - Shows layered architecture of capabilities
     subgraph Core["🎯 Core Capabilities"]
         direction LR
         C1["📦 Order Management<br/><i>Revenue enablement</i>"]
@@ -68,17 +69,20 @@ flowchart TB
         F3["☁️ Cloud Infrastructure<br/><i>Compute and networking</i>"]
     end
 
+    %% Hierarchical dependencies
     Core --> Enabling --> Foundation
 
+    %% Cross-capability relationships
     C1 -.->|"triggers"| C2
     C1 -.->|"publishes to"| E2
     C2 -.->|"consumes from"| E2
     C1 -.->|"monitored by"| E1
     C2 -.->|"monitored by"| E1
 
-    classDef core fill:#e3f2fd,stroke:#1565c0,stroke-width:2px
-    classDef enabling fill:#e8f5e9,stroke:#2e7d32,stroke-width:2px
-    classDef foundation fill:#f5f5f5,stroke:#616161,stroke-width:2px
+    %% Modern color palette - WCAG AA compliant
+    classDef core fill:#EEF2FF,stroke:#4F46E5,stroke-width:2px,color:#312E81
+    classDef enabling fill:#ECFDF5,stroke:#10B981,stroke-width:2px,color:#065F46
+    classDef foundation fill:#F3F4F6,stroke:#6B7280,stroke-width:2px,color:#374151
 
     class C1,C2 core
     class E1,E2,E3 enabling
@@ -119,6 +123,7 @@ flowchart TB
 
 ```mermaid
 flowchart LR
+    %% Order to Fulfillment Value Stream - End-to-end order processing flow
     subgraph Trigger["🎯 Trigger"]
         T1["Customer submits<br/>order"]
     end
@@ -145,9 +150,10 @@ flowchart LR
 
     T1 --> S1 --> S2 --> S3 --> S4 --> O1
 
-    classDef trigger fill:#e3f2fd,stroke:#1565c0
-    classDef stage fill:#fff3e0,stroke:#ef6c00
-    classDef outcome fill:#e8f5e9,stroke:#2e7d32
+    %% Modern color palette - WCAG AA compliant
+    classDef trigger fill:#EEF2FF,stroke:#4F46E5,stroke-width:2px,color:#312E81
+    classDef stage fill:#FEF3C7,stroke:#F59E0B,stroke-width:2px,color:#92400E
+    classDef outcome fill:#D1FAE5,stroke:#10B981,stroke-width:2px,color:#065F46
 
     class T1 trigger
     class S1,S2,S3,S4 stage
@@ -173,6 +179,7 @@ flowchart LR
 
 ```mermaid
 flowchart LR
+    %% Observability Value Stream - Telemetry collection and analysis flow
     subgraph Sources["📡 Sources"]
         A1["Service emits<br/>telemetry"]
     end
@@ -195,9 +202,10 @@ flowchart LR
 
     A1 --> B1 --> C1 --> D1 --> E1
 
-    classDef source fill:#fff3e0,stroke:#ef6c00
-    classDef process fill:#e3f2fd,stroke:#1565c0
-    classDef outcome fill:#e8f5e9,stroke:#2e7d32
+    %% Modern color palette - WCAG AA compliant
+    classDef source fill:#FEF3C7,stroke:#F59E0B,stroke-width:2px,color:#92400E
+    classDef process fill:#EEF2FF,stroke:#4F46E5,stroke-width:2px,color:#312E81
+    classDef outcome fill:#D1FAE5,stroke:#10B981,stroke-width:2px,color:#065F46
 
     class A1 source
     class B1,C1,D1 process
@@ -226,31 +234,37 @@ flowchart LR
 
 ```mermaid
 flowchart TD
+    %% Order Lifecycle Process - Complete order processing flow with error handling
     Start([Customer Action]) --> Submit["Submit Order<br/>via Web App"]
     Submit --> Validate{"Validate<br/>Order Data"}
 
+    %% Validation branch
     Validate -->|Invalid| Reject["Return Validation<br/>Errors"]
     Reject --> End1([Customer Corrects])
 
+    %% Happy path
     Validate -->|Valid| Persist["Persist to<br/>SQL Database"]
     Persist --> Publish["Publish Event<br/>to Service Bus"]
     Publish --> Trigger["Trigger Logic App<br/>Workflow"]
 
+    %% Processing outcomes
     Trigger --> Process{"Process<br/>Order"}
     Process -->|Success| StoreSuccess["Store in Success<br/>Container"]
     Process -->|Failure| StoreError["Store in Error<br/>Container"]
 
+    %% Post-processing
     StoreSuccess --> Cleanup["Cleanup Workflow<br/>(Every 3 seconds)"]
     Cleanup --> End2([Order Complete])
 
     StoreError --> Retry["Manual Review<br/>& Retry"]
     Retry --> End3([Resolved])
 
-    classDef start fill:#e3f2fd,stroke:#1565c0
-    classDef process fill:#fff3e0,stroke:#ef6c00
-    classDef decision fill:#f3e5f5,stroke:#7b1fa2
-    classDef success fill:#e8f5e9,stroke:#2e7d32
-    classDef error fill:#ffebee,stroke:#c62828
+    %% Modern color palette - WCAG AA compliant
+    classDef start fill:#EEF2FF,stroke:#4F46E5,stroke-width:2px,color:#312E81
+    classDef process fill:#FEF3C7,stroke:#F59E0B,stroke-width:2px,color:#92400E
+    classDef decision fill:#F3E8FF,stroke:#A855F7,stroke-width:2px,color:#581C87
+    classDef success fill:#D1FAE5,stroke:#10B981,stroke-width:2px,color:#065F46
+    classDef error fill:#FEE2E2,stroke:#EF4444,stroke-width:2px,color:#991B1B
 
     class Start,End1,End2,End3 start
     class Submit,Persist,Publish,Trigger,Cleanup,Retry process

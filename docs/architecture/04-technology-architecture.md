@@ -57,6 +57,7 @@
 
 ```mermaid
 flowchart TB
+    %% Platform Decomposition - Azure platform services architecture
     subgraph Compute["🖥️ Compute Platform"]
         ACA["Azure Container Apps<br/><i>API & Web App</i>"]
         LA["Logic Apps Standard<br/><i>Workflows</i>"]
@@ -84,6 +85,7 @@ flowchart TB
         Subnets["Subnets<br/><i>API, LogicApp</i>"]
     end
 
+    %% Platform dependencies
     Compute --> Data
     Compute --> Observability
     Compute --> Identity
@@ -91,11 +93,12 @@ flowchart TB
     Data --> Identity
     Compute --> Network
 
-    classDef compute fill:#e3f2fd,stroke:#1565c0,stroke-width:2px
-    classDef data fill:#e8f5e9,stroke:#2e7d32,stroke-width:2px
-    classDef observe fill:#fff3e0,stroke:#ef6c00,stroke-width:2px
-    classDef identity fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px
-    classDef network fill:#fce4ec,stroke:#c2185b,stroke-width:2px
+    %% Modern color palette - WCAG AA compliant
+    classDef compute fill:#EEF2FF,stroke:#4F46E5,stroke-width:2px,color:#312E81
+    classDef data fill:#D1FAE5,stroke:#10B981,stroke-width:2px,color:#065F46
+    classDef observe fill:#FEF3C7,stroke:#F59E0B,stroke-width:2px,color:#92400E
+    classDef identity fill:#F3E8FF,stroke:#A855F7,stroke-width:2px,color:#581C87
+    classDef network fill:#FCE7F3,stroke:#EC4899,stroke-width:2px,color:#9D174D
 
     class ACA,LA,ASP compute
     class SQL,SB,Storage data
@@ -133,6 +136,7 @@ flowchart TB
 
 ```mermaid
 flowchart TB
+    %% Azure Resource Topology - Resource group structure
     subgraph RG["📁 Resource Group: rg-orders-{env}-{region}"]
         subgraph Compute["Compute"]
             CAE["Container Apps Environment"]
@@ -167,6 +171,7 @@ flowchart TB
         end
     end
 
+    %% Resource relationships
     CAE --> CA1
     CAE --> CA2
     ASP --> LA
@@ -177,7 +182,9 @@ flowchart TB
     CA1 --> SubnetAPI
     LA --> SubnetLA
 
-    classDef resource fill:#e3f2fd,stroke:#1565c0
+    %% Modern color palette - WCAG AA compliant
+    classDef resource fill:#EEF2FF,stroke:#4F46E5,stroke-width:2px,color:#312E81
+
     class RG,CAE,CA1,CA2,ASP,LA,SQL,SQLDB,SB,Topic,Sub,Storage,AI,LAW,MI,VNet,SubnetAPI,SubnetLA resource
 ```
 

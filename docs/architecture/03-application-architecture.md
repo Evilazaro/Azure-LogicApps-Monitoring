@@ -50,6 +50,7 @@ The solution follows a **modular, event-driven architecture** with clear service
 
 ```mermaid
 flowchart TB
+    %% Application Landscape Map - Multi-layer application architecture
     subgraph Presentation["🖥️ Presentation Layer"]
         direction LR
         WebApp["🌐 eShop.Web.App<br/>Blazor Server<br/>:5000"]
@@ -96,10 +97,11 @@ flowchart TB
     API -.->|"OTLP"| Monitor
     LogicApp -.->|"Diagnostics"| Monitor
 
-    classDef presentation fill:#e3f2fd,stroke:#1565c0,stroke-width:2px
-    classDef application fill:#e8f5e9,stroke:#2e7d32,stroke-width:2px
-    classDef platform fill:#fff3e0,stroke:#ef6c00,stroke-width:2px
-    classDef external fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px
+    %% Modern color palette - WCAG AA compliant
+    classDef presentation fill:#EEF2FF,stroke:#4F46E5,stroke-width:2px,color:#312E81
+    classDef application fill:#D1FAE5,stroke:#10B981,stroke-width:2px,color:#065F46
+    classDef platform fill:#FEF3C7,stroke:#F59E0B,stroke-width:2px,color:#92400E
+    classDef external fill:#F3E8FF,stroke:#A855F7,stroke-width:2px,color:#581C87
 
     class WebApp presentation
     class API,LogicApp application
@@ -155,6 +157,7 @@ flowchart TB
 
 ```mermaid
 flowchart TB
+    %% eShop.Orders.API Component Architecture
     subgraph API["eShop.Orders.API"]
         Controllers["Controllers<br/><i>API Endpoints</i>"]
         Services["Services<br/><i>Business Logic</i>"]
@@ -169,16 +172,20 @@ flowchart TB
         AI["App Insights"]
     end
 
+    %% Internal flow
     Controllers --> Services
     Services --> Repositories
     Services --> Handlers
+
+    %% External connections
     Repositories --> DB
     Handlers --> SB
     Controllers -.-> AI
     Services -.-> AI
 
-    classDef internal fill:#e8f5e9,stroke:#2e7d32
-    classDef external fill:#f3e5f5,stroke:#7b1fa2
+    %% Modern color palette - WCAG AA compliant
+    classDef internal fill:#D1FAE5,stroke:#10B981,stroke-width:2px,color:#065F46
+    classDef external fill:#F3E8FF,stroke:#A855F7,stroke-width:2px,color:#581C87
 
     class Controllers,Services,Repositories,Handlers,HealthChecks internal
     class DB,SB,AI external
@@ -218,6 +225,7 @@ flowchart TB
 
 ```mermaid
 flowchart TB
+    %% eShop.Web.App Component Architecture
     subgraph WebApp["eShop.Web.App"]
         Pages["Pages<br/><i>Razor Components</i>"]
         Layout["Layout<br/><i>App Shell</i>"]
@@ -230,14 +238,18 @@ flowchart TB
         AI["App Insights"]
     end
 
+    %% Internal relationships
     Pages --> Services
     Pages --> Shared
     Layout --> Pages
+
+    %% External connections
     Services -->|"HTTP"| API
     Pages -.->|"OTLP"| AI
 
-    classDef internal fill:#e3f2fd,stroke:#1565c0
-    classDef external fill:#f3e5f5,stroke:#7b1fa2
+    %% Modern color palette - WCAG AA compliant
+    classDef internal fill:#EEF2FF,stroke:#4F46E5,stroke-width:2px,color:#312E81
+    classDef external fill:#F3E8FF,stroke:#A855F7,stroke-width:2px,color:#581C87
 
     class Pages,Layout,Services,Shared internal
     class API,AI external
@@ -317,6 +329,7 @@ The **OrdersManagementLogicApp** is an Azure Logic Apps Standard application con
 
 ```mermaid
 flowchart TD
+    %% OrdersPlacedProcess Workflow - Order message processing flow
     Trigger["📨 Service Bus Trigger<br/>ordersplaced/orderprocessingsub<br/>1s polling"]
     Check{"Check Content Type<br/>application/json?"}
     CallAPI["🔗 HTTP POST<br/>/api/Orders/process"]
@@ -326,6 +339,7 @@ flowchart TD
     StoreInvalid["⚠️ Create Blob<br/>/ordersprocessedwitherrors/{MessageId}"]
     Complete["Auto-complete Message"]
 
+    %% Flow connections
     Trigger --> Check
     Check -->|"Yes (JSON)"| CallAPI
     Check -->|"No (Invalid)"| StoreInvalid
@@ -336,11 +350,12 @@ flowchart TD
     StoreError --> Complete
     StoreInvalid --> Complete
 
-    classDef trigger fill:#e3f2fd,stroke:#1565c0
-    classDef decision fill:#fff3e0,stroke:#ef6c00
-    classDef success fill:#e8f5e9,stroke:#2e7d32
-    classDef error fill:#ffebee,stroke:#c62828
-    classDef warning fill:#fff8e1,stroke:#f9a825
+    %% Modern color palette - WCAG AA compliant
+    classDef trigger fill:#EEF2FF,stroke:#4F46E5,stroke-width:2px,color:#312E81
+    classDef decision fill:#FEF3C7,stroke:#F59E0B,stroke-width:2px,color:#92400E
+    classDef success fill:#D1FAE5,stroke:#10B981,stroke-width:2px,color:#065F46
+    classDef error fill:#FEE2E2,stroke:#EF4444,stroke-width:2px,color:#991B1B
+    classDef warning fill:#FEF3C7,stroke:#F59E0B,stroke-width:2px,color:#92400E
 
     class Trigger trigger
     class Check,CheckResult decision
@@ -377,6 +392,7 @@ flowchart TD
 
 ```mermaid
 flowchart TD
+    %% OrdersPlacedCompleteProcess Workflow - Cleanup flow for processed orders
     Trigger["⏰ Recurrence Trigger<br/>Every 3 seconds"]
     ListBlobs["📋 List Blobs (V2)<br/>/ordersprocessedsuccessfully"]
     CheckBlobs{"Any Blobs<br/>Found?"}
@@ -386,6 +402,7 @@ flowchart TD
     Complete["✅ Complete Iteration"]
     NoAction["⏭️ Skip (No blobs)"]
 
+    %% Flow connections
     Trigger --> ListBlobs
     ListBlobs --> CheckBlobs
     CheckBlobs -->|"Yes"| ForEach
@@ -395,11 +412,12 @@ flowchart TD
     DeleteBlob --> Complete
     Complete -->|"Next blob"| ForEach
 
-    classDef trigger fill:#e3f2fd,stroke:#1565c0
-    classDef action fill:#e8f5e9,stroke:#2e7d32
-    classDef decision fill:#fff3e0,stroke:#ef6c00
-    classDef delete fill:#ffebee,stroke:#c62828
-    classDef skip fill:#f5f5f5,stroke:#9e9e9e
+    %% Modern color palette - WCAG AA compliant
+    classDef trigger fill:#EEF2FF,stroke:#4F46E5,stroke-width:2px,color:#312E81
+    classDef action fill:#D1FAE5,stroke:#10B981,stroke-width:2px,color:#065F46
+    classDef decision fill:#FEF3C7,stroke:#F59E0B,stroke-width:2px,color:#92400E
+    classDef delete fill:#FEE2E2,stroke:#EF4444,stroke-width:2px,color:#991B1B
+    classDef skip fill:#F3F4F6,stroke:#6B7280,stroke-width:2px,color:#374151
 
     class Trigger trigger
     class ListBlobs,GetMetadata,Complete action
@@ -451,6 +469,7 @@ workflows/OrdersManagement/
 
 ```mermaid
 flowchart LR
+    %% Inter-Service Communication Patterns
     subgraph Sync["🔄 Synchronous (HTTP/REST)"]
         Web["Web App"]
         API["Orders API"]
@@ -461,13 +480,17 @@ flowchart LR
         SB["Service Bus<br/>ordersplaced topic"]
     end
 
+    %% Sync connections
     Web -->|"GET/POST/DELETE"| API
     LA -->|"POST"| API
+
+    %% Async connections
     API -->|"Publish"| SB
     SB -->|"Subscribe"| LA
 
-    classDef sync fill:#e3f2fd,stroke:#1565c0
-    classDef async fill:#e8f5e9,stroke:#2e7d32
+    %% Modern color palette - WCAG AA compliant
+    classDef sync fill:#EEF2FF,stroke:#4F46E5,stroke-width:2px,color:#312E81
+    classDef async fill:#D1FAE5,stroke:#10B981,stroke-width:2px,color:#065F46
 
     class Web,API,LA sync
     class SB async
