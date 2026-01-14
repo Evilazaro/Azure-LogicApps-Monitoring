@@ -129,6 +129,7 @@ jobs:
       AZURE_LOCATION: ${{ vars.AZURE_LOCATION }}
       AZURE_ENV_NAME: ${{ vars.AZURE_ENV_NAME }}
       DEPLOYER_PRINCIPAL_TYPE: ServicePrincipal
+      DEPLOY_HEALTH_MODEL: false
 
     steps:
       # ------------------------------------------------------------------------
@@ -180,7 +181,7 @@ jobs:
       # Fails fast to prevent expensive provisioning if tests fail.
       # ------------------------------------------------------------------------
       - name: "🧪 Run unit tests"
-        run: dotnet test app.sln --configuration Release --no-build --verbosity normal --logger "trx" --results-directory TestResults
+        run: dotnet test app.sln --configuration Release --verbosity normal --logger "trx" --results-directory TestResults
 
       # ------------------------------------------------------------------------
       # Step 6: Upload test results

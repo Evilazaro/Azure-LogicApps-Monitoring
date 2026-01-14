@@ -10,6 +10,9 @@
     },
     "deployerPrincipalType": {
       "value": "${DEPLOYER_PRINCIPAL_TYPE=User}"
+    },
+    "deployHealthModel": {
+      "value": "${DEPLOY_HEALTH_MODEL=true}"
     }
   }
 }

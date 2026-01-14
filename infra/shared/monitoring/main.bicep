@@ -49,6 +49,9 @@ param location string
 @description('Resource tags applied to all monitoring resources')
 param tags tagsType
 
+@description('Whether to deploy Azure Monitor Health Model (requires tenant-level permissions)')
+param deployHealthModel bool = true
+
 // ========== Variables ==========
 
 // Diagnostic settings configuration for comprehensive logging
@@ -89,8 +92,9 @@ module operational 'log-analytics-workspace.bicep' = {
 
 // Azure Monitor Health Model Module: Creates service group hierarchy
 // Enables hierarchical health monitoring across services
+// Skipped when deployHealthModel is false (e.g., CI/CD without tenant permissions)
 @description('Creates service group hierarchy for organizing health monitoring')
-module healthModel 'azure-monitor-health-model.bicep' = {
+module healthModel 'azure-monitor-health-model.bicep' = if (deployHealthModel) {
   params: {
     name: name
     tags: tags
