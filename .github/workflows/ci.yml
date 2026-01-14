@@ -373,30 +373,6 @@ jobs:
             echo "" >> $GITHUB_STEP_SUMMARY
           fi
 
-          # Per-project test breakdown
-          if [ -n "$PROJECT_RESULTS" ]; then
-            echo "### 📂 Test Results by Project" >> $GITHUB_STEP_SUMMARY
-            echo "" >> $GITHUB_STEP_SUMMARY
-            echo "| Test Project | Total | ✅ Passed | ❌ Failed | ⏭️ Skipped | Status |" >> $GITHUB_STEP_SUMMARY
-            echo "|--------------|-------|-----------|-----------|------------|--------|" >> $GITHUB_STEP_SUMMARY
-            
-            # Parse project results (format: project:total:passed:failed:skipped|...)
-            # Use here-string to avoid subshell issues with pipeline
-            while IFS=':' read -r proj total passed failed skipped; do
-              if [ -n "$proj" ]; then
-                if [ "$failed" -gt 0 ]; then
-                  STATUS="❌ Failed"
-                elif [ "$total" -eq 0 ]; then
-                  STATUS="⚠️ Empty"
-                else
-                  STATUS="✅ Passed"
-                fi
-                echo "| \`$proj\` | $total | $passed | $failed | $skipped | $STATUS |" >> $GITHUB_STEP_SUMMARY
-              fi
-            done <<< "$(echo "$PROJECT_RESULTS" | tr '|' '\n')"
-            echo "" >> $GITHUB_STEP_SUMMARY
-          fi
-
           # Run information
           echo "### 📊 Run Information" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
