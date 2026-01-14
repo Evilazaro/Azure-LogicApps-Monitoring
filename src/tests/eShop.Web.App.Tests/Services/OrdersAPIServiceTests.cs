@@ -951,7 +951,7 @@ public sealed class OrdersAPIServiceTests
 
         using var activityListener = new ActivityListener
         {
-            ShouldListenTo = _ => true,
+            ShouldListenTo = source => source.Name == TestActivitySourceName,
             Sample = (ref ActivityCreationOptions<ActivityContext> _) => ActivitySamplingResult.AllData,
             ActivityStarted = activity => capturedActivity = activity
         };
@@ -979,7 +979,7 @@ public sealed class OrdersAPIServiceTests
 
         using var activityListener = new ActivityListener
         {
-            ShouldListenTo = _ => true,
+            ShouldListenTo = source => source.Name == TestActivitySourceName,
             Sample = (ref ActivityCreationOptions<ActivityContext> _) => ActivitySamplingResult.AllData,
             ActivityStarted = activity => capturedActivity = activity
         };
