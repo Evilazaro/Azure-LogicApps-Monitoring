@@ -43,7 +43,7 @@
 # ------------------------------------------------------------------------------
 # WORKFLOW METADATA
 # ------------------------------------------------------------------------------
-name: "Continuous Integration, Provision & Deploy"
+name: "CI/CD: Azure Provision & Deploy"
 
 # ------------------------------------------------------------------------------
 # TRIGGER CONFIGURATION
@@ -133,8 +133,9 @@ jobs:
   #  18. Authenticate Azure CLI (OIDC)
   #  19. Authenticate Azure Developer CLI
   #  20. Provision Azure Infrastructure
-  #  21. Deploy Application
-  #  22. Generate Deployment Summary
+  #  21. Re-authenticate Azure CLI (Token Refresh)
+  #  22. Deploy Application
+  #  23. Generate Deployment Summary
   # ============================================================================
   provision-and-deploy:
     name: "🚀 Provision & Deploy to Azure"
@@ -547,7 +548,22 @@ jobs:
           AZURE_ENV_NAME: ${{ github.event.inputs.environment || vars.AZURE_ENV_NAME }}
 
       # ------------------------------------------------------------------------
-      # Step 21: Deploy Application
+      # Step 21: Re-authenticate Azure Developer CLI (Token Refresh)
+      # ------------------------------------------------------------------------
+      # OIDC tokens have a short validity window (~5 minutes).
+      # Provisioning may take 15-20+ minutes, causing the original token to expire.
+      # Re-authenticating ensures a fresh token is available for deployment.
+      # ------------------------------------------------------------------------
+      - name: "🔐 Re-authenticate Azure Developer CLI (Token Refresh)"
+        run: |
+          azd auth login \
+            --client-id "$AZURE_CLIENT_ID" \
+            --federated-credential-provider "github" \
+            --tenant-id "$AZURE_TENANT_ID"
+        shell: bash
+
+      # ------------------------------------------------------------------------
+      # Step 22: Deploy Application
       # ------------------------------------------------------------------------
       # Deploys application code to provisioned Azure resources.
       # Uses .NET Aspire manifest for service discovery and configuration.
@@ -568,7 +584,7 @@ jobs:
           AZURE_ENV_NAME: ${{ github.event.inputs.environment || vars.AZURE_ENV_NAME }}
 
       # ------------------------------------------------------------------------
-      # Step 22: Generate Deployment Summary
+      # Step 23: Generate Deployment Summary
       # ------------------------------------------------------------------------
       # Creates a GitHub Actions job summary with deployment details.
       # Includes: build validation status, test metrics, deployment details,
