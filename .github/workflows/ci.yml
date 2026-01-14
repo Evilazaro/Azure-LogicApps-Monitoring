@@ -167,6 +167,7 @@ jobs:
             # ------------------------------------------------------------------------
             # Executes all unit tests in the solution and captures results.
             # Uses --logger trx for standard VSTest TRX output.
+            # Each test project generates its own TRX file for detailed reporting.
             # continue-on-error: Allows subsequent steps to parse results on failure.
             # ------------------------------------------------------------------------
             - name: "🧪 Run unit tests"
@@ -176,12 +177,12 @@ jobs:
                   # Create TestResults directory to ensure it exists
                   mkdir -p TestResults
 
-                  # Run tests with TRX logger (standard VSTest approach)
+                  # Run tests with TRX logger - each project generates its own TRX file
                   dotnet test app.sln \
                     --configuration Release \
                     --no-build \
                     --verbosity normal \
-                    --logger "trx;LogFileName=test-results.trx" \
+                    --logger "trx" \
                     --results-directory TestResults
 
                   TEST_EXIT_CODE=$?
@@ -200,7 +201,7 @@ jobs:
             # Step 6: Parse test results
             # ------------------------------------------------------------------------
             # Extracts test metrics from TRX files for job summary.
-            # Parses total, passed, failed, and skipped test counts.
+            # Parses total, passed, failed, and skipped test counts per project.
             # Sets outputs for use in summary generation.
             # ------------------------------------------------------------------------
             - name: "📊 Parse test results"
@@ -212,16 +213,22 @@ jobs:
                   PASSED=0
                   FAILED=0
                   SKIPPED=0
-                  DURATION="0.00s"
+
+                  # Arrays for per-project results (stored as delimited strings for GITHUB_OUTPUT)
+                  PROJECT_RESULTS=""
 
                   # Find and parse TRX files
                   if [ -d "TestResults" ]; then
                     for trx in TestResults/*.trx; do
                       if [ -f "$trx" ]; then
-                        echo "Parsing: $trx"
+                        # Extract project name from TRX filename
+                        FILENAME=$(basename "$trx" .trx)
+                        # Clean up the project name (remove guid suffix if present)
+                        PROJECT_NAME=$(echo "$FILENAME" | sed 's/_[a-f0-9\-]*$//' | sed 's/_net[0-9]*_[0-9]*$//')
+                        
+                        echo "Parsing: $trx (Project: $PROJECT_NAME)"
                         
                         # Extract test counts using grep and sed
-                        # TRX format: <Counters total="X" executed="Y" passed="Z" failed="A" .../>
                         COUNTERS=$(grep -oP '<Counters[^>]+>' "$trx" | head -1 || echo "")
                         
                         if [ -n "$COUNTERS" ]; then
@@ -234,20 +241,12 @@ jobs:
                           PASSED=$((PASSED + FILE_PASSED))
                           FAILED=$((FAILED + FILE_FAILED))
                           SKIPPED=$((SKIPPED + FILE_SKIPPED))
-                        fi
-                        
-                        # Extract duration
-                        TIMES=$(grep -oP '<Times[^>]+>' "$trx" | head -1 || echo "")
-                        if [ -n "$TIMES" ]; then
-                          START=$(echo "$TIMES" | grep -oP 'start="\K[^"]+' || echo "")
-                          FINISH=$(echo "$TIMES" | grep -oP 'finish="\K[^"]+' || echo "")
-                          if [ -n "$START" ] && [ -n "$FINISH" ]; then
-                            # Calculate duration in seconds (simplified)
-                            DURATION_SEC=$(( $(date -d "$FINISH" +%s 2>/dev/null || echo 0) - $(date -d "$START" +%s 2>/dev/null || echo 0) ))
-                            if [ "$DURATION_SEC" -gt 0 ]; then
-                              DURATION="${DURATION_SEC}s"
-                            fi
+                          
+                          # Store per-project results
+                          if [ -n "$PROJECT_RESULTS" ]; then
+                            PROJECT_RESULTS="${PROJECT_RESULTS}|"
                           fi
+                          PROJECT_RESULTS="${PROJECT_RESULTS}${PROJECT_NAME}:${FILE_TOTAL}:${FILE_PASSED}:${FILE_FAILED}:${FILE_SKIPPED}"
                         fi
                       fi
                     done
@@ -258,7 +257,7 @@ jobs:
                   echo "passed=$PASSED" >> $GITHUB_OUTPUT
                   echo "failed=$FAILED" >> $GITHUB_OUTPUT
                   echo "skipped=$SKIPPED" >> $GITHUB_OUTPUT
-                  echo "duration=$DURATION" >> $GITHUB_OUTPUT
+                  echo "project_results=$PROJECT_RESULTS" >> $GITHUB_OUTPUT
 
                   # Log results
                   echo "::group::Test Results Summary"
@@ -266,7 +265,7 @@ jobs:
                   echo "Passed:  $PASSED"
                   echo "Failed:  $FAILED"
                   echo "Skipped: $SKIPPED"
-                  echo "Duration: $DURATION"
+                  echo "Projects: $PROJECT_RESULTS"
                   echo "::endgroup::"
 
                   # Set job status based on test results
@@ -317,7 +316,7 @@ jobs:
             # Step 9: Generate build summary
             # ------------------------------------------------------------------------
             # Creates a GitHub Actions job summary with build and test results.
-            # Displays actual test metrics from TRX parsing.
+            # Displays actual test metrics from TRX parsing including per-project breakdown.
             # Runs always to provide visibility even on failures.
             # ------------------------------------------------------------------------
             - name: "📋 Generate Build Summary"
@@ -328,8 +327,7 @@ jobs:
                   PASSED="${{ steps.test-results.outputs.passed || '0' }}"
                   FAILED="${{ steps.test-results.outputs.failed || '0' }}"
                   SKIPPED="${{ steps.test-results.outputs.skipped || '0' }}"
-                  DURATION="${{ steps.test-results.outputs.duration || 'N/A' }}"
-                  TEST_STATUS="${{ steps.test-results.outputs.test-status || 'unknown' }}"
+                  PROJECT_RESULTS="${{ steps.test-results.outputs.project_results || '' }}"
 
                   # Determine test status icon
                   if [ "$FAILED" -gt 0 ]; then
@@ -358,7 +356,7 @@ jobs:
                   echo "" >> $GITHUB_STEP_SUMMARY
 
                   # Test results section
-                  echo "### 🧪 Test Results" >> $GITHUB_STEP_SUMMARY
+                  echo "### 🧪 Test Results Summary" >> $GITHUB_STEP_SUMMARY
                   echo "" >> $GITHUB_STEP_SUMMARY
                   echo "| Metric | Count |" >> $GITHUB_STEP_SUMMARY
                   echo "|--------|-------|" >> $GITHUB_STEP_SUMMARY
@@ -366,7 +364,6 @@ jobs:
                   echo "| **✅ Passed** | $PASSED |" >> $GITHUB_STEP_SUMMARY
                   echo "| **❌ Failed** | $FAILED |" >> $GITHUB_STEP_SUMMARY
                   echo "| **⏭️ Skipped** | $SKIPPED |" >> $GITHUB_STEP_SUMMARY
-                  echo "| **⏱️ Duration** | $DURATION |" >> $GITHUB_STEP_SUMMARY
                   echo "| **Status** | $TEST_ICON $TEST_STATUS_TEXT |" >> $GITHUB_STEP_SUMMARY
                   echo "" >> $GITHUB_STEP_SUMMARY
 
@@ -376,6 +373,40 @@ jobs:
                     echo "**Pass Rate:** $PASS_PCT% ($PASSED/$TOTAL)" >> $GITHUB_STEP_SUMMARY
                     echo "" >> $GITHUB_STEP_SUMMARY
                   fi
+
+                  # Per-project test breakdown
+                  if [ -n "$PROJECT_RESULTS" ]; then
+                    echo "### 📂 Test Results by Project" >> $GITHUB_STEP_SUMMARY
+                    echo "" >> $GITHUB_STEP_SUMMARY
+                    echo "| Test Project | Total | ✅ Passed | ❌ Failed | ⏭️ Skipped | Status |" >> $GITHUB_STEP_SUMMARY
+                    echo "|--------------|-------|-----------|-----------|------------|--------|" >> $GITHUB_STEP_SUMMARY
+                    
+                    # Parse project results (format: project:total:passed:failed:skipped|...)
+                    echo "$PROJECT_RESULTS" | tr '|' '\n' | while IFS=':' read -r proj total passed failed skipped; do
+                      if [ -n "$proj" ]; then
+                        if [ "$failed" -gt 0 ]; then
+                          STATUS="❌ Failed"
+                        elif [ "$total" -eq 0 ]; then
+                          STATUS="⚠️ Empty"
+                        else
+                          STATUS="✅ Passed"
+                        fi
+                        echo "| \`$proj\` | $total | $passed | $failed | $skipped | $STATUS |" >> $GITHUB_STEP_SUMMARY
+                      fi
+                    done
+                    echo "" >> $GITHUB_STEP_SUMMARY
+                  fi
+
+                  # Test project inventory
+                  echo "### 📋 Test Projects" >> $GITHUB_STEP_SUMMARY
+                  echo "" >> $GITHUB_STEP_SUMMARY
+                  echo "| Project | Description |" >> $GITHUB_STEP_SUMMARY
+                  echo "|---------|-------------|" >> $GITHUB_STEP_SUMMARY
+                  echo "| \`app.Host.Tests\` | .NET Aspire AppHost configuration tests |" >> $GITHUB_STEP_SUMMARY
+                  echo "| \`app.ServiceDefauls.Tests\` | Service defaults, health checks, telemetry tests |" >> $GITHUB_STEP_SUMMARY
+                  echo "| \`eShop.Oders.API.Tests\` | Orders API services, repositories, handlers tests |" >> $GITHUB_STEP_SUMMARY
+                  echo "| \`eShop.Web.App.Tests\` | Web App UI services tests |" >> $GITHUB_STEP_SUMMARY
+                  echo "" >> $GITHUB_STEP_SUMMARY
 
                   # Run information
                   echo "### 📊 Run Information" >> $GITHUB_STEP_SUMMARY

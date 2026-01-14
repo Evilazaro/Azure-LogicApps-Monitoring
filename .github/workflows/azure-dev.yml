@@ -199,7 +199,7 @@ jobs:
       # Executes all unit tests to validate code correctness before deployment.
       # Fails fast to prevent expensive provisioning if tests fail.
       # continue-on-error: Allows result parsing and summary generation.
-      # Uses --logger trx for standard VSTest TRX output.
+      # Each test project generates its own TRX file for detailed reporting.
       # ------------------------------------------------------------------------
       - name: "🧪 Run unit tests"
         id: test
@@ -208,12 +208,12 @@ jobs:
           # Create TestResults directory to ensure it exists
           mkdir -p TestResults
 
-          # Run tests with TRX logger (standard VSTest approach)
+          # Run tests with TRX logger - each project generates its own TRX file
           dotnet test app.sln \
             --configuration Release \
             --no-build \
             --verbosity normal \
-            --logger "trx;LogFileName=test-results.trx" \
+            --logger "trx" \
             --results-directory TestResults
 
           TEST_EXIT_CODE=$?
@@ -227,7 +227,7 @@ jobs:
           echo "::endgroup::"
 
           exit $TEST_EXIT_CODE
-      # Parses total, passed, failed, and skipped test counts.
+      # Parses total, passed, failed, and skipped test counts per project.
       # ------------------------------------------------------------------------
       - name: "📊 Parse test results"
         id: test-results
@@ -238,13 +238,20 @@ jobs:
           PASSED=0
           FAILED=0
           SKIPPED=0
-          DURATION="0s"
+
+          # Arrays for per-project results (stored as delimited strings for GITHUB_OUTPUT)
+          PROJECT_RESULTS=""
 
           # Find and parse TRX files
           if [ -d "TestResults" ]; then
             for trx in TestResults/*.trx; do
               if [ -f "$trx" ]; then
-                echo "Parsing: $trx"
+                # Extract project name from TRX filename
+                FILENAME=$(basename "$trx" .trx)
+                # Clean up the project name (remove guid suffix if present)
+                PROJECT_NAME=$(echo "$FILENAME" | sed 's/_[a-f0-9\-]*$//' | sed 's/_net[0-9]*_[0-9]*$//')
+                
+                echo "Parsing: $trx (Project: $PROJECT_NAME)"
                 
                 # Extract test counts from TRX XML
                 COUNTERS=$(grep -oP '<Counters[^>]+>' "$trx" | head -1 || echo "")
@@ -259,6 +266,12 @@ jobs:
                   PASSED=$((PASSED + FILE_PASSED))
                   FAILED=$((FAILED + FILE_FAILED))
                   SKIPPED=$((SKIPPED + FILE_SKIPPED))
+                  
+                  # Store per-project results
+                  if [ -n "$PROJECT_RESULTS" ]; then
+                    PROJECT_RESULTS="${PROJECT_RESULTS}|"
+                  fi
+                  PROJECT_RESULTS="${PROJECT_RESULTS}${PROJECT_NAME}:${FILE_TOTAL}:${FILE_PASSED}:${FILE_FAILED}:${FILE_SKIPPED}"
                 fi
               fi
             done
@@ -269,6 +282,7 @@ jobs:
           echo "passed=$PASSED" >> $GITHUB_OUTPUT
           echo "failed=$FAILED" >> $GITHUB_OUTPUT
           echo "skipped=$SKIPPED" >> $GITHUB_OUTPUT
+          echo "project_results=$PROJECT_RESULTS" >> $GITHUB_OUTPUT
 
           # Log results
           echo "::group::Test Results Summary"
@@ -276,6 +290,7 @@ jobs:
           echo "Passed:  $PASSED"
           echo "Failed:  $FAILED"
           echo "Skipped: $SKIPPED"
+          echo "Projects: $PROJECT_RESULTS"
           echo "::endgroup::"
 
           # Fail if tests failed
@@ -461,7 +476,7 @@ jobs:
       # Step 18: Generate Deployment Summary
       # ------------------------------------------------------------------------
       # Creates a GitHub Actions job summary with deployment details.
-      # Includes actual test results from TRX parsing.
+      # Includes actual test results from TRX parsing with per-project breakdown.
       # Runs always to provide visibility even on failures.
       # ------------------------------------------------------------------------
       - name: "📋 Generate Deployment Summary"
@@ -472,6 +487,7 @@ jobs:
           PASSED="${{ steps.test-results.outputs.passed || '0' }}"
           FAILED="${{ steps.test-results.outputs.failed || '0' }}"
           SKIPPED="${{ steps.test-results.outputs.skipped || '0' }}"
+          PROJECT_RESULTS="${{ steps.test-results.outputs.project_results || '' }}"
 
           # Determine test status
           if [ "$FAILED" -gt 0 ]; then
@@ -495,7 +511,7 @@ jobs:
 
           # Show test details if tests ran
           if [ "$TOTAL" -gt 0 ]; then
-            echo "### 🧪 Test Results" >> $GITHUB_STEP_SUMMARY
+            echo "### 🧪 Test Results Summary" >> $GITHUB_STEP_SUMMARY
             echo "" >> $GITHUB_STEP_SUMMARY
             echo "| Metric | Count |" >> $GITHUB_STEP_SUMMARY
             echo "|--------|-------|" >> $GITHUB_STEP_SUMMARY
@@ -509,6 +525,40 @@ jobs:
             fi
             echo "" >> $GITHUB_STEP_SUMMARY
           fi
+
+          # Per-project test breakdown
+          if [ -n "$PROJECT_RESULTS" ]; then
+            echo "### 📂 Test Results by Project" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "| Test Project | Total | ✅ Passed | ❌ Failed | ⏭️ Skipped | Status |" >> $GITHUB_STEP_SUMMARY
+            echo "|--------------|-------|-----------|-----------|------------|--------|" >> $GITHUB_STEP_SUMMARY
+            
+            # Parse project results (format: project:total:passed:failed:skipped|...)
+            echo "$PROJECT_RESULTS" | tr '|' '\n' | while IFS=':' read -r proj total passed failed skipped; do
+              if [ -n "$proj" ]; then
+                if [ "$failed" -gt 0 ]; then
+                  STATUS="❌ Failed"
+                elif [ "$total" -eq 0 ]; then
+                  STATUS="⚠️ Empty"
+                else
+                  STATUS="✅ Passed"
+                fi
+                echo "| \`$proj\` | $total | $passed | $failed | $skipped | $STATUS |" >> $GITHUB_STEP_SUMMARY
+              fi
+            done
+            echo "" >> $GITHUB_STEP_SUMMARY
+          fi
+
+          # Test project inventory
+          echo "### 📋 Test Projects" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Project | Description |" >> $GITHUB_STEP_SUMMARY
+          echo "|---------|-------------|" >> $GITHUB_STEP_SUMMARY
+          echo "| \`app.Host.Tests\` | .NET Aspire AppHost configuration tests |" >> $GITHUB_STEP_SUMMARY
+          echo "| \`app.ServiceDefauls.Tests\` | Service defaults, health checks, telemetry tests |" >> $GITHUB_STEP_SUMMARY
+          echo "| \`eShop.Oders.API.Tests\` | Orders API services, repositories, handlers tests |" >> $GITHUB_STEP_SUMMARY
+          echo "| \`eShop.Web.App.Tests\` | Web App UI services tests |" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
 
           echo "### 📊 Deployment Details" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
