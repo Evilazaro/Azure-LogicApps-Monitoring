@@ -164,7 +164,7 @@ jobs:
       AZURE_SUBSCRIPTION_ID: ${{ vars.AZURE_SUBSCRIPTION_ID }}
       AZURE_LOCATION: ${{ vars.AZURE_LOCATION }}
       AZURE_ENV_NAME: ${{ vars.AZURE_ENV_NAME }}
-      DEPLOYER_PRINCIPAL_TYPE: ${{ vars.DEPLOYER_PRINCIPAL_TYPE }}
+      DEPLOYER_PRINCIPAL_TYPE: "ServicePrincipal"
       DEPLOY_HEALTH_MODEL: false
 
     steps:
