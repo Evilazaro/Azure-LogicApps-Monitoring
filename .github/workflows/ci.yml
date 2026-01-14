@@ -152,7 +152,7 @@ jobs:
             # Step 5: Run unit tests
             # ------------------------------------------------------------------------
             # Executes all unit tests in the solution and captures results.
-            # --report-trx: Supports MSTest.Sdk projects with TrxReport extension.
+            # Uses --logger trx for standard VSTest TRX output.
             # continue-on-error: Allows subsequent steps to parse results on failure.
             # ------------------------------------------------------------------------
             - name: "🧪 Run unit tests"
@@ -162,13 +162,13 @@ jobs:
                   # Create TestResults directory to ensure it exists
                   mkdir -p TestResults
 
-                  # Run tests with TRX reporter enabled
-                  # MSTest.Sdk with Microsoft.Testing.Extensions.TrxReport uses --report-trx
+                  # Run tests with TRX logger (standard VSTest approach)
                   dotnet test app.sln \
                     --configuration Release \
+                    --no-build \
                     --verbosity normal \
-                    --results-directory TestResults \
-                    -- --report-trx --report-trx-filename test-results.trx
+                    --logger "trx;LogFileName=test-results.trx" \
+                    --results-directory TestResults
 
                   TEST_EXIT_CODE=$?
 

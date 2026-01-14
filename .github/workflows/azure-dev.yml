@@ -182,7 +182,7 @@ jobs:
       # Executes all unit tests to validate code correctness before deployment.
       # Fails fast to prevent expensive provisioning if tests fail.
       # continue-on-error: Allows result parsing and summary generation.
-      # Note: Uses --report-trx for MSTest.Sdk projects with TrxReport extension.
+      # Uses --logger trx for standard VSTest TRX output.
       # ------------------------------------------------------------------------
       - name: "🧪 Run unit tests"
         id: test
@@ -191,13 +191,13 @@ jobs:
           # Create TestResults directory to ensure it exists
           mkdir -p TestResults
 
-          # Run tests with TRX reporter enabled
-          # MSTest.Sdk with Microsoft.Testing.Extensions.TrxReport uses --report-trx
+          # Run tests with TRX logger (standard VSTest approach)
           dotnet test app.sln \
             --configuration Release \
+            --no-build \
             --verbosity normal \
-            --results-directory TestResults \
-            -- --report-trx --report-trx-filename test-results.trx
+            --logger "trx;LogFileName=test-results.trx" \
+            --results-directory TestResults
 
           TEST_EXIT_CODE=$?
 
