@@ -65,16 +65,9 @@ on:
           - staging
           - prod
 
-  push:
-    # Trigger on commits to the mainline branch
+  pull_request:
     branches:
       - main
-    # Optimize by ignoring non-code changes
-    paths-ignore:
-      - "**.md"
-      - "docs/**"
-      - ".gitignore"
-      - "LICENSE"
 
 # ------------------------------------------------------------------------------
 # CONCURRENCY CONTROL
