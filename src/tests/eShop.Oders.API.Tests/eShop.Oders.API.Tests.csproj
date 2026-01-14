@@ -7,11 +7,15 @@
     <Nullable>enable</Nullable>
     <TestingPlatformShowTestsFailure>true</TestingPlatformShowTestsFailure>
     <TestingExtensionsProfile>AllMicrosoft</TestingExtensionsProfile>
+    <!-- Enable TRX report generation for CI/CD pipelines -->
+    <EnableMSTestRunner>true</EnableMSTestRunner>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="Moq" Version="4.20.72" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="9.0.0" />
+    <!-- TRX Reporter for Microsoft Testing Platform (MSTest.Sdk) -->
+    <PackageReference Include="Microsoft.Testing.Extensions.TrxReport" Version="1.5.3" />
   </ItemGroup>
 
   <ItemGroup>
