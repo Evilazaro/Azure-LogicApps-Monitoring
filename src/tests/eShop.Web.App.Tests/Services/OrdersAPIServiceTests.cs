@@ -26,12 +26,13 @@ public sealed class OrdersAPIServiceTests
     private OrdersAPIService _service = null!;
 
     private const string BaseAddress = "https://test-api.example.com/";
+    private const string TestActivitySourceName = "eShop.Web.App.Tests.OrdersAPIService";
 
     [TestInitialize]
     public void TestInitialize()
     {
         _loggerMock = new Mock<ILogger<OrdersAPIService>>();
-        _activitySource = new ActivitySource("TestActivitySource");
+        _activitySource = new ActivitySource(TestActivitySourceName);
         _httpMessageHandler = new MockHttpMessageHandler();
         _httpClient = new HttpClient(_httpMessageHandler)
         {
@@ -942,7 +943,7 @@ public sealed class OrdersAPIServiceTests
     #region Distributed Tracing Tests
 
     [TestMethod]
-    public async Task PlaceOrderAsync_CreatesActivityWithCorrectTags()
+    public async Task PlaceOrderAsync_CreatesActivity()
     {
         // Arrange
         var order = CreateTestOrder("trace-test-order");

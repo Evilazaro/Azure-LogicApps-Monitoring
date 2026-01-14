@@ -3,9 +3,6 @@
 // Tests .NET Aspire orchestration configuration for the eShop application
 // =============================================================================
 
-using Aspire.Hosting;
-using Aspire.Hosting.Testing;
-
 namespace app.Host.Tests;
 
 /// <summary>
