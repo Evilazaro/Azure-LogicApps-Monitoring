@@ -125,7 +125,7 @@ hooks:
   # Exit Behavior: Fails provisioning if any step fails (continueOnError: false)
   preprovision:
     posix:
-      shell: sh
+      shell: bash
       run: |
         # ======================================
         # GitHub Actions Summary - Start
@@ -196,8 +196,13 @@ hooks:
           echo "**Duration:** ${HOOK_DURATION}s" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           
-          # Fail if any step failed
-          if [[ "$BUILD_STATUS" == *"Failed"* ]] || [[ "$TEST_STATUS" == *"Failed"* ]] || [[ "$VALIDATION_STATUS" == *"Failed"* ]]; then
+          # Fail if any step failed (POSIX-compatible pattern matching)
+          HAS_FAILURE=false
+          case "$BUILD_STATUS" in *Failed*) HAS_FAILURE=true ;; esac
+          case "$TEST_STATUS" in *Failed*) HAS_FAILURE=true ;; esac
+          case "$VALIDATION_STATUS" in *Failed*) HAS_FAILURE=true ;; esac
+          
+          if [ "$HAS_FAILURE" = "true" ]; then
             echo "> ⚠️ **Warning:** One or more preprovision tasks failed. Check logs above for details." >> $GITHUB_STEP_SUMMARY
             exit 1
           else
@@ -297,7 +302,7 @@ hooks:
   # Identity and stored in local user secrets (not committed to source control).
   postprovision:
     posix:
-      shell: sh
+      shell: bash
       run: |
         # ======================================
         # GitHub Actions Summary - Start
@@ -342,7 +347,12 @@ hooks:
           echo "**Duration:** ${HOOK_DURATION}s" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           
-          if [[ "$SECRETS_STATUS" == *"Failed"* ]] || [[ "$TESTDATA_STATUS" == *"Failed"* ]]; then
+          # Check for failures (POSIX-compatible pattern matching)
+          HAS_FAILURE=false
+          case "$SECRETS_STATUS" in *Failed*) HAS_FAILURE=true ;; esac
+          case "$TESTDATA_STATUS" in *Failed*) HAS_FAILURE=true ;; esac
+          
+          if [ "$HAS_FAILURE" = "true" ]; then
             echo "> ⚠️ **Warning:** One or more postprovision tasks failed." >> $GITHUB_STEP_SUMMARY
             exit 1
           else
@@ -419,7 +429,7 @@ hooks:
   # Dependencies: Requires infrastructure to be provisioned (Logic App must exist)
   predeploy:
     posix:
-      shell: sh
+      shell: bash
       run: |
         # ======================================
         # GitHub Actions Summary - Start
@@ -458,12 +468,16 @@ hooks:
           echo "**Duration:** ${HOOK_DURATION}s" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           
-          if [[ "$WORKFLOW_STATUS" == *"Failed"* ]]; then
-            echo "> ⚠️ **Warning:** Workflow deployment failed. Check logs above." >> $GITHUB_STEP_SUMMARY
-            exit 1
-          else
-            echo "> ✅ Logic Apps workflows deployed successfully." >> $GITHUB_STEP_SUMMARY
-          fi
+          # Check for failures (POSIX-compatible pattern matching)
+          case "$WORKFLOW_STATUS" in
+            *Failed*)
+              echo "> ⚠️ **Warning:** Workflow deployment failed. Check logs above." >> $GITHUB_STEP_SUMMARY
+              exit 1
+              ;;
+            *)
+              echo "> ✅ Logic Apps workflows deployed successfully." >> $GITHUB_STEP_SUMMARY
+              ;;
+          esac
         fi
       continueOnError: false
       interactive: true
@@ -530,7 +544,7 @@ hooks:
   # Note: Failures here do not roll back deployment but alert to potential issues
   postdeploy:
     posix:
-      shell: sh
+      shell: bash
       run: |
         # ======================================
         # GitHub Actions Summary - Start
@@ -657,7 +671,7 @@ hooks:
   # handles purging if required for environment recreation.
   postinfradelete:
     posix:
-      shell: sh
+      shell: bash
       run: |
         # ======================================
         # GitHub Actions Summary - Start
