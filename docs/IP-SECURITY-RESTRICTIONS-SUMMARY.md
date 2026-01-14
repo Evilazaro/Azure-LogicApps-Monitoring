@@ -1,10 +1,22 @@
 # IP Security Restrictions - Quick Reference
 
-## Summary of Changes
+## 📑 Table of Contents
+
+- [📋 Summary of Changes](#-summary-of-changes)
+- [📁 Modified Files](#-modified-files)
+- [🔒 Default Security Posture](#-default-security-posture)
+- [🔄 Next Steps](#-next-steps)
+- [💡 Quick Configuration Examples](#-quick-configuration-examples)
+- [✅ Testing Checklist](#-testing-checklist)
+- [📚 Documentation](#-documentation)
+
+---
+
+## 📋 Summary of Changes
 
 IP security restrictions have been implemented across all infrastructure components for enhanced security.
 
-## Modified Files
+## 📁 Modified Files
 
 1. ✅ **Container Apps** - `app.AppHost\infra\orders-api.tmpl.yaml`
 
@@ -32,7 +44,7 @@ IP security restrictions have been implemented across all infrastructure compone
    - Azure services bypass enabled
    - Templates for IP and VNet rules
 
-## Default Security Posture
+## 🔒 Default Security Posture
 
 | Resource Type      | Default Action | Azure Services | VNet Access       | Public IPs |
 | ------------------ | -------------- | -------------- | ----------------- | ---------- |
@@ -42,7 +54,7 @@ IP security restrictions have been implemented across all infrastructure compone
 | SQL Database       | Allow Azure    | Allowed        | Template Provided | Denied     |
 | Storage Account    | Deny           | Bypass         | Template Provided | Denied     |
 
-## Next Steps
+## 🔄 Next Steps
 
 1. **Review VNet CIDR**: Verify 10.0.0.0/16 matches your VNet configuration
 2. **Add Environment-Specific IPs**: Update templates with dev/staging/prod IPs
@@ -50,7 +62,7 @@ IP security restrictions have been implemented across all infrastructure compone
 4. **Enable Monitoring**: Set up alerts for blocked access attempts
 5. **Document Exceptions**: Any IP allowlist entries should be documented
 
-## Quick Configuration Examples
+## 💡 Quick Configuration Examples
 
 ### Add Client IP to SQL Firewall
 
@@ -86,7 +98,7 @@ ipSecurityRestrictions:
     description: Allow client IP
 ```
 
-## Testing Checklist
+## ✅ Testing Checklist
 
 - [ ] Container Apps can communicate internally
 - [ ] Logic Apps can access Service Bus
@@ -96,6 +108,6 @@ ipSecurityRestrictions:
 - [ ] Deployment pipelines can access resources
 - [ ] Monitoring and logging is functional
 
-## Documentation
+## 📚 Documentation
 
 See [IP-SECURITY-RESTRICTIONS.md](./IP-SECURITY-RESTRICTIONS.md) for detailed configuration and troubleshooting guide.

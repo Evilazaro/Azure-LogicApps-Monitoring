@@ -1,8 +1,23 @@
 # IP Security Restrictions Configuration
 
+## 📑 Table of Contents
+
+- [📋 Overview](#-overview)
+- [⚙️ Container Apps (orders-api)](#%EF%B8%8F-container-apps-orders-api)
+- [🔄 Logic Apps Standard (Workflow Engine)](#-logic-apps-standard-workflow-engine)
+- [📦 Azure Container Registry](#-azure-container-registry)
+- [🗄️ Azure SQL Database](#%EF%B8%8F-azure-sql-database)
+- [💾 Storage Accounts (Workflow Storage)](#-storage-accounts-workflow-storage)
+- [🔒 Security Best Practices](#-security-best-practices)
+- [🌍 Environment-Specific Configuration](#-environment-specific-configuration)
+- [🔧 Troubleshooting](#-troubleshooting)
+- [📚 References](#-references)
+
+---
+
 This document describes the IP security restrictions implemented across the Azure infrastructure to enhance security posture.
 
-## Overview
+## 📋 Overview
 
 IP security restrictions have been implemented at multiple layers:
 
@@ -12,7 +27,7 @@ IP security restrictions have been implemented at multiple layers:
 - Azure SQL Database
 - Storage Accounts
 
-## Container Apps (orders-api)
+## ⚙️ Container Apps (orders-api)
 
 **File**: `app.AppHost\infra\orders-api.tmpl.yaml`
 
@@ -37,7 +52,7 @@ ipSecurityRestrictions:
 
 To add additional IP ranges, modify the `ipSecurityRestrictions` array in the template file.
 
-## Logic Apps Standard (Workflow Engine)
+## 🔄 Logic Apps Standard (Workflow Engine)
 
 **File**: `infra-old\workload\logic-app.bicep`
 
@@ -77,7 +92,7 @@ ipSecurityRestrictionsDefaultAction: 'Deny'
 
 Add additional IP rules by inserting new objects in the `ipSecurityRestrictions` array with appropriate priority values (lower numbers = higher priority).
 
-## Azure Container Registry
+## 📦 Azure Container Registry
 
 **File**: `infra\resources.bicep`
 
@@ -121,7 +136,7 @@ virtualNetworkRules: [
 ]
 ```
 
-## Azure SQL Database
+## 🗄️ Azure SQL Database
 
 **File**: `infra\OrdersDatabase\OrdersDatabase.module.bicep`
 
@@ -169,7 +184,7 @@ resource sqlFirewallRule_ClientIP 'Microsoft.Sql/servers/firewallRules@2023-08-0
 }
 ```
 
-## Storage Accounts (Workflow Storage)
+## 💾 Storage Accounts (Workflow Storage)
 
 **File**: `infra-old\shared\data\main.bicep`
 
@@ -213,7 +228,7 @@ virtualNetworkRules: [
 ]
 ```
 
-## Security Best Practices
+## 🔒 Security Best Practices
 
 1. **Principle of Least Privilege**: Start with deny-all and explicitly allow only required sources
 2. **Use VNet Integration**: Prefer VNet service endpoints over public IP allowlists
@@ -222,7 +237,7 @@ virtualNetworkRules: [
 5. **Environment-Specific Rules**: Use different rules for dev/staging/production
 6. **Monitoring**: Enable diagnostic logging for failed access attempts
 
-## Environment-Specific Configuration
+## 🌍 Environment-Specific Configuration
 
 ### Development
 
@@ -240,7 +255,7 @@ virtualNetworkRules: [
 - Only allow production VNets and essential services
 - Document all exceptions with business justification
 
-## Troubleshooting
+## 🔧 Troubleshooting
 
 ### Common Issues:
 
@@ -258,7 +273,7 @@ virtualNetworkRules: [
    - Check VNet integration is properly configured
    - Verify service-to-service rules allow internal traffic
 
-## References
+## 📚 References
 
 - [Azure App Service IP Restrictions](https://learn.microsoft.com/azure/app-service/app-service-ip-restrictions)
 - [Container Apps Ingress Configuration](https://learn.microsoft.com/azure/container-apps/ingress)
