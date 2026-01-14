@@ -726,17 +726,23 @@ main() {
     local sql_output
     local sql_exit_code=0
     
-    # Use Azure AD access token authentication with sqlcmd
-    # Note: sqlcmd requires the token to be passed via -G flag for Azure AD auth
+    # Use Azure AD access token authentication with go-sqlcmd
+    # For go-sqlcmd (Microsoft's new Go-based sqlcmd), use --authentication-method
+    # with the access token passed via environment variable SQLCMDPASSWORD
+    # Reference: https://github.com/microsoft/go-sqlcmd
+    export SQLCMDPASSWORD="$access_token"
+    
     sql_output=$(sqlcmd \
         -S "tcp:${server_fqdn},1433" \
         -d "$DATABASE_NAME" \
-        -G \
-        -P "$access_token" \
+        --authentication-method ActiveDirectoryAccessToken \
         -N \
         -l "$COMMAND_TIMEOUT" \
         -i "$sql_file" \
         2>&1) || sql_exit_code=$?
+    
+    # Clear the token from environment
+    unset SQLCMDPASSWORD
 
     # Clean up temporary file
     rm -f "$sql_file"

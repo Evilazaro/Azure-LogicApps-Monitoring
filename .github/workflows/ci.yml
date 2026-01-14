@@ -152,8 +152,7 @@ jobs:
             # Step 5: Run unit tests
             # ------------------------------------------------------------------------
             # Executes all unit tests in the solution and captures results.
-            # --logger trx: Generates test results in TRX format for rich reporting.
-            # --report-trx: Supports MSTest.Sdk projects (new Microsoft Testing Platform).
+            # Uses --logger trx for standard VSTest TRX output.
             # continue-on-error: Allows subsequent steps to parse results on failure.
             # ------------------------------------------------------------------------
             - name: "🧪 Run unit tests"
@@ -163,14 +162,15 @@ jobs:
                   # Create TestResults directory to ensure it exists
                   mkdir -p TestResults
 
-                  # Run tests with TRX reporter
+                  # Run tests with TRX logger (standard VSTest approach)
                   dotnet test app.sln \
                     --configuration Release \
+                    --no-build \
                     --verbosity normal \
                     --logger "trx;LogFileName=test-results.trx" \
-                    --results-directory TestResults \
-                    --report-trx --report-trx-filename test-results.trx \
-                    2>&1 || true
+                    --results-directory TestResults
+
+                  TEST_EXIT_CODE=$?
 
                   # Debug: List test results
                   echo "::group::Test Results Directory Contents"
@@ -180,13 +180,12 @@ jobs:
                   ls -la TestResults/ 2>/dev/null || echo "TestResults directory not found or empty"
                   echo "::endgroup::"
 
-                  # Check if any tests failed
-                  if [ -f "TestResults/test-results.trx" ]; then
-                    if grep -q 'outcome="Failed"' TestResults/test-results.trx 2>/dev/null; then
-                      echo "::error::Some tests failed"
-                      exit 1
-                    fi
-                  fi
+                  exit $TEST_EXIT_CODE
+
+            # ------------------------------------------------------------------------
+            # Step 6: Parse test results
+            # ------------------------------------------------------------------------
+            # Extracts test metrics from TRX files for job summary.
             # Parses total, passed, failed, and skipped test counts.
             # Sets outputs for use in summary generation.
             # ------------------------------------------------------------------------

@@ -182,7 +182,7 @@ jobs:
       # Executes all unit tests to validate code correctness before deployment.
       # Fails fast to prevent expensive provisioning if tests fail.
       # continue-on-error: Allows result parsing and summary generation.
-      # Note: Uses --report-trx for MSTest.Sdk projects compatibility.
+      # Uses --logger trx for standard VSTest TRX output.
       # ------------------------------------------------------------------------
       - name: "🧪 Run unit tests"
         id: test
@@ -191,15 +191,15 @@ jobs:
           # Create TestResults directory to ensure it exists
           mkdir -p TestResults
 
-          # Run tests with TRX reporter
-          # The --report-trx flag works with MSTest.Sdk (new Microsoft Testing Platform)
+          # Run tests with TRX logger (standard VSTest approach)
           dotnet test app.sln \
             --configuration Release \
+            --no-build \
             --verbosity normal \
             --logger "trx;LogFileName=test-results.trx" \
-            --results-directory TestResults \
-            --report-trx --report-trx-filename test-results.trx \
-            2>&1 || true
+            --results-directory TestResults
+
+          TEST_EXIT_CODE=$?
 
           # Debug: List test results
           echo "::group::Test Results Directory Contents"
@@ -209,13 +209,7 @@ jobs:
           ls -la TestResults/ 2>/dev/null || echo "TestResults directory not found or empty"
           echo "::endgroup::"
 
-          # Check if any tests failed (look for failures in output)
-          if [ -f "TestResults/test-results.trx" ]; then
-            if grep -q 'outcome="Failed"' TestResults/test-results.trx 2>/dev/null; then
-              echo "::error::Some tests failed"
-              exit 1
-            fi
-          fi
+          exit $TEST_EXIT_CODE
       # Parses total, passed, failed, and skipped test counts.
       # ------------------------------------------------------------------------
       - name: "📊 Parse test results"
