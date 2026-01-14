@@ -125,7 +125,7 @@ hooks:
   # Exit Behavior: Fails provisioning if any step fails (continueOnError: false)
   preprovision:
     posix:
-      shell: bash
+      shell: sh
       run: |
         # ======================================
         # GitHub Actions Summary - Start
@@ -302,7 +302,7 @@ hooks:
   # Identity and stored in local user secrets (not committed to source control).
   postprovision:
     posix:
-      shell: bash
+      shell: sh
       run: |
         # ======================================
         # GitHub Actions Summary - Start
@@ -429,7 +429,7 @@ hooks:
   # Dependencies: Requires infrastructure to be provisioned (Logic App must exist)
   predeploy:
     posix:
-      shell: bash
+      shell: sh
       run: |
         # ======================================
         # GitHub Actions Summary - Start
@@ -544,7 +544,7 @@ hooks:
   # Note: Failures here do not roll back deployment but alert to potential issues
   postdeploy:
     posix:
-      shell: bash
+      shell: sh
       run: |
         # ======================================
         # GitHub Actions Summary - Start
@@ -671,7 +671,7 @@ hooks:
   # handles purging if required for environment recreation.
   postinfradelete:
     posix:
-      shell: bash
+      shell: sh
       run: |
         # ======================================
         # GitHub Actions Summary - Start
