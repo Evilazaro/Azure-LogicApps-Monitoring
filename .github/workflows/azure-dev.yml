@@ -65,7 +65,7 @@ on:
           - staging
           - prod
 
-  pull_request:
+  push:
     branches:
       - main
 
