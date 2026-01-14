@@ -6,22 +6,22 @@
 
 ### Deployment Principles
 
-| # | Principle | Statement | Implementation |
-|---|-----------|-----------|----------------|
+| #       | Principle                  | Statement                       | Implementation              |
+| ------- | -------------------------- | ------------------------------- | --------------------------- |
 | **D-1** | **Infrastructure as Code** | All infrastructure is versioned | Bicep templates in `infra/` |
-| **D-2** | **GitOps** | Git is the source of truth | GitHub Actions, azd |
-| **D-3** | **Immutable Deployments** | Replace, don't modify | Container image deployment |
-| **D-4** | **Environment Parity** | Dev mirrors production | Same Bicep across envs |
-| **D-5** | **Zero Downtime** | No service interruption | Rolling updates |
+| **D-2** | **GitOps**                 | Git is the source of truth      | GitHub Actions, azd         |
+| **D-3** | **Immutable Deployments**  | Replace, don't modify           | Container image deployment  |
+| **D-4** | **Environment Parity**     | Dev mirrors production          | Same Bicep across envs      |
+| **D-5** | **Zero Downtime**          | No service interruption         | Rolling updates             |
 
 ### Deployment Tooling
 
-| Tool | Purpose | Usage |
-|------|---------|-------|
-| **Azure Developer CLI (azd)** | Developer workflow orchestration | `azd up`, `azd deploy` |
-| **GitHub Actions** | CI/CD automation | PR validation, deployment |
-| **Bicep** | Infrastructure as Code | Resource provisioning |
-| **Azure CLI** | Resource management | Hook scripts |
+| Tool                          | Purpose                          | Usage                     |
+| ----------------------------- | -------------------------------- | ------------------------- |
+| **Azure Developer CLI (azd)** | Developer workflow orchestration | `azd up`, `azd deploy`    |
+| **GitHub Actions**            | CI/CD automation                 | PR validation, deployment |
+| **Bicep**                     | Infrastructure as Code           | Resource provisioning     |
+| **Azure CLI**                 | Resource management              | Hook scripts              |
 
 ---
 
@@ -59,12 +59,12 @@ flowchart LR
 
 ### Environment Configuration
 
-| Environment | Subscription | Resource Naming | SKU Tier |
-|-------------|--------------|-----------------|----------|
-| **Local** | N/A | Local emulators | Emulators |
-| **Dev** | Non-prod | `{name}-dev-{region}` | Consumption/Basic |
-| **Staging** | Non-prod | `{name}-stg-{region}` | Standard |
-| **Production** | Prod | `{name}-prod-{region}` | Premium |
+| Environment    | Subscription | Resource Naming        | SKU Tier          |
+| -------------- | ------------ | ---------------------- | ----------------- |
+| **Local**      | N/A          | Local emulators        | Emulators         |
+| **Dev**        | Non-prod     | `{name}-dev-{region}`  | Consumption/Basic |
+| **Staging**    | Non-prod     | `{name}-stg-{region}`  | Standard          |
+| **Production** | Prod         | `{name}-prod-{region}` | Premium           |
 
 ---
 
@@ -108,20 +108,20 @@ flowchart TB
 
 ### CI Pipeline (ci.yml)
 
-| Stage | Actions | Artifacts |
-|-------|---------|-----------|
-| **Build** | `dotnet restore`, `dotnet build` | Build outputs |
-| **Test** | `dotnet test`, `coverlet` | Test results, coverage |
-| **Analyze** | Code scanning, security analysis | SARIF reports |
+| Stage       | Actions                          | Artifacts              |
+| ----------- | -------------------------------- | ---------------------- |
+| **Build**   | `dotnet restore`, `dotnet build` | Build outputs          |
+| **Test**    | `dotnet test`, `coverlet`        | Test results, coverage |
+| **Analyze** | Code scanning, security analysis | SARIF reports          |
 
 ### CD Pipeline (azure-dev.yml)
 
-| Stage | Actions | Description |
-|-------|---------|-------------|
-| **Package** | Build container images | Multi-architecture images |
-| **Provision** | `azd provision` | Deploy Bicep infrastructure |
-| **Deploy** | `azd deploy` | Deploy application containers |
-| **Verify** | Health check validation | Endpoint availability |
+| Stage         | Actions                 | Description                   |
+| ------------- | ----------------------- | ----------------------------- |
+| **Package**   | Build container images  | Multi-architecture images     |
+| **Provision** | `azd provision`         | Deploy Bicep infrastructure   |
+| **Deploy**    | `azd deploy`            | Deploy application containers |
+| **Verify**    | Health check validation | Endpoint availability         |
 
 ---
 
@@ -184,12 +184,12 @@ flowchart TB
 
 ### Bicep Parameters
 
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| `location` | string | Azure region for deployment |
+| Parameter         | Type   | Description                             |
+| ----------------- | ------ | --------------------------------------- |
+| `location`        | string | Azure region for deployment             |
 | `environmentName` | string | Environment identifier (dev, stg, prod) |
-| `principalId` | string | Deploying user/service principal |
-| `principalType` | string | ServicePrincipal or User |
+| `principalId`     | string | Deploying user/service principal        |
+| `principalType`   | string | ServicePrincipal or User                |
 
 ---
 
@@ -219,13 +219,13 @@ hooks:
 
 ### azd Commands
 
-| Command | Purpose | When Used |
-|---------|---------|-----------|
-| `azd init` | Initialize project | New project setup |
+| Command         | Purpose               | When Used              |
+| --------------- | --------------------- | ---------------------- |
+| `azd init`      | Initialize project    | New project setup      |
 | `azd provision` | Deploy infrastructure | Infrastructure changes |
-| `azd deploy` | Deploy applications | Code changes |
-| `azd up` | Provision + Deploy | Full deployment |
-| `azd down` | Delete all resources | Environment cleanup |
+| `azd deploy`    | Deploy applications   | Code changes           |
+| `azd up`        | Provision + Deploy    | Full deployment        |
+| `azd down`      | Delete all resources  | Environment cleanup    |
 
 ---
 
@@ -271,16 +271,16 @@ flowchart LR
 
 ### Hook Scripts Inventory
 
-| Script | Purpose | Platform |
-|--------|---------|----------|
-| `check-dev-workstation.ps1/.sh` | Validate dev environment prerequisites | Windows/Linux |
-| `preprovision.ps1/.sh` | Pre-deployment validation | Windows/Linux |
-| `postprovision.ps1/.sh` | Post-deployment configuration | Windows/Linux |
-| `sql-managed-identity-config.ps1/.sh` | Configure SQL Managed Identity | Windows/Linux |
-| `configure-federated-credential.ps1/.sh` | Setup OIDC for GitHub Actions | Windows/Linux |
-| `deploy-workflow.ps1/.sh` | Deploy Logic Apps workflows | Windows/Linux |
-| `clean-secrets.ps1/.sh` | Remove local secrets | Windows/Linux |
-| `postinfradelete.ps1/.sh` | Cleanup after infrastructure deletion | Windows/Linux |
+| Script                                   | Purpose                                | Platform      |
+| ---------------------------------------- | -------------------------------------- | ------------- |
+| `check-dev-workstation.ps1/.sh`          | Validate dev environment prerequisites | Windows/Linux |
+| `preprovision.ps1/.sh`                   | Pre-deployment validation              | Windows/Linux |
+| `postprovision.ps1/.sh`                  | Post-deployment configuration          | Windows/Linux |
+| `sql-managed-identity-config.ps1/.sh`    | Configure SQL Managed Identity         | Windows/Linux |
+| `configure-federated-credential.ps1/.sh` | Setup OIDC for GitHub Actions          | Windows/Linux |
+| `deploy-workflow.ps1/.sh`                | Deploy Logic Apps workflows            | Windows/Linux |
+| `clean-secrets.ps1/.sh`                  | Remove local secrets                   | Windows/Linux |
+| `postinfradelete.ps1/.sh`                | Cleanup after infrastructure deletion  | Windows/Linux |
 
 ---
 
@@ -288,11 +288,11 @@ flowchart LR
 
 ### Release Strategy
 
-| Strategy | Description | Rollback |
-|----------|-------------|----------|
+| Strategy            | Description                   | Rollback                     |
+| ------------------- | ----------------------------- | ---------------------------- |
 | **Rolling Updates** | Gradual container replacement | Automatic with health probes |
-| **Blue-Green** | Full environment swap | Switch traffic back |
-| **Canary** | Percentage-based rollout | Reduce traffic percentage |
+| **Blue-Green**      | Full environment swap         | Switch traffic back          |
+| **Canary**          | Percentage-based rollout      | Reduce traffic percentage    |
 
 ### Container Deployment
 
@@ -318,12 +318,12 @@ sequenceDiagram
 
 ### Deployment Verification
 
-| Check | Method | Criteria |
-|-------|--------|----------|
-| **Health Endpoint** | HTTP GET /health | HTTP 200 |
-| **Readiness** | HTTP GET /ready | HTTP 200 |
-| **Liveness** | HTTP GET /alive | HTTP 200 |
-| **Smoke Tests** | API endpoint calls | Expected responses |
+| Check               | Method             | Criteria           |
+| ------------------- | ------------------ | ------------------ |
+| **Health Endpoint** | HTTP GET /health   | HTTP 200           |
+| **Readiness**       | HTTP GET /ready    | HTTP 200           |
+| **Liveness**        | HTTP GET /alive    | HTTP 200           |
+| **Smoke Tests**     | API endpoint calls | Expected responses |
 
 ---
 
@@ -359,11 +359,11 @@ flowchart LR
 
 ### Deployment Secrets
 
-| Secret | Storage | Usage |
-|--------|---------|-------|
-| **AZURE_CLIENT_ID** | GitHub Variables | Service principal ID |
-| **AZURE_TENANT_ID** | GitHub Variables | Azure AD tenant |
-| **AZURE_SUBSCRIPTION_ID** | GitHub Variables | Target subscription |
+| Secret                    | Storage          | Usage                |
+| ------------------------- | ---------------- | -------------------- |
+| **AZURE_CLIENT_ID**       | GitHub Variables | Service principal ID |
+| **AZURE_TENANT_ID**       | GitHub Variables | Azure AD tenant      |
+| **AZURE_SUBSCRIPTION_ID** | GitHub Variables | Target subscription  |
 
 > **Note:** No actual secrets are stored. OIDC federated credentials provide secure, secret-free authentication.
 
@@ -436,13 +436,13 @@ flowchart TB
 
 ## Cross-Architecture Relationships
 
-| Related Architecture | Connection | Reference |
-|---------------------|------------|-----------|
-| **Technology Architecture** | Technology stack deployed | [Technology Architecture](04-technology-architecture.md#azure-platform-components) |
-| **Security Architecture** | OIDC and secret management | [Security Architecture](06-security-architecture.md#secret-management) |
-| **Observability Architecture** | Deployment monitoring | [Observability Architecture](05-observability-architecture.md#deployment-observability) |
-| **Application Architecture** | Service deployment targets | [Application Architecture](03-application-architecture.md#deployment-view) |
+| Related Architecture           | Connection                 | Reference                                                                               |
+| ------------------------------ | -------------------------- | --------------------------------------------------------------------------------------- |
+| **Technology Architecture**    | Technology stack deployed  | [Technology Architecture](04-technology-architecture.md#azure-platform-components)      |
+| **Security Architecture**      | OIDC and secret management | [Security Architecture](06-security-architecture.md#secret-management)                  |
+| **Observability Architecture** | Deployment monitoring      | [Observability Architecture](05-observability-architecture.md#deployment-observability) |
+| **Application Architecture**   | Service deployment targets | [Application Architecture](03-application-architecture.md#deployment-view)              |
 
 ---
 
-*Last Updated: January 2026*
+_Last Updated: January 2026_
