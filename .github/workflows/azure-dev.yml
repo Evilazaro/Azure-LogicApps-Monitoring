@@ -134,6 +134,11 @@ jobs:
       DEPLOY_HEALTH_MODEL: false
 
     steps:
+      - name: "Update Linux packages"
+        run: |
+          echo "Updating Linux packages..."
+          sudo apt-get update && sudo apt-get install -y unzip
+
       # ------------------------------------------------------------------------
       # Step 1: Checkout repository
       # ------------------------------------------------------------------------
@@ -159,6 +164,11 @@ jobs:
             8.x
             9.x
             10.x
+
+      - name: "🛠️ Update .NET Workloads"
+        run: |
+          echo "Updating .NET Workloads:"
+          dotnet workload update
 
       # ------------------------------------------------------------------------
       # Step 2.5: Cache NuGet packages
