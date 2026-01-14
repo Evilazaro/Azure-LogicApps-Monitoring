@@ -214,7 +214,8 @@ jobs:
       # Step 8: Run unit tests
       # ------------------------------------------------------------------------
       # Executes unit tests in the solution and captures results in TRX format.
-      # Uses TRX logger for test result reporting and GitHub integration.
+      # All test projects use MSTest.Sdk which requires -- --report-trx for TRX output.
+      # TRX files are generated in bin/<config>/<tfm>/TestResults/ directories.
       # continue-on-error: Allows subsequent steps to parse and report results on failure.
       #
       # NOTE: app.Host.Tests is excluded because it contains .NET Aspire integration
@@ -237,33 +238,26 @@ jobs:
 
           # Run unit tests excluding Aspire integration tests (app.Host.Tests)
           # which require Docker containers that aren't available in CI.
-          # Using --logger "trx;LogFilePrefix=TestResults" for consistent TRX output
+          # All projects use MSTest.Sdk - TRX output via --report-trx
           echo "::group::Running Tests"
           dotnet test app.sln \
             --configuration Release \
             --no-build \
             --verbosity normal \
             --logger "console;verbosity=detailed" \
-            --logger "trx;LogFilePrefix=TestResults" \
-            --results-directory TestResults \
-            --filter "FullyQualifiedName!~app.Host.Tests"
+            --filter "FullyQualifiedName!~app.Host.Tests" \
+            -- --report-trx
 
           TEST_EXIT_CODE=$?
           echo "Test exit code: $TEST_EXIT_CODE"
           echo "::endgroup::"
 
-          # Collect all TRX files from various locations into TestResults folder
+          # Collect TRX files from bin directories into TestResults folder
           echo "::group::Collecting TRX Files"
-          # Copy TRX files from bin directories (MSTest SDK projects)
           find . -path "*/bin/*/TestResults/*.trx" -type f -exec cp -v {} TestResults/ \; 2>/dev/null || true
-          # Copy TRX files from obj directories if any
-          find . -path "*/obj/*/TestResults/*.trx" -type f -exec cp -v {} TestResults/ \; 2>/dev/null || true
           echo ""
           echo "TRX files in TestResults directory:"
           ls -la TestResults/*.trx 2>/dev/null || echo "No TRX files found in TestResults/"
-          echo ""
-          echo "Total TRX files found in workspace:"
-          find . -name "*.trx" -type f 2>/dev/null | head -20
           echo "::endgroup::"
 
           # If tests failed, show detailed failure information
