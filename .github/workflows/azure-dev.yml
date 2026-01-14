@@ -34,7 +34,7 @@
 # ------------------------------------------------------------------------------
 # WORKFLOW METADATA
 # ------------------------------------------------------------------------------
-name: "Azure Developer CLI - Provision & Deploy"
+name: "Continuous Integration, Provision & Deploy"
 
 # ------------------------------------------------------------------------------
 # TRIGGER CONFIGURATION
@@ -428,7 +428,7 @@ jobs:
           tenant-id: ${{ vars.AZURE_TENANT_ID }}
           subscription-id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
 
-      - name: "🔐 Authenticate Azure Developer CLI (OIDC)"
+      - name: "🔐 Authenticate Azure Developer CLI (Federated Credentials)"
         run: |
           azd auth login `
             --client-id "$Env:AZURE_CLIENT_ID" `
