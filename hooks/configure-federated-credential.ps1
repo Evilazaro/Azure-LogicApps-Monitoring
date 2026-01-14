@@ -1,4 +1,6 @@
 #!/usr/bin/env pwsh
+#Requires -Version 7.0
+
 <#
 .SYNOPSIS
     Configures federated identity credentials for GitHub Actions OIDC authentication.
@@ -6,6 +8,9 @@
 .DESCRIPTION
     This script adds or updates federated identity credentials in an Azure AD App Registration
     to enable GitHub Actions workflows to authenticate using OIDC (OpenID Connect).
+
+    This script is designed to be run as an Azure Developer CLI (azd) hook, where environment
+    variables are automatically loaded during the provisioning process.
 
 .PARAMETER AppName
     The display name of the Azure AD App Registration.
@@ -23,13 +28,17 @@
     The GitHub Environment name to configure. Default: dev
 
 .EXAMPLE
-    ./configure-federated-credential.ps1 -AppName "my-app-registration"
+    ./configure-federated-credential.ps1 -AppName 'my-app-registration'
 
 .EXAMPLE
-    ./configure-federated-credential.ps1 -AppObjectId "00000000-0000-0000-0000-000000000000" -Environment "prod"
+    ./configure-federated-credential.ps1 -AppObjectId '00000000-0000-0000-0000-000000000000' -Environment 'prod'
+
+.NOTES
+    Author: Azure Developer CLI Hook
+    Requires: Azure CLI, PowerShell 7.0+
 #>
 
-[CmdletBinding()]
+[CmdletBinding(SupportsShouldProcess)]
 param(
     [Parameter(Mandatory = $false)]
     [string]$AppName,
@@ -38,74 +47,296 @@ param(
     [string]$AppObjectId,
 
     [Parameter(Mandatory = $false)]
-    [string]$GitHubOrg = "Evilazaro",
+    [string]$GitHubOrg = 'Evilazaro',
 
     [Parameter(Mandatory = $false)]
-    [string]$GitHubRepo = "Azure-LogicApps-Monitoring",
+    [string]$GitHubRepo = 'Azure-LogicApps-Monitoring',
 
     [Parameter(Mandatory = $false)]
-    [string]$Environment = "dev"
+    [string]$Environment = 'dev'
 )
 
 Set-StrictMode -Version Latest
-$ErrorActionPreference = "Stop"
+$ErrorActionPreference = 'Stop'
 
-Write-Host "========================================" -ForegroundColor Cyan
-Write-Host "Federated Identity Credential Setup" -ForegroundColor Cyan
-Write-Host "========================================" -ForegroundColor Cyan
+#region Constants
+$script:GITHUB_OIDC_ISSUER = 'https://token.actions.githubusercontent.com'
+$script:AZURE_AD_AUDIENCE = 'api://AzureADTokenExchange'
+#endregion Constants
 
-# Check if user is logged in to Azure CLI
-Write-Host "`nChecking Azure CLI login status..." -ForegroundColor Yellow
-$account = az account show 2>$null | ConvertFrom-Json
-if (-not $account) {
-    Write-Host "Not logged in to Azure CLI. Please run 'az login' first." -ForegroundColor Red
-    exit 1
+#region Helper Functions
+function Write-InfoMessage {
+    <#
+    .SYNOPSIS
+        Writes an informational message to the host.
+    #>
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$Message,
+
+        [Parameter(Mandatory = $false)]
+        [ConsoleColor]$ForegroundColor = [ConsoleColor]::White
+    )
+    Write-Host $Message -ForegroundColor $ForegroundColor
 }
-Write-Host "Logged in as: $($account.user.name)" -ForegroundColor Green
-Write-Host "Subscription: $($account.name) ($($account.id))" -ForegroundColor Green
 
-# Get the App Registration Object ID
-if (-not $AppObjectId) {
-    if (-not $AppName) {
-        Write-Host "`nNo AppName or AppObjectId provided. Listing available App Registrations..." -ForegroundColor Yellow
-        $apps = az ad app list --all --query "[].{DisplayName:displayName, AppId:appId, ObjectId:id}" -o json | ConvertFrom-Json
-        
-        if ($apps.Count -eq 0) {
-            Write-Host "No App Registrations found in this tenant." -ForegroundColor Red
+function Write-SectionHeader {
+    <#
+    .SYNOPSIS
+        Writes a formatted section header.
+    #>
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$Title
+    )
+    Write-Host '========================================' -ForegroundColor Cyan
+    Write-Host $Title -ForegroundColor Cyan
+    Write-Host '========================================' -ForegroundColor Cyan
+}
+
+function Test-AzureCliLogin {
+    <#
+    .SYNOPSIS
+        Verifies Azure CLI login status.
+    .OUTPUTS
+        PSCustomObject containing the account information if logged in.
+    #>
+    [CmdletBinding()]
+    [OutputType([PSCustomObject])]
+    param()
+
+    Write-InfoMessage -Message "`nChecking Azure CLI login status..." -ForegroundColor Yellow
+
+    try {
+        $accountJson = az account show --output json 2>&1
+        if ($LASTEXITCODE -ne 0) {
+            throw 'Not logged in to Azure CLI'
+        }
+        $account = $accountJson | ConvertFrom-Json
+        Write-InfoMessage -Message "Logged in as: $($account.user.name)" -ForegroundColor Green
+        Write-InfoMessage -Message "Subscription: $($account.name) ($($account.id))" -ForegroundColor Green
+        return $account
+    }
+    catch {
+        Write-InfoMessage -Message "Not logged in to Azure CLI. Please run 'az login' first." -ForegroundColor Red
+        exit 1
+    }
+}
+
+function Get-AppRegistration {
+    <#
+    .SYNOPSIS
+        Retrieves the App Registration by name or Object ID.
+    .OUTPUTS
+        PSCustomObject containing the app registration details.
+    #>
+    [CmdletBinding()]
+    [OutputType([PSCustomObject])]
+    param(
+        [Parameter(Mandatory = $false)]
+        [string]$Name,
+
+        [Parameter(Mandatory = $false)]
+        [string]$ObjectId
+    )
+
+    if (-not [string]::IsNullOrWhiteSpace($ObjectId)) {
+        return [PSCustomObject]@{ id = $ObjectId }
+    }
+
+    if ([string]::IsNullOrWhiteSpace($Name)) {
+        Write-InfoMessage -Message "`nNo AppName or AppObjectId provided. Listing available App Registrations..." -ForegroundColor Yellow
+
+        $appsJson = az ad app list --all --query "[].{DisplayName:displayName, AppId:appId, ObjectId:id}" --output json 2>&1
+        if ($LASTEXITCODE -ne 0) {
+            Write-InfoMessage -Message 'Failed to list App Registrations.' -ForegroundColor Red
             exit 1
         }
 
-        Write-Host "`nAvailable App Registrations:" -ForegroundColor Cyan
+        $apps = $appsJson | ConvertFrom-Json
+
+        if ($null -eq $apps -or $apps.Count -eq 0) {
+            Write-InfoMessage -Message 'No App Registrations found in this tenant.' -ForegroundColor Red
+            exit 1
+        }
+
+        Write-InfoMessage -Message "`nAvailable App Registrations:" -ForegroundColor Cyan
         $apps | Format-Table -AutoSize
-        
-        $AppName = Read-Host "Enter the App Registration display name"
+
+        $Name = Read-Host 'Enter the App Registration display name'
     }
 
-    Write-Host "`nLooking up App Registration: $AppName" -ForegroundColor Yellow
-    $app = az ad app list --display-name $AppName --query "[0]" -o json | ConvertFrom-Json
-    
-    if (-not $app) {
-        Write-Host "App Registration '$AppName' not found." -ForegroundColor Red
+    Write-InfoMessage -Message "`nLooking up App Registration: $Name" -ForegroundColor Yellow
+
+    $appJson = az ad app list --display-name $Name --query '[0]' --output json 2>&1
+    if ($LASTEXITCODE -ne 0) {
+        Write-InfoMessage -Message "Failed to look up App Registration '$Name'." -ForegroundColor Red
         exit 1
     }
-    
-    $AppObjectId = $app.id
-    Write-Host "Found App Registration:" -ForegroundColor Green
-    Write-Host "  Display Name: $($app.displayName)" -ForegroundColor White
-    Write-Host "  App ID (Client ID): $($app.appId)" -ForegroundColor White
-    Write-Host "  Object ID: $AppObjectId" -ForegroundColor White
+
+    $app = $appJson | ConvertFrom-Json
+
+    if ($null -eq $app) {
+        Write-InfoMessage -Message "App Registration '$Name' not found." -ForegroundColor Red
+        exit 1
+    }
+
+    Write-InfoMessage -Message 'Found App Registration:' -ForegroundColor Green
+    Write-InfoMessage -Message "  Display Name: $($app.displayName)"
+    Write-InfoMessage -Message "  App ID (Client ID): $($app.appId)"
+    Write-InfoMessage -Message "  Object ID: $($app.id)"
+
+    return $app
 }
 
-# List existing federated credentials
-Write-Host "`nChecking existing federated credentials..." -ForegroundColor Yellow
-$existingCredentials = az ad app federated-credential list --id $AppObjectId -o json 2>$null | ConvertFrom-Json
+function Get-FederatedCredentials {
+    <#
+    .SYNOPSIS
+        Retrieves existing federated credentials for an app.
+    .OUTPUTS
+        Array of federated credential objects.
+    #>
+    [CmdletBinding()]
+    [OutputType([PSCustomObject[]])]
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$AppObjectId
+    )
 
-if ($existingCredentials -and $existingCredentials.Count -gt 0) {
-    Write-Host "Existing federated credentials:" -ForegroundColor Cyan
+    Write-InfoMessage -Message "`nChecking existing federated credentials..." -ForegroundColor Yellow
+
+    try {
+        $credentialsJson = az ad app federated-credential list --id $AppObjectId --output json 2>&1
+        if ($LASTEXITCODE -ne 0) {
+            return @()
+        }
+        $credentials = $credentialsJson | ConvertFrom-Json
+        return $credentials
+    }
+    catch {
+        return @()
+    }
+}
+
+function New-FederatedCredential {
+    <#
+    .SYNOPSIS
+        Creates a new federated credential for an app.
+    .OUTPUTS
+        PSCustomObject containing the created credential.
+    #>
+    [CmdletBinding(SupportsShouldProcess)]
+    [OutputType([PSCustomObject])]
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$AppObjectId,
+
+        [Parameter(Mandatory = $true)]
+        [string]$CredentialName,
+
+        [Parameter(Mandatory = $true)]
+        [string]$Subject,
+
+        [Parameter(Mandatory = $true)]
+        [string]$Description
+    )
+
+    if ($PSCmdlet.ShouldProcess($CredentialName, 'Create federated credential')) {
+        Write-InfoMessage -Message "`nCreating federated credential..." -ForegroundColor Yellow
+        Write-InfoMessage -Message "  Name: $CredentialName"
+        Write-InfoMessage -Message "  Issuer: $script:GITHUB_OIDC_ISSUER"
+        Write-InfoMessage -Message "  Subject: $Subject"
+        Write-InfoMessage -Message "  Audience: $script:AZURE_AD_AUDIENCE"
+
+        $credentialParams = @{
+            name        = $CredentialName
+            issuer      = $script:GITHUB_OIDC_ISSUER
+            subject     = $Subject
+            audiences   = @($script:AZURE_AD_AUDIENCE)
+            description = $Description
+        }
+
+        # Create a temporary file for the JSON parameters
+        $tempFile = [System.IO.Path]::GetTempFileName()
+        try {
+            $credentialParams | ConvertTo-Json -Depth 10 | Set-Content -Path $tempFile -Encoding UTF8
+
+            $resultJson = az ad app federated-credential create --id $AppObjectId --parameters "@$tempFile" --output json 2>&1
+            if ($LASTEXITCODE -ne 0) {
+                throw "Azure CLI returned error: $resultJson"
+            }
+
+            $result = $resultJson | ConvertFrom-Json
+            Write-InfoMessage -Message "`nFederated credential created successfully!" -ForegroundColor Green
+            Write-InfoMessage -Message "  ID: $($result.id)"
+            Write-InfoMessage -Message "  Name: $($result.name)"
+            return $result
+        }
+        finally {
+            if (Test-Path -Path $tempFile) {
+                Remove-Item -Path $tempFile -Force -ErrorAction SilentlyContinue
+            }
+        }
+    }
+}
+
+function Show-WorkflowGuidance {
+    <#
+    .SYNOPSIS
+        Displays guidance for configuring GitHub Actions workflows.
+    #>
+    [CmdletBinding()]
+    param()
+
+    Write-SectionHeader -Title 'Setup Complete!'
+    Write-InfoMessage -Message "`nYour GitHub Actions workflow should now be able to authenticate using OIDC."
+    Write-InfoMessage -Message 'Make sure your workflow has the following permissions:'
+    Write-Host @'
+
+permissions:
+  id-token: write
+  contents: read
+
+'@ -ForegroundColor Gray
+
+    Write-InfoMessage -Message 'And uses the azure/login action like this:'
+    Write-Host @'
+
+- uses: azure/login@v2
+  with:
+    client-id: ${{ secrets.AZURE_CLIENT_ID }}
+    tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+    subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+'@ -ForegroundColor Gray
+}
+#endregion Helper Functions
+
+#region Main Script
+
+#endregion Helper Functions
+
+#region Main Script
+Write-SectionHeader -Title 'Federated Identity Credential Setup'
+
+# Verify Azure CLI login
+$null = Test-AzureCliLogin
+
+# Get the App Registration
+$app = Get-AppRegistration -Name $AppName -ObjectId $AppObjectId
+$resolvedAppObjectId = $app.id
+
+# Get existing federated credentials
+$existingCredentials = Get-FederatedCredentials -AppObjectId $resolvedAppObjectId
+
+if ($null -ne $existingCredentials -and $existingCredentials.Count -gt 0) {
+    Write-InfoMessage -Message 'Existing federated credentials:' -ForegroundColor Cyan
     foreach ($cred in $existingCredentials) {
-        Write-Host "  - Name: $($cred.name)" -ForegroundColor White
+        Write-InfoMessage -Message "  - Name: $($cred.name)"
         Write-Host "    Subject: $($cred.subject)" -ForegroundColor Gray
-        Write-Host ""
+        Write-Host ''
     }
 }
 
@@ -116,109 +347,61 @@ $credentialName = "github-actions-${Environment}-environment"
 # Check if credential already exists
 $existingCred = $existingCredentials | Where-Object { $_.subject -eq $subjectClaim }
 
-if ($existingCred) {
-    Write-Host "Federated credential for subject '$subjectClaim' already exists." -ForegroundColor Green
-    Write-Host "Credential Name: $($existingCred.name)" -ForegroundColor White
+if ($null -ne $existingCred) {
+    Write-InfoMessage -Message "Federated credential for subject '$subjectClaim' already exists." -ForegroundColor Green
+    Write-InfoMessage -Message "Credential Name: $($existingCred.name)"
     exit 0
 }
 
-# Create the federated credential
-Write-Host "`nCreating federated credential..." -ForegroundColor Yellow
-Write-Host "  Name: $credentialName" -ForegroundColor White
-Write-Host "  Issuer: https://token.actions.githubusercontent.com" -ForegroundColor White
-Write-Host "  Subject: $subjectClaim" -ForegroundColor White
-Write-Host "  Audience: api://AzureADTokenExchange" -ForegroundColor White
+# Create the environment federated credential
+$null = New-FederatedCredential `
+    -AppObjectId $resolvedAppObjectId `
+    -CredentialName $credentialName `
+    -Subject $subjectClaim `
+    -Description "GitHub Actions OIDC for $GitHubOrg/$GitHubRepo $Environment environment"
+#endregion Main Script
 
-$credentialParams = @{
-    name        = $credentialName
-    issuer      = "https://token.actions.githubusercontent.com"
-    subject     = $subjectClaim
-    audiences   = @("api://AzureADTokenExchange")
-    description = "GitHub Actions OIDC for $GitHubOrg/$GitHubRepo $Environment environment"
-} | ConvertTo-Json -Compress
-
-try {
-    $result = az ad app federated-credential create --id $AppObjectId --parameters $credentialParams -o json | ConvertFrom-Json
-    Write-Host "`nFederated credential created successfully!" -ForegroundColor Green
-    Write-Host "  ID: $($result.id)" -ForegroundColor White
-    Write-Host "  Name: $($result.name)" -ForegroundColor White
-}
-catch {
-    Write-Host "Failed to create federated credential: $_" -ForegroundColor Red
-    exit 1
-}
-
-# Optionally create credentials for branch and pull request
-Write-Host "`n========================================" -ForegroundColor Cyan
-Write-Host "Additional Credential Options" -ForegroundColor Cyan
-Write-Host "========================================" -ForegroundColor Cyan
+#region Optional Credentials
+Write-SectionHeader -Title 'Additional Credential Options'
 
 $createBranch = Read-Host "`nDo you want to create a credential for the 'main' branch? (y/N)"
 if ($createBranch -eq 'y' -or $createBranch -eq 'Y') {
     $branchSubject = "repo:${GitHubOrg}/${GitHubRepo}:ref:refs/heads/main"
-    $branchCredName = "github-actions-main-branch"
-    
+    $branchCredName = 'github-actions-main-branch'
+
     $branchExists = $existingCredentials | Where-Object { $_.subject -eq $branchSubject }
-    if (-not $branchExists) {
-        $branchParams = @{
-            name        = $branchCredName
-            issuer      = "https://token.actions.githubusercontent.com"
-            subject     = $branchSubject
-            audiences   = @("api://AzureADTokenExchange")
-            description = "GitHub Actions OIDC for $GitHubOrg/$GitHubRepo main branch"
-        } | ConvertTo-Json -Compress
-        
-        az ad app federated-credential create --id $AppObjectId --parameters $branchParams -o json | Out-Null
-        Write-Host "Created credential for main branch." -ForegroundColor Green
+    if ($null -eq $branchExists) {
+        $null = New-FederatedCredential `
+            -AppObjectId $resolvedAppObjectId `
+            -CredentialName $branchCredName `
+            -Subject $branchSubject `
+            -Description "GitHub Actions OIDC for $GitHubOrg/$GitHubRepo main branch"
+        Write-InfoMessage -Message 'Created credential for main branch.' -ForegroundColor Green
     }
     else {
-        Write-Host "Credential for main branch already exists." -ForegroundColor Yellow
+        Write-InfoMessage -Message 'Credential for main branch already exists.' -ForegroundColor Yellow
     }
 }
 
-$createPR = Read-Host "Do you want to create a credential for pull requests? (y/N)"
+$createPR = Read-Host 'Do you want to create a credential for pull requests? (y/N)'
 if ($createPR -eq 'y' -or $createPR -eq 'Y') {
     $prSubject = "repo:${GitHubOrg}/${GitHubRepo}:pull_request"
-    $prCredName = "github-actions-pull-request"
-    
+    $prCredName = 'github-actions-pull-request'
+
     $prExists = $existingCredentials | Where-Object { $_.subject -eq $prSubject }
-    if (-not $prExists) {
-        $prParams = @{
-            name        = $prCredName
-            issuer      = "https://token.actions.githubusercontent.com"
-            subject     = $prSubject
-            audiences   = @("api://AzureADTokenExchange")
-            description = "GitHub Actions OIDC for $GitHubOrg/$GitHubRepo pull requests"
-        } | ConvertTo-Json -Compress
-        
-        az ad app federated-credential create --id $AppObjectId --parameters $prParams -o json | Out-Null
-        Write-Host "Created credential for pull requests." -ForegroundColor Green
+    if ($null -eq $prExists) {
+        $null = New-FederatedCredential `
+            -AppObjectId $resolvedAppObjectId `
+            -CredentialName $prCredName `
+            -Subject $prSubject `
+            -Description "GitHub Actions OIDC for $GitHubOrg/$GitHubRepo pull requests"
+        Write-InfoMessage -Message 'Created credential for pull requests.' -ForegroundColor Green
     }
     else {
-        Write-Host "Credential for pull requests already exists." -ForegroundColor Yellow
+        Write-InfoMessage -Message 'Credential for pull requests already exists.' -ForegroundColor Yellow
     }
 }
+#endregion Optional Credentials
 
-Write-Host "`n========================================" -ForegroundColor Cyan
-Write-Host "Setup Complete!" -ForegroundColor Green
-Write-Host "========================================" -ForegroundColor Cyan
-Write-Host "`nYour GitHub Actions workflow should now be able to authenticate using OIDC." -ForegroundColor White
-Write-Host "Make sure your workflow has the following permissions:" -ForegroundColor White
-Write-Host @"
-
-permissions:
-  id-token: write
-  contents: read
-
-"@ -ForegroundColor Gray
-
-Write-Host "And uses the azure/login action like this:" -ForegroundColor White
-Write-Host @"
-
-- uses: azure/login@v2
-  with:
-    client-id: `${{ secrets.AZURE_CLIENT_ID }}
-    tenant-id: `${{ secrets.AZURE_TENANT_ID }}
-    subscription-id: `${{ secrets.AZURE_SUBSCRIPTION_ID }}
-
-"@ -ForegroundColor Gray
+# Show workflow guidance
+Show-WorkflowGuidance

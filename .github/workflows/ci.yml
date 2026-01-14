@@ -86,11 +86,13 @@ concurrency:
 #   - pull-requests: read  → Required for PR metadata access
 #   - statuses: write      → Required to report commit status checks
 #   - checks: write        → Required for dorny/test-reporter to create check runs
+#   - actions: read        → Required for dorny/test-reporter in private repos
 permissions:
   contents: read
   pull-requests: read
   statuses: write
   checks: write
+  actions: read
 
 # ------------------------------------------------------------------------------
 # JOBS DEFINITION
@@ -128,15 +130,16 @@ jobs:
 
     steps:
       # ------------------------------------------------------------------------
-      # Step 1: Update Linux packages
+      # Step 1: Install required tools
       # ------------------------------------------------------------------------
       # Updates apt package list and installs unzip utility.
       # Required for extracting certain .NET workload components.
       # ------------------------------------------------------------------------
-      - name: "Update Linux packages"
+      - name: "📦 Install required tools"
         run: |
-          echo "Updating Linux packages..."
-          sudo apt-get update && sudo apt-get install -y unzip
+          echo "Installing required tools..."
+          sudo apt-get update
+          sudo apt-get install -y unzip
 
       # ------------------------------------------------------------------------
       # Step 2: Checkout repository
@@ -502,14 +505,13 @@ jobs:
       # ------------------------------------------------------------------------
       # Compiles the main infrastructure template and all referenced modules.
       # Validates syntax, type checking, and module references.
-      # Note: Runs az bicep install again to ensure Bicep is available in this action step.
+      # Bicep CLI is already available from previous step.
       # Output redirected to /dev/null; only success/failure matters.
       # ------------------------------------------------------------------------
       - name: "🏗️ Build main.bicep"
         uses: azure/cli@v2
         with:
           inlineScript: |
-            az bicep install
             echo "Building infra/main.bicep..."
             az bicep build --file infra/main.bicep --stdout > /dev/null
             echo "✅ infra/main.bicep compiled successfully"
