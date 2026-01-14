@@ -259,10 +259,17 @@ jobs:
       # NOTE: app.Host.Tests is excluded because it contains .NET Aspire integration
       # tests that require Docker containers. These tests run locally with Docker
       # Desktop but fail in CI without proper container infrastructure.
+      #
+      # IMPORTANT: .NET 10 SDK requires opting into the new dotnet test experience
+      # for Microsoft.Testing.Platform (MSTest.Sdk). This is done via the
+      # DOTNET_CLI_TESTINGPLATFORM_ENABLE environment variable.
+      # See: https://aka.ms/dotnet-test-mtp-error
       # ------------------------------------------------------------------------
       - name: "🧪 Run unit tests"
         id: test
         continue-on-error: true
+        env:
+          DOTNET_CLI_TESTINGPLATFORM_ENABLE: "1"
         run: |
           # Create TestResults directory to ensure it exists
           mkdir -p TestResults
@@ -495,17 +502,15 @@ jobs:
       # ------------------------------------------------------------------------
       # Step 13: Setup Azure CLI and Bicep
       # ------------------------------------------------------------------------
-      # Uses azure/cli action to run Azure CLI commands.
+      # Azure CLI is pre-installed on GitHub-hosted runners.
       # Installs Bicep CLI for template compilation and displays version.
       # No Azure authentication needed at this stage - only local validation.
       # ------------------------------------------------------------------------
       - name: "🔧 Setup Azure CLI and Bicep"
-        uses: azure/cli@v2
-        with:
-          inlineScript: |
-            az --version
-            az bicep install
-            az bicep version
+        run: |
+          az --version
+          az bicep install
+          az bicep version
 
       # ------------------------------------------------------------------------
       # Step 14: Build Bicep templates
@@ -516,12 +521,10 @@ jobs:
       # ------------------------------------------------------------------------
       - name: "🏗️ Build Bicep templates"
         id: bicep-build
-        uses: azure/cli@v2
-        with:
-          inlineScript: |
-            echo "Building infra/main.bicep..."
-            az bicep build --file infra/main.bicep --stdout > /dev/null
-            echo "✅ infra/main.bicep compiled successfully"
+        run: |
+          echo "Building infra/main.bicep..."
+          az bicep build --file infra/main.bicep --stdout > /dev/null
+          echo "✅ infra/main.bicep compiled successfully"
 
       # ------------------------------------------------------------------------
       # Step 15: Install Azure Developer CLI (azd)
