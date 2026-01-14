@@ -100,6 +100,7 @@ permissions:
   contents: read
   statuses: write
   checks: write
+  actions: read
 
 # ------------------------------------------------------------------------------
 # JOBS DEFINITION
@@ -168,15 +169,16 @@ jobs:
 
     steps:
       # ------------------------------------------------------------------------
-      # Step 1: Update Linux packages
+      # Step 1: Install required tools
       # ------------------------------------------------------------------------
       # Updates apt package list and installs unzip utility.
       # Required for extracting certain .NET workload components.
       # ------------------------------------------------------------------------
-      - name: "Update Linux packages"
+      - name: "📦 Install required tools"
         run: |
-          echo "Updating Linux packages..."
-          sudo apt-get update && sudo apt-get install -y unzip
+          echo "Installing required tools..."
+          sudo apt-get update
+          sudo apt-get install -y unzip
 
       # ------------------------------------------------------------------------
       # Step 2: Checkout repository
@@ -513,11 +515,11 @@ jobs:
       # ------------------------------------------------------------------------
       - name: "🔐 Authenticate Azure Developer CLI (Federated Credentials)"
         run: |
-          azd auth login `
-            --client-id "$Env:AZURE_CLIENT_ID" `
-            --federated-credential-provider "github" `
-            --tenant-id "$Env:AZURE_TENANT_ID"
-        shell: pwsh
+          azd auth login \
+            --client-id "$AZURE_CLIENT_ID" \
+            --federated-credential-provider "github" \
+            --tenant-id "$AZURE_TENANT_ID"
+        shell: bash
 
       # ------------------------------------------------------------------------
       # Step 20: Provision Azure Infrastructure
