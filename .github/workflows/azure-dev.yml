@@ -180,9 +180,7 @@ jobs:
       # Fails fast to prevent expensive provisioning if tests fail.
       # ------------------------------------------------------------------------
       - name: "🧪 Run unit tests"
-        run: |
-          mkdir -p ${{ github.workspace }}/TestResults
-          dotnet test app.sln --configuration Release --no-build --verbosity normal --logger "trx;LogFileName=test-results.trx" --results-directory ${{ github.workspace }}/TestResults
+        run: dotnet test app.sln --configuration Release --no-build --verbosity normal --logger "trx" --results-directory TestResults
 
       # ------------------------------------------------------------------------
       # Step 6: Upload test results
@@ -195,7 +193,7 @@ jobs:
         if: always()
         with:
           name: deployment-test-results
-          path: ${{ github.workspace }}/TestResults/**/*.trx
+          path: TestResults
           retention-days: 7
           if-no-files-found: ignore
 
@@ -244,10 +242,12 @@ jobs:
       # ------------------------------------------------------------------------
       - name: "🛠️ Install sqlcmd"
         run: |
-          curl https://packages.microsoft.com/keys/microsoft.asc | sudo tee /etc/apt/trusted.gpg.d/microsoft.asc
-          sudo add-apt-repository "$(wget -qO- https://packages.microsoft.com/config/ubuntu/$(lsb_release -rs)/prod.list)"
-          sudo apt-get update
-          sudo apt-get install -y sqlcmd || echo "sqlcmd installation failed, continuing..."
+          # Install sqlcmd (Go version) via direct download
+          curl -sSL -o sqlcmd.tar.bz2 https://github.com/microsoft/go-sqlcmd/releases/latest/download/sqlcmd-linux-amd64.tar.bz2
+          sudo tar -xjf sqlcmd.tar.bz2 -C /usr/local/bin
+          rm sqlcmd.tar.bz2
+          sqlcmd --version || echo "sqlcmd installation verification failed"
+        continue-on-error: true
 
       # ------------------------------------------------------------------------
       # Step 11: Make hook scripts executable
