@@ -45,6 +45,7 @@ param location string = resourceGroup().location
 @minLength(50)
 param userAssignedIdentityId string
 
+@description('Resource ID of the subnet for Logic App VNet integration')
 param apiSubnetId string
 
 @description('User Assigned Identity name for reference')

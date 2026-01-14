@@ -152,6 +152,7 @@ jobs:
       # Multiple versions support different project target frameworks.
       # ------------------------------------------------------------------------
       - name: "🔧 Setup .NET SDK"
+        id: setup-dotnet
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: |
@@ -160,11 +161,26 @@ jobs:
             10.x
 
       # ------------------------------------------------------------------------
+      # Step 2.5: Cache NuGet packages
+      # ------------------------------------------------------------------------
+      # Caches NuGet packages to speed up subsequent builds.
+      # Key includes OS and solution hash for cache invalidation.
+      # ------------------------------------------------------------------------
+      - name: "💾 Cache NuGet packages"
+        uses: actions/cache@v4
+        with:
+          path: ~/.nuget/packages
+          key: ${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj', '**/*.sln') }}
+          restore-keys: |
+            ${{ runner.os }}-nuget-
+
+      # ------------------------------------------------------------------------
       # Step 3: Restore NuGet packages
       # ------------------------------------------------------------------------
       # Downloads all NuGet dependencies defined in project files.
       # ------------------------------------------------------------------------
       - name: "📦 Restore dependencies"
+        id: restore
         run: dotnet restore app.sln --verbosity minimal
 
       # ------------------------------------------------------------------------
@@ -174,6 +190,7 @@ jobs:
       # This ensures the application compiles before attempting deployment.
       # ------------------------------------------------------------------------
       - name: "🏗️ Build .NET solution"
+        id: build
         run: dotnet build app.sln --configuration Release --no-restore /p:TreatWarningsAsErrors=false
 
       # ------------------------------------------------------------------------
@@ -333,10 +350,10 @@ jobs:
       # This catches syntax errors before attempting deployment.
       # ------------------------------------------------------------------------
       - name: "🏗️ Build Bicep templates"
+        id: bicep-build
         uses: azure/cli@v2
         with:
           inlineScript: |
-            az bicep install
             echo "Building infra/main.bicep..."
             az bicep build --file infra/main.bicep --stdout > /dev/null
             echo "✅ infra/main.bicep compiled successfully"
@@ -512,11 +529,11 @@ jobs:
           echo "| **Commit SHA** | [\`${GITHUB_SHA:0:7}\`](${{ github.server_url }}/${{ github.repository }}/commit/${{ github.sha }}) |" >> $GITHUB_STEP_SUMMARY
           echo "| **Workflow Run** | [#${{ github.run_number }}](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}) |" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          if [[ "${{ job.status }}" == "success" ]]; then
+          if [ "${{ job.status }}" = "success" ]; then
             echo "### ✅ Deployment completed successfully!" >> $GITHUB_STEP_SUMMARY
             echo "" >> $GITHUB_STEP_SUMMARY
             echo "The application has been deployed to the **${{ github.event.inputs.environment || vars.AZURE_ENV_NAME }}** environment." >> $GITHUB_STEP_SUMMARY
-          elif [[ "${{ job.status }}" == "cancelled" ]]; then
+          elif [ "${{ job.status }}" = "cancelled" ]; then
             echo "### ⚠️ Deployment was cancelled" >> $GITHUB_STEP_SUMMARY
           else
             echo "### ❌ Deployment failed" >> $GITHUB_STEP_SUMMARY

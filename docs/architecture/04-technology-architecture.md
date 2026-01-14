@@ -257,12 +257,13 @@ infra/
 ├── shared/
 │   ├── main.bicep               # Shared infrastructure orchestrator
 │   ├── data/
-│   │   └── main.bicep           # SQL Server, Database
+│   │   └── main.bicep           # SQL Server, Database, Storage, Private Endpoints
 │   ├── identity/
 │   │   └── main.bicep           # Managed Identity, Role assignments
 │   ├── monitoring/
 │   │   ├── main.bicep           # Monitoring orchestrator
 │   │   ├── app-insights.bicep   # Application Insights
+│   │   ├── azure-monitor-health-model.bicep  # Health Model (tenant scope)
 │   │   └── log-analytics-workspace.bicep
 │   └── network/
 │       └── main.bicep           # VNet, Subnets

@@ -131,6 +131,20 @@ jobs:
                       10.x
 
             # ------------------------------------------------------------------------
+            # Step 2.5: Cache NuGet packages
+            # ------------------------------------------------------------------------
+            # Caches NuGet packages to speed up subsequent builds.
+            # Key includes OS, solution hash for cache invalidation.
+            # ------------------------------------------------------------------------
+            - name: "💾 Cache NuGet packages"
+              uses: actions/cache@v4
+              with:
+                  path: ~/.nuget/packages
+                  key: ${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj', '**/*.sln') }}
+                  restore-keys: |
+                      ${{ runner.os }}-nuget-
+
+            # ------------------------------------------------------------------------
             # Step 3: Restore NuGet packages
             # ------------------------------------------------------------------------
             # Downloads and caches all NuGet dependencies defined in project files.
@@ -380,7 +394,7 @@ jobs:
                     echo "" >> $GITHUB_STEP_SUMMARY
                     echo "> **Action Required:** Review the test report above for details on failed tests." >> $GITHUB_STEP_SUMMARY
                     echo "> Download the \`test-results\` artifact for full TRX files." >> $GITHUB_STEP_SUMMARY
-                  elif [[ "${{ job.status }}" != "success" ]]; then
+                  elif [ "${{ job.status }}" != "success" ]; then
                     echo "> **Note:** Check the build logs above for detailed error information." >> $GITHUB_STEP_SUMMARY
                   fi
 
@@ -467,7 +481,7 @@ jobs:
                   echo "| **Commit** | [\`${GITHUB_SHA:0:7}\`](${{ github.server_url }}/${{ github.repository }}/commit/${{ github.sha }}) |" >> $GITHUB_STEP_SUMMARY
                   echo "| **Triggered By** | @${{ github.actor }} |" >> $GITHUB_STEP_SUMMARY
                   echo "" >> $GITHUB_STEP_SUMMARY
-                  if [[ "${{ job.status }}" != "success" ]]; then
+                  if [ "${{ job.status }}" != "success" ]; then
                     echo "> **Note:** Check the Bicep compilation logs above for detailed error information." >> $GITHUB_STEP_SUMMARY
                   fi
 
@@ -511,7 +525,7 @@ jobs:
                   echo "" >> $GITHUB_STEP_SUMMARY
 
                   # Determine overall status
-                  if [[ "${{ needs.build-dotnet.result }}" == "success" && "${{ needs.build-bicep.result }}" == "success" ]]; then
+                  if [ "${{ needs.build-dotnet.result }}" = "success" ] && [ "${{ needs.build-bicep.result }}" = "success" ]; then
                     echo "### ✅ All CI checks passed!" >> $GITHUB_STEP_SUMMARY
                     echo "" >> $GITHUB_STEP_SUMMARY
                     echo "This branch is ready for deployment." >> $GITHUB_STEP_SUMMARY

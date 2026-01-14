@@ -101,11 +101,11 @@ resource registry 'Microsoft.ContainerRegistry/registries@2025-11-01' = {
     }
   }
   tags: tags
-  // Premium SKU provides:
-  // - Geo-replication for high availability
-  // - Enhanced throughput and storage capacity
-  // - Advanced security features including content trust
-  // - Private link support for network isolation
+  // Basic SKU provides:
+  // - Standard container registry features
+  // - Suitable for development and testing workloads
+  // - 10 GB storage included
+  // - Upgrade to Premium for geo-replication, enhanced throughput, and private link support
   sku: {
     name: 'Basic'
   }
