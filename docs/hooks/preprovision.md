@@ -456,10 +456,10 @@ flowchart LR
     CheckQuota --> Cleanup
     Cleanup --> Complete
 
-    classDef startEnd fill:#e8f5e9,stroke:#2e7d32,stroke-width:3px,color:#1b5e20
-    classDef process fill:#e3f2fd,stroke:#1976d2,stroke-width:2px,color:#0d47a1
-    classDef decision fill:#fff3e0,stroke:#f57c00,stroke-width:2px,color:#e65100
-    classDef failure fill:#ffcdd2,stroke:#d32f2f,stroke-width:2px,color:#b71c1c
+    classDef startEnd fill:#D1FAE5,stroke:#10B981,stroke-width:3px,color:#065F46
+    classDef process fill:#EEF2FF,stroke:#4F46E5,stroke-width:2px,color:#312E81
+    classDef decision fill:#FEF3C7,stroke:#F59E0B,stroke-width:2px,color:#92400E
+    classDef failure fill:#FEE2E2,stroke:#EF4444,stroke-width:2px,color:#991B1B
 
     class Start,Complete startEnd
     class ValidateRuntime,CheckDotNet,CheckAzd,CheckAzCLI,CheckAuth,CheckBicep,CheckProviders,CheckQuota,ClearSecrets process

@@ -566,11 +566,11 @@ flowchart LR
     %% --- Style Definitions ---
     %% Color palette follows Material Design guidelines
     %% Green: Success states | Blue: Process steps | Orange: Data ops | Purple: Generation
-    classDef startEndStyle fill:#e8f5e9,stroke:#2e7d32,stroke-width:3px,color:#1b5e20
-    classDef processStyle fill:#e3f2fd,stroke:#1976d2,stroke-width:2px,color:#0d47a1
-    classDef detailStyle fill:#f5f5f5,stroke:#9e9e9e,stroke-width:1px,color:#424242
-    classDef dataStyle fill:#fff3e0,stroke:#f57c00,stroke-width:2px,color:#e65100
-    classDef generateStyle fill:#e1bee7,stroke:#7b1fa2,stroke-width:2px,color:#4a148c
+    classDef startEndStyle fill:#D1FAE5,stroke:#10B981,stroke-width:3px,color:#065F46
+    classDef processStyle fill:#EEF2FF,stroke:#4F46E5,stroke-width:2px,color:#312E81
+    classDef detailStyle fill:#F3F4F6,stroke:#6B7280,stroke-width:1px,color:#374151
+    classDef dataStyle fill:#FEF3C7,stroke:#F59E0B,stroke-width:2px,color:#92400E
+    classDef generateStyle fill:#F3E8FF,stroke:#A855F7,stroke-width:2px,color:#581C87
 
     %% --- Apply Styles ---
     class Start,End startEndStyle

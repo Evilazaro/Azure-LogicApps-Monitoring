@@ -184,13 +184,13 @@ flowchart LR
     %% =====================================================
     %% Style Definitions
     %% =====================================================
-    classDef trigger fill:#4A90D9,stroke:#2E5A8B,color:#FFFFFF,stroke-width:2px,font-weight:bold
-    classDef validation fill:#F5A623,stroke:#C78419,color:#FFFFFF,stroke-width:2px
-    classDef decision fill:#9B59B6,stroke:#7D3C98,color:#FFFFFF,stroke-width:2px
-    classDef process fill:#3498DB,stroke:#2471A3,color:#FFFFFF,stroke-width:2px
-    classDef success fill:#27AE60,stroke:#1E8449,color:#FFFFFF,stroke-width:2px,font-weight:bold
-    classDef warning fill:#E67E22,stroke:#BA6418,color:#FFFFFF,stroke-width:2px
-    classDef error fill:#E74C3C,stroke:#B83A2F,color:#FFFFFF,stroke-width:2px
+    classDef trigger fill:#312E81,stroke:#4F46E5,color:#fff,stroke-width:3px,font-weight:bold
+    classDef validation fill:#FEF3C7,stroke:#F59E0B,color:#92400E,stroke-width:2px
+    classDef decision fill:#F3E8FF,stroke:#A855F7,color:#581C87,stroke-width:2px
+    classDef process fill:#EEF2FF,stroke:#4F46E5,color:#312E81,stroke-width:2px
+    classDef success fill:#065F46,stroke:#10B981,color:#fff,stroke-width:3px,font-weight:bold
+    classDef warning fill:#FEF3C7,stroke:#F59E0B,color:#92400E,stroke-width:2px
+    classDef error fill:#FEE2E2,stroke:#EF4444,color:#991B1B,stroke-width:2px
 
     %% =====================================================
     %% Trigger Phase
@@ -291,12 +291,12 @@ flowchart LR
     %% =====================================================
     %% Subgraph Styling
     %% =====================================================
-    style TRIGGER fill:#E8F4FD,stroke:#4A90D9,stroke-width:2px
-    style VALIDATION fill:#FFF3E0,stroke:#F5A623,stroke-width:2px
-    style QUERY fill:#E3F2FD,stroke:#3498DB,stroke-width:2px
-    style FILTER fill:#F3E5F5,stroke:#9B59B6,stroke-width:2px
-    style EXECUTE fill:#E8F5E9,stroke:#27AE60,stroke-width:2px
-    style EXIT fill:#FAFAFA,stroke:#9E9E9E,stroke-width:2px
+    style TRIGGER fill:#EEF2FF,stroke:#4F46E5,stroke-width:2px
+    style VALIDATION fill:#FEF3C7,stroke:#F59E0B,stroke-width:2px
+    style QUERY fill:#EEF2FF,stroke:#4F46E5,stroke-width:2px
+    style FILTER fill:#F3E8FF,stroke:#A855F7,stroke-width:2px
+    style EXECUTE fill:#D1FAE5,stroke:#10B981,stroke-width:2px
+    style EXIT fill:#F3F4F6,stroke:#6B7280,stroke-width:2px
 ```
 
 ### 🔗 Azure REST API Operations

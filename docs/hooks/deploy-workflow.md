@@ -240,18 +240,18 @@ flowchart LR
     phase4 --> phase5
 
     %% ===== STYLES =====
-    classDef startNode fill:#5c6bc0,stroke:#3949ab,stroke-width:2px,color:#ffffff,font-weight:bold
-    classDef processNode fill:#42a5f5,stroke:#1976d2,stroke-width:2px,color:#ffffff
-    classDef validationNode fill:#66bb6a,stroke:#388e3c,stroke-width:2px,color:#ffffff
-    classDef azureNode fill:#0078d4,stroke:#005a9e,stroke-width:2px,color:#ffffff
-    classDef successNode fill:#4caf50,stroke:#2e7d32,stroke-width:3px,color:#ffffff,font-weight:bold
+    classDef startNode fill:#312E81,stroke:#4F46E5,stroke-width:3px,color:#fff,font-weight:bold
+    classDef processNode fill:#EEF2FF,stroke:#4F46E5,stroke-width:2px,color:#312E81
+    classDef validationNode fill:#D1FAE5,stroke:#10B981,stroke-width:2px,color:#065F46
+    classDef azureNode fill:#EEF2FF,stroke:#4F46E5,stroke-width:2px,color:#312E81
+    classDef successNode fill:#065F46,stroke:#10B981,stroke-width:3px,color:#fff,font-weight:bold
 
     %% ===== SUBGRAPH STYLES =====
-    style phase1 fill:#e3f2fd,stroke:#1976d2,stroke-width:2px,rx:10
-    style phase2 fill:#e8f5e9,stroke:#388e3c,stroke-width:2px,rx:10
-    style phase3 fill:#fff3e0,stroke:#f57c00,stroke-width:2px,rx:10
-    style phase4 fill:#e1f5fe,stroke:#0288d1,stroke-width:2px,rx:10
-    style phase5 fill:#e8f5e9,stroke:#2e7d32,stroke-width:2px,rx:10
+    style phase1 fill:#EEF2FF,stroke:#4F46E5,stroke-width:2px,rx:10
+    style phase2 fill:#D1FAE5,stroke:#10B981,stroke-width:2px,rx:10
+    style phase3 fill:#FEF3C7,stroke:#F59E0B,stroke-width:2px,rx:10
+    style phase4 fill:#EEF2FF,stroke:#4F46E5,stroke-width:2px,rx:10
+    style phase5 fill:#D1FAE5,stroke:#10B981,stroke-width:2px,rx:10
 ```
 
 #### 📋 Phase Descriptions

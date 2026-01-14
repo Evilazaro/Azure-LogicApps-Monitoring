@@ -234,10 +234,10 @@ flowchart TB
     LAW --> Workbooks
     AI --> Dashboard
 
-    classDef app fill:#e3f2fd,stroke:#1565c0
-    classDef collect fill:#fff3e0,stroke:#ef6c00
-    classDef store fill:#e8f5e9,stroke:#2e7d32
-    classDef viz fill:#f3e5f5,stroke:#7b1fa2
+    classDef app fill:#EEF2FF,stroke:#4F46E5,stroke-width:2px,color:#312E81
+    classDef collect fill:#FEF3C7,stroke:#F59E0B,stroke-width:2px,color:#92400E
+    classDef store fill:#D1FAE5,stroke:#10B981,stroke-width:2px,color:#065F46
+    classDef viz fill:#F3E8FF,stroke:#A855F7,stroke-width:2px,color:#581C87
 
     class API,Web,LA app
     class Exporter,Connector collect

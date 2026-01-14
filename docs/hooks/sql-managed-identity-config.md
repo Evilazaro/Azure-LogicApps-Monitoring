@@ -251,18 +251,18 @@ flowchart LR
     E --> O
 
     %% Styling classes
-    classDef startNode fill:#4caf50,stroke:#2e7d32,stroke-width:2px,color:#fff
-    classDef endNode fill:#607d8b,stroke:#455a64,stroke-width:2px,color:#fff
-    classDef processNode fill:#2196f3,stroke:#1565c0,stroke-width:2px,color:#fff
-    classDef decisionNode fill:#ff9800,stroke:#ef6c00,stroke-width:2px,color:#fff
-    classDef errorNode fill:#f44336,stroke:#c62828,stroke-width:2px,color:#fff
-    classDef successNode fill:#4caf50,stroke:#2e7d32,stroke-width:2px,color:#fff
-    classDef warningNode fill:#ffeb3b,stroke:#f9a825,stroke-width:2px,color:#333
+    classDef startNode fill:#065F46,stroke:#10B981,stroke-width:3px,color:#fff
+    classDef endNode fill:#F3F4F6,stroke:#6B7280,stroke-width:2px,color:#374151
+    classDef processNode fill:#EEF2FF,stroke:#4F46E5,stroke-width:2px,color:#312E81
+    classDef decisionNode fill:#FEF3C7,stroke:#F59E0B,stroke-width:2px,color:#92400E
+    classDef errorNode fill:#FEE2E2,stroke:#EF4444,stroke-width:2px,color:#991B1B
+    classDef successNode fill:#D1FAE5,stroke:#10B981,stroke-width:2px,color:#065F46
+    classDef warningNode fill:#FEF3C7,stroke:#F59E0B,stroke-width:2px,color:#92400E
 
     %% Subgraph styling
-    style validation fill:#e3f2fd,stroke:#1976d2,stroke-width:2px
-    style config fill:#fff3e0,stroke:#ff9800,stroke-width:2px
-    style execution fill:#e8f5e9,stroke:#4caf50,stroke-width:2px
+    style validation fill:#EEF2FF,stroke:#4F46E5,stroke-width:2px
+    style config fill:#FEF3C7,stroke:#F59E0B,stroke-width:2px
+    style execution fill:#D1FAE5,stroke:#10B981,stroke-width:2px
 ```
 
 ### 🔗 Technical Details

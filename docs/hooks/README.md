@@ -166,14 +166,14 @@ flowchart LR
     DevLoop --> ShutdownPhase
     ShutdownPhase --> End
 
-    classDef startEnd fill:#0078d4,stroke:#005a9e,stroke-width:3px,color:#fff
-    classDef ready fill:#28a745,stroke:#218838,stroke-width:3px,color:#fff
-    classDef process fill:#e3f2fd,stroke:#1976d2,stroke-width:2px,color:#0d47a1
-    classDef success fill:#e8f5e9,stroke:#4caf50,stroke-width:2px,color:#1b5e20
-    classDef test fill:#f3e5f5,stroke:#9c27b0,stroke-width:2px,color:#4a148c
-    classDef loop fill:#fff3e0,stroke:#ff9800,stroke-width:2px,color:#e65100
-    classDef debug fill:#ffebee,stroke:#f44336,stroke-width:2px,color:#b71c1c
-    classDef decision fill:#fff3e0,stroke:#f57c00,stroke-width:2px,color:#e65100
+    classDef startEnd fill:#312E81,stroke:#4F46E5,stroke-width:3px,color:#fff
+    classDef ready fill:#065F46,stroke:#10B981,stroke-width:3px,color:#fff
+    classDef process fill:#EEF2FF,stroke:#4F46E5,stroke-width:2px,color:#312E81
+    classDef success fill:#D1FAE5,stroke:#10B981,stroke-width:2px,color:#065F46
+    classDef test fill:#F3E8FF,stroke:#A855F7,stroke-width:2px,color:#581C87
+    classDef loop fill:#FEF3C7,stroke:#F59E0B,stroke-width:2px,color:#92400E
+    classDef debug fill:#FEE2E2,stroke:#EF4444,stroke-width:2px,color:#991B1B
+    classDef decision fill:#FEF3C7,stroke:#F59E0B,stroke-width:2px,color:#92400E
 
     class Start,End startEnd
     class Ready ready
@@ -328,12 +328,12 @@ flowchart LR
 
     LocalLoop --> Code
 
-    classDef startEnd fill:#0078d4,stroke:#005a9e,stroke-width:3px,color:#fff
-    classDef ready fill:#28a745,stroke:#218838,stroke-width:3px,color:#fff
-    classDef process fill:#e3f2fd,stroke:#1976d2,stroke-width:2px,color:#0d47a1
-    classDef success fill:#e8f5e9,stroke:#4caf50,stroke-width:2px,color:#1b5e20
-    classDef decision fill:#fff3e0,stroke:#f57c00,stroke-width:2px,color:#e65100
-    classDef debug fill:#ffebee,stroke:#f44336,stroke-width:2px,color:#b71c1c
+    classDef startEnd fill:#312E81,stroke:#4F46E5,stroke-width:3px,color:#fff
+    classDef ready fill:#065F46,stroke:#10B981,stroke-width:3px,color:#fff
+    classDef process fill:#EEF2FF,stroke:#4F46E5,stroke-width:2px,color:#312E81
+    classDef success fill:#D1FAE5,stroke:#10B981,stroke-width:2px,color:#065F46
+    classDef decision fill:#FEF3C7,stroke:#F59E0B,stroke-width:2px,color:#92400E
+    classDef debug fill:#FEE2E2,stroke:#EF4444,stroke-width:2px,color:#991B1B
     classDef invisible fill:none,stroke:none
 
     class Start startEnd
@@ -569,9 +569,9 @@ requiredVersions:
 # INFRASTRUCTURE CONFIGURATION
 # ------------------------------------------------------------------------------
 infra:
-  provider: bicep    # IaC provider: 'bicep' (recommended) or 'terraform'
-  path: infra        # Relative path to infrastructure templates directory
-  module: main       # Entry point module name (resolves to infra/main.bicep)
+  provider: bicep # IaC provider: 'bicep' (recommended) or 'terraform'
+  path: infra # Relative path to infrastructure templates directory
+  module: main # Entry point module name (resolves to infra/main.bicep)
 
 # ------------------------------------------------------------------------------
 # LIFECYCLE HOOKS
@@ -691,7 +691,7 @@ services:
 # CI/CD PIPELINE CONFIGURATION
 # ------------------------------------------------------------------------------
 pipeline:
-  provider: github   # CI/CD provider: 'github' or 'azdo'
+  provider: github # CI/CD provider: 'github' or 'azdo'
 ```
 
 For this project, azure.yaml defines the .NET Aspire AppHost which internally orchestrates the Orders API and Web App services, specifies the Bicep infrastructure templates in the `infra/` directory, and declares preprovision, postprovision, predeploy, postdeploy, and postinfradelete hooks that execute platform-specific scripts. The preprovision hook now includes comprehensive build and test validation to prevent failed deployments due to code issues. The hooks section is particularly powerful because it allows you to inject custom validation, configuration, and data generation logic into the azd workflow without modifying azd itself. This extensibility makes azd suitable for complex enterprise scenarios where standard deployment workflows need augmentation with organization-specific requirements.
@@ -736,9 +736,9 @@ flowchart LR
 
     PostHook --> Complete[Deployment Complete]
 
-    classDef startNode fill:#0078d4,stroke:#005a9e,stroke-width:2px,color:#fff
-    classDef completeNode fill:#6f42c1,stroke:#5a32a3,stroke-width:2px,color:#fff
-    classDef process fill:#e3f2fd,stroke:#1976d2,stroke-width:2px,color:#0d47a1
+    classDef startNode fill:#312E81,stroke:#4F46E5,stroke-width:2px,color:#fff
+    classDef completeNode fill:#581C87,stroke:#A855F7,stroke-width:2px,color:#fff
+    classDef process fill:#EEF2FF,stroke:#4F46E5,stroke-width:2px,color:#312E81
 
     class Start startNode
     class Complete completeNode
@@ -817,10 +817,10 @@ azd provision
 
 The repository includes production-ready GitHub Actions workflows for continuous integration and deployment:
 
-| Workflow | File | Purpose |
-|----------|------|---------|
-| **CI - Build Validation** | [`.github/workflows/ci.yml`](../../.github/workflows/ci.yml) | Validates .NET and Bicep code on every push and PR |
-| **Azure Developer CLI** | [`.github/workflows/azure-dev.yml`](../../.github/workflows/azure-dev.yml) | Provisions infrastructure and deploys to Azure |
+| Workflow                  | File                                                                       | Purpose                                            |
+| ------------------------- | -------------------------------------------------------------------------- | -------------------------------------------------- |
+| **CI - Build Validation** | [`.github/workflows/ci.yml`](../../.github/workflows/ci.yml)               | Validates .NET and Bicep code on every push and PR |
+| **Azure Developer CLI**   | [`.github/workflows/azure-dev.yml`](../../.github/workflows/azure-dev.yml) | Provisions infrastructure and deploys to Azure     |
 
 ### GitHub Actions
 

@@ -534,10 +534,10 @@ flowchart LR
     SecretsConfig --> ValidationPhase
     ValidationPhase --> Complete
 
-    classDef startEnd fill:#e8f5e9,stroke:#2e7d32,stroke-width:3px,color:#1b5e20
-    classDef process fill:#e3f2fd,stroke:#1976d2,stroke-width:2px,color:#0d47a1
-    classDef config fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px,color:#4a148c
-    classDef loop fill:#fff3e0,stroke:#f57c00,stroke-width:2px,color:#e65100
+    classDef startEnd fill:#D1FAE5,stroke:#10B981,stroke-width:3px,color:#065F46
+    classDef process fill:#EEF2FF,stroke:#4F46E5,stroke-width:2px,color:#312E81
+    classDef config fill:#F3E8FF,stroke:#A855F7,stroke-width:2px,color:#581C87
+    classDef loop fill:#FEF3C7,stroke:#F59E0B,stroke-width:2px,color:#92400E
 
     class Start,Complete startEnd
     class SetEnv,Execute,Validate,ACRAuth,SQLConfig,Clear,Validate2,Summary process
