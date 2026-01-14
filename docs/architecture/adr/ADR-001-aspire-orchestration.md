@@ -4,13 +4,24 @@
 
 ---
 
-## Status
+## 📑 Table of Contents
+
+- [📊 Status](#-status)
+- [📋 Context](#-context)
+- [✅ Decision](#-decision)
+- [⚖️ Consequences](#️-consequences)
+- [🔄 Alternatives Considered](#-alternatives-considered)
+- [📚 References](#-references)
+
+---
+
+## 📊 Status
 
 **Accepted** - January 2025
 
 ---
 
-## Context
+## 📋 Context
 
 The eShop Orders system is a cloud-native distributed application consisting of multiple services:
 
@@ -40,7 +51,7 @@ We need a way to:
 
 ---
 
-## Decision
+## ✅ Decision
 
 We will use **.NET Aspire 13.1.0** as our distributed application orchestration framework.
 
@@ -89,7 +100,7 @@ public static IHostApplicationBuilder AddServiceDefaults(this IHostApplicationBu
 
 ---
 
-## Consequences
+## ⚖️ Consequences
 
 ### Benefits
 
@@ -121,7 +132,7 @@ public static IHostApplicationBuilder AddServiceDefaults(this IHostApplicationBu
 
 ---
 
-## Alternatives Considered
+## 🔄 Alternatives Considered
 
 ### 1. Docker Compose
 
@@ -159,7 +170,7 @@ public static IHostApplicationBuilder AddServiceDefaults(this IHostApplicationBu
 
 ---
 
-## References
+## 📚 References
 
 - [.NET Aspire Documentation](https://learn.microsoft.com/dotnet/aspire/)
 - [AppHost.cs](../../../app.AppHost/AppHost.cs)

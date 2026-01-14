@@ -4,13 +4,25 @@
 
 ---
 
-## Status
+## 📑 Table of Contents
+
+- [📊 Status](#-status)
+- [📋 Context](#-context)
+- [✅ Decision](#-decision)
+- [⚖️ Consequences](#️-consequences)
+- [🔄 Alternatives Considered](#-alternatives-considered)
+- [📈 Telemetry Architecture](#-telemetry-architecture)
+- [📚 References](#-references)
+
+---
+
+## 📊 Status
 
 **Accepted** - January 2025
 
 ---
 
-## Context
+## 📋 Context
 
 The eShop Orders system is a distributed application with multiple services that need comprehensive observability:
 
@@ -41,7 +53,7 @@ The eShop Orders system is a distributed application with multiple services that
 
 ---
 
-## Decision
+## ✅ Decision
 
 We will use **OpenTelemetry SDK** with **Azure Monitor Exporter** for observability instrumentation.
 
@@ -115,7 +127,7 @@ if (Activity.Current != null)
 
 ---
 
-## Consequences
+## ⚖️ Consequences
 
 ### Benefits
 
@@ -147,7 +159,7 @@ if (Activity.Current != null)
 
 ---
 
-## Alternatives Considered
+## 🔄 Alternatives Considered
 
 ### 1. Application Insights SDK (Direct)
 
@@ -186,7 +198,7 @@ if (Activity.Current != null)
 
 ---
 
-## Telemetry Architecture
+## 📈 Telemetry Architecture
 
 ```mermaid
 flowchart TB
@@ -235,7 +247,7 @@ flowchart TB
 
 ---
 
-## References
+## 📚 References
 
 - [OpenTelemetry .NET Documentation](https://opentelemetry.io/docs/instrumentation/net/)
 - [Azure Monitor OpenTelemetry](https://learn.microsoft.com/azure/azure-monitor/app/opentelemetry-overview)

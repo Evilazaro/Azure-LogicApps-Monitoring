@@ -4,13 +4,25 @@
 
 ---
 
-## Status
+## 📑 Table of Contents
+
+- [📊 Status](#-status)
+- [📋 Context](#-context)
+- [✅ Decision](#-decision)
+- [⚖️ Consequences](#️-consequences)
+- [🔄 Alternatives Considered](#-alternatives-considered)
+- [📝 Message Schema](#-message-schema)
+- [📚 References](#-references)
+
+---
+
+## 📊 Status
 
 **Accepted** - January 2025
 
 ---
 
-## Context
+## 📋 Context
 
 The eShop Orders system needs to communicate order events between services:
 
@@ -40,7 +52,7 @@ The eShop Orders system needs to communicate order events between services:
 
 ---
 
-## Decision
+## ✅ Decision
 
 We will use **Azure Service Bus Topics** for asynchronous order event messaging.
 
@@ -103,7 +115,7 @@ public async Task PublishOrderPlacedAsync(Order order)
 
 ---
 
-## Consequences
+## ⚖️ Consequences
 
 ### Benefits
 
@@ -136,7 +148,7 @@ public async Task PublishOrderPlacedAsync(Order order)
 
 ---
 
-## Alternatives Considered
+## 🔄 Alternatives Considered
 
 ### 1. Azure Storage Queues
 
@@ -180,7 +192,7 @@ public async Task PublishOrderPlacedAsync(Order order)
 
 ---
 
-## Message Schema
+## 📝 Message Schema
 
 ### Order Placed Event
 
@@ -211,7 +223,7 @@ public async Task PublishOrderPlacedAsync(Order order)
 
 ---
 
-## References
+## 📚 References
 
 - [Azure Service Bus Documentation](https://learn.microsoft.com/azure/service-bus-messaging/)
 - [OrdersMessageHandler.cs](../../../src/eShop.Orders.API/Handlers/OrdersMessageHandler.cs)
