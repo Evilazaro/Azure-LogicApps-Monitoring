@@ -4,7 +4,22 @@
 
 ---
 
-## 1. Data Architecture Overview
+## 📑 Table of Contents
+
+- [📋 Data Architecture Overview](#-1-data-architecture-overview)
+- [📜 Data Architecture Principles](#-2-data-architecture-principles)
+- [🗺️ Data Landscape Map](#%EF%B8%8F-3-data-landscape-map)
+- [📚 Data Domain Catalog](#-4-data-domain-catalog)
+- [🗄️ Data Store Details](#%EF%B8%8F-5-data-store-details)
+- [🔄 Data Flow Architecture](#-6-data-flow-architecture)
+- [📊 Monitoring Data Flow Architecture](#-7-monitoring-data-flow-architecture)
+- [📡 Telemetry Data Mapping](#-8-telemetry-data-mapping)
+- [🔗 Trace Context Propagation](#-9-trace-context-propagation)
+- [🛠️ Data Dependencies](#%EF%B8%8F-10-data-dependencies)
+
+---
+
+## 📋 1. Data Architecture Overview
 
 The data architecture follows a **service-oriented data ownership model** where each service owns and manages its data store exclusively. Cross-service data access is mediated through APIs and asynchronous events, ensuring loose coupling and independent deployability.
 
@@ -21,7 +36,7 @@ The data architecture follows a **service-oriented data ownership model** where 
 
 ---
 
-## 2. Data Architecture Principles
+## 📜 2. Data Architecture Principles
 
 | Principle                   | Statement                                       | Rationale                                        | Implications                                      |
 | --------------------------- | ----------------------------------------------- | ------------------------------------------------ | ------------------------------------------------- |
@@ -33,7 +48,7 @@ The data architecture follows a **service-oriented data ownership model** where 
 
 ---
 
-## 3. Data Landscape Map
+## 🗺️ 3. Data Landscape Map
 
 ```mermaid
 flowchart LR
@@ -79,7 +94,7 @@ flowchart LR
 
 ---
 
-## 4. Data Domain Catalog
+## 📚 4. Data Domain Catalog
 
 | Data Domain               | Description                                          | Bounded Context | Primary Store        | Owner Service | Steward               |
 | ------------------------- | ---------------------------------------------------- | --------------- | -------------------- | ------------- | --------------------- |
@@ -90,7 +105,7 @@ flowchart LR
 
 ---
 
-## 5. Data Store Details
+## 🗄️ 5. Data Store Details
 
 | Store                  | Technology                 | Purpose                       | Owner Service                | Location                    | Tier/SKU        | Retention   |
 | ---------------------- | -------------------------- | ----------------------------- | ---------------------------- | --------------------------- | --------------- | ----------- |
@@ -103,7 +118,7 @@ flowchart LR
 
 ---
 
-## 6. Data Flow Architecture
+## 🔄 6. Data Flow Architecture
 
 ### Write Path (Order Creation)
 
@@ -155,7 +170,7 @@ sequenceDiagram
 
 ---
 
-## 7. Monitoring Data Flow Architecture
+## 📊 7. Monitoring Data Flow Architecture
 
 ```mermaid
 flowchart LR
@@ -216,7 +231,7 @@ flowchart LR
 
 ---
 
-## 8. Telemetry Data Mapping
+## 📡 8. Telemetry Data Mapping
 
 ### Three Pillars of Observability
 
@@ -321,7 +336,7 @@ flowchart TB
 
 ---
 
-## 9. Trace Context Propagation
+## 🔗 9. Trace Context Propagation
 
 The solution implements **W3C Trace Context** for cross-service correlation:
 
@@ -366,7 +381,7 @@ if (activity != null)
 
 ---
 
-## 10. Data Dependencies
+## 🛠️ 10. Data Dependencies
 
 ```mermaid
 flowchart TD

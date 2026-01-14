@@ -1,10 +1,23 @@
 # Azure Logic Apps Monitoring Solution - Architecture Overview
 
+## 📑 Table of Contents
+
+- [📋 Executive Summary](#-executive-summary)
+- [🏗️ High-Level Architecture](#%EF%B8%8F-high-level-architecture)
+- [📦 Service Inventory](#-service-inventory)
+- [📄 Document Navigation](#-document-navigation)
+- [☁️ Key Azure Resources](#%EF%B8%8F-key-azure-resources)
+- [📁 Repository Structure](#-repository-structure)
+- [🚀 Quick Start](#-quick-start)
+- [📚 Related Documentation](#-related-documentation)
+
+---
+
 [Business Architecture →](01-business-architecture.md)
 
 ---
 
-## Executive Summary
+## 📋 Executive Summary
 
 The **Azure Logic Apps Monitoring Solution** is a cloud-native distributed application that demonstrates enterprise-grade observability patterns for Azure Logic Apps Standard workflows. Built on **.NET Aspire** orchestration, this reference architecture showcases how to implement end-to-end distributed tracing, centralized logging, and comprehensive metrics collection across a microservices-based order management system.
 
@@ -19,7 +32,7 @@ The solution provides a practical implementation of monitoring patterns that ena
 
 ---
 
-## High-Level Architecture
+## 🏗️ High-Level Architecture
 
 ```mermaid
 flowchart TD
@@ -80,7 +93,7 @@ flowchart TD
 
 ---
 
-## Service Inventory
+## 📦 Service Inventory
 
 | Service                 | Type         | Technology               | Responsibility                                 | Port |
 | ----------------------- | ------------ | ------------------------ | ---------------------------------------------- | ---- |
@@ -92,7 +105,7 @@ flowchart TD
 
 ---
 
-## Document Navigation
+## 📄 Document Navigation
 
 | Document                                                             | TOGAF Layer   | Description                               | Primary Audience           |
 | -------------------------------------------------------------------- | ------------- | ----------------------------------------- | -------------------------- |
@@ -114,7 +127,7 @@ flowchart TD
 
 ---
 
-## Key Azure Resources
+## ☁️ Key Azure Resources
 
 | Resource                           | Purpose                     | SKU/Tier        | Location   |
 | ---------------------------------- | --------------------------- | --------------- | ---------- |
@@ -128,7 +141,7 @@ flowchart TD
 
 ---
 
-## Repository Structure
+## 📁 Repository Structure
 
 ```
 ├── app.AppHost/                    # .NET Aspire orchestration
@@ -161,7 +174,7 @@ flowchart TD
 
 ---
 
-## Quick Start
+## 🚀 Quick Start
 
 ```bash
 # Prerequisites: Azure CLI, Azure Developer CLI (azd), .NET 10 SDK
@@ -187,7 +200,7 @@ dotnet run
 
 ---
 
-## Related Documentation
+## 📚 Related Documentation
 
 - [Azure Logic Apps Documentation](https://learn.microsoft.com/azure/logic-apps/)
 - [.NET Aspire Documentation](https://learn.microsoft.com/dotnet/aspire/)

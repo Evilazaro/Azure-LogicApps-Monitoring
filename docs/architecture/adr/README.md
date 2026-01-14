@@ -4,7 +4,16 @@
 
 ---
 
-## About ADRs
+## 📑 Table of Contents
+
+- [📋 About ADRs](#-about-adrs)
+- [📊 Decision Log](#-decision-log)
+- [📋 Summary](#-summary)
+- [⏳ Pending Decisions](#-pending-decisions)
+
+---
+
+## 📋 About ADRs
 
 Architecture Decision Records (ADRs) document significant architectural decisions made during the design and development of the eShop Orders system. Each ADR captures the context, decision, consequences, and rationale for a specific architectural choice.
 
@@ -21,7 +30,7 @@ Each ADR follows this structure:
 
 ---
 
-## Decision Log
+## 📊 Decision Log
 
 | ADR                                          | Title                                 | Status   | Date    |
 | -------------------------------------------- | ------------------------------------- | -------- | ------- |
@@ -31,7 +40,7 @@ Each ADR follows this structure:
 
 ---
 
-## Summary
+## 📋 Summary
 
 ### ADR-001: .NET Aspire for Service Orchestration
 
@@ -72,7 +81,7 @@ Each ADR follows this structure:
 
 ---
 
-## Pending Decisions
+## ⏳ Pending Decisions
 
 | Topic          | Status      | Notes                         |
 | -------------- | ----------- | ----------------------------- |

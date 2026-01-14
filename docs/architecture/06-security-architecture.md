@@ -4,7 +4,21 @@
 
 ---
 
-## 1. Security Overview
+## 📑 Table of Contents
+
+- [📋 Security Overview](#-1-security-overview)
+- [🔐 Authentication & Authorization](#-2-authentication--authorization)
+- [🎭 Managed Identity Architecture](#-3-managed-identity-architecture)
+- [🔑 Secret Management](#-4-secret-management)
+- [🌐 Network Security](#-5-network-security)
+- [🛡️ Data Protection](#%EF%B8%8F-6-data-protection)
+- [✅ Compliance & Governance](#-7-compliance--governance)
+- [📝 Security Checklist](#-8-security-checklist)
+- [🔗 Cross-Architecture Relationships](#-cross-architecture-relationships)
+
+---
+
+## 📋 1. Security Overview
 
 ### Security Principles
 
@@ -28,7 +42,7 @@
 
 ---
 
-## 2. Authentication & Authorization
+## 🔐 2. Authentication & Authorization
 
 ### Authentication Flow
 
@@ -91,7 +105,7 @@ flowchart LR
 
 ---
 
-## 3. Managed Identity Architecture
+## 🎭 3. Managed Identity Architecture
 
 ### Identity Assignments
 
@@ -161,7 +175,7 @@ sequenceDiagram
 
 ---
 
-## 4. Secret Management
+## 🔑 4. Secret Management
 
 ### Secret Storage Approach
 
@@ -197,7 +211,7 @@ sequenceDiagram
 
 ---
 
-## 5. Network Security
+## 🌐 5. Network Security
 
 ### Network Topology
 
@@ -248,7 +262,7 @@ flowchart TB
 
 ---
 
-## 6. Data Protection
+## 🛡️ 6. Data Protection
 
 ### Encryption at Rest
 
@@ -279,7 +293,7 @@ flowchart TB
 
 ---
 
-## 7. Compliance & Governance
+## ✅ 7. Compliance & Governance
 
 ### Compliance Requirements
 
@@ -301,7 +315,7 @@ flowchart TB
 
 ---
 
-## 8. Security Checklist
+## 📝 8. Security Checklist
 
 - [x] **Managed Identity** configured for all services
 - [x] **No secrets** stored in code or configuration files
@@ -318,7 +332,7 @@ flowchart TB
 
 ---
 
-## Cross-Architecture Relationships
+## 🔗 Cross-Architecture Relationships
 
 | Related Architecture        | Connection                         | Reference                                                |
 | --------------------------- | ---------------------------------- | -------------------------------------------------------- |

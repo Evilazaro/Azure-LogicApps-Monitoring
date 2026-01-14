@@ -4,7 +4,18 @@
 
 ---
 
-## 1. Deployment Overview
+## 📑 Table of Contents
+
+- [📋 Deployment Overview](#-1-deployment-overview)
+- [📁 Infrastructure as Code](#-2-infrastructure-as-code)
+- [⚙️ Azure Developer CLI (azd)](#%EF%B8%8F-3-azure-developer-cli-azd)
+- [🚀 CI/CD Pipeline](#-4-cicd-pipeline)
+- [🔐 Workload Identity Federation](#-5-workload-identity-federation)
+- [💻 Local Development](#-6-local-development)
+
+---
+
+## 📋 1. Deployment Overview
 
 ### Deployment Strategy
 
@@ -48,7 +59,7 @@ flowchart LR
 
 ---
 
-## 2. Infrastructure as Code
+## 📁 2. Infrastructure as Code
 
 ### Bicep Module Structure
 
@@ -131,7 +142,7 @@ flowchart TB
 
 ---
 
-## 3. Azure Developer CLI (azd)
+## ⚙️ 3. Azure Developer CLI (azd)
 
 ### azd Workflow
 
@@ -227,7 +238,7 @@ hooks:
 
 ---
 
-## 4. CI/CD Pipeline
+## 🚀 4. CI/CD Pipeline
 
 ### Pipeline Architecture
 
@@ -345,7 +356,7 @@ jobs:
 
 ---
 
-## 5. Workload Identity Federation
+## 🔐 5. Workload Identity Federation
 
 ### OIDC Authentication Flow
 
@@ -390,7 +401,7 @@ az ad app federated-credential create `
 
 ---
 
-## 6. Local Development
+## 💻 6. Local Development
 
 ### Prerequisites
 

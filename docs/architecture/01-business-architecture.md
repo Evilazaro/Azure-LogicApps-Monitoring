@@ -4,7 +4,19 @@
 
 ---
 
-## 1. Business Context
+## 📑 Table of Contents
+
+- [📋 Business Context](#-1-business-context)
+- [⚙️ Business Capabilities](#%EF%B8%8F-2-business-capabilities)
+- [👥 Stakeholder Analysis](#-3-stakeholder-analysis)
+- [🔄 Value Streams](#-4-value-streams)
+- [✅ Quality Attribute Requirements](#-5-quality-attribute-requirements)
+- [📊 Business Process Flows](#-6-business-process-flows)
+- [🔗 Cross-Architecture Relationships](#-cross-architecture-relationships)
+
+---
+
+## 📋 1. Business Context
 
 ### Problem Statement
 
@@ -29,7 +41,7 @@ The **Azure Logic Apps Monitoring Solution** provides a reference architecture d
 
 ---
 
-## 2. Business Capabilities
+## ⚙️ 2. Business Capabilities
 
 ### Capability Map
 
@@ -87,7 +99,7 @@ flowchart TB
 
 ---
 
-## 3. Stakeholder Analysis
+## 👥 3. Stakeholder Analysis
 
 | Stakeholder                   | Concerns                                   | How Architecture Addresses                          |
 | ----------------------------- | ------------------------------------------ | --------------------------------------------------- |
@@ -100,7 +112,7 @@ flowchart TB
 
 ---
 
-## 4. Value Streams
+## 🔄 4. Value Streams
 
 ### Order to Fulfillment Value Stream
 
@@ -193,7 +205,7 @@ flowchart LR
 
 ---
 
-## 5. Quality Attribute Requirements
+## ✅ 5. Quality Attribute Requirements
 
 | Attribute           | Requirement                            | Priority | Measurement             | Implementation                                   |
 | ------------------- | -------------------------------------- | -------- | ----------------------- | ------------------------------------------------ |
@@ -207,7 +219,7 @@ flowchart LR
 
 ---
 
-## 6. Business Process Flows
+## 📊 6. Business Process Flows
 
 ### Order Lifecycle Process
 
@@ -257,7 +269,7 @@ flowchart TD
 
 ---
 
-## Cross-Architecture Relationships
+## 🔗 Cross-Architecture Relationships
 
 | Related Architecture           | Connection                                      | Reference                                                      |
 | ------------------------------ | ----------------------------------------------- | -------------------------------------------------------------- |

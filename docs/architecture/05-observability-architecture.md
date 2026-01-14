@@ -4,7 +4,23 @@
 
 ---
 
-## 1. Observability Principles
+## 📑 Table of Contents
+
+- [📜 Observability Principles](#-1-observability-principles)
+- [🎯 Observability Strategy](#-2-observability-strategy)
+- [📊 Telemetry Architecture](#-3-telemetry-architecture)
+- [🔍 Distributed Tracing](#-4-distributed-tracing)
+- [📈 Metrics](#-5-metrics)
+- [📝 Logs](#-6-logs)
+- [⚙️ Platform Components](#%EF%B8%8F-7-platform-components)
+- [🚨 Alerting and Incident Response](#-8-alerting-and-incident-response)
+- [✅ Health Checks](#-9-health-checks)
+- [🛠️ OpenTelemetry Configuration](#%EF%B8%8F-10-opentelemetry-configuration)
+- [🔗 Cross-Architecture Relationships](#-cross-architecture-relationships)
+
+---
+
+## 📜 1. Observability Principles
 
 | #       | Principle                          | Statement                           | Rationale                         | Implications                       |
 | ------- | ---------------------------------- | ----------------------------------- | --------------------------------- | ---------------------------------- |
@@ -16,7 +32,7 @@
 
 ---
 
-## 2. Observability Strategy
+## 🎯 2. Observability Strategy
 
 ### Goals and Objectives
 
@@ -37,7 +53,7 @@
 
 ---
 
-## 3. Telemetry Architecture
+## 📊 3. Telemetry Architecture
 
 ### Three Pillars Overview
 
@@ -94,7 +110,7 @@ flowchart TB
 
 ---
 
-## 4. Distributed Tracing
+## 🔍 4. Distributed Tracing
 
 ### Trace Context Propagation
 
@@ -162,7 +178,7 @@ if (activity != null)
 
 ---
 
-## 5. Metrics
+## 📈 5. Metrics
 
 ### Metrics Strategy
 
@@ -202,7 +218,7 @@ private static readonly Histogram<double> OrderProcessingDuration = Meter.Create
 
 ---
 
-## 6. Logs
+## 📝 6. Logs
 
 ### Logging Standards
 
@@ -240,7 +256,7 @@ _logger.LogInformation("Order {OrderId} placed successfully in {Duration:F2}ms",
 
 ---
 
-## 7. Platform Components
+## ⚙️ 7. Platform Components
 
 ### Collection Layer
 
@@ -269,7 +285,7 @@ _logger.LogInformation("Order {OrderId} placed successfully in {Duration:F2}ms",
 
 ---
 
-## 8. Alerting and Incident Response
+## 🚨 8. Alerting and Incident Response
 
 ### Alert Rules Catalog
 
@@ -289,7 +305,7 @@ _logger.LogInformation("Order {OrderId} placed successfully in {Duration:F2}ms",
 
 ---
 
-## 9. Health Checks
+## ✅ 9. Health Checks
 
 ### Health Check Architecture
 
@@ -329,7 +345,7 @@ flowchart LR
 
 ---
 
-## 10. OpenTelemetry Configuration
+## 🛠️ 10. OpenTelemetry Configuration
 
 ### Configuration Overview
 
@@ -369,7 +385,7 @@ options.Filter = context =>
 
 ---
 
-## Cross-Architecture Relationships
+## 🔗 Cross-Architecture Relationships
 
 | Related Architecture         | Connection                              | Reference                                                                           |
 | ---------------------------- | --------------------------------------- | ----------------------------------------------------------------------------------- |

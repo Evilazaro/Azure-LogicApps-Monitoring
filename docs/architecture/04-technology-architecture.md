@@ -4,7 +4,22 @@
 
 ---
 
-## 1. Technology Principles
+## 📑 Table of Contents
+
+- [📜 Technology Principles](#-1-technology-principles)
+- [📋 Technology Standards](#-2-technology-standards)
+- [☁️ Platform Services](#%EF%B8%8F-3-platform-services)
+- [🏛️ Azure Resource Topology](#%EF%B8%8F-4-azure-resource-topology)
+- [🔗 Technology Component Mapping](#-5-technology-component-mapping)
+- [📁 Infrastructure as Code](#-6-infrastructure-as-code)
+- [🌍 Environment Topology](#-7-environment-topology)
+- [🛠️ Operational Considerations](#%EF%B8%8F-8-operational-considerations)
+- [💰 Cost Analysis](#-9-cost-analysis)
+- [🔗 Cross-Architecture Relationships](#-cross-architecture-relationships)
+
+---
+
+## 📜 1. Technology Principles
 
 | #       | Principle                  | Statement                                | Rationale                                 | Implications                                    |
 | ------- | -------------------------- | ---------------------------------------- | ----------------------------------------- | ----------------------------------------------- |
@@ -16,7 +31,7 @@
 
 ---
 
-## 2. Technology Standards
+## 📋 2. Technology Standards
 
 ### Standards Catalog
 
@@ -36,7 +51,7 @@
 
 ---
 
-## 3. Platform Services
+## ☁️ 3. Platform Services
 
 ### Platform Decomposition
 
@@ -114,7 +129,7 @@ flowchart TB
 
 ---
 
-## 4. Azure Resource Topology
+## 🏛️ 4. Azure Resource Topology
 
 ```mermaid
 flowchart TB
@@ -168,7 +183,7 @@ flowchart TB
 
 ---
 
-## 5. Technology Component Mapping
+## 🔗 5. Technology Component Mapping
 
 ### Application-to-Technology Matrix
 
@@ -190,7 +205,7 @@ flowchart TB
 
 ---
 
-## 6. Infrastructure as Code
+## 📁 6. Infrastructure as Code
 
 ### IaC Tool Selection
 
@@ -242,7 +257,7 @@ infra/
 
 ---
 
-## 7. Environment Topology
+## 🌍 7. Environment Topology
 
 | Environment    | Region     | Purpose             | Scaling         | Data       |
 | -------------- | ---------- | ------------------- | --------------- | ---------- |
@@ -262,7 +277,7 @@ infra/
 
 ---
 
-## 8. Operational Considerations
+## 🛠️ 8. Operational Considerations
 
 ### Backup and Recovery
 
@@ -282,7 +297,7 @@ infra/
 
 ---
 
-## 9. Cost Analysis
+## 💰 9. Cost Analysis
 
 ### Resource Pricing Model
 
@@ -304,7 +319,7 @@ infra/
 
 ---
 
-## Cross-Architecture Relationships
+## 🔗 Cross-Architecture Relationships
 
 | Related Architecture           | Connection                            | Reference                                                      |
 | ------------------------------ | ------------------------------------- | -------------------------------------------------------------- |

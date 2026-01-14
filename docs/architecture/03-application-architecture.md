@@ -4,7 +4,17 @@
 
 ---
 
-## 1. Application Architecture Overview
+## 📑 Table of Contents
+
+- [📋 Application Architecture Overview](#-1-application-architecture-overview)
+- [📜 Application Architecture Principles](#-2-application-architecture-principles)
+- [🗺️ Application Landscape Map](#%EF%B8%8F-3-application-landscape-map)
+- [📦 Service Catalog](#-4-service-catalog)
+- [⚙️ Service Details](#%EF%B8%8F-5-service-details)
+
+---
+
+## 📋 1. Application Architecture Overview
 
 The solution follows a **modular, event-driven architecture** with clear service boundaries aligned to business capabilities. Each service is independently deployable, owns its data, and communicates through well-defined contracts.
 
@@ -24,7 +34,7 @@ The solution follows a **modular, event-driven architecture** with clear service
 
 ---
 
-## 2. Application Architecture Principles
+## 📜 2. Application Architecture Principles
 
 | Principle                   | Statement                             | Rationale                     | Implications                        |
 | --------------------------- | ------------------------------------- | ----------------------------- | ----------------------------------- |
@@ -36,7 +46,7 @@ The solution follows a **modular, event-driven architecture** with clear service
 
 ---
 
-## 3. Application Landscape Map
+## 🗺️ 3. Application Landscape Map
 
 ```mermaid
 flowchart TB
@@ -120,7 +130,7 @@ flowchart TB
 
 ---
 
-## 4. Service Catalog
+## 📦 4. Service Catalog
 
 | Service              | Type          | Port | Dependencies         | Health Endpoint | Source                                              |
 | -------------------- | ------------- | ---- | -------------------- | --------------- | --------------------------------------------------- |
@@ -130,7 +140,7 @@ flowchart TB
 
 ---
 
-## 5. Service Details
+## ⚙️ 5. Service Details
 
 ### eShop.Orders.API
 
