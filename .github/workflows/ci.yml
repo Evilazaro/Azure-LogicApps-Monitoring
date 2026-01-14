@@ -78,13 +78,15 @@ concurrency:
 # SECURITY PERMISSIONS
 # ------------------------------------------------------------------------------
 # Minimal permissions following principle of least privilege.
-# - contents: read    → Required for repository checkout
+# - contents: read     → Required for repository checkout
 # - pull-requests: read → Required for PR metadata access
-# - statuses: write   → Required to report commit status checks
+# - statuses: write    → Required to report commit status checks
+# - checks: write      → Required for test-reporter to create check runs
 permissions:
     contents: read
     pull-requests: read
     statuses: write
+    checks: write
 
 # ------------------------------------------------------------------------------
 # JOBS DEFINITION
@@ -149,16 +151,113 @@ jobs:
             # ------------------------------------------------------------------------
             # Step 5: Run unit tests
             # ------------------------------------------------------------------------
-            # Executes all unit tests in the solution.
-            # --logger trx: Generates test results in TRX format for reporting.
+            # Executes all unit tests in the solution and captures results.
+            # --logger trx: Generates test results in TRX format for rich reporting.
+            # --logger console: Provides real-time output in workflow logs.
+            # --collect: Collects code coverage data for analysis.
+            # continue-on-error: Allows subsequent steps to parse results on failure.
             # ------------------------------------------------------------------------
             - name: "🧪 Run unit tests"
-              run: dotnet test app.sln --configuration Release --verbosity normal --logger "trx" --results-directory TestResults
+              id: test
+              continue-on-error: true
+              run: |
+                  dotnet test app.sln \
+                    --configuration Release \
+                    --verbosity normal \
+                    --logger "trx;LogFileName=test-results.trx" \
+                    --logger "console;verbosity=detailed" \
+                    --results-directory TestResults \
+                    -- RunConfiguration.CollectSourceInformation=true
 
             # ------------------------------------------------------------------------
-            # Step 6: Upload test results
+            # Step 6: Parse test results
             # ------------------------------------------------------------------------
-            # Uploads test results as artifacts for later analysis.
+            # Extracts test metrics from TRX files for job summary.
+            # Parses total, passed, failed, and skipped test counts.
+            # Sets outputs for use in summary generation.
+            # ------------------------------------------------------------------------
+            - name: "📊 Parse test results"
+              id: test-results
+              if: always()
+              run: |
+                  # Initialize counters
+                  TOTAL=0
+                  PASSED=0
+                  FAILED=0
+                  SKIPPED=0
+                  DURATION="0.00s"
+
+                  # Find and parse TRX files
+                  if [ -d "TestResults" ]; then
+                    for trx in TestResults/*.trx; do
+                      if [ -f "$trx" ]; then
+                        echo "Parsing: $trx"
+                        
+                        # Extract test counts using grep and sed
+                        # TRX format: <Counters total="X" executed="Y" passed="Z" failed="A" .../>
+                        COUNTERS=$(grep -oP '<Counters[^>]+>' "$trx" | head -1 || echo "")
+                        
+                        if [ -n "$COUNTERS" ]; then
+                          FILE_TOTAL=$(echo "$COUNTERS" | grep -oP 'total="\K[0-9]+' || echo "0")
+                          FILE_PASSED=$(echo "$COUNTERS" | grep -oP 'passed="\K[0-9]+' || echo "0")
+                          FILE_FAILED=$(echo "$COUNTERS" | grep -oP 'failed="\K[0-9]+' || echo "0")
+                          FILE_SKIPPED=$(echo "$COUNTERS" | grep -oP 'notExecuted="\K[0-9]+' || echo "0")
+                          
+                          TOTAL=$((TOTAL + FILE_TOTAL))
+                          PASSED=$((PASSED + FILE_PASSED))
+                          FAILED=$((FAILED + FILE_FAILED))
+                          SKIPPED=$((SKIPPED + FILE_SKIPPED))
+                        fi
+                        
+                        # Extract duration
+                        TIMES=$(grep -oP '<Times[^>]+>' "$trx" | head -1 || echo "")
+                        if [ -n "$TIMES" ]; then
+                          START=$(echo "$TIMES" | grep -oP 'start="\K[^"]+' || echo "")
+                          FINISH=$(echo "$TIMES" | grep -oP 'finish="\K[^"]+' || echo "")
+                          if [ -n "$START" ] && [ -n "$FINISH" ]; then
+                            # Calculate duration in seconds (simplified)
+                            DURATION_SEC=$(( $(date -d "$FINISH" +%s 2>/dev/null || echo 0) - $(date -d "$START" +%s 2>/dev/null || echo 0) ))
+                            if [ "$DURATION_SEC" -gt 0 ]; then
+                              DURATION="${DURATION_SEC}s"
+                            fi
+                          fi
+                        fi
+                      fi
+                    done
+                  fi
+
+                  # Set outputs
+                  echo "total=$TOTAL" >> $GITHUB_OUTPUT
+                  echo "passed=$PASSED" >> $GITHUB_OUTPUT
+                  echo "failed=$FAILED" >> $GITHUB_OUTPUT
+                  echo "skipped=$SKIPPED" >> $GITHUB_OUTPUT
+                  echo "duration=$DURATION" >> $GITHUB_OUTPUT
+
+                  # Log results
+                  echo "::group::Test Results Summary"
+                  echo "Total:   $TOTAL"
+                  echo "Passed:  $PASSED"
+                  echo "Failed:  $FAILED"
+                  echo "Skipped: $SKIPPED"
+                  echo "Duration: $DURATION"
+                  echo "::endgroup::"
+
+                  # Set job status based on test results
+                  if [ "$FAILED" -gt 0 ]; then
+                    echo "::error::$FAILED test(s) failed"
+                    echo "test-status=failed" >> $GITHUB_OUTPUT
+                  elif [ "$TOTAL" -eq 0 ]; then
+                    echo "::warning::No tests were found"
+                    echo "test-status=no-tests" >> $GITHUB_OUTPUT
+                  else
+                    echo "::notice::All $PASSED tests passed"
+                    echo "test-status=passed" >> $GITHUB_OUTPUT
+                  fi
+
+            # ------------------------------------------------------------------------
+            # Step 7: Upload test results artifact
+            # ------------------------------------------------------------------------
+            # Uploads TRX files as artifacts for download and analysis.
             # Runs always to capture results even on test failures.
             # ------------------------------------------------------------------------
             - name: "📤 Upload test results"
@@ -167,33 +266,121 @@ jobs:
               with:
                   name: test-results
                   path: TestResults
-                  retention-days: 7
-                  if-no-files-found: ignore
+                  retention-days: 14
+                  if-no-files-found: warn
 
             # ------------------------------------------------------------------------
-            # Step 7: Generate build summary
+            # Step 8: Generate test report (PR annotations)
+            # ------------------------------------------------------------------------
+            # Creates a test report with inline annotations for failed tests.
+            # Only runs on pull requests to annotate code with failures.
+            # Uses dorny/test-reporter for rich GitHub integration.
+            # ------------------------------------------------------------------------
+            - name: "📝 Generate test report"
+              uses: dorny/test-reporter@v1
+              if: always() && (github.event_name == 'pull_request' || github.event_name == 'push')
+              with:
+                  name: "Unit Test Results"
+                  path: "TestResults/*.trx"
+                  reporter: dotnet-trx
+                  fail-on-error: false
+
+            # ------------------------------------------------------------------------
+            # Step 9: Generate build summary
             # ------------------------------------------------------------------------
             # Creates a GitHub Actions job summary with build and test results.
+            # Displays actual test metrics from TRX parsing.
             # Runs always to provide visibility even on failures.
             # ------------------------------------------------------------------------
             - name: "📋 Generate Build Summary"
               if: always()
               run: |
+                  # Get test results from previous step
+                  TOTAL="${{ steps.test-results.outputs.total || '0' }}"
+                  PASSED="${{ steps.test-results.outputs.passed || '0' }}"
+                  FAILED="${{ steps.test-results.outputs.failed || '0' }}"
+                  SKIPPED="${{ steps.test-results.outputs.skipped || '0' }}"
+                  DURATION="${{ steps.test-results.outputs.duration || 'N/A' }}"
+                  TEST_STATUS="${{ steps.test-results.outputs.test-status || 'unknown' }}"
+
+                  # Determine test status icon
+                  if [ "$FAILED" -gt 0 ]; then
+                    TEST_ICON="❌"
+                    TEST_STATUS_TEXT="Failed"
+                  elif [ "$TOTAL" -eq 0 ]; then
+                    TEST_ICON="⚠️"
+                    TEST_STATUS_TEXT="No Tests"
+                  else
+                    TEST_ICON="✅"
+                    TEST_STATUS_TEXT="Passed"
+                  fi
+
+                  # Build summary header
                   echo "## 🔨 .NET Build & Test Results" >> $GITHUB_STEP_SUMMARY
+                  echo "" >> $GITHUB_STEP_SUMMARY
+
+                  # Build status
+                  echo "### 🏗️ Build Status" >> $GITHUB_STEP_SUMMARY
                   echo "" >> $GITHUB_STEP_SUMMARY
                   echo "| Property | Value |" >> $GITHUB_STEP_SUMMARY
                   echo "|----------|-------|" >> $GITHUB_STEP_SUMMARY
                   echo "| **Status** | ${{ job.status == 'success' && '✅ Passed' || job.status == 'cancelled' && '⚠️ Cancelled' || '❌ Failed' }} |" >> $GITHUB_STEP_SUMMARY
                   echo "| **Configuration** | Release |" >> $GITHUB_STEP_SUMMARY
                   echo "| **Solution** | \`app.sln\` |" >> $GITHUB_STEP_SUMMARY
-                  echo "| **Tests** | Unit tests executed |" >> $GITHUB_STEP_SUMMARY
+                  echo "" >> $GITHUB_STEP_SUMMARY
+
+                  # Test results section
+                  echo "### 🧪 Test Results" >> $GITHUB_STEP_SUMMARY
+                  echo "" >> $GITHUB_STEP_SUMMARY
+                  echo "| Metric | Count |" >> $GITHUB_STEP_SUMMARY
+                  echo "|--------|-------|" >> $GITHUB_STEP_SUMMARY
+                  echo "| **Total Tests** | $TOTAL |" >> $GITHUB_STEP_SUMMARY
+                  echo "| **✅ Passed** | $PASSED |" >> $GITHUB_STEP_SUMMARY
+                  echo "| **❌ Failed** | $FAILED |" >> $GITHUB_STEP_SUMMARY
+                  echo "| **⏭️ Skipped** | $SKIPPED |" >> $GITHUB_STEP_SUMMARY
+                  echo "| **⏱️ Duration** | $DURATION |" >> $GITHUB_STEP_SUMMARY
+                  echo "| **Status** | $TEST_ICON $TEST_STATUS_TEXT |" >> $GITHUB_STEP_SUMMARY
+                  echo "" >> $GITHUB_STEP_SUMMARY
+
+                  # Test result visualization
+                  if [ "$TOTAL" -gt 0 ]; then
+                    PASS_PCT=$((PASSED * 100 / TOTAL))
+                    echo "**Pass Rate:** $PASS_PCT% ($PASSED/$TOTAL)" >> $GITHUB_STEP_SUMMARY
+                    echo "" >> $GITHUB_STEP_SUMMARY
+                  fi
+
+                  # Run information
+                  echo "### 📊 Run Information" >> $GITHUB_STEP_SUMMARY
+                  echo "" >> $GITHUB_STEP_SUMMARY
+                  echo "| Property | Value |" >> $GITHUB_STEP_SUMMARY
+                  echo "|----------|-------|" >> $GITHUB_STEP_SUMMARY
                   echo "| **Branch** | \`${{ github.ref_name }}\` |" >> $GITHUB_STEP_SUMMARY
                   echo "| **Commit** | [\`${GITHUB_SHA:0:7}\`](${{ github.server_url }}/${{ github.repository }}/commit/${{ github.sha }}) |" >> $GITHUB_STEP_SUMMARY
                   echo "| **Triggered By** | @${{ github.actor }} |" >> $GITHUB_STEP_SUMMARY
+                  echo "| **Workflow Run** | [#${{ github.run_number }}](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}) |" >> $GITHUB_STEP_SUMMARY
                   echo "" >> $GITHUB_STEP_SUMMARY
-                  if [[ "${{ job.status }}" != "success" ]]; then
-                    echo "> **Note:** Check the build/test logs above for detailed error information." >> $GITHUB_STEP_SUMMARY
+
+                  # Conditional messages
+                  if [ "$FAILED" -gt 0 ]; then
+                    echo "### ❌ Test Failures Detected" >> $GITHUB_STEP_SUMMARY
+                    echo "" >> $GITHUB_STEP_SUMMARY
+                    echo "> **Action Required:** Review the test report above for details on failed tests." >> $GITHUB_STEP_SUMMARY
+                    echo "> Download the \`test-results\` artifact for full TRX files." >> $GITHUB_STEP_SUMMARY
+                  elif [[ "${{ job.status }}" != "success" ]]; then
+                    echo "> **Note:** Check the build logs above for detailed error information." >> $GITHUB_STEP_SUMMARY
                   fi
+
+            # ------------------------------------------------------------------------
+            # Step 10: Fail job if tests failed
+            # ------------------------------------------------------------------------
+            # Ensures the job fails if any tests failed.
+            # This step runs after summary generation to preserve visibility.
+            # ------------------------------------------------------------------------
+            - name: "🚨 Check test results"
+              if: always() && steps.test.outcome == 'failure'
+              run: |
+                  echo "::error::Unit tests failed. See test report for details."
+                  exit 1
 
     # ============================================================================
     # JOB: build-bicep

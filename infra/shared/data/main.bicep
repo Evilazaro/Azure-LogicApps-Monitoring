@@ -72,6 +72,13 @@ param metricsSettings object[]
 @description('Resource tags applied to storage resources')
 param tags tagsType
 
+@description('Principal type of the deployer (User for interactive, ServicePrincipal for CI/CD)')
+@allowed([
+  'User'
+  'ServicePrincipal'
+])
+param deployerPrincipalType string = 'User'
+
 // ========== Variables ==========
 
 // Remove special characters for naming compliance
@@ -444,10 +451,12 @@ resource sqlServer 'Microsoft.Sql/servers@2024-11-01-preview' = {
     administrators: {
       administratorType: 'ActiveDirectory'
       azureADOnlyAuthentication: true
-      // 'Application' principal type is used for both Managed Identities and Service Principals
-      // This allows the managed identity to administer the SQL Server using Entra ID authentication
-      principalType: 'Application'
-      login: deployer().userPrincipalName
+      // Principal type varies based on deployer:
+      // - 'User' for interactive deployments (uses userPrincipalName)
+      // - 'Application' for CI/CD with Service Principals (uses objectId as login)
+      principalType: deployerPrincipalType == 'ServicePrincipal' ? 'Application' : 'User'
+      // Service Principals don't have userPrincipalName, use objectId instead
+      login: deployerPrincipalType == 'ServicePrincipal' ? deployer().objectId : deployer().userPrincipalName
       sid: deployer().objectId
       tenantId: tenant().tenantId
     }

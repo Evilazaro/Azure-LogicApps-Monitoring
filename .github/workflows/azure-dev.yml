@@ -84,11 +84,13 @@ concurrency:
 # - id-token: write  → Required for OIDC federated credential authentication
 # - contents: read   → Required for repository checkout
 # - statuses: write  → Required to report deployment status checks
+# - checks: write    → Required for test-reporter to create check runs
 # Reference: https://docs.github.com/en/actions/security-guides/automatic-token-authentication
 permissions:
   id-token: write
   contents: read
   statuses: write
+  checks: write
 
 # ------------------------------------------------------------------------------
 # JOBS DEFINITION
@@ -179,12 +181,83 @@ jobs:
       # ------------------------------------------------------------------------
       # Executes all unit tests to validate code correctness before deployment.
       # Fails fast to prevent expensive provisioning if tests fail.
+      # continue-on-error: Allows result parsing and summary generation.
       # ------------------------------------------------------------------------
       - name: "🧪 Run unit tests"
-        run: dotnet test app.sln --configuration Release --verbosity normal --logger "trx" --results-directory TestResults
+        id: test
+        continue-on-error: true
+        run: |
+          dotnet test app.sln \
+            --configuration Release \
+            --verbosity normal \
+            --logger "trx;LogFileName=test-results.trx" \
+            --logger "console;verbosity=detailed" \
+            --results-directory TestResults \
+            -- RunConfiguration.CollectSourceInformation=true
 
       # ------------------------------------------------------------------------
-      # Step 6: Upload test results
+      # Step 6: Parse test results
+      # ------------------------------------------------------------------------
+      # Extracts test metrics from TRX files for job summary.
+      # Parses total, passed, failed, and skipped test counts.
+      # ------------------------------------------------------------------------
+      - name: "📊 Parse test results"
+        id: test-results
+        if: always()
+        run: |
+          # Initialize counters
+          TOTAL=0
+          PASSED=0
+          FAILED=0
+          SKIPPED=0
+          DURATION="0s"
+
+          # Find and parse TRX files
+          if [ -d "TestResults" ]; then
+            for trx in TestResults/*.trx; do
+              if [ -f "$trx" ]; then
+                echo "Parsing: $trx"
+                
+                # Extract test counts from TRX XML
+                COUNTERS=$(grep -oP '<Counters[^>]+>' "$trx" | head -1 || echo "")
+                
+                if [ -n "$COUNTERS" ]; then
+                  FILE_TOTAL=$(echo "$COUNTERS" | grep -oP 'total="\K[0-9]+' || echo "0")
+                  FILE_PASSED=$(echo "$COUNTERS" | grep -oP 'passed="\K[0-9]+' || echo "0")
+                  FILE_FAILED=$(echo "$COUNTERS" | grep -oP 'failed="\K[0-9]+' || echo "0")
+                  FILE_SKIPPED=$(echo "$COUNTERS" | grep -oP 'notExecuted="\K[0-9]+' || echo "0")
+                  
+                  TOTAL=$((TOTAL + FILE_TOTAL))
+                  PASSED=$((PASSED + FILE_PASSED))
+                  FAILED=$((FAILED + FILE_FAILED))
+                  SKIPPED=$((SKIPPED + FILE_SKIPPED))
+                fi
+              fi
+            done
+          fi
+
+          # Set outputs
+          echo "total=$TOTAL" >> $GITHUB_OUTPUT
+          echo "passed=$PASSED" >> $GITHUB_OUTPUT
+          echo "failed=$FAILED" >> $GITHUB_OUTPUT
+          echo "skipped=$SKIPPED" >> $GITHUB_OUTPUT
+
+          # Log results
+          echo "::group::Test Results Summary"
+          echo "Total:   $TOTAL"
+          echo "Passed:  $PASSED"
+          echo "Failed:  $FAILED"
+          echo "Skipped: $SKIPPED"
+          echo "::endgroup::"
+
+          # Fail if tests failed
+          if [ "$FAILED" -gt 0 ]; then
+            echo "::error::$FAILED test(s) failed"
+          fi
+        shell: bash
+
+      # ------------------------------------------------------------------------
+      # Step 7: Upload test results
       # ------------------------------------------------------------------------
       # Uploads test results as artifacts for analysis.
       # Runs always to capture results even on test failures.
@@ -195,11 +268,41 @@ jobs:
         with:
           name: deployment-test-results
           path: TestResults
-          retention-days: 7
-          if-no-files-found: ignore
+          retention-days: 14
+          if-no-files-found: warn
 
       # ------------------------------------------------------------------------
-      # Step 7: Setup Azure CLI and Bicep
+      # Step 8: Generate test report (PR annotations)
+      # ------------------------------------------------------------------------
+      # Creates a test report with inline annotations for failed tests.
+      # Uses dorny/test-reporter for rich GitHub integration.
+      # ------------------------------------------------------------------------
+      - name: "📝 Generate test report"
+        uses: dorny/test-reporter@v1
+        if: always()
+        with:
+          name: "Deployment - Unit Test Results"
+          path: "TestResults/*.trx"
+          reporter: dotnet-trx
+          fail-on-error: false
+
+      # ------------------------------------------------------------------------
+      # Step 9: Fail if tests failed (gate deployment)
+      # ------------------------------------------------------------------------
+      # Stops deployment if unit tests failed.
+      # This is a critical gate to prevent deploying broken code.
+      # ------------------------------------------------------------------------
+      - name: "🚨 Gate: Check test results"
+        if: steps.test.outcome == 'failure'
+        run: |
+          echo "::error::Unit tests failed. Deployment blocked."
+          echo "## ❌ Deployment Blocked" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "Unit tests failed. Fix test failures before deployment." >> $GITHUB_STEP_SUMMARY
+          exit 1
+
+      # ------------------------------------------------------------------------
+      # Step 10: Setup Azure CLI and Bicep
       # ------------------------------------------------------------------------
       # Azure CLI with Bicep for infrastructure template validation.
       # ------------------------------------------------------------------------
@@ -212,7 +315,7 @@ jobs:
             az bicep version
 
       # ------------------------------------------------------------------------
-      # Step 8: Build Bicep templates
+      # Step 11: Build Bicep templates
       # ------------------------------------------------------------------------
       # Validates infrastructure templates compile before provisioning.
       # This catches syntax errors before attempting deployment.
@@ -227,7 +330,7 @@ jobs:
             echo "✅ infra/main.bicep compiled successfully"
 
       # ------------------------------------------------------------------------
-      # Step 9: Install Azure Developer CLI (azd)
+      # Step 12: Install Azure Developer CLI (azd)
       # ------------------------------------------------------------------------
       # Installs the latest version of azd for infrastructure management.
       # azd provides a unified experience for provisioning and deployment.
@@ -236,7 +339,7 @@ jobs:
         uses: Azure/setup-azd@v2
 
       # ------------------------------------------------------------------------
-      # Step 10: Install sqlcmd utility
+      # Step 13: Install sqlcmd utility
       # ------------------------------------------------------------------------
       # Installs the Go version of sqlcmd for SQL Database managed identity
       # configuration in post-provisioning hooks.
@@ -251,7 +354,7 @@ jobs:
         continue-on-error: true
 
       # ------------------------------------------------------------------------
-      # Step 11: Make hook scripts executable
+      # Step 14: Make hook scripts executable
       # ------------------------------------------------------------------------
       # Ensures shell scripts in hooks directory have execute permissions.
       # Required for azd lifecycle hooks to run on Linux runners.
@@ -260,7 +363,7 @@ jobs:
         run: chmod +x ./hooks/*.sh
 
       # ------------------------------------------------------------------------
-      # Step 12: Authenticate with Azure using OIDC
+      # Step 15: Authenticate with Azure using OIDC
       # ------------------------------------------------------------------------
       # Uses OpenID Connect (OIDC) federated credentials for passwordless auth.
       # No secrets are stored in GitHub - authentication is handled via
@@ -287,7 +390,7 @@ jobs:
         shell: pwsh
 
       # ------------------------------------------------------------------------
-      # Step 13: Provision Azure Infrastructure
+      # Step 16: Provision Azure Infrastructure
       # ------------------------------------------------------------------------
       # Deploys infrastructure using Bicep templates defined in /infra.
       # --no-prompt: Runs non-interactively for CI/CD automation.
@@ -306,7 +409,7 @@ jobs:
           AZURE_ENV_NAME: ${{ github.event.inputs.environment || vars.AZURE_ENV_NAME }}
 
       # ------------------------------------------------------------------------
-      # Step 14: Deploy Application
+      # Step 17: Deploy Application
       # ------------------------------------------------------------------------
       # Deploys application code to provisioned Azure resources.
       # Uses .NET Aspire manifest for service discovery and configuration.
@@ -326,24 +429,58 @@ jobs:
           AZURE_ENV_NAME: ${{ github.event.inputs.environment || vars.AZURE_ENV_NAME }}
 
       # ------------------------------------------------------------------------
-      # Step 15: Generate Deployment Summary
+      # Step 18: Generate Deployment Summary
       # ------------------------------------------------------------------------
       # Creates a GitHub Actions job summary with deployment details.
+      # Includes actual test results from TRX parsing.
       # Runs always to provide visibility even on failures.
       # ------------------------------------------------------------------------
       - name: "📋 Generate Deployment Summary"
         if: always()
         run: |
+          # Get test results from earlier step
+          TOTAL="${{ steps.test-results.outputs.total || '0' }}"
+          PASSED="${{ steps.test-results.outputs.passed || '0' }}"
+          FAILED="${{ steps.test-results.outputs.failed || '0' }}"
+          SKIPPED="${{ steps.test-results.outputs.skipped || '0' }}"
+
+          # Determine test status
+          if [ "$FAILED" -gt 0 ]; then
+            TEST_STATUS="❌ $FAILED Failed"
+          elif [ "$TOTAL" -eq 0 ]; then
+            TEST_STATUS="⚠️ No Tests"
+          else
+            TEST_STATUS="✅ $PASSED Passed"
+          fi
+
           echo "## 🚀 Deployment Summary" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "### �️ Build Validation" >> $GITHUB_STEP_SUMMARY
+          echo "### 🏗️ Build Validation" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "| Check | Status |" >> $GITHUB_STEP_SUMMARY
           echo "|-------|--------|" >> $GITHUB_STEP_SUMMARY
           echo "| .NET Build | ✅ Compiled |" >> $GITHUB_STEP_SUMMARY
-          echo "| Unit Tests | ✅ Passed |" >> $GITHUB_STEP_SUMMARY
+          echo "| Unit Tests | $TEST_STATUS |" >> $GITHUB_STEP_SUMMARY
           echo "| Bicep Build | ✅ Validated |" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
+
+          # Show test details if tests ran
+          if [ "$TOTAL" -gt 0 ]; then
+            echo "### 🧪 Test Results" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "| Metric | Count |" >> $GITHUB_STEP_SUMMARY
+            echo "|--------|-------|" >> $GITHUB_STEP_SUMMARY
+            echo "| Total | $TOTAL |" >> $GITHUB_STEP_SUMMARY
+            echo "| ✅ Passed | $PASSED |" >> $GITHUB_STEP_SUMMARY
+            echo "| ❌ Failed | $FAILED |" >> $GITHUB_STEP_SUMMARY
+            echo "| ⏭️ Skipped | $SKIPPED |" >> $GITHUB_STEP_SUMMARY
+            if [ "$TOTAL" -gt 0 ]; then
+              PASS_PCT=$((PASSED * 100 / TOTAL))
+              echo "| **Pass Rate** | $PASS_PCT% |" >> $GITHUB_STEP_SUMMARY
+            fi
+            echo "" >> $GITHUB_STEP_SUMMARY
+          fi
+
           echo "### 📊 Deployment Details" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "| Property | Value |" >> $GITHUB_STEP_SUMMARY
