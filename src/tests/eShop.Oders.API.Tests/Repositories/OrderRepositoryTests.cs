@@ -126,8 +126,9 @@ public sealed class OrderRepositoryTests : IDisposable
         var exception = await Assert.ThrowsExactlyAsync<ArgumentException>(
             () => _repository.SaveOrderAsync(duplicateOrder));
 
-        Assert.IsTrue(exception.Message.Contains("duplicate-order") ||
-                      exception.Message.Contains("same key", StringComparison.OrdinalIgnoreCase));
+        Assert.IsTrue(exception.Message.Contains("duplicate-order", StringComparison.OrdinalIgnoreCase) ||
+                      exception.Message.Contains("same key", StringComparison.OrdinalIgnoreCase),
+                      "Exception message should mention duplicate order or same key");
     }
 
     [TestMethod]
@@ -425,12 +426,12 @@ public sealed class OrderRepositoryTests : IDisposable
         var result = await _repository.GetExistingOrderIdsAsync(idsToCheck);
 
         // Assert
-        Assert.AreEqual(3, result.Count);
-        Assert.IsTrue(result.Contains("order-0"));
-        Assert.IsTrue(result.Contains("order-1"));
-        Assert.IsTrue(result.Contains("order-2"));
-        Assert.IsFalse(result.Contains("non-existing-1"));
-        Assert.IsFalse(result.Contains("non-existing-2"));
+        Assert.HasCount(result, 3);
+        CollectionAssert.Contains(result.ToList(), "order-0");
+        CollectionAssert.Contains(result.ToList(), "order-1");
+        CollectionAssert.Contains(result.ToList(), "order-2");
+        CollectionAssert.DoesNotContain(result.ToList(), "non-existing-1");
+        CollectionAssert.DoesNotContain(result.ToList(), "non-existing-2");
     }
 
     [TestMethod]
@@ -444,7 +445,7 @@ public sealed class OrderRepositoryTests : IDisposable
         var result = await _repository.GetExistingOrderIdsAsync(idsToCheck);
 
         // Assert
-        Assert.AreEqual(0, result.Count);
+        Assert.HasCount(result, 0);
     }
 
     [TestMethod]
@@ -458,7 +459,7 @@ public sealed class OrderRepositoryTests : IDisposable
         var result = await _repository.GetExistingOrderIdsAsync(idsToCheck);
 
         // Assert
-        Assert.AreEqual(0, result.Count);
+        Assert.HasCount(result, 0);
     }
 
     [TestMethod]
@@ -480,7 +481,7 @@ public sealed class OrderRepositoryTests : IDisposable
         var result = await _repository.GetExistingOrderIdsAsync(idsToCheck);
 
         // Assert
-        Assert.AreEqual(3, result.Count);
+        Assert.HasCount(result, 3);
     }
 
     #endregion

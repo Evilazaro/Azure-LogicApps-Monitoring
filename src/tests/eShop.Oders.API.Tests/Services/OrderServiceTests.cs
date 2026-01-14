@@ -147,7 +147,7 @@ public sealed class OrderServiceTests
         // Act & Assert
         var exception = await Assert.ThrowsExactlyAsync<InvalidOperationException>(
             () => _orderService.PlaceOrderAsync(order));
-        Assert.IsTrue(exception.Message.Contains("already exists"));
+        StringAssert.Contains(exception.Message, "already exists");
     }
 
     [TestMethod]

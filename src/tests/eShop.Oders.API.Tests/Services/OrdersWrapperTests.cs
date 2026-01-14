@@ -196,7 +196,7 @@ public sealed class OrdersWrapperTests
         var highValueOrders = wrapper.Orders.Where(o => o.Total > 100.00m).ToList();
 
         // Assert
-        Assert.AreEqual(1, highValueOrders.Count);
+        Assert.HasCount(highValueOrders, 1);
         Assert.AreEqual("order-2", highValueOrders[0].Id);
     }
 

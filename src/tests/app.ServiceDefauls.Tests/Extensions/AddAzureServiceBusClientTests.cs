@@ -86,7 +86,7 @@ public sealed class AddAzureServiceBusClientTests
         var exception = Assert.ThrowsExactly<InvalidOperationException>(
             () => serviceProvider.GetRequiredService<ServiceBusClient>());
 
-        Assert.IsTrue(exception.Message.Contains("MESSAGING_HOST"));
+        StringAssert.Contains(exception.Message, "MESSAGING_HOST");
     }
 
     [TestMethod]
@@ -108,7 +108,7 @@ public sealed class AddAzureServiceBusClientTests
         var exception = Assert.ThrowsExactly<InvalidOperationException>(
             () => serviceProvider.GetRequiredService<ServiceBusClient>());
 
-        Assert.IsTrue(exception.Message.Contains("ConnectionStrings:messaging"));
+        StringAssert.Contains(exception.Message, "ConnectionStrings:messaging");
     }
 
     [TestMethod]
