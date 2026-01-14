@@ -31,6 +31,7 @@
 
 ```mermaid
 flowchart LR
+    %% Environment Model - Promotion flow from local to production
     subgraph Dev["🔧 Development"]
         Local["Local<br/>.NET Aspire"]
         DevEnv["Dev Environment<br/>Azure"]
@@ -44,13 +45,15 @@ flowchart LR
         ProdEnv["Production<br/>Azure"]
     end
 
+    %% Promotion flow
     Local -->|"azd up"| DevEnv
     DevEnv -->|"Promotion"| StageEnv
     StageEnv -->|"Approval"| ProdEnv
 
-    classDef dev fill:#e3f2fd,stroke:#1565c0
-    classDef stage fill:#fff3e0,stroke:#ef6c00
-    classDef prod fill:#e8f5e9,stroke:#2e7d32
+    %% Modern color palette - WCAG AA compliant
+    classDef dev fill:#EEF2FF,stroke:#4F46E5,stroke-width:2px,color:#312E81
+    classDef stage fill:#FEF3C7,stroke:#F59E0B,stroke-width:2px,color:#92400E
+    classDef prod fill:#D1FAE5,stroke:#10B981,stroke-width:2px,color:#065F46
 
     class Local,DevEnv dev
     class StageEnv stage
@@ -85,6 +88,7 @@ infra/
 
 ```mermaid
 flowchart TB
+    %% Bicep Module Relationships - Infrastructure as Code structure
     subgraph Subscription["📦 Subscription Scope"]
         Main["main.bicep"]
     end
@@ -107,6 +111,7 @@ flowchart TB
         LogicApp["logic-app.bicep"]
     end
 
+    %% Module dependencies
     Main --> Shared
     Main --> Workload
     Shared --> Identity
@@ -119,10 +124,11 @@ flowchart TB
 
     Workload -.->|"outputs"| Shared
 
-    classDef main fill:#1565c0,stroke:#0d47a1,color:#fff
-    classDef module fill:#e3f2fd,stroke:#1565c0
-    classDef shared fill:#e8f5e9,stroke:#2e7d32
-    classDef workload fill:#fff3e0,stroke:#ef6c00
+    %% Modern color palette - WCAG AA compliant
+    classDef main fill:#312E81,stroke:#4F46E5,stroke-width:2px,color:#fff
+    classDef module fill:#EEF2FF,stroke:#4F46E5,stroke-width:2px,color:#312E81
+    classDef shared fill:#D1FAE5,stroke:#10B981,stroke-width:2px,color:#065F46
+    classDef workload fill:#FEF3C7,stroke:#F59E0B,stroke-width:2px,color:#92400E
 
     class Main main
     class Shared,Workload module
@@ -148,6 +154,7 @@ flowchart TB
 
 ```mermaid
 flowchart TB
+    %% Azure Developer CLI (azd) Workflow - Lifecycle hooks and stages
     subgraph Init["🔧 Initialize"]
         Init1["azd init"]
         Init2["Select template"]
@@ -172,6 +179,7 @@ flowchart TB
         PostDeploy["postdeploy"]
     end
 
+    %% Workflow flow
     Init1 --> Init2
     Init2 --> PreProv
     PreProv --> Prov1
@@ -184,10 +192,11 @@ flowchart TB
     Deploy2 --> Deploy3
     Deploy3 --> PostDeploy
 
-    classDef init fill:#e3f2fd,stroke:#1565c0
-    classDef prov fill:#e8f5e9,stroke:#2e7d32
-    classDef deploy fill:#fff3e0,stroke:#ef6c00
-    classDef hook fill:#f3e5f5,stroke:#7b1fa2
+    %% Modern color palette - WCAG AA compliant
+    classDef init fill:#EEF2FF,stroke:#4F46E5,stroke-width:2px,color:#312E81
+    classDef prov fill:#D1FAE5,stroke:#10B981,stroke-width:2px,color:#065F46
+    classDef deploy fill:#FEF3C7,stroke:#F59E0B,stroke-width:2px,color:#92400E
+    classDef hook fill:#F3E8FF,stroke:#A855F7,stroke-width:2px,color:#581C87
 
     class Init1,Init2 init
     class Prov1,Prov2,Prov3 prov
@@ -244,6 +253,7 @@ hooks:
 
 ```mermaid
 flowchart TB
+    %% CI/CD Pipeline Architecture - Build, test, and deployment flow
     subgraph Trigger["🎯 Triggers"]
         Push["Push to main"]
         PR["Pull Request"]
@@ -268,6 +278,7 @@ flowchart TB
         Prod["Production Environment"]
     end
 
+    %% Pipeline flow
     Push --> CI
     PR --> CI
     Manual --> CD
@@ -278,10 +289,11 @@ flowchart TB
     Dev -->|"Promotion"| Staging
     Staging -->|"Approval"| Prod
 
-    classDef trigger fill:#ffebee,stroke:#c62828
-    classDef ci fill:#e3f2fd,stroke:#1565c0
-    classDef cd fill:#e8f5e9,stroke:#2e7d32
-    classDef azure fill:#fff3e0,stroke:#ef6c00
+    %% Modern color palette - WCAG AA compliant
+    classDef trigger fill:#FEE2E2,stroke:#EF4444,stroke-width:2px,color:#991B1B
+    classDef ci fill:#EEF2FF,stroke:#4F46E5,stroke-width:2px,color:#312E81
+    classDef cd fill:#D1FAE5,stroke:#10B981,stroke-width:2px,color:#065F46
+    classDef azure fill:#FEF3C7,stroke:#F59E0B,stroke-width:2px,color:#92400E
 
     class Push,PR,Manual trigger
     class Build,Test,Analyze ci
@@ -362,6 +374,7 @@ jobs:
 
 ```mermaid
 sequenceDiagram
+    %% Workload Identity Federation - OIDC authentication flow for GitHub Actions
     autonumber
     participant GH as GitHub Actions
     participant Entra as Microsoft Entra ID
@@ -417,6 +430,7 @@ az ad app federated-credential create `
 
 ```mermaid
 flowchart LR
+    %% Local Development Workflow - Setup to running
     subgraph Setup["🔧 Setup"]
         Clone["git clone"]
         Deps["dotnet restore"]
@@ -432,15 +446,17 @@ flowchart LR
         Dashboard["Aspire Dashboard<br/>localhost:15217"]
     end
 
+    %% Workflow flow
     Clone --> Deps
     Deps --> Login
     Login --> Select
     Select --> Aspire
     Aspire --> Dashboard
 
-    classDef setup fill:#e3f2fd,stroke:#1565c0
-    classDef auth fill:#fff3e0,stroke:#ef6c00
-    classDef run fill:#e8f5e9,stroke:#2e7d32
+    %% Modern color palette - WCAG AA compliant
+    classDef setup fill:#EEF2FF,stroke:#4F46E5,stroke-width:2px,color:#312E81
+    classDef auth fill:#FEF3C7,stroke:#F59E0B,stroke-width:2px,color:#92400E
+    classDef run fill:#D1FAE5,stroke:#10B981,stroke-width:2px,color:#065F46
 
     class Clone,Deps setup
     class Login,Select auth

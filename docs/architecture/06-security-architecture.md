@@ -48,6 +48,7 @@
 
 ```mermaid
 flowchart LR
+    %% Authentication Flow - Services to Azure Resources via Managed Identity
     subgraph Services["Services"]
         API["Orders API"]
         WebApp["Web App"]
@@ -66,6 +67,7 @@ flowchart LR
         AI["App Insights"]
     end
 
+    %% Authentication flow
     API --> MI
     WebApp --> MI
     LogicApp --> MI
@@ -75,9 +77,10 @@ flowchart LR
     EntraID -->|"Token"| Storage
     EntraID -->|"Token"| AI
 
-    classDef service fill:#e3f2fd,stroke:#1565c0
-    classDef identity fill:#fff3e0,stroke:#ef6c00
-    classDef resource fill:#e8f5e9,stroke:#2e7d32
+    %% Modern color palette - WCAG AA compliant
+    classDef service fill:#EEF2FF,stroke:#4F46E5,stroke-width:2px,color:#312E81
+    classDef identity fill:#FEF3C7,stroke:#F59E0B,stroke-width:2px,color:#92400E
+    classDef resource fill:#D1FAE5,stroke:#10B981,stroke-width:2px,color:#065F46
 
     class API,WebApp,LogicApp service
     class MI,EntraID identity
@@ -111,6 +114,7 @@ flowchart LR
 
 ```mermaid
 flowchart TB
+    %% Managed Identity Architecture - Role assignments for services
     subgraph Identity["🔐 User-Assigned Managed Identity"]
         MI["id-orders-{env}"]
     end
@@ -128,6 +132,7 @@ flowchart TB
         AIRole["App Insights:<br/>Monitoring Contributor"]
     end
 
+    %% Identity bindings
     MI --> API
     MI --> Web
     MI --> LA
@@ -136,9 +141,10 @@ flowchart TB
     MI --> StorageRole
     MI --> AIRole
 
-    classDef identity fill:#fff3e0,stroke:#ef6c00,stroke-width:2px
-    classDef service fill:#e3f2fd,stroke:#1565c0
-    classDef role fill:#e8f5e9,stroke:#2e7d32
+    %% Modern color palette - WCAG AA compliant
+    classDef identity fill:#FEF3C7,stroke:#F59E0B,stroke-width:2px,color:#92400E
+    classDef service fill:#EEF2FF,stroke:#4F46E5,stroke-width:2px,color:#312E81
+    classDef role fill:#D1FAE5,stroke:#10B981,stroke-width:2px,color:#065F46
 
     class MI identity
     class API,Web,LA service
@@ -159,6 +165,7 @@ flowchart TB
 
 ```mermaid
 sequenceDiagram
+    %% Service-to-Service Authentication Flow via Managed Identity
     autonumber
     participant API as Orders API
     participant MI as Managed Identity
@@ -217,6 +224,7 @@ sequenceDiagram
 
 ```mermaid
 flowchart TB
+    %% Network Security Topology - VNet integration and PaaS connectivity
     subgraph Internet["🌐 Internet"]
         Users["Users"]
     end
@@ -236,15 +244,17 @@ flowchart TB
         Storage["Azure Storage<br/>(Private endpoint optional)"]
     end
 
+    %% Network flows
     Users -->|"HTTPS"| API
     API -->|"Private"| SQL
     API -->|"AMQP"| SB
     LA -->|"Connector"| SB
     LA --> Storage
 
-    classDef internet fill:#ffebee,stroke:#c62828
-    classDef vnet fill:#e3f2fd,stroke:#1565c0
-    classDef paas fill:#e8f5e9,stroke:#2e7d32
+    %% Modern color palette - WCAG AA compliant
+    classDef internet fill:#FEE2E2,stroke:#EF4444,stroke-width:2px,color:#991B1B
+    classDef vnet fill:#EEF2FF,stroke:#4F46E5,stroke-width:2px,color:#312E81
+    classDef paas fill:#D1FAE5,stroke:#10B981,stroke-width:2px,color:#065F46
 
     class Users internet
     class API,LA vnet
