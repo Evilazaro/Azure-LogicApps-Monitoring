@@ -2,20 +2,22 @@
 # CONTINUOUS INTEGRATION (CI) PIPELINE
 # ==============================================================================
 #
-# Purpose:      Validates code quality by building .NET projects and compiling
-#               Bicep infrastructure templates on every push and pull request.
+# Purpose:      Validates code quality by building .NET projects, running tests,
+#               and compiling Bicep infrastructure templates.
 #
-# Triggers:     - Push to any branch
-#               - Pull requests targeting main branch
+# Triggers:     - Push to any branch (with path filters)
+#               - Pull requests targeting main branch (with path filters)
 #               - Manual workflow dispatch
 #
-# Validations:  This pipeline performs compilation checks only (no deployment):
+# Validations:  This pipeline performs the following validations (no deployment):
 #               ├── .NET Build: Compiles all .NET projects in the solution
-#               ├── .NET Tests: Runs unit tests to validate code correctness
+#               ├── .NET Tests: Runs unit tests and reports results with TRX output
+#               ├── Test Reports: Generates test annotations and job summaries
 #               └── Bicep Build: Validates and compiles infrastructure templates
 #
 # Prerequisites:
-#   - .NET SDK 10.x (installed automatically)
+#   - .NET SDK 8.x, 9.x, and 10.x (installed automatically)
+#   - .NET Workloads including Aspire (updated automatically)
 #   - Azure CLI with Bicep (installed automatically)
 #
 # Documentation:
@@ -35,9 +37,11 @@ name: "CI - Build Validation"
 # TRIGGER CONFIGURATION
 # ------------------------------------------------------------------------------
 # Workflow executes on:
-#   1. Push events to any branch (validates all commits)
-#   2. Pull requests targeting main (gate for merging)
-#   3. Manual trigger via GitHub Actions UI
+#   1. Push events to any branch (only when relevant files change)
+#   2. Pull requests targeting main (gate for merging, with path filters)
+#   3. Manual trigger via GitHub Actions UI (workflow_dispatch)
+#
+# Path filters include: .cs, .csproj, .sln, .bicep, .json, and this workflow file
 on:
   workflow_dispatch:
 
@@ -77,11 +81,11 @@ concurrency:
 # ------------------------------------------------------------------------------
 # SECURITY PERMISSIONS
 # ------------------------------------------------------------------------------
-# Minimal permissions following principle of least privilege.
-# - contents: read     → Required for repository checkout
-# - pull-requests: read → Required for PR metadata access
-# - statuses: write    → Required to report commit status checks
-# - checks: write      → Required for test-reporter to create check runs
+# Minimal permissions following principle of least privilege:
+#   - contents: read       → Required for repository checkout
+#   - pull-requests: read  → Required for PR metadata access
+#   - statuses: write      → Required to report commit status checks
+#   - checks: write        → Required for dorny/test-reporter to create check runs
 permissions:
   contents: read
   pull-requests: read
@@ -96,7 +100,20 @@ jobs:
   # JOB: build-dotnet
   # ============================================================================
   # Compiles all .NET projects to validate code syntax and dependencies.
-  # Runs restore, build, and optionally tests.
+  # Performs the following steps:
+  #   1. Update Linux packages (install unzip)
+  #   2. Checkout repository
+  #   3. Setup .NET SDK (8.x, 9.x, 10.x)
+  #   4. Update .NET Workloads (Aspire, etc.)
+  #   5. Cache NuGet packages
+  #   6. Restore dependencies
+  #   7. Build solution (Release configuration)
+  #   8. Run unit tests with TRX output
+  #   9. Parse test results from TRX files
+  #  10. Upload test artifacts
+  #  11. Generate test report (dorny/test-reporter)
+  #  12. Generate build summary
+  #  13. Fail job if tests failed
   # ============================================================================
   build-dotnet:
     name: "🔨 Build .NET Solution"
@@ -111,15 +128,29 @@ jobs:
 
     steps:
       # ------------------------------------------------------------------------
-      # Step 1: Checkout repository
+      # Step 1: Update Linux packages
+      # ------------------------------------------------------------------------
+      # Updates apt package list and installs unzip utility.
+      # Required for extracting certain .NET workload components.
+      # ------------------------------------------------------------------------
+      - name: "Update Linux packages"
+        run: |
+          echo "Updating Linux packages..."
+          sudo apt-get update && sudo apt-get install -y unzip
+
+      # ------------------------------------------------------------------------
+      # Step 2: Checkout repository
       # ------------------------------------------------------------------------
       - name: "📥 Checkout repository"
         uses: actions/checkout@v4
 
       # ------------------------------------------------------------------------
-      # Step 2: Setup .NET SDK
+      # Step 3: Setup .NET SDK
       # ------------------------------------------------------------------------
-      # Installs required .NET SDK versions for building .NET Aspire projects.
+      # Installs multiple .NET SDK versions required for building:
+      #   - .NET 8.x: LTS version for backward compatibility
+      #   - .NET 9.x: Current stable version
+      #   - .NET 10.x: Preview version for .NET Aspire projects
       # ------------------------------------------------------------------------
       - name: "🔧 Setup .NET SDK"
         id: setup-dotnet
@@ -131,10 +162,23 @@ jobs:
             10.x
 
       # ------------------------------------------------------------------------
-      # Step 2.5: Cache NuGet packages
+      # Step 4: Update .NET Workloads
+      # ------------------------------------------------------------------------
+      # Updates .NET workloads (including Aspire) to ensure all required
+      # components are available for building the solution.
+      # ------------------------------------------------------------------------
+      - name: "🛠️ Install .NET Aspire and update Workloads"
+        run: |
+          echo "Installing .NET Aspire workload:"
+          sudo dotnet workload install aspire --skip-manifest-update || echo "Aspire workload already installed"
+          echo "Updating .NET Workloads:"
+          sudo dotnet workload update
+
+      # ------------------------------------------------------------------------
+      # Step 5: Cache NuGet packages
       # ------------------------------------------------------------------------
       # Caches NuGet packages to speed up subsequent builds.
-      # Key includes OS, solution hash for cache invalidation.
+      # Cache key includes OS and hash of project/solution files for invalidation.
       # ------------------------------------------------------------------------
       - name: "💾 Cache NuGet packages"
         uses: actions/cache@v4
@@ -145,30 +189,33 @@ jobs:
             ${{ runner.os }}-nuget-
 
       # ------------------------------------------------------------------------
-      # Step 3: Restore NuGet packages
+      # Step 6: Restore NuGet packages
       # ------------------------------------------------------------------------
-      # Downloads and caches all NuGet dependencies defined in project files.
+      # Downloads all NuGet dependencies defined in project files.
+      # Uses cached packages from previous runs when available.
       # ------------------------------------------------------------------------
       - name: "📦 Restore dependencies"
         run: dotnet restore app.sln --verbosity minimal
 
       # ------------------------------------------------------------------------
-      # Step 4: Build solution
+      # Step 7: Build solution
       # ------------------------------------------------------------------------
       # Compiles all projects in Release configuration.
-      # --no-restore: Uses packages from previous step for efficiency.
-      # /warnaserror: Treats warnings as errors for stricter validation.
+      #   --no-restore: Uses packages from previous step for efficiency
+      #   TreatWarningsAsErrors=false: Allows warnings during build
       # ------------------------------------------------------------------------
       - name: "🏗️ Build solution"
         run: dotnet build app.sln --configuration Release --no-restore /p:TreatWarningsAsErrors=false
 
       # ------------------------------------------------------------------------
-      # Step 5: Run unit tests
+      # Step 8: Run unit tests
       # ------------------------------------------------------------------------
-      # Executes all unit tests in the solution and captures results.
-      # Uses both --logger trx (for classic SDK) and -- --report-trx (for MSTest SDK)
-      # to ensure all test projects generate TRX output files.
-      # continue-on-error: Allows subsequent steps to parse results on failure.
+      # Executes all unit tests in the solution and captures results in TRX format.
+      # Uses dual TRX generation strategy:
+      #   --logger "trx": For classic SDK test projects
+      #   -- --report-trx: For MSTest SDK test projects (output in bin/<config>/<tfm>/TestResults/)
+      # Collects TRX files from various locations into a single TestResults folder.
+      # continue-on-error: Allows subsequent steps to parse and report results on failure.
       # ------------------------------------------------------------------------
       - name: "🧪 Run unit tests"
         id: test
@@ -201,11 +248,12 @@ jobs:
           exit $TEST_EXIT_CODE
 
       # ------------------------------------------------------------------------
-      # Step 6: Parse test results
+      # Step 9: Parse test results
       # ------------------------------------------------------------------------
       # Extracts test metrics from TRX files for job summary.
-      # Parses total, passed, failed, and skipped test counts per project.
-      # Sets outputs for use in summary generation.
+      # Parses total, passed, failed, and skipped test counts from each TRX file.
+      # Sets step outputs (total, passed, failed, skipped, project_results, test-status)
+      # for use in summary generation and job status determination.
       # ------------------------------------------------------------------------
       - name: "📊 Parse test results"
         id: test-results
@@ -283,10 +331,10 @@ jobs:
           fi
 
       # ------------------------------------------------------------------------
-      # Step 7: Upload test results artifact
+      # Step 10: Upload test results artifact
       # ------------------------------------------------------------------------
       # Uploads TRX files as artifacts for download and analysis.
-      # Runs always to capture results even on test failures.
+      # Retention: 14 days. Runs always to capture results even on test failures.
       # ------------------------------------------------------------------------
       - name: "📤 Upload test results"
         uses: actions/upload-artifact@v4
@@ -298,12 +346,12 @@ jobs:
           if-no-files-found: warn
 
       # ------------------------------------------------------------------------
-      # Step 8: Generate test report (PR annotations)
+      # Step 11: Generate test report
       # ------------------------------------------------------------------------
       # Creates a test report with inline annotations for failed tests.
-      # Only runs on pull requests to annotate code with failures.
-      # Uses dorny/test-reporter for rich GitHub integration.
-      # Only runs if TRX files exist to avoid errors.
+      # Uses dorny/test-reporter for rich GitHub integration with check runs.
+      # Conditions: Runs always if TRX files exist, with fail-on-error disabled
+      # to prevent blocking the pipeline on report generation issues.
       # ------------------------------------------------------------------------
       - name: "📝 Generate test report"
         uses: dorny/test-reporter@v1
@@ -315,10 +363,11 @@ jobs:
           fail-on-error: false
 
       # ------------------------------------------------------------------------
-      # Step 9: Generate build summary
+      # Step 12: Generate build summary
       # ------------------------------------------------------------------------
       # Creates a GitHub Actions job summary with build and test results.
-      # Displays actual test metrics from TRX parsing including per-project breakdown.
+      # Includes: build status, test metrics (total/passed/failed/skipped),
+      # pass rate, run information (branch, commit, actor, workflow run link).
       # Runs always to provide visibility even on failures.
       # ------------------------------------------------------------------------
       - name: "📋 Generate Build Summary"
@@ -398,10 +447,11 @@ jobs:
           fi
 
       # ------------------------------------------------------------------------
-      # Step 10: Fail job if tests failed
+      # Step 13: Fail job if tests failed
       # ------------------------------------------------------------------------
       # Ensures the job fails if any tests failed.
-      # This step runs after summary generation to preserve visibility.
+      # Runs after summary generation to preserve visibility of results.
+      # Condition: Only executes when test step outcome was 'failure'.
       # ------------------------------------------------------------------------
       - name: "🚨 Check test results"
         if: always() && steps.test.outcome == 'failure'
@@ -414,6 +464,11 @@ jobs:
   # ============================================================================
   # Validates and compiles Bicep infrastructure templates.
   # Ensures IaC syntax is correct without deploying to Azure.
+  # Performs the following steps:
+  #   1. Checkout repository
+  #   2. Setup Azure CLI and install Bicep
+  #   3. Build main.bicep (validates all referenced modules)
+  #   4. Generate build summary
   # ============================================================================
   build-bicep:
     name: "☁️ Build Bicep Templates"
@@ -430,9 +485,9 @@ jobs:
       # ------------------------------------------------------------------------
       # Step 2: Setup Azure CLI and install Bicep
       # ------------------------------------------------------------------------
-      # Azure CLI Docker image doesn't include Bicep by default.
-      # Install Bicep CLI for template compilation.
-      # No authentication needed - only local compilation.
+      # Uses azure/cli action to run Azure CLI commands.
+      # Installs Bicep CLI for template compilation and displays version.
+      # No Azure authentication needed - only local compilation.
       # ------------------------------------------------------------------------
       - name: "🔧 Setup Azure CLI and Bicep"
         uses: azure/cli@v2
@@ -447,7 +502,8 @@ jobs:
       # ------------------------------------------------------------------------
       # Compiles the main infrastructure template and all referenced modules.
       # Validates syntax, type checking, and module references.
-      # Building main.bicep automatically validates all imported modules.
+      # Note: Runs az bicep install again to ensure Bicep is available in this action step.
+      # Output redirected to /dev/null; only success/failure matters.
       # ------------------------------------------------------------------------
       - name: "🏗️ Build main.bicep"
         uses: azure/cli@v2
@@ -462,6 +518,7 @@ jobs:
       # Step 4: Generate build summary
       # ------------------------------------------------------------------------
       # Creates a GitHub Actions job summary with Bicep compilation results.
+      # Includes: template status, branch, commit, and actor information.
       # Runs always to provide visibility even on failures.
       # ------------------------------------------------------------------------
       - name: "📋 Generate Build Summary"
@@ -487,8 +544,10 @@ jobs:
   # ============================================================================
   # JOB: ci-summary
   # ============================================================================
-  # Aggregates results from all CI jobs and provides a unified status.
-  # This job is used as a single status check for branch protection rules.
+  # Aggregates results from all CI jobs (build-dotnet, build-bicep) and provides
+  # a unified status. This job serves as a single status check for branch
+  # protection rules, simplifying required status check configuration.
+  # Runs always (even if dependencies fail) to report final pipeline status.
   # ============================================================================
   ci-summary:
     name: "✅ CI Summary"
@@ -499,10 +558,11 @@ jobs:
 
     steps:
       # ------------------------------------------------------------------------
-      # Step 1: Check job results
+      # Step 1: Evaluate CI results and generate summary
       # ------------------------------------------------------------------------
-      # Evaluates the status of all dependent jobs and fails if any failed.
-      # This provides a single status check for branch protection rules.
+      # Evaluates the status of all dependent jobs (build-dotnet, build-bicep).
+      # Generates a summary table showing each job's status and run metadata.
+      # Exits with code 1 if any job failed, providing a single status check.
       # ------------------------------------------------------------------------
       - name: "🔍 Evaluate CI Results"
         run: |

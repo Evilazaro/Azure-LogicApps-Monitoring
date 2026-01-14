@@ -2,26 +2,35 @@
 # AZURE DEVELOPER CLI (azd) CI/CD PIPELINE
 # ==============================================================================
 #
-# Purpose:      Automated infrastructure provisioning and application deployment
-#               for the Azure Logic Apps Monitoring solution.
+# Purpose:      Automated CI validation, infrastructure provisioning, and
+#               application deployment for the Azure Logic Apps Monitoring solution.
 #
 # Triggers:     - Push to main branch (continuous deployment)
-#               - Manual workflow dispatch (on-demand deployment)
+#               - Manual workflow dispatch (on-demand deployment with environment selection)
 #
-# Architecture: Uses Azure Developer CLI (azd) with .NET Aspire for:
-#               ├── Infrastructure provisioning (Bicep/ARM)
-#               └── Application deployment (Container Apps)
+# Pipeline Flow:
+#               ┌─────────────────────────────────────────────────────────────┐
+#               │ CI Validation (gates deployment)                            │
+#               │   ├── .NET Build: Compiles all projects                     │
+#               │   ├── Unit Tests: Runs tests with TRX reporting             │
+#               │   └── Bicep Build: Validates infrastructure templates       │
+#               ├─────────────────────────────────────────────────────────────┤
+#               │ Provisioning & Deployment (runs if CI passes)               │
+#               │   ├── Azure Infrastructure: Provisions via azd/Bicep        │
+#               │   └── Application: Deploys to Azure Container Apps          │
+#               └─────────────────────────────────────────────────────────────┘
 #
 # Security:     Implements OIDC federated credentials (passwordless auth)
 #               No secrets stored in GitHub - uses Azure Managed Identity
 #
 # Prerequisites:
 #   GitHub Repository Variables (Settings → Secrets and Variables → Actions):
-#   - AZURE_CLIENT_ID       : Service Principal/App Registration Client ID
-#   - AZURE_TENANT_ID       : Azure AD Tenant ID
-#   - AZURE_SUBSCRIPTION_ID : Target Azure Subscription ID
-#   - AZURE_LOCATION        : Azure region for deployment (e.g., eastus2)
-#   - AZURE_ENV_NAME        : Environment name (e.g., dev, staging, prod)
+#   - AZURE_CLIENT_ID        : Service Principal/App Registration Client ID
+#   - AZURE_TENANT_ID        : Azure AD Tenant ID
+#   - AZURE_SUBSCRIPTION_ID  : Target Azure Subscription ID
+#   - AZURE_LOCATION         : Azure region for deployment (e.g., eastus2)
+#   - AZURE_ENV_NAME         : Environment name (e.g., dev, staging, prod)
+#   - DEPLOYER_PRINCIPAL_TYPE: Principal type for deployment (e.g., ServicePrincipal)
 #
 # Documentation:
 #   - azd:  https://learn.microsoft.com/azure/developer/azure-developer-cli/
@@ -99,8 +108,32 @@ jobs:
   # ============================================================================
   # JOB: provision-and-deploy
   # ============================================================================
-  # Provisions Azure infrastructure and deploys the application using azd.
-  # Combines both operations in a single job for efficiency with azd workflows.
+  # Validates code, provisions Azure infrastructure, and deploys the application.
+  # Combines CI validation and deployment in a single job for efficiency.
+  #
+  # Steps performed:
+  #   1. Update Linux packages (install unzip)
+  #   2. Checkout repository
+  #   3. Setup .NET SDK (8.x, 9.x, 10.x)
+  #   4. Update .NET Workloads
+  #   5. Cache NuGet packages
+  #   6. Restore dependencies
+  #   7. Build .NET solution
+  #   8. Run unit tests (gate deployment)
+  #   9. Parse test results
+  #  10. Upload test results artifact
+  #  11. Generate test report
+  #  12. Gate: Check test results
+  #  13. Setup Azure CLI and Bicep
+  #  14. Build Bicep templates
+  #  15. Install Azure Developer CLI
+  #  16. Install sqlcmd utility
+  #  17. Make hook scripts executable
+  #  18. Authenticate Azure CLI (OIDC)
+  #  19. Authenticate Azure Developer CLI
+  #  20. Provision Azure Infrastructure
+  #  21. Deploy Application
+  #  22. Generate Deployment Summary
   # ============================================================================
   provision-and-deploy:
     name: "🚀 Provision & Deploy to Azure"
@@ -135,7 +168,18 @@ jobs:
 
     steps:
       # ------------------------------------------------------------------------
-      # Step 1: Checkout repository
+      # Step 1: Update Linux packages
+      # ------------------------------------------------------------------------
+      # Updates apt package list and installs unzip utility.
+      # Required for extracting certain .NET workload components.
+      # ------------------------------------------------------------------------
+      - name: "Update Linux packages"
+        run: |
+          echo "Updating Linux packages..."
+          sudo apt-get update && sudo apt-get install -y unzip
+
+      # ------------------------------------------------------------------------
+      # Step 2: Checkout repository
       # ------------------------------------------------------------------------
       # Clones the repository code for build and deployment.
       # fetch-depth: 0 provides full history for version detection if needed.
@@ -146,10 +190,12 @@ jobs:
           fetch-depth: 0
 
       # ------------------------------------------------------------------------
-      # Step 2: Setup .NET SDK
+      # Step 3: Setup .NET SDK
       # ------------------------------------------------------------------------
-      # Installs required .NET SDK versions for building .NET Aspire projects.
-      # Multiple versions support different project target frameworks.
+      # Installs multiple .NET SDK versions required for building:
+      #   - .NET 8.x: LTS version for backward compatibility
+      #   - .NET 9.x: Current stable version
+      #   - .NET 10.x: Preview version for .NET Aspire projects
       # ------------------------------------------------------------------------
       - name: "🔧 Setup .NET SDK"
         id: setup-dotnet
@@ -161,10 +207,23 @@ jobs:
             10.x
 
       # ------------------------------------------------------------------------
-      # Step 2.5: Cache NuGet packages
+      # Step 4: Update .NET Workloads
+      # ------------------------------------------------------------------------
+      # Updates .NET workloads (including Aspire) to ensure all required
+      # components are available for building the solution.
+      # ------------------------------------------------------------------------
+      - name: "🛠️ Install .NET Aspire and update Workloads"
+        run: |
+          echo "Installing .NET Aspire workload:"
+          sudo dotnet workload install aspire --skip-manifest-update || echo "Aspire workload already installed"
+          echo "Updating .NET Workloads:"
+          sudo dotnet workload update
+
+      # ------------------------------------------------------------------------
+      # Step 5: Cache NuGet packages
       # ------------------------------------------------------------------------
       # Caches NuGet packages to speed up subsequent builds.
-      # Key includes OS and solution hash for cache invalidation.
+      # Cache key includes OS and hash of project/solution files for invalidation.
       # ------------------------------------------------------------------------
       - name: "💾 Cache NuGet packages"
         uses: actions/cache@v4
@@ -175,18 +234,21 @@ jobs:
             ${{ runner.os }}-nuget-
 
       # ------------------------------------------------------------------------
-      # Step 3: Restore NuGet packages
+      # Step 6: Restore NuGet packages
       # ------------------------------------------------------------------------
       # Downloads all NuGet dependencies defined in project files.
+      # Uses cached packages from previous runs when available.
       # ------------------------------------------------------------------------
       - name: "📦 Restore dependencies"
         id: restore
         run: dotnet restore app.sln --verbosity minimal
 
       # ------------------------------------------------------------------------
-      # Step 4: Build .NET solution
+      # Step 7: Build .NET solution
       # ------------------------------------------------------------------------
       # Compiles all projects in Release configuration to validate code.
+      #   --no-restore: Uses packages from previous step for efficiency
+      #   TreatWarningsAsErrors=false: Allows warnings during build
       # This ensures the application compiles before attempting deployment.
       # ------------------------------------------------------------------------
       - name: "🏗️ Build .NET solution"
@@ -194,13 +256,15 @@ jobs:
         run: dotnet build app.sln --configuration Release --no-restore /p:TreatWarningsAsErrors=false
 
       # ------------------------------------------------------------------------
-      # Step 5: Run unit tests
+      # Step 8: Run unit tests
       # ------------------------------------------------------------------------
       # Executes all unit tests to validate code correctness before deployment.
-      # Fails fast to prevent expensive provisioning if tests fail.
-      # continue-on-error: Allows result parsing and summary generation.
-      # Uses both --logger trx (for classic SDK) and -- --report-trx (for MSTest SDK)
-      # to ensure all test projects generate TRX output files.
+      # Gates deployment - tests must pass before provisioning expensive resources.
+      # Uses dual TRX generation strategy:
+      #   --logger "trx": For classic SDK test projects
+      #   -- --report-trx: For MSTest SDK test projects (output in bin/<config>/<tfm>/TestResults/)
+      # Collects TRX files from various locations into a single TestResults folder.
+      # continue-on-error: Allows subsequent steps to parse and report results.
       # ------------------------------------------------------------------------
       - name: "🧪 Run unit tests"
         id: test
@@ -231,7 +295,14 @@ jobs:
           echo "::endgroup::"
 
           exit $TEST_EXIT_CODE
-      # Parses total, passed, failed, and skipped test counts per project.
+
+      # ------------------------------------------------------------------------
+      # Step 9: Parse test results
+      # ------------------------------------------------------------------------
+      # Extracts test metrics from TRX files for job summary.
+      # Parses total, passed, failed, and skipped test counts from each TRX file.
+      # Sets step outputs (total, passed, failed, skipped, project_results)
+      # for use in summary generation and deployment gating.
       # ------------------------------------------------------------------------
       - name: "📊 Parse test results"
         id: test-results
@@ -303,10 +374,10 @@ jobs:
         shell: bash
 
       # ------------------------------------------------------------------------
-      # Step 7: Upload test results
+      # Step 10: Upload test results artifact
       # ------------------------------------------------------------------------
-      # Uploads test results as artifacts for analysis.
-      # Runs always to capture results even on test failures.
+      # Uploads TRX files as artifacts for download and analysis.
+      # Retention: 14 days. Runs always to capture results even on test failures.
       # ------------------------------------------------------------------------
       - name: "📤 Upload test results"
         uses: actions/upload-artifact@v4
@@ -318,11 +389,12 @@ jobs:
           if-no-files-found: warn
 
       # ------------------------------------------------------------------------
-      # Step 8: Generate test report (PR annotations)
+      # Step 11: Generate test report
       # ------------------------------------------------------------------------
       # Creates a test report with inline annotations for failed tests.
-      # Uses dorny/test-reporter for rich GitHub integration.
-      # Only runs if TRX files exist to avoid errors.
+      # Uses dorny/test-reporter for rich GitHub integration with check runs.
+      # Conditions: Runs always if TRX files exist, with fail-on-error disabled
+      # to prevent blocking the pipeline on report generation issues.
       # ------------------------------------------------------------------------
       - name: "📝 Generate test report"
         uses: dorny/test-reporter@v1
@@ -334,10 +406,11 @@ jobs:
           fail-on-error: false
 
       # ------------------------------------------------------------------------
-      # Step 9: Fail if tests failed (gate deployment)
+      # Step 12: Gate - Check test results
       # ------------------------------------------------------------------------
       # Stops deployment if unit tests failed.
-      # This is a critical gate to prevent deploying broken code.
+      # This is a critical gate to prevent deploying broken code to Azure.
+      # If tests fail, the job fails here before any Azure provisioning begins.
       # ------------------------------------------------------------------------
       - name: "🚨 Gate: Check test results"
         if: steps.test.outcome == 'failure'
@@ -349,9 +422,11 @@ jobs:
           exit 1
 
       # ------------------------------------------------------------------------
-      # Step 10: Setup Azure CLI and Bicep
+      # Step 13: Setup Azure CLI and Bicep
       # ------------------------------------------------------------------------
-      # Azure CLI with Bicep for infrastructure template validation.
+      # Uses azure/cli action to run Azure CLI commands.
+      # Installs Bicep CLI for template compilation and displays version.
+      # No Azure authentication needed at this stage - only local validation.
       # ------------------------------------------------------------------------
       - name: "🔧 Setup Azure CLI and Bicep"
         uses: azure/cli@v2
@@ -362,10 +437,11 @@ jobs:
             az bicep version
 
       # ------------------------------------------------------------------------
-      # Step 11: Build Bicep templates
+      # Step 14: Build Bicep templates
       # ------------------------------------------------------------------------
       # Validates infrastructure templates compile before provisioning.
-      # This catches syntax errors before attempting deployment.
+      # Compiles the main template and all referenced modules.
+      # This catches syntax errors before attempting Azure deployment.
       # ------------------------------------------------------------------------
       - name: "🏗️ Build Bicep templates"
         id: bicep-build
@@ -377,7 +453,7 @@ jobs:
             echo "✅ infra/main.bicep compiled successfully"
 
       # ------------------------------------------------------------------------
-      # Step 12: Install Azure Developer CLI (azd)
+      # Step 15: Install Azure Developer CLI (azd)
       # ------------------------------------------------------------------------
       # Installs the latest version of azd for infrastructure management.
       # azd provides a unified experience for provisioning and deployment.
@@ -386,10 +462,11 @@ jobs:
         uses: Azure/setup-azd@v2
 
       # ------------------------------------------------------------------------
-      # Step 13: Install sqlcmd utility
+      # Step 16: Install sqlcmd utility
       # ------------------------------------------------------------------------
       # Installs the Go version of sqlcmd for SQL Database managed identity
       # configuration in post-provisioning hooks.
+      # continue-on-error: Installation failure doesn't block deployment.
       # ------------------------------------------------------------------------
       - name: "🛠️ Install sqlcmd"
         run: |
@@ -401,7 +478,7 @@ jobs:
         continue-on-error: true
 
       # ------------------------------------------------------------------------
-      # Step 14: Make hook scripts executable
+      # Step 17: Make hook scripts executable
       # ------------------------------------------------------------------------
       # Ensures shell scripts in hooks directory have execute permissions.
       # Required for azd lifecycle hooks to run on Linux runners.
@@ -410,7 +487,7 @@ jobs:
         run: chmod +x ./hooks/*.sh
 
       # ------------------------------------------------------------------------
-      # Step 15: Authenticate with Azure using OIDC
+      # Step 18: Authenticate Azure CLI (OIDC)
       # ------------------------------------------------------------------------
       # Uses OpenID Connect (OIDC) federated credentials for passwordless auth.
       # No secrets are stored in GitHub - authentication is handled via
@@ -428,6 +505,12 @@ jobs:
           tenant-id: ${{ vars.AZURE_TENANT_ID }}
           subscription-id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
 
+      # ------------------------------------------------------------------------
+      # Step 19: Authenticate Azure Developer CLI
+      # ------------------------------------------------------------------------
+      # Authenticates azd using GitHub federated credentials provider.
+      # Uses the same OIDC mechanism as Azure CLI for consistent auth.
+      # ------------------------------------------------------------------------
       - name: "🔐 Authenticate Azure Developer CLI (Federated Credentials)"
         run: |
           azd auth login `
@@ -437,7 +520,7 @@ jobs:
         shell: pwsh
 
       # ------------------------------------------------------------------------
-      # Step 16: Provision Azure Infrastructure
+      # Step 20: Provision Azure Infrastructure
       # ------------------------------------------------------------------------
       # Deploys infrastructure using Bicep templates defined in /infra.
       # --no-prompt: Runs non-interactively for CI/CD automation.
@@ -456,10 +539,11 @@ jobs:
           AZURE_ENV_NAME: ${{ github.event.inputs.environment || vars.AZURE_ENV_NAME }}
 
       # ------------------------------------------------------------------------
-      # Step 17: Deploy Application
+      # Step 21: Deploy Application
       # ------------------------------------------------------------------------
       # Deploys application code to provisioned Azure resources.
       # Uses .NET Aspire manifest for service discovery and configuration.
+      # Outputs the webapp URL for environment link in GitHub.
       #
       # Deployed services (defined in azure.yaml):
       #   - eShop.Orders.API: REST API for order management
@@ -476,10 +560,11 @@ jobs:
           AZURE_ENV_NAME: ${{ github.event.inputs.environment || vars.AZURE_ENV_NAME }}
 
       # ------------------------------------------------------------------------
-      # Step 18: Generate Deployment Summary
+      # Step 22: Generate Deployment Summary
       # ------------------------------------------------------------------------
       # Creates a GitHub Actions job summary with deployment details.
-      # Includes actual test results from TRX parsing with per-project breakdown.
+      # Includes: build validation status, test metrics, deployment details,
+      # and run information (environment, region, branch, commit, actor).
       # Runs always to provide visibility even on failures.
       # ------------------------------------------------------------------------
       - name: "📋 Generate Deployment Summary"
