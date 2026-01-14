@@ -381,7 +381,8 @@ jobs:
             echo "|--------------|-------|-----------|-----------|------------|--------|" >> $GITHUB_STEP_SUMMARY
             
             # Parse project results (format: project:total:passed:failed:skipped|...)
-            echo "$PROJECT_RESULTS" | tr '|' '\n' | while IFS=':' read -r proj total passed failed skipped; do
+            # Use here-string to avoid subshell issues with pipeline
+            while IFS=':' read -r proj total passed failed skipped; do
               if [ -n "$proj" ]; then
                 if [ "$failed" -gt 0 ]; then
                   STATUS="❌ Failed"
@@ -392,20 +393,9 @@ jobs:
                 fi
                 echo "| \`$proj\` | $total | $passed | $failed | $skipped | $STATUS |" >> $GITHUB_STEP_SUMMARY
               fi
-            done
+            done <<< "$(echo "$PROJECT_RESULTS" | tr '|' '\n')"
             echo "" >> $GITHUB_STEP_SUMMARY
           fi
-
-          # Test project inventory
-          echo "### 📋 Test Projects" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "| Project | Description |" >> $GITHUB_STEP_SUMMARY
-          echo "|---------|-------------|" >> $GITHUB_STEP_SUMMARY
-          echo "| \`app.Host.Tests\` | .NET Aspire AppHost configuration tests |" >> $GITHUB_STEP_SUMMARY
-          echo "| \`app.ServiceDefauls.Tests\` | Service defaults, health checks, telemetry tests |" >> $GITHUB_STEP_SUMMARY
-          echo "| \`eShop.Oders.API.Tests\` | Orders API services, repositories, handlers tests |" >> $GITHUB_STEP_SUMMARY
-          echo "| \`eShop.Web.App.Tests\` | Web App UI services tests |" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
 
           # Run information
           echo "### 📊 Run Information" >> $GITHUB_STEP_SUMMARY
