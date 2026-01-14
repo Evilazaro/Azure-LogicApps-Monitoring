@@ -214,10 +214,7 @@ jobs:
       # Step 8: Run unit tests
       # ------------------------------------------------------------------------
       # Executes unit tests in the solution and captures results in TRX format.
-      # Uses dual TRX generation strategy:
-      #   --logger "trx": For classic SDK test projects
-      #   -- --report-trx: For MSTest SDK test projects (output in bin/<config>/<tfm>/TestResults/)
-      # Collects TRX files from various locations into a single TestResults folder.
+      # Uses TRX logger for test result reporting and GitHub integration.
       # continue-on-error: Allows subsequent steps to parse and report results on failure.
       #
       # NOTE: app.Host.Tests is excluded because it contains .NET Aspire integration
@@ -231,28 +228,63 @@ jobs:
           # Create TestResults directory to ensure it exists
           mkdir -p TestResults
 
+          echo "::group::Environment Information"
+          echo "Working directory: $(pwd)"
+          echo ".NET SDK version: $(dotnet --version)"
+          echo "Available test projects:"
+          find . -name "*.Tests.csproj" -type f | head -20
+          echo "::endgroup::"
+
           # Run unit tests excluding Aspire integration tests (app.Host.Tests)
           # which require Docker containers that aren't available in CI.
-          # - --logger "trx" for classic SDK projects (e.g., eShop.Oders.API.Tests)
-          # - -- --report-trx for MSTest SDK projects (e.g., app.ServiceDefauls.Tests, eShop.Web.App.Tests)
-          # Note: MSTest SDK projects generate TRX in bin/<config>/<tfm>/TestResults/
+          # Using --logger "trx;LogFilePrefix=TestResults" for consistent TRX output
+          echo "::group::Running Tests"
           dotnet test app.sln \
             --configuration Release \
             --no-build \
             --verbosity normal \
-            --logger "trx" \
+            --logger "console;verbosity=detailed" \
+            --logger "trx;LogFilePrefix=TestResults" \
             --results-directory TestResults \
-            --filter "FullyQualifiedName!~app.Host.Tests" \
-            -- --report-trx
+            --filter "FullyQualifiedName!~app.Host.Tests"
 
           TEST_EXIT_CODE=$?
+          echo "Test exit code: $TEST_EXIT_CODE"
+          echo "::endgroup::"
 
           # Collect all TRX files from various locations into TestResults folder
           echo "::group::Collecting TRX Files"
-          find . -path "*/bin/*/TestResults/*.trx" -type f -exec cp {} TestResults/ \; 2>/dev/null || true
-          echo "TRX files in TestResults:"
-          ls -la TestResults/*.trx 2>/dev/null || echo "No TRX files found"
+          # Copy TRX files from bin directories (MSTest SDK projects)
+          find . -path "*/bin/*/TestResults/*.trx" -type f -exec cp -v {} TestResults/ \; 2>/dev/null || true
+          # Copy TRX files from obj directories if any
+          find . -path "*/obj/*/TestResults/*.trx" -type f -exec cp -v {} TestResults/ \; 2>/dev/null || true
+          echo ""
+          echo "TRX files in TestResults directory:"
+          ls -la TestResults/*.trx 2>/dev/null || echo "No TRX files found in TestResults/"
+          echo ""
+          echo "Total TRX files found in workspace:"
+          find . -name "*.trx" -type f 2>/dev/null | head -20
           echo "::endgroup::"
+
+          # If tests failed, show detailed failure information
+          if [ $TEST_EXIT_CODE -ne 0 ]; then
+            echo "::group::❌ Test Failure Details"
+            echo "Tests failed with exit code: $TEST_EXIT_CODE"
+            # Parse TRX files to show failed test names
+            for trx in TestResults/*.trx; do
+              if [ -f "$trx" ]; then
+                FAILED_TESTS=$(grep -oP 'testName="\K[^"]+(?="[^>]*outcome="Failed")' "$trx" 2>/dev/null || true)
+                if [ -n "$FAILED_TESTS" ]; then
+                  echo ""
+                  echo "Failed tests in $(basename "$trx"):"
+                  echo "$FAILED_TESTS" | while read -r test; do
+                    echo "  ❌ $test"
+                  done
+                fi
+              fi
+            done
+            echo "::endgroup::"
+          fi
 
           exit $TEST_EXIT_CODE
 
@@ -460,12 +492,46 @@ jobs:
       # ------------------------------------------------------------------------
       # Ensures the job fails if any tests failed.
       # Runs after summary generation to preserve visibility of results.
+      # Provides detailed diagnostic information for troubleshooting.
       # Condition: Only executes when test step outcome was 'failure'.
       # ------------------------------------------------------------------------
       - name: "🚨 Check test results"
         if: always() && steps.test.outcome == 'failure'
         run: |
           echo "::error::Unit tests failed. See test report for details."
+
+          # Add test failure details to summary
+          TOTAL="${{ steps.test-results.outputs.total || '0' }}"
+          PASSED="${{ steps.test-results.outputs.passed || '0' }}"
+          FAILED="${{ steps.test-results.outputs.failed || '0' }}"
+
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "---" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "## ❌ Build Failed - Test Failures" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          # Show failed test names from TRX files
+          if [ -d "TestResults" ]; then
+            echo "### ❌ Failed Tests" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            for trx in TestResults/*.trx; do
+              if [ -f "$trx" ]; then
+                FAILED_TESTS=$(grep -oP 'testName="\K[^"]+(?="[^>]*outcome="Failed")' "$trx" 2>/dev/null || true)
+                if [ -n "$FAILED_TESTS" ]; then
+                  echo "**$(basename "$trx" .trx)**:" >> $GITHUB_STEP_SUMMARY
+                  echo '```' >> $GITHUB_STEP_SUMMARY
+                  echo "$FAILED_TESTS" >> $GITHUB_STEP_SUMMARY
+                  echo '```' >> $GITHUB_STEP_SUMMARY
+                  echo "" >> $GITHUB_STEP_SUMMARY
+                fi
+              fi
+            done
+          fi
+
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "> **Next Steps:** Review the test report above or download the test artifacts for detailed failure information." >> $GITHUB_STEP_SUMMARY
+
           exit 1
 
   # ============================================================================
