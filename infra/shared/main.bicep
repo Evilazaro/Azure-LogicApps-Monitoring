@@ -174,6 +174,7 @@ module data 'data/main.bicep' = {
     dataSubnetId: network.outputs.DATA_SUBNET_ID
     vnetId: network.outputs.VNET_ID
     tags: tags
+    deployerPrincipalType: deployerPrincipalType
   }
 }
 
