@@ -210,7 +210,16 @@ jobs:
         uses: Azure/setup-azd@v2
 
       # ------------------------------------------------------------------------
-      # Step 8: Authenticate with Azure using OIDC
+      # Step 9: Make hook scripts executable
+      # ------------------------------------------------------------------------
+      # Ensures shell scripts in hooks directory have execute permissions.
+      # Required for azd lifecycle hooks to run on Linux runners.
+      # ------------------------------------------------------------------------
+      - name: "🔑 Make hook scripts executable"
+        run: chmod +x ./hooks/*.sh
+
+      # ------------------------------------------------------------------------
+      # Step 10: Authenticate with Azure using OIDC
       # ------------------------------------------------------------------------
       # Uses OpenID Connect (OIDC) federated credentials for passwordless auth.
       # No secrets are stored in GitHub - authentication is handled via
@@ -230,7 +239,7 @@ jobs:
         shell: pwsh
 
       # ------------------------------------------------------------------------
-      # Step 9: Provision Azure Infrastructure
+      # Step 11: Provision Azure Infrastructure
       # ------------------------------------------------------------------------
       # Deploys infrastructure using Bicep templates defined in /infra.
       # --no-prompt: Runs non-interactively for CI/CD automation.
@@ -249,7 +258,7 @@ jobs:
           AZURE_ENV_NAME: ${{ github.event.inputs.environment || vars.AZURE_ENV_NAME }}
 
       # ------------------------------------------------------------------------
-      # Step 10: Deploy Application
+      # Step 12: Deploy Application
       # ------------------------------------------------------------------------
       # Deploys application code to provisioned Azure resources.
       # Uses .NET Aspire manifest for service discovery and configuration.
@@ -269,7 +278,7 @@ jobs:
           AZURE_ENV_NAME: ${{ github.event.inputs.environment || vars.AZURE_ENV_NAME }}
 
       # ------------------------------------------------------------------------
-      # Step 11: Generate Deployment Summary
+      # Step 13: Generate Deployment Summary
       # ------------------------------------------------------------------------
       # Creates a GitHub Actions job summary with deployment details.
       # Runs always to provide visibility even on failures.

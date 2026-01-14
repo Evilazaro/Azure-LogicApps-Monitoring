@@ -11,6 +11,7 @@
 #
 # Validations:  This pipeline performs compilation checks only (no deployment):
 #               ├── .NET Build: Compiles all .NET projects in the solution
+#               ├── .NET Tests: Runs unit tests to validate code correctness
 #               └── Bicep Build: Validates and compiles infrastructure templates
 #
 # Prerequisites:
@@ -146,27 +147,52 @@ jobs:
               run: dotnet build app.sln --configuration Release --no-restore /p:TreatWarningsAsErrors=false
 
             # ------------------------------------------------------------------------
-            # Step 5: Generate build summary
+            # Step 5: Run unit tests
             # ------------------------------------------------------------------------
-            # Creates a GitHub Actions job summary with build results.
+            # Executes all unit tests in the solution.
+            # --no-build: Uses build output from previous step for efficiency.
+            # --logger trx: Generates test results in TRX format for reporting.
+            # ------------------------------------------------------------------------
+            - name: "🧪 Run unit tests"
+              run: dotnet test app.sln --configuration Release --no-build --verbosity normal --logger "trx;LogFileName=test-results.trx" --results-directory ./TestResults
+
+            # ------------------------------------------------------------------------
+            # Step 6: Upload test results
+            # ------------------------------------------------------------------------
+            # Uploads test results as artifacts for later analysis.
+            # Runs always to capture results even on test failures.
+            # ------------------------------------------------------------------------
+            - name: "📤 Upload test results"
+              uses: actions/upload-artifact@v4
+              if: always()
+              with:
+                  name: test-results
+                  path: ./TestResults/*.trx
+                  retention-days: 7
+
+            # ------------------------------------------------------------------------
+            # Step 7: Generate build summary
+            # ------------------------------------------------------------------------
+            # Creates a GitHub Actions job summary with build and test results.
             # Runs always to provide visibility even on failures.
             # ------------------------------------------------------------------------
             - name: "📋 Generate Build Summary"
               if: always()
               run: |
-                  echo "## 🔨 .NET Build Results" >> $GITHUB_STEP_SUMMARY
+                  echo "## 🔨 .NET Build & Test Results" >> $GITHUB_STEP_SUMMARY
                   echo "" >> $GITHUB_STEP_SUMMARY
                   echo "| Property | Value |" >> $GITHUB_STEP_SUMMARY
                   echo "|----------|-------|" >> $GITHUB_STEP_SUMMARY
                   echo "| **Status** | ${{ job.status == 'success' && '✅ Passed' || job.status == 'cancelled' && '⚠️ Cancelled' || '❌ Failed' }} |" >> $GITHUB_STEP_SUMMARY
                   echo "| **Configuration** | Release |" >> $GITHUB_STEP_SUMMARY
                   echo "| **Solution** | \`app.sln\` |" >> $GITHUB_STEP_SUMMARY
+                  echo "| **Tests** | Unit tests executed |" >> $GITHUB_STEP_SUMMARY
                   echo "| **Branch** | \`${{ github.ref_name }}\` |" >> $GITHUB_STEP_SUMMARY
                   echo "| **Commit** | [\`${GITHUB_SHA:0:7}\`](${{ github.server_url }}/${{ github.repository }}/commit/${{ github.sha }}) |" >> $GITHUB_STEP_SUMMARY
                   echo "| **Triggered By** | @${{ github.actor }} |" >> $GITHUB_STEP_SUMMARY
                   echo "" >> $GITHUB_STEP_SUMMARY
                   if [[ "${{ job.status }}" != "success" ]]; then
-                    echo "> **Note:** Check the build logs above for detailed error information." >> $GITHUB_STEP_SUMMARY
+                    echo "> **Note:** Check the build/test logs above for detailed error information." >> $GITHUB_STEP_SUMMARY
                   fi
 
     # ============================================================================
