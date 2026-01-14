@@ -199,7 +199,8 @@ jobs:
       # Executes all unit tests to validate code correctness before deployment.
       # Fails fast to prevent expensive provisioning if tests fail.
       # continue-on-error: Allows result parsing and summary generation.
-      # Each test project generates its own TRX file for detailed reporting.
+      # Uses both --logger trx (for classic SDK) and -- --report-trx (for MSTest SDK)
+      # to ensure all test projects generate TRX output files.
       # ------------------------------------------------------------------------
       - name: "🧪 Run unit tests"
         id: test
@@ -208,22 +209,25 @@ jobs:
           # Create TestResults directory to ensure it exists
           mkdir -p TestResults
 
-          # Run all tests in the solution
+          # Run all tests in the solution with both TRX loggers:
+          # - --logger "trx" for classic SDK projects (e.g., eShop.Oders.API.Tests)
+          # - -- --report-trx for MSTest SDK projects (e.g., app.Host.Tests, app.ServiceDefauls.Tests, eShop.Web.App.Tests)
+          # Note: MSTest SDK projects generate TRX in bin/<config>/<tfm>/TestResults/
           dotnet test app.sln \
             --configuration Release \
             --no-build \
             --verbosity normal \
             --logger "trx" \
-            --results-directory TestResults
+            --results-directory TestResults \
+            -- --report-trx
 
           TEST_EXIT_CODE=$?
 
-          # Debug: List test results
-          echo "::group::Test Results Directory Contents"
-          echo "Looking for TRX files..."
-          find . -name "*.trx" -type f 2>/dev/null || echo "No TRX files found with find"
-          echo "TestResults directory:"
-          ls -la TestResults/ 2>/dev/null || echo "TestResults directory not found or empty"
+          # Collect all TRX files from various locations into TestResults folder
+          echo "::group::Collecting TRX Files"
+          find . -path "*/bin/*/TestResults/*.trx" -type f -exec cp {} TestResults/ \; 2>/dev/null || true
+          echo "TRX files in TestResults:"
+          ls -la TestResults/*.trx 2>/dev/null || echo "No TRX files found"
           echo "::endgroup::"
 
           exit $TEST_EXIT_CODE
