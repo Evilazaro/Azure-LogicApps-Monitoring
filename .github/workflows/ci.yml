@@ -245,9 +245,33 @@ jobs:
           if [ -d "TestResults" ]; then
             for trx in TestResults/*.trx; do
               if [ -f "$trx" ]; then
-                        # Extract project name from TRX filename (format: ProjectName.trx)
-                        FILENAME=$(basename "$trx" .trx)
-                        PROJECT_NAME="$FILENAME"
+                # Extract project name from TRX filename (format: ProjectName.trx)
+                FILENAME=$(basename "$trx" .trx)
+                PROJECT_NAME="$FILENAME"
+                
+                echo "Parsing: $trx (Project: $PROJECT_NAME)"
+                
+                # Extract test counts using grep and sed
+                COUNTERS=$(grep -oP '<Counters[^>]+>' "$trx" | head -1 || echo "")
+                
+                if [ -n "$COUNTERS" ]; then
+                  FILE_TOTAL=$(echo "$COUNTERS" | grep -oP 'total="\K[0-9]+' || echo "0")
+                  FILE_PASSED=$(echo "$COUNTERS" | grep -oP 'passed="\K[0-9]+' || echo "0")
+                  FILE_FAILED=$(echo "$COUNTERS" | grep -oP 'failed="\K[0-9]+' || echo "0")
+                  FILE_SKIPPED=$(echo "$COUNTERS" | grep -oP 'notExecuted="\K[0-9]+' || echo "0")
+                  
+                  TOTAL=$((TOTAL + FILE_TOTAL))
+                  PASSED=$((PASSED + FILE_PASSED))
+                  FAILED=$((FAILED + FILE_FAILED))
+                  SKIPPED=$((SKIPPED + FILE_SKIPPED))
+                  
+                  # Store per-project results
+                  if [ -n "$PROJECT_RESULTS" ]; then
+                    PROJECT_RESULTS="${PROJECT_RESULTS}|"
+                  fi
+                  PROJECT_RESULTS="${PROJECT_RESULTS}${PROJECT_NAME}:${FILE_TOTAL}:${FILE_PASSED}:${FILE_FAILED}:${FILE_SKIPPED}"
+                fi
+              fi
             done
           fi
 
