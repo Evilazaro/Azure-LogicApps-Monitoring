@@ -194,6 +194,8 @@ jobs:
               PROJECT_NAME=$(basename "$PROJECT" .csproj)
               echo "::group::Running tests for $PROJECT_NAME"
               
+              # Run test and capture exit code (don't fail immediately)
+              set +e
               dotnet test "$PROJECT" \
                 --configuration Release \
                 --no-build \
@@ -202,7 +204,10 @@ jobs:
                 --results-directory TestResults
               
               PROJECT_EXIT_CODE=$?
+              set -e
+              
               if [ $PROJECT_EXIT_CODE -ne 0 ]; then
+                echo "::warning::Tests failed or errored for $PROJECT_NAME (exit code: $PROJECT_EXIT_CODE)"
                 OVERALL_EXIT_CODE=$PROJECT_EXIT_CODE
               fi
               echo "::endgroup::"
