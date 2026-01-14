@@ -169,7 +169,7 @@ jobs:
                     --verbosity normal \
                     --results-directory TestResults \
                     -- --report-trx --report-trx-filename test-results.trx
-                  
+
                   TEST_EXIT_CODE=$?
 
                   # Debug: List test results
@@ -185,6 +185,11 @@ jobs:
             # ------------------------------------------------------------------------
             # Step 6: Parse test results
             # ------------------------------------------------------------------------
+            # Extracts test metrics from TRX files for job summary.
+            # Parses total, passed, failed, and skipped test counts.
+            # Sets outputs for use in summary generation.
+            # ------------------------------------------------------------------------
+            - name: "📊 Parse test results"
               id: test-results
               if: always()
               run: |
