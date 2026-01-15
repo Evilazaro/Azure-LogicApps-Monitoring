@@ -170,11 +170,11 @@ jobs:
           echo "::endgroup::"
           echo "::notice title=Azure Auth::✅ Successfully authenticated with Azure"
       - name: 🔑 Logging in to Azure CLI
-        uses: azure/login@v1
+        uses: azure/login@v2
         with:
           client-id: ${{ env.AZURE_CLIENT_ID }}
           tenant-id: ${{ env.AZURE_TENANT_ID }}
-          enable-azclilogin: true
+          subscription-id: ${{ env.AZURE_SUBSCRIPTION_ID }}
 
       # ------------------------------------------------------------------------
       # Phase 3: Provision & Deploy
