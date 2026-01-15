@@ -156,6 +156,12 @@ jobs:
             --tenant-id "$AZURE_TENANT_ID"
           echo "::endgroup::"
           echo "::notice title=Azure Auth::✅ Successfully authenticated with Azure"
+      - name: 🔑 Logging in to Azure CLI
+        uses: azure/login@v1
+        with:
+          client-id: ${{ env.AZURE_CLIENT_ID }}
+          tenant-id: ${{ env.AZURE_TENANT_ID }}
+          enable-azclilogin: true
 
       # ------------------------------------------------------------------------
       # Phase 3: Provision & Deploy
