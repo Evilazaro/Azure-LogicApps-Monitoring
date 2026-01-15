@@ -93,7 +93,7 @@ jobs:
   # Call Reusable CI Workflow
   # ============================================================================
   ci:
-    name: 🚀 CI Pipeline
+    name: 🚀 CI
     uses: ./.github/workflows/ci-dotnet-reusable.yml
     with:
       configuration: ${{ inputs.configuration || 'Release' }}
