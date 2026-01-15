@@ -132,6 +132,11 @@ jobs:
       - name: 📥 Checkout repository
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
 
+      - name: 📦 Install Prerequisites
+        run: |
+          sudo ./hooks/prepovision.sh --auto-install --force
+          sudo apt-get install -y unzip
+
       - name: 🔧 Install Azure Developer CLI
         uses: Azure/setup-azd@v2
 
