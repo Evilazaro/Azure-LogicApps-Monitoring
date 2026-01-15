@@ -136,8 +136,8 @@ jobs:
         run: |
           sudo apt-get update && sudo apt-get install -y jq && sudo apt-get install -y dos2unix
           sudo dos2unix ./hooks/*.*
-          chmod +x ./hooks/prepovision.sh
-          sudo ./hooks/prepovision.sh --auto-install --force
+          chmod +x ./hooks/preprovision.sh
+          sudo ./hooks/preprovision.sh --auto-install --force
 
       - name: 🔧 Install Azure Developer CLI
         uses: Azure/setup-azd@v2
