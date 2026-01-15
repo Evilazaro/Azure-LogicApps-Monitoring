@@ -557,3 +557,28 @@ jobs:
                     echo "- 📖 Check the job logs for detailed error messages" >> $GITHUB_STEP_SUMMARY
                     echo "- 💬 Ask for help in the PR comments if needed" >> $GITHUB_STEP_SUMMARY
                   fi
+
+    # ============================================================================
+    # Failure Handler Job (Visual failure path in graph)
+    # ============================================================================
+    on-failure:
+        name: ❌ Failed
+        runs-on: ${{ inputs.runs-on }}
+        needs: [build, test, analyze]
+        if: failure()
+        timeout-minutes: 5
+
+        steps:
+            - name: ❌ Report CI failure
+              run: |
+                  echo "::error title=CI Failed::One or more CI jobs failed"
+
+                  echo "## ❌ CI Failure Report" >> $GITHUB_STEP_SUMMARY
+                  echo "" >> $GITHUB_STEP_SUMMARY
+                  echo "| Job | Result |" >> $GITHUB_STEP_SUMMARY
+                  echo "|-----|--------|" >> $GITHUB_STEP_SUMMARY
+                  echo "| 🔨 Build | ${{ needs.build.result }} |" >> $GITHUB_STEP_SUMMARY
+                  echo "| 🧪 Test | ${{ needs.test.result }} |" >> $GITHUB_STEP_SUMMARY
+                  echo "| 🔍 Analyze | ${{ needs.analyze.result }} |" >> $GITHUB_STEP_SUMMARY
+                  echo "" >> $GITHUB_STEP_SUMMARY
+                  echo "Review the failed job logs above for details." >> $GITHUB_STEP_SUMMARY
