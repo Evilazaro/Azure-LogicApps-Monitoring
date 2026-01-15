@@ -160,9 +160,6 @@ hooks:
         # ======================================
         echo "Building and testing solution..."
 
-        # Clean (ignore errors - normal for fresh builds)
-        dotnet clean app.sln
-
         # Restore
         if ! dotnet restore app.sln; then
           BUILD_STATUS="❌ Restore Failed"
@@ -171,6 +168,11 @@ hooks:
         # Build
         if ! dotnet build app.sln --configuration Release --no-restore; then
           BUILD_STATUS="❌ Build Failed"
+        fi
+
+        # Test
+        if ! dotnet test --solution app.sln --configuration Release --no-build --verbosity normal; then
+          BUILD_STATUS="❌ Test Failed"
         fi
 
         # ======================================
@@ -186,6 +188,7 @@ hooks:
           echo "|------|--------|" >> $GITHUB_STEP_SUMMARY
           echo "| Environment Validation | $VALIDATION_STATUS |" >> $GITHUB_STEP_SUMMARY
           echo "| .NET Build | $BUILD_STATUS |" >> $GITHUB_STEP_SUMMARY
+          echo "| .NET Test | $TEST_STATUS |" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "**Duration:** ${HOOK_DURATION}s" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
@@ -252,9 +255,6 @@ hooks:
         # ======================================
         Write-Host "Building and testing solution..." -ForegroundColor Cyan
 
-        # Clean (ignore errors - normal for fresh builds)
-        dotnet clean app.sln
-
         # Restore
         dotnet restore app.sln
         if ($LASTEXITCODE -ne 0) { $BuildStatus = "❌ Restore Failed"; $HasError = $true }
@@ -262,6 +262,10 @@ hooks:
         # Build
         dotnet build app.sln --configuration Release --no-restore
         if ($LASTEXITCODE -ne 0) { $BuildStatus = "❌ Build Failed"; $HasError = $true }
+
+        # Test
+        dotnet test --solution app.sln --configuration Release --no-build --verbosity normal
+        if ($LASTEXITCODE -ne 0) { $BuildStatus = "❌ Test Failed"; $HasError = $true }
 
         # ======================================
         # GitHub Actions Summary - End
@@ -275,6 +279,7 @@ hooks:
           "|------|--------|" | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append
           "| Environment Validation | $ValidationStatus |" | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append
           "| .NET Build | $BuildStatus |" | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append
+          "| .NET Test | $TestStatus |" | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append
           "" | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append
           "**Duration:** ${HookDuration}s" | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append
           "" | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append
@@ -352,6 +357,7 @@ hooks:
           echo "|------|--------|" >> $GITHUB_STEP_SUMMARY
           echo "| Configure Secrets | $SECRETS_STATUS |" >> $GITHUB_STEP_SUMMARY
           echo "| Generate Test Data | $TESTDATA_STATUS |" >> $GITHUB_STEP_SUMMARY
+          echo "| .NET Test | $TEST_STATUS |" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "**Duration:** ${HOOK_DURATION}s" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
@@ -422,6 +428,7 @@ hooks:
           "|------|--------|" | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append
           "| Configure Secrets | $SecretsStatus |" | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append
           "| Generate Test Data | $TestDataStatus |" | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append
+          "| .NET Test | $TestStatus |" | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append
           "" | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append
           "**Duration:** ${HookDuration}s" | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append
           "" | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append
@@ -555,6 +562,7 @@ hooks:
           "|------|--------|" | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append
           "| Deploy Logic Apps Workflows | $WorkflowStatus |" | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append
           "| Configure Connections | $WorkflowStatus |" | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append
+          "| .NET Test | $TestStatus |" | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append
           "" | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append
           "**Duration:** ${HookDuration}s" | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append
           "" | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append
@@ -689,6 +697,7 @@ hooks:
           "|------|--------|" | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append
           "| Deployment Validation | $HealthStatus |" | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append
           "| Resource Health Check | $HealthStatus |" | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append
+          "| .NET Test | $TestStatus |" | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append
           "" | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append
           "**Duration:** ${HookDuration}s" | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append
           "" | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append
