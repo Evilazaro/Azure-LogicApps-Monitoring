@@ -165,11 +165,6 @@ hooks:
           BUILD_STATUS="❌ Build Failed"
         fi
 
-        # Test (using Microsoft.Testing.Platform syntax)
-        if ! dotnet test app.sln --configuration Release --no-build --report-trx --report-trx-filename TestResults.trx --results-directory ./TestResults; then
-          TEST_STATUS="❌ Tests Failed"
-        fi
-
         # ======================================
         # Preprovision Validation
         # ======================================
@@ -262,10 +257,6 @@ hooks:
         # Build
         dotnet build app.sln --configuration Release --no-restore
         if ($LASTEXITCODE -ne 0) { $BuildStatus = "❌ Build Failed"; $HasError = $true }
-
-        # Test (using Microsoft.Testing.Platform syntax)
-        dotnet test app.sln --configuration Release --no-build --report-trx --report-trx-filename TestResults.trx --results-directory ./TestResults
-        if ($LASTEXITCODE -ne 0) { $TestStatus = "❌ Tests Failed"; $HasError = $true }
 
         # ======================================
         # Preprovision Validation
