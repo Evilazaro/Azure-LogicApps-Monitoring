@@ -88,6 +88,12 @@ on:
                 type: boolean
                 default: true
 
+            enable-matrix:
+                description: "Enable matrix testing across multiple OS platforms"
+                required: false
+                type: boolean
+                default: false
+
         # --------------------------------------------------------------------------
         # Output Parameters
         # --------------------------------------------------------------------------
@@ -238,13 +244,18 @@ jobs:
                   echo "- **${{ inputs.build-artifacts-name }}** - Compiled binaries (\`${{ inputs.configuration }}\` configuration)" >> $GITHUB_STEP_SUMMARY
 
     # ============================================================================
-    # Test Job
+    # Test Job (with optional matrix for cross-platform testing)
     # ============================================================================
     test:
-        name: 🧪 Test
-        runs-on: ${{ inputs.runs-on }}
+        name: 🧪 Test (${{ matrix.os }})
+        runs-on: ${{ matrix.os }}
         timeout-minutes: 30
         needs: build
+
+        strategy:
+            fail-fast: false
+            matrix:
+                os: ${{ inputs.enable-matrix && fromJson('["ubuntu-latest", "windows-latest", "macos-latest"]') || fromJson('["ubuntu-latest"]') }}
 
         steps:
             # ------------------------------------------------------------------
