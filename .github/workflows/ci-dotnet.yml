@@ -225,7 +225,7 @@ jobs:
       # Creates a check run with test results visible in PR
       # ------------------------------------------------------------------------
       - name: 📋 Publish test results
-        uses: dorny/test-reporter@890f7f1a633a6f5cc23afa81ddf7bd50dc22a37d # v2.0.0
+        uses: dorny/test-reporter@b082adf0eced0765477756c2a610396589b8c637 # v2.5.0
         if: always()
         with:
           name: "Test Results"
