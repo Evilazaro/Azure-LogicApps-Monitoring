@@ -1,0 +1,397 @@
+# ============================================================================
+# .NET Continuous Integration - Reusable Workflow
+# ============================================================================
+#
+# Purpose:
+#   Reusable workflow that builds, tests, and analyzes .NET solutions.
+#   Can be called from other workflows with customizable parameters.
+#
+# Usage:
+#   jobs:
+#     ci:
+#       uses: ./.github/workflows/ci-dotnet-reusable.yml
+#       with:
+#         configuration: 'Release'
+#         dotnet-version: '10.0.x'
+#       secrets: inherit
+#
+# Documentation:
+#   https://docs.github.com/en/actions/using-workflows/reusing-workflows
+#
+# ============================================================================
+
+name: CI - .NET Reusable Workflow
+
+on:
+    workflow_call:
+        # --------------------------------------------------------------------------
+        # Input Parameters
+        # --------------------------------------------------------------------------
+        inputs:
+            configuration:
+                description: "Build configuration (Release/Debug)"
+                required: false
+                type: string
+                default: "Release"
+
+            dotnet-version:
+                description: ".NET SDK version to use"
+                required: false
+                type: string
+                default: "10.0.x"
+
+            solution-file:
+                description: "Path to the solution file"
+                required: false
+                type: string
+                default: "app.sln"
+
+            test-results-artifact-name:
+                description: "Name for test results artifact"
+                required: false
+                type: string
+                default: "test-results"
+
+            build-artifacts-name:
+                description: "Name for build artifacts"
+                required: false
+                type: string
+                default: "build-artifacts"
+
+            coverage-artifact-name:
+                description: "Name for code coverage artifact"
+                required: false
+                type: string
+                default: "code-coverage"
+
+            artifact-retention-days:
+                description: "Number of days to retain artifacts"
+                required: false
+                type: number
+                default: 30
+
+            runs-on:
+                description: "Runner to use for jobs"
+                required: false
+                type: string
+                default: "ubuntu-latest"
+
+            enable-code-analysis:
+                description: "Enable code formatting analysis"
+                required: false
+                type: boolean
+                default: true
+
+            fail-on-format-issues:
+                description: "Fail workflow if code formatting issues are found"
+                required: false
+                type: boolean
+                default: true
+
+        # --------------------------------------------------------------------------
+        # Output Parameters
+        # --------------------------------------------------------------------------
+        outputs:
+            build-version:
+                description: "The generated build version"
+                value: ${{ jobs.build.outputs.build-version }}
+
+            build-result:
+                description: "Build job result"
+                value: ${{ jobs.build.result }}
+
+            test-result:
+                description: "Test job result"
+                value: ${{ jobs.test.result }}
+
+            analyze-result:
+                description: "Analysis job result"
+                value: ${{ jobs.analyze.result }}
+
+# ------------------------------------------------------------------------------
+# Workflow-level Permissions (Least Privilege)
+# ------------------------------------------------------------------------------
+permissions:
+    contents: read
+    checks: write
+    pull-requests: write
+
+# ------------------------------------------------------------------------------
+# Environment Variables
+# ------------------------------------------------------------------------------
+env:
+    DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
+    DOTNET_NOLOGO: true
+    DOTNET_CLI_TELEMETRY_OPTOUT: true
+
+# ------------------------------------------------------------------------------
+# Default Shell Configuration
+# ------------------------------------------------------------------------------
+defaults:
+    run:
+        shell: bash
+
+jobs:
+    # ============================================================================
+    # Build Job
+    # ============================================================================
+    build:
+        name: 🔨 Build
+        runs-on: ${{ inputs.runs-on }}
+        timeout-minutes: 15
+        outputs:
+            build-version: ${{ steps.version.outputs.version }}
+
+        steps:
+            - name: 📥 Checkout repository
+              uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+              with:
+                  fetch-depth: 0
+
+            - name: 🔧 Setup .NET SDK
+              uses: actions/setup-dotnet@67a3573c9a986a3f9c594539f4ab511d57bb3ce9 # v4.3.1
+              with:
+                  dotnet-version: ${{ inputs.dotnet-version }}
+
+            - name: ☁️ Update .NET workloads
+              run: sudo dotnet workload update
+
+            - name: 🏷️ Generate build version
+              id: version
+              run: |
+                  VERSION="1.0.${{ github.run_number }}"
+                  echo "version=$VERSION" >> $GITHUB_OUTPUT
+                  echo "::notice title=Build Version::$VERSION"
+
+            - name: 📥 Restore dependencies
+              run: dotnet restore ${{ inputs.solution-file }} --verbosity minimal
+
+            - name: 🔨 Build solution
+              run: |
+                  dotnet build ${{ inputs.solution-file }} \
+                    --configuration ${{ inputs.configuration }} \
+                    --no-restore \
+                    /p:Version=${{ steps.version.outputs.version }} \
+                    /p:ContinuousIntegrationBuild=true
+
+            - name: 📤 Upload build artifacts
+              uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+              with:
+                  name: ${{ inputs.build-artifacts-name }}
+                  path: |
+                      **/bin/${{ inputs.configuration }}/**
+                      !**/bin/${{ inputs.configuration }}/**/ref/**
+                  retention-days: 7
+                  if-no-files-found: error
+
+            - name: 📊 Generate build summary
+              run: |
+                  echo "## 🔨 Build Summary" >> $GITHUB_STEP_SUMMARY
+                  echo "" >> $GITHUB_STEP_SUMMARY
+                  echo "| Property | Value |" >> $GITHUB_STEP_SUMMARY
+                  echo "|----------|-------|" >> $GITHUB_STEP_SUMMARY
+                  echo "| **Configuration** | \`${{ inputs.configuration }}\` |" >> $GITHUB_STEP_SUMMARY
+                  echo "| **Version** | \`${{ steps.version.outputs.version }}\` |" >> $GITHUB_STEP_SUMMARY
+                  echo "| **Commit SHA** | \`${{ github.sha }}\` |" >> $GITHUB_STEP_SUMMARY
+                  echo "| **Branch** | \`${{ github.ref_name }}\` |" >> $GITHUB_STEP_SUMMARY
+                  echo "| **Runner** | \`${{ runner.os }}\` |" >> $GITHUB_STEP_SUMMARY
+                  echo "| **.NET Version** | \`${{ inputs.dotnet-version }}\` |" >> $GITHUB_STEP_SUMMARY
+                  echo "" >> $GITHUB_STEP_SUMMARY
+                  echo "✅ Build completed successfully!" >> $GITHUB_STEP_SUMMARY
+
+    # ============================================================================
+    # Test Job
+    # ============================================================================
+    test:
+        name: 🧪 Test
+        runs-on: ${{ inputs.runs-on }}
+        timeout-minutes: 30
+        needs: build
+
+        steps:
+            - name: 📥 Checkout repository
+              uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+
+            - name: 🔧 Setup .NET SDK
+              uses: actions/setup-dotnet@67a3573c9a986a3f9c594539f4ab511d57bb3ce9 # v4.3.1
+              with:
+                  dotnet-version: ${{ inputs.dotnet-version }}
+
+            - name: ☁️ Update .NET workloads
+              run: sudo dotnet workload update
+
+            - name: 📥 Restore dependencies
+              run: dotnet restore ${{ inputs.solution-file }} --verbosity minimal
+
+            - name: 🔨 Build solution
+              run: dotnet build ${{ inputs.solution-file }} --configuration ${{ inputs.configuration }} --no-restore
+
+            - name: 🧪 Run tests with coverage
+              run: |
+                  dotnet test --solution ${{ inputs.solution-file }} \
+                    --configuration ${{ inputs.configuration }} \
+                    --no-restore \
+                    --verbosity normal \
+                    --report-trx \
+                    --report-trx-filename test-results.trx \
+                    --results-directory "${{ github.workspace }}/TestResults" \
+                    --coverage \
+                    --coverage-output-format cobertura \
+                    --coverage-output coverage.cobertura.xml
+
+            - name: 📋 Publish test results
+              uses: dorny/test-reporter@b082adf0eced0765477756c2a610396589b8c637 # v2.5.0
+              if: always()
+              with:
+                  name: "Test Results"
+                  path: "${{ github.workspace }}/TestResults/**/*.trx"
+                  reporter: dotnet-trx
+                  fail-on-error: true
+
+            - name: 📤 Upload test results
+              uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+              if: always()
+              with:
+                  name: ${{ inputs.test-results-artifact-name }}
+                  path: ${{ github.workspace }}/TestResults
+                  retention-days: ${{ inputs.artifact-retention-days }}
+
+            - name: 📤 Upload code coverage
+              uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+              if: always()
+              with:
+                  name: ${{ inputs.coverage-artifact-name }}
+                  path: ${{ github.workspace }}/TestResults/**/coverage.cobertura.xml
+                  retention-days: ${{ inputs.artifact-retention-days }}
+
+            - name: 📊 Generate test summary
+              if: always()
+              run: |
+                  echo "## 🧪 Test Summary" >> $GITHUB_STEP_SUMMARY
+                  echo "" >> $GITHUB_STEP_SUMMARY
+                  echo "| Property | Value |" >> $GITHUB_STEP_SUMMARY
+                  echo "|----------|-------|" >> $GITHUB_STEP_SUMMARY
+                  echo "| **Configuration** | \`${{ inputs.configuration }}\` |" >> $GITHUB_STEP_SUMMARY
+                  echo "| **Test Framework** | Microsoft.Testing.Platform |" >> $GITHUB_STEP_SUMMARY
+                  echo "" >> $GITHUB_STEP_SUMMARY
+                  echo "📁 Test results and code coverage reports are available in the workflow artifacts." >> $GITHUB_STEP_SUMMARY
+
+    # ============================================================================
+    # Code Analysis Job
+    # ============================================================================
+    analyze:
+        name: 🔍 Analyze
+        runs-on: ${{ inputs.runs-on }}
+        timeout-minutes: 15
+        needs: build
+        if: ${{ inputs.enable-code-analysis }}
+
+        steps:
+            - name: 📥 Checkout repository
+              uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+
+            - name: 🔧 Setup .NET SDK
+              uses: actions/setup-dotnet@67a3573c9a986a3f9c594539f4ab511d57bb3ce9 # v4.3.1
+              with:
+                  dotnet-version: ${{ inputs.dotnet-version }}
+
+            - name: ☁️ Update .NET workloads
+              run: sudo dotnet workload update
+
+            - name: 📥 Restore dependencies
+              run: dotnet restore ${{ inputs.solution-file }} --verbosity minimal
+
+            - name: 🎨 Verify code formatting
+              id: format-check
+              run: |
+                  echo "::group::Checking code format"
+                  dotnet format ${{ inputs.solution-file }} --verify-no-changes --verbosity diagnostic || {
+                    echo "::error title=Code Formatting::Code formatting issues detected. Run 'dotnet format' locally to fix."
+                    exit 1
+                  }
+                  echo "::endgroup::"
+              continue-on-error: true
+
+            - name: 📊 Generate analysis summary
+              if: always()
+              run: |
+                  echo "## 🔍 Code Analysis Summary" >> $GITHUB_STEP_SUMMARY
+                  echo "" >> $GITHUB_STEP_SUMMARY
+
+                  if [ "${{ steps.format-check.outcome }}" == "success" ]; then
+                    echo "✅ **Code Formatting**: Passed" >> $GITHUB_STEP_SUMMARY
+                  else
+                    echo "❌ **Code Formatting**: Failed - Run \`dotnet format\` locally to fix" >> $GITHUB_STEP_SUMMARY
+                  fi
+
+                  echo "" >> $GITHUB_STEP_SUMMARY
+                  echo "### 💡 Tips" >> $GITHUB_STEP_SUMMARY
+                  echo "- Run \`dotnet format\` before committing to auto-fix formatting issues" >> $GITHUB_STEP_SUMMARY
+                  echo "- Consider adding a pre-commit hook for automatic formatting" >> $GITHUB_STEP_SUMMARY
+
+            - name: ❌ Fail on format issues
+              if: ${{ steps.format-check.outcome == 'failure' && inputs.fail-on-format-issues }}
+              run: exit 1
+
+    # ============================================================================
+    # Workflow Summary Job
+    # ============================================================================
+    summary:
+        name: 📊 Summary
+        runs-on: ${{ inputs.runs-on }}
+        timeout-minutes: 5
+        needs: [build, test, analyze]
+        if: always()
+
+        steps:
+            - name: 📊 Generate workflow summary
+              run: |
+                  echo "# 🚀 CI Workflow Summary" >> $GITHUB_STEP_SUMMARY
+                  echo "" >> $GITHUB_STEP_SUMMARY
+                  echo "## 📋 Job Results" >> $GITHUB_STEP_SUMMARY
+                  echo "" >> $GITHUB_STEP_SUMMARY
+                  echo "| Job | Status |" >> $GITHUB_STEP_SUMMARY
+                  echo "|-----|--------|" >> $GITHUB_STEP_SUMMARY
+
+                  # Build status
+                  if [ "${{ needs.build.result }}" == "success" ]; then
+                    echo "| 🔨 Build | ✅ Passed |" >> $GITHUB_STEP_SUMMARY
+                  else
+                    echo "| 🔨 Build | ❌ Failed |" >> $GITHUB_STEP_SUMMARY
+                  fi
+
+                  # Test status
+                  if [ "${{ needs.test.result }}" == "success" ]; then
+                    echo "| 🧪 Test | ✅ Passed |" >> $GITHUB_STEP_SUMMARY
+                  else
+                    echo "| 🧪 Test | ❌ Failed |" >> $GITHUB_STEP_SUMMARY
+                  fi
+
+                  # Analyze status
+                  if [ "${{ needs.analyze.result }}" == "success" ]; then
+                    echo "| 🔍 Analyze | ✅ Passed |" >> $GITHUB_STEP_SUMMARY
+                  elif [ "${{ needs.analyze.result }}" == "skipped" ]; then
+                    echo "| 🔍 Analyze | ⏭️ Skipped |" >> $GITHUB_STEP_SUMMARY
+                  else
+                    echo "| 🔍 Analyze | ❌ Failed |" >> $GITHUB_STEP_SUMMARY
+                  fi
+
+                  echo "" >> $GITHUB_STEP_SUMMARY
+                  echo "## 📝 Workflow Details" >> $GITHUB_STEP_SUMMARY
+                  echo "" >> $GITHUB_STEP_SUMMARY
+                  echo "| Property | Value |" >> $GITHUB_STEP_SUMMARY
+                  echo "|----------|-------|" >> $GITHUB_STEP_SUMMARY
+                  echo "| **Workflow** | \`${{ github.workflow }}\` |" >> $GITHUB_STEP_SUMMARY
+                  echo "| **Run ID** | \`${{ github.run_id }}\` |" >> $GITHUB_STEP_SUMMARY
+                  echo "| **Run Number** | \`${{ github.run_number }}\` |" >> $GITHUB_STEP_SUMMARY
+                  echo "| **Event** | \`${{ github.event_name }}\` |" >> $GITHUB_STEP_SUMMARY
+                  echo "| **Branch** | \`${{ github.ref_name }}\` |" >> $GITHUB_STEP_SUMMARY
+                  echo "| **Commit** | [\`${{ github.sha }}\`](${{ github.server_url }}/${{ github.repository }}/commit/${{ github.sha }}) |" >> $GITHUB_STEP_SUMMARY
+                  echo "| **Actor** | @${{ github.actor }} |" >> $GITHUB_STEP_SUMMARY
+                  echo "" >> $GITHUB_STEP_SUMMARY
+                  echo "## 📦 Artifacts" >> $GITHUB_STEP_SUMMARY
+                  echo "" >> $GITHUB_STEP_SUMMARY
+                  echo "The following artifacts are available for download:" >> $GITHUB_STEP_SUMMARY
+                  echo "- **build-artifacts** - Compiled binaries" >> $GITHUB_STEP_SUMMARY
+                  echo "- **test-results** - Test execution results (.trx files)" >> $GITHUB_STEP_SUMMARY
+                  echo "- **code-coverage** - Code coverage reports (Cobertura format)" >> $GITHUB_STEP_SUMMARY
