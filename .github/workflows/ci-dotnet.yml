@@ -210,7 +210,7 @@ jobs:
       # ------------------------------------------------------------------------
       - name: 🧪 Run tests with coverage
         run: |
-          dotnet test ${{ env.SOLUTION_FILE }} \
+          dotnet test --solution ${{ env.SOLUTION_FILE }} \
             --configuration ${{ env.CONFIGURATION }} \
             --no-restore \
             --verbosity normal \
