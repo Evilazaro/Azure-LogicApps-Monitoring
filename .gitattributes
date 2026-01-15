@@ -1,0 +1,35 @@
+# Git attributes configuration for cross-platform compatibility
+# Ensure consistent line endings for all files
+
+# Set default behavior to auto-detect text files and normalize line endings
+* text=auto
+
+# Shell scripts must have Unix-style LF line endings
+# This prevents issues when running on Linux (CI/CD, containers, etc.)
+*.sh text eol=lf
+
+# PowerShell scripts can use Windows-style CRLF line endings
+*.ps1 text eol=crlf
+
+# Bicep files should use LF for consistency
+*.bicep text eol=lf
+
+# YAML files should use LF for consistency
+*.yml text eol=lf
+*.yaml text eol=lf
+
+# JSON files should use LF for consistency
+*.json text eol=lf
+
+# Markdown files can use auto
+*.md text
+
+# Binary files should not be modified
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.exe binary
+*.dll binary
+*.zip binary

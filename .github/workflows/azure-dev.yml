@@ -143,7 +143,6 @@ jobs:
                 sudo apt-get install mssql-tools18 unixodbc-dev -y && \
                 sudo apt-get update && \
                 sudo apt-get install mssql-tools18 -y
-          sudo dos2unix ./hooks/*.*
 
       - name: 🔧 Install Azure Developer CLI
         uses: Azure/setup-azd@v2
