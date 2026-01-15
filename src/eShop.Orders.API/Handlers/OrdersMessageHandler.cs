@@ -4,6 +4,7 @@
 // =============================================================================
 
 using app.ServiceDefaults.CommonTypes;
+using Azure.Messaging.ServiceBus;
 using eShop.Orders.API.Interfaces;
 using System.Diagnostics;
 using System.Text.Json;

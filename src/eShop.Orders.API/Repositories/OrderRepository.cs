@@ -6,6 +6,7 @@
 using app.ServiceDefaults.CommonTypes;
 using eShop.Orders.API.Data;
 using eShop.Orders.API.Interfaces;
+using Microsoft.EntityFrameworkCore;
 using System.Diagnostics;
 
 namespace eShop.Orders.API.Repositories;

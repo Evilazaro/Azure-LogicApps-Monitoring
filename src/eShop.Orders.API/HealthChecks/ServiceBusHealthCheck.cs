@@ -3,6 +3,7 @@
 // Monitors Azure Service Bus connectivity
 // =============================================================================
 
+using Azure.Messaging.ServiceBus;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 
 namespace eShop.Orders.API.HealthChecks;

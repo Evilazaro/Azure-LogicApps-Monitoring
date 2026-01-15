@@ -4,6 +4,7 @@
 // =============================================================================
 
 using eShop.Orders.API.Data.Entities;
+using Microsoft.EntityFrameworkCore;
 
 namespace eShop.Orders.API.Data;
 

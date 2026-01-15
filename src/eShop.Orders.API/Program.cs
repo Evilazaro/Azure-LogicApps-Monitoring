@@ -10,6 +10,7 @@ using eShop.Orders.API.Interfaces;
 using eShop.Orders.API.Repositories;
 using eShop.Orders.API.Services;
 using eShop.Orders.API.Services.Interfaces;
+using Microsoft.EntityFrameworkCore;
 using System.Diagnostics;
 
 var builder = WebApplication.CreateBuilder(args);
