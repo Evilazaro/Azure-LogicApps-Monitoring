@@ -140,20 +140,28 @@ hooks:
           echo "" >> $GITHUB_STEP_SUMMARY
         fi
 
+        # Track status
+        BUILD_STATUS="✅ Success"
+        VALIDATION_STATUS="✅ Success"
+
+        # ======================================
+        # Preprovision Validation (FIRST)
+        # ======================================
+        # Validates and installs: .NET SDK, Azure CLI, sqlcmd, zip, etc.
+        if ! ./hooks/preprovision.sh --force --verbose; then
+          VALIDATION_STATUS="❌ Validation Failed"
+        fi
+
+        # Update PATH for newly installed tools
+        export PATH="$HOME/.dotnet:/opt/mssql-tools18/bin:$PATH"
+
         # ======================================
         # Build and Test Solution
         # ======================================
         echo "Building and testing solution..."
 
-        # Track build status
-        BUILD_STATUS="✅ Success"
-        TEST_STATUS="✅ Success"
-        VALIDATION_STATUS="✅ Success"
-
-        # Clean
-        if ! dotnet clean app.sln --verbosity quiet; then
-          BUILD_STATUS="❌ Clean Failed"
-        fi
+        # Clean (ignore errors - normal for fresh builds)
+        dotnet clean app.sln
 
         # Restore
         if ! dotnet restore app.sln; then
@@ -163,14 +171,6 @@ hooks:
         # Build
         if ! dotnet build app.sln --configuration Release --no-restore; then
           BUILD_STATUS="❌ Build Failed"
-        fi
-
-        # ======================================
-        # Preprovision Validation
-        # ======================================
-        # Validates: Azure CLI auth, required tools, quota availability
-        if ! ./hooks/preprovision.sh --force --verbose; then
-          VALIDATION_STATUS="❌ Validation Failed"
         fi
 
         # ======================================
@@ -184,18 +184,16 @@ hooks:
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "| Task | Status |" >> $GITHUB_STEP_SUMMARY
           echo "|------|--------|" >> $GITHUB_STEP_SUMMARY
-          echo "| .NET Build | $BUILD_STATUS |" >> $GITHUB_STEP_SUMMARY
-          echo "| Unit Tests | $TEST_STATUS |" >> $GITHUB_STEP_SUMMARY
           echo "| Environment Validation | $VALIDATION_STATUS |" >> $GITHUB_STEP_SUMMARY
+          echo "| .NET Build | $BUILD_STATUS |" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "**Duration:** ${HOOK_DURATION}s" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           
           # Fail if any step failed (POSIX-compatible pattern matching)
           HAS_FAILURE=false
-          case "$BUILD_STATUS" in *Failed*) HAS_FAILURE=true ;; esac
-          case "$TEST_STATUS" in *Failed*) HAS_FAILURE=true ;; esac
           case "$VALIDATION_STATUS" in *Failed*) HAS_FAILURE=true ;; esac
+          case "$BUILD_STATUS" in *Failed*) HAS_FAILURE=true ;; esac
           
           if [ "$HAS_FAILURE" = "true" ]; then
             echo "> ⚠️ **Warning:** One or more preprovision tasks failed. Check logs above for details." >> $GITHUB_STEP_SUMMARY
@@ -206,9 +204,8 @@ hooks:
 
         # Exit based on failure status (works whether GITHUB_STEP_SUMMARY is set or not)
         HAS_FAILURE=false
-        case "$BUILD_STATUS" in *Failed*) HAS_FAILURE=true ;; esac
-        case "$TEST_STATUS" in *Failed*) HAS_FAILURE=true ;; esac
         case "$VALIDATION_STATUS" in *Failed*) HAS_FAILURE=true ;; esac
+        case "$BUILD_STATUS" in *Failed*) HAS_FAILURE=true ;; esac
 
         if [ "$HAS_FAILURE" = "true" ]; then
           echo "❌ One or more preprovision tasks failed"
@@ -235,20 +232,28 @@ hooks:
           "" | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append
         }
 
+        # Track status
+        $BuildStatus = "✅ Success"
+        $ValidationStatus = "✅ Success"
+        $HasError = $false
+
+        # ======================================
+        # Preprovision Validation (FIRST)
+        # ======================================
+        # Validates and installs: .NET SDK, Azure CLI, sqlcmd, zip, etc.
+        ./hooks/preprovision.ps1 -Force -Verbose
+        if ($LASTEXITCODE -ne 0) { $ValidationStatus = "❌ Validation Failed"; $HasError = $true }
+
+        # Refresh PATH for newly installed tools
+        $env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path","User")
+
         # ======================================
         # Build and Test Solution
         # ======================================
         Write-Host "Building and testing solution..." -ForegroundColor Cyan
 
-        # Track build status
-        $BuildStatus = "✅ Success"
-        $TestStatus = "✅ Success"
-        $ValidationStatus = "✅ Success"
-        $HasError = $false
-
-        # Clean
-        dotnet clean app.sln --verbosity quiet
-        if ($LASTEXITCODE -ne 0) { $BuildStatus = "❌ Clean Failed"; $HasError = $true }
+        # Clean (ignore errors - normal for fresh builds)
+        dotnet clean app.sln
 
         # Restore
         dotnet restore app.sln
@@ -257,13 +262,6 @@ hooks:
         # Build
         dotnet build app.sln --configuration Release --no-restore
         if ($LASTEXITCODE -ne 0) { $BuildStatus = "❌ Build Failed"; $HasError = $true }
-
-        # ======================================
-        # Preprovision Validation
-        # ======================================
-        # Validates: Azure CLI auth, required tools, quota availability
-        ./hooks/preprovision.ps1 -Force -Verbose
-        if ($LASTEXITCODE -ne 0) { $ValidationStatus = "❌ Validation Failed"; $HasError = $true }
 
         # ======================================
         # GitHub Actions Summary - End
@@ -275,9 +273,8 @@ hooks:
           "" | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append
           "| Task | Status |" | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append
           "|------|--------|" | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append
-          "| .NET Build | $BuildStatus |" | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append
-          "| Unit Tests | $TestStatus |" | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append
           "| Environment Validation | $ValidationStatus |" | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append
+          "| .NET Build | $BuildStatus |" | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append
           "" | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append
           "**Duration:** ${HookDuration}s" | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append
           "" | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append
