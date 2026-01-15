@@ -86,7 +86,7 @@ jobs:
   # CI Job - Build, Test, and Analyze
   # ============================================================================
   ci:
-    name: 🔨 CI Pipeline
+    name: 🔄 CI
     if: ${{ github.event.inputs.skip-ci != 'true' }}
     uses: ./.github/workflows/ci-dotnet-reusable.yml
     with:
@@ -101,7 +101,7 @@ jobs:
   # Deploy to Dev Environment
   # ============================================================================
   deploy-dev:
-    name: 🚀 Deploy to Dev
+    name: 🚀 Deploy Dev
     runs-on: ubuntu-latest
     needs: [ci]
     if: |
@@ -127,14 +127,11 @@ jobs:
 
     steps:
       # ------------------------------------------------------------------------
-      # Checkout Repository
+      # Phase 1: Setup
       # ------------------------------------------------------------------------
       - name: 📥 Checkout repository
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
 
-      # ------------------------------------------------------------------------
-      # Setup Tools
-      # ------------------------------------------------------------------------
       - name: 🔧 Install Azure Developer CLI
         uses: Azure/setup-azd@ae811689366f7cacdb5b7eed75cb72fe0953e6c6 # v2.0.0
 
@@ -144,35 +141,57 @@ jobs:
           dotnet-version: ${{ env.DOTNET_VERSION }}
 
       # ------------------------------------------------------------------------
-      # Azure Authentication (OIDC)
+      # Phase 2: Authentication
       # ------------------------------------------------------------------------
       - name: 🔐 Log in with Azure (Federated Credentials)
         run: |
+          echo "::group::🔐 Authenticating with Azure"
+          echo "→ Client ID: $AZURE_CLIENT_ID"
+          echo "→ Tenant ID: $AZURE_TENANT_ID"
+          echo "→ Method: Federated Credentials (OIDC)"
+          echo ""
           azd auth login \
             --client-id "$AZURE_CLIENT_ID" \
             --federated-credential-provider "github" \
             --tenant-id "$AZURE_TENANT_ID"
+          echo "::endgroup::"
+          echo "::notice title=Azure Auth::✅ Successfully authenticated with Azure"
 
       # ------------------------------------------------------------------------
-      # Provision Infrastructure
+      # Phase 3: Provision & Deploy
       # ------------------------------------------------------------------------
       - name: 🏗️ Provision Infrastructure
         id: provision
         run: |
-          echo "::group::Provisioning Azure resources"
-          azd provision --no-prompt --output json > provision-output.json 2>&1 || true
-          cat provision-output.json
-          echo "::endgroup::"
+          echo "::group::🏗️ Provisioning Azure infrastructure"
+          echo "→ Environment: $AZURE_ENV_NAME"
+          echo "→ Location: $AZURE_LOCATION"
+          echo "→ Subscription: $AZURE_SUBSCRIPTION_ID"
+          echo ""
+          if azd provision --no-prompt; then
+            echo "::endgroup::"
+            echo "::notice title=Provision::✅ Infrastructure provisioned successfully"
+          else
+            echo "::endgroup::"
+            echo "::error title=Provision::❌ Infrastructure provisioning failed"
+            exit 1
+          fi
 
-      # ------------------------------------------------------------------------
-      # Deploy Application
-      # ------------------------------------------------------------------------
       - name: 🚀 Deploy Application
         id: deploy
         run: |
-          echo "::group::Deploying application"
-          azd deploy --no-prompt
-          echo "::endgroup::"
+          echo "::group::🚀 Deploying application to Azure"
+          echo "→ Environment: $AZURE_ENV_NAME"
+          echo "→ Configuration: Release"
+          echo ""
+          if azd deploy --no-prompt; then
+            echo "::endgroup::"
+            echo "::notice title=Deploy::✅ Application deployed successfully"
+          else
+            echo "::endgroup::"
+            echo "::error title=Deploy::❌ Application deployment failed"
+            exit 1
+          fi
 
           # Extract outputs for summary
           RESOURCE_GROUP="${AZURE_ENV_NAME}-rg"
@@ -180,40 +199,77 @@ jobs:
           echo "webapp-url=https://${AZURE_ENV_NAME}.azurewebsites.net" >> $GITHUB_OUTPUT
 
       # ------------------------------------------------------------------------
-      # Deployment Summary
+      # Phase 4: Summary
       # ------------------------------------------------------------------------
       - name: 📊 Generate deployment summary
         if: always()
         run: |
           echo "## 🚀 Dev Deployment Summary" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
+
+          # Status badge
+          if [ "${{ job.status }}" == "success" ]; then
+            echo "![Deployment Status](https://img.shields.io/badge/deployment-successful-brightgreen?style=for-the-badge)" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "![Deployment Status](https://img.shields.io/badge/deployment-failed-red?style=for-the-badge)" >> $GITHUB_STEP_SUMMARY
+          fi
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          # Environment info
+          echo "### 🎯 Environment" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
           echo "| Property | Value |" >> $GITHUB_STEP_SUMMARY
           echo "|----------|-------|" >> $GITHUB_STEP_SUMMARY
+          echo "| **Status** | $( [ '${{ job.status }}' == 'success' ] && echo '✅ Deployed' || echo '❌ Failed' ) |" >> $GITHUB_STEP_SUMMARY
           echo "| **Environment** | \`dev\` |" >> $GITHUB_STEP_SUMMARY
           echo "| **Azure Environment** | \`$AZURE_ENV_NAME\` |" >> $GITHUB_STEP_SUMMARY
           echo "| **Location** | \`$AZURE_LOCATION\` |" >> $GITHUB_STEP_SUMMARY
-          echo "| **Commit** | \`${{ github.sha }}\` |" >> $GITHUB_STEP_SUMMARY
-          echo "| **Branch** | \`${{ github.ref_name }}\` |" >> $GITHUB_STEP_SUMMARY
-          echo "| **Actor** | @${{ github.actor }} |" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
 
-          if [ "${{ job.status }}" == "success" ]; then
-            echo "✅ **Status**: Deployment completed successfully!" >> $GITHUB_STEP_SUMMARY
-          else
-            echo "❌ **Status**: Deployment failed. Check logs for details." >> $GITHUB_STEP_SUMMARY
+          # Git info (collapsible)
+          echo "<details>" >> $GITHUB_STEP_SUMMARY
+          echo "<summary>📋 Deployment Details</summary>" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Property | Value |" >> $GITHUB_STEP_SUMMARY
+          echo "|----------|-------|" >> $GITHUB_STEP_SUMMARY
+          echo "| **Branch** | [\`${{ github.ref_name }}\`](${{ github.server_url }}/${{ github.repository }}/tree/${{ github.ref_name }}) |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Commit** | [\`${GITHUB_SHA:0:7}\`](${{ github.server_url }}/${{ github.repository }}/commit/${{ github.sha }}) |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Actor** | [@${{ github.actor }}](${{ github.server_url }}/${{ github.actor }}) |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Workflow Run** | [#${{ github.run_number }}](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}) |" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "</details>" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          # Show rollback on failure
+          if [ "${{ job.status }}" != "success" ]; then
+            echo "### ⚠️ Deployment Failed" >> $GITHUB_STEP_SUMMARY
             echo "" >> $GITHUB_STEP_SUMMARY
-            echo "### 🔄 Rollback Instructions" >> $GITHUB_STEP_SUMMARY
-            echo "To rollback, re-run the workflow with a previous commit:" >> $GITHUB_STEP_SUMMARY
+            echo "<details>" >> $GITHUB_STEP_SUMMARY
+            echo "<summary>🔄 Rollback Instructions</summary>" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "To rollback to a previous deployment:" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
             echo "\`\`\`bash" >> $GITHUB_STEP_SUMMARY
+            echo "# Option 1: Re-run with previous commit" >> $GITHUB_STEP_SUMMARY
             echo "gh workflow run azure-dev.yml --ref <previous-commit-sha>" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "# Option 2: Use Azure Developer CLI locally" >> $GITHUB_STEP_SUMMARY
+            echo "git checkout <previous-commit-sha>" >> $GITHUB_STEP_SUMMARY
+            echo "azd deploy --no-prompt" >> $GITHUB_STEP_SUMMARY
             echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "</details>" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "### ✅ Deployment Successful" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "The application has been deployed to the \`dev\` environment." >> $GITHUB_STEP_SUMMARY
           fi
 
   # ============================================================================
   # Workflow Summary Job
   # ============================================================================
   summary:
-    name: 📊 Deployment Summary
+    name: 📊 Summary
     runs-on: ubuntu-latest
     needs: [ci, deploy-dev]
     if: always()
@@ -224,39 +280,98 @@ jobs:
         run: |
           echo "# 🚀 CD Workflow Summary" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "## 📋 Job Results" >> $GITHUB_STEP_SUMMARY
+
+          # Overall status determination
+          if ([ "${{ needs.ci.result }}" == "success" ] || [ "${{ needs.ci.result }}" == "skipped" ]) && \
+             [ "${{ needs.deploy-dev.result }}" == "success" ]; then
+            echo "![CD Status](https://img.shields.io/badge/CD-successful-brightgreen?style=for-the-badge)" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "![CD Status](https://img.shields.io/badge/CD-failed-red?style=for-the-badge)" >> $GITHUB_STEP_SUMMARY
+          fi
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "| Job | Status |" >> $GITHUB_STEP_SUMMARY
-          echo "|-----|--------|" >> $GITHUB_STEP_SUMMARY
+
+          echo "---" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          echo "## 📋 Pipeline Results" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Stage | Status | Description |" >> $GITHUB_STEP_SUMMARY
+          echo "|-------|--------|-------------|" >> $GITHUB_STEP_SUMMARY
 
           # CI status
           CI_RESULT="${{ needs.ci.result }}"
           if [ "$CI_RESULT" == "success" ]; then
-            echo "| 🔨 CI Pipeline | ✅ Passed |" >> $GITHUB_STEP_SUMMARY
+            echo "| 🔨 CI Pipeline | ✅ Passed | Build, test, and analysis completed |" >> $GITHUB_STEP_SUMMARY
           elif [ "$CI_RESULT" == "skipped" ]; then
-            echo "| 🔨 CI Pipeline | ⏭️ Skipped |" >> $GITHUB_STEP_SUMMARY
+            echo "| 🔨 CI Pipeline | ⏭️ Skipped | CI checks bypassed |" >> $GITHUB_STEP_SUMMARY
           else
-            echo "| 🔨 CI Pipeline | ❌ Failed |" >> $GITHUB_STEP_SUMMARY
+            echo "| 🔨 CI Pipeline | ❌ Failed | CI checks failed |" >> $GITHUB_STEP_SUMMARY
           fi
 
           # Dev deployment status
           DEV_RESULT="${{ needs.deploy-dev.result }}"
           if [ "$DEV_RESULT" == "success" ]; then
-            echo "| 🚀 Deploy Dev | ✅ Passed |" >> $GITHUB_STEP_SUMMARY
+            echo "| 🚀 Deploy Dev | ✅ Deployed | Application deployed to dev environment |" >> $GITHUB_STEP_SUMMARY
           elif [ "$DEV_RESULT" == "skipped" ]; then
-            echo "| 🚀 Deploy Dev | ⏭️ Skipped |" >> $GITHUB_STEP_SUMMARY
+            echo "| 🚀 Deploy Dev | ⏭️ Skipped | Deployment skipped |" >> $GITHUB_STEP_SUMMARY
           else
-            echo "| 🚀 Deploy Dev | ❌ Failed |" >> $GITHUB_STEP_SUMMARY
+            echo "| 🚀 Deploy Dev | ❌ Failed | Deployment failed |" >> $GITHUB_STEP_SUMMARY
           fi
-
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "## 📝 Workflow Details" >> $GITHUB_STEP_SUMMARY
+
+          # Workflow details (collapsible)
+          echo "<details>" >> $GITHUB_STEP_SUMMARY
+          echo "<summary>📝 Workflow Details</summary>" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "| Property | Value |" >> $GITHUB_STEP_SUMMARY
           echo "|----------|-------|" >> $GITHUB_STEP_SUMMARY
           echo "| **Workflow** | \`${{ github.workflow }}\` |" >> $GITHUB_STEP_SUMMARY
-          echo "| **Run ID** | \`${{ github.run_id }}\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Run ID** | [\`${{ github.run_id }}\`](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}) |" >> $GITHUB_STEP_SUMMARY
           echo "| **Event** | \`${{ github.event_name }}\` |" >> $GITHUB_STEP_SUMMARY
-          echo "| **Branch** | \`${{ github.ref_name }}\` |" >> $GITHUB_STEP_SUMMARY
-          echo "| **Commit** | [\`${{ github.sha }}\`](${{ github.server_url }}/${{ github.repository }}/commit/${{ github.sha }}) |" >> $GITHUB_STEP_SUMMARY
-          echo "| **Actor** | @${{ github.actor }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Branch** | [\`${{ github.ref_name }}\`](${{ github.server_url }}/${{ github.repository }}/tree/${{ github.ref_name }}) |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Commit** | [\`${GITHUB_SHA:0:7}\`](${{ github.server_url }}/${{ github.repository }}/commit/${{ github.sha }}) |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Actor** | [@${{ github.actor }}](${{ github.server_url }}/${{ github.actor }}) |" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "</details>" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          # Action required on failure
+          if [ "${{ needs.deploy-dev.result }}" != "success" ] && [ "${{ needs.deploy-dev.result }}" != "skipped" ]; then
+            echo "---" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "## ⚠️ Action Required" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "The deployment pipeline has failed. Please review the logs and take corrective action." >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "**Quick Actions:**" >> $GITHUB_STEP_SUMMARY
+            echo "- 🔄 [Re-run workflow](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})" >> $GITHUB_STEP_SUMMARY
+            echo "- 📖 Check the deployment logs for detailed error messages" >> $GITHUB_STEP_SUMMARY
+            echo "- 💬 Review Azure portal for resource status" >> $GITHUB_STEP_SUMMARY
+          fi
+
+  # ============================================================================
+  # Failure Handler Job (Visual failure path in graph)
+  # ============================================================================
+  on-failure:
+    name: ❌ Handle Failure
+    runs-on: ubuntu-latest
+    needs: [ci, deploy-dev]
+    if: failure()
+    timeout-minutes: 5
+
+    steps:
+      - name: ❌ Report failure
+        run: |
+          echo "::error title=Pipeline Failed::One or more jobs failed. Review the logs above."
+
+          echo "## ❌ Pipeline Failure Report" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Job | Result |" >> $GITHUB_STEP_SUMMARY
+          echo "|-----|--------|" >> $GITHUB_STEP_SUMMARY
+          echo "| 🔄 CI | ${{ needs.ci.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| 🚀 Deploy Dev | ${{ needs.deploy-dev.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### 🔍 Next Steps" >> $GITHUB_STEP_SUMMARY
+          echo "1. Click on the failed job above to see detailed logs" >> $GITHUB_STEP_SUMMARY
+          echo "2. Fix the issue in your code" >> $GITHUB_STEP_SUMMARY
+          echo "3. Push a new commit or re-run the workflow" >> $GITHUB_STEP_SUMMARY

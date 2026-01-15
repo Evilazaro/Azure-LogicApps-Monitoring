@@ -71,6 +71,11 @@ on:
         required: false
         default: true
         type: boolean
+      enable-matrix:
+        description: "Enable cross-platform matrix testing (ubuntu, windows, macos)"
+        required: false
+        default: false
+        type: boolean
 
 # ------------------------------------------------------------------------------
 # Concurrency Configuration
@@ -93,7 +98,7 @@ jobs:
   # Call Reusable CI Workflow
   # ============================================================================
   ci:
-    name: 🚀 CI Pipeline
+    name: 🚀 CI
     uses: ./.github/workflows/ci-dotnet-reusable.yml
     with:
       configuration: ${{ inputs.configuration || 'Release' }}
@@ -105,5 +110,6 @@ jobs:
       artifact-retention-days: 30
       runs-on: "ubuntu-latest"
       enable-code-analysis: ${{ inputs.enable-code-analysis == '' && true || inputs.enable-code-analysis }}
+      enable-matrix: ${{ inputs.enable-matrix || false }}
       fail-on-format-issues: true
     secrets: inherit

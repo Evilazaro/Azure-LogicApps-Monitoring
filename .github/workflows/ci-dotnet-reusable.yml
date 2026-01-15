@@ -88,6 +88,12 @@ on:
                 type: boolean
                 default: true
 
+            enable-matrix:
+                description: "Enable matrix testing across multiple OS platforms"
+                required: false
+                type: boolean
+                default: false
+
         # --------------------------------------------------------------------------
         # Output Parameters
         # --------------------------------------------------------------------------
@@ -156,6 +162,9 @@ jobs:
             - name: ☁️ Update .NET workloads
               run: sudo dotnet workload update
 
+            # ------------------------------------------------------------------
+            # Phase 2: Build
+            # ------------------------------------------------------------------
             - name: 🏷️ Generate build version
               id: version
               run: |
@@ -168,12 +177,21 @@ jobs:
 
             - name: 🔨 Build solution
               run: |
+                  echo "::group::🔨 Building solution"
+                  echo "→ Configuration: ${{ inputs.configuration }}"
+                  echo "→ Version: ${{ steps.version.outputs.version }}"
+                  echo ""
                   dotnet build ${{ inputs.solution-file }} \
                     --configuration ${{ inputs.configuration }} \
                     --no-restore \
                     /p:Version=${{ steps.version.outputs.version }} \
                     /p:ContinuousIntegrationBuild=true
+                  echo "::endgroup::"
+                  echo "::notice title=Build::✅ Solution built successfully (${{ inputs.configuration }})"
 
+            # ------------------------------------------------------------------
+            # Phase 3: Publish
+            # ------------------------------------------------------------------
             - name: 📤 Upload build artifacts
               uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
               with:
@@ -185,30 +203,64 @@ jobs:
                   if-no-files-found: error
 
             - name: 📊 Generate build summary
+              if: always()
               run: |
                   echo "## 🔨 Build Summary" >> $GITHUB_STEP_SUMMARY
                   echo "" >> $GITHUB_STEP_SUMMARY
+
+                  # Status badge
+                  if [ "${{ job.status }}" == "success" ]; then
+                    echo "![Build Status](https://img.shields.io/badge/build-passing-brightgreen)" >> $GITHUB_STEP_SUMMARY
+                  else
+                    echo "![Build Status](https://img.shields.io/badge/build-failing-red)" >> $GITHUB_STEP_SUMMARY
+                  fi
+                  echo "" >> $GITHUB_STEP_SUMMARY
+
+                  # Main info table
                   echo "| Property | Value |" >> $GITHUB_STEP_SUMMARY
                   echo "|----------|-------|" >> $GITHUB_STEP_SUMMARY
+                  echo "| **Status** | $( [ '${{ job.status }}' == 'success' ] && echo '✅ Passed' || echo '❌ Failed' ) |" >> $GITHUB_STEP_SUMMARY
                   echo "| **Configuration** | \`${{ inputs.configuration }}\` |" >> $GITHUB_STEP_SUMMARY
                   echo "| **Version** | \`${{ steps.version.outputs.version }}\` |" >> $GITHUB_STEP_SUMMARY
-                  echo "| **Commit SHA** | \`${{ github.sha }}\` |" >> $GITHUB_STEP_SUMMARY
-                  echo "| **Branch** | \`${{ github.ref_name }}\` |" >> $GITHUB_STEP_SUMMARY
-                  echo "| **Runner** | \`${{ runner.os }}\` |" >> $GITHUB_STEP_SUMMARY
                   echo "| **.NET Version** | \`${{ inputs.dotnet-version }}\` |" >> $GITHUB_STEP_SUMMARY
+                  echo "| **Runner** | \`${{ runner.os }}\` |" >> $GITHUB_STEP_SUMMARY
                   echo "" >> $GITHUB_STEP_SUMMARY
-                  echo "✅ Build completed successfully!" >> $GITHUB_STEP_SUMMARY
+
+                  # Collapsible details
+                  echo "<details>" >> $GITHUB_STEP_SUMMARY
+                  echo "<summary>📋 Git Information</summary>" >> $GITHUB_STEP_SUMMARY
+                  echo "" >> $GITHUB_STEP_SUMMARY
+                  echo "| Property | Value |" >> $GITHUB_STEP_SUMMARY
+                  echo "|----------|-------|" >> $GITHUB_STEP_SUMMARY
+                  echo "| **Branch** | \`${{ github.ref_name }}\` |" >> $GITHUB_STEP_SUMMARY
+                  echo "| **Commit** | [\`${GITHUB_SHA:0:7}\`](${{ github.server_url }}/${{ github.repository }}/commit/${{ github.sha }}) |" >> $GITHUB_STEP_SUMMARY
+                  echo "| **Actor** | [@${{ github.actor }}](${{ github.server_url }}/${{ github.actor }}) |" >> $GITHUB_STEP_SUMMARY
+                  echo "" >> $GITHUB_STEP_SUMMARY
+                  echo "</details>" >> $GITHUB_STEP_SUMMARY
+                  echo "" >> $GITHUB_STEP_SUMMARY
+
+                  # Artifacts section
+                  echo "### 📦 Artifacts" >> $GITHUB_STEP_SUMMARY
+                  echo "- **${{ inputs.build-artifacts-name }}** - Compiled binaries (\`${{ inputs.configuration }}\` configuration)" >> $GITHUB_STEP_SUMMARY
 
     # ============================================================================
-    # Test Job
+    # Test Job (with optional matrix for cross-platform testing)
     # ============================================================================
     test:
-        name: 🧪 Test
-        runs-on: ${{ inputs.runs-on }}
+        name: 🧪 Test (${{ matrix.os }})
+        runs-on: ${{ matrix.os }}
         timeout-minutes: 30
         needs: build
 
+        strategy:
+            fail-fast: false
+            matrix:
+                os: ${{ inputs.enable-matrix && fromJson('["ubuntu-latest", "windows-latest", "macos-latest"]') || fromJson('["ubuntu-latest"]') }}
+
         steps:
+            # ------------------------------------------------------------------
+            # Phase 1: Setup
+            # ------------------------------------------------------------------
             - name: 📥 Checkout repository
               uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
 
@@ -218,16 +270,32 @@ jobs:
                   dotnet-version: ${{ inputs.dotnet-version }}
 
             - name: ☁️ Update .NET workloads
-              run: sudo dotnet workload update
+              run: |
+                  echo "::group::📦 Updating .NET workloads"
+                  sudo dotnet workload update
+                  echo "::endgroup::"
 
             - name: 📥 Restore dependencies
-              run: dotnet restore ${{ inputs.solution-file }} --verbosity minimal
+              run: |
+                  echo "::group::📦 Restoring NuGet packages"
+                  dotnet restore ${{ inputs.solution-file }} --verbosity minimal
+                  echo "::endgroup::"
 
+            # ------------------------------------------------------------------
+            # Phase 2: Build & Test
+            # ------------------------------------------------------------------
             - name: 🔨 Build solution
-              run: dotnet build ${{ inputs.solution-file }} --configuration ${{ inputs.configuration }} --no-restore
+              run: |
+                  echo "::group::🔨 Building for tests"
+                  dotnet build ${{ inputs.solution-file }} --configuration ${{ inputs.configuration }} --no-restore
+                  echo "::endgroup::"
 
             - name: 🧪 Run tests with coverage
               run: |
+                  echo "::group::🧪 Executing tests with coverage"
+                  echo "→ Configuration: ${{ inputs.configuration }}"
+                  echo "→ Coverage format: Cobertura"
+                  echo ""
                   dotnet test --solution ${{ inputs.solution-file }} \
                     --configuration ${{ inputs.configuration }} \
                     --no-restore \
@@ -238,7 +306,12 @@ jobs:
                     --coverage \
                     --coverage-output-format cobertura \
                     --coverage-output coverage.cobertura.xml
+                  echo "::endgroup::"
+                  echo "::notice title=Tests::✅ All tests passed"
 
+            # ------------------------------------------------------------------
+            # Phase 3: Publish Results
+            # ------------------------------------------------------------------
             - name: 📋 Publish test results
               uses: dorny/test-reporter@b082adf0eced0765477756c2a610396589b8c637 # v2.5.0
               if: always()
@@ -269,12 +342,44 @@ jobs:
               run: |
                   echo "## 🧪 Test Summary" >> $GITHUB_STEP_SUMMARY
                   echo "" >> $GITHUB_STEP_SUMMARY
+
+                  # Status badge
+                  if [ "${{ job.status }}" == "success" ]; then
+                    echo "![Test Status](https://img.shields.io/badge/tests-passing-brightgreen)" >> $GITHUB_STEP_SUMMARY
+                  else
+                    echo "![Test Status](https://img.shields.io/badge/tests-failing-red)" >> $GITHUB_STEP_SUMMARY
+                  fi
+                  echo "" >> $GITHUB_STEP_SUMMARY
+
+                  # Main info table
                   echo "| Property | Value |" >> $GITHUB_STEP_SUMMARY
                   echo "|----------|-------|" >> $GITHUB_STEP_SUMMARY
+                  echo "| **Status** | $( [ '${{ job.status }}' == 'success' ] && echo '✅ Passed' || echo '❌ Failed' ) |" >> $GITHUB_STEP_SUMMARY
                   echo "| **Configuration** | \`${{ inputs.configuration }}\` |" >> $GITHUB_STEP_SUMMARY
                   echo "| **Test Framework** | Microsoft.Testing.Platform |" >> $GITHUB_STEP_SUMMARY
+                  echo "| **Coverage Format** | Cobertura |" >> $GITHUB_STEP_SUMMARY
                   echo "" >> $GITHUB_STEP_SUMMARY
-                  echo "📁 Test results and code coverage reports are available in the workflow artifacts." >> $GITHUB_STEP_SUMMARY
+
+                  # Artifacts section
+                  echo "### 📦 Artifacts" >> $GITHUB_STEP_SUMMARY
+                  echo "| Artifact | Description |" >> $GITHUB_STEP_SUMMARY
+                  echo "|----------|-------------|" >> $GITHUB_STEP_SUMMARY
+                  echo "| **${{ inputs.test-results-artifact-name }}** | Test execution results (.trx) |" >> $GITHUB_STEP_SUMMARY
+                  echo "| **${{ inputs.coverage-artifact-name }}** | Code coverage reports (Cobertura XML) |" >> $GITHUB_STEP_SUMMARY
+                  echo "" >> $GITHUB_STEP_SUMMARY
+
+                  # Troubleshooting on failure
+                  if [ "${{ job.status }}" != "success" ]; then
+                    echo "<details>" >> $GITHUB_STEP_SUMMARY
+                    echo "<summary>🔧 Troubleshooting Tips</summary>" >> $GITHUB_STEP_SUMMARY
+                    echo "" >> $GITHUB_STEP_SUMMARY
+                    echo "1. Download the **${{ inputs.test-results-artifact-name }}** artifact for detailed results" >> $GITHUB_STEP_SUMMARY
+                    echo "2. Run tests locally: \`dotnet test ${{ inputs.solution-file }}\`" >> $GITHUB_STEP_SUMMARY
+                    echo "3. Check for flaky tests or environment-specific issues" >> $GITHUB_STEP_SUMMARY
+                    echo "4. Review the [Test Reporter](#) check for individual test failures" >> $GITHUB_STEP_SUMMARY
+                    echo "" >> $GITHUB_STEP_SUMMARY
+                    echo "</details>" >> $GITHUB_STEP_SUMMARY
+                  fi
 
     # ============================================================================
     # Code Analysis Job
@@ -287,6 +392,9 @@ jobs:
         if: ${{ inputs.enable-code-analysis }}
 
         steps:
+            # ------------------------------------------------------------------
+            # Phase 1: Setup
+            # ------------------------------------------------------------------
             - name: 📥 Checkout repository
               uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
 
@@ -296,20 +404,35 @@ jobs:
                   dotnet-version: ${{ inputs.dotnet-version }}
 
             - name: ☁️ Update .NET workloads
-              run: sudo dotnet workload update
+              run: |
+                  echo "::group::📦 Updating .NET workloads"
+                  sudo dotnet workload update
+                  echo "::endgroup::"
 
             - name: 📥 Restore dependencies
-              run: dotnet restore ${{ inputs.solution-file }} --verbosity minimal
+              run: |
+                  echo "::group::📦 Restoring NuGet packages"
+                  dotnet restore ${{ inputs.solution-file }} --verbosity minimal
+                  echo "::endgroup::"
 
+            # ------------------------------------------------------------------
+            # Phase 2: Analysis
+            # ------------------------------------------------------------------
             - name: 🎨 Verify code formatting
               id: format-check
               run: |
-                  echo "::group::Checking code format"
-                  dotnet format ${{ inputs.solution-file }} --verify-no-changes --verbosity diagnostic || {
-                    echo "::error title=Code Formatting::Code formatting issues detected. Run 'dotnet format' locally to fix."
+                  echo "::group::🎨 Checking code format"
+                  echo "→ Analyzing: ${{ inputs.solution-file }}"
+                  echo "→ Verifying .editorconfig compliance"
+                  echo ""
+                  if dotnet format ${{ inputs.solution-file }} --verify-no-changes --verbosity diagnostic; then
+                    echo "::endgroup::"
+                    echo "::notice title=Code Format::✅ All files are properly formatted"
+                  else
+                    echo "::endgroup::"
+                    echo "::warning title=Code Format::⚠️ Formatting issues detected. Run 'dotnet format' locally to fix."
                     exit 1
-                  }
-                  echo "::endgroup::"
+                  fi
               continue-on-error: true
 
             - name: 📊 Generate analysis summary
@@ -318,16 +441,48 @@ jobs:
                   echo "## 🔍 Code Analysis Summary" >> $GITHUB_STEP_SUMMARY
                   echo "" >> $GITHUB_STEP_SUMMARY
 
+                  # Status badge
                   if [ "${{ steps.format-check.outcome }}" == "success" ]; then
-                    echo "✅ **Code Formatting**: Passed" >> $GITHUB_STEP_SUMMARY
+                    echo "![Analysis Status](https://img.shields.io/badge/analysis-passing-brightgreen)" >> $GITHUB_STEP_SUMMARY
                   else
-                    echo "❌ **Code Formatting**: Failed - Run \`dotnet format\` locally to fix" >> $GITHUB_STEP_SUMMARY
+                    echo "![Analysis Status](https://img.shields.io/badge/analysis-issues%20found-yellow)" >> $GITHUB_STEP_SUMMARY
+                  fi
+                  echo "" >> $GITHUB_STEP_SUMMARY
+
+                  # Results table
+                  echo "| Check | Status | Description |" >> $GITHUB_STEP_SUMMARY
+                  echo "|-------|--------|-------------|" >> $GITHUB_STEP_SUMMARY
+                  if [ "${{ steps.format-check.outcome }}" == "success" ]; then
+                    echo "| 🎨 Code Formatting | ✅ Passed | Code follows .editorconfig standards |" >> $GITHUB_STEP_SUMMARY
+                  else
+                    echo "| 🎨 Code Formatting | ❌ Failed | Formatting issues detected |" >> $GITHUB_STEP_SUMMARY
+                  fi
+                  echo "" >> $GITHUB_STEP_SUMMARY
+
+                  # Show fix instructions on failure
+                  if [ "${{ steps.format-check.outcome }}" != "success" ]; then
+                    echo "### 🔧 How to Fix" >> $GITHUB_STEP_SUMMARY
+                    echo "" >> $GITHUB_STEP_SUMMARY
+                    echo "\`\`\`bash" >> $GITHUB_STEP_SUMMARY
+                    echo "# Auto-fix all formatting issues" >> $GITHUB_STEP_SUMMARY
+                    echo "dotnet format ${{ inputs.solution-file }}" >> $GITHUB_STEP_SUMMARY
+                    echo "" >> $GITHUB_STEP_SUMMARY
+                    echo "# Verify changes" >> $GITHUB_STEP_SUMMARY
+                    echo "dotnet format ${{ inputs.solution-file }} --verify-no-changes" >> $GITHUB_STEP_SUMMARY
+                    echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+                    echo "" >> $GITHUB_STEP_SUMMARY
                   fi
 
+                  # Tips section (collapsible)
+                  echo "<details>" >> $GITHUB_STEP_SUMMARY
+                  echo "<summary>💡 Best Practices</summary>" >> $GITHUB_STEP_SUMMARY
                   echo "" >> $GITHUB_STEP_SUMMARY
-                  echo "### 💡 Tips" >> $GITHUB_STEP_SUMMARY
                   echo "- Run \`dotnet format\` before committing to auto-fix formatting issues" >> $GITHUB_STEP_SUMMARY
-                  echo "- Consider adding a pre-commit hook for automatic formatting" >> $GITHUB_STEP_SUMMARY
+                  echo "- Configure your IDE to format on save using \`.editorconfig\`" >> $GITHUB_STEP_SUMMARY
+                  echo "- Consider adding a [pre-commit hook](https://pre-commit.com/) for automatic formatting" >> $GITHUB_STEP_SUMMARY
+                  echo "- Use \`dotnet format --verify-no-changes\` in your local workflow" >> $GITHUB_STEP_SUMMARY
+                  echo "" >> $GITHUB_STEP_SUMMARY
+                  echo "</details>" >> $GITHUB_STEP_SUMMARY
 
             - name: ❌ Fail on format issues
               if: ${{ steps.format-check.outcome == 'failure' && inputs.fail-on-format-issues }}
@@ -348,50 +503,114 @@ jobs:
               run: |
                   echo "# 🚀 CI Workflow Summary" >> $GITHUB_STEP_SUMMARY
                   echo "" >> $GITHUB_STEP_SUMMARY
+
+                  # Overall status determination
+                  if [ "${{ needs.build.result }}" == "success" ] && \
+                     [ "${{ needs.test.result }}" == "success" ] && \
+                     ([ "${{ needs.analyze.result }}" == "success" ] || [ "${{ needs.analyze.result }}" == "skipped" ]); then
+                    echo "![CI Status](https://img.shields.io/badge/CI-passing-brightgreen?style=for-the-badge)" >> $GITHUB_STEP_SUMMARY
+                  else
+                    echo "![CI Status](https://img.shields.io/badge/CI-failing-red?style=for-the-badge)" >> $GITHUB_STEP_SUMMARY
+                  fi
+                  echo "" >> $GITHUB_STEP_SUMMARY
+
+                  # Horizontal rule
+                  echo "---" >> $GITHUB_STEP_SUMMARY
+                  echo "" >> $GITHUB_STEP_SUMMARY
+
                   echo "## 📋 Job Results" >> $GITHUB_STEP_SUMMARY
                   echo "" >> $GITHUB_STEP_SUMMARY
-                  echo "| Job | Status |" >> $GITHUB_STEP_SUMMARY
-                  echo "|-----|--------|" >> $GITHUB_STEP_SUMMARY
+                  echo "| Job | Status | Description |" >> $GITHUB_STEP_SUMMARY
+                  echo "|-----|--------|-------------|" >> $GITHUB_STEP_SUMMARY
 
                   # Build status
                   if [ "${{ needs.build.result }}" == "success" ]; then
-                    echo "| 🔨 Build | ✅ Passed |" >> $GITHUB_STEP_SUMMARY
+                    echo "| 🔨 Build | ✅ Passed | Solution compiled successfully |" >> $GITHUB_STEP_SUMMARY
                   else
-                    echo "| 🔨 Build | ❌ Failed |" >> $GITHUB_STEP_SUMMARY
+                    echo "| 🔨 Build | ❌ Failed | Compilation errors detected |" >> $GITHUB_STEP_SUMMARY
                   fi
 
                   # Test status
                   if [ "${{ needs.test.result }}" == "success" ]; then
-                    echo "| 🧪 Test | ✅ Passed |" >> $GITHUB_STEP_SUMMARY
+                    echo "| 🧪 Test | ✅ Passed | All tests executed successfully |" >> $GITHUB_STEP_SUMMARY
                   else
-                    echo "| 🧪 Test | ❌ Failed |" >> $GITHUB_STEP_SUMMARY
+                    echo "| 🧪 Test | ❌ Failed | Test failures detected |" >> $GITHUB_STEP_SUMMARY
                   fi
 
                   # Analyze status
                   if [ "${{ needs.analyze.result }}" == "success" ]; then
-                    echo "| 🔍 Analyze | ✅ Passed |" >> $GITHUB_STEP_SUMMARY
+                    echo "| 🔍 Analyze | ✅ Passed | Code meets quality standards |" >> $GITHUB_STEP_SUMMARY
                   elif [ "${{ needs.analyze.result }}" == "skipped" ]; then
-                    echo "| 🔍 Analyze | ⏭️ Skipped |" >> $GITHUB_STEP_SUMMARY
+                    echo "| 🔍 Analyze | ⏭️ Skipped | Code analysis disabled |" >> $GITHUB_STEP_SUMMARY
                   else
-                    echo "| 🔍 Analyze | ❌ Failed |" >> $GITHUB_STEP_SUMMARY
+                    echo "| 🔍 Analyze | ❌ Failed | Code quality issues found |" >> $GITHUB_STEP_SUMMARY
                   fi
-
                   echo "" >> $GITHUB_STEP_SUMMARY
-                  echo "## 📝 Workflow Details" >> $GITHUB_STEP_SUMMARY
+
+                  # Workflow Details (collapsible)
+                  echo "<details>" >> $GITHUB_STEP_SUMMARY
+                  echo "<summary>📝 Workflow Details</summary>" >> $GITHUB_STEP_SUMMARY
                   echo "" >> $GITHUB_STEP_SUMMARY
                   echo "| Property | Value |" >> $GITHUB_STEP_SUMMARY
                   echo "|----------|-------|" >> $GITHUB_STEP_SUMMARY
                   echo "| **Workflow** | \`${{ github.workflow }}\` |" >> $GITHUB_STEP_SUMMARY
-                  echo "| **Run ID** | \`${{ github.run_id }}\` |" >> $GITHUB_STEP_SUMMARY
-                  echo "| **Run Number** | \`${{ github.run_number }}\` |" >> $GITHUB_STEP_SUMMARY
+                  echo "| **Run ID** | [\`${{ github.run_id }}\`](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}) |" >> $GITHUB_STEP_SUMMARY
+                  echo "| **Run Number** | \`#${{ github.run_number }}\` |" >> $GITHUB_STEP_SUMMARY
                   echo "| **Event** | \`${{ github.event_name }}\` |" >> $GITHUB_STEP_SUMMARY
-                  echo "| **Branch** | \`${{ github.ref_name }}\` |" >> $GITHUB_STEP_SUMMARY
-                  echo "| **Commit** | [\`${{ github.sha }}\`](${{ github.server_url }}/${{ github.repository }}/commit/${{ github.sha }}) |" >> $GITHUB_STEP_SUMMARY
-                  echo "| **Actor** | @${{ github.actor }} |" >> $GITHUB_STEP_SUMMARY
+                  echo "| **Branch** | [\`${{ github.ref_name }}\`](${{ github.server_url }}/${{ github.repository }}/tree/${{ github.ref_name }}) |" >> $GITHUB_STEP_SUMMARY
+                  echo "| **Commit** | [\`${GITHUB_SHA:0:7}\`](${{ github.server_url }}/${{ github.repository }}/commit/${{ github.sha }}) |" >> $GITHUB_STEP_SUMMARY
+                  echo "| **Actor** | [@${{ github.actor }}](${{ github.server_url }}/${{ github.actor }}) |" >> $GITHUB_STEP_SUMMARY
                   echo "" >> $GITHUB_STEP_SUMMARY
+                  echo "</details>" >> $GITHUB_STEP_SUMMARY
+                  echo "" >> $GITHUB_STEP_SUMMARY
+
+                  # Artifacts section
                   echo "## 📦 Artifacts" >> $GITHUB_STEP_SUMMARY
                   echo "" >> $GITHUB_STEP_SUMMARY
-                  echo "The following artifacts are available for download:" >> $GITHUB_STEP_SUMMARY
-                  echo "- **build-artifacts** - Compiled binaries" >> $GITHUB_STEP_SUMMARY
-                  echo "- **test-results** - Test execution results (.trx files)" >> $GITHUB_STEP_SUMMARY
-                  echo "- **code-coverage** - Code coverage reports (Cobertura format)" >> $GITHUB_STEP_SUMMARY
+                  echo "| Artifact | Description | Retention |" >> $GITHUB_STEP_SUMMARY
+                  echo "|----------|-------------|-----------|" >> $GITHUB_STEP_SUMMARY
+                  echo "| 📁 **build-artifacts** | Compiled binaries | 7 days |" >> $GITHUB_STEP_SUMMARY
+                  echo "| 📋 **test-results** | Test execution results (.trx) | 30 days |" >> $GITHUB_STEP_SUMMARY
+                  echo "| 📊 **code-coverage** | Coverage reports (Cobertura) | 30 days |" >> $GITHUB_STEP_SUMMARY
+                  echo "" >> $GITHUB_STEP_SUMMARY
+
+                  # Next steps on failure
+                  if [ "${{ needs.build.result }}" != "success" ] || \
+                     [ "${{ needs.test.result }}" != "success" ] || \
+                     ([ "${{ needs.analyze.result }}" != "success" ] && [ "${{ needs.analyze.result }}" != "skipped" ]); then
+                    echo "---" >> $GITHUB_STEP_SUMMARY
+                    echo "" >> $GITHUB_STEP_SUMMARY
+                    echo "## ⚠️ Action Required" >> $GITHUB_STEP_SUMMARY
+                    echo "" >> $GITHUB_STEP_SUMMARY
+                    echo "Some checks have failed. Please review the individual job summaries above for details." >> $GITHUB_STEP_SUMMARY
+                    echo "" >> $GITHUB_STEP_SUMMARY
+                    echo "**Quick Actions:**" >> $GITHUB_STEP_SUMMARY
+                    echo "- 🔄 [Re-run failed jobs](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})" >> $GITHUB_STEP_SUMMARY
+                    echo "- 📖 Check the job logs for detailed error messages" >> $GITHUB_STEP_SUMMARY
+                    echo "- 💬 Ask for help in the PR comments if needed" >> $GITHUB_STEP_SUMMARY
+                  fi
+
+    # ============================================================================
+    # Failure Handler Job (Visual failure path in graph)
+    # ============================================================================
+    on-failure:
+        name: ❌ Failed
+        runs-on: ${{ inputs.runs-on }}
+        needs: [build, test, analyze]
+        if: failure()
+        timeout-minutes: 5
+
+        steps:
+            - name: ❌ Report CI failure
+              run: |
+                  echo "::error title=CI Failed::One or more CI jobs failed"
+
+                  echo "## ❌ CI Failure Report" >> $GITHUB_STEP_SUMMARY
+                  echo "" >> $GITHUB_STEP_SUMMARY
+                  echo "| Job | Result |" >> $GITHUB_STEP_SUMMARY
+                  echo "|-----|--------|" >> $GITHUB_STEP_SUMMARY
+                  echo "| 🔨 Build | ${{ needs.build.result }} |" >> $GITHUB_STEP_SUMMARY
+                  echo "| 🧪 Test | ${{ needs.test.result }} |" >> $GITHUB_STEP_SUMMARY
+                  echo "| 🔍 Analyze | ${{ needs.analyze.result }} |" >> $GITHUB_STEP_SUMMARY
+                  echo "" >> $GITHUB_STEP_SUMMARY
+                  echo "Review the failed job logs above for details." >> $GITHUB_STEP_SUMMARY
