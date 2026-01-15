@@ -55,7 +55,9 @@ Generated\ Files/
 
 # MSTest test Results
 [Tt]est[Rr]esult*/
+[Aa]zd[Tt]est[Rr]esult*/
 [Dd]iagnostic[Rr]esults*/
+[Aa]zd[Dd]iagnostic[Rr]esults*/
 [Bb]uild[Ll]og.*
 *.trx
 

@@ -118,7 +118,7 @@ jobs:
       AZURE_SUBSCRIPTION_ID: ${{ vars.AZURE_SUBSCRIPTION_ID }}
       AZURE_ENV_NAME: ${{ vars.AZURE_ENV_NAME || 'dev' }}
       AZURE_LOCATION: ${{ vars.AZURE_LOCATION || 'eastus2' }}
-      DEPLOYER_PRINCIPAL_TYPE: ${{ vars.DEPLOYER_PRINCIPAL_TYPE }}
+      DEPLOYER_PRINCIPAL_TYPE: ${{ vars.DEPLOYER_PRINCIPAL_TYPE || 'ServicePrincipal' }}
       DEPLOY_HEALTH_MODEL: ${{ vars.DEPLOY_HEALTH_MODEL }}
 
     outputs:

@@ -127,14 +127,14 @@ hooks:
     posix:
       shell: sh
       run: |
-        dotnet clean --verbosity normal
+        dotnet clean
         dotnet restore --verbosity normal
         dotnet build --configuration Debug --verbosity normal
         dotnet test \
                --configuration Debug \
                --no-build \
-               --results-directory ./src/tests/TestResults \
-               --diagnostic-output-directory ./src/tests/DiagnosticResults \
+               --results-directory ./src/tests/AzdTestResults \
+               --diagnostic-output-directory ./src/tests/AzdDiagnosticResults \
                --diagnostic \
                --diagnostic-file-prefix '[log]_' \
                --report-trx \
@@ -149,21 +149,21 @@ hooks:
     windows:
       shell: pwsh
       run: |
-        dotnet clean --verbosity normal
+        dotnet clean
         dotnet restore --verbosity normal
         dotnet build --configuration Debug --verbosity normal
-        dotnet test \
-               --configuration Debug \
-               --no-build \
-               --results-directory ./src/tests/TestResults \
-               --diagnostic-output-directory ./src/tests/DiagnosticResults \
-               --diagnostic \
-               --diagnostic-file-prefix "[log]_" \
-               --report-trx \
-               --report-trx-filename 'appreport.trx' \
-               --coverage \
-               --coverage-output-format cobertura \
-               --coverage-output coverage.cobertura.xml \
+        dotnet test `
+               --configuration Debug `
+               --no-build `
+               --results-directory ./src/tests/AzdTestResults `
+               --diagnostic-output-directory ./src/tests/AzdDiagnosticResults `
+               --diagnostic `
+               --diagnostic-file-prefix "[log]_" `
+               --report-trx `
+               --report-trx-filename 'appreport.trx' `
+               --coverage `
+               --coverage-output-format cobertura `
+               --coverage-output coverage.cobertura.xml `
                --verbosity normal
         ./hooks/preprovision.ps1 -Force -Verbose
       continueOnError: false
