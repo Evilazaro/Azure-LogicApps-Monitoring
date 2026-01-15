@@ -4,17 +4,11 @@
 // OpenTelemetry, health checks, service discovery, and resilience patterns
 // =============================================================================
 
-using Azure.Identity;
-using Azure.Messaging.ServiceBus;
-using Azure.Monitor.OpenTelemetry.Exporter;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Logging;
-using OpenTelemetry;
-using OpenTelemetry.Metrics;
-using OpenTelemetry.Trace;
 
 namespace Microsoft.Extensions.Hosting;
 

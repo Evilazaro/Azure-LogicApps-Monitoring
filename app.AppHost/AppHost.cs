@@ -3,8 +3,6 @@
 // Configures .NET Aspire orchestration for the eShop microservices application
 // =============================================================================
 
-using Microsoft.Extensions.Hosting;
-
 var builder = DistributedApplication.CreateBuilder(args);
 
 // =============================================================================

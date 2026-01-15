@@ -128,8 +128,8 @@ hooks:
       shell: sh
       run: |
         dotnet clean
-        dotnet restore --verbosity normal
-        dotnet build --configuration Debug --verbosity normal
+        dotnet restore --verbosity minimal
+        dotnet build --configuration Debug --verbosity minimal
         dotnet test \
                --configuration Debug \
                --no-build \
@@ -142,7 +142,7 @@ hooks:
                --coverage \
                --coverage-output-format cobertura \
                --coverage-output coverage.cobertura.xml \
-               --verbosity normal
+               --verbosity minimal
         ./hooks/preprovision.sh --force --verbose
       continueOnError: false
       interactive: true
@@ -150,8 +150,8 @@ hooks:
       shell: pwsh
       run: |
         dotnet clean
-        dotnet restore --verbosity normal
-        dotnet build --configuration Debug --verbosity normal
+        dotnet restore --verbosity minimal
+        dotnet build --configuration Debug --verbosity minimal
         dotnet test `
                --configuration Debug `
                --no-build `
@@ -164,7 +164,7 @@ hooks:
                --coverage `
                --coverage-output-format cobertura `
                --coverage-output coverage.cobertura.xml `
-               --verbosity normal
+               --verbosity minimal
         ./hooks/preprovision.ps1 -Force -Verbose
       continueOnError: false
       interactive: true

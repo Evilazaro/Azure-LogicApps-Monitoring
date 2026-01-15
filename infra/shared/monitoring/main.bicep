@@ -90,20 +90,6 @@ module operational 'log-analytics-workspace.bicep' = {
   }
 }
 
-// Azure Monitor Health Model Module: Creates service group hierarchy
-// Enables hierarchical health monitoring across services
-// Skipped when deployHealthModel is false (e.g., CI/CD without tenant permissions)
-@description('Creates service group hierarchy for organizing health monitoring')
-module healthModel 'azure-monitor-health-model.bicep' = if (deployHealthModel) {
-  params: {
-    name: name
-    tags: tags
-  }
-  dependsOn: [
-    operational
-  ]
-}
-
 // Application Insights Module: Deploys workspace-based Application Insights
 // Provides application telemetry and monitoring capabilities
 @description('Deploys workspace-based Application Insights for application telemetry')

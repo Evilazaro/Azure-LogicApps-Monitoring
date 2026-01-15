@@ -5,7 +5,6 @@
 
 using eShop.Web.App.Components;
 using eShop.Web.App.Components.Services;
-using Microsoft.FluentUI.AspNetCore.Components;
 using System.Diagnostics;
 
 var builder = WebApplication.CreateBuilder(args);
