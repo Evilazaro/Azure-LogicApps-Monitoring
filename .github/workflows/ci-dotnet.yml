@@ -110,7 +110,14 @@ jobs:
       - name: 🔧 Setup .NET SDK
         uses: actions/setup-dotnet@67a3573c9a986a3f9c594539f4ab511d57bb3ce9 # v4.3.1
         with:
-          dotnet-version: ${{ env.DOTNET_VERSION }}
+          dotnet-version:
+            ${{ env.DOTNET_VERSION }}
+
+            # ------------------------------------------------------------------------
+      # Update .NET Workload (if applicable)
+      # ------------------------------------------------------------------------
+      - name: ☁️ Update .NET workloads
+        run: sudo dotnet workload update
 
       # ------------------------------------------------------------------------
       # Generate Build Version
@@ -199,10 +206,23 @@ jobs:
           dotnet-version: ${{ env.DOTNET_VERSION }}
 
       # ------------------------------------------------------------------------
+      # Update .NET Workload (if applicable)
+      # ------------------------------------------------------------------------
+      - name: ☁️ Update .NET workloads
+        run: sudo dotnet workload update
+
+      # ------------------------------------------------------------------------
       # Restore Dependencies
       # ------------------------------------------------------------------------
       - name: 📥 Restore dependencies
         run: dotnet restore ${{ env.SOLUTION_FILE }} --verbosity minimal
+
+      # ------------------------------------------------------------------------
+      # Build Solution
+      # Required before running tests
+      # ------------------------------------------------------------------------
+      - name: 🔨 Build solution
+        run: dotnet build ${{ env.SOLUTION_FILE }} --configuration ${{ env.CONFIGURATION }} --no-restore
 
       # ------------------------------------------------------------------------
       # Run Tests with Coverage
@@ -214,11 +234,12 @@ jobs:
             --configuration ${{ env.CONFIGURATION }} \
             --no-restore \
             --verbosity normal \
-            --logger "trx;LogFileName=test-results.trx" \
-            --logger "console;verbosity=detailed" \
+            --report-trx \
+            --report-trx-filename test-results.trx \
             --results-directory "${{ github.workspace }}/TestResults" \
-            --collect:"XPlat Code Coverage" \
-            -- DataCollectionRunSettings.DataCollectors.DataCollector.Configuration.Format=cobertura
+            --coverage \
+            --coverage-output-format cobertura \
+            --coverage-output coverage.cobertura.xml
 
       # ------------------------------------------------------------------------
       # Publish Test Results
@@ -295,6 +316,12 @@ jobs:
         uses: actions/setup-dotnet@67a3573c9a986a3f9c594539f4ab511d57bb3ce9 # v4.3.1
         with:
           dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      # ------------------------------------------------------------------------
+      # Update .NET Workload (if applicable)
+      # ------------------------------------------------------------------------
+      - name: ☁️ Update .NET workloads
+        run: sudo dotnet workload update
 
       # ------------------------------------------------------------------------
       # Restore Dependencies
