@@ -176,7 +176,7 @@ jobs:
           subscription-id: ${{ env.AZURE_SUBSCRIPTION_ID }}
 
       # ------------------------------------------------------------------------
-      # Phase 3: Provision & Deploy
+      # Phase 3: Provision, Reauthenticate & Deploy
       # ------------------------------------------------------------------------
       - name: 🏗️ Provision Infrastructure
         id: provision
@@ -194,6 +194,26 @@ jobs:
             echo "::error title=Provision::❌ Infrastructure provisioning failed"
             exit 1
           fi
+
+      - name: 🔐 Log in with Azure (Federated Credentials)
+        run: |
+          echo "::group::🔐 Authenticating with Azure"
+          echo "→ Client ID: $AZURE_CLIENT_ID"
+          echo "→ Tenant ID: $AZURE_TENANT_ID"
+          echo "→ Method: Federated Credentials (OIDC)"
+          echo ""
+          azd auth login \
+            --client-id "$AZURE_CLIENT_ID" \
+            --federated-credential-provider "github" \
+            --tenant-id "$AZURE_TENANT_ID"
+          echo "::endgroup::"
+          echo "::notice title=Azure Auth::✅ Successfully authenticated with Azure"
+      - name: 🔑 Logging in to Azure CLI
+        uses: azure/login@v2
+        with:
+          client-id: ${{ env.AZURE_CLIENT_ID }}
+          tenant-id: ${{ env.AZURE_TENANT_ID }}
+          subscription-id: ${{ env.AZURE_SUBSCRIPTION_ID }}
 
       - name: 🚀 Deploy Application
         id: deploy

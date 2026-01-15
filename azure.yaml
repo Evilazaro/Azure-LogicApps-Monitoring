@@ -166,7 +166,7 @@ hooks:
         fi
 
         # Test
-        if ! dotnet test app.sln --configuration Release --no-build --logger "trx;LogFileName=TestResults.trx" --results-directory ./TestResults; then
+        if ! dotnet test --solution app.sln --configuration Release --no-build --logger "trx;LogFileName=TestResults.trx" --results-directory ./TestResults; then
           TEST_STATUS="❌ Tests Failed"
         fi
 
@@ -204,11 +204,24 @@ hooks:
           
           if [ "$HAS_FAILURE" = "true" ]; then
             echo "> ⚠️ **Warning:** One or more preprovision tasks failed. Check logs above for details." >> $GITHUB_STEP_SUMMARY
-            exit 1
           else
             echo "> ✅ All preprovision tasks completed successfully." >> $GITHUB_STEP_SUMMARY
           fi
         fi
+
+        # Exit based on failure status (works whether GITHUB_STEP_SUMMARY is set or not)
+        HAS_FAILURE=false
+        case "$BUILD_STATUS" in *Failed*) HAS_FAILURE=true ;; esac
+        case "$TEST_STATUS" in *Failed*) HAS_FAILURE=true ;; esac
+        case "$VALIDATION_STATUS" in *Failed*) HAS_FAILURE=true ;; esac
+
+        if [ "$HAS_FAILURE" = "true" ]; then
+          echo "❌ One or more preprovision tasks failed"
+          exit 1
+        fi
+
+        echo "✅ All preprovision tasks completed successfully"
+        exit 0
       continueOnError: false
       interactive: true
     windows:
@@ -280,11 +293,19 @@ hooks:
           
           if ($HasError) {
             "> ⚠️ **Warning:** One or more preprovision tasks failed. Check logs above for details." | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append
-            exit 1
           } else {
             "> ✅ All preprovision tasks completed successfully." | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append
           }
         }
+
+        # Exit based on failure status (works whether GITHUB_STEP_SUMMARY is set or not)
+        if ($HasError) {
+          Write-Host "❌ One or more preprovision tasks failed" -ForegroundColor Red
+          exit 1
+        }
+
+        Write-Host "✅ All preprovision tasks completed successfully" -ForegroundColor Green
+        exit 0
       continueOnError: false
       interactive: true
 
@@ -354,11 +375,23 @@ hooks:
           
           if [ "$HAS_FAILURE" = "true" ]; then
             echo "> ⚠️ **Warning:** One or more postprovision tasks failed." >> $GITHUB_STEP_SUMMARY
-            exit 1
           else
             echo "> ✅ Infrastructure configured successfully." >> $GITHUB_STEP_SUMMARY
           fi
         fi
+
+        # Exit based on failure status (works whether GITHUB_STEP_SUMMARY is set or not)
+        HAS_FAILURE=false
+        case "$SECRETS_STATUS" in *Failed*) HAS_FAILURE=true ;; esac
+        case "$TESTDATA_STATUS" in *Failed*) HAS_FAILURE=true ;; esac
+
+        if [ "$HAS_FAILURE" = "true" ]; then
+          echo "❌ One or more postprovision tasks failed"
+          exit 1
+        fi
+
+        echo "✅ Postprovision completed successfully"
+        exit 0
       continueOnError: false
       interactive: true
     windows:
@@ -407,11 +440,19 @@ hooks:
           
           if ($HasError) {
             "> ⚠️ **Warning:** One or more postprovision tasks failed." | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append
-            exit 1
           } else {
             "> ✅ Infrastructure configured successfully." | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append
           }
         }
+
+        # Exit based on failure status (works whether GITHUB_STEP_SUMMARY is set or not)
+        if ($HasError) {
+          Write-Host "❌ One or more postprovision tasks failed" -ForegroundColor Red
+          exit 1
+        }
+
+        Write-Host "✅ Postprovision completed successfully" -ForegroundColor Green
+        exit 0
       continueOnError: false
       interactive: true
 
@@ -472,13 +513,23 @@ hooks:
           case "$WORKFLOW_STATUS" in
             *Failed*)
               echo "> ⚠️ **Warning:** Workflow deployment failed. Check logs above." >> $GITHUB_STEP_SUMMARY
-              exit 1
               ;;
             *)
               echo "> ✅ Logic Apps workflows deployed successfully." >> $GITHUB_STEP_SUMMARY
               ;;
           esac
         fi
+
+        # Exit based on failure status (works whether GITHUB_STEP_SUMMARY is set or not)
+        case "$WORKFLOW_STATUS" in
+          *Failed*)
+            echo "❌ Workflow deployment failed"
+            exit 1
+            ;;
+        esac
+
+        echo "✅ Predeploy completed successfully"
+        exit 0
       continueOnError: false
       interactive: true
     windows:
@@ -522,11 +573,19 @@ hooks:
           
           if ($HasError) {
             "> ⚠️ **Warning:** Workflow deployment failed. Check logs above." | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append
-            exit 1
           } else {
             "> ✅ Logic Apps workflows deployed successfully." | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append
           }
         }
+
+        # Exit based on failure status (works whether GITHUB_STEP_SUMMARY is set or not)
+        if ($HasError) {
+          Write-Host "❌ Workflow deployment failed" -ForegroundColor Red
+          exit 1
+        }
+
+        Write-Host "✅ Predeploy completed successfully" -ForegroundColor Green
+        exit 0
       continueOnError: false
       interactive: true
 
@@ -597,6 +656,9 @@ hooks:
           echo "| Logic Apps | 🟢 Deployed |" >> $GITHUB_STEP_SUMMARY
           echo "| Infrastructure | 🟢 Provisioned |" >> $GITHUB_STEP_SUMMARY
         fi
+
+        echo "✅ Postdeploy completed successfully"
+        exit 0
       continueOnError: false
       interactive: true
     windows:
@@ -653,6 +715,9 @@ hooks:
           "| Logic Apps | 🟢 Deployed |" | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append
           "| Infrastructure | 🟢 Provisioned |" | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append
         }
+
+        Write-Host "✅ Postdeploy completed successfully" -ForegroundColor Green
+        exit 0
       continueOnError: false
       interactive: true
 
@@ -713,6 +778,9 @@ hooks:
           
           echo "> 🧹 Infrastructure cleanup completed. Environment is ready for recreation." >> $GITHUB_STEP_SUMMARY
         fi
+
+        echo "✅ Postinfradelete cleanup completed"
+        exit 0
       continueOnError: false
       interactive: true
     windows:
@@ -756,6 +824,9 @@ hooks:
           
           "> 🧹 Infrastructure cleanup completed. Environment is ready for recreation." | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append
         }
+
+        Write-Host "✅ Postinfradelete cleanup completed" -ForegroundColor Green
+        exit 0
       continueOnError: false
       interactive: true
 
