@@ -156,6 +156,9 @@ jobs:
             - name: ☁️ Update .NET workloads
               run: sudo dotnet workload update
 
+            # ------------------------------------------------------------------
+            # Phase 2: Build
+            # ------------------------------------------------------------------
             - name: 🏷️ Generate build version
               id: version
               run: |
@@ -180,6 +183,9 @@ jobs:
                   echo "::endgroup::"
                   echo "::notice title=Build::✅ Solution built successfully (${{ inputs.configuration }})"
 
+            # ------------------------------------------------------------------
+            # Phase 3: Publish
+            # ------------------------------------------------------------------
             - name: 📤 Upload build artifacts
               uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
               with:
@@ -241,6 +247,9 @@ jobs:
         needs: build
 
         steps:
+            # ------------------------------------------------------------------
+            # Phase 1: Setup
+            # ------------------------------------------------------------------
             - name: 📥 Checkout repository
               uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
 
@@ -261,6 +270,9 @@ jobs:
                   dotnet restore ${{ inputs.solution-file }} --verbosity minimal
                   echo "::endgroup::"
 
+            # ------------------------------------------------------------------
+            # Phase 2: Build & Test
+            # ------------------------------------------------------------------
             - name: 🔨 Build solution
               run: |
                   echo "::group::🔨 Building for tests"
@@ -286,6 +298,9 @@ jobs:
                   echo "::endgroup::"
                   echo "::notice title=Tests::✅ All tests passed"
 
+            # ------------------------------------------------------------------
+            # Phase 3: Publish Results
+            # ------------------------------------------------------------------
             - name: 📋 Publish test results
               uses: dorny/test-reporter@b082adf0eced0765477756c2a610396589b8c637 # v2.5.0
               if: always()
@@ -366,6 +381,9 @@ jobs:
         if: ${{ inputs.enable-code-analysis }}
 
         steps:
+            # ------------------------------------------------------------------
+            # Phase 1: Setup
+            # ------------------------------------------------------------------
             - name: 📥 Checkout repository
               uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
 
@@ -386,6 +404,9 @@ jobs:
                   dotnet restore ${{ inputs.solution-file }} --verbosity minimal
                   echo "::endgroup::"
 
+            # ------------------------------------------------------------------
+            # Phase 2: Analysis
+            # ------------------------------------------------------------------
             - name: 🎨 Verify code formatting
               id: format-check
               run: |
