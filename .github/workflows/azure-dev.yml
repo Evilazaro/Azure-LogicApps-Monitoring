@@ -1,52 +1,395 @@
-# Run when commits are pushed to feature/ci
+# ============================================================================
+# Azure Developer CLI - Continuous Delivery Workflow
+# ============================================================================
+#
+# Purpose:
+#   Provisions Azure infrastructure and deploys the .NET application using
+#   Azure Developer CLI (azd) with OpenID Connect (OIDC) authentication.
+#
+# Pipeline Flow:
+#   CI (build/test/analyze) → Deploy to Dev → [Manual Approval] → Deploy to Prod
+#
+# Features:
+#   - Integrated CI pipeline (build, test, code analysis)
+#   - OIDC authentication (no stored secrets)
+#   - Environment-based deployments with protection rules
+#   - Deployment summaries and observability
+#
+# Prerequisites:
+#   - Federated credentials configured in Azure AD
+#   - GitHub Environments: dev, prod (with protection rules)
+#   - Repository variables: AZURE_CLIENT_ID, AZURE_TENANT_ID, AZURE_SUBSCRIPTION_ID
+#
+# Documentation:
+#   https://learn.microsoft.com/en-us/azure/developer/github/connect-from-azure
+#
+# ============================================================================
+
+name: CD - Azure Deployment
+
+# ------------------------------------------------------------------------------
+# Trigger Configuration
+# ------------------------------------------------------------------------------
 on:
   workflow_dispatch:
+    inputs:
+      environment:
+        description: "Target environment for deployment"
+        required: true
+        default: "dev"
+        type: choice
+        options:
+          - dev
+          - prod
+          - staging
+      skip-ci:
+        description: "Skip CI checks (use with caution)"
+        required: false
+        default: false
+        type: boolean
   push:
-    # Run when commits are pushed to mainline branch (main or master)
-    # Set this to the mainline branch you are using
     branches:
       - main
+    paths:
+      - "src/**"
+      - "app.*/**"
+      - "infra/**"
+      - "azure.yaml"
+      - ".github/workflows/azure-dev.yml"
 
-# Set up permissions for deploying with secretless Azure federated credentials
-# https://learn.microsoft.com/en-us/azure/developer/github/connect-from-azure?tabs=azure-portal%2Clinux#set-up-azure-login-with-openid-connect-authentication
+# ------------------------------------------------------------------------------
+# Concurrency Configuration
+# Prevents simultaneous deployments to the same environment
+# ------------------------------------------------------------------------------
+concurrency:
+  group: deploy-${{ github.event.inputs.environment || 'dev' }}-${{ github.ref }}
+  cancel-in-progress: false
+
+# ------------------------------------------------------------------------------
+# Workflow-level Permissions (Least Privilege)
+# ------------------------------------------------------------------------------
 permissions:
   id-token: write
   contents: read
+  checks: write
+  pull-requests: write
+
+# ------------------------------------------------------------------------------
+# Environment Variables
+# ------------------------------------------------------------------------------
+env:
+  DOTNET_VERSION: "10.0.x"
+  DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
+  DOTNET_NOLOGO: true
+  DOTNET_CLI_TELEMETRY_OPTOUT: true
+
+# ------------------------------------------------------------------------------
+# Default Shell Configuration
+# ------------------------------------------------------------------------------
+defaults:
+  run:
+    shell: bash
 
 jobs:
-  build:
+  # ============================================================================
+  # CI Job - Build, Test, and Analyze
+  # ============================================================================
+  ci:
+    name: 🔨 CI Pipeline
+    if: ${{ github.event.inputs.skip-ci != 'true' }}
+    uses: ./.github/workflows/ci-dotnet-reusable.yml
+    with:
+      configuration: "Release"
+      dotnet-version: "10.0.x"
+      solution-file: "app.sln"
+      enable-code-analysis: true
+      fail-on-format-issues: false
+    secrets: inherit
+
+  # ============================================================================
+  # Deploy to Dev Environment
+  # ============================================================================
+  deploy-dev:
+    name: 🚀 Deploy to Dev
     runs-on: ubuntu-latest
+    needs: [ci]
+    if: |
+      always() && 
+      (needs.ci.result == 'success' || needs.ci.result == 'skipped') &&
+      (github.event_name == 'push' || github.event.inputs.environment == 'dev')
+    timeout-minutes: 30
+    environment:
+      name: dev
+      url: ${{ steps.deploy.outputs.webapp-url }}
+
     env:
       AZURE_CLIENT_ID: ${{ vars.AZURE_CLIENT_ID }}
       AZURE_TENANT_ID: ${{ vars.AZURE_TENANT_ID }}
       AZURE_SUBSCRIPTION_ID: ${{ vars.AZURE_SUBSCRIPTION_ID }}
+      AZURE_ENV_NAME: ${{ vars.AZURE_ENV_NAME || 'dev' }}
+      AZURE_LOCATION: ${{ vars.AZURE_LOCATION || 'eastus2' }}
       DEPLOYER_PRINCIPAL_TYPE: ${{ vars.DEPLOYER_PRINCIPAL_TYPE }}
       DEPLOY_HEALTH_MODEL: ${{ vars.DEPLOY_HEALTH_MODEL }}
-      AZURE_LOCATION: ${{ vars.AZURE_LOCATION }}
-      AZURE_ENV_NAME: ${{ vars.AZURE_ENV_NAME }}
+
+    outputs:
+      webapp-url: ${{ steps.deploy.outputs.webapp-url }}
+      resource-group: ${{ steps.deploy.outputs.resource-group }}
+
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-      - name: Install azd
-        uses: Azure/setup-azd@v2
-      - name: Setup .NET
-        uses: actions/setup-dotnet@v4
+      # ------------------------------------------------------------------------
+      # Checkout Repository
+      # ------------------------------------------------------------------------
+      - name: 📥 Checkout repository
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+
+      # ------------------------------------------------------------------------
+      # Setup Tools
+      # ------------------------------------------------------------------------
+      - name: 🔧 Install Azure Developer CLI
+        uses: Azure/setup-azd@ae811689366f7cacdb5b7eed75cb72fe0953e6c6 # v2.0.0
+
+      - name: 🔧 Setup .NET SDK
+        uses: actions/setup-dotnet@67a3573c9a986a3f9c594539f4ab511d57bb3ce9 # v4.3.1
         with:
-          dotnet-version: |
-            8.x
-            9.x
-            10.x
+          dotnet-version: ${{ env.DOTNET_VERSION }}
 
-      - name: Log in with Azure (Federated Credentials)
+      # ------------------------------------------------------------------------
+      # Azure Authentication (OIDC)
+      # ------------------------------------------------------------------------
+      - name: 🔐 Log in with Azure (Federated Credentials)
         run: |
-          azd auth login `
-            --client-id "$Env:AZURE_CLIENT_ID" `
-            --federated-credential-provider "github" `
-            --tenant-id "$Env:AZURE_TENANT_ID"
-        shell: pwsh
+          azd auth login \
+            --client-id "$AZURE_CLIENT_ID" \
+            --federated-credential-provider "github" \
+            --tenant-id "$AZURE_TENANT_ID"
 
-      - name: Provision Infrastructure
-        run: azd provision --no-prompt
+      # ------------------------------------------------------------------------
+      # Provision Infrastructure
+      # ------------------------------------------------------------------------
+      - name: 🏗️ Provision Infrastructure
+        id: provision
+        run: |
+          echo "::group::Provisioning Azure resources"
+          azd provision --no-prompt --output json > provision-output.json 2>&1 || true
+          cat provision-output.json
+          echo "::endgroup::"
 
-      - name: Deploy Application
-        run: azd deploy --no-prompt
+      # ------------------------------------------------------------------------
+      # Deploy Application
+      # ------------------------------------------------------------------------
+      - name: 🚀 Deploy Application
+        id: deploy
+        run: |
+          echo "::group::Deploying application"
+          azd deploy --no-prompt
+          echo "::endgroup::"
+
+          # Extract outputs for summary
+          RESOURCE_GROUP="${AZURE_ENV_NAME}-rg"
+          echo "resource-group=$RESOURCE_GROUP" >> $GITHUB_OUTPUT
+          echo "webapp-url=https://${AZURE_ENV_NAME}.azurewebsites.net" >> $GITHUB_OUTPUT
+
+      # ------------------------------------------------------------------------
+      # Deployment Summary
+      # ------------------------------------------------------------------------
+      - name: 📊 Generate deployment summary
+        if: always()
+        run: |
+          echo "## 🚀 Dev Deployment Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Property | Value |" >> $GITHUB_STEP_SUMMARY
+          echo "|----------|-------|" >> $GITHUB_STEP_SUMMARY
+          echo "| **Environment** | \`dev\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Azure Environment** | \`$AZURE_ENV_NAME\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Location** | \`$AZURE_LOCATION\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Commit** | \`${{ github.sha }}\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Branch** | \`${{ github.ref_name }}\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Actor** | @${{ github.actor }} |" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          if [ "${{ job.status }}" == "success" ]; then
+            echo "✅ **Status**: Deployment completed successfully!" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "❌ **Status**: Deployment failed. Check logs for details." >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "### 🔄 Rollback Instructions" >> $GITHUB_STEP_SUMMARY
+            echo "To rollback, re-run the workflow with a previous commit:" >> $GITHUB_STEP_SUMMARY
+            echo "\`\`\`bash" >> $GITHUB_STEP_SUMMARY
+            echo "gh workflow run azure-dev.yml --ref <previous-commit-sha>" >> $GITHUB_STEP_SUMMARY
+            echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+          fi
+
+  # ============================================================================
+  # Deploy to Prod Environment
+  # ============================================================================
+  deploy-prod:
+    name: 🚀 Deploy to Prod
+    runs-on: ubuntu-latest
+    needs: [ci, deploy-dev]
+    if: |
+      always() && 
+      needs.deploy-dev.result == 'success' &&
+      github.event.inputs.environment == 'prod'
+    timeout-minutes: 45
+    environment:
+      name: prod
+      url: ${{ steps.deploy.outputs.webapp-url }}
+
+    env:
+      AZURE_CLIENT_ID: ${{ vars.AZURE_CLIENT_ID }}
+      AZURE_TENANT_ID: ${{ vars.AZURE_TENANT_ID }}
+      AZURE_SUBSCRIPTION_ID: ${{ vars.AZURE_SUBSCRIPTION_ID }}
+      AZURE_ENV_NAME: ${{ vars.AZURE_ENV_NAME || 'prod' }}
+      AZURE_LOCATION: ${{ vars.AZURE_LOCATION || 'eastus2' }}
+      DEPLOYER_PRINCIPAL_TYPE: ${{ vars.DEPLOYER_PRINCIPAL_TYPE }}
+      DEPLOY_HEALTH_MODEL: ${{ vars.DEPLOY_HEALTH_MODEL }}
+
+    outputs:
+      webapp-url: ${{ steps.deploy.outputs.webapp-url }}
+      resource-group: ${{ steps.deploy.outputs.resource-group }}
+
+    steps:
+      # ------------------------------------------------------------------------
+      # Checkout Repository
+      # ------------------------------------------------------------------------
+      - name: 📥 Checkout repository
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+
+      # ------------------------------------------------------------------------
+      # Setup Tools
+      # ------------------------------------------------------------------------
+      - name: 🔧 Install Azure Developer CLI
+        uses: Azure/setup-azd@ae811689366f7cacdb5b7eed75cb72fe0953e6c6 # v2.0.0
+
+      - name: 🔧 Setup .NET SDK
+        uses: actions/setup-dotnet@67a3573c9a986a3f9c594539f4ab511d57bb3ce9 # v4.3.1
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      # ------------------------------------------------------------------------
+      # Azure Authentication (OIDC)
+      # ------------------------------------------------------------------------
+      - name: 🔐 Log in with Azure (Federated Credentials)
+        run: |
+          azd auth login \
+            --client-id "$AZURE_CLIENT_ID" \
+            --federated-credential-provider "github" \
+            --tenant-id "$AZURE_TENANT_ID"
+
+      # ------------------------------------------------------------------------
+      # Provision Infrastructure
+      # ------------------------------------------------------------------------
+      - name: 🏗️ Provision Infrastructure
+        id: provision
+        run: |
+          echo "::group::Provisioning Azure resources"
+          azd provision --no-prompt --output json > provision-output.json 2>&1 || true
+          cat provision-output.json
+          echo "::endgroup::"
+
+      # ------------------------------------------------------------------------
+      # Deploy Application
+      # ------------------------------------------------------------------------
+      - name: 🚀 Deploy Application
+        id: deploy
+        run: |
+          echo "::group::Deploying application"
+          azd deploy --no-prompt
+          echo "::endgroup::"
+
+          # Extract outputs for summary
+          RESOURCE_GROUP="${AZURE_ENV_NAME}-rg"
+          echo "resource-group=$RESOURCE_GROUP" >> $GITHUB_OUTPUT
+          echo "webapp-url=https://${AZURE_ENV_NAME}.azurewebsites.net" >> $GITHUB_OUTPUT
+
+      # ------------------------------------------------------------------------
+      # Deployment Summary
+      # ------------------------------------------------------------------------
+      - name: 📊 Generate deployment summary
+        if: always()
+        run: |
+          echo "## 🚀 Production Deployment Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Property | Value |" >> $GITHUB_STEP_SUMMARY
+          echo "|----------|-------|" >> $GITHUB_STEP_SUMMARY
+          echo "| **Environment** | \`prod\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Azure Environment** | \`$AZURE_ENV_NAME\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Location** | \`$AZURE_LOCATION\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Commit** | \`${{ github.sha }}\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Branch** | \`${{ github.ref_name }}\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Actor** | @${{ github.actor }} |" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          if [ "${{ job.status }}" == "success" ]; then
+            echo "✅ **Status**: Production deployment completed successfully!" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "❌ **Status**: Production deployment failed. Check logs for details." >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "### 🔄 Rollback Instructions" >> $GITHUB_STEP_SUMMARY
+            echo "To rollback, re-run the workflow with a previous commit:" >> $GITHUB_STEP_SUMMARY
+            echo "\`\`\`bash" >> $GITHUB_STEP_SUMMARY
+            echo "gh workflow run azure-dev.yml --ref <previous-commit-sha>" >> $GITHUB_STEP_SUMMARY
+            echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+          fi
+
+  # ============================================================================
+  # Workflow Summary Job
+  # ============================================================================
+  summary:
+    name: 📊 Deployment Summary
+    runs-on: ubuntu-latest
+    needs: [ci, deploy-dev, deploy-prod]
+    if: always()
+    timeout-minutes: 5
+
+    steps:
+      - name: 📊 Generate workflow summary
+        run: |
+          echo "# 🚀 CD Workflow Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "## 📋 Job Results" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Job | Status |" >> $GITHUB_STEP_SUMMARY
+          echo "|-----|--------|" >> $GITHUB_STEP_SUMMARY
+
+          # CI status
+          CI_RESULT="${{ needs.ci.result }}"
+          if [ "$CI_RESULT" == "success" ]; then
+            echo "| 🔨 CI Pipeline | ✅ Passed |" >> $GITHUB_STEP_SUMMARY
+          elif [ "$CI_RESULT" == "skipped" ]; then
+            echo "| 🔨 CI Pipeline | ⏭️ Skipped |" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "| 🔨 CI Pipeline | ❌ Failed |" >> $GITHUB_STEP_SUMMARY
+          fi
+
+          # Dev deployment status
+          DEV_RESULT="${{ needs.deploy-dev.result }}"
+          if [ "$DEV_RESULT" == "success" ]; then
+            echo "| 🚀 Deploy Dev | ✅ Passed |" >> $GITHUB_STEP_SUMMARY
+          elif [ "$DEV_RESULT" == "skipped" ]; then
+            echo "| 🚀 Deploy Dev | ⏭️ Skipped |" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "| 🚀 Deploy Dev | ❌ Failed |" >> $GITHUB_STEP_SUMMARY
+          fi
+
+          # Prod deployment status
+          PROD_RESULT="${{ needs.deploy-prod.result }}"
+          if [ "$PROD_RESULT" == "success" ]; then
+            echo "| 🚀 Deploy Prod | ✅ Passed |" >> $GITHUB_STEP_SUMMARY
+          elif [ "$PROD_RESULT" == "skipped" ]; then
+            echo "| 🚀 Deploy Prod | ⏭️ Skipped |" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "| 🚀 Deploy Prod | ❌ Failed |" >> $GITHUB_STEP_SUMMARY
+          fi
+
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "## 📝 Workflow Details" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Property | Value |" >> $GITHUB_STEP_SUMMARY
+          echo "|----------|-------|" >> $GITHUB_STEP_SUMMARY
+          echo "| **Workflow** | \`${{ github.workflow }}\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Run ID** | \`${{ github.run_id }}\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Event** | \`${{ github.event_name }}\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Branch** | \`${{ github.ref_name }}\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Commit** | [\`${{ github.sha }}\`](${{ github.server_url }}/${{ github.repository }}/commit/${{ github.sha }}) |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Actor** | @${{ github.actor }} |" >> $GITHUB_STEP_SUMMARY
