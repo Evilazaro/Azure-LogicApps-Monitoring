@@ -127,178 +127,45 @@ hooks:
     posix:
       shell: sh
       run: |
-        # ======================================
-        # GitHub Actions Summary - Start
-        # ======================================
-        HOOK_START_TIME=$(date +%s)
-
-        # Initialize summary (only in GitHub Actions)
-        if [ -n "$GITHUB_STEP_SUMMARY" ]; then
-          echo "## 🔧 Preprovision Hook" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "**Started:** $(date -u '+%Y-%m-%d %H:%M:%S UTC')" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-        fi
-
-        # Track status
-        BUILD_STATUS="✅ Success"
-        VALIDATION_STATUS="✅ Success"
-
-        # ======================================
-        # Preprovision Validation (FIRST)
-        # ======================================
-        # Validates and installs: .NET SDK, Azure CLI, sqlcmd, zip, etc.
-        if ! ./hooks/preprovision.sh --force --verbose; then
-          VALIDATION_STATUS="❌ Validation Failed"
-        fi
-
-        # Update PATH for newly installed tools
-        export PATH="$HOME/.dotnet:/opt/mssql-tools18/bin:$PATH"
-
-        # ======================================
-        # Build and Test Solution
-        # ======================================
-        echo "Building and testing solution..."
-
-        # Restore
-        if ! dotnet restore app.sln; then
-          BUILD_STATUS="❌ Restore Failed"
-        fi
-
-        # Build
-        if ! dotnet build app.sln --configuration Release --no-restore; then
-          BUILD_STATUS="❌ Build Failed"
-        fi
-
-        # Test
-        if ! dotnet test --solution app.sln --configuration Release --no-build --verbosity normal; then
-          BUILD_STATUS="❌ Test Failed"
-        fi
-
-        # ======================================
-        # GitHub Actions Summary - End
-        # ======================================
-        if [ -n "$GITHUB_STEP_SUMMARY" ]; then
-          HOOK_END_TIME=$(date +%s)
-          HOOK_DURATION=$((HOOK_END_TIME - HOOK_START_TIME))
-          
-          echo "### 📋 Preprovision Results" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "| Task | Status |" >> $GITHUB_STEP_SUMMARY
-          echo "|------|--------|" >> $GITHUB_STEP_SUMMARY
-          echo "| Environment Validation | $VALIDATION_STATUS |" >> $GITHUB_STEP_SUMMARY
-          echo "| .NET Build | $BUILD_STATUS |" >> $GITHUB_STEP_SUMMARY
-          echo "| .NET Test | $TEST_STATUS |" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "**Duration:** ${HOOK_DURATION}s" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          
-          # Fail if any step failed (POSIX-compatible pattern matching)
-          HAS_FAILURE=false
-          case "$VALIDATION_STATUS" in *Failed*) HAS_FAILURE=true ;; esac
-          case "$BUILD_STATUS" in *Failed*) HAS_FAILURE=true ;; esac
-          
-          if [ "$HAS_FAILURE" = "true" ]; then
-            echo "> ⚠️ **Warning:** One or more preprovision tasks failed. Check logs above for details." >> $GITHUB_STEP_SUMMARY
-          else
-            echo "> ✅ All preprovision tasks completed successfully." >> $GITHUB_STEP_SUMMARY
-          fi
-        fi
-
-        # Exit based on failure status (works whether GITHUB_STEP_SUMMARY is set or not)
-        HAS_FAILURE=false
-        case "$VALIDATION_STATUS" in *Failed*) HAS_FAILURE=true ;; esac
-        case "$BUILD_STATUS" in *Failed*) HAS_FAILURE=true ;; esac
-
-        if [ "$HAS_FAILURE" = "true" ]; then
-          echo "❌ One or more preprovision tasks failed"
-          exit 1
-        fi
-
-        echo "✅ All preprovision tasks completed successfully"
-        exit 0
+        dotnet clean --verbosity normal
+        dotnet restore --verbosity normal
+        dotnet build --configuration Debug --verbosity normal
+        dotnet test \
+               --configuration Debug \
+               --no-build \
+               --results-directory ./src/tests/TestResults \
+               --diagnostic-output-directory ./src/tests/DiagnosticResults \
+               --diagnostic \
+               --diagnostic-file-prefix '[log]_' \
+               --report-trx \
+               --report-trx-filename 'appreport.trx' \
+               --coverage \
+               --coverage-output-format cobertura \
+               --coverage-output coverage.cobertura.xml \
+               --verbosity normal
+        ./hooks/preprovision.sh --force --verbose
       continueOnError: false
       interactive: true
     windows:
       shell: pwsh
       run: |
-        # ======================================
-        # GitHub Actions Summary - Start
-        # ======================================
-        $HookStartTime = Get-Date
-
-        # Initialize summary (only in GitHub Actions)
-        if ($env:GITHUB_STEP_SUMMARY) {
-          "## 🔧 Preprovision Hook" | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append
-          "" | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append
-          "**Started:** $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss') UTC" | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append
-          "" | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append
-        }
-
-        # Track status
-        $BuildStatus = "✅ Success"
-        $ValidationStatus = "✅ Success"
-        $HasError = $false
-
-        # ======================================
-        # Preprovision Validation (FIRST)
-        # ======================================
-        # Validates and installs: .NET SDK, Azure CLI, sqlcmd, zip, etc.
+        dotnet clean --verbosity normal
+        dotnet restore --verbosity normal
+        dotnet build --configuration Debug --verbosity normal
+        dotnet test \
+               --configuration Debug \
+               --no-build \
+               --results-directory ./src/tests/TestResults \
+               --diagnostic-output-directory ./src/tests/DiagnosticResults \
+               --diagnostic \
+               --diagnostic-file-prefix "[log]_" \
+               --report-trx \
+               --report-trx-filename 'appreport.trx' \
+               --coverage \
+               --coverage-output-format cobertura \
+               --coverage-output coverage.cobertura.xml \
+               --verbosity normal
         ./hooks/preprovision.ps1 -Force -Verbose
-        if ($LASTEXITCODE -ne 0) { $ValidationStatus = "❌ Validation Failed"; $HasError = $true }
-
-        # Refresh PATH for newly installed tools
-        $env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path","User")
-
-        # ======================================
-        # Build and Test Solution
-        # ======================================
-        Write-Host "Building and testing solution..." -ForegroundColor Cyan
-
-        # Restore
-        dotnet restore app.sln
-        if ($LASTEXITCODE -ne 0) { $BuildStatus = "❌ Restore Failed"; $HasError = $true }
-
-        # Build
-        dotnet build app.sln --configuration Release --no-restore
-        if ($LASTEXITCODE -ne 0) { $BuildStatus = "❌ Build Failed"; $HasError = $true }
-
-        # Test
-        dotnet test --solution app.sln --configuration Release --no-build --verbosity normal
-        if ($LASTEXITCODE -ne 0) { $BuildStatus = "❌ Test Failed"; $HasError = $true }
-
-        # ======================================
-        # GitHub Actions Summary - End
-        # ======================================
-        if ($env:GITHUB_STEP_SUMMARY) {
-          $HookDuration = [math]::Round(((Get-Date) - $HookStartTime).TotalSeconds)
-          
-          "### 📋 Preprovision Results" | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append
-          "" | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append
-          "| Task | Status |" | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append
-          "|------|--------|" | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append
-          "| Environment Validation | $ValidationStatus |" | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append
-          "| .NET Build | $BuildStatus |" | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append
-          "| .NET Test | $TestStatus |" | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append
-          "" | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append
-          "**Duration:** ${HookDuration}s" | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append
-          "" | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append
-          
-          if ($HasError) {
-            "> ⚠️ **Warning:** One or more preprovision tasks failed. Check logs above for details." | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append
-          } else {
-            "> ✅ All preprovision tasks completed successfully." | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append
-          }
-        }
-
-        # Exit based on failure status (works whether GITHUB_STEP_SUMMARY is set or not)
-        if ($HasError) {
-          Write-Host "❌ One or more preprovision tasks failed" -ForegroundColor Red
-          exit 1
-        }
-
-        Write-Host "✅ All preprovision tasks completed successfully" -ForegroundColor Green
-        exit 0
       continueOnError: false
       interactive: true
 
@@ -318,136 +185,15 @@ hooks:
     posix:
       shell: sh
       run: |
-        # ======================================
-        # GitHub Actions Summary - Start
-        # ======================================
-        HOOK_START_TIME=$(date +%s)
-
-        if [ -n "$GITHUB_STEP_SUMMARY" ]; then
-          echo "## ⚙️ Postprovision Hook" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "**Started:** $(date -u '+%Y-%m-%d %H:%M:%S UTC')" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-        fi
-
-        # Track status
-        SECRETS_STATUS="✅ Success"
-        TESTDATA_STATUS="✅ Success"
-
-        # Configure local secrets from Azure Key Vault
-        if ! ./hooks/postprovision.sh --force --verbose; then
-          SECRETS_STATUS="❌ Failed"
-        fi
-
-        # Generate test data for development
-        if ! ./hooks/Generate-Orders.sh --force --verbose; then
-          TESTDATA_STATUS="❌ Failed"
-        fi
-
-        # ======================================
-        # GitHub Actions Summary - End
-        # ======================================
-        if [ -n "$GITHUB_STEP_SUMMARY" ]; then
-          HOOK_END_TIME=$(date +%s)
-          HOOK_DURATION=$((HOOK_END_TIME - HOOK_START_TIME))
-          
-          echo "### 📋 Postprovision Results" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "| Task | Status |" >> $GITHUB_STEP_SUMMARY
-          echo "|------|--------|" >> $GITHUB_STEP_SUMMARY
-          echo "| Configure Secrets | $SECRETS_STATUS |" >> $GITHUB_STEP_SUMMARY
-          echo "| Generate Test Data | $TESTDATA_STATUS |" >> $GITHUB_STEP_SUMMARY
-          echo "| .NET Test | $TEST_STATUS |" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "**Duration:** ${HOOK_DURATION}s" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          
-          # Check for failures (POSIX-compatible pattern matching)
-          HAS_FAILURE=false
-          case "$SECRETS_STATUS" in *Failed*) HAS_FAILURE=true ;; esac
-          case "$TESTDATA_STATUS" in *Failed*) HAS_FAILURE=true ;; esac
-          
-          if [ "$HAS_FAILURE" = "true" ]; then
-            echo "> ⚠️ **Warning:** One or more postprovision tasks failed." >> $GITHUB_STEP_SUMMARY
-          else
-            echo "> ✅ Infrastructure configured successfully." >> $GITHUB_STEP_SUMMARY
-          fi
-        fi
-
-        # Exit based on failure status (works whether GITHUB_STEP_SUMMARY is set or not)
-        HAS_FAILURE=false
-        case "$SECRETS_STATUS" in *Failed*) HAS_FAILURE=true ;; esac
-        case "$TESTDATA_STATUS" in *Failed*) HAS_FAILURE=true ;; esac
-
-        if [ "$HAS_FAILURE" = "true" ]; then
-          echo "❌ One or more postprovision tasks failed"
-          exit 1
-        fi
-
-        echo "✅ Postprovision completed successfully"
-        exit 0
+        ./hooks/postprovision.sh --force --verbose
+        ./hooks/Generate-Orders.sh --force --verbose
       continueOnError: false
       interactive: true
     windows:
       shell: pwsh
       run: |
-        # ======================================
-        # GitHub Actions Summary - Start
-        # ======================================
-        $HookStartTime = Get-Date
-
-        if ($env:GITHUB_STEP_SUMMARY) {
-          "## ⚙️ Postprovision Hook" | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append
-          "" | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append
-          "**Started:** $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss') UTC" | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append
-          "" | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append
-        }
-
-        # Track status
-        $SecretsStatus = "✅ Success"
-        $TestDataStatus = "✅ Success"
-        $HasError = $false
-
-        # Configure local secrets from Azure Key Vault
         ./hooks/postprovision.ps1 -Force -Verbose
-        if ($LASTEXITCODE -ne 0) { $SecretsStatus = "❌ Failed"; $HasError = $true }
-
-        # Generate test data for development
         ./hooks/Generate-Orders.ps1 -Force -Verbose
-        if ($LASTEXITCODE -ne 0) { $TestDataStatus = "❌ Failed"; $HasError = $true }
-
-        # ======================================
-        # GitHub Actions Summary - End
-        # ======================================
-        if ($env:GITHUB_STEP_SUMMARY) {
-          $HookDuration = [math]::Round(((Get-Date) - $HookStartTime).TotalSeconds)
-          
-          "### 📋 Postprovision Results" | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append
-          "" | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append
-          "| Task | Status |" | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append
-          "|------|--------|" | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append
-          "| Configure Secrets | $SecretsStatus |" | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append
-          "| Generate Test Data | $TestDataStatus |" | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append
-          "| .NET Test | $TestStatus |" | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append
-          "" | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append
-          "**Duration:** ${HookDuration}s" | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append
-          "" | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append
-          
-          if ($HasError) {
-            "> ⚠️ **Warning:** One or more postprovision tasks failed." | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append
-          } else {
-            "> ✅ Infrastructure configured successfully." | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append
-          }
-        }
-
-        # Exit based on failure status (works whether GITHUB_STEP_SUMMARY is set or not)
-        if ($HasError) {
-          Write-Host "❌ One or more postprovision tasks failed" -ForegroundColor Red
-          exit 1
-        }
-
-        Write-Host "✅ Postprovision completed successfully" -ForegroundColor Green
-        exit 0
       continueOnError: false
       interactive: true
 
@@ -467,363 +213,13 @@ hooks:
     posix:
       shell: sh
       run: |
-        # ======================================
-        # GitHub Actions Summary - Start
-        # ======================================
-        HOOK_START_TIME=$(date +%s)
-
-        if [ -n "$GITHUB_STEP_SUMMARY" ]; then
-          echo "## 🚀 Predeploy Hook" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "**Started:** $(date -u '+%Y-%m-%d %H:%M:%S UTC')" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-        fi
-
-        # Track status
-        WORKFLOW_STATUS="✅ Success"
-
-        # Deploy Logic Apps workflows and configure connections
-        if ! ./hooks/deploy-workflow.sh; then
-          WORKFLOW_STATUS="❌ Failed"
-        fi
-
-        # ======================================
-        # GitHub Actions Summary - End
-        # ======================================
-        if [ -n "$GITHUB_STEP_SUMMARY" ]; then
-          HOOK_END_TIME=$(date +%s)
-          HOOK_DURATION=$((HOOK_END_TIME - HOOK_START_TIME))
-          
-          echo "### 📋 Predeploy Results" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "| Task | Status |" >> $GITHUB_STEP_SUMMARY
-          echo "|------|--------|" >> $GITHUB_STEP_SUMMARY
-          echo "| Deploy Logic Apps Workflows | $WORKFLOW_STATUS |" >> $GITHUB_STEP_SUMMARY
-          echo "| Configure Connections | $WORKFLOW_STATUS |" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "**Duration:** ${HOOK_DURATION}s" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          
-          # Check for failures (POSIX-compatible pattern matching)
-          case "$WORKFLOW_STATUS" in
-            *Failed*)
-              echo "> ⚠️ **Warning:** Workflow deployment failed. Check logs above." >> $GITHUB_STEP_SUMMARY
-              ;;
-            *)
-              echo "> ✅ Logic Apps workflows deployed successfully." >> $GITHUB_STEP_SUMMARY
-              ;;
-          esac
-        fi
-
-        # Exit based on failure status (works whether GITHUB_STEP_SUMMARY is set or not)
-        case "$WORKFLOW_STATUS" in
-          *Failed*)
-            echo "❌ Workflow deployment failed"
-            exit 1
-            ;;
-        esac
-
-        echo "✅ Predeploy completed successfully"
-        exit 0
+        ./hooks/deploy-workflow.sh --force --verbose
       continueOnError: false
       interactive: true
     windows:
       shell: pwsh
       run: |
-        # ======================================
-        # GitHub Actions Summary - Start
-        # ======================================
-        $HookStartTime = Get-Date
-
-        if ($env:GITHUB_STEP_SUMMARY) {
-          "## 🚀 Predeploy Hook" | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append
-          "" | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append
-          "**Started:** $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss') UTC" | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append
-          "" | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append
-        }
-
-        # Track status
-        $WorkflowStatus = "✅ Success"
-        $HasError = $false
-
-        # Deploy Logic Apps workflows and configure connections
-        ./hooks/deploy-workflow.ps1
-        if ($LASTEXITCODE -ne 0) { $WorkflowStatus = "❌ Failed"; $HasError = $true }
-
-        # ======================================
-        # GitHub Actions Summary - End
-        # ======================================
-        if ($env:GITHUB_STEP_SUMMARY) {
-          $HookDuration = [math]::Round(((Get-Date) - $HookStartTime).TotalSeconds)
-          
-          "### 📋 Predeploy Results" | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append
-          "" | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append
-          "| Task | Status |" | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append
-          "|------|--------|" | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append
-          "| Deploy Logic Apps Workflows | $WorkflowStatus |" | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append
-          "| Configure Connections | $WorkflowStatus |" | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append
-          "| .NET Test | $TestStatus |" | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append
-          "" | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append
-          "**Duration:** ${HookDuration}s" | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append
-          "" | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append
-          
-          if ($HasError) {
-            "> ⚠️ **Warning:** Workflow deployment failed. Check logs above." | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append
-          } else {
-            "> ✅ Logic Apps workflows deployed successfully." | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append
-          }
-        }
-
-        # Exit based on failure status (works whether GITHUB_STEP_SUMMARY is set or not)
-        if ($HasError) {
-          Write-Host "❌ Workflow deployment failed" -ForegroundColor Red
-          exit 1
-        }
-
-        Write-Host "✅ Predeploy completed successfully" -ForegroundColor Green
-        exit 0
-      continueOnError: false
-      interactive: true
-
-  # ============================================================================
-  # POSTDEPLOY HOOK
-  # ============================================================================
-  # Purpose: Validate deployment success and perform smoke tests to ensure
-  #          all services are running correctly.
-  #
-  # Actions:
-  #   1. Display deployment completion status
-  #   2. Validate deployed resource health
-  #   3. Run basic connectivity tests
-  #
-  # Note: Failures here do not roll back deployment but alert to potential issues
-  postdeploy:
-    posix:
-      shell: sh
-      run: |
-        # ======================================
-        # GitHub Actions Summary - Start
-        # ======================================
-        HOOK_START_TIME=$(date +%s)
-
-        if [ -n "$GITHUB_STEP_SUMMARY" ]; then
-          echo "## ✅ Postdeploy Hook" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "**Started:** $(date -u '+%Y-%m-%d %H:%M:%S UTC')" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-        fi
-
-        echo "=========================================="
-        echo "Deployment completed successfully!"
-        echo "=========================================="
-        echo "Validating deployed resources..."
-
-        # Track health check status
-        HEALTH_STATUS="✅ Success"
-        # Note: Add health check URLs here when available
-        # if ! curl -s -o /dev/null -w "%{http_code}" https://<app-url>/health | grep -q "200"; then
-        #   HEALTH_STATUS="❌ Failed"
-        # fi
-
-        # ======================================
-        # GitHub Actions Summary - End
-        # ======================================
-        if [ -n "$GITHUB_STEP_SUMMARY" ]; then
-          HOOK_END_TIME=$(date +%s)
-          HOOK_DURATION=$((HOOK_END_TIME - HOOK_START_TIME))
-          
-          echo "### 📋 Postdeploy Results" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "| Task | Status |" >> $GITHUB_STEP_SUMMARY
-          echo "|------|--------|" >> $GITHUB_STEP_SUMMARY
-          echo "| Deployment Validation | $HEALTH_STATUS |" >> $GITHUB_STEP_SUMMARY
-          echo "| Resource Health Check | $HEALTH_STATUS |" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "**Duration:** ${HOOK_DURATION}s" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          
-          echo "### 🎉 Deployment Complete" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "The application has been successfully deployed to Azure." >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "| Resource | Status |" >> $GITHUB_STEP_SUMMARY
-          echo "|----------|--------|" >> $GITHUB_STEP_SUMMARY
-          echo "| Container Apps | 🟢 Running |" >> $GITHUB_STEP_SUMMARY
-          echo "| Logic Apps | 🟢 Deployed |" >> $GITHUB_STEP_SUMMARY
-          echo "| Infrastructure | 🟢 Provisioned |" >> $GITHUB_STEP_SUMMARY
-        fi
-
-        echo "✅ Postdeploy completed successfully"
-        exit 0
-      continueOnError: false
-      interactive: true
-    windows:
-      shell: pwsh
-      run: |
-        # ======================================
-        # GitHub Actions Summary - Start
-        # ======================================
-        $HookStartTime = Get-Date
-
-        if ($env:GITHUB_STEP_SUMMARY) {
-          "## ✅ Postdeploy Hook" | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append
-          "" | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append
-          "**Started:** $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss') UTC" | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append
-          "" | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append
-        }
-
-        Write-Host "==========================================" -ForegroundColor Green
-        Write-Host "Deployment completed successfully!" -ForegroundColor Green
-        Write-Host "==========================================" -ForegroundColor Green
-        Write-Host "Validating deployed resources..." -ForegroundColor Cyan
-
-        # Track health check status
-        $HealthStatus = "✅ Success"
-        # Note: Add health check URLs here when available
-        # try {
-        #   $response = Invoke-WebRequest -Uri "https://<app-url>/health" -UseBasicParsing
-        #   if ($response.StatusCode -ne 200) { $HealthStatus = "❌ Failed" }
-        # } catch { $HealthStatus = "❌ Failed" }
-
-        # ======================================
-        # GitHub Actions Summary - End
-        # ======================================
-        if ($env:GITHUB_STEP_SUMMARY) {
-          $HookDuration = [math]::Round(((Get-Date) - $HookStartTime).TotalSeconds)
-          
-          "### 📋 Postdeploy Results" | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append
-          "" | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append
-          "| Task | Status |" | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append
-          "|------|--------|" | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append
-          "| Deployment Validation | $HealthStatus |" | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append
-          "| Resource Health Check | $HealthStatus |" | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append
-          "| .NET Test | $TestStatus |" | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append
-          "" | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append
-          "**Duration:** ${HookDuration}s" | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append
-          "" | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append
-          
-          "### 🎉 Deployment Complete" | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append
-          "" | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append
-          "The application has been successfully deployed to Azure." | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append
-          "" | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append
-          "| Resource | Status |" | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append
-          "|----------|--------|" | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append
-          "| Container Apps | 🟢 Running |" | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append
-          "| Logic Apps | 🟢 Deployed |" | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append
-          "| Infrastructure | 🟢 Provisioned |" | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append
-        }
-
-        Write-Host "✅ Postdeploy completed successfully" -ForegroundColor Green
-        exit 0
-      continueOnError: false
-      interactive: true
-
-  # ============================================================================
-  # POSTINFRADELETE HOOK
-  # ============================================================================
-  # Purpose: Clean up any remaining resources after infrastructure deletion
-  #          that may not be automatically removed by Bicep.
-  #
-  # Actions:
-  #   1. Clean up soft-deleted Key Vault instances
-  #   2. Remove orphaned role assignments
-  #   3. Clear local cached credentials
-  #
-  # Note: Azure Key Vault has soft-delete enabled by default; this hook
-  # handles purging if required for environment recreation.
-  postinfradelete:
-    posix:
-      shell: sh
-      run: |
-        # ======================================
-        # GitHub Actions Summary - Start
-        # ======================================
-        HOOK_START_TIME=$(date +%s)
-
-        if [ -n "$GITHUB_STEP_SUMMARY" ]; then
-          echo "## 🗑️ Postinfradelete Hook" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "**Started:** $(date -u '+%Y-%m-%d %H:%M:%S UTC')" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-        fi
-
-        # Track status
-        CLEANUP_STATUS="✅ Success"
-
-        # Clean up remaining resources and local state
-        if ! ./hooks/postinfradelete.sh --force --verbose; then
-          CLEANUP_STATUS="⚠️ Partial"
-        fi
-
-        # ======================================
-        # GitHub Actions Summary - End
-        # ======================================
-        if [ -n "$GITHUB_STEP_SUMMARY" ]; then
-          HOOK_END_TIME=$(date +%s)
-          HOOK_DURATION=$((HOOK_END_TIME - HOOK_START_TIME))
-          
-          echo "### 📋 Cleanup Results" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "| Task | Status |" >> $GITHUB_STEP_SUMMARY
-          echo "|------|--------|" >> $GITHUB_STEP_SUMMARY
-          echo "| Purge Key Vault | $CLEANUP_STATUS |" >> $GITHUB_STEP_SUMMARY
-          echo "| Remove Role Assignments | $CLEANUP_STATUS |" >> $GITHUB_STEP_SUMMARY
-          echo "| Clear Local Cache | $CLEANUP_STATUS |" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "**Duration:** ${HOOK_DURATION}s" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          
-          echo "> 🧹 Infrastructure cleanup completed. Environment is ready for recreation." >> $GITHUB_STEP_SUMMARY
-        fi
-
-        echo "✅ Postinfradelete cleanup completed"
-        exit 0
-      continueOnError: false
-      interactive: true
-    windows:
-      shell: pwsh
-      run: |
-        # ======================================
-        # GitHub Actions Summary - Start
-        # ======================================
-        $HookStartTime = Get-Date
-
-        if ($env:GITHUB_STEP_SUMMARY) {
-          "## 🗑️ Postinfradelete Hook" | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append
-          "" | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append
-          "**Started:** $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss') UTC" | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append
-          "" | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append
-        }
-
-        # Track status
-        $CleanupStatus = "✅ Success"
-
-        # Clean up remaining resources and local state
-        ./hooks/postinfradelete.ps1 -Force -Verbose
-        if ($LASTEXITCODE -ne 0) { $CleanupStatus = "⚠️ Partial" }
-
-        # ======================================
-        # GitHub Actions Summary - End
-        # ======================================
-        if ($env:GITHUB_STEP_SUMMARY) {
-          $HookDuration = [math]::Round(((Get-Date) - $HookStartTime).TotalSeconds)
-          
-          "### 📋 Cleanup Results" | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append
-          "" | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append
-          "| Task | Status |" | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append
-          "|------|--------|" | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append
-          "| Purge Key Vault | $CleanupStatus |" | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append
-          "| Remove Role Assignments | $CleanupStatus |" | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append
-          "| Clear Local Cache | $CleanupStatus |" | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append
-          "" | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append
-          "**Duration:** ${HookDuration}s" | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append
-          "" | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append
-          
-          "> 🧹 Infrastructure cleanup completed. Environment is ready for recreation." | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append
-        }
-
-        Write-Host "✅ Postinfradelete cleanup completed" -ForegroundColor Green
-        exit 0
+        ./hooks/deploy-workflow.ps1 -Force -Verbose
       continueOnError: false
       interactive: true
 
