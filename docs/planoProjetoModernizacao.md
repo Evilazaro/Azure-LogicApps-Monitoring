@@ -216,77 +216,61 @@ A arquitetura incorpora **observabilidade** (logs estruturados, métricas, corre
 
 ```mermaid
 ---
-title: "Arquitetura Alvo – Integração via Camada de Serviços (API)"
+title: Arquitetura Alvo - Integração via Camada de Serviços (API)
 ---
 flowchart LR
-  %% ═══════════════════════════════════════════════════════════════
-  %% DIAGRAMA: Arquitetura alvo (TO-BE)
-  %% PROPÓSITO: Documentar o modelo moderno de integração baseado em
-  %%            API REST com contratos OpenAPI, observabilidade e
-  %%            preparação para evolução event-driven
-  %% ═══════════════════════════════════════════════════════════════
+  %% ===== DEFINIÇÕES DE ESTILO =====
+  classDef primary fill:#4F46E5,stroke:#3730A3,color:#FFFFFF
+  classDef secondary fill:#10B981,stroke:#059669,color:#FFFFFF
+  classDef datastore fill:#F59E0B,stroke:#D97706,color:#000000
+  classDef external fill:#6B7280,stroke:#4B5563,color:#FFFFFF,stroke-dasharray: 5 5
+  classDef failed fill:#F44336,stroke:#C62828,color:#FFFFFF
+  classDef trigger fill:#818CF8,stroke:#4F46E5,color:#FFFFFF
+  classDef decision fill:#FFFBEB,stroke:#F59E0B,color:#000000
+  classDef input fill:#F3F4F6,stroke:#6B7280,color:#000000
 
+  %% ===== SUBGRAPH: COOPERFLORA =====
   subgraph Cooperflora ["🏢 Cooperflora (Cliente)"]
     CLIENTE["📱 Sistema do Cliente<br>(Cooperflora)"]
   end
+  style Cooperflora fill:#F8FAFC,stroke:#334155,stroke-width:2px
 
+  %% ===== SUBGRAPH: INTEGRAÇÃO =====
   subgraph Integracao ["🔗 Camada de Integração"]
     API["🚀 API de Integração<br>.NET Web API"]
   end
+  style Integracao fill:#EEF2FF,stroke:#4F46E5,stroke-width:2px
 
+  %% ===== SUBGRAPH: ERP NÉCTAR =====
   subgraph Nectar ["📦 ERP Néctar"]
     ERP["⚙️ ERP Néctar"]
     DBERP[("💾 Banco do ERP<br>(interno)")]
-    ERP -->|"persistência<br>interna"| DBERP
+    ERP -->|"persistência interna"| DBERP
   end
+  style Nectar fill:#F0FDF4,stroke:#10B981,stroke-width:2px
 
+  %% ===== SUBGRAPH: PLATAFORMA =====
   subgraph Plataforma ["📊 Operação e Evolução"]
     OBS["📈 Observabilidade<br>Logs + Métricas + Auditoria"]
     FUTURO["📨 Mensageria<br>(Service Bus - Futuro)"]
   end
-
-  %% Fluxo principal (síncrono)
-  CLIENTE -->|"HTTP/REST + JSON<br>(contrato OpenAPI v1)"| API
-  API -->|"Validação → Mapeamento<br>→ Regras de integração"| ERP
-
-  %% Fluxos auxiliares (observabilidade e evolução)
-  API -.->|"logs estruturados<br>+ correlation-id"| OBS
-  API -.->|"eventos/filas<br>(evolução opcional)"| FUTURO
-
-  %% ═══════════════════════════════════════════════════════════════
-  %% FLUXO SIMPLIFICADO
-  %% 1. Cliente envia requisição HTTP/REST para a API
-  %% 2. API valida, mapeia e aplica regras de integração
-  %% 3. API persiste no ERP (banco interno, não exposto)
-  %% 4. Observabilidade captura logs e métricas
-  %% ✅ Benefício: desacoplamento total do banco
-  %% ═══════════════════════════════════════════════════════════════
-
-  %% ═══════════════════════════════════════════════════════════════
-  %% LEGENDA DE CORES (Paleta Moderna)
-  %% - Indigo (#4F46E5): API / Camada de integração (destaque)
-  %% - Emerald (#10B981): ERP / Sistema de destino
-  %% - Pink (#DB2777): Observabilidade / Operação
-  %% - Tracejado: Componentes opcionais/futuros
-  %% ═══════════════════════════════════════════════════════════════
-  classDef client fill:#F1F5F9,stroke:#334155,color:#0F172A,stroke-width:2px;
-  classDef api fill:#4F46E5,stroke:#312E81,color:#FFFFFF,stroke-width:2px;
-  classDef erp fill:#ECFDF5,stroke:#10B981,color:#052E16,stroke-width:2px;
-  classDef datastore fill:#E2E8F0,stroke:#475569,color:#0F172A,stroke-width:1px;
-  classDef obs fill:#FDF2F8,stroke:#DB2777,color:#4A044E,stroke-width:2px;
-  classDef optional fill:#F8FAFC,stroke:#94A3B8,color:#0F172A,stroke-width:1px,stroke-dasharray: 5 3;
-
-  class CLIENTE client
-  class API api
-  class ERP erp
-  class DBERP datastore
-  class OBS obs
-  class FUTURO optional
-
-  style Cooperflora fill:#F8FAFC,stroke:#334155,stroke-width:2px
-  style Integracao fill:#EEF2FF,stroke:#4F46E5,stroke-width:2px
-  style Nectar fill:#F0FDF4,stroke:#10B981,stroke-width:2px
   style Plataforma fill:#FDF2F8,stroke:#DB2777,stroke-width:2px
+
+  %% ===== CONEXÕES PRINCIPAIS =====
+  CLIENTE -->|"HTTP/REST + JSON"| API
+  API -->|"Validação e Mapeamento"| ERP
+
+  %% ===== CONEXÕES AUXILIARES =====
+  API -.->|"logs estruturados"| OBS
+  API -.->|"eventos futuros"| FUTURO
+
+  %% ===== APLICAÇÃO DE ESTILOS =====
+  class CLIENTE input
+  class API primary
+  class ERP secondary
+  class DBERP datastore
+  class OBS trigger
+  class FUTURO external
 ```
 
 ### 🔄 Visão geral comparativa
@@ -439,77 +423,58 @@ A camada de API é responsável por validação de entrada, autenticação e rat
 
 ```mermaid
 ---
-title: "Arquitetura em Camadas – API de Integração"
+title: Arquitetura em Camadas - API de Integração
 ---
 block-beta
-  %% ═══════════════════════════════════════════════════════════════
-  %% DIAGRAMA: Arquitetura em Camadas (Clean Architecture)
-  %% PROPÓSITO: Documentar a estrutura de responsabilidades da API,
-  %%            separando validação, orquestração, regras e dados
-  %% PADRÃO: Clean Architecture / Ports & Adapters
-  %% ═══════════════════════════════════════════════════════════════
+  %% ===== DEFINIÇÕES DE ESTILO =====
+  classDef primary fill:#4F46E5,stroke:#3730A3,color:#FFFFFF
+  classDef secondary fill:#10B981,stroke:#059669,color:#FFFFFF
+  classDef datastore fill:#F59E0B,stroke:#D97706,color:#000000
+  classDef external fill:#6B7280,stroke:#4B5563,color:#FFFFFF,stroke-dasharray: 5 5
+  classDef failed fill:#F44336,stroke:#C62828,color:#FFFFFF
+  classDef trigger fill:#818CF8,stroke:#4F46E5,color:#FFFFFF
+  classDef decision fill:#FFFBEB,stroke:#F59E0B,color:#000000
+  classDef input fill:#F3F4F6,stroke:#6B7280,color:#000000
 
   columns 1
 
-  %% ───────────────────────────────────────────────────────────────
-  %% CAMADA 1: API (Controllers) - Ponto de entrada
-  %% ───────────────────────────────────────────────────────────────
+  %% ===== CAMADA 1: API (Controllers) =====
   block:api["🌐 API (Controllers)"]
     api_desc["Validação de entrada | Autenticação | Rate limiting"]
   end
 
   space
 
-  %% ───────────────────────────────────────────────────────────────
-  %% CAMADA 2: Aplicação (Services) - Orquestração
-  %% ───────────────────────────────────────────────────────────────
+  %% ===== CAMADA 2: Aplicação (Services) =====
   block:app["⚙️ Aplicação (Services)"]
     app_desc["Orquestração | Mapeamento | Casos de uso"]
   end
 
   space
 
-  %% ───────────────────────────────────────────────────────────────
-  %% CAMADA 3: Domínio (Entities) - Regras de negócio
-  %% ───────────────────────────────────────────────────────────────
+  %% ===== CAMADA 3: Domínio (Entities) =====
   block:domain["📦 Domínio (Entities)"]
     domain_desc["Regras de negócio | Validações de domínio"]
   end
 
   space
 
-  %% ───────────────────────────────────────────────────────────────
-  %% CAMADA 4: Infraestrutura (Repositories) - Acesso externo
-  %% ───────────────────────────────────────────────────────────────
+  %% ===== CAMADA 4: Infraestrutura (Repositories) =====
   block:infra["🗄️ Infraestrutura (Repositories)"]
     infra_desc["Acesso a dados | Gateways externos | ERP"]
   end
 
-  %% ───────────────────────────────────────────────────────────────
-  %% CONEXÕES: Fluxo de dependência entre camadas
-  %% ───────────────────────────────────────────────────────────────
+  %% ===== CONEXÕES ENTRE CAMADAS =====
   api --> app
   app --> domain
   domain --> infra
 
-  %% ═══════════════════════════════════════════════════════════════
-  %% ESTILOS: Paleta de cores por responsabilidade
-  %% - Indigo (#4F46E5): API/Controllers (entrada)
-  %% - Violet (#7C3AED): Application/Services (orquestração)
-  %% - Emerald (#10B981): Domain/Entities (negócio)
-  %% - Amber (#F59E0B): Infrastructure/Repositories (dados)
-  %% ═══════════════════════════════════════════════════════════════
-  classDef apiStyle fill:#4F46E5,stroke:#312E81,color:#FFFFFF,stroke-width:2px
-  classDef appStyle fill:#7C3AED,stroke:#4C1D95,color:#FFFFFF,stroke-width:2px
-  classDef domainStyle fill:#10B981,stroke:#065F46,color:#FFFFFF,stroke-width:2px
-  classDef infraStyle fill:#F59E0B,stroke:#92400E,color:#FFFFFF,stroke-width:2px
-  classDef descStyle fill:#F8FAFC,stroke:#CBD5E1,color:#334155,stroke-width:1px
-
-  class api apiStyle
-  class app appStyle
-  class domain domainStyle
-  class infra infraStyle
-  class api_desc,app_desc,domain_desc,infra_desc descStyle
+  %% ===== APLICAÇÃO DE ESTILOS =====
+  class api primary
+  class app trigger
+  class domain secondary
+  class infra datastore
+  class api_desc,app_desc,domain_desc,infra_desc input
 ```
 
 | Diretriz                       | Descrição                                          |
@@ -592,81 +557,63 @@ Para cada item de escopo, a Néctar produzirá um **Entregável Mínimo Validáv
 
 ```mermaid
 ---
-title: "Fluxo de Validação dos EMVs (Entregáveis Mínimos Validáveis)"
+title: Fluxo de Validação dos EMVs (Entregáveis Mínimos Validáveis)
 ---
 flowchart LR
-    %% ═══════════════════════════════════════════════════════════════
-    %% FLUXO DE VALIDAÇÃO DOS EMVs
-    %% PROPÓSITO: Documentar o processo de entrega, validação e
-    %%            aprovação dos Entregáveis Mínimos Validáveis
-    %% REGRA: 2 dias úteis para validação; após prazo = aprovação tácita
-    %% ═══════════════════════════════════════════════════════════════
+    %% ===== DEFINIÇÕES DE ESTILO =====
+    classDef primary fill:#4F46E5,stroke:#3730A3,color:#FFFFFF
+    classDef secondary fill:#10B981,stroke:#059669,color:#FFFFFF
+    classDef datastore fill:#F59E0B,stroke:#D97706,color:#000000
+    classDef external fill:#6B7280,stroke:#4B5563,color:#FFFFFF,stroke-dasharray: 5 5
+    classDef failed fill:#F44336,stroke:#C62828,color:#FFFFFF
+    classDef trigger fill:#818CF8,stroke:#4F46E5,color:#FFFFFF
+    classDef decision fill:#FFFBEB,stroke:#F59E0B,color:#000000
+    classDef input fill:#F3F4F6,stroke:#6B7280,color:#000000
 
-    %% ───────────────────────────────────────────────────────────────
-    %% FASE 1: Entrega (Néctar → Cooperflora)
-    %% ───────────────────────────────────────────────────────────────
+    %% ===== SUBGRAPH: ENTREGA =====
     subgraph entrega ["📤 Entrega"]
         direction LR
         A["📦 Néctar entrega<br>EMV"]
         B["📧 Notificação<br>formal ao cliente"]
-        A --> B
+        A -->|"notifica"| B
     end
+    style entrega fill:#EEF2FF,stroke:#4F46E5,stroke-width:2px
 
-    %% ───────────────────────────────────────────────────────────────
-    %% FASE 2: Validação (Cooperflora - prazo de 2 dias úteis)
-    %% ───────────────────────────────────────────────────────────────
+    %% ===== SUBGRAPH: VALIDAÇÃO =====
     subgraph validacao ["⏱️ Validação (2 dias úteis)"]
         direction LR
         C{"⏱️ Validação em<br>2 dias úteis?"}
         D["📝 Feedback<br>recebido"]
         E["✅ Aprovação<br>Tácita"]
-        C -->|"✅ Sim"| D
-        C -->|"❌ Não"| E
+        C -->|"Sim"| D
+        C -->|"Não"| E
     end
+    style validacao fill:#FFFBEB,stroke:#D97706,stroke-width:2px
 
-    %% ───────────────────────────────────────────────────────────────
-    %% FASE 3: Decisão e Resultado
-    %% ───────────────────────────────────────────────────────────────
+    %% ===== SUBGRAPH: RESULTADO =====
     subgraph resultado ["📋 Resultado"]
         direction LR
         F{"🔍 Aprovado?"}
         G["✅ EMV<br>Aprovado"]
         H["📋 Ajustes<br>dentro do escopo"]
         I["➡️ Próxima<br>etapa"]
-        F -->|"✅ Sim"| G
-        F -->|"❌ Não"| H
-        G --> I
+        F -->|"Sim"| G
+        F -->|"Não"| H
+        G -->|"avança"| I
     end
-
-    %% ───────────────────────────────────────────────────────────────
-    %% CONEXÕES ENTRE FASES
-    %% ───────────────────────────────────────────────────────────────
-    entrega --> validacao
-    D --> F
-    E --> G
-    H --> A
-
-    %% ═══════════════════════════════════════════════════════════════
-    %% ESTILOS: Paleta de cores por tipo de elemento
-    %% - Indigo (#4F46E5): Ações de entrega
-    %% - Amber (#FEF3C7): Pontos de decisão
-    %% - Emerald (#10B981): Aprovação/Sucesso
-    %% - Indigo claro (#E0E7FF): Processos intermediários
-    %% ═══════════════════════════════════════════════════════════════
-    classDef delivery fill:#4F46E5,stroke:#312E81,color:#FFFFFF,stroke-width:2px
-    classDef decision fill:#FEF3C7,stroke:#D97706,color:#78350F,stroke-width:2px
-    classDef approved fill:#10B981,stroke:#065F46,color:#FFFFFF,stroke-width:2px
-    classDef process fill:#E0E7FF,stroke:#4F46E5,color:#1E1B4B,stroke-width:1px
-
-    class A,B delivery
-    class C,F decision
-    class E,G approved
-    class D,H,I process
-
-    %% Estilo dos subgraphs
-    style entrega fill:#EEF2FF,stroke:#4F46E5,stroke-width:2px
-    style validacao fill:#FFFBEB,stroke:#D97706,stroke-width:2px
     style resultado fill:#F0FDF4,stroke:#10B981,stroke-width:2px
+
+    %% ===== CONEXÕES ENTRE FASES =====
+    entrega -->|"inicia validação"| validacao
+    D -->|"analisa"| F
+    E -->|"aprovado automaticamente"| G
+    H -->|"retrabalho"| A
+
+    %% ===== APLICAÇÃO DE ESTILOS =====
+    class A,B primary
+    class C,F decision
+    class E,G secondary
+    class D,H,I input
 ```
 
 > **Nota**: Os EMVs são **marcos de validação intermediários** — não substituem os critérios de aceite completos de cada fase. Servem para garantir alinhamento contínuo e detectar desvios cedo, reduzindo risco de retrabalho ao final das fases.
@@ -817,24 +764,20 @@ O padrão Strangler foi escolhido porque permite **evolução sem "big bang"**: 
 
 ```mermaid
 ---
-title: "Strangler Pattern – Migração Fluxo a Fluxo"
+title: Strangler Pattern - Migração Fluxo a Fluxo
 ---
 flowchart LR
-    %% ═══════════════════════════════════════════════════════════════
-    %% DIAGRAMA: Strangler Pattern – Comparação Antes vs Depois
-    %% PROPÓSITO: Ilustrar a transformação da arquitetura de integração
-    %%            de um modelo baseado em polling/SQL direto para uma
-    %%            camada de serviços (API) com contratos explícitos
-    %% PADRÃO: Strangler Pattern (migração incremental por fluxo)
-    %% ═══════════════════════════════════════════════════════════════
+    %% ===== DEFINIÇÕES DE ESTILO =====
+    classDef primary fill:#4F46E5,stroke:#3730A3,color:#FFFFFF
+    classDef secondary fill:#10B981,stroke:#059669,color:#FFFFFF
+    classDef datastore fill:#F59E0B,stroke:#D97706,color:#000000
+    classDef external fill:#6B7280,stroke:#4B5563,color:#FFFFFF,stroke-dasharray: 5 5
+    classDef failed fill:#F44336,stroke:#C62828,color:#FFFFFF
+    classDef trigger fill:#818CF8,stroke:#4F46E5,color:#FFFFFF
+    classDef decision fill:#FFFBEB,stroke:#F59E0B,color:#000000
+    classDef input fill:#F3F4F6,stroke:#6B7280,color:#000000
 
-    %% ───────────────────────────────────────────────────────────────
-    %% ESTADO ATUAL: Integração via polling e acesso direto ao banco
-    %% - Timers disparam periodicamente
-    %% - Access/VBA varre tabelas buscando "novos" registros
-    %% - Regras de negócio embarcadas no código legado
-    %% - Escrita direta no SQL Server (acoplamento forte)
-    %% ───────────────────────────────────────────────────────────────
+    %% ===== SUBGRAPH: LEGADO =====
     subgraph legado ["⚠️ ANTES (Legado)"]
         direction LR
         A1["⏱️ Access/VBA<br>Timer"]
@@ -846,14 +789,9 @@ flowchart LR
         A2 -->|"processa"| A3
         A3 -->|"SQL direto"| A4
     end
+    style legado fill:#FFF7ED,stroke:#FB923C,stroke-width:2px
 
-    %% ───────────────────────────────────────────────────────────────
-    %% ESTADO ALVO: Integração via API com contratos explícitos
-    %% - Cliente envia dados proativamente (push, não pull)
-    %% - API centraliza validação, mapeamento e idempotência
-    %% - Persistência controlada com auditoria
-    %% - Desacoplamento: cliente não conhece schema do ERP
-    %% ───────────────────────────────────────────────────────────────
+    %% ===== SUBGRAPH: MODERNO =====
     subgraph moderno ["✅ DEPOIS (Com API)"]
         direction LR
         B1["📱 Sistema do Cliente<br>ou Access em modo UI"]
@@ -862,39 +800,18 @@ flowchart LR
         B4["📦 ERP Néctar"]
 
         B1 -->|"HTTP POST/PUT"| B2
-        B2 -->|"validação"| B3
-        B3 -->|"persistência<br>controlada"| B4
+        B2 -->|"valida"| B3
+        B3 -->|"persiste controlado"| B4
     end
-
-    %% ───────────────────────────────────────────────────────────────
-    %% TRANSIÇÃO: Strangler Pattern (migração incremental)
-    %% - Cada fluxo é migrado independentemente
-    %% - Feature flags permitem rollback a qualquer momento
-    %% - Legado e API coexistem durante a transição
-    %% ───────────────────────────────────────────────────────────────
-    legado ==>|"🔄 Strangler Pattern<br>migrar fluxo a fluxo"| moderno
-
-    %% ═══════════════════════════════════════════════════════════════
-    %% DEFINIÇÃO DE ESTILOS
-    %% ═══════════════════════════════════════════════════════════════
-
-    %% Paleta de cores: Legado (laranja/warning)
-    classDef legacy fill:#FFEDD5,stroke:#F97316,color:#431407,stroke-width:2px
-
-    %% Paleta de cores: Moderno (indigo/success)
-    classDef modern fill:#E0E7FF,stroke:#4F46E5,color:#111827,stroke-width:2px
-
-    %% Paleta de cores: API (destaque principal)
-    classDef api fill:#4F46E5,stroke:#312E81,color:#FFFFFF,stroke-width:2px
-
-    %% Aplicação de classes aos nós
-    class A1,A2,A3,A4 legacy
-    class B1,B3,B4 modern
-    class B2 api
-
-    %% Estilização dos subgraphs
-    style legado fill:#FFF7ED,stroke:#FB923C,stroke-width:2px
     style moderno fill:#EEF2FF,stroke:#4F46E5,stroke-width:2px
+
+    %% ===== TRANSIÇÃO =====
+    legado ==>|"Strangler Pattern"| moderno
+
+    %% ===== APLICAÇÃO DE ESTILOS =====
+    class A1,A2,A3,A4 datastore
+    class B1,B3,B4 input
+    class B2 primary
 ```
 
 **Mudança fundamental na direção da integração:**
@@ -924,25 +841,18 @@ A convivência é gerenciada **por fluxo**, não por "sistema inteiro". Cada flu
 
 ```mermaid
 ---
-title: "Ciclo de Estados por Fluxo – Operação Híbrida"
+title: Ciclo de Estados por Fluxo - Operação Híbrida
 ---
 stateDiagram-v2
-    %% ═══════════════════════════════════════════════════════════════
-    %% DIAGRAMA DE ESTADOS: Ciclo de migração por fluxo
-    %% PROPÓSITO: Documentar os estados de cada fluxo durante a
-    %%            migração e as transições permitidas entre eles
-    %% PADRÃO: Strangler Pattern (migração incremental)
-    %% ═══════════════════════════════════════════════════════════════
+    %% ===== DIAGRAMA DE ESTADOS: Ciclo de migração por fluxo =====
 
-    %% ───────────────────────────────────────────────────────────────
-    %% DEFINIÇÃO DOS ESTADOS
-    %% ───────────────────────────────────────────────────────────────
-    [*] --> Legado: Início
+    %% ===== DEFINIÇÃO DOS ESTADOS =====
+    [*] --> Legado: Início do fluxo
 
     state "🟠 LEGADO" as Legado {
         [*] --> timer_ativo
         timer_ativo: Timers/polling ativos
-        timer_ativo --> processando
+        timer_ativo --> processando: executa
         processando: Processamento via VBA/SQL
         processando --> [*]
     }
@@ -950,9 +860,9 @@ stateDiagram-v2
     state "🟡 HÍBRIDO" as Hibrido {
         [*] --> api_ativa
         api_ativa: API ativa (feature flag ON)
-        api_ativa --> fallback_disponivel
+        api_ativa --> fallback_disponivel: habilita fallback
         fallback_disponivel: Legado como fallback
-        fallback_disponivel --> monitoramento
+        fallback_disponivel --> monitoramento: monitora
         monitoramento: Monitoramento reforçado
         monitoramento --> [*]
     }
@@ -960,31 +870,23 @@ stateDiagram-v2
     state "🟢 API" as API {
         [*] --> api_exclusiva
         api_exclusiva: Fluxo 100% via API
-        api_exclusiva --> timer_desativado
+        api_exclusiva --> timer_desativado: desativa timer
         timer_desativado: Timer legado desativado
         timer_desativado --> [*]
     }
 
-    %% ───────────────────────────────────────────────────────────────
-    %% TRANSIÇÕES DE AVANÇO (caminho feliz)
-    %% ───────────────────────────────────────────────────────────────
-    Legado --> Hibrido: Migração aprovada<br>(contrato + API implementada)
-    Hibrido --> API: Estabilização concluída<br>(≥2 semanas sem incidentes P1)
+    %% ===== TRANSIÇÕES DE AVANÇO =====
+    Legado --> Hibrido: Migração aprovada
+    Hibrido --> API: Estabilização concluída
 
-    %% ───────────────────────────────────────────────────────────────
-    %% TRANSIÇÕES DE ROLLBACK (caminho de contingência)
-    %% ───────────────────────────────────────────────────────────────
-    Hibrido --> Legado: ❌ Rollback controlado<br>(feature flag OFF)
-    API --> Hibrido: ⚠️ Rollback excepcional<br>(+ análise RCA obrigatória)
+    %% ===== TRANSIÇÕES DE ROLLBACK =====
+    Hibrido --> Legado: Rollback controlado
+    API --> Hibrido: Rollback excepcional
 
-    %% ───────────────────────────────────────────────────────────────
-    %% ESTADO FINAL (migração completa)
-    %% ───────────────────────────────────────────────────────────────
-    API --> [*]: Fluxo migrado<br>(aceite formal)
+    %% ===== ESTADO FINAL =====
+    API --> [*]: Fluxo migrado
 
-    %% ───────────────────────────────────────────────────────────────
-    %% NOTAS EXPLICATIVAS
-    %% ───────────────────────────────────────────────────────────────
+    %% ===== NOTAS EXPLICATIVAS =====
     note right of Legado
         Operação atual via timers/polling
         Acesso direto ao SQL Server
@@ -1053,67 +955,39 @@ O Gantt é a **visão principal** do cronograma, mostrando duração, dependênc
 
 ```mermaid
 ---
-title: "📅 Roadmap de Fases – Visão Temporal"
+title: Roadmap de Fases - Visão Temporal
 ---
 gantt
-    %% ═══════════════════════════════════════════════════════════════
-    %% DIAGRAMA: Roadmap de Fases do Projeto de Modernização
-    %% PROPÓSITO: Visualizar a linha do tempo das fases do projeto,
-    %%            dependências entre atividades e marcos de decisão
-    %% PADRÃO: Strangler Pattern (migração incremental por fluxo)
-    %% ═══════════════════════════════════════════════════════════════
-
-    %% ───────────────────────────────────────────────────────────────
-    %% CONFIGURAÇÃO DO GRÁFICO
-    %% - dateFormat: formato de entrada das datas (YYYY-MM-DD)
-    %% - axisFormat: formato de exibição no eixo (dia/mês/ano)
-    %% - tickInterval: intervalo entre marcações (2 semanas)
-    %% - todayMarker: linha vermelha indicando a data atual
-    %% ───────────────────────────────────────────────────────────────
+    %% ===== CONFIGURAÇÃO DO GRÁFICO =====
     dateFormat YYYY-MM-DD
     axisFormat %d/%m/%y
     tickInterval 2week
     todayMarker stroke-width:3px,stroke:#EF4444,opacity:0.8
 
-    %% ───────────────────────────────────────────────────────────────
-    %% SEÇÃO: PREPARAÇÃO (Semanas 1–4)
-    %% Objetivo: Estabelecer base de governança e contratos
-    %% ───────────────────────────────────────────────────────────────
+    %% ===== SEÇÃO: PREPARAÇÃO =====
     section 📋 Preparação
     Fase 0 – Alinhamento e Riscos       :active, f0, 2026-01-13, 2w
     🚦 Gate Go/No-Go                    :milestone, m0, after f0, 0d
     Fase 1 – Contratos OpenAPI          :f1, after f0, 2w
     🚦 Aprovação Contratos              :milestone, m1, after f1, 0d
 
-    %% ───────────────────────────────────────────────────────────────
-    %% SEÇÃO: FUNDAÇÃO (Semanas 5–7)
-    %% Objetivo: Construir infraestrutura base da API
-    %% ───────────────────────────────────────────────────────────────
+    %% ===== SEÇÃO: FUNDAÇÃO =====
     section 🏗️ Fundação
     Fase 2 – API e Infraestrutura       :f2, after f1, 3w
     🚦 Checkpoint Infra OK              :milestone, m2, after f2, 0d
 
-    %% ───────────────────────────────────────────────────────────────
-    %% SEÇÃO: PILOTO (Semanas 8–11) — CRÍTICO
-    %% Objetivo: Validar padrões com primeiro fluxo em produção
-    %% ───────────────────────────────────────────────────────────────
+    %% ===== SEÇÃO: PILOTO (CRÍTICO) =====
     section 🚀 Piloto
     Fase 3 – Fluxo Piloto (Pessoas)     :crit, f3, after f2, 4w
     🚦 Go-Live Piloto                   :milestone, crit, m3, after f3, 0d
 
-    %% ───────────────────────────────────────────────────────────────
-    %% SEÇÃO: MIGRAÇÃO (Semanas 12–28)
-    %% Objetivo: Escalar migração fluxo a fluxo
-    %% ───────────────────────────────────────────────────────────────
+    %% ===== SEÇÃO: MIGRAÇÃO =====
     section 🔄 Migração
     Fase 4 – Operação Híbrida           :f4, after f3, 12w
     Fase 5 – Simplificação Legado       :f5, after f4, 8w
     🏁 Aceite Final                     :milestone, m5, after f5, 0d
 
-    %% ───────────────────────────────────────────────────────────────
-    %% SEÇÃO: EVOLUÇÃO (Pós-projeto)
-    %% Objetivo: Evoluções opcionais por demanda
-    %% ───────────────────────────────────────────────────────────────
+    %% ===== SEÇÃO: EVOLUÇÃO =====
     section ✨ Evolução
     Fase 6 – Evoluções Opcionais        :done, f6, after f5, 4w
 ```
@@ -1148,7 +1022,8 @@ O Timeline apresenta uma **visão simplificada** focada nas datas-chave e decis�
     }
 }}%%
 timeline
-    title 🚦 Marcos de Decisão – Visão Executiva
+    title Marcos de Decisão - Visão Executiva
+    %% ===== SEÇÃO Q1/2026 =====
     section 📋 Q1/2026
         13/Jan : 🚀 Kick-off Projeto
                 : Fase 0 inicia
@@ -1156,15 +1031,19 @@ timeline
                 : Decisão de continuidade
         10/Fev : 📋 Contratos Aprovados
                 : OpenAPI v1 validada
+    %% ===== SEÇÃO FEV-MAR/2026 =====
     section 🏗️ Fev-Mar/2026
         03/Mar : 🏗️ Infraestrutura Pronta
                 : API em DEV/HML
+    %% ===== SEÇÃO MAR-ABR/2026 =====
     section 🚀 Mar-Abr/2026
         31/Mar : 🎯 Go-Live Piloto
                 : Primeiro fluxo em PRD
+    %% ===== SEÇÃO ABR-JUL/2026 =====
     section 🔄 Abr-Jul/2026
         23/Jun : 🔄 Migração Concluída
                 : Fluxos críticos OK
+    %% ===== SEÇÃO JUL-SET/2026 =====
     section 🏁 Jul-Set/2026
         18/Ago : 🏁 Aceite Final
                 : Projeto encerrado
@@ -1273,6 +1152,7 @@ flowchart LR
 ```
 
 > **Legenda de Elementos**:
+>
 > | Forma | Significado |
 > |:-----:|:------------|
 > | 📦 **Retângulo** | Fase de trabalho |
@@ -1592,87 +1472,68 @@ Todo projeto está sujeito a mudanças. O processo de controle de mudanças gara
 
 ```mermaid
 ---
-title: "Processo de Change Request (Controle de Mudanças)"
+title: Processo de Change Request (Controle de Mudanças)
 ---
 flowchart LR
-    %% ═══════════════════════════════════════════════════════════════
-    %% PROCESSO DE CHANGE REQUEST
-    %% PROPÓSITO: Documentar o fluxo de avaliação, aprovação e
-    %%            implementação de mudanças no projeto
-    %% GOVERNANÇA: Mudanças seguem controle formal com critérios
-    %% ═══════════════════════════════════════════════════════════════
+    %% ===== DEFINIÇÕES DE ESTILO =====
+    classDef primary fill:#4F46E5,stroke:#3730A3,color:#FFFFFF
+    classDef secondary fill:#10B981,stroke:#059669,color:#FFFFFF
+    classDef datastore fill:#F59E0B,stroke:#D97706,color:#000000
+    classDef external fill:#6B7280,stroke:#4B5563,color:#FFFFFF,stroke-dasharray: 5 5
+    classDef failed fill:#F44336,stroke:#C62828,color:#FFFFFF
+    classDef trigger fill:#818CF8,stroke:#4F46E5,color:#FFFFFF
+    classDef decision fill:#FFFBEB,stroke:#F59E0B,color:#000000
+    classDef input fill:#F3F4F6,stroke:#6B7280,color:#000000
 
-    %% ───────────────────────────────────────────────────────────────
-    %% FASE 1: Solicitação e Análise
-    %% ───────────────────────────────────────────────────────────────
+    %% ===== SUBGRAPH: SOLICITAÇÃO =====
     subgraph solicitacao ["📥 Solicitação"]
         direction LR
         A["📝 Solicitação<br>de Mudança"]
         B["📊 Análise<br>de Impacto"]
-        A --> B
+        A -->|"submete"| B
     end
+    style solicitacao fill:#EEF2FF,stroke:#4F46E5,stroke-width:2px
 
-    %% ───────────────────────────────────────────────────────────────
-    %% FASE 2: Triagem e Roteamento
-    %% ───────────────────────────────────────────────────────────────
+    %% ===== SUBGRAPH: TRIAGEM =====
     subgraph triagem ["🔀 Triagem"]
         direction LR
         C{"🔍 Impacto<br>Significativo?"}
         D["👥 Comitê<br>Executivo"]
         E["👤 Gerente<br>de Projeto"]
-        C -->|"✅ Sim<br>(>2 sem ou >10%)"| D
-        C -->|"❌ Não<br>(menor impacto)"| E
+        C -->|"Sim"| D
+        C -->|"Não"| E
     end
+    style triagem fill:#FEF9C3,stroke:#D97706,stroke-width:2px
 
-    %% ───────────────────────────────────────────────────────────────
-    %% FASE 3: Decisão
-    %% ───────────────────────────────────────────────────────────────
+    %% ===== SUBGRAPH: DECISÃO =====
     subgraph decisao ["⚖️ Decisão"]
         direction LR
         F{"✅ Aprovado?"}
         H["❌ Registrar<br>Decisão"]
-        F -->|"❌ Não"| H
+        F -->|"Não"| H
     end
+    style decisao fill:#FFFBEB,stroke:#F59E0B,stroke-width:2px
 
-    %% ───────────────────────────────────────────────────────────────
-    %% FASE 4: Execução
-    %% ───────────────────────────────────────────────────────────────
+    %% ===== SUBGRAPH: EXECUÇÃO =====
     subgraph execucao ["🚀 Execução"]
         direction LR
         G["📋 Atualizar<br>Baseline"]
         I["🚀 Implementar"]
-        G --> I
+        G -->|"inicia"| I
     end
-
-    %% ───────────────────────────────────────────────────────────────
-    %% CONEXÕES ENTRE FASES
-    %% ───────────────────────────────────────────────────────────────
-    solicitacao --> triagem
-    D --> F
-    E --> F
-    F -->|"✅ Sim"| execucao
-
-    %% ═══════════════════════════════════════════════════════════════
-    %% ESTILOS: Paleta de cores por tipo de elemento
-    %% - Indigo (#E0E7FF): Processos/Ações
-    %% - Amber (#FEF3C7): Pontos de decisão
-    %% - Emerald (#D1FAE5): Ações de resultado
-    %% ═══════════════════════════════════════════════════════════════
-    classDef process fill:#E0E7FF,stroke:#4F46E5,color:#1E1B4B,stroke-width:2px
-    classDef decision fill:#FEF3C7,stroke:#D97706,color:#78350F,stroke-width:2px
-    classDef action fill:#D1FAE5,stroke:#059669,color:#064E3B,stroke-width:2px
-    classDef rejected fill:#FEE2E2,stroke:#DC2626,color:#7F1D1D,stroke-width:2px
-
-    class A,B,G,I process
-    class C,F decision
-    class D,E action
-    class H rejected
-
-    %% Estilo dos subgraphs
-    style solicitacao fill:#EEF2FF,stroke:#4F46E5,stroke-width:2px
-    style triagem fill:#FEF9C3,stroke:#D97706,stroke-width:2px
-    style decisao fill:#FFFBEB,stroke:#F59E0B,stroke-width:2px
     style execucao fill:#ECFDF5,stroke:#10B981,stroke-width:2px
+
+    %% ===== CONEXÕES ENTRE FASES =====
+    solicitacao -->|"analisa"| triagem
+    D -->|"decide"| F
+    E -->|"decide"| F
+    F -->|"Sim"| execucao
+
+    %% ===== APLICAÇÃO DE ESTILOS =====
+    class A,B,G,I input
+    class C,F decision
+    class D,E secondary
+    class H failed
 ```
 
 | Etapa                   | Responsável                    | Prazo Alvo                | Artefato                                        |
@@ -1874,75 +1735,40 @@ A matriz abaixo ilustra como a combinação de **Probabilidade** (eixo vertical)
 
 ```mermaid
 ---
-title: "Matriz de Severidade (Probabilidade × Impacto)"
+title: Matriz de Severidade (Probabilidade x Impacto)
 ---
 block-beta
-  %% ═══════════════════════════════════════════════════════════════
-  %% DIAGRAMA: Matriz de Severidade (Probabilidade × Impacto)
-  %% PROPÓSITO: Ilustrar como a combinação de probabilidade e impacto
-  %%            determina a severidade de riscos e premissas
-  %% USO: Classificar e priorizar ações de mitigação/monitoramento
-  %% ═══════════════════════════════════════════════════════════════
+  %% ===== DEFINIÇÕES DE ESTILO =====
+  classDef primary fill:#4F46E5,stroke:#3730A3,color:#FFFFFF
+  classDef secondary fill:#10B981,stroke:#059669,color:#FFFFFF
+  classDef datastore fill:#F59E0B,stroke:#D97706,color:#000000
+  classDef external fill:#6B7280,stroke:#4B5563,color:#FFFFFF,stroke-dasharray: 5 5
+  classDef failed fill:#F44336,stroke:#C62828,color:#FFFFFF
+  classDef trigger fill:#818CF8,stroke:#4F46E5,color:#FFFFFF
+  classDef decision fill:#FFFBEB,stroke:#F59E0B,color:#000000
+  classDef input fill:#F3F4F6,stroke:#6B7280,color:#000000
 
   columns 5
 
-  %% ───────────────────────────────────────────────────────────────
-  %% LINHA DE CABEÇALHO: Labels dos eixos e níveis de Impacto
-  %% ───────────────────────────────────────────────────────────────
-  EIXOS["Prob. ↓ / Imp. →"]:1 B["Baixo"]:1 M["Médio"]:1 A["Alto"]:1 C["Crítico"]:1
+  %% ===== CABEÇALHO =====
+  EIXOS["Prob. / Imp."]:1 B["Baixo"]:1 M["Médio"]:1 A["Alto"]:1 C["Crítico"]:1
 
-  %% ───────────────────────────────────────────────────────────────
-  %% LINHA 1: Probabilidade ALTA
-  %% - Baixo impacto → Médio (🟡)
-  %% - Médio impacto → Alto (🟠)
-  %% - Alto/Crítico impacto → Crítico (🔴)
-  %% ───────────────────────────────────────────────────────────────
+  %% ===== LINHA PROBABILIDADE ALTA =====
   PA["Alta"]:1 PA_B["🟡 Médio"]:1 PA_M["🟠 Alto"]:1 PA_A["🔴 Crítico"]:1 PA_C["🔴 Crítico"]:1
 
-  %% ───────────────────────────────────────────────────────────────
-  %% LINHA 2: Probabilidade MÉDIA
-  %% - Baixo impacto → Baixo (🟢)
-  %% - Médio impacto → Médio (🟡)
-  %% - Alto impacto → Alto (🟠)
-  %% - Crítico impacto → Crítico (🔴)
-  %% ───────────────────────────────────────────────────────────────
+  %% ===== LINHA PROBABILIDADE MÉDIA =====
   PM["Média"]:1 PM_B["🟢 Baixo"]:1 PM_M["🟡 Médio"]:1 PM_A["🟠 Alto"]:1 PM_C["🔴 Crítico"]:1
 
-  %% ───────────────────────────────────────────────────────────────
-  %% LINHA 3: Probabilidade BAIXA
-  %% - Baixo/Médio impacto → Baixo (🟢)
-  %% - Alto impacto → Médio (🟡)
-  %% - Crítico impacto → Alto (🟠)
-  %% ───────────────────────────────────────────────────────────────
+  %% ===== LINHA PROBABILIDADE BAIXA =====
   PB["Baixa"]:1 PB_B["🟢 Baixo"]:1 PB_M["🟢 Baixo"]:1 PB_A["🟡 Médio"]:1 PB_C["🟠 Alto"]:1
 
-  %% ═══════════════════════════════════════════════════════════════
-  %% DEFINIÇÃO DE ESTILOS
-  %% ═══════════════════════════════════════════════════════════════
-
-  %% Estilo do cabeçalho (cinza escuro)
-  classDef header fill:#334155,stroke:#1E293B,color:#FFFFFF,font-weight:bold
-
-  %% Estilo do label dos eixos (Indigo)
-  classDef eixo fill:#4F46E5,stroke:#3730A3,color:#FFFFFF,font-weight:bold
-
-  %% Paleta de cores por severidade:
-  %% - Baixo (🟢): Emerald #10B981
-  %% - Médio (🟡): Amber #F59E0B
-  %% - Alto (🟠): Orange #F97316
-  %% - Crítico (🔴): Red #EF4444
-  classDef baixo fill:#10B981,stroke:#065F46,color:#FFFFFF
-  classDef medio fill:#F59E0B,stroke:#92400E,color:#FFFFFF
-  classDef alto fill:#F97316,stroke:#C2410C,color:#FFFFFF
-  classDef critico fill:#EF4444,stroke:#B91C1C,color:#FFFFFF
-
-  %% Aplicação das classes
-  class B,M,A,C,PA,PM,PB header
-  class EIXOS eixo
-  class PM_B,PB_B,PB_M baixo
-  class PA_B,PM_M,PB_A medio
-  class PA_M,PM_A,PB_C alto
-  class PA_A,PA_C,PM_C critico
+  %% ===== APLICAÇÃO DE ESTILOS =====
+  class B,M,A,C,PA,PM,PB primary
+  class EIXOS trigger
+  class PM_B,PB_B,PB_M secondary
+  class PA_B,PM_M,PB_A datastore
+  class PA_M,PM_A,PB_C datastore
+  class PA_A,PA_C,PM_C failed
 ```
 
 > **📋 Resumo Visual de Severidade**
