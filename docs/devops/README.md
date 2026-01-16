@@ -1,10 +1,33 @@
-# DevOps Documentation
+# 🔧 DevOps Documentation
 
-This folder contains comprehensive documentation for the GitHub Actions workflows used in the Azure Logic Apps Monitoring project.
+> Comprehensive documentation for GitHub Actions workflows used in the Azure Logic Apps Monitoring project.
+
+---
+
+## 📑 Table of Contents
+
+- [Overview](#-overview)
+- [Master Pipeline Diagram](#️-master-pipeline-diagram)
+- [Workflow Documentation](#-workflow-documentation)
+- [Quick Reference](#-quick-reference)
+- [Required Secrets & Variables](#-required-secrets--variables)
+- [Related Documentation](#-related-documentation)
+- [Additional Resources](#-additional-resources)
+
+---
 
 ## 📋 Overview
 
-The project uses GitHub Actions for continuous integration (CI) and continuous delivery (CD) to Azure. The pipeline architecture follows best practices for .NET development with Azure Developer CLI (azd) for infrastructure provisioning and application deployment.
+The project uses **GitHub Actions** for continuous integration (CI) and continuous delivery (CD) to Azure. The pipeline architecture follows best practices for .NET development with **Azure Developer CLI (azd)** for infrastructure provisioning and application deployment.
+
+### Key Highlights
+
+- ✅ **Automated CI/CD** - Full automation from code push to deployment
+- 🔐 **OIDC Authentication** - Secure, secretless Azure authentication
+- 🔄 **Reusable Workflows** - DRY principle with shared CI components
+- 📊 **Comprehensive Reporting** - Detailed summaries and test results
+
+---
 
 ## 🗺️ Master Pipeline Diagram
 
