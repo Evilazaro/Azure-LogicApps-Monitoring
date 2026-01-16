@@ -313,12 +313,25 @@ check_sqlcmd() {
     fi
     
     # Verify it's go-sqlcmd by checking for --version flag support
+    # go-sqlcmd outputs "Version: x.y.z" or similar
+    # ODBC sqlcmd outputs "Unknown Option" or similar error for --version
     local version_output
     version_output=$(sqlcmd --version 2>&1 || true)
+    log_verbose "sqlcmd --version output: $version_output"
     
-    if echo "$version_output" | grep -qi "Unknown Option\|invalid option\|-\?"; then
+    # Check for positive confirmation that it's go-sqlcmd
+    # go-sqlcmd version output contains "Version" or version number pattern
+    if echo "$version_output" | grep -qiE "^Version:|^[0-9]+\.[0-9]+\.[0-9]+|go-sqlcmd"; then
+        log_verbose "go-sqlcmd version: $version_output"
+        log_success "go-sqlcmd is available at: $sqlcmd_path"
+        return 0
+    fi
+    
+    # Check for ODBC sqlcmd error indicators
+    if echo "$version_output" | grep -qi "Unknown Option\|invalid option\|Sqlcmd: Error"; then
         log_error "Detected ODBC sqlcmd (mssql-tools) instead of go-sqlcmd"
         log_error "sqlcmd path: $sqlcmd_path"
+        log_error "Version output: $version_output"
         log_error "This script requires go-sqlcmd for Azure AD authentication."
         log_error ""
         log_error "Please install go-sqlcmd and ensure it's first in PATH:"
@@ -328,9 +341,30 @@ check_sqlcmd() {
         return 1
     fi
     
-    log_verbose "go-sqlcmd version: $version_output"
-    log_success "go-sqlcmd is available at: $sqlcmd_path"
-    return 0
+    # If we can't determine, try running with --help to check for Azure AD support
+    local help_output
+    help_output=$(sqlcmd --help 2>&1 || true)
+    
+    if echo "$help_output" | grep -qi "authentication-method\|ActiveDirectory"; then
+        log_verbose "go-sqlcmd confirmed via --help (supports Azure AD authentication)"
+        log_success "go-sqlcmd is available at: $sqlcmd_path"
+        return 0
+    fi
+    
+    # Last resort: assume it's correct if it's in /usr/local/bin (where we install it)
+    if [[ "$sqlcmd_path" == /usr/local/bin/sqlcmd ]]; then
+        log_warning "Could not confirm go-sqlcmd version, but path suggests it's correct"
+        log_verbose "Proceeding with sqlcmd at: $sqlcmd_path"
+        return 0
+    fi
+    
+    log_error "Unable to confirm sqlcmd is go-sqlcmd"
+    log_error "sqlcmd path: $sqlcmd_path"
+    log_error "Version output: $version_output"
+    log_error ""
+    log_error "Please ensure go-sqlcmd is installed:"
+    log_error "  https://github.com/microsoft/go-sqlcmd"
+    return 1
 }
 
 # Acquire Azure SQL access token
