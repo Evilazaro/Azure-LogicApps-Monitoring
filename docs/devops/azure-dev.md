@@ -398,7 +398,7 @@ azd deploy --no-prompt
 | [CI - .NET Reusable Workflow](./ci-dotnet-reusable.md) | Reusable CI workflow details |
 | [Azure Developer CLI Documentation](https://learn.microsoft.com/en-us/azure/developer/azure-developer-cli/) | Official azd documentation |
 | [Federated Credentials Setup](https://learn.microsoft.com/en-us/azure/developer/github/connect-from-azure) | OIDC authentication setup |
-| [Hooks Documentation](../hooks/README.md) | Pre/post deployment scripts |
+| [Developer Experience Documentation](../hooks/README.md) | Pre/post deployment scripts |
 
 ---
 

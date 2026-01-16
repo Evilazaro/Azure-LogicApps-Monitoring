@@ -127,12 +127,27 @@ dotnet run
 #### Local Inner Loop Cycle
 
 ```mermaid
+---
+title: Local Development Inner Loop Cycle
+---
 flowchart LR
+    %% ===== CLASS DEFINITIONS =====
+    classDef primary fill:#4F46E5,stroke:#3730A3,color:#FFFFFF
+    classDef secondary fill:#10B981,stroke:#059669,color:#FFFFFF
+    classDef datastore fill:#F59E0B,stroke:#D97706,color:#000000
+    classDef external fill:#6B7280,stroke:#4B5563,color:#FFFFFF,stroke-dasharray: 5 5
+    classDef failed fill:#F44336,stroke:#C62828,color:#FFFFFF
+    classDef trigger fill:#818CF8,stroke:#4F46E5,color:#FFFFFF
+    classDef decision fill:#FFFBEB,stroke:#F59E0B,color:#000000
+    classDef input fill:#F3F4F6,stroke:#6B7280,color:#000000
+
+    %% ===== START/END NODES =====
     Start([Local Dev Start])
     End([Docker Auto-Cleanup])
 
-    Start --> SetupPhase
+    Start -->|"Initialize"| SetupPhase
 
+    %% ===== ENVIRONMENT SETUP PHASE =====
     subgraph SetupPhase["1️⃣ Environment Setup"]
         direction TB
         Docker[Docker Running?]
@@ -140,48 +155,47 @@ flowchart LR
         Run[Run AppHost<br/>dotnet run]
         Ready([Environment Ready<br/>~30-60 seconds])
 
-        Docker -->|No| StartDocker
-        Docker -->|Yes| Run
-        StartDocker --> Run
-        Run --> Ready
+        Docker -->|"No"| StartDocker
+        Docker -->|"Yes"| Run
+        StartDocker -->|"Started"| Run
+        Run -->|"Containers Ready"| Ready
     end
+    style SetupPhase fill:#EEF2FF,stroke:#4F46E5,stroke-width:2px
 
+    %% ===== INNER LOOP PHASE =====
     subgraph DevLoop["🔄 INNER LOOP (10-30 seconds/iteration)"]
         direction LR
-        Code[💻 Edit Code<br/>C#, Razor, JSON] --> HotReload[⚡ Hot Reload<br/>1-3 seconds]
-        HotReload --> Test[🧪 Test Changes<br/>Browser/Postman]
-        Test --> Logs[📊 View Logs<br/>Aspire Dashboard]
-        Logs --> Review{Works?}
-        Review -->|Yes| Code
-        Review -->|No| Debug[🐛 Debug<br/>Breakpoints in IDE]
-        Debug --> Code
+        Code[💻 Edit Code<br/>C#, Razor, JSON] -->|"Save File"| HotReload[⚡ Hot Reload<br/>1-3 seconds]
+        HotReload -->|"Reload Complete"| Test[🧪 Test Changes<br/>Browser/Postman]
+        Test -->|"View Results"| Logs[📊 View Logs<br/>Aspire Dashboard]
+        Logs -->|"Evaluate"| Review{Works?}
+        Review -->|"Yes - Continue"| Code
+        Review -->|"No - Fix Issue"| Debug[🐛 Debug<br/>Breakpoints in IDE]
+        Debug -->|"Apply Fix"| Code
     end
+    style DevLoop fill:#FEF3C7,stroke:#F59E0B,stroke-width:2px
 
+    %% ===== SHUTDOWN PHASE =====
     subgraph ShutdownPhase["3️⃣ Shutdown"]
         direction TB
         Stop[Stop Development<br/>Ctrl+C]
     end
+    style ShutdownPhase fill:#FEE2E2,stroke:#EF4444,stroke-width:2px
 
-    SetupPhase --> DevLoop
-    DevLoop --> ShutdownPhase
-    ShutdownPhase --> End
+    %% ===== PHASE CONNECTIONS =====
+    SetupPhase -->|"Environment Ready"| DevLoop
+    DevLoop -->|"Development Complete"| ShutdownPhase
+    ShutdownPhase -->|"Cleanup"| End
 
-    classDef startEnd fill:#312E81,stroke:#4F46E5,stroke-width:3px,color:#fff
-    classDef ready fill:#065F46,stroke:#10B981,stroke-width:3px,color:#fff
-    classDef process fill:#EEF2FF,stroke:#4F46E5,stroke-width:2px,color:#312E81
-    classDef success fill:#D1FAE5,stroke:#10B981,stroke-width:2px,color:#065F46
-    classDef test fill:#F3E8FF,stroke:#A855F7,stroke-width:2px,color:#581C87
-    classDef loop fill:#FEF3C7,stroke:#F59E0B,stroke-width:2px,color:#92400E
-    classDef debug fill:#FEE2E2,stroke:#EF4444,stroke-width:2px,color:#991B1B
-    classDef decision fill:#FEF3C7,stroke:#F59E0B,stroke-width:2px,color:#92400E
-
-    class Start,End startEnd
-    class Ready ready
-    class Code,Run,StartDocker,Stop process
-    class HotReload success
-    class Test test
-    class Logs,Review loop
-    class Debug debug
+    %% ===== NODE STYLING =====
+    class Start,End trigger
+    class Ready secondary
+    class Code,Run,StartDocker,Stop primary
+    class HotReload secondary
+    class Test input
+    class Logs datastore
+    class Review decision
+    class Debug failed
     class Docker decision
 ```
 
@@ -282,67 +296,81 @@ For production-like environments, integration testing, or team collaboration:
 ### Workflow Phases
 
 ```mermaid
+---
+title: Developer Workflow Phases - Local vs Azure
+---
 flowchart LR
-    Start([👨‍💻 Developer Starts Work]) --> ModeChoice{Development<br/>Mode?}
+    %% ===== CLASS DEFINITIONS =====
+    classDef primary fill:#4F46E5,stroke:#3730A3,color:#FFFFFF
+    classDef secondary fill:#10B981,stroke:#059669,color:#FFFFFF
+    classDef datastore fill:#F59E0B,stroke:#D97706,color:#000000
+    classDef external fill:#6B7280,stroke:#4B5563,color:#FFFFFF,stroke-dasharray: 5 5
+    classDef failed fill:#F44336,stroke:#C62828,color:#FFFFFF
+    classDef trigger fill:#818CF8,stroke:#4F46E5,color:#FFFFFF
+    classDef decision fill:#FFFBEB,stroke:#F59E0B,color:#000000
+    classDef input fill:#F3F4F6,stroke:#6B7280,color:#000000
 
-    ModeChoice -->|Local| LocalSetup
-    ModeChoice -->|Azure| AzureSetup
+    %% ===== START NODE =====
+    Start([👨‍💻 Developer Starts Work]) -->|"Choose Path"| ModeChoice{Development<br/>Mode?}
 
+    ModeChoice -->|"Local Development"| LocalSetup
+    ModeChoice -->|"Azure Deployment"| AzureSetup
+
+    %% ===== LOCAL DEVELOPMENT PHASE =====
     subgraph LocalSetup["🏠 LOCAL DEVELOPMENT (Fast)"]
         direction LR
         LocalPrereq["1️⃣ Prerequisites<br/>Docker, .NET 10, Aspire"]
-        LocalPrereq --> LocalRun["2️⃣ Run AppHost<br/>dotnet run (~1 min)"]
-        LocalRun --> LocalReady["✅ Environment Ready<br/>Containers + Services"]
+        LocalPrereq -->|"Check Complete"| LocalRun["2️⃣ Run AppHost<br/>dotnet run (~1 min)"]
+        LocalRun -->|"Services Started"| LocalReady["✅ Environment Ready<br/>Containers + Services"]
     end
+    style LocalSetup fill:#ECFDF5,stroke:#10B981,stroke-width:2px
 
+    %% ===== AZURE DEPLOYMENT PHASE =====
     subgraph AzureSetup["☁️ AZURE DEPLOYMENT (Complete)"]
         direction LR
         Validate["1️⃣ Validate Environment<br/>check-dev-workstation + preprovision<br/>⏱️ ~20 sec"]
-        Validate --> CheckValid{✅ Prerequisites OK?}
-        CheckValid --> |No| Fix[🔧 Install/Update Tools]
-        Fix --> Validate
-        CheckValid --> |Yes| Provision
+        Validate -->|"Validate"| CheckValid{✅ Prerequisites OK?}
+        CheckValid -->|"No - Missing Tools"| Fix[🔧 Install/Update Tools]
+        Fix -->|"Retry Validation"| Validate
+        CheckValid -->|"Yes - Continue"| Provision
 
         Provision["2️⃣ Provision Infrastructure<br/>azd provision<br/>⏱️ ~5-10 min"]
-        Provision --> CheckDeploy{✅ Deployed OK?}
-        CheckDeploy --> |No| Debug[🐛 Debug & Fix]
-        Debug --> Provision
-        CheckDeploy --> |Yes| Configure
+        Provision -->|"Check Status"| CheckDeploy{✅ Deployed OK?}
+        CheckDeploy -->|"No - Failed"| Debug[🐛 Debug & Fix]
+        Debug -->|"Retry Provision"| Provision
+        CheckDeploy -->|"Yes - Success"| Configure
 
         Configure["3️⃣ Configure Secrets<br/>postprovision (includes SQL managed identity)<br/>⏱️ ~20-30 sec"]
     end
+    style AzureSetup fill:#EEF2FF,stroke:#4F46E5,stroke-width:2px
 
-    LocalReady --> LocalLoop([Local Inner Loop])
-    Configure --> AzureReady([✅ Azure Environment Ready])
-    AzureReady --> DevLoop
+    %% ===== TRANSITION CONNECTIONS =====
+    LocalReady -->|"Start Development"| LocalLoop([Local Inner Loop])
+    Configure -->|"Configuration Complete"| AzureReady([✅ Azure Environment Ready])
+    AzureReady -->|"Start Development"| DevLoop
 
+    %% ===== DEVELOPER INNER LOOP =====
     subgraph DevLoop["🔄 DEVELOPER INNER LOOP (Both Modes)"]
         direction LR
-        Code[💻 Write Code] --> Test[🧪 Test Locally]
-        Test --> Review{Works?}
-        Review --> |Yes| Code
-        Review --> |Needs Infra Changes| ExitLoop[ ]
+        Code[💻 Write Code] -->|"Execute Tests"| Test[🧪 Test Locally]
+        Test -->|"Evaluate Results"| Review{Works?}
+        Review -->|"Yes - Continue"| Code
+        Review -->|"Needs Infra Changes"| ExitLoop[ ]
     end
+    style DevLoop fill:#FEF3C7,stroke:#F59E0B,stroke-width:2px
 
-    ExitLoop --> ModeChoice
+    %% ===== LOOP BACK CONNECTIONS =====
+    ExitLoop -->|"Reconfigure"| ModeChoice
+    LocalLoop -->|"Enter Loop"| Code
 
-    LocalLoop --> Code
-
-    classDef startEnd fill:#312E81,stroke:#4F46E5,stroke-width:3px,color:#fff
-    classDef ready fill:#065F46,stroke:#10B981,stroke-width:3px,color:#fff
-    classDef process fill:#EEF2FF,stroke:#4F46E5,stroke-width:2px,color:#312E81
-    classDef success fill:#D1FAE5,stroke:#10B981,stroke-width:2px,color:#065F46
-    classDef decision fill:#FEF3C7,stroke:#F59E0B,stroke-width:2px,color:#92400E
-    classDef debug fill:#FEE2E2,stroke:#EF4444,stroke-width:2px,color:#991B1B
-    classDef invisible fill:none,stroke:none
-
-    class Start startEnd
-    class LocalReady,AzureReady,LocalLoop ready
-    class LocalPrereq,LocalRun,Validate,Provision,Configure,Code process
-    class Test success
+    %% ===== NODE STYLING =====
+    class Start trigger
+    class LocalReady,AzureReady,LocalLoop secondary
+    class LocalPrereq,LocalRun,Validate,Provision,Configure,Code primary
+    class Test input
     class ModeChoice,CheckValid,CheckDeploy,Review decision
-    class Fix,Debug debug
-    class ExitLoop invisible
+    class Fix,Debug failed
+    class ExitLoop external
 ```
 
 ### Comparison: Local vs. Azure Development
@@ -709,40 +737,60 @@ The postprovision hook executes after infrastructure is successfully deployed bu
 #### Execution Flow
 
 ```mermaid
+---
+title: Azure Developer CLI Lifecycle Execution Flow
+---
 flowchart LR
-    Start[azd provision] --> PrepHook
+    %% ===== CLASS DEFINITIONS =====
+    classDef primary fill:#4F46E5,stroke:#3730A3,color:#FFFFFF
+    classDef secondary fill:#10B981,stroke:#059669,color:#FFFFFF
+    classDef datastore fill:#F59E0B,stroke:#D97706,color:#000000
+    classDef external fill:#6B7280,stroke:#4B5563,color:#FFFFFF,stroke-dasharray: 5 5
+    classDef failed fill:#F44336,stroke:#C62828,color:#FFFFFF
+    classDef trigger fill:#818CF8,stroke:#4F46E5,color:#FFFFFF
+    classDef decision fill:#FFFBEB,stroke:#F59E0B,color:#000000
+    classDef input fill:#F3F4F6,stroke:#6B7280,color:#000000
 
+    %% ===== START NODE =====
+    Start[azd provision] -->|"Execute Hook"| PrepHook
+
+    %% ===== PREPROVISION HOOK =====
     subgraph PrepHook["Preprovision Hook"]
         direction LR
-        ValidateTools[Validate Tools] --> CheckAuth[Check Azure Auth]
-        CheckAuth --> ClearSecrets[Clear Secrets]
+        ValidateTools[Validate Tools] -->|"Tools OK"| CheckAuth[Check Azure Auth]
+        CheckAuth -->|"Auth Valid"| ClearSecrets[Clear Secrets]
     end
+    style PrepHook fill:#FEF3C7,stroke:#F59E0B,stroke-width:2px
 
-    PrepHook --> Deploy
+    PrepHook -->|"Validation Complete"| Deploy
 
+    %% ===== INFRASTRUCTURE DEPLOYMENT =====
     subgraph Deploy["Infrastructure Deployment"]
         direction LR
-        DeployBicep[Deploy Bicep Templates] --> SetEnvVars[Set Environment Variables]
+        DeployBicep[Deploy Bicep Templates] -->|"Resources Created"| SetEnvVars[Set Environment Variables]
     end
+    style Deploy fill:#EEF2FF,stroke:#4F46E5,stroke-width:2px
 
-    Deploy --> PostHook
+    Deploy -->|"Deployment Success"| PostHook
 
+    %% ===== POSTPROVISION HOOK =====
     subgraph PostHook["Postprovision Hook"]
         direction LR
-        AuthACR[Authenticate ACR] --> ClearStale[Clear Stale Secrets]
-        ClearStale --> ConfigSecrets[Configure User Secrets]
-        ConfigSecrets --> ConfigSQL[Configure SQL Managed Identity]
+        AuthACR[Authenticate ACR] -->|"ACR Ready"| ClearStale[Clear Stale Secrets]
+        ClearStale -->|"Secrets Cleared"| ConfigSecrets[Configure User Secrets]
+        ConfigSecrets -->|"Secrets Set"| ConfigSQL[Configure SQL Managed Identity]
     end
+    style PostHook fill:#ECFDF5,stroke:#10B981,stroke-width:2px
 
-    PostHook --> Complete[Deployment Complete]
+    %% ===== END NODE =====
+    PostHook -->|"Configuration Complete"| Complete[Deployment Complete]
 
-    classDef startNode fill:#312E81,stroke:#4F46E5,stroke-width:2px,color:#fff
-    classDef completeNode fill:#581C87,stroke:#A855F7,stroke-width:2px,color:#fff
-    classDef process fill:#EEF2FF,stroke:#4F46E5,stroke-width:2px,color:#312E81
-
-    class Start startNode
-    class Complete completeNode
-    class ValidateTools,CheckAuth,ClearSecrets,DeployBicep,SetEnvVars,AuthACR,ClearStale,ConfigSecrets,ConfigSQL process
+    %% ===== NODE STYLING =====
+    class Start trigger
+    class Complete secondary
+    class ValidateTools,CheckAuth,ClearSecrets input
+    class DeployBicep,SetEnvVars primary
+    class AuthACR,ClearStale,ConfigSecrets,ConfigSQL datastore
 ```
 
 ### First-Time Setup

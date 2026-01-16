@@ -76,55 +76,75 @@ This workflow uses multiple automation scripts from the hooks directory:
 ### Script Dependencies
 
 ```mermaid
+---
+title: Script Dependencies and Execution Flow
+---
 flowchart TD
+    %% ===== CLASS DEFINITIONS =====
+    classDef primary fill:#4F46E5,stroke:#3730A3,color:#FFFFFF
+    classDef secondary fill:#10B981,stroke:#059669,color:#FFFFFF
+    classDef datastore fill:#F59E0B,stroke:#D97706,color:#000000
+    classDef external fill:#6B7280,stroke:#4B5563,color:#FFFFFF,stroke-dasharray: 5 5
+    classDef failed fill:#F44336,stroke:#C62828,color:#FFFFFF
+    classDef trigger fill:#818CF8,stroke:#4F46E5,color:#FFFFFF
+    classDef decision fill:#FFFBEB,stroke:#F59E0B,color:#000000
+    classDef input fill:#F3F4F6,stroke:#6B7280,color:#000000
+
+    %% ===== PRE-PROVISIONING SECTION =====
     subgraph PreProvGroup["🛠️ Pre-Provisioning"]
         direction TB
         CheckDev[check-dev-workstation]
         PreProv[preprovision]
         CleanSecrets1[clean-secrets]
-        CheckDev -.optional.-> PreProv
-        PreProv --> CleanSecrets1
+        CheckDev -."optional dependency".-> PreProv
+        PreProv -->|"calls"| CleanSecrets1
     end
+    style PreProvGroup fill:#EEF2FF,stroke:#4F46E5,stroke-width:2px
 
+    %% ===== AZURE PROVISIONING SECTION =====
     subgraph ProvGroup["☁️ Azure Provisioning"]
         direction TB
         AzdProv[azd provision]
     end
+    style ProvGroup fill:#DBEAFE,stroke:#3B82F6,stroke-width:2px
 
+    %% ===== POST-PROVISIONING SECTION =====
     subgraph PostProvGroup["⚙️ Post-Provisioning"]
         direction TB
         PostProv[postprovision]
         CleanSecrets2[clean-secrets]
         SqlConfig[sql-managed-identity-config]
-        PostProv --> CleanSecrets2
-        PostProv --> SqlConfig
+        PostProv -->|"calls"| CleanSecrets2
+        PostProv -->|"calls"| SqlConfig
     end
+    style PostProvGroup fill:#D1FAE5,stroke:#10B981,stroke-width:2px
 
+    %% ===== DELETION SECTION =====
     subgraph DeleteGroup["🗑️ Infrastructure Deletion"]
         direction TB
         AzdDown[azd down]
         PostInfraDelete[postinfradelete]
-        AzdDown --> PostInfraDelete
+        AzdDown -->|"triggers"| PostInfraDelete
     end
+    style DeleteGroup fill:#FEE2E2,stroke:#EF4444,stroke-width:2px
 
+    %% ===== OPTIONAL SECTION =====
     subgraph OptionalGroup["📊 Optional"]
         direction TB
         GenOrders[Generate-Orders]
     end
+    style OptionalGroup fill:#FEF3C7,stroke:#F59E0B,stroke-width:2px
 
-    CleanSecrets1 --> AzdProv
-    AzdProv --> PostProv
-    GenOrders -.optional manual.-> PostProv
+    %% ===== CONNECTIONS =====
+    CleanSecrets1 -->|"enables"| AzdProv
+    AzdProv -->|"triggers"| PostProv
+    GenOrders -."optional manual execution".-> PostProv
 
-    classDef optionalClass fill:#FEF3C7,stroke:#F59E0B,stroke-width:2px,stroke-dasharray: 5 5,color:#92400E
-    classDef automaticClass fill:#D1FAE5,stroke:#10B981,stroke-width:2px,color:#065F46
-    classDef utilityClass fill:#F3F4F6,stroke:#6B7280,stroke-width:2px,color:#374151
-    classDef deleteClass fill:#FEE2E2,stroke:#EF4444,stroke-width:2px,color:#991B1B
-
-    class CheckDev,GenOrders optionalClass
-    class PreProv,AzdProv,PostProv,SqlConfig automaticClass
-    class CleanSecrets1,CleanSecrets2 utilityClass
-    class AzdDown,PostInfraDelete deleteClass
+    %% ===== APPLY STYLES =====
+    class CheckDev,GenOrders external
+    class PreProv,AzdProv,PostProv,SqlConfig secondary
+    class CleanSecrets1,CleanSecrets2 input
+    class AzdDown,PostInfraDelete failed
 ```
 
 ---
@@ -134,33 +154,54 @@ flowchart TD
 ### Complete Deployment Flow
 
 ```mermaid
+---
+title: Complete Azure Deployment Flow
+---
 flowchart LR
+    %% ===== CLASS DEFINITIONS =====
+    classDef primary fill:#4F46E5,stroke:#3730A3,color:#FFFFFF
+    classDef secondary fill:#10B981,stroke:#059669,color:#FFFFFF
+    classDef datastore fill:#F59E0B,stroke:#D97706,color:#000000
+    classDef external fill:#6B7280,stroke:#4B5563,color:#FFFFFF,stroke-dasharray: 5 5
+    classDef failed fill:#F44336,stroke:#C62828,color:#FFFFFF
+    classDef trigger fill:#818CF8,stroke:#4F46E5,color:#FFFFFF
+    classDef decision fill:#FFFBEB,stroke:#F59E0B,color:#000000
+    classDef input fill:#F3F4F6,stroke:#6B7280,color:#000000
+
+    %% ===== START NODE =====
     Start["🚀 START DEPLOYMENT<br/>Developer runs: azd up"]
 
+    %% ===== OPTIONAL PRE-CHECK SECTION =====
     subgraph Optional["Optional Pre-Check"]
         Check["1️⃣ check-dev-workstation<br/>Quick validation (3-5s)"]
     end
+    style Optional fill:#F3F4F6,stroke:#6B7280,stroke-width:2px
 
+    %% ===== PRE-PROVISIONING SECTION =====
     subgraph PreProvision["2️⃣ Pre-Provisioning (Automatic)"]
         PreStart["PREPROVISION START<br/>Version 2.3.0 (2026-01-06)"]
         PreStep1["Step 1: PowerShell/Bash Version<br/>PS: 7.0+ | Bash: 4.0+"]
         PreStep2["Step 2: Prerequisites<br/>.NET 10.0+ | azd | Azure CLI 2.60.0+<br/>Bicep 0.30.0+ | 8 Resource Providers"]
         PreStep3["Step 3: Clear User Secrets<br/>Call clean-secrets script"]
 
-        PreStart --> PreStep1
-        PreStep1 --> PreDecision1{Pass?}
-        PreDecision1 -->|✓| PreStep2
-        PreDecision1 -->|✗| PreError1["ERROR: Fix environment"]
-        PreStep2 --> PreDecision2{Pass?}
-        PreDecision2 -->|✓| PreStep3
-        PreDecision2 -->|✗| PreError2["ERROR: Install tools"]
-        PreStep3 --> PreReady["✓ Ready for provisioning"]
+        PreStart -->|"initiates"| PreStep1
+        PreStep1 -->|"validates"| PreDecision1{Pass?}
+        PreDecision1 -->|"✓ success"| PreStep2
+        PreDecision1 -->|"✗ failure"| PreError1["ERROR: Fix environment"]
+        PreStep2 -->|"validates"| PreDecision2{Pass?}
+        PreDecision2 -->|"✓ success"| PreStep3
+        PreDecision2 -->|"✗ failure"| PreError2["ERROR: Install tools"]
+        PreStep3 -->|"completes"| PreReady["✓ Ready for provisioning"]
     end
+    style PreProvision fill:#EEF2FF,stroke:#4F46E5,stroke-width:2px
 
+    %% ===== AZURE PROVISIONING SECTION =====
     subgraph Provision["3️⃣ Azure Provisioning"]
         AzdProv["Deploy Infrastructure<br/>Bicep templates (5-10 min)<br/>SQL DB | Service Bus | Container Apps"]
     end
+    style Provision fill:#DBEAFE,stroke:#3B82F6,stroke-width:2px
 
+    %% ===== POST-PROVISIONING SECTION =====
     subgraph PostProvision["4️⃣ Post-Provisioning (Automatic)"]
         PostStart["POSTPROVISION START<br/>Version 2.0.1"]
         PostStep1["Step 1: Validate Env Vars<br/>Azure resource outputs"]
@@ -169,16 +210,18 @@ flowchart LR
         PostStep4["Step 4: Set New Secrets<br/>Secrets across 3 projects<br/>AppHost | API | WebApp"]
         PostStep5["Step 5: SQL Managed Identity<br/>Call sql-managed-identity-config"]
 
-        PostStart --> PostStep1
-        PostStep1 --> PostDecision1{Valid?}
-        PostDecision1 -->|✓| PostStep2
-        PostDecision1 -->|✗| PostError1["ERROR: Missing vars"]
-        PostStep2 --> PostStep3
-        PostStep3 --> PostStep4
-        PostStep4 --> PostStep5
-        PostStep5 --> PostReady["✓ Configuration complete"]
+        PostStart -->|"initiates"| PostStep1
+        PostStep1 -->|"validates"| PostDecision1{Valid?}
+        PostDecision1 -->|"✓ success"| PostStep2
+        PostDecision1 -->|"✗ failure"| PostError1["ERROR: Missing vars"]
+        PostStep2 -->|"authenticates"| PostStep3
+        PostStep3 -->|"clears"| PostStep4
+        PostStep4 -->|"configures"| PostStep5
+        PostStep5 -->|"completes"| PostReady["✓ Configuration complete"]
     end
+    style PostProvision fill:#D1FAE5,stroke:#10B981,stroke-width:2px
 
+    %% ===== SQL CONFIGURATION SECTION =====
     subgraph SqlConfig["🔐 SQL Managed Identity Configuration"]
         SqlStart["SQL-MANAGED-IDENTITY-CONFIG<br/>Version 1.0.0 (2026-01-06)"]
         SqlStep1["Step 1: Validate Azure Auth"]
@@ -187,47 +230,46 @@ flowchart LR
         SqlStep4["Step 4: Acquire Access Token"]
         SqlStep5["Step 5: Execute SQL Script<br/>Create user | Assign roles"]
 
-        SqlStart --> SqlStep1
-        SqlStep1 --> SqlDecision1{Pass?}
-        SqlDecision1 -->|✓| SqlStep2
-        SqlDecision1 -->|✗| SqlError1["ERROR: Not authenticated"]
-        SqlStep2 --> SqlDecision2{Pass?}
-        SqlDecision2 -->|✓| SqlStep3
-        SqlDecision2 -->|✗| SqlError2["ERROR: Install sqlcmd"]
-        SqlStep3 --> SqlStep4
-        SqlStep4 --> SqlDecision3{Success?}
-        SqlDecision3 -->|✓| SqlStep5
-        SqlDecision3 -->|✗| SqlError3["ERROR: Token failed"]
-        SqlStep5 --> SqlReady["✓ SQL access configured"]
+        SqlStart -->|"initiates"| SqlStep1
+        SqlStep1 -->|"validates"| SqlDecision1{Pass?}
+        SqlDecision1 -->|"✓ success"| SqlStep2
+        SqlDecision1 -->|"✗ failure"| SqlError1["ERROR: Not authenticated"]
+        SqlStep2 -->|"validates"| SqlDecision2{Pass?}
+        SqlDecision2 -->|"✓ success"| SqlStep3
+        SqlDecision2 -->|"✗ failure"| SqlError2["ERROR: Install sqlcmd"]
+        SqlStep3 -->|"constructs"| SqlStep4
+        SqlStep4 -->|"acquires"| SqlDecision3{Success?}
+        SqlDecision3 -->|"✓ success"| SqlStep5
+        SqlDecision3 -->|"✗ failure"| SqlError3["ERROR: Token failed"]
+        SqlStep5 -->|"completes"| SqlReady["✓ SQL access configured"]
     end
+    style SqlConfig fill:#FEF3C7,stroke:#F59E0B,stroke-width:2px
 
+    %% ===== OPTIONAL POST-DEPLOYMENT SECTION =====
     subgraph Optional2["Optional Post-Deployment"]
         GenOrders["📊 Generate-Orders<br/>Test data generation (manual)"]
     end
+    style Optional2 fill:#F3F4F6,stroke:#6B7280,stroke-width:2px
 
-    Start --> Check
-    Check -.optional.-> PreStart
-    Start --> PreStart
-    PreReady --> AzdProv
-    AzdProv --> PostStart
-    PostReady --> Complete
-    PostStep5 --> SqlStart
-    SqlReady --> PostReady
-    Complete -.optional.-> GenOrders
+    %% ===== MAIN FLOW CONNECTIONS =====
+    Start -->|"initiates"| Check
+    Check -."optional path".-> PreStart
+    Start -->|"direct path"| PreStart
+    PreReady -->|"triggers"| AzdProv
+    AzdProv -->|"triggers"| PostStart
+    PostReady -->|"finalizes"| Complete
+    PostStep5 -->|"calls"| SqlStart
+    SqlReady -->|"returns to"| PostReady
+    Complete -."optional execution".-> GenOrders
 
     Complete["✅ DEPLOYMENT COMPLETE<br/>Environment ready for development"]
 
-    classDef successClass fill:#D1FAE5,stroke:#10B981,stroke-width:2px,color:#065F46
-    classDef errorClass fill:#FEE2E2,stroke:#EF4444,stroke-width:2px,color:#991B1B
-    classDef processClass fill:#EEF2FF,stroke:#4F46E5,stroke-width:2px,color:#312E81
-    classDef decisionClass fill:#FEF3C7,stroke:#F59E0B,stroke-width:2px,color:#92400E
-    classDef optionalClass fill:#F3F4F6,stroke:#6B7280,stroke-width:2px,stroke-dasharray: 5 5,color:#374151
-
-    class Start,PreReady,PostReady,SqlReady,Complete successClass
-    class PreError1,PreError2,PostError1,SqlError1,SqlError2,SqlError3 errorClass
-    class PreStep1,PreStep2,PreStep3,PostStep1,PostStep2,PostStep3,PostStep4,PostStep5,SqlStep1,SqlStep2,SqlStep3,SqlStep4,SqlStep5,AzdProv processClass
-    class PreDecision1,PreDecision2,PostDecision1,SqlDecision1,SqlDecision2,SqlDecision3 decisionClass
-    class Check,GenOrders optionalClass
+    %% ===== APPLY STYLES =====
+    class Start,PreReady,PostReady,SqlReady,Complete secondary
+    class PreError1,PreError2,PostError1,SqlError1,SqlError2,SqlError3 failed
+    class PreStep1,PreStep2,PreStep3,PostStep1,PostStep2,PostStep3,PostStep4,PostStep5,SqlStep1,SqlStep2,SqlStep3,SqlStep4,SqlStep5,AzdProv primary
+    class PreDecision1,PreDecision2,PostDecision1,SqlDecision1,SqlDecision2,SqlDecision3 decision
+    class Check,GenOrders external
 ```
 
 ### Pre-Provisioning Validation Flow (preprovision.ps1/sh)
@@ -235,199 +277,279 @@ flowchart LR
 ### Pre-Provisioning Validation Flow (preprovision.ps1/sh)
 
 ```mermaid
+---
+title: Pre-Provisioning Validation Flow
+---
 flowchart LR
+    %% ===== CLASS DEFINITIONS =====
+    classDef primary fill:#4F46E5,stroke:#3730A3,color:#FFFFFF
+    classDef secondary fill:#10B981,stroke:#059669,color:#FFFFFF
+    classDef datastore fill:#F59E0B,stroke:#D97706,color:#000000
+    classDef external fill:#6B7280,stroke:#4B5563,color:#FFFFFF,stroke-dasharray: 5 5
+    classDef failed fill:#F44336,stroke:#C62828,color:#FFFFFF
+    classDef trigger fill:#818CF8,stroke:#4F46E5,color:#FFFFFF
+    classDef decision fill:#FFFBEB,stroke:#F59E0B,color:#000000
+    classDef input fill:#F3F4F6,stroke:#6B7280,color:#000000
+
+    %% ===== START NODE =====
     Start["PREPROVISION (.PS1/.SH) START<br/>Version 2.3.0<br/>Last Modified: 2026-01-06"]
 
+    %% ===== RUNTIME VALIDATION SECTION =====
     subgraph RuntimeCheck["1️⃣ Runtime Validation"]
         direction TB
         Step1["Runtime Version<br/>PowerShell: 7.0+ | Bash: 4.0+"]
         Decision1{Pass?}
         Error1["ERROR: Upgrade PowerShell"]
-        Step1 --> Decision1
-        Decision1 -->|✗ FAIL| Error1
+        Step1 -->|"validates version"| Decision1
+        Decision1 -->|"✗ FAIL"| Error1
     end
+    style RuntimeCheck fill:#EEF2FF,stroke:#4F46E5,stroke-width:2px
 
+    %% ===== PREREQUISITES VALIDATION SECTION =====
     subgraph PrereqCheck["2️⃣ Prerequisites Validation"]
         direction TB
         Step2["Prerequisites Validation"]
         Prereqs["Validate Prerequisites:<br/>2.1 .NET SDK (10.0+)<br/>2.2 Azure Developer CLI<br/>2.3 Azure CLI (2.60.0+)<br/>2.4 Bicep CLI (0.30.0+)<br/>2.5 Resource Providers (8)<br/>2.6 Azure Quota (info)"]
         Decision2{All Pass?}
         Error2["ERROR: Fix prerequisites"]
-        Step2 --> Prereqs
-        Prereqs --> Decision2
-        Decision2 -->|✗ ANY FAIL| Error2
+        Step2 -->|"initiates"| Prereqs
+        Prereqs -->|"validates all"| Decision2
+        Decision2 -->|"✗ ANY FAIL"| Error2
     end
+    style PrereqCheck fill:#DBEAFE,stroke:#3B82F6,stroke-width:2px
 
+    %% ===== SECRETS CLEARING SECTION =====
     subgraph SecretsPhase["3️⃣ Clear User Secrets"]
         direction TB
         Step3["Clear User Secrets<br/>Execute: clean-secrets.ps1<br/>Projects: Orders.API, Web.App, AppHost"]
         Decision3{Skip?}
         ClearSecrets["Clear all project secrets"]
         Skip["SKIPPED<br/>--validate-only<br/>--skip-secrets-clear<br/>--dry-run"]
-        Step3 --> Decision3
-        Decision3 -->|No| ClearSecrets
-        Decision3 -->|Yes| Skip
+        Step3 -->|"checks flags"| Decision3
+        Decision3 -->|"No - execute"| ClearSecrets
+        Decision3 -->|"Yes - skip"| Skip
     end
+    style SecretsPhase fill:#FEF3C7,stroke:#F59E0B,stroke-width:2px
 
+    %% ===== RESULT SECTION =====
     subgraph ResultPhase["4️⃣ Result"]
         direction TB
         Summary["EXECUTION SUMMARY<br/>Status: ✓ SUCCESS<br/>Duration: 14-22 seconds<br/>Exit Code: 0"]
         Ready["READY FOR DEPLOYMENT<br/>azd provision | azd up"]
-        Summary --> Ready
+        Summary -->|"outputs"| Ready
     end
+    style ResultPhase fill:#D1FAE5,stroke:#10B981,stroke-width:2px
 
-    Start --> RuntimeCheck
-    Decision1 -->|✓ PASS| PrereqCheck
-    Decision2 -->|✓ ALL PASS| SecretsPhase
-    ClearSecrets --> ResultPhase
-    Skip --> ResultPhase
+    %% ===== MAIN FLOW CONNECTIONS =====
+    Start -->|"initiates"| RuntimeCheck
+    Decision1 -->|"✓ PASS"| PrereqCheck
+    Decision2 -->|"✓ ALL PASS"| SecretsPhase
+    ClearSecrets -->|"proceeds to"| ResultPhase
+    Skip -->|"proceeds to"| ResultPhase
 
-    classDef successClass fill:#D1FAE5,stroke:#10B981,stroke-width:2px,color:#065F46
-    classDef errorClass fill:#FEE2E2,stroke:#EF4444,stroke-width:2px,color:#991B1B
-    classDef processClass fill:#EEF2FF,stroke:#4F46E5,stroke-width:2px,color:#312E81
-    classDef decisionClass fill:#FEF3C7,stroke:#F59E0B,stroke-width:2px,color:#92400E
-    classDef skipClass fill:#F3F4F6,stroke:#6B7280,stroke-width:2px,color:#374151
-
-    class Start,Summary,Ready successClass
-    class Error1,Error2 errorClass
-    class Step1,Step2,Prereqs,Step3,ClearSecrets processClass
-    class Decision1,Decision2,Decision3 decisionClass
-    class Skip skipClass
+    %% ===== APPLY STYLES =====
+    class Start,Summary,Ready secondary
+    class Error1,Error2 failed
+    class Step1,Step2,Prereqs,Step3,ClearSecrets primary
+    class Decision1,Decision2,Decision3 decision
+    class Skip input
 ```
 
 ### Parameter Modes
 
 ```mermaid
+---
+title: Script Parameter Modes and Behaviors
+---
 flowchart TD
+    %% ===== CLASS DEFINITIONS =====
+    classDef primary fill:#4F46E5,stroke:#3730A3,color:#FFFFFF
+    classDef secondary fill:#10B981,stroke:#059669,color:#FFFFFF
+    classDef datastore fill:#F59E0B,stroke:#D97706,color:#000000
+    classDef external fill:#6B7280,stroke:#4B5563,color:#FFFFFF,stroke-dasharray: 5 5
+    classDef failed fill:#F44336,stroke:#C62828,color:#FFFFFF
+    classDef trigger fill:#818CF8,stroke:#4F46E5,color:#FFFFFF
+    classDef decision fill:#FFFBEB,stroke:#F59E0B,color:#000000
+    classDef input fill:#F3F4F6,stroke:#6B7280,color:#000000
+
+    %% ===== VALIDATE ONLY MODE =====
     subgraph ValidateOnly["-ValidateOnly / --validate-only"]
         VO1["Steps 1 & 2: Full validation"]
         VO2["Step 3: SKIPPED (no secrets clearing)"]
-        VO1 --> VO2
+        VO1 -->|"then"| VO2
     end
+    style ValidateOnly fill:#EEF2FF,stroke:#4F46E5,stroke-width:2px
 
+    %% ===== SKIP SECRETS CLEAR MODE =====
     subgraph SkipSecretsClear["-SkipSecretsClear / --skip-secrets-clear"]
         SS1["Steps 1 & 2: Full validation"]
         SS2["Step 3: SKIPPED (no secrets clearing)"]
-        SS1 --> SS2
+        SS1 -->|"then"| SS2
     end
+    style SkipSecretsClear fill:#DBEAFE,stroke:#3B82F6,stroke-width:2px
 
+    %% ===== FORCE MODE =====
     subgraph Force["-Force / --force"]
         F1["Steps 1 & 2: Full validation"]
         F2["Step 3: Execute WITHOUT confirmation"]
-        F1 --> F2
+        F1 -->|"then"| F2
     end
+    style Force fill:#FEF3C7,stroke:#F59E0B,stroke-width:2px
 
+    %% ===== WHAT-IF MODE =====
     subgraph WhatIf["-WhatIf / --dry-run"]
         WI1["Steps 1 & 2: Full validation"]
         WI2["Step 3: PREVIEW only (no execution)"]
-        WI1 --> WI2
+        WI1 -->|"then"| WI2
     end
+    style WhatIf fill:#F3E8FF,stroke:#A855F7,stroke-width:2px
 
+    %% ===== VERBOSE MODE =====
     subgraph Verbose["-Verbose / --verbose"]
         V1["All steps: Detailed logging"]
         V2["Shows: Tool paths, versions, auth"]
         V3["Useful for: Troubleshooting, audit"]
-        V1 --> V2 --> V3
+        V1 -->|"includes"| V2
+        V2 -->|"enables"| V3
     end
+    style Verbose fill:#D1FAE5,stroke:#10B981,stroke-width:2px
 
-    classDef paramClass fill:#F3E8FF,stroke:#A855F7,stroke-width:2px,color:#581C87
-    class ValidateOnly,SkipSecretsClear,Force,WhatIf,Verbose paramClass
+    %% ===== APPLY STYLES =====
+    class VO1,SS1,F1,WI1,V1 primary
+    class VO2,SS2 input
+    class F2,V2,V3 secondary
+    class WI2 external
 ```
 
 ### Failure Handling Flow
 
 ```mermaid
+---
+title: Validation Failure Handling Flow
+---
 flowchart LR
+    %% ===== CLASS DEFINITIONS =====
+    classDef primary fill:#4F46E5,stroke:#3730A3,color:#FFFFFF
+    classDef secondary fill:#10B981,stroke:#059669,color:#FFFFFF
+    classDef datastore fill:#F59E0B,stroke:#D97706,color:#000000
+    classDef external fill:#6B7280,stroke:#4B5563,color:#FFFFFF,stroke-dasharray: 5 5
+    classDef failed fill:#F44336,stroke:#C62828,color:#FFFFFF
+    classDef trigger fill:#818CF8,stroke:#4F46E5,color:#FFFFFF
+    classDef decision fill:#FFFBEB,stroke:#F59E0B,color:#000000
+    classDef input fill:#F3F4F6,stroke:#6B7280,color:#000000
+
+    %% ===== DETECTION SECTION =====
     subgraph Detection["🔍 Detection"]
         direction TB
         Failure["Validation Failure<br/>in Step 2"]
     end
+    style Detection fill:#FEE2E2,stroke:#EF4444,stroke-width:2px
 
+    %% ===== REPORTING SECTION =====
     subgraph Reporting["📝 Reporting"]
         direction TB
         Display["Display error with ✗ symbol"]
         Instructions["Show installation/fix instructions"]
         SetFlag["Set prerequisitesFailed = true"]
         Continue["Continue checking remaining"]
-        Display --> Instructions
-        Instructions --> SetFlag
-        SetFlag --> Continue
+        Display -->|"provides"| Instructions
+        Instructions -->|"triggers"| SetFlag
+        SetFlag -->|"allows"| Continue
     end
+    style Reporting fill:#FEF3C7,stroke:#F59E0B,stroke-width:2px
 
+    %% ===== EXIT SECTION =====
     subgraph ExitPhase["🚪 Exit"]
         direction TB
         ThrowError["After all checks:<br/>Throw error and exit code 1"]
         FailureSummary["Display failure summary<br/>with duration"]
-        ThrowError --> FailureSummary
+        ThrowError -->|"outputs"| FailureSummary
     end
+    style ExitPhase fill:#FEE2E2,stroke:#C62828,stroke-width:2px
 
-    Detection --> Reporting
-    Reporting --> ExitPhase
+    %% ===== MAIN FLOW CONNECTIONS =====
+    Detection -->|"triggers"| Reporting
+    Reporting -->|"leads to"| ExitPhase
 
-    classDef failureClass fill:#FEE2E2,stroke:#EF4444,stroke-width:2px,color:#991B1B
-    classDef processClass fill:#FEF3C7,stroke:#F59E0B,stroke-width:2px,color:#92400E
-
-    class Failure,ThrowError,FailureSummary failureClass
-    class Display,Instructions,SetFlag,Continue processClass
+    %% ===== APPLY STYLES =====
+    class Failure,ThrowError,FailureSummary failed
+    class Display,Instructions,SetFlag,Continue datastore
 ```
 
 ### Integration Points
 
 ```mermaid
+---
+title: CI/CD Integration Points and Workflow
+---
 flowchart TD
-    CheckDev["1️⃣ check-dev-workstation (.ps1/.sh)<br/>(optional but recommended)<br/>Version: 1.0.0"]
-    CheckDev --> AZD
+    %% ===== CLASS DEFINITIONS =====
+    classDef primary fill:#4F46E5,stroke:#3730A3,color:#FFFFFF
+    classDef secondary fill:#10B981,stroke:#059669,color:#FFFFFF
+    classDef datastore fill:#F59E0B,stroke:#D97706,color:#000000
+    classDef external fill:#6B7280,stroke:#4B5563,color:#FFFFFF,stroke-dasharray: 5 5
+    classDef failed fill:#F44336,stroke:#C62828,color:#FFFFFF
+    classDef trigger fill:#818CF8,stroke:#4F46E5,color:#FFFFFF
+    classDef decision fill:#FFFBEB,stroke:#F59E0B,color:#000000
+    classDef input fill:#F3F4F6,stroke:#6B7280,color:#000000
 
+    %% ===== ENTRY POINT =====
+    CheckDev["1️⃣ check-dev-workstation (.ps1/.sh)<br/>(optional but recommended)<br/>Version: 1.0.0"]
+    CheckDev -->|"triggers"| AZD
+
+    %% ===== AZURE DEVELOPER CLI SECTION =====
     subgraph AZD["Azure Developer CLI (azd)"]
         AzdYaml["azure.yaml<br/>hooks:<br/>  preprovision: (build + validate)<br/>  postprovision: (secrets + data)<br/>  predeploy: (Logic Apps)<br/>  postdeploy: (validation)<br/>  postinfradelete: (cleanup)"]
-        AzdYaml --> AzdCmd["azd provision | azd up"]
-        AzdCmd --> Execute["2️⃣ Execute preprovision (.ps1/.sh)<br/>Version: 2.3.0"]
-        Execute --> Validate{Validation<br/>passes?}
-        Validate -->|✓| Deploy["Continue with deployment<br/>Bicep: infra/main.bicep"]
-        Deploy --> Post["3️⃣ Execute postprovision (.ps1/.sh)<br/>Version: 2.0.1"]
-        Post --> SqlConfig["4️⃣ Execute sql-managed-identity-config<br/>Version: 1.0.0 (2026-01-06)"]
-        SqlConfig --> Ready["✓ Ready for development"]
-        Validate -->|✗| Stop["Stop deployment"]
+        AzdYaml -->|"configures"| AzdCmd["azd provision | azd up"]
+        AzdCmd -->|"executes"| Execute["2️⃣ Execute preprovision (.ps1/.sh)<br/>Version: 2.3.0"]
+        Execute -->|"validates"| Validate{Validation<br/>passes?}
+        Validate -->|"✓ success"| Deploy["Continue with deployment<br/>Bicep: infra/main.bicep"]
+        Deploy -->|"triggers"| Post["3️⃣ Execute postprovision (.ps1/.sh)<br/>Version: 2.0.1"]
+        Post -->|"calls"| SqlConfig["4️⃣ Execute sql-managed-identity-config<br/>Version: 1.0.0 (2026-01-06)"]
+        SqlConfig -->|"completes"| Ready["✓ Ready for development"]
+        Validate -->|"✗ failure"| Stop["Stop deployment"]
     end
+    style AZD fill:#EEF2FF,stroke:#4F46E5,stroke-width:2px
 
+    %% ===== UTILITY SCRIPTS SECTION =====
     subgraph Utilities["Utility Scripts (Called by others)"]
         CleanSec["clean-secrets (.ps1/.sh)<br/>Version: 2.0.1<br/>Called by: preprovision & postprovision"]
         GenOrd["Generate-Orders (.ps1/.sh)<br/>Version: 2.0.1<br/>Manual execution (optional)"]
     end
+    style Utilities fill:#F3F4F6,stroke:#6B7280,stroke-width:2px
 
+    %% ===== GITHUB ACTIONS SECTION =====
     subgraph GitHub["GitHub Actions Integration"]
         GHAction1["- name: Check workstation<br/>  run: |<br/>    # Windows: pwsh check-dev-workstation.ps1<br/>    # Linux: bash check-dev-workstation.sh"]
         GHAction2["- name: Pre-provision<br/>  run: |<br/>    # Windows: pwsh preprovision.ps1 -Force<br/>    # Linux: bash preprovision.sh --force"]
         GHAction3["- name: Deploy<br/>  run: azd up --no-prompt"]
-        GHAction1 --> GHAction2
-        GHAction2 --> GHAction3
+        GHAction1 -->|"then"| GHAction2
+        GHAction2 -->|"then"| GHAction3
     end
+    style GitHub fill:#F3E8FF,stroke:#A855F7,stroke-width:2px
 
+    %% ===== AZURE DEVOPS SECTION =====
     subgraph AzureDevOps["Azure DevOps Pipeline Integration"]
         ADOTask1["- task: PowerShell@2<br/>  inputs:<br/>    filePath: hooks/check-dev-workstation.ps1"]
         ADOTask2["- task: PowerShell@2<br/>  inputs:<br/>    filePath: hooks/preprovision.ps1<br/>    arguments: -Force"]
         ADOTask3["- task: AzureCLI@2<br/>  inputs:<br/>    scriptType: pscore<br/>    scriptLocation: inlineScript<br/>    inlineScript: azd up --no-prompt"]
-        ADOTask1 --> ADOTask2
-        ADOTask2 --> ADOTask3
+        ADOTask1 -->|"then"| ADOTask2
+        ADOTask2 -->|"then"| ADOTask3
     end
+    style AzureDevOps fill:#DBEAFE,stroke:#3B82F6,stroke-width:2px
 
-    Execute -.calls.-> CleanSec
-    Post -.calls.-> CleanSec
-    Ready -.manual.-> GenOrd
+    %% ===== CROSS-SUBGRAPH CONNECTIONS =====
+    Execute -."calls utility".-> CleanSec
+    Post -."calls utility".-> CleanSec
+    Ready -."manual execution".-> GenOrd
 
-    classDef devClass fill:#FEF3C7,stroke:#F59E0B,stroke-width:3px,color:#92400E
-    classDef azdClass fill:#EEF2FF,stroke:#4F46E5,stroke-width:2px,color:#312E81
-    classDef ciClass fill:#F3E8FF,stroke:#A855F7,stroke-width:2px,color:#581C87
-    classDef successClass fill:#D1FAE5,stroke:#10B981,stroke-width:2px,color:#065F46
-    classDef failClass fill:#FEE2E2,stroke:#EF4444,stroke-width:2px,color:#991B1B
-    classDef utilClass fill:#F3F4F6,stroke:#6B7280,stroke-width:2px,color:#374151
-
-    class CheckDev devClass
-    class AzdYaml,AzdCmd,Execute azdClass
-    class GHAction1,GHAction2,GHAction3,ADOTask1,ADOTask2,ADOTask3 ciClass
-    class Deploy,Post,SqlConfig,Ready successClass
-    class Stop failClass
-    class CleanSec,GenOrd utilClass
+    %% ===== APPLY STYLES =====
+    class CheckDev datastore
+    class AzdYaml,AzdCmd,Execute primary
+    class GHAction1,GHAction2,GHAction3,ADOTask1,ADOTask2,ADOTask3 trigger
+    class Deploy,Post,SqlConfig,Ready secondary
+    class Stop failed
+    class CleanSec,GenOrd input
 ```
 
 ## Script Details
@@ -981,42 +1103,63 @@ docker ps | Select-String "servicebus"
 The inner loop represents the rapid code-compile-test cycle during active development:
 
 ```mermaid
+---
+title: Inner Loop Development Cycle
+---
 flowchart LR
-    Start([Start Development]) --> Running[AppHost Running]
+    %% ===== CLASS DEFINITIONS =====
+    classDef primary fill:#4F46E5,stroke:#3730A3,color:#FFFFFF
+    classDef secondary fill:#10B981,stroke:#059669,color:#FFFFFF
+    classDef datastore fill:#F59E0B,stroke:#D97706,color:#000000
+    classDef external fill:#6B7280,stroke:#4B5563,color:#FFFFFF,stroke-dasharray: 5 5
+    classDef failed fill:#F44336,stroke:#C62828,color:#FFFFFF
+    classDef trigger fill:#818CF8,stroke:#4F46E5,color:#FFFFFF
+    classDef decision fill:#FFFBEB,stroke:#F59E0B,color:#000000
+    classDef input fill:#F3F4F6,stroke:#6B7280,color:#000000
 
+    %% ===== START AND RUNNING NODES =====
+    Start([Start Development])
+    Running[AppHost Running]
+    Start -->|"initiates"| Running
+
+    %% ===== INNER LOOP SECTION =====
     subgraph InnerLoop["🔄 INNER LOOP (Seconds)"]
         direction TB
-        Edit[1. Edit Code<br/>.cs, .razor, .json] --> HotReload[2. Hot Reload<br/>Automatic]
-        HotReload --> Test[3. Test Changes<br/>Browser/API]
-        Test --> Observe[4. Observe Logs<br/>Aspire Dashboard]
-        Observe --> Decision{Works?}
-        Decision -->|Yes| Continue[Continue Development]
-        Decision -->|No| Debug[5. Debug<br/>Breakpoints]
-        Debug --> Edit
-        Continue --> Edit
+        Edit[1. Edit Code<br/>.cs, .razor, .json]
+        HotReload[2. Hot Reload<br/>Automatic]
+        Test[3. Test Changes<br/>Browser/API]
+        Observe[4. Observe Logs<br/>Aspire Dashboard]
+        Decision{Works?}
+        Continue[Continue Development]
+        Debug[5. Debug<br/>Breakpoints]
+        
+        Edit -->|"triggers"| HotReload
+        HotReload -->|"enables"| Test
+        Test -->|"monitored by"| Observe
+        Observe -->|"evaluates"| Decision
+        Decision -->|"Yes - success"| Continue
+        Decision -->|"No - issues"| Debug
+        Debug -->|"returns to"| Edit
+        Continue -->|"next iteration"| Edit
     end
+    style InnerLoop fill:#EEF2FF,stroke:#4F46E5,stroke-width:2px
 
-    Running --> InnerLoop
-    InnerLoop --> Commit[Commit Changes]
+    %% ===== END NODE =====
+    Commit[Commit Changes]
 
-    classDef startEnd fill:#312E81,stroke:#4F46E5,stroke-width:3px,color:#fff
-    classDef running fill:#065F46,stroke:#10B981,stroke-width:2px,color:#fff
-    classDef process fill:#EEF2FF,stroke:#4F46E5,stroke-width:2px,color:#312E81
-    classDef success fill:#D1FAE5,stroke:#10B981,stroke-width:2px,color:#065F46
-    classDef test fill:#F3E8FF,stroke:#A855F7,stroke-width:2px,color:#581C87
-    classDef loop fill:#FEF3C7,stroke:#F59E0B,stroke-width:2px,color:#92400E
-    classDef debug fill:#FEE2E2,stroke:#EF4444,stroke-width:2px,color:#991B1B
-    classDef commit fill:#DCFCE7,stroke:#22C55E,stroke-width:2px,color:#166534
-    classDef decision fill:#FEF3C7,stroke:#F59E0B,stroke-width:2px,color:#92400E
+    %% ===== MAIN FLOW CONNECTIONS =====
+    Running -->|"enters"| InnerLoop
+    InnerLoop -->|"completes to"| Commit
 
-    class Start startEnd
-    class Running running
-    class Edit,Continue process
-    class HotReload success
-    class Test test
-    class Observe,Decision loop
-    class Debug debug
-    class Commit commit
+    %% ===== APPLY STYLES =====
+    class Start trigger
+    class Running secondary
+    class Edit,Continue primary
+    class HotReload secondary
+    class Test trigger
+    class Observe,Decision decision
+    class Debug failed
+    class Commit secondary
 ```
 
 **Key Inner Loop Features:**
