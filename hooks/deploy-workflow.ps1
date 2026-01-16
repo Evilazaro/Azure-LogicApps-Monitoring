@@ -36,6 +36,8 @@ param(
     [switch]$Force
 )
 
+# Enable strict mode for robust error handling
+Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
 $ProgressPreference = 'SilentlyContinue'
 
