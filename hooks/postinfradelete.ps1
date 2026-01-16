@@ -67,6 +67,7 @@ Set-StrictMode -Version Latest
 $OriginalErrorActionPreference = $ErrorActionPreference
 $OriginalInformationPreference = $InformationPreference
 $OriginalProgressPreference = $ProgressPreference
+$OriginalConfirmPreference = $ConfirmPreference
 
 # Set script preferences for consistent behavior
 $ErrorActionPreference = 'Stop'
@@ -317,7 +318,7 @@ function Test-AzureCliInstalled {
     
     process {
         try {
-            $azCommand = Get-Command -Name 'az' -ErrorAction SilentlyContinue
+            $azCommand = Get-Command -Name 'az' -CommandType Application -ErrorAction SilentlyContinue
             
             if (-not $azCommand) {
                 Write-Log -Message 'Azure CLI (az) is not installed or not in PATH' -Level Error
@@ -458,8 +459,8 @@ function Get-DeletedLogicApps {
             
             # Filter for Logic Apps Standard (kind contains 'workflowapp')
             $deletedLogicApps = @($result.value | Where-Object {
-                $_.properties.kind -match 'workflowapp'
-            })
+                    $_.properties.kind -match 'workflowapp'
+                })
             
             if ($deletedLogicApps.Count -eq 0) {
                 Write-Log -Message "No soft-deleted Logic Apps found in location '$Location'" -Level Info
@@ -636,8 +637,8 @@ function Invoke-LogicAppPurge {
         if (-not [string]::IsNullOrWhiteSpace($ResourceGroup)) {
             Write-Verbose -Message "Filtering by resource group: $ResourceGroup"
             $deletedLogicApps = @($deletedLogicApps | Where-Object {
-                $_.properties.resourceGroup -eq $ResourceGroup
-            })
+                    $_.properties.resourceGroup -eq $ResourceGroup
+                })
             
             if ($deletedLogicApps.Count -eq 0) {
                 Write-Log -Message "No deleted Logic Apps found matching resource group '$ResourceGroup'" -Level Info
@@ -649,8 +650,8 @@ function Invoke-LogicAppPurge {
         if (-not [string]::IsNullOrWhiteSpace($LogicAppName)) {
             Write-Verbose -Message "Filtering by Logic App name pattern: $LogicAppName"
             $deletedLogicApps = @($deletedLogicApps | Where-Object {
-                $_.properties.deletedSiteName -like "*$LogicAppName*"
-            })
+                    $_.properties.deletedSiteName -like "*$LogicAppName*"
+                })
             
             if ($deletedLogicApps.Count -eq 0) {
                 Write-Log -Message "No deleted Logic Apps found matching name pattern '$LogicAppName'" -Level Info
@@ -807,6 +808,7 @@ finally {
     $ErrorActionPreference = $OriginalErrorActionPreference
     $InformationPreference = $OriginalInformationPreference
     $ProgressPreference = $OriginalProgressPreference
+    $ConfirmPreference = $OriginalConfirmPreference
     
     Write-Log -Message "Script completed with exit code: $script:ExitCode" -Level Info
     exit $script:ExitCode

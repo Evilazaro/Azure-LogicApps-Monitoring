@@ -310,10 +310,10 @@ When `--auto-install` or `-AutoInstall` is specified, the script can install mis
 
 If auto-install is not used, the script provides download links:
 
-- **.NET SDK**: https://dotnet.microsoft.com/download/dotnet/10.0
-- **Azure CLI**: https://docs.microsoft.com/cli/azure/install-azure-cli
-- **Azure Developer CLI**: https://aka.ms/azd/install
-- **Bicep CLI**: `az bicep install` or https://github.com/Azure/bicep/releases
+- **.NET SDK**: <https://dotnet.microsoft.com/download/dotnet/10.0>
+- **Azure CLI**: <https://docs.microsoft.com/cli/azure/install-azure-cli>
+- **Azure Developer CLI**: <https://aka.ms/azd/install>
+- **Bicep CLI**: `az bicep install` or <https://github.com/Azure/bicep/releases>
 - **zip**:
   - Windows: Built-in via `Compress-Archive` cmdlet (PowerShell 5.0+)
   - Ubuntu/Debian: `sudo apt-get install zip`
@@ -471,7 +471,7 @@ flowchart LR
 
 | Aspect           | Details                                                                                                                                                                                                                        |
 | ---------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| **Version**      | 2.3.0 (PowerShell: 2025-12-30, Bash: 2025-12-30)                                                                                                                                                                               |
+| **Version**      | 2.3.0 (PowerShell: 2026-01-06, Bash: 2026-01-06)                                                                                                                                                                               |
 | **Called By**    | • **Azure Developer CLI (azd)** automatically before `azd provision` or `azd up`<br/>• Developers manually for environment validation<br/>• CI/CD pipelines during automated deployment workflows                              |
 | **Calls**        | • `clean-secrets.ps1` or `clean-secrets.sh` for secret clearing<br/>• `az login` for Azure authentication<br/>• `az provider register` for resource provider registration<br/>• Installation scripts for missing prerequisites |
 | **Dependencies** | • **Runtime:** PowerShell 7.0+ or Bash 4.0+<br/>• **.NET SDK:** Version 10.0+<br/>• **Azure CLI:** Version 2.60.0+<br/>• **Azure Developer CLI (azd)**<br/>• **Bicep CLI:** Version 0.30.0+                                    |
@@ -584,7 +584,7 @@ For detailed diagnostic information:
 
 | Version   | Date       | Changes                                                                                                                                                                                                                                             |
 | --------- | ---------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **2.3.0** | 2026-01-06 | • Applied PowerShell best practices (OutputType on script block)<br/>• Updated copyright to 2025-2026<br/>• Documentation updates                                                                                                                   |
+| **2.3.0** | 2026-01-06 | • Applied PowerShell best practices (OutputType on script block)<br/>• Added preference backup/restore pattern in PowerShell<br/>• Added `-CommandType Application` to `Get-Command` calls for external commands<br/>• Added IFS protection in Bash<br/>• Updated copyright to 2025-2026<br/>• Documentation updates                                                                                                                   |
 | **2.3.0** | 2025-12-30 | • Added `--auto-install` parameter<br/>• Added `--use-device-code-login` parameter<br/>• Added installation functions for all prerequisites<br/>• Added Azure resource provider registration<br/>• Synchronized PowerShell and Bash implementations |
 | **2.0.0** | 2025-12-29 | • Complete rewrite with comprehensive validation<br/>• Added Bicep CLI validation<br/>• Added Azure authentication check<br/>• Added quota information                                                                                              |
 | **1.0.0** | 2025-12-01 | • Initial release with basic validation                                                                                                                                                                                                             |

@@ -49,6 +49,14 @@ param(
 
 # Script configuration
 Set-StrictMode -Version Latest
+
+# Save original preferences to restore in finally block
+$script:OriginalErrorActionPreference = $ErrorActionPreference
+$script:OriginalInformationPreference = $InformationPreference
+$script:OriginalProgressPreference = $ProgressPreference
+$script:OriginalConfirmPreference = $ConfirmPreference
+
+# Set script preferences for consistent behavior
 $ErrorActionPreference = 'Stop'
 $InformationPreference = 'Continue'
 $ProgressPreference = 'SilentlyContinue'
@@ -182,11 +190,11 @@ function Set-DotNetUserSecret {
         [Parameter(Mandatory = $true, Position = 2)]
         [ValidateNotNullOrEmpty()]
         [ValidateScript({ 
-            if (Test-Path -Path $_ -PathType Leaf) {
-                return $true
-            }
-            throw "Project file not found: $_"
-        })]
+                if (Test-Path -Path $_ -PathType Leaf) {
+                    return $true
+                }
+                throw "Project file not found: $_"
+            })]
         [string]$ProjectPath
     )
     
@@ -593,7 +601,7 @@ function Write-SectionHeader {
     begin {
         # Define line separator constants
         $mainSeparator = "═══════════════════════════════════════════════════════"
-        $subSeparator  = "───────────────────────────────────────────────────────"
+        $subSeparator = "───────────────────────────────────────────────────────"
     }
     
     process {
@@ -919,7 +927,8 @@ try {
         # Construct path to SQL managed identity configuration script
         $sqlConfigScriptPath = if ($PSScriptRoot) {
             Join-Path -Path $PSScriptRoot -ChildPath "sql-managed-identity-config.ps1"
-        } else {
+        }
+        else {
             Join-Path -Path (Get-Location).Path -ChildPath "sql-managed-identity-config.ps1"
         }
         
@@ -1000,16 +1009,19 @@ try {
                     # Manual intervention may be required for database access
                     $errorMessage = if ($_.Exception) { 
                         $_.Exception.Message 
-                    } elseif ($_ -is [string]) {
+                    }
+                    elseif ($_ -is [string]) {
                         $_
-                    } else {
+                    }
+                    else {
                         $_.ToString()
                     }
                     Write-Warning "Failed to configure SQL database managed identity: $errorMessage"
                     Write-Warning "The application may not have database access. Manual configuration may be required."
                     if ($_.Exception) {
                         Write-Verbose "Error details: $($_.Exception.ToString())"
-                    } else {
+                    }
+                    else {
                         Write-Verbose "Error details: $($_.ToString())"
                     }
                     Write-Information ""
@@ -1100,35 +1112,35 @@ try {
     
     # Define secrets for AppHost project (all Azure configuration)
     $appHostSecrets = [ordered]@{
-        'Azure:TenantId'                   = $azureTenantId
-        'Azure:SubscriptionId'             = $azureSubscriptionId
-        'Azure:Location'                   = $azureLocation
-        'Azure:ResourceGroup'              = $azureResourceGroup
-        'ApplicationInsights:Enabled'      = $enableApplicationInsights
-        'Azure:ApplicationInsights:Name'   = $applicationInsightsName
+        'Azure:TenantId'                       = $azureTenantId
+        'Azure:SubscriptionId'                 = $azureSubscriptionId
+        'Azure:Location'                       = $azureLocation
+        'Azure:ResourceGroup'                  = $azureResourceGroup
+        'ApplicationInsights:Enabled'          = $enableApplicationInsights
+        'Azure:ApplicationInsights:Name'       = $applicationInsightsName
         'ApplicationInsights:ConnectionString' = $applicationInsightsConnectionString
-        'Azure:ClientId'   = $azureClientId
-        'Azure:ManagedIdentity:Name'       = $azureManagedIdentityName
-        'Azure:ServiceBus:HostName'        = $azureServiceBusHostName
-        'Azure:ServiceBus:TopicName'       = $azureServiceBusTopicName
-        'Azure:ServiceBus:SubscriptionName' = $azureServiceBusSubscriptionName
-        'Azure:ServiceBus:Endpoint'        = $azureMessagingServiceBusEndpoint
-        'Azure:SqlServer:Fqdn'             = $azureSqlServerFqdn
-        'Azure:SqlServer:Name'             = $azureSqlServerName
-        'Azure:SqlDatabase:Name'           = $azureSqlDatabaseName
-        'Azure:Storage:AccountName'        = $azureStorageAccountName
-        'Azure:ContainerRegistry:Endpoint' = $azureContainerRegistryEndpoint
-        'Azure:ContainerRegistry:Name'     = $azureContainerRegistryName
-        'Azure:ContainerApps:EnvironmentName' = $azureContainerAppsEnvironmentName
-        'Azure:ContainerApps:EnvironmentId' = $azureContainerAppsEnvironmentId
-        'Azure:ContainerApps:DefaultDomain' = $azureContainerAppsEnvironmentDomain
-        'Azure:LogAnalytics:WorkspaceName' = $azureLogAnalyticsWorkspaceName
+        'Azure:ClientId'                       = $azureClientId
+        'Azure:ManagedIdentity:Name'           = $azureManagedIdentityName
+        'Azure:ServiceBus:HostName'            = $azureServiceBusHostName
+        'Azure:ServiceBus:TopicName'           = $azureServiceBusTopicName
+        'Azure:ServiceBus:SubscriptionName'    = $azureServiceBusSubscriptionName
+        'Azure:ServiceBus:Endpoint'            = $azureMessagingServiceBusEndpoint
+        'Azure:SqlServer:Fqdn'                 = $azureSqlServerFqdn
+        'Azure:SqlServer:Name'                 = $azureSqlServerName
+        'Azure:SqlDatabase:Name'               = $azureSqlDatabaseName
+        'Azure:Storage:AccountName'            = $azureStorageAccountName
+        'Azure:ContainerRegistry:Endpoint'     = $azureContainerRegistryEndpoint
+        'Azure:ContainerRegistry:Name'         = $azureContainerRegistryName
+        'Azure:ContainerApps:EnvironmentName'  = $azureContainerAppsEnvironmentName
+        'Azure:ContainerApps:EnvironmentId'    = $azureContainerAppsEnvironmentId
+        'Azure:ContainerApps:DefaultDomain'    = $azureContainerAppsEnvironmentDomain
+        'Azure:LogAnalytics:WorkspaceName'     = $azureLogAnalyticsWorkspaceName
     }
     
     # Define secrets for API project (Service Bus and Database configuration)
     $apiSecrets = [ordered]@{
-        'Azure:TenantId'                   = $azureTenantId
-        'Azure:ClientId'                   = $azureClientId
+        'Azure:TenantId'                       = $azureTenantId
+        'Azure:ClientId'                       = $azureClientId
         'ApplicationInsights:ConnectionString' = $applicationInsightsConnectionString
     }
     
@@ -1374,8 +1386,11 @@ finally {
     # Cleanup and reset preferences
     Write-Verbose "Executing finally block - cleaning up..."
     
-    # Reset progress preference to default
-    $ProgressPreference = 'Continue'
+    # Restore original preferences
+    $ErrorActionPreference = $script:OriginalErrorActionPreference
+    $InformationPreference = $script:OriginalInformationPreference
+    $ProgressPreference = $script:OriginalProgressPreference
+    $ConfirmPreference = $script:OriginalConfirmPreference
     
     # Calculate total execution time if available
     if (Get-Variable -Name executionStart -Scope Script -ErrorAction SilentlyContinue) {

@@ -489,6 +489,15 @@ check_dependencies() {
         exit 1
     fi
     
+    # Check for bc (arbitrary precision calculator)
+    if ! command -v bc &> /dev/null; then
+        log_error "bc is required but not installed. Install it with:"
+        log_error "  Ubuntu/Debian: sudo apt-get install bc"
+        log_error "  macOS: brew install bc"
+        log_error "  RHEL/CentOS: sudo yum install bc"
+        exit 1
+    fi
+    
     # Check for uuidgen or fall back to /proc/sys/kernel/random/uuid
     if ! command -v uuidgen &> /dev/null; then
         if [[ ! -f /proc/sys/kernel/random/uuid ]]; then
@@ -624,13 +633,11 @@ escape_json_string() {
 # Function: generate_order
 # Description: Generates a single order with random products
 # Arguments:
-#   $1 - Order number (for tracking)
+#   None - Order IDs are generated using UUIDs
 # Returns:
 #   JSON object representing the order
 #------------------------------------------------------------------------------
 generate_order() {
-    local order_number=$1
-    
     # Generate unique IDs
     local order_guid
     order_guid=$(get_short_uuid 12)
@@ -786,8 +793,8 @@ generate_all_orders() {
             json_content+=","
         fi
         
-        # Generate order
-        json_content+=$(generate_order "${i}")
+        # Generate order (no argument needed - IDs are UUID-based)
+        json_content+=$(generate_order)
         
         # Show progress every 10 orders or on last order
         if [[ $((i % 10)) -eq 0 || "${i}" -eq "${ORDER_COUNT}" ]]; then

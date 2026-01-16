@@ -59,6 +59,9 @@ param(
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
 
+# Store original preferences to restore in finally block
+$script:OriginalErrorActionPreference = $ErrorActionPreference
+
 #region Constants
 $script:GITHUB_OIDC_ISSUER = 'https://token.actions.githubusercontent.com'
 $script:AZURE_AD_AUDIENCE = 'api://AzureADTokenExchange'
@@ -71,6 +74,7 @@ function Write-InfoMessage {
         Writes an informational message to the host.
     #>
     [CmdletBinding()]
+    [OutputType([void])]
     param(
         [Parameter(Mandatory = $true)]
         [string]$Message,
@@ -87,6 +91,7 @@ function Write-SectionHeader {
         Writes a formatted section header.
     #>
     [CmdletBinding()]
+    [OutputType([void])]
     param(
         [Parameter(Mandatory = $true)]
         [string]$Title
@@ -288,6 +293,7 @@ function Show-WorkflowGuidance {
         Displays guidance for configuring GitHub Actions workflows.
     #>
     [CmdletBinding()]
+    [OutputType([void])]
     param()
 
     Write-SectionHeader -Title 'Setup Complete!'
@@ -315,93 +321,100 @@ permissions:
 #endregion Helper Functions
 
 #region Main Script
+try {
+    Write-SectionHeader -Title 'Federated Identity Credential Setup'
 
-#endregion Helper Functions
+    # Verify Azure CLI login
+    $null = Test-AzureCliLogin
 
-#region Main Script
-Write-SectionHeader -Title 'Federated Identity Credential Setup'
+    # Get the App Registration
+    $app = Get-AppRegistration -Name $AppName -ObjectId $AppObjectId
+    $resolvedAppObjectId = $app.id
 
-# Verify Azure CLI login
-$null = Test-AzureCliLogin
+    # Get existing federated credentials
+    $existingCredentials = Get-FederatedCredentials -AppObjectId $resolvedAppObjectId
 
-# Get the App Registration
-$app = Get-AppRegistration -Name $AppName -ObjectId $AppObjectId
-$resolvedAppObjectId = $app.id
-
-# Get existing federated credentials
-$existingCredentials = Get-FederatedCredentials -AppObjectId $resolvedAppObjectId
-
-if ($null -ne $existingCredentials -and $existingCredentials.Count -gt 0) {
-    Write-InfoMessage -Message 'Existing federated credentials:' -ForegroundColor Cyan
-    foreach ($cred in $existingCredentials) {
-        Write-InfoMessage -Message "  - Name: $($cred.name)"
-        Write-Host "    Subject: $($cred.subject)" -ForegroundColor Gray
-        Write-Host ''
+    if ($null -ne $existingCredentials -and $existingCredentials.Count -gt 0) {
+        Write-InfoMessage -Message 'Existing federated credentials:' -ForegroundColor Cyan
+        foreach ($cred in $existingCredentials) {
+            Write-InfoMessage -Message "  - Name: $($cred.name)"
+            Write-Host "    Subject: $($cred.subject)" -ForegroundColor Gray
+            Write-Host ''
+        }
     }
+
+    # Define the subject claim for the GitHub environment
+    $subjectClaim = "repo:${GitHubOrg}/${GitHubRepo}:environment:${Environment}"
+    $credentialName = "github-actions-${Environment}-environment"
+
+    # Check if credential already exists
+    $existingCred = $existingCredentials | Where-Object { $_.subject -eq $subjectClaim }
+
+    if ($null -ne $existingCred) {
+        Write-InfoMessage -Message "Federated credential for subject '$subjectClaim' already exists." -ForegroundColor Green
+        Write-InfoMessage -Message "Credential Name: $($existingCred.name)"
+        exit 0
+    }
+
+    # Create the environment federated credential
+    $null = New-FederatedCredential `
+        -AppObjectId $resolvedAppObjectId `
+        -CredentialName $credentialName `
+        -Subject $subjectClaim `
+        -Description "GitHub Actions OIDC for $GitHubOrg/$GitHubRepo $Environment environment"
+    #endregion Main Script
+
+    #region Optional Credentials
+    Write-SectionHeader -Title 'Additional Credential Options'
+
+    $createBranch = Read-Host "`nDo you want to create a credential for the 'main' branch? (y/N)"
+    if ($createBranch -eq 'y' -or $createBranch -eq 'Y') {
+        $branchSubject = "repo:${GitHubOrg}/${GitHubRepo}:ref:refs/heads/main"
+        $branchCredName = 'github-actions-main-branch'
+
+        $branchExists = $existingCredentials | Where-Object { $_.subject -eq $branchSubject }
+        if ($null -eq $branchExists) {
+            $null = New-FederatedCredential `
+                -AppObjectId $resolvedAppObjectId `
+                -CredentialName $branchCredName `
+                -Subject $branchSubject `
+                -Description "GitHub Actions OIDC for $GitHubOrg/$GitHubRepo main branch"
+            Write-InfoMessage -Message 'Created credential for main branch.' -ForegroundColor Green
+        }
+        else {
+            Write-InfoMessage -Message 'Credential for main branch already exists.' -ForegroundColor Yellow
+        }
+    }
+
+    $createPR = Read-Host 'Do you want to create a credential for pull requests? (y/N)'
+    if ($createPR -eq 'y' -or $createPR -eq 'Y') {
+        $prSubject = "repo:${GitHubOrg}/${GitHubRepo}:pull_request"
+        $prCredName = 'github-actions-pull-request'
+
+        $prExists = $existingCredentials | Where-Object { $_.subject -eq $prSubject }
+        if ($null -eq $prExists) {
+            $null = New-FederatedCredential `
+                -AppObjectId $resolvedAppObjectId `
+                -CredentialName $prCredName `
+                -Subject $prSubject `
+                -Description "GitHub Actions OIDC for $GitHubOrg/$GitHubRepo pull requests"
+            Write-InfoMessage -Message 'Created credential for pull requests.' -ForegroundColor Green
+        }
+        else {
+            Write-InfoMessage -Message 'Credential for pull requests already exists.' -ForegroundColor Yellow
+        }
+    }
+    #endregion Optional Credentials
+
+    # Show workflow guidance
+    Show-WorkflowGuidance
 }
-
-# Define the subject claim for the GitHub environment
-$subjectClaim = "repo:${GitHubOrg}/${GitHubRepo}:environment:${Environment}"
-$credentialName = "github-actions-${Environment}-environment"
-
-# Check if credential already exists
-$existingCred = $existingCredentials | Where-Object { $_.subject -eq $subjectClaim }
-
-if ($null -ne $existingCred) {
-    Write-InfoMessage -Message "Federated credential for subject '$subjectClaim' already exists." -ForegroundColor Green
-    Write-InfoMessage -Message "Credential Name: $($existingCred.name)"
-    exit 0
+catch {
+    Write-Host "ERROR: $($_.Exception.Message)" -ForegroundColor Red
+    Write-Verbose -Message "Stack trace: $($_.ScriptStackTrace)"
+    exit 1
 }
-
-# Create the environment federated credential
-$null = New-FederatedCredential `
-    -AppObjectId $resolvedAppObjectId `
-    -CredentialName $credentialName `
-    -Subject $subjectClaim `
-    -Description "GitHub Actions OIDC for $GitHubOrg/$GitHubRepo $Environment environment"
-#endregion Main Script
-
-#region Optional Credentials
-Write-SectionHeader -Title 'Additional Credential Options'
-
-$createBranch = Read-Host "`nDo you want to create a credential for the 'main' branch? (y/N)"
-if ($createBranch -eq 'y' -or $createBranch -eq 'Y') {
-    $branchSubject = "repo:${GitHubOrg}/${GitHubRepo}:ref:refs/heads/main"
-    $branchCredName = 'github-actions-main-branch'
-
-    $branchExists = $existingCredentials | Where-Object { $_.subject -eq $branchSubject }
-    if ($null -eq $branchExists) {
-        $null = New-FederatedCredential `
-            -AppObjectId $resolvedAppObjectId `
-            -CredentialName $branchCredName `
-            -Subject $branchSubject `
-            -Description "GitHub Actions OIDC for $GitHubOrg/$GitHubRepo main branch"
-        Write-InfoMessage -Message 'Created credential for main branch.' -ForegroundColor Green
-    }
-    else {
-        Write-InfoMessage -Message 'Credential for main branch already exists.' -ForegroundColor Yellow
-    }
+finally {
+    # Restore original preferences
+    $ErrorActionPreference = $script:OriginalErrorActionPreference
 }
-
-$createPR = Read-Host 'Do you want to create a credential for pull requests? (y/N)'
-if ($createPR -eq 'y' -or $createPR -eq 'Y') {
-    $prSubject = "repo:${GitHubOrg}/${GitHubRepo}:pull_request"
-    $prCredName = 'github-actions-pull-request'
-
-    $prExists = $existingCredentials | Where-Object { $_.subject -eq $prSubject }
-    if ($null -eq $prExists) {
-        $null = New-FederatedCredential `
-            -AppObjectId $resolvedAppObjectId `
-            -CredentialName $prCredName `
-            -Subject $prSubject `
-            -Description "GitHub Actions OIDC for $GitHubOrg/$GitHubRepo pull requests"
-        Write-InfoMessage -Message 'Created credential for pull requests.' -ForegroundColor Green
-    }
-    else {
-        Write-InfoMessage -Message 'Credential for pull requests already exists.' -ForegroundColor Yellow
-    }
-}
-#endregion Optional Credentials
-
-# Show workflow guidance
-Show-WorkflowGuidance

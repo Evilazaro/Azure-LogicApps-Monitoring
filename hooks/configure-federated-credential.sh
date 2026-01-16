@@ -30,6 +30,15 @@
 
 set -euo pipefail
 
+# Validate required dependencies
+if ! command -v jq &> /dev/null; then
+    echo "ERROR: 'jq' is required but not installed. Please install jq first." >&2
+    echo "  - macOS: brew install jq" >&2
+    echo "  - Ubuntu/Debian: sudo apt-get install jq" >&2
+    echo "  - RHEL/CentOS: sudo yum install jq" >&2
+    exit 1
+fi
+
 #region Constants
 readonly GITHUB_OIDC_ISSUER="https://token.actions.githubusercontent.com"
 readonly AZURE_AD_AUDIENCE="api://AzureADTokenExchange"
@@ -171,9 +180,6 @@ create_federated_credential() {
     local temp_file
     temp_file=$(mktemp)
 
-    # Ensure temp file is cleaned up on exit
-    trap "rm -f '$temp_file'" EXIT
-
     cat > "$temp_file" << EOF
 {
     "name": "$credential_name",
@@ -192,7 +198,6 @@ EOF
     fi
 
     rm -f "$temp_file"
-    trap - EXIT
 
     local result_id result_name
     result_id=$(echo "$result_json" | jq -r '.id')

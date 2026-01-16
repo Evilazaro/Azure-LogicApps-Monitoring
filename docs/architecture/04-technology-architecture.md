@@ -56,55 +56,64 @@
 ### Platform Decomposition
 
 ```mermaid
+---
+title: Platform Decomposition - Azure Services Architecture
+---
 flowchart TB
-    %% Platform Decomposition - Azure platform services architecture
+    %% ===== CLASS DEFINITIONS =====
+    classDef primary fill:#4F46E5,stroke:#3730A3,color:#FFFFFF
+    classDef secondary fill:#10B981,stroke:#059669,color:#FFFFFF
+    classDef datastore fill:#F59E0B,stroke:#D97706,color:#000000
+    classDef external fill:#6B7280,stroke:#4B5563,color:#FFFFFF,stroke-dasharray: 5 5
+    classDef failed fill:#F44336,stroke:#C62828,color:#FFFFFF
+    classDef trigger fill:#818CF8,stroke:#4F46E5,color:#FFFFFF
+    classDef decision fill:#FFFBEB,stroke:#F59E0B,color:#000000
+    classDef input fill:#F3F4F6,stroke:#6B7280,color:#000000
+
+    %% ===== COMPUTE PLATFORM =====
     subgraph Compute["🖥️ Compute Platform"]
-        ACA["Azure Container Apps<br/><i>API & Web App</i>"]
-        LA["Logic Apps Standard<br/><i>Workflows</i>"]
-        ASP["App Service Plan<br/><i>WS1</i>"]
+        ACA["Azure Container Apps<br/><i>API & Web App</i>"]:::primary
+        LA["Logic Apps Standard<br/><i>Workflows</i>"]:::primary
+        ASP["App Service Plan<br/><i>WS1</i>"]:::primary
     end
+    style Compute fill:#EEF2FF,stroke:#4F46E5,stroke-width:2px,color:#312E81
 
+    %% ===== DATA PLATFORM =====
     subgraph Data["💾 Data Platform"]
-        SQL["Azure SQL Database<br/><i>OrderDb</i>"]
-        SB["Azure Service Bus<br/><i>Standard</i>"]
-        Storage["Azure Storage<br/><i>Standard LRS</i>"]
+        SQL["Azure SQL Database<br/><i>OrderDb</i>"]:::datastore
+        SB["Azure Service Bus<br/><i>Standard</i>"]:::datastore
+        Storage["Azure Storage<br/><i>Standard LRS</i>"]:::datastore
     end
+    style Data fill:#D1FAE5,stroke:#10B981,stroke-width:2px,color:#065F46
 
+    %% ===== OBSERVABILITY PLATFORM =====
     subgraph Observability["📊 Observability Platform"]
-        AI["Application Insights"]
-        LAW["Log Analytics Workspace"]
+        AI["Application Insights"]:::secondary
+        LAW["Log Analytics Workspace"]:::secondary
     end
+    style Observability fill:#FEF3C7,stroke:#F59E0B,stroke-width:2px,color:#92400E
 
+    %% ===== IDENTITY PLATFORM =====
     subgraph Identity["🔐 Identity Platform"]
-        MI["User-Assigned<br/>Managed Identity"]
-        RBAC["Azure RBAC<br/>Role Assignments"]
+        MI["User-Assigned<br/>Managed Identity"]:::trigger
+        RBAC["Azure RBAC<br/>Role Assignments"]:::trigger
     end
+    style Identity fill:#F3E8FF,stroke:#A855F7,stroke-width:2px,color:#581C87
 
+    %% ===== NETWORK PLATFORM =====
     subgraph Network["🌐 Network Platform"]
-        VNet["Virtual Network"]
-        Subnets["Subnets<br/><i>API, LogicApp</i>"]
+        VNet["Virtual Network"]:::input
+        Subnets["Subnets<br/><i>API, LogicApp</i>"]:::input
     end
+    style Network fill:#FCE7F3,stroke:#EC4899,stroke-width:2px,color:#9D174D
 
-    %% Platform dependencies
-    Compute --> Data
-    Compute --> Observability
-    Compute --> Identity
-    Data --> Observability
-    Data --> Identity
-    Compute --> Network
-
-    %% Modern color palette - WCAG AA compliant
-    classDef compute fill:#EEF2FF,stroke:#4F46E5,stroke-width:2px,color:#312E81
-    classDef data fill:#D1FAE5,stroke:#10B981,stroke-width:2px,color:#065F46
-    classDef observe fill:#FEF3C7,stroke:#F59E0B,stroke-width:2px,color:#92400E
-    classDef identity fill:#F3E8FF,stroke:#A855F7,stroke-width:2px,color:#581C87
-    classDef network fill:#FCE7F3,stroke:#EC4899,stroke-width:2px,color:#9D174D
-
-    class ACA,LA,ASP compute
-    class SQL,SB,Storage data
-    class AI,LAW observe
-    class MI,RBAC identity
-    class VNet,Subnets network
+    %% ===== PLATFORM DEPENDENCIES =====
+    Compute -->|"stores data"| Data
+    Compute -->|"sends telemetry"| Observability
+    Compute -->|"authenticates via"| Identity
+    Data -->|"logs metrics"| Observability
+    Data -->|"authorizes with"| Identity
+    Compute -->|"connects through"| Network
 ```
 
 ### Compute Platform
@@ -135,57 +144,77 @@ flowchart TB
 ## 🏛️ 4. Azure Resource Topology
 
 ```mermaid
+---
+title: Azure Resource Topology - Resource Group Structure
+---
 flowchart TB
-    %% Azure Resource Topology - Resource group structure
+    %% ===== CLASS DEFINITIONS =====
+    classDef primary fill:#4F46E5,stroke:#3730A3,color:#FFFFFF
+    classDef secondary fill:#10B981,stroke:#059669,color:#FFFFFF
+    classDef datastore fill:#F59E0B,stroke:#D97706,color:#000000
+    classDef external fill:#6B7280,stroke:#4B5563,color:#FFFFFF,stroke-dasharray: 5 5
+    classDef failed fill:#F44336,stroke:#C62828,color:#FFFFFF
+    classDef trigger fill:#818CF8,stroke:#4F46E5,color:#FFFFFF
+    classDef decision fill:#FFFBEB,stroke:#F59E0B,color:#000000
+    classDef input fill:#F3F4F6,stroke:#6B7280,color:#000000
+
+    %% ===== RESOURCE GROUP =====
     subgraph RG["📁 Resource Group: rg-orders-{env}-{region}"]
+        %% ===== COMPUTE RESOURCES =====
         subgraph Compute["Compute"]
-            CAE["Container Apps Environment"]
-            CA1["Container App: orders-api"]
-            CA2["Container App: web-app"]
-            ASP["App Service Plan: WS1"]
-            LA["Logic App: OrdersManagement"]
+            CAE["Container Apps Environment"]:::primary
+            CA1["Container App: orders-api"]:::primary
+            CA2["Container App: web-app"]:::primary
+            ASP["App Service Plan: WS1"]:::primary
+            LA["Logic App: OrdersManagement"]:::primary
         end
+        style Compute fill:#EEF2FF,stroke:#4F46E5,stroke-width:2px,color:#312E81
 
+        %% ===== DATA RESOURCES =====
         subgraph Data["Data"]
-            SQL["SQL Server"]
-            SQLDB["SQL Database: OrderDb"]
-            SB["Service Bus Namespace"]
-            Topic["Topic: ordersplaced"]
-            Sub["Subscription: orderprocessingsub"]
-            Storage["Storage Account"]
+            SQL["SQL Server"]:::datastore
+            SQLDB["SQL Database: OrderDb"]:::datastore
+            SB["Service Bus Namespace"]:::datastore
+            Topic["Topic: ordersplaced"]:::datastore
+            Sub["Subscription: orderprocessingsub"]:::datastore
+            Storage["Storage Account"]:::datastore
         end
+        style Data fill:#D1FAE5,stroke:#10B981,stroke-width:2px,color:#065F46
 
+        %% ===== MONITORING RESOURCES =====
         subgraph Monitoring["Monitoring"]
-            AI["Application Insights"]
-            LAW["Log Analytics Workspace"]
+            AI["Application Insights"]:::secondary
+            LAW["Log Analytics Workspace"]:::secondary
         end
+        style Monitoring fill:#FEF3C7,stroke:#F59E0B,stroke-width:2px,color:#92400E
 
+        %% ===== IDENTITY RESOURCES =====
         subgraph Identity["Identity"]
-            MI["User-Assigned Managed Identity"]
+            MI["User-Assigned Managed Identity"]:::trigger
         end
+        style Identity fill:#F3E8FF,stroke:#A855F7,stroke-width:2px,color:#581C87
 
+        %% ===== NETWORK RESOURCES =====
         subgraph Network["Network"]
-            VNet["Virtual Network"]
-            SubnetAPI["Subnet: api"]
-            SubnetLA["Subnet: logicapp"]
+            VNet["Virtual Network"]:::input
+            SubnetAPI["Subnet: api"]:::input
+            SubnetLA["Subnet: logicapp"]:::input
         end
+        style Network fill:#FCE7F3,stroke:#EC4899,stroke-width:2px,color:#9D174D
     end
+    style RG fill:#F8FAFC,stroke:#64748B,stroke-width:3px,color:#1E293B
 
-    %% Resource relationships
-    CAE --> CA1
-    CAE --> CA2
-    ASP --> LA
-    SQL --> SQLDB
-    SB --> Topic --> Sub
-    VNet --> SubnetAPI
-    VNet --> SubnetLA
-    CA1 --> SubnetAPI
-    LA --> SubnetLA
-
-    %% Modern color palette - WCAG AA compliant
-    classDef resource fill:#EEF2FF,stroke:#4F46E5,stroke-width:2px,color:#312E81
-
-    class RG,CAE,CA1,CA2,ASP,LA,SQL,SQLDB,SB,Topic,Sub,Storage,AI,LAW,MI,VNet,SubnetAPI,SubnetLA resource
+    %% ===== RESOURCE RELATIONSHIPS =====
+    CAE -->|"hosts"| CA1
+    CAE -->|"hosts"| CA2
+    ASP -->|"runs"| LA
+    SQL -->|"contains"| SQLDB
+    SB -->|"contains"| Topic
+    Topic -->|"delivers to"| Sub
+    VNet -->|"defines"| SubnetAPI
+    VNet -->|"defines"| SubnetLA
+    CA1 -->|"deployed in"| SubnetAPI
+    LA -->|"deployed in"| SubnetLA
 ```
 
 ---

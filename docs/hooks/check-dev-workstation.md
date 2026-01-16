@@ -351,7 +351,7 @@ flowchart LR
 
 **Process Details:**
 
-1. **Script Initialization**: Establishes strict error handling (PowerShell: `Set-StrictMode -Version Latest`, Bash: `set -euo pipefail`) and sets error action preference to `Continue`
+1. **Script Initialization**: Establishes strict error handling (PowerShell: `Set-StrictMode -Version Latest`, Bash: `set -euo pipefail`) and sets error action preference to `Stop` for fail-fast behavior
 2. **Path Resolution**: Validates that the preprovision script exists in the same directory (`$PSScriptRoot/preprovision.ps1` or `$SCRIPT_DIR/preprovision.sh`)
 3. **Validation Delegation**: Executes preprovision with `-ValidateOnly` (PowerShell) or `--validate-only` (Bash) flag, capturing all output via stream redirection (`2>&1`)
 4. **Result Processing**: Captures exit code, displays formatted output to stdout, and exits with appropriate status code (0 for success, error code for failure)

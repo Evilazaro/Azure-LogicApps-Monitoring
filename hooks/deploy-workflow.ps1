@@ -29,17 +29,18 @@
 [CmdletBinding()]
 param(
     [Parameter(Position = 0)]
-    [ValidateScript({ $_ -eq '' -or (Test-Path -Path $_ -PathType Container) })]
-    [string]$WorkflowPath,
-
-    [Parameter()]
-    [switch]$Force
+    [AllowEmptyString()]
+    [string]$WorkflowPath
 )
 
 # Enable strict mode for robust error handling
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
 $ProgressPreference = 'SilentlyContinue'
+
+# Store original preferences to restore in finally block
+$script:OriginalErrorActionPreference = $ErrorActionPreference
+$script:OriginalProgressPreference = $ProgressPreference
 
 # Placeholder pattern for ${VARIABLE} substitution
 $PlaceholderPattern = '\$\{([A-Z_][A-Z0-9_]*)\}'
@@ -50,7 +51,9 @@ $ExcludePatterns = @('.debug', '.git*', '.vscode', '__azurite*', '__blobstorage_
 #region Helper Functions
 
 function Write-Log {
-    param([string]$Message, [ValidateSet('Info','Success','Warning','Error')][string]$Level = 'Info')
+    [CmdletBinding()]
+    [OutputType([void])]
+    param([string]$Message, [ValidateSet('Info', 'Success', 'Warning', 'Error')][string]$Level = 'Info')
     $prefix = @{ Info = '[i]'; Success = '[✓]'; Warning = '[!]'; Error = '[✗]' }[$Level]
     $color = @{ Info = 'Cyan'; Success = 'Green'; Warning = 'Yellow'; Error = 'Red' }[$Level]
     Write-Host "$(Get-Date -Format 'HH:mm:ss') $prefix $Message" -ForegroundColor $color
@@ -167,159 +170,173 @@ function Get-ConnectionRuntimeUrl {
 
 #region Main
 
-Write-Host "`n╔════════════════════════════════════════════════════════╗" -ForegroundColor Cyan
-Write-Host "║     Logic Apps Standard Workflow Deployment            ║" -ForegroundColor Cyan
-Write-Host "╚════════════════════════════════════════════════════════╝`n" -ForegroundColor Cyan
-
-# Set up environment variable aliases for connections.json compatibility
-Set-WorkflowEnvironmentAliases
-
-# Load required configuration from environment
-$config = @{
-    SubscriptionId     = Get-EnvironmentValue 'AZURE_SUBSCRIPTION_ID'
-    ResourceGroup      = Get-EnvironmentValue 'AZURE_RESOURCE_GROUP'
-    LogicAppName       = Get-EnvironmentValue 'LOGIC_APP_NAME'
-    Location           = Get-EnvironmentValue 'AZURE_LOCATION' 'westus3'
-    ServiceBusRuntimeUrl = Get-EnvironmentValue 'SERVICE_BUS_CONNECTION_RUNTIME_URL'
-    BlobRuntimeUrl     = Get-EnvironmentValue 'AZURE_BLOB_CONNECTION_RUNTIME_URL'
-}
-
-# Validate required values
-$missing = @()
-if (-not $config.SubscriptionId) { $missing += 'AZURE_SUBSCRIPTION_ID' }
-if (-not $config.ResourceGroup) { $missing += 'AZURE_RESOURCE_GROUP' }
-if (-not $config.LogicAppName) { $missing += 'LOGIC_APP_NAME' }
-
-if ($missing.Count -gt 0) {
-    Write-Log -Message "Missing environment variables: $($missing -join ', ')" -Level Error
-    exit 1
-}
-
-Write-Log -Message "Target: $($config.LogicAppName) in $($config.ResourceGroup)"
-
-# Find workflow project
-$projectPath = if ($WorkflowPath -and (Test-Path $WorkflowPath)) {
-    $WorkflowPath
-} else {
-    $searchPath = Join-Path $PSScriptRoot '..\workflows\OrdersManagement\OrdersManagementLogicApp'
-    if (Test-Path $searchPath) { (Resolve-Path $searchPath).Path }
-    else { throw 'Workflow project not found' }
-}
-Write-Log -Message "Source: $projectPath"
-
-# Discover workflows
-$workflows = Get-ChildItem -Path $projectPath -Directory | Where-Object {
-    $dirName = $_.Name
-    (Test-Path (Join-Path $_.FullName 'workflow.json')) -and
-    (-not ($ExcludePatterns | Where-Object { $dirName -like $_ }))
-}
-
-if ($workflows.Count -eq 0) { throw 'No workflows found' }
-Write-Log -Message "Workflows: $($workflows.Name -join ', ')" -Level Success
-
-# Get connection runtime URLs if not in environment
-if ([string]::IsNullOrEmpty($config.ServiceBusRuntimeUrl)) {
-    Write-Log -Message 'Fetching Service Bus connection runtime URL...'
-    $config.ServiceBusRuntimeUrl = Get-ConnectionRuntimeUrl -ConnectionName 'servicebus' -ResourceGroup $config.ResourceGroup -SubscriptionId $config.SubscriptionId
-}
-if ([string]::IsNullOrEmpty($config.BlobRuntimeUrl)) {
-    Write-Log -Message 'Fetching Azure Blob connection runtime URL...'
-    $config.BlobRuntimeUrl = Get-ConnectionRuntimeUrl -ConnectionName 'azureblob' -ResourceGroup $config.ResourceGroup -SubscriptionId $config.SubscriptionId
-}
-
-# Create staging directory
-$stagingDir = Join-Path ([IO.Path]::GetTempPath()) "logicapp-$(Get-Random)"
-New-Item -ItemType Directory -Path $stagingDir -Force | Out-Null
-
 try {
-    # Copy host.json
-    Copy-Item (Join-Path $projectPath 'host.json') $stagingDir
 
-    # Process connections.json
-    $connectionsFile = Join-Path $projectPath 'connections.json'
-    if (Test-Path $connectionsFile) {
-        $content = Get-Content $connectionsFile -Raw
-        $resolved = Resolve-Placeholders $content 'connections.json'
-        Set-Content (Join-Path $stagingDir 'connections.json') $resolved
+    Write-Host "`n╔════════════════════════════════════════════════════════╗" -ForegroundColor Cyan
+    Write-Host "║     Logic Apps Standard Workflow Deployment            ║" -ForegroundColor Cyan
+    Write-Host "╚════════════════════════════════════════════════════════╝`n" -ForegroundColor Cyan
+
+    # Set up environment variable aliases for connections.json compatibility
+    Set-WorkflowEnvironmentAliases
+
+    # Load required configuration from environment
+    $config = @{
+        SubscriptionId       = Get-EnvironmentValue 'AZURE_SUBSCRIPTION_ID'
+        ResourceGroup        = Get-EnvironmentValue 'AZURE_RESOURCE_GROUP'
+        LogicAppName         = Get-EnvironmentValue 'LOGIC_APP_NAME'
+        Location             = Get-EnvironmentValue 'AZURE_LOCATION' 'westus3'
+        ServiceBusRuntimeUrl = Get-EnvironmentValue 'SERVICE_BUS_CONNECTION_RUNTIME_URL'
+        BlobRuntimeUrl       = Get-EnvironmentValue 'AZURE_BLOB_CONNECTION_RUNTIME_URL'
     }
 
-    # Process parameters.json
-    $parametersFile = Join-Path $projectPath 'parameters.json'
-    if (Test-Path $parametersFile) {
-        $content = Get-Content $parametersFile -Raw
-        $resolved = Resolve-Placeholders $content 'parameters.json'
-        Set-Content (Join-Path $stagingDir 'parameters.json') $resolved
+    # Validate required values
+    $missing = @()
+    if (-not $config.SubscriptionId) { $missing += 'AZURE_SUBSCRIPTION_ID' }
+    if (-not $config.ResourceGroup) { $missing += 'AZURE_RESOURCE_GROUP' }
+    if (-not $config.LogicAppName) { $missing += 'LOGIC_APP_NAME' }
+
+    if ($missing.Count -gt 0) {
+        Write-Log -Message "Missing environment variables: $($missing -join ', ')" -Level Error
+        exit 1
     }
 
-    # Process workflow folders
-    foreach ($wf in $workflows) {
-        $destDir = Join-Path $stagingDir $wf.Name
-        New-Item -ItemType Directory -Path $destDir -Force | Out-Null
+    Write-Log -Message "Target: $($config.LogicAppName) in $($config.ResourceGroup)"
+
+    # Find workflow project
+    $projectPath = if ($WorkflowPath -and (Test-Path $WorkflowPath)) {
+        $WorkflowPath
+    }
+    else {
+        $searchPath = Join-Path $PSScriptRoot '..\workflows\OrdersManagement\OrdersManagementLogicApp'
+        if (Test-Path $searchPath) { (Resolve-Path $searchPath).Path }
+        else { throw 'Workflow project not found' }
+    }
+    Write-Log -Message "Source: $projectPath"
+
+    # Discover workflows
+    $workflows = Get-ChildItem -Path $projectPath -Directory | Where-Object {
+        $dirName = $_.Name
+        (Test-Path (Join-Path $_.FullName 'workflow.json')) -and
+        (-not ($ExcludePatterns | Where-Object { $dirName -like $_ }))
+    }
+
+    if ($workflows.Count -eq 0) { throw 'No workflows found' }
+    Write-Log -Message "Workflows: $($workflows.Name -join ', ')" -Level Success
+
+    # Get connection runtime URLs if not in environment
+    if ([string]::IsNullOrEmpty($config.ServiceBusRuntimeUrl)) {
+        Write-Log -Message 'Fetching Service Bus connection runtime URL...'
+        $config.ServiceBusRuntimeUrl = Get-ConnectionRuntimeUrl -ConnectionName 'servicebus' -ResourceGroup $config.ResourceGroup -SubscriptionId $config.SubscriptionId
+    }
+    if ([string]::IsNullOrEmpty($config.BlobRuntimeUrl)) {
+        Write-Log -Message 'Fetching Azure Blob connection runtime URL...'
+        $config.BlobRuntimeUrl = Get-ConnectionRuntimeUrl -ConnectionName 'azureblob' -ResourceGroup $config.ResourceGroup -SubscriptionId $config.SubscriptionId
+    }
+
+    # Create staging directory
+    $stagingDir = Join-Path ([IO.Path]::GetTempPath()) "logicapp-$(Get-Random)"
+    New-Item -ItemType Directory -Path $stagingDir -Force | Out-Null
+
+    try {
+        # Copy host.json
+        Copy-Item (Join-Path $projectPath 'host.json') $stagingDir
+
+        # Process connections.json
+        $connectionsFile = Join-Path $projectPath 'connections.json'
+        if (Test-Path $connectionsFile) {
+            $content = Get-Content $connectionsFile -Raw
+            $resolved = Resolve-Placeholders $content 'connections.json'
+            Set-Content (Join-Path $stagingDir 'connections.json') $resolved
+        }
+
+        # Process parameters.json
+        $parametersFile = Join-Path $projectPath 'parameters.json'
+        if (Test-Path $parametersFile) {
+            $content = Get-Content $parametersFile -Raw
+            $resolved = Resolve-Placeholders $content 'parameters.json'
+            Set-Content (Join-Path $stagingDir 'parameters.json') $resolved
+        }
+
+        # Process workflow folders
+        foreach ($wf in $workflows) {
+            $destDir = Join-Path $stagingDir $wf.Name
+            New-Item -ItemType Directory -Path $destDir -Force | Out-Null
         
-        $wfFile = Join-Path $wf.FullName 'workflow.json'
-        $content = Get-Content $wfFile -Raw
-        $resolved = Resolve-Placeholders $content "$($wf.Name)/workflow.json"
-        Set-Content (Join-Path $destDir 'workflow.json') $resolved
-    }
+            $wfFile = Join-Path $wf.FullName 'workflow.json'
+            $content = Get-Content $wfFile -Raw
+            $resolved = Resolve-Placeholders $content "$($wf.Name)/workflow.json"
+            Set-Content (Join-Path $destDir 'workflow.json') $resolved
+        }
 
-    # Create zip package
-    $zipPath = Join-Path ([IO.Path]::GetTempPath()) "logicapp-deploy.zip"
-    Compress-Archive -Path "$stagingDir\*" -DestinationPath $zipPath -Force
-    Write-Log -Message "Package: $([math]::Round((Get-Item $zipPath).Length / 1KB, 1)) KB" -Level Success
+        # Create zip package
+        $zipPath = Join-Path ([IO.Path]::GetTempPath()) "logicapp-deploy.zip"
+        Compress-Archive -Path "$stagingDir\*" -DestinationPath $zipPath -Force
+        Write-Log -Message "Package: $([math]::Round((Get-Item $zipPath).Length / 1KB, 1)) KB" -Level Success
 
-    # Update app settings with connection runtime URLs
-    Write-Log -Message 'Updating application settings...'
-    $settings = @()
-    if ($config.ServiceBusRuntimeUrl) { $settings += "servicebus-ConnectionRuntimeUrl=$($config.ServiceBusRuntimeUrl)" }
-    if ($config.BlobRuntimeUrl) { $settings += "azureblob-ConnectionRuntimeUrl=$($config.BlobRuntimeUrl)" }
+        # Update app settings with connection runtime URLs
+        Write-Log -Message 'Updating application settings...'
+        $settings = @()
+        if ($config.ServiceBusRuntimeUrl) { $settings += "servicebus-ConnectionRuntimeUrl=$($config.ServiceBusRuntimeUrl)" }
+        if ($config.BlobRuntimeUrl) { $settings += "azureblob-ConnectionRuntimeUrl=$($config.BlobRuntimeUrl)" }
     
-    if ($settings.Count -gt 0) {
-        $settingsArgs = @(
-            'functionapp', 'config', 'appsettings', 'set'
+        if ($settings.Count -gt 0) {
+            $settingsArgs = @(
+                'functionapp', 'config', 'appsettings', 'set'
+                '--name', $config.LogicAppName
+                '--resource-group', $config.ResourceGroup
+                '--subscription', $config.SubscriptionId
+                '--settings'
+            ) + $settings + @('--output', 'none')
+        
+            $null = az @settingsArgs 2>&1
+        
+            if ($LASTEXITCODE -ne 0) {
+                Write-Log -Message 'Failed to update application settings' -Level Warning
+            }
+        }
+
+        # Deploy
+        Write-Log -Message 'Deploying workflows...'
+        $startTime = Get-Date
+    
+        $deployArgs = @(
+            'functionapp', 'deployment', 'source', 'config-zip'
             '--name', $config.LogicAppName
             '--resource-group', $config.ResourceGroup
             '--subscription', $config.SubscriptionId
-            '--settings'
-        ) + $settings + @('--output', 'none')
-        
-        $null = az @settingsArgs 2>&1
-        
+            '--src', $zipPath
+            '--output', 'none'
+        )
+    
+        az @deployArgs
+    
         if ($LASTEXITCODE -ne 0) {
-            Write-Log -Message 'Failed to update application settings' -Level Warning
+            throw 'Deployment failed with exit code: {0}' -f $LASTEXITCODE
         }
+
+        $duration = [math]::Round(((Get-Date) - $startTime).TotalSeconds, 1)
+        Write-Log -Message "Deployed in $duration seconds" -Level Success
+
+        # Cleanup
+        Remove-Item $zipPath -Force -ErrorAction SilentlyContinue
+    }
+    finally {
+        Remove-Item $stagingDir -Recurse -Force -ErrorAction SilentlyContinue
     }
 
-    # Deploy
-    Write-Log -Message 'Deploying workflows...'
-    $startTime = Get-Date
-    
-    $deployArgs = @(
-        'functionapp', 'deployment', 'source', 'config-zip'
-        '--name', $config.LogicAppName
-        '--resource-group', $config.ResourceGroup
-        '--subscription', $config.SubscriptionId
-        '--src', $zipPath
-        '--output', 'none'
-    )
-    
-    az @deployArgs
-    
-    if ($LASTEXITCODE -ne 0) {
-        throw 'Deployment failed with exit code: {0}' -f $LASTEXITCODE
-    }
-
-    $duration = [math]::Round(((Get-Date) - $startTime).TotalSeconds, 1)
-    Write-Log -Message "Deployed in $duration seconds" -Level Success
-
-    # Cleanup
-    Remove-Item $zipPath -Force -ErrorAction SilentlyContinue
+    Write-Host "`n╔════════════════════════════════════════════════════════╗" -ForegroundColor Green
+    Write-Host "║              Deployment Complete                       ║" -ForegroundColor Green
+    Write-Host "╚════════════════════════════════════════════════════════╝`n" -ForegroundColor Green
+}
+catch {
+    Write-Log -Message "Deployment failed: $($_.Exception.Message)" -Level Error
+    Write-Verbose -Message "Stack trace: $($_.ScriptStackTrace)"
+    exit 1
 }
 finally {
-    Remove-Item $stagingDir -Recurse -Force -ErrorAction SilentlyContinue
+    # Restore original preferences
+    $ErrorActionPreference = $script:OriginalErrorActionPreference
+    $ProgressPreference = $script:OriginalProgressPreference
 }
-
-Write-Host "`n╔════════════════════════════════════════════════════════╗" -ForegroundColor Green
-Write-Host "║              Deployment Complete                       ║" -ForegroundColor Green
-Write-Host "╚════════════════════════════════════════════════════════╝`n" -ForegroundColor Green
 
 #endregion

@@ -31,10 +31,10 @@ By providing multiple execution modes (interactive, force, preview, verbose), th
 - [📚 Examples](#-examples)
   - [🔄 Example 1: Clean Secrets Before Re-provisioning](#example-1-clean-secrets-before-re-provisioning)
   - [🔁 Example 2: CI/CD Pipeline Integration](#example-2-cicd-pipeline-integration)
-- [�️ How It Works](#️-how-it-works)
+- [🛠️ How It Works](#%EF%B8%8F-how-it-works)
   - [🔄 Internal Process Flow](#internal-process-flow)
   - [🔗 Integration Points](#integration-points)
-- [�📖 Related Documentation](#-related-documentation)
+- [📖 Related Documentation](#-related-documentation)
 - [🔐 Security Considerations](#-security-considerations)
   - [✅ Safe Operations](#safe-operations)
   - [🗑️ What Gets Deleted](#what-gets-deleted)
@@ -409,7 +409,7 @@ fi
 
 ---
 
-## �️ How It Works
+## 🛠️ How It Works
 
 ### Internal Process Flow
 
@@ -518,7 +518,7 @@ flowchart LR
 | **Outputs**      | • **Exit Code:** `0` (success) or `1` (failure)<br/>• **Console Output:** Progress messages and summary<br/>• **Side Effect:** Deleted secrets.json files from user secrets storage                                             |
 | **Storage**      | • **Windows:** `%APPDATA%\Microsoft\UserSecrets\<id>\secrets.json`<br/>• **Linux/macOS:** `~/.microsoft/usersecrets/<id>/secrets.json`                                                                                          |
 
-## �📖 Related Documentation
+## 📖 Related Documentation
 
 - **[postprovision.ps1](./postprovision.md)** - Sets user secrets after provisioning (inverse operation)
 - **[preprovision.ps1](./preprovision.ps1)** - Calls this script during pre-provisioning

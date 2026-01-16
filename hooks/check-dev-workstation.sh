@@ -312,7 +312,7 @@ main() {
         esac
     done
     
-    # Validate preprovision.ps1 exists (mirroring PowerShell variable naming)
+    # Validate preprovision.sh exists in the same directory
     local preprovision_path="${SCRIPT_DIR}/preprovision.sh"
     
     if [[ ! -f "${preprovision_path}" ]]; then

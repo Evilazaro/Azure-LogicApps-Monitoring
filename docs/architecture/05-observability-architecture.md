@@ -10,8 +10,8 @@
 - [🎯 Observability Strategy](#-2-observability-strategy)
 - [📊 Telemetry Architecture](#-3-telemetry-architecture)
 - [🔍 Distributed Tracing](#-4-distributed-tracing)
-- [� Logic Apps Workflow Observability](#-logic-apps-workflow-observability)
-- [�📈 Metrics](#-5-metrics)
+- [🔄 Logic Apps Workflow Observability](#-logic-apps-workflow-observability)
+- [📈 Metrics](#-5-metrics)
 - [📝 Logs](#-6-logs)
 - [⚙️ Platform Components](#%EF%B8%8F-7-platform-components)
 - [🚨 Alerting and Incident Response](#-8-alerting-and-incident-response)
@@ -59,47 +59,69 @@
 ### Three Pillars Overview
 
 ```mermaid
+---
+title: Three Pillars of Observability - Telemetry Architecture
+---
 flowchart TB
-    %% Three Pillars of Observability - Telemetry collection architecture
+    %% ===== CLASS DEFINITIONS =====
+    classDef primary fill:#4F46E5,stroke:#3730A3,color:#FFFFFF
+    classDef secondary fill:#10B981,stroke:#059669,color:#FFFFFF
+    classDef datastore fill:#F59E0B,stroke:#D97706,color:#000000
+    classDef external fill:#6B7280,stroke:#4B5563,color:#FFFFFF,stroke-dasharray: 5 5
+    classDef failed fill:#F44336,stroke:#C62828,color:#FFFFFF
+    classDef trigger fill:#818CF8,stroke:#4F46E5,color:#FFFFFF
+    classDef decision fill:#FFFBEB,stroke:#F59E0B,color:#000000
+    classDef input fill:#F3F4F6,stroke:#6B7280,color:#000000
+
+    %% ===== PILLARS SUBGRAPH =====
     subgraph Pillars["📊 Three Pillars of Observability"]
         direction LR
         Traces["🔍 Traces<br/><i>Distributed request flow</i>"]
         Metrics["📈 Metrics<br/><i>Quantitative measurements</i>"]
         Logs["📝 Logs<br/><i>Discrete event records</i>"]
     end
+    style Pillars fill:#EEF2FF,stroke:#4F46E5,stroke-width:2px,color:#312E81
 
+    %% ===== COLLECTION SUBGRAPH =====
     subgraph Collection["📥 Collection Layer"]
         OTEL["OpenTelemetry SDK"]
         AzDiag["Azure Diagnostics"]
     end
+    style Collection fill:#D1FAE5,stroke:#10B981,stroke-width:2px,color:#065F46
 
+    %% ===== BACKEND SUBGRAPH =====
     subgraph Backend["💾 Backend Layer"]
         AI["Application Insights"]
         LAW["Log Analytics"]
     end
+    style Backend fill:#FEF3C7,stroke:#F59E0B,stroke-width:2px,color:#92400E
 
+    %% ===== CONSUMPTION SUBGRAPH =====
     subgraph Consumption["👁️ Consumption Layer"]
         Dashboards["Dashboards"]
         Alerts["Alerts"]
         Queries["KQL Queries"]
     end
+    style Consumption fill:#F3E8FF,stroke:#A855F7,stroke-width:2px,color:#581C87
 
-    %% Data flow
-    Traces & Metrics & Logs --> OTEL
-    OTEL --> AI
-    AzDiag --> LAW
-    AI & LAW --> Dashboards & Alerts & Queries
+    %% ===== DATA FLOW CONNECTIONS =====
+    Traces -->|"telemetry data"| OTEL
+    Metrics -->|"telemetry data"| OTEL
+    Logs -->|"telemetry data"| OTEL
+    OTEL -->|"OTLP export"| AI
+    AzDiag -->|"diagnostic logs"| LAW
+    AI -->|"query results"| Dashboards
+    AI -->|"threshold triggers"| Alerts
+    AI -->|"data source"| Queries
+    LAW -->|"query results"| Dashboards
+    LAW -->|"threshold triggers"| Alerts
+    LAW -->|"data source"| Queries
 
-    %% Modern color palette - WCAG AA compliant
-    classDef pillars fill:#EEF2FF,stroke:#4F46E5,stroke-width:2px,color:#312E81
-    classDef collection fill:#D1FAE5,stroke:#10B981,stroke-width:2px,color:#065F46
-    classDef backend fill:#FEF3C7,stroke:#F59E0B,stroke-width:2px,color:#92400E
-    classDef consumption fill:#F3E8FF,stroke:#A855F7,stroke-width:2px,color:#581C87
-
-    class Traces,Metrics,Logs pillars
-    class OTEL,AzDiag collection
-    class AI,LAW backend
-    class Dashboards,Alerts,Queries consumption
+    %% ===== NODE STYLING =====
+    class Traces,Metrics,Logs trigger
+    class OTEL,AzDiag secondary
+    class AI,LAW datastore
+    class Dashboards,Alerts,Queries primary
 ```
 
 ### Instrumentation Standards
@@ -119,39 +141,70 @@ flowchart TB
 ### Trace Context Propagation
 
 ```mermaid
+---
+title: Distributed Trace Context Propagation Flow
+---
 flowchart LR
-    %% Distributed Trace Context Propagation Flow
+    %% ===== CLASS DEFINITIONS =====
+    classDef primary fill:#4F46E5,stroke:#3730A3,color:#FFFFFF
+    classDef secondary fill:#10B981,stroke:#059669,color:#FFFFFF
+    classDef datastore fill:#F59E0B,stroke:#D97706,color:#000000
+    classDef external fill:#6B7280,stroke:#4B5563,color:#FFFFFF,stroke-dasharray: 5 5
+    classDef failed fill:#F44336,stroke:#C62828,color:#FFFFFF
+    classDef trigger fill:#818CF8,stroke:#4F46E5,color:#FFFFFF
+    classDef decision fill:#FFFBEB,stroke:#F59E0B,color:#000000
+    classDef input fill:#F3F4F6,stroke:#6B7280,color:#000000
+
+    %% ===== WEB APP SUBGRAPH =====
     subgraph WebApp["🌐 Web App"]
         W1["HTTP Request<br/>traceparent: auto"]
     end
+    style WebApp fill:#EEF2FF,stroke:#4F46E5,stroke-width:2px,color:#312E81
 
+    %% ===== ORDERS API SUBGRAPH =====
     subgraph API["⚙️ Orders API"]
         A1["Extract traceparent"]
         A2["Create child span"]
         A3["Propagate to Service Bus"]
     end
+    style API fill:#D1FAE5,stroke:#10B981,stroke-width:2px,color:#065F46
 
+    %% ===== SERVICE BUS SUBGRAPH =====
     subgraph ServiceBus["📨 Service Bus"]
         SB1["ApplicationProperties<br/>TraceId, SpanId, traceparent"]
     end
+    style ServiceBus fill:#FEF3C7,stroke:#F59E0B,stroke-width:2px,color:#92400E
 
+    %% ===== LOGIC APP SUBGRAPH =====
     subgraph LogicApp["🔄 Logic App"]
         LA1["Extract correlation"]
         LA2["x-ms-workflow-run-id"]
     end
+    style LogicApp fill:#F3E8FF,stroke:#A855F7,stroke-width:2px,color:#581C87
 
+    %% ===== APP INSIGHTS SUBGRAPH =====
     subgraph AppInsights["📊 App Insights"]
         AI1["Correlated traces<br/>Operation ID"]
     end
+    style AppInsights fill:#DCFCE7,stroke:#16A34A,stroke-width:2px,color:#166534
 
-    %% Flow connections
+    %% ===== FLOW CONNECTIONS =====
     W1 -->|"traceparent header"| A1
-    A1 --> A2 --> A3
+    A1 -->|"parse context"| A2
+    A2 -->|"enrich message"| A3
     A3 -->|"AMQP properties"| SB1
-    SB1 --> LA1 --> LA2
-    W1 -.-> AI1
-    A2 -.-> AI1
-    LA2 -.-> AI1
+    SB1 -->|"trigger workflow"| LA1
+    LA1 -->|"assign run ID"| LA2
+    W1 -.->|"export trace"| AI1
+    A2 -.->|"export span"| AI1
+    LA2 -.->|"correlate run"| AI1
+
+    %% ===== NODE STYLING =====
+    class W1 trigger
+    class A1,A2,A3 secondary
+    class SB1 datastore
+    class LA1,LA2 primary
+    class AI1 external
 ```
 
 ### Span Inventory
@@ -184,7 +237,7 @@ if (activity != null)
 
 ---
 
-## � Logic Apps Workflow Observability
+## 🔄 Logic Apps Workflow Observability
 
 ### Workflow Telemetry Overview
 
@@ -397,31 +450,61 @@ _logger.LogInformation("Order {OrderId} placed successfully in {Duration:F2}ms",
 ### Health Check Architecture
 
 ```mermaid
+---
+title: Health Check Architecture
+---
 flowchart LR
-    %% Health Check Architecture - Endpoint and check relationships
+    %% ===== CLASS DEFINITIONS =====
+    classDef primary fill:#4F46E5,stroke:#3730A3,color:#FFFFFF
+    classDef secondary fill:#10B981,stroke:#059669,color:#FFFFFF
+    classDef datastore fill:#F59E0B,stroke:#D97706,color:#000000
+    classDef external fill:#6B7280,stroke:#4B5563,color:#FFFFFF,stroke-dasharray: 5 5
+    classDef failed fill:#F44336,stroke:#C62828,color:#FFFFFF
+    classDef trigger fill:#818CF8,stroke:#4F46E5,color:#FFFFFF
+    classDef decision fill:#FFFBEB,stroke:#F59E0B,color:#000000
+    classDef input fill:#F3F4F6,stroke:#6B7280,color:#000000
+
+    %% ===== ENDPOINTS SUBGRAPH =====
     subgraph Endpoints["Health Endpoints"]
         Health["/health<br/>All checks"]
         Alive["/alive<br/>Liveness only"]
     end
+    style Endpoints fill:#EEF2FF,stroke:#4F46E5,stroke-width:2px,color:#312E81
 
+    %% ===== CHECKS SUBGRAPH =====
     subgraph Checks["Health Checks"]
         Self["Self Check"]
         DB["Database Check"]
         SB["Service Bus Check"]
     end
+    style Checks fill:#FEF3C7,stroke:#F59E0B,stroke-width:2px,color:#92400E
 
+    %% ===== STATUS SUBGRAPH =====
     subgraph Status["Status"]
         Healthy["✅ Healthy"]
         Degraded["⚠️ Degraded"]
         Unhealthy["❌ Unhealthy"]
     end
+    style Status fill:#D1FAE5,stroke:#10B981,stroke-width:2px,color:#065F46
 
-    %% Check relationships
-    Health --> Self & DB & SB
-    Alive --> Self
-    Self --> Healthy
-    DB --> Healthy & Degraded & Unhealthy
-    SB --> Healthy & Unhealthy
+    %% ===== CHECK RELATIONSHIPS =====
+    Health -->|"invokes"| Self
+    Health -->|"invokes"| DB
+    Health -->|"invokes"| SB
+    Alive -->|"invokes"| Self
+    Self -->|"returns"| Healthy
+    DB -->|"connected"| Healthy
+    DB -->|"slow response"| Degraded
+    DB -->|"connection failed"| Unhealthy
+    SB -->|"available"| Healthy
+    SB -->|"unavailable"| Unhealthy
+
+    %% ===== NODE STYLING =====
+    class Health,Alive trigger
+    class Self,DB,SB primary
+    class Healthy secondary
+    class Degraded decision
+    class Unhealthy failed
 ```
 
 ### Health Check Inventory

@@ -72,9 +72,11 @@ param()
 # Enable strict mode for robust error handling
 Set-StrictMode -Version Latest
 
-# Store original preference to restore in finally block
+# Store original preferences to restore in finally block
 $originalErrorActionPreference = $ErrorActionPreference
+$originalInformationPreference = $InformationPreference
 $ErrorActionPreference = 'Stop'
+$InformationPreference = 'Continue'
 
 # Script metadata constants with script scope for proper accessibility
 $script:ScriptVersion = '1.0.0'
@@ -101,7 +103,7 @@ try {
     $pwshPath = $null
     
     # Try Get-Command first (most reliable)
-    $pwshCommand = Get-Command -Name 'pwsh' -CommandType Application, ExternalScript -ErrorAction SilentlyContinue
+    $pwshCommand = Get-Command -Name 'pwsh' -CommandType Application -ErrorAction SilentlyContinue
     
     if ($null -ne $pwshCommand) {
         $pwshPath = $pwshCommand.Source
@@ -184,8 +186,9 @@ catch {
     exit 1
 }
 finally {
-    # Cleanup - restore error preference to original value
+    # Cleanup - restore preferences to original values
     $ErrorActionPreference = $originalErrorActionPreference
+    $InformationPreference = $originalInformationPreference
     Write-Verbose -Message 'Workstation validation process completed'
 }
 

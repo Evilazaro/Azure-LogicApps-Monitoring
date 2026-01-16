@@ -22,6 +22,24 @@
 
 set -euo pipefail
 
+# Validate required dependencies
+for cmd in jq zip; do
+    if ! command -v "$cmd" &> /dev/null; then
+        echo "ERROR: '$cmd' is required but not installed." >&2
+        case "$cmd" in
+            jq)
+                echo "  - macOS: brew install jq" >&2
+                echo "  - Ubuntu/Debian: sudo apt-get install jq" >&2
+                ;;
+            zip)
+                echo "  - macOS: brew install zip (usually pre-installed)" >&2
+                echo "  - Ubuntu/Debian: sudo apt-get install zip" >&2
+                ;;
+        esac
+        exit 1
+    fi
+done
+
 # Script directory for relative path resolution
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
@@ -175,34 +193,13 @@ cleanup() {
 
 #region Main
 
-# Global flags
-FORCE=false
-VERBOSE=false
-
 main() {
     local workflow_path=""
     
-    # Parse command line arguments
-    while [[ $# -gt 0 ]]; do
-        case "$1" in
-            --force|-f)
-                FORCE=true
-                shift
-                ;;
-            --verbose|-v)
-                VERBOSE=true
-                shift
-                ;;
-            -*)
-                write_log "Unknown option: $1" Warning
-                shift
-                ;;
-            *)
-                workflow_path="$1"
-                shift
-                ;;
-        esac
-    done
+    # Parse command line arguments (only positional workflow path)
+    if [[ $# -gt 0 ]] && [[ ! "$1" =~ ^- ]]; then
+        workflow_path="$1"
+    fi
     
     # Set up cleanup trap
     trap cleanup EXIT
