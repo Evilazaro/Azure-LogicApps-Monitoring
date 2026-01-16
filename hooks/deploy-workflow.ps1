@@ -209,8 +209,9 @@ Write-Log -Message "Source: $projectPath"
 
 # Discover workflows
 $workflows = Get-ChildItem -Path $projectPath -Directory | Where-Object {
+    $dirName = $_.Name
     (Test-Path (Join-Path $_.FullName 'workflow.json')) -and
-    ($ExcludePatterns | ForEach-Object { $_.Name -notlike $_ } | Where-Object { $_ } | Select-Object -First 1)
+    (-not ($ExcludePatterns | Where-Object { $dirName -like $_ }))
 }
 
 if ($workflows.Count -eq 0) { throw 'No workflows found' }
