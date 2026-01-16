@@ -152,11 +152,11 @@ flowchart TB
 
 ## 📊 Quick Reference
 
-| Workflow | Triggers | Jobs | Environment |
-| -------- | -------- | ---- | ----------- |
-| **CD - Azure Deployment** | `push:main`, `workflow_dispatch` | CI → Deploy Dev → Summary | `dev` |
-| **CI - .NET Build and Test** | `push:*`, `pull_request:main`, `workflow_dispatch` | CI (calls reusable) | N/A |
-| **CI - .NET Reusable** | `workflow_call` | Build → Test → Analyze → Summary | N/A |
+| Workflow | Triggers | Jobs | Platforms |
+| -------- | -------- | ---- | --------- |
+| **CD - Azure Deployment** | `push:main`, `workflow_dispatch` | CI → Deploy Dev → Summary | Ubuntu (deploy) |
+| **CI - .NET Build and Test** | `push:*`, `pull_request:main`, `workflow_dispatch` | CI (calls reusable) | Ubuntu, Windows, macOS |
+| **CI - .NET Reusable** | `workflow_call` | Build → Test → Analyze → Summary | Ubuntu, Windows, macOS |
 
 ---
 

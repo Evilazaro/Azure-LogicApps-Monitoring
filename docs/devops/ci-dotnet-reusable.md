@@ -34,8 +34,8 @@ This is a reusable workflow that builds, tests, and analyzes .NET solutions. It 
 | 🧪 **Test Execution** | With code coverage (Cobertura) |
 | 🔍 **Code Analysis** | Formatting analysis with `dotnet format` |
 | 📊 **Detailed Summaries** | Job summaries and status badges |
-| 📦 **Artifact Upload** | Builds, tests, and coverage |
-| 🖥️ **Cross-Platform** | Optional matrix testing (Ubuntu, Windows, macOS) |
+| 📦 **Artifact Upload** | Per-platform builds, tests, and coverage |
+| 🖥️ **Cross-Platform** | Always runs on Ubuntu, Windows, and macOS |
 
 ---
 
@@ -57,13 +57,19 @@ flowchart LR
         config[/"configuration"/]
         dotnet[/"dotnet-version"/]
         solution[/"solution-file"/]
-        matrix_flag[/"enable-matrix"/]
         analysis_flag[/"enable-code-analysis"/]
     end
 
     %% ===== BUILD JOB =====
-    subgraph BuildJob["🔨 Build Job"]
+    subgraph BuildJob["🔨 Build Job (Matrix)"]
         direction LR
+        
+        subgraph BuildMatrix["Cross-Platform Build"]
+            b_ubuntu["Ubuntu"]
+            b_windows["Windows"]
+            b_macos["macOS"]
+        end
+        
         b_checkout["Checkout Repository"]
         b_setup["Setup .NET SDK"]
         b_workload["Update Workloads"]
@@ -75,13 +81,13 @@ flowchart LR
     end
 
     %% ===== TEST JOB =====
-    subgraph TestJob["🧪 Test Job"]
+    subgraph TestJob["🧪 Test Job (Matrix)"]
         direction LR
         
-        subgraph MatrixStrategy["Matrix Strategy"]
-            ubuntu["Ubuntu"]
-            windows["Windows"]
-            macos["macOS"]
+        subgraph TestMatrix["Cross-Platform Test"]
+            t_ubuntu["Ubuntu"]
+            t_windows["Windows"]
+            t_macos["macOS"]
         end
         
         t_checkout["Checkout Repository"]
@@ -126,17 +132,18 @@ flowchart LR
     end
 
     %% ===== ARTIFACTS =====
-    subgraph ArtifactsGroup["📦 Artifacts"]
-        art_build[/"build-artifacts"/]
-        art_test[/"test-results"/]
-        art_cov[/"code-coverage"/]
+    subgraph ArtifactsGroup["📦 Artifacts (per-platform)"]
+        art_build[/"build-artifacts-{os}"/]
+        art_test[/"test-results-{os}"/]
+        art_cov[/"code-coverage-{os}"/]
     end
 
     %% Trigger flow - workflow initialization
     workflow_call -->|receives| InputsGroup
-    InputsGroup -->|configures| b_checkout
+    InputsGroup -->|configures| BuildMatrix
 
-    %% Build flow - compile and package
+    %% Build flow - compile and package on all platforms
+    BuildMatrix -->|parallel builds| b_checkout
     b_checkout -->|clone repo| b_setup
     b_setup -->|install SDK| b_workload
     b_workload -->|update| b_version
@@ -147,9 +154,8 @@ flowchart LR
     b_build -->|outputs| out_version
 
     %% Test flow - depends on build completion
-    b_summary -->|on success| t_checkout
-    matrix_flag -.->|if enabled| MatrixStrategy
-    MatrixStrategy -->|parallel runs| t_checkout
+    b_summary -->|on success| TestMatrix
+    TestMatrix -->|parallel tests| t_checkout
     t_checkout -->|clone repo| t_setup
     t_setup -->|install SDK| t_workload
     t_workload -->|update| t_restore
@@ -209,8 +215,9 @@ flowchart LR
     style TriggerGroup fill:#EEF2FF,stroke:#4F46E5,stroke-width:2px
     style InputsGroup fill:#F3F4F6,stroke:#6B7280,stroke-width:2px
     style BuildJob fill:#E0E7FF,stroke:#4F46E5,stroke-width:2px
+    style BuildMatrix fill:#D1FAE5,stroke:#10B981,stroke-width:1px
     style TestJob fill:#E0E7FF,stroke:#4F46E5,stroke-width:2px
-    style MatrixStrategy fill:#D1FAE5,stroke:#10B981,stroke-width:1px
+    style TestMatrix fill:#D1FAE5,stroke:#10B981,stroke-width:1px
     style AnalyzeJob fill:#ECFDF5,stroke:#10B981,stroke-width:2px
     style SummaryJob fill:#ECFDF5,stroke:#10B981,stroke-width:2px
     style FailureJob fill:#FEE2E2,stroke:#F44336,stroke-width:2px
@@ -219,7 +226,8 @@ flowchart LR
 
     %% Apply styles to nodes
     class workflow_call trigger
-    class config,dotnet,solution,matrix_flag,analysis_flag input
+    class config,dotnet,solution,analysis_flag input
+    class b_ubuntu,b_windows,b_macos,t_ubuntu,t_windows,t_macos matrix
     class b_checkout,b_setup,b_workload,b_version,b_restore,b_build,b_upload,b_summary primary
     class t_checkout,t_setup,t_workload,t_restore,t_build,t_test,t_report,t_upload,t_summary primary
     class a_checkout,a_setup,a_workload,a_restore,a_format,a_summary,a_fail secondary
@@ -227,7 +235,6 @@ flowchart LR
     class f_report failed
     class out_version,out_build,out_test,out_analyze datastore
     class art_build,art_test,art_cov datastore
-    class ubuntu,windows,macos,MatrixStrategy matrix
 ```
 
 ---
@@ -254,14 +261,13 @@ on:
 | `configuration` | `string` | ❌ | `Release` | Build configuration (Release/Debug) |
 | `dotnet-version` | `string` | ❌ | `10.0.x` | .NET SDK version to use |
 | `solution-file` | `string` | ❌ | `app.sln` | Path to the solution file |
-| `test-results-artifact-name` | `string` | ❌ | `test-results` | Name for test results artifact |
-| `build-artifacts-name` | `string` | ❌ | `build-artifacts` | Name for build artifacts |
-| `coverage-artifact-name` | `string` | ❌ | `code-coverage` | Name for code coverage artifact |
-| `artifact-retention-days` | `number` | ❌ | `30` | Days to retain artifacts |
-| `runs-on` | `string` | ❌ | `ubuntu-latest` | Runner for jobs |
+| `test-results-artifact-name` | `string` | ❌ | `test-results` | Base name for test results artifact (OS suffix added) |
+| `build-artifacts-name` | `string` | ❌ | `build-artifacts` | Base name for build artifacts (OS suffix added) |
+| `coverage-artifact-name` | `string` | ❌ | `code-coverage` | Base name for code coverage artifact (OS suffix added) |
+| `artifact-retention-days` | `number` | ❌ | `30` | Days to retain test/coverage artifacts |
+| `runs-on` | `string` | ❌ | `ubuntu-latest` | Runner for analyze and summary jobs (build/test use matrix) |
 | `enable-code-analysis` | `boolean` | ❌ | `true` | Enable code formatting analysis |
 | `fail-on-format-issues` | `boolean` | ❌ | `true` | Fail workflow on formatting issues |
-| `enable-matrix` | `boolean` | ❌ | `false` | Enable cross-platform matrix testing |
 
 ---
 
@@ -280,11 +286,11 @@ on:
 
 ### Job 1: 🔨 Build
 
-**Purpose:** Compile the solution and generate build artifacts.
+**Purpose:** Compile the solution and generate build artifacts on all platforms.
 
 | Property | Value |
 | -------- | ----- |
-| **Runner** | `${{ inputs.runs-on }}` |
+| **Runner** | Matrix: `ubuntu-latest`, `windows-latest`, `macos-latest` |
 | **Timeout** | 15 minutes |
 | **Outputs** | `build-version` |
 
@@ -303,11 +309,11 @@ on:
 
 ### Job 2: 🧪 Test
 
-**Purpose:** Execute tests with code coverage collection.
+**Purpose:** Execute tests with code coverage collection on all platforms.
 
 | Property | Value |
 | -------- | ----- |
-| **Runner** | Matrix: `ubuntu-latest`, `windows-latest`, `macos-latest` (if enabled) |
+| **Runner** | Matrix: `ubuntu-latest`, `windows-latest`, `macos-latest` |
 | **Timeout** | 30 minutes |
 | **Needs** | `build` |
 
@@ -317,8 +323,10 @@ on:
 strategy:
   fail-fast: false
   matrix:
-    os: ${{ inputs.enable-matrix && fromJson('["ubuntu-latest", "windows-latest", "macos-latest"]') || fromJson('["ubuntu-latest"]') }}
+    os: [ubuntu-latest, windows-latest, macos-latest]
 ```
+
+> 💡 **Note:** Cross-platform testing is always enabled to catch platform-specific issues early.
 
 #### Test Steps
 

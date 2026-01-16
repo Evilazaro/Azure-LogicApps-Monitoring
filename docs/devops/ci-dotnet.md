@@ -28,10 +28,10 @@ This workflow orchestrates the CI pipeline by calling the reusable workflow. It 
 | ------- | ----------- |
 | ✅ **Automatic Triggering** | On push and pull requests |
 | 🔧 **Configurable Build** | Release/Debug configuration options |
-| 🧪 **Cross-Platform Testing** | Optional matrix testing (Ubuntu, Windows, macOS) |
+| 🧪 **Cross-Platform Testing** | Builds and tests on Ubuntu, Windows, and macOS |
 | 🔍 **Code Analysis** | Formatting analysis with `.editorconfig` |
 | 📊 **Test Reporting** | Detailed summaries and result publishing |
-| 📦 **Build Artifacts** | Upload for debugging and verification |
+| 📦 **Build Artifacts** | Per-platform artifacts for debugging |
 
 ---
 
@@ -53,26 +53,28 @@ flowchart LR
     subgraph InputsGroup["⚙️ Manual Inputs"]
         config{"Configuration"}
         analysis{"Enable Code Analysis"}
-        matrix{"Enable Matrix Testing"}
     end
 
     %% ===== CI PIPELINE =====
-    subgraph CIPipeline["🔄 CI Pipeline"]
+    subgraph CIPipeline["🔄 CI Pipeline (Cross-Platform)"]
         ci_call[["CI Reusable Workflow"]]
         
         subgraph JobsGroup["Reusable Workflow Jobs"]
-            build(["Build"])
-            test(["Test"])
+            direction TB
+            subgraph MatrixJobs["Matrix: Ubuntu, Windows, macOS"]
+                build(["Build"])
+                test(["Test"])
+            end
             analyze(["Analyze"])
             summary(["Summary"])
         end
     end
 
     %% ===== ARTIFACTS =====
-    subgraph ArtifactsGroup["📦 Artifacts"]
-        build_art[/"build-artifacts"/]
-        test_art[/"test-results"/]
-        cov_art[/"code-coverage"/]
+    subgraph ArtifactsGroup["📦 Artifacts (per-platform)"]
+        build_art[/"build-artifacts-{os}"/]
+        test_art[/"test-results-{os}"/]
+        cov_art[/"code-coverage-{os}"/]
     end
 
     %% Trigger flow - events initiate pipeline
@@ -81,7 +83,6 @@ flowchart LR
     manual -->|configures| config
     config -->|passes to| ci_call
     analysis -.->|optional| ci_call
-    matrix -.->|optional| ci_call
 
     %% CI flow - job execution sequence
     ci_call -->|starts| build
@@ -114,11 +115,12 @@ flowchart LR
     style InputsGroup fill:#FEF3C7,stroke:#F59E0B,stroke-width:2px
     style CIPipeline fill:#ECFDF5,stroke:#10B981,stroke-width:2px
     style JobsGroup fill:#D1FAE5,stroke:#059669,stroke-width:1px
+    style MatrixJobs fill:#E0E7FF,stroke:#4F46E5,stroke-width:1px
     style ArtifactsGroup fill:#FEF3C7,stroke:#F59E0B,stroke-width:2px
 
     %% Apply styles to nodes
     class push,pr,manual trigger
-    class config,analysis,matrix decision
+    class config,analysis decision
     class ci_call external
     class build,test primary
     class analyze,summary secondary
@@ -169,7 +171,8 @@ paths:
 | ----- | ---- | ------- | ------- | ----------- |
 | `configuration` | `choice` | `Release` | `Release`, `Debug` | Build configuration |
 | `enable-code-analysis` | `boolean` | `true` | - | Enable code formatting analysis |
-| `enable-matrix` | `boolean` | `false` | - | Enable cross-platform matrix testing |
+
+> 💡 **Note:** Cross-platform matrix testing is always enabled - builds and tests run on Ubuntu, Windows, and macOS.
 
 ---
 
@@ -192,13 +195,12 @@ This workflow consists of a single job that calls the reusable CI workflow.
 | `configuration` | `${{ inputs.configuration \|\| 'Release' }}` | Build configuration |
 | `dotnet-version` | `10.0.x` | .NET SDK version |
 | `solution-file` | `app.sln` | Solution file path |
-| `test-results-artifact-name` | `test-results` | Test results artifact name |
-| `build-artifacts-name` | `build-artifacts` | Build artifacts name |
-| `coverage-artifact-name` | `code-coverage` | Coverage artifact name |
+| `test-results-artifact-name` | `test-results` | Base name for test results artifact |
+| `build-artifacts-name` | `build-artifacts` | Base name for build artifacts |
+| `coverage-artifact-name` | `code-coverage` | Base name for coverage artifact |
 | `artifact-retention-days` | `30` | Artifact retention period |
-| `runs-on` | `ubuntu-latest` | Runner environment |
+| `runs-on` | `ubuntu-latest` | Runner for analyze/summary jobs |
 | `enable-code-analysis` | Dynamic | Enable code analysis |
-| `enable-matrix` | `${{ inputs.enable-matrix \|\| false }}` | Enable matrix testing |
 | `fail-on-format-issues` | `true` | Fail on formatting issues |
 
 ---
@@ -228,11 +230,13 @@ concurrency:
 
 ## 📦 Artifacts
 
+All artifacts include the platform suffix (`-ubuntu-latest`, `-windows-latest`, `-macos-latest`).
+
 | Artifact | Contents | Retention |
 | -------- | -------- | --------- |
-| `build-artifacts` | Compiled binaries | 7 days |
-| `test-results` | Test execution results (`.trx`) | 30 days |
-| `code-coverage` | Cobertura XML coverage reports | 30 days |
+| `build-artifacts-{os}` | Compiled binaries | 7 days |
+| `test-results-{os}` | Test execution results (`.trx`) | 30 days |
+| `code-coverage-{os}` | Cobertura XML coverage reports | 30 days |
 
 ---
 
@@ -263,8 +267,9 @@ gh pr create --base main --head feature/my-feature
 3. Select configuration options:
    - **Build configuration**: Release or Debug
    - **Enable code formatting analysis**: Check/uncheck
-   - **Enable cross-platform matrix testing**: Check/uncheck
 4. Click **Run workflow**
+
+> 💡 Cross-platform testing runs automatically on all platforms (Ubuntu, Windows, macOS).
 
 ### Manual CI Run (CLI)
 
@@ -275,14 +280,13 @@ gh workflow run ci-dotnet.yml
 # Run with Debug configuration
 gh workflow run ci-dotnet.yml -f configuration=Debug
 
-# Run with matrix testing enabled
-gh workflow run ci-dotnet.yml -f enable-matrix=true
+# Run with code analysis disabled
+gh workflow run ci-dotnet.yml -f enable-code-analysis=false
 
 # Run with all options
 gh workflow run ci-dotnet.yml \
   -f configuration=Release \
-  -f enable-code-analysis=true \
-  -f enable-matrix=true
+  -f enable-code-analysis=true
 ```
 
 ---
