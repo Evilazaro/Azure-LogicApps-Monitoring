@@ -136,13 +136,14 @@ jobs:
         run: |
           sudo apt-get update && \
                sudo apt-get install -y jq && \
-               sudo apt-get install -y dos2unix && \
-               curl -sSL -O https://packages.microsoft.com/config/ubuntu/24.04/packages-microsoft-prod.deb && \
-               sudo dpkg -i packages-microsoft-prod.deb && \
-                sudo apt-get update && \
-                sudo apt-get install mssql-tools18 unixodbc-dev -y && \
-                sudo apt-get update && \
-                sudo apt-get install mssql-tools18 -y
+               sudo apt-get install -y dos2unix
+
+          # Install go-sqlcmd (modern sqlcmd with Azure AD authentication support)
+          # Reference: https://github.com/microsoft/go-sqlcmd
+          curl -sSL https://packages.microsoft.com/keys/microsoft.asc | sudo tee /etc/apt/trusted.gpg.d/microsoft.asc > /dev/null
+          sudo add-apt-repository "$(curl -sSL https://packages.microsoft.com/config/ubuntu/22.04/prod.list)"
+          sudo apt-get update
+          sudo apt-get install -y sqlcmd
 
       - name: 🔧 Install Azure Developer CLI
         uses: Azure/setup-azd@v2

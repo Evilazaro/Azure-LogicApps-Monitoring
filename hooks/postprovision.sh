@@ -911,16 +911,12 @@ main() {
         info "  Database: $azure_sql_database_name"
         info "  Managed Identity: $azure_managed_identity_name"
         
-        # Ensure sqlcmd is in PATH (check common installation locations)
+        # Check if sqlcmd (go-sqlcmd) is available in PATH
+        # go-sqlcmd is required for Azure AD authentication via --authentication-method
         if ! command -v sqlcmd &> /dev/null; then
-            local sqlcmd_paths=("/opt/mssql-tools18/bin" "/opt/mssql-tools/bin")
-            for sqlcmd_path in "${sqlcmd_paths[@]}"; do
-                if [[ -x "${sqlcmd_path}/sqlcmd" ]]; then
-                    verbose "Adding ${sqlcmd_path} to PATH for sqlcmd"
-                    export PATH="${sqlcmd_path}:${PATH}"
-                    break
-                fi
-            done
+            warning "sqlcmd (go-sqlcmd) not found in PATH"
+            warning "Please install go-sqlcmd: https://github.com/microsoft/go-sqlcmd"
+            warning "Skipping SQL database user configuration."
         fi
         
         # Locate the SQL configuration script

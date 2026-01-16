@@ -275,20 +275,44 @@ check_azure_cli() {
     return 0
 }
 
-# Check if sqlcmd is available
+# Check if sqlcmd (go-sqlcmd) is available
 check_sqlcmd() {
-    log_verbose "Checking sqlcmd availability..."
+    log_verbose "Checking sqlcmd (go-sqlcmd) availability..."
 
     if ! command -v sqlcmd &> /dev/null; then
-        log_error "sqlcmd utility is not installed"
-        log_error "Install mssql-tools package:"
-        log_error "  Ubuntu/Debian: curl https://packages.microsoft.com/keys/microsoft.asc | sudo apt-key add - && sudo apt-get update && sudo apt-get install mssql-tools"
-        log_error "  macOS: brew install mssql-tools"
-        log_error "  More info: https://learn.microsoft.com/sql/tools/sqlcmd/sqlcmd-utility"
+        log_error "sqlcmd (go-sqlcmd) utility is not installed"
+        log_error "This script requires go-sqlcmd for Azure AD authentication."
+        log_error ""
+        log_error "Install go-sqlcmd:"
+        log_error "  Ubuntu/Debian:"
+        log_error "    curl -sSL https://packages.microsoft.com/keys/microsoft.asc | sudo tee /etc/apt/trusted.gpg.d/microsoft.asc > /dev/null"
+        log_error "    sudo add-apt-repository \"\$(curl -sSL https://packages.microsoft.com/config/ubuntu/22.04/prod.list)\""
+        log_error "    sudo apt-get update && sudo apt-get install -y sqlcmd"
+        log_error "  macOS: brew install sqlcmd"
+        log_error "  Windows: winget install sqlcmd"
+        log_error ""
+        log_error "More info: https://github.com/microsoft/go-sqlcmd"
         return 1
     fi
 
-    log_verbose "sqlcmd found at: $(command -v sqlcmd)"
+    local sqlcmd_path
+    sqlcmd_path=$(command -v sqlcmd)
+    log_verbose "sqlcmd found at: $sqlcmd_path"
+    
+    # Verify it's go-sqlcmd by checking for --version flag support
+    local version_output
+    version_output=$(sqlcmd --version 2>&1 || true)
+    
+    if echo "$version_output" | grep -qi "Unknown Option\|invalid option\|-\?"; then
+        log_error "Detected ODBC sqlcmd (mssql-tools) instead of go-sqlcmd"
+        log_error "This script requires go-sqlcmd for Azure AD authentication."
+        log_error ""
+        log_error "Please install go-sqlcmd and ensure it's first in PATH:"
+        log_error "  https://github.com/microsoft/go-sqlcmd"
+        return 1
+    fi
+    
+    log_verbose "go-sqlcmd version: $version_output"
     return 0
 }
 
