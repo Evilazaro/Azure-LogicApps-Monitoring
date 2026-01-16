@@ -186,13 +186,7 @@ hooks:
       shell: sh
       run: |
         if [ "${DEPLOYER_PRINCIPAL_TYPE}" = "ServicePrincipal" ]; then
-          echo "Deployer is a Service Principal."
-          az login \
-             --service-principal \
-             --client-id "${AZURE_CLIENT_ID}" \
-             --tenant "${AZURE_TENANT_ID}" \
-             --federated-token "${AZURE_FEDERATED_TOKEN}" \
-             --allow-no-subscriptions
+          echo "Deployer is a Service Principal - Azure CLI already authenticated via GitHub Actions OIDC"
         else
           ./hooks/Generate-Orders.sh --force --verbose
         fi
@@ -203,13 +197,7 @@ hooks:
       shell: pwsh
       run: |
         if ($env:DEPLOYER_PRINCIPAL_TYPE -eq "ServicePrincipal") {
-          Write-Host "Deployer is a Service Principal."
-          az login `
-             --service-principal `
-             --client-id $env:AZURE_CLIENT_ID `
-             --tenant $env:AZURE_TENANT_ID `
-             --federated-token $env:AZURE_FEDERATED_TOKEN `
-             --allow-no-subscriptions
+          Write-Host "Deployer is a Service Principal - Azure CLI already authenticated via GitHub Actions OIDC"
         }
         else {
           ./hooks/Generate-Orders.ps1 -Force -Verbose
