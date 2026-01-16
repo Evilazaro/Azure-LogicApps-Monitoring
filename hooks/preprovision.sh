@@ -71,6 +71,9 @@
 # -o pipefail: Return value of a pipeline is the status of the last command to exit with non-zero status
 set -euo pipefail
 
+# Preserve default IFS for safe word splitting (space, tab, newline)
+IFS=$' \t\n'
+
 ################################################################################
 # Script Configuration
 ################################################################################

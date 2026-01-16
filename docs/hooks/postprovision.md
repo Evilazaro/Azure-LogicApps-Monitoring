@@ -490,59 +490,74 @@ The application uses Entity Framework with `EnsureCreatedAsync()` which requires
 The script executes a comprehensive post-provisioning configuration workflow:
 
 ```mermaid
+---
+title: postprovision Configuration Workflow
+---
 flowchart LR
-    Start(["🚀 azd provision completes"])
-    Complete(["🏁 Complete"])
+    %% ===== STYLE DEFINITIONS =====
+    classDef primary fill:#4F46E5,stroke:#3730A3,color:#FFFFFF
+    classDef secondary fill:#10B981,stroke:#059669,color:#FFFFFF
+    classDef datastore fill:#F59E0B,stroke:#D97706,color:#000000
+    classDef external fill:#6B7280,stroke:#4B5563,color:#FFFFFF,stroke-dasharray: 5 5
+    classDef failed fill:#F44336,stroke:#C62828,color:#FFFFFF
+    classDef trigger fill:#818CF8,stroke:#4F46E5,color:#FFFFFF
+    classDef decision fill:#FFFBEB,stroke:#F59E0B,color:#000000
+    classDef input fill:#F3F4F6,stroke:#6B7280,color:#000000
 
-    Start --> EnvironmentSetup
+    %% ===== ENTRY AND EXIT =====
+    Start(["🚀 azd provision completes"]):::trigger
+    Complete(["🏁 Complete"]):::secondary
 
+    Start -->|"triggers"| EnvironmentSetup
+
+    %% ===== PHASE 1: ENVIRONMENT SETUP =====
     subgraph EnvironmentSetup["1️⃣ Environment Setup"]
         direction TB
-        SetEnv["Set Environment Variables"]
-        Execute["Execute postprovision"]
-        Validate["Validate Environment"]
-        SetEnv --> Execute
-        Execute --> Validate
+        SetEnv["Set Environment Variables"]:::primary
+        Execute["Execute postprovision"]:::primary
+        Validate["Validate Environment"]:::primary
+        SetEnv -->|"configures"| Execute
+        Execute -->|"validates"| Validate
     end
 
+    %% ===== PHASE 2: AUTHENTICATION =====
     subgraph Authentication["2️⃣ Authentication"]
         direction TB
-        ACRAuth["ACR Authentication"]
-        SQLConfig["SQL Managed Identity"]
-        ACRAuth --> SQLConfig
+        ACRAuth["ACR Authentication"]:::external
+        SQLConfig["SQL Managed Identity"]:::external
+        ACRAuth -->|"configures"| SQLConfig
     end
 
+    %% ===== PHASE 3: SECRETS CONFIGURATION =====
     subgraph SecretsConfig["3️⃣ Secrets Configuration"]
         direction TB
-        Clear["Clear Old Secrets"]
-        ConfigLoop["Configure Secrets Loop"]
-        ConfigProject["Set Project Secrets"]
-        Clear --> ConfigLoop
-        ConfigLoop --> ConfigProject
-        ConfigProject --> ConfigLoop
+        Clear["Clear Old Secrets"]:::primary
+        ConfigLoop["Configure Secrets Loop"]:::datastore
+        ConfigProject["Set Project Secrets"]:::primary
+        Clear -->|"clears"| ConfigLoop
+        ConfigLoop -->|"iterates"| ConfigProject
+        ConfigProject -->|"continues"| ConfigLoop
     end
 
+    %% ===== PHASE 4: VALIDATION =====
     subgraph ValidationPhase["4️⃣ Validation & Summary"]
         direction TB
-        Validate2["Validate Configuration"]
-        Summary["Display Summary"]
-        Validate2 --> Summary
+        Validate2["Validate Configuration"]:::primary
+        Summary["Display Summary"]:::secondary
+        Validate2 -->|"summarizes"| Summary
     end
 
-    EnvironmentSetup --> Authentication
-    Authentication --> SecretsConfig
-    SecretsConfig --> ValidationPhase
-    ValidationPhase --> Complete
+    %% ===== FLOW CONNECTIONS =====
+    EnvironmentSetup -->|"proceeds to"| Authentication
+    Authentication -->|"proceeds to"| SecretsConfig
+    SecretsConfig -->|"proceeds to"| ValidationPhase
+    ValidationPhase -->|"completes"| Complete
 
-    classDef startEnd fill:#D1FAE5,stroke:#10B981,stroke-width:3px,color:#065F46
-    classDef process fill:#EEF2FF,stroke:#4F46E5,stroke-width:2px,color:#312E81
-    classDef config fill:#F3E8FF,stroke:#A855F7,stroke-width:2px,color:#581C87
-    classDef loop fill:#FEF3C7,stroke:#F59E0B,stroke-width:2px,color:#92400E
-
-    class Start,Complete startEnd
-    class SetEnv,Execute,Validate,ACRAuth,SQLConfig,Clear,Validate2,Summary process
-    class ConfigLoop loop
-    class ConfigProject config
+    %% ===== SUBGRAPH STYLES =====
+    style EnvironmentSetup fill:#EEF2FF,stroke:#4F46E5,stroke-width:2px
+    style Authentication fill:#F3E8FF,stroke:#A855F7,stroke-width:2px
+    style SecretsConfig fill:#FEF3C7,stroke:#F59E0B,stroke-width:2px
+    style ValidationPhase fill:#D1FAE5,stroke:#10B981,stroke-width:2px
 ```
 
 ### Integration Points
@@ -789,7 +804,7 @@ jobs:
 | ---------- | ---------- | -------------------------------------------------------------------------------------- |
 | **v1.0.0** | 2025-11-20 | Initial release with basic user secrets configuration                                  |
 | **v2.0.0** | 2025-12-15 | Added SQL managed identity configuration, ACR authentication, comprehensive validation |
-| **v2.0.1** | 2026-01-06 | Applied PowerShell best practices (OutputType on script block), documentation updates  |
+| **v2.0.1** | 2026-01-06 | Applied PowerShell best practices (OutputType on script block, preference backup/restore pattern), added IFS protection in Bash, documentation updates  |
 
 ## Quick Links
 

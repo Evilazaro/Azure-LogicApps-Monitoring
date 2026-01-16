@@ -47,44 +47,58 @@
 ### Authentication Flow
 
 ```mermaid
+---
+title: Authentication Flow via Managed Identity
+---
 flowchart LR
-    %% Authentication Flow - Services to Azure Resources via Managed Identity
+    %% ===== CLASS DEFINITIONS =====
+    classDef primary fill:#4F46E5,stroke:#3730A3,color:#FFFFFF
+    classDef secondary fill:#10B981,stroke:#059669,color:#FFFFFF
+    classDef datastore fill:#F59E0B,stroke:#D97706,color:#000000
+    classDef external fill:#6B7280,stroke:#4B5563,color:#FFFFFF,stroke-dasharray: 5 5
+    classDef failed fill:#F44336,stroke:#C62828,color:#FFFFFF
+    classDef trigger fill:#818CF8,stroke:#4F46E5,color:#FFFFFF
+    classDef decision fill:#FFFBEB,stroke:#F59E0B,color:#000000
+    classDef input fill:#F3F4F6,stroke:#6B7280,color:#000000
+
+    %% ===== SERVICES SUBGRAPH =====
     subgraph Services["Services"]
         API["Orders API"]
         WebApp["Web App"]
         LogicApp["Logic App"]
     end
+    style Services fill:#EEF2FF,stroke:#4F46E5,stroke-width:2px
 
+    %% ===== IDENTITY PLATFORM SUBGRAPH =====
     subgraph Identity["Identity Platform"]
         MI["User-Assigned<br/>Managed Identity"]
         EntraID["Microsoft Entra ID"]
     end
+    style Identity fill:#FEF3C7,stroke:#F59E0B,stroke-width:2px
 
+    %% ===== AZURE RESOURCES SUBGRAPH =====
     subgraph Resources["Azure Resources"]
         SQL["Azure SQL"]
         SB["Service Bus"]
         Storage["Azure Storage"]
         AI["App Insights"]
     end
+    style Resources fill:#D1FAE5,stroke:#10B981,stroke-width:2px
 
-    %% Authentication flow
-    API --> MI
-    WebApp --> MI
-    LogicApp --> MI
-    MI --> EntraID
-    EntraID -->|"Token"| SQL
-    EntraID -->|"Token"| SB
-    EntraID -->|"Token"| Storage
-    EntraID -->|"Token"| AI
+    %% ===== CONNECTIONS =====
+    API -->|"Request Identity"| MI
+    WebApp -->|"Request Identity"| MI
+    LogicApp -->|"Request Identity"| MI
+    MI -->|"Authenticate"| EntraID
+    EntraID -->|"Access Token"| SQL
+    EntraID -->|"Access Token"| SB
+    EntraID -->|"Access Token"| Storage
+    EntraID -->|"Access Token"| AI
 
-    %% Modern color palette - WCAG AA compliant
-    classDef service fill:#EEF2FF,stroke:#4F46E5,stroke-width:2px,color:#312E81
-    classDef identity fill:#FEF3C7,stroke:#F59E0B,stroke-width:2px,color:#92400E
-    classDef resource fill:#D1FAE5,stroke:#10B981,stroke-width:2px,color:#065F46
-
-    class API,WebApp,LogicApp service
-    class MI,EntraID identity
-    class SQL,SB,Storage,AI resource
+    %% ===== NODE STYLES =====
+    class API,WebApp,LogicApp primary
+    class MI,EntraID trigger
+    class SQL,SB,Storage,AI secondary
 ```
 
 ### Identity Providers
@@ -113,42 +127,58 @@ flowchart LR
 ### Identity Assignments
 
 ```mermaid
+---
+title: Managed Identity Role Assignments
+---
 flowchart TB
-    %% Managed Identity Architecture - Role assignments for services
+    %% ===== CLASS DEFINITIONS =====
+    classDef primary fill:#4F46E5,stroke:#3730A3,color:#FFFFFF
+    classDef secondary fill:#10B981,stroke:#059669,color:#FFFFFF
+    classDef datastore fill:#F59E0B,stroke:#D97706,color:#000000
+    classDef external fill:#6B7280,stroke:#4B5563,color:#FFFFFF,stroke-dasharray: 5 5
+    classDef failed fill:#F44336,stroke:#C62828,color:#FFFFFF
+    classDef trigger fill:#818CF8,stroke:#4F46E5,color:#FFFFFF
+    classDef decision fill:#FFFBEB,stroke:#F59E0B,color:#000000
+    classDef input fill:#F3F4F6,stroke:#6B7280,color:#000000
+
+    %% ===== MANAGED IDENTITY SUBGRAPH =====
     subgraph Identity["🔐 User-Assigned Managed Identity"]
         MI["id-orders-{env}"]
     end
+    style Identity fill:#FEF3C7,stroke:#F59E0B,stroke-width:2px
 
+    %% ===== SERVICES SUBGRAPH =====
     subgraph Services["📱 Services"]
         API["Container App:<br/>orders-api"]
         Web["Container App:<br/>web-app"]
         LA["Logic App:<br/>OrdersManagement"]
     end
+    style Services fill:#EEF2FF,stroke:#4F46E5,stroke-width:2px
 
+    %% ===== ROLE ASSIGNMENTS SUBGRAPH =====
     subgraph Roles["🎫 Role Assignments"]
         SQLRole["Azure SQL:<br/>SQL DB Contributor"]
         SBRole["Service Bus:<br/>Data Sender/Receiver"]
         StorageRole["Storage:<br/>Blob Data Contributor"]
         AIRole["App Insights:<br/>Monitoring Contributor"]
     end
+    style Roles fill:#D1FAE5,stroke:#10B981,stroke-width:2px
 
-    %% Identity bindings
-    MI --> API
-    MI --> Web
-    MI --> LA
-    MI --> SQLRole
-    MI --> SBRole
-    MI --> StorageRole
-    MI --> AIRole
+    %% ===== SERVICE BINDINGS =====
+    MI -->|"Assigned To"| API
+    MI -->|"Assigned To"| Web
+    MI -->|"Assigned To"| LA
 
-    %% Modern color palette - WCAG AA compliant
-    classDef identity fill:#FEF3C7,stroke:#F59E0B,stroke-width:2px,color:#92400E
-    classDef service fill:#EEF2FF,stroke:#4F46E5,stroke-width:2px,color:#312E81
-    classDef role fill:#D1FAE5,stroke:#10B981,stroke-width:2px,color:#065F46
+    %% ===== ROLE BINDINGS =====
+    MI -->|"Grants"| SQLRole
+    MI -->|"Grants"| SBRole
+    MI -->|"Grants"| StorageRole
+    MI -->|"Grants"| AIRole
 
-    class MI identity
-    class API,Web,LA service
-    class SQLRole,SBRole,StorageRole,AIRole role
+    %% ===== NODE STYLES =====
+    class MI trigger
+    class API,Web,LA primary
+    class SQLRole,SBRole,StorageRole,AIRole secondary
 ```
 
 ### Role Assignments
@@ -164,20 +194,26 @@ flowchart TB
 ### Service-to-Service Auth Flow
 
 ```mermaid
+---
+title: Service-to-Service Authentication Flow
+---
 sequenceDiagram
-    %% Service-to-Service Authentication Flow via Managed Identity
+    %% ===== PARTICIPANTS =====
     autonumber
     participant API as Orders API
     participant MI as Managed Identity
     participant Entra as Microsoft Entra ID
     participant SB as Service Bus
 
+    %% ===== TOKEN ACQUISITION =====
     API->>MI: Request access token
-    MI->>Entra: Authenticate (implicit)
-    Entra-->>MI: JWT Token
-    MI-->>API: Access Token
-    API->>SB: Send message<br/>(Bearer token)
-    SB-->>API: Accepted
+    MI->>Entra: Authenticate via implicit flow
+    Entra-->>MI: Return JWT Token
+    MI-->>API: Return Access Token
+
+    %% ===== SERVICE CALL =====
+    API->>SB: Send message with Bearer token
+    SB-->>API: Return Accepted response
 ```
 
 ---
@@ -223,12 +259,27 @@ sequenceDiagram
 ### Network Topology
 
 ```mermaid
+---
+title: Network Security Topology
+---
 flowchart TB
-    %% Network Security Topology - VNet integration and PaaS connectivity
+    %% ===== CLASS DEFINITIONS =====
+    classDef primary fill:#4F46E5,stroke:#3730A3,color:#FFFFFF
+    classDef secondary fill:#10B981,stroke:#059669,color:#FFFFFF
+    classDef datastore fill:#F59E0B,stroke:#D97706,color:#000000
+    classDef external fill:#6B7280,stroke:#4B5563,color:#FFFFFF,stroke-dasharray: 5 5
+    classDef failed fill:#F44336,stroke:#C62828,color:#FFFFFF
+    classDef trigger fill:#818CF8,stroke:#4F46E5,color:#FFFFFF
+    classDef decision fill:#FFFBEB,stroke:#F59E0B,color:#000000
+    classDef input fill:#F3F4F6,stroke:#6B7280,color:#000000
+
+    %% ===== INTERNET SUBGRAPH =====
     subgraph Internet["🌐 Internet"]
         Users["Users"]
     end
+    style Internet fill:#FEE2E2,stroke:#EF4444,stroke-width:2px
 
+    %% ===== VIRTUAL NETWORK SUBGRAPH =====
     subgraph VNet["🔒 Virtual Network"]
         subgraph APISubnet["API Subnet"]
             API["Container Apps"]
@@ -237,28 +288,29 @@ flowchart TB
             LA["Logic Apps"]
         end
     end
+    style VNet fill:#EEF2FF,stroke:#4F46E5,stroke-width:2px
+    style APISubnet fill:#E0E7FF,stroke:#6366F1,stroke-width:1px
+    style LASubnet fill:#E0E7FF,stroke:#6366F1,stroke-width:1px
 
+    %% ===== AZURE PAAS SUBGRAPH =====
     subgraph PaaS["☁️ Azure PaaS"]
         SQL["Azure SQL<br/>(Firewall rules)"]
         SB["Service Bus<br/>(Public endpoint)"]
         Storage["Azure Storage<br/>(Private endpoint optional)"]
     end
+    style PaaS fill:#D1FAE5,stroke:#10B981,stroke-width:2px
 
-    %% Network flows
-    Users -->|"HTTPS"| API
-    API -->|"Private"| SQL
-    API -->|"AMQP"| SB
-    LA -->|"Connector"| SB
-    LA --> Storage
+    %% ===== NETWORK FLOWS =====
+    Users -->|"HTTPS Request"| API
+    API -->|"Private TDS/TLS"| SQL
+    API -->|"AMQP/TLS"| SB
+    LA -->|"Connector Call"| SB
+    LA -->|"Blob Storage"| Storage
 
-    %% Modern color palette - WCAG AA compliant
-    classDef internet fill:#FEE2E2,stroke:#EF4444,stroke-width:2px,color:#991B1B
-    classDef vnet fill:#EEF2FF,stroke:#4F46E5,stroke-width:2px,color:#312E81
-    classDef paas fill:#D1FAE5,stroke:#10B981,stroke-width:2px,color:#065F46
-
-    class Users internet
-    class API,LA vnet
-    class SQL,SB,Storage paas
+    %% ===== NODE STYLES =====
+    class Users external
+    class API,LA primary
+    class SQL,SB,Storage secondary
 ```
 
 ### Network Controls

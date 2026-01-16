@@ -86,6 +86,9 @@ IFS=$' \t\n'
 # Script version following semantic versioning (MAJOR.MINOR.PATCH)
 readonly SCRIPT_VERSION="2.0.1"
 
+# Minimum .NET SDK major version required (matches PowerShell script)
+readonly MINIMUM_DOTNET_MAJOR_VERSION=10
+
 # Script name for consistent logging and help text
 readonly SCRIPT_NAME="clean-secrets.sh"
 
@@ -410,12 +413,27 @@ test_dotnet_availability() {
     log_verbose "dotnet command found at: ${dotnet_path}"
     
     # Verify dotnet can execute and return version
-    if ! dotnet --version &> /dev/null; then
+    local dotnet_version
+    if ! dotnet_version=$(dotnet --version 2>&1); then
         log_verbose "dotnet command failed to execute"
         return 1
     fi
     
-    log_verbose ".NET SDK is available and functional"
+    # Validate version meets minimum requirement (matches PowerShell logic)
+    local major_version
+    major_version=$(echo "${dotnet_version}" | cut -d'.' -f1)
+    
+    if ! [[ "${major_version}" =~ ^[0-9]+$ ]]; then
+        log_verbose "Unable to parse dotnet major version from: ${dotnet_version}"
+        return 1
+    fi
+    
+    if [[ ${major_version} -lt ${MINIMUM_DOTNET_MAJOR_VERSION} ]]; then
+        log_verbose "dotnet SDK major version ${major_version} is less than required ${MINIMUM_DOTNET_MAJOR_VERSION}"
+        return 1
+    fi
+    
+    log_verbose ".NET SDK is available and functional (version: ${dotnet_version})"
     return 0
 }
 
@@ -608,9 +626,9 @@ main() {
         # Step 1: Validate .NET SDK availability
         log_info "Step 1: Validating .NET SDK availability..."
         if ! test_dotnet_availability; then
-            log_error ".NET SDK is not installed or not accessible."
-            log_error "Please install .NET SDK 10.0 or higher."
-            log_error "Download from: https://dotnet.microsoft.com/download/dotnet/10.0"
+            log_error ".NET SDK is not installed, not accessible, or does not meet requirements."
+            log_error "Required: .NET SDK ${MINIMUM_DOTNET_MAJOR_VERSION}.0 or higher."
+            log_error "Download from: https://dotnet.microsoft.com/download/dotnet/${MINIMUM_DOTNET_MAJOR_VERSION}.0"
             exit 1
         fi
         
@@ -677,7 +695,7 @@ main() {
         fi
         
         # Step 4: Clear user secrets for each valid project
-        log_info "Step 3: Clearing user secrets..."
+        log_info "Step 4: Clearing user secrets..."
         log_info ""
         
         # Process each valid project

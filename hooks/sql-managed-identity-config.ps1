@@ -229,6 +229,12 @@ param(
 
 # Script metadata
 Set-StrictMode -Version Latest
+
+# Backup original preferences for restoration in finally block
+$script:OriginalErrorActionPreference = $ErrorActionPreference
+$script:OriginalProgressPreference = $ProgressPreference
+$script:OriginalInformationPreference = $InformationPreference
+
 $ErrorActionPreference = 'Stop'
 $ProgressPreference = 'SilentlyContinue'
 $InformationPreference = 'Continue'
@@ -250,14 +256,14 @@ function Install-MicrosoftDataSqlClient {
     
     try {
         # Try using nuget.exe if available
-        $nugetExe = Get-Command nuget.exe -ErrorAction SilentlyContinue
+        $nugetExe = Get-Command -Name nuget.exe -CommandType Application -ErrorAction SilentlyContinue
         if ($nugetExe) {
             Write-Information -MessageData 'Using nuget.exe to install package...' -InformationAction Continue
             & nuget.exe install Microsoft.Data.SqlClient -OutputDirectory $tempDir -NonInteractive 2>&1 | Out-Null
         }
         else {
             # Try using dotnet CLI
-            $dotnetExe = Get-Command dotnet -ErrorAction SilentlyContinue
+            $dotnetExe = Get-Command -Name dotnet -CommandType Application -ErrorAction SilentlyContinue
             if ($dotnetExe) {
                 Write-Information -MessageData 'Using dotnet CLI to restore package...' -InformationAction Continue
                 # Create a minimal project to restore the package
@@ -326,18 +332,18 @@ catch {
     # Determine the runtime identifier (RID) for platform-specific assemblies
     $rid = if ($IsWindows -or $env:OS -eq 'Windows_NT') { 'win' } elseif ($IsMacOS) { 'osx' } else { 'unix' }
     $arch = if ([System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture -eq 'X64') { 'x64' } 
-            elseif ([System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture -eq 'Arm64') { 'arm64' } 
-            else { 'x86' }
+    elseif ([System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture -eq 'Arm64') { 'arm64' } 
+    else { 'x86' }
     Write-Verbose "Detected runtime: $rid-$arch"
     
     foreach ($basePath in $nugetPaths) {
         if (Test-Path -Path $basePath -ErrorAction SilentlyContinue) {
             # Find the latest version
             $latestVersion = Get-ChildItem -Path $basePath -Directory -ErrorAction SilentlyContinue |
-                Sort-Object { 
-                    try { [Version]$_.Name } catch { [Version]"0.0.0" }
-                } -Descending |
-                Select-Object -First 1
+            Sort-Object { 
+                try { [Version]$_.Name } catch { [Version]"0.0.0" }
+            } -Descending |
+            Select-Object -First 1
             
             if ($latestVersion) {
                 # Get PowerShell's .NET runtime version to pick the best matching TFM
@@ -386,8 +392,8 @@ catch {
                 foreach ($sniBasePath in $sniBasePaths) {
                     if (Test-Path -Path $sniBasePath -ErrorAction SilentlyContinue) {
                         $sniLatestVersion = Get-ChildItem -Path $sniBasePath -Directory -ErrorAction SilentlyContinue |
-                            Sort-Object { try { [Version]$_.Name } catch { [Version]"0.0.0" } } -Descending |
-                            Select-Object -First 1
+                        Sort-Object { try { [Version]$_.Name } catch { [Version]"0.0.0" } } -Descending |
+                        Select-Object -First 1
                         
                         if ($sniLatestVersion) {
                             $sniDllPath = Join-Path -Path $sniLatestVersion.FullName -ChildPath "runtimes\win-$arch\native\Microsoft.Data.SqlClient.SNI.dll"
@@ -508,7 +514,8 @@ function Write-LogMessage {
                 $greenColor = "$esc[32m"
                 Write-Information -MessageData "${greenColor}${formattedMessage}${resetColor}" -InformationAction Continue
             }
-            default { # Info
+            default {
+                # Info
                 $cyanColor = "$esc[36m"
                 Write-Information -MessageData "${cyanColor}${formattedMessage}${resetColor}" -InformationAction Continue
             }
@@ -550,13 +557,13 @@ function Write-ColoredOutput {
     $resetColor = "$esc[0m"
     
     $colorCode = switch ($Color) {
-        'Red'     { "$esc[31m" }
-        'Green'   { "$esc[32m" }
-        'Yellow'  { "$esc[33m" }
-        'Cyan'    { "$esc[36m" }
-        'White'   { "$esc[37m" }
-        'Gray'    { "$esc[90m" }
-        default   { '' }
+        'Red' { "$esc[31m" }
+        'Green' { "$esc[32m" }
+        'Yellow' { "$esc[33m" }
+        'Cyan' { "$esc[36m" }
+        'White' { "$esc[37m" }
+        'Gray' { "$esc[90m" }
+        default { '' }
     }
     
     if ($colorCode) {
@@ -596,7 +603,7 @@ function Test-AzureCliAvailability {
     process {
         try {
             # Check if az command exists
-            $azCommand = Get-Command -Name az -ErrorAction SilentlyContinue
+            $azCommand = Get-Command -Name az -CommandType Application -ErrorAction SilentlyContinue
             
             if (-not $azCommand) {
                 Write-LogMessage 'Azure CLI (az) is not installed or not in PATH' -Level Error
@@ -1208,17 +1215,17 @@ After installing, run this script again.
         
         # Build success result object with comprehensive information
         $result = [PSCustomObject]@{
-            PSTypeName        = 'SqlManagedIdentityConfiguration.Result'
-            Success           = $true
-            Principal         = $PrincipalDisplayName
-            Server            = $serverFqdn
-            Database          = $DatabaseName
-            Roles             = $DatabaseRoles
-            RowsAffected      = $rowsAffected
+            PSTypeName           = 'SqlManagedIdentityConfiguration.Result'
+            Success              = $true
+            Principal            = $PrincipalDisplayName
+            Server               = $serverFqdn
+            Database             = $DatabaseName
+            Roles                = $DatabaseRoles
+            RowsAffected         = $rowsAffected
             ExecutionTimeSeconds = [Math]::Round($executionDuration, 2)
-            Timestamp         = Get-Date -Format 'o'  # ISO 8601 format
-            Message           = 'Managed identity configuration completed successfully'
-            ScriptVersion     = $script:ScriptVersion
+            Timestamp            = Get-Date -Format 'o'  # ISO 8601 format
+            Message              = 'Managed identity configuration completed successfully'
+            ScriptVersion        = $script:ScriptVersion
         }
         
         # Return the result object
@@ -1228,7 +1235,7 @@ After installing, run this script again.
         # Check if this is a SQL exception (from either Microsoft.Data.SqlClient or System.Data.SqlClient)
         $sqlEx = $_.Exception
         $isSqlException = $sqlEx.GetType().Name -eq 'SqlException' -or 
-                          $sqlEx.GetType().FullName -like '*SqlException*'
+        $sqlEx.GetType().FullName -like '*SqlException*'
         
         if ($isSqlException) {
             # Handle SQL-specific exceptions with detailed error information
@@ -1404,4 +1411,10 @@ catch {
     # Return error object for programmatic handling
     # Note: Return statement in catch block prevents the exception from propagating
     return $errorResult
+}
+finally {
+    # Restore original preferences
+    $ErrorActionPreference = $script:OriginalErrorActionPreference
+    $ProgressPreference = $script:OriginalProgressPreference
+    $InformationPreference = $script:OriginalInformationPreference
 }

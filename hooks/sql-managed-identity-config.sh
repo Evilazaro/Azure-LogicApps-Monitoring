@@ -64,6 +64,9 @@
 # Bash strict mode for robust error handling
 set -euo pipefail
 
+# Preserve default IFS for safe word splitting (space, tab, newline)
+IFS=$' \t\n'
+
 #============================================================================
 # Script Constants
 #============================================================================

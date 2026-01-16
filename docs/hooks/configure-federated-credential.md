@@ -173,32 +173,105 @@ This script performs the following operations:
 ### 📊 Workflow Diagram
 
 ```mermaid
+---
+title: Federated Credential Configuration Flow
+---
 flowchart TD
-    A[🚀 Start Script] --> B{Azure CLI<br/>Logged In?}
-    B -->|No| C[❌ Exit: Run az login]
-    B -->|Yes| D{AppObjectId<br/>Provided?}
-    D -->|Yes| E[Use Provided ID]
-    D -->|No| F{AppName<br/>Provided?}
-    F -->|No| G[List Available Apps]
-    G --> H[Prompt for App Name]
-    F -->|Yes| I[Look Up App by Name]
-    H --> I
-    I --> J{App Found?}
-    J -->|No| K[❌ Exit: App Not Found]
-    J -->|Yes| E
-    E --> L[Get Existing Credentials]
-    L --> M{Environment<br/>Credential Exists?}
-    M -->|Yes| N[✅ Skip: Already Exists]
-    M -->|No| O[Create Environment Credential]
-    O --> P[Prompt: Create Branch Credential?]
-    N --> P
-    P -->|Yes| Q[Create Branch Credential]
-    P -->|No| R[Prompt: Create PR Credential?]
-    Q --> R
-    R -->|Yes| S[Create PR Credential]
-    R -->|No| T[Show Workflow Guidance]
-    S --> T
-    T --> U[✅ Complete]
+    %% ===== ENTRY POINT =====
+    A(["🚀 Start Script"])
+
+    %% ===== AUTHENTICATION CHECK =====
+    subgraph AuthCheck["🔐 Authentication Check"]
+        direction TB
+        B{"Azure CLI<br/>Logged In?"}
+        C(["❌ Exit: Run az login"])
+    end
+
+    %% ===== APP IDENTIFICATION =====
+    subgraph AppIdentification["🎯 App Identification"]
+        direction TB
+        D{"AppObjectId<br/>Provided?"}
+        E["Use Provided ID"]
+        F{"AppName<br/>Provided?"}
+        G["List Available Apps"]
+        H["Prompt for App Name"]
+        I["Look Up App by Name"]
+        J{"App Found?"}
+        K(["❌ Exit: App Not Found"])
+    end
+
+    %% ===== CREDENTIAL MANAGEMENT =====
+    subgraph CredentialMgmt["⚙️ Credential Management"]
+        direction TB
+        L["Get Existing Credentials"]
+        M{"Environment<br/>Credential Exists?"}
+        N["✅ Skip: Already Exists"]
+        O["Create Environment Credential"]
+        P{"Create Branch<br/>Credential?"}
+        Q["Create Branch Credential"]
+        R{"Create PR<br/>Credential?"}
+        S["Create PR Credential"]
+    end
+
+    %% ===== COMPLETION =====
+    subgraph Completion["📋 Completion"]
+        direction TB
+        T["Show Workflow Guidance"]
+        U(["✅ Complete"])
+    end
+
+    %% ===== FLOW CONNECTIONS =====
+    A -->|"initiates"| B
+    B -->|"No"| C
+    B -->|"Yes"| D
+    D -->|"Yes"| E
+    D -->|"No"| F
+    F -->|"No"| G
+    G -->|"displays"| H
+    F -->|"Yes"| I
+    H -->|"proceeds to"| I
+    I -->|"validates"| J
+    J -->|"No"| K
+    J -->|"Yes"| E
+    E -->|"retrieves"| L
+    L -->|"checks"| M
+    M -->|"Yes"| N
+    M -->|"No"| O
+    O -->|"prompts"| P
+    N -->|"continues"| P
+    P -->|"Yes"| Q
+    P -->|"No"| R
+    Q -->|"prompts"| R
+    R -->|"Yes"| S
+    R -->|"No"| T
+    S -->|"displays"| T
+    T -->|"completes"| U
+
+    %% ===== STYLING DEFINITIONS =====
+    %% Primary components: Indigo - main processes/services
+    classDef primary fill:#4F46E5,stroke:#3730A3,color:#FFFFFF
+    %% Secondary components: Emerald - secondary elements
+    classDef secondary fill:#10B981,stroke:#059669,color:#FFFFFF
+    %% Decision points: Amber outline - conditional logic
+    classDef decision fill:#FFFBEB,stroke:#F59E0B,color:#000000
+    %% Triggers: Indigo light - entry points
+    classDef trigger fill:#818CF8,stroke:#4F46E5,color:#FFFFFF
+    %% Error/failure states: Red - error handling
+    classDef failed fill:#F44336,stroke:#C62828,color:#FFFFFF
+    %% External systems: Gray - reusable/external calls
+    classDef external fill:#6B7280,stroke:#4B5563,color:#FFFFFF,stroke-dasharray: 5 5
+
+    %% ===== SUBGRAPH STYLING =====
+    style AuthCheck fill:#EEF2FF,stroke:#4F46E5,stroke-width:2px
+    style AppIdentification fill:#FEF3C7,stroke:#F59E0B,stroke-width:2px
+    style CredentialMgmt fill:#ECFDF5,stroke:#10B981,stroke-width:2px
+    style Completion fill:#D1FAE5,stroke:#10B981,stroke-width:2px
+
+    %% ===== APPLY STYLES TO NODES =====
+    class A,U trigger
+    class E,G,H,I,L,N,O,Q,S,T primary
+    class B,D,F,J,M,P,R decision
+    class C,K failed
 ```
 
 ---
@@ -280,12 +353,13 @@ The script checks for existing credentials before creating new ones:
 
 ## ⚠️ Error Handling
 
-| Error                                   | Cause                                          | Resolution                      |
-| --------------------------------------- | ---------------------------------------------- | ------------------------------- |
-| "Not logged in to Azure CLI"            | Azure CLI session expired or not authenticated | Run `az login`                  |
-| "App Registration not found"            | Invalid app name or insufficient permissions   | Verify app name and permissions |
-| "Failed to create federated credential" | Permission denied or invalid parameters        | Check Azure AD permissions      |
-| "Failed to list App Registrations"      | Insufficient permissions to list apps          | Request Application.Read.All    |
+| Error                                   | Cause                                          | Resolution                                |
+| --------------------------------------- | ---------------------------------------------- | ----------------------------------------- |
+| "'jq' is required but not installed"    | jq utility not found (Bash only)               | Install jq: `apt install jq` or `brew install jq` |
+| "Not logged in to Azure CLI"            | Azure CLI session expired or not authenticated | Run `az login`                            |
+| "App Registration not found"            | Invalid app name or insufficient permissions   | Verify app name and permissions           |
+| "Failed to create federated credential" | Permission denied or invalid parameters        | Check Azure AD permissions                |
+| "Failed to list App Registrations"      | Insufficient permissions to list apps          | Request Application.Read.All              |
 
 ---
 

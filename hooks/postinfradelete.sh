@@ -56,6 +56,10 @@
 
 set -euo pipefail
 
+# Set Internal Field Separator to default (space, tab, newline)
+# Protects against word splitting vulnerabilities
+IFS=$' \t\n'
+
 # ==============================================================================
 # Script Constants
 # ==============================================================================

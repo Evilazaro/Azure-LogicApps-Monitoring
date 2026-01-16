@@ -12,7 +12,7 @@
 - [📁 Documentation Structure](#-documentation-structure)
 - [🏗️ Architecture Documentation](#️-architecture-documentation)
 - [🔄 DevOps Documentation](#-devops-documentation)
-- [🪝 Developer Hooks Documentation](#-developer-hooks-documentation)
+- [🪝 Developer Experience Documentation](#-developer-hooks-documentation)
 - [🔒 Security Documentation](#-security-documentation)
 - [🚀 Quick Start](#-quick-start)
 - [📊 Solution Architecture Overview](#-solution-architecture-overview)
@@ -91,7 +91,7 @@ The [devops/](devops/README.md) folder contains CI/CD pipeline documentation:
 
 ---
 
-## 🪝 Developer Hooks Documentation
+## 🪝 Developer Experience Documentation
 
 The [hooks/](hooks/README.md) folder documents automation scripts for the development lifecycle:
 
@@ -169,38 +169,56 @@ All scripts support **cross-platform execution** with dual implementations in Po
 ## 📊 Solution Architecture Overview
 
 ```mermaid
+---
+title: Solution Architecture Overview
+---
 flowchart TD
-    %% ===========================================
-    %% Solution Architecture Overview
-    %% Azure Logic Apps Monitoring Reference
-    %% ===========================================
+    %% ===== STYLE DEFINITIONS =====
+    classDef primary fill:#4F46E5,stroke:#3730A3,color:#FFFFFF
+    classDef secondary fill:#10B981,stroke:#059669,color:#FFFFFF
+    classDef datastore fill:#F59E0B,stroke:#D97706,color:#000000
+    classDef external fill:#6B7280,stroke:#4B5563,color:#FFFFFF,stroke-dasharray: 5 5
+    classDef failed fill:#F44336,stroke:#C62828,color:#FFFFFF
+    classDef trigger fill:#818CF8,stroke:#4F46E5,color:#FFFFFF
+    classDef decision fill:#FFFBEB,stroke:#F59E0B,color:#000000
+    classDef input fill:#F3F4F6,stroke:#6B7280,color:#000000
 
+    %% ===== PRESENTATION LAYER =====
     subgraph Presentation["🖥️ Presentation Layer"]
         WebApp["🌐 eShop.Web.App<br/>Blazor Server"]
     end
+    style Presentation fill:#EEF2FF,stroke:#4F46E5,stroke-width:2px,color:#1E1B4B
 
+    %% ===== APPLICATION LAYER =====
     subgraph Application["⚙️ Application Layer"]
         OrdersAPI["📡 eShop.Orders.API<br/>ASP.NET Core"]
         LogicApp["🔄 OrdersManagement<br/>Logic Apps Standard"]
     end
+    style Application fill:#ECFDF5,stroke:#10B981,stroke-width:2px,color:#064E3B
 
+    %% ===== PLATFORM LAYER =====
     subgraph Platform["🏗️ Platform Layer"]
         AspireHost["🎯 app.AppHost<br/>.NET Aspire"]
         ServiceDefaults["📦 app.ServiceDefaults<br/>Cross-cutting Concerns"]
     end
+    style Platform fill:#FFFBEB,stroke:#F59E0B,stroke-width:2px,color:#78350F
 
+    %% ===== DATA LAYER =====
     subgraph DataLayer["💾 Data Layer"]
         SqlDb[("🗄️ Azure SQL<br/>OrderDb")]
         ServiceBus["📨 Azure Service Bus<br/>ordersplaced topic"]
         BlobStorage["📁 Azure Storage<br/>Workflow State"]
     end
+    style DataLayer fill:#FAF5FF,stroke:#A855F7,stroke-width:2px,color:#4C1D95
 
+    %% ===== OBSERVABILITY LAYER =====
     subgraph Observability["📊 Observability Layer"]
         AppInsights["📈 Application Insights"]
         LogAnalytics["📋 Log Analytics"]
     end
+    style Observability fill:#FDF2F8,stroke:#EC4899,stroke-width:2px,color:#831843
 
-    %% --- Primary Data Flow ---
+    %% ===== PRIMARY DATA FLOW =====
     WebApp -->|"HTTP/REST"| OrdersAPI
     OrdersAPI -->|"EF Core"| SqlDb
     OrdersAPI -->|"AMQP"| ServiceBus
@@ -208,30 +226,24 @@ flowchart TD
     LogicApp -->|"HTTP Callback"| OrdersAPI
     LogicApp -->|"State Persistence"| BlobStorage
 
-    %% --- Platform Orchestration ---
+    %% ===== PLATFORM ORCHESTRATION =====
     AspireHost -.->|"Orchestrates"| WebApp
     AspireHost -.->|"Orchestrates"| OrdersAPI
     ServiceDefaults -.->|"Configures"| WebApp
     ServiceDefaults -.->|"Configures"| OrdersAPI
 
-    %% --- Telemetry Flow ---
+    %% ===== TELEMETRY FLOW =====
     WebApp -.->|"OTLP Traces"| AppInsights
     OrdersAPI -.->|"OTLP Traces"| AppInsights
     LogicApp -.->|"Diagnostics"| LogAnalytics
     AppInsights -->|"Export"| LogAnalytics
 
-    %% --- Node Styling ---
-    classDef presentation fill:#EEF2FF,stroke:#4F46E5,stroke-width:2px,color:#1E1B4B
-    classDef application fill:#ECFDF5,stroke:#10B981,stroke-width:2px,color:#064E3B
-    classDef platform fill:#FFFBEB,stroke:#F59E0B,stroke-width:2px,color:#78350F
-    classDef data fill:#FAF5FF,stroke:#A855F7,stroke-width:2px,color:#4C1D95
-    classDef observability fill:#FDF2F8,stroke:#EC4899,stroke-width:2px,color:#831843
-
-    class WebApp presentation
-    class OrdersAPI,LogicApp application
-    class AspireHost,ServiceDefaults platform
-    class SqlDb,ServiceBus,BlobStorage data
-    class AppInsights,LogAnalytics observability
+    %% ===== NODE CLASS ASSIGNMENTS =====
+    class WebApp primary
+    class OrdersAPI,LogicApp secondary
+    class AspireHost,ServiceDefaults trigger
+    class SqlDb,ServiceBus,BlobStorage datastore
+    class AppInsights,LogAnalytics external
 ```
 
 ---

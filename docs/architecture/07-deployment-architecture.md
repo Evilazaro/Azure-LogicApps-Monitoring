@@ -30,34 +30,48 @@
 ### Environment Model
 
 ```mermaid
+---
+title: Environment Model - Promotion Flow
+---
 flowchart LR
-    %% Environment Model - Promotion flow from local to production
+    %% ===== CLASS DEFINITIONS =====
+    classDef primary fill:#4F46E5,stroke:#3730A3,color:#FFFFFF
+    classDef secondary fill:#10B981,stroke:#059669,color:#FFFFFF
+    classDef datastore fill:#F59E0B,stroke:#D97706,color:#000000
+    classDef external fill:#6B7280,stroke:#4B5563,color:#FFFFFF,stroke-dasharray: 5 5
+    classDef failed fill:#F44336,stroke:#C62828,color:#FFFFFF
+    classDef trigger fill:#818CF8,stroke:#4F46E5,color:#FFFFFF
+    classDef decision fill:#FFFBEB,stroke:#F59E0B,color:#000000
+    classDef input fill:#F3F4F6,stroke:#6B7280,color:#000000
+
+    %% ===== DEVELOPMENT ENVIRONMENT =====
     subgraph Dev["🔧 Development"]
         Local["Local<br/>.NET Aspire"]
         DevEnv["Dev Environment<br/>Azure"]
     end
+    style Dev fill:#EEF2FF,stroke:#4F46E5,stroke-width:2px
 
+    %% ===== STAGING ENVIRONMENT =====
     subgraph Stage["🧪 Staging"]
         StageEnv["Staging<br/>Azure"]
     end
+    style Stage fill:#FEF3C7,stroke:#F59E0B,stroke-width:2px
 
+    %% ===== PRODUCTION ENVIRONMENT =====
     subgraph Prod["🚀 Production"]
         ProdEnv["Production<br/>Azure"]
     end
+    style Prod fill:#D1FAE5,stroke:#10B981,stroke-width:2px
 
-    %% Promotion flow
-    Local -->|"azd up"| DevEnv
-    DevEnv -->|"Promotion"| StageEnv
-    StageEnv -->|"Approval"| ProdEnv
+    %% ===== PROMOTION FLOW =====
+    Local -->|"Deploy locally"| DevEnv
+    DevEnv -->|"Promote to staging"| StageEnv
+    StageEnv -->|"Approval required"| ProdEnv
 
-    %% Modern color palette - WCAG AA compliant
-    classDef dev fill:#EEF2FF,stroke:#4F46E5,stroke-width:2px,color:#312E81
-    classDef stage fill:#FEF3C7,stroke:#F59E0B,stroke-width:2px,color:#92400E
-    classDef prod fill:#D1FAE5,stroke:#10B981,stroke-width:2px,color:#065F46
-
-    class Local,DevEnv dev
-    class StageEnv stage
-    class ProdEnv prod
+    %% ===== APPLY STYLES =====
+    class Local,DevEnv primary
+    class StageEnv decision
+    class ProdEnv secondary
 ```
 
 ---
@@ -87,53 +101,67 @@ infra/
 ### Module Relationships
 
 ```mermaid
+---
+title: Bicep Module Relationships
+---
 flowchart TB
-    %% Bicep Module Relationships - Infrastructure as Code structure
+    %% ===== CLASS DEFINITIONS =====
+    classDef primary fill:#4F46E5,stroke:#3730A3,color:#FFFFFF
+    classDef secondary fill:#10B981,stroke:#059669,color:#FFFFFF
+    classDef datastore fill:#F59E0B,stroke:#D97706,color:#000000
+    classDef external fill:#6B7280,stroke:#4B5563,color:#FFFFFF,stroke-dasharray: 5 5
+    classDef failed fill:#F44336,stroke:#C62828,color:#FFFFFF
+    classDef trigger fill:#818CF8,stroke:#4F46E5,color:#FFFFFF
+    classDef decision fill:#FFFBEB,stroke:#F59E0B,color:#000000
+    classDef input fill:#F3F4F6,stroke:#6B7280,color:#000000
+
+    %% ===== SUBSCRIPTION SCOPE =====
     subgraph Subscription["📦 Subscription Scope"]
         Main["main.bicep"]
     end
+    style Subscription fill:#312E81,stroke:#4F46E5,stroke-width:2px
 
+    %% ===== RESOURCE GROUP SCOPE =====
     subgraph RG["📁 Resource Group"]
         Shared["shared/main.bicep"]
         Workload["workload/main.bicep"]
     end
+    style RG fill:#EEF2FF,stroke:#4F46E5,stroke-width:2px
 
+    %% ===== SHARED MODULES =====
     subgraph SharedModules["🔧 Shared Modules"]
         Identity["identity/"]
         Monitoring["monitoring/"]
         Network["network/"]
         Data["data/"]
     end
+    style SharedModules fill:#D1FAE5,stroke:#10B981,stroke-width:2px
 
+    %% ===== WORKLOAD MODULES =====
     subgraph WorkloadModules["⚙️ Workload Modules"]
         Messaging["messaging/"]
         Services["services/"]
         LogicApp["logic-app.bicep"]
     end
+    style WorkloadModules fill:#FEF3C7,stroke:#F59E0B,stroke-width:2px
 
-    %% Module dependencies
-    Main --> Shared
-    Main --> Workload
-    Shared --> Identity
-    Shared --> Monitoring
-    Shared --> Network
-    Shared --> Data
-    Workload --> Messaging
-    Workload --> Services
-    Workload --> LogicApp
+    %% ===== MODULE DEPENDENCIES =====
+    Main -->|"deploys"| Shared
+    Main -->|"deploys"| Workload
+    Shared -->|"includes"| Identity
+    Shared -->|"includes"| Monitoring
+    Shared -->|"includes"| Network
+    Shared -->|"includes"| Data
+    Workload -->|"includes"| Messaging
+    Workload -->|"includes"| Services
+    Workload -->|"includes"| LogicApp
+    Workload -.->|"references outputs"| Shared
 
-    Workload -.->|"outputs"| Shared
-
-    %% Modern color palette - WCAG AA compliant
-    classDef main fill:#312E81,stroke:#4F46E5,stroke-width:2px,color:#fff
-    classDef module fill:#EEF2FF,stroke:#4F46E5,stroke-width:2px,color:#312E81
-    classDef shared fill:#D1FAE5,stroke:#10B981,stroke-width:2px,color:#065F46
-    classDef workload fill:#FEF3C7,stroke:#F59E0B,stroke-width:2px,color:#92400E
-
-    class Main main
-    class Shared,Workload module
-    class Identity,Monitoring,Network,Data shared
-    class Messaging,Services,LogicApp workload
+    %% ===== APPLY STYLES =====
+    class Main primary
+    class Shared,Workload trigger
+    class Identity,Monitoring,Network,Data secondary
+    class Messaging,Services,LogicApp datastore
 ```
 
 ### Key Bicep Patterns
@@ -153,55 +181,70 @@ flowchart TB
 ### azd Workflow
 
 ```mermaid
+---
+title: Azure Developer CLI Workflow
+---
 flowchart TB
-    %% Azure Developer CLI (azd) Workflow - Lifecycle hooks and stages
+    %% ===== CLASS DEFINITIONS =====
+    classDef primary fill:#4F46E5,stroke:#3730A3,color:#FFFFFF
+    classDef secondary fill:#10B981,stroke:#059669,color:#FFFFFF
+    classDef datastore fill:#F59E0B,stroke:#D97706,color:#000000
+    classDef external fill:#6B7280,stroke:#4B5563,color:#FFFFFF,stroke-dasharray: 5 5
+    classDef failed fill:#F44336,stroke:#C62828,color:#FFFFFF
+    classDef trigger fill:#818CF8,stroke:#4F46E5,color:#FFFFFF
+    classDef decision fill:#FFFBEB,stroke:#F59E0B,color:#000000
+    classDef input fill:#F3F4F6,stroke:#6B7280,color:#000000
+
+    %% ===== INITIALIZE STAGE =====
     subgraph Init["🔧 Initialize"]
         Init1["azd init"]
         Init2["Select template"]
     end
+    style Init fill:#EEF2FF,stroke:#4F46E5,stroke-width:2px
 
+    %% ===== PROVISION STAGE =====
     subgraph Provision["☁️ Provision"]
         Prov1["azd provision"]
         Prov2["Deploy Bicep"]
         Prov3["Create resources"]
     end
+    style Provision fill:#D1FAE5,stroke:#10B981,stroke-width:2px
 
+    %% ===== DEPLOY STAGE =====
     subgraph Deploy["🚀 Deploy"]
         Deploy1["azd deploy"]
         Deploy2["Build apps"]
         Deploy3["Push to Azure"]
     end
+    style Deploy fill:#FEF3C7,stroke:#F59E0B,stroke-width:2px
 
+    %% ===== LIFECYCLE HOOKS =====
     subgraph Hooks["🪝 Lifecycle Hooks"]
         PreProv["preprovision"]
         PostProv["postprovision"]
         PreDeploy["predeploy"]
         PostDeploy["postdeploy"]
     end
+    style Hooks fill:#F3E8FF,stroke:#A855F7,stroke-width:2px
 
-    %% Workflow flow
-    Init1 --> Init2
-    Init2 --> PreProv
-    PreProv --> Prov1
-    Prov1 --> Prov2
-    Prov2 --> Prov3
-    Prov3 --> PostProv
-    PostProv --> PreDeploy
-    PreDeploy --> Deploy1
-    Deploy1 --> Deploy2
-    Deploy2 --> Deploy3
-    Deploy3 --> PostDeploy
+    %% ===== WORKFLOW CONNECTIONS =====
+    Init1 -->|"start"| Init2
+    Init2 -->|"triggers hook"| PreProv
+    PreProv -->|"validates"| Prov1
+    Prov1 -->|"executes"| Prov2
+    Prov2 -->|"creates"| Prov3
+    Prov3 -->|"triggers hook"| PostProv
+    PostProv -->|"triggers hook"| PreDeploy
+    PreDeploy -->|"starts"| Deploy1
+    Deploy1 -->|"compiles"| Deploy2
+    Deploy2 -->|"uploads"| Deploy3
+    Deploy3 -->|"triggers hook"| PostDeploy
 
-    %% Modern color palette - WCAG AA compliant
-    classDef init fill:#EEF2FF,stroke:#4F46E5,stroke-width:2px,color:#312E81
-    classDef prov fill:#D1FAE5,stroke:#10B981,stroke-width:2px,color:#065F46
-    classDef deploy fill:#FEF3C7,stroke:#F59E0B,stroke-width:2px,color:#92400E
-    classDef hook fill:#F3E8FF,stroke:#A855F7,stroke-width:2px,color:#581C87
-
-    class Init1,Init2 init
-    class Prov1,Prov2,Prov3 prov
-    class Deploy1,Deploy2,Deploy3 deploy
-    class PreProv,PostProv,PreDeploy,PostDeploy hook
+    %% ===== APPLY STYLES =====
+    class Init1,Init2 primary
+    class Prov1,Prov2,Prov3 secondary
+    class Deploy1,Deploy2,Deploy3 datastore
+    class PreProv,PostProv,PreDeploy,PostDeploy trigger
 ```
 
 ### azure.yaml Configuration
@@ -252,53 +295,68 @@ hooks:
 ### Pipeline Architecture
 
 ```mermaid
+---
+title: CI/CD Pipeline Architecture
+---
 flowchart TB
-    %% CI/CD Pipeline Architecture - Build, test, and deployment flow
-    subgraph Trigger["🎯 Triggers"]
+    %% ===== CLASS DEFINITIONS =====
+    classDef primary fill:#4F46E5,stroke:#3730A3,color:#FFFFFF
+    classDef secondary fill:#10B981,stroke:#059669,color:#FFFFFF
+    classDef datastore fill:#F59E0B,stroke:#D97706,color:#000000
+    classDef external fill:#6B7280,stroke:#4B5563,color:#FFFFFF,stroke-dasharray: 5 5
+    classDef failed fill:#F44336,stroke:#C62828,color:#FFFFFF
+    classDef trigger fill:#818CF8,stroke:#4F46E5,color:#FFFFFF
+    classDef decision fill:#FFFBEB,stroke:#F59E0B,color:#000000
+    classDef input fill:#F3F4F6,stroke:#6B7280,color:#000000
+
+    %% ===== TRIGGER SOURCES =====
+    subgraph TriggerGroup["🎯 Triggers"]
         Push["Push to main"]
         PR["Pull Request"]
         Manual["Manual dispatch"]
     end
+    style TriggerGroup fill:#FEE2E2,stroke:#EF4444,stroke-width:2px
 
+    %% ===== CI PIPELINE =====
     subgraph CI["🔨 CI Pipeline"]
         Build["Build"]
         Test["Test"]
         Analyze["Code Analysis"]
     end
+    style CI fill:#EEF2FF,stroke:#4F46E5,stroke-width:2px
 
+    %% ===== CD PIPELINE =====
     subgraph CD["🚀 CD Pipeline"]
         Login["Azure Login<br/>(OIDC)"]
         Provision["azd provision"]
         Deploy["azd deploy"]
     end
+    style CD fill:#D1FAE5,stroke:#10B981,stroke-width:2px
 
+    %% ===== AZURE ENVIRONMENTS =====
     subgraph Azure["☁️ Azure"]
         Dev["Dev Environment"]
         Staging["Staging Environment"]
         Prod["Production Environment"]
     end
+    style Azure fill:#FEF3C7,stroke:#F59E0B,stroke-width:2px
 
-    %% Pipeline flow
-    Push --> CI
-    PR --> CI
-    Manual --> CD
-    CI --> CD
-    Login --> Provision
-    Provision --> Deploy
-    Deploy --> Dev
-    Dev -->|"Promotion"| Staging
-    Staging -->|"Approval"| Prod
+    %% ===== PIPELINE CONNECTIONS =====
+    Push -->|"triggers build"| CI
+    PR -->|"triggers build"| CI
+    Manual -->|"triggers deployment"| CD
+    CI -->|"on success"| CD
+    Login -->|"authenticates"| Provision
+    Provision -->|"creates infra"| Deploy
+    Deploy -->|"deploys to"| Dev
+    Dev -->|"promotes to"| Staging
+    Staging -->|"approval gates"| Prod
 
-    %% Modern color palette - WCAG AA compliant
-    classDef trigger fill:#FEE2E2,stroke:#EF4444,stroke-width:2px,color:#991B1B
-    classDef ci fill:#EEF2FF,stroke:#4F46E5,stroke-width:2px,color:#312E81
-    classDef cd fill:#D1FAE5,stroke:#10B981,stroke-width:2px,color:#065F46
-    classDef azure fill:#FEF3C7,stroke:#F59E0B,stroke-width:2px,color:#92400E
-
+    %% ===== APPLY STYLES =====
     class Push,PR,Manual trigger
-    class Build,Test,Analyze ci
-    class Login,Provision,Deploy cd
-    class Dev,Staging,Prod azure
+    class Build,Test,Analyze primary
+    class Login,Provision,Deploy secondary
+    class Dev,Staging,Prod datastore
 ```
 
 ### GitHub Actions Workflows
@@ -373,19 +431,30 @@ jobs:
 ### OIDC Authentication Flow
 
 ```mermaid
+---
+title: OIDC Authentication Flow
+---
 sequenceDiagram
-    %% Workload Identity Federation - OIDC authentication flow for GitHub Actions
+    %% ===== WORKLOAD IDENTITY FEDERATION =====
+    %% OIDC authentication flow for GitHub Actions
     autonumber
+
+    %% ===== PARTICIPANTS =====
     participant GH as GitHub Actions
     participant Entra as Microsoft Entra ID
     participant Azure as Azure Resources
 
+    %% ===== TOKEN GENERATION =====
     GH->>GH: Generate OIDC token
-    GH->>Entra: Present OIDC token
+
+    %% ===== TOKEN VALIDATION =====
+    GH->>Entra: Present OIDC token for validation
     Entra->>Entra: Validate issuer, subject, audience
-    Entra-->>GH: Azure access token
+    Entra-->>GH: Return Azure access token
+
+    %% ===== DEPLOYMENT =====
     GH->>Azure: Deploy with access token
-    Azure-->>GH: Deployment result
+    Azure-->>GH: Return deployment result
 ```
 
 ### Federated Credential Configuration
@@ -429,38 +498,52 @@ az ad app federated-credential create `
 ### Development Workflow
 
 ```mermaid
+---
+title: Local Development Workflow
+---
 flowchart LR
-    %% Local Development Workflow - Setup to running
+    %% ===== CLASS DEFINITIONS =====
+    classDef primary fill:#4F46E5,stroke:#3730A3,color:#FFFFFF
+    classDef secondary fill:#10B981,stroke:#059669,color:#FFFFFF
+    classDef datastore fill:#F59E0B,stroke:#D97706,color:#000000
+    classDef external fill:#6B7280,stroke:#4B5563,color:#FFFFFF,stroke-dasharray: 5 5
+    classDef failed fill:#F44336,stroke:#C62828,color:#FFFFFF
+    classDef trigger fill:#818CF8,stroke:#4F46E5,color:#FFFFFF
+    classDef decision fill:#FFFBEB,stroke:#F59E0B,color:#000000
+    classDef input fill:#F3F4F6,stroke:#6B7280,color:#000000
+
+    %% ===== SETUP STAGE =====
     subgraph Setup["🔧 Setup"]
         Clone["git clone"]
         Deps["dotnet restore"]
     end
+    style Setup fill:#EEF2FF,stroke:#4F46E5,stroke-width:2px
 
+    %% ===== AUTHENTICATION STAGE =====
     subgraph Auth["🔐 Authentication"]
         Login["az login"]
         Select["az account set"]
     end
+    style Auth fill:#FEF3C7,stroke:#F59E0B,stroke-width:2px
 
+    %% ===== RUN STAGE =====
     subgraph Run["▶️ Run"]
         Aspire["dotnet run<br/>(AppHost)"]
         Dashboard["Aspire Dashboard<br/>localhost:15217"]
     end
+    style Run fill:#D1FAE5,stroke:#10B981,stroke-width:2px
 
-    %% Workflow flow
-    Clone --> Deps
-    Deps --> Login
-    Login --> Select
-    Select --> Aspire
-    Aspire --> Dashboard
+    %% ===== WORKFLOW CONNECTIONS =====
+    Clone -->|"downloads repo"| Deps
+    Deps -->|"restores packages"| Login
+    Login -->|"authenticates"| Select
+    Select -->|"sets subscription"| Aspire
+    Aspire -->|"starts app"| Dashboard
 
-    %% Modern color palette - WCAG AA compliant
-    classDef setup fill:#EEF2FF,stroke:#4F46E5,stroke-width:2px,color:#312E81
-    classDef auth fill:#FEF3C7,stroke:#F59E0B,stroke-width:2px,color:#92400E
-    classDef run fill:#D1FAE5,stroke:#10B981,stroke-width:2px,color:#065F46
-
-    class Clone,Deps setup
-    class Login,Select auth
-    class Aspire,Dashboard run
+    %% ===== APPLY STYLES =====
+    class Clone,Deps primary
+    class Login,Select datastore
+    class Aspire,Dashboard secondary
 ```
 
 ### Check Workstation Script

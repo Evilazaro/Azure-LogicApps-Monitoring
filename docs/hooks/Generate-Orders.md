@@ -35,10 +35,10 @@ By supporting multiple execution modes (interactive, force, preview, verbose), t
   - [🔄 Example 1: Generate Test Data for Development](#example-1-generate-test-data-for-development)
   - [🔁 Example 2: CI/CD Pipeline Integration](#example-2-cicd-pipeline-integration)
   - [📊 Example 3: Load Testing Data Generation](#example-3-load-testing-data-generation)
-- [� How It Works](#-how-it-works)
+- [🛠️ How It Works](#%EF%B8%8F-how-it-works)
   - [🔄 Internal Process Flow](#internal-process-flow)
   - [🔗 Integration Points](#integration-points)
-- [�📖 Related Documentation](#-related-documentation)
+- [📖 Related Documentation](#-related-documentation)
 - [🔐 Security Considerations](#-security-considerations)
 - [🎓 Best Practices](#-best-practices)
 - [📊 Performance](#-performance)
@@ -481,103 +481,100 @@ Get-Item ..\infra\data\ordersBatch.json | Select-Object Length, @{N='SizeKB';E={
 ls -lh ../infra/data/ordersBatch.json
 ```
 
-## � How It Works
+## 🛠️ How It Works
 
 ### Internal Process Flow
 
 The script executes a systematic workflow through four distinct phases:
 
 ```mermaid
-%%{init: {'theme': 'base', 'themeVariables': { 'primaryColor': '#e3f2fd', 'primaryTextColor': '#0d47a1', 'primaryBorderColor': '#1976d2', 'lineColor': '#64b5f6', 'secondaryColor': '#fff3e0', 'tertiaryColor': '#e8f5e9'}}}%%
+---
+title: Generate-Orders Process Flow
+---
 flowchart LR
-    %% ===================================================================
-    %% WORKFLOW: Generate-Orders Process Flow
-    %% Description: Generates sample e-commerce order data for testing
-    %% ===================================================================
+    %% ===== STYLE DEFINITIONS =====
+    classDef primary fill:#4F46E5,stroke:#3730A3,color:#FFFFFF
+    classDef secondary fill:#10B981,stroke:#059669,color:#FFFFFF
+    classDef datastore fill:#F59E0B,stroke:#D97706,color:#000000
+    classDef external fill:#6B7280,stroke:#4B5563,color:#FFFFFF,stroke-dasharray: 5 5
+    classDef failed fill:#F44336,stroke:#C62828,color:#FFFFFF
+    classDef trigger fill:#818CF8,stroke:#4F46E5,color:#FFFFFF
+    classDef decision fill:#FFFBEB,stroke:#F59E0B,color:#000000
+    classDef input fill:#F3F4F6,stroke:#6B7280,color:#000000
 
-    %% --- Entry and Exit Points ---
-    Start(["🚀 Generate-Orders starts"])
-    End(["🏁 Script completes"])
+    %% ===== ENTRY AND EXIT POINTS =====
+    Start(["🚀 Generate-Orders starts"]):::trigger
+    End(["🏁 Script completes"]):::secondary
 
-    Start --> Initialization
+    Start -->|"begins"| Initialization
 
-    %% --- Phase 1: Initialization & Validation ---
+    %% ===== PHASE 1: INITIALIZATION & VALIDATION =====
     subgraph Initialization["1️⃣ Initialization Phase"]
         direction TB
-        Init["Script Initialization"]
-        InitDetails["• Parse command-line args<br/>• Set StrictMode/strict mode<br/>• Configure preferences"]
-        Validate["Parameter Validation"]
-        ValidateDetails["• Validate OrderCount range<br/>• Validate Min/Max products<br/>• Verify output path"]
-        Init --> InitDetails
-        InitDetails --> Validate
-        Validate --> ValidateDetails
+        Init["Script Initialization"]:::primary
+        InitDetails["• Parse command-line args<br/>• Set StrictMode/strict mode<br/>• Configure preferences"]:::input
+        Validate["Parameter Validation"]:::primary
+        ValidateDetails["• Validate OrderCount range<br/>• Validate Min/Max products<br/>• Verify output path"]:::input
+        Init -->|"configures"| InitDetails
+        InitDetails -->|"validates"| Validate
+        Validate -->|"checks"| ValidateDetails
     end
 
-    %% --- Phase 2: Data Preparation ---
+    %% ===== PHASE 2: DATA PREPARATION =====
     subgraph Preparation["2️⃣ Preparation Phase"]
         direction TB
-        Catalog["Load Product Catalog"]
-        CatalogDetails["• 20 predefined products<br/>• Base prices configured<br/>• Product IDs assigned"]
-        Addresses["Load Address Pool"]
-        AddressDetails["• 20 global addresses<br/>• Major cities worldwide<br/>• Geographic diversity"]
-        Catalog --> CatalogDetails
-        CatalogDetails --> Addresses
-        Addresses --> AddressDetails
+        Catalog["Load Product Catalog"]:::datastore
+        CatalogDetails["• 20 predefined products<br/>• Base prices configured<br/>• Product IDs assigned"]:::input
+        Addresses["Load Address Pool"]:::datastore
+        AddressDetails["• 20 global addresses<br/>• Major cities worldwide<br/>• Geographic diversity"]:::input
+        Catalog -->|"loads"| CatalogDetails
+        CatalogDetails -->|"prepares"| Addresses
+        Addresses -->|"loads"| AddressDetails
     end
 
-    %% --- Phase 3: Order Generation ---
+    %% ===== PHASE 3: ORDER GENERATION =====
     subgraph Generation["3️⃣ Generation Phase"]
         direction TB
-        Loop["Order Generation Loop"]
-        LoopDetails["• Generate GUID-based Order ID<br/>• Create Customer ID<br/>• Random date timestamp"]
-        Products["Product Selection"]
-        ProductDetails["• Random product count<br/>• Apply ±20% price variation<br/>• Calculate line totals"]
-        Progress["Progress Tracking"]
-        ProgressDetails["• Update every 10 orders<br/>• Display percentage<br/>• Show current count"]
-        Loop --> LoopDetails
-        LoopDetails --> Products
-        Products --> ProductDetails
-        ProductDetails --> Progress
-        Progress --> ProgressDetails
+        Loop["Order Generation Loop"]:::primary
+        LoopDetails["• Generate GUID-based Order ID<br/>• Create Customer ID<br/>• Random date timestamp"]:::input
+        Products["Product Selection"]:::primary
+        ProductDetails["• Random product count<br/>• Apply ±20% price variation<br/>• Calculate line totals"]:::input
+        Progress["Progress Tracking"]:::secondary
+        ProgressDetails["• Update every 10 orders<br/>• Display percentage<br/>• Show current count"]:::input
+        Loop -->|"generates"| LoopDetails
+        LoopDetails -->|"selects"| Products
+        Products -->|"calculates"| ProductDetails
+        ProductDetails -->|"tracks"| Progress
+        Progress -->|"reports"| ProgressDetails
     end
 
-    %% --- Phase 4: Export ---
+    %% ===== PHASE 4: EXPORT =====
     subgraph Export["4️⃣ Export Phase"]
         direction TB
-        Serialize["JSON Serialization"]
-        SerializeDetails["• Convert to JSON format<br/>• Depth 10 for nesting<br/>• UTF-8 encoding"]
-        Write["Write to File"]
-        WriteDetails["• Create directory if needed<br/>• Write JSON content<br/>• Display file size"]
-        Summary["Display Summary"]
-        SummaryDetails["• Total orders generated<br/>• Output file path<br/>• Products per order range"]
-        Serialize --> SerializeDetails
-        SerializeDetails --> Write
-        Write --> WriteDetails
-        WriteDetails --> Summary
-        Summary --> SummaryDetails
+        Serialize["JSON Serialization"]:::primary
+        SerializeDetails["• Convert to JSON format<br/>• Depth 10 for nesting<br/>• UTF-8 encoding"]:::input
+        Write["Write to File"]:::datastore
+        WriteDetails["• Create directory if needed<br/>• Write JSON content<br/>• Display file size"]:::input
+        Summary["Display Summary"]:::secondary
+        SummaryDetails["• Total orders generated<br/>• Output file path<br/>• Products per order range"]:::input
+        Serialize -->|"converts"| SerializeDetails
+        SerializeDetails -->|"writes"| Write
+        Write -->|"saves"| WriteDetails
+        WriteDetails -->|"summarizes"| Summary
+        Summary -->|"displays"| SummaryDetails
     end
 
-    %% --- Flow Connections ---
-    Initialization --> Preparation
-    Preparation --> Generation
-    Generation --> Export
-    SummaryDetails --> End
+    %% ===== FLOW CONNECTIONS =====
+    Initialization -->|"proceeds to"| Preparation
+    Preparation -->|"proceeds to"| Generation
+    Generation -->|"proceeds to"| Export
+    SummaryDetails -->|"completes"| End
 
-    %% --- Style Definitions ---
-    %% Color palette follows Material Design guidelines
-    %% Green: Success states | Blue: Process steps | Orange: Data ops | Purple: Generation
-    classDef startEndStyle fill:#D1FAE5,stroke:#10B981,stroke-width:3px,color:#065F46
-    classDef processStyle fill:#EEF2FF,stroke:#4F46E5,stroke-width:2px,color:#312E81
-    classDef detailStyle fill:#F3F4F6,stroke:#6B7280,stroke-width:1px,color:#374151
-    classDef dataStyle fill:#FEF3C7,stroke:#F59E0B,stroke-width:2px,color:#92400E
-    classDef generateStyle fill:#F3E8FF,stroke:#A855F7,stroke-width:2px,color:#581C87
-
-    %% --- Apply Styles ---
-    class Start,End startEndStyle
-    class Init,Validate,Serialize,Write,Summary processStyle
-    class InitDetails,ValidateDetails,CatalogDetails,AddressDetails,LoopDetails,ProductDetails,ProgressDetails,SerializeDetails,WriteDetails,SummaryDetails detailStyle
-    class Catalog,Addresses dataStyle
-    class Loop,Products,Progress generateStyle
+    %% ===== SUBGRAPH STYLES =====
+    style Initialization fill:#EEF2FF,stroke:#4F46E5,stroke-width:2px
+    style Preparation fill:#FEF3C7,stroke:#F59E0B,stroke-width:2px
+    style Generation fill:#F3E8FF,stroke:#A855F7,stroke-width:2px
+    style Export fill:#D1FAE5,stroke:#10B981,stroke-width:2px
 ```
 
 **Process Details:**
@@ -592,12 +589,12 @@ flowchart LR
 | Aspect           | Details                                                                                                                                                                   |
 | ---------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **Called By**    | • `deploy-workflow.ps1/.sh` - Generates test data before deployment<br/>• Manual execution for development testing<br/>• CI/CD pipelines for automated test data setup    |
-| **Calls**        | • `New-Guid` / `uuidgen` - Unique ID generation<br/>• `Get-Random` / `$RANDOM` - Random number generation<br/>• `ConvertTo-Json` / `jq` - JSON serialization              |
-| **Dependencies** | • **Runtime:** PowerShell 7.0+ or Bash 4.0+<br/>• **Tools:** `jq` required for Bash version<br/>• **Output Directory:** Auto-created if missing                           |
+| **Calls**        | • `New-Guid` / `uuidgen` - Unique ID generation<br/>• `Get-Random` / `$RANDOM` - Random number generation<br/>• `ConvertTo-Json` / `jq` - JSON serialization<br/>• `bc` - Decimal calculations (Bash only) |
+| **Dependencies** | • **Runtime:** PowerShell 7.0+ or Bash 4.0+<br/>• **Tools:** `jq` and `bc` required for Bash version<br/>• **Output Directory:** Auto-created if missing                  |
 | **Outputs**      | • **Exit Code:** `0` (success) or `1` (failure)<br/>• **File:** JSON array of order objects<br/>• **Console:** Progress updates and summary                               |
 | **Data Schema**  | • **Order ID:** `ORD-{12 hex chars}`<br/>• **Customer ID:** `CUST-{8 hex chars}`<br/>• **Product ID:** `OP-{12 hex chars}`<br/>• **Date Range:** 2024-01-01 to 2025-12-31 |
 
-## �📖 Related Documentation
+## 📖 Related Documentation
 
 - **[postprovision.md](./postprovision.md)** - Configures secrets after Azure deployment
 - **[deploy-workflow.md](./deploy-workflow.md)** - Deploys Logic Apps workflows (uses generated data)

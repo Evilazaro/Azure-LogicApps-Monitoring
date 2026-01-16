@@ -310,10 +310,10 @@ When `--auto-install` or `-AutoInstall` is specified, the script can install mis
 
 If auto-install is not used, the script provides download links:
 
-- **.NET SDK**: https://dotnet.microsoft.com/download/dotnet/10.0
-- **Azure CLI**: https://docs.microsoft.com/cli/azure/install-azure-cli
-- **Azure Developer CLI**: https://aka.ms/azd/install
-- **Bicep CLI**: `az bicep install` or https://github.com/Azure/bicep/releases
+- **.NET SDK**: <https://dotnet.microsoft.com/download/dotnet/10.0>
+- **Azure CLI**: <https://docs.microsoft.com/cli/azure/install-azure-cli>
+- **Azure Developer CLI**: <https://aka.ms/azd/install>
+- **Bicep CLI**: `az bicep install` or <https://github.com/Azure/bicep/releases>
 - **zip**:
   - Windows: Built-in via `Compress-Archive` cmdlet (PowerShell 5.0+)
   - Ubuntu/Debian: `sudo apt-get install zip`
@@ -383,95 +383,111 @@ az provider register --namespace Microsoft.Storage --wait
 ### Workflow Diagram
 
 ```mermaid
+---
+title: preprovision Execution Flow
+---
 flowchart LR
-    Start(["🚀 azd up / azd provision"])
-    Complete(["✓ Pre-provisioning Complete"])
-    Failed(["✗ Pre-provisioning Failed"])
+    %% ===== STYLE DEFINITIONS =====
+    classDef primary fill:#4F46E5,stroke:#3730A3,color:#FFFFFF
+    classDef secondary fill:#10B981,stroke:#059669,color:#FFFFFF
+    classDef datastore fill:#F59E0B,stroke:#D97706,color:#000000
+    classDef external fill:#6B7280,stroke:#4B5563,color:#FFFFFF,stroke-dasharray: 5 5
+    classDef failed fill:#F44336,stroke:#C62828,color:#FFFFFF
+    classDef trigger fill:#818CF8,stroke:#4F46E5,color:#FFFFFF
+    classDef decision fill:#FFFBEB,stroke:#F59E0B,color:#000000
+    classDef input fill:#F3F4F6,stroke:#6B7280,color:#000000
 
-    Start --> RuntimeValidation
+    %% ===== TRIGGER NODES =====
+    Start(["🚀 azd up / azd provision"]):::trigger
+    Complete(["✓ Pre-provisioning Complete"]):::secondary
+    Failed(["✗ Pre-provisioning Failed"]):::failed
 
+    %% ===== PHASE 1: RUNTIME VALIDATION =====
     subgraph RuntimeValidation["1️⃣ Runtime Validation"]
         direction TB
-        ValidateRuntime["Validate Runtime Version"]
+        ValidateRuntime["Validate Runtime Version"]:::primary
     end
 
+    %% ===== PHASE 2: PREREQUISITES CHECK =====
     subgraph Prerequisites["2️⃣ Prerequisites Check"]
         direction TB
-        CheckDotNet["Check .NET SDK"]
-        InstallDotNet{"Install .NET?"}
-        CheckAzd["Check Azure Developer CLI"]
-        InstallAzd{"Install azd?"}
-        CheckAzCLI["Check Azure CLI"]
-        InstallAzCLI{"Install Azure CLI?"}
-        CheckBicep["Check Bicep CLI"]
-        InstallBicep{"Install Bicep?"}
+        CheckDotNet["Check .NET SDK"]:::primary
+        InstallDotNet{"Install .NET?"}:::decision
+        CheckAzd["Check Azure Developer CLI"]:::primary
+        InstallAzd{"Install azd?"}:::decision
+        CheckAzCLI["Check Azure CLI"]:::primary
+        InstallAzCLI{"Install Azure CLI?"}:::decision
+        CheckBicep["Check Bicep CLI"]:::primary
+        InstallBicep{"Install Bicep?"}:::decision
 
-        CheckDotNet -->|Missing| InstallDotNet
-        InstallDotNet -->|Yes| CheckDotNet
-        CheckDotNet -->|OK| CheckAzd
-        CheckAzd -->|Missing| InstallAzd
-        InstallAzd -->|Yes| CheckAzd
-        CheckAzd -->|OK| CheckAzCLI
-        CheckAzCLI -->|Missing| InstallAzCLI
-        InstallAzCLI -->|Yes| CheckAzCLI
-        CheckAzCLI -->|OK| CheckBicep
-        CheckBicep -->|Missing| InstallBicep
-        InstallBicep -->|Yes| CheckBicep
+        CheckDotNet -->|"Missing"| InstallDotNet
+        InstallDotNet -->|"Yes"| CheckDotNet
+        CheckDotNet -->|"OK"| CheckAzd
+        CheckAzd -->|"Missing"| InstallAzd
+        InstallAzd -->|"Yes"| CheckAzd
+        CheckAzd -->|"OK"| CheckAzCLI
+        CheckAzCLI -->|"Missing"| InstallAzCLI
+        InstallAzCLI -->|"Yes"| CheckAzCLI
+        CheckAzCLI -->|"OK"| CheckBicep
+        CheckBicep -->|"Missing"| InstallBicep
+        InstallBicep -->|"Yes"| CheckBicep
     end
 
+    %% ===== PHASE 3: AZURE AUTHENTICATION =====
     subgraph Authentication["3️⃣ Azure Authentication"]
         direction TB
-        CheckAuth["Check Azure Authentication"]
-        Login{"Login to Azure?"}
+        CheckAuth["Check Azure Authentication"]:::primary
+        Login{"Login to Azure?"}:::decision
 
-        CheckAuth -->|Not Authenticated| Login
-        Login -->|Yes| CheckAuth
+        CheckAuth -->|"Not Authenticated"| Login
+        Login -->|"Yes"| CheckAuth
     end
 
+    %% ===== PHASE 4: AZURE CONFIGURATION =====
     subgraph AzureConfig["4️⃣ Azure Configuration"]
         direction TB
-        CheckProviders["Check Resource Providers"]
-        RegisterProviders{"Register Providers?"}
-        CheckQuota["Check Quotas (Info)"]
+        CheckProviders["Check Resource Providers"]:::primary
+        RegisterProviders{"Register Providers?"}:::decision
+        CheckQuota["Check Quotas (Info)"]:::datastore
 
-        CheckProviders -->|Missing| RegisterProviders
-        RegisterProviders -->|Yes| CheckProviders
-        CheckProviders -->|OK| CheckQuota
+        CheckProviders -->|"Missing"| RegisterProviders
+        RegisterProviders -->|"Yes"| CheckProviders
+        CheckProviders -->|"OK"| CheckQuota
     end
 
+    %% ===== PHASE 5: CLEANUP =====
     subgraph Cleanup["5️⃣ Cleanup"]
         direction TB
-        ClearSecrets["Clear User Secrets"]
+        ClearSecrets["Clear User Secrets"]:::primary
     end
 
-    RuntimeValidation --> Prerequisites
-    InstallDotNet -->|No| Failed
-    InstallAzd -->|No| Failed
-    InstallAzCLI -->|No| Failed
-    InstallBicep -->|No| Failed
-    CheckBicep -->|OK| Authentication
-    Login -->|No| Failed
-    CheckAuth -->|OK| AzureConfig
-    RegisterProviders -->|No| Failed
-    CheckQuota --> Cleanup
-    Cleanup --> Complete
+    %% ===== MAIN FLOW CONNECTIONS =====
+    Start -->|"Initiate"| RuntimeValidation
+    RuntimeValidation -->|"Validated"| Prerequisites
+    InstallDotNet -->|"No"| Failed
+    InstallAzd -->|"No"| Failed
+    InstallAzCLI -->|"No"| Failed
+    InstallBicep -->|"No"| Failed
+    CheckBicep -->|"OK"| Authentication
+    Login -->|"No"| Failed
+    CheckAuth -->|"OK"| AzureConfig
+    RegisterProviders -->|"No"| Failed
+    CheckQuota -->|"Proceed"| Cleanup
+    Cleanup -->|"Done"| Complete
 
-    classDef startEnd fill:#D1FAE5,stroke:#10B981,stroke-width:3px,color:#065F46
-    classDef process fill:#EEF2FF,stroke:#4F46E5,stroke-width:2px,color:#312E81
-    classDef decision fill:#FEF3C7,stroke:#F59E0B,stroke-width:2px,color:#92400E
-    classDef failure fill:#FEE2E2,stroke:#EF4444,stroke-width:2px,color:#991B1B
-
-    class Start,Complete startEnd
-    class ValidateRuntime,CheckDotNet,CheckAzd,CheckAzCLI,CheckAuth,CheckBicep,CheckProviders,CheckQuota,ClearSecrets process
-    class InstallDotNet,InstallAzd,InstallAzCLI,Login,InstallBicep,RegisterProviders decision
-    class Failed failure
+    %% ===== SUBGRAPH STYLES =====
+    style RuntimeValidation fill:#EEF2FF,stroke:#4F46E5,stroke-width:2px
+    style Prerequisites fill:#FEF3C7,stroke:#F59E0B,stroke-width:2px
+    style Authentication fill:#DBEAFE,stroke:#3B82F6,stroke-width:2px
+    style AzureConfig fill:#FEE2E2,stroke:#EF4444,stroke-width:2px
+    style Cleanup fill:#D1FAE5,stroke:#10B981,stroke-width:2px
 ```
 
 ### Integration Points
 
 | Aspect           | Details                                                                                                                                                                                                                        |
 | ---------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| **Version**      | 2.3.0 (PowerShell: 2025-12-30, Bash: 2025-12-30)                                                                                                                                                                               |
+| **Version**      | 2.3.0 (PowerShell: 2026-01-06, Bash: 2026-01-06)                                                                                                                                                                               |
 | **Called By**    | • **Azure Developer CLI (azd)** automatically before `azd provision` or `azd up`<br/>• Developers manually for environment validation<br/>• CI/CD pipelines during automated deployment workflows                              |
 | **Calls**        | • `clean-secrets.ps1` or `clean-secrets.sh` for secret clearing<br/>• `az login` for Azure authentication<br/>• `az provider register` for resource provider registration<br/>• Installation scripts for missing prerequisites |
 | **Dependencies** | • **Runtime:** PowerShell 7.0+ or Bash 4.0+<br/>• **.NET SDK:** Version 10.0+<br/>• **Azure CLI:** Version 2.60.0+<br/>• **Azure Developer CLI (azd)**<br/>• **Bicep CLI:** Version 0.30.0+                                    |
@@ -584,7 +600,7 @@ For detailed diagnostic information:
 
 | Version   | Date       | Changes                                                                                                                                                                                                                                             |
 | --------- | ---------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **2.3.0** | 2026-01-06 | • Applied PowerShell best practices (OutputType on script block)<br/>• Updated copyright to 2025-2026<br/>• Documentation updates                                                                                                                   |
+| **2.3.0** | 2026-01-06 | • Applied PowerShell best practices (OutputType on script block)<br/>• Added preference backup/restore pattern in PowerShell<br/>• Added `-CommandType Application` to `Get-Command` calls for external commands<br/>• Added IFS protection in Bash<br/>• Updated copyright to 2025-2026<br/>• Documentation updates                                                                                                                   |
 | **2.3.0** | 2025-12-30 | • Added `--auto-install` parameter<br/>• Added `--use-device-code-login` parameter<br/>• Added installation functions for all prerequisites<br/>• Added Azure resource provider registration<br/>• Synchronized PowerShell and Bash implementations |
 | **2.0.0** | 2025-12-29 | • Complete rewrite with comprehensive validation<br/>• Added Bicep CLI validation<br/>• Added Azure authentication check<br/>• Added quota information                                                                                              |
 | **1.0.0** | 2025-12-01 | • Initial release with basic validation                                                                                                                                                                                                             |

@@ -35,38 +35,62 @@ The solution provides a practical implementation of monitoring patterns that ena
 ## 🏗️ High-Level Architecture
 
 ```mermaid
+---
+title: Azure Logic Apps Monitoring - High-Level Architecture
+---
 flowchart TD
+    %% ===== STYLE DEFINITIONS =====
+    classDef primary fill:#4F46E5,stroke:#3730A3,color:#FFFFFF
+    classDef secondary fill:#10B981,stroke:#059669,color:#FFFFFF
+    classDef datastore fill:#F59E0B,stroke:#D97706,color:#000000
+    classDef external fill:#6B7280,stroke:#4B5563,color:#FFFFFF,stroke-dasharray: 5 5
+    classDef failed fill:#F44336,stroke:#C62828,color:#FFFFFF
+    classDef trigger fill:#818CF8,stroke:#4F46E5,color:#FFFFFF
+    classDef decision fill:#FFFBEB,stroke:#F59E0B,color:#000000
+    classDef input fill:#F3F4F6,stroke:#6B7280,color:#000000
+
+    %% ===== PRESENTATION LAYER =====
     subgraph Presentation["🖥️ Presentation Layer"]
         WebApp["🌐 eShop.Web.App<br/>Blazor Server"]
     end
+    style Presentation fill:#EEF2FF,stroke:#4F46E5,stroke-width:2px,color:#312E81
 
+    %% ===== APPLICATION LAYER =====
     subgraph Application["⚙️ Application Layer"]
         API["📡 eShop.Orders.API<br/>ASP.NET Core"]
         LogicApp["🔄 OrdersManagement<br/>Logic Apps Standard"]
     end
+    style Application fill:#D1FAE5,stroke:#10B981,stroke-width:2px,color:#065F46
 
+    %% ===== PLATFORM LAYER =====
     subgraph Platform["🏗️ Platform Layer"]
         Aspire["🎯 app.AppHost<br/>.NET Aspire"]
         Defaults["📦 app.ServiceDefaults<br/>Cross-cutting Concerns"]
     end
+    style Platform fill:#FEF3C7,stroke:#F59E0B,stroke-width:2px,color:#92400E
 
+    %% ===== DATA LAYER =====
     subgraph Data["💾 Data Layer"]
         SQL[("🗄️ Azure SQL<br/>OrderDb")]
         SB["📨 Azure Service Bus<br/>ordersplaced topic"]
         Storage["📁 Azure Storage<br/>Workflow State"]
     end
+    style Data fill:#F3E8FF,stroke:#A855F7,stroke-width:2px,color:#581C87
 
+    %% ===== OBSERVABILITY LAYER =====
     subgraph Observability["📊 Observability Layer"]
         AI["📈 Application Insights"]
         LAW["📋 Log Analytics"]
     end
+    style Observability fill:#FCE7F3,stroke:#EC4899,stroke-width:2px,color:#9D174D
 
+    %% ===== CONNECTIONS =====
     WebApp -->|"HTTP/REST"| API
     API -->|"EF Core"| SQL
     API -->|"AMQP"| SB
     SB -->|"Trigger"| LogicApp
     LogicApp -->|"HTTP"| API
-    LogicApp --> Storage
+    LogicApp -->|"State"| Storage
 
     Aspire -.->|"Orchestrates"| WebApp
     Aspire -.->|"Orchestrates"| API
@@ -76,20 +100,14 @@ flowchart TD
     WebApp -.->|"OTLP"| AI
     API -.->|"OTLP"| AI
     LogicApp -.->|"Diagnostics"| LAW
-    AI --> LAW
+    AI -->|"Stores"| LAW
 
-    %% Modern color palette - WCAG AA compliant
-    classDef presentation fill:#EEF2FF,stroke:#4F46E5,stroke-width:2px,color:#312E81
-    classDef application fill:#D1FAE5,stroke:#10B981,stroke-width:2px,color:#065F46
-    classDef platform fill:#FEF3C7,stroke:#F59E0B,stroke-width:2px,color:#92400E
-    classDef data fill:#F3E8FF,stroke:#A855F7,stroke-width:2px,color:#581C87
-    classDef observability fill:#FCE7F3,stroke:#EC4899,stroke-width:2px,color:#9D174D
-
-    class WebApp presentation
-    class API,LogicApp application
-    class Aspire,Defaults platform
-    class SQL,SB,Storage data
-    class AI,LAW observability
+    %% ===== CLASS ASSIGNMENTS =====
+    class WebApp primary
+    class API,LogicApp secondary
+    class Aspire,Defaults trigger
+    class SQL,SB,Storage datastore
+    class AI,LAW external
 ```
 
 ---
@@ -144,7 +162,7 @@ flowchart TD
 
 ## 📁 Repository Structure
 
-```
+```text
 ├── app.AppHost/                    # .NET Aspire orchestration
 ├── app.ServiceDefaults/            # Shared cross-cutting concerns
 ├── src/
