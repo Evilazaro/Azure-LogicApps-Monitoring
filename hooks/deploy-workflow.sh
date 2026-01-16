@@ -81,6 +81,7 @@ get_environment_value() {
 
 set_workflow_environment_aliases() {
     # Map WORKFLOWS_* variables to AZURE_* equivalents for connections.json compatibility
+    # Also export AZURE_* variables that may come from azd environment
     declare -A mappings=(
         ["WORKFLOWS_SUBSCRIPTION_ID"]="AZURE_SUBSCRIPTION_ID"
         ["WORKFLOWS_RESOURCE_GROUP_NAME"]="AZURE_RESOURCE_GROUP"
@@ -91,8 +92,18 @@ set_workflow_environment_aliases() {
         local source_key="${mappings[$key]}"
         if [[ -z "${!key:-}" ]] && [[ -n "${!source_key:-}" ]]; then
             export "$key"="${!source_key}"
+            write_log "Set ${key}=${!source_key}" Success
         fi
     done
+    
+    # Debug: Show all relevant environment variables
+    write_log "Environment variables for deployment:"
+    write_log "  AZURE_SUBSCRIPTION_ID=${AZURE_SUBSCRIPTION_ID:-<not set>}"
+    write_log "  AZURE_RESOURCE_GROUP=${AZURE_RESOURCE_GROUP:-<not set>}"
+    write_log "  AZURE_LOCATION=${AZURE_LOCATION:-<not set>}"
+    write_log "  MANAGED_IDENTITY_NAME=${MANAGED_IDENTITY_NAME:-<not set>}"
+    write_log "  WORKFLOWS_SUBSCRIPTION_ID=${WORKFLOWS_SUBSCRIPTION_ID:-<not set>}"
+    write_log "  WORKFLOWS_RESOURCE_GROUP_NAME=${WORKFLOWS_RESOURCE_GROUP_NAME:-<not set>}"
 }
 
 resolve_placeholders() {
@@ -110,6 +121,7 @@ resolve_placeholders() {
             
             if [[ -n "$var_value" ]]; then
                 resolved="${resolved//$match/$var_value}"
+                write_log "  Resolved \${${var_name}} in ${filename}" Success
             else
                 unresolved+=("$var_name")
             fi
@@ -348,6 +360,15 @@ main() {
         --src "$ZIP_PATH" \
         --output none; then
         write_log "Deployment failed" Error
+        
+        # Fetch deployment logs to help diagnose the issue
+        write_log "Fetching deployment logs..." Warning
+        az webapp log deployment show \
+            --name "$logic_app_name" \
+            --resource-group "$resource_group" \
+            --subscription "$subscription_id" \
+            --output table 2>/dev/null || true
+        
         exit 1
     fi
     

@@ -218,5 +218,3 @@ output AZURE_TENANT_ID string = tenant().tenantId
 
 @description('Storage account name for Logic Apps workflows and data')
 output AZURE_STORAGE_ACCOUNT_NAME_WORKFLOW string = workload.outputs.AZURE_STORAGE_ACCOUNT_NAME_WORKFLOW
-
-output DEPLOYER_ID string = deployer().objectId

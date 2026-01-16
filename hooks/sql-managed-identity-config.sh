@@ -735,8 +735,8 @@ main() {
         -S "tcp:${server_fqdn},1433" \
         -d "$DATABASE_NAME" \
         --authentication-method ActiveDirectoryAzCli \
-        --encrypt-connection \
-        --timeout-login "$COMMAND_TIMEOUT" \
+        -N \
+        -l "$COMMAND_TIMEOUT" \
         -i "$sql_file" \
         2>&1) || sql_exit_code=$?
 
