@@ -156,14 +156,26 @@ flowchart TB
 |:------------|:-----------------|
 | `dev` | None (auto-deploy) |
 
+---
+
 ## 🔗 Related Documentation
 
-- [Architecture Documentation](../architecture/README.md)
-- [Azure Developer CLI Documentation](https://learn.microsoft.com/en-us/azure/developer/azure-developer-cli/)
-- [GitHub Actions Documentation](https://docs.github.com/en/actions)
-- [Federated Credentials Setup](https://learn.microsoft.com/en-us/azure/developer/github/connect-from-azure)
+| Resource | Description |
+|:---------|:------------|
+| [Architecture Documentation](../architecture/README.md) | System architecture and design decisions |
+| [Azure Developer CLI Documentation](https://learn.microsoft.com/en-us/azure/developer/azure-developer-cli/) | Official azd documentation |
+| [GitHub Actions Documentation](https://docs.github.com/en/actions) | GitHub Actions reference |
+| [Federated Credentials Setup](https://learn.microsoft.com/en-us/azure/developer/github/connect-from-azure) | OIDC authentication setup guide |
+
+---
 
 ## 📚 Additional Resources
 
-- [Hooks Documentation](../hooks/README.md) - Pre/post deployment scripts
-- [Infrastructure Documentation](../../infra/README.md) - Bicep templates
+| Resource | Description |
+|:---------|:------------|
+| [Hooks Documentation](../hooks/README.md) | Pre/post deployment scripts |
+| [Infrastructure Documentation](../../infra/README.md) | Bicep templates and IaC |
+
+---
+
+[⬆️ Back to top](#-devops-documentation)

@@ -1,18 +1,38 @@
-# CD - Azure Deployment
+# 🚀 CD - Azure Deployment
 
-**Workflow File:** [azure-dev.yml](../../.github/workflows/azure-dev.yml)
+> **Workflow File:** [azure-dev.yml](../../.github/workflows/azure-dev.yml)
+
+---
+
+## 📑 Table of Contents
+
+- [Overview](#-overview)
+- [Pipeline Visualization](#️-pipeline-visualization)
+- [Triggers](#-triggers)
+- [Jobs & Steps](#-jobs--steps)
+- [Prerequisites](#-prerequisites)
+- [Environment Variables](#-environment-variables)
+- [Usage Examples](#-usage-examples)
+- [Troubleshooting](#-troubleshooting)
+- [Related Documentation](#-related-documentation)
+
+---
 
 ## 📋 Overview
 
-This workflow provisions Azure infrastructure and deploys the .NET application using Azure Developer CLI (azd) with OpenID Connect (OIDC) authentication. It integrates the CI pipeline (build, test, analyze) before deploying to the development environment.
+This workflow provisions Azure infrastructure and deploys the .NET application using **Azure Developer CLI (azd)** with **OpenID Connect (OIDC)** authentication. It integrates the CI pipeline (build, test, analyze) before deploying to the development environment.
 
 ### Key Features
 
-- ✅ Integrated CI pipeline (build, test, code analysis)
-- 🔐 OIDC authentication (no stored secrets)
-- 🌍 Environment-based deployment with protection rules
-- 📊 Deployment summaries and observability
-- 🔄 Automatic rollback instructions on failure
+| Feature | Description |
+|:--------|:------------|
+| ✅ **Integrated CI Pipeline** | Build, test, and code analysis before deployment |
+| 🔐 **OIDC Authentication** | No stored secrets - uses federated credentials |
+| 🌍 **Environment-based Deployment** | Protection rules and environment variables |
+| 📊 **Deployment Summaries** | Detailed observability and reporting |
+| 🔄 **Automatic Rollback** | Instructions provided on failure |
+
+---
 
 ## 🗺️ Pipeline Visualization
 
