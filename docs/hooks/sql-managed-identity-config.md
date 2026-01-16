@@ -196,70 +196,73 @@ The following built-in database roles can be assigned:
 ### 📊 Workflow Diagram
 
 ```mermaid
-%%{init: {'theme': 'base', 'themeVariables': { 'primaryColor': '#4285f4', 'primaryTextColor': '#fff', 'primaryBorderColor': '#2d6ecf', 'lineColor': '#5c6bc0', 'secondaryColor': '#81c784', 'tertiaryColor': '#fff3e0'}}}%%
+---
+title: sql-managed-identity-config Workflow
+---
 flowchart LR
-    %% Start node
-    A["🚀 Start"]:::startNode
+    %% ===== STYLE DEFINITIONS =====
+    classDef primary fill:#4F46E5,stroke:#3730A3,color:#FFFFFF
+    classDef secondary fill:#10B981,stroke:#059669,color:#FFFFFF
+    classDef datastore fill:#F59E0B,stroke:#D97706,color:#000000
+    classDef external fill:#6B7280,stroke:#4B5563,color:#FFFFFF,stroke-dasharray: 5 5
+    classDef failed fill:#F44336,stroke:#C62828,color:#FFFFFF
+    classDef trigger fill:#818CF8,stroke:#4F46E5,color:#FFFFFF
+    classDef decision fill:#FFFBEB,stroke:#F59E0B,color:#000000
+    classDef input fill:#F3F4F6,stroke:#6B7280,color:#000000
 
-    %% Validation Phase
+    %% ===== TRIGGER NODES =====
+    A["🚀 Start"]:::trigger
+
+    %% ===== PHASE 1: VALIDATION =====
     subgraph validation["🔍 Phase 1: Validation"]
         direction TB
-        B["Validate Parameters"]:::processNode
-        C["Check Azure CLI Auth"]:::processNode
-        D{"Authenticated?"}:::decisionNode
+        B["Validate Parameters"]:::primary
+        C["Check Azure CLI Auth"]:::primary
+        D{"Authenticated?"}:::decision
     end
 
-    %% Configuration Phase
+    %% ===== PHASE 2: CONFIGURATION =====
     subgraph config["⚙️ Phase 2: Configuration"]
         direction TB
-        F["Configure Firewall"]:::processNode
-        G["Acquire Access Token"]:::processNode
-        H["Generate SQL Script"]:::processNode
+        F["Configure Firewall"]:::primary
+        G["Acquire Access Token"]:::primary
+        H["Generate SQL Script"]:::datastore
     end
 
-    %% Execution Phase
+    %% ===== PHASE 3: EXECUTION =====
     subgraph execution["▶️ Phase 3: Execution"]
         direction TB
-        I["Connect to Database"]:::processNode
-        J["Execute SQL Script"]:::processNode
-        K{"Success?"}:::decisionNode
+        I["Connect to Database"]:::external
+        J["Execute SQL Script"]:::primary
+        K{"Success?"}:::decision
     end
 
-    %% Result Nodes
-    E["❌ Exit with Error"]:::errorNode
-    L["📋 Show Troubleshooting"]:::warningNode
-    M["❌ Return Error Result"]:::errorNode
-    N["✅ Return Success Result"]:::successNode
-    O["🏁 End"]:::endNode
+    %% ===== RESULT NODES =====
+    E["❌ Exit with Error"]:::failed
+    L["📋 Show Troubleshooting"]:::datastore
+    M["❌ Return Error Result"]:::failed
+    N["✅ Return Success Result"]:::secondary
+    O["🏁 End"]:::input
 
-    %% Flow connections
-    A --> validation
-    B --> C
-    C --> D
-    D -->|No| E
-    D -->|Yes| config
-    F --> G
-    G --> H
-    H --> execution
-    I --> J
-    J --> K
-    K -->|No| L
-    L --> M
-    K -->|Yes| N
-    M --> O
-    N --> O
-    E --> O
+    %% ===== MAIN FLOW CONNECTIONS =====
+    A -->|"Start Process"| validation
+    B -->|"Params OK"| C
+    C -->|"Check Auth"| D
+    D -->|"No"| E
+    D -->|"Yes"| config
+    F -->|"Firewall OK"| G
+    G -->|"Token Acquired"| H
+    H -->|"Script Ready"| execution
+    I -->|"Connected"| J
+    J -->|"Execute"| K
+    K -->|"No"| L
+    L -->|"Show Help"| M
+    K -->|"Yes"| N
+    M -->|"Exit"| O
+    N -->|"Exit"| O
+    E -->|"Exit"| O
 
-    %% Styling classes
-    classDef startNode fill:#065F46,stroke:#10B981,stroke-width:3px,color:#fff
-    classDef endNode fill:#F3F4F6,stroke:#6B7280,stroke-width:2px,color:#374151
-    classDef processNode fill:#EEF2FF,stroke:#4F46E5,stroke-width:2px,color:#312E81
-    classDef decisionNode fill:#FEF3C7,stroke:#F59E0B,stroke-width:2px,color:#92400E
-    classDef errorNode fill:#FEE2E2,stroke:#EF4444,stroke-width:2px,color:#991B1B
-    classDef successNode fill:#D1FAE5,stroke:#10B981,stroke-width:2px,color:#065F46
-    classDef warningNode fill:#FEF3C7,stroke:#F59E0B,stroke-width:2px,color:#92400E
-
-    %% Subgraph styling
+    %% ===== SUBGRAPH STYLES =====
     style validation fill:#EEF2FF,stroke:#4F46E5,stroke-width:2px
     style config fill:#FEF3C7,stroke:#F59E0B,stroke-width:2px
     style execution fill:#D1FAE5,stroke:#10B981,stroke-width:2px

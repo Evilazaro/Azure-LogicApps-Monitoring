@@ -180,117 +180,92 @@ See what would be purged without making changes (PowerShell only):
 ### 📊 Workflow Diagram
 
 ```mermaid
+---
+title: postinfradelete Workflow
+---
 flowchart LR
-    %% =====================================================
-    %% Style Definitions
-    %% =====================================================
-    classDef trigger fill:#312E81,stroke:#4F46E5,color:#fff,stroke-width:3px,font-weight:bold
-    classDef validation fill:#FEF3C7,stroke:#F59E0B,color:#92400E,stroke-width:2px
-    classDef decision fill:#F3E8FF,stroke:#A855F7,color:#581C87,stroke-width:2px
-    classDef process fill:#EEF2FF,stroke:#4F46E5,color:#312E81,stroke-width:2px
-    classDef success fill:#065F46,stroke:#10B981,color:#fff,stroke-width:3px,font-weight:bold
-    classDef warning fill:#FEF3C7,stroke:#F59E0B,color:#92400E,stroke-width:2px
-    classDef error fill:#FEE2E2,stroke:#EF4444,color:#991B1B,stroke-width:2px
+    %% ===== STYLE DEFINITIONS =====
+    classDef primary fill:#4F46E5,stroke:#3730A3,color:#FFFFFF
+    classDef secondary fill:#10B981,stroke:#059669,color:#FFFFFF
+    classDef datastore fill:#F59E0B,stroke:#D97706,color:#000000
+    classDef external fill:#6B7280,stroke:#4B5563,color:#FFFFFF,stroke-dasharray: 5 5
+    classDef failed fill:#F44336,stroke:#C62828,color:#FFFFFF
+    classDef trigger fill:#818CF8,stroke:#4F46E5,color:#FFFFFF
+    classDef decision fill:#FFFBEB,stroke:#F59E0B,color:#000000
+    classDef input fill:#F3F4F6,stroke:#6B7280,color:#000000
 
-    %% =====================================================
-    %% Trigger Phase
-    %% =====================================================
+    %% ===== TRIGGER PHASE =====
     subgraph TRIGGER["🚀 Trigger"]
         direction TB
-        A[/"azd down completes"/]
-        B["postinfradelete hook"]
+        A[/"azd down completes"/]:::trigger
+        B["postinfradelete hook"]:::primary
     end
 
-    %% =====================================================
-    %% Validation Phase
-    %% =====================================================
+    %% ===== VALIDATION PHASE =====
     subgraph VALIDATION["🔍 Validation"]
         direction TB
-        C{"Prerequisites?"}
-        E{"Env Variables?"}
+        C{"Prerequisites?"}:::decision
+        E{"Env Variables?"}:::decision
     end
 
-    %% =====================================================
-    %% Query Phase
-    %% =====================================================
+    %% ===== QUERY PHASE =====
     subgraph QUERY["📡 Azure API"]
         direction TB
-        G[["Query Deleted Sites"]]
-        H{"Logic Apps Found?"}
+        G[["Query Deleted Sites"]]:::external
+        H{"Logic Apps Found?"}:::decision
     end
 
-    %% =====================================================
-    %% Filter Phase
-    %% =====================================================
+    %% ===== FILTER PHASE =====
     subgraph FILTER["🔎 Filtering"]
         direction TB
-        J{"Resource Group?"}
-        K["Apply RG Filter"]
-        L{"Name Pattern?"}
-        M["Apply Name Filter"]
+        J{"Resource Group?"}:::decision
+        K["Apply RG Filter"]:::primary
+        L{"Name Pattern?"}:::decision
+        M["Apply Name Filter"]:::primary
     end
 
-    %% =====================================================
-    %% Execution Phase
-    %% =====================================================
+    %% ===== EXECUTION PHASE =====
     subgraph EXECUTE["⚡ Execution"]
         direction TB
-        N["List Logic Apps"]
-        O{"Confirm Purge?"}
-        Q[["Purge Logic Apps"]]
-        R["Report Summary"]
+        N["List Logic Apps"]:::primary
+        O{"Confirm Purge?"}:::decision
+        Q[["Purge Logic Apps"]]:::external
+        R["Report Summary"]:::secondary
     end
 
-    %% =====================================================
-    %% Exit States
-    %% =====================================================
+    %% ===== EXIT STATES =====
     subgraph EXIT["🏁 Exit"]
         direction TB
-        D[/"⚠️ Exit: Warning"/]
-        F[/"⏭️ Exit: Skip"/]
-        I[/"✅ Exit: No Apps"/]
-        P[/"🚫 Exit: Cancelled"/]
-        S[/"✅ Exit: Success"/]
+        D[/"⚠️ Exit: Warning"/]:::datastore
+        F[/"⏭️ Exit: Skip"/]:::input
+        I[/"✅ Exit: No Apps"/]:::secondary
+        P[/"🚫 Exit: Cancelled"/]:::failed
+        S[/"✅ Exit: Success"/]:::secondary
     end
 
-    %% =====================================================
-    %% Flow Connections
-    %% =====================================================
-    A --> B
-    B --> C
+    %% ===== FLOW CONNECTIONS =====
+    A -->|"triggers"| B
+    B -->|"validates"| C
     C -->|"❌ Fail"| D
     C -->|"✅ Pass"| E
     E -->|"❌ Missing"| F
     E -->|"✅ Valid"| G
-    G --> H
+    G -->|"queries"| H
     H -->|"❌ None"| I
     H -->|"✅ Found"| J
     J -->|"✅ Yes"| K
     J -->|"❌ No"| L
-    K --> L
+    K -->|"filters"| L
     L -->|"✅ Yes"| M
     L -->|"❌ No"| N
-    M --> N
-    N --> O
+    M -->|"applies"| N
+    N -->|"confirms"| O
     O -->|"❌ No"| P
     O -->|"✅ Yes"| Q
-    Q --> R
-    R --> S
+    Q -->|"reports"| R
+    R -->|"completes"| S
 
-    %% =====================================================
-    %% Apply Styles
-    %% =====================================================
-    class A,B trigger
-    class C,E validation
-    class H,J,L,O decision
-    class G,K,M,N,Q,R process
-    class I,S success
-    class D,F warning
-    class P error
-
-    %% =====================================================
-    %% Subgraph Styling
-    %% =====================================================
+    %% ===== SUBGRAPH STYLES =====
     style TRIGGER fill:#EEF2FF,stroke:#4F46E5,stroke-width:2px
     style VALIDATION fill:#FEF3C7,stroke:#F59E0B,stroke-width:2px
     style QUERY fill:#EEF2FF,stroke:#4F46E5,stroke-width:2px

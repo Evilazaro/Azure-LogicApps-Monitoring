@@ -197,61 +197,78 @@ The script automatically creates these aliases for `connections.json` compatibil
 ### 📊 Workflow Diagram
 
 ```mermaid
-%%{init: {'theme': 'base', 'themeVariables': { 'primaryColor': '#4a90d9', 'primaryTextColor': '#ffffff', 'primaryBorderColor': '#2c5aa0', 'lineColor': '#5c6bc0', 'secondaryColor': '#81c784', 'tertiaryColor': '#ffb74d'}}}%%
+---
+title: deploy-workflow Deployment Flow
+---
 flowchart LR
+    %% ===== STYLE DEFINITIONS =====
+    classDef primary fill:#4F46E5,stroke:#3730A3,color:#FFFFFF
+    classDef secondary fill:#10B981,stroke:#059669,color:#FFFFFF
+    classDef datastore fill:#F59E0B,stroke:#D97706,color:#000000
+    classDef external fill:#6B7280,stroke:#4B5563,color:#FFFFFF,stroke-dasharray: 5 5
+    classDef failed fill:#F44336,stroke:#C62828,color:#FFFFFF
+    classDef trigger fill:#818CF8,stroke:#4F46E5,color:#FFFFFF
+    classDef decision fill:#FFFBEB,stroke:#F59E0B,color:#000000
+    classDef input fill:#F3F4F6,stroke:#6B7280,color:#000000
+
     %% ===== PHASE 1: INITIALIZATION =====
     subgraph phase1["🔧 Initialization"]
         direction LR
-        A["🚀 Start"]:::startNode --> B["📋 Environment<br/>Setup"]:::processNode
-        B --> C["✅ Validate<br/>Config"]:::validationNode
+        A["🚀 Start"]:::trigger
+        B["📋 Environment<br/>Setup"]:::primary
+        C["✅ Validate<br/>Config"]:::secondary
+        A -->|"begins"| B
+        B -->|"validates"| C
     end
 
     %% ===== PHASE 2: DISCOVERY =====
     subgraph phase2["🔎 Discovery"]
         direction LR
-        D["📂 Find Workflow<br/>Project"]:::processNode --> E["🔍 Discover<br/>Workflows"]:::processNode
-        E --> F["🔗 Fetch Connection<br/>URLs"]:::azureNode
+        D["📂 Find Workflow<br/>Project"]:::primary
+        E["🔍 Discover<br/>Workflows"]:::primary
+        F["🔗 Fetch Connection<br/>URLs"]:::external
+        D -->|"locates"| E
+        E -->|"fetches"| F
     end
 
     %% ===== PHASE 3: PREPARATION =====
     subgraph phase3["📦 Preparation"]
         direction LR
-        G["🔀 Resolve<br/>Placeholders"]:::processNode --> H["📁 Stage<br/>Files"]:::processNode
-        H --> I["🗜️ Create ZIP<br/>Package"]:::processNode
+        G["🔀 Resolve<br/>Placeholders"]:::primary
+        H["📁 Stage<br/>Files"]:::datastore
+        I["🗜️ Create ZIP<br/>Package"]:::primary
+        G -->|"stages"| H
+        H -->|"packages"| I
     end
 
     %% ===== PHASE 4: DEPLOYMENT =====
     subgraph phase4["🚀 Deployment"]
         direction LR
-        J["⚙️ Update App<br/>Settings"]:::azureNode --> K["☁️ Deploy ZIP<br/>to Azure"]:::azureNode
-        K --> L["🧹 Cleanup<br/>Temp Files"]:::processNode
+        J["⚙️ Update App<br/>Settings"]:::external
+        K["☁️ Deploy ZIP<br/>to Azure"]:::external
+        L["🧹 Cleanup<br/>Temp Files"]:::primary
+        J -->|"deploys"| K
+        K -->|"cleans up"| L
     end
 
     %% ===== PHASE 5: COMPLETION =====
     subgraph phase5["✨ Completion"]
         direction LR
-        M["✅ Deployment<br/>Complete"]:::successNode
+        M["✅ Deployment<br/>Complete"]:::secondary
     end
 
     %% ===== INTER-PHASE CONNECTIONS =====
-    phase1 --> phase2
-    phase2 --> phase3
-    phase3 --> phase4
-    phase4 --> phase5
-
-    %% ===== STYLES =====
-    classDef startNode fill:#312E81,stroke:#4F46E5,stroke-width:3px,color:#fff,font-weight:bold
-    classDef processNode fill:#EEF2FF,stroke:#4F46E5,stroke-width:2px,color:#312E81
-    classDef validationNode fill:#D1FAE5,stroke:#10B981,stroke-width:2px,color:#065F46
-    classDef azureNode fill:#EEF2FF,stroke:#4F46E5,stroke-width:2px,color:#312E81
-    classDef successNode fill:#065F46,stroke:#10B981,stroke-width:3px,color:#fff,font-weight:bold
+    phase1 -->|"proceeds to"| phase2
+    phase2 -->|"proceeds to"| phase3
+    phase3 -->|"proceeds to"| phase4
+    phase4 -->|"completes"| phase5
 
     %% ===== SUBGRAPH STYLES =====
-    style phase1 fill:#EEF2FF,stroke:#4F46E5,stroke-width:2px,rx:10
-    style phase2 fill:#D1FAE5,stroke:#10B981,stroke-width:2px,rx:10
-    style phase3 fill:#FEF3C7,stroke:#F59E0B,stroke-width:2px,rx:10
-    style phase4 fill:#EEF2FF,stroke:#4F46E5,stroke-width:2px,rx:10
-    style phase5 fill:#D1FAE5,stroke:#10B981,stroke-width:2px,rx:10
+    style phase1 fill:#EEF2FF,stroke:#4F46E5,stroke-width:2px
+    style phase2 fill:#D1FAE5,stroke:#10B981,stroke-width:2px
+    style phase3 fill:#FEF3C7,stroke:#F59E0B,stroke-width:2px
+    style phase4 fill:#EEF2FF,stroke:#4F46E5,stroke-width:2px
+    style phase5 fill:#D1FAE5,stroke:#10B981,stroke-width:2px
 ```
 
 #### 📋 Phase Descriptions

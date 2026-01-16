@@ -416,89 +416,86 @@ fi
 The script executes a systematic workflow through four distinct phases:
 
 ```mermaid
-%%{init: {'theme': 'base', 'themeVariables': { 'primaryColor': '#e3f2fd', 'primaryTextColor': '#0d47a1', 'primaryBorderColor': '#1976d2', 'lineColor': '#64b5f6', 'secondaryColor': '#fff3e0', 'tertiaryColor': '#e8f5e9'}}}%%
+---
+title: clean-secrets Process Flow
+---
 flowchart LR
-    %% ===================================================================
-    %% WORKFLOW: clean-secrets Process Flow
-    %% Description: Clears .NET user secrets from configured projects
-    %% ===================================================================
+    %% ===== STYLE DEFINITIONS =====
+    classDef primary fill:#4F46E5,stroke:#3730A3,color:#FFFFFF
+    classDef secondary fill:#10B981,stroke:#059669,color:#FFFFFF
+    classDef datastore fill:#F59E0B,stroke:#D97706,color:#000000
+    classDef external fill:#6B7280,stroke:#4B5563,color:#FFFFFF,stroke-dasharray: 5 5
+    classDef failed fill:#F44336,stroke:#C62828,color:#FFFFFF
+    classDef trigger fill:#818CF8,stroke:#4F46E5,color:#FFFFFF
+    classDef decision fill:#FFFBEB,stroke:#F59E0B,color:#000000
+    classDef input fill:#F3F4F6,stroke:#6B7280,color:#000000
 
-    %% --- Entry and Exit Points ---
-    Start(["🚀 clean-secrets starts"])
-    End(["🏁 Script completes"])
+    %% ===== ENTRY AND EXIT POINTS =====
+    Start(["🚀 clean-secrets starts"]):::trigger
+    End(["🏁 Script completes"]):::secondary
 
-    Start --> Initialization
+    Start -->|"begins"| Initialization
 
-    %% --- Phase 1: Initialization & Validation ---
+    %% ===== PHASE 1: INITIALIZATION & VALIDATION =====
     subgraph Initialization["1️⃣ Initialization Phase"]
         direction TB
-        Init["Script Initialization"]
-        InitDetails["• Set StrictMode/strict mode<br/>• Parse command-line args<br/>• Configure preferences"]
-        DotNet["Validate .NET SDK"]
-        DotNetDetails["• Check dotnet in PATH<br/>• Verify version ≥ 10.0<br/>• Test SDK execution"]
-        Init --> InitDetails
-        InitDetails --> DotNet
-        DotNet --> DotNetDetails
+        Init["Script Initialization"]:::primary
+        InitDetails["• Set StrictMode/strict mode<br/>• Parse command-line args<br/>• Configure preferences"]:::input
+        DotNet["Validate .NET SDK"]:::primary
+        DotNetDetails["• Check dotnet in PATH<br/>• Verify version ≥ 10.0<br/>• Test SDK execution"]:::input
+        Init -->|"configures"| InitDetails
+        InitDetails -->|"validates"| DotNet
+        DotNet -->|"checks"| DotNetDetails
     end
 
-    %% --- Phase 2: Project Discovery ---
+    %% ===== PHASE 2: PROJECT DISCOVERY =====
     subgraph Discovery["2️⃣ Discovery Phase"]
         direction TB
-        Projects["Discover Projects"]
-        ProjectDetails["• app.AppHost<br/>• eShop.Orders.API<br/>• eShop.Web.App"]
-        Validate["Validate Paths"]
-        ValidateDetails["• Check directory exists<br/>• Locate .csproj files<br/>• Build valid project list"]
-        Projects --> ProjectDetails
-        ProjectDetails --> Validate
-        Validate --> ValidateDetails
+        Projects["Discover Projects"]:::primary
+        ProjectDetails["• app.AppHost<br/>• eShop.Orders.API<br/>• eShop.Web.App"]:::datastore
+        Validate["Validate Paths"]:::primary
+        ValidateDetails["• Check directory exists<br/>• Locate .csproj files<br/>• Build valid project list"]:::input
+        Projects -->|"discovers"| ProjectDetails
+        ProjectDetails -->|"validates"| Validate
+        Validate -->|"checks"| ValidateDetails
     end
 
-    %% --- Phase 3: Confirmation ---
+    %% ===== PHASE 3: CONFIRMATION =====
     subgraph Confirmation["3️⃣ Confirmation Phase"]
         direction TB
-        CheckForce{"Force mode<br/>enabled?"}
-        Prompt["Prompt User"]
-        PromptDetails["• Display project list<br/>• Request confirmation<br/>• Handle user response"]
-        Skip["Skip Confirmation"]
+        CheckForce{"Force mode<br/>enabled?"}:::decision
+        Prompt["Prompt User"]:::primary
+        PromptDetails["• Display project list<br/>• Request confirmation<br/>• Handle user response"]:::input
+        Skip["Skip Confirmation"]:::secondary
         CheckForce -->|"No"| Prompt
         CheckForce -->|"Yes"| Skip
-        Prompt --> PromptDetails
+        Prompt -->|"displays"| PromptDetails
     end
 
-    %% --- Phase 4: Execution ---
+    %% ===== PHASE 4: EXECUTION =====
     subgraph Execution["4️⃣ Execution Phase"]
         direction TB
-        Clear["Clear Secrets"]
-        ClearDetails["• Execute dotnet user-secrets clear<br/>• Track success/failure<br/>• Log results"]
-        Summary["Display Summary"]
-        SummaryDetails["• Total projects<br/>• Successfully cleared<br/>• Failed operations"]
-        Clear --> ClearDetails
-        ClearDetails --> Summary
-        Summary --> SummaryDetails
+        Clear["Clear Secrets"]:::primary
+        ClearDetails["• Execute dotnet user-secrets clear<br/>• Track success/failure<br/>• Log results"]:::input
+        Summary["Display Summary"]:::secondary
+        SummaryDetails["• Total projects<br/>• Successfully cleared<br/>• Failed operations"]:::input
+        Clear -->|"executes"| ClearDetails
+        ClearDetails -->|"generates"| Summary
+        Summary -->|"displays"| SummaryDetails
     end
 
-    %% --- Flow Connections ---
-    Initialization --> Discovery
-    Discovery --> Confirmation
-    PromptDetails --> Execution
-    Skip --> Execution
-    SummaryDetails --> End
+    %% ===== FLOW CONNECTIONS =====
+    Initialization -->|"proceeds to"| Discovery
+    Discovery -->|"proceeds to"| Confirmation
+    PromptDetails -->|"proceeds to"| Execution
+    Skip -->|"proceeds to"| Execution
+    SummaryDetails -->|"completes"| End
 
-    %% --- Style Definitions ---
-    %% Color palette follows modern WCAG AA compliant guidelines
-    %% Green: Success | Indigo: Process | Gray: Detail | Amber: Decision | Purple: .NET
-    classDef startEndStyle fill:#D1FAE5,stroke:#10B981,stroke-width:3px,color:#065F46
-    classDef processStyle fill:#EEF2FF,stroke:#4F46E5,stroke-width:2px,color:#312E81
-    classDef detailStyle fill:#F3F4F6,stroke:#6B7280,stroke-width:1px,color:#374151
-    classDef decisionStyle fill:#FEF3C7,stroke:#F59E0B,stroke-width:2px,color:#92400E
-    classDef dotnetStyle fill:#F3E8FF,stroke:#A855F7,stroke-width:2px,color:#581C87
-
-    %% --- Apply Styles ---
-    class Start,End startEndStyle
-    class Init,Projects,Validate,Prompt,Skip,Clear,Summary processStyle
-    class InitDetails,DotNetDetails,ProjectDetails,ValidateDetails,PromptDetails,ClearDetails,SummaryDetails detailStyle
-    class CheckForce decisionStyle
-    class DotNet dotnetStyle
+    %% ===== SUBGRAPH STYLES =====
+    style Initialization fill:#EEF2FF,stroke:#4F46E5,stroke-width:2px
+    style Discovery fill:#D1FAE5,stroke:#10B981,stroke-width:2px
+    style Confirmation fill:#FEF3C7,stroke:#F59E0B,stroke-width:2px
+    style Execution fill:#F3E8FF,stroke:#A855F7,stroke-width:2px
 ```
 
 **Process Details:**

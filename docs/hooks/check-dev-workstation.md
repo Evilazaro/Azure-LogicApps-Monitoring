@@ -272,81 +272,76 @@ echo "Environment validated - proceeding with build..."
 The script executes a streamlined validation workflow through four distinct phases:
 
 ```mermaid
-%%{init: {'theme': 'base', 'themeVariables': { 'primaryColor': '#e3f2fd', 'primaryTextColor': '#0d47a1', 'primaryBorderColor': '#1976d2', 'lineColor': '#64b5f6', 'secondaryColor': '#fff3e0', 'tertiaryColor': '#e8f5e9'}}}%%
+---
+title: check-dev-workstation Process Flow
+---
 flowchart LR
-    %% ===================================================================
-    %% WORKFLOW: check-dev-workstation Process Flow
-    %% Description: Validates developer workstation prerequisites
-    %% ===================================================================
+    %% ===== STYLE DEFINITIONS =====
+    classDef primary fill:#4F46E5,stroke:#3730A3,color:#FFFFFF
+    classDef secondary fill:#10B981,stroke:#059669,color:#FFFFFF
+    classDef datastore fill:#F59E0B,stroke:#D97706,color:#000000
+    classDef external fill:#6B7280,stroke:#4B5563,color:#FFFFFF,stroke-dasharray: 5 5
+    classDef failed fill:#F44336,stroke:#C62828,color:#FFFFFF
+    classDef trigger fill:#818CF8,stroke:#4F46E5,color:#FFFFFF
+    classDef decision fill:#FFFBEB,stroke:#F59E0B,color:#000000
+    classDef input fill:#F3F4F6,stroke:#6B7280,color:#000000
 
-    %% --- Entry and Exit Points ---
-    Start(["🚀 check-dev-workstation starts"])
-    End(["🏁 Script completes"])
+    %% ===== ENTRY AND EXIT POINTS =====
+    Start(["🚀 check-dev-workstation starts"]):::trigger
+    End(["🏁 Script completes"]):::secondary
 
-    Start --> Initialization
+    Start -->|"begins"| Initialization
 
-    %% --- Phase 1: Initialization ---
+    %% ===== PHASE 1: INITIALIZATION =====
     subgraph Initialization["1️⃣ Initialization Phase"]
         direction TB
-        Init["Script Initialization"]
-        InitDetails["• Set StrictMode/strict mode<br/>• Configure error preferences<br/>• Validate prerequisites"]
-        Init --> InitDetails
+        Init["Script Initialization"]:::primary
+        InitDetails["• Set StrictMode/strict mode<br/>• Configure error preferences<br/>• Validate prerequisites"]:::input
+        Init -->|"configures"| InitDetails
     end
 
-    %% --- Phase 2: Path Resolution ---
+    %% ===== PHASE 2: PATH RESOLUTION =====
     subgraph PathResolution["2️⃣ Path Resolution Phase"]
         direction TB
-        Path["Locate Scripts"]
-        PathDetails["• Locate preprovision script<br/>• Verify script exists<br/>• Prepare execution context"]
-        Path --> PathDetails
+        Path["Locate Scripts"]:::primary
+        PathDetails["• Locate preprovision script<br/>• Verify script exists<br/>• Prepare execution context"]:::input
+        Path -->|"resolves"| PathDetails
     end
 
-    %% --- Phase 3: Validation Execution ---
+    %% ===== PHASE 3: VALIDATION EXECUTION =====
     subgraph ValidationPhase["3️⃣ Validation Phase"]
         direction TB
-        Delegate["Validation Delegation"]
-        DelegateDetails["• Invoke preprovision -ValidateOnly<br/>• Pass -Verbose flag if set<br/>• Monitor execution"]
-        Check{"All validations<br/>passed?"}
-        Delegate --> DelegateDetails
-        DelegateDetails --> Check
+        Delegate["Validation Delegation"]:::primary
+        DelegateDetails["• Invoke preprovision -ValidateOnly<br/>• Pass -Verbose flag if set<br/>• Monitor execution"]:::input
+        Check{"All validations<br/>passed?"}:::decision
+        Delegate -->|"executes"| DelegateDetails
+        DelegateDetails -->|"evaluates"| Check
     end
 
-    %% --- Phase 4: Result Processing ---
+    %% ===== PHASE 4: RESULT PROCESSING =====
     subgraph ResultPhase["4️⃣ Result Phase"]
         direction TB
-        Success["✅ Success Path"]
-        SuccessDetails["• Format success message<br/>• Exit code: 0<br/>• Display summary"]
-        Failure["❌ Failure Path"]
-        FailureDetails["• Format error details<br/>• Exit code: non-zero<br/>• Show remediation steps"]
-        Success --> SuccessDetails
-        Failure --> FailureDetails
+        Success["✅ Success Path"]:::secondary
+        SuccessDetails["• Format success message<br/>• Exit code: 0<br/>• Display summary"]:::input
+        Failure["❌ Failure Path"]:::failed
+        FailureDetails["• Format error details<br/>• Exit code: non-zero<br/>• Show remediation steps"]:::input
+        Success -->|"formats"| SuccessDetails
+        Failure -->|"formats"| FailureDetails
     end
 
-    %% --- Flow Connections ---
-    Initialization --> PathResolution
-    PathResolution --> ValidationPhase
+    %% ===== FLOW CONNECTIONS =====
+    Initialization -->|"proceeds to"| PathResolution
+    PathResolution -->|"proceeds to"| ValidationPhase
     Check -->|"Yes"| Success
     Check -->|"No"| Failure
-    SuccessDetails --> End
-    FailureDetails --> End
+    SuccessDetails -->|"completes"| End
+    FailureDetails -->|"completes"| End
 
-    %% --- Style Definitions ---
-    %% Color palette follows modern WCAG AA compliant guidelines
-    %% Indigo: Primary/Process | Green: Success | Amber: Decisions | Red: Errors
-    classDef startEndStyle fill:#D1FAE5,stroke:#10B981,stroke-width:3px,color:#065F46
-    classDef processStyle fill:#EEF2FF,stroke:#4F46E5,stroke-width:2px,color:#312E81
-    classDef detailStyle fill:#F3F4F6,stroke:#6B7280,stroke-width:1px,color:#374151
-    classDef decisionStyle fill:#FEF3C7,stroke:#F59E0B,stroke-width:2px,color:#92400E
-    classDef successStyle fill:#D1FAE5,stroke:#10B981,stroke-width:2px,color:#065F46
-    classDef failureStyle fill:#FEE2E2,stroke:#EF4444,stroke-width:2px,color:#991B1B
-
-    %% --- Apply Styles ---
-    class Start,End startEndStyle
-    class Init,Path,Delegate processStyle
-    class InitDetails,PathDetails,DelegateDetails,SuccessDetails,FailureDetails detailStyle
-    class Check decisionStyle
-    class Success successStyle
-    class Failure failureStyle
+    %% ===== SUBGRAPH STYLES =====
+    style Initialization fill:#EEF2FF,stroke:#4F46E5,stroke-width:2px
+    style PathResolution fill:#D1FAE5,stroke:#10B981,stroke-width:2px
+    style ValidationPhase fill:#FEF3C7,stroke:#F59E0B,stroke-width:2px
+    style ResultPhase fill:#F3E8FF,stroke:#A855F7,stroke-width:2px
 ```
 
 **Process Details:**
