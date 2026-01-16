@@ -17,7 +17,7 @@ This workflow provisions Azure infrastructure and deploys the .NET application u
 ## 🗺️ Pipeline Visualization
 
 ```mermaid
-flowchart TD
+flowchart LR
     subgraph Triggers["🎯 Triggers"]
         push([Push to main])
         manual([Manual Dispatch])
@@ -32,7 +32,7 @@ flowchart TD
     end
 
     subgraph Deploy["🚀 Deploy Stage"]
-        direction TB
+        direction LR
         
         subgraph Setup["📦 Phase 1: Setup"]
             checkout["📥 Checkout"]

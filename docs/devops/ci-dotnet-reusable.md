@@ -19,7 +19,7 @@ This is a reusable workflow that builds, tests, and analyzes .NET solutions. It 
 ## 🗺️ Pipeline Visualization
 
 ```mermaid
-flowchart TD
+flowchart LR
     subgraph Trigger["🎯 Trigger"]
         workflow_call([workflow_call])
     end
@@ -34,7 +34,7 @@ flowchart TD
     end
 
     subgraph Build["🔨 Build Job"]
-        direction TB
+        direction LR
         b_checkout["📥 Checkout"]
         b_setup["🔧 Setup .NET SDK"]
         b_workload["☁️ Update Workloads"]
@@ -46,7 +46,7 @@ flowchart TD
     end
 
     subgraph Test["🧪 Test Job"]
-        direction TB
+        direction LR
         
         subgraph Matrix["Matrix Strategy"]
             ubuntu["Ubuntu"]
@@ -66,7 +66,7 @@ flowchart TD
     end
 
     subgraph Analyze["🔍 Analyze Job"]
-        direction TB
+        direction LR
         a_checkout["📥 Checkout"]
         a_setup["🔧 Setup .NET SDK"]
         a_workload["☁️ Update Workloads"]

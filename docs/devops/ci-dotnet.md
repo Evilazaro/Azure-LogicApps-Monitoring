@@ -18,7 +18,7 @@ This workflow orchestrates the CI pipeline by calling the reusable workflow. It 
 ## 🗺️ Pipeline Visualization
 
 ```mermaid
-flowchart TD
+flowchart LR
     subgraph Triggers["🎯 Triggers"]
         push([Push to branches])
         pr([Pull Request to main])
