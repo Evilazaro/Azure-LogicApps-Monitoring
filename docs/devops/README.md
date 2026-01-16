@@ -6,13 +6,13 @@
 
 ## 📑 Table of Contents
 
-- [Overview](#-overview)
-- [Master Pipeline Diagram](#️-master-pipeline-diagram)
-- [Workflow Documentation](#-workflow-documentation)
-- [Quick Reference](#-quick-reference)
-- [Required Secrets & Variables](#-required-secrets--variables)
-- [Related Documentation](#-related-documentation)
-- [Additional Resources](#-additional-resources)
+- [📋 Overview](#-overview)
+- [🗺️ Master Pipeline Diagram](#%EF%B8%8F-master-pipeline-diagram)
+- [📁 Workflow Documentation](#-workflow-documentation)
+- [📊 Quick Reference](#-quick-reference)
+- [🔐 Required Secrets & Variables](#-required-secrets--variables)
+- [🔗 Related Documentation](#-related-documentation)
+- [📚 Additional Resources](#-additional-resources)
 
 ---
 
@@ -121,7 +121,7 @@ flowchart TB
 ## 📁 Workflow Documentation
 
 | Workflow File | Documentation | Purpose |
-|:--------------|:--------------|:--------|
+| ------------- | ------------- | ------- |
 | [azure-dev.yml](../../.github/workflows/azure-dev.yml) | [azure-dev.md](./azure-dev.md) | 🚀 CD - Provisions Azure infrastructure and deploys the application |
 | [ci-dotnet.yml](../../.github/workflows/ci-dotnet.yml) | [ci-dotnet.md](./ci-dotnet.md) | 🔄 CI - Orchestrates the .NET build and test pipeline |
 | [ci-dotnet-reusable.yml](../../.github/workflows/ci-dotnet-reusable.yml) | [ci-dotnet-reusable.md](./ci-dotnet-reusable.md) | 🔧 Reusable workflow for .NET CI operations |
@@ -131,7 +131,7 @@ flowchart TB
 ## 📊 Quick Reference
 
 | Workflow | Triggers | Jobs | Environment |
-|:---------|:---------|:-----|:------------|
+| -------- | -------- | ---- | ----------- |
 | **CD - Azure Deployment** | `push:main`, `workflow_dispatch` | CI → Deploy Dev → Summary | `dev` |
 | **CI - .NET Build and Test** | `push:*`, `pull_request:main`, `workflow_dispatch` | CI (calls reusable) | N/A |
 | **CI - .NET Reusable** | `workflow_call` | Build → Test → Analyze → Summary | N/A |
@@ -143,7 +143,7 @@ flowchart TB
 ### Repository Variables (Required for CD)
 
 | Variable | Description | Example |
-|:---------|:------------|:--------|
+| -------- | ----------- | ------- |
 | `AZURE_CLIENT_ID` | Azure AD App Registration Client ID | `xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx` |
 | `AZURE_TENANT_ID` | Azure AD Tenant ID | `xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx` |
 | `AZURE_SUBSCRIPTION_ID` | Azure Subscription ID | `xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx` |
@@ -153,7 +153,7 @@ flowchart TB
 ### GitHub Environment
 
 | Environment | Protection Rules |
-|:------------|:-----------------|
+| ----------- | ---------------- |
 | `dev` | None (auto-deploy) |
 
 ---
@@ -161,7 +161,7 @@ flowchart TB
 ## 🔗 Related Documentation
 
 | Resource | Description |
-|:---------|:------------|
+| -------- | ----------- |
 | [Architecture Documentation](../architecture/README.md) | System architecture and design decisions |
 | [Azure Developer CLI Documentation](https://learn.microsoft.com/en-us/azure/developer/azure-developer-cli/) | Official azd documentation |
 | [GitHub Actions Documentation](https://docs.github.com/en/actions) | GitHub Actions reference |
@@ -172,7 +172,7 @@ flowchart TB
 ## 📚 Additional Resources
 
 | Resource | Description |
-|:---------|:------------|
+| -------- | ----------- |
 | [Hooks Documentation](../hooks/README.md) | Pre/post deployment scripts |
 | [Infrastructure Documentation](../../infra/README.md) | Bicep templates and IaC |
 

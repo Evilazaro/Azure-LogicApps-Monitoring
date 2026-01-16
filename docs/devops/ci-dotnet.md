@@ -6,15 +6,15 @@
 
 ## 📑 Table of Contents
 
-- [Overview](#-overview)
-- [Pipeline Visualization](#️-pipeline-visualization)
-- [Triggers](#-triggers)
-- [Jobs & Steps](#-jobs--steps)
-- [Prerequisites](#-prerequisites)
-- [Artifacts](#-artifacts)
-- [Usage Examples](#-usage-examples)
-- [Troubleshooting](#-troubleshooting)
-- [Related Documentation](#-related-documentation)
+- [📋 Overview](#-overview)
+- [🗺️ Pipeline Visualization](#%EF%B8%8F-pipeline-visualization)
+- [🎯 Triggers](#-triggers)
+- [📋 Jobs & Steps](#-jobs--steps)
+- [🔐 Prerequisites](#-prerequisites)
+- [📦 Artifacts](#-artifacts)
+- [🚀 Usage Examples](#-usage-examples)
+- [🔍 Troubleshooting](#-troubleshooting)
+- [🔗 Related Documentation](#-related-documentation)
 
 ---
 
@@ -25,7 +25,7 @@ This workflow orchestrates the CI pipeline by calling the reusable workflow. It 
 ### Key Features
 
 | Feature | Description |
-|:--------|:------------|
+| ------- | ----------- |
 | ✅ **Automatic Triggering** | On push and pull requests |
 | 🔧 **Configurable Build** | Release/Debug configuration options |
 | 🧪 **Cross-Platform Testing** | Optional matrix testing (Ubuntu, Windows, macOS) |
@@ -115,7 +115,7 @@ flowchart LR
 ### Push Events
 
 | Branch Pattern | Description |
-|:---------------|:------------|
+| -------------- | ----------- |
 | `main` | Main development branch |
 | `feature/**` | Feature branches |
 | `bugfix/**` | Bug fix branches |
@@ -129,7 +129,7 @@ flowchart LR
 ### Pull Request Events
 
 | Target Branch | Description |
-|:--------------|:------------|
+| ------------- | ----------- |
 | `main` | Pull requests targeting main branch |
 
 ### Path Filters
@@ -149,7 +149,7 @@ paths:
 ### Manual Dispatch Inputs
 
 | Input | Type | Default | Options | Description |
-|:------|:-----|:--------|:--------|:------------|
+| ----- | ---- | ------- | ------- | ----------- |
 | `configuration` | `choice` | `Release` | `Release`, `Debug` | Build configuration |
 | `enable-code-analysis` | `boolean` | `true` | - | Enable code formatting analysis |
 | `enable-matrix` | `boolean` | `false` | - | Enable cross-platform matrix testing |
@@ -163,7 +163,7 @@ paths:
 This workflow consists of a single job that calls the reusable CI workflow.
 
 | Property | Value |
-|:---------|:------|
+| -------- | ----- |
 | **Type** | Reusable workflow call |
 | **Workflow** | `.github/workflows/ci-dotnet-reusable.yml` |
 | **Secrets** | Inherited |
@@ -171,7 +171,7 @@ This workflow consists of a single job that calls the reusable CI workflow.
 ### Reusable Workflow Parameters
 
 | Parameter | Value | Description |
-|:----------|:------|:------------|
+| --------- | ----- | ----------- |
 | `configuration` | `${{ inputs.configuration \|\| 'Release' }}` | Build configuration |
 | `dotnet-version` | `10.0.x` | .NET SDK version |
 | `solution-file` | `app.sln` | Solution file path |
@@ -212,7 +212,7 @@ concurrency:
 ## 📦 Artifacts
 
 | Artifact | Contents | Retention |
-|:---------|:---------|:----------|
+| -------- | -------- | --------- |
 | `build-artifacts` | Compiled binaries | 7 days |
 | `test-results` | Test execution results (`.trx`) | 30 days |
 | `code-coverage` | Cobertura XML coverage reports | 30 days |
@@ -275,7 +275,7 @@ gh workflow run ci-dotnet.yml \
 ### Common Issues
 
 | Issue | Cause | Solution |
-|:------|:------|:---------|
+| ----- | ----- | -------- |
 | Build fails | Missing NuGet packages | Check `dotnet restore` logs |
 | Tests fail | Test failures | Download `test-results` artifact for details |
 | Format check fails | Code style violations | Run `dotnet format app.sln` locally |
@@ -312,7 +312,7 @@ dotnet format app.sln
 ## 🔗 Related Documentation
 
 | Resource | Description |
-|:---------|:------------|
+| -------- | ----------- |
 | [CI - .NET Reusable Workflow](./ci-dotnet-reusable.md) | Reusable CI workflow details |
 | [CD - Azure Deployment](./azure-dev.md) | Azure deployment workflow |
 | [.NET Testing Documentation](https://docs.microsoft.com/en-us/dotnet/core/testing/) | Microsoft testing guide |

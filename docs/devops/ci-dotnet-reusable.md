@@ -6,18 +6,18 @@
 
 ## 📑 Table of Contents
 
-- [Overview](#-overview)
-- [Pipeline Visualization](#️-pipeline-visualization)
-- [Trigger](#-trigger)
-- [Inputs](#-inputs)
-- [Outputs](#-outputs)
-- [Jobs & Steps](#-jobs--steps)
-- [Prerequisites](#-prerequisites)
-- [Artifacts](#-artifacts)
-- [Environment Variables](#-environment-variables)
-- [Usage Examples](#-usage-examples)
-- [Troubleshooting](#-troubleshooting)
-- [Related Documentation](#-related-documentation)
+- [📋 Overview](#-overview)
+- [🗺️ Pipeline Visualization](#%EF%B8%8F-pipeline-visualization)
+- [🎯 Trigger](#-trigger)
+- [📥 Inputs](#-inputs)
+- [📤 Outputs](#-outputs)
+- [📋 Jobs & Steps](#-jobs--steps)
+- [🔐 Prerequisites](#-prerequisites)
+- [📦 Artifacts](#-artifacts)
+- [🔧 Environment Variables](#-environment-variables)
+- [🚀 Usage Examples](#-usage-examples)
+- [🔍 Troubleshooting](#-troubleshooting)
+- [🔗 Related Documentation](#-related-documentation)
 
 ---
 
@@ -28,7 +28,7 @@ This is a reusable workflow that builds, tests, and analyzes .NET solutions. It 
 ### Key Features
 
 | Feature | Description |
-|:--------|:------------|
+| ------- | ----------- |
 | 🔄 **Fully Reusable** | Via `workflow_call` trigger |
 | 🔨 **Configurable Build** | With version generation |
 | 🧪 **Test Execution** | With code coverage (Cobertura) |
@@ -219,7 +219,7 @@ on:
 ## 📥 Inputs
 
 | Input | Type | Required | Default | Description |
-|:------|:-----|:--------:|:--------|:------------|
+| ----- | ---- | :------: | ------- | ----------- |
 | `configuration` | `string` | ❌ | `Release` | Build configuration (Release/Debug) |
 | `dotnet-version` | `string` | ❌ | `10.0.x` | .NET SDK version to use |
 | `solution-file` | `string` | ❌ | `app.sln` | Path to the solution file |
@@ -237,7 +237,7 @@ on:
 ## 📤 Outputs
 
 | Output | Description |
-|:-------|:------------|
+| ------ | ----------- |
 | `build-version` | The generated build version (e.g., `1.0.42`) |
 | `build-result` | Build job result (`success`, `failure`, `cancelled`) |
 | `test-result` | Test job result |
@@ -252,15 +252,15 @@ on:
 **Purpose:** Compile the solution and generate build artifacts.
 
 | Property | Value |
-|:---------|:------|
+| -------- | ----- |
 | **Runner** | `${{ inputs.runs-on }}` |
 | **Timeout** | 15 minutes |
 | **Outputs** | `build-version` |
 
-#### Steps
+#### Build Steps
 
 | Step | Description |
-|:-----|:------------|
+| ---- | ----------- |
 | 📥 Checkout repository | Clone with full history (`fetch-depth: 0`) |
 | 🔧 Setup .NET SDK | Install specified .NET version |
 | ☁️ Update .NET workloads | Update .NET workloads |
@@ -275,7 +275,7 @@ on:
 **Purpose:** Execute tests with code coverage collection.
 
 | Property | Value |
-|:---------|:------|
+| -------- | ----- |
 | **Runner** | Matrix: `ubuntu-latest`, `windows-latest`, `macos-latest` (if enabled) |
 | **Timeout** | 30 minutes |
 | **Needs** | `build` |
@@ -289,10 +289,10 @@ strategy:
     os: ${{ inputs.enable-matrix && fromJson('["ubuntu-latest", "windows-latest", "macos-latest"]') || fromJson('["ubuntu-latest"]') }}
 ```
 
-#### Steps
+#### Test Steps
 
 | Step | Description |
-|:-----|:------------|
+| ---- | ----------- |
 | 📥 Checkout repository | Clone repository |
 | 🔧 Setup .NET SDK | Install .NET SDK |
 | ☁️ Update .NET workloads | Update workloads |
@@ -309,16 +309,16 @@ strategy:
 **Purpose:** Verify code formatting compliance.
 
 | Property | Value |
-|:---------|:------|
+| -------- | ----- |
 | **Runner** | `${{ inputs.runs-on }}` |
 | **Timeout** | 15 minutes |
 | **Needs** | `build` |
 | **Condition** | `${{ inputs.enable-code-analysis }}` |
 
-#### Steps
+#### Analysis Steps
 
 | Step | Description |
-|:-----|:------------|
+| ---- | ----------- |
 | 📥 Checkout repository | Clone repository |
 | 🔧 Setup .NET SDK | Install .NET SDK |
 | ☁️ Update .NET workloads | Update workloads |
@@ -332,7 +332,7 @@ strategy:
 **Purpose:** Generate overall workflow summary.
 
 | Property | Value |
-|:---------|:------|
+| -------- | ----- |
 | **Runner** | `${{ inputs.runs-on }}` |
 | **Timeout** | 5 minutes |
 | **Needs** | `build`, `test`, `analyze` |
@@ -351,7 +351,7 @@ strategy:
 **Purpose:** Report CI failures.
 
 | Property | Value |
-|:---------|:------|
+| -------- | ----- |
 | **Runner** | `${{ inputs.runs-on }}` |
 | **Timeout** | 5 minutes |
 | **Needs** | `build`, `test`, `analyze` |
@@ -375,7 +375,7 @@ permissions:
 ## 📦 Artifacts
 
 | Artifact | Contents | Retention |
-|:---------|:---------|:----------|
+| -------- | -------- | --------- |
 | `build-artifacts` | Compiled binaries (`**/bin/${{ inputs.configuration }}/**`) | 7 days |
 | `test-results` | Test results (`.trx` files) | `${{ inputs.artifact-retention-days }}` |
 | `code-coverage` | Coverage reports (`coverage.cobertura.xml`) | `${{ inputs.artifact-retention-days }}` |
@@ -459,7 +459,7 @@ jobs:
 ### Common Issues
 
 | Issue | Cause | Solution |
-|:------|:------|:---------|
+| ----- | ----- | -------- |
 | Build fails | Missing dependencies | Check `dotnet restore` output |
 | Tests fail on specific OS | Platform-specific code | Review matrix job logs |
 | Coverage not generated | Test framework issue | Verify test project configuration |
@@ -520,7 +520,7 @@ flowchart LR
 ## 🔗 Related Documentation
 
 | Resource | Description |
-|:---------|:------------|
+| -------- | ----------- |
 | [CI - .NET Build and Test](./ci-dotnet.md) | Main CI workflow |
 | [CD - Azure Deployment](./azure-dev.md) | Azure deployment workflow |
 | [GitHub Reusable Workflows](https://docs.github.com/en/actions/using-workflows/reusing-workflows) | GitHub documentation |
