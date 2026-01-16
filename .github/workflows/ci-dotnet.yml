@@ -8,10 +8,11 @@
 #   reusable workflow.
 #
 # Features:
+#   - Cross-platform builds and tests (Ubuntu, Windows, macOS)
 #   - Code coverage collection and reporting
 #   - Static code analysis with dotnet format
 #   - Test result publishing with detailed summaries
-#   - Build artifact upload for debugging
+#   - Build artifact upload for debugging (per-platform)
 #
 # Triggers:
 #   - Push to main and feature branches (with path filters)
@@ -71,11 +72,6 @@ on:
         required: false
         default: true
         type: boolean
-      enable-matrix:
-        description: "Enable cross-platform matrix testing (ubuntu, windows, macos)"
-        required: false
-        default: false
-        type: boolean
 
 # ------------------------------------------------------------------------------
 # Concurrency Configuration
@@ -96,6 +92,8 @@ permissions:
 jobs:
   # ============================================================================
   # Call Reusable CI Workflow
+  # Note: Build and test jobs always run on all platforms (Ubuntu, Windows, macOS)
+  # via matrix strategy in the reusable workflow.
   # ============================================================================
   ci:
     name: 🚀 CI
@@ -108,8 +106,7 @@ jobs:
       build-artifacts-name: "build-artifacts"
       coverage-artifact-name: "code-coverage"
       artifact-retention-days: 30
-      runs-on: "ubuntu-latest"
+      runs-on: "ubuntu-latest" # Used for analyze and summary jobs only (build/test use cross-platform matrix)
       enable-code-analysis: ${{ inputs.enable-code-analysis == '' && true || inputs.enable-code-analysis }}
-      enable-matrix: ${{ inputs.enable-matrix || false }}
       fail-on-format-issues: true
     secrets: inherit
