@@ -120,6 +120,15 @@ flowchart TB
     %% Data stores: Amber - reporting
     classDef datastore fill:#F59E0B,stroke:#D97706,color:#000000
 
+    %% Subgraph background styling - lighter shades with transparency
+    style TriggersGroup fill:#EEF2FF,stroke:#4F46E5,stroke-width:2px
+    style CIGroup fill:#ECFDF5,stroke:#10B981,stroke-width:2px
+    style CIJobs fill:#D1FAE5,stroke:#059669,stroke-width:1px
+    style CDGroup fill:#EEF2FF,stroke:#4F46E5,stroke-width:2px
+    style CDJobs fill:#E0E7FF,stroke:#3730A3,stroke-width:1px
+    style DMGroup fill:#F3F4F6,stroke:#6B7280,stroke-width:2px
+    style ResultsGroup fill:#FEF3C7,stroke:#F59E0B,stroke-width:2px
+
     %% Apply styles to nodes
     class push,pr,manual,schedule trigger
     class build,test primary

@@ -109,6 +109,13 @@ flowchart LR
     %% Decision points: Amber outline - conditional logic
     classDef decision fill:#FFFBEB,stroke:#F59E0B,color:#000000
 
+    %% Subgraph background styling - lighter shades
+    style TriggersGroup fill:#EEF2FF,stroke:#4F46E5,stroke-width:2px
+    style InputsGroup fill:#FEF3C7,stroke:#F59E0B,stroke-width:2px
+    style CIPipeline fill:#ECFDF5,stroke:#10B981,stroke-width:2px
+    style JobsGroup fill:#D1FAE5,stroke:#059669,stroke-width:1px
+    style ArtifactsGroup fill:#FEF3C7,stroke:#F59E0B,stroke-width:2px
+
     %% Apply styles to nodes
     class push,pr,manual trigger
     class config,analysis,matrix decision

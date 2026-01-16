@@ -144,6 +144,18 @@ flowchart LR
     %% Triggers: Indigo light - entry points
     classDef trigger fill:#818CF8,stroke:#4F46E5,color:#FFFFFF
 
+    %% Subgraph background styling - lighter shades
+    style Triggers fill:#EEF2FF,stroke:#4F46E5,stroke-width:2px
+    style Conditions fill:#FEF3C7,stroke:#F59E0B,stroke-width:2px
+    style CI fill:#F3F4F6,stroke:#6B7280,stroke-width:2px
+    style Deploy fill:#ECFDF5,stroke:#10B981,stroke-width:2px
+    style SetupPhase fill:#E0E7FF,stroke:#4F46E5,stroke-width:1px
+    style AuthPhase fill:#D1FAE5,stroke:#10B981,stroke-width:1px
+    style ProvisionPhase fill:#E0E7FF,stroke:#4F46E5,stroke-width:1px
+    style SummaryPhase fill:#FEF3C7,stroke:#F59E0B,stroke-width:1px
+    style Results fill:#FEF3C7,stroke:#F59E0B,stroke-width:2px
+    style OutputsGroup fill:#FEF3C7,stroke:#F59E0B,stroke-width:2px
+
     %% Apply styles to nodes
     class push,manual trigger
     class skip_ci decision

@@ -205,6 +205,18 @@ flowchart LR
     %% Matrix: Light emerald - parallel execution
     classDef matrix fill:#D1FAE5,stroke:#10B981,color:#000000
 
+    %% Subgraph background styling - lighter shades
+    style TriggerGroup fill:#EEF2FF,stroke:#4F46E5,stroke-width:2px
+    style InputsGroup fill:#F3F4F6,stroke:#6B7280,stroke-width:2px
+    style BuildJob fill:#E0E7FF,stroke:#4F46E5,stroke-width:2px
+    style TestJob fill:#E0E7FF,stroke:#4F46E5,stroke-width:2px
+    style MatrixStrategy fill:#D1FAE5,stroke:#10B981,stroke-width:1px
+    style AnalyzeJob fill:#ECFDF5,stroke:#10B981,stroke-width:2px
+    style SummaryJob fill:#ECFDF5,stroke:#10B981,stroke-width:2px
+    style FailureJob fill:#FEE2E2,stroke:#F44336,stroke-width:2px
+    style OutputsGroup fill:#FEF3C7,stroke:#F59E0B,stroke-width:2px
+    style ArtifactsGroup fill:#FEF3C7,stroke:#F59E0B,stroke-width:2px
+
     %% Apply styles to nodes
     class workflow_call trigger
     class config,dotnet,solution,matrix_flag,analysis_flag input
