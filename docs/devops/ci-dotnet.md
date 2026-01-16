@@ -1,6 +1,22 @@
-# CI - .NET Build and Test
+# 🔄 CI - .NET Build and Test
 
-**Workflow File:** [ci-dotnet.yml](../../.github/workflows/ci-dotnet.yml)
+> **Workflow File:** [ci-dotnet.yml](../../.github/workflows/ci-dotnet.yml)
+
+---
+
+## 📑 Table of Contents
+
+- [Overview](#-overview)
+- [Pipeline Visualization](#️-pipeline-visualization)
+- [Triggers](#-triggers)
+- [Jobs & Steps](#-jobs--steps)
+- [Prerequisites](#-prerequisites)
+- [Artifacts](#-artifacts)
+- [Usage Examples](#-usage-examples)
+- [Troubleshooting](#-troubleshooting)
+- [Related Documentation](#-related-documentation)
+
+---
 
 ## 📋 Overview
 
@@ -8,12 +24,16 @@ This workflow orchestrates the CI pipeline by calling the reusable workflow. It 
 
 ### Key Features
 
-- ✅ Automatic triggering on push and pull requests
-- 🔧 Configurable build configuration (Release/Debug)
-- 🧪 Optional cross-platform matrix testing
-- 🔍 Code formatting analysis with .editorconfig
-- 📊 Test result publishing with detailed summaries
-- 📦 Build artifact upload for debugging
+| Feature | Description |
+|:--------|:------------|
+| ✅ **Automatic Triggering** | On push and pull requests |
+| 🔧 **Configurable Build** | Release/Debug configuration options |
+| 🧪 **Cross-Platform Testing** | Optional matrix testing (Ubuntu, Windows, macOS) |
+| 🔍 **Code Analysis** | Formatting analysis with `.editorconfig` |
+| 📊 **Test Reporting** | Detailed summaries and result publishing |
+| 📦 **Build Artifacts** | Upload for debugging and verification |
+
+---
 
 ## 🗺️ Pipeline Visualization
 
@@ -88,12 +108,14 @@ flowchart LR
     class build_art,test_art,cov_art artifact
 ```
 
+---
+
 ## 🎯 Triggers
 
 ### Push Events
 
 | Branch Pattern | Description |
-|----------------|-------------|
+|:---------------|:------------|
 | `main` | Main development branch |
 | `feature/**` | Feature branches |
 | `bugfix/**` | Bug fix branches |
@@ -107,10 +129,12 @@ flowchart LR
 ### Pull Request Events
 
 | Target Branch | Description |
-|---------------|-------------|
+|:--------------|:------------|
 | `main` | Pull requests targeting main branch |
 
 ### Path Filters
+
+The workflow monitors changes to these paths:
 
 ```yaml
 paths:
@@ -125,10 +149,12 @@ paths:
 ### Manual Dispatch Inputs
 
 | Input | Type | Default | Options | Description |
-|-------|------|---------|---------|-------------|
+|:------|:-----|:--------|:--------|:------------|
 | `configuration` | `choice` | `Release` | `Release`, `Debug` | Build configuration |
 | `enable-code-analysis` | `boolean` | `true` | - | Enable code formatting analysis |
 | `enable-matrix` | `boolean` | `false` | - | Enable cross-platform matrix testing |
+
+---
 
 ## 📋 Jobs & Steps
 
@@ -137,7 +163,7 @@ paths:
 This workflow consists of a single job that calls the reusable CI workflow.
 
 | Property | Value |
-|----------|-------|
+|:---------|:------|
 | **Type** | Reusable workflow call |
 | **Workflow** | `.github/workflows/ci-dotnet-reusable.yml` |
 | **Secrets** | Inherited |
@@ -145,7 +171,7 @@ This workflow consists of a single job that calls the reusable CI workflow.
 ### Reusable Workflow Parameters
 
 | Parameter | Value | Description |
-|-----------|-------|-------------|
+|:----------|:------|:------------|
 | `configuration` | `${{ inputs.configuration \|\| 'Release' }}` | Build configuration |
 | `dotnet-version` | `10.0.x` | .NET SDK version |
 | `solution-file` | `app.sln` | Solution file path |
@@ -157,6 +183,8 @@ This workflow consists of a single job that calls the reusable CI workflow.
 | `enable-code-analysis` | Dynamic | Enable code analysis |
 | `enable-matrix` | `${{ inputs.enable-matrix \|\| false }}` | Enable matrix testing |
 | `fail-on-format-issues` | `true` | Fail on formatting issues |
+
+---
 
 ## 🔐 Prerequisites
 
@@ -177,15 +205,19 @@ concurrency:
   cancel-in-progress: true
 ```
 
-This prevents duplicate workflow runs for the same branch/PR and cancels in-progress runs when new commits are pushed.
+> 💡 **Note:** This prevents duplicate workflow runs for the same branch/PR and cancels in-progress runs when new commits are pushed.
+
+---
 
 ## 📦 Artifacts
 
 | Artifact | Contents | Retention |
-|----------|----------|-----------|
+|:---------|:---------|:----------|
 | `build-artifacts` | Compiled binaries | 7 days |
-| `test-results` | Test execution results (.trx) | 30 days |
+| `test-results` | Test execution results (`.trx`) | 30 days |
 | `code-coverage` | Cobertura XML coverage reports | 30 days |
+
+---
 
 ## 🚀 Usage Examples
 
@@ -207,7 +239,7 @@ git push origin feature/my-feature
 gh pr create --base main --head feature/my-feature
 ```
 
-### Manual CI Run
+### Manual CI Run (UI)
 
 1. Go to **Actions** → **CI - .NET Build and Test**
 2. Click **Run workflow**
@@ -217,7 +249,7 @@ gh pr create --base main --head feature/my-feature
    - **Enable cross-platform matrix testing**: Check/uncheck
 4. Click **Run workflow**
 
-### Manual CI via CLI
+### Manual CI Run (CLI)
 
 ```bash
 # Run with defaults
@@ -236,12 +268,14 @@ gh workflow run ci-dotnet.yml \
   -f enable-matrix=true
 ```
 
+---
+
 ## 🔍 Troubleshooting
 
 ### Common Issues
 
 | Issue | Cause | Solution |
-|-------|-------|----------|
+|:------|:------|:---------|
 | Build fails | Missing NuGet packages | Check `dotnet restore` logs |
 | Tests fail | Test failures | Download `test-results` artifact for details |
 | Format check fails | Code style violations | Run `dotnet format app.sln` locally |
@@ -271,11 +305,19 @@ dotnet format app.sln
 1. Navigate to the workflow run
 2. Click on the **Test Results** check
 3. View individual test results and failures
-4. Download `test-results` artifact for detailed .trx files
+4. Download `test-results` artifact for detailed `.trx` files
+
+---
 
 ## 🔗 Related Documentation
 
-- [CI - .NET Reusable Workflow](./ci-dotnet-reusable.md)
-- [CD - Azure Deployment](./azure-dev.md)
-- [.NET Testing Documentation](https://docs.microsoft.com/en-us/dotnet/core/testing/)
-- [dotnet format Documentation](https://docs.microsoft.com/en-us/dotnet/core/tools/dotnet-format)
+| Resource | Description |
+|:---------|:------------|
+| [CI - .NET Reusable Workflow](./ci-dotnet-reusable.md) | Reusable CI workflow details |
+| [CD - Azure Deployment](./azure-dev.md) | Azure deployment workflow |
+| [.NET Testing Documentation](https://docs.microsoft.com/en-us/dotnet/core/testing/) | Microsoft testing guide |
+| [dotnet format Documentation](https://docs.microsoft.com/en-us/dotnet/core/tools/dotnet-format) | Code formatting tool |
+
+---
+
+[⬆️ Back to top](#-ci---net-build-and-test)
