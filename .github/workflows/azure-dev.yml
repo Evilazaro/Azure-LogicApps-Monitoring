@@ -265,6 +265,7 @@ jobs:
 
           # Extract outputs for summary
           RESOURCE_GROUP="${AZURE_ENV_NAME}-rg"
+          AZURE_CONTAINER_APPS_ENVIRONMENT_DEFAULT_DOMAIN="${AZURE_CONTAINER_APPS_ENVIRONMENT_DEFAULT_DOMAIN}"
           echo "resource-group=$RESOURCE_GROUP" >> $GITHUB_OUTPUT
           echo "webapp-url=https://aspire-dashboard.ext.$AZURE_CONTAINER_APPS_ENVIRONMENT_DEFAULT_DOMAIN" >> $GITHUB_OUTPUT
 
