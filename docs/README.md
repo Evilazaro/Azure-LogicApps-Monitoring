@@ -12,7 +12,7 @@
 - [📁 Documentation Structure](#-documentation-structure)
 - [🏗️ Architecture Documentation](#️-architecture-documentation)
 - [🔄 DevOps Documentation](#-devops-documentation)
-- [🪝 Developer Hooks Documentation](#-developer-hooks-documentation)
+- [🪝 Developer Experience Documentation](#-developer-hooks-documentation)
 - [🔒 Security Documentation](#-security-documentation)
 - [🚀 Quick Start](#-quick-start)
 - [📊 Solution Architecture Overview](#-solution-architecture-overview)
@@ -91,7 +91,7 @@ The [devops/](devops/README.md) folder contains CI/CD pipeline documentation:
 
 ---
 
-## 🪝 Developer Hooks Documentation
+## 🪝 Developer Experience Documentation
 
 The [hooks/](hooks/README.md) folder documents automation scripts for the development lifecycle:
 

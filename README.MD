@@ -226,7 +226,7 @@ Detailed documentation is organized by domain. Each section has its own README w
 | **Architecture** | [Overview](docs/architecture/README.md) | Understanding system design, components, and patterns |
 | **ADRs** | [Decision Log](docs/architecture/adr/README.md) | Learning why specific technologies were chosen |
 | **DevOps** | [CI/CD Guide](docs/devops/README.md) | Setting up pipelines or understanding deployment flow |
-| **Developer Hooks** | [Scripts Guide](docs/hooks/README.md) | Automating local setup or customizing azd hooks |
+| **Developer Experience** | [Scripts Guide](docs/hooks/README.md) | Automating local setup or customizing azd hooks |
 | **Security** | [IP Restrictions](docs/IP-SECURITY-RESTRICTIONS.md) | Configuring network security policies |
 
 [🔝 Back to Top](#azure-logic-apps-monitoring-solution)

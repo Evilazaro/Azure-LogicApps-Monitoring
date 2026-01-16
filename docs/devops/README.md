@@ -195,7 +195,7 @@ flowchart TB
 
 | Resource | Description |
 | -------- | ----------- |
-| [Hooks Documentation](../hooks/README.md) | Pre/post deployment scripts |
+| [Developer Experience Documentation](../hooks/README.md) | Pre/post deployment scripts |
 | [Infrastructure Documentation](../../infra/README.md) | Bicep templates and IaC |
 
 ---
