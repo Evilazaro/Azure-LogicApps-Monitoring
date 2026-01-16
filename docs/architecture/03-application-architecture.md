@@ -49,25 +49,44 @@ The solution follows a **modular, event-driven architecture** with clear service
 ## 🗺️ 3. Application Landscape Map
 
 ```mermaid
+---
+title: Application Landscape Map
+---
 flowchart TB
-    %% Application Landscape Map - Multi-layer application architecture
+    %% ===== CLASS DEFINITIONS =====
+    classDef primary fill:#4F46E5,stroke:#3730A3,color:#FFFFFF
+    classDef secondary fill:#10B981,stroke:#059669,color:#FFFFFF
+    classDef datastore fill:#F59E0B,stroke:#D97706,color:#000000
+    classDef external fill:#6B7280,stroke:#4B5563,color:#FFFFFF,stroke-dasharray: 5 5
+    classDef failed fill:#F44336,stroke:#C62828,color:#FFFFFF
+    classDef trigger fill:#818CF8,stroke:#4F46E5,color:#FFFFFF
+    classDef decision fill:#FFFBEB,stroke:#F59E0B,color:#000000
+    classDef input fill:#F3F4F6,stroke:#6B7280,color:#000000
+
+    %% ===== PRESENTATION LAYER =====
     subgraph Presentation["🖥️ Presentation Layer"]
         direction LR
         WebApp["🌐 eShop.Web.App<br/>Blazor Server<br/>:5000"]
     end
+    style Presentation fill:#EEF2FF,stroke:#4F46E5,stroke-width:2px
 
+    %% ===== APPLICATION LAYER =====
     subgraph Application["⚙️ Application Layer"]
         direction LR
         API["📡 eShop.Orders.API<br/>ASP.NET Core<br/>:5001"]
         LogicApp["🔄 OrdersManagement<br/>Logic Apps Standard"]
     end
+    style Application fill:#D1FAE5,stroke:#10B981,stroke-width:2px
 
+    %% ===== PLATFORM LAYER =====
     subgraph Platform["🏗️ Platform Layer"]
         direction LR
         Orchestrator["🎯 app.AppHost<br/>.NET Aspire"]
         SharedLib["📦 app.ServiceDefaults<br/>Cross-cutting Library"]
     end
+    style Platform fill:#FEF3C7,stroke:#F59E0B,stroke-width:2px
 
+    %% ===== EXTERNAL SERVICES =====
     subgraph External["☁️ External Services"]
         direction LR
         DB[("🗄️ Azure SQL<br/>OrderDb")]
@@ -75,38 +94,35 @@ flowchart TB
         Storage["📁 Azure Storage<br/>Workflow State"]
         Monitor["📊 App Insights"]
     end
+    style External fill:#F3E8FF,stroke:#A855F7,stroke-width:2px
 
-    %% Synchronous flows
+    %% ===== SYNCHRONOUS FLOWS =====
     WebApp -->|"HTTP/REST"| API
     API -->|"EF Core"| DB
     API -->|"AMQP"| Queue
     LogicApp -->|"HTTP"| API
 
-    %% Async/Event flows
+    %% ===== ASYNC/EVENT FLOWS =====
     Queue -->|"Trigger"| LogicApp
-    LogicApp --> Storage
+    LogicApp -->|"Store State"| Storage
 
-    %% Platform relationships
+    %% ===== PLATFORM RELATIONSHIPS =====
     Orchestrator -.->|"Orchestrates"| WebApp
     Orchestrator -.->|"Orchestrates"| API
     SharedLib -.->|"Configures"| WebApp
     SharedLib -.->|"Configures"| API
 
-    %% Telemetry flows
+    %% ===== TELEMETRY FLOWS =====
     WebApp -.->|"OTLP"| Monitor
     API -.->|"OTLP"| Monitor
     LogicApp -.->|"Diagnostics"| Monitor
 
-    %% Modern color palette - WCAG AA compliant
-    classDef presentation fill:#EEF2FF,stroke:#4F46E5,stroke-width:2px,color:#312E81
-    classDef application fill:#D1FAE5,stroke:#10B981,stroke-width:2px,color:#065F46
-    classDef platform fill:#FEF3C7,stroke:#F59E0B,stroke-width:2px,color:#92400E
-    classDef external fill:#F3E8FF,stroke:#A855F7,stroke-width:2px,color:#581C87
-
-    class WebApp presentation
-    class API,LogicApp application
-    class Orchestrator,SharedLib platform
-    class DB,Queue,Storage,Monitor external
+    %% ===== NODE CLASSES =====
+    class WebApp primary
+    class API,LogicApp secondary
+    class Orchestrator,SharedLib trigger
+    class DB,Queue,Storage datastore
+    class Monitor external
 ```
 
 ### Application Inventory
@@ -156,8 +172,21 @@ flowchart TB
 **Component Diagram:**
 
 ```mermaid
+---
+title: eShop.Orders.API Component Architecture
+---
 flowchart TB
-    %% eShop.Orders.API Component Architecture
+    %% ===== CLASS DEFINITIONS =====
+    classDef primary fill:#4F46E5,stroke:#3730A3,color:#FFFFFF
+    classDef secondary fill:#10B981,stroke:#059669,color:#FFFFFF
+    classDef datastore fill:#F59E0B,stroke:#D97706,color:#000000
+    classDef external fill:#6B7280,stroke:#4B5563,color:#FFFFFF,stroke-dasharray: 5 5
+    classDef failed fill:#F44336,stroke:#C62828,color:#FFFFFF
+    classDef trigger fill:#818CF8,stroke:#4F46E5,color:#FFFFFF
+    classDef decision fill:#FFFBEB,stroke:#F59E0B,color:#000000
+    classDef input fill:#F3F4F6,stroke:#6B7280,color:#000000
+
+    %% ===== API COMPONENTS =====
     subgraph API["eShop.Orders.API"]
         Controllers["Controllers<br/><i>API Endpoints</i>"]
         Services["Services<br/><i>Business Logic</i>"]
@@ -165,30 +194,32 @@ flowchart TB
         Handlers["Handlers<br/><i>Messaging</i>"]
         HealthChecks["HealthChecks<br/><i>Diagnostics</i>"]
     end
+    style API fill:#D1FAE5,stroke:#10B981,stroke-width:2px
 
+    %% ===== EXTERNAL DEPENDENCIES =====
     subgraph External["External Dependencies"]
         DB[("SQL Database")]
         SB["Service Bus"]
         AI["App Insights"]
     end
+    style External fill:#F3E8FF,stroke:#A855F7,stroke-width:2px
 
-    %% Internal flow
-    Controllers --> Services
-    Services --> Repositories
-    Services --> Handlers
+    %% ===== INTERNAL FLOW =====
+    Controllers -->|"invoke"| Services
+    Services -->|"call"| Repositories
+    Services -->|"dispatch"| Handlers
 
-    %% External connections
-    Repositories --> DB
-    Handlers --> SB
-    Controllers -.-> AI
-    Services -.-> AI
+    %% ===== EXTERNAL CONNECTIONS =====
+    Repositories -->|"persist"| DB
+    Handlers -->|"publish"| SB
+    Controllers -.->|"trace"| AI
+    Services -.->|"trace"| AI
 
-    %% Modern color palette - WCAG AA compliant
-    classDef internal fill:#D1FAE5,stroke:#10B981,stroke-width:2px,color:#065F46
-    classDef external fill:#F3E8FF,stroke:#A855F7,stroke-width:2px,color:#581C87
-
-    class Controllers,Services,Repositories,Handlers,HealthChecks internal
-    class DB,SB,AI external
+    %% ===== NODE CLASSES =====
+    class Controllers,Services primary
+    class Repositories,Handlers,HealthChecks secondary
+    class DB,SB datastore
+    class AI external
 ```
 
 **API Endpoints:**
@@ -224,35 +255,50 @@ flowchart TB
 **Component Diagram:**
 
 ```mermaid
+---
+title: eShop.Web.App Component Architecture
+---
 flowchart TB
-    %% eShop.Web.App Component Architecture
+    %% ===== CLASS DEFINITIONS =====
+    classDef primary fill:#4F46E5,stroke:#3730A3,color:#FFFFFF
+    classDef secondary fill:#10B981,stroke:#059669,color:#FFFFFF
+    classDef datastore fill:#F59E0B,stroke:#D97706,color:#000000
+    classDef external fill:#6B7280,stroke:#4B5563,color:#FFFFFF,stroke-dasharray: 5 5
+    classDef failed fill:#F44336,stroke:#C62828,color:#FFFFFF
+    classDef trigger fill:#818CF8,stroke:#4F46E5,color:#FFFFFF
+    classDef decision fill:#FFFBEB,stroke:#F59E0B,color:#000000
+    classDef input fill:#F3F4F6,stroke:#6B7280,color:#000000
+
+    %% ===== WEBAPP COMPONENTS =====
     subgraph WebApp["eShop.Web.App"]
         Pages["Pages<br/><i>Razor Components</i>"]
         Layout["Layout<br/><i>App Shell</i>"]
         Services["Services<br/><i>API Clients</i>"]
         Shared["Shared<br/><i>UI Components</i>"]
     end
+    style WebApp fill:#EEF2FF,stroke:#4F46E5,stroke-width:2px
 
+    %% ===== EXTERNAL SERVICES =====
     subgraph External["External"]
         API["Orders API"]
         AI["App Insights"]
     end
+    style External fill:#F3E8FF,stroke:#A855F7,stroke-width:2px
 
-    %% Internal relationships
-    Pages --> Services
-    Pages --> Shared
-    Layout --> Pages
+    %% ===== INTERNAL RELATIONSHIPS =====
+    Pages -->|"call"| Services
+    Pages -->|"render"| Shared
+    Layout -->|"host"| Pages
 
-    %% External connections
+    %% ===== EXTERNAL CONNECTIONS =====
     Services -->|"HTTP"| API
     Pages -.->|"OTLP"| AI
 
-    %% Modern color palette - WCAG AA compliant
-    classDef internal fill:#EEF2FF,stroke:#4F46E5,stroke-width:2px,color:#312E81
-    classDef external fill:#F3E8FF,stroke:#A855F7,stroke-width:2px,color:#581C87
-
-    class Pages,Layout,Services,Shared internal
-    class API,AI external
+    %% ===== NODE CLASSES =====
+    class Pages,Layout primary
+    class Services,Shared secondary
+    class API datastore
+    class AI external
 ```
 
 **State Management:**
@@ -328,40 +374,52 @@ The **OrdersManagementLogicApp** is an Azure Logic Apps Standard application con
 **OrdersPlacedProcess Flow:**
 
 ```mermaid
+---
+title: OrdersPlacedProcess Workflow
+---
 flowchart TD
-    %% OrdersPlacedProcess Workflow - Order message processing flow
+    %% ===== CLASS DEFINITIONS =====
+    classDef primary fill:#4F46E5,stroke:#3730A3,color:#FFFFFF
+    classDef secondary fill:#10B981,stroke:#059669,color:#FFFFFF
+    classDef datastore fill:#F59E0B,stroke:#D97706,color:#000000
+    classDef external fill:#6B7280,stroke:#4B5563,color:#FFFFFF,stroke-dasharray: 5 5
+    classDef failed fill:#F44336,stroke:#C62828,color:#FFFFFF
+    classDef trigger fill:#818CF8,stroke:#4F46E5,color:#FFFFFF
+    classDef decision fill:#FFFBEB,stroke:#F59E0B,color:#000000
+    classDef input fill:#F3F4F6,stroke:#6B7280,color:#000000
+
+    %% ===== TRIGGER =====
     Trigger["📨 Service Bus Trigger<br/>ordersplaced/orderprocessingsub<br/>1s polling"]
+
+    %% ===== DECISION NODES =====
     Check{"Check Content Type<br/>application/json?"}
-    CallAPI["🔗 HTTP POST<br/>/api/Orders/process"]
     CheckResult{"Check HTTP Response<br/>201 Created?"}
+
+    %% ===== ACTION NODES =====
+    CallAPI["🔗 HTTP POST<br/>/api/Orders/process"]
     StoreSuccess["✅ Create Blob<br/>/ordersprocessedsuccessfully/{MessageId}"]
     StoreError["❌ Create Blob<br/>/ordersprocessedwitherrors/{MessageId}"]
     StoreInvalid["⚠️ Create Blob<br/>/ordersprocessedwitherrors/{MessageId}"]
     Complete["Auto-complete Message"]
 
-    %% Flow connections
-    Trigger --> Check
+    %% ===== FLOW CONNECTIONS =====
+    Trigger -->|"receive message"| Check
     Check -->|"Yes (JSON)"| CallAPI
     Check -->|"No (Invalid)"| StoreInvalid
-    CallAPI --> CheckResult
+    CallAPI -->|"evaluate response"| CheckResult
     CheckResult -->|"201 Success"| StoreSuccess
     CheckResult -->|"Error"| StoreError
-    StoreSuccess --> Complete
-    StoreError --> Complete
-    StoreInvalid --> Complete
+    StoreSuccess -->|"finalize"| Complete
+    StoreError -->|"finalize"| Complete
+    StoreInvalid -->|"finalize"| Complete
 
-    %% Modern color palette - WCAG AA compliant
-    classDef trigger fill:#EEF2FF,stroke:#4F46E5,stroke-width:2px,color:#312E81
-    classDef decision fill:#FEF3C7,stroke:#F59E0B,stroke-width:2px,color:#92400E
-    classDef success fill:#D1FAE5,stroke:#10B981,stroke-width:2px,color:#065F46
-    classDef error fill:#FEE2E2,stroke:#EF4444,stroke-width:2px,color:#991B1B
-    classDef warning fill:#FEF3C7,stroke:#F59E0B,stroke-width:2px,color:#92400E
-
+    %% ===== NODE CLASSES =====
     class Trigger trigger
     class Check,CheckResult decision
-    class CallAPI,Complete,StoreSuccess success
-    class StoreError error
-    class StoreInvalid warning
+    class CallAPI,Complete primary
+    class StoreSuccess secondary
+    class StoreError failed
+    class StoreInvalid datastore
 ```
 
 **Blob Storage Paths:**
@@ -391,40 +449,51 @@ flowchart TD
 **OrdersPlacedCompleteProcess Flow:**
 
 ```mermaid
+---
+title: OrdersPlacedCompleteProcess Workflow
+---
 flowchart TD
-    %% OrdersPlacedCompleteProcess Workflow - Cleanup flow for processed orders
+    %% ===== CLASS DEFINITIONS =====
+    classDef primary fill:#4F46E5,stroke:#3730A3,color:#FFFFFF
+    classDef secondary fill:#10B981,stroke:#059669,color:#FFFFFF
+    classDef datastore fill:#F59E0B,stroke:#D97706,color:#000000
+    classDef external fill:#6B7280,stroke:#4B5563,color:#FFFFFF,stroke-dasharray: 5 5
+    classDef failed fill:#F44336,stroke:#C62828,color:#FFFFFF
+    classDef trigger fill:#818CF8,stroke:#4F46E5,color:#FFFFFF
+    classDef decision fill:#FFFBEB,stroke:#F59E0B,color:#000000
+    classDef input fill:#F3F4F6,stroke:#6B7280,color:#000000
+
+    %% ===== TRIGGER =====
     Trigger["⏰ Recurrence Trigger<br/>Every 3 seconds"]
+
+    %% ===== ACTION NODES =====
     ListBlobs["📋 List Blobs (V2)<br/>/ordersprocessedsuccessfully"]
-    CheckBlobs{"Any Blobs<br/>Found?"}
     ForEach["🔄 For Each Blob<br/>(20 parallel)"]
     GetMetadata["📄 Get Blob Metadata (V2)<br/>Get file path"]
     DeleteBlob["🗑️ Delete Blob (V2)<br/>Remove processed order"]
     Complete["✅ Complete Iteration"]
     NoAction["⏭️ Skip (No blobs)"]
 
-    %% Flow connections
-    Trigger --> ListBlobs
-    ListBlobs --> CheckBlobs
+    %% ===== DECISION NODES =====
+    CheckBlobs{"Any Blobs<br/>Found?"}
+
+    %% ===== FLOW CONNECTIONS =====
+    Trigger -->|"start"| ListBlobs
+    ListBlobs -->|"evaluate"| CheckBlobs
     CheckBlobs -->|"Yes"| ForEach
     CheckBlobs -->|"No"| NoAction
-    ForEach --> GetMetadata
-    GetMetadata --> DeleteBlob
-    DeleteBlob --> Complete
+    ForEach -->|"process"| GetMetadata
+    GetMetadata -->|"retrieve path"| DeleteBlob
+    DeleteBlob -->|"confirm"| Complete
     Complete -->|"Next blob"| ForEach
 
-    %% Modern color palette - WCAG AA compliant
-    classDef trigger fill:#EEF2FF,stroke:#4F46E5,stroke-width:2px,color:#312E81
-    classDef action fill:#D1FAE5,stroke:#10B981,stroke-width:2px,color:#065F46
-    classDef decision fill:#FEF3C7,stroke:#F59E0B,stroke-width:2px,color:#92400E
-    classDef delete fill:#FEE2E2,stroke:#EF4444,stroke-width:2px,color:#991B1B
-    classDef skip fill:#F3F4F6,stroke:#6B7280,stroke-width:2px,color:#374151
-
+    %% ===== NODE CLASSES =====
     class Trigger trigger
-    class ListBlobs,GetMetadata,Complete action
     class CheckBlobs decision
-    class ForEach action
-    class DeleteBlob delete
-    class NoAction skip
+    class ListBlobs,GetMetadata,Complete primary
+    class ForEach secondary
+    class DeleteBlob failed
+    class NoAction input
 ```
 
 **Actions Detail:**
@@ -468,32 +537,46 @@ workflows/OrdersManagement/
 ### Communication Patterns
 
 ```mermaid
+---
+title: Inter-Service Communication Patterns
+---
 flowchart LR
-    %% Inter-Service Communication Patterns
+    %% ===== CLASS DEFINITIONS =====
+    classDef primary fill:#4F46E5,stroke:#3730A3,color:#FFFFFF
+    classDef secondary fill:#10B981,stroke:#059669,color:#FFFFFF
+    classDef datastore fill:#F59E0B,stroke:#D97706,color:#000000
+    classDef external fill:#6B7280,stroke:#4B5563,color:#FFFFFF,stroke-dasharray: 5 5
+    classDef failed fill:#F44336,stroke:#C62828,color:#FFFFFF
+    classDef trigger fill:#818CF8,stroke:#4F46E5,color:#FFFFFF
+    classDef decision fill:#FFFBEB,stroke:#F59E0B,color:#000000
+    classDef input fill:#F3F4F6,stroke:#6B7280,color:#000000
+
+    %% ===== SYNCHRONOUS LAYER =====
     subgraph Sync["🔄 Synchronous (HTTP/REST)"]
         Web["Web App"]
         API["Orders API"]
         LA["Logic Apps"]
     end
+    style Sync fill:#EEF2FF,stroke:#4F46E5,stroke-width:2px
 
+    %% ===== ASYNCHRONOUS LAYER =====
     subgraph Async["📨 Asynchronous (Service Bus)"]
         SB["Service Bus<br/>ordersplaced topic"]
     end
+    style Async fill:#D1FAE5,stroke:#10B981,stroke-width:2px
 
-    %% Sync connections
+    %% ===== SYNC CONNECTIONS =====
     Web -->|"GET/POST/DELETE"| API
     LA -->|"POST"| API
 
-    %% Async connections
+    %% ===== ASYNC CONNECTIONS =====
     API -->|"Publish"| SB
     SB -->|"Subscribe"| LA
 
-    %% Modern color palette - WCAG AA compliant
-    classDef sync fill:#EEF2FF,stroke:#4F46E5,stroke-width:2px,color:#312E81
-    classDef async fill:#D1FAE5,stroke:#10B981,stroke-width:2px,color:#065F46
-
-    class Web,API,LA sync
-    class SB async
+    %% ===== NODE CLASSES =====
+    class Web,LA primary
+    class API secondary
+    class SB datastore
 ```
 
 | Pattern               | Usage             | Implementation               | Example                  |
