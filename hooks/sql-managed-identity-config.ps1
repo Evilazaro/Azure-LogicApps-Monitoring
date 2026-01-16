@@ -1,4 +1,8 @@
-﻿<#
+﻿#!/usr/bin/env pwsh
+
+#Requires -Version 7.0
+
+<#
 .SYNOPSIS
     Configures Azure SQL Database user with Managed Identity authentication.
 

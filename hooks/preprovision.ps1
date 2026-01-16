@@ -1,5 +1,7 @@
 ﻿#!/usr/bin/env pwsh
 
+#Requires -Version 7.0
+
 <#
 .SYNOPSIS
     Pre-provisioning script for Azure Developer CLI (azd) deployment.
@@ -87,8 +89,6 @@ param(
     [Parameter(Mandatory = $false, HelpMessage = 'Automatically install missing prerequisites without prompting')]
     [switch]$AutoInstall
 )
-
-#Requires -Version 7.0
 
 # Script configuration
 Set-StrictMode -Version Latest

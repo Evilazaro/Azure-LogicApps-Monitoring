@@ -299,20 +299,37 @@ check_sqlcmd() {
     sqlcmd_path=$(command -v sqlcmd)
     log_verbose "sqlcmd found at: $sqlcmd_path"
     
+    # Check if this is the ODBC mssql-tools version (in /opt/mssql-tools*)
+    if [[ "$sqlcmd_path" == /opt/mssql-tools* ]]; then
+        log_error "Detected ODBC sqlcmd (mssql-tools) at: $sqlcmd_path"
+        log_error "This script requires go-sqlcmd for Azure AD authentication."
+        log_error ""
+        log_error "The ODBC version of sqlcmd does not support Azure AD authentication."
+        log_error "Please install go-sqlcmd and ensure it's first in PATH:"
+        log_error "  https://github.com/microsoft/go-sqlcmd"
+        log_error ""
+        log_error "Current PATH: $PATH"
+        return 1
+    fi
+    
     # Verify it's go-sqlcmd by checking for --version flag support
     local version_output
     version_output=$(sqlcmd --version 2>&1 || true)
     
     if echo "$version_output" | grep -qi "Unknown Option\|invalid option\|-\?"; then
         log_error "Detected ODBC sqlcmd (mssql-tools) instead of go-sqlcmd"
+        log_error "sqlcmd path: $sqlcmd_path"
         log_error "This script requires go-sqlcmd for Azure AD authentication."
         log_error ""
         log_error "Please install go-sqlcmd and ensure it's first in PATH:"
         log_error "  https://github.com/microsoft/go-sqlcmd"
+        log_error ""
+        log_error "Current PATH: $PATH"
         return 1
     fi
     
     log_verbose "go-sqlcmd version: $version_output"
+    log_success "go-sqlcmd is available at: $sqlcmd_path"
     return 0
 }
 

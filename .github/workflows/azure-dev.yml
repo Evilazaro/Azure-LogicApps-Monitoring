@@ -137,10 +137,21 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y jq dos2unix software-properties-common
 
+          # Remove any existing ODBC sqlcmd (mssql-tools) to prevent PATH conflicts
+          # The ODBC version doesn't support Azure AD authentication
+          echo "Checking for existing ODBC sqlcmd installations..."
+          if [ -f /opt/mssql-tools/bin/sqlcmd ]; then
+            echo "Removing ODBC sqlcmd from /opt/mssql-tools/bin..."
+            sudo rm -f /opt/mssql-tools/bin/sqlcmd
+          fi
+          if [ -f /opt/mssql-tools18/bin/sqlcmd ]; then
+            echo "Removing ODBC sqlcmd from /opt/mssql-tools18/bin..."
+            sudo rm -f /opt/mssql-tools18/bin/sqlcmd
+          fi
+
           # Install go-sqlcmd (modern sqlcmd with Azure AD authentication support)
           # Reference: https://github.com/microsoft/go-sqlcmd
           # Note: go-sqlcmd is required for --authentication-method ActiveDirectoryAzCli
-          # Download the latest go-sqlcmd from GitHub releases
           echo "Installing go-sqlcmd..."
           SQLCMD_VERSION=$(curl -s https://api.github.com/repos/microsoft/go-sqlcmd/releases/latest | jq -r '.tag_name')
           echo "Latest go-sqlcmd version: $SQLCMD_VERSION"
@@ -152,10 +163,18 @@ jobs:
           sudo chmod +x /usr/local/bin/sqlcmd
           rm -f sqlcmd.tar.bz2
 
-          # Verify go-sqlcmd is installed
+          # Verify go-sqlcmd is installed and is the correct version
           echo "Verifying sqlcmd installation..."
           which sqlcmd
+          echo "sqlcmd path: $(which sqlcmd)"
           sqlcmd --version
+
+          # Double-check it's go-sqlcmd (not ODBC)
+          if ! sqlcmd --version 2>&1 | grep -qi "go-sqlcmd\|Version:"; then
+            echo "ERROR: sqlcmd does not appear to be go-sqlcmd!"
+            exit 1
+          fi
+          echo "✓ go-sqlcmd installed successfully"
 
       - name: 🔧 Install Azure Developer CLI
         uses: Azure/setup-azd@v2
