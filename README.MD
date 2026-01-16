@@ -46,48 +46,78 @@ The **Azure Logic Apps Monitoring Solution** is a cloud-native reference archite
 ## 🏗️ Architecture Overview
 
 ```mermaid
+---
+title: Azure Logic Apps Monitoring - Solution Architecture
+---
 flowchart TD
+    %% ===== STYLE DEFINITIONS =====
+    classDef primary fill:#4F46E5,stroke:#3730A3,color:#FFFFFF
+    classDef secondary fill:#10B981,stroke:#059669,color:#FFFFFF
+    classDef datastore fill:#F59E0B,stroke:#D97706,color:#000000
+    classDef external fill:#6B7280,stroke:#4B5563,color:#FFFFFF,stroke-dasharray: 5 5
+    classDef trigger fill:#818CF8,stroke:#4F46E5,color:#FFFFFF
+
+    %% ===== PRESENTATION LAYER =====
     subgraph Presentation["🖥️ Presentation Layer"]
         WebApp["🌐 eShop.Web.App<br/>Blazor Server + FluentUI"]
     end
+    style Presentation fill:#EEF2FF,stroke:#4F46E5,stroke-width:2px
 
+    %% ===== APPLICATION LAYER =====
     subgraph Application["⚙️ Application Layer"]
         API["📡 eShop.Orders.API<br/>ASP.NET Core 10.0"]
         LogicApp["🔄 OrdersManagement<br/>Logic Apps Standard"]
     end
+    style Application fill:#ECFDF5,stroke:#10B981,stroke-width:2px
 
+    %% ===== PLATFORM LAYER =====
     subgraph Platform["🏗️ Platform Layer"]
         Aspire["🎯 app.AppHost<br/>.NET Aspire 13.1.0"]
         Defaults["📦 app.ServiceDefaults<br/>OpenTelemetry + Polly"]
     end
+    style Platform fill:#E0E7FF,stroke:#4F46E5,stroke-width:2px
 
+    %% ===== DATA LAYER =====
     subgraph Data["💾 Data Layer"]
         SQL[("🗄️ Azure SQL<br/>OrderDb")]
         SB["📨 Azure Service Bus<br/>ordersplaced topic"]
         Storage["📁 Azure Storage<br/>Workflow State"]
     end
+    style Data fill:#FEF3C7,stroke:#F59E0B,stroke-width:2px
 
+    %% ===== OBSERVABILITY LAYER =====
     subgraph Observability["📊 Observability Layer"]
         AI["📈 Application Insights"]
         LAW["📋 Log Analytics"]
     end
+    style Observability fill:#F3F4F6,stroke:#6B7280,stroke-width:2px
 
+    %% ===== CONNECTIONS - Primary Data Flow =====
     WebApp -->|"HTTP/REST"| API
     API -->|"EF Core"| SQL
     API -->|"AMQP"| SB
     SB -->|"Trigger"| LogicApp
-    LogicApp -->|"HTTP"| API
+    LogicApp -->|"HTTP Callback"| API
     LogicApp -->|"State"| Storage
 
+    %% ===== CONNECTIONS - Platform Orchestration =====
     Aspire -.->|"Orchestrates"| WebApp
     Aspire -.->|"Orchestrates"| API
     Defaults -.->|"Configures"| WebApp
     Defaults -.->|"Configures"| API
 
+    %% ===== CONNECTIONS - Telemetry =====
     API -.->|"OTLP"| AI
     WebApp -.->|"OTLP"| AI
-    LogicApp -.->|"Telemetry"| AI
+    LogicApp -.->|"Diagnostics"| AI
     AI -.->|"Logs"| LAW
+
+    %% ===== CLASS ASSIGNMENTS =====
+    class WebApp primary
+    class API,LogicApp secondary
+    class Aspire,Defaults trigger
+    class SQL,SB,Storage datastore
+    class AI,LAW external
 ```
 
 | Layer | Components | Purpose |
