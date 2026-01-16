@@ -37,6 +37,9 @@ This workflow provisions Azure infrastructure and deploys the .NET application u
 ## 🗺️ Pipeline Visualization
 
 ```mermaid
+---
+title: CD - Azure Deployment Pipeline
+---
 flowchart LR
     subgraph Triggers["🎯 Triggers"]
         push([Push to main])

@@ -32,6 +32,9 @@ The project uses **GitHub Actions** for continuous integration (CI) and continuo
 ## 🗺️ Master Pipeline Diagram
 
 ```mermaid
+---
+title: DevOps Master Pipeline Architecture
+---
 flowchart TB
     subgraph Triggers["🎯 Trigger Events"]
         push([Push to main])

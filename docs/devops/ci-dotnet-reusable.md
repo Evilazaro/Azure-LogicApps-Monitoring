@@ -42,6 +42,9 @@ This is a reusable workflow that builds, tests, and analyzes .NET solutions. It 
 ## 🗺️ Pipeline Visualization
 
 ```mermaid
+---
+title: CI - .NET Reusable Workflow Pipeline
+---
 flowchart LR
     subgraph Trigger["🎯 Trigger"]
         workflow_call([workflow_call])
@@ -494,6 +497,9 @@ dotnet format app.sln --include "**/*.cs"
 ## 📊 Job Dependencies Graph
 
 ```mermaid
+---
+title: CI Job Dependencies
+---
 flowchart LR
     build(["🔨 Build"]) --> test(["🧪 Test"])
     build --> analyze(["🔍 Analyze"])

@@ -38,6 +38,9 @@ This workflow orchestrates the CI pipeline by calling the reusable workflow. It 
 ## 🗺️ Pipeline Visualization
 
 ```mermaid
+---
+title: CI - .NET Build and Test Pipeline
+---
 flowchart LR
     subgraph Triggers["🎯 Triggers"]
         push([Push to branches])
