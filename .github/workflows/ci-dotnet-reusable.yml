@@ -183,11 +183,7 @@ jobs:
           echo "→ Configuration: ${{ inputs.configuration }}"
           echo "→ Version: ${{ steps.version.outputs.version }}"
           echo ""
-          dotnet build ${{ inputs.solution-file }} \
-            --configuration ${{ inputs.configuration }} \
-            --no-restore \
-            /p:Version=${{ steps.version.outputs.version }} \
-            /p:ContinuousIntegrationBuild=true
+          dotnet build ${{ inputs.solution-file }} --configuration ${{ inputs.configuration }} --no-restore -p:Version=${{ steps.version.outputs.version }} -p:ContinuousIntegrationBuild=true
           echo "::endgroup::"
           echo "::notice title=Build::✅ Solution built successfully (${{ inputs.configuration }})"
 
@@ -298,16 +294,7 @@ jobs:
           echo "→ Configuration: ${{ inputs.configuration }}"
           echo "→ Coverage format: Cobertura"
           echo ""
-          dotnet test --solution ${{ inputs.solution-file }} \
-            --configuration ${{ inputs.configuration }} \
-            --no-restore \
-            --verbosity minimal \
-            --report-trx \
-            --report-trx-filename test-results.trx \
-            --results-directory "${{ github.workspace }}/TestResults" \
-            --coverage \
-            --coverage-output-format cobertura \
-            --coverage-output coverage.cobertura.xml
+          dotnet test --solution ${{ inputs.solution-file }} --configuration ${{ inputs.configuration }} --no-restore --verbosity minimal --report-trx --report-trx-filename test-results.trx --results-directory "${{ github.workspace }}/TestResults" --coverage --coverage-output-format cobertura --coverage-output coverage.cobertura.xml
           echo "::endgroup::"
           echo "::notice title=Tests::✅ All tests passed"
 
