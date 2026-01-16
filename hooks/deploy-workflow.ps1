@@ -33,10 +33,7 @@ param(
     [string]$WorkflowPath,
 
     [Parameter()]
-    [switch]$Force,
-
-    [Parameter()]
-    [switch]$Verbose
+    [switch]$Force
 )
 
 $ErrorActionPreference = 'Stop'
