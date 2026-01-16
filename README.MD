@@ -219,40 +219,15 @@ Azure-LogicApps-Monitoring/
 
 ## 📖 Documentation
 
-### 🏗️ Architecture Documentation
+Detailed documentation is organized by domain. Each section has its own README with comprehensive guides.
 
-TOGAF-aligned enterprise architecture documentation covering the complete solution design. The architecture docs demonstrate enterprise-grade observability patterns for Azure Logic Apps Standard workflows, featuring OpenTelemetry instrumentation, event-driven messaging with Service Bus, and Infrastructure as Code with Bicep.
-
-| Document | Description |
-|:---------|:------------|
-| [Architecture Overview](docs/architecture/README.md) | High-level architecture with diagrams |
-| [Business Architecture](docs/architecture/01-business-architecture.md) | Stakeholders, capabilities, value streams |
-| [Data Architecture](docs/architecture/02-data-architecture.md) | Data stores, flows, telemetry mapping |
-| [Application Architecture](docs/architecture/03-application-architecture.md) | Services, APIs, integration patterns |
-| [Technology Architecture](docs/architecture/04-technology-architecture.md) | Azure resources, infrastructure topology |
-| [Observability Architecture](docs/architecture/05-observability-architecture.md) | Tracing, metrics, logging, alerting |
-| [Security Architecture](docs/architecture/06-security-architecture.md) | Identity, secrets, network security |
-| [Deployment Architecture](docs/architecture/07-deployment-architecture.md) | IaC, CI/CD, environment management |
-
-### 📝 Architecture Decision Records
-
-ADRs document significant architectural decisions made during the design and development of the solution. Each record captures the context, decision, consequences, and rationale for specific architectural choices following a standardized template.
-
-| ADR | Decision |
-|:----|:---------|
-| [ADR-001](docs/architecture/adr/ADR-001-aspire-orchestration.md) | .NET Aspire for Service Orchestration |
-| [ADR-002](docs/architecture/adr/ADR-002-service-bus-messaging.md) | Azure Service Bus for Async Messaging |
-| [ADR-003](docs/architecture/adr/ADR-003-observability-strategy.md) | OpenTelemetry with Azure Monitor |
-
-### 📚 Additional Documentation
-
-Comprehensive guides for CI/CD pipelines with GitHub Actions and cross-platform automation scripts. The DevOps documentation covers OIDC authentication and reusable workflows, while the hooks guide details PowerShell and Bash scripts for environment validation, secret management, and test data generation.
-
-| Document | Description |
-|:---------|:------------|
-| [DevOps Practices](docs/devops/README.md) | CI/CD pipeline documentation |
-| [Developer Hooks](docs/hooks/README.md) | Automation scripts guide |
-| [IP Security Restrictions](docs/IP-SECURITY-RESTRICTIONS.md) | Network security configuration |
+| Category | Start Here | When to Read |
+|:---------|:-----------|:-------------|
+| **Architecture** | [Overview](docs/architecture/README.md) | Understanding system design, components, and patterns |
+| **ADRs** | [Decision Log](docs/architecture/adr/README.md) | Learning why specific technologies were chosen |
+| **DevOps** | [CI/CD Guide](docs/devops/README.md) | Setting up pipelines or understanding deployment flow |
+| **Developer Hooks** | [Scripts Guide](docs/hooks/README.md) | Automating local setup or customizing azd hooks |
+| **Security** | [IP Restrictions](docs/IP-SECURITY-RESTRICTIONS.md) | Configuring network security policies |
 
 [🔝 Back to Top](#azure-logic-apps-monitoring-solution)
 
