@@ -163,32 +163,95 @@ flowchart TD
 ## 📁 Repository Structure
 
 ```text
-├── app.AppHost/                    # .NET Aspire orchestration
-├── app.ServiceDefaults/            # Shared cross-cutting concerns
-├── src/
-│   ├── eShop.Orders.API/           # Orders REST API
-│   │   ├── Controllers/            # API endpoints
-│   │   ├── Services/               # Business logic
-│   │   ├── Repositories/           # Data access
-│   │   ├── Handlers/               # Message handlers
-│   │   └── HealthChecks/           # Custom health checks
-│   ├── eShop.Web.App/              # Blazor Server frontend
-│   │   └── Components/             # Razor components
-│   └── tests/                      # Unit and integration tests
-├── workflows/
-│   └── OrdersManagement/           # Logic Apps workflows
-├── infra/                          # Bicep IaC templates
-│   ├── shared/                     # Shared infrastructure
-│   │   ├── identity/               # Managed identity
-│   │   ├── monitoring/             # App Insights, Log Analytics
-│   │   └── network/                # VNet configuration
-│   └── workload/                   # Workload resources
-│       ├── messaging/              # Service Bus
-│       └── services/               # Container Apps
-├── hooks/                          # azd lifecycle scripts
-├── docs/
-│   └── architecture/               # This documentation
-└── .github/workflows/              # CI/CD pipelines
+📁 Azure-LogicApps-Monitoring/
+├── 🎯 app.AppHost/                        # .NET Aspire orchestration
+│   ├── 🟣 app.AppHost.csproj
+│   ├── 🟢 AppHost.cs
+│   └── 📋 appsettings.json
+├── 📦 app.ServiceDefaults/                # Shared cross-cutting concerns
+│   ├── 🟣 app.ServiceDefaults.csproj
+│   ├── 🟢 CommonTypes.cs
+│   └── 🟢 Extensions.cs
+├── 📁 src/
+│   ├── 📡 eShop.Orders.API/               # Orders REST API
+│   │   ├── 📁 Controllers/                # API endpoints
+│   │   │   ├── 🟢 OrdersController.cs
+│   │   │   └── 🟢 WeatherForecastController.cs
+│   │   ├── 📁 Services/                   # Business logic
+│   │   │   ├── 🟢 OrderService.cs
+│   │   │   └── 🟢 OrdersWrapper.cs
+│   │   ├── 📁 Repositories/               # Data access
+│   │   │   └── 🟢 OrderRepository.cs
+│   │   ├── 📁 Handlers/                   # Message handlers
+│   │   │   ├── 🟢 OrdersMessageHandler.cs
+│   │   │   └── 🟢 NoOpOrdersMessageHandler.cs
+│   │   ├── 📁 HealthChecks/               # Custom health checks
+│   │   │   ├── 🟢 DbContextHealthCheck.cs
+│   │   │   └── 🟢 ServiceBusHealthCheck.cs
+│   │   ├── 🟣 eShop.Orders.API.csproj
+│   │   └── 🟢 Program.cs
+│   ├── 🌐 eShop.Web.App/                  # Blazor Server frontend
+│   │   ├── 📁 Components/                 # Razor components
+│   │   │   ├── 📁 Layout/
+│   │   │   ├── 📁 Pages/
+│   │   │   └── 📁 Shared/
+│   │   ├── 🟣 eShop.Web.App.csproj
+│   │   └── 🟢 Program.cs
+│   └── 🧪 tests/                          # Unit and integration tests
+│       └── 📁 eShop.Orders.API.Tests/
+├── 🔄 workflows/
+│   └── 📁 OrdersManagement/               # Logic Apps workflows
+│       └── 📁 OrdersManagementLogicApp/
+│           ├── 📁 OrdersPlacedProcess/
+│           ├── 📁 OrdersPlacedCompleteProcess/
+│           ├── 📋 host.json
+│           └── 📋 connections.json
+├── 🏗️ infra/                              # Bicep IaC templates
+│   ├── 🔷 main.bicep
+│   ├── 📋 main.parameters.json
+│   ├── 🔷 types.bicep
+│   ├── 📁 shared/                         # Shared infrastructure
+│   │   ├── 📁 identity/                   # Managed identity
+│   │   │   └── 🔷 main.bicep
+│   │   ├── 📁 monitoring/                 # App Insights, Log Analytics
+│   │   │   ├── 🔷 main.bicep
+│   │   │   ├── 🔷 app-insights.bicep
+│   │   │   └── 🔷 log-analytics-workspace.bicep
+│   │   ├── 📁 network/                    # VNet configuration
+│   │   │   └── 🔷 main.bicep
+│   │   └── 📁 data/
+│   │       └── 🔷 main.bicep
+│   └── 📁 workload/                       # Workload resources
+│       ├── 🔷 main.bicep
+│       ├── 🔷 logic-app.bicep
+│       ├── 📁 messaging/                  # Service Bus
+│       │   └── 🔷 main.bicep
+│       └── 📁 services/                   # Container Apps
+│           └── 🔷 main.bicep
+├── 🪝 hooks/                              # azd lifecycle scripts
+│   ├── 🔵 check-dev-workstation.ps1
+│   ├── 🐚 check-dev-workstation.sh
+│   ├── 🔵 preprovision.ps1
+│   ├── 🐚 preprovision.sh
+│   ├── 🔵 postprovision.ps1
+│   ├── 🐚 postprovision.sh
+│   ├── 🔵 deploy-workflow.ps1
+│   └── 🐚 deploy-workflow.sh
+├── 📚 docs/
+│   ├── 📁 architecture/                   # This documentation
+│   │   └── 📁 adr/                        # Architecture Decision Records
+│   ├── 📁 devops/
+│   └── 📁 hooks/
+├── 🐙 .github/
+│   └── 📁 workflows/                      # CI/CD pipelines
+│       ├── 📄 azure-dev.yml
+│       ├── 📄 ci-dotnet.yml
+│       └── 📄 ci-dotnet-reusable.yml
+├── 🟣 app.sln
+├── 📄 azure.yaml
+├── 📋 global.json
+├── 📝 README.MD
+└── 📜 LICENSE
 ```
 
 ---

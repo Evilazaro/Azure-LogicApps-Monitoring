@@ -260,16 +260,41 @@ flowchart TD
 ### 📂 Repository Structure
 
 ```text
-├── app.AppHost/           # .NET Aspire orchestrator
-├── app.ServiceDefaults/   # Shared cross-cutting concerns
-├── src/
-│   ├── eShop.Orders.API/  # Orders REST API
-│   ├── eShop.Web.App/     # Blazor Server frontend
-│   └── tests/             # Unit and integration tests
-├── workflows/             # Logic Apps Standard workflows
-├── infra/                 # Bicep infrastructure templates
-├── hooks/                 # Automation scripts
-└── docs/                  # Documentation (you are here)
+📁 Azure-LogicApps-Monitoring/
+├── 🎯 app.AppHost/                        # .NET Aspire orchestrator
+│   ├── 🟣 app.AppHost.csproj
+│   ├── 🟢 AppHost.cs
+│   └── 📋 appsettings.json
+├── 📦 app.ServiceDefaults/                # Shared cross-cutting concerns
+│   ├── 🟣 app.ServiceDefaults.csproj
+│   ├── 🟢 CommonTypes.cs
+│   └── 🟢 Extensions.cs
+├── 📁 src/
+│   ├── 📡 eShop.Orders.API/               # Orders REST API
+│   │   ├── 📁 Controllers/
+│   │   ├── 📁 Services/
+│   │   ├── 📁 Repositories/
+│   │   └── 📁 Handlers/
+│   ├── 🌐 eShop.Web.App/                  # Blazor Server frontend
+│   │   └── 📁 Components/
+│   └── 🧪 tests/                          # Unit and integration tests
+│       └── 📁 eShop.Orders.API.Tests/
+├── 🔄 workflows/                          # Logic Apps Standard workflows
+│   └── 📁 OrdersManagement/
+├── 🏗️ infra/                              # Bicep infrastructure templates
+│   ├── 🔷 main.bicep
+│   ├── 📁 shared/
+│   └── 📁 workload/
+├── 🪝 hooks/                              # Automation scripts
+├── 📚 docs/                               # Documentation (you are here)
+│   ├── 📁 architecture/
+│   ├── 📁 devops/
+│   └── 📁 hooks/
+├── 🐙 .github/
+│   └── 📁 workflows/
+├── 🟣 app.sln
+├── 📄 azure.yaml
+└── 📜 LICENSE
 ```
 
 ---

@@ -193,24 +193,68 @@ azd env get-values  # View environment variables
 ## 📁 Project Structure
 
 ```text
-Azure-LogicApps-Monitoring/
-├── app.AppHost/           # .NET Aspire orchestration (Aspire 13.1.0)
-├── app.ServiceDefaults/   # Cross-cutting concerns (OpenTelemetry, health checks)
-├── src/
-│   ├── eShop.Orders.API/  # REST API (ASP.NET Core 10.0)
-│   ├── eShop.Web.App/     # Frontend (Blazor Server + FluentUI)
-│   └── tests/             # Unit tests (MSTest + NSubstitute)
-├── infra/                 # Bicep IaC templates
-│   ├── main.bicep         # Entry point orchestrator
-│   ├── shared/            # Identity, monitoring, network, data
-│   └── workload/          # Logic Apps, messaging, container services
-├── workflows/             # Logic Apps Standard workflow definitions
-├── hooks/                 # azd lifecycle scripts (PowerShell + Bash)
-├── docs/                  # Comprehensive documentation
-│   ├── architecture/      # TOGAF-aligned architecture docs
-│   ├── devops/            # CI/CD pipeline documentation
-│   └── hooks/             # Automation scripts guide
-└── .github/workflows/     # GitHub Actions CI/CD pipelines
+📁 Azure-LogicApps-Monitoring/
+├── 🎯 app.AppHost/                        # .NET Aspire orchestration (Aspire 13.1.0)
+│   ├── 🟣 app.AppHost.csproj
+│   ├── 🟢 AppHost.cs
+│   └── 📋 appsettings.json
+├── 📦 app.ServiceDefaults/                # Cross-cutting concerns (OpenTelemetry, health checks)
+│   ├── 🟣 app.ServiceDefaults.csproj
+│   ├── 🟢 CommonTypes.cs
+│   └── 🟢 Extensions.cs
+├── 📁 src/
+│   ├── 📡 eShop.Orders.API/               # REST API (ASP.NET Core 10.0)
+│   │   ├── 📁 Controllers/
+│   │   ├── 📁 Services/
+│   │   ├── 📁 Repositories/
+│   │   ├── 📁 Handlers/
+│   │   ├── 📁 HealthChecks/
+│   │   ├── 🟣 eShop.Orders.API.csproj
+│   │   └── 🟢 Program.cs
+│   ├── 🌐 eShop.Web.App/                  # Frontend (Blazor Server + FluentUI)
+│   │   ├── 📁 Components/
+│   │   ├── 🟣 eShop.Web.App.csproj
+│   │   └── 🟢 Program.cs
+│   └── 🧪 tests/                          # Unit tests (MSTest + NSubstitute)
+│       └── 📁 eShop.Orders.API.Tests/
+├── 🏗️ infra/                              # Bicep IaC templates
+│   ├── 🔷 main.bicep                      # Entry point orchestrator
+│   ├── 📋 main.parameters.json
+│   ├── 🔷 types.bicep
+│   ├── 📁 shared/                         # Identity, monitoring, network, data
+│   │   ├── 📁 identity/
+│   │   ├── 📁 monitoring/
+│   │   ├── 📁 network/
+│   │   └── 📁 data/
+│   └── 📁 workload/                       # Logic Apps, messaging, container services
+│       ├── 🔷 logic-app.bicep
+│       ├── 📁 messaging/
+│       └── 📁 services/
+├── 🔄 workflows/                          # Logic Apps Standard workflow definitions
+│   └── 📁 OrdersManagement/
+│       └── 📁 OrdersManagementLogicApp/
+├── 🪝 hooks/                              # azd lifecycle scripts (PowerShell + Bash)
+│   ├── 🔵 check-dev-workstation.ps1
+│   ├── 🐚 check-dev-workstation.sh
+│   ├── 🔵 preprovision.ps1
+│   ├── 🐚 preprovision.sh
+│   ├── 🔵 postprovision.ps1
+│   └── 🐚 postprovision.sh
+├── 📚 docs/                               # Comprehensive documentation
+│   ├── 📁 architecture/                   # TOGAF-aligned architecture docs
+│   │   └── 📁 adr/                        # Architecture Decision Records
+│   ├── 📁 devops/                         # CI/CD pipeline documentation
+│   └── 📁 hooks/                          # Automation scripts guide
+├── 🐙 .github/
+│   └── 📁 workflows/                      # GitHub Actions CI/CD pipelines
+│       ├── 📄 azure-dev.yml
+│       ├── 📄 ci-dotnet.yml
+│       └── 📄 ci-dotnet-reusable.yml
+├── 🟣 app.sln
+├── 📄 azure.yaml
+├── 📋 global.json
+├── 📝 README.MD
+└── 📜 LICENSE
 ```
 
 [🔝 Back to Top](#azure-logic-apps-monitoring-solution)
