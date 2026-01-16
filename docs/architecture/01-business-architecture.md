@@ -47,14 +47,28 @@ The **Azure Logic Apps Monitoring Solution** provides a reference architecture d
 ### Capability Map
 
 ```mermaid
+---
+title: Business Capability Map
+---
 flowchart TB
-    %% Business Capability Map - Shows layered architecture of capabilities
+    %% ===== CLASS DEFINITIONS =====
+    classDef primary fill:#4F46E5,stroke:#3730A3,color:#FFFFFF
+    classDef secondary fill:#10B981,stroke:#059669,color:#FFFFFF
+    classDef datastore fill:#F59E0B,stroke:#D97706,color:#000000
+    classDef external fill:#6B7280,stroke:#4B5563,color:#FFFFFF,stroke-dasharray: 5 5
+    classDef failed fill:#F44336,stroke:#C62828,color:#FFFFFF
+    classDef trigger fill:#818CF8,stroke:#4F46E5,color:#FFFFFF
+    classDef decision fill:#FFFBEB,stroke:#F59E0B,color:#000000
+    classDef input fill:#F3F4F6,stroke:#6B7280,color:#000000
+
+    %% ===== CORE CAPABILITIES =====
     subgraph Core["🎯 Core Capabilities"]
         direction LR
         C1["📦 Order Management<br/><i>Revenue enablement</i>"]
         C2["🔄 Workflow Automation<br/><i>Process efficiency</i>"]
     end
 
+    %% ===== ENABLING CAPABILITIES =====
     subgraph Enabling["⚙️ Enabling Capabilities"]
         direction LR
         E1["📊 Observability<br/><i>Operational visibility</i>"]
@@ -62,6 +76,7 @@ flowchart TB
         E3["🌐 API Management<br/><i>Service exposure</i>"]
     end
 
+    %% ===== FOUNDATION CAPABILITIES =====
     subgraph Foundation["🏗️ Foundation Capabilities"]
         direction LR
         F1["🔐 Identity Management<br/><i>Authentication/Authorization</i>"]
@@ -69,24 +84,24 @@ flowchart TB
         F3["☁️ Cloud Infrastructure<br/><i>Compute and networking</i>"]
     end
 
-    %% Hierarchical dependencies
-    Core --> Enabling --> Foundation
+    %% ===== CONNECTIONS =====
+    Core -->|"depends on"| Enabling -->|"depends on"| Foundation
 
-    %% Cross-capability relationships
     C1 -.->|"triggers"| C2
     C1 -.->|"publishes to"| E2
     C2 -.->|"consumes from"| E2
     C1 -.->|"monitored by"| E1
     C2 -.->|"monitored by"| E1
 
-    %% Modern color palette - WCAG AA compliant
-    classDef core fill:#EEF2FF,stroke:#4F46E5,stroke-width:2px,color:#312E81
-    classDef enabling fill:#ECFDF5,stroke:#10B981,stroke-width:2px,color:#065F46
-    classDef foundation fill:#F3F4F6,stroke:#6B7280,stroke-width:2px,color:#374151
+    %% ===== SUBGRAPH STYLES =====
+    style Core fill:#E0E7FF,stroke:#4F46E5,stroke-width:2px
+    style Enabling fill:#ECFDF5,stroke:#10B981,stroke-width:2px
+    style Foundation fill:#F3F4F6,stroke:#6B7280,stroke-width:2px
 
-    class C1,C2 core
-    class E1,E2,E3 enabling
-    class F1,F2,F3 foundation
+    %% ===== NODE CLASSES =====
+    class C1,C2 primary
+    class E1,E2,E3 secondary
+    class F1,F2,F3 external
 ```
 
 ### Capability Descriptions
@@ -122,42 +137,65 @@ flowchart TB
 ### Order to Fulfillment Value Stream
 
 ```mermaid
+---
+title: Order to Fulfillment Value Stream
+---
 flowchart LR
-    %% Order to Fulfillment Value Stream - End-to-end order processing flow
-    subgraph Trigger["🎯 Trigger"]
+    %% ===== CLASS DEFINITIONS =====
+    classDef primary fill:#4F46E5,stroke:#3730A3,color:#FFFFFF
+    classDef secondary fill:#10B981,stroke:#059669,color:#FFFFFF
+    classDef datastore fill:#F59E0B,stroke:#D97706,color:#000000
+    classDef external fill:#6B7280,stroke:#4B5563,color:#FFFFFF,stroke-dasharray: 5 5
+    classDef failed fill:#F44336,stroke:#C62828,color:#FFFFFF
+    classDef trigger fill:#818CF8,stroke:#4F46E5,color:#FFFFFF
+    classDef decision fill:#FFFBEB,stroke:#F59E0B,color:#000000
+    classDef input fill:#F3F4F6,stroke:#6B7280,color:#000000
+
+    %% ===== TRIGGER STAGE =====
+    subgraph TriggerStage["🎯 Trigger"]
         T1["Customer submits<br/>order"]
     end
 
+    %% ===== ENGAGE STAGE =====
     subgraph Engage["📥 Engage"]
         S1["Capture order<br/>via Web UI"]
     end
 
+    %% ===== TRANSACT STAGE =====
     subgraph Transact["💳 Transact"]
         S2["Validate &<br/>persist order"]
     end
 
+    %% ===== PROCESS STAGE =====
     subgraph Process["⚙️ Process"]
         S3["Publish event &<br/>trigger workflow"]
     end
 
+    %% ===== FULFILL STAGE =====
     subgraph Fulfill["📦 Fulfill"]
         S4["Execute workflow<br/>automation"]
     end
 
+    %% ===== OUTCOME STAGE =====
     subgraph Outcome["✅ Outcome"]
         O1["Order processed<br/>successfully"]
     end
 
-    T1 --> S1 --> S2 --> S3 --> S4 --> O1
+    %% ===== CONNECTIONS =====
+    T1 -->|"initiates"| S1 -->|"submits"| S2 -->|"triggers"| S3 -->|"executes"| S4 -->|"completes"| O1
 
-    %% Modern color palette - WCAG AA compliant
-    classDef trigger fill:#EEF2FF,stroke:#4F46E5,stroke-width:2px,color:#312E81
-    classDef stage fill:#FEF3C7,stroke:#F59E0B,stroke-width:2px,color:#92400E
-    classDef outcome fill:#D1FAE5,stroke:#10B981,stroke-width:2px,color:#065F46
+    %% ===== SUBGRAPH STYLES =====
+    style TriggerStage fill:#EEF2FF,stroke:#4F46E5,stroke-width:2px
+    style Engage fill:#E0E7FF,stroke:#4F46E5,stroke-width:2px
+    style Transact fill:#E0E7FF,stroke:#4F46E5,stroke-width:2px
+    style Process fill:#E0E7FF,stroke:#4F46E5,stroke-width:2px
+    style Fulfill fill:#E0E7FF,stroke:#4F46E5,stroke-width:2px
+    style Outcome fill:#FEF3C7,stroke:#F59E0B,stroke-width:2px
 
+    %% ===== NODE CLASSES =====
     class T1 trigger
-    class S1,S2,S3,S4 stage
-    class O1 outcome
+    class S1,S2,S3,S4 primary
+    class O1 datastore
 ```
 
 #### Value Stream Details
@@ -178,38 +216,60 @@ flowchart LR
 ### Observability Value Stream
 
 ```mermaid
+---
+title: Observability Value Stream
+---
 flowchart LR
-    %% Observability Value Stream - Telemetry collection and analysis flow
+    %% ===== CLASS DEFINITIONS =====
+    classDef primary fill:#4F46E5,stroke:#3730A3,color:#FFFFFF
+    classDef secondary fill:#10B981,stroke:#059669,color:#FFFFFF
+    classDef datastore fill:#F59E0B,stroke:#D97706,color:#000000
+    classDef external fill:#6B7280,stroke:#4B5563,color:#FFFFFF,stroke-dasharray: 5 5
+    classDef failed fill:#F44336,stroke:#C62828,color:#FFFFFF
+    classDef trigger fill:#818CF8,stroke:#4F46E5,color:#FFFFFF
+    classDef decision fill:#FFFBEB,stroke:#F59E0B,color:#000000
+    classDef input fill:#F3F4F6,stroke:#6B7280,color:#000000
+
+    %% ===== SOURCES STAGE =====
     subgraph Sources["📡 Sources"]
         A1["Service emits<br/>telemetry"]
     end
 
+    %% ===== COLLECT STAGE =====
     subgraph Collect["📥 Collect"]
         B1["OpenTelemetry<br/>captures data"]
     end
 
+    %% ===== STORE STAGE =====
     subgraph Store["💾 Store"]
         C1["App Insights<br/>aggregates"]
     end
 
+    %% ===== ANALYZE STAGE =====
     subgraph Analyze["🔍 Analyze"]
         D1["KQL queries<br/>& dashboards"]
     end
 
+    %% ===== ACT STAGE =====
     subgraph Act["⚡ Act"]
         E1["Alert &<br/>respond"]
     end
 
-    A1 --> B1 --> C1 --> D1 --> E1
+    %% ===== CONNECTIONS =====
+    A1 -->|"emits"| B1 -->|"captures"| C1 -->|"queries"| D1 -->|"triggers"| E1
 
-    %% Modern color palette - WCAG AA compliant
-    classDef source fill:#FEF3C7,stroke:#F59E0B,stroke-width:2px,color:#92400E
-    classDef process fill:#EEF2FF,stroke:#4F46E5,stroke-width:2px,color:#312E81
-    classDef outcome fill:#D1FAE5,stroke:#10B981,stroke-width:2px,color:#065F46
+    %% ===== SUBGRAPH STYLES =====
+    style Sources fill:#EEF2FF,stroke:#4F46E5,stroke-width:2px
+    style Collect fill:#E0E7FF,stroke:#4F46E5,stroke-width:2px
+    style Store fill:#FEF3C7,stroke:#F59E0B,stroke-width:2px
+    style Analyze fill:#E0E7FF,stroke:#4F46E5,stroke-width:2px
+    style Act fill:#ECFDF5,stroke:#10B981,stroke-width:2px
 
-    class A1 source
-    class B1,C1,D1 process
-    class E1 outcome
+    %% ===== NODE CLASSES =====
+    class A1 trigger
+    class B1,D1 primary
+    class C1 datastore
+    class E1 secondary
 ```
 
 ---
@@ -233,44 +293,51 @@ flowchart LR
 ### Order Lifecycle Process
 
 ```mermaid
+---
+title: Order Lifecycle Process
+---
 flowchart TD
-    %% Order Lifecycle Process - Complete order processing flow with error handling
-    Start([Customer Action]) --> Submit["Submit Order<br/>via Web App"]
-    Submit --> Validate{"Validate<br/>Order Data"}
+    %% ===== CLASS DEFINITIONS =====
+    classDef primary fill:#4F46E5,stroke:#3730A3,color:#FFFFFF
+    classDef secondary fill:#10B981,stroke:#059669,color:#FFFFFF
+    classDef datastore fill:#F59E0B,stroke:#D97706,color:#000000
+    classDef external fill:#6B7280,stroke:#4B5563,color:#FFFFFF,stroke-dasharray: 5 5
+    classDef failed fill:#F44336,stroke:#C62828,color:#FFFFFF
+    classDef trigger fill:#818CF8,stroke:#4F46E5,color:#FFFFFF
+    classDef decision fill:#FFFBEB,stroke:#F59E0B,color:#000000
+    classDef input fill:#F3F4F6,stroke:#6B7280,color:#000000
 
-    %% Validation branch
-    Validate -->|Invalid| Reject["Return Validation<br/>Errors"]
-    Reject --> End1([Customer Corrects])
+    %% ===== START =====
+    Start([Customer Action]) -->|"initiates"| Submit["Submit Order<br/>via Web App"]
+    Submit -->|"validates"| Validate{"Validate<br/>Order Data"}
 
-    %% Happy path
-    Validate -->|Valid| Persist["Persist to<br/>SQL Database"]
-    Persist --> Publish["Publish Event<br/>to Service Bus"]
-    Publish --> Trigger["Trigger Logic App<br/>Workflow"]
+    %% ===== VALIDATION BRANCH =====
+    Validate -->|"Invalid"| Reject["Return Validation<br/>Errors"]
+    Reject -->|"returns to"| End1([Customer Corrects])
 
-    %% Processing outcomes
-    Trigger --> Process{"Process<br/>Order"}
-    Process -->|Success| StoreSuccess["Store in Success<br/>Container"]
-    Process -->|Failure| StoreError["Store in Error<br/>Container"]
+    %% ===== HAPPY PATH =====
+    Validate -->|"Valid"| Persist["Persist to<br/>SQL Database"]
+    Persist -->|"publishes"| Publish["Publish Event<br/>to Service Bus"]
+    Publish -->|"triggers"| TriggerWorkflow["Trigger Logic App<br/>Workflow"]
 
-    %% Post-processing
-    StoreSuccess --> Cleanup["Cleanup Workflow<br/>(Every 3 seconds)"]
-    Cleanup --> End2([Order Complete])
+    %% ===== PROCESSING OUTCOMES =====
+    TriggerWorkflow -->|"processes"| Process{"Process<br/>Order"}
+    Process -->|"Success"| StoreSuccess["Store in Success<br/>Container"]
+    Process -->|"Failure"| StoreError["Store in Error<br/>Container"]
 
-    StoreError --> Retry["Manual Review<br/>& Retry"]
-    Retry --> End3([Resolved])
+    %% ===== POST-PROCESSING =====
+    StoreSuccess -->|"schedules"| Cleanup["Cleanup Workflow<br/>(Every 3 seconds)"]
+    Cleanup -->|"completes"| End2([Order Complete])
 
-    %% Modern color palette - WCAG AA compliant
-    classDef start fill:#EEF2FF,stroke:#4F46E5,stroke-width:2px,color:#312E81
-    classDef process fill:#FEF3C7,stroke:#F59E0B,stroke-width:2px,color:#92400E
-    classDef decision fill:#F3E8FF,stroke:#A855F7,stroke-width:2px,color:#581C87
-    classDef success fill:#D1FAE5,stroke:#10B981,stroke-width:2px,color:#065F46
-    classDef error fill:#FEE2E2,stroke:#EF4444,stroke-width:2px,color:#991B1B
+    StoreError -->|"requires"| Retry["Manual Review<br/>& Retry"]
+    Retry -->|"resolves"| End3([Resolved])
 
-    class Start,End1,End2,End3 start
-    class Submit,Persist,Publish,Trigger,Cleanup,Retry process
+    %% ===== NODE CLASSES =====
+    class Start,End1,End2,End3 trigger
+    class Submit,Persist,Publish,TriggerWorkflow,Cleanup,Retry primary
     class Validate,Process decision
-    class StoreSuccess success
-    class Reject,StoreError error
+    class StoreSuccess secondary
+    class Reject,StoreError failed
 ```
 
 ### Logic Apps Workflow Inventory
