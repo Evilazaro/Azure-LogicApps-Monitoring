@@ -237,19 +237,21 @@ Generates comprehensive workflow summary with status badges and links.
 **Condition:** Runs on failure
 
 | Property | Value |
-|----------|-------|
+|:---------|:------|
 | **Runner** | `ubuntu-latest` |
 | **Timeout** | 5 minutes |
 | **Needs** | `ci`, `deploy-dev` |
 
 Reports failure with detailed job results and next steps.
 
+---
+
 ## 🔐 Prerequisites
 
 ### Required Repository Variables
 
 | Variable | Description | Required |
-|----------|-------------|----------|
+|:---------|:------------|:--------:|
 | `AZURE_CLIENT_ID` | Azure AD App Registration Client ID | ✅ |
 | `AZURE_TENANT_ID` | Azure AD Tenant ID | ✅ |
 | `AZURE_SUBSCRIPTION_ID` | Azure Subscription ID | ✅ |
