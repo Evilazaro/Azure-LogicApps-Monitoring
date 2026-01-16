@@ -362,9 +362,17 @@ azd deploy --no-prompt
 3. Expand the failed step to view detailed logs
 4. Check the deployment summary for environment details
 
+---
+
 ## 🔗 Related Documentation
 
-- [CI - .NET Reusable Workflow](./ci-dotnet-reusable.md)
-- [Azure Developer CLI Documentation](https://learn.microsoft.com/en-us/azure/developer/azure-developer-cli/)
-- [Federated Credentials Setup](https://learn.microsoft.com/en-us/azure/developer/github/connect-from-azure)
-- [Hooks Documentation](../hooks/README.md)
+| Resource | Description |
+|:---------|:------------|
+| [CI - .NET Reusable Workflow](./ci-dotnet-reusable.md) | Reusable CI workflow details |
+| [Azure Developer CLI Documentation](https://learn.microsoft.com/en-us/azure/developer/azure-developer-cli/) | Official azd documentation |
+| [Federated Credentials Setup](https://learn.microsoft.com/en-us/azure/developer/github/connect-from-azure) | OIDC authentication setup |
+| [Hooks Documentation](../hooks/README.md) | Pre/post deployment scripts |
+
+---
+
+[⬆️ Back to top](#-cd---azure-deployment)
