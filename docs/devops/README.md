@@ -116,28 +116,34 @@ flowchart TB
     class summary_job summary
 ```
 
+---
+
 ## 📁 Workflow Documentation
 
 | Workflow File | Documentation | Purpose |
-|---------------|---------------|---------|
+|:--------------|:--------------|:--------|
 | [azure-dev.yml](../../.github/workflows/azure-dev.yml) | [azure-dev.md](./azure-dev.md) | 🚀 CD - Provisions Azure infrastructure and deploys the application |
 | [ci-dotnet.yml](../../.github/workflows/ci-dotnet.yml) | [ci-dotnet.md](./ci-dotnet.md) | 🔄 CI - Orchestrates the .NET build and test pipeline |
 | [ci-dotnet-reusable.yml](../../.github/workflows/ci-dotnet-reusable.yml) | [ci-dotnet-reusable.md](./ci-dotnet-reusable.md) | 🔧 Reusable workflow for .NET CI operations |
 
+---
+
 ## 📊 Quick Reference
 
 | Workflow | Triggers | Jobs | Environment |
-|----------|----------|------|-------------|
+|:---------|:---------|:-----|:------------|
 | **CD - Azure Deployment** | `push:main`, `workflow_dispatch` | CI → Deploy Dev → Summary | `dev` |
 | **CI - .NET Build and Test** | `push:*`, `pull_request:main`, `workflow_dispatch` | CI (calls reusable) | N/A |
 | **CI - .NET Reusable** | `workflow_call` | Build → Test → Analyze → Summary | N/A |
+
+---
 
 ## 🔐 Required Secrets & Variables
 
 ### Repository Variables (Required for CD)
 
 | Variable | Description | Example |
-|----------|-------------|---------|
+|:---------|:------------|:--------|
 | `AZURE_CLIENT_ID` | Azure AD App Registration Client ID | `xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx` |
 | `AZURE_TENANT_ID` | Azure AD Tenant ID | `xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx` |
 | `AZURE_SUBSCRIPTION_ID` | Azure Subscription ID | `xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx` |
@@ -147,7 +153,7 @@ flowchart TB
 ### GitHub Environment
 
 | Environment | Protection Rules |
-|-------------|------------------|
+|:------------|:-----------------|
 | `dev` | None (auto-deploy) |
 
 ## 🔗 Related Documentation
