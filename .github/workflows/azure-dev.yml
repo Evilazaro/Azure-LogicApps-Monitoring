@@ -140,15 +140,17 @@ jobs:
           # Install go-sqlcmd (modern sqlcmd with Azure AD authentication support)
           # Reference: https://github.com/microsoft/go-sqlcmd
           # Note: go-sqlcmd is required for --authentication-method ActiveDirectoryAzCli
-          curl -sSL https://packages.microsoft.com/keys/microsoft.asc | sudo tee /etc/apt/trusted.gpg.d/microsoft.asc > /dev/null
-          curl -sSL https://packages.microsoft.com/config/ubuntu/$(lsb_release -rs)/prod.list | sudo tee /etc/apt/sources.list.d/mssql-release.list > /dev/null
-          sudo apt-get update
+          # Download the latest go-sqlcmd from GitHub releases
+          echo "Installing go-sqlcmd..."
+          SQLCMD_VERSION=$(curl -s https://api.github.com/repos/microsoft/go-sqlcmd/releases/latest | jq -r '.tag_name')
+          echo "Latest go-sqlcmd version: $SQLCMD_VERSION"
 
-          # Remove any existing ODBC sqlcmd to avoid conflicts
-          sudo apt-get remove -y mssql-tools mssql-tools18 2>/dev/null || true
-
-          # Install go-sqlcmd
-          sudo apt-get install -y sqlcmd
+          # Download and extract go-sqlcmd for Linux amd64
+          curl -sSL "https://github.com/microsoft/go-sqlcmd/releases/download/${SQLCMD_VERSION}/sqlcmd-linux-amd64.tar.bz2" -o sqlcmd.tar.bz2
+          tar -xjf sqlcmd.tar.bz2
+          sudo mv sqlcmd /usr/local/bin/sqlcmd
+          sudo chmod +x /usr/local/bin/sqlcmd
+          rm -f sqlcmd.tar.bz2
 
           # Verify go-sqlcmd is installed
           echo "Verifying sqlcmd installation..."
