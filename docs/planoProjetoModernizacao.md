@@ -2106,6 +2106,9 @@ A estimativa foi construída utilizando a técnica de **decomposição por ativi
 | **TOTAL**            | **112h** | **112h** | **168h** | **240h** | **780h** | **188h** | **1.600h** | **100%** |
 
 ```mermaid
+---
+title: Distribuição de Horas por Recurso
+---
 %%{init: { 'theme': 'base', 'themeVariables': {
     'pie1': '#10B981',
     'pie2': '#3B82F6',
@@ -2113,7 +2116,7 @@ A estimativa foi construída utilizando a técnica de **decomposição por ativi
     'pie4': '#8B5CF6'
 } } }%%
 pie showData
-    title 📊 Distribuição de Horas por Recurso
+    %% ===== DISTRIBUIÇÃO POR RECURSO =====
     "Gerente de Projeto (17%)" : 264
     "Arquiteto de Solução (14%)" : 220
     "Desenvolvedor Sênior (42%)" : 672
@@ -2121,6 +2124,9 @@ pie showData
 ```
 
 ```mermaid
+---
+title: Distribuição de Horas por Fase
+---
 %%{init: { 'theme': 'base', 'themeVariables': {
     'pie1': '#F0FDF4',
     'pie2': '#DCFCE7',
@@ -2130,7 +2136,7 @@ pie showData
     'pie6': '#22C55E'
 } } }%%
 pie showData
-    title 📈 Distribuição de Horas por Fase
+    %% ===== DISTRIBUIÇÃO POR FASE =====
     "Fase 0 – Alinhamento (7%)" : 112
     "Fase 1 – Contratos (7%)" : 112
     "Fase 2 – Fundação (11%)" : 168
@@ -2247,13 +2253,16 @@ O pagamento do projeto será realizado conforme o fluxo abaixo, vinculado aos ma
     'cScale2': '#F59E0B', 'cScaleLabel2': '#ffffff'
 } } }%%
 timeline
-    title 💳 Cronograma de Pagamento do Projeto
+    title Cronograma de Pagamento do Projeto
+    %% ===== SEÇÃO INÍCIO =====
     section 📋 Início
         Aceite do Projeto : 💰 30% – R$ 72.000,00 : Assinatura e aceite formal
+    %% ===== SEÇÃO FUNDAÇÃO =====
     section 🏗️ Fases 0–2 (Fundação)
         Fase 0 : 💰 10% – R$ 24.000,00 : Inventário técnico
         Fase 1 : 💰 10% – R$ 24.000,00 : Contratos OpenAPI
         Fase 2 : 💰 10% – R$ 24.000,00 : API em DEV/HML
+    %% ===== SEÇÃO EXECUÇÃO =====
     section 🚀 Fases 3–5 (Execução)
         Fase 3 : 💰 15% – R$ 36.000,00 : Fluxo piloto em PRD
         Fase 4 : 💰 15% – R$ 36.000,00 : Migração completa
@@ -2261,6 +2270,9 @@ timeline
 ```
 
 ```mermaid
+---
+title: Distribuição dos Pagamentos (R$)
+---
 %%{init: { 'theme': 'base', 'themeVariables': {
     'pie1': '#10B981',
     'pie2': '#4F46E5',
@@ -2271,7 +2283,7 @@ timeline
     'pie7': '#FCD34D'
 } } }%%
 pie showData
-    title 📊 Distribuição dos Pagamentos (R$)
+    %% ===== DISTRIBUIÇÃO DE PAGAMENTOS =====
     "Aceite (30%)" : 72000
     "Fase 0 (10%)" : 24000
     "Fase 1 (10%)" : 24000
