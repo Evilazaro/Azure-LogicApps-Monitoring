@@ -96,32 +96,26 @@ flowchart LR
     test -->|stores| cov_art
 
     %% ===== STYLING DEFINITIONS =====
-    %% Triggers: Blue - entry points
-    classDef trigger fill:#2196F3,stroke:#1565C0,color:#FFFFFF
-    %% Inputs: Yellow - user decisions
-    classDef input fill:#FFC107,stroke:#F57F17,color:#000000
-    %% Reusable workflows: Gray dashed - external calls
-    classDef reusable fill:#607D8B,stroke:#455A64,color:#FFFFFF,stroke-dasharray: 5 5
-    %% Build steps: Orange - compilation
-    classDef build fill:#FF9800,stroke:#E65100,color:#FFFFFF
-    %% Test steps: Purple - testing
-    classDef test fill:#9C27B0,stroke:#6A1B9A,color:#FFFFFF
-    %% Analyze steps: Cyan - code analysis
-    classDef analyze fill:#00BCD4,stroke:#00838F,color:#FFFFFF
-    %% Summary: Green - reporting
-    classDef summary fill:#4CAF50,stroke:#2E7D32,color:#FFFFFF
-    %% Artifacts: Light green - stored files
-    classDef artifact fill:#8BC34A,stroke:#558B2F,color:#FFFFFF
+    %% Primary components: Indigo - main processes/services
+    classDef primary fill:#4F46E5,stroke:#3730A3,color:#FFFFFF
+    %% Secondary components: Emerald - secondary elements
+    classDef secondary fill:#10B981,stroke:#059669,color:#FFFFFF
+    %% Data stores: Amber - artifacts and outputs
+    classDef datastore fill:#F59E0B,stroke:#D97706,color:#000000
+    %% External systems: Gray - reusable/external calls
+    classDef external fill:#6B7280,stroke:#4B5563,color:#FFFFFF,stroke-dasharray: 5 5
+    %% Triggers: Indigo light - entry points
+    classDef trigger fill:#818CF8,stroke:#4F46E5,color:#FFFFFF
+    %% Decision points: Amber outline - conditional logic
+    classDef decision fill:#FFFBEB,stroke:#F59E0B,color:#000000
 
     %% Apply styles to nodes
     class push,pr,manual trigger
-    class config,analysis,matrix input
-    class ci_call reusable
-    class build build
-    class test test
-    class analyze analyze
-    class summary summary
-    class build_art,test_art,cov_art artifact
+    class config,analysis,matrix decision
+    class ci_call external
+    class build,test primary
+    class analyze,summary secondary
+    class build_art,test_art,cov_art datastore
 ```
 
 ---

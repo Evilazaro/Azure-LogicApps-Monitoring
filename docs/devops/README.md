@@ -107,29 +107,26 @@ flowchart TB
     deploy --x|on failure| failure_handler
 
     %% ===== STYLING DEFINITIONS =====
-    %% Triggers: Blue - entry points
-    classDef trigger fill:#2196F3,stroke:#1565C0,color:#FFFFFF
-    %% Build steps: Orange - compilation
-    classDef build fill:#FF9800,stroke:#E65100,color:#FFFFFF
-    %% Test steps: Purple - testing
-    classDef test fill:#9C27B0,stroke:#6A1B9A,color:#FFFFFF
-    %% Deploy steps: Green - deployment
-    classDef deploy fill:#4CAF50,stroke:#2E7D32,color:#FFFFFF
-    %% Reusable workflows: Gray dashed - external calls
-    classDef reusable fill:#607D8B,stroke:#455A64,color:#FFFFFF,stroke-dasharray: 5 5
-    %% Failed states: Red - error handling
+    %% Primary components: Indigo - main processes/services
+    classDef primary fill:#4F46E5,stroke:#3730A3,color:#FFFFFF
+    %% Secondary components: Emerald - secondary elements
+    classDef secondary fill:#10B981,stroke:#059669,color:#FFFFFF
+    %% External systems: Gray - reusable/external calls
+    classDef external fill:#6B7280,stroke:#4B5563,color:#FFFFFF,stroke-dasharray: 5 5
+    %% Error/failure states: Red - error handling
     classDef failed fill:#F44336,stroke:#C62828,color:#FFFFFF
-    %% Summary: Yellow - reporting
-    classDef summary fill:#FFC107,stroke:#F57F17,color:#000000
+    %% Triggers: Indigo light - entry points
+    classDef trigger fill:#818CF8,stroke:#4F46E5,color:#FFFFFF
+    %% Data stores: Amber - reporting
+    classDef datastore fill:#F59E0B,stroke:#D97706,color:#000000
 
     %% Apply styles to nodes
     class push,pr,manual,schedule trigger
-    class build build
-    class test test
-    class deploy deploy
-    class ci_reusable,ci_call reusable
+    class build,test primary
+    class deploy,analyze secondary
+    class ci_reusable,ci_call external
     class failure_handler failed
-    class summary_job summary
+    class summary_job datastore
 ```
 
 ---

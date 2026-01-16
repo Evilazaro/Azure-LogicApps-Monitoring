@@ -188,37 +188,33 @@ flowchart LR
     t_upload -->|stores| art_cov
 
     %% ===== STYLING DEFINITIONS =====
-    %% Triggers: Blue - entry points
-    classDef trigger fill:#2196F3,stroke:#1565C0,color:#FFFFFF
-    %% Inputs: Light purple - parameters
-    classDef input fill:#E1BEE7,stroke:#7B1FA2,color:#000000
-    %% Build steps: Orange - compilation
-    classDef build fill:#FF9800,stroke:#E65100,color:#FFFFFF
-    %% Test steps: Purple - testing
-    classDef test fill:#9C27B0,stroke:#6A1B9A,color:#FFFFFF
-    %% Analyze steps: Cyan - code analysis
-    classDef analyze fill:#00BCD4,stroke:#00838F,color:#FFFFFF
-    %% Summary: Green - reporting
-    classDef summary fill:#4CAF50,stroke:#2E7D32,color:#FFFFFF
-    %% Failed states: Red - error handling
+    %% Primary components: Indigo - main processes/services
+    classDef primary fill:#4F46E5,stroke:#3730A3,color:#FFFFFF
+    %% Secondary components: Emerald - secondary elements
+    classDef secondary fill:#10B981,stroke:#059669,color:#FFFFFF
+    %% Data stores: Amber - artifacts and outputs
+    classDef datastore fill:#F59E0B,stroke:#D97706,color:#000000
+    %% External systems: Gray - reusable/external calls
+    classDef external fill:#6B7280,stroke:#4B5563,color:#FFFFFF,stroke-dasharray: 5 5
+    %% Error/failure states: Red - error handling
     classDef failed fill:#F44336,stroke:#C62828,color:#FFFFFF
-    %% Outputs: Light green - results
-    classDef output fill:#8BC34A,stroke:#558B2F,color:#FFFFFF
-    %% Artifacts: Yellow - stored files
-    classDef artifact fill:#FFEB3B,stroke:#F57F17,color:#000000
-    %% Matrix: Light cyan - parallel execution
-    classDef matrix fill:#B2EBF2,stroke:#00838F,color:#000000
+    %% Triggers: Indigo light - entry points
+    classDef trigger fill:#818CF8,stroke:#4F46E5,color:#FFFFFF
+    %% Inputs: Light background - parameters
+    classDef input fill:#F3F4F6,stroke:#6B7280,color:#000000
+    %% Matrix: Light emerald - parallel execution
+    classDef matrix fill:#D1FAE5,stroke:#10B981,color:#000000
 
     %% Apply styles to nodes
     class workflow_call trigger
     class config,dotnet,solution,matrix_flag,analysis_flag input
-    class b_checkout,b_setup,b_workload,b_version,b_restore,b_build,b_upload,b_summary build
-    class t_checkout,t_setup,t_workload,t_restore,t_build,t_test,t_report,t_upload,t_summary test
-    class a_checkout,a_setup,a_workload,a_restore,a_format,a_summary,a_fail analyze
-    class s_generate summary
+    class b_checkout,b_setup,b_workload,b_version,b_restore,b_build,b_upload,b_summary primary
+    class t_checkout,t_setup,t_workload,t_restore,t_build,t_test,t_report,t_upload,t_summary primary
+    class a_checkout,a_setup,a_workload,a_restore,a_format,a_summary,a_fail secondary
+    class s_generate secondary
     class f_report failed
-    class out_version,out_build,out_test,out_analyze output
-    class art_build,art_test,art_cov artifact
+    class out_version,out_build,out_test,out_analyze datastore
+    class art_build,art_test,art_cov datastore
     class ubuntu,windows,macos,MatrixStrategy matrix
 ```
 
@@ -530,17 +526,19 @@ flowchart LR
     analyze --x|on failure| failure
 
     %% ===== STYLING DEFINITIONS =====
-    classDef build fill:#FF9800,stroke:#E65100,color:#FFFFFF
-    classDef test fill:#9C27B0,stroke:#6A1B9A,color:#FFFFFF
-    classDef analyze fill:#00BCD4,stroke:#00838F,color:#FFFFFF
-    classDef summary fill:#4CAF50,stroke:#2E7D32,color:#FFFFFF
+    %% Primary components: Indigo - main processes
+    classDef primary fill:#4F46E5,stroke:#3730A3,color:#FFFFFF
+    %% Secondary components: Emerald - secondary elements
+    classDef secondary fill:#10B981,stroke:#059669,color:#FFFFFF
+    %% Error/failure states: Red - error handling
     classDef failed fill:#F44336,stroke:#C62828,color:#FFFFFF
+    %% Data stores: Amber - reporting
+    classDef datastore fill:#F59E0B,stroke:#D97706,color:#000000
 
     %% Apply styles to nodes
-    class build build
-    class test test
-    class analyze analyze
-    class summary summary
+    class build,test primary
+    class analyze secondary
+    class summary datastore
     class failure failed
 ```
 

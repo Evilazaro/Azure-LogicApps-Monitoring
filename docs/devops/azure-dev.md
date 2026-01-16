@@ -129,35 +129,31 @@ flowchart LR
     deploy_app -->|outputs| resource_group
 
     %% ===== STYLING DEFINITIONS =====
-    %% Triggers: Blue - entry points
-    classDef trigger fill:#2196F3,stroke:#1565C0,color:#FFFFFF
-    %% Conditions: Yellow - decision points
-    classDef condition fill:#FFC107,stroke:#F57F17,color:#000000
-    %% Build steps: Orange - setup tasks
-    classDef build fill:#FF9800,stroke:#E65100,color:#FFFFFF
-    %% Deploy steps: Green - deployment actions
-    classDef deploy fill:#4CAF50,stroke:#2E7D32,color:#FFFFFF
-    %% Auth steps: Purple - authentication
-    classDef auth fill:#673AB7,stroke:#4527A0,color:#FFFFFF
-    %% Reusable workflows: Gray dashed - external calls
-    classDef reusable fill:#607D8B,stroke:#455A64,color:#FFFFFF,stroke-dasharray: 5 5
-    %% Failed states: Red - error handling
+    %% Primary components: Indigo - main processes/services
+    classDef primary fill:#4F46E5,stroke:#3730A3,color:#FFFFFF
+    %% Secondary components: Emerald - secondary elements
+    classDef secondary fill:#10B981,stroke:#059669,color:#FFFFFF
+    %% Data stores: Amber - artifacts and outputs
+    classDef datastore fill:#F59E0B,stroke:#D97706,color:#000000
+    %% External systems: Gray - reusable/external calls
+    classDef external fill:#6B7280,stroke:#4B5563,color:#FFFFFF,stroke-dasharray: 5 5
+    %% Error/failure states: Red - error handling
     classDef failed fill:#F44336,stroke:#C62828,color:#FFFFFF
-    %% Summary: Cyan - reporting
-    classDef summary fill:#00BCD4,stroke:#00838F,color:#FFFFFF
-    %% Outputs: Light green - data outputs
-    classDef output fill:#8BC34A,stroke:#558B2F,color:#FFFFFF
+    %% Decision points: Amber outline - conditional logic
+    classDef decision fill:#FFFBEB,stroke:#F59E0B,color:#000000
+    %% Triggers: Indigo light - entry points
+    classDef trigger fill:#818CF8,stroke:#4F46E5,color:#FFFFFF
 
     %% Apply styles to nodes
     class push,manual trigger
-    class skip_ci condition
-    class ci_job reusable
-    class checkout,prereq,azd_install,dotnet_setup build
-    class azd_auth,az_login,reauth auth
-    class provision,deploy_app deploy
-    class gen_summary,summary_job summary
+    class skip_ci decision
+    class ci_job external
+    class checkout,prereq,azd_install,dotnet_setup primary
+    class azd_auth,az_login,reauth secondary
+    class provision,deploy_app primary
+    class gen_summary,summary_job secondary
     class failure_handler failed
-    class webapp_url,resource_group output
+    class webapp_url,resource_group datastore
 ```
 
 ---
