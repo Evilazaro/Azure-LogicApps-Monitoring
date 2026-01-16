@@ -160,7 +160,7 @@ jobs:
           dotnet-version: ${{ inputs.dotnet-version }}
 
       - name: ☁️ Update .NET workloads
-        run: sudo dotnet workload update
+        run: dotnet workload update
 
       # ------------------------------------------------------------------
       # Phase 2: Build
@@ -272,7 +272,7 @@ jobs:
       - name: ☁️ Update .NET workloads
         run: |
           echo "::group::📦 Updating .NET workloads"
-          sudo dotnet workload update
+          dotnet workload update
           echo "::endgroup::"
 
       - name: 📥 Restore dependencies
@@ -406,7 +406,7 @@ jobs:
       - name: ☁️ Update .NET workloads
         run: |
           echo "::group::📦 Updating .NET workloads"
-          sudo dotnet workload update
+          dotnet workload update
           echo "::endgroup::"
 
       - name: 📥 Restore dependencies
