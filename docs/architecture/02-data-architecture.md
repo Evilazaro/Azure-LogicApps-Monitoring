@@ -378,8 +378,21 @@ flowchart LR
 ### Telemetry-to-Source Mapping
 
 ```mermaid
+---
+title: Telemetry-to-Source Mapping
+---
 flowchart TB
-    %% Telemetry-to-Source Mapping - Shows which sources emit which pillar data
+    %% ===== CLASS DEFINITIONS =====
+    classDef primary fill:#4F46E5,stroke:#3730A3,color:#FFFFFF
+    classDef secondary fill:#10B981,stroke:#059669,color:#FFFFFF
+    classDef datastore fill:#F59E0B,stroke:#D97706,color:#000000
+    classDef external fill:#6B7280,stroke:#4B5563,color:#FFFFFF,stroke-dasharray: 5 5
+    classDef failed fill:#F44336,stroke:#C62828,color:#FFFFFF
+    classDef trigger fill:#818CF8,stroke:#4F46E5,color:#FFFFFF
+    classDef decision fill:#FFFBEB,stroke:#F59E0B,color:#000000
+    classDef input fill:#F3F4F6,stroke:#6B7280,color:#000000
+
+    %% ===== TELEMETRY SOURCES =====
     subgraph Sources["📡 Telemetry Sources"]
         API["⚙️ Orders API"]
         Web["🌐 Web App"]
@@ -387,42 +400,46 @@ flowchart TB
         SB["📨 Service Bus"]
         SQL["🗄️ SQL Database"]
     end
+    style Sources fill:#FEF3C7,stroke:#F59E0B,stroke-width:2px
 
+    %% ===== THREE PILLARS =====
     subgraph Pillars["📊 Three Pillars"]
-        subgraph Traces["📍 Traces"]
+        subgraph TracesSubgraph["📍 Traces"]
             T1["HTTP request spans"]
             T2["Database spans"]
             T3["Messaging spans"]
         end
+        style TracesSubgraph fill:#EEF2FF,stroke:#4F46E5,stroke-width:2px
 
-        subgraph Metrics["📈 Metrics"]
+        subgraph MetricsSubgraph["📈 Metrics"]
             M1["Request metrics"]
             M2["Business metrics"]
             M3["Platform metrics"]
         end
+        style MetricsSubgraph fill:#ECFDF5,stroke:#10B981,stroke-width:2px
 
-        subgraph Logs["📝 Logs"]
+        subgraph LogsSubgraph["📝 Logs"]
             L1["Application logs"]
             L2["Diagnostic logs"]
             L3["Audit logs"]
         end
+        style LogsSubgraph fill:#F3F4F6,stroke:#6B7280,stroke-width:2px
     end
+    style Pillars fill:#FFFFFF,stroke:#E5E7EB,stroke-width:1px
 
-    %% Source to pillar mappings
-    API --> T1 & T2 & T3 & M1 & M2 & L1
-    Web --> T1 & M1 & L1
-    LA --> M3 & L2
-    SB --> M3 & L2
-    SQL --> M3 & L2
+    %% ===== SOURCE TO PILLAR MAPPINGS =====
+    API -->|"emits"| T1 & T2 & T3 & M1 & M2 & L1
+    Web -->|"emits"| T1 & M1 & L1
+    LA -->|"emits"| M3 & L2
+    SB -->|"emits"| M3 & L2
+    SQL -->|"emits"| M3 & L2
 
-    %% Modern color palette - WCAG AA compliant
-    classDef trace fill:#EEF2FF,stroke:#4F46E5,stroke-width:2px,color:#312E81
-    classDef metric fill:#D1FAE5,stroke:#10B981,stroke-width:2px,color:#065F46
-    classDef log fill:#FEF3C7,stroke:#F59E0B,stroke-width:2px,color:#92400E
-
-    class T1,T2,T3 trace
-    class M1,M2,M3 metric
-    class L1,L2,L3 log
+    %% ===== APPLY CLASSES =====
+    class API,Web primary
+    class LA,SB,SQL datastore
+    class T1,T2,T3 trigger
+    class M1,M2,M3 secondary
+    class L1,L2,L3 input
 ```
 
 ### Metrics Inventory
@@ -487,8 +504,21 @@ The solution implements **W3C Trace Context** for cross-service correlation:
 ### Correlation Flow
 
 ```mermaid
+---
+title: W3C Trace Context Correlation Flow
+---
 flowchart LR
-    %% W3C Trace Context Propagation Flow
+    %% ===== CLASS DEFINITIONS =====
+    classDef primary fill:#4F46E5,stroke:#3730A3,color:#FFFFFF
+    classDef secondary fill:#10B981,stroke:#059669,color:#FFFFFF
+    classDef datastore fill:#F59E0B,stroke:#D97706,color:#000000
+    classDef external fill:#6B7280,stroke:#4B5563,color:#FFFFFF,stroke-dasharray: 5 5
+    classDef failed fill:#F44336,stroke:#C62828,color:#FFFFFF
+    classDef trigger fill:#818CF8,stroke:#4F46E5,color:#FFFFFF
+    classDef decision fill:#FFFBEB,stroke:#F59E0B,color:#000000
+    classDef input fill:#F3F4F6,stroke:#6B7280,color:#000000
+
+    %% ===== TRACE CONTEXT FLOW =====
     subgraph TraceContext["🔗 W3C Trace Context Flow"]
         direction LR
         HTTP["HTTP Request<br/>traceparent header"]
@@ -496,12 +526,19 @@ flowchart LR
         LA["Logic Apps<br/>x-ms-workflow-run-id"]
         AI["App Insights<br/>Operation ID"]
     end
+    style TraceContext fill:#EEF2FF,stroke:#4F46E5,stroke-width:2px
 
-    %% Propagation paths
+    %% ===== PROPAGATION PATHS =====
     HTTP -->|"Propagate"| SB
     SB -->|"Extract"| LA
     HTTP -->|"Auto-capture"| AI
     LA -->|"Correlate"| AI
+
+    %% ===== APPLY CLASSES =====
+    class HTTP trigger
+    class SB datastore
+    class LA primary
+    class AI secondary
 ```
 
 ### Implementation Example
@@ -523,37 +560,52 @@ if (activity != null)
 ## 🛠️ 10. Data Dependencies
 
 ```mermaid
+---
+title: Data Dependencies Flow
+---
 flowchart TD
-    %% Data Dependencies - Shows upstream/downstream data flow relationships
+    %% ===== CLASS DEFINITIONS =====
+    classDef primary fill:#4F46E5,stroke:#3730A3,color:#FFFFFF
+    classDef secondary fill:#10B981,stroke:#059669,color:#FFFFFF
+    classDef datastore fill:#F59E0B,stroke:#D97706,color:#000000
+    classDef external fill:#6B7280,stroke:#4B5563,color:#FFFFFF,stroke-dasharray: 5 5
+    classDef failed fill:#F44336,stroke:#C62828,color:#FFFFFF
+    classDef trigger fill:#818CF8,stroke:#4F46E5,color:#FFFFFF
+    classDef decision fill:#FFFBEB,stroke:#F59E0B,color:#000000
+    classDef input fill:#F3F4F6,stroke:#6B7280,color:#000000
+
+    %% ===== UPSTREAM =====
     subgraph Upstream["⬆️ Upstream (Data Producers)"]
         WebApp["eShop.Web.App<br/>(Order Input)"]
     end
+    style Upstream fill:#FEF3C7,stroke:#F59E0B,stroke-width:2px
 
+    %% ===== CORE DATA ASSETS =====
     subgraph Core["🎯 Core Data Assets"]
         OrderDb[("OrderDb<br/>Azure SQL")]
         EventBus["Service Bus<br/>ordersplaced"]
     end
+    style Core fill:#EEF2FF,stroke:#4F46E5,stroke-width:2px
 
+    %% ===== DOWNSTREAM =====
     subgraph Downstream["⬇️ Downstream (Data Consumers)"]
         LogicApp["Logic Apps<br/>(Workflow)"]
         AppInsights["App Insights<br/>(Analytics)"]
     end
+    style Downstream fill:#ECFDF5,stroke:#10B981,stroke-width:2px
 
-    %% Data flow connections
+    %% ===== DATA FLOW CONNECTIONS =====
     WebApp -->|"Creates orders"| OrderDb
     OrderDb -->|"Publishes events"| EventBus
     EventBus -->|"Triggers workflows"| LogicApp
     OrderDb -.->|"Emits telemetry"| AppInsights
     LogicApp -.->|"Emits telemetry"| AppInsights
 
-    %% Modern color palette - WCAG AA compliant
-    classDef upstream fill:#FEF3C7,stroke:#F59E0B,stroke-width:2px,color:#92400E
-    classDef core fill:#EEF2FF,stroke:#4F46E5,stroke-width:2px,color:#312E81
-    classDef downstream fill:#D1FAE5,stroke:#10B981,stroke-width:2px,color:#065F46
-
-    class WebApp upstream
-    class OrderDb,EventBus core
-    class LogicApp,AppInsights downstream
+    %% ===== APPLY CLASSES =====
+    class WebApp trigger
+    class OrderDb,EventBus datastore
+    class LogicApp primary
+    class AppInsights secondary
 ```
 
 ---
