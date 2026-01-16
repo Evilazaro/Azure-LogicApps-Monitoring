@@ -19,12 +19,6 @@
 - [✅ Prerequisites](#-prerequisites)
 - [🚀 Quick Start](#-quick-start)
 - [📁 Project Structure](#-project-structure)
-- [⚙️ Application Components](#️-application-components)
-- [☁️ Infrastructure](#️-infrastructure)
-- [🔄 Logic Apps Workflows](#-logic-apps-workflows)
-- [🔁 CI/CD Pipelines](#-cicd-pipelines)
-- [🪝 Developer Hooks](#-developer-hooks)
-- [🧪 Testing](#-testing)
 - [📖 Documentation](#-documentation)
 - [🤝 Contributing](#-contributing)
 - [📄 License](#-license)
@@ -33,9 +27,7 @@
 
 ## 📋 Description
 
-The **Azure Logic Apps Monitoring Solution** is a cloud-native reference architecture demonstrating enterprise-grade observability patterns for Azure Logic Apps Standard workflows.
-
-Built on **.NET Aspire 13.1.0** orchestration, this solution showcases end-to-end distributed tracing, centralized logging, and comprehensive metrics collection across a microservices-based order management system.
+The **Azure Logic Apps Monitoring Solution** is a cloud-native reference architecture demonstrating enterprise-grade observability patterns for Azure Logic Apps Standard workflows. Built on **.NET Aspire 13.1.0** orchestration, this solution showcases end-to-end distributed tracing, centralized logging, and comprehensive metrics collection across a microservices-based order management system.
 
 ### ✨ Key Highlights
 
@@ -46,7 +38,6 @@ Built on **.NET Aspire 13.1.0** orchestration, this solution showcases end-to-en
 | **Infrastructure as Code** | Bicep templates with Azure Developer CLI (azd) for repeatable deployments |
 | **Zero-Secret Authentication** | Managed Identity for all service-to-service communication |
 | **Cross-Platform Scripts** | PowerShell and Bash automation for Windows, Linux, and macOS |
-| **Comprehensive Testing** | MSTest with code coverage and diagnostic reporting |
 
 [🔝 Back to Top](#azure-logic-apps-monitoring-solution)
 
@@ -99,16 +90,13 @@ flowchart TD
     AI -.->|"Logs"| LAW
 ```
 
-### 📊 Layer Summary
-
 | Layer | Components | Purpose |
 |:------|:-----------|:--------|
-| **Presentation** | eShop.Web.App (Blazor Server + FluentUI) | Interactive UI with order management pages |
-| **Application** | eShop.Orders.API, Logic Apps Standard | REST API + automated workflow processing |
-| **Platform** | .NET Aspire AppHost + ServiceDefaults | Orchestration, service discovery, resilience |
-| **Data** | Azure SQL, Service Bus, Storage | Persistence, messaging, workflow state |
-| **Observability** | Application Insights, Log Analytics | Distributed tracing, metrics, alerting |
-| **Network** | Virtual Network with delegated subnets | Container Apps, Logic Apps, Private Endpoints |
+| **Presentation** | eShop.Web.App (Blazor Server + FluentUI) | Interactive UI with order management |
+| **Application** | eShop.Orders.API, Logic Apps Standard | REST API + workflow automation |
+| **Platform** | .NET Aspire AppHost + ServiceDefaults | Orchestration, service discovery |
+| **Data** | Azure SQL, Service Bus, Storage | Persistence, messaging, state |
+| **Observability** | Application Insights, Log Analytics | Tracing, metrics, alerting |
 
 > 📚 For detailed architecture documentation, see [Architecture Overview](docs/architecture/README.md).
 
@@ -118,29 +106,13 @@ flowchart TD
 
 ## ✅ Prerequisites
 
-### Required Tools
-
 | Tool | Version | Purpose |
 |:-----|:--------|:--------|
 | [Azure CLI](https://learn.microsoft.com/cli/azure/install-azure-cli) | ≥ 2.60.0 | Azure resource management |
 | [Azure Developer CLI (azd)](https://learn.microsoft.com/azure/developer/azure-developer-cli/install-azd) | ≥ 1.11.0 | Infrastructure provisioning & deployment |
 | [.NET SDK](https://dotnet.microsoft.com/download) | 10.0 | Application runtime |
-| [PowerShell](https://docs.microsoft.com/powershell/scripting/install/installing-powershell) | ≥ 7.0 | Cross-platform automation scripts |
-| [Docker](https://www.docker.com/products/docker-desktop) | Latest | Local development & containers |
-
-### ☁️ Azure Subscription Requirements
-
-An active Azure subscription with permissions to create:
-
-- Resource Groups
-- Azure Container Apps Environment
-- Azure SQL Database
-- Azure Service Bus Namespace
-- Azure Logic Apps Standard (WorkflowStandard tier)
-- Azure Storage Accounts
-- Application Insights & Log Analytics Workspace
-- User-Assigned Managed Identity
-- Virtual Network with delegated subnets
+| [PowerShell](https://docs.microsoft.com/powershell/scripting/install/installing-powershell) | ≥ 7.0 | Cross-platform automation |
+| [Docker](https://www.docker.com/products/docker-desktop) | Latest | Local development |
 
 [🔝 Back to Top](#azure-logic-apps-monitoring-solution)
 
