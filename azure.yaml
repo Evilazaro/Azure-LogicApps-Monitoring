@@ -185,6 +185,13 @@ hooks:
     posix:
       shell: sh
       run: |
+        if [ "${DEPLOYER_PRINCIPAL_TYPE}" = "ServicePrincipal" ]; then
+          echo "Deployer is a Service Principal."
+          az login \
+             --client-id "${DEPLOYER_ID}" \
+             --service-principal \
+             --tenant "${AZURE_TENANT_ID}" 
+        fi
         ./hooks/postprovision.sh --force --verbose
         ./hooks/Generate-Orders.sh --force --verbose
       continueOnError: false
