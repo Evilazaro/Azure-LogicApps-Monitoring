@@ -731,11 +731,12 @@ main() {
     # go-sqlcmd can use it directly with --authentication-method ActiveDirectoryAzCli
     # This avoids needing to pass tokens manually
     # Reference: https://github.com/microsoft/go-sqlcmd
+    # Note: -N requires a value in go-sqlcmd (true/false/strict), -l is login timeout
     sql_output=$(sqlcmd \
         -S "tcp:${server_fqdn},1433" \
         -d "$DATABASE_NAME" \
         --authentication-method ActiveDirectoryAzCli \
-        -N \
+        -N true \
         -l "$COMMAND_TIMEOUT" \
         -i "$sql_file" \
         2>&1) || sql_exit_code=$?
