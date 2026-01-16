@@ -144,7 +144,7 @@ flowchart TD
 
 ## 📁 Repository Structure
 
-```
+```text
 ├── app.AppHost/                    # .NET Aspire orchestration
 ├── app.ServiceDefaults/            # Shared cross-cutting concerns
 ├── src/

@@ -31,7 +31,7 @@ IP security restrictions have been implemented at multiple layers:
 
 **File**: `app.AppHost\infra\orders-api.tmpl.yaml`
 
-### Restrictions Applied:
+### Restrictions Applied
 
 - **Virtual Network Traffic**: Allows traffic from VNet (10.0.0.0/16)
 - **Azure Services**: Allows traffic from Azure Cloud services using service tags
@@ -48,7 +48,7 @@ ipSecurityRestrictions:
     description: Allow traffic from Azure services
 ```
 
-### Customization:
+### Customization
 
 To add additional IP ranges, modify the `ipSecurityRestrictions` array in the template file.
 
@@ -56,15 +56,15 @@ To add additional IP ranges, modify the `ipSecurityRestrictions` array in the te
 
 **File**: `infra-old\workload\logic-app.bicep`
 
-### Restrictions Applied:
+### Logic Apps Restrictions Applied
 
-#### Main Site Access:
+#### Main Site Access
 
 - **Virtual Network**: 10.0.0.0/16 (Priority 100)
 - **Azure Services**: Service tag-based access (Priority 200)
 - **Default Action**: Deny all other traffic
 
-#### SCM (Source Control Management) Access:
+#### SCM (Source Control Management) Access
 
 - **Virtual Network**: 10.0.0.0/16 (Priority 100)
 - **Default Action**: Deny all other traffic
@@ -88,7 +88,7 @@ ipSecurityRestrictions: [
 ipSecurityRestrictionsDefaultAction: 'Deny'
 ```
 
-### Customization:
+### Logic Apps Customization
 
 Add additional IP rules by inserting new objects in the `ipSecurityRestrictions` array with appropriate priority values (lower numbers = higher priority).
 
@@ -96,7 +96,7 @@ Add additional IP rules by inserting new objects in the `ipSecurityRestrictions`
 
 **File**: `infra\resources.bicep`
 
-### Restrictions Applied:
+### Container Registry Restrictions
 
 - **Default Action**: Deny
 - **Azure Services Bypass**: Enabled (allows Azure services to access)
@@ -112,7 +112,7 @@ networkRuleSet: {
 networkRuleBypassOptions: 'AzureServices'
 ```
 
-### Customization:
+### Container Registry Customization
 
 To allow specific IP addresses:
 
@@ -140,7 +140,7 @@ virtualNetworkRules: [
 
 **File**: `infra\OrdersDatabase\OrdersDatabase.module.bicep`
 
-### Restrictions Applied:
+### SQL Database Restrictions
 
 - **Azure Services**: Allowed (0.0.0.0 - 0.0.0.0 rule)
 - **Additional Rules**: Template provided for VNet ranges
@@ -156,7 +156,7 @@ resource sqlFirewallRule_AllowAllAzureIps 'Microsoft.Sql/servers/firewallRules@2
 }
 ```
 
-### Customization:
+### SQL Database Customization
 
 Uncomment and modify the template to add VNet or specific IP ranges:
 
@@ -188,7 +188,7 @@ resource sqlFirewallRule_ClientIP 'Microsoft.Sql/servers/firewallRules@2023-08-0
 
 **File**: `infra-old\shared\data\main.bicep`
 
-### Restrictions Applied:
+### Storage Account Restrictions
 
 - **Default Action**: Deny
 - **Bypass**: Azure Services, Logging, Metrics
@@ -204,7 +204,7 @@ networkAcls: {
 }
 ```
 
-### Customization:
+### Storage Account Customization
 
 Add IP addresses:
 
@@ -257,7 +257,7 @@ virtualNetworkRules: [
 
 ## 🔧 Troubleshooting
 
-### Common Issues:
+### Common Issues
 
 1. **Cannot access from Azure Portal**
 

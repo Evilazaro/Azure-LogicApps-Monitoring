@@ -10,8 +10,8 @@
 - [🎯 Observability Strategy](#-2-observability-strategy)
 - [📊 Telemetry Architecture](#-3-telemetry-architecture)
 - [🔍 Distributed Tracing](#-4-distributed-tracing)
-- [� Logic Apps Workflow Observability](#-logic-apps-workflow-observability)
-- [�📈 Metrics](#-5-metrics)
+- [🔄 Logic Apps Workflow Observability](#-logic-apps-workflow-observability)
+- [📈 Metrics](#-5-metrics)
 - [📝 Logs](#-6-logs)
 - [⚙️ Platform Components](#%EF%B8%8F-7-platform-components)
 - [🚨 Alerting and Incident Response](#-8-alerting-and-incident-response)
@@ -184,7 +184,7 @@ if (activity != null)
 
 ---
 
-## � Logic Apps Workflow Observability
+## 🔄 Logic Apps Workflow Observability
 
 ### Workflow Telemetry Overview
 

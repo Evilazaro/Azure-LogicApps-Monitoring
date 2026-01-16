@@ -35,10 +35,10 @@ By supporting multiple execution modes (interactive, force, preview, verbose), t
   - [🔄 Example 1: Generate Test Data for Development](#example-1-generate-test-data-for-development)
   - [🔁 Example 2: CI/CD Pipeline Integration](#example-2-cicd-pipeline-integration)
   - [📊 Example 3: Load Testing Data Generation](#example-3-load-testing-data-generation)
-- [� How It Works](#-how-it-works)
+- [🛠️ How It Works](#%EF%B8%8F-how-it-works)
   - [🔄 Internal Process Flow](#internal-process-flow)
   - [🔗 Integration Points](#integration-points)
-- [�📖 Related Documentation](#-related-documentation)
+- [📖 Related Documentation](#-related-documentation)
 - [🔐 Security Considerations](#-security-considerations)
 - [🎓 Best Practices](#-best-practices)
 - [📊 Performance](#-performance)
@@ -481,7 +481,7 @@ Get-Item ..\infra\data\ordersBatch.json | Select-Object Length, @{N='SizeKB';E={
 ls -lh ../infra/data/ordersBatch.json
 ```
 
-## � How It Works
+## 🛠️ How It Works
 
 ### Internal Process Flow
 
@@ -597,7 +597,7 @@ flowchart LR
 | **Outputs**      | • **Exit Code:** `0` (success) or `1` (failure)<br/>• **File:** JSON array of order objects<br/>• **Console:** Progress updates and summary                               |
 | **Data Schema**  | • **Order ID:** `ORD-{12 hex chars}`<br/>• **Customer ID:** `CUST-{8 hex chars}`<br/>• **Product ID:** `OP-{12 hex chars}`<br/>• **Date Range:** 2024-01-01 to 2025-12-31 |
 
-## �📖 Related Documentation
+## 📖 Related Documentation
 
 - **[postprovision.md](./postprovision.md)** - Configures secrets after Azure deployment
 - **[deploy-workflow.md](./deploy-workflow.md)** - Deploys Logic Apps workflows (uses generated data)
