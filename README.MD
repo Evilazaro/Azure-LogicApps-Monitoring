@@ -221,6 +221,8 @@ Azure-LogicApps-Monitoring/
 
 ### 🏗️ Architecture Documentation
 
+TOGAF-aligned enterprise architecture documentation covering the complete solution design. The architecture docs demonstrate enterprise-grade observability patterns for Azure Logic Apps Standard workflows, featuring OpenTelemetry instrumentation, event-driven messaging with Service Bus, and Infrastructure as Code with Bicep.
+
 | Document | Description |
 |:---------|:------------|
 | [Architecture Overview](docs/architecture/README.md) | High-level architecture with diagrams |
@@ -234,6 +236,8 @@ Azure-LogicApps-Monitoring/
 
 ### 📝 Architecture Decision Records
 
+ADRs document significant architectural decisions made during the design and development of the solution. Each record captures the context, decision, consequences, and rationale for specific architectural choices following a standardized template.
+
 | ADR | Decision |
 |:----|:---------|
 | [ADR-001](docs/architecture/adr/ADR-001-aspire-orchestration.md) | .NET Aspire for Service Orchestration |
@@ -241,6 +245,8 @@ Azure-LogicApps-Monitoring/
 | [ADR-003](docs/architecture/adr/ADR-003-observability-strategy.md) | OpenTelemetry with Azure Monitor |
 
 ### 📚 Additional Documentation
+
+Comprehensive guides for CI/CD pipelines with GitHub Actions and cross-platform automation scripts. The DevOps documentation covers OIDC authentication and reusable workflows, while the hooks guide details PowerShell and Bash scripts for environment validation, secret management, and test data generation.
 
 | Document | Description |
 |:---------|:------------|
