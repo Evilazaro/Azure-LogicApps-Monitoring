@@ -175,8 +175,34 @@ cleanup() {
 
 #region Main
 
+# Global flags
+FORCE=false
+VERBOSE=false
+
 main() {
-    local workflow_path="${1:-}"
+    local workflow_path=""
+    
+    # Parse command line arguments
+    while [[ $# -gt 0 ]]; do
+        case "$1" in
+            --force|-f)
+                FORCE=true
+                shift
+                ;;
+            --verbose|-v)
+                VERBOSE=true
+                shift
+                ;;
+            -*)
+                write_log "Unknown option: $1" Warning
+                shift
+                ;;
+            *)
+                workflow_path="$1"
+                shift
+                ;;
+        esac
+    done
     
     # Set up cleanup trap
     trap cleanup EXIT

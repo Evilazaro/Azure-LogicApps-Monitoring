@@ -134,16 +134,26 @@ jobs:
 
       - name: 📦 Install Prerequisites
         run: |
-          sudo apt-get update && \
-               sudo apt-get install -y jq && \
-               sudo apt-get install -y dos2unix
+          sudo apt-get update
+          sudo apt-get install -y jq dos2unix software-properties-common
 
           # Install go-sqlcmd (modern sqlcmd with Azure AD authentication support)
           # Reference: https://github.com/microsoft/go-sqlcmd
+          # Note: go-sqlcmd is required for --authentication-method ActiveDirectoryAzCli
           curl -sSL https://packages.microsoft.com/keys/microsoft.asc | sudo tee /etc/apt/trusted.gpg.d/microsoft.asc > /dev/null
-          sudo add-apt-repository "$(curl -sSL https://packages.microsoft.com/config/ubuntu/22.04/prod.list)"
+          curl -sSL https://packages.microsoft.com/config/ubuntu/$(lsb_release -rs)/prod.list | sudo tee /etc/apt/sources.list.d/mssql-release.list > /dev/null
           sudo apt-get update
+
+          # Remove any existing ODBC sqlcmd to avoid conflicts
+          sudo apt-get remove -y mssql-tools mssql-tools18 2>/dev/null || true
+
+          # Install go-sqlcmd
           sudo apt-get install -y sqlcmd
+
+          # Verify go-sqlcmd is installed
+          echo "Verifying sqlcmd installation..."
+          which sqlcmd
+          sqlcmd --version
 
       - name: 🔧 Install Azure Developer CLI
         uses: Azure/setup-azd@v2

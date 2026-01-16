@@ -30,7 +30,13 @@
 param(
     [Parameter(Position = 0)]
     [ValidateScript({ $_ -eq '' -or (Test-Path -Path $_ -PathType Container) })]
-    [string]$WorkflowPath
+    [string]$WorkflowPath,
+
+    [Parameter()]
+    [switch]$Force,
+
+    [Parameter()]
+    [switch]$Verbose
 )
 
 $ErrorActionPreference = 'Stop'
