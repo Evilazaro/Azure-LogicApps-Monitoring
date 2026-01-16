@@ -141,15 +141,19 @@ flowchart LR
     class webapp_url,resource_group output
 ```
 
+---
+
 ## 🎯 Triggers
 
 | Event | Condition | Description |
-|-------|-----------|-------------|
+|:------|:----------|:------------|
 | `push` | Branch: `main` | Triggers on push to main branch |
 | `push` | Paths: `src/**`, `app.*/**`, `infra/**`, `azure.yaml`, workflow file | Only runs when relevant files change |
 | `workflow_dispatch` | Manual | Allows manual triggering with optional skip-ci input |
 
 ### Path Filters
+
+The workflow monitors changes to these paths:
 
 ```yaml
 paths:
@@ -163,8 +167,12 @@ paths:
 ### Manual Dispatch Inputs
 
 | Input | Type | Default | Description |
-|-------|------|---------|-------------|
+|:------|:-----|:--------|:------------|
 | `skip-ci` | `boolean` | `false` | Skip CI checks (use with caution) |
+
+> ⚠️ **Warning:** Skipping CI should only be used for emergency deployments or when CI has been validated separately.
+
+---
 
 ## 📋 Jobs & Steps
 
@@ -173,7 +181,7 @@ paths:
 **Condition:** Runs unless `skip-ci` is `true`
 
 | Property | Value |
-|----------|-------|
+|:---------|:------|
 | **Type** | Reusable workflow call |
 | **Workflow** | `.github/workflows/ci-dotnet-reusable.yml` |
 | **Configuration** | `Release` |
@@ -184,7 +192,7 @@ paths:
 **Condition:** Runs when CI succeeds or is skipped
 
 | Property | Value |
-|----------|-------|
+|:---------|:------|
 | **Runner** | `ubuntu-latest` |
 | **Timeout** | 30 minutes |
 | **Environment** | `dev` |
@@ -193,9 +201,9 @@ paths:
 #### Steps Overview
 
 | Phase | Step | Description |
-|-------|------|-------------|
+|:------|:-----|:------------|
 | **Setup** | 📥 Checkout repository | Clones the repository |
-| **Setup** | 📦 Install Prerequisites | Installs jq, dos2unix, go-sqlcmd |
+| **Setup** | 📦 Install Prerequisites | Installs `jq`, `dos2unix`, `go-sqlcmd` |
 | **Setup** | 🔧 Install Azure Developer CLI | Sets up azd |
 | **Setup** | 🔧 Setup .NET SDK | Installs .NET 10.0.x |
 | **Auth** | 🔐 Log in with Azure (OIDC) | Authenticates azd with federated credentials |
@@ -208,7 +216,7 @@ paths:
 #### Job Outputs
 
 | Output | Description |
-|--------|-------------|
+|:-------|:------------|
 | `webapp-url` | URL of the deployed web application |
 | `resource-group` | Name of the Azure resource group |
 
@@ -217,7 +225,7 @@ paths:
 **Condition:** Always runs
 
 | Property | Value |
-|----------|-------|
+|:---------|:------|
 | **Runner** | `ubuntu-latest` |
 | **Timeout** | 5 minutes |
 | **Needs** | `ci`, `deploy-dev` |
