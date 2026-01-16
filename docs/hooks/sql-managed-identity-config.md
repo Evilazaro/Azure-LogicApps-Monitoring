@@ -383,9 +383,7 @@ az sql server ad-admin list \
 
 | Version | Date       | Changes                                                                                       |
 | ------- | ---------- | --------------------------------------------------------------------------------------------- |
-| 1.0.2   | 2026-01-16 | Added preference backup/restore pattern in PowerShell, added `-CommandType Application` to `Get-Command` calls, added IFS protection in Bash |
-| 1.0.1   | 2025-01-13 | PSScriptAnalyzer compliance: renamed functions, improved logging, UTF-8 BOM                   |
-| 1.0.0   | 2026-01-06 | Initial release with PowerShell Core and Bash support                                         |
+| 1.0.0   | 2026-01-06 | Initial release with PowerShell Core and Bash support, preference backup/restore pattern, `-CommandType Application` to `Get-Command` calls, IFS protection in Bash |
 
 ---
 
