@@ -46,11 +46,13 @@ This is a reusable workflow that builds, tests, and analyzes .NET solutions. It 
 title: CI - .NET Reusable Workflow Pipeline
 ---
 flowchart LR
-    subgraph Trigger["🎯 Trigger"]
-        workflow_call([workflow_call])
+    %% ===== TRIGGER =====
+    subgraph TriggerGroup["🎯 Trigger"]
+        workflow_call(["workflow_call"])
     end
 
-    subgraph Inputs["⚙️ Inputs"]
+    %% ===== INPUT PARAMETERS =====
+    subgraph InputsGroup["⚙️ Inputs"]
         direction LR
         config[/"configuration"/]
         dotnet[/"dotnet-version"/]
@@ -59,137 +61,155 @@ flowchart LR
         analysis_flag[/"enable-code-analysis"/]
     end
 
-    subgraph Build["🔨 Build Job"]
+    %% ===== BUILD JOB =====
+    subgraph BuildJob["🔨 Build Job"]
         direction LR
-        b_checkout["📥 Checkout"]
-        b_setup["🔧 Setup .NET SDK"]
-        b_workload["☁️ Update Workloads"]
-        b_version["🏷️ Generate Version"]
-        b_restore["📥 Restore Dependencies"]
-        b_build["🔨 Build Solution"]
-        b_upload["📤 Upload Artifacts"]
-        b_summary["📊 Build Summary"]
+        b_checkout["Checkout Repository"]
+        b_setup["Setup .NET SDK"]
+        b_workload["Update Workloads"]
+        b_version["Generate Version"]
+        b_restore["Restore Dependencies"]
+        b_build["Build Solution"]
+        b_upload["Upload Artifacts"]
+        b_summary["Build Summary"]
     end
 
-    subgraph Test["🧪 Test Job"]
+    %% ===== TEST JOB =====
+    subgraph TestJob["🧪 Test Job"]
         direction LR
         
-        subgraph Matrix["Matrix Strategy"]
+        subgraph MatrixStrategy["Matrix Strategy"]
             ubuntu["Ubuntu"]
             windows["Windows"]
             macos["macOS"]
         end
         
-        t_checkout["📥 Checkout"]
-        t_setup["🔧 Setup .NET SDK"]
-        t_workload["☁️ Update Workloads"]
-        t_restore["📥 Restore Dependencies"]
-        t_build["🔨 Build Solution"]
-        t_test["🧪 Run Tests + Coverage"]
-        t_report["📋 Publish Results"]
-        t_upload["📤 Upload Artifacts"]
-        t_summary["📊 Test Summary"]
+        t_checkout["Checkout Repository"]
+        t_setup["Setup .NET SDK"]
+        t_workload["Update Workloads"]
+        t_restore["Restore Dependencies"]
+        t_build["Build Solution"]
+        t_test["Run Tests + Coverage"]
+        t_report["Publish Results"]
+        t_upload["Upload Artifacts"]
+        t_summary["Test Summary"]
     end
 
-    subgraph Analyze["🔍 Analyze Job"]
+    %% ===== ANALYZE JOB =====
+    subgraph AnalyzeJob["🔍 Analyze Job"]
         direction LR
-        a_checkout["📥 Checkout"]
-        a_setup["🔧 Setup .NET SDK"]
-        a_workload["☁️ Update Workloads"]
-        a_restore["📥 Restore Dependencies"]
-        a_format["🎨 Verify Formatting"]
-        a_summary["📊 Analysis Summary"]
-        a_fail["❌ Fail on Issues"]
+        a_checkout["Checkout Repository"]
+        a_setup["Setup .NET SDK"]
+        a_workload["Update Workloads"]
+        a_restore["Restore Dependencies"]
+        a_format["Verify Formatting"]
+        a_summary["Analysis Summary"]
+        a_fail["Fail on Issues"]
     end
 
-    subgraph Summary["📊 Summary Job"]
-        s_generate["📊 Generate Summary"]
+    %% ===== SUMMARY JOB =====
+    subgraph SummaryJob["📊 Summary Job"]
+        s_generate["Generate Summary"]
     end
 
-    subgraph Failure["❌ Failure Handler"]
-        f_report["❌ Report Failure"]
+    %% ===== FAILURE HANDLER =====
+    subgraph FailureJob["❌ Failure Handler"]
+        f_report["Report Failure"]
     end
 
-    subgraph Outputs["📤 Outputs"]
+    %% ===== WORKFLOW OUTPUTS =====
+    subgraph OutputsGroup["📤 Outputs"]
         out_version[/"build-version"/]
         out_build[/"build-result"/]
         out_test[/"test-result"/]
         out_analyze[/"analyze-result"/]
     end
 
-    subgraph Artifacts["📦 Artifacts"]
-        art_build[/"📁 build-artifacts"/]
-        art_test[/"📋 test-results"/]
-        art_cov[/"📊 code-coverage"/]
+    %% ===== ARTIFACTS =====
+    subgraph ArtifactsGroup["📦 Artifacts"]
+        art_build[/"build-artifacts"/]
+        art_test[/"test-results"/]
+        art_cov[/"code-coverage"/]
     end
 
-    %% Trigger flow
-    workflow_call --> Inputs
-    Inputs --> b_checkout
+    %% Trigger flow - workflow initialization
+    workflow_call -->|receives| InputsGroup
+    InputsGroup -->|configures| b_checkout
 
-    %% Build flow
-    b_checkout --> b_setup
-    b_setup --> b_workload
-    b_workload --> b_version
-    b_version --> b_restore
-    b_restore --> b_build
-    b_build --> b_upload
-    b_upload --> b_summary
-    b_build --> out_version
+    %% Build flow - compile and package
+    b_checkout -->|clone repo| b_setup
+    b_setup -->|install SDK| b_workload
+    b_workload -->|update| b_version
+    b_version -->|set version| b_restore
+    b_restore -->|restore packages| b_build
+    b_build -->|compile| b_upload
+    b_upload -->|store artifacts| b_summary
+    b_build -->|outputs| out_version
 
-    %% Test flow (depends on build)
-    b_summary --> t_checkout
-    matrix_flag -.->|if enabled| Matrix
-    Matrix --> t_checkout
-    t_checkout --> t_setup
-    t_setup --> t_workload
-    t_workload --> t_restore
-    t_restore --> t_build
-    t_build --> t_test
-    t_test --> t_report
-    t_report --> t_upload
-    t_upload --> t_summary
+    %% Test flow - depends on build completion
+    b_summary -->|on success| t_checkout
+    matrix_flag -.->|if enabled| MatrixStrategy
+    MatrixStrategy -->|parallel runs| t_checkout
+    t_checkout -->|clone repo| t_setup
+    t_setup -->|install SDK| t_workload
+    t_workload -->|update| t_restore
+    t_restore -->|restore packages| t_build
+    t_build -->|compile| t_test
+    t_test -->|execute tests| t_report
+    t_report -->|publish| t_upload
+    t_upload -->|store results| t_summary
 
-    %% Analyze flow (depends on build)
-    b_summary --> a_checkout
+    %% Analyze flow - depends on build completion
+    b_summary -->|on success| a_checkout
     analysis_flag -.->|if enabled| a_checkout
-    a_checkout --> a_setup
-    a_setup --> a_workload
-    a_workload --> a_restore
-    a_restore --> a_format
-    a_format --> a_summary
-    a_summary --> a_fail
+    a_checkout -->|clone repo| a_setup
+    a_setup -->|install SDK| a_workload
+    a_workload -->|update| a_restore
+    a_restore -->|restore packages| a_format
+    a_format -->|check format| a_summary
+    a_summary -->|evaluate| a_fail
 
-    %% Summary flow
-    t_summary --> s_generate
-    a_summary --> s_generate
+    %% Summary flow - aggregate all results
+    t_summary -->|report status| s_generate
+    a_summary -->|report status| s_generate
 
-    %% Failure flow
-    t_test --x f_report
-    a_format --x f_report
+    %% Failure flow - error paths
+    t_test --x|on failure| f_report
+    a_format --x|on failure| f_report
 
-    %% Outputs
-    b_summary --> out_build
-    t_summary --> out_test
-    a_summary --> out_analyze
+    %% Output connections - export results
+    b_summary -->|outputs| out_build
+    t_summary -->|outputs| out_test
+    a_summary -->|outputs| out_analyze
 
-    %% Artifacts
-    b_upload --> art_build
-    t_upload --> art_test
-    t_upload --> art_cov
+    %% Artifact connections - store files
+    b_upload -->|stores| art_build
+    t_upload -->|stores| art_test
+    t_upload -->|stores| art_cov
 
-    %% Styling
-    classDef trigger fill:#2196F3,stroke:#1565C0,color:#fff
-    classDef input fill:#E1BEE7,stroke:#7B1FA2,color:#000
-    classDef build fill:#FF9800,stroke:#E65100,color:#fff
-    classDef test fill:#9C27B0,stroke:#6A1B9A,color:#fff
-    classDef analyze fill:#00BCD4,stroke:#00838F,color:#fff
-    classDef summary fill:#4CAF50,stroke:#2E7D32,color:#fff
-    classDef failed fill:#F44336,stroke:#C62828,color:#fff
-    classDef output fill:#8BC34A,stroke:#558B2F,color:#fff
-    classDef artifact fill:#FFEB3B,stroke:#F57F17,color:#000
-    classDef matrix fill:#B2EBF2,stroke:#00838F,color:#000
+    %% ===== STYLING DEFINITIONS =====
+    %% Triggers: Blue - entry points
+    classDef trigger fill:#2196F3,stroke:#1565C0,color:#FFFFFF
+    %% Inputs: Light purple - parameters
+    classDef input fill:#E1BEE7,stroke:#7B1FA2,color:#000000
+    %% Build steps: Orange - compilation
+    classDef build fill:#FF9800,stroke:#E65100,color:#FFFFFF
+    %% Test steps: Purple - testing
+    classDef test fill:#9C27B0,stroke:#6A1B9A,color:#FFFFFF
+    %% Analyze steps: Cyan - code analysis
+    classDef analyze fill:#00BCD4,stroke:#00838F,color:#FFFFFF
+    %% Summary: Green - reporting
+    classDef summary fill:#4CAF50,stroke:#2E7D32,color:#FFFFFF
+    %% Failed states: Red - error handling
+    classDef failed fill:#F44336,stroke:#C62828,color:#FFFFFF
+    %% Outputs: Light green - results
+    classDef output fill:#8BC34A,stroke:#558B2F,color:#FFFFFF
+    %% Artifacts: Yellow - stored files
+    classDef artifact fill:#FFEB3B,stroke:#F57F17,color:#000000
+    %% Matrix: Light cyan - parallel execution
+    classDef matrix fill:#B2EBF2,stroke:#00838F,color:#000000
 
+    %% Apply styles to nodes
     class workflow_call trigger
     class config,dotnet,solution,matrix_flag,analysis_flag input
     class b_checkout,b_setup,b_workload,b_version,b_restore,b_build,b_upload,b_summary build
@@ -199,7 +219,7 @@ flowchart LR
     class f_report failed
     class out_version,out_build,out_test,out_analyze output
     class art_build,art_test,art_cov artifact
-    class ubuntu,windows,macos,Matrix matrix
+    class ubuntu,windows,macos,MatrixStrategy matrix
 ```
 
 ---
@@ -501,19 +521,22 @@ dotnet format app.sln --include "**/*.cs"
 title: CI Job Dependencies
 ---
 flowchart LR
-    build(["🔨 Build"]) --> test(["🧪 Test"])
-    build --> analyze(["🔍 Analyze"])
-    test --> summary(["📊 Summary"])
-    analyze --> summary
-    test --x failure(["❌ Failed"])
-    analyze --x failure
+    %% ===== JOB DEPENDENCY GRAPH =====
+    build(["Build"]) -->|triggers| test(["Test"])
+    build -->|triggers| analyze(["Analyze"])
+    test -->|reports to| summary(["Summary"])
+    analyze -->|reports to| summary
+    test --x|on failure| failure(["Failed"])
+    analyze --x|on failure| failure
 
-    classDef build fill:#FF9800,stroke:#E65100,color:#fff
-    classDef test fill:#9C27B0,stroke:#6A1B9A,color:#fff
-    classDef analyze fill:#00BCD4,stroke:#00838F,color:#fff
-    classDef summary fill:#4CAF50,stroke:#2E7D32,color:#fff
-    classDef failed fill:#F44336,stroke:#C62828,color:#fff
+    %% ===== STYLING DEFINITIONS =====
+    classDef build fill:#FF9800,stroke:#E65100,color:#FFFFFF
+    classDef test fill:#9C27B0,stroke:#6A1B9A,color:#FFFFFF
+    classDef analyze fill:#00BCD4,stroke:#00838F,color:#FFFFFF
+    classDef summary fill:#4CAF50,stroke:#2E7D32,color:#FFFFFF
+    classDef failed fill:#F44336,stroke:#C62828,color:#FFFFFF
 
+    %% Apply styles to nodes
     class build build
     class test test
     class analyze analyze

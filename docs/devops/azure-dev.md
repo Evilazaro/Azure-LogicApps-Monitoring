@@ -41,98 +41,114 @@ This workflow provisions Azure infrastructure and deploys the .NET application u
 title: CD - Azure Deployment Pipeline
 ---
 flowchart LR
+    %% ===== TRIGGER EVENTS =====
     subgraph Triggers["🎯 Triggers"]
-        push([Push to main])
-        manual([Manual Dispatch])
+        push(["Push to Main"])
+        manual(["Manual Dispatch"])
     end
 
+    %% ===== CONDITION CHECKS =====
     subgraph Conditions["⚙️ Conditions"]
-        skip_ci{Skip CI?}
+        skip_ci{"Skip CI?"}
     end
 
+    %% ===== CI STAGE =====
     subgraph CI["🔄 CI Stage"]
-        ci_job[["🔄 CI Reusable Workflow"]]
+        ci_job[["CI Reusable Workflow"]]
     end
 
+    %% ===== DEPLOYMENT STAGE =====
     subgraph Deploy["🚀 Deploy Stage"]
         direction LR
         
-        subgraph Setup["📦 Phase 1: Setup"]
-            checkout["📥 Checkout"]
-            prereq["📦 Install Prerequisites"]
-            azd_install["🔧 Install Azure Developer CLI"]
-            dotnet_setup["🔧 Setup .NET SDK"]
+        subgraph SetupPhase["📦 Phase 1: Setup"]
+            checkout["Checkout Repository"]
+            prereq["Install Prerequisites"]
+            azd_install["Install Azure Developer CLI"]
+            dotnet_setup["Setup .NET SDK"]
         end
         
-        subgraph Auth["🔐 Phase 2: Authentication"]
-            azd_auth["🔐 AZD Login (OIDC)"]
-            az_login["🔑 Azure CLI Login"]
+        subgraph AuthPhase["🔐 Phase 2: Authentication"]
+            azd_auth["AZD Login via OIDC"]
+            az_login["Azure CLI Login"]
         end
         
-        subgraph Provision["🏗️ Phase 3: Provision & Deploy"]
-            provision["🏗️ Provision Infrastructure"]
-            reauth["🔐 Re-authenticate"]
-            deploy_app["🚀 Deploy Application"]
+        subgraph ProvisionPhase["🏗️ Phase 3: Provision & Deploy"]
+            provision["Provision Infrastructure"]
+            reauth["Re-authenticate Session"]
+            deploy_app["Deploy Application"]
         end
         
-        subgraph Summary["📊 Phase 4: Summary"]
-            gen_summary["📊 Generate Summary"]
+        subgraph SummaryPhase["📊 Phase 4: Summary"]
+            gen_summary["Generate Summary"]
         end
     end
 
+    %% ===== RESULTS =====
     subgraph Results["📊 Final Results"]
-        summary_job(["📊 Workflow Summary"])
-        failure_handler(["❌ Handle Failure"])
+        summary_job(["Workflow Summary"])
+        failure_handler(["Handle Failure"])
     end
 
-    subgraph Outputs["📤 Outputs"]
-        webapp_url[/"🌐 Web App URL"/]
-        resource_group[/"📁 Resource Group"/]
+    %% ===== OUTPUTS =====
+    subgraph OutputsGroup["📤 Outputs"]
+        webapp_url[/"Web App URL"/]
+        resource_group[/"Resource Group Name"/]
     end
 
-    %% Trigger flow
-    push --> skip_ci
-    manual --> skip_ci
+    %% Trigger flow - events initiate pipeline
+    push -->|triggers| skip_ci
+    manual -->|triggers| skip_ci
     
-    %% CI decision
-    skip_ci -->|No| ci_job
-    skip_ci -->|Yes| checkout
-    ci_job --> checkout
+    %% CI decision - conditional execution
+    skip_ci -->|run CI| ci_job
+    skip_ci -->|skip to deploy| checkout
+    ci_job -->|on success| checkout
     
-    %% Deploy flow
-    checkout --> prereq
-    prereq --> azd_install
-    azd_install --> dotnet_setup
-    dotnet_setup --> azd_auth
-    azd_auth --> az_login
-    az_login --> provision
-    provision --> reauth
-    reauth --> deploy_app
-    deploy_app --> gen_summary
+    %% Deploy flow - sequential setup and deployment
+    checkout -->|clone repo| prereq
+    prereq -->|install tools| azd_install
+    azd_install -->|configure| dotnet_setup
+    dotnet_setup -->|authenticate| azd_auth
+    azd_auth -->|login| az_login
+    az_login -->|run azd provision| provision
+    provision -->|refresh tokens| reauth
+    reauth -->|run azd deploy| deploy_app
+    deploy_app -->|create report| gen_summary
     
-    %% Summary flow
-    gen_summary --> summary_job
-    ci_job --> summary_job
+    %% Summary flow - aggregate results
+    gen_summary -->|report| summary_job
+    ci_job -->|status| summary_job
     
-    %% Failure flow
-    ci_job --x failure_handler
-    deploy_app --x failure_handler
+    %% Failure flow - error handling paths
+    ci_job --x|on failure| failure_handler
+    deploy_app --x|on failure| failure_handler
     
-    %% Output flow
-    deploy_app --> webapp_url
-    deploy_app --> resource_group
+    %% Output flow - capture deployment outputs
+    deploy_app -->|outputs| webapp_url
+    deploy_app -->|outputs| resource_group
 
-    %% Styling
-    classDef trigger fill:#2196F3,stroke:#1565C0,color:#fff
-    classDef condition fill:#FFC107,stroke:#F57F17,color:#000
-    classDef build fill:#FF9800,stroke:#E65100,color:#fff
-    classDef deploy fill:#4CAF50,stroke:#2E7D32,color:#fff
-    classDef auth fill:#673AB7,stroke:#4527A0,color:#fff
-    classDef reusable fill:#607D8B,stroke:#455A64,color:#fff,stroke-dasharray: 5 5
-    classDef failed fill:#F44336,stroke:#C62828,color:#fff
-    classDef summary fill:#00BCD4,stroke:#00838F,color:#fff
-    classDef output fill:#8BC34A,stroke:#558B2F,color:#fff
+    %% ===== STYLING DEFINITIONS =====
+    %% Triggers: Blue - entry points
+    classDef trigger fill:#2196F3,stroke:#1565C0,color:#FFFFFF
+    %% Conditions: Yellow - decision points
+    classDef condition fill:#FFC107,stroke:#F57F17,color:#000000
+    %% Build steps: Orange - setup tasks
+    classDef build fill:#FF9800,stroke:#E65100,color:#FFFFFF
+    %% Deploy steps: Green - deployment actions
+    classDef deploy fill:#4CAF50,stroke:#2E7D32,color:#FFFFFF
+    %% Auth steps: Purple - authentication
+    classDef auth fill:#673AB7,stroke:#4527A0,color:#FFFFFF
+    %% Reusable workflows: Gray dashed - external calls
+    classDef reusable fill:#607D8B,stroke:#455A64,color:#FFFFFF,stroke-dasharray: 5 5
+    %% Failed states: Red - error handling
+    classDef failed fill:#F44336,stroke:#C62828,color:#FFFFFF
+    %% Summary: Cyan - reporting
+    classDef summary fill:#00BCD4,stroke:#00838F,color:#FFFFFF
+    %% Outputs: Light green - data outputs
+    classDef output fill:#8BC34A,stroke:#558B2F,color:#FFFFFF
 
+    %% Apply styles to nodes
     class push,manual trigger
     class skip_ci condition
     class ci_job reusable

@@ -42,65 +42,78 @@ This workflow orchestrates the CI pipeline by calling the reusable workflow. It 
 title: CI - .NET Build and Test Pipeline
 ---
 flowchart LR
-    subgraph Triggers["🎯 Triggers"]
-        push([Push to branches])
-        pr([Pull Request to main])
-        manual([Manual Dispatch])
+    %% ===== TRIGGER EVENTS =====
+    subgraph TriggersGroup["🎯 Triggers"]
+        push(["Push to Branches"])
+        pr(["Pull Request to Main"])
+        manual(["Manual Dispatch"])
     end
 
-    subgraph Inputs["⚙️ Manual Inputs"]
-        config{{"Configuration<br/>(Release/Debug)"}}
-        analysis{{"Enable Code Analysis"}}
-        matrix{{"Enable Matrix Testing"}}
+    %% ===== MANUAL INPUTS =====
+    subgraph InputsGroup["⚙️ Manual Inputs"]
+        config{"Configuration"}
+        analysis{"Enable Code Analysis"}
+        matrix{"Enable Matrix Testing"}
     end
 
-    subgraph CI["🔄 CI Pipeline"]
-        ci_call[["🚀 CI Reusable Workflow"]]
+    %% ===== CI PIPELINE =====
+    subgraph CIPipeline["🔄 CI Pipeline"]
+        ci_call[["CI Reusable Workflow"]]
         
-        subgraph Jobs["Reusable Workflow Jobs"]
-            build(["🔨 Build"])
-            test(["🧪 Test"])
-            analyze(["🔍 Analyze"])
-            summary(["📊 Summary"])
+        subgraph JobsGroup["Reusable Workflow Jobs"]
+            build(["Build"])
+            test(["Test"])
+            analyze(["Analyze"])
+            summary(["Summary"])
         end
     end
 
-    subgraph Artifacts["📦 Artifacts"]
-        build_art[/"📁 build-artifacts"/]
-        test_art[/"📋 test-results"/]
-        cov_art[/"📊 code-coverage"/]
+    %% ===== ARTIFACTS =====
+    subgraph ArtifactsGroup["📦 Artifacts"]
+        build_art[/"build-artifacts"/]
+        test_art[/"test-results"/]
+        cov_art[/"code-coverage"/]
     end
 
-    %% Trigger flow
-    push --> ci_call
-    pr --> ci_call
-    manual --> config
-    config --> ci_call
-    analysis -.-> ci_call
-    matrix -.-> ci_call
+    %% Trigger flow - events initiate pipeline
+    push -->|triggers| ci_call
+    pr -->|triggers| ci_call
+    manual -->|configures| config
+    config -->|passes to| ci_call
+    analysis -.->|optional| ci_call
+    matrix -.->|optional| ci_call
 
-    %% CI flow
-    ci_call --> build
-    build --> test
-    build --> analyze
-    test --> summary
-    analyze --> summary
+    %% CI flow - job execution sequence
+    ci_call -->|starts| build
+    build -->|on success| test
+    build -->|on success| analyze
+    test -->|reports to| summary
+    analyze -->|reports to| summary
 
-    %% Artifact flow
-    build --> build_art
-    test --> test_art
-    test --> cov_art
+    %% Artifact flow - store outputs
+    build -->|stores| build_art
+    test -->|stores| test_art
+    test -->|stores| cov_art
 
-    %% Styling
-    classDef trigger fill:#2196F3,stroke:#1565C0,color:#fff
-    classDef input fill:#FFC107,stroke:#F57F17,color:#000
-    classDef reusable fill:#607D8B,stroke:#455A64,color:#fff,stroke-dasharray: 5 5
-    classDef build fill:#FF9800,stroke:#E65100,color:#fff
-    classDef test fill:#9C27B0,stroke:#6A1B9A,color:#fff
-    classDef analyze fill:#00BCD4,stroke:#00838F,color:#fff
-    classDef summary fill:#4CAF50,stroke:#2E7D32,color:#fff
-    classDef artifact fill:#8BC34A,stroke:#558B2F,color:#fff
+    %% ===== STYLING DEFINITIONS =====
+    %% Triggers: Blue - entry points
+    classDef trigger fill:#2196F3,stroke:#1565C0,color:#FFFFFF
+    %% Inputs: Yellow - user decisions
+    classDef input fill:#FFC107,stroke:#F57F17,color:#000000
+    %% Reusable workflows: Gray dashed - external calls
+    classDef reusable fill:#607D8B,stroke:#455A64,color:#FFFFFF,stroke-dasharray: 5 5
+    %% Build steps: Orange - compilation
+    classDef build fill:#FF9800,stroke:#E65100,color:#FFFFFF
+    %% Test steps: Purple - testing
+    classDef test fill:#9C27B0,stroke:#6A1B9A,color:#FFFFFF
+    %% Analyze steps: Cyan - code analysis
+    classDef analyze fill:#00BCD4,stroke:#00838F,color:#FFFFFF
+    %% Summary: Green - reporting
+    classDef summary fill:#4CAF50,stroke:#2E7D32,color:#FFFFFF
+    %% Artifacts: Light green - stored files
+    classDef artifact fill:#8BC34A,stroke:#558B2F,color:#FFFFFF
 
+    %% Apply styles to nodes
     class push,pr,manual trigger
     class config,analysis,matrix input
     class ci_call reusable
