@@ -255,7 +255,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: ${{ inputs.enable-matrix && fromJson('["ubuntu-latest", "windows-latest", "macos-latest"]') || fromJson('["ubuntu-latest"]') }}
+        os: [ubuntu-latest, windows-latest, macos-latest]
 
     steps:
       # ------------------------------------------------------------------
@@ -325,7 +325,7 @@ jobs:
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         if: always()
         with:
-          name: ${{ inputs.test-results-artifact-name }}
+          name: ${{ inputs.test-results-artifact-name }}-${{ matrix.os }}
           path: ${{ github.workspace }}/TestResults
           retention-days: ${{ inputs.artifact-retention-days }}
 
@@ -333,7 +333,7 @@ jobs:
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         if: always()
         with:
-          name: ${{ inputs.coverage-artifact-name }}
+          name: ${{ inputs.coverage-artifact-name }}-${{ matrix.os }}
           path: ${{ github.workspace }}/TestResults/**/coverage.cobertura.xml
           retention-days: ${{ inputs.artifact-retention-days }}
 
@@ -364,8 +364,8 @@ jobs:
           echo "### 📦 Artifacts" >> $GITHUB_STEP_SUMMARY
           echo "| Artifact | Description |" >> $GITHUB_STEP_SUMMARY
           echo "|----------|-------------|" >> $GITHUB_STEP_SUMMARY
-          echo "| **${{ inputs.test-results-artifact-name }}** | Test execution results (.trx) |" >> $GITHUB_STEP_SUMMARY
-          echo "| **${{ inputs.coverage-artifact-name }}** | Code coverage reports (Cobertura XML) |" >> $GITHUB_STEP_SUMMARY
+          echo "| **${{ inputs.test-results-artifact-name }}-${{ matrix.os }}** | Test execution results (.trx) |" >> $GITHUB_STEP_SUMMARY
+          echo "| **${{ inputs.coverage-artifact-name }}-${{ matrix.os }}** | Code coverage reports (Cobertura XML) |" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
 
           # Troubleshooting on failure
@@ -373,7 +373,7 @@ jobs:
             echo "<details>" >> $GITHUB_STEP_SUMMARY
             echo "<summary>🔧 Troubleshooting Tips</summary>" >> $GITHUB_STEP_SUMMARY
             echo "" >> $GITHUB_STEP_SUMMARY
-            echo "1. Download the **${{ inputs.test-results-artifact-name }}** artifact for detailed results" >> $GITHUB_STEP_SUMMARY
+            echo "1. Download the **${{ inputs.test-results-artifact-name }}-${{ matrix.os }}** artifact for detailed results" >> $GITHUB_STEP_SUMMARY
             echo "2. Run tests locally: \`dotnet test ${{ inputs.solution-file }}\`" >> $GITHUB_STEP_SUMMARY
             echo "3. Check for flaky tests or environment-specific issues" >> $GITHUB_STEP_SUMMARY
             echo "4. Review the [Test Reporter](#) check for individual test failures" >> $GITHUB_STEP_SUMMARY
