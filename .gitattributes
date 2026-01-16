@@ -2,7 +2,12 @@
 # Ensure consistent line endings for all files
 
 # Set default behavior to auto-detect text files and normalize line endings
+
 * text=auto
+* text eol=lf
+
+
+*.bicep text eol=lf
 
 # Shell scripts must have Unix-style LF line endings
 # This prevents issues when running on Linux (CI/CD, containers, etc.)
