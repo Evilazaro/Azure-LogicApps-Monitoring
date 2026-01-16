@@ -273,14 +273,16 @@ permissions:
 ### GitHub Environment
 
 | Environment | URL Output | Protection Rules |
-|-------------|------------|------------------|
+|:------------|:-----------|:-----------------|
 | `dev` | `${{ steps.deploy.outputs.webapp-url }}` | None |
 
 ### Azure Prerequisites
 
-1. **Federated Credentials**: Must be configured in Azure AD for GitHub Actions OIDC
-2. **Resource Provider Registrations**: Required Azure providers must be registered
-3. **Subscription Access**: Service principal must have appropriate permissions
+1. **Federated Credentials** - Must be configured in Azure AD for GitHub Actions OIDC
+2. **Resource Provider Registrations** - Required Azure providers must be registered
+3. **Subscription Access** - Service principal must have appropriate permissions
+
+---
 
 ## 🔧 Environment Variables
 
@@ -291,6 +293,8 @@ env:
   DOTNET_NOLOGO: true
   DOTNET_CLI_TELEMETRY_OPTOUT: true
 ```
+
+---
 
 ## 🚀 Usage Examples
 
@@ -304,14 +308,14 @@ git commit -m "feat: add new feature"
 git push origin main
 ```
 
-### Manual Deployment
+### Manual Deployment (UI)
 
 1. Go to **Actions** → **CD - Azure Deployment**
 2. Click **Run workflow**
 3. Optionally check **Skip CI checks**
 4. Click **Run workflow**
 
-### Manual Deployment via CLI
+### Manual Deployment (CLI)
 
 ```bash
 gh workflow run azure-dev.yml --ref main
@@ -323,12 +327,16 @@ gh workflow run azure-dev.yml --ref main
 gh workflow run azure-dev.yml --ref main -f skip-ci=true
 ```
 
+> ⚠️ **Caution:** Only use skip-ci for emergency deployments when CI has been validated separately.
+
+---
+
 ## 🔍 Troubleshooting
 
 ### Common Issues
 
 | Issue | Cause | Solution |
-|-------|-------|----------|
+|:------|:------|:---------|
 | OIDC authentication fails | Invalid federated credentials | Verify Azure AD app registration configuration |
 | Provision fails | Missing permissions | Check subscription RBAC assignments |
 | Deploy fails | Resource conflicts | Review Azure portal for resource status |
