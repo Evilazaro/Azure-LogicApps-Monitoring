@@ -188,19 +188,33 @@ hooks:
         if [ "${DEPLOYER_PRINCIPAL_TYPE}" = "ServicePrincipal" ]; then
           echo "Deployer is a Service Principal."
           az login \
-             --client-id "${DEPLOYER_ID}" \
              --service-principal \
-             --tenant "${AZURE_TENANT_ID}" 
+             --client-id "${AZURE_CLIENT_ID}" \
+             --tenant "${AZURE_TENANT_ID}" \
+             --federated-token "${AZURE_FEDERATED_TOKEN}" \
+             --allow-no-subscriptions
+        else
+          ./hooks/Generate-Orders.sh --force --verbose
         fi
         ./hooks/postprovision.sh --force --verbose
-        ./hooks/Generate-Orders.sh --force --verbose
       continueOnError: false
       interactive: true
     windows:
       shell: pwsh
       run: |
+        if ($env:DEPLOYER_PRINCIPAL_TYPE -eq "ServicePrincipal") {
+          Write-Host "Deployer is a Service Principal."
+          az login `
+             --service-principal `
+             --client-id $env:AZURE_CLIENT_ID `
+             --tenant $env:AZURE_TENANT_ID `
+             --federated-token $env:AZURE_FEDERATED_TOKEN `
+             --allow-no-subscriptions
+        }
+        else {
+          ./hooks/Generate-Orders.ps1 -Force -Verbose
+        }
         ./hooks/postprovision.ps1 -Force -Verbose
-        ./hooks/Generate-Orders.ps1 -Force -Verbose
       continueOnError: false
       interactive: true
 
