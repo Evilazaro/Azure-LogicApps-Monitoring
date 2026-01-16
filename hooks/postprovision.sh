@@ -51,6 +51,10 @@
 # -o pipefail: Catch errors in pipelines
 set -euo pipefail
 
+# Set Internal Field Separator to default (space, tab, newline)
+# Protects against word splitting vulnerabilities
+IFS=$' \t\n'
+
 # Script configuration constants
 # These values define script versioning and location for relative path resolution
 readonly SCRIPT_VERSION="2.0.1"

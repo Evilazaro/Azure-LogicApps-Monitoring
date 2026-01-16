@@ -280,12 +280,13 @@ The script checks for existing credentials before creating new ones:
 
 ## ⚠️ Error Handling
 
-| Error                                   | Cause                                          | Resolution                      |
-| --------------------------------------- | ---------------------------------------------- | ------------------------------- |
-| "Not logged in to Azure CLI"            | Azure CLI session expired or not authenticated | Run `az login`                  |
-| "App Registration not found"            | Invalid app name or insufficient permissions   | Verify app name and permissions |
-| "Failed to create federated credential" | Permission denied or invalid parameters        | Check Azure AD permissions      |
-| "Failed to list App Registrations"      | Insufficient permissions to list apps          | Request Application.Read.All    |
+| Error                                   | Cause                                          | Resolution                                |
+| --------------------------------------- | ---------------------------------------------- | ----------------------------------------- |
+| "'jq' is required but not installed"    | jq utility not found (Bash only)               | Install jq: `apt install jq` or `brew install jq` |
+| "Not logged in to Azure CLI"            | Azure CLI session expired or not authenticated | Run `az login`                            |
+| "App Registration not found"            | Invalid app name or insufficient permissions   | Verify app name and permissions           |
+| "Failed to create federated credential" | Permission denied or invalid parameters        | Check Azure AD permissions                |
+| "Failed to list App Registrations"      | Insufficient permissions to list apps          | Request Application.Read.All              |
 
 ---
 

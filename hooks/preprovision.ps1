@@ -92,6 +92,14 @@ param(
 
 # Script configuration
 Set-StrictMode -Version Latest
+
+# Backup original preferences for restoration in finally block
+$script:OriginalErrorActionPreference = $ErrorActionPreference
+$script:OriginalInformationPreference = $InformationPreference
+$script:OriginalProgressPreference = $ProgressPreference
+$script:OriginalWarningPreference = $WarningPreference
+$script:OriginalConfirmPreference = $ConfirmPreference
+
 $ErrorActionPreference = 'Stop'
 $InformationPreference = 'Continue'
 $ProgressPreference = 'SilentlyContinue'
@@ -194,7 +202,7 @@ function Test-DotNetSDK {
     process {
         try {
             # Check if dotnet command exists
-            $dotnetCommand = Get-Command -Name dotnet -ErrorAction SilentlyContinue
+            $dotnetCommand = Get-Command -Name dotnet -CommandType Application -ErrorAction SilentlyContinue
             if (-not $dotnetCommand) {
                 Write-Verbose '.NET SDK not found in PATH'
                 return $false
@@ -261,7 +269,7 @@ function Test-AzureDeveloperCLI {
 
     process {
         try {
-            $azdCommand = Get-Command -Name azd -ErrorAction SilentlyContinue
+            $azdCommand = Get-Command -Name azd -CommandType Application -ErrorAction SilentlyContinue
             if (-not $azdCommand) {
                 Write-Verbose 'Azure Developer CLI not found in PATH'
                 return $false
@@ -329,7 +337,7 @@ function Test-AzureCLI {
         
         try {
             # Check if az command exists
-            $azCommand = Get-Command -Name az -ErrorAction SilentlyContinue
+            $azCommand = Get-Command -Name az -CommandType Application -ErrorAction SilentlyContinue
             if (-not $azCommand) {
                 Write-Verbose 'Azure CLI not found in PATH'
                 return $result
@@ -529,7 +537,7 @@ function Test-BicepCLI {
     process {
         try {
             # Check if bicep command exists (standalone)
-            $bicepCommand = Get-Command -Name bicep -ErrorAction SilentlyContinue
+            $bicepCommand = Get-Command -Name bicep -CommandType Application -ErrorAction SilentlyContinue
             
             if (-not $bicepCommand) {
                 # Try Azure CLI bicep
@@ -611,7 +619,7 @@ function Test-Zip {
                 }
                 
                 # Fallback: check for zip.exe
-                $zipCommand = Get-Command -Name zip -ErrorAction SilentlyContinue
+                $zipCommand = Get-Command -Name zip -CommandType Application -ErrorAction SilentlyContinue
                 if ($zipCommand) {
                     Write-Verbose "zip found at: $($zipCommand.Source)"
                     return $true
@@ -622,7 +630,7 @@ function Test-Zip {
             }
             else {
                 # On Linux/macOS, check for zip command
-                $zipCommand = Get-Command -Name zip -ErrorAction SilentlyContinue
+                $zipCommand = Get-Command -Name zip -CommandType Application -ErrorAction SilentlyContinue
                 if (-not $zipCommand) {
                     Write-Verbose 'zip command not found in PATH'
                     return $false
@@ -672,7 +680,7 @@ function Test-WingetAvailable {
 
     process {
         try {
-            $wingetCmd = Get-Command -Name winget -ErrorAction SilentlyContinue
+            $wingetCmd = Get-Command -Name winget -CommandType Application -ErrorAction SilentlyContinue
             if (-not $wingetCmd) {
                 Write-Verbose 'winget not found in PATH'
                 return $false
@@ -980,11 +988,11 @@ function Install-AzureCLI {
             else {
                 Write-Information '  📥 Installing via package manager...'
                 
-                if (Get-Command apt-get -ErrorAction SilentlyContinue) {
+                if (Get-Command -Name apt-get -CommandType Application -ErrorAction SilentlyContinue) {
                     # Debian/Ubuntu
                     & curl -sL https://aka.ms/InstallAzureCLIDeb | sudo bash
                 }
-                elseif (Get-Command brew -ErrorAction SilentlyContinue) {
+                elseif (Get-Command -Name brew -CommandType Application -ErrorAction SilentlyContinue) {
                     # macOS
                     & brew install azure-cli
                 }
@@ -1071,7 +1079,7 @@ function Install-BicepCLI {
             }
             
             # Fallback: Install via Azure CLI (works on all platforms)
-            $azCommand = Get-Command -Name az -ErrorAction SilentlyContinue
+            $azCommand = Get-Command -Name az -CommandType Application -ErrorAction SilentlyContinue
             if (-not $azCommand) {
                 Write-Warning '  ✗ Azure CLI is required to install Bicep via fallback method'
                 Write-Warning '    Please install Azure CLI first, or install Bicep manually.'
@@ -1161,7 +1169,7 @@ function Install-Zip {
                 # macOS typically has zip pre-installed
                 Write-Information '  📥 Checking zip on macOS...'
                 
-                $zipCommand = Get-Command -Name zip -ErrorAction SilentlyContinue
+                $zipCommand = Get-Command -Name zip -CommandType Application -ErrorAction SilentlyContinue
                 if ($zipCommand) {
                     Write-Information '  ✓ zip is already available on macOS (pre-installed)'
                     Write-Information ''
@@ -1169,7 +1177,7 @@ function Install-Zip {
                 }
                 
                 # Try installing via Homebrew
-                $brewCommand = Get-Command -Name brew -ErrorAction SilentlyContinue
+                $brewCommand = Get-Command -Name brew -CommandType Application -ErrorAction SilentlyContinue
                 if ($brewCommand) {
                     Write-Information '  📥 Installing zip via Homebrew...'
                     & brew install zip
@@ -1193,7 +1201,7 @@ function Install-Zip {
                 Write-Information ''
                 
                 # Detect package manager and install
-                if (Get-Command -Name apt-get -ErrorAction SilentlyContinue) {
+                if (Get-Command -Name apt-get -CommandType Application -ErrorAction SilentlyContinue) {
                     # Debian/Ubuntu
                     Write-Information '  📥 Installing via apt-get...'
                     $null = & sudo apt-get update 2>&1
@@ -1206,7 +1214,7 @@ function Install-Zip {
                         return $true
                     }
                 }
-                elseif (Get-Command -Name dnf -ErrorAction SilentlyContinue) {
+                elseif (Get-Command -Name dnf -CommandType Application -ErrorAction SilentlyContinue) {
                     # Fedora/RHEL 8+
                     Write-Information '  📥 Installing via dnf...'
                     & sudo dnf install -y zip
@@ -1218,7 +1226,7 @@ function Install-Zip {
                         return $true
                     }
                 }
-                elseif (Get-Command -Name yum -ErrorAction SilentlyContinue) {
+                elseif (Get-Command -Name yum -CommandType Application -ErrorAction SilentlyContinue) {
                     # CentOS/RHEL 7
                     Write-Information '  📥 Installing via yum...'
                     & sudo yum install -y zip
@@ -1230,7 +1238,7 @@ function Install-Zip {
                         return $true
                     }
                 }
-                elseif (Get-Command -Name pacman -ErrorAction SilentlyContinue) {
+                elseif (Get-Command -Name pacman -CommandType Application -ErrorAction SilentlyContinue) {
                     # Arch Linux
                     Write-Information '  📥 Installing via pacman...'
                     & sudo pacman -S --noconfirm zip
@@ -1242,7 +1250,7 @@ function Install-Zip {
                         return $true
                     }
                 }
-                elseif (Get-Command -Name apk -ErrorAction SilentlyContinue) {
+                elseif (Get-Command -Name apk -CommandType Application -ErrorAction SilentlyContinue) {
                     # Alpine Linux
                     Write-Information '  📥 Installing via apk...'
                     & sudo apk add zip
@@ -2016,9 +2024,12 @@ catch {
     exit 1
 }
 finally {
-    # Reset preferences
-    $ErrorActionPreference = 'Continue'
-    $InformationPreference = 'Continue'
+    # Restore original preferences
+    $ErrorActionPreference = $script:OriginalErrorActionPreference
+    $InformationPreference = $script:OriginalInformationPreference
+    $ProgressPreference = $script:OriginalProgressPreference
+    $WarningPreference = $script:OriginalWarningPreference
+    $ConfirmPreference = $script:OriginalConfirmPreference
     Write-Verbose 'Pre-provisioning script execution completed.'
 }
 

@@ -77,6 +77,14 @@ param(
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
 
+# Save original preference variables to restore in finally block
+$script:OriginalErrorActionPreference = $ErrorActionPreference
+$script:OriginalInformationPreference = $InformationPreference
+$script:OriginalConfirmPreference = $ConfirmPreference
+
+# Ensure informational messages are displayed
+$InformationPreference = 'Continue'
+
 #endregion Script Configuration
 
 #region Product Catalog
@@ -223,10 +231,6 @@ function New-Order {
     [OutputType([hashtable])]
     param(
         [Parameter(Mandatory)]
-        [ValidateRange(1, 99999)]
-        [int]$OrderNumber,
-
-        [Parameter(Mandatory)]
         [ValidateRange(1, 20)]
         [int]$MinProductCount,
 
@@ -298,13 +302,13 @@ function New-Order {
         # Create order product record (line item)
         # Contains all information needed for order fulfillment and billing
         $orderProducts.Add([ordered]@{
-            id                 = $orderProductId      # Unique line item ID
-            orderId            = $orderId             # Foreign key to order
-            productId          = $product.Id          # Foreign key to product catalog
-            productDescription = $product.Description # Denormalized for reporting
-            quantity           = $quantity            # Number of units ordered
-            price              = $price               # Unit price at time of order
-        })
+                id                 = $orderProductId      # Unique line item ID
+                orderId            = $orderId             # Foreign key to order
+                productId          = $product.Id          # Foreign key to product catalog
+                productDescription = $product.Description # Denormalized for reporting
+                quantity           = $quantity            # Number of units ordered
+                price              = $price               # Unit price at time of order
+            })
         
         # Add line item subtotal to order running total
         $orderTotal += $subtotal
@@ -447,8 +451,7 @@ try {
     # Using 1-based counter for human-friendly order numbers
     for ($i = 1; $i -le $OrderCount; $i++) {
         # Create order and add to collection
-        # OrderNumber parameter is used for tracking/logging, not for the order ID
-        $orders.Add((New-Order -OrderNumber $i -MinProductCount $MinProducts -MaxProductCount $MaxProducts))
+        $orders.Add((New-Order -MinProductCount $MinProducts -MaxProductCount $MaxProducts))
         
         # Update progress bar periodically to avoid performance impact
         # Update every 10 orders OR on the final order to ensure 100% completion shows
@@ -490,6 +493,11 @@ catch {
     throw
 }
 finally {
+    # Restore original preference variables
+    $ErrorActionPreference = $script:OriginalErrorActionPreference
+    $InformationPreference = $script:OriginalInformationPreference
+    $ConfirmPreference = $script:OriginalConfirmPreference
+    
     Write-Verbose -Message 'Order generation process completed.'
 }
 

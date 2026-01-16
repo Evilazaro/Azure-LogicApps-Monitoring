@@ -124,7 +124,7 @@ function Test-DotNetAvailability {
 
     process {
         try {
-            $dotnetCommand = Get-Command -Name dotnet -ErrorAction SilentlyContinue
+            $dotnetCommand = Get-Command -Name dotnet -CommandType Application -ErrorAction SilentlyContinue
             if (-not $dotnetCommand) {
                 Write-Verbose -Message '.NET command not found in PATH'
                 return [pscustomobject]@{
@@ -344,6 +344,7 @@ function Write-ScriptHeader {
         Write-ScriptHeader
     #>
     [CmdletBinding()]
+    [OutputType([void])]
     param()
 
     process {
@@ -377,6 +378,7 @@ function Write-ScriptSummary {
         Write-ScriptSummary -SuccessCount 3 -FailureCount 0 -TotalCount 3
     #>
     [CmdletBinding()]
+    [OutputType([void])]
     param(
         [Parameter(Mandatory = $true)]
         [int]$SuccessCount,
@@ -427,10 +429,10 @@ try {
         $projectFile = Test-ProjectPath -Path $project.Path -Name $project.Name
         if ($projectFile) {
             $validProjects.Add(@{
-                Name = $project.Name
-                Path = $project.Path
-                ProjectFile = $projectFile
-            })
+                    Name        = $project.Name
+                    Path        = $project.Path
+                    ProjectFile = $projectFile
+                })
             Write-Information -MessageData "  ✓ $($project.Name)"
         }
         else {

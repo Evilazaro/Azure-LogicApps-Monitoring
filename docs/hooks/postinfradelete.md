@@ -469,6 +469,7 @@ azd down  # Purges only dev environment Logic Apps
 
 | Version | Date       | Changes                                                                                                                                              |
 | ------- | ---------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 2.0.1   | 2026-01-16 | Added ConfirmPreference backup/restore, added CommandType to Get-Command, added IFS protection to Bash script                                        |
 | 2.0.0   | 2026-01-09 | Applied PowerShell best practices: added begin/process/end blocks, ValidateNotNullOrEmpty, improved error handling, centralized API version constant |
 | 1.0.0   | 2026-01-09 | Initial release                                                                                                                                      |
 
