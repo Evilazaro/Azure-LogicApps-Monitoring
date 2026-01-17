@@ -40,7 +40,7 @@ on:
         type: boolean
   push:
     branches:
-      - main
+      - docs987678
     paths:
       - "src/**"
       - "app.*/**"
