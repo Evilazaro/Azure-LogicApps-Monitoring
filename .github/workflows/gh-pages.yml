@@ -42,7 +42,10 @@ jobs:
           path: ~/.cache
           restore-keys: |
             mkdocs-material-
-      - run: pip install mkdocs-material
+      - name: Install dependencies
+        run: |
+          pip install mkdocs-material mkdocs-minify-plugin
+          pip install -r ./docs/gh-pages/requirements.txt
       - name: Deploy to GitHub Pages
         working-directory: ./docs/gh-pages
         run: mkdocs gh-deploy --force
