@@ -29,27 +29,31 @@
 
 ### Environment Model
 
+> 📖 **See also:** [DevOps Documentation](../devops/README.md) for detailed pipeline configuration and secrets management.
+
 ```mermaid
 ---
 title: Environment Model - Promotion Flow
 ---
 flowchart LR
     %% ===== CLASS DEFINITIONS =====
+    %% Primary components: Indigo - main processes/services
     classDef primary fill:#4F46E5,stroke:#3730A3,color:#FFFFFF
+    %% Secondary components: Emerald - secondary elements
     classDef secondary fill:#10B981,stroke:#059669,color:#FFFFFF
+    %% Data stores: Amber - environments/reporting
     classDef datastore fill:#F59E0B,stroke:#D97706,color:#000000
+    %% External systems: Gray - external calls
     classDef external fill:#6B7280,stroke:#4B5563,color:#FFFFFF,stroke-dasharray: 5 5
-    classDef failed fill:#F44336,stroke:#C62828,color:#FFFFFF
+    %% Triggers: Indigo light - entry points
     classDef trigger fill:#818CF8,stroke:#4F46E5,color:#FFFFFF
-    classDef decision fill:#FFFBEB,stroke:#F59E0B,color:#000000
-    classDef input fill:#F3F4F6,stroke:#6B7280,color:#000000
 
     %% ===== DEVELOPMENT ENVIRONMENT =====
     subgraph Dev["🔧 Development"]
         Local["Local<br/>.NET Aspire"]
         DevEnv["Dev Environment<br/>Azure"]
     end
-    style Dev fill:#EEF2FF,stroke:#4F46E5,stroke-width:2px
+    style Dev fill:#ECFDF5,stroke:#10B981,stroke-width:2px
 
     %% ===== STAGING ENVIRONMENT =====
     subgraph Stage["🧪 Staging"]
@@ -61,7 +65,7 @@ flowchart LR
     subgraph Prod["🚀 Production"]
         ProdEnv["Production<br/>Azure"]
     end
-    style Prod fill:#D1FAE5,stroke:#10B981,stroke-width:2px
+    style Prod fill:#EEF2FF,stroke:#4F46E5,stroke-width:2px
 
     %% ===== PROMOTION FLOW =====
     Local -->|"Deploy locally"| DevEnv
@@ -69,8 +73,9 @@ flowchart LR
     StageEnv -->|"Approval required"| ProdEnv
 
     %% ===== APPLY STYLES =====
-    class Local,DevEnv primary
-    class StageEnv decision
+    class Local trigger
+    class DevEnv primary
+    class StageEnv datastore
     class ProdEnv secondary
 ```
 
@@ -292,6 +297,8 @@ hooks:
 
 ## 🚀 4. CI/CD Pipeline
 
+> 📖 **See also:** [DevOps Documentation](../devops/README.md) for detailed workflow documentation and configuration.
+
 ### Pipeline Architecture
 
 ```mermaid
@@ -300,26 +307,37 @@ title: CI/CD Pipeline Architecture
 ---
 flowchart TB
     %% ===== CLASS DEFINITIONS =====
+    %% Primary components: Indigo - main processes/services
     classDef primary fill:#4F46E5,stroke:#3730A3,color:#FFFFFF
+    %% Secondary components: Emerald - secondary elements
     classDef secondary fill:#10B981,stroke:#059669,color:#FFFFFF
+    %% Data stores: Amber - reporting/environments
     classDef datastore fill:#F59E0B,stroke:#D97706,color:#000000
+    %% External systems: Gray - reusable/external calls
     classDef external fill:#6B7280,stroke:#4B5563,color:#FFFFFF,stroke-dasharray: 5 5
+    %% Error/failure states: Red - error handling
     classDef failed fill:#F44336,stroke:#C62828,color:#FFFFFF
+    %% Triggers: Indigo light - entry points
     classDef trigger fill:#818CF8,stroke:#4F46E5,color:#FFFFFF
-    classDef decision fill:#FFFBEB,stroke:#F59E0B,color:#000000
-    classDef input fill:#F3F4F6,stroke:#6B7280,color:#000000
+    %% Matrix: Light indigo - parallel execution
     classDef matrix fill:#E0E7FF,stroke:#4F46E5,color:#000000
 
     %% ===== TRIGGER SOURCES =====
     subgraph TriggerGroup["🎯 Triggers"]
-        Push["Push to main"]
-        PR["Pull Request"]
-        Manual["Manual dispatch"]
+        Push(["Push to main"])
+        PR(["Pull Request"])
+        Manual(["Manual dispatch"])
     end
-    style TriggerGroup fill:#FEE2E2,stroke:#EF4444,stroke-width:2px
+    style TriggerGroup fill:#EEF2FF,stroke:#4F46E5,stroke-width:2px
+
+    %% ===== EXTERNAL SERVICES =====
+    subgraph ExternalGroup["🔧 External Services"]
+        Dependabot["Dependabot<br/>(Config-based)"]
+    end
+    style ExternalGroup fill:#F3F4F6,stroke:#6B7280,stroke-width:2px
 
     %% ===== CI PIPELINE =====
-    subgraph CI["🔨 CI Pipeline (Reusable Workflow)"]
+    subgraph CI["🔄 CI Pipeline (Reusable Workflow)"]
         direction TB
         subgraph BuildMatrix["Build (Cross-Platform Matrix)"]
             BuildLinux["🐧 ubuntu-latest"]
@@ -333,7 +351,7 @@ flowchart TB
         end
         Analyze["📊 Code Analysis"]
     end
-    style CI fill:#EEF2FF,stroke:#4F46E5,stroke-width:2px
+    style CI fill:#ECFDF5,stroke:#10B981,stroke-width:2px
     style BuildMatrix fill:#E0E7FF,stroke:#818CF8,stroke-width:1px
     style TestMatrix fill:#E0E7FF,stroke:#818CF8,stroke-width:1px
 
@@ -343,28 +361,51 @@ flowchart TB
         Provision["azd provision"]
         Deploy["azd deploy"]
     end
-    style CD fill:#D1FAE5,stroke:#10B981,stroke-width:2px
+    style CD fill:#EEF2FF,stroke:#4F46E5,stroke-width:2px
 
     %% ===== AZURE ENVIRONMENTS =====
-    subgraph Azure["☁️ Azure"]
+    subgraph Azure["☁️ Azure Environments"]
         Dev["Dev Environment"]
         Staging["Staging Environment"]
         Prod["Production Environment"]
     end
     style Azure fill:#FEF3C7,stroke:#F59E0B,stroke-width:2px
 
-    %% ===== PIPELINE CONNECTIONS =====
+    %% ===== RESULTS =====
+    subgraph ResultsGroup["📊 Results"]
+        Summary(["Summary"])
+        FailureHandler(["Handle Failure"])
+    end
+    style ResultsGroup fill:#FEF3C7,stroke:#F59E0B,stroke-width:2px
+
+    %% ===== TRIGGER CONNECTIONS =====
     Push -->|"triggers CI"| CI
+    Push -->|"triggers CD"| CD
     PR -->|"triggers CI"| CI
+    Manual -->|"triggers CI"| CI
     Manual -->|"triggers CD"| CD
+
+    %% ===== DEPENDABOT FLOW =====
+    Dependabot -.->|"creates PRs"| PR
+
+    %% ===== CI FLOW =====
     BuildMatrix -->|"parallel builds"| TestMatrix
     TestMatrix -->|"tests complete"| Analyze
+    Analyze -->|"reports to"| Summary
+
+    %% ===== CD FLOW =====
     CI -->|"on success"| CD
     Login -->|"authenticates"| Provision
     Provision -->|"creates infra"| Deploy
     Deploy -->|"deploys to"| Dev
+    Deploy -->|"reports to"| Summary
     Dev -->|"promotes to"| Staging
     Staging -->|"approval gates"| Prod
+
+    %% ===== FAILURE PATHS =====
+    TestMatrix --x|"on failure"| FailureHandler
+    Analyze --x|"on failure"| FailureHandler
+    Deploy --x|"on failure"| FailureHandler
 
     %% ===== APPLY STYLES =====
     class Push,PR,Manual trigger
@@ -372,6 +413,9 @@ flowchart TB
     class Analyze secondary
     class Login,Provision,Deploy secondary
     class Dev,Staging,Prod datastore
+    class Dependabot external
+    class FailureHandler failed
+    class Summary datastore
 ```
 
 ### GitHub Actions Workflows

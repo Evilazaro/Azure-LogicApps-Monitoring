@@ -190,6 +190,7 @@ flowchart TB
 
 | Resource | Description |
 | -------- | ----------- |
+| [Deployment Architecture](../architecture/07-deployment-architecture.md) | CI/CD pipeline architecture and environment promotion flow |
 | [Architecture Documentation](../architecture/README.md) | System architecture and design decisions |
 | [Azure Developer CLI Documentation](https://learn.microsoft.com/en-us/azure/developer/azure-developer-cli/) | Official azd documentation |
 | [GitHub Actions Documentation](https://docs.github.com/en/actions) | GitHub Actions reference |
