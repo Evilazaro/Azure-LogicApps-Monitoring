@@ -19,11 +19,11 @@ The bread and butter of any theme. Below you'll find the layouts included with M
 
 The base layout all other layouts inherit from. There's not much to this layout apart from pulling in several `_includes`:
 
-* `<head>` elements
-* masthead navigation links
-* {% raw %}`{{ content }}`{% endraw %}
-* page footer
-* scripts
+- `<head>` elements
+- masthead navigation links
+- {% raw %}`{{ content }}`{% endraw %}
+- page footer
+- scripts
 
 **Note:** You won't ever assign this layout directly to a post or page. Instead all other layouts will build off of it by setting `layout: default` in their YAML Front Matter.
 {: .notice--warning}
@@ -62,7 +62,7 @@ classes:
 Outputs:
 
 ```html
-<body class="layout--splash landing dark-theme">
+<body class="layout--splash landing dark-theme"></body>
 ```
 
 ### Canonical URL
@@ -88,7 +88,7 @@ A Jekyll layout that compresses HTML in pure Liquid. To enable add `layout: comp
 **Note:** Has been known to mangle markup and break JavaScript... especially if inline `// comments` are present. For this reason it has been disabled by default.
 {: .notice--danger}
 
-* [Documentation](http://jch.penibelst.de/)
+- [Documentation](http://jch.penibelst.de/)
 
 ## Single layout
 
@@ -96,12 +96,12 @@ The layout you'll likely use the most --- sidebar and main content combo.
 
 **Includes:**
 
-* Optional header image with caption
-* Optional header overlay (solid color/image) + text and optional "call to action" button
-* Optional social sharing links module
-* Optional comments module
-* Optional related posts module
-* Wide page variant
+- Optional header image with caption
+- Optional header overlay (solid color/image) + text and optional "call to action" button
+- Optional social sharing links module
+- Optional comments module
+- Optional related posts module
+- Wide page variant
 
 {% include gallery id="single_layout_gallery" caption="Image header and meta info examples for `single` layout" %}
 
@@ -124,12 +124,12 @@ Auto-generated table of contents list for your posts and pages can be enabled by
 
 ![table of contents example]({{ "/assets/images/mm-toc-helper-example.jpg" | relative_url }})
 
-| Parameter   | Required | Description | Default |
-| ---------   | -------- | ----------- | ------- |
-| **toc**     | Optional | Show table of contents. (boolean) | `false` |
-| **toc_label** | Optional | Table of contents title. (string) | `toc_label` in UI Text data file. |
-| **toc_icon**  | Optional | Table of contents icon, displays before the title. (string) | [Font Awesome](https://fontawesome.com/v6/search?s=solid&m=free) <i class="fas fa-file-alt"></i> **file-alt** icon. Other FA icons can be used instead. |
-| **toc_sticky** | Optional | Stick table of contents to top of screen.                   | `false` |
+| Parameter      | Required | Description                                                 | Default                                                                                                                                                 |
+| -------------- | -------- | ----------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **toc**        | Optional | Show table of contents. (boolean)                           | `false`                                                                                                                                                 |
+| **toc_label**  | Optional | Table of contents title. (string)                           | `toc_label` in UI Text data file.                                                                                                                       |
+| **toc_icon**   | Optional | Table of contents icon, displays before the title. (string) | [Font Awesome](https://fontawesome.com/v6/search?s=solid&m=free) <i class="fas fa-file-alt"></i> **file-alt** icon. Other FA icons can be used instead. |
+| **toc_sticky** | Optional | Stick table of contents to top of screen.                   | `false`                                                                                                                                                 |
 
 **TOC example with custom title and icon**
 
@@ -148,18 +148,26 @@ toc_icon: "cog"
 Good headings:
 
 # Heading
+
 ## Heading
+
 ### Heading
+
 ### Heading
+
 # Heading
+
 ## Heading
 
 Bad headings:
 
 # Heading
+
 ### Heading (skipped H2)
+
 ##### Heading (skipped H4)
 ```
+
 {% endcapture %}
 
 <div class="notice--warning">
@@ -172,9 +180,9 @@ Essentially the same as `single` with markup adjustments and some modules remove
 
 **Includes:**
 
-* Optional header image with caption
-* Optional header overlay (solid color/image) + text and optional "call to action" button
-* List and grid views
+- Optional header image with caption
+- Optional header overlay (solid color/image) + text and optional "call to action" button
+- List and grid views
 
 <figure>
   <img src="{{ '/assets/images/mm-layout-archive.png' | relative_url }}" alt="archive layout example">
@@ -183,17 +191,17 @@ Essentially the same as `single` with markup adjustments and some modules remove
 
 Below are sample archive pages you can easily drop into your project, taking care to rename `permalink`, `title`, or the filename to fit your site. Each is 100% compatible with GitHub Pages.
 
-* [All Posts Grouped by Category -- List View][posts-categories]
-* [All Posts Grouped by Tag -- List View][posts-tags]
-* [All Posts Grouped by Year -- List View][posts-year]
-* [All Posts Grouped by Collection -- List View][posts-collection]
-* [Portfolio Collection -- Grid View][portfolio-collection]
+- [All Posts Grouped by Category -- List View][posts-categories]
+- [All Posts Grouped by Tag -- List View][posts-tags]
+- [All Posts Grouped by Year -- List View][posts-year]
+- [All Posts Grouped by Collection -- List View][posts-collection]
+- [Portfolio Collection -- Grid View][portfolio-collection]
 
-[posts-categories]: https://github.com/{{ site.repository }}/blob/master/docs/_pages/category-archive.md
-[posts-tags]: https://github.com/{{ site.repository }}/blob/master/docs/_pages/tag-archive.md
-[posts-year]: https://github.com/{{ site.repository }}/blob/master/docs/_pages/year-archive.md
-[posts-collection]: https://github.com/{{ site.repository }}/blob/master/docs/_pages/collection-archive.html
-[portfolio-collection]: https://github.com/{{ site.repository }}/blob/master/docs/_pages/portfolio-archive.md
+[posts-categories]: https://github.com/{{ site.repository }}/blob/master/docs/\_pages/category-archive.md
+[posts-tags]: https://github.com/{{ site.repository }}/blob/master/docs/\_pages/tag-archive.md
+[posts-year]: https://github.com/{{ site.repository }}/blob/master/docs/\_pages/year-archive.md
+[posts-collection]: https://github.com/{{ site.repository }}/blob/master/docs/\_pages/collection-archive.html
+[portfolio-collection]: https://github.com/{{ site.repository }}/blob/master/docs/\_pages/portfolio-archive.md
 
 Post and page excerpts are auto-generated by Jekyll which grabs the first paragraph of text. To override this text with something more specific use the following YAML Front Matter:
 
@@ -243,14 +251,14 @@ If you have the luxury of using Jekyll plugins, the creation of category and tag
 
 If you're not using the `jekyll-archives` plugin then you need to create archive pages yourself. Sample taxonomy archives can be found by grabbing the Markdown sources below and adding to your site.
 
-| Name                 | Layout | Example |
-| -------------------- | ------ | ------ |
-| [Posts Archive](https://mmistakes.github.io/minimal-mistakes/year-archive/) | `layout: posts` | [year-archive.md](https://github.com/mmistakes/minimal-mistakes/blob/master/docs/_pages/year-archive.md) |
-| [Categories Archive](https://mmistakes.github.io/minimal-mistakes/categories/) | `layout: categories` | [category-archive.md](https://github.com/mmistakes/minimal-mistakes/blob/master/docs/_pages/category-archive.md) |
-| [Category Archive](https://mmistakes.github.io/minimal-mistakes/categories/edge-case/) | `layout: category` | [edge-case.md](https://github.com/mmistakes/minimal-mistakes/blob/master/docs/_pages/edge-case.md) |
-| [Tags Archive](https://mmistakes.github.io/minimal-mistakes/tags/) | `layout: tags` | [tag-archive.md](https://github.com/mmistakes/minimal-mistakes/blob/master/docs/_pages/tag-archive.md) |
-| [Tag Archive](https://mmistakes.github.io/minimal-mistakes/tags/markup/) | `layout: tag` | [markup.md](https://github.com/mmistakes/minimal-mistakes/blob/master/docs/_pages/markup.md) |
-| [Collection Archive](https://mmistakes.github.io/minimal-mistakes/recipes/) | `layout: collection` | [recipes-archive.md](https://github.com/mmistakes/minimal-mistakes/blob/master/docs/_pages/recipes-archive.md) |
+| Name                                                                                   | Layout               | Example                                                                                                          |
+| -------------------------------------------------------------------------------------- | -------------------- | ---------------------------------------------------------------------------------------------------------------- |
+| [Posts Archive](https://mmistakes.github.io/minimal-mistakes/year-archive/)            | `layout: posts`      | [year-archive.md](https://github.com/mmistakes/minimal-mistakes/blob/master/docs/_pages/year-archive.md)         |
+| [Categories Archive](https://mmistakes.github.io/minimal-mistakes/categories/)         | `layout: categories` | [category-archive.md](https://github.com/mmistakes/minimal-mistakes/blob/master/docs/_pages/category-archive.md) |
+| [Category Archive](https://mmistakes.github.io/minimal-mistakes/categories/edge-case/) | `layout: category`   | [edge-case.md](https://github.com/mmistakes/minimal-mistakes/blob/master/docs/_pages/edge-case.md)               |
+| [Tags Archive](https://mmistakes.github.io/minimal-mistakes/tags/)                     | `layout: tags`       | [tag-archive.md](https://github.com/mmistakes/minimal-mistakes/blob/master/docs/_pages/tag-archive.md)           |
+| [Tag Archive](https://mmistakes.github.io/minimal-mistakes/tags/markup/)               | `layout: tag`        | [markup.md](https://github.com/mmistakes/minimal-mistakes/blob/master/docs/_pages/markup.md)                     |
+| [Collection Archive](https://mmistakes.github.io/minimal-mistakes/recipes/)            | `layout: collection` | [recipes-archive.md](https://github.com/mmistakes/minimal-mistakes/blob/master/docs/_pages/recipes-archive.md)   |
 
 **Note:** By default, documents are shown in a list view. To change to a grid view add `entries_layout: grid` to the page's front matter.
 {: .notice--info}
@@ -359,7 +367,7 @@ If you'd rather have a paginated page of posts reside in a subfolder instead of 
 
 Create `index.html` in the location you'd like. For example if I wanted it to live at **/blog** I'd create `/blog/index.html` with `layout: home` in its YAML Front Matter.
 
-Then adjust the `paginate_path` in **_config.yml** to match.
+Then adjust the `paginate_path` in **\_config.yml** to match.
 
 ```yaml
 paginate_path: /blog/page:num
@@ -377,13 +385,13 @@ For full-width landing pages that need a little something extra add `layout: spl
 
 **Includes:**
 
-* Optional header image with caption
-* Optional header overlay (solid color/image) + text and optional "call to action" button
-* Feature blocks (`left`, `center`, and `right` alignment options)
+- Optional header image with caption
+- Optional header overlay (solid color/image) + text and optional "call to action" button
+- Feature blocks (`left`, `center`, and `right` alignment options)
 
 ![splash page layout example]({{ "/assets/images/mm-layout-splash.png" | relative_url }})
 
-Feature blocks can be assigned and aligned to the `left`, `right`, or `center` with a sprinkling of YAML. For full details on how to use the `feature_row` helper check the [**Content**]({{ "/docs/helpers/" | relative_url }}) section or review a [sample splash page](https://github.com/{{ site.repository }}/blob/master/docs/_pages/splash-page.md).
+Feature blocks can be assigned and aligned to the `left`, `right`, or `center` with a sprinkling of YAML. For full details on how to use the `feature_row` helper check the [**Content**]({{ "/docs/helpers/" | relative_url }}) section or review a [sample splash page](https://github.com/{{ site.repository }}/blob/master/docs/\_pages/splash-page.md).
 
 ## Search page layout
 
@@ -455,16 +463,16 @@ header:
 
 To overlay text on top of a header image you have a few more options:
 
-| Name                     | Description | Default |
-| ----                     | ----------- | ------- |
-| **overlay_image**        | Header image you'd like to overlay. Same rules as `header.image` from above. | |
+| Name                     | Description                                                                                                                              | Default |
+| ------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------- | ------- |
+| **overlay_image**        | Header image you'd like to overlay. Same rules as `header.image` from above.                                                             |         |
 | **overlay_filter**       | Color/opacity to overlay on top of the header image. Example: `0.5`, `rgba(255, 0, 0, 0.5)` or [`linear-gradient`][mdn-linear-gradient]. |
-| **show_overlay_excerpt** | Display excerpt in the overlay text | true |
-| **excerpt**              | Auto-generated page excerpt is added to the overlay text or can be overridden. | |
-| **tagline**              | Overrides page excerpt. Useful when header text needs to be different from excerpt in archive views. | |
-| **actions**              | Call to action button links (`actions` array: `label` and `url`). More than one button link can be assigned. | |
+| **show_overlay_excerpt** | Display excerpt in the overlay text                                                                                                      | true    |
+| **excerpt**              | Auto-generated page excerpt is added to the overlay text or can be overridden.                                                           |         |
+| **tagline**              | Overrides page excerpt. Useful when header text needs to be different from excerpt in archive views.                                     |         |
+| **actions**              | Call to action button links (`actions` array: `label` and `url`). More than one button link can be assigned.                             |         |
 
-  [mdn-linear-gradient]: https://developer.mozilla.org/en-US/docs/Web/CSS/linear-gradient()
+[mdn-linear-gradient]: https://developer.mozilla.org/en-US/docs/Web/CSS/linear-gradient()
 
 With this YAML Front Matter:
 
@@ -591,7 +599,7 @@ defaults:
 **Note:** To disable the author sidebar profile for a specific post or page, add `author_profile: false` to the YAML Front Matter instead.
 {: .notice--warning}
 
-To assign more author links, add to the `author.links` array  in [`_config.yml`]({{ "/docs/configuration/" | relative_url }}) link so. Any of [Font Awesome's icons](https://fontawesome.com/v6/search) are available for use.
+To assign more author links, add to the `author.links` array in [`_config.yml`]({{ "/docs/configuration/" | relative_url }}) link so. Any of [Font Awesome's icons](https://fontawesome.com/v6/search) are available for use.
 
 ```yaml
 author:
@@ -634,7 +642,7 @@ For example, to color a Reddit icon, simply add a `color` declaration and the co
 Blocks of content can be added by using the following under `sidebar`:
 
 | Name          | Description                                                |
-| ----          | -----------                                                |
+| ------------- | ---------------------------------------------------------- |
 | **title**     | Title or heading.                                          |
 | **image**     | Image path placed in `/images/` folder or an external URL. |
 | **image_alt** | Alternate description for image.                           |
@@ -747,7 +755,7 @@ defaults:
         nav: "docs"
 ```
 
-*New in v4.26.0*: If you have multiple sidebar navs defined and want to include more than one on a page, the sidebar nav can also be a list.
+_New in v4.26.0_: If you have multiple sidebar navs defined and want to include more than one on a page, the sidebar nav can also be a list.
 
 ```yaml
 sidebar:
@@ -771,12 +779,17 @@ If you'd like to add, remove, or change the order of these default links you can
 Let's say you wanted to replace the LinkedIn button with a Reddit one. Simply replace the HTML with the following:
 
 ```html
-{% raw %}<a href="https://www.reddit.com/submit?url={{ page.url | absolute_url | url_encode }}&title={{ page.title }}" class="btn" title="{{ site.data.ui-text[site.locale].share_on_label }} Reddit"><i class="fab fa-fw fa-reddit" aria-hidden="true"></i><span> Reddit</span></a>{% endraw %}
+{% raw %}<a
+  href="https://www.reddit.com/submit?url={{ page.url | absolute_url | url_encode }}&title={{ page.title }}"
+  class="btn"
+  title="{{ site.data.ui-text[site.locale].share_on_label }} Reddit"
+  ><i class="fab fa-fw fa-reddit" aria-hidden="true"></i><span> Reddit</span></a
+>{% endraw %}
 ```
 
 The important parts to change are:
 
-1. Share point URL *eg. `https://www.reddit.com/submit?url=`
+1. Share point URL \*eg. `https://www.reddit.com/submit?url=`
 2. Link `title`
 3. [Font Awesome icon](http://fontawesome.io/icons/) (`fa-` class)
 4. Link label
@@ -789,10 +802,8 @@ Under the `$buttoncolors:` color map in `_sass/minimal-mistakes/_buttons.scss` s
 
 ```scss
 $buttoncolors:
-(facebook, $facebook-color),
-(twitter, $twitter-color),
-(linkedin, $linkedin-color),
-(reddit, $reddit-color);
+  (facebook, $facebook-color), (twitter, $twitter-color),
+  (linkedin, $linkedin-color), (reddit, $reddit-color);
 ```
 
 **ProTip:** For bonus points you can modify the Sass variable `$reddit-color` that is set in `_variables.scss` [or use a different "brand" color](http://brandcolors.net/).
@@ -801,7 +812,12 @@ $buttoncolors:
 Add the new `.btn--reddit` class to the `<a>` element from earlier, [compile `main.css`]({{ "/docs/stylesheets/" | relative_url }}) and away you go.
 
 ```html
-{% raw %}<a href="https://www.reddit.com/submit?url={{ page.url | absolute_url | url_encode }}&title={{ page.title }}" class="btn btn--reddit" title="{{ site.data.ui-text[site.locale].share_on_label }} Reddit"><i class="fab fa-fw fa-reddit" aria-hidden="true"></i><span> Reddit</span></a>{% endraw %}
+{% raw %}<a
+  href="https://www.reddit.com/submit?url={{ page.url | absolute_url | url_encode }}&title={{ page.title }}"
+  class="btn btn--reddit"
+  title="{{ site.data.ui-text[site.locale].share_on_label }} Reddit"
+  ><i class="fab fa-fw fa-reddit" aria-hidden="true"></i><span> Reddit</span></a
+>{% endraw %}
 ```
 
 ![Reddit social share link button]({{ "/assets/images/mm-social-share-links-reddit-color.png" | relative_url }})
@@ -819,17 +835,18 @@ The `default` layout includes a number of custom templates, which provide ways f
 Add some Liquid tags for the new configuration to `_includes/head/custom.html`.
 {% raw %}```html
 {% if page.page_css %}
-  {% for stylesheet in page.page_css %}
-    <link rel="stylesheet" href="{{ stylesheet | relative_url }}">
-  {% endfor %}
+{% for stylesheet in page.page_css %}
+<link rel="stylesheet" href="{{ stylesheet | relative_url }}">
+{% endfor %}
 {% endif %}
-```{% endraw %}
+
+````{% endraw %}
 
 Next, add `page_css` to any page's YAML Front Matter to have your CSS loaded for that page.
 ```yaml
 page_css:
   - /path/to/your/custom.css
-```
+````
 
 ### Footer
 
@@ -838,16 +855,17 @@ page_css:
 Add some Liquid tags for the new configuration to `_includes/footer/custom.html`.
 {% raw %}```html
 {% if page.page_js %}
-  {% for script in page.page_js %}
-    <script src="{{ script | relative_url }}"></script>
-  {% endfor %}
+{% for script in page.page_js %}
+<script src="{{ script | relative_url }}"></script>
+{% endfor %}
 {% endif %}
-```{% endraw %}
+
+````{% endraw %}
 
 Next, add `page_js` to any page's YAML Front Matter to have your JavaScript loaded for that page.
 ```yaml
 page_js:
   - /path/to/your/custom.js
-```
+````
 
 ---

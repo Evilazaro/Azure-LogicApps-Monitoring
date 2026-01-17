@@ -73,6 +73,7 @@ u,
 ins {
   text-decoration: none;
   border-bottom: 1px solid $text-color;
+
   a {
     color: inherit;
   }
@@ -159,7 +160,8 @@ pre {
 }
 
 pre {
-  overflow-x: auto; /* add scrollbars to wide code blocks*/
+  overflow-x: auto;
+  /* add scrollbars to wide code blocks*/
 }
 
 /* horizontal rule */

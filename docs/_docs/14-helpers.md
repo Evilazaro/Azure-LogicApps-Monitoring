@@ -67,8 +67,15 @@ Will output the following:
 
 ```html
 <figure>
-  <a href="/assets/images/unsplash-image-10.jpg" class="image-popup" title="This is a figure caption.">
-    <img src="/assets/images/unsplash-image-10.jpg" alt="this is a placeholder image">
+  <a
+    href="/assets/images/unsplash-image-10.jpg"
+    class="image-popup"
+    title="This is a figure caption."
+  >
+    <img
+      src="/assets/images/unsplash-image-10.jpg"
+      alt="this is a placeholder image"
+    />
   </a>
   <figcaption>This is a figure caption.</figcaption>
 </figure>
@@ -130,7 +137,7 @@ Designed to compliment the [`splash`]({{ "/docs/layouts/#splash-page-layout" | r
 To add a feature row containing three content blocks with text and image, add the following YAML Front Matter
 
 | Name              | Required     | Description                                                                                          | Default                            |
-| ----------------- | ------------ | ---------------------------------------------------------------------------------------------------- | ---------------------------------- |
+| ----------------- | ------------ | ---------------------------------------------------------------------------------------------------- | ---------------------------------- | ----- |
 | **image_path**    | **Required** | Full path to image eg: `/assets/images/filename.jpg`. Use absolute URLS for those hosted externally. |                                    |
 | **image_caption** | Optional     | Caption for image, Markdown is supported eg: `"Image from [Unsplash](https://unsplash.com)"`         |
 | **alt**           | Optional     | Alternate text for image.                                                                            |                                    |
@@ -178,11 +185,11 @@ And then drop-in the feature row include in the body where you'd like it to appe
 
 Embed a video from YouTube, Vimeo, Google Drive, or bilibili that responsively sizes to fit the width of its parent. To help with GDPR compliance, the theme is using the privacy enhanced version of YouTube and Vimeo providers out of the box.
 
-| Parameter  | Required     | Description                                                |
-| ---------- | ------------ | ---------------------------------------------------------- |
-| `id`       | **Required** | ID of the video                                            |
+| Parameter  | Required     | Description                                                                      |
+| ---------- | ------------ | -------------------------------------------------------------------------------- |
+| `id`       | **Required** | ID of the video                                                                  |
 | `provider` | **Required** | Hosting provider of the video: `youtube`, `vimeo`, `google-drive`, or `bilibili` |
-| `danmaku`  | Optional     | Bilibili only, [details below](#Bilibili)                  |
+| `danmaku`  | Optional     | Bilibili only, [details below](#Bilibili)                                        |
 
 ### YouTube
 
@@ -278,12 +285,12 @@ Auto-generated table of contents list for your posts and pages can be enabled us
 
 Add `toc: true` to the YAML Front Matter of any post or page.
 
-| Parameter      | Required | Description                                                 | Default                                                                                                                                                       |
-| -------------- | -------- | ----------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **toc**        | Optional | Show table of contents. (boolean)                           | `false`                                                                                                                                                       |
-| **toc_label**  | Optional | Table of contents title. (string)                           | `toc_label` in UI Text data file.                                                                                                                             |
+| Parameter      | Required | Description                                                 | Default                                                                                                                                                 |
+| -------------- | -------- | ----------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **toc**        | Optional | Show table of contents. (boolean)                           | `false`                                                                                                                                                 |
+| **toc_label**  | Optional | Table of contents title. (string)                           | `toc_label` in UI Text data file.                                                                                                                       |
 | **toc_icon**   | Optional | Table of contents icon, displays before the title. (string) | [Font Awesome](https://fontawesome.com/v6/search?s=solid&m=free) <i class="fas fa-file-alt"></i> **file-alt** icon. Other FA icons can be used instead. |
-| **toc_sticky** | Optional | Stick table of contents to top of screen.                   | `false`                                                                                                                                                       |
+| **toc_sticky** | Optional | Stick table of contents to top of screen.                   | `false`                                                                                                                                                 |
 
 **TOC example with custom title and icon**
 
@@ -292,7 +299,6 @@ toc: true
 toc_label: "My Table of Contents"
 toc_icon: "cog"
 ---
-
 ```
 
 **Note:** using both methods will have unintended results. Be sure to remove `{% raw %}{% include toc %}{% endraw %}` placed table of contents from your content when using `toc: true`.
@@ -305,18 +311,26 @@ toc_icon: "cog"
 Good headings:
 
 # Heading
+
 ## Heading
+
 ### Heading
+
 ### Heading
+
 # Heading
+
 ## Heading
 
 Bad headings:
 
 # Heading
+
 ### Heading (skipped H2)
+
 ##### Heading (skipped H4)
 ```
+
 {% endcapture %}
 
 <div class="notice--warning">
@@ -337,9 +351,9 @@ To include a Kramdown [auto-generated table of contents](https://kramdown.gettal
 **Deprecated:** `toc` helper will be removed in the next major version of the theme. It is encouraged that you migrate to the YAML Front Matter method above.
 {: .notice--danger}
 
-| Parameter | Required | Description                                                 | Default                                                                                                                                                       |
-| --------- | -------- | ----------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **title** | Optional | Table of contents title. (string)                           | `toc_label` in UI Text data file.                                                                                                                             |
+| Parameter | Required | Description                                                 | Default                                                                                                                                                 |
+| --------- | -------- | ----------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **title** | Optional | Table of contents title. (string)                           | `toc_label` in UI Text data file.                                                                                                                       |
 | **icon**  | Optional | Table of contents icon, displays before the title. (string) | [Font Awesome](https://fontawesome.com/v6/search?s=solid&m=free) <i class="fas fa-file-alt"></i> **file-alt** icon. Other FA icons can be used instead. |
 
 **TOC example with custom title and icon**

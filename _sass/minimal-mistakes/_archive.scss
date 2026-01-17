@@ -51,7 +51,7 @@
   text-overflow: ellipsis;
 
   a[rel="permalink"]::before {
-    content: '';
+    content: "";
     position: absolute;
     inset: 0;
   }
@@ -165,7 +165,8 @@
   }
 
   @include breakpoint($medium) {
-    margin-inline: 0; /* override margin*/
+    margin-inline: 0;
+    /* override margin*/
     width: span(3 of 12);
 
     &:nth-child(2n + 1) {
@@ -280,12 +281,13 @@
   }
 
   a.btn::before {
-    content: '';
+    content: "";
     position: absolute;
     inset: 0;
   }
 
-  &--left, &--right {
+  &--left,
+  &--right {
     position: relative;
     margin-inline: 0;
     width: 100%;
@@ -293,7 +295,7 @@
     font-size: 1.125em;
 
     a.btn::before {
-      content: '';
+      content: "";
       position: absolute;
       inset: 0;
     }
@@ -367,7 +369,7 @@
     }
 
     a.btn::before {
-      content: '';
+      content: "";
       position: absolute;
       inset: 0;
     }
@@ -425,7 +427,7 @@
 /* Place inside a single layout */
 
 .layout--single {
-	.feature__wrapper {
-		display: inline-block;
-	}
+  .feature__wrapper {
+    display: inline-block;
+  }
 }

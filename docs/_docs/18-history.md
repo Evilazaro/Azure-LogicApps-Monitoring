@@ -5,7 +5,7 @@ permalink: "/docs/history/"
 excerpt: Change log of enhancements and bug fixes made to the theme.
 sidebar:
   nav: docs
-last_modified_at: '2025-08-31T11:43:03+08:00'
+last_modified_at: "2025-08-31T11:43:03+08:00"
 toc: false
 ---
 
@@ -15,6 +15,7 @@ toc: false
 -->
 
 {% raw %}
+
 ## Unreleased
 
 ### Enhancements
@@ -1802,4 +1803,5 @@ toc: false
 - Google Analytics, Google Authorship, webmaster verifies, and Twitter card meta are now optional.
 
 ## [1.0.1](https://github.com/mmistakes/minimal-mistakes/releases/tag/v1.0.1)
+
 {% endraw %}

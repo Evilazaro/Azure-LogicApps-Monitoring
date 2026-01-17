@@ -4,13 +4,13 @@ Found a typo in the documentation or interested in [fixing a bug](https://github
 
 For help with using the theme or general Jekyll support questions, please use the [Jekyll Talk forums](https://talk.jekyllrb.com/).
 
-Minimal Mistakes has been designed as a base for you to customize and fit your 
-site's unique needs. Please keep this in mind when requesting features and/or 
-submitting pull requests. If it's not something that most people will use, I 
+Minimal Mistakes has been designed as a base for you to customize and fit your
+site's unique needs. Please keep this in mind when requesting features and/or
+submitting pull requests. If it's not something that most people will use, I
 probably won't consider it. When in doubt ask.
 
-This goes for author sidebar links and "share button" additions -- I have no 
-intention of merging in every possibly option, the essentials are there to get 
+This goes for author sidebar links and "share button" additions -- I have no
+intention of merging in every possibly option, the essentials are there to get
 you started :smile:.
 
 ## Pull Requests
@@ -18,6 +18,6 @@ you started :smile:.
 When submitting a pull request:
 
 1. Clone the repo.
-2. Create a branch off of `master` and give it a meaningful name (e.g. 
+2. Create a branch off of `master` and give it a meaningful name (e.g.
    `my-awesome-new-feature`) and describe the feature or fix.
 3. Open a pull request on GitHub.

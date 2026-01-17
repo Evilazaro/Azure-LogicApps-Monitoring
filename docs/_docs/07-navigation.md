@@ -52,21 +52,21 @@ Enable breadcrumb links to help visitors better navigate deep sites. Because of 
 ![breadcrumb navigation example]({{ "/assets/images/mm-breadcrumbs-example.jpg" | relative_url }})
 
 ```yaml
-breadcrumbs: true  # disabled by default
+breadcrumbs: true # disabled by default
 ```
 
 Breadcrumb start link text and separator character can both be changed in `_data/ui-text.yml`.
 
 ```yaml
-breadcrumb_home_label : "Home"
-breadcrumb_separator  : "/"
+breadcrumb_home_label: "Home"
+breadcrumb_separator: "/"
 ```
 
 For breadcrumbs that resemble something like `Start > Blog > My Awesome Post` you'd apply these settings:
 
 ```yaml
-breadcrumb_home_label : "Start"
-breadcrumb_separator  : ">"
+breadcrumb_home_label: "Start"
+breadcrumb_separator: ">"
 ```
 
 ## Custom sidebar navigation menu

@@ -1,7 +1,7 @@
 ---
-title:  "Gemified Theme -- Beta Release"
+title: "Gemified Theme -- Beta Release"
 last_modified_at: 2018-03-20T16:01:04-04:00
-categories: 
+categories:
   - Jekyll
 tags:
   - update
@@ -17,7 +17,7 @@ Fine with all that? Great. Let's continue.
 
 If you're migrating a site already using Minimal Mistakes and haven't customized any of the `_includes`, `_layouts`, `_sass` partials, or `assets` this should be quick and painless.
 
-## Step 1: Remove Theme Files 
+## Step 1: Remove Theme Files
 
 Remove `_includes`, `_layouts`, `_sass`, `assets` folders and files within. You won't need these anymore as they're bundled in the theme.
 
@@ -29,7 +29,7 @@ Replace `gem "github-pages` or `gem "jekyll"` with `gem "jekyll", "~> 3.3.0"`. Y
 
 [^update-jekyll]: You could also run `bundle update jekyll` to update Jekyll.
 
-Add the Minimal Mistakes theme gem: 
+Add the Minimal Mistakes theme gem:
 
 ```ruby
 gem "minimal-mistakes-jekyll"
@@ -64,7 +64,7 @@ If this is a new site be sure to add the following files to `_data/` and customi
 - [`_data/ui-text.yml`](https://github.com/mmistakes/minimal-mistakes/blob/master/_data/ui-text.yml) - UI text [documentation]({{ "/docs/ui-text/" | relative_url }})
 - [`_data/navigation.yml`](https://github.com/mmistakes/minimal-mistakes/blob/master/_data/navigation.yml) - navigation [documentation]({{ "/docs/navigation/" | relative_url }})
 
-You'll also need to: 
+You'll also need to:
 
 - Replace `<site root>/index.html` with a modified [Minimal Mistakes `index.html`](https://github.com/mmistakes/minimal-mistakes/blob/master/index.html).
 - Change `layout: post` in `_posts/0000-00-00-welcome-to-jekyll.markdown` to `layout: single`.

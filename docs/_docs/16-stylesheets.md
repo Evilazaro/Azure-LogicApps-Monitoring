@@ -44,7 +44,6 @@ To override the default [Sass](http://sass-lang.com/guide) (located in theme's
 `_sass` directory), do one of the following:
 
 1. Copy directly from the Minimal Mistakes theme gem
-
    - Go to your local Minimal Mistakes gem installation directory (run
      `bundle show minimal-mistakes-jekyll` to get the path to it).
    - Copy the contents of `/assets/css/main.scss` from there to
@@ -52,7 +51,6 @@ To override the default [Sass](http://sass-lang.com/guide) (located in theme's
    - Customize what you want inside `<your_project>/assets/css/main.scss`.
 
 2. Copy from this repo.
-
    - Copy the contents of [assets/css/main.scss](https://github.com/mmistakes/minimal-mistakes/blob/master/assets/css/main.scss)
      to `<your_project>`.
    - Customize what you want inside `<your_project/assets/css/main.scss`.
@@ -88,9 +86,11 @@ By default the theme uses [system fonts](https://medium.com/designing-medium/sys
 
 ```scss
 /* system typefaces */
-$serif      : Georgia, Times, serif;
-$sans-serif : -apple-system, BlinkMacSystemFont, "Roboto", "Segoe UI", "Helvetica Neue", "Lucida Grande", Arial, sans-serif;
-$monospace  : Monaco, Consolas, "Lucida Console", monospace;
+$serif: Georgia, Times, serif;
+$sans-serif:
+  -apple-system, BlinkMacSystemFont, "Roboto", "Segoe UI", "Helvetica Neue",
+  "Lucida Grande", Arial, sans-serif;
+$monospace: Monaco, Consolas, "Lucida Console", monospace;
 ```
 
 Sans-serif fonts have been used for most of the type, with serifs reserved for captions. If you wish to change this you'll need to poke around the various `SCSS` partials and modify `font-family` declarations.
@@ -105,17 +105,30 @@ Not a fan of the refreshed typography of the theme and want to revert back an ol
 **1.** Add this Google Fonts script to [`_includes/head/custom.html`](https://github.com/mmistakes/minimal-mistakes/blob/master/_includes/head/custom.html):
 
 ```html
-<link href="https://fonts.googleapis.com/css?family=PT+Sans+Narrow:400,700|PT+Serif:400,700,400italic" rel="stylesheet" type="text/css">
+<link
+  href="https://fonts.googleapis.com/css?family=PT+Sans+Narrow:400,700|PT+Serif:400,700,400italic"
+  rel="stylesheet"
+  type="text/css"
+/>
 ```
 
 **2.** Update the following SCSS variables:
 
 ```scss
-$serif              : "PT Serif", Georgia, Times, serif;
-$sans-serif-narrow  : "PT Sans Narrow", -apple-system, BlinkMacSystemFont, "Roboto", "Segoe UI", "Helvetica Neue", "Lucida Grande", Arial, sans-serif;
+$serif: "PT Serif", Georgia, Times, serif;
+$sans-serif-narrow:
+  "PT Sans Narrow",
+  -apple-system,
+  BlinkMacSystemFont,
+  "Roboto",
+  "Segoe UI",
+  "Helvetica Neue",
+  "Lucida Grande",
+  Arial,
+  sans-serif;
 
-$global-font-family : $serif;
-$header-font-family : $sans-serif-narrow;
+$global-font-family: $serif;
+$header-font-family: $sans-serif-narrow;
 ```
 
 ### Type scale
@@ -135,14 +148,14 @@ Type sizes are set in ems to proportional scale as the screen size changes. Larg
 
 ```scss
 /* type scale */
-$type-size-1 : 2.441em;  // ~39.056px
-$type-size-2 : 1.953em;  // ~31.248px
-$type-size-3 : 1.563em;  // ~25.008px
-$type-size-4 : 1.25em;   // ~20px
-$type-size-5 : 1em;      // ~16px
-$type-size-6 : 0.75em;   // ~12px
-$type-size-7 : 0.6875em; // ~11px
-$type-size-8 : 0.625em;  // ~10px
+$type-size-1: 2.441em; // ~39.056px
+$type-size-2: 1.953em; // ~31.248px
+$type-size-3: 1.563em; // ~25.008px
+$type-size-4: 1.25em; // ~20px
+$type-size-5: 1em; // ~16px
+$type-size-6: 0.75em; // ~12px
+$type-size-7: 0.6875em; // ~11px
+$type-size-8: 0.625em; // ~10px
 ```
 
 ### Colors
@@ -388,6 +401,6 @@ And `$susy` is used for setting [the grid](http://susy.oddbird.net/) the theme u
 You can disable either the fade-in intro animation, element transition animations, or both by overriding the corresponding variables. For example if you wanted to disable all animations you could include the following lines:
 
 ```scss
-$intro-transition  : none;
-$global-transition : none;
+$intro-transition: none;
+$global-transition: none;
 ```

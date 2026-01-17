@@ -7,9 +7,9 @@ last_modified_at: 2018-03-20T16:00:02-04:00
 
 Collections like posts and pages work as you'd expect. If you're new to them be sure to read [Jekyll's documentation](https://jekyllrb.com/docs/collections/).
 
-The theme has been built with collections in mind and you will find [several examples]({{ "/collection-archive/" | relative_url }}) on the demo site ([portfolio]({{ "/portfolio/" | relative_url }}), [recipes]({{ "/recipes/" | relative_url }}), [pets]({{ "/pets/" | relative_url }})). 
+The theme has been built with collections in mind and you will find [several examples]({{ "/collection-archive/" | relative_url }}) on the demo site ([portfolio]({{ "/portfolio/" | relative_url }}), [recipes]({{ "/recipes/" | relative_url }}), [pets]({{ "/pets/" | relative_url }})).
 
-**Collections in the Wild:** This set of documentation is also [built as a collection](https://github.com/{{ site.repository }}/blob/master/docs/_docs/) if you're looking for a fully fleshed out example to inspect.
+**Collections in the Wild:** This set of documentation is also [built as a collection](https://github.com/{{ site.repository }}/blob/master/docs/\_docs/) if you're looking for a fully fleshed out example to inspect.
 {: .notice--info}
 
 ---
@@ -41,7 +41,7 @@ defaults:
       share: true
 ```
 
-Now make a portfolio.md file in the '_pages' folder.
+Now make a portfolio.md file in the '\_pages' folder.
 
 ```yaml
 ---
@@ -54,6 +54,6 @@ classes: wide
 ---
 ```
 
-And then create portfolio content like [`_portfolio/foo-bar-website.md`](https://github.com/{{ site.repository }}/blob/master/docs/_portfolio/foo-bar-website.md), to end up with something like this.
+And then create portfolio content like [`_portfolio/foo-bar-website.md`](https://github.com/{{ site.repository }}/blob/master/docs/\_portfolio/foo-bar-website.md), to end up with something like this.
 
 ![portfolio collection example]({{ "/assets/images/mm-portfolio-collection-example.jpg" | relative_url }})

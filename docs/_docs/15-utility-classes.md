@@ -115,30 +115,30 @@ Make any link standout more when applying the `.btn .btn--primary` classes.
 <a href="#" class="btn btn--primary">Link Text</a>
 ```
 
-| Button Type   | Example | Class | Kramdown |
-| ------        | ------- | ----- | ------- |
-| Default       | [Text](#link){: .btn} | `.btn` | `[Text](#link){: .btn}` |
-| Primary       | [Text](#link){: .btn .btn--primary} | `.btn .btn--primary` | `[Text](#link){: .btn .btn--primary}` |
-| Success       | [Text](#link){: .btn .btn--success} | `.btn .btn--success` | `[Text](#link){: .btn .btn--success}` |
-| Warning       | [Text](#link){: .btn .btn--warning} | `.btn .btn--warning` | `[Text](#link){: .btn .btn--warning}` |
-| Danger        | [Text](#link){: .btn .btn--danger} | `.btn .btn--danger` | `[Text](#link){: .btn .btn--danger}` |
-| Info          | [Text](#link){: .btn .btn--info} | `.btn .btn--info` | `[Text](#link){: .btn .btn--info}` |
-| Inverse       | [Text](#link){: .btn .btn--inverse} | `.btn .btn--inverse` | `[Text](#link){: .btn .btn--inverse}` |
+| Button Type   | Example                                   | Class                      | Kramdown                                    |
+| ------------- | ----------------------------------------- | -------------------------- | ------------------------------------------- |
+| Default       | [Text](#link){: .btn}                     | `.btn`                     | `[Text](#link){: .btn}`                     |
+| Primary       | [Text](#link){: .btn .btn--primary}       | `.btn .btn--primary`       | `[Text](#link){: .btn .btn--primary}`       |
+| Success       | [Text](#link){: .btn .btn--success}       | `.btn .btn--success`       | `[Text](#link){: .btn .btn--success}`       |
+| Warning       | [Text](#link){: .btn .btn--warning}       | `.btn .btn--warning`       | `[Text](#link){: .btn .btn--warning}`       |
+| Danger        | [Text](#link){: .btn .btn--danger}        | `.btn .btn--danger`        | `[Text](#link){: .btn .btn--danger}`        |
+| Info          | [Text](#link){: .btn .btn--info}          | `.btn .btn--info`          | `[Text](#link){: .btn .btn--info}`          |
+| Inverse       | [Text](#link){: .btn .btn--inverse}       | `.btn .btn--inverse`       | `[Text](#link){: .btn .btn--inverse}`       |
 | Light Outline | [Text](#link){: .btn .btn--light-outline} | `.btn .btn--light-outline` | `[Text](#link){: .btn .btn--light-outline}` |
 
-| Button Size | Example | Class | Kramdown |
-| ----------- | ------- | ----- | -------- |
+| Button Size | Example                                                 | Class                              | Kramdown                                            |
+| ----------- | ------------------------------------------------------- | ---------------------------------- | --------------------------------------------------- |
 | X-Large     | [X-Large Button](#){: .btn .btn--primary .btn--x-large} | `.btn .btn--primary .btn--x-large` | `[Text](#link){: .btn .btn--primary .btn--x-large}` |
-| Large       | [Large Button](#){: .btn .btn--primary .btn--large} | `.btn .btn--primary .btn--large` | `[Text](#link){: .btn .btn--primary .btn--large}` |
-| Default     | [Default Button](#){: .btn .btn--primary} | `.btn .btn--primary` | `[Text](#link){: .btn .btn--primary }` |
-| Small       | [Small Button](#){: .btn .btn--primary .btn--small} | `.btn .btn--primary .btn--small` | `[Text](#link){: .btn .btn--primary .btn--small}` |
+| Large       | [Large Button](#){: .btn .btn--primary .btn--large}     | `.btn .btn--primary .btn--large`   | `[Text](#link){: .btn .btn--primary .btn--large}`   |
+| Default     | [Default Button](#){: .btn .btn--primary}               | `.btn .btn--primary`               | `[Text](#link){: .btn .btn--primary }`              |
+| Small       | [Small Button](#){: .btn .btn--primary .btn--small}     | `.btn .btn--primary .btn--small`   | `[Text](#link){: .btn .btn--primary .btn--small}`   |
 
 ## Notices
 
 Call attention to a block of text.
 
 | Notice Type | Class              |
-| ----------- | -----              |
+| ----------- | ------------------ |
 | Default     | `.notice`          |
 | Primary     | `.notice--primary` |
 | Info        | `.notice--info`    |
@@ -167,9 +167,9 @@ Call attention to a block of text.
 {% capture notice-text %}
 You can also add the `.notice` class to a `<div>` element.
 
-* Bullet point 1
-* Bullet point 2
-{% endcapture %}
+- Bullet point 1
+- Bullet point 2
+  {% endcapture %}
 
 <div class="notice--info">
   <h4 class="no_toc">Notice Headline:</h4>

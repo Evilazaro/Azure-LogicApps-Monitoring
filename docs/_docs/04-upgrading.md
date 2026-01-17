@@ -26,7 +26,7 @@ When using Bundler you can downgrade or lock the theme to a specific release ([t
 gem "minimal-mistakes-jekyll", :git => "https://github.com/mmistakes/minimal-mistakes.git", :tag => "{{ site.data.theme.version }}"
 ```
 
-  [tag]: https://github.com/mmistakes/minimal-mistakes/tags
+[tag]: https://github.com/mmistakes/minimal-mistakes/tags
 
 For more information on [installing gems from Git repositories](https://bundler.io/guides/git.html) consult Bundler's documentation.
 
@@ -70,12 +70,12 @@ Another way of dealing with updates is [downloading the theme](https://github.co
 
 Here's a quick checklist of the important folders/files you'll want to be mindful of:
 
-| Name                   |     |
-| ----                   | --- |
-| `_layouts`             | Replace all. Apply edits if you customized any layouts. |
-| `_includes`            | Replace all. Apply edits if you customized any includes. |
-| `assets`               | Replace all. Apply edits if you customized stylesheets or scripts. |
-| `_sass`                | Replace all. Apply edits if you customized Sass partials. |
+| Name                   |                                                                                |
+| ---------------------- | ------------------------------------------------------------------------------ |
+| `_layouts`             | Replace all. Apply edits if you customized any layouts.                        |
+| `_includes`            | Replace all. Apply edits if you customized any includes.                       |
+| `assets`               | Replace all. Apply edits if you customized stylesheets or scripts.             |
+| `_sass`                | Replace all. Apply edits if you customized Sass partials.                      |
 | `_data/navigation.yml` | Safe to keep. Verify that there were no major structural changes or additions. |
 | `_data/ui-text.yml`    | Safe to keep. Verify that there were no major structural changes or additions. |
 | `_config.yml`          | Safe to keep. Verify that there were no major structural changes or additions. |
