@@ -41,18 +41,19 @@ flowchart TB
         push(["Push to Main"])
         pr(["Pull Request"])
         manual(["Manual Dispatch"])
-        schedule(["Dependabot Schedule"])
     end
 
     %% ===== CONTINUOUS INTEGRATION =====
     subgraph CIGroup["🔄 Continuous Integration"]
         direction TB
         ci_workflow["CI - .NET Build and Test"]
-        ci_reusable[["CI Reusable Workflow"]]
         
-        subgraph CIJobs["CI Jobs"]
-            build(["Build"])
-            test(["Test"])
+        subgraph CIJobs["CI Jobs (via Reusable Workflow)"]
+            direction TB
+            subgraph MatrixJobs["Matrix: Ubuntu, Windows, macOS"]
+                build(["Build"])
+                test(["Test"])
+            end
             analyze(["Analyze"])
         end
     end
@@ -63,14 +64,14 @@ flowchart TB
         cd_workflow["CD - Azure Deployment"]
         
         subgraph CDJobs["CD Jobs"]
-            ci_call[["Call CI Reusable"]]
+            ci_stage[["CI Stage (Reusable)"]]
             deploy(["Deploy Dev"])
         end
     end
 
-    %% ===== DEPENDENCY MANAGEMENT =====
-    subgraph DMGroup["📦 Dependency Management"]
-        dependabot["Dependabot"]
+    %% ===== EXTERNAL SERVICES =====
+    subgraph ExternalGroup["🔧 External Services"]
+        dependabot["Dependabot<br/>(Config-based)"]
     end
 
     %% ===== RESULTS =====
@@ -79,29 +80,30 @@ flowchart TB
         failure_handler(["Handle Failure"])
     end
 
-    %% Trigger connections - events initiate workflows
+    %% ===== TRIGGER CONNECTIONS =====
     push -->|triggers| ci_workflow
     push -->|triggers| cd_workflow
     pr -->|triggers| ci_workflow
     manual -->|triggers| ci_workflow
     manual -->|triggers| cd_workflow
-    schedule -->|triggers| dependabot
 
-    %% CI Flow - build and test pipeline
-    ci_workflow -->|calls| ci_reusable
-    ci_reusable -->|starts| build
+    %% ===== CI FLOW =====
+    ci_workflow -->|calls reusable| MatrixJobs
+    MatrixJobs -->|parallel| build
     build -->|on success| test
     build -->|on success| analyze
     test -->|reports to| summary_job
     analyze -->|reports to| summary_job
 
-    %% CD Flow - deployment pipeline
-    cd_workflow -->|calls| ci_call
-    ci_call -->|invokes| ci_reusable
-    ci_call -->|on success| deploy
+    %% ===== CD FLOW =====
+    cd_workflow -->|runs| ci_stage
+    ci_stage -->|on success| deploy
     deploy -->|reports to| summary_job
 
-    %% Failure path - error handling
+    %% ===== DEPENDABOT FLOW =====
+    dependabot -.->|creates PRs| pr
+
+    %% ===== FAILURE PATHS =====
     test --x|on failure| failure_handler
     analyze --x|on failure| failure_handler
     deploy --x|on failure| failure_handler
@@ -119,21 +121,25 @@ flowchart TB
     classDef trigger fill:#818CF8,stroke:#4F46E5,color:#FFFFFF
     %% Data stores: Amber - reporting
     classDef datastore fill:#F59E0B,stroke:#D97706,color:#000000
+    %% Matrix: Light emerald - parallel execution
+    classDef matrix fill:#D1FAE5,stroke:#10B981,color:#000000
 
-    %% Subgraph background styling - lighter shades with transparency
+    %% ===== SUBGRAPH STYLING =====
     style TriggersGroup fill:#EEF2FF,stroke:#4F46E5,stroke-width:2px
     style CIGroup fill:#ECFDF5,stroke:#10B981,stroke-width:2px
     style CIJobs fill:#D1FAE5,stroke:#059669,stroke-width:1px
+    style MatrixJobs fill:#E0E7FF,stroke:#4F46E5,stroke-width:1px
     style CDGroup fill:#EEF2FF,stroke:#4F46E5,stroke-width:2px
     style CDJobs fill:#E0E7FF,stroke:#3730A3,stroke-width:1px
-    style DMGroup fill:#F3F4F6,stroke:#6B7280,stroke-width:2px
+    style ExternalGroup fill:#F3F4F6,stroke:#6B7280,stroke-width:2px
     style ResultsGroup fill:#FEF3C7,stroke:#F59E0B,stroke-width:2px
 
-    %% Apply styles to nodes
-    class push,pr,manual,schedule trigger
+    %% ===== NODE STYLING =====
+    class push,pr,manual trigger
     class build,test primary
     class deploy,analyze secondary
-    class ci_reusable,ci_call external
+    class ci_stage external
+    class dependabot external
     class failure_handler failed
     class summary_job datastore
 ```
