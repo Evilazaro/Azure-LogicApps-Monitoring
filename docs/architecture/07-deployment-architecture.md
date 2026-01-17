@@ -308,6 +308,7 @@ flowchart TB
     classDef trigger fill:#818CF8,stroke:#4F46E5,color:#FFFFFF
     classDef decision fill:#FFFBEB,stroke:#F59E0B,color:#000000
     classDef input fill:#F3F4F6,stroke:#6B7280,color:#000000
+    classDef matrix fill:#E0E7FF,stroke:#4F46E5,color:#000000
 
     %% ===== TRIGGER SOURCES =====
     subgraph TriggerGroup["🎯 Triggers"]
@@ -318,12 +319,23 @@ flowchart TB
     style TriggerGroup fill:#FEE2E2,stroke:#EF4444,stroke-width:2px
 
     %% ===== CI PIPELINE =====
-    subgraph CI["🔨 CI Pipeline"]
-        Build["Build"]
-        Test["Test"]
-        Analyze["Code Analysis"]
+    subgraph CI["🔨 CI Pipeline (Reusable Workflow)"]
+        direction TB
+        subgraph BuildMatrix["Build (Cross-Platform Matrix)"]
+            BuildLinux["🐧 ubuntu-latest"]
+            BuildWindows["🪟 windows-latest"]
+            BuildMac["🍎 macos-latest"]
+        end
+        subgraph TestMatrix["Test (Cross-Platform Matrix)"]
+            TestLinux["🐧 ubuntu-latest"]
+            TestWindows["🪟 windows-latest"]
+            TestMac["🍎 macos-latest"]
+        end
+        Analyze["📊 Code Analysis"]
     end
     style CI fill:#EEF2FF,stroke:#4F46E5,stroke-width:2px
+    style BuildMatrix fill:#E0E7FF,stroke:#818CF8,stroke-width:1px
+    style TestMatrix fill:#E0E7FF,stroke:#818CF8,stroke-width:1px
 
     %% ===== CD PIPELINE =====
     subgraph CD["🚀 CD Pipeline"]
@@ -342,9 +354,11 @@ flowchart TB
     style Azure fill:#FEF3C7,stroke:#F59E0B,stroke-width:2px
 
     %% ===== PIPELINE CONNECTIONS =====
-    Push -->|"triggers build"| CI
-    PR -->|"triggers build"| CI
-    Manual -->|"triggers deployment"| CD
+    Push -->|"triggers CI"| CI
+    PR -->|"triggers CI"| CI
+    Manual -->|"triggers CD"| CD
+    BuildMatrix -->|"parallel builds"| TestMatrix
+    TestMatrix -->|"tests complete"| Analyze
     CI -->|"on success"| CD
     Login -->|"authenticates"| Provision
     Provision -->|"creates infra"| Deploy
@@ -354,72 +368,157 @@ flowchart TB
 
     %% ===== APPLY STYLES =====
     class Push,PR,Manual trigger
-    class Build,Test,Analyze primary
+    class BuildLinux,BuildWindows,BuildMac,TestLinux,TestWindows,TestMac primary
+    class Analyze secondary
     class Login,Provision,Deploy secondary
     class Dev,Staging,Prod datastore
 ```
 
 ### GitHub Actions Workflows
 
-| Workflow      | File                                                   | Trigger         | Purpose              |
-| ------------- | ------------------------------------------------------ | --------------- | -------------------- |
-| **CI**        | [ci.yml](../../.github/workflows/ci.yml)               | Push, PR        | Build, test, analyze |
-| **Azure Dev** | [azure-dev.yml](../../.github/workflows/azure-dev.yml) | Manual dispatch | Full deployment      |
+| Workflow            | File                                                                     | Trigger           | Purpose                               |
+| ------------------- | ------------------------------------------------------------------------ | ----------------- | ------------------------------------- |
+| **CI**              | [ci-dotnet.yml](../../.github/workflows/ci-dotnet.yml)                   | Push, PR          | Orchestrates CI via reusable workflow |
+| **CI Reusable**     | [ci-dotnet-reusable.yml](../../.github/workflows/ci-dotnet-reusable.yml) | Called by CI      | Build, test, analyze (cross-platform) |
+| **Azure Dev (CD)**  | [azure-dev.yml](../../.github/workflows/azure-dev.yml)                   | Manual, CD events | Full deployment to Azure              |
+
+### Cross-Platform Matrix Strategy
+
+The CI pipeline **always** runs on multiple operating systems to ensure consistent behavior across platforms:
+
+| Platform        | Runner           | Purpose                         |
+| --------------- | ---------------- | ------------------------------- |
+| **Linux**       | ubuntu-latest    | Primary build/test environment  |
+| **Windows**     | windows-latest   | Windows compatibility testing   |
+| **macOS**       | macos-latest     | macOS compatibility testing     |
+
+### Artifact Naming Convention
+
+To avoid conflicts when multiple matrix jobs run in parallel, artifacts use platform-specific naming:
+
+| Artifact Type       | Naming Pattern                   | Example                           |
+| ------------------- | -------------------------------- | --------------------------------- |
+| **Build Artifacts** | `build-artifacts-{os}`           | `build-artifacts-ubuntu-latest`   |
+| **Test Results**    | `test-results-{os}`              | `test-results-windows-latest`     |
+| **Code Coverage**   | `code-coverage-{os}`             | `code-coverage-macos-latest`      |
+
+This ensures each platform's artifacts are stored separately, enabling:
+
+- **Independent downloads** per platform
+- **Platform-specific debugging** when issues occur
+- **No 409 Conflict errors** from duplicate artifact names
 
 ### CI Workflow Steps
 
 ```yaml
-# .github/workflows/ci.yml (simplified)
-name: CI
+# .github/workflows/ci-dotnet-reusable.yml (simplified)
+name: CI (.NET) - Reusable
 
 on:
-  push:
-    branches: [main]
-  pull_request:
-    branches: [main]
+  workflow_call:
+    inputs:
+      dotnet-version:
+        type: string
+        default: '10.0.x'
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    # Cross-platform matrix: always runs on all platforms
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: "10.0.x"
+          dotnet-version: ${{ inputs.dotnet-version }}
       - run: dotnet restore
       - run: dotnet build --no-restore
-      - run: dotnet test --no-build
+      - name: Upload Build Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          # Artifacts named with OS suffix to avoid conflicts
+          name: build-artifacts-${{ matrix.os }}
+          path: '**/bin/**'
+
+  test:
+    needs: build
+    # Cross-platform matrix: always runs on all platforms
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ inputs.dotnet-version }}
+      - run: dotnet test --collect:"XPlat Code Coverage"
+      - name: Upload Test Results
+        uses: actions/upload-artifact@v4
+        with:
+          # Artifacts named with OS suffix to avoid conflicts
+          name: test-results-${{ matrix.os }}
+          path: '**/TestResults/**'
 ```
 
 ### Azure Dev Workflow Steps
 
 ```yaml
 # .github/workflows/azure-dev.yml (simplified)
-name: Azure Dev
+name: Azure Developer CLI (CD)
 
 on:
   workflow_dispatch:
     inputs:
       environment:
-        description: "Environment to deploy"
+        description: 'Environment to deploy'
         required: true
-        default: "dev"
+        default: 'dev'
+        type: choice
+        options:
+          - dev
+          - staging
+          - production
+  push:
+    branches: [main]
 
 permissions:
   id-token: write
   contents: read
+  checks: write
+  pull-requests: write
 
 jobs:
+  # First run CI via reusable workflow
+  ci:
+    name: CI
+    uses: ./.github/workflows/ci-dotnet-reusable.yml
+    permissions:
+      contents: read
+      checks: write
+      pull-requests: write
+    with:
+      dotnet-version: '10.0.x'
+
+  # Then deploy to Azure
   deploy:
+    needs: ci
     runs-on: ubuntu-latest
-    environment: ${{ inputs.environment }}
+    environment: ${{ inputs.environment || 'dev' }}
     steps:
       - uses: actions/checkout@v4
-      - uses: azure/login@v2
+      - name: Azure Login (OIDC)
+        uses: azure/login@v2
         with:
           client-id: ${{ vars.AZURE_CLIENT_ID }}
           tenant-id: ${{ vars.AZURE_TENANT_ID }}
           subscription-id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
+      - name: Install Azure Developer CLI
+        uses: Azure/setup-azd@v2
       - run: azd provision --no-prompt
       - run: azd deploy --no-prompt
 ```
