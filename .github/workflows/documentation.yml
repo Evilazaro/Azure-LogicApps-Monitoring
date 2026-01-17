@@ -51,10 +51,6 @@ jobs:
         uses: actions/setup-python@v6
         with:
           python-version: ${{ env.PYTHON_VERSION }}
-          cache: pip
-          cache-dependency-path: |
-            pyproject.toml
-            requirements.txt
 
       - name: Set up build cache
         uses: actions/cache/restore@v4
