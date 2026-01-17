@@ -111,20 +111,22 @@ title: Bicep Module Relationships
 ---
 flowchart TB
     %% ===== CLASS DEFINITIONS =====
+    %% Primary components: Indigo - main processes/services
     classDef primary fill:#4F46E5,stroke:#3730A3,color:#FFFFFF
+    %% Secondary components: Emerald - secondary elements
     classDef secondary fill:#10B981,stroke:#059669,color:#FFFFFF
+    %% Data stores: Amber - artifacts/outputs
     classDef datastore fill:#F59E0B,stroke:#D97706,color:#000000
+    %% External systems: Gray - external calls
     classDef external fill:#6B7280,stroke:#4B5563,color:#FFFFFF,stroke-dasharray: 5 5
-    classDef failed fill:#F44336,stroke:#C62828,color:#FFFFFF
+    %% Triggers: Indigo light - entry points
     classDef trigger fill:#818CF8,stroke:#4F46E5,color:#FFFFFF
-    classDef decision fill:#FFFBEB,stroke:#F59E0B,color:#000000
-    classDef input fill:#F3F4F6,stroke:#6B7280,color:#000000
 
     %% ===== SUBSCRIPTION SCOPE =====
     subgraph Subscription["📦 Subscription Scope"]
         Main["main.bicep"]
     end
-    style Subscription fill:#312E81,stroke:#4F46E5,stroke-width:2px
+    style Subscription fill:#E0E7FF,stroke:#4F46E5,stroke-width:2px
 
     %% ===== RESOURCE GROUP SCOPE =====
     subgraph RG["📁 Resource Group"]
@@ -140,7 +142,7 @@ flowchart TB
         Network["network/"]
         Data["data/"]
     end
-    style SharedModules fill:#D1FAE5,stroke:#10B981,stroke-width:2px
+    style SharedModules fill:#ECFDF5,stroke:#10B981,stroke-width:2px
 
     %% ===== WORKLOAD MODULES =====
     subgraph WorkloadModules["⚙️ Workload Modules"]
@@ -191,14 +193,14 @@ title: Azure Developer CLI Workflow
 ---
 flowchart TB
     %% ===== CLASS DEFINITIONS =====
+    %% Primary components: Indigo - main processes/services
     classDef primary fill:#4F46E5,stroke:#3730A3,color:#FFFFFF
+    %% Secondary components: Emerald - secondary elements
     classDef secondary fill:#10B981,stroke:#059669,color:#FFFFFF
+    %% Data stores: Amber - artifacts/outputs
     classDef datastore fill:#F59E0B,stroke:#D97706,color:#000000
-    classDef external fill:#6B7280,stroke:#4B5563,color:#FFFFFF,stroke-dasharray: 5 5
-    classDef failed fill:#F44336,stroke:#C62828,color:#FFFFFF
+    %% Triggers: Indigo light - entry points/hooks
     classDef trigger fill:#818CF8,stroke:#4F46E5,color:#FFFFFF
-    classDef decision fill:#FFFBEB,stroke:#F59E0B,color:#000000
-    classDef input fill:#F3F4F6,stroke:#6B7280,color:#000000
 
     %% ===== INITIALIZE STAGE =====
     subgraph Init["🔧 Initialize"]
@@ -213,7 +215,7 @@ flowchart TB
         Prov2["Deploy Bicep"]
         Prov3["Create resources"]
     end
-    style Provision fill:#D1FAE5,stroke:#10B981,stroke-width:2px
+    style Provision fill:#ECFDF5,stroke:#10B981,stroke-width:2px
 
     %% ===== DEPLOY STAGE =====
     subgraph Deploy["🚀 Deploy"]
@@ -230,7 +232,7 @@ flowchart TB
         PreDeploy["predeploy"]
         PostDeploy["postdeploy"]
     end
-    style Hooks fill:#F3E8FF,stroke:#A855F7,stroke-width:2px
+    style Hooks fill:#E0E7FF,stroke:#4F46E5,stroke-width:2px
 
     %% ===== WORKFLOW CONNECTIONS =====
     Init1 -->|"start"| Init2
@@ -646,14 +648,12 @@ title: Local Development Workflow
 ---
 flowchart LR
     %% ===== CLASS DEFINITIONS =====
+    %% Primary components: Indigo - main processes/services
     classDef primary fill:#4F46E5,stroke:#3730A3,color:#FFFFFF
+    %% Secondary components: Emerald - secondary elements
     classDef secondary fill:#10B981,stroke:#059669,color:#FFFFFF
+    %% Data stores: Amber - authentication/config
     classDef datastore fill:#F59E0B,stroke:#D97706,color:#000000
-    classDef external fill:#6B7280,stroke:#4B5563,color:#FFFFFF,stroke-dasharray: 5 5
-    classDef failed fill:#F44336,stroke:#C62828,color:#FFFFFF
-    classDef trigger fill:#818CF8,stroke:#4F46E5,color:#FFFFFF
-    classDef decision fill:#FFFBEB,stroke:#F59E0B,color:#000000
-    classDef input fill:#F3F4F6,stroke:#6B7280,color:#000000
 
     %% ===== SETUP STAGE =====
     subgraph Setup["🔧 Setup"]
@@ -674,7 +674,7 @@ flowchart LR
         Aspire["dotnet run<br/>(AppHost)"]
         Dashboard["Aspire Dashboard<br/>localhost:15217"]
     end
-    style Run fill:#D1FAE5,stroke:#10B981,stroke-width:2px
+    style Run fill:#ECFDF5,stroke:#10B981,stroke-width:2px
 
     %% ===== WORKFLOW CONNECTIONS =====
     Clone -->|"downloads repo"| Deps
