@@ -46,6 +46,7 @@ jobs:
             includes
             material/overrides
             src/templates/partials/languages
+            mkdocs.yml
 
       - name: Set up Python runtime
         uses: actions/setup-python@v6
