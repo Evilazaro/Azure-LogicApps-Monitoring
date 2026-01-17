@@ -1153,13 +1153,13 @@ flowchart LR
 
 > **Legenda de Elementos**:
 >
-> | Forma | Significado |
-> |:-----:|:------------|
-> | 📦 **Retângulo** | Fase de trabalho |
-> | 🔶 **Hexágono** | Gate de decisão |
-> | ⭕ **Círculo vermelho** | Ponto de bloqueio |
-> | ➡️ **Seta sólida** | Caminho de aprovação |
-> | ➡️ **Seta pontilhada** | Caminho de bloqueio/rollback |
+> |          Forma          | Significado                  |
+> | :---------------------: | :--------------------------- |
+> |    📦 **Retângulo**     | Fase de trabalho             |
+> |     🔶 **Hexágono**     | Gate de decisão              |
+> | ⭕ **Círculo vermelho** | Ponto de bloqueio            |
+> |   ➡️ **Seta sólida**    | Caminho de aprovação         |
+> | ➡️ **Seta pontilhada**  | Caminho de bloqueio/rollback |
 
 ---
 
@@ -2300,7 +2300,6 @@ pie showData
 2. **Contingência não incluída:** Recomenda-se reserva de 15–20% para contingências, o que elevaria o investimento total para aproximadamente **R$ 276.000,00 a R$ 288.000,00**.
 
 3. **Investimentos não contemplados:**
-
    - Licenciamento de ferramentas (APM, Service Bus, etc.) — responsabilidade da Cooperflora conforme premissas
    - Infraestrutura de ambientes (DEV/HML/PRD)
    - Eventuais horas extras ou alocação emergencial

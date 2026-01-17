@@ -7,35 +7,41 @@ The eShop.Orders.API project has been refactored to use **Entity Framework Core*
 ## Changes Made
 
 ### 1. **NuGet Packages Added**
-   - `Microsoft.EntityFrameworkCore.SqlServer` (v9.0.0)
-   - `Microsoft.EntityFrameworkCore.Design` (v9.0.0)
-   - `Microsoft.EntityFrameworkCore.Tools` (v9.0.0)
+
+- `Microsoft.EntityFrameworkCore.SqlServer` (v9.0.0)
+- `Microsoft.EntityFrameworkCore.Design` (v9.0.0)
+- `Microsoft.EntityFrameworkCore.Tools` (v9.0.0)
 
 ### 2. **New Files Created**
 
 #### Data Layer
+
 - **`Data/OrderDbContext.cs`**: EF Core DbContext for order management
 - **`Data/Entities/OrderEntity.cs`**: Entity model for Orders table
 - **`Data/Entities/OrderProductEntity.cs`**: Entity model for OrderProducts table
 - **`Data/OrderMapper.cs`**: Extension methods to convert between domain models and entities
 
 #### Repository
+
 - **`Repositories/OrderRepository.cs`**: Refactored to use EF Core instead of file-based storage
 
 ### 3. **Configuration Changes**
 
 #### Program.cs
+
 - Removed file-based storage configuration (`OrderStorageOptions`)
 - Added `AddDbContext<OrderDbContext>` with SQL Server provider
 - Configured retry strategy for transient failures
 - Enabled sensitive data logging and detailed errors in development
 
 #### appsettings.json
+
 - Removed `OrderStorage` section
 - Added `ConnectionStrings:OrdersDatabase` configuration
 - Added EF Core logging configuration
 
 #### appsettings.Development.json
+
 - Added connection string for development environment
 - Enabled detailed EF Core command logging
 
@@ -111,6 +117,7 @@ dotnet ef migrations script -o migration.sql
 ### Tables Created
 
 #### Orders
+
 - **Id** (nvarchar(100), PK): Unique order identifier
 - **CustomerId** (nvarchar(100), indexed): Customer identifier
 - **Date** (datetime2, indexed): Order date
@@ -118,6 +125,7 @@ dotnet ef migrations script -o migration.sql
 - **Total** (decimal(18,2)): Order total amount
 
 #### OrderProducts
+
 - **Id** (nvarchar(100), PK): Unique order product identifier
 - **OrderId** (nvarchar(100), FK, indexed): Foreign key to Orders
 - **ProductId** (nvarchar(100), indexed): Product identifier
@@ -126,6 +134,7 @@ dotnet ef migrations script -o migration.sql
 - **Price** (decimal(18,2)): Unit price
 
 ### Relationships
+
 - One-to-many relationship between Orders and OrderProducts
 - Cascade delete enabled (deleting an order deletes its products)
 
@@ -143,6 +152,7 @@ The application uses **Azure AD authentication** to connect to SQL Azure Databas
 For local development with Azure AD authentication:
 
 1. Ensure you're logged in with Azure CLI:
+
    ```powershell
    az login
    ```
@@ -168,6 +178,7 @@ dotnet run
 ### 3. Test Endpoints
 
 The API endpoints remain unchanged:
+
 - `POST /api/orders` - Create a new order
 - `GET /api/orders` - Get all orders
 - `GET /api/orders/{id}` - Get a specific order
@@ -191,7 +202,7 @@ If you need to rollback to file-based storage:
 ✅ **Performance**: Indexed queries and query optimization  
 ✅ **Reliability**: Database-level backup and recovery  
 ✅ **Security**: Azure AD authentication and encryption at rest  
-✅ **Query Capabilities**: Rich querying with LINQ  
+✅ **Query Capabilities**: Rich querying with LINQ
 
 ## Additional Resources
 

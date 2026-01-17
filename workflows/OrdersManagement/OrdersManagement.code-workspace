@@ -2,16 +2,16 @@
   "folders": [
     {
       "name": "OrdersManagementLogicApp",
-      "path": "./OrdersManagementLogicApp"
-    }
+      "path": "./OrdersManagementLogicApp",
+    },
   ],
   "settings": {
     "terminal.integrated.env.windows": {
-      "PATH": "C:\\Users\\evalvesd\\.azurelogicapps\\dependencies\\DotNetSDK;${env:PATH}"
+      "PATH": "C:\\Users\\evalvesd\\.azurelogicapps\\dependencies\\DotNetSDK;${env:PATH}",
     },
     "omnisharp.dotNetCliPaths": [
-      "C:\\Users\\evalvesd\\.azurelogicapps\\dependencies\\DotNetSDK"
+      "C:\\Users\\evalvesd\\.azurelogicapps\\dependencies\\DotNetSDK",
     ],
-    "debug.internalConsoleOptions": "neverOpen"
-  }
+    "debug.internalConsoleOptions": "neverOpen",
+  },
 }

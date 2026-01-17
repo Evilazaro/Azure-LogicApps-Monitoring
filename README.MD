@@ -31,13 +31,13 @@ The **Azure Logic Apps Monitoring Solution** is a cloud-native reference archite
 
 ### ✨ Key Highlights
 
-| Feature | Description |
-|:--------|:------------|
-| **Unified Observability** | OpenTelemetry-based instrumentation with W3C Trace Context propagation |
-| **Event-Driven Architecture** | Azure Service Bus for reliable, asynchronous order event processing |
-| **Infrastructure as Code** | Bicep templates with Azure Developer CLI (azd) for repeatable deployments |
-| **Zero-Secret Authentication** | Managed Identity for all service-to-service communication |
-| **Cross-Platform Scripts** | PowerShell and Bash automation for Windows, Linux, and macOS |
+| Feature                        | Description                                                               |
+| :----------------------------- | :------------------------------------------------------------------------ |
+| **Unified Observability**      | OpenTelemetry-based instrumentation with W3C Trace Context propagation    |
+| **Event-Driven Architecture**  | Azure Service Bus for reliable, asynchronous order event processing       |
+| **Infrastructure as Code**     | Bicep templates with Azure Developer CLI (azd) for repeatable deployments |
+| **Zero-Secret Authentication** | Managed Identity for all service-to-service communication                 |
+| **Cross-Platform Scripts**     | PowerShell and Bash automation for Windows, Linux, and macOS              |
 
 [🔝 Back to Top](#azure-logic-apps-monitoring-solution)
 
@@ -120,13 +120,13 @@ flowchart TD
     class AI,LAW external
 ```
 
-| Layer | Components | Purpose |
-|:------|:-----------|:--------|
-| **Presentation** | eShop.Web.App (Blazor Server + FluentUI) | Interactive UI with order management |
-| **Application** | eShop.Orders.API, Logic Apps Standard | REST API + workflow automation |
-| **Platform** | .NET Aspire AppHost + ServiceDefaults | Orchestration, service discovery |
-| **Data** | Azure SQL, Service Bus, Storage | Persistence, messaging, state |
-| **Observability** | Application Insights, Log Analytics | Tracing, metrics, alerting |
+| Layer             | Components                               | Purpose                              |
+| :---------------- | :--------------------------------------- | :----------------------------------- |
+| **Presentation**  | eShop.Web.App (Blazor Server + FluentUI) | Interactive UI with order management |
+| **Application**   | eShop.Orders.API, Logic Apps Standard    | REST API + workflow automation       |
+| **Platform**      | .NET Aspire AppHost + ServiceDefaults    | Orchestration, service discovery     |
+| **Data**          | Azure SQL, Service Bus, Storage          | Persistence, messaging, state        |
+| **Observability** | Application Insights, Log Analytics      | Tracing, metrics, alerting           |
 
 > 📚 For detailed architecture documentation, see [Architecture Overview](docs/architecture/README.md).
 
@@ -136,13 +136,13 @@ flowchart TD
 
 ## ✅ Prerequisites
 
-| Tool | Version | Purpose |
-|:-----|:--------|:--------|
-| [Azure CLI](https://learn.microsoft.com/cli/azure/install-azure-cli) | ≥ 2.60.0 | Azure resource management |
+| Tool                                                                                                     | Version  | Purpose                                  |
+| :------------------------------------------------------------------------------------------------------- | :------- | :--------------------------------------- |
+| [Azure CLI](https://learn.microsoft.com/cli/azure/install-azure-cli)                                     | ≥ 2.60.0 | Azure resource management                |
 | [Azure Developer CLI (azd)](https://learn.microsoft.com/azure/developer/azure-developer-cli/install-azd) | ≥ 1.11.0 | Infrastructure provisioning & deployment |
-| [.NET SDK](https://dotnet.microsoft.com/download) | 10.0 | Application runtime |
-| [PowerShell](https://docs.microsoft.com/powershell/scripting/install/installing-powershell) | ≥ 7.0 | Cross-platform automation |
-| [Docker](https://www.docker.com/products/docker-desktop) | Latest | Local development |
+| [.NET SDK](https://dotnet.microsoft.com/download)                                                        | 10.0     | Application runtime                      |
+| [PowerShell](https://docs.microsoft.com/powershell/scripting/install/installing-powershell)              | ≥ 7.0    | Cross-platform automation                |
+| [Docker](https://www.docker.com/products/docker-desktop)                                                 | Latest   | Local development                        |
 
 [🔝 Back to Top](#azure-logic-apps-monitoring-solution)
 
@@ -265,13 +265,13 @@ azd env get-values  # View environment variables
 
 Detailed documentation is organized by domain. Each section has its own README with comprehensive guides.
 
-| Category | Start Here | When to Read |
-|:---------|:-----------|:-------------|
-| **Architecture** | [Overview](docs/architecture/README.md) | Understanding system design, components, and patterns |
-| **ADRs** | [Decision Log](docs/architecture/adr/README.md) | Learning why specific technologies were chosen |
-| **DevOps** | [CI/CD Guide](docs/devops/README.md) | Setting up pipelines or understanding deployment flow |
-| **Developer Experience** | [Scripts Guide](docs/hooks/README.md) | Automating local setup or customizing azd hooks |
-| **Security** | [IP Restrictions](docs/IP-SECURITY-RESTRICTIONS.md) | Configuring network security policies |
+| Category                 | Start Here                                          | When to Read                                          |
+| :----------------------- | :-------------------------------------------------- | :---------------------------------------------------- |
+| **Architecture**         | [Overview](docs/architecture/README.md)             | Understanding system design, components, and patterns |
+| **ADRs**                 | [Decision Log](docs/architecture/adr/README.md)     | Learning why specific technologies were chosen        |
+| **DevOps**               | [CI/CD Guide](docs/devops/README.md)                | Setting up pipelines or understanding deployment flow |
+| **Developer Experience** | [Scripts Guide](docs/hooks/README.md)               | Automating local setup or customizing azd hooks       |
+| **Security**             | [IP Restrictions](docs/IP-SECURITY-RESTRICTIONS.md) | Configuring network security policies                 |
 
 [🔝 Back to Top](#azure-logic-apps-monitoring-solution)
 

@@ -199,12 +199,10 @@ Beyond basic validation, the preprovision script offers intelligent automation f
 ### Execution Flow
 
 1. **Validate Runtime Version**
-
    - PowerShell: Validates PowerShell 7.0+
    - Bash: Validates Bash 4.0+
 
 2. **Validate Prerequisites**
-
    - Check .NET SDK version (10.0+)
    - Check Azure Developer CLI (azd)
    - Check Azure CLI version (2.60.0+)
@@ -213,12 +211,10 @@ Beyond basic validation, the preprovision script offers intelligent automation f
    - Check zip utility (required for Logic Apps workflow deployment)
 
 3. **Azure Resource Providers** (if authenticated)
-
    - Validate required providers are registered
    - Optionally register missing providers
 
 4. **Azure Quota Check** (informational)
-
    - Display quota requirements
    - Guide users to check current quotas
 
@@ -598,12 +594,12 @@ For detailed diagnostic information:
 
 ## 🔄 Version History
 
-| Version   | Date       | Changes                                                                                                                                                                                                                                             |
-| --------- | ---------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **2.3.0** | 2026-01-06 | • Applied PowerShell best practices (OutputType on script block)<br/>• Added preference backup/restore pattern in PowerShell<br/>• Added `-CommandType Application` to `Get-Command` calls for external commands<br/>• Added IFS protection in Bash<br/>• Updated copyright to 2025-2026<br/>• Documentation updates                                                                                                                   |
-| **2.3.0** | 2025-12-30 | • Added `--auto-install` parameter<br/>• Added `--use-device-code-login` parameter<br/>• Added installation functions for all prerequisites<br/>• Added Azure resource provider registration<br/>• Synchronized PowerShell and Bash implementations |
-| **2.0.0** | 2025-12-29 | • Complete rewrite with comprehensive validation<br/>• Added Bicep CLI validation<br/>• Added Azure authentication check<br/>• Added quota information                                                                                              |
-| **1.0.0** | 2025-12-01 | • Initial release with basic validation                                                                                                                                                                                                             |
+| Version   | Date       | Changes                                                                                                                                                                                                                                                                                                              |
+| --------- | ---------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **2.3.0** | 2026-01-06 | • Applied PowerShell best practices (OutputType on script block)<br/>• Added preference backup/restore pattern in PowerShell<br/>• Added `-CommandType Application` to `Get-Command` calls for external commands<br/>• Added IFS protection in Bash<br/>• Updated copyright to 2025-2026<br/>• Documentation updates |
+| **2.3.0** | 2025-12-30 | • Added `--auto-install` parameter<br/>• Added `--use-device-code-login` parameter<br/>• Added installation functions for all prerequisites<br/>• Added Azure resource provider registration<br/>• Synchronized PowerShell and Bash implementations                                                                  |
+| **2.0.0** | 2025-12-29 | • Complete rewrite with comprehensive validation<br/>• Added Bicep CLI validation<br/>• Added Azure authentication check<br/>• Added quota information                                                                                                                                                               |
+| **1.0.0** | 2025-12-01 | • Initial release with basic validation                                                                                                                                                                                                                                                                              |
 
 ---
 

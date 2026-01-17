@@ -422,31 +422,31 @@ flowchart TB
 
 ### GitHub Actions Workflows
 
-| Workflow            | File                                                                     | Trigger           | Purpose                               |
-| ------------------- | ------------------------------------------------------------------------ | ----------------- | ------------------------------------- |
-| **CI**              | [ci-dotnet.yml](../../.github/workflows/ci-dotnet.yml)                   | Push, PR          | Orchestrates CI via reusable workflow |
-| **CI Reusable**     | [ci-dotnet-reusable.yml](../../.github/workflows/ci-dotnet-reusable.yml) | Called by CI      | Build, test, analyze (cross-platform) |
-| **Azure Dev (CD)**  | [azure-dev.yml](../../.github/workflows/azure-dev.yml)                   | Manual, CD events | Full deployment to Azure              |
+| Workflow           | File                                                                     | Trigger           | Purpose                               |
+| ------------------ | ------------------------------------------------------------------------ | ----------------- | ------------------------------------- |
+| **CI**             | [ci-dotnet.yml](../../.github/workflows/ci-dotnet.yml)                   | Push, PR          | Orchestrates CI via reusable workflow |
+| **CI Reusable**    | [ci-dotnet-reusable.yml](../../.github/workflows/ci-dotnet-reusable.yml) | Called by CI      | Build, test, analyze (cross-platform) |
+| **Azure Dev (CD)** | [azure-dev.yml](../../.github/workflows/azure-dev.yml)                   | Manual, CD events | Full deployment to Azure              |
 
 ### Cross-Platform Matrix Strategy
 
 The CI pipeline **always** runs on multiple operating systems to ensure consistent behavior across platforms:
 
-| Platform        | Runner           | Purpose                         |
-| --------------- | ---------------- | ------------------------------- |
-| **Linux**       | ubuntu-latest    | Primary build/test environment  |
-| **Windows**     | windows-latest   | Windows compatibility testing   |
-| **macOS**       | macos-latest     | macOS compatibility testing     |
+| Platform    | Runner         | Purpose                        |
+| ----------- | -------------- | ------------------------------ |
+| **Linux**   | ubuntu-latest  | Primary build/test environment |
+| **Windows** | windows-latest | Windows compatibility testing  |
+| **macOS**   | macos-latest   | macOS compatibility testing    |
 
 ### Artifact Naming Convention
 
 To avoid conflicts when multiple matrix jobs run in parallel, artifacts use platform-specific naming:
 
-| Artifact Type       | Naming Pattern                   | Example                           |
-| ------------------- | -------------------------------- | --------------------------------- |
-| **Build Artifacts** | `build-artifacts-{os}`           | `build-artifacts-ubuntu-latest`   |
-| **Test Results**    | `test-results-{os}`              | `test-results-windows-latest`     |
-| **Code Coverage**   | `code-coverage-{os}`             | `code-coverage-macos-latest`      |
+| Artifact Type       | Naming Pattern         | Example                         |
+| ------------------- | ---------------------- | ------------------------------- |
+| **Build Artifacts** | `build-artifacts-{os}` | `build-artifacts-ubuntu-latest` |
+| **Test Results**    | `test-results-{os}`    | `test-results-windows-latest`   |
+| **Code Coverage**   | `code-coverage-{os}`   | `code-coverage-macos-latest`    |
 
 This ensures each platform's artifacts are stored separately, enabling:
 
@@ -465,7 +465,7 @@ on:
     inputs:
       dotnet-version:
         type: string
-        default: '10.0.x'
+        default: "10.0.x"
 
 jobs:
   build:
@@ -487,7 +487,7 @@ jobs:
         with:
           # Artifacts named with OS suffix to avoid conflicts
           name: build-artifacts-${{ matrix.os }}
-          path: '**/bin/**'
+          path: "**/bin/**"
 
   test:
     needs: build
@@ -508,7 +508,7 @@ jobs:
         with:
           # Artifacts named with OS suffix to avoid conflicts
           name: test-results-${{ matrix.os }}
-          path: '**/TestResults/**'
+          path: "**/TestResults/**"
 ```
 
 ### Azure Dev Workflow Steps
@@ -521,9 +521,9 @@ on:
   workflow_dispatch:
     inputs:
       environment:
-        description: 'Environment to deploy'
+        description: "Environment to deploy"
         required: true
-        default: 'dev'
+        default: "dev"
         type: choice
         options:
           - dev
@@ -548,7 +548,7 @@ jobs:
       checks: write
       pull-requests: write
     with:
-      dotnet-version: '10.0.x'
+      dotnet-version: "10.0.x"
 
   # Then deploy to Azure
   deploy:

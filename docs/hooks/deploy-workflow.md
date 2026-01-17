@@ -327,14 +327,14 @@ The script resolves `${VARIABLE_NAME}` placeholders in the following files:
 
 ## 🔢 Exit Codes
 
-| Code | Description                                        |
-| ---- | -------------------------------------------------- |
-| `0`  | ✅ Deployment successful                           |
-| `1`  | ❌ Missing required dependencies (jq, zip)         |
-| `1`  | ❌ Missing required environment variables          |
-| `1`  | ❌ Workflow project not found                      |
-| `1`  | ❌ No workflows discovered                         |
-| `1`  | ❌ Deployment command failed                       |
+| Code | Description                                |
+| ---- | ------------------------------------------ |
+| `0`  | ✅ Deployment successful                   |
+| `1`  | ❌ Missing required dependencies (jq, zip) |
+| `1`  | ❌ Missing required environment variables  |
+| `1`  | ❌ Workflow project not found              |
+| `1`  | ❌ No workflows discovered                 |
+| `1`  | ❌ Deployment command failed               |
 
 ---
 

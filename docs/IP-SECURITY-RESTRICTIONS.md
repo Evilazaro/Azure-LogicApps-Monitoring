@@ -260,12 +260,10 @@ virtualNetworkRules: [
 ### Common Issues
 
 1. **Cannot access from Azure Portal**
-
    - Check if client IP is allowed in SQL/Storage firewall
    - Verify "Allow Azure services" is enabled
 
 2. **Logic App cannot reach Storage**
-
    - Ensure managed identity has proper RBAC roles
    - Verify storage network ACLs allow Azure services
 

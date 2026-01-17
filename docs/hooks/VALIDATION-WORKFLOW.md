@@ -1132,7 +1132,7 @@ flowchart LR
         Decision{Works?}
         Continue[Continue Development]
         Debug[5. Debug<br/>Breakpoints]
-        
+
         Edit -->|"triggers"| HotReload
         HotReload -->|"enables"| Test
         Test -->|"monitored by"| Observe
@@ -1165,19 +1165,16 @@ flowchart LR
 **Key Inner Loop Features:**
 
 1. **Hot Reload** (.NET 10):
-
    - C# code changes apply without restart
    - Razor component changes reflect immediately
    - Static assets update in real-time
 
 2. **Debugging**:
-
    - Set breakpoints in Visual Studio/VS Code
    - Step through code across services
    - Inspect variables and call stacks
 
 3. **Observability**:
-
    - Real-time logs in Aspire Dashboard
    - Distributed tracing across services
    - Performance metrics monitoring
@@ -1291,7 +1288,6 @@ dotnet watch --project app.AppHost
 ### Debugging Best Practices
 
 1. **Set Strategic Breakpoints**:
-
    - Controllers: `OrdersController.cs`
    - Services: `OrderService.cs`, `OrdersMessageHandler.cs`
    - Repository: `OrderRepository.cs`
@@ -1305,7 +1301,6 @@ dotnet watch --project app.AppHost
    ```
 
 3. **Leverage Aspire Dashboard**:
-
    - Monitor distributed traces to identify slow operations
    - Check logs for exceptions across all services
    - View metrics to detect performance bottlenecks

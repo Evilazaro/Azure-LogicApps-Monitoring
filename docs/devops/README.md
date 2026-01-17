@@ -47,7 +47,7 @@ flowchart TB
     subgraph CIGroup["🔄 Continuous Integration"]
         direction TB
         ci_workflow["CI - .NET Build and Test"]
-        
+
         subgraph CIJobs["CI Jobs (via Reusable Workflow)"]
             direction TB
             subgraph MatrixJobs["Matrix: Ubuntu, Windows, macOS"]
@@ -62,7 +62,7 @@ flowchart TB
     subgraph CDGroup["🚀 Continuous Delivery"]
         direction TB
         cd_workflow["CD - Azure Deployment"]
-        
+
         subgraph CDJobs["CD Jobs"]
             ci_stage[["CI Stage (Reusable)"]]
             deploy(["Deploy Dev"])
@@ -148,21 +148,21 @@ flowchart TB
 
 ## 📁 Workflow Documentation
 
-| Workflow File | Documentation | Purpose |
-| ------------- | ------------- | ------- |
-| [azure-dev.yml](../../.github/workflows/azure-dev.yml) | [azure-dev.md](./azure-dev.md) | 🚀 CD - Provisions Azure infrastructure and deploys the application |
-| [ci-dotnet.yml](../../.github/workflows/ci-dotnet.yml) | [ci-dotnet.md](./ci-dotnet.md) | 🔄 CI - Orchestrates the .NET build and test pipeline |
-| [ci-dotnet-reusable.yml](../../.github/workflows/ci-dotnet-reusable.yml) | [ci-dotnet-reusable.md](./ci-dotnet-reusable.md) | 🔧 Reusable workflow for .NET CI operations |
+| Workflow File                                                            | Documentation                                    | Purpose                                                             |
+| ------------------------------------------------------------------------ | ------------------------------------------------ | ------------------------------------------------------------------- |
+| [azure-dev.yml](../../.github/workflows/azure-dev.yml)                   | [azure-dev.md](./azure-dev.md)                   | 🚀 CD - Provisions Azure infrastructure and deploys the application |
+| [ci-dotnet.yml](../../.github/workflows/ci-dotnet.yml)                   | [ci-dotnet.md](./ci-dotnet.md)                   | 🔄 CI - Orchestrates the .NET build and test pipeline               |
+| [ci-dotnet-reusable.yml](../../.github/workflows/ci-dotnet-reusable.yml) | [ci-dotnet-reusable.md](./ci-dotnet-reusable.md) | 🔧 Reusable workflow for .NET CI operations                         |
 
 ---
 
 ## 📊 Quick Reference
 
-| Workflow | Triggers | Jobs | Platforms |
-| -------- | -------- | ---- | --------- |
-| **CD - Azure Deployment** | `push:main`, `workflow_dispatch` | CI → Deploy Dev → Summary | Ubuntu (deploy) |
-| **CI - .NET Build and Test** | `push:*`, `pull_request:main`, `workflow_dispatch` | CI (calls reusable) | Ubuntu, Windows, macOS |
-| **CI - .NET Reusable** | `workflow_call` | Build → Test → Analyze → Summary | Ubuntu, Windows, macOS |
+| Workflow                     | Triggers                                           | Jobs                             | Platforms              |
+| ---------------------------- | -------------------------------------------------- | -------------------------------- | ---------------------- |
+| **CD - Azure Deployment**    | `push:main`, `workflow_dispatch`                   | CI → Deploy Dev → Summary        | Ubuntu (deploy)        |
+| **CI - .NET Build and Test** | `push:*`, `pull_request:main`, `workflow_dispatch` | CI (calls reusable)              | Ubuntu, Windows, macOS |
+| **CI - .NET Reusable**       | `workflow_call`                                    | Build → Test → Analyze → Summary | Ubuntu, Windows, macOS |
 
 ---
 
@@ -170,40 +170,40 @@ flowchart TB
 
 ### Repository Variables (Required for CD)
 
-| Variable | Description | Example |
-| -------- | ----------- | ------- |
-| `AZURE_CLIENT_ID` | Azure AD App Registration Client ID | `xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx` |
-| `AZURE_TENANT_ID` | Azure AD Tenant ID | `xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx` |
-| `AZURE_SUBSCRIPTION_ID` | Azure Subscription ID | `xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx` |
-| `AZURE_ENV_NAME` | Azure environment name (optional) | `dev` |
-| `AZURE_LOCATION` | Azure region (optional) | `eastus2` |
+| Variable                | Description                         | Example                                |
+| ----------------------- | ----------------------------------- | -------------------------------------- |
+| `AZURE_CLIENT_ID`       | Azure AD App Registration Client ID | `xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx` |
+| `AZURE_TENANT_ID`       | Azure AD Tenant ID                  | `xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx` |
+| `AZURE_SUBSCRIPTION_ID` | Azure Subscription ID               | `xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx` |
+| `AZURE_ENV_NAME`        | Azure environment name (optional)   | `dev`                                  |
+| `AZURE_LOCATION`        | Azure region (optional)             | `eastus2`                              |
 
 ### GitHub Environment
 
-| Environment | Protection Rules |
-| ----------- | ---------------- |
-| `dev` | None (auto-deploy) |
+| Environment | Protection Rules   |
+| ----------- | ------------------ |
+| `dev`       | None (auto-deploy) |
 
 ---
 
 ## 🔗 Related Documentation
 
-| Resource | Description |
-| -------- | ----------- |
-| [Deployment Architecture](../architecture/07-deployment-architecture.md) | CI/CD pipeline architecture and environment promotion flow |
-| [Architecture Documentation](../architecture/README.md) | System architecture and design decisions |
-| [Azure Developer CLI Documentation](https://learn.microsoft.com/en-us/azure/developer/azure-developer-cli/) | Official azd documentation |
-| [GitHub Actions Documentation](https://docs.github.com/en/actions) | GitHub Actions reference |
-| [Federated Credentials Setup](https://learn.microsoft.com/en-us/azure/developer/github/connect-from-azure) | OIDC authentication setup guide |
+| Resource                                                                                                    | Description                                                |
+| ----------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------- |
+| [Deployment Architecture](../architecture/07-deployment-architecture.md)                                    | CI/CD pipeline architecture and environment promotion flow |
+| [Architecture Documentation](../architecture/README.md)                                                     | System architecture and design decisions                   |
+| [Azure Developer CLI Documentation](https://learn.microsoft.com/en-us/azure/developer/azure-developer-cli/) | Official azd documentation                                 |
+| [GitHub Actions Documentation](https://docs.github.com/en/actions)                                          | GitHub Actions reference                                   |
+| [Federated Credentials Setup](https://learn.microsoft.com/en-us/azure/developer/github/connect-from-azure)  | OIDC authentication setup guide                            |
 
 ---
 
 ## 📚 Additional Resources
 
-| Resource | Description |
-| -------- | ----------- |
+| Resource                                                 | Description                 |
+| -------------------------------------------------------- | --------------------------- |
 | [Developer Experience Documentation](../hooks/README.md) | Pre/post deployment scripts |
-| [Infrastructure Documentation](../../infra/README.md) | Bicep templates and IaC |
+| [Infrastructure Documentation](../../infra/README.md)    | Bicep templates and IaC     |
 
 ---
 

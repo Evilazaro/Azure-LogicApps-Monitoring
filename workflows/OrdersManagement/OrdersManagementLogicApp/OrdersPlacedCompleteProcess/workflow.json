@@ -1,108 +1,104 @@
 {
-    "definition": {
-        "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
-        "contentVersion": "1.0.0.0",
-        "parameters": {
-            "servicebus-ConnectionRuntimeUrl": {
-                "type": "String"
-            },
-            "servicebus-Authentication": {
-                "type": "Object"
-            },
-            "azureblob-ConnectionRuntimeUrl": {
-                "type": "String"
-            },
-            "azureblob-Authentication": {
-                "type": "Object"
-            },
-            "AZURE_STORAGE_ACCOUNT_NAME_WORKFLOW": {
-                "type": "String"
-            },
-            "ORDERS_API_URL": {
-                "type": "String"
-            }
-        },
-        "triggers": {
-            "Recurrence": {
-                "type": "Recurrence",
-                "recurrence": {
-                    "interval": 3,
-                    "frequency": "Second",
-                    "timeZone": "Central Standard Time"
-                }
-            }
-        },
-        "actions": {
-            "Lists_blobs_(V2)": {
-                "type": "ApiConnection",
-                "inputs": {
-                    "host": {
-                        "connection": {
-                            "referenceName": "azureblob"
-                        }
-                    },
-                    "method": "get",
-                    "path": "/v2/datasets/@{encodeURIComponent(encodeURIComponent('${AZURE_STORAGE_ACCOUNT_NAME_WORKFLOW}'))}/foldersV2/@{encodeURIComponent(encodeURIComponent('JTJmb3JkZXJzcHJvY2Vzc2Vkc3VjY2Vzc2Z1bGx5'))}",
-                    "queries": {
-                        "nextPageMarker": "",
-                        "useFlatListing": true
-                    }
-                },
-                "runAfter": {},
-                "metadata": {
-                    "JTJmb3JkZXJzcHJvY2Vzc2Vkc3VjY2Vzc2Z1bGx5": "/ordersprocessedsuccessfully"
-                }
-            },
-            "For_each": {
-                "type": "Foreach",
-                "foreach": "@body('Lists_blobs_(V2)')?['value']",
-                "actions": {
-                    "Get_Blob_Metadata_(V2)": {
-                        "type": "ApiConnection",
-                        "inputs": {
-                            "host": {
-                                "connection": {
-                                    "referenceName": "azureblob"
-                                }
-                            },
-                            "method": "get",
-                            "path": "/v2/datasets/@{encodeURIComponent(encodeURIComponent('${AZURE_STORAGE_ACCOUNT_NAME_WORKFLOW}'))}/files/@{encodeURIComponent(encodeURIComponent(item()?['Path']))}"
-                        }
-                    },
-                    "Delete_blob_(V2)": {
-                        "type": "ApiConnection",
-                        "inputs": {
-                            "host": {
-                                "connection": {
-                                    "referenceName": "azureblob"
-                                }
-                            },
-                            "method": "delete",
-                            "headers": {
-                                "SkipDeleteIfFileNotFoundOnServer": false
-                            },
-                            "path": "/v2/datasets/@{encodeURIComponent(encodeURIComponent('${AZURE_STORAGE_ACCOUNT_NAME_WORKFLOW}'))}/files/@{encodeURIComponent(encodeURIComponent(body('Get_Blob_Metadata_(V2)')?['Path']))}"
-                        },
-                        "runAfter": {
-                            "Get_Blob_Metadata_(V2)": [
-                                "SUCCEEDED"
-                            ]
-                        }
-                    }
-                },
-                "runAfter": {
-                    "Lists_blobs_(V2)": [
-                        "SUCCEEDED"
-                    ]
-                },
-                "runtimeConfiguration": {
-                    "concurrency": {
-                        "repetitions": 20
-                    }
-                }
-            }
-        },
-        "outputs": {}
+  "definition": {
+    "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+      "servicebus-ConnectionRuntimeUrl": {
+        "type": "String"
+      },
+      "servicebus-Authentication": {
+        "type": "Object"
+      },
+      "azureblob-ConnectionRuntimeUrl": {
+        "type": "String"
+      },
+      "azureblob-Authentication": {
+        "type": "Object"
+      },
+      "AZURE_STORAGE_ACCOUNT_NAME_WORKFLOW": {
+        "type": "String"
+      },
+      "ORDERS_API_URL": {
+        "type": "String"
+      }
     },
-    "kind": "stateful"
+    "triggers": {
+      "Recurrence": {
+        "type": "Recurrence",
+        "recurrence": {
+          "interval": 3,
+          "frequency": "Second",
+          "timeZone": "Central Standard Time"
+        }
+      }
+    },
+    "actions": {
+      "Lists_blobs_(V2)": {
+        "type": "ApiConnection",
+        "inputs": {
+          "host": {
+            "connection": {
+              "referenceName": "azureblob"
+            }
+          },
+          "method": "get",
+          "path": "/v2/datasets/@{encodeURIComponent(encodeURIComponent('${AZURE_STORAGE_ACCOUNT_NAME_WORKFLOW}'))}/foldersV2/@{encodeURIComponent(encodeURIComponent('JTJmb3JkZXJzcHJvY2Vzc2Vkc3VjY2Vzc2Z1bGx5'))}",
+          "queries": {
+            "nextPageMarker": "",
+            "useFlatListing": true
+          }
+        },
+        "runAfter": {},
+        "metadata": {
+          "JTJmb3JkZXJzcHJvY2Vzc2Vkc3VjY2Vzc2Z1bGx5": "/ordersprocessedsuccessfully"
+        }
+      },
+      "For_each": {
+        "type": "Foreach",
+        "foreach": "@body('Lists_blobs_(V2)')?['value']",
+        "actions": {
+          "Get_Blob_Metadata_(V2)": {
+            "type": "ApiConnection",
+            "inputs": {
+              "host": {
+                "connection": {
+                  "referenceName": "azureblob"
+                }
+              },
+              "method": "get",
+              "path": "/v2/datasets/@{encodeURIComponent(encodeURIComponent('${AZURE_STORAGE_ACCOUNT_NAME_WORKFLOW}'))}/files/@{encodeURIComponent(encodeURIComponent(item()?['Path']))}"
+            }
+          },
+          "Delete_blob_(V2)": {
+            "type": "ApiConnection",
+            "inputs": {
+              "host": {
+                "connection": {
+                  "referenceName": "azureblob"
+                }
+              },
+              "method": "delete",
+              "headers": {
+                "SkipDeleteIfFileNotFoundOnServer": false
+              },
+              "path": "/v2/datasets/@{encodeURIComponent(encodeURIComponent('${AZURE_STORAGE_ACCOUNT_NAME_WORKFLOW}'))}/files/@{encodeURIComponent(encodeURIComponent(body('Get_Blob_Metadata_(V2)')?['Path']))}"
+            },
+            "runAfter": {
+              "Get_Blob_Metadata_(V2)": ["SUCCEEDED"]
+            }
+          }
+        },
+        "runAfter": {
+          "Lists_blobs_(V2)": ["SUCCEEDED"]
+        },
+        "runtimeConfiguration": {
+          "concurrency": {
+            "repetitions": 20
+          }
+        }
+      }
+    },
+    "outputs": {}
+  },
+  "kind": "stateful"
 }

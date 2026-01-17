@@ -27,15 +27,15 @@ This is a reusable workflow that builds, tests, and analyzes .NET solutions. It 
 
 ### Key Features
 
-| Feature | Description |
-| ------- | ----------- |
-| 🔄 **Fully Reusable** | Via `workflow_call` trigger |
-| 🔨 **Configurable Build** | With version generation |
-| 🧪 **Test Execution** | With code coverage (Cobertura) |
-| 🔍 **Code Analysis** | Formatting analysis with `dotnet format` |
-| 📊 **Detailed Summaries** | Job summaries and status badges |
-| 📦 **Artifact Upload** | Per-platform builds, tests, and coverage |
-| 🖥️ **Cross-Platform** | Always runs on Ubuntu, Windows, and macOS |
+| Feature                   | Description                               |
+| ------------------------- | ----------------------------------------- |
+| 🔄 **Fully Reusable**     | Via `workflow_call` trigger               |
+| 🔨 **Configurable Build** | With version generation                   |
+| 🧪 **Test Execution**     | With code coverage (Cobertura)            |
+| 🔍 **Code Analysis**      | Formatting analysis with `dotnet format`  |
+| 📊 **Detailed Summaries** | Job summaries and status badges           |
+| 📦 **Artifact Upload**    | Per-platform builds, tests, and coverage  |
+| 🖥️ **Cross-Platform**     | Always runs on Ubuntu, Windows, and macOS |
 
 ---
 
@@ -63,13 +63,13 @@ flowchart LR
     %% ===== BUILD JOB =====
     subgraph BuildJob["🔨 Build Job (Matrix)"]
         direction LR
-        
+
         subgraph BuildMatrix["Cross-Platform Build"]
             b_ubuntu["Ubuntu"]
             b_windows["Windows"]
             b_macos["macOS"]
         end
-        
+
         b_checkout["Checkout Repository"]
         b_setup["Setup .NET SDK"]
         b_workload["Update Workloads"]
@@ -83,13 +83,13 @@ flowchart LR
     %% ===== TEST JOB =====
     subgraph TestJob["🧪 Test Job (Matrix)"]
         direction LR
-        
+
         subgraph TestMatrix["Cross-Platform Test"]
             t_ubuntu["Ubuntu"]
             t_windows["Windows"]
             t_macos["macOS"]
         end
-        
+
         t_checkout["Checkout Repository"]
         t_setup["Setup .NET SDK"]
         t_workload["Update Workloads"]
@@ -256,29 +256,29 @@ on:
 
 ## 📥 Inputs
 
-| Input | Type | Required | Default | Description |
-| ----- | ---- | :------: | ------- | ----------- |
-| `configuration` | `string` | ❌ | `Release` | Build configuration (Release/Debug) |
-| `dotnet-version` | `string` | ❌ | `10.0.x` | .NET SDK version to use |
-| `solution-file` | `string` | ❌ | `app.sln` | Path to the solution file |
-| `test-results-artifact-name` | `string` | ❌ | `test-results` | Base name for test results artifact (OS suffix added) |
-| `build-artifacts-name` | `string` | ❌ | `build-artifacts` | Base name for build artifacts (OS suffix added) |
-| `coverage-artifact-name` | `string` | ❌ | `code-coverage` | Base name for code coverage artifact (OS suffix added) |
-| `artifact-retention-days` | `number` | ❌ | `30` | Days to retain test/coverage artifacts |
-| `runs-on` | `string` | ❌ | `ubuntu-latest` | Runner for analyze and summary jobs (build/test use matrix) |
-| `enable-code-analysis` | `boolean` | ❌ | `true` | Enable code formatting analysis |
-| `fail-on-format-issues` | `boolean` | ❌ | `true` | Fail workflow on formatting issues |
+| Input                        | Type      | Required | Default           | Description                                                 |
+| ---------------------------- | --------- | :------: | ----------------- | ----------------------------------------------------------- |
+| `configuration`              | `string`  |    ❌    | `Release`         | Build configuration (Release/Debug)                         |
+| `dotnet-version`             | `string`  |    ❌    | `10.0.x`          | .NET SDK version to use                                     |
+| `solution-file`              | `string`  |    ❌    | `app.sln`         | Path to the solution file                                   |
+| `test-results-artifact-name` | `string`  |    ❌    | `test-results`    | Base name for test results artifact (OS suffix added)       |
+| `build-artifacts-name`       | `string`  |    ❌    | `build-artifacts` | Base name for build artifacts (OS suffix added)             |
+| `coverage-artifact-name`     | `string`  |    ❌    | `code-coverage`   | Base name for code coverage artifact (OS suffix added)      |
+| `artifact-retention-days`    | `number`  |    ❌    | `30`              | Days to retain test/coverage artifacts                      |
+| `runs-on`                    | `string`  |    ❌    | `ubuntu-latest`   | Runner for analyze and summary jobs (build/test use matrix) |
+| `enable-code-analysis`       | `boolean` |    ❌    | `true`            | Enable code formatting analysis                             |
+| `fail-on-format-issues`      | `boolean` |    ❌    | `true`            | Fail workflow on formatting issues                          |
 
 ---
 
 ## 📤 Outputs
 
-| Output | Description |
-| ------ | ----------- |
-| `build-version` | The generated build version (e.g., `1.0.42`) |
-| `build-result` | Build job result (`success`, `failure`, `cancelled`) |
-| `test-result` | Test job result |
-| `analyze-result` | Analysis job result |
+| Output           | Description                                          |
+| ---------------- | ---------------------------------------------------- |
+| `build-version`  | The generated build version (e.g., `1.0.42`)         |
+| `build-result`   | Build job result (`success`, `failure`, `cancelled`) |
+| `test-result`    | Test job result                                      |
+| `analyze-result` | Analysis job result                                  |
 
 ---
 
@@ -288,34 +288,34 @@ on:
 
 **Purpose:** Compile the solution and generate build artifacts on all platforms.
 
-| Property | Value |
-| -------- | ----- |
-| **Runner** | Matrix: `ubuntu-latest`, `windows-latest`, `macos-latest` |
-| **Timeout** | 15 minutes |
-| **Outputs** | `build-version` |
+| Property    | Value                                                     |
+| ----------- | --------------------------------------------------------- |
+| **Runner**  | Matrix: `ubuntu-latest`, `windows-latest`, `macos-latest` |
+| **Timeout** | 15 minutes                                                |
+| **Outputs** | `build-version`                                           |
 
 #### Build Steps
 
-| Step | Description |
-| ---- | ----------- |
-| 📥 Checkout repository | Clone with full history (`fetch-depth: 0`) |
-| 🔧 Setup .NET SDK | Install specified .NET version |
-| ☁️ Update .NET workloads | Update .NET workloads |
+| Step                      | Description                                    |
+| ------------------------- | ---------------------------------------------- |
+| 📥 Checkout repository    | Clone with full history (`fetch-depth: 0`)     |
+| 🔧 Setup .NET SDK         | Install specified .NET version                 |
+| ☁️ Update .NET workloads  | Update .NET workloads                          |
 | 🏷️ Generate build version | Create version: `1.0.${{ github.run_number }}` |
-| 📥 Restore dependencies | `dotnet restore` with minimal verbosity |
-| 🔨 Build solution | `dotnet build` with CI flags |
-| 📤 Upload build artifacts | Upload compiled binaries |
-| 📊 Generate build summary | Create status badge and summary |
+| 📥 Restore dependencies   | `dotnet restore` with minimal verbosity        |
+| 🔨 Build solution         | `dotnet build` with CI flags                   |
+| 📤 Upload build artifacts | Upload compiled binaries                       |
+| 📊 Generate build summary | Create status badge and summary                |
 
 ### Job 2: 🧪 Test
 
 **Purpose:** Execute tests with code coverage collection on all platforms.
 
-| Property | Value |
-| -------- | ----- |
-| **Runner** | Matrix: `ubuntu-latest`, `windows-latest`, `macos-latest` |
-| **Timeout** | 30 minutes |
-| **Needs** | `build` |
+| Property    | Value                                                     |
+| ----------- | --------------------------------------------------------- |
+| **Runner**  | Matrix: `ubuntu-latest`, `windows-latest`, `macos-latest` |
+| **Timeout** | 30 minutes                                                |
+| **Needs**   | `build`                                                   |
 
 #### Matrix Strategy
 
@@ -330,52 +330,52 @@ strategy:
 
 #### Test Steps
 
-| Step | Description |
-| ---- | ----------- |
-| 📥 Checkout repository | Clone repository |
-| 🔧 Setup .NET SDK | Install .NET SDK |
-| ☁️ Update .NET workloads | Update workloads |
-| 📥 Restore dependencies | Restore NuGet packages |
-| 🔨 Build solution | Build for testing |
-| 🧪 Run tests with coverage | Execute tests with Cobertura coverage |
-| 📋 Publish test results | Use `dorny/test-reporter` for GitHub checks |
-| 📤 Upload test results | Upload `.trx` files |
-| 📤 Upload code coverage | Upload Cobertura XML |
-| 📊 Generate test summary | Create test status summary |
+| Step                       | Description                                 |
+| -------------------------- | ------------------------------------------- |
+| 📥 Checkout repository     | Clone repository                            |
+| 🔧 Setup .NET SDK          | Install .NET SDK                            |
+| ☁️ Update .NET workloads   | Update workloads                            |
+| 📥 Restore dependencies    | Restore NuGet packages                      |
+| 🔨 Build solution          | Build for testing                           |
+| 🧪 Run tests with coverage | Execute tests with Cobertura coverage       |
+| 📋 Publish test results    | Use `dorny/test-reporter` for GitHub checks |
+| 📤 Upload test results     | Upload `.trx` files                         |
+| 📤 Upload code coverage    | Upload Cobertura XML                        |
+| 📊 Generate test summary   | Create test status summary                  |
 
 ### Job 3: 🔍 Analyze
 
 **Purpose:** Verify code formatting compliance.
 
-| Property | Value |
-| -------- | ----- |
-| **Runner** | `${{ inputs.runs-on }}` |
-| **Timeout** | 15 minutes |
-| **Needs** | `build` |
+| Property      | Value                                |
+| ------------- | ------------------------------------ |
+| **Runner**    | `${{ inputs.runs-on }}`              |
+| **Timeout**   | 15 minutes                           |
+| **Needs**     | `build`                              |
 | **Condition** | `${{ inputs.enable-code-analysis }}` |
 
 #### Analysis Steps
 
-| Step | Description |
-| ---- | ----------- |
-| 📥 Checkout repository | Clone repository |
-| 🔧 Setup .NET SDK | Install .NET SDK |
-| ☁️ Update .NET workloads | Update workloads |
-| 📥 Restore dependencies | Restore packages |
-| 🎨 Verify code formatting | Run `dotnet format --verify-no-changes` |
-| 📊 Generate analysis summary | Create analysis summary with fix instructions |
-| ❌ Fail on format issues | Exit if issues found and `fail-on-format-issues` is true |
+| Step                         | Description                                              |
+| ---------------------------- | -------------------------------------------------------- |
+| 📥 Checkout repository       | Clone repository                                         |
+| 🔧 Setup .NET SDK            | Install .NET SDK                                         |
+| ☁️ Update .NET workloads     | Update workloads                                         |
+| 📥 Restore dependencies      | Restore packages                                         |
+| 🎨 Verify code formatting    | Run `dotnet format --verify-no-changes`                  |
+| 📊 Generate analysis summary | Create analysis summary with fix instructions            |
+| ❌ Fail on format issues     | Exit if issues found and `fail-on-format-issues` is true |
 
 ### Job 4: 📊 Summary
 
 **Purpose:** Generate overall workflow summary.
 
-| Property | Value |
-| -------- | ----- |
-| **Runner** | `${{ inputs.runs-on }}` |
-| **Timeout** | 5 minutes |
-| **Needs** | `build`, `test`, `analyze` |
-| **Condition** | `always()` |
+| Property      | Value                      |
+| ------------- | -------------------------- |
+| **Runner**    | `${{ inputs.runs-on }}`    |
+| **Timeout**   | 5 minutes                  |
+| **Needs**     | `build`, `test`, `analyze` |
+| **Condition** | `always()`                 |
 
 #### Summary Contents
 
@@ -389,12 +389,12 @@ strategy:
 
 **Purpose:** Report CI failures.
 
-| Property | Value |
-| -------- | ----- |
-| **Runner** | `${{ inputs.runs-on }}` |
-| **Timeout** | 5 minutes |
-| **Needs** | `build`, `test`, `analyze` |
-| **Condition** | `failure()` |
+| Property      | Value                      |
+| ------------- | -------------------------- |
+| **Runner**    | `${{ inputs.runs-on }}`    |
+| **Timeout**   | 5 minutes                  |
+| **Needs**     | `build`, `test`, `analyze` |
+| **Condition** | `failure()`                |
 
 ---
 
@@ -404,8 +404,8 @@ strategy:
 
 ```yaml
 permissions:
-  contents: read       # Required for checkout
-  checks: write        # Required for test reporter
+  contents: read # Required for checkout
+  checks: write # Required for test reporter
   pull-requests: write # Required for PR status
 ```
 
@@ -413,11 +413,11 @@ permissions:
 
 ## 📦 Artifacts
 
-| Artifact | Contents | Retention |
-| -------- | -------- | --------- |
-| `build-artifacts` | Compiled binaries (`**/bin/${{ inputs.configuration }}/**`) | 7 days |
-| `test-results` | Test results (`.trx` files) | `${{ inputs.artifact-retention-days }}` |
-| `code-coverage` | Coverage reports (`coverage.cobertura.xml`) | `${{ inputs.artifact-retention-days }}` |
+| Artifact          | Contents                                                    | Retention                               |
+| ----------------- | ----------------------------------------------------------- | --------------------------------------- |
+| `build-artifacts` | Compiled binaries (`**/bin/${{ inputs.configuration }}/**`) | 7 days                                  |
+| `test-results`    | Test results (`.trx` files)                                 | `${{ inputs.artifact-retention-days }}` |
+| `code-coverage`   | Coverage reports (`coverage.cobertura.xml`)                 | `${{ inputs.artifact-retention-days }}` |
 
 ---
 
@@ -441,8 +441,8 @@ jobs:
   ci:
     uses: ./.github/workflows/ci-dotnet-reusable.yml
     with:
-      configuration: 'Release'
-      dotnet-version: '10.0.x'
+      configuration: "Release"
+      dotnet-version: "10.0.x"
     secrets: inherit
 ```
 
@@ -453,14 +453,14 @@ jobs:
   ci:
     uses: ./.github/workflows/ci-dotnet-reusable.yml
     with:
-      configuration: 'Release'
-      dotnet-version: '10.0.x'
-      solution-file: 'MyApp.sln'
-      test-results-artifact-name: 'my-test-results'
-      build-artifacts-name: 'my-build-artifacts'
-      coverage-artifact-name: 'my-coverage'
+      configuration: "Release"
+      dotnet-version: "10.0.x"
+      solution-file: "MyApp.sln"
+      test-results-artifact-name: "my-test-results"
+      build-artifacts-name: "my-build-artifacts"
+      coverage-artifact-name: "my-coverage"
       artifact-retention-days: 14
-      runs-on: 'ubuntu-latest'
+      runs-on: "ubuntu-latest"
       enable-code-analysis: true
       fail-on-format-issues: true
       enable-matrix: true
@@ -474,9 +474,9 @@ jobs:
   ci:
     uses: ./.github/workflows/ci-dotnet-reusable.yml
     with:
-      configuration: 'Debug'
+      configuration: "Debug"
       enable-code-analysis: true
-      fail-on-format-issues: false  # Warn but don't fail
+      fail-on-format-issues: false # Warn but don't fail
     secrets: inherit
 ```
 
@@ -487,7 +487,7 @@ jobs:
   ci:
     uses: ./.github/workflows/ci-dotnet-reusable.yml
     with:
-      enable-matrix: true  # Test on Ubuntu, Windows, and macOS
+      enable-matrix: true # Test on Ubuntu, Windows, and macOS
     secrets: inherit
 ```
 
@@ -497,13 +497,13 @@ jobs:
 
 ### Common Issues
 
-| Issue | Cause | Solution |
-| ----- | ----- | -------- |
-| Build fails | Missing dependencies | Check `dotnet restore` output |
-| Tests fail on specific OS | Platform-specific code | Review matrix job logs |
-| Coverage not generated | Test framework issue | Verify test project configuration |
-| Format check fails | Code style violations | Run `dotnet format` locally |
-| Workload update fails | Permission issues | Check runner configuration |
+| Issue                     | Cause                  | Solution                          |
+| ------------------------- | ---------------------- | --------------------------------- |
+| Build fails               | Missing dependencies   | Check `dotnet restore` output     |
+| Tests fail on specific OS | Platform-specific code | Review matrix job logs            |
+| Coverage not generated    | Test framework issue   | Verify test project configuration |
+| Format check fails        | Code style violations  | Run `dotnet format` locally       |
+| Workload update fails     | Permission issues      | Check runner configuration        |
 
 ### Local Debugging
 
@@ -566,13 +566,13 @@ flowchart LR
 
 ## 🔗 Related Documentation
 
-| Resource | Description |
-| -------- | ----------- |
-| [CI - .NET Build and Test](./ci-dotnet.md) | Main CI workflow |
-| [CD - Azure Deployment](./azure-dev.md) | Azure deployment workflow |
-| [GitHub Reusable Workflows](https://docs.github.com/en/actions/using-workflows/reusing-workflows) | GitHub documentation |
-| [.NET SDK Documentation](https://docs.microsoft.com/en-us/dotnet/) | Microsoft .NET docs |
-| [Microsoft Testing Platform](https://learn.microsoft.com/en-us/dotnet/core/testing/) | Testing documentation |
+| Resource                                                                                          | Description               |
+| ------------------------------------------------------------------------------------------------- | ------------------------- |
+| [CI - .NET Build and Test](./ci-dotnet.md)                                                        | Main CI workflow          |
+| [CD - Azure Deployment](./azure-dev.md)                                                           | Azure deployment workflow |
+| [GitHub Reusable Workflows](https://docs.github.com/en/actions/using-workflows/reusing-workflows) | GitHub documentation      |
+| [.NET SDK Documentation](https://docs.microsoft.com/en-us/dotnet/)                                | Microsoft .NET docs       |
+| [Microsoft Testing Platform](https://learn.microsoft.com/en-us/dotnet/core/testing/)              | Testing documentation     |
 
 ---
 

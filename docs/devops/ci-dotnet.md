@@ -24,14 +24,14 @@ This workflow orchestrates the CI pipeline by calling the reusable workflow. It 
 
 ### Key Features
 
-| Feature | Description |
-| ------- | ----------- |
-| ✅ **Automatic Triggering** | On push and pull requests |
-| 🔧 **Configurable Build** | Release/Debug configuration options |
+| Feature                       | Description                                    |
+| ----------------------------- | ---------------------------------------------- |
+| ✅ **Automatic Triggering**   | On push and pull requests                      |
+| 🔧 **Configurable Build**     | Release/Debug configuration options            |
 | 🧪 **Cross-Platform Testing** | Builds and tests on Ubuntu, Windows, and macOS |
-| 🔍 **Code Analysis** | Formatting analysis with `.editorconfig` |
-| 📊 **Test Reporting** | Detailed summaries and result publishing |
-| 📦 **Build Artifacts** | Per-platform artifacts for debugging |
+| 🔍 **Code Analysis**          | Formatting analysis with `.editorconfig`       |
+| 📊 **Test Reporting**         | Detailed summaries and result publishing       |
+| 📦 **Build Artifacts**        | Per-platform artifacts for debugging           |
 
 ---
 
@@ -58,7 +58,7 @@ flowchart LR
     %% ===== CI PIPELINE =====
     subgraph CIPipeline["🔄 CI Pipeline (Cross-Platform)"]
         ci_call[["CI Reusable Workflow"]]
-        
+
         subgraph JobsGroup["Reusable Workflow Jobs"]
             direction TB
             subgraph MatrixJobs["Matrix: Ubuntu, Windows, macOS"]
@@ -133,23 +133,23 @@ flowchart LR
 
 ### Push Events
 
-| Branch Pattern | Description |
-| -------------- | ----------- |
-| `main` | Main development branch |
-| `feature/**` | Feature branches |
-| `bugfix/**` | Bug fix branches |
-| `hotfix/**` | Hotfix branches |
-| `release/**` | Release branches |
-| `chore/**` | Maintenance branches |
-| `docs/**` | Documentation branches |
-| `refactor/**` | Refactoring branches |
-| `test/**` | Test branches |
+| Branch Pattern | Description             |
+| -------------- | ----------------------- |
+| `main`         | Main development branch |
+| `feature/**`   | Feature branches        |
+| `bugfix/**`    | Bug fix branches        |
+| `hotfix/**`    | Hotfix branches         |
+| `release/**`   | Release branches        |
+| `chore/**`     | Maintenance branches    |
+| `docs/**`      | Documentation branches  |
+| `refactor/**`  | Refactoring branches    |
+| `test/**`      | Test branches           |
 
 ### Pull Request Events
 
-| Target Branch | Description |
-| ------------- | ----------- |
-| `main` | Pull requests targeting main branch |
+| Target Branch | Description                         |
+| ------------- | ----------------------------------- |
+| `main`        | Pull requests targeting main branch |
 
 ### Path Filters
 
@@ -157,20 +157,20 @@ The workflow monitors changes to these paths:
 
 ```yaml
 paths:
-  - "src/**"                              # Source code
-  - "app.*/**"                            # .NET Aspire projects
-  - "*.sln"                               # Solution files
-  - "global.json"                         # .NET SDK configuration
-  - ".github/workflows/ci-dotnet.yml"     # This workflow
-  - ".github/workflows/ci-dotnet-reusable.yml"  # Reusable workflow
+  - "src/**" # Source code
+  - "app.*/**" # .NET Aspire projects
+  - "*.sln" # Solution files
+  - "global.json" # .NET SDK configuration
+  - ".github/workflows/ci-dotnet.yml" # This workflow
+  - ".github/workflows/ci-dotnet-reusable.yml" # Reusable workflow
 ```
 
 ### Manual Dispatch Inputs
 
-| Input | Type | Default | Options | Description |
-| ----- | ---- | ------- | ------- | ----------- |
-| `configuration` | `choice` | `Release` | `Release`, `Debug` | Build configuration |
-| `enable-code-analysis` | `boolean` | `true` | - | Enable code formatting analysis |
+| Input                  | Type      | Default   | Options            | Description                     |
+| ---------------------- | --------- | --------- | ------------------ | ------------------------------- |
+| `configuration`        | `choice`  | `Release` | `Release`, `Debug` | Build configuration             |
+| `enable-code-analysis` | `boolean` | `true`    | -                  | Enable code formatting analysis |
 
 > 💡 **Note:** Cross-platform matrix testing is always enabled - builds and tests run on Ubuntu, Windows, and macOS.
 
@@ -182,26 +182,26 @@ paths:
 
 This workflow consists of a single job that calls the reusable CI workflow.
 
-| Property | Value |
-| -------- | ----- |
-| **Type** | Reusable workflow call |
+| Property     | Value                                      |
+| ------------ | ------------------------------------------ |
+| **Type**     | Reusable workflow call                     |
 | **Workflow** | `.github/workflows/ci-dotnet-reusable.yml` |
-| **Secrets** | Inherited |
+| **Secrets**  | Inherited                                  |
 
 ### Reusable Workflow Parameters
 
-| Parameter | Value | Description |
-| --------- | ----- | ----------- |
-| `configuration` | `${{ inputs.configuration \|\| 'Release' }}` | Build configuration |
-| `dotnet-version` | `10.0.x` | .NET SDK version |
-| `solution-file` | `app.sln` | Solution file path |
-| `test-results-artifact-name` | `test-results` | Base name for test results artifact |
-| `build-artifacts-name` | `build-artifacts` | Base name for build artifacts |
-| `coverage-artifact-name` | `code-coverage` | Base name for coverage artifact |
-| `artifact-retention-days` | `30` | Artifact retention period |
-| `runs-on` | `ubuntu-latest` | Runner for analyze/summary jobs |
-| `enable-code-analysis` | Dynamic | Enable code analysis |
-| `fail-on-format-issues` | `true` | Fail on formatting issues |
+| Parameter                    | Value                                        | Description                         |
+| ---------------------------- | -------------------------------------------- | ----------------------------------- |
+| `configuration`              | `${{ inputs.configuration \|\| 'Release' }}` | Build configuration                 |
+| `dotnet-version`             | `10.0.x`                                     | .NET SDK version                    |
+| `solution-file`              | `app.sln`                                    | Solution file path                  |
+| `test-results-artifact-name` | `test-results`                               | Base name for test results artifact |
+| `build-artifacts-name`       | `build-artifacts`                            | Base name for build artifacts       |
+| `coverage-artifact-name`     | `code-coverage`                              | Base name for coverage artifact     |
+| `artifact-retention-days`    | `30`                                         | Artifact retention period           |
+| `runs-on`                    | `ubuntu-latest`                              | Runner for analyze/summary jobs     |
+| `enable-code-analysis`       | Dynamic                                      | Enable code analysis                |
+| `fail-on-format-issues`      | `true`                                       | Fail on formatting issues           |
 
 ---
 
@@ -211,8 +211,8 @@ This workflow consists of a single job that calls the reusable CI workflow.
 
 ```yaml
 permissions:
-  contents: read       # Required for checkout
-  checks: write        # Required for test reporter
+  contents: read # Required for checkout
+  checks: write # Required for test reporter
   pull-requests: write # Required for PR comments
 ```
 
@@ -232,11 +232,11 @@ concurrency:
 
 All artifacts include the platform suffix (`-ubuntu-latest`, `-windows-latest`, `-macos-latest`).
 
-| Artifact | Contents | Retention |
-| -------- | -------- | --------- |
-| `build-artifacts-{os}` | Compiled binaries | 7 days |
-| `test-results-{os}` | Test execution results (`.trx`) | 30 days |
-| `code-coverage-{os}` | Cobertura XML coverage reports | 30 days |
+| Artifact               | Contents                        | Retention |
+| ---------------------- | ------------------------------- | --------- |
+| `build-artifacts-{os}` | Compiled binaries               | 7 days    |
+| `test-results-{os}`    | Test execution results (`.trx`) | 30 days   |
+| `code-coverage-{os}`   | Cobertura XML coverage reports  | 30 days   |
 
 ---
 
@@ -295,12 +295,12 @@ gh workflow run ci-dotnet.yml \
 
 ### Common Issues
 
-| Issue | Cause | Solution |
-| ----- | ----- | -------- |
-| Build fails | Missing NuGet packages | Check `dotnet restore` logs |
-| Tests fail | Test failures | Download `test-results` artifact for details |
-| Format check fails | Code style violations | Run `dotnet format app.sln` locally |
-| Matrix job fails | OS-specific issue | Check logs for the specific OS |
+| Issue              | Cause                  | Solution                                     |
+| ------------------ | ---------------------- | -------------------------------------------- |
+| Build fails        | Missing NuGet packages | Check `dotnet restore` logs                  |
+| Tests fail         | Test failures          | Download `test-results` artifact for details |
+| Format check fails | Code style violations  | Run `dotnet format app.sln` locally          |
+| Matrix job fails   | OS-specific issue      | Check logs for the specific OS               |
 
 ### Local Verification
 
@@ -332,12 +332,12 @@ dotnet format app.sln
 
 ## 🔗 Related Documentation
 
-| Resource | Description |
-| -------- | ----------- |
-| [CI - .NET Reusable Workflow](./ci-dotnet-reusable.md) | Reusable CI workflow details |
-| [CD - Azure Deployment](./azure-dev.md) | Azure deployment workflow |
-| [.NET Testing Documentation](https://docs.microsoft.com/en-us/dotnet/core/testing/) | Microsoft testing guide |
-| [dotnet format Documentation](https://docs.microsoft.com/en-us/dotnet/core/tools/dotnet-format) | Code formatting tool |
+| Resource                                                                                        | Description                  |
+| ----------------------------------------------------------------------------------------------- | ---------------------------- |
+| [CI - .NET Reusable Workflow](./ci-dotnet-reusable.md)                                          | Reusable CI workflow details |
+| [CD - Azure Deployment](./azure-dev.md)                                                         | Azure deployment workflow    |
+| [.NET Testing Documentation](https://docs.microsoft.com/en-us/dotnet/core/testing/)             | Microsoft testing guide      |
+| [dotnet format Documentation](https://docs.microsoft.com/en-us/dotnet/core/tools/dotnet-format) | Code formatting tool         |
 
 ---
 

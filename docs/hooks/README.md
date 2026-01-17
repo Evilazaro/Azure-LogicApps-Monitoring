@@ -1047,7 +1047,6 @@ $VerbosePreference = 'Continue'
 For additional assistance:
 
 1. **Review detailed script documentation**:
-
    - [check-dev-workstation.md](./check-dev-workstation.md)
    - [VALIDATION-WORKFLOW.md](./VALIDATION-WORKFLOW.md)
    - [postprovision.md](./postprovision.md)

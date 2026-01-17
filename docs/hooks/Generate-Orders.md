@@ -586,13 +586,13 @@ flowchart LR
 
 ### Integration Points
 
-| Aspect           | Details                                                                                                                                                                   |
-| ---------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Called By**    | • `deploy-workflow.ps1/.sh` - Generates test data before deployment<br/>• Manual execution for development testing<br/>• CI/CD pipelines for automated test data setup    |
+| Aspect           | Details                                                                                                                                                                                                    |
+| ---------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Called By**    | • `deploy-workflow.ps1/.sh` - Generates test data before deployment<br/>• Manual execution for development testing<br/>• CI/CD pipelines for automated test data setup                                     |
 | **Calls**        | • `New-Guid` / `uuidgen` - Unique ID generation<br/>• `Get-Random` / `$RANDOM` - Random number generation<br/>• `ConvertTo-Json` / `jq` - JSON serialization<br/>• `bc` - Decimal calculations (Bash only) |
-| **Dependencies** | • **Runtime:** PowerShell 7.0+ or Bash 4.0+<br/>• **Tools:** `jq` and `bc` required for Bash version<br/>• **Output Directory:** Auto-created if missing                  |
-| **Outputs**      | • **Exit Code:** `0` (success) or `1` (failure)<br/>• **File:** JSON array of order objects<br/>• **Console:** Progress updates and summary                               |
-| **Data Schema**  | • **Order ID:** `ORD-{12 hex chars}`<br/>• **Customer ID:** `CUST-{8 hex chars}`<br/>• **Product ID:** `OP-{12 hex chars}`<br/>• **Date Range:** 2024-01-01 to 2025-12-31 |
+| **Dependencies** | • **Runtime:** PowerShell 7.0+ or Bash 4.0+<br/>• **Tools:** `jq` and `bc` required for Bash version<br/>• **Output Directory:** Auto-created if missing                                                   |
+| **Outputs**      | • **Exit Code:** `0` (success) or `1` (failure)<br/>• **File:** JSON array of order objects<br/>• **Console:** Progress updates and summary                                                                |
+| **Data Schema**  | • **Order ID:** `ORD-{12 hex chars}`<br/>• **Customer ID:** `CUST-{8 hex chars}`<br/>• **Product ID:** `OP-{12 hex chars}`<br/>• **Date Range:** 2024-01-01 to 2025-12-31                                  |
 
 ## 📖 Related Documentation
 

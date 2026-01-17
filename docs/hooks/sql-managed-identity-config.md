@@ -384,8 +384,8 @@ az sql server ad-admin list \
 
 ## 📜 Version History
 
-| Version | Date       | Changes                                                                                       |
-| ------- | ---------- | --------------------------------------------------------------------------------------------- |
+| Version | Date       | Changes                                                                                                                                                             |
+| ------- | ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | 1.0.0   | 2026-01-06 | Initial release with PowerShell Core and Bash support, preference backup/restore pattern, `-CommandType Application` to `Get-Command` calls, IFS protection in Bash |
 
 ---

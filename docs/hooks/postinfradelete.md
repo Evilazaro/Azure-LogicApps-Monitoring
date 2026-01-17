@@ -442,10 +442,10 @@ azd down  # Purges only dev environment Logic Apps
 
 ## 📜 Version History
 
-| Version | Date       | Changes                                                                                                                                              |
-| ------- | ---------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Version | Date       | Changes                                                                                                                                                                                                                                    |
+| ------- | ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | 2.0.0   | 2026-01-09 | Applied PowerShell best practices: added begin/process/end blocks, ValidateNotNullOrEmpty, improved error handling, centralized API version constant, ConfirmPreference backup/restore, CommandType to Get-Command, IFS protection in Bash |
-| 1.0.0   | 2026-01-09 | Initial release                                                                                                                                      |
+| 1.0.0   | 2026-01-09 | Initial release                                                                                                                                                                                                                            |
 
 ---
 

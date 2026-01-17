@@ -2,135 +2,137 @@
 
 /* DataGrid Harmonization */
 fluent-data-grid-row {
-    min-height: 40px;
+  min-height: 40px;
 }
 
 fluent-data-grid-cell {
-    padding: 10px 12px !important;
+  padding: 10px 12px !important;
 }
 
 .description-column {
-    max-width: 350px;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
+  max-width: 350px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 /* Card Hover Effect */
 fluent-card:hover {
-    box-shadow: var(--elevation-shadow-card-hover);
-    transition: box-shadow 0.2s ease-in-out;
+  box-shadow: var(--elevation-shadow-card-hover);
+  transition: box-shadow 0.2s ease-in-out;
 }
 
 /* Consistent Page Container */
 .page-container {
-    padding: 20px;
-    max-width: 1400px;
-    margin: 0 auto;
+  padding: 20px;
+  max-width: 1400px;
+  margin: 0 auto;
 }
 
 .page-container-medium {
-    padding: 20px;
-    max-width: 1000px;
-    margin: 0 auto;
+  padding: 20px;
+  max-width: 1000px;
+  margin: 0 auto;
 }
 
 /* Field Label Styling */
 .field-label {
-    font-size: 13px;
-    font-weight: 600;
-    margin-bottom: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  margin-bottom: 6px;
 }
 
 .field-label-small {
-    font-size: 11px;
-    color: var(--neutral-foreground-hint);
+  font-size: 11px;
+  color: var(--neutral-foreground-hint);
 }
 
 /* Required Field Indicator */
 .required-indicator {
-    color: var(--error);
+  color: var(--error);
 }
 
 /* Section Header */
 .section-header {
-    font-weight: 600;
-    font-size: 15px;
-    margin-bottom: 12px;
+  font-weight: 600;
+  font-size: 15px;
+  margin-bottom: 12px;
 }
 
 /* Order Header Hover */
 .order-header-clickable {
-    padding: 12px 16px;
-    background-color: var(--neutral-layer-1);
-    border-bottom: 1px solid var(--neutral-stroke-rest);
-    cursor: pointer;
-    transition: background-color 0.2s ease-in-out;
+  padding: 12px 16px;
+  background-color: var(--neutral-layer-1);
+  border-bottom: 1px solid var(--neutral-stroke-rest);
+  cursor: pointer;
+  transition: background-color 0.2s ease-in-out;
 }
 
 .order-header-clickable:hover {
-    background-color: var(--neutral-layer-2);
+  background-color: var(--neutral-layer-2);
 }
 
 /* Responsive Grid */
 .responsive-grid {
-    display: grid;
-    gap: 16px;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  display: grid;
+  gap: 16px;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
 }
 
 /* Status Badges */
 .status-badge {
-    display: inline-flex;
-    align-items: center;
-    padding: 4px 12px;
-    border-radius: 12px;
-    font-size: 12px;
-    font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 12px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 600;
 }
 
 .status-success {
-    background-color: var(--success-background);
-    color: var(--success-foreground);
+  background-color: var(--success-background);
+  color: var(--success-foreground);
 }
 
 .status-warning {
-    background-color: var(--warning-background);
-    color: var(--warning-foreground);
+  background-color: var(--warning-background);
+  color: var(--warning-foreground);
 }
 
 .status-error {
-    background-color: var(--error-background);
-    color: var(--error-foreground);
+  background-color: var(--error-background);
+  color: var(--error-foreground);
 }
 
 /* Smooth Transitions */
 .smooth-transition {
-    transition: all 0.2s ease-in-out;
+  transition: all 0.2s ease-in-out;
 }
 
 /* Loading Skeleton */
 .skeleton {
-    background: linear-gradient(90deg,
-            var(--neutral-layer-2) 25%,
-            var(--neutral-layer-3) 50%,
-            var(--neutral-layer-2) 75%);
-    background-size: 200% 100%;
-    animation: loading 1.5s ease-in-out infinite;
+  background: linear-gradient(
+    90deg,
+    var(--neutral-layer-2) 25%,
+    var(--neutral-layer-3) 50%,
+    var(--neutral-layer-2) 75%
+  );
+  background-size: 200% 100%;
+  animation: loading 1.5s ease-in-out infinite;
 }
 
 @keyframes loading {
-    0% {
-        background-position: 200% 0;
-    }
+  0% {
+    background-position: 200% 0;
+  }
 
-    100% {
-        background-position: -200% 0;
-    }
+  100% {
+    background-position: -200% 0;
+  }
 }
 
 /* Focus Visible Enhancement */
 *:focus-visible {
-    outline: 2px solid var(--accent-fill-rest);
-    outline-offset: 2px;
+  outline: 2px solid var(--accent-fill-rest);
+  outline-offset: 2px;
 }

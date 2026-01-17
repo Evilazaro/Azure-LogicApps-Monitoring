@@ -162,7 +162,7 @@ sequenceDiagram
     API->>API: Validate Order
     API->>DB: INSERT Order + Products
     DB-->>API: Confirmation
-    
+
     %% ===== EVENT PUBLISHING =====
     API->>SB: Publish OrderPlaced Message
     Note over API,SB: traceparent header propagated
@@ -196,7 +196,7 @@ sequenceDiagram
     Web->>API: GET /api/orders
     API->>DB: SELECT Orders with Products
     DB-->>API: Order Data (Entity)
-    
+
     %% ===== DATA TRANSFORMATION =====
     API->>API: Map Entity to DTO
     API-->>Web: JSON Order Collection

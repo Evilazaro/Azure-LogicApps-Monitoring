@@ -19,23 +19,19 @@ IP security restrictions have been implemented across all infrastructure compone
 ## 📁 Modified Files
 
 1. ✅ **Container Apps** - `app.AppHost\infra\orders-api.tmpl.yaml`
-
    - Added ingress IP restrictions for VNet (10.0.0.0/16)
    - Allow Azure Cloud services via service tag
 
 2. ✅ **Logic Apps** - `infra-old\workload\logic-app.bicep`
-
    - Added site-level IP restrictions
    - Added SCM (deployment) IP restrictions
    - Default action: Deny
 
 3. ✅ **Container Registry** - `infra\resources.bicep`
-
    - Network rules with default deny
    - Azure services bypass enabled
 
 4. ✅ **SQL Database** - `infra\OrdersDatabase\OrdersDatabase.module.bicep`
-
    - Azure services allowed
    - Template for additional IP/VNet rules included
 

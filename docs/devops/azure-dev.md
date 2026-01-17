@@ -24,13 +24,13 @@ This workflow provisions Azure infrastructure and deploys the .NET application u
 
 ### Key Features
 
-| Feature | Description |
-| ------- | ----------- |
-| ✅ **Integrated CI Pipeline** | Build, test, and code analysis before deployment |
-| 🔐 **OIDC Authentication** | No stored secrets - uses federated credentials |
-| 🌍 **Environment-based Deployment** | Protection rules and environment variables |
-| 📊 **Deployment Summaries** | Detailed observability and reporting |
-| 🔄 **Automatic Rollback** | Instructions provided on failure |
+| Feature                             | Description                                      |
+| ----------------------------------- | ------------------------------------------------ |
+| ✅ **Integrated CI Pipeline**       | Build, test, and code analysis before deployment |
+| 🔐 **OIDC Authentication**          | No stored secrets - uses federated credentials   |
+| 🌍 **Environment-based Deployment** | Protection rules and environment variables       |
+| 📊 **Deployment Summaries**         | Detailed observability and reporting             |
+| 🔄 **Automatic Rollback**           | Instructions provided on failure                 |
 
 ---
 
@@ -60,25 +60,25 @@ flowchart LR
     %% ===== DEPLOYMENT STAGE =====
     subgraph Deploy["🚀 Deploy Stage"]
         direction LR
-        
+
         subgraph SetupPhase["📦 Phase 1: Setup"]
             checkout["Checkout Repository"]
             prereq["Install Prerequisites"]
             azd_install["Install Azure Developer CLI"]
             dotnet_setup["Setup .NET SDK"]
         end
-        
+
         subgraph AuthPhase["🔐 Phase 2: Authentication"]
             azd_auth["AZD Login via OIDC"]
             az_login["Azure CLI Login"]
         end
-        
+
         subgraph ProvisionPhase["🏗️ Phase 3: Provision & Deploy"]
             provision["Provision Infrastructure"]
             reauth["Re-authenticate Session"]
             deploy_app["Deploy Application"]
         end
-        
+
         subgraph SummaryPhase["📊 Phase 4: Summary"]
             gen_summary["Generate Summary"]
         end
@@ -99,12 +99,12 @@ flowchart LR
     %% Trigger flow - events initiate pipeline
     push -->|triggers| skip_ci
     manual -->|triggers| skip_ci
-    
+
     %% CI decision - conditional execution
     skip_ci -->|run CI| ci_job
     skip_ci -->|skip to deploy| checkout
     ci_job -->|on success| checkout
-    
+
     %% Deploy flow - sequential setup and deployment
     checkout -->|clone repo| prereq
     prereq -->|install tools| azd_install
@@ -115,15 +115,15 @@ flowchart LR
     provision -->|refresh tokens| reauth
     reauth -->|run azd deploy| deploy_app
     deploy_app -->|create report| gen_summary
-    
+
     %% Summary flow - aggregate results
     gen_summary -->|report| summary_job
     ci_job -->|status| summary_job
-    
+
     %% Failure flow - error handling paths
     ci_job --x|on failure| failure_handler
     deploy_app --x|on failure| failure_handler
-    
+
     %% Output flow - capture deployment outputs
     deploy_app -->|outputs| webapp_url
     deploy_app -->|outputs| resource_group
@@ -172,11 +172,11 @@ flowchart LR
 
 ## 🎯 Triggers
 
-| Event | Condition | Description |
-| ----- | --------- | ----------- |
-| `push` | Branch: `main` | Triggers on push to main branch |
-| `push` | Paths: `src/**`, `app.*/**`, `infra/**`, `azure.yaml`, workflow file | Only runs when relevant files change |
-| `workflow_dispatch` | Manual | Allows manual triggering with optional skip-ci input |
+| Event               | Condition                                                            | Description                                          |
+| ------------------- | -------------------------------------------------------------------- | ---------------------------------------------------- |
+| `push`              | Branch: `main`                                                       | Triggers on push to main branch                      |
+| `push`              | Paths: `src/**`, `app.*/**`, `infra/**`, `azure.yaml`, workflow file | Only runs when relevant files change                 |
+| `workflow_dispatch` | Manual                                                               | Allows manual triggering with optional skip-ci input |
 
 ### Path Filters
 
@@ -184,17 +184,17 @@ The workflow monitors changes to these paths:
 
 ```yaml
 paths:
-  - "src/**"           # Source code changes
-  - "app.*/**"         # .NET Aspire host/defaults projects
-  - "infra/**"         # Infrastructure changes
-  - "azure.yaml"       # Azure Developer CLI configuration
-  - ".github/workflows/azure-dev.yml"  # This workflow
+  - "src/**" # Source code changes
+  - "app.*/**" # .NET Aspire host/defaults projects
+  - "infra/**" # Infrastructure changes
+  - "azure.yaml" # Azure Developer CLI configuration
+  - ".github/workflows/azure-dev.yml" # This workflow
 ```
 
 ### Manual Dispatch Inputs
 
-| Input | Type | Default | Description |
-| ----- | ---- | ------- | ----------- |
+| Input     | Type      | Default | Description                       |
+| --------- | --------- | ------- | --------------------------------- |
 | `skip-ci` | `boolean` | `false` | Skip CI checks (use with caution) |
 
 > ⚠️ **Warning:** Skipping CI should only be used for emergency deployments or when CI has been validated separately.
@@ -207,55 +207,55 @@ paths:
 
 **Condition:** Runs unless `skip-ci` is `true`
 
-| Property | Value |
-| -------- | ----- |
-| **Type** | Reusable workflow call |
-| **Workflow** | `.github/workflows/ci-dotnet-reusable.yml` |
-| **Configuration** | `Release` |
-| **Analysis** | Enabled |
+| Property          | Value                                      |
+| ----------------- | ------------------------------------------ |
+| **Type**          | Reusable workflow call                     |
+| **Workflow**      | `.github/workflows/ci-dotnet-reusable.yml` |
+| **Configuration** | `Release`                                  |
+| **Analysis**      | Enabled                                    |
 
 ### Job 2: 🚀 Deploy Dev
 
 **Condition:** Runs when CI succeeds or is skipped
 
-| Property | Value |
-| -------- | ----- |
-| **Runner** | `ubuntu-latest` |
-| **Timeout** | 30 minutes |
-| **Environment** | `dev` |
-| **Needs** | `ci` |
+| Property        | Value           |
+| --------------- | --------------- |
+| **Runner**      | `ubuntu-latest` |
+| **Timeout**     | 30 minutes      |
+| **Environment** | `dev`           |
+| **Needs**       | `ci`            |
 
 #### Steps Overview
 
-| Phase | Step | Description |
-| ----- | ---- | ----------- |
-| **Setup** | 📥 Checkout repository | Clones the repository |
-| **Setup** | 📦 Install Prerequisites | Installs `jq`, `dos2unix`, `go-sqlcmd` |
-| **Setup** | 🔧 Install Azure Developer CLI | Sets up azd |
-| **Setup** | 🔧 Setup .NET SDK | Installs .NET 10.0.x |
-| **Auth** | 🔐 Log in with Azure (OIDC) | Authenticates azd with federated credentials |
-| **Auth** | 🔑 Azure CLI Login | Authenticates Azure CLI |
-| **Deploy** | 🏗️ Provision Infrastructure | Runs `azd provision` |
-| **Deploy** | 🔐 Re-authenticate | Refreshes authentication |
-| **Deploy** | 🚀 Deploy Application | Runs `azd deploy` |
-| **Summary** | 📊 Generate deployment summary | Creates detailed summary |
+| Phase       | Step                           | Description                                  |
+| ----------- | ------------------------------ | -------------------------------------------- |
+| **Setup**   | 📥 Checkout repository         | Clones the repository                        |
+| **Setup**   | 📦 Install Prerequisites       | Installs `jq`, `dos2unix`, `go-sqlcmd`       |
+| **Setup**   | 🔧 Install Azure Developer CLI | Sets up azd                                  |
+| **Setup**   | 🔧 Setup .NET SDK              | Installs .NET 10.0.x                         |
+| **Auth**    | 🔐 Log in with Azure (OIDC)    | Authenticates azd with federated credentials |
+| **Auth**    | 🔑 Azure CLI Login             | Authenticates Azure CLI                      |
+| **Deploy**  | 🏗️ Provision Infrastructure    | Runs `azd provision`                         |
+| **Deploy**  | 🔐 Re-authenticate             | Refreshes authentication                     |
+| **Deploy**  | 🚀 Deploy Application          | Runs `azd deploy`                            |
+| **Summary** | 📊 Generate deployment summary | Creates detailed summary                     |
 
 #### Job Outputs
 
-| Output | Description |
-| ------ | ----------- |
-| `webapp-url` | URL of the deployed web application |
-| `resource-group` | Name of the Azure resource group |
+| Output           | Description                         |
+| ---------------- | ----------------------------------- |
+| `webapp-url`     | URL of the deployed web application |
+| `resource-group` | Name of the Azure resource group    |
 
 ### Job 3: 📊 Summary
 
 **Condition:** Always runs
 
-| Property | Value |
-| -------- | ----- |
-| **Runner** | `ubuntu-latest` |
-| **Timeout** | 5 minutes |
-| **Needs** | `ci`, `deploy-dev` |
+| Property    | Value              |
+| ----------- | ------------------ |
+| **Runner**  | `ubuntu-latest`    |
+| **Timeout** | 5 minutes          |
+| **Needs**   | `ci`, `deploy-dev` |
 
 Generates comprehensive workflow summary with status badges and links.
 
@@ -263,11 +263,11 @@ Generates comprehensive workflow summary with status badges and links.
 
 **Condition:** Runs on failure
 
-| Property | Value |
-| -------- | ----- |
-| **Runner** | `ubuntu-latest` |
-| **Timeout** | 5 minutes |
-| **Needs** | `ci`, `deploy-dev` |
+| Property    | Value              |
+| ----------- | ------------------ |
+| **Runner**  | `ubuntu-latest`    |
+| **Timeout** | 5 minutes          |
+| **Needs**   | `ci`, `deploy-dev` |
 
 Reports failure with detailed job results and next steps.
 
@@ -277,31 +277,31 @@ Reports failure with detailed job results and next steps.
 
 ### Required Repository Variables
 
-| Variable | Description | Required |
-| -------- | ----------- | :------: |
-| `AZURE_CLIENT_ID` | Azure AD App Registration Client ID | ✅ |
-| `AZURE_TENANT_ID` | Azure AD Tenant ID | ✅ |
-| `AZURE_SUBSCRIPTION_ID` | Azure Subscription ID | ✅ |
-| `AZURE_ENV_NAME` | Azure environment name | ❌ (default: `dev`) |
-| `AZURE_LOCATION` | Azure region | ❌ (default: `eastus2`) |
-| `DEPLOYER_PRINCIPAL_TYPE` | Principal type for deployment | ❌ (default: `ServicePrincipal`) |
-| `DEPLOY_HEALTH_MODEL` | Health model deployment flag | ❌ |
+| Variable                  | Description                         |             Required             |
+| ------------------------- | ----------------------------------- | :------------------------------: |
+| `AZURE_CLIENT_ID`         | Azure AD App Registration Client ID |                ✅                |
+| `AZURE_TENANT_ID`         | Azure AD Tenant ID                  |                ✅                |
+| `AZURE_SUBSCRIPTION_ID`   | Azure Subscription ID               |                ✅                |
+| `AZURE_ENV_NAME`          | Azure environment name              |       ❌ (default: `dev`)        |
+| `AZURE_LOCATION`          | Azure region                        |     ❌ (default: `eastus2`)      |
+| `DEPLOYER_PRINCIPAL_TYPE` | Principal type for deployment       | ❌ (default: `ServicePrincipal`) |
+| `DEPLOY_HEALTH_MODEL`     | Health model deployment flag        |                ❌                |
 
 ### Required Permissions
 
 ```yaml
 permissions:
-  id-token: write      # Required for OIDC authentication
-  contents: read       # Required for checkout
-  checks: write        # Required for status checks
+  id-token: write # Required for OIDC authentication
+  contents: read # Required for checkout
+  checks: write # Required for status checks
   pull-requests: write # Required for PR comments
 ```
 
 ### GitHub Environment
 
-| Environment | URL Output | Protection Rules |
-| ----------- | ---------- | ---------------- |
-| `dev` | `${{ steps.deploy.outputs.webapp-url }}` | None |
+| Environment | URL Output                               | Protection Rules |
+| ----------- | ---------------------------------------- | ---------------- |
+| `dev`       | `${{ steps.deploy.outputs.webapp-url }}` | None             |
 
 ### Azure Prerequisites
 
@@ -362,12 +362,12 @@ gh workflow run azure-dev.yml --ref main -f skip-ci=true
 
 ### Common Issues
 
-| Issue | Cause | Solution |
-| ----- | ----- | -------- |
+| Issue                     | Cause                         | Solution                                       |
+| ------------------------- | ----------------------------- | ---------------------------------------------- |
 | OIDC authentication fails | Invalid federated credentials | Verify Azure AD app registration configuration |
-| Provision fails | Missing permissions | Check subscription RBAC assignments |
-| Deploy fails | Resource conflicts | Review Azure portal for resource status |
-| sqlcmd errors | Wrong version installed | Workflow installs go-sqlcmd automatically |
+| Provision fails           | Missing permissions           | Check subscription RBAC assignments            |
+| Deploy fails              | Resource conflicts            | Review Azure portal for resource status        |
+| sqlcmd errors             | Wrong version installed       | Workflow installs go-sqlcmd automatically      |
 
 ### Rollback Instructions
 
@@ -393,12 +393,12 @@ azd deploy --no-prompt
 
 ## 🔗 Related Documentation
 
-| Resource | Description |
-| -------- | ----------- |
-| [CI - .NET Reusable Workflow](./ci-dotnet-reusable.md) | Reusable CI workflow details |
-| [Azure Developer CLI Documentation](https://learn.microsoft.com/en-us/azure/developer/azure-developer-cli/) | Official azd documentation |
-| [Federated Credentials Setup](https://learn.microsoft.com/en-us/azure/developer/github/connect-from-azure) | OIDC authentication setup |
-| [Developer Experience Documentation](../hooks/README.md) | Pre/post deployment scripts |
+| Resource                                                                                                    | Description                  |
+| ----------------------------------------------------------------------------------------------------------- | ---------------------------- |
+| [CI - .NET Reusable Workflow](./ci-dotnet-reusable.md)                                                      | Reusable CI workflow details |
+| [Azure Developer CLI Documentation](https://learn.microsoft.com/en-us/azure/developer/azure-developer-cli/) | Official azd documentation   |
+| [Federated Credentials Setup](https://learn.microsoft.com/en-us/azure/developer/github/connect-from-azure)  | OIDC authentication setup    |
+| [Developer Experience Documentation](../hooks/README.md)                                                    | Pre/post deployment scripts  |
 
 ---
 
