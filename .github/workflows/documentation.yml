@@ -66,7 +66,7 @@ jobs:
       - name: Install Python dependencies
         run: |
           pip install mkdocs-material
-          pip install .[recommended,git,imaging]
+          pip install pillow cairosvg mkdocs-git-revision-date-localized-plugin mkdocs-git-committers-plugin-2
 
       - name: Install Insiders build
         if: github.event.repository.fork == false
