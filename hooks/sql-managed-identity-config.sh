@@ -316,15 +316,15 @@ check_sqlcmd() {
     fi
     
     # Verify it's go-sqlcmd by checking for --version flag support
-    # go-sqlcmd outputs "Version: x.y.z" or similar
+    # go-sqlcmd outputs "Version: x.y.z", "vX.Y.Z" or similar
     # ODBC sqlcmd outputs "Unknown Option" or similar error for --version
     local version_output
     version_output=$(sqlcmd --version 2>&1 || true)
     log_verbose "sqlcmd --version output: $version_output"
     
     # Check for positive confirmation that it's go-sqlcmd
-    # go-sqlcmd version output contains "Version" or version number pattern
-    if echo "$version_output" | grep -qiE "^Version:|^[0-9]+\.[0-9]+\.[0-9]+|go-sqlcmd"; then
+    # go-sqlcmd version output contains "Version", "vX.Y.Z" or version number pattern
+    if echo "$version_output" | grep -qiE "^Version:|^v?[0-9]+\.[0-9]+\.[0-9]+|go-sqlcmd|SqlcmdLegal|SqlcmdNotices"; then
         log_verbose "go-sqlcmd version: $version_output"
         log_success "go-sqlcmd is available at: $sqlcmd_path"
         return 0
