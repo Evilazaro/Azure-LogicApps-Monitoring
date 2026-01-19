@@ -24,7 +24,7 @@ properties:
       - name: applicationinsights-connection-string
         value: '{{ .Env.TELEMETRY_APPINSIGHTSCONNECTIONSTRING }}'
       - name: connectionstrings--orderdb
-        value: Server=tcp:{{ .Env.ORDERSDATABASE_SQLSERVERFQDN }},1433;Encrypt=True;Authentication="Active Directory Default";Database=OrderDb
+        value: 'Server=tcp:{{ .Env.ORDERSDATABASE_SQLSERVERFQDN }},1433;Encrypt=True;Authentication=Active Directory Default;Database=OrderDb'
       - name: connectionstrings--messaging
         value: '{{ .Env.MESSAGING_SERVICEBUSENDPOINT }}'
   template:
