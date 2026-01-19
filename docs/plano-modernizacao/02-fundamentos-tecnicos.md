@@ -247,28 +247,28 @@ block-beta
   columns 1
 
   %% ===== CAMADA 1: API (Controllers) =====
-  block:api["🌐 API (Controllers)"]
+  block:api["🌐 API (Controllers)"]:1
     api_desc["Validação de entrada | Autenticação | Rate limiting"]
   end
 
   space
 
   %% ===== CAMADA 2: Aplicação (Services) =====
-  block:app["⚙️ Aplicação (Services)"]
+  block:app["⚙️ Aplicação (Services)"]:1
     app_desc["Orquestração | Mapeamento | Casos de uso"]
   end
 
   space
 
   %% ===== CAMADA 3: Domínio (Entities) =====
-  block:domain["📦 Domínio (Entities)"]
+  block:domain["📦 Domínio (Entities)"]:1
     domain_desc["Regras de negócio | Validações de domínio"]
   end
 
   space
 
   %% ===== CAMADA 4: Infraestrutura (Repositories) =====
-  block:infra["🗄️ Infraestrutura (Repositories)"]
+  block:infra["🗄️ Infraestrutura (Repositories)"]:1
     infra_desc["Acesso a dados | Gateways externos | ERP"]
   end
 
@@ -276,6 +276,12 @@ block-beta
   api --> app
   app --> domain
   domain --> infra
+
+  %% ===== ESTILOS =====
+  style api fill:#4F46E5,stroke:#3730A3,color:#FFFFFF
+  style app fill:#10B981,stroke:#059669,color:#FFFFFF
+  style domain fill:#F59E0B,stroke:#D97706,color:#000000
+  style infra fill:#6B7280,stroke:#4B5563,color:#FFFFFF
 ```
 
 | Diretriz                       | Descrição                                          |
@@ -357,13 +363,26 @@ Para cada item de escopo, a Néctar produzirá um **Entregável Mínimo Validáv
 title: Fluxo de Validação dos EMVs (Entregáveis Mínimos Validáveis)
 ---
 flowchart LR
+    %% ===== DEFINIÇÕES DE ESTILO =====
+    classDef primary fill:#4F46E5,stroke:#3730A3,color:#FFFFFF
+    classDef secondary fill:#10B981,stroke:#059669,color:#FFFFFF
+    classDef datastore fill:#F59E0B,stroke:#D97706,color:#000000
+    classDef external fill:#6B7280,stroke:#4B5563,color:#FFFFFF,stroke-dasharray: 5 5
+    classDef failed fill:#F44336,stroke:#C62828,color:#FFFFFF
+    classDef trigger fill:#818CF8,stroke:#4F46E5,color:#FFFFFF
+    classDef decision fill:#FFFBEB,stroke:#F59E0B,color:#000000
+    classDef input fill:#F3F4F6,stroke:#6B7280,color:#000000
+
+    %% ===== SUBGRAPH: ENTREGA =====
     subgraph entrega ["📤 Entrega"]
         direction LR
         A["📦 Néctar entrega<br>EMV"]
         B["📧 Notificação<br>formal ao cliente"]
         A -->|"notifica"| B
     end
+    style entrega fill:#EEF2FF,stroke:#4F46E5,stroke-width:2px
 
+    %% ===== SUBGRAPH: VALIDAÇÃO =====
     subgraph validacao ["⏱️ Validação (2 dias úteis)"]
         direction LR
         C{"⏱️ Validação em<br>2 dias úteis?"}
@@ -372,7 +391,9 @@ flowchart LR
         C -->|"Sim"| D
         C -->|"Não"| E
     end
+    style validacao fill:#FEF3C7,stroke:#F59E0B,stroke-width:2px
 
+    %% ===== SUBGRAPH: RESULTADO =====
     subgraph resultado ["📋 Resultado"]
         direction LR
         F{"🔍 Aprovado?"}
@@ -383,11 +404,21 @@ flowchart LR
         F -->|"Não"| H
         G -->|"avança"| I
     end
+    style resultado fill:#ECFDF5,stroke:#10B981,stroke-width:2px
 
+    %% ===== CONEXÕES ENTRE SUBGRAPHS =====
     entrega -->|"inicia validação"| validacao
     D -->|"analisa"| F
     E -->|"aprovado automaticamente"| G
     H -->|"retrabalho"| A
+
+    %% ===== APLICAÇÃO DE ESTILOS =====
+    class A,B input
+    class C,F decision
+    class D trigger
+    class E,G secondary
+    class H failed
+    class I primary
 ```
 
 ---

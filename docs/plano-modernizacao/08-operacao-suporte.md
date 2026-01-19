@@ -54,8 +54,16 @@ Durante as Fases 3-5 do projeto, o sistema operará em modo híbrido, com fluxos
 ### Governança da Convivência
 
 ```mermaid
+---
+title: Governança da Convivência - Estados de Operação
+---
 stateDiagram-v2
     direction LR
+    
+    %% ===== DEFINIÇÕES DE ESTILO =====
+    classDef legadoState fill:#F59E0B,stroke:#D97706,color:#000000
+    classDef hibridoState fill:#FBBF24,stroke:#D97706,color:#000000
+    classDef apiState fill:#10B981,stroke:#059669,color:#FFFFFF
     
     [*] --> Legado: Estado Inicial
     
@@ -86,6 +94,11 @@ stateDiagram-v2
     }
     
     API --> [*]: Sistema Modernizado
+
+    %% ===== APLICAÇÃO DE ESTILOS =====
+    class Legado legadoState
+    class Hibrido hibridoState
+    class API apiState
 ```
 
 ### Regras de Convivência
@@ -111,27 +124,65 @@ stateDiagram-v2
 ### Pipeline CI/CD
 
 ```mermaid
+---
+title: Pipeline CI/CD - Fluxo de Implantação
+---
 flowchart LR
+    %% ===== DEFINIÇÕES DE ESTILO =====
+    classDef primary fill:#4F46E5,stroke:#3730A3,color:#FFFFFF
+    classDef secondary fill:#10B981,stroke:#059669,color:#FFFFFF
+    classDef datastore fill:#F59E0B,stroke:#D97706,color:#000000
+    classDef external fill:#6B7280,stroke:#4B5563,color:#FFFFFF,stroke-dasharray: 5 5
+    classDef failed fill:#F44336,stroke:#C62828,color:#FFFFFF
+    classDef trigger fill:#818CF8,stroke:#4F46E5,color:#FFFFFF
+    classDef decision fill:#FFFBEB,stroke:#F59E0B,color:#000000
+    classDef input fill:#F3F4F6,stroke:#6B7280,color:#000000
+
+    %% ===== SUBGRAPH: DESENVOLVIMENTO =====
     subgraph dev ["🔧 Desenvolvimento"]
-        A[Commit] --> B[Build]
-        B --> C[Testes Unitários]
+        A["Commit"]
+        B["Build"]
+        C["Testes Unitários"]
+        A -->|"trigger"| B
+        B -->|"compila"| C
     end
+    style dev fill:#EEF2FF,stroke:#4F46E5,stroke-width:2px
     
+    %% ===== SUBGRAPH: QUALIDADE =====
     subgraph qa ["🧪 Qualidade"]
-        C --> D[Deploy DEV]
-        D --> E[Testes Integração]
-        E --> F[Deploy HML]
+        D["Deploy DEV"]
+        E["Testes Integração"]
+        F["Deploy HML"]
+        C -->|"sucesso"| D
+        D -->|"executa"| E
+        E -->|"aprovado"| F
     end
+    style qa fill:#FEF3C7,stroke:#F59E0B,stroke-width:2px
     
+    %% ===== SUBGRAPH: PRODUÇÃO =====
     subgraph prod ["🚀 Produção"]
-        F --> G{Aprovação}
-        G -->|Sim| H[Deploy PRD]
-        H --> I[Smoke Tests]
-        I --> J[Monitoramento]
+        G{"Aprovação"}
+        H["Deploy PRD"]
+        I["Smoke Tests"]
+        J["Monitoramento"]
+        F -->|"solicita"| G
+        G -->|"Sim"| H
+        H -->|"valida"| I
+        I -->|"monitora"| J
     end
+    style prod fill:#ECFDF5,stroke:#10B981,stroke-width:2px
     
-    G -->|Não| K[Correções]
-    K --> A
+    %% ===== FLUXO DE CORREÇÃO =====
+    K["Correções"]
+    G -->|"Não"| K
+    K -->|"reinicia"| A
+
+    %% ===== APLICAÇÃO DE ESTILOS =====
+    class A,B,C input
+    class D,E,F trigger
+    class G decision
+    class H,I,J secondary
+    class K failed
 ```
 
 ### Estratégia de Rollback
@@ -270,29 +321,54 @@ Para cenários futuros de maior escala ou desacoplamento, a introdução de Serv
 ### Modelo de Implementação
 
 ```mermaid
+---
+title: Arquitetura Event-Driven - Service Bus (Evolução Futura)
+---
 flowchart LR
+    %% ===== DEFINIÇÕES DE ESTILO =====
+    classDef primary fill:#4F46E5,stroke:#3730A3,color:#FFFFFF
+    classDef secondary fill:#10B981,stroke:#059669,color:#FFFFFF
+    classDef datastore fill:#F59E0B,stroke:#D97706,color:#000000
+    classDef external fill:#6B7280,stroke:#4B5563,color:#FFFFFF,stroke-dasharray: 5 5
+    classDef failed fill:#F44336,stroke:#C62828,color:#FFFFFF
+    classDef trigger fill:#818CF8,stroke:#4F46E5,color:#FFFFFF
+    classDef decision fill:#FFFBEB,stroke:#F59E0B,color:#000000
+    classDef input fill:#F3F4F6,stroke:#6B7280,color:#000000
+
+    %% ===== SUBGRAPH: PRODUTORES =====
     subgraph producer ["🏭 Produtores"]
-        A[API Pedidos]
-        B[API Faturamento]
+        A["API Pedidos"]
+        B["API Faturamento"]
     end
+    style producer fill:#EEF2FF,stroke:#4F46E5,stroke-width:2px
     
+    %% ===== SUBGRAPH: SERVICE BUS =====
     subgraph bus ["📬 Service Bus"]
-        C[(Topic: Pedidos)]
-        D[(Topic: Notas)]
+        C[("Topic: Pedidos")]
+        D[("Topic: Notas")]
     end
+    style bus fill:#FEF3C7,stroke:#F59E0B,stroke-width:2px
     
+    %% ===== SUBGRAPH: CONSUMIDORES =====
     subgraph consumers ["👥 Consumidores"]
-        E[Worker Estoque]
-        F[Worker Financeiro]
-        G[Worker Analytics]
+        E["Worker Estoque"]
+        F["Worker Financeiro"]
+        G["Worker Analytics"]
     end
+    style consumers fill:#ECFDF5,stroke:#10B981,stroke-width:2px
     
-    A -->|publish| C
-    B -->|publish| D
-    C -->|subscribe| E
-    C -->|subscribe| G
-    D -->|subscribe| F
-    D -->|subscribe| G
+    %% ===== CONEXÕES =====
+    A -->|"publish"| C
+    B -->|"publish"| D
+    C -->|"subscribe"| E
+    C -->|"subscribe"| G
+    D -->|"subscribe"| F
+    D -->|"subscribe"| G
+
+    %% ===== APLICAÇÃO DE ESTILOS =====
+    class A,B primary
+    class C,D datastore
+    class E,F,G secondary
 ```
 
 > **⚠️ Nota:** A implementação de Service Bus está fora do escopo das Fases 0-5 e seria tratada como evolução opcional (Fase 6) mediante aprovação e orçamento adicional.

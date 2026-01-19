@@ -41,6 +41,17 @@ A abordagem adotada é o **Strangler Pattern**, com extração gradual da lógic
 title: Strangler Pattern - Migração Fluxo a Fluxo
 ---
 flowchart LR
+    %% ===== DEFINIÇÕES DE ESTILO =====
+    classDef primary fill:#4F46E5,stroke:#3730A3,color:#FFFFFF
+    classDef secondary fill:#10B981,stroke:#059669,color:#FFFFFF
+    classDef datastore fill:#F59E0B,stroke:#D97706,color:#000000
+    classDef external fill:#6B7280,stroke:#4B5563,color:#FFFFFF,stroke-dasharray: 5 5
+    classDef failed fill:#F44336,stroke:#C62828,color:#FFFFFF
+    classDef trigger fill:#818CF8,stroke:#4F46E5,color:#FFFFFF
+    classDef decision fill:#FFFBEB,stroke:#F59E0B,color:#000000
+    classDef input fill:#F3F4F6,stroke:#6B7280,color:#000000
+
+    %% ===== SUBGRAPH: LEGADO =====
     subgraph legado ["⚠️ ANTES (Legado)"]
         direction LR
         A1["⏱️ Access/VBA<br>Timer"]
@@ -54,6 +65,7 @@ flowchart LR
     end
     style legado fill:#FFF7ED,stroke:#FB923C,stroke-width:2px
 
+    %% ===== SUBGRAPH: MODERNO =====
     subgraph moderno ["✅ DEPOIS (Com API)"]
         direction LR
         B1["📱 Sistema do Cliente<br>ou Access em modo UI"]
@@ -67,7 +79,17 @@ flowchart LR
     end
     style moderno fill:#EEF2FF,stroke:#4F46E5,stroke-width:2px
 
+    %% ===== CONEXÃO PRINCIPAL =====
     legado ==>|"Strangler Pattern"| moderno
+
+    %% ===== APLICAÇÃO DE ESTILOS =====
+    class A1 trigger
+    class A2,A3 datastore
+    class A4 failed
+    class B1 input
+    class B2 primary
+    class B3 trigger
+    class B4 secondary
 ```
 
 **Mudança fundamental na direção da integração:**
@@ -100,6 +122,11 @@ A convivência é gerenciada **por fluxo**, não por "sistema inteiro". Cada flu
 title: Ciclo de Estados por Fluxo - Operação Híbrida
 ---
 stateDiagram-v2
+    %% ===== DEFINIÇÕES DE ESTILO =====
+    classDef legadoState fill:#F59E0B,stroke:#D97706,color:#000000
+    classDef hibridoState fill:#FBBF24,stroke:#D97706,color:#000000
+    classDef apiState fill:#10B981,stroke:#059669,color:#FFFFFF
+
     [*] --> Legado: Início do fluxo
 
     state "🟠 LEGADO" as Legado {
@@ -133,6 +160,11 @@ stateDiagram-v2
     Hibrido --> Legado: Rollback controlado
     API --> Hibrido: Rollback excepcional
     API --> [*]: Fluxo migrado
+
+    %% ===== APLICAÇÃO DE ESTILOS =====
+    class Legado legadoState
+    class Hibrido hibridoState
+    class API apiState
 ```
 
 | Estado      | Descrição                                  | Critério de Transição                                 |
@@ -173,30 +205,36 @@ stateDiagram-v2
 title: Roadmap de Fases - Visão Temporal
 ---
 gantt
+    %% ===== CONFIGURAÇÃO =====
     dateFormat YYYY-MM-DD
     axisFormat %d/%m/%y
     tickInterval 2week
     todayMarker stroke-width:3px,stroke:#EF4444,opacity:0.8
 
+    %% ===== SEÇÃO: PREPARAÇÃO =====
     section 📋 Preparação
     Fase 0 – Alinhamento e Riscos       :active, f0, 2026-01-13, 2w
     🚦 Gate Go/No-Go                    :milestone, m0, after f0, 0d
     Fase 1 – Contratos OpenAPI          :f1, after f0, 2w
     🚦 Aprovação Contratos              :milestone, m1, after f1, 0d
 
+    %% ===== SEÇÃO: FUNDAÇÃO =====
     section 🏗️ Fundação
     Fase 2 – API e Infraestrutura       :f2, after f1, 3w
     🚦 Checkpoint Infra OK              :milestone, m2, after f2, 0d
 
+    %% ===== SEÇÃO: PILOTO =====
     section 🚀 Piloto
     Fase 3 – Fluxo Piloto (Pessoas)     :crit, f3, after f2, 4w
     🚦 Go-Live Piloto                   :milestone, crit, m3, after f3, 0d
 
+    %% ===== SEÇÃO: MIGRAÇÃO =====
     section 🔄 Migração
     Fase 4 – Operação Híbrida           :f4, after f3, 12w
     Fase 5 – Simplificação Legado       :f5, after f4, 8w
     🏁 Aceite Final                     :milestone, m5, after f5, 0d
 
+    %% ===== SEÇÃO: EVOLUÇÃO =====
     section ✨ Evolução
     Fase 6 – Evoluções Opcionais        :done, f6, after f5, 4w
 ```

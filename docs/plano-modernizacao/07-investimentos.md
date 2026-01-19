@@ -280,9 +280,13 @@ title: Distribuição de Horas por Recurso
     'pie4': '#8B5CF6'
 } } }%%
 pie showData
+    %% Gerente de Projeto - 17% das horas totais
     "Gerente de Projeto (17%)" : 264
+    %% Arquiteto de Solução - 14% das horas totais
     "Arquiteto de Solução (14%)" : 220
+    %% Desenvolvedor Sênior - 42% das horas totais (maior esforço)
     "Desenvolvedor Sênior (42%)" : 672
+    %% Desenvolvedor Pleno - 28% das horas totais
     "Desenvolvedor Pleno (28%)" : 444
 ```
 
@@ -299,9 +303,11 @@ title: Distribuição de Horas por Fase
     'pie6': '#22C55E'
 } } }%%
 pie showData
+    %% Fases iniciais - menor esforço
     "Fase 0 – Alinhamento (7%)" : 112
     "Fase 1 – Contratos (7%)" : 112
     "Fase 2 – Fundação (11%)" : 168
+    %% Fases de execução - maior esforço
     "Fase 3 – Piloto (15%)" : 240
     "Fase 4 – Migração (49%)" : 780
     "Fase 5 – Simplificação (12%)" : 188
@@ -409,19 +415,24 @@ O pagamento do projeto será realizado conforme o fluxo abaixo, vinculado aos ma
 5. **Atrasos por parte do cliente:** Caso haja atraso na validação de entregas ou fornecimento de insumos pela Cooperflora que impacte o cronograma, os pagamentos seguirão o calendário original, não sendo postergados.
 
 ```mermaid
+---
+title: Cronograma de Pagamento do Projeto
+---
 %%{init: { 'theme': 'base', 'themeVariables': {
     'cScale0': '#10B981', 'cScaleLabel0': '#ffffff',
     'cScale1': '#4F46E5', 'cScaleLabel1': '#ffffff',
     'cScale2': '#F59E0B', 'cScaleLabel2': '#ffffff'
 } } }%%
 timeline
-    title Cronograma de Pagamento do Projeto
+    %% ===== SEÇÃO: INÍCIO DO PROJETO =====
     section 📋 Início
         Aceite do Projeto : 💰 30% – R$ 72.000,00 : Assinatura e aceite formal
+    %% ===== SEÇÃO: FASES DE FUNDAÇÃO =====
     section 🏗️ Fases 0–2 (Fundação)
         Fase 0 : 💰 10% – R$ 24.000,00 : Inventário técnico
         Fase 1 : 💰 10% – R$ 24.000,00 : Contratos OpenAPI
         Fase 2 : 💰 10% – R$ 24.000,00 : API em DEV/HML
+    %% ===== SEÇÃO: FASES DE EXECUÇÃO =====
     section 🚀 Fases 3–5 (Execução)
         Fase 3 : 💰 15% – R$ 36.000,00 : Fluxo piloto em PRD
         Fase 4 : 💰 15% – R$ 36.000,00 : Migração completa
@@ -442,10 +453,13 @@ title: Distribuição dos Pagamentos (R$)
     'pie7': '#FCD34D'
 } } }%%
 pie showData
+    %% Pagamento inicial - maior parcela
     "Aceite (30%)" : 72000
+    %% Pagamentos das fases de fundação
     "Fase 0 (10%)" : 24000
     "Fase 1 (10%)" : 24000
     "Fase 2 (10%)" : 24000
+    %% Pagamentos das fases de execução
     "Fase 3 (15%)" : 36000
     "Fase 4 (15%)" : 36000
     "Fase 5 (10%)" : 24000

@@ -119,13 +119,26 @@ O processo de controle de mudanças garante que alterações sejam avaliadas, ap
 title: Processo de Change Request (Controle de Mudanças)
 ---
 flowchart LR
+    %% ===== DEFINIÇÕES DE ESTILO =====
+    classDef primary fill:#4F46E5,stroke:#3730A3,color:#FFFFFF
+    classDef secondary fill:#10B981,stroke:#059669,color:#FFFFFF
+    classDef datastore fill:#F59E0B,stroke:#D97706,color:#000000
+    classDef external fill:#6B7280,stroke:#4B5563,color:#FFFFFF,stroke-dasharray: 5 5
+    classDef failed fill:#F44336,stroke:#C62828,color:#FFFFFF
+    classDef trigger fill:#818CF8,stroke:#4F46E5,color:#FFFFFF
+    classDef decision fill:#FFFBEB,stroke:#F59E0B,color:#000000
+    classDef input fill:#F3F4F6,stroke:#6B7280,color:#000000
+
+    %% ===== SUBGRAPH: SOLICITAÇÃO =====
     subgraph solicitacao ["📥 Solicitação"]
         direction LR
         A["📝 Solicitação<br>de Mudança"]
         B["📊 Análise<br>de Impacto"]
         A -->|"submete"| B
     end
+    style solicitacao fill:#EEF2FF,stroke:#4F46E5,stroke-width:2px
 
+    %% ===== SUBGRAPH: TRIAGEM =====
     subgraph triagem ["🔀 Triagem"]
         direction LR
         C{"🔍 Impacto<br>Significativo?"}
@@ -134,25 +147,40 @@ flowchart LR
         C -->|"Sim"| D
         C -->|"Não"| E
     end
+    style triagem fill:#FEF3C7,stroke:#F59E0B,stroke-width:2px
 
+    %% ===== SUBGRAPH: DECISÃO =====
     subgraph decisao ["⚖️ Decisão"]
         direction LR
         F{"✅ Aprovado?"}
         H["❌ Registrar<br>Decisão"]
         F -->|"Não"| H
     end
+    style decisao fill:#FEE2E2,stroke:#F44336,stroke-width:2px
 
+    %% ===== SUBGRAPH: EXECUÇÃO =====
     subgraph execucao ["🚀 Execução"]
         direction LR
         G["📋 Atualizar<br>Baseline"]
         I["🚀 Implementar"]
         G -->|"inicia"| I
     end
+    style execucao fill:#ECFDF5,stroke:#10B981,stroke-width:2px
 
+    %% ===== CONEXÕES ENTRE SUBGRAPHS =====
     solicitacao -->|"analisa"| triagem
     D -->|"decide"| F
     E -->|"decide"| F
     F -->|"Sim"| execucao
+
+    %% ===== APLICAÇÃO DE ESTILOS =====
+    class A input
+    class B trigger
+    class C,F decision
+    class D,E primary
+    class G secondary
+    class H failed
+    class I primary
 ```
 
 | Etapa                   | Responsável                    | Prazo Alvo                | Artefato                                        |

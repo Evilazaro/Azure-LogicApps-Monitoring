@@ -70,19 +70,31 @@ Este projeto visa modernizar o **Módulo Integrador/Interface (Access + VBA)** u
 ### 📊 Visão Geral do Cronograma
 
 ```mermaid
+---
+title: Cronograma Macro do Projeto
+---
 gantt
-    title Cronograma Macro do Projeto
+    %% ===== CONFIGURAÇÃO =====
     dateFormat  YYYY-MM-DD
+    axisFormat  %d/%m
+    todayMarker stroke-width:3px,stroke:#4F46E5,opacity:0.8
 
+    %% ===== SEÇÃO: FUNDAÇÃO =====
     section Fundação
-    Fase 0 - Alinhamento     :f0, 2026-02-03, 2w
+    Fase 0 - Alinhamento     :active, f0, 2026-02-03, 2w
     Fase 1 - Contratos       :f1, after f0, 2w
-    Fase 2 - Fundação API    :f2, after f1, 3w
+    Fase 2 - Fundação API    :crit, f2, after f1, 3w
     
+    %% ===== SEÇÃO: EXECUÇÃO =====
     section Execução
     Fase 3 - Piloto          :f3, after f2, 4w
-    Fase 4 - Migração        :f4, after f3, 12w
+    Fase 4 - Migração        :crit, f4, after f3, 12w
     Fase 5 - Simplificação   :f5, after f4, 5w
+
+    %% ===== MARCOS =====
+    section Marcos
+    Go-Live Piloto           :milestone, m1, 2026-04-28, 0d
+    Go-Live Completo         :milestone, m2, 2026-08-24, 0d
 ```
 
 ---

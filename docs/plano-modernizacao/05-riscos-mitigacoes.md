@@ -85,6 +85,28 @@ block-beta
 
   %% ===== LINHA PROBABILIDADE BAIXA =====
   PB["Baixa"]:1 PB_B["🟢 Baixo"]:1 PB_M["🟢 Baixo"]:1 PB_A["🟡 Médio"]:1 PB_C["🟠 Alto"]:1
+
+  %% ===== ESTILOS =====
+  style EIXOS fill:#6B7280,stroke:#4B5563,color:#FFFFFF
+  style B fill:#D1FAE5,stroke:#10B981,color:#000000
+  style M fill:#FEF3C7,stroke:#F59E0B,color:#000000
+  style A fill:#FED7AA,stroke:#F97316,color:#000000
+  style C fill:#FEE2E2,stroke:#EF4444,color:#000000
+  style PA fill:#F3F4F6,stroke:#6B7280,color:#000000
+  style PM fill:#F3F4F6,stroke:#6B7280,color:#000000
+  style PB fill:#F3F4F6,stroke:#6B7280,color:#000000
+  style PA_B fill:#FEF3C7,stroke:#F59E0B,color:#000000
+  style PA_M fill:#FED7AA,stroke:#F97316,color:#000000
+  style PA_A fill:#FEE2E2,stroke:#EF4444,color:#000000
+  style PA_C fill:#FEE2E2,stroke:#EF4444,color:#000000
+  style PM_B fill:#D1FAE5,stroke:#10B981,color:#000000
+  style PM_M fill:#FEF3C7,stroke:#F59E0B,color:#000000
+  style PM_A fill:#FED7AA,stroke:#F97316,color:#000000
+  style PM_C fill:#FEE2E2,stroke:#EF4444,color:#000000
+  style PB_B fill:#D1FAE5,stroke:#10B981,color:#000000
+  style PB_M fill:#D1FAE5,stroke:#10B981,color:#000000
+  style PB_A fill:#FEF3C7,stroke:#F59E0B,color:#000000
+  style PB_C fill:#FED7AA,stroke:#F97316,color:#000000
 ```
 
 > **📋 Resumo Visual de Severidade**
