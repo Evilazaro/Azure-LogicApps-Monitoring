@@ -2,7 +2,6 @@
 title: IP Security Restrictions Configuration
 description: Comprehensive guide for IP restrictions across all Azure resources in the solution
 author: Evilazaro
-date: 2026-01-19
 version: 1.0
 tags: [security, ip-restrictions, network, azure, firewall]
 ---

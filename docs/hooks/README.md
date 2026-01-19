@@ -2,7 +2,6 @@
 title: Developer Inner Loop Workflow
 description: Automation scripts for Azure Logic Apps Monitoring development lifecycle with cross-platform support
 author: Evilazaro
-date: 2026-01-19
 version: 1.0
 tags: [developer-experience, automation, powershell, bash, azd-hooks]
 ---

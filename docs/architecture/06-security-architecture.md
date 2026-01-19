@@ -2,7 +2,6 @@
 title: Security Architecture
 description: Authentication, authorization, network security, and compliance for the Azure Logic Apps Monitoring solution
 author: Evilazaro
-date: 2026-01-19
 version: 1.0
 tags: [architecture, security, managed-identity, rbac, network-security]
 ---

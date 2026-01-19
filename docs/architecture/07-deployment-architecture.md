@@ -2,7 +2,6 @@
 title: Deployment Architecture
 description: Infrastructure as Code, CI/CD, and environment management for the Azure Logic Apps Monitoring solution
 author: Evilazaro
-date: 2026-01-19
 version: 1.0
 tags: [architecture, deployment, ci-cd, bicep, azd, github-actions]
 ---

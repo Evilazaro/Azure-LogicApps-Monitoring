@@ -2,7 +2,6 @@
 title: Application Architecture
 description: Service catalog, API contracts, and service interactions for the Azure Logic Apps Monitoring solution
 author: Evilazaro
-date: 2026-01-19
 version: 1.0
 tags: [architecture, application, microservices, api, aspnet-core]
 ---

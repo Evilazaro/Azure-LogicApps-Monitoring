@@ -2,7 +2,6 @@
 title: "ADR-002: Azure Service Bus for Asynchronous Messaging"
 description: Architecture decision to use Azure Service Bus for order event messaging
 author: Evilazaro
-date: 2025-01
 status: Accepted
 tags: [adr, service-bus, messaging, architecture-decision]
 ---

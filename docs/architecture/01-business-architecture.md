@@ -2,7 +2,6 @@
 title: Business Architecture
 description: Business context, capabilities, stakeholders, and value streams for the Azure Logic Apps Monitoring solution
 author: Evilazaro
-date: 2026-01-19
 version: 1.0
 tags: [architecture, business, capabilities, stakeholders, togaf]
 ---

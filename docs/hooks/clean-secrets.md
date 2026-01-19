@@ -2,7 +2,6 @@
 title: clean-secrets Script
 description: Utility tool for safely clearing .NET user secrets from all projects
 author: Evilazaro
-date: 2026-01-19
 version: 2.0.1
 tags: [hooks, secrets, cleanup, powershell, bash]
 ---

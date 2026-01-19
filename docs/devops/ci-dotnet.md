@@ -2,7 +2,6 @@
 title: CI - .NET Build and Test
 description: Build validation pipeline for pull requests with cross-platform testing
 author: Evilazaro
-date: 2026-01-19
 version: 1.0
 tags: [devops, ci, dotnet, testing, github-actions]
 ---

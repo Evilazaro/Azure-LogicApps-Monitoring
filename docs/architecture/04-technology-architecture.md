@@ -2,7 +2,6 @@
 title: Technology Architecture
 description: Platform services, technology standards, and Azure resource topology
 author: Evilazaro
-date: 2026-01-19
 version: 1.0
 tags: [architecture, technology, azure, infrastructure, bicep]
 ---

@@ -2,7 +2,6 @@
 title: CD - Azure Deployment
 description: CI/CD pipeline for provisioning and deployment using Azure Developer CLI
 author: Evilazaro
-date: 2026-01-19
 version: 1.0
 tags: [devops, cd, azure, azd, deployment, github-actions]
 ---

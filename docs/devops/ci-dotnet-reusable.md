@@ -2,7 +2,6 @@
 title: CI - .NET Reusable Workflow
 description: Reusable workflow for .NET build, test, and analysis operations
 author: Evilazaro
-date: 2026-01-19
 version: 1.0
 tags: [devops, ci, dotnet, reusable-workflow, github-actions]
 ---

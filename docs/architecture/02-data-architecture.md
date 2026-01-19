@@ -2,7 +2,6 @@
 title: Data Architecture
 description: Data stores, domains, flows, and telemetry mapping for the Azure Logic Apps Monitoring solution
 author: Evilazaro
-date: 2026-01-19
 version: 1.0
 tags: [architecture, data, database, telemetry, azure-sql]
 ---

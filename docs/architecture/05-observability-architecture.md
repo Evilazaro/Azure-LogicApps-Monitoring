@@ -2,7 +2,6 @@
 title: Observability Architecture
 description: Distributed tracing, metrics, logs, and alerting strategies for the Azure Logic Apps Monitoring solution
 author: Evilazaro
-date: 2026-01-19
 version: 1.0
 tags: [architecture, observability, opentelemetry, application-insights, monitoring]
 ---

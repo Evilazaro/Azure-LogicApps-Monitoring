@@ -2,7 +2,6 @@
 title: "ADR-001: .NET Aspire for Service Orchestration"
 description: Architecture decision to use .NET Aspire as the distributed application orchestration framework
 author: Evilazaro
-date: 2025-01
 status: Accepted
 tags: [adr, aspire, orchestration, architecture-decision]
 ---

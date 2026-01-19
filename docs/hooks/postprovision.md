@@ -2,7 +2,6 @@
 title: Post-Provisioning Script
 description: Configures .NET user secrets with Azure resource information after infrastructure provisioning
 author: Evilazaro
-date: 2026-01-19
 version: 2.0.1
 tags: [hooks, postprovision, azd, secrets, azure]
 ---

@@ -2,7 +2,6 @@
 title: DevOps Documentation
 description: GitHub Actions workflows for CI/CD pipelines in the Azure Logic Apps Monitoring project
 author: Evilazaro
-date: 2026-01-19
 version: 1.0
 tags: [devops, ci-cd, github-actions, azure, deployment]
 ---

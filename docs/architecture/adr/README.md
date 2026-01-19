@@ -2,7 +2,6 @@
 title: Architecture Decision Records
 description: Documentation of significant architectural decisions for the Azure Logic Apps Monitoring solution
 author: Evilazaro
-date: 2026-01-19
 version: 1.0
 tags: [architecture, adr, decisions, documentation]
 ---

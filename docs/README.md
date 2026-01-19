@@ -2,7 +2,6 @@
 title: Azure Logic Apps Monitoring Solution - Documentation
 description: Comprehensive documentation for the Azure Logic Apps Monitoring solution demonstrating enterprise-grade observability patterns
 author: Evilazaro
-date: 2026-01-19
 version: 1.0
 tags: [azure, logic-apps, monitoring, observability, aspire, opentelemetry]
 ---

@@ -2,7 +2,6 @@
 title: "ADR-003: OpenTelemetry with Azure Monitor for Observability"
 description: Architecture decision to implement OpenTelemetry instrumentation with Azure Monitor
 author: Evilazaro
-date: 2025-01
 status: Accepted
 tags: [adr, opentelemetry, observability, architecture-decision]
 ---

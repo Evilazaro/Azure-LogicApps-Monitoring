@@ -2,7 +2,6 @@
 title: IP Security Restrictions - Quick Reference
 description: Quick reference for IP security restrictions with default security posture and configuration examples
 author: Evilazaro
-date: 2026-01-19
 version: 1.0
 tags: [security, ip-restrictions, quick-reference, azure]
 ---

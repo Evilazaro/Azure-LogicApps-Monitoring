@@ -2,7 +2,6 @@
 title: Generate Orders Script
 description: PowerShell and Bash scripts for generating sample e-commerce order data for testing Azure Logic Apps
 author: Evilazaro
-date: 2026-01-19
 version: 2.0.1
 tags: [hooks, testing, data-generation, orders, powershell, bash]
 ---

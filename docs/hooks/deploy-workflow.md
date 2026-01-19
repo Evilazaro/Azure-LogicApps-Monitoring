@@ -2,7 +2,6 @@
 title: Workflow Deployment Script
 description: PowerShell and Bash scripts for deploying Logic Apps workflows to Azure
 author: Evilazaro
-date: 2026-01-19
 version: 2.0.1
 tags: [hooks, deployment, logic-apps, azure, workflows, powershell, bash]
 ---

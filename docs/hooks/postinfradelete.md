@@ -2,7 +2,6 @@
 title: Post-Infrastructure Delete Hook
 description: Azure Developer CLI hook for purging soft-deleted Logic Apps after infrastructure deletion
 author: Evilazaro
-date: 2026-01-19
 version: 2.0.0
 tags: [hooks, azd, cleanup, soft-delete, logic-apps, powershell, bash]
 ---
