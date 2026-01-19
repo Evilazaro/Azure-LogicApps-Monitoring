@@ -12,38 +12,6 @@ Este documento é o **índice principal** do Plano de Projeto de Modernização 
 
 ---
 
-## 📋 Controle do Documento
-
-| Campo                 | Valor             |
-| --------------------- | ----------------- |
-| **Código do Projeto** | COOP-2026-MOD-INT |
-| **Versão**            | 1.0               |
-| **Status**            | Em elaboração     |
-| **Autor**             | Néctar            |
-| **Cliente**           | Cooperflora       |
-| **Classificação**     | Confidencial      |
-
-### 📜 Histórico de Revisões
-
-| Versão | Data       | Autor  | Descrição da Alteração                                                 |
-| :----: | ---------- | ------ | ---------------------------------------------------------------------- |
-|  0.1   | 06/01/2026 | Néctar | Versão inicial – estrutura e escopo                                    |
-|  0.2   | 10/01/2026 | Néctar | Adição de arquitetura, cronograma e riscos                             |
-|  0.3   | 12/01/2026 | Néctar | Detalhamento de estimativa de horas (WBS) e custos                     |
-|  1.0   | 13/01/2026 | Néctar | Versão consolidada para aprovação – ajustes de organização e navegação |
-|  1.1   | 19/01/2026 | Néctar | Reorganização em documentos modulares por tema                         |
-
-### ✍️ Aprovações
-
-| Papel                    | Nome | Organização | Data | Assinatura |
-| ------------------------ | ---- | ----------- | ---- | ---------- |
-| **Sponsor Executivo**    |      | Cooperflora |      |            |
-| **Product Owner**        |      | Cooperflora |      |            |
-| **Gerente de Projeto**   |      | Néctar      |      |            |
-| **Arquiteto de Solução** |      | Néctar      |      |            |
-
----
-
 ## 🎯 Resumo Executivo
 
 Este projeto visa modernizar o **Módulo Integrador/Interface (Access + VBA)** utilizado pela Cooperflora para integrar com o ERP Néctar, substituindo o modelo de **acesso direto ao SQL Server** por uma **camada de serviços (API)** com contratos explícitos, segurança e observabilidade.
@@ -118,7 +86,7 @@ A documentação completa está organizada nos seguintes documentos:
 gantt
     title Cronograma Macro do Projeto
     dateFormat  YYYY-MM-DD
-    
+
     section Fundação
     Fase 0 - Alinhamento     :f0, 2026-02-03, 2w
     Fase 1 - Contratos       :f1, after f0, 2w
