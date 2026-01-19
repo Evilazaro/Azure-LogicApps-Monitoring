@@ -82,7 +82,7 @@ A documentação completa está organizada nos seguintes documentos:
 
 ## 📊 Visão Geral do Cronograma
 
-`mermaid
+```mermaid
 gantt
     title Cronograma Macro do Projeto
     dateFormat  YYYY-MM-DD
@@ -96,13 +96,13 @@ gantt
     Fase 3 - Piloto          :f3, after f2, 4w
     Fase 4 - Migração        :f4, after f3, 12w
     Fase 5 - Simplificação   :f5, after f4, 5w
-`
+```
 
 ---
 
 ## 📂 Estrutura de Arquivos
 
-`
+```
 docs/
 ├── planoProjetoModernizacao.md     ← Este arquivo (índice)
 └── plano-modernizacao/
@@ -116,7 +116,7 @@ docs/
     ├── 07-investimentos.md          ← WBS e custos
     ├── 08-operacao-suporte.md       ← Runbooks e operação
     └── 09-glossario.md              ← Glossário de termos
-`
+```
 
 ---
 
