@@ -219,25 +219,30 @@ public sealed class OrdersAPIService
             throw new ArgumentException("Order ID cannot be null or empty", nameof(orderId));
         }
 
+        // Sanitize orderId before logging to prevent log forging via control characters
+        var sanitizedOrderId = orderId
+            .Replace("\r", string.Empty, StringComparison.Ordinal)
+            .Replace("\n", string.Empty, StringComparison.Ordinal);
+
         using var activity = _activitySource.StartActivity("GetOrderById", ActivityKind.Client);
-        activity?.SetTag("order.id", orderId);
+        activity?.SetTag("order.id", sanitizedOrderId);
 
         using var logScope = _logger.BeginScope(new Dictionary<string, object>
         {
             ["TraceId"] = Activity.Current?.TraceId.ToString() ?? "none",
-            ["OrderId"] = orderId
+            ["OrderId"] = sanitizedOrderId
         });
 
         try
         {
-            _logger.LogInformation("Retrieving order with ID: {OrderId}", orderId);
+            _logger.LogInformation("Retrieving order with ID: {OrderId}", sanitizedOrderId);
 
             var order = await _httpClient.GetFromJsonAsync<Order>($"api/orders/{orderId}", cancellationToken).ConfigureAwait(false);
 
             if (order == null)
             {
                 activity?.SetStatus(ActivityStatusCode.Error, "Order not found");
-                _logger.LogWarning("Order with ID {OrderId} not found", orderId);
+                _logger.LogWarning("Order with ID {OrderId} not found", sanitizedOrderId);
             }
             else
             {
@@ -250,7 +255,7 @@ public sealed class OrdersAPIService
         {
             activity?.SetStatus(ActivityStatusCode.Error, "Order not found (404)");
             // 404 is expected, don't record as exception in telemetry
-            _logger.LogWarning("Order with ID {OrderId} not found (404)", orderId);
+            _logger.LogWarning("Order with ID {OrderId} not found (404)", sanitizedOrderId);
             return null;
         }
         catch (HttpRequestException ex)
@@ -258,14 +263,14 @@ public sealed class OrdersAPIService
             activity?.SetStatus(ActivityStatusCode.Error, $"HTTP error: {ex.StatusCode}");
             activity?.AddException(ex);
             _logger.LogError(ex, "HTTP error while fetching order {OrderId} from orders-api. Status: {StatusCode}",
-                orderId, ex.StatusCode);
+                sanitizedOrderId, ex.StatusCode);
             throw;
         }
         catch (Exception ex) when (ex is not ArgumentException)
         {
             activity?.SetStatus(ActivityStatusCode.Error, ex.Message);
             activity?.AddException(ex);
-            _logger.LogError(ex, "Unexpected error while fetching order {OrderId} from orders-api", orderId);
+            _logger.LogError(ex, "Unexpected error while fetching order {OrderId} from orders-api", sanitizedOrderId);
             throw;
         }
     }
