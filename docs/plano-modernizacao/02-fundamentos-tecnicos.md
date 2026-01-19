@@ -434,6 +434,6 @@ flowchart LR
 
 <div align="center">
 
-[⬆️ Voltar ao topo](#-parte-ii--fundamentos-técnicos) | [📑 Índice](./README.md) | [Execução do Projeto →](./03-execucao-projeto.md)
+[⬆️ Voltar ao topo](#️-parte-iii--fundamentos-técnicos) | [📑 Índice](./README.md) | [Execução do Projeto →](./03-execucao-projeto.md)
 
 </div>

@@ -24,7 +24,7 @@ tags: [azure, logic-apps, monitoring, observability, aspire, opentelemetry]
 - [📁 Documentation Structure](#-documentation-structure)
 - [🏗️ Architecture Documentation](#️-architecture-documentation)
 - [🔄 DevOps Documentation](#-devops-documentation)
-- [🪝 Developer Experience Documentation](#-developer-hooks-documentation)
+- [🪝 Developer Experience Documentation](#-developer-experience-documentation)
 - [🔒 Security Documentation](#-security-documentation)
 - [🚀 Quick Start](#-quick-start)
 - [📊 Solution Architecture Overview](#-solution-architecture-overview)

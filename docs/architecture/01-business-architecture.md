@@ -412,11 +412,3 @@ The order processing automation is implemented through two Azure Logic Apps Stan
 | **Data Architecture**          | Order data supports Order Management capability | [Data Architecture](02-data-architecture.md)                   |
 | **Application Architecture**   | Services implement business capabilities        | [Application Architecture](03-application-architecture.md)     |
 | **Observability Architecture** | Metrics track value stream performance          | [Observability Architecture](05-observability-architecture.md) |
-
----
-
-<div align="center">
-
-[⬆️ Back to top](#-business-architecture) | [📑 Index](README.md) | [Data Architecture →](02-data-architecture.md)
-
-</div>

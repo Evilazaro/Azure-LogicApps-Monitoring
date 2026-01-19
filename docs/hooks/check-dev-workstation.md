@@ -488,6 +488,6 @@ azd up
 
 **Made with ❤️ by Evilazaro | Principal Cloud Solution Architect | Microsoft**
 
-[⬆ Back to Top](#check-dev-workstation-ps1--sh)
+[⬆ Back to Top](#-check-dev-workstationps1--sh)
 
 </div>

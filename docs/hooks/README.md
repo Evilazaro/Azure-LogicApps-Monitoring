@@ -56,7 +56,7 @@ tags: [developer-experience, automation, powershell, bash, azd-hooks]
   - [🔒 Secret Management](#secret-management)
   - [☁️ Azure Resource Management](#azure-resource-management)
   - [🌐 Cross-Platform Development](#cross-platform-development)
-- [🛠️ Troubleshooting](#-troubleshooting)
+- [🛠️ Troubleshooting](#️-troubleshooting)
   - [📝 Using Verbose Mode](#using-verbose-mode)
   - [🐛 Debug Mode](#debug-mode)
   - [❓ Getting Help](#getting-help)
@@ -1114,6 +1114,6 @@ For additional assistance:
 
 **Made with ❤️ by Evilazaro | Principal Cloud Solution Architect | Microsoft**
 
-[⬆ Back to Top](#azure-logic-apps-monitoring---developer-inner-loop-workflow)
+[⬆ Back to Top](#-azure-logic-apps-monitoring---developer-inner-loop-workflow)
 
 </div>

@@ -658,6 +658,6 @@ azd up
 
 **Made with ❤️ by Evilazaro | Principal Cloud Solution Architect | Microsoft**
 
-[⬆ Back to Top](#clean-secrets-ps1--sh)
+[⬆ Back to Top](#-clean-secretsps1--sh)
 
 </div>
