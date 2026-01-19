@@ -1024,40 +1024,146 @@ install_sqlcmd() {
     
     # Try to install sqlcmd (Go) first - it has better Azure AD support
     # and uses Azure CLI credentials directly with --authentication-method
-    print_info "  Attempting to install sqlcmd (Go) for better Azure AD support..."
+    print_info "  Attempting to install go-sqlcmd for Azure AD support..."
     echo ""
     
-    local go_install_success=false
+    local go_sqlcmd_installed=false
     
-    # Check if Go is installed and try to install sqlcmd (Go)
-    if command -v go &> /dev/null; then
-        print_verbose "  Go is installed, attempting installation via go install..."
+    # Method 1: Try to install via package manager (recommended)
+    if [[ -f /etc/os-release ]]; then
+        # shellcheck disable=SC1091
+        source /etc/os-release
+        
+        case "${ID}" in
+            ubuntu|debian)
+                print_info "  📥 Installing go-sqlcmd via apt (${PRETTY_NAME})..."
+                
+                # Add Microsoft repository key
+                if curl -sSL https://packages.microsoft.com/keys/microsoft.asc | sudo tee /etc/apt/trusted.gpg.d/microsoft.asc > /dev/null 2>&1; then
+                    # Add Microsoft repository (using version-specific or fallback to 22.04)
+                    local version_id="${VERSION_ID:-22.04}"
+                    if sudo add-apt-repository -y "$(curl -sSL https://packages.microsoft.com/config/ubuntu/${version_id}/prod.list 2>/dev/null)" 2>/dev/null || \
+                       sudo add-apt-repository -y "$(curl -sSL https://packages.microsoft.com/config/ubuntu/22.04/prod.list)" 2>/dev/null; then
+                        sudo apt-get update -qq 2>/dev/null
+                        if sudo apt-get install -y sqlcmd 2>/dev/null; then
+                            if command -v sqlcmd &> /dev/null; then
+                                print_success "  go-sqlcmd installed successfully via apt!"
+                                go_sqlcmd_installed=true
+                            fi
+                        fi
+                    fi
+                fi
+                ;;
+                
+            fedora|rhel|centos|rocky|almalinux)
+                print_info "  📥 Installing go-sqlcmd via dnf/yum (${PRETTY_NAME})..."
+                
+                # Add Microsoft repository
+                if sudo rpm --import https://packages.microsoft.com/keys/microsoft.asc 2>/dev/null; then
+                    if curl -sSL https://packages.microsoft.com/config/rhel/8/prod.repo | sudo tee /etc/yum.repos.d/msprod.repo > /dev/null 2>&1; then
+                        if sudo dnf install -y sqlcmd 2>/dev/null || sudo yum install -y sqlcmd 2>/dev/null; then
+                            if command -v sqlcmd &> /dev/null; then
+                                print_success "  go-sqlcmd installed successfully!"
+                                go_sqlcmd_installed=true
+                            fi
+                        fi
+                    fi
+                fi
+                ;;
+        esac
+    elif [[ "$(uname)" == "Darwin" ]]; then
+        # macOS installation via Homebrew
+        print_info "  📥 Installing go-sqlcmd via Homebrew (macOS)..."
+        
+        if command -v brew &> /dev/null; then
+            if brew install sqlcmd 2>/dev/null; then
+                if command -v sqlcmd &> /dev/null; then
+                    print_success "  go-sqlcmd installed successfully via Homebrew!"
+                    go_sqlcmd_installed=true
+                fi
+            fi
+        fi
+    fi
+    
+    # Method 2: If package manager failed, try go install
+    if [[ "${go_sqlcmd_installed}" != "true" ]] && command -v go &> /dev/null; then
+        print_info "  Attempting installation via go install..."
         if go install github.com/microsoft/go-sqlcmd/cmd/sqlcmd@latest 2>/dev/null; then
             # Add Go bin to PATH if not already there
             if [[ -d "${HOME}/go/bin" ]] && [[ ":${PATH}:" != *":${HOME}/go/bin:"* ]]; then
                 export PATH="${HOME}/go/bin:${PATH}"
             fi
             if command -v sqlcmd &> /dev/null; then
-                print_success "  sqlcmd (Go) installed successfully via go install!"
-                go_install_success=true
+                print_success "  go-sqlcmd installed successfully via go install!"
+                go_sqlcmd_installed=true
             fi
         fi
     fi
     
-    # If Go installation succeeded, we're done
-    if [[ "${go_install_success}" == "true" ]]; then
+    # Method 3: Try direct binary download
+    if [[ "${go_sqlcmd_installed}" != "true" ]]; then
+        print_info "  Attempting direct binary download from GitHub..."
+        
+        local arch
+        arch=$(uname -m)
+        local os_type
+        os_type=$(uname -s | tr '[:upper:]' '[:lower:]')
+        local binary_name=""
+        
+        case "${os_type}" in
+            linux)
+                case "${arch}" in
+                    x86_64|amd64) binary_name="sqlcmd-linux-amd64.tar.bz2" ;;
+                    aarch64|arm64) binary_name="sqlcmd-linux-arm64.tar.bz2" ;;
+                esac
+                ;;
+            darwin)
+                case "${arch}" in
+                    x86_64|amd64) binary_name="sqlcmd-darwin-amd64.tar.bz2" ;;
+                    arm64) binary_name="sqlcmd-darwin-arm64.tar.bz2" ;;
+                esac
+                ;;
+        esac
+        
+        if [[ -n "${binary_name}" ]]; then
+            local download_url="https://github.com/microsoft/go-sqlcmd/releases/latest/download/${binary_name}"
+            local install_dir="/usr/local/bin"
+            
+            # Check if we can write to /usr/local/bin, otherwise use ~/bin
+            if [[ ! -w "${install_dir}" ]]; then
+                install_dir="${HOME}/bin"
+                mkdir -p "${install_dir}"
+                if [[ ":${PATH}:" != *":${install_dir}:"* ]]; then
+                    export PATH="${install_dir}:${PATH}"
+                fi
+            fi
+            
+            print_info "  Downloading from: ${download_url}"
+            print_info "  Installing to: ${install_dir}"
+            
+            if curl -sL "${download_url}" | tar xjf - -C "${install_dir}" 2>/dev/null; then
+                chmod +x "${install_dir}/sqlcmd" 2>/dev/null
+                if command -v sqlcmd &> /dev/null; then
+                    print_success "  go-sqlcmd installed successfully via binary download!"
+                    go_sqlcmd_installed=true
+                fi
+            fi
+        fi
+    fi
+    
+    # If go-sqlcmd was installed, we're done
+    if [[ "${go_sqlcmd_installed}" == "true" ]]; then
         echo ""
-        print_info "  sqlcmd (Go) provides better Azure AD authentication support."
+        print_info "  go-sqlcmd provides Azure AD authentication support."
         print_info "  It uses Azure CLI credentials directly with --authentication-method ActiveDirectoryDefault"
         echo ""
         return 0
     fi
     
-    # Fall back to installing mssql-tools18 (ODBC version)
-    print_info "  Installing mssql-tools18 (ODBC version) as fallback..."
+    # Fall back to installing mssql-tools18 (ODBC version) - Note: Limited Azure AD support
+    print_warning "  go-sqlcmd installation failed. Falling back to mssql-tools18 (ODBC)..."
+    print_warning "  Note: mssql-tools18 has limited Azure AD authentication support."
     echo ""
-    
-    # Detect OS and install accordingly
     if [[ -f /etc/os-release ]]; then
         # shellcheck disable=SC1091
         source /etc/os-release

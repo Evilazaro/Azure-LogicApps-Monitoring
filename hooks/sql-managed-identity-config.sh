@@ -278,24 +278,152 @@ check_azure_cli() {
     return 0
 }
 
+# Install go-sqlcmd automatically
+install_sqlcmd() {
+    log_info "Attempting to install go-sqlcmd automatically..."
+    
+    local os_type
+    os_type=$(uname -s | tr '[:upper:]' '[:lower:]')
+    
+    case "$os_type" in
+        linux*)
+            log_info "Detected Linux - installing go-sqlcmd..."
+            # Try to detect the Linux distribution
+            if [ -f /etc/os-release ]; then
+                . /etc/os-release
+                case "$ID" in
+                    ubuntu|debian)
+                        log_info "Detected $ID - using apt package manager..."
+                        # Add Microsoft repository key
+                        curl -sSL https://packages.microsoft.com/keys/microsoft.asc | sudo tee /etc/apt/trusted.gpg.d/microsoft.asc > /dev/null
+                        # Add Microsoft repository (using Ubuntu 22.04 as base)
+                        local version_id="${VERSION_ID:-22.04}"
+                        sudo add-apt-repository -y "$(curl -sSL https://packages.microsoft.com/config/ubuntu/${version_id}/prod.list)" 2>/dev/null || \
+                            sudo add-apt-repository -y "$(curl -sSL https://packages.microsoft.com/config/ubuntu/22.04/prod.list)"
+                        sudo apt-get update
+                        sudo apt-get install -y sqlcmd
+                        ;;
+                    rhel|centos|fedora|rocky|alma)
+                        log_info "Detected $ID - using dnf/yum package manager..."
+                        sudo rpm --import https://packages.microsoft.com/keys/microsoft.asc
+                        curl -sSL https://packages.microsoft.com/config/rhel/8/prod.repo | sudo tee /etc/yum.repos.d/msprod.repo > /dev/null
+                        sudo dnf install -y sqlcmd 2>/dev/null || sudo yum install -y sqlcmd
+                        ;;
+                    *)
+                        log_info "Unknown distribution - attempting direct binary download..."
+                        install_sqlcmd_binary
+                        ;;
+                esac
+            else
+                log_info "Cannot detect distribution - attempting direct binary download..."
+                install_sqlcmd_binary
+            fi
+            ;;
+        darwin*)
+            log_info "Detected macOS - installing via Homebrew..."
+            if command -v brew &> /dev/null; then
+                brew install sqlcmd
+            else
+                log_error "Homebrew is not installed. Please install Homebrew first:"
+                log_error "  /bin/bash -c \"\$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)\""
+                return 1
+            fi
+            ;;
+        msys*|mingw*|cygwin*)
+            log_info "Detected Windows - please install using winget:"
+            log_error "  winget install sqlcmd"
+            return 1
+            ;;
+        *)
+            log_error "Unsupported operating system: $os_type"
+            return 1
+            ;;
+    esac
+    
+    # Verify installation
+    if command -v sqlcmd &> /dev/null; then
+        log_success "go-sqlcmd installed successfully"
+        return 0
+    else
+        log_error "go-sqlcmd installation failed"
+        return 1
+    fi
+}
+
+# Install go-sqlcmd from binary release
+install_sqlcmd_binary() {
+    log_info "Downloading go-sqlcmd binary from GitHub releases..."
+    
+    local arch
+    arch=$(uname -m)
+    local binary_name="sqlcmd-linux-amd64.tar.bz2"
+    
+    case "$arch" in
+        x86_64|amd64)
+            binary_name="sqlcmd-linux-amd64.tar.bz2"
+            ;;
+        aarch64|arm64)
+            binary_name="sqlcmd-linux-arm64.tar.bz2"
+            ;;
+        *)
+            log_error "Unsupported architecture: $arch"
+            return 1
+            ;;
+    esac
+    
+    local download_url="https://github.com/microsoft/go-sqlcmd/releases/latest/download/${binary_name}"
+    local install_dir="/usr/local/bin"
+    
+    # Check if we can write to /usr/local/bin, otherwise use ~/bin
+    if [ ! -w "$install_dir" ]; then
+        install_dir="$HOME/bin"
+        mkdir -p "$install_dir"
+        # Add to PATH if not already there
+        if [[ ":$PATH:" != *":$install_dir:"* ]]; then
+            export PATH="$install_dir:$PATH"
+            log_info "Added $install_dir to PATH"
+        fi
+    fi
+    
+    log_info "Downloading from: $download_url"
+    log_info "Installing to: $install_dir"
+    
+    if curl -L "$download_url" | tar xjvf - -C "$install_dir"; then
+        chmod +x "$install_dir/sqlcmd"
+        log_success "go-sqlcmd binary installed to $install_dir/sqlcmd"
+        return 0
+    else
+        log_error "Failed to download or extract go-sqlcmd binary"
+        return 1
+    fi
+}
+
 # Check if sqlcmd (go-sqlcmd) is available
 check_sqlcmd() {
     log_verbose "Checking sqlcmd (go-sqlcmd) availability..."
 
     if ! command -v sqlcmd &> /dev/null; then
-        log_error "sqlcmd (go-sqlcmd) utility is not installed"
-        log_error "This script requires go-sqlcmd for Azure AD authentication."
-        log_error ""
-        log_error "Install go-sqlcmd:"
-        log_error "  Ubuntu/Debian:"
-        log_error "    curl -sSL https://packages.microsoft.com/keys/microsoft.asc | sudo tee /etc/apt/trusted.gpg.d/microsoft.asc > /dev/null"
-        log_error "    sudo add-apt-repository \"\$(curl -sSL https://packages.microsoft.com/config/ubuntu/22.04/prod.list)\""
-        log_error "    sudo apt-get update && sudo apt-get install -y sqlcmd"
-        log_error "  macOS: brew install sqlcmd"
-        log_error "  Windows: winget install sqlcmd"
-        log_error ""
-        log_error "More info: https://github.com/microsoft/go-sqlcmd"
-        return 1
+        log_warning "sqlcmd (go-sqlcmd) utility is not installed"
+        log_info "This script requires go-sqlcmd for Azure AD authentication."
+        log_info ""
+        
+        # Attempt automatic installation
+        if install_sqlcmd; then
+            log_success "go-sqlcmd was installed automatically"
+        else
+            log_error "Automatic installation failed. Please install manually:"
+            log_error ""
+            log_error "Install go-sqlcmd:"
+            log_error "  Ubuntu/Debian:"
+            log_error "    curl -sSL https://packages.microsoft.com/keys/microsoft.asc | sudo tee /etc/apt/trusted.gpg.d/microsoft.asc > /dev/null"
+            log_error "    sudo add-apt-repository \"\$(curl -sSL https://packages.microsoft.com/config/ubuntu/22.04/prod.list)\""
+            log_error "    sudo apt-get update && sudo apt-get install -y sqlcmd"
+            log_error "  macOS: brew install sqlcmd"
+            log_error "  Windows: winget install sqlcmd"
+            log_error ""
+            log_error "More info: https://github.com/microsoft/go-sqlcmd"
+            return 1
+        fi
     fi
 
     local sqlcmd_path
