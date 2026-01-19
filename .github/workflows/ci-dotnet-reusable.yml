@@ -611,7 +611,11 @@ jobs:
           # Info table
           echo "| Property | Value |" >> $GITHUB_STEP_SUMMARY
           echo "|----------|-------|" >> $GITHUB_STEP_SUMMARY
-          echo "| **Status** | \$( [ '\${{ job.status }}' == 'success' ] && echo '✅ No vulnerabilities found' || echo '❌ Issues detected' ) |" >> $GITHUB_STEP_SUMMARY
+          if [ "${{ job.status }}" == "success" ]; then
+            echo "| **Status** | ✅ No vulnerabilities found |" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "| **Status** | ❌ Issues detected |" >> $GITHUB_STEP_SUMMARY
+          fi
           echo "| **Language** | C# |" >> $GITHUB_STEP_SUMMARY
           echo "| **Query Suites** | security-extended, security-and-quality |" >> $GITHUB_STEP_SUMMARY
           echo "| **Build Mode** | Autobuild |" >> $GITHUB_STEP_SUMMARY
