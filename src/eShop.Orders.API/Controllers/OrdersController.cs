@@ -18,6 +18,18 @@ namespace eShop.Orders.API.Controllers;
 public sealed class OrdersController : ControllerBase
 {
     private readonly ILogger<OrdersController> _logger;
+
+    private static string SanitizeOrderIdForLogging(string orderId)
+    {
+        if (orderId is null)
+        {
+            return string.Empty;
+        }
+
+        // Remove line breaks to prevent log forging via control characters
+        return orderId.Replace("\r", string.Empty)
+                      .Replace("\n", string.Empty);
+    }
     private readonly IOrderService _orderService;
     private readonly ActivitySource _activitySource;
 
@@ -266,17 +278,19 @@ public sealed class OrdersController : ControllerBase
             return BadRequest(new { error = "Order ID cannot be empty" });
         }
 
+        var sanitizedOrderId = SanitizeOrderIdForLogging(id);
+
         using var activity = _activitySource.StartActivity("GetOrderById", ActivityKind.Server);
-        activity?.SetTag("order.id", id);
+        activity?.SetTag("order.id", sanitizedOrderId);
         activity?.SetTag("http.method", "GET");
         activity?.SetTag("http.route", "/api/orders/{id}");
         activity?.SetTag("http.request.method", "GET");
-        activity?.SetTag("url.path", $"/api/orders/{id}");
+        activity?.SetTag("url.path", $"/api/orders/{sanitizedOrderId}");
 
         using var logScope = _logger.BeginScope(new Dictionary<string, object>
         {
             ["TraceId"] = Activity.Current?.TraceId.ToString() ?? "none",
-            ["OrderId"] = id
+            ["OrderId"] = sanitizedOrderId
         });
 
         try
@@ -301,7 +315,7 @@ public sealed class OrdersController : ControllerBase
                 { "exception.type", ex.GetType().FullName ?? ex.GetType().Name },
                 { "exception.message", ex.Message }
             }));
-            _logger.LogError(ex, "Unexpected error while retrieving order {OrderId}", id);
+            _logger.LogError(ex, "Unexpected error while retrieving order {OrderId}", sanitizedOrderId);
             return StatusCode(StatusCodes.Status500InternalServerError,
                 new { error = "An error occurred while processing your request", orderId = id, type = "InternalError" });
         }
@@ -321,6 +335,8 @@ public sealed class OrdersController : ControllerBase
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        var sanitizedOrderId = SanitizeOrderIdForLogging(id);
+
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<ActionResult> DeleteOrder(string id, CancellationToken cancellationToken)
     {
@@ -330,16 +346,16 @@ public sealed class OrdersController : ControllerBase
         }
 
         using var activity = _activitySource.StartActivity("DeleteOrder", ActivityKind.Server);
-        activity?.SetTag("order.id", id);
+        activity?.SetTag("order.id", sanitizedOrderId);
         activity?.SetTag("http.method", "DELETE");
         activity?.SetTag("http.route", "/api/orders/{id}");
         activity?.SetTag("http.request.method", "DELETE");
-        activity?.SetTag("url.path", $"/api/orders/{id}");
+        activity?.SetTag("url.path", $"/api/orders/{sanitizedOrderId}");
 
         using var logScope = _logger.BeginScope(new Dictionary<string, object>
         {
             ["TraceId"] = Activity.Current?.TraceId.ToString() ?? "none",
-            ["OrderId"] = id
+            ["OrderId"] = sanitizedOrderId
         });
 
         try
@@ -358,7 +374,7 @@ public sealed class OrdersController : ControllerBase
             if (deleted)
             {
                 activity?.SetStatus(ActivityStatusCode.Ok);
-                _logger.LogInformation("Successfully deleted order {OrderId}", id);
+                _logger.LogInformation("Successfully deleted order {OrderId}", sanitizedOrderId);
                 return NoContent();
             }
 
@@ -375,7 +391,7 @@ public sealed class OrdersController : ControllerBase
                 { "exception.type", ex.GetType().FullName ?? ex.GetType().Name },
                 { "exception.message", ex.Message }
             }));
-            _logger.LogError(ex, "Unexpected error while deleting order {OrderId}", id);
+            _logger.LogError(ex, "Unexpected error while deleting order {OrderId}", sanitizedOrderId);
             return StatusCode(StatusCodes.Status500InternalServerError,
                 new { error = "An error occurred while processing your request", orderId = id, type = "InternalError" });
         }

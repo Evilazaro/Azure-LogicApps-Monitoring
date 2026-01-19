@@ -19,6 +19,18 @@ public sealed class OrderService : IOrderService
 {
     private readonly ILogger<OrderService> _logger;
     private readonly IOrderRepository _orderRepository;
+
+    private static string SanitizeOrderIdForLogging(string orderId)
+    {
+        if (orderId is null)
+        {
+            return string.Empty;
+        }
+
+        // Remove line breaks to prevent log forging via control characters
+        return orderId.Replace("\r", string.Empty)
+                      .Replace("\n", string.Empty);
+    }
     private readonly IOrdersMessageHandler _ordersMessageHandler;
     private readonly IServiceScopeFactory _serviceScopeFactory;
     private readonly ActivitySource _activitySource;
@@ -370,17 +382,18 @@ public sealed class OrderService : IOrderService
         }
 
         using var activity = _activitySource.StartActivity("GetOrderById", ActivityKind.Internal);
-        activity?.SetTag("order.id", orderId);
+        var sanitizedOrderId = SanitizeOrderIdForLogging(orderId);
+        activity?.SetTag("order.id", sanitizedOrderId);
 
         try
         {
-            _logger.LogInformation("Retrieving order with ID: {OrderId}", orderId);
+            _logger.LogInformation("Retrieving order with ID: {OrderId}", sanitizedOrderId);
             var order = await _orderRepository.GetOrderByIdAsync(orderId, cancellationToken);
 
             if (order == null)
             {
                 activity?.SetStatus(ActivityStatusCode.Error, "Order not found");
-                _logger.LogWarning("Order with ID {OrderId} not found", orderId);
+                _logger.LogWarning("Order with ID {OrderId} not found", sanitizedOrderId);
             }
             else
             {
@@ -397,9 +410,9 @@ public sealed class OrderService : IOrderService
                 { "error.type", ex.GetType().Name },
                 { "exception.message", ex.Message },
                 { "exception.type", ex.GetType().FullName ?? ex.GetType().Name },
-                { "order.id", orderId }
+                { "order.id", sanitizedOrderId }
             }));
-            _logger.LogError(ex, "Failed to retrieve order {OrderId}", orderId);
+            _logger.LogError(ex, "Failed to retrieve order {OrderId}", sanitizedOrderId);
             throw;
         }
     }
