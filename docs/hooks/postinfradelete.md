@@ -22,8 +22,8 @@ tags: [hooks, azd, cleanup, soft-delete, logic-apps, powershell, bash]
 <details>
 <summary>📍 <strong>Quick Navigation</strong></summary>
 
-| Previous | Index | Next |
-|:---------|:------:|--------:|
+| Previous                                |         Index         |                                                                  Next |
+| :-------------------------------------- | :-------------------: | --------------------------------------------------------------------: |
 | [← Deploy Workflow](deploy-workflow.md) | [📑 Index](README.md) | [Configure Federated Credential →](configure-federated-credential.md) |
 
 </details>

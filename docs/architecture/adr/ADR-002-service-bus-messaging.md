@@ -14,8 +14,8 @@ tags: [adr, service-bus, messaging, architecture-decision]
 <details>
 <summary>📍 <strong>Quick Navigation</strong></summary>
 
-| Previous | Index | Next |
-|:---------|:------:|--------:|
+| Previous                                     |           Index           |                                           Next |
+| :------------------------------------------- | :-----------------------: | ---------------------------------------------: |
 | [← ADR-001](ADR-001-aspire-orchestration.md) | [📋 ADR Index](README.md) | [ADR-003 →](ADR-003-observability-strategy.md) |
 
 </details>

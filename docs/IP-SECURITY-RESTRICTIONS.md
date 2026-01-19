@@ -15,9 +15,9 @@ tags: [security, ip-restrictions, network, azure, firewall]
 <details>
 <summary>📍 <strong>Quick Navigation</strong></summary>
 
-| Previous | Index | Next |
-|:---------|:------:|--------:|
-| — | [📚 Docs Index](README.md) | [Quick Reference →](IP-SECURITY-RESTRICTIONS-SUMMARY.md) |
+| Previous |           Index            |                                                     Next |
+| :------- | :------------------------: | -------------------------------------------------------: |
+| —        | [📚 Docs Index](README.md) | [Quick Reference →](IP-SECURITY-RESTRICTIONS-SUMMARY.md) |
 
 </details>
 

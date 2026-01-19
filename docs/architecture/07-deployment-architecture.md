@@ -15,8 +15,8 @@ tags: [architecture, deployment, ci-cd, bicep, azd, github-actions]
 <details>
 <summary>📍 <strong>Quick Navigation</strong></summary>
 
-| Previous | Index | Next |
-|:---------|:------:|--------:|
+| Previous                                               |         Index         |                    Next |
+| :----------------------------------------------------- | :-------------------: | ----------------------: |
 | [← Security Architecture](06-security-architecture.md) | [📑 Index](README.md) | [ADRs →](adr/README.md) |
 
 </details>

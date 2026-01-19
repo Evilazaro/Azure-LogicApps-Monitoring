@@ -15,9 +15,9 @@ tags: [architecture, azure, togaf, observability, microservices]
 <details>
 <summary>📍 <strong>Quick Navigation</strong></summary>
 
-| Previous | Index | Next |
-|:---------|:------:|--------:|
-| — | [📚 Docs Index](../README.md) | [Business Architecture →](01-business-architecture.md) |
+| Previous |             Index             |                                                   Next |
+| :------- | :---------------------------: | -----------------------------------------------------: |
+| —        | [📚 Docs Index](../README.md) | [Business Architecture →](01-business-architecture.md) |
 
 </details>
 

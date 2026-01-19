@@ -30,17 +30,17 @@ tags: [modernização, integração, api, cooperflora, néctar]
 
 Este documento está organizado em módulos para atender às necessidades de diferentes stakeholders. Utilize este guia para navegar diretamente às seções mais relevantes para sua função.
 
-| Documento                                                            | Descrição                                                 | Público Principal | Tempo de Leitura |
-| -------------------------------------------------------------------- | --------------------------------------------------------- | ----------------- | :--------------: |
-| [01 - Visão Executiva](./01-visao-executiva.md)                      | Introdução, Escopo, Governança, Riscos e Critérios        | BDMs              |   ~15 minutos    |
-| [02 - Fundamentos Técnicos](./02-fundamentos-tecnicos.md)            | Arquitetura, Padrões técnicos, Diretrizes de dev          | TDMs              |   ~25 minutos    |
-| [03 - Execução do Projeto](./03-execucao-projeto.md)                 | Fases, Cronograma, Roadmap, Strangler Pattern             | BDMs + TDMs       |   ~20 minutos    |
-| [04 - Gestão do Projeto](./04-gestao-projeto.md)                     | Stakeholders, RACI, Governança, Change Control            | BDMs + TDMs       |   ~15 minutos    |
-| [05 - Riscos e Mitigações](./05-riscos-mitigacoes.md)                | RAID, Matriz de Severidade, Planos de Contingência        | BDMs + TDMs       |   ~10 minutos    |
-| [06 - Premissas e Restrições](./06-premissas-restricoes.md)          | Premissas gerais, Premissas de escopo, Restrições         | BDMs + TDMs       |   ~15 minutos    |
-| [07 - Investimentos](./07-investimentos.md)                          | Estimativa de horas (WBS), Custos, Cronograma de pagamento| BDMs              |   ~15 minutos    |
-| [08 - Operação e Suporte](./08-operacao-suporte.md)                  | Implantação, Operação híbrida, Runbooks, Evolução futura  | TDMs              |   ~10 minutos    |
-| [09 - Glossário](./09-glossario.md)                                  | Definições de termos técnicos e de negócio                | Todos             |   ~5 minutos     |
+| Documento                                                   | Descrição                                                  | Público Principal | Tempo de Leitura |
+| ----------------------------------------------------------- | ---------------------------------------------------------- | ----------------- | :--------------: |
+| [01 - Visão Executiva](./01-visao-executiva.md)             | Introdução, Escopo, Governança, Riscos e Critérios         | BDMs              |   ~15 minutos    |
+| [02 - Fundamentos Técnicos](./02-fundamentos-tecnicos.md)   | Arquitetura, Padrões técnicos, Diretrizes de dev           | TDMs              |   ~25 minutos    |
+| [03 - Execução do Projeto](./03-execucao-projeto.md)        | Fases, Cronograma, Roadmap, Strangler Pattern              | BDMs + TDMs       |   ~20 minutos    |
+| [04 - Gestão do Projeto](./04-gestao-projeto.md)            | Stakeholders, RACI, Governança, Change Control             | BDMs + TDMs       |   ~15 minutos    |
+| [05 - Riscos e Mitigações](./05-riscos-mitigacoes.md)       | RAID, Matriz de Severidade, Planos de Contingência         | BDMs + TDMs       |   ~10 minutos    |
+| [06 - Premissas e Restrições](./06-premissas-restricoes.md) | Premissas gerais, Premissas de escopo, Restrições          | BDMs + TDMs       |   ~15 minutos    |
+| [07 - Investimentos](./07-investimentos.md)                 | Estimativa de horas (WBS), Custos, Cronograma de pagamento | BDMs              |   ~15 minutos    |
+| [08 - Operação e Suporte](./08-operacao-suporte.md)         | Implantação, Operação híbrida, Runbooks, Evolução futura   | TDMs              |   ~10 minutos    |
+| [09 - Glossário](./09-glossario.md)                         | Definições de termos técnicos e de negócio                 | Todos             |    ~5 minutos    |
 
 ---
 
@@ -95,7 +95,7 @@ gantt
     Fase 0 - Alinhamento     :active, f0, 2026-02-03, 2w
     Fase 1 - Contratos       :f1, after f0, 2w
     Fase 2 - Fundação API    :crit, f2, after f1, 3w
-    
+
     %% ===== SEÇÃO: EXECUÇÃO =====
     section Execução
     Fase 3 - Piloto          :f3, after f2, 4w

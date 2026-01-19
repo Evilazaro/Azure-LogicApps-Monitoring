@@ -16,8 +16,8 @@ tags: [hooks, preprovision, azd, validation, azure]
 <details>
 <summary>📍 <strong>Quick Navigation</strong></summary>
 
-| Previous | Index | Next |
-|:---------|:------:|--------:|
+| Previous                                            |            Index            |                                Next |
+| :-------------------------------------------------- | :-------------------------: | ----------------------------------: |
 | [← check-dev-workstation](check-dev-workstation.md) | [📑 Hooks Index](README.md) | [postprovision →](postprovision.md) |
 
 </details>

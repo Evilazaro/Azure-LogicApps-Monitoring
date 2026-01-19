@@ -15,8 +15,8 @@ tags: [architecture, business, capabilities, stakeholders, togaf]
 <details>
 <summary>📍 <strong>Quick Navigation</strong></summary>
 
-| Previous | Index | Next |
-|:---------|:------:|--------:|
+| Previous                             |         Index         |                                           Next |
+| :----------------------------------- | :-------------------: | ---------------------------------------------: |
 | [← Architecture Overview](README.md) | [📑 Index](README.md) | [Data Architecture →](02-data-architecture.md) |
 
 </details>

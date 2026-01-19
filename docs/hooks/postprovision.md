@@ -22,8 +22,8 @@ tags: [hooks, postprovision, azd, secrets, azure]
 <details>
 <summary>📍 <strong>Quick Navigation</strong></summary>
 
-| Previous | Index | Next |
-|:---------|:------:|--------:|
+| Previous                          |            Index            |                                                            Next |
+| :-------------------------------- | :-------------------------: | --------------------------------------------------------------: |
 | [← preprovision](preprovision.md) | [📑 Hooks Index](README.md) | [sql-managed-identity-config →](sql-managed-identity-config.md) |
 
 </details>

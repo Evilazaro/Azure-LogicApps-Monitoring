@@ -16,8 +16,8 @@ tags: [premissas, restrições, planejamento, riscos]
 <details>
 <summary>📍 <strong>Navegação Rápida</strong></summary>
 
-| Anterior | Índice | Próximo |
-|:---------|:------:|--------:|
+| Anterior                                           |          Índice          |                                  Próximo |
+| :------------------------------------------------- | :----------------------: | ---------------------------------------: |
 | [← Riscos e Mitigações](./05-riscos-mitigacoes.md) | [📑 Índice](./README.md) | [Investimentos →](./07-investimentos.md) |
 
 </details>
@@ -162,11 +162,11 @@ O não cumprimento de premissas sob responsabilidade da Cooperflora pode gerar o
 
 ### 📊 Distribuição de Severidade (P01–P28)
 
-| Severidade        | Quantidade | Percentual |
-| ----------------- | :--------: | :--------: |
-| 🔴 **Crítico**    |     6      |    21%     |
-| 🟠 **Alto**       |     8      |    29%     |
-| 🟡 **Médio**      |    14      |    50%     |
+| Severidade     | Quantidade | Percentual |
+| -------------- | :--------: | :--------: |
+| 🔴 **Crítico** |     6      |    21%     |
+| 🟠 **Alto**    |     8      |    29%     |
+| 🟡 **Médio**   |     14     |    50%     |
 
 > **⚠️ Premissas Críticas (🔴)**: P01, P06, P08, P12, P16, P25 e P28 — requerem acompanhamento **semanal** no Comitê de Projeto.
 
@@ -190,12 +190,12 @@ As restrições são limitações conhecidas que moldam as decisões do projeto.
 
 ## 📚 Documentos Relacionados
 
-| Documento                                                      | Descrição                            |
-| -------------------------------------------------------------- | ------------------------------------ |
-| [Riscos e Mitigações](./05-riscos-mitigacoes.md)               | Registro RAID e planos de mitigação  |
-| [Gestão do Projeto](./04-gestao-projeto.md)                    | Governança e processos de controle   |
-| [Execução do Projeto](./03-execucao-projeto.md)                | Fases e cronograma detalhado         |
-| [Investimentos](./07-investimentos.md)                         | Orçamento e custos do projeto        |
+| Documento                                        | Descrição                           |
+| ------------------------------------------------ | ----------------------------------- |
+| [Riscos e Mitigações](./05-riscos-mitigacoes.md) | Registro RAID e planos de mitigação |
+| [Gestão do Projeto](./04-gestao-projeto.md)      | Governança e processos de controle  |
+| [Execução do Projeto](./03-execucao-projeto.md)  | Fases e cronograma detalhado        |
+| [Investimentos](./07-investimentos.md)           | Orçamento e custos do projeto       |
 
 ---
 

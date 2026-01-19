@@ -15,8 +15,8 @@ tags: [architecture, application, microservices, api, aspnet-core]
 <details>
 <summary>📍 <strong>Quick Navigation</strong></summary>
 
-| Previous | Index | Next |
-|:---------|:------:|--------:|
+| Previous                                       |         Index         |                                                       Next |
+| :--------------------------------------------- | :-------------------: | ---------------------------------------------------------: |
 | [← Data Architecture](02-data-architecture.md) | [📑 Index](README.md) | [Technology Architecture →](04-technology-architecture.md) |
 
 </details>

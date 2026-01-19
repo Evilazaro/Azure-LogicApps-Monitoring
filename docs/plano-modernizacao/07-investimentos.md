@@ -16,8 +16,8 @@ tags: [investimentos, custos, estimativas, cronograma, pagamentos]
 <details>
 <summary>📍 <strong>Navegação Rápida</strong></summary>
 
-| Anterior | Índice | Próximo |
-|:---------|:------:|--------:|
+| Anterior                                                 |          Índice          |                                          Próximo |
+| :------------------------------------------------------- | :----------------------: | -----------------------------------------------: |
 | [← Premissas e Restrições](./06-premissas-restricoes.md) | [📑 Índice](./README.md) | [Operação e Suporte →](./08-operacao-suporte.md) |
 
 </details>
@@ -58,13 +58,13 @@ tags: [investimentos, custos, estimativas, cronograma, pagamentos]
 >
 > ## 📋 Resumo Executivo
 >
-> | Métrica | Valor |
-> |:--------|------:|
-> | **💰 Investimento Total** | **R$ 240.000,00** |
-> | **⏱️ Duração** | 28 semanas (~7 meses) |
-> | **🕐 Total de Horas** | 1.600 horas |
-> | **👥 Recursos** | 4 profissionais |
-> | **💵 Valor Hora** | R$ 150,00 |
+> | Métrica                   |                 Valor |
+> | :------------------------ | --------------------: |
+> | **💰 Investimento Total** |     **R$ 240.000,00** |
+> | **⏱️ Duração**            | 28 semanas (~7 meses) |
+> | **🕐 Total de Horas**     |           1.600 horas |
+> | **👥 Recursos**           |       4 profissionais |
+> | **💵 Valor Hora**         |             R$ 150,00 |
 
 ---
 
@@ -94,30 +94,30 @@ A estimativa foi construída utilizando a técnica de **decomposição por ativi
 <details open>
 <summary><strong>📋 Detalhamento das Atividades</strong></summary>
 
-| Atividade | Responsável | Horas | Justificativa |
-|:----------|:-----------:|------:|:--------------|
-| Kick-off e alinhamento com stakeholders | GP + Arq | 8h | Reuniões iniciais + preparação |
-| Inventário técnico do módulo Access/VBA | Dev Sênior + Dev Pleno | 24h | Análise de código legado (~3.000 LOC) |
-| Inventário de rotinas SINC | Dev Sênior | 16h | Mapeamento de jobs e dependências |
-| Mapeamento de pontos de integração | Arq + Dev Sênior | 16h | Diagramas C4 + documentação |
-| Análise de tabelas compartilhadas (SQL Server) | Dev Sênior + Dev Pleno | 16h | Schema, triggers, constraints |
-| Matriz de propriedade de dados | GP + Arq | 8h | Definição de source of truth por domínio |
-| Requisitos não funcionais e restrições | Arq | 8h | SLAs, volumetria, janelas de manutenção |
-| Priorização de fluxos (backlog) | GP | 8h | Critérios MoSCoW + riscos |
-| Documentação e revisão | GP | 8h | Consolidação de artefatos Fase 0 |
-| **Subtotal Fase 0** | | **112h** | |
+| Atividade                                      |      Responsável       |    Horas | Justificativa                            |
+| :--------------------------------------------- | :--------------------: | -------: | :--------------------------------------- |
+| Kick-off e alinhamento com stakeholders        |        GP + Arq        |       8h | Reuniões iniciais + preparação           |
+| Inventário técnico do módulo Access/VBA        | Dev Sênior + Dev Pleno |      24h | Análise de código legado (~3.000 LOC)    |
+| Inventário de rotinas SINC                     |       Dev Sênior       |      16h | Mapeamento de jobs e dependências        |
+| Mapeamento de pontos de integração             |    Arq + Dev Sênior    |      16h | Diagramas C4 + documentação              |
+| Análise de tabelas compartilhadas (SQL Server) | Dev Sênior + Dev Pleno |      16h | Schema, triggers, constraints            |
+| Matriz de propriedade de dados                 |        GP + Arq        |       8h | Definição de source of truth por domínio |
+| Requisitos não funcionais e restrições         |          Arq           |       8h | SLAs, volumetria, janelas de manutenção  |
+| Priorização de fluxos (backlog)                |           GP           |       8h | Critérios MoSCoW + riscos                |
+| Documentação e revisão                         |           GP           |       8h | Consolidação de artefatos Fase 0         |
+| **Subtotal Fase 0**                            |                        | **112h** |                                          |
 
 </details>
 
 <details>
 <summary><strong>👥 Distribuição por Recurso</strong></summary>
 
-| Recurso | Horas | % da Fase |
-|:--------|------:|----------:|
-| Gerente de Projeto | 24h | 21% |
-| Arquiteto de Solução | 32h | 29% |
-| Desenvolvedor Sênior | 40h | 36% |
-| Desenvolvedor Pleno | 16h | 14% |
+| Recurso              | Horas | % da Fase |
+| :------------------- | ----: | --------: |
+| Gerente de Projeto   |   24h |       21% |
+| Arquiteto de Solução |   32h |       29% |
+| Desenvolvedor Sênior |   40h |       36% |
+| Desenvolvedor Pleno  |   16h |       14% |
 
 </details>
 
@@ -132,31 +132,31 @@ A estimativa foi construída utilizando a técnica de **decomposição por ativi
 <details open>
 <summary><strong>📋 Detalhamento das Atividades</strong></summary>
 
-| Atividade | Responsável | Horas | Justificativa |
-|:----------|:-----------:|------:|:--------------|
-| Workshop de levantamento de regras de negócio | GP + Arq | 12h | 3 sessões de 4h com PO Cooperflora |
-| Modelagem de domínios e entidades | Arq + Dev Sênior | 16h | DTOs, agregados, limites de contexto |
-| Definição de endpoints (fluxo piloto – Pessoas) | Arq + Dev Sênior | 12h | CRUD + operações específicas |
-| Especificação OpenAPI v1 | Dev Sênior + Dev Pleno | 24h | Payloads, validações, exemplos |
-| Taxonomia de erros padronizada | Arq | 8h | Códigos, mensagens, campos de erro |
-| Política de versionamento | Arq | 4h | Estratégia /v1, /v2, breaking changes |
-| Definição de idempotência por operação | Arq + Dev Sênior | 8h | Chaves naturais, deduplicação |
-| Requisitos de autenticação/autorização | Arq + GP | 8h | OAuth2 / API Key – decisão com cliente |
-| Validação e aprovação dos contratos | GP | 8h | Apresentação + coleta de aceite |
-| Documentação e revisão | GP + Dev Sênior | 12h | Consolidação de artefatos Fase 1 |
-| **Subtotal Fase 1** | | **112h** | |
+| Atividade                                       |      Responsável       |    Horas | Justificativa                          |
+| :---------------------------------------------- | :--------------------: | -------: | :------------------------------------- |
+| Workshop de levantamento de regras de negócio   |        GP + Arq        |      12h | 3 sessões de 4h com PO Cooperflora     |
+| Modelagem de domínios e entidades               |    Arq + Dev Sênior    |      16h | DTOs, agregados, limites de contexto   |
+| Definição de endpoints (fluxo piloto – Pessoas) |    Arq + Dev Sênior    |      12h | CRUD + operações específicas           |
+| Especificação OpenAPI v1                        | Dev Sênior + Dev Pleno |      24h | Payloads, validações, exemplos         |
+| Taxonomia de erros padronizada                  |          Arq           |       8h | Códigos, mensagens, campos de erro     |
+| Política de versionamento                       |          Arq           |       4h | Estratégia /v1, /v2, breaking changes  |
+| Definição de idempotência por operação          |    Arq + Dev Sênior    |       8h | Chaves naturais, deduplicação          |
+| Requisitos de autenticação/autorização          |        Arq + GP        |       8h | OAuth2 / API Key – decisão com cliente |
+| Validação e aprovação dos contratos             |           GP           |       8h | Apresentação + coleta de aceite        |
+| Documentação e revisão                          |    GP + Dev Sênior     |      12h | Consolidação de artefatos Fase 1       |
+| **Subtotal Fase 1**                             |                        | **112h** |                                        |
 
 </details>
 
 <details>
 <summary><strong>👥 Distribuição por Recurso</strong></summary>
 
-| Recurso | Horas | % da Fase |
-|:--------|------:|----------:|
-| Gerente de Projeto | 28h | 25% |
-| Arquiteto de Solução | 40h | 36% |
-| Desenvolvedor Sênior | 32h | 29% |
-| Desenvolvedor Pleno | 12h | 11% |
+| Recurso              | Horas | % da Fase |
+| :------------------- | ----: | --------: |
+| Gerente de Projeto   |   28h |       25% |
+| Arquiteto de Solução |   40h |       36% |
+| Desenvolvedor Sênior |   32h |       29% |
+| Desenvolvedor Pleno  |   12h |       11% |
 
 </details>
 
@@ -171,33 +171,33 @@ A estimativa foi construída utilizando a técnica de **decomposição por ativi
 <details open>
 <summary><strong>📋 Detalhamento das Atividades</strong></summary>
 
-| Atividade | Responsável | Horas | Justificativa |
-|:----------|:-----------:|------:|:--------------|
-| Setup de solução .NET (estrutura de projetos) | Dev Sênior | 8h | Camadas, DI, organização de código |
-| Implementação de arquitetura base | Arq + Dev Sênior | 24h | Middleware, validação, tratamento de erros |
-| Logging estruturado + correlation-id | Dev Sênior + Dev Pleno | 16h | Serilog/Seq + propagação de contexto |
-| Health checks e métricas | Dev Sênior | 8h | /health, /ready, métricas Prometheus |
-| Integração com ERP Néctar (conectividade) | Dev Sênior + Dev Pleno | 24h | Componentes SDK, connection pooling |
-| Swagger/OpenAPI setup | Dev Pleno | 8h | Documentação auto-gerada |
-| Pipeline CI/CD | Dev Sênior + Dev Pleno | 16h | Build, test, deploy automatizado |
-| Configuração de ambientes (DEV/HML) | Dev Sênior | 12h | Variáveis, secrets, configurações |
-| Testes de conectividade e smoke tests | Dev Sênior + Dev Pleno | 16h | Validação ponta a ponta |
-| Code review e ajustes de arquitetura | Arq | 12h | Revisão de padrões e boas práticas |
-| Documentação técnica da fundação | Dev Sênior | 8h | ADRs, README, guias de contribuição |
-| Coordenação e acompanhamento | GP | 16h | Dailies, gestão de impedimentos |
-| **Subtotal Fase 2** | | **168h** | |
+| Atividade                                     |      Responsável       |    Horas | Justificativa                              |
+| :-------------------------------------------- | :--------------------: | -------: | :----------------------------------------- |
+| Setup de solução .NET (estrutura de projetos) |       Dev Sênior       |       8h | Camadas, DI, organização de código         |
+| Implementação de arquitetura base             |    Arq + Dev Sênior    |      24h | Middleware, validação, tratamento de erros |
+| Logging estruturado + correlation-id          | Dev Sênior + Dev Pleno |      16h | Serilog/Seq + propagação de contexto       |
+| Health checks e métricas                      |       Dev Sênior       |       8h | /health, /ready, métricas Prometheus       |
+| Integração com ERP Néctar (conectividade)     | Dev Sênior + Dev Pleno |      24h | Componentes SDK, connection pooling        |
+| Swagger/OpenAPI setup                         |       Dev Pleno        |       8h | Documentação auto-gerada                   |
+| Pipeline CI/CD                                | Dev Sênior + Dev Pleno |      16h | Build, test, deploy automatizado           |
+| Configuração de ambientes (DEV/HML)           |       Dev Sênior       |      12h | Variáveis, secrets, configurações          |
+| Testes de conectividade e smoke tests         | Dev Sênior + Dev Pleno |      16h | Validação ponta a ponta                    |
+| Code review e ajustes de arquitetura          |          Arq           |      12h | Revisão de padrões e boas práticas         |
+| Documentação técnica da fundação              |       Dev Sênior       |       8h | ADRs, README, guias de contribuição        |
+| Coordenação e acompanhamento                  |           GP           |      16h | Dailies, gestão de impedimentos            |
+| **Subtotal Fase 2**                           |                        | **168h** |                                            |
 
 </details>
 
 <details>
 <summary><strong>👥 Distribuição por Recurso</strong></summary>
 
-| Recurso | Horas | % da Fase |
-|:--------|------:|----------:|
-| Gerente de Projeto | 16h | 10% |
-| Arquiteto de Solução | 36h | 21% |
-| Desenvolvedor Sênior | 68h | 40% |
-| Desenvolvedor Pleno | 48h | 29% |
+| Recurso              | Horas | % da Fase |
+| :------------------- | ----: | --------: |
+| Gerente de Projeto   |   16h |       10% |
+| Arquiteto de Solução |   36h |       21% |
+| Desenvolvedor Sênior |   68h |       40% |
+| Desenvolvedor Pleno  |   48h |       29% |
 
 </details>
 
@@ -212,35 +212,35 @@ A estimativa foi construída utilizando a técnica de **decomposição por ativi
 <details open>
 <summary><strong>📋 Detalhamento das Atividades</strong></summary>
 
-| Atividade | Responsável | Horas | Justificativa |
-|:----------|:-----------:|------:|:--------------|
-| Análise detalhada do fluxo Pessoas no legado | Dev Sênior + Dev Pleno | 24h | Mapeamento de regras, edge cases |
-| Implementação de endpoints (CRUD Pessoas) | Dev Sênior + Dev Pleno | 48h | Controllers, services, repositories |
-| Validações de negócio | Dev Sênior | 16h | FluentValidation, regras complexas |
-| Idempotência e deduplicação | Dev Sênior | 12h | Mecanismo de chaves únicas |
-| Auditoria por transação | Dev Pleno | 12h | Log de operações, rastreabilidade |
-| Testes unitários | Dev Pleno | 24h | xUnit, cobertura ≥90% |
-| Testes de integração | Dev Sênior + Dev Pleno | 20h | TestContainers, cenários E2E |
-| Implementação de feature flag | Dev Sênior | 8h | Roteamento Legado/API |
-| Ajustes no legado para convivência | Dev Sênior + Dev Pleno | 16h | Adaptações mínimas no Access/VBA |
-| Homologação com usuários | GP + Dev Sênior | 16h | Sessões de validação |
-| Runbook operacional | Dev Sênior | 8h | Procedimentos de operação |
-| Dashboards e alertas | Dev Pleno | 12h | Grafana/Application Insights |
-| Go-live piloto + estabilização | GP + Dev Sênior | 16h | Acompanhamento das 2 primeiras semanas |
-| Documentação de lições aprendidas | GP | 8h | Retrospectiva e ajustes de processo |
-| **Subtotal Fase 3** | | **240h** | |
+| Atividade                                    |      Responsável       |    Horas | Justificativa                          |
+| :------------------------------------------- | :--------------------: | -------: | :------------------------------------- |
+| Análise detalhada do fluxo Pessoas no legado | Dev Sênior + Dev Pleno |      24h | Mapeamento de regras, edge cases       |
+| Implementação de endpoints (CRUD Pessoas)    | Dev Sênior + Dev Pleno |      48h | Controllers, services, repositories    |
+| Validações de negócio                        |       Dev Sênior       |      16h | FluentValidation, regras complexas     |
+| Idempotência e deduplicação                  |       Dev Sênior       |      12h | Mecanismo de chaves únicas             |
+| Auditoria por transação                      |       Dev Pleno        |      12h | Log de operações, rastreabilidade      |
+| Testes unitários                             |       Dev Pleno        |      24h | xUnit, cobertura ≥90%                  |
+| Testes de integração                         | Dev Sênior + Dev Pleno |      20h | TestContainers, cenários E2E           |
+| Implementação de feature flag                |       Dev Sênior       |       8h | Roteamento Legado/API                  |
+| Ajustes no legado para convivência           | Dev Sênior + Dev Pleno |      16h | Adaptações mínimas no Access/VBA       |
+| Homologação com usuários                     |    GP + Dev Sênior     |      16h | Sessões de validação                   |
+| Runbook operacional                          |       Dev Sênior       |       8h | Procedimentos de operação              |
+| Dashboards e alertas                         |       Dev Pleno        |      12h | Grafana/Application Insights           |
+| Go-live piloto + estabilização               |    GP + Dev Sênior     |      16h | Acompanhamento das 2 primeiras semanas |
+| Documentação de lições aprendidas            |           GP           |       8h | Retrospectiva e ajustes de processo    |
+| **Subtotal Fase 3**                          |                        | **240h** |                                        |
 
 </details>
 
 <details>
 <summary><strong>👥 Distribuição por Recurso</strong></summary>
 
-| Recurso | Horas | % da Fase |
-|:--------|------:|----------:|
-| Gerente de Projeto | 40h | 17% |
-| Arquiteto de Solução | 16h | 7% |
-| Desenvolvedor Sênior | 112h | 47% |
-| Desenvolvedor Pleno | 72h | 30% |
+| Recurso              | Horas | % da Fase |
+| :------------------- | ----: | --------: |
+| Gerente de Projeto   |   40h |       17% |
+| Arquiteto de Solução |   16h |        7% |
+| Desenvolvedor Sênior |  112h |       47% |
+| Desenvolvedor Pleno  |   72h |       30% |
 
 </details>
 
@@ -258,82 +258,82 @@ A estimativa foi construída utilizando a técnica de **decomposição por ativi
 <details open>
 <summary><strong>📦 Fluxo 2 – Produtos</strong></summary>
 
-| Atividade | Responsável | Horas | Justificativa |
-|:----------|:-----------:|------:|:--------------|
-| Análise e mapeamento | Dev Sênior | 16h | Catálogo, categorias, atributos |
-| Implementação | Dev Sênior + Dev Pleno | 56h | Endpoints + validações |
-| Testes e homologação | Dev Pleno + GP | 32h | Unitários, integração, aceite |
+| Atividade            |      Responsável       | Horas | Justificativa                   |
+| :------------------- | :--------------------: | ----: | :------------------------------ |
+| Análise e mapeamento |       Dev Sênior       |   16h | Catálogo, categorias, atributos |
+| Implementação        | Dev Sênior + Dev Pleno |   56h | Endpoints + validações          |
+| Testes e homologação |     Dev Pleno + GP     |   32h | Unitários, integração, aceite   |
 
 </details>
 
 <details open>
 <summary><strong>📦 Fluxo 3 – Pedidos</strong></summary>
 
-| Atividade | Responsável | Horas | Justificativa |
-|:----------|:-----------:|------:|:--------------|
-| Análise e mapeamento | Dev Sênior | 20h | Fluxo complexo, estados, regras |
-| Implementação | Dev Sênior + Dev Pleno | 72h | Endpoints + validações + saga |
-| Testes e homologação | Dev Pleno + GP | 40h | Cenários de negócio variados |
+| Atividade            |      Responsável       | Horas | Justificativa                   |
+| :------------------- | :--------------------: | ----: | :------------------------------ |
+| Análise e mapeamento |       Dev Sênior       |   20h | Fluxo complexo, estados, regras |
+| Implementação        | Dev Sênior + Dev Pleno |   72h | Endpoints + validações + saga   |
+| Testes e homologação |     Dev Pleno + GP     |   40h | Cenários de negócio variados    |
 
 </details>
 
 <details open>
 <summary><strong>📦 Fluxo 4 – Faturamento</strong></summary>
 
-| Atividade | Responsável | Horas | Justificativa |
-|:----------|:-----------:|------:|:--------------|
-| Análise e mapeamento | Dev Sênior | 16h | NF-e, integrações fiscais |
-| Implementação | Dev Sênior + Dev Pleno | 56h | Endpoints + validações |
-| Testes e homologação | Dev Pleno + GP | 32h | Cenários fiscais críticos |
+| Atividade            |      Responsável       | Horas | Justificativa             |
+| :------------------- | :--------------------: | ----: | :------------------------ |
+| Análise e mapeamento |       Dev Sênior       |   16h | NF-e, integrações fiscais |
+| Implementação        | Dev Sênior + Dev Pleno |   56h | Endpoints + validações    |
+| Testes e homologação |     Dev Pleno + GP     |   32h | Cenários fiscais críticos |
 
 </details>
 
 <details open>
 <summary><strong>📦 Fluxo 5 – Financeiro (Contas)</strong></summary>
 
-| Atividade | Responsável | Horas | Justificativa |
-|:----------|:-----------:|------:|:--------------|
-| Análise e mapeamento | Dev Sênior | 16h | A pagar, a receber, conciliação |
-| Implementação | Dev Sênior + Dev Pleno | 56h | Endpoints + validações |
-| Testes e homologação | Dev Pleno + GP | 32h | Integração contábil |
+| Atividade            |      Responsável       | Horas | Justificativa                   |
+| :------------------- | :--------------------: | ----: | :------------------------------ |
+| Análise e mapeamento |       Dev Sênior       |   16h | A pagar, a receber, conciliação |
+| Implementação        | Dev Sênior + Dev Pleno |   56h | Endpoints + validações          |
+| Testes e homologação |     Dev Pleno + GP     |   32h | Integração contábil             |
 
 </details>
 
 <details open>
 <summary><strong>📦 Fluxo 6 – Estoque</strong></summary>
 
-| Atividade | Responsável | Horas | Justificativa |
-|:----------|:-----------:|------:|:--------------|
-| Análise e mapeamento | Dev Sênior | 12h | Movimentações, inventário |
-| Implementação | Dev Sênior + Dev Pleno | 48h | Endpoints + validações |
-| Testes e homologação | Dev Pleno + GP | 24h | Cenários de movimentação |
+| Atividade            |      Responsável       | Horas | Justificativa             |
+| :------------------- | :--------------------: | ----: | :------------------------ |
+| Análise e mapeamento |       Dev Sênior       |   12h | Movimentações, inventário |
+| Implementação        | Dev Sênior + Dev Pleno |   48h | Endpoints + validações    |
+| Testes e homologação |     Dev Pleno + GP     |   24h | Cenários de movimentação  |
 
 </details>
 
 <details>
 <summary><strong>🔧 Atividades Transversais</strong></summary>
 
-| Atividade | Responsável | Horas | Justificativa |
-|:----------|:-----------:|------:|:--------------|
-| Gestão de feature flags (5 fluxos) | Dev Sênior | 20h | Configuração por fluxo |
-| Monitoramento e ajustes de performance | Dev Sênior + Dev Pleno | 40h | Otimizações, índices, cache |
-| Coordenação e acompanhamento | GP | 96h | Gestão contínua (~8h/sem) |
-| Revisões de arquitetura | Arq | 48h | Validação de padrões (~4h/sem) |
-| Documentação contínua | Dev Pleno | 24h | Atualização de specs e runbooks |
-| Checkpoints por onda (3 ondas) | GP + Arq | 24h | Apresentações e aceites |
-| **Subtotal Fase 4** | | **780h** | |
+| Atividade                              |      Responsável       |    Horas | Justificativa                   |
+| :------------------------------------- | :--------------------: | -------: | :------------------------------ |
+| Gestão de feature flags (5 fluxos)     |       Dev Sênior       |      20h | Configuração por fluxo          |
+| Monitoramento e ajustes de performance | Dev Sênior + Dev Pleno |      40h | Otimizações, índices, cache     |
+| Coordenação e acompanhamento           |           GP           |      96h | Gestão contínua (~8h/sem)       |
+| Revisões de arquitetura                |          Arq           |      48h | Validação de padrões (~4h/sem)  |
+| Documentação contínua                  |       Dev Pleno        |      24h | Atualização de specs e runbooks |
+| Checkpoints por onda (3 ondas)         |        GP + Arq        |      24h | Apresentações e aceites         |
+| **Subtotal Fase 4**                    |                        | **780h** |                                 |
 
 </details>
 
 <details>
 <summary><strong>👥 Distribuição por Recurso</strong></summary>
 
-| Recurso | Horas | % da Fase |
-|:--------|------:|----------:|
-| Gerente de Projeto | 120h | 15% |
-| Arquiteto de Solução | 72h | 9% |
-| Desenvolvedor Sênior | 340h | 44% |
-| Desenvolvedor Pleno | 248h | 32% |
+| Recurso              | Horas | % da Fase |
+| :------------------- | ----: | --------: |
+| Gerente de Projeto   |  120h |       15% |
+| Arquiteto de Solução |   72h |        9% |
+| Desenvolvedor Sênior |  340h |       44% |
+| Desenvolvedor Pleno  |  248h |       32% |
 
 </details>
 
@@ -348,33 +348,33 @@ A estimativa foi construída utilizando a técnica de **decomposição por ativi
 <details open>
 <summary><strong>📋 Detalhamento das Atividades</strong></summary>
 
-| Atividade | Responsável | Horas | Justificativa |
-|:----------|:-----------:|------:|:--------------|
-| Inventário final de timers ativos | Dev Sênior | 8h | Validação do que foi migrado |
-| Desativação de timers (por fluxo) | Dev Sênior + Dev Pleno | 24h | 6 fluxos × 4h (com validação) |
-| Remoção de código VBA obsoleto | Dev Pleno | 16h | Limpeza de rotinas não utilizadas |
-| Ajustes em tabelas de staging | Dev Sênior | 12h | Remoção de tabelas temporárias |
-| Validação de integridade de dados | Dev Sênior + Dev Pleno | 24h | Reconciliação final |
-| Monitoramento pós-desativação | Dev Sênior | 16h | 2 semanas de observação |
-| Documentação de arquitetura final | Arq + Dev Sênior | 24h | Diagramas C4 atualizados |
-| Runbooks de operação consolidados | Dev Sênior | 12h | Procedimentos unificados |
-| Guia de troubleshooting | Dev Sênior + Dev Pleno | 16h | FAQ técnico + scripts |
-| Handover para operação | GP + Dev Sênior | 16h | Sessões de transferência |
-| Relatório de encerramento | GP | 12h | Métricas, lições, recomendações |
-| Aceite final e encerramento | GP | 8h | Apresentação executiva |
-| **Subtotal Fase 5** | | **188h** | |
+| Atividade                         |      Responsável       |    Horas | Justificativa                     |
+| :-------------------------------- | :--------------------: | -------: | :-------------------------------- |
+| Inventário final de timers ativos |       Dev Sênior       |       8h | Validação do que foi migrado      |
+| Desativação de timers (por fluxo) | Dev Sênior + Dev Pleno |      24h | 6 fluxos × 4h (com validação)     |
+| Remoção de código VBA obsoleto    |       Dev Pleno        |      16h | Limpeza de rotinas não utilizadas |
+| Ajustes em tabelas de staging     |       Dev Sênior       |      12h | Remoção de tabelas temporárias    |
+| Validação de integridade de dados | Dev Sênior + Dev Pleno |      24h | Reconciliação final               |
+| Monitoramento pós-desativação     |       Dev Sênior       |      16h | 2 semanas de observação           |
+| Documentação de arquitetura final |    Arq + Dev Sênior    |      24h | Diagramas C4 atualizados          |
+| Runbooks de operação consolidados |       Dev Sênior       |      12h | Procedimentos unificados          |
+| Guia de troubleshooting           | Dev Sênior + Dev Pleno |      16h | FAQ técnico + scripts             |
+| Handover para operação            |    GP + Dev Sênior     |      16h | Sessões de transferência          |
+| Relatório de encerramento         |           GP           |      12h | Métricas, lições, recomendações   |
+| Aceite final e encerramento       |           GP           |       8h | Apresentação executiva            |
+| **Subtotal Fase 5**               |                        | **188h** |                                   |
 
 </details>
 
 <details>
 <summary><strong>👥 Distribuição por Recurso</strong></summary>
 
-| Recurso | Horas | % da Fase |
-|:--------|------:|----------:|
-| Gerente de Projeto | 36h | 19% |
-| Arquiteto de Solução | 24h | 13% |
-| Desenvolvedor Sênior | 80h | 43% |
-| Desenvolvedor Pleno | 48h | 26% |
+| Recurso              | Horas | % da Fase |
+| :------------------- | ----: | --------: |
+| Gerente de Projeto   |   36h |       19% |
+| Arquiteto de Solução |   24h |       13% |
+| Desenvolvedor Sênior |   80h |       43% |
+| Desenvolvedor Pleno  |   48h |       26% |
 
 </details>
 
@@ -455,23 +455,23 @@ pie showData
 > [!CAUTION]
 > As premissas abaixo são críticas para a validade desta estimativa. Desvios podem impactar significativamente o cronograma e os custos.
 
-| ID | Premissa | Impacto se Falsa |
-|:--:|:---------|:-----------------|
-| **E01** | Código legado VBA está acessível e documentável | +20% em Fase 0 |
-| **E02** | Schema do SQL Server está estabilizado (sem mudanças) | Retrabalho em mapeamentos |
-| **E03** | Cooperflora fornece SME para workshops em até 48h | Atraso em Fase 1 |
-| **E04** | Ambientes DEV/HML disponíveis até início da Fase 2 | Bloqueio de desenvolvimento |
-| **E05** | Fluxos de migração são independentes (sem acoplamento) | +30% em Fase 4 se acoplados |
-| **E06** | Não há mudanças funcionais durante a migração | Escopo adicional via Change Control |
+|   ID    | Premissa                                               | Impacto se Falsa                    |
+| :-----: | :----------------------------------------------------- | :---------------------------------- |
+| **E01** | Código legado VBA está acessível e documentável        | +20% em Fase 0                      |
+| **E02** | Schema do SQL Server está estabilizado (sem mudanças)  | Retrabalho em mapeamentos           |
+| **E03** | Cooperflora fornece SME para workshops em até 48h      | Atraso em Fase 1                    |
+| **E04** | Ambientes DEV/HML disponíveis até início da Fase 2     | Bloqueio de desenvolvimento         |
+| **E05** | Fluxos de migração são independentes (sem acoplamento) | +30% em Fase 4 se acoplados         |
+| **E06** | Não há mudanças funcionais durante a migração          | Escopo adicional via Change Control |
 
 ### ⚠️ Riscos que Podem Afetar a Estimativa
 
-| Risco | Probabilidade | Impacto (Horas) | Mitigação |
-|:------|:-------------:|-----------------:|:---------|
-| Descoberta de regras não documentadas no VBA | 🟠 **Alta** | +80h a +160h | Buffer de 15% recomendado |
-| Fluxos mais complexos que o esperado | 🟡 Média | +40h por fluxo | Reavaliação por onda |
-| Indisponibilidade de SMEs do cliente | 🟡 Média | +20h em espera | Acordar agenda na Fase 0 |
-| Problemas de performance em produção | 🟢 Baixa | +40h | Testes de carga antecipados |
+| Risco                                        | Probabilidade | Impacto (Horas) | Mitigação                   |
+| :------------------------------------------- | :-----------: | --------------: | :-------------------------- |
+| Descoberta de regras não documentadas no VBA |  🟠 **Alta**  |    +80h a +160h | Buffer de 15% recomendado   |
+| Fluxos mais complexos que o esperado         |   🟡 Média    |  +40h por fluxo | Reavaliação por onda        |
+| Indisponibilidade de SMEs do cliente         |   🟡 Média    |  +20h em espera | Acordar agenda na Fase 0    |
+| Problemas de performance em produção         |   🟢 Baixa    |            +40h | Testes de carga antecipados |
 
 ---
 
@@ -548,13 +548,13 @@ O pagamento do projeto será realizado conforme o fluxo abaixo, vinculado aos ma
 > [!IMPORTANT]
 > **Termos contratuais de pagamento**
 
-| # | Condição |
-|:-:|:---------|
-| 1️⃣ | **Prazo de pagamento:** 10 dias úteis após emissão da Nota Fiscal correspondente ao marco. |
-| 2️⃣ | **Faturamento:** A Néctar emitirá a NF após validação formal do marco pela Cooperflora (aceite do EMV correspondente ou aprovação tácita após 2 dias úteis). |
-| 3️⃣ | **Primeiro pagamento (30%):** Devido imediatamente após o aceite formal do projeto, independente do início da execução. |
-| 4️⃣ | **Pagamentos subsequentes:** Condicionados à conclusão e aceite dos critérios de cada fase, conforme definido na seção [Fases do Projeto](./03-execucao-projeto.md). |
-| 5️⃣ | **Atrasos por parte do cliente:** Caso haja atraso na validação de entregas ou fornecimento de insumos pela Cooperflora que impacte o cronograma, os pagamentos seguirão o calendário original, não sendo postergados. |
+|  #  | Condição                                                                                                                                                                                                               |
+| :-: | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1️⃣  | **Prazo de pagamento:** 10 dias úteis após emissão da Nota Fiscal correspondente ao marco.                                                                                                                             |
+| 2️⃣  | **Faturamento:** A Néctar emitirá a NF após validação formal do marco pela Cooperflora (aceite do EMV correspondente ou aprovação tácita após 2 dias úteis).                                                           |
+| 3️⃣  | **Primeiro pagamento (30%):** Devido imediatamente após o aceite formal do projeto, independente do início da execução.                                                                                                |
+| 4️⃣  | **Pagamentos subsequentes:** Condicionados à conclusão e aceite dos critérios de cada fase, conforme definido na seção [Fases do Projeto](./03-execucao-projeto.md).                                                   |
+| 5️⃣  | **Atrasos por parte do cliente:** Caso haja atraso na validação de entregas ou fornecimento de insumos pela Cooperflora que impacte o cronograma, os pagamentos seguirão o calendário original, não sendo postergados. |
 
 ```mermaid
 ---
@@ -615,13 +615,13 @@ pie showData
 <details open>
 <summary><strong>📌 Itens Não Contemplados</strong></summary>
 
-| Item | Observação |
-|:-----|:----------|
-| **Fase 6 (Evolução opcional)** | Não está incluída nesta estimativa por ser executada sob demanda, com escopo e custos a serem definidos caso a caso. |
-| **Contingência** | Não incluída. Recomenda-se reserva de 15–20%, o que elevaria o investimento total para **R$ 276.000,00 a R$ 288.000,00**. |
-| **Licenciamento de ferramentas** | APM, Service Bus, etc. — responsabilidade da Cooperflora conforme premissas. |
-| **Infraestrutura de ambientes** | DEV/HML/PRD não contemplados. |
-| **Horas extras ou alocação emergencial** | Sob demanda e negociação separada. |
+| Item                                     | Observação                                                                                                                |
+| :--------------------------------------- | :------------------------------------------------------------------------------------------------------------------------ |
+| **Fase 6 (Evolução opcional)**           | Não está incluída nesta estimativa por ser executada sob demanda, com escopo e custos a serem definidos caso a caso.      |
+| **Contingência**                         | Não incluída. Recomenda-se reserva de 15–20%, o que elevaria o investimento total para **R$ 276.000,00 a R$ 288.000,00**. |
+| **Licenciamento de ferramentas**         | APM, Service Bus, etc. — responsabilidade da Cooperflora conforme premissas.                                              |
+| **Infraestrutura de ambientes**          | DEV/HML/PRD não contemplados.                                                                                             |
+| **Horas extras ou alocação emergencial** | Sob demanda e negociação separada.                                                                                        |
 
 </details>
 
@@ -632,26 +632,26 @@ pie showData
 >
 > ### 📋 Resumo Executivo de Investimento
 >
-> | Métrica | Valor |
-> |:--------|------:|
-> | **Investimento Total** | **R$ 240.000,00** |
-> | **Duração** | 28 semanas (~7 meses) |
-> | **Valor Hora Base** | R$ 150,00 |
-> | **Recursos Alocados** | 4 profissionais |
-> | **Total de Horas** | 1.600 horas |
-> | **Com Contingência (15%)** | R$ 276.000,00 |
-> | **Com Contingência (20%)** | R$ 288.000,00 |
+> | Métrica                    |                 Valor |
+> | :------------------------- | --------------------: |
+> | **Investimento Total**     |     **R$ 240.000,00** |
+> | **Duração**                | 28 semanas (~7 meses) |
+> | **Valor Hora Base**        |             R$ 150,00 |
+> | **Recursos Alocados**      |       4 profissionais |
+> | **Total de Horas**         |           1.600 horas |
+> | **Com Contingência (15%)** |         R$ 276.000,00 |
+> | **Com Contingência (20%)** |         R$ 288.000,00 |
 
 ---
 
 ## 📚 Documentos Relacionados
 
-| Documento                                            | Descrição                       |
-| ---------------------------------------------------- | ------------------------------- |
+| Documento                                              | Descrição                        |
+| ------------------------------------------------------ | -------------------------------- |
 | [Premissas e Restrições](./06-premissas-restricoes.md) | Premissas e restrições completas |
-| [Execução do Projeto](./03-execucao-projeto.md)      | Fases e cronograma detalhado    |
-| [Gestão do Projeto](./04-gestao-projeto.md)          | Governança e controle           |
-| [Riscos e Mitigações](./05-riscos-mitigacoes.md)     | Registro RAID                   |
+| [Execução do Projeto](./03-execucao-projeto.md)        | Fases e cronograma detalhado     |
+| [Gestão do Projeto](./04-gestao-projeto.md)            | Governança e controle            |
+| [Riscos e Mitigações](./05-riscos-mitigacoes.md)       | Registro RAID                    |
 
 ---
 

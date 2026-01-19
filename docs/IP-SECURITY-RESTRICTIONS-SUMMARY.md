@@ -15,9 +15,9 @@ tags: [security, ip-restrictions, quick-reference, azure]
 <details>
 <summary>📍 <strong>Quick Navigation</strong></summary>
 
-| Previous | Index | Next |
-|:---------|:------:|--------:|
-| [← Detailed Guide](IP-SECURITY-RESTRICTIONS.md) | [📚 Docs Index](README.md) | — |
+| Previous                                        |           Index            | Next |
+| :---------------------------------------------- | :------------------------: | ---: |
+| [← Detailed Guide](IP-SECURITY-RESTRICTIONS.md) | [📚 Docs Index](README.md) |    — |
 
 </details>
 

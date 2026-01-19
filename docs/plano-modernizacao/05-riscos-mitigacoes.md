@@ -16,8 +16,8 @@ tags: [riscos, raid, mitigações, contingência, kpis]
 <details>
 <summary>📍 <strong>Navegação Rápida</strong></summary>
 
-| Anterior | Índice | Próximo |
-|:---------|:------:|--------:|
+| Anterior                                      |          Índice          |                                                  Próximo |
+| :-------------------------------------------- | :----------------------: | -------------------------------------------------------: |
 | [← Gestão do Projeto](./04-gestao-projeto.md) | [📑 Índice](./README.md) | [Premissas e Restrições →](./06-premissas-restricoes.md) |
 
 </details>

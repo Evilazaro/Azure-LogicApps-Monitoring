@@ -14,9 +14,9 @@ tags: [adr, opentelemetry, observability, architecture-decision]
 <details>
 <summary>📍 <strong>Quick Navigation</strong></summary>
 
-| Previous | Index | Next |
-|:---------|:------:|--------:|
-| [← ADR-002](ADR-002-service-bus-messaging.md) | [📋 ADR Index](README.md) | — |
+| Previous                                      |           Index           | Next |
+| :-------------------------------------------- | :-----------------------: | ---: |
+| [← ADR-002](ADR-002-service-bus-messaging.md) | [📋 ADR Index](README.md) |    — |
 
 </details>
 

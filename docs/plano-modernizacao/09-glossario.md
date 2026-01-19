@@ -16,9 +16,9 @@ tags: [glossário, termos, definições, siglas]
 <details>
 <summary>📍 <strong>Navegação Rápida</strong></summary>
 
-| Anterior | Índice | Próximo |
-|:---------|:------:|--------:|
-| [← Operação e Suporte](./08-operacao-suporte.md) | [📑 Índice](./README.md) | — |
+| Anterior                                         |          Índice          | Próximo |
+| :----------------------------------------------- | :----------------------: | ------: |
+| [← Operação e Suporte](./08-operacao-suporte.md) | [📑 Índice](./README.md) |       — |
 
 </details>
 
@@ -110,17 +110,17 @@ tags: [glossário, termos, definições, siglas]
 
 ## 📚 Documentos Relacionados
 
-| Documento                                            | Descrição                        |
-| ---------------------------------------------------- | -------------------------------- |
-| [README](./README.md)                                | Índice da documentação           |
-| [Visão Executiva](./01-visao-executiva.md)           | Contexto de negócio              |
-| [Fundamentos Técnicos](./02-fundamentos-tecnicos.md) | Arquitetura e padrões            |
-| [Execução do Projeto](./03-execucao-projeto.md)      | Fases e cronograma               |
-| [Gestão do Projeto](./04-gestao-projeto.md)          | Governança                       |
-| [Riscos e Mitigações](./05-riscos-mitigacoes.md)     | RAID                             |
-| [Premissas e Restrições](./06-premissas-restricoes.md) | Premissas e restrições         |
-| [Investimentos](./07-investimentos.md)               | Custos e cronograma de pagamento |
-| [Operação e Suporte](./08-operacao-suporte.md)       | Runbooks e treinamento           |
+| Documento                                              | Descrição                        |
+| ------------------------------------------------------ | -------------------------------- |
+| [README](./README.md)                                  | Índice da documentação           |
+| [Visão Executiva](./01-visao-executiva.md)             | Contexto de negócio              |
+| [Fundamentos Técnicos](./02-fundamentos-tecnicos.md)   | Arquitetura e padrões            |
+| [Execução do Projeto](./03-execucao-projeto.md)        | Fases e cronograma               |
+| [Gestão do Projeto](./04-gestao-projeto.md)            | Governança                       |
+| [Riscos e Mitigações](./05-riscos-mitigacoes.md)       | RAID                             |
+| [Premissas e Restrições](./06-premissas-restricoes.md) | Premissas e restrições           |
+| [Investimentos](./07-investimentos.md)                 | Custos e cronograma de pagamento |
+| [Operação e Suporte](./08-operacao-suporte.md)         | Runbooks e treinamento           |
 
 ---
 

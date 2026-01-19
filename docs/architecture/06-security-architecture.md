@@ -15,8 +15,8 @@ tags: [architecture, security, managed-identity, rbac, network-security]
 <details>
 <summary>📍 <strong>Quick Navigation</strong></summary>
 
-| Previous | Index | Next |
-|:---------|:------:|--------:|
+| Previous                                                         |         Index         |                                                       Next |
+| :--------------------------------------------------------------- | :-------------------: | ---------------------------------------------------------: |
 | [← Observability Architecture](05-observability-architecture.md) | [📑 Index](README.md) | [Deployment Architecture →](07-deployment-architecture.md) |
 
 </details>

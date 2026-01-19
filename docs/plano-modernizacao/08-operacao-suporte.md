@@ -16,8 +16,8 @@ tags: [operação, suporte, ci-cd, runbooks, treinamento]
 <details>
 <summary>📍 <strong>Navegação Rápida</strong></summary>
 
-| Anterior | Índice | Próximo |
-|:---------|:------:|--------:|
+| Anterior                                 |          Índice          |                          Próximo |
+| :--------------------------------------- | :----------------------: | -------------------------------: |
 | [← Investimentos](./07-investimentos.md) | [📑 Índice](./README.md) | [Glossário →](./09-glossario.md) |
 
 </details>
@@ -61,13 +61,13 @@ Durante as Fases 3-5 do projeto, o sistema operará em modo híbrido, com fluxos
 
 ### Características da Operação Híbrida
 
-| Aspecto              | Legado (Access/VBA)                              | Nova API                              |
-| -------------------- | ------------------------------------------------ | ------------------------------------- |
-| **Acionamento**      | Timers e eventos manuais                         | Requisições HTTP/REST                 |
-| **Monitoramento**    | Logs locais + consultas manuais                  | APM + dashboards + alertas            |
-| **Rollback**         | Reativar timer + restaurar código                | Feature flag + rollback por endpoint  |
-| **Dados**            | Escrita direta no SQL Server                     | Escrita via API + auditoria           |
-| **Rastreabilidade**  | Limitada a logs locais                           | Correlation-ID + logs estruturados    |
+| Aspecto             | Legado (Access/VBA)               | Nova API                             |
+| ------------------- | --------------------------------- | ------------------------------------ |
+| **Acionamento**     | Timers e eventos manuais          | Requisições HTTP/REST                |
+| **Monitoramento**   | Logs locais + consultas manuais   | APM + dashboards + alertas           |
+| **Rollback**        | Reativar timer + restaurar código | Feature flag + rollback por endpoint |
+| **Dados**           | Escrita direta no SQL Server      | Escrita via API + auditoria          |
+| **Rastreabilidade** | Limitada a logs locais            | Correlation-ID + logs estruturados   |
 
 ### Governança da Convivência
 
@@ -77,23 +77,23 @@ title: Governança da Convivência - Estados de Operação
 ---
 stateDiagram-v2
     direction LR
-    
+
     %% ===== DEFINIÇÕES DE ESTILO =====
     classDef legadoState fill:#F59E0B,stroke:#D97706,color:#000000
     classDef hibridoState fill:#FBBF24,stroke:#D97706,color:#000000
     classDef apiState fill:#10B981,stroke:#059669,color:#FFFFFF
-    
+
     [*] --> Legado: Estado Inicial
-    
+
     state "🏛️ LEGADO" as Legado {
         [*] --> TimerAtivo
         TimerAtivo --> ProcessandoVBA: timer dispara
         ProcessandoVBA --> EscritaSQL: executa lógica
         EscritaSQL --> TimerAtivo: aguarda próximo ciclo
     }
-    
+
     Legado --> Hibrido: Fase 3 (Piloto)
-    
+
     state "🔀 HÍBRIDO" as Hibrido {
         [*] --> FeatureFlag
         FeatureFlag --> RotaLegado: flag = legado
@@ -101,16 +101,16 @@ stateDiagram-v2
         RotaLegado --> Resultado
         RotaAPI --> Resultado
     }
-    
+
     Hibrido --> API: Fase 5 (Simplificação)
-    
+
     state "🚀 API" as API {
         [*] --> EndpointREST
         EndpointREST --> ProcessaAPI: requisição
         ProcessaAPI --> RespostaJSON: retorna
         RespostaJSON --> EndpointREST: aguarda
     }
-    
+
     API --> [*]: Sistema Modernizado
 
     %% ===== APLICAÇÃO DE ESTILOS =====
@@ -133,11 +133,11 @@ stateDiagram-v2
 
 ### Ambientes
 
-| Ambiente | Propósito                           | Responsabilidade |
-| -------- | ----------------------------------- | ---------------- |
-| **DEV**  | Desenvolvimento e testes unitários  | Néctar           |
-| **HML**  | Homologação e testes de aceite      | Néctar + Cliente |
-| **PRD**  | Produção                            | Cliente          |
+| Ambiente | Propósito                          | Responsabilidade |
+| -------- | ---------------------------------- | ---------------- |
+| **DEV**  | Desenvolvimento e testes unitários | Néctar           |
+| **HML**  | Homologação e testes de aceite     | Néctar + Cliente |
+| **PRD**  | Produção                           | Cliente          |
 
 ### Pipeline CI/CD
 
@@ -165,7 +165,7 @@ flowchart LR
         B -->|"compila"| C
     end
     style dev fill:#EEF2FF,stroke:#4F46E5,stroke-width:2px
-    
+
     %% ===== SUBGRAPH: QUALIDADE =====
     subgraph qa ["🧪 Qualidade"]
         D["Deploy DEV"]
@@ -176,7 +176,7 @@ flowchart LR
         E -->|"aprovado"| F
     end
     style qa fill:#FEF3C7,stroke:#F59E0B,stroke-width:2px
-    
+
     %% ===== SUBGRAPH: PRODUÇÃO =====
     subgraph prod ["🚀 Produção"]
         G{"Aprovação"}
@@ -189,7 +189,7 @@ flowchart LR
         I -->|"monitora"| J
     end
     style prod fill:#ECFDF5,stroke:#10B981,stroke-width:2px
-    
+
     %% ===== FLUXO DE CORREÇÃO =====
     K["Correções"]
     G -->|"Não"| K
@@ -205,12 +205,12 @@ flowchart LR
 
 ### Estratégia de Rollback
 
-| Cenário                          | Ação                                          | Tempo Esperado |
-| -------------------------------- | --------------------------------------------- | -------------- |
-| Erro em endpoint específico      | Desabilitar feature flag                      | < 5 min        |
-| Problema em fluxo inteiro        | Reverter para versão anterior                 | < 15 min       |
-| Falha crítica de integração      | Reativar timer legado + comunicar operação    | < 30 min       |
-| Inconsistência de dados          | Rollback + análise + reconciliação manual     | 2-4 horas      |
+| Cenário                     | Ação                                       | Tempo Esperado |
+| --------------------------- | ------------------------------------------ | -------------- |
+| Erro em endpoint específico | Desabilitar feature flag                   | < 5 min        |
+| Problema em fluxo inteiro   | Reverter para versão anterior              | < 15 min       |
+| Falha crítica de integração | Reativar timer legado + comunicar operação | < 30 min       |
+| Inconsistência de dados     | Rollback + análise + reconciliação manual  | 2-4 horas      |
 
 ---
 
@@ -220,30 +220,30 @@ Os runbooks serão entregues durante as Fases 3 e 5, contemplando:
 
 ### Runbook 1: Operações Rotineiras
 
-| Procedimento             | Frequência | Responsável      |
-| ------------------------ | ---------- | ---------------- |
-| Verificação de health    | A cada 5 min (automático) | Sistema |
-| Revisão de alertas       | Diário     | Operação         |
-| Backup de configurações  | Semanal    | TI               |
-| Análise de métricas      | Semanal    | Tech Lead        |
+| Procedimento            | Frequência                | Responsável |
+| ----------------------- | ------------------------- | ----------- |
+| Verificação de health   | A cada 5 min (automático) | Sistema     |
+| Revisão de alertas      | Diário                    | Operação    |
+| Backup de configurações | Semanal                   | TI          |
+| Análise de métricas     | Semanal                   | Tech Lead   |
 
 ### Runbook 2: Troubleshooting
 
-| Sintoma                      | Possível Causa                     | Ação                                      |
-| ---------------------------- | ---------------------------------- | ----------------------------------------- |
-| Timeout em requisições       | Sobrecarga de banco                | Verificar queries + connection pool       |
-| Erro 500 intermitente        | Exception não tratada              | Consultar logs com correlation-id         |
-| Dados não sincronizados      | Falha em operação do legado        | Verificar timers + logs VBA               |
-| API lenta                    | Falta de índice                    | Analisar query plan + criar índice        |
+| Sintoma                 | Possível Causa              | Ação                                |
+| ----------------------- | --------------------------- | ----------------------------------- |
+| Timeout em requisições  | Sobrecarga de banco         | Verificar queries + connection pool |
+| Erro 500 intermitente   | Exception não tratada       | Consultar logs com correlation-id   |
+| Dados não sincronizados | Falha em operação do legado | Verificar timers + logs VBA         |
+| API lenta               | Falta de índice             | Analisar query plan + criar índice  |
 
 ### Runbook 3: Incidentes
 
-| Severidade | Descrição                    | SLA Resposta | SLA Resolução | Escalação          |
-| :--------: | ---------------------------- | :----------: | :-----------: | ------------------ |
-|   **P1**   | Sistema indisponível         |   15 min     |    2 horas    | Tech Lead + Arquiteto |
-|   **P2**   | Funcionalidade crítica afetada |   30 min     |    4 horas    | Tech Lead          |
-|   **P3**   | Funcionalidade secundária    |   2 horas    |    1 dia      | Desenvolvedor      |
-|   **P4**   | Melhoria ou ajuste           |   1 dia      |    5 dias     | Backlog            |
+| Severidade | Descrição                      | SLA Resposta | SLA Resolução | Escalação             |
+| :--------: | ------------------------------ | :----------: | :-----------: | --------------------- |
+|   **P1**   | Sistema indisponível           |    15 min    |    2 horas    | Tech Lead + Arquiteto |
+|   **P2**   | Funcionalidade crítica afetada |    30 min    |    4 horas    | Tech Lead             |
+|   **P3**   | Funcionalidade secundária      |   2 horas    |     1 dia     | Desenvolvedor         |
+|   **P4**   | Melhoria ou ajuste             |    1 dia     |    5 dias     | Backlog               |
 
 ---
 
@@ -251,21 +251,21 @@ Os runbooks serão entregues durante as Fases 3 e 5, contemplando:
 
 ### Público-Alvo
 
-| Grupo              | Conteúdo                                           | Duração   | Fase      |
-| ------------------ | -------------------------------------------------- | --------- | --------- |
-| Operação TI        | Runbooks, monitoramento, troubleshooting básico    | 4h        | Fase 5    |
-| Suporte N1/N2      | FAQ técnico, escalação, ferramentas de diagnóstico | 2h        | Fase 5    |
-| Desenvolvedores    | Arquitetura, padrões, contribuição de código       | 8h        | Fase 3-4  |
-| Gestão             | Dashboards executivos, métricas de negócio         | 1h        | Fase 5    |
+| Grupo           | Conteúdo                                           | Duração | Fase     |
+| --------------- | -------------------------------------------------- | ------- | -------- |
+| Operação TI     | Runbooks, monitoramento, troubleshooting básico    | 4h      | Fase 5   |
+| Suporte N1/N2   | FAQ técnico, escalação, ferramentas de diagnóstico | 2h      | Fase 5   |
+| Desenvolvedores | Arquitetura, padrões, contribuição de código       | 8h      | Fase 3-4 |
+| Gestão          | Dashboards executivos, métricas de negócio         | 1h      | Fase 5   |
 
 ### Material de Treinamento
 
-| Artefato                   | Descrição                              | Entrega   |
-| -------------------------- | -------------------------------------- | --------- |
-| Guia de Operação           | Manual completo de operação            | Fase 5    |
-| FAQ Técnico                | Perguntas frequentes + soluções        | Fase 5    |
-| Vídeos de Troubleshooting  | Demonstrações de diagnóstico           | Fase 5    |
-| Diagramas de Arquitetura   | C4 atualizados                         | Fase 5    |
+| Artefato                  | Descrição                       | Entrega |
+| ------------------------- | ------------------------------- | ------- |
+| Guia de Operação          | Manual completo de operação     | Fase 5  |
+| FAQ Técnico               | Perguntas frequentes + soluções | Fase 5  |
+| Vídeos de Troubleshooting | Demonstrações de diagnóstico    | Fase 5  |
+| Diagramas de Arquitetura  | C4 atualizados                  | Fase 5  |
 
 ---
 
@@ -273,22 +273,22 @@ Os runbooks serão entregues durante as Fases 3 e 5, contemplando:
 
 ### Critérios de Aceite do Handover
 
-| Critério                                          | Verificação                                   |
-| ------------------------------------------------- | --------------------------------------------- |
-| Documentação técnica completa                     | Review por TI Cooperflora                     |
-| Runbooks validados                                | Simulação de incidentes                       |
-| Treinamento realizado                             | Lista de presença + avaliação                 |
-| Dashboards funcionais                             | Demonstração ao vivo                          |
-| Alertas configurados                              | Teste de disparo de alertas                   |
-| Acessos de operação provisionados                 | Validação de permissões                       |
+| Critério                          | Verificação                   |
+| --------------------------------- | ----------------------------- |
+| Documentação técnica completa     | Review por TI Cooperflora     |
+| Runbooks validados                | Simulação de incidentes       |
+| Treinamento realizado             | Lista de presença + avaliação |
+| Dashboards funcionais             | Demonstração ao vivo          |
+| Alertas configurados              | Teste de disparo de alertas   |
+| Acessos de operação provisionados | Validação de permissões       |
 
 ### Período de Acompanhamento
 
-| Período                   | Suporte Néctar                       | Responsabilidade |
-| ------------------------- | ------------------------------------ | ---------------- |
-| Semanas 1-2 pós-handover  | Disponível para chamados prioritários | Compartilhada    |
-| Semanas 3-4 pós-handover  | Suporte sob demanda (consultivo)     | Cliente          |
-| A partir da semana 5      | Contrato de suporte (se aplicável)   | Cliente          |
+| Período                  | Suporte Néctar                        | Responsabilidade |
+| ------------------------ | ------------------------------------- | ---------------- |
+| Semanas 1-2 pós-handover | Disponível para chamados prioritários | Compartilhada    |
+| Semanas 3-4 pós-handover | Suporte sob demanda (consultivo)      | Cliente          |
+| A partir da semana 5     | Contrato de suporte (se aplicável)    | Cliente          |
 
 ---
 
@@ -298,12 +298,12 @@ A arquitetura do projeto foi desenhada para facilitar uma futura migração ao N
 
 ### Preparação Técnica
 
-| Aspecto                   | Estado Atual                                | Benefício para Migração           |
-| ------------------------- | ------------------------------------------- | --------------------------------- |
-| Contratos de API          | OpenAPI versionado e documentado            | Contratos formais reutilizáveis   |
-| Desacoplamento            | Integração via API (não banco direto)       | Substituição transparente         |
-| Observabilidade           | Logs estruturados + métricas                | Migração de dashboards facilitada |
-| Configurações             | Externalizadas (environment variables)      | Ajuste por ambiente               |
+| Aspecto          | Estado Atual                           | Benefício para Migração           |
+| ---------------- | -------------------------------------- | --------------------------------- |
+| Contratos de API | OpenAPI versionado e documentado       | Contratos formais reutilizáveis   |
+| Desacoplamento   | Integração via API (não banco direto)  | Substituição transparente         |
+| Observabilidade  | Logs estruturados + métricas           | Migração de dashboards facilitada |
+| Configurações    | Externalizadas (environment variables) | Ajuste por ambiente               |
 
 ### Passos para Migração Nimbus
 
@@ -320,21 +320,21 @@ Para cenários futuros de maior escala ou desacoplamento, a introdução de Serv
 
 ### Quando Considerar
 
-| Indicador                                | Gatilho                                         |
-| ---------------------------------------- | ----------------------------------------------- |
-| Picos de carga                           | Quando filas são necessárias para absorver picos |
-| Desacoplamento entre domínios            | Quando integrações síncronas causam acoplamento |
-| Eventos de negócio cross-sistema         | Quando múltiplos consumidores precisam do mesmo evento |
-| Requisitos de resiliência                | Quando falhas temporárias não podem perder dados |
+| Indicador                        | Gatilho                                                |
+| -------------------------------- | ------------------------------------------------------ |
+| Picos de carga                   | Quando filas são necessárias para absorver picos       |
+| Desacoplamento entre domínios    | Quando integrações síncronas causam acoplamento        |
+| Eventos de negócio cross-sistema | Quando múltiplos consumidores precisam do mesmo evento |
+| Requisitos de resiliência        | Quando falhas temporárias não podem perder dados       |
 
 ### Eventos Candidatos
 
-| Domínio          | Evento Exemplo          | Consumidores Potenciais          |
-| ---------------- | ----------------------- | -------------------------------- |
-| **Pedidos**      | `PedidoCriado`          | Faturamento, Estoque, Logística  |
-| **Faturamento**  | `NotaFiscalEmitida`     | Financeiro, Contabilidade        |
-| **Estoque**      | `EstoqueAtualizado`     | Compras, Vendas                  |
-| **Financeiro**   | `PagamentoRecebido`     | Cobrança, CRM                    |
+| Domínio         | Evento Exemplo      | Consumidores Potenciais         |
+| --------------- | ------------------- | ------------------------------- |
+| **Pedidos**     | `PedidoCriado`      | Faturamento, Estoque, Logística |
+| **Faturamento** | `NotaFiscalEmitida` | Financeiro, Contabilidade       |
+| **Estoque**     | `EstoqueAtualizado` | Compras, Vendas                 |
+| **Financeiro**  | `PagamentoRecebido` | Cobrança, CRM                   |
 
 ### Modelo de Implementação
 
@@ -359,14 +359,14 @@ flowchart LR
         B["API Faturamento"]
     end
     style producer fill:#EEF2FF,stroke:#4F46E5,stroke-width:2px
-    
+
     %% ===== SUBGRAPH: SERVICE BUS =====
     subgraph bus ["📬 Service Bus"]
         C[("Topic: Pedidos")]
         D[("Topic: Notas")]
     end
     style bus fill:#FEF3C7,stroke:#F59E0B,stroke-width:2px
-    
+
     %% ===== SUBGRAPH: CONSUMIDORES =====
     subgraph consumers ["👥 Consumidores"]
         E["Worker Estoque"]
@@ -374,7 +374,7 @@ flowchart LR
         G["Worker Analytics"]
     end
     style consumers fill:#ECFDF5,stroke:#10B981,stroke-width:2px
-    
+
     %% ===== CONEXÕES =====
     A -->|"publish"| C
     B -->|"publish"| D
@@ -395,12 +395,12 @@ flowchart LR
 
 ## 📚 Documentos Relacionados
 
-| Documento                                            | Descrição                          |
-| ---------------------------------------------------- | ---------------------------------- |
-| [Fundamentos Técnicos](./02-fundamentos-tecnicos.md) | Arquitetura e padrões técnicos     |
-| [Execução do Projeto](./03-execucao-projeto.md)      | Fases e cronograma                 |
-| [Riscos e Mitigações](./05-riscos-mitigacoes.md)     | Registro RAID                      |
-| [Investimentos](./07-investimentos.md)               | Estimativa de horas e custos       |
+| Documento                                            | Descrição                      |
+| ---------------------------------------------------- | ------------------------------ |
+| [Fundamentos Técnicos](./02-fundamentos-tecnicos.md) | Arquitetura e padrões técnicos |
+| [Execução do Projeto](./03-execucao-projeto.md)      | Fases e cronograma             |
+| [Riscos e Mitigações](./05-riscos-mitigacoes.md)     | Registro RAID                  |
+| [Investimentos](./07-investimentos.md)               | Estimativa de horas e custos   |
 
 ---
 

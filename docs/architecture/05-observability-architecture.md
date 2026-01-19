@@ -3,7 +3,8 @@ title: Observability Architecture
 description: Distributed tracing, metrics, logs, and alerting strategies for the Azure Logic Apps Monitoring solution
 author: Evilazaro
 version: 1.0
-tags: [architecture, observability, opentelemetry, application-insights, monitoring]
+tags:
+  [architecture, observability, opentelemetry, application-insights, monitoring]
 ---
 
 # 📊 Observability Architecture
@@ -15,8 +16,8 @@ tags: [architecture, observability, opentelemetry, application-insights, monitor
 <details>
 <summary>📍 <strong>Quick Navigation</strong></summary>
 
-| Previous | Index | Next |
-|:---------|:------:|--------:|
+| Previous                                                   |         Index         |                                                   Next |
+| :--------------------------------------------------------- | :-------------------: | -----------------------------------------------------: |
 | [← Technology Architecture](04-technology-architecture.md) | [📑 Index](README.md) | [Security Architecture →](06-security-architecture.md) |
 
 </details>

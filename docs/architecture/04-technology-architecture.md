@@ -15,8 +15,8 @@ tags: [architecture, technology, azure, infrastructure, bicep]
 <details>
 <summary>📍 <strong>Quick Navigation</strong></summary>
 
-| Previous | Index | Next |
-|:---------|:------:|--------:|
+| Previous                                                     |         Index         |                                                             Next |
+| :----------------------------------------------------------- | :-------------------: | ---------------------------------------------------------------: |
 | [← Application Architecture](03-application-architecture.md) | [📑 Index](README.md) | [Observability Architecture →](05-observability-architecture.md) |
 
 </details>

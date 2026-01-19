@@ -22,9 +22,9 @@ tags: [developer-experience, automation, powershell, bash, azd-hooks]
 <details>
 <summary>📍 <strong>Quick Navigation</strong></summary>
 
-| Previous | Index | Next |
-|:---------|:------:|--------:|
-| — | [📚 Docs Index](../README.md) | [check-dev-workstation →](check-dev-workstation.md) |
+| Previous |             Index             |                                                Next |
+| :------- | :---------------------------: | --------------------------------------------------: |
+| —        | [📚 Docs Index](../README.md) | [check-dev-workstation →](check-dev-workstation.md) |
 
 </details>
 

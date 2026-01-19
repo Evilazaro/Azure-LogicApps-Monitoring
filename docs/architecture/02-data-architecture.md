@@ -15,8 +15,8 @@ tags: [architecture, data, database, telemetry, azure-sql]
 <details>
 <summary>📍 <strong>Quick Navigation</strong></summary>
 
-| Previous | Index | Next |
-|:---------|:------:|--------:|
+| Previous                                               |         Index         |                                                         Next |
+| :----------------------------------------------------- | :-------------------: | -----------------------------------------------------------: |
 | [← Business Architecture](01-business-architecture.md) | [📑 Index](README.md) | [Application Architecture →](03-application-architecture.md) |
 
 </details>

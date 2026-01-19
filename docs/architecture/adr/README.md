@@ -15,9 +15,9 @@ tags: [architecture, adr, decisions, documentation]
 <details>
 <summary>📍 <strong>Quick Navigation</strong></summary>
 
-| Previous | Index | Next |
-|:---------|:------:|--------:|
-| [← Deployment Architecture](../07-deployment-architecture.md) | [📑 Index](../README.md) | — |
+| Previous                                                      |          Index           | Next |
+| :------------------------------------------------------------ | :----------------------: | ---: |
+| [← Deployment Architecture](../07-deployment-architecture.md) | [📑 Index](../README.md) |    — |
 
 </details>
 

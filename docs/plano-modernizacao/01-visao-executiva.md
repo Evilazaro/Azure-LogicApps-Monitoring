@@ -16,9 +16,9 @@ tags: [visão-executiva, escopo, governança, riscos, bdm]
 <details>
 <summary>📍 <strong>Navegação Rápida</strong></summary>
 
-| Anterior | Índice | Próximo |
-|:---------|:------:|--------:|
-| — | [📑 Índice](./README.md) | [Fundamentos Técnicos →](./02-fundamentos-tecnicos.md) |
+| Anterior |          Índice          |                                                Próximo |
+| :------- | :----------------------: | -----------------------------------------------------: |
+| —        | [📑 Índice](./README.md) | [Fundamentos Técnicos →](./02-fundamentos-tecnicos.md) |
 
 </details>
 

@@ -14,9 +14,9 @@ tags: [adr, aspire, orchestration, architecture-decision]
 <details>
 <summary>📍 <strong>Quick Navigation</strong></summary>
 
-| Previous | Index | Next |
-|:---------|:------:|--------:|
-| — | [📋 ADR Index](README.md) | [ADR-002 →](ADR-002-service-bus-messaging.md) |
+| Previous |           Index           |                                          Next |
+| :------- | :-----------------------: | --------------------------------------------: |
+| —        | [📋 ADR Index](README.md) | [ADR-002 →](ADR-002-service-bus-messaging.md) |
 
 </details>
 

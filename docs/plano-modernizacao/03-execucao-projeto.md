@@ -16,8 +16,8 @@ tags: [execução, fases, roadmap, strangler-pattern, migração]
 <details>
 <summary>📍 <strong>Navegação Rápida</strong></summary>
 
-| Anterior | Índice | Próximo |
-|:---------|:------:|--------:|
+| Anterior                                               |          Índice          |                                       Próximo |
+| :----------------------------------------------------- | :----------------------: | --------------------------------------------: |
 | [← Fundamentos Técnicos](./02-fundamentos-tecnicos.md) | [📑 Índice](./README.md) | [Gestão do Projeto →](./04-gestao-projeto.md) |
 
 </details>

@@ -16,8 +16,8 @@ tags: [governança, raci, stakeholders, mudanças, comunicação]
 <details>
 <summary>📍 <strong>Navegação Rápida</strong></summary>
 
-| Anterior | Índice | Próximo |
-|:---------|:------:|--------:|
+| Anterior                                          |          Índice          |                                            Próximo |
+| :------------------------------------------------ | :----------------------: | -------------------------------------------------: |
 | [← Execução do Projeto](./03-execucao-projeto.md) | [📑 Índice](./README.md) | [Riscos e Mitigações →](./05-riscos-mitigacoes.md) |
 
 </details>

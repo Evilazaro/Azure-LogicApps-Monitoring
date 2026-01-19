@@ -15,8 +15,8 @@ tags: [hooks, validation, workflow, azure, logic-apps, comprehensive-guide]
 <details>
 <summary>📍 <strong>Quick Navigation</strong></summary>
 
-| Previous | Index | Next |
-|:---------|:------:|--------:|
+| Previous                                                              |         Index         |                         Next |
+| :-------------------------------------------------------------------- | :-------------------: | ---------------------------: |
 | [← Configure Federated Credential](configure-federated-credential.md) | [📑 Index](README.md) | [🏠 Docs Home](../README.md) |
 
 </details>
