@@ -1,8 +1,27 @@
-# PARTE I – Visão Executiva
+# 📋 PARTE I – Visão Executiva
 
 > 🎯 **Para BDMs**: Esta parte contém tudo o que você precisa para entender o projeto, aprovar escopo e acompanhar a execução. Tempo estimado: 15 minutos.
 
-[← Voltar ao Índice](./README.md)
+**Navegação**: [← Voltar ao Índice](./README.md) | [Fundamentos Técnicos →](./02-fundamentos-tecnicos.md)
+
+---
+
+## 📑 Índice
+
+- [🎯 Introdução](#-introdução)
+  - [🎯 Objetivo do Documento](#-objetivo-do-documento)
+  - [⚠️ Situação atual e motivação](#️-situação-atual-e-motivação)
+- [🎯 Escopo do Projeto](#-escopo-do-projeto)
+  - [🎯 Escopo por Domínio de Negócio](#-escopo-por-domínio-de-negócio)
+  - [🚫 Fora do escopo](#-fora-do-escopo)
+- [👥 Governança e Tomada de Decisão](#-governança-e-tomada-de-decisão)
+  - [💼 Stakeholders Principais](#-stakeholders-principais)
+  - [📋 Matriz RACI Simplificada](#-matriz-raci-simplificada)
+  - [🏛️ Fóruns de Decisão](#️-fóruns-de-decisão)
+- [⚠️ Riscos Principais e Critérios de Sucesso](#️-riscos-principais-e-critérios-de-sucesso)
+  - [📝 Top 5 Riscos](#-top-5-riscos)
+  - [🏆 Critérios de Sucesso](#-critérios-de-sucesso)
+- [📚 Documentos Relacionados](#-documentos-relacionados)
 
 ---
 
@@ -158,4 +177,4 @@ Esta seção define os **entregáveis e limites** do projeto de modernização d
 
 ---
 
-[← Voltar ao Índice](./README.md)
+[⬆️ Voltar ao topo](#-parte-i--visão-executiva) | [← Voltar ao Índice](./README.md) | [Fundamentos Técnicos →](./02-fundamentos-tecnicos.md)

@@ -1,8 +1,34 @@
-# PARTE III – Fundamentos Técnicos
+# 🛠️ PARTE III – Fundamentos Técnicos
 
 > 🎯 **Para TDMs**: Esta parte apresenta a arquitetura técnica, princípios e padrões de desenvolvimento. Tempo estimado: 25 minutos.
 
-[← Voltar ao Índice](./README.md)
+**Navegação**: [← Voltar ao Índice](./README.md) | [← Visão Executiva](./01-visao-executiva.md) | [Execução do Projeto →](./03-execucao-projeto.md)
+
+---
+
+## 📑 Índice
+
+- [🏗️ Arquitetura e Padrões Técnicos](#️-arquitetura-e-padrões-técnicos)
+  - [🟢 Arquitetura alvo](#-arquitetura-alvo)
+  - [🔄 Visão geral comparativa](#-visão-geral-comparativa)
+- [📜 Princípios arquiteturais](#-princípios-arquiteturais)
+  - [💼 Princípios de Negócio (Business)](#-princípios-de-negócio-business)
+  - [🗃️ Princípios de Dados (Data)](#️-princípios-de-dados-data)
+  - [⚙️ Princípios de Aplicação (Application)](#️-princípios-de-aplicação-application)
+  - [💻 Princípios de Tecnologia (Technology)](#-princípios-de-tecnologia-technology)
+- [🛠️ Padrões técnicos de integração](#️-padrões-técnicos-de-integração)
+  - [📝 Padrão de API e contratos](#-padrão-de-api-e-contratos)
+  - [⚠️ Tratamento de erros](#️-tratamento-de-erros)
+  - [🔄 Idempotência e reprocessamento](#-idempotência-e-reprocessamento)
+  - [🗂️ Propriedade de dados (source of truth)](#️-propriedade-de-dados-source-of-truth)
+  - [📡 Evolução para event-driven](#-evolução-para-event-driven)
+- [📐 Diretrizes de arquitetura e desenvolvimento](#-diretrizes-de-arquitetura-e-desenvolvimento)
+  - [🏛️ Arquitetura em camadas](#️-arquitetura-em-camadas)
+  - [🧪 Estratégia de testes](#-estratégia-de-testes)
+  - [🚀 DevOps e ambientes](#-devops-e-ambientes)
+- [📝 Detalhamento Técnico dos Entregáveis](#-detalhamento-técnico-dos-entregáveis)
+- [📦 Entregáveis Mínimos Validáveis (EMV)](#-entregáveis-mínimos-validáveis-emv)
+- [📚 Documentos Relacionados](#-documentos-relacionados)
 
 ---
 
@@ -375,4 +401,4 @@ flowchart LR
 
 ---
 
-[← Voltar ao Índice](./README.md)
+[⬆️ Voltar ao topo](#️-parte-iii--fundamentos-técnicos) | [← Voltar ao Índice](./README.md) | [Execução do Projeto →](./03-execucao-projeto.md)

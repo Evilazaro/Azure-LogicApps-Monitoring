@@ -1,8 +1,25 @@
-# Gestão do Projeto (Governança, Stakeholders e Controle)
+# 📊 Gestão do Projeto (Governança, Stakeholders e Controle)
 
 > 🎯 **Para BDMs e TDMs**: Esta seção define a estrutura de governança, papéis, comunicação e controle do projeto. Tempo estimado: 15 minutos.
 
-[← Voltar ao Índice](./README.md)
+**Navegação**: [← Voltar ao Índice](./README.md) | [← Execução do Projeto](./03-execucao-projeto.md) | [Riscos e Mitigações →](./05-riscos-mitigacoes.md)
+
+---
+
+## 📑 Índice
+
+- [💼 Stakeholders e Matriz RACI](#-stakeholders-e-matriz-raci)
+- [📋 Matriz RACI por Entregável](#-matriz-raci-por-entregável)
+- [🏛️ Estrutura de Governança e Fóruns de Decisão](#️-estrutura-de-governança-e-fóruns-de-decisão)
+  - [🏛️ Nível Estratégico: Comitê Executivo](#️-nível-estratégico-comitê-executivo-steering-committee)
+  - [⚙️ Nível Tático: Comitê de Projeto](#️-nível-tático-comitê-de-projeto)
+  - [🎹 Nível Operacional: Cerimônias Ágeis](#-nível-operacional-cerimônias-ágeis)
+- [🔄 Gestão de Mudanças (Change Control)](#-gestão-de-mudanças-change-control)
+  - [📝 Processo de Change Request](#-processo-de-change-request)
+  - [🚨 Critérios para Escalação ao Comitê Executivo](#-critérios-para-escalação-ao-comitê-executivo)
+- [📣 Plano de Comunicação](#-plano-de-comunicação)
+- [🏆 Critérios de Sucesso do Projeto](#-critérios-de-sucesso-do-projeto)
+- [📚 Documentos Relacionados](#-documentos-relacionados)
 
 ---
 
@@ -198,4 +215,4 @@ Os critérios abaixo definem como o sucesso do projeto será medido:
 
 ---
 
-[← Voltar ao Índice](./README.md)
+[⬆️ Voltar ao topo](#-gestão-do-projeto-governança-stakeholders-e-controle) | [← Voltar ao Índice](./README.md) | [Riscos e Mitigações →](./05-riscos-mitigacoes.md)

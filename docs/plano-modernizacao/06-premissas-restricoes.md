@@ -1,11 +1,15 @@
-# Premissas e Restrições do Projeto
+# 📋 Premissas e Restrições do Projeto
 
-> **Navegação**: [← Índice](./README.md) | [← Riscos e Mitigações](./05-riscos-mitigacoes.md) | [Investimentos →](./07-investimentos.md)
+> 🎯 **Para BDMs e TDMs**: Esta seção documenta todas as premissas assumidas e restrições conhecidas do projeto. Tempo estimado: 15 minutos.
 
-## Sumário
+**Navegação**: [← Voltar ao Índice](./README.md) | [← Riscos e Mitigações](./05-riscos-mitigacoes.md) | [Investimentos →](./07-investimentos.md)
 
-- [Premissas](#✅-premissas)
-  - [Legenda de Severidade](#🎯-legenda-de-severidade)
+---
+
+## 📑 Índice
+
+- [✅ Premissas](#-premissas)
+  - [🎯 Legenda de Severidade](#-legenda-de-severidade)
   - [Fase 0 – Alinhamento e Contenção de Riscos](#fase-0--alinhamento-e-contenção-de-riscos)
   - [Fase 1 – Definição dos Contratos de Integração](#fase-1--definição-dos-contratos-de-integração)
   - [Fase 2 – Fundação da API](#fase-2--fundação-da-api)
@@ -13,9 +17,10 @@
   - [Fase 4 – Migração por Fluxo / Operação Híbrida](#fase-4--migração-por-fluxo--operação-híbrida)
   - [Fase 5 – Simplificação do Legado](#fase-5--simplificação-do-legado)
   - [Fase 6 – Evolução Opcional](#fase-6--evolução-opcional)
-  - [Premissas Transversais](#premissas-transversais-aplicáveis-a-todas-as-fases)
-  - [Impacto Financeiro](#⚠️-impacto-financeiro-para-premissas-não-cumpridas)
-- [Restrições](#⛔-restrições)
+  - [Premissas Transversais (Aplicáveis a Todas as Fases)](#premissas-transversais-aplicáveis-a-todas-as-fases)
+  - [⚠️ Impacto Financeiro para Premissas Não Cumpridas](#️-impacto-financeiro-para-premissas-não-cumpridas)
+- [⛔ Restrições](#-restrições)
+- [📚 Documentos Relacionados](#-documentos-relacionados)
 
 ---
 
@@ -172,4 +177,4 @@ As restrições são limitações conhecidas que moldam as decisões do projeto.
 
 ---
 
-> **Navegação**: [← Índice](./README.md) | [← Riscos e Mitigações](./05-riscos-mitigacoes.md) | [Investimentos →](./07-investimentos.md)
+[⬆️ Voltar ao topo](#-premissas-e-restrições-do-projeto) | [← Voltar ao Índice](./README.md) | [Investimentos →](./07-investimentos.md)

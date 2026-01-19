@@ -4,6 +4,17 @@
 
 ---
 
+## 📑 Índice
+
+- [📑 Estrutura da Documentação](#-estrutura-da-documentação)
+- [🎯 Acesso Rápido por Interesse](#-acesso-rápido-por-interesse)
+- [📊 Resumo Executivo](#-resumo-executivo)
+  - [Principais Números](#principais-números)
+  - [📊 Visão Geral do Cronograma](#-visão-geral-do-cronograma)
+  - [✅ Benefícios Esperados](#-benefícios-esperados)
+
+---
+
 ## 📑 Estrutura da Documentação
 
 Este documento está organizado em módulos para atender às necessidades de diferentes stakeholders. Utilize este guia para navegar diretamente às seções mais relevantes para sua função.
@@ -76,13 +87,17 @@ gantt
 
 ---
 
-### Benefícios Esperados
+### ✅ Benefícios Esperados
 
 - ✅ Redução de risco operacional
 - ✅ Contratos OpenAPI versionados
 - ✅ Observabilidade ponta a ponta
 - ✅ Segurança e controle de acesso
 - ✅ Preparação para cenários cloud/segregados
+
+---
+
+[⬆️ Voltar ao topo](#-plano-de-projeto--modernização-do-módulo-integrador-do-sistema-néctar-cooperflora)
 
 ---
 

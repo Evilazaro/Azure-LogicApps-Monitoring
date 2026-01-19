@@ -1,16 +1,39 @@
-# Operação e Suporte
+# 🛠️ Operação e Suporte
 
-> **Navegação**: [← Índice](./README.md) | [← Investimentos](./07-investimentos.md) | [Glossário →](./09-glossario.md)
+> 🎯 **Para TDMs**: Esta seção apresenta o modelo de operação híbrida, runbooks, treinamento e planos de evolução futura. Tempo estimado: 10 minutos.
 
-## Sumário
+**Navegação**: [← Voltar ao Índice](./README.md) | [← Investimentos](./07-investimentos.md) | [Glossário →](./09-glossario.md)
 
-- [Modelo de Operação Híbrida](#🔄-modelo-de-operação-híbrida)
-- [Estratégia de Deploy](#🚀-estratégia-de-deploy)
-- [Runbooks Operacionais](#📋-runbooks-operacionais)
-- [Treinamento](#📚-plano-de-treinamento)
-- [Handover para Operação](#🤝-handover-para-operação)
-- [Migração Futura ao Nimbus](#☁️-migração-futura-ao-nimbus)
-- [Arquitetura Orientada a Eventos](#📡-arquitetura-orientada-a-eventos)
+---
+
+## 📑 Índice
+
+- [🔄 Modelo de Operação Híbrida](#-modelo-de-operação-híbrida)
+  - [Características da Operação Híbrida](#características-da-operação-híbrida)
+  - [Governança da Convivência](#governança-da-convivência)
+  - [Regras de Convivência](#regras-de-convivência)
+- [🚀 Estratégia de Deploy](#-estratégia-de-deploy)
+  - [Ambientes](#ambientes)
+  - [Pipeline CI/CD](#pipeline-cicd)
+  - [Estratégia de Rollback](#estratégia-de-rollback)
+- [📋 Runbooks Operacionais](#-runbooks-operacionais)
+  - [Runbook 1: Operações Rotineiras](#runbook-1-operações-rotineiras)
+  - [Runbook 2: Troubleshooting](#runbook-2-troubleshooting)
+  - [Runbook 3: Incidentes](#runbook-3-incidentes)
+- [📚 Plano de Treinamento](#-plano-de-treinamento)
+  - [Público-Alvo](#público-alvo)
+  - [Material de Treinamento](#material-de-treinamento)
+- [🤝 Handover para Operação](#-handover-para-operação)
+  - [Critérios de Aceite do Handover](#critérios-de-aceite-do-handover)
+  - [Período de Acompanhamento](#período-de-acompanhamento)
+- [☁️ Migração Futura ao Nimbus](#️-migração-futura-ao-nimbus)
+  - [Preparação Técnica](#preparação-técnica)
+  - [Passos para Migração Nimbus](#passos-para-migração-nimbus)
+- [📡 Arquitetura Orientada a Eventos (Evolução Opcional)](#-arquitetura-orientada-a-eventos-evolução-opcional)
+  - [Quando Considerar](#quando-considerar)
+  - [Eventos Candidatos](#eventos-candidatos)
+  - [Modelo de Implementação](#modelo-de-implementação)
+- [📚 Documentos Relacionados](#-documentos-relacionados)
 
 ---
 
@@ -287,4 +310,4 @@ flowchart LR
 
 ---
 
-> **Navegação**: [← Índice](./README.md) | [← Investimentos](./07-investimentos.md) | [Glossário →](./09-glossario.md)
+[⬆️ Voltar ao topo](#️-operação-e-suporte) | [← Voltar ao Índice](./README.md) | [Glossário →](./09-glossario.md)

@@ -2,7 +2,26 @@
 
 > 🎯 **Para BDMs e TDMs**: Esta seção apresenta o registro de riscos, matriz de severidade, planos de contingência e KPIs de monitoramento. Tempo estimado: 10 minutos.
 
-[← Voltar ao Índice](./README.md)
+**Navegação**: [← Voltar ao Índice](./README.md) | [← Gestão do Projeto](./04-gestao-projeto.md) | [Premissas e Restrições →](./06-premissas-restricoes.md)
+
+---
+
+## 📑 Índice
+
+- [📋 Visão Geral](#-visão-geral)
+- [🎯 Legenda de Severidade](#-legenda-de-severidade)
+- [📝 Registro de Riscos](#-registro-de-riscos)
+- [🎯 Matriz de Severidade](#-matriz-de-severidade)
+- [🚨 Plano de Contingência para Riscos Críticos](#-plano-de-contingência-para-riscos-críticos)
+- [📊 KPIs de Monitoramento do Projeto](#-kpis-de-monitoramento-do-projeto)
+- [📋 Riscos por Fase](#-riscos-por-fase)
+  - [Fase 0 – Alinhamento e Contenção](#fase-0--alinhamento-e-contenção)
+  - [Fase 1 – Definição de Contratos](#fase-1--definição-de-contratos)
+  - [Fase 2 – Fundação da API](#fase-2--fundação-da-api)
+  - [Fase 3 – Fluxo Piloto](#fase-3--fluxo-piloto)
+  - [Fase 4 – Migração por Fluxo](#fase-4--migração-por-fluxo)
+  - [Fase 5 – Simplificação do Legado](#fase-5--simplificação-do-legado)
+- [📚 Documentos Relacionados](#-documentos-relacionados)
 
 ---
 
@@ -165,4 +184,4 @@ Além dos critérios de sucesso, os seguintes KPIs serão monitorados continuame
 
 ---
 
-[← Voltar ao Índice](./README.md)
+[⬆️ Voltar ao topo](#️-riscos-raid-e-mitigações) | [← Voltar ao Índice](./README.md) | [Premissas e Restrições →](./06-premissas-restricoes.md)

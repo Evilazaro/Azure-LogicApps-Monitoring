@@ -1,8 +1,26 @@
-# PARTE II – Execução do Projeto
+# 📅 PARTE II – Execução do Projeto
 
 > 🎯 **Para BDMs e TDMs**: Esta parte detalha as fases de execução, cronograma e roadmap de migração. Tempo estimado: 20 minutos.
 
-[← Voltar ao Índice](./README.md)
+**Navegação**: [← Voltar ao Índice](./README.md) | [← Fundamentos Técnicos](./02-fundamentos-tecnicos.md) | [Gestão do Projeto →](./04-gestao-projeto.md)
+
+---
+
+## 📑 Índice
+
+- [📅 Fases do Projeto e Cronograma Macro](#-fases-do-projeto-e-cronograma-macro)
+- [🔄 Estratégia de modernização: Strangler Pattern](#-estratégia-de-modernização-strangler-pattern)
+- [⚖️ Operação híbrida e ciclo de estados](#️-operação-híbrida-e-ciclo-de-estados)
+- [🗺️ Visão executiva do roadmap](#️-visão-executiva-do-roadmap)
+- [📆 Cronograma macro (referência por semanas)](#-cronograma-macro-referência-por-semanas)
+- [0️⃣ Fase 0 – Alinhamento e contenção de riscos](#0️⃣-fase-0--alinhamento-e-contenção-de-riscos-12-semanas)
+- [1️⃣ Fase 1 – Definição dos contratos de integração](#1️⃣-fase-1--definição-dos-contratos-de-integração-12-semanas)
+- [2️⃣ Fase 2 – Fundação da API](#2️⃣-fase-2--fundação-da-api-23-semanas)
+- [3️⃣ Fase 3 – Fluxo Piloto](#3️⃣-fase-3--fluxo-piloto-24-semanas)
+- [4️⃣ Fase 4 – Migração por fluxo / Operação híbrida](#4️⃣-fase-4--migração-por-fluxo--operação-híbrida-13-meses)
+- [5️⃣ Fase 5 – Simplificação do legado](#5️⃣-fase-5--simplificação-do-legado-12-meses)
+- [6️⃣ Fase 6 – Evolução opcional](#6️⃣-fase-6--evolução-opcional-contínuo)
+- [📚 Documentos Relacionados](#-documentos-relacionados)
 
 ---
 
@@ -377,4 +395,4 @@ O módulo **não deve** mais conter:
 
 ---
 
-[← Voltar ao Índice](./README.md)
+[⬆️ Voltar ao topo](#-parte-ii--execução-do-projeto) | [← Voltar ao Índice](./README.md) | [Gestão do Projeto →](./04-gestao-projeto.md)

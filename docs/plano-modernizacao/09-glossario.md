@@ -1,22 +1,23 @@
-# Glossário
+# 📖 Glossário
 
-> **Navegação**: [← Índice](./README.md) | [← Operação e Suporte](./08-operacao-suporte.md)
+> 🎯 **Para Todos**: Este glossário define os termos técnicos e siglas utilizados na documentação do projeto para garantir entendimento comum entre todos os stakeholders. Tempo estimado: 5 minutos.
 
-Este glossário define os termos técnicos e siglas utilizados na documentação do projeto para garantir entendimento comum entre todos os stakeholders.
-
----
-
-## Sumário
-
-- [Termos de Negócio](#termos-de-negócio)
-- [Termos Técnicos](#termos-técnicos)
-- [Termos de Arquitetura](#termos-de-arquitetura)
-- [Termos de Projeto](#termos-de-projeto)
-- [Termos de Observabilidade](#termos-de-observabilidade)
+**Navegação**: [← Voltar ao Índice](./README.md) | [← Operação e Suporte](./08-operacao-suporte.md)
 
 ---
 
-## Termos de Negócio
+## 📑 Índice
+
+- [🏬 Termos de Negócio](#-termos-de-negócio)
+- [💻 Termos Técnicos](#-termos-técnicos)
+- [🏗️ Termos de Arquitetura](#️-termos-de-arquitetura)
+- [📊 Termos de Projeto](#-termos-de-projeto)
+- [📈 Termos de Observabilidade](#-termos-de-observabilidade)
+- [📚 Documentos Relacionados](#-documentos-relacionados)
+
+---
+
+## 🏬 Termos de Negócio
 
 | Termo           | Definição                                                                            |
 | --------------- | ------------------------------------------------------------------------------------ |
@@ -31,7 +32,7 @@ Este glossário define os termos técnicos e siglas utilizados na documentação
 
 ---
 
-## Termos Técnicos
+## 💻 Termos Técnicos
 
 | Termo              | Definição                                                                     |
 | ------------------ | ----------------------------------------------------------------------------- |
@@ -48,7 +49,7 @@ Este glossário define os termos técnicos e siglas utilizados na documentação
 
 ---
 
-## Termos de Arquitetura
+## 🏗️ Termos de Arquitetura
 
 | Termo                  | Definição                                                             |
 | ---------------------- | --------------------------------------------------------------------- |
@@ -62,7 +63,7 @@ Este glossário define os termos técnicos e siglas utilizados na documentação
 
 ---
 
-## Termos de Projeto
+## 📊 Termos de Projeto
 
 | Termo      | Definição                                                                   |
 | ---------- | --------------------------------------------------------------------------- |
@@ -77,7 +78,7 @@ Este glossário define os termos técnicos e siglas utilizados na documentação
 
 ---
 
-## Termos de Observabilidade
+## 📈 Termos de Observabilidade
 
 | Termo                 | Definição                                                                                 |
 | --------------------- | ----------------------------------------------------------------------------------------- |
@@ -105,4 +106,4 @@ Este glossário define os termos técnicos e siglas utilizados na documentação
 
 ---
 
-> **Navegação**: [← Índice](./README.md) | [← Operação e Suporte](./08-operacao-suporte.md)
+[⬆️ Voltar ao topo](#-glossário) | [← Voltar ao Índice](./README.md) | [← Operação e Suporte](./08-operacao-suporte.md)

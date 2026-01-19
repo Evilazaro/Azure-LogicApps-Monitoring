@@ -1,25 +1,30 @@
-# Investimentos do Projeto
+# 💰 Investimentos do Projeto
 
-> **Navegação**: [← Índice](./README.md) | [← Premissas e Restrições](./06-premissas-restricoes.md) | [Operação e Suporte →](./08-operacao-suporte.md)
+> 🎯 **Para BDMs**: Esta seção apresenta o detalhamento das estimativas de horas, custos e cronograma de pagamento. Tempo estimado: 15 minutos.
 
-## Sumário
+**Navegação**: [← Voltar ao Índice](./README.md) | [← Premissas e Restrições](./06-premissas-restricoes.md) | [Operação e Suporte →](./08-operacao-suporte.md)
 
-- [Detalhamento da Estimativa de Horas](#📊-detalhamento-da-estimativa-de-horas)
-  - [Metodologia de Estimativa](#🎯-metodologia-de-estimativa)
-  - [Fase 0 – Alinhamento e Contenção de Riscos](#📋-fase-0--alinhamento-e-contenção-de-riscos-2-semanas)
-  - [Fase 1 – Definição dos Contratos](#📝-fase-1--definição-dos-contratos-de-integração-2-semanas)
-  - [Fase 2 – Fundação da API](#🏗️-fase-2--fundação-da-api-3-semanas)
-  - [Fase 3 – Fluxo Piloto](#🚀-fase-3--fluxo-piloto-4-semanas)
-  - [Fase 4 – Migração por Fluxo](#🔄-fase-4--migração-por-fluxo-12-semanas)
-  - [Fase 5 – Simplificação do Legado](#🧹-fase-5--simplificação-do-legado-5-semanas)
-  - [Consolidação de Horas](#📊-consolidação-da-estimativa-de-horas)
-- [Estimativa de Investimentos](#💰-estimativa-de-investimentos-do-projeto)
-  - [Composição do Time](#👥-composição-do-time-néctar)
-  - [Cálculo por Recurso](#📊-cálculo-do-custo-por-recurso)
-  - [Resumo Financeiro](#💵-resumo-financeiro)
-  - [Distribuição por Fase](#📈-distribuição-de-investimentos-por-fase)
-  - [Cronograma de Pagamento](#💳-cronograma-de-pagamento)
-- [Premissas e Riscos da Estimativa](#🔍-premissas-da-estimativa)
+---
+
+## 📑 Índice
+
+- [📊 Detalhamento da Estimativa de Horas](#-detalhamento-da-estimativa-de-horas)
+  - [🎯 Metodologia de Estimativa](#-metodologia-de-estimativa)
+  - [📋 Fase 0 – Alinhamento e Contenção de Riscos (2 semanas)](#-fase-0--alinhamento-e-contenção-de-riscos-2-semanas)
+  - [📝 Fase 1 – Definição dos Contratos de Integração (2 semanas)](#-fase-1--definição-dos-contratos-de-integração-2-semanas)
+  - [🏗️ Fase 2 – Fundação da API (3 semanas)](#️-fase-2--fundação-da-api-3-semanas)
+  - [🚀 Fase 3 – Fluxo Piloto (4 semanas)](#-fase-3--fluxo-piloto-4-semanas)
+  - [🔄 Fase 4 – Migração por Fluxo (12 semanas)](#-fase-4--migração-por-fluxo-12-semanas)
+  - [🧹 Fase 5 – Simplificação do Legado (5 semanas)](#-fase-5--simplificação-do-legado-5-semanas)
+  - [📊 Consolidação da Estimativa de Horas](#-consolidação-da-estimativa-de-horas)
+- [🔍 Premissas da Estimativa](#-premissas-da-estimativa)
+- [💰 Estimativa de Investimentos do Projeto](#-estimativa-de-investimentos-do-projeto)
+  - [👥 Composição do Time Néctar](#-composição-do-time-néctar)
+  - [📊 Cálculo do Custo por Recurso](#-cálculo-do-custo-por-recurso)
+  - [💵 Resumo Financeiro](#-resumo-financeiro)
+  - [📈 Distribuição de Investimentos por Fase](#-distribuição-de-investimentos-por-fase)
+  - [💳 Cronograma de Pagamento](#-cronograma-de-pagamento)
+- [📚 Documentos Relacionados](#-documentos-relacionados)
 
 ---
 
@@ -484,4 +489,4 @@ pie showData
 
 ---
 
-> **Navegação**: [← Índice](./README.md) | [← Premissas e Restrições](./06-premissas-restricoes.md) | [Operação e Suporte →](./08-operacao-suporte.md)
+[⬆️ Voltar ao topo](#-investimentos-do-projeto) | [← Voltar ao Índice](./README.md) | [Operação e Suporte →](./08-operacao-suporte.md)
