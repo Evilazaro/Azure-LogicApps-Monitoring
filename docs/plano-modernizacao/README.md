@@ -2,35 +2,6 @@
 
 > 📅 **Data de referência:** 13 de janeiro de 2026
 
-## 📋 Controle do Documento
-
-| Campo                 | Valor             |
-| --------------------- | ----------------- |
-| **Código do Projeto** | COOP-2026-MOD-INT |
-| **Versão**            | 1.0               |
-| **Status**            | Em elaboração     |
-| **Autor**             | Néctar            |
-| **Cliente**           | Cooperflora       |
-| **Classificação**     | Confidencial      |
-
-### 📜 Histórico de Revisões
-
-| Versão | Data       | Autor  | Descrição da Alteração                                                 |
-| :----: | ---------- | ------ | ---------------------------------------------------------------------- |
-|  0.1   | 06/01/2026 | Néctar | Versão inicial – estrutura e escopo                                    |
-|  0.2   | 10/01/2026 | Néctar | Adição de arquitetura, cronograma e riscos                             |
-|  0.3   | 12/01/2026 | Néctar | Detalhamento de estimativa de horas (WBS) e custos                     |
-|  1.0   | 13/01/2026 | Néctar | Versão consolidada para aprovação – ajustes de organização e navegação |
-
-### ✍️ Aprovações
-
-| Papel                    | Nome | Organização | Data | Assinatura |
-| ------------------------ | ---- | ----------- | ---- | ---------- |
-| **Sponsor Executivo**    |      | Cooperflora |      |            |
-| **Product Owner**        |      | Cooperflora |      |            |
-| **Gerente de Projeto**   |      | Néctar      |      |            |
-| **Arquiteto de Solução** |      | Néctar      |      |            |
-
 ---
 
 ## 📑 Estrutura da Documentação
@@ -84,6 +55,26 @@ Este projeto visa modernizar o **Módulo Integrador/Interface (Access + VBA)** u
 | **Investimento Total** | R$ 240.000,00         |
 | **Fases**              | 6 (Fase 0 a Fase 5)   |
 | **Fluxos a Migrar**    | 6 domínios de negócio |
+
+### 📊 Visão Geral do Cronograma
+
+```mermaid
+gantt
+    title Cronograma Macro do Projeto
+    dateFormat  YYYY-MM-DD
+
+    section Fundação
+    Fase 0 - Alinhamento     :f0, 2026-02-03, 2w
+    Fase 1 - Contratos       :f1, after f0, 2w
+    Fase 2 - Fundação API    :f2, after f1, 3w
+    
+    section Execução
+    Fase 3 - Piloto          :f3, after f2, 4w
+    Fase 4 - Migração        :f4, after f3, 12w
+    Fase 5 - Simplificação   :f5, after f4, 5w
+```
+
+---
 
 ### Benefícios Esperados
 
