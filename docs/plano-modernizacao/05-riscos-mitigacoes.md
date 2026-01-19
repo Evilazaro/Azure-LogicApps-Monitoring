@@ -1,8 +1,26 @@
+---
+title: Riscos e Mitigações
+description: Registro RAID, matriz de severidade, planos de contingência e KPIs de monitoramento
+author: Néctar Sistemas
+date: 2026-01-13
+version: 1.0
+tags: [riscos, raid, mitigações, contingência, kpis]
+---
+
 # ⚠️ Riscos (RAID) e Mitigações
 
-> 🎯 **Para BDMs e TDMs**: Esta seção apresenta o registro de riscos, matriz de severidade, planos de contingência e KPIs de monitoramento. Tempo estimado: 10 minutos.
+> [!NOTE]
+> 🎯 **Para BDMs e TDMs**: Esta seção apresenta o registro de riscos, matriz de severidade, planos de contingência e KPIs de monitoramento.  
+> ⏱️ **Tempo estimado de leitura:** 10 minutos
 
-**Navegação**: [← Voltar ao Índice](./README.md) | [← Gestão do Projeto](./04-gestao-projeto.md) | [Premissas e Restrições →](./06-premissas-restricoes.md)
+<details>
+<summary>📍 <strong>Navegação Rápida</strong></summary>
+
+| Anterior | Índice | Próximo |
+|:---------|:------:|--------:|
+| [← Gestão do Projeto](./04-gestao-projeto.md) | [📑 Índice](./README.md) | [Premissas e Restrições →](./06-premissas-restricoes.md) |
+
+</details>
 
 ---
 
@@ -59,6 +77,7 @@ A matriz de riscos segue a escala: **Probabilidade** (Baixa/Média/Alta) × **Im
 | R09 | Performance da API inferior ao legado em cenários específicos |     Baixa     |  Alto   |  🟡 **Médio**  | Testes de carga; otimização; cache quando aplicável; métricas de baseline            | Arquiteto          | Aberto |
 | R10 | Mudanças no ERP Néctar durante o projeto                      |     Baixa     | Crítico |  🟠 **Alto**   | Comunicação prévia obrigatória; versionamento de contratos; testes de regressão      | Arquiteto          | Aberto |
 
+> [!WARNING]
 > **📊 Distribuição de Severidade (R01–R10)**: 🔴 1 Crítico (10%) | 🟠 5 Altos (50%) | 🟡 3 Médios (30%) | 🟢 1 Baixo (10%)
 
 ---
@@ -109,6 +128,7 @@ block-beta
   style PB_C fill:#FED7AA,stroke:#F97316,color:#000000
 ```
 
+> [!TIP]
 > **📋 Resumo Visual de Severidade**
 >
 > | Severidade  | Emoji |    Cor    | Probabilidade × Impacto                       | Ação Requerida                                           |
@@ -206,4 +226,8 @@ Além dos critérios de sucesso, os seguintes KPIs serão monitorados continuame
 
 ---
 
-[⬆️ Voltar ao topo](#️-riscos-raid-e-mitigações) | [← Voltar ao Índice](./README.md) | [Premissas e Restrições →](./06-premissas-restricoes.md)
+<div align="center">
+
+[⬆️ Voltar ao topo](#️-riscos-raid-e-mitigações) | [📑 Índice](./README.md) | [Premissas e Restrições →](./06-premissas-restricoes.md)
+
+</div>

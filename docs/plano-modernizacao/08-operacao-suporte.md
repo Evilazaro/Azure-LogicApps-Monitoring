@@ -1,8 +1,26 @@
+---
+title: Operação e Suporte
+description: Modelo de operação híbrida, runbooks, CI/CD, treinamento e evolução futura
+author: Néctar Sistemas
+date: 2026-01-13
+version: 1.0
+tags: [operação, suporte, ci-cd, runbooks, treinamento]
+---
+
 # 🛠️ Operação e Suporte
 
-> 🎯 **Para TDMs**: Esta seção apresenta o modelo de operação híbrida, runbooks, treinamento e planos de evolução futura. Tempo estimado: 10 minutos.
+> [!NOTE]
+> 🎯 **Para TDMs**: Esta seção apresenta o modelo de operação híbrida, runbooks, treinamento e planos de evolução futura.  
+> ⏱️ **Tempo estimado de leitura:** 10 minutos
 
-**Navegação**: [← Voltar ao Índice](./README.md) | [← Investimentos](./07-investimentos.md) | [Glossário →](./09-glossario.md)
+<details>
+<summary>📍 <strong>Navegação Rápida</strong></summary>
+
+| Anterior | Índice | Próximo |
+|:---------|:------:|--------:|
+| [← Investimentos](./07-investimentos.md) | [📑 Índice](./README.md) | [Glossário →](./09-glossario.md) |
+
+</details>
 
 ---
 
@@ -386,4 +404,8 @@ flowchart LR
 
 ---
 
-[⬆️ Voltar ao topo](#️-operação-e-suporte) | [← Voltar ao Índice](./README.md) | [Glossário →](./09-glossario.md)
+<div align="center">
+
+[⬆️ Voltar ao topo](#️-operação-e-suporte) | [📑 Índice](./README.md) | [Glossário →](./09-glossario.md)
+
+</div>

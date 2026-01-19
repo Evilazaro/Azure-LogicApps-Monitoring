@@ -1,8 +1,26 @@
+---
+title: Gestão do Projeto
+description: Governança, stakeholders, matriz RACI, gestão de mudanças e comunicação do projeto
+author: Néctar Sistemas
+date: 2026-01-13
+version: 1.0
+tags: [governança, raci, stakeholders, mudanças, comunicação]
+---
+
 # 📊 Gestão do Projeto (Governança, Stakeholders e Controle)
 
-> 🎯 **Para BDMs e TDMs**: Esta seção define a estrutura de governança, papéis, comunicação e controle do projeto. Tempo estimado: 15 minutos.
+> [!NOTE]
+> 🎯 **Para BDMs e TDMs**: Esta seção define a estrutura de governança, papéis, comunicação e controle do projeto.  
+> ⏱️ **Tempo estimado de leitura:** 15 minutos
 
-**Navegação**: [← Voltar ao Índice](./README.md) | [← Execução do Projeto](./03-execucao-projeto.md) | [Riscos e Mitigações →](./05-riscos-mitigacoes.md)
+<details>
+<summary>📍 <strong>Navegação Rápida</strong></summary>
+
+| Anterior | Índice | Próximo |
+|:---------|:------:|--------:|
+| [← Execução do Projeto](./03-execucao-projeto.md) | [📑 Índice](./README.md) | [Riscos e Mitigações →](./05-riscos-mitigacoes.md) |
+
+</details>
 
 ---
 
@@ -243,4 +261,8 @@ Os critérios abaixo definem como o sucesso do projeto será medido:
 
 ---
 
-[⬆️ Voltar ao topo](#-gestão-do-projeto-governança-stakeholders-e-controle) | [← Voltar ao Índice](./README.md) | [Riscos e Mitigações →](./05-riscos-mitigacoes.md)
+<div align="center">
+
+[⬆️ Voltar ao topo](#-gestão-do-projeto-governança-stakeholders-e-controle) | [📑 Índice](./README.md) | [Riscos e Mitigações →](./05-riscos-mitigacoes.md)
+
+</div>

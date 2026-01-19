@@ -1,8 +1,26 @@
+---
+title: Glossário
+description: Definições de termos técnicos, siglas e conceitos utilizados na documentação do projeto
+author: Néctar Sistemas
+date: 2026-01-13
+version: 1.0
+tags: [glossário, termos, definições, siglas]
+---
+
 # 📖 Glossário
 
-> 🎯 **Para Todos**: Este glossário define os termos técnicos e siglas utilizados na documentação do projeto para garantir entendimento comum entre todos os stakeholders. Tempo estimado: 5 minutos.
+> [!NOTE]
+> 🎯 **Para Todos**: Este glossário define os termos técnicos e siglas utilizados na documentação do projeto para garantir entendimento comum entre todos os stakeholders.  
+> ⏱️ **Tempo estimado de leitura:** 5 minutos
 
-**Navegação**: [← Voltar ao Índice](./README.md) | [← Operação e Suporte](./08-operacao-suporte.md)
+<details>
+<summary>📍 <strong>Navegação Rápida</strong></summary>
+
+| Anterior | Índice | Próximo |
+|:---------|:------:|--------:|
+| [← Operação e Suporte](./08-operacao-suporte.md) | [📑 Índice](./README.md) | — |
+
+</details>
 
 ---
 
@@ -106,4 +124,8 @@
 
 ---
 
-[⬆️ Voltar ao topo](#-glossário) | [← Voltar ao Índice](./README.md) | [← Operação e Suporte](./08-operacao-suporte.md)
+<div align="center">
+
+[⬆️ Voltar ao topo](#-glossário) | [📑 Índice](./README.md) | [← Operação e Suporte](./08-operacao-suporte.md)
+
+</div>

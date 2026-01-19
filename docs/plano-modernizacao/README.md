@@ -1,6 +1,17 @@
+---
+title: Plano de Projeto – Modernização do Módulo Integrador
+description: Documentação completa do projeto de modernização do Módulo Integrador do Sistema Néctar (Cooperflora)
+author: Néctar Sistemas
+date: 2026-01-13
+version: 1.0
+tags: [modernização, integração, api, cooperflora, néctar]
+---
+
 # 📄 Plano de Projeto – Modernização do Módulo Integrador do Sistema Néctar (Cooperflora)
 
-> 📅 **Data de referência:** 13 de janeiro de 2026
+> [!NOTE]
+> 📅 **Data de referência:** 13 de janeiro de 2026  
+> 📝 **Versão:** 1.0 | **Status:** Aprovado
 
 ---
 
@@ -109,9 +120,11 @@ gantt
 
 ---
 
+<div align="center">
+
 [⬆️ Voltar ao topo](#-plano-de-projeto--modernização-do-módulo-integrador-do-sistema-néctar-cooperflora)
 
----
+</div>
 
 **📄 Documentação Completa**
 

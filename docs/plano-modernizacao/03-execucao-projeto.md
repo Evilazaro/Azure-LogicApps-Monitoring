@@ -1,8 +1,26 @@
+---
+title: Execução do Projeto
+description: Fases de execução, Strangler Pattern, operação híbrida e roadmap do projeto de modernização
+author: Néctar Sistemas
+date: 2026-01-13
+version: 1.0
+tags: [execução, fases, roadmap, strangler-pattern, migração]
+---
+
 # 📅 PARTE II – Execução do Projeto
 
-> 🎯 **Para BDMs e TDMs**: Esta parte detalha as fases de execução, cronograma e roadmap de migração. Tempo estimado: 20 minutos.
+> [!NOTE]
+> 🎯 **Para BDMs e TDMs**: Esta parte detalha as fases de execução, cronograma e roadmap de migração.  
+> ⏱️ **Tempo estimado de leitura:** 20 minutos
 
-**Navegação**: [← Voltar ao Índice](./README.md) | [← Fundamentos Técnicos](./02-fundamentos-tecnicos.md) | [Gestão do Projeto →](./04-gestao-projeto.md)
+<details>
+<summary>📍 <strong>Navegação Rápida</strong></summary>
+
+| Anterior | Índice | Próximo |
+|:---------|:------:|--------:|
+| [← Fundamentos Técnicos](./02-fundamentos-tecnicos.md) | [📑 Índice](./README.md) | [Gestão do Projeto →](./04-gestao-projeto.md) |
+
+</details>
 
 ---
 
@@ -433,4 +451,8 @@ O módulo **não deve** mais conter:
 
 ---
 
-[⬆️ Voltar ao topo](#-parte-ii--execução-do-projeto) | [← Voltar ao Índice](./README.md) | [Gestão do Projeto →](./04-gestao-projeto.md)
+<div align="center">
+
+[⬆️ Voltar ao topo](#-parte-ii--execução-do-projeto) | [📑 Índice](./README.md) | [Gestão do Projeto →](./04-gestao-projeto.md)
+
+</div>

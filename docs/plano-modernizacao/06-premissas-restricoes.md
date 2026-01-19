@@ -1,8 +1,26 @@
+---
+title: Premissas e Restrições
+description: Premissas assumidas por fase e restrições conhecidas do projeto de modernização
+author: Néctar Sistemas
+date: 2026-01-13
+version: 1.0
+tags: [premissas, restrições, planejamento, riscos]
+---
+
 # 📋 Premissas e Restrições do Projeto
 
-> 🎯 **Para BDMs e TDMs**: Esta seção documenta todas as premissas assumidas e restrições conhecidas do projeto. Tempo estimado: 15 minutos.
+> [!NOTE]
+> 🎯 **Para BDMs e TDMs**: Esta seção documenta todas as premissas assumidas e restrições conhecidas do projeto.  
+> ⏱️ **Tempo estimado de leitura:** 15 minutos
 
-**Navegação**: [← Voltar ao Índice](./README.md) | [← Riscos e Mitigações](./05-riscos-mitigacoes.md) | [Investimentos →](./07-investimentos.md)
+<details>
+<summary>📍 <strong>Navegação Rápida</strong></summary>
+
+| Anterior | Índice | Próximo |
+|:---------|:------:|--------:|
+| [← Riscos e Mitigações](./05-riscos-mitigacoes.md) | [📑 Índice](./README.md) | [Investimentos →](./07-investimentos.md) |
+
+</details>
 
 ---
 
@@ -27,6 +45,10 @@
 ## ✅ Premissas
 
 As premissas são condições assumidas como verdadeiras para fins de planejamento. Se alguma premissa se mostrar falsa, deve ser tratada como **risco materializado** e seguir o processo de gestão de riscos. As premissas estão organizadas por **fase do ciclo de vida** do projeto e **responsável**, com destaque para impactos financeiros quando aplicável.
+
+> [!IMPORTANT]
+> **Monitoramento de Premissas**: Cada premissa deve ser revisada nas reuniões de status semanais.
+> Premissas com severidade 🔴 **Crítico** devem ter plano de contingência documentado.
 
 ### 🎯 Legenda de Severidade
 
@@ -177,4 +199,8 @@ As restrições são limitações conhecidas que moldam as decisões do projeto.
 
 ---
 
-[⬆️ Voltar ao topo](#-premissas-e-restrições-do-projeto) | [← Voltar ao Índice](./README.md) | [Investimentos →](./07-investimentos.md)
+<div align="center">
+
+[⬆️ Voltar ao topo](#-premissas-e-restrições-do-projeto) | [📑 Índice](./README.md) | [Investimentos →](./07-investimentos.md)
+
+</div>

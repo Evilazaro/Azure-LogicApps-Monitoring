@@ -1,8 +1,26 @@
+---
+title: Visão Executiva
+description: Introdução, escopo, governança, riscos e critérios de sucesso do projeto de modernização
+author: Néctar Sistemas
+date: 2026-01-13
+version: 1.0
+tags: [visão-executiva, escopo, governança, riscos, bdm]
+---
+
 # 📋 PARTE I – Visão Executiva
 
-> 🎯 **Para BDMs**: Esta parte contém tudo o que você precisa para entender o projeto, aprovar escopo e acompanhar a execução. Tempo estimado: 15 minutos.
+> [!NOTE]
+> 🎯 **Para BDMs**: Esta parte contém tudo o que você precisa para entender o projeto, aprovar escopo e acompanhar a execução.  
+> ⏱️ **Tempo estimado de leitura:** 15 minutos
 
-**Navegação**: [← Voltar ao Índice](./README.md) | [Fundamentos Técnicos →](./02-fundamentos-tecnicos.md)
+<details>
+<summary>📍 <strong>Navegação Rápida</strong></summary>
+
+| Anterior | Índice | Próximo |
+|:---------|:------:|--------:|
+| — | [📑 Índice](./README.md) | [Fundamentos Técnicos →](./02-fundamentos-tecnicos.md) |
+
+</details>
 
 ---
 
@@ -58,6 +76,7 @@ O cenário futuro **não prevê banco compartilhado** nem acesso direto entre am
 | Baixa visibilidade operacional (observabilidade e rastreabilidade)      | Falhas percebidas tardiamente; rastreio depende de logs esparsos e investigação manual; sem correlação de transações.            | Aumenta MTTR e impacto de incidentes, reduz transparência para gestão e suporte, dificulta governança e tomada de decisão baseada em dados.                                                      | Implementar observabilidade (logs estruturados, métricas, auditoria e correlação por transação), com dashboards/alertas por fluxo para operação e governança.                                       |
 | Modelo limita evolução para ambientes segregados/nuvem                  | Arquitetura depende de proximidade física e acesso ao SQL Server; isolamento de rede ou nuvem pode quebrar a integração.         | Bloqueia iniciativas de modernização/segregação, aumenta risco de ruptura em mudanças de infraestrutura e reduz flexibilidade para novas integrações e expansão.                                 | Preparar a integração para operar com segurança em cenários segregados/nuvem, preservando continuidade do negócio e abrindo caminho para evoluções futuras (incl. mensageria quando fizer sentido). |
 
+> [!TIP]
 > 📘 **Para detalhes técnicos da arquitetura atual e alvo**, consulte o documento [02 - Fundamentos Técnicos](./02-fundamentos-tecnicos.md).
 
 ---
@@ -79,6 +98,7 @@ Esta seção define os **entregáveis e limites** do projeto de modernização d
 | **Segurança da API**                     | Autenticação/autorização, rate limiting e hardening de endpoints                                      | Reduz risco de exposição e habilita cenários segregados                 |
 | **Preparação event-driven (opcional)**   | Modelagem de eventos e guideline para evolução assíncrona                                             | Evita "becos sem saída" arquiteturais                                   |
 
+> [!TIP]
 > 📘 **Para detalhes completos de cada item de escopo**, consulte o documento [02 - Fundamentos Técnicos](./02-fundamentos-tecnicos.md).
 
 ### 🎯 Escopo por Domínio de Negócio
@@ -126,7 +146,8 @@ Esta seção define os **entregáveis e limites** do projeto de modernização d
 | Aprovação de go-live por fluxo |    A    |      R       |  A  |     C     |
 | Gestão de mudanças             |    A    |      R       |  C  |     C     |
 
-> **Legenda**: R = Responsável | A = Aprovador | C = Consultado | I = Informado
+> [!NOTE]
+> **Legenda RACI**: R = Responsável | A = Aprovador | C = Consultado | I = Informado
 
 ### 🏛️ Fóruns de Decisão
 
@@ -136,6 +157,7 @@ Esta seção define os **entregáveis e limites** do projeto de modernização d
 | **Comitê de Projeto** | Ger. Projeto, PO, Arquiteto | Semanal    | Progresso, riscos, priorização                  |
 | **Daily Standup**     | Dev Team                    | Diária     | Sincronização, bloqueios                        |
 
+> [!TIP]
 > 📘 **Para detalhes completos de governança**, consulte o documento [04 - Gestão do Projeto](./04-gestao-projeto.md).
 
 ---
@@ -152,6 +174,7 @@ Esta seção define os **entregáveis e limites** do projeto de modernização d
 | Scope creep e priorização instável                      | Média |  Alto   |  🟠 **Alto**   | Baseline de escopo; processo de change control        |
 | Comportamento do legado diverge do esperado             | Média |  Alto   |  🟠 **Alto**   | Testes E2E extensivos; rollback preparado             |
 
+> [!TIP]
 > 📘 **Para registro completo de riscos**, consulte o documento [05 - Riscos e Mitigações](./05-riscos-mitigacoes.md).
 
 ### 🏆 Critérios de Sucesso
@@ -177,4 +200,8 @@ Esta seção define os **entregáveis e limites** do projeto de modernização d
 
 ---
 
-[⬆️ Voltar ao topo](#-parte-i--visão-executiva) | [← Voltar ao Índice](./README.md) | [Fundamentos Técnicos →](./02-fundamentos-tecnicos.md)
+<div align="center">
+
+[⬆️ Voltar ao topo](#-parte-i--visão-executiva) | [📑 Índice](./README.md) | [Fundamentos Técnicos →](./02-fundamentos-tecnicos.md)
+
+</div>
