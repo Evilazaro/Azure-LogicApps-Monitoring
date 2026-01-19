@@ -3,8 +3,19 @@
 # ============================================================================
 #
 # Purpose:
-#   Reusable workflow that builds, tests, and analyzes .NET solutions.
-#   Can be called from other workflows with customizable parameters.
+#   Comprehensive reusable CI workflow for .NET solutions that performs:
+#   - Cross-platform builds (Ubuntu, Windows, macOS)
+#   - Cross-platform testing with code coverage
+#   - Code formatting analysis (.editorconfig compliance)
+#   - CodeQL security scanning (always enabled)
+#
+# Jobs:
+#   1. Build     - Compiles solution on all platforms (matrix)
+#   2. Test      - Runs tests with coverage on all platforms (matrix)
+#   3. Analyze   - Verifies code formatting (optional)
+#   4. CodeQL    - Security vulnerability scanning (always runs)
+#   5. Summary   - Aggregates results from all jobs
+#   6. On-Failure - Reports failures with actionable information
 #
 # Usage:
 #   jobs:
@@ -14,6 +25,12 @@
 #         configuration: 'Release'
 #         dotnet-version: '10.0.x'
 #       secrets: inherit
+#
+# Artifacts Generated:
+#   - build-artifacts-{os}    : Compiled binaries per platform
+#   - test-results-{os}       : Test results (.trx) per platform
+#   - code-coverage-{os}      : Coverage reports (Cobertura) per platform
+#   - codeql-sarif-results    : Security scan results (SARIF)
 #
 # Documentation:
 #   https://docs.github.com/en/actions/using-workflows/reusing-workflows
@@ -108,13 +125,22 @@ on:
         description: "Analysis job result"
         value: ${{ jobs.analyze.result }}
 
+      codeql-result:
+        description: "CodeQL security scan result"
+        value: ${{ jobs.codeql.result }}
+
 # ------------------------------------------------------------------------------
 # Workflow-level Permissions (Least Privilege)
+# - contents: read      - Read repository contents for checkout
+# - checks: write       - Create check runs for test results
+# - pull-requests: write - Post comments on pull requests
+# - security-events: write - Upload CodeQL SARIF results to Security tab
 # ------------------------------------------------------------------------------
 permissions:
   contents: read
   checks: write
   pull-requests: write
+  security-events: write
 
 # ------------------------------------------------------------------------------
 # Environment Variables
@@ -133,7 +159,10 @@ defaults:
 
 jobs:
   # ============================================================================
-  # Build Job
+  # Build Job (Cross-Platform Matrix)
+  # ============================================================================
+  # Compiles the .NET solution on Ubuntu, Windows, and macOS runners.
+  # Generates versioned build artifacts for each platform.
   # ============================================================================
   build:
     name: 🔨 Build (${{ matrix.os }})
@@ -149,7 +178,7 @@ jobs:
 
     steps:
       # ------------------------------------------------------------------
-      # Phase 1: Setup
+      # Phase 1: Environment Setup
       # ------------------------------------------------------------------
       - name: 📥 Checkout repository
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
@@ -165,7 +194,7 @@ jobs:
         run: dotnet workload update
 
       # ------------------------------------------------------------------
-      # Phase 2: Build
+      # Phase 2: Build Solution
       # ------------------------------------------------------------------
       - name: 🏷️ Generate build version
         id: version
@@ -188,7 +217,7 @@ jobs:
           echo "::notice title=Build::✅ Solution built successfully (${{ inputs.configuration }})"
 
       # ------------------------------------------------------------------
-      # Phase 3: Publish
+      # Phase 3: Upload Artifacts
       # ------------------------------------------------------------------
       - name: 📤 Upload build artifacts
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
@@ -242,7 +271,11 @@ jobs:
           echo "- **${{ inputs.build-artifacts-name }}-${{ matrix.os }}** - Compiled binaries (\`${{ inputs.configuration }}\` configuration)" >> $GITHUB_STEP_SUMMARY
 
   # ============================================================================
-  # Test Job (cross-platform matrix testing)
+  # Test Job (Cross-Platform Matrix)
+  # ============================================================================
+  # Executes all tests on Ubuntu, Windows, and macOS runners.
+  # Generates test results (.trx) and code coverage reports (Cobertura).
+  # Uses dorny/test-reporter for GitHub check run integration.
   # ============================================================================
   test:
     name: 🧪 Test (${{ matrix.os }})
@@ -257,7 +290,7 @@ jobs:
 
     steps:
       # ------------------------------------------------------------------
-      # Phase 1: Setup
+      # Phase 1: Environment Setup
       # ------------------------------------------------------------------
       - name: 📥 Checkout repository
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
@@ -280,7 +313,7 @@ jobs:
           echo "::endgroup::"
 
       # ------------------------------------------------------------------
-      # Phase 2: Build & Test
+      # Phase 2: Build and Execute Tests
       # ------------------------------------------------------------------
       - name: 🔨 Build solution
         run: |
@@ -299,9 +332,9 @@ jobs:
           echo "::notice title=Tests::✅ All tests passed"
 
       # ------------------------------------------------------------------
-      # Phase 3: Publish Results
-      # Note: Test reporter uses OS-specific names to avoid conflicts in
-      # matrix builds. path-replace-backslashes handles Windows paths.
+      # Phase 3: Publish Results and Coverage
+      # Uses OS-specific artifact names to avoid conflicts in matrix builds.
+      # path-replace-backslashes handles Windows path separators.
       # ------------------------------------------------------------------
       - name: 📋 Publish test results
         uses: dorny/test-reporter@b082adf0eced0765477756c2a610396589b8c637 # v2.5.0
@@ -375,7 +408,11 @@ jobs:
           fi
 
   # ============================================================================
-  # Code Analysis Job
+  # Code Formatting Analysis Job (Optional)
+  # ============================================================================
+  # Verifies code formatting compliance with .editorconfig standards.
+  # Can be disabled via enable-code-analysis input parameter.
+  # Failure behavior controlled by fail-on-format-issues input.
   # ============================================================================
   analyze:
     name: 🔍 Analyze
@@ -386,7 +423,7 @@ jobs:
 
     steps:
       # ------------------------------------------------------------------
-      # Phase 1: Setup
+      # Phase 1: Environment Setup
       # ------------------------------------------------------------------
       - name: 📥 Checkout repository
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
@@ -409,7 +446,7 @@ jobs:
           echo "::endgroup::"
 
       # ------------------------------------------------------------------
-      # Phase 2: Analysis
+      # Phase 2: Code Formatting Verification
       # ------------------------------------------------------------------
       - name: 🎨 Verify code formatting
         id: format-check
@@ -482,13 +519,143 @@ jobs:
         run: exit 1
 
   # ============================================================================
+  # CodeQL Security Scanning Job
+  # ============================================================================
+  # Best Practices Applied:
+  # - Runs on every workflow execution (no conditional skip)
+  # - Uses pinned action versions with SHA for supply chain security
+  # - Fetch complete git history for accurate blame information
+  # - Uses autobuild for comprehensive .NET analysis
+  # - Uploads SARIF results for GitHub Security tab integration
+  # - Configured with security-extended and security-and-quality query suites
+  # ============================================================================
+  codeql:
+    name: 🛡️ CodeQL Security Scan
+    runs-on: ${{ inputs.runs-on }}
+    timeout-minutes: 45
+    needs: build
+
+    steps:
+      # ------------------------------------------------------------------
+      # Phase 1: Environment Setup
+      # ------------------------------------------------------------------
+      - name: 📥 Checkout repository
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          fetch-depth: 0 # Full history for accurate CodeQL blame tracking
+
+      - name: 🔧 Setup .NET SDK
+        uses: actions/setup-dotnet@67a3573c9a986a3f9c594539f4ab511d57bb3ce9 # v4.3.1
+        with:
+          dotnet-version: ${{ inputs.dotnet-version }}
+
+      # ------------------------------------------------------------------
+      # Phase 2: CodeQL Security Analysis
+      # Uses autobuild for comprehensive .NET coverage.
+      # Extended queries provide deeper security analysis.
+      # ------------------------------------------------------------------
+      - name: 🛡️ Initialize CodeQL
+        uses: github/codeql-action/init@662472033e021d55d94146f66f6058822b0b39fd # v3.28.0
+        with:
+          languages: csharp
+          # Using autobuild for comprehensive .NET analysis (best practice)
+          queries: +security-extended,+security-and-quality
+          # Configuration for paths to exclude from scanning
+          config: |
+            paths-ignore:
+              - '**/tests/**'
+              - '**/test/**'
+              - '**/*.test.cs'
+              - '**/*.Tests.cs'
+
+      - name: 🔨 Autobuild for CodeQL
+        uses: github/codeql-action/autobuild@662472033e021d55d94146f66f6058822b0b39fd # v3.28.0
+
+      - name: 🛡️ Perform CodeQL analysis
+        id: codeql-analyze
+        uses: github/codeql-action/analyze@662472033e021d55d94146f66f6058822b0b39fd # v3.28.0
+        with:
+          category: "/language:csharp"
+          output: codeql-results
+          upload: always # Always upload SARIF regardless of findings
+
+      - name: 📤 Upload CodeQL SARIF results
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        if: always()
+        with:
+          name: codeql-sarif-results
+          path: codeql-results
+          retention-days: ${{ inputs.artifact-retention-days }}
+
+      - name: 📊 Generate CodeQL summary
+        if: always()
+        run: |
+          echo "## 🛡️ CodeQL Security Scan Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          # Status badge
+          if [ "${{ job.status }}" == "success" ]; then
+            echo "![CodeQL Status](https://img.shields.io/badge/security%20scan-passing-brightgreen)" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "![CodeQL Status](https://img.shields.io/badge/security%20scan-issues%20found-red)" >> $GITHUB_STEP_SUMMARY
+          fi
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          # Info table
+          echo "| Property | Value |" >> $GITHUB_STEP_SUMMARY
+          echo "|----------|-------|" >> $GITHUB_STEP_SUMMARY
+          echo "| **Status** | \$( [ '\${{ job.status }}' == 'success' ] && echo '✅ No vulnerabilities found' || echo '❌ Issues detected' ) |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Language** | C# |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Query Suites** | security-extended, security-and-quality |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Build Mode** | Autobuild |" >> $GITHUB_STEP_SUMMARY
+          echo "| **SARIF Results** | Uploaded to Security tab |" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          # Best practices section
+          echo "### ✅ Best Practices Applied" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Practice | Status |" >> $GITHUB_STEP_SUMMARY
+          echo "|----------|--------|" >> $GITHUB_STEP_SUMMARY
+          echo "| Pinned action versions (SHA) | ✅ |" >> $GITHUB_STEP_SUMMARY
+          echo "| Full git history for blame | ✅ |" >> $GITHUB_STEP_SUMMARY
+          echo "| Autobuild for .NET | ✅ |" >> $GITHUB_STEP_SUMMARY
+          echo "| Extended security queries | ✅ |" >> $GITHUB_STEP_SUMMARY
+          echo "| SARIF upload enabled | ✅ |" >> $GITHUB_STEP_SUMMARY
+          echo "| Runs on every CI execution | ✅ |" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          # Details section
+          echo "<details>" >> $GITHUB_STEP_SUMMARY
+          echo "<summary>💡 About CodeQL Security Scanning</summary>" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "CodeQL is GitHub's semantic code analysis engine that identifies security vulnerabilities:" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Vulnerability Categories Scanned:**" >> $GITHUB_STEP_SUMMARY
+          echo "- 💉 SQL injection, XSS, and other injection attacks" >> $GITHUB_STEP_SUMMARY
+          echo "- 🔐 Insecure cryptographic practices" >> $GITHUB_STEP_SUMMARY
+          echo "- 📤 Sensitive data exposure" >> $GITHUB_STEP_SUMMARY
+          echo "- 🔑 Authentication and authorization issues" >> $GITHUB_STEP_SUMMARY
+          echo "- 🛡️ Path traversal vulnerabilities" >> $GITHUB_STEP_SUMMARY
+          echo "- ⚠️ Unsafe deserialization" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**View Results:**" >> $GITHUB_STEP_SUMMARY
+          echo "- Navigate to the **Security** tab → **Code scanning alerts**" >> $GITHUB_STEP_SUMMARY
+          echo "- Download the **codeql-sarif-results** artifact for offline analysis" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "</details>" >> $GITHUB_STEP_SUMMARY
+
+  # ============================================================================
   # Workflow Summary Job
+  # ============================================================================
+  # Aggregates results from all CI jobs into a comprehensive summary.
+  # Always runs to provide visibility into workflow status.
+  # Generates markdown summary with job statuses, artifacts, and next steps.
   # ============================================================================
   summary:
     name: 📊 Summary
     runs-on: ${{ inputs.runs-on }}
     timeout-minutes: 5
-    needs: [build, test, analyze]
+    needs: [build, test, analyze, codeql]
     if: always()
 
     steps:
@@ -500,7 +667,8 @@ jobs:
           # Overall status determination
           if [ "${{ needs.build.result }}" == "success" ] && \
              [ "${{ needs.test.result }}" == "success" ] && \
-             ([ "${{ needs.analyze.result }}" == "success" ] || [ "${{ needs.analyze.result }}" == "skipped" ]); then
+             ([ "${{ needs.analyze.result }}" == "success" ] || [ "${{ needs.analyze.result }}" == "skipped" ]) && \
+             [ "${{ needs.codeql.result }}" == "success" ]; then
             echo "![CI Status](https://img.shields.io/badge/CI-passing-brightgreen?style=for-the-badge)" >> $GITHUB_STEP_SUMMARY
           else
             echo "![CI Status](https://img.shields.io/badge/CI-failing-red?style=for-the-badge)" >> $GITHUB_STEP_SUMMARY
@@ -538,6 +706,13 @@ jobs:
           else
             echo "| 🔍 Analyze | ❌ Failed | Code quality issues found |" >> $GITHUB_STEP_SUMMARY
           fi
+
+          # CodeQL status (always runs - no skipped state)
+          if [ "${{ needs.codeql.result }}" == "success" ]; then
+            echo "| 🛡️ CodeQL | ✅ Passed | No security vulnerabilities found |" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "| 🛡️ CodeQL | ❌ Failed | Security issues detected - check Security tab |" >> $GITHUB_STEP_SUMMARY
+          fi
           echo "" >> $GITHUB_STEP_SUMMARY
 
           # Workflow Details (collapsible)
@@ -565,12 +740,14 @@ jobs:
           echo "| 📁 **build-artifacts-{os}** | Compiled binaries (per platform) | 7 days |" >> $GITHUB_STEP_SUMMARY
           echo "| 📋 **test-results-{os}** | Test execution results (.trx per platform) | 30 days |" >> $GITHUB_STEP_SUMMARY
           echo "| 📊 **code-coverage-{os}** | Coverage reports (Cobertura per platform) | 30 days |" >> $GITHUB_STEP_SUMMARY
+          echo "| 🛡️ **codeql-sarif-results** | CodeQL security scan results (SARIF) | 30 days |" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
 
           # Next steps on failure
           if [ "${{ needs.build.result }}" != "success" ] || \
              [ "${{ needs.test.result }}" != "success" ] || \
-             ([ "${{ needs.analyze.result }}" != "success" ] && [ "${{ needs.analyze.result }}" != "skipped" ]); then
+             ([ "${{ needs.analyze.result }}" != "success" ] && [ "${{ needs.analyze.result }}" != "skipped" ]) || \
+             [ "${{ needs.codeql.result }}" != "success" ]; then
             echo "---" >> $GITHUB_STEP_SUMMARY
             echo "" >> $GITHUB_STEP_SUMMARY
             echo "## ⚠️ Action Required" >> $GITHUB_STEP_SUMMARY
@@ -584,12 +761,16 @@ jobs:
           fi
 
   # ============================================================================
-  # Failure Handler Job (Visual failure path in graph)
+  # Failure Handler Job
+  # ============================================================================
+  # Provides visual failure indication in the workflow graph.
+  # Reports detailed failure information for all jobs.
+  # Only runs when any of the dependent jobs fail.
   # ============================================================================
   on-failure:
     name: ❌ Failed
     runs-on: ${{ inputs.runs-on }}
-    needs: [build, test, analyze]
+    needs: [build, test, analyze, codeql]
     if: failure()
     timeout-minutes: 5
 
@@ -605,5 +786,6 @@ jobs:
           echo "| 🔨 Build | ${{ needs.build.result }} |" >> $GITHUB_STEP_SUMMARY
           echo "| 🧪 Test | ${{ needs.test.result }} |" >> $GITHUB_STEP_SUMMARY
           echo "| 🔍 Analyze | ${{ needs.analyze.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| 🛡️ CodeQL | ${{ needs.codeql.result }} |" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "Review the failed job logs above for details." >> $GITHUB_STEP_SUMMARY

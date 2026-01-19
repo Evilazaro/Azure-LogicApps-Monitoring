@@ -8,11 +8,19 @@
 #   reusable workflow.
 #
 # Features:
-#   - Cross-platform builds and tests (Ubuntu, Windows, macOS)
-#   - Code coverage collection and reporting
-#   - Static code analysis with dotnet format
+#   - Cross-platform builds (Ubuntu, Windows, macOS)
+#   - Cross-platform testing with code coverage (Cobertura)
+#   - Code formatting analysis (.editorconfig compliance)
+#   - CodeQL security vulnerability scanning (always enabled)
 #   - Test result publishing with detailed summaries
-#   - Build artifact upload for debugging (per-platform)
+#   - Build artifacts upload per platform
+#
+# Jobs Executed (via reusable workflow):
+#   1. Build     - Compiles solution on all platforms
+#   2. Test      - Runs tests with coverage on all platforms
+#   3. Analyze   - Verifies code formatting (optional)
+#   4. CodeQL    - Security vulnerability scanning (always runs)
+#   5. Summary   - Aggregates results from all jobs
 #
 # Triggers:
 #   - Push to main and feature branches (with path filters)
@@ -83,17 +91,26 @@ concurrency:
 
 # ------------------------------------------------------------------------------
 # Workflow-level Permissions (Least Privilege)
+# - contents: read        - Read repository contents for checkout
+# - checks: write         - Create check runs for test results
+# - pull-requests: write  - Post comments on pull requests
+# - security-events: write - Upload CodeQL SARIF results to Security tab
 # ------------------------------------------------------------------------------
 permissions:
   contents: read
   checks: write
   pull-requests: write
+  security-events: write
 
 jobs:
   # ============================================================================
   # Call Reusable CI Workflow
-  # Note: Build and test jobs always run on all platforms (Ubuntu, Windows, macOS)
-  # via matrix strategy in the reusable workflow.
+  # ============================================================================
+  # Executes the comprehensive CI pipeline:
+  # - Build and Test run on all platforms via matrix (Ubuntu, Windows, macOS)
+  # - Analyze job verifies code formatting (optional, runs on runs-on runner)
+  # - CodeQL job performs security scanning (always runs on runs-on runner)
+  # - Summary job aggregates all results
   # ============================================================================
   ci:
     name: 🚀 CI
@@ -106,7 +123,7 @@ jobs:
       build-artifacts-name: "build-artifacts"
       coverage-artifact-name: "code-coverage"
       artifact-retention-days: 30
-      runs-on: "ubuntu-latest" # Used for analyze and summary jobs only (build/test use cross-platform matrix)
+      runs-on: "ubuntu-latest" # Used for Analyze, CodeQL, and Summary jobs (Build/Test use cross-platform matrix)
       enable-code-analysis: ${{ inputs.enable-code-analysis == '' && true || inputs.enable-code-analysis }}
       fail-on-format-issues: true
     secrets: inherit

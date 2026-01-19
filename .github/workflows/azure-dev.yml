@@ -7,10 +7,16 @@
 #   Azure Developer CLI (azd) with OpenID Connect (OIDC) authentication.
 #
 # Pipeline Flow:
-#   CI (build/test/analyze) → Deploy to Dev
+#   CI (Build → Test → Analyze → CodeQL) → Deploy to Dev
+#
+# CI Jobs (via reusable workflow):
+#   1. Build     - Cross-platform compilation (Ubuntu, Windows, macOS)
+#   2. Test      - Cross-platform testing with coverage
+#   3. Analyze   - Code formatting verification
+#   4. CodeQL    - Security vulnerability scanning (always runs)
 #
 # Features:
-#   - Integrated CI pipeline (build, test, code analysis)
+#   - Integrated CI pipeline with security scanning
 #   - OIDC authentication (no stored secrets)
 #   - Environment-based deployment with protection rules
 #   - Deployment summaries and observability
@@ -58,12 +64,18 @@ concurrency:
 
 # ------------------------------------------------------------------------------
 # Workflow-level Permissions (Least Privilege)
+# - id-token: write       - Required for OIDC authentication with Azure
+# - contents: read        - Read repository contents for checkout
+# - checks: write         - Create check runs for test results
+# - pull-requests: write  - Post comments on pull requests
+# - security-events: write - Upload CodeQL SARIF results to Security tab
 # ------------------------------------------------------------------------------
 permissions:
   id-token: write
   contents: read
   checks: write
   pull-requests: write
+  security-events: write
 
 # ------------------------------------------------------------------------------
 # Environment Variables
@@ -83,7 +95,12 @@ defaults:
 
 jobs:
   # ============================================================================
-  # CI Job - Build, Test, and Analyze
+  # CI Job - Build, Test, Analyze, and Security Scan
+  # ============================================================================
+  # Executes the comprehensive CI pipeline before deployment:
+  # - Build and Test run on all platforms (Ubuntu, Windows, macOS)
+  # - Analyze verifies code formatting
+  # - CodeQL performs security vulnerability scanning (always runs)
   # ============================================================================
   ci:
     name: 🔄 CI
