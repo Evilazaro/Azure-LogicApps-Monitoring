@@ -525,9 +525,13 @@ jobs:
   # - Runs on every workflow execution (no conditional skip)
   # - Uses pinned action versions with SHA for supply chain security
   # - Fetch complete git history for accurate blame information
-  # - Uses autobuild for comprehensive .NET analysis
+  # - Uses autobuild for comprehensive .NET (C#) analysis
   # - Uploads SARIF results for GitHub Security tab integration
   # - Configured with security-extended and security-and-quality query suites
+  #
+  # Note: CodeQL supports: c-cpp, csharp, go, java-kotlin,
+  #       javascript-typescript, python, ruby, swift
+  #       This workflow scans C# code only.
   # ============================================================================
   codeql:
     name: 🛡️ CodeQL Security Scan
@@ -553,13 +557,16 @@ jobs:
       # Phase 2: CodeQL Security Analysis
       # Uses autobuild for comprehensive .NET coverage.
       # Extended queries provide deeper security analysis.
+      # Supported languages: c-cpp, csharp, go, java-kotlin,
+      # javascript-typescript, python, ruby, swift
       # ------------------------------------------------------------------
       - name: 🛡️ Initialize CodeQL
         uses: github/codeql-action/init@662472033e021d55d94146f66f6058822b0b39fd # v3.28.0
         with:
           languages: csharp
-          # Using autobuild for comprehensive .NET analysis (best practice)
-          queries: +security-extended,+security-and-quality
+          # Query suites: security-extended adds more security queries
+          # security-and-quality adds code quality queries on top
+          queries: security-extended, security-and-quality
           # Configuration for paths to exclude from scanning
           config: |
             paths-ignore:
