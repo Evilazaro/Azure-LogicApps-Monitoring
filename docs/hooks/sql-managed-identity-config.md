@@ -1,4 +1,17 @@
-# sql-managed-identity-config (.ps1 / .sh)
+---
+title: SQL Managed Identity Configuration
+description: PowerShell and Bash scripts for configuring Azure SQL Database access with managed identities
+author: Evilazaro
+date: 2026-01-19
+version: 1.0.0
+tags: [hooks, azure, sql, managed-identity, security, powershell, bash]
+---
+
+# 🔐 sql-managed-identity-config (.ps1 / .sh)
+
+> [!NOTE]
+> 🎯 **For DevOps Engineers & DBAs**: Scripts for configuring Azure SQL Database access using managed identities.
+> ⏱️ **Execution time:** ~30-60 seconds
 
 ![PowerShell](https://img.shields.io/badge/PowerShell-7.0+-blue.svg)
 ![Bash](https://img.shields.io/badge/Bash-4.0+-green.svg)
@@ -6,6 +19,15 @@
 ![Cross-Platform](https://img.shields.io/badge/platform-Windows%20%7C%20Linux%20%7C%20macOS-lightgrey.svg)
 ![Version](https://img.shields.io/badge/version-1.0.0-green.svg)
 ![License](https://img.shields.io/badge/license-MIT-orange.svg)
+
+<details>
+<summary>📍 <strong>Quick Navigation</strong></summary>
+
+| Previous | Index | Next |
+|:---------|:------:|--------:|
+| [← Clean Secrets](clean-secrets.md) | [📑 Index](README.md) | [Generate Orders →](Generate-Orders.md) |
+
+</details>
 
 ---
 
@@ -394,6 +416,8 @@ az sql server ad-admin list \
 
 **Made with ❤️ by Evilazaro | Principal Cloud Solution Architect | Microsoft**
 
-[⬆ Back to Top](#-pre-provisioning-script-documentation)
+[⬆ Back to Top](#-sql-managed-identity-config-ps1--sh) | [← Clean Secrets](clean-secrets.md) | [📑 Index](README.md) | [Generate Orders →](Generate-Orders.md)
+
+</div>
 
 </div>

@@ -1,4 +1,17 @@
-# configure-federated-credential (.ps1 / .sh)
+---
+title: Configure Federated Credential
+description: PowerShell and Bash scripts for configuring GitHub Actions OIDC federated credentials
+author: Evilazaro
+date: 2026-01-19
+version: 1.0.0
+tags: [hooks, azure, github-actions, oidc, federated-credential, security, powershell, bash]
+---
+
+# 🔑 configure-federated-credential (.ps1 / .sh)
+
+> [!NOTE]
+> 🎯 **For DevOps Engineers**: Configure GitHub Actions OIDC federated credentials for passwordless Azure authentication.
+> ⏱️ **Execution time:** ~20-40 seconds
 
 ![PowerShell](https://img.shields.io/badge/PowerShell-7.0+-blue.svg)
 ![Bash](https://img.shields.io/badge/Bash-4.0+-green.svg)
@@ -6,6 +19,15 @@
 ![Cross-Platform](https://img.shields.io/badge/platform-Windows%20%7C%20Linux%20%7C%20macOS-lightgrey.svg)
 ![Version](https://img.shields.io/badge/version-1.0.0-green.svg)
 ![License](https://img.shields.io/badge/license-MIT-orange.svg)
+
+<details>
+<summary>📍 <strong>Quick Navigation</strong></summary>
+
+| Previous | Index | Next |
+|:---------|:------:|--------:|
+| [← Post-Infra Delete](postinfradelete.md) | [📑 Index](README.md) | [Validation Workflow →](VALIDATION-WORKFLOW.md) |
+
+</details>
 
 ---
 
@@ -399,3 +421,13 @@ The script checks for existing credentials before creating new ones:
 | Version | Date       | Description                                      |
 | ------- | ---------- | ------------------------------------------------ |
 | 1.0.0   | 2026-01-14 | Initial release with PowerShell and Bash support |
+
+---
+
+<div align="center">
+
+**Made with ❤️ by Evilazaro | Principal Cloud Solution Architect | Microsoft**
+
+[⬆ Back to Top](#-configure-federated-credential-ps1--sh) | [← Post-Infra Delete](postinfradelete.md) | [📑 Index](README.md) | [Validation Workflow →](VALIDATION-WORKFLOW.md)
+
+</div>

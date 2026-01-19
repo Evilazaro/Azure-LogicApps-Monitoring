@@ -1,10 +1,34 @@
-# Generate-Orders (.ps1 / .sh)
+---
+title: Generate Orders Script
+description: PowerShell and Bash scripts for generating sample e-commerce order data for testing Azure Logic Apps
+author: Evilazaro
+date: 2026-01-19
+version: 2.0.1
+tags: [hooks, testing, data-generation, orders, powershell, bash]
+---
+
+# 📦 Generate-Orders (.ps1 / .sh)
+
+> [!NOTE]
+> 🎯 **For Developers & Testers**: Generate sample e-commerce order data for Azure Logic Apps workflow testing.
+> ⏱️ **Execution time:** ~2-5 seconds (2000 orders)
 
 ![PowerShell](https://img.shields.io/badge/PowerShell-7.0+-blue.svg)
 ![Bash](https://img.shields.io/badge/Bash-4.0+-green.svg)
 ![Cross-Platform](https://img.shields.io/badge/platform-Windows%20%7C%20Linux%20%7C%20macOS-lightgrey.svg)
 ![Version](https://img.shields.io/badge/version-2.0.1-green.svg)
 ![License](https://img.shields.io/badge/license-MIT-orange.svg)
+
+<details>
+<summary>📍 <strong>Quick Navigation</strong></summary>
+
+| Previous | Index | Next |
+|:---------|:------:|--------:|
+| [← SQL Managed Identity](sql-managed-identity-config.md) | [📑 Index](README.md) | [Deploy Workflow →](deploy-workflow.md) |
+
+</details>
+
+---
 
 ## 📋 Overview
 
@@ -708,6 +732,6 @@ flowchart LR
 
 **Made with ❤️ by Evilazaro | Principal Cloud Solution Architect | Microsoft**
 
-[⬆ Back to Top](#generate-orders-ps1--sh)
+[⬆ Back to Top](#-generate-orders-ps1--sh) | [← SQL Managed Identity](sql-managed-identity-config.md) | [📑 Index](README.md) | [Deploy Workflow →](deploy-workflow.md)
 
 </div>

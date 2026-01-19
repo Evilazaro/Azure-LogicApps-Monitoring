@@ -1,8 +1,32 @@
+---
+title: Workflow Deployment Script
+description: PowerShell and Bash scripts for deploying Logic Apps workflows to Azure
+author: Evilazaro
+date: 2026-01-19
+version: 2.0.1
+tags: [hooks, deployment, logic-apps, azure, workflows, powershell, bash]
+---
+
 # 🚀 Workflow Deployment Script Documentation
+
+> [!NOTE]
+> 🎯 **For DevOps Engineers & Developers**: Deploy Logic Apps workflows to Azure with automated placeholder resolution.
+> ⏱️ **Execution time:** ~30-90 seconds depending on workflow count
 
 > **Version:** 2.0.1  
 > **Last Updated:** 2026-01-07  
 > **Scripts:** `deploy-workflow.ps1` (PowerShell) | `deploy-workflow.sh` (Bash)
+
+<details>
+<summary>📍 <strong>Quick Navigation</strong></summary>
+
+| Previous | Index | Next |
+|:---------|:------:|--------:|
+| [← Generate Orders](Generate-Orders.md) | [📑 Index](README.md) | [Post-Infra Delete →](postinfradelete.md) |
+
+</details>
+
+---
 
 ## 📋 Table of Contents
 
@@ -448,3 +472,13 @@ For detailed logging during execution:
 
 - [Architecture Overview](../architecture/README.md)
 - [Developer Workflow](./README.md)
+
+---
+
+<div align="center">
+
+**Made with ❤️ by Evilazaro | Principal Cloud Solution Architect | Microsoft**
+
+[⬆ Back to Top](#-workflow-deployment-script-documentation) | [← Generate Orders](Generate-Orders.md) | [📑 Index](README.md) | [Post-Infra Delete →](postinfradelete.md)
+
+</div>

@@ -1,4 +1,17 @@
-# postinfradelete (.ps1 / .sh)
+---
+title: Post-Infrastructure Delete Hook
+description: Azure Developer CLI hook for purging soft-deleted Logic Apps after infrastructure deletion
+author: Evilazaro
+date: 2026-01-19
+version: 2.0.0
+tags: [hooks, azd, cleanup, soft-delete, logic-apps, powershell, bash]
+---
+
+# 🗑️ postinfradelete (.ps1 / .sh)
+
+> [!NOTE]
+> 🎯 **For DevOps Engineers**: Automatically purges soft-deleted Logic Apps after `azd down` completes.
+> ⏱️ **Execution time:** ~15-45 seconds per Logic App
 
 ![PowerShell](https://img.shields.io/badge/PowerShell-7.0+-blue.svg)
 ![Bash](https://img.shields.io/badge/Bash-4.0+-green.svg)
@@ -6,6 +19,17 @@
 ![Cross-Platform](https://img.shields.io/badge/platform-Windows%20%7C%20Linux%20%7C%20macOS-lightgrey.svg)
 ![Version](https://img.shields.io/badge/version-2.0.0-green.svg)
 ![License](https://img.shields.io/badge/license-MIT-orange.svg)
+
+<details>
+<summary>📍 <strong>Quick Navigation</strong></summary>
+
+| Previous | Index | Next |
+|:---------|:------:|--------:|
+| [← Deploy Workflow](deploy-workflow.md) | [📑 Index](README.md) | [Configure Federated Credential →](configure-federated-credential.md) |
+
+</details>
+
+---
 
 ## 📋 Overview
 
@@ -448,6 +472,14 @@ azd down  # Purges only dev environment Logic Apps
 | 1.0.0   | 2026-01-09 | Initial release                                                                                                                                                                                                                            |
 
 ---
+
+<div align="center">
+
+**Made with ❤️ by Evilazaro | Principal Cloud Solution Architect | Microsoft**
+
+[⬆ Back to Top](#️-postinfradelete-ps1--sh) | [← Deploy Workflow](deploy-workflow.md) | [📑 Index](README.md) | [Configure Federated Credential →](configure-federated-credential.md)
+
+</div>
 
 **Author**: Evilazaro | Principal Cloud Solution Architect | Microsoft  
 **Repository**: [Azure-LogicApps-Monitoring](https://github.com/Evilazaro/Azure-LogicApps-Monitoring)

@@ -1,4 +1,28 @@
-# Azure Logic Apps Monitoring - Complete Validation Workflow
+---
+title: Complete Validation Workflow
+description: Comprehensive guide to all validation scripts and their execution workflow for Azure Logic Apps Monitoring
+author: Evilazaro
+date: 2026-01-19
+version: 1.0.0
+tags: [hooks, validation, workflow, azure, logic-apps, comprehensive-guide]
+---
+
+# ✅ Azure Logic Apps Monitoring - Complete Validation Workflow
+
+> [!NOTE]
+> 🎯 **For All Team Members**: Comprehensive guide covering all validation scripts, their dependencies, and execution workflows.
+> ⏱️ **Reading time:** ~25 minutes
+
+<details>
+<summary>📍 <strong>Quick Navigation</strong></summary>
+
+| Previous | Index | Next |
+|:---------|:------:|--------:|
+| [← Configure Federated Credential](configure-federated-credential.md) | [📑 Index](README.md) | [🏠 Docs Home](../README.md) |
+
+</details>
+
+---
 
 ## 📑 Table of Contents
 
@@ -1452,6 +1476,6 @@ docker ps -a --filter "name=aspire" --format "{{.ID}}" | ForEach-Object { docker
 
 **Made with ❤️ by Evilazaro | Principal Cloud Solution Architect | Microsoft**
 
-[⬆ Back to Top](#azure-logic-apps-monitoring---complete-validation-workflow)
+[⬆ Back to Top](#-azure-logic-apps-monitoring---complete-validation-workflow) | [← Configure Federated Credential](configure-federated-credential.md) | [📑 Index](README.md) | [🏠 Docs Home](../README.md)
 
 </div>
