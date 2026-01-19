@@ -21,8 +21,8 @@ tags: [hooks, testing, data-generation, orders, powershell, bash]
 <details>
 <summary>📍 <strong>Quick Navigation</strong></summary>
 
-| Previous | Index | Next |
-|:---------|:------:|--------:|
+| Previous                                                 |         Index         |                                    Next |
+| :------------------------------------------------------- | :-------------------: | --------------------------------------: |
 | [← SQL Managed Identity](sql-managed-identity-config.md) | [📑 Index](README.md) | [Deploy Workflow →](deploy-workflow.md) |
 
 </details>

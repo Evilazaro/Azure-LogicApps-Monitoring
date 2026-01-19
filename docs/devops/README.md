@@ -15,9 +15,9 @@ tags: [devops, ci-cd, github-actions, azure, deployment]
 <details>
 <summary>📍 <strong>Quick Navigation</strong></summary>
 
-| Previous | Index | Next |
-|:---------|:------:|--------:|
-| — | [📚 Docs Index](../README.md) | [Azure Deployment →](azure-dev.md) |
+| Previous |             Index             |                               Next |
+| :------- | :---------------------------: | ---------------------------------: |
+| —        | [📚 Docs Index](../README.md) | [Azure Deployment →](azure-dev.md) |
 
 </details>
 

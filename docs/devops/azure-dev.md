@@ -15,8 +15,8 @@ tags: [devops, cd, azure, azd, deployment, github-actions]
 <details>
 <summary>📍 <strong>Quick Navigation</strong></summary>
 
-| Previous | Index | Next |
-|:---------|:------:|--------:|
+| Previous                       |            Index             |                          Next |
+| :----------------------------- | :--------------------------: | ----------------------------: |
 | [← DevOps Overview](README.md) | [📑 DevOps Index](README.md) | [CI Pipeline →](ci-dotnet.md) |
 
 </details>

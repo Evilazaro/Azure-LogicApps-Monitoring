@@ -15,9 +15,9 @@ tags: [devops, ci, dotnet, reusable-workflow, github-actions]
 <details>
 <summary>📍 <strong>Quick Navigation</strong></summary>
 
-| Previous | Index | Next |
-|:---------|:------:|--------:|
-| [← CI Pipeline](ci-dotnet.md) | [📑 DevOps Index](README.md) | — |
+| Previous                      |            Index             | Next |
+| :---------------------------- | :--------------------------: | ---: |
+| [← CI Pipeline](ci-dotnet.md) | [📑 DevOps Index](README.md) |    — |
 
 </details>
 

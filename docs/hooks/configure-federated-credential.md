@@ -3,7 +3,17 @@ title: Configure Federated Credential
 description: PowerShell and Bash scripts for configuring GitHub Actions OIDC federated credentials
 author: Evilazaro
 version: 1.0.0
-tags: [hooks, azure, github-actions, oidc, federated-credential, security, powershell, bash]
+tags:
+  [
+    hooks,
+    azure,
+    github-actions,
+    oidc,
+    federated-credential,
+    security,
+    powershell,
+    bash,
+  ]
 ---
 
 # 🔑 configure-federated-credential (.ps1 / .sh)
@@ -22,8 +32,8 @@ tags: [hooks, azure, github-actions, oidc, federated-credential, security, power
 <details>
 <summary>📍 <strong>Quick Navigation</strong></summary>
 
-| Previous | Index | Next |
-|:---------|:------:|--------:|
+| Previous                                  |         Index         |                                            Next |
+| :---------------------------------------- | :-------------------: | ----------------------------------------------: |
 | [← Post-Infra Delete](postinfradelete.md) | [📑 Index](README.md) | [Validation Workflow →](VALIDATION-WORKFLOW.md) |
 
 </details>

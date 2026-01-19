@@ -15,8 +15,8 @@ tags: [devops, ci, dotnet, testing, github-actions]
 <details>
 <summary>📍 <strong>Quick Navigation</strong></summary>
 
-| Previous | Index | Next |
-|:---------|:------:|--------:|
+| Previous                           |            Index             |                                   Next |
+| :--------------------------------- | :--------------------------: | -------------------------------------: |
 | [← Azure Deployment](azure-dev.md) | [📑 DevOps Index](README.md) | [Reusable CI →](ci-dotnet-reusable.md) |
 
 </details>

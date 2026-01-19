@@ -21,8 +21,8 @@ tags: [hooks, validation, prerequisites, powershell, bash]
 <details>
 <summary>📍 <strong>Quick Navigation</strong></summary>
 
-| Previous | Index | Next |
-|:---------|:------:|--------:|
+| Previous                      |            Index            |                              Next |
+| :---------------------------- | :-------------------------: | --------------------------------: |
 | [← Hooks Overview](README.md) | [📑 Hooks Index](README.md) | [preprovision →](preprovision.md) |
 
 </details>

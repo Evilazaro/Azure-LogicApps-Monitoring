@@ -22,8 +22,8 @@ tags: [hooks, secrets, cleanup, powershell, bash]
 <details>
 <summary>📍 <strong>Quick Navigation</strong></summary>
 
-| Previous | Index | Next |
-|:---------|:------:|--------:|
+| Previous                                                        |            Index            |                                    Next |
+| :-------------------------------------------------------------- | :-------------------------: | --------------------------------------: |
 | [← sql-managed-identity-config](sql-managed-identity-config.md) | [📑 Hooks Index](README.md) | [Generate-Orders →](Generate-Orders.md) |
 
 </details>

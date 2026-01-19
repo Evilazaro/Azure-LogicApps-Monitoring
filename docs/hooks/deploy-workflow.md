@@ -19,8 +19,8 @@ tags: [hooks, deployment, logic-apps, azure, workflows, powershell, bash]
 <details>
 <summary>📍 <strong>Quick Navigation</strong></summary>
 
-| Previous | Index | Next |
-|:---------|:------:|--------:|
+| Previous                                |         Index         |                                      Next |
+| :-------------------------------------- | :-------------------: | ----------------------------------------: |
 | [← Generate Orders](Generate-Orders.md) | [📑 Index](README.md) | [Post-Infra Delete →](postinfradelete.md) |
 
 </details>
