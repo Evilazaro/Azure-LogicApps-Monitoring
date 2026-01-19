@@ -1,6 +1,26 @@
+---
+title: CI - .NET Build and Test
+description: Build validation pipeline for pull requests with cross-platform testing
+author: Evilazaro
+date: 2026-01-19
+version: 1.0
+tags: [devops, ci, dotnet, testing, github-actions]
+---
+
 # 🔄 CI - .NET Build and Test
 
-> **Workflow File:** [ci-dotnet.yml](../../.github/workflows/ci-dotnet.yml)
+> [!NOTE]
+> **Workflow File:** [ci-dotnet.yml](../../.github/workflows/ci-dotnet.yml)  
+> 🎯 **For Developers**: Orchestrates CI pipeline with cross-platform builds and tests.
+
+<details>
+<summary>📍 <strong>Quick Navigation</strong></summary>
+
+| Previous | Index | Next |
+|:---------|:------:|--------:|
+| [← Azure Deployment](azure-dev.md) | [📑 DevOps Index](README.md) | [Reusable CI →](ci-dotnet-reusable.md) |
+
+</details>
 
 ---
 

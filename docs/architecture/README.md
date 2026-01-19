@@ -1,4 +1,26 @@
-# Azure Logic Apps Monitoring Solution - Architecture Overview
+---
+title: Architecture Overview
+description: Complete architecture documentation for the Azure Logic Apps Monitoring solution following TOGAF principles
+author: Evilazaro
+date: 2026-01-19
+version: 1.0
+tags: [architecture, azure, togaf, observability, microservices]
+---
+
+# 🏗️ Azure Logic Apps Monitoring Solution - Architecture Overview
+
+> [!NOTE]
+> 🎯 **For Cloud Architects, Developers, and Platform Engineers**: This documentation provides comprehensive architecture guidance following TOGAF enterprise architecture principles.  
+> ⏱️ **Estimated reading time:** 15 minutes for overview, 1 hour for complete architecture documentation
+
+<details>
+<summary>📍 <strong>Quick Navigation</strong></summary>
+
+| Previous | Index | Next |
+|:---------|:------:|--------:|
+| — | [📚 Docs Index](../README.md) | [Business Architecture →](01-business-architecture.md) |
+
+</details>
 
 ## 📑 Table of Contents
 
@@ -291,4 +313,8 @@ dotnet run
 
 ---
 
-← Previous | **Index** | [Business Architecture →](01-business-architecture.md)
+<div align="center">
+
+[⬆️ Back to top](#️-azure-logic-apps-monitoring-solution---architecture-overview) | [📚 Docs Index](../README.md) | [Business Architecture →](01-business-architecture.md)
+
+</div>

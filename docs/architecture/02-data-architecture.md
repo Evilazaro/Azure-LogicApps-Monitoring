@@ -1,6 +1,26 @@
-# Data Architecture
+---
+title: Data Architecture
+description: Data stores, domains, flows, and telemetry mapping for the Azure Logic Apps Monitoring solution
+author: Evilazaro
+date: 2026-01-19
+version: 1.0
+tags: [architecture, data, database, telemetry, azure-sql]
+---
 
-[← Business Architecture](01-business-architecture.md) | [Index](README.md) | [Application Architecture →](03-application-architecture.md)
+# 🗄️ Data Architecture
+
+> [!NOTE]
+> 🎯 **For Architects and Data Engineers**: This document covers data stores, domains, flows, and telemetry mapping.  
+> ⏱️ **Estimated reading time:** 20 minutes
+
+<details>
+<summary>📍 <strong>Quick Navigation</strong></summary>
+
+| Previous | Index | Next |
+|:---------|:------:|--------:|
+| [← Business Architecture](01-business-architecture.md) | [📑 Index](README.md) | [Application Architecture →](03-application-architecture.md) |
+
+</details>
 
 ---
 

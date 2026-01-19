@@ -1,6 +1,26 @@
-# Business Architecture
+---
+title: Business Architecture
+description: Business context, capabilities, stakeholders, and value streams for the Azure Logic Apps Monitoring solution
+author: Evilazaro
+date: 2026-01-19
+version: 1.0
+tags: [architecture, business, capabilities, stakeholders, togaf]
+---
 
-[← README](README.md) | [Index](README.md) | [Data Architecture →](02-data-architecture.md)
+# 🏢 Business Architecture
+
+> [!NOTE]
+> 🎯 **For Architects and Product Owners**: This document defines business capabilities, stakeholders, and value streams.  
+> ⏱️ **Estimated reading time:** 15 minutes
+
+<details>
+<summary>📍 <strong>Quick Navigation</strong></summary>
+
+| Previous | Index | Next |
+|:---------|:------:|--------:|
+| [← Architecture Overview](README.md) | [📑 Index](README.md) | [Data Architecture →](02-data-architecture.md) |
+
+</details>
 
 ---
 
@@ -396,4 +416,8 @@ The order processing automation is implemented through two Azure Logic Apps Stan
 
 ---
 
-[← README](README.md) | [Index](README.md) | [Data Architecture →](02-data-architecture.md)
+<div align="center">
+
+[⬆️ Back to top](#-business-architecture) | [📑 Index](README.md) | [Data Architecture →](02-data-architecture.md)
+
+</div>

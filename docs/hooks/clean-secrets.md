@@ -1,4 +1,13 @@
-# clean-secrets (.ps1 / .sh)
+---
+title: clean-secrets Script
+description: Utility tool for safely clearing .NET user secrets from all projects
+author: Evilazaro
+date: 2026-01-19
+version: 2.0.1
+tags: [hooks, secrets, cleanup, powershell, bash]
+---
+
+# 🧹 clean-secrets (.ps1 / .sh)
 
 ![PowerShell](https://img.shields.io/badge/PowerShell-7.0+-blue.svg)
 ![Bash](https://img.shields.io/badge/Bash-4.0+-green.svg)
@@ -6,6 +15,19 @@
 ![Cross-Platform](https://img.shields.io/badge/platform-Windows%20%7C%20Linux%20%7C%20macOS-lightgrey.svg)
 ![Version](https://img.shields.io/badge/version-2.0.1-green.svg)
 ![License](https://img.shields.io/badge/license-MIT-orange.svg)
+
+> [!NOTE]
+> 🎯 **For Developers**: Safely clears .NET user secrets from all projects.  
+> ⏱️ **Execution time:** 2-4 seconds
+
+<details>
+<summary>📍 <strong>Quick Navigation</strong></summary>
+
+| Previous | Index | Next |
+|:---------|:------:|--------:|
+| [← sql-managed-identity-config](sql-managed-identity-config.md) | [📑 Hooks Index](README.md) | [Generate-Orders →](Generate-Orders.md) |
+
+</details>
 
 ## 📋 Overview
 

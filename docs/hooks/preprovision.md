@@ -1,8 +1,26 @@
+---
+title: Pre-Provisioning Script
+description: Validates and prepares environment for Azure deployment with comprehensive prerequisite checks
+author: Evilazaro
+date: 2026-01-06
+version: 2.3.0
+tags: [hooks, preprovision, azd, validation, azure]
+---
+
 # 🚀 Pre-Provisioning Script Documentation
 
-> **Version:** 2.3.0  
-> **Last Updated:** 2026-01-06  
-> **Scripts:** `preprovision.ps1` (PowerShell) | `preprovision.sh` (Bash)
+> [!NOTE]
+> **Version:** 2.3.0 | **Scripts:** `preprovision.ps1` (PowerShell) | `preprovision.sh` (Bash)  
+> 🎯 **For Developers and DevOps**: Validates and prepares environment for Azure deployment.
+
+<details>
+<summary>📍 <strong>Quick Navigation</strong></summary>
+
+| Previous | Index | Next |
+|:---------|:------:|--------:|
+| [← check-dev-workstation](check-dev-workstation.md) | [📑 Hooks Index](README.md) | [postprovision →](postprovision.md) |
+
+</details>
 
 ## 📋 Table of Contents
 

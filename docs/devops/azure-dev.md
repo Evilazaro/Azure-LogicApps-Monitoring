@@ -1,6 +1,26 @@
+---
+title: CD - Azure Deployment
+description: CI/CD pipeline for provisioning and deployment using Azure Developer CLI
+author: Evilazaro
+date: 2026-01-19
+version: 1.0
+tags: [devops, cd, azure, azd, deployment, github-actions]
+---
+
 # 🚀 CD - Azure Deployment
 
-> **Workflow File:** [azure-dev.yml](../../.github/workflows/azure-dev.yml)
+> [!NOTE]
+> **Workflow File:** [azure-dev.yml](../../.github/workflows/azure-dev.yml)  
+> 🎯 **For DevOps Engineers**: Pipeline for Azure infrastructure provisioning and application deployment.
+
+<details>
+<summary>📍 <strong>Quick Navigation</strong></summary>
+
+| Previous | Index | Next |
+|:---------|:------:|--------:|
+| [← DevOps Overview](README.md) | [📑 DevOps Index](README.md) | [CI Pipeline →](ci-dotnet.md) |
+
+</details>
 
 ---
 

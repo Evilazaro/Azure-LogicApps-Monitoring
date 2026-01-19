@@ -1,6 +1,26 @@
+---
+title: DevOps Documentation
+description: GitHub Actions workflows for CI/CD pipelines in the Azure Logic Apps Monitoring project
+author: Evilazaro
+date: 2026-01-19
+version: 1.0
+tags: [devops, ci-cd, github-actions, azure, deployment]
+---
+
 # 🔧 DevOps Documentation
 
-> Comprehensive documentation for GitHub Actions workflows used in the Azure Logic Apps Monitoring project.
+> [!NOTE]
+> 🎯 **For DevOps Engineers and Platform Teams**: Comprehensive documentation for GitHub Actions workflows used in CI/CD pipelines.  
+> ⏱️ **Estimated reading time:** 10 minutes for overview, 30 minutes for complete documentation
+
+<details>
+<summary>📍 <strong>Quick Navigation</strong></summary>
+
+| Previous | Index | Next |
+|:---------|:------:|--------:|
+| — | [📚 Docs Index](../README.md) | [Azure Deployment →](azure-dev.md) |
+
+</details>
 
 ---
 

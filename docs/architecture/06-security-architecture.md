@@ -1,6 +1,26 @@
-# Security Architecture
+---
+title: Security Architecture
+description: Authentication, authorization, network security, and compliance for the Azure Logic Apps Monitoring solution
+author: Evilazaro
+date: 2026-01-19
+version: 1.0
+tags: [architecture, security, managed-identity, rbac, network-security]
+---
 
-[← Observability Architecture](05-observability-architecture.md) | [Index](README.md) | [Deployment Architecture →](07-deployment-architecture.md)
+# 🔐 Security Architecture
+
+> [!NOTE]
+> 🎯 **For Security Engineers**: This document covers identity, secrets, network security, and compliance.  
+> ⏱️ **Estimated reading time:** 15 minutes
+
+<details>
+<summary>📍 <strong>Quick Navigation</strong></summary>
+
+| Previous | Index | Next |
+|:---------|:------:|--------:|
+| [← Observability Architecture](05-observability-architecture.md) | [📑 Index](README.md) | [Deployment Architecture →](07-deployment-architecture.md) |
+
+</details>
 
 ---
 

@@ -1,10 +1,32 @@
-# check-dev-workstation (.ps1 / .sh)
+---
+title: check-dev-workstation Script
+description: Critical first-step validation tool for workstation prerequisites before development
+author: Evilazaro
+date: 2026-01-19
+version: 1.0.0
+tags: [hooks, validation, prerequisites, powershell, bash]
+---
+
+# ✅ check-dev-workstation (.ps1 / .sh)
 
 ![PowerShell](https://img.shields.io/badge/PowerShell-7.0+-blue.svg)
 ![Bash](https://img.shields.io/badge/Bash-4.0+-green.svg)
 ![Cross-Platform](https://img.shields.io/badge/platform-Windows%20%7C%20Linux%20%7C%20macOS-lightgrey.svg)
 ![Version](https://img.shields.io/badge/version-1.0.0-green.svg)
 ![License](https://img.shields.io/badge/license-MIT-orange.svg)
+
+> [!NOTE]
+> 🎯 **For Developers**: Validates workstation prerequisites before development begins.  
+> ⏱️ **Execution time:** 3-5 seconds
+
+<details>
+<summary>📍 <strong>Quick Navigation</strong></summary>
+
+| Previous | Index | Next |
+|:---------|:------:|--------:|
+| [← Hooks Overview](README.md) | [📑 Hooks Index](README.md) | [preprovision →](preprovision.md) |
+
+</details>
 
 ## 📋 Overview
 

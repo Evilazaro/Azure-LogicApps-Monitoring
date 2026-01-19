@@ -1,6 +1,26 @@
-# Application Architecture
+---
+title: Application Architecture
+description: Service catalog, API contracts, and service interactions for the Azure Logic Apps Monitoring solution
+author: Evilazaro
+date: 2026-01-19
+version: 1.0
+tags: [architecture, application, microservices, api, aspnet-core]
+---
 
-[← Data Architecture](02-data-architecture.md) | [Index](README.md) | [Technology Architecture →](04-technology-architecture.md)
+# ⚙️ Application Architecture
+
+> [!NOTE]
+> 🎯 **For Developers and Tech Leads**: This document covers services, APIs, and integration patterns.  
+> ⏱️ **Estimated reading time:** 25 minutes
+
+<details>
+<summary>📍 <strong>Quick Navigation</strong></summary>
+
+| Previous | Index | Next |
+|:---------|:------:|--------:|
+| [← Data Architecture](02-data-architecture.md) | [📑 Index](README.md) | [Technology Architecture →](04-technology-architecture.md) |
+
+</details>
 
 ---
 

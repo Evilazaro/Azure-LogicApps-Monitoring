@@ -1,6 +1,25 @@
-# ADR-001: .NET Aspire for Service Orchestration
+---
+title: "ADR-001: .NET Aspire for Service Orchestration"
+description: Architecture decision to use .NET Aspire as the distributed application orchestration framework
+author: Evilazaro
+date: 2025-01
+status: Accepted
+tags: [adr, aspire, orchestration, architecture-decision]
+---
 
-[← ADR Index](README.md)
+# 🎯 ADR-001: .NET Aspire for Service Orchestration
+
+> [!NOTE]
+> **Status:** Accepted | **Date:** January 2025
+
+<details>
+<summary>📍 <strong>Quick Navigation</strong></summary>
+
+| Previous | Index | Next |
+|:---------|:------:|--------:|
+| — | [📋 ADR Index](README.md) | [ADR-002 →](ADR-002-service-bus-messaging.md) |
+
+</details>
 
 ---
 

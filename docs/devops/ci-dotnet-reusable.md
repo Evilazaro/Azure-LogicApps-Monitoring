@@ -1,6 +1,26 @@
+---
+title: CI - .NET Reusable Workflow
+description: Reusable workflow for .NET build, test, and analysis operations
+author: Evilazaro
+date: 2026-01-19
+version: 1.0
+tags: [devops, ci, dotnet, reusable-workflow, github-actions]
+---
+
 # 🔧 CI - .NET Reusable Workflow
 
-> **Workflow File:** [ci-dotnet-reusable.yml](../../.github/workflows/ci-dotnet-reusable.yml)
+> [!NOTE]
+> **Workflow File:** [ci-dotnet-reusable.yml](../../.github/workflows/ci-dotnet-reusable.yml)  
+> 🎯 **For DevOps Engineers**: Reusable CI workflow for consistent .NET build and test operations.
+
+<details>
+<summary>📍 <strong>Quick Navigation</strong></summary>
+
+| Previous | Index | Next |
+|:---------|:------:|--------:|
+| [← CI Pipeline](ci-dotnet.md) | [📑 DevOps Index](README.md) | — |
+
+</details>
 
 ---
 

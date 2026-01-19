@@ -1,6 +1,26 @@
-# Architecture Decision Records
+---
+title: Architecture Decision Records
+description: Documentation of significant architectural decisions for the Azure Logic Apps Monitoring solution
+author: Evilazaro
+date: 2026-01-19
+version: 1.0
+tags: [architecture, adr, decisions, documentation]
+---
 
-[← Deployment Architecture](../07-deployment-architecture.md) | [Index](../README.md)
+# 📋 Architecture Decision Records
+
+> [!NOTE]
+> 🎯 **For All Technical Staff**: ADRs document significant architectural decisions made during design and development.  
+> ⏱️ **Estimated reading time:** 10 minutes for overview
+
+<details>
+<summary>📍 <strong>Quick Navigation</strong></summary>
+
+| Previous | Index | Next |
+|:---------|:------:|--------:|
+| [← Deployment Architecture](../07-deployment-architecture.md) | [📑 Index](../README.md) | — |
+
+</details>
 
 ---
 

@@ -1,4 +1,13 @@
-# postprovision (.ps1 / .sh)
+---
+title: Post-Provisioning Script
+description: Configures .NET user secrets with Azure resource information after infrastructure provisioning
+author: Evilazaro
+date: 2026-01-19
+version: 2.0.1
+tags: [hooks, postprovision, azd, secrets, azure]
+---
+
+# ⚙️ postprovision (.ps1 / .sh)
 
 ![PowerShell](https://img.shields.io/badge/PowerShell-7.0+-blue.svg)
 ![Bash](https://img.shields.io/badge/Bash-4.0+-green.svg)
@@ -6,6 +15,19 @@
 ![Cross-Platform](https://img.shields.io/badge/platform-Windows%20%7C%20Linux%20%7C%20macOS-lightgrey.svg)
 ![Version](https://img.shields.io/badge/version-2.0.1-green.svg)
 ![License](https://img.shields.io/badge/license-MIT-orange.svg)
+
+> [!NOTE]
+> 🎯 **For Developers**: Configures secrets after `azd provision` completes.  
+> ⏱️ **Execution time:** 10-20 seconds
+
+<details>
+<summary>📍 <strong>Quick Navigation</strong></summary>
+
+| Previous | Index | Next |
+|:---------|:------:|--------:|
+| [← preprovision](preprovision.md) | [📑 Hooks Index](README.md) | [sql-managed-identity-config →](sql-managed-identity-config.md) |
+
+</details>
 
 ## 📋 Overview
 

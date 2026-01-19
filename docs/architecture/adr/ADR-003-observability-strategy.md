@@ -1,6 +1,25 @@
-# ADR-003: OpenTelemetry with Azure Monitor for Observability
+---
+title: "ADR-003: OpenTelemetry with Azure Monitor for Observability"
+description: Architecture decision to implement OpenTelemetry instrumentation with Azure Monitor
+author: Evilazaro
+date: 2025-01
+status: Accepted
+tags: [adr, opentelemetry, observability, architecture-decision]
+---
 
-[← ADR Index](README.md)
+# 📊 ADR-003: OpenTelemetry with Azure Monitor for Observability
+
+> [!NOTE]
+> **Status:** Accepted | **Date:** January 2025
+
+<details>
+<summary>📍 <strong>Quick Navigation</strong></summary>
+
+| Previous | Index | Next |
+|:---------|:------:|--------:|
+| [← ADR-002](ADR-002-service-bus-messaging.md) | [📋 ADR Index](README.md) | — |
+
+</details>
 
 ---
 

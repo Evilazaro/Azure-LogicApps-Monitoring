@@ -1,4 +1,13 @@
-# Azure Logic Apps Monitoring - Developer Inner Loop Workflow
+---
+title: Developer Inner Loop Workflow
+description: Automation scripts for Azure Logic Apps Monitoring development lifecycle with cross-platform support
+author: Evilazaro
+date: 2026-01-19
+version: 1.0
+tags: [developer-experience, automation, powershell, bash, azd-hooks]
+---
+
+# 🪫 Azure Logic Apps Monitoring - Developer Inner Loop Workflow
 
 ![PowerShell](https://img.shields.io/badge/PowerShell-7.0+-blue.svg)
 ![Bash](https://img.shields.io/badge/Bash-4.0+-green.svg)
@@ -6,6 +15,19 @@
 ![.NET](https://img.shields.io/badge/.NET-10.0+-purple.svg)
 ![Cross-Platform](https://img.shields.io/badge/platform-Windows%20%7C%20Linux%20%7C%20macOS-lightgrey.svg)
 ![License](https://img.shields.io/badge/license-MIT-orange.svg)
+
+> [!NOTE]
+> 🎯 **For Developers and DevOps Engineers**: This documentation covers automation scripts for the development lifecycle.  
+> ⏱️ **Estimated reading time:** 15 minutes for overview, 45 minutes for complete documentation
+
+<details>
+<summary>📍 <strong>Quick Navigation</strong></summary>
+
+| Previous | Index | Next |
+|:---------|:------:|--------:|
+| — | [📚 Docs Index](../README.md) | [check-dev-workstation →](check-dev-workstation.md) |
+
+</details>
 
 ## 📋 Table of Contents
 

@@ -1,6 +1,26 @@
-# Technology Architecture
+---
+title: Technology Architecture
+description: Platform services, technology standards, and Azure resource topology
+author: Evilazaro
+date: 2026-01-19
+version: 1.0
+tags: [architecture, technology, azure, infrastructure, bicep]
+---
 
-[← Application Architecture](03-application-architecture.md) | [Index](README.md) | [Observability Architecture →](05-observability-architecture.md)
+# ☁️ Technology Architecture
+
+> [!NOTE]
+> 🎯 **For Platform Engineers and DevOps**: This document covers Azure resources, infrastructure, and technology standards.  
+> ⏱️ **Estimated reading time:** 15 minutes
+
+<details>
+<summary>📍 <strong>Quick Navigation</strong></summary>
+
+| Previous | Index | Next |
+|:---------|:------:|--------:|
+| [← Application Architecture](03-application-architecture.md) | [📑 Index](README.md) | [Observability Architecture →](05-observability-architecture.md) |
+
+</details>
 
 ---
 

@@ -1,8 +1,21 @@
-# Azure Logic Apps Monitoring Solution - Documentation
+---
+title: Azure Logic Apps Monitoring Solution - Documentation
+description: Comprehensive documentation for the Azure Logic Apps Monitoring solution demonstrating enterprise-grade observability patterns
+author: Evilazaro
+date: 2026-01-19
+version: 1.0
+tags: [azure, logic-apps, monitoring, observability, aspire, opentelemetry]
+---
+
+# 📚 Azure Logic Apps Monitoring Solution - Documentation
 
 ![Azure](https://img.shields.io/badge/Azure-0078D4?logo=microsoft-azure&logoColor=white)
 ![.NET](https://img.shields.io/badge/.NET-10.0-512BD4?logo=dotnet&logoColor=white)
 ![License](https://img.shields.io/badge/license-MIT-orange.svg)
+
+> [!NOTE]
+> 🎯 **For Platform Engineers, Developers, and Architects**: This documentation provides comprehensive guidance for implementing enterprise-grade observability patterns with Azure Logic Apps.  
+> ⏱️ **Estimated reading time:** 10 minutes for overview, 2+ hours for complete documentation
 
 ---
 
@@ -314,6 +327,14 @@ When contributing to documentation:
 ## 📄 License
 
 This project is licensed under the **MIT License** — see the [LICENSE](../LICENSE) file for details.
+
+---
+
+<div align="center">
+
+[⬆️ Back to top](#-azure-logic-apps-monitoring-solution---documentation)
+
+</div>
 
 ---
 

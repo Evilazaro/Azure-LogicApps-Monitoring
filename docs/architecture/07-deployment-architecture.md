@@ -1,6 +1,26 @@
-# Deployment Architecture
+---
+title: Deployment Architecture
+description: Infrastructure as Code, CI/CD, and environment management for the Azure Logic Apps Monitoring solution
+author: Evilazaro
+date: 2026-01-19
+version: 1.0
+tags: [architecture, deployment, ci-cd, bicep, azd, github-actions]
+---
 
-[← Security Architecture](06-security-architecture.md) | [Index](README.md) | [ADRs →](adr/README.md)
+# 🚀 Deployment Architecture
+
+> [!NOTE]
+> 🎯 **For DevOps and Platform Engineers**: This document covers CI/CD, environments, and Infrastructure as Code.  
+> ⏱️ **Estimated reading time:** 20 minutes
+
+<details>
+<summary>📍 <strong>Quick Navigation</strong></summary>
+
+| Previous | Index | Next |
+|:---------|:------:|--------:|
+| [← Security Architecture](06-security-architecture.md) | [📑 Index](README.md) | [ADRs →](adr/README.md) |
+
+</details>
 
 ---
 
