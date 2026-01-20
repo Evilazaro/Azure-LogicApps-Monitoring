@@ -36,51 +36,68 @@ The solution implements a **service-oriented data architecture** where each serv
 ## Data Landscape Map
 
 ```mermaid
+---
+title: Data Landscape Map
+---
 flowchart LR
+    %% ===== BUSINESS DATA DOMAINS =====
     subgraph BusinessDomains["📊 Business Data Domains"]
         Orders["📦 Orders Domain"]
         Events["📨 Order Events Domain"]
     end
 
+    %% ===== TRANSACTIONAL STORES =====
     subgraph TransactionalStores["🗄️ Transactional Stores"]
         OrderDb[("OrderDb<br/>Azure SQL")]
     end
 
+    %% ===== MESSAGING STORES =====
     subgraph MessagingStores["📨 Messaging Stores"]
         Topic["ordersplaced<br/>Service Bus Topic"]
         Sub["orderprocessingsub<br/>Subscription"]
     end
 
+    %% ===== WORKFLOW STORES =====
     subgraph WorkflowStores["📁 Workflow Stores"]
         BlobSuccess["Success Blobs<br/>/ordersprocessedsuccessfully"]
         BlobError["Error Blobs<br/>/ordersprocessedwitherrors"]
     end
 
+    %% ===== TELEMETRY STORES =====
     subgraph TelemetryStores["📊 Telemetry Stores"]
         AppInsights["Application Insights"]
         LogAnalytics["Log Analytics"]
     end
 
-    Orders --> OrderDb
-    Orders --> Topic
-    Events --> Topic
-    Topic --> Sub
-    Sub --> BlobSuccess
-    Sub --> BlobError
-    OrderDb -.->|"telemetry"| AppInsights
-    Topic -.->|"diagnostics"| LogAnalytics
+    %% ===== CONNECTIONS =====
+    Orders -->|"persists to"| OrderDb
+    Orders -->|"publishes to"| Topic
+    Events -->|"flows through"| Topic
+    Topic -->|"delivers to"| Sub
+    Sub -->|"stores success"| BlobSuccess
+    Sub -->|"stores errors"| BlobError
+    OrderDb -.->|"emits telemetry"| AppInsights
+    Topic -.->|"emits diagnostics"| LogAnalytics
 
-    classDef domain fill:#e3f2fd,stroke:#1565c0,stroke-width:2px
-    classDef transactional fill:#e8f5e9,stroke:#2e7d32,stroke-width:2px
-    classDef messaging fill:#fff3e0,stroke:#ef6c00,stroke-width:2px
-    classDef workflow fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px
-    classDef telemetry fill:#fce4ec,stroke:#c2185b,stroke-width:2px
+    %% ===== STYLES - NODE CLASSES =====
+    classDef primary fill:#4F46E5,stroke:#3730A3,color:#FFFFFF
+    classDef datastore fill:#F59E0B,stroke:#D97706,color:#000000
+    classDef secondary fill:#10B981,stroke:#059669,color:#FFFFFF
+    classDef external fill:#6B7280,stroke:#4B5563,color:#FFFFFF,stroke-dasharray:5 5
 
-    class Orders,Events domain
-    class OrderDb transactional
-    class Topic,Sub messaging
-    class BlobSuccess,BlobError workflow
-    class AppInsights,LogAnalytics telemetry
+    %% ===== CLASS ASSIGNMENTS =====
+    class Orders,Events primary
+    class OrderDb datastore
+    class Topic,Sub secondary
+    class BlobSuccess,BlobError datastore
+    class AppInsights,LogAnalytics external
+
+    %% ===== SUBGRAPH STYLES =====
+    style BusinessDomains fill:#EEF2FF,stroke:#4F46E5,stroke-width:2px
+    style TransactionalStores fill:#FEF3C7,stroke:#F59E0B,stroke-width:2px
+    style MessagingStores fill:#ECFDF5,stroke:#10B981,stroke-width:2px
+    style WorkflowStores fill:#FEF3C7,stroke:#F59E0B,stroke-width:2px
+    style TelemetryStores fill:#F3F4F6,stroke:#6B7280,stroke-width:2px
 ```
 
 ---
@@ -166,7 +183,11 @@ sequenceDiagram
 ## Monitoring Data Flow Architecture
 
 ```mermaid
+---
+title: Monitoring Data Flow Architecture
+---
 flowchart LR
+    %% ===== TELEMETRY SOURCES =====
     subgraph Sources["📡 Layer 1: Telemetry Sources"]
         API["⚙️ Orders API"]
         Web["🌐 Web App"]
@@ -175,16 +196,19 @@ flowchart LR
         SQL["🗄️ SQL Database"]
     end
 
+    %% ===== INSTRUMENTATION =====
     subgraph Instrumentation["🔧 Layer 2: Instrumentation"]
         OTEL["OpenTelemetry SDK<br/><i>Traces, Metrics, Logs</i>"]
         AzDiag["Azure Diagnostics<br/><i>Platform telemetry</i>"]
     end
 
+    %% ===== COLLECTION =====
     subgraph Collection["📥 Layer 3: Collection"]
         AI["Application Insights<br/><i>APM & Traces</i>"]
         LAW["Log Analytics<br/><i>Logs & Diagnostics</i>"]
     end
 
+    %% ===== VISUALIZATION =====
     subgraph Visualization["📈 Layer 4: Visualization"]
         AppMap["Application Map"]
         TxSearch["Transaction Search"]
@@ -192,23 +216,37 @@ flowchart LR
         Alerts["Alert Rules"]
     end
 
-    API & Web -->|"OTLP/HTTP"| OTEL
-    LA & SB & SQL -->|"ARM Diagnostics"| AzDiag
-    OTEL -->|"Export"| AI
-    AzDiag -->|"Export"| LAW
-    AI --> LAW
-    AI --> AppMap & TxSearch
-    LAW --> Dashboards & Alerts
+    %% ===== CONNECTIONS =====
+    API -->|"sends OTLP/HTTP"| OTEL
+    Web -->|"sends OTLP/HTTP"| OTEL
+    LA -->|"exports ARM Diagnostics"| AzDiag
+    SB -->|"exports ARM Diagnostics"| AzDiag
+    SQL -->|"exports ARM Diagnostics"| AzDiag
+    OTEL -->|"exports to"| AI
+    AzDiag -->|"exports to"| LAW
+    AI -->|"forwards to"| LAW
+    AI -->|"renders"| AppMap
+    AI -->|"renders"| TxSearch
+    LAW -->|"renders"| Dashboards
+    LAW -->|"triggers"| Alerts
 
-    classDef source fill:#fff3e0,stroke:#ef6c00,stroke-width:2px
-    classDef instrument fill:#e3f2fd,stroke:#1565c0,stroke-width:2px
-    classDef collect fill:#e8f5e9,stroke:#2e7d32,stroke-width:2px
-    classDef visual fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px
+    %% ===== STYLES - NODE CLASSES =====
+    classDef primary fill:#4F46E5,stroke:#3730A3,color:#FFFFFF
+    classDef secondary fill:#10B981,stroke:#059669,color:#FFFFFF
+    classDef datastore fill:#F59E0B,stroke:#D97706,color:#000000
+    classDef external fill:#6B7280,stroke:#4B5563,color:#FFFFFF,stroke-dasharray:5 5
 
-    class API,Web,LA,SB,SQL source
-    class OTEL,AzDiag instrument
-    class AI,LAW collect
-    class AppMap,TxSearch,Dashboards,Alerts visual
+    %% ===== CLASS ASSIGNMENTS =====
+    class API,Web,LA,SB,SQL primary
+    class OTEL,AzDiag secondary
+    class AI,LAW datastore
+    class AppMap,TxSearch,Dashboards,Alerts external
+
+    %% ===== SUBGRAPH STYLES =====
+    style Sources fill:#EEF2FF,stroke:#4F46E5,stroke-width:2px
+    style Instrumentation fill:#ECFDF5,stroke:#10B981,stroke-width:2px
+    style Collection fill:#FEF3C7,stroke:#F59E0B,stroke-width:2px
+    style Visualization fill:#F3F4F6,stroke:#6B7280,stroke-width:2px
 ```
 
 ---
@@ -282,7 +320,11 @@ flowchart LR
 The solution implements **W3C Trace Context** for cross-service correlation:
 
 ```mermaid
+---
+title: W3C Trace Context Flow
+---
 flowchart LR
+    %% ===== TRACE CONTEXT FLOW =====
     subgraph TraceContext["🔗 W3C Trace Context Flow"]
         HTTP["HTTP Request<br/><code>traceparent</code> header"]
         SB["Service Bus<br/><code>ApplicationProperties</code>"]
@@ -290,13 +332,20 @@ flowchart LR
         AI["App Insights<br/><code>Operation ID</code>"]
     end
 
-    HTTP -->|"Propagate"| SB
-    SB -->|"Extract"| LA
-    HTTP -->|"Auto-capture"| AI
-    LA -.->|"Correlate"| AI
+    %% ===== CONNECTIONS =====
+    HTTP -->|"Propagates to"| SB
+    SB -->|"Extracts for"| LA
+    HTTP -->|"Auto-captures to"| AI
+    LA -.->|"Correlates with"| AI
 
-    classDef context fill:#e3f2fd,stroke:#1565c0,stroke-width:2px
-    class HTTP,SB,LA,AI context
+    %% ===== STYLES - NODE CLASSES =====
+    classDef primary fill:#4F46E5,stroke:#3730A3,color:#FFFFFF
+
+    %% ===== CLASS ASSIGNMENTS =====
+    class HTTP,SB,LA,AI primary
+
+    %% ===== SUBGRAPH STYLES =====
+    style TraceContext fill:#EEF2FF,stroke:#4F46E5,stroke-width:2px
 ```
 
 ### Implementation in OrdersMessageHandler
@@ -313,34 +362,48 @@ message.ApplicationProperties["traceparent"] = activity.Id ?? string.Empty;
 ## Data Dependencies Map
 
 ```mermaid
+---
+title: Data Dependencies Map
+---
 flowchart TD
+    %% ===== UPSTREAM (DATA PRODUCERS) =====
     subgraph Upstream["⬆️ Upstream (Data Producers)"]
         WebApp["🌐 Web App<br/>(Order Input)"]
     end
 
-    subgraph Core["🎯 Core Data Assets"]
+    %% ===== CORE DATA ASSETS =====
+    subgraph CoreAssets["🎯 Core Data Assets"]
         OrderDb[("🗄️ OrderDb<br/>Azure SQL")]
         EventBus["📨 Service Bus<br/>ordersplaced"]
     end
 
+    %% ===== DOWNSTREAM (DATA CONSUMERS) =====
     subgraph Downstream["⬇️ Downstream (Data Consumers)"]
         LogicApp["🔄 Logic Apps<br/>(Workflow Automation)"]
         AppInsights["📊 App Insights<br/>(Analytics & Monitoring)"]
     end
 
+    %% ===== CONNECTIONS =====
     WebApp -->|"Creates orders"| OrderDb
     OrderDb -->|"Publishes events"| EventBus
     EventBus -->|"Triggers workflows"| LogicApp
     OrderDb -.->|"Emits telemetry"| AppInsights
     LogicApp -.->|"Emits telemetry"| AppInsights
 
-    classDef upstream fill:#fff3e0,stroke:#ef6c00,stroke-width:2px
-    classDef core fill:#e3f2fd,stroke:#1565c0,stroke-width:2px
-    classDef downstream fill:#e8f5e9,stroke:#2e7d32,stroke-width:2px
+    %% ===== STYLES - NODE CLASSES =====
+    classDef primary fill:#4F46E5,stroke:#3730A3,color:#FFFFFF
+    classDef datastore fill:#F59E0B,stroke:#D97706,color:#000000
+    classDef secondary fill:#10B981,stroke:#059669,color:#FFFFFF
 
-    class WebApp upstream
-    class OrderDb,EventBus core
-    class LogicApp,AppInsights downstream
+    %% ===== CLASS ASSIGNMENTS =====
+    class WebApp primary
+    class OrderDb,EventBus datastore
+    class LogicApp,AppInsights secondary
+
+    %% ===== SUBGRAPH STYLES =====
+    style Upstream fill:#EEF2FF,stroke:#4F46E5,stroke-width:2px
+    style CoreAssets fill:#FEF3C7,stroke:#F59E0B,stroke-width:2px
+    style Downstream fill:#ECFDF5,stroke:#10B981,stroke-width:2px
 ```
 
 ---
