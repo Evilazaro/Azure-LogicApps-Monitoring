@@ -189,9 +189,6 @@ hooks:
       run: |
         if [ "${DEPLOYER_PRINCIPAL_TYPE}" = "ServicePrincipal" ]; then
           echo "Deployer is a Service Principal - Azure CLI already authenticated via GitHub Actions OIDC"
-          az ad group member add \
-                --group "Directory Readers" \
-                --member-id "#{MANAGED_IDENTITY_CLIENT_ID}"
         else
           ./hooks/Generate-Orders.sh --force --verbose
         fi
