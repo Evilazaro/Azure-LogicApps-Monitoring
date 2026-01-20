@@ -9,8 +9,8 @@
 - [Status](#-status)
 - [Date](#-date)
 - [Context](#-context)
-- [Decision](#-decision)
-- [Consequences](#-consequences)
+- [Decision](#%EF%B8%8F-decision)
+- [Consequences](#%EF%B8%8F-consequences)
 - [Telemetry Matrix](#-telemetry-matrix)
 - [Alternatives Considered](#-alternatives-considered)
 - [Correlation Strategy](#-correlation-strategy)
@@ -23,11 +23,11 @@
 
 ✅ **Accepted**
 
-## Date
+## 📅 Date
 
 2025-01
 
-## Context
+## 📋 Context
 
 The Azure Logic Apps Monitoring Solution requires comprehensive observability across:
 
@@ -54,7 +54,6 @@ Key requirements:
 | Operational simplicity | ↘️ Single platform preferred          |
 
 ---
-
 
 ---
 
@@ -160,7 +159,7 @@ public static IHostApplicationBuilder ConfigureOpenTelemetry(
 }
 ```
 
-2. **Custom Metrics** (`OrderService.cs`):
+1. **Custom Metrics** (`OrderService.cs`):
 
 ```csharp
 private static readonly Meter _meter = new("eShop.Orders.API");
@@ -170,7 +169,7 @@ private static readonly Histogram<double> _orderDuration =
     _meter.CreateHistogram<double>("eShop.orders.processing.duration");
 ```
 
-3. **Trace Context Propagation** (`OrdersMessageHandler.cs`):
+1. **Trace Context Propagation** (`OrdersMessageHandler.cs`):
 
 ```csharp
 // Propagate trace context to Service Bus messages
@@ -180,7 +179,7 @@ message.ApplicationProperties["traceparent"] =
     $"00-{Activity.Current?.TraceId}-{Activity.Current?.SpanId}-01";
 ```
 
-## Consequences
+## ⚖️ Consequences
 
 ### Positive
 
@@ -210,7 +209,6 @@ message.ApplicationProperties["traceparent"] =
 
 ---
 
-
 ---
 
 ## 📱 Telemetry Matrix
@@ -224,7 +222,6 @@ message.ApplicationProperties["traceparent"] =
 | SQL Database | ✅     | ✅      | ✅   | Azure Diagnostics |
 
 ---
-
 
 ---
 
@@ -276,7 +273,6 @@ message.ApplicationProperties["traceparent"] =
 
 ---
 
-
 ---
 
 ## 🔗 Correlation Strategy
@@ -317,7 +313,6 @@ sequenceDiagram
 | App Insights | SDK                 | `operation_Id`           |
 
 ---
-
 
 ---
 

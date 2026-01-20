@@ -10,7 +10,7 @@
 - [Date](#-date)
 - [Context](#-context)
 - [Decision](#%EF%B8%8F-decision)
-- [Consequences](#-consequences)
+- [Consequences](#%EF%B8%8F-consequences)
 - [Alternatives Considered](#-alternatives-considered)
 - [Message Patterns](#-message-patterns)
 - [Related Decisions](#-related-decisions)
@@ -22,11 +22,11 @@
 
 ✅ **Accepted**
 
-## Date
+## 📅 Date
 
 2025-01
 
-## Context
+## 📋 Context
 
 The Azure Logic Apps Monitoring Solution requires asynchronous communication between:
 
@@ -43,7 +43,7 @@ Key requirements:
 
 ### Message Flow
 
-```
+```text
 Order Created → API publishes message → Service Bus → Logic App triggers → Process order
 ```
 
@@ -84,7 +84,7 @@ Order Created → API publishes message → Service Bus → Logic App triggers �
 }
 ```
 
-3. **Publishing Pattern** (from `OrdersMessageHandler.cs`):
+1. **Publishing Pattern** (from `OrdersMessageHandler.cs`):
 
 ```csharp
 public async Task SendOrderPlacedMessageAsync(OrderEntity order)
@@ -104,7 +104,7 @@ public async Task SendOrderPlacedMessageAsync(OrderEntity order)
 }
 ```
 
-4. **Logic App Trigger**:
+1. **Logic App Trigger**:
 
 ```json
 {
