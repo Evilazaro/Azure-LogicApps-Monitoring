@@ -2,6 +2,7 @@
 title: Azure Logic Apps Monitoring Solution
 description: Enterprise-grade observability patterns for Azure Logic Apps Standard workflows with .NET Aspire orchestration
 author: Evilazaro
+date: 2026-01-20
 version: 1.0
 tags: [azure, logic-apps, monitoring, observability, aspire, opentelemetry]
 ---
@@ -17,6 +18,8 @@ tags: [azure, logic-apps, monitoring, observability, aspire, opentelemetry]
 
 > [!NOTE]
 > **Target Audience**: Platform Engineers, DevOps Engineers, Cloud Architects, and .NET Developers building enterprise observability solutions on Azure.
+>
+> ⏱️ **Estimated Reading Time**: 10-15 minutes
 
 <details>
 <summary>📍 <strong>Quick Navigation</strong></summary>
@@ -398,6 +401,17 @@ Contributions are welcome! Please follow these steps:
 ## 📄 License
 
 This project is licensed under the **MIT License** - see the [LICENSE](LICENSE) file for details.
+
+---
+
+## 📎 Related Documents
+
+| Document                                                      | Description                                       |
+| ------------------------------------------------------------- | ------------------------------------------------- |
+| [Architecture Overview](docs/architecture/README.md)          | Complete TOGAF-aligned architecture documentation |
+| [DevOps Guide](docs/devops/README.md)                         | CI/CD pipeline documentation                      |
+| [Hook Scripts Reference](docs/hooks/README.md)                | azd lifecycle automation scripts                  |
+| [IP Security Configuration](docs/IP-SECURITY-RESTRICTIONS.md) | Network security setup guide                      |
 
 ---
 
