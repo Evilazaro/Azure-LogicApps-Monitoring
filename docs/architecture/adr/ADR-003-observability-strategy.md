@@ -1,10 +1,25 @@
-# ADR-003: OpenTelemetry + Application Insights for Observability
+# 📊 ADR-003: OpenTelemetry + Application Insights for Observability
 
 ← [ADR-002](ADR-002-service-bus-messaging.md) | **ADR-003** | [ADR Index](README.md)
 
 ---
 
-## Status
+## 📑 Table of Contents
+
+- [Status](#-status)
+- [Date](#-date)
+- [Context](#-context)
+- [Decision](#-decision)
+- [Consequences](#-consequences)
+- [Telemetry Matrix](#-telemetry-matrix)
+- [Alternatives Considered](#-alternatives-considered)
+- [Correlation Strategy](#-correlation-strategy)
+- [Related Decisions](#-related-decisions)
+- [References](#-references)
+
+---
+
+## ✅ Status
 
 ✅ **Accepted**
 
@@ -38,7 +53,13 @@ Key requirements:
 | Standards adoption     | ↗️ Industry-standard telemetry        |
 | Operational simplicity | ↘️ Single platform preferred          |
 
-## Decision
+---
+
+[↑ Back to Top](#-adr-003-opentelemetry--application-insights-for-observability)
+
+---
+
+## 🛠️ Decision
 
 **Adopt OpenTelemetry SDK for instrumentation** with **Azure Monitor (Application Insights)** as the backend, providing vendor-neutral telemetry collection with Azure-native analysis capabilities.
 
@@ -188,7 +209,13 @@ message.ApplicationProperties["traceparent"] =
 - Existing Azure Monitor skills transfer
 - KQL queries remain the analysis language
 
-## Telemetry Matrix
+---
+
+[↑ Back to Top](#-adr-003-opentelemetry--application-insights-for-observability)
+
+---
+
+## 📱 Telemetry Matrix
 
 | Component    | Traces | Metrics | Logs | Method            |
 | ------------ | ------ | ------- | ---- | ----------------- |
@@ -198,7 +225,13 @@ message.ApplicationProperties["traceparent"] =
 | Service Bus  | ✅     | ✅      | ✅   | Azure Diagnostics |
 | SQL Database | ✅     | ✅      | ✅   | Azure Diagnostics |
 
-## Alternatives Considered
+---
+
+[↑ Back to Top](#-adr-003-opentelemetry--application-insights-for-observability)
+
+---
+
+## 🔍 Alternatives Considered
 
 ### 1. Application Insights SDK Only
 
@@ -244,7 +277,13 @@ message.ApplicationProperties["traceparent"] =
 - No local development option
 - Harder to switch vendors later
 
-## Correlation Strategy
+---
+
+[↑ Back to Top](#-adr-003-opentelemetry--application-insights-for-observability)
+
+---
+
+## 🔗 Correlation Strategy
 
 ### Cross-Service Trace Flow
 
@@ -281,12 +320,20 @@ sequenceDiagram
 | Logic App    | Built-in            | `x-ms-workflow-run-id`   |
 | App Insights | SDK                 | `operation_Id`           |
 
-## Related Decisions
+---
+
+[↑ Back to Top](#-adr-003-opentelemetry--application-insights-for-observability)
+
+---
+
+## 🔗 Related Decisions
 
 - [ADR-001: Aspire Orchestration](ADR-001-aspire-orchestration.md) - OTel configured via ServiceDefaults
 - [ADR-002: Service Bus Messaging](ADR-002-service-bus-messaging.md) - Trace propagation in messages
 
-## References
+---
+
+## 📚 References
 
 - [OpenTelemetry .NET](https://opentelemetry.io/docs/languages/net/)
 - [Azure Monitor OpenTelemetry](https://learn.microsoft.com/azure/azure-monitor/app/opentelemetry-overview)
