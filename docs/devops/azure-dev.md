@@ -62,7 +62,7 @@ title: CD - Azure Deployment Pipeline
 flowchart LR
     %% ===== TRIGGER EVENTS =====
     subgraph Triggers["🎯 Triggers"]
-        push(["Push to Main"])
+        push(["Push to docs987678"])
         manual(["Manual Dispatch"])
     end
 
@@ -193,7 +193,7 @@ flowchart LR
 
 | Event               | Condition                                                            | Description                                          |
 | ------------------- | -------------------------------------------------------------------- | ---------------------------------------------------- |
-| `push`              | Branch: `main`                                                       | Triggers on push to main branch                      |
+| `push`              | Branch: `docs987678`                                                 | Triggers on push to docs987678 branch                |
 | `push`              | Paths: `src/**`, `app.*/**`, `infra/**`, `azure.yaml`, workflow file | Only runs when relevant files change                 |
 | `workflow_dispatch` | Manual                                                               | Allows manual triggering with optional skip-ci input |
 
@@ -255,9 +255,10 @@ paths:
 | **Auth**    | 🔐 Log in with Azure (OIDC)    | Authenticates azd with federated credentials |
 | **Auth**    | 🔑 Azure CLI Login             | Authenticates Azure CLI                      |
 | **Deploy**  | 🏗️ Provision Infrastructure    | Runs `azd provision`                         |
-| **Deploy**  | 🔐 Re-authenticate             | Refreshes authentication                     |
+| **Deploy**  | 🔑 Create SQL User             | Creates managed identity user in Azure SQL   |
+| **Deploy**  | 🔐 Re-authenticate             | Refreshes authentication tokens              |
 | **Deploy**  | 🚀 Deploy Application          | Runs `azd deploy`                            |
-| **Summary** | 📊 Generate deployment summary | Creates detailed summary                     |
+| **Summary** | 📊 Generate deployment summary | Creates detailed summary with rollback info  |
 
 #### Job Outputs
 

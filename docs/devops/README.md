@@ -74,6 +74,7 @@ flowchart TB
                 test(["Test"])
             end
             analyze(["Analyze"])
+            codeql(["🛡️ CodeQL"])
         end
     end
 
@@ -111,8 +112,10 @@ flowchart TB
     MatrixJobs -->|parallel| build
     build -->|on success| test
     build -->|on success| analyze
+    build -->|on success| codeql
     test -->|reports to| summary_job
     analyze -->|reports to| summary_job
+    codeql -->|reports to| summary_job
 
     %% ===== CD FLOW =====
     cd_workflow -->|runs| ci_stage
@@ -125,6 +128,7 @@ flowchart TB
     %% ===== FAILURE PATHS =====
     test --x|on failure| failure_handler
     analyze --x|on failure| failure_handler
+    codeql --x|on failure| failure_handler
     deploy --x|on failure| failure_handler
 
     %% ===== STYLING DEFINITIONS =====
@@ -157,6 +161,7 @@ flowchart TB
     class push,pr,manual trigger
     class build,test primary
     class deploy,analyze secondary
+    class codeql primary
     class ci_stage external
     class dependabot external
     class failure_handler failed
@@ -177,11 +182,11 @@ flowchart TB
 
 ## 📊 Quick Reference
 
-| Workflow                     | Triggers                                           | Jobs                             | Platforms              |
-| ---------------------------- | -------------------------------------------------- | -------------------------------- | ---------------------- |
-| **CD - Azure Deployment**    | `push:main`, `workflow_dispatch`                   | CI → Deploy Dev → Summary        | Ubuntu (deploy)        |
-| **CI - .NET Build and Test** | `push:*`, `pull_request:main`, `workflow_dispatch` | CI (calls reusable)              | Ubuntu, Windows, macOS |
-| **CI - .NET Reusable**       | `workflow_call`                                    | Build → Test → Analyze → Summary | Ubuntu, Windows, macOS |
+| Workflow                     | Triggers                                           | Jobs                                      | Platforms              |
+| ---------------------------- | -------------------------------------------------- | ----------------------------------------- | ---------------------- |
+| **CD - Azure Deployment**    | `push:docs987678`, `workflow_dispatch`             | CI → Deploy Dev → Summary                 | Ubuntu (deploy)        |
+| **CI - .NET Build and Test** | `push:*`, `pull_request:main`, `workflow_dispatch` | CI (calls reusable)                       | Ubuntu, Windows, macOS |
+| **CI - .NET Reusable**       | `workflow_call`                                    | Build → Test → Analyze → CodeQL → Summary | Ubuntu, Windows, macOS |
 
 ---
 

@@ -52,6 +52,7 @@ This is a reusable workflow that builds, tests, and analyzes .NET solutions. It 
 | 🔨 **Configurable Build** | With version generation                   |
 | 🧪 **Test Execution**     | With code coverage (Cobertura)            |
 | 🔍 **Code Analysis**      | Formatting analysis with `dotnet format`  |
+| 🛡️ **Security Scanning**  | CodeQL vulnerability scanning (C#)        |
 | 📊 **Detailed Summaries** | Job summaries and status badges           |
 | 📦 **Artifact Upload**    | Per-platform builds, tests, and coverage  |
 | 🖥️ **Cross-Platform**     | Always runs on Ubuntu, Windows, and macOS |
@@ -130,6 +131,18 @@ flowchart LR
         a_format["Verify Formatting"]
         a_summary["Analysis Summary"]
         a_fail["Fail on Issues"]
+    end
+
+    %% ===== CODEQL JOB =====
+    subgraph CodeQLJob["🛡️ CodeQL Security Scan"]
+        direction LR
+        cql_checkout["Checkout Repository"]
+        cql_setup["Setup .NET SDK"]
+        cql_init["Initialize CodeQL"]
+        cql_build["Autobuild"]
+        cql_analyze["Perform Analysis"]
+        cql_upload["Upload SARIF"]
+        cql_summary["CodeQL Summary"]
     end
 
     %% ===== SUMMARY JOB =====
@@ -298,6 +311,7 @@ on:
 | `build-result`   | Build job result (`success`, `failure`, `cancelled`) |
 | `test-result`    | Test job result                                      |
 | `analyze-result` | Analysis job result                                  |
+| `codeql-result`  | CodeQL security scan result                          |
 
 ---
 
@@ -385,35 +399,76 @@ strategy:
 | 📊 Generate analysis summary | Create analysis summary with fix instructions            |
 | ❌ Fail on format issues     | Exit if issues found and `fail-on-format-issues` is true |
 
-### Job 4: 📊 Summary
+### Job 4: �️ CodeQL Security Scan
+
+**Purpose:** Perform security vulnerability scanning using GitHub CodeQL.
+
+| Property      | Value                        |
+| ------------- | ---------------------------- |
+| **Runner**    | `${{ inputs.runs-on }}`      |
+| **Timeout**   | 45 minutes                   |
+| **Needs**     | `build`                      |
+| **Condition** | Always runs (no skip option) |
+
+#### CodeQL Configuration
+
+| Setting            | Value                                                        | Description                              |
+| ------------------ | ------------------------------------------------------------ | ---------------------------------------- |
+| **Language**       | `csharp`                                                     | Scans C# code                            |
+| **Query Suites**   | `security-extended`, `security-and-quality`                  | Extended security queries + code quality |
+| **Build Mode**     | Autobuild                                                    | Automatic .NET build detection           |
+| **Excluded Paths** | `**/tests/**`, `**/test/**`, `**/*.test.cs`, `**/*.Tests.cs` | Test code excluded                       |
+
+#### CodeQL Steps
+
+| Step                       | Description                                |
+| -------------------------- | ------------------------------------------ |
+| 📥 Checkout repository     | Clone with full history (`fetch-depth: 0`) |
+| 🔧 Setup .NET SDK          | Install .NET SDK                           |
+| 🛡️ Initialize CodeQL       | Configure CodeQL with extended queries     |
+| 🔨 Autobuild for CodeQL    | Automatic .NET build                       |
+| 🛡️ Perform CodeQL analysis | Execute security scan                      |
+| 📤 Upload CodeQL SARIF     | Upload results to GitHub Security tab      |
+| 📊 Generate CodeQL summary | Create security scan summary               |
+
+#### Vulnerability Categories Scanned
+
+- 💉 SQL injection, XSS, and other injection attacks
+- 🔐 Insecure cryptographic practices
+- 📤 Sensitive data exposure
+- 🔑 Authentication and authorization issues
+- 🛡️ Path traversal vulnerabilities
+- ⚠️ Unsafe deserialization
+
+### Job 5: 📊 Summary
 
 **Purpose:** Generate overall workflow summary.
 
-| Property      | Value                      |
-| ------------- | -------------------------- |
-| **Runner**    | `${{ inputs.runs-on }}`    |
-| **Timeout**   | 5 minutes                  |
-| **Needs**     | `build`, `test`, `analyze` |
-| **Condition** | `always()`                 |
+| Property      | Value                                |
+| ------------- | ------------------------------------ |
+| **Runner**    | `${{ inputs.runs-on }}`              |
+| **Timeout**   | 5 minutes                            |
+| **Needs**     | `build`, `test`, `analyze`, `codeql` |
+| **Condition** | `always()`                           |
 
 #### Summary Contents
 
 - Overall CI status badge
-- Job results table (Build, Test, Analyze)
+- Job results table (Build, Test, Analyze, CodeQL)
 - Workflow details (branch, commit, actor)
 - Artifacts list with retention info
 - Action required section on failure
 
-### Job 5: ❌ Failed
+### Job 6: ❌ Failed
 
 **Purpose:** Report CI failures.
 
-| Property      | Value                      |
-| ------------- | -------------------------- |
-| **Runner**    | `${{ inputs.runs-on }}`    |
-| **Timeout**   | 5 minutes                  |
-| **Needs**     | `build`, `test`, `analyze` |
-| **Condition** | `failure()`                |
+| Property      | Value                                |
+| ------------- | ------------------------------------ |
+| **Runner**    | `${{ inputs.runs-on }}`              |
+| **Timeout**   | 5 minutes                            |
+| **Needs**     | `build`, `test`, `analyze`, `codeql` |
+| **Condition** | `failure()`                          |
 
 ---
 
@@ -432,11 +487,12 @@ permissions:
 
 ## 📦 Artifacts
 
-| Artifact          | Contents                                                    | Retention                               |
-| ----------------- | ----------------------------------------------------------- | --------------------------------------- |
-| `build-artifacts` | Compiled binaries (`**/bin/${{ inputs.configuration }}/**`) | 7 days                                  |
-| `test-results`    | Test results (`.trx` files)                                 | `${{ inputs.artifact-retention-days }}` |
-| `code-coverage`   | Coverage reports (`coverage.cobertura.xml`)                 | `${{ inputs.artifact-retention-days }}` |
+| Artifact               | Contents                                                    | Retention                               |
+| ---------------------- | ----------------------------------------------------------- | --------------------------------------- |
+| `build-artifacts-{os}` | Compiled binaries (`**/bin/${{ inputs.configuration }}/**`) | 7 days                                  |
+| `test-results-{os}`    | Test results (`.trx` files)                                 | `${{ inputs.artifact-retention-days }}` |
+| `code-coverage-{os}`   | Coverage reports (`coverage.cobertura.xml`)                 | `${{ inputs.artifact-retention-days }}` |
+| `codeql-sarif-results` | CodeQL security scan results (SARIF format)                 | `${{ inputs.artifact-retention-days }}` |
 
 ---
 
@@ -557,18 +613,23 @@ title: CI Job Dependencies
 ---
 flowchart LR
     %% ===== JOB DEPENDENCY GRAPH =====
-    build(["Build"]) -->|triggers| test(["Test"])
-    build -->|triggers| analyze(["Analyze"])
-    test -->|reports to| summary(["Summary"])
+    build(["🔨 Build"]) -->|triggers| test(["🧪 Test"])
+    build -->|triggers| analyze(["🔍 Analyze"])
+    build -->|triggers| codeql(["🛡️ CodeQL"])
+    test -->|reports to| summary(["📊 Summary"])
     analyze -->|reports to| summary
-    test --x|on failure| failure(["Failed"])
+    codeql -->|reports to| summary
+    test --x|on failure| failure(["❌ Failed"])
     analyze --x|on failure| failure
+    codeql --x|on failure| failure
 
     %% ===== STYLING DEFINITIONS =====
     %% Primary components: Indigo - main processes
     classDef primary fill:#4F46E5,stroke:#3730A3,color:#FFFFFF
     %% Secondary components: Emerald - secondary elements
     classDef secondary fill:#10B981,stroke:#059669,color:#FFFFFF
+    %% Security: Purple - security scanning
+    classDef security fill:#9C27B0,stroke:#6A1B9A,color:#FFFFFF
     %% Error/failure states: Red - error handling
     classDef failed fill:#F44336,stroke:#C62828,color:#FFFFFF
     %% Data stores: Amber - reporting
@@ -577,6 +638,7 @@ flowchart LR
     %% Apply styles to nodes
     class build,test primary
     class analyze secondary
+    class codeql security
     class summary datastore
     class failure failed
 ```

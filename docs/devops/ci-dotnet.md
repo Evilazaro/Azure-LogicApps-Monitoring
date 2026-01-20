@@ -49,6 +49,7 @@ This workflow orchestrates the CI pipeline by calling the reusable workflow. It 
 | 🔧 **Configurable Build**     | Release/Debug configuration options            |
 | 🧪 **Cross-Platform Testing** | Builds and tests on Ubuntu, Windows, and macOS |
 | 🔍 **Code Analysis**          | Formatting analysis with `.editorconfig`       |
+| 🛡️ **Security Scanning**      | CodeQL vulnerability scanning (always enabled) |
 | 📊 **Test Reporting**         | Detailed summaries and result publishing       |
 | 📦 **Build Artifacts**        | Per-platform artifacts for debugging           |
 
@@ -85,6 +86,7 @@ flowchart LR
                 test(["Test"])
             end
             analyze(["Analyze"])
+            codeql(["🛡️ CodeQL"])
             summary(["Summary"])
         end
     end
@@ -107,8 +109,10 @@ flowchart LR
     ci_call -->|starts| build
     build -->|on success| test
     build -->|on success| analyze
+    build -->|on success| codeql
     test -->|reports to| summary
     analyze -->|reports to| summary
+    codeql -->|reports to| summary
 
     %% Artifact flow - store outputs
     build -->|stores| build_art
@@ -143,6 +147,7 @@ flowchart LR
     class ci_call external
     class build,test primary
     class analyze,summary secondary
+    class codeql primary
     class build_art,test_art,cov_art datastore
 ```
 
@@ -233,6 +238,7 @@ permissions:
   contents: read # Required for checkout
   checks: write # Required for test reporter
   pull-requests: write # Required for PR comments
+  security-events: write # Required for CodeQL SARIF upload
 ```
 
 ### Concurrency Configuration
@@ -256,6 +262,7 @@ All artifacts include the platform suffix (`-ubuntu-latest`, `-windows-latest`, 
 | `build-artifacts-{os}` | Compiled binaries               | 7 days    |
 | `test-results-{os}`    | Test execution results (`.trx`) | 30 days   |
 | `code-coverage-{os}`   | Cobertura XML coverage reports  | 30 days   |
+| `codeql-sarif-results` | CodeQL security scan results    | 30 days   |
 
 ---
 
