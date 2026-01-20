@@ -1,6 +1,30 @@
+---
+title: Security Architecture
+description: Security architecture documentation covering identity management, network security, data protection, threat modeling, and compliance for the Azure Logic Apps Monitoring Solution.
+author: Architecture Team
+date: 2026-01-20
+version: 1.0.0
+tags:
+  - security
+  - managed-identity
+  - zero-trust
+  - rbac
+---
+
 # 🔐 Security Architecture
 
-← [Observability Architecture](05-observability-architecture.md) | **Security** | [Deployment Architecture →](07-deployment-architecture.md)
+> [!NOTE]
+> **Target Audience:** Security Teams, Compliance Officers, Platform Engineers
+> **Reading Time:** ~12 minutes
+
+<details>
+<summary>📍 Navigation</summary>
+
+| Previous                                                         |    Index     |                                                       Next |
+| :--------------------------------------------------------------- | :----------: | ---------------------------------------------------------: |
+| [← Observability Architecture](05-observability-architecture.md) | **Security** | [Deployment Architecture →](07-deployment-architecture.md) |
+
+</details>
 
 ---
 
@@ -356,7 +380,8 @@ flowchart LR
 | `AZURE_TENANT_ID`       | GitHub Environment | N/A (static)               |
 | `AZURE_SUBSCRIPTION_ID` | GitHub Environment | N/A (static)               |
 
-> 💡 **Note**: GitHub Actions uses OIDC federation with Workload Identity, eliminating client secrets.
+> [!TIP]
+> **Note**: GitHub Actions uses OIDC federation with Workload Identity, eliminating client secrets.
 
 ---
 
@@ -436,4 +461,8 @@ flowchart LR
 
 ---
 
-_← [Observability Architecture](05-observability-architecture.md) | [Deployment Architecture →](07-deployment-architecture.md)_
+<div align="center">
+
+[← Observability Architecture](05-observability-architecture.md) | **Security** | [Deployment Architecture →](07-deployment-architecture.md)
+
+</div>

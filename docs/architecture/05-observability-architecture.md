@@ -20,8 +20,8 @@ tags:
 <details>
 <summary>📍 Navigation</summary>
 
-| Previous | Index | Next |
-|:---------|:-----:|-----:|
+| Previous                                                   |       Index       |                                                   Next |
+| :--------------------------------------------------------- | :---------------: | -----------------------------------------------------: |
 | [← Technology Architecture](04-technology-architecture.md) | **Observability** | [Security Architecture →](06-security-architecture.md) |
 
 </details>

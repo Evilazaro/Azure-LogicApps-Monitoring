@@ -1,6 +1,30 @@
+---
+title: Deployment Architecture
+description: Deployment architecture documentation covering CI/CD pipelines, Azure Developer CLI integration, infrastructure modules, and local development setup for the Azure Logic Apps Monitoring Solution.
+author: Architecture Team
+date: 2026-01-20
+version: 1.0.0
+tags:
+  - deployment
+  - ci-cd
+  - github-actions
+  - azure-developer-cli
+---
+
 # 🚀 Deployment Architecture
 
-← [Security Architecture](06-security-architecture.md) | **Deployment** | [ADR Index →](adr/README.md)
+> [!NOTE]
+> **Target Audience:** DevOps Engineers, Platform Engineers, Developers
+> **Reading Time:** ~15 minutes
+
+<details>
+<summary>📍 Navigation</summary>
+
+| Previous                                               |     Index      |                         Next |
+| :----------------------------------------------------- | :------------: | ---------------------------: |
+| [← Security Architecture](06-security-architecture.md) | **Deployment** | [ADR Index →](adr/README.md) |
+
+</details>
 
 ---
 
@@ -531,6 +555,9 @@ dotnet run --project app.AppHost/app.AppHost.csproj
 
 ## ✅ Deployment Checklist
 
+> [!IMPORTANT]
+> Complete these checks before, during, and after deployment to ensure success.
+
 ### Pre-Deployment
 
 - [ ] All tests passing in CI
@@ -567,4 +594,8 @@ dotnet run --project app.AppHost/app.AppHost.csproj
 
 ---
 
-_← [Security Architecture](06-security-architecture.md) | [ADR Index →](adr/README.md)_
+<div align="center">
+
+[← Security Architecture](06-security-architecture.md) | **Deployment** | [ADR Index →](adr/README.md)
+
+</div>
