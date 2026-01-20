@@ -1,10 +1,23 @@
-# ADR-001: Use .NET Aspire for Service Orchestration
+# 🎯 ADR-001: Use .NET Aspire for Service Orchestration
 
 ← [ADR Index](README.md) | **ADR-001** | [ADR-002 →](ADR-002-service-bus-messaging.md)
 
 ---
 
-## Status
+## 📑 Table of Contents
+
+- [Status](#-status)
+- [Date](#-date)
+- [Context](#-context)
+- [Decision](#-decision)
+- [Consequences](#-consequences)
+- [Alternatives Considered](#-alternatives-considered)
+- [Related Decisions](#-related-decisions)
+- [References](#-references)
+
+---
+
+## ✅ Status
 
 ✅ **Accepted**
 
