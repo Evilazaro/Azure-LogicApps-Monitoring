@@ -128,3 +128,13 @@ ipSecurityRestrictions:
 ## 📚 Documentation
 
 See [IP-SECURITY-RESTRICTIONS.md](./IP-SECURITY-RESTRICTIONS.md) for detailed configuration and troubleshooting guide.
+
+---
+
+<div align="center">
+
+[← Detailed Guide](IP-SECURITY-RESTRICTIONS.md) | **Quick Reference** | [📚 Docs Index](README.md)
+
+[⬆️ Back to top](#-ip-security-restrictions---quick-reference)
+
+</div>

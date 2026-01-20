@@ -367,4 +367,10 @@ dotnet format app.sln
 
 ---
 
+<div align="center">
+
+[← Azure Deployment](azure-dev.md) | **CI Pipeline** | [Reusable CI →](ci-dotnet-reusable.md)
+
 [⬆️ Back to top](#-ci---net-build-and-test)
+
+</div>

@@ -510,4 +510,10 @@ azd deploy --no-prompt
 
 ---
 
+<div align="center">
+
+[← DevOps Overview](README.md) | **CD - Azure Deployment** | [CI Pipeline →](ci-dotnet.md)
+
 [⬆️ Back to top](#-cd---azure-deployment)
+
+</div>

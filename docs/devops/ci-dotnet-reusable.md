@@ -659,4 +659,10 @@ flowchart LR
 
 ---
 
+<div align="center">
+
+[← CI Pipeline](ci-dotnet.md) | **Reusable CI Workflow** | [📑 DevOps Index](README.md)
+
 [⬆️ Back to top](#-ci---net-reusable-workflow)
+
+</div>
