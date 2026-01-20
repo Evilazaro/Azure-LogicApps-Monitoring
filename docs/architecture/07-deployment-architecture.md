@@ -1,10 +1,25 @@
-# Deployment Architecture
+# 🚀 Deployment Architecture
 
 ← [Security Architecture](06-security-architecture.md) | **Deployment** | [ADR Index →](adr/README.md)
 
 ---
 
-## Deployment Principles
+## 📑 Table of Contents
+
+- [Deployment Principles](#-deployment-principles)
+- [Environment Strategy](#-environment-strategy)
+- [CI/CD Pipeline Architecture](#%EF%B8%8F-cicd-pipeline-architecture)
+- [Azure Developer CLI Integration](#-azure-developer-cli-azd-integration)
+- [Infrastructure Modules](#-infrastructure-modules)
+- [Deployment Hooks](#-deployment-hooks)
+- [Rollback Strategy](#-rollback-strategy)
+- [Local Development Setup](#-local-development-setup)
+- [Deployment Checklist](#-deployment-checklist)
+- [Cross-Architecture Relationships](#-cross-architecture-relationships)
+
+---
+
+## 📋 Deployment Principles
 
 | #       | Principle                  | Rationale                   | Implications                   |
 | ------- | -------------------------- | --------------------------- | ------------------------------ |
@@ -16,7 +31,11 @@
 
 ---
 
-## Environment Strategy
+[↑ Back to Top](#-deployment-architecture)
+
+---
+
+## 🌍 Environment Strategy
 
 ### Environment Matrix
 
@@ -67,7 +86,11 @@ flowchart TB
 
 ---
 
-## CI/CD Pipeline Architecture
+[↑ Back to Top](#-deployment-architecture)
+
+---
+
+## ⚙️ CI/CD Pipeline Architecture
 
 ### Pipeline Flow
 
@@ -191,7 +214,11 @@ jobs:
 
 ---
 
-## Azure Developer CLI (azd) Integration
+[↑ Back to Top](#-deployment-architecture)
+
+---
+
+## 🔧 Azure Developer CLI (azd) Integration
 
 ### azd Configuration
 
@@ -276,7 +303,11 @@ flowchart LR
 
 ---
 
-## Infrastructure Modules
+[↑ Back to Top](#-deployment-architecture)
+
+---
+
+## 🏭 Infrastructure Modules
 
 ### Bicep Module Hierarchy
 
@@ -344,7 +375,11 @@ flowchart TB
 
 ---
 
-## Deployment Hooks
+[↑ Back to Top](#-deployment-architecture)
+
+---
+
+## 🪝 Deployment Hooks
 
 ### preprovision Hook
 
@@ -410,7 +445,11 @@ Write-Host "✅ Post-provisioning complete"
 
 ---
 
-## Rollback Strategy
+[↑ Back to Top](#-deployment-architecture)
+
+---
+
+## ⏮️ Rollback Strategy
 
 ### Rollback Scenarios
 
@@ -463,7 +502,11 @@ flowchart LR
 
 ---
 
-## Local Development Setup
+[↑ Back to Top](#-deployment-architecture)
+
+---
+
+## 💻 Local Development Setup
 
 ### Prerequisites
 
@@ -498,7 +541,11 @@ dotnet run --project app.AppHost/app.AppHost.csproj
 
 ---
 
-## Deployment Checklist
+[↑ Back to Top](#-deployment-architecture)
+
+---
+
+## ✅ Deployment Checklist
 
 ### Pre-Deployment
 
@@ -524,7 +571,11 @@ dotnet run --project app.AppHost/app.AppHost.csproj
 
 ---
 
-## Cross-Architecture Relationships
+[↑ Back to Top](#-deployment-architecture)
+
+---
+
+## 🌐 Cross-Architecture Relationships
 
 | Related Architecture           | Connection            | Reference                                                                                     |
 | ------------------------------ | --------------------- | --------------------------------------------------------------------------------------------- |

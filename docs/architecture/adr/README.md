@@ -1,10 +1,19 @@
-# Architecture Decision Records
+# 📜 Architecture Decision Records
 
 ← [Deployment Architecture](../07-deployment-architecture.md) | **ADR Index** | [ADR-001 →](ADR-001-aspire-orchestration.md)
 
 ---
 
-## About ADRs
+## 📑 Table of Contents
+
+- [About ADRs](#-about-adrs)
+- [ADR Index](#-adr-index)
+- [Decision Log Summary](#-decision-log-summary)
+- [ADR Template](#-adr-template)
+
+---
+
+## ℹ️ About ADRs
 
 Architecture Decision Records (ADRs) document significant architectural decisions made during the design and evolution of the Azure Logic Apps Monitoring Solution. Each ADR captures:
 
@@ -12,7 +21,13 @@ Architecture Decision Records (ADRs) document significant architectural decision
 - **Decision**: What was decided
 - **Consequences**: The resulting context after applying the decision
 
-## ADR Index
+---
+
+[↑ Back to Top](#-architecture-decision-records)
+
+---
+
+## 📊 ADR Index
 
 | ID                                           | Title                                                  | Status      | Date    |
 | -------------------------------------------- | ------------------------------------------------------ | ----------- | ------- |
@@ -20,7 +35,13 @@ Architecture Decision Records (ADRs) document significant architectural decision
 | [ADR-002](ADR-002-service-bus-messaging.md)  | Use Azure Service Bus for Async Messaging              | ✅ Accepted | 2025-01 |
 | [ADR-003](ADR-003-observability-strategy.md) | OpenTelemetry + Application Insights for Observability | ✅ Accepted | 2025-01 |
 
-## Decision Log Summary
+---
+
+[↑ Back to Top](#-architecture-decision-records)
+
+---
+
+## 📝 Decision Log Summary
 
 ### ADR-001: .NET Aspire for Service Orchestration
 
@@ -70,7 +91,11 @@ Architecture Decision Records (ADRs) document significant architectural decision
 
 ---
 
-## ADR Template
+[↑ Back to Top](#-architecture-decision-records)
+
+---
+
+## 📝 ADR Template
 
 When creating new ADRs, use this template:
 
