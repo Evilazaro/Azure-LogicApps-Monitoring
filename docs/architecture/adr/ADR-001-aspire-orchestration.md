@@ -30,14 +30,14 @@ tags:
 
 ## 📑 Table of Contents
 
-- [Status](#-status)
-- [Date](#-date)
-- [Context](#-context)
-- [Decision](#%EF%B8%8F-decision)
-- [Consequences](#%EF%B8%8F-consequences)
-- [Alternatives Considered](#-alternatives-considered)
-- [Related Decisions](#-related-decisions)
-- [References](#-references)
+- [✅ Status](#-status)
+- [📅 Date](#-date)
+- [📊 Context](#-context)
+- [🛠️ Decision](#%EF%B8%8F-decision)
+- [⚖️ Consequences](#%EF%B8%8F-consequences)
+- [🔍 Alternatives Considered](#-alternatives-considered)
+- [🔗 Related Decisions](#-related-decisions)
+- [📚 References](#-references)
 
 ---
 

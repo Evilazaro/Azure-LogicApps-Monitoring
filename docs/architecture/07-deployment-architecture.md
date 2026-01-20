@@ -30,16 +30,16 @@ tags:
 
 ## 📑 Table of Contents
 
-- [Deployment Principles](#-deployment-principles)
-- [Environment Strategy](#-environment-strategy)
-- [CI/CD Pipeline Architecture](#-cicd-pipeline-architecture)
-- [Azure Developer CLI Integration](#-azure-developer-cli-azd-integration)
-- [Infrastructure Modules](#-infrastructure-modules)
-- [Deployment Hooks](#-deployment-hooks)
-- [Rollback Strategy](#-rollback-strategy)
-- [Local Development Setup](#-local-development-setup)
-- [Deployment Checklist](#-deployment-checklist)
-- [Cross-Architecture Relationships](#-cross-architecture-relationships)
+- [📋 Deployment Principles](#-deployment-principles)
+- [🌍 Environment Strategy](#-environment-strategy)
+- [⚙️ CI/CD Pipeline Architecture](#-cicd-pipeline-architecture)
+- [🔧 Azure Developer CLI Integration](#-azure-developer-cli-azd-integration)
+- [🏭 Infrastructure Modules](#-infrastructure-modules)
+- [🪝 Deployment Hooks](#-deployment-hooks)
+- [⏮️ Rollback Strategy](#-rollback-strategy)
+- [💻 Local Development Setup](#-local-development-setup)
+- [✅ Deployment Checklist](#-deployment-checklist)
+- [🌐 Cross-Architecture Relationships](#-cross-architecture-relationships)
 
 ---
 

@@ -30,16 +30,16 @@ tags:
 
 ## 📑 Table of Contents
 
-- [Status](#-status)
-- [Date](#-date)
-- [Context](#-context)
-- [Decision](#%EF%B8%8F-decision)
-- [Consequences](#%EF%B8%8F-consequences)
-- [Telemetry Matrix](#-telemetry-matrix)
-- [Alternatives Considered](#-alternatives-considered)
-- [Correlation Strategy](#-correlation-strategy)
-- [Related Decisions](#-related-decisions)
-- [References](#-references)
+- [✅ Status](#-status)
+- [📅 Date](#-date)
+- [📋 Context](#-context)
+- [🛠️ Decision](#%EF%B8%8F-decision)
+- [⚖️ Consequences](#%EF%B8%8F-consequences)
+- [📱 Telemetry Matrix](#-telemetry-matrix)
+- [🔍 Alternatives Considered](#-alternatives-considered)
+- [🔗 Correlation Strategy](#-correlation-strategy)
+- [🔗 Related Decisions](#-related-decisions)
+- [📚 References](#-references)
 
 ---
 

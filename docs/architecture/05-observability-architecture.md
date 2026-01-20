@@ -30,17 +30,17 @@ tags:
 
 ## 📑 Table of Contents
 
-- [Observability Principles](#-observability-principles)
-- [Three Pillars Overview](#-three-pillars-overview)
-- [Distributed Tracing Strategy](#-distributed-tracing-strategy)
-- [Metrics Catalog](#-metrics-catalog)
-- [Logging Strategy](#-logging-strategy)
-- [OpenTelemetry Configuration](#-opentelemetry-configuration)
-- [Health Monitoring](#-health-monitoring)
-- [Alert Rules Catalog](#-alert-rules-catalog)
-- [SLI/SLO Definitions](#-slislo-definitions)
-- [Observability Platform Architecture](#-observability-platform-architecture)
-- [Cross-Architecture Relationships](#-cross-architecture-relationships)
+- [📋 Observability Principles](#-observability-principles)
+- [🏛️ Three Pillars Overview](#-three-pillars-overview)
+- [🔍 Distributed Tracing Strategy](#-distributed-tracing-strategy)
+- [📊 Metrics Catalog](#-metrics-catalog)
+- [📝 Logging Strategy](#-logging-strategy)
+- [🔧 OpenTelemetry Configuration](#-opentelemetry-configuration)
+- [❤️ Health Monitoring](#-health-monitoring)
+- [🚨 Alert Rules Catalog](#-alert-rules-catalog)
+- [🎯️ SLI/SLO Definitions](#-slislo-definitions)
+- [🏭 Observability Platform Architecture](#-observability-platform-architecture)
+- [🌐 Cross-Architecture Relationships](#-cross-architecture-relationships)
 
 ---
 

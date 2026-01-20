@@ -29,10 +29,10 @@ tags:
 
 ## 📑 Table of Contents
 
-- [About ADRs](#-about-adrs)
-- [ADR Index](#-adr-index)
-- [Decision Log Summary](#-decision-log-summary)
-- [ADR Template](#-adr-template)
+- [ℹ️ About ADRs](#-about-adrs)
+- [📊 ADR Index](#-adr-index)
+- [📝 Decision Log Summary](#-decision-log-summary)
+- [📝 ADR Template](#-adr-template)
 
 ---
 

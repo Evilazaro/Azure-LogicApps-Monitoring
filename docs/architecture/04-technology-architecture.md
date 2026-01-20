@@ -30,16 +30,16 @@ tags:
 
 ## 📑 Table of Contents
 
-- [Technology Principles](#-technology-principles)
-- [Technology Standards Catalog](#-technology-standards-catalog)
-- [Platform Decomposition](#-platform-decomposition)
-- [Environment and Location Strategy](#-environment-and-location-strategy)
-- [Infrastructure Components](#-infrastructure-components)
-- [Technology Portfolio](#-technology-portfolio)
-- [Infrastructure as Code](#-infrastructure-as-code)
-- [Local Development Stack](#-local-development-stack)
-- [Operational Considerations](#-operational-considerations)
-- [Cross-Architecture Relationships](#-cross-architecture-relationships)
+- [📋 Technology Principles](#-technology-principles)
+- [📦 Technology Standards Catalog](#-technology-standards-catalog)
+- [🏛️ Platform Decomposition](#-platform-decomposition)
+- [🌍 Environment and Location Strategy](#-environment-and-location-strategy)
+- [🏭 Infrastructure Components](#-infrastructure-components)
+- [💼 Technology Portfolio](#-technology-portfolio)
+- [📝 Infrastructure as Code](#-infrastructure-as-code)
+- [💻 Local Development Stack](#-local-development-stack)
+- [🔧 Operational Considerations](#-operational-considerations)
+- [🌐 Cross-Architecture Relationships](#-cross-architecture-relationships)
 
 ---
 

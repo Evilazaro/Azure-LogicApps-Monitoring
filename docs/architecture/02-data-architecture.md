@@ -30,18 +30,18 @@ tags:
 
 ## 📑 Table of Contents
 
-- [Data Architecture Overview](#-data-architecture-overview)
-- [Data Architecture Principles](#-data-architecture-principles)
-- [Data Landscape Map](#-data-landscape-map)
-- [Data Domain Catalog](#-data-domain-catalog)
-- [Data Store Details](#-data-store-details)
-- [Data Flow Architecture](#-data-flow-architecture)
-- [Monitoring Data Flow Architecture](#-monitoring-data-flow-architecture)
-- [Telemetry Data Mapping](#-telemetry-data-mapping)
-- [Trace Context Propagation](#-trace-context-propagation)
-- [Data Dependencies Map](#-data-dependencies-map)
-- [Data Lifecycle States](#-data-lifecycle-states)
-- [Cross-Architecture Relationships](#-cross-architecture-relationships)
+- [📊 Data Architecture Overview](#-data-architecture-overview)
+- [📋 Data Architecture Principles](#-data-architecture-principles)
+- [🗺️ Data Landscape Map](#-data-landscape-map)
+- [📂 Data Domain Catalog](#-data-domain-catalog)
+- [🗃️ Data Store Details](#-data-store-details)
+- [🔀 Data Flow Architecture](#-data-flow-architecture)
+- [📊 Monitoring Data Flow Architecture](#-monitoring-data-flow-architecture)
+- [📡 Telemetry Data Mapping](#-telemetry-data-mapping)
+- [🔗 Trace Context Propagation](#-trace-context-propagation)
+- [📌 Data Dependencies Map](#-data-dependencies-map)
+- [🔄 Data Lifecycle States](#-data-lifecycle-states)
+- [🌐 Cross-Architecture Relationships](#-cross-architecture-relationships)
 
 ---
 

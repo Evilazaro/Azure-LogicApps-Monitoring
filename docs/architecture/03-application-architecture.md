@@ -30,17 +30,17 @@ tags:
 
 ## 📑 Table of Contents
 
-- [Application Architecture Overview](#-application-architecture-overview)
-- [Application Architecture Principles](#-application-architecture-principles)
-- [Application Landscape Map](#-application-landscape-map)
-- [Service Catalog](#-service-catalog)
-- [Service Details](#-service-details)
-- [Inter-Service Communication](#-inter-service-communication)
-- [Application Integration Points](#-application-integration-points)
-- [Resilience Patterns](#-resilience-patterns)
-- [Cross-Cutting Concerns](#-cross-cutting-concerns-servicedefaults)
-- [Technology Stack Summary](#-technology-stack-summary)
-- [Cross-Architecture Relationships](#-cross-architecture-relationships)
+- [🎯 Application Architecture Overview](#-application-architecture-overview)
+- [📋 Application Architecture Principles](#-application-architecture-principles)
+- [🗺️ Application Landscape Map](#-application-landscape-map)
+- [📦 Service Catalog](#-service-catalog)
+- [🔍 Service Details](#-service-details)
+- [🔄 Inter-Service Communication](#-inter-service-communication)
+- [🔗 Application Integration Points](#-application-integration-points)
+- [🛡️ Resilience Patterns](#-resilience-patterns)
+- [🧩 Cross-Cutting Concerns](#-cross-cutting-concerns-servicedefaults)
+- [📚 Technology Stack Summary](#-technology-stack-summary)
+- [🌐 Cross-Architecture Relationships](#-cross-architecture-relationships)
 
 ---
 

@@ -30,16 +30,16 @@ tags:
 
 ## 📑 Table of Contents
 
-- [Security Principles](#-security-principles)
-- [Identity and Access Management](#-identity-and-access-management)
-- [Network Security](#-network-security)
-- [Authentication Flows](#-authentication-flows)
-- [Data Protection](#-data-protection)
-- [Secret Management Strategy](#-secret-management-strategy)
-- [Compliance Considerations](#-compliance-considerations)
-- [Threat Model Summary](#-threat-model-summary)
-- [Security Monitoring](#-security-monitoring)
-- [Cross-Architecture Relationships](#-cross-architecture-relationships)
+- [📋 Security Principles](#-security-principles)
+- [🔑 Identity and Access Management](#-identity-and-access-management)
+- [🌐 Network Security](#-network-security)
+- [🔄 Authentication Flows](#-authentication-flows)
+- [🛡️ Data Protection](#-data-protection)
+- [🔒 Secret Management Strategy](#-secret-management-strategy)
+- [✅ Compliance Considerations](#-compliance-considerations)
+- [⚠️ Threat Model Summary](#-threat-model-summary)
+- [📹 Security Monitoring](#-security-monitoring)
+- [🌐 Cross-Architecture Relationships](#-cross-architecture-relationships)
 
 ---
 
