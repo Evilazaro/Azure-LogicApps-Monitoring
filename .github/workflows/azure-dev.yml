@@ -227,7 +227,7 @@ jobs:
           echo "✓ go-sqlcmd installed successfully"
 
       - name: 🔧 Install Azure Developer CLI
-        uses: Azure/setup-azd@866b5933d9d788e498d5880fe4ee28d24cc6d85c # v2.0.0
+        uses: Azure/setup-azd@c495e71ba59e44bfaaac10a32c8ee90d191ca4a3 # v2.2.1
         with:
           version: "latest"
 
