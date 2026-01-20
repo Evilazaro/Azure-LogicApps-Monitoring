@@ -260,8 +260,6 @@ sequenceDiagram
 
 ---
 
----
-
 ## 🔧 OpenTelemetry Configuration
 
 ### Instrumentation Sources
@@ -295,8 +293,6 @@ openTelemetry.WithMetrics(metrics =>
 | ----------------- | ------------------------ | --------------------------------------- |
 | **OTLP**          | Aspire Dashboard (local) | `OTEL_EXPORTER_OTLP_ENDPOINT`           |
 | **Azure Monitor** | Application Insights     | `APPLICATIONINSIGHTS_CONNECTION_STRING` |
-
----
 
 ---
 
@@ -343,8 +339,6 @@ public async Task<HealthCheckResult> CheckHealthAsync(
 
 ---
 
----
-
 ## 🚨 Alert Rules Catalog
 
 | Alert                   | Severity | Condition                 | Response                     |
@@ -358,8 +352,6 @@ public async Task<HealthCheckResult> CheckHealthAsync(
 
 ---
 
----
-
 ## 🎯️ SLI/SLO Definitions
 
 | SLI              | Definition               | Measurement                 | SLO      | Error Budget   |
@@ -368,8 +360,6 @@ public async Task<HealthCheckResult> CheckHealthAsync(
 | **Latency**      | P95 response time        | `percentile(duration, 95)`  | < 500ms  | N/A            |
 | **Throughput**   | Orders processed/hour    | `count(orders.placed)`      | > 500/hr | N/A            |
 | **Error Rate**   | % of 5xx responses       | `errorCount / totalCount`   | < 0.1%   | N/A            |
-
----
 
 ---
 
@@ -451,8 +441,6 @@ flowchart LR
     style Analysis fill:#F3F4F6,stroke:#6B7280,stroke-width:2px
     style Action fill:#FEE2E2,stroke:#F44336,stroke-width:2px
 ```
-
----
 
 ---
 

@@ -32,11 +32,11 @@ tags:
 
 - [Deployment Principles](#-deployment-principles)
 - [Environment Strategy](#-environment-strategy)
-- [CI/CD Pipeline Architecture](#%EF%B8%8F-cicd-pipeline-architecture)
+- [CI/CD Pipeline Architecture](#-cicd-pipeline-architecture)
 - [Azure Developer CLI Integration](#-azure-developer-cli-azd-integration)
 - [Infrastructure Modules](#-infrastructure-modules)
 - [Deployment Hooks](#-deployment-hooks)
-- [Rollback Strategy](#%EF%B8%8F-rollback-strategy)
+- [Rollback Strategy](#-rollback-strategy)
 - [Local Development Setup](#-local-development-setup)
 - [Deployment Checklist](#-deployment-checklist)
 - [Cross-Architecture Relationships](#-cross-architecture-relationships)
@@ -52,8 +52,6 @@ tags:
 | **D-3** | **Environment Parity**     | Reduce production surprises | Same IaC for all environments  |
 | **D-4** | **Zero-Downtime Deploy**   | Business continuity         | Rolling updates, health probes |
 | **D-5** | **Automated Validation**   | Shift-left quality          | PR gates, automated tests      |
-
----
 
 ---
 
@@ -105,8 +103,6 @@ flowchart TB
     style Environments fill:#EEF2FF,stroke:#4F46E5,stroke-width:2px
     style Config fill:#ECFDF5,stroke:#10B981,stroke-width:2px
 ```
-
----
 
 ---
 
@@ -234,8 +230,6 @@ jobs:
 
 ---
 
----
-
 ## 🔧 Azure Developer CLI (azd) Integration
 
 ### azd Configuration
@@ -321,8 +315,6 @@ flowchart LR
 
 ---
 
----
-
 ## 🏭 Infrastructure Modules
 
 ### Bicep Module Hierarchy
@@ -388,8 +380,6 @@ flowchart TB
 | `workload/logic-app.bicep` | Logic Apps         | Standard plan, workflows      |
 | `workload/messaging/`      | Messaging          | Service Bus namespace, topics |
 | `workload/services/`       | Compute            | Container Apps environment    |
-
----
 
 ---
 
@@ -459,8 +449,6 @@ Write-Host "✅ Post-provisioning complete"
 
 ---
 
----
-
 ## ⏮️ Rollback Strategy
 
 ### Rollback Scenarios
@@ -514,8 +502,6 @@ flowchart LR
 
 ---
 
----
-
 ## 💻 Local Development Setup
 
 ### Prerequisites
@@ -551,8 +537,6 @@ dotnet run --project app.AppHost/app.AppHost.csproj
 
 ---
 
----
-
 ## ✅ Deployment Checklist
 
 > [!IMPORTANT]
@@ -579,8 +563,6 @@ dotnet run --project app.AppHost/app.AppHost.csproj
 - [ ] Test critical user journeys
 - [ ] Verify Service Bus message flow
 - [ ] Check Logic App workflow runs
-
----
 
 ---
 

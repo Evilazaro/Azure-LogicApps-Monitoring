@@ -34,10 +34,10 @@ tags:
 - [Identity and Access Management](#-identity-and-access-management)
 - [Network Security](#-network-security)
 - [Authentication Flows](#-authentication-flows)
-- [Data Protection](#%EF%B8%8F-data-protection)
+- [Data Protection](#-data-protection)
 - [Secret Management Strategy](#-secret-management-strategy)
 - [Compliance Considerations](#-compliance-considerations)
-- [Threat Model Summary](#%EF%B8%8F-threat-model-summary)
+- [Threat Model Summary](#-threat-model-summary)
 - [Security Monitoring](#-security-monitoring)
 - [Cross-Architecture Relationships](#-cross-architecture-relationships)
 
@@ -52,8 +52,6 @@ tags:
 | **S-3** | **Defense in Depth**         | Multiple security layers  | Network + Identity + Encryption      |
 | **S-4** | **Assume Breach**            | Proactive protection      | Monitoring, segmentation, encryption |
 | **S-5** | **Secure by Default**        | No manual hardening       | Infrastructure as Code policies      |
-
----
 
 ---
 
@@ -136,8 +134,6 @@ flowchart TB
 | Logic Apps MI  | Storage Account      | `Storage Blob Data Contributor`   | Write processed blobs |
 | Web App MI     | Orders API           | Network access                    | HTTP calls            |
 | GitHub Actions | Azure Resource Group | `Contributor`                     | Deployment            |
-
----
 
 ---
 
@@ -230,8 +226,6 @@ flowchart TB
 
 ---
 
----
-
 ## 🔄 Authentication Flows
 
 ### Service-to-Service Authentication
@@ -289,8 +283,6 @@ sequenceDiagram
 
 ---
 
----
-
 ## 🛡️ Data Protection
 
 ### Encryption at Rest
@@ -320,8 +312,6 @@ sequenceDiagram
 | Order Totals       | Internal       | Financial data              |
 | Connection Strings | Confidential   | Managed Identity eliminates |
 | API Keys           | Confidential   | Not used (Managed Identity) |
-
----
 
 ---
 
@@ -385,8 +375,6 @@ flowchart LR
 
 ---
 
----
-
 ## ✅ Compliance Considerations
 
 ### Security Controls Matrix
@@ -410,8 +398,6 @@ flowchart LR
 
 ---
 
----
-
 ## ⚠️ Threat Model Summary
 
 | Threat                  | Vector                  | Mitigation                     |
@@ -422,8 +408,6 @@ flowchart LR
 | **Data Exfiltration**   | Direct resource access  | Private endpoints, NSGs        |
 | **Supply Chain**        | Malicious dependencies  | NuGet audit, GitHub Dependabot |
 | **Insider Threat**      | Privileged access abuse | Least privilege, audit logs    |
-
----
 
 ---
 
@@ -446,8 +430,6 @@ flowchart LR
 | Resources with public endpoints | 0        | Azure Policy      |
 | Failed authentication %         | < 0.1%   | Entra ID logs     |
 | Time to patch critical CVE      | < 7 days | Dependabot alerts |
-
----
 
 ---
 
