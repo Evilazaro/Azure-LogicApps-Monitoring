@@ -247,19 +247,19 @@ paths:
 
 #### Steps Overview
 
-| Phase       | Step                           | Description                                  |
-| ----------- | ------------------------------ | -------------------------------------------- |
-| **Setup**   | 📥 Checkout repository         | Clones the repository                        |
-| **Setup**   | 📦 Install Prerequisites       | Installs `jq`, `dos2unix`, `go-sqlcmd`       |
-| **Setup**   | 🔧 Install Azure Developer CLI | Sets up azd                                  |
-| **Setup**   | 🔧 Setup .NET SDK              | Installs .NET 10.0.x                         |
-| **Auth**    | 🔐 Log in with Azure (OIDC)    | Authenticates azd with federated credentials |
-| **Auth**    | 🔑 Azure CLI Login             | Authenticates Azure CLI                      |
-| **Deploy**  | 🏗️ Provision Infrastructure    | Runs `azd provision`                         |
-| **Deploy**  | 🔑 Create SQL User             | Creates managed identity user in Azure SQL   |
-| **Deploy**  | 🔐 Re-authenticate             | Refreshes authentication tokens              |
-| **Deploy**  | 🚀 Deploy Application          | Runs `azd deploy`                            |
-| **Summary** | 📊 Generate deployment summary | Creates detailed summary with rollback info  |
+| Phase       | Step                           | Description                                                |
+| ----------- | ------------------------------ | ---------------------------------------------------------- |
+| **Setup**   | 📥 Checkout repository         | Clones the repository                                      |
+| **Setup**   | 📦 Install Prerequisites       | Installs `jq`, `dos2unix`, `go-sqlcmd`                     |
+| **Setup**   | 🔧 Install Azure Developer CLI | Sets up azd                                                |
+| **Setup**   | 🔧 Setup .NET SDK              | Installs .NET 10.0.x                                       |
+| **Auth**    | 🔐 Log in with Azure (OIDC)    | Authenticates azd with federated credentials               |
+| **Auth**    | 🔑 Azure CLI Login             | Authenticates Azure CLI                                    |
+| **Deploy**  | 🏗️ Provision Infrastructure    | Runs `azd provision` (3 retries, 30s exponential backoff)  |
+| **Deploy**  | 🔑 Create SQL User             | Creates managed identity user (3 retries, 15s exp backoff) |
+| **Deploy**  | 🔐 Re-authenticate             | Refreshes authentication tokens                            |
+| **Deploy**  | 🚀 Deploy Application          | Runs `azd deploy` (3 retries, 30s exponential backoff)     |
+| **Summary** | 📊 Generate deployment summary | Creates detailed summary with rollback info                |
 
 #### Job Outputs
 
@@ -333,7 +333,61 @@ permissions:
 
 ---
 
-## 🔧 Environment Variables
+## � Resilience Features
+
+This workflow includes built-in retry logic to handle transient failures common in cloud deployments.
+
+### Retry Configuration
+
+| Operation                       | Max Retries | Initial Delay | Backoff Strategy         |
+| ------------------------------- | :---------: | :-----------: | ------------------------ |
+| **Infrastructure Provisioning** |      3      |      30s      | Exponential (30→60→120s) |
+| **SQL User Creation**           |      3      |      15s      | Exponential (15→30→60s)  |
+| **Application Deployment**      |      3      |      30s      | Exponential (30→60→120s) |
+
+### Retry Behavior
+
+```mermaid
+flowchart LR
+    subgraph RetryLogic["🔄 Retry Pattern"]
+        attempt["Attempt Operation"]
+        check{{"Success?"}}
+        retry["Wait & Retry"]
+        fail["❌ Fail Pipeline"]
+        success["✅ Continue"]
+    end
+
+    attempt --> check
+    check -->|"Yes"| success
+    check -->|"No (< max)"| retry
+    retry -->|"Exponential backoff"| attempt
+    check -->|"No (= max)"| fail
+
+    classDef primary fill:#4F46E5,stroke:#3730A3,color:#FFFFFF
+    classDef secondary fill:#10B981,stroke:#059669,color:#FFFFFF
+    classDef failed fill:#F44336,stroke:#C62828,color:#FFFFFF
+    classDef decision fill:#FFC107,stroke:#FFA000,color:#000000
+
+    class attempt,retry primary
+    class success secondary
+    class fail failed
+    class check decision
+
+    style RetryLogic fill:#EEF2FF,stroke:#4F46E5,stroke-width:2px
+```
+
+### Common Transient Failures Handled
+
+| Failure Type              | Cause                            | Recovery                            |
+| ------------------------- | -------------------------------- | ----------------------------------- |
+| Azure API throttling      | Too many requests                | Exponential backoff allows recovery |
+| Network connectivity      | Temporary network issues         | Retry reconnects automatically      |
+| SQL connectivity timeout  | Database temporarily unreachable | Retry with increased delay          |
+| Container deployment race | Resource not yet ready           | Delay allows propagation            |
+
+---
+
+## �🔧 Environment Variables
 
 ```yaml
 env:
@@ -384,12 +438,32 @@ gh workflow run azure-dev.yml --ref main -f skip-ci=true
 
 ### Common Issues
 
-| Issue                     | Cause                         | Solution                                       |
-| ------------------------- | ----------------------------- | ---------------------------------------------- |
-| OIDC authentication fails | Invalid federated credentials | Verify Azure AD app registration configuration |
-| Provision fails           | Missing permissions           | Check subscription RBAC assignments            |
-| Deploy fails              | Resource conflicts            | Review Azure portal for resource status        |
-| sqlcmd errors             | Wrong version installed       | Workflow installs go-sqlcmd automatically      |
+| Issue                         | Cause                         | Solution                                       |
+| ----------------------------- | ----------------------------- | ---------------------------------------------- |
+| OIDC authentication fails     | Invalid federated credentials | Verify Azure AD app registration configuration |
+| Provision fails after 3 tries | Persistent Azure API issues   | Check Azure status page, verify quotas         |
+| Deploy fails after 3 tries    | Resource conflicts or limits  | Review Azure portal for resource status        |
+| SQL creation fails            | Network/firewall issues       | Verify SQL firewall allows GitHub Actions IPs  |
+| sqlcmd errors                 | Wrong version installed       | Workflow installs go-sqlcmd automatically      |
+
+### Retry Logic Indicators
+
+When reviewing logs, look for these messages to understand retry behavior:
+
+```
+# Provisioning retries
+Provisioning attempt 1 of 3...
+::warning::Provisioning attempt 1 failed, retrying in 30s...
+Provisioning attempt 2 of 3...
+
+# SQL retries
+SQL execution attempt 1 of 3...
+::warning::SQL execution attempt 1 failed, retrying in 15s...
+
+# Deployment retries
+Deployment attempt 1 of 3...
+::warning::Deployment attempt 1 failed, retrying in 30s...
+```
 
 ### Rollback Instructions
 
