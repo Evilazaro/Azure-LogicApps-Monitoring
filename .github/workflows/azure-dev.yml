@@ -296,6 +296,25 @@ jobs:
           echo "resource-group=$RESOURCE_GROUP" >> $GITHUB_OUTPUT
           echo "webapp-url=https://aspire-dashboard.ext.$AZURE_CONTAINER_APPS_ENVIRONMENT_DEFAULT_DOMAIN" >> $GITHUB_OUTPUT
 
+      - name: 🔍 Verify Container App Configuration
+        run: |
+          echo "::group::🔍 Checking deployed Container App configuration"
+          RG="rg-orders-${AZURE_ENV_NAME}-${AZURE_LOCATION}"
+          echo "Resource Group: $RG"
+          
+          echo ""
+          echo "=== Container App Identity ==="
+          az containerapp show --name orders-api --resource-group "$RG" --query "identity" -o json || echo "Failed to get identity"
+          
+          echo ""
+          echo "=== AZURE_CLIENT_ID Environment Variable ==="
+          az containerapp show --name orders-api --resource-group "$RG" --query "properties.template.containers[0].env[?name=='AZURE_CLIENT_ID']" -o json || echo "Failed to get env var"
+          
+          echo ""
+          echo "=== Expected MANAGED_IDENTITY_CLIENT_ID ==="
+          azd env get-values | grep "MANAGED_IDENTITY_CLIENT_ID"
+          echo "::endgroup::"
+
       # ------------------------------------------------------------------------
       # Phase 4: Summary
       # ------------------------------------------------------------------------
