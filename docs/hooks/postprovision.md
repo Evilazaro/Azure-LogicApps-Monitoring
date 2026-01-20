@@ -836,8 +836,6 @@ jobs:
 
 ---
 
----
-
 ## 📝 Notes
 
 - **Last Updated**: January 6, 2026
@@ -847,4 +845,12 @@ jobs:
 - Configures secrets across 3 projects (AppHost, Orders.API, Web.App)
 - Both scripts implement comprehensive error handling and detailed logging
 
+---
+
+<div align="center">
+
 **Made with ❤️ by Evilazaro | Principal Cloud Solution Architect | Microsoft**
+
+[⬆ Back to Top](#️-postprovision-ps1--sh) | [← preprovision](preprovision.md) | [📑 Index](README.md) | [sql-managed-identity-config →](sql-managed-identity-config.md)
+
+</div>

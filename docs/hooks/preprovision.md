@@ -638,6 +638,6 @@ For detailed diagnostic information:
 
 **Made with ❤️ by Evilazaro | Principal Cloud Solution Architect | Microsoft**
 
-[⬆ Back to Top](#-pre-provisioning-script-documentation)
+[⬆ Back to Top](#-pre-provisioning-script-documentation) | [← check-dev-workstation](check-dev-workstation.md) | [📑 Index](README.md) | [postprovision →](postprovision.md)
 
 </div>

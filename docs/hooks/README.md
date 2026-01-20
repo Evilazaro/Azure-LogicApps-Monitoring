@@ -1114,6 +1114,6 @@ For additional assistance:
 
 **Made with ❤️ by Evilazaro | Principal Cloud Solution Architect | Microsoft**
 
-[⬆ Back to Top](#-azure-logic-apps-monitoring---developer-inner-loop-workflow)
+[⬆ Back to Top](#-azure-logic-apps-monitoring---developer-inner-loop-workflow) | [📚 Docs Index](../README.md) | [check-dev-workstation →](check-dev-workstation.md)
 
 </div>

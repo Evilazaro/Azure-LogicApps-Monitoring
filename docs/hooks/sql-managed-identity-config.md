@@ -22,9 +22,9 @@ tags: [hooks, azure, sql, managed-identity, security, powershell, bash]
 <details>
 <summary>📍 <strong>Quick Navigation</strong></summary>
 
-| Previous                            |         Index         |                                    Next |
-| :---------------------------------- | :-------------------: | --------------------------------------: |
-| [← Clean Secrets](clean-secrets.md) | [📑 Index](README.md) | [Generate Orders →](Generate-Orders.md) |
+| Previous                            |         Index         |                                Next |
+| :---------------------------------- | :-------------------: | ----------------------------------: |
+| [← postprovision](postprovision.md) | [📑 Index](README.md) | [Clean Secrets →](clean-secrets.md) |
 
 </details>
 
@@ -196,17 +196,17 @@ if ($result.Success) {
 
 The following built-in database roles can be assigned:
 
-| Role                | Description                                    |
-| ------------------- | ---------------------------------------------- | --------- |
-| `db_owner`          | Full permissions in the database               | 🔴 High   |
-| `db_datareader`     | Read all data from all user tables             | 🟢 Low    |
-| `db_datawriter`     | Add, delete, or modify data in all user tables | 🟡 Medium |
-| `db_ddladmin`       | Run DDL commands (CREATE, ALTER, DROP)         | 🟡 Medium |
-| `db_backupoperator` | Can back up the database                       | 🟡 Medium |
-| `db_securityadmin`  | Modify role membership and manage permissions  | 🔴 High   |
-| `db_accessadmin`    | Add or remove database access                  | 🔴 High   |
-| `db_denydatareader` | Cannot read any data in the database           | 🔵 Deny   |
-| `db_denydatawriter` | Cannot modify any data in the database         | 🔵 Deny   |
+| Role                | Description                                    | Risk Level |
+| :------------------ | :--------------------------------------------- | :--------: |
+| `db_owner`          | Full permissions in the database               |  🔴 High   |
+| `db_datareader`     | Read all data from all user tables             |   🟢 Low   |
+| `db_datawriter`     | Add, delete, or modify data in all user tables | 🟡 Medium  |
+| `db_ddladmin`       | Run DDL commands (CREATE, ALTER, DROP)         | 🟡 Medium  |
+| `db_backupoperator` | Can back up the database                       | 🟡 Medium  |
+| `db_securityadmin`  | Modify role membership and manage permissions  |  🔴 High   |
+| `db_accessadmin`    | Add or remove database access                  |  🔴 High   |
+| `db_denydatareader` | Cannot read any data in the database           |  🔵 Deny   |
+| `db_denydatawriter` | Cannot modify any data in the database         |  🔵 Deny   |
 
 **Default Roles:** `db_datareader`, `db_datawriter`
 
@@ -416,8 +416,6 @@ az sql server ad-admin list \
 
 **Made with ❤️ by Evilazaro | Principal Cloud Solution Architect | Microsoft**
 
-[⬆ Back to Top](#-sql-managed-identity-config-ps1--sh) | [← Clean Secrets](clean-secrets.md) | [📑 Index](README.md) | [Generate Orders →](Generate-Orders.md)
-
-</div>
+[⬆ Back to Top](#-sql-managed-identity-config-ps1--sh) | [← postprovision](postprovision.md) | [📑 Index](README.md) | [Clean Secrets →](clean-secrets.md)
 
 </div>

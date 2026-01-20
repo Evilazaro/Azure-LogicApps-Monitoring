@@ -479,6 +479,3 @@ azd down  # Purges only dev environment Logic Apps
 [⬆ Back to Top](#️-postinfradelete-ps1--sh) | [← Deploy Workflow](deploy-workflow.md) | [📑 Index](README.md) | [Configure Federated Credential →](configure-federated-credential.md)
 
 </div>
-
-**Author**: Evilazaro | Principal Cloud Solution Architect | Microsoft  
-**Repository**: [Azure-LogicApps-Monitoring](https://github.com/Evilazaro/Azure-LogicApps-Monitoring)
