@@ -2,6 +2,7 @@
 title: SQL Managed Identity Configuration
 description: PowerShell and Bash scripts for configuring Azure SQL Database access with managed identities
 author: Evilazaro
+date: 2026-01-20
 version: 1.0.0
 tags: [hooks, azure, sql, managed-identity, security, powershell, bash]
 ---

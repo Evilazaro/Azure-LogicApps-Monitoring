@@ -2,6 +2,7 @@
 title: Complete Validation Workflow
 description: Comprehensive guide to all validation scripts and their execution workflow for Azure Logic Apps Monitoring
 author: Evilazaro
+date: 2026-01-20
 version: 1.0.0
 tags: [hooks, validation, workflow, azure, logic-apps, comprehensive-guide]
 ---

@@ -2,6 +2,7 @@
 title: check-dev-workstation Script
 description: Critical first-step validation tool for workstation prerequisites before development
 author: Evilazaro
+date: 2026-01-20
 version: 1.0.0
 tags: [hooks, validation, prerequisites, powershell, bash]
 ---
