@@ -299,3 +299,13 @@ virtualNetworkRules: [
 - [SQL Database Firewall Rules](https://learn.microsoft.com/azure/azure-sql/database/firewall-configure)
 - [Storage Account Network Security](https://learn.microsoft.com/azure/storage/common/storage-network-security)
 - [Container Registry Network Rules](https://learn.microsoft.com/azure/container-registry/container-registry-access-selected-networks)
+
+---
+
+<div align="center">
+
+[📚 Docs Index](README.md) | **IP Security Guide** | [Quick Reference →](IP-SECURITY-RESTRICTIONS-SUMMARY.md)
+
+[⬆️ Back to top](#-ip-security-restrictions-configuration)
+
+</div>

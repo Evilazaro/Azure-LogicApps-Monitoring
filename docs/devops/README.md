@@ -185,12 +185,12 @@ flowchart TB
 
 ## 📊 Quick Reference
 
-| Workflow                     | Triggers                                                             | Jobs                                                   | Platforms              |
-| ---------------------------- | -------------------------------------------------------------------- | ------------------------------------------------------ | ---------------------- |
-| **CD - Azure Deployment**    | `push:docs987678`, `workflow_dispatch`                               | CI → Deploy Dev → Summary → On-Failure                 | Ubuntu (deploy)        |
-| **CI - .NET Build and Test** | `push:main,feature/**,...`, `pull_request:main`, `workflow_dispatch` | CI (calls reusable)                                    | Ubuntu, Windows, macOS |
-| **CI - .NET Reusable**       | `workflow_call`                                                      | Build → Test → Analyze → CodeQL → Summary → On-Failure | Ubuntu, Windows, macOS |
-| **Dependabot**               | Schedule (Weekly, Mondays 06:00 UTC)                                 | Automated PR creation                                  | N/A (GitHub service)   |
+| Workflow                     | Triggers                                                             | Jobs                                                   | Resilience                     |
+| ---------------------------- | -------------------------------------------------------------------- | ------------------------------------------------------ | ------------------------------ |
+| **CD - Azure Deployment**    | `push:docs987678`, `workflow_dispatch`                               | CI → Deploy Dev → Summary → On-Failure                 | 3 retries, exponential backoff |
+| **CI - .NET Build and Test** | `push:main,feature/**,...`, `pull_request:main`, `workflow_dispatch` | CI (calls reusable)                                    | Matrix retry on failure        |
+| **CI - .NET Reusable**       | `workflow_call`                                                      | Build → Test → Analyze → CodeQL → Summary → On-Failure | Cross-platform matrix coverage |
+| **Dependabot**               | Schedule (Weekly, Mondays 06:00 UTC)                                 | Automated PR creation                                  | Automatic retry by GitHub      |
 
 ---
 

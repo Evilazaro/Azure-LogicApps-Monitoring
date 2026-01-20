@@ -54,9 +54,9 @@ This folder contains comprehensive documentation for the **Azure Logic Apps Moni
 | [architecture/](architecture/README.md)                                    | Complete architecture documentation following enterprise architecture principles |
 | [devops/](devops/README.md)                                                | CI/CD pipelines and DevOps practices documentation                               |
 | [hooks/](hooks/README.md)                                                  | Developer inner loop workflow and automation scripts documentation               |
+| [plano-modernizacao/](plano-modernizacao/README.md)                        | Project modernization plan (Portuguese)                                          |
 | [IP-SECURITY-RESTRICTIONS.md](IP-SECURITY-RESTRICTIONS.md)                 | Detailed IP security restrictions configuration guide                            |
 | [IP-SECURITY-RESTRICTIONS-SUMMARY.md](IP-SECURITY-RESTRICTIONS-SUMMARY.md) | Quick reference for IP security restrictions                                     |
-| [planoProjetoModernizacao.md](planoProjetoModernizacao.md)                 | Project modernization plan (Portuguese)                                          |
 
 ---
 
@@ -89,10 +89,11 @@ The [architecture/](architecture/README.md) folder contains detailed documentati
 
 The [devops/](devops/README.md) folder contains CI/CD pipeline documentation:
 
-| Document                                              | Description                                                              |
-| ----------------------------------------------------- | ------------------------------------------------------------------------ |
-| [azure-dev-workflow.md](devops/azure-dev-workflow.md) | CI/CD pipeline for provisioning and deployment using Azure Developer CLI |
-| [ci-workflow.md](devops/ci-workflow.md)               | Build validation pipeline for pull requests                              |
+| Document                                              | Description                                                      |
+| ----------------------------------------------------- | ---------------------------------------------------------------- |
+| [azure-dev.md](devops/azure-dev.md)                   | CD pipeline for Azure infrastructure provisioning and deployment |
+| [ci-dotnet.md](devops/ci-dotnet.md)                   | CI pipeline for .NET build and test                              |
+| [ci-dotnet-reusable.md](devops/ci-dotnet-reusable.md) | Reusable CI workflow for .NET projects                           |
 
 ### 🔐 Pipeline Security Features
 

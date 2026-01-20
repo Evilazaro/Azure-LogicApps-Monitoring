@@ -207,13 +207,24 @@ flowchart LR
     a_format -->|check format| a_summary
     a_summary -->|evaluate| a_fail
 
+    %% CodeQL flow - depends on build completion
+    b_summary -->|on success| cql_checkout
+    cql_checkout -->|clone repo| cql_setup
+    cql_setup -->|install SDK| cql_init
+    cql_init -->|configure| cql_build
+    cql_build -->|autobuild| cql_analyze
+    cql_analyze -->|scan| cql_upload
+    cql_upload -->|store SARIF| cql_summary
+
     %% Summary flow - aggregate all results
     t_summary -->|report status| s_generate
     a_summary -->|report status| s_generate
+    cql_summary -->|report status| s_generate
 
     %% Failure flow - error paths
     t_test --x|on failure| f_report
     a_format --x|on failure| f_report
+    cql_analyze --x|on failure| f_report
 
     %% Output connections - export results
     b_summary -->|outputs| out_build
@@ -648,4 +659,10 @@ flowchart LR
 
 ---
 
+<div align="center">
+
+[← CI Pipeline](ci-dotnet.md) | **Reusable CI Workflow** | [📑 DevOps Index](README.md)
+
 [⬆️ Back to top](#-ci---net-reusable-workflow)
+
+</div>

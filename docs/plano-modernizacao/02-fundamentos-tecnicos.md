@@ -1,8 +1,26 @@
+---
+title: Fundamentos Técnicos
+description: Arquitetura técnica, princípios TOGAF e padrões de desenvolvimento para o projeto de modernização
+author: Néctar Sistemas
+date: 2026-01-13
+version: 1.0
+tags: [arquitetura, padrões, desenvolvimento, togaf, api]
+---
+
 # 🛠️ PARTE III – Fundamentos Técnicos
 
-> 🎯 **Para TDMs**: Esta parte apresenta a arquitetura técnica, princípios e padrões de desenvolvimento. Tempo estimado: 25 minutos.
+> [!NOTE]
+> 🎯 **Para TDMs**: Esta parte apresenta a arquitetura técnica, princípios e padrões de desenvolvimento.  
+> ⏱️ **Tempo estimado de leitura:** 25 minutos
 
-**Navegação**: [← Voltar ao Índice](./README.md) | [← Visão Executiva](./01-visao-executiva.md) | [Execução do Projeto →](./03-execucao-projeto.md)
+<details>
+<summary>📍 <strong>Navegação Rápida</strong></summary>
+
+| Anterior                                     |          Índice          |                                           Próximo |
+| :------------------------------------------- | :----------------------: | ------------------------------------------------: |
+| [← Visão Executiva](./01-visao-executiva.md) | [📑 Índice](./README.md) | [Execução do Projeto →](./03-execucao-projeto.md) |
+
+</details>
 
 ---
 

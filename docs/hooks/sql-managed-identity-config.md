@@ -2,6 +2,7 @@
 title: SQL Managed Identity Configuration
 description: PowerShell and Bash scripts for configuring Azure SQL Database access with managed identities
 author: Evilazaro
+date: 2026-01-20
 version: 1.0.0
 tags: [hooks, azure, sql, managed-identity, security, powershell, bash]
 ---
@@ -22,9 +23,9 @@ tags: [hooks, azure, sql, managed-identity, security, powershell, bash]
 <details>
 <summary>📍 <strong>Quick Navigation</strong></summary>
 
-| Previous                            |         Index         |                                    Next |
-| :---------------------------------- | :-------------------: | --------------------------------------: |
-| [← Clean Secrets](clean-secrets.md) | [📑 Index](README.md) | [Generate Orders →](Generate-Orders.md) |
+| Previous                            |         Index         |                                Next |
+| :---------------------------------- | :-------------------: | ----------------------------------: |
+| [← postprovision](postprovision.md) | [📑 Index](README.md) | [Clean Secrets →](clean-secrets.md) |
 
 </details>
 
@@ -112,16 +113,16 @@ When running via Azure Developer CLI (`azd`), these variables are automatically 
 
 ### Bash Parameters
 
-| Parameter       | Short | Required | Default                       | Description                               |
-| --------------- | ----- | -------- | ----------------------------- | ----------------------------------------- |
-| `--server`      | `-s`  | Yes      | -                             | Azure SQL Server name (without suffix)    |
-| `--database`    | `-d`  | Yes      | -                             | Target database name (cannot be 'master') |
-| `--principal`   | `-p`  | Yes      | -                             | Managed identity display name             |
-| `--roles`       | `-r`  | No       | `db_datareader,db_datawriter` | Comma-separated database roles            |
-| `--environment` | `-e`  | No       | `AzureCloud`                  | Azure cloud environment                   |
-| `--timeout`     | `-t`  | No       | `120`                         | SQL command timeout in seconds            |
-| `--verbose`     | `-v`  | No       | -                             | Enable verbose output                     |
-| `--help`        | `-h`  | No       | -                             | Display help message                      |
+| Parameter           | Short | Required | Default                       | Description                                                    |
+| ------------------- | ----- | -------- | ----------------------------- | -------------------------------------------------------------- |
+| `--sql-server-name` | `-s`  | Yes      | -                             | Azure SQL Server name (without `.database.windows.net` suffix) |
+| `--database-name`   | `-d`  | Yes      | -                             | Target database name (cannot be 'master')                      |
+| `--principal-name`  | `-p`  | Yes      | -                             | Managed identity or service principal display name             |
+| `--database-roles`  | `-r`  | No       | `db_datareader,db_datawriter` | Comma-separated database roles                                 |
+| `--environment`     | `-e`  | No       | `AzureCloud`                  | Azure cloud environment                                        |
+| `--timeout`         | `-t`  | No       | `120`                         | SQL command timeout in seconds (30-600)                        |
+| `--verbose`         | `-v`  | No       | -                             | Enable verbose output                                          |
+| `--help`            | `-h`  | No       | -                             | Display help message                                           |
 
 ## 🚀 Usage
 
@@ -166,9 +167,9 @@ if ($result.Success) {
 ```bash
 # Basic usage with default roles
 ./sql-managed-identity-config.sh \
-    --server myserver \
-    --database mydb \
-    --principal my-app-identity
+    --sql-server-name myserver \
+    --database-name mydb \
+    --principal-name my-app-identity
 
 # With custom roles
 ./sql-managed-identity-config.sh \
@@ -179,9 +180,9 @@ if ($result.Success) {
 
 # With verbose output
 ./sql-managed-identity-config.sh \
-    --server myserver \
-    --database mydb \
-    --principal my-app-identity \
+    --sql-server-name myserver \
+    --database-name mydb \
+    --principal-name my-app-identity \
     --verbose
 
 # Azure Government cloud
@@ -196,17 +197,17 @@ if ($result.Success) {
 
 The following built-in database roles can be assigned:
 
-| Role                | Description                                    |
-| ------------------- | ---------------------------------------------- | --------- |
-| `db_owner`          | Full permissions in the database               | 🔴 High   |
-| `db_datareader`     | Read all data from all user tables             | 🟢 Low    |
-| `db_datawriter`     | Add, delete, or modify data in all user tables | 🟡 Medium |
-| `db_ddladmin`       | Run DDL commands (CREATE, ALTER, DROP)         | 🟡 Medium |
-| `db_backupoperator` | Can back up the database                       | 🟡 Medium |
-| `db_securityadmin`  | Modify role membership and manage permissions  | 🔴 High   |
-| `db_accessadmin`    | Add or remove database access                  | 🔴 High   |
-| `db_denydatareader` | Cannot read any data in the database           | 🔵 Deny   |
-| `db_denydatawriter` | Cannot modify any data in the database         | 🔵 Deny   |
+| Role                | Description                                    | Risk Level |
+| :------------------ | :--------------------------------------------- | :--------: |
+| `db_owner`          | Full permissions in the database               |  🔴 High   |
+| `db_datareader`     | Read all data from all user tables             |   🟢 Low   |
+| `db_datawriter`     | Add, delete, or modify data in all user tables | 🟡 Medium  |
+| `db_ddladmin`       | Run DDL commands (CREATE, ALTER, DROP)         | 🟡 Medium  |
+| `db_backupoperator` | Can back up the database                       | 🟡 Medium  |
+| `db_securityadmin`  | Modify role membership and manage permissions  |  🔴 High   |
+| `db_accessadmin`    | Add or remove database access                  |  🔴 High   |
+| `db_denydatareader` | Cannot read any data in the database           |  🔵 Deny   |
+| `db_denydatawriter` | Cannot modify any data in the database         |  🔵 Deny   |
 
 **Default Roles:** `db_datareader`, `db_datawriter`
 
@@ -405,9 +406,10 @@ az sql server ad-admin list \
 
 ## 📜 Version History
 
-| Version | Date       | Changes                                                                                                                                                             |
-| ------- | ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 1.0.0   | 2026-01-06 | Initial release with PowerShell Core and Bash support, preference backup/restore pattern, `-CommandType Application` to `Get-Command` calls, IFS protection in Bash |
+| Version | Date       | Changes                                                                                                                                                                                         |
+| ------- | ---------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1.0.1   | 2026-01-14 | Fixed Bash parameter names to match script (`--sql-server-name`, `--database-name`, `--principal-name`, `--database-roles` instead of short forms), added `--timeout` range validation (30-600) |
+| 1.0.0   | 2026-01-06 | Initial release with PowerShell Core and Bash support, preference backup/restore pattern, `-CommandType Application` to `Get-Command` calls, IFS protection in Bash                             |
 
 ---
 
@@ -415,8 +417,6 @@ az sql server ad-admin list \
 
 **Made with ❤️ by Evilazaro | Principal Cloud Solution Architect | Microsoft**
 
-[⬆ Back to Top](#-sql-managed-identity-config-ps1--sh) | [← Clean Secrets](clean-secrets.md) | [📑 Index](README.md) | [Generate Orders →](Generate-Orders.md)
-
-</div>
+[⬆ Back to Top](#-sql-managed-identity-config-ps1--sh) | [← postprovision](postprovision.md) | [📑 Index](README.md) | [Clean Secrets →](clean-secrets.md)
 
 </div>

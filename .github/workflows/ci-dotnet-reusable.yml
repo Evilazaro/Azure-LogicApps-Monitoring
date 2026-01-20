@@ -226,7 +226,7 @@ jobs:
           path: |
             **/bin/${{ inputs.configuration }}/**
             !**/bin/${{ inputs.configuration }}/**/ref/**
-          retention-days: 7
+          retention-days: ${{ inputs.artifact-retention-days }}
           if-no-files-found: error
 
       - name: 📊 Generate build summary
@@ -748,10 +748,10 @@ jobs:
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "| Artifact | Description | Retention |" >> $GITHUB_STEP_SUMMARY
           echo "|----------|-------------|-----------|" >> $GITHUB_STEP_SUMMARY
-          echo "| 📁 **build-artifacts-{os}** | Compiled binaries (per platform) | 7 days |" >> $GITHUB_STEP_SUMMARY
-          echo "| 📋 **test-results-{os}** | Test execution results (.trx per platform) | 30 days |" >> $GITHUB_STEP_SUMMARY
-          echo "| 📊 **code-coverage-{os}** | Coverage reports (Cobertura per platform) | 30 days |" >> $GITHUB_STEP_SUMMARY
-          echo "| 🛡️ **codeql-sarif-results** | CodeQL security scan results (SARIF) | 30 days |" >> $GITHUB_STEP_SUMMARY
+          echo "| 📁 **build-artifacts-{os}** | Compiled binaries (per platform) | ${{ inputs.artifact-retention-days }} days |" >> $GITHUB_STEP_SUMMARY
+          echo "| 📋 **test-results-{os}** | Test execution results (.trx per platform) | ${{ inputs.artifact-retention-days }} days |" >> $GITHUB_STEP_SUMMARY
+          echo "| 📊 **code-coverage-{os}** | Coverage reports (Cobertura per platform) | ${{ inputs.artifact-retention-days }} days |" >> $GITHUB_STEP_SUMMARY
+          echo "| 🛡️ **codeql-sarif-results** | CodeQL security scan results (SARIF) | ${{ inputs.artifact-retention-days }} days |" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
 
           # Next steps on failure

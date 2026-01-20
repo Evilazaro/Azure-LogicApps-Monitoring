@@ -2,6 +2,7 @@
 title: check-dev-workstation Script
 description: Critical first-step validation tool for workstation prerequisites before development
 author: Evilazaro
+date: 2026-01-20
 version: 1.0.0
 tags: [hooks, validation, prerequisites, powershell, bash]
 ---
@@ -117,7 +118,7 @@ The script performs comprehensive validation of:
 
 **Output Example:**
 
-```
+```text
 [12:34:56] ✓ PowerShell 7.4.1 (required: 7.0+)
 [12:34:57] ✓ .NET SDK 10.0.0 (required: 10.0+)
 [12:34:58] ✓ Azure Developer CLI 1.5.0
@@ -148,7 +149,7 @@ Your workstation is ready for development.
 
 **Output Example (PowerShell):**
 
-```
+```text
 VERBOSE: Starting developer workstation validation...
 VERBOSE: Using validation script: Z:\app\hooks\preprovision.ps1
 VERBOSE: Script version: 1.0.0
@@ -160,7 +161,7 @@ VERBOSE: Workstation validation process completed
 
 **Output Example (Bash):**
 
-```
+```text
 [VERBOSE] Starting developer workstation validation...
 [VERBOSE] Using validation script: /app/hooks/preprovision.sh
 [VERBOSE] Script version: 1.0.0
@@ -488,6 +489,6 @@ azd up
 
 **Made with ❤️ by Evilazaro | Principal Cloud Solution Architect | Microsoft**
 
-[⬆ Back to Top](#-check-dev-workstationps1--sh)
+[⬆ Back to Top](#-check-dev-workstation-ps1--sh) | [← Hooks Overview](README.md) | [📑 Index](README.md) | [preprovision →](preprovision.md)
 
 </div>

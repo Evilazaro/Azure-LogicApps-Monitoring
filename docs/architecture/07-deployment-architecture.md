@@ -209,7 +209,7 @@ flowchart TB
 
 ### Azure Dev Workflow Detail
 
-The CD workflow (`azure-dev.yml`) orchestrates the full deployment pipeline:
+The CD workflow (`azure-dev.yml`) orchestrates the full deployment pipeline with built-in retry logic for resilience:
 
 ```yaml
 # .github/workflows/azure-dev.yml
@@ -270,11 +270,14 @@ jobs:
         run: azd auth login --client-id "$AZURE_CLIENT_ID" --federated-credential-provider "github" --tenant-id "$AZURE_TENANT_ID"
       - uses: azure/login@v2 # Azure CLI login
       - name: 🏗️ Provision Infrastructure
+        # 3 retries with exponential backoff (30s → 60s → 120s)
         run: azd provision --no-prompt
       - name: 🔑 Create SQL User with Client ID
+        # 3 retries with exponential backoff (15s → 30s → 60s)
         run: # Uses go-sqlcmd with SID-based user creation
       - name: 🔐 Re-authenticate (token refresh)
       - name: 🚀 Deploy Application
+        # 3 retries with exponential backoff (30s → 60s → 120s)
         run: azd deploy --no-prompt
 
   # Job 3: Workflow Summary
@@ -291,6 +294,16 @@ jobs:
     needs: [ci, deploy-dev]
     if: failure()
 ```
+
+### Retry Configuration
+
+The workflow includes built-in retry logic to handle transient cloud failures:
+
+| Operation         | Max Retries | Initial Delay | Backoff Strategy         |
+| ----------------- | :---------: | :-----------: | ------------------------ |
+| `azd provision`   |      3      |      30s      | Exponential (30→60→120s) |
+| SQL User Creation |      3      |      15s      | Exponential (15→30→60s)  |
+| `azd deploy`      |      3      |      30s      | Exponential (30→60→120s) |
 
 ### CI Reusable Workflow Jobs
 

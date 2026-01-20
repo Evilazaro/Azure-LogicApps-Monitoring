@@ -2,6 +2,7 @@
 title: clean-secrets Script
 description: Utility tool for safely clearing .NET user secrets from all projects
 author: Evilazaro
+date: 2026-01-20
 version: 2.0.1
 tags: [hooks, secrets, cleanup, powershell, bash]
 ---
@@ -22,9 +23,9 @@ tags: [hooks, secrets, cleanup, powershell, bash]
 <details>
 <summary>📍 <strong>Quick Navigation</strong></summary>
 
-| Previous                                                        |            Index            |                                    Next |
-| :-------------------------------------------------------------- | :-------------------------: | --------------------------------------: |
-| [← sql-managed-identity-config](sql-managed-identity-config.md) | [📑 Hooks Index](README.md) | [Generate-Orders →](Generate-Orders.md) |
+| Previous                            |            Index            |                                                            Next |
+| :---------------------------------- | :-------------------------: | --------------------------------------------------------------: |
+| [← postprovision](postprovision.md) | [📑 Hooks Index](README.md) | [sql-managed-identity-config →](sql-managed-identity-config.md) |
 
 </details>
 
@@ -658,6 +659,6 @@ azd up
 
 **Made with ❤️ by Evilazaro | Principal Cloud Solution Architect | Microsoft**
 
-[⬆ Back to Top](#-clean-secretsps1--sh)
+[⬆ Back to Top](#-clean-secrets-ps1--sh) | [← sql-managed-identity-config](sql-managed-identity-config.md) | [📑 Index](README.md) | [Generate-Orders →](Generate-Orders.md)
 
 </div>

@@ -2,6 +2,7 @@
 title: Generate Orders Script
 description: PowerShell and Bash scripts for generating sample e-commerce order data for testing Azure Logic Apps
 author: Evilazaro
+date: 2026-01-20
 version: 2.0.1
 tags: [hooks, testing, data-generation, orders, powershell, bash]
 ---
@@ -21,9 +22,9 @@ tags: [hooks, testing, data-generation, orders, powershell, bash]
 <details>
 <summary>📍 <strong>Quick Navigation</strong></summary>
 
-| Previous                                                 |         Index         |                                    Next |
-| :------------------------------------------------------- | :-------------------: | --------------------------------------: |
-| [← SQL Managed Identity](sql-managed-identity-config.md) | [📑 Index](README.md) | [Deploy Workflow →](deploy-workflow.md) |
+| Previous                            |         Index         |                                    Next |
+| :---------------------------------- | :-------------------: | --------------------------------------: |
+| [← Clean Secrets](clean-secrets.md) | [📑 Index](README.md) | [Deploy Workflow →](deploy-workflow.md) |
 
 </details>
 
@@ -731,6 +732,6 @@ flowchart LR
 
 **Made with ❤️ by Evilazaro | Principal Cloud Solution Architect | Microsoft**
 
-[⬆ Back to Top](#-generate-orders-ps1--sh) | [← SQL Managed Identity](sql-managed-identity-config.md) | [📑 Index](README.md) | [Deploy Workflow →](deploy-workflow.md)
+[⬆ Back to Top](#-generate-orders-ps1--sh) | [← Clean Secrets](clean-secrets.md) | [📑 Index](README.md) | [Deploy Workflow →](deploy-workflow.md)
 
 </div>
