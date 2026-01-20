@@ -366,7 +366,7 @@ flowchart LR
 | `AZURE_TENANT_ID`       | GitHub Environment | N/A (static)               |
 | `AZURE_SUBSCRIPTION_ID` | GitHub Environment | N/A (static)               |
 
-> **Note**: GitHub Actions uses OIDC federation with Workload Identity, eliminating client secrets.
+> 💡 **Note**: GitHub Actions uses OIDC federation with Workload Identity, eliminating client secrets.
 
 ---
 
