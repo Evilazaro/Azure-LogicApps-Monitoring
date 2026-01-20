@@ -102,6 +102,9 @@ var roles string[] = [
   '0b962ed2-6d56-471c-bd5f-3477d83a7ba4' // Azure Resource Notifications System Topics Subscriber
   '7f951dda-4ed3-4680-a7ca-43fe172d538d' // Azure Container Registry ACR Pull
   '8311e382-0749-4cb8-b61a-304f252e45ec' // Azure Container Registry ACR Push
+  'df021288-bdef-4463-88db-98f22de89214' // Read user profiles
+  '98830695-27a2-44f7-8c18-0c3ebc9698f6' // Read group memberships
+  '9a5d68dd-52b0-4cc2-bd40-abcf44ac3a30' // Read service principals
 ]
 
 // Assign roles to managed identity for resource access

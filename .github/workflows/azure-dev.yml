@@ -246,7 +246,7 @@ jobs:
             cat /tmp/provision.log
             exit 1
           fi
-          
+
           # Show postprovision hook output
           echo ""
           echo "=== Checking if postprovision ran ==="
@@ -255,27 +255,27 @@ jobs:
       - name: 🔑 Create SQL User with Object ID
         run: |
           echo "::group::🔑 Creating SQL database user using Object ID"
-          
+
           # Get values from azd environment
           SQL_SERVER=$(azd env get-values | grep "AZURE_SQL_SERVER_NAME" | cut -d'=' -f2 | tr -d '"')
           SQL_DB=$(azd env get-values | grep "AZURE_SQL_DATABASE_NAME" | cut -d'=' -f2 | tr -d '"')
           MI_NAME=$(azd env get-values | grep "MANAGED_IDENTITY_NAME" | cut -d'=' -f2 | tr -d '"')
           MI_CLIENT_ID=$(azd env get-values | grep "MANAGED_IDENTITY_CLIENT_ID" | cut -d'=' -f2 | tr -d '"')
           RG="rg-orders-${AZURE_ENV_NAME}-${AZURE_LOCATION}"
-          
+
           echo "SQL Server: $SQL_SERVER"
           echo "Database: $SQL_DB"
           echo "Managed Identity Name: $MI_NAME"
           echo "Managed Identity Client ID: $MI_CLIENT_ID"
-          
+
           # Get the Object ID (Principal ID) of the managed identity
           MI_OBJECT_ID=$(az identity show --name "$MI_NAME" --resource-group "$RG" --query principalId -o tsv)
           echo "Managed Identity Object ID: $MI_OBJECT_ID"
-          
+
           # Convert the Object ID (GUID) to binary format for SQL Server SID
           # SQL Server expects the SID as a binary value derived from the Object ID
           # Format: 0x + GUID bytes in specific order
-          
+
           # Create SQL script that uses SID directly instead of FROM EXTERNAL PROVIDER
           # This bypasses the MS Graph lookup requirement
           # Note: Writing to a temp file instead of piping to avoid go-sqlcmd stdin crash
@@ -297,7 +297,7 @@ jobs:
           BEGIN
               PRINT 'INFO: User [$(MI_NAME)] already exists';
           END;
-          
+
           -- Add to db_owner role
           IF NOT EXISTS (SELECT 1 FROM sys.database_role_members rm 
                          JOIN sys.database_principals r ON rm.role_principal_id = r.principal_id 
@@ -312,26 +312,26 @@ jobs:
               PRINT 'INFO: [$(MI_NAME)] is already in db_owner role';
           END;
           EOSQL
-          
+
           echo "SQL script written to: $SQL_SCRIPT_FILE"
           echo "Script contents:"
           cat "$SQL_SCRIPT_FILE"
-          
+
           echo ""
           echo "Executing SQL script..."
           sqlcmd -S "${SQL_SERVER}.database.windows.net" -d "$SQL_DB" \
             --authentication-method ActiveDirectoryAzCli -N true \
             -v MI_NAME="$MI_NAME" MI_OBJECT_ID="$MI_OBJECT_ID" \
             -i "$SQL_SCRIPT_FILE"
-          
+
           # Cleanup temp file
           rm -f "$SQL_SCRIPT_FILE"
-          
+
           echo ""
           echo "Verifying user creation..."
           sqlcmd -S "${SQL_SERVER}.database.windows.net" -d "$SQL_DB" --authentication-method ActiveDirectoryAzCli -N true \
             -Q "SELECT name, type_desc, authentication_type_desc FROM sys.database_principals WHERE name = '$MI_NAME'"
-          
+
           echo "::endgroup::"
 
       - name: 🔐 Log in with Azure (Federated Credentials)
@@ -354,16 +354,6 @@ jobs:
           tenant-id: ${{ env.AZURE_TENANT_ID }}
           subscription-id: ${{ env.AZURE_SUBSCRIPTION_ID }}
 
-      - name: � Debug azd environment values
-        run: |
-          echo "::group::🔍 Checking azd environment values"
-          echo "Managed Identity values:"
-          azd env get-values | grep -E "MANAGED_IDENTITY|AZURE_CONTAINER_REGISTRY_MANAGED_IDENTITY" || echo "No managed identity values found"
-          echo ""
-          echo "SQL values:"
-          azd env get-values | grep -E "SQL|ORDERSDATABASE" || echo "No SQL values found"
-          echo "::endgroup::"
-
       - name: �🚀 Deploy Application
         id: deploy
         run: |
@@ -385,45 +375,6 @@ jobs:
           AZURE_CONTAINER_APPS_ENVIRONMENT_DEFAULT_DOMAIN="${AZURE_CONTAINER_APPS_ENVIRONMENT_DEFAULT_DOMAIN}"
           echo "resource-group=$RESOURCE_GROUP" >> $GITHUB_OUTPUT
           echo "webapp-url=https://aspire-dashboard.ext.$AZURE_CONTAINER_APPS_ENVIRONMENT_DEFAULT_DOMAIN" >> $GITHUB_OUTPUT
-
-      - name: 🔍 Verify Container App Configuration
-        run: |
-          echo "::group::🔍 Checking deployed Container App configuration"
-          RG="rg-orders-${AZURE_ENV_NAME}-${AZURE_LOCATION}"
-          echo "Resource Group: $RG"
-          
-          echo ""
-          echo "=== Container App Identity ==="
-          az containerapp show --name orders-api --resource-group "$RG" --query "identity" -o json || echo "Failed to get identity"
-          
-          echo ""
-          echo "=== AZURE_CLIENT_ID Environment Variable ==="
-          az containerapp show --name orders-api --resource-group "$RG" --query "properties.template.containers[0].env[?name=='AZURE_CLIENT_ID']" -o json || echo "Failed to get env var"
-          
-          echo ""
-          echo "=== Expected MANAGED_IDENTITY_CLIENT_ID ==="
-          azd env get-values | grep "MANAGED_IDENTITY_CLIENT_ID"
-          echo "::endgroup::"
-
-      - name: 🔍 Verify SQL User Exists
-        run: |
-          echo "::group::🔍 Checking SQL database user"
-          SQL_SERVER=$(azd env get-values | grep "AZURE_SQL_SERVER_NAME" | cut -d'=' -f2 | tr -d '"')
-          SQL_DB=$(azd env get-values | grep "AZURE_SQL_DATABASE_NAME" | cut -d'=' -f2 | tr -d '"')
-          MI_NAME=$(azd env get-values | grep "MANAGED_IDENTITY_NAME" | cut -d'=' -f2 | tr -d '"')
-          
-          echo "SQL Server: $SQL_SERVER"
-          echo "Database: $SQL_DB"
-          echo "Managed Identity Name: $MI_NAME"
-          echo ""
-          
-          echo "=== Checking if user exists in database ==="
-          sqlcmd -S "${SQL_SERVER}.database.windows.net" -d "$SQL_DB" --authentication-method ActiveDirectoryAzCli -Q "SELECT name, type_desc, authentication_type_desc FROM sys.database_principals WHERE name = '$MI_NAME'" || echo "Failed to query SQL"
-          
-          echo ""
-          echo "=== All external users in database ==="
-          sqlcmd -S "${SQL_SERVER}.database.windows.net" -d "$SQL_DB" --authentication-method ActiveDirectoryAzCli -Q "SELECT name, type_desc, authentication_type_desc FROM sys.database_principals WHERE type IN ('E', 'X')" || echo "Failed to query SQL"
-          echo "::endgroup::"
 
       # ------------------------------------------------------------------------
       # Phase 4: Summary
