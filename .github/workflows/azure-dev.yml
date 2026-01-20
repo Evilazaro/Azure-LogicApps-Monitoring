@@ -264,7 +264,17 @@ jobs:
           tenant-id: ${{ env.AZURE_TENANT_ID }}
           subscription-id: ${{ env.AZURE_SUBSCRIPTION_ID }}
 
-      - name: 🚀 Deploy Application
+      - name: � Debug azd environment values
+        run: |
+          echo "::group::🔍 Checking azd environment values"
+          echo "Managed Identity values:"
+          azd env get-values | grep -E "MANAGED_IDENTITY|AZURE_CONTAINER_REGISTRY_MANAGED_IDENTITY" || echo "No managed identity values found"
+          echo ""
+          echo "SQL values:"
+          azd env get-values | grep -E "SQL|ORDERSDATABASE" || echo "No SQL values found"
+          echo "::endgroup::"
+
+      - name: �🚀 Deploy Application
         id: deploy
         run: |
           echo "::group::🚀 Deploying application to Azure"
