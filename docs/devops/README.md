@@ -57,8 +57,9 @@ title: DevOps Master Pipeline Architecture
 flowchart TB
     %% ===== TRIGGER EVENTS =====
     subgraph TriggersGroup["🎯 Trigger Events"]
-        push(["Push to Main"])
-        pr(["Pull Request"])
+        push_ci(["Push to main/feature/**"])
+        push_cd(["Push to docs987678"])
+        pr(["Pull Request to main"])
         manual(["Manual Dispatch"])
     end
 
@@ -101,8 +102,8 @@ flowchart TB
     end
 
     %% ===== TRIGGER CONNECTIONS =====
-    push -->|triggers| ci_workflow
-    push -->|triggers| cd_workflow
+    push_ci -->|triggers| ci_workflow
+    push_cd -->|triggers| cd_workflow
     pr -->|triggers| ci_workflow
     manual -->|triggers| ci_workflow
     manual -->|triggers| cd_workflow
@@ -158,7 +159,7 @@ flowchart TB
     style ResultsGroup fill:#FEF3C7,stroke:#F59E0B,stroke-width:2px
 
     %% ===== NODE STYLING =====
-    class push,pr,manual trigger
+    class push_ci,push_cd,pr,manual trigger
     class ci_workflow,cd_workflow primary
     class build,test primary
     class deploy,analyze secondary
