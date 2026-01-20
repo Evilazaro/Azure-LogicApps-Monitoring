@@ -7,7 +7,7 @@
 ## 📑 Table of Contents
 
 - [Business Context](#-business-context)
-- [Business Capabilities](#-business-capabilities)
+- [Business Capabilities](#%EF%B8%8F-business-capabilities)
 - [Stakeholder Analysis](#-stakeholder-analysis)
 - [Value Streams](#-value-streams)
 - [Quality Attribute Requirements](#-quality-attribute-requirements)
@@ -46,8 +46,6 @@ The **Azure Logic Apps Monitoring Solution** provides a **reference implementati
 | **Architect**         | Evaluates patterns     | Reference architecture, documented decisions     |
 
 ---
-
-[↑ Back to Top](#-business-architecture)
 
 ---
 
@@ -122,8 +120,6 @@ flowchart TB
 
 ---
 
-[↑ Back to Top](#-business-architecture)
-
 ---
 
 ## 👥 Stakeholder Analysis
@@ -137,8 +133,6 @@ flowchart TB
 | **Compliance Officer** | Audit trail, data governance          | Immutable telemetry, diagnostic settings to storage                  |
 
 ---
-
-[↑ Back to Top](#-business-architecture)
 
 ---
 
@@ -220,8 +214,6 @@ flowchart LR
 
 ---
 
-[↑ Back to Top](#-business-architecture)
-
 ---
 
 ## ✅ Quality Attribute Requirements
@@ -237,8 +229,6 @@ flowchart LR
 | **Maintainability** | < 30 min developer onboarding                | Medium   | Local emulators, comprehensive documentation               |
 
 ---
-
-[↑ Back to Top](#-business-architecture)
 
 ---
 
@@ -309,8 +299,6 @@ flowchart TD
 ```
 
 ---
-
-[↑ Back to Top](#-business-architecture)
 
 ---
 

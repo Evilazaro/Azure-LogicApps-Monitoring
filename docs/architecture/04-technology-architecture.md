@@ -8,7 +8,7 @@
 
 - [Technology Principles](#-technology-principles)
 - [Technology Standards Catalog](#-technology-standards-catalog)
-- [Platform Decomposition](#-platform-decomposition)
+- [Platform Decomposition](#%EF%B8%8F-platform-decomposition)
 - [Environment and Location Strategy](#-environment-and-location-strategy)
 - [Infrastructure Components](#-infrastructure-components)
 - [Technology Portfolio](#-technology-portfolio)
@@ -31,8 +31,6 @@
 
 ---
 
-[↑ Back to Top](#️-technology-architecture)
-
 ---
 
 ## 📦 Technology Standards Catalog
@@ -49,8 +47,6 @@
 | **CLI**                | Azure Developer CLI  | 1.11+    | Approved | E2E deployment orchestration      |
 
 ---
-
-[↑ Back to Top](#️-technology-architecture)
 
 ---
 
@@ -125,8 +121,6 @@ flowchart TB
 
 ---
 
-[↑ Back to Top](#️-technology-architecture)
-
 ---
 
 ## 🌍 Environment and Location Strategy
@@ -139,8 +133,6 @@ flowchart TB
 | **Production** | Configurable | Live workloads      | 99.9%      | Azure PaaS (dedicated)                 |
 
 ---
-
-[↑ Back to Top](#️-technology-architecture)
 
 ---
 
@@ -239,8 +231,6 @@ flowchart TB
 
 ---
 
-[↑ Back to Top](#️-technology-architecture)
-
 ---
 
 ## 💼 Technology Portfolio
@@ -257,8 +247,6 @@ flowchart TB
 | **Storage Account**            | Standard LRS    | Auto          | Per-GB + transactions | Workflow state, blobs        |
 
 ---
-
-[↑ Back to Top](#️-technology-architecture)
 
 ---
 
@@ -303,8 +291,6 @@ infra/
 
 ---
 
-[↑ Back to Top](#️-technology-architecture)
-
 ---
 
 ## 💻 Local Development Stack
@@ -335,8 +321,6 @@ else
 
 ---
 
-[↑ Back to Top](#️-technology-architecture)
-
 ---
 
 ## 🔧 Operational Considerations
@@ -359,8 +343,6 @@ else
 | **Logic Apps**     | Slot deployment (optional) | Near-zero          |
 
 ---
-
-[↑ Back to Top](#️-technology-architecture)
 
 ---
 

@@ -9,7 +9,7 @@
 - [Status](#-status)
 - [Date](#-date)
 - [Context](#-context)
-- [Decision](#-decision)
+- [Decision](#%EF%B8%8F-decision)
 - [Consequences](#-consequences)
 - [Alternatives Considered](#-alternatives-considered)
 - [Message Patterns](#-message-patterns)
@@ -57,8 +57,6 @@ Order Created → API publishes message → Service Bus → Logic App triggers �
 | Complexity               | ↘️ Additional infrastructure component |
 
 ---
-
-[↑ Back to Top](#-adr-002-use-azure-service-bus-for-async-messaging)
 
 ---
 
@@ -129,8 +127,6 @@ public async Task SendOrderPlacedMessageAsync(OrderEntity order)
 
 ---
 
-[↑ Back to Top](#-adr-002-use-azure-service-bus-for-async-messaging)
-
 ---
 
 ## ⚖️ Consequences
@@ -162,8 +158,6 @@ public async Task SendOrderPlacedMessageAsync(OrderEntity order)
 - Topic/subscription matches pub/sub requirements
 
 ---
-
-[↑ Back to Top](#-adr-002-use-azure-service-bus-for-async-messaging)
 
 ---
 
@@ -215,8 +209,6 @@ public async Task SendOrderPlacedMessageAsync(OrderEntity order)
 
 ---
 
-[↑ Back to Top](#-adr-002-use-azure-service-bus-for-async-messaging)
-
 ---
 
 ## 📩 Message Patterns
@@ -261,8 +253,6 @@ flowchart LR
 | Auto-delete on idle | Disabled  | Preserve for monitoring        |
 
 ---
-
-[↑ Back to Top](#-adr-002-use-azure-service-bus-for-async-messaging)
 
 ---
 

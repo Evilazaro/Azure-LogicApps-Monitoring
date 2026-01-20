@@ -10,10 +10,10 @@
 - [Identity and Access Management](#-identity-and-access-management)
 - [Network Security](#-network-security)
 - [Authentication Flows](#-authentication-flows)
-- [Data Protection](#-data-protection)
+- [Data Protection](#%EF%B8%8F-data-protection)
 - [Secret Management Strategy](#-secret-management-strategy)
 - [Compliance Considerations](#-compliance-considerations)
-- [Threat Model Summary](#-threat-model-summary)
+- [Threat Model Summary](#%EF%B8%8F-threat-model-summary)
 - [Security Monitoring](#-security-monitoring)
 - [Cross-Architecture Relationships](#-cross-architecture-relationships)
 
@@ -30,8 +30,6 @@
 | **S-5** | **Secure by Default**        | No manual hardening       | Infrastructure as Code policies      |
 
 ---
-
-[↑ Back to Top](#-security-architecture)
 
 ---
 
@@ -116,8 +114,6 @@ flowchart TB
 | GitHub Actions | Azure Resource Group | `Contributor`                     | Deployment            |
 
 ---
-
-[↑ Back to Top](#-security-architecture)
 
 ---
 
@@ -210,8 +206,6 @@ flowchart TB
 
 ---
 
-[↑ Back to Top](#-security-architecture)
-
 ---
 
 ## 🔄 Authentication Flows
@@ -271,8 +265,6 @@ sequenceDiagram
 
 ---
 
-[↑ Back to Top](#-security-architecture)
-
 ---
 
 ## 🛡️ Data Protection
@@ -306,8 +298,6 @@ sequenceDiagram
 | API Keys           | Confidential   | Not used (Managed Identity) |
 
 ---
-
-[↑ Back to Top](#-security-architecture)
 
 ---
 
@@ -370,8 +360,6 @@ flowchart LR
 
 ---
 
-[↑ Back to Top](#-security-architecture)
-
 ---
 
 ## ✅ Compliance Considerations
@@ -397,8 +385,6 @@ flowchart LR
 
 ---
 
-[↑ Back to Top](#-security-architecture)
-
 ---
 
 ## ⚠️ Threat Model Summary
@@ -413,8 +399,6 @@ flowchart LR
 | **Insider Threat**      | Privileged access abuse | Least privilege, audit logs    |
 
 ---
-
-[↑ Back to Top](#-security-architecture)
 
 ---
 
@@ -439,8 +423,6 @@ flowchart LR
 | Time to patch critical CVE      | < 7 days | Dependabot alerts |
 
 ---
-
-[↑ Back to Top](#-security-architecture)
 
 ---
 

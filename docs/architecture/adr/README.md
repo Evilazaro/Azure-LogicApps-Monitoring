@@ -6,7 +6,7 @@
 
 ## 📑 Table of Contents
 
-- [About ADRs](#-about-adrs)
+- [About ADRs](#%E2%84%B9%EF%B8%8F-about-adrs)
 - [ADR Index](#-adr-index)
 - [Decision Log Summary](#-decision-log-summary)
 - [ADR Template](#-adr-template)
@@ -23,8 +23,6 @@ Architecture Decision Records (ADRs) document significant architectural decision
 
 ---
 
-[↑ Back to Top](#-architecture-decision-records)
-
 ---
 
 ## 📊 ADR Index
@@ -36,8 +34,6 @@ Architecture Decision Records (ADRs) document significant architectural decision
 | [ADR-003](ADR-003-observability-strategy.md) | OpenTelemetry + Application Insights for Observability | ✅ Accepted | 2025-01 |
 
 ---
-
-[↑ Back to Top](#-architecture-decision-records)
 
 ---
 
@@ -90,8 +86,6 @@ Architecture Decision Records (ADRs) document significant architectural decision
 [Read full ADR →](ADR-003-observability-strategy.md)
 
 ---
-
-[↑ Back to Top](#-architecture-decision-records)
 
 ---
 

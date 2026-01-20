@@ -8,12 +8,12 @@
 
 - [Application Architecture Overview](#-application-architecture-overview)
 - [Application Architecture Principles](#-application-architecture-principles)
-- [Application Landscape Map](#-application-landscape-map)
+- [Application Landscape Map](#%EF%B8%8F-application-landscape-map)
 - [Service Catalog](#-service-catalog)
 - [Service Details](#-service-details)
 - [Inter-Service Communication](#-inter-service-communication)
 - [Application Integration Points](#-application-integration-points)
-- [Resilience Patterns](#-resilience-patterns)
+- [Resilience Patterns](#%EF%B8%8F-resilience-patterns)
 - [Cross-Cutting Concerns](#-cross-cutting-concerns-servicedefaults)
 - [Technology Stack Summary](#-technology-stack-summary)
 - [Cross-Architecture Relationships](#-cross-architecture-relationships)
@@ -38,8 +38,6 @@ The solution implements a **modular monolith** architecture with clear service b
 
 ---
 
-[↑ Back to Top](#️-application-architecture)
-
 ---
 
 ## 📋 Application Architecture Principles
@@ -53,8 +51,6 @@ The solution implements a **modular monolith** architecture with clear service b
 | **Observability by Design** | All services instrumented with OpenTelemetry  | Operational excellence        | Built-in tracing and metrics    |
 
 ---
-
-[↑ Back to Top](#️-application-architecture)
 
 ---
 
@@ -129,8 +125,6 @@ flowchart TB
 
 ---
 
-[↑ Back to Top](#️-application-architecture)
-
 ---
 
 ## 📦 Service Catalog
@@ -143,8 +137,6 @@ flowchart TB
 | **app.AppHost**      | Orchestrator  | N/A  | All services                     | N/A                 |
 
 ---
-
-[↑ Back to Top](#️-application-architecture)
 
 ---
 
@@ -242,7 +234,7 @@ flowchart TB
 | `ListAllOrders.razor`    | Orders grid       | [Components/Pages/ListAllOrders.razor](../../src/eShop.Web.App/Components/Pages/ListAllOrders.razor)       |
 | `ViewOrder.razor`        | Order details     | [Components/Pages/ViewOrder.razor](../../src/eShop.Web.App/Components/Pages/ViewOrder.razor)               |
 
-#### Component Structure
+#### Web App Component Structure
 
 ```mermaid
 ---
@@ -330,8 +322,6 @@ flowchart TD
 
 ---
 
-[↑ Back to Top](#️-application-architecture)
-
 ---
 
 ## 🔄 Inter-Service Communication
@@ -387,8 +377,6 @@ flowchart LR
 
 ---
 
-[↑ Back to Top](#️-application-architecture)
-
 ---
 
 ## 🔗 Application Integration Points
@@ -403,8 +391,6 @@ flowchart LR
 
 ---
 
-[↑ Back to Top](#️-application-architecture)
-
 ---
 
 ## 🛡️ Resilience Patterns
@@ -417,8 +403,6 @@ flowchart LR
 | **DB Retry**        | EF Core        | 5 retries, 30s max delay        | [Program.cs](../../src/eShop.Orders.API/Program.cs)      |
 
 ---
-
-[↑ Back to Top](#️-application-architecture)
 
 ---
 
@@ -438,8 +422,6 @@ The `app.ServiceDefaults` library provides shared configuration:
 
 ---
 
-[↑ Back to Top](#️-application-architecture)
-
 ---
 
 ## 📚 Technology Stack Summary
@@ -456,8 +438,6 @@ The `app.ServiceDefaults` library provides shared configuration:
 | **Orchestration** | .NET Aspire                | 13.1.0  | Local development   |
 
 ---
-
-[↑ Back to Top](#️-application-architecture)
 
 ---
 

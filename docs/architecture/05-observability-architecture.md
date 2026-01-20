@@ -7,12 +7,12 @@
 ## 📑 Table of Contents
 
 - [Observability Principles](#-observability-principles)
-- [Three Pillars Overview](#-three-pillars-overview)
+- [Three Pillars Overview](#%EF%B8%8F-three-pillars-overview)
 - [Distributed Tracing Strategy](#-distributed-tracing-strategy)
 - [Metrics Catalog](#-metrics-catalog)
 - [Logging Strategy](#-logging-strategy)
 - [OpenTelemetry Configuration](#-opentelemetry-configuration)
-- [Health Monitoring](#-health-monitoring)
+- [Health Monitoring](#%EF%B8%8F-health-monitoring)
 - [Alert Rules Catalog](#-alert-rules-catalog)
 - [SLI/SLO Definitions](#%EF%B8%8F-slislo-definitions)
 - [Observability Platform Architecture](#-observability-platform-architecture)
@@ -31,8 +31,6 @@
 | **O-5** | **Cost-Aware Telemetry**           | Control data volumes              | Sampling and filtering strategies |
 
 ---
-
-[↑ Back to Top](#-observability-architecture)
 
 ---
 
@@ -107,8 +105,6 @@ flowchart TB
 
 ---
 
-[↑ Back to Top](#-observability-architecture)
-
 ---
 
 ## 🔍 Distributed Tracing Strategy
@@ -169,8 +165,6 @@ sequenceDiagram
 
 ---
 
-[↑ Back to Top](#-observability-architecture)
-
 ---
 
 ## 📊 Metrics Catalog
@@ -202,8 +196,6 @@ sequenceDiagram
 | **Logic Apps**   | `RunsFailed`              | > 3 in 5 min      | Check workflow logs  |
 
 ---
-
-[↑ Back to Top](#-observability-architecture)
 
 ---
 
@@ -250,8 +242,6 @@ sequenceDiagram
 
 ---
 
-[↑ Back to Top](#-observability-architecture)
-
 ---
 
 ## 🔧 OpenTelemetry Configuration
@@ -289,8 +279,6 @@ openTelemetry.WithMetrics(metrics =>
 | **Azure Monitor** | Application Insights     | `APPLICATIONINSIGHTS_CONNECTION_STRING` |
 
 ---
-
-[↑ Back to Top](#-observability-architecture)
 
 ---
 
@@ -337,8 +325,6 @@ public async Task<HealthCheckResult> CheckHealthAsync(
 
 ---
 
-[↑ Back to Top](#-observability-architecture)
-
 ---
 
 ## 🚨 Alert Rules Catalog
@@ -354,8 +340,6 @@ public async Task<HealthCheckResult> CheckHealthAsync(
 
 ---
 
-[↑ Back to Top](#-observability-architecture)
-
 ---
 
 ## 🎯️ SLI/SLO Definitions
@@ -368,8 +352,6 @@ public async Task<HealthCheckResult> CheckHealthAsync(
 | **Error Rate**   | % of 5xx responses       | `errorCount / totalCount`   | < 0.1%   | N/A            |
 
 ---
-
-[↑ Back to Top](#-observability-architecture)
 
 ---
 
@@ -453,8 +435,6 @@ flowchart LR
 ```
 
 ---
-
-[↑ Back to Top](#-observability-architecture)
 
 ---
 

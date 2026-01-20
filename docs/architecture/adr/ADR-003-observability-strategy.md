@@ -55,7 +55,6 @@ Key requirements:
 
 ---
 
-[↑ Back to Top](#-adr-003-opentelemetry--application-insights-for-observability)
 
 ---
 
@@ -211,7 +210,6 @@ message.ApplicationProperties["traceparent"] =
 
 ---
 
-[↑ Back to Top](#-adr-003-opentelemetry--application-insights-for-observability)
 
 ---
 
@@ -227,7 +225,6 @@ message.ApplicationProperties["traceparent"] =
 
 ---
 
-[↑ Back to Top](#-adr-003-opentelemetry--application-insights-for-observability)
 
 ---
 
@@ -279,7 +276,6 @@ message.ApplicationProperties["traceparent"] =
 
 ---
 
-[↑ Back to Top](#-adr-003-opentelemetry--application-insights-for-observability)
 
 ---
 
@@ -322,7 +318,6 @@ sequenceDiagram
 
 ---
 
-[↑ Back to Top](#-adr-003-opentelemetry--application-insights-for-observability)
 
 ---
 

@@ -7,10 +7,10 @@
 ## 📑 Table of Contents
 
 - [Executive Summary](#-executive-summary)
-- [High-Level Architecture](#️-high-level-architecture)
+- [High-Level Architecture](#%EF%B8%8F-high-level-architecture)
 - [Service Inventory](#-service-inventory)
-- [Azure Resource Inventory](#️-azure-resource-inventory)
-- [Document Navigation](#️-document-navigation)
+- [Azure Resource Inventory](#%EF%B8%8F-azure-resource-inventory)
+- [Document Navigation](#%EF%B8%8F-document-navigation)
 - [Reading Recommendations by Audience](#-reading-recommendations-by-audience)
 - [Repository Structure](#-repository-structure)
 - [Quick Links](#-quick-links)
@@ -31,8 +31,6 @@ The **Azure Logic Apps Monitoring Solution** is a cloud-native reference archite
 **Target Deployment Environments:** Local development (emulators), Azure Container Apps (production)
 
 ---
-
-[↑ Back to Top](#️-azure-logic-apps-monitoring-solution---architecture-overview)
 
 ---
 
@@ -114,8 +112,6 @@ flowchart TD
 
 ---
 
-[↑ Back to Top](#️-azure-logic-apps-monitoring-solution---architecture-overview)
-
 ---
 
 ## 📦 Service Inventory
@@ -129,8 +125,6 @@ flowchart TD
 | **app.ServiceDefaults** | Library      | .NET Class Library       | OpenTelemetry, health checks, resilience patterns, Service Bus client | N/A  |
 
 ---
-
-[↑ Back to Top](#️-azure-logic-apps-monitoring-solution---architecture-overview)
 
 ---
 
@@ -147,8 +141,6 @@ flowchart TD
 | **Logic App**                  | Logic Apps Standard      | Workflow automation engine             | WS1             |
 
 ---
-
-[↑ Back to Top](#️-azure-logic-apps-monitoring-solution---architecture-overview)
 
 ---
 
@@ -182,8 +174,6 @@ flowchart TD
 
 ---
 
-[↑ Back to Top](#️-azure-logic-apps-monitoring-solution---architecture-overview)
-
 ---
 
 ## 👥 Reading Recommendations by Audience
@@ -196,8 +186,6 @@ flowchart TD
 | **DevOps/SRE Teams**          | Deployment → Observability → Technology → Security |
 
 ---
-
-[↑ Back to Top](#️-azure-logic-apps-monitoring-solution---architecture-overview)
 
 ---
 
@@ -224,8 +212,6 @@ Azure-LogicApps-Monitoring/
 
 ---
 
-[↑ Back to Top](#️-azure-logic-apps-monitoring-solution---architecture-overview)
-
 ---
 
 ## 🔗 Quick Links
@@ -238,5 +224,4 @@ Azure-LogicApps-Monitoring/
 
 ---
 
-_Last Updated: January 2026 | Version 1.0.0_
-
+> **Last Updated:** January 2026 | **Version:** 1.0.0

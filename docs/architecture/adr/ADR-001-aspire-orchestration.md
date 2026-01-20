@@ -9,8 +9,8 @@
 - [Status](#-status)
 - [Date](#-date)
 - [Context](#-context)
-- [Decision](#-decision)
-- [Consequences](#-consequences)
+- [Decision](#%EF%B8%8F-decision)
+- [Consequences](#%EF%B8%8F-consequences)
 - [Alternatives Considered](#-alternatives-considered)
 - [Related Decisions](#-related-decisions)
 - [References](#-references)
@@ -26,8 +26,6 @@
 2025-01
 
 ---
-
-[↑ Back to Top](#-adr-001-use-net-aspire-for-service-orchestration)
 
 ---
 
@@ -59,8 +57,6 @@ Key challenges:
 | Maturity concerns       | ↘️ Aspire is relatively new (GA 2024) |
 
 ---
-
-[↑ Back to Top](#-adr-001-use-net-aspire-for-service-orchestration)
 
 ---
 
@@ -98,8 +94,6 @@ var ordersApi = builder.AddProject<Projects.eShop_Orders_API>("orders-api")
 
 ---
 
-[↑ Back to Top](#-adr-001-use-net-aspire-for-service-orchestration)
-
 ---
 
 ## ⚖️ Consequences
@@ -131,8 +125,6 @@ var ordersApi = builder.AddProject<Projects.eShop_Orders_API>("orders-api")
 - Azure deployment still uses standard Bicep/ARM
 
 ---
-
-[↑ Back to Top](#-adr-001-use-net-aspire-for-service-orchestration)
 
 ---
 
@@ -172,8 +164,6 @@ var ordersApi = builder.AddProject<Projects.eShop_Orders_API>("orders-api")
 - Harder to maintain consistency
 
 ---
-
-[↑ Back to Top](#-adr-001-use-net-aspire-for-service-orchestration)
 
 ---
 

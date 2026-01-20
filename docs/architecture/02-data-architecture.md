@@ -8,9 +8,9 @@
 
 - [Data Architecture Overview](#-data-architecture-overview)
 - [Data Architecture Principles](#-data-architecture-principles)
-- [Data Landscape Map](#-data-landscape-map)
+- [Data Landscape Map](#%EF%B8%8F-data-landscape-map)
 - [Data Domain Catalog](#-data-domain-catalog)
-- [Data Store Details](#-data-store-details)
+- [Data Store Details](#%EF%B8%8F-data-store-details)
 - [Data Flow Architecture](#-data-flow-architecture)
 - [Monitoring Data Flow Architecture](#-monitoring-data-flow-architecture)
 - [Telemetry Data Mapping](#-telemetry-data-mapping)
@@ -38,8 +38,6 @@ The solution implements a **service-oriented data architecture** where each serv
 
 ---
 
-[↑ Back to Top](#️-data-architecture)
-
 ---
 
 ## 📋 Data Architecture Principles
@@ -53,8 +51,6 @@ The solution implements a **service-oriented data architecture** where each serv
 | **Trace Context Propagation** | All messages include W3C Trace Context          | End-to-end correlation                           | TraceId, SpanId in Service Bus ApplicationProperties       |
 
 ---
-
-[↑ Back to Top](#️-data-architecture)
 
 ---
 
@@ -127,8 +123,6 @@ flowchart LR
 
 ---
 
-[↑ Back to Top](#️-data-architecture)
-
 ---
 
 ## 📂 Data Domain Catalog
@@ -141,8 +135,6 @@ flowchart LR
 | **Operational Telemetry** | Traces, metrics, logs            | Observability   | App Insights  | All Services  | SRE Team              |
 
 ---
-
-[↑ Back to Top](#️-data-architecture)
 
 ---
 
@@ -158,8 +150,6 @@ flowchart LR
 | **Error Blobs**        | Azure Blob Storage         | Failed order artifacts        | Logic Apps                   | Azure Storage Account       | Standard LRS    |
 
 ---
-
-[↑ Back to Top](#️-data-architecture)
 
 ---
 
@@ -216,8 +206,6 @@ sequenceDiagram
 ```
 
 ---
-
-[↑ Back to Top](#️-data-architecture)
 
 ---
 
@@ -292,8 +280,6 @@ flowchart LR
 
 ---
 
-[↑ Back to Top](#️-data-architecture)
-
 ---
 
 ## 📡 Telemetry Data Mapping
@@ -360,8 +346,6 @@ flowchart LR
 
 ---
 
-[↑ Back to Top](#️-data-architecture)
-
 ---
 
 ## 🔗 Trace Context Propagation
@@ -407,8 +391,6 @@ message.ApplicationProperties["traceparent"] = activity.Id ?? string.Empty;
 ```
 
 ---
-
-[↑ Back to Top](#️-data-architecture)
 
 ---
 
@@ -461,8 +443,6 @@ flowchart TD
 
 ---
 
-[↑ Back to Top](#️-data-architecture)
-
 ---
 
 ## 🔄 Data Lifecycle States
@@ -476,8 +456,6 @@ flowchart TD
 | **Telemetry**   | Operational data captured   | App Insights      | 90 days      | Continuous            |
 
 ---
-
-[↑ Back to Top](#️-data-architecture)
 
 ---
 

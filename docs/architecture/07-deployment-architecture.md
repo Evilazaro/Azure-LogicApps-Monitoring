@@ -12,7 +12,7 @@
 - [Azure Developer CLI Integration](#-azure-developer-cli-azd-integration)
 - [Infrastructure Modules](#-infrastructure-modules)
 - [Deployment Hooks](#-deployment-hooks)
-- [Rollback Strategy](#-rollback-strategy)
+- [Rollback Strategy](#%EF%B8%8F-rollback-strategy)
 - [Local Development Setup](#-local-development-setup)
 - [Deployment Checklist](#-deployment-checklist)
 - [Cross-Architecture Relationships](#-cross-architecture-relationships)
@@ -30,8 +30,6 @@
 | **D-5** | **Automated Validation**   | Shift-left quality          | PR gates, automated tests      |
 
 ---
-
-[↑ Back to Top](#-deployment-architecture)
 
 ---
 
@@ -85,8 +83,6 @@ flowchart TB
 ```
 
 ---
-
-[↑ Back to Top](#-deployment-architecture)
 
 ---
 
@@ -214,8 +210,6 @@ jobs:
 
 ---
 
-[↑ Back to Top](#-deployment-architecture)
-
 ---
 
 ## 🔧 Azure Developer CLI (azd) Integration
@@ -303,8 +297,6 @@ flowchart LR
 
 ---
 
-[↑ Back to Top](#-deployment-architecture)
-
 ---
 
 ## 🏭 Infrastructure Modules
@@ -375,8 +367,6 @@ flowchart TB
 
 ---
 
-[↑ Back to Top](#-deployment-architecture)
-
 ---
 
 ## 🪝 Deployment Hooks
@@ -445,8 +435,6 @@ Write-Host "✅ Post-provisioning complete"
 
 ---
 
-[↑ Back to Top](#-deployment-architecture)
-
 ---
 
 ## ⏮️ Rollback Strategy
@@ -502,8 +490,6 @@ flowchart LR
 
 ---
 
-[↑ Back to Top](#-deployment-architecture)
-
 ---
 
 ## 💻 Local Development Setup
@@ -541,8 +527,6 @@ dotnet run --project app.AppHost/app.AppHost.csproj
 
 ---
 
-[↑ Back to Top](#-deployment-architecture)
-
 ---
 
 ## ✅ Deployment Checklist
@@ -570,8 +554,6 @@ dotnet run --project app.AppHost/app.AppHost.csproj
 - [ ] Check Logic App workflow runs
 
 ---
-
-[↑ Back to Top](#-deployment-architecture)
 
 ---
 
