@@ -348,7 +348,11 @@ This workflow includes built-in retry logic to handle transient failures common 
 ### Retry Behavior
 
 ```mermaid
+---
+title: Retry Pattern with Exponential Backoff
+---
 flowchart LR
+    %% ===== RETRY PATTERN =====
     subgraph RetryLogic["🔄 Retry Pattern"]
         attempt["Attempt Operation"]
         check{{"Success?"}}
@@ -357,22 +361,30 @@ flowchart LR
         success["✅ Continue"]
     end
 
-    attempt --> check
+    %% ===== FLOW CONNECTIONS =====
+    attempt -->|"execute"| check
     check -->|"Yes"| success
     check -->|"No (< max)"| retry
-    retry -->|"Exponential backoff"| attempt
+    retry -->|"exponential backoff"| attempt
     check -->|"No (= max)"| fail
 
+    %% ===== STYLING DEFINITIONS =====
+    %% Primary components: Indigo - main processes
     classDef primary fill:#4F46E5,stroke:#3730A3,color:#FFFFFF
+    %% Secondary components: Emerald - success states
     classDef secondary fill:#10B981,stroke:#059669,color:#FFFFFF
+    %% Error/failure states: Red - error handling
     classDef failed fill:#F44336,stroke:#C62828,color:#FFFFFF
-    classDef decision fill:#FFC107,stroke:#FFA000,color:#000000
+    %% Decision points: Amber outline - conditional logic
+    classDef decision fill:#FFFBEB,stroke:#F59E0B,color:#000000
 
+    %% ===== NODE STYLING =====
     class attempt,retry primary
     class success secondary
     class fail failed
     class check decision
 
+    %% ===== SUBGRAPH STYLING =====
     style RetryLogic fill:#EEF2FF,stroke:#4F46E5,stroke-width:2px
 ```
 
