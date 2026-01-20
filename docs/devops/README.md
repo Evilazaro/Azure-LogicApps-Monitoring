@@ -159,6 +159,7 @@ flowchart TB
 
     %% ===== NODE STYLING =====
     class push,pr,manual trigger
+    class ci_workflow,cd_workflow primary
     class build,test primary
     class deploy,analyze secondary
     class codeql primary

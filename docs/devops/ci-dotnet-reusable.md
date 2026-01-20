@@ -251,6 +251,7 @@ flowchart LR
     style TestJob fill:#E0E7FF,stroke:#4F46E5,stroke-width:2px
     style TestMatrix fill:#D1FAE5,stroke:#10B981,stroke-width:1px
     style AnalyzeJob fill:#ECFDF5,stroke:#10B981,stroke-width:2px
+    style CodeQLJob fill:#E0E7FF,stroke:#4F46E5,stroke-width:2px
     style SummaryJob fill:#ECFDF5,stroke:#10B981,stroke-width:2px
     style FailureJob fill:#FEE2E2,stroke:#F44336,stroke-width:2px
     style OutputsGroup fill:#FEF3C7,stroke:#F59E0B,stroke-width:2px
@@ -263,6 +264,7 @@ flowchart LR
     class b_checkout,b_setup,b_workload,b_version,b_restore,b_build,b_upload,b_summary primary
     class t_checkout,t_setup,t_workload,t_restore,t_build,t_test,t_report,t_upload,t_summary primary
     class a_checkout,a_setup,a_workload,a_restore,a_format,a_summary,a_fail secondary
+    class cql_checkout,cql_setup,cql_init,cql_build,cql_analyze,cql_upload,cql_summary primary
     class s_generate secondary
     class f_report failed
     class out_version,out_build,out_test,out_analyze datastore
@@ -628,17 +630,15 @@ flowchart LR
     classDef primary fill:#4F46E5,stroke:#3730A3,color:#FFFFFF
     %% Secondary components: Emerald - secondary elements
     classDef secondary fill:#10B981,stroke:#059669,color:#FFFFFF
-    %% Security: Purple - security scanning
-    classDef security fill:#9C27B0,stroke:#6A1B9A,color:#FFFFFF
     %% Error/failure states: Red - error handling
     classDef failed fill:#F44336,stroke:#C62828,color:#FFFFFF
     %% Data stores: Amber - reporting
     classDef datastore fill:#F59E0B,stroke:#D97706,color:#000000
 
-    %% Apply styles to nodes
+    %% ===== NODE STYLING =====
     class build,test primary
     class analyze secondary
-    class codeql security
+    class codeql primary
     class summary datastore
     class failure failed
 ```
