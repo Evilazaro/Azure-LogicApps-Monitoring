@@ -1,6 +1,29 @@
+---
+title: Architecture Decision Records Index
+description: Index of Architecture Decision Records (ADRs) documenting significant architectural decisions for the Azure Logic Apps Monitoring Solution.
+author: Architecture Team
+date: 2026-01-20
+version: 1.0.0
+tags:
+  - adr
+  - architecture-decisions
+  - documentation
+---
+
 # 📜 Architecture Decision Records
 
-← [Deployment Architecture](../07-deployment-architecture.md) | **ADR Index** | [ADR-001 →](ADR-001-aspire-orchestration.md)
+> [!NOTE]
+> **Target Audience:** Cloud Solution Architects, Technical Leads, Developers
+> **Reading Time:** ~5 minutes
+
+<details>
+<summary>📍 Navigation</summary>
+
+| Previous                                                      |     Index     |                                         Next |
+| :------------------------------------------------------------ | :-----------: | -------------------------------------------: |
+| [← Deployment Architecture](../07-deployment-architecture.md) | **ADR Index** | [ADR-001 →](ADR-001-aspire-orchestration.md) |
+
+</details>
 
 ---
 
@@ -15,11 +38,12 @@
 
 ## ℹ️ About ADRs
 
-Architecture Decision Records (ADRs) document significant architectural decisions made during the design and evolution of the Azure Logic Apps Monitoring Solution. Each ADR captures:
-
-- **Context**: The situation and forces that led to the decision
-- **Decision**: What was decided
-- **Consequences**: The resulting context after applying the decision
+> [!TIP]
+> Architecture Decision Records (ADRs) document significant architectural decisions made during the design and evolution of the Azure Logic Apps Monitoring Solution. Each ADR captures:
+>
+> - **Context**: The situation and forces that led to the decision
+> - **Decision**: What was decided
+> - **Consequences**: The resulting context after applying the decision
 
 ---
 
@@ -140,4 +164,8 @@ YYYY-MM
 
 ---
 
-_← [Deployment Architecture](../07-deployment-architecture.md) | [ADR-001 →](ADR-001-aspire-orchestration.md)_
+<div align="center">
+
+[← Deployment Architecture](../07-deployment-architecture.md) | **ADR Index** | [ADR-001 →](ADR-001-aspire-orchestration.md)
+
+</div>

@@ -1,6 +1,30 @@
+---
+title: "ADR-003: OpenTelemetry + Application Insights for Observability"
+description: Architecture decision record documenting the selection of OpenTelemetry with Azure Application Insights as the observability strategy for the Azure Logic Apps Monitoring Solution.
+author: Architecture Team
+date: 2025-01
+version: 1.0.0
+tags:
+  - adr
+  - opentelemetry
+  - application-insights
+  - observability
+---
+
 # 📊 ADR-003: OpenTelemetry + Application Insights for Observability
 
-← [ADR-002](ADR-002-service-bus-messaging.md) | **ADR-003** | [ADR Index](README.md)
+> [!NOTE]
+> **Target Audience:** Cloud Solution Architects, SRE Teams, Platform Engineers
+> **Reading Time:** ~10 minutes
+
+<details>
+<summary>📍 Navigation</summary>
+
+| Previous                                      |    Index    |                   Next |
+| :-------------------------------------------- | :---------: | ---------------------: |
+| [← ADR-002](ADR-002-service-bus-messaging.md) | **ADR-003** | [ADR Index](README.md) |
+
+</details>
 
 ---
 
@@ -29,7 +53,8 @@
 
 ## 📋 Context
 
-The Azure Logic Apps Monitoring Solution requires comprehensive observability across:
+> [!IMPORTANT]
+> The Azure Logic Apps Monitoring Solution requires comprehensive observability across:
 
 - **Orders API** (.NET Web API)
 - **Web App** (.NET Blazor)
@@ -332,4 +357,8 @@ sequenceDiagram
 
 ---
 
-_← [ADR-002](ADR-002-service-bus-messaging.md) | [ADR Index](README.md)_
+<div align="center">
+
+[← ADR-002](ADR-002-service-bus-messaging.md) | **ADR-003** | [ADR Index](README.md)
+
+</div>

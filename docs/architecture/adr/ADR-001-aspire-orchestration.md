@@ -1,6 +1,30 @@
+---
+title: "ADR-001: Use .NET Aspire for Service Orchestration"
+description: Architecture decision record documenting the selection of .NET Aspire as the service orchestration framework for the Azure Logic Apps Monitoring Solution.
+author: Architecture Team
+date: 2025-01
+version: 1.0.0
+tags:
+  - adr
+  - aspire
+  - orchestration
+  - service-discovery
+---
+
 # 🎯 ADR-001: Use .NET Aspire for Service Orchestration
 
-← [ADR Index](README.md) | **ADR-001** | [ADR-002 →](ADR-002-service-bus-messaging.md)
+> [!NOTE]
+> **Target Audience:** Cloud Solution Architects, Platform Engineers, Developers
+> **Reading Time:** ~8 minutes
+
+<details>
+<summary>📍 Navigation</summary>
+
+| Previous                 |    Index    |                                          Next |
+| :----------------------- | :---------: | --------------------------------------------: |
+| [← ADR Index](README.md) | **ADR-001** | [ADR-002 →](ADR-002-service-bus-messaging.md) |
+
+</details>
 
 ---
 
@@ -31,7 +55,8 @@
 
 ## 📊 Context
 
-The Azure Logic Apps Monitoring Solution requires orchestration of multiple services:
+> [!IMPORTANT]
+> The Azure Logic Apps Monitoring Solution requires orchestration of multiple services:
 
 - Orders API (REST backend)
 - Web App (frontend)
@@ -181,4 +206,8 @@ var ordersApi = builder.AddProject<Projects.eShop_Orders_API>("orders-api")
 
 ---
 
-_← [ADR Index](README.md) | [ADR-002 →](ADR-002-service-bus-messaging.md)_
+<div align="center">
+
+[← ADR Index](README.md) | **ADR-001** | [ADR-002 →](ADR-002-service-bus-messaging.md)
+
+</div>

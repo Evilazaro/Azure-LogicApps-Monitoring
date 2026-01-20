@@ -1,6 +1,30 @@
+---
+title: "ADR-002: Use Azure Service Bus for Async Messaging"
+description: Architecture decision record documenting the selection of Azure Service Bus as the async messaging platform for the Azure Logic Apps Monitoring Solution.
+author: Architecture Team
+date: 2025-01
+version: 1.0.0
+tags:
+  - adr
+  - service-bus
+  - messaging
+  - async
+---
+
 # 📨 ADR-002: Use Azure Service Bus for Async Messaging
 
-← [ADR-001](ADR-001-aspire-orchestration.md) | **ADR-002** | [ADR-003 →](ADR-003-observability-strategy.md)
+> [!NOTE]
+> **Target Audience:** Cloud Solution Architects, Platform Engineers, Developers
+> **Reading Time:** ~8 minutes
+
+<details>
+<summary>📍 Navigation</summary>
+
+| Previous                                     |    Index    |                                           Next |
+| :------------------------------------------- | :---------: | ---------------------------------------------: |
+| [← ADR-001](ADR-001-aspire-orchestration.md) | **ADR-002** | [ADR-003 →](ADR-003-observability-strategy.md) |
+
+</details>
 
 ---
 
@@ -28,7 +52,8 @@
 
 ## 📋 Context
 
-The Azure Logic Apps Monitoring Solution requires asynchronous communication between:
+> [!IMPORTANT]
+> The Azure Logic Apps Monitoring Solution requires asynchronous communication between:
 
 - **Orders API** (message publisher)
 - **Logic Apps** (message consumer and processor)
@@ -271,4 +296,8 @@ flowchart LR
 
 ---
 
-_← [ADR-001](ADR-001-aspire-orchestration.md) | [ADR-003 →](ADR-003-observability-strategy.md)_
+<div align="center">
+
+[← ADR-001](ADR-001-aspire-orchestration.md) | **ADR-002** | [ADR-003 →](ADR-003-observability-strategy.md)
+
+</div>
