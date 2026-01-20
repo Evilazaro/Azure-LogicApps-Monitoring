@@ -1,10 +1,25 @@
-# Technology Architecture
+# 🛠️ Technology Architecture
 
 ← [Application Architecture](03-application-architecture.md) | **Technology Layer** | [Observability Architecture →](05-observability-architecture.md)
 
 ---
 
-## Technology Principles
+## 📑 Table of Contents
+
+- [Technology Principles](#-technology-principles)
+- [Technology Standards Catalog](#-technology-standards-catalog)
+- [Platform Decomposition](#-platform-decomposition)
+- [Environment and Location Strategy](#-environment-and-location-strategy)
+- [Infrastructure Components](#-infrastructure-components)
+- [Technology Portfolio](#-technology-portfolio)
+- [Infrastructure as Code](#-infrastructure-as-code)
+- [Local Development Stack](#-local-development-stack)
+- [Operational Considerations](#-operational-considerations)
+- [Cross-Architecture Relationships](#-cross-architecture-relationships)
+
+---
+
+## 📋 Technology Principles
 
 | #       | Principle                     | Rationale                         | Implications                          |
 | ------- | ----------------------------- | --------------------------------- | ------------------------------------- |
@@ -16,7 +31,11 @@
 
 ---
 
-## Technology Standards Catalog
+[↑ Back to Top](#️-technology-architecture)
+
+---
+
+## 📦 Technology Standards Catalog
 
 | Category               | Technology           | Version  | Status   | Rationale                         |
 | ---------------------- | -------------------- | -------- | -------- | --------------------------------- |
@@ -31,7 +50,11 @@
 
 ---
 
-## Platform Decomposition
+[↑ Back to Top](#️-technology-architecture)
+
+---
+
+## 🏛️ Platform Decomposition
 
 ```mermaid
 ---
@@ -102,7 +125,11 @@ flowchart TB
 
 ---
 
-## Environment and Location Strategy
+[↑ Back to Top](#️-technology-architecture)
+
+---
+
+## 🌍 Environment and Location Strategy
 
 | Environment    | Region       | Purpose             | SLA Target | Infrastructure                         |
 | -------------- | ------------ | ------------------- | ---------- | -------------------------------------- |
@@ -113,7 +140,11 @@ flowchart TB
 
 ---
 
-## Infrastructure Components
+[↑ Back to Top](#️-technology-architecture)
+
+---
+
+## 🏭 Infrastructure Components
 
 ### Azure Resource Topology
 
@@ -208,7 +239,11 @@ flowchart TB
 
 ---
 
-## Technology Portfolio
+[↑ Back to Top](#️-technology-architecture)
+
+---
+
+## 💼 Technology Portfolio
 
 | Service                        | Tier/SKU        | Scaling       | Cost Model            | Purpose                      |
 | ------------------------------ | --------------- | ------------- | --------------------- | ---------------------------- |
@@ -223,11 +258,15 @@ flowchart TB
 
 ---
 
-## Infrastructure as Code
+[↑ Back to Top](#️-technology-architecture)
+
+---
+
+## 📝 Infrastructure as Code
 
 ### Bicep Module Structure
 
-```
+```text
 infra/
 ├── main.bicep                    # Entry point (subscription scope)
 ├── main.parameters.json          # Environment parameters
@@ -264,7 +303,11 @@ infra/
 
 ---
 
-## Local Development Stack
+[↑ Back to Top](#️-technology-architecture)
+
+---
+
+## 💻 Local Development Stack
 
 | Azure Service        | Local Alternative        | Configuration                       |
 | -------------------- | ------------------------ | ----------------------------------- |
@@ -292,7 +335,11 @@ else
 
 ---
 
-## Operational Considerations
+[↑ Back to Top](#️-technology-architecture)
+
+---
+
+## 🔧 Operational Considerations
 
 ### Backup and Recovery
 
@@ -313,7 +360,11 @@ else
 
 ---
 
-## Cross-Architecture Relationships
+[↑ Back to Top](#️-technology-architecture)
+
+---
+
+## 🌐 Cross-Architecture Relationships
 
 | Related Architecture           | Connection                                    | Reference                                                      |
 | ------------------------------ | --------------------------------------------- | -------------------------------------------------------------- |

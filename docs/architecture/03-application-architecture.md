@@ -1,10 +1,26 @@
-# Application Architecture
+# ⚙️ Application Architecture
 
 ← [Data Architecture](02-data-architecture.md) | **Application Layer** | [Technology Architecture →](04-technology-architecture.md)
 
 ---
 
-## Application Architecture Overview
+## 📑 Table of Contents
+
+- [Application Architecture Overview](#-application-architecture-overview)
+- [Application Architecture Principles](#-application-architecture-principles)
+- [Application Landscape Map](#-application-landscape-map)
+- [Service Catalog](#-service-catalog)
+- [Service Details](#-service-details)
+- [Inter-Service Communication](#-inter-service-communication)
+- [Application Integration Points](#-application-integration-points)
+- [Resilience Patterns](#-resilience-patterns)
+- [Cross-Cutting Concerns](#-cross-cutting-concerns-servicedefaults)
+- [Technology Stack Summary](#-technology-stack-summary)
+- [Cross-Architecture Relationships](#-cross-architecture-relationships)
+
+---
+
+## 🎯 Application Architecture Overview
 
 The solution implements a **modular monolith** architecture with clear service boundaries, evolving toward microservices. Services communicate via:
 
@@ -22,7 +38,11 @@ The solution implements a **modular monolith** architecture with clear service b
 
 ---
 
-## Application Architecture Principles
+[↑ Back to Top](#️-application-architecture)
+
+---
+
+## 📋 Application Architecture Principles
 
 | Principle                   | Statement                                     | Rationale                     | Implications                    |
 | --------------------------- | --------------------------------------------- | ----------------------------- | ------------------------------- |
@@ -34,7 +54,11 @@ The solution implements a **modular monolith** architecture with clear service b
 
 ---
 
-## Application Landscape Map
+[↑ Back to Top](#️-application-architecture)
+
+---
+
+## 🗺️ Application Landscape Map
 
 ```mermaid
 ---
@@ -105,7 +129,11 @@ flowchart TB
 
 ---
 
-## Service Catalog
+[↑ Back to Top](#️-application-architecture)
+
+---
+
+## 📦 Service Catalog
 
 | Service              | Type          | Port | Dependencies                     | Health Endpoint     |
 | -------------------- | ------------- | ---- | -------------------------------- | ------------------- |
@@ -116,7 +144,11 @@ flowchart TB
 
 ---
 
-## Service Details
+[↑ Back to Top](#️-application-architecture)
+
+---
+
+## 🔍 Service Details
 
 ### eShop.Orders.API
 
@@ -298,7 +330,11 @@ flowchart TD
 
 ---
 
-## Inter-Service Communication
+[↑ Back to Top](#️-application-architecture)
+
+---
+
+## 🔄 Inter-Service Communication
 
 ### Communication Patterns
 
@@ -351,7 +387,11 @@ flowchart LR
 
 ---
 
-## Application Integration Points
+[↑ Back to Top](#️-application-architecture)
+
+---
+
+## 🔗 Application Integration Points
 
 | Source      | Target       | Protocol    | Contract            | Pattern               |
 | ----------- | ------------ | ----------- | ------------------- | --------------------- |
@@ -363,7 +403,11 @@ flowchart LR
 
 ---
 
-## Resilience Patterns
+[↑ Back to Top](#️-application-architecture)
+
+---
+
+## 🛡️ Resilience Patterns
 
 | Pattern             | Implementation | Configuration                   | Source                                                   |
 | ------------------- | -------------- | ------------------------------- | -------------------------------------------------------- |
@@ -374,7 +418,11 @@ flowchart LR
 
 ---
 
-## Cross-Cutting Concerns (ServiceDefaults)
+[↑ Back to Top](#️-application-architecture)
+
+---
+
+## 🧩 Cross-Cutting Concerns (ServiceDefaults)
 
 The `app.ServiceDefaults` library provides shared configuration:
 
@@ -390,7 +438,11 @@ The `app.ServiceDefaults` library provides shared configuration:
 
 ---
 
-## Technology Stack Summary
+[↑ Back to Top](#️-application-architecture)
+
+---
+
+## 📚 Technology Stack Summary
 
 | Layer             | Technology                 | Version | Purpose             |
 | ----------------- | -------------------------- | ------- | ------------------- |
@@ -405,7 +457,11 @@ The `app.ServiceDefaults` library provides shared configuration:
 
 ---
 
-## Cross-Architecture Relationships
+[↑ Back to Top](#️-application-architecture)
+
+---
+
+## 🌐 Cross-Architecture Relationships
 
 | Related Architecture           | Connection                                   | Reference                                                                  |
 | ------------------------------ | -------------------------------------------- | -------------------------------------------------------------------------- |

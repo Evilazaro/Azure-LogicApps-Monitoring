@@ -1,10 +1,26 @@
-# Observability Architecture
+# 📊 Observability Architecture
 
 ← [Technology Architecture](04-technology-architecture.md) | **Observability** | [Security Architecture →](06-security-architecture.md)
 
 ---
 
-## Observability Principles
+## 📑 Table of Contents
+
+- [Observability Principles](#-observability-principles)
+- [Three Pillars Overview](#-three-pillars-overview)
+- [Distributed Tracing Strategy](#-distributed-tracing-strategy)
+- [Metrics Catalog](#-metrics-catalog)
+- [Logging Strategy](#-logging-strategy)
+- [OpenTelemetry Configuration](#-opentelemetry-configuration)
+- [Health Monitoring](#-health-monitoring)
+- [Alert Rules Catalog](#-alert-rules-catalog)
+- [SLI/SLO Definitions](#%EF%B8%8F-slislo-definitions)
+- [Observability Platform Architecture](#-observability-platform-architecture)
+- [Cross-Architecture Relationships](#-cross-architecture-relationships)
+
+---
+
+## 📋 Observability Principles
 
 | #       | Principle                          | Rationale                         | Implications                      |
 | ------- | ---------------------------------- | --------------------------------- | --------------------------------- |
@@ -16,7 +32,11 @@
 
 ---
 
-## Three Pillars Overview
+[↑ Back to Top](#-observability-architecture)
+
+---
+
+## 🏛️ Three Pillars Overview
 
 ```mermaid
 ---
@@ -87,7 +107,11 @@ flowchart TB
 
 ---
 
-## Distributed Tracing Strategy
+[↑ Back to Top](#-observability-architecture)
+
+---
+
+## 🔍 Distributed Tracing Strategy
 
 ### Trace Flow Architecture
 
@@ -145,7 +169,11 @@ sequenceDiagram
 
 ---
 
-## Metrics Catalog
+[↑ Back to Top](#-observability-architecture)
+
+---
+
+## 📊 Metrics Catalog
 
 ### Application Metrics (Custom)
 
@@ -175,7 +203,11 @@ sequenceDiagram
 
 ---
 
-## Logging Strategy
+[↑ Back to Top](#-observability-architecture)
+
+---
+
+## 📝 Logging Strategy
 
 ### Log Levels and Usage
 
@@ -218,7 +250,11 @@ sequenceDiagram
 
 ---
 
-## OpenTelemetry Configuration
+[↑ Back to Top](#-observability-architecture)
+
+---
+
+## 🔧 OpenTelemetry Configuration
 
 ### Instrumentation Sources
 
@@ -254,7 +290,11 @@ openTelemetry.WithMetrics(metrics =>
 
 ---
 
-## Health Monitoring
+[↑ Back to Top](#-observability-architecture)
+
+---
+
+## ❤️ Health Monitoring
 
 ### Health Check Endpoints
 
@@ -297,7 +337,11 @@ public async Task<HealthCheckResult> CheckHealthAsync(
 
 ---
 
-## Alert Rules Catalog
+[↑ Back to Top](#-observability-architecture)
+
+---
+
+## 🚨 Alert Rules Catalog
 
 | Alert                   | Severity | Condition                 | Response                     |
 | ----------------------- | -------- | ------------------------- | ---------------------------- |
@@ -310,7 +354,11 @@ public async Task<HealthCheckResult> CheckHealthAsync(
 
 ---
 
-## SLI/SLO Definitions
+[↑ Back to Top](#-observability-architecture)
+
+---
+
+## 🎯️ SLI/SLO Definitions
 
 | SLI              | Definition               | Measurement                 | SLO      | Error Budget   |
 | ---------------- | ------------------------ | --------------------------- | -------- | -------------- |
@@ -321,7 +369,11 @@ public async Task<HealthCheckResult> CheckHealthAsync(
 
 ---
 
-## Observability Platform Architecture
+[↑ Back to Top](#-observability-architecture)
+
+---
+
+## 🏭 Observability Platform Architecture
 
 ```mermaid
 ---
@@ -402,7 +454,11 @@ flowchart LR
 
 ---
 
-## Cross-Architecture Relationships
+[↑ Back to Top](#-observability-architecture)
+
+---
+
+## 🌐 Cross-Architecture Relationships
 
 | Related Architecture         | Connection                               | Reference                                                                                       |
 | ---------------------------- | ---------------------------------------- | ----------------------------------------------------------------------------------------------- |

@@ -1,10 +1,25 @@
-# Security Architecture
+# 🔐 Security Architecture
 
 ← [Observability Architecture](05-observability-architecture.md) | **Security** | [Deployment Architecture →](07-deployment-architecture.md)
 
 ---
 
-## Security Principles
+## 📑 Table of Contents
+
+- [Security Principles](#-security-principles)
+- [Identity and Access Management](#-identity-and-access-management)
+- [Network Security](#-network-security)
+- [Authentication Flows](#-authentication-flows)
+- [Data Protection](#-data-protection)
+- [Secret Management Strategy](#-secret-management-strategy)
+- [Compliance Considerations](#-compliance-considerations)
+- [Threat Model Summary](#-threat-model-summary)
+- [Security Monitoring](#-security-monitoring)
+- [Cross-Architecture Relationships](#-cross-architecture-relationships)
+
+---
+
+## 📋 Security Principles
 
 | #       | Principle                    | Rationale                 | Implications                         |
 | ------- | ---------------------------- | ------------------------- | ------------------------------------ |
@@ -16,7 +31,11 @@
 
 ---
 
-## Identity and Access Management
+[↑ Back to Top](#-security-architecture)
+
+---
+
+## 🔑 Identity and Access Management
 
 ### Managed Identity Architecture
 
@@ -98,7 +117,11 @@ flowchart TB
 
 ---
 
-## Network Security
+[↑ Back to Top](#-security-architecture)
+
+---
+
+## 🌐 Network Security
 
 ### Network Architecture
 
@@ -187,7 +210,11 @@ flowchart TB
 
 ---
 
-## Authentication Flows
+[↑ Back to Top](#-security-architecture)
+
+---
+
+## 🔄 Authentication Flows
 
 ### Service-to-Service Authentication
 
@@ -244,7 +271,11 @@ sequenceDiagram
 
 ---
 
-## Data Protection
+[↑ Back to Top](#-security-architecture)
+
+---
+
+## 🛡️ Data Protection
 
 ### Encryption at Rest
 
@@ -276,7 +307,11 @@ sequenceDiagram
 
 ---
 
-## Secret Management Strategy
+[↑ Back to Top](#-security-architecture)
+
+---
+
+## 🔒 Secret Management Strategy
 
 ### No Secrets Architecture
 
@@ -335,7 +370,11 @@ flowchart LR
 
 ---
 
-## Compliance Considerations
+[↑ Back to Top](#-security-architecture)
+
+---
+
+## ✅ Compliance Considerations
 
 ### Security Controls Matrix
 
@@ -358,7 +397,11 @@ flowchart LR
 
 ---
 
-## Threat Model Summary
+[↑ Back to Top](#-security-architecture)
+
+---
+
+## ⚠️ Threat Model Summary
 
 | Threat                  | Vector                  | Mitigation                     |
 | ----------------------- | ----------------------- | ------------------------------ |
@@ -371,7 +414,11 @@ flowchart LR
 
 ---
 
-## Security Monitoring
+[↑ Back to Top](#-security-architecture)
+
+---
+
+## 📹 Security Monitoring
 
 ### Security Alerts
 
@@ -393,7 +440,11 @@ flowchart LR
 
 ---
 
-## Cross-Architecture Relationships
+[↑ Back to Top](#-security-architecture)
+
+---
+
+## 🌐 Cross-Architecture Relationships
 
 | Related Architecture           | Connection                       | Reference                                                                      |
 | ------------------------------ | -------------------------------- | ------------------------------------------------------------------------------ |
