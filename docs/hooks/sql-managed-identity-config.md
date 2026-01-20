@@ -112,16 +112,16 @@ When running via Azure Developer CLI (`azd`), these variables are automatically 
 
 ### Bash Parameters
 
-| Parameter       | Short | Required | Default                       | Description                               |
-| --------------- | ----- | -------- | ----------------------------- | ----------------------------------------- |
-| `--server`      | `-s`  | Yes      | -                             | Azure SQL Server name (without suffix)    |
-| `--database`    | `-d`  | Yes      | -                             | Target database name (cannot be 'master') |
-| `--principal`   | `-p`  | Yes      | -                             | Managed identity display name             |
-| `--roles`       | `-r`  | No       | `db_datareader,db_datawriter` | Comma-separated database roles            |
-| `--environment` | `-e`  | No       | `AzureCloud`                  | Azure cloud environment                   |
-| `--timeout`     | `-t`  | No       | `120`                         | SQL command timeout in seconds            |
-| `--verbose`     | `-v`  | No       | -                             | Enable verbose output                     |
-| `--help`        | `-h`  | No       | -                             | Display help message                      |
+| Parameter           | Short | Required | Default                       | Description                                                    |
+| ------------------- | ----- | -------- | ----------------------------- | -------------------------------------------------------------- |
+| `--sql-server-name` | `-s`  | Yes      | -                             | Azure SQL Server name (without `.database.windows.net` suffix) |
+| `--database-name`   | `-d`  | Yes      | -                             | Target database name (cannot be 'master')                      |
+| `--principal-name`  | `-p`  | Yes      | -                             | Managed identity or service principal display name             |
+| `--database-roles`  | `-r`  | No       | `db_datareader,db_datawriter` | Comma-separated database roles                                 |
+| `--environment`     | `-e`  | No       | `AzureCloud`                  | Azure cloud environment                                        |
+| `--timeout`         | `-t`  | No       | `120`                         | SQL command timeout in seconds (30-600)                        |
+| `--verbose`         | `-v`  | No       | -                             | Enable verbose output                                          |
+| `--help`            | `-h`  | No       | -                             | Display help message                                           |
 
 ## 🚀 Usage
 
@@ -166,9 +166,9 @@ if ($result.Success) {
 ```bash
 # Basic usage with default roles
 ./sql-managed-identity-config.sh \
-    --server myserver \
-    --database mydb \
-    --principal my-app-identity
+    --sql-server-name myserver \
+    --database-name mydb \
+    --principal-name my-app-identity
 
 # With custom roles
 ./sql-managed-identity-config.sh \
@@ -179,9 +179,9 @@ if ($result.Success) {
 
 # With verbose output
 ./sql-managed-identity-config.sh \
-    --server myserver \
-    --database mydb \
-    --principal my-app-identity \
+    --sql-server-name myserver \
+    --database-name mydb \
+    --principal-name my-app-identity \
     --verbose
 
 # Azure Government cloud
@@ -405,9 +405,10 @@ az sql server ad-admin list \
 
 ## 📜 Version History
 
-| Version | Date       | Changes                                                                                                                                                             |
-| ------- | ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 1.0.0   | 2026-01-06 | Initial release with PowerShell Core and Bash support, preference backup/restore pattern, `-CommandType Application` to `Get-Command` calls, IFS protection in Bash |
+| Version | Date       | Changes                                                                                                                                                                                         |
+| ------- | ---------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1.0.1   | 2026-01-14 | Fixed Bash parameter names to match script (`--sql-server-name`, `--database-name`, `--principal-name`, `--database-roles` instead of short forms), added `--timeout` range validation (30-600) |
+| 1.0.0   | 2026-01-06 | Initial release with PowerShell Core and Bash support, preference backup/restore pattern, `-CommandType Application` to `Get-Command` calls, IFS protection in Bash                             |
 
 ---
 
