@@ -51,8 +51,6 @@ tags:
 
 ---
 
----
-
 ## 📊 Context
 
 > [!IMPORTANT]
@@ -80,8 +78,6 @@ Key challenges:
 | Azure-native deployment | ↗️ Seamless cloud integration         |
 | Learning curve          | ↘️ Team must learn Aspire concepts    |
 | Maturity concerns       | ↘️ Aspire is relatively new (GA 2024) |
-
----
 
 ---
 
@@ -119,8 +115,6 @@ var ordersApi = builder.AddProject<Projects.eShop_Orders_API>("orders-api")
 
 ---
 
----
-
 ## ⚖️ Consequences
 
 ### Positive
@@ -148,8 +142,6 @@ var ordersApi = builder.AddProject<Projects.eShop_Orders_API>("orders-api")
 - Aspire patterns align with existing .NET extension methods
 - Team already familiar with dependency injection concepts
 - Azure deployment still uses standard Bicep/ARM
-
----
 
 ---
 
@@ -187,8 +179,6 @@ var ordersApi = builder.AddProject<Projects.eShop_Orders_API>("orders-api")
 - No visualization of dependencies
 - Duplicated configuration across projects
 - Harder to maintain consistency
-
----
 
 ---
 

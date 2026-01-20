@@ -29,7 +29,7 @@ tags:
 
 ## 📑 Table of Contents
 
-- [About ADRs](#%E2%84%B9%EF%B8%8F-about-adrs)
+- [About ADRs](#-about-adrs)
 - [ADR Index](#-adr-index)
 - [Decision Log Summary](#-decision-log-summary)
 - [ADR Template](#-adr-template)
@@ -47,8 +47,6 @@ tags:
 
 ---
 
----
-
 ## 📊 ADR Index
 
 | ID                                           | Title                                                  | Status      | Date    |
@@ -56,8 +54,6 @@ tags:
 | [ADR-001](ADR-001-aspire-orchestration.md)   | Use .NET Aspire for Service Orchestration              | ✅ Accepted | 2025-01 |
 | [ADR-002](ADR-002-service-bus-messaging.md)  | Use Azure Service Bus for Async Messaging              | ✅ Accepted | 2025-01 |
 | [ADR-003](ADR-003-observability-strategy.md) | OpenTelemetry + Application Insights for Observability | ✅ Accepted | 2025-01 |
-
----
 
 ---
 
@@ -108,8 +104,6 @@ tags:
 - Azure-native analysis tools
 
 [Read full ADR →](ADR-003-observability-strategy.md)
-
----
 
 ---
 

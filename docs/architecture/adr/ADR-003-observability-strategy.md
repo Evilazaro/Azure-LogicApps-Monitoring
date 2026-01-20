@@ -80,8 +80,6 @@ Key requirements:
 
 ---
 
----
-
 ## 🛠️ Decision
 
 **Adopt OpenTelemetry SDK for instrumentation** with **Azure Monitor (Application Insights)** as the backend, providing vendor-neutral telemetry collection with Azure-native analysis capabilities.
@@ -234,8 +232,6 @@ message.ApplicationProperties["traceparent"] =
 
 ---
 
----
-
 ## 📱 Telemetry Matrix
 
 | Component    | Traces | Metrics | Logs | Method            |
@@ -245,8 +241,6 @@ message.ApplicationProperties["traceparent"] =
 | Logic Apps   | ✅     | ✅      | ✅   | Azure Diagnostics |
 | Service Bus  | ✅     | ✅      | ✅   | Azure Diagnostics |
 | SQL Database | ✅     | ✅      | ✅   | Azure Diagnostics |
-
----
 
 ---
 
@@ -298,8 +292,6 @@ message.ApplicationProperties["traceparent"] =
 
 ---
 
----
-
 ## 🔗 Correlation Strategy
 
 ### Cross-Service Trace Flow
@@ -336,8 +328,6 @@ sequenceDiagram
 | Service Bus  | ApplicationProperty | `TraceId`, `traceparent` |
 | Logic App    | Built-in            | `x-ms-workflow-run-id`   |
 | App Insights | SDK                 | `operation_Id`           |
-
----
 
 ---
 

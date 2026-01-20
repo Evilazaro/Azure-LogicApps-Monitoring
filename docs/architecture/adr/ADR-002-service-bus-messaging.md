@@ -83,8 +83,6 @@ Order Created → API publishes message → Service Bus → Logic App triggers �
 
 ---
 
----
-
 ## 🛠️ Decision
 
 **Use Azure Service Bus Standard tier** with topic/subscription pattern for async messaging between the Orders API and Logic Apps.
@@ -152,8 +150,6 @@ public async Task SendOrderPlacedMessageAsync(OrderEntity order)
 
 ---
 
----
-
 ## ⚖️ Consequences
 
 ### Positive
@@ -181,8 +177,6 @@ public async Task SendOrderPlacedMessageAsync(OrderEntity order)
 - Message size limit (256 KB Standard) sufficient for order payloads
 - 14-day message retention adequate for processing
 - Topic/subscription matches pub/sub requirements
-
----
 
 ---
 
@@ -234,8 +228,6 @@ public async Task SendOrderPlacedMessageAsync(OrderEntity order)
 
 ---
 
----
-
 ## 📩 Message Patterns
 
 ### Dead Letter Handling
@@ -276,8 +268,6 @@ flowchart LR
 | Max Delivery Count  | 10        | Attempts before dead-lettering |
 | Lock Duration       | 5 minutes | Processing time before requeue |
 | Auto-delete on idle | Disabled  | Preserve for monitoring        |
-
----
 
 ---
 

@@ -215,8 +215,6 @@ sequenceDiagram
 
 ---
 
----
-
 ## 📝 Logging Strategy
 
 ### Log Levels and Usage
