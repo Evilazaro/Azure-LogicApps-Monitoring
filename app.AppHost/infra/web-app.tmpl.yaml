@@ -13,24 +13,22 @@ properties:
       dotnet:
         autoConfigureDataProtection: true
     ingress:
-      external: false
+      external: true
       targetPort: {{ targetPortOrDefault 8080 }}
       transport: http
-      allowInsecure: true
+      allowInsecure: false
+      stickySessions:
+        affinity: sticky
     registries:
       - server: {{ .Env.AZURE_CONTAINER_REGISTRY_ENDPOINT }}
         identity: {{ .Env.AZURE_CONTAINER_REGISTRY_MANAGED_IDENTITY_ID }}
     secrets:
       - name: applicationinsights-connection-string
         value: '{{ .Env.TELEMETRY_APPINSIGHTSCONNECTIONSTRING }}'
-      - name: connectionstrings--orderdb
-        value: Server=tcp:{{ .Env.ORDERSDATABASE_SQLSERVERFQDN }},1433;Encrypt=True;Authentication="Active Directory Default";Database=OrderDb
-      - name: connectionstrings--messaging
-        value: '{{ .Env.MESSAGING_SERVICEBUSENDPOINT }}'
   template:
     containers:
       - image: {{ .Image }}
-        name: orders-api
+        name: web-app
         env:
           - name: AZURE_CLIENT_ID
             value: {{ .Env.MANAGED_IDENTITY_CLIENT_ID }}
@@ -38,34 +36,24 @@ properties:
             value: "true"
           - name: HTTP_PORTS
             value: '{{ targetPortOrDefault 0 }}'
-          - name: MESSAGING_HOST
-            value: '{{ .Env.MESSAGING_SERVICEBUSHOSTNAME }}'
-          - name: MESSAGING_URI
-            value: '{{ .Env.MESSAGING_SERVICEBUSENDPOINT }}'
-          - name: ORDERDB_DATABASENAME
-            value: OrderDb
-          - name: ORDERDB_HOST
-            value: '{{ .Env.ORDERSDATABASE_SQLSERVERFQDN }}'
-          - name: ORDERDB_JDBCCONNECTIONSTRING
-            value: jdbc:sqlserver://{{ .Env.ORDERSDATABASE_SQLSERVERFQDN }}:1433;database=OrderDb;encrypt=true;trustServerCertificate=false
-          - name: ORDERDB_PORT
-            value: "1433"
-          - name: ORDERDB_URI
-            value: mssql://{{ .Env.ORDERSDATABASE_SQLSERVERFQDN }}:1433/OrderDb
+          - name: ORDERS_API_HTTP
+            value: http://orders-api.internal.{{ .Env.AZURE_CONTAINER_APPS_ENVIRONMENT_DEFAULT_DOMAIN }}
+          - name: ORDERS_API_HTTPS
+            value: https://orders-api.internal.{{ .Env.AZURE_CONTAINER_APPS_ENVIRONMENT_DEFAULT_DOMAIN }}
           - name: OTEL_DOTNET_EXPERIMENTAL_OTLP_EMIT_EVENT_LOG_ATTRIBUTES
             value: "true"
           - name: OTEL_DOTNET_EXPERIMENTAL_OTLP_EMIT_EXCEPTION_LOG_ATTRIBUTES
             value: "true"
           - name: OTEL_DOTNET_EXPERIMENTAL_OTLP_RETRY
             value: in_memory
+          - name: services__orders-api__http__0
+            value: http://orders-api.internal.{{ .Env.AZURE_CONTAINER_APPS_ENVIRONMENT_DEFAULT_DOMAIN }}
+          - name: services__orders-api__https__0
+            value: https://orders-api.internal.{{ .Env.AZURE_CONTAINER_APPS_ENVIRONMENT_DEFAULT_DOMAIN }}
           - name: APPLICATIONINSIGHTS_CONNECTION_STRING
             secretRef: applicationinsights-connection-string
-          - name: ConnectionStrings__OrderDb
-            secretRef: connectionstrings--orderdb
-          - name: ConnectionStrings__messaging
-            secretRef: connectionstrings--messaging
     scale:
-      minReplicas: 10
+      minReplicas: 5
 tags:
-  azd-service-name: orders-api
-  aspire-resource-name: orders-api
+  azd-service-name: web-app
+  aspire-resource-name: web-app
