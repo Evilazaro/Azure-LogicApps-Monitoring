@@ -30,13 +30,13 @@ tags:
 
 ## 📑 Table of Contents
 
-- [Business Context](#-business-context)
-- [Business Capabilities](#️-business-capabilities)
-- [Stakeholder Analysis](#-stakeholder-analysis)
-- [Value Streams](#-value-streams)
-- [Quality Attribute Requirements](#-quality-attribute-requirements)
-- [Business Process Flows](#-business-process-flows)
-- [Related Documents](#-related-documents)
+- [🌐 Business Context](#-business-context)
+- [🛠️ Business Capabilities](#️-business-capabilities)
+- [👥 Stakeholder Analysis](#-stakeholder-analysis)
+- [📊 Value Streams](#-value-streams)
+- [✅ Quality Attribute Requirements](#-quality-attribute-requirements)
+- [🔄 Business Process Flows](#-business-process-flows)
+- [📚 Related Documents](#-related-documents)
 
 ---
 

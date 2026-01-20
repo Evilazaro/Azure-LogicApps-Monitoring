@@ -31,14 +31,14 @@ tags:
 
 ## 📑 Table of Contents
 
-- [Executive Summary](#-executive-summary)
-- [High-Level Architecture](#-high-level-architecture)
-- [Service Inventory](#-service-inventory)
-- [Azure Resource Inventory](#-azure-resource-inventory)
-- [Document Navigation](#-document-navigation)
-- [Reading Recommendations by Audience](#-reading-recommendations-by-audience)
-- [Repository Structure](#-repository-structure)
-- [Quick Links](#-quick-links)
+- [📋 Executive Summary](#-executive-summary)
+- [🏛️ High-Level Architecture](#-high-level-architecture)
+- [📦 Service Inventory](#-service-inventory)
+- [☁️ Azure Resource Inventory](#-azure-resource-inventory)
+- [🗺️ Document Navigation](#-document-navigation)
+- [👥 Reading Recommendations by Audience](#-reading-recommendations-by-audience)
+- [📁 Repository Structure](#-repository-structure)
+- [🔗 Quick Links](#-quick-links)
 
 ---
 
