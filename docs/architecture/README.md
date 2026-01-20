@@ -1,10 +1,23 @@
-# Azure Logic Apps Monitoring Solution - Architecture Overview
+# 🏗️ Azure Logic Apps Monitoring Solution - Architecture Overview
 
 ← [Project Root](../../README.md) | **Architecture Index** | [Business Architecture →](01-business-architecture.md)
 
 ---
 
-## Executive Summary
+## 📑 Table of Contents
+
+- [Executive Summary](#-executive-summary)
+- [High-Level Architecture](#-high-level-architecture)
+- [Service Inventory](#-service-inventory)
+- [Azure Resource Inventory](#-azure-resource-inventory)
+- [Document Navigation](#-document-navigation)
+- [Reading Recommendations by Audience](#-reading-recommendations-by-audience)
+- [Repository Structure](#-repository-structure)
+- [Quick Links](#-quick-links)
+
+---
+
+## 📋 Executive Summary
 
 The **Azure Logic Apps Monitoring Solution** is a cloud-native reference architecture demonstrating enterprise-grade observability patterns for distributed applications. Built on .NET 10 and .NET Aspire orchestration, the solution showcases a complete order management system with end-to-end distributed tracing, event-driven workflows, and comprehensive telemetry collection.
 
@@ -19,7 +32,11 @@ The **Azure Logic Apps Monitoring Solution** is a cloud-native reference archite
 
 ---
 
-## High-Level Architecture
+[↑ Back to Top](#-azure-logic-apps-monitoring-solution---architecture-overview)
+
+---
+
+## 🏛️ High-Level Architecture
 
 ```mermaid
 ---
@@ -97,7 +114,11 @@ flowchart TD
 
 ---
 
-## Service Inventory
+[↑ Back to Top](#-azure-logic-apps-monitoring-solution---architecture-overview)
+
+---
+
+## 📦 Service Inventory
 
 | Service                 | Type         | Technology               | Responsibility                                                        | Port |
 | ----------------------- | ------------ | ------------------------ | --------------------------------------------------------------------- | ---- |
@@ -109,7 +130,11 @@ flowchart TD
 
 ---
 
-## Azure Resource Inventory
+[↑ Back to Top](#-azure-logic-apps-monitoring-solution---architecture-overview)
+
+---
+
+## ☁️ Azure Resource Inventory
 
 | Resource                       | Azure Service            | Purpose                                | SKU/Tier        |
 | ------------------------------ | ------------------------ | -------------------------------------- | --------------- |
@@ -123,7 +148,11 @@ flowchart TD
 
 ---
 
-## Document Navigation
+[↑ Back to Top](#-azure-logic-apps-monitoring-solution---architecture-overview)
+
+---
+
+## 🗺️ Document Navigation
 
 ### TOGAF BDAT Layers
 
@@ -153,7 +182,11 @@ flowchart TD
 
 ---
 
-## Reading Recommendations by Audience
+[↑ Back to Top](#-azure-logic-apps-monitoring-solution---architecture-overview)
+
+---
+
+## 👥 Reading Recommendations by Audience
 
 | Audience                      | Recommended Path                                   |
 | ----------------------------- | -------------------------------------------------- |
@@ -164,9 +197,13 @@ flowchart TD
 
 ---
 
-## Repository Structure
+[↑ Back to Top](#-azure-logic-apps-monitoring-solution---architecture-overview)
 
-```
+---
+
+## 📁 Repository Structure
+
+```text
 Azure-LogicApps-Monitoring/
 ├── app.AppHost/                 # .NET Aspire orchestration
 ├── app.ServiceDefaults/         # Shared cross-cutting concerns
@@ -187,7 +224,11 @@ Azure-LogicApps-Monitoring/
 
 ---
 
-## Quick Links
+[↑ Back to Top](#-azure-logic-apps-monitoring-solution---architecture-overview)
+
+---
+
+## 🔗 Quick Links
 
 - **Source Code:** [app.sln](../../app.sln)
 - **Infrastructure:** [infra/main.bicep](../../infra/main.bicep)

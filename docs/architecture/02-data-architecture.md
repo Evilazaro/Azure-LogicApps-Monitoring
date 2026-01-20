@@ -1,10 +1,27 @@
-# Data Architecture
+# 🗄️ Data Architecture
 
 ← [Business Architecture](01-business-architecture.md) | **Data Layer** | [Application Architecture →](03-application-architecture.md)
 
 ---
 
-## Data Architecture Overview
+## 📑 Table of Contents
+
+- [Data Architecture Overview](#-data-architecture-overview)
+- [Data Architecture Principles](#-data-architecture-principles)
+- [Data Landscape Map](#-data-landscape-map)
+- [Data Domain Catalog](#-data-domain-catalog)
+- [Data Store Details](#-data-store-details)
+- [Data Flow Architecture](#-data-flow-architecture)
+- [Monitoring Data Flow Architecture](#-monitoring-data-flow-architecture)
+- [Telemetry Data Mapping](#-telemetry-data-mapping)
+- [Trace Context Propagation](#-trace-context-propagation)
+- [Data Dependencies Map](#-data-dependencies-map)
+- [Data Lifecycle States](#-data-lifecycle-states)
+- [Cross-Architecture Relationships](#-cross-architecture-relationships)
+
+---
+
+## 📊 Data Architecture Overview
 
 The solution implements a **service-oriented data architecture** where each service owns its data stores. This ensures loose coupling, independent deployability, and clear data ownership boundaries.
 
@@ -21,7 +38,11 @@ The solution implements a **service-oriented data architecture** where each serv
 
 ---
 
-## Data Architecture Principles
+[↑ Back to Top](#️-data-architecture)
+
+---
+
+## 📋 Data Architecture Principles
 
 | Principle                     | Statement                                       | Rationale                                        | Implications                                               |
 | ----------------------------- | ----------------------------------------------- | ------------------------------------------------ | ---------------------------------------------------------- |
@@ -33,7 +54,11 @@ The solution implements a **service-oriented data architecture** where each serv
 
 ---
 
-## Data Landscape Map
+[↑ Back to Top](#️-data-architecture)
+
+---
+
+## 🗺️ Data Landscape Map
 
 ```mermaid
 ---
@@ -102,7 +127,11 @@ flowchart LR
 
 ---
 
-## Data Domain Catalog
+[↑ Back to Top](#️-data-architecture)
+
+---
+
+## 📂 Data Domain Catalog
 
 | Data Domain               | Description                      | Bounded Context | Primary Store | Owner Service | Steward               |
 | ------------------------- | -------------------------------- | --------------- | ------------- | ------------- | --------------------- |
@@ -113,7 +142,11 @@ flowchart LR
 
 ---
 
-## Data Store Details
+[↑ Back to Top](#️-data-architecture)
+
+---
+
+## 🗃️ Data Store Details
 
 | Store                  | Technology                 | Purpose                       | Owner Service                | Location                    | Tier/SKU        |
 | ---------------------- | -------------------------- | ----------------------------- | ---------------------------- | --------------------------- | --------------- |
@@ -126,7 +159,11 @@ flowchart LR
 
 ---
 
-## Data Flow Architecture
+[↑ Back to Top](#️-data-architecture)
+
+---
+
+## 🔀 Data Flow Architecture
 
 ### Write Path (Order Placement)
 
@@ -180,7 +217,11 @@ sequenceDiagram
 
 ---
 
-## Monitoring Data Flow Architecture
+[↑ Back to Top](#️-data-architecture)
+
+---
+
+## 📊 Monitoring Data Flow Architecture
 
 ```mermaid
 ---
@@ -251,7 +292,11 @@ flowchart LR
 
 ---
 
-## Telemetry Data Mapping
+[↑ Back to Top](#️-data-architecture)
+
+---
+
+## 📡 Telemetry Data Mapping
 
 ### Three Pillars of Observability
 
@@ -315,7 +360,11 @@ flowchart LR
 
 ---
 
-## Trace Context Propagation
+[↑ Back to Top](#️-data-architecture)
+
+---
+
+## 🔗 Trace Context Propagation
 
 The solution implements **W3C Trace Context** for cross-service correlation:
 
@@ -359,7 +408,11 @@ message.ApplicationProperties["traceparent"] = activity.Id ?? string.Empty;
 
 ---
 
-## Data Dependencies Map
+[↑ Back to Top](#️-data-architecture)
+
+---
+
+## 📌 Data Dependencies Map
 
 ```mermaid
 ---
@@ -408,7 +461,11 @@ flowchart TD
 
 ---
 
-## Data Lifecycle States
+[↑ Back to Top](#️-data-architecture)
+
+---
+
+## 🔄 Data Lifecycle States
 
 | Stage           | Description                 | Location          | Duration     | Transition Trigger    |
 | --------------- | --------------------------- | ----------------- | ------------ | --------------------- |
@@ -420,7 +477,11 @@ flowchart TD
 
 ---
 
-## Cross-Architecture Relationships
+[↑ Back to Top](#️-data-architecture)
+
+---
+
+## 🌐 Cross-Architecture Relationships
 
 | Related Architecture           | Connection                                             | Reference                                                                  |
 | ------------------------------ | ------------------------------------------------------ | -------------------------------------------------------------------------- |

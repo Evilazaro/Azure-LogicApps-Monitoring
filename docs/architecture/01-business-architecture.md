@@ -1,10 +1,22 @@
-# Business Architecture
+# 🎯 Business Architecture
 
 ← [Architecture Overview](README.md) | **Business Layer** | [Data Architecture →](02-data-architecture.md)
 
 ---
 
-## Business Context
+## 📑 Table of Contents
+
+- [Business Context](#-business-context)
+- [Business Capabilities](#-business-capabilities)
+- [Stakeholder Analysis](#-stakeholder-analysis)
+- [Value Streams](#-value-streams)
+- [Quality Attribute Requirements](#-quality-attribute-requirements)
+- [Business Process Flows](#-business-process-flows)
+- [Related Documents](#-related-documents)
+
+---
+
+## 🌐 Business Context
 
 ### Problem Statement
 
@@ -35,7 +47,11 @@ The **Azure Logic Apps Monitoring Solution** provides a **reference implementati
 
 ---
 
-## Business Capabilities
+[↑ Back to Top](#-business-architecture)
+
+---
+
+## 🛠️ Business Capabilities
 
 ### Capability Map
 
@@ -106,7 +122,11 @@ flowchart TB
 
 ---
 
-## Stakeholder Analysis
+[↑ Back to Top](#-business-architecture)
+
+---
+
+## 👥 Stakeholder Analysis
 
 | Stakeholder            | Concerns                              | How Architecture Addresses                                           |
 | ---------------------- | ------------------------------------- | -------------------------------------------------------------------- |
@@ -118,7 +138,11 @@ flowchart TB
 
 ---
 
-## Value Streams
+[↑ Back to Top](#-business-architecture)
+
+---
+
+## 📊 Value Streams
 
 ### Order to Fulfillment Value Stream
 
@@ -196,7 +220,11 @@ flowchart LR
 
 ---
 
-## Quality Attribute Requirements
+[↑ Back to Top](#-business-architecture)
+
+---
+
+## ✅ Quality Attribute Requirements
 
 | Attribute           | Requirement                                  | Priority | Architectural Approach                                     |
 | ------------------- | -------------------------------------------- | -------- | ---------------------------------------------------------- |
@@ -210,7 +238,11 @@ flowchart LR
 
 ---
 
-## Business Process Flows
+[↑ Back to Top](#-business-architecture)
+
+---
+
+## 🔄 Business Process Flows
 
 ### Order Lifecycle Process
 
@@ -278,7 +310,11 @@ flowchart TD
 
 ---
 
-## Related Documents
+[↑ Back to Top](#-business-architecture)
+
+---
+
+## 📚 Related Documents
 
 | Document                                                       | Relationship                               |
 | -------------------------------------------------------------- | ------------------------------------------ |
