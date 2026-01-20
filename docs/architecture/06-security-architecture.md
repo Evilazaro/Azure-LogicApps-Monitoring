@@ -21,19 +21,25 @@
 ### Managed Identity Architecture
 
 ```mermaid
+---
+title: Managed Identity Architecture
+---
 flowchart TB
+    %% ===== APPLICATIONS =====
     subgraph Apps["🖥️ Applications"]
         API["Orders API<br/><i>User-Assigned MI</i>"]
         Web["Web App<br/><i>User-Assigned MI</i>"]
         LA["Logic Apps<br/><i>System-Assigned MI</i>"]
     end
 
+    %% ===== IDENTITY =====
     subgraph Identity["🔐 Microsoft Entra ID"]
         MI["Managed<br/>Identities"]
         Roles["Role<br/>Definitions"]
         RBAC["Role<br/>Assignments"]
     end
 
+    %% ===== RESOURCES =====
     subgraph Resources["☁️ Azure Resources"]
         SQL["🗄️ SQL Database"]
         SB["📨 Service Bus"]
@@ -42,18 +48,32 @@ flowchart TB
         AI["📊 App Insights"]
     end
 
-    API & Web & LA -.->|"Authenticate"| MI
-    MI --> RBAC
-    RBAC -->|"Authorized"| SQL & SB & KV & Storage & AI
-    Roles --> RBAC
+    %% ===== CONNECTIONS =====
+    API -->|"authenticates"| MI
+    Web -->|"authenticates"| MI
+    LA -->|"authenticates"| MI
+    MI -->|"assigned"| RBAC
+    Roles -->|"defines"| RBAC
+    RBAC -->|"authorizes"| SQL
+    RBAC -->|"authorizes"| SB
+    RBAC -->|"authorizes"| KV
+    RBAC -->|"authorizes"| Storage
+    RBAC -->|"authorizes"| AI
 
-    classDef app fill:#e3f2fd,stroke:#1565c0,stroke-width:2px
-    classDef identity fill:#fff3e0,stroke:#ef6c00,stroke-width:2px
-    classDef resource fill:#e8f5e9,stroke:#2e7d32,stroke-width:2px
+    %% ===== STYLES - NODE CLASSES =====
+    classDef primary fill:#4F46E5,stroke:#3730A3,color:#FFFFFF
+    classDef secondary fill:#10B981,stroke:#059669,color:#FFFFFF
+    classDef datastore fill:#F59E0B,stroke:#D97706,color:#000000
 
-    class API,Web,LA app
-    class MI,Roles,RBAC identity
-    class SQL,SB,KV,Storage,AI resource
+    %% ===== CLASS ASSIGNMENTS =====
+    class API,Web,LA primary
+    class MI,Roles,RBAC secondary
+    class SQL,SB,KV,Storage,AI datastore
+
+    %% ===== SUBGRAPH STYLES =====
+    style Apps fill:#EEF2FF,stroke:#4F46E5,stroke-width:2px
+    style Identity fill:#ECFDF5,stroke:#10B981,stroke-width:2px
+    style Resources fill:#FEF3C7,stroke:#F59E0B,stroke-width:2px
 ```
 
 ### Identity Assignments
@@ -83,12 +103,17 @@ flowchart TB
 ### Network Architecture
 
 ```mermaid
+---
+title: Network Architecture
+---
 flowchart TB
+    %% ===== INTERNET =====
     subgraph Internet["🌐 Internet"]
         Users["👥 Users"]
         GitHub["🔄 GitHub Actions"]
     end
 
+    %% ===== AZURE =====
     subgraph Azure["☁️ Azure"]
         subgraph VNet["🔒 Virtual Network (10.0.0.0/16)"]
             subgraph AppSubnet["App Subnet (10.0.0.0/24)"]
@@ -104,27 +129,41 @@ flowchart TB
         end
 
         subgraph PaaS["☁️ PaaS Services"]
-            SQL[(SQL Database)]
-            SB[Service Bus]
-            LA[Logic Apps]
+            SQL[("SQL Database")]
+            SB["Service Bus"]
+            LA["Logic Apps"]
         end
     end
 
+    %% ===== CONNECTIONS =====
     Users -->|"HTTPS/443"| CAE
     GitHub -->|"HTTPS/443"| Azure
-    CAE --> SQLPrivate --> SQL
-    CAE --> SBPrivate --> SB
-    LAPrivate --> LA
-    LA --> SBPrivate
-    LA --> SQLPrivate
+    CAE -->|"connects"| SQLPrivate
+    CAE -->|"connects"| SBPrivate
+    SQLPrivate -->|"routes to"| SQL
+    SBPrivate -->|"routes to"| SB
+    LAPrivate -->|"routes to"| LA
+    LA -->|"uses"| SBPrivate
+    LA -->|"uses"| SQLPrivate
 
-    classDef internet fill:#ffebee,stroke:#c62828,stroke-width:2px
-    classDef vnet fill:#e8f5e9,stroke:#2e7d32,stroke-width:2px
-    classDef paas fill:#e3f2fd,stroke:#1565c0,stroke-width:2px
+    %% ===== STYLES - NODE CLASSES =====
+    classDef external fill:#6B7280,stroke:#4B5563,color:#FFFFFF,stroke-dasharray:5 5
+    classDef primary fill:#4F46E5,stroke:#3730A3,color:#FFFFFF
+    classDef datastore fill:#F59E0B,stroke:#D97706,color:#000000
 
-    class Users,GitHub internet
-    class CAE,LAPrivate,SQLPrivate,SBPrivate vnet
-    class SQL,SB,LA paas
+    %% ===== CLASS ASSIGNMENTS =====
+    class Users,GitHub external
+    class CAE,LAPrivate,SQLPrivate,SBPrivate primary
+    class SQL,SB,LA datastore
+
+    %% ===== SUBGRAPH STYLES =====
+    style Internet fill:#F3F4F6,stroke:#6B7280,stroke-width:2px
+    style Azure fill:#EEF2FF,stroke:#4F46E5,stroke-width:2px
+    style VNet fill:#ECFDF5,stroke:#10B981,stroke-width:2px
+    style AppSubnet fill:#D1FAE5,stroke:#10B981,stroke-width:1px
+    style IntSubnet fill:#D1FAE5,stroke:#10B981,stroke-width:1px
+    style DataSubnet fill:#D1FAE5,stroke:#10B981,stroke-width:1px
+    style PaaS fill:#FEF3C7,stroke:#F59E0B,stroke-width:2px
 ```
 
 ### Network Controls
@@ -153,6 +192,9 @@ flowchart TB
 ### Service-to-Service Authentication
 
 ```mermaid
+---
+title: Service-to-Service Authentication
+---
 sequenceDiagram
     autonumber
     participant API as Orders API
@@ -176,6 +218,9 @@ sequenceDiagram
 ### GitHub Actions to Azure Authentication
 
 ```mermaid
+---
+title: GitHub Actions to Azure Authentication
+---
 sequenceDiagram
     autonumber
     participant GH as GitHub Actions
@@ -236,35 +281,46 @@ sequenceDiagram
 ### No Secrets Architecture
 
 ```mermaid
+---
+title: No Secrets Architecture
+---
 flowchart LR
+    %% ===== TRADITIONAL (AVOIDED) =====
     subgraph Traditional["❌ Traditional (Avoided)"]
         App1["Application"]
         Secrets["🔑 Secrets"]
         KV1["Key Vault"]
         Res1["Resources"]
 
-        App1 -->|"Retrieve"| KV1
-        KV1 -->|"Returns"| Secrets
-        Secrets -->|"Authenticate"| Res1
+        App1 -->|"retrieves"| KV1
+        KV1 -->|"returns"| Secrets
+        Secrets -->|"authenticates"| Res1
     end
 
+    %% ===== MODERN (IMPLEMENTED) =====
     subgraph Modern["✅ Modern (Implemented)"]
         App2["Application"]
         MI2["🔐 Managed<br/>Identity"]
         Entra2["Entra ID"]
         Res2["Resources"]
 
-        App2 -->|"Request token"| MI2
-        MI2 -->|"Authenticate"| Entra2
-        Entra2 -->|"JWT token"| App2
+        App2 -->|"requests token"| MI2
+        MI2 -->|"authenticates"| Entra2
+        Entra2 -->|"issues JWT"| App2
         App2 -->|"Bearer token"| Res2
     end
 
-    classDef avoided fill:#ffebee,stroke:#c62828
-    classDef implemented fill:#e8f5e9,stroke:#2e7d32
+    %% ===== STYLES - NODE CLASSES =====
+    classDef failed fill:#F44336,stroke:#C62828,color:#FFFFFF
+    classDef secondary fill:#10B981,stroke:#059669,color:#FFFFFF
 
-    class App1,Secrets,KV1,Res1 avoided
-    class App2,MI2,Entra2,Res2 implemented
+    %% ===== CLASS ASSIGNMENTS =====
+    class App1,Secrets,KV1,Res1 failed
+    class App2,MI2,Entra2,Res2 secondary
+
+    %% ===== SUBGRAPH STYLES =====
+    style Traditional fill:#FEE2E2,stroke:#F44336,stroke-width:2px
+    style Modern fill:#ECFDF5,stroke:#10B981,stroke-width:2px
 ```
 
 ### Remaining Secrets
