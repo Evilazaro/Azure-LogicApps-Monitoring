@@ -57,8 +57,9 @@ title: DevOps Master Pipeline Architecture
 flowchart TB
     %% ===== TRIGGER EVENTS =====
     subgraph TriggersGroup["🎯 Trigger Events"]
-        push(["Push to Main"])
-        pr(["Pull Request"])
+        push_ci(["Push to main/feature/**"])
+        push_cd(["Push to docs987678"])
+        pr(["Pull Request to main"])
         manual(["Manual Dispatch"])
     end
 
@@ -101,8 +102,8 @@ flowchart TB
     end
 
     %% ===== TRIGGER CONNECTIONS =====
-    push -->|triggers| ci_workflow
-    push -->|triggers| cd_workflow
+    push_ci -->|triggers| ci_workflow
+    push_cd -->|triggers| cd_workflow
     pr -->|triggers| ci_workflow
     manual -->|triggers| ci_workflow
     manual -->|triggers| cd_workflow
@@ -158,7 +159,7 @@ flowchart TB
     style ResultsGroup fill:#FEF3C7,stroke:#F59E0B,stroke-width:2px
 
     %% ===== NODE STYLING =====
-    class push,pr,manual trigger
+    class push_ci,push_cd,pr,manual trigger
     class ci_workflow,cd_workflow primary
     class build,test primary
     class deploy,analyze secondary
@@ -184,12 +185,12 @@ flowchart TB
 
 ## 📊 Quick Reference
 
-| Workflow                     | Triggers                                           | Jobs                                      | Platforms              |
-| ---------------------------- | -------------------------------------------------- | ----------------------------------------- | ---------------------- |
-| **CD - Azure Deployment**    | `push:docs987678`, `workflow_dispatch`             | CI → Deploy Dev → Summary                 | Ubuntu (deploy)        |
-| **CI - .NET Build and Test** | `push:*`, `pull_request:main`, `workflow_dispatch` | CI (calls reusable)                       | Ubuntu, Windows, macOS |
-| **CI - .NET Reusable**       | `workflow_call`                                    | Build → Test → Analyze → CodeQL → Summary | Ubuntu, Windows, macOS |
-| **Dependabot**               | Schedule (Weekly, Mondays 06:00 UTC)               | Automated PR creation                     | N/A (GitHub service)   |
+| Workflow                     | Triggers                                                             | Jobs                                                   | Platforms              |
+| ---------------------------- | -------------------------------------------------------------------- | ------------------------------------------------------ | ---------------------- |
+| **CD - Azure Deployment**    | `push:docs987678`, `workflow_dispatch`                               | CI → Deploy Dev → Summary → On-Failure                 | Ubuntu (deploy)        |
+| **CI - .NET Build and Test** | `push:main,feature/**,...`, `pull_request:main`, `workflow_dispatch` | CI (calls reusable)                                    | Ubuntu, Windows, macOS |
+| **CI - .NET Reusable**       | `workflow_call`                                                      | Build → Test → Analyze → CodeQL → Summary → On-Failure | Ubuntu, Windows, macOS |
+| **Dependabot**               | Schedule (Weekly, Mondays 06:00 UTC)                                 | Automated PR creation                                  | N/A (GitHub service)   |
 
 ---
 
