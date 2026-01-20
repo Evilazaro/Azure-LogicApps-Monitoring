@@ -278,41 +278,54 @@ jobs:
           
           # Create SQL script that uses SID directly instead of FROM EXTERNAL PROVIDER
           # This bypasses the MS Graph lookup requirement
-          SQL_SCRIPT="
+          # Note: Writing to a temp file instead of piping to avoid go-sqlcmd stdin crash
+          SQL_SCRIPT_FILE=$(mktemp --suffix=.sql)
+          cat > "$SQL_SCRIPT_FILE" << 'EOSQL'
           -- Check if user already exists
-          IF NOT EXISTS (SELECT 1 FROM sys.database_principals WHERE name = N'$MI_NAME')
+          IF NOT EXISTS (SELECT 1 FROM sys.database_principals WHERE name = N'$(MI_NAME)')
           BEGIN
               -- Create user with SID (Object ID converted to binary)
               -- The SID format for Entra ID users is the Object ID GUID
               DECLARE @sql NVARCHAR(MAX);
-              SET @sql = N'CREATE USER [$MI_NAME] WITH SID = 0x' + 
-                         CONVERT(VARCHAR(64), CAST(CAST('$MI_OBJECT_ID' AS UNIQUEIDENTIFIER) AS VARBINARY(16)), 2) + 
+              SET @sql = N'CREATE USER [$(MI_NAME)] WITH SID = 0x' + 
+                         CONVERT(VARCHAR(64), CAST(CAST('$(MI_OBJECT_ID)' AS UNIQUEIDENTIFIER) AS VARBINARY(16)), 2) + 
                          N', TYPE = E';
               EXEC sp_executesql @sql;
-              PRINT 'SUCCESS: User [$MI_NAME] created with SID';
+              PRINT 'SUCCESS: User [$(MI_NAME)] created with SID';
           END
           ELSE
           BEGIN
-              PRINT 'INFO: User [$MI_NAME] already exists';
+              PRINT 'INFO: User [$(MI_NAME)] already exists';
           END;
           
           -- Add to db_owner role
           IF NOT EXISTS (SELECT 1 FROM sys.database_role_members rm 
                          JOIN sys.database_principals r ON rm.role_principal_id = r.principal_id 
                          JOIN sys.database_principals m ON rm.member_principal_id = m.principal_id 
-                         WHERE r.name = 'db_owner' AND m.name = '$MI_NAME')
+                         WHERE r.name = 'db_owner' AND m.name = '$(MI_NAME)')
           BEGIN
-              ALTER ROLE [db_owner] ADD MEMBER [$MI_NAME];
-              PRINT 'SUCCESS: Added [$MI_NAME] to db_owner role';
+              ALTER ROLE [db_owner] ADD MEMBER [$(MI_NAME)];
+              PRINT 'SUCCESS: Added [$(MI_NAME)] to db_owner role';
           END
           ELSE
           BEGIN
-              PRINT 'INFO: [$MI_NAME] is already in db_owner role';
+              PRINT 'INFO: [$(MI_NAME)] is already in db_owner role';
           END;
-          "
+          EOSQL
           
+          echo "SQL script written to: $SQL_SCRIPT_FILE"
+          echo "Script contents:"
+          cat "$SQL_SCRIPT_FILE"
+          
+          echo ""
           echo "Executing SQL script..."
-          echo "$SQL_SCRIPT" | sqlcmd -S "${SQL_SERVER}.database.windows.net" -d "$SQL_DB" --authentication-method ActiveDirectoryAzCli -N true
+          sqlcmd -S "${SQL_SERVER}.database.windows.net" -d "$SQL_DB" \
+            --authentication-method ActiveDirectoryAzCli -N true \
+            -v MI_NAME="$MI_NAME" MI_OBJECT_ID="$MI_OBJECT_ID" \
+            -i "$SQL_SCRIPT_FILE"
+          
+          # Cleanup temp file
+          rm -f "$SQL_SCRIPT_FILE"
           
           echo ""
           echo "Verifying user creation..."
