@@ -37,24 +37,31 @@ The solution implements a **modular monolith** architecture with clear service b
 ## Application Landscape Map
 
 ```mermaid
+---
+title: Application Landscape Map
+---
 flowchart TB
+    %% ===== PRESENTATION LAYER =====
     subgraph Presentation["🖥️ Presentation Layer"]
         direction LR
         WebApp["🌐 eShop.Web.App<br/>Blazor Server<br/><i>:5000</i>"]
     end
 
+    %% ===== APPLICATION LAYER =====
     subgraph Application["⚙️ Application Layer"]
         direction LR
         API["📡 eShop.Orders.API<br/>ASP.NET Core<br/><i>:5001</i>"]
         Workflow["🔄 OrdersManagement<br/>Logic Apps Standard"]
     end
 
+    %% ===== PLATFORM LAYER =====
     subgraph Platform["🏗️ Platform Layer"]
         direction LR
         Orchestrator["🎯 app.AppHost<br/>.NET Aspire"]
         SharedLib["📦 app.ServiceDefaults<br/>Cross-Cutting Concerns"]
     end
 
+    %% ===== EXTERNAL SERVICES =====
     subgraph External["☁️ External Services"]
         direction LR
         DB[("🗄️ OrderDb<br/>Azure SQL")]
@@ -62,6 +69,7 @@ flowchart TB
         Monitor["📊 App Insights"]
     end
 
+    %% ===== CONNECTIONS =====
     WebApp -->|"HTTP/REST"| API
     API -->|"EF Core"| DB
     API -->|"AMQP"| Queue
@@ -77,15 +85,22 @@ flowchart TB
     API -.->|"OTLP"| Monitor
     Workflow -.->|"Diagnostics"| Monitor
 
-    classDef presentation fill:#e3f2fd,stroke:#1565c0,stroke-width:2px
-    classDef application fill:#e8f5e9,stroke:#2e7d32,stroke-width:2px
-    classDef platform fill:#fff3e0,stroke:#ef6c00,stroke-width:2px
-    classDef external fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px
+    %% ===== STYLES - NODE CLASSES =====
+    classDef primary fill:#4F46E5,stroke:#3730A3,color:#FFFFFF
+    classDef secondary fill:#10B981,stroke:#059669,color:#FFFFFF
+    classDef external fill:#6B7280,stroke:#4B5563,color:#FFFFFF,stroke-dasharray:5 5
 
-    class WebApp presentation
-    class API,Workflow application
-    class Orchestrator,SharedLib platform
+    %% ===== CLASS ASSIGNMENTS =====
+    class WebApp primary
+    class API,Workflow primary
+    class Orchestrator,SharedLib secondary
     class DB,Queue,Monitor external
+
+    %% ===== SUBGRAPH STYLES =====
+    style Presentation fill:#EEF2FF,stroke:#4F46E5,stroke-width:2px
+    style Application fill:#E0E7FF,stroke:#4F46E5,stroke-width:2px
+    style Platform fill:#ECFDF5,stroke:#10B981,stroke-width:2px
+    style External fill:#F3F4F6,stroke:#6B7280,stroke-width:2px
 ```
 
 ---
@@ -128,7 +143,11 @@ flowchart TB
 #### Component Structure
 
 ```mermaid
+---
+title: Orders API Component Structure
+---
 flowchart TB
+    %% ===== API COMPONENTS =====
     subgraph API["eShop.Orders.API"]
         Controllers["📋 Controllers<br/><i>OrdersController</i>"]
         Services["⚙️ Services<br/><i>OrderService</i>"]
@@ -137,14 +156,27 @@ flowchart TB
         HealthChecks["❤️ HealthChecks<br/><i>DB, ServiceBus</i>"]
     end
 
-    Controllers --> Services
-    Services --> Repositories
-    Services --> Handlers
-    Repositories --> EF["EF Core<br/>OrderDbContext"]
-    Handlers --> SB["ServiceBusClient"]
+    %% ===== EXTERNAL DEPENDENCIES =====
+    EF["EF Core<br/>OrderDbContext"]
+    SB["ServiceBusClient"]
 
-    classDef layer fill:#e8f5e9,stroke:#2e7d32
-    class Controllers,Services,Handlers,Repositories,HealthChecks layer
+    %% ===== CONNECTIONS =====
+    Controllers -->|"invokes"| Services
+    Services -->|"queries"| Repositories
+    Services -->|"publishes via"| Handlers
+    Repositories -->|"uses"| EF
+    Handlers -->|"sends to"| SB
+
+    %% ===== STYLES - NODE CLASSES =====
+    classDef primary fill:#4F46E5,stroke:#3730A3,color:#FFFFFF
+    classDef external fill:#6B7280,stroke:#4B5563,color:#FFFFFF,stroke-dasharray:5 5
+
+    %% ===== CLASS ASSIGNMENTS =====
+    class Controllers,Services,Handlers,Repositories,HealthChecks primary
+    class EF,SB external
+
+    %% ===== SUBGRAPH STYLES =====
+    style API fill:#ECFDF5,stroke:#10B981,stroke-width:2px
 ```
 
 #### Key Patterns
@@ -181,7 +213,11 @@ flowchart TB
 #### Component Structure
 
 ```mermaid
+---
+title: Web App Component Structure
+---
 flowchart TB
+    %% ===== WEBAPP COMPONENTS =====
     subgraph WebApp["eShop.Web.App"]
         Pages["📄 Pages<br/><i>Blazor components</i>"]
         Layout["🎨 Layout<br/><i>MainLayout, NavMenu</i>"]
@@ -189,13 +225,25 @@ flowchart TB
         Shared["🧩 Shared<br/><i>Reusable components</i>"]
     end
 
-    Pages --> Layout
-    Pages --> Services
-    Pages --> Shared
-    Services --> HTTP["HttpClient<br/>with Resilience"]
+    %% ===== EXTERNAL DEPENDENCIES =====
+    HTTP["HttpClient<br/>with Resilience"]
 
-    classDef layer fill:#e3f2fd,stroke:#1565c0
-    class Pages,Layout,Services,Shared layer
+    %% ===== CONNECTIONS =====
+    Pages -->|"uses"| Layout
+    Pages -->|"calls"| Services
+    Pages -->|"renders"| Shared
+    Services -->|"sends requests via"| HTTP
+
+    %% ===== STYLES - NODE CLASSES =====
+    classDef primary fill:#4F46E5,stroke:#3730A3,color:#FFFFFF
+    classDef external fill:#6B7280,stroke:#4B5563,color:#FFFFFF,stroke-dasharray:5 5
+
+    %% ===== CLASS ASSIGNMENTS =====
+    class Pages,Layout,Services,Shared primary
+    class HTTP external
+
+    %% ===== SUBGRAPH STYLES =====
+    style WebApp fill:#EEF2FF,stroke:#4F46E5,stroke-width:2px
 ```
 
 ---
@@ -214,27 +262,38 @@ flowchart TB
 #### OrdersPlacedProcess Flow
 
 ```mermaid
+---
+title: OrdersPlacedProcess Workflow
+---
 flowchart TD
+    %% ===== WORKFLOW STEPS =====
     Trigger["📨 Service Bus Trigger<br/><i>ordersplaced topic</i>"]
-    Check["❓ Check ContentType<br/><i>application/json</i>"]
+    Check{"❓ Check ContentType<br/><i>application/json</i>"}
     HTTP["🌐 HTTP POST<br/><i>/api/orders/process</i>"]
-    CheckResult["❓ Check HTTP Status<br/><i>201 Created?</i>"]
+    CheckResult{"❓ Check HTTP Status<br/><i>201 Created?</i>"}
     Success["✅ Create Success Blob<br/><i>/ordersprocessedsuccessfully</i>"]
     Error["❌ Create Error Blob<br/><i>/ordersprocessedwitherrors</i>"]
 
-    Trigger --> Check
+    %% ===== CONNECTIONS =====
+    Trigger -->|"receives message"| Check
     Check -->|"Valid"| HTTP
-    HTTP --> CheckResult
+    HTTP -->|"returns status"| CheckResult
     CheckResult -->|"Success"| Success
     CheckResult -->|"Failure"| Error
 
-    classDef trigger fill:#e3f2fd,stroke:#1565c0
-    classDef action fill:#e8f5e9,stroke:#2e7d32
-    classDef decision fill:#fff3e0,stroke:#ef6c00
+    %% ===== STYLES - NODE CLASSES =====
+    classDef trigger fill:#818CF8,stroke:#4F46E5,color:#FFFFFF
+    classDef primary fill:#4F46E5,stroke:#3730A3,color:#FFFFFF
+    classDef decision fill:#FFFBEB,stroke:#F59E0B,color:#000000
+    classDef secondary fill:#10B981,stroke:#059669,color:#FFFFFF
+    classDef failed fill:#F44336,stroke:#C62828,color:#FFFFFF
 
+    %% ===== CLASS ASSIGNMENTS =====
     class Trigger trigger
-    class HTTP,Success,Error action
+    class HTTP primary
     class Check,CheckResult decision
+    class Success secondary
+    class Error failed
 ```
 
 ---
@@ -244,13 +303,18 @@ flowchart TD
 ### Communication Patterns
 
 ```mermaid
+---
+title: Inter-Service Communication Patterns
+---
 flowchart LR
+    %% ===== SYNCHRONOUS COMMUNICATION =====
     subgraph Sync["🔄 Synchronous (HTTP/REST)"]
         Web["Web App"]
         API["Orders API"]
         Web -->|"GET/POST"| API
     end
 
+    %% ===== ASYNCHRONOUS COMMUNICATION =====
     subgraph Async["📨 Asynchronous (Service Bus)"]
         API2["Orders API"]
         SB["Service Bus"]
@@ -259,11 +323,17 @@ flowchart LR
         SB -->|"Subscribe"| LA
     end
 
-    classDef sync fill:#e3f2fd,stroke:#1565c0
-    classDef async fill:#fff3e0,stroke:#ef6c00
+    %% ===== STYLES - NODE CLASSES =====
+    classDef primary fill:#4F46E5,stroke:#3730A3,color:#FFFFFF
+    classDef secondary fill:#10B981,stroke:#059669,color:#FFFFFF
 
-    class Web,API sync
-    class API2,SB,LA async
+    %% ===== CLASS ASSIGNMENTS =====
+    class Web,API primary
+    class API2,SB,LA secondary
+
+    %% ===== SUBGRAPH STYLES =====
+    style Sync fill:#EEF2FF,stroke:#4F46E5,stroke-width:2px
+    style Async fill:#ECFDF5,stroke:#10B981,stroke-width:2px
 ```
 
 | Pattern               | Usage                            | Implementation                      |
