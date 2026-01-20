@@ -251,6 +251,7 @@ jobs:
       dotnet-version: "10.0.x"
       solution-file: "app.sln"
       enable-code-analysis: true
+      fail-on-format-issues: false
     secrets: inherit
 
   # Job 2: Deploy to Dev Environment
@@ -313,34 +314,86 @@ The reusable CI workflow (`ci-dotnet-reusable.yml`) contains the following jobs:
 ```yaml
 # azure.yaml
 name: azure-logicapps-monitoring
+
 metadata:
   template: azure-logicapps-monitoring@1.0.0
   description: "Azure Logic Apps Monitoring solution with .NET Aspire orchestration"
+  author: "Evilazaro"
+  repository: "https://github.com/Evilazaro/Azure-LogicApps-Monitoring"
+
 requiredVersions:
   azd: ">= 1.11.0"
+
 infra:
   provider: bicep
   path: infra
   module: main
+
 hooks:
   preprovision:
     posix:
       shell: sh
       run: |
-        dotnet clean && dotnet restore && dotnet build && dotnet test
+        # Conditional: Only run dotnet build/test when deployed by User (not ServicePrincipal)
+        if [ "${DEPLOYER_PRINCIPAL_TYPE}" = "User" ]; then
+          dotnet clean && dotnet restore && dotnet build && dotnet test ...
+        fi
         ./hooks/preprovision.sh --force --verbose
+      continueOnError: false
+      interactive: true
     windows:
       shell: pwsh
       run: |
-        dotnet clean; dotnet restore; dotnet build; dotnet test
+        dotnet clean; dotnet restore; dotnet build; dotnet test ...
         ./hooks/preprovision.ps1 -Force -Verbose
+      continueOnError: false
+      interactive: true
+
   postprovision:
     posix:
       shell: sh
-      run: ./hooks/postprovision.sh --force --verbose
+      run: |
+        if [ "${DEPLOYER_PRINCIPAL_TYPE}" = "ServicePrincipal" ]; then
+          echo "Deployer is a Service Principal - skipping Generate-Orders"
+        else
+          ./hooks/Generate-Orders.sh --force --verbose
+        fi
+        ./hooks/postprovision.sh --force --verbose
+      continueOnError: false
+      interactive: true
     windows:
       shell: pwsh
-      run: ./hooks/postprovision.ps1 -Force -Verbose
+      run: |
+        if ($env:DEPLOYER_PRINCIPAL_TYPE -eq "ServicePrincipal") {
+          Write-Host "Deployer is a Service Principal - skipping Generate-Orders"
+        } else {
+          ./hooks/Generate-Orders.ps1 -Force -Verbose
+        }
+        ./hooks/postprovision.ps1 -Force -Verbose
+      continueOnError: false
+      interactive: true
+
+  predeploy:
+    posix:
+      shell: sh
+      run: ./hooks/deploy-workflow.sh --force --verbose
+      continueOnError: false
+      interactive: true
+    windows:
+      shell: pwsh
+      run: ./hooks/deploy-workflow.ps1 -Force -Verbose
+      continueOnError: false
+      interactive: true
+
+services:
+  # .NET Aspire AppHost - orchestrates all child services
+  app:
+    language: dotnet
+    project: ./app.AppHost/app.AppHost.csproj
+    host: containerapp
+
+pipeline:
+  provider: github
 ```
 
 ### azd Commands
@@ -363,14 +416,14 @@ title: azd Lifecycle Hooks
 flowchart LR
     %% ===== PROVISION =====
     subgraph Provision["📐 azd provision"]
-        PreProv["preprovision<br/><i>Validate prereqs</i>"]
+        PreProv["preprovision<br/><i>Build, test, validate</i>"]
         BicepDeploy["Bicep Deploy"]
-        PostProv["postprovision<br/><i>Configure DB, workflows</i>"]
+        PostProv["postprovision<br/><i>Generate orders, config</i>"]
     end
 
     %% ===== DEPLOY =====
     subgraph Deploy["📦 azd deploy"]
-        PreDeploy["predeploy<br/><i>(not used)</i>"]
+        PreDeploy["predeploy<br/><i>Deploy Logic App workflows</i>"]
         AppDeploy["App Deploy"]
         PostDeploy["postdeploy<br/><i>(not used)</i>"]
     end

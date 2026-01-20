@@ -226,12 +226,13 @@ paths:
 
 **Condition:** Runs unless `skip-ci` is `true`
 
-| Property          | Value                                      |
-| ----------------- | ------------------------------------------ |
-| **Type**          | Reusable workflow call                     |
-| **Workflow**      | `.github/workflows/ci-dotnet-reusable.yml` |
-| **Configuration** | `Release`                                  |
-| **Analysis**      | Enabled                                    |
+| Property                  | Value                                      |
+| ------------------------- | ------------------------------------------ |
+| **Type**                  | Reusable workflow call                     |
+| **Workflow**              | `.github/workflows/ci-dotnet-reusable.yml` |
+| **Configuration**         | `Release`                                  |
+| **Analysis**              | Enabled                                    |
+| **Fail on Format Issues** | Disabled                                   |
 
 ### Job 2: 🚀 Deploy Dev
 
