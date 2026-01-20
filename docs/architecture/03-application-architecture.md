@@ -32,12 +32,12 @@ tags:
 
 - [Application Architecture Overview](#-application-architecture-overview)
 - [Application Architecture Principles](#-application-architecture-principles)
-- [Application Landscape Map](#%EF%B8%8F-application-landscape-map)
+- [Application Landscape Map](#-application-landscape-map)
 - [Service Catalog](#-service-catalog)
 - [Service Details](#-service-details)
 - [Inter-Service Communication](#-inter-service-communication)
 - [Application Integration Points](#-application-integration-points)
-- [Resilience Patterns](#%EF%B8%8F-resilience-patterns)
+- [Resilience Patterns](#-resilience-patterns)
 - [Cross-Cutting Concerns](#-cross-cutting-concerns-servicedefaults)
 - [Technology Stack Summary](#-technology-stack-summary)
 - [Cross-Architecture Relationships](#-cross-architecture-relationships)
@@ -63,8 +63,6 @@ tags:
 
 ---
 
----
-
 ## 📋 Application Architecture Principles
 
 | Principle                   | Statement                                     | Rationale                     | Implications                    |
@@ -74,8 +72,6 @@ tags:
 | **Loose Coupling**          | Services communicate via events for workflows | Independent deployability     | Service Bus for async patterns  |
 | **High Cohesion**           | Related functionality grouped together        | Understandability             | Domain-aligned services         |
 | **Observability by Design** | All services instrumented with OpenTelemetry  | Operational excellence        | Built-in tracing and metrics    |
-
----
 
 ---
 
@@ -150,8 +146,6 @@ flowchart TB
 
 ---
 
----
-
 ## 📦 Service Catalog
 
 | Service              | Type          | Port | Dependencies                     | Health Endpoint     |
@@ -160,8 +154,6 @@ flowchart TB
 | **eShop.Orders.API** | REST API      | 5001 | SQL Database, Service Bus        | `/health`, `/alive` |
 | **OrdersManagement** | Logic App     | N/A  | Service Bus, Storage, Orders API | Azure-managed       |
 | **app.AppHost**      | Orchestrator  | N/A  | All services                     | N/A                 |
-
----
 
 ---
 
@@ -347,8 +339,6 @@ flowchart TD
 
 ---
 
----
-
 ## 🔄 Inter-Service Communication
 
 ### Communication Patterns
@@ -402,8 +392,6 @@ flowchart LR
 
 ---
 
----
-
 ## 🔗 Application Integration Points
 
 | Source      | Target       | Protocol    | Contract            | Pattern               |
@@ -416,8 +404,6 @@ flowchart LR
 
 ---
 
----
-
 ## 🛡️ Resilience Patterns
 
 | Pattern             | Implementation | Configuration                   | Source                                                   |
@@ -426,8 +412,6 @@ flowchart LR
 | **Circuit Breaker** | Polly          | 5 failures, 120s sampling       | [Extensions.cs](../../app.ServiceDefaults/Extensions.cs) |
 | **Timeout**         | HttpClient     | 60s per attempt, 600s total     | [Extensions.cs](../../app.ServiceDefaults/Extensions.cs) |
 | **DB Retry**        | EF Core        | 5 retries, 30s max delay        | [Program.cs](../../src/eShop.Orders.API/Program.cs)      |
-
----
 
 ---
 
@@ -447,8 +431,6 @@ The `app.ServiceDefaults` library provides shared configuration:
 
 ---
 
----
-
 ## 📚 Technology Stack Summary
 
 | Layer             | Technology                 | Version | Purpose             |
@@ -461,8 +443,6 @@ The `app.ServiceDefaults` library provides shared configuration:
 | **Messaging**     | Azure.Messaging.ServiceBus | Latest  | Event publishing    |
 | **Telemetry**     | OpenTelemetry              | Latest  | Observability       |
 | **Orchestration** | .NET Aspire                | 13.1.0  | Local development   |
-
----
 
 ---
 

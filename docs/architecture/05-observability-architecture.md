@@ -31,14 +31,14 @@ tags:
 ## 📑 Table of Contents
 
 - [Observability Principles](#-observability-principles)
-- [Three Pillars Overview](#%EF%B8%8F-three-pillars-overview)
+- [Three Pillars Overview](#-three-pillars-overview)
 - [Distributed Tracing Strategy](#-distributed-tracing-strategy)
 - [Metrics Catalog](#-metrics-catalog)
 - [Logging Strategy](#-logging-strategy)
 - [OpenTelemetry Configuration](#-opentelemetry-configuration)
-- [Health Monitoring](#%EF%B8%8F-health-monitoring)
+- [Health Monitoring](#-health-monitoring)
 - [Alert Rules Catalog](#-alert-rules-catalog)
-- [SLI/SLO Definitions](#%EF%B8%8F-slislo-definitions)
+- [SLI/SLO Definitions](#-slislo-definitions)
 - [Observability Platform Architecture](#-observability-platform-architecture)
 - [Cross-Architecture Relationships](#-cross-architecture-relationships)
 
@@ -53,8 +53,6 @@ tags:
 | **O-3** | **Business-Aligned Metrics**       | Connect tech to outcomes          | Custom metrics for orders KPIs    |
 | **O-4** | **Actionable Alerts**              | Reduce noise, improve response    | Alert on symptoms, not causes     |
 | **O-5** | **Cost-Aware Telemetry**           | Control data volumes              | Sampling and filtering strategies |
-
----
 
 ---
 
@@ -129,8 +127,6 @@ flowchart TB
 
 ---
 
----
-
 ## 🔍 Distributed Tracing Strategy
 
 ### Trace Flow Architecture
@@ -186,8 +182,6 @@ sequenceDiagram
 | **Orders API** | `SaveOrderStarted`     | Internal | `order.id`, `order.customer_id`          |
 | **Orders API** | `SendOrderMessage`     | Producer | `messaging.destination.name`, `order.id` |
 | **Web App**    | `HTTP GET /api/orders` | Client   | `http.url`, `http.status_code`           |
-
----
 
 ---
 

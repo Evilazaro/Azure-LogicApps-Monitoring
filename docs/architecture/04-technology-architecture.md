@@ -32,7 +32,7 @@ tags:
 
 - [Technology Principles](#-technology-principles)
 - [Technology Standards Catalog](#-technology-standards-catalog)
-- [Platform Decomposition](#%EF%B8%8F-platform-decomposition)
+- [Platform Decomposition](#-platform-decomposition)
 - [Environment and Location Strategy](#-environment-and-location-strategy)
 - [Infrastructure Components](#-infrastructure-components)
 - [Technology Portfolio](#-technology-portfolio)
@@ -55,8 +55,6 @@ tags:
 
 ---
 
----
-
 ## 📦 Technology Standards Catalog
 
 | Category               | Technology           | Version  | Status   | Rationale                         |
@@ -69,8 +67,6 @@ tags:
 | **APM**                | Application Insights | Latest   | Approved | Distributed tracing, Azure native |
 | **IaC**                | Bicep                | 0.30+    | Approved | Azure-native, type-safe           |
 | **CLI**                | Azure Developer CLI  | 1.11+    | Approved | E2E deployment orchestration      |
-
----
 
 ---
 
@@ -145,8 +141,6 @@ flowchart TB
 
 ---
 
----
-
 ## 🌍 Environment and Location Strategy
 
 | Environment    | Region       | Purpose             | SLA Target | Infrastructure                         |
@@ -155,8 +149,6 @@ flowchart TB
 | **Dev**        | Configurable | Shared development  | 99%        | Azure PaaS (shared)                    |
 | **Staging**    | Configurable | Pre-prod validation | 99.5%      | Azure PaaS (dedicated)                 |
 | **Production** | Configurable | Live workloads      | 99.9%      | Azure PaaS (dedicated)                 |
-
----
 
 ---
 
@@ -255,8 +247,6 @@ flowchart TB
 
 ---
 
----
-
 ## 💼 Technology Portfolio
 
 | Service                        | Tier/SKU        | Scaling       | Cost Model            | Purpose                      |
@@ -269,8 +259,6 @@ flowchart TB
 | **Log Analytics**              | Per-GB          | Auto          | Per-GB ingested       | Log aggregation              |
 | **Container Registry**         | Basic           | N/A           | Per-storage           | Container image store        |
 | **Storage Account**            | Standard LRS    | Auto          | Per-GB + transactions | Workflow state, blobs        |
-
----
 
 ---
 
@@ -315,8 +303,6 @@ infra/
 
 ---
 
----
-
 ## 💻 Local Development Stack
 
 | Azure Service        | Local Alternative        | Configuration                       |
@@ -345,8 +331,6 @@ else
 
 ---
 
----
-
 ## 🔧 Operational Considerations
 
 ### Backup and Recovery
@@ -365,8 +349,6 @@ else
 | **Container Apps** | Rolling updates            | Zero downtime      |
 | **Azure SQL**      | Azure-managed patching     | Automatic failover |
 | **Logic Apps**     | Slot deployment (optional) | Near-zero          |
-
----
 
 ---
 
