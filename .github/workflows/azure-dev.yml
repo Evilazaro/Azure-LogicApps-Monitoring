@@ -315,6 +315,26 @@ jobs:
           azd env get-values | grep "MANAGED_IDENTITY_CLIENT_ID"
           echo "::endgroup::"
 
+      - name: 🔍 Verify SQL User Exists
+        run: |
+          echo "::group::🔍 Checking SQL database user"
+          SQL_SERVER=$(azd env get-values | grep "AZURE_SQL_SERVER_NAME" | cut -d'=' -f2 | tr -d '"')
+          SQL_DB=$(azd env get-values | grep "AZURE_SQL_DATABASE_NAME" | cut -d'=' -f2 | tr -d '"')
+          MI_NAME=$(azd env get-values | grep "MANAGED_IDENTITY_NAME" | cut -d'=' -f2 | tr -d '"')
+          
+          echo "SQL Server: $SQL_SERVER"
+          echo "Database: $SQL_DB"
+          echo "Managed Identity Name: $MI_NAME"
+          echo ""
+          
+          echo "=== Checking if user exists in database ==="
+          sqlcmd -S "${SQL_SERVER}.database.windows.net" -d "$SQL_DB" --authentication-method ActiveDirectoryAzCli -Q "SELECT name, type_desc, authentication_type_desc FROM sys.database_principals WHERE name = '$MI_NAME'" || echo "Failed to query SQL"
+          
+          echo ""
+          echo "=== All external users in database ==="
+          sqlcmd -S "${SQL_SERVER}.database.windows.net" -d "$SQL_DB" --authentication-method ActiveDirectoryAzCli -Q "SELECT name, type_desc, authentication_type_desc FROM sys.database_principals WHERE type IN ('E', 'X')" || echo "Failed to query SQL"
+          echo "::endgroup::"
+
       # ------------------------------------------------------------------------
       # Phase 4: Summary
       # ------------------------------------------------------------------------
