@@ -7,22 +7,32 @@
 #   Azure Developer CLI (azd) with OpenID Connect (OIDC) authentication.
 #
 # Pipeline Flow:
-#   CI (Build → Test → Analyze → CodeQL) → Deploy to Dev
+#   CI → Deploy Dev → Summary
 #
-# CI Jobs (via reusable workflow):
-#   1. Build     - Cross-platform compilation (Ubuntu, Windows, macOS)
-#   2. Test      - Cross-platform testing with coverage
-#   3. Analyze   - Code formatting verification
-#   4. CodeQL    - Security vulnerability scanning (always runs)
+# Jobs:
+#   1. ci          - Reusable CI workflow (Build, Test, Analyze, CodeQL)
+#   2. deploy-dev  - Provision infrastructure, configure SQL, deploy application
+#   3. summary     - Generate workflow summary report
+#   4. on-failure  - Handle and report pipeline failures
+#
+# Deployment Phases:
+#   Phase 1: Setup         - Checkout, install prerequisites (go-sqlcmd), .NET SDK, azd
+#   Phase 2: Auth          - OIDC authentication with Azure (azd + az CLI)
+#   Phase 3: Provision     - Infrastructure provisioning via azd provision
+#   Phase 4: SQL Config    - Create managed identity user in SQL database
+#   Phase 5: Re-auth       - Re-authenticate after SQL operations (token refresh)
+#   Phase 6: Deploy        - Application deployment via azd deploy
+#   Phase 7: Summary       - Generate deployment summary report
 #
 # Features:
-#   - Integrated CI pipeline with security scanning
-#   - OIDC authentication (no stored secrets)
+#   - Integrated CI pipeline with security scanning (CodeQL)
+#   - OIDC/Federated Credentials authentication (no stored secrets)
 #   - Environment-based deployment with protection rules
+#   - SQL Managed Identity configuration with go-sqlcmd
 #   - Deployment summaries and observability
 #
 # Prerequisites:
-#   - Federated credentials configured in Azure AD
+#   - Federated credentials configured in Azure Entra ID
 #   - GitHub Environment: dev
 #   - Repository variables: AZURE_CLIENT_ID, AZURE_TENANT_ID, AZURE_SUBSCRIPTION_ID
 #
@@ -95,12 +105,15 @@ defaults:
 
 jobs:
   # ============================================================================
-  # CI Job - Build, Test, Analyze, and Security Scan
+  # CI Job - Reusable Workflow
   # ============================================================================
-  # Executes the comprehensive CI pipeline before deployment:
-  # - Build and Test run on all platforms (Ubuntu, Windows, macOS)
-  # - Analyze verifies code formatting
-  # - CodeQL performs security vulnerability scanning (always runs)
+  # Calls the reusable CI workflow (ci-dotnet-reusable.yml) which executes:
+  # - Build: Cross-platform compilation (Ubuntu, Windows, macOS)
+  # - Test: Cross-platform testing with coverage reporting
+  # - Analyze: Code formatting verification
+  # - CodeQL: Security vulnerability scanning
+  #
+  # Can be skipped via workflow_dispatch input: skip-ci=true
   # ============================================================================
   ci:
     name: 🔄 CI
@@ -116,6 +129,11 @@ jobs:
 
   # ============================================================================
   # Deploy to Dev Environment
+  # ============================================================================
+  # Deploys the application to the dev environment using Azure Developer CLI.
+  # Runs after CI succeeds or is skipped. Uses OIDC authentication.
+  #
+  # Phases: Setup → Auth → Provision → SQL Config → Re-auth → Deploy → Summary
   # ============================================================================
   deploy-dev:
     name: 🚀 Deploy Dev
@@ -145,6 +163,7 @@ jobs:
     steps:
       # ------------------------------------------------------------------------
       # Phase 1: Setup
+      # Install prerequisites including go-sqlcmd for SQL Managed Identity config
       # ------------------------------------------------------------------------
       - name: 📥 Checkout repository
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
@@ -170,7 +189,21 @@ jobs:
           # Reference: https://github.com/microsoft/go-sqlcmd
           # Note: go-sqlcmd is required for --authentication-method ActiveDirectoryAzCli
           echo "Installing go-sqlcmd..."
-          SQLCMD_VERSION=$(curl -s https://api.github.com/repos/microsoft/go-sqlcmd/releases/latest | jq -r '.tag_name')
+
+          # Fetch latest version with retry logic for API reliability
+          for i in 1 2 3; do
+            SQLCMD_VERSION=$(curl -sS --retry 3 --retry-delay 2 https://api.github.com/repos/microsoft/go-sqlcmd/releases/latest | jq -r '.tag_name')
+            if [ -n "$SQLCMD_VERSION" ] && [ "$SQLCMD_VERSION" != "null" ]; then
+              break
+            fi
+            echo "Retry $i: Failed to fetch version, waiting..."
+            sleep 5
+          done
+
+          if [ -z "$SQLCMD_VERSION" ] || [ "$SQLCMD_VERSION" == "null" ]; then
+            echo "::error::Failed to fetch go-sqlcmd version from GitHub API"
+            exit 1
+          fi
           echo "Latest go-sqlcmd version: $SQLCMD_VERSION"
 
           # Download and extract go-sqlcmd for Linux amd64
@@ -194,7 +227,7 @@ jobs:
           echo "✓ go-sqlcmd installed successfully"
 
       - name: 🔧 Install Azure Developer CLI
-        uses: Azure/setup-azd@v2
+        uses: Azure/setup-azd@866b5933d9d788e498d5880fe4ee28d24cc6d85c # v2.0.0
         with:
           version: "latest"
 
@@ -205,6 +238,7 @@ jobs:
 
       # ------------------------------------------------------------------------
       # Phase 2: Authentication
+      # Authenticate both azd CLI and Azure CLI using OIDC federated credentials
       # ------------------------------------------------------------------------
       - name: 🔐 Log in with Azure (Federated Credentials)
         run: |
@@ -221,7 +255,7 @@ jobs:
           echo "::notice title=Azure Auth::✅ Successfully authenticated with Azure"
 
       - name: 🔑 Logging in to Azure CLI
-        uses: azure/login@v2.4.0
+        uses: azure/login@a457da9ea143d694b1b9c7c869ebb04ebe844ef5 # v2.4.0
         with:
           client-id: ${{ env.AZURE_CLIENT_ID }}
           tenant-id: ${{ env.AZURE_TENANT_ID }}
@@ -229,7 +263,8 @@ jobs:
           args: --timeout 900
 
       # ------------------------------------------------------------------------
-      # Phase 3: Provision, Reauthenticate & Deploy
+      # Phase 3: Provision Infrastructure
+      # Provisions Azure resources using azd provision (runs Bicep templates)
       # ------------------------------------------------------------------------
       - name: 🏗️ Provision Infrastructure
         id: provision
@@ -256,6 +291,11 @@ jobs:
           echo "=== Checking if postprovision ran ==="
           grep -i "postprovision\|sql\|managed identity\|database" /tmp/provision.log || echo "No postprovision output found"
 
+      # ------------------------------------------------------------------------
+      # Phase 4: SQL Managed Identity Configuration
+      # Creates database user for the managed identity using go-sqlcmd.
+      # Uses SID-based user creation to bypass MS Graph API lookup.
+      # ------------------------------------------------------------------------
       - name: 🔑 Create SQL User with Object ID
         run: |
           echo "::group::🔑 Creating SQL database user using Object ID"
@@ -338,6 +378,11 @@ jobs:
 
           echo "::endgroup::"
 
+      # ------------------------------------------------------------------------
+      # Phase 5: Re-authentication
+      # Re-authenticate after SQL operations to refresh OIDC tokens.
+      # Required because tokens may expire during long-running SQL operations.
+      # ------------------------------------------------------------------------
       - name: 🔐 Log in with Azure (Federated Credentials)
         run: |
           echo "::group::🔐 Authenticating with Azure"
@@ -353,14 +398,18 @@ jobs:
           echo "::notice title=Azure Auth::✅ Successfully authenticated with Azure"
 
       - name: 🔑 Logging in to Azure CLI
-        uses: azure/login@v2.4.0
+        uses: azure/login@a457da9ea143d694b1b9c7c869ebb04ebe844ef5 # v2.4.0
         with:
           client-id: ${{ env.AZURE_CLIENT_ID }}
           tenant-id: ${{ env.AZURE_TENANT_ID }}
           subscription-id: ${{ env.AZURE_SUBSCRIPTION_ID }}
           args: --timeout 900
 
-      - name: �🚀 Deploy Application
+      # ------------------------------------------------------------------------
+      # Phase 6: Deploy Application
+      # Deploys application code using azd deploy command
+      # ------------------------------------------------------------------------
+      - name: 🚀 Deploy Application
         id: deploy
         run: |
           echo "::group::🚀 Deploying application to Azure"
@@ -383,7 +432,8 @@ jobs:
           echo "webapp-url=https://aspire-dashboard.ext.$AZURE_CONTAINER_APPS_ENVIRONMENT_DEFAULT_DOMAIN" >> $GITHUB_OUTPUT
 
       # ------------------------------------------------------------------------
-      # Phase 4: Summary
+      # Phase 7: Summary
+      # Generate deployment summary with status, environment info, and rollback instructions
       # ------------------------------------------------------------------------
       - name: 📊 Generate deployment summary
         if: always()
@@ -451,6 +501,13 @@ jobs:
 
   # ============================================================================
   # Workflow Summary Job
+  # ============================================================================
+  # Generates a comprehensive workflow summary with:
+  # - Overall pipeline status (CI + Deploy)
+  # - Individual job results
+  # - Workflow details and links
+  # - Action required guidance on failure
+  # Always runs regardless of previous job outcomes.
   # ============================================================================
   summary:
     name: 📊 Summary
@@ -534,7 +591,11 @@ jobs:
           fi
 
   # ============================================================================
-  # Failure Handler Job (Visual failure path in graph)
+  # Failure Handler Job
+  # ============================================================================
+  # Provides visual failure indication in the workflow graph and generates
+  # a failure report with job statuses and next steps for troubleshooting.
+  # Only runs when CI or deploy-dev jobs fail.
   # ============================================================================
   on-failure:
     name: ❌ Handle Failure
