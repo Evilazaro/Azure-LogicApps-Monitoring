@@ -59,11 +59,11 @@ tags:
 
 ### Environment Matrix
 
-| Environment     | Purpose             | Azure Subscription | Trigger         |
-| --------------- | ------------------- | ------------------ | --------------- |
-| **Local**       | Development         | N/A (Emulators)    | Manual          |
-| **Development** | Integration testing | Dev subscription   | Push to `main`  |
-| **Production**  | Live workloads      | Prod subscription  | Manual approval |
+| Environment     | Purpose             | Azure Subscription | Trigger              |
+| --------------- | ------------------- | ------------------ | -------------------- |
+| **Local**       | Development         | N/A (Emulators)    | Manual               |
+| **Development** | Integration testing | Dev subscription   | Push to `docs987678` |
+| **Production**  | Live workloads      | Prod subscription  | Manual approval      |
 
 ### Environment Configuration
 
@@ -117,81 +117,98 @@ title: CI/CD Pipeline Flow
 flowchart LR
     %% ===== TRIGGERS =====
     subgraph Trigger["🎯 Triggers"]
-        Push["Push to main"]
+        Push["Push to branches"]
         PR["Pull Request"]
         Manual["Manual Dispatch"]
     end
 
-    %% ===== BUILD STAGE =====
-    subgraph Build["🔨 Build Stage"]
-        Restore["📦 Restore"]
-        Compile["⚙️ Build"]
-        Test["🧪 Test"]
-        Publish["📤 Publish"]
+    %% ===== CI STAGE =====
+    subgraph CI["🔄 CI Stage (Cross-Platform)"]
+        subgraph Matrix["Matrix: Ubuntu, Windows, macOS"]
+            Build["🔨 Build"]
+            Test["🧪 Test"]
+        end
+        Analyze["🔍 Analyze"]
+        CodeQL["🛡️ CodeQL"]
     end
 
-    %% ===== VALIDATE STAGE =====
-    subgraph Validate["✅ Validate Stage"]
-        Format["📝 Format Check"]
-        Lint["🔍 Lint"]
-        Security["🔒 Security Scan"]
+    %% ===== CD STAGE =====
+    subgraph CD["🚀 CD Stage"]
+        Provision["📐 azd provision"]
+        SQLConfig["🔑 SQL Config"]
+        Deploy["📦 azd deploy"]
     end
 
-    %% ===== DEPLOY STAGE =====
-    subgraph Deploy["🚀 Deploy Stage"]
-        Infra["📐 Bicep Deploy"]
-        App["📦 App Deploy"]
-        Verify["✔️ Health Check"]
+    %% ===== RESULTS =====
+    subgraph Results["📊 Results"]
+        Summary["Summary"]
+        Failure["Handle Failure"]
     end
 
     %% ===== CONNECTIONS =====
-    Push -->|"triggers"| Build
-    Manual -->|"triggers"| Build
-    Build -->|"continues to"| Deploy
-    PR -->|"triggers"| Build
-    Build -->|"continues to"| Validate
+    Push -->|"triggers"| CI
+    PR -->|"triggers"| CI
+    Manual -->|"triggers"| CI
+    Build -->|"on success"| Test
+    Build -->|"parallel"| Analyze
+    Build -->|"parallel"| CodeQL
+    CI -->|"on success"| CD
+    Provision -->|"configures"| SQLConfig
+    SQLConfig -->|"continues"| Deploy
+    Deploy -->|"reports"| Summary
+    CI --x|"on failure"| Failure
+    CD --x|"on failure"| Failure
 
     %% ===== STYLES - NODE CLASSES =====
     classDef trigger fill:#F59E0B,stroke:#D97706,color:#000000
     classDef primary fill:#4F46E5,stroke:#3730A3,color:#FFFFFF
     classDef secondary fill:#10B981,stroke:#059669,color:#FFFFFF
-    classDef external fill:#6B7280,stroke:#4B5563,color:#FFFFFF
+    classDef failed fill:#F44336,stroke:#C62828,color:#FFFFFF
+    classDef datastore fill:#F59E0B,stroke:#D97706,color:#000000
 
     %% ===== CLASS ASSIGNMENTS =====
     class Push,PR,Manual trigger
-    class Restore,Compile,Test,Publish primary
-    class Format,Lint,Security external
-    class Infra,App,Verify secondary
+    class Build,Test,CodeQL primary
+    class Analyze,Provision,SQLConfig,Deploy secondary
+    class Summary datastore
+    class Failure failed
 
     %% ===== SUBGRAPH STYLES =====
     style Trigger fill:#FEF3C7,stroke:#F59E0B,stroke-width:2px
-    style Build fill:#EEF2FF,stroke:#4F46E5,stroke-width:2px
-    style Validate fill:#F3F4F6,stroke:#6B7280,stroke-width:2px
-    style Deploy fill:#ECFDF5,stroke:#10B981,stroke-width:2px
+    style CI fill:#EEF2FF,stroke:#4F46E5,stroke-width:2px
+    style Matrix fill:#E0E7FF,stroke:#4F46E5,stroke-width:1px
+    style CD fill:#ECFDF5,stroke:#10B981,stroke-width:2px
+    style Results fill:#FEF3C7,stroke:#F59E0B,stroke-width:2px
 ```
 
 ### GitHub Actions Workflows
 
-| Workflow        | File                     | Trigger                                      | Purpose                                       |
-| --------------- | ------------------------ | -------------------------------------------- | --------------------------------------------- |
-| **Azure Dev**   | `azure-dev.yml`          | Push to `docs987678`, manual dispatch        | CI + Infrastructure provisioning + Deployment |
-| **CI .NET**     | `ci-dotnet.yml`          | Push (main, feature/\*\*, etc.), PRs to main | Build, test, format check, CodeQL security    |
-| **CI Reusable** | `ci-dotnet-reusable.yml` | Called by azure-dev.yml and ci-dotnet.yml    | Cross-platform build, test, analyze, security |
+| Workflow        | File                     | Trigger                                                       | Purpose                                                    |
+| --------------- | ------------------------ | ------------------------------------------------------------- | ---------------------------------------------------------- |
+| **Azure Dev**   | `azure-dev.yml`          | Push to `docs987678`, `workflow_dispatch`                     | CI + Infrastructure provisioning + SQL config + Deployment |
+| **CI .NET**     | `ci-dotnet.yml`          | Push (`main`, `feature/**`, `bugfix/**`, etc.), PRs to `main` | Orchestrates CI by calling reusable workflow               |
+| **CI Reusable** | `ci-dotnet-reusable.yml` | `workflow_call` (from azure-dev.yml and ci-dotnet.yml)        | Cross-platform build, test, analyze, CodeQL security scan  |
+| **Dependabot**  | `dependabot.yml`         | Schedule (Weekly, Mondays 06:00 UTC)                          | Automated dependency updates for NuGet and GitHub Actions  |
 
 ### Azure Dev Workflow Detail
+
+The CD workflow (`azure-dev.yml`) orchestrates the full deployment pipeline:
 
 ```yaml
 # .github/workflows/azure-dev.yml
 name: CD - Azure Deployment
+
 on:
   push:
     branches: [docs987678]
     paths:
-      - "src/**"
-      - "app.*/**"
-      - "infra/**"
-      - "azure.yaml"
-      - ".github/workflows/azure-dev.yml"
+      [
+        "src/**",
+        "app.*/**",
+        "infra/**",
+        "azure.yaml",
+        ".github/workflows/azure-dev.yml",
+      ]
   workflow_dispatch:
     inputs:
       skip-ci:
@@ -200,13 +217,14 @@ on:
         default: false
 
 permissions:
-  id-token: write # OIDC token
-  contents: read
-  checks: write
-  pull-requests: write
-  security-events: write
+  id-token: write # OIDC authentication
+  contents: read # Repository checkout
+  checks: write # Test result reporting
+  pull-requests: write # PR comments
+  security-events: write # CodeQL SARIF upload
 
 jobs:
+  # Job 1: CI Pipeline (Reusable)
   ci:
     name: 🔄 CI
     if: ${{ github.event.inputs.skip-ci != 'true' }}
@@ -214,31 +232,60 @@ jobs:
     with:
       configuration: "Release"
       dotnet-version: "10.0.x"
+      solution-file: "app.sln"
+      enable-code-analysis: true
     secrets: inherit
 
+  # Job 2: Deploy to Dev Environment
   deploy-dev:
     name: 🚀 Deploy Dev
     runs-on: ubuntu-latest
     needs: [ci]
     if: always() && (needs.ci.result == 'success' || needs.ci.result == 'skipped')
-    environment:
-      name: dev
+    environment: { name: dev }
     steps:
       - uses: actions/checkout@v4
+      - name: 📦 Install Prerequisites (go-sqlcmd)
       - uses: Azure/setup-azd@v2
+      - uses: actions/setup-dotnet@v4
       - name: 🔐 Log in with Azure (OIDC)
-        run: |
-          azd auth login \
-            --client-id "$AZURE_CLIENT_ID" \
-            --federated-credential-provider "github" \
-            --tenant-id "$AZURE_TENANT_ID"
+        run: azd auth login --client-id "$AZURE_CLIENT_ID" --federated-credential-provider "github" --tenant-id "$AZURE_TENANT_ID"
+      - uses: azure/login@v2 # Azure CLI login
       - name: 🏗️ Provision Infrastructure
         run: azd provision --no-prompt
-      - name: 🔑 Create SQL User
-        run: # SQL managed identity configuration via go-sqlcmd
+      - name: 🔑 Create SQL User with Client ID
+        run: # Uses go-sqlcmd with SID-based user creation
+      - name: 🔐 Re-authenticate (token refresh)
       - name: 🚀 Deploy Application
         run: azd deploy --no-prompt
+
+  # Job 3: Workflow Summary
+  summary:
+    name: 📊 Summary
+    runs-on: ubuntu-latest
+    needs: [ci, deploy-dev]
+    if: always()
+
+  # Job 4: Failure Handler
+  on-failure:
+    name: ❌ Handle Failure
+    runs-on: ubuntu-latest
+    needs: [ci, deploy-dev]
+    if: failure()
 ```
+
+### CI Reusable Workflow Jobs
+
+The reusable CI workflow (`ci-dotnet-reusable.yml`) contains the following jobs:
+
+| Job            | Runner                          | Purpose                                              |
+| -------------- | ------------------------------- | ---------------------------------------------------- |
+| **Build**      | Matrix (Ubuntu, Windows, macOS) | Compile solution, generate version, upload artifacts |
+| **Test**       | Matrix (Ubuntu, Windows, macOS) | Execute tests with Cobertura coverage                |
+| **Analyze**    | `ubuntu-latest` (configurable)  | Verify code formatting with `dotnet format`          |
+| **CodeQL**     | `ubuntu-latest` (configurable)  | Security vulnerability scanning (C#)                 |
+| **Summary**    | `ubuntu-latest` (configurable)  | Aggregate results from all jobs                      |
+| **On-Failure** | `ubuntu-latest` (configurable)  | Report failures with job statuses                    |
 
 ---
 
@@ -580,11 +627,23 @@ dotnet run --project app.AppHost/app.AppHost.csproj
 
 ## 🌐 Cross-Architecture Relationships
 
-| Related Architecture           | Connection            | Reference                                                                                     |
-| ------------------------------ | --------------------- | --------------------------------------------------------------------------------------------- |
-| **Technology Architecture**    | IaC modules defined   | [Infrastructure as Code](04-technology-architecture.md#infrastructure-as-code-strategy)       |
-| **Security Architecture**      | CI/CD authentication  | [GitHub Actions Auth](06-security-architecture.md#github-actions-to-azure-authentication)     |
-| **Observability Architecture** | Deployment monitoring | [Platform Architecture](05-observability-architecture.md#observability-platform-architecture) |
+| Related Architecture           | Connection             | Reference                                                                                     |
+| ------------------------------ | ---------------------- | --------------------------------------------------------------------------------------------- |
+| **Technology Architecture**    | IaC modules defined    | [Infrastructure as Code](04-technology-architecture.md#infrastructure-as-code-strategy)       |
+| **Security Architecture**      | CI/CD authentication   | [GitHub Actions Auth](06-security-architecture.md#github-actions-to-azure-authentication)     |
+| **Observability Architecture** | Deployment monitoring  | [Platform Architecture](05-observability-architecture.md#observability-platform-architecture) |
+| **DevOps Documentation**       | Detailed workflow docs | [DevOps Index](../devops/README.md)                                                           |
+
+### Related DevOps Documentation
+
+For detailed workflow documentation, see:
+
+| Document                                              | Description                                        |
+| ----------------------------------------------------- | -------------------------------------------------- |
+| [DevOps Overview](../devops/README.md)                | Master pipeline diagram and quick reference        |
+| [CD - Azure Deployment](../devops/azure-dev.md)       | Detailed azure-dev.yml workflow documentation      |
+| [CI - .NET Build and Test](../devops/ci-dotnet.md)    | CI orchestration workflow documentation            |
+| [CI - .NET Reusable](../devops/ci-dotnet-reusable.md) | Reusable workflow with all jobs and inputs/outputs |
 
 ---
 
