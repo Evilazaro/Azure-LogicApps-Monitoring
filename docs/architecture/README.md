@@ -32,7 +32,7 @@ The **Azure Logic Apps Monitoring Solution** is a cloud-native reference archite
 
 ---
 
-[↑ Back to Top](#-azure-logic-apps-monitoring-solution---architecture-overview)
+[↑ Back to Top](#️-azure-logic-apps-monitoring-solution---architecture-overview)
 
 ---
 
@@ -114,7 +114,7 @@ flowchart TD
 
 ---
 
-[↑ Back to Top](#-azure-logic-apps-monitoring-solution---architecture-overview)
+[↑ Back to Top](#️-azure-logic-apps-monitoring-solution---architecture-overview)
 
 ---
 
@@ -130,7 +130,7 @@ flowchart TD
 
 ---
 
-[↑ Back to Top](#-azure-logic-apps-monitoring-solution---architecture-overview)
+[↑ Back to Top](#️-azure-logic-apps-monitoring-solution---architecture-overview)
 
 ---
 
@@ -148,7 +148,7 @@ flowchart TD
 
 ---
 
-[↑ Back to Top](#-azure-logic-apps-monitoring-solution---architecture-overview)
+[↑ Back to Top](#️-azure-logic-apps-monitoring-solution---architecture-overview)
 
 ---
 
@@ -182,7 +182,7 @@ flowchart TD
 
 ---
 
-[↑ Back to Top](#-azure-logic-apps-monitoring-solution---architecture-overview)
+[↑ Back to Top](#️-azure-logic-apps-monitoring-solution---architecture-overview)
 
 ---
 
@@ -197,7 +197,7 @@ flowchart TD
 
 ---
 
-[↑ Back to Top](#-azure-logic-apps-monitoring-solution---architecture-overview)
+[↑ Back to Top](#️-azure-logic-apps-monitoring-solution---architecture-overview)
 
 ---
 
@@ -224,7 +224,7 @@ Azure-LogicApps-Monitoring/
 
 ---
 
-[↑ Back to Top](#-azure-logic-apps-monitoring-solution---architecture-overview)
+[↑ Back to Top](#️-azure-logic-apps-monitoring-solution---architecture-overview)
 
 ---
 
@@ -239,3 +239,4 @@ Azure-LogicApps-Monitoring/
 ---
 
 _Last Updated: January 2026 | Version 1.0.0_
+
