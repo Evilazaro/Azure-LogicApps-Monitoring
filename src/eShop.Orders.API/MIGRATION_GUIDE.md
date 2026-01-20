@@ -30,7 +30,7 @@ tags: [ef-core, migration, sql-azure, database]
 - [🧪 Testing the Changes](#-testing-the-changes)
 - [⏪ Rollback Instructions](#-rollback-instructions)
 - [✅ Benefits of EF Core](#-benefits-of-ef-core)
-- [📚 Additional Resources](#-additional-resources-1)
+- [📚 Additional Resources](#-additional-resources)
 
 ---
 
@@ -265,7 +265,7 @@ If you need to rollback to file-based storage:
 
 ---
 
-## 📚 Additional Resources than file-based storage
+## 📚 Additional Resources
 
 | Resource                            | Link                                                                                                       |
 | ----------------------------------- | ---------------------------------------------------------------------------------------------------------- |
