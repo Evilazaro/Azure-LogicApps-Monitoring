@@ -1,6 +1,31 @@
+---
+title: Architecture Overview
+description: Comprehensive architecture documentation for the Azure Logic Apps Monitoring Solution, covering TOGAF BDAT layers, cross-cutting concerns, and decision records.
+author: Architecture Team
+date: 2026-01-20
+version: 1.0.0
+tags:
+  - architecture
+  - azure
+  - logic-apps
+  - monitoring
+  - aspire
+---
+
 # 🏗️ Azure Logic Apps Monitoring Solution - Architecture Overview
 
-← [Project Root](../../README.md) | **Architecture Index** | [Business Architecture →](01-business-architecture.md)
+> [!NOTE]
+> **Target Audience:** Cloud Solution Architects, Platform Engineers, Developers, DevOps/SRE Teams
+> **Reading Time:** ~15 minutes
+
+<details>
+<summary>📍 Navigation</summary>
+
+| Previous                          |         Index          |                                                   Next |
+| :-------------------------------- | :--------------------: | -----------------------------------------------------: |
+| [← Project Root](../../README.md) | **Architecture Index** | [Business Architecture →](01-business-architecture.md) |
+
+</details>
 
 ---
 
@@ -21,14 +46,16 @@
 
 The **Azure Logic Apps Monitoring Solution** is a cloud-native reference architecture demonstrating enterprise-grade observability patterns for distributed applications. Built on .NET 10 and .NET Aspire orchestration, the solution showcases a complete order management system with end-to-end distributed tracing, event-driven workflows, and comprehensive telemetry collection.
 
-**Key Architectural Highlights:**
+> [!IMPORTANT]
+> **Key Architectural Highlights:**
+>
+> - **Event-Driven Architecture** with Azure Service Bus for decoupled, scalable messaging
+> - **Distributed Tracing** via OpenTelemetry with W3C Trace Context propagation across service boundaries
+> - **Infrastructure as Code** using Bicep templates with Azure Developer CLI (azd) for single-command deployments
+> - **Zero-Trust Security** through Managed Identity authentication eliminating stored credentials
 
-- **Event-Driven Architecture** with Azure Service Bus for decoupled, scalable messaging
-- **Distributed Tracing** via OpenTelemetry with W3C Trace Context propagation across service boundaries
-- **Infrastructure as Code** using Bicep templates with Azure Developer CLI (azd) for single-command deployments
-- **Zero-Trust Security** through Managed Identity authentication eliminating stored credentials
-
-**Target Deployment Environments:** Local development (emulators), Azure Container Apps (production)
+> [!TIP]
+> **Target Deployment Environments:** Local development (emulators), Azure Container Apps (production)
 
 ---
 
@@ -225,3 +252,22 @@ Azure-LogicApps-Monitoring/
 ---
 
 > **Last Updated:** January 2026 | **Version:** 1.0.0
+
+---
+
+## 📚 Related Documents
+
+| Document                                                   | Description                               |
+| ---------------------------------------------------------- | ----------------------------------------- |
+| [Business Architecture](01-business-architecture.md)       | Capabilities, value streams, stakeholders |
+| [Data Architecture](02-data-architecture.md)               | Data domains, flows, telemetry mapping    |
+| [Application Architecture](03-application-architecture.md) | Service decomposition, APIs, integration  |
+| [ADR Index](adr/README.md)                                 | Architecture Decision Records             |
+
+---
+
+<div align="center">
+
+[← Project Root](../../README.md) | **Architecture Index** | [Business Architecture →](01-business-architecture.md)
+
+</div>

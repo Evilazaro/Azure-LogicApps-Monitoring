@@ -1,6 +1,30 @@
+---
+title: Observability Architecture
+description: Observability architecture documentation covering the three pillars (traces, metrics, logs), distributed tracing strategy, OpenTelemetry configuration, and alerting for the Azure Logic Apps Monitoring Solution.
+author: Architecture Team
+date: 2026-01-20
+version: 1.0.0
+tags:
+  - observability
+  - opentelemetry
+  - application-insights
+  - monitoring
+---
+
 # 📊 Observability Architecture
 
-← [Technology Architecture](04-technology-architecture.md) | **Observability** | [Security Architecture →](06-security-architecture.md)
+> [!NOTE]
+> **Target Audience:** SRE Teams, DevOps Engineers, Platform Engineers
+> **Reading Time:** ~15 minutes
+
+<details>
+<summary>📍 Navigation</summary>
+
+| Previous | Index | Next |
+|:---------|:-----:|-----:|
+| [← Technology Architecture](04-technology-architecture.md) | **Observability** | [Security Architecture →](06-security-architecture.md) |
+
+</details>
 
 ---
 
@@ -449,4 +473,8 @@ flowchart LR
 
 ---
 
-_← [Technology Architecture](04-technology-architecture.md) | [Security Architecture →](06-security-architecture.md)_
+<div align="center">
+
+[← Technology Architecture](04-technology-architecture.md) | **Observability** | [Security Architecture →](06-security-architecture.md)
+
+</div>

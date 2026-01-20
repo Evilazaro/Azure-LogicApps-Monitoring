@@ -1,6 +1,30 @@
+---
+title: Business Architecture
+description: Business architecture documentation covering capabilities, stakeholders, value streams, and quality attributes for the Azure Logic Apps Monitoring Solution.
+author: Architecture Team
+date: 2026-01-20
+version: 1.0.0
+tags:
+  - business-architecture
+  - togaf
+  - capabilities
+  - value-streams
+---
+
 # 🎯 Business Architecture
 
-← [Architecture Overview](README.md) | **Business Layer** | [Data Architecture →](02-data-architecture.md)
+> [!NOTE]
+> **Target Audience:** Business Decision Makers (BDMs), Cloud Solution Architects, Product Owners
+> **Reading Time:** ~12 minutes
+
+<details>
+<summary>📍 Navigation</summary>
+
+| Previous                             |       Index        |                                           Next |
+| :----------------------------------- | :----------------: | ---------------------------------------------: |
+| [← Architecture Overview](README.md) | **Business Layer** | [Data Architecture →](02-data-architecture.md) |
+
+</details>
 
 ---
 
@@ -20,21 +44,23 @@
 
 ### Problem Statement
 
-Modern distributed applications generate vast amounts of telemetry across multiple services, databases, and messaging systems. Without comprehensive observability, organizations struggle to:
-
-- Diagnose issues across service boundaries
-- Understand end-to-end transaction flows
-- Meet SLAs with proactive monitoring
-- Correlate events across asynchronous workflows
+> [!WARNING]
+> Modern distributed applications generate vast amounts of telemetry across multiple services, databases, and messaging systems. Without comprehensive observability, organizations struggle to:
+>
+> - Diagnose issues across service boundaries
+> - Understand end-to-end transaction flows
+> - Meet SLAs with proactive monitoring
+> - Correlate events across asynchronous workflows
 
 ### Solution Value Proposition
 
-The **Azure Logic Apps Monitoring Solution** provides a **reference implementation** demonstrating how to instrument a distributed order management system with:
-
-- **End-to-end distributed tracing** with W3C Trace Context propagation
-- **Event-driven workflow automation** with full observability
-- **Centralized telemetry** aggregating logs, metrics, and traces
-- **Zero-trust security** through managed identity authentication
+> [!TIP]
+> The **Azure Logic Apps Monitoring Solution** provides a **reference implementation** demonstrating how to instrument a distributed order management system with:
+>
+> - **End-to-end distributed tracing** with W3C Trace Context propagation
+> - **Event-driven workflow automation** with full observability
+> - **Centralized telemetry** aggregating logs, metrics, and traces
+> - **Zero-trust security** through managed identity authentication
 
 ### Target Users and Personas
 
@@ -312,4 +338,8 @@ flowchart TD
 
 ---
 
-_← [Architecture Overview](README.md) | [Data Architecture →](02-data-architecture.md)_
+<div align="center">
+
+[← Architecture Overview](README.md) | **Business Layer** | [Data Architecture →](02-data-architecture.md)
+
+</div>

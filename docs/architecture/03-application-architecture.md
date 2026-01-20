@@ -1,6 +1,30 @@
+---
+title: Application Architecture
+description: Application architecture documentation covering service decomposition, APIs, integration patterns, resilience patterns, and cross-cutting concerns for the Azure Logic Apps Monitoring Solution.
+author: Architecture Team
+date: 2026-01-20
+version: 1.0.0
+tags:
+  - application-architecture
+  - togaf
+  - microservices
+  - api-design
+---
+
 # ⚙️ Application Architecture
 
-← [Data Architecture](02-data-architecture.md) | **Application Layer** | [Technology Architecture →](04-technology-architecture.md)
+> [!NOTE]
+> **Target Audience:** Developers, Solution Architects, Technical Leads
+> **Reading Time:** ~18 minutes
+
+<details>
+<summary>📍 Navigation</summary>
+
+| Previous                                       |         Index         |                                                       Next |
+| :--------------------------------------------- | :-------------------: | ---------------------------------------------------------: |
+| [← Data Architecture](02-data-architecture.md) | **Application Layer** | [Technology Architecture →](04-technology-architecture.md) |
+
+</details>
 
 ---
 
@@ -22,10 +46,11 @@
 
 ## 🎯 Application Architecture Overview
 
-The solution implements a **modular monolith** architecture with clear service boundaries, evolving toward microservices. Services communicate via:
-
-- **Synchronous HTTP/REST** for request/response operations
-- **Asynchronous Service Bus** for event-driven workflows
+> [!IMPORTANT]
+> The solution implements a **modular monolith** architecture with clear service boundaries, evolving toward microservices. Services communicate via:
+>
+> - **Synchronous HTTP/REST** for request/response operations
+> - **Asynchronous Service Bus** for event-driven workflows
 
 ### Architectural Style
 
@@ -452,4 +477,8 @@ The `app.ServiceDefaults` library provides shared configuration:
 
 ---
 
-_← [Data Architecture](02-data-architecture.md) | [Technology Architecture →](04-technology-architecture.md)_
+<div align="center">
+
+[← Data Architecture](02-data-architecture.md) | **Application Layer** | [Technology Architecture →](04-technology-architecture.md)
+
+</div>

@@ -1,6 +1,30 @@
+---
+title: Data Architecture
+description: Data architecture documentation covering data domains, flows, telemetry mapping, trace context propagation, and data lifecycle for the Azure Logic Apps Monitoring Solution.
+author: Architecture Team
+date: 2026-01-20
+version: 1.0.0
+tags:
+  - data-architecture
+  - togaf
+  - telemetry
+  - observability
+---
+
 # 🗄️ Data Architecture
 
-← [Business Architecture](01-business-architecture.md) | **Data Layer** | [Application Architecture →](03-application-architecture.md)
+> [!NOTE]
+> **Target Audience:** Data Engineers, Platform Engineers, Developers
+> **Reading Time:** ~15 minutes
+
+<details>
+<summary>📍 Navigation</summary>
+
+| Previous                                               |     Index      |                                                         Next |
+| :----------------------------------------------------- | :------------: | -----------------------------------------------------------: |
+| [← Business Architecture](01-business-architecture.md) | **Data Layer** | [Application Architecture →](03-application-architecture.md) |
+
+</details>
 
 ---
 
@@ -23,7 +47,8 @@
 
 ## 📊 Data Architecture Overview
 
-The solution implements a **service-oriented data architecture** where each service owns its data stores. This ensures loose coupling, independent deployability, and clear data ownership boundaries.
+> [!IMPORTANT]
+> The solution implements a **service-oriented data architecture** where each service owns its data stores. This ensures loose coupling, independent deployability, and clear data ownership boundaries.
 
 ### Data Stores Inventory
 
@@ -350,7 +375,8 @@ flowchart LR
 
 ## 🔗 Trace Context Propagation
 
-The solution implements **W3C Trace Context** for cross-service correlation:
+> [!TIP]
+> The solution implements **W3C Trace Context** for cross-service correlation:
 
 ```mermaid
 ---
@@ -470,4 +496,8 @@ flowchart TD
 
 ---
 
-_← [Business Architecture](01-business-architecture.md) | [Application Architecture →](03-application-architecture.md)_
+<div align="center">
+
+[← Business Architecture](01-business-architecture.md) | **Data Layer** | [Application Architecture →](03-application-architecture.md)
+
+</div>

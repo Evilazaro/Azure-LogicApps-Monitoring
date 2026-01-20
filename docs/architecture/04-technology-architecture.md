@@ -1,6 +1,30 @@
+---
+title: Technology Architecture
+description: Technology architecture documentation covering infrastructure, platforms, deployment topology, and operational considerations for the Azure Logic Apps Monitoring Solution.
+author: Architecture Team
+date: 2026-01-20
+version: 1.0.0
+tags:
+  - technology-architecture
+  - togaf
+  - azure
+  - infrastructure
+---
+
 # 🛠️ Technology Architecture
 
-← [Application Architecture](03-application-architecture.md) | **Technology Layer** | [Observability Architecture →](05-observability-architecture.md)
+> [!NOTE]
+> **Target Audience:** Platform Engineers, Cloud Architects, DevOps Engineers
+> **Reading Time:** ~15 minutes
+
+<details>
+<summary>📍 Navigation</summary>
+
+| Previous                                                     |        Index         |                                                             Next |
+| :----------------------------------------------------------- | :------------------: | ---------------------------------------------------------------: |
+| [← Application Architecture](03-application-architecture.md) | **Technology Layer** | [Observability Architecture →](05-observability-architecture.md) |
+
+</details>
 
 ---
 
@@ -357,4 +381,8 @@ else
 
 ---
 
-_← [Application Architecture](03-application-architecture.md) | [Observability Architecture →](05-observability-architecture.md)_
+<div align="center">
+
+[← Application Architecture](03-application-architecture.md) | **Technology Layer** | [Observability Architecture →](05-observability-architecture.md)
+
+</div>
