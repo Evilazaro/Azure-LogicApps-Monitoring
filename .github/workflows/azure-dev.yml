@@ -19,7 +19,8 @@
 #   Phase 1: Setup         - Checkout, install prerequisites (go-sqlcmd), .NET SDK, azd
 #   Phase 2: Auth          - OIDC authentication with Azure (azd + az CLI)
 #   Phase 3: Provision     - Infrastructure provisioning via azd provision
-#   Phase 4: SQL Config    - Create managed identity user in SQL database
+#   Phase 4a: Re-auth      - Re-authenticate before SQL operations (token refresh)
+#   Phase 4b: SQL Config   - Create managed identity user in SQL database
 #   Phase 5: Re-auth       - Re-authenticate after SQL operations (token refresh)
 #   Phase 6: Deploy        - Application deployment via azd deploy
 #   Phase 7: Summary       - Generate deployment summary report
@@ -304,7 +305,31 @@ jobs:
           grep -i "postprovision\|sql\|managed identity\|database" /tmp/provision.log || echo "No postprovision output found"
 
       # ------------------------------------------------------------------------
-      # Phase 4: SQL Managed Identity Configuration
+      # Phase 4a: Re-authenticate before SQL operations
+      # OIDC tokens have short lifetime (5 min). Refresh before SQL operations
+      # to avoid AADSTS700024 token expiration errors.
+      # ------------------------------------------------------------------------
+      - name: 🔐 Refresh Azure credentials (Pre-SQL)
+        run: |
+          echo "::group::🔐 Refreshing Azure credentials before SQL operations"
+          echo "→ Reason: OIDC tokens expire after ~5 minutes"
+          echo "→ Token refresh required before SQL database operations"
+          echo ""
+          azd auth login \
+            --client-id "$AZURE_CLIENT_ID" \
+            --federated-credential-provider "github" \
+            --tenant-id "$AZURE_TENANT_ID"
+          echo "::endgroup::"
+
+      - name: 🔑 Refresh Azure CLI (Pre-SQL)
+        uses: azure/login@a457da9ea143d694b1b9c7c869ebb04ebe844ef5 # v2.4.0
+        with:
+          client-id: ${{ env.AZURE_CLIENT_ID }}
+          tenant-id: ${{ env.AZURE_TENANT_ID }}
+          subscription-id: ${{ env.AZURE_SUBSCRIPTION_ID }}
+
+      # ------------------------------------------------------------------------
+      # Phase 4b: SQL Managed Identity Configuration
       # Creates database user for the managed identity using go-sqlcmd.
       # Uses SID-based user creation to bypass MS Graph API lookup.
       # ------------------------------------------------------------------------
@@ -446,7 +471,7 @@ jobs:
           echo "::endgroup::"
 
       # ------------------------------------------------------------------------
-      # Phase 5: Re-authentication
+      # Phase 5: Re-authentication (Post-SQL)
       # Re-authenticate after SQL operations to refresh OIDC tokens.
       # Required because tokens may expire during long-running SQL operations.
       # ------------------------------------------------------------------------
