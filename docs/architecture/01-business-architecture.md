@@ -123,41 +123,66 @@ flowchart TB
 ### Order to Fulfillment Value Stream
 
 ```mermaid
+---
+title: Order to Fulfillment Value Stream
+---
 flowchart LR
+    %% ===== TRIGGER =====
     subgraph Trigger["🎯 Trigger"]
-        T1["Customer<br/>Places Order"]
+        T1(["Customer<br/>Places Order"])
     end
 
+    %% ===== ENGAGE =====
     subgraph Engage["📝 Engage"]
         S1["Order Entry<br/><i>Web App UI</i>"]
     end
 
+    %% ===== PROCESS =====
     subgraph Process["⚙️ Process"]
         S2["Order Validation<br/><i>API validation</i>"]
         S3["Order Persistence<br/><i>SQL Database</i>"]
     end
 
+    %% ===== NOTIFY =====
     subgraph Notify["📨 Notify"]
         S4["Event Publication<br/><i>Service Bus</i>"]
     end
 
+    %% ===== AUTOMATE =====
     subgraph Automate["🔄 Automate"]
         S5["Workflow Execution<br/><i>Logic Apps</i>"]
     end
 
+    %% ===== OUTCOME =====
     subgraph Outcome["✅ Outcome"]
-        O1["Order Processed<br/>& Tracked"]
+        O1(["Order Processed<br/>& Tracked"])
     end
 
-    T1 --> S1 --> S2 --> S3 --> S4 --> S5 --> O1
+    %% ===== CONNECTIONS =====
+    T1 -->|"submits"| S1
+    S1 -->|"validates"| S2
+    S2 -->|"persists"| S3
+    S3 -->|"publishes"| S4
+    S4 -->|"triggers"| S5
+    S5 -->|"completes"| O1
 
-    classDef trigger fill:#e3f2fd,stroke:#1565c0
-    classDef stage fill:#fff3e0,stroke:#ef6c00
-    classDef outcome fill:#e8f5e9,stroke:#2e7d32
+    %% ===== STYLES - NODE CLASSES =====
+    classDef trigger fill:#818CF8,stroke:#4F46E5,color:#FFFFFF
+    classDef primary fill:#4F46E5,stroke:#3730A3,color:#FFFFFF
+    classDef secondary fill:#10B981,stroke:#059669,color:#FFFFFF
 
+    %% ===== CLASS ASSIGNMENTS =====
     class T1 trigger
-    class S1,S2,S3,S4,S5 stage
-    class O1 outcome
+    class S1,S2,S3,S4,S5 primary
+    class O1 secondary
+
+    %% ===== SUBGRAPH STYLES =====
+    style Trigger fill:#EEF2FF,stroke:#4F46E5,stroke-width:2px
+    style Engage fill:#E0E7FF,stroke:#4F46E5,stroke-width:2px
+    style Process fill:#E0E7FF,stroke:#4F46E5,stroke-width:2px
+    style Notify fill:#E0E7FF,stroke:#4F46E5,stroke-width:2px
+    style Automate fill:#E0E7FF,stroke:#4F46E5,stroke-width:2px
+    style Outcome fill:#ECFDF5,stroke:#10B981,stroke-width:2px
 ```
 
 ### Value Stream Metrics
@@ -190,40 +215,65 @@ flowchart LR
 ### Order Lifecycle Process
 
 ```mermaid
+---
+title: Order Lifecycle Process
+---
 flowchart TD
-    Start([Customer Action]) --> Submit[Submit Order via Web UI]
-    Submit --> Validate{API Validates Order}
+    %% ===== START =====
+    Start(["Customer Action"])
 
-    Validate -->|Valid| Persist[Persist to SQL Database]
-    Validate -->|Invalid| Reject[Return Validation Error]
+    %% ===== MAIN FLOW =====
+    Submit["Submit Order via Web UI"]
+    Validate{"API Validates Order"}
+    Persist["Persist to SQL Database"]
+    Reject["Return Validation Error"]
+    Publish["Publish to Service Bus Topic"]
+    Acknowledge["Return Success to Customer"]
+    Trigger["Logic App Triggered"]
+    Process["Execute Workflow"]
+    CallAPI["Callback to Orders API"]
+    StoreSuccess["Store in Success Blob"]
+    StoreError["Store in Error Blob"]
+    Cleanup["Cleanup Workflow Deletes Blobs"]
 
-    Persist --> Publish[Publish to Service Bus Topic]
-    Publish --> Acknowledge[Return Success to Customer]
+    %% ===== END =====
+    EndNode(["End"])
 
-    Publish --> Trigger[Logic App Triggered]
-    Trigger --> Process[Execute Workflow]
-    Process --> CallAPI[Callback to Orders API]
+    %% ===== CONNECTIONS =====
+    Start -->|"initiates"| Submit
+    Submit -->|"sends request"| Validate
 
-    CallAPI -->|Success| StoreSuccess[Store in Success Blob]
-    CallAPI -->|Failure| StoreError[Store in Error Blob]
+    Validate -->|"Valid"| Persist
+    Validate -->|"Invalid"| Reject
 
-    StoreSuccess --> Cleanup[Cleanup Workflow Deletes Blobs]
+    Persist -->|"commits"| Publish
+    Publish -->|"returns"| Acknowledge
+    Publish -->|"triggers"| Trigger
 
-    Reject --> End([End])
-    Acknowledge --> End
-    Cleanup --> End
-    StoreError --> End
+    Trigger -->|"starts"| Process
+    Process -->|"calls"| CallAPI
 
-    classDef start fill:#e3f2fd,stroke:#1565c0
-    classDef process fill:#e8f5e9,stroke:#2e7d32
-    classDef decision fill:#fff3e0,stroke:#ef6c00
-    classDef error fill:#ffebee,stroke:#c62828
-    classDef endpoint fill:#f3e5f5,stroke:#7b1fa2
+    CallAPI -->|"Success"| StoreSuccess
+    CallAPI -->|"Failure"| StoreError
 
-    class Start,End start
-    class Submit,Persist,Publish,Acknowledge,Trigger,Process,CallAPI,StoreSuccess,Cleanup process
+    StoreSuccess -->|"schedules"| Cleanup
+
+    Reject -->|"terminates"| EndNode
+    Acknowledge -->|"terminates"| EndNode
+    Cleanup -->|"terminates"| EndNode
+    StoreError -->|"terminates"| EndNode
+
+    %% ===== STYLES - NODE CLASSES =====
+    classDef trigger fill:#818CF8,stroke:#4F46E5,color:#FFFFFF
+    classDef primary fill:#4F46E5,stroke:#3730A3,color:#FFFFFF
+    classDef decision fill:#FFFBEB,stroke:#F59E0B,color:#000000
+    classDef failed fill:#F44336,stroke:#C62828,color:#FFFFFF
+
+    %% ===== CLASS ASSIGNMENTS =====
+    class Start,EndNode trigger
+    class Submit,Persist,Publish,Acknowledge,Trigger,Process,CallAPI,StoreSuccess,Cleanup primary
     class Validate decision
-    class Reject,StoreError error
+    class Reject,StoreError failed
 ```
 
 ---
