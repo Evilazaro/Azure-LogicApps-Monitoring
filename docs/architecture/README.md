@@ -22,32 +22,41 @@ The **Azure Logic Apps Monitoring Solution** is a cloud-native reference archite
 ## High-Level Architecture
 
 ```mermaid
+---
+title: High-Level Architecture
+---
 flowchart TD
+    %% ===== PRESENTATION LAYER =====
     subgraph Presentation["🖥️ Presentation Layer"]
         WebApp["🌐 eShop.Web.App<br/>Blazor Server"]
     end
 
+    %% ===== APPLICATION LAYER =====
     subgraph Application["⚙️ Application Layer"]
         API["📡 eShop.Orders.API<br/>ASP.NET Core REST API"]
         LogicApp["🔄 OrdersManagement<br/>Logic Apps Standard"]
     end
 
+    %% ===== PLATFORM LAYER =====
     subgraph Platform["🏗️ Platform Layer"]
         Aspire["🎯 app.AppHost<br/>.NET Aspire Orchestrator"]
         Defaults["📦 app.ServiceDefaults<br/>Cross-Cutting Concerns"]
     end
 
+    %% ===== DATA LAYER =====
     subgraph Data["💾 Data Layer"]
         SQL[("🗄️ OrderDb<br/>Azure SQL Database")]
         ServiceBus["📨 ordersplaced<br/>Service Bus Topic"]
         Storage["📁 Workflow State<br/>Azure Storage"]
     end
 
+    %% ===== OBSERVABILITY LAYER =====
     subgraph Observability["📊 Observability Layer"]
         AppInsights["📈 Application Insights<br/>Distributed Tracing"]
         LogAnalytics["📋 Log Analytics<br/>Centralized Logs"]
     end
 
+    %% ===== CONNECTIONS =====
     WebApp -->|"HTTP/REST"| API
     API -->|"EF Core"| SQL
     API -->|"AMQP"| ServiceBus
@@ -63,19 +72,27 @@ flowchart TD
     API -.->|"OTLP"| AppInsights
     WebApp -.->|"OTLP"| AppInsights
     LogicApp -.->|"Diagnostics"| LogAnalytics
-    AppInsights --> LogAnalytics
+    AppInsights -->|"Export"| LogAnalytics
 
-    classDef presentation fill:#e3f2fd,stroke:#1565c0,stroke-width:2px
-    classDef application fill:#e8f5e9,stroke:#2e7d32,stroke-width:2px
-    classDef platform fill:#fff3e0,stroke:#ef6c00,stroke-width:2px
-    classDef data fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px
-    classDef observability fill:#fce4ec,stroke:#c2185b,stroke-width:2px
+    %% ===== STYLES - NODE CLASSES =====
+    classDef primary fill:#4F46E5,stroke:#3730A3,color:#FFFFFF
+    classDef secondary fill:#10B981,stroke:#059669,color:#FFFFFF
+    classDef datastore fill:#F59E0B,stroke:#D97706,color:#000000
+    classDef external fill:#6B7280,stroke:#4B5563,color:#FFFFFF,stroke-dasharray:5 5
 
-    class WebApp presentation
-    class API,LogicApp application
-    class Aspire,Defaults platform
-    class SQL,ServiceBus,Storage data
-    class AppInsights,LogAnalytics observability
+    %% ===== CLASS ASSIGNMENTS =====
+    class WebApp primary
+    class API,LogicApp primary
+    class Aspire,Defaults secondary
+    class SQL,ServiceBus,Storage datastore
+    class AppInsights,LogAnalytics external
+
+    %% ===== SUBGRAPH STYLES =====
+    style Presentation fill:#EEF2FF,stroke:#4F46E5,stroke-width:2px
+    style Application fill:#E0E7FF,stroke:#4F46E5,stroke-width:2px
+    style Platform fill:#ECFDF5,stroke:#10B981,stroke-width:2px
+    style Data fill:#FEF3C7,stroke:#F59E0B,stroke-width:2px
+    style Observability fill:#F3F4F6,stroke:#6B7280,stroke-width:2px
 ```
 
 ---

@@ -40,13 +40,18 @@ The **Azure Logic Apps Monitoring Solution** provides a **reference implementati
 ### Capability Map
 
 ```mermaid
+---
+title: Business Capability Map
+---
 flowchart TB
+    %% ===== CORE CAPABILITIES =====
     subgraph Core["🎯 Core Capabilities"]
         direction LR
         C1["📦 Order Management<br/><i>Revenue-enabling</i>"]
         C2["🔄 Workflow Automation<br/><i>Process orchestration</i>"]
     end
 
+    %% ===== ENABLING CAPABILITIES =====
     subgraph Enabling["⚙️ Enabling Capabilities"]
         direction LR
         E1["📊 Observability<br/><i>Visibility & insights</i>"]
@@ -54,6 +59,7 @@ flowchart TB
         E3["📨 Event Messaging<br/><i>Asynchronous communication</i>"]
     end
 
+    %% ===== FOUNDATION CAPABILITIES =====
     subgraph Foundation["🏗️ Foundation Capabilities"]
         direction LR
         F1["☁️ Cloud Infrastructure<br/><i>Compute & storage</i>"]
@@ -61,19 +67,28 @@ flowchart TB
         F3["🛡️ Security & Compliance<br/><i>Data protection</i>"]
     end
 
-    Core --> Enabling --> Foundation
+    %% ===== CONNECTIONS =====
+    Core -->|"depends on"| Enabling
+    Enabling -->|"depends on"| Foundation
     C1 -.->|"triggers"| C2
     C1 -.->|"publishes to"| E3
     C2 -.->|"monitored by"| E1
     E3 -.->|"triggers"| C2
 
-    classDef core fill:#e3f2fd,stroke:#1565c0,stroke-width:2px
-    classDef enabling fill:#e8f5e9,stroke:#2e7d32,stroke-width:2px
-    classDef foundation fill:#f5f5f5,stroke:#616161,stroke-width:2px
+    %% ===== STYLES - NODE CLASSES =====
+    classDef primary fill:#4F46E5,stroke:#3730A3,color:#FFFFFF
+    classDef secondary fill:#10B981,stroke:#059669,color:#FFFFFF
+    classDef external fill:#6B7280,stroke:#4B5563,color:#FFFFFF,stroke-dasharray:5 5
 
-    class C1,C2 core
-    class E1,E2,E3 enabling
-    class F1,F2,F3 foundation
+    %% ===== CLASS ASSIGNMENTS =====
+    class C1,C2 primary
+    class E1,E2,E3 secondary
+    class F1,F2,F3 external
+
+    %% ===== SUBGRAPH STYLES =====
+    style Core fill:#EEF2FF,stroke:#4F46E5,stroke-width:2px
+    style Enabling fill:#ECFDF5,stroke:#10B981,stroke-width:2px
+    style Foundation fill:#F3F4F6,stroke:#6B7280,stroke-width:2px
 ```
 
 ### Capability Descriptions
