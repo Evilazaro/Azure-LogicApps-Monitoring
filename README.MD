@@ -15,6 +15,25 @@ tags: [azure, logic-apps, monitoring, observability, aspire, opentelemetry]
 ![Build](https://img.shields.io/github/actions/workflow/status/Evilazaro/Azure-LogicApps-Monitoring/ci-dotnet.yml?label=CI)
 ![Aspire](https://img.shields.io/badge/.NET%20Aspire-13.1.0-512BD4?logo=dotnet)
 
+> [!NOTE]
+> **Target Audience**: Platform Engineers, DevOps Engineers, Cloud Architects, and .NET Developers building enterprise observability solutions on Azure.
+
+<details>
+<summary>📍 <strong>Quick Navigation</strong></summary>
+
+| Section                                     | Description                              |
+| ------------------------------------------- | ---------------------------------------- |
+| [✨ Key Features](#-key-features)           | Core capabilities and value propositions |
+| [🏗️ Architecture](#️-architecture-overview)  | System design and Azure services used    |
+| [📋 Prerequisites](#-prerequisites)         | Required tools and Azure subscription    |
+| [🚀 Quick Start](#-quick-start)             | Step-by-step deployment guide            |
+| [📁 Project Structure](#-project-structure) | Repository organization                  |
+| [📚 Documentation](#-documentation)         | Links to detailed documentation          |
+| [🔧 Local Development](#-local-development) | Running locally with .NET Aspire         |
+| [🤝 Contributing](#-contributing)           | How to contribute to this project        |
+
+</details>
+
 > A cloud-native reference architecture demonstrating **enterprise-grade observability patterns** for Azure Logic Apps Standard workflows. Built on **.NET Aspire** orchestration, this solution showcases end-to-end distributed tracing, event-driven messaging, and comprehensive telemetry collection across a microservices-based order management system.
 
 ---
@@ -137,7 +156,14 @@ flowchart TB
 | **Azure Application Insights** | Distributed tracing and metrics            |
 | **Azure Log Analytics**        | Centralized logging and KQL queries        |
 
-> 📖 **Detailed Architecture**: See [docs/architecture/README.md](docs/architecture/README.md) for complete TOGAF-aligned documentation.
+> [!TIP]
+> 📖 **Detailed Architecture**: See [docs/architecture/README.md](docs/architecture/README.md) for complete TOGAF-aligned documentation including TOGAF-aligned business, data, application, and technology architecture.
+
+<div align="right">
+
+[⬆️ Back to Top](#-azure-logic-apps-monitoring-solution)
+
+</div>
 
 ---
 
@@ -153,8 +179,17 @@ flowchart TB
 
 ### Azure Subscription Requirements
 
-- An active Azure subscription with **Contributor** role
-- Ability to create service principals for OIDC authentication (CI/CD)
+> [!IMPORTANT]
+> Ensure you have the following before proceeding:
+>
+> - An active Azure subscription with **Contributor** role
+> - Ability to create service principals for OIDC authentication (CI/CD)
+
+<div align="right">
+
+[⬆️ Back to Top](#-azure-logic-apps-monitoring-solution)
+
+</div>
 
 ---
 
@@ -194,13 +229,14 @@ azd env set AZURE_LOCATION <azure-region>  # e.g., eastus2
 azd up
 ```
 
-This single command will:
-
-1. ✅ Build and test the .NET solution
-2. ✅ Provision all Azure infrastructure (Bicep)
-3. ✅ Configure SQL database with Managed Identity
-4. ✅ Deploy Logic App workflows
-5. ✅ Deploy containerized applications
+> [!NOTE]
+> This single command will automatically:
+>
+> 1. ✅ Build and test the .NET solution
+> 2. ✅ Provision all Azure infrastructure (Bicep)
+> 3. ✅ Configure SQL database with Managed Identity
+> 4. ✅ Deploy Logic App workflows
+> 5. ✅ Deploy containerized applications
 
 ### 5. Verify Deployment
 
@@ -211,6 +247,15 @@ azd show
 # Monitor logs
 azd monitor --logs
 ```
+
+> [!TIP]
+> Use `azd monitor --overview` to open the Azure Portal dashboard for your deployed resources.
+
+<div align="right">
+
+[⬆️ Back to Top](#-azure-logic-apps-monitoring-solution)
+
+</div>
 
 ---
 
@@ -240,6 +285,12 @@ Azure-LogicApps-Monitoring/
 └── app.sln                   # .NET solution file
 ```
 
+<div align="right">
+
+[⬆️ Back to Top](#-azure-logic-apps-monitoring-solution)
+
+</div>
+
 ---
 
 ## 📚 Documentation
@@ -264,6 +315,12 @@ Azure-LogicApps-Monitoring/
 | [ADR-001](docs/architecture/adr/ADR-001-aspire-orchestration.md)   | .NET Aspire for Service Orchestration | Accepted |
 | [ADR-002](docs/architecture/adr/ADR-002-service-bus-messaging.md)  | Azure Service Bus for Async Messaging | Accepted |
 | [ADR-003](docs/architecture/adr/ADR-003-observability-strategy.md) | OpenTelemetry with Azure Monitor      | Accepted |
+
+<div align="right">
+
+[⬆️ Back to Top](#-azure-logic-apps-monitoring-solution)
+
+</div>
 
 ---
 
@@ -302,6 +359,12 @@ dotnet test --configuration Release --collect:"XPlat Code Coverage"
 | `azd monitor --logs` | Stream application logs             |
 | `azd env list`       | List all environments               |
 
+<div align="right">
+
+[⬆️ Back to Top](#-azure-logic-apps-monitoring-solution)
+
+</div>
+
 ---
 
 ## 🤝 Contributing
@@ -320,6 +383,15 @@ Contributions are welcome! Please follow these steps:
 - Write unit tests for new functionality
 - Update documentation for significant changes
 - Ensure CI pipeline passes before requesting review
+
+> [!WARNING]
+> All pull requests must pass the CI pipeline checks before merging. Run `dotnet test` locally to verify your changes.
+
+<div align="right">
+
+[⬆️ Back to Top](#-azure-logic-apps-monitoring-solution)
+
+</div>
 
 ---
 
