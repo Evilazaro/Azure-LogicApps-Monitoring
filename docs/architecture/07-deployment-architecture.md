@@ -441,11 +441,12 @@ flowchart TB
 
 ### GitHub Actions Workflows
 
-| Workflow           | File                                                                     | Trigger           | Purpose                               |
-| ------------------ | ------------------------------------------------------------------------ | ----------------- | ------------------------------------- |
-| **CI**             | [ci-dotnet.yml](../../.github/workflows/ci-dotnet.yml)                   | Push, PR          | Orchestrates CI via reusable workflow |
-| **CI Reusable**    | [ci-dotnet-reusable.yml](../../.github/workflows/ci-dotnet-reusable.yml) | Called by CI      | Build, test, analyze (cross-platform) |
-| **Azure Dev (CD)** | [azure-dev.yml](../../.github/workflows/azure-dev.yml)                   | Manual, CD events | Full deployment to Azure              |
+| Workflow           | File                                                                     | Trigger           | Purpose                                 |
+| ------------------ | ------------------------------------------------------------------------ | ----------------- | --------------------------------------- |
+| **CI**             | [ci-dotnet.yml](../../.github/workflows/ci-dotnet.yml)                   | Push, PR          | Orchestrates CI via reusable workflow   |
+| **CI Reusable**    | [ci-dotnet-reusable.yml](../../.github/workflows/ci-dotnet-reusable.yml) | Called by CI      | Build, test, analyze (cross-platform)   |
+| **Azure Dev (CD)** | [azure-dev.yml](../../.github/workflows/azure-dev.yml)                   | Manual, CD events | Full deployment to Azure                |
+| **Dependabot**     | [dependabot.yml](../../.github/dependabot.yml)                           | Automated         | Dependency updates (NuGet, npm, Docker) |
 
 ### Cross-Platform Matrix Strategy
 
@@ -556,6 +557,7 @@ permissions:
   contents: read
   checks: write
   pull-requests: write
+  security-events: write # Required for CodeQL SARIF upload
 
 jobs:
   # First run CI via reusable workflow
@@ -566,6 +568,7 @@ jobs:
       contents: read
       checks: write
       pull-requests: write
+      security-events: write # Required for CodeQL
     with:
       dotnet-version: "10.0.x"
 

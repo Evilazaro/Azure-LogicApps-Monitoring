@@ -173,11 +173,12 @@ flowchart TB
 
 ## 📁 Workflow Documentation
 
-| Workflow File                                                            | Documentation                                    | Purpose                                                             |
-| ------------------------------------------------------------------------ | ------------------------------------------------ | ------------------------------------------------------------------- |
-| [azure-dev.yml](../../.github/workflows/azure-dev.yml)                   | [azure-dev.md](./azure-dev.md)                   | 🚀 CD - Provisions Azure infrastructure and deploys the application |
-| [ci-dotnet.yml](../../.github/workflows/ci-dotnet.yml)                   | [ci-dotnet.md](./ci-dotnet.md)                   | 🔄 CI - Orchestrates the .NET build and test pipeline               |
-| [ci-dotnet-reusable.yml](../../.github/workflows/ci-dotnet-reusable.yml) | [ci-dotnet-reusable.md](./ci-dotnet-reusable.md) | 🔧 Reusable workflow for .NET CI operations                         |
+| Workflow File                                                            | Documentation                                                    | Purpose                                                             |
+| ------------------------------------------------------------------------ | ---------------------------------------------------------------- | ------------------------------------------------------------------- |
+| [azure-dev.yml](../../.github/workflows/azure-dev.yml)                   | [azure-dev.md](./azure-dev.md)                                   | 🚀 CD - Provisions Azure infrastructure and deploys the application |
+| [ci-dotnet.yml](../../.github/workflows/ci-dotnet.yml)                   | [ci-dotnet.md](./ci-dotnet.md)                                   | 🔄 CI - Orchestrates the .NET build and test pipeline               |
+| [ci-dotnet-reusable.yml](../../.github/workflows/ci-dotnet-reusable.yml) | [ci-dotnet-reusable.md](./ci-dotnet-reusable.md)                 | 🔧 Reusable workflow for .NET CI operations                         |
+| [dependabot.yml](../../.github/dependabot.yml)                           | See [Dependabot Configuration](#-dependabot-configuration) below | 🤖 Automated dependency updates for security and maintenance        |
 
 ---
 
@@ -188,6 +189,7 @@ flowchart TB
 | **CD - Azure Deployment**    | `push:docs987678`, `workflow_dispatch`             | CI → Deploy Dev → Summary                 | Ubuntu (deploy)        |
 | **CI - .NET Build and Test** | `push:*`, `pull_request:main`, `workflow_dispatch` | CI (calls reusable)                       | Ubuntu, Windows, macOS |
 | **CI - .NET Reusable**       | `workflow_call`                                    | Build → Test → Analyze → CodeQL → Summary | Ubuntu, Windows, macOS |
+| **Dependabot**               | Schedule (Weekly, Mondays 06:00 UTC)               | Automated PR creation                     | N/A (GitHub service)   |
 
 ---
 
@@ -208,6 +210,45 @@ flowchart TB
 | Environment | Protection Rules   |
 | ----------- | ------------------ |
 | `dev`       | None (auto-deploy) |
+
+---
+
+## 🤖 Dependabot Configuration
+
+The project uses **Dependabot** for automated dependency updates, ensuring security patches and version upgrades are applied consistently.
+
+### Configuration File
+
+📄 **File**: [`.github/dependabot.yml`](../../.github/dependabot.yml)
+
+### Monitored Ecosystems
+
+| Ecosystem          | Directory | Schedule               | PR Limit | Description               |
+| ------------------ | --------- | ---------------------- | -------- | ------------------------- |
+| **NuGet**          | `/`       | Weekly (Mon 06:00 UTC) | 10       | .NET package dependencies |
+| **GitHub Actions** | `/`       | Weekly (Mon 06:00 UTC) | 5        | Workflow action versions  |
+
+### Update Groups
+
+| Group         | Patterns                                                           | Purpose                          |
+| ------------- | ------------------------------------------------------------------ | -------------------------------- |
+| **microsoft** | `Microsoft.*`, `System.*`, `Azure.*`                               | Microsoft SDK and Azure packages |
+| **testing**   | `xunit*`, `Moq*`, `FluentAssertions*`, `coverlet*`, `NSubstitute*` | Test framework packages          |
+| **actions**   | `*` (all)                                                          | All GitHub Actions               |
+
+### Labels Applied
+
+- `dependencies` - All dependency updates
+- `nuget` - NuGet package updates
+- `github-actions` - GitHub Actions updates
+- `automated` - Auto-generated PRs
+
+### Commit Message Prefixes
+
+| Ecosystem      | Prefix        | Example                                               |
+| -------------- | ------------- | ----------------------------------------------------- |
+| NuGet          | `deps(nuget)` | `deps(nuget): bump Microsoft.Extensions.Logging`      |
+| GitHub Actions | `ci(deps)`    | `ci(deps): bump actions/checkout from 4.1.0 to 4.2.0` |
 
 ---
 

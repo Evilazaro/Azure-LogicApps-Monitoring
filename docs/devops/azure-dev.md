@@ -311,10 +311,11 @@ Reports failure with detailed job results and next steps.
 
 ```yaml
 permissions:
-  id-token: write # Required for OIDC authentication
+  id-token: write # Required for OIDC authentication with Azure
   contents: read # Required for checkout
   checks: write # Required for status checks
   pull-requests: write # Required for PR comments
+  security-events: write # Required for CodeQL SARIF upload to Security tab
 ```
 
 ### GitHub Environment

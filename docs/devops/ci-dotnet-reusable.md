@@ -483,6 +483,7 @@ permissions:
   contents: read # Required for checkout
   checks: write # Required for test reporter
   pull-requests: write # Required for PR status
+  security-events: write # Required for CodeQL SARIF upload to Security tab
 ```
 
 ---
