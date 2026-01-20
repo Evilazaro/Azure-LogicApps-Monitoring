@@ -2,7 +2,7 @@
 # Dependabot Configuration
 # ============================================================================
 # Automated dependency updates for security patches and version upgrades.
-# 
+#
 # Ecosystems monitored:
 #   - NuGet (.NET packages)
 #   - GitHub Actions (workflow actions)
