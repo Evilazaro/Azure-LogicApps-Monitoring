@@ -110,75 +110,92 @@ flowchart TB
 
 ### Pipeline Flow
 
+The project has **two distinct pipeline flows**:
+
+1. **CI Pipeline** (`ci-dotnet.yml`) - Triggered by pushes and PRs, runs build/test/analyze/security
+2. **CD Pipeline** (`azure-dev.yml`) - Triggered by push to `docs987678` branch only, includes CI + deployment
+
 ```mermaid
 ---
-title: CI/CD Pipeline Flow
+title: CI/CD Pipeline Architecture
 ---
-flowchart LR
+flowchart TB
     %% ===== TRIGGERS =====
-    subgraph Trigger["🎯 Triggers"]
-        Push["Push to branches"]
-        PR["Pull Request"]
-        Manual["Manual Dispatch"]
+    subgraph Triggers["🎯 Trigger Events"]
+        push_main(["Push to main/feature/**"])
+        push_cd(["Push to docs987678"])
+        pr(["Pull Request to main"])
+        manual(["Manual Dispatch"])
     end
 
-    %% ===== CI STAGE =====
-    subgraph CI["🔄 CI Stage (Cross-Platform)"]
-        subgraph Matrix["Matrix: Ubuntu, Windows, macOS"]
-            Build["🔨 Build"]
-            Test["🧪 Test"]
+    %% ===== CI WORKFLOW =====
+    subgraph CIWorkflow["🔄 CI Workflow (ci-dotnet.yml)"]
+        ci_reusable[["CI Reusable Workflow"]]
+        subgraph CIJobs["Jobs"]
+            direction LR
+            subgraph Matrix["Matrix: Ubuntu, Windows, macOS"]
+                build["🔨 Build"]
+                test["🧪 Test"]
+            end
+            analyze["🔍 Analyze"]
+            codeql["🛡️ CodeQL"]
         end
-        Analyze["🔍 Analyze"]
-        CodeQL["🛡️ CodeQL"]
+        ci_summary["📊 Summary"]
     end
 
-    %% ===== CD STAGE =====
-    subgraph CD["🚀 CD Stage"]
-        Provision["📐 azd provision"]
-        SQLConfig["🔑 SQL Config"]
-        Deploy["📦 azd deploy"]
-    end
-
-    %% ===== RESULTS =====
-    subgraph Results["📊 Results"]
-        Summary["Summary"]
-        Failure["Handle Failure"]
+    %% ===== CD WORKFLOW =====
+    subgraph CDWorkflow["🚀 CD Workflow (azure-dev.yml)"]
+        cd_ci[["CI Stage (Reusable)"]]
+        subgraph DeployJobs["Deploy Jobs"]
+            provision["🏗️ Provision"]
+            sql_config["🔑 SQL Config"]
+            deploy["📦 Deploy"]
+        end
+        cd_summary["📊 Summary"]
+        cd_failure["❌ On-Failure"]
     end
 
     %% ===== CONNECTIONS =====
-    Push -->|"triggers"| CI
-    PR -->|"triggers"| CI
-    Manual -->|"triggers"| CI
-    Build -->|"on success"| Test
-    Build -->|"parallel"| Analyze
-    Build -->|"parallel"| CodeQL
-    CI -->|"on success"| CD
-    Provision -->|"configures"| SQLConfig
-    SQLConfig -->|"continues"| Deploy
-    Deploy -->|"reports"| Summary
-    CI --x|"on failure"| Failure
-    CD --x|"on failure"| Failure
+    push_main -->|"triggers"| ci_reusable
+    pr -->|"triggers"| ci_reusable
+    manual -->|"triggers"| ci_reusable
+    manual -->|"triggers"| cd_ci
 
-    %% ===== STYLES - NODE CLASSES =====
-    classDef trigger fill:#F59E0B,stroke:#D97706,color:#000000
+    push_cd -->|"triggers"| cd_ci
+
+    ci_reusable --> CIJobs
+    build --> test
+    build --> analyze
+    build --> codeql
+    CIJobs --> ci_summary
+
+    cd_ci -->|"on success"| provision
+    provision --> sql_config
+    sql_config --> deploy
+    deploy --> cd_summary
+    cd_ci --x cd_failure
+    deploy --x cd_failure
+
+    %% ===== STYLES =====
+    classDef trigger fill:#818CF8,stroke:#4F46E5,color:#FFFFFF
     classDef primary fill:#4F46E5,stroke:#3730A3,color:#FFFFFF
     classDef secondary fill:#10B981,stroke:#059669,color:#FFFFFF
+    classDef external fill:#6B7280,stroke:#4B5563,color:#FFFFFF,stroke-dasharray: 5 5
     classDef failed fill:#F44336,stroke:#C62828,color:#FFFFFF
     classDef datastore fill:#F59E0B,stroke:#D97706,color:#000000
 
-    %% ===== CLASS ASSIGNMENTS =====
-    class Push,PR,Manual trigger
-    class Build,Test,CodeQL primary
-    class Analyze,Provision,SQLConfig,Deploy secondary
-    class Summary datastore
-    class Failure failed
+    class push_main,push_cd,pr,manual trigger
+    class build,test,codeql,provision,sql_config,deploy primary
+    class analyze,ci_summary,cd_summary secondary
+    class ci_reusable,cd_ci external
+    class cd_failure failed
 
-    %% ===== SUBGRAPH STYLES =====
-    style Trigger fill:#FEF3C7,stroke:#F59E0B,stroke-width:2px
-    style CI fill:#EEF2FF,stroke:#4F46E5,stroke-width:2px
+    style Triggers fill:#EEF2FF,stroke:#4F46E5,stroke-width:2px
+    style CIWorkflow fill:#ECFDF5,stroke:#10B981,stroke-width:2px
+    style CIJobs fill:#D1FAE5,stroke:#059669,stroke-width:1px
     style Matrix fill:#E0E7FF,stroke:#4F46E5,stroke-width:1px
-    style CD fill:#ECFDF5,stroke:#10B981,stroke-width:2px
-    style Results fill:#FEF3C7,stroke:#F59E0B,stroke-width:2px
+    style CDWorkflow fill:#EEF2FF,stroke:#4F46E5,stroke-width:2px
+    style DeployJobs fill:#E0E7FF,stroke:#3730A3,stroke-width:1px
 ```
 
 ### GitHub Actions Workflows
@@ -295,29 +312,35 @@ The reusable CI workflow (`ci-dotnet-reusable.yml`) contains the following jobs:
 
 ```yaml
 # azure.yaml
-name: logic-apps-monitoring
+name: azure-logicapps-monitoring
 metadata:
-  template: azd-aspire
-services:
-  app:
-    language: dotnet
-    project: ./app.AppHost/app.AppHost.csproj
-    host: containerapp
+  template: azure-logicapps-monitoring@1.0.0
+  description: "Azure Logic Apps Monitoring solution with .NET Aspire orchestration"
+requiredVersions:
+  azd: ">= 1.11.0"
+infra:
+  provider: bicep
+  path: infra
+  module: main
 hooks:
   preprovision:
     posix:
       shell: sh
-      run: ./hooks/preprovision.sh
+      run: |
+        dotnet clean && dotnet restore && dotnet build && dotnet test
+        ./hooks/preprovision.sh --force --verbose
     windows:
       shell: pwsh
-      run: ./hooks/preprovision.ps1
+      run: |
+        dotnet clean; dotnet restore; dotnet build; dotnet test
+        ./hooks/preprovision.ps1 -Force -Verbose
   postprovision:
     posix:
       shell: sh
-      run: ./hooks/postprovision.sh
+      run: ./hooks/postprovision.sh --force --verbose
     windows:
       shell: pwsh
-      run: ./hooks/postprovision.ps1
+      run: ./hooks/postprovision.ps1 -Force -Verbose
 ```
 
 ### azd Commands
