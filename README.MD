@@ -410,7 +410,7 @@ This project is licensed under the **MIT License** - see the [LICENSE](LICENSE) 
 | ------------------------------------------------------------- | ------------------------------------------------- |
 | [Architecture Overview](docs/architecture/README.md)          | Complete TOGAF-aligned architecture documentation |
 | [DevOps Guide](docs/devops/README.md)                         | CI/CD pipeline documentation                      |
-| [Hook Scripts Reference](docs/hooks/README.md)                | azd lifecycle automation scripts                  |
+| [Developer Experience](docs/hooks/README.md)                  | azd lifecycle automation scripts                  |
 | [IP Security Configuration](docs/IP-SECURITY-RESTRICTIONS.md) | Network security setup guide                      |
 
 ---
