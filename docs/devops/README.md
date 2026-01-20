@@ -184,12 +184,12 @@ flowchart TB
 
 ## 📊 Quick Reference
 
-| Workflow                     | Triggers                                           | Jobs                                      | Platforms              |
-| ---------------------------- | -------------------------------------------------- | ----------------------------------------- | ---------------------- |
-| **CD - Azure Deployment**    | `push:docs987678`, `workflow_dispatch`             | CI → Deploy Dev → Summary                 | Ubuntu (deploy)        |
-| **CI - .NET Build and Test** | `push:*`, `pull_request:main`, `workflow_dispatch` | CI (calls reusable)                       | Ubuntu, Windows, macOS |
-| **CI - .NET Reusable**       | `workflow_call`                                    | Build → Test → Analyze → CodeQL → Summary | Ubuntu, Windows, macOS |
-| **Dependabot**               | Schedule (Weekly, Mondays 06:00 UTC)               | Automated PR creation                     | N/A (GitHub service)   |
+| Workflow                     | Triggers                                                             | Jobs                                                   | Platforms              |
+| ---------------------------- | -------------------------------------------------------------------- | ------------------------------------------------------ | ---------------------- |
+| **CD - Azure Deployment**    | `push:docs987678`, `workflow_dispatch`                               | CI → Deploy Dev → Summary → On-Failure                 | Ubuntu (deploy)        |
+| **CI - .NET Build and Test** | `push:main,feature/**,...`, `pull_request:main`, `workflow_dispatch` | CI (calls reusable)                                    | Ubuntu, Windows, macOS |
+| **CI - .NET Reusable**       | `workflow_call`                                                      | Build → Test → Analyze → CodeQL → Summary → On-Failure | Ubuntu, Windows, macOS |
+| **Dependabot**               | Schedule (Weekly, Mondays 06:00 UTC)                                 | Automated PR creation                                  | N/A (GitHub service)   |
 
 ---
 

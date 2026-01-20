@@ -172,60 +172,72 @@ flowchart LR
 
 ### GitHub Actions Workflows
 
-| Workflow        | File                     | Trigger                | Purpose                   |
-| --------------- | ------------------------ | ---------------------- | ------------------------- |
-| **Azure Dev**   | `azure-dev.yml`          | Push to `main`, manual | Full deployment via azd   |
-| **CI .NET**     | `ci-dotnet.yml`          | All pushes, PRs        | Build, test, format check |
-| **CI Reusable** | `ci-dotnet-reusable.yml` | Called by ci-dotnet    | Reusable build job        |
+| Workflow        | File                     | Trigger                                      | Purpose                                       |
+| --------------- | ------------------------ | -------------------------------------------- | --------------------------------------------- |
+| **Azure Dev**   | `azure-dev.yml`          | Push to `docs987678`, manual dispatch        | CI + Infrastructure provisioning + Deployment |
+| **CI .NET**     | `ci-dotnet.yml`          | Push (main, feature/\*\*, etc.), PRs to main | Build, test, format check, CodeQL security    |
+| **CI Reusable** | `ci-dotnet-reusable.yml` | Called by azure-dev.yml and ci-dotnet.yml    | Cross-platform build, test, analyze, security |
 
 ### Azure Dev Workflow Detail
 
 ```yaml
 # .github/workflows/azure-dev.yml
-name: Azure Dev
+name: CD - Azure Deployment
 on:
   push:
-    branches: [main]
+    branches: [docs987678]
+    paths:
+      - "src/**"
+      - "app.*/**"
+      - "infra/**"
+      - "azure.yaml"
+      - ".github/workflows/azure-dev.yml"
   workflow_dispatch:
+    inputs:
+      skip-ci:
+        description: "Skip CI checks (use with caution)"
+        type: boolean
+        default: false
 
 permissions:
   id-token: write # OIDC token
   contents: read
+  checks: write
+  pull-requests: write
+  security-events: write
 
 jobs:
-  build:
+  ci:
+    name: 🔄 CI
+    if: ${{ github.event.inputs.skip-ci != 'true' }}
+    uses: ./.github/workflows/ci-dotnet-reusable.yml
+    with:
+      configuration: "Release"
+      dotnet-version: "10.0.x"
+    secrets: inherit
+
+  deploy-dev:
+    name: 🚀 Deploy Dev
     runs-on: ubuntu-latest
+    needs: [ci]
+    if: always() && (needs.ci.result == 'success' || needs.ci.result == 'skipped')
+    environment:
+      name: dev
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-dotnet@v4
-        with:
-          global-json-file: global.json
-
-      # Build and test
-      - run: dotnet restore
-      - run: dotnet build --no-restore
-      - run: dotnet test --no-build
-
-      # Publish artifacts
-      - run: dotnet publish -c Release -o ./publish
-      - uses: actions/upload-artifact@v4
-
-  deploy:
-    runs-on: ubuntu-latest
-    needs: build
-    environment: Development
-    steps:
-      # OIDC authentication
-      - uses: azure/login@v2
-        with:
-          client-id: ${{ vars.AZURE_CLIENT_ID }}
-          tenant-id: ${{ vars.AZURE_TENANT_ID }}
-          subscription-id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
-
-      # Deploy with azd
-      - uses: azure/setup-azd@v2
-      - run: azd provision --no-prompt
-      - run: azd deploy --no-prompt
+      - uses: Azure/setup-azd@v2
+      - name: 🔐 Log in with Azure (OIDC)
+        run: |
+          azd auth login \
+            --client-id "$AZURE_CLIENT_ID" \
+            --federated-credential-provider "github" \
+            --tenant-id "$AZURE_TENANT_ID"
+      - name: 🏗️ Provision Infrastructure
+        run: azd provision --no-prompt
+      - name: 🔑 Create SQL User
+        run: # SQL managed identity configuration via go-sqlcmd
+      - name: 🚀 Deploy Application
+        run: azd deploy --no-prompt
 ```
 
 ---

@@ -541,7 +541,6 @@ jobs:
       runs-on: "ubuntu-latest"
       enable-code-analysis: true
       fail-on-format-issues: true
-      enable-matrix: true
     secrets: inherit
 ```
 
@@ -558,16 +557,7 @@ jobs:
     secrets: inherit
 ```
 
-### Cross-Platform Testing
-
-```yaml
-jobs:
-  ci:
-    uses: ./.github/workflows/ci-dotnet-reusable.yml
-    with:
-      enable-matrix: true # Test on Ubuntu, Windows, and macOS
-    secrets: inherit
-```
+> 💡 **Note:** Cross-platform testing (Ubuntu, Windows, macOS) is always enabled via matrix strategy.
 
 ---
 
