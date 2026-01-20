@@ -235,14 +235,22 @@ jobs:
           echo "→ Location: $AZURE_LOCATION"
           echo "→ Subscription: $AZURE_SUBSCRIPTION_ID"
           echo ""
-          if azd provision --no-prompt; then
+          # Run provision with full output (no --no-prompt to see hook output)
+          # The hooks run as part of azd provision
+          if azd provision --no-prompt 2>&1 | tee /tmp/provision.log; then
             echo "::endgroup::"
             echo "::notice title=Provision::✅ Infrastructure provisioned successfully"
           else
             echo "::endgroup::"
             echo "::error title=Provision::❌ Infrastructure provisioning failed"
+            cat /tmp/provision.log
             exit 1
           fi
+          
+          # Show postprovision hook output
+          echo ""
+          echo "=== Checking if postprovision ran ==="
+          grep -i "postprovision\|sql\|managed identity\|database" /tmp/provision.log || echo "No postprovision output found"
 
       - name: 🔐 Log in with Azure (Federated Credentials)
         run: |
