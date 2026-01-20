@@ -21,7 +21,8 @@
               "headers": {
                 "accept": "text/plain",
                 "Content-type": "application/json"
-              }
+              },
+              "body": "@base64ToString(triggerBody()?['ContentData'])"
             },
             "runtimeConfiguration": {
               "contentTransfer": {
