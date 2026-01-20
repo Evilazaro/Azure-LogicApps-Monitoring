@@ -1,10 +1,24 @@
-# ADR-002: Use Azure Service Bus for Async Messaging
+# 📨 ADR-002: Use Azure Service Bus for Async Messaging
 
 ← [ADR-001](ADR-001-aspire-orchestration.md) | **ADR-002** | [ADR-003 →](ADR-003-observability-strategy.md)
 
 ---
 
-## Status
+## 📑 Table of Contents
+
+- [Status](#-status)
+- [Date](#-date)
+- [Context](#-context)
+- [Decision](#-decision)
+- [Consequences](#-consequences)
+- [Alternatives Considered](#-alternatives-considered)
+- [Message Patterns](#-message-patterns)
+- [Related Decisions](#-related-decisions)
+- [References](#-references)
+
+---
+
+## ✅ Status
 
 ✅ **Accepted**
 
@@ -42,7 +56,13 @@ Order Created → API publishes message → Service Bus → Logic App triggers �
 | Cost optimization        | ↘️ Pay-per-message pricing             |
 | Complexity               | ↘️ Additional infrastructure component |
 
-## Decision
+---
+
+[↑ Back to Top](#-adr-002-use-azure-service-bus-for-async-messaging)
+
+---
+
+## 🛠️ Decision
 
 **Use Azure Service Bus Standard tier** with topic/subscription pattern for async messaging between the Orders API and Logic Apps.
 
@@ -107,7 +127,13 @@ public async Task SendOrderPlacedMessageAsync(OrderEntity order)
 }
 ```
 
-## Consequences
+---
+
+[↑ Back to Top](#-adr-002-use-azure-service-bus-for-async-messaging)
+
+---
+
+## ⚖️ Consequences
 
 ### Positive
 
@@ -135,7 +161,13 @@ public async Task SendOrderPlacedMessageAsync(OrderEntity order)
 - 14-day message retention adequate for processing
 - Topic/subscription matches pub/sub requirements
 
-## Alternatives Considered
+---
+
+[↑ Back to Top](#-adr-002-use-azure-service-bus-for-async-messaging)
+
+---
+
+## 🔍 Alternatives Considered
 
 ### 1. Azure Storage Queues
 
@@ -181,7 +213,13 @@ public async Task SendOrderPlacedMessageAsync(OrderEntity order)
 - Synchronous blocking
 - No message buffering during outages
 
-## Message Patterns
+---
+
+[↑ Back to Top](#-adr-002-use-azure-service-bus-for-async-messaging)
+
+---
+
+## 📩 Message Patterns
 
 ### Dead Letter Handling
 
@@ -222,12 +260,20 @@ flowchart LR
 | Lock Duration       | 5 minutes | Processing time before requeue |
 | Auto-delete on idle | Disabled  | Preserve for monitoring        |
 
-## Related Decisions
+---
+
+[↑ Back to Top](#-adr-002-use-azure-service-bus-for-async-messaging)
+
+---
+
+## 🔗 Related Decisions
 
 - [ADR-001: Aspire Orchestration](ADR-001-aspire-orchestration.md) - Service Bus configured via Aspire
 - [ADR-003: Observability Strategy](ADR-003-observability-strategy.md) - Trace context propagation in messages
 
-## References
+---
+
+## 📚 References
 
 - [Azure Service Bus Documentation](https://learn.microsoft.com/azure/service-bus-messaging/)
 - [Service Bus Topics and Subscriptions](https://learn.microsoft.com/azure/service-bus-messaging/service-bus-queues-topics-subscriptions)

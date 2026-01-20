@@ -21,11 +21,17 @@
 
 ✅ **Accepted**
 
-## Date
+## 📅 Date
 
 2025-01
 
-## Context
+---
+
+[↑ Back to Top](#-adr-001-use-net-aspire-for-service-orchestration)
+
+---
+
+## 📊 Context
 
 The Azure Logic Apps Monitoring Solution requires orchestration of multiple services:
 
@@ -52,7 +58,13 @@ Key challenges:
 | Learning curve          | ↘️ Team must learn Aspire concepts    |
 | Maturity concerns       | ↘️ Aspire is relatively new (GA 2024) |
 
-## Decision
+---
+
+[↑ Back to Top](#-adr-001-use-net-aspire-for-service-orchestration)
+
+---
+
+## 🛠️ Decision
 
 **Adopt .NET Aspire 13.1.0 as the service orchestration framework** for the Azure Logic Apps Monitoring Solution.
 
@@ -84,7 +96,13 @@ var ordersApi = builder.AddProject<Projects.eShop_Orders_API>("orders-api")
     .WithReference(sqlServer);
 ```
 
-## Consequences
+---
+
+[↑ Back to Top](#-adr-001-use-net-aspire-for-service-orchestration)
+
+---
+
+## ⚖️ Consequences
 
 ### Positive
 
@@ -112,7 +130,13 @@ var ordersApi = builder.AddProject<Projects.eShop_Orders_API>("orders-api")
 - Team already familiar with dependency injection concepts
 - Azure deployment still uses standard Bicep/ARM
 
-## Alternatives Considered
+---
+
+[↑ Back to Top](#-adr-001-use-net-aspire-for-service-orchestration)
+
+---
+
+## 🔍 Alternatives Considered
 
 ### 1. Docker Compose
 
@@ -147,11 +171,19 @@ var ordersApi = builder.AddProject<Projects.eShop_Orders_API>("orders-api")
 - Duplicated configuration across projects
 - Harder to maintain consistency
 
-## Related Decisions
+---
+
+[↑ Back to Top](#-adr-001-use-net-aspire-for-service-orchestration)
+
+---
+
+## 🔗 Related Decisions
 
 - [ADR-003: Observability Strategy](ADR-003-observability-strategy.md) - Leverages Aspire's OpenTelemetry integration
 
-## References
+---
+
+## 📚 References
 
 - [.NET Aspire Documentation](https://learn.microsoft.com/dotnet/aspire/)
 - [Aspire Service Discovery](https://learn.microsoft.com/dotnet/aspire/service-discovery/overview)
