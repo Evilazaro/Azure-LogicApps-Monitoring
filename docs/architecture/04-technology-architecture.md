@@ -34,53 +34,70 @@
 ## Platform Decomposition
 
 ```mermaid
+---
+title: Platform Decomposition
+---
 flowchart TB
+    %% ===== COMPUTE PLATFORM =====
     subgraph Compute["🖥️ Compute Platform"]
         ACA["Azure Container Apps<br/><i>Serverless containers</i>"]
         LA["Logic Apps Standard<br/><i>Workflow engine</i>"]
         ASP["App Service Plan<br/><i>WS1 - WorkflowStandard</i>"]
     end
 
+    %% ===== DATA PLATFORM =====
     subgraph Data["💾 Data Platform"]
         SQL["Azure SQL Database<br/><i>General Purpose</i>"]
         SB["Azure Service Bus<br/><i>Standard tier</i>"]
         Storage["Azure Storage<br/><i>Standard LRS</i>"]
     end
 
+    %% ===== OBSERVABILITY PLATFORM =====
     subgraph Observability["📊 Observability Platform"]
         AI["Application Insights<br/><i>Workspace-based</i>"]
         LAW["Log Analytics Workspace<br/><i>Centralized logs</i>"]
     end
 
+    %% ===== IDENTITY PLATFORM =====
     subgraph Identity["🔐 Identity Platform"]
         MI["User-Assigned Managed Identity"]
         RBAC["Azure RBAC<br/><i>Role assignments</i>"]
     end
 
+    %% ===== NETWORK PLATFORM =====
     subgraph Network["🌐 Network Platform"]
         VNet["Virtual Network"]
         Subnets["Subnets<br/><i>API, Logic App</i>"]
     end
 
-    ACA --> MI
-    LA --> ASP
-    LA --> MI
-    SQL --> MI
-    SB --> MI
-    ACA --> VNet
-    LA --> Subnets
+    %% ===== CONNECTIONS =====
+    ACA -->|"authenticates via"| MI
+    LA -->|"runs on"| ASP
+    LA -->|"authenticates via"| MI
+    SQL -->|"authorizes via"| MI
+    SB -->|"authorizes via"| MI
+    ACA -->|"connects to"| VNet
+    LA -->|"connects to"| Subnets
 
-    classDef compute fill:#e3f2fd,stroke:#1565c0,stroke-width:2px
-    classDef data fill:#e8f5e9,stroke:#2e7d32,stroke-width:2px
-    classDef observability fill:#fce4ec,stroke:#c2185b,stroke-width:2px
-    classDef identity fill:#fff3e0,stroke:#ef6c00,stroke-width:2px
-    classDef network fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px
+    %% ===== STYLES - NODE CLASSES =====
+    classDef primary fill:#4F46E5,stroke:#3730A3,color:#FFFFFF
+    classDef datastore fill:#F59E0B,stroke:#D97706,color:#000000
+    classDef secondary fill:#10B981,stroke:#059669,color:#FFFFFF
+    classDef external fill:#6B7280,stroke:#4B5563,color:#FFFFFF,stroke-dasharray:5 5
 
-    class ACA,LA,ASP compute
-    class SQL,SB,Storage data
-    class AI,LAW observability
-    class MI,RBAC identity
-    class VNet,Subnets network
+    %% ===== CLASS ASSIGNMENTS =====
+    class ACA,LA,ASP primary
+    class SQL,SB,Storage datastore
+    class AI,LAW secondary
+    class MI,RBAC external
+    class VNet,Subnets external
+
+    %% ===== SUBGRAPH STYLES =====
+    style Compute fill:#EEF2FF,stroke:#4F46E5,stroke-width:2px
+    style Data fill:#FEF3C7,stroke:#F59E0B,stroke-width:2px
+    style Observability fill:#ECFDF5,stroke:#10B981,stroke-width:2px
+    style Identity fill:#F3F4F6,stroke:#6B7280,stroke-width:2px
+    style Network fill:#F3F4F6,stroke:#6B7280,stroke-width:2px
 ```
 
 ---
@@ -101,13 +118,19 @@ flowchart TB
 ### Azure Resource Topology
 
 ```mermaid
+---
+title: Azure Resource Topology
+---
 flowchart TB
+    %% ===== RESOURCE GROUP =====
     subgraph RG["📦 Resource Group: rg-orders-{env}-{region}"]
-        subgraph Identity["🔐 Identity"]
+        %% ===== IDENTITY RESOURCES =====
+        subgraph IdentityRG["🔐 Identity"]
             MI["User-Assigned<br/>Managed Identity"]
         end
 
-        subgraph Compute["🖥️ Compute"]
+        %% ===== COMPUTE RESOURCES =====
+        subgraph ComputeRG["🖥️ Compute"]
             CAE["Container Apps<br/>Environment"]
             CA1["Container App:<br/>orders-api"]
             CA2["Container App:<br/>web-app"]
@@ -116,7 +139,8 @@ flowchart TB
             LogicApp["Logic App:<br/>OrdersManagement"]
         end
 
-        subgraph Data["💾 Data"]
+        %% ===== DATA RESOURCES =====
+        subgraph DataRG["💾 Data"]
             SQLServer["SQL Server"]
             SQLDb["SQL Database:<br/>OrderDb"]
             SBNamespace["Service Bus<br/>Namespace"]
@@ -125,41 +149,61 @@ flowchart TB
             StorageAcct["Storage Account"]
         end
 
-        subgraph Monitoring["📊 Monitoring"]
+        %% ===== MONITORING RESOURCES =====
+        subgraph MonitoringRG["📊 Monitoring"]
             LAW["Log Analytics<br/>Workspace"]
             AppInsights["Application<br/>Insights"]
         end
 
-        subgraph Network["🌐 Network"]
+        %% ===== NETWORK RESOURCES =====
+        subgraph NetworkRG["🌐 Network"]
             VNet["Virtual Network"]
             APISubnet["API Subnet"]
             LASubnet["Logic App Subnet"]
         end
     end
 
-    MI --> CA1 & CA2 & LogicApp & SQLDb & SBNamespace
-    CA1 & CA2 --> CAE
-    CAE --> ACR
-    LogicApp --> ASP
-    SQLServer --> SQLDb
-    SBNamespace --> SBTopic --> SBSub
-    AppInsights --> LAW
-    CA1 & CA2 -.-> AppInsights
-    CAE --> APISubnet
-    LogicApp --> LASubnet
-    APISubnet & LASubnet --> VNet
+    %% ===== CONNECTIONS =====
+    MI -->|"assigned to"| CA1
+    MI -->|"assigned to"| CA2
+    MI -->|"assigned to"| LogicApp
+    MI -->|"authorizes"| SQLDb
+    MI -->|"authorizes"| SBNamespace
+    CA1 -->|"deployed to"| CAE
+    CA2 -->|"deployed to"| CAE
+    CAE -->|"pulls from"| ACR
+    LogicApp -->|"runs on"| ASP
+    SQLServer -->|"hosts"| SQLDb
+    SBNamespace -->|"contains"| SBTopic
+    SBTopic -->|"delivers to"| SBSub
+    AppInsights -->|"exports to"| LAW
+    CA1 -.->|"sends telemetry"| AppInsights
+    CA2 -.->|"sends telemetry"| AppInsights
+    CAE -->|"connected to"| APISubnet
+    LogicApp -->|"connected to"| LASubnet
+    APISubnet -->|"part of"| VNet
+    LASubnet -->|"part of"| VNet
 
-    classDef identity fill:#fff3e0,stroke:#ef6c00
-    classDef compute fill:#e3f2fd,stroke:#1565c0
-    classDef data fill:#e8f5e9,stroke:#2e7d32
-    classDef monitoring fill:#fce4ec,stroke:#c2185b
-    classDef network fill:#f3e5f5,stroke:#7b1fa2
+    %% ===== STYLES - NODE CLASSES =====
+    classDef primary fill:#4F46E5,stroke:#3730A3,color:#FFFFFF
+    classDef datastore fill:#F59E0B,stroke:#D97706,color:#000000
+    classDef secondary fill:#10B981,stroke:#059669,color:#FFFFFF
+    classDef external fill:#6B7280,stroke:#4B5563,color:#FFFFFF,stroke-dasharray:5 5
 
-    class MI identity
-    class CAE,CA1,CA2,ACR,ASP,LogicApp compute
-    class SQLServer,SQLDb,SBNamespace,SBTopic,SBSub,StorageAcct data
-    class LAW,AppInsights monitoring
-    class VNet,APISubnet,LASubnet network
+    %% ===== CLASS ASSIGNMENTS =====
+    class MI external
+    class CAE,CA1,CA2,ACR,ASP,LogicApp primary
+    class SQLServer,SQLDb,SBNamespace,SBTopic,SBSub,StorageAcct datastore
+    class LAW,AppInsights secondary
+    class VNet,APISubnet,LASubnet external
+
+    %% ===== SUBGRAPH STYLES =====
+    style RG fill:#F3F4F6,stroke:#6B7280,stroke-width:2px
+    style IdentityRG fill:#F3F4F6,stroke:#6B7280,stroke-width:1px
+    style ComputeRG fill:#EEF2FF,stroke:#4F46E5,stroke-width:1px
+    style DataRG fill:#FEF3C7,stroke:#F59E0B,stroke-width:1px
+    style MonitoringRG fill:#ECFDF5,stroke:#10B981,stroke-width:1px
+    style NetworkRG fill:#F3F4F6,stroke:#6B7280,stroke-width:1px
 ```
 
 ---
