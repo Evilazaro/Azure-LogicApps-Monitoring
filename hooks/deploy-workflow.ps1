@@ -148,7 +148,10 @@ function Get-ConnectionRuntimeUrl {
     
     try {
         $uri = "https://management.azure.com/subscriptions/$SubscriptionId/resourceGroups/$ResourceGroup/providers/Microsoft.Web/connections/$ConnectionName/listConnectionKeys?api-version=2016-06-01"
-        $jsonOutput = az rest --method POST --uri $uri --output json 2>&1
+        # Disable ANSI colors to prevent JSON parsing errors in CI environments
+        $env:AZURE_CORE_NO_COLOR = "true"
+        $env:NO_COLOR = "1"
+        $jsonOutput = az rest --method POST --uri $uri --output json --only-show-errors 2>&1
         
         if ($LASTEXITCODE -ne 0) {
             Write-Verbose "Failed to get runtime URL for connection '$ConnectionName': $jsonOutput"
@@ -171,6 +174,10 @@ function Get-ConnectionRuntimeUrl {
 #region Main
 
 try {
+
+    # Disable ANSI colors globally to prevent JSON parsing errors in CI environments
+    $env:AZURE_CORE_NO_COLOR = "true"
+    $env:NO_COLOR = "1"
 
     Write-Host "`n╔════════════════════════════════════════════════════════╗" -ForegroundColor Cyan
     Write-Host "║     Logic Apps Standard Workflow Deployment            ║" -ForegroundColor Cyan

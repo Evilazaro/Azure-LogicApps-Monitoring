@@ -160,8 +160,12 @@ get_connection_runtime_url() {
     
     local uri="https://management.azure.com/subscriptions/${subscription_id}/resourceGroups/${resource_group}/providers/Microsoft.Web/connections/${connection_name}/listConnectionKeys?api-version=2016-06-01"
     
+    # Disable ANSI colors to prevent JSON parsing errors in CI environments
+    export AZURE_CORE_NO_COLOR="true"
+    export NO_COLOR="1"
+    
     local result
-    if result=$(az rest --method POST --uri "$uri" --output json 2>/dev/null); then
+    if result=$(az rest --method POST --uri "$uri" --output json --only-show-errors 2>/dev/null); then
         local runtime_url
         runtime_url=$(echo "$result" | jq -r '.runtimeUrls[0] // empty' 2>/dev/null)
         if [[ -n "$runtime_url" ]]; then
@@ -195,6 +199,10 @@ cleanup() {
 
 main() {
     local workflow_path=""
+    
+    # Disable ANSI colors globally to prevent JSON parsing errors in CI environments
+    export AZURE_CORE_NO_COLOR="true"
+    export NO_COLOR="1"
     
     # Parse command line arguments (only positional workflow path)
     if [[ $# -gt 0 ]] && [[ ! "$1" =~ ^- ]]; then
