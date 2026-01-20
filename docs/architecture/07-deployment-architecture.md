@@ -29,28 +29,40 @@
 ### Environment Configuration
 
 ```mermaid
+---
+title: Environment Configuration
+---
 flowchart TB
+    %% ===== ENVIRONMENTS =====
     subgraph Environments["🌍 Environments"]
         Local["🖥️ Local<br/><i>Aspire Dashboard</i><br/><i>Emulators</i>"]
         Dev["🔧 Development<br/><i>Azure (Dev Sub)</i><br/><i>Reduced SKUs</i>"]
         Prod["🚀 Production<br/><i>Azure (Prod Sub)</i><br/><i>Full SKUs</i>"]
     end
 
+    %% ===== CONFIGURATION SOURCES =====
     subgraph Config["⚙️ Configuration Sources"]
         LocalCfg["appsettings.Development.json<br/>local emulator endpoints"]
         DevCfg["azd environment variables<br/>Azure-managed endpoints"]
         ProdCfg["azd environment variables<br/>Azure-managed endpoints"]
     end
 
-    Local --> LocalCfg
-    Dev --> DevCfg
-    Prod --> ProdCfg
+    %% ===== CONNECTIONS =====
+    Local -->|"uses"| LocalCfg
+    Dev -->|"uses"| DevCfg
+    Prod -->|"uses"| ProdCfg
 
-    classDef env fill:#e3f2fd,stroke:#1565c0,stroke-width:2px
-    classDef config fill:#e8f5e9,stroke:#2e7d32,stroke-width:2px
+    %% ===== STYLES - NODE CLASSES =====
+    classDef primary fill:#4F46E5,stroke:#3730A3,color:#FFFFFF
+    classDef secondary fill:#10B981,stroke:#059669,color:#FFFFFF
 
-    class Local,Dev,Prod env
-    class LocalCfg,DevCfg,ProdCfg config
+    %% ===== CLASS ASSIGNMENTS =====
+    class Local,Dev,Prod primary
+    class LocalCfg,DevCfg,ProdCfg secondary
+
+    %% ===== SUBGRAPH STYLES =====
+    style Environments fill:#EEF2FF,stroke:#4F46E5,stroke-width:2px
+    style Config fill:#ECFDF5,stroke:#10B981,stroke-width:2px
 ```
 
 ---
@@ -60,13 +72,18 @@ flowchart TB
 ### Pipeline Flow
 
 ```mermaid
+---
+title: CI/CD Pipeline Flow
+---
 flowchart LR
+    %% ===== TRIGGERS =====
     subgraph Trigger["🎯 Triggers"]
         Push["Push to main"]
         PR["Pull Request"]
         Manual["Manual Dispatch"]
     end
 
+    %% ===== BUILD STAGE =====
     subgraph Build["🔨 Build Stage"]
         Restore["📦 Restore"]
         Compile["⚙️ Build"]
@@ -74,30 +91,44 @@ flowchart LR
         Publish["📤 Publish"]
     end
 
+    %% ===== VALIDATE STAGE =====
     subgraph Validate["✅ Validate Stage"]
         Format["📝 Format Check"]
         Lint["🔍 Lint"]
         Security["🔒 Security Scan"]
     end
 
+    %% ===== DEPLOY STAGE =====
     subgraph Deploy["🚀 Deploy Stage"]
         Infra["📐 Bicep Deploy"]
         App["📦 App Deploy"]
         Verify["✔️ Health Check"]
     end
 
-    Push & Manual --> Build --> Deploy
-    PR --> Build --> Validate
+    %% ===== CONNECTIONS =====
+    Push -->|"triggers"| Build
+    Manual -->|"triggers"| Build
+    Build -->|"continues to"| Deploy
+    PR -->|"triggers"| Build
+    Build -->|"continues to"| Validate
 
-    classDef trigger fill:#fff3e0,stroke:#ef6c00
-    classDef build fill:#e3f2fd,stroke:#1565c0
-    classDef validate fill:#f3e5f5,stroke:#7b1fa2
-    classDef deploy fill:#e8f5e9,stroke:#2e7d32
+    %% ===== STYLES - NODE CLASSES =====
+    classDef trigger fill:#F59E0B,stroke:#D97706,color:#000000
+    classDef primary fill:#4F46E5,stroke:#3730A3,color:#FFFFFF
+    classDef secondary fill:#10B981,stroke:#059669,color:#FFFFFF
+    classDef external fill:#6B7280,stroke:#4B5563,color:#FFFFFF
 
+    %% ===== CLASS ASSIGNMENTS =====
     class Push,PR,Manual trigger
-    class Restore,Compile,Test,Publish build
-    class Format,Lint,Security validate
-    class Infra,App,Verify deploy
+    class Restore,Compile,Test,Publish primary
+    class Format,Lint,Security external
+    class Infra,App,Verify secondary
+
+    %% ===== SUBGRAPH STYLES =====
+    style Trigger fill:#FEF3C7,stroke:#F59E0B,stroke-width:2px
+    style Build fill:#EEF2FF,stroke:#4F46E5,stroke-width:2px
+    style Validate fill:#F3F4F6,stroke:#6B7280,stroke-width:2px
+    style Deploy fill:#ECFDF5,stroke:#10B981,stroke-width:2px
 ```
 
 ### GitHub Actions Workflows
@@ -205,26 +236,42 @@ hooks:
 ### azd Lifecycle Hooks
 
 ```mermaid
+---
+title: azd Lifecycle Hooks
+---
 flowchart LR
+    %% ===== PROVISION =====
     subgraph Provision["📐 azd provision"]
         PreProv["preprovision<br/><i>Validate prereqs</i>"]
         BicepDeploy["Bicep Deploy"]
         PostProv["postprovision<br/><i>Configure DB, workflows</i>"]
     end
 
+    %% ===== DEPLOY =====
     subgraph Deploy["📦 azd deploy"]
         PreDeploy["predeploy<br/><i>(not used)</i>"]
         AppDeploy["App Deploy"]
         PostDeploy["postdeploy<br/><i>(not used)</i>"]
     end
 
-    PreProv --> BicepDeploy --> PostProv --> PreDeploy --> AppDeploy --> PostDeploy
+    %% ===== CONNECTIONS =====
+    PreProv -->|"validates"| BicepDeploy
+    BicepDeploy -->|"triggers"| PostProv
+    PostProv -->|"continues"| PreDeploy
+    PreDeploy -->|"starts"| AppDeploy
+    AppDeploy -->|"triggers"| PostDeploy
 
-    classDef hook fill:#fff3e0,stroke:#ef6c00
-    classDef deploy fill:#e3f2fd,stroke:#1565c0
+    %% ===== STYLES - NODE CLASSES =====
+    classDef trigger fill:#F59E0B,stroke:#D97706,color:#000000
+    classDef primary fill:#4F46E5,stroke:#3730A3,color:#FFFFFF
 
-    class PreProv,PostProv,PreDeploy,PostDeploy hook
-    class BicepDeploy,AppDeploy deploy
+    %% ===== CLASS ASSIGNMENTS =====
+    class PreProv,PostProv,PreDeploy,PostDeploy trigger
+    class BicepDeploy,AppDeploy primary
+
+    %% ===== SUBGRAPH STYLES =====
+    style Provision fill:#EEF2FF,stroke:#4F46E5,stroke-width:2px
+    style Deploy fill:#ECFDF5,stroke:#10B981,stroke-width:2px
 ```
 
 ---
@@ -234,9 +281,14 @@ flowchart LR
 ### Bicep Module Hierarchy
 
 ```mermaid
+---
+title: Bicep Module Hierarchy
+---
 flowchart TB
+    %% ===== MAIN ENTRY =====
     Main["main.bicep<br/><i>Entry point</i>"]
 
+    %% ===== SHARED MODULES =====
     subgraph Shared["shared/"]
         SharedMain["main.bicep"]
         Identity["identity/<br/>managed-identity.bicep"]
@@ -245,22 +297,36 @@ flowchart TB
         Data["data/<br/>sql-database.bicep"]
     end
 
+    %% ===== WORKLOAD MODULES =====
     subgraph Workload["workload/"]
         LogicApp["logic-app.bicep"]
         Messaging["messaging/<br/>service-bus.bicep"]
         Services["services/<br/>container-apps.bicep"]
     end
 
-    Main --> SharedMain & LogicApp & Messaging & Services
-    SharedMain --> Identity & Monitoring & Network & Data
+    %% ===== CONNECTIONS =====
+    Main -->|"imports"| SharedMain
+    Main -->|"imports"| LogicApp
+    Main -->|"imports"| Messaging
+    Main -->|"imports"| Services
+    SharedMain -->|"contains"| Identity
+    SharedMain -->|"contains"| Monitoring
+    SharedMain -->|"contains"| Network
+    SharedMain -->|"contains"| Data
 
-    classDef main fill:#1565c0,stroke:#0d47a1,color:#fff
-    classDef shared fill:#e8f5e9,stroke:#2e7d32
-    classDef workload fill:#fff3e0,stroke:#ef6c00
+    %% ===== STYLES - NODE CLASSES =====
+    classDef main fill:#4F46E5,stroke:#3730A3,color:#FFFFFF
+    classDef secondary fill:#10B981,stroke:#059669,color:#FFFFFF
+    classDef datastore fill:#F59E0B,stroke:#D97706,color:#000000
 
+    %% ===== CLASS ASSIGNMENTS =====
     class Main main
-    class SharedMain,Identity,Monitoring,Network,Data shared
-    class LogicApp,Messaging,Services workload
+    class SharedMain,Identity,Monitoring,Network,Data secondary
+    class LogicApp,Messaging,Services datastore
+
+    %% ===== SUBGRAPH STYLES =====
+    style Shared fill:#ECFDF5,stroke:#10B981,stroke-width:2px
+    style Workload fill:#FEF3C7,stroke:#F59E0B,stroke-width:2px
 ```
 
 ### Module Descriptions
@@ -358,29 +424,41 @@ Write-Host "✅ Post-provisioning complete"
 ### Container Apps Revision Management
 
 ```mermaid
+---
+title: Container Apps Revision Management
+---
 flowchart LR
+    %% ===== REVISIONS =====
     subgraph Revisions["📦 Container Apps Revisions"]
         Rev1["Revision 1<br/><i>0% traffic</i>"]
         Rev2["Revision 2<br/><i>0% traffic</i>"]
         Rev3["Revision 3<br/><i>100% traffic</i><br/>✅ Active"]
     end
 
+    %% ===== ACTIONS =====
     subgraph Actions["⚡ Actions"]
         Deploy["New Deploy<br/>→ Rev 4"]
         Rollback["Rollback<br/>→ Rev 2"]
     end
 
-    Rev3 -.-> Deploy
-    Rev3 -.-> Rollback
-    Rollback --> Rev2
+    %% ===== CONNECTIONS =====
+    Rev3 -->|"creates"| Deploy
+    Rev3 -->|"reverts to"| Rollback
+    Rollback -->|"activates"| Rev2
 
-    classDef active fill:#e8f5e9,stroke:#2e7d32,stroke-width:2px
-    classDef inactive fill:#f5f5f5,stroke:#9e9e9e
-    classDef action fill:#fff3e0,stroke:#ef6c00
+    %% ===== STYLES - NODE CLASSES =====
+    classDef secondary fill:#10B981,stroke:#059669,color:#FFFFFF
+    classDef external fill:#6B7280,stroke:#4B5563,color:#FFFFFF,stroke-dasharray:5 5
+    classDef trigger fill:#F59E0B,stroke:#D97706,color:#000000
 
-    class Rev3 active
-    class Rev1,Rev2 inactive
-    class Deploy,Rollback action
+    %% ===== CLASS ASSIGNMENTS =====
+    class Rev3 secondary
+    class Rev1,Rev2 external
+    class Deploy,Rollback trigger
+
+    %% ===== SUBGRAPH STYLES =====
+    style Revisions fill:#ECFDF5,stroke:#10B981,stroke-width:2px
+    style Actions fill:#FEF3C7,stroke:#F59E0B,stroke-width:2px
 ```
 
 ---
