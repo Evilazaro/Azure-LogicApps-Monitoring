@@ -186,7 +186,11 @@ public async Task SendOrderPlacedMessageAsync(OrderEntity order)
 ### Dead Letter Handling
 
 ```mermaid
+---
+title: Dead Letter Handling
+---
 flowchart LR
+    %% ===== NODES =====
     Publisher["Orders API"]
     Topic["ordersplaced<br/>Topic"]
     Sub["orderprocessingsub<br/>Subscription"]
@@ -194,15 +198,20 @@ flowchart LR
     DLQ["Dead Letter<br/>Queue"]
     Alert["Alert Rule"]
 
-    Publisher --> Topic --> Sub --> LA
+    %% ===== CONNECTIONS =====
+    Publisher -->|"publishes to"| Topic
+    Topic -->|"routes to"| Sub
+    Sub -->|"triggers"| LA
     Sub -->|"MaxDeliveryCount exceeded"| DLQ
-    DLQ -.-> Alert
+    DLQ -->|"triggers"| Alert
 
-    classDef normal fill:#e8f5e9,stroke:#2e7d32
-    classDef error fill:#ffebee,stroke:#c62828
+    %% ===== STYLES - NODE CLASSES =====
+    classDef secondary fill:#10B981,stroke:#059669,color:#FFFFFF
+    classDef failed fill:#F44336,stroke:#C62828,color:#FFFFFF
 
-    class Publisher,Topic,Sub,LA normal
-    class DLQ,Alert error
+    %% ===== CLASS ASSIGNMENTS =====
+    class Publisher,Topic,Sub,LA secondary
+    class DLQ,Alert failed
 ```
 
 ### Retry Configuration

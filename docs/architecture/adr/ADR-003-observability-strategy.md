@@ -45,22 +45,29 @@ Key requirements:
 ### Implementation Architecture
 
 ```mermaid
+---
+title: Observability Implementation Architecture
+---
 flowchart TB
+    %% ===== APPLICATIONS =====
     subgraph Apps["Applications"]
         API["Orders API<br/><i>OTel SDK</i>"]
         Web["Web App<br/><i>OTel SDK</i>"]
     end
 
+    %% ===== OPENTELEMETRY LAYER =====
     subgraph OTel["OpenTelemetry Layer"]
         SDK["OTel .NET SDK"]
         Exporter["Azure Monitor<br/>Exporter"]
     end
 
+    %% ===== AZURE MONITOR =====
     subgraph Azure["Azure Monitor"]
         AI["Application<br/>Insights"]
         LAW["Log Analytics<br/>Workspace"]
     end
 
+    %% ===== ANALYSIS TOOLS =====
     subgraph Analysis["Analysis Tools"]
         Map["Application Map"]
         TxSearch["Transaction Search"]
@@ -68,19 +75,34 @@ flowchart TB
         Alerts["Alert Rules"]
     end
 
-    API & Web --> SDK --> Exporter --> AI --> LAW
-    AI --> Map & TxSearch & Metrics
-    LAW --> Alerts
+    %% ===== CONNECTIONS =====
+    API -->|"sends telemetry"| SDK
+    Web -->|"sends telemetry"| SDK
+    SDK -->|"processes"| Exporter
+    Exporter -->|"exports to"| AI
+    AI -->|"forwards to"| LAW
+    AI -->|"powers"| Map
+    AI -->|"powers"| TxSearch
+    AI -->|"powers"| Metrics
+    LAW -->|"triggers"| Alerts
 
-    classDef app fill:#e3f2fd,stroke:#1565c0
-    classDef otel fill:#fff3e0,stroke:#ef6c00
-    classDef azure fill:#e8f5e9,stroke:#2e7d32
-    classDef analysis fill:#f3e5f5,stroke:#7b1fa2
+    %% ===== STYLES - NODE CLASSES =====
+    classDef primary fill:#4F46E5,stroke:#3730A3,color:#FFFFFF
+    classDef secondary fill:#10B981,stroke:#059669,color:#FFFFFF
+    classDef datastore fill:#F59E0B,stroke:#D97706,color:#000000
+    classDef external fill:#6B7280,stroke:#4B5563,color:#FFFFFF
 
-    class API,Web app
-    class SDK,Exporter otel
-    class AI,LAW azure
-    class Map,TxSearch,Metrics,Alerts analysis
+    %% ===== CLASS ASSIGNMENTS =====
+    class API,Web primary
+    class SDK,Exporter secondary
+    class AI,LAW datastore
+    class Map,TxSearch,Metrics,Alerts external
+
+    %% ===== SUBGRAPH STYLES =====
+    style Apps fill:#EEF2FF,stroke:#4F46E5,stroke-width:2px
+    style OTel fill:#ECFDF5,stroke:#10B981,stroke-width:2px
+    style Azure fill:#FEF3C7,stroke:#F59E0B,stroke-width:2px
+    style Analysis fill:#F3F4F6,stroke:#6B7280,stroke-width:2px
 ```
 
 ### Implementation Details
@@ -227,6 +249,9 @@ message.ApplicationProperties["traceparent"] =
 ### Cross-Service Trace Flow
 
 ```mermaid
+---
+title: Cross-Service Trace Flow
+---
 sequenceDiagram
     participant Web as Web App
     participant API as Orders API
@@ -240,9 +265,9 @@ sequenceDiagram
     API->>SB: Message + TraceId property
     SB->>LA: Trigger + correlation
 
-    Web -.-> AI: Export
-    API -.-> AI: Export
-    LA -.-> AI: Diagnostics
+    Web-->>AI: Export
+    API-->>AI: Export
+    LA-->>AI: Diagnostics
 
     Note over AI: Application Map shows<br/>complete flow
 ```
