@@ -9,12 +9,14 @@ tags: [azure, logic-apps, monitoring, observability, aspire, opentelemetry]
 
 # 🚀 Azure Logic Apps Monitoring Solution
 
-![License](https://img.shields.io/github/license/Evilazaro/Azure-LogicApps-Monitoring)
-![.NET](https://img.shields.io/badge/.NET-10.0-512BD4?logo=dotnet)
-![Azure](https://img.shields.io/badge/Azure-Container%20Apps-0078D4?logo=microsoftazure)
-![azd](https://img.shields.io/badge/azd-compatible-green?logo=microsoft)
-![Build](https://img.shields.io/github/actions/workflow/status/Evilazaro/Azure-LogicApps-Monitoring/ci-dotnet.yml?label=CI)
-![Aspire](https://img.shields.io/badge/.NET%20Aspire-13.1.0-512BD4?logo=dotnet)
+[![License](https://img.shields.io/github/license/Evilazaro/Azure-LogicApps-Monitoring)](LICENSE)
+[![.NET](https://img.shields.io/badge/.NET-10.0-512BD4?logo=dotnet)](https://dotnet.microsoft.com/download/dotnet/10.0)
+[![Azure](https://img.shields.io/badge/Azure-Container%20Apps-0078D4?logo=microsoftazure)](https://azure.microsoft.com/products/container-apps)
+[![Logic Apps](https://img.shields.io/badge/Azure-Logic%20Apps-0078D4?logo=microsoftazure)](https://azure.microsoft.com/products/logic-apps)
+[![azd](https://img.shields.io/badge/azd-compatible-green?logo=microsoft)](https://learn.microsoft.com/azure/developer/azure-developer-cli/)
+[![Build](https://img.shields.io/github/actions/workflow/status/Evilazaro/Azure-LogicApps-Monitoring/ci-dotnet.yml?label=CI&logo=githubactions)](https://github.com/Evilazaro/Azure-LogicApps-Monitoring/actions/workflows/ci-dotnet.yml)
+[![Aspire](https://img.shields.io/badge/.NET%20Aspire-13.1.0-512BD4?logo=dotnet)](https://learn.microsoft.com/dotnet/aspire/)
+[![Security](https://img.shields.io/badge/Security-Managed%20Identity-success?logo=microsoftazure)](docs/architecture/06-security-architecture.md)
 
 > [!NOTE]
 > **Target Audience**: Platform Engineers, DevOps Engineers, Cloud Architects, and .NET Developers building enterprise observability solutions on Azure.
@@ -52,6 +54,7 @@ tags: [azure, logic-apps, monitoring, observability, aspire, opentelemetry]
 - [🔧 Local Development](#-local-development)
 - [🤝 Contributing](#-contributing)
 - [📄 License](#-license)
+- [📎 Related Documents](#-related-documents)
 
 ---
 
