@@ -195,6 +195,8 @@ jobs:
 
       - name: 🔧 Install Azure Developer CLI
         uses: Azure/setup-azd@v2
+        with:
+          version: "latest"
 
       - name: 🔧 Setup .NET SDK
         uses: actions/setup-dotnet@67a3573c9a986a3f9c594539f4ab511d57bb3ce9 # v4.3.1
@@ -217,12 +219,14 @@ jobs:
             --tenant-id "$AZURE_TENANT_ID"
           echo "::endgroup::"
           echo "::notice title=Azure Auth::✅ Successfully authenticated with Azure"
+
       - name: 🔑 Logging in to Azure CLI
-        uses: azure/login@v2
+        uses: azure/login@v2.4.0
         with:
           client-id: ${{ env.AZURE_CLIENT_ID }}
           tenant-id: ${{ env.AZURE_TENANT_ID }}
           subscription-id: ${{ env.AZURE_SUBSCRIPTION_ID }}
+          args: --timeout 900
 
       # ------------------------------------------------------------------------
       # Phase 3: Provision, Reauthenticate & Deploy
@@ -347,12 +351,14 @@ jobs:
             --tenant-id "$AZURE_TENANT_ID"
           echo "::endgroup::"
           echo "::notice title=Azure Auth::✅ Successfully authenticated with Azure"
+
       - name: 🔑 Logging in to Azure CLI
-        uses: azure/login@v2
+        uses: azure/login@v2.4.0
         with:
           client-id: ${{ env.AZURE_CLIENT_ID }}
           tenant-id: ${{ env.AZURE_TENANT_ID }}
           subscription-id: ${{ env.AZURE_SUBSCRIPTION_ID }}
+          args: --timeout 900
 
       - name: �🚀 Deploy Application
         id: deploy
