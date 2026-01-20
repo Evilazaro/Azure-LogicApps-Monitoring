@@ -1,0 +1,2 @@
+# Ignore Go template YAML files - Prettier breaks {{ }} syntax
+app.AppHost/infra/*.tmpl.yaml
