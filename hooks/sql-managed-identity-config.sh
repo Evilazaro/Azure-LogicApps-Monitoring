@@ -964,6 +964,33 @@ main() {
         exit 1
     fi
 
+    # Log SQL output to see PRINT statements (important for debugging)
+    if [[ -n "$sql_output" ]]; then
+        log_info "SQL Output:"
+        echo "$sql_output" | while IFS= read -r line; do
+            log_info "  $line"
+        done
+    fi
+
+    # Verify the user was actually created
+    log_info "Verifying user creation..."
+    local verify_output
+    verify_output=$(sqlcmd \
+        -S "tcp:${server_fqdn},1433" \
+        -d "$DATABASE_NAME" \
+        --authentication-method ActiveDirectoryAzCli \
+        -N true \
+        -l "$COMMAND_TIMEOUT" \
+        -Q "SELECT name, type_desc FROM sys.database_principals WHERE name = '$PRINCIPAL_DISPLAY_NAME'" \
+        2>&1) || true
+    
+    if echo "$verify_output" | grep -q "$PRINCIPAL_DISPLAY_NAME"; then
+        log_success "User [$PRINCIPAL_DISPLAY_NAME] verified in database"
+    else
+        log_warning "User [$PRINCIPAL_DISPLAY_NAME] NOT FOUND in database after creation attempt!"
+        log_warning "Verification output: $verify_output"
+    fi
+
     echo ""
     log_success "===================================================================="
     log_success "SQL SCRIPT EXECUTION COMPLETED SUCCESSFULLY"
