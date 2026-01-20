@@ -296,9 +296,9 @@ jobs:
       # Creates database user for the managed identity using go-sqlcmd.
       # Uses SID-based user creation to bypass MS Graph API lookup.
       # ------------------------------------------------------------------------
-      - name: 🔑 Create SQL User with Object ID
+      - name: 🔑 Create SQL User with Client ID
         run: |
-          echo "::group::🔑 Creating SQL database user using Object ID"
+          echo "::group::🔑 Creating SQL database user using Client ID (Application ID)"
 
           # Get values from azd environment
           SQL_SERVER=$(azd env get-values | grep "AZURE_SQL_SERVER_NAME" | cut -d'=' -f2 | tr -d '"')
@@ -312,34 +312,69 @@ jobs:
           echo "Managed Identity Name: $MI_NAME"
           echo "Managed Identity Client ID: $MI_CLIENT_ID"
 
-          # Get the Object ID (Principal ID) of the managed identity
-          MI_OBJECT_ID=$(az identity show --name "$MI_NAME" --resource-group "$RG" --query principalId -o tsv)
-          echo "Managed Identity Object ID: $MI_OBJECT_ID"
+          # IMPORTANT: For Azure SQL Database with Entra ID (Azure AD) authentication,
+          # the SID must be created from the CLIENT ID (Application ID), NOT the Object ID.
+          # The Client ID is used as the identity claim in the access token.
+          # Reference: https://learn.microsoft.com/en-us/azure/azure-sql/database/authentication-aad-service-principal
 
-          # Convert the Object ID (GUID) to binary format for SQL Server SID
-          # SQL Server expects the SID as a binary value derived from the Object ID
-          # Format: 0x + GUID bytes in specific order
+          # Verify we have the client ID
+          if [ -z "$MI_CLIENT_ID" ]; then
+            echo "::error::Managed Identity Client ID not found in environment variables"
+            echo "Attempting to fetch from Azure..."
+            MI_CLIENT_ID=$(az identity show --name "$MI_NAME" --resource-group "$RG" --query clientId -o tsv)
+          fi
+          echo "Using Client ID for SID: $MI_CLIENT_ID"
 
-          # Create SQL script that uses SID directly instead of FROM EXTERNAL PROVIDER
+          # Create SQL script that uses SID derived from CLIENT ID
           # This bypasses the MS Graph lookup requirement
           # Note: Writing to a temp file instead of piping to avoid go-sqlcmd stdin crash
           SQL_SCRIPT_FILE=$(mktemp --suffix=.sql)
           cat > "$SQL_SCRIPT_FILE" << 'EOSQL'
+          -- Calculate the expected SID from Client ID
+          DECLARE @expectedSid VARBINARY(16);
+          SET @expectedSid = CAST(CAST('$(MI_CLIENT_ID)' AS UNIQUEIDENTIFIER) AS VARBINARY(16));
+
           -- Check if user already exists
-          IF NOT EXISTS (SELECT 1 FROM sys.database_principals WHERE name = N'$(MI_NAME)')
+          IF EXISTS (SELECT 1 FROM sys.database_principals WHERE name = N'$(MI_NAME)')
           BEGIN
-              -- Create user with SID (Object ID converted to binary)
-              -- The SID format for Entra ID users is the Object ID GUID
-              DECLARE @sql NVARCHAR(MAX);
-              SET @sql = N'CREATE USER [$(MI_NAME)] WITH SID = 0x' + 
-                         CONVERT(VARCHAR(64), CAST(CAST('$(MI_OBJECT_ID)' AS UNIQUEIDENTIFIER) AS VARBINARY(16)), 2) + 
-                         N', TYPE = E';
-              EXEC sp_executesql @sql;
-              PRINT 'SUCCESS: User [$(MI_NAME)] created with SID';
+              -- User exists - verify the SID matches the expected Client ID
+              DECLARE @existingSid VARBINARY(85);
+              SELECT @existingSid = sid FROM sys.database_principals WHERE name = N'$(MI_NAME)';
+              
+              IF @existingSid <> @expectedSid
+              BEGIN
+                  -- SID mismatch - user was likely created with wrong ID (Object ID instead of Client ID)
+                  -- Drop and recreate with correct SID
+                  PRINT 'WARNING: User [$(MI_NAME)] exists but SID does not match Client ID.';
+                  PRINT 'Expected SID (from Client ID): ' + CONVERT(VARCHAR(64), @expectedSid, 2);
+                  PRINT 'Actual SID: ' + CONVERT(VARCHAR(64), @existingSid, 2);
+                  PRINT 'Dropping and recreating user with correct SID...';
+                  
+                  DROP USER [$(MI_NAME)];
+                  PRINT 'INFO: Dropped user [$(MI_NAME)]';
+                  
+                  -- Recreate with correct SID
+                  DECLARE @createSql NVARCHAR(MAX);
+                  SET @createSql = N'CREATE USER [$(MI_NAME)] WITH SID = 0x' + 
+                               CONVERT(VARCHAR(64), @expectedSid, 2) + 
+                               N', TYPE = E';
+                  EXEC sp_executesql @createSql;
+                  PRINT 'SUCCESS: User [$(MI_NAME)] recreated with correct SID from Client ID';
+              END
+              ELSE
+              BEGIN
+                  PRINT 'INFO: User [$(MI_NAME)] already exists with correct SID';
+              END
           END
           ELSE
           BEGIN
-              PRINT 'INFO: User [$(MI_NAME)] already exists';
+              -- User doesn't exist - create with correct SID
+              DECLARE @sql NVARCHAR(MAX);
+              SET @sql = N'CREATE USER [$(MI_NAME)] WITH SID = 0x' + 
+                         CONVERT(VARCHAR(64), @expectedSid, 2) + 
+                         N', TYPE = E';
+              EXEC sp_executesql @sql;
+              PRINT 'SUCCESS: User [$(MI_NAME)] created with SID from Client ID';
           END;
 
           -- Add to db_owner role
@@ -365,7 +400,7 @@ jobs:
           echo "Executing SQL script..."
           sqlcmd -S "${SQL_SERVER}.database.windows.net" -d "$SQL_DB" \
             --authentication-method ActiveDirectoryAzCli -N true \
-            -v MI_NAME="$MI_NAME" MI_OBJECT_ID="$MI_OBJECT_ID" \
+            -v MI_NAME="$MI_NAME" MI_CLIENT_ID="$MI_CLIENT_ID" \
             -i "$SQL_SCRIPT_FILE"
 
           # Cleanup temp file
@@ -374,7 +409,7 @@ jobs:
           echo ""
           echo "Verifying user creation..."
           sqlcmd -S "${SQL_SERVER}.database.windows.net" -d "$SQL_DB" --authentication-method ActiveDirectoryAzCli -N true \
-            -Q "SELECT name, type_desc, authentication_type_desc FROM sys.database_principals WHERE name = '$MI_NAME'"
+            -Q "SELECT name, type_desc, authentication_type_desc, CONVERT(VARCHAR(64), sid, 2) as sid_hex FROM sys.database_principals WHERE name = '$MI_NAME'"
 
           echo "::endgroup::"
 
