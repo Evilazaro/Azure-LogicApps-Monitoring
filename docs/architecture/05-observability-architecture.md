@@ -19,7 +19,11 @@
 ## Three Pillars Overview
 
 ```mermaid
+---
+title: Three Pillars of Observability
+---
 flowchart TB
+    %% ===== THREE PILLARS =====
     subgraph Pillars["📊 Three Pillars of Observability"]
         direction LR
         Traces["🔍 Traces<br/><i>Distributed request flow</i>"]
@@ -27,16 +31,19 @@ flowchart TB
         Logs["📝 Logs<br/><i>Discrete event records</i>"]
     end
 
+    %% ===== COLLECTION LAYER =====
     subgraph Collection["📥 Collection Layer"]
         SDK["OpenTelemetry SDK<br/><i>.NET instrumentation</i>"]
         Agent["Azure Diagnostics<br/><i>Platform telemetry</i>"]
     end
 
+    %% ===== BACKEND LAYER =====
     subgraph Backend["💾 Backend Layer"]
         APM["Application Insights<br/><i>APM platform</i>"]
         LogStore["Log Analytics<br/><i>Log aggregation</i>"]
     end
 
+    %% ===== CONSUMPTION LAYER =====
     subgraph Consumption["👁️ Consumption Layer"]
         Dashboards["Azure Dashboards"]
         Alerts["Alert Rules"]
@@ -44,19 +51,38 @@ flowchart TB
         AppMap["Application Map"]
     end
 
-    Traces & Metrics & Logs --> SDK & Agent
-    SDK & Agent --> APM & LogStore
-    APM & LogStore --> Dashboards & Alerts & Queries & AppMap
+    %% ===== CONNECTIONS =====
+    Traces -->|"collected by"| SDK
+    Metrics -->|"collected by"| SDK
+    Logs -->|"collected by"| SDK
+    Traces -->|"collected by"| Agent
+    Metrics -->|"collected by"| Agent
+    Logs -->|"collected by"| Agent
+    SDK -->|"exports to"| APM
+    Agent -->|"exports to"| LogStore
+    APM -->|"forwards to"| LogStore
+    APM -->|"powers"| Dashboards
+    APM -->|"powers"| Alerts
+    APM -->|"powers"| Queries
+    APM -->|"powers"| AppMap
 
-    classDef pillars fill:#e3f2fd,stroke:#1565c0,stroke-width:2px
-    classDef collection fill:#e8f5e9,stroke:#2e7d32,stroke-width:2px
-    classDef backend fill:#fff3e0,stroke:#ef6c00,stroke-width:2px
-    classDef consumption fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px
+    %% ===== STYLES - NODE CLASSES =====
+    classDef primary fill:#4F46E5,stroke:#3730A3,color:#FFFFFF
+    classDef secondary fill:#10B981,stroke:#059669,color:#FFFFFF
+    classDef datastore fill:#F59E0B,stroke:#D97706,color:#000000
+    classDef external fill:#6B7280,stroke:#4B5563,color:#FFFFFF,stroke-dasharray:5 5
 
-    class Traces,Metrics,Logs pillars
-    class SDK,Agent collection
-    class APM,LogStore backend
-    class Dashboards,Alerts,Queries,AppMap consumption
+    %% ===== CLASS ASSIGNMENTS =====
+    class Traces,Metrics,Logs primary
+    class SDK,Agent secondary
+    class APM,LogStore datastore
+    class Dashboards,Alerts,Queries,AppMap external
+
+    %% ===== SUBGRAPH STYLES =====
+    style Pillars fill:#EEF2FF,stroke:#4F46E5,stroke-width:2px
+    style Collection fill:#ECFDF5,stroke:#10B981,stroke-width:2px
+    style Backend fill:#FEF3C7,stroke:#F59E0B,stroke-width:2px
+    style Consumption fill:#F3F4F6,stroke:#6B7280,stroke-width:2px
 ```
 
 ---
@@ -298,7 +324,11 @@ public async Task<HealthCheckResult> CheckHealthAsync(
 ## Observability Platform Architecture
 
 ```mermaid
+---
+title: Observability Platform Architecture
+---
 flowchart LR
+    %% ===== TELEMETRY SOURCES =====
     subgraph Sources["📡 Telemetry Sources"]
         API["Orders API"]
         Web["Web App"]
@@ -307,46 +337,67 @@ flowchart LR
         SQL["SQL Database"]
     end
 
+    %% ===== INGESTION =====
     subgraph Ingestion["📥 Ingestion"]
         OTEL["OpenTelemetry<br/>Collector"]
         DiagSettings["Diagnostic<br/>Settings"]
     end
 
+    %% ===== STORAGE =====
     subgraph Storage["💾 Storage"]
         AI["Application<br/>Insights"]
         LAW["Log Analytics<br/>Workspace"]
     end
 
+    %% ===== ANALYSIS =====
     subgraph Analysis["🔍 Analysis"]
         KQL["KQL Queries"]
         AppMap["Application Map"]
         TxSearch["Transaction Search"]
     end
 
+    %% ===== ACTION =====
     subgraph Action["⚡ Action"]
         Alerts["Alert Rules"]
         Dashboards["Dashboards"]
         Workbooks["Workbooks"]
     end
 
-    API & Web -->|"OTLP"| OTEL --> AI
-    LA & SB & SQL -->|"ARM"| DiagSettings --> LAW
-    AI --> LAW
-    AI --> KQL & AppMap & TxSearch
-    LAW --> KQL
-    KQL --> Alerts & Dashboards & Workbooks
+    %% ===== CONNECTIONS =====
+    API -->|"sends OTLP"| OTEL
+    Web -->|"sends OTLP"| OTEL
+    LA -->|"exports ARM"| DiagSettings
+    SB -->|"exports ARM"| DiagSettings
+    SQL -->|"exports ARM"| DiagSettings
+    OTEL -->|"exports to"| AI
+    DiagSettings -->|"exports to"| LAW
+    AI -->|"forwards to"| LAW
+    AI -->|"enables"| KQL
+    AI -->|"enables"| AppMap
+    AI -->|"enables"| TxSearch
+    LAW -->|"enables"| KQL
+    KQL -->|"powers"| Alerts
+    KQL -->|"powers"| Dashboards
+    KQL -->|"powers"| Workbooks
 
-    classDef source fill:#fff3e0,stroke:#ef6c00
-    classDef ingestion fill:#e3f2fd,stroke:#1565c0
-    classDef storage fill:#e8f5e9,stroke:#2e7d32
-    classDef analysis fill:#f3e5f5,stroke:#7b1fa2
-    classDef action fill:#fce4ec,stroke:#c2185b
+    %% ===== STYLES - NODE CLASSES =====
+    classDef primary fill:#4F46E5,stroke:#3730A3,color:#FFFFFF
+    classDef secondary fill:#10B981,stroke:#059669,color:#FFFFFF
+    classDef datastore fill:#F59E0B,stroke:#D97706,color:#000000
+    classDef external fill:#6B7280,stroke:#4B5563,color:#FFFFFF,stroke-dasharray:5 5
 
-    class API,Web,LA,SB,SQL source
-    class OTEL,DiagSettings ingestion
-    class AI,LAW storage
-    class KQL,AppMap,TxSearch analysis
-    class Alerts,Dashboards,Workbooks action
+    %% ===== CLASS ASSIGNMENTS =====
+    class API,Web,LA,SB,SQL primary
+    class OTEL,DiagSettings secondary
+    class AI,LAW datastore
+    class KQL,AppMap,TxSearch,Alerts,Dashboards,Workbooks external
+
+    %% ===== SUBGRAPH STYLES =====
+    style Sources fill:#EEF2FF,stroke:#4F46E5,stroke-width:2px
+    style Ingestion fill:#ECFDF5,stroke:#10B981,stroke-width:2px
+    style Storage fill:#FEF3C7,stroke:#F59E0B,stroke-width:2px
+    style Analysis fill:#F3F4F6,stroke:#6B7280,stroke-width:2px
+    style Action fill:#FEE2E2,stroke:#F44336,stroke-width:2px
 ```
 
 ---
