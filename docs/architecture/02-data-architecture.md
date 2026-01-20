@@ -32,9 +32,9 @@ tags:
 
 - [Data Architecture Overview](#-data-architecture-overview)
 - [Data Architecture Principles](#-data-architecture-principles)
-- [Data Landscape Map](#%EF%B8%8F-data-landscape-map)
+- [Data Landscape Map](#-data-landscape-map)
 - [Data Domain Catalog](#-data-domain-catalog)
-- [Data Store Details](#%EF%B8%8F-data-store-details)
+- [Data Store Details](#-data-store-details)
 - [Data Flow Architecture](#-data-flow-architecture)
 - [Monitoring Data Flow Architecture](#-monitoring-data-flow-architecture)
 - [Telemetry Data Mapping](#-telemetry-data-mapping)
@@ -63,8 +63,6 @@ tags:
 
 ---
 
----
-
 ## 📋 Data Architecture Principles
 
 | Principle                     | Statement                                       | Rationale                                        | Implications                                               |
@@ -74,8 +72,6 @@ tags:
 | **Data at Rest Encryption**   | All persistent data encrypted                   | Compliance, security posture                     | Azure SQL TDE, Storage Service Encryption enabled          |
 | **Schema Evolution**          | All schemas support backward-compatible changes | Zero-downtime deployments                        | Additive changes only, versioned APIs for breaking changes |
 | **Trace Context Propagation** | All messages include W3C Trace Context          | End-to-end correlation                           | TraceId, SpanId in Service Bus ApplicationProperties       |
-
----
 
 ---
 
@@ -148,8 +144,6 @@ flowchart LR
 
 ---
 
----
-
 ## 📂 Data Domain Catalog
 
 | Data Domain               | Description                      | Bounded Context | Primary Store | Owner Service | Steward               |
@@ -158,8 +152,6 @@ flowchart LR
 | **Order Events**          | Immutable order lifecycle events | Messaging       | Service Bus   | Platform      | Platform Team         |
 | **Workflow State**        | Logic App execution artifacts    | Automation      | Azure Storage | Logic Apps    | Workflow Team         |
 | **Operational Telemetry** | Traces, metrics, logs            | Observability   | App Insights  | All Services  | SRE Team              |
-
----
 
 ---
 
@@ -173,8 +165,6 @@ flowchart LR
 | **Workflow State**     | Azure Storage (File Share) | Logic App workflow state      | OrdersManagement Logic App   | Azure Storage Account       | Standard LRS    |
 | **Success Blobs**      | Azure Blob Storage         | Processed order artifacts     | Logic Apps                   | Azure Storage Account       | Standard LRS    |
 | **Error Blobs**        | Azure Blob Storage         | Failed order artifacts        | Logic Apps                   | Azure Storage Account       | Standard LRS    |
-
----
 
 ---
 
@@ -229,8 +219,6 @@ sequenceDiagram
     API-->>Web: JSON Order Collection
     Web-->>User: Render Orders Grid
 ```
-
----
 
 ---
 
@@ -305,8 +293,6 @@ flowchart LR
 
 ---
 
----
-
 ## 📡 Telemetry Data Mapping
 
 ### Three Pillars of Observability
@@ -371,8 +357,6 @@ flowchart LR
 
 ---
 
----
-
 ## 🔗 Trace Context Propagation
 
 > [!TIP]
@@ -415,8 +399,6 @@ message.ApplicationProperties["TraceId"] = activity.TraceId.ToString();
 message.ApplicationProperties["SpanId"] = activity.SpanId.ToString();
 message.ApplicationProperties["traceparent"] = activity.Id ?? string.Empty;
 ```
-
----
 
 ---
 
@@ -469,8 +451,6 @@ flowchart TD
 
 ---
 
----
-
 ## 🔄 Data Lifecycle States
 
 | Stage           | Description                 | Location          | Duration     | Transition Trigger    |
@@ -480,8 +460,6 @@ flowchart TD
 | **Publication** | Order event published       | Service Bus topic | 14 days TTL  | Post-commit hook      |
 | **Consumption** | Event processed by workflow | Logic App         | Minutes      | Subscription delivery |
 | **Telemetry**   | Operational data captured   | App Insights      | 90 days      | Continuous            |
-
----
 
 ---
 

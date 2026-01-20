@@ -32,10 +32,10 @@ tags:
 ## 📑 Table of Contents
 
 - [Executive Summary](#-executive-summary)
-- [High-Level Architecture](#%EF%B8%8F-high-level-architecture)
+- [High-Level Architecture](#-high-level-architecture)
 - [Service Inventory](#-service-inventory)
-- [Azure Resource Inventory](#%EF%B8%8F-azure-resource-inventory)
-- [Document Navigation](#%EF%B8%8F-document-navigation)
+- [Azure Resource Inventory](#-azure-resource-inventory)
+- [Document Navigation](#-document-navigation)
 - [Reading Recommendations by Audience](#-reading-recommendations-by-audience)
 - [Repository Structure](#-repository-structure)
 - [Quick Links](#-quick-links)
@@ -56,8 +56,6 @@ The **Azure Logic Apps Monitoring Solution** is a cloud-native reference archite
 
 > [!TIP]
 > **Target Deployment Environments:** Local development (emulators), Azure Container Apps (production)
-
----
 
 ---
 
@@ -139,8 +137,6 @@ flowchart TD
 
 ---
 
----
-
 ## 📦 Service Inventory
 
 | Service                 | Type         | Technology               | Responsibility                                                        | Port |
@@ -150,8 +146,6 @@ flowchart TD
 | **OrdersManagement**    | Workflow     | Logic Apps Standard      | Event-driven order processing automation                              | N/A  |
 | **app.AppHost**         | Orchestrator | .NET Aspire              | Service discovery, resource wiring, local emulator configuration      | N/A  |
 | **app.ServiceDefaults** | Library      | .NET Class Library       | OpenTelemetry, health checks, resilience patterns, Service Bus client | N/A  |
-
----
 
 ---
 
@@ -166,8 +160,6 @@ flowchart TD
 | **Log Analytics**              | Log Analytics Workspace  | Centralized log aggregation            | Per-GB          |
 | **Container Apps Environment** | Azure Container Apps     | Serverless container hosting           | Consumption     |
 | **Logic App**                  | Logic Apps Standard      | Workflow automation engine             | WS1             |
-
----
 
 ---
 
@@ -201,8 +193,6 @@ flowchart TD
 
 ---
 
----
-
 ## 👥 Reading Recommendations by Audience
 
 | Audience                      | Recommended Path                                   |
@@ -211,8 +201,6 @@ flowchart TD
 | **Platform Engineers**        | Technology → Deployment → Security → Data          |
 | **Developers**                | Application → Data → Observability → README        |
 | **DevOps/SRE Teams**          | Deployment → Observability → Technology → Security |
-
----
 
 ---
 
@@ -236,8 +224,6 @@ Azure-LogicApps-Monitoring/
 ├── .github/workflows/           # CI/CD pipelines
 └── docs/architecture/           # This documentation
 ```
-
----
 
 ---
 

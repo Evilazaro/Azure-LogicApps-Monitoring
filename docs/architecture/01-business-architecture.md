@@ -31,7 +31,7 @@ tags:
 ## 📑 Table of Contents
 
 - [Business Context](#-business-context)
-- [Business Capabilities](#%EF%B8%8F-business-capabilities)
+- [Business Capabilities](#-business-capabilities)
 - [Stakeholder Analysis](#-stakeholder-analysis)
 - [Value Streams](#-value-streams)
 - [Quality Attribute Requirements](#-quality-attribute-requirements)
@@ -70,8 +70,6 @@ tags:
 | **Developer**         | Builds features        | Fast local development, clear service contracts  |
 | **SRE/Operations**    | Maintains production   | Actionable alerts, quick incident diagnosis      |
 | **Architect**         | Evaluates patterns     | Reference architecture, documented decisions     |
-
----
 
 ---
 
@@ -146,8 +144,6 @@ flowchart TB
 
 ---
 
----
-
 ## 👥 Stakeholder Analysis
 
 | Stakeholder            | Concerns                              | How Architecture Addresses                                           |
@@ -157,8 +153,6 @@ flowchart TB
 | **Operations Team**    | System reliability, incident response | Health checks, Application Insights alerts, centralized logs         |
 | **Security Team**      | Data protection, access control       | Managed Identity (no secrets), TLS everywhere, RBAC                  |
 | **Compliance Officer** | Audit trail, data governance          | Immutable telemetry, diagnostic settings to storage                  |
-
----
 
 ---
 
@@ -240,8 +234,6 @@ flowchart LR
 
 ---
 
----
-
 ## ✅ Quality Attribute Requirements
 
 | Attribute           | Requirement                                  | Priority | Architectural Approach                                     |
@@ -253,8 +245,6 @@ flowchart LR
 | **Security**        | Zero stored credentials                      | Critical | Managed Identity, DefaultAzureCredential                   |
 | **Resilience**      | Graceful degradation on dependency failures  | High     | Circuit breaker, retry with exponential backoff            |
 | **Maintainability** | < 30 min developer onboarding                | Medium   | Local emulators, comprehensive documentation               |
-
----
 
 ---
 
@@ -323,8 +313,6 @@ flowchart TD
     class Validate decision
     class Reject,StoreError failed
 ```
-
----
 
 ---
 
