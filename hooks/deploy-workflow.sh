@@ -81,7 +81,8 @@ write_log() {
             ;;
     esac
     
-    echo -e "${color}$(date '+%H:%M:%S') ${prefix} ${message}${reset}"
+    # Output to stderr to avoid polluting stdout (used for function return values)
+    echo -e "${color}$(date '+%H:%M:%S') ${prefix} ${message}${reset}" >&2
 }
 
 get_environment_value() {
