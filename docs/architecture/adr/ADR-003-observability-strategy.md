@@ -4,13 +4,29 @@
 
 ---
 
-## Status
+## 📚 Table of Contents
+
+- [🚦 Status](#-status)
+- [📝 Context](#-context)
+- [✅ Decision](#-decision)
+- [🎯 Consequences](#-consequences)
+- [🔄 Alternatives Considered](#-alternatives-considered)
+- [📊 Telemetry Inventory](#-telemetry-inventory)
+- [🧪 Validation](#-validation)
+- [🔗 Related ADRs](#-related-adrs)
+- [📚 References](#-references)
+
+---
+
+## 🚦 Status
 
 🟢 **Accepted** — January 2024
 
 ---
 
-## Context
+<div align="right"><a href="#-table-of-contents">⬆️ Back to top</a></div>
+
+## 📝 Context
 
 The distributed nature of the solution requires **end-to-end observability** across:
 
@@ -36,13 +52,15 @@ The distributed nature of the solution requires **end-to-end observability** acr
 
 ---
 
-## Decision
+<div align="right"><a href="#-table-of-contents">⬆️ Back to top</a></div>
+
+## ✅ Decision
 
 **We will use OpenTelemetry SDK with Azure Monitor Exporter for telemetry collection.**
 
-### Implementation
+### 🛠️ Implementation
 
-#### OpenTelemetry Configuration
+#### 📊 OpenTelemetry Configuration
 
 From [Extensions.cs](../../../app.ServiceDefaults/Extensions.cs):
 
@@ -84,7 +102,7 @@ private static IHostApplicationBuilder AddOpenTelemetryExporters(
 }
 ```
 
-#### Trace Context Propagation
+#### 🔗 Trace Context Propagation
 
 From [OrdersMessageHandler.cs](../../../src/eShop.Orders.API/Handlers/OrdersMessageHandler.cs):
 
@@ -97,7 +115,7 @@ if (Activity.Current != null)
 }
 ```
 
-#### Application Insights Integration
+#### 📊 Application Insights Integration
 
 From [app-insights.bicep](../../../infra/shared/monitoring/app-insights.bicep):
 
@@ -114,7 +132,7 @@ resource appInsights 'Microsoft.Insights/components@2020-02-02' = {
 }
 ```
 
-### Key Decisions
+### 🔑 Key Decisions
 
 | Aspect       | Decision             | Rationale                     |
 | ------------ | -------------------- | ----------------------------- |
@@ -126,9 +144,11 @@ resource appInsights 'Microsoft.Insights/components@2020-02-02' = {
 
 ---
 
-## Consequences
+<div align="right"><a href="#-table-of-contents">⬆️ Back to top</a></div>
 
-### Positive
+## 🎯 Consequences
+
+### ✅ Positive
 
 | Benefit                  | Description                                       |
 | ------------------------ | ------------------------------------------------- |
@@ -139,7 +159,7 @@ resource appInsights 'Microsoft.Insights/components@2020-02-02' = {
 | **Cost control**         | Sampling reduces ingestion costs                  |
 | **Correlation**          | W3C format works across technologies              |
 
-### Negative
+### ⚠️ Negative
 
 | Drawback                | Mitigation                           |
 | ----------------------- | ------------------------------------ | --------------------------------------- |
@@ -147,7 +167,7 @@ resource appInsights 'Microsoft.Insights/components@2020-02-02' = {
 | **Sampling trade-offs** | Some traces may be lost              | Configure sampling rate per environment |
 | **Double telemetry**    | App Insights SDK + OTel can conflict | Use OTel-only approach                  |
 
-### Neutral
+### ⚖️ Neutral
 
 - Azure Monitor Exporter is Microsoft-maintained
 - Application Insights retains data for 90 days (configurable)
