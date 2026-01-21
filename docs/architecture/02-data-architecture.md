@@ -1,10 +1,25 @@
-# Data Architecture
+# 🗃️ Data Architecture
 
 ← [Business Architecture](01-business-architecture.md) | [Index](README.md) | [Application Architecture →](03-application-architecture.md)
 
 ---
 
-## 1. Data Architecture Overview
+## 📑 Table of Contents
+
+- [📊 Overview](#-1-data-architecture-overview)
+- [📋 Principles](#-2-data-architecture-principles)
+- [🗺️ Data Landscape](#️-3-data-landscape-map)
+- [📦 Domain Catalog](#-4-data-domain-catalog)
+- [🗄️ Store Details](#️-5-data-store-details)
+- [🔄 Data Flow](#-6-data-flow-architecture)
+- [📊 Monitoring Data Flow](#-7-monitoring-data-flow-architecture)
+- [📍 Telemetry Mapping](#-8-telemetry-data-mapping)
+- [🔗 Trace Context](#-9-trace-context-propagation)
+- [↔️ Cross-Architecture](#️-10-cross-architecture-relationships)
+
+---
+
+## 📊 1. Data Architecture Overview
 
 The Azure Logic Apps Monitoring Solution implements a **service-oriented data architecture** where each service owns its data store exclusively. This ensures loose coupling, independent deployability, and clear data ownership boundaries.
 
@@ -20,7 +35,9 @@ The Azure Logic Apps Monitoring Solution implements a **service-oriented data ar
 
 ---
 
-## 2. Data Architecture Principles
+<div align="right"><a href="#-table-of-contents">⬆️ Back to top</a></div>
+
+## 📋 2. Data Architecture Principles
 
 | Principle                   | Statement                                     | Rationale                                 | Implications                                  |
 | --------------------------- | --------------------------------------------- | ----------------------------------------- | --------------------------------------------- |
@@ -32,7 +49,9 @@ The Azure Logic Apps Monitoring Solution implements a **service-oriented data ar
 
 ---
 
-## 3. Data Landscape Map
+<div align="right"><a href="#-table-of-contents">⬆️ Back to top</a></div>
+
+## 🗺️ 3. Data Landscape Map
 
 ```mermaid
 flowchart LR
@@ -78,7 +97,9 @@ flowchart LR
 
 ---
 
-## 4. Data Domain Catalog
+<div align="right"><a href="#-table-of-contents">⬆️ Back to top</a></div>
+
+## 📦 4. Data Domain Catalog
 
 | Data Domain               | Description                                | Bounded Context | Primary Store | Owner Service | Steward               |
 | ------------------------- | ------------------------------------------ | --------------- | ------------- | ------------- | --------------------- |
@@ -89,7 +110,9 @@ flowchart LR
 
 ---
 
-## 5. Data Store Details
+<div align="right"><a href="#-table-of-contents">⬆️ Back to top</a></div>
+
+## 🗄️ 5. Data Store Details
 
 | Store                           | Technology               | Purpose                       | Owner Service                | Location                    | Tier/SKU     |
 | ------------------------------- | ------------------------ | ----------------------------- | ---------------------------- | --------------------------- | ------------ |
@@ -101,9 +124,11 @@ flowchart LR
 
 ---
 
-## 6. Data Flow Architecture
+<div align="right"><a href="#-table-of-contents">⬆️ Back to top</a></div>
 
-### Write Path: Order Placement
+## 🔄 6. Data Flow Architecture
+
+### ✏️ Write Path: Order Placement
 
 ```mermaid
 sequenceDiagram
@@ -139,7 +164,7 @@ sequenceDiagram
     end
 ```
 
-### Read Path: Order Retrieval
+### 📖 Read Path: Order Retrieval
 
 ```mermaid
 sequenceDiagram
@@ -161,7 +186,9 @@ sequenceDiagram
 
 ---
 
-## 7. Monitoring Data Flow Architecture
+<div align="right"><a href="#-table-of-contents">⬆️ Back to top</a></div>
+
+## 📊 7. Monitoring Data Flow Architecture
 
 ```mermaid
 flowchart LR
@@ -226,9 +253,11 @@ flowchart LR
 
 ---
 
-## 8. Telemetry Data Mapping
+<div align="right"><a href="#-table-of-contents">⬆️ Back to top</a></div>
 
-### Three Pillars of Observability
+## 📍 8. Telemetry Data Mapping
+
+### 📊 Three Pillars of Observability
 
 | Pillar      | Description                                 | Data Type                                | Use Case                              | Storage               |
 | ----------- | ------------------------------------------- | ---------------------------------------- | ------------------------------------- | --------------------- |
@@ -236,7 +265,7 @@ flowchart LR
 | **Metrics** | Numeric measurements aggregated over time   | Counters, Gauges, Histograms             | Dashboards, alerts, capacity planning | Azure Monitor Metrics |
 | **Logs**    | Discrete events with contextual information | Structured JSON with properties          | Debugging, auditing, investigation    | Log Analytics         |
 
-### Telemetry Mapping Diagram
+### 🗺️ Telemetry Mapping Diagram
 
 ```mermaid
 flowchart TB
@@ -292,9 +321,9 @@ flowchart TB
     class L1,L2,L3 log
 ```
 
-### Metrics Inventory by Source
+### 📊 Metrics Inventory by Source
 
-#### Orders API Metrics
+#### 📡 Orders API Metrics
 
 | Metric                         | Type          | Unit    | Dimensions            | Alert Threshold | Purpose                       |
 | ------------------------------ | ------------- | ------- | --------------------- | --------------- | ----------------------------- |
@@ -303,7 +332,7 @@ flowchart TB
 | `db.client.operation.duration` | Histogram     | seconds | operation, db.name    | P95 > 1s        | Database query performance    |
 | `orders.created`               | Counter       | count   | -                     | N/A             | Business volume tracking      |
 
-#### Service Bus Metrics (Platform)
+#### 📨 Service Bus Metrics (Platform)
 
 | Metric                 | Type    | Description                | Alert Threshold |
 | ---------------------- | ------- | -------------------------- | --------------- |
@@ -312,7 +341,7 @@ flowchart TB
 | `IncomingMessages`     | Counter | Messages received          | N/A             |
 | `OutgoingMessages`     | Counter | Messages delivered         | N/A             |
 
-#### SQL Database Metrics (Platform)
+#### 🗄️ SQL Database Metrics (Platform)
 
 | Metric                    | Type    | Description            | Alert Threshold |
 | ------------------------- | ------- | ---------------------- | --------------- |
@@ -321,7 +350,7 @@ flowchart TB
 | `connection_successful`   | Counter | Successful connections | N/A             |
 | `deadlock`                | Counter | Deadlock occurrences   | > 0             |
 
-#### Logic Apps Metrics (Platform)
+#### 🔄 Logic Apps Metrics (Platform)
 
 | Metric          | Type    | Description              | Alert Threshold |
 | --------------- | ------- | ------------------------ | --------------- |
@@ -329,9 +358,9 @@ flowchart TB
 | `RunsFailed`    | Counter | Failed workflow runs     | > 5/5min        |
 | `RunLatency`    | Gauge   | Workflow execution time  | > 10s           |
 
-### Logs Inventory by Source
+### 📝 Logs Inventory by Source
 
-#### Orders API Logs
+#### 📝 Orders API Logs
 
 | Log Event                    | Level       | Properties                 | Example                               |
 | ---------------------------- | ----------- | -------------------------- | ------------------------------------- |
@@ -340,7 +369,7 @@ flowchart TB
 | `ServiceBusMessagePublished` | Information | MessageId, Topic, TraceId  | "OrderPlaced published"               |
 | `UnhandledException`         | Error       | Exception, StackTrace      | Full exception details                |
 
-#### Logic Apps Logs (Diagnostic)
+#### ⚙️ Logic Apps Logs (Diagnostic)
 
 | Log Event              | Level       | Table            | Properties                     |
 | ---------------------- | ----------- | ---------------- | ------------------------------ |
@@ -348,7 +377,7 @@ flowchart TB
 | `WorkflowRunCompleted` | Information | AzureDiagnostics | runId, status, duration        |
 | `WorkflowRunFailed`    | Error       | AzureDiagnostics | runId, errorCode, errorMessage |
 
-### Structured Logging Format
+### 📜 Structured Logging Format
 
 ```json
 {
@@ -369,7 +398,9 @@ flowchart TB
 
 ---
 
-## 9. Trace Context Propagation
+<div align="right"><a href="#-table-of-contents">⬆️ Back to top</a></div>
+
+## 🔗 9. Trace Context Propagation
 
 The solution implements **W3C Trace Context** for cross-service correlation:
 
@@ -380,7 +411,7 @@ The solution implements **W3C Trace Context** for cross-service correlation:
 | Logic Apps           | Built-in correlation     | Azure-managed                      |
 | Application Insights | SDK auto-instrumentation | Operation ID correlation           |
 
-### Implementation Reference
+### 💻 Implementation Reference
 
 From [OrdersMessageHandler.cs](../../src/eShop.Orders.API/Handlers/OrdersMessageHandler.cs):
 
@@ -394,7 +425,7 @@ if (activity != null)
 }
 ```
 
-### Correlation Flow
+### 🔗 Correlation Flow
 
 ```mermaid
 flowchart LR
@@ -414,7 +445,9 @@ flowchart LR
 
 ---
 
-## 10. Cross-Architecture Relationships
+<div align="right"><a href="#-table-of-contents">⬆️ Back to top</a></div>
+
+## ↔️ 10. Cross-Architecture Relationships
 
 | Related Architecture           | Connection                                             | Reference                                                                    |
 | ------------------------------ | ------------------------------------------------------ | ---------------------------------------------------------------------------- |

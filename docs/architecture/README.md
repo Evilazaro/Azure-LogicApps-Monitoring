@@ -1,10 +1,21 @@
-# Architecture Overview
+# 🏗️ Architecture Overview
 
 ← [Documentation Home](../README.md) | **Index** | [Business Architecture →](01-business-architecture.md)
 
 ---
 
-## Executive Summary
+## 📑 Table of Contents
+
+- [📋 Executive Summary](#-executive-summary)
+- [🗺️ High-Level Architecture](#️-high-level-architecture)
+- [📦 Service Inventory](#-service-inventory)
+- [🧭 Document Navigation](#-document-navigation)
+- [⚡ Quick Reference](#-quick-reference)
+- [🔗 Related Documentation](#-related-documentation)
+
+---
+
+## 📋 Executive Summary
 
 The **Azure Logic Apps Monitoring Solution** is a cloud-native reference architecture demonstrating enterprise-grade observability patterns for distributed applications on Azure. Built around an eShop order management scenario, this solution showcases how to implement end-to-end monitoring, distributed tracing, and event-driven automation using Azure's native services.
 
@@ -17,7 +28,9 @@ The **Azure Logic Apps Monitoring Solution** is a cloud-native reference archite
 
 ---
 
-## High-Level Architecture
+<div align="right"><a href="#-table-of-contents">⬆️ Back to top</a></div>
+
+## 🗺️ High-Level Architecture
 
 ```mermaid
 flowchart TB
@@ -74,7 +87,9 @@ flowchart TB
 
 ---
 
-## Service Inventory
+<div align="right"><a href="#-table-of-contents">⬆️ Back to top</a></div>
+
+## 📦 Service Inventory
 
 | Service                 | Type         | Responsibility                                 | Technology               |
 | ----------------------- | ------------ | ---------------------------------------------- | ------------------------ |
@@ -86,11 +101,13 @@ flowchart TB
 
 ---
 
-## Document Navigation
+<div align="right"><a href="#-table-of-contents">⬆️ Back to top</a></div>
+
+## 🧭 Document Navigation
 
 This architecture documentation follows the **TOGAF BDAT framework**, organized into modular, cross-referenced documents:
 
-### BDAT Layer Documents
+### 📚 BDAT Layer Documents
 
 | Document                                                            | Description                               | Primary Audience            |
 | ------------------------------------------------------------------- | ----------------------------------------- | --------------------------- |
@@ -102,7 +119,7 @@ This architecture documentation follows the **TOGAF BDAT framework**, organized 
 | [06 - Security Architecture](06-security-architecture.md)           | Identity, secrets, network security       | Security Engineers          |
 | [07 - Deployment Architecture](07-deployment-architecture.md)       | CI/CD, environments, IaC                  | DevOps Engineers            |
 
-### Architecture Decision Records
+### 📝 Architecture Decision Records
 
 | ADR                                              | Title                                   | Status   |
 | ------------------------------------------------ | --------------------------------------- | -------- |
@@ -110,7 +127,7 @@ This architecture documentation follows the **TOGAF BDAT framework**, organized 
 | [ADR-002](adr/ADR-002-service-bus-messaging.md)  | Azure Service Bus for Async Messaging   | Accepted |
 | [ADR-003](adr/ADR-003-observability-strategy.md) | OpenTelemetry with Application Insights | Accepted |
 
-### Reading Order by Audience
+### 👥 Reading Order by Audience
 
 | Audience                      | Recommended Path             |
 | ----------------------------- | ---------------------------- |
@@ -121,9 +138,11 @@ This architecture documentation follows the **TOGAF BDAT framework**, organized 
 
 ---
 
-## Quick Reference
+<div align="right"><a href="#-table-of-contents">⬆️ Back to top</a></div>
 
-### Key Azure Resources
+## ⚡ Quick Reference
+
+### ☁️ Key Azure Resources
 
 | Resource             | Purpose                   | Tier          |
 | -------------------- | ------------------------- | ------------- |
@@ -134,9 +153,9 @@ This architecture documentation follows the **TOGAF BDAT framework**, organized 
 | Application Insights | Distributed tracing & APM | Standard      |
 | Log Analytics        | Centralized logging       | Pay-as-you-go |
 
-### Repository Structure
+### 📁 Repository Structure
 
-```
+```text
 Azure-LogicApps-Monitoring/
 ├── app.AppHost/              # .NET Aspire orchestration
 ├── app.ServiceDefaults/      # Shared cross-cutting concerns
@@ -159,7 +178,9 @@ Azure-LogicApps-Monitoring/
 
 ---
 
-## Related Documentation
+<div align="right"><a href="#-table-of-contents">⬆️ Back to top</a></div>
+
+## 🔗 Related Documentation
 
 - [DevOps Documentation](../devops/README.md) - CI/CD pipeline details
 - [Hook Scripts Guide](../hooks/README.md) - Automation scripts documentation

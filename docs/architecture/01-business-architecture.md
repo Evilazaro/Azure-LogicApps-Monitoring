@@ -1,10 +1,22 @@
-# Business Architecture
+# 🏢 Business Architecture
 
 ← [Architecture Overview](README.md) | [Index](README.md) | [Data Architecture →](02-data-architecture.md)
 
 ---
 
-## 1. Business Context
+## 📑 Table of Contents
+
+- [🎯 Business Context](#-1-business-context)
+- [⚙️ Business Capabilities](#️-2-business-capabilities)
+- [👥 Stakeholder Analysis](#-3-stakeholder-analysis)
+- [📊 Value Streams](#-4-value-streams)
+- [✅ Quality Attribute Requirements](#-5-quality-attribute-requirements)
+- [🔄 Business Process Flows](#-6-business-process-flows)
+- [🔗 Related Documents](#-related-documents)
+
+---
+
+## 🎯 1. Business Context
 
 ### Problem Statement
 
@@ -30,9 +42,11 @@ The Azure Logic Apps Monitoring Solution provides a **reference architecture** f
 
 ---
 
-## 2. Business Capabilities
+<div align="right"><a href="#-table-of-contents">⬆️ Back to top</a></div>
 
-### Capability Map
+## ⚙️ 2. Business Capabilities
+
+### 🗺️ Capability Map
 
 ```mermaid
 flowchart TB
@@ -74,7 +88,7 @@ flowchart TB
     class F1,F2,F3 foundation
 ```
 
-### Capability Descriptions
+### 📋 Capability Descriptions
 
 | Capability               | Description                                                                                              | Type       | Primary Components                                                                         |
 | ------------------------ | -------------------------------------------------------------------------------------------------------- | ---------- | ------------------------------------------------------------------------------------------ |
@@ -89,7 +103,9 @@ flowchart TB
 
 ---
 
-## 3. Stakeholder Analysis
+<div align="right"><a href="#-table-of-contents">⬆️ Back to top</a></div>
+
+## 👥 3. Stakeholder Analysis
 
 | Stakeholder                | Concerns                              | How Architecture Addresses                       |
 | -------------------------- | ------------------------------------- | ------------------------------------------------ |
@@ -101,9 +117,11 @@ flowchart TB
 
 ---
 
-## 4. Value Streams
+<div align="right"><a href="#-table-of-contents">⬆️ Back to top</a></div>
 
-### Order to Fulfillment Value Stream
+## 📊 4. Value Streams
+
+### 📦 Order to Fulfillment Value Stream
 
 ```mermaid
 flowchart LR
@@ -134,7 +152,7 @@ flowchart LR
     class O1 outcome
 ```
 
-#### Value Stream Stages
+#### 📍 Value Stream Stages
 
 | Stage        | Description                                 | Capabilities                     | Cycle Time |
 | ------------ | ------------------------------------------- | -------------------------------- | ---------- |
@@ -144,7 +162,7 @@ flowchart LR
 | **Publish**  | OrderPlaced event sent to Service Bus       | Event Messaging                  | ~150ms     |
 | **Process**  | Logic App executes automated workflow       | Workflow Automation              | ~2s        |
 
-### Observability Value Stream
+### 🔍 Observability Value Stream
 
 ```mermaid
 flowchart LR
@@ -176,7 +194,9 @@ flowchart LR
 
 ---
 
-## 5. Quality Attribute Requirements
+<div align="right"><a href="#-table-of-contents">⬆️ Back to top</a></div>
+
+## ✅ 5. Quality Attribute Requirements
 
 | Attribute           | Requirement                      | Priority | Measurement                           |
 | ------------------- | -------------------------------- | -------- | ------------------------------------- |
@@ -190,9 +210,11 @@ flowchart LR
 
 ---
 
-## 6. Business Process Flows
+<div align="right"><a href="#-table-of-contents">⬆️ Back to top</a></div>
 
-### Order Lifecycle Process
+## 🔄 6. Business Process Flows
+
+### 📦 Order Lifecycle Process
 
 ```mermaid
 flowchart TD
@@ -225,7 +247,9 @@ flowchart TD
 
 ---
 
-## Related Documents
+<div align="right"><a href="#-table-of-contents">⬆️ Back to top</a></div>
+
+## 🔗 Related Documents
 
 - [Data Architecture](02-data-architecture.md) - Data domains supporting business capabilities
 - [Application Architecture](03-application-architecture.md) - Services implementing capabilities

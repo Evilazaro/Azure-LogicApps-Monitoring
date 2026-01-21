@@ -1,10 +1,26 @@
-# Application Architecture
+# ⚙️ Application Architecture
 
 ← [Data Architecture](02-data-architecture.md) | [Index](README.md) | [Technology Architecture →](04-technology-architecture.md)
 
 ---
 
-## 1. Application Architecture Overview
+## 📑 Table of Contents
+
+- [📊 Overview](#-1-application-architecture-overview)
+- [📋 Principles](#-2-application-architecture-principles)
+- [🗺️ Landscape Map](#️-3-application-landscape-map)
+- [📦 Service Catalog](#-4-service-catalog)
+- [🔍 Service Details](#-5-service-details)
+- [🔄 Inter-Service Communication](#-6-inter-service-communication)
+- [🔗 Integration Points](#-7-application-integration-points)
+- [🛡️ Resilience Patterns](#️-8-resilience-patterns)
+- [🏛️ Cross-Cutting Concerns](#️-9-cross-cutting-concerns)
+- [💻 Technology Stack](#-10-technology-stack-summary)
+- [↔️ Cross-Architecture](#️-11-cross-architecture-relationships)
+
+---
+
+## 📊 1. Application Architecture Overview
 
 The Azure Logic Apps Monitoring Solution follows an **event-driven, modular architecture** with clear service boundaries. Each service has a single responsibility, communicates via well-defined APIs or events, and can be deployed independently.
 
@@ -26,7 +42,9 @@ The Azure Logic Apps Monitoring Solution follows an **event-driven, modular arch
 
 ---
 
-## 2. Application Architecture Principles
+<div align="right"><a href="#-table-of-contents">⬆️ Back to top</a></div>
+
+## 📋 2. Application Architecture Principles
 
 | Principle                   | Statement                             | Rationale                     | Implications                    |
 | --------------------------- | ------------------------------------- | ----------------------------- | ------------------------------- |
@@ -38,7 +56,9 @@ The Azure Logic Apps Monitoring Solution follows an **event-driven, modular arch
 
 ---
 
-## 3. Application Landscape Map
+<div align="right"><a href="#-table-of-contents">⬆️ Back to top</a></div>
+
+## 🗺️ 3. Application Landscape Map
 
 ```mermaid
 flowchart TB
@@ -99,7 +119,7 @@ flowchart TB
     class DB,Queue,Monitor,Storage external
 ```
 
-### Application Inventory
+### 📦 Application Inventory
 
 | Application         | Layer        | Type         | Technology               | Owner         | Status |
 | ------------------- | ------------ | ------------ | ------------------------ | ------------- | ------ |
@@ -109,7 +129,7 @@ flowchart TB
 | app.AppHost         | Platform     | Orchestrator | .NET Aspire 13.1         | Platform Team | Active |
 | app.ServiceDefaults | Platform     | Library      | .NET Class Library       | Platform Team | Active |
 
-### Application Relationship Matrix
+### 🔄 Application Relationship Matrix
 
 | From         | To           | Relationship | Protocol    | Direction |
 | ------------ | ------------ | ------------ | ----------- | --------- |
@@ -123,7 +143,9 @@ flowchart TB
 
 ---
 
-## 4. Service Catalog
+<div align="right"><a href="#-table-of-contents">⬆️ Back to top</a></div>
+
+## 📦 4. Service Catalog
 
 | Service              | Type          | Port | Dependencies              | Health Endpoint     |
 | -------------------- | ------------- | ---- | ------------------------- | ------------------- |
@@ -133,9 +155,11 @@ flowchart TB
 
 ---
 
-## 5. Service Details
+<div align="right"><a href="#-table-of-contents">⬆️ Back to top</a></div>
 
-### eShop.Orders.API
+## 🔍 5. Service Details
+
+### 📡 eShop.Orders.API
 
 **Responsibilities:**
 
@@ -147,7 +171,7 @@ flowchart TB
 
 **Source:** [src/eShop.Orders.API/](../../src/eShop.Orders.API/)
 
-#### API Endpoints
+#### 🌐 API Endpoints
 
 | Method | Route                 | Description               | Request      | Response      |
 | ------ | --------------------- | ------------------------- | ------------ | ------------- |
@@ -206,7 +230,7 @@ flowchart TB
     class OR,DbCtx data
 ```
 
-#### Key Patterns Implemented
+#### 🛠️ Key Patterns Implemented
 
 | Pattern              | Implementation        | Purpose              |
 | -------------------- | --------------------- | -------------------- |
@@ -217,7 +241,7 @@ flowchart TB
 
 ---
 
-### eShop.Web.App
+### 🌐 eShop.Web.App
 
 **Responsibilities:**
 
@@ -261,7 +285,7 @@ flowchart TB
     class APIService service
 ```
 
-#### UI Components Overview
+#### 🖼️ UI Components Overview
 
 | Component    | Purpose                   | Location           |
 | ------------ | ------------------------- | ------------------ |
@@ -272,18 +296,18 @@ flowchart TB
 
 ---
 
-### Logic Apps Workflows
+### 🔄 Logic Apps Workflows
 
 **Source:** [workflows/OrdersManagement/](../../workflows/OrdersManagement/)
 
-#### Workflow Inventory
+#### 📝 Workflow Inventory
 
 | Workflow                        | Trigger             | Purpose                       | Output               |
 | ------------------------------- | ------------------- | ----------------------------- | -------------------- |
 | **OrdersPlacedProcess**         | Service Bus message | Validate and process orders   | Blob (success/error) |
 | **OrdersPlacedCompleteProcess** | Recurrence (3s)     | Cleanup processed order blobs | Deleted blobs        |
 
-#### OrdersPlacedProcess Flow
+#### 📈 OrdersPlacedProcess Flow
 
 ```mermaid
 flowchart TD
@@ -300,7 +324,7 @@ flowchart TD
     D --> H
 ```
 
-#### Integration Points
+#### 🔗 Integration Points
 
 | Integration  | Connector  | Authentication   |
 | ------------ | ---------- | ---------------- |
@@ -310,9 +334,11 @@ flowchart TD
 
 ---
 
-## 6. Inter-Service Communication
+<div align="right"><a href="#-table-of-contents">⬆️ Back to top</a></div>
 
-### Communication Patterns
+## 🔄 6. Inter-Service Communication
+
+### 📡 Communication Patterns
 
 ```mermaid
 flowchart LR
@@ -337,7 +363,7 @@ flowchart LR
 | **Publish/Subscribe** | Event notification    | Service Bus Topic | OrderPlaced event |
 | **Fire-and-Forget**   | Background processing | Service Bus Queue | Order processing  |
 
-### Service Discovery
+### 🔍 Service Discovery
 
 | Environment | Mechanism          | Configuration                |
 | ----------- | ------------------ | ---------------------------- |
@@ -346,7 +372,9 @@ flowchart LR
 
 ---
 
-## 7. Application Integration Points
+<div align="right"><a href="#-table-of-contents">⬆️ Back to top</a></div>
+
+## 🔗 7. Application Integration Points
 
 | Source      | Target       | Protocol  | Contract            | Pattern               |
 | ----------- | ------------ | --------- | ------------------- | --------------------- |
@@ -358,7 +386,9 @@ flowchart LR
 
 ---
 
-## 8. Resilience Patterns
+<div align="right"><a href="#-table-of-contents">⬆️ Back to top</a></div>
+
+## 🛡️ 8. Resilience Patterns
 
 From [app.ServiceDefaults/Extensions.cs](../../app.ServiceDefaults/Extensions.cs):
 
@@ -369,7 +399,7 @@ From [app.ServiceDefaults/Extensions.cs](../../app.ServiceDefaults/Extensions.cs
 | **Timeout**         | HttpClient     | 60s per attempt, 600s total     | Prevent hung requests      |
 | **Bulkhead**        | Service Bus    | Independent send timeout (30s)  | Isolate message delivery   |
 
-### Resilience Configuration
+### ⚙️ Resilience Configuration
 
 ```csharp
 // From Extensions.cs
@@ -385,7 +415,9 @@ http.AddStandardResilienceHandler(options =>
 
 ---
 
-## 9. Cross-Cutting Concerns
+<div align="right"><a href="#-table-of-contents">⬆️ Back to top</a></div>
+
+## 🏛️ 9. Cross-Cutting Concerns
 
 The `app.ServiceDefaults` library provides shared functionality consumed by all services:
 
@@ -399,7 +431,9 @@ The `app.ServiceDefaults` library provides shared functionality consumed by all 
 
 ---
 
-## 10. Technology Stack Summary
+<div align="right"><a href="#-table-of-contents">⬆️ Back to top</a></div>
+
+## 💻 10. Technology Stack Summary
 
 | Layer         | Technology                 | Version | Purpose             |
 | ------------- | -------------------------- | ------- | ------------------- |
@@ -415,7 +449,9 @@ The `app.ServiceDefaults` library provides shared functionality consumed by all 
 
 ---
 
-## 11. Cross-Architecture Relationships
+<div align="right"><a href="#-table-of-contents">⬆️ Back to top</a></div>
+
+## ↔️ 11. Cross-Architecture Relationships
 
 | Related Architecture           | Connection                                   | Reference                                                                           |
 | ------------------------------ | -------------------------------------------- | ----------------------------------------------------------------------------------- |
