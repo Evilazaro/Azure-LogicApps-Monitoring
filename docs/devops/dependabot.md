@@ -56,64 +56,82 @@ Dependabot monitors two package ecosystems:
 <summary>🔍 Click to expand dependency scanning flow</summary>
 
 ```mermaid
+---
+title: Dependabot Configuration Visualization
+---
 flowchart TD
+    %% ===== DEPENDABOT SCHEDULER =====
     subgraph Dependabot["🤖 Dependabot"]
-        SCAN[📅 Weekly Scan<br/>Monday 06:00 UTC]
+        SCAN(["📅 Weekly Scan<br/>Monday 06:00 UTC"])
     end
 
+    %% ===== NUGET ECOSYSTEM =====
     subgraph NuGet["📦 NuGet Ecosystem"]
         direction TB
-        N_SCAN[Scan Dependencies]
+        N_SCAN["Scan Dependencies"]
 
         subgraph MicrosoftGroup["Microsoft Packages"]
-            MS1[Microsoft.*]
-            MS2[System.*]
-            MS3[Azure.*]
+            MS1["Microsoft.*"]
+            MS2["System.*"]
+            MS3["Azure.*"]
         end
 
         subgraph TestingGroup["Testing Packages"]
-            T1[xunit*]
-            T2[Moq*]
-            T3[FluentAssertions*]
-            T4[coverlet*]
-            T5[NSubstitute*]
+            T1["xunit*"]
+            T2["Moq*"]
+            T3["FluentAssertions*"]
+            T4["coverlet*"]
+            T5["NSubstitute*"]
         end
 
-        N_PR[Create PRs<br/>Limit: 10]
+        N_PR[/"Create PRs<br/>Limit: 10"/]
     end
 
+    %% ===== GITHUB ACTIONS ECOSYSTEM =====
     subgraph Actions["⚙️ GitHub Actions Ecosystem"]
         direction TB
-        A_SCAN[Scan Workflow Actions]
+        A_SCAN["Scan Workflow Actions"]
 
         subgraph ActionsGroup["All Actions"]
-            A1[actions/*]
-            A2[github/*]
-            A3[azure/*]
+            A1["actions/*"]
+            A2["github/*"]
+            A3["azure/*"]
         end
 
-        A_PR[Create PRs<br/>Limit: 5]
+        A_PR[/"Create PRs<br/>Limit: 5"/]
     end
 
-    SCAN --> N_SCAN
-    SCAN --> A_SCAN
-    N_SCAN --> MicrosoftGroup
-    N_SCAN --> TestingGroup
-    MicrosoftGroup --> N_PR
-    TestingGroup --> N_PR
-    A_SCAN --> ActionsGroup
-    ActionsGroup --> A_PR
+    %% ===== SCAN FLOWS =====
+    SCAN ==>|scans| N_SCAN
+    SCAN ==>|scans| A_SCAN
+    N_SCAN -->|checks| MicrosoftGroup
+    N_SCAN -->|checks| TestingGroup
+    MicrosoftGroup -->|updates| N_PR
+    TestingGroup -->|updates| N_PR
+    A_SCAN -->|checks| ActionsGroup
+    ActionsGroup -->|updates| A_PR
 
-    %% Styling
-    classDef scan fill:#2196F3,stroke:#1565C0,color:#fff
-    classDef nuget fill:#FF9800,stroke:#EF6C00,color:#fff
-    classDef actions fill:#9C27B0,stroke:#6A1B9A,color:#fff
-    classDef pr fill:#4CAF50,stroke:#2E7D32,color:#fff
+    %% ===== NODE STYLING =====
+    classDef trigger fill:#818CF8,stroke:#4F46E5,color:#FFFFFF
+    classDef primary fill:#4F46E5,stroke:#3730A3,color:#FFFFFF
+    classDef secondary fill:#10B981,stroke:#059669,color:#FFFFFF
+    classDef external fill:#6B7280,stroke:#4B5563,color:#FFFFFF,stroke-dasharray:5 5
+    classDef datastore fill:#F59E0B,stroke:#D97706,color:#000000
 
-    class SCAN scan
-    class N_SCAN,MS1,MS2,MS3,T1,T2,T3,T4,T5 nuget
-    class A_SCAN,A1,A2,A3 actions
-    class N_PR,A_PR pr
+    %% ===== APPLY NODE CLASSES =====
+    class SCAN trigger
+    class N_SCAN,MS1,MS2,MS3 primary
+    class T1,T2,T3,T4,T5 secondary
+    class A_SCAN,A1,A2,A3 external
+    class N_PR,A_PR datastore
+
+    %% ===== SUBGRAPH STYLING =====
+    style Dependabot fill:#EEF2FF,stroke:#4F46E5,stroke-width:2px
+    style NuGet fill:#E0E7FF,stroke:#4F46E5,stroke-width:2px
+    style MicrosoftGroup fill:#D1FAE5,stroke:#059669,stroke-width:1px
+    style TestingGroup fill:#D1FAE5,stroke:#059669,stroke-width:1px
+    style Actions fill:#F3F4F6,stroke:#6B7280,stroke-width:2px
+    style ActionsGroup fill:#F3F4F6,stroke:#6B7280,stroke-width:1px
 ```
 
 </details>

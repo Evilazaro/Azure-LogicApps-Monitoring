@@ -371,22 +371,39 @@ Performs static analysis security testing (SAST) using GitHub CodeQL.
 <summary>🔍 View CodeQL analysis flow</summary>
 
 ```mermaid
+---
+title: CodeQL Security Analysis Flow
+---
 flowchart LR
+    %% ===== CODEQL ANALYSIS STEPS =====
     subgraph CodeQL["🛡️ CodeQL Analysis"]
-        C1[📥 Checkout<br/>Full History]
-        C2[🔧 Setup .NET]
-        C3[🛡️ Initialize CodeQL]
-        C4[🔨 Autobuild]
-        C5[🛡️ Analyze]
-        C6[📤 Upload SARIF]
-        C7[📊 Summary]
+        C1["📥 Checkout<br/>Full History"]
+        C2["🔧 Setup .NET"]
+        C3["🛡️ Initialize CodeQL"]
+        C4["🔨 Autobuild"]
+        C5["🛡️ Analyze"]
+        C6["📤 Upload SARIF"]
+        C7[/"📊 Summary"/]
     end
 
-    C1 --> C2 --> C3 --> C4 --> C5 --> C6 --> C7
+    %% ===== ANALYSIS FLOW =====
+    C1 -->|then| C2
+    C2 -->|then| C3
+    C3 -->|initializes| C4
+    C4 -->|builds| C5
+    C5 -->|produces| C6
+    C6 -->|generates| C7
 
-    classDef codeql fill:#607D8B,stroke:#455A64,color:#fff
+    %% ===== NODE STYLING =====
+    classDef secondary fill:#10B981,stroke:#059669,color:#FFFFFF
+    classDef datastore fill:#F59E0B,stroke:#D97706,color:#000000
 
-    class C1,C2,C3,C4,C5,C6,C7 codeql
+    %% ===== APPLY NODE CLASSES =====
+    class C1,C2,C3,C4,C5,C6 secondary
+    class C7 datastore
+
+    %% ===== SUBGRAPH STYLING =====
+    style CodeQL fill:#ECFDF5,stroke:#10B981,stroke-width:2px
 ```
 
 </details>
