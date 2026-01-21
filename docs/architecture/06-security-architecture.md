@@ -117,17 +117,23 @@ sequenceDiagram
 ### 👤 Identity Assignments
 
 ```mermaid
+---
+title: Identity Assignments
+---
 flowchart TB
+    %% ===== IDENTITY =====
     subgraph Identity["🔐 User Assigned Managed Identity"]
         MI["orders-{suffix}-mi"]
     end
 
+    %% ===== SERVICES =====
     subgraph Services["📡 Services"]
         API["Container Apps<br/>Orders API"]
         WebApp["Container Apps<br/>Web App"]
         LA["Logic Apps<br/>OrdersManagement"]
     end
 
+    %% ===== RESOURCES =====
     subgraph Resources["☁️ Azure Resources"]
         SQL[("Azure SQL")]
         SB["Service Bus"]
@@ -135,20 +141,28 @@ flowchart TB
         AppIns["App Insights"]
     end
 
-    MI --> API & WebApp & LA
+    %% ===== CONNECTIONS =====
+    MI -->|"assigns to"| API & WebApp & LA
     API -->|"SQL Data Contributor"| SQL
     API -->|"Service Bus Data Sender"| SB
     LA -->|"Service Bus Data Receiver"| SB
     LA -->|"Storage Blob Contributor"| Storage
     API & WebApp -->|"Monitoring Contributor"| AppIns
 
-    classDef identity fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px
-    classDef service fill:#e3f2fd,stroke:#1565c0,stroke-width:2px
-    classDef resource fill:#e8f5e9,stroke:#2e7d32,stroke-width:2px
+    %% ===== CLASS DEFINITIONS (EXACT HEX COLORS) =====
+    classDef primary fill:#4F46E5,stroke:#3730A3,color:#FFFFFF
+    classDef secondary fill:#10B981,stroke:#059669,color:#FFFFFF
+    classDef datastore fill:#F59E0B,stroke:#D97706,color:#000000
+    classDef trigger fill:#818CF8,stroke:#4F46E5,color:#FFFFFF
 
-    class MI identity
-    class API,WebApp,LA service
-    class SQL,SB,Storage,AppIns resource
+    class MI trigger
+    class API,WebApp,LA primary
+    class SQL,SB,Storage,AppIns datastore
+
+    %% ===== SUBGRAPH STYLES =====
+    style Identity fill:#EEF2FF,stroke:#4F46E5,stroke-width:2px
+    style Services fill:#E0E7FF,stroke:#4F46E5,stroke-width:2px
+    style Resources fill:#FEF3C7,stroke:#F59E0B,stroke-width:2px
 ```
 
 ### 📝 Role Assignments
@@ -170,15 +184,21 @@ From [infra/shared/identity/main.bicep](../../infra/shared/identity/main.bicep):
 ### 🔄 Service-to-Service Authentication Flow
 
 ```mermaid
+---
+title: Service-to-Service Authentication Flow
+---
 flowchart LR
+    %% ===== LOCAL DEVELOPMENT =====
     subgraph LocalDev["🛠️ Local Development"]
         DevCred["Azure CLI / VS Credential"]
     end
 
+    %% ===== AZURE DEPLOYMENT =====
     subgraph AzureDeploy["☁️ Azure Deployment"]
         ManagedId["User Assigned<br/>Managed Identity"]
     end
 
+    %% ===== CREDENTIAL CHAIN =====
     subgraph DefaultAzureCredential["DefaultAzureCredential Chain"]
         direction TB
         Env["Environment Credential"]
@@ -187,14 +207,31 @@ flowchart LR
         CLI["Azure CLI Credential"]
     end
 
-    DevCred --> VS & CLI
-    ManagedId --> MI
-
-    DefaultAzureCredential --> SQL & SB & Storage
-
+    %% ===== AZURE RESOURCES =====
     SQL[("Azure SQL")]
     SB["Service Bus"]
     Storage["Storage"]
+
+    %% ===== CONNECTIONS =====
+    DevCred -->|"provides"| VS & CLI
+    ManagedId -->|"provides"| MI
+    DefaultAzureCredential -->|"authenticates"| SQL & SB & Storage
+
+    %% ===== CLASS DEFINITIONS (EXACT HEX COLORS) =====
+    classDef primary fill:#4F46E5,stroke:#3730A3,color:#FFFFFF
+    classDef secondary fill:#10B981,stroke:#059669,color:#FFFFFF
+    classDef datastore fill:#F59E0B,stroke:#D97706,color:#000000
+    classDef trigger fill:#818CF8,stroke:#4F46E5,color:#FFFFFF
+    classDef external fill:#6B7280,stroke:#4B5563,color:#FFFFFF,stroke-dasharray:5 5
+
+    class DevCred,ManagedId trigger
+    class Env,MI,VS,CLI primary
+    class SQL,SB,Storage datastore
+
+    %% ===== SUBGRAPH STYLES =====
+    style LocalDev fill:#F3F4F6,stroke:#6B7280,stroke-width:2px
+    style AzureDeploy fill:#E0E7FF,stroke:#4F46E5,stroke-width:2px
+    style DefaultAzureCredential fill:#ECFDF5,stroke:#10B981,stroke-width:2px
 ```
 
 ---
@@ -250,12 +287,18 @@ dotnet user-secrets set "Azure:ServiceBus:HostName" $serviceBusHostName
 ### 🗺️ Network Topology
 
 ```mermaid
+---
+title: Network Topology
+---
 flowchart TB
+    %% ===== INTERNET =====
     subgraph Internet["🌐 Internet"]
         Users["External Users"]
     end
 
+    %% ===== AZURE PLATFORM =====
     subgraph Azure["☁️ Azure"]
+        %% ===== VIRTUAL NETWORK =====
         subgraph VNet["Virtual Network (10.0.0.0/16)"]
             subgraph CASubnet["Container Apps Subnet"]
                 API["Orders API"]
@@ -267,6 +310,7 @@ flowchart TB
             end
         end
 
+        %% ===== PAAS SERVICES =====
         subgraph PaaS["PaaS Services"]
             SQL[("Azure SQL")]
             SB["Service Bus"]
@@ -274,19 +318,30 @@ flowchart TB
         end
     end
 
+    %% ===== CONNECTIONS =====
     Users -->|"HTTPS"| WebApp
     WebApp -->|"Internal"| API
     API -->|"TDS/TLS"| SQL
     API -->|"AMQP/TLS"| SB
     LA -->|"HTTPS"| Storage
 
-    classDef internet fill:#ffebee,stroke:#c62828
-    classDef vnet fill:#e3f2fd,stroke:#1565c0
-    classDef paas fill:#e8f5e9,stroke:#2e7d32
+    %% ===== CLASS DEFINITIONS (EXACT HEX COLORS) =====
+    classDef primary fill:#4F46E5,stroke:#3730A3,color:#FFFFFF
+    classDef secondary fill:#10B981,stroke:#059669,color:#FFFFFF
+    classDef datastore fill:#F59E0B,stroke:#D97706,color:#000000
+    classDef external fill:#6B7280,stroke:#4B5563,color:#FFFFFF,stroke-dasharray:5 5
 
-    class Users internet
-    class API,WebApp,LA vnet
-    class SQL,SB,Storage paas
+    class Users external
+    class API,WebApp,LA primary
+    class SQL,SB,Storage datastore
+
+    %% ===== SUBGRAPH STYLES =====
+    style Internet fill:#F3F4F6,stroke:#6B7280,stroke-width:2px
+    style Azure fill:#E0E7FF,stroke:#4F46E5,stroke-width:2px
+    style VNet fill:#EEF2FF,stroke:#4F46E5,stroke-width:2px
+    style CASubnet fill:#ECFDF5,stroke:#10B981,stroke-width:2px
+    style LASubnet fill:#ECFDF5,stroke:#10B981,stroke-width:2px
+    style PaaS fill:#FEF3C7,stroke:#F59E0B,stroke-width:2px
 ```
 
 ### 🛡️ Network Controls
