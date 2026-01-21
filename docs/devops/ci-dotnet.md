@@ -60,73 +60,88 @@ This workflow provides:
 <summary>🔍 Click to expand pipeline diagram</summary>
 
 ```mermaid
+---
+title: CI Pipeline Architecture
+---
 flowchart TD
+    %% ===== TRIGGER EVENTS =====
     subgraph Triggers["🎯 Triggers"]
-        T1([push])
-        T2([pull_request])
-        T3([workflow_dispatch])
+        T1(["push"])
+        T2(["pull_request"])
+        T3(["workflow_dispatch"])
     end
 
+    %% ===== PATH FILTERS =====
     subgraph PathFilters["📁 Path Filters"]
-        PF[src/**, app.*/**,<br/>*.sln, global.json,<br/>workflow files]
+        PF[/"src/**, app.*/**,<br/>*.sln, global.json,<br/>workflow files"/]
     end
 
+    %% ===== CI PIPELINE =====
     subgraph CI["🚀 CI Pipeline"]
-        CI_CALL[[ci-dotnet-reusable.yml]]
+        CI_CALL[["ci-dotnet-reusable.yml"]]
     end
 
+    %% ===== EXECUTED JOBS =====
     subgraph Jobs["📋 Jobs Executed"]
         direction TB
 
         subgraph BuildMatrix["🔨 Build Matrix"]
-            B1[Ubuntu]
-            B2[Windows]
-            B3[macOS]
+            B1["Ubuntu"]
+            B2["Windows"]
+            B3["macOS"]
         end
 
         subgraph TestMatrix["🧪 Test Matrix"]
-            T_U[Ubuntu]
-            T_W[Windows]
-            T_M[macOS]
+            TM_U["Ubuntu"]
+            TM_W["Windows"]
+            TM_M["macOS"]
         end
 
-        ANALYZE[🔍 Analyze]
-        CODEQL[🛡️ CodeQL]
-        SUMMARY[📊 Summary]
+        ANALYZE["🔍 Analyze"]
+        CODEQL["🛡️ CodeQL"]
+        SUMMARY[/"📊 Summary"/]
     end
 
-    %% Trigger flows
-    T1 --> PF
-    T2 --> PF
-    T3 --> CI_CALL
-    PF --> CI_CALL
+    %% ===== TRIGGER FLOWS =====
+    T1 -->|evaluates| PF
+    T2 -->|evaluates| PF
+    T3 -->|triggers directly| CI_CALL
+    PF -->|matches| CI_CALL
 
-    %% CI to Jobs
-    CI_CALL --> BuildMatrix
-    BuildMatrix --> TestMatrix
-    BuildMatrix --> ANALYZE
-    BuildMatrix --> CODEQL
-    TestMatrix --> SUMMARY
-    ANALYZE --> SUMMARY
-    CODEQL --> SUMMARY
+    %% ===== CI TO JOBS =====
+    CI_CALL ==>|executes| BuildMatrix
+    BuildMatrix -->|compiles| TestMatrix
+    BuildMatrix -->|validates| ANALYZE
+    BuildMatrix -->|scans| CODEQL
+    TestMatrix -->|reports| SUMMARY
+    ANALYZE -->|reports| SUMMARY
+    CODEQL -->|reports| SUMMARY
 
-    %% Styling
-    classDef trigger fill:#2196F3,stroke:#1565C0,color:#fff
-    classDef filter fill:#FFC107,stroke:#FFA000,color:#000
-    classDef reusable fill:#9C27B0,stroke:#6A1B9A,color:#fff
-    classDef build fill:#FF9800,stroke:#EF6C00,color:#fff
-    classDef test fill:#9C27B0,stroke:#6A1B9A,color:#fff
-    classDef security fill:#607D8B,stroke:#455A64,color:#fff
-    classDef summary fill:#00BCD4,stroke:#0097A7,color:#fff
+    %% ===== NODE STYLING =====
+    classDef trigger fill:#818CF8,stroke:#4F46E5,color:#FFFFFF
+    classDef input fill:#F3F4F6,stroke:#6B7280,color:#000000
+    classDef external fill:#6B7280,stroke:#4B5563,color:#FFFFFF,stroke-dasharray:5 5
+    classDef primary fill:#4F46E5,stroke:#3730A3,color:#FFFFFF
+    classDef secondary fill:#10B981,stroke:#059669,color:#FFFFFF
+    classDef matrix fill:#D1FAE5,stroke:#10B981,color:#000000
+    classDef datastore fill:#F59E0B,stroke:#D97706,color:#000000
 
+    %% ===== APPLY NODE CLASSES =====
     class T1,T2,T3 trigger
-    class PF filter
-    class CI_CALL reusable
-    class B1,B2,B3 build
-    class T_U,T_W,T_M test
-    class ANALYZE test
-    class CODEQL security
-    class SUMMARY summary
+    class PF input
+    class CI_CALL external
+    class B1,B2,B3,TM_U,TM_W,TM_M matrix
+    class ANALYZE secondary
+    class CODEQL secondary
+    class SUMMARY datastore
+
+    %% ===== SUBGRAPH STYLING =====
+    style Triggers fill:#EEF2FF,stroke:#4F46E5,stroke-width:2px
+    style PathFilters fill:#F3F4F6,stroke:#6B7280,stroke-width:2px
+    style CI fill:#E0E7FF,stroke:#4F46E5,stroke-width:2px
+    style Jobs fill:#ECFDF5,stroke:#10B981,stroke-width:2px
+    style BuildMatrix fill:#D1FAE5,stroke:#059669,stroke-width:1px
+    style TestMatrix fill:#D1FAE5,stroke:#059669,stroke-width:1px
 ```
 
 </details>
@@ -197,43 +212,56 @@ The reusable workflow executes the following jobs:
 <summary>🔍 View jobs flow diagram</summary>
 
 ```mermaid
+---
+title: CI Jobs Flow Overview
+---
 flowchart LR
+    %% ===== CROSS-PLATFORM MATRIX =====
     subgraph CrossPlatform["🌐 Cross-Platform Matrix"]
         direction TB
         BUILD["🔨 Build<br/>(Ubuntu, Windows, macOS)"]
         TEST["🧪 Test<br/>(Ubuntu, Windows, macOS)"]
     end
 
+    %% ===== SINGLE RUNNER JOBS =====
     subgraph SingleRunner["🖥️ Single Runner"]
         ANALYZE["🔍 Analyze"]
         CODEQL["🛡️ CodeQL"]
     end
 
+    %% ===== FINAL AGGREGATION =====
     subgraph Final["📊 Aggregation"]
-        SUMMARY["📊 Summary"]
+        SUMMARY[/"📊 Summary"/]
         FAILURE["❌ On-Failure"]
     end
 
-    BUILD --> TEST
-    BUILD --> ANALYZE
-    BUILD --> CODEQL
-    TEST --> SUMMARY
-    ANALYZE --> SUMMARY
-    CODEQL --> SUMMARY
-    SUMMARY -.->|failure| FAILURE
+    %% ===== JOB FLOW =====
+    BUILD ==>|compiles| TEST
+    BUILD -->|validates| ANALYZE
+    BUILD -->|scans| CODEQL
+    TEST -->|reports| SUMMARY
+    ANALYZE -->|reports| SUMMARY
+    CODEQL -->|reports| SUMMARY
+    SUMMARY -.->|on failure| FAILURE
 
-    classDef build fill:#FF9800,stroke:#EF6C00,color:#fff
-    classDef test fill:#9C27B0,stroke:#6A1B9A,color:#fff
-    classDef security fill:#607D8B,stroke:#455A64,color:#fff
-    classDef summary fill:#00BCD4,stroke:#0097A7,color:#fff
-    classDef failure fill:#F44336,stroke:#C62828,color:#fff
+    %% ===== NODE STYLING =====
+    classDef primary fill:#4F46E5,stroke:#3730A3,color:#FFFFFF
+    classDef secondary fill:#10B981,stroke:#059669,color:#FFFFFF
+    classDef datastore fill:#F59E0B,stroke:#D97706,color:#000000
+    classDef failed fill:#F44336,stroke:#C62828,color:#FFFFFF
 
-    class BUILD build
-    class TEST test
-    class ANALYZE test
-    class CODEQL security
-    class SUMMARY summary
-    class FAILURE failure
+    %% ===== APPLY NODE CLASSES =====
+    class BUILD primary
+    class TEST secondary
+    class ANALYZE secondary
+    class CODEQL secondary
+    class SUMMARY datastore
+    class FAILURE failed
+
+    %% ===== SUBGRAPH STYLING =====
+    style CrossPlatform fill:#ECFDF5,stroke:#10B981,stroke-width:2px
+    style SingleRunner fill:#E0E7FF,stroke:#4F46E5,stroke-width:2px
+    style Final fill:#FEF3C7,stroke:#F59E0B,stroke-width:2px
 ```
 
 </details>
