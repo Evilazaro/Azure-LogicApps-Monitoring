@@ -248,45 +248,62 @@ GitHub Actions updates are **critical for security**:
 <summary>🔍 Click to expand PR workflow diagram</summary>
 
 ```mermaid
+---
+title: Dependabot PR Workflow
+---
 flowchart LR
-    subgraph Dependabot["🤖 Dependabot"]
-        DETECT[Detect Update]
-        CREATE[Create PR]
+    %% ===== DEPENDABOT =====
+    subgraph DependabotBot["🤖 Dependabot"]
+        DETECT["Detect Update"]
+        CREATE["Create PR"]
     end
 
-    subgraph CI["🔄 CI Pipeline"]
-        BUILD[Build]
-        TEST[Test]
-        CODEQL[CodeQL]
+    %% ===== CI PIPELINE =====
+    subgraph CIPipeline["🔄 CI Pipeline"]
+        BUILD["Build"]
+        TEST["Test"]
+        CODEQL["CodeQL"]
     end
 
+    %% ===== REVIEW STAGE =====
     subgraph Review["👀 Review"]
-        AUTO[Auto-merge<br/>Minor/Patch]
-        MANUAL[Manual Review<br/>Major]
+        AUTO{"Auto-merge<br/>Minor/Patch"}
+        MANUAL["Manual Review<br/>Major"]
     end
 
+    %% ===== MERGE STAGE =====
     subgraph Merge["✅ Merge"]
-        MERGED[Merged to Main]
+        MERGED(["Merged to Main"])
     end
 
-    DETECT --> CREATE
-    CREATE --> BUILD
-    BUILD --> TEST
-    TEST --> CODEQL
-    CODEQL --> AUTO
-    CODEQL --> MANUAL
-    AUTO --> MERGED
-    MANUAL --> MERGED
+    %% ===== WORKFLOW FLOW =====
+    DETECT -->|finds| CREATE
+    CREATE -->|triggers| BUILD
+    BUILD -->|compiles| TEST
+    TEST -->|scans| CODEQL
+    CODEQL -->|auto-approve| AUTO
+    CODEQL -->|requires| MANUAL
+    AUTO ==>|merges| MERGED
+    MANUAL ==>|approves| MERGED
 
-    classDef bot fill:#2196F3,stroke:#1565C0,color:#fff
-    classDef ci fill:#FF9800,stroke:#EF6C00,color:#fff
-    classDef review fill:#FFC107,stroke:#FFA000,color:#000
-    classDef merge fill:#4CAF50,stroke:#2E7D32,color:#fff
+    %% ===== NODE STYLING =====
+    classDef trigger fill:#818CF8,stroke:#4F46E5,color:#FFFFFF
+    classDef primary fill:#4F46E5,stroke:#3730A3,color:#FFFFFF
+    classDef secondary fill:#10B981,stroke:#059669,color:#FFFFFF
+    classDef decision fill:#FFFBEB,stroke:#F59E0B,color:#000000
 
-    class DETECT,CREATE bot
-    class BUILD,TEST,CODEQL ci
-    class AUTO,MANUAL review
-    class MERGED merge
+    %% ===== APPLY NODE CLASSES =====
+    class DETECT,CREATE trigger
+    class BUILD,TEST,CODEQL primary
+    class AUTO decision
+    class MANUAL secondary
+    class MERGED secondary
+
+    %% ===== SUBGRAPH STYLING =====
+    style DependabotBot fill:#EEF2FF,stroke:#4F46E5,stroke-width:2px
+    style CIPipeline fill:#E0E7FF,stroke:#4F46E5,stroke-width:2px
+    style Review fill:#FEF3C7,stroke:#F59E0B,stroke-width:2px
+    style Merge fill:#ECFDF5,stroke:#10B981,stroke-width:2px
 ```
 
 </details>
