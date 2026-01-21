@@ -1,0 +1,170 @@
+# Architecture Overview
+
+← [Documentation Home](../README.md) | **Index** | [Business Architecture →](01-business-architecture.md)
+
+---
+
+## Executive Summary
+
+The **Azure Logic Apps Monitoring Solution** is a cloud-native reference architecture demonstrating enterprise-grade observability patterns for distributed applications on Azure. Built around an eShop order management scenario, this solution showcases how to implement end-to-end monitoring, distributed tracing, and event-driven automation using Azure's native services.
+
+**Key Architectural Highlights:**
+
+- **.NET Aspire orchestration** for seamless local development and Azure deployment
+- **Event-driven architecture** with Azure Service Bus for asynchronous order processing
+- **Logic Apps Standard** workflows for automated order validation and routing
+- **Comprehensive observability** through Application Insights with W3C Trace Context correlation
+
+---
+
+## High-Level Architecture
+
+```mermaid
+flowchart TB
+    subgraph Presentation["🖥️ Presentation Layer"]
+        WebApp["🌐 eShop.Web.App<br/>Blazor Server"]
+    end
+
+    subgraph Application["⚙️ Application Layer"]
+        API["📡 eShop.Orders.API<br/>ASP.NET Core"]
+        Workflow["🔄 OrdersManagement<br/>Logic Apps Standard"]
+    end
+
+    subgraph Platform["🏗️ Platform Layer"]
+        Aspire["🎯 app.AppHost<br/>.NET Aspire"]
+        Defaults["📦 app.ServiceDefaults<br/>Cross-cutting Concerns"]
+    end
+
+    subgraph Data["💾 Data Layer"]
+        SQL[("🗄️ Azure SQL<br/>OrderDb")]
+        SB["📨 Service Bus<br/>ordersplaced topic"]
+        Storage["📁 Azure Storage<br/>Workflow State"]
+    end
+
+    subgraph Observability["📊 Observability Layer"]
+        AppInsights["🔍 Application Insights"]
+        LogAnalytics["📋 Log Analytics"]
+    end
+
+    WebApp -->|"HTTP/REST"| API
+    API -->|"EF Core"| SQL
+    API -->|"AMQP"| SB
+    SB -->|"Trigger"| Workflow
+    Workflow -->|"HTTP"| API
+    Workflow --> Storage
+
+    Aspire -.->|"Orchestrates"| WebApp & API
+    Defaults -.->|"Configures"| WebApp & API
+
+    WebApp & API & Workflow -.->|"OTLP"| AppInsights
+    AppInsights --> LogAnalytics
+
+    classDef presentation fill:#e3f2fd,stroke:#1565c0,stroke-width:2px
+    classDef application fill:#e8f5e9,stroke:#2e7d32,stroke-width:2px
+    classDef platform fill:#fff3e0,stroke:#ef6c00,stroke-width:2px
+    classDef data fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px
+    classDef observability fill:#fce4ec,stroke:#c2185b,stroke-width:2px
+
+    class WebApp presentation
+    class API,Workflow application
+    class Aspire,Defaults platform
+    class SQL,SB,Storage data
+    class AppInsights,LogAnalytics observability
+```
+
+---
+
+## Service Inventory
+
+| Service                 | Type         | Responsibility                                 | Technology               |
+| ----------------------- | ------------ | ---------------------------------------------- | ------------------------ |
+| **eShop.Web.App**       | Frontend     | Order management UI, real-time updates         | Blazor Server, Fluent UI |
+| **eShop.Orders.API**    | Backend API  | Order CRUD, batch processing, event publishing | ASP.NET Core, EF Core    |
+| **OrdersManagement**    | Workflow     | Order validation, routing, blob storage        | Logic Apps Standard      |
+| **app.AppHost**         | Orchestrator | Service composition, Azure resource wiring     | .NET Aspire              |
+| **app.ServiceDefaults** | Library      | Telemetry, resilience, health checks           | OpenTelemetry, Polly     |
+
+---
+
+## Document Navigation
+
+This architecture documentation follows the **TOGAF BDAT framework**, organized into modular, cross-referenced documents:
+
+### BDAT Layer Documents
+
+| Document                                                            | Description                               | Primary Audience            |
+| ------------------------------------------------------------------- | ----------------------------------------- | --------------------------- |
+| [01 - Business Architecture](01-business-architecture.md)           | Capabilities, value streams, stakeholders | Architects, Product Owners  |
+| [02 - Data Architecture](02-data-architecture.md)                   | Data stores, flows, telemetry mapping     | Data Architects, Developers |
+| [03 - Application Architecture](03-application-architecture.md)     | Services, APIs, integration patterns      | Developers, Tech Leads      |
+| [04 - Technology Architecture](04-technology-architecture.md)       | Azure services, infrastructure, IaC       | Platform Engineers, SREs    |
+| [05 - Observability Architecture](05-observability-architecture.md) | Tracing, metrics, alerting                | SREs, DevOps Engineers      |
+| [06 - Security Architecture](06-security-architecture.md)           | Identity, secrets, network security       | Security Engineers          |
+| [07 - Deployment Architecture](07-deployment-architecture.md)       | CI/CD, environments, IaC                  | DevOps Engineers            |
+
+### Architecture Decision Records
+
+| ADR                                              | Title                                   | Status   |
+| ------------------------------------------------ | --------------------------------------- | -------- |
+| [ADR-001](adr/ADR-001-aspire-orchestration.md)   | .NET Aspire for Service Orchestration   | Accepted |
+| [ADR-002](adr/ADR-002-service-bus-messaging.md)  | Azure Service Bus for Async Messaging   | Accepted |
+| [ADR-003](adr/ADR-003-observability-strategy.md) | OpenTelemetry with Application Insights | Accepted |
+
+### Reading Order by Audience
+
+| Audience                      | Recommended Path             |
+| ----------------------------- | ---------------------------- |
+| **Cloud Solution Architects** | README → 01 → 04 → 05 → ADRs |
+| **Platform Engineers**        | README → 04 → 07 → 06        |
+| **Developers**                | README → 03 → 02 → 05        |
+| **DevOps/SRE Teams**          | README → 07 → 05 → 04        |
+
+---
+
+## Quick Reference
+
+### Key Azure Resources
+
+| Resource             | Purpose                   | Tier          |
+| -------------------- | ------------------------- | ------------- |
+| Azure Container Apps | Hosts API and Web App     | Consumption   |
+| Azure SQL Database   | Order data persistence    | Standard S1   |
+| Azure Service Bus    | Event messaging           | Standard      |
+| Logic Apps Standard  | Workflow automation       | WS1           |
+| Application Insights | Distributed tracing & APM | Standard      |
+| Log Analytics        | Centralized logging       | Pay-as-you-go |
+
+### Repository Structure
+
+```
+Azure-LogicApps-Monitoring/
+├── app.AppHost/              # .NET Aspire orchestration
+├── app.ServiceDefaults/      # Shared cross-cutting concerns
+├── src/
+│   ├── eShop.Orders.API/     # REST API for order management
+│   ├── eShop.Web.App/        # Blazor Server frontend
+│   └── tests/                # Unit and integration tests
+├── workflows/
+│   └── OrdersManagement/     # Logic Apps Standard workflows
+├── infra/                    # Bicep IaC templates
+│   ├── shared/               # Shared infrastructure modules
+│   └── workload/             # Workload-specific resources
+├── hooks/                    # azd lifecycle scripts
+├── docs/
+│   ├── architecture/         # This documentation
+│   ├── devops/               # CI/CD documentation
+│   └── hooks/                # Hook script guides
+└── .github/workflows/        # GitHub Actions CI/CD
+```
+
+---
+
+## Related Documentation
+
+- [DevOps Documentation](../devops/README.md) - CI/CD pipeline details
+- [Hook Scripts Guide](../hooks/README.md) - Automation scripts documentation
+- [Azure Developer CLI](https://learn.microsoft.com/azure/developer/azure-developer-cli/) - Official azd documentation
+
+---
+
+_Last Updated: January 2026_
