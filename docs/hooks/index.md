@@ -80,18 +80,84 @@ This directory contains documentation for all hooks scripts used in the Azure Lo
 The following diagram shows the typical execution flow during `azd up`:
 
 ```mermaid
+---
+title: azd up Execution Flow
+---
 flowchart TD
-    A[🚀 azd up] --> B[preprovision]
-    B --> C[Validate Prerequisites]
-    C --> D[Clear User Secrets]
-    D --> E[azd provision]
-    E --> F[Bicep Deployment]
-    F --> G[postprovision]
-    G --> H[Configure User Secrets]
-    H --> I[SQL Managed Identity Setup]
-    I --> J[azd deploy]
-    J --> K[deploy-workflow]
-    K --> L[✅ Deployment Complete]
+    %% ===== STYLE DEFINITIONS =====
+    classDef primary fill:#4F46E5,stroke:#3730A3,color:#FFFFFF
+    classDef secondary fill:#10B981,stroke:#059669,color:#FFFFFF
+    classDef datastore fill:#F59E0B,stroke:#D97706,color:#000000
+    classDef trigger fill:#818CF8,stroke:#4F46E5,color:#FFFFFF
+    classDef decision fill:#FFFBEB,stroke:#F59E0B,color:#000000
+
+    %% ===== TRIGGER =====
+    subgraph triggers["🚀 Entry Point"]
+        direction TB
+        A(["🚀 azd up"])
+    end
+
+    %% ===== PRE-PROVISIONING =====
+    subgraph preprov["🔧 Pre-Provisioning"]
+        direction TB
+        B["preprovision"]
+        C["Validate Prerequisites"]
+        D["Clear User Secrets"]
+    end
+
+    %% ===== PROVISIONING =====
+    subgraph prov["☁️ Azure Provisioning"]
+        direction TB
+        E["azd provision"]
+        F["Bicep Deployment"]
+    end
+
+    %% ===== POST-PROVISIONING =====
+    subgraph postprov["⚙️ Post-Provisioning"]
+        direction TB
+        G["postprovision"]
+        H["Configure User Secrets"]
+        I["SQL Managed Identity Setup"]
+    end
+
+    %% ===== DEPLOYMENT =====
+    subgraph deploy["📦 Deployment"]
+        direction TB
+        J["azd deploy"]
+        K["deploy-workflow"]
+    end
+
+    %% ===== COMPLETION =====
+    subgraph complete["✅ Results"]
+        direction TB
+        L(["✅ Deployment Complete"])
+    end
+
+    %% ===== CONNECTIONS =====
+    A -->|"initiates"| B
+    B -->|"validates"| C
+    C -->|"clears"| D
+    D -->|"triggers"| E
+    E -->|"deploys IaC"| F
+    F -->|"triggers"| G
+    G -->|"configures"| H
+    H -->|"configures"| I
+    I -->|"triggers"| J
+    J -->|"deploys"| K
+    K -->|"completes"| L
+
+    %% ===== NODE STYLING =====
+    class A trigger
+    class B,C,D,E,F,G,H,I,J,K primary
+    class L secondary
+
+    %% ===== SUBGRAPH STYLING =====
+    style triggers fill:#EEF2FF,stroke:#4F46E5,stroke-width:2px
+    style preprov fill:#ECFDF5,stroke:#10B981,stroke-width:2px
+    style prov fill:#E0E7FF,stroke:#4F46E5,stroke-width:2px
+    style postprov fill:#D1FAE5,stroke:#059669,stroke-width:2px
+    style deploy fill:#E0E7FF,stroke:#4F46E5,stroke-width:2px
+    style complete fill:#FEF3C7,stroke:#F59E0B,stroke-width:2px
 ```
 
 ---

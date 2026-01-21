@@ -133,49 +133,133 @@ This script primarily validates the environment rather than consuming environmen
 ## 🔄 Execution Flow
 
 ```mermaid
+---
+title: preprovision Execution Flow
+---
 flowchart TD
-    A[🚀 Start preprovision] --> B{Validate PowerShell/Bash Version}
-    B -->|Pass| C{Validate .NET SDK}
-    B -->|Fail| Z[❌ Exit with Error]
+    %% ===== STYLE DEFINITIONS =====
+    classDef primary fill:#4F46E5,stroke:#3730A3,color:#FFFFFF
+    classDef secondary fill:#10B981,stroke:#059669,color:#FFFFFF
+    classDef datastore fill:#F59E0B,stroke:#D97706,color:#000000
+    classDef trigger fill:#818CF8,stroke:#4F46E5,color:#FFFFFF
+    classDef decision fill:#FFFBEB,stroke:#F59E0B,color:#000000
+    classDef failed fill:#F44336,stroke:#C62828,color:#FFFFFF
+    classDef external fill:#6B7280,stroke:#4B5563,color:#FFFFFF,stroke-dasharray:5 5
 
-    C -->|Pass| D{Validate Azure CLI}
-    C -->|Fail| C1{AutoInstall?}
-    C1 -->|Yes| C2[Install .NET SDK]
-    C1 -->|No| Z
-    C2 --> D
+    %% ===== TRIGGER =====
+    subgraph triggers["🚀 Entry Point"]
+        direction TB
+        A(["🚀 Start preprovision"])
+    end
 
-    D -->|Pass| E{Validate Bicep CLI}
-    D -->|Fail| D1{AutoInstall?}
-    D1 -->|Yes| D2[Install Azure CLI]
-    D1 -->|No| Z
-    D2 --> E
+    %% ===== VALIDATION STAGE =====
+    subgraph validation["🔍 Prerequisites Validation"]
+        direction TB
+        B{"Validate PowerShell/Bash Version"}
+        C{"Validate .NET SDK"}
+        C1{"AutoInstall?"}
+        C2["Install .NET SDK"]
+        D{"Validate Azure CLI"}
+        D1{"AutoInstall?"}
+        D2["Install Azure CLI"]
+        E{"Validate Bicep CLI"}
+        E1{"AutoInstall?"}
+        E2["Install Bicep CLI"]
+    end
 
-    E -->|Pass| F{Validate Azure Authentication}
-    E -->|Fail| E1{AutoInstall?}
-    E1 -->|Yes| E2[Install Bicep CLI]
-    E1 -->|No| Z
-    E2 --> F
+    %% ===== AUTHENTICATION STAGE =====
+    subgraph auth["🔐 Azure Authentication"]
+        direction TB
+        F{"Validate Azure Authentication"}
+        F1{"UseDeviceCodeLogin?"}
+        F2["Azure Login with Device Code"]
+        F3["Azure Login with Browser"]
+        G["Check Resource Provider Registration"]
+    end
 
-    F -->|Pass| G[Check Resource Provider Registration]
-    F -->|Fail| F1{UseDeviceCodeLogin?}
-    F1 -->|Yes| F2[Azure Login with Device Code]
-    F1 -->|No| F3[Azure Login with Browser]
-    F2 --> G
-    F3 --> G
+    %% ===== EXECUTION STAGE =====
+    subgraph execution["⚙️ Execution"]
+        direction TB
+        H{"ValidateOnly Mode?"}
+        I["✅ Validation Complete"]
+        J{"SkipSecretsClear?"}
+        K["Skip Secrets Clearing"]
+        L["Clear .NET User Secrets"]
+        M["✅ Pre-provisioning Complete"]
+    end
 
-    G --> H{ValidateOnly Mode?}
-    H -->|Yes| I[✅ Validation Complete]
-    H -->|No| J{SkipSecretsClear?}
+    %% ===== RESULTS =====
+    subgraph results["📊 Results"]
+        direction TB
+        N["Display Validation Summary"]
+        O(["🏁 End"])
+    end
 
-    J -->|Yes| K[Skip Secrets Clearing]
-    J -->|No| L[Clear .NET User Secrets]
+    %% ===== FAILURE =====
+    subgraph failure["❌ Error Handling"]
+        direction TB
+        Z["❌ Exit with Error"]
+    end
 
-    K --> M[✅ Pre-provisioning Complete]
-    L --> M
+    %% ===== CONNECTIONS =====
+    A -->|"validates"| B
+    B -->|"Pass"| C
+    B -->|"Fail"| Z
 
-    I --> N[Display Validation Summary]
-    M --> N
-    N --> O[🏁 End]
+    C -->|"Pass"| D
+    C -->|"Fail"| C1
+    C1 -->|"Yes"| C2
+    C1 -->|"No"| Z
+    C2 -->|"installed"| D
+
+    D -->|"Pass"| E
+    D -->|"Fail"| D1
+    D1 -->|"Yes"| D2
+    D1 -->|"No"| Z
+    D2 -->|"installed"| E
+
+    E -->|"Pass"| F
+    E -->|"Fail"| E1
+    E1 -->|"Yes"| E2
+    E1 -->|"No"| Z
+    E2 -->|"installed"| F
+
+    F -->|"Pass"| G
+    F -->|"Fail"| F1
+    F1 -->|"Yes"| F2
+    F1 -->|"No"| F3
+    F2 -->|"authenticated"| G
+    F3 -->|"authenticated"| G
+
+    G -->|"checked"| H
+    H -->|"Yes"| I
+    H -->|"No"| J
+
+    J -->|"Yes"| K
+    J -->|"No"| L
+
+    K -->|"skipped"| M
+    L -->|"cleared"| M
+
+    I -->|"summary"| N
+    M -->|"summary"| N
+    N -->|"completes"| O
+
+    %% ===== NODE STYLING =====
+    class A trigger
+    class B,C,D,E,F,H,J,C1,D1,E1,F1 decision
+    class C2,D2,E2,F2,F3,G,K,L primary
+    class I,M,N secondary
+    class O secondary
+    class Z failed
+
+    %% ===== SUBGRAPH STYLING =====
+    style triggers fill:#EEF2FF,stroke:#4F46E5,stroke-width:2px
+    style validation fill:#ECFDF5,stroke:#10B981,stroke-width:2px
+    style auth fill:#E0E7FF,stroke:#4F46E5,stroke-width:2px
+    style execution fill:#D1FAE5,stroke:#059669,stroke-width:2px
+    style results fill:#FEF3C7,stroke:#F59E0B,stroke-width:2px
+    style failure fill:#FEE2E2,stroke:#F44336,stroke-width:2px
 ```
 
 ---

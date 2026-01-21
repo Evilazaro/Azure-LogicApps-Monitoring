@@ -130,37 +130,122 @@ The script performs the following operations:
 ## 🔄 Execution Flow
 
 ```mermaid
+---
+title: postprovision Execution Flow
+---
 flowchart TD
-    A[🚀 Start postprovision] --> B[Initialize Execution Timer]
-    B --> C{Validate Required Env Vars}
+    %% ===== STYLE DEFINITIONS =====
+    classDef primary fill:#4F46E5,stroke:#3730A3,color:#FFFFFF
+    classDef secondary fill:#10B981,stroke:#059669,color:#FFFFFF
+    classDef datastore fill:#F59E0B,stroke:#D97706,color:#000000
+    classDef trigger fill:#818CF8,stroke:#4F46E5,color:#FFFFFF
+    classDef decision fill:#FFFBEB,stroke:#F59E0B,color:#000000
+    classDef failed fill:#F44336,stroke:#C62828,color:#FFFFFF
+    classDef external fill:#6B7280,stroke:#4B5563,color:#FFFFFF,stroke-dasharray:5 5
 
-    C -->|Missing| Z[❌ Exit with Error]
-    C -->|Valid| D[Display Configuration Summary]
+    %% ===== TRIGGER =====
+    subgraph triggers["🚀 Entry Point"]
+        direction TB
+        A(["🚀 Start postprovision"])
+        B["Initialize Execution Timer"]
+    end
 
-    D --> E{ACR Configured?}
-    E -->|Yes| F[Authenticate to ACR]
-    E -->|No| G[Skip ACR Auth]
+    %% ===== VALIDATION =====
+    subgraph validation["🔍 Validation"]
+        direction TB
+        C{"Validate Required Env Vars"}
+        D["Display Configuration Summary"]
+    end
 
-    F --> H[Clear Existing User Secrets]
-    G --> H
+    %% ===== ACR AUTHENTICATION =====
+    subgraph acr["🐳 Container Registry"]
+        direction TB
+        E{"ACR Configured?"}
+        F["Authenticate to ACR"]
+        G["Skip ACR Auth"]
+    end
 
-    H --> I[Configure User Secrets]
+    %% ===== SECRETS CONFIGURATION =====
+    subgraph secrets["🔐 Secrets Configuration"]
+        direction TB
+        H["Clear Existing User Secrets"]
+        I["Configure User Secrets"]
+        J["Set AZURE_SUBSCRIPTION_ID"]
+        K["Set AZURE_RESOURCE_GROUP"]
+        L["Set AZURE_LOCATION"]
+        M["Set Service Connection Strings"]
+    end
 
-    I --> J[Set AZURE_SUBSCRIPTION_ID]
-    J --> K[Set AZURE_RESOURCE_GROUP]
-    K --> L[Set AZURE_LOCATION]
-    L --> M[Set Service Connection Strings]
+    %% ===== SQL CONFIGURATION =====
+    subgraph sql["🗄️ SQL Configuration"]
+        direction TB
+        N{"SQL Server Configured?"}
+        O["Configure SQL Managed Identity"]
+        P["Skip SQL Config"]
+    end
 
-    M --> N{SQL Server Configured?}
-    N -->|Yes| O[Configure SQL Managed Identity]
-    N -->|No| P[Skip SQL Config]
+    %% ===== RESULTS =====
+    subgraph results["📊 Results"]
+        direction TB
+        Q["Display Success Summary"]
+        R["Report Execution Statistics"]
+        S["✅ Post-provisioning Complete"]
+        T(["🏁 End"])
+    end
 
-    O --> Q[Display Success Summary]
-    P --> Q
+    %% ===== FAILURE =====
+    subgraph failure["❌ Error Handling"]
+        direction TB
+        Z["❌ Exit with Error"]
+    end
 
-    Q --> R[Report Execution Statistics]
-    R --> S[✅ Post-provisioning Complete]
-    S --> T[🏁 End]
+    %% ===== CONNECTIONS =====
+    A -->|"initializes"| B
+    B -->|"validates"| C
+
+    C -->|"Missing"| Z
+    C -->|"Valid"| D
+
+    D -->|"checks"| E
+    E -->|"Yes"| F
+    E -->|"No"| G
+
+    F -->|"clears"| H
+    G -->|"clears"| H
+
+    H -->|"configures"| I
+    I -->|"sets"| J
+    J -->|"sets"| K
+    K -->|"sets"| L
+    L -->|"sets"| M
+
+    M -->|"checks"| N
+    N -->|"Yes"| O
+    N -->|"No"| P
+
+    O -->|"displays"| Q
+    P -->|"displays"| Q
+
+    Q -->|"reports"| R
+    R -->|"completes"| S
+    S -->|"ends"| T
+
+    %% ===== NODE STYLING =====
+    class A trigger
+    class B,D,F,G,H,I,J,K,L,M,O,P primary
+    class C,E,N decision
+    class Q,R,S secondary
+    class T secondary
+    class Z failed
+
+    %% ===== SUBGRAPH STYLING =====
+    style triggers fill:#EEF2FF,stroke:#4F46E5,stroke-width:2px
+    style validation fill:#ECFDF5,stroke:#10B981,stroke-width:2px
+    style acr fill:#E0E7FF,stroke:#4F46E5,stroke-width:2px
+    style secrets fill:#D1FAE5,stroke:#059669,stroke-width:2px
+    style sql fill:#E0E7FF,stroke:#4F46E5,stroke-width:2px
+    style results fill:#FEF3C7,stroke:#F59E0B,stroke-width:2px
+    style failure fill:#FEE2E2,stroke:#F44336,stroke-width:2px
 ```
 
 ---

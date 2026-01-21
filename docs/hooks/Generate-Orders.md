@@ -168,49 +168,152 @@ Orders are assigned random addresses from a global pool of 20 addresses spanning
 ## 🔄 Execution Flow
 
 ```mermaid
+---
+title: Generate-Orders Execution Flow
+---
 flowchart TD
-    A[🚀 Start Generate-Orders] --> B[Parse Arguments]
-    B --> C{Help Requested?}
+    %% ===== STYLE DEFINITIONS =====
+    classDef primary fill:#4F46E5,stroke:#3730A3,color:#FFFFFF
+    classDef secondary fill:#10B981,stroke:#059669,color:#FFFFFF
+    classDef datastore fill:#F59E0B,stroke:#D97706,color:#000000
+    classDef trigger fill:#818CF8,stroke:#4F46E5,color:#FFFFFF
+    classDef decision fill:#FFFBEB,stroke:#F59E0B,color:#000000
+    classDef failed fill:#F44336,stroke:#C62828,color:#FFFFFF
+    classDef external fill:#6B7280,stroke:#4B5563,color:#FFFFFF,stroke-dasharray:5 5
+    classDef matrix fill:#D1FAE5,stroke:#10B981,color:#000000
 
-    C -->|Yes| D[Display Help]
-    D --> Z[🏁 End]
+    %% ===== TRIGGER =====
+    subgraph triggers["🚀 Entry Point"]
+        direction TB
+        A(["🚀 Start Generate-Orders"])
+        B["Parse Arguments"]
+    end
 
-    C -->|No| E{Validate Parameters}
-    E -->|Invalid| F[❌ Exit with Error]
-    E -->|Valid| G[Initialize Statistics]
+    %% ===== HELP =====
+    subgraph help["📖 Help"]
+        direction TB
+        C{"Help Requested?"}
+        D["Display Help"]
+    end
 
-    G --> H{DryRun Mode?}
-    H -->|Yes| I[Display Configuration]
-    I --> Z
+    %% ===== VALIDATION =====
+    subgraph validation["🔍 Validation"]
+        direction TB
+        E{"Validate Parameters"}
+        G["Initialize Statistics"]
+        H{"DryRun Mode?"}
+        I["Display Configuration"]
+    end
 
-    H -->|No| J[Initialize Product Catalog]
-    J --> K[Initialize Address Pool]
-    K --> L[Initialize Order Array]
+    %% ===== INITIALIZATION =====
+    subgraph init["⚙️ Initialization"]
+        direction TB
+        J["Initialize Product Catalog"]
+        K["Initialize Address Pool"]
+        L["Initialize Order Array"]
+    end
 
-    L --> M[Loop: Generate Orders]
-    M --> N[Generate Order ID GUID/UUID]
-    N --> O[Generate Random Order Date]
-    O --> P[Select Random Customer ID]
-    P --> Q[Select Random Address]
+    %% ===== ORDER GENERATION =====
+    subgraph orderloop["📦 Order Generation Loop"]
+        direction TB
+        M["Loop: Generate Orders"]
+        N["Generate Order ID GUID/UUID"]
+        O["Generate Random Order Date"]
+        P["Select Random Customer ID"]
+        Q["Select Random Address"]
+        R["Determine Product Count"]
+        Y{"More Orders?"}
+    end
 
-    Q --> R[Determine Product Count]
-    R --> S[Loop: Generate Products]
-    S --> T[Select Random Product]
-    T --> U[Apply Price Variation ±20%]
-    U --> V[Set Random Quantity 1-5]
+    %% ===== PRODUCT GENERATION =====
+    subgraph productloop["🛒 Product Generation Loop"]
+        direction TB
+        S["Loop: Generate Products"]
+        T["Select Random Product"]
+        U["Apply Price Variation ±20%"]
+        V["Set Random Quantity 1-5"]
+        W{"More Products?"}
+        X["Add Order to Array"]
+    end
 
-    V --> W{More Products?}
-    W -->|Yes| S
-    W -->|No| X[Add Order to Array]
+    %% ===== OUTPUT =====
+    subgraph output["📄 Output Generation"]
+        direction TB
+        AA["Convert to JSON"]
+        AB["Write to Output File"]
+        AC["Display Summary Statistics"]
+        AD["✅ Generation Complete"]
+        Z(["🏁 End"])
+    end
 
-    X --> Y{More Orders?}
-    Y -->|Yes| M
-    Y -->|No| AA[Convert to JSON]
+    %% ===== FAILURE =====
+    subgraph failure["❌ Error Handling"]
+        direction TB
+        F["❌ Exit with Error"]
+    end
 
-    AA --> AB[Write to Output File]
-    AB --> AC[Display Summary Statistics]
-    AC --> AD[✅ Generation Complete]
-    AD --> Z
+    %% ===== CONNECTIONS =====
+    A -->|"parses"| B
+    B -->|"checks"| C
+
+    C -->|"Yes"| D
+    D -->|"ends"| Z
+
+    C -->|"No"| E
+    E -->|"Invalid"| F
+    E -->|"Valid"| G
+
+    G -->|"checks"| H
+    H -->|"Yes"| I
+    I -->|"ends"| Z
+
+    H -->|"No"| J
+    J -->|"initializes"| K
+    K -->|"initializes"| L
+
+    L -->|"starts"| M
+    M -->|"generates"| N
+    N -->|"generates"| O
+    O -->|"selects"| P
+    P -->|"selects"| Q
+
+    Q -->|"determines"| R
+    R -->|"starts"| S
+    S -->|"selects"| T
+    T -->|"applies"| U
+    U -->|"sets"| V
+
+    V -->|"checks"| W
+    W -->|"Yes"| S
+    W -->|"No"| X
+
+    X -->|"checks"| Y
+    Y -->|"Yes"| M
+    Y -->|"No"| AA
+
+    AA -->|"writes"| AB
+    AB -->|"displays"| AC
+    AC -->|"completes"| AD
+    AD -->|"ends"| Z
+
+    %% ===== NODE STYLING =====
+    class A trigger
+    class B,D,G,I,J,K,L,N,O,P,Q,R,T,U,V,X primary
+    class C,E,H,W,Y decision
+    class M,S matrix
+    class AA,AB,AC,AD secondary
+    class Z secondary
+    class F failed
+
+    %% ===== SUBGRAPH STYLING =====
+    style triggers fill:#EEF2FF,stroke:#4F46E5,stroke-width:2px
+    style help fill:#F3F4F6,stroke:#6B7280,stroke-width:2px
+    style validation fill:#ECFDF5,stroke:#10B981,stroke-width:2px
+    style init fill:#E0E7FF,stroke:#4F46E5,stroke-width:2px
+    style orderloop fill:#D1FAE5,stroke:#059669,stroke-width:2px
+    style productloop fill:#D1FAE5,stroke:#059669,stroke-width:1px
+    style output fill:#FEF3C7,stroke:#F59E0B,stroke-width:2px
+    style failure fill:#FEE2E2,stroke:#F44336,stroke-width:2px
 ```
 
 ---

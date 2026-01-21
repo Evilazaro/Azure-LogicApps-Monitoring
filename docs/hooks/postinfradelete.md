@@ -124,49 +124,144 @@ The script performs the following operations:
 ## 🔄 Execution Flow
 
 ```mermaid
+---
+title: postinfradelete Execution Flow
+---
 flowchart TD
-    A[🚀 Start postinfradelete] --> B[Parse Arguments]
-    B --> C{Help Requested?}
+    %% ===== STYLE DEFINITIONS =====
+    classDef primary fill:#4F46E5,stroke:#3730A3,color:#FFFFFF
+    classDef secondary fill:#10B981,stroke:#059669,color:#FFFFFF
+    classDef datastore fill:#F59E0B,stroke:#D97706,color:#000000
+    classDef trigger fill:#818CF8,stroke:#4F46E5,color:#FFFFFF
+    classDef decision fill:#FFFBEB,stroke:#F59E0B,color:#000000
+    classDef failed fill:#F44336,stroke:#C62828,color:#FFFFFF
+    classDef external fill:#6B7280,stroke:#4B5563,color:#FFFFFF,stroke-dasharray:5 5
 
-    C -->|Yes| D[Display Help]
-    D --> Z[🏁 End]
+    %% ===== TRIGGER =====
+    subgraph triggers["🚀 Entry Point"]
+        direction TB
+        A(["🚀 Start postinfradelete"])
+        B["Parse Arguments"]
+    end
 
-    C -->|No| E{Validate Required Env Vars}
-    E -->|Missing| F[❌ Exit with Error]
-    E -->|Valid| G[Display Configuration]
+    %% ===== HELP =====
+    subgraph help["📖 Help"]
+        direction TB
+        C{"Help Requested?"}
+        D["Display Help"]
+    end
 
-    G --> H[Get Soft-Deleted Logic Apps via REST API]
-    H --> I{Any Deleted Apps Found?}
+    %% ===== VALIDATION =====
+    subgraph validation["🔍 Validation"]
+        direction TB
+        E{"Validate Required Env Vars"}
+        G["Display Configuration"]
+    end
 
-    I -->|No| J[ℹ️ No Apps to Purge]
-    J --> Z
+    %% ===== DISCOVERY =====
+    subgraph discovery["🔎 Resource Discovery"]
+        direction TB
+        H["Get Soft-Deleted Logic Apps via REST API"]
+        I{"Any Deleted Apps Found?"}
+        K["Filter by Resource Group Pattern"]
+        L{"Any Matching Apps?"}
+    end
 
-    I -->|Yes| K[Filter by Resource Group Pattern]
-    K --> L{Any Matching Apps?}
+    %% ===== CONFIRMATION =====
+    subgraph confirmation["✋ Confirmation"]
+        direction TB
+        M{"Force Mode?"}
+        N["Prompt for Confirmation"]
+        O["Skip Confirmation"]
+    end
 
-    L -->|No| J
-    L -->|Yes| M{Force Mode?}
+    %% ===== PURGE =====
+    subgraph purge["🗑️ Purge Operations"]
+        direction TB
+        Q["Loop: Purge Each Logic App"]
+        R["Call DELETE REST API"]
+        S{"More Apps?"}
+    end
 
-    M -->|No| N[Prompt for Confirmation]
-    M -->|Yes| O[Skip Confirmation]
+    %% ===== RESULTS =====
+    subgraph results["📊 Results"]
+        direction TB
+        J["ℹ️ No Apps to Purge"]
+        T["Display Summary"]
+        U{"Any Failures?"}
+        V["⚠️ Partial Success"]
+        W["✅ All Purged Successfully"]
+        Z(["🏁 End"])
+    end
 
-    N -->|Decline| P[🚫 Exit Cancelled]
-    N -->|Accept| O
+    %% ===== FAILURE =====
+    subgraph failure["❌ Error Handling"]
+        direction TB
+        F["❌ Exit with Error"]
+        P["🚫 Exit Cancelled"]
+    end
 
-    O --> Q[Loop: Purge Each Logic App]
-    Q --> R[Call DELETE REST API]
+    %% ===== CONNECTIONS =====
+    A -->|"parses"| B
+    B -->|"checks"| C
 
-    R --> S{More Apps?}
-    S -->|Yes| Q
-    S -->|No| T[Display Summary]
+    C -->|"Yes"| D
+    D -->|"ends"| Z
 
-    T --> U{Any Failures?}
-    U -->|Yes| V[⚠️ Partial Success]
-    U -->|No| W[✅ All Purged Successfully]
+    C -->|"No"| E
+    E -->|"Missing"| F
+    E -->|"Valid"| G
 
-    V --> Z
-    W --> Z
-    P --> Z
+    G -->|"retrieves"| H
+    H -->|"checks"| I
+
+    I -->|"No"| J
+    J -->|"ends"| Z
+
+    I -->|"Yes"| K
+    K -->|"checks"| L
+
+    L -->|"No"| J
+    L -->|"Yes"| M
+
+    M -->|"No"| N
+    M -->|"Yes"| O
+
+    N -->|"Decline"| P
+    N -->|"Accept"| O
+
+    O -->|"iterates"| Q
+    Q -->|"calls"| R
+
+    R -->|"checks"| S
+    S -->|"Yes"| Q
+    S -->|"No"| T
+
+    T -->|"checks"| U
+    U -->|"Yes"| V
+    U -->|"No"| W
+
+    V -->|"ends"| Z
+    W -->|"ends"| Z
+    P -->|"ends"| Z
+
+    %% ===== NODE STYLING =====
+    class A trigger
+    class B,D,G,H,K,N,O,Q,R primary
+    class C,E,I,L,M,S,U decision
+    class J,T,V,W secondary
+    class Z secondary
+    class F,P failed
+
+    %% ===== SUBGRAPH STYLING =====
+    style triggers fill:#EEF2FF,stroke:#4F46E5,stroke-width:2px
+    style help fill:#F3F4F6,stroke:#6B7280,stroke-width:2px
+    style validation fill:#ECFDF5,stroke:#10B981,stroke-width:2px
+    style discovery fill:#E0E7FF,stroke:#4F46E5,stroke-width:2px
+    style confirmation fill:#D1FAE5,stroke:#059669,stroke-width:2px
+    style purge fill:#E0E7FF,stroke:#4F46E5,stroke-width:2px
+    style results fill:#FEF3C7,stroke:#F59E0B,stroke-width:2px
+    style failure fill:#FEE2E2,stroke:#F44336,stroke-width:2px
 ```
 
 ---

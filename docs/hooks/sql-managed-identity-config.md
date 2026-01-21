@@ -170,58 +170,166 @@ Common built-in roles that can be assigned:
 ## 🔄 Execution Flow
 
 ```mermaid
+---
+title: sql-managed-identity-config Execution Flow
+---
 flowchart TD
-    A[🚀 Start sql-managed-identity-config] --> B[Parse Arguments]
-    B --> C{Help Requested?}
+    %% ===== STYLE DEFINITIONS =====
+    classDef primary fill:#4F46E5,stroke:#3730A3,color:#FFFFFF
+    classDef secondary fill:#10B981,stroke:#059669,color:#FFFFFF
+    classDef datastore fill:#F59E0B,stroke:#D97706,color:#000000
+    classDef trigger fill:#818CF8,stroke:#4F46E5,color:#FFFFFF
+    classDef decision fill:#FFFBEB,stroke:#F59E0B,color:#000000
+    classDef failed fill:#F44336,stroke:#C62828,color:#FFFFFF
+    classDef external fill:#6B7280,stroke:#4B5563,color:#FFFFFF,stroke-dasharray:5 5
+    classDef matrix fill:#D1FAE5,stroke:#10B981,color:#000000
 
-    C -->|Yes| D[Display Help]
-    D --> Z[🏁 End]
+    %% ===== TRIGGER =====
+    subgraph triggers["🚀 Entry Point"]
+        direction TB
+        A(["🚀 Start sql-managed-identity-config"])
+        B["Parse Arguments"]
+    end
 
-    C -->|No| E{Validate Parameters}
-    E -->|Invalid| F[❌ Return Error Result]
-    F --> Z
+    %% ===== HELP =====
+    subgraph help["📖 Help"]
+        direction TB
+        C{"Help Requested?"}
+        D["Display Help"]
+    end
 
-    E -->|Valid| G{Azure CLI Logged In?}
-    G -->|No| H[❌ Return Auth Error]
-    H --> Z
+    %% ===== VALIDATION =====
+    subgraph validation["🔍 Validation"]
+        direction TB
+        E{"Validate Parameters"}
+        G{"Azure CLI Logged In?"}
+    end
 
-    G -->|Yes| I[Acquire Azure AD Token]
-    I --> J{Token Acquired?}
+    %% ===== TOKEN ACQUISITION =====
+    subgraph token["🔑 Token Acquisition"]
+        direction TB
+        I["Acquire Azure AD Token"]
+        J{"Token Acquired?"}
+    end
 
-    J -->|No| K[❌ Return Token Error]
-    K --> Z
+    %% ===== DATABASE CONNECTION =====
+    subgraph dbconn["🗄️ Database Connection"]
+        direction TB
+        L["Build SQL Connection"]
+        M["Connect to Database"]
+        N{"Connection Success?"}
+    end
 
-    J -->|Yes| L[Build SQL Connection]
-    L --> M[Connect to Database]
+    %% ===== USER CREATION =====
+    subgraph usercreate["👤 User Management"]
+        direction TB
+        P["Check if User Exists"]
+        Q{"User Exists?"}
+        R["Skip User Creation"]
+        S["CREATE USER FROM EXTERNAL PROVIDER"]
+    end
 
-    M --> N{Connection Success?}
-    N -->|No| O[❌ Return Connection Error]
-    O --> Z
+    %% ===== ROLE ASSIGNMENT =====
+    subgraph roleassign["🛡️ Role Assignment Loop"]
+        direction TB
+        T["Process Role Assignments"]
+        U["Loop: Assign Each Role"]
+        V["Check Role Membership"]
+        W{"Already Member?"}
+        X["Skip Role Assignment"]
+        Y["ALTER ROLE ADD MEMBER"]
+        AA{"More Roles?"}
+    end
 
-    N -->|Yes| P[Check if User Exists]
-    P --> Q{User Exists?}
+    %% ===== RESULTS =====
+    subgraph results["📊 Results"]
+        direction TB
+        AB["Build Success Result"]
+        AC["✅ Return Result Object"]
+        Z(["🏁 End"])
+    end
 
-    Q -->|Yes| R[Skip User Creation]
-    Q -->|No| S[CREATE USER FROM EXTERNAL PROVIDER]
+    %% ===== FAILURE =====
+    subgraph failure["❌ Error Handling"]
+        direction TB
+        F["❌ Return Error Result"]
+        H["❌ Return Auth Error"]
+        K["❌ Return Token Error"]
+        O["❌ Return Connection Error"]
+    end
 
-    R --> T[Process Role Assignments]
-    S --> T
+    %% ===== CONNECTIONS =====
+    A -->|"parses"| B
+    B -->|"checks"| C
 
-    T --> U[Loop: Assign Each Role]
-    U --> V[Check Role Membership]
-    V --> W{Already Member?}
+    C -->|"Yes"| D
+    D -->|"ends"| Z
 
-    W -->|Yes| X[Skip Role Assignment]
-    W -->|No| Y[ALTER ROLE ADD MEMBER]
+    C -->|"No"| E
+    E -->|"Invalid"| F
+    F -->|"ends"| Z
 
-    X --> AA{More Roles?}
-    Y --> AA
+    E -->|"Valid"| G
+    G -->|"No"| H
+    H -->|"ends"| Z
 
-    AA -->|Yes| U
-    AA -->|No| AB[Build Success Result]
+    G -->|"Yes"| I
+    I -->|"checks"| J
 
-    AB --> AC[✅ Return Result Object]
-    AC --> Z
+    J -->|"No"| K
+    K -->|"ends"| Z
+
+    J -->|"Yes"| L
+    L -->|"connects"| M
+
+    M -->|"checks"| N
+    N -->|"No"| O
+    O -->|"ends"| Z
+
+    N -->|"Yes"| P
+    P -->|"checks"| Q
+
+    Q -->|"Yes"| R
+    Q -->|"No"| S
+
+    R -->|"processes"| T
+    S -->|"processes"| T
+
+    T -->|"loops"| U
+    U -->|"checks"| V
+    V -->|"evaluates"| W
+
+    W -->|"Yes"| X
+    W -->|"No"| Y
+
+    X -->|"checks"| AA
+    Y -->|"checks"| AA
+
+    AA -->|"Yes"| U
+    AA -->|"No"| AB
+
+    AB -->|"returns"| AC
+    AC -->|"ends"| Z
+
+    %% ===== NODE STYLING =====
+    class A trigger
+    class B,D,I,L,M,P,R,S,V,X,Y primary
+    class C,E,G,J,N,Q,W,AA decision
+    class U,T matrix
+    class AB,AC secondary
+    class Z secondary
+    class F,H,K,O failed
+
+    %% ===== SUBGRAPH STYLING =====
+    style triggers fill:#EEF2FF,stroke:#4F46E5,stroke-width:2px
+    style help fill:#F3F4F6,stroke:#6B7280,stroke-width:2px
+    style validation fill:#ECFDF5,stroke:#10B981,stroke-width:2px
+    style token fill:#E0E7FF,stroke:#4F46E5,stroke-width:2px
+    style dbconn fill:#E0E7FF,stroke:#4F46E5,stroke-width:2px
+    style usercreate fill:#D1FAE5,stroke:#059669,stroke-width:2px
+    style roleassign fill:#D1FAE5,stroke:#059669,stroke-width:1px
+    style results fill:#FEF3C7,stroke:#F59E0B,stroke-width:2px
+    style failure fill:#FEE2E2,stroke:#F44336,stroke-width:2px
 ```
 
 ---

@@ -150,40 +150,127 @@ The following patterns are excluded from deployment (per `.funcignore`):
 ## 🔄 Execution Flow
 
 ```mermaid
+---
+title: deploy-workflow Execution Flow
+---
 flowchart TD
-    A[🚀 Start deploy-workflow] --> B[Disable ANSI Colors]
-    B --> C[Set Environment Variable Aliases]
+    %% ===== STYLE DEFINITIONS =====
+    classDef primary fill:#4F46E5,stroke:#3730A3,color:#FFFFFF
+    classDef secondary fill:#10B981,stroke:#059669,color:#FFFFFF
+    classDef datastore fill:#F59E0B,stroke:#D97706,color:#000000
+    classDef trigger fill:#818CF8,stroke:#4F46E5,color:#FFFFFF
+    classDef decision fill:#FFFBEB,stroke:#F59E0B,color:#000000
+    classDef failed fill:#F44336,stroke:#C62828,color:#FFFFFF
+    classDef external fill:#6B7280,stroke:#4B5563,color:#FFFFFF,stroke-dasharray:5 5
 
-    C --> D[Load Configuration from Environment]
-    D --> E{Validate Required Variables}
+    %% ===== TRIGGER =====
+    subgraph triggers["🚀 Entry Point"]
+        direction TB
+        A(["🚀 Start deploy-workflow"])
+        B["Disable ANSI Colors"]
+        C["Set Environment Variable Aliases"]
+    end
 
-    E -->|Missing| Z[❌ Exit with Error]
-    E -->|Valid| F{Connection Runtime URLs Set?}
+    %% ===== CONFIGURATION =====
+    subgraph config["⚙️ Configuration"]
+        direction TB
+        D["Load Configuration from Environment"]
+        E{"Validate Required Variables"}
+        F{"Connection Runtime URLs Set?"}
+        G["Retrieve Runtime URLs from Azure"]
+        H["Use Existing URLs"]
+    end
 
-    F -->|No| G[Retrieve Runtime URLs from Azure]
-    F -->|Yes| H[Use Existing URLs]
+    %% ===== STAGING =====
+    subgraph staging["📁 Staging"]
+        direction TB
+        I["Create Staging Directory"]
+        J["Copy Workflow Files"]
+        K["Resolve Placeholders in Files"]
+    end
 
-    G --> H
-    H --> I[Create Staging Directory]
+    %% ===== PROCESSING =====
+    subgraph processing["🔧 File Processing"]
+        direction TB
+        L["Process connections.json"]
+        M["Process parameters.json"]
+        N["Process host.json"]
+    end
 
-    I --> J[Copy Workflow Files]
-    J --> K[Resolve Placeholders in Files]
+    %% ===== DEPLOYMENT =====
+    subgraph deployment["📦 Deployment"]
+        direction TB
+        O["Create Deployment ZIP"]
+        P["Deploy to Logic App via az webapp deployment"]
+        Q{"Deployment Success?"}
+    end
 
-    K --> L[Process connections.json]
-    L --> M[Process parameters.json]
-    M --> N[Process host.json]
+    %% ===== RESULTS =====
+    subgraph results["📊 Results"]
+        direction TB
+        R["❌ Log Error"]
+        S["✅ Log Success"]
+        T["Cleanup Staging Directory"]
+        U(["🏁 End"])
+    end
 
-    N --> O[Create Deployment ZIP]
-    O --> P[Deploy to Logic App via az webapp deployment]
+    %% ===== FAILURE =====
+    subgraph failure["❌ Error Handling"]
+        direction TB
+        Z["❌ Exit with Error"]
+    end
 
-    P --> Q{Deployment Success?}
-    Q -->|No| R[❌ Log Error]
-    Q -->|Yes| S[✅ Log Success]
+    %% ===== CONNECTIONS =====
+    A -->|"disables"| B
+    B -->|"sets"| C
 
-    R --> T[Cleanup Staging Directory]
-    S --> T
+    C -->|"loads"| D
+    D -->|"validates"| E
 
-    T --> U[🏁 End]
+    E -->|"Missing"| Z
+    E -->|"Valid"| F
+
+    F -->|"No"| G
+    F -->|"Yes"| H
+
+    G -->|"uses"| H
+    H -->|"creates"| I
+
+    I -->|"copies"| J
+    J -->|"resolves"| K
+
+    K -->|"processes"| L
+    L -->|"processes"| M
+    M -->|"processes"| N
+
+    N -->|"creates"| O
+    O -->|"deploys"| P
+
+    P -->|"checks"| Q
+    Q -->|"No"| R
+    Q -->|"Yes"| S
+
+    R -->|"cleans"| T
+    S -->|"cleans"| T
+
+    T -->|"ends"| U
+
+    %% ===== NODE STYLING =====
+    class A trigger
+    class B,C,D,G,H,I,J,K,L,M,N,O,P primary
+    class E,F,Q decision
+    class S,T secondary
+    class U secondary
+    class R,Z failed
+
+    %% ===== SUBGRAPH STYLING =====
+    style triggers fill:#EEF2FF,stroke:#4F46E5,stroke-width:2px
+    style config fill:#ECFDF5,stroke:#10B981,stroke-width:2px
+    style staging fill:#E0E7FF,stroke:#4F46E5,stroke-width:2px
+    style processing fill:#D1FAE5,stroke:#059669,stroke-width:2px
+    style deployment fill:#E0E7FF,stroke:#4F46E5,stroke-width:2px
+    style results fill:#FEF3C7,stroke:#F59E0B,stroke-width:2px
+    style failure fill:#FEE2E2,stroke:#F44336,stroke-width:2px
 ```
 
 ---
