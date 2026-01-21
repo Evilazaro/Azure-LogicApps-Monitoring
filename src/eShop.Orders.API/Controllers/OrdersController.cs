@@ -424,6 +424,19 @@ public sealed class OrdersController : ControllerBase
             _logger.LogInformation("Successfully deleted {DeletedCount} orders out of {TotalCount}", deletedCount, orderIdsList.Count);
             return Ok(deletedCount);
         }
+        catch (OperationCanceledException oce) when (cancellationToken.IsCancellationRequested)
+        {
+            activity?.SetStatus(ActivityStatusCode.Error, oce.Message);
+            activity?.SetTag("error.type", nameof(OperationCanceledException));
+            activity?.AddEvent(new ActivityEvent("operation_canceled", tags: new ActivityTagsCollection
+            {
+                { "exception.type", typeof(OperationCanceledException).FullName ?? nameof(OperationCanceledException) },
+                { "exception.message", oce.Message }
+            }));
+            _logger.LogWarning(oce, "Delete orders batch operation was canceled.");
+            return StatusCode(StatusCodes.Status400BadRequest,
+                new { error = "Operation was canceled", type = "OperationCanceled" });
+        }
         catch (Exception ex)
         {
             activity?.SetStatus(ActivityStatusCode.Error, ex.Message);
@@ -472,6 +485,19 @@ public sealed class OrdersController : ControllerBase
                 "Successfully retrieved {MessageCount} messages from topics",
                 messageCount);
             return Ok(messages);
+        }
+        catch (OperationCanceledException oce) when (cancellationToken.IsCancellationRequested)
+        {
+            activity?.SetStatus(ActivityStatusCode.Error, oce.Message);
+            activity?.SetTag("error.type", nameof(OperationCanceledException));
+            activity?.AddEvent(new ActivityEvent("operation_canceled", tags: new ActivityTagsCollection
+            {
+                { "exception.type", typeof(OperationCanceledException).FullName ?? nameof(OperationCanceledException) },
+                { "exception.message", oce.Message }
+            }));
+            _logger.LogWarning(oce, "List messages from topics operation was canceled.");
+            return StatusCode(StatusCodes.Status400BadRequest,
+                new { error = "Operation was canceled", type = "OperationCanceled" });
         }
         catch (Exception ex)
         {
