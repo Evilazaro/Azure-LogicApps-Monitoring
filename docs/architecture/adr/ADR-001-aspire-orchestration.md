@@ -1,16 +1,31 @@
-# ADR-001: .NET Aspire for Local Development Orchestration
+# 📝 ADR-001: .NET Aspire for Local Development Orchestration
 
 ← [ADR Index](README.md) | [ADR-002 →](ADR-002-service-bus-messaging.md)
 
 ---
 
-## Status
+## 📑 Table of Contents
+
+- [🚦 Status](#-status)
+- [📝 Context](#-context)
+- [✅ Decision](#-decision)
+- [📊 Consequences](#-consequences)
+- [🔄 Alternatives Considered](#-alternatives-considered)
+- [✅ Validation](#-validation)
+- [🔗 Related ADRs](#-related-adrs)
+- [📚 References](#-references)
+
+---
+
+## 🚦 Status
 
 🟢 **Accepted** — January 2024
 
 ---
 
-## Context
+<div align="right"><a href="#-table-of-contents">⬆️ Back to top</a></div>
+
+## 📝 Context
 
 The Azure Logic Apps Monitoring Solution is a distributed system with multiple components:
 
@@ -33,11 +48,13 @@ The Azure Logic Apps Monitoring Solution is a distributed system with multiple c
 
 ---
 
-## Decision
+<div align="right"><a href="#-table-of-contents">⬆️ Back to top</a></div>
+
+## ✅ Decision
 
 **We will use .NET Aspire as the local development orchestration platform.**
 
-### Implementation
+### 🛠️ Implementation
 
 The AppHost project (`app.AppHost/AppHost.cs`) defines the distributed application:
 
@@ -65,7 +82,7 @@ var webApp = builder.AddProject<Projects.eShop_Web_App>("web-app")
     .WithReference(insights);
 ```
 
-### Key Decisions
+### 🎯 Key Decisions
 
 | Aspect            | Decision            | Rationale                                           |
 | ----------------- | ------------------- | --------------------------------------------------- |
@@ -76,9 +93,11 @@ var webApp = builder.AddProject<Projects.eShop_Web_App>("web-app")
 
 ---
 
-## Consequences
+<div align="right"><a href="#-table-of-contents">⬆️ Back to top</a></div>
 
-### Positive
+## 📊 Consequences
+
+### ✅ Positive
 
 | Benefit                  | Impact                                                 |
 | ------------------------ | ------------------------------------------------------ |
@@ -88,7 +107,7 @@ var webApp = builder.AddProject<Projects.eShop_Web_App>("web-app")
 | **Observability**        | Built-in dashboard shows logs, traces, metrics         |
 | **Container management** | Aspire handles SQL and Service Bus containers          |
 
-### Negative
+### ⚠️ Negative
 
 | Drawback                 | Mitigation                |
 | ------------------------ | ------------------------- | ----------------------------------- |
@@ -96,7 +115,7 @@ var webApp = builder.AddProject<Projects.eShop_Web_App>("web-app")
 | **Resource consumption** | Containers require memory | Minimum 16GB RAM recommended        |
 | **Version dependency**   | .NET 9+ required          | Project already targets .NET 10     |
 
-### Neutral
+### ⚖️ Neutral
 
 - Aspire is a development tool; production uses standard Azure services
 - The AppHost project is excluded from production deployment
@@ -104,9 +123,11 @@ var webApp = builder.AddProject<Projects.eShop_Web_App>("web-app")
 
 ---
 
-## Alternatives Considered
+<div align="right"><a href="#-table-of-contents">⬆️ Back to top</a></div>
 
-### Alternative 1: Docker Compose
+## 🔄 Alternatives Considered
+
+### 🐳 Alternative 1: Docker Compose
 
 ```yaml
 # docker-compose.yml
@@ -128,7 +149,7 @@ services:
 | **Cons**           | No native .NET integration, manual configuration |
 | **Why not chosen** | Aspire provides better DX for .NET developers    |
 
-### Alternative 2: Tye (Project Tye)
+### ❌ Alternative 2: Tye (Project Tye)
 
 | Criteria           | Assessment                                    |
 | ------------------ | --------------------------------------------- |
@@ -136,7 +157,7 @@ services:
 | **Cons**           | Deprecated, no longer maintained by Microsoft |
 | **Why not chosen** | Aspire is the official successor to Tye       |
 
-### Alternative 3: Manual Scripts
+### 📜 Alternative 3: Manual Scripts
 
 ```powershell
 # start-all.ps1
@@ -152,7 +173,9 @@ Start-Process dotnet "run --project src/eShop.Web.App"
 
 ---
 
-## Validation
+<div align="right"><a href="#-table-of-contents">⬆️ Back to top</a></div>
+
+## ✅ Validation
 
 The decision is validated by:
 
@@ -162,14 +185,18 @@ The decision is validated by:
 
 ---
 
-## Related ADRs
+<div align="right"><a href="#-table-of-contents">⬆️ Back to top</a></div>
+
+## 🔗 Related ADRs
 
 - [ADR-002](ADR-002-service-bus-messaging.md) — Service Bus is orchestrated by Aspire
 - [ADR-003](ADR-003-observability-strategy.md) — Aspire dashboard provides local observability
 
 ---
 
-## References
+<div align="right"><a href="#-table-of-contents">⬆️ Back to top</a></div>
+
+## 📚 References
 
 - [.NET Aspire Documentation](https://learn.microsoft.com/dotnet/aspire/)
 - [app.AppHost/AppHost.cs](../../../app.AppHost/AppHost.cs)

@@ -1,16 +1,32 @@
-# ADR-002: Azure Service Bus for Asynchronous Messaging
+# 📝 ADR-002: Azure Service Bus for Asynchronous Messaging
 
 ← [ADR-001](ADR-001-aspire-orchestration.md) | [ADR Index](README.md) | [ADR-003 →](ADR-003-observability-strategy.md)
 
 ---
 
-## Status
+## 📑 Table of Contents
+
+- [🚦 Status](#-status)
+- [📝 Context](#-context)
+- [✅ Decision](#-decision)
+- [📊 Consequences](#-consequences)
+- [🔄 Alternatives Considered](#-alternatives-considered)
+- [📦 Message Contract](#-message-contract)
+- [✅ Validation](#-validation)
+- [🔗 Related ADRs](#-related-adrs)
+- [📚 References](#-references)
+
+---
+
+## 🚦 Status
 
 🟢 **Accepted** — January 2024
 
 ---
 
-## Context
+<div align="right"><a href="#-table-of-contents">⬆️ Back to top</a></div>
+
+## 📝 Context
 
 The order processing workflow requires **asynchronous communication** between:
 
@@ -30,13 +46,15 @@ The order processing workflow requires **asynchronous communication** between:
 
 ---
 
-## Decision
+<div align="right"><a href="#-table-of-contents">⬆️ Back to top</a></div>
+
+## ✅ Decision
 
 **We will use Azure Service Bus with Topics and Subscriptions for event-driven messaging.**
 
-### Implementation
+### 🛠️ Implementation
 
-#### Topic/Subscription Topology
+#### 🗺️ Topic/Subscription Topology
 
 ```mermaid
 flowchart LR
@@ -68,7 +86,7 @@ flowchart LR
     class LA consumer
 ```
 
-#### Message Publishing (Orders API)
+#### 📤 Message Publishing (Orders API)
 
 From [OrdersMessageHandler.cs](../../../src/eShop.Orders.API/Handlers/OrdersMessageHandler.cs):
 
@@ -94,7 +112,7 @@ public async Task SendOrderCreatedMessageAsync(Order order)
 }
 ```
 
-#### Message Consumption (Logic Apps)
+#### 📥 Message Consumption (Logic Apps)
 
 Defined in [workflow.json](../../../workflows/OrdersManagement/OrdersManagementLogicApp/OrdersPlacedProcess/workflow.json):
 
@@ -117,7 +135,7 @@ Defined in [workflow.json](../../../workflows/OrdersManagement/OrdersManagementL
 }
 ```
 
-### Key Decisions
+### 🎯 Key Decisions
 
 | Aspect             | Decision               | Rationale                         |
 | ------------------ | ---------------------- | --------------------------------- |
@@ -129,9 +147,11 @@ Defined in [workflow.json](../../../workflows/OrdersManagement/OrdersManagementL
 
 ---
 
-## Consequences
+<div align="right"><a href="#-table-of-contents">⬆️ Back to top</a></div>
 
-### Positive
+## 📊 Consequences
+
+### ✅ Positive
 
 | Benefit            | Description                                |
 | ------------------ | ------------------------------------------ |
@@ -142,7 +162,7 @@ Defined in [workflow.json](../../../workflows/OrdersManagement/OrdersManagementL
 | **Dead-lettering** | Failed messages captured for debugging     |
 | **Local dev**      | Service Bus emulator via .NET Aspire       |
 
-### Negative
+### ⚠️ Negative
 
 | Drawback                 | Mitigation                              |
 | ------------------------ | --------------------------------------- | ------------------------------ |
@@ -150,7 +170,7 @@ Defined in [workflow.json](../../../workflows/OrdersManagement/OrdersManagementL
 | **Cost**                 | Per-message pricing                     | Standard tier optimizes costs  |
 | **Complexity**           | Additional component to manage          | Bicep IaC handles provisioning |
 
-### Neutral
+### ⚖️ Neutral
 
 - Messages are persisted for 14 days (default retention)
 - Topic partitioning is disabled (not needed at current scale)
@@ -158,9 +178,11 @@ Defined in [workflow.json](../../../workflows/OrdersManagement/OrdersManagementL
 
 ---
 
-## Alternatives Considered
+<div align="right"><a href="#-table-of-contents">⬆️ Back to top</a></div>
 
-### Alternative 1: Azure Storage Queues
+## 🔄 Alternatives Considered
+
+### 📦 Alternative 1: Azure Storage Queues
 
 ```csharp
 // Storage Queue approach
@@ -173,7 +195,7 @@ await queueClient.SendMessageAsync(JsonSerializer.Serialize(order));
 | **Cons**           | No pub/sub, no dead-letter, limited features |
 | **Why not chosen** | Need topic fanout and advanced features      |
 
-### Alternative 2: Azure Event Grid
+### 📡 Alternative 2: Azure Event Grid
 
 | Criteria           | Assessment                             |
 | ------------------ | -------------------------------------- |
@@ -181,7 +203,7 @@ await queueClient.SendMessageAsync(JsonSerializer.Serialize(order));
 | **Cons**           | At-most-once delivery, no message peek |
 | **Why not chosen** | Need at-least-once reliability         |
 
-### Alternative 3: Azure Event Hubs
+### 🌊 Alternative 3: Azure Event Hubs
 
 | Criteria           | Assessment                                     |
 | ------------------ | ---------------------------------------------- |
@@ -189,7 +211,7 @@ await queueClient.SendMessageAsync(JsonSerializer.Serialize(order));
 | **Cons**           | Designed for big data, complex consumer groups |
 | **Why not chosen** | Overkill for order event volumes               |
 
-### Alternative 4: RabbitMQ (self-hosted)
+### 🐰 Alternative 4: RabbitMQ (self-hosted)
 
 | Criteria           | Assessment                               |
 | ------------------ | ---------------------------------------- |
@@ -199,9 +221,11 @@ await queueClient.SendMessageAsync(JsonSerializer.Serialize(order));
 
 ---
 
-## Message Contract
+<div align="right"><a href="#-table-of-contents">⬆️ Back to top</a></div>
 
-### Order Created Event
+## 📦 Message Contract
+
+### 📨 Order Created Event
 
 ```json
 {
@@ -219,7 +243,7 @@ await queueClient.SendMessageAsync(JsonSerializer.Serialize(order));
 }
 ```
 
-### Message Properties
+### 🏷️ Message Properties
 
 | Property        | Value              | Purpose                   |
 | --------------- | ------------------ | ------------------------- |
@@ -231,7 +255,9 @@ await queueClient.SendMessageAsync(JsonSerializer.Serialize(order));
 
 ---
 
-## Validation
+<div align="right"><a href="#-table-of-contents">⬆️ Back to top</a></div>
+
+## ✅ Validation
 
 The decision is validated by:
 
@@ -242,14 +268,18 @@ The decision is validated by:
 
 ---
 
-## Related ADRs
+<div align="right"><a href="#-table-of-contents">⬆️ Back to top</a></div>
+
+## 🔗 Related ADRs
 
 - [ADR-001](ADR-001-aspire-orchestration.md) — Aspire orchestrates Service Bus emulator
 - [ADR-003](ADR-003-observability-strategy.md) — Trace context propagation strategy
 
 ---
 
-## References
+<div align="right"><a href="#-table-of-contents">⬆️ Back to top</a></div>
+
+## 📚 References
 
 - [Azure Service Bus Documentation](https://learn.microsoft.com/azure/service-bus-messaging/)
 - [W3C Trace Context](https://www.w3.org/TR/trace-context/)
