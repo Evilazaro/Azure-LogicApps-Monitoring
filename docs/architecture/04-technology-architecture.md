@@ -1,6 +1,26 @@
+---
+title: Technology Architecture
+description: Azure platform services, infrastructure as code, and operational considerations for the Azure Logic Apps Monitoring Solution
+author: Platform Team
+date: 2026-01-21
+version: 1.0.0
+tags: [architecture, technology, azure, infrastructure, togaf, bdat]
+---
+
 # 🖥️ Technology Architecture
 
-← [Application Architecture](03-application-architecture.md) | [Index](README.md) | [Observability Architecture →](05-observability-architecture.md)
+> [!NOTE]
+> **Target Audience:** Platform Engineers, SREs, Cloud Architects  
+> **Reading Time:** ~20 minutes
+
+<details>
+<summary>📖 <strong>Navigation</strong></summary>
+
+| Previous                                                     |       Index        |                                                             Next |
+| :----------------------------------------------------------- | :----------------: | ---------------------------------------------------------------: |
+| [← Application Architecture](03-application-architecture.md) | [Index](README.md) | [Observability Architecture →](05-observability-architecture.md) |
+
+</details>
 
 ---
 
@@ -19,6 +39,9 @@
 ---
 
 ## 📋 1. Technology Principles
+
+> [!TIP]
+> These principles guide all infrastructure decisions and ensure consistency across environments.
 
 | #   | Principle                  | Statement                         | Rationale                                         | Implications               |
 | --- | -------------------------- | --------------------------------- | ------------------------------------------------- | -------------------------- |
@@ -333,6 +356,16 @@ infra/
 | **Observability Architecture** | Monitoring platforms            | [Platform Components](05-observability-architecture.md#7-platform-components)   |
 | **Security Architecture**      | Identity and network platforms  | [Managed Identity](06-security-architecture.md#3-managed-identity-architecture) |
 | **Deployment Architecture**    | IaC provisions platforms        | [Infrastructure as Code](07-deployment-architecture.md#infrastructure-as-code)  |
+
+---
+
+<div align="center">
+
+| Previous                                                     |       Index        |                                                             Next |
+| :----------------------------------------------------------- | :----------------: | ---------------------------------------------------------------: |
+| [← Application Architecture](03-application-architecture.md) | [Index](README.md) | [Observability Architecture →](05-observability-architecture.md) |
+
+</div>
 
 ---
 

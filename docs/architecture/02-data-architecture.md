@@ -1,6 +1,26 @@
+---
+title: Data Architecture
+description: Data landscape, stores, flows, and telemetry mapping for the Azure Logic Apps Monitoring Solution
+author: Platform Team
+date: 2026-01-21
+version: 1.0.0
+tags: [architecture, data, telemetry, togaf, bdat]
+---
+
 # 🗃️ Data Architecture
 
-← [Business Architecture](01-business-architecture.md) | [Index](README.md) | [Application Architecture →](03-application-architecture.md)
+> [!NOTE]
+> **Target Audience:** Data Architects, Backend Developers, Platform Engineers  
+> **Reading Time:** ~20 minutes
+
+<details>
+<summary>📖 <strong>Navigation</strong></summary>
+
+| Previous                                               |       Index        |                                                         Next |
+| :----------------------------------------------------- | :----------------: | -----------------------------------------------------------: |
+| [← Business Architecture](01-business-architecture.md) | [Index](README.md) | [Application Architecture →](03-application-architecture.md) |
+
+</details>
 
 ---
 
@@ -38,6 +58,9 @@ The Azure Logic Apps Monitoring Solution implements a **service-oriented data ar
 <div align="right"><a href="#-table-of-contents">⬆️ Back to top</a></div>
 
 ## 📋 2. Data Architecture Principles
+
+> [!TIP]
+> These principles ensure loose coupling, independent deployability, and clear data ownership boundaries across the solution.
 
 | Principle                   | Statement                                     | Rationale                                 | Implications                                  |
 | --------------------------- | --------------------------------------------- | ----------------------------------------- | --------------------------------------------- |
@@ -456,6 +479,16 @@ flowchart LR
 | **Technology Architecture**    | Azure SQL hosts OrderDb; Service Bus transports events | [Platform Services](04-technology-architecture.md#3-platform-services)       |
 | **Observability Architecture** | Telemetry data flows to App Insights                   | [Distributed Tracing](05-observability-architecture.md#4-traces)             |
 | **Security Architecture**      | Data classification drives access control              | [Data Protection](06-security-architecture.md#5-data-protection)             |
+
+---
+
+<div align="center">
+
+| Previous                                               |       Index        |                                                         Next |
+| :----------------------------------------------------- | :----------------: | -----------------------------------------------------------: |
+| [← Business Architecture](01-business-architecture.md) | [Index](README.md) | [Application Architecture →](03-application-architecture.md) |
+
+</div>
 
 ---
 

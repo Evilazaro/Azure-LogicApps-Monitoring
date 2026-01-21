@@ -1,6 +1,26 @@
+---
+title: Application Architecture
+description: Service catalog, APIs, integration patterns, and cross-cutting concerns for the Azure Logic Apps Monitoring Solution
+author: Platform Team
+date: 2026-01-21
+version: 1.0.0
+tags: [architecture, application, services, api, togaf, bdat]
+---
+
 # ⚙️ Application Architecture
 
-← [Data Architecture](02-data-architecture.md) | [Index](README.md) | [Technology Architecture →](04-technology-architecture.md)
+> [!NOTE]
+> **Target Audience:** Developers, Tech Leads, Solution Architects  
+> **Reading Time:** ~25 minutes
+
+<details>
+<summary>📖 <strong>Navigation</strong></summary>
+
+| Previous                                       |       Index        |                                                       Next |
+| :--------------------------------------------- | :----------------: | ---------------------------------------------------------: |
+| [← Data Architecture](02-data-architecture.md) | [Index](README.md) | [Technology Architecture →](04-technology-architecture.md) |
+
+</details>
 
 ---
 
@@ -22,7 +42,8 @@
 
 ## 📊 1. Application Architecture Overview
 
-The Azure Logic Apps Monitoring Solution follows an **event-driven, modular architecture** with clear service boundaries. Each service has a single responsibility, communicates via well-defined APIs or events, and can be deployed independently.
+> [!IMPORTANT]
+> The solution follows an **event-driven, modular architecture** with clear service boundaries. Each service has a single responsibility, communicates via well-defined APIs or events, and can be deployed independently.
 
 ### Architectural Style
 
@@ -459,6 +480,16 @@ The `app.ServiceDefaults` library provides shared functionality consumed by all 
 | **Data Architecture**          | Services own data stores per bounded context | [Data Domain Catalog](02-data-architecture.md#4-data-domain-catalog)                |
 | **Technology Architecture**    | Services deployed to Azure infrastructure    | [Platform Services](04-technology-architecture.md#3-platform-services)              |
 | **Observability Architecture** | Services emit telemetry via OpenTelemetry    | [Telemetry Architecture](05-observability-architecture.md#3-telemetry-architecture) |
+
+---
+
+<div align="center">
+
+| Previous                                       |       Index        |                                                       Next |
+| :--------------------------------------------- | :----------------: | ---------------------------------------------------------: |
+| [← Data Architecture](02-data-architecture.md) | [Index](README.md) | [Technology Architecture →](04-technology-architecture.md) |
+
+</div>
 
 ---
 

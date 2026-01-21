@@ -1,6 +1,26 @@
+---
+title: Observability Architecture
+description: Distributed tracing, metrics, logging, alerting, and dashboards for the Azure Logic Apps Monitoring Solution
+author: Platform Team
+date: 2026-01-21
+version: 1.0.0
+tags: [architecture, observability, monitoring, opentelemetry, togaf, bdat]
+---
+
 # 🔭 Observability Architecture
 
-← [Technology Architecture](04-technology-architecture.md) | [Index](README.md) | [Security Architecture →](06-security-architecture.md)
+> [!NOTE]
+> **Target Audience:** SREs, DevOps Engineers, Platform Engineers  
+> **Reading Time:** ~25 minutes
+
+<details>
+<summary>📖 <strong>Navigation</strong></summary>
+
+| Previous | Index | Next |
+|:---------|:-----:|-----:|
+| [← Technology Architecture](04-technology-architecture.md) | [Index](README.md) | [Security Architecture →](06-security-architecture.md) |
+
+</details>
 
 ---
 
@@ -46,6 +66,9 @@
 | **Performance Baselines**     | Understand normal behavior         | P50/P95/P99 latency tracking |
 
 ### 📊 SLI/SLO Definitions
+
+> [!IMPORTANT]
+> These SLIs and SLOs define the contract between the platform and its users. Monitor these metrics closely to ensure service reliability.
 
 | SLI              | Definition                    | Measurement                 | SLO      | Error Budget   |
 | ---------------- | ----------------------------- | --------------------------- | -------- | -------------- |
@@ -385,6 +408,16 @@ if (activity != null)
 | **Data Architecture**        | Telemetry as data domain           | [Telemetry Data Mapping](02-data-architecture.md#8-telemetry-data-mapping)         |
 | **Application Architecture** | Services emit telemetry            | [Cross-Cutting Concerns](03-application-architecture.md#9-cross-cutting-concerns)  |
 | **Technology Architecture**  | Observability platforms            | [Platform Services](04-technology-architecture.md#3-platform-services)             |
+
+---
+
+<div align="center">
+
+| Previous | Index | Next |
+|:---------|:-----:|-----:|
+| [← Technology Architecture](04-technology-architecture.md) | [Index](README.md) | [Security Architecture →](06-security-architecture.md) |
+
+</div>
 
 ---
 

@@ -1,6 +1,26 @@
+---
+title: Architecture Overview
+description: Comprehensive architecture documentation for the Azure Logic Apps Monitoring Solution following TOGAF BDAT framework
+author: Platform Team
+date: 2026-01-21
+version: 1.0.0
+tags: [architecture, azure, logic-apps, monitoring, togaf]
+---
+
 # 🏗️ Architecture Overview
 
-← [Documentation Home](../README.md) | **Index** | [Business Architecture →](01-business-architecture.md)
+> [!NOTE]
+> **Target Audience:** Cloud Solution Architects, Platform Engineers, Developers  
+> **Reading Time:** ~10 minutes
+
+<details>
+<summary>📖 <strong>Navigation</strong></summary>
+
+| Previous                           |      Index       |                                                   Next |
+| :--------------------------------- | :--------------: | -----------------------------------------------------: |
+| [Documentation Home](../README.md) | **You are here** | [Business Architecture →](01-business-architecture.md) |
+
+</details>
 
 ---
 
@@ -142,6 +162,9 @@ This architecture documentation follows the **TOGAF BDAT framework**, organized 
 
 ## ⚡ Quick Reference
 
+> [!TIP]
+> Use the tables below for quick reference when navigating the Azure portal or reviewing infrastructure code.
+
 ### ☁️ Key Azure Resources
 
 | Resource             | Purpose                   | Tier          |
@@ -185,6 +208,16 @@ Azure-LogicApps-Monitoring/
 - [DevOps Documentation](../devops/README.md) - CI/CD pipeline details
 - [Hook Scripts Guide](../hooks/README.md) - Automation scripts documentation
 - [Azure Developer CLI](https://learn.microsoft.com/azure/developer/azure-developer-cli/) - Official azd documentation
+
+---
+
+<div align="center">
+
+| Previous                           |           Index           |                                                   Next |
+| :--------------------------------- | :-----------------------: | -----------------------------------------------------: |
+| [Documentation Home](../README.md) | **Architecture Overview** | [Business Architecture →](01-business-architecture.md) |
+
+</div>
 
 ---
 

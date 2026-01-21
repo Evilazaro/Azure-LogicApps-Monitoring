@@ -1,6 +1,26 @@
+---
+title: Business Architecture
+description: Business context, capabilities, stakeholders, and value streams for the Azure Logic Apps Monitoring Solution
+author: Platform Team
+date: 2026-01-21
+version: 1.0.0
+tags: [architecture, business, capabilities, togaf, bdat]
+---
+
 # 🏢 Business Architecture
 
-← [Architecture Overview](README.md) | [Index](README.md) | [Data Architecture →](02-data-architecture.md)
+> [!NOTE]
+> **Target Audience:** Business Decision Makers, Solution Architects, Product Owners  
+> **Reading Time:** ~15 minutes
+
+<details>
+<summary>📖 <strong>Navigation</strong></summary>
+
+| Previous                             |       Index        |                                           Next |
+| :----------------------------------- | :----------------: | ---------------------------------------------: |
+| [← Architecture Overview](README.md) | [Index](README.md) | [Data Architecture →](02-data-architecture.md) |
+
+</details>
 
 ---
 
@@ -20,7 +40,10 @@
 
 ### Problem Statement
 
-Organizations deploying event-driven distributed applications on Azure face significant challenges in achieving end-to-end visibility across service boundaries. Traditional monitoring approaches fail to capture the complete transaction flow when orders traverse multiple services, message queues, and automated workflows, resulting in blind spots during troubleshooting and capacity planning.
+> [!IMPORTANT]
+> Organizations deploying event-driven distributed applications on Azure face significant challenges in achieving end-to-end visibility across service boundaries.
+
+Traditional monitoring approaches fail to capture the complete transaction flow when orders traverse multiple services, message queues, and automated workflows, resulting in blind spots during troubleshooting and capacity planning.
 
 ### Solution Value Proposition
 
@@ -254,6 +277,16 @@ flowchart TD
 - [Data Architecture](02-data-architecture.md) - Data domains supporting business capabilities
 - [Application Architecture](03-application-architecture.md) - Services implementing capabilities
 - [Observability Architecture](05-observability-architecture.md) - SLI/SLO definitions
+
+---
+
+<div align="center">
+
+| Previous                             |       Index        |                                           Next |
+| :----------------------------------- | :----------------: | ---------------------------------------------: |
+| [← Architecture Overview](README.md) | [Index](README.md) | [Data Architecture →](02-data-architecture.md) |
+
+</div>
 
 ---
 
