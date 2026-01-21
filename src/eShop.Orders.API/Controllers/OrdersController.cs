@@ -7,6 +7,7 @@ using app.ServiceDefaults.CommonTypes;
 using eShop.Orders.API.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 using System.Diagnostics;
+using Microsoft.AspNetCore.Authorization;
 
 namespace eShop.Orders.API.Controllers;
 
@@ -350,6 +351,14 @@ public sealed class OrdersController : ControllerBase
             {
                 activity?.SetStatus(ActivityStatusCode.Error, "Order not found");
                 return NotFound(new { error = $"Order with ID {id} not found", orderId = id, type = "NotFoundError" });
+            }
+
+            // Authorization check to ensure the current user can delete this order
+            var authorizationResult = await _authorizationService.AuthorizeAsync(User, order, "DeleteOrderPolicy");
+            if (!authorizationResult.Succeeded)
+            {
+                activity?.SetStatus(ActivityStatusCode.Error, "Forbidden");
+                return Forbid();
             }
 
             // Delete the order
