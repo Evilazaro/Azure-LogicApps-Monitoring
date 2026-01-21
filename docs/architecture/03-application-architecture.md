@@ -82,24 +82,31 @@ tags: [architecture, application, services, api, togaf, bdat]
 ## 🗺️ 3. Application Landscape Map
 
 ```mermaid
+---
+title: Application Landscape Map
+---
 flowchart TB
+    %% ===== PRESENTATION LAYER =====
     subgraph Presentation["🖥️ Presentation Layer"]
         direction LR
         WebApp["🌐 eShop.Web.App<br/>Blazor Server<br/>:5002"]
     end
 
+    %% ===== APPLICATION LAYER =====
     subgraph Application["⚙️ Application Layer"]
         direction LR
         API["📡 eShop.Orders.API<br/>ASP.NET Core<br/>:5001"]
         Workflow["🔄 OrdersManagement<br/>Logic Apps Standard"]
     end
 
+    %% ===== PLATFORM LAYER =====
     subgraph Platform["🏗️ Platform Layer"]
         direction LR
         Orchestrator["🎯 app.AppHost<br/>.NET Aspire"]
         SharedLib["📦 app.ServiceDefaults<br/>Cross-cutting Concerns"]
     end
 
+    %% ===== EXTERNAL SERVICES =====
     subgraph External["☁️ External Services"]
         direction LR
         DB[("🗄️ Azure SQL<br/>OrderDb")]
@@ -108,36 +115,45 @@ flowchart TB
         Storage["📁 Azure Storage"]
     end
 
-    %% Synchronous flows
+    %% ===== SYNCHRONOUS FLOWS =====
     WebApp -->|"HTTP/REST"| API
     API -->|"EF Core/TDS"| DB
     API -->|"AMQP"| Queue
     Workflow -->|"HTTP"| API
 
-    %% Async/Event flows
+    %% ===== ASYNC/EVENT FLOWS =====
     Queue -->|"Trigger"| Workflow
-    Workflow --> Storage
+    Workflow -->|"Write"| Storage
 
-    %% Platform relationships
+    %% ===== PLATFORM RELATIONSHIPS =====
     Orchestrator -.->|"Orchestrates"| WebApp
     Orchestrator -.->|"Orchestrates"| API
     SharedLib -.->|"Configures"| WebApp
     SharedLib -.->|"Configures"| API
 
-    %% Telemetry flows
+    %% ===== TELEMETRY FLOWS =====
     WebApp -.->|"OTLP"| Monitor
     API -.->|"OTLP"| Monitor
     Workflow -.->|"Diagnostics"| Monitor
 
-    classDef presentation fill:#e3f2fd,stroke:#1565c0,stroke-width:2px
-    classDef application fill:#e8f5e9,stroke:#2e7d32,stroke-width:2px
-    classDef platform fill:#fff3e0,stroke:#ef6c00,stroke-width:2px
-    classDef external fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px
+    %% ===== CLASS DEFINITIONS =====
+    classDef primary fill:#4F46E5,stroke:#3730A3,color:#FFFFFF,stroke-width:2px
+    classDef secondary fill:#10B981,stroke:#059669,color:#FFFFFF,stroke-width:2px
+    classDef trigger fill:#818CF8,stroke:#4F46E5,color:#FFFFFF,stroke-width:2px
+    classDef external fill:#6B7280,stroke:#4B5563,color:#FFFFFF,stroke-width:2px,stroke-dasharray:5 5
+    classDef datastore fill:#F59E0B,stroke:#D97706,color:#000000,stroke-width:2px
 
-    class WebApp presentation
-    class API,Workflow application
-    class Orchestrator,SharedLib platform
-    class DB,Queue,Monitor,Storage external
+    %% ===== CLASS ASSIGNMENTS =====
+    class WebApp primary
+    class API,Workflow secondary
+    class Orchestrator,SharedLib trigger
+    class DB,Queue,Monitor,Storage datastore
+
+    %% ===== SUBGRAPH STYLES =====
+    style Presentation fill:#EEF2FF,stroke:#4F46E5,stroke-width:2px
+    style Application fill:#ECFDF5,stroke:#10B981,stroke-width:2px
+    style Platform fill:#E0E7FF,stroke:#4F46E5,stroke-width:2px
+    style External fill:#F3F4F6,stroke:#6B7280,stroke-width:2px
 ```
 
 ### 📦 Application Inventory
@@ -206,7 +222,11 @@ flowchart TB
 #### Component Diagram
 
 ```mermaid
+---
+title: eShop.Orders.API Component Diagram
+---
 flowchart TB
+    %% ===== API SERVICE =====
     subgraph API["eShop.Orders.API"]
         subgraph Controllers["Controllers"]
             OC["OrdersController"]
@@ -235,20 +255,32 @@ flowchart TB
         end
     end
 
-    OC --> OS
-    OS --> OR
-    OS --> MH
-    OR --> DbCtx
+    %% ===== CONNECTIONS =====
+    OC -->|"calls"| OS
+    OS -->|"queries"| OR
+    OS -->|"publishes"| MH
+    OR -->|"persists"| DbCtx
     MH -->|"Service Bus"| External["📨 Service Bus"]
     DbCtx -->|"EF Core"| DB[("🗄️ SQL")]
 
-    classDef controller fill:#e3f2fd,stroke:#1565c0
-    classDef service fill:#e8f5e9,stroke:#2e7d32
-    classDef data fill:#fff3e0,stroke:#ef6c00
+    %% ===== CLASS DEFINITIONS =====
+    classDef primary fill:#4F46E5,stroke:#3730A3,color:#FFFFFF,stroke-width:2px
+    classDef secondary fill:#10B981,stroke:#059669,color:#FFFFFF,stroke-width:2px
+    classDef datastore fill:#F59E0B,stroke:#D97706,color:#000000,stroke-width:2px
 
-    class OC controller
-    class OS,MH,NoOp service
-    class OR,DbCtx data
+    %% ===== CLASS ASSIGNMENTS =====
+    class OC primary
+    class OS,MH,NoOp secondary
+    class OR,DbCtx datastore
+
+    %% ===== SUBGRAPH STYLES =====
+    style API fill:#F3F4F6,stroke:#6B7280,stroke-width:2px
+    style Controllers fill:#EEF2FF,stroke:#4F46E5,stroke-width:2px
+    style Services fill:#ECFDF5,stroke:#10B981,stroke-width:2px
+    style Repositories fill:#FEF3C7,stroke:#F59E0B,stroke-width:2px
+    style Handlers fill:#ECFDF5,stroke:#10B981,stroke-width:2px
+    style Data fill:#FEF3C7,stroke:#F59E0B,stroke-width:2px
+    style HealthChecks fill:#E0E7FF,stroke:#4F46E5,stroke-width:2px
 ```
 
 #### 🛠️ Key Patterns Implemented
@@ -276,7 +308,11 @@ flowchart TB
 #### Component Diagram
 
 ```mermaid
+---
+title: eShop.Web.App Component Diagram
+---
 flowchart TB
+    %% ===== WEB APP =====
     subgraph WebApp["eShop.Web.App"]
         subgraph Components["Components"]
             App["App.razor"]
@@ -294,16 +330,26 @@ flowchart TB
         end
     end
 
-    Pages --> APIService
+    %% ===== CONNECTIONS =====
+    Pages -->|"calls"| APIService
     APIService -->|"HTTP"| External["📡 Orders API"]
-    App --> Routes --> Pages
-    Pages --> Layout
+    App -->|"routes"| Routes
+    Routes -->|"renders"| Pages
+    Pages -->|"uses"| Layout
 
-    classDef component fill:#e3f2fd,stroke:#1565c0
-    classDef service fill:#e8f5e9,stroke:#2e7d32
+    %% ===== CLASS DEFINITIONS =====
+    classDef primary fill:#4F46E5,stroke:#3730A3,color:#FFFFFF,stroke-width:2px
+    classDef secondary fill:#10B981,stroke:#059669,color:#FFFFFF,stroke-width:2px
 
-    class App,Routes,Pages,Layout component
-    class APIService service
+    %% ===== CLASS ASSIGNMENTS =====
+    class App,Routes,Pages,Layout primary
+    class APIService secondary
+
+    %% ===== SUBGRAPH STYLES =====
+    style WebApp fill:#F3F4F6,stroke:#6B7280,stroke-width:2px
+    style Components fill:#EEF2FF,stroke:#4F46E5,stroke-width:2px
+    style Services fill:#ECFDF5,stroke:#10B981,stroke-width:2px
+    style Shared fill:#E0E7FF,stroke:#4F46E5,stroke-width:2px
 ```
 
 #### 🖼️ UI Components Overview
@@ -331,18 +377,36 @@ flowchart TB
 #### 📈 OrdersPlacedProcess Flow
 
 ```mermaid
+---
+title: OrdersPlacedProcess Workflow
+---
 flowchart TD
-    A[📨 Service Bus Trigger] --> B{Content Type = JSON?}
-    B -->|Yes| C[🌐 HTTP POST to API]
-    B -->|No| D[⏭️ Skip Processing]
+    %% ===== WORKFLOW FLOW =====
+    A[📨 Service Bus Trigger] -->|"receive"| B{Content Type = JSON?}
+    B -->|"Yes"| C[🌐 HTTP POST to API]
+    B -->|"No"| D[⏭️ Skip Processing]
 
-    C --> E{Status = 201?}
-    E -->|Yes| F[✅ Store in Success Blob]
-    E -->|No| G[⚠️ Store in Error Blob]
+    C -->|"response"| E{Status = 201?}
+    E -->|"Yes"| F[✅ Store in Success Blob]
+    E -->|"No"| G[⚠️ Store in Error Blob]
 
-    F --> H[✔️ Complete]
-    G --> H
-    D --> H
+    F -->|"complete"| H[✔️ Complete]
+    G -->|"complete"| H
+    D -->|"complete"| H
+
+    %% ===== CLASS DEFINITIONS =====
+    classDef trigger fill:#818CF8,stroke:#4F46E5,color:#FFFFFF,stroke-width:2px
+    classDef decision fill:#FFFBEB,stroke:#F59E0B,color:#000000,stroke-width:2px
+    classDef primary fill:#4F46E5,stroke:#3730A3,color:#FFFFFF,stroke-width:2px
+    classDef secondary fill:#10B981,stroke:#059669,color:#FFFFFF,stroke-width:2px
+    classDef failed fill:#F44336,stroke:#C62828,color:#FFFFFF,stroke-width:2px
+
+    %% ===== CLASS ASSIGNMENTS =====
+    class A trigger
+    class B,E decision
+    class C,D primary
+    class F,H secondary
+    class G failed
 ```
 
 #### 🔗 Integration Points
@@ -362,13 +426,18 @@ flowchart TD
 ### 📡 Communication Patterns
 
 ```mermaid
+---
+title: Inter-Service Communication Patterns
+---
 flowchart LR
+    %% ===== SYNCHRONOUS =====
     subgraph Sync["🔄 Synchronous"]
         Web["Web App"]
         API["Orders API"]
         Web -->|"HTTP/REST"| API
     end
 
+    %% ===== ASYNCHRONOUS =====
     subgraph Async["⚡ Asynchronous"]
         API2["Orders API"]
         SB["Service Bus"]
@@ -376,6 +445,20 @@ flowchart LR
         API2 -->|"Publish"| SB
         SB -->|"Subscribe"| LA
     end
+
+    %% ===== CLASS DEFINITIONS =====
+    classDef primary fill:#4F46E5,stroke:#3730A3,color:#FFFFFF,stroke-width:2px
+    classDef secondary fill:#10B981,stroke:#059669,color:#FFFFFF,stroke-width:2px
+    classDef datastore fill:#F59E0B,stroke:#D97706,color:#000000,stroke-width:2px
+
+    %% ===== CLASS ASSIGNMENTS =====
+    class Web,API primary
+    class API2,LA secondary
+    class SB datastore
+
+    %% ===== SUBGRAPH STYLES =====
+    style Sync fill:#EEF2FF,stroke:#4F46E5,stroke-width:2px
+    style Async fill:#ECFDF5,stroke:#10B981,stroke-width:2px
 ```
 
 | Pattern               | Usage                 | Implementation    | Example           |
