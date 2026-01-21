@@ -107,7 +107,7 @@ The script acts as a wrapper around `preprovision` in ValidateOnly mode, providi
 ---
 title: check-dev-workstation Execution Flow
 ---
-flowchart LR
+flowchart TD
     %% ===== STYLE DEFINITIONS =====
     classDef primary fill:#4F46E5,stroke:#3730A3,color:#FFFFFF
     classDef secondary fill:#10B981,stroke:#059669,color:#FFFFFF
@@ -119,20 +119,20 @@ flowchart LR
 
     %% ===== TRIGGER =====
     subgraph triggers["🚀 Entry Point"]
-        direction LR
+        direction TB
         A(["🚀 Start check-dev-workstation"])
     end
 
     %% ===== VALIDATION =====
     subgraph validation["🔍 Script Validation"]
-        direction LR
+        direction TB
         B{"preprovision script exists?"}
         C["Resolve PowerShell/Bash Path"]
     end
 
     %% ===== EXECUTION =====
     subgraph execution["⚙️ Execution"]
-        direction LR
+        direction TB
         D["Build Execution Arguments"]
         E["Execute preprovision --validate-only"]
         F{"Validation Exit Code"}
@@ -140,7 +140,7 @@ flowchart LR
 
     %% ===== RESULTS =====
     subgraph results["📊 Results"]
-        direction LR
+        direction TB
         G["✅ Workstation Validated Successfully"]
         H["⚠️ Validation Issues Found"]
         I["Display Success Message"]
@@ -152,7 +152,7 @@ flowchart LR
 
     %% ===== FAILURE =====
     subgraph failure["❌ Error Handling"]
-        direction LR
+        direction TB
         Z["❌ Exit with Error"]
     end
 
