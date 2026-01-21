@@ -215,6 +215,7 @@ DELETE https://management.azure.com/subscriptions/{subscriptionId}/providers/Mic
 | Version | Date       | Changes                                                                      |
 | ------- | ---------- | ---------------------------------------------------------------------------- |
 | 2.0.0   | 2026-01-09 | Major refactor with REST API implementation and comprehensive error handling |
+| 1.0.0   | 2025-10-01 | Initial release                                                              |
 
 ---
 
@@ -227,12 +228,3 @@ DELETE https://management.azure.com/subscriptions/{subscriptionId}/providers/Mic
 ---
 
 [⬅️ Back to Index](./index.md)
-| 1.0.0 | 2025-10-01 | Initial release |
-
----
-
-## 🔗 Links
-
-- [Repository](https://github.com/Evilazaro/Azure-LogicApps-Monitoring)
-- [Azure Logic Apps Documentation](https://learn.microsoft.com/azure/logic-apps/)
-- [Azure REST API Reference](https://learn.microsoft.com/rest/api/azure/)
