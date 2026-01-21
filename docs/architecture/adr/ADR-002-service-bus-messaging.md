@@ -80,33 +80,48 @@ The order processing workflow requires **asynchronous communication** between:
 #### 🗺️ Topic/Subscription Topology
 
 ```mermaid
+---
+title: Topic/Subscription Topology
+---
 flowchart LR
+    %% ===== PRODUCER =====
     subgraph Producer["📡 Orders API"]
         API[OrdersController]
     end
 
+    %% ===== SERVICE BUS =====
     subgraph ServiceBus["📬 Azure Service Bus"]
         Topic["Topic: ordersplaced"]
         Sub1["Subscription: orderprocessingsub"]
         DLQ["Dead Letter Queue"]
     end
 
+    %% ===== CONSUMER =====
     subgraph Consumer["⚡ Logic Apps"]
         LA[OrdersPlacedProcess]
     end
 
+    %% ===== CONNECTIONS =====
     API -->|"Publish"| Topic
-    Topic --> Sub1
+    Topic -->|"routes to"| Sub1
     Sub1 -->|"Receive"| LA
     Sub1 -.->|"Failed"| DLQ
 
-    classDef producer fill:#e3f2fd,stroke:#1565c0
-    classDef bus fill:#fff3e0,stroke:#ef6c00
-    classDef consumer fill:#e8f5e9,stroke:#2e7d32
+    %% ===== CLASS DEFINITIONS (EXACT HEX COLORS) =====
+    classDef primary fill:#4F46E5,stroke:#3730A3,color:#FFFFFF
+    classDef secondary fill:#10B981,stroke:#059669,color:#FFFFFF
+    classDef datastore fill:#F59E0B,stroke:#D97706,color:#000000
+    classDef failed fill:#F44336,stroke:#C62828,color:#FFFFFF
 
-    class API producer
-    class Topic,Sub1,DLQ bus
-    class LA consumer
+    class API primary
+    class Topic,Sub1 datastore
+    class DLQ failed
+    class LA secondary
+
+    %% ===== SUBGRAPH STYLES =====
+    style Producer fill:#E0E7FF,stroke:#4F46E5,stroke-width:2px
+    style ServiceBus fill:#FEF3C7,stroke:#F59E0B,stroke-width:2px
+    style Consumer fill:#ECFDF5,stroke:#10B981,stroke-width:2px
 ```
 
 #### 📤 Message Publishing (Orders API)

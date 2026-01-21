@@ -48,31 +48,39 @@ This document describes the deployment architecture for the Azure Logic Apps Mon
 ## 🗺️ Architecture Diagram
 
 ```mermaid
+---
+title: Deployment Architecture Overview
+---
 flowchart TB
+    %% ===== GITHUB REPOSITORY =====
     subgraph GitHub["📦 GitHub Repository"]
         CODE[Source Code]
         WORKFLOWS[GitHub Actions]
         DEPENDABOT[Dependabot]
     end
 
+    %% ===== CI/CD PIPELINE =====
     subgraph CICD["🔄 CI/CD Pipeline"]
         direction TB
 
+        %% ===== CI STAGE =====
         subgraph CI["CI Stage"]
-            BUILD[🔨 Build<br/>Cross-Platform]
-            TEST[🧪 Test<br/>Cross-Platform]
-            ANALYZE[🔍 Code Analysis]
-            CODEQL[🛡️ Security Scan]
+            BUILD["🔨 Build<br/>Cross-Platform"]
+            TEST["🧪 Test<br/>Cross-Platform"]
+            ANALYZE["🔍 Code Analysis"]
+            CODEQL["🛡️ Security Scan"]
         end
 
+        %% ===== CD STAGE =====
         subgraph CD["CD Stage"]
-            AUTH[🔐 OIDC Auth]
-            PROVISION[🏗️ Provision]
-            SQLCONFIG[🔑 SQL Config]
-            DEPLOY[🚀 Deploy]
+            AUTH["🔐 OIDC Auth"]
+            PROVISION["🏗️ Provision"]
+            SQLCONFIG["🔑 SQL Config"]
+            DEPLOY["🚀 Deploy"]
         end
     end
 
+    %% ===== AZURE CLOUD =====
     subgraph Azure["☁️ Azure Cloud"]
         subgraph SharedInfra["Shared Infrastructure"]
             ENTRA[Microsoft Entra ID]
@@ -90,48 +98,59 @@ flowchart TB
         end
     end
 
-    %% GitHub to CI/CD
-    CODE --> BUILD
-    WORKFLOWS --> CI
-    DEPENDABOT --> CODE
+    %% ===== GITHUB TO CI/CD CONNECTIONS =====
+    CODE -->|"triggers"| BUILD
+    WORKFLOWS -->|"orchestrates"| CI
+    DEPENDABOT -->|"updates"| CODE
 
-    %% CI Flow
-    BUILD --> TEST
-    BUILD --> ANALYZE
-    BUILD --> CODEQL
+    %% ===== CI FLOW =====
+    BUILD -->|"produces"| TEST
+    BUILD -->|"feeds"| ANALYZE
+    BUILD -->|"feeds"| CODEQL
 
-    %% CD Flow
-    TEST --> AUTH
-    CODEQL --> AUTH
-    AUTH --> ENTRA
-    AUTH --> PROVISION
-    PROVISION --> SharedInfra
-    PROVISION --> Workload
-    SQLCONFIG --> SQL
-    SQLCONFIG --> MI
-    DEPLOY --> ACA
+    %% ===== CD FLOW =====
+    TEST -->|"on success"| AUTH
+    CODEQL -->|"on success"| AUTH
+    AUTH -->|"authenticates"| ENTRA
+    AUTH -->|"enables"| PROVISION
+    PROVISION -->|"creates"| SharedInfra
+    PROVISION -->|"creates"| Workload
+    SQLCONFIG -->|"configures"| SQL
+    SQLCONFIG -->|"uses"| MI
+    DEPLOY -->|"deploys to"| ACA
 
-    %% Azure connections
-    ACA --> ACAENV
-    ACA --> SB
-    ACA --> SQL
-    ACA --> MI
-    ACAENV --> VNET
-    ACA --> APPINS
-    APPINS --> LAW
+    %% ===== AZURE CONNECTIONS =====
+    ACA -->|"runs in"| ACAENV
+    ACA -->|"sends to"| SB
+    ACA -->|"queries"| SQL
+    ACA -->|"authenticates via"| MI
+    ACAENV -->|"isolated by"| VNET
+    ACA -->|"telemetry to"| APPINS
+    APPINS -->|"logs to"| LAW
 
-    %% Styling
-    classDef github fill:#24292e,stroke:#1b1f23,color:#fff
-    classDef ci fill:#FF9800,stroke:#EF6C00,color:#fff
-    classDef cd fill:#4CAF50,stroke:#2E7D32,color:#fff
-    classDef azure fill:#0078D4,stroke:#005A9E,color:#fff
-    classDef security fill:#607D8B,stroke:#455A64,color:#fff
+    %% ===== CLASS DEFINITIONS (EXACT HEX COLORS) =====
+    classDef primary fill:#4F46E5,stroke:#3730A3,color:#FFFFFF
+    classDef secondary fill:#10B981,stroke:#059669,color:#FFFFFF
+    classDef datastore fill:#F59E0B,stroke:#D97706,color:#000000
+    classDef trigger fill:#818CF8,stroke:#4F46E5,color:#FFFFFF
+    classDef external fill:#6B7280,stroke:#4B5563,color:#FFFFFF,stroke-dasharray:5 5
+    classDef failed fill:#F44336,stroke:#C62828,color:#FFFFFF
 
-    class CODE,WORKFLOWS,DEPENDABOT github
-    class BUILD,TEST,ANALYZE ci
-    class CODEQL security
-    class AUTH,PROVISION,SQLCONFIG,DEPLOY cd
-    class ENTRA,VNET,LAW,APPINS,ACA,ACAENV,SQL,SB,MI azure
+    class CODE,WORKFLOWS,DEPENDABOT trigger
+    class BUILD,TEST,ANALYZE secondary
+    class CODEQL failed
+    class AUTH,PROVISION,SQLCONFIG,DEPLOY primary
+    class ENTRA,VNET,LAW,APPINS,ACA,ACAENV,MI primary
+    class SQL,SB datastore
+
+    %% ===== SUBGRAPH STYLES =====
+    style GitHub fill:#EEF2FF,stroke:#4F46E5,stroke-width:2px
+    style CICD fill:#F3F4F6,stroke:#6B7280,stroke-width:2px
+    style CI fill:#ECFDF5,stroke:#10B981,stroke-width:2px
+    style CD fill:#E0E7FF,stroke:#4F46E5,stroke-width:2px
+    style Azure fill:#E0E7FF,stroke:#4F46E5,stroke-width:2px
+    style SharedInfra fill:#F3F4F6,stroke:#6B7280,stroke-width:2px
+    style Workload fill:#FEF3C7,stroke:#F59E0B,stroke-width:2px
 ```
 
 <div align="right"><a href="#-table-of-contents">⬆️ Back to top</a></div>
@@ -150,38 +169,55 @@ The deployment pipeline consists of two main workflows:
 ### 🛠️ CI Stage Details
 
 ```mermaid
+---
+title: CI Stage Details
+---
 flowchart LR
+    %% ===== CI PIPELINE =====
     subgraph CI["CI Pipeline"]
         direction TB
 
+        %% ===== CROSS-PLATFORM MATRIX =====
         subgraph Matrix["Cross-Platform Matrix"]
             U[Ubuntu]
             W[Windows]
             M[macOS]
         end
 
-        BUILD[🔨 Build] --> TEST[🧪 Test]
-        BUILD --> ANALYZE[🔍 Analyze]
-        BUILD --> CODEQL[🛡️ CodeQL]
+        BUILD["🔨 Build"] -->|"produces"| TEST["🧪 Test"]
+        BUILD -->|"feeds"| ANALYZE["🔍 Analyze"]
+        BUILD -->|"feeds"| CODEQL["🛡️ CodeQL"]
 
-        Matrix --> BUILD
+        Matrix -->|"runs on"| BUILD
     end
 
+    %% ===== OUTPUTS =====
     subgraph Outputs["Outputs"]
         ARTIFACTS[Build Artifacts]
         COVERAGE[Code Coverage]
         SARIF[Security Report]
     end
 
-    TEST --> ARTIFACTS
-    TEST --> COVERAGE
-    CODEQL --> SARIF
+    TEST -->|"generates"| ARTIFACTS
+    TEST -->|"generates"| COVERAGE
+    CODEQL -->|"generates"| SARIF
 
-    classDef ci fill:#FF9800,stroke:#EF6C00,color:#fff
-    classDef output fill:#4CAF50,stroke:#2E7D32,color:#fff
+    %% ===== CLASS DEFINITIONS (EXACT HEX COLORS) =====
+    classDef primary fill:#4F46E5,stroke:#3730A3,color:#FFFFFF
+    classDef secondary fill:#10B981,stroke:#059669,color:#FFFFFF
+    classDef datastore fill:#F59E0B,stroke:#D97706,color:#000000
+    classDef trigger fill:#818CF8,stroke:#4F46E5,color:#FFFFFF
+    classDef failed fill:#F44336,stroke:#C62828,color:#FFFFFF
 
-    class BUILD,TEST,ANALYZE,CODEQL,U,W,M ci
-    class ARTIFACTS,COVERAGE,SARIF output
+    class BUILD,TEST,ANALYZE secondary
+    class CODEQL failed
+    class U,W,M trigger
+    class ARTIFACTS,COVERAGE,SARIF datastore
+
+    %% ===== SUBGRAPH STYLES =====
+    style CI fill:#ECFDF5,stroke:#10B981,stroke-width:2px
+    style Matrix fill:#EEF2FF,stroke:#4F46E5,stroke-width:2px
+    style Outputs fill:#FEF3C7,stroke:#F59E0B,stroke-width:2px
 ```
 
 | Job     | Purpose                                | Platforms              |
@@ -194,53 +230,71 @@ flowchart LR
 ### 🚀 CD Stage Details
 
 ```mermaid
+---
+title: CD Stage Details
+---
 flowchart TD
+    %% ===== CD PIPELINE =====
     subgraph CD["CD Pipeline"]
         direction TB
 
         CI_CHECK{CI Passed?}
 
+        %% ===== PHASE 1: AUTHENTICATION =====
         subgraph Auth["Phase 1: Authentication"]
             OIDC[OIDC Login]
             AZD_AUTH[azd auth]
             AZ_LOGIN[az login]
         end
 
+        %% ===== PHASE 2: PROVISION =====
         subgraph Provision["Phase 2: Provision"]
             AZD_PROVISION[azd provision]
             BICEP[Bicep Templates]
         end
 
+        %% ===== PHASE 3: SQL CONFIG =====
         subgraph SQLConfig["Phase 3: SQL Config"]
             REFRESH1[Refresh Token]
             CREATE_USER[Create SQL User]
         end
 
+        %% ===== PHASE 4: DEPLOY =====
         subgraph Deploy["Phase 4: Deploy"]
             REFRESH2[Refresh Token]
             AZD_DEPLOY[azd deploy]
         end
     end
 
-    CI_CHECK -->|Yes| OIDC
-    OIDC --> AZD_AUTH
-    AZD_AUTH --> AZ_LOGIN
-    AZ_LOGIN --> AZD_PROVISION
-    AZD_PROVISION --> BICEP
-    BICEP --> REFRESH1
-    REFRESH1 --> CREATE_USER
-    CREATE_USER --> REFRESH2
-    REFRESH2 --> AZD_DEPLOY
+    %% ===== CONNECTIONS =====
+    CI_CHECK -->|"Yes"| OIDC
+    OIDC -->|"enables"| AZD_AUTH
+    AZD_AUTH -->|"enables"| AZ_LOGIN
+    AZ_LOGIN -->|"triggers"| AZD_PROVISION
+    AZD_PROVISION -->|"uses"| BICEP
+    BICEP -->|"then"| REFRESH1
+    REFRESH1 -->|"enables"| CREATE_USER
+    CREATE_USER -->|"then"| REFRESH2
+    REFRESH2 -->|"enables"| AZD_DEPLOY
 
-    classDef decision fill:#FFC107,stroke:#FFA000,color:#000
-    classDef auth fill:#2196F3,stroke:#1565C0,color:#fff
-    classDef provision fill:#FF9800,stroke:#EF6C00,color:#fff
-    classDef deploy fill:#4CAF50,stroke:#2E7D32,color:#fff
+    %% ===== CLASS DEFINITIONS (EXACT HEX COLORS) =====
+    classDef primary fill:#4F46E5,stroke:#3730A3,color:#FFFFFF
+    classDef secondary fill:#10B981,stroke:#059669,color:#FFFFFF
+    classDef datastore fill:#F59E0B,stroke:#D97706,color:#000000
+    classDef trigger fill:#818CF8,stroke:#4F46E5,color:#FFFFFF
+    classDef decision fill:#FFFBEB,stroke:#F59E0B,color:#000000
 
     class CI_CHECK decision
-    class OIDC,AZD_AUTH,AZ_LOGIN,REFRESH1,REFRESH2 auth
-    class AZD_PROVISION,BICEP provision
-    class CREATE_USER,AZD_DEPLOY deploy
+    class OIDC,AZD_AUTH,AZ_LOGIN,REFRESH1,REFRESH2 trigger
+    class AZD_PROVISION,BICEP secondary
+    class CREATE_USER,AZD_DEPLOY primary
+
+    %% ===== SUBGRAPH STYLES =====
+    style CD fill:#E0E7FF,stroke:#4F46E5,stroke-width:2px
+    style Auth fill:#EEF2FF,stroke:#4F46E5,stroke-width:2px
+    style Provision fill:#ECFDF5,stroke:#10B981,stroke-width:2px
+    style SQLConfig fill:#FEF3C7,stroke:#F59E0B,stroke-width:2px
+    style Deploy fill:#E0E7FF,stroke:#4F46E5,stroke-width:2px
 ```
 
 | Phase          | Purpose                                  |
