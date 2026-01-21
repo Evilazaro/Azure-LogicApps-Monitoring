@@ -335,6 +335,4 @@ The script tracks and reports:
 
 **[⬆️ Back to Top](#%EF%B8%8F-postprovision)** · **[← preprovision](./preprovision.md)** · **[postinfradelete →](./postinfradelete.md)**
 
-## </div>
-
-[⬅️ Back to Index](./README.md)
+</div>

@@ -466,6 +466,4 @@ The script returns a `PSCustomObject` with type `SqlManagedIdentityConfiguration
 
 **[⬆️ Back to Top](#-sql-managed-identity-config)** · **[← configure-federated-credential](./configure-federated-credential.md)** · **[🪝 Hooks Index](./README.md)**
 
-## </div>
-
-[⬅️ Back to Index](./README.md)
+</div>

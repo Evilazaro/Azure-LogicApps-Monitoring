@@ -354,6 +354,4 @@ DELETE https://management.azure.com/subscriptions/{subscriptionId}/providers/Mic
 
 **[⬆️ Back to Top](#%EF%B8%8F-postinfradelete)** · **[← postprovision](./postprovision.md)** · **[check-dev-workstation →](./check-dev-workstation.md)**
 
-## </div>
-
-[⬅️ Back to Index](./README.md)
+</div>
