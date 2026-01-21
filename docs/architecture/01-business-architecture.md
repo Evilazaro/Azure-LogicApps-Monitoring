@@ -72,13 +72,18 @@ The Azure Logic Apps Monitoring Solution provides a **reference architecture** f
 ### 🗺️ Capability Map
 
 ```mermaid
+---
+title: Business Capability Map
+---
 flowchart TB
+    %% ===== CORE CAPABILITIES =====
     subgraph Core["🎯 Core Capabilities"]
         direction LR
         C1["📦 Order Management<br/><i>Revenue-generating</i>"]
         C2["🔄 Workflow Automation<br/><i>Process efficiency</i>"]
     end
 
+    %% ===== ENABLING CAPABILITIES =====
     subgraph Enabling["⚙️ Enabling Capabilities"]
         direction LR
         E1["📊 Observability<br/><i>Operational visibility</i>"]
@@ -86,6 +91,7 @@ flowchart TB
         E3["🔗 API Management<br/><i>Service exposure</i>"]
     end
 
+    %% ===== FOUNDATION CAPABILITIES =====
     subgraph Foundation["🏗️ Foundation Capabilities"]
         direction LR
         F1["🔐 Identity Management<br/><i>Authentication & authorization</i>"]
@@ -93,7 +99,9 @@ flowchart TB
         F3["☁️ Cloud Infrastructure<br/><i>Compute & networking</i>"]
     end
 
-    Core --> Enabling --> Foundation
+    %% ===== CONNECTIONS =====
+    Core -->|"enables"| Enabling
+    Enabling -->|"depends on"| Foundation
 
     C1 -.->|"publishes events"| E2
     C1 -.->|"monitored by"| E1
@@ -102,13 +110,20 @@ flowchart TB
     E1 -.->|"secured by"| F1
     E2 -.->|"runs on"| F3
 
-    classDef core fill:#e3f2fd,stroke:#1565c0,stroke-width:2px
-    classDef enabling fill:#e8f5e9,stroke:#2e7d32,stroke-width:2px
-    classDef foundation fill:#f5f5f5,stroke:#616161,stroke-width:2px
+    %% ===== CLASS DEFINITIONS =====
+    classDef primary fill:#4F46E5,stroke:#3730A3,color:#FFFFFF,stroke-width:2px
+    classDef secondary fill:#10B981,stroke:#059669,color:#FFFFFF,stroke-width:2px
+    classDef external fill:#6B7280,stroke:#4B5563,color:#FFFFFF,stroke-width:2px,stroke-dasharray:5 5
 
-    class C1,C2 core
-    class E1,E2,E3 enabling
-    class F1,F2,F3 foundation
+    %% ===== CLASS ASSIGNMENTS =====
+    class C1,C2 primary
+    class E1,E2,E3 secondary
+    class F1,F2,F3 external
+
+    %% ===== SUBGRAPH STYLES =====
+    style Core fill:#EEF2FF,stroke:#4F46E5,stroke-width:2px
+    style Enabling fill:#ECFDF5,stroke:#10B981,stroke-width:2px
+    style Foundation fill:#F3F4F6,stroke:#6B7280,stroke-width:2px
 ```
 
 ### 📋 Capability Descriptions
@@ -147,11 +162,16 @@ flowchart TB
 ### 📦 Order to Fulfillment Value Stream
 
 ```mermaid
+---
+title: Order to Fulfillment Value Stream
+---
 flowchart LR
+    %% ===== TRIGGER =====
     subgraph Trigger["🎯 Trigger"]
         T1["Customer<br/>Places Order"]
     end
 
+    %% ===== VALUE STREAM STAGES =====
     subgraph VS["📊 Value Stream Stages"]
         S1["1️⃣ Capture<br/><i>Order Submission</i>"]
         S2["2️⃣ Validate<br/><i>Order Verification</i>"]
@@ -160,19 +180,33 @@ flowchart LR
         S5["5️⃣ Process<br/><i>Workflow Execution</i>"]
     end
 
+    %% ===== OUTCOME =====
     subgraph Outcome["✅ Outcome"]
         O1["Order Processed<br/>& Tracked"]
     end
 
-    T1 --> S1 --> S2 --> S3 --> S4 --> S5 --> O1
+    %% ===== CONNECTIONS =====
+    T1 -->|"initiates"| S1
+    S1 -->|"validates"| S2
+    S2 -->|"stores"| S3
+    S3 -->|"emits"| S4
+    S4 -->|"executes"| S5
+    S5 -->|"completes"| O1
 
-    classDef trigger fill:#e3f2fd,stroke:#1565c0
-    classDef stage fill:#fff3e0,stroke:#ef6c00
-    classDef outcome fill:#e8f5e9,stroke:#2e7d32
+    %% ===== CLASS DEFINITIONS =====
+    classDef trigger fill:#818CF8,stroke:#4F46E5,color:#FFFFFF,stroke-width:2px
+    classDef primary fill:#4F46E5,stroke:#3730A3,color:#FFFFFF,stroke-width:2px
+    classDef secondary fill:#10B981,stroke:#059669,color:#FFFFFF,stroke-width:2px
 
+    %% ===== CLASS ASSIGNMENTS =====
     class T1 trigger
-    class S1,S2,S3,S4,S5 stage
-    class O1 outcome
+    class S1,S2,S3,S4,S5 primary
+    class O1 secondary
+
+    %% ===== SUBGRAPH STYLES =====
+    style Trigger fill:#EEF2FF,stroke:#4F46E5,stroke-width:2px
+    style VS fill:#E0E7FF,stroke:#4F46E5,stroke-width:2px
+    style Outcome fill:#FEF3C7,stroke:#F59E0B,stroke-width:2px
 ```
 
 #### 📍 Value Stream Stages
@@ -188,11 +222,16 @@ flowchart LR
 ### 🔍 Observability Value Stream
 
 ```mermaid
+---
+title: Observability Value Stream
+---
 flowchart LR
+    %% ===== TRIGGER =====
     subgraph Trigger["🎯 Trigger"]
         T1["System<br/>Activity"]
     end
 
+    %% ===== OBSERVABILITY STAGES =====
     subgraph VS["📊 Observability Stages"]
         S1["1️⃣ Instrument<br/><i>Capture Telemetry</i>"]
         S2["2️⃣ Collect<br/><i>Aggregate Data</i>"]
@@ -200,19 +239,32 @@ flowchart LR
         S4["4️⃣ Alert<br/><i>Notify on Anomalies</i>"]
     end
 
+    %% ===== OUTCOME =====
     subgraph Outcome["✅ Outcome"]
         O1["Operational<br/>Insight"]
     end
 
-    T1 --> S1 --> S2 --> S3 --> S4 --> O1
+    %% ===== CONNECTIONS =====
+    T1 -->|"generates"| S1
+    S1 -->|"aggregates"| S2
+    S2 -->|"correlates"| S3
+    S3 -->|"notifies"| S4
+    S4 -->|"provides"| O1
 
-    classDef trigger fill:#e3f2fd,stroke:#1565c0
-    classDef stage fill:#fff3e0,stroke:#ef6c00
-    classDef outcome fill:#e8f5e9,stroke:#2e7d32
+    %% ===== CLASS DEFINITIONS =====
+    classDef trigger fill:#818CF8,stroke:#4F46E5,color:#FFFFFF,stroke-width:2px
+    classDef primary fill:#4F46E5,stroke:#3730A3,color:#FFFFFF,stroke-width:2px
+    classDef secondary fill:#10B981,stroke:#059669,color:#FFFFFF,stroke-width:2px
 
+    %% ===== CLASS ASSIGNMENTS =====
     class T1 trigger
-    class S1,S2,S3,S4 stage
-    class O1 outcome
+    class S1,S2,S3,S4 primary
+    class O1 secondary
+
+    %% ===== SUBGRAPH STYLES =====
+    style Trigger fill:#EEF2FF,stroke:#4F46E5,stroke-width:2px
+    style VS fill:#E0E7FF,stroke:#4F46E5,stroke-width:2px
+    style Outcome fill:#FEF3C7,stroke:#F59E0B,stroke-width:2px
 ```
 
 ---
@@ -240,32 +292,42 @@ flowchart LR
 ### 📦 Order Lifecycle Process
 
 ```mermaid
+---
+title: Order Lifecycle Process
+---
 flowchart TD
-    A[📝 Order Submitted] --> B{Validate Order}
-    B -->|Valid| C[💾 Save to Database]
-    B -->|Invalid| D[❌ Return Error]
+    %% ===== START =====
+    A[📝 Order Submitted] -->|"validate"| B{Validate Order}
 
-    C --> E[📨 Publish to Service Bus]
-    E --> F[🔄 Logic App Triggered]
+    %% ===== VALIDATION =====
+    B -->|"Valid"| C[💾 Save to Database]
+    B -->|"Invalid"| D[❌ Return Error]
 
-    F --> G{Process Order}
-    G -->|Success| H[✅ Store in Success Blob]
-    G -->|Failure| I[⚠️ Store in Error Blob]
+    %% ===== PROCESSING =====
+    C -->|"publish"| E[📨 Publish to Service Bus]
+    E -->|"trigger"| F[🔄 Logic App Triggered]
 
-    H --> J[🗑️ Cleanup Workflow]
-    J --> K[Order Complete]
+    F -->|"process"| G{Process Order}
+    G -->|"Success"| H[✅ Store in Success Blob]
+    G -->|"Failure"| I[⚠️ Store in Error Blob]
 
-    classDef start fill:#e3f2fd,stroke:#1565c0
-    classDef process fill:#fff3e0,stroke:#ef6c00
-    classDef decision fill:#fce4ec,stroke:#c2185b
-    classDef success fill:#e8f5e9,stroke:#2e7d32
-    classDef error fill:#ffebee,stroke:#c62828
+    %% ===== COMPLETION =====
+    H -->|"cleanup"| J[🗑️ Cleanup Workflow]
+    J -->|"complete"| K[Order Complete]
 
-    class A start
-    class C,E,F,J process
+    %% ===== CLASS DEFINITIONS =====
+    classDef trigger fill:#818CF8,stroke:#4F46E5,color:#FFFFFF,stroke-width:2px
+    classDef primary fill:#4F46E5,stroke:#3730A3,color:#FFFFFF,stroke-width:2px
+    classDef decision fill:#FFFBEB,stroke:#F59E0B,color:#000000,stroke-width:2px
+    classDef secondary fill:#10B981,stroke:#059669,color:#FFFFFF,stroke-width:2px
+    classDef failed fill:#F44336,stroke:#C62828,color:#FFFFFF,stroke-width:2px
+
+    %% ===== CLASS ASSIGNMENTS =====
+    class A trigger
+    class C,E,F,J primary
     class B,G decision
-    class H,K success
-    class D,I error
+    class H,K secondary
+    class D,I failed
 ```
 
 ---
