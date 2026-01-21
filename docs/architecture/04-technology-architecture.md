@@ -88,58 +88,79 @@ tags: [architecture, technology, azure, infrastructure, togaf, bdat]
 ### 🧩 Platform Decomposition
 
 ```mermaid
+---
+title: Platform Decomposition
+---
 flowchart TB
+    %% ===== COMPUTE PLATFORM =====
     subgraph Compute["🖥️ Compute Platform"]
         ACA["Azure Container Apps<br/><i>API, Web App</i>"]
         ACAENV["Container Apps Environment<br/><i>Shared runtime</i>"]
-        LA["Logic Apps Standard<br/><i>Workflows</i>"]
+        LA["🔄 Logic Apps Standard<br/><i>Workflows</i>"]
         ASP["App Service Plan<br/><i>WS1 / Elastic</i>"]
     end
 
+    %% ===== DATA PLATFORM =====
     subgraph Data["💾 Data Platform"]
         SQL["Azure SQL Database<br/><i>OrderDb</i>"]
         SB["Azure Service Bus<br/><i>ordersplaced topic</i>"]
         Storage["Azure Storage<br/><i>Workflow state, blobs</i>"]
     end
 
+    %% ===== OBSERVABILITY PLATFORM =====
     subgraph Observability["📊 Observability Platform"]
         AI["Application Insights<br/><i>APM, traces</i>"]
         LAW["Log Analytics<br/><i>Centralized logs</i>"]
     end
 
+    %% ===== IDENTITY PLATFORM =====
     subgraph Identity["🔐 Identity Platform"]
         MI["User Assigned<br/>Managed Identity"]
         RBAC["Azure RBAC<br/><i>Role assignments</i>"]
         Entra["Microsoft Entra ID<br/><i>Authentication</i>"]
     end
 
+    %% ===== NETWORK PLATFORM =====
     subgraph Network["🌐 Network Platform"]
         VNet["Virtual Network"]
         Subnet["Subnets<br/><i>API, Logic Apps</i>"]
     end
 
-    ACA --> ACAENV
-    LA --> ASP
-    ACAENV --> VNet
-    LA --> VNet
+    %% ===== CONNECTIONS =====
+    ACA -->|"runs in"| ACAENV
+    LA -->|"hosted by"| ASP
+    ACAENV -->|"integrated with"| VNet
+    LA -->|"integrated with"| VNet
 
-    ACA --> SQL & SB
-    LA --> SB & Storage
+    ACA -->|"connects"| SQL & SB
+    LA -->|"uses"| SB & Storage
 
-    ACA & LA --> AI --> LAW
-    ACA & LA --> MI --> RBAC --> Entra
+    ACA & LA -->|"emits"| AI
+    AI -->|"queries"| LAW
+    ACA & LA -->|"authenticates"| MI
+    MI -->|"authorized by"| RBAC
+    RBAC -->|"validates"| Entra
 
-    classDef compute fill:#e3f2fd,stroke:#1565c0,stroke-width:2px
-    classDef data fill:#fff3e0,stroke:#ef6c00,stroke-width:2px
-    classDef observability fill:#e8f5e9,stroke:#2e7d32,stroke-width:2px
-    classDef identity fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px
-    classDef network fill:#fce4ec,stroke:#c2185b,stroke-width:2px
+    %% ===== CLASS DEFINITIONS =====
+    classDef primary fill:#4F46E5,stroke:#3730A3,color:#FFFFFF,stroke-width:2px
+    classDef datastore fill:#F59E0B,stroke:#D97706,color:#000000,stroke-width:2px
+    classDef secondary fill:#10B981,stroke:#059669,color:#FFFFFF,stroke-width:2px
+    classDef trigger fill:#818CF8,stroke:#4F46E5,color:#FFFFFF,stroke-width:2px
+    classDef external fill:#6B7280,stroke:#4B5563,color:#FFFFFF,stroke-width:2px,stroke-dasharray:5 5
 
-    class ACA,ACAENV,LA,ASP compute
-    class SQL,SB,Storage data
-    class AI,LAW observability
-    class MI,RBAC,Entra identity
-    class VNet,Subnet network
+    %% ===== CLASS ASSIGNMENTS =====
+    class ACA,ACAENV,LA,ASP primary
+    class SQL,SB,Storage datastore
+    class AI,LAW secondary
+    class MI,RBAC,Entra trigger
+    class VNet,Subnet external
+
+    %% ===== SUBGRAPH STYLES =====
+    style Compute fill:#EEF2FF,stroke:#4F46E5,stroke-width:2px
+    style Data fill:#FEF3C7,stroke:#F59E0B,stroke-width:2px
+    style Observability fill:#ECFDF5,stroke:#10B981,stroke-width:2px
+    style Identity fill:#E0E7FF,stroke:#4F46E5,stroke-width:2px
+    style Network fill:#F3F4F6,stroke:#6B7280,stroke-width:2px
 ```
 
 ### 🖥️ 3.1 Compute Platform
@@ -199,31 +220,45 @@ flowchart TB
 ### 📦 Environment Progression
 
 ```mermaid
+---
+title: Environment Progression Pipeline
+---
 flowchart LR
+    %% ===== DEVELOPMENT =====
     subgraph Dev["🛠️ Development"]
         Local["Local<br/><i>Emulators</i>"]
         DevEnv["Dev<br/><i>Shared Azure</i>"]
     end
 
+    %% ===== PRE-PRODUCTION =====
     subgraph PreProd["🧪 Pre-Production"]
         Staging["Staging<br/><i>Production-like</i>"]
     end
 
+    %% ===== PRODUCTION =====
     subgraph Prod["🚀 Production"]
         ProdMain["Production<br/><i>Live workloads</i>"]
     end
 
+    %% ===== CONNECTIONS =====
     Local -->|"PR Merge"| DevEnv
     DevEnv -->|"Release Branch"| Staging
     Staging -->|"Approval"| ProdMain
 
-    classDef dev fill:#e3f2fd,stroke:#1565c0
-    classDef preprod fill:#fff3e0,stroke:#ef6c00
-    classDef prod fill:#e8f5e9,stroke:#2e7d32
+    %% ===== CLASS DEFINITIONS =====
+    classDef primary fill:#4F46E5,stroke:#3730A3,color:#FFFFFF,stroke-width:2px
+    classDef datastore fill:#F59E0B,stroke:#D97706,color:#000000,stroke-width:2px
+    classDef secondary fill:#10B981,stroke:#059669,color:#FFFFFF,stroke-width:2px
 
-    class Local,DevEnv dev
-    class Staging preprod
-    class ProdMain prod
+    %% ===== CLASS ASSIGNMENTS =====
+    class Local,DevEnv primary
+    class Staging datastore
+    class ProdMain secondary
+
+    %% ===== SUBGRAPH STYLES =====
+    style Dev fill:#EEF2FF,stroke:#4F46E5,stroke-width:2px
+    style PreProd fill:#FEF3C7,stroke:#F59E0B,stroke-width:2px
+    style Prod fill:#ECFDF5,stroke:#10B981,stroke-width:2px
 ```
 
 ---

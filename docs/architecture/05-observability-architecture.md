@@ -86,7 +86,11 @@ tags: [architecture, observability, monitoring, opentelemetry, togaf, bdat]
 ### 📊 Three Pillars Overview
 
 ```mermaid
+---
+title: Three Pillars of Observability
+---
 flowchart TB
+    %% ===== THREE PILLARS =====
     subgraph Pillars["📊 Three Pillars of Observability"]
         direction LR
         Traces["🔍 Traces<br/><i>Distributed request flow</i>"]
@@ -94,17 +98,20 @@ flowchart TB
         Logs["📝 Logs<br/><i>Discrete event records</i>"]
     end
 
+    %% ===== COLLECTION LAYER =====
     subgraph Collection["📥 Collection Layer"]
         SDK["OpenTelemetry SDK"]
         AzMon["Azure Monitor Exporter"]
         Diag["Azure Diagnostics"]
     end
 
+    %% ===== BACKEND LAYER =====
     subgraph Backend["💾 Backend Layer"]
         AI["Application Insights<br/><i>APM Platform</i>"]
         LAW["Log Analytics<br/><i>Query Engine</i>"]
     end
 
+    %% ===== CONSUMPTION LAYER =====
     subgraph Consumption["👁️ Consumption Layer"]
         AppMap["Application Map"]
         TxSearch["Transaction Search"]
@@ -112,21 +119,32 @@ flowchart TB
         Alerts["Alert Rules"]
     end
 
-    Traces & Metrics & Logs --> SDK --> AzMon --> AI
-    Diag --> LAW
-    AI --> LAW
-    AI --> AppMap & TxSearch
-    LAW --> Dashboards & Alerts
+    %% ===== CONNECTIONS =====
+    Traces & Metrics & Logs -->|"instrument"| SDK
+    SDK -->|"export"| AzMon
+    AzMon -->|"ingest"| AI
+    Diag -->|"stream"| LAW
+    AI -->|"query"| LAW
+    AI -->|"visualize"| AppMap & TxSearch
+    LAW -->|"query"| Dashboards & Alerts
 
-    classDef pillars fill:#e3f2fd,stroke:#1565c0,stroke-width:2px
-    classDef collection fill:#e8f5e9,stroke:#2e7d32,stroke-width:2px
-    classDef backend fill:#fff3e0,stroke:#ef6c00,stroke-width:2px
-    classDef consumption fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px
+    %% ===== CLASS DEFINITIONS =====
+    classDef primary fill:#4F46E5,stroke:#3730A3,color:#FFFFFF,stroke-width:2px
+    classDef secondary fill:#10B981,stroke:#059669,color:#FFFFFF,stroke-width:2px
+    classDef datastore fill:#F59E0B,stroke:#D97706,color:#000000,stroke-width:2px
+    classDef trigger fill:#818CF8,stroke:#4F46E5,color:#FFFFFF,stroke-width:2px
 
-    class Traces,Metrics,Logs pillars
-    class SDK,AzMon,Diag collection
-    class AI,LAW backend
-    class AppMap,TxSearch,Dashboards,Alerts consumption
+    %% ===== CLASS ASSIGNMENTS =====
+    class Traces,Metrics,Logs primary
+    class SDK,AzMon,Diag secondary
+    class AI,LAW datastore
+    class AppMap,TxSearch,Dashboards,Alerts trigger
+
+    %% ===== SUBGRAPH STYLES =====
+    style Pillars fill:#EEF2FF,stroke:#4F46E5,stroke-width:2px
+    style Collection fill:#ECFDF5,stroke:#10B981,stroke-width:2px
+    style Backend fill:#FEF3C7,stroke:#F59E0B,stroke-width:2px
+    style Consumption fill:#E0E7FF,stroke:#4F46E5,stroke-width:2px
 ```
 
 ### 🛠️ Instrumentation Standards
