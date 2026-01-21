@@ -1,10 +1,26 @@
-# Observability Architecture
+# 🔭 Observability Architecture
 
 ← [Technology Architecture](04-technology-architecture.md) | [Index](README.md) | [Security Architecture →](06-security-architecture.md)
 
 ---
 
-## 1. Observability Principles
+## 📑 Table of Contents
+
+- [📋 Principles](#-1-observability-principles)
+- [🎯 Strategy](#-2-observability-strategy)
+- [📊 Telemetry Architecture](#-3-telemetry-architecture)
+- [🔍 Traces](#-4-traces)
+- [📊 Metrics](#-5-metrics)
+- [📝 Logs](#-6-logs)
+- [⚙️ Platform Components](#️-7-platform-components)
+- [🚨 Alerting & Incident Response](#-8-alerting-and-incident-response)
+- [📊 Dashboards](#-9-dashboards)
+- [💰 Cost Management](#-10-cost-management)
+- [↔️ Cross-Architecture](#️-11-cross-architecture-relationships)
+
+---
+
+## 📋 1. Observability Principles
 
 | #   | Principle                          | Rationale                             | Implications                      |
 | --- | ---------------------------------- | ------------------------------------- | --------------------------------- |
@@ -16,9 +32,11 @@
 
 ---
 
-## 2. Observability Strategy
+<div align="right"><a href="#-table-of-contents">⬆️ Back to top</a></div>
 
-### Goals and Objectives
+## 🎯 2. Observability Strategy
+
+### 🎯 Goals and Objectives
 
 | Goal                          | Objective                          | Measurement                  |
 | ----------------------------- | ---------------------------------- | ---------------------------- |
@@ -27,7 +45,7 @@
 | **Efficient Troubleshooting** | Reduce MTTR                        | < 30 min to root cause       |
 | **Performance Baselines**     | Understand normal behavior         | P50/P95/P99 latency tracking |
 
-### SLI/SLO Definitions
+### 📊 SLI/SLO Definitions
 
 | SLI              | Definition                    | Measurement                 | SLO      | Error Budget   |
 | ---------------- | ----------------------------- | --------------------------- | -------- | -------------- |
@@ -38,9 +56,11 @@
 
 ---
 
-## 3. Telemetry Architecture
+<div align="right"><a href="#-table-of-contents">⬆️ Back to top</a></div>
 
-### Three Pillars Overview
+## 📊 3. Telemetry Architecture
+
+### 📊 Three Pillars Overview
 
 ```mermaid
 flowchart TB
@@ -86,7 +106,7 @@ flowchart TB
     class AppMap,TxSearch,Dashboards,Alerts consumption
 ```
 
-### Instrumentation Standards
+### 🛠️ Instrumentation Standards
 
 | Component       | Instrumentation                          | Auto/Manual | Source           |
 | --------------- | ---------------------------------------- | ----------- | ---------------- |
@@ -96,7 +116,7 @@ flowchart TB
 | Service Bus     | Azure.Messaging.ServiceBus source        | Manual      | Custom spans     |
 | Business Events | Custom ActivitySource                    | Manual      | Application code |
 
-### Telemetry Inventory Matrix
+### 📝 Telemetry Inventory Matrix
 
 | Source               | Traces     | Metrics          | Logs           | Correlation ID     |
 | -------------------- | ---------- | ---------------- | -------------- | ------------------ |
@@ -108,13 +128,15 @@ flowchart TB
 
 ---
 
-## 4. Traces
+<div align="right"><a href="#-table-of-contents">⬆️ Back to top</a></div>
 
-### Distributed Tracing Strategy
+## 🔍 4. Traces
+
+### 🌐 Distributed Tracing Strategy
 
 The solution implements **W3C Trace Context** for cross-service correlation, ensuring traces flow seamlessly from the Web App through the API, Service Bus, and Logic Apps.
 
-### Span Inventory
+### 📝 Span Inventory
 
 | Span Name          | Kind     | Source               | Attributes                                   |
 | ------------------ | -------- | -------------------- | -------------------------------------------- |
@@ -123,7 +145,7 @@ The solution implements **W3C Trace Context** for cross-service correlation, ens
 | `GetOrders`        | Server   | OrdersController     | http.method, http.route                      |
 | `db.query`         | Client   | EF Core              | db.name, db.operation                        |
 
-### Trace Propagation Flow
+### 🔄 Trace Propagation Flow
 
 ```mermaid
 sequenceDiagram
@@ -147,7 +169,7 @@ sequenceDiagram
     Note over Web,AI: All operations correlate via TraceId
 ```
 
-### Context Propagation Implementation
+### 💻 Context Propagation Implementation
 
 From [OrdersMessageHandler.cs](../../src/eShop.Orders.API/Handlers/OrdersMessageHandler.cs):
 
@@ -167,15 +189,17 @@ if (activity != null)
 
 ---
 
-## 5. Metrics
+<div align="right"><a href="#-table-of-contents">⬆️ Back to top</a></div>
 
-### Metrics Strategy
+## 📊 5. Metrics
+
+### 🎯 Metrics Strategy
 
 - **Request metrics**: Auto-instrumented by OpenTelemetry
 - **Business metrics**: Custom counters for order operations
 - **Platform metrics**: Azure Monitor for infrastructure
 
-### Metrics Catalog
+### 📝 Metrics Catalog
 
 | Metric Name                    | Type          | Source        | Unit    | Business Meaning     |
 | ------------------------------ | ------------- | ------------- | ------- | -------------------- |
@@ -185,7 +209,7 @@ if (activity != null)
 | `servicebus.messages.active`   | Gauge         | Azure Monitor | count   | Queue backlog        |
 | `sql.dtu.consumption`          | Gauge         | Azure Monitor | percent | Database load        |
 
-### Custom Business Metrics
+### 🏭 Custom Business Metrics
 
 | Metric                       | Type      | Purpose                    | Implementation                |
 | ---------------------------- | --------- | -------------------------- | ----------------------------- |
@@ -195,9 +219,11 @@ if (activity != null)
 
 ---
 
-## 6. Logs
+<div align="right"><a href="#-table-of-contents">⬆️ Back to top</a></div>
 
-### Logging Standards
+## 📝 6. Logs
+
+### 📖 Logging Standards
 
 | Standard               | Implementation                                                       | Example                     |
 | ---------------------- | -------------------------------------------------------------------- | --------------------------- |
@@ -206,7 +232,7 @@ if (activity != null)
 | **Log Levels**         | Information for success, Warning for recoverable, Error for failures | Per-event basis             |
 | **Sensitive Data**     | No PII in logs                                                       | Mask customer data          |
 
-### Log Levels and Categories
+### 🚦 Log Levels and Categories
 
 | Level           | Usage                        | Example             |
 | --------------- | ---------------------------- | ------------------- |
@@ -217,7 +243,7 @@ if (activity != null)
 | **Error**       | Failures requiring attention | Exception details   |
 | **Critical**    | System-wide failures         | Service unavailable |
 
-### Structured Logging Schema
+### 📜 Structured Logging Schema
 
 ```json
 {
@@ -237,9 +263,11 @@ if (activity != null)
 
 ---
 
-## 7. Platform Components
+<div align="right"><a href="#-table-of-contents">⬆️ Back to top</a></div>
 
-### Collection Layer
+## ⚙️ 7. Platform Components
+
+### 📥 Collection Layer
 
 | Component                  | Technology                           | Purpose                   |
 | -------------------------- | ------------------------------------ | ------------------------- |
@@ -247,7 +275,7 @@ if (activity != null)
 | **Azure Monitor Exporter** | Azure.Monitor.OpenTelemetry.Exporter | Export to App Insights    |
 | **Azure Diagnostics**      | Built-in                             | Platform telemetry        |
 
-### Storage Layer
+### 🗃️ Storage Layer
 
 | Store                   | Purpose              | Retention | Query Language   |
 | ----------------------- | -------------------- | --------- | ---------------- |
@@ -255,7 +283,7 @@ if (activity != null)
 | Log Analytics Workspace | Centralized logs     | 30 days   | KQL              |
 | Azure Monitor Metrics   | Time-series          | 93 days   | Metrics Explorer |
 
-### Visualization Layer
+### 📊 Visualization Layer
 
 | Tool               | Purpose              | Primary Users |
 | ------------------ | -------------------- | ------------- |
@@ -266,9 +294,11 @@ if (activity != null)
 
 ---
 
-## 8. Alerting and Incident Response
+<div align="right"><a href="#-table-of-contents">⬆️ Back to top</a></div>
 
-### Alert Rules Catalog
+## 🚨 8. Alerting and Incident Response
+
+### ⚠️ Alert Rules Catalog
 
 | Alert                   | Severity | Condition                 | Response                 |
 | ----------------------- | -------- | ------------------------- | ------------------------ |
@@ -278,7 +308,7 @@ if (activity != null)
 | **Database DTU High**   | Warning  | DTU > 80% for 15 min      | Consider scaling         |
 | **Logic App Failures**  | Critical | > 3 failures in 5 min     | Check workflow logs      |
 
-### Escalation Procedures
+### 📈 Escalation Procedures
 
 | Severity          | Initial Response         | Escalation Path                | SLA     |
 | ----------------- | ------------------------ | ------------------------------ | ------- |
@@ -288,9 +318,11 @@ if (activity != null)
 
 ---
 
-## 9. Dashboards
+<div align="right"><a href="#-table-of-contents">⬆️ Back to top</a></div>
 
-### Dashboard Inventory
+## 📊 9. Dashboards
+
+### 📝 Dashboard Inventory
 
 | Dashboard               | Purpose                   | Refresh Rate | Audience      |
 | ----------------------- | ------------------------- | ------------ | ------------- |
@@ -299,7 +331,7 @@ if (activity != null)
 | **Infrastructure**      | Resource utilization      | 5 min        | Platform      |
 | **Error Analysis**      | Failure investigation     | Real-time    | Developers    |
 
-### Key Visualizations
+### 📈 Key Visualizations
 
 | Visualization        | Metrics         | Chart Type   |
 | -------------------- | --------------- | ------------ |
@@ -311,9 +343,11 @@ if (activity != null)
 
 ---
 
-## 10. Cost Management
+<div align="right"><a href="#-table-of-contents">⬆️ Back to top</a></div>
 
-### Data Volume Estimates
+## 💰 10. Cost Management
+
+### 📊 Data Volume Estimates
 
 | Source           | Daily Volume | Monthly Cost |
 | ---------------- | ------------ | ------------ |
@@ -322,7 +356,7 @@ if (activity != null)
 | Platform Metrics | ~100 MB      | ~$2          |
 | Logic App Logs   | ~50 MB       | ~$1          |
 
-### Sampling Strategies
+### 🎯 Sampling Strategies
 
 | Telemetry Type   | Sampling Rate | Rationale               |
 | ---------------- | ------------- | ----------------------- |
@@ -331,7 +365,7 @@ if (activity != null)
 | Metrics          | 100%          | Low volume, aggregated  |
 | Logs (debug)     | 1%            | Development only        |
 
-### Retention Policies
+### 📅 Retention Policies
 
 | Data Type | Hot Storage | Archive | Rationale              |
 | --------- | ----------- | ------- | ---------------------- |
@@ -341,7 +375,9 @@ if (activity != null)
 
 ---
 
-## 11. Cross-Architecture Relationships
+<div align="right"><a href="#-table-of-contents">⬆️ Back to top</a></div>
+
+## ↔️ 11. Cross-Architecture Relationships
 
 | Related Architecture         | Connection                         | Reference                                                                          |
 | ---------------------------- | ---------------------------------- | ---------------------------------------------------------------------------------- |

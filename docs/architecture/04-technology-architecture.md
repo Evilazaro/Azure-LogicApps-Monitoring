@@ -1,10 +1,24 @@
-# Technology Architecture
+# 🖥️ Technology Architecture
 
 ← [Application Architecture](03-application-architecture.md) | [Index](README.md) | [Observability Architecture →](05-observability-architecture.md)
 
 ---
 
-## 1. Technology Principles
+## 📑 Table of Contents
+
+- [📋 Principles](#-1-technology-principles)
+- [📊 Standards](#-2-technology-standards)
+- [☁️ Platform Services](#️-3-platform-services)
+- [🚀 Deployment Architecture](#-4-deployment-architecture)
+- [🗺️ Component Mapping](#️-5-technology-component-mapping)
+- [📜 Infrastructure as Code](#-6-infrastructure-as-code)
+- [🛠️ Operational Considerations](#️-7-operational-considerations)
+- [💰 Cost Analysis](#-8-cost-analysis)
+- [↔️ Cross-Architecture](#️-9-cross-architecture-relationships)
+
+---
+
+## 📋 1. Technology Principles
 
 | #   | Principle                  | Statement                         | Rationale                                         | Implications               |
 | --- | -------------------------- | --------------------------------- | ------------------------------------------------- | -------------------------- |
@@ -16,9 +30,11 @@
 
 ---
 
-## 2. Technology Standards
+<div align="right"><a href="#-table-of-contents">⬆️ Back to top</a></div>
 
-### Standards Catalog
+## 📊 2. Technology Standards
+
+### 📖 Standards Catalog
 
 | Category               | Technology           | Version  | Status   | Rationale                         |
 | ---------------------- | -------------------- | -------- | -------- | --------------------------------- |
@@ -31,7 +47,7 @@
 | **IaC**                | Bicep                | Latest   | Approved | Azure-native, type-safe           |
 | **Orchestration**      | .NET Aspire          | 13.1.0   | Approved | Cloud-native development          |
 
-### Lifecycle Status
+### 🔄 Lifecycle Status
 
 | Technology           | Current State | Target State | Retiring      |
 | -------------------- | ------------- | ------------ | ------------- |
@@ -42,9 +58,11 @@
 
 ---
 
-## 3. Platform Services
+<div align="right"><a href="#-table-of-contents">⬆️ Back to top</a></div>
 
-### Platform Decomposition
+## ☁️ 3. Platform Services
+
+### 🧩 Platform Decomposition
 
 ```mermaid
 flowchart TB
@@ -101,7 +119,7 @@ flowchart TB
     class VNet,Subnet network
 ```
 
-### 3.1 Compute Platform
+### 🖥️ 3.1 Compute Platform
 
 | Service                        | Purpose                               | SKU/Tier         | Scaling       |
 | ------------------------------ | ------------------------------------- | ---------------- | ------------- |
@@ -110,7 +128,7 @@ flowchart TB
 | **Logic Apps Standard**        | Workflow automation engine            | WS1              | Elastic       |
 | **App Service Plan**           | Logic Apps hosting                    | WorkflowStandard | Elastic scale |
 
-### 3.2 Data Platform
+### 🗄️ 3.2 Data Platform
 
 | Service                | Purpose                      | SKU/Tier     | Configuration          |
 | ---------------------- | ---------------------------- | ------------ | ---------------------- |
@@ -118,14 +136,14 @@ flowchart TB
 | **Azure Service Bus**  | Event messaging              | Standard     | Topics + Subscriptions |
 | **Azure Storage**      | Workflow state, blob storage | Standard LRS | General Purpose v2     |
 
-### 3.3 Observability Platform
+### 📊 3.3 Observability Platform
 
 | Service                     | Purpose                     | SKU/Tier      | Retention |
 | --------------------------- | --------------------------- | ------------- | --------- |
 | **Application Insights**    | APM, distributed tracing    | Standard      | 90 days   |
 | **Log Analytics Workspace** | Centralized log aggregation | Pay-as-you-go | 30 days   |
 
-### 3.4 Identity Platform
+### 🔐 3.4 Identity Platform
 
 | Service                            | Purpose                | Configuration                     |
 | ---------------------------------- | ---------------------- | --------------------------------- |
@@ -133,7 +151,7 @@ flowchart TB
 | **Azure RBAC**                     | Authorization          | Least privilege roles             |
 | **Microsoft Entra ID**             | Identity provider      | SQL AD authentication             |
 
-### 3.5 Network Platform
+### 🌐 3.5 Network Platform
 
 | Service             | Purpose              | Configuration                      |
 | ------------------- | -------------------- | ---------------------------------- |
@@ -142,9 +160,11 @@ flowchart TB
 
 ---
 
-## 4. Deployment Architecture
+<div align="right"><a href="#-table-of-contents">⬆️ Back to top</a></div>
 
-### Environment Topology
+## 🚀 4. Deployment Architecture
+
+### 🌍 Environment Topology
 
 | Environment    | Region  | Purpose                   | SLA Target | Infrastructure    |
 | -------------- | ------- | ------------------------- | ---------- | ----------------- |
@@ -153,7 +173,7 @@ flowchart TB
 | **Staging**    | East US | Pre-production validation | 99.5%      | Azure (dedicated) |
 | **Production** | East US | Live workloads            | 99.9%      | Azure (dedicated) |
 
-### Environment Progression
+### 📦 Environment Progression
 
 ```mermaid
 flowchart LR
@@ -185,9 +205,11 @@ flowchart LR
 
 ---
 
-## 5. Technology Component Mapping
+<div align="right"><a href="#-table-of-contents">⬆️ Back to top</a></div>
 
-### Application-to-Technology Matrix
+## 🗺️ 5. Technology Component Mapping
+
+### 📱 Application-to-Technology Matrix
 
 | Application          | Compute             | Data         | Messaging                | Observability |
 | -------------------- | ------------------- | ------------ | ------------------------ | ------------- |
@@ -195,7 +217,7 @@ flowchart LR
 | **eShop.Web.App**    | Container Apps      | -            | -                        | App Insights  |
 | **OrdersManagement** | Logic Apps Standard | Blob Storage | Service Bus (subscriber) | App Insights  |
 
-### Capability-to-Platform Matrix
+### 🌟 Capability-to-Platform Matrix
 
 | Capability          | Platform Service     | Justification             |
 | ------------------- | -------------------- | ------------------------- |
@@ -207,11 +229,13 @@ flowchart LR
 
 ---
 
-## 6. Infrastructure as Code
+<div align="right"><a href="#-table-of-contents">⬆️ Back to top</a></div>
 
-### IaC Structure
+## 📜 6. Infrastructure as Code
 
-```
+### 📁 IaC Structure
+
+```text
 infra/
 ├── main.bicep                    # Entry point (subscription scope)
 ├── main.parameters.json          # Parameter values
@@ -231,7 +255,7 @@ infra/
     └── services/                 # Container Apps
 ```
 
-### Module Responsibilities
+### 🧩 Module Responsibilities
 
 | Module                  | Scope          | Resources Created                       |
 | ----------------------- | -------------- | --------------------------------------- |
@@ -239,7 +263,7 @@ infra/
 | **shared/main.bicep**   | Resource Group | Identity, Monitoring, Network, Data     |
 | **workload/main.bicep** | Resource Group | Container Apps, Logic Apps, Service Bus |
 
-### Parameter Strategy
+### ⚙️ Parameter Strategy
 
 | Parameter Type  | Storage                  | Example                   |
 | --------------- | ------------------------ | ------------------------- |
@@ -250,9 +274,11 @@ infra/
 
 ---
 
-## 7. Operational Considerations
+<div align="right"><a href="#-table-of-contents">⬆️ Back to top</a></div>
 
-### Backup and Recovery
+## 🛠️ 7. Operational Considerations
+
+### 💾 Backup and Recovery
 
 | Resource     | Backup Strategy         | RPO   | RTO      |
 | ------------ | ----------------------- | ----- | -------- |
@@ -261,7 +287,7 @@ infra/
 | Blob Storage | Soft delete, versioning | N/A   | Minutes  |
 | Logic Apps   | State in Storage        | N/A   | Redeploy |
 
-### Maintenance Windows
+### 🔧 Maintenance Windows
 
 | Activity               | Frequency  | Window    | Impact                |
 | ---------------------- | ---------- | --------- | --------------------- |
@@ -271,9 +297,11 @@ infra/
 
 ---
 
-## 8. Cost Analysis
+<div align="right"><a href="#-table-of-contents">⬆️ Back to top</a></div>
 
-### Resource Pricing Model
+## 💰 8. Cost Analysis
+
+### 💳 Resource Pricing Model
 
 | Service                | Pricing Model              | Estimated Monthly Cost |
 | ---------------------- | -------------------------- | ---------------------- |
@@ -284,7 +312,7 @@ infra/
 | Application Insights   | Per-GB ingested            | ~$20                   |
 | Storage                | Per-GB + operations        | ~$5                    |
 
-### Optimization Opportunities
+### 💡 Optimization Opportunities
 
 | Opportunity                     | Potential Savings | Trade-off          |
 | ------------------------------- | ----------------- | ------------------ |
@@ -294,7 +322,9 @@ infra/
 
 ---
 
-## 9. Cross-Architecture Relationships
+<div align="right"><a href="#-table-of-contents">⬆️ Back to top</a></div>
+
+## ↔️ 9. Cross-Architecture Relationships
 
 | Related Architecture           | Connection                      | Reference                                                                       |
 | ------------------------------ | ------------------------------- | ------------------------------------------------------------------------------- |

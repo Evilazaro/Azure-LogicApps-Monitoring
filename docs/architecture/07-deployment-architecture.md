@@ -1,14 +1,31 @@
-# Deployment Architecture
+# 🚀 Deployment Architecture
 
 ← [Security Architecture](06-security-architecture.md) | [Index](README.md) | [ADRs →](adr/README.md)
 
 ---
 
-## Overview
+## 📑 Table of Contents
+
+- [📊 Overview](#-overview)
+- [🗺️ Architecture Diagram](#️-architecture-diagram)
+- [🔄 Deployment Pipeline](#-deployment-pipeline)
+- [📜 Infrastructure as Code](#-infrastructure-as-code)
+- [🔑 Authentication Architecture](#-authentication-architecture)
+- [🛡️ Security Considerations](#️-security-considerations)
+- [🌍 Deployment Environments](#-deployment-environments)
+- [📊 Monitoring and Observability](#-monitoring-and-observability)
+- [↩️ Rollback Procedures](#️-rollback-procedures)
+- [🔗 Related Documentation](#-related-documentation)
+
+---
+
+## 📊 Overview
 
 This document describes the deployment architecture for the Azure Logic Apps Monitoring solution, including the CI/CD pipelines, infrastructure provisioning, and deployment processes.
 
-## Architecture Diagram
+<div align="right"><a href="#-table-of-contents">⬆️ Back to top</a></div>
+
+## 🗺️ Architecture Diagram
 
 ```mermaid
 flowchart TB
@@ -97,9 +114,11 @@ flowchart TB
     class ENTRA,VNET,LAW,APPINS,ACA,ACAENV,SQL,SB,MI azure
 ```
 
-## Deployment Pipeline
+<div align="right"><a href="#-table-of-contents">⬆️ Back to top</a></div>
 
-### Pipeline Stages
+## 🔄 Deployment Pipeline
+
+### 📦 Pipeline Stages
 
 The deployment pipeline consists of two main workflows:
 
@@ -108,7 +127,7 @@ The deployment pipeline consists of two main workflows:
 | **CI** | `ci-dotnet.yml` | Build, test, analyze, and security scan |
 | **CD** | `azure-dev.yml` | Provision infrastructure and deploy     |
 
-### CI Stage Details
+### 🛠️ CI Stage Details
 
 ```mermaid
 flowchart LR
@@ -152,7 +171,7 @@ flowchart LR
 | Analyze | Verify code formatting compliance      | Ubuntu                 |
 | CodeQL  | Security vulnerability scanning        | Ubuntu                 |
 
-### CD Stage Details
+### 🚀 CD Stage Details
 
 ```mermaid
 flowchart TD
@@ -211,11 +230,13 @@ flowchart TD
 | SQL Config     | Configure managed identity access to SQL |
 | Deploy         | Deploy application containers            |
 
-## Infrastructure as Code
+<div align="right"><a href="#-table-of-contents">⬆️ Back to top</a></div>
 
-### Bicep Structure
+## 📜 Infrastructure as Code
 
-```
+### 📁 Bicep Structure
+
+```text
 infra/
 ├── main.bicep                 # Entry point
 ├── main.parameters.json       # Parameters
@@ -233,7 +254,7 @@ infra/
     └── services/              # Container Apps
 ```
 
-### Azure Resources Provisioned
+### ☁️ Azure Resources Provisioned
 
 | Resource Type              | Purpose                                 |
 | -------------------------- | --------------------------------------- |
@@ -246,9 +267,11 @@ infra/
 | Application Insights       | Application performance monitoring      |
 | Virtual Network            | Network isolation                       |
 
-## Authentication Architecture
+<div align="right"><a href="#-table-of-contents">⬆️ Back to top</a></div>
 
-### OIDC Federation
+## 🔑 Authentication Architecture
+
+### 🔄 OIDC Federation
 
 The deployment uses OpenID Connect (OIDC) for secure, secretless authentication:
 
@@ -271,7 +294,7 @@ sequenceDiagram
     Azure-->>GHA: Resources
 ```
 
-### Required Configuration
+### ⚙️ Required Configuration
 
 | Component            | Configuration                                                 |
 | -------------------- | ------------------------------------------------------------- |

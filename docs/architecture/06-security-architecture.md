@@ -1,12 +1,26 @@
-# Security Architecture
+# 🔐 Security Architecture
 
 ← [Observability Architecture](05-observability-architecture.md) | [Index](README.md) | [Deployment Architecture →](07-deployment-architecture.md)
 
 ---
 
-## 1. Security Overview
+## 📑 Table of Contents
 
-### Security Principles
+- [🛡️ Overview](#️-1-security-overview)
+- [🔑 Authentication & Authorization](#-2-authentication--authorization)
+- [🔐 Managed Identity](#-3-managed-identity-architecture)
+- [🗝️ Secret Management](#️-4-secret-management)
+- [🌐 Network Security](#-5-network-security)
+- [📊 Data Protection](#-6-data-protection)
+- [✅ Compliance & Governance](#-7-compliance--governance)
+- [🚨 Security Monitoring](#-8-security-monitoring)
+- [🔗 Related Documents](#-related-documents)
+
+---
+
+## 🛡️ 1. Security Overview
+
+### 📋 Security Principles
 
 | #   | Principle                 | Statement                             | Implementation                          |
 | --- | ------------------------- | ------------------------------------- | --------------------------------------- |
@@ -16,7 +30,7 @@
 | S-4 | **Secrets Elimination**   | No stored credentials                 | Managed Identity, no connection strings |
 | S-5 | **Encryption Everywhere** | Data protected at rest and in transit | TLS 1.2+, Azure encryption              |
 
-### Threat Model Summary
+### ⚠️ Threat Model Summary
 
 | Threat Category         | Risk Level | Mitigation                                 |
 | ----------------------- | ---------- | ------------------------------------------ |
@@ -28,9 +42,11 @@
 
 ---
 
-## 2. Authentication & Authorization
+<div align="right"><a href="#-table-of-contents">⬆️ Back to top</a></div>
 
-### Authentication Flow
+## 🔑 2. Authentication & Authorization
+
+### 🔄 Authentication Flow
 
 ```mermaid
 sequenceDiagram
@@ -49,14 +65,14 @@ sequenceDiagram
     Resource-->>Service: Authorized response
 ```
 
-### Identity Providers
+### 🏛️ Identity Providers
 
 | Provider               | Usage                   | Configuration    |
 | ---------------------- | ----------------------- | ---------------- |
 | **Microsoft Entra ID** | Service-to-service auth | Managed Identity |
 | **Azure SQL AD Auth**  | Database authentication | Entra ID users   |
 
-### API Security
+### 🔒 API Security
 
 | Endpoint        | Authentication  | Authorization          |
 | --------------- | --------------- | ---------------------- |
@@ -68,9 +84,11 @@ sequenceDiagram
 
 ---
 
-## 3. Managed Identity Architecture
+<div align="right"><a href="#-table-of-contents">⬆️ Back to top</a></div>
 
-### Identity Assignments
+## 🔐 3. Managed Identity Architecture
+
+### 👤 Identity Assignments
 
 ```mermaid
 flowchart TB
@@ -107,7 +125,7 @@ flowchart TB
     class SQL,SB,Storage,AppIns resource
 ```
 
-### Role Assignments
+### 📝 Role Assignments
 
 From [infra/shared/identity/main.bicep](../../infra/shared/identity/main.bicep):
 
@@ -123,7 +141,7 @@ From [infra/shared/identity/main.bicep](../../infra/shared/identity/main.bicep):
 | Service Bus Data Receiver          | `4f6d3b9b-027b-4f4c-9142-0e5a2a2247e0` | Receive messages        |
 | Service Bus Data Sender            | `69a216fc-b8fb-44d8-bc22-1f3c2cd27a39` | Send messages           |
 
-### Service-to-Service Authentication Flow
+### 🔄 Service-to-Service Authentication Flow
 
 ```mermaid
 flowchart LR
@@ -155,9 +173,11 @@ flowchart LR
 
 ---
 
-## 4. Secret Management
+<div align="right"><a href="#-table-of-contents">⬆️ Back to top</a></div>
 
-### Secret Storage Approach
+## 🗝️ 4. Secret Management
+
+### 📦 Secret Storage Approach
 
 | Environment           | Mechanism         | Configuration         |
 | --------------------- | ----------------- | --------------------- |
@@ -165,7 +185,7 @@ flowchart LR
 | **CI/CD**             | GitHub Secrets    | Environment variables |
 | **Azure Runtime**     | Managed Identity  | No secrets needed     |
 
-### Secret Categories
+### 📋 Secret Categories
 
 | Category               | Local Dev        | Azure                 | Example          |
 | ---------------------- | ---------------- | --------------------- | ---------------- |
@@ -173,7 +193,7 @@ flowchart LR
 | **API Keys**           | User Secrets     | Key Vault (if needed) | External APIs    |
 | **Certificates**       | Local cert store | Azure Key Vault       | TLS              |
 
-### Local Development Secrets
+### 🛠️ Local Development Secrets
 
 Configured via [hooks/postprovision.ps1](../../hooks/postprovision.ps1):
 
@@ -184,7 +204,7 @@ dotnet user-secrets set "Azure:ClientId" $env:AZURE_CLIENT_ID
 dotnet user-secrets set "Azure:ServiceBus:HostName" $serviceBusHostName
 ```
 
-### Secret Rotation Strategy
+### 🔄 Secret Rotation Strategy
 
 | Secret Type             | Rotation     | Method               |
 | ----------------------- | ------------ | -------------------- |
@@ -194,9 +214,11 @@ dotnet user-secrets set "Azure:ServiceBus:HostName" $serviceBusHostName
 
 ---
 
-## 5. Network Security
+<div align="right"><a href="#-table-of-contents">⬆️ Back to top</a></div>
 
-### Network Topology
+## 🌐 5. Network Security
+
+### 🗺️ Network Topology
 
 ```mermaid
 flowchart TB
@@ -238,7 +260,7 @@ flowchart TB
     class SQL,SB,Storage paas
 ```
 
-### Network Controls
+### 🛡️ Network Controls
 
 | Control               | Implementation             | Purpose                 |
 | --------------------- | -------------------------- | ----------------------- |
@@ -247,7 +269,7 @@ flowchart TB
 | **TLS Enforcement**   | All services               | Encryption in transit   |
 | **Ingress Control**   | Container Apps ingress     | External access control |
 
-### Firewall Rules
+### 🔥 Firewall Rules
 
 | Service        | Allowed Sources    | Ports                      |
 | -------------- | ------------------ | -------------------------- |
@@ -258,9 +280,11 @@ flowchart TB
 
 ---
 
-## 6. Data Protection
+<div align="right"><a href="#-table-of-contents">⬆️ Back to top</a></div>
 
-### Encryption at Rest
+## 📊 6. Data Protection
+
+### 🔒 Encryption at Rest
 
 | Service              | Encryption                        | Key Management    |
 | -------------------- | --------------------------------- | ----------------- |
@@ -269,7 +293,7 @@ flowchart TB
 | Azure Storage        | SSE                               | Microsoft-managed |
 | Application Insights | SSE                               | Microsoft-managed |
 
-### Encryption in Transit
+### 🔐 Encryption in Transit
 
 | Communication   | Protocol      | Minimum Version |
 | --------------- | ------------- | --------------- |
@@ -278,7 +302,7 @@ flowchart TB
 | Service Bus     | AMQP over TLS | 1.2             |
 | Storage         | HTTPS         | TLS 1.2         |
 
-### Data Classification
+### 🏷️ Data Classification
 
 | Data Type    | Classification | Handling           |
 | ------------ | -------------- | ------------------ |
@@ -287,7 +311,7 @@ flowchart TB
 | Order totals | Internal       | Log freely         |
 | Telemetry    | Internal       | Standard retention |
 
-### Data Masking
+### 🕶️ Data Masking
 
 ```csharp
 // Example: Logging with masked customer data
@@ -298,9 +322,11 @@ _logger.LogInformation("Order {OrderId} created for customer {CustomerId}",
 
 ---
 
-## 7. Compliance & Governance
+<div align="right"><a href="#-table-of-contents">⬆️ Back to top</a></div>
 
-### Compliance Requirements
+## ✅ 7. Compliance & Governance
+
+### 📋 Compliance Requirements
 
 | Requirement               | Implementation           | Validation              |
 | ------------------------- | ------------------------ | ----------------------- |
@@ -310,7 +336,7 @@ _logger.LogInformation("Order {OrderId} created for customer {CustomerId}",
 | **Access logging**        | Azure Activity Log       | Log Analytics queries   |
 | **Least privilege**       | Scoped RBAC roles        | Role assignment review  |
 
-### Audit Logging
+### 📝 Audit Logging
 
 | Event Type          | Source                | Destination   |
 | ------------------- | --------------------- | ------------- |
@@ -319,7 +345,7 @@ _logger.LogInformation("Order {OrderId} created for customer {CustomerId}",
 | Data access         | SQL Audit             | Log Analytics |
 | API requests        | Application Insights  | App Insights  |
 
-### Governance Controls
+### 🏛️ Governance Controls
 
 | Control                | Implementation           | Enforcement           |
 | ---------------------- | ------------------------ | --------------------- |
@@ -329,9 +355,11 @@ _logger.LogInformation("Order {OrderId} created for customer {CustomerId}",
 
 ---
 
-## 8. Security Monitoring
+<div align="right"><a href="#-table-of-contents">⬆️ Back to top</a></div>
 
-### Security Alerts
+## 🚨 8. Security Monitoring
+
+### ⚠️ Security Alerts
 
 | Alert                 | Condition             | Response           |
 | --------------------- | --------------------- | ------------------ |
@@ -339,7 +367,7 @@ _logger.LogInformation("Order {OrderId} created for customer {CustomerId}",
 | Unusual API errors    | 401/403 spike         | Check for attacks  |
 | Resource modification | Outside change window | Audit review       |
 
-### Security Dashboard KQL Queries
+### 📊 Security Dashboard KQL Queries
 
 ```kusto
 // Failed authentication attempts
@@ -351,7 +379,9 @@ AzureActivity
 
 ---
 
-## Related Documents
+<div align="right"><a href="#-table-of-contents">⬆️ Back to top</a></div>
+
+## 🔗 Related Documents
 
 - [Technology Architecture](04-technology-architecture.md) - Identity platform details
 - [Deployment Architecture](07-deployment-architecture.md) - OIDC federation
