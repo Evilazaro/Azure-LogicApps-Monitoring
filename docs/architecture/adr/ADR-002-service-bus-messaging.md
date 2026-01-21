@@ -1,6 +1,26 @@
+---
+title: "ADR-002: Azure Service Bus for Asynchronous Messaging"
+description: Decision record for choosing Azure Service Bus with Topics and Subscriptions for event-driven messaging
+author: Platform Team
+date: 2024-01-15
+version: 1.0.0
+tags: [adr, service-bus, messaging, async, events]
+---
+
 # 📝 ADR-002: Azure Service Bus for Asynchronous Messaging
 
-← [ADR-001](ADR-001-aspire-orchestration.md) | [ADR Index](README.md) | [ADR-003 →](ADR-003-observability-strategy.md)
+> [!NOTE]
+> **Target Audience:** Developers, Solution Architects, Platform Engineers  
+> **Reading Time:** ~12 minutes
+
+<details>
+<summary>📖 <strong>Navigation</strong></summary>
+
+| Previous                                     |         Index          |                                           Next |
+| :------------------------------------------- | :--------------------: | ---------------------------------------------: |
+| [← ADR-001](ADR-001-aspire-orchestration.md) | [ADR Index](README.md) | [ADR-003 →](ADR-003-observability-strategy.md) |
+
+</details>
 
 ---
 
@@ -34,6 +54,9 @@ The order processing workflow requires **asynchronous communication** between:
 2. **Logic Apps** — Processes order events and performs downstream actions
 
 **Requirements:**
+
+> [!IMPORTANT]
+> These requirements drove the selection of Azure Service Bus over alternative messaging platforms.
 
 - **Reliability** — Messages must not be lost during processing failures
 - **Scalability** — Handle variable order volumes (batch operations)
@@ -284,6 +307,16 @@ The decision is validated by:
 - [Azure Service Bus Documentation](https://learn.microsoft.com/azure/service-bus-messaging/)
 - [W3C Trace Context](https://www.w3.org/TR/trace-context/)
 - [infra/workload/messaging/](../../../infra/workload/messaging/) — Bicep configuration
+
+---
+
+<div align="center">
+
+| Previous                                     |         Index          |                                           Next |
+| :------------------------------------------- | :--------------------: | ---------------------------------------------: |
+| [← ADR-001](ADR-001-aspire-orchestration.md) | [ADR Index](README.md) | [ADR-003 →](ADR-003-observability-strategy.md) |
+
+</div>
 
 ---
 

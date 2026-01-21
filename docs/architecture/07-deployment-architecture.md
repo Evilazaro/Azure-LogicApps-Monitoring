@@ -390,6 +390,9 @@ sequenceDiagram
 
 ## ↩️ Rollback Procedures
 
+> [!CAUTION]
+> Always verify the health of the application after rollback. Ensure database migrations are backward-compatible before proceeding.
+
 ### 📦 Application Rollback
 
 ```bash

@@ -1,6 +1,26 @@
+---
+title: "ADR-003: OpenTelemetry with Azure Monitor for Observability"
+description: Decision record for choosing OpenTelemetry SDK with Azure Monitor Exporter for telemetry collection
+author: Platform Team
+date: 2024-01-15
+version: 1.0.0
+tags: [adr, observability, opentelemetry, azure-monitor, tracing]
+---
+
 # ADR-003: OpenTelemetry with Azure Monitor for Observability
 
-← [ADR-002](ADR-002-service-bus-messaging.md) | [ADR Index](README.md)
+> [!NOTE]
+> **Target Audience:** SREs, Developers, Platform Engineers  
+> **Reading Time:** ~10 minutes
+
+<details>
+<summary>📖 <strong>Navigation</strong></summary>
+
+| Previous                                      |         Index          | Next |
+| :-------------------------------------------- | :--------------------: | ---: |
+| [← ADR-002](ADR-002-service-bus-messaging.md) | [ADR Index](README.md) |    — |
+
+</details>
 
 ---
 
@@ -39,6 +59,9 @@ The distributed nature of the solution requires **end-to-end observability** acr
 | Azure SQL   | Azure PaaS            | Query performance         |
 
 **Requirements:**
+
+> [!IMPORTANT]
+> These observability requirements ensure comprehensive visibility across all distributed components while maintaining cost efficiency.
 
 1. **Distributed tracing** — Follow requests across service boundaries
 2. **Correlation** — Link messages to originating API calls
@@ -275,6 +298,16 @@ The decision is validated by:
 - [Azure Monitor OpenTelemetry](https://learn.microsoft.com/azure/azure-monitor/app/opentelemetry-enable)
 - [W3C Trace Context](https://www.w3.org/TR/trace-context/)
 - [Observability Architecture](../05-observability-architecture.md)
+
+---
+
+<div align="center">
+
+| Previous                                      |         Index          | Next |
+| :-------------------------------------------- | :--------------------: | ---: |
+| [← ADR-002](ADR-002-service-bus-messaging.md) | [ADR Index](README.md) |    — |
+
+</div>
 
 ---
 

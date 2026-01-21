@@ -425,6 +425,9 @@ flowchart TB
 
 ## 🔗 9. Trace Context Propagation
 
+> [!TIP]
+> W3C Trace Context is the industry standard for distributed tracing. It enables correlation of requests across service boundaries without vendor lock-in.
+
 The solution implements **W3C Trace Context** for cross-service correlation:
 
 | Component            | Propagation Method       | Properties                         |

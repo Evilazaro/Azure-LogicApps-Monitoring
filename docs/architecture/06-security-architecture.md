@@ -97,6 +97,9 @@ sequenceDiagram
 
 ### 🔒 API Security
 
+> [!WARNING]
+> The Orders API is internal-only, accessed via Container Apps internal networking. External access would require additional authentication (e.g., Entra ID, API keys).
+
 | Endpoint        | Authentication  | Authorization          |
 | --------------- | --------------- | ---------------------- |
 | `/api/orders`   | None (internal) | Network isolation      |
@@ -217,6 +220,9 @@ flowchart LR
 | **Certificates**       | Local cert store | Azure Key Vault       | TLS              |
 
 ### 🛠️ Local Development Secrets
+
+> [!TIP]
+> Use .NET User Secrets to avoid storing credentials in source control during local development.
 
 Configured via [hooks/postprovision.ps1](../../hooks/postprovision.ps1):
 
