@@ -1,6 +1,26 @@
+---
+title: CI - .NET Build and Test Workflow
+description: Continuous integration pipeline for .NET solution code quality validation with cross-platform support, code coverage, and security scanning
+author: Platform Team
+date: 2026-01-21
+version: 1.0.0
+tags: [ci, build, test, dotnet, github-actions, codeql]
+---
+
 # 🔄 CI - .NET Build and Test Workflow
 
-> Continuous integration pipeline that orchestrates code quality validation for the .NET solution with cross-platform support, code coverage, and security scanning.
+> [!NOTE]
+> **Target Audience:** Developers, DevOps Engineers, QA Engineers<br/>
+> **Reading Time:** ~8 minutes
+
+<details>
+<summary>📍 Navigation</summary>
+
+| Previous                  |           Index           |                                 Next |
+| :------------------------ | :-----------------------: | -----------------------------------: |
+| [DevOps Index](README.md) | [DevOps Index](README.md) | [CI Reusable](ci-dotnet-reusable.md) |
+
+</details>
 
 ---
 
@@ -35,6 +55,9 @@ This workflow provides:
 ---
 
 ## 📊 Pipeline Visualization
+
+<details>
+<summary>🔍 Click to expand pipeline diagram</summary>
 
 ```mermaid
 flowchart TD
@@ -106,6 +129,8 @@ flowchart TD
     class SUMMARY summary
 ```
 
+</details>
+
 ---
 
 ## 🎯 Triggers
@@ -168,6 +193,9 @@ fail-on-format-issues: true
 
 The reusable workflow executes the following jobs:
 
+<details>
+<summary>🔍 View jobs flow diagram</summary>
+
 ```mermaid
 flowchart LR
     subgraph CrossPlatform["🌐 Cross-Platform Matrix"]
@@ -207,6 +235,8 @@ flowchart LR
     class SUMMARY summary
     class FAILURE failure
 ```
+
+</details>
 
 ### Job Details
 
@@ -301,6 +331,9 @@ gh pr create --base main --title "My feature"
 
 ### Common Issues
 
+> [!WARNING]
+> Platform-specific issues are common in cross-platform builds. Always test on all platforms before merging.
+
 | Issue                            | Cause                            | Solution                                 |
 | :------------------------------- | :------------------------------- | :--------------------------------------- |
 | Build fails on one platform only | Platform-specific code issues    | Check conditional compilation directives |
@@ -309,6 +342,9 @@ gh pr create --base main --title "My feature"
 | CodeQL timeout                   | Large codebase analysis          | CodeQL has 45-minute timeout             |
 
 ### Local Verification
+
+> [!TIP]
+> Run these commands before pushing to catch issues early.
 
 ```bash
 # Build solution
@@ -335,3 +371,11 @@ dotnet format app.sln
 ---
 
 [⬆️ Back to Top](#-ci---net-build-and-test-workflow)
+
+---
+
+<div align="center">
+
+**[← DevOps Index](README.md)** | **[DevOps Index](README.md)** | **[CI Reusable →](ci-dotnet-reusable.md)**
+
+</div>

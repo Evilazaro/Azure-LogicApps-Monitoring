@@ -1,6 +1,26 @@
+---
+title: CI - .NET Reusable Workflow
+description: Comprehensive reusable CI workflow for .NET solutions with cross-platform build/test support, code coverage, and CodeQL security scanning
+author: Platform Team
+date: 2026-01-21
+version: 1.0.0
+tags: [ci, reusable-workflow, dotnet, cross-platform, codeql, coverage]
+---
+
 # 🔧 CI - .NET Reusable Workflow
 
-> Comprehensive, reusable continuous integration workflow for .NET solutions with cross-platform support, code coverage, and security scanning.
+> [!NOTE]
+> **Target Audience:** DevOps Engineers, Platform Engineers<br/>
+> **Reading Time:** ~15 minutes
+
+<details>
+<summary>📍 Navigation</summary>
+
+| Previous                    |           Index           |                     Next |
+| :-------------------------- | :-----------------------: | -----------------------: |
+| [CI Workflow](ci-dotnet.md) | [DevOps Index](README.md) | [CD Azure](azure-dev.md) |
+
+</details>
 
 ---
 
@@ -36,6 +56,9 @@ This reusable workflow provides:
 ---
 
 ## 📊 Pipeline Visualization
+
+<details>
+<summary>🔍 Click to expand full pipeline visualization</summary>
 
 ```mermaid
 flowchart TD
@@ -122,7 +145,12 @@ flowchart TD
     class A1,A2,A3,A4 artifact
 ```
 
+</details>
+
 ### Trigger
+
+> [!IMPORTANT]
+> This workflow cannot be triggered directly. It must be called from another workflow using `workflow_call`.
 
 This workflow uses `workflow_call` trigger, meaning it can only be called by other workflows.
 
@@ -170,6 +198,9 @@ on:
 
 Compiles the .NET solution on Ubuntu, Windows, and macOS runners.
 
+<details>
+<summary>🔍 View build steps diagram</summary>
+
 ```mermaid
 flowchart LR
     subgraph Matrix["Build Matrix"]
@@ -199,6 +230,8 @@ flowchart LR
     class U,W,M matrix
     class S1,S2,S3,S4,S5,S6,S7,S8 step
 ```
+
+</details>
 
 | Property      | Value                                             |
 | :------------ | :------------------------------------------------ |
@@ -288,6 +321,12 @@ dotnet format app.sln --verify-no-changes --verbosity diagnostic
 
 Performs static analysis security testing (SAST) using GitHub CodeQL.
 
+> [!WARNING]
+> CodeQL scans can take up to 45 minutes for large codebases. Do not skip this job.
+
+<details>
+<summary>🔍 View CodeQL analysis flow</summary>
+
 ```mermaid
 flowchart LR
     subgraph CodeQL["🛡️ CodeQL Analysis"]
@@ -306,6 +345,8 @@ flowchart LR
 
     class C1,C2,C3,C4,C5,C6,C7 codeql
 ```
+
+</details>
 
 | Property        | Value                            |
 | :-------------- | :------------------------------- |
@@ -405,6 +446,9 @@ permissions:
 
 ### Basic Usage
 
+> [!TIP]
+> Always use `secrets: inherit` to pass repository secrets to the reusable workflow.
+
 ```yaml
 jobs:
   ci:
@@ -493,3 +537,11 @@ dotnet format app.sln --verify-no-changes
 ---
 
 [⬆️ Back to Top](#-ci---net-reusable-workflow)
+
+---
+
+<div align="center">
+
+**[← CI Workflow](ci-dotnet.md)** | **[DevOps Index](README.md)** | **[CD Azure →](azure-dev.md)**
+
+</div>

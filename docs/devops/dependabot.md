@@ -1,6 +1,26 @@
+---
+title: Dependabot Configuration
+description: Automated dependency management for NuGet packages and GitHub Actions with grouped updates and security patching
+author: Platform Team
+date: 2026-01-21
+version: 1.0.0
+tags: [dependabot, dependencies, security, nuget, github-actions, automation]
+---
+
 # 🤖 Dependabot Configuration
 
-> Automated dependency updates for security patches and version upgrades across NuGet packages and GitHub Actions.
+> [!NOTE]
+> **Target Audience:** DevOps Engineers, Security Engineers, Developers<br/>
+> **Reading Time:** ~10 minutes
+
+<details>
+<summary>📍 Navigation</summary>
+
+| Previous                 |           Index           | Next |
+| :----------------------- | :-----------------------: | ---: |
+| [CD Azure](azure-dev.md) | [DevOps Index](README.md) |    — |
+
+</details>
 
 ---
 
@@ -31,6 +51,9 @@ Dependabot monitors two package ecosystems:
 ---
 
 ## 📊 Configuration Visualization
+
+<details>
+<summary>🔍 Click to expand dependency scanning flow</summary>
 
 ```mermaid
 flowchart TD
@@ -92,6 +115,8 @@ flowchart TD
     class A_SCAN,A1,A2,A3 actions
     class N_PR,A_PR pr
 ```
+
+</details>
 
 ---
 
@@ -187,6 +212,9 @@ ci(deps): Update <action-name> from vX to vY
 
 #### Why Actions Updates Matter
 
+> [!CAUTION]
+> Outdated GitHub Actions can introduce supply chain security vulnerabilities. Never ignore Actions update PRs.
+
 GitHub Actions updates are **critical for security**:
 
 1. **Supply Chain Security**: Actions can execute arbitrary code in your workflows
@@ -197,6 +225,9 @@ GitHub Actions updates are **critical for security**:
 ---
 
 ## 🔄 Pull Request Workflow
+
+<details>
+<summary>🔍 Click to expand PR workflow diagram</summary>
 
 ```mermaid
 flowchart LR
@@ -240,9 +271,14 @@ flowchart LR
     class MERGED merge
 ```
 
+</details>
+
 ### Managing Dependabot PRs
 
 #### Viewing Open PRs
+
+> [!TIP]
+> Use labels to filter Dependabot PRs and prioritize security-related updates.
 
 ```bash
 # List all Dependabot PRs
@@ -359,3 +395,11 @@ schedule:
 ---
 
 [⬆️ Back to Top](#-dependabot-configuration)
+
+---
+
+<div align="center">
+
+**[← CD Azure](azure-dev.md)** | **[DevOps Index](README.md)**
+
+</div>

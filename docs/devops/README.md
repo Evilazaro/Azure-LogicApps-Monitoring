@@ -1,6 +1,26 @@
+---
+title: DevOps Documentation
+description: Comprehensive documentation for CI/CD pipelines and DevOps configurations for the Azure Logic Apps Monitoring solution
+author: Platform Team
+date: 2026-01-21
+version: 1.0.0
+tags: [devops, ci-cd, github-actions, azure, pipelines]
+---
+
 # 🚀 DevOps Documentation
 
-> Comprehensive documentation for the CI/CD pipelines and DevOps configurations used in the Azure Logic Apps Monitoring solution.
+> [!NOTE]
+> **Target Audience:** DevOps Engineers, Platform Engineers, Developers<br/>
+> **Reading Time:** ~15 minutes
+
+<details>
+<summary>📍 Navigation</summary>
+
+| Previous |      Index       |                        Next |
+| :------- | :--------------: | --------------------------: |
+| —        | **You are here** | [CI Workflow](ci-dotnet.md) |
+
+</details>
 
 ---
 
@@ -31,6 +51,9 @@ This folder contains comprehensive documentation for the CI/CD pipelines and Dev
 
 The DevOps architecture follows a modern CI/CD approach with:
 
+> [!TIP]
+> This architecture leverages GitHub Actions' native features for maximum efficiency and security.
+
 - **Reusable Workflows**: Modular, DRY workflow design
 - **Cross-Platform Testing**: Validation across Ubuntu, Windows, and macOS
 - **Security-First**: CodeQL scanning on every CI run
@@ -40,6 +63,9 @@ The DevOps architecture follows a modern CI/CD approach with:
 ---
 
 ## 📊 Master Pipeline Diagram
+
+<details>
+<summary>🔍 Click to expand full pipeline diagram</summary>
 
 ```mermaid
 flowchart TD
@@ -157,9 +183,14 @@ flowchart TD
     class CI_SUMMARY,CD_SUMMARY summary
 ```
 
+</details>
+
 ---
 
 ## 📚 Documentation Index
+
+> [!IMPORTANT]
+> Start with the [CI Workflow](ci-dotnet.md) to understand the foundation of our pipeline architecture.
 
 | Document                                           | Description                                      |
 | :------------------------------------------------- | :----------------------------------------------- |
@@ -217,6 +248,9 @@ flowchart TD
 
 ### CI Pipeline (Pull Requests & Pushes)
 
+<details>
+<summary>🔍 View CI Pipeline Sequence Diagram</summary>
+
 ```mermaid
 sequenceDiagram
     participant Dev as Developer
@@ -243,7 +277,12 @@ sequenceDiagram
     GH->>Dev: Display results
 ```
 
+</details>
+
 ### CD Pipeline (Deployment)
+
+<details>
+<summary>🔍 View CD Pipeline Sequence Diagram</summary>
 
 ```mermaid
 sequenceDiagram
@@ -273,9 +312,14 @@ sequenceDiagram
     GH->>Dev: Display deployment status
 ```
 
+</details>
+
 ---
 
 ## 💻 Local Development
+
+> [!TIP]
+> Running CI checks locally before pushing helps catch issues early and speeds up the feedback loop.
 
 ### Running CI Checks Locally
 
@@ -294,6 +338,9 @@ dotnet format app.sln
 ```
 
 ### Deploying Locally with azd
+
+> [!WARNING]
+> Running `azd up` locally will provision real Azure resources and may incur costs.
 
 ```bash
 # Login to Azure
@@ -368,3 +415,11 @@ azd up
 ---
 
 [⬆️ Back to Top](#-devops-documentation)
+
+---
+
+<div align="center">
+
+**[CI Workflow →](ci-dotnet.md)**
+
+</div>

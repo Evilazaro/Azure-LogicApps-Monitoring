@@ -1,6 +1,26 @@
+---
+title: CD - Azure Deployment Workflow
+description: Continuous delivery pipeline for provisioning Azure infrastructure and deploying .NET applications using Azure Developer CLI with OIDC authentication
+author: Platform Team
+date: 2026-01-21
+version: 1.0.0
+tags: [cd, deployment, azure, azd, oidc, github-actions]
+---
+
 # 🚀 CD - Azure Deployment Workflow
 
-> Continuous delivery pipeline that provisions Azure infrastructure and deploys the .NET application using Azure Developer CLI (azd) with OpenID Connect (OIDC) authentication.
+> [!NOTE]
+> **Target Audience:** DevOps Engineers, Platform Engineers, Release Managers<br/>
+> **Reading Time:** ~12 minutes
+
+<details>
+<summary>📍 Navigation</summary>
+
+| Previous                             |           Index           |                        Next |
+| :----------------------------------- | :-----------------------: | --------------------------: |
+| [CI Reusable](ci-dotnet-reusable.md) | [DevOps Index](README.md) | [Dependabot](dependabot.md) |
+
+</details>
 
 ---
 
@@ -30,6 +50,9 @@ This workflow implements a comprehensive deployment pipeline with integrated CI 
 ---
 
 ## 📊 Pipeline Visualization
+
+<details>
+<summary>🔍 Click to expand deployment pipeline diagram</summary>
 
 ```mermaid
 flowchart TD
@@ -121,6 +144,8 @@ flowchart TD
     class FAIL failure
 ```
 
+</details>
+
 ---
 
 ## 🎯 Triggers
@@ -132,6 +157,9 @@ flowchart TD
 | **Path Filters**    | `src/**`, `app.*/**`, `infra/**`, `azure.yaml`, workflow file | Only relevant file changes    |
 
 ### Manual Trigger Inputs
+
+> [!CAUTION]
+> The `skip-ci` option bypasses all build and test validation. Use only for emergency hotfixes.
 
 | Input     | Type    | Default | Description                       |
 | :-------- | :------ | :------ | :-------------------------------- |
@@ -172,6 +200,9 @@ Deploys the application to the development environment.
 | **Environment** | `dev`                     |
 
 #### Deployment Phases
+
+<details>
+<summary>🔍 View deployment phases diagram</summary>
 
 ```mermaid
 flowchart LR
@@ -219,6 +250,8 @@ flowchart LR
     class P5A,P5B deploy
 ```
 
+</details>
+
 #### Key Steps
 
 | Step                           | Description                                                  |
@@ -265,6 +298,9 @@ Reports pipeline failures with actionable information.
 ---
 
 ## ⚙️ Prerequisites
+
+> [!IMPORTANT]
+> All prerequisites must be configured before the first deployment. Missing configuration will cause authentication failures.
 
 ### Required Secrets/Variables
 
@@ -331,6 +367,9 @@ Prevents simultaneous deployments to the same environment while ensuring in-prog
 
 ### Manual Deployment
 
+> [!TIP]
+> Use the GitHub CLI for quick workflow triggers from your terminal.
+
 ```bash
 # Trigger deployment with CI checks
 gh workflow run azure-dev.yml
@@ -382,3 +421,11 @@ azd deploy --no-prompt
 ---
 
 [⬆️ Back to Top](#-cd---azure-deployment-workflow)
+
+---
+
+<div align="center">
+
+**[← CI Reusable](ci-dotnet-reusable.md)** | **[DevOps Index](README.md)** | **[Dependabot →](dependabot.md)**
+
+</div>
