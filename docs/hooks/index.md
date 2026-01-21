@@ -8,7 +8,7 @@ This directory contains documentation for all hooks scripts used in the Azure Lo
 
 ---
 
-## � Table of Contents
+## 📑 Table of Contents
 
 - [📁 Hook Categories](#-hook-categories)
   - [🔄 Lifecycle Hooks](#-lifecycle-hooks-azd-triggered)
@@ -23,7 +23,7 @@ This directory contains documentation for all hooks scripts used in the Azure Lo
 
 ---
 
-## �📁 Hook Categories
+## 📁 Hook Categories
 
 ### 🔄 Lifecycle Hooks (azd-triggered)
 

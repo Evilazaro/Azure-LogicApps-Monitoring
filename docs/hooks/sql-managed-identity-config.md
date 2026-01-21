@@ -18,7 +18,7 @@ The script is **idempotent** and can be safely re-run. It will skip existing use
 
 ---
 
-## � Table of Contents
+## 📑 Table of Contents
 
 - [📌 Script Metadata](#-script-metadata)
 - [🔧 Prerequisites](#-prerequisites)
@@ -39,7 +39,7 @@ The script is **idempotent** and can be safely re-run. It will skip existing use
 
 ---
 
-## �📌 Script Metadata
+## 📌 Script Metadata
 
 | Property          | PowerShell                                                   | Bash                                                         |
 | ----------------- | ------------------------------------------------------------ | ------------------------------------------------------------ |

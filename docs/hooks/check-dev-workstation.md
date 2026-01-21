@@ -20,7 +20,7 @@ The script acts as a wrapper around `preprovision` in ValidateOnly mode, providi
 
 ---
 
-## � Table of Contents
+## 📑 Table of Contents
 
 - [📌 Script Metadata](#-script-metadata)
 - [🔧 Prerequisites](#-prerequisites)
@@ -36,7 +36,7 @@ The script acts as a wrapper around `preprovision` in ValidateOnly mode, providi
 
 ---
 
-## �📌 Script Metadata
+## 📌 Script Metadata
 
 | Property          | PowerShell                                                   | Bash                                                         |
 | ----------------- | ------------------------------------------------------------ | ------------------------------------------------------------ |

@@ -16,7 +16,7 @@ The script performs the following operations:
 
 ---
 
-## � Table of Contents
+## 📑 Table of Contents
 
 - [📌 Script Metadata](#-script-metadata)
 - [🔧 Prerequisites](#-prerequisites)
@@ -33,7 +33,7 @@ The script performs the following operations:
 
 ---
 
-## �📌 Script Metadata
+## 📌 Script Metadata
 
 | Property          | PowerShell          | Bash               |
 | ----------------- | ------------------- | ------------------ |
