@@ -175,9 +175,11 @@ resource appInsights 'Microsoft.Insights/components@2020-02-02' = {
 
 ---
 
-## Alternatives Considered
+<div align="right"><a href="#-table-of-contents">⬆️ Back to top</a></div>
 
-### Alternative 1: Application Insights SDK (Classic)
+## 🔄 Alternatives Considered
+
+### ⭐ Alternative 1: Application Insights SDK (Classic)
 
 ```csharp
 // Classic App Insights approach
@@ -190,7 +192,7 @@ services.AddApplicationInsightsTelemetry();
 | **Cons**           | Vendor lock-in, deprecated for new apps    |
 | **Why not chosen** | Microsoft recommends OTel for new projects |
 
-### Alternative 2: Jaeger + Prometheus + ELK
+### 🔧 Alternative 2: Jaeger + Prometheus + ELK
 
 | Criteria           | Assessment                              |
 | ------------------ | --------------------------------------- |
@@ -198,7 +200,7 @@ services.AddApplicationInsightsTelemetry();
 | **Cons**           | Operational overhead, multiple backends |
 | **Why not chosen** | Prefer managed services                 |
 
-### Alternative 3: Datadog / New Relic
+### 💸 Alternative 3: Datadog / New Relic
 
 | Criteria           | Assessment                                 |
 | ------------------ | ------------------------------------------ |
@@ -208,9 +210,11 @@ services.AddApplicationInsightsTelemetry();
 
 ---
 
-## Telemetry Inventory
+<div align="right"><a href="#-table-of-contents">⬆️ Back to top</a></div>
 
-### Traces Collected
+## 📊 Telemetry Inventory
+
+### 🔎 Traces Collected
 
 | Source       | Instrumentation | Spans               |
 | ------------ | --------------- | ------------------- |
@@ -220,7 +224,7 @@ services.AddApplicationInsightsTelemetry();
 | Service Bus  | Manual          | Message operations  |
 | Custom       | Manual          | Business operations |
 
-### Metrics Collected
+### 📈 Metrics Collected
 
 | Category     | Metrics                        |
 | ------------ | ------------------------------ |
@@ -228,7 +232,7 @@ services.AddApplicationInsightsTelemetry();
 | **HTTP**     | Request duration, status codes |
 | **Business** | Orders created, batch sizes    |
 
-### Log Levels
+### 📋 Log Levels
 
 | Level         | Usage                                 |
 | ------------- | ------------------------------------- |
@@ -241,7 +245,9 @@ services.AddApplicationInsightsTelemetry();
 
 ---
 
-## Validation
+<div align="right"><a href="#-table-of-contents">⬆️ Back to top</a></div>
+
+## 🧪 Validation
 
 The decision is validated by:
 
@@ -252,14 +258,18 @@ The decision is validated by:
 
 ---
 
-## Related ADRs
+<div align="right"><a href="#-table-of-contents">⬆️ Back to top</a></div>
+
+## 🔗 Related ADRs
 
 - [ADR-001](ADR-001-aspire-orchestration.md) — Aspire dashboard for local observability
 - [ADR-002](ADR-002-service-bus-messaging.md) — Trace context in message properties
 
 ---
 
-## References
+<div align="right"><a href="#-table-of-contents">⬆️ Back to top</a></div>
+
+## 📚 References
 
 - [OpenTelemetry .NET](https://opentelemetry.io/docs/languages/net/)
 - [Azure Monitor OpenTelemetry](https://learn.microsoft.com/azure/azure-monitor/app/opentelemetry-enable)
