@@ -18,7 +18,23 @@ The script performs the following operations:
 
 ---
 
-## 📌 Script Metadata
+## � Table of Contents
+
+- [Script Metadata](#-script-metadata)
+- [Prerequisites](#-prerequisites)
+- [Parameters](#-parameters)
+- [OIDC Configuration](#-oidc-configuration)
+- [Execution Flow](#-execution-flow)
+- [Usage Examples](#-usage-examples)
+- [Exit Codes](#️-exit-codes)
+- [Security Considerations](#-security-considerations)
+- [Related Documentation](#-related-documentation)
+
+[⬅️ Back to Index](./index.md)
+
+---
+
+## �📌 Script Metadata
 
 | Property          | PowerShell                           | Bash                                |
 | ----------------- | ------------------------------------ | ----------------------------------- |
@@ -198,3 +214,7 @@ flowchart TD
 - [Repository](https://github.com/Evilazaro/Azure-LogicApps-Monitoring)
 - [GitHub Actions OIDC Documentation](https://docs.github.com/en/actions/deployment/security-hardening-your-deployments/about-security-hardening-with-openid-connect)
 - [Azure AD Workload Identity Federation](https://learn.microsoft.com/azure/active-directory/workload-identities/workload-identity-federation)
+
+---
+
+[⬅️ Back to Index](./index.md)

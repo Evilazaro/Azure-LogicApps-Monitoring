@@ -20,7 +20,23 @@ The script acts as a wrapper around `preprovision` in ValidateOnly mode, providi
 
 ---
 
-## 📌 Script Metadata
+## � Table of Contents
+
+- [Script Metadata](#-script-metadata)
+- [Prerequisites](#-prerequisites)
+- [Parameters](#-parameters)
+- [Execution Flow](#-execution-flow)
+- [Usage Examples](#-usage-examples)
+- [Exit Codes](#️-exit-codes)
+- [Troubleshooting](#️-troubleshooting)
+- [Related Scripts](#-related-scripts)
+- [Version History](#-version-history)
+
+[⬅️ Back to Index](./index.md)
+
+---
+
+## �📌 Script Metadata
 
 | Property          | PowerShell                                                   | Bash                                                         |
 | ----------------- | ------------------------------------------------------------ | ------------------------------------------------------------ |
@@ -154,3 +170,7 @@ If validation fails, the script provides actionable guidance:
 
 - [Repository](https://github.com/Evilazaro/Azure-LogicApps-Monitoring)
 - [preprovision.ps1](./preprovision.md) - The underlying validation script
+
+---
+
+[⬅️ Back to Index](./index.md)

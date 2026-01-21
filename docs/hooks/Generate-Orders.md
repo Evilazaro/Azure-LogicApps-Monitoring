@@ -18,7 +18,23 @@ The script performs the following operations:
 
 ---
 
-## 📌 Script Metadata
+## � Table of Contents
+
+- [Script Metadata](#-script-metadata)
+- [Prerequisites](#-prerequisites)
+- [Parameters](#-parameters)
+- [Product Catalog](#-product-catalog)
+- [Delivery Addresses](#-delivery-addresses)
+- [Execution Flow](#-execution-flow)
+- [Usage Examples](#-usage-examples)
+- [Output Format](#-output-format)
+- [Exit Codes](#️-exit-codes)
+
+[⬅️ Back to Index](./index.md)
+
+---
+
+## �📌 Script Metadata
 
 | Property          | PowerShell                                                   | Bash                                                         |
 | ----------------- | ------------------------------------------------------------ | ------------------------------------------------------------ |
@@ -284,3 +300,7 @@ The script reports:
 
 - [Repository](https://github.com/Evilazaro/Azure-LogicApps-Monitoring)
 - [Azure Logic Apps Documentation](https://learn.microsoft.com/azure/logic-apps/)
+
+---
+
+[⬅️ Back to Index](./index.md)

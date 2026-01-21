@@ -18,7 +18,23 @@ The script performs the following operations:
 
 ---
 
-## 📌 Script Metadata
+## � Table of Contents
+
+- [Script Metadata](#-script-metadata)
+- [Prerequisites](#-prerequisites)
+- [Parameters](#-parameters)
+- [Environment Variables](#-environment-variables)
+- [Execution Flow](#-execution-flow)
+- [Usage Examples](#-usage-examples)
+- [Exit Codes](#️-exit-codes)
+- [Related Scripts](#-related-scripts)
+- [Version History](#-version-history)
+
+[⬅️ Back to Index](./index.md)
+
+---
+
+## �📌 Script Metadata
 
 | Property          | PowerShell                                                   | Bash                                                         |
 | ----------------- | ------------------------------------------------------------ | ------------------------------------------------------------ |
@@ -222,3 +238,7 @@ flowchart TD
 - [Azure Developer CLI Documentation](https://learn.microsoft.com/azure/developer/azure-developer-cli/)
 - [.NET SDK Installation](https://dotnet.microsoft.com/download)
 - [Azure CLI Installation](https://learn.microsoft.com/cli/azure/install-azure-cli)
+
+---
+
+[⬅️ Back to Index](./index.md)

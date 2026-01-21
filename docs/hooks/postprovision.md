@@ -16,7 +16,24 @@ The script performs the following operations:
 
 ---
 
-## 📌 Script Metadata
+## � Table of Contents
+
+- [Script Metadata](#-script-metadata)
+- [Prerequisites](#-prerequisites)
+- [Parameters](#-parameters)
+- [Environment Variables](#-environment-variables)
+- [Execution Flow](#-execution-flow)
+- [Usage Examples](#-usage-examples)
+- [Exit Codes](#️-exit-codes)
+- [Output Statistics](#-output-statistics)
+- [Related Scripts](#-related-scripts)
+- [Version History](#-version-history)
+
+[⬅️ Back to Index](./index.md)
+
+---
+
+## �📌 Script Metadata
 
 | Property          | PowerShell          | Bash               |
 | ----------------- | ------------------- | ------------------ |
@@ -198,3 +215,7 @@ The script tracks and reports:
 - [Repository](https://github.com/Evilazaro/Azure-LogicApps-Monitoring)
 - [Azure Developer CLI Documentation](https://learn.microsoft.com/azure/developer/azure-developer-cli/)
 - [.NET User Secrets Documentation](https://learn.microsoft.com/aspnet/core/security/app-secrets)
+
+---
+
+[⬅️ Back to Index](./index.md)

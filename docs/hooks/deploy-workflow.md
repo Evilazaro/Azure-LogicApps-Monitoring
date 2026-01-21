@@ -16,7 +16,25 @@ The script performs the following operations:
 
 ---
 
-## 📌 Script Metadata
+## � Table of Contents
+
+- [Script Metadata](#-script-metadata)
+- [Prerequisites](#-prerequisites)
+- [Parameters](#-parameters)
+- [Environment Variables](#-environment-variables)
+- [Excluded Files](#-excluded-files)
+- [Execution Flow](#-execution-flow)
+- [Usage Examples](#-usage-examples)
+- [Exit Codes](#️-exit-codes)
+- [Placeholder Resolution](#-placeholder-resolution)
+- [Related Scripts](#-related-scripts)
+- [Version History](#-version-history)
+
+[⬅️ Back to Index](./index.md)
+
+---
+
+## �📌 Script Metadata
 
 | Property          | PowerShell            | Bash                 |
 | ----------------- | --------------------- | -------------------- |
@@ -225,3 +243,7 @@ The script resolves `${VARIABLE}` placeholders in workflow files by replacing th
 - [Repository](https://github.com/Evilazaro/Azure-LogicApps-Monitoring)
 - [Azure Logic Apps Standard Documentation](https://learn.microsoft.com/azure/logic-apps/logic-apps-overview)
 - [Azure CLI webapp deployment](https://learn.microsoft.com/cli/azure/webapp/deployment)
+
+---
+
+[⬅️ Back to Index](./index.md)

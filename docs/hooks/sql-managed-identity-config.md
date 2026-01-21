@@ -18,7 +18,28 @@ The script is **idempotent** and can be safely re-run. It will skip existing use
 
 ---
 
-## 📌 Script Metadata
+## � Table of Contents
+
+- [Script Metadata](#-script-metadata)
+- [Prerequisites](#-prerequisites)
+- [Parameters](#-parameters)
+- [Environment Variables](#-environment-variables)
+- [Azure Environments](#-azure-environments)
+- [Database Roles](#️-database-roles)
+- [Execution Flow](#-execution-flow)
+- [Usage Examples](#-usage-examples)
+- [Output Format](#-output-format)
+- [Exit Codes](#️-exit-codes)
+- [Security Considerations](#-security-considerations)
+- [Known Limitations](#️-known-limitations)
+- [Related Scripts](#-related-scripts)
+- [Version History](#-version-history)
+
+[⬅️ Back to Index](./index.md)
+
+---
+
+## �📌 Script Metadata
 
 | Property          | PowerShell                                                   | Bash                                                         |
 | ----------------- | ------------------------------------------------------------ | ------------------------------------------------------------ |
@@ -302,3 +323,7 @@ The script returns a `PSCustomObject` with type `SqlManagedIdentityConfiguration
 - [Repository](https://github.com/Evilazaro/Azure-LogicApps-Monitoring)
 - [Azure SQL Authentication with Azure AD](https://learn.microsoft.com/azure/azure-sql/database/authentication-aad-configure)
 - [Managed Identities Overview](https://learn.microsoft.com/azure/active-directory/managed-identities-azure-resources/overview)
+
+---
+
+[⬅️ Back to Index](./index.md)

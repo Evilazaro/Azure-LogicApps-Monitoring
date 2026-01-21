@@ -17,7 +17,24 @@ The script performs the following operations:
 
 ---
 
-## 📌 Script Metadata
+## � Table of Contents
+
+- [Script Metadata](#-script-metadata)
+- [Prerequisites](#-prerequisites)
+- [Parameters](#-parameters)
+- [Environment Variables](#-environment-variables)
+- [Execution Flow](#-execution-flow)
+- [Usage Examples](#-usage-examples)
+- [Exit Codes](#️-exit-codes)
+- [Azure REST API](#-azure-rest-api)
+- [Related Scripts](#-related-scripts)
+- [Version History](#-version-history)
+
+[⬅️ Back to Index](./index.md)
+
+---
+
+## �📌 Script Metadata
 
 | Property          | PowerShell                                                   | Bash                                                         |
 | ----------------- | ------------------------------------------------------------ | ------------------------------------------------------------ |
@@ -198,7 +215,19 @@ DELETE https://management.azure.com/subscriptions/{subscriptionId}/providers/Mic
 | Version | Date       | Changes                                                                      |
 | ------- | ---------- | ---------------------------------------------------------------------------- |
 | 2.0.0   | 2026-01-09 | Major refactor with REST API implementation and comprehensive error handling |
-| 1.0.0   | 2025-10-01 | Initial release                                                              |
+
+---
+
+## 🔗 Links
+
+- [Repository](https://github.com/Evilazaro/Azure-LogicApps-Monitoring)
+- [Azure Logic Apps Standard Documentation](https://learn.microsoft.com/azure/logic-apps/logic-apps-overview)
+- [Azure REST API Reference](https://learn.microsoft.com/rest/api/azure/)
+
+---
+
+[⬅️ Back to Index](./index.md)
+| 1.0.0 | 2025-10-01 | Initial release |
 
 ---
 

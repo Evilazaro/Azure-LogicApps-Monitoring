@@ -8,7 +8,22 @@ This directory contains documentation for all hooks scripts used in the Azure Lo
 
 ---
 
-## 📁 Hook Categories
+## � Table of Contents
+
+- [Hook Categories](#-hook-categories)
+  - [Lifecycle Hooks](#-lifecycle-hooks-azd-triggered)
+  - [Development Tools](#️-development-tools)
+  - [Azure Configuration](#️-azure-configuration)
+- [Execution Order](#-execution-order)
+- [Script Matrix](#-script-matrix)
+- [Common Prerequisites](#-common-prerequisites)
+- [Environment Variables](#-environment-variables)
+- [Quick Start](#-quick-start)
+- [Related Documentation](#-related-documentation)
+
+---
+
+## �📁 Hook Categories
 
 ### 🔄 Lifecycle Hooks (azd-triggered)
 
