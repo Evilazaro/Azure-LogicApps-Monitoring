@@ -27,7 +27,9 @@ The **CD - Azure Deployment** workflow (`azure-dev.yml`) is the continuous deliv
 
 This workflow implements a comprehensive deployment pipeline with integrated CI validation, infrastructure provisioning, SQL Managed Identity configuration, and application deployment to Azure Container Apps.
 
-## Pipeline Visualization
+---
+
+## 📊 Pipeline Visualization
 
 ```mermaid
 flowchart TD
@@ -119,10 +121,12 @@ flowchart TD
     class FAIL failure
 ```
 
-## Triggers
+---
+
+## 🎯 Triggers
 
 | Trigger             | Condition                                                     | Description                   |
-| ------------------- | ------------------------------------------------------------- | ----------------------------- |
+| :------------------ | :------------------------------------------------------------ | :---------------------------- |
 | `workflow_dispatch` | Manual trigger with optional `skip-ci` input                  | Allows manual deployment runs |
 | `push`              | Branch: `docs987678`                                          | Triggers on push to branch    |
 | **Path Filters**    | `src/**`, `app.*/**`, `infra/**`, `azure.yaml`, workflow file | Only relevant file changes    |
@@ -130,17 +134,19 @@ flowchart TD
 ### Manual Trigger Inputs
 
 | Input     | Type    | Default | Description                       |
-| --------- | ------- | ------- | --------------------------------- |
+| :-------- | :------ | :------ | :-------------------------------- |
 | `skip-ci` | boolean | `false` | Skip CI checks (use with caution) |
 
-## Jobs
+---
+
+## 📋 Jobs
 
 ### 1. 🔄 CI (Reusable Workflow)
 
 Calls the reusable CI workflow (`ci-dotnet-reusable.yml`) for build, test, and security analysis.
 
 | Property      | Value                                        |
-| ------------- | -------------------------------------------- |
+| :------------ | :------------------------------------------- |
 | **Condition** | `github.event.inputs.skip-ci != 'true'`      |
 | **Workflow**  | `./.github/workflows/ci-dotnet-reusable.yml` |
 
@@ -159,7 +165,7 @@ fail-on-format-issues: false
 Deploys the application to the development environment.
 
 | Property        | Value                     |
-| --------------- | ------------------------- |
+| :-------------- | :------------------------ |
 | **Runner**      | `ubuntu-latest`           |
 | **Timeout**     | 30 minutes                |
 | **Depends On**  | `ci` (success or skipped) |
@@ -216,7 +222,7 @@ flowchart LR
 #### Key Steps
 
 | Step                           | Description                                                  |
-| ------------------------------ | ------------------------------------------------------------ |
+| :----------------------------- | :----------------------------------------------------------- |
 | 📥 Checkout repository         | Clone repository for deployment                              |
 | 📦 Install Prerequisites       | Install jq, dos2unix, go-sqlcmd for SQL operations           |
 | 🔧 Install Azure Developer CLI | Install latest azd CLI                                       |
@@ -231,7 +237,7 @@ flowchart LR
 #### Outputs
 
 | Output           | Description                         |
-| ---------------- | ----------------------------------- |
+| :--------------- | :---------------------------------- |
 | `webapp-url`     | URL of the deployed web application |
 | `resource-group` | Name of the Azure resource group    |
 
@@ -240,7 +246,7 @@ flowchart LR
 Generates a comprehensive workflow summary report.
 
 | Property       | Value              |
-| -------------- | ------------------ |
+| :------------- | :----------------- |
 | **Runner**     | `ubuntu-latest`    |
 | **Timeout**    | 5 minutes          |
 | **Depends On** | `ci`, `deploy-dev` |
@@ -251,17 +257,19 @@ Generates a comprehensive workflow summary report.
 Reports pipeline failures with actionable information.
 
 | Property      | Value           |
-| ------------- | --------------- |
+| :------------ | :-------------- |
 | **Runner**    | `ubuntu-latest` |
 | **Timeout**   | 5 minutes       |
 | **Condition** | `failure()`     |
 
-## Prerequisites
+---
+
+## ⚙️ Prerequisites
 
 ### Required Secrets/Variables
 
 | Variable                  | Type     | Description                                  |
-| ------------------------- | -------- | -------------------------------------------- |
+| :------------------------ | :------- | :------------------------------------------- |
 | `AZURE_CLIENT_ID`         | Variable | Azure AD application (client) ID             |
 | `AZURE_TENANT_ID`         | Variable | Azure AD tenant ID                           |
 | `AZURE_SUBSCRIPTION_ID`   | Variable | Azure subscription ID                        |
@@ -294,16 +302,20 @@ The workflow requires a GitHub environment named `dev` with:
 2. **Service Principal**: Application with appropriate Azure RBAC roles
 3. **Azure SQL**: Database with Entra ID authentication enabled
 
-## Environment Variables
+---
+
+## 🌐 Environment Variables
 
 | Variable                            | Value    | Description                  |
-| ----------------------------------- | -------- | ---------------------------- |
+| :---------------------------------- | :------- | :--------------------------- |
 | `DOTNET_VERSION`                    | `10.0.x` | .NET SDK version             |
 | `DOTNET_SKIP_FIRST_TIME_EXPERIENCE` | `true`   | Skip .NET welcome experience |
 | `DOTNET_NOLOGO`                     | `true`   | Suppress .NET logo           |
 | `DOTNET_CLI_TELEMETRY_OPTOUT`       | `true`   | Disable telemetry            |
 
-## Concurrency
+---
+
+## 🔄 Concurrency
 
 ```yaml
 concurrency:
@@ -313,7 +325,9 @@ concurrency:
 
 Prevents simultaneous deployments to the same environment while ensuring in-progress deployments complete.
 
-## Usage Examples
+---
+
+## 💡 Usage Examples
 
 ### Manual Deployment
 
@@ -336,12 +350,14 @@ git checkout <previous-commit-sha>
 azd deploy --no-prompt
 ```
 
-## Troubleshooting
+---
+
+## 🔧 Troubleshooting
 
 ### Common Issues
 
 | Issue                     | Cause                                 | Solution                                    |
-| ------------------------- | ------------------------------------- | ------------------------------------------- |
+| :------------------------ | :------------------------------------ | :------------------------------------------ |
 | OIDC authentication fails | Federated credential misconfiguration | Verify Azure AD app registration settings   |
 | SQL user creation fails   | Token expired during long operations  | Credentials are auto-refreshed; check logs  |
 | Provisioning timeout      | Azure API throttling                  | Retry logic handles transient failures      |
@@ -354,9 +370,15 @@ azd deploy --no-prompt
 3. **Azure Portal**: Check resource group status and activity logs
 4. **Re-run Workflow**: Use the "Re-run failed jobs" option
 
-## Related Documentation
+---
+
+## 📚 Related Documentation
 
 - [Azure Developer CLI Documentation](https://learn.microsoft.com/azure/developer/azure-developer-cli/)
 - [GitHub Actions OIDC with Azure](https://learn.microsoft.com/azure/developer/github/connect-from-azure)
 - [CI Workflow Documentation](ci-dotnet.md)
 - [Reusable CI Workflow](ci-dotnet-reusable.md)
+
+---
+
+[⬆️ Back to Top](#-cd---azure-deployment-workflow)

@@ -1,6 +1,26 @@
-# CI - .NET Build and Test Workflow
+# 🔄 CI - .NET Build and Test Workflow
 
-## Overview
+> Continuous integration pipeline that orchestrates code quality validation for the .NET solution with cross-platform support, code coverage, and security scanning.
+
+---
+
+## 📑 Table of Contents
+
+- [🔄 CI - .NET Build and Test Workflow](#-ci---net-build-and-test-workflow)
+  - [📑 Table of Contents](#-table-of-contents)
+  - [📖 Overview](#-overview)
+  - [📊 Pipeline Visualization](#-pipeline-visualization)
+  - [🎯 Triggers](#-triggers)
+  - [📋 Jobs](#-jobs)
+  - [⚙️ Configuration](#️-configuration)
+  - [📦 Artifacts](#-artifacts)
+  - [💡 Usage Examples](#-usage-examples)
+  - [🔧 Troubleshooting](#-troubleshooting)
+  - [📚 Related Documentation](#-related-documentation)
+
+---
+
+## 📖 Overview
 
 The **CI - .NET Build and Test** workflow (`ci-dotnet.yml`) is the continuous integration pipeline that orchestrates code quality validation for the .NET solution. It serves as the entry point that calls the reusable CI workflow with appropriate configuration.
 
@@ -12,7 +32,9 @@ This workflow provides:
 - CodeQL security vulnerability scanning
 - Test result publishing with detailed summaries
 
-## Pipeline Visualization
+---
+
+## 📊 Pipeline Visualization
 
 ```mermaid
 flowchart TD
@@ -84,10 +106,12 @@ flowchart TD
     class SUMMARY summary
 ```
 
-## Triggers
+---
+
+## 🎯 Triggers
 
 | Trigger             | Branches                                                                                                      | Description                       |
-| ------------------- | ------------------------------------------------------------------------------------------------------------- | --------------------------------- |
+| :------------------ | :------------------------------------------------------------------------------------------------------------ | :-------------------------------- |
 | `push`              | `main`, `feature/**`, `bugfix/**`, `hotfix/**`, `release/**`, `chore/**`, `docs/**`, `refactor/**`, `test/**` | Triggers on push to any branch    |
 | `pull_request`      | `main`                                                                                                        | Triggers on PRs targeting main    |
 | `workflow_dispatch` | Any                                                                                                           | Manual trigger with configuration |
@@ -97,7 +121,7 @@ flowchart TD
 The workflow only triggers when changes are made to:
 
 | Path Pattern                               | Description                 |
-| ------------------------------------------ | --------------------------- |
+| :----------------------------------------- | :-------------------------- |
 | `src/**`                                   | Source code files           |
 | `app.*/**`                                 | AppHost and ServiceDefaults |
 | `*.sln`                                    | Solution files              |
@@ -108,18 +132,20 @@ The workflow only triggers when changes are made to:
 ### Manual Trigger Inputs
 
 | Input                  | Type    | Default   | Description                         |
-| ---------------------- | ------- | --------- | ----------------------------------- |
+| :--------------------- | :------ | :-------- | :---------------------------------- |
 | `configuration`        | choice  | `Release` | Build configuration (Release/Debug) |
 | `enable-code-analysis` | boolean | `true`    | Enable code formatting analysis     |
 
-## Jobs
+---
+
+## 📋 Jobs
 
 ### 🚀 CI (Reusable Workflow Call)
 
 This workflow delegates all CI operations to the reusable workflow.
 
 | Property     | Value                                        |
-| ------------ | -------------------------------------------- |
+| :----------- | :------------------------------------------- |
 | **Workflow** | `./.github/workflows/ci-dotnet-reusable.yml` |
 | **Secrets**  | `inherit` (passes all secrets)               |
 
@@ -138,7 +164,7 @@ enable-code-analysis: ${{ inputs.enable-code-analysis == '' && true || inputs.en
 fail-on-format-issues: true
 ```
 
-## Jobs Executed (via Reusable Workflow)
+### Jobs Executed (via Reusable Workflow)
 
 The reusable workflow executes the following jobs:
 
@@ -185,7 +211,7 @@ flowchart LR
 ### Job Details
 
 | Job           | Runner                          | Description                                   |
-| ------------- | ------------------------------- | --------------------------------------------- |
+| :------------ | :------------------------------ | :-------------------------------------------- |
 | 🔨 Build      | Matrix (ubuntu, windows, macos) | Compiles solution on all platforms            |
 | 🧪 Test       | Matrix (ubuntu, windows, macos) | Runs tests with coverage on all platforms     |
 | 🔍 Analyze    | ubuntu-latest                   | Verifies code formatting (optional)           |
@@ -193,7 +219,9 @@ flowchart LR
 | 📊 Summary    | ubuntu-latest                   | Aggregates results from all jobs              |
 | ❌ On-Failure | ubuntu-latest                   | Reports failures (runs only on failure)       |
 
-## Prerequisites
+---
+
+## ⚙️ Configuration
 
 ### Required Permissions
 
@@ -215,16 +243,18 @@ permissions:
 - `.editorconfig` file for formatting rules
 - Solution file (`app.sln`) at repository root
 
-## Artifacts Generated
+---
+
+## 📦 Artifacts
 
 | Artifact               | Description                      | Retention |
-| ---------------------- | -------------------------------- | --------- |
+| :--------------------- | :------------------------------- | :-------- |
 | `build-artifacts-{os}` | Compiled binaries per platform   | 30 days   |
 | `test-results-{os}`    | Test execution results (.trx)    | 30 days   |
 | `code-coverage-{os}`   | Coverage reports (Cobertura XML) | 30 days   |
 | `codeql-sarif-results` | Security scan results (SARIF)    | 30 days   |
 
-## Concurrency
+### Concurrency
 
 ```yaml
 concurrency:
@@ -234,7 +264,9 @@ concurrency:
 
 Prevents duplicate workflow runs for the same branch/PR and cancels in-progress runs when new commits are pushed.
 
-## Usage Examples
+---
+
+## 💡 Usage Examples
 
 ### Automatic Trigger
 
@@ -263,12 +295,14 @@ gh workflow run ci-dotnet.yml -f enable-code-analysis=false
 gh pr create --base main --title "My feature"
 ```
 
-## Troubleshooting
+---
+
+## 🔧 Troubleshooting
 
 ### Common Issues
 
 | Issue                            | Cause                            | Solution                                 |
-| -------------------------------- | -------------------------------- | ---------------------------------------- |
+| :------------------------------- | :------------------------------- | :--------------------------------------- |
 | Build fails on one platform only | Platform-specific code issues    | Check conditional compilation directives |
 | Code formatting check fails      | Code doesn't match .editorconfig | Run `dotnet format` locally              |
 | Tests fail on specific OS        | Environment-dependent tests      | Review test assumptions about file paths |
@@ -290,8 +324,14 @@ dotnet format app.sln --verify-no-changes
 dotnet format app.sln
 ```
 
-## Related Documentation
+---
+
+## 📚 Related Documentation
 
 - [Reusable CI Workflow](ci-dotnet-reusable.md) - Detailed documentation of the reusable workflow
 - [CD - Azure Deployment](azure-dev.md) - Deployment workflow that uses this CI
 - [GitHub Actions .NET Documentation](https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-net)
+
+---
+
+[⬆️ Back to Top](#-ci---net-build-and-test-workflow)

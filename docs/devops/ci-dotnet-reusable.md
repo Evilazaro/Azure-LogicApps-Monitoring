@@ -1,6 +1,26 @@
-# CI - .NET Reusable Workflow
+# 🔧 CI - .NET Reusable Workflow
 
-## Overview
+> Comprehensive, reusable continuous integration workflow for .NET solutions with cross-platform support, code coverage, and security scanning.
+
+---
+
+## 📑 Table of Contents
+
+- [🔧 CI - .NET Reusable Workflow](#-ci---net-reusable-workflow)
+  - [📑 Table of Contents](#-table-of-contents)
+  - [📖 Overview](#-overview)
+  - [📊 Pipeline Visualization](#-pipeline-visualization)
+  - [⚙️ Workflow Inputs](#️-workflow-inputs)
+  - [📤 Workflow Outputs](#-workflow-outputs)
+  - [📋 Jobs](#-jobs)
+  - [📦 Artifacts](#-artifacts)
+  - [💡 Usage Examples](#-usage-examples)
+  - [🔧 Troubleshooting](#-troubleshooting)
+  - [📚 Related Documentation](#-related-documentation)
+
+---
+
+## 📖 Overview
 
 The **CI - .NET Reusable Workflow** (`ci-dotnet-reusable.yml`) is a comprehensive, reusable continuous integration workflow designed to be called by other workflows. It implements a complete CI pipeline for .NET solutions with cross-platform support.
 
@@ -13,7 +33,9 @@ This reusable workflow provides:
 - Configurable inputs for maximum flexibility
 - Workflow outputs for downstream consumption
 
-## Pipeline Visualization
+---
+
+## 📊 Pipeline Visualization
 
 ```mermaid
 flowchart TD
@@ -100,7 +122,7 @@ flowchart TD
     class A1,A2,A3,A4 artifact
 ```
 
-## Trigger
+### Trigger
 
 This workflow uses `workflow_call` trigger, meaning it can only be called by other workflows.
 
@@ -111,10 +133,12 @@ on:
     outputs: ...
 ```
 
-## Input Parameters
+---
+
+## ⚙️ Workflow Inputs
 
 | Input                        | Type    | Default           | Required | Description                              |
-| ---------------------------- | ------- | ----------------- | -------- | ---------------------------------------- |
+| :--------------------------- | :------ | :---------------- | :------- | :--------------------------------------- |
 | `configuration`              | string  | `Release`         | No       | Build configuration (Release/Debug)      |
 | `dotnet-version`             | string  | `10.0.x`          | No       | .NET SDK version to use                  |
 | `solution-file`              | string  | `app.sln`         | No       | Path to the solution file                |
@@ -126,17 +150,21 @@ on:
 | `enable-code-analysis`       | boolean | `true`            | No       | Enable code formatting analysis          |
 | `fail-on-format-issues`      | boolean | `true`            | No       | Fail workflow if formatting issues found |
 
-## Output Parameters
+---
+
+## 📤 Workflow Outputs
 
 | Output           | Description                 |
-| ---------------- | --------------------------- |
+| :--------------- | :-------------------------- |
 | `build-version`  | Generated build version     |
 | `build-result`   | Build job result            |
 | `test-result`    | Test job result             |
 | `analyze-result` | Analysis job result         |
 | `codeql-result`  | CodeQL security scan result |
 
-## Jobs
+---
+
+## 📋 Jobs
 
 ### 1. 🔨 Build (Cross-Platform Matrix)
 
@@ -173,7 +201,7 @@ flowchart LR
 ```
 
 | Property      | Value                                             |
-| ------------- | ------------------------------------------------- |
+| :------------ | :------------------------------------------------ |
 | **Runners**   | `ubuntu-latest`, `windows-latest`, `macos-latest` |
 | **Timeout**   | 15 minutes                                        |
 | **Fail Fast** | `false` (all platforms run regardless)            |
@@ -182,7 +210,7 @@ flowchart LR
 #### Key Steps
 
 | Step                | Description                                           |
-| ------------------- | ----------------------------------------------------- |
+| :------------------ | :---------------------------------------------------- |
 | 📥 Checkout         | Clone repository with full history (`fetch-depth: 0`) |
 | 🔧 Setup .NET SDK   | Install specified .NET version                        |
 | ☁️ Update Workloads | Update .NET workloads for all platforms               |
@@ -197,7 +225,7 @@ flowchart LR
 Executes tests with code coverage on all platforms.
 
 | Property       | Value                                             |
-| -------------- | ------------------------------------------------- |
+| :------------- | :------------------------------------------------ |
 | **Runners**    | `ubuntu-latest`, `windows-latest`, `macos-latest` |
 | **Timeout**    | 30 minutes                                        |
 | **Depends On** | `build`                                           |
@@ -206,7 +234,7 @@ Executes tests with code coverage on all platforms.
 #### Key Steps
 
 | Step                    | Description                                      |
-| ----------------------- | ------------------------------------------------ |
+| :---------------------- | :----------------------------------------------- |
 | 📥 Checkout             | Clone repository                                 |
 | 🔧 Setup .NET SDK       | Install .NET SDK                                 |
 | 🔨 Build                | Rebuild for test execution                       |
@@ -234,7 +262,7 @@ dotnet test --solution app.sln \
 Verifies code formatting compliance with `.editorconfig` standards.
 
 | Property       | Value                            |
-| -------------- | -------------------------------- |
+| :------------- | :------------------------------- |
 | **Runner**     | Configurable via `runs-on` input |
 | **Timeout**    | 15 minutes                       |
 | **Depends On** | `build`                          |
@@ -243,7 +271,7 @@ Verifies code formatting compliance with `.editorconfig` standards.
 #### Key Steps
 
 | Step                 | Description                                     |
-| -------------------- | ----------------------------------------------- |
+| :------------------- | :---------------------------------------------- |
 | 📥 Checkout          | Clone repository                                |
 | 🔧 Setup .NET SDK    | Install .NET SDK                                |
 | 🎨 Verify Formatting | Run `dotnet format --verify-no-changes`         |
