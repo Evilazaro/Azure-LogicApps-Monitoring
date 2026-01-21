@@ -1,6 +1,30 @@
+---
+title: configure-federated-credential Script
+description: Configures federated identity credentials for passwordless GitHub Actions OIDC authentication with Azure AD.
+author: Azure Developer CLI Team
+date: 2026-01-06
+version: 1.0.0
+tags: [azure-ad, oidc, github-actions, authentication, security]
+---
+
 # 🔐 configure-federated-credential
 
 > Configures federated identity credentials for GitHub Actions OIDC authentication.
+
+> [!NOTE]
+> **Target Audience:** DevOps Engineers and Security Administrators  
+> **Reading Time:** ~6 minutes
+
+<details>
+<summary>📍 Navigation</summary>
+
+| Previous                                |         Index          |                                                            Next |
+| :-------------------------------------- | :--------------------: | --------------------------------------------------------------: |
+| [deploy-workflow](./deploy-workflow.md) | [🪝 Hooks](./index.md) | [sql-managed-identity-config](./sql-managed-identity-config.md) |
+
+</details>
+
+---
 
 ## 📋 Overview
 
@@ -31,6 +55,9 @@ The script performs the following operations:
 - [📚 Related Documentation](#-related-documentation)
 
 [⬅️ Back to Index](./index.md)
+
+> [!IMPORTANT]
+> Federated credentials enable passwordless authentication—no secrets need to be stored in GitHub.
 
 ---
 
@@ -209,6 +236,9 @@ flowchart TD
 
 ---
 
+> [!WARNING]
+> Ensure you have the necessary Azure AD permissions (Application.ReadWrite.All or owner role) before running this script.
+
 ## 🔗 Links
 
 - [Repository](https://github.com/Evilazaro/Azure-LogicApps-Monitoring)
@@ -217,4 +247,8 @@ flowchart TD
 
 ---
 
-[⬅️ Back to Index](./index.md)
+<div align="center">
+
+**[⬆️ Back to Top](#-configure-federated-credential)** · **[← deploy-workflow](./deploy-workflow.md)** · **[sql-managed-identity-config →](./sql-managed-identity-config.md)**
+
+</div>

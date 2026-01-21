@@ -1,6 +1,30 @@
+---
+title: postprovision Hook
+description: Post-provisioning script that configures .NET user secrets with Azure resource information after infrastructure deployment.
+author: Evilazaro
+date: 2026-01-06
+version: 2.0.1
+tags: [azd, hooks, postprovision, secrets, configuration]
+---
+
 # ⚙️ postprovision
 
 > Post-provisioning script for Azure Developer CLI (azd).
+
+> [!NOTE]
+> **Target Audience:** DevOps Engineers and Developers  
+> **Reading Time:** ~7 minutes
+
+<details>
+<summary>📍 Navigation</summary>
+
+| Previous                          |         Index          |                                    Next |
+| :-------------------------------- | :--------------------: | --------------------------------------: |
+| [preprovision](./preprovision.md) | [🪝 Hooks](./index.md) | [postinfradelete](./postinfradelete.md) |
+
+</details>
+
+---
 
 ## 📋 Overview
 
@@ -30,6 +54,9 @@ The script performs the following operations:
 - [📜 Version History](#-version-history)
 
 [⬅️ Back to Index](./index.md)
+
+> [!TIP]
+> Run with `--verbose` flag to see detailed configuration output.
 
 ---
 
@@ -208,7 +235,8 @@ The script tracks and reports:
 | 1.5.0   | 2025-09-15 | Added ACR authentication support                 |
 | 1.0.0   | 2025-08-15 | Initial release                                  |
 
----
+> [!IMPORTANT]
+> Ensure all required environment variables are set by `azd provision` before running this script.
 
 ## 🔗 Links
 
@@ -217,5 +245,11 @@ The script tracks and reports:
 - [.NET User Secrets Documentation](https://learn.microsoft.com/aspnet/core/security/app-secrets)
 
 ---
+
+<div align="center">
+
+**[⬆️ Back to Top](#%EF%B8%8F-postprovision)** · **[← preprovision](./preprovision.md)** · **[postinfradelete →](./postinfradelete.md)**
+
+## </div>
 
 [⬅️ Back to Index](./index.md)

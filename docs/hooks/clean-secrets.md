@@ -1,6 +1,30 @@
+---
+title: clean-secrets Script
+description: Utility script to clear .NET user secrets for all projects in the Azure Logic Apps Monitoring solution.
+author: Evilazaro
+date: 2026-01-06
+version: 2.0.1
+tags: [azd, secrets, cleanup, dotnet, configuration]
+---
+
 # 🧹 clean-secrets
 
 > Clears .NET user secrets for all projects in the solution.
+
+> [!NOTE]
+> **Target Audience:** Developers and DevOps Engineers  
+> **Reading Time:** ~5 minutes
+
+<details>
+<summary>📍 Navigation</summary>
+
+| Previous                                            |         Index          |                                    Next |
+| :-------------------------------------------------- | :--------------------: | --------------------------------------: |
+| [check-dev-workstation](./check-dev-workstation.md) | [🪝 Hooks](./index.md) | [Generate-Orders](./Generate-Orders.md) |
+
+</details>
+
+---
 
 ## 📋 Overview
 
@@ -32,6 +56,9 @@ The script performs the following operations:
 - [📜 Version History](#-version-history)
 
 [⬅️ Back to Index](./index.md)
+
+> [!TIP]
+> Use `--dry-run` to preview which secrets would be cleared without making any changes.
 
 ---
 
@@ -203,6 +230,9 @@ The script tracks and reports:
 
 ---
 
+> [!WARNING]
+> This script permanently removes user secrets. Back up any important configuration before running.
+
 ## 🔗 Links
 
 - [Repository](https://github.com/Evilazaro/Azure-LogicApps-Monitoring)
@@ -210,4 +240,8 @@ The script tracks and reports:
 
 ---
 
-[⬅️ Back to Index](./index.md)
+<div align="center">
+
+**[⬆️ Back to Top](#-clean-secrets)** · **[← check-dev-workstation](./check-dev-workstation.md)** · **[Generate-Orders →](./Generate-Orders.md)**
+
+</div>

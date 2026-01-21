@@ -1,6 +1,30 @@
+---
+title: Generate-Orders Script
+description: Utility script to generate sample e-commerce order data in JSON format for testing Azure Logic Apps monitoring scenarios.
+author: Evilazaro
+date: 2026-01-06
+version: 2.0.1
+tags: [testing, data-generation, orders, json, sample-data]
+---
+
 # 📦 Generate-Orders
 
 > Generates sample order data for testing Azure Logic Apps monitoring.
+
+> [!NOTE]
+> **Target Audience:** Developers and QA Engineers  
+> **Reading Time:** ~7 minutes
+
+<details>
+<summary>📍 Navigation</summary>
+
+| Previous                            |         Index          |                                    Next |
+| :---------------------------------- | :--------------------: | --------------------------------------: |
+| [clean-secrets](./clean-secrets.md) | [🪝 Hooks](./index.md) | [deploy-workflow](./deploy-workflow.md) |
+
+</details>
+
+---
 
 ## 📋 Overview
 
@@ -31,6 +55,9 @@ The script performs the following operations:
 - [⚠️ Exit Codes](#%EF%B8%8F-exit-codes)
 
 [⬅️ Back to Index](./index.md)
+
+> [!TIP]
+> Use `--dry-run` to preview the configuration without generating orders.
 
 ---
 
@@ -296,6 +323,9 @@ The script reports:
 
 ---
 
+> [!IMPORTANT]
+> Generated orders use GUID/UUID format for unique order identification across test runs.
+
 ## 🔗 Links
 
 - [Repository](https://github.com/Evilazaro/Azure-LogicApps-Monitoring)
@@ -303,4 +333,8 @@ The script reports:
 
 ---
 
-[⬅️ Back to Index](./index.md)
+<div align="center">
+
+**[⬆️ Back to Top](#-generate-orders)** · **[← clean-secrets](./clean-secrets.md)** · **[deploy-workflow →](./deploy-workflow.md)**
+
+</div>

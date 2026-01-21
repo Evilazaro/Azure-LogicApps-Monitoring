@@ -1,6 +1,30 @@
+---
+title: Hooks Documentation
+description: Comprehensive documentation for Azure Developer CLI (azd) lifecycle hooks and utility scripts used in the Azure Logic Apps Monitoring solution.
+author: Evilazaro
+date: 2026-01-21
+version: 2.0.0
+tags: [azd, hooks, azure, devops, lifecycle, automation]
+---
+
 # 🪝 Hooks Documentation
 
 > Azure Developer CLI (azd) lifecycle hooks for the Azure Logic Apps Monitoring solution.
+
+> [!NOTE]
+> **Target Audience:** DevOps Engineers, Cloud Architects, and Developers  
+> **Reading Time:** ~10 minutes
+
+<details>
+<summary>📍 Navigation</summary>
+
+| Previous |      Index       |                              Next |
+| :------- | :--------------: | --------------------------------: |
+| —        | **You are here** | [preprovision](./preprovision.md) |
+
+</details>
+
+---
 
 ## 📋 Overview
 
@@ -168,8 +192,19 @@ azd down
 
 ---
 
+> [!TIP]
+> For detailed information about each script, click on the links in the tables above to navigate to the individual documentation pages.
+
 ## 🔗 Links
 
 - [Repository](https://github.com/Evilazaro/Azure-LogicApps-Monitoring)
 - [Issues](https://github.com/Evilazaro/Azure-LogicApps-Monitoring/issues)
 - [Azure Logic Apps Documentation](https://learn.microsoft.com/azure/logic-apps/)
+
+---
+
+<div align="center">
+
+**[⬆️ Back to Top](#-hooks-documentation)** · **[preprovision →](./preprovision.md)**
+
+</div>

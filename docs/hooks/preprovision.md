@@ -1,6 +1,30 @@
+---
+title: preprovision Hook
+description: Pre-provisioning script that validates environment prerequisites and clears user secrets before Azure resource provisioning.
+author: Evilazaro
+date: 2026-01-06
+version: 2.3.0
+tags: [azd, hooks, preprovision, validation, prerequisites]
+---
+
 # 🚀 preprovision
 
 > Pre-provisioning script for Azure Developer CLI (azd) deployment.
+
+> [!NOTE]
+> **Target Audience:** DevOps Engineers and Cloud Administrators  
+> **Reading Time:** ~8 minutes
+
+<details>
+<summary>📍 Navigation</summary>
+
+| Previous            |         Index          |                                Next |
+| :------------------ | :--------------------: | ----------------------------------: |
+| [index](./index.md) | [🪝 Hooks](./index.md) | [postprovision](./postprovision.md) |
+
+</details>
+
+---
 
 ## 📋 Overview
 
@@ -31,6 +55,9 @@ The script performs the following operations:
 - [📜 Version History](#-version-history)
 
 [⬅️ Back to Index](./index.md)
+
+> [!TIP]
+> Use the `-ValidateOnly` flag to check prerequisites without clearing secrets.
 
 ---
 
@@ -230,6 +257,9 @@ flowchart TD
 | 2.0.0   | 2025-10-01 | Major refactor with comprehensive validation                             |
 | 1.0.0   | 2025-08-15 | Initial release                                                          |
 
+> [!IMPORTANT]
+> This script must run successfully before `azd provision`. It validates all required tools and configurations.
+
 ---
 
 ## 🔗 Links
@@ -241,4 +271,8 @@ flowchart TD
 
 ---
 
-[⬅️ Back to Index](./index.md)
+<div align="center">
+
+**[⬆️ Back to Top](#-preprovision)** · **[← index](./index.md)** · **[postprovision →](./postprovision.md)**
+
+</div>

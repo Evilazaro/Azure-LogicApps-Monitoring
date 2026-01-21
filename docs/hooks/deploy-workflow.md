@@ -1,6 +1,30 @@
+---
+title: deploy-workflow Hook
+description: Deployment script that packages and deploys Logic Apps Standard workflows to Azure using zip deployment.
+author: Azure Developer CLI Team
+date: 2026-01-06
+version: 2.0.1
+tags: [azd, deployment, logic-apps, workflows, azure]
+---
+
 # 🚀 deploy-workflow
 
 > Deploys Logic Apps Standard workflows to Azure.
+
+> [!NOTE]
+> **Target Audience:** DevOps Engineers and Cloud Administrators  
+> **Reading Time:** ~8 minutes
+
+<details>
+<summary>📍 Navigation</summary>
+
+| Previous                                |         Index          |                                                                  Next |
+| :-------------------------------------- | :--------------------: | --------------------------------------------------------------------: |
+| [Generate-Orders](./Generate-Orders.md) | [🪝 Hooks](./index.md) | [configure-federated-credential](./configure-federated-credential.md) |
+
+</details>
+
+---
 
 ## 📋 Overview
 
@@ -31,6 +55,9 @@ The script performs the following operations:
 - [📜 Version History](#-version-history)
 
 [⬅️ Back to Index](./index.md)
+
+> [!TIP]
+> Environment variables are automatically set by `azd` during deployment hooks—no manual configuration needed.
 
 ---
 
@@ -238,6 +265,9 @@ The script resolves `${VARIABLE}` placeholders in workflow files by replacing th
 
 ---
 
+> [!IMPORTANT]
+> Ensure all required environment variables are set before deployment. Missing variables will cause placeholder resolution to fail.
+
 ## 🔗 Links
 
 - [Repository](https://github.com/Evilazaro/Azure-LogicApps-Monitoring)
@@ -246,4 +276,8 @@ The script resolves `${VARIABLE}` placeholders in workflow files by replacing th
 
 ---
 
-[⬅️ Back to Index](./index.md)
+<div align="center">
+
+**[⬆️ Back to Top](#-deploy-workflow)** · **[← Generate-Orders](./Generate-Orders.md)** · **[configure-federated-credential →](./configure-federated-credential.md)**
+
+</div>

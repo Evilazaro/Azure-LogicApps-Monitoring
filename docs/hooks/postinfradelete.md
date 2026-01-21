@@ -1,6 +1,30 @@
+---
+title: postinfradelete Hook
+description: Post-infrastructure-delete hook that purges soft-deleted Logic Apps Standard resources after running azd down.
+author: Evilazaro
+date: 2026-01-09
+version: 2.0.0
+tags: [azd, hooks, cleanup, logic-apps, soft-delete]
+---
+
 # 🗑️ postinfradelete
 
 > Post-infrastructure-delete hook for Azure Developer CLI (azd).
+
+> [!NOTE]
+> **Target Audience:** DevOps Engineers and Cloud Administrators  
+> **Reading Time:** ~6 minutes
+
+<details>
+<summary>📍 Navigation</summary>
+
+| Previous                            |         Index          |                                                Next |
+| :---------------------------------- | :--------------------: | --------------------------------------------------: |
+| [postprovision](./postprovision.md) | [🪝 Hooks](./index.md) | [check-dev-workstation](./check-dev-workstation.md) |
+
+</details>
+
+---
 
 ## 📋 Overview
 
@@ -31,6 +55,9 @@ The script performs the following operations:
 - [📜 Version History](#-version-history)
 
 [⬅️ Back to Index](./index.md)
+
+> [!WARNING]
+> Purging soft-deleted Logic Apps is irreversible. Use `-WhatIf` to preview changes before execution.
 
 ---
 
@@ -217,7 +244,8 @@ DELETE https://management.azure.com/subscriptions/{subscriptionId}/providers/Mic
 | 2.0.0   | 2026-01-09 | Major refactor with REST API implementation and comprehensive error handling |
 | 1.0.0   | 2025-10-01 | Initial release                                                              |
 
----
+> [!CAUTION]
+> Purged Logic Apps cannot be recovered. Always verify the apps to be deleted with `--verbose` before confirming.
 
 ## 🔗 Links
 
@@ -226,5 +254,11 @@ DELETE https://management.azure.com/subscriptions/{subscriptionId}/providers/Mic
 - [Azure REST API Reference](https://learn.microsoft.com/rest/api/azure/)
 
 ---
+
+<div align="center">
+
+**[⬆️ Back to Top](#%EF%B8%8F-postinfradelete)** · **[← postprovision](./postprovision.md)** · **[check-dev-workstation →](./check-dev-workstation.md)**
+
+## </div>
 
 [⬅️ Back to Index](./index.md)

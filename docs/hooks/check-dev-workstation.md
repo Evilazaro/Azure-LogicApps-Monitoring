@@ -1,6 +1,30 @@
+---
+title: check-dev-workstation Script
+description: Developer workstation validation script that ensures all prerequisites for the Azure Logic Apps Monitoring solution are properly installed.
+author: Evilazaro
+date: 2026-01-07
+version: 1.0.0
+tags: [azd, development, validation, prerequisites, workstation]
+---
+
 # 🔍 check-dev-workstation
 
 > Validates developer workstation prerequisites for Azure Logic Apps Monitoring solution.
+
+> [!NOTE]
+> **Target Audience:** Developers and New Team Members  
+> **Reading Time:** ~5 minutes
+
+<details>
+<summary>📍 Navigation</summary>
+
+| Previous                                |         Index          |                                Next |
+| :-------------------------------------- | :--------------------: | ----------------------------------: |
+| [postinfradelete](./postinfradelete.md) | [🪝 Hooks](./index.md) | [clean-secrets](./clean-secrets.md) |
+
+</details>
+
+---
 
 ## 📋 Overview
 
@@ -33,6 +57,9 @@ The script acts as a wrapper around `preprovision` in ValidateOnly mode, providi
 - [📜 Version History](#-version-history)
 
 [⬅️ Back to Index](./index.md)
+
+> [!TIP]
+> Run this script when onboarding to the project or after system updates to ensure your environment is properly configured.
 
 ---
 
@@ -166,6 +193,9 @@ If validation fails, the script provides actionable guidance:
 
 ---
 
+> [!IMPORTANT]
+> This script only validates prerequisites—it does not install missing tools. Use `preprovision` with `-AutoInstall` for automated installation.
+
 ## 🔗 Links
 
 - [Repository](https://github.com/Evilazaro/Azure-LogicApps-Monitoring)
@@ -173,4 +203,8 @@ If validation fails, the script provides actionable guidance:
 
 ---
 
-[⬅️ Back to Index](./index.md)
+<div align="center">
+
+**[⬆️ Back to Top](#-check-dev-workstation)** · **[← postinfradelete](./postinfradelete.md)** · **[clean-secrets →](./clean-secrets.md)**
+
+</div>

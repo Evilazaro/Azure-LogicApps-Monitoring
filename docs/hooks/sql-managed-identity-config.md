@@ -1,6 +1,30 @@
+---
+title: sql-managed-identity-config Script
+description: Configures Azure SQL Database users with Microsoft Entra ID Managed Identity authentication for secure, passwordless access.
+author: Evilazaro
+date: 2026-01-06
+version: 1.0.0
+tags: [azure-sql, managed-identity, entra-id, authentication, security]
+---
+
 # 🔐 sql-managed-identity-config
 
 > Configures Azure SQL Database user with Managed Identity authentication.
+
+> [!NOTE]
+> **Target Audience:** Database Administrators and DevOps Engineers  
+> **Reading Time:** ~10 minutes
+
+<details>
+<summary>📍 Navigation</summary>
+
+| Previous                                                              |         Index          | Next |
+| :-------------------------------------------------------------------- | :--------------------: | ---: |
+| [configure-federated-credential](./configure-federated-credential.md) | [🪝 Hooks](./index.md) |    — |
+
+</details>
+
+---
 
 ## 📋 Overview
 
@@ -36,6 +60,9 @@ The script is **idempotent** and can be safely re-run. It will skip existing use
 - [📜 Version History](#-version-history)
 
 [⬅️ Back to Index](./index.md)
+
+> [!IMPORTANT]
+> This script requires Microsoft Entra ID Administrator privileges on the SQL Server. The script is idempotent and safe to re-run.
 
 ---
 
@@ -316,7 +343,8 @@ The script returns a `PSCustomObject` with type `SqlManagedIdentityConfiguration
 | ------- | ---------- | ------------------------------------------------------------- |
 | 1.0.0   | 2026-01-06 | Initial release - Entra ID managed identity SQL configuration |
 
----
+> [!CAUTION]
+> Ensure firewall rules allow access to Azure SQL Database from your current IP before running this script.
 
 ## 🔗 Links
 
@@ -325,5 +353,11 @@ The script returns a `PSCustomObject` with type `SqlManagedIdentityConfiguration
 - [Managed Identities Overview](https://learn.microsoft.com/azure/active-directory/managed-identities-azure-resources/overview)
 
 ---
+
+<div align="center">
+
+**[⬆️ Back to Top](#-sql-managed-identity-config)** · **[← configure-federated-credential](./configure-federated-credential.md)** · **[🪝 Hooks Index](./index.md)**
+
+## </div>
 
 [⬅️ Back to Index](./index.md)
