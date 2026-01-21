@@ -1,5 +1,9 @@
 # Deployment Architecture
 
+← [Security Architecture](06-security-architecture.md) | [Index](README.md) | [ADRs →](adr/README.md)
+
+---
+
 ## Overview
 
 This document describes the deployment architecture for the Azure Logic Apps Monitoring solution, including the CI/CD pipelines, infrastructure provisioning, and deployment processes.
@@ -359,7 +363,15 @@ az deployment group create --template-file infra/main.bicep \
 
 ## Related Documentation
 
+- [Architecture Overview](README.md) - Documentation navigation
+- [Security Architecture](06-security-architecture.md) - OIDC and identity details
+- [Observability Architecture](05-observability-architecture.md) - Monitoring integration
+- [Technology Architecture](04-technology-architecture.md) - Platform components
 - [DevOps Documentation](../devops/README.md) - Detailed workflow documentation
 - [CI Workflow](../devops/ci-dotnet.md) - Build and test pipeline
 - [CD Workflow](../devops/azure-dev.md) - Deployment pipeline
 - [Azure Developer CLI](https://learn.microsoft.com/azure/developer/azure-developer-cli/)
+
+---
+
+_Last Updated: January 2026_
