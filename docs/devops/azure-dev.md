@@ -1,6 +1,27 @@
-# CD - Azure Deployment Workflow
+# 🚀 CD - Azure Deployment Workflow
 
-## Overview
+> Continuous delivery pipeline that provisions Azure infrastructure and deploys the .NET application using Azure Developer CLI (azd) with OpenID Connect (OIDC) authentication.
+
+---
+
+## 📑 Table of Contents
+
+- [🚀 CD - Azure Deployment Workflow](#-cd---azure-deployment-workflow)
+  - [📑 Table of Contents](#-table-of-contents)
+  - [📖 Overview](#-overview)
+  - [📊 Pipeline Visualization](#-pipeline-visualization)
+  - [🎯 Triggers](#-triggers)
+  - [📋 Jobs](#-jobs)
+  - [⚙️ Prerequisites](#️-prerequisites)
+  - [🌐 Environment Variables](#-environment-variables)
+  - [🔄 Concurrency](#-concurrency)
+  - [💡 Usage Examples](#-usage-examples)
+  - [🔧 Troubleshooting](#-troubleshooting)
+  - [📚 Related Documentation](#-related-documentation)
+
+---
+
+## 📖 Overview
 
 The **CD - Azure Deployment** workflow (`azure-dev.yml`) is the continuous delivery pipeline that provisions Azure infrastructure and deploys the .NET application using Azure Developer CLI (azd) with OpenID Connect (OIDC) authentication.
 

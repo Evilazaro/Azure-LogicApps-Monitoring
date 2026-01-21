@@ -184,7 +184,7 @@ flowchart TD
 ### Jobs Overview
 
 | Job           | Workflow(s)           | Runners                | Purpose                     |
-| ------------- | --------------------- | ---------------------- | --------------------------- |
+| :------------ | :-------------------- | :--------------------- | :-------------------------- |
 | 🔨 Build      | CI Reusable           | ubuntu, windows, macos | Compile solution            |
 | 🧪 Test       | CI Reusable           | ubuntu, windows, macos | Execute tests with coverage |
 | 🔍 Analyze    | CI Reusable           | ubuntu-latest          | Code format verification    |
@@ -195,7 +195,7 @@ flowchart TD
 ### Required Secrets & Variables
 
 | Name                    | Type     | Used In | Description                    |
-| ----------------------- | -------- | ------- | ------------------------------ |
+| :---------------------- | :------- | :------ | :----------------------------- |
 | `AZURE_CLIENT_ID`       | Variable | CD      | Azure AD application client ID |
 | `AZURE_TENANT_ID`       | Variable | CD      | Azure AD tenant ID             |
 | `AZURE_SUBSCRIPTION_ID` | Variable | CD      | Azure subscription ID          |
@@ -205,13 +205,15 @@ flowchart TD
 ### Artifacts Generated
 
 | Artifact               | Workflow | Contents                      | Retention |
-| ---------------------- | -------- | ----------------------------- | --------- |
+| :--------------------- | :------- | :---------------------------- | :-------- |
 | `build-artifacts-{os}` | CI       | Compiled binaries             | 30 days   |
 | `test-results-{os}`    | CI       | Test results (.trx)           | 30 days   |
 | `code-coverage-{os}`   | CI       | Coverage reports (Cobertura)  | 30 days   |
 | `codeql-sarif-results` | CI       | Security scan results (SARIF) | 30 days   |
 
-## Pipeline Flow
+---
+
+## 🔄 Pipeline Flow
 
 ### CI Pipeline (Pull Requests & Pushes)
 
@@ -271,7 +273,9 @@ sequenceDiagram
     GH->>Dev: Display deployment status
 ```
 
-## Local Development
+---
+
+## 💻 Local Development
 
 ### Running CI Checks Locally
 
@@ -305,9 +309,11 @@ azd deploy
 azd up
 ```
 
-## Best Practices
+---
 
-### Security
+## ✅ Best Practices
+
+### 🔒 Security
 
 - ✅ OIDC authentication (no stored secrets)
 - ✅ CodeQL security scanning on every CI run
@@ -315,26 +321,28 @@ azd up
 - ✅ Least-privilege permissions
 - ✅ Dependabot for dependency updates
 
-### Reliability
+### 🔄 Reliability
 
 - ✅ Retry logic for transient failures
 - ✅ Cross-platform testing (Ubuntu, Windows, macOS)
 - ✅ Fail-fast disabled for complete feedback
 - ✅ Comprehensive error reporting
 
-### Maintainability
+### 🛠️ Maintainability
 
 - ✅ Reusable workflow patterns
 - ✅ Configurable inputs
 - ✅ Detailed workflow summaries
 - ✅ Semantic commit messages
 
-## Troubleshooting
+---
+
+## 🔧 Troubleshooting
 
 ### Common Issues
 
 | Issue                     | Solution                                     |
-| ------------------------- | -------------------------------------------- |
+| :------------------------ | :------------------------------------------- |
 | OIDC auth fails           | Verify federated credential configuration    |
 | Tests fail on specific OS | Check platform-specific code paths           |
 | Format check fails        | Run `dotnet format` locally                  |
@@ -348,9 +356,15 @@ azd up
 3. Check Azure portal for deployment status
 4. Open an issue in the repository
 
-## Related Documentation
+---
+
+## 📚 Related Documentation
 
 - [Azure Developer CLI](https://learn.microsoft.com/azure/developer/azure-developer-cli/)
 - [GitHub Actions](https://docs.github.com/en/actions)
 - [.NET CLI](https://learn.microsoft.com/dotnet/core/tools/)
 - [CodeQL](https://codeql.github.com/docs/)
+
+---
+
+[⬆️ Back to Top](#-devops-documentation)
