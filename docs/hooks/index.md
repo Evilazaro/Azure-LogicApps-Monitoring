@@ -74,17 +74,17 @@ flowchart TD
 
 ## 📊 Script Matrix
 
-| Script                         | PowerShell | Bash | Version | Last Modified |
-| ------------------------------ | :--------: | :--: | ------- | ------------- |
-| preprovision                   |     ✅     |  ✅  | 2.3.0   | 2026-01-06    |
-| postprovision                  |     ✅     |  ✅  | 2.0.1   | 2026-01-06    |
-| postinfradelete                |     ✅     |  ✅  | 2.0.0   | 2026-01-09    |
-| check-dev-workstation          |     ✅     |  ✅  | 1.0.0   | 2026-01-07    |
-| clean-secrets                  |     ✅     |  ✅  | 2.0.1   | 2026-01-06    |
-| deploy-workflow                |     ✅     |  ✅  | 2.0.1   | N/A           |
-| configure-federated-credential |     ✅     |  ✅  | N/A     | N/A           |
-| Generate-Orders                |     ✅     |  ✅  | 2.0.1   | 2026-01-06    |
-| sql-managed-identity-config    |     ✅     |  ✅  | 1.0.0   | 2026-01-06    |
+| Script                                                                | PowerShell | Bash | Version | Last Modified |
+| --------------------------------------------------------------------- | :--------: | :--: | ------- | ------------- |
+| [preprovision](./preprovision.md)                                     |     ✅     |  ✅  | 2.3.0   | 2026-01-06    |
+| [postprovision](./postprovision.md)                                   |     ✅     |  ✅  | 2.0.1   | 2026-01-06    |
+| [postinfradelete](./postinfradelete.md)                               |     ✅     |  ✅  | 2.0.0   | 2026-01-09    |
+| [check-dev-workstation](./check-dev-workstation.md)                   |     ✅     |  ✅  | 1.0.0   | 2026-01-07    |
+| [clean-secrets](./clean-secrets.md)                                   |     ✅     |  ✅  | 2.0.1   | 2026-01-06    |
+| [deploy-workflow](./deploy-workflow.md)                               |     ✅     |  ✅  | 2.0.1   | —             |
+| [configure-federated-credential](./configure-federated-credential.md) |     ✅     |  ✅  | 1.0.0   | —             |
+| [Generate-Orders](./Generate-Orders.md)                               |     ✅     |  ✅  | 2.0.1   | 2026-01-06    |
+| [sql-managed-identity-config](./sql-managed-identity-config.md)       |     ✅     |  ✅  | 1.0.0   | 2026-01-06    |
 
 ---
 

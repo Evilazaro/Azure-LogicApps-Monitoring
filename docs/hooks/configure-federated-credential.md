@@ -39,8 +39,8 @@ The script performs the following operations:
 | Property          | PowerShell                           | Bash                                |
 | ----------------- | ------------------------------------ | ----------------------------------- |
 | **File Name**     | `configure-federated-credential.ps1` | `configure-federated-credential.sh` |
-| **Version**       | N/A                                  | N/A                                 |
-| **Last Modified** | N/A                                  | N/A                                 |
+| **Version**       | 1.0.0                                | 1.0.0                               |
+| **Last Modified** | —                                    | —                                   |
 | **Author**        | Azure Developer CLI Hook             | Azure Developer CLI Hook            |
 
 ---
