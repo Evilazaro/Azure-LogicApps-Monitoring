@@ -104,26 +104,94 @@ The script acts as a wrapper around `preprovision` in ValidateOnly mode, providi
 ## 🔄 Execution Flow
 
 ```mermaid
+---
+title: check-dev-workstation Execution Flow
+---
 flowchart TD
-    A[🚀 Start check-dev-workstation] --> B{preprovision script exists?}
-    B -->|No| Z[❌ Exit with Error]
-    B -->|Yes| C[Resolve PowerShell/Bash Path]
+    %% ===== STYLE DEFINITIONS =====
+    classDef primary fill:#4F46E5,stroke:#3730A3,color:#FFFFFF
+    classDef secondary fill:#10B981,stroke:#059669,color:#FFFFFF
+    classDef datastore fill:#F59E0B,stroke:#D97706,color:#000000
+    classDef trigger fill:#818CF8,stroke:#4F46E5,color:#FFFFFF
+    classDef decision fill:#FFFBEB,stroke:#F59E0B,color:#000000
+    classDef failed fill:#F44336,stroke:#C62828,color:#FFFFFF
+    classDef external fill:#6B7280,stroke:#4B5563,color:#FFFFFF,stroke-dasharray:5 5
 
-    C --> D[Build Execution Arguments]
-    D --> E[Execute preprovision --validate-only]
+    %% ===== TRIGGER =====
+    subgraph triggers["🚀 Entry Point"]
+        direction TB
+        A(["🚀 Start check-dev-workstation"])
+    end
 
-    E --> F{Validation Exit Code}
-    F -->|0| G[✅ Workstation Validated Successfully]
-    F -->|Non-zero| H[⚠️ Validation Issues Found]
+    %% ===== VALIDATION =====
+    subgraph validation["🔍 Script Validation"]
+        direction TB
+        B{"preprovision script exists?"}
+        C["Resolve PowerShell/Bash Path"]
+    end
 
-    G --> I[Display Success Message]
-    H --> J[Display Warning Message]
+    %% ===== EXECUTION =====
+    subgraph execution["⚙️ Execution"]
+        direction TB
+        D["Build Execution Arguments"]
+        E["Execute preprovision --validate-only"]
+        F{"Validation Exit Code"}
+    end
 
-    I --> K[Exit 0]
-    J --> L[Exit with preprovision exit code]
+    %% ===== RESULTS =====
+    subgraph results["📊 Results"]
+        direction TB
+        G["✅ Workstation Validated Successfully"]
+        H["⚠️ Validation Issues Found"]
+        I["Display Success Message"]
+        J["Display Warning Message"]
+        K["Exit 0"]
+        L["Exit with preprovision exit code"]
+        M(["🏁 End"])
+    end
 
-    K --> M[🏁 End]
-    L --> M
+    %% ===== FAILURE =====
+    subgraph failure["❌ Error Handling"]
+        direction TB
+        Z["❌ Exit with Error"]
+    end
+
+    %% ===== CONNECTIONS =====
+    A -->|"checks"| B
+    B -->|"No"| Z
+    B -->|"Yes"| C
+
+    C -->|"builds"| D
+    D -->|"executes"| E
+    E -->|"evaluates"| F
+
+    F -->|"0"| G
+    F -->|"Non-zero"| H
+
+    G -->|"displays"| I
+    H -->|"displays"| J
+
+    I -->|"exits"| K
+    J -->|"exits"| L
+
+    K -->|"ends"| M
+    L -->|"ends"| M
+
+    %% ===== NODE STYLING =====
+    class A trigger
+    class B,F decision
+    class C,D,E primary
+    class G,I,K secondary
+    class H,J datastore
+    class L,M secondary
+    class Z failed
+
+    %% ===== SUBGRAPH STYLING =====
+    style triggers fill:#EEF2FF,stroke:#4F46E5,stroke-width:2px
+    style validation fill:#ECFDF5,stroke:#10B981,stroke-width:2px
+    style execution fill:#E0E7FF,stroke:#4F46E5,stroke-width:2px
+    style results fill:#FEF3C7,stroke:#F59E0B,stroke-width:2px
+    style failure fill:#FEE2E2,stroke:#F44336,stroke-width:2px
 ```
 
 ---
