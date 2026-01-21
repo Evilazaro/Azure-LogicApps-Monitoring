@@ -28,7 +28,7 @@ builder.Services.AddSession(options =>
 });
 
 // Register observability components for dependency injection
-builder.Services.AddSingleton(new ActivitySource("eShop.Web.App"));
+builder.Services.AddSingleton(_ => new ActivitySource("eShop.Web.App"));
 
 // Add Razor Components with interactive server-side rendering
 builder.Services.AddRazorComponents()
