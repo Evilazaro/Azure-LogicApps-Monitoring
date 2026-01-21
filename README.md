@@ -49,40 +49,69 @@ A cloud-native reference architecture demonstrating enterprise-grade observabili
 ## 🏗️ Architecture Overview
 
 ```mermaid
+---
+title: High-Level Solution Architecture
+---
 flowchart TB
-    subgraph Presentation["🖥️ Presentation"]
+    %% ===== PRESENTATION LAYER =====
+    subgraph Presentation["🖥️ Presentation Layer"]
         WebApp["eShop.Web.App<br/>Blazor Server"]
     end
 
-    subgraph Application["⚙️ Application"]
+    %% ===== APPLICATION LAYER =====
+    subgraph Application["⚙️ Application Layer"]
         API["eShop.Orders.API<br/>ASP.NET Core"]
         Workflow["OrdersManagement<br/>Logic Apps Standard"]
     end
 
-    subgraph Platform["🎯 Platform"]
+    %% ===== PLATFORM LAYER =====
+    subgraph Platform["🎯 Platform Layer"]
         Aspire["app.AppHost<br/>.NET Aspire"]
     end
 
-    subgraph Data["💾 Data"]
+    %% ===== DATA LAYER =====
+    subgraph Data["💾 Data Layer"]
         SQL[("Azure SQL")]
         SB["Service Bus"]
         Storage["Azure Storage"]
     end
 
-    subgraph Observability["📊 Observability"]
+    %% ===== OBSERVABILITY LAYER =====
+    subgraph Observability["📊 Observability Layer"]
         AppInsights["Application Insights"]
         LogAnalytics["Log Analytics"]
     end
 
-    WebApp -->|"HTTP"| API
-    API -->|"EF Core"| SQL
-    API -->|"AMQP"| SB
-    SB -->|"Trigger"| Workflow
-    Workflow -->|"HTTP"| API
+    %% ===== CONNECTIONS =====
+    WebApp -->|"HTTP requests"| API
+    API -->|"EF Core queries"| SQL
+    API -->|"AMQP publish"| SB
+    SB -->|"Trigger workflow"| Workflow
+    Workflow -->|"HTTP callback"| API
 
     Aspire -.->|"Orchestrates"| WebApp & API
     API & Workflow -->|"Telemetry"| AppInsights
-    AppInsights --> LogAnalytics
+    AppInsights -->|"Logs to"| LogAnalytics
+
+    %% ===== CLASS DEFINITIONS (EXACT HEX COLORS) =====
+    classDef primary fill:#4F46E5,stroke:#3730A3,color:#FFFFFF
+    classDef secondary fill:#10B981,stroke:#059669,color:#FFFFFF
+    classDef datastore fill:#F59E0B,stroke:#D97706,color:#000000
+    classDef trigger fill:#818CF8,stroke:#4F46E5,color:#FFFFFF
+    classDef external fill:#6B7280,stroke:#4B5563,color:#FFFFFF,stroke-dasharray:5 5
+
+    class WebApp primary
+    class API,Workflow primary
+    class Aspire trigger
+    class SQL,SB,Storage datastore
+    class AppInsights,LogAnalytics secondary
+
+    %% ===== SUBGRAPH STYLES =====
+    style Presentation fill:#E0E7FF,stroke:#4F46E5,stroke-width:2px
+    style Application fill:#E0E7FF,stroke:#4F46E5,stroke-width:2px
+    style Platform fill:#EEF2FF,stroke:#4F46E5,stroke-width:2px
+    style Data fill:#FEF3C7,stroke:#F59E0B,stroke-width:2px
+    style Observability fill:#ECFDF5,stroke:#10B981,stroke-width:2px
 ```
 
 **Key Architectural Highlights:**
