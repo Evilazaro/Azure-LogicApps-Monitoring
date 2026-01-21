@@ -1,6 +1,26 @@
+---
+title: Architecture Decision Records
+description: Index and templates for Architecture Decision Records (ADRs) documenting significant architectural choices
+author: Platform Team
+date: 2026-01-21
+version: 1.0.0
+tags: [architecture, adr, decisions, documentation]
+---
+
 # 📝 Architecture Decision Records (ADRs)
 
-← [Deployment Architecture](../07-deployment-architecture.md) | [Index](../README.md)
+> [!NOTE]
+> **Target Audience:** All Technical Stakeholders  
+> **Reading Time:** ~5 minutes
+
+<details>
+<summary>📖 <strong>Navigation</strong></summary>
+
+| Previous                                                      |               Index                |                                         Next |
+| :------------------------------------------------------------ | :--------------------------------: | -------------------------------------------: |
+| [← Deployment Architecture](../07-deployment-architecture.md) | [Architecture Index](../README.md) | [ADR-001 →](ADR-001-aspire-orchestration.md) |
+
+</details>
 
 ---
 
@@ -17,7 +37,10 @@
 
 ## 📊 Overview
 
-This directory contains Architecture Decision Records (ADRs) documenting significant architectural choices made for the Azure Logic Apps Monitoring Solution. ADRs capture the **context**, **decision**, and **consequences** of each choice to preserve institutional knowledge.
+> [!TIP]
+> ADRs capture the **context**, **decision**, and **consequences** of each architectural choice to preserve institutional knowledge and help future team members understand why decisions were made.
+
+This directory contains Architecture Decision Records (ADRs) documenting significant architectural choices made for the Azure Logic Apps Monitoring Solution.
 
 <div align="right"><a href="#-table-of-contents">⬆️ Back to top</a></div>
 
@@ -47,6 +70,9 @@ This directory contains Architecture Decision Records (ADRs) documenting signifi
 <div align="right"><a href="#-table-of-contents">⬆️ Back to top</a></div>
 
 ## 📝 ADR Template
+
+<details>
+<summary>📄 <strong>Click to expand ADR template</strong></summary>
 
 When creating new ADRs, use the following template:
 
@@ -94,6 +120,8 @@ When creating new ADRs, use the following template:
 - [ADR-XXX](ADR-XXX-title.md) - Related decision
 ```
 
+</details>
+
 ---
 
 <div align="right"><a href="#-table-of-contents">⬆️ Back to top</a></div>
@@ -121,6 +149,16 @@ When creating new ADRs, use the following template:
 - [Technology Architecture](../04-technology-architecture.md) - Platform choices
 - [Application Architecture](../03-application-architecture.md) - Service design
 - [Observability Architecture](../05-observability-architecture.md) - Monitoring design
+
+---
+
+<div align="center">
+
+| Previous                                                      |               Index                |                                         Next |
+| :------------------------------------------------------------ | :--------------------------------: | -------------------------------------------: |
+| [← Deployment Architecture](../07-deployment-architecture.md) | [Architecture Index](../README.md) | [ADR-001 →](ADR-001-aspire-orchestration.md) |
+
+</div>
 
 ---
 

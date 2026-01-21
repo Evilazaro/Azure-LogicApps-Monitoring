@@ -1,6 +1,26 @@
+---
+title: "ADR-001: .NET Aspire for Local Development Orchestration"
+description: Decision record for choosing .NET Aspire as the local development orchestration platform
+author: Platform Team
+date: 2024-01-15
+version: 1.0.0
+tags: [adr, aspire, orchestration, local-development]
+---
+
 # 📝 ADR-001: .NET Aspire for Local Development Orchestration
 
-← [ADR Index](README.md) | [ADR-002 →](ADR-002-service-bus-messaging.md)
+> [!NOTE]
+> **Target Audience:** Developers, Platform Engineers  
+> **Reading Time:** ~10 minutes
+
+<details>
+<summary>📖 <strong>Navigation</strong></summary>
+
+| Previous                 |         Index          |                                          Next |
+| :----------------------- | :--------------------: | --------------------------------------------: |
+| [← ADR Index](README.md) | [ADR Index](README.md) | [ADR-002 →](ADR-002-service-bus-messaging.md) |
+
+</details>
 
 ---
 
@@ -37,6 +57,9 @@ The Azure Logic Apps Monitoring Solution is a distributed system with multiple c
 - **Application Insights** — Telemetry collection
 
 **Challenges:**
+
+> [!WARNING]
+> Without proper orchestration, developers face significant friction in local development.
 
 1. Developers need to run 3+ services locally with proper configuration
 2. Connection strings and dependencies vary between local/Azure environments
@@ -201,6 +224,16 @@ The decision is validated by:
 - [.NET Aspire Documentation](https://learn.microsoft.com/dotnet/aspire/)
 - [app.AppHost/AppHost.cs](../../../app.AppHost/AppHost.cs)
 - [app.ServiceDefaults/Extensions.cs](../../../app.ServiceDefaults/Extensions.cs)
+
+---
+
+<div align="center">
+
+| Previous                 |         Index          |                                          Next |
+| :----------------------- | :--------------------: | --------------------------------------------: |
+| [← ADR Index](README.md) | [ADR Index](README.md) | [ADR-002 →](ADR-002-service-bus-messaging.md) |
+
+</div>
 
 ---
 

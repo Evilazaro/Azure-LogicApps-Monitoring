@@ -1,6 +1,26 @@
+---
+title: Deployment Architecture
+description: CI/CD pipelines, infrastructure as code, and deployment processes for the Azure Logic Apps Monitoring Solution
+author: Platform Team
+date: 2026-01-21
+version: 1.0.0
+tags: [architecture, deployment, cicd, github-actions, bicep, togaf, bdat]
+---
+
 # 🚀 Deployment Architecture
 
-← [Security Architecture](06-security-architecture.md) | [Index](README.md) | [ADRs →](adr/README.md)
+> [!NOTE]
+> **Target Audience:** DevOps Engineers, Platform Engineers, Release Managers  
+> **Reading Time:** ~20 minutes
+
+<details>
+<summary>📖 <strong>Navigation</strong></summary>
+
+| Previous                                               |       Index        |                    Next |
+| :----------------------------------------------------- | :----------------: | ----------------------: |
+| [← Security Architecture](06-security-architecture.md) | [Index](README.md) | [ADRs →](adr/README.md) |
+
+</details>
 
 ---
 
@@ -273,6 +293,9 @@ infra/
 
 ### 🔄 OIDC Federation
 
+> [!TIP]
+> OIDC federation eliminates the need for storing Azure credentials in GitHub secrets, providing a more secure deployment model.
+
 The deployment uses OpenID Connect (OIDC) for secure, secretless authentication:
 
 ```mermaid
@@ -404,6 +427,16 @@ az deployment group create --template-file infra/main.bicep \
 - [CI Workflow](../devops/ci-dotnet.md) - Build and test pipeline
 - [CD Workflow](../devops/azure-dev.md) - Deployment pipeline
 - [Azure Developer CLI](https://learn.microsoft.com/azure/developer/azure-developer-cli/)
+
+---
+
+<div align="center">
+
+| Previous                                               |       Index        |                    Next |
+| :----------------------------------------------------- | :----------------: | ----------------------: |
+| [← Security Architecture](06-security-architecture.md) | [Index](README.md) | [ADRs →](adr/README.md) |
+
+</div>
 
 ---
 
