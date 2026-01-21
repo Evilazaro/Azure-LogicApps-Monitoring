@@ -77,18 +77,24 @@ The Azure Logic Apps Monitoring Solution implements a **service-oriented data ar
 ## 🗺️ 3. Data Landscape Map
 
 ```mermaid
+---
+title: Data Landscape Map
+---
 flowchart LR
+    %% ===== BUSINESS DATA DOMAINS =====
     subgraph BusinessDomains["📊 Business Data Domains"]
         Orders["📦 Orders Domain<br/><i>Order entities, products</i>"]
         Events["📨 Order Events Domain<br/><i>OrderPlaced messages</i>"]
     end
 
+    %% ===== DATA STORES =====
     subgraph DataStores["🗄️ Data Stores"]
         OrderDb[("OrderDb<br/>Azure SQL")]
         EventStore["ordersplaced<br/>Service Bus Topic"]
         WorkflowState["Workflow State<br/>Azure Storage"]
     end
 
+    %% ===== DATA CONSUMERS =====
     subgraph Consumers["👥 Data Consumers"]
         API["Orders API"]
         WebApp["Web App"]
@@ -96,26 +102,34 @@ flowchart LR
         Analytics["App Insights"]
     end
 
-    Orders --> OrderDb
-    Orders --> EventStore
-    Events --> EventStore
+    %% ===== CONNECTIONS =====
+    Orders -->|"persists"| OrderDb
+    Orders -->|"publishes"| EventStore
+    Events -->|"stores"| EventStore
 
-    OrderDb --> API
-    API --> WebApp
-    EventStore --> LogicApp
-    LogicApp --> WorkflowState
+    OrderDb -->|"reads"| API
+    API -->|"serves"| WebApp
+    EventStore -->|"triggers"| LogicApp
+    LogicApp -->|"writes"| WorkflowState
 
-    API -.-> Analytics
-    WebApp -.-> Analytics
-    LogicApp -.-> Analytics
+    API -.->|"emits"| Analytics
+    WebApp -.->|"emits"| Analytics
+    LogicApp -.->|"emits"| Analytics
 
-    classDef domain fill:#e3f2fd,stroke:#1565c0,stroke-width:2px
-    classDef store fill:#fff3e0,stroke:#ef6c00,stroke-width:2px
-    classDef consumer fill:#e8f5e9,stroke:#2e7d32,stroke-width:2px
+    %% ===== CLASS DEFINITIONS =====
+    classDef primary fill:#4F46E5,stroke:#3730A3,color:#FFFFFF,stroke-width:2px
+    classDef datastore fill:#F59E0B,stroke:#D97706,color:#000000,stroke-width:2px
+    classDef secondary fill:#10B981,stroke:#059669,color:#FFFFFF,stroke-width:2px
 
-    class Orders,Events domain
-    class OrderDb,EventStore,WorkflowState store
-    class API,WebApp,LogicApp,Analytics consumer
+    %% ===== CLASS ASSIGNMENTS =====
+    class Orders,Events primary
+    class OrderDb,EventStore,WorkflowState datastore
+    class API,WebApp,LogicApp,Analytics secondary
+
+    %% ===== SUBGRAPH STYLES =====
+    style BusinessDomains fill:#EEF2FF,stroke:#4F46E5,stroke-width:2px
+    style DataStores fill:#FEF3C7,stroke:#F59E0B,stroke-width:2px
+    style Consumers fill:#ECFDF5,stroke:#10B981,stroke-width:2px
 ```
 
 ---
@@ -214,7 +228,11 @@ sequenceDiagram
 ## 📊 7. Monitoring Data Flow Architecture
 
 ```mermaid
+---
+title: Monitoring Data Flow Architecture
+---
 flowchart LR
+    %% ===== TELEMETRY SOURCES =====
     subgraph Sources["📡 Layer 1: Telemetry Sources"]
         direction TB
         WebApp["🌐 Web App<br/>Blazor Server"]
@@ -224,18 +242,21 @@ flowchart LR
         SB["📨 Service Bus"]
     end
 
+    %% ===== INSTRUMENTATION =====
     subgraph Instrumentation["🔧 Layer 2: Instrumentation"]
         direction TB
         OTEL["OpenTelemetry SDK<br/><i>.NET Auto-instrumentation</i>"]
         AzDiag["Azure Diagnostics<br/><i>Platform telemetry</i>"]
     end
 
+    %% ===== COLLECTION =====
     subgraph Collection["📥 Layer 3: Collection"]
         direction TB
         AI["Application Insights<br/><i>APM & Tracing</i>"]
         LAW["Log Analytics<br/><i>Centralized Logs</i>"]
     end
 
+    %% ===== VISUALIZATION =====
     subgraph Visualization["📈 Layer 4: Visualization"]
         direction TB
         AppMap["Application Map"]
@@ -244,25 +265,34 @@ flowchart LR
         Alerts["Alert Rules"]
     end
 
+    %% ===== CONNECTIONS =====
     WebApp & API -->|"OTLP/HTTP"| OTEL
     LA & SQL & SB -->|"Built-in"| AzDiag
 
     OTEL -->|"Export"| AI
     AzDiag -->|"Diagnostic Settings"| LAW
-    AI --> LAW
+    AI -->|"Query"| LAW
 
-    AI --> AppMap & TxSearch
-    LAW --> Dashboards & Alerts
+    AI -->|"visualize"| AppMap & TxSearch
+    LAW -->|"query"| Dashboards & Alerts
 
-    classDef source fill:#fff3e0,stroke:#ef6c00,stroke-width:2px
-    classDef instrument fill:#e3f2fd,stroke:#1565c0,stroke-width:2px
-    classDef collect fill:#e8f5e9,stroke:#2e7d32,stroke-width:2px
-    classDef visual fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px
+    %% ===== CLASS DEFINITIONS =====
+    classDef trigger fill:#818CF8,stroke:#4F46E5,color:#FFFFFF,stroke-width:2px
+    classDef primary fill:#4F46E5,stroke:#3730A3,color:#FFFFFF,stroke-width:2px
+    classDef secondary fill:#10B981,stroke:#059669,color:#FFFFFF,stroke-width:2px
+    classDef datastore fill:#F59E0B,stroke:#D97706,color:#000000,stroke-width:2px
 
-    class WebApp,API,LA,SQL,SB source
-    class OTEL,AzDiag instrument
-    class AI,LAW collect
-    class AppMap,TxSearch,Dashboards,Alerts visual
+    %% ===== CLASS ASSIGNMENTS =====
+    class WebApp,API,LA,SQL,SB trigger
+    class OTEL,AzDiag primary
+    class AI,LAW datastore
+    class AppMap,TxSearch,Dashboards,Alerts secondary
+
+    %% ===== SUBGRAPH STYLES =====
+    style Sources fill:#EEF2FF,stroke:#4F46E5,stroke-width:2px
+    style Instrumentation fill:#E0E7FF,stroke:#4F46E5,stroke-width:2px
+    style Collection fill:#FEF3C7,stroke:#F59E0B,stroke-width:2px
+    style Visualization fill:#ECFDF5,stroke:#10B981,stroke-width:2px
 ```
 
 ### Telemetry Layer Requirements
@@ -291,7 +321,11 @@ flowchart LR
 ### 🗺️ Telemetry Mapping Diagram
 
 ```mermaid
+---
+title: Telemetry Mapping Diagram
+---
 flowchart TB
+    %% ===== TELEMETRY SOURCES =====
     subgraph Sources["📡 Telemetry Sources"]
         API["⚙️ Orders API"]
         Web["🌐 Web App"]
@@ -300,6 +334,7 @@ flowchart TB
         SQL["🗄️ SQL Database"]
     end
 
+    %% ===== THREE PILLARS =====
     subgraph Pillars["📊 Three Pillars"]
         subgraph Traces["📍 Traces"]
             T1["HTTP Request spans"]
@@ -320,28 +355,40 @@ flowchart TB
         end
     end
 
+    %% ===== STORAGE =====
     subgraph Storage["📥 Storage"]
         AI["Application Insights"]
         LAW["Log Analytics"]
     end
 
-    API --> T1 & T2 & M1 & M2 & L1
-    Web --> T1 & M1 & L1
-    LA --> T3 & M3 & L2
-    SB --> M3 & L2
-    SQL --> M3 & L2
+    %% ===== CONNECTIONS =====
+    API -->|"emits"| T1 & T2 & M1 & M2 & L1
+    Web -->|"emits"| T1 & M1 & L1
+    LA -->|"emits"| T3 & M3 & L2
+    SB -->|"emits"| M3 & L2
+    SQL -->|"emits"| M3 & L2
 
-    Traces --> AI
-    Metrics --> AI
-    Logs --> AI & LAW
+    Traces -->|"store"| AI
+    Metrics -->|"store"| AI
+    Logs -->|"store"| AI & LAW
 
-    classDef trace fill:#e3f2fd,stroke:#1565c0
-    classDef metric fill:#e8f5e9,stroke:#2e7d32
-    classDef log fill:#fff3e0,stroke:#ef6c00
+    %% ===== CLASS DEFINITIONS =====
+    classDef primary fill:#4F46E5,stroke:#3730A3,color:#FFFFFF,stroke-width:2px
+    classDef secondary fill:#10B981,stroke:#059669,color:#FFFFFF,stroke-width:2px
+    classDef datastore fill:#F59E0B,stroke:#D97706,color:#000000,stroke-width:2px
 
-    class T1,T2,T3 trace
-    class M1,M2,M3 metric
-    class L1,L2,L3 log
+    %% ===== CLASS ASSIGNMENTS =====
+    class T1,T2,T3 primary
+    class M1,M2,M3 secondary
+    class L1,L2,L3 datastore
+
+    %% ===== SUBGRAPH STYLES =====
+    style Sources fill:#EEF2FF,stroke:#4F46E5,stroke-width:2px
+    style Pillars fill:#E0E7FF,stroke:#4F46E5,stroke-width:2px
+    style Traces fill:#EEF2FF,stroke:#4F46E5,stroke-width:2px
+    style Metrics fill:#ECFDF5,stroke:#10B981,stroke-width:2px
+    style Logs fill:#FEF3C7,stroke:#F59E0B,stroke-width:2px
+    style Storage fill:#F3F4F6,stroke:#6B7280,stroke-width:2px
 ```
 
 ### 📊 Metrics Inventory by Source
@@ -454,7 +501,11 @@ if (activity != null)
 ### 🔗 Correlation Flow
 
 ```mermaid
+---
+title: W3C Trace Context Correlation Flow
+---
 flowchart LR
+    %% ===== TRACE CONTEXT FLOW =====
     subgraph TraceContext["🔗 W3C Trace Context Flow"]
         direction LR
         HTTP["HTTP Request<br/><code>traceparent</code> header"]
@@ -463,10 +514,24 @@ flowchart LR
         AI["App Insights<br/><code>Operation ID</code>"]
     end
 
+    %% ===== CONNECTIONS =====
     HTTP -->|"Propagate"| SB
     SB -->|"Extract"| LA
     HTTP -->|"Auto-capture"| AI
     LA -->|"Correlate"| AI
+
+    %% ===== CLASS DEFINITIONS =====
+    classDef primary fill:#4F46E5,stroke:#3730A3,color:#FFFFFF,stroke-width:2px
+    classDef secondary fill:#10B981,stroke:#059669,color:#FFFFFF,stroke-width:2px
+    classDef datastore fill:#F59E0B,stroke:#D97706,color:#000000,stroke-width:2px
+
+    %% ===== CLASS ASSIGNMENTS =====
+    class HTTP,SB primary
+    class LA secondary
+    class AI datastore
+
+    %% ===== SUBGRAPH STYLES =====
+    style TraceContext fill:#EEF2FF,stroke:#4F46E5,stroke-width:2px
 ```
 
 ---
