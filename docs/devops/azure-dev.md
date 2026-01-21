@@ -55,93 +55,107 @@ This workflow implements a comprehensive deployment pipeline with integrated CI 
 <summary>🔍 Click to expand deployment pipeline diagram</summary>
 
 ```mermaid
+---
+title: Azure Deployment Pipeline Architecture
+---
 flowchart TD
+    %% ===== TRIGGER EVENTS =====
     subgraph Triggers["🎯 Triggers"]
-        T1([workflow_dispatch])
-        T2([push to docs987678])
+        T1(["workflow_dispatch"])
+        T2(["push to branch"])
     end
 
+    %% ===== CI STAGE =====
     subgraph CI["🔄 CI Stage"]
-        CI_JOB[[ci-dotnet-reusable.yml]]
-        CI_BUILD[🔨 Build]
-        CI_TEST[🧪 Test]
-        CI_ANALYZE[🔍 Analyze]
-        CI_CODEQL[🛡️ CodeQL]
+        CI_JOB[["ci-dotnet-reusable.yml"]]
+        CI_BUILD["🔨 Build"]
+        CI_TEST["🧪 Test"]
+        CI_ANALYZE["🔍 Analyze"]
+        CI_CODEQL["🛡️ CodeQL"]
     end
 
+    %% ===== DEPLOYMENT STAGE =====
     subgraph Deploy["🚀 Deploy Dev Stage"]
         direction TB
-        D1[📥 Checkout]
-        D2[📦 Install Prerequisites]
-        D3[🔧 Install azd CLI]
-        D4[🔧 Setup .NET SDK]
-        D5[🔐 Azure Auth - OIDC]
-        D6[🏗️ Provision Infrastructure]
-        D7[🔐 Refresh Credentials Pre-SQL]
-        D8[🔑 Create SQL User]
-        D9[🔐 Refresh Credentials Post-SQL]
-        D10[🚀 Deploy Application]
-        D11[📊 Generate Summary]
+        D1["📥 Checkout"]
+        D2["📦 Install Prerequisites"]
+        D3["🔧 Install azd CLI"]
+        D4["🔧 Setup .NET SDK"]
+        D5["🔐 Azure Auth - OIDC"]
+        D6["🏗️ Provision Infrastructure"]
+        D7["🔐 Refresh Credentials Pre-SQL"]
+        D8["🔑 Create SQL User"]
+        D9["🔐 Refresh Credentials Post-SQL"]
+        D10["🚀 Deploy Application"]
+        D11[/"📊 Generate Summary"/]
     end
 
+    %% ===== OUTPUT STAGE =====
     subgraph Summary["📊 Summary Stage"]
-        SUM[📊 Workflow Summary]
+        SUM[/"📊 Workflow Summary"/]
     end
 
+    %% ===== FAILURE HANDLING =====
     subgraph Failure["❌ Failure Handling"]
-        FAIL[❌ Handle Failure]
+        FAIL["❌ Handle Failure"]
     end
 
-    %% Trigger flows
-    T1 --> CI_JOB
-    T2 --> CI_JOB
+    %% ===== TRIGGER FLOWS =====
+    T1 -->|triggers| CI_JOB
+    T2 -->|triggers| CI_JOB
 
-    %% CI internal flow
-    CI_JOB --> CI_BUILD
-    CI_BUILD --> CI_TEST
-    CI_BUILD --> CI_ANALYZE
-    CI_BUILD --> CI_CODEQL
+    %% ===== CI INTERNAL FLOW =====
+    CI_JOB ==>|executes| CI_BUILD
+    CI_BUILD -->|compiles| CI_TEST
+    CI_BUILD -->|validates| CI_ANALYZE
+    CI_BUILD -->|scans| CI_CODEQL
 
-    %% CI to Deploy
+    %% ===== CI TO DEPLOY =====
     CI_JOB -->|success or skipped| D1
 
-    %% Deploy internal flow
-    D1 --> D2
-    D2 --> D3
-    D3 --> D4
-    D4 --> D5
-    D5 --> D6
-    D6 --> D7
-    D7 --> D8
-    D8 --> D9
-    D9 --> D10
-    D10 --> D11
+    %% ===== DEPLOY INTERNAL FLOW =====
+    D1 -->|next| D2
+    D2 -->|next| D3
+    D3 -->|next| D4
+    D4 -->|next| D5
+    D5 -->|authenticates| D6
+    D6 -->|provisions| D7
+    D7 -->|refreshes| D8
+    D8 -->|configures| D9
+    D9 -->|refreshes| D10
+    D10 -->|generates| D11
 
-    %% Deploy to Summary
-    D11 --> SUM
+    %% ===== DEPLOY TO SUMMARY =====
+    D11 -->|completes| SUM
 
-    %% Failure handling
-    CI_JOB -.->|failure| FAIL
-    D10 -.->|failure| FAIL
+    %% ===== FAILURE HANDLING =====
+    CI_JOB -.->|on failure| FAIL
+    D10 -.->|on failure| FAIL
 
-    %% Styling
-    classDef trigger fill:#2196F3,stroke:#1565C0,color:#fff
-    classDef reusable fill:#9C27B0,stroke:#6A1B9A,color:#fff
-    classDef build fill:#FF9800,stroke:#EF6C00,color:#fff
-    classDef test fill:#9C27B0,stroke:#6A1B9A,color:#fff
-    classDef deploy fill:#4CAF50,stroke:#2E7D32,color:#fff
-    classDef security fill:#607D8B,stroke:#455A64,color:#fff
-    classDef summary fill:#00BCD4,stroke:#0097A7,color:#fff
-    classDef failure fill:#F44336,stroke:#C62828,color:#fff
+    %% ===== NODE STYLING =====
+    classDef trigger fill:#818CF8,stroke:#4F46E5,color:#FFFFFF
+    classDef external fill:#6B7280,stroke:#4B5563,color:#FFFFFF,stroke-dasharray:5 5
+    classDef primary fill:#4F46E5,stroke:#3730A3,color:#FFFFFF
+    classDef secondary fill:#10B981,stroke:#059669,color:#FFFFFF
+    classDef datastore fill:#F59E0B,stroke:#D97706,color:#000000
+    classDef failed fill:#F44336,stroke:#C62828,color:#FFFFFF
 
+    %% ===== APPLY NODE CLASSES =====
     class T1,T2 trigger
-    class CI_JOB reusable
-    class CI_BUILD build
-    class CI_TEST,CI_ANALYZE test
-    class CI_CODEQL security
-    class D1,D2,D3,D4,D5,D6,D7,D8,D9,D10,D11 deploy
-    class SUM summary
-    class FAIL failure
+    class CI_JOB external
+    class CI_BUILD,CI_ANALYZE secondary
+    class CI_TEST secondary
+    class CI_CODEQL secondary
+    class D1,D2,D3,D4,D5,D6,D7,D8,D9,D10 primary
+    class D11,SUM datastore
+    class FAIL failed
+
+    %% ===== SUBGRAPH STYLING =====
+    style Triggers fill:#EEF2FF,stroke:#4F46E5,stroke-width:2px
+    style CI fill:#ECFDF5,stroke:#10B981,stroke-width:2px
+    style Deploy fill:#E0E7FF,stroke:#4F46E5,stroke-width:2px
+    style Summary fill:#FEF3C7,stroke:#F59E0B,stroke-width:2px
+    style Failure fill:#FEE2E2,stroke:#F44336,stroke-width:2px
 ```
 
 </details>

@@ -68,119 +68,140 @@ The DevOps architecture follows a modern CI/CD approach with:
 <summary>🔍 Click to expand full pipeline diagram</summary>
 
 ```mermaid
+---
+title: Master CI/CD Pipeline Architecture
+---
 flowchart TD
+    %% ===== TRIGGER EVENTS =====
     subgraph Triggers["🎯 Trigger Events"]
-        T_PUSH([Push to Branch])
-        T_PR([Pull Request])
-        T_MANUAL([Manual Dispatch])
-        T_SCHEDULE([Weekly Schedule])
+        T_PUSH(["Push to Branch"])
+        T_PR(["Pull Request"])
+        T_MANUAL(["Manual Dispatch"])
+        T_SCHEDULE(["Weekly Schedule"])
     end
 
+    %% ===== DEPENDABOT AUTOMATION =====
     subgraph Dependabot["🤖 Dependabot"]
-        DEP_NUGET[NuGet Updates]
-        DEP_ACTIONS[Actions Updates]
+        DEP_NUGET["NuGet Updates"]
+        DEP_ACTIONS["Actions Updates"]
     end
 
+    %% ===== CI ENTRY POINT =====
     subgraph CIWorkflow["📋 CI Workflow (ci-dotnet.yml)"]
-        CI_ENTRY[CI Entry Point]
+        CI_ENTRY[["CI Entry Point"]]
     end
 
+    %% ===== REUSABLE CI WORKFLOW =====
     subgraph ReusableCI["🔄 Reusable CI (ci-dotnet-reusable.yml)"]
         direction TB
 
         subgraph BuildMatrix["🔨 Build (Matrix)"]
-            B_U[Ubuntu]
-            B_W[Windows]
-            B_M[macOS]
+            B_U["Ubuntu"]
+            B_W["Windows"]
+            B_M["macOS"]
         end
 
         subgraph TestMatrix["🧪 Test (Matrix)"]
-            T_U[Ubuntu]
-            T_W[Windows]
-            T_M[macOS]
+            T_U["Ubuntu"]
+            T_W["Windows"]
+            T_M["macOS"]
         end
 
-        ANALYZE[🔍 Analyze<br/>Code Format]
-        CODEQL[🛡️ CodeQL<br/>Security Scan]
-        CI_SUMMARY[📊 CI Summary]
+        ANALYZE["🔍 Analyze<br/>Code Format"]
+        CODEQL["🛡️ CodeQL<br/>Security Scan"]
+        CI_SUMMARY[/"📊 CI Summary"/]
     end
 
+    %% ===== CD WORKFLOW =====
     subgraph CDWorkflow["🚀 CD Workflow (azure-dev.yml)"]
         direction TB
-        CD_CI[🔄 CI Stage]
-        CD_DEPLOY[🚀 Deploy Dev]
-        CD_SUMMARY[📊 CD Summary]
+        CD_CI[["🔄 CI Stage"]]
+        CD_DEPLOY["🚀 Deploy Dev"]
+        CD_SUMMARY[/"📊 CD Summary"/]
 
         subgraph DeployPhases["Deployment Phases"]
-            DP1[Setup & Auth]
-            DP2[Provision Infra]
-            DP3[SQL Config]
-            DP4[Deploy App]
+            DP1["Setup & Auth"]
+            DP2["Provision Infra"]
+            DP3["SQL Config"]
+            DP4["Deploy App"]
         end
     end
 
+    %% ===== AZURE RESOURCES =====
     subgraph Azure["☁️ Azure"]
-        AZ_RG[(Resource Group)]
-        AZ_ACA[Container Apps]
-        AZ_SQL[(Azure SQL)]
-        AZ_SB[Service Bus]
+        AZ_RG[("Resource Group")]
+        AZ_ACA["Container Apps"]
+        AZ_SQL[("Azure SQL")]
+        AZ_SB["Service Bus"]
     end
 
-    %% Trigger Flows
-    T_PUSH --> CI_ENTRY
-    T_PR --> CI_ENTRY
-    T_MANUAL --> CI_ENTRY
-    T_MANUAL --> CD_CI
-    T_PUSH --> CD_CI
+    %% ===== TRIGGER FLOWS =====
+    T_PUSH -->|triggers| CI_ENTRY
+    T_PR -->|triggers| CI_ENTRY
+    T_MANUAL -->|triggers| CI_ENTRY
+    T_MANUAL -->|triggers| CD_CI
+    T_PUSH -->|triggers| CD_CI
 
-    %% Dependabot
-    T_SCHEDULE --> DEP_NUGET
-    T_SCHEDULE --> DEP_ACTIONS
-    DEP_NUGET -.->|PR| T_PR
-    DEP_ACTIONS -.->|PR| T_PR
+    %% ===== DEPENDABOT FLOWS =====
+    T_SCHEDULE -->|runs| DEP_NUGET
+    T_SCHEDULE -->|runs| DEP_ACTIONS
+    DEP_NUGET -.->|creates PR| T_PR
+    DEP_ACTIONS -.->|creates PR| T_PR
 
-    %% CI Flow
-    CI_ENTRY --> BuildMatrix
-    BuildMatrix --> TestMatrix
-    BuildMatrix --> ANALYZE
-    BuildMatrix --> CODEQL
-    TestMatrix --> CI_SUMMARY
-    ANALYZE --> CI_SUMMARY
-    CODEQL --> CI_SUMMARY
+    %% ===== CI FLOW =====
+    CI_ENTRY ==>|calls| BuildMatrix
+    BuildMatrix -->|compiles| TestMatrix
+    BuildMatrix -->|validates| ANALYZE
+    BuildMatrix -->|scans| CODEQL
+    TestMatrix -->|reports| CI_SUMMARY
+    ANALYZE -->|reports| CI_SUMMARY
+    CODEQL -->|reports| CI_SUMMARY
 
-    %% CD Flow
-    CD_CI -->|Calls| BuildMatrix
+    %% ===== CD FLOW =====
+    CD_CI ==>|calls| BuildMatrix
     CD_CI -->|success/skipped| CD_DEPLOY
-    CD_DEPLOY --> DP1
-    DP1 --> DP2
-    DP2 --> DP3
-    DP3 --> DP4
-    DP4 --> CD_SUMMARY
+    CD_DEPLOY -->|executes| DP1
+    DP1 -->|then| DP2
+    DP2 -->|then| DP3
+    DP3 -->|then| DP4
+    DP4 -->|generates| CD_SUMMARY
 
-    %% Azure Deployment
-    DP2 --> AZ_RG
-    DP3 --> AZ_SQL
-    DP4 --> AZ_ACA
-    AZ_ACA --> AZ_SB
+    %% ===== AZURE DEPLOYMENT =====
+    DP2 ==>|provisions| AZ_RG
+    DP3 ==>|configures| AZ_SQL
+    DP4 ==>|deploys to| AZ_ACA
+    AZ_ACA -->|connects| AZ_SB
 
-    %% Styling
-    classDef trigger fill:#2196F3,stroke:#1565C0,color:#fff
-    classDef dependabot fill:#0366d6,stroke:#0550ae,color:#fff
-    classDef ci fill:#FF9800,stroke:#EF6C00,color:#fff
-    classDef test fill:#9C27B0,stroke:#6A1B9A,color:#fff
-    classDef security fill:#607D8B,stroke:#455A64,color:#fff
-    classDef deploy fill:#4CAF50,stroke:#2E7D32,color:#fff
-    classDef azure fill:#0078D4,stroke:#005A9E,color:#fff
-    classDef summary fill:#00BCD4,stroke:#0097A7,color:#fff
+    %% ===== NODE STYLING =====
+    classDef trigger fill:#818CF8,stroke:#4F46E5,color:#FFFFFF
+    classDef external fill:#6B7280,stroke:#4B5563,color:#FFFFFF,stroke-dasharray:5 5
+    classDef primary fill:#4F46E5,stroke:#3730A3,color:#FFFFFF
+    classDef secondary fill:#10B981,stroke:#059669,color:#FFFFFF
+    classDef datastore fill:#F59E0B,stroke:#D97706,color:#000000
+    classDef failed fill:#F44336,stroke:#C62828,color:#FFFFFF
+    classDef matrix fill:#D1FAE5,stroke:#10B981,color:#000000
 
+    %% ===== APPLY NODE CLASSES =====
     class T_PUSH,T_PR,T_MANUAL,T_SCHEDULE trigger
-    class DEP_NUGET,DEP_ACTIONS dependabot
-    class CI_ENTRY,B_U,B_W,B_M ci
-    class T_U,T_W,T_M,ANALYZE test
-    class CODEQL security
-    class CD_CI,CD_DEPLOY,DP1,DP2,DP3,DP4 deploy
-    class AZ_RG,AZ_ACA,AZ_SQL,AZ_SB azure
-    class CI_SUMMARY,CD_SUMMARY summary
+    class DEP_NUGET,DEP_ACTIONS external
+    class CI_ENTRY,CD_CI primary
+    class B_U,B_W,B_M,T_U,T_W,T_M matrix
+    class ANALYZE,CODEQL secondary
+    class CD_DEPLOY,DP1,DP2,DP3,DP4 primary
+    class AZ_RG,AZ_SQL datastore
+    class AZ_ACA,AZ_SB secondary
+    class CI_SUMMARY,CD_SUMMARY datastore
+
+    %% ===== SUBGRAPH STYLING =====
+    style Triggers fill:#EEF2FF,stroke:#4F46E5,stroke-width:2px
+    style Dependabot fill:#F3F4F6,stroke:#6B7280,stroke-width:2px
+    style CIWorkflow fill:#E0E7FF,stroke:#4F46E5,stroke-width:2px
+    style ReusableCI fill:#ECFDF5,stroke:#10B981,stroke-width:2px
+    style BuildMatrix fill:#D1FAE5,stroke:#059669,stroke-width:1px
+    style TestMatrix fill:#D1FAE5,stroke:#059669,stroke-width:1px
+    style CDWorkflow fill:#E0E7FF,stroke:#4F46E5,stroke-width:2px
+    style DeployPhases fill:#D1FAE5,stroke:#059669,stroke-width:1px
+    style Azure fill:#FEF3C7,stroke:#F59E0B,stroke-width:2px
 ```
 
 </details>
@@ -252,29 +273,36 @@ flowchart TD
 <summary>🔍 View CI Pipeline Sequence Diagram</summary>
 
 ```mermaid
+---
+title: CI Pipeline Sequence
+---
 sequenceDiagram
-    participant Dev as Developer
-    participant GH as GitHub
-    participant CI as CI Workflow
-    participant Matrix as Build/Test Matrix
+    autonumber
+    participant Dev as 👨‍💻 Developer
+    participant GH as 🐙 GitHub
+    participant CI as 🔄 CI Workflow
+    participant Matrix as 📊 Build/Test Matrix
 
+    %% ===== TRIGGER PHASE =====
     Dev->>GH: Push commit / Create PR
     GH->>CI: Trigger workflow
     CI->>Matrix: Start parallel builds
 
-    par Ubuntu
+    %% ===== MATRIX EXECUTION =====
+    par Ubuntu Build
         Matrix->>Matrix: Build → Test → Coverage
-    and Windows
+    and Windows Build
         Matrix->>Matrix: Build → Test → Coverage
-    and macOS
+    and macOS Build
         Matrix->>Matrix: Build → Test → Coverage
     end
 
-    Matrix->>CI: Results
+    %% ===== RESULTS PHASE =====
+    Matrix-->>CI: Aggregate results
     CI->>CI: Analyze (format check)
     CI->>CI: CodeQL (security scan)
-    CI->>GH: Post status checks
-    GH->>Dev: Display results
+    CI-->>GH: Post status checks
+    GH-->>Dev: Display results
 ```
 
 </details>
@@ -285,31 +313,42 @@ sequenceDiagram
 <summary>🔍 View CD Pipeline Sequence Diagram</summary>
 
 ```mermaid
+---
+title: CD Pipeline Sequence
+---
 sequenceDiagram
-    participant Dev as Developer
-    participant GH as GitHub
-    participant CD as CD Workflow
-    participant Azure as Azure
+    autonumber
+    participant Dev as 👨‍💻 Developer
+    participant GH as 🐙 GitHub
+    participant CD as 🚀 CD Workflow
+    participant Azure as ☁️ Azure
 
+    %% ===== TRIGGER PHASE =====
     Dev->>GH: Push to branch / Manual trigger
     GH->>CD: Trigger workflow
 
+    %% ===== CI STAGE =====
     CD->>CD: CI Stage (Build, Test, Analyze)
 
+    %% ===== AUTHENTICATION =====
     CD->>Azure: OIDC Authentication
-    Azure-->>CD: Token
+    Azure-->>CD: Access Token
 
+    %% ===== PROVISIONING =====
     CD->>Azure: azd provision
     Azure-->>CD: Resources created
 
+    %% ===== SQL CONFIGURATION =====
     CD->>Azure: Configure SQL User
     Azure-->>CD: User created
 
+    %% ===== DEPLOYMENT =====
     CD->>Azure: azd deploy
     Azure-->>CD: App deployed
 
-    CD->>GH: Generate summary
-    GH->>Dev: Display deployment status
+    %% ===== SUMMARY =====
+    CD-->>GH: Generate summary
+    GH-->>Dev: Display deployment status
 ```
 
 </details>
