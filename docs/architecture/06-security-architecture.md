@@ -1,6 +1,26 @@
+---
+title: Security Architecture
+description: Identity, authentication, secrets management, network security, and compliance for the Azure Logic Apps Monitoring Solution
+author: Platform Team
+date: 2026-01-21
+version: 1.0.0
+tags: [architecture, security, identity, zero-trust, togaf, bdat]
+---
+
 # 🔐 Security Architecture
 
-← [Observability Architecture](05-observability-architecture.md) | [Index](README.md) | [Deployment Architecture →](07-deployment-architecture.md)
+> [!NOTE]
+> **Target Audience:** Security Engineers, Platform Engineers, Compliance Officers  
+> **Reading Time:** ~20 minutes
+
+<details>
+<summary>📖 <strong>Navigation</strong></summary>
+
+| Previous                                                         |       Index        |                                                       Next |
+| :--------------------------------------------------------------- | :----------------: | ---------------------------------------------------------: |
+| [← Observability Architecture](05-observability-architecture.md) | [Index](README.md) | [Deployment Architecture →](07-deployment-architecture.md) |
+
+</details>
 
 ---
 
@@ -31,6 +51,9 @@
 | S-5 | **Encryption Everywhere** | Data protected at rest and in transit | TLS 1.2+, Azure encryption              |
 
 ### ⚠️ Threat Model Summary
+
+> [!CAUTION]
+> The following threats have been identified and mitigated. Regular threat modeling reviews should be conducted as the architecture evolves.
 
 | Threat Category         | Risk Level | Mitigation                                 |
 | ----------------------- | ---------- | ------------------------------------------ |
@@ -386,6 +409,16 @@ AzureActivity
 - [Technology Architecture](04-technology-architecture.md) - Identity platform details
 - [Deployment Architecture](07-deployment-architecture.md) - OIDC federation
 - [ADR-001](adr/ADR-001-aspire-orchestration.md) - Managed identity configuration
+
+---
+
+<div align="center">
+
+| Previous                                                         |       Index        |                                                       Next |
+| :--------------------------------------------------------------- | :----------------: | ---------------------------------------------------------: |
+| [← Observability Architecture](05-observability-architecture.md) | [Index](README.md) | [Deployment Architecture →](07-deployment-architecture.md) |
+
+</div>
 
 ---
 

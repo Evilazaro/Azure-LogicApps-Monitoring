@@ -16,8 +16,8 @@ tags: [architecture, observability, monitoring, opentelemetry, togaf, bdat]
 <details>
 <summary>📖 <strong>Navigation</strong></summary>
 
-| Previous | Index | Next |
-|:---------|:-----:|-----:|
+| Previous                                                   |       Index        |                                                   Next |
+| :--------------------------------------------------------- | :----------------: | -----------------------------------------------------: |
 | [← Technology Architecture](04-technology-architecture.md) | [Index](README.md) | [Security Architecture →](06-security-architecture.md) |
 
 </details>
@@ -413,8 +413,8 @@ if (activity != null)
 
 <div align="center">
 
-| Previous | Index | Next |
-|:---------|:-----:|-----:|
+| Previous                                                   |       Index        |                                                   Next |
+| :--------------------------------------------------------- | :----------------: | -----------------------------------------------------: |
 | [← Technology Architecture](04-technology-architecture.md) | [Index](README.md) | [Security Architecture →](06-security-architecture.md) |
 
 </div>
