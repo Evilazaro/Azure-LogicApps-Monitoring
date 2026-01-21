@@ -1,155 +1,91 @@
 ---
-title: "ADR-003: OpenTelemetry + Application Insights for Observability"
-description: Architecture decision record documenting the selection of OpenTelemetry with Azure Application Insights as the observability strategy for the Azure Logic Apps Monitoring Solution.
-author: Architecture Team
-date: 2025-01
+title: "ADR-003: OpenTelemetry with Azure Monitor for Observability"
+description: Decision record for choosing OpenTelemetry SDK with Azure Monitor Exporter for telemetry collection
+author: Platform Team
+date: 2024-01-15
 version: 1.0.0
-tags:
-  - adr
-  - opentelemetry
-  - application-insights
-  - observability
+tags: [adr, observability, opentelemetry, azure-monitor, tracing]
 ---
 
-# 📊 ADR-003: OpenTelemetry + Application Insights for Observability
+# ADR-003: OpenTelemetry with Azure Monitor for Observability
 
 > [!NOTE]
-> **Target Audience:** Cloud Solution Architects, SRE Teams, Platform Engineers
+> **Target Audience:** SREs, Developers, Platform Engineers  
 > **Reading Time:** ~10 minutes
 
 <details>
-<summary>📍 Navigation</summary>
+<summary>📖 <strong>Navigation</strong></summary>
 
-| Previous                                      |    Index    |                   Next |
-| :-------------------------------------------- | :---------: | ---------------------: |
-| [← ADR-002](ADR-002-service-bus-messaging.md) | **ADR-003** | [ADR Index](README.md) |
+| Previous                                      |         Index          | Next |
+| :-------------------------------------------- | :--------------------: | ---: |
+| [← ADR-002](ADR-002-service-bus-messaging.md) | [ADR Index](README.md) |    — |
 
 </details>
 
 ---
 
-## 📑 Table of Contents
+## 📚 Table of Contents
 
-- [✅ Status](#-status)
-- [📅 Date](#-date)
-- [📋 Context](#-context)
-- [🛠️ Decision](#%EF%B8%8F-decision)
-- [⚖️ Consequences](#%EF%B8%8F-consequences)
-- [📱 Telemetry Matrix](#-telemetry-matrix)
-- [🔍 Alternatives Considered](#-alternatives-considered)
-- [🔗 Correlation Strategy](#-correlation-strategy)
-- [🔗 Related Decisions](#-related-decisions)
+- [🚦 Status](#-status)
+- [📝 Context](#-context)
+- [✅ Decision](#-decision)
+- [🎯 Consequences](#-consequences)
+- [🔄 Alternatives Considered](#-alternatives-considered)
+- [📊 Telemetry Inventory](#-telemetry-inventory)
+- [🧪 Validation](#-validation)
+- [🔗 Related ADRs](#-related-adrs)
 - [📚 References](#-references)
 
 ---
 
-## ✅ Status
+## 🚦 Status
 
-✅ **Accepted**
+🟢 **Accepted** — January 2024
 
-## 📅 Date
+---
 
-2025-01
+<div align="right"><a href="#-table-of-contents">⬆️ Back to top</a></div>
 
-## 📋 Context
+## 📝 Context
+
+The distributed nature of the solution requires **end-to-end observability** across:
+
+| Component   | Technology            | Telemetry Challenge       |
+| ----------- | --------------------- | ------------------------- |
+| Orders API  | .NET 10 Container App | Traces, metrics, logs     |
+| Web App     | Blazor Server         | User interactions, errors |
+| Service Bus | Azure PaaS            | Message correlation       |
+| Logic Apps  | Azure PaaS            | Workflow execution        |
+| Azure SQL   | Azure PaaS            | Query performance         |
+
+**Requirements:**
 
 > [!IMPORTANT]
-> The Azure Logic Apps Monitoring Solution requires comprehensive observability across:
+> These observability requirements ensure comprehensive visibility across all distributed components while maintaining cost efficiency.
 
-- **Orders API** (.NET Web API)
-- **Web App** (.NET Blazor)
-- **Logic Apps** (Azure Logic Apps Standard)
-- **Infrastructure** (Service Bus, SQL Database, Container Apps)
+1. **Distributed tracing** — Follow requests across service boundaries
+2. **Correlation** — Link messages to originating API calls
+3. **Metrics** — Track business and technical KPIs
+4. **Logs** — Structured logging with context
+5. **Dashboards** — Unified view of system health
+6. **Alerts** — Proactive issue detection
+7. **Cost efficiency** — Optimize telemetry ingestion
 
-Key requirements:
-
-1. **Distributed Tracing**: End-to-end visibility across services and message queues
-2. **Metrics Collection**: Application and business KPIs
-3. **Log Aggregation**: Centralized logging with correlation
-4. **Alerting**: Proactive notification of issues
-5. **Dashboards**: Visual analysis and troubleshooting
-
-### Forces
-
-| Force                  | Direction                             |
-| ---------------------- | ------------------------------------- |
-| Vendor flexibility     | ↗️ Avoid observability vendor lock-in |
-| Azure integration      | ↗️ Leverage native Azure tools        |
-| Standards adoption     | ↗️ Industry-standard telemetry        |
-| Operational simplicity | ↘️ Single platform preferred          |
+**Question:** What observability stack provides comprehensive visibility with minimal vendor lock-in?
 
 ---
 
-## 🛠️ Decision
+<div align="right"><a href="#-table-of-contents">⬆️ Back to top</a></div>
 
-**Adopt OpenTelemetry SDK for instrumentation** with **Azure Monitor (Application Insights)** as the backend, providing vendor-neutral telemetry collection with Azure-native analysis capabilities.
+## ✅ Decision
 
-### Implementation Architecture
+**We will use OpenTelemetry SDK with Azure Monitor Exporter for telemetry collection.**
 
-```mermaid
----
-title: Observability Implementation Architecture
----
-flowchart TB
-    %% ===== APPLICATIONS =====
-    subgraph Apps["Applications"]
-        API["Orders API<br/><i>OTel SDK</i>"]
-        Web["Web App<br/><i>OTel SDK</i>"]
-    end
+### 🛠️ Implementation
 
-    %% ===== OPENTELEMETRY LAYER =====
-    subgraph OTel["OpenTelemetry Layer"]
-        SDK["OTel .NET SDK"]
-        Exporter["Azure Monitor<br/>Exporter"]
-    end
+#### 📊 OpenTelemetry Configuration
 
-    %% ===== AZURE MONITOR =====
-    subgraph Azure["Azure Monitor"]
-        AI["Application<br/>Insights"]
-        LAW["Log Analytics<br/>Workspace"]
-    end
-
-    %% ===== ANALYSIS TOOLS =====
-    subgraph Analysis["Analysis Tools"]
-        Map["Application Map"]
-        TxSearch["Transaction Search"]
-        Metrics["Metrics Explorer"]
-        Alerts["Alert Rules"]
-    end
-
-    %% ===== CONNECTIONS =====
-    API -->|"sends telemetry"| SDK
-    Web -->|"sends telemetry"| SDK
-    SDK -->|"processes"| Exporter
-    Exporter -->|"exports to"| AI
-    AI -->|"forwards to"| LAW
-    AI -->|"powers"| Map
-    AI -->|"powers"| TxSearch
-    AI -->|"powers"| Metrics
-    LAW -->|"triggers"| Alerts
-
-    %% ===== STYLES - NODE CLASSES =====
-    classDef primary fill:#4F46E5,stroke:#3730A3,color:#FFFFFF
-    classDef secondary fill:#10B981,stroke:#059669,color:#FFFFFF
-    classDef datastore fill:#F59E0B,stroke:#D97706,color:#000000
-    classDef external fill:#6B7280,stroke:#4B5563,color:#FFFFFF
-
-    %% ===== CLASS ASSIGNMENTS =====
-    class API,Web primary
-    class SDK,Exporter secondary
-    class AI,LAW datastore
-    class Map,TxSearch,Metrics,Alerts external
-
-    %% ===== SUBGRAPH STYLES =====
-    style Apps fill:#EEF2FF,stroke:#4F46E5,stroke-width:2px
-    style OTel fill:#ECFDF5,stroke:#10B981,stroke-width:2px
-    style Azure fill:#FEF3C7,stroke:#F59E0B,stroke-width:2px
-    style Analysis fill:#F3F4F6,stroke:#6B7280,stroke-width:2px
-```
-
-### Implementation Details
-
-1. **OpenTelemetry Configuration** (`Extensions.cs`):
+From [Extensions.cs](../../../app.ServiceDefaults/Extensions.cs):
 
 ```csharp
 public static IHostApplicationBuilder ConfigureOpenTelemetry(
@@ -166,189 +102,213 @@ public static IHostApplicationBuilder ConfigureOpenTelemetry(
         {
             metrics.AddAspNetCoreInstrumentation()
                    .AddHttpClientInstrumentation()
-                   .AddRuntimeInstrumentation()
-                   .AddMeter("eShop.Orders.API");
+                   .AddRuntimeInstrumentation();
         })
         .WithTracing(tracing =>
         {
             tracing.AddSource(builder.Environment.ApplicationName)
                    .AddAspNetCoreInstrumentation()
-                   .AddHttpClientInstrumentation()
-                   .AddSqlClientInstrumentation();
+                   .AddHttpClientInstrumentation();
         });
 
+    // Azure Monitor integration
     builder.AddOpenTelemetryExporters();
+}
+
+private static IHostApplicationBuilder AddOpenTelemetryExporters(
+    this IHostApplicationBuilder builder)
+{
+    builder.Services.AddOpenTelemetry()
+           .UseAzureMonitor();  // Azure Monitor Exporter
+
     return builder;
 }
 ```
 
-1. **Custom Metrics** (`OrderService.cs`):
+#### 🔗 Trace Context Propagation
+
+From [OrdersMessageHandler.cs](../../../src/eShop.Orders.API/Handlers/OrdersMessageHandler.cs):
 
 ```csharp
-private static readonly Meter _meter = new("eShop.Orders.API");
-private static readonly Counter<int> _ordersPlaced =
-    _meter.CreateCounter<int>("eShop.orders.placed");
-private static readonly Histogram<double> _orderDuration =
-    _meter.CreateHistogram<double>("eShop.orders.processing.duration");
+// Propagate W3C Trace Context through Service Bus messages
+if (Activity.Current != null)
+{
+    message.ApplicationProperties["traceparent"] = Activity.Current.Id;
+    message.ApplicationProperties["tracestate"] = Activity.Current.TraceStateString;
+}
 ```
 
-1. **Trace Context Propagation** (`OrdersMessageHandler.cs`):
+#### 📊 Application Insights Integration
+
+From [app-insights.bicep](../../../infra/shared/monitoring/app-insights.bicep):
+
+```bicep
+resource appInsights 'Microsoft.Insights/components@2020-02-02' = {
+  name: name
+  location: location
+  kind: 'web'
+  properties: {
+    Application_Type: 'web'
+    WorkspaceResourceId: logAnalyticsWorkspace.id
+    IngestionMode: 'LogAnalytics'
+  }
+}
+```
+
+### 🔑 Key Decisions
+
+| Aspect       | Decision             | Rationale                     |
+| ------------ | -------------------- | ----------------------------- |
+| **SDK**      | OpenTelemetry .NET   | Vendor-neutral, CNCF standard |
+| **Exporter** | Azure Monitor        | Native Azure integration      |
+| **Backend**  | Application Insights | Unified Azure observability   |
+| **Traces**   | W3C Trace Context    | Industry standard propagation |
+| **Sampling** | Head-based (default) | Cost optimization             |
+
+---
+
+<div align="right"><a href="#-table-of-contents">⬆️ Back to top</a></div>
+
+## 🎯 Consequences
+
+### ✅ Positive
+
+| Benefit                  | Description                                       |
+| ------------------------ | ------------------------------------------------- |
+| **Vendor neutrality**    | OpenTelemetry is portable to other backends       |
+| **Unified telemetry**    | Traces, metrics, logs in one SDK                  |
+| **Auto-instrumentation** | ASP.NET Core, HttpClient, EF Core                 |
+| **Azure integration**    | Native App Insights features (Live Metrics, etc.) |
+| **Cost control**         | Sampling reduces ingestion costs                  |
+| **Correlation**          | W3C format works across technologies              |
+
+### ⚠️ Negative
+
+| Drawback                | Mitigation                           |
+| ----------------------- | ------------------------------------ | --------------------------------------- |
+| **Learning curve**      | OpenTelemetry concepts are new       | SDK abstracts complexity                |
+| **Sampling trade-offs** | Some traces may be lost              | Configure sampling rate per environment |
+| **Double telemetry**    | App Insights SDK + OTel can conflict | Use OTel-only approach                  |
+
+### ⚖️ Neutral
+
+- Azure Monitor Exporter is Microsoft-maintained
+- Application Insights retains data for 90 days (configurable)
+- Logic Apps have built-in observability separate from OTel
+
+---
+
+<div align="right"><a href="#-table-of-contents">⬆️ Back to top</a></div>
+
+## 🔄 Alternatives Considered
+
+### ⭐ Alternative 1: Application Insights SDK (Classic)
 
 ```csharp
-// Propagate trace context to Service Bus messages
-message.ApplicationProperties["TraceId"] = Activity.Current?.TraceId.ToString();
-message.ApplicationProperties["SpanId"] = Activity.Current?.SpanId.ToString();
-message.ApplicationProperties["traceparent"] =
-    $"00-{Activity.Current?.TraceId}-{Activity.Current?.SpanId}-01";
+// Classic App Insights approach
+services.AddApplicationInsightsTelemetry();
 ```
 
-## ⚖️ Consequences
+| Criteria           | Assessment                                 |
+| ------------------ | ------------------------------------------ |
+| **Pros**           | Deep Azure integration, simpler setup      |
+| **Cons**           | Vendor lock-in, deprecated for new apps    |
+| **Why not chosen** | Microsoft recommends OTel for new projects |
 
-### Positive
+### 🔧 Alternative 2: Jaeger + Prometheus + ELK
 
-| Benefit                       | Impact                                       |
-| ----------------------------- | -------------------------------------------- |
-| **Vendor Neutrality**         | Can switch backends without re-instrumenting |
-| **Standards Compliance**      | W3C Trace Context for correlation            |
-| **Rich Auto-instrumentation** | ASP.NET Core, HTTP, SQL, EF Core automatic   |
-| **Custom Metrics**            | Business KPIs alongside technical metrics    |
-| **Azure Integration**         | Application Map, Transaction Search, Alerts  |
-| **Local Development**         | Aspire Dashboard for local OTLP              |
+| Criteria           | Assessment                              |
+| ------------------ | --------------------------------------- |
+| **Pros**           | Open source, self-hosted control        |
+| **Cons**           | Operational overhead, multiple backends |
+| **Why not chosen** | Prefer managed services                 |
 
-### Negative
+### 💸 Alternative 3: Datadog / New Relic
 
-| Tradeoff              | Mitigation                                           |
-| --------------------- | ---------------------------------------------------- |
-| **Two Concepts**      | OTel for collection, Azure for analysis - documented |
-| **Learning Curve**    | Team training on both OTel and Azure Monitor         |
-| **Data Volume Costs** | Sampling strategies, retention policies              |
-| **Logic App Gaps**    | Logic Apps use built-in diagnostics, not OTel        |
-
-### Neutral
-
-- Application Insights pricing model unchanged
-- Existing Azure Monitor skills transfer
-- KQL queries remain the analysis language
+| Criteria           | Assessment                                 |
+| ------------------ | ------------------------------------------ |
+| **Pros**           | Feature-rich, excellent UX                 |
+| **Cons**           | Additional vendor, cost, data residency    |
+| **Why not chosen** | Azure-native preferred for Azure workloads |
 
 ---
 
-## 📱 Telemetry Matrix
+<div align="right"><a href="#-table-of-contents">⬆️ Back to top</a></div>
 
-| Component    | Traces | Metrics | Logs | Method            |
-| ------------ | ------ | ------- | ---- | ----------------- |
-| Orders API   | ✅     | ✅      | ✅   | OTel SDK          |
-| Web App      | ✅     | ✅      | ✅   | OTel SDK          |
-| Logic Apps   | ✅     | ✅      | ✅   | Azure Diagnostics |
-| Service Bus  | ✅     | ✅      | ✅   | Azure Diagnostics |
-| SQL Database | ✅     | ✅      | ✅   | Azure Diagnostics |
+## 📊 Telemetry Inventory
 
----
+### 🔎 Traces Collected
 
-## 🔍 Alternatives Considered
+| Source       | Instrumentation | Spans               |
+| ------------ | --------------- | ------------------- |
+| ASP.NET Core | Auto            | HTTP requests       |
+| HttpClient   | Auto            | Outbound HTTP       |
+| EF Core      | Auto            | SQL queries         |
+| Service Bus  | Manual          | Message operations  |
+| Custom       | Manual          | Business operations |
 
-### 1. Application Insights SDK Only
+### 📈 Metrics Collected
 
-**Description**: Use classic Application Insights .NET SDK
+| Category     | Metrics                        |
+| ------------ | ------------------------------ |
+| **Runtime**  | GC collections, thread pool    |
+| **HTTP**     | Request duration, status codes |
+| **Business** | Orders created, batch sizes    |
 
-**Why Not Chosen**:
+### 📋 Log Levels
 
-- Vendor lock-in to Azure Monitor
-- Harder to migrate to other backends
-- Less alignment with industry standards
-- Classic SDK being deprecated in favor of OTel
-
-### 2. Jaeger/Zipkin
-
-**Description**: Self-hosted open-source tracing backends
-
-**Why Not Chosen**:
-
-- Operational overhead of hosting
-- No native Azure integration
-- Separate tools for metrics and logs
-- Additional infrastructure to manage
-
-### 3. Datadog/New Relic/Dynatrace
-
-**Description**: Third-party commercial APM platforms
-
-**Why Not Chosen**:
-
-- Additional licensing costs
-- Data egress from Azure
-- Duplicate capabilities with Azure Monitor
-- Extra vendor relationship to manage
-
-### 4. Azure Monitor Agent Only
-
-**Description**: Use Azure Monitor agent without OTel
-
-**Why Not Chosen**:
-
-- Less control over instrumentation
-- Missing custom spans and metrics
-- No local development option
-- Harder to switch vendors later
+| Level         | Usage                                 |
+| ------------- | ------------------------------------- |
+| `Trace`       | Detailed debugging (disabled in prod) |
+| `Debug`       | Development diagnostics               |
+| `Information` | Business events                       |
+| `Warning`     | Recoverable issues                    |
+| `Error`       | Failures requiring attention          |
+| `Critical`    | System failures                       |
 
 ---
 
-## 🔗 Correlation Strategy
+<div align="right"><a href="#-table-of-contents">⬆️ Back to top</a></div>
 
-### Cross-Service Trace Flow
+## 🧪 Validation
 
-```mermaid
----
-title: Cross-Service Trace Flow
----
-sequenceDiagram
-    participant Web as Web App
-    participant API as Orders API
-    participant SB as Service Bus
-    participant LA as Logic App
-    participant AI as App Insights
+The decision is validated by:
 
-    Note over Web,LA: Same TraceId propagated
-
-    Web->>API: HTTP + traceparent
-    API->>SB: Message + TraceId property
-    SB->>LA: Trigger + correlation
-
-    Web-->>AI: Export
-    API-->>AI: Export
-    LA-->>AI: Diagnostics
-
-    Note over AI: Application Map shows<br/>complete flow
-```
-
-### Correlation Properties
-
-| Hop          | Mechanism           | Property                 |
-| ------------ | ------------------- | ------------------------ |
-| HTTP         | Header              | `traceparent`            |
-| Service Bus  | ApplicationProperty | `TraceId`, `traceparent` |
-| Logic App    | Built-in            | `x-ms-workflow-run-id`   |
-| App Insights | SDK                 | `operation_Id`           |
+1. **End-to-end traces** — API → Service Bus → Logic Apps correlation works
+2. **Live Metrics** — Real-time view in Azure portal
+3. **Alerts** — Proactive notifications on degradation
+4. **Cost analysis** — Sampling keeps ingestion under budget
 
 ---
 
-## 🔗 Related Decisions
+<div align="right"><a href="#-table-of-contents">⬆️ Back to top</a></div>
 
-- [ADR-001: Aspire Orchestration](ADR-001-aspire-orchestration.md) - OTel configured via ServiceDefaults
-- [ADR-002: Service Bus Messaging](ADR-002-service-bus-messaging.md) - Trace propagation in messages
+## 🔗 Related ADRs
+
+- [ADR-001](ADR-001-aspire-orchestration.md) — Aspire dashboard for local observability
+- [ADR-002](ADR-002-service-bus-messaging.md) — Trace context in message properties
 
 ---
+
+<div align="right"><a href="#-table-of-contents">⬆️ Back to top</a></div>
 
 ## 📚 References
 
 - [OpenTelemetry .NET](https://opentelemetry.io/docs/languages/net/)
-- [Azure Monitor OpenTelemetry](https://learn.microsoft.com/azure/azure-monitor/app/opentelemetry-overview)
+- [Azure Monitor OpenTelemetry](https://learn.microsoft.com/azure/azure-monitor/app/opentelemetry-enable)
 - [W3C Trace Context](https://www.w3.org/TR/trace-context/)
-- [.NET Aspire Telemetry](https://learn.microsoft.com/dotnet/aspire/fundamentals/telemetry)
+- [Observability Architecture](../05-observability-architecture.md)
 
 ---
 
 <div align="center">
 
-[← ADR-002](ADR-002-service-bus-messaging.md) | **ADR-003** | [ADR Index](README.md)
+| Previous                                      |         Index          | Next |
+| :-------------------------------------------- | :--------------------: | ---: |
+| [← ADR-002](ADR-002-service-bus-messaging.md) | [ADR Index](README.md) |    — |
 
 </div>
+
+---
+
+_Last Updated: January 2026_

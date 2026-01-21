@@ -1,23 +1,24 @@
 ---
 title: CI - .NET Reusable Workflow
-description: Reusable workflow for .NET build, test, and analysis operations
-author: Evilazaro
-version: 1.0
-tags: [devops, ci, dotnet, reusable-workflow, github-actions]
+description: Comprehensive reusable CI workflow for .NET solutions with cross-platform build/test support, code coverage, and CodeQL security scanning
+author: Platform Team
+date: 2026-01-21
+version: 1.0.0
+tags: [ci, reusable-workflow, dotnet, cross-platform, codeql, coverage]
 ---
 
 # 🔧 CI - .NET Reusable Workflow
 
 > [!NOTE]
-> **Workflow File:** [ci-dotnet-reusable.yml](../../.github/workflows/ci-dotnet-reusable.yml)  
-> 🎯 **For DevOps Engineers**: Reusable CI workflow for consistent .NET build and test operations.
+> **Target Audience:** DevOps Engineers, Platform Engineers<br/>
+> **Reading Time:** ~15 minutes
 
 <details>
-<summary>📍 <strong>Quick Navigation</strong></summary>
+<summary>📍 Navigation</summary>
 
-| Previous                      |            Index             | Next |
-| :---------------------------- | :--------------------------: | ---: |
-| [← CI Pipeline](ci-dotnet.md) | [📑 DevOps Index](README.md) |    — |
+| Previous                    |           Index           |                     Next |
+| :-------------------------- | :-----------------------: | -----------------------: |
+| [CI Workflow](ci-dotnet.md) | [DevOps Index](README.md) | [CD Azure](azure-dev.md) |
 
 </details>
 
@@ -25,537 +26,497 @@ tags: [devops, ci, dotnet, reusable-workflow, github-actions]
 
 ## 📑 Table of Contents
 
-- [📋 Overview](#-overview)
-- [🗺️ Pipeline Visualization](#%EF%B8%8F-pipeline-visualization)
-- [🎯 Trigger](#-trigger)
-- [📥 Inputs](#-inputs)
-- [📤 Outputs](#-outputs)
-- [📋 Jobs & Steps](#-jobs--steps)
-- [🔐 Prerequisites](#-prerequisites)
-- [📦 Artifacts](#-artifacts)
-- [🔧 Environment Variables](#-environment-variables)
-- [🚀 Usage Examples](#-usage-examples)
-- [🔍 Troubleshooting](#-troubleshooting)
-- [🔗 Related Documentation](#-related-documentation)
+- [🔧 CI - .NET Reusable Workflow](#-ci---net-reusable-workflow)
+  - [📑 Table of Contents](#-table-of-contents)
+  - [📖 Overview](#-overview)
+  - [📊 Pipeline Visualization](#-pipeline-visualization)
+  - [⚙️ Workflow Inputs](#️-workflow-inputs)
+  - [📤 Workflow Outputs](#-workflow-outputs)
+  - [📋 Jobs](#-jobs)
+  - [📦 Artifacts](#-artifacts)
+  - [💡 Usage Examples](#-usage-examples)
+  - [🔧 Troubleshooting](#-troubleshooting)
+  - [📚 Related Documentation](#-related-documentation)
 
 ---
 
-## 📋 Overview
+## 📖 Overview
 
-This is a reusable workflow that builds, tests, and analyzes .NET solutions. It can be called from other workflows with customizable parameters, enabling consistent CI practices across multiple pipelines.
+The **CI - .NET Reusable Workflow** (`ci-dotnet-reusable.yml`) is a comprehensive, reusable continuous integration workflow designed to be called by other workflows. It implements a complete CI pipeline for .NET solutions with cross-platform support.
 
-### Key Features
+This reusable workflow provides:
 
-| Feature                   | Description                               |
-| ------------------------- | ----------------------------------------- |
-| 🔄 **Fully Reusable**     | Via `workflow_call` trigger               |
-| 🔨 **Configurable Build** | With version generation                   |
-| 🧪 **Test Execution**     | With code coverage (Cobertura)            |
-| 🔍 **Code Analysis**      | Formatting analysis with `dotnet format`  |
-| 🛡️ **Security Scanning**  | CodeQL vulnerability scanning (C#)        |
-| 📊 **Detailed Summaries** | Job summaries and status badges           |
-| 📦 **Artifact Upload**    | Per-platform builds, tests, and coverage  |
-| 🖥️ **Cross-Platform**     | Always runs on Ubuntu, Windows, and macOS |
+- Cross-platform builds (Ubuntu, Windows, macOS) via matrix strategy
+- Cross-platform testing with code coverage (Cobertura format)
+- Code formatting analysis (.editorconfig compliance)
+- CodeQL security vulnerability scanning (always enabled)
+- Configurable inputs for maximum flexibility
+- Workflow outputs for downstream consumption
 
 ---
 
-## 🗺️ Pipeline Visualization
+## 📊 Pipeline Visualization
+
+<details>
+<summary>🔍 Click to expand full pipeline visualization</summary>
 
 ```mermaid
 ---
-title: CI - .NET Reusable Workflow Pipeline
+title: Reusable CI Pipeline Architecture
 ---
-flowchart LR
-    %% ===== TRIGGER =====
-    subgraph TriggerGroup["🎯 Trigger"]
-        workflow_call(["workflow_call"])
+flowchart TD
+    %% ===== WORKFLOW INPUTS =====
+    subgraph Input["📥 Workflow Inputs"]
+        I1[/"configuration"/]
+        I2[/"dotnet-version"/]
+        I3[/"solution-file"/]
+        I4[/"enable-code-analysis"/]
     end
 
-    %% ===== INPUT PARAMETERS =====
-    subgraph InputsGroup["⚙️ Inputs"]
+    %% ===== BUILD STAGE =====
+    subgraph BuildStage["🔨 Build Stage (Matrix)"]
         direction LR
-        config[/"configuration"/]
-        dotnet[/"dotnet-version"/]
-        solution[/"solution-file"/]
-        analysis_flag[/"enable-code-analysis"/]
-    end
-
-    %% ===== BUILD JOB =====
-    subgraph BuildJob["🔨 Build Job (Matrix)"]
-        direction LR
-
-        subgraph BuildMatrix["Cross-Platform Build"]
-            b_ubuntu["Ubuntu"]
-            b_windows["Windows"]
-            b_macos["macOS"]
+        subgraph Ubuntu1["Ubuntu"]
+            B_U["Build"]
         end
-
-        b_checkout["Checkout Repository"]
-        b_setup["Setup .NET SDK"]
-        b_workload["Update Workloads"]
-        b_version["Generate Version"]
-        b_restore["Restore Dependencies"]
-        b_build["Build Solution"]
-        b_upload["Upload Artifacts"]
-        b_summary["Build Summary"]
-    end
-
-    %% ===== TEST JOB =====
-    subgraph TestJob["🧪 Test Job (Matrix)"]
-        direction LR
-
-        subgraph TestMatrix["Cross-Platform Test"]
-            t_ubuntu["Ubuntu"]
-            t_windows["Windows"]
-            t_macos["macOS"]
+        subgraph Windows1["Windows"]
+            B_W["Build"]
         end
-
-        t_checkout["Checkout Repository"]
-        t_setup["Setup .NET SDK"]
-        t_workload["Update Workloads"]
-        t_restore["Restore Dependencies"]
-        t_build["Build Solution"]
-        t_test["Run Tests + Coverage"]
-        t_report["Publish Results"]
-        t_upload["Upload Artifacts"]
-        t_summary["Test Summary"]
+        subgraph macOS1["macOS"]
+            B_M["Build"]
+        end
     end
 
-    %% ===== ANALYZE JOB =====
-    subgraph AnalyzeJob["🔍 Analyze Job"]
+    %% ===== TEST STAGE =====
+    subgraph TestStage["🧪 Test Stage (Matrix)"]
         direction LR
-        a_checkout["Checkout Repository"]
-        a_setup["Setup .NET SDK"]
-        a_workload["Update Workloads"]
-        a_restore["Restore Dependencies"]
-        a_format["Verify Formatting"]
-        a_summary["Analysis Summary"]
-        a_fail["Fail on Issues"]
+        subgraph Ubuntu2["Ubuntu"]
+            T_U["Test + Coverage"]
+        end
+        subgraph Windows2["Windows"]
+            T_W["Test + Coverage"]
+        end
+        subgraph macOS2["macOS"]
+            T_M["Test + Coverage"]
+        end
     end
 
-    %% ===== CODEQL JOB =====
-    subgraph CodeQLJob["🛡️ CodeQL Security Scan"]
+    %% ===== ANALYSIS STAGE =====
+    subgraph AnalysisStage["🔍 Analysis Stage"]
         direction LR
-        cql_checkout["Checkout Repository"]
-        cql_setup["Setup .NET SDK"]
-        cql_init["Initialize CodeQL"]
-        cql_build["Autobuild"]
-        cql_analyze["Perform Analysis"]
-        cql_upload["Upload SARIF"]
-        cql_summary["CodeQL Summary"]
+        ANALYZE["Code Format Check"]
+        CODEQL["CodeQL Security Scan"]
     end
 
-    %% ===== SUMMARY JOB =====
-    subgraph SummaryJob["📊 Summary Job"]
-        s_generate["Generate Summary"]
-    end
-
-    %% ===== FAILURE HANDLER =====
-    subgraph FailureJob["❌ Failure Handler"]
-        f_report["Report Failure"]
-    end
-
-    %% ===== WORKFLOW OUTPUTS =====
-    subgraph OutputsGroup["📤 Outputs"]
-        out_version[/"build-version"/]
-        out_build[/"build-result"/]
-        out_test[/"test-result"/]
-        out_analyze[/"analyze-result"/]
+    %% ===== OUTPUT STAGE =====
+    subgraph OutputStage["📊 Output Stage"]
+        SUMMARY[/"Summary Report"/]
+        ONFAIL["Failure Handler"]
     end
 
     %% ===== ARTIFACTS =====
-    subgraph ArtifactsGroup["📦 Artifacts (per-platform)"]
-        art_build[/"build-artifacts-{os}"/]
-        art_test[/"test-results-{os}"/]
-        art_cov[/"code-coverage-{os}"/]
+    subgraph Artifacts["📦 Artifacts"]
+        A1[("build-artifacts-os")]
+        A2[("test-results-os")]
+        A3[("code-coverage-os")]
+        A4[("codeql-sarif-results")]
     end
 
-    %% Trigger flow - workflow initialization
-    workflow_call -->|receives| InputsGroup
-    InputsGroup -->|configures| BuildMatrix
+    %% ===== PIPELINE FLOW =====
+    Input ==>|configures| BuildStage
+    BuildStage ==>|compiles| TestStage
+    BuildStage -->|validates| AnalysisStage
+    TestStage -->|reports| OutputStage
+    AnalysisStage -->|reports| OutputStage
+    OutputStage -.->|on failure| ONFAIL
 
-    %% Build flow - compile and package on all platforms
-    BuildMatrix -->|parallel builds| b_checkout
-    b_checkout -->|clone repo| b_setup
-    b_setup -->|install SDK| b_workload
-    b_workload -->|update| b_version
-    b_version -->|set version| b_restore
-    b_restore -->|restore packages| b_build
-    b_build -->|compile| b_upload
-    b_upload -->|store artifacts| b_summary
-    b_build -->|outputs| out_version
+    %% ===== ARTIFACT FLOWS =====
+    BuildStage -->|produces| A1
+    TestStage -->|produces| A2
+    TestStage -->|produces| A3
+    CODEQL -->|produces| A4
 
-    %% Test flow - depends on build completion
-    b_summary -->|on success| TestMatrix
-    TestMatrix -->|parallel tests| t_checkout
-    t_checkout -->|clone repo| t_setup
-    t_setup -->|install SDK| t_workload
-    t_workload -->|update| t_restore
-    t_restore -->|restore packages| t_build
-    t_build -->|compile| t_test
-    t_test -->|execute tests| t_report
-    t_report -->|publish| t_upload
-    t_upload -->|store results| t_summary
-
-    %% Analyze flow - depends on build completion
-    b_summary -->|on success| a_checkout
-    analysis_flag -.->|if enabled| a_checkout
-    a_checkout -->|clone repo| a_setup
-    a_setup -->|install SDK| a_workload
-    a_workload -->|update| a_restore
-    a_restore -->|restore packages| a_format
-    a_format -->|check format| a_summary
-    a_summary -->|evaluate| a_fail
-
-    %% CodeQL flow - depends on build completion
-    b_summary -->|on success| cql_checkout
-    cql_checkout -->|clone repo| cql_setup
-    cql_setup -->|install SDK| cql_init
-    cql_init -->|configure| cql_build
-    cql_build -->|autobuild| cql_analyze
-    cql_analyze -->|scan| cql_upload
-    cql_upload -->|store SARIF| cql_summary
-
-    %% Summary flow - aggregate all results
-    t_summary -->|report status| s_generate
-    a_summary -->|report status| s_generate
-    cql_summary -->|report status| s_generate
-
-    %% Failure flow - error paths
-    t_test --x|on failure| f_report
-    a_format --x|on failure| f_report
-    cql_analyze --x|on failure| f_report
-
-    %% Output connections - export results
-    b_summary -->|outputs| out_build
-    t_summary -->|outputs| out_test
-    a_summary -->|outputs| out_analyze
-
-    %% Artifact connections - store files
-    b_upload -->|stores| art_build
-    t_upload -->|stores| art_test
-    t_upload -->|stores| art_cov
-
-    %% ===== STYLING DEFINITIONS =====
-    %% Primary components: Indigo - main processes/services
-    classDef primary fill:#4F46E5,stroke:#3730A3,color:#FFFFFF
-    %% Secondary components: Emerald - secondary elements
-    classDef secondary fill:#10B981,stroke:#059669,color:#FFFFFF
-    %% Data stores: Amber - artifacts and outputs
-    classDef datastore fill:#F59E0B,stroke:#D97706,color:#000000
-    %% External systems: Gray - reusable/external calls
-    classDef external fill:#6B7280,stroke:#4B5563,color:#FFFFFF,stroke-dasharray: 5 5
-    %% Error/failure states: Red - error handling
-    classDef failed fill:#F44336,stroke:#C62828,color:#FFFFFF
-    %% Triggers: Indigo light - entry points
-    classDef trigger fill:#818CF8,stroke:#4F46E5,color:#FFFFFF
-    %% Inputs: Light background - parameters
+    %% ===== NODE STYLING =====
     classDef input fill:#F3F4F6,stroke:#6B7280,color:#000000
-    %% Matrix: Light emerald - parallel execution
+    classDef primary fill:#4F46E5,stroke:#3730A3,color:#FFFFFF
+    classDef secondary fill:#10B981,stroke:#059669,color:#FFFFFF
     classDef matrix fill:#D1FAE5,stroke:#10B981,color:#000000
+    classDef datastore fill:#F59E0B,stroke:#D97706,color:#000000
+    classDef failed fill:#F44336,stroke:#C62828,color:#FFFFFF
 
-    %% Subgraph background styling - lighter shades
-    style TriggerGroup fill:#EEF2FF,stroke:#4F46E5,stroke-width:2px
-    style InputsGroup fill:#F3F4F6,stroke:#6B7280,stroke-width:2px
-    style BuildJob fill:#E0E7FF,stroke:#4F46E5,stroke-width:2px
-    style BuildMatrix fill:#D1FAE5,stroke:#10B981,stroke-width:1px
-    style TestJob fill:#E0E7FF,stroke:#4F46E5,stroke-width:2px
-    style TestMatrix fill:#D1FAE5,stroke:#10B981,stroke-width:1px
-    style AnalyzeJob fill:#ECFDF5,stroke:#10B981,stroke-width:2px
-    style CodeQLJob fill:#E0E7FF,stroke:#4F46E5,stroke-width:2px
-    style SummaryJob fill:#ECFDF5,stroke:#10B981,stroke-width:2px
-    style FailureJob fill:#FEE2E2,stroke:#F44336,stroke-width:2px
-    style OutputsGroup fill:#FEF3C7,stroke:#F59E0B,stroke-width:2px
-    style ArtifactsGroup fill:#FEF3C7,stroke:#F59E0B,stroke-width:2px
+    %% ===== APPLY NODE CLASSES =====
+    class I1,I2,I3,I4 input
+    class B_U,B_W,B_M matrix
+    class T_U,T_W,T_M matrix
+    class ANALYZE,CODEQL secondary
+    class SUMMARY datastore
+    class ONFAIL failed
+    class A1,A2,A3,A4 datastore
 
-    %% Apply styles to nodes
-    class workflow_call trigger
-    class config,dotnet,solution,analysis_flag input
-    class b_ubuntu,b_windows,b_macos,t_ubuntu,t_windows,t_macos matrix
-    class b_checkout,b_setup,b_workload,b_version,b_restore,b_build,b_upload,b_summary primary
-    class t_checkout,t_setup,t_workload,t_restore,t_build,t_test,t_report,t_upload,t_summary primary
-    class a_checkout,a_setup,a_workload,a_restore,a_format,a_summary,a_fail secondary
-    class cql_checkout,cql_setup,cql_init,cql_build,cql_analyze,cql_upload,cql_summary primary
-    class s_generate secondary
-    class f_report failed
-    class out_version,out_build,out_test,out_analyze datastore
-    class art_build,art_test,art_cov datastore
+    %% ===== SUBGRAPH STYLING =====
+    style Input fill:#F3F4F6,stroke:#6B7280,stroke-width:2px
+    style BuildStage fill:#ECFDF5,stroke:#10B981,stroke-width:2px
+    style Ubuntu1 fill:#D1FAE5,stroke:#059669,stroke-width:1px
+    style Windows1 fill:#D1FAE5,stroke:#059669,stroke-width:1px
+    style macOS1 fill:#D1FAE5,stroke:#059669,stroke-width:1px
+    style TestStage fill:#ECFDF5,stroke:#10B981,stroke-width:2px
+    style Ubuntu2 fill:#D1FAE5,stroke:#059669,stroke-width:1px
+    style Windows2 fill:#D1FAE5,stroke:#059669,stroke-width:1px
+    style macOS2 fill:#D1FAE5,stroke:#059669,stroke-width:1px
+    style AnalysisStage fill:#E0E7FF,stroke:#4F46E5,stroke-width:2px
+    style OutputStage fill:#FEF3C7,stroke:#F59E0B,stroke-width:2px
+    style Artifacts fill:#FEF3C7,stroke:#F59E0B,stroke-width:2px
 ```
 
----
+</details>
 
-## 🎯 Trigger
+### Trigger
 
-This workflow is triggered exclusively via `workflow_call` from other workflows.
+> [!IMPORTANT]
+> This workflow cannot be triggered directly. It must be called from another workflow using `workflow_call`.
+
+This workflow uses `workflow_call` trigger, meaning it can only be called by other workflows.
 
 ```yaml
 on:
   workflow_call:
-    inputs: # ...
-    outputs: # ...
+    inputs: ...
+    outputs: ...
 ```
 
-> 💡 **Note:** This workflow cannot be triggered directly - it must be called from another workflow.
+---
+
+## ⚙️ Workflow Inputs
+
+| Input                        | Type    | Default           | Required | Description                              |
+| :--------------------------- | :------ | :---------------- | :------- | :--------------------------------------- |
+| `configuration`              | string  | `Release`         | No       | Build configuration (Release/Debug)      |
+| `dotnet-version`             | string  | `10.0.x`          | No       | .NET SDK version to use                  |
+| `solution-file`              | string  | `app.sln`         | No       | Path to the solution file                |
+| `test-results-artifact-name` | string  | `test-results`    | No       | Name for test results artifact           |
+| `build-artifacts-name`       | string  | `build-artifacts` | No       | Name for build artifacts                 |
+| `coverage-artifact-name`     | string  | `code-coverage`   | No       | Name for code coverage artifact          |
+| `artifact-retention-days`    | number  | `30`              | No       | Number of days to retain artifacts       |
+| `runs-on`                    | string  | `ubuntu-latest`   | No       | Runner for analyze and summary jobs      |
+| `enable-code-analysis`       | boolean | `true`            | No       | Enable code formatting analysis          |
+| `fail-on-format-issues`      | boolean | `true`            | No       | Fail workflow if formatting issues found |
 
 ---
 
-## 📥 Inputs
+## 📤 Workflow Outputs
 
-| Input                        | Type      | Required | Default           | Description                                                 |
-| ---------------------------- | --------- | :------: | ----------------- | ----------------------------------------------------------- |
-| `configuration`              | `string`  |    ❌    | `Release`         | Build configuration (Release/Debug)                         |
-| `dotnet-version`             | `string`  |    ❌    | `10.0.x`          | .NET SDK version to use                                     |
-| `solution-file`              | `string`  |    ❌    | `app.sln`         | Path to the solution file                                   |
-| `test-results-artifact-name` | `string`  |    ❌    | `test-results`    | Base name for test results artifact (OS suffix added)       |
-| `build-artifacts-name`       | `string`  |    ❌    | `build-artifacts` | Base name for build artifacts (OS suffix added)             |
-| `coverage-artifact-name`     | `string`  |    ❌    | `code-coverage`   | Base name for code coverage artifact (OS suffix added)      |
-| `artifact-retention-days`    | `number`  |    ❌    | `30`              | Days to retain test/coverage artifacts                      |
-| `runs-on`                    | `string`  |    ❌    | `ubuntu-latest`   | Runner for analyze and summary jobs (build/test use matrix) |
-| `enable-code-analysis`       | `boolean` |    ❌    | `true`            | Enable code formatting analysis                             |
-| `fail-on-format-issues`      | `boolean` |    ❌    | `true`            | Fail workflow on formatting issues                          |
+| Output           | Description                 |
+| :--------------- | :-------------------------- |
+| `build-version`  | Generated build version     |
+| `build-result`   | Build job result            |
+| `test-result`    | Test job result             |
+| `analyze-result` | Analysis job result         |
+| `codeql-result`  | CodeQL security scan result |
 
 ---
 
-## 📤 Outputs
+## 📋 Jobs
 
-| Output           | Description                                          |
-| ---------------- | ---------------------------------------------------- |
-| `build-version`  | The generated build version (e.g., `1.0.42`)         |
-| `build-result`   | Build job result (`success`, `failure`, `cancelled`) |
-| `test-result`    | Test job result                                      |
-| `analyze-result` | Analysis job result                                  |
-| `codeql-result`  | CodeQL security scan result                          |
+### 1. 🔨 Build (Cross-Platform Matrix)
 
+Compiles the .NET solution on Ubuntu, Windows, and macOS runners.
+
+<details>
+<summary>🔍 View build steps diagram</summary>
+
+```mermaid
 ---
+title: Build Steps Workflow
+---
+flowchart LR
+    %% ===== BUILD MATRIX =====
+    subgraph Matrix["Build Matrix"]
+        direction TB
+        U["ubuntu-latest"]
+        W["windows-latest"]
+        M["macos-latest"]
+    end
 
-## 📋 Jobs & Steps
+    %% ===== BUILD STEPS =====
+    subgraph Steps["Build Steps"]
+        S1["📥 Checkout"]
+        S2["🔧 Setup .NET"]
+        S3["☁️ Update Workloads"]
+        S4["🏷️ Generate Version"]
+        S5["📥 Restore"]
+        S6["🔨 Build"]
+        S7["📤 Upload Artifacts"]
+        S8[/"📊 Summary"/]
+    end
 
-### Job 1: 🔨 Build
+    %% ===== FLOW =====
+    Matrix ==>|executes| S1
+    S1 -->|then| S2
+    S2 -->|then| S3
+    S3 -->|then| S4
+    S4 -->|then| S5
+    S5 -->|then| S6
+    S6 -->|then| S7
+    S7 -->|generates| S8
 
-**Purpose:** Compile the solution and generate build artifacts on all platforms.
+    %% ===== NODE STYLING =====
+    classDef matrix fill:#D1FAE5,stroke:#10B981,color:#000000
+    classDef primary fill:#4F46E5,stroke:#3730A3,color:#FFFFFF
+    classDef datastore fill:#F59E0B,stroke:#D97706,color:#000000
 
-| Property    | Value                                                     |
-| ----------- | --------------------------------------------------------- |
-| **Runner**  | Matrix: `ubuntu-latest`, `windows-latest`, `macos-latest` |
-| **Timeout** | 15 minutes                                                |
-| **Outputs** | `build-version`                                           |
+    %% ===== APPLY NODE CLASSES =====
+    class U,W,M matrix
+    class S1,S2,S3,S4,S5,S6,S7 primary
+    class S8 datastore
 
-#### Build Steps
+    %% ===== SUBGRAPH STYLING =====
+    style Matrix fill:#D1FAE5,stroke:#10B981,stroke-width:2px
+    style Steps fill:#E0E7FF,stroke:#4F46E5,stroke-width:2px
+```
 
-| Step                      | Description                                    |
-| ------------------------- | ---------------------------------------------- |
-| 📥 Checkout repository    | Clone with full history (`fetch-depth: 0`)     |
-| 🔧 Setup .NET SDK         | Install specified .NET version                 |
-| ☁️ Update .NET workloads  | Update .NET workloads                          |
-| 🏷️ Generate build version | Create version: `1.0.${{ github.run_number }}` |
-| 📥 Restore dependencies   | `dotnet restore` with minimal verbosity        |
-| 🔨 Build solution         | `dotnet build` with CI flags                   |
-| 📤 Upload build artifacts | Upload compiled binaries                       |
-| 📊 Generate build summary | Create status badge and summary                |
+</details>
 
-### Job 2: 🧪 Test
+| Property      | Value                                             |
+| :------------ | :------------------------------------------------ |
+| **Runners**   | `ubuntu-latest`, `windows-latest`, `macos-latest` |
+| **Timeout**   | 15 minutes                                        |
+| **Fail Fast** | `false` (all platforms run regardless)            |
+| **Output**    | `build-version`                                   |
 
-**Purpose:** Execute tests with code coverage collection on all platforms.
+#### Key Steps
 
-| Property    | Value                                                     |
-| ----------- | --------------------------------------------------------- |
-| **Runner**  | Matrix: `ubuntu-latest`, `windows-latest`, `macos-latest` |
-| **Timeout** | 30 minutes                                                |
-| **Needs**   | `build`                                                   |
+| Step                | Description                                           |
+| :------------------ | :---------------------------------------------------- |
+| 📥 Checkout         | Clone repository with full history (`fetch-depth: 0`) |
+| 🔧 Setup .NET SDK   | Install specified .NET version                        |
+| ☁️ Update Workloads | Update .NET workloads for all platforms               |
+| 🏷️ Generate Version | Create version `1.0.{run_number}`                     |
+| 📥 Restore          | Restore NuGet packages                                |
+| 🔨 Build            | Compile with CI build properties                      |
+| 📤 Upload Artifacts | Upload binaries per platform                          |
+| 📊 Summary          | Generate build summary                                |
 
-#### Matrix Strategy
+### 2. 🧪 Test (Cross-Platform Matrix)
+
+Executes tests with code coverage on all platforms.
+
+| Property       | Value                                             |
+| :------------- | :------------------------------------------------ |
+| **Runners**    | `ubuntu-latest`, `windows-latest`, `macos-latest` |
+| **Timeout**    | 30 minutes                                        |
+| **Depends On** | `build`                                           |
+| **Fail Fast**  | `false`                                           |
+
+#### Key Steps
+
+| Step                    | Description                                      |
+| :---------------------- | :----------------------------------------------- |
+| 📥 Checkout             | Clone repository                                 |
+| 🔧 Setup .NET SDK       | Install .NET SDK                                 |
+| 🔨 Build                | Rebuild for test execution                       |
+| 🧪 Run Tests            | Execute with coverage collection                 |
+| 📋 Publish Test Results | Create GitHub check runs via dorny/test-reporter |
+| 📤 Upload Test Results  | Upload .trx files per platform                   |
+| 📤 Upload Coverage      | Upload Cobertura XML per platform                |
+| 📊 Summary              | Generate test summary with troubleshooting tips  |
+
+#### Test Command
+
+```bash
+dotnet test --solution app.sln \
+  --configuration Release \
+  --no-restore \
+  --verbosity minimal \
+  --report-trx --report-trx-filename test-results.trx \
+  --results-directory "${{ github.workspace }}/TestResults" \
+  --coverage --coverage-output-format cobertura \
+  --coverage-output coverage.cobertura.xml
+```
+
+### 3. 🔍 Analyze (Optional)
+
+Verifies code formatting compliance with `.editorconfig` standards.
+
+| Property       | Value                            |
+| :------------- | :------------------------------- |
+| **Runner**     | Configurable via `runs-on` input |
+| **Timeout**    | 15 minutes                       |
+| **Depends On** | `build`                          |
+| **Condition**  | `inputs.enable-code-analysis`    |
+
+#### Key Steps
+
+| Step                 | Description                                     |
+| :------------------- | :---------------------------------------------- |
+| 📥 Checkout          | Clone repository                                |
+| 🔧 Setup .NET SDK    | Install .NET SDK                                |
+| 🎨 Verify Formatting | Run `dotnet format --verify-no-changes`         |
+| 📊 Summary           | Generate analysis summary with fix instructions |
+| ❌ Fail on Issues    | Exit with error if `fail-on-format-issues=true` |
+
+#### Format Check Command
+
+```bash
+dotnet format app.sln --verify-no-changes --verbosity diagnostic
+```
+
+### 4. 🛡️ CodeQL Security Scan
+
+Performs static analysis security testing (SAST) using GitHub CodeQL.
+
+> [!WARNING]
+> CodeQL scans can take up to 45 minutes for large codebases. Do not skip this job.
+
+<details>
+<summary>🔍 View CodeQL analysis flow</summary>
+
+```mermaid
+---
+title: CodeQL Security Analysis Flow
+---
+flowchart LR
+    %% ===== CODEQL ANALYSIS STEPS =====
+    subgraph CodeQL["🛡️ CodeQL Analysis"]
+        C1["📥 Checkout<br/>Full History"]
+        C2["🔧 Setup .NET"]
+        C3["🛡️ Initialize CodeQL"]
+        C4["🔨 Autobuild"]
+        C5["🛡️ Analyze"]
+        C6["📤 Upload SARIF"]
+        C7[/"📊 Summary"/]
+    end
+
+    %% ===== ANALYSIS FLOW =====
+    C1 -->|then| C2
+    C2 -->|then| C3
+    C3 -->|initializes| C4
+    C4 -->|builds| C5
+    C5 -->|produces| C6
+    C6 -->|generates| C7
+
+    %% ===== NODE STYLING =====
+    classDef secondary fill:#10B981,stroke:#059669,color:#FFFFFF
+    classDef datastore fill:#F59E0B,stroke:#D97706,color:#000000
+
+    %% ===== APPLY NODE CLASSES =====
+    class C1,C2,C3,C4,C5,C6 secondary
+    class C7 datastore
+
+    %% ===== SUBGRAPH STYLING =====
+    style CodeQL fill:#ECFDF5,stroke:#10B981,stroke-width:2px
+```
+
+</details>
+
+| Property        | Value                            |
+| :-------------- | :------------------------------- |
+| **Runner**      | Configurable via `runs-on` input |
+| **Timeout**     | 45 minutes                       |
+| **Depends On**  | `build`                          |
+| **Always Runs** | Yes (no conditional skip)        |
+
+#### Configuration
 
 ```yaml
-strategy:
-  fail-fast: false
-  matrix:
-    os: [ubuntu-latest, windows-latest, macos-latest]
+languages: csharp
+queries: security-extended, security-and-quality
+config:
+  paths-ignore:
+    - "**/tests/**"
+    - "**/test/**"
+    - "**/*.test.cs"
+    - "**/*.Tests.cs"
 ```
 
-> 💡 **Note:** Cross-platform testing is always enabled to catch platform-specific issues early.
+#### Security Checks Performed
 
-#### Test Steps
+| Category                | Description                           |
+| :---------------------- | :------------------------------------ |
+| 💉 Injection Attacks    | SQL injection, XSS, command injection |
+| 🔐 Cryptographic Issues | Insecure algorithms, weak keys        |
+| 📤 Data Exposure        | Sensitive data leaks, logging secrets |
+| 🔑 Auth/AuthZ Issues    | Authentication bypasses               |
+| 🛡️ Path Traversal       | Directory traversal vulnerabilities   |
+| ⚠️ Deserialization      | Unsafe object deserialization         |
 
-| Step                       | Description                                 |
-| -------------------------- | ------------------------------------------- |
-| 📥 Checkout repository     | Clone repository                            |
-| 🔧 Setup .NET SDK          | Install .NET SDK                            |
-| ☁️ Update .NET workloads   | Update workloads                            |
-| 📥 Restore dependencies    | Restore NuGet packages                      |
-| 🔨 Build solution          | Build for testing                           |
-| 🧪 Run tests with coverage | Execute tests with Cobertura coverage       |
-| 📋 Publish test results    | Use `dorny/test-reporter` for GitHub checks |
-| 📤 Upload test results     | Upload `.trx` files                         |
-| 📤 Upload code coverage    | Upload Cobertura XML                        |
-| 📊 Generate test summary   | Create test status summary                  |
+### 5. 📊 Summary
 
-### Job 3: 🔍 Analyze
+Aggregates results from all CI jobs into a comprehensive summary.
 
-**Purpose:** Verify code formatting compliance.
-
-| Property      | Value                                |
-| ------------- | ------------------------------------ |
-| **Runner**    | `${{ inputs.runs-on }}`              |
-| **Timeout**   | 15 minutes                           |
-| **Needs**     | `build`                              |
-| **Condition** | `${{ inputs.enable-code-analysis }}` |
-
-#### Analysis Steps
-
-| Step                         | Description                                              |
-| ---------------------------- | -------------------------------------------------------- |
-| 📥 Checkout repository       | Clone repository                                         |
-| 🔧 Setup .NET SDK            | Install .NET SDK                                         |
-| ☁️ Update .NET workloads     | Update workloads                                         |
-| 📥 Restore dependencies      | Restore packages                                         |
-| 🎨 Verify code formatting    | Run `dotnet format --verify-no-changes`                  |
-| 📊 Generate analysis summary | Create analysis summary with fix instructions            |
-| ❌ Fail on format issues     | Exit if issues found and `fail-on-format-issues` is true |
-
-### Job 4: �️ CodeQL Security Scan
-
-**Purpose:** Perform security vulnerability scanning using GitHub CodeQL.
-
-| Property      | Value                        |
-| ------------- | ---------------------------- |
-| **Runner**    | `${{ inputs.runs-on }}`      |
-| **Timeout**   | 45 minutes                   |
-| **Needs**     | `build`                      |
-| **Condition** | Always runs (no skip option) |
-
-#### CodeQL Configuration
-
-| Setting            | Value                                                        | Description                              |
-| ------------------ | ------------------------------------------------------------ | ---------------------------------------- |
-| **Language**       | `csharp`                                                     | Scans C# code                            |
-| **Query Suites**   | `security-extended`, `security-and-quality`                  | Extended security queries + code quality |
-| **Build Mode**     | Autobuild                                                    | Automatic .NET build detection           |
-| **Excluded Paths** | `**/tests/**`, `**/test/**`, `**/*.test.cs`, `**/*.Tests.cs` | Test code excluded                       |
-
-#### CodeQL Steps
-
-| Step                       | Description                                |
-| -------------------------- | ------------------------------------------ |
-| 📥 Checkout repository     | Clone with full history (`fetch-depth: 0`) |
-| 🔧 Setup .NET SDK          | Install .NET SDK                           |
-| 🛡️ Initialize CodeQL       | Configure CodeQL with extended queries     |
-| 🔨 Autobuild for CodeQL    | Automatic .NET build                       |
-| 🛡️ Perform CodeQL analysis | Execute security scan                      |
-| 📤 Upload CodeQL SARIF     | Upload results to GitHub Security tab      |
-| 📊 Generate CodeQL summary | Create security scan summary               |
-
-#### Vulnerability Categories Scanned
-
-- 💉 SQL injection, XSS, and other injection attacks
-- 🔐 Insecure cryptographic practices
-- 📤 Sensitive data exposure
-- 🔑 Authentication and authorization issues
-- 🛡️ Path traversal vulnerabilities
-- ⚠️ Unsafe deserialization
-
-### Job 5: 📊 Summary
-
-**Purpose:** Generate overall workflow summary.
-
-| Property      | Value                                |
-| ------------- | ------------------------------------ |
-| **Runner**    | `${{ inputs.runs-on }}`              |
-| **Timeout**   | 5 minutes                            |
-| **Needs**     | `build`, `test`, `analyze`, `codeql` |
-| **Condition** | `always()`                           |
+| Property       | Value                                |
+| :------------- | :----------------------------------- |
+| **Runner**     | Configurable via `runs-on` input     |
+| **Timeout**    | 5 minutes                            |
+| **Depends On** | `build`, `test`, `analyze`, `codeql` |
+| **Condition**  | `always()`                           |
 
 #### Summary Contents
 
 - Overall CI status badge
-- Job results table (Build, Test, Analyze, CodeQL)
-- Workflow details (branch, commit, actor)
+- Individual job results table
+- Workflow details (collapsible)
 - Artifacts list with retention info
 - Action required section on failure
 
-### Job 6: ❌ Failed
+### 6. ❌ On-Failure
 
-**Purpose:** Report CI failures.
+Provides visual failure indication and detailed failure report.
 
-| Property      | Value                                |
-| ------------- | ------------------------------------ |
-| **Runner**    | `${{ inputs.runs-on }}`              |
-| **Timeout**   | 5 minutes                            |
-| **Needs**     | `build`, `test`, `analyze`, `codeql` |
-| **Condition** | `failure()`                          |
-
----
-
-## 🔐 Prerequisites
+| Property       | Value                                |
+| :------------- | :----------------------------------- |
+| **Runner**     | Configurable via `runs-on` input     |
+| **Timeout**    | 5 minutes                            |
+| **Depends On** | `build`, `test`, `analyze`, `codeql` |
+| **Condition**  | `failure()`                          |
 
 ### Required Permissions
 
 ```yaml
 permissions:
-  contents: read # Required for checkout
-  checks: write # Required for test reporter
-  pull-requests: write # Required for PR status
-  security-events: write # Required for CodeQL SARIF upload to Security tab
+  contents: read # Read repository contents for checkout
+  checks: write # Create check runs for test results
+  pull-requests: write # Post comments on pull requests
+  security-events: write # Upload CodeQL SARIF results to Security tab
 ```
 
 ---
 
 ## 📦 Artifacts
 
-| Artifact               | Contents                                                    | Retention                               |
-| ---------------------- | ----------------------------------------------------------- | --------------------------------------- |
-| `build-artifacts-{os}` | Compiled binaries (`**/bin/${{ inputs.configuration }}/**`) | 7 days                                  |
-| `test-results-{os}`    | Test results (`.trx` files)                                 | `${{ inputs.artifact-retention-days }}` |
-| `code-coverage-{os}`   | Coverage reports (`coverage.cobertura.xml`)                 | `${{ inputs.artifact-retention-days }}` |
-| `codeql-sarif-results` | CodeQL security scan results (SARIF format)                 | `${{ inputs.artifact-retention-days }}` |
+### Environment Variables
+
+| Variable                            | Value  | Description             |
+| :---------------------------------- | :----- | :---------------------- |
+| `DOTNET_SKIP_FIRST_TIME_EXPERIENCE` | `true` | Skip welcome experience |
+| `DOTNET_NOLOGO`                     | `true` | Suppress .NET logo      |
+| `DOTNET_CLI_TELEMETRY_OPTOUT`       | `true` | Disable telemetry       |
+
+### Artifacts Generated
+
+| Artifact Pattern       | Contents                             | Platform-Specific |
+| :--------------------- | :----------------------------------- | :---------------- |
+| `build-artifacts-{os}` | Compiled binaries                    | Yes               |
+| `test-results-{os}`    | Test results (.trx files)            | Yes               |
+| `code-coverage-{os}`   | Cobertura XML coverage reports       | Yes               |
+| `codeql-sarif-results` | Security scan results (SARIF format) | No                |
 
 ---
 
-## 🔧 Environment Variables
-
-```yaml
-env:
-  DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
-  DOTNET_NOLOGO: true
-  DOTNET_CLI_TELEMETRY_OPTOUT: true
-```
-
----
-
-## 🚀 Usage Examples
+## 💡 Usage Examples
 
 ### Basic Usage
 
-```yaml
-jobs:
-  ci:
-    uses: ./.github/workflows/ci-dotnet-reusable.yml
-    with:
-      configuration: "Release"
-      dotnet-version: "10.0.x"
-    secrets: inherit
-```
-
-### Full Configuration
+> [!TIP]
+> Always use `secrets: inherit` to pass repository secrets to the reusable workflow.
 
 ```yaml
 jobs:
   ci:
     uses: ./.github/workflows/ci-dotnet-reusable.yml
-    with:
-      configuration: "Release"
-      dotnet-version: "10.0.x"
-      solution-file: "MyApp.sln"
-      test-results-artifact-name: "my-test-results"
-      build-artifacts-name: "my-build-artifacts"
-      coverage-artifact-name: "my-coverage"
-      artifact-retention-days: 14
-      runs-on: "ubuntu-latest"
-      enable-code-analysis: true
-      fail-on-format-issues: true
     secrets: inherit
 ```
 
-### Debug Build with Relaxed Analysis
+### Custom Configuration
 
 ```yaml
 jobs:
@@ -563,28 +524,58 @@ jobs:
     uses: ./.github/workflows/ci-dotnet-reusable.yml
     with:
       configuration: "Debug"
+      dotnet-version: "9.0.x"
+      solution-file: "MyApp.sln"
       enable-code-analysis: true
-      fail-on-format-issues: false # Warn but don't fail
+      fail-on-format-issues: false
+      artifact-retention-days: 14
     secrets: inherit
 ```
 
-> 💡 **Note:** Cross-platform testing (Ubuntu, Windows, macOS) is always enabled via matrix strategy.
+### Using Outputs
+
+```yaml
+jobs:
+  ci:
+    uses: ./.github/workflows/ci-dotnet-reusable.yml
+    secrets: inherit
+
+  deploy:
+    needs: ci
+    if: needs.ci.outputs.build-result == 'success'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy version
+        run: echo "Deploying version ${{ needs.ci.outputs.build-version }}"
+```
+
+### Best Practices Applied
+
+| Practice                  | Implementation                             |
+| :------------------------ | :----------------------------------------- |
+| ✅ Pinned Action Versions | All actions use SHA-pinned versions        |
+| ✅ Cross-Platform Testing | Matrix strategy across 3 OS platforms      |
+| ✅ Security Scanning      | CodeQL runs on every execution             |
+| ✅ Code Coverage          | Cobertura format for tooling compatibility |
+| ✅ Artifact Retention     | Configurable retention period              |
+| ✅ Fail Fast Disabled     | All matrix jobs complete for full feedback |
+| ✅ Detailed Summaries     | Rich markdown summaries for each job       |
+| ✅ Test Result Publishing | GitHub check runs via dorny/test-reporter  |
 
 ---
 
-## 🔍 Troubleshooting
+## 🔧 Troubleshooting
 
 ### Common Issues
 
-| Issue                     | Cause                  | Solution                          |
-| ------------------------- | ---------------------- | --------------------------------- |
-| Build fails               | Missing dependencies   | Check `dotnet restore` output     |
-| Tests fail on specific OS | Platform-specific code | Review matrix job logs            |
-| Coverage not generated    | Test framework issue   | Verify test project configuration |
-| Format check fails        | Code style violations  | Run `dotnet format` locally       |
-| Workload update fails     | Permission issues      | Check runner configuration        |
+| Issue                      | Cause                             | Solution                                    |
+| :------------------------- | :-------------------------------- | :------------------------------------------ |
+| Format check fails         | Code violates .editorconfig rules | Run `dotnet format` locally                 |
+| Tests fail on Windows only | Path separator issues             | Use `Path.Combine()` or `/` in paths        |
+| CodeQL takes too long      | Large codebase                    | 45-minute timeout; consider query filtering |
+| Artifact upload fails      | No files match pattern            | Verify build output paths                   |
 
-### Local Debugging
+### Local Testing Commands
 
 ```bash
 # Full CI simulation
@@ -594,75 +585,23 @@ dotnet test app.sln --configuration Release --collect:"XPlat Code Coverage"
 dotnet format app.sln --verify-no-changes
 ```
 
-### Fixing Format Issues
+---
 
-```bash
-# Auto-fix all formatting issues
-dotnet format app.sln
+## 📚 Related Documentation
 
-# Verify changes
-dotnet format app.sln --verify-no-changes
-
-# Fix specific file types
-dotnet format app.sln --include "**/*.cs"
-```
+- [CI Workflow](ci-dotnet.md) - Entry point workflow that calls this reusable workflow
+- [CD - Azure Deployment](azure-dev.md) - Deployment workflow
+- [GitHub Reusable Workflows](https://docs.github.com/en/actions/using-workflows/reusing-workflows)
+- [CodeQL Documentation](https://codeql.github.com/docs/)
 
 ---
 
-## 📊 Job Dependencies Graph
-
-```mermaid
----
-title: CI Job Dependencies
----
-flowchart LR
-    %% ===== JOB DEPENDENCY GRAPH =====
-    build(["🔨 Build"]) -->|triggers| test(["🧪 Test"])
-    build -->|triggers| analyze(["🔍 Analyze"])
-    build -->|triggers| codeql(["🛡️ CodeQL"])
-    test -->|reports to| summary(["📊 Summary"])
-    analyze -->|reports to| summary
-    codeql -->|reports to| summary
-    test --x|on failure| failure(["❌ Failed"])
-    analyze --x|on failure| failure
-    codeql --x|on failure| failure
-
-    %% ===== STYLING DEFINITIONS =====
-    %% Primary components: Indigo - main processes
-    classDef primary fill:#4F46E5,stroke:#3730A3,color:#FFFFFF
-    %% Secondary components: Emerald - secondary elements
-    classDef secondary fill:#10B981,stroke:#059669,color:#FFFFFF
-    %% Error/failure states: Red - error handling
-    classDef failed fill:#F44336,stroke:#C62828,color:#FFFFFF
-    %% Data stores: Amber - reporting
-    classDef datastore fill:#F59E0B,stroke:#D97706,color:#000000
-
-    %% ===== NODE STYLING =====
-    class build,test primary
-    class analyze secondary
-    class codeql primary
-    class summary datastore
-    class failure failed
-```
-
----
-
-## 🔗 Related Documentation
-
-| Resource                                                                                          | Description               |
-| ------------------------------------------------------------------------------------------------- | ------------------------- |
-| [CI - .NET Build and Test](./ci-dotnet.md)                                                        | Main CI workflow          |
-| [CD - Azure Deployment](./azure-dev.md)                                                           | Azure deployment workflow |
-| [GitHub Reusable Workflows](https://docs.github.com/en/actions/using-workflows/reusing-workflows) | GitHub documentation      |
-| [.NET SDK Documentation](https://docs.microsoft.com/en-us/dotnet/)                                | Microsoft .NET docs       |
-| [Microsoft Testing Platform](https://learn.microsoft.com/en-us/dotnet/core/testing/)              | Testing documentation     |
+[⬆️ Back to Top](#-ci---net-reusable-workflow)
 
 ---
 
 <div align="center">
 
-[← CI Pipeline](ci-dotnet.md) | **Reusable CI Workflow** | [📑 DevOps Index](README.md)
-
-[⬆️ Back to top](#-ci---net-reusable-workflow)
+**[← CI Workflow](ci-dotnet.md)** | **[DevOps Index](README.md)** | **[CD Azure →](azure-dev.md)**
 
 </div>

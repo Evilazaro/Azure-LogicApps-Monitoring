@@ -1,23 +1,24 @@
 ---
-title: CD - Azure Deployment
-description: CI/CD pipeline for provisioning and deployment using Azure Developer CLI
-author: Evilazaro
-version: 1.0
-tags: [devops, cd, azure, azd, deployment, github-actions]
+title: CD - Azure Deployment Workflow
+description: Continuous delivery pipeline for provisioning Azure infrastructure and deploying .NET applications using Azure Developer CLI with OIDC authentication
+author: Platform Team
+date: 2026-01-21
+version: 1.0.0
+tags: [cd, deployment, azure, azd, oidc, github-actions]
 ---
 
-# 🚀 CD - Azure Deployment
+# 🚀 CD - Azure Deployment Workflow
 
 > [!NOTE]
-> **Workflow File:** [azure-dev.yml](../../.github/workflows/azure-dev.yml)  
-> 🎯 **For DevOps Engineers**: Pipeline for Azure infrastructure provisioning and application deployment.
+> **Target Audience:** DevOps Engineers, Platform Engineers, Release Managers<br/>
+> **Reading Time:** ~12 minutes
 
 <details>
-<summary>📍 <strong>Quick Navigation</strong></summary>
+<summary>📍 Navigation</summary>
 
-| Previous                       |            Index             |                          Next |
-| :----------------------------- | :--------------------------: | ----------------------------: |
-| [← DevOps Overview](README.md) | [📑 DevOps Index](README.md) | [CI Pipeline →](ci-dotnet.md) |
+| Previous                             |           Index           |                        Next |
+| :----------------------------------- | :-----------------------: | --------------------------: |
+| [CI Reusable](ci-dotnet-reusable.md) | [DevOps Index](README.md) | [Dependabot](dependabot.md) |
 
 </details>
 
@@ -25,461 +26,390 @@ tags: [devops, cd, azure, azd, deployment, github-actions]
 
 ## 📑 Table of Contents
 
-- [📋 Overview](#-overview)
-- [🗺️ Pipeline Visualization](#%EF%B8%8F-pipeline-visualization)
-- [🎯 Triggers](#-triggers)
-- [📋 Jobs & Steps](#-jobs--steps)
-- [🔐 Prerequisites](#-prerequisites)
-- [🔧 Environment Variables](#-environment-variables)
-- [🚀 Usage Examples](#-usage-examples)
-- [🔍 Troubleshooting](#-troubleshooting)
-- [🔗 Related Documentation](#-related-documentation)
+- [🚀 CD - Azure Deployment Workflow](#-cd---azure-deployment-workflow)
+  - [📑 Table of Contents](#-table-of-contents)
+  - [📖 Overview](#-overview)
+  - [📊 Pipeline Visualization](#-pipeline-visualization)
+  - [🎯 Triggers](#-triggers)
+  - [📋 Jobs](#-jobs)
+  - [⚙️ Prerequisites](#️-prerequisites)
+  - [🌐 Environment Variables](#-environment-variables)
+  - [🔄 Concurrency](#-concurrency)
+  - [💡 Usage Examples](#-usage-examples)
+  - [🔧 Troubleshooting](#-troubleshooting)
+  - [📚 Related Documentation](#-related-documentation)
 
 ---
 
-## 📋 Overview
+## 📖 Overview
 
-This workflow provisions Azure infrastructure and deploys the .NET application using **Azure Developer CLI (azd)** with **OpenID Connect (OIDC)** authentication. It integrates the CI pipeline (build, test, analyze) before deploying to the development environment.
+The **CD - Azure Deployment** workflow (`azure-dev.yml`) is the continuous delivery pipeline that provisions Azure infrastructure and deploys the .NET application using Azure Developer CLI (azd) with OpenID Connect (OIDC) authentication.
 
-### Key Features
-
-| Feature                             | Description                                      |
-| ----------------------------------- | ------------------------------------------------ |
-| ✅ **Integrated CI Pipeline**       | Build, test, and code analysis before deployment |
-| 🔐 **OIDC Authentication**          | No stored secrets - uses federated credentials   |
-| 🌍 **Environment-based Deployment** | Protection rules and environment variables       |
-| 📊 **Deployment Summaries**         | Detailed observability and reporting             |
-| 🔄 **Automatic Rollback**           | Instructions provided on failure                 |
+This workflow implements a comprehensive deployment pipeline with integrated CI validation, infrastructure provisioning, SQL Managed Identity configuration, and application deployment to Azure Container Apps.
 
 ---
 
-## 🗺️ Pipeline Visualization
+## 📊 Pipeline Visualization
+
+<details>
+<summary>🔍 Click to expand deployment pipeline diagram</summary>
 
 ```mermaid
 ---
-title: CD - Azure Deployment Pipeline
+title: Azure Deployment Pipeline Architecture
 ---
-flowchart LR
+flowchart TD
     %% ===== TRIGGER EVENTS =====
     subgraph Triggers["🎯 Triggers"]
-        push(["Push to docs987678"])
-        manual(["Manual Dispatch"])
-    end
-
-    %% ===== CONDITION CHECKS =====
-    subgraph Conditions["⚙️ Conditions"]
-        skip_ci{"Skip CI?"}
+        T1(["workflow_dispatch"])
+        T2(["push to branch"])
     end
 
     %% ===== CI STAGE =====
     subgraph CI["🔄 CI Stage"]
-        ci_job[["CI Reusable Workflow"]]
+        CI_JOB[["ci-dotnet-reusable.yml"]]
+        CI_BUILD["🔨 Build"]
+        CI_TEST["🧪 Test"]
+        CI_ANALYZE["🔍 Analyze"]
+        CI_CODEQL["🛡️ CodeQL"]
     end
 
     %% ===== DEPLOYMENT STAGE =====
-    subgraph Deploy["🚀 Deploy Stage"]
-        direction LR
-
-        subgraph SetupPhase["📦 Phase 1: Setup"]
-            checkout["Checkout Repository"]
-            prereq["Install Prerequisites"]
-            azd_install["Install Azure Developer CLI"]
-            dotnet_setup["Setup .NET SDK"]
-        end
-
-        subgraph AuthPhase["🔐 Phase 2: Authentication"]
-            azd_auth["AZD Login via OIDC"]
-            az_login["Azure CLI Login"]
-        end
-
-        subgraph ProvisionPhase["🏗️ Phase 3: Provision & Deploy"]
-            provision["Provision Infrastructure"]
-            reauth["Re-authenticate Session"]
-            deploy_app["Deploy Application"]
-        end
-
-        subgraph SummaryPhase["📊 Phase 4: Summary"]
-            gen_summary["Generate Summary"]
-        end
+    subgraph Deploy["🚀 Deploy Dev Stage"]
+        direction TB
+        D1["📥 Checkout"]
+        D2["📦 Install Prerequisites"]
+        D3["🔧 Install azd CLI"]
+        D4["🔧 Setup .NET SDK"]
+        D5["🔐 Azure Auth - OIDC"]
+        D6["🏗️ Provision Infrastructure"]
+        D7["🔐 Refresh Credentials Pre-SQL"]
+        D8["🔑 Create SQL User"]
+        D9["🔐 Refresh Credentials Post-SQL"]
+        D10["🚀 Deploy Application"]
+        D11[/"📊 Generate Summary"/]
     end
 
-    %% ===== RESULTS =====
-    subgraph Results["📊 Final Results"]
-        summary_job(["Workflow Summary"])
-        failure_handler(["Handle Failure"])
+    %% ===== OUTPUT STAGE =====
+    subgraph Summary["📊 Summary Stage"]
+        SUM[/"📊 Workflow Summary"/]
     end
 
-    %% ===== OUTPUTS =====
-    subgraph OutputsGroup["📤 Outputs"]
-        webapp_url[/"Web App URL"/]
-        resource_group[/"Resource Group Name"/]
+    %% ===== FAILURE HANDLING =====
+    subgraph Failure["❌ Failure Handling"]
+        FAIL["❌ Handle Failure"]
     end
 
-    %% Trigger flow - events initiate pipeline
-    push -->|triggers| skip_ci
-    manual -->|triggers| skip_ci
+    %% ===== TRIGGER FLOWS =====
+    T1 -->|triggers| CI_JOB
+    T2 -->|triggers| CI_JOB
 
-    %% CI decision - conditional execution
-    skip_ci -->|run CI| ci_job
-    skip_ci -->|skip to deploy| checkout
-    ci_job -->|on success| checkout
+    %% ===== CI INTERNAL FLOW =====
+    CI_JOB ==>|executes| CI_BUILD
+    CI_BUILD -->|compiles| CI_TEST
+    CI_BUILD -->|validates| CI_ANALYZE
+    CI_BUILD -->|scans| CI_CODEQL
 
-    %% Deploy flow - sequential setup and deployment
-    checkout -->|clone repo| prereq
-    prereq -->|install tools| azd_install
-    azd_install -->|configure| dotnet_setup
-    dotnet_setup -->|authenticate| azd_auth
-    azd_auth -->|login| az_login
-    az_login -->|run azd provision| provision
-    provision -->|refresh tokens| reauth
-    reauth -->|run azd deploy| deploy_app
-    deploy_app -->|create report| gen_summary
+    %% ===== CI TO DEPLOY =====
+    CI_JOB -->|success or skipped| D1
 
-    %% Summary flow - aggregate results
-    gen_summary -->|report| summary_job
-    ci_job -->|status| summary_job
+    %% ===== DEPLOY INTERNAL FLOW =====
+    D1 -->|next| D2
+    D2 -->|next| D3
+    D3 -->|next| D4
+    D4 -->|next| D5
+    D5 -->|authenticates| D6
+    D6 -->|provisions| D7
+    D7 -->|refreshes| D8
+    D8 -->|configures| D9
+    D9 -->|refreshes| D10
+    D10 -->|generates| D11
 
-    %% Failure flow - error handling paths
-    ci_job --x|on failure| failure_handler
-    deploy_app --x|on failure| failure_handler
+    %% ===== DEPLOY TO SUMMARY =====
+    D11 -->|completes| SUM
 
-    %% Output flow - capture deployment outputs
-    deploy_app -->|outputs| webapp_url
-    deploy_app -->|outputs| resource_group
+    %% ===== FAILURE HANDLING =====
+    CI_JOB -.->|on failure| FAIL
+    D10 -.->|on failure| FAIL
 
-    %% ===== STYLING DEFINITIONS =====
-    %% Primary components: Indigo - main processes/services
-    classDef primary fill:#4F46E5,stroke:#3730A3,color:#FFFFFF
-    %% Secondary components: Emerald - secondary elements
-    classDef secondary fill:#10B981,stroke:#059669,color:#FFFFFF
-    %% Data stores: Amber - artifacts and outputs
-    classDef datastore fill:#F59E0B,stroke:#D97706,color:#000000
-    %% External systems: Gray - reusable/external calls
-    classDef external fill:#6B7280,stroke:#4B5563,color:#FFFFFF,stroke-dasharray: 5 5
-    %% Error/failure states: Red - error handling
-    classDef failed fill:#F44336,stroke:#C62828,color:#FFFFFF
-    %% Decision points: Amber outline - conditional logic
-    classDef decision fill:#FFFBEB,stroke:#F59E0B,color:#000000
-    %% Triggers: Indigo light - entry points
+    %% ===== NODE STYLING =====
     classDef trigger fill:#818CF8,stroke:#4F46E5,color:#FFFFFF
+    classDef external fill:#6B7280,stroke:#4B5563,color:#FFFFFF,stroke-dasharray:5 5
+    classDef primary fill:#4F46E5,stroke:#3730A3,color:#FFFFFF
+    classDef secondary fill:#10B981,stroke:#059669,color:#FFFFFF
+    classDef datastore fill:#F59E0B,stroke:#D97706,color:#000000
+    classDef failed fill:#F44336,stroke:#C62828,color:#FFFFFF
 
-    %% Subgraph background styling - lighter shades
+    %% ===== APPLY NODE CLASSES =====
+    class T1,T2 trigger
+    class CI_JOB external
+    class CI_BUILD,CI_ANALYZE secondary
+    class CI_TEST secondary
+    class CI_CODEQL secondary
+    class D1,D2,D3,D4,D5,D6,D7,D8,D9,D10 primary
+    class D11,SUM datastore
+    class FAIL failed
+
+    %% ===== SUBGRAPH STYLING =====
     style Triggers fill:#EEF2FF,stroke:#4F46E5,stroke-width:2px
-    style Conditions fill:#FEF3C7,stroke:#F59E0B,stroke-width:2px
-    style CI fill:#F3F4F6,stroke:#6B7280,stroke-width:2px
-    style Deploy fill:#ECFDF5,stroke:#10B981,stroke-width:2px
-    style SetupPhase fill:#E0E7FF,stroke:#4F46E5,stroke-width:1px
-    style AuthPhase fill:#D1FAE5,stroke:#10B981,stroke-width:1px
-    style ProvisionPhase fill:#E0E7FF,stroke:#4F46E5,stroke-width:1px
-    style SummaryPhase fill:#FEF3C7,stroke:#F59E0B,stroke-width:1px
-    style Results fill:#FEF3C7,stroke:#F59E0B,stroke-width:2px
-    style OutputsGroup fill:#FEF3C7,stroke:#F59E0B,stroke-width:2px
-
-    %% Apply styles to nodes
-    class push,manual trigger
-    class skip_ci decision
-    class ci_job external
-    class checkout,prereq,azd_install,dotnet_setup primary
-    class azd_auth,az_login,reauth secondary
-    class provision,deploy_app primary
-    class gen_summary,summary_job secondary
-    class failure_handler failed
-    class webapp_url,resource_group datastore
+    style CI fill:#ECFDF5,stroke:#10B981,stroke-width:2px
+    style Deploy fill:#E0E7FF,stroke:#4F46E5,stroke-width:2px
+    style Summary fill:#FEF3C7,stroke:#F59E0B,stroke-width:2px
+    style Failure fill:#FEE2E2,stroke:#F44336,stroke-width:2px
 ```
+
+</details>
 
 ---
 
 ## 🎯 Triggers
 
-| Event               | Condition                                                            | Description                                          |
-| ------------------- | -------------------------------------------------------------------- | ---------------------------------------------------- |
-| `push`              | Branch: `docs987678`                                                 | Triggers on push to docs987678 branch                |
-| `push`              | Paths: `src/**`, `app.*/**`, `infra/**`, `azure.yaml`, workflow file | Only runs when relevant files change                 |
-| `workflow_dispatch` | Manual                                                               | Allows manual triggering with optional skip-ci input |
+| Trigger             | Condition                                                     | Description                   |
+| :------------------ | :------------------------------------------------------------ | :---------------------------- |
+| `workflow_dispatch` | Manual trigger with optional `skip-ci` input                  | Allows manual deployment runs |
+| `push`              | Branch: `docs987678`                                          | Triggers on push to branch    |
+| **Path Filters**    | `src/**`, `app.*/**`, `infra/**`, `azure.yaml`, workflow file | Only relevant file changes    |
 
-### Path Filters
+### Manual Trigger Inputs
 
-The workflow monitors changes to these paths:
+> [!CAUTION]
+> The `skip-ci` option bypasses all build and test validation. Use only for emergency hotfixes.
 
-```yaml
-paths:
-  - "src/**" # Source code changes
-  - "app.*/**" # .NET Aspire host/defaults projects
-  - "infra/**" # Infrastructure changes
-  - "azure.yaml" # Azure Developer CLI configuration
-  - ".github/workflows/azure-dev.yml" # This workflow
-```
-
-### Manual Dispatch Inputs
-
-| Input     | Type      | Default | Description                       |
-| --------- | --------- | ------- | --------------------------------- |
-| `skip-ci` | `boolean` | `false` | Skip CI checks (use with caution) |
-
-> ⚠️ **Warning:** Skipping CI should only be used for emergency deployments or when CI has been validated separately.
+| Input     | Type    | Default | Description                       |
+| :-------- | :------ | :------ | :-------------------------------- |
+| `skip-ci` | boolean | `false` | Skip CI checks (use with caution) |
 
 ---
 
-## 📋 Jobs & Steps
+## 📋 Jobs
 
-### Job 1: 🔄 CI
+### 1. 🔄 CI (Reusable Workflow)
 
-**Condition:** Runs unless `skip-ci` is `true`
+Calls the reusable CI workflow (`ci-dotnet-reusable.yml`) for build, test, and security analysis.
 
-| Property                  | Value                                      |
-| ------------------------- | ------------------------------------------ |
-| **Type**                  | Reusable workflow call                     |
-| **Workflow**              | `.github/workflows/ci-dotnet-reusable.yml` |
-| **Configuration**         | `Release`                                  |
-| **Analysis**              | Enabled                                    |
-| **Fail on Format Issues** | Disabled                                   |
+| Property      | Value                                        |
+| :------------ | :------------------------------------------- |
+| **Condition** | `github.event.inputs.skip-ci != 'true'`      |
+| **Workflow**  | `./.github/workflows/ci-dotnet-reusable.yml` |
 
-### Job 2: 🚀 Deploy Dev
+**Configuration passed:**
 
-**Condition:** Runs when CI succeeds or is skipped
+```yaml
+configuration: "Release"
+dotnet-version: "10.0.x"
+solution-file: "app.sln"
+enable-code-analysis: true
+fail-on-format-issues: false
+```
 
-| Property        | Value           |
-| --------------- | --------------- |
-| **Runner**      | `ubuntu-latest` |
-| **Timeout**     | 30 minutes      |
-| **Environment** | `dev`           |
-| **Needs**       | `ci`            |
+### 2. 🚀 Deploy Dev
 
-#### Steps Overview
+Deploys the application to the development environment.
 
-| Phase       | Step                           | Description                                                |
-| ----------- | ------------------------------ | ---------------------------------------------------------- |
-| **Setup**   | 📥 Checkout repository         | Clones the repository                                      |
-| **Setup**   | 📦 Install Prerequisites       | Installs `jq`, `dos2unix`, `go-sqlcmd`                     |
-| **Setup**   | 🔧 Install Azure Developer CLI | Sets up azd                                                |
-| **Setup**   | 🔧 Setup .NET SDK              | Installs .NET 10.0.x                                       |
-| **Auth**    | 🔐 Log in with Azure (OIDC)    | Authenticates azd with federated credentials               |
-| **Auth**    | 🔑 Azure CLI Login             | Authenticates Azure CLI                                    |
-| **Deploy**  | 🏗️ Provision Infrastructure    | Runs `azd provision` (3 retries, 30s exponential backoff)  |
-| **Deploy**  | 🔑 Create SQL User             | Creates managed identity user (3 retries, 15s exp backoff) |
-| **Deploy**  | 🔐 Re-authenticate             | Refreshes authentication tokens                            |
-| **Deploy**  | 🚀 Deploy Application          | Runs `azd deploy` (3 retries, 30s exponential backoff)     |
-| **Summary** | 📊 Generate deployment summary | Creates detailed summary with rollback info                |
+| Property        | Value                     |
+| :-------------- | :------------------------ |
+| **Runner**      | `ubuntu-latest`           |
+| **Timeout**     | 30 minutes                |
+| **Depends On**  | `ci` (success or skipped) |
+| **Environment** | `dev`                     |
 
-#### Job Outputs
+#### Deployment Phases
+
+<details>
+<summary>🔍 View deployment phases diagram</summary>
+
+```mermaid
+---
+title: Deployment Phases Workflow
+---
+flowchart LR
+    %% ===== PHASE 1: SETUP =====
+    subgraph Phase1["Phase 1: Setup"]
+        P1A["Checkout"]
+        P1B["Install go-sqlcmd"]
+        P1C["Install azd CLI"]
+        P1D["Setup .NET SDK"]
+    end
+
+    %% ===== PHASE 2: AUTHENTICATION =====
+    subgraph Phase2["Phase 2: Auth"]
+        P2A["azd auth login"]
+        P2B["az login OIDC"]
+    end
+
+    %% ===== PHASE 3: PROVISIONING =====
+    subgraph Phase3["Phase 3: Provision"]
+        P3A["azd provision"]
+    end
+
+    %% ===== PHASE 4: SQL CONFIGURATION =====
+    subgraph Phase4["Phase 4: SQL Config"]
+        P4A["Refresh Credentials"]
+        P4B["Create SQL User"]
+    end
+
+    %% ===== PHASE 5: DEPLOYMENT =====
+    subgraph Phase5["Phase 5: Deploy"]
+        P5A["Refresh Credentials"]
+        P5B["azd deploy"]
+    end
+
+    %% ===== PHASE FLOW =====
+    Phase1 ==>|completes| Phase2
+    Phase2 ==>|authenticates| Phase3
+    Phase3 ==>|provisions| Phase4
+    Phase4 ==>|configures| Phase5
+
+    %% ===== NODE STYLING =====
+    classDef primary fill:#4F46E5,stroke:#3730A3,color:#FFFFFF
+    classDef input fill:#F3F4F6,stroke:#6B7280,color:#000000
+    classDef secondary fill:#10B981,stroke:#059669,color:#FFFFFF
+    classDef datastore fill:#F59E0B,stroke:#D97706,color:#000000
+
+    %% ===== APPLY NODE CLASSES =====
+    class P1A,P1B,P1C,P1D input
+    class P2A,P2B primary
+    class P3A secondary
+    class P4A,P4B datastore
+    class P5A,P5B primary
+
+    %% ===== SUBGRAPH STYLING =====
+    style Phase1 fill:#F3F4F6,stroke:#6B7280,stroke-width:2px
+    style Phase2 fill:#EEF2FF,stroke:#4F46E5,stroke-width:2px
+    style Phase3 fill:#ECFDF5,stroke:#10B981,stroke-width:2px
+    style Phase4 fill:#FEF3C7,stroke:#F59E0B,stroke-width:2px
+    style Phase5 fill:#E0E7FF,stroke:#4F46E5,stroke-width:2px
+```
+
+</details>
+
+#### Key Steps
+
+| Step                           | Description                                                  |
+| :----------------------------- | :----------------------------------------------------------- |
+| 📥 Checkout repository         | Clone repository for deployment                              |
+| 📦 Install Prerequisites       | Install jq, dos2unix, go-sqlcmd for SQL operations           |
+| 🔧 Install Azure Developer CLI | Install latest azd CLI                                       |
+| 🔧 Setup .NET SDK              | Install .NET 10.0.x SDK                                      |
+| 🔐 Azure Auth (OIDC)           | Authenticate using federated credentials                     |
+| 🏗️ Provision Infrastructure    | Run `azd provision` with retry logic (3 attempts)            |
+| 🔐 Refresh Credentials         | Re-authenticate before SQL operations (OIDC token refresh)   |
+| 🔑 Create SQL User             | Create managed identity user in SQL database using go-sqlcmd |
+| 🚀 Deploy Application          | Run `azd deploy` with retry logic (3 attempts)               |
+| 📊 Generate Summary            | Create deployment summary in workflow output                 |
+
+#### Outputs
 
 | Output           | Description                         |
-| ---------------- | ----------------------------------- |
+| :--------------- | :---------------------------------- |
 | `webapp-url`     | URL of the deployed web application |
 | `resource-group` | Name of the Azure resource group    |
 
-### Job 3: 📊 Summary
+### 3. 📊 Summary
 
-**Condition:** Always runs
+Generates a comprehensive workflow summary report.
 
-| Property    | Value              |
-| ----------- | ------------------ |
-| **Runner**  | `ubuntu-latest`    |
-| **Timeout** | 5 minutes          |
-| **Needs**   | `ci`, `deploy-dev` |
+| Property       | Value              |
+| :------------- | :----------------- |
+| **Runner**     | `ubuntu-latest`    |
+| **Timeout**    | 5 minutes          |
+| **Depends On** | `ci`, `deploy-dev` |
+| **Condition**  | `always()`         |
 
-Generates comprehensive workflow summary with status badges and links.
+### 4. ❌ Handle Failure
 
-### Job 4: ❌ Handle Failure
+Reports pipeline failures with actionable information.
 
-**Condition:** Runs on failure
-
-| Property    | Value              |
-| ----------- | ------------------ |
-| **Runner**  | `ubuntu-latest`    |
-| **Timeout** | 5 minutes          |
-| **Needs**   | `ci`, `deploy-dev` |
-
-Reports failure with detailed job results and next steps.
+| Property      | Value           |
+| :------------ | :-------------- |
+| **Runner**    | `ubuntu-latest` |
+| **Timeout**   | 5 minutes       |
+| **Condition** | `failure()`     |
 
 ---
 
-## 🔐 Prerequisites
+## ⚙️ Prerequisites
 
-### Required Repository Variables
+> [!IMPORTANT]
+> All prerequisites must be configured before the first deployment. Missing configuration will cause authentication failures.
 
-| Variable                  | Description                         |             Required             |
-| ------------------------- | ----------------------------------- | :------------------------------: |
-| `AZURE_CLIENT_ID`         | Azure AD App Registration Client ID |                ✅                |
-| `AZURE_TENANT_ID`         | Azure AD Tenant ID                  |                ✅                |
-| `AZURE_SUBSCRIPTION_ID`   | Azure Subscription ID               |                ✅                |
-| `AZURE_ENV_NAME`          | Azure environment name              |       ❌ (default: `dev`)        |
-| `AZURE_LOCATION`          | Azure region                        |     ❌ (default: `eastus2`)      |
-| `DEPLOYER_PRINCIPAL_TYPE` | Principal type for deployment       | ❌ (default: `ServicePrincipal`) |
-| `DEPLOY_HEALTH_MODEL`     | Health model deployment flag        |                ❌                |
+### Required Secrets/Variables
+
+| Variable                  | Type     | Description                                  |
+| :------------------------ | :------- | :------------------------------------------- |
+| `AZURE_CLIENT_ID`         | Variable | Azure AD application (client) ID             |
+| `AZURE_TENANT_ID`         | Variable | Azure AD tenant ID                           |
+| `AZURE_SUBSCRIPTION_ID`   | Variable | Azure subscription ID                        |
+| `AZURE_ENV_NAME`          | Variable | Azure environment name (default: `dev`)      |
+| `AZURE_LOCATION`          | Variable | Azure region (default: `eastus2`)            |
+| `DEPLOYER_PRINCIPAL_TYPE` | Variable | Principal type (default: `ServicePrincipal`) |
+| `DEPLOY_HEALTH_MODEL`     | Variable | Enable health model deployment               |
 
 ### Required Permissions
 
 ```yaml
 permissions:
-  id-token: write # Required for OIDC authentication with Azure
-  contents: read # Required for checkout
-  checks: write # Required for status checks
-  pull-requests: write # Required for PR comments
-  security-events: write # Required for CodeQL SARIF upload to Security tab
+  id-token: write # OIDC authentication with Azure
+  contents: read # Read repository contents
+  checks: write # Create check runs for test results
+  pull-requests: write # Post comments on pull requests
+  security-events: write # Upload CodeQL SARIF results
 ```
 
 ### GitHub Environment
 
-| Environment | URL Output                               | Protection Rules |
-| ----------- | ---------------------------------------- | ---------------- |
-| `dev`       | `${{ steps.deploy.outputs.webapp-url }}` | None             |
+The workflow requires a GitHub environment named `dev` with:
+
+- Environment protection rules (optional)
+- Environment-specific variables configured
 
 ### Azure Prerequisites
 
-1. **Federated Credentials** - Must be configured in Azure AD for GitHub Actions OIDC
-2. **Resource Provider Registrations** - Required Azure providers must be registered
-3. **Subscription Access** - Service principal must have appropriate permissions
+1. **Federated Credentials**: Configure OIDC federation in Azure Entra ID
+2. **Service Principal**: Application with appropriate Azure RBAC roles
+3. **Azure SQL**: Database with Entra ID authentication enabled
 
 ---
 
-## � Resilience Features
+## 🌐 Environment Variables
 
-This workflow includes built-in retry logic to handle transient failures common in cloud deployments.
-
-### Retry Configuration
-
-| Operation                       | Max Retries | Initial Delay | Backoff Strategy         |
-| ------------------------------- | :---------: | :-----------: | ------------------------ |
-| **Infrastructure Provisioning** |      3      |      30s      | Exponential (30→60→120s) |
-| **SQL User Creation**           |      3      |      15s      | Exponential (15→30→60s)  |
-| **Application Deployment**      |      3      |      30s      | Exponential (30→60→120s) |
-
-### Retry Behavior
-
-```mermaid
----
-title: Retry Pattern with Exponential Backoff
----
-flowchart LR
-    %% ===== RETRY PATTERN =====
-    subgraph RetryLogic["🔄 Retry Pattern"]
-        attempt["Attempt Operation"]
-        check{{"Success?"}}
-        retry["Wait & Retry"]
-        fail["❌ Fail Pipeline"]
-        success["✅ Continue"]
-    end
-
-    %% ===== FLOW CONNECTIONS =====
-    attempt -->|"execute"| check
-    check -->|"Yes"| success
-    check -->|"No (< max)"| retry
-    retry -->|"exponential backoff"| attempt
-    check -->|"No (= max)"| fail
-
-    %% ===== STYLING DEFINITIONS =====
-    %% Primary components: Indigo - main processes
-    classDef primary fill:#4F46E5,stroke:#3730A3,color:#FFFFFF
-    %% Secondary components: Emerald - success states
-    classDef secondary fill:#10B981,stroke:#059669,color:#FFFFFF
-    %% Error/failure states: Red - error handling
-    classDef failed fill:#F44336,stroke:#C62828,color:#FFFFFF
-    %% Decision points: Amber outline - conditional logic
-    classDef decision fill:#FFFBEB,stroke:#F59E0B,color:#000000
-
-    %% ===== NODE STYLING =====
-    class attempt,retry primary
-    class success secondary
-    class fail failed
-    class check decision
-
-    %% ===== SUBGRAPH STYLING =====
-    style RetryLogic fill:#EEF2FF,stroke:#4F46E5,stroke-width:2px
-```
-
-### Common Transient Failures Handled
-
-| Failure Type              | Cause                            | Recovery                            |
-| ------------------------- | -------------------------------- | ----------------------------------- |
-| Azure API throttling      | Too many requests                | Exponential backoff allows recovery |
-| Network connectivity      | Temporary network issues         | Retry reconnects automatically      |
-| SQL connectivity timeout  | Database temporarily unreachable | Retry with increased delay          |
-| Container deployment race | Resource not yet ready           | Delay allows propagation            |
+| Variable                            | Value    | Description                  |
+| :---------------------------------- | :------- | :--------------------------- |
+| `DOTNET_VERSION`                    | `10.0.x` | .NET SDK version             |
+| `DOTNET_SKIP_FIRST_TIME_EXPERIENCE` | `true`   | Skip .NET welcome experience |
+| `DOTNET_NOLOGO`                     | `true`   | Suppress .NET logo           |
+| `DOTNET_CLI_TELEMETRY_OPTOUT`       | `true`   | Disable telemetry            |
 
 ---
 
-## �🔧 Environment Variables
+## 🔄 Concurrency
 
 ```yaml
-env:
-  DOTNET_VERSION: "10.0.x"
-  DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
-  DOTNET_NOLOGO: true
-  DOTNET_CLI_TELEMETRY_OPTOUT: true
+concurrency:
+  group: deploy-dev-${{ github.ref }}
+  cancel-in-progress: false
 ```
+
+Prevents simultaneous deployments to the same environment while ensuring in-progress deployments complete.
 
 ---
 
-## 🚀 Usage Examples
+## 💡 Usage Examples
 
-### Automatic Deployment
+### Manual Deployment
 
-Push changes to the `main` branch with changes in monitored paths:
-
-```bash
-git add src/
-git commit -m "feat: add new feature"
-git push origin main
-```
-
-### Manual Deployment (UI)
-
-1. Go to **Actions** → **CD - Azure Deployment**
-2. Click **Run workflow**
-3. Optionally check **Skip CI checks**
-4. Click **Run workflow**
-
-### Manual Deployment (CLI)
+> [!TIP]
+> Use the GitHub CLI for quick workflow triggers from your terminal.
 
 ```bash
-gh workflow run azure-dev.yml --ref main
-```
+# Trigger deployment with CI checks
+gh workflow run azure-dev.yml
 
-### Skip CI (Emergency Deploy)
-
-```bash
-gh workflow run azure-dev.yml --ref main -f skip-ci=true
-```
-
-> ⚠️ **Caution:** Only use skip-ci for emergency deployments when CI has been validated separately.
-
----
-
-## 🔍 Troubleshooting
-
-### Common Issues
-
-| Issue                         | Cause                         | Solution                                       |
-| ----------------------------- | ----------------------------- | ---------------------------------------------- |
-| OIDC authentication fails     | Invalid federated credentials | Verify Azure AD app registration configuration |
-| Provision fails after 3 tries | Persistent Azure API issues   | Check Azure status page, verify quotas         |
-| Deploy fails after 3 tries    | Resource conflicts or limits  | Review Azure portal for resource status        |
-| SQL creation fails            | Network/firewall issues       | Verify SQL firewall allows GitHub Actions IPs  |
-| sqlcmd errors                 | Wrong version installed       | Workflow installs go-sqlcmd automatically      |
-
-### Retry Logic Indicators
-
-When reviewing logs, look for these messages to understand retry behavior:
-
-```
-# Provisioning retries
-Provisioning attempt 1 of 3...
-::warning::Provisioning attempt 1 failed, retrying in 30s...
-Provisioning attempt 2 of 3...
-
-# SQL retries
-SQL execution attempt 1 of 3...
-::warning::SQL execution attempt 1 failed, retrying in 15s...
-
-# Deployment retries
-Deployment attempt 1 of 3...
-::warning::Deployment attempt 1 failed, retrying in 30s...
+# Trigger deployment skipping CI (use with caution)
+gh workflow run azure-dev.yml -f skip-ci=true
 ```
 
 ### Rollback Instructions
-
-On deployment failure, the summary includes rollback instructions:
 
 ```bash
 # Option 1: Re-run with previous commit
@@ -490,30 +420,43 @@ git checkout <previous-commit-sha>
 azd deploy --no-prompt
 ```
 
-### Viewing Logs
+---
 
-1. Navigate to the failed workflow run
-2. Click on the failed job
-3. Expand the failed step to view detailed logs
-4. Check the deployment summary for environment details
+## 🔧 Troubleshooting
+
+### Common Issues
+
+| Issue                     | Cause                                 | Solution                                    |
+| :------------------------ | :------------------------------------ | :------------------------------------------ |
+| OIDC authentication fails | Federated credential misconfiguration | Verify Azure AD app registration settings   |
+| SQL user creation fails   | Token expired during long operations  | Credentials are auto-refreshed; check logs  |
+| Provisioning timeout      | Azure API throttling                  | Retry logic handles transient failures      |
+| go-sqlcmd not found       | PATH conflict with ODBC sqlcmd        | Workflow removes ODBC version automatically |
+
+### Debugging Steps
+
+1. **Check Authentication**: Verify federated credentials in Azure portal
+2. **Review Logs**: Expand collapsed log groups for detailed output
+3. **Azure Portal**: Check resource group status and activity logs
+4. **Re-run Workflow**: Use the "Re-run failed jobs" option
 
 ---
 
-## 🔗 Related Documentation
+## 📚 Related Documentation
 
-| Resource                                                                                                    | Description                  |
-| ----------------------------------------------------------------------------------------------------------- | ---------------------------- |
-| [CI - .NET Reusable Workflow](./ci-dotnet-reusable.md)                                                      | Reusable CI workflow details |
-| [Azure Developer CLI Documentation](https://learn.microsoft.com/en-us/azure/developer/azure-developer-cli/) | Official azd documentation   |
-| [Federated Credentials Setup](https://learn.microsoft.com/en-us/azure/developer/github/connect-from-azure)  | OIDC authentication setup    |
-| [Developer Experience Documentation](../hooks/README.md)                                                    | Pre/post deployment scripts  |
+- [Azure Developer CLI Documentation](https://learn.microsoft.com/azure/developer/azure-developer-cli/)
+- [GitHub Actions OIDC with Azure](https://learn.microsoft.com/azure/developer/github/connect-from-azure)
+- [CI Workflow Documentation](ci-dotnet.md)
+- [Reusable CI Workflow](ci-dotnet-reusable.md)
+
+---
+
+[⬆️ Back to Top](#-cd---azure-deployment-workflow)
 
 ---
 
 <div align="center">
 
-[← DevOps Overview](README.md) | **CD - Azure Deployment** | [CI Pipeline →](ci-dotnet.md)
-
-[⬆️ Back to top](#-cd---azure-deployment)
+**[← CI Reusable](ci-dotnet-reusable.md)** | **[DevOps Index](README.md)** | **[Dependabot →](dependabot.md)**
 
 </div>

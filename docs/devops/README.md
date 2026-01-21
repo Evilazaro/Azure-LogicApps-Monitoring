@@ -1,23 +1,24 @@
 ---
 title: DevOps Documentation
-description: GitHub Actions workflows for CI/CD pipelines in the Azure Logic Apps Monitoring project
-author: Evilazaro
-version: 1.0
-tags: [devops, ci-cd, github-actions, azure, deployment]
+description: Comprehensive documentation for CI/CD pipelines and DevOps configurations for the Azure Logic Apps Monitoring solution
+author: Platform Team
+date: 2026-01-21
+version: 1.0.0
+tags: [devops, ci-cd, github-actions, azure, pipelines]
 ---
 
-# 🔧 DevOps Documentation
+# 🚀 DevOps Documentation
 
 > [!NOTE]
-> 🎯 **For DevOps Engineers and Platform Teams**: Comprehensive documentation for GitHub Actions workflows used in CI/CD pipelines.  
-> ⏱️ **Estimated reading time:** 10 minutes for overview, 30 minutes for complete documentation
+> **Target Audience:** DevOps Engineers, Platform Engineers, Developers<br/>
+> **Reading Time:** ~15 minutes
 
 <details>
-<summary>📍 <strong>Quick Navigation</strong></summary>
+<summary>📍 Navigation</summary>
 
-| Previous |             Index             |                               Next |
-| :------- | :---------------------------: | ---------------------------------: |
-| —        | [📚 Docs Index](../README.md) | [Azure Deployment →](azure-dev.md) |
+| Previous |      Index       |                        Next |
+| :------- | :--------------: | --------------------------: |
+| —        | **You are here** | [CI Workflow](ci-dotnet.md) |
 
 </details>
 
@@ -25,253 +26,439 @@ tags: [devops, ci-cd, github-actions, azure, deployment]
 
 ## 📑 Table of Contents
 
-- [📋 Overview](#-overview)
-- [🗺️ Master Pipeline Diagram](#%EF%B8%8F-master-pipeline-diagram)
-- [📁 Workflow Documentation](#-workflow-documentation)
-- [📊 Quick Reference](#-quick-reference)
-- [🔐 Required Secrets & Variables](#-required-secrets--variables)
-- [🔗 Related Documentation](#-related-documentation)
-- [📚 Additional Resources](#-additional-resources)
+- [🚀 DevOps Documentation](#-devops-documentation)
+  - [📑 Table of Contents](#-table-of-contents)
+  - [📖 Overview](#-overview)
+  - [🏗️ Architecture Overview](#️-architecture-overview)
+  - [📊 Master Pipeline Diagram](#-master-pipeline-diagram)
+  - [📚 Documentation Index](#-documentation-index)
+  - [⚡ Quick Reference](#-quick-reference)
+  - [🔄 Pipeline Flow](#-pipeline-flow)
+  - [💻 Local Development](#-local-development)
+  - [✅ Best Practices](#-best-practices)
+  - [🔧 Troubleshooting](#-troubleshooting)
+  - [📚 Related Documentation](#-related-documentation)
 
 ---
 
-## 📋 Overview
+## 📖 Overview
 
-The project uses **GitHub Actions** for continuous integration (CI) and continuous delivery (CD) to Azure. The pipeline architecture follows best practices for .NET development with **Azure Developer CLI (azd)** for infrastructure provisioning and application deployment.
-
-### Key Highlights
-
-- ✅ **Automated CI/CD** - Full automation from code push to deployment
-- 🔐 **OIDC Authentication** - Secure, secretless Azure authentication
-- 🔄 **Reusable Workflows** - DRY principle with shared CI components
-- 📊 **Comprehensive Reporting** - Detailed summaries and test results
+This folder contains comprehensive documentation for the CI/CD pipelines and DevOps configurations used in the Azure Logic Apps Monitoring solution. The project uses GitHub Actions for continuous integration and deployment to Azure.
 
 ---
 
-## 🗺️ Master Pipeline Diagram
+## 🏗️ Architecture Overview
+
+The DevOps architecture follows a modern CI/CD approach with:
+
+> [!TIP]
+> This architecture leverages GitHub Actions' native features for maximum efficiency and security.
+
+- **Reusable Workflows**: Modular, DRY workflow design
+- **Cross-Platform Testing**: Validation across Ubuntu, Windows, and macOS
+- **Security-First**: CodeQL scanning on every CI run
+- **Infrastructure as Code**: Azure resources provisioned via Bicep templates
+- **OIDC Authentication**: Secure, secretless authentication with Azure
+
+---
+
+## 📊 Master Pipeline Diagram
+
+<details>
+<summary>🔍 Click to expand full pipeline diagram</summary>
 
 ```mermaid
 ---
-title: DevOps Master Pipeline Architecture
+title: Master CI/CD Pipeline Architecture
 ---
-flowchart TB
+flowchart TD
     %% ===== TRIGGER EVENTS =====
-    subgraph TriggersGroup["🎯 Trigger Events"]
-        push_ci(["Push to main/feature/**"])
-        push_cd(["Push to docs987678"])
-        pr(["Pull Request to main"])
-        manual(["Manual Dispatch"])
+    subgraph Triggers["🎯 Trigger Events"]
+        T_PUSH(["Push to Branch"])
+        T_PR(["Pull Request"])
+        T_MANUAL(["Manual Dispatch"])
+        T_SCHEDULE(["Weekly Schedule"])
     end
 
-    %% ===== CONTINUOUS INTEGRATION =====
-    subgraph CIGroup["🔄 Continuous Integration"]
-        direction TB
-        ci_workflow["CI - .NET Build and Test"]
+    %% ===== DEPENDABOT AUTOMATION =====
+    subgraph Dependabot["🤖 Dependabot"]
+        DEP_NUGET["NuGet Updates"]
+        DEP_ACTIONS["Actions Updates"]
+    end
 
-        subgraph CIJobs["CI Jobs (via Reusable Workflow)"]
-            direction TB
-            subgraph MatrixJobs["Matrix: Ubuntu, Windows, macOS"]
-                build(["Build"])
-                test(["Test"])
-            end
-            analyze(["Analyze"])
-            codeql(["🛡️ CodeQL"])
+    %% ===== CI ENTRY POINT =====
+    subgraph CIWorkflow["📋 CI Workflow (ci-dotnet.yml)"]
+        CI_ENTRY[["CI Entry Point"]]
+    end
+
+    %% ===== REUSABLE CI WORKFLOW =====
+    subgraph ReusableCI["🔄 Reusable CI (ci-dotnet-reusable.yml)"]
+        direction TB
+
+        subgraph BuildMatrix["🔨 Build (Matrix)"]
+            B_U["Ubuntu"]
+            B_W["Windows"]
+            B_M["macOS"]
+        end
+
+        subgraph TestMatrix["🧪 Test (Matrix)"]
+            T_U["Ubuntu"]
+            T_W["Windows"]
+            T_M["macOS"]
+        end
+
+        ANALYZE["🔍 Analyze<br/>Code Format"]
+        CODEQL["🛡️ CodeQL<br/>Security Scan"]
+        CI_SUMMARY[/"📊 CI Summary"/]
+    end
+
+    %% ===== CD WORKFLOW =====
+    subgraph CDWorkflow["🚀 CD Workflow (azure-dev.yml)"]
+        direction TB
+        CD_CI[["🔄 CI Stage"]]
+        CD_DEPLOY["🚀 Deploy Dev"]
+        CD_SUMMARY[/"📊 CD Summary"/]
+
+        subgraph DeployPhases["Deployment Phases"]
+            DP1["Setup & Auth"]
+            DP2["Provision Infra"]
+            DP3["SQL Config"]
+            DP4["Deploy App"]
         end
     end
 
-    %% ===== CONTINUOUS DELIVERY =====
-    subgraph CDGroup["🚀 Continuous Delivery"]
-        direction TB
-        cd_workflow["CD - Azure Deployment"]
-
-        subgraph CDJobs["CD Jobs"]
-            ci_stage[["CI Stage (Reusable)"]]
-            deploy(["Deploy Dev"])
-        end
+    %% ===== AZURE RESOURCES =====
+    subgraph Azure["☁️ Azure"]
+        AZ_RG[("Resource Group")]
+        AZ_ACA["Container Apps"]
+        AZ_SQL[("Azure SQL")]
+        AZ_SB["Service Bus"]
     end
 
-    %% ===== EXTERNAL SERVICES =====
-    subgraph ExternalGroup["🔧 External Services"]
-        dependabot["Dependabot<br/>(Config-based)"]
-    end
+    %% ===== TRIGGER FLOWS =====
+    T_PUSH -->|triggers| CI_ENTRY
+    T_PR -->|triggers| CI_ENTRY
+    T_MANUAL -->|triggers| CI_ENTRY
+    T_MANUAL -->|triggers| CD_CI
+    T_PUSH -->|triggers| CD_CI
 
-    %% ===== RESULTS =====
-    subgraph ResultsGroup["📊 Results"]
-        summary_job(["Summary"])
-        failure_handler(["Handle Failure"])
-    end
-
-    %% ===== TRIGGER CONNECTIONS =====
-    push_ci -->|triggers| ci_workflow
-    push_cd -->|triggers| cd_workflow
-    pr -->|triggers| ci_workflow
-    manual -->|triggers| ci_workflow
-    manual -->|triggers| cd_workflow
+    %% ===== DEPENDABOT FLOWS =====
+    T_SCHEDULE -->|runs| DEP_NUGET
+    T_SCHEDULE -->|runs| DEP_ACTIONS
+    DEP_NUGET -.->|creates PR| T_PR
+    DEP_ACTIONS -.->|creates PR| T_PR
 
     %% ===== CI FLOW =====
-    ci_workflow -->|calls reusable| MatrixJobs
-    MatrixJobs -->|parallel| build
-    build -->|on success| test
-    build -->|on success| analyze
-    build -->|on success| codeql
-    test -->|reports to| summary_job
-    analyze -->|reports to| summary_job
-    codeql -->|reports to| summary_job
+    CI_ENTRY ==>|calls| BuildMatrix
+    BuildMatrix -->|compiles| TestMatrix
+    BuildMatrix -->|validates| ANALYZE
+    BuildMatrix -->|scans| CODEQL
+    TestMatrix -->|reports| CI_SUMMARY
+    ANALYZE -->|reports| CI_SUMMARY
+    CODEQL -->|reports| CI_SUMMARY
 
     %% ===== CD FLOW =====
-    cd_workflow -->|runs| ci_stage
-    ci_stage -->|on success| deploy
-    deploy -->|reports to| summary_job
+    CD_CI ==>|calls| BuildMatrix
+    CD_CI -->|success/skipped| CD_DEPLOY
+    CD_DEPLOY -->|executes| DP1
+    DP1 -->|then| DP2
+    DP2 -->|then| DP3
+    DP3 -->|then| DP4
+    DP4 -->|generates| CD_SUMMARY
 
-    %% ===== DEPENDABOT FLOW =====
-    dependabot -.->|creates PRs| pr
-
-    %% ===== FAILURE PATHS =====
-    test --x|on failure| failure_handler
-    analyze --x|on failure| failure_handler
-    codeql --x|on failure| failure_handler
-    deploy --x|on failure| failure_handler
-
-    %% ===== STYLING DEFINITIONS =====
-    %% Primary components: Indigo - main processes/services
-    classDef primary fill:#4F46E5,stroke:#3730A3,color:#FFFFFF
-    %% Secondary components: Emerald - secondary elements
-    classDef secondary fill:#10B981,stroke:#059669,color:#FFFFFF
-    %% External systems: Gray - reusable/external calls
-    classDef external fill:#6B7280,stroke:#4B5563,color:#FFFFFF,stroke-dasharray: 5 5
-    %% Error/failure states: Red - error handling
-    classDef failed fill:#F44336,stroke:#C62828,color:#FFFFFF
-    %% Triggers: Indigo light - entry points
-    classDef trigger fill:#818CF8,stroke:#4F46E5,color:#FFFFFF
-    %% Data stores: Amber - reporting
-    classDef datastore fill:#F59E0B,stroke:#D97706,color:#000000
-    %% Matrix: Light emerald - parallel execution
-    classDef matrix fill:#D1FAE5,stroke:#10B981,color:#000000
-
-    %% ===== SUBGRAPH STYLING =====
-    style TriggersGroup fill:#EEF2FF,stroke:#4F46E5,stroke-width:2px
-    style CIGroup fill:#ECFDF5,stroke:#10B981,stroke-width:2px
-    style CIJobs fill:#D1FAE5,stroke:#059669,stroke-width:1px
-    style MatrixJobs fill:#E0E7FF,stroke:#4F46E5,stroke-width:1px
-    style CDGroup fill:#EEF2FF,stroke:#4F46E5,stroke-width:2px
-    style CDJobs fill:#E0E7FF,stroke:#3730A3,stroke-width:1px
-    style ExternalGroup fill:#F3F4F6,stroke:#6B7280,stroke-width:2px
-    style ResultsGroup fill:#FEF3C7,stroke:#F59E0B,stroke-width:2px
+    %% ===== AZURE DEPLOYMENT =====
+    DP2 ==>|provisions| AZ_RG
+    DP3 ==>|configures| AZ_SQL
+    DP4 ==>|deploys to| AZ_ACA
+    AZ_ACA -->|connects| AZ_SB
 
     %% ===== NODE STYLING =====
-    class push_ci,push_cd,pr,manual trigger
-    class ci_workflow,cd_workflow primary
-    class build,test primary
-    class deploy,analyze secondary
-    class codeql primary
-    class ci_stage external
-    class dependabot external
-    class failure_handler failed
-    class summary_job datastore
+    classDef trigger fill:#818CF8,stroke:#4F46E5,color:#FFFFFF
+    classDef external fill:#6B7280,stroke:#4B5563,color:#FFFFFF,stroke-dasharray:5 5
+    classDef primary fill:#4F46E5,stroke:#3730A3,color:#FFFFFF
+    classDef secondary fill:#10B981,stroke:#059669,color:#FFFFFF
+    classDef datastore fill:#F59E0B,stroke:#D97706,color:#000000
+    classDef failed fill:#F44336,stroke:#C62828,color:#FFFFFF
+    classDef matrix fill:#D1FAE5,stroke:#10B981,color:#000000
+
+    %% ===== APPLY NODE CLASSES =====
+    class T_PUSH,T_PR,T_MANUAL,T_SCHEDULE trigger
+    class DEP_NUGET,DEP_ACTIONS external
+    class CI_ENTRY,CD_CI primary
+    class B_U,B_W,B_M,T_U,T_W,T_M matrix
+    class ANALYZE,CODEQL secondary
+    class CD_DEPLOY,DP1,DP2,DP3,DP4 primary
+    class AZ_RG,AZ_SQL datastore
+    class AZ_ACA,AZ_SB secondary
+    class CI_SUMMARY,CD_SUMMARY datastore
+
+    %% ===== SUBGRAPH STYLING =====
+    style Triggers fill:#EEF2FF,stroke:#4F46E5,stroke-width:2px
+    style Dependabot fill:#F3F4F6,stroke:#6B7280,stroke-width:2px
+    style CIWorkflow fill:#E0E7FF,stroke:#4F46E5,stroke-width:2px
+    style ReusableCI fill:#ECFDF5,stroke:#10B981,stroke-width:2px
+    style BuildMatrix fill:#D1FAE5,stroke:#059669,stroke-width:1px
+    style TestMatrix fill:#D1FAE5,stroke:#059669,stroke-width:1px
+    style CDWorkflow fill:#E0E7FF,stroke:#4F46E5,stroke-width:2px
+    style DeployPhases fill:#D1FAE5,stroke:#059669,stroke-width:1px
+    style Azure fill:#FEF3C7,stroke:#F59E0B,stroke-width:2px
+```
+
+</details>
+
+---
+
+## 📚 Documentation Index
+
+> [!IMPORTANT]
+> Start with the [CI Workflow](ci-dotnet.md) to understand the foundation of our pipeline architecture.
+
+| Document                                           | Description                                      |
+| :------------------------------------------------- | :----------------------------------------------- |
+| [🔨 CI - .NET Build and Test](ci-dotnet.md)        | Main CI workflow orchestrating builds and tests  |
+| [🔄 CI - Reusable Workflow](ci-dotnet-reusable.md) | Reusable CI workflow with cross-platform support |
+| [🚀 CD - Azure Deployment](azure-dev.md)           | Continuous deployment to Azure using azd         |
+| [🤖 Dependabot Configuration](dependabot.md)       | Automated dependency update configuration        |
+
+---
+
+## ⚡ Quick Reference
+
+### Workflows Summary
+
+| Workflow                 | File                     | Triggers                     | Purpose                  |
+| :----------------------- | :----------------------- | :--------------------------- | :----------------------- |
+| CI - .NET Build and Test | `ci-dotnet.yml`          | push, pull_request, dispatch | Code quality validation  |
+| CI - Reusable            | `ci-dotnet-reusable.yml` | workflow_call                | Shared CI implementation |
+| CD - Azure Deployment    | `azure-dev.yml`          | push, dispatch               | Deploy to Azure          |
+| Dependabot               | `dependabot.yml`         | schedule (weekly)            | Dependency updates       |
+
+### Jobs Overview
+
+| Job           | Workflow(s)           | Runners                | Purpose                     |
+| :------------ | :-------------------- | :--------------------- | :-------------------------- |
+| 🔨 Build      | CI Reusable           | ubuntu, windows, macos | Compile solution            |
+| 🧪 Test       | CI Reusable           | ubuntu, windows, macos | Execute tests with coverage |
+| 🔍 Analyze    | CI Reusable           | ubuntu-latest          | Code format verification    |
+| 🛡️ CodeQL     | CI Reusable           | ubuntu-latest          | Security scanning           |
+| 🚀 Deploy Dev | CD Azure              | ubuntu-latest          | Deploy to dev environment   |
+| 📊 Summary    | CI Reusable, CD Azure | ubuntu-latest          | Generate reports            |
+
+### Required Secrets & Variables
+
+| Name                    | Type     | Used In | Description                    |
+| :---------------------- | :------- | :------ | :----------------------------- |
+| `AZURE_CLIENT_ID`       | Variable | CD      | Azure AD application client ID |
+| `AZURE_TENANT_ID`       | Variable | CD      | Azure AD tenant ID             |
+| `AZURE_SUBSCRIPTION_ID` | Variable | CD      | Azure subscription ID          |
+| `AZURE_ENV_NAME`        | Variable | CD      | Azure environment name         |
+| `AZURE_LOCATION`        | Variable | CD      | Azure region                   |
+
+### Artifacts Generated
+
+| Artifact               | Workflow | Contents                      | Retention |
+| :--------------------- | :------- | :---------------------------- | :-------- |
+| `build-artifacts-{os}` | CI       | Compiled binaries             | 30 days   |
+| `test-results-{os}`    | CI       | Test results (.trx)           | 30 days   |
+| `code-coverage-{os}`   | CI       | Coverage reports (Cobertura)  | 30 days   |
+| `codeql-sarif-results` | CI       | Security scan results (SARIF) | 30 days   |
+
+---
+
+## 🔄 Pipeline Flow
+
+### CI Pipeline (Pull Requests & Pushes)
+
+<details>
+<summary>🔍 View CI Pipeline Sequence Diagram</summary>
+
+```mermaid
+---
+title: CI Pipeline Sequence
+---
+sequenceDiagram
+    autonumber
+    participant Dev as 👨‍💻 Developer
+    participant GH as 🐙 GitHub
+    participant CI as 🔄 CI Workflow
+    participant Matrix as 📊 Build/Test Matrix
+
+    %% ===== TRIGGER PHASE =====
+    Dev->>GH: Push commit / Create PR
+    GH->>CI: Trigger workflow
+    CI->>Matrix: Start parallel builds
+
+    %% ===== MATRIX EXECUTION =====
+    par Ubuntu Build
+        Matrix->>Matrix: Build → Test → Coverage
+    and Windows Build
+        Matrix->>Matrix: Build → Test → Coverage
+    and macOS Build
+        Matrix->>Matrix: Build → Test → Coverage
+    end
+
+    %% ===== RESULTS PHASE =====
+    Matrix-->>CI: Aggregate results
+    CI->>CI: Analyze (format check)
+    CI->>CI: CodeQL (security scan)
+    CI-->>GH: Post status checks
+    GH-->>Dev: Display results
+```
+
+</details>
+
+### CD Pipeline (Deployment)
+
+<details>
+<summary>🔍 View CD Pipeline Sequence Diagram</summary>
+
+```mermaid
+---
+title: CD Pipeline Sequence
+---
+sequenceDiagram
+    autonumber
+    participant Dev as 👨‍💻 Developer
+    participant GH as 🐙 GitHub
+    participant CD as 🚀 CD Workflow
+    participant Azure as ☁️ Azure
+
+    %% ===== TRIGGER PHASE =====
+    Dev->>GH: Push to branch / Manual trigger
+    GH->>CD: Trigger workflow
+
+    %% ===== CI STAGE =====
+    CD->>CD: CI Stage (Build, Test, Analyze)
+
+    %% ===== AUTHENTICATION =====
+    CD->>Azure: OIDC Authentication
+    Azure-->>CD: Access Token
+
+    %% ===== PROVISIONING =====
+    CD->>Azure: azd provision
+    Azure-->>CD: Resources created
+
+    %% ===== SQL CONFIGURATION =====
+    CD->>Azure: Configure SQL User
+    Azure-->>CD: User created
+
+    %% ===== DEPLOYMENT =====
+    CD->>Azure: azd deploy
+    Azure-->>CD: App deployed
+
+    %% ===== SUMMARY =====
+    CD-->>GH: Generate summary
+    GH-->>Dev: Display deployment status
+```
+
+</details>
+
+---
+
+## 💻 Local Development
+
+> [!TIP]
+> Running CI checks locally before pushing helps catch issues early and speeds up the feedback loop.
+
+### Running CI Checks Locally
+
+```bash
+# Build solution
+dotnet build app.sln --configuration Release
+
+# Run tests with coverage
+dotnet test app.sln --configuration Release --collect:"XPlat Code Coverage"
+
+# Check code formatting
+dotnet format app.sln --verify-no-changes
+
+# Fix formatting issues
+dotnet format app.sln
+```
+
+### Deploying Locally with azd
+
+> [!WARNING]
+> Running `azd up` locally will provision real Azure resources and may incur costs.
+
+```bash
+# Login to Azure
+azd auth login
+
+# Provision infrastructure
+azd provision
+
+# Deploy application
+azd deploy
+
+# Full provision and deploy
+azd up
 ```
 
 ---
 
-## 📁 Workflow Documentation
+## ✅ Best Practices
 
-| Workflow File                                                            | Documentation                                                    | Purpose                                                             |
-| ------------------------------------------------------------------------ | ---------------------------------------------------------------- | ------------------------------------------------------------------- |
-| [azure-dev.yml](../../.github/workflows/azure-dev.yml)                   | [azure-dev.md](./azure-dev.md)                                   | 🚀 CD - Provisions Azure infrastructure and deploys the application |
-| [ci-dotnet.yml](../../.github/workflows/ci-dotnet.yml)                   | [ci-dotnet.md](./ci-dotnet.md)                                   | 🔄 CI - Orchestrates the .NET build and test pipeline               |
-| [ci-dotnet-reusable.yml](../../.github/workflows/ci-dotnet-reusable.yml) | [ci-dotnet-reusable.md](./ci-dotnet-reusable.md)                 | 🔧 Reusable workflow for .NET CI operations                         |
-| [dependabot.yml](../../.github/dependabot.yml)                           | See [Dependabot Configuration](#-dependabot-configuration) below | 🤖 Automated dependency updates for security and maintenance        |
+### 🔒 Security
 
----
+- ✅ OIDC authentication (no stored secrets)
+- ✅ CodeQL security scanning on every CI run
+- ✅ Pinned action versions (SHA-based)
+- ✅ Least-privilege permissions
+- ✅ Dependabot for dependency updates
 
-## 📊 Quick Reference
+### 🔄 Reliability
 
-| Workflow                     | Triggers                                                             | Jobs                                                   | Resilience                     |
-| ---------------------------- | -------------------------------------------------------------------- | ------------------------------------------------------ | ------------------------------ |
-| **CD - Azure Deployment**    | `push:docs987678`, `workflow_dispatch`                               | CI → Deploy Dev → Summary → On-Failure                 | 3 retries, exponential backoff |
-| **CI - .NET Build and Test** | `push:main,feature/**,...`, `pull_request:main`, `workflow_dispatch` | CI (calls reusable)                                    | Matrix retry on failure        |
-| **CI - .NET Reusable**       | `workflow_call`                                                      | Build → Test → Analyze → CodeQL → Summary → On-Failure | Cross-platform matrix coverage |
-| **Dependabot**               | Schedule (Weekly, Mondays 06:00 UTC)                                 | Automated PR creation                                  | Automatic retry by GitHub      |
+- ✅ Retry logic for transient failures
+- ✅ Cross-platform testing (Ubuntu, Windows, macOS)
+- ✅ Fail-fast disabled for complete feedback
+- ✅ Comprehensive error reporting
 
----
+### 🛠️ Maintainability
 
-## 🔐 Required Secrets & Variables
-
-### Repository Variables (Required for CD)
-
-| Variable                | Description                         | Example                                |
-| ----------------------- | ----------------------------------- | -------------------------------------- |
-| `AZURE_CLIENT_ID`       | Azure AD App Registration Client ID | `xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx` |
-| `AZURE_TENANT_ID`       | Azure AD Tenant ID                  | `xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx` |
-| `AZURE_SUBSCRIPTION_ID` | Azure Subscription ID               | `xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx` |
-| `AZURE_ENV_NAME`        | Azure environment name (optional)   | `dev`                                  |
-| `AZURE_LOCATION`        | Azure region (optional)             | `eastus2`                              |
-
-### GitHub Environment
-
-| Environment | Protection Rules   |
-| ----------- | ------------------ |
-| `dev`       | None (auto-deploy) |
+- ✅ Reusable workflow patterns
+- ✅ Configurable inputs
+- ✅ Detailed workflow summaries
+- ✅ Semantic commit messages
 
 ---
 
-## 🤖 Dependabot Configuration
+## 🔧 Troubleshooting
 
-The project uses **Dependabot** for automated dependency updates, ensuring security patches and version upgrades are applied consistently.
+### Common Issues
 
-### Configuration File
+| Issue                     | Solution                                     |
+| :------------------------ | :------------------------------------------- |
+| OIDC auth fails           | Verify federated credential configuration    |
+| Tests fail on specific OS | Check platform-specific code paths           |
+| Format check fails        | Run `dotnet format` locally                  |
+| CodeQL timeout            | Review query configuration and codebase size |
+| Deployment fails          | Check Azure portal for resource status       |
 
-📄 **File**: [`.github/dependabot.yml`](../../.github/dependabot.yml)
+### Getting Help
 
-### Monitored Ecosystems
-
-| Ecosystem          | Directory | Schedule               | PR Limit | Description               |
-| ------------------ | --------- | ---------------------- | -------- | ------------------------- |
-| **NuGet**          | `/`       | Weekly (Mon 06:00 UTC) | 10       | .NET package dependencies |
-| **GitHub Actions** | `/`       | Weekly (Mon 06:00 UTC) | 5        | Workflow action versions  |
-
-### Update Groups
-
-| Group         | Patterns                                                           | Purpose                          |
-| ------------- | ------------------------------------------------------------------ | -------------------------------- |
-| **microsoft** | `Microsoft.*`, `System.*`, `Azure.*`                               | Microsoft SDK and Azure packages |
-| **testing**   | `xunit*`, `Moq*`, `FluentAssertions*`, `coverlet*`, `NSubstitute*` | Test framework packages          |
-| **actions**   | `*` (all)                                                          | All GitHub Actions               |
-
-### Labels Applied
-
-- `dependencies` - All dependency updates
-- `nuget` - NuGet package updates
-- `github-actions` - GitHub Actions updates
-- `automated` - Auto-generated PRs
-
-### Commit Message Prefixes
-
-| Ecosystem      | Prefix        | Example                                               |
-| -------------- | ------------- | ----------------------------------------------------- |
-| NuGet          | `deps(nuget)` | `deps(nuget): bump Microsoft.Extensions.Logging`      |
-| GitHub Actions | `ci(deps)`    | `ci(deps): bump actions/checkout from 4.1.0 to 4.2.0` |
+1. Check individual workflow documentation for detailed troubleshooting
+2. Review workflow logs in GitHub Actions
+3. Check Azure portal for deployment status
+4. Open an issue in the repository
 
 ---
 
-## 🔗 Related Documentation
+## 📚 Related Documentation
 
-| Resource                                                                                                    | Description                                                |
-| ----------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------- |
-| [Deployment Architecture](../architecture/07-deployment-architecture.md)                                    | CI/CD pipeline architecture and environment promotion flow |
-| [Architecture Documentation](../architecture/README.md)                                                     | System architecture and design decisions                   |
-| [Azure Developer CLI Documentation](https://learn.microsoft.com/en-us/azure/developer/azure-developer-cli/) | Official azd documentation                                 |
-| [GitHub Actions Documentation](https://docs.github.com/en/actions)                                          | GitHub Actions reference                                   |
-| [Federated Credentials Setup](https://learn.microsoft.com/en-us/azure/developer/github/connect-from-azure)  | OIDC authentication setup guide                            |
+- [Azure Developer CLI](https://learn.microsoft.com/azure/developer/azure-developer-cli/)
+- [GitHub Actions](https://docs.github.com/en/actions)
+- [.NET CLI](https://learn.microsoft.com/dotnet/core/tools/)
+- [CodeQL](https://codeql.github.com/docs/)
 
 ---
 
-## 📚 Additional Resources
-
-| Resource                                                 | Description                 |
-| -------------------------------------------------------- | --------------------------- |
-| [Developer Experience Documentation](../hooks/README.md) | Pre/post deployment scripts |
-| [Infrastructure Documentation](../../infra/README.md)    | Bicep templates and IaC     |
+[⬆️ Back to Top](#-devops-documentation)
 
 ---
 
-[⬆️ Back to top](#-devops-documentation)
+<div align="center">
+
+**[CI Workflow →](ci-dotnet.md)**
+
+</div>

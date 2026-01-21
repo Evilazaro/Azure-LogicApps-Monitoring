@@ -1,643 +1,362 @@
 ---
-title: Pre-Provisioning Script
-description: Validates and prepares environment for Azure deployment with comprehensive prerequisite checks
+title: preprovision Hook
+description: Pre-provisioning script that validates environment prerequisites and clears user secrets before Azure resource provisioning.
 author: Evilazaro
 date: 2026-01-06
 version: 2.3.0
-tags: [hooks, preprovision, azd, validation, azure]
+tags: [azd, hooks, preprovision, validation, prerequisites]
 ---
 
-# 🚀 Pre-Provisioning Script Documentation
+# 🚀 preprovision
+
+> Pre-provisioning script for Azure Developer CLI (azd) deployment.
 
 > [!NOTE]
-> **Version:** 2.3.0 | **Scripts:** `preprovision.ps1` (PowerShell) | `preprovision.sh` (Bash)  
-> 🎯 **For Developers and DevOps**: Validates and prepares environment for Azure deployment.
+> **Target Audience:** DevOps Engineers and Cloud Administrators  
+> **Reading Time:** ~8 minutes
 
 <details>
-<summary>📍 <strong>Quick Navigation</strong></summary>
+<summary>📍 Navigation</summary>
 
-| Previous                                            |            Index            |                                Next |
-| :-------------------------------------------------- | :-------------------------: | ----------------------------------: |
-| [← check-dev-workstation](check-dev-workstation.md) | [📑 Hooks Index](README.md) | [postprovision →](postprovision.md) |
+| Previous |          Index          |                                Next |
+| :------- | :---------------------: | ----------------------------------: |
+| —        | [🪝 Hooks](./README.md) | [postprovision](./postprovision.md) |
 
 </details>
 
-## 📋 Table of Contents
+---
 
-- [📖 Overview](#overview)
-  - [✨ Key Features](#key-features)
-- [📋 Prerequisites](#prerequisites)
-  - [🔧 Required Tools](#required-tools)
-  - [☁️ Azure Requirements](#azure-requirements)
-- [⚙️ Parameters](#parameters)
-  - [💻 PowerShell (`preprovision.ps1`)](#powershell-preprovisionps1)
-  - [🐚 Bash (`preprovision.sh`)](#bash-preprovisionsh)
-- [🚀 Usage Examples](#usage-examples)
-  - [💻 Basic Usage](#basic-usage)
-  - [⚡ Force Execution (No Prompts)](#force-execution-no-prompts)
-  - [✅ Validate Only (No Changes)](#validate-only-no-changes)
-  - [📦 Auto-Install Missing Prerequisites](#auto-install-missing-prerequisites)
-  - [🖥️ Remote/Headless Sessions](#remoteheadless-sessions)
-  - [📝 Verbose Output](#verbose-output)
-  - [🔒 Skip Secrets Clearing](#skip-secrets-clearing)
-- [🔍 What the Script Does](#what-the-script-does)
-  - [🔄 Execution Flow](#execution-flow)
-- [✅ Prerequisite Validation](#prerequisite-validation)
-  - [🔷 .NET SDK Validation](#net-sdk-validation)
-  - [☁️ Azure CLI Validation](#azure-cli-validation)
-  - [📐 Bicep CLI Validation](#bicep-cli-validation)
-- [📥 Installation Functions](#installation-functions)
-  - [🤖 Automatic Installation](#automatic-installation)
-  - [🔧 Manual Installation](#manual-installation)
-- [🔐 Azure Authentication](#azure-authentication)
-  - [🌐 Browser-Based Login (Default)](#browser-based-login-default)
-  - [📱 Device Code Login](#device-code-login)
-- [📦 Resource Provider Registration](#resource-provider-registration)
-  - [📋 Required Providers](#required-providers)
-  - [🔧 Manual Registration](#manual-registration)
-- [🛠️ How It Works](#️-how-it-works)
-  - [📊 Workflow Diagram](#workflow-diagram)
-  - [🔗 Integration Points](#integration-points)
-- [⚠️ Error Handling](#error-handling)
-  - [📁 Error Categories](#error-categories)
-  - [💬 Error Messages](#error-messages)
-- [🔢 Exit Codes](#exit-codes)
-- [🔧 Troubleshooting](#troubleshooting)
-  - [❓ Common Issues](#common-issues)
-  - [📝 Verbose Mode](#verbose-mode)
-- [📊 Performance Characteristics](#performance-characteristics)
-- [🔄 Version History](#-version-history)
-- [📚 Related Documentation](#related-documentation)
+## 📋 Overview
+
+This script performs pre-provisioning tasks before Azure resources are provisioned. It ensures a clean state by clearing user secrets and validates the development environment.
+
+The script performs the following operations:
+
+- Validates PowerShell/Bash version compatibility
+- Clears .NET user secrets for all projects
+- Validates required tools (.NET SDK, Azure CLI, Bicep CLI)
+- Validates Azure Resource Provider registration
+- Checks Azure subscription quotas (informational)
+- Prepares environment for Azure deployment
+- Provides detailed logging and error handling
 
 ---
 
-## Overview
+## 📑 Table of Contents
 
-The **preprovision** hook is a critical first step in the Azure Developer CLI (azd) deployment lifecycle, executing automatically before any Azure infrastructure is provisioned. This script ensures your development workstation meets all requirements for a successful deployment by validating installed tools (.NET SDK 10.0+, Azure CLI, Bicep), authenticating with Azure, registering required resource providers, and preparing a clean workspace state. Available in both PowerShell and Bash variants, it provides cross-platform support for Windows, macOS, and Linux environments.
+- [📌 Script Metadata](#-script-metadata)
+- [🔧 Prerequisites](#-prerequisites)
+- [📥 Parameters](#-parameters)
+- [🌐 Environment Variables](#-environment-variables)
+- [🔄 Execution Flow](#-execution-flow)
+- [📝 Usage Examples](#-usage-examples)
+- [⚠️ Exit Codes](#%EF%B8%8F-exit-codes)
+- [📚 Related Scripts](#-related-scripts)
+- [📜 Version History](#-version-history)
 
-Beyond basic validation, the preprovision script offers intelligent automation features that streamline the developer experience: automatic installation of missing prerequisites (with user consent), device code authentication for headless/remote sessions, verbose logging for troubleshooting, and a validate-only mode for CI/CD pipelines. The script also clears .NET User Secrets to ensure fresh deployments don't inherit stale connection strings from previous environments, preventing subtle configuration conflicts that can be difficult to diagnose.
+[⬅️ Back to Index](./README.md)
 
-### Key Features
-
-- ✅ **Prerequisite Validation**: Validates all required tools and versions
-- 🔧 **Auto-Installation**: Can automatically install missing prerequisites
-- 🔐 **Azure Authentication**: Handles Azure CLI login with device code support
-- 📝 **Resource Provider Registration**: Ensures Azure providers are registered
-- 🧹 **Clean State**: Clears .NET user secrets for fresh deployment
-- 📊 **Detailed Logging**: Provides verbose output for troubleshooting
-
----
-
-## Prerequisites
-
-### Required Tools
-
-| Tool                          | Minimum Version | Purpose                              |
-| ----------------------------- | --------------- | ------------------------------------ |
-| **PowerShell**                | 7.0+            | Script runtime (Windows/macOS/Linux) |
-| **Bash**                      | 4.0+            | Script runtime (macOS/Linux)         |
-| **.NET SDK**                  | 10.0+           | Building and managing .NET projects  |
-| **Azure CLI**                 | 2.60.0+         | Azure resource management            |
-| **Azure Developer CLI (azd)** | Latest          | Azure deployment automation          |
-| **Bicep CLI**                 | 0.30.0+         | Infrastructure as Code               |
-| **zip**                       | Any             | Logic Apps workflow deployment       |
-
-### Azure Requirements
-
-- Active Azure subscription
-- Sufficient permissions to register resource providers
-- Quota for required resources (Container Apps, Storage, Service Bus, etc.)
+> [!TIP]
+> Use the `-ValidateOnly` flag to check prerequisites without clearing secrets.
 
 ---
 
-## Parameters
+## 📌 Script Metadata
+
+| Property          | PowerShell                                                   | Bash                                                         |
+| ----------------- | ------------------------------------------------------------ | ------------------------------------------------------------ |
+| **File Name**     | `preprovision.ps1`                                           | `preprovision.sh`                                            |
+| **Version**       | 2.3.0                                                        | 2.3.0                                                        |
+| **Last Modified** | 2026-01-06                                                   | 2026-01-06                                                   |
+| **Author**        | Evilazaro \| Principal Cloud Solution Architect \| Microsoft | Evilazaro \| Principal Cloud Solution Architect \| Microsoft |
+
+---
+
+## 🔧 Prerequisites
+
+| Requirement         | Minimum Version | Notes                                          |
+| ------------------- | --------------- | ---------------------------------------------- |
+| PowerShell Core     | 7.0             | Required for `.ps1` script                     |
+| Bash                | 4.0             | Required for `.sh` script (associative arrays) |
+| .NET SDK            | 10.0            | Latest LTS features                            |
+| Azure CLI           | 2.60.0          | Latest Bicep and ACA support                   |
+| Bicep CLI           | 0.30.0          | Latest language features                       |
+| Azure Developer CLI | Any             | Required for `azd` workflow                    |
+
+---
+
+## 📥 Parameters
 
 ### PowerShell (`preprovision.ps1`)
 
-| Parameter             | Type   | Description                                        |
-| --------------------- | ------ | -------------------------------------------------- |
-| `-Force`              | Switch | Skip confirmation prompts and force execution      |
-| `-SkipSecretsClear`   | Switch | Skip the user secrets clearing step                |
-| `-ValidateOnly`       | Switch | Only validate prerequisites without making changes |
-| `-UseDeviceCodeLogin` | Switch | Use device code flow for Azure authentication      |
-| `-AutoInstall`        | Switch | Automatically install missing prerequisites        |
-| `-Verbose`            | Switch | Enable verbose output                              |
-| `-WhatIf`             | Switch | Show what would happen without making changes      |
+| Parameter             | Type   | Required | Default  | Description                                                                   |
+| --------------------- | ------ | -------- | -------- | ----------------------------------------------------------------------------- |
+| `-Force`              | Switch | No       | `$false` | Skips confirmation prompts and forces execution                               |
+| `-SkipSecretsClear`   | Switch | No       | `$false` | Skips the user secrets clearing step                                          |
+| `-ValidateOnly`       | Switch | No       | `$false` | Only validates prerequisites without making changes                           |
+| `-UseDeviceCodeLogin` | Switch | No       | `$false` | Uses device code flow for Azure authentication (for remote/headless sessions) |
+| `-AutoInstall`        | Switch | No       | `$false` | Automatically installs missing prerequisites without prompting                |
 
 ### Bash (`preprovision.sh`)
 
-| Parameter                 | Description                                        |
-| ------------------------- | -------------------------------------------------- |
-| `--force`                 | Skip confirmation prompts and force execution      |
-| `--skip-secrets-clear`    | Skip the user secrets clearing step                |
-| `--validate-only`         | Only validate prerequisites without making changes |
-| `--use-device-code-login` | Use device code flow for Azure authentication      |
-| `--auto-install`          | Automatically install missing prerequisites        |
-| `--verbose`               | Enable verbose output                              |
-| `--help`                  | Display help message                               |
+| Parameter                 | Type | Required | Default | Description                                        |
+| ------------------------- | ---- | -------- | ------- | -------------------------------------------------- |
+| `--force`                 | Flag | No       | `false` | Skip confirmation prompts and force execution      |
+| `--skip-secrets-clear`    | Flag | No       | `false` | Skip the user secrets clearing step                |
+| `--validate-only`         | Flag | No       | `false` | Only validate prerequisites without making changes |
+| `--use-device-code-login` | Flag | No       | `false` | Use device code flow for Azure authentication      |
+| `--auto-install`          | Flag | No       | `false` | Automatically install missing prerequisites        |
+| `--verbose`               | Flag | No       | `false` | Enable verbose output                              |
+| `--help`                  | Flag | No       | N/A     | Display help message                               |
 
 ---
 
-## Usage Examples
+## 🌐 Environment Variables
 
-### Basic Usage
+This script primarily validates the environment rather than consuming environment variables. However, it requires the following Azure Resource Providers to be registered:
 
-```powershell
-# PowerShell - Standard execution with prompts
-.\preprovision.ps1
+### Required Azure Resource Providers
 
-# Bash - Standard execution with prompts
-./preprovision.sh
-```
-
-### Force Execution (No Prompts)
-
-```powershell
-# PowerShell
-.\preprovision.ps1 -Force
-
-# Bash
-./preprovision.sh --force
-```
-
-### Validate Only (No Changes)
-
-```powershell
-# PowerShell
-.\preprovision.ps1 -ValidateOnly
-
-# Bash
-./preprovision.sh --validate-only
-```
-
-### Auto-Install Missing Prerequisites
-
-```powershell
-# PowerShell - Install missing tools automatically
-.\preprovision.ps1 -AutoInstall -Force
-
-# Bash - Install missing tools automatically
-./preprovision.sh --auto-install --force
-```
-
-### Remote/Headless Sessions
-
-```powershell
-# PowerShell - Use device code for Azure login
-.\preprovision.ps1 -UseDeviceCodeLogin
-
-# Bash - Use device code for Azure login
-./preprovision.sh --use-device-code-login
-```
-
-### Verbose Output
-
-```powershell
-# PowerShell
-.\preprovision.ps1 -Verbose
-
-# Bash
-./preprovision.sh --verbose
-```
-
-### Skip Secrets Clearing
-
-```powershell
-# PowerShell
-.\preprovision.ps1 -SkipSecretsClear
-
-# Bash
-./preprovision.sh --skip-secrets-clear
-```
+| Provider                        | Purpose                                               |
+| ------------------------------- | ----------------------------------------------------- |
+| `Microsoft.App`                 | Azure Container Apps for serverless containers        |
+| `Microsoft.ServiceBus`          | Azure Service Bus for reliable messaging              |
+| `Microsoft.Storage`             | Azure Storage for blobs, queues, and tables           |
+| `Microsoft.Web`                 | Azure App Service and Logic Apps                      |
+| `Microsoft.ContainerRegistry`   | Azure Container Registry for Docker images            |
+| `Microsoft.Insights`            | Application Insights for telemetry and monitoring     |
+| `Microsoft.OperationalInsights` | Log Analytics for centralized logging                 |
+| `Microsoft.ManagedIdentity`     | Managed identities for Azure resources authentication |
 
 ---
 
-## What the Script Does
-
-### Execution Flow
-
-1. **Validate Runtime Version**
-   - PowerShell: Validates PowerShell 7.0+
-   - Bash: Validates Bash 4.0+
-
-2. **Validate Prerequisites**
-   - Check .NET SDK version (10.0+)
-   - Check Azure Developer CLI (azd)
-   - Check Azure CLI version (2.60.0+)
-   - Check Azure CLI authentication
-   - Check Bicep CLI version (0.30.0+)
-   - Check zip utility (required for Logic Apps workflow deployment)
-
-3. **Azure Resource Providers** (if authenticated)
-   - Validate required providers are registered
-   - Optionally register missing providers
-
-4. **Azure Quota Check** (informational)
-   - Display quota requirements
-   - Guide users to check current quotas
-
-5. **Clear User Secrets** (unless skipped)
-   - Execute `clean-secrets.ps1` or `clean-secrets.sh`
-   - Remove stale configuration from previous runs
-
----
-
-## Prerequisite Validation
-
-### .NET SDK Validation
-
-The script validates that .NET SDK 10.0 or higher is installed:
-
-```powershell
-# PowerShell validation logic
-$versionOutput = & dotnet --version 2>&1
-$majorVersion = [int]$versionString.Split('.')[0]
-if ($majorVersion -lt 10) {
-    # Offer to install
-}
-```
-
-```bash
-# Bash validation logic
-version_output=$(dotnet --version 2>&1)
-major_version=$(echo "${version_output}" | cut -d. -f1)
-if [[ ${major_version} -lt 10 ]]; then
-    # Offer to install
-fi
-```
-
-### Azure CLI Validation
-
-The script performs a comprehensive Azure CLI check:
-
-1. **Installation Check**: Verifies `az` command exists
-2. **Version Check**: Validates version ≥ 2.60.0
-3. **Authentication Check**: Verifies user is logged in
-
-### Bicep CLI Validation
-
-Checks for Bicep CLI in two locations:
-
-1. Standalone installation (`bicep` command)
-2. Azure CLI integration (`az bicep version`)
-
-### zip Utility Validation
-
-The zip utility is required for Logic Apps workflow deployment. The script validates availability based on the platform:
-
-- **Windows**: Checks for `Compress-Archive` cmdlet (built-in to PowerShell 5.0+)
-- **Linux**: Checks for `zip` command in PATH
-- **macOS**: Checks for `zip` command (typically pre-installed)
-
-```powershell
-# PowerShell validation logic (Windows)
-$compressCmd = Get-Command -Name Compress-Archive -ErrorAction SilentlyContinue
-if ($compressCmd) {
-    # zip capability available via PowerShell cmdlet
-}
-```
-
-```bash
-# Bash validation logic (Linux/macOS)
-if command -v zip &>/dev/null; then
-    # zip command available
-fi
-```
-
----
-
-## Installation Functions
-
-### Automatic Installation
-
-When `--auto-install` or `-AutoInstall` is specified, the script can install missing prerequisites:
-
-| Tool                | Windows                     | Linux/macOS          |
-| ------------------- | --------------------------- | -------------------- |
-| .NET SDK            | winget / dotnet-install.ps1 | dotnet-install.sh    |
-| Azure CLI           | winget / MSI installer      | apt-get / brew / yum |
-| Azure Developer CLI | winget / PowerShell script  | curl installer       |
-| Bicep CLI           | winget / az bicep install   | az bicep install     |
-| zip                 | Built-in (Compress-Archive) | apt-get / dnf / brew |
-
-### Manual Installation
-
-If auto-install is not used, the script provides download links:
-
-- **.NET SDK**: <https://dotnet.microsoft.com/download/dotnet/10.0>
-- **Azure CLI**: <https://docs.microsoft.com/cli/azure/install-azure-cli>
-- **Azure Developer CLI**: <https://aka.ms/azd/install>
-- **Bicep CLI**: `az bicep install` or <https://github.com/Azure/bicep/releases>
-- **zip**:
-  - Windows: Built-in via `Compress-Archive` cmdlet (PowerShell 5.0+)
-  - Ubuntu/Debian: `sudo apt-get install zip`
-  - RHEL/CentOS: `sudo dnf install zip`
-  - macOS: Pre-installed or `brew install zip`
-
----
-
-## Azure Authentication
-
-### Browser-Based Login (Default)
-
-```powershell
-# PowerShell
-.\preprovision.ps1
-# Opens browser for authentication
-```
-
-### Device Code Login
-
-For remote sessions, SSH connections, or environments without a browser:
-
-```powershell
-# PowerShell
-.\preprovision.ps1 -UseDeviceCodeLogin
-
-# Bash
-./preprovision.sh --use-device-code-login
-```
-
-Device code flow displays a code and URL for authentication on another device.
-
----
-
-## Resource Provider Registration
-
-### Required Providers
-
-The script validates registration of these Azure resource providers:
-
-| Provider                        | Service                        |
-| ------------------------------- | ------------------------------ |
-| `Microsoft.App`                 | Azure Container Apps           |
-| `Microsoft.ServiceBus`          | Azure Service Bus              |
-| `Microsoft.Storage`             | Azure Storage                  |
-| `Microsoft.Web`                 | Azure App Service & Logic Apps |
-| `Microsoft.ContainerRegistry`   | Azure Container Registry       |
-| `Microsoft.Insights`            | Application Insights           |
-| `Microsoft.OperationalInsights` | Log Analytics                  |
-| `Microsoft.ManagedIdentity`     | Managed Identities             |
-
-### Manual Registration
-
-If automatic registration fails, register manually:
-
-```bash
-az provider register --namespace Microsoft.App --wait
-az provider register --namespace Microsoft.ServiceBus --wait
-az provider register --namespace Microsoft.Storage --wait
-# ... etc
-```
-
----
-
-## 🛠️ How It Works
-
-### Workflow Diagram
+## 🔄 Execution Flow
 
 ```mermaid
 ---
 title: preprovision Execution Flow
 ---
-flowchart LR
+flowchart TD
     %% ===== STYLE DEFINITIONS =====
     classDef primary fill:#4F46E5,stroke:#3730A3,color:#FFFFFF
     classDef secondary fill:#10B981,stroke:#059669,color:#FFFFFF
     classDef datastore fill:#F59E0B,stroke:#D97706,color:#000000
-    classDef external fill:#6B7280,stroke:#4B5563,color:#FFFFFF,stroke-dasharray: 5 5
-    classDef failed fill:#F44336,stroke:#C62828,color:#FFFFFF
     classDef trigger fill:#818CF8,stroke:#4F46E5,color:#FFFFFF
     classDef decision fill:#FFFBEB,stroke:#F59E0B,color:#000000
-    classDef input fill:#F3F4F6,stroke:#6B7280,color:#000000
+    classDef failed fill:#F44336,stroke:#C62828,color:#FFFFFF
+    classDef external fill:#6B7280,stroke:#4B5563,color:#FFFFFF,stroke-dasharray:5 5
 
-    %% ===== TRIGGER NODES =====
-    Start(["🚀 azd up / azd provision"]):::trigger
-    Complete(["✓ Pre-provisioning Complete"]):::secondary
-    Failed(["✗ Pre-provisioning Failed"]):::failed
-
-    %% ===== PHASE 1: RUNTIME VALIDATION =====
-    subgraph RuntimeValidation["1️⃣ Runtime Validation"]
+    %% ===== TRIGGER =====
+    subgraph triggers["🚀 Entry Point"]
         direction TB
-        ValidateRuntime["Validate Runtime Version"]:::primary
+        A(["🚀 Start preprovision"])
     end
 
-    %% ===== PHASE 2: PREREQUISITES CHECK =====
-    subgraph Prerequisites["2️⃣ Prerequisites Check"]
+    %% ===== VALIDATION STAGE =====
+    subgraph validation["🔍 Prerequisites Validation"]
         direction TB
-        CheckDotNet["Check .NET SDK"]:::primary
-        InstallDotNet{"Install .NET?"}:::decision
-        CheckAzd["Check Azure Developer CLI"]:::primary
-        InstallAzd{"Install azd?"}:::decision
-        CheckAzCLI["Check Azure CLI"]:::primary
-        InstallAzCLI{"Install Azure CLI?"}:::decision
-        CheckBicep["Check Bicep CLI"]:::primary
-        InstallBicep{"Install Bicep?"}:::decision
-
-        CheckDotNet -->|"Missing"| InstallDotNet
-        InstallDotNet -->|"Yes"| CheckDotNet
-        CheckDotNet -->|"OK"| CheckAzd
-        CheckAzd -->|"Missing"| InstallAzd
-        InstallAzd -->|"Yes"| CheckAzd
-        CheckAzd -->|"OK"| CheckAzCLI
-        CheckAzCLI -->|"Missing"| InstallAzCLI
-        InstallAzCLI -->|"Yes"| CheckAzCLI
-        CheckAzCLI -->|"OK"| CheckBicep
-        CheckBicep -->|"Missing"| InstallBicep
-        InstallBicep -->|"Yes"| CheckBicep
+        B{"Validate PowerShell/Bash Version"}
+        C{"Validate .NET SDK"}
+        C1{"AutoInstall?"}
+        C2["Install .NET SDK"]
+        D{"Validate Azure CLI"}
+        D1{"AutoInstall?"}
+        D2["Install Azure CLI"]
+        E{"Validate Bicep CLI"}
+        E1{"AutoInstall?"}
+        E2["Install Bicep CLI"]
     end
 
-    %% ===== PHASE 3: AZURE AUTHENTICATION =====
-    subgraph Authentication["3️⃣ Azure Authentication"]
+    %% ===== AUTHENTICATION STAGE =====
+    subgraph auth["🔐 Azure Authentication"]
         direction TB
-        CheckAuth["Check Azure Authentication"]:::primary
-        Login{"Login to Azure?"}:::decision
-
-        CheckAuth -->|"Not Authenticated"| Login
-        Login -->|"Yes"| CheckAuth
+        F{"Validate Azure Authentication"}
+        F1{"UseDeviceCodeLogin?"}
+        F2["Azure Login with Device Code"]
+        F3["Azure Login with Browser"]
+        G["Check Resource Provider Registration"]
     end
 
-    %% ===== PHASE 4: AZURE CONFIGURATION =====
-    subgraph AzureConfig["4️⃣ Azure Configuration"]
+    %% ===== EXECUTION STAGE =====
+    subgraph execution["⚙️ Execution"]
         direction TB
-        CheckProviders["Check Resource Providers"]:::primary
-        RegisterProviders{"Register Providers?"}:::decision
-        CheckQuota["Check Quotas (Info)"]:::datastore
-
-        CheckProviders -->|"Missing"| RegisterProviders
-        RegisterProviders -->|"Yes"| CheckProviders
-        CheckProviders -->|"OK"| CheckQuota
+        H{"ValidateOnly Mode?"}
+        I["✅ Validation Complete"]
+        J{"SkipSecretsClear?"}
+        K["Skip Secrets Clearing"]
+        L["Clear .NET User Secrets"]
+        M["✅ Pre-provisioning Complete"]
     end
 
-    %% ===== PHASE 5: CLEANUP =====
-    subgraph Cleanup["5️⃣ Cleanup"]
+    %% ===== RESULTS =====
+    subgraph results["📊 Results"]
         direction TB
-        ClearSecrets["Clear User Secrets"]:::primary
+        N["Display Validation Summary"]
+        O(["🏁 End"])
     end
 
-    %% ===== MAIN FLOW CONNECTIONS =====
-    Start -->|"Initiate"| RuntimeValidation
-    RuntimeValidation -->|"Validated"| Prerequisites
-    InstallDotNet -->|"No"| Failed
-    InstallAzd -->|"No"| Failed
-    InstallAzCLI -->|"No"| Failed
-    InstallBicep -->|"No"| Failed
-    CheckBicep -->|"OK"| Authentication
-    Login -->|"No"| Failed
-    CheckAuth -->|"OK"| AzureConfig
-    RegisterProviders -->|"No"| Failed
-    CheckQuota -->|"Proceed"| Cleanup
-    Cleanup -->|"Done"| Complete
+    %% ===== FAILURE =====
+    subgraph failure["❌ Error Handling"]
+        direction TB
+        Z["❌ Exit with Error"]
+    end
 
-    %% ===== SUBGRAPH STYLES =====
-    style RuntimeValidation fill:#EEF2FF,stroke:#4F46E5,stroke-width:2px
-    style Prerequisites fill:#FEF3C7,stroke:#F59E0B,stroke-width:2px
-    style Authentication fill:#DBEAFE,stroke:#3B82F6,stroke-width:2px
-    style AzureConfig fill:#FEE2E2,stroke:#EF4444,stroke-width:2px
-    style Cleanup fill:#D1FAE5,stroke:#10B981,stroke-width:2px
+    %% ===== CONNECTIONS =====
+    A -->|"validates"| B
+    B -->|"Pass"| C
+    B -->|"Fail"| Z
+
+    C -->|"Pass"| D
+    C -->|"Fail"| C1
+    C1 -->|"Yes"| C2
+    C1 -->|"No"| Z
+    C2 -->|"installed"| D
+
+    D -->|"Pass"| E
+    D -->|"Fail"| D1
+    D1 -->|"Yes"| D2
+    D1 -->|"No"| Z
+    D2 -->|"installed"| E
+
+    E -->|"Pass"| F
+    E -->|"Fail"| E1
+    E1 -->|"Yes"| E2
+    E1 -->|"No"| Z
+    E2 -->|"installed"| F
+
+    F -->|"Pass"| G
+    F -->|"Fail"| F1
+    F1 -->|"Yes"| F2
+    F1 -->|"No"| F3
+    F2 -->|"authenticated"| G
+    F3 -->|"authenticated"| G
+
+    G -->|"checked"| H
+    H -->|"Yes"| I
+    H -->|"No"| J
+
+    J -->|"Yes"| K
+    J -->|"No"| L
+
+    K -->|"skipped"| M
+    L -->|"cleared"| M
+
+    I -->|"summary"| N
+    M -->|"summary"| N
+    N -->|"completes"| O
+
+    %% ===== NODE STYLING =====
+    class A trigger
+    class B,C,D,E,F,H,J,C1,D1,E1,F1 decision
+    class C2,D2,E2,F2,F3,G,K,L primary
+    class I,M,N secondary
+    class O secondary
+    class Z failed
+
+    %% ===== SUBGRAPH STYLING =====
+    style triggers fill:#EEF2FF,stroke:#4F46E5,stroke-width:2px
+    style validation fill:#ECFDF5,stroke:#10B981,stroke-width:2px
+    style auth fill:#E0E7FF,stroke:#4F46E5,stroke-width:2px
+    style execution fill:#D1FAE5,stroke:#059669,stroke-width:2px
+    style results fill:#FEF3C7,stroke:#F59E0B,stroke-width:2px
+    style failure fill:#FEE2E2,stroke:#F44336,stroke-width:2px
 ```
-
-### Integration Points
-
-| Aspect           | Details                                                                                                                                                                                                                        |
-| ---------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| **Version**      | 2.3.0 (PowerShell: 2026-01-06, Bash: 2026-01-06)                                                                                                                                                                               |
-| **Called By**    | • **Azure Developer CLI (azd)** automatically before `azd provision` or `azd up`<br/>• Developers manually for environment validation<br/>• CI/CD pipelines during automated deployment workflows                              |
-| **Calls**        | • `clean-secrets.ps1` or `clean-secrets.sh` for secret clearing<br/>• `az login` for Azure authentication<br/>• `az provider register` for resource provider registration<br/>• Installation scripts for missing prerequisites |
-| **Dependencies** | • **Runtime:** PowerShell 7.0+ or Bash 4.0+<br/>• **.NET SDK:** Version 10.0+<br/>• **Azure CLI:** Version 2.60.0+<br/>• **Azure Developer CLI (azd)**<br/>• **Bicep CLI:** Version 0.30.0+                                    |
 
 ---
 
-## Error Handling
+## 📝 Usage Examples
 
-### Error Categories
-
-| Category                   | Behavior                                 | Recovery                                 |
-| -------------------------- | ---------------------------------------- | ---------------------------------------- |
-| **Missing Prerequisites**  | Offer to install or display instructions | Install manually or use `--auto-install` |
-| **Version Mismatch**       | Display current vs required version      | Upgrade tool                             |
-| **Authentication Failure** | Prompt for Azure login                   | Run `az login` manually                  |
-| **Provider Registration**  | Display registration commands            | Run commands manually                    |
-| **Clean Secrets Failure**  | Warning (non-fatal)                      | Continue with deployment                 |
-
-### Error Messages
-
-The scripts provide detailed error messages with:
-
-- Current state vs expected state
-- Specific remediation steps
-- Download/installation URLs
-- Manual command alternatives
-
----
-
-## Exit Codes
-
-| Code  | Meaning                                              |
-| ----- | ---------------------------------------------------- |
-| `0`   | Success - All validations passed                     |
-| `1`   | Failure - Prerequisites missing or validation failed |
-| `2`   | Invalid arguments (Bash only)                        |
-| `130` | User interruption (Ctrl+C)                           |
-
----
-
-## Troubleshooting
-
-### Common Issues
-
-#### .NET SDK Not Found
-
-```bash
-# Verify installation
-dotnet --version
-
-# If not found, install from:
-# https://dotnet.microsoft.com/download/dotnet/10.0
-```
-
-#### Azure CLI Not Authenticated
-
-```bash
-# Login interactively
-az login
-
-# Or use device code for remote sessions
-az login --use-device-code
-```
-
-#### Bicep Version Too Old
-
-```bash
-# Upgrade Bicep via Azure CLI
-az bicep upgrade
-
-# Or install standalone
-az bicep install
-```
-
-#### Resource Provider Not Registered
-
-```bash
-# Check provider status
-az provider show --namespace Microsoft.App --query registrationState
-
-# Register provider
-az provider register --namespace Microsoft.App --wait
-```
-
-### Verbose Mode
-
-For detailed diagnostic information:
+### PowerShell
 
 ```powershell
-# PowerShell
-.\preprovision.ps1 -Verbose
+# Standard pre-provisioning with confirmation prompts
+.\preprovision.ps1
 
-# Bash
-./preprovision.sh --verbose
+# Pre-provisioning without confirmation prompts
+.\preprovision.ps1 -Force
+
+# Only validate prerequisites without clearing secrets
+.\preprovision.ps1 -ValidateOnly
+
+# Skip secret clearing and show verbose output
+.\preprovision.ps1 -SkipSecretsClear -Verbose
+
+# Use device code flow for Azure login (useful for remote/headless sessions)
+.\preprovision.ps1 -UseDeviceCodeLogin
+
+# Automatically install all missing prerequisites without prompts
+.\preprovision.ps1 -AutoInstall -Force
+```
+
+### Bash
+
+```bash
+# Standard pre-provisioning with confirmation prompts
+./preprovision.sh
+
+# Pre-provisioning without confirmation prompts
+./preprovision.sh --force
+
+# Only validate prerequisites without clearing secrets
+./preprovision.sh --validate-only
+
+# Skip secret clearing and show verbose output
+./preprovision.sh --skip-secrets-clear --verbose
+
+# Use device code flow for Azure login
+./preprovision.sh --use-device-code-login
+
+# Automatically install all missing prerequisites without prompts
+./preprovision.sh --auto-install --force
 ```
 
 ---
 
-## Performance Characteristics
+## ⚠️ Exit Codes
 
-| Characteristic     | Details                                                                                                                                                                      |
-| ------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Execution Time** | • **With all prerequisites:** 5-10 seconds<br/>• **With installations:** 2-10 minutes (depending on downloads)<br/>• **Provider registration:** Up to 2 minutes per provider |
-| **Resource Usage** | • **Memory:** ~30 MB peak<br/>• **CPU:** Low utilization<br/>• **Network:** Download bandwidth for installations                                                             |
-| **Scalability**    | • Linear with number of prerequisites to install<br/>• Provider registration is parallelizable                                                                               |
-
----
-
-## 🔄 Version History
-
-| Version   | Date       | Changes                                                                                                                                                                                                                                                                                                              |
-| --------- | ---------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **2.3.0** | 2026-01-06 | • Applied PowerShell best practices (OutputType on script block)<br/>• Added preference backup/restore pattern in PowerShell<br/>• Added `-CommandType Application` to `Get-Command` calls for external commands<br/>• Added IFS protection in Bash<br/>• Updated copyright to 2025-2026<br/>• Documentation updates |
-| **2.3.0** | 2025-12-30 | • Added `--auto-install` parameter<br/>• Added `--use-device-code-login` parameter<br/>• Added installation functions for all prerequisites<br/>• Added Azure resource provider registration<br/>• Synchronized PowerShell and Bash implementations                                                                  |
-| **2.0.0** | 2025-12-29 | • Complete rewrite with comprehensive validation<br/>• Added Bicep CLI validation<br/>• Added Azure authentication check<br/>• Added quota information                                                                                                                                                               |
-| **1.0.0** | 2025-12-01 | • Initial release with basic validation                                                                                                                                                                                                                                                                              |
+| Code | Meaning                                                     |
+| ---- | ----------------------------------------------------------- |
+| `0`  | Success - all validations passed and operations completed   |
+| `1`  | Failure - one or more validations failed or errors occurred |
 
 ---
 
-## Related Documentation
+## 📚 Related Scripts
 
-- [clean-secrets.md](clean-secrets.md) - User secrets clearing script
-- [postprovision.md](postprovision.md) - Post-provisioning configuration script
-- [check-dev-workstation.md](check-dev-workstation.md) - Development workstation validation
-- [README.md](README.md) - Hooks overview
+| Script                                              | Purpose                                              |
+| --------------------------------------------------- | ---------------------------------------------------- |
+| [clean-secrets](./clean-secrets.md)                 | Called to clear .NET user secrets                    |
+| [check-dev-workstation](./check-dev-workstation.md) | Wrapper that calls preprovision in ValidateOnly mode |
+| [postprovision](./postprovision.md)                 | Runs after infrastructure provisioning               |
 
 ---
 
-> **📝 Note:** This documentation is auto-generated based on script analysis. For the most accurate information, refer to the script source code and inline comments.
+## 📜 Version History
+
+| Version | Date       | Changes                                                                  |
+| ------- | ---------- | ------------------------------------------------------------------------ |
+| 2.3.0   | 2026-01-06 | Added AutoInstall parameter, enhanced Azure Resource Provider validation |
+| 2.2.0   | 2025-12-15 | Added UseDeviceCodeLogin parameter for remote sessions                   |
+| 2.1.0   | 2025-11-20 | Added Bicep CLI validation                                               |
+| 2.0.0   | 2025-10-01 | Major refactor with comprehensive validation                             |
+| 1.0.0   | 2025-08-15 | Initial release                                                          |
+
+> [!IMPORTANT]
+> This script must run successfully before `azd provision`. It validates all required tools and configurations.
+
+---
+
+## 🔗 Links
+
+- [Repository](https://github.com/Evilazaro/Azure-LogicApps-Monitoring)
+- [Azure Developer CLI Documentation](https://learn.microsoft.com/azure/developer/azure-developer-cli/)
+- [.NET SDK Installation](https://dotnet.microsoft.com/download)
+- [Azure CLI Installation](https://learn.microsoft.com/cli/azure/install-azure-cli)
 
 ---
 
 <div align="center">
 
-**Made with ❤️ by Evilazaro | Principal Cloud Solution Architect | Microsoft**
-
-[⬆ Back to Top](#-pre-provisioning-script-documentation) | [← check-dev-workstation](check-dev-workstation.md) | [📑 Index](README.md) | [postprovision →](postprovision.md)
+**[⬆️ Back to Top](#-preprovision)** · **[🪝 Hooks](./README.md)** · **[postprovision →](./postprovision.md)**
 
 </div>

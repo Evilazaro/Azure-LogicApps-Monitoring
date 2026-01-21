@@ -1,23 +1,24 @@
 ---
-title: CI - .NET Build and Test
-description: Build validation pipeline for pull requests with cross-platform testing
-author: Evilazaro
-version: 1.0
-tags: [devops, ci, dotnet, testing, github-actions]
+title: CI - .NET Build and Test Workflow
+description: Continuous integration pipeline for .NET solution code quality validation with cross-platform support, code coverage, and security scanning
+author: Platform Team
+date: 2026-01-21
+version: 1.0.0
+tags: [ci, build, test, dotnet, github-actions, codeql]
 ---
 
-# 🔄 CI - .NET Build and Test
+# 🔄 CI - .NET Build and Test Workflow
 
 > [!NOTE]
-> **Workflow File:** [ci-dotnet.yml](../../.github/workflows/ci-dotnet.yml)  
-> 🎯 **For Developers**: Orchestrates CI pipeline with cross-platform builds and tests.
+> **Target Audience:** Developers, DevOps Engineers, QA Engineers<br/>
+> **Reading Time:** ~8 minutes
 
 <details>
-<summary>📍 <strong>Quick Navigation</strong></summary>
+<summary>📍 Navigation</summary>
 
-| Previous                           |            Index             |                                   Next |
-| :--------------------------------- | :--------------------------: | -------------------------------------: |
-| [← Azure Deployment](azure-dev.md) | [📑 DevOps Index](README.md) | [Reusable CI →](ci-dotnet-reusable.md) |
+| Previous                  |           Index           |                                 Next |
+| :------------------------ | :-----------------------: | -----------------------------------: |
+| [DevOps Index](README.md) | [DevOps Index](README.md) | [CI Reusable](ci-dotnet-reusable.md) |
 
 </details>
 
@@ -25,223 +26,293 @@ tags: [devops, ci, dotnet, testing, github-actions]
 
 ## 📑 Table of Contents
 
-- [📋 Overview](#-overview)
-- [🗺️ Pipeline Visualization](#%EF%B8%8F-pipeline-visualization)
-- [🎯 Triggers](#-triggers)
-- [📋 Jobs & Steps](#-jobs--steps)
-- [🔐 Prerequisites](#-prerequisites)
-- [📦 Artifacts](#-artifacts)
-- [🚀 Usage Examples](#-usage-examples)
-- [🔍 Troubleshooting](#-troubleshooting)
-- [🔗 Related Documentation](#-related-documentation)
+- [🔄 CI - .NET Build and Test Workflow](#-ci---net-build-and-test-workflow)
+  - [📑 Table of Contents](#-table-of-contents)
+  - [📖 Overview](#-overview)
+  - [📊 Pipeline Visualization](#-pipeline-visualization)
+  - [🎯 Triggers](#-triggers)
+  - [📋 Jobs](#-jobs)
+  - [⚙️ Configuration](#️-configuration)
+  - [📦 Artifacts](#-artifacts)
+  - [💡 Usage Examples](#-usage-examples)
+  - [🔧 Troubleshooting](#-troubleshooting)
+  - [📚 Related Documentation](#-related-documentation)
 
 ---
 
-## 📋 Overview
+## 📖 Overview
 
-This workflow orchestrates the CI pipeline by calling the reusable workflow. It handles triggers, path filters, and passes configuration to the reusable CI workflow for .NET solutions.
+The **CI - .NET Build and Test** workflow (`ci-dotnet.yml`) is the continuous integration pipeline that orchestrates code quality validation for the .NET solution. It serves as the entry point that calls the reusable CI workflow with appropriate configuration.
 
-### Key Features
+This workflow provides:
 
-| Feature                       | Description                                    |
-| ----------------------------- | ---------------------------------------------- |
-| ✅ **Automatic Triggering**   | On push and pull requests                      |
-| 🔧 **Configurable Build**     | Release/Debug configuration options            |
-| 🧪 **Cross-Platform Testing** | Builds and tests on Ubuntu, Windows, and macOS |
-| 🔍 **Code Analysis**          | Formatting analysis with `.editorconfig`       |
-| 🛡️ **Security Scanning**      | CodeQL vulnerability scanning (always enabled) |
-| 📊 **Test Reporting**         | Detailed summaries and result publishing       |
-| 📦 **Build Artifacts**        | Per-platform artifacts for debugging           |
+- Cross-platform builds (Ubuntu, Windows, macOS)
+- Cross-platform testing with code coverage (Cobertura)
+- Code formatting analysis (.editorconfig compliance)
+- CodeQL security vulnerability scanning
+- Test result publishing with detailed summaries
 
 ---
 
-## 🗺️ Pipeline Visualization
+## 📊 Pipeline Visualization
+
+<details>
+<summary>🔍 Click to expand pipeline diagram</summary>
 
 ```mermaid
 ---
-title: CI - .NET Build and Test Pipeline
+title: CI Pipeline Architecture
 ---
-flowchart LR
+flowchart TD
     %% ===== TRIGGER EVENTS =====
-    subgraph TriggersGroup["🎯 Triggers"]
-        push(["Push to Branches"])
-        pr(["Pull Request to Main"])
-        manual(["Manual Dispatch"])
+    subgraph Triggers["🎯 Triggers"]
+        T1(["push"])
+        T2(["pull_request"])
+        T3(["workflow_dispatch"])
     end
 
-    %% ===== MANUAL INPUTS =====
-    subgraph InputsGroup["⚙️ Manual Inputs"]
-        config{"Configuration"}
-        analysis{"Enable Code Analysis"}
+    %% ===== PATH FILTERS =====
+    subgraph PathFilters["📁 Path Filters"]
+        PF[/"src/**, app.*/**,<br/>*.sln, global.json,<br/>workflow files"/]
     end
 
     %% ===== CI PIPELINE =====
-    subgraph CIPipeline["🔄 CI Pipeline (Cross-Platform)"]
-        ci_call[["CI Reusable Workflow"]]
+    subgraph CI["🚀 CI Pipeline"]
+        CI_CALL[["ci-dotnet-reusable.yml"]]
+    end
 
-        subgraph JobsGroup["Reusable Workflow Jobs"]
-            direction TB
-            subgraph MatrixJobs["Matrix: Ubuntu, Windows, macOS"]
-                build(["Build"])
-                test(["Test"])
-            end
-            analyze(["Analyze"])
-            codeql(["🛡️ CodeQL"])
-            summary(["Summary"])
+    %% ===== EXECUTED JOBS =====
+    subgraph Jobs["📋 Jobs Executed"]
+        direction TB
+
+        subgraph BuildMatrix["🔨 Build Matrix"]
+            B1["Ubuntu"]
+            B2["Windows"]
+            B3["macOS"]
         end
+
+        subgraph TestMatrix["🧪 Test Matrix"]
+            TM_U["Ubuntu"]
+            TM_W["Windows"]
+            TM_M["macOS"]
+        end
+
+        ANALYZE["🔍 Analyze"]
+        CODEQL["🛡️ CodeQL"]
+        SUMMARY[/"📊 Summary"/]
     end
 
-    %% ===== ARTIFACTS =====
-    subgraph ArtifactsGroup["📦 Artifacts (per-platform)"]
-        build_art[/"build-artifacts-{os}"/]
-        test_art[/"test-results-{os}"/]
-        cov_art[/"code-coverage-{os}"/]
-    end
+    %% ===== TRIGGER FLOWS =====
+    T1 -->|evaluates| PF
+    T2 -->|evaluates| PF
+    T3 -->|triggers directly| CI_CALL
+    PF -->|matches| CI_CALL
 
-    %% Trigger flow - events initiate pipeline
-    push -->|triggers| ci_call
-    pr -->|triggers| ci_call
-    manual -->|configures| config
-    config -->|passes to| ci_call
-    analysis -.->|optional| ci_call
+    %% ===== CI TO JOBS =====
+    CI_CALL ==>|executes| BuildMatrix
+    BuildMatrix -->|compiles| TestMatrix
+    BuildMatrix -->|validates| ANALYZE
+    BuildMatrix -->|scans| CODEQL
+    TestMatrix -->|reports| SUMMARY
+    ANALYZE -->|reports| SUMMARY
+    CODEQL -->|reports| SUMMARY
 
-    %% CI flow - job execution sequence
-    ci_call -->|starts| build
-    build -->|on success| test
-    build -->|on success| analyze
-    build -->|on success| codeql
-    test -->|reports to| summary
-    analyze -->|reports to| summary
-    codeql -->|reports to| summary
-
-    %% Artifact flow - store outputs
-    build -->|stores| build_art
-    test -->|stores| test_art
-    test -->|stores| cov_art
-
-    %% ===== STYLING DEFINITIONS =====
-    %% Primary components: Indigo - main processes/services
-    classDef primary fill:#4F46E5,stroke:#3730A3,color:#FFFFFF
-    %% Secondary components: Emerald - secondary elements
-    classDef secondary fill:#10B981,stroke:#059669,color:#FFFFFF
-    %% Data stores: Amber - artifacts and outputs
-    classDef datastore fill:#F59E0B,stroke:#D97706,color:#000000
-    %% External systems: Gray - reusable/external calls
-    classDef external fill:#6B7280,stroke:#4B5563,color:#FFFFFF,stroke-dasharray: 5 5
-    %% Triggers: Indigo light - entry points
+    %% ===== NODE STYLING =====
     classDef trigger fill:#818CF8,stroke:#4F46E5,color:#FFFFFF
-    %% Decision points: Amber outline - conditional logic
-    classDef decision fill:#FFFBEB,stroke:#F59E0B,color:#000000
+    classDef input fill:#F3F4F6,stroke:#6B7280,color:#000000
+    classDef external fill:#6B7280,stroke:#4B5563,color:#FFFFFF,stroke-dasharray:5 5
+    classDef primary fill:#4F46E5,stroke:#3730A3,color:#FFFFFF
+    classDef secondary fill:#10B981,stroke:#059669,color:#FFFFFF
+    classDef matrix fill:#D1FAE5,stroke:#10B981,color:#000000
+    classDef datastore fill:#F59E0B,stroke:#D97706,color:#000000
 
-    %% Subgraph background styling - lighter shades
-    style TriggersGroup fill:#EEF2FF,stroke:#4F46E5,stroke-width:2px
-    style InputsGroup fill:#FEF3C7,stroke:#F59E0B,stroke-width:2px
-    style CIPipeline fill:#ECFDF5,stroke:#10B981,stroke-width:2px
-    style JobsGroup fill:#D1FAE5,stroke:#059669,stroke-width:1px
-    style MatrixJobs fill:#E0E7FF,stroke:#4F46E5,stroke-width:1px
-    style ArtifactsGroup fill:#FEF3C7,stroke:#F59E0B,stroke-width:2px
+    %% ===== APPLY NODE CLASSES =====
+    class T1,T2,T3 trigger
+    class PF input
+    class CI_CALL external
+    class B1,B2,B3,TM_U,TM_W,TM_M matrix
+    class ANALYZE secondary
+    class CODEQL secondary
+    class SUMMARY datastore
 
-    %% Apply styles to nodes
-    class push,pr,manual trigger
-    class config,analysis decision
-    class ci_call external
-    class build,test primary
-    class analyze,summary secondary
-    class codeql primary
-    class build_art,test_art,cov_art datastore
+    %% ===== SUBGRAPH STYLING =====
+    style Triggers fill:#EEF2FF,stroke:#4F46E5,stroke-width:2px
+    style PathFilters fill:#F3F4F6,stroke:#6B7280,stroke-width:2px
+    style CI fill:#E0E7FF,stroke:#4F46E5,stroke-width:2px
+    style Jobs fill:#ECFDF5,stroke:#10B981,stroke-width:2px
+    style BuildMatrix fill:#D1FAE5,stroke:#059669,stroke-width:1px
+    style TestMatrix fill:#D1FAE5,stroke:#059669,stroke-width:1px
 ```
+
+</details>
 
 ---
 
 ## 🎯 Triggers
 
-### Push Events
-
-| Branch Pattern | Description             |
-| -------------- | ----------------------- |
-| `main`         | Main development branch |
-| `feature/**`   | Feature branches        |
-| `bugfix/**`    | Bug fix branches        |
-| `hotfix/**`    | Hotfix branches         |
-| `release/**`   | Release branches        |
-| `chore/**`     | Maintenance branches    |
-| `docs/**`      | Documentation branches  |
-| `refactor/**`  | Refactoring branches    |
-| `test/**`      | Test branches           |
-
-### Pull Request Events
-
-| Target Branch | Description                         |
-| ------------- | ----------------------------------- |
-| `main`        | Pull requests targeting main branch |
+| Trigger             | Branches                                                                                                      | Description                       |
+| :------------------ | :------------------------------------------------------------------------------------------------------------ | :-------------------------------- |
+| `push`              | `main`, `feature/**`, `bugfix/**`, `hotfix/**`, `release/**`, `chore/**`, `docs/**`, `refactor/**`, `test/**` | Triggers on push to any branch    |
+| `pull_request`      | `main`                                                                                                        | Triggers on PRs targeting main    |
+| `workflow_dispatch` | Any                                                                                                           | Manual trigger with configuration |
 
 ### Path Filters
 
-The workflow monitors changes to these paths:
+The workflow only triggers when changes are made to:
+
+| Path Pattern                               | Description                 |
+| :----------------------------------------- | :-------------------------- |
+| `src/**`                                   | Source code files           |
+| `app.*/**`                                 | AppHost and ServiceDefaults |
+| `*.sln`                                    | Solution files              |
+| `global.json`                              | .NET SDK configuration      |
+| `.github/workflows/ci-dotnet.yml`          | This workflow file          |
+| `.github/workflows/ci-dotnet-reusable.yml` | Reusable workflow file      |
+
+### Manual Trigger Inputs
+
+| Input                  | Type    | Default   | Description                         |
+| :--------------------- | :------ | :-------- | :---------------------------------- |
+| `configuration`        | choice  | `Release` | Build configuration (Release/Debug) |
+| `enable-code-analysis` | boolean | `true`    | Enable code formatting analysis     |
+
+---
+
+## 📋 Jobs
+
+### 🚀 CI (Reusable Workflow Call)
+
+This workflow delegates all CI operations to the reusable workflow.
+
+| Property     | Value                                        |
+| :----------- | :------------------------------------------- |
+| **Workflow** | `./.github/workflows/ci-dotnet-reusable.yml` |
+| **Secrets**  | `inherit` (passes all secrets)               |
+
+#### Configuration Passed
 
 ```yaml
-paths:
-  - "src/**" # Source code
-  - "app.*/**" # .NET Aspire projects
-  - "*.sln" # Solution files
-  - "global.json" # .NET SDK configuration
-  - ".github/workflows/ci-dotnet.yml" # This workflow
-  - ".github/workflows/ci-dotnet-reusable.yml" # Reusable workflow
+configuration: ${{ inputs.configuration || 'Release' }}
+dotnet-version: "10.0.x"
+solution-file: "app.sln"
+test-results-artifact-name: "test-results"
+build-artifacts-name: "build-artifacts"
+coverage-artifact-name: "code-coverage"
+artifact-retention-days: 30
+runs-on: "ubuntu-latest"
+enable-code-analysis: ${{ inputs.enable-code-analysis == '' && true || inputs.enable-code-analysis }}
+fail-on-format-issues: true
 ```
 
-### Manual Dispatch Inputs
+### Jobs Executed (via Reusable Workflow)
 
-| Input                  | Type      | Default   | Options            | Description                     |
-| ---------------------- | --------- | --------- | ------------------ | ------------------------------- |
-| `configuration`        | `choice`  | `Release` | `Release`, `Debug` | Build configuration             |
-| `enable-code-analysis` | `boolean` | `true`    | -                  | Enable code formatting analysis |
+The reusable workflow executes the following jobs:
 
-> 💡 **Note:** Cross-platform matrix testing is always enabled - builds and tests run on Ubuntu, Windows, and macOS.
+<details>
+<summary>🔍 View jobs flow diagram</summary>
+
+```mermaid
+---
+title: CI Jobs Flow Overview
+---
+flowchart LR
+    %% ===== CROSS-PLATFORM MATRIX =====
+    subgraph CrossPlatform["🌐 Cross-Platform Matrix"]
+        direction TB
+        BUILD["🔨 Build<br/>(Ubuntu, Windows, macOS)"]
+        TEST["🧪 Test<br/>(Ubuntu, Windows, macOS)"]
+    end
+
+    %% ===== SINGLE RUNNER JOBS =====
+    subgraph SingleRunner["🖥️ Single Runner"]
+        ANALYZE["🔍 Analyze"]
+        CODEQL["🛡️ CodeQL"]
+    end
+
+    %% ===== FINAL AGGREGATION =====
+    subgraph Final["📊 Aggregation"]
+        SUMMARY[/"📊 Summary"/]
+        FAILURE["❌ On-Failure"]
+    end
+
+    %% ===== JOB FLOW =====
+    BUILD ==>|compiles| TEST
+    BUILD -->|validates| ANALYZE
+    BUILD -->|scans| CODEQL
+    TEST -->|reports| SUMMARY
+    ANALYZE -->|reports| SUMMARY
+    CODEQL -->|reports| SUMMARY
+    SUMMARY -.->|on failure| FAILURE
+
+    %% ===== NODE STYLING =====
+    classDef primary fill:#4F46E5,stroke:#3730A3,color:#FFFFFF
+    classDef secondary fill:#10B981,stroke:#059669,color:#FFFFFF
+    classDef datastore fill:#F59E0B,stroke:#D97706,color:#000000
+    classDef failed fill:#F44336,stroke:#C62828,color:#FFFFFF
+
+    %% ===== APPLY NODE CLASSES =====
+    class BUILD primary
+    class TEST secondary
+    class ANALYZE secondary
+    class CODEQL secondary
+    class SUMMARY datastore
+    class FAILURE failed
+
+    %% ===== SUBGRAPH STYLING =====
+    style CrossPlatform fill:#ECFDF5,stroke:#10B981,stroke-width:2px
+    style SingleRunner fill:#E0E7FF,stroke:#4F46E5,stroke-width:2px
+    style Final fill:#FEF3C7,stroke:#F59E0B,stroke-width:2px
+```
+
+</details>
+
+### Job Details
+
+| Job           | Runner                          | Description                                   |
+| :------------ | :------------------------------ | :-------------------------------------------- |
+| 🔨 Build      | Matrix (ubuntu, windows, macos) | Compiles solution on all platforms            |
+| 🧪 Test       | Matrix (ubuntu, windows, macos) | Runs tests with coverage on all platforms     |
+| 🔍 Analyze    | ubuntu-latest                   | Verifies code formatting (optional)           |
+| 🛡️ CodeQL     | ubuntu-latest                   | Security vulnerability scanning (always runs) |
+| 📊 Summary    | ubuntu-latest                   | Aggregates results from all jobs              |
+| ❌ On-Failure | ubuntu-latest                   | Reports failures (runs only on failure)       |
 
 ---
 
-## 📋 Jobs & Steps
-
-### Job: 🚀 CI
-
-This workflow consists of a single job that calls the reusable CI workflow.
-
-| Property     | Value                                      |
-| ------------ | ------------------------------------------ |
-| **Type**     | Reusable workflow call                     |
-| **Workflow** | `.github/workflows/ci-dotnet-reusable.yml` |
-| **Secrets**  | Inherited                                  |
-
-### Reusable Workflow Parameters
-
-| Parameter                    | Value                                        | Description                         |
-| ---------------------------- | -------------------------------------------- | ----------------------------------- |
-| `configuration`              | `${{ inputs.configuration \|\| 'Release' }}` | Build configuration                 |
-| `dotnet-version`             | `10.0.x`                                     | .NET SDK version                    |
-| `solution-file`              | `app.sln`                                    | Solution file path                  |
-| `test-results-artifact-name` | `test-results`                               | Base name for test results artifact |
-| `build-artifacts-name`       | `build-artifacts`                            | Base name for build artifacts       |
-| `coverage-artifact-name`     | `code-coverage`                              | Base name for coverage artifact     |
-| `artifact-retention-days`    | `30`                                         | Artifact retention period           |
-| `runs-on`                    | `ubuntu-latest`                              | Runner for analyze/summary jobs     |
-| `enable-code-analysis`       | Dynamic                                      | Enable code analysis                |
-| `fail-on-format-issues`      | `true`                                       | Fail on formatting issues           |
-
----
-
-## 🔐 Prerequisites
+## ⚙️ Configuration
 
 ### Required Permissions
 
 ```yaml
 permissions:
-  contents: read # Required for checkout
-  checks: write # Required for test reporter
-  pull-requests: write # Required for PR comments
-  security-events: write # Required for CodeQL SARIF upload
+  contents: read # Read repository contents
+  checks: write # Create check runs for test results
+  pull-requests: write # Post comments on pull requests
+  security-events: write # Upload CodeQL SARIF results
 ```
 
-### Concurrency Configuration
+### .NET SDK
+
+- Version: `10.0.x`
+- Workloads: Updated automatically during workflow
+
+### Code Quality Requirements
+
+- `.editorconfig` file for formatting rules
+- Solution file (`app.sln`) at repository root
+
+---
+
+## 📦 Artifacts
+
+| Artifact               | Description                      | Retention |
+| :--------------------- | :------------------------------- | :-------- |
+| `build-artifacts-{os}` | Compiled binaries per platform   | 30 days   |
+| `test-results-{os}`    | Test execution results (.trx)    | 30 days   |
+| `code-coverage-{os}`   | Coverage reports (Cobertura XML) | 30 days   |
+| `codeql-sarif-results` | Security scan results (SARIF)    | 30 days   |
+
+### Concurrency
 
 ```yaml
 concurrency:
@@ -249,128 +320,90 @@ concurrency:
   cancel-in-progress: true
 ```
 
-> 💡 **Note:** This prevents duplicate workflow runs for the same branch/PR and cancels in-progress runs when new commits are pushed.
+Prevents duplicate workflow runs for the same branch/PR and cancels in-progress runs when new commits are pushed.
 
 ---
 
-## 📦 Artifacts
+## 💡 Usage Examples
 
-All artifacts include the platform suffix (`-ubuntu-latest`, `-windows-latest`, `-macos-latest`).
-
-| Artifact               | Contents                        | Retention |
-| ---------------------- | ------------------------------- | --------- |
-| `build-artifacts-{os}` | Compiled binaries               | 7 days    |
-| `test-results-{os}`    | Test execution results (`.trx`) | 30 days   |
-| `code-coverage-{os}`   | Cobertura XML coverage reports  | 30 days   |
-| `codeql-sarif-results` | CodeQL security scan results    | 30 days   |
-
----
-
-## 🚀 Usage Examples
-
-### Automatic CI on Push
+### Automatic Trigger
 
 ```bash
-# Create a feature branch and push
-git checkout -b feature/my-feature
-# Make changes...
-git add .
-git commit -m "feat: implement new feature"
+# Push to any configured branch triggers CI
 git push origin feature/my-feature
 ```
 
-### Automatic CI on Pull Request
+### Manual Trigger
 
 ```bash
-# Create PR from feature branch
-gh pr create --base main --head feature/my-feature
-```
-
-### Manual CI Run (UI)
-
-1. Go to **Actions** → **CI - .NET Build and Test**
-2. Click **Run workflow**
-3. Select configuration options:
-   - **Build configuration**: Release or Debug
-   - **Enable code formatting analysis**: Check/uncheck
-4. Click **Run workflow**
-
-> 💡 Cross-platform testing runs automatically on all platforms (Ubuntu, Windows, macOS).
-
-### Manual CI Run (CLI)
-
-```bash
-# Run with defaults
+# Trigger with default configuration (Release)
 gh workflow run ci-dotnet.yml
 
-# Run with Debug configuration
+# Trigger with Debug configuration
 gh workflow run ci-dotnet.yml -f configuration=Debug
 
-# Run with code analysis disabled
+# Trigger without code analysis
 gh workflow run ci-dotnet.yml -f enable-code-analysis=false
+```
 
-# Run with all options
-gh workflow run ci-dotnet.yml \
-  -f configuration=Release \
-  -f enable-code-analysis=true
+### Pull Request
+
+```bash
+# Create PR to main - automatically triggers CI
+gh pr create --base main --title "My feature"
 ```
 
 ---
 
-## 🔍 Troubleshooting
+## 🔧 Troubleshooting
 
 ### Common Issues
 
-| Issue              | Cause                  | Solution                                     |
-| ------------------ | ---------------------- | -------------------------------------------- |
-| Build fails        | Missing NuGet packages | Check `dotnet restore` logs                  |
-| Tests fail         | Test failures          | Download `test-results` artifact for details |
-| Format check fails | Code style violations  | Run `dotnet format app.sln` locally          |
-| Matrix job fails   | OS-specific issue      | Check logs for the specific OS               |
+> [!WARNING]
+> Platform-specific issues are common in cross-platform builds. Always test on all platforms before merging.
+
+| Issue                            | Cause                            | Solution                                 |
+| :------------------------------- | :------------------------------- | :--------------------------------------- |
+| Build fails on one platform only | Platform-specific code issues    | Check conditional compilation directives |
+| Code formatting check fails      | Code doesn't match .editorconfig | Run `dotnet format` locally              |
+| Tests fail on specific OS        | Environment-dependent tests      | Review test assumptions about file paths |
+| CodeQL timeout                   | Large codebase analysis          | CodeQL has 45-minute timeout             |
 
 ### Local Verification
 
-```bash
-# Restore dependencies
-dotnet restore app.sln
+> [!TIP]
+> Run these commands before pushing to catch issues early.
 
+```bash
 # Build solution
 dotnet build app.sln --configuration Release
 
-# Run tests
-dotnet test app.sln --configuration Release
+# Run tests with coverage
+dotnet test app.sln --configuration Release --collect:"XPlat Code Coverage"
 
-# Check formatting
+# Check code formatting
 dotnet format app.sln --verify-no-changes
 
 # Fix formatting issues
 dotnet format app.sln
 ```
 
-### Viewing Test Results
+---
 
-1. Navigate to the workflow run
-2. Click on the **Test Results** check
-3. View individual test results and failures
-4. Download `test-results` artifact for detailed `.trx` files
+## 📚 Related Documentation
+
+- [Reusable CI Workflow](ci-dotnet-reusable.md) - Detailed documentation of the reusable workflow
+- [CD - Azure Deployment](azure-dev.md) - Deployment workflow that uses this CI
+- [GitHub Actions .NET Documentation](https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-net)
 
 ---
 
-## 🔗 Related Documentation
-
-| Resource                                                                                        | Description                  |
-| ----------------------------------------------------------------------------------------------- | ---------------------------- |
-| [CI - .NET Reusable Workflow](./ci-dotnet-reusable.md)                                          | Reusable CI workflow details |
-| [CD - Azure Deployment](./azure-dev.md)                                                         | Azure deployment workflow    |
-| [.NET Testing Documentation](https://docs.microsoft.com/en-us/dotnet/core/testing/)             | Microsoft testing guide      |
-| [dotnet format Documentation](https://docs.microsoft.com/en-us/dotnet/core/tools/dotnet-format) | Code formatting tool         |
+[⬆️ Back to Top](#-ci---net-build-and-test-workflow)
 
 ---
 
 <div align="center">
 
-[← Azure Deployment](azure-dev.md) | **CI Pipeline** | [Reusable CI →](ci-dotnet-reusable.md)
-
-[⬆️ Back to top](#-ci---net-build-and-test)
+**[← DevOps Index](README.md)** | **[DevOps Index](README.md)** | **[CI Reusable →](ci-dotnet-reusable.md)**
 
 </div>

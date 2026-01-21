@@ -1,28 +1,24 @@
 ---
 title: Technology Architecture
-description: Technology architecture documentation covering infrastructure, platforms, deployment topology, and operational considerations for the Azure Logic Apps Monitoring Solution.
-author: Architecture Team
-date: 2026-01-20
+description: Azure platform services, infrastructure as code, and operational considerations for the Azure Logic Apps Monitoring Solution
+author: Platform Team
+date: 2026-01-21
 version: 1.0.0
-tags:
-  - technology-architecture
-  - togaf
-  - azure
-  - infrastructure
+tags: [architecture, technology, azure, infrastructure, togaf, bdat]
 ---
 
-# 🛠️ Technology Architecture
+# 🖥️ Technology Architecture
 
 > [!NOTE]
-> **Target Audience:** Platform Engineers, Cloud Architects, DevOps Engineers
-> **Reading Time:** ~15 minutes
+> **Target Audience:** Platform Engineers, SREs, Cloud Architects  
+> **Reading Time:** ~20 minutes
 
 <details>
-<summary>📍 Navigation</summary>
+<summary>📖 <strong>Navigation</strong></summary>
 
-| Previous                                                     |        Index         |                                                             Next |
-| :----------------------------------------------------------- | :------------------: | ---------------------------------------------------------------: |
-| [← Application Architecture](03-application-architecture.md) | **Technology Layer** | [Observability Architecture →](05-observability-architecture.md) |
+| Previous                                                     |       Index        |                                                             Next |
+| :----------------------------------------------------------- | :----------------: | ---------------------------------------------------------------: |
+| [← Application Architecture](03-application-architecture.md) | [Index](README.md) | [Observability Architecture →](05-observability-architecture.md) |
 
 </details>
 
@@ -30,47 +26,66 @@ tags:
 
 ## 📑 Table of Contents
 
-- [📋 Technology Principles](#-technology-principles)
-- [📦 Technology Standards Catalog](#-technology-standards-catalog)
-- [🏛️ Platform Decomposition](#-platform-decomposition)
-- [🌍 Environment and Location Strategy](#-environment-and-location-strategy)
-- [🏭 Infrastructure Components](#-infrastructure-components)
-- [💼 Technology Portfolio](#-technology-portfolio)
-- [📝 Infrastructure as Code](#-infrastructure-as-code)
-- [💻 Local Development Stack](#-local-development-stack)
-- [🔧 Operational Considerations](#-operational-considerations)
-- [🌐 Cross-Architecture Relationships](#-cross-architecture-relationships)
+- [📋 Principles](#-1-technology-principles)
+- [📊 Standards](#-2-technology-standards)
+- [☁️ Platform Services](#️-3-platform-services)
+- [🚀 Deployment Architecture](#-4-deployment-architecture)
+- [🗺️ Component Mapping](#️-5-technology-component-mapping)
+- [📜 Infrastructure as Code](#-6-infrastructure-as-code)
+- [🛠️ Operational Considerations](#️-7-operational-considerations)
+- [💰 Cost Analysis](#-8-cost-analysis)
+- [↔️ Cross-Architecture](#️-9-cross-architecture-relationships)
 
 ---
 
-## 📋 Technology Principles
+## 📋 1. Technology Principles
 
-| #       | Principle                     | Rationale                         | Implications                          |
-| ------- | ----------------------------- | --------------------------------- | ------------------------------------- |
-| **T-1** | **Azure PaaS First**          | Reduced operational overhead      | Container Apps, SQL PaaS, Service Bus |
-| **T-2** | **Infrastructure as Code**    | Repeatable, auditable deployments | All resources defined in Bicep        |
-| **T-3** | **Managed Identity**          | Zero stored secrets               | DefaultAzureCredential everywhere     |
-| **T-4** | **Local Development Parity**  | Minimize production surprises     | Emulators mirror Azure services       |
-| **T-5** | **Single-Command Deployment** | Reduce human error                | `azd up` provisions and deploys       |
+> [!TIP]
+> These principles guide all infrastructure decisions and ensure consistency across environments.
+
+| #   | Principle                  | Statement                         | Rationale                                         | Implications               |
+| --- | -------------------------- | --------------------------------- | ------------------------------------------------- | -------------------------- |
+| T-1 | **Cloud-Native First**     | Use Azure PaaS services over IaaS | Reduced operational overhead, built-in resilience | Accept service limitations |
+| T-2 | **Infrastructure as Code** | All resources defined in Bicep    | Repeatable, auditable deployments                 | No portal-only changes     |
+| T-3 | **Managed Identity**       | No stored credentials             | Zero-trust security posture                       | All services use MI        |
+| T-4 | **Environment Parity**     | Local dev mirrors production      | Reduce surprises                                  | Emulators for all services |
+| T-5 | **Serverless Preference**  | Consumption-based compute         | Cost optimization                                 | Cold start acceptance      |
 
 ---
 
-## 📦 Technology Standards Catalog
+<div align="right"><a href="#-table-of-contents">⬆️ Back to top</a></div>
+
+## 📊 2. Technology Standards
+
+### 📖 Standards Catalog
 
 | Category               | Technology           | Version  | Status   | Rationale                         |
 | ---------------------- | -------------------- | -------- | -------- | --------------------------------- |
 | **Runtime**            | .NET                 | 10.0     | Approved | LTS, performance, Aspire support  |
-| **Container Platform** | Azure Container Apps | Latest   | Approved | Serverless containers, auto-scale |
+| **Container Platform** | Azure Container Apps | Latest   | Approved | Serverless containers, Dapr-ready |
+| **Workflow Engine**    | Logic Apps Standard  | Latest   | Approved | Azure-native, low-code automation |
 | **Database**           | Azure SQL Database   | Latest   | Approved | Managed PaaS, EF Core support     |
-| **Messaging**          | Azure Service Bus    | Standard | Approved | Enterprise messaging, topics      |
-| **Workflow**           | Logic Apps Standard  | Latest   | Approved | Event-driven automation           |
-| **APM**                | Application Insights | Latest   | Approved | Distributed tracing, Azure native |
-| **IaC**                | Bicep                | 0.30+    | Approved | Azure-native, type-safe           |
-| **CLI**                | Azure Developer CLI  | 1.11+    | Approved | E2E deployment orchestration      |
+| **Messaging**          | Azure Service Bus    | Standard | Approved | Enterprise messaging patterns     |
+| **Observability**      | Application Insights | Latest   | Approved | Azure-native APM                  |
+| **IaC**                | Bicep                | Latest   | Approved | Azure-native, type-safe           |
+| **Orchestration**      | .NET Aspire          | 13.1.0   | Approved | Cloud-native development          |
+
+### 🔄 Lifecycle Status
+
+| Technology           | Current State | Target State | Retiring      |
+| -------------------- | ------------- | ------------ | ------------- |
+| .NET 10              | Active        | Active       | -             |
+| .NET Aspire 13.1     | Active        | Active       | -             |
+| Bicep                | Active        | Active       | ARM Templates |
+| Application Insights | Active        | Active       | -             |
 
 ---
 
-## 🏛️ Platform Decomposition
+<div align="right"><a href="#-table-of-contents">⬆️ Back to top</a></div>
+
+## ☁️ 3. Platform Services
+
+### 🧩 Platform Decomposition
 
 ```mermaid
 ---
@@ -79,292 +94,314 @@ title: Platform Decomposition
 flowchart TB
     %% ===== COMPUTE PLATFORM =====
     subgraph Compute["🖥️ Compute Platform"]
-        ACA["Azure Container Apps<br/><i>Serverless containers</i>"]
-        LA["Logic Apps Standard<br/><i>Workflow engine</i>"]
-        ASP["App Service Plan<br/><i>WS1 - WorkflowStandard</i>"]
+        ACA["Azure Container Apps<br/><i>API, Web App</i>"]
+        ACAENV["Container Apps Environment<br/><i>Shared runtime</i>"]
+        LA["🔄 Logic Apps Standard<br/><i>Workflows</i>"]
+        ASP["App Service Plan<br/><i>WS1 / Elastic</i>"]
     end
 
     %% ===== DATA PLATFORM =====
     subgraph Data["💾 Data Platform"]
-        SQL["Azure SQL Database<br/><i>General Purpose</i>"]
-        SB["Azure Service Bus<br/><i>Standard tier</i>"]
-        Storage["Azure Storage<br/><i>Standard LRS</i>"]
+        SQL["Azure SQL Database<br/><i>OrderDb</i>"]
+        SB["Azure Service Bus<br/><i>ordersplaced topic</i>"]
+        Storage["Azure Storage<br/><i>Workflow state, blobs</i>"]
     end
 
     %% ===== OBSERVABILITY PLATFORM =====
     subgraph Observability["📊 Observability Platform"]
-        AI["Application Insights<br/><i>Workspace-based</i>"]
-        LAW["Log Analytics Workspace<br/><i>Centralized logs</i>"]
+        AI["Application Insights<br/><i>APM, traces</i>"]
+        LAW["Log Analytics<br/><i>Centralized logs</i>"]
     end
 
     %% ===== IDENTITY PLATFORM =====
     subgraph Identity["🔐 Identity Platform"]
-        MI["User-Assigned Managed Identity"]
+        MI["User Assigned<br/>Managed Identity"]
         RBAC["Azure RBAC<br/><i>Role assignments</i>"]
+        Entra["Microsoft Entra ID<br/><i>Authentication</i>"]
     end
 
     %% ===== NETWORK PLATFORM =====
     subgraph Network["🌐 Network Platform"]
         VNet["Virtual Network"]
-        Subnets["Subnets<br/><i>API, Logic App</i>"]
+        Subnet["Subnets<br/><i>API, Logic Apps</i>"]
     end
 
     %% ===== CONNECTIONS =====
-    ACA -->|"authenticates via"| MI
-    LA -->|"runs on"| ASP
-    LA -->|"authenticates via"| MI
-    SQL -->|"authorizes via"| MI
-    SB -->|"authorizes via"| MI
-    ACA -->|"connects to"| VNet
-    LA -->|"connects to"| Subnets
+    ACA -->|"runs in"| ACAENV
+    LA -->|"hosted by"| ASP
+    ACAENV -->|"integrated with"| VNet
+    LA -->|"integrated with"| VNet
 
-    %% ===== STYLES - NODE CLASSES =====
-    classDef primary fill:#4F46E5,stroke:#3730A3,color:#FFFFFF
-    classDef datastore fill:#F59E0B,stroke:#D97706,color:#000000
-    classDef secondary fill:#10B981,stroke:#059669,color:#FFFFFF
-    classDef external fill:#6B7280,stroke:#4B5563,color:#FFFFFF,stroke-dasharray:5 5
+    ACA -->|"connects"| SQL & SB
+    LA -->|"uses"| SB & Storage
+
+    ACA & LA -->|"emits"| AI
+    AI -->|"queries"| LAW
+    ACA & LA -->|"authenticates"| MI
+    MI -->|"authorized by"| RBAC
+    RBAC -->|"validates"| Entra
+
+    %% ===== CLASS DEFINITIONS =====
+    classDef primary fill:#4F46E5,stroke:#3730A3,color:#FFFFFF,stroke-width:2px
+    classDef datastore fill:#F59E0B,stroke:#D97706,color:#000000,stroke-width:2px
+    classDef secondary fill:#10B981,stroke:#059669,color:#FFFFFF,stroke-width:2px
+    classDef trigger fill:#818CF8,stroke:#4F46E5,color:#FFFFFF,stroke-width:2px
+    classDef external fill:#6B7280,stroke:#4B5563,color:#FFFFFF,stroke-width:2px,stroke-dasharray:5 5
 
     %% ===== CLASS ASSIGNMENTS =====
-    class ACA,LA,ASP primary
+    class ACA,ACAENV,LA,ASP primary
     class SQL,SB,Storage datastore
     class AI,LAW secondary
-    class MI,RBAC external
-    class VNet,Subnets external
+    class MI,RBAC,Entra trigger
+    class VNet,Subnet external
 
     %% ===== SUBGRAPH STYLES =====
     style Compute fill:#EEF2FF,stroke:#4F46E5,stroke-width:2px
     style Data fill:#FEF3C7,stroke:#F59E0B,stroke-width:2px
     style Observability fill:#ECFDF5,stroke:#10B981,stroke-width:2px
-    style Identity fill:#F3F4F6,stroke:#6B7280,stroke-width:2px
+    style Identity fill:#E0E7FF,stroke:#4F46E5,stroke-width:2px
     style Network fill:#F3F4F6,stroke:#6B7280,stroke-width:2px
 ```
 
+### 🖥️ 3.1 Compute Platform
+
+| Service                        | Purpose                               | SKU/Tier         | Scaling       |
+| ------------------------------ | ------------------------------------- | ---------------- | ------------- |
+| **Container Apps Environment** | Shared runtime for containerized apps | Consumption      | Automatic     |
+| **Container Apps**             | Hosts Orders API and Web App          | Consumption      | 0-10 replicas |
+| **Logic Apps Standard**        | Workflow automation engine            | WS1              | Elastic       |
+| **App Service Plan**           | Logic Apps hosting                    | WorkflowStandard | Elastic scale |
+
+### 🗄️ 3.2 Data Platform
+
+| Service                | Purpose                      | SKU/Tier     | Configuration          |
+| ---------------------- | ---------------------------- | ------------ | ---------------------- |
+| **Azure SQL Database** | Order data persistence       | Standard S1  | 20 DTUs, 250GB         |
+| **Azure Service Bus**  | Event messaging              | Standard     | Topics + Subscriptions |
+| **Azure Storage**      | Workflow state, blob storage | Standard LRS | General Purpose v2     |
+
+### 📊 3.3 Observability Platform
+
+| Service                     | Purpose                     | SKU/Tier      | Retention |
+| --------------------------- | --------------------------- | ------------- | --------- |
+| **Application Insights**    | APM, distributed tracing    | Standard      | 90 days   |
+| **Log Analytics Workspace** | Centralized log aggregation | Pay-as-you-go | 30 days   |
+
+### 🔐 3.4 Identity Platform
+
+| Service                            | Purpose                | Configuration                     |
+| ---------------------------------- | ---------------------- | --------------------------------- |
+| **User Assigned Managed Identity** | Service authentication | Single identity for all workloads |
+| **Azure RBAC**                     | Authorization          | Least privilege roles             |
+| **Microsoft Entra ID**             | Identity provider      | SQL AD authentication             |
+
+### 🌐 3.5 Network Platform
+
+| Service             | Purpose              | Configuration                      |
+| ------------------- | -------------------- | ---------------------------------- |
+| **Virtual Network** | Network isolation    | Address space: 10.0.0.0/16         |
+| **Subnets**         | Service segmentation | API, Logic Apps, Private Endpoints |
+
 ---
 
-## 🌍 Environment and Location Strategy
+<div align="right"><a href="#-table-of-contents">⬆️ Back to top</a></div>
 
-| Environment    | Region       | Purpose             | SLA Target | Infrastructure                         |
-| -------------- | ------------ | ------------------- | ---------- | -------------------------------------- |
-| **Local**      | N/A          | Development/Debug   | N/A        | Emulators (SQL Container, SB Emulator) |
-| **Dev**        | Configurable | Shared development  | 99%        | Azure PaaS (shared)                    |
-| **Staging**    | Configurable | Pre-prod validation | 99.5%      | Azure PaaS (dedicated)                 |
-| **Production** | Configurable | Live workloads      | 99.9%      | Azure PaaS (dedicated)                 |
+## 🚀 4. Deployment Architecture
 
----
+### 🌍 Environment Topology
 
-## 🏭 Infrastructure Components
+| Environment    | Region  | Purpose                   | SLA Target | Infrastructure    |
+| -------------- | ------- | ------------------------- | ---------- | ----------------- |
+| **Local**      | N/A     | Development, debugging    | N/A        | Emulators, Docker |
+| **Dev**        | East US | Shared development        | 99%        | Azure (shared)    |
+| **Staging**    | East US | Pre-production validation | 99.5%      | Azure (dedicated) |
+| **Production** | East US | Live workloads            | 99.9%      | Azure (dedicated) |
 
-### Azure Resource Topology
+### 📦 Environment Progression
 
 ```mermaid
 ---
-title: Azure Resource Topology
+title: Environment Progression Pipeline
 ---
-flowchart TB
-    %% ===== RESOURCE GROUP =====
-    subgraph RG["📦 Resource Group: rg-orders-{env}-{region}"]
-        %% ===== IDENTITY RESOURCES =====
-        subgraph IdentityRG["🔐 Identity"]
-            MI["User-Assigned<br/>Managed Identity"]
-        end
+flowchart LR
+    %% ===== DEVELOPMENT =====
+    subgraph Dev["🛠️ Development"]
+        Local["Local<br/><i>Emulators</i>"]
+        DevEnv["Dev<br/><i>Shared Azure</i>"]
+    end
 
-        %% ===== COMPUTE RESOURCES =====
-        subgraph ComputeRG["🖥️ Compute"]
-            CAE["Container Apps<br/>Environment"]
-            CA1["Container App:<br/>orders-api"]
-            CA2["Container App:<br/>web-app"]
-            ACR["Container Registry"]
-            ASP["App Service Plan<br/>(WS1)"]
-            LogicApp["Logic App:<br/>OrdersManagement"]
-        end
+    %% ===== PRE-PRODUCTION =====
+    subgraph PreProd["🧪 Pre-Production"]
+        Staging["Staging<br/><i>Production-like</i>"]
+    end
 
-        %% ===== DATA RESOURCES =====
-        subgraph DataRG["💾 Data"]
-            SQLServer["SQL Server"]
-            SQLDb["SQL Database:<br/>OrderDb"]
-            SBNamespace["Service Bus<br/>Namespace"]
-            SBTopic["Topic:<br/>ordersplaced"]
-            SBSub["Subscription:<br/>orderprocessingsub"]
-            StorageAcct["Storage Account"]
-        end
-
-        %% ===== MONITORING RESOURCES =====
-        subgraph MonitoringRG["📊 Monitoring"]
-            LAW["Log Analytics<br/>Workspace"]
-            AppInsights["Application<br/>Insights"]
-        end
-
-        %% ===== NETWORK RESOURCES =====
-        subgraph NetworkRG["🌐 Network"]
-            VNet["Virtual Network"]
-            APISubnet["API Subnet"]
-            LASubnet["Logic App Subnet"]
-        end
+    %% ===== PRODUCTION =====
+    subgraph Prod["🚀 Production"]
+        ProdMain["Production<br/><i>Live workloads</i>"]
     end
 
     %% ===== CONNECTIONS =====
-    MI -->|"assigned to"| CA1
-    MI -->|"assigned to"| CA2
-    MI -->|"assigned to"| LogicApp
-    MI -->|"authorizes"| SQLDb
-    MI -->|"authorizes"| SBNamespace
-    CA1 -->|"deployed to"| CAE
-    CA2 -->|"deployed to"| CAE
-    CAE -->|"pulls from"| ACR
-    LogicApp -->|"runs on"| ASP
-    SQLServer -->|"hosts"| SQLDb
-    SBNamespace -->|"contains"| SBTopic
-    SBTopic -->|"delivers to"| SBSub
-    AppInsights -->|"exports to"| LAW
-    CA1 -.->|"sends telemetry"| AppInsights
-    CA2 -.->|"sends telemetry"| AppInsights
-    CAE -->|"connected to"| APISubnet
-    LogicApp -->|"connected to"| LASubnet
-    APISubnet -->|"part of"| VNet
-    LASubnet -->|"part of"| VNet
+    Local -->|"PR Merge"| DevEnv
+    DevEnv -->|"Release Branch"| Staging
+    Staging -->|"Approval"| ProdMain
 
-    %% ===== STYLES - NODE CLASSES =====
-    classDef primary fill:#4F46E5,stroke:#3730A3,color:#FFFFFF
-    classDef datastore fill:#F59E0B,stroke:#D97706,color:#000000
-    classDef secondary fill:#10B981,stroke:#059669,color:#FFFFFF
-    classDef external fill:#6B7280,stroke:#4B5563,color:#FFFFFF,stroke-dasharray:5 5
+    %% ===== CLASS DEFINITIONS =====
+    classDef primary fill:#4F46E5,stroke:#3730A3,color:#FFFFFF,stroke-width:2px
+    classDef datastore fill:#F59E0B,stroke:#D97706,color:#000000,stroke-width:2px
+    classDef secondary fill:#10B981,stroke:#059669,color:#FFFFFF,stroke-width:2px
 
     %% ===== CLASS ASSIGNMENTS =====
-    class MI external
-    class CAE,CA1,CA2,ACR,ASP,LogicApp primary
-    class SQLServer,SQLDb,SBNamespace,SBTopic,SBSub,StorageAcct datastore
-    class LAW,AppInsights secondary
-    class VNet,APISubnet,LASubnet external
+    class Local,DevEnv primary
+    class Staging datastore
+    class ProdMain secondary
 
     %% ===== SUBGRAPH STYLES =====
-    style RG fill:#F3F4F6,stroke:#6B7280,stroke-width:2px
-    style IdentityRG fill:#F3F4F6,stroke:#6B7280,stroke-width:1px
-    style ComputeRG fill:#EEF2FF,stroke:#4F46E5,stroke-width:1px
-    style DataRG fill:#FEF3C7,stroke:#F59E0B,stroke-width:1px
-    style MonitoringRG fill:#ECFDF5,stroke:#10B981,stroke-width:1px
-    style NetworkRG fill:#F3F4F6,stroke:#6B7280,stroke-width:1px
+    style Dev fill:#EEF2FF,stroke:#4F46E5,stroke-width:2px
+    style PreProd fill:#FEF3C7,stroke:#F59E0B,stroke-width:2px
+    style Prod fill:#ECFDF5,stroke:#10B981,stroke-width:2px
 ```
 
 ---
 
-## 💼 Technology Portfolio
+<div align="right"><a href="#-table-of-contents">⬆️ Back to top</a></div>
 
-| Service                        | Tier/SKU        | Scaling       | Cost Model            | Purpose                      |
-| ------------------------------ | --------------- | ------------- | --------------------- | ---------------------------- |
-| **Container Apps Environment** | Consumption     | 0-10 replicas | Per-request           | Serverless container hosting |
-| **Azure SQL Database**         | General Purpose | Manual        | DTU-based             | Relational data persistence  |
-| **Service Bus Namespace**      | Standard        | Auto          | Per-operation         | Message brokering            |
-| **Logic Apps**                 | Standard (WS1)  | Elastic       | Per-execution         | Workflow automation          |
-| **Application Insights**       | Standard        | Auto          | Per-GB ingested       | APM and tracing              |
-| **Log Analytics**              | Per-GB          | Auto          | Per-GB ingested       | Log aggregation              |
-| **Container Registry**         | Basic           | N/A           | Per-storage           | Container image store        |
-| **Storage Account**            | Standard LRS    | Auto          | Per-GB + transactions | Workflow state, blobs        |
+## 🗺️ 5. Technology Component Mapping
+
+### 📱 Application-to-Technology Matrix
+
+| Application          | Compute             | Data         | Messaging                | Observability |
+| -------------------- | ------------------- | ------------ | ------------------------ | ------------- |
+| **eShop.Orders.API** | Container Apps      | Azure SQL    | Service Bus (publisher)  | App Insights  |
+| **eShop.Web.App**    | Container Apps      | -            | -                        | App Insights  |
+| **OrdersManagement** | Logic Apps Standard | Blob Storage | Service Bus (subscriber) | App Insights  |
+
+### 🌟 Capability-to-Platform Matrix
+
+| Capability          | Platform Service     | Justification             |
+| ------------------- | -------------------- | ------------------------- |
+| Order Management    | Container Apps + SQL | Transactional workload    |
+| Workflow Automation | Logic Apps Standard  | Low-code, event-driven    |
+| Event Messaging     | Service Bus          | Enterprise reliability    |
+| Observability       | Application Insights | Azure-native, correlation |
+| Identity            | Managed Identity     | Zero-trust, no secrets    |
 
 ---
 
-## 📝 Infrastructure as Code
+<div align="right"><a href="#-table-of-contents">⬆️ Back to top</a></div>
 
-### Bicep Module Structure
+## 📜 6. Infrastructure as Code
+
+### 📁 IaC Structure
 
 ```text
 infra/
 ├── main.bicep                    # Entry point (subscription scope)
-├── main.parameters.json          # Environment parameters
+├── main.parameters.json          # Parameter values
 ├── types.bicep                   # Shared type definitions
 ├── shared/
-│   ├── main.bicep               # Shared infrastructure orchestrator
-│   ├── identity/
-│   │   └── main.bicep           # Managed identity + RBAC
-│   ├── monitoring/
-│   │   ├── main.bicep           # Monitoring orchestrator
-│   │   ├── app-insights.bicep   # Application Insights
+│   ├── main.bicep                # Shared resources orchestrator
+│   ├── data/                     # Data resources (Storage)
+│   ├── identity/                 # Managed Identity, RBAC
+│   ├── monitoring/               # App Insights, Log Analytics
+│   │   ├── app-insights.bicep
 │   │   └── log-analytics-workspace.bicep
-│   ├── network/
-│   │   └── main.bicep           # VNet, subnets, NSGs
-│   └── data/
-│       └── main.bicep           # SQL Server, Storage
+│   └── network/                  # VNet, Subnets
 └── workload/
-    ├── main.bicep               # Workload orchestrator
-    ├── logic-app.bicep          # Logic Apps Standard
-    ├── messaging/
-    │   └── main.bicep           # Service Bus
-    └── services/
-        └── main.bicep           # Container Apps
+    ├── main.bicep                # Workload orchestrator
+    ├── logic-app.bicep           # Logic Apps Standard
+    ├── messaging/                # Service Bus
+    └── services/                 # Container Apps
 ```
 
-### Key Bicep Patterns
+### 🧩 Module Responsibilities
 
-| Pattern                 | Implementation                                    | Location                                                      |
-| ----------------------- | ------------------------------------------------- | ------------------------------------------------------------- |
-| **Unique Naming**       | `uniqueString(resourceGroup().id, name, envName)` | All modules                                                   |
-| **Tagging**             | Standard tags via `tagsType`                      | [types.bicep](../../infra/types.bicep)                        |
-| **Diagnostic Settings** | All resources export to Log Analytics             | Each module                                                   |
-| **Managed Identity**    | User-assigned identity shared across resources    | [identity/main.bicep](../../infra/shared/identity/main.bicep) |
+| Module                  | Scope          | Resources Created                       |
+| ----------------------- | -------------- | --------------------------------------- |
+| **main.bicep**          | Subscription   | Resource Group                          |
+| **shared/main.bicep**   | Resource Group | Identity, Monitoring, Network, Data     |
+| **workload/main.bicep** | Resource Group | Container Apps, Logic Apps, Service Bus |
 
----
+### ⚙️ Parameter Strategy
 
-## 💻 Local Development Stack
-
-| Azure Service        | Local Alternative        | Configuration                       |
-| -------------------- | ------------------------ | ----------------------------------- |
-| Azure SQL Database   | SQL Server Container     | `RunAsContainer()` with data volume |
-| Azure Service Bus    | Service Bus Emulator     | `RunAsEmulator()`                   |
-| Application Insights | OTLP Exporter / Console  | Environment detection               |
-| Container Apps       | Direct project execution | Kestrel servers                     |
-
-### Local Mode Detection
-
-```csharp
-// From AppHost.cs
-var isLocalMode = sbHostName.Equals("localhost", StringComparison.OrdinalIgnoreCase);
-
-if (isLocalMode)
-{
-    serviceBusResource = builder.AddAzureServiceBus("messaging").RunAsEmulator();
-}
-else
-{
-    serviceBusResource = builder.AddAzureServiceBus("messaging")
-        .AsExisting(sbParam, resourceGroupParameter);
-}
-```
+| Parameter Type  | Storage                  | Example                   |
+| --------------- | ------------------------ | ------------------------- |
+| **Static**      | main.parameters.json     | `solutionName`, `envName` |
+| **Environment** | azd environment (.env)   | `AZURE_LOCATION`          |
+| **Secrets**     | User Secrets / Key Vault | Connection strings        |
+| **Computed**    | Bicep variables          | Resource suffixes         |
 
 ---
 
-## 🔧 Operational Considerations
+<div align="right"><a href="#-table-of-contents">⬆️ Back to top</a></div>
 
-### Backup and Recovery
+## 🛠️ 7. Operational Considerations
 
-| Resource             | Backup Strategy                  | RPO   | RTO      |
-| -------------------- | -------------------------------- | ----- | -------- |
-| **Azure SQL**        | Azure-managed backup             | 5 min | < 1 hour |
-| **Service Bus**      | Geo-disaster recovery (optional) | 0     | < 1 min  |
-| **Storage**          | LRS (3 copies)                   | 0     | N/A      |
-| **Container Images** | ACR geo-replication (optional)   | 0     | < 5 min  |
+### 💾 Backup and Recovery
 
-### Maintenance Windows
+| Resource     | Backup Strategy         | RPO   | RTO      |
+| ------------ | ----------------------- | ----- | -------- |
+| Azure SQL    | Automated backups       | 5 min | 1 hour   |
+| Service Bus  | Geo-DR (if enabled)     | N/A   | Minutes  |
+| Blob Storage | Soft delete, versioning | N/A   | Minutes  |
+| Logic Apps   | State in Storage        | N/A   | Redeploy |
 
-| Resource           | Update Strategy            | Downtime           |
-| ------------------ | -------------------------- | ------------------ |
-| **Container Apps** | Rolling updates            | Zero downtime      |
-| **Azure SQL**      | Azure-managed patching     | Automatic failover |
-| **Logic Apps**     | Slot deployment (optional) | Near-zero          |
+### 🔧 Maintenance Windows
+
+| Activity               | Frequency  | Window    | Impact                |
+| ---------------------- | ---------- | --------- | --------------------- |
+| Azure SQL patching     | Monthly    | Automatic | Minimal (failover)    |
+| Container Apps updates | Continuous | Automatic | None (revision-based) |
+| Logic Apps runtime     | Monthly    | Automatic | Brief restarts        |
 
 ---
 
-## 🌐 Cross-Architecture Relationships
+<div align="right"><a href="#-table-of-contents">⬆️ Back to top</a></div>
 
-| Related Architecture           | Connection                                    | Reference                                                      |
-| ------------------------------ | --------------------------------------------- | -------------------------------------------------------------- |
-| **Application Architecture**   | Services deployed to this infrastructure      | [Application Architecture](03-application-architecture.md)     |
-| **Observability Architecture** | Monitoring platforms defined here             | [Observability Architecture](05-observability-architecture.md) |
-| **Deployment Architecture**    | IaC modules provisioned by CI/CD              | [Deployment Architecture](07-deployment-architecture.md)       |
-| **Security Architecture**      | Identity and network security configured here | [Security Architecture](06-security-architecture.md)           |
+## 💰 8. Cost Analysis
+
+### 💳 Resource Pricing Model
+
+| Service                | Pricing Model              | Estimated Monthly Cost |
+| ---------------------- | -------------------------- | ---------------------- |
+| Container Apps         | Per-request + vCPU-seconds | $50-150                |
+| Azure SQL (S1)         | DTU-based                  | ~$30                   |
+| Service Bus (Standard) | Per-operation + base       | ~$10                   |
+| Logic Apps (WS1)       | App Service Plan           | ~$150                  |
+| Application Insights   | Per-GB ingested            | ~$20                   |
+| Storage                | Per-GB + operations        | ~$5                    |
+
+### 💡 Optimization Opportunities
+
+| Opportunity                     | Potential Savings | Trade-off          |
+| ------------------------------- | ----------------- | ------------------ |
+| Reserved capacity (SQL)         | 30-40%            | 1-year commitment  |
+| Container Apps min replicas = 0 | Variable          | Cold start latency |
+| Log Analytics sampling          | 50%+              | Reduced telemetry  |
+
+---
+
+<div align="right"><a href="#-table-of-contents">⬆️ Back to top</a></div>
+
+## ↔️ 9. Cross-Architecture Relationships
+
+| Related Architecture           | Connection                      | Reference                                                                       |
+| ------------------------------ | ------------------------------- | ------------------------------------------------------------------------------- |
+| **Application Architecture**   | Services deployed to platforms  | [Service Catalog](03-application-architecture.md#4-service-catalog)             |
+| **Data Architecture**          | Data stores hosted on platforms | [Data Store Details](02-data-architecture.md#5-data-store-details)              |
+| **Observability Architecture** | Monitoring platforms            | [Platform Components](05-observability-architecture.md#7-platform-components)   |
+| **Security Architecture**      | Identity and network platforms  | [Managed Identity](06-security-architecture.md#3-managed-identity-architecture) |
+| **Deployment Architecture**    | IaC provisions platforms        | [Infrastructure as Code](07-deployment-architecture.md#infrastructure-as-code)  |
 
 ---
 
 <div align="center">
 
-[← Application Architecture](03-application-architecture.md) | **Technology Layer** | [Observability Architecture →](05-observability-architecture.md)
+| Previous                                                     |       Index        |                                                             Next |
+| :----------------------------------------------------------- | :----------------: | ---------------------------------------------------------------: |
+| [← Application Architecture](03-application-architecture.md) | [Index](README.md) | [Observability Architecture →](05-observability-architecture.md) |
 
 </div>
+
+---
+
+_Last Updated: January 2026_

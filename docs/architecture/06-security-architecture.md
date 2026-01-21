@@ -1,28 +1,24 @@
 ---
 title: Security Architecture
-description: Security architecture documentation covering identity management, network security, data protection, threat modeling, and compliance for the Azure Logic Apps Monitoring Solution.
-author: Architecture Team
-date: 2026-01-20
+description: Identity, authentication, secrets management, network security, and compliance for the Azure Logic Apps Monitoring Solution
+author: Platform Team
+date: 2026-01-21
 version: 1.0.0
-tags:
-  - security
-  - managed-identity
-  - zero-trust
-  - rbac
+tags: [architecture, security, identity, zero-trust, togaf, bdat]
 ---
 
 # 🔐 Security Architecture
 
 > [!NOTE]
-> **Target Audience:** Security Teams, Compliance Officers, Platform Engineers
-> **Reading Time:** ~12 minutes
+> **Target Audience:** Security Engineers, Platform Engineers, Compliance Officers  
+> **Reading Time:** ~20 minutes
 
 <details>
-<summary>📍 Navigation</summary>
+<summary>📖 <strong>Navigation</strong></summary>
 
-| Previous                                                         |    Index     |                                                       Next |
-| :--------------------------------------------------------------- | :----------: | ---------------------------------------------------------: |
-| [← Observability Architecture](05-observability-architecture.md) | **Security** | [Deployment Architecture →](07-deployment-architecture.md) |
+| Previous                                                         |       Index        |                                                       Next |
+| :--------------------------------------------------------------- | :----------------: | ---------------------------------------------------------: |
+| [← Observability Architecture](05-observability-architecture.md) | [Index](README.md) | [Deployment Architecture →](07-deployment-architecture.md) |
 
 </details>
 
@@ -30,421 +26,461 @@ tags:
 
 ## 📑 Table of Contents
 
-- [📋 Security Principles](#-security-principles)
-- [🔑 Identity and Access Management](#-identity-and-access-management)
-- [🌐 Network Security](#-network-security)
-- [🔄 Authentication Flows](#-authentication-flows)
-- [🛡️ Data Protection](#-data-protection)
-- [🔒 Secret Management Strategy](#-secret-management-strategy)
-- [✅ Compliance Considerations](#-compliance-considerations)
-- [⚠️ Threat Model Summary](#-threat-model-summary)
-- [📹 Security Monitoring](#-security-monitoring)
-- [🌐 Cross-Architecture Relationships](#-cross-architecture-relationships)
+- [🛡️ Overview](#️-1-security-overview)
+- [🔑 Authentication & Authorization](#-2-authentication--authorization)
+- [🔐 Managed Identity](#-3-managed-identity-architecture)
+- [🗝️ Secret Management](#️-4-secret-management)
+- [🌐 Network Security](#-5-network-security)
+- [📊 Data Protection](#-6-data-protection)
+- [✅ Compliance & Governance](#-7-compliance--governance)
+- [🚨 Security Monitoring](#-8-security-monitoring)
+- [🔗 Related Documents](#-related-documents)
 
 ---
 
-## 📋 Security Principles
+## 🛡️ 1. Security Overview
 
-| #       | Principle                    | Rationale                 | Implications                         |
-| ------- | ---------------------------- | ------------------------- | ------------------------------------ |
-| **S-1** | **Zero Credentials in Code** | Eliminate secret exposure | Managed Identity everywhere          |
-| **S-2** | **Least Privilege**          | Limit blast radius        | Role-specific RBAC assignments       |
-| **S-3** | **Defense in Depth**         | Multiple security layers  | Network + Identity + Encryption      |
-| **S-4** | **Assume Breach**            | Proactive protection      | Monitoring, segmentation, encryption |
-| **S-5** | **Secure by Default**        | No manual hardening       | Infrastructure as Code policies      |
+### 📋 Security Principles
+
+| #   | Principle                 | Statement                             | Implementation                          |
+| --- | ------------------------- | ------------------------------------- | --------------------------------------- |
+| S-1 | **Zero Trust**            | Never trust, always verify            | Managed Identity for all service auth   |
+| S-2 | **Least Privilege**       | Minimum permissions required          | Fine-grained RBAC roles                 |
+| S-3 | **Defense in Depth**      | Multiple security layers              | Network + Identity + Encryption         |
+| S-4 | **Secrets Elimination**   | No stored credentials                 | Managed Identity, no connection strings |
+| S-5 | **Encryption Everywhere** | Data protected at rest and in transit | TLS 1.2+, Azure encryption              |
+
+### ⚠️ Threat Model Summary
+
+> [!CAUTION]
+> The following threats have been identified and mitigated. Regular threat modeling reviews should be conducted as the architecture evolves.
+
+| Threat Category         | Risk Level | Mitigation                                 |
+| ----------------------- | ---------- | ------------------------------------------ |
+| **Credential Theft**    | High       | Managed Identity (no credentials to steal) |
+| **SQL Injection**       | Medium     | Parameterized queries via EF Core          |
+| **Man-in-the-Middle**   | Medium     | TLS 1.2+ enforced                          |
+| **Unauthorized Access** | High       | Azure RBAC, network isolation              |
+| **Data Exfiltration**   | Medium     | Network controls, audit logging            |
 
 ---
 
-## 🔑 Identity and Access Management
+<div align="right"><a href="#-table-of-contents">⬆️ Back to top</a></div>
 
-### Managed Identity Architecture
+## 🔑 2. Authentication & Authorization
+
+### 🔄 Authentication Flow
+
+```mermaid
+sequenceDiagram
+    participant Service as 📡 Service
+    participant MI as 🔐 Managed Identity
+    participant AAD as Microsoft Entra ID
+    participant Resource as ☁️ Azure Resource
+
+    Service->>MI: Request token for resource
+    MI->>AAD: Authenticate (no credentials)
+    AAD-->>MI: Access token (JWT)
+    MI-->>Service: Token returned
+    Service->>Resource: API call with Bearer token
+    Resource->>AAD: Validate token
+    AAD-->>Resource: Token valid
+    Resource-->>Service: Authorized response
+```
+
+### 🏛️ Identity Providers
+
+| Provider               | Usage                   | Configuration    |
+| ---------------------- | ----------------------- | ---------------- |
+| **Microsoft Entra ID** | Service-to-service auth | Managed Identity |
+| **Azure SQL AD Auth**  | Database authentication | Entra ID users   |
+
+### 🔒 API Security
+
+> [!WARNING]
+> The Orders API is internal-only, accessed via Container Apps internal networking. External access would require additional authentication (e.g., Entra ID, API keys).
+
+| Endpoint        | Authentication  | Authorization          |
+| --------------- | --------------- | ---------------------- |
+| `/api/orders`   | None (internal) | Network isolation      |
+| `/health`       | None            | Public (health probes) |
+| Logic App → API | Internal        | VNet integration       |
+
+> **Note:** The Orders API is internal-only, accessed via Container Apps internal networking. External access would require additional authentication (e.g., Entra ID, API keys).
+
+---
+
+<div align="right"><a href="#-table-of-contents">⬆️ Back to top</a></div>
+
+## 🔐 3. Managed Identity Architecture
+
+### 👤 Identity Assignments
 
 ```mermaid
 ---
-title: Managed Identity Architecture
+title: Identity Assignments
 ---
 flowchart TB
-    %% ===== APPLICATIONS =====
-    subgraph Apps["🖥️ Applications"]
-        API["Orders API<br/><i>User-Assigned MI</i>"]
-        Web["Web App<br/><i>User-Assigned MI</i>"]
-        LA["Logic Apps<br/><i>System-Assigned MI</i>"]
+    %% ===== IDENTITY =====
+    subgraph Identity["🔐 User Assigned Managed Identity"]
+        MI["orders-{suffix}-mi"]
     end
 
-    %% ===== IDENTITY =====
-    subgraph Identity["🔐 Microsoft Entra ID"]
-        MI["Managed<br/>Identities"]
-        Roles["Role<br/>Definitions"]
-        RBAC["Role<br/>Assignments"]
+    %% ===== SERVICES =====
+    subgraph Services["📡 Services"]
+        API["Container Apps<br/>Orders API"]
+        WebApp["Container Apps<br/>Web App"]
+        LA["Logic Apps<br/>OrdersManagement"]
     end
 
     %% ===== RESOURCES =====
     subgraph Resources["☁️ Azure Resources"]
-        SQL["🗄️ SQL Database"]
-        SB["📨 Service Bus"]
-        KV["🔑 Key Vault"]
-        Storage["📦 Blob Storage"]
-        AI["📊 App Insights"]
+        SQL[("Azure SQL")]
+        SB["Service Bus"]
+        Storage["Storage Account"]
+        AppIns["App Insights"]
     end
 
     %% ===== CONNECTIONS =====
-    API -->|"authenticates"| MI
-    Web -->|"authenticates"| MI
-    LA -->|"authenticates"| MI
-    MI -->|"assigned"| RBAC
-    Roles -->|"defines"| RBAC
-    RBAC -->|"authorizes"| SQL
-    RBAC -->|"authorizes"| SB
-    RBAC -->|"authorizes"| KV
-    RBAC -->|"authorizes"| Storage
-    RBAC -->|"authorizes"| AI
+    MI -->|"assigns to"| API & WebApp & LA
+    API -->|"SQL Data Contributor"| SQL
+    API -->|"Service Bus Data Sender"| SB
+    LA -->|"Service Bus Data Receiver"| SB
+    LA -->|"Storage Blob Contributor"| Storage
+    API & WebApp -->|"Monitoring Contributor"| AppIns
 
-    %% ===== STYLES - NODE CLASSES =====
+    %% ===== CLASS DEFINITIONS (EXACT HEX COLORS) =====
     classDef primary fill:#4F46E5,stroke:#3730A3,color:#FFFFFF
     classDef secondary fill:#10B981,stroke:#059669,color:#FFFFFF
     classDef datastore fill:#F59E0B,stroke:#D97706,color:#000000
+    classDef trigger fill:#818CF8,stroke:#4F46E5,color:#FFFFFF
 
-    %% ===== CLASS ASSIGNMENTS =====
-    class API,Web,LA primary
-    class MI,Roles,RBAC secondary
-    class SQL,SB,KV,Storage,AI datastore
+    class MI trigger
+    class API,WebApp,LA primary
+    class SQL,SB,Storage,AppIns datastore
 
     %% ===== SUBGRAPH STYLES =====
-    style Apps fill:#EEF2FF,stroke:#4F46E5,stroke-width:2px
-    style Identity fill:#ECFDF5,stroke:#10B981,stroke-width:2px
+    style Identity fill:#EEF2FF,stroke:#4F46E5,stroke-width:2px
+    style Services fill:#E0E7FF,stroke:#4F46E5,stroke-width:2px
     style Resources fill:#FEF3C7,stroke:#F59E0B,stroke-width:2px
 ```
 
-### Identity Assignments
+### 📝 Role Assignments
 
-| Application    | Identity Type   | Identity Name Pattern        |
-| -------------- | --------------- | ---------------------------- |
-| Orders API     | User-Assigned   | `id-{env}-{location}-orders` |
-| Web App        | User-Assigned   | `id-{env}-{location}-web`    |
-| Logic Apps     | System-Assigned | (auto-generated)             |
-| Container Apps | User-Assigned   | `id-{env}-{location}-{app}`  |
+From [infra/shared/identity/main.bicep](../../infra/shared/identity/main.bicep):
 
-### RBAC Role Assignments
+| Role                               | Role Definition ID                     | Purpose                 |
+| ---------------------------------- | -------------------------------------- | ----------------------- |
+| Storage Account Contributor        | `17d1049b-9a84-46fb-8f53-869881c3d3ab` | Storage management      |
+| Storage Blob Data Contributor      | `ba92f5b4-2d11-453d-a403-e96b0029c9fe` | Blob read/write         |
+| Storage Blob Data Owner            | `b7e6dc6d-f1e8-4753-8033-0f276bb0955b` | Blob full control       |
+| Monitoring Metrics Publisher       | `3913510d-42f4-4e42-8a64-420c390055eb` | Emit metrics            |
+| Monitoring Contributor             | `749f88d5-cbae-40b8-bcfc-e573ddc772fa` | Monitor management      |
+| App Insights Component Contributor | `ae349356-3a1b-4a5e-921d-050484c6347e` | App Insights config     |
+| Service Bus Data Owner             | `090c5cfd-751d-490a-894a-3ce6f1109419` | Full Service Bus access |
+| Service Bus Data Receiver          | `4f6d3b9b-027b-4f4c-9142-0e5a2a2247e0` | Receive messages        |
+| Service Bus Data Sender            | `69a216fc-b8fb-44d8-bc22-1f3c2cd27a39` | Send messages           |
 
-| Principal      | Resource             | Role                              | Purpose               |
-| -------------- | -------------------- | --------------------------------- | --------------------- |
-| Orders API MI  | SQL Database         | `db_datareader`, `db_datawriter`  | CRUD operations       |
-| Orders API MI  | Service Bus          | `Azure Service Bus Data Sender`   | Publish messages      |
-| Logic Apps MI  | Service Bus          | `Azure Service Bus Data Receiver` | Consume messages      |
-| Logic Apps MI  | Storage Account      | `Storage Blob Data Contributor`   | Write processed blobs |
-| Web App MI     | Orders API           | Network access                    | HTTP calls            |
-| GitHub Actions | Azure Resource Group | `Contributor`                     | Deployment            |
-
----
-
-## 🌐 Network Security
-
-### Network Architecture
+### 🔄 Service-to-Service Authentication Flow
 
 ```mermaid
 ---
-title: Network Architecture
+title: Service-to-Service Authentication Flow
+---
+flowchart LR
+    %% ===== LOCAL DEVELOPMENT =====
+    subgraph LocalDev["🛠️ Local Development"]
+        DevCred["Azure CLI / VS Credential"]
+    end
+
+    %% ===== AZURE DEPLOYMENT =====
+    subgraph AzureDeploy["☁️ Azure Deployment"]
+        ManagedId["User Assigned<br/>Managed Identity"]
+    end
+
+    %% ===== CREDENTIAL CHAIN =====
+    subgraph DefaultAzureCredential["DefaultAzureCredential Chain"]
+        direction TB
+        Env["Environment Credential"]
+        MI["Managed Identity"]
+        VS["Visual Studio Credential"]
+        CLI["Azure CLI Credential"]
+    end
+
+    %% ===== AZURE RESOURCES =====
+    SQL[("Azure SQL")]
+    SB["Service Bus"]
+    Storage["Storage"]
+
+    %% ===== CONNECTIONS =====
+    DevCred -->|"provides"| VS & CLI
+    ManagedId -->|"provides"| MI
+    DefaultAzureCredential -->|"authenticates"| SQL & SB & Storage
+
+    %% ===== CLASS DEFINITIONS (EXACT HEX COLORS) =====
+    classDef primary fill:#4F46E5,stroke:#3730A3,color:#FFFFFF
+    classDef secondary fill:#10B981,stroke:#059669,color:#FFFFFF
+    classDef datastore fill:#F59E0B,stroke:#D97706,color:#000000
+    classDef trigger fill:#818CF8,stroke:#4F46E5,color:#FFFFFF
+    classDef external fill:#6B7280,stroke:#4B5563,color:#FFFFFF,stroke-dasharray:5 5
+
+    class DevCred,ManagedId trigger
+    class Env,MI,VS,CLI primary
+    class SQL,SB,Storage datastore
+
+    %% ===== SUBGRAPH STYLES =====
+    style LocalDev fill:#F3F4F6,stroke:#6B7280,stroke-width:2px
+    style AzureDeploy fill:#E0E7FF,stroke:#4F46E5,stroke-width:2px
+    style DefaultAzureCredential fill:#ECFDF5,stroke:#10B981,stroke-width:2px
+```
+
+---
+
+<div align="right"><a href="#-table-of-contents">⬆️ Back to top</a></div>
+
+## 🗝️ 4. Secret Management
+
+### 📦 Secret Storage Approach
+
+| Environment           | Mechanism         | Configuration         |
+| --------------------- | ----------------- | --------------------- |
+| **Local Development** | .NET User Secrets | `dotnet user-secrets` |
+| **CI/CD**             | GitHub Secrets    | Environment variables |
+| **Azure Runtime**     | Managed Identity  | No secrets needed     |
+
+### 📋 Secret Categories
+
+| Category               | Local Dev        | Azure                 | Example          |
+| ---------------------- | ---------------- | --------------------- | ---------------- |
+| **Connection Strings** | User Secrets     | Managed Identity      | SQL, Service Bus |
+| **API Keys**           | User Secrets     | Key Vault (if needed) | External APIs    |
+| **Certificates**       | Local cert store | Azure Key Vault       | TLS              |
+
+### 🛠️ Local Development Secrets
+
+> [!TIP]
+> Use .NET User Secrets to avoid storing credentials in source control during local development.
+
+Configured via [hooks/postprovision.ps1](../../hooks/postprovision.ps1):
+
+```powershell
+# User secrets configured after azd provision
+dotnet user-secrets set "Azure:TenantId" $env:AZURE_TENANT_ID
+dotnet user-secrets set "Azure:ClientId" $env:AZURE_CLIENT_ID
+dotnet user-secrets set "Azure:ServiceBus:HostName" $serviceBusHostName
+```
+
+### 🔄 Secret Rotation Strategy
+
+| Secret Type             | Rotation     | Method               |
+| ----------------------- | ------------ | -------------------- |
+| Managed Identity tokens | Automatic    | Azure-managed        |
+| User secrets (dev)      | Manual       | On credential change |
+| GitHub OIDC tokens      | Per-workflow | Automatic            |
+
+---
+
+<div align="right"><a href="#-table-of-contents">⬆️ Back to top</a></div>
+
+## 🌐 5. Network Security
+
+### 🗺️ Network Topology
+
+```mermaid
+---
+title: Network Topology
 ---
 flowchart TB
     %% ===== INTERNET =====
     subgraph Internet["🌐 Internet"]
-        Users["👥 Users"]
-        GitHub["🔄 GitHub Actions"]
+        Users["External Users"]
     end
 
-    %% ===== AZURE =====
+    %% ===== AZURE PLATFORM =====
     subgraph Azure["☁️ Azure"]
-        subgraph VNet["🔒 Virtual Network (10.0.0.0/16)"]
-            subgraph AppSubnet["App Subnet (10.0.0.0/24)"]
-                CAE["Container Apps<br/>Environment"]
+        %% ===== VIRTUAL NETWORK =====
+        subgraph VNet["Virtual Network (10.0.0.0/16)"]
+            subgraph CASubnet["Container Apps Subnet"]
+                API["Orders API"]
+                WebApp["Web App"]
             end
-            subgraph IntSubnet["Integration Subnet (10.0.1.0/24)"]
-                LAPrivate["Logic Apps<br/>Private Endpoints"]
-            end
-            subgraph DataSubnet["Data Subnet (10.0.2.0/24)"]
-                SQLPrivate["SQL<br/>Private Endpoint"]
-                SBPrivate["Service Bus<br/>Private Endpoint"]
+
+            subgraph LASubnet["Logic Apps Subnet"]
+                LA["Logic Apps"]
             end
         end
 
-        subgraph PaaS["☁️ PaaS Services"]
-            SQL[("SQL Database")]
+        %% ===== PAAS SERVICES =====
+        subgraph PaaS["PaaS Services"]
+            SQL[("Azure SQL")]
             SB["Service Bus"]
-            LA["Logic Apps"]
+            Storage["Storage"]
         end
     end
 
     %% ===== CONNECTIONS =====
-    Users -->|"HTTPS/443"| CAE
-    GitHub -->|"HTTPS/443"| Azure
-    CAE -->|"connects"| SQLPrivate
-    CAE -->|"connects"| SBPrivate
-    SQLPrivate -->|"routes to"| SQL
-    SBPrivate -->|"routes to"| SB
-    LAPrivate -->|"routes to"| LA
-    LA -->|"uses"| SBPrivate
-    LA -->|"uses"| SQLPrivate
+    Users -->|"HTTPS"| WebApp
+    WebApp -->|"Internal"| API
+    API -->|"TDS/TLS"| SQL
+    API -->|"AMQP/TLS"| SB
+    LA -->|"HTTPS"| Storage
 
-    %% ===== STYLES - NODE CLASSES =====
-    classDef external fill:#6B7280,stroke:#4B5563,color:#FFFFFF,stroke-dasharray:5 5
+    %% ===== CLASS DEFINITIONS (EXACT HEX COLORS) =====
     classDef primary fill:#4F46E5,stroke:#3730A3,color:#FFFFFF
+    classDef secondary fill:#10B981,stroke:#059669,color:#FFFFFF
     classDef datastore fill:#F59E0B,stroke:#D97706,color:#000000
+    classDef external fill:#6B7280,stroke:#4B5563,color:#FFFFFF,stroke-dasharray:5 5
 
-    %% ===== CLASS ASSIGNMENTS =====
-    class Users,GitHub external
-    class CAE,LAPrivate,SQLPrivate,SBPrivate primary
-    class SQL,SB,LA datastore
+    class Users external
+    class API,WebApp,LA primary
+    class SQL,SB,Storage datastore
 
     %% ===== SUBGRAPH STYLES =====
     style Internet fill:#F3F4F6,stroke:#6B7280,stroke-width:2px
-    style Azure fill:#EEF2FF,stroke:#4F46E5,stroke-width:2px
-    style VNet fill:#ECFDF5,stroke:#10B981,stroke-width:2px
-    style AppSubnet fill:#D1FAE5,stroke:#10B981,stroke-width:1px
-    style IntSubnet fill:#D1FAE5,stroke:#10B981,stroke-width:1px
-    style DataSubnet fill:#D1FAE5,stroke:#10B981,stroke-width:1px
+    style Azure fill:#E0E7FF,stroke:#4F46E5,stroke-width:2px
+    style VNet fill:#EEF2FF,stroke:#4F46E5,stroke-width:2px
+    style CASubnet fill:#ECFDF5,stroke:#10B981,stroke-width:2px
+    style LASubnet fill:#ECFDF5,stroke:#10B981,stroke-width:2px
     style PaaS fill:#FEF3C7,stroke:#F59E0B,stroke-width:2px
 ```
 
-### Network Controls
+### 🛡️ Network Controls
 
-| Control               | Resource                   | Configuration                    |
-| --------------------- | -------------------------- | -------------------------------- |
-| **IP Restrictions**   | Logic Apps                 | Allowed IPs for admin access     |
-| **Service Endpoints** | SQL, Service Bus           | VNet integration                 |
-| **NSG Rules**         | Subnets                    | Deny all inbound, allow specific |
-| **WAF**               | (Optional) APIM/Front Door | OWASP rule set                   |
+| Control               | Implementation             | Purpose                 |
+| --------------------- | -------------------------- | ----------------------- |
+| **VNet Integration**  | Container Apps, Logic Apps | Network isolation       |
+| **Service Endpoints** | SQL, Service Bus, Storage  | PaaS access from VNet   |
+| **TLS Enforcement**   | All services               | Encryption in transit   |
+| **Ingress Control**   | Container Apps ingress     | External access control |
 
-### Firewall Rules Summary
+### 🔥 Firewall Rules
 
-| Source         | Destination                  | Port | Protocol | Action |
-| -------------- | ---------------------------- | ---- | -------- | ------ |
-| Internet       | Container Apps               | 443  | HTTPS    | Allow  |
-| Container Apps | SQL Private Endpoint         | 1433 | TDS      | Allow  |
-| Container Apps | Service Bus Private Endpoint | 5671 | AMQPS    | Allow  |
-| Logic Apps     | Service Bus                  | 5671 | AMQPS    | Allow  |
-| GitHub Actions | Azure Resource Manager       | 443  | HTTPS    | Allow  |
-
----
-
-## 🔄 Authentication Flows
-
-### Service-to-Service Authentication
-
-```mermaid
----
-title: Service-to-Service Authentication
----
-sequenceDiagram
-    autonumber
-    participant API as Orders API
-    participant MI as Managed Identity
-    participant Entra as Microsoft Entra ID
-    participant SB as Service Bus
-
-    API->>MI: Request token for Service Bus
-    MI->>Entra: Token request (client credentials)
-    Note over MI,Entra: No secrets exchanged<br/>Instance metadata
-
-    Entra-->>MI: Access token (JWT)
-    MI-->>API: Token returned
-
-    API->>SB: Send message + Bearer token
-    SB->>Entra: Validate token
-    Entra-->>SB: Token valid, roles verified
-    SB-->>API: Message accepted (201)
-```
-
-### GitHub Actions to Azure Authentication
-
-```mermaid
----
-title: GitHub Actions to Azure Authentication
----
-sequenceDiagram
-    autonumber
-    participant GH as GitHub Actions
-    participant GHOIDC as GitHub OIDC Provider
-    participant Entra as Microsoft Entra ID
-    participant ARM as Azure Resource Manager
-
-    GH->>GHOIDC: Request OIDC token
-    Note over GH,GHOIDC: Subject: repo + branch + workflow
-
-    GHOIDC-->>GH: OIDC JWT token
-
-    GH->>Entra: Exchange OIDC token
-    Note over Entra: Verify federated credential<br/>Match subject claim
-
-    Entra-->>GH: Azure access token
-
-    GH->>ARM: Deploy with Bearer token
-    ARM-->>GH: Deployment complete
-```
+| Service        | Allowed Sources    | Ports                      |
+| -------------- | ------------------ | -------------------------- |
+| Azure SQL      | VNet subnets       | 1433                       |
+| Service Bus    | VNet subnets       | 443 (AMQP over WebSockets) |
+| Storage        | VNet subnets       | 443                        |
+| Container Apps | Internet (ingress) | 443                        |
 
 ---
 
-## 🛡️ Data Protection
+<div align="right"><a href="#-table-of-contents">⬆️ Back to top</a></div>
 
-### Encryption at Rest
+## 📊 6. Data Protection
 
-| Resource             | Encryption                        | Key Management    |
+### 🔒 Encryption at Rest
+
+| Service              | Encryption                        | Key Management    |
 | -------------------- | --------------------------------- | ----------------- |
-| Azure SQL Database   | TDE (Transparent Data Encryption) | Microsoft-managed |
-| Service Bus          | Platform encryption               | Microsoft-managed |
-| Storage Account      | AES-256                           | Microsoft-managed |
-| Application Insights | Platform encryption               | Microsoft-managed |
+| Azure SQL            | TDE (Transparent Data Encryption) | Microsoft-managed |
+| Service Bus          | SSE (Storage Service Encryption)  | Microsoft-managed |
+| Azure Storage        | SSE                               | Microsoft-managed |
+| Application Insights | SSE                               | Microsoft-managed |
 
-### Encryption in Transit
+### 🔐 Encryption in Transit
 
-| Channel            | Protocol | Minimum Version |
-| ------------------ | -------- | --------------- |
-| HTTP Traffic       | TLS      | 1.2             |
-| SQL Connections    | TLS      | 1.2             |
-| Service Bus (AMQP) | TLS      | 1.2             |
-| Azure Management   | TLS      | 1.2             |
+| Communication   | Protocol      | Minimum Version |
+| --------------- | ------------- | --------------- |
+| HTTP APIs       | TLS           | 1.2             |
+| SQL connections | TDS over TLS  | 1.2             |
+| Service Bus     | AMQP over TLS | 1.2             |
+| Storage         | HTTPS         | TLS 1.2         |
 
-### Sensitive Data Classification
+### 🏷️ Data Classification
 
-| Data Type          | Classification | Protection                  |
-| ------------------ | -------------- | --------------------------- |
-| Order IDs          | Internal       | UUID format, no PII         |
-| Customer IDs       | Internal       | Reference only              |
-| Order Totals       | Internal       | Financial data              |
-| Connection Strings | Confidential   | Managed Identity eliminates |
-| API Keys           | Confidential   | Not used (Managed Identity) |
+| Data Type    | Classification | Handling           |
+| ------------ | -------------- | ------------------ |
+| Order IDs    | Internal       | Log freely         |
+| Customer IDs | Confidential   | Mask in logs       |
+| Order totals | Internal       | Log freely         |
+| Telemetry    | Internal       | Standard retention |
 
----
+### 🕶️ Data Masking
 
-## 🔒 Secret Management Strategy
-
-### No Secrets Architecture
-
-```mermaid
----
-title: No Secrets Architecture
----
-flowchart LR
-    %% ===== TRADITIONAL (AVOIDED) =====
-    subgraph Traditional["❌ Traditional (Avoided)"]
-        App1["Application"]
-        Secrets["🔑 Secrets"]
-        KV1["Key Vault"]
-        Res1["Resources"]
-
-        App1 -->|"retrieves"| KV1
-        KV1 -->|"returns"| Secrets
-        Secrets -->|"authenticates"| Res1
-    end
-
-    %% ===== MODERN (IMPLEMENTED) =====
-    subgraph Modern["✅ Modern (Implemented)"]
-        App2["Application"]
-        MI2["🔐 Managed<br/>Identity"]
-        Entra2["Entra ID"]
-        Res2["Resources"]
-
-        App2 -->|"requests token"| MI2
-        MI2 -->|"authenticates"| Entra2
-        Entra2 -->|"issues JWT"| App2
-        App2 -->|"Bearer token"| Res2
-    end
-
-    %% ===== STYLES - NODE CLASSES =====
-    classDef failed fill:#F44336,stroke:#C62828,color:#FFFFFF
-    classDef secondary fill:#10B981,stroke:#059669,color:#FFFFFF
-
-    %% ===== CLASS ASSIGNMENTS =====
-    class App1,Secrets,KV1,Res1 failed
-    class App2,MI2,Entra2,Res2 secondary
-
-    %% ===== SUBGRAPH STYLES =====
-    style Traditional fill:#FEE2E2,stroke:#F44336,stroke-width:2px
-    style Modern fill:#ECFDF5,stroke:#10B981,stroke-width:2px
+```csharp
+// Example: Logging with masked customer data
+_logger.LogInformation("Order {OrderId} created for customer {CustomerId}",
+    order.Id,
+    MaskCustomerId(order.CustomerId)); // CUST-***-001
 ```
 
-### Remaining Secrets
+---
 
-| Secret                  | Storage            | Rotation                   |
-| ----------------------- | ------------------ | -------------------------- |
-| `AZURE_CLIENT_ID`       | GitHub Environment | Manual (service principal) |
-| `AZURE_TENANT_ID`       | GitHub Environment | N/A (static)               |
-| `AZURE_SUBSCRIPTION_ID` | GitHub Environment | N/A (static)               |
+<div align="right"><a href="#-table-of-contents">⬆️ Back to top</a></div>
 
-> [!TIP]
-> **Note**: GitHub Actions uses OIDC federation with Workload Identity, eliminating client secrets.
+## ✅ 7. Compliance & Governance
+
+### 📋 Compliance Requirements
+
+| Requirement               | Implementation           | Validation              |
+| ------------------------- | ------------------------ | ----------------------- |
+| **No stored credentials** | Managed Identity         | Audit role assignments  |
+| **Encryption at rest**    | Azure-managed encryption | Azure Policy            |
+| **Encryption in transit** | TLS 1.2+                 | Connection string audit |
+| **Access logging**        | Azure Activity Log       | Log Analytics queries   |
+| **Least privilege**       | Scoped RBAC roles        | Role assignment review  |
+
+### 📝 Audit Logging
+
+| Event Type          | Source                | Destination   |
+| ------------------- | --------------------- | ------------- |
+| Resource operations | Azure Activity Log    | Log Analytics |
+| Authentication      | Entra ID Sign-in logs | Log Analytics |
+| Data access         | SQL Audit             | Log Analytics |
+| API requests        | Application Insights  | App Insights  |
+
+### 🏛️ Governance Controls
+
+| Control                | Implementation           | Enforcement           |
+| ---------------------- | ------------------------ | --------------------- |
+| **Tagging**            | Required tags in Bicep   | Deployment validation |
+| **Naming conventions** | Consistent naming in IaC | Code review           |
+| **Resource locks**     | Production resources     | Manual/Bicep          |
 
 ---
 
-## ✅ Compliance Considerations
+<div align="right"><a href="#-table-of-contents">⬆️ Back to top</a></div>
 
-### Security Controls Matrix
+## 🚨 8. Security Monitoring
 
-| Control                 | Implementation                       | Evidence           |
-| ----------------------- | ------------------------------------ | ------------------ |
-| **Identity Management** | Managed Identity, no shared accounts | Bicep deployment   |
-| **Access Control**      | RBAC with least privilege            | Role assignments   |
-| **Audit Logging**       | Azure Activity Log, App Insights     | Log Analytics      |
-| **Network Security**    | Service endpoints, NSGs              | VNet configuration |
-| **Data Encryption**     | TDE, TLS 1.2                         | Platform default   |
+### ⚠️ Security Alerts
 
-### Audit Trail
+| Alert                 | Condition             | Response           |
+| --------------------- | --------------------- | ------------------ |
+| Failed SQL logins     | > 5 failures in 5 min | Investigate source |
+| Unusual API errors    | 401/403 spike         | Check for attacks  |
+| Resource modification | Outside change window | Audit review       |
 
-| Event                  | Log Source            | Retention |
-| ---------------------- | --------------------- | --------- |
-| Resource modifications | Azure Activity Log    | 90 days   |
-| Authentication events  | Entra ID Sign-in Logs | 30 days   |
-| Application operations | Application Insights  | 90 days   |
-| API requests           | Container Apps logs   | 90 days   |
+### 📊 Security Dashboard KQL Queries
 
----
-
-## ⚠️ Threat Model Summary
-
-| Threat                  | Vector                  | Mitigation                     |
-| ----------------------- | ----------------------- | ------------------------------ |
-| **Credential Theft**    | Hardcoded secrets       | Managed Identity               |
-| **Man-in-the-Middle**   | Network interception    | TLS 1.2+, private endpoints    |
-| **Unauthorized Access** | Weak authentication     | Entra ID, RBAC                 |
-| **Data Exfiltration**   | Direct resource access  | Private endpoints, NSGs        |
-| **Supply Chain**        | Malicious dependencies  | NuGet audit, GitHub Dependabot |
-| **Insider Threat**      | Privileged access abuse | Least privilege, audit logs    |
+```kusto
+// Failed authentication attempts
+AzureActivity
+| where OperationNameValue contains "MICROSOFT.SQL"
+| where ActivityStatusValue == "Failed"
+| summarize FailedCount = count() by CallerIpAddress, bin(TimeGenerated, 1h)
+```
 
 ---
 
-## 📹 Security Monitoring
+<div align="right"><a href="#-table-of-contents">⬆️ Back to top</a></div>
 
-### Security Alerts
+## 🔗 Related Documents
 
-| Alert                        | Trigger                       | Response               |
-| ---------------------------- | ----------------------------- | ---------------------- |
-| Failed authentication spike  | > 10 failures in 5 min        | Investigate source IPs |
-| Unauthorized role assignment | Any role change               | Review and approve     |
-| Public endpoint enabled      | Resource configuration change | Remediate immediately  |
-| TLS 1.0/1.1 detected         | Connection attempt            | Block and investigate  |
-
-### Security KPIs
-
-| KPI                             | Target   | Measurement       |
-| ------------------------------- | -------- | ----------------- |
-| Secrets in code                 | 0        | Static analysis   |
-| Resources with public endpoints | 0        | Azure Policy      |
-| Failed authentication %         | < 0.1%   | Entra ID logs     |
-| Time to patch critical CVE      | < 7 days | Dependabot alerts |
-
----
-
-## 🌐 Cross-Architecture Relationships
-
-| Related Architecture           | Connection                       | Reference                                                                      |
-| ------------------------------ | -------------------------------- | ------------------------------------------------------------------------------ |
-| **Technology Architecture**    | Infrastructure security controls | [Platform Decomposition](04-technology-architecture.md#platform-decomposition) |
-| **Deployment Architecture**    | CI/CD security (OIDC)            | [CI/CD Strategy](07-deployment-architecture.md)                                |
-| **Observability Architecture** | Security monitoring and alerts   | [Alert Rules](05-observability-architecture.md#alert-rules-catalog)            |
+- [Technology Architecture](04-technology-architecture.md) - Identity platform details
+- [Deployment Architecture](07-deployment-architecture.md) - OIDC federation
+- [ADR-001](adr/ADR-001-aspire-orchestration.md) - Managed identity configuration
 
 ---
 
 <div align="center">
 
-[← Observability Architecture](05-observability-architecture.md) | **Security** | [Deployment Architecture →](07-deployment-architecture.md)
+| Previous                                                         |       Index        |                                                       Next |
+| :--------------------------------------------------------------- | :----------------: | ---------------------------------------------------------: |
+| [← Observability Architecture](05-observability-architecture.md) | [Index](README.md) | [Deployment Architecture →](07-deployment-architecture.md) |
 
 </div>
+
+---
+
+_Last Updated: January 2026_

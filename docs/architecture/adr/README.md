@@ -1,27 +1,24 @@
 ---
-title: Architecture Decision Records Index
-description: Index of Architecture Decision Records (ADRs) documenting significant architectural decisions for the Azure Logic Apps Monitoring Solution.
-author: Architecture Team
-date: 2026-01-20
+title: Architecture Decision Records
+description: Index and templates for Architecture Decision Records (ADRs) documenting significant architectural choices
+author: Platform Team
+date: 2026-01-21
 version: 1.0.0
-tags:
-  - adr
-  - architecture-decisions
-  - documentation
+tags: [architecture, adr, decisions, documentation]
 ---
 
-# 📜 Architecture Decision Records
+# 📝 Architecture Decision Records (ADRs)
 
 > [!NOTE]
-> **Target Audience:** Cloud Solution Architects, Technical Leads, Developers
+> **Target Audience:** All Technical Stakeholders  
 > **Reading Time:** ~5 minutes
 
 <details>
-<summary>📍 Navigation</summary>
+<summary>📖 <strong>Navigation</strong></summary>
 
-| Previous                                                      |     Index     |                                         Next |
-| :------------------------------------------------------------ | :-----------: | -------------------------------------------: |
-| [← Deployment Architecture](../07-deployment-architecture.md) | **ADR Index** | [ADR-001 →](ADR-001-aspire-orchestration.md) |
+| Previous                                                      |               Index                |                                         Next |
+| :------------------------------------------------------------ | :--------------------------------: | -------------------------------------------: |
+| [← Deployment Architecture](../07-deployment-architecture.md) | [Architecture Index](../README.md) | [ADR-001 →](ADR-001-aspire-orchestration.md) |
 
 </details>
 
@@ -29,106 +26,70 @@ tags:
 
 ## 📑 Table of Contents
 
-- [ℹ️ About ADRs](#-about-adrs)
-- [📊 ADR Index](#-adr-index)
-- [📝 Decision Log Summary](#-decision-log-summary)
+- [📊 Overview](#-overview)
+- [🚦 ADR Status Legend](#-adr-status-legend)
+- [📇 ADR Index](#-adr-index)
 - [📝 ADR Template](#-adr-template)
+- [📂 Decision Categories](#-decision-categories)
+- [🔗 Related Documents](#-related-documents)
 
 ---
 
-## ℹ️ About ADRs
+## 📊 Overview
 
 > [!TIP]
-> Architecture Decision Records (ADRs) document significant architectural decisions made during the design and evolution of the Azure Logic Apps Monitoring Solution. Each ADR captures:
->
-> - **Context**: The situation and forces that led to the decision
-> - **Decision**: What was decided
-> - **Consequences**: The resulting context after applying the decision
+> ADRs capture the **context**, **decision**, and **consequences** of each architectural choice to preserve institutional knowledge and help future team members understand why decisions were made.
+
+This directory contains Architecture Decision Records (ADRs) documenting significant architectural choices made for the Azure Logic Apps Monitoring Solution.
+
+<div align="right"><a href="#-table-of-contents">⬆️ Back to top</a></div>
+
+## 🚦 ADR Status Legend
+
+| Status            | Description                                |
+| ----------------- | ------------------------------------------ |
+| 🟢 **Accepted**   | Decision has been approved and implemented |
+| 🟡 **Proposed**   | Decision is under consideration            |
+| 🔴 **Deprecated** | Decision has been superseded               |
+| ⚪ **Superseded** | Replaced by a newer ADR                    |
 
 ---
 
-## 📊 ADR Index
+<div align="right"><a href="#-table-of-contents">⬆️ Back to top</a></div>
 
-| ID                                           | Title                                                  | Status      | Date    |
-| -------------------------------------------- | ------------------------------------------------------ | ----------- | ------- |
-| [ADR-001](ADR-001-aspire-orchestration.md)   | Use .NET Aspire for Service Orchestration              | ✅ Accepted | 2025-01 |
-| [ADR-002](ADR-002-service-bus-messaging.md)  | Use Azure Service Bus for Async Messaging              | ✅ Accepted | 2025-01 |
-| [ADR-003](ADR-003-observability-strategy.md) | OpenTelemetry + Application Insights for Observability | ✅ Accepted | 2025-01 |
+## 📇 ADR Index
 
----
-
-## 📝 Decision Log Summary
-
-### ADR-001: .NET Aspire for Service Orchestration
-
-**Problem**: Need consistent service orchestration across local development and cloud deployment.
-
-**Decision**: Adopt .NET Aspire 13.1.0 as the service orchestration framework.
-
-**Key Benefits**:
-
-- Unified local/cloud configuration
-- Built-in service discovery
-- Integrated observability
-
-[Read full ADR →](ADR-001-aspire-orchestration.md)
+| #                                        | Title                     | Status      | Date    | Summary                                             |
+| ---------------------------------------- | ------------------------- | ----------- | ------- | --------------------------------------------------- |
+| [001](ADR-001-aspire-orchestration.md)   | .NET Aspire Orchestration | 🟢 Accepted | 2024-01 | Use .NET Aspire for local development orchestration |
+| [002](ADR-002-service-bus-messaging.md)  | Service Bus Messaging     | 🟢 Accepted | 2024-01 | Use Azure Service Bus for async message handling    |
+| [003](ADR-003-observability-strategy.md) | Observability Strategy    | 🟢 Accepted | 2024-01 | OpenTelemetry with Azure Monitor integration        |
 
 ---
 
-### ADR-002: Azure Service Bus for Async Messaging
-
-**Problem**: Need reliable, scalable async communication between API and Logic Apps.
-
-**Decision**: Use Azure Service Bus Standard tier with topic/subscription pattern.
-
-**Key Benefits**:
-
-- Enterprise-grade reliability
-- Topic/subscription flexibility
-- Native Azure integration
-
-[Read full ADR →](ADR-002-service-bus-messaging.md)
-
----
-
-### ADR-003: OpenTelemetry + Application Insights
-
-**Problem**: Need comprehensive observability with vendor flexibility.
-
-**Decision**: Use OpenTelemetry SDK with Azure Monitor exporter.
-
-**Key Benefits**:
-
-- Vendor-neutral instrumentation
-- Automatic correlation
-- Azure-native analysis tools
-
-[Read full ADR →](ADR-003-observability-strategy.md)
-
----
+<div align="right"><a href="#-table-of-contents">⬆️ Back to top</a></div>
 
 ## 📝 ADR Template
 
-When creating new ADRs, use this template:
+<details>
+<summary>📄 <strong>Click to expand ADR template</strong></summary>
+
+When creating new ADRs, use the following template:
 
 ```markdown
-# ADR-XXX: [Title]
+# ADR-XXX: Title
 
 ## Status
 
 [Proposed | Accepted | Deprecated | Superseded by ADR-XXX]
 
-## Date
-
-YYYY-MM
-
 ## Context
 
-[Describe the situation, forces, and constraints]
+[Describe the situation and problem requiring a decision]
 
 ## Decision
 
-[State the decision clearly]
+[State the architectural decision clearly]
 
 ## Consequences
 
@@ -139,8 +100,8 @@ YYYY-MM
 
 ### Negative
 
-- [Tradeoff 1]
-- [Tradeoff 2]
+- [Drawback 1]
+- [Drawback 2]
 
 ### Neutral
 
@@ -148,18 +109,57 @@ YYYY-MM
 
 ## Alternatives Considered
 
-1. [Alternative 1]: [Why not chosen]
-2. [Alternative 2]: [Why not chosen]
+### Alternative 1: [Name]
 
-## References
+- **Pros:** [...]
+- **Cons:** [...]
+- **Why not chosen:** [...]
 
-- [Link to relevant documentation]
+## Related ADRs
+
+- [ADR-XXX](ADR-XXX-title.md) - Related decision
 ```
+
+</details>
+
+---
+
+<div align="right"><a href="#-table-of-contents">⬆️ Back to top</a></div>
+
+## 📂 Decision Categories
+
+### 🏗️ Infrastructure Decisions
+
+- [ADR-001](ADR-001-aspire-orchestration.md) - Orchestration approach
+
+### 🔗 Integration Decisions
+
+- [ADR-002](ADR-002-service-bus-messaging.md) - Messaging platform
+
+### ⚙️ Operations Decisions
+
+- [ADR-003](ADR-003-observability-strategy.md) - Monitoring strategy
+
+---
+
+<div align="right"><a href="#-table-of-contents">⬆️ Back to top</a></div>
+
+## 🔗 Related Documents
+
+- [Technology Architecture](../04-technology-architecture.md) - Platform choices
+- [Application Architecture](../03-application-architecture.md) - Service design
+- [Observability Architecture](../05-observability-architecture.md) - Monitoring design
 
 ---
 
 <div align="center">
 
-[← Deployment Architecture](../07-deployment-architecture.md) | **ADR Index** | [ADR-001 →](ADR-001-aspire-orchestration.md)
+| Previous                                                      |               Index                |                                         Next |
+| :------------------------------------------------------------ | :--------------------------------: | -------------------------------------------: |
+| [← Deployment Architecture](../07-deployment-architecture.md) | [Architecture Index](../README.md) | [ADR-001 →](ADR-001-aspire-orchestration.md) |
 
 </div>
+
+---
+
+_Last Updated: January 2026_

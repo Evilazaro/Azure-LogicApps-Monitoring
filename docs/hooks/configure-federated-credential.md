@@ -1,443 +1,335 @@
 ---
-title: Configure Federated Credential
-description: PowerShell and Bash scripts for configuring GitHub Actions OIDC federated credentials
-author: Evilazaro
-date: 2026-01-20
+title: configure-federated-credential Script
+description: Configures federated identity credentials for passwordless GitHub Actions OIDC authentication with Azure AD.
+author: Azure Developer CLI Team
+date: 2026-01-06
 version: 1.0.0
-tags:
-  [
-    hooks,
-    azure,
-    github-actions,
-    oidc,
-    federated-credential,
-    security,
-    powershell,
-    bash,
-  ]
+tags: [azure-ad, oidc, github-actions, authentication, security]
 ---
 
-# 🔑 configure-federated-credential (.ps1 / .sh)
+# 🔐 configure-federated-credential
+
+> Configures federated identity credentials for GitHub Actions OIDC authentication.
 
 > [!NOTE]
-> 🎯 **For DevOps Engineers**: Configure GitHub Actions OIDC federated credentials for passwordless Azure authentication.
-> ⏱️ **Execution time:** ~20-40 seconds
-
-![PowerShell](https://img.shields.io/badge/PowerShell-7.0+-blue.svg)
-![Bash](https://img.shields.io/badge/Bash-4.0+-green.svg)
-![Azure](https://img.shields.io/badge/Azure-CLI-blue.svg)
-![Cross-Platform](https://img.shields.io/badge/platform-Windows%20%7C%20Linux%20%7C%20macOS-lightgrey.svg)
-![Version](https://img.shields.io/badge/version-1.0.0-green.svg)
-![License](https://img.shields.io/badge/license-MIT-orange.svg)
+> **Target Audience:** DevOps Engineers and Security Administrators  
+> **Reading Time:** ~6 minutes
 
 <details>
-<summary>📍 <strong>Quick Navigation</strong></summary>
+<summary>📍 Navigation</summary>
 
-| Previous                                  |         Index         |                                            Next |
-| :---------------------------------------- | :-------------------: | ----------------------------------------------: |
-| [← Post-Infra Delete](postinfradelete.md) | [📑 Index](README.md) | [Validation Workflow →](VALIDATION-WORKFLOW.md) |
+| Previous                                |          Index          |                                                            Next |
+| :-------------------------------------- | :---------------------: | --------------------------------------------------------------: |
+| [deploy-workflow](./deploy-workflow.md) | [🪝 Hooks](./README.md) | [sql-managed-identity-config](./sql-managed-identity-config.md) |
 
 </details>
 
 ---
 
-## 📑 Table of Contents
-
-- [📋 Overview](#-overview)
-- [🎯 Purpose](#-purpose)
-- [📋 Prerequisites](#-prerequisites)
-  - [🔧 Required Tools](#-required-tools)
-  - [☁️ Azure Requirements](#️-azure-requirements)
-- [📁 Files](#-files)
-- [⚙️ Parameters](#️-parameters)
-  - [💻 PowerShell (`configure-federated-credential.ps1`)](#-powershell-configure-federated-credentialps1)
-  - [🐚 Bash (`configure-federated-credential.sh`)](#-bash-configure-federated-credentialsh)
-- [🚀 Usage Examples](#-usage-examples)
-  - [💻 PowerShell Examples](#-powershell-examples)
-  - [🐚 Bash Examples](#-bash-examples)
-- [🔍 What the Script Does](#-what-the-script-does)
-  - [🔄 Execution Flow](#-execution-flow)
-  - [📊 Workflow Diagram](#-workflow-diagram)
-- [🔑 Federated Credential Types](#-federated-credential-types)
-- [⚙️ GitHub Actions Configuration](#️-github-actions-configuration)
-  - [📜 Workflow Permissions](#-workflow-permissions)
-  - [🔐 Azure Login Action](#-azure-login-action)
-  - [🔒 Required GitHub Secrets](#-required-github-secrets)
-- [🛠️ Script Behavior](#️-script-behavior)
-  - [🖥️ Interactive Mode](#️-interactive-mode)
-  - [🔄 Idempotent Operations](#-idempotent-operations)
-- [⚠️ Error Handling](#️-error-handling)
-- [🔢 Exit Codes](#-exit-codes)
-- [🔐 Security Considerations](#-security-considerations)
-- [📖 Related Documentation](#-related-documentation)
-- [📜 Version History](#-version-history)
-
----
-
 ## 📋 Overview
 
-The `configure-federated-credential` script configures federated identity credentials for GitHub Actions OIDC (OpenID Connect) authentication. This enables GitHub Actions workflows to authenticate to Azure without storing secrets, using Azure AD workload identity federation.
+This script adds or updates federated identity credentials in an Azure AD App Registration to enable GitHub Actions workflows to authenticate using OIDC (OpenID Connect).
 
-Available in both PowerShell (`.ps1`) and Bash (`.sh`) versions for cross-platform compatibility, this script is designed to be **idempotent** and can be safely re-run. It will skip existing credentials with the same subject claim without errors.
+This script is designed to be run as an Azure Developer CLI (azd) hook, where environment variables are automatically loaded during the provisioning process.
 
-The script supports creating three types of federated credentials: environment-based (for GitHub environments), branch-based (for specific branches like `main`), and pull request-based (for PR workflows).
+The script performs the following operations:
 
----
-
-## 🎯 Purpose
-
-This script performs the following operations:
-
-| Operation                                 | Description                                               |
-| ----------------------------------------- | --------------------------------------------------------- |
-| ✅ **Validates Azure CLI authentication** | Ensures user is logged in to Azure CLI                    |
-| ✅ **Retrieves App Registration**         | Looks up the App Registration by name or Object ID        |
-| ✅ **Lists existing credentials**         | Shows any existing federated credentials on the app       |
-| ✅ **Creates environment credential**     | Creates a federated credential for the GitHub environment |
-| ✅ **Optional branch credential**         | Offers to create a credential for the `main` branch       |
-| ✅ **Optional PR credential**             | Offers to create a credential for pull requests           |
-| ✅ **Displays workflow guidance**         | Shows how to configure GitHub Actions workflows           |
+- Verifies Azure CLI login status
+- Looks up App Registration by name or Object ID
+- Lists existing federated credentials
+- Creates or updates federated credentials for GitHub Actions
+- Supports multiple GitHub environments (dev, staging, prod)
 
 ---
 
-## 📋 Prerequisites
+## 📑 Table of Contents
 
-### 🔧 Required Tools
+- [📌 Script Metadata](#-script-metadata)
+- [🔧 Prerequisites](#-prerequisites)
+- [📥 Parameters](#-parameters)
+- [🔑 OIDC Configuration](#-oidc-configuration)
+- [🔄 Execution Flow](#-execution-flow)
+- [📝 Usage Examples](#-usage-examples)
+- [⚠️ Exit Codes](#%EF%B8%8F-exit-codes)
+- [🔒 Security Considerations](#-security-considerations)
+- [📚 Related Documentation](#-related-documentation)
 
-| Tool           | Minimum Version | Purpose                              | Installation                          |
-| -------------- | --------------- | ------------------------------------ | ------------------------------------- |
-| **PowerShell** | 7.0+            | Script runtime (Windows/macOS/Linux) | `winget install Microsoft.PowerShell` |
-| **Bash**       | 4.0+            | Script runtime (macOS/Linux)         | Pre-installed on most systems         |
-| **Azure CLI**  | 2.50+           | Azure resource management            | `winget install Microsoft.AzureCLI`   |
-| **jq**         | Any             | JSON parsing (Bash only)             | `apt install jq` / `brew install jq`  |
+[⬅️ Back to Index](./README.md)
 
-### ☁️ Azure Requirements
-
-- Active Azure subscription
-- Permission to manage App Registrations and federated credentials
-- Existing Azure AD App Registration to configure
-- Authenticated Azure CLI session (`az login`)
-
----
-
-## 📁 Files
-
-| File                                 | Platform            | Description                    |
-| ------------------------------------ | ------------------- | ------------------------------ |
-| `configure-federated-credential.ps1` | Windows/Linux/macOS | PowerShell Core implementation |
-| `configure-federated-credential.sh`  | Linux/macOS         | Bash implementation            |
+> [!IMPORTANT]
+> Federated credentials enable passwordless authentication—no secrets need to be stored in GitHub.
 
 ---
 
-## ⚙️ Parameters
+## 📌 Script Metadata
 
-### 💻 PowerShell (`configure-federated-credential.ps1`)
+| Property          | PowerShell                           | Bash                                |
+| ----------------- | ------------------------------------ | ----------------------------------- |
+| **File Name**     | `configure-federated-credential.ps1` | `configure-federated-credential.sh` |
+| **Version**       | 1.0.0                                | 1.0.0                               |
+| **Last Modified** | —                                    | —                                   |
+| **Author**        | Azure Developer CLI Hook             | Azure Developer CLI Hook            |
+
+---
+
+## 🔧 Prerequisites
+
+| Requirement     | Minimum Version | Notes                                   |
+| --------------- | --------------- | --------------------------------------- |
+| PowerShell Core | 7.0             | Required for `.ps1` script              |
+| Bash            | 4.0             | Required for `.sh` script               |
+| Azure CLI       | 2.50+           | For Azure AD operations                 |
+| jq              | Any             | Required for Bash script (JSON parsing) |
+
+---
+
+## 📥 Parameters
+
+### PowerShell (`configure-federated-credential.ps1`)
 
 | Parameter      | Type   | Required | Default                      | Description                                   |
 | -------------- | ------ | -------- | ---------------------------- | --------------------------------------------- |
-| `-AppName`     | String | No       | -                            | Display name of the Azure AD App Registration |
-| `-AppObjectId` | String | No       | -                            | Object ID of the Azure AD App Registration    |
+| `-AppName`     | String | No\*     | N/A                          | Display name of the Azure AD App Registration |
+| `-AppObjectId` | String | No\*     | N/A                          | Object ID of the Azure AD App Registration    |
 | `-GitHubOrg`   | String | No       | `Evilazaro`                  | GitHub organization or username               |
 | `-GitHubRepo`  | String | No       | `Azure-LogicApps-Monitoring` | GitHub repository name                        |
 | `-Environment` | String | No       | `dev`                        | GitHub Environment name to configure          |
 
-### 🐚 Bash (`configure-federated-credential.sh`)
+\*Either `-AppName` or `-AppObjectId` should be provided. If neither is specified, the script will list available App Registrations and prompt for selection.
 
-| Parameter         | Short | Required | Default                      | Description                                   |
-| ----------------- | ----- | -------- | ---------------------------- | --------------------------------------------- |
-| `--app-name`      | -     | No       | -                            | Display name of the Azure AD App Registration |
-| `--app-object-id` | -     | No       | -                            | Object ID of the Azure AD App Registration    |
-| `--github-org`    | -     | No       | `Evilazaro`                  | GitHub organization or username               |
-| `--github-repo`   | -     | No       | `Azure-LogicApps-Monitoring` | GitHub repository name                        |
-| `--environment`   | -     | No       | `dev`                        | GitHub Environment name to configure          |
-| `--help`          | `-h`  | No       | -                            | Display help message                          |
+### Bash (`configure-federated-credential.sh`)
 
----
+| Parameter         | Type   | Required | Default                      | Description                                   |
+| ----------------- | ------ | -------- | ---------------------------- | --------------------------------------------- |
+| `--app-name`      | String | No\*     | N/A                          | Display name of the Azure AD App Registration |
+| `--app-object-id` | String | No\*     | N/A                          | Object ID of the Azure AD App Registration    |
+| `--github-org`    | String | No       | `Evilazaro`                  | GitHub organization or username               |
+| `--github-repo`   | String | No       | `Azure-LogicApps-Monitoring` | GitHub repository name                        |
+| `--environment`   | String | No       | `dev`                        | GitHub Environment name to configure          |
 
-## 🚀 Usage Examples
-
-### 💻 PowerShell Examples
-
-```powershell
-# Using App Name
-./configure-federated-credential.ps1 -AppName 'my-app-registration'
-
-# Using App Object ID
-./configure-federated-credential.ps1 -AppObjectId '00000000-0000-0000-0000-000000000000'
-
-# With custom GitHub settings and environment
-./configure-federated-credential.ps1 -AppName 'my-app' -GitHubOrg 'MyOrg' -GitHubRepo 'MyRepo' -Environment 'prod'
-
-# Interactive mode (will list available apps)
-./configure-federated-credential.ps1
-```
-
-### 🐚 Bash Examples
-
-```bash
-# Using App Name
-./configure-federated-credential.sh --app-name "my-app-registration"
-
-# Using App Object ID
-./configure-federated-credential.sh --app-object-id "00000000-0000-0000-0000-000000000000"
-
-# With custom GitHub settings and environment
-./configure-federated-credential.sh --app-name "my-app" --github-org "MyOrg" --github-repo "MyRepo" --environment "prod"
-
-# Show help
-./configure-federated-credential.sh --help
-```
+\*Either `--app-name` or `--app-object-id` should be provided. If neither is specified, the script will list available App Registrations and prompt for selection.
 
 ---
 
-## 🔍 What the Script Does
+## 🔑 OIDC Configuration
 
-### 🔄 Execution Flow
+### Constants
 
-1. **Verifies Azure CLI Authentication**: Checks if the user is logged in to Azure CLI
-2. **Retrieves App Registration**: Looks up the App Registration by name or Object ID
-3. **Lists Existing Credentials**: Shows any existing federated credentials configured on the app
-4. **Creates Environment Credential**: Creates a federated credential for the specified GitHub environment
-5. **Optional Branch Credential**: Offers to create a credential for the `main` branch
-6. **Optional PR Credential**: Offers to create a credential for pull requests
-7. **Displays Workflow Guidance**: Shows how to configure GitHub Actions workflows
+| Constant           | Value                                         | Description                     |
+| ------------------ | --------------------------------------------- | ------------------------------- |
+| GitHub OIDC Issuer | `https://token.actions.githubusercontent.com` | Token issuer for GitHub Actions |
+| Azure AD Audience  | `api://AzureADTokenExchange`                  | Token audience for Azure AD     |
 
-### 📊 Workflow Diagram
+### Subject Format
+
+The federated credential subject is formatted as:
+
+```
+repo:{org}/{repo}:environment:{environment}
+```
+
+Example: `repo:Evilazaro/Azure-LogicApps-Monitoring:environment:dev`
+
+---
+
+## 🔄 Execution Flow
 
 ```mermaid
 ---
-title: Federated Credential Configuration Flow
+title: configure-federated-credential Execution Flow
 ---
 flowchart TD
-    %% ===== ENTRY POINT =====
-    A(["🚀 Start Script"])
+    %% ===== STYLE DEFINITIONS =====
+    classDef primary fill:#4F46E5,stroke:#3730A3,color:#FFFFFF
+    classDef secondary fill:#10B981,stroke:#059669,color:#FFFFFF
+    classDef datastore fill:#F59E0B,stroke:#D97706,color:#000000
+    classDef trigger fill:#818CF8,stroke:#4F46E5,color:#FFFFFF
+    classDef decision fill:#FFFBEB,stroke:#F59E0B,color:#000000
+    classDef failed fill:#F44336,stroke:#C62828,color:#FFFFFF
+    classDef external fill:#6B7280,stroke:#4B5563,color:#FFFFFF,stroke-dasharray:5 5
+    classDef input fill:#F3F4F6,stroke:#6B7280,color:#000000
 
-    %% ===== AUTHENTICATION CHECK =====
-    subgraph AuthCheck["🔐 Authentication Check"]
+    %% ===== TRIGGER =====
+    subgraph triggers["🚀 Entry Point"]
         direction TB
-        B{"Azure CLI<br/>Logged In?"}
-        C(["❌ Exit: Run az login"])
+        A(["🚀 Start configure-federated-credential"])
     end
 
-    %% ===== APP IDENTIFICATION =====
-    subgraph AppIdentification["🎯 App Identification"]
+    %% ===== AUTHENTICATION =====
+    subgraph auth["🔐 Authentication Check"]
         direction TB
-        D{"AppObjectId<br/>Provided?"}
-        E["Use Provided ID"]
-        F{"AppName<br/>Provided?"}
-        G["List Available Apps"]
-        H["Prompt for App Name"]
-        I["Look Up App by Name"]
-        J{"App Found?"}
-        K(["❌ Exit: App Not Found"])
+        B{"Azure CLI Logged In?"}
     end
 
-    %% ===== CREDENTIAL MANAGEMENT =====
-    subgraph CredentialMgmt["⚙️ Credential Management"]
+    %% ===== APP RESOLUTION =====
+    subgraph appres["🔍 App Resolution"]
         direction TB
-        L["Get Existing Credentials"]
-        M{"Environment<br/>Credential Exists?"}
-        N["✅ Skip: Already Exists"]
-        O["Create Environment Credential"]
-        P{"Create Branch<br/>Credential?"}
-        Q["Create Branch Credential"]
-        R{"Create PR<br/>Credential?"}
-        S["Create PR Credential"]
+        C{"AppObjectId Provided?"}
+        D["Use Provided Object ID"]
+        E{"AppName Provided?"}
+        F["Lookup App by Name"]
+        G["List All App Registrations"]
+        H["Prompt User for Selection"]
+        I{"App Found?"}
     end
 
-    %% ===== COMPLETION =====
-    subgraph Completion["📋 Completion"]
+    %% ===== CREDENTIAL CONFIG =====
+    subgraph credconfig["🔑 Credential Configuration"]
         direction TB
-        T["Show Workflow Guidance"]
-        U(["✅ Complete"])
+        J["Display App Details"]
+        K["Get Existing Federated Credentials"]
+        L["Generate Credential Name"]
+        M{"Credential Exists?"}
+        N["Update Existing Credential"]
+        O["Create New Credential"]
     end
 
-    %% ===== FLOW CONNECTIONS =====
-    A -->|"initiates"| B
-    B -->|"No"| C
-    B -->|"Yes"| D
-    D -->|"Yes"| E
-    D -->|"No"| F
-    F -->|"No"| G
-    G -->|"displays"| H
-    F -->|"Yes"| I
-    H -->|"proceeds to"| I
-    I -->|"validates"| J
-    J -->|"No"| K
-    J -->|"Yes"| E
-    E -->|"retrieves"| L
+    %% ===== RESULTS =====
+    subgraph results["📊 Results"]
+        direction TB
+        P["✅ Display Success"]
+        Q["Display Next Steps"]
+        R(["🏁 End"])
+    end
+
+    %% ===== FAILURE =====
+    subgraph failure["❌ Error Handling"]
+        direction TB
+        Y["❌ Exit - App Not Found"]
+        Z["❌ Exit - Login Required"]
+    end
+
+    %% ===== CONNECTIONS =====
+    A -->|"checks"| B
+    B -->|"No"| Z
+    B -->|"Yes"| C
+
+    C -->|"Yes"| D
+    C -->|"No"| E
+
+    E -->|"Yes"| F
+    E -->|"No"| G
+
+    G -->|"prompts"| H
+    H -->|"selects"| F
+
+    F -->|"checks"| I
+    I -->|"No"| Y
+    I -->|"Yes"| D
+
+    D -->|"displays"| J
+    J -->|"retrieves"| K
+
+    K -->|"generates"| L
     L -->|"checks"| M
+
     M -->|"Yes"| N
     M -->|"No"| O
-    O -->|"prompts"| P
-    N -->|"continues"| P
-    P -->|"Yes"| Q
-    P -->|"No"| R
-    Q -->|"prompts"| R
-    R -->|"Yes"| S
-    R -->|"No"| T
-    S -->|"displays"| T
-    T -->|"completes"| U
 
-    %% ===== STYLING DEFINITIONS =====
-    %% Primary components: Indigo - main processes/services
-    classDef primary fill:#4F46E5,stroke:#3730A3,color:#FFFFFF
-    %% Secondary components: Emerald - secondary elements
-    classDef secondary fill:#10B981,stroke:#059669,color:#FFFFFF
-    %% Decision points: Amber outline - conditional logic
-    classDef decision fill:#FFFBEB,stroke:#F59E0B,color:#000000
-    %% Triggers: Indigo light - entry points
-    classDef trigger fill:#818CF8,stroke:#4F46E5,color:#FFFFFF
-    %% Error/failure states: Red - error handling
-    classDef failed fill:#F44336,stroke:#C62828,color:#FFFFFF
-    %% External systems: Gray - reusable/external calls
-    classDef external fill:#6B7280,stroke:#4B5563,color:#FFFFFF,stroke-dasharray: 5 5
+    N -->|"succeeds"| P
+    O -->|"succeeds"| P
+
+    P -->|"displays"| Q
+    Q -->|"ends"| R
+
+    %% ===== NODE STYLING =====
+    class A trigger
+    class B,C,E,I,M decision
+    class D,F,J,K,L,N,O primary
+    class G,H input
+    class P,Q secondary
+    class R secondary
+    class Y,Z failed
 
     %% ===== SUBGRAPH STYLING =====
-    style AuthCheck fill:#EEF2FF,stroke:#4F46E5,stroke-width:2px
-    style AppIdentification fill:#FEF3C7,stroke:#F59E0B,stroke-width:2px
-    style CredentialMgmt fill:#ECFDF5,stroke:#10B981,stroke-width:2px
-    style Completion fill:#D1FAE5,stroke:#10B981,stroke-width:2px
-
-    %% ===== APPLY STYLES TO NODES =====
-    class A,U trigger
-    class E,G,H,I,L,N,O,Q,S,T primary
-    class B,D,F,J,M,P,R decision
-    class C,K failed
+    style triggers fill:#EEF2FF,stroke:#4F46E5,stroke-width:2px
+    style auth fill:#ECFDF5,stroke:#10B981,stroke-width:2px
+    style appres fill:#E0E7FF,stroke:#4F46E5,stroke-width:2px
+    style credconfig fill:#D1FAE5,stroke:#059669,stroke-width:2px
+    style results fill:#FEF3C7,stroke:#F59E0B,stroke-width:2px
+    style failure fill:#FEE2E2,stroke:#F44336,stroke-width:2px
 ```
 
 ---
 
-## 🔑 Federated Credential Types
+## 📝 Usage Examples
 
-The script can create three types of federated credentials:
+### PowerShell
 
-| Type             | Subject Format                              | Use Case                                           |
-| ---------------- | ------------------------------------------- | -------------------------------------------------- |
-| **Environment**  | `repo:{org}/{repo}:environment:{env}`       | Workflows running in a specific GitHub environment |
-| **Branch**       | `repo:{org}/{repo}:ref:refs/heads/{branch}` | Workflows running on a specific branch             |
-| **Pull Request** | `repo:{org}/{repo}:pull_request`            | Workflows running on pull requests                 |
+```powershell
+# Configure using App Registration name (will be looked up)
+./configure-federated-credential.ps1 -AppName 'my-app-registration'
 
----
+# Configure using Object ID directly with production environment
+./configure-federated-credential.ps1 -AppObjectId '00000000-0000-0000-0000-000000000000' -Environment 'prod'
 
-## ⚙️ GitHub Actions Configuration
-
-After running this script, configure your GitHub Actions workflow with the following settings:
-
-### 📜 Workflow Permissions
-
-```yaml
-permissions:
-  id-token: write
-  contents: read
+# Configure for a different GitHub repository
+./configure-federated-credential.ps1 -AppName 'my-app' -GitHubOrg 'MyOrg' -GitHubRepo 'MyRepo'
 ```
 
-### 🔐 Azure Login Action
+### Bash
 
-```yaml
-- uses: azure/login@v2
-  with:
-    client-id: ${{ secrets.AZURE_CLIENT_ID }}
-    tenant-id: ${{ secrets.AZURE_TENANT_ID }}
-    subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+```bash
+# Configure using App Registration name (will be looked up)
+./configure-federated-credential.sh --app-name "my-app-registration"
+
+# Configure using Object ID directly with production environment
+./configure-federated-credential.sh --app-object-id "00000000-0000-0000-0000-000000000000" --environment "prod"
+
+# Configure for a different GitHub repository
+./configure-federated-credential.sh --app-name "my-app" --github-org "MyOrg" --github-repo "MyRepo"
 ```
 
-### 🔒 Required GitHub Secrets
+---
 
-| Secret                  | Description                                         |
-| ----------------------- | --------------------------------------------------- |
-| `AZURE_CLIENT_ID`       | The Application (client) ID of the App Registration |
-| `AZURE_TENANT_ID`       | The Directory (tenant) ID                           |
-| `AZURE_SUBSCRIPTION_ID` | The Azure subscription ID                           |
+## ⚠️ Exit Codes
+
+| Code | Meaning                                                       |
+| ---- | ------------------------------------------------------------- |
+| `0`  | Success - federated credential configured successfully        |
+| `1`  | Error - not logged in, app not found, or configuration failed |
 
 ---
 
-## 🛠️ Script Behavior
+## 🔒 Security Considerations
 
-### 🖥️ Interactive Mode
-
-If no `AppName` or `AppObjectId` is provided, the script:
-
-1. Lists all available App Registrations in the tenant
-2. Prompts the user to enter the display name of the desired app
-
-**Example Output:**
-
-```
-Available App Registrations:
-DisplayName              AppId                                  ObjectId
------------              -----                                  --------
-my-app-registration      12345678-1234-1234-1234-123456789012   abcdef00-...
-another-app              87654321-4321-4321-4321-210987654321   fedcba00-...
-
-Enter the App Registration display name: my-app-registration
-```
-
-### 🔄 Idempotent Operations
-
-The script checks for existing credentials before creating new ones:
-
-- ✅ If a credential with the same subject already exists, it reports this and skips creation
-- ✅ This makes the script safe to run multiple times
-- ✅ No duplicate credentials will be created
+- Federated credentials enable passwordless authentication from GitHub Actions
+- Only workflows running in the specified GitHub repository and environment can authenticate
+- No secrets need to be stored in GitHub Secrets
+- Token exchange happens securely between GitHub and Azure AD
 
 ---
 
-## ⚠️ Error Handling
+## 📚 Related Documentation
 
-| Error                                   | Cause                                          | Resolution                                        |
-| --------------------------------------- | ---------------------------------------------- | ------------------------------------------------- |
-| "'jq' is required but not installed"    | jq utility not found (Bash only)               | Install jq: `apt install jq` or `brew install jq` |
-| "Not logged in to Azure CLI"            | Azure CLI session expired or not authenticated | Run `az login`                                    |
-| "App Registration not found"            | Invalid app name or insufficient permissions   | Verify app name and permissions                   |
-| "Failed to create federated credential" | Permission denied or invalid parameters        | Check Azure AD permissions                        |
-| "Failed to list App Registrations"      | Insufficient permissions to list apps          | Request Application.Read.All                      |
-
----
-
-## 🔢 Exit Codes
-
-| Code | Description                                         |
-| ---- | --------------------------------------------------- |
-| 0    | Success                                             |
-| 1    | Error (authentication, lookup, or creation failure) |
-
----
-
-## 🔐 Security Considerations
-
-| Consideration          | Description                                                                     |
-| ---------------------- | ------------------------------------------------------------------------------- |
-| **OIDC vs Secrets**    | Federated credentials eliminate the need to store long-lived secrets            |
-| **Scope Limitation**   | Each credential is scoped to specific GitHub contexts (environment, branch, PR) |
-| **Audit Trail**        | Azure AD logs all authentication attempts using federated credentials           |
-| **Least Privilege**    | Configure App Registration with minimum required permissions                    |
-| **Token Lifetime**     | OIDC tokens are short-lived (typically 1 hour)                                  |
-| **No Secret Rotation** | Unlike client secrets, federated credentials don't need periodic rotation       |
-
----
-
-## 📖 Related Documentation
-
-- [Azure AD Workload Identity Federation](https://learn.microsoft.com/en-us/azure/active-directory/develop/workload-identity-federation)
-- [GitHub Actions OIDC](https://docs.github.com/en/actions/deployment/security-hardening-your-deployments/about-security-hardening-with-openid-connect)
-- [Azure Login Action](https://github.com/Azure/login)
-- [Configuring OpenID Connect in Azure](https://docs.github.com/en/actions/deployment/security-hardening-your-deployments/configuring-openid-connect-in-azure)
+| Resource                                                                                                                                              | Description                        |
+| ----------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------- |
+| [GitHub Actions OIDC](https://docs.github.com/en/actions/deployment/security-hardening-your-deployments/about-security-hardening-with-openid-connect) | GitHub's OIDC documentation        |
+| [Azure Workload Identity](https://learn.microsoft.com/azure/active-directory/workload-identities/workload-identity-federation)                        | Azure workload identity federation |
 
 ---
 
 ## 📜 Version History
 
-| Version | Date       | Description                                      |
-| ------- | ---------- | ------------------------------------------------ |
-| 1.0.0   | 2026-01-14 | Initial release with PowerShell and Bash support |
+| Version | Date | Changes                                                  |
+| ------- | ---- | -------------------------------------------------------- |
+| 1.0.0   | N/A  | Initial release - GitHub Actions OIDC federation support |
+
+---
+
+> [!WARNING]
+> Ensure you have the necessary Azure AD permissions (Application.ReadWrite.All or owner role) before running this script.
+
+## 🔗 Links
+
+- [Repository](https://github.com/Evilazaro/Azure-LogicApps-Monitoring)
+- [GitHub Actions OIDC Documentation](https://docs.github.com/en/actions/deployment/security-hardening-your-deployments/about-security-hardening-with-openid-connect)
+- [Azure AD Workload Identity Federation](https://learn.microsoft.com/azure/active-directory/workload-identities/workload-identity-federation)
 
 ---
 
 <div align="center">
 
-**Made with ❤️ by Evilazaro | Principal Cloud Solution Architect | Microsoft**
-
-[⬆ Back to Top](#-configure-federated-credential-ps1--sh) | [← Post-Infra Delete](postinfradelete.md) | [📑 Index](README.md) | [Validation Workflow →](VALIDATION-WORKFLOW.md)
+**[⬆️ Back to Top](#-configure-federated-credential)** · **[← deploy-workflow](./deploy-workflow.md)** · **[sql-managed-identity-config →](./sql-managed-identity-config.md)**
 
 </div>

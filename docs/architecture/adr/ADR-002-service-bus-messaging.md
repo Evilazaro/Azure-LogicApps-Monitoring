@@ -1,28 +1,24 @@
 ---
-title: "ADR-002: Use Azure Service Bus for Async Messaging"
-description: Architecture decision record documenting the selection of Azure Service Bus as the async messaging platform for the Azure Logic Apps Monitoring Solution.
-author: Architecture Team
-date: 2025-01
+title: "ADR-002: Azure Service Bus for Asynchronous Messaging"
+description: Decision record for choosing Azure Service Bus with Topics and Subscriptions for event-driven messaging
+author: Platform Team
+date: 2024-01-15
 version: 1.0.0
-tags:
-  - adr
-  - service-bus
-  - messaging
-  - async
+tags: [adr, service-bus, messaging, async, events]
 ---
 
-# 📨 ADR-002: Use Azure Service Bus for Async Messaging
+# 📝 ADR-002: Azure Service Bus for Asynchronous Messaging
 
 > [!NOTE]
-> **Target Audience:** Cloud Solution Architects, Platform Engineers, Developers
-> **Reading Time:** ~8 minutes
+> **Target Audience:** Developers, Solution Architects, Platform Engineers  
+> **Reading Time:** ~12 minutes
 
 <details>
-<summary>📍 Navigation</summary>
+<summary>📖 <strong>Navigation</strong></summary>
 
-| Previous                                     |    Index    |                                           Next |
-| :------------------------------------------- | :---------: | ---------------------------------------------: |
-| [← ADR-001](ADR-001-aspire-orchestration.md) | **ADR-002** | [ADR-003 →](ADR-003-observability-strategy.md) |
+| Previous                                     |         Index          |                                           Next |
+| :------------------------------------------- | :--------------------: | ---------------------------------------------: |
+| [← ADR-001](ADR-001-aspire-orchestration.md) | [ADR Index](README.md) | [ADR-003 →](ADR-003-observability-strategy.md) |
 
 </details>
 
@@ -30,109 +26,138 @@ tags:
 
 ## 📑 Table of Contents
 
-- [✅ Status](#-status)
-- [📅 Date](#-date)
-- [📋 Context](#-context)
-- [🛠️ Decision](#%EF%B8%8F-decision)
-- [⚖️ Consequences](#%EF%B8%8F-consequences)
-- [🔍 Alternatives Considered](#-alternatives-considered)
-- [📩 Message Patterns](#-message-patterns)
-- [🔗 Related Decisions](#-related-decisions)
+- [🚦 Status](#-status)
+- [📝 Context](#-context)
+- [✅ Decision](#-decision)
+- [📊 Consequences](#-consequences)
+- [🔄 Alternatives Considered](#-alternatives-considered)
+- [📦 Message Contract](#-message-contract)
+- [✅ Validation](#-validation)
+- [🔗 Related ADRs](#-related-adrs)
 - [📚 References](#-references)
 
 ---
 
-## ✅ Status
+## 🚦 Status
 
-✅ **Accepted**
-
-## 📅 Date
-
-2025-01
-
-## 📋 Context
-
-> [!IMPORTANT]
-> The Azure Logic Apps Monitoring Solution requires asynchronous communication between:
-
-- **Orders API** (message publisher)
-- **Logic Apps** (message consumer and processor)
-
-Key requirements:
-
-1. **Reliability**: Messages must not be lost even during component failures
-2. **Decoupling**: Publisher and consumer operate independently
-3. **Scalability**: Handle variable message volumes
-4. **Observability**: End-to-end tracing across async boundaries
-5. **Azure Integration**: Native integration with Logic Apps
-
-### Message Flow
-
-```text
-Order Created → API publishes message → Service Bus → Logic App triggers → Process order
-```
-
-### Forces
-
-| Force                    | Direction                              |
-| ------------------------ | -------------------------------------- |
-| Reliability requirements | ↗️ Enterprise-grade messaging          |
-| Azure ecosystem          | ↗️ Native Azure service                |
-| Cost optimization        | ↘️ Pay-per-message pricing             |
-| Complexity               | ↘️ Additional infrastructure component |
+🟢 **Accepted** — January 2024
 
 ---
 
-## 🛠️ Decision
+<div align="right"><a href="#-table-of-contents">⬆️ Back to top</a></div>
 
-**Use Azure Service Bus Standard tier** with topic/subscription pattern for async messaging between the Orders API and Logic Apps.
+## 📝 Context
 
-### Implementation Details
+The order processing workflow requires **asynchronous communication** between:
 
-1. **Namespace Configuration**:
-   - SKU: Standard
-   - Managed Identity authentication
-   - Topic: `ordersplaced`
-   - Subscription: `orderprocessingsub`
+1. **Orders API** — Creates orders and emits events
+2. **Logic Apps** — Processes order events and performs downstream actions
 
-2. **Message Structure**:
+**Requirements:**
 
-```json
-{
-  "OrderId": "ORD-2025-001",
-  "CreatedAt": "2025-01-20T10:30:00Z",
-  "Status": "OrderPlaced",
-  "CustomerDetails": { ... },
-  "Total": 299.99
-}
+> [!IMPORTANT]
+> These requirements drove the selection of Azure Service Bus over alternative messaging platforms.
+
+- **Reliability** — Messages must not be lost during processing failures
+- **Scalability** — Handle variable order volumes (batch operations)
+- **Observability** — Trace messages end-to-end across services
+- **Ordering** — Process messages in FIFO order when required (sessions)
+- **Dead-lettering** — Capture failed messages for analysis
+- **Local development** — Test messaging without Azure costs
+
+**Question:** What messaging platform should we use for reliable, observable event-driven communication?
+
+---
+
+<div align="right"><a href="#-table-of-contents">⬆️ Back to top</a></div>
+
+## ✅ Decision
+
+**We will use Azure Service Bus with Topics and Subscriptions for event-driven messaging.**
+
+### 🛠️ Implementation
+
+#### 🗺️ Topic/Subscription Topology
+
+```mermaid
+---
+title: Topic/Subscription Topology
+---
+flowchart LR
+    %% ===== PRODUCER =====
+    subgraph Producer["📡 Orders API"]
+        API[OrdersController]
+    end
+
+    %% ===== SERVICE BUS =====
+    subgraph ServiceBus["📬 Azure Service Bus"]
+        Topic["Topic: ordersplaced"]
+        Sub1["Subscription: orderprocessingsub"]
+        DLQ["Dead Letter Queue"]
+    end
+
+    %% ===== CONSUMER =====
+    subgraph Consumer["⚡ Logic Apps"]
+        LA[OrdersPlacedProcess]
+    end
+
+    %% ===== CONNECTIONS =====
+    API -->|"Publish"| Topic
+    Topic -->|"routes to"| Sub1
+    Sub1 -->|"Receive"| LA
+    Sub1 -.->|"Failed"| DLQ
+
+    %% ===== CLASS DEFINITIONS (EXACT HEX COLORS) =====
+    classDef primary fill:#4F46E5,stroke:#3730A3,color:#FFFFFF
+    classDef secondary fill:#10B981,stroke:#059669,color:#FFFFFF
+    classDef datastore fill:#F59E0B,stroke:#D97706,color:#000000
+    classDef failed fill:#F44336,stroke:#C62828,color:#FFFFFF
+
+    class API primary
+    class Topic,Sub1 datastore
+    class DLQ failed
+    class LA secondary
+
+    %% ===== SUBGRAPH STYLES =====
+    style Producer fill:#E0E7FF,stroke:#4F46E5,stroke-width:2px
+    style ServiceBus fill:#FEF3C7,stroke:#F59E0B,stroke-width:2px
+    style Consumer fill:#ECFDF5,stroke:#10B981,stroke-width:2px
 ```
 
-1. **Publishing Pattern** (from `OrdersMessageHandler.cs`):
+#### 📤 Message Publishing (Orders API)
+
+From [OrdersMessageHandler.cs](../../../src/eShop.Orders.API/Handlers/OrdersMessageHandler.cs):
 
 ```csharp
-public async Task SendOrderPlacedMessageAsync(OrderEntity order)
+public async Task SendOrderCreatedMessageAsync(Order order)
 {
-    var message = new ServiceBusMessage(
-        BinaryData.FromObjectAsJson(order))
+    var message = new ServiceBusMessage(JsonSerializer.SerializeToUtf8Bytes(order))
     {
         ContentType = "application/json",
-        MessageId = order.OrderId
+        Subject = "OrderCreated",
+        MessageId = order.Id.ToString(),
+        CorrelationId = Activity.Current?.TraceId.ToString()
     };
 
-    // Trace context propagation
-    message.ApplicationProperties["TraceId"] = Activity.Current?.TraceId.ToString();
-    message.ApplicationProperties["SpanId"] = Activity.Current?.SpanId.ToString();
+    // W3C Trace Context propagation
+    if (Activity.Current != null)
+    {
+        message.ApplicationProperties["traceparent"] = Activity.Current.Id;
+        message.ApplicationProperties["tracestate"] = Activity.Current.TraceStateString;
+    }
 
     await _sender.SendMessageAsync(message);
 }
 ```
 
-1. **Logic App Trigger**:
+#### 📥 Message Consumption (Logic Apps)
+
+Defined in [workflow.json](../../../workflows/OrdersManagement/OrdersManagementLogicApp/OrdersPlacedProcess/workflow.json):
 
 ```json
 {
   "triggers": {
-    "When_a_message_is_received_in_a_topic_subscription": {
+    "When_messages_are_available_in_a_topic_subscription": {
       "type": "ServiceProvider",
       "inputs": {
         "parameters": {
@@ -148,146 +173,166 @@ public async Task SendOrderPlacedMessageAsync(OrderEntity order)
 }
 ```
 
----
+### 🎯 Key Decisions
 
-## ⚖️ Consequences
-
-### Positive
-
-| Benefit                        | Impact                                       |
-| ------------------------------ | -------------------------------------------- |
-| **At-Least-Once Delivery**     | Messages survive crashes and restarts        |
-| **Topic/Subscription Model**   | Multiple consumers can process same messages |
-| **Dead Letter Queue**          | Failed messages preserved for analysis       |
-| **Native Logic App Connector** | Zero-code trigger configuration              |
-| **Managed Identity Support**   | No secrets for authentication                |
-| **Message Sessions**           | FIFO ordering when needed                    |
-
-### Negative
-
-| Tradeoff                 | Mitigation                                      |
-| ------------------------ | ----------------------------------------------- |
-| **Added Latency**        | Async pattern acceptable for order processing   |
-| **Message Ordering**     | Use message sessions if strict ordering needed  |
-| **Cost per Message**     | Standard tier pricing, monitor with cost alerts |
-| **Eventual Consistency** | Design workflows to handle idempotency          |
-
-### Neutral
-
-- Message size limit (256 KB Standard) sufficient for order payloads
-- 14-day message retention adequate for processing
-- Topic/subscription matches pub/sub requirements
+| Aspect             | Decision               | Rationale                         |
+| ------------------ | ---------------------- | --------------------------------- |
+| **Pattern**        | Topics & Subscriptions | Pub/sub for multiple consumers    |
+| **Tier**           | Standard               | Sessions, large messages support  |
+| **Authentication** | Managed Identity       | No connection string secrets      |
+| **Serialization**  | JSON                   | Human-readable, Logic Apps native |
+| **Tracing**        | W3C Trace Context      | End-to-end correlation            |
 
 ---
 
-## 🔍 Alternatives Considered
+<div align="right"><a href="#-table-of-contents">⬆️ Back to top</a></div>
 
-### 1. Azure Storage Queues
+## 📊 Consequences
 
-**Description**: Simple queue service built on Azure Storage
+### ✅ Positive
 
-**Why Not Chosen**:
+| Benefit            | Description                                |
+| ------------------ | ------------------------------------------ |
+| **Decoupling**     | API doesn't wait for Logic Apps processing |
+| **Reliability**    | At-least-once delivery with retries        |
+| **Observability**  | `traceparent` propagates through messages  |
+| **Scalability**    | Logic Apps auto-scales with queue depth    |
+| **Dead-lettering** | Failed messages captured for debugging     |
+| **Local dev**      | Service Bus emulator via .NET Aspire       |
 
-- No topic/subscription pattern
-- Limited message features (no dead-lettering)
-- No native Logic App trigger
-- Less suitable for enterprise messaging
+### ⚠️ Negative
 
-### 2. Azure Event Grid
+| Drawback                 | Mitigation                              |
+| ------------------------ | --------------------------------------- | ------------------------------ |
+| **Eventual consistency** | API returns before processing completes | Acceptable for order events    |
+| **Cost**                 | Per-message pricing                     | Standard tier optimizes costs  |
+| **Complexity**           | Additional component to manage          | Bicep IaC handles provisioning |
 
-**Description**: Event-driven routing service
+### ⚖️ Neutral
 
-**Why Not Chosen**:
-
-- Push-based, not pull-based
-- Best for event notification, not message processing
-- Less control over consumption patterns
-- Different reliability model
-
-### 3. Azure Event Hubs
-
-**Description**: Big data streaming platform
-
-**Why Not Chosen**:
-
-- Optimized for high-volume streaming
-- Consumer group model more complex
-- Overkill for order processing volumes
-- Higher cost at low volumes
-
-### 4. Direct HTTP Calls
-
-**Description**: API calls Logic App directly
-
-**Why Not Chosen**:
-
-- Tight coupling between services
-- No retry/reliability guarantees
-- Synchronous blocking
-- No message buffering during outages
+- Messages are persisted for 14 days (default retention)
+- Topic partitioning is disabled (not needed at current scale)
+- Session support available but not currently used
 
 ---
 
-## 📩 Message Patterns
+<div align="right"><a href="#-table-of-contents">⬆️ Back to top</a></div>
 
-### Dead Letter Handling
+## 🔄 Alternatives Considered
 
-```mermaid
----
-title: Dead Letter Handling
----
-flowchart LR
-    %% ===== NODES =====
-    Publisher["Orders API"]
-    Topic["ordersplaced<br/>Topic"]
-    Sub["orderprocessingsub<br/>Subscription"]
-    LA["Logic App"]
-    DLQ["Dead Letter<br/>Queue"]
-    Alert["Alert Rule"]
+### 📦 Alternative 1: Azure Storage Queues
 
-    %% ===== CONNECTIONS =====
-    Publisher -->|"publishes to"| Topic
-    Topic -->|"routes to"| Sub
-    Sub -->|"triggers"| LA
-    Sub -->|"MaxDeliveryCount exceeded"| DLQ
-    DLQ -->|"triggers"| Alert
-
-    %% ===== STYLES - NODE CLASSES =====
-    classDef secondary fill:#10B981,stroke:#059669,color:#FFFFFF
-    classDef failed fill:#F44336,stroke:#C62828,color:#FFFFFF
-
-    %% ===== CLASS ASSIGNMENTS =====
-    class Publisher,Topic,Sub,LA secondary
-    class DLQ,Alert failed
+```csharp
+// Storage Queue approach
+await queueClient.SendMessageAsync(JsonSerializer.Serialize(order));
 ```
 
-### Retry Configuration
+| Criteria           | Assessment                                   |
+| ------------------ | -------------------------------------------- |
+| **Pros**           | Lower cost, simpler API                      |
+| **Cons**           | No pub/sub, no dead-letter, limited features |
+| **Why not chosen** | Need topic fanout and advanced features      |
 
-| Setting             | Value     | Purpose                        |
-| ------------------- | --------- | ------------------------------ |
-| Max Delivery Count  | 10        | Attempts before dead-lettering |
-| Lock Duration       | 5 minutes | Processing time before requeue |
-| Auto-delete on idle | Disabled  | Preserve for monitoring        |
+### 📡 Alternative 2: Azure Event Grid
+
+| Criteria           | Assessment                             |
+| ------------------ | -------------------------------------- |
+| **Pros**           | Push model, built-in Azure integration |
+| **Cons**           | At-most-once delivery, no message peek |
+| **Why not chosen** | Need at-least-once reliability         |
+
+### 🌊 Alternative 3: Azure Event Hubs
+
+| Criteria           | Assessment                                     |
+| ------------------ | ---------------------------------------------- |
+| **Pros**           | High throughput, event streaming               |
+| **Cons**           | Designed for big data, complex consumer groups |
+| **Why not chosen** | Overkill for order event volumes               |
+
+### 🐰 Alternative 4: RabbitMQ (self-hosted)
+
+| Criteria           | Assessment                               |
+| ------------------ | ---------------------------------------- |
+| **Pros**           | Open source, flexible routing            |
+| **Cons**           | Operational overhead, no managed service |
+| **Why not chosen** | Prefer managed services                  |
 
 ---
 
-## 🔗 Related Decisions
+<div align="right"><a href="#-table-of-contents">⬆️ Back to top</a></div>
 
-- [ADR-001: Aspire Orchestration](ADR-001-aspire-orchestration.md) - Service Bus configured via Aspire
-- [ADR-003: Observability Strategy](ADR-003-observability-strategy.md) - Trace context propagation in messages
+## 📦 Message Contract
+
+### 📨 Order Created Event
+
+```json
+{
+  "id": "c7d14f9e-3c4e-4f5a-9b2d-1234567890ab",
+  "customerId": "CUST-001",
+  "items": [
+    {
+      "productId": "PROD-001",
+      "quantity": 2,
+      "price": 29.99
+    }
+  ],
+  "total": 59.98,
+  "createdDate": "2024-01-15T10:30:00Z"
+}
+```
+
+### 🏷️ Message Properties
+
+| Property        | Value              | Purpose                   |
+| --------------- | ------------------ | ------------------------- |
+| `ContentType`   | `application/json` | Serialization format      |
+| `Subject`       | `OrderCreated`     | Event type                |
+| `MessageId`     | Order ID           | Deduplication             |
+| `CorrelationId` | Trace ID           | Distributed tracing       |
+| `traceparent`   | W3C format         | OpenTelemetry propagation |
 
 ---
+
+<div align="right"><a href="#-table-of-contents">⬆️ Back to top</a></div>
+
+## ✅ Validation
+
+The decision is validated by:
+
+1. **Reliability testing** — Messages survive API restarts
+2. **Observability** — Traces flow from API → Service Bus → Logic Apps
+3. **Local development** — Emulator provides realistic testing
+4. **Production monitoring** — Dead-letter queue remains empty
+
+---
+
+<div align="right"><a href="#-table-of-contents">⬆️ Back to top</a></div>
+
+## 🔗 Related ADRs
+
+- [ADR-001](ADR-001-aspire-orchestration.md) — Aspire orchestrates Service Bus emulator
+- [ADR-003](ADR-003-observability-strategy.md) — Trace context propagation strategy
+
+---
+
+<div align="right"><a href="#-table-of-contents">⬆️ Back to top</a></div>
 
 ## 📚 References
 
 - [Azure Service Bus Documentation](https://learn.microsoft.com/azure/service-bus-messaging/)
-- [Service Bus Topics and Subscriptions](https://learn.microsoft.com/azure/service-bus-messaging/service-bus-queues-topics-subscriptions)
-- [Logic Apps Service Bus Connector](https://learn.microsoft.com/azure/connectors/connectors-create-api-servicebus)
+- [W3C Trace Context](https://www.w3.org/TR/trace-context/)
+- [infra/workload/messaging/](../../../infra/workload/messaging/) — Bicep configuration
 
 ---
 
 <div align="center">
 
-[← ADR-001](ADR-001-aspire-orchestration.md) | **ADR-002** | [ADR-003 →](ADR-003-observability-strategy.md)
+| Previous                                     |         Index          |                                           Next |
+| :------------------------------------------- | :--------------------: | ---------------------------------------------: |
+| [← ADR-001](ADR-001-aspire-orchestration.md) | [ADR Index](README.md) | [ADR-003 →](ADR-003-observability-strategy.md) |
 
 </div>
+
+---
+
+_Last Updated: January 2026_

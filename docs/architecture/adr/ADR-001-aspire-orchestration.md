@@ -1,28 +1,24 @@
 ---
-title: "ADR-001: Use .NET Aspire for Service Orchestration"
-description: Architecture decision record documenting the selection of .NET Aspire as the service orchestration framework for the Azure Logic Apps Monitoring Solution.
-author: Architecture Team
-date: 2025-01
+title: "ADR-001: .NET Aspire for Local Development Orchestration"
+description: Decision record for choosing .NET Aspire as the local development orchestration platform
+author: Platform Team
+date: 2024-01-15
 version: 1.0.0
-tags:
-  - adr
-  - aspire
-  - orchestration
-  - service-discovery
+tags: [adr, aspire, orchestration, local-development]
 ---
 
-# 🎯 ADR-001: Use .NET Aspire for Service Orchestration
+# 📝 ADR-001: .NET Aspire for Local Development Orchestration
 
 > [!NOTE]
-> **Target Audience:** Cloud Solution Architects, Platform Engineers, Developers
-> **Reading Time:** ~8 minutes
+> **Target Audience:** Developers, Platform Engineers  
+> **Reading Time:** ~10 minutes
 
 <details>
-<summary>📍 Navigation</summary>
+<summary>📖 <strong>Navigation</strong></summary>
 
-| Previous                 |    Index    |                                          Next |
-| :----------------------- | :---------: | --------------------------------------------: |
-| [← ADR Index](README.md) | **ADR-001** | [ADR-002 →](ADR-002-service-bus-messaging.md) |
+| Previous                 |         Index          |                                          Next |
+| :----------------------- | :--------------------: | --------------------------------------------: |
+| [← ADR Index](README.md) | [ADR Index](README.md) | [ADR-002 →](ADR-002-service-bus-messaging.md) |
 
 </details>
 
@@ -30,174 +26,215 @@ tags:
 
 ## 📑 Table of Contents
 
-- [✅ Status](#-status)
-- [📅 Date](#-date)
-- [📊 Context](#-context)
-- [🛠️ Decision](#%EF%B8%8F-decision)
-- [⚖️ Consequences](#%EF%B8%8F-consequences)
-- [🔍 Alternatives Considered](#-alternatives-considered)
-- [🔗 Related Decisions](#-related-decisions)
+- [🚦 Status](#-status)
+- [📝 Context](#-context)
+- [✅ Decision](#-decision)
+- [📊 Consequences](#-consequences)
+- [🔄 Alternatives Considered](#-alternatives-considered)
+- [✅ Validation](#-validation)
+- [🔗 Related ADRs](#-related-adrs)
 - [📚 References](#-references)
 
 ---
 
-## ✅ Status
+## 🚦 Status
 
-✅ **Accepted**
-
-## 📅 Date
-
-2025-01
+🟢 **Accepted** — January 2024
 
 ---
 
-## 📊 Context
+<div align="right"><a href="#-table-of-contents">⬆️ Back to top</a></div>
 
-> [!IMPORTANT]
-> The Azure Logic Apps Monitoring Solution requires orchestration of multiple services:
+## 📝 Context
 
-- Orders API (REST backend)
-- Web App (frontend)
-- Azure Service Bus
-- Azure SQL Database
-- Application Insights
+The Azure Logic Apps Monitoring Solution is a distributed system with multiple components:
 
-Key challenges:
+- **eShop.Orders.API** — REST API for order management
+- **eShop.Web.App** — Blazor Server frontend
+- **Azure Service Bus** — Message broker
+- **Azure SQL Database** — Order persistence
+- **Azure Logic Apps** — Workflow orchestration
+- **Application Insights** — Telemetry collection
 
-1. **Development/Production Parity**: Developers need local environments that mirror production topology
-2. **Service Discovery**: Services need to locate each other without hardcoded endpoints
-3. **Configuration Management**: Connection strings, endpoints, and settings vary by environment
-4. **Observability Setup**: Distributed tracing requires consistent instrumentation across services
-5. **Azure Integration**: Resources must be provisioned consistently with proper authentication
+**Challenges:**
 
-### Forces
+> [!WARNING]
+> Without proper orchestration, developers face significant friction in local development.
 
-| Force                   | Direction                             |
-| ----------------------- | ------------------------------------- |
-| Developer productivity  | ↗️ Simplified local development       |
-| Azure-native deployment | ↗️ Seamless cloud integration         |
-| Learning curve          | ↘️ Team must learn Aspire concepts    |
-| Maturity concerns       | ↘️ Aspire is relatively new (GA 2024) |
+1. Developers need to run 3+ services locally with proper configuration
+2. Connection strings and dependencies vary between local/Azure environments
+3. Service discovery is complex when ports change between runs
+4. Starting services in the correct order requires manual coordination
+5. Environment parity between dev and production is difficult to achieve
+
+**Question:** How should we orchestrate local development to maximize developer productivity while maintaining environment parity with Azure?
 
 ---
 
-## 🛠️ Decision
+<div align="right"><a href="#-table-of-contents">⬆️ Back to top</a></div>
 
-**Adopt .NET Aspire 13.1.0 as the service orchestration framework** for the Azure Logic Apps Monitoring Solution.
+## ✅ Decision
 
-### Implementation Details
+**We will use .NET Aspire as the local development orchestration platform.**
 
-1. **AppHost Project** (`app.AppHost/`):
-   - Central orchestration point
-   - Defines service topology
-   - Configures Azure resources
+### 🛠️ Implementation
 
-2. **ServiceDefaults Project** (`app.ServiceDefaults/`):
-   - Shared cross-cutting concerns
-   - OpenTelemetry configuration
-   - Health checks
-   - Resilience policies
-
-3. **Resource Configuration Pattern**:
+The AppHost project (`app.AppHost/AppHost.cs`) defines the distributed application:
 
 ```csharp
-// AppHost.cs
-var serviceBus = builder.AddAzureServiceBus("messaging")
-    .RunAsEmulator();
+var builder = DistributedApplication.CreateBuilder(args);
 
-var sqlServer = builder.AddAzureSqlServer("sql")
-    .RunAsContainer();
+// Azure Service Bus (emulator for local, Azure for production)
+var serviceBus = isEmulated
+    ? builder.AddAzureServiceBus("messaging").RunAsEmulator()
+    : builder.AddConnectionString("messaging");
 
+// SQL Database (container for local, Azure for production)
+var sqlServer = isLocalDB
+    ? builder.AddSqlServer("sql").AddDatabase("orders")
+    : builder.AddConnectionString("orders");
+
+// Application services with dependencies
 var ordersApi = builder.AddProject<Projects.eShop_Orders_API>("orders-api")
+    .WithReference(sqlServer)
     .WithReference(serviceBus)
-    .WithReference(sqlServer);
+    .WithReference(insights);
+
+var webApp = builder.AddProject<Projects.eShop_Web_App>("web-app")
+    .WithReference(ordersApi)
+    .WithReference(insights);
 ```
 
----
+### 🎯 Key Decisions
 
-## ⚖️ Consequences
-
-### Positive
-
-| Benefit                        | Impact                                                 |
-| ------------------------------ | ------------------------------------------------------ |
-| **Unified Configuration**      | Single place to define service topology                |
-| **Built-in Service Discovery** | Automatic endpoint injection via environment variables |
-| **Local Emulators**            | Service Bus emulator, SQL container for local dev      |
-| **Integrated Observability**   | Aspire Dashboard with OTLP support                     |
-| **Azure-Native Deployment**    | Direct integration with azd CLI                        |
-| **Resource Visualization**     | Dashboard shows service dependencies                   |
-
-### Negative
-
-| Tradeoff                        | Mitigation                                           |
-| ------------------------------- | ---------------------------------------------------- |
-| **Learning Curve**              | Team training, documentation, pair programming       |
-| **Framework Coupling**          | ServiceDefaults abstracts most Aspire specifics      |
-| **Version Dependencies**        | Pin versions in global.json, test upgrades in CI     |
-| **Local Resource Requirements** | Docker Desktop required, documented in prerequisites |
-
-### Neutral
-
-- Aspire patterns align with existing .NET extension methods
-- Team already familiar with dependency injection concepts
-- Azure deployment still uses standard Bicep/ARM
+| Aspect            | Decision            | Rationale                                           |
+| ----------------- | ------------------- | --------------------------------------------------- |
+| **Framework**     | .NET Aspire 9.1.0   | Native .NET integration, production-ready           |
+| **Service Bus**   | Emulator for local  | No Azure costs during development                   |
+| **SQL Server**    | Container for local | Consistent schema management                        |
+| **Configuration** | Environment-based   | `ASPIRE_ALLOW_UNSECURED_TRANSPORT` toggles behavior |
 
 ---
 
-## 🔍 Alternatives Considered
+<div align="right"><a href="#-table-of-contents">⬆️ Back to top</a></div>
 
-### 1. Docker Compose
+## 📊 Consequences
 
-**Description**: Use docker-compose.yml for local orchestration
+### ✅ Positive
 
-**Why Not Chosen**:
+| Benefit                  | Impact                                                 |
+| ------------------------ | ------------------------------------------------------ |
+| **One-click startup**    | `F5` starts all services with correct dependencies     |
+| **Service discovery**    | Automatic endpoint injection via `WithReference()`     |
+| **Environment parity**   | Same code paths for local emulators and Azure services |
+| **Observability**        | Built-in dashboard shows logs, traces, metrics         |
+| **Container management** | Aspire handles SQL and Service Bus containers          |
 
-- No native .NET integration
-- Separate configuration from code
-- No built-in service discovery for .NET
-- Different deployment model than production
+### ⚠️ Negative
 
-### 2. Kubernetes (Minikube/Kind)
+| Drawback                 | Mitigation                |
+| ------------------------ | ------------------------- | ----------------------------------- |
+| **Learning curve**       | Aspire concepts are new   | Documentation and examples provided |
+| **Resource consumption** | Containers require memory | Minimum 16GB RAM recommended        |
+| **Version dependency**   | .NET 9+ required          | Project already targets .NET 10     |
 
-**Description**: Run Kubernetes locally for full parity
+### ⚖️ Neutral
 
-**Why Not Chosen**:
-
-- Significant complexity overhead
-- Heavy resource requirements
-- Production uses Container Apps, not AKS
-- Slower inner dev loop
-
-### 3. Manual Configuration
-
-**Description**: Configure each service independently with environment variables
-
-**Why Not Chosen**:
-
-- Error-prone endpoint management
-- No visualization of dependencies
-- Duplicated configuration across projects
-- Harder to maintain consistency
+- Aspire is a development tool; production uses standard Azure services
+- The AppHost project is excluded from production deployment
+- Container emulators approximate but don't perfectly match Azure behavior
 
 ---
 
-## 🔗 Related Decisions
+<div align="right"><a href="#-table-of-contents">⬆️ Back to top</a></div>
 
-- [ADR-003: Observability Strategy](ADR-003-observability-strategy.md) - Leverages Aspire's OpenTelemetry integration
+## 🔄 Alternatives Considered
+
+### 🐳 Alternative 1: Docker Compose
+
+```yaml
+# docker-compose.yml
+services:
+  orders-api:
+    build: ./src/eShop.Orders.API
+    depends_on:
+      - sql
+      - servicebus
+  sql:
+    image: mcr.microsoft.com/mssql/server:2022
+  servicebus:
+    image: mcr.microsoft.com/azure-messaging/servicebus-emulator
+```
+
+| Criteria           | Assessment                                       |
+| ------------------ | ------------------------------------------------ |
+| **Pros**           | Industry standard, language-agnostic             |
+| **Cons**           | No native .NET integration, manual configuration |
+| **Why not chosen** | Aspire provides better DX for .NET developers    |
+
+### ❌ Alternative 2: Tye (Project Tye)
+
+| Criteria           | Assessment                                    |
+| ------------------ | --------------------------------------------- |
+| **Pros**           | Lightweight, familiar YAML syntax             |
+| **Cons**           | Deprecated, no longer maintained by Microsoft |
+| **Why not chosen** | Aspire is the official successor to Tye       |
+
+### 📜 Alternative 3: Manual Scripts
+
+```powershell
+# start-all.ps1
+Start-Process dotnet "run --project src/eShop.Orders.API"
+Start-Process dotnet "run --project src/eShop.Web.App"
+```
+
+| Criteria           | Assessment                                   |
+| ------------------ | -------------------------------------------- |
+| **Pros**           | Simple, no additional tooling                |
+| **Cons**           | No service discovery, manual port management |
+| **Why not chosen** | Does not scale with service count            |
 
 ---
+
+<div align="right"><a href="#-table-of-contents">⬆️ Back to top</a></div>
+
+## ✅ Validation
+
+The decision is validated by:
+
+1. **Developer feedback** — Single-click startup improves onboarding
+2. **CI/CD parity** — Same Aspire configuration runs in GitHub Actions
+3. **Emulator accuracy** — Service Bus and SQL emulators provide realistic testing
+
+---
+
+<div align="right"><a href="#-table-of-contents">⬆️ Back to top</a></div>
+
+## 🔗 Related ADRs
+
+- [ADR-002](ADR-002-service-bus-messaging.md) — Service Bus is orchestrated by Aspire
+- [ADR-003](ADR-003-observability-strategy.md) — Aspire dashboard provides local observability
+
+---
+
+<div align="right"><a href="#-table-of-contents">⬆️ Back to top</a></div>
 
 ## 📚 References
 
 - [.NET Aspire Documentation](https://learn.microsoft.com/dotnet/aspire/)
-- [Aspire Service Discovery](https://learn.microsoft.com/dotnet/aspire/service-discovery/overview)
-- [Aspire + Azure Developer CLI](https://learn.microsoft.com/azure/developer/azure-developer-cli/overview)
+- [app.AppHost/AppHost.cs](../../../app.AppHost/AppHost.cs)
+- [app.ServiceDefaults/Extensions.cs](../../../app.ServiceDefaults/Extensions.cs)
 
 ---
 
 <div align="center">
 
-[← ADR Index](README.md) | **ADR-001** | [ADR-002 →](ADR-002-service-bus-messaging.md)
+| Previous                 |         Index          |                                          Next |
+| :----------------------- | :--------------------: | --------------------------------------------: |
+| [← ADR Index](README.md) | [ADR Index](README.md) | [ADR-002 →](ADR-002-service-bus-messaging.md) |
 
 </div>
+
+---
+
+_Last Updated: January 2026_

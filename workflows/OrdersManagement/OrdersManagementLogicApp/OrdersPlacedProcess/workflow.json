@@ -8,7 +8,10 @@
         "expression": {
           "and": [
             {
-              "equals": ["@triggerBody()?['ContentType']", "application/json"]
+              "equals": [
+                "@triggerBody()?['ContentType']",
+                "application/json"
+              ]
             }
           ]
         },
@@ -35,7 +38,10 @@
             "expression": {
               "and": [
                 {
-                  "equals": ["@outputs('HTTP')?['statusCode']", 201]
+                  "equals": [
+                    "@outputs('HTTP')?['statusCode']",
+                    201
+                  ]
                 }
               ]
             },
@@ -98,7 +104,9 @@
               }
             },
             "runAfter": {
-              "HTTP": ["SUCCEEDED"]
+              "HTTP": [
+                "SUCCEEDED"
+              ]
             }
           }
         },
