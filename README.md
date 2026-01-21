@@ -1,4 +1,13 @@
-# Azure Logic Apps Monitoring Solution
+---
+title: Azure Logic Apps Monitoring Solution
+description: Cloud-native reference architecture demonstrating enterprise-grade observability patterns for distributed applications on Azure with .NET Aspire orchestration
+author: Evilazaro
+date: 2026-01-21
+version: 1.0.0
+tags: [azure, logic-apps, monitoring, aspire, observability, bicep, dotnet]
+---
+
+# 🚀 Azure Logic Apps Monitoring Solution
 
 ![License](https://img.shields.io/github/license/Evilazaro/Azure-LogicApps-Monitoring)
 ![.NET](https://img.shields.io/badge/.NET-10.0-512BD4?logo=dotnet)
@@ -7,7 +16,20 @@
 ![azd](https://img.shields.io/badge/azd-compatible-green?logo=microsoft)
 ![Build](https://img.shields.io/github/actions/workflow/status/Evilazaro/Azure-LogicApps-Monitoring/ci-dotnet.yml?branch=main&label=CI)
 
+> [!NOTE]
+> **Target Audience:** Cloud Solution Architects, Platform Engineers, Developers<br/>
+> **Reading Time:** ~8 minutes
+
 A cloud-native reference architecture demonstrating enterprise-grade observability patterns for distributed applications on Azure. Built around an eShop order management scenario, this solution showcases end-to-end monitoring, distributed tracing, and event-driven automation using Azure's native services with .NET Aspire orchestration.
+
+<details>
+<summary>📖 <strong>Navigation</strong></summary>
+
+| Previous |      Index       |                                          Next |
+| :------- | :--------------: | --------------------------------------------: |
+| —        | **You are here** | [Architecture →](docs/architecture/README.md) |
+
+</details>
 
 ---
 
@@ -20,6 +42,7 @@ A cloud-native reference architecture demonstrating enterprise-grade observabili
 - [📚 Documentation](#-documentation)
 - [🤝 Contributing](#-contributing)
 - [📄 License](#-license)
+- [🔗 Related Documents](#-related-documents)
 
 ---
 
@@ -241,14 +264,34 @@ Contributions are welcome! Please follow these guidelines:
 
 ## 📄 License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+This project is licensed under the **MIT License** — see the [LICENSE](LICENSE) file for details.
+
+---
+
+## 🔗 Related Documents
+
+- [Architecture Documentation](docs/architecture/README.md) — Comprehensive TOGAF BDAT architecture
+- [DevOps Documentation](docs/devops/README.md) — CI/CD pipelines and workflows
+- [Hook Scripts Documentation](docs/hooks/README.md) — azd lifecycle scripts reference
 
 ---
 
 <div align="center">
 
-**[⬆ Back to Top](#azure-logic-apps-monitoring-solution)**
+| Previous |      Index       |                                          Next |
+| :------- | :--------------: | --------------------------------------------: |
+| —        | **You are here** | [Architecture →](docs/architecture/README.md) |
+
+</div>
+
+---
+
+<div align="center">
+
+**[⬆ Back to Top](#-azure-logic-apps-monitoring-solution)**
 
 Made with ❤️ by [Evilazaro](https://github.com/Evilazaro)
+
+_Last Updated: January 2026_
 
 </div>
