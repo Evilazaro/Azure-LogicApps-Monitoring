@@ -22,15 +22,15 @@ The script acts as a wrapper around `preprovision` in ValidateOnly mode, providi
 
 ## � Table of Contents
 
-- [Script Metadata](#-script-metadata)
-- [Prerequisites](#-prerequisites)
-- [Parameters](#-parameters)
-- [Execution Flow](#-execution-flow)
-- [Usage Examples](#-usage-examples)
-- [Exit Codes](#️-exit-codes)
-- [Troubleshooting](#️-troubleshooting)
-- [Related Scripts](#-related-scripts)
-- [Version History](#-version-history)
+- [📌 Script Metadata](#-script-metadata)
+- [🔧 Prerequisites](#-prerequisites)
+- [📥 Parameters](#-parameters)
+- [🔄 Execution Flow](#-execution-flow)
+- [📝 Usage Examples](#-usage-examples)
+- [⚠️ Exit Codes](#%EF%B8%8F-exit-codes)
+- [🛠️ Troubleshooting](#%EF%B8%8F-troubleshooting)
+- [📚 Related Scripts](#-related-scripts)
+- [📜 Version History](#-version-history)
 
 [⬅️ Back to Index](./index.md)
 

@@ -18,16 +18,16 @@ The script performs the following operations:
 
 ## � Table of Contents
 
-- [Script Metadata](#-script-metadata)
-- [Prerequisites](#-prerequisites)
-- [Parameters](#-parameters)
-- [Environment Variables](#-environment-variables)
-- [Execution Flow](#-execution-flow)
-- [Usage Examples](#-usage-examples)
-- [Exit Codes](#️-exit-codes)
-- [Output Statistics](#-output-statistics)
-- [Related Scripts](#-related-scripts)
-- [Version History](#-version-history)
+- [📌 Script Metadata](#-script-metadata)
+- [🔧 Prerequisites](#-prerequisites)
+- [📥 Parameters](#-parameters)
+- [🌐 Environment Variables](#-environment-variables)
+- [🔄 Execution Flow](#-execution-flow)
+- [📝 Usage Examples](#-usage-examples)
+- [⚠️ Exit Codes](#%EF%B8%8F-exit-codes)
+- [📊 Output Statistics](#-output-statistics)
+- [📚 Related Scripts](#-related-scripts)
+- [📜 Version History](#-version-history)
 
 [⬅️ Back to Index](./index.md)
 

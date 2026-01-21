@@ -20,15 +20,15 @@ The script performs the following operations:
 
 ## � Table of Contents
 
-- [Script Metadata](#-script-metadata)
-- [Prerequisites](#-prerequisites)
-- [Parameters](#-parameters)
-- [Product Catalog](#-product-catalog)
-- [Delivery Addresses](#-delivery-addresses)
-- [Execution Flow](#-execution-flow)
-- [Usage Examples](#-usage-examples)
-- [Output Format](#-output-format)
-- [Exit Codes](#️-exit-codes)
+- [📌 Script Metadata](#-script-metadata)
+- [🔧 Prerequisites](#-prerequisites)
+- [📥 Parameters](#-parameters)
+- [🛒 Product Catalog](#-product-catalog)
+- [🏠 Delivery Addresses](#-delivery-addresses)
+- [🔄 Execution Flow](#-execution-flow)
+- [📝 Usage Examples](#-usage-examples)
+- [📄 Output Format](#-output-format)
+- [⚠️ Exit Codes](#%EF%B8%8F-exit-codes)
 
 [⬅️ Back to Index](./index.md)
 

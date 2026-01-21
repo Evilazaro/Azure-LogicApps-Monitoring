@@ -18,17 +18,17 @@ The script performs the following operations:
 
 ## � Table of Contents
 
-- [Script Metadata](#-script-metadata)
-- [Prerequisites](#-prerequisites)
-- [Parameters](#-parameters)
-- [Environment Variables](#-environment-variables)
-- [Excluded Files](#-excluded-files)
-- [Execution Flow](#-execution-flow)
-- [Usage Examples](#-usage-examples)
-- [Exit Codes](#️-exit-codes)
-- [Placeholder Resolution](#-placeholder-resolution)
-- [Related Scripts](#-related-scripts)
-- [Version History](#-version-history)
+- [📌 Script Metadata](#-script-metadata)
+- [🔧 Prerequisites](#-prerequisites)
+- [📥 Parameters](#-parameters)
+- [🌐 Environment Variables](#-environment-variables)
+- [📁 Excluded Files](#-excluded-files)
+- [🔄 Execution Flow](#-execution-flow)
+- [📝 Usage Examples](#-usage-examples)
+- [⚠️ Exit Codes](#%EF%B8%8F-exit-codes)
+- [🔧 Placeholder Resolution](#-placeholder-resolution)
+- [📚 Related Scripts](#-related-scripts)
+- [📜 Version History](#-version-history)
 
 [⬅️ Back to Index](./index.md)
 
@@ -40,8 +40,8 @@ The script performs the following operations:
 | ----------------- | --------------------- | -------------------- |
 | **File Name**     | `deploy-workflow.ps1` | `deploy-workflow.sh` |
 | **Version**       | 2.0.1                 | 2.0.1                |
-| **Last Modified** | N/A                   | N/A                  |
-| **Author**        | N/A                   | N/A                  |
+| **Last Modified** | —                     | —                    |
+| **Author**        | Azure Developer CLI   | Azure Developer CLI  |
 
 ---
 

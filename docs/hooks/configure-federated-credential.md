@@ -20,15 +20,15 @@ The script performs the following operations:
 
 ## � Table of Contents
 
-- [Script Metadata](#-script-metadata)
-- [Prerequisites](#-prerequisites)
-- [Parameters](#-parameters)
-- [OIDC Configuration](#-oidc-configuration)
-- [Execution Flow](#-execution-flow)
-- [Usage Examples](#-usage-examples)
-- [Exit Codes](#️-exit-codes)
-- [Security Considerations](#-security-considerations)
-- [Related Documentation](#-related-documentation)
+- [📌 Script Metadata](#-script-metadata)
+- [🔧 Prerequisites](#-prerequisites)
+- [📥 Parameters](#-parameters)
+- [🔑 OIDC Configuration](#-oidc-configuration)
+- [🔄 Execution Flow](#-execution-flow)
+- [📝 Usage Examples](#-usage-examples)
+- [⚠️ Exit Codes](#%EF%B8%8F-exit-codes)
+- [🔒 Security Considerations](#-security-considerations)
+- [📚 Related Documentation](#-related-documentation)
 
 [⬅️ Back to Index](./index.md)
 
