@@ -18,9 +18,9 @@ tags: [azd, secrets, cleanup, dotnet, configuration]
 <details>
 <summary>📍 Navigation</summary>
 
-| Previous                                            |         Index          |                                    Next |
-| :-------------------------------------------------- | :--------------------: | --------------------------------------: |
-| [check-dev-workstation](./check-dev-workstation.md) | [🪝 Hooks](./index.md) | [Generate-Orders](./Generate-Orders.md) |
+| Previous                                            |          Index          |                                    Next |
+| :-------------------------------------------------- | :---------------------: | --------------------------------------: |
+| [check-dev-workstation](./check-dev-workstation.md) | [🪝 Hooks](./README.md) | [Generate-Orders](./Generate-Orders.md) |
 
 </details>
 
@@ -55,7 +55,7 @@ The script performs the following operations:
 - [📚 Related Scripts](#-related-scripts)
 - [📜 Version History](#-version-history)
 
-[⬅️ Back to Index](./index.md)
+[⬅️ Back to Index](./README.md)
 
 > [!TIP]
 > Use `--dry-run` to preview which secrets would be cleared without making any changes.

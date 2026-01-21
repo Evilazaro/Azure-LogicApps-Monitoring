@@ -18,9 +18,9 @@ tags: [azure-ad, oidc, github-actions, authentication, security]
 <details>
 <summary>📍 Navigation</summary>
 
-| Previous                                |         Index          |                                                            Next |
-| :-------------------------------------- | :--------------------: | --------------------------------------------------------------: |
-| [deploy-workflow](./deploy-workflow.md) | [🪝 Hooks](./index.md) | [sql-managed-identity-config](./sql-managed-identity-config.md) |
+| Previous                                |          Index          |                                                            Next |
+| :-------------------------------------- | :---------------------: | --------------------------------------------------------------: |
+| [deploy-workflow](./deploy-workflow.md) | [🪝 Hooks](./README.md) | [sql-managed-identity-config](./sql-managed-identity-config.md) |
 
 </details>
 
@@ -54,7 +54,7 @@ The script performs the following operations:
 - [🔒 Security Considerations](#-security-considerations)
 - [📚 Related Documentation](#-related-documentation)
 
-[⬅️ Back to Index](./index.md)
+[⬅️ Back to Index](./README.md)
 
 > [!IMPORTANT]
 > Federated credentials enable passwordless authentication—no secrets need to be stored in GitHub.

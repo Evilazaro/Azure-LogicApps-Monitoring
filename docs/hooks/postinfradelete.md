@@ -18,9 +18,9 @@ tags: [azd, hooks, cleanup, logic-apps, soft-delete]
 <details>
 <summary>📍 Navigation</summary>
 
-| Previous                            |         Index          |                                                Next |
-| :---------------------------------- | :--------------------: | --------------------------------------------------: |
-| [postprovision](./postprovision.md) | [🪝 Hooks](./index.md) | [check-dev-workstation](./check-dev-workstation.md) |
+| Previous                            |          Index          |                                                Next |
+| :---------------------------------- | :---------------------: | --------------------------------------------------: |
+| [postprovision](./postprovision.md) | [🪝 Hooks](./README.md) | [check-dev-workstation](./check-dev-workstation.md) |
 
 </details>
 
@@ -54,7 +54,7 @@ The script performs the following operations:
 - [📚 Related Scripts](#-related-scripts)
 - [📜 Version History](#-version-history)
 
-[⬅️ Back to Index](./index.md)
+[⬅️ Back to Index](./README.md)
 
 > [!WARNING]
 > Purging soft-deleted Logic Apps is irreversible. Use `-WhatIf` to preview changes before execution.
@@ -356,4 +356,4 @@ DELETE https://management.azure.com/subscriptions/{subscriptionId}/providers/Mic
 
 ## </div>
 
-[⬅️ Back to Index](./index.md)
+[⬅️ Back to Index](./README.md)

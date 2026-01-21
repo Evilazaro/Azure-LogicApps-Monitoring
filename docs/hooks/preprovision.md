@@ -18,9 +18,9 @@ tags: [azd, hooks, preprovision, validation, prerequisites]
 <details>
 <summary>📍 Navigation</summary>
 
-| Previous            |         Index          |                                Next |
-| :------------------ | :--------------------: | ----------------------------------: |
-| [index](./index.md) | [🪝 Hooks](./index.md) | [postprovision](./postprovision.md) |
+| Previous |          Index          |                                Next |
+| :------- | :---------------------: | ----------------------------------: |
+| —        | [🪝 Hooks](./README.md) | [postprovision](./postprovision.md) |
 
 </details>
 
@@ -54,7 +54,7 @@ The script performs the following operations:
 - [📚 Related Scripts](#-related-scripts)
 - [📜 Version History](#-version-history)
 
-[⬅️ Back to Index](./index.md)
+[⬅️ Back to Index](./README.md)
 
 > [!TIP]
 > Use the `-ValidateOnly` flag to check prerequisites without clearing secrets.
@@ -357,6 +357,6 @@ flowchart TD
 
 <div align="center">
 
-**[⬆️ Back to Top](#-preprovision)** · **[← index](./index.md)** · **[postprovision →](./postprovision.md)**
+**[⬆️ Back to Top](#-preprovision)** · **[🪝 Hooks](./README.md)** · **[postprovision →](./postprovision.md)**
 
 </div>

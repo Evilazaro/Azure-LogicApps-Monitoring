@@ -18,9 +18,9 @@ tags: [azd, development, validation, prerequisites, workstation]
 <details>
 <summary>📍 Navigation</summary>
 
-| Previous                                |         Index          |                                Next |
-| :-------------------------------------- | :--------------------: | ----------------------------------: |
-| [postinfradelete](./postinfradelete.md) | [🪝 Hooks](./index.md) | [clean-secrets](./clean-secrets.md) |
+| Previous                                |          Index          |                                Next |
+| :-------------------------------------- | :---------------------: | ----------------------------------: |
+| [postinfradelete](./postinfradelete.md) | [🪝 Hooks](./README.md) | [clean-secrets](./clean-secrets.md) |
 
 </details>
 
@@ -56,7 +56,7 @@ The script acts as a wrapper around `preprovision` in ValidateOnly mode, providi
 - [📚 Related Scripts](#-related-scripts)
 - [📜 Version History](#-version-history)
 
-[⬅️ Back to Index](./index.md)
+[⬅️ Back to Index](./README.md)
 
 > [!TIP]
 > Run this script when onboarding to the project or after system updates to ensure your environment is properly configured.

@@ -18,9 +18,9 @@ tags: [azure-sql, managed-identity, entra-id, authentication, security]
 <details>
 <summary>📍 Navigation</summary>
 
-| Previous                                                              |         Index          | Next |
-| :-------------------------------------------------------------------- | :--------------------: | ---: |
-| [configure-federated-credential](./configure-federated-credential.md) | [🪝 Hooks](./index.md) |    — |
+| Previous                                                              |          Index          | Next |
+| :-------------------------------------------------------------------- | :---------------------: | ---: |
+| [configure-federated-credential](./configure-federated-credential.md) | [🪝 Hooks](./README.md) |    — |
 
 </details>
 
@@ -59,7 +59,7 @@ The script is **idempotent** and can be safely re-run. It will skip existing use
 - [📚 Related Scripts](#-related-scripts)
 - [📜 Version History](#-version-history)
 
-[⬅️ Back to Index](./index.md)
+[⬅️ Back to Index](./README.md)
 
 > [!IMPORTANT]
 > This script requires Microsoft Entra ID Administrator privileges on the SQL Server. The script is idempotent and safe to re-run.
@@ -464,8 +464,8 @@ The script returns a `PSCustomObject` with type `SqlManagedIdentityConfiguration
 
 <div align="center">
 
-**[⬆️ Back to Top](#-sql-managed-identity-config)** · **[← configure-federated-credential](./configure-federated-credential.md)** · **[🪝 Hooks Index](./index.md)**
+**[⬆️ Back to Top](#-sql-managed-identity-config)** · **[← configure-federated-credential](./configure-federated-credential.md)** · **[🪝 Hooks Index](./README.md)**
 
 ## </div>
 
-[⬅️ Back to Index](./index.md)
+[⬅️ Back to Index](./README.md)

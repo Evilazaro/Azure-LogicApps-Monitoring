@@ -18,9 +18,9 @@ tags: [azd, hooks, postprovision, secrets, configuration]
 <details>
 <summary>📍 Navigation</summary>
 
-| Previous                          |         Index          |                                    Next |
-| :-------------------------------- | :--------------------: | --------------------------------------: |
-| [preprovision](./preprovision.md) | [🪝 Hooks](./index.md) | [postinfradelete](./postinfradelete.md) |
+| Previous                          |          Index          |                                    Next |
+| :-------------------------------- | :---------------------: | --------------------------------------: |
+| [preprovision](./preprovision.md) | [🪝 Hooks](./README.md) | [postinfradelete](./postinfradelete.md) |
 
 </details>
 
@@ -53,7 +53,7 @@ The script performs the following operations:
 - [📚 Related Scripts](#-related-scripts)
 - [📜 Version History](#-version-history)
 
-[⬅️ Back to Index](./index.md)
+[⬅️ Back to Index](./README.md)
 
 > [!TIP]
 > Run with `--verbose` flag to see detailed configuration output.
@@ -337,4 +337,4 @@ The script tracks and reports:
 
 ## </div>
 
-[⬅️ Back to Index](./index.md)
+[⬅️ Back to Index](./README.md)

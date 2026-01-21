@@ -18,9 +18,9 @@ tags: [testing, data-generation, orders, json, sample-data]
 <details>
 <summary>📍 Navigation</summary>
 
-| Previous                            |         Index          |                                    Next |
-| :---------------------------------- | :--------------------: | --------------------------------------: |
-| [clean-secrets](./clean-secrets.md) | [🪝 Hooks](./index.md) | [deploy-workflow](./deploy-workflow.md) |
+| Previous                            |          Index          |                                    Next |
+| :---------------------------------- | :---------------------: | --------------------------------------: |
+| [clean-secrets](./clean-secrets.md) | [🪝 Hooks](./README.md) | [deploy-workflow](./deploy-workflow.md) |
 
 </details>
 
@@ -54,7 +54,7 @@ The script performs the following operations:
 - [📄 Output Format](#-output-format)
 - [⚠️ Exit Codes](#%EF%B8%8F-exit-codes)
 
-[⬅️ Back to Index](./index.md)
+[⬅️ Back to Index](./README.md)
 
 > [!TIP]
 > Use `--dry-run` to preview the configuration without generating orders.

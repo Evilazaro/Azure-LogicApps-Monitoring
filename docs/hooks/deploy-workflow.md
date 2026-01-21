@@ -18,9 +18,9 @@ tags: [azd, deployment, logic-apps, workflows, azure]
 <details>
 <summary>📍 Navigation</summary>
 
-| Previous                                |         Index          |                                                                  Next |
-| :-------------------------------------- | :--------------------: | --------------------------------------------------------------------: |
-| [Generate-Orders](./Generate-Orders.md) | [🪝 Hooks](./index.md) | [configure-federated-credential](./configure-federated-credential.md) |
+| Previous                                |          Index          |                                                                  Next |
+| :-------------------------------------- | :---------------------: | --------------------------------------------------------------------: |
+| [Generate-Orders](./Generate-Orders.md) | [🪝 Hooks](./README.md) | [configure-federated-credential](./configure-federated-credential.md) |
 
 </details>
 
@@ -54,7 +54,7 @@ The script performs the following operations:
 - [📚 Related Scripts](#-related-scripts)
 - [📜 Version History](#-version-history)
 
-[⬅️ Back to Index](./index.md)
+[⬅️ Back to Index](./README.md)
 
 > [!TIP]
 > Environment variables are automatically set by `azd` during deployment hooks—no manual configuration needed.
