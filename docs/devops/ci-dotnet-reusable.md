@@ -308,7 +308,7 @@ flowchart LR
 ```
 
 | Property        | Value                            |
-| --------------- | -------------------------------- |
+| :-------------- | :------------------------------- |
 | **Runner**      | Configurable via `runs-on` input |
 | **Timeout**     | 45 minutes                       |
 | **Depends On**  | `build`                          |
@@ -330,7 +330,7 @@ config:
 #### Security Checks Performed
 
 | Category                | Description                           |
-| ----------------------- | ------------------------------------- |
+| :---------------------- | :------------------------------------ |
 | 💉 Injection Attacks    | SQL injection, XSS, command injection |
 | 🔐 Cryptographic Issues | Insecure algorithms, weak keys        |
 | 📤 Data Exposure        | Sensitive data leaks, logging secrets |
@@ -343,7 +343,7 @@ config:
 Aggregates results from all CI jobs into a comprehensive summary.
 
 | Property       | Value                                |
-| -------------- | ------------------------------------ |
+| :------------- | :----------------------------------- |
 | **Runner**     | Configurable via `runs-on` input     |
 | **Timeout**    | 5 minutes                            |
 | **Depends On** | `build`, `test`, `analyze`, `codeql` |
@@ -362,13 +362,13 @@ Aggregates results from all CI jobs into a comprehensive summary.
 Provides visual failure indication and detailed failure report.
 
 | Property       | Value                                |
-| -------------- | ------------------------------------ |
+| :------------- | :----------------------------------- |
 | **Runner**     | Configurable via `runs-on` input     |
 | **Timeout**    | 5 minutes                            |
 | **Depends On** | `build`, `test`, `analyze`, `codeql` |
 | **Condition**  | `failure()`                          |
 
-## Required Permissions
+### Required Permissions
 
 ```yaml
 permissions:
@@ -378,24 +378,30 @@ permissions:
   security-events: write # Upload CodeQL SARIF results to Security tab
 ```
 
-## Environment Variables
+---
+
+## 📦 Artifacts
+
+### Environment Variables
 
 | Variable                            | Value  | Description             |
-| ----------------------------------- | ------ | ----------------------- |
+| :---------------------------------- | :----- | :---------------------- |
 | `DOTNET_SKIP_FIRST_TIME_EXPERIENCE` | `true` | Skip welcome experience |
 | `DOTNET_NOLOGO`                     | `true` | Suppress .NET logo      |
 | `DOTNET_CLI_TELEMETRY_OPTOUT`       | `true` | Disable telemetry       |
 
-## Artifacts Generated
+### Artifacts Generated
 
 | Artifact Pattern       | Contents                             | Platform-Specific |
-| ---------------------- | ------------------------------------ | ----------------- |
+| :--------------------- | :----------------------------------- | :---------------- |
 | `build-artifacts-{os}` | Compiled binaries                    | Yes               |
 | `test-results-{os}`    | Test results (.trx files)            | Yes               |
 | `code-coverage-{os}`   | Cobertura XML coverage reports       | Yes               |
 | `codeql-sarif-results` | Security scan results (SARIF format) | No                |
 
-## Usage Examples
+---
+
+## 💡 Usage Examples
 
 ### Basic Usage
 
@@ -439,10 +445,10 @@ jobs:
         run: echo "Deploying version ${{ needs.ci.outputs.build-version }}"
 ```
 
-## Best Practices Applied
+### Best Practices Applied
 
 | Practice                  | Implementation                             |
-| ------------------------- | ------------------------------------------ |
+| :------------------------ | :----------------------------------------- |
 | ✅ Pinned Action Versions | All actions use SHA-pinned versions        |
 | ✅ Cross-Platform Testing | Matrix strategy across 3 OS platforms      |
 | ✅ Security Scanning      | CodeQL runs on every execution             |
@@ -452,12 +458,14 @@ jobs:
 | ✅ Detailed Summaries     | Rich markdown summaries for each job       |
 | ✅ Test Result Publishing | GitHub check runs via dorny/test-reporter  |
 
-## Troubleshooting
+---
+
+## 🔧 Troubleshooting
 
 ### Common Issues
 
 | Issue                      | Cause                             | Solution                                    |
-| -------------------------- | --------------------------------- | ------------------------------------------- |
+| :------------------------- | :-------------------------------- | :------------------------------------------ |
 | Format check fails         | Code violates .editorconfig rules | Run `dotnet format` locally                 |
 | Tests fail on Windows only | Path separator issues             | Use `Path.Combine()` or `/` in paths        |
 | CodeQL takes too long      | Large codebase                    | 45-minute timeout; consider query filtering |
@@ -473,9 +481,15 @@ dotnet test app.sln --configuration Release --collect:"XPlat Code Coverage"
 dotnet format app.sln --verify-no-changes
 ```
 
-## Related Documentation
+---
+
+## 📚 Related Documentation
 
 - [CI Workflow](ci-dotnet.md) - Entry point workflow that calls this reusable workflow
 - [CD - Azure Deployment](azure-dev.md) - Deployment workflow
 - [GitHub Reusable Workflows](https://docs.github.com/en/actions/using-workflows/reusing-workflows)
 - [CodeQL Documentation](https://codeql.github.com/docs/)
+
+---
+
+[⬆️ Back to Top](#-ci---net-reusable-workflow)

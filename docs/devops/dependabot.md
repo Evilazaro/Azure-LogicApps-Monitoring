@@ -1,6 +1,25 @@
-# Dependabot Configuration
+# 🤖 Dependabot Configuration
 
-## Overview
+> Automated dependency updates for security patches and version upgrades across NuGet packages and GitHub Actions.
+
+---
+
+## 📑 Table of Contents
+
+- [🤖 Dependabot Configuration](#-dependabot-configuration)
+  - [📑 Table of Contents](#-table-of-contents)
+  - [📖 Overview](#-overview)
+  - [📊 Configuration Visualization](#-configuration-visualization)
+  - [⚙️ Configuration Details](#️-configuration-details)
+  - [📦 Package Groups](#-package-groups)
+  - [🔄 Pull Request Workflow](#-pull-request-workflow)
+  - [💡 Best Practices](#-best-practices)
+  - [🔧 Troubleshooting](#-troubleshooting)
+  - [📚 Related Documentation](#-related-documentation)
+
+---
+
+## 📖 Overview
 
 The **Dependabot Configuration** (`dependabot.yml`) automates dependency updates for the repository, ensuring security patches and version upgrades are applied in a timely manner.
 
@@ -9,7 +28,9 @@ Dependabot monitors two package ecosystems:
 - **NuGet** (.NET packages)
 - **GitHub Actions** (workflow action versions)
 
-## Configuration Visualization
+---
+
+## 📊 Configuration Visualization
 
 ```mermaid
 flowchart TD
@@ -72,12 +93,14 @@ flowchart TD
     class N_PR,A_PR pr
 ```
 
-## Configuration Details
+---
+
+## ⚙️ Configuration Details
 
 ### Schedule
 
 | Property | Value   | Description                        |
-| -------- | ------- | ---------------------------------- |
+| :------- | :------ | :--------------------------------- |
 | Interval | Weekly  | Checks for updates once per week   |
 | Day      | Monday  | Runs at the start of the work week |
 | Time     | 06:00   | Early morning (before work hours)  |
@@ -101,7 +124,7 @@ open-pull-requests-limit: 10
 #### Labels Applied
 
 | Label        | Purpose                           |
-| ------------ | --------------------------------- |
+| :----------- | :-------------------------------- |
 | dependencies | Identifies dependency updates     |
 | nuget        | Identifies NuGet-specific updates |
 | automated    | Indicates automated PR creation   |
@@ -112,12 +135,16 @@ open-pull-requests-limit: 10
 deps(nuget): Update <package-name> from X.Y.Z to A.B.C
 ```
 
-#### Package Groups
+---
+
+## 📦 Package Groups
 
 Dependabot groups related packages together to reduce PR noise:
 
+### NuGet Package Groups
+
 | Group     | Patterns                                                           | Purpose                 |
-| --------- | ------------------------------------------------------------------ | ----------------------- |
+| :-------- | :----------------------------------------------------------------- | :---------------------- |
 | microsoft | `Microsoft.*`, `System.*`, `Azure.*`                               | Core Microsoft packages |
 | testing   | `xunit*`, `Moq*`, `FluentAssertions*`, `coverlet*`, `NSubstitute*` | Testing frameworks      |
 
@@ -139,7 +166,7 @@ open-pull-requests-limit: 5
 #### Labels Applied
 
 | Label          | Purpose                           |
-| -------------- | --------------------------------- |
+| :------------- | :-------------------------------- |
 | dependencies   | Identifies dependency updates     |
 | github-actions | Identifies GitHub Actions updates |
 | automated      | Indicates automated PR creation   |
@@ -150,15 +177,15 @@ open-pull-requests-limit: 5
 ci(deps): Update <action-name> from vX to vY
 ```
 
-#### Package Groups
+#### GitHub Actions Groups
 
 | Group   | Patterns | Purpose                            |
-| ------- | -------- | ---------------------------------- |
+| :------ | :------- | :--------------------------------- |
 | actions | `*`      | Groups all action updates together |
 
-## Security Importance
+### Security Importance
 
-### Why Actions Updates Matter
+#### Why Actions Updates Matter
 
 GitHub Actions updates are **critical for security**:
 
@@ -167,17 +194,9 @@ GitHub Actions updates are **critical for security**:
 3. **Vulnerability Patches**: Action maintainers release security fixes regularly
 4. **Breaking Changes**: Keeping updated prevents accumulating breaking changes
 
-### Best Practices Applied
+---
 
-| Practice                    | Implementation                        |
-| --------------------------- | ------------------------------------- |
-| ✅ Weekly Checks            | Regular cadence for timely updates    |
-| ✅ Grouped Updates          | Reduces PR noise for related packages |
-| ✅ PR Limits                | Prevents overwhelming reviewers       |
-| ✅ Semantic Commit Messages | Clear, parseable commit history       |
-| ✅ Automated Labels         | Easy filtering and tracking           |
-
-## Pull Request Workflow
+## 🔄 Pull Request Workflow
 
 ```mermaid
 flowchart LR
@@ -221,9 +240,9 @@ flowchart LR
     class MERGED merge
 ```
 
-## Managing Dependabot PRs
+### Managing Dependabot PRs
 
-### Viewing Open PRs
+#### Viewing Open PRs
 
 ```bash
 # List all Dependabot PRs
@@ -236,12 +255,12 @@ gh pr list --author "dependabot[bot]" --label "nuget"
 gh pr list --author "dependabot[bot]" --label "github-actions"
 ```
 
-### Interacting with Dependabot
+#### Interacting with Dependabot
 
 You can comment on Dependabot PRs to control behavior:
 
 | Command                        | Action                                   |
-| ------------------------------ | ---------------------------------------- |
+| :----------------------------- | :--------------------------------------- |
 | `@dependabot rebase`           | Rebase the PR against the base branch    |
 | `@dependabot recreate`         | Recreate the PR from scratch             |
 | `@dependabot merge`            | Merge the PR after CI passes             |
