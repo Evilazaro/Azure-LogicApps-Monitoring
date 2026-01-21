@@ -53,56 +53,74 @@ The **Azure Logic Apps Monitoring Solution** is a cloud-native reference archite
 ## 🗺️ High-Level Architecture
 
 ```mermaid
+---
+title: High-Level Architecture
+---
 flowchart TB
+    %% ===== PRESENTATION LAYER =====
     subgraph Presentation["🖥️ Presentation Layer"]
         WebApp["🌐 eShop.Web.App<br/>Blazor Server"]
     end
 
+    %% ===== APPLICATION LAYER =====
     subgraph Application["⚙️ Application Layer"]
         API["📡 eShop.Orders.API<br/>ASP.NET Core"]
         Workflow["🔄 OrdersManagement<br/>Logic Apps Standard"]
     end
 
+    %% ===== PLATFORM LAYER =====
     subgraph Platform["🏗️ Platform Layer"]
         Aspire["🎯 app.AppHost<br/>.NET Aspire"]
         Defaults["📦 app.ServiceDefaults<br/>Cross-cutting Concerns"]
     end
 
+    %% ===== DATA LAYER =====
     subgraph Data["💾 Data Layer"]
         SQL[("🗄️ Azure SQL<br/>OrderDb")]
         SB["📨 Service Bus<br/>ordersplaced topic"]
         Storage["📁 Azure Storage<br/>Workflow State"]
     end
 
+    %% ===== OBSERVABILITY LAYER =====
     subgraph Observability["📊 Observability Layer"]
         AppInsights["🔍 Application Insights"]
         LogAnalytics["📋 Log Analytics"]
     end
 
+    %% ===== CONNECTIONS =====
     WebApp -->|"HTTP/REST"| API
     API -->|"EF Core"| SQL
     API -->|"AMQP"| SB
     SB -->|"Trigger"| Workflow
     Workflow -->|"HTTP"| API
-    Workflow --> Storage
+    Workflow -->|"State"| Storage
 
     Aspire -.->|"Orchestrates"| WebApp & API
     Defaults -.->|"Configures"| WebApp & API
 
     WebApp & API & Workflow -.->|"OTLP"| AppInsights
-    AppInsights --> LogAnalytics
+    AppInsights -->|"Ingest"| LogAnalytics
 
-    classDef presentation fill:#e3f2fd,stroke:#1565c0,stroke-width:2px
-    classDef application fill:#e8f5e9,stroke:#2e7d32,stroke-width:2px
-    classDef platform fill:#fff3e0,stroke:#ef6c00,stroke-width:2px
-    classDef data fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px
-    classDef observability fill:#fce4ec,stroke:#c2185b,stroke-width:2px
+    %% ===== CLASS DEFINITIONS =====
+    classDef primary fill:#4F46E5,stroke:#3730A3,color:#FFFFFF,stroke-width:2px
+    classDef secondary fill:#10B981,stroke:#059669,color:#FFFFFF,stroke-width:2px
+    classDef datastore fill:#F59E0B,stroke:#D97706,color:#000000,stroke-width:2px
+    classDef external fill:#6B7280,stroke:#4B5563,color:#FFFFFF,stroke-width:2px,stroke-dasharray:5 5
+    classDef trigger fill:#818CF8,stroke:#4F46E5,color:#FFFFFF,stroke-width:2px
 
-    class WebApp presentation
-    class API,Workflow application
-    class Aspire,Defaults platform
-    class SQL,SB,Storage data
-    class AppInsights,LogAnalytics observability
+    %% ===== CLASS ASSIGNMENTS =====
+    class WebApp primary
+    class API,Workflow secondary
+    class Aspire,Defaults trigger
+    class SQL,SB,Storage datastore
+    class AppInsights,LogAnalytics external
+
+    %% ===== SUBGRAPH STYLES =====
+    style Presentation fill:#EEF2FF,stroke:#4F46E5,stroke-width:2px
+    style Application fill:#ECFDF5,stroke:#10B981,stroke-width:2px
+    style Platform fill:#E0E7FF,stroke:#4F46E5,stroke-width:2px
+    style Data fill:#FEF3C7,stroke:#F59E0B,stroke-width:2px
+    style Observability fill:#F3F4F6,stroke:#6B7280,stroke-width:2px
 ```
 
 ---
