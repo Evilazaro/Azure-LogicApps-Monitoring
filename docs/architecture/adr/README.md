@@ -1,14 +1,27 @@
-# Architecture Decision Records (ADRs)
+# 📝 Architecture Decision Records (ADRs)
 
 ← [Deployment Architecture](../07-deployment-architecture.md) | [Index](../README.md)
 
 ---
 
-## Overview
+## 📑 Table of Contents
+
+- [📊 Overview](#-overview)
+- [🚦 ADR Status Legend](#-adr-status-legend)
+- [📇 ADR Index](#-adr-index)
+- [📝 ADR Template](#-adr-template)
+- [📂 Decision Categories](#-decision-categories)
+- [🔗 Related Documents](#-related-documents)
+
+---
+
+## 📊 Overview
 
 This directory contains Architecture Decision Records (ADRs) documenting significant architectural choices made for the Azure Logic Apps Monitoring Solution. ADRs capture the **context**, **decision**, and **consequences** of each choice to preserve institutional knowledge.
 
-## ADR Status Legend
+<div align="right"><a href="#-table-of-contents">⬆️ Back to top</a></div>
+
+## 🚦 ADR Status Legend
 
 | Status            | Description                                |
 | ----------------- | ------------------------------------------ |
@@ -19,7 +32,9 @@ This directory contains Architecture Decision Records (ADRs) documenting signifi
 
 ---
 
-## ADR Index
+<div align="right"><a href="#-table-of-contents">⬆️ Back to top</a></div>
+
+## 📇 ADR Index
 
 | #                                        | Title                     | Status      | Date    | Summary                                             |
 | ---------------------------------------- | ------------------------- | ----------- | ------- | --------------------------------------------------- |
@@ -29,7 +44,9 @@ This directory contains Architecture Decision Records (ADRs) documenting signifi
 
 ---
 
-## ADR Template
+<div align="right"><a href="#-table-of-contents">⬆️ Back to top</a></div>
+
+## 📝 ADR Template
 
 When creating new ADRs, use the following template:
 
@@ -79,23 +96,27 @@ When creating new ADRs, use the following template:
 
 ---
 
-## Decision Categories
+<div align="right"><a href="#-table-of-contents">⬆️ Back to top</a></div>
 
-### Infrastructure Decisions
+## 📂 Decision Categories
+
+### 🏗️ Infrastructure Decisions
 
 - [ADR-001](ADR-001-aspire-orchestration.md) - Orchestration approach
 
-### Integration Decisions
+### 🔗 Integration Decisions
 
 - [ADR-002](ADR-002-service-bus-messaging.md) - Messaging platform
 
-### Operations Decisions
+### ⚙️ Operations Decisions
 
 - [ADR-003](ADR-003-observability-strategy.md) - Monitoring strategy
 
 ---
 
-## Related Documents
+<div align="right"><a href="#-table-of-contents">⬆️ Back to top</a></div>
+
+## 🔗 Related Documents
 
 - [Technology Architecture](../04-technology-architecture.md) - Platform choices
 - [Application Architecture](../03-application-architecture.md) - Service design

@@ -303,9 +303,11 @@ sequenceDiagram
 | GitHub Variables     | `AZURE_CLIENT_ID`, `AZURE_TENANT_ID`, `AZURE_SUBSCRIPTION_ID` |
 | GitHub Environment   | `dev` environment with protection rules                       |
 
-## Security Considerations
+<div align="right"><a href="#-table-of-contents">⬆️ Back to top</a></div>
 
-### Pipeline Security
+## 🛡️ Security Considerations
+
+### 🔐 Pipeline Security
 
 | Measure                   | Implementation                              |
 | ------------------------- | ------------------------------------------- |
@@ -315,7 +317,7 @@ sequenceDiagram
 | Dependency Updates        | Dependabot automated PRs                    |
 | Least Privilege           | Minimal permissions in workflow             |
 
-### Runtime Security
+### 🛡️ Runtime Security
 
 | Measure             | Implementation                         |
 | ------------------- | -------------------------------------- |
@@ -324,15 +326,17 @@ sequenceDiagram
 | SQL Authentication  | Entra ID (Azure AD) only               |
 | Container Isolation | Azure Container Apps environment       |
 
-## Deployment Environments
+<div align="right"><a href="#-table-of-contents">⬆️ Back to top</a></div>
 
-### Environment Configuration
+## 🌍 Deployment Environments
+
+### ⚙️ Environment Configuration
 
 | Environment | Trigger                   | Protection Rules   |
 | ----------- | ------------------------- | ------------------ |
 | `dev`       | Push to configured branch | None (auto-deploy) |
 
-### Environment Variables
+### 📋 Environment Variables
 
 | Variable                  | Description                   |
 | ------------------------- | ----------------------------- |
@@ -341,25 +345,29 @@ sequenceDiagram
 | `DEPLOYER_PRINCIPAL_TYPE` | Principal type for deployment |
 | `DEPLOY_HEALTH_MODEL`     | Health model configuration    |
 
-## Monitoring and Observability
+<div align="right"><a href="#-table-of-contents">⬆️ Back to top</a></div>
 
-### Pipeline Monitoring
+## 📊 Monitoring and Observability
+
+### 👁️ Pipeline Monitoring
 
 - **GitHub Actions UI**: Real-time workflow execution status
 - **Workflow Summaries**: Detailed Markdown reports per job
 - **Artifacts**: Build outputs, test results, coverage reports
 - **Security Tab**: CodeQL findings and SARIF results
 
-### Application Monitoring
+### 📱 Application Monitoring
 
 - **Application Insights**: Distributed tracing and metrics
 - **Log Analytics**: Centralized log aggregation
 - **Azure Monitor**: Resource health and alerts
 - **Container Apps Metrics**: Container-level telemetry
 
-## Rollback Procedures
+<div align="right"><a href="#-table-of-contents">⬆️ Back to top</a></div>
 
-### Application Rollback
+## ↩️ Rollback Procedures
+
+### 📦 Application Rollback
 
 ```bash
 # Option 1: Re-deploy previous commit
@@ -370,7 +378,7 @@ git checkout <previous-commit>
 azd deploy
 ```
 
-### Infrastructure Rollback
+### 🏗️ Infrastructure Rollback
 
 ```bash
 # Azure resources maintain deployment history
@@ -384,7 +392,9 @@ az deployment group create --template-file infra/main.bicep \
   --parameters @infra/main.parameters.json
 ```
 
-## Related Documentation
+<div align="right"><a href="#-table-of-contents">⬆️ Back to top</a></div>
+
+## 🔗 Related Documentation
 
 - [Architecture Overview](README.md) - Documentation navigation
 - [Security Architecture](06-security-architecture.md) - OIDC and identity details
