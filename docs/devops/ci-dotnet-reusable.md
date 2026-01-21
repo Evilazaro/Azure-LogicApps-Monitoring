@@ -61,88 +61,111 @@ This reusable workflow provides:
 <summary>🔍 Click to expand full pipeline visualization</summary>
 
 ```mermaid
+---
+title: Reusable CI Pipeline Architecture
+---
 flowchart TD
+    %% ===== WORKFLOW INPUTS =====
     subgraph Input["📥 Workflow Inputs"]
-        I1[configuration]
-        I2[dotnet-version]
-        I3[solution-file]
-        I4[enable-code-analysis]
+        I1[/"configuration"/]
+        I2[/"dotnet-version"/]
+        I3[/"solution-file"/]
+        I4[/"enable-code-analysis"/]
     end
 
+    %% ===== BUILD STAGE =====
     subgraph BuildStage["🔨 Build Stage (Matrix)"]
         direction LR
         subgraph Ubuntu1["Ubuntu"]
-            B_U[Build]
+            B_U["Build"]
         end
         subgraph Windows1["Windows"]
-            B_W[Build]
+            B_W["Build"]
         end
         subgraph macOS1["macOS"]
-            B_M[Build]
+            B_M["Build"]
         end
     end
 
+    %% ===== TEST STAGE =====
     subgraph TestStage["🧪 Test Stage (Matrix)"]
         direction LR
         subgraph Ubuntu2["Ubuntu"]
-            T_U[Test + Coverage]
+            T_U["Test + Coverage"]
         end
         subgraph Windows2["Windows"]
-            T_W[Test + Coverage]
+            T_W["Test + Coverage"]
         end
         subgraph macOS2["macOS"]
-            T_M[Test + Coverage]
+            T_M["Test + Coverage"]
         end
     end
 
+    %% ===== ANALYSIS STAGE =====
     subgraph AnalysisStage["🔍 Analysis Stage"]
         direction LR
-        ANALYZE[Code Format Check]
-        CODEQL[CodeQL Security Scan]
+        ANALYZE["Code Format Check"]
+        CODEQL["CodeQL Security Scan"]
     end
 
+    %% ===== OUTPUT STAGE =====
     subgraph OutputStage["📊 Output Stage"]
-        SUMMARY[Summary Report]
-        ONFAIL[Failure Handler]
+        SUMMARY[/"Summary Report"/]
+        ONFAIL["Failure Handler"]
     end
 
+    %% ===== ARTIFACTS =====
     subgraph Artifacts["📦 Artifacts"]
-        A1[/build-artifacts-os/]
-        A2[/test-results-os/]
-        A3[/code-coverage-os/]
-        A4[/codeql-sarif-results/]
+        A1[("build-artifacts-os")]
+        A2[("test-results-os")]
+        A3[("code-coverage-os")]
+        A4[("codeql-sarif-results")]
     end
 
-    %% Flow
-    Input --> BuildStage
-    BuildStage --> TestStage
-    BuildStage --> AnalysisStage
-    TestStage --> OutputStage
-    AnalysisStage --> OutputStage
-    OutputStage -.->|failure| ONFAIL
+    %% ===== PIPELINE FLOW =====
+    Input ==>|configures| BuildStage
+    BuildStage ==>|compiles| TestStage
+    BuildStage -->|validates| AnalysisStage
+    TestStage -->|reports| OutputStage
+    AnalysisStage -->|reports| OutputStage
+    OutputStage -.->|on failure| ONFAIL
 
-    %% Artifacts
-    BuildStage --> A1
-    TestStage --> A2
-    TestStage --> A3
-    CODEQL --> A4
+    %% ===== ARTIFACT FLOWS =====
+    BuildStage -->|produces| A1
+    TestStage -->|produces| A2
+    TestStage -->|produces| A3
+    CODEQL -->|produces| A4
 
-    %% Styling
-    classDef input fill:#2196F3,stroke:#1565C0,color:#fff
-    classDef build fill:#FF9800,stroke:#EF6C00,color:#fff
-    classDef test fill:#9C27B0,stroke:#6A1B9A,color:#fff
-    classDef security fill:#607D8B,stroke:#455A64,color:#fff
-    classDef summary fill:#00BCD4,stroke:#0097A7,color:#fff
-    classDef failure fill:#F44336,stroke:#C62828,color:#fff
-    classDef artifact fill:#8BC34A,stroke:#689F38,color:#fff
+    %% ===== NODE STYLING =====
+    classDef input fill:#F3F4F6,stroke:#6B7280,color:#000000
+    classDef primary fill:#4F46E5,stroke:#3730A3,color:#FFFFFF
+    classDef secondary fill:#10B981,stroke:#059669,color:#FFFFFF
+    classDef matrix fill:#D1FAE5,stroke:#10B981,color:#000000
+    classDef datastore fill:#F59E0B,stroke:#D97706,color:#000000
+    classDef failed fill:#F44336,stroke:#C62828,color:#FFFFFF
 
+    %% ===== APPLY NODE CLASSES =====
     class I1,I2,I3,I4 input
-    class B_U,B_W,B_M build
-    class T_U,T_W,T_M,ANALYZE test
-    class CODEQL security
-    class SUMMARY summary
-    class ONFAIL failure
-    class A1,A2,A3,A4 artifact
+    class B_U,B_W,B_M matrix
+    class T_U,T_W,T_M matrix
+    class ANALYZE,CODEQL secondary
+    class SUMMARY datastore
+    class ONFAIL failed
+    class A1,A2,A3,A4 datastore
+
+    %% ===== SUBGRAPH STYLING =====
+    style Input fill:#F3F4F6,stroke:#6B7280,stroke-width:2px
+    style BuildStage fill:#ECFDF5,stroke:#10B981,stroke-width:2px
+    style Ubuntu1 fill:#D1FAE5,stroke:#059669,stroke-width:1px
+    style Windows1 fill:#D1FAE5,stroke:#059669,stroke-width:1px
+    style macOS1 fill:#D1FAE5,stroke:#059669,stroke-width:1px
+    style TestStage fill:#ECFDF5,stroke:#10B981,stroke-width:2px
+    style Ubuntu2 fill:#D1FAE5,stroke:#059669,stroke-width:1px
+    style Windows2 fill:#D1FAE5,stroke:#059669,stroke-width:1px
+    style macOS2 fill:#D1FAE5,stroke:#059669,stroke-width:1px
+    style AnalysisStage fill:#E0E7FF,stroke:#4F46E5,stroke-width:2px
+    style OutputStage fill:#FEF3C7,stroke:#F59E0B,stroke-width:2px
+    style Artifacts fill:#FEF3C7,stroke:#F59E0B,stroke-width:2px
 ```
 
 </details>
@@ -202,33 +225,53 @@ Compiles the .NET solution on Ubuntu, Windows, and macOS runners.
 <summary>🔍 View build steps diagram</summary>
 
 ```mermaid
+---
+title: Build Steps Workflow
+---
 flowchart LR
+    %% ===== BUILD MATRIX =====
     subgraph Matrix["Build Matrix"]
         direction TB
-        U[ubuntu-latest]
-        W[windows-latest]
-        M[macos-latest]
+        U["ubuntu-latest"]
+        W["windows-latest"]
+        M["macos-latest"]
     end
 
+    %% ===== BUILD STEPS =====
     subgraph Steps["Build Steps"]
-        S1[📥 Checkout]
-        S2[🔧 Setup .NET]
-        S3[☁️ Update Workloads]
-        S4[🏷️ Generate Version]
-        S5[📥 Restore]
-        S6[🔨 Build]
-        S7[📤 Upload Artifacts]
-        S8[📊 Summary]
+        S1["📥 Checkout"]
+        S2["🔧 Setup .NET"]
+        S3["☁️ Update Workloads"]
+        S4["🏷️ Generate Version"]
+        S5["📥 Restore"]
+        S6["🔨 Build"]
+        S7["📤 Upload Artifacts"]
+        S8[/"📊 Summary"/]
     end
 
-    Matrix --> S1
-    S1 --> S2 --> S3 --> S4 --> S5 --> S6 --> S7 --> S8
+    %% ===== FLOW =====
+    Matrix ==>|executes| S1
+    S1 -->|then| S2
+    S2 -->|then| S3
+    S3 -->|then| S4
+    S4 -->|then| S5
+    S5 -->|then| S6
+    S6 -->|then| S7
+    S7 -->|generates| S8
 
-    classDef matrix fill:#FF9800,stroke:#EF6C00,color:#fff
-    classDef step fill:#2196F3,stroke:#1565C0,color:#fff
+    %% ===== NODE STYLING =====
+    classDef matrix fill:#D1FAE5,stroke:#10B981,color:#000000
+    classDef primary fill:#4F46E5,stroke:#3730A3,color:#FFFFFF
+    classDef datastore fill:#F59E0B,stroke:#D97706,color:#000000
 
+    %% ===== APPLY NODE CLASSES =====
     class U,W,M matrix
-    class S1,S2,S3,S4,S5,S6,S7,S8 step
+    class S1,S2,S3,S4,S5,S6,S7 primary
+    class S8 datastore
+
+    %% ===== SUBGRAPH STYLING =====
+    style Matrix fill:#D1FAE5,stroke:#10B981,stroke-width:2px
+    style Steps fill:#E0E7FF,stroke:#4F46E5,stroke-width:2px
 ```
 
 </details>
