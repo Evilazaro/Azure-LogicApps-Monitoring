@@ -153,7 +153,7 @@ The following patterns are excluded from deployment (per `.funcignore`):
 ---
 title: deploy-workflow Execution Flow
 ---
-flowchart LR
+flowchart TD
     %% ===== STYLE DEFINITIONS =====
     classDef primary fill:#4F46E5,stroke:#3730A3,color:#FFFFFF
     classDef secondary fill:#10B981,stroke:#059669,color:#FFFFFF
