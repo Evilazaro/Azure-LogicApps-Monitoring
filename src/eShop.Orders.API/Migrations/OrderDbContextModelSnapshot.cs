@@ -88,7 +88,7 @@ namespace eShop.Orders.API.Migrations
 
                     b.HasIndex("ProductId");
 
-                    b.ToTable("OrderProducts", (string)null);
+                    b.ToTable("OrderProducts", null);
                 });
 
             modelBuilder.Entity("eShop.Orders.API.Data.Entities.OrderProductEntity", b =>
