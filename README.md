@@ -13,13 +13,13 @@ A cloud-native reference architecture demonstrating enterprise-grade observabili
 
 ## 📑 Table of Contents
 
-- [Architecture Overview](#-architecture-overview)
-- [Prerequisites](#-prerequisites)
-- [Quick Start](#-quick-start)
-- [Project Structure](#-project-structure)
-- [Documentation](#-documentation)
-- [Contributing](#-contributing)
-- [License](#-license)
+- [🏗️ Architecture Overview](#️-architecture-overview)
+- [📋 Prerequisites](#-prerequisites)
+- [🚀 Quick Start](#-quick-start)
+- [📁 Project Structure](#-project-structure)
+- [📚 Documentation](#-documentation)
+- [🤝 Contributing](#-contributing)
+- [📄 License](#-license)
 
 ---
 
@@ -74,7 +74,10 @@ flowchart TB
 | **Observability**  | Application Insights   | Distributed tracing with W3C Trace Context |
 | **Infrastructure** | Bicep                  | Infrastructure as Code                     |
 
+> [!TIP]
 > 📖 For detailed architecture documentation, see [Architecture Overview](docs/architecture/README.md)
+
+<div align="right"><a href="#-table-of-contents">⬆️ Back to top</a></div>
 
 ---
 
@@ -88,10 +91,12 @@ flowchart TB
 | [Docker](https://www.docker.com/get-started)                                                             | Latest  | Local development (emulators) |
 | [VS Code](https://code.visualstudio.com/)                                                                | Latest  | Recommended IDE               |
 
-### Optional Tools
+### 🔧 Optional Tools
 
-- [Azure Functions Core Tools](https://docs.microsoft.com/azure/azure-functions/functions-run-local) - For Logic Apps local development
-- [SQL Server Management Studio](https://docs.microsoft.com/sql/ssms/download-sql-server-management-studio-ssms) - Database management
+- [Azure Functions Core Tools](https://docs.microsoft.com/azure/azure-functions/functions-run-local) — For Logic Apps local development
+- [SQL Server Management Studio](https://docs.microsoft.com/sql/ssms/download-sql-server-management-studio-ssms) — Database management
+
+<div align="right"><a href="#-table-of-contents">⬆️ Back to top</a></div>
 
 ---
 
@@ -129,7 +134,7 @@ This single command will:
 - ✅ Deploy application containers
 - ✅ Set up monitoring and observability
 
-### Local Development
+### 💻 Local Development
 
 ```bash
 # Restore dependencies
@@ -139,7 +144,10 @@ dotnet restore
 dotnet run --project app.AppHost
 ```
 
-> 💡 The Aspire dashboard will open automatically, providing local observability.
+> [!TIP]
+> The Aspire dashboard will open automatically, providing local observability.
+
+<div align="right"><a href="#-table-of-contents">⬆️ Back to top</a></div>
 
 ---
 
@@ -168,14 +176,16 @@ Azure-LogicApps-Monitoring/
 └── azure.yaml                   # azd configuration
 ```
 
+<div align="right"><a href="#-table-of-contents">⬆️ Back to top</a></div>
+
 ---
 
 ## 📚 Documentation
 
-### Architecture (TOGAF BDAT Framework)
+### 🏛️ Architecture (TOGAF BDAT Framework)
 
 | Document                                                                         | Description                               |
-| -------------------------------------------------------------------------------- | ----------------------------------------- |
+| :------------------------------------------------------------------------------- | :---------------------------------------- |
 | [Architecture Overview](docs/architecture/README.md)                             | Executive summary and navigation          |
 | [Business Architecture](docs/architecture/01-business-architecture.md)           | Capabilities, value streams, stakeholders |
 | [Data Architecture](docs/architecture/02-data-architecture.md)                   | Data stores, flows, telemetry mapping     |
@@ -185,21 +195,23 @@ Azure-LogicApps-Monitoring/
 | [Security Architecture](docs/architecture/06-security-architecture.md)           | Identity, secrets, network security       |
 | [Deployment Architecture](docs/architecture/07-deployment-architecture.md)       | CI/CD, pipelines, deployment processes    |
 
-### Architecture Decision Records (ADRs)
+### 📝 Architecture Decision Records (ADRs)
 
 | ADR                                                                | Decision                             |
-| ------------------------------------------------------------------ | ------------------------------------ |
+| :----------------------------------------------------------------- | :----------------------------------- |
 | [ADR-001](docs/architecture/adr/ADR-001-aspire-orchestration.md)   | .NET Aspire for orchestration        |
 | [ADR-002](docs/architecture/adr/ADR-002-service-bus-messaging.md)  | Azure Service Bus for messaging      |
 | [ADR-003](docs/architecture/adr/ADR-003-observability-strategy.md) | OpenTelemetry observability strategy |
 
-### DevOps
+### 🔄 DevOps
 
 | Document                                 | Description                        |
-| ---------------------------------------- | ---------------------------------- |
+| :--------------------------------------- | :--------------------------------- |
 | [DevOps Overview](docs/devops/README.md) | CI/CD architecture and workflows   |
 | [CI Workflow](docs/devops/ci-dotnet.md)  | Build, test, and analysis pipeline |
 | [CD Workflow](docs/devops/azure-dev.md)  | Azure deployment pipeline          |
+
+<div align="right"><a href="#-table-of-contents">⬆️ Back to top</a></div>
 
 ---
 
@@ -213,12 +225,17 @@ Contributions are welcome! Please follow these guidelines:
 4. **Push** to the branch (`git push origin feature/amazing-feature`)
 5. **Open** a Pull Request
 
-### Development Guidelines
+### 📏 Development Guidelines
+
+> [!IMPORTANT]
+> Please ensure your contributions meet these criteria before submitting.
 
 - Follow existing code style and conventions
 - Add tests for new functionality
 - Update documentation as needed
 - Ensure CI passes before requesting review
+
+<div align="right"><a href="#-table-of-contents">⬆️ Back to top</a></div>
 
 ---
 
