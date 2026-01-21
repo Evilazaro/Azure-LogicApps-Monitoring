@@ -119,20 +119,20 @@ flowchart LR
 
     %% ===== TRIGGER =====
     subgraph triggers["🚀 Entry Point"]
-        direction TB
+        direction LR
         A(["🚀 Start check-dev-workstation"])
     end
 
     %% ===== VALIDATION =====
     subgraph validation["🔍 Script Validation"]
-        direction TB
+        direction LR
         B{"preprovision script exists?"}
         C["Resolve PowerShell/Bash Path"]
     end
 
     %% ===== EXECUTION =====
     subgraph execution["⚙️ Execution"]
-        direction TB
+        direction LR
         D["Build Execution Arguments"]
         E["Execute preprovision --validate-only"]
         F{"Validation Exit Code"}
@@ -140,7 +140,7 @@ flowchart LR
 
     %% ===== RESULTS =====
     subgraph results["📊 Results"]
-        direction TB
+        direction LR
         G["✅ Workstation Validated Successfully"]
         H["⚠️ Validation Issues Found"]
         I["Display Success Message"]
@@ -152,7 +152,7 @@ flowchart LR
 
     %% ===== FAILURE =====
     subgraph failure["❌ Error Handling"]
-        direction TB
+        direction LR
         Z["❌ Exit with Error"]
     end
 
