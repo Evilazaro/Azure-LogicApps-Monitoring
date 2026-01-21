@@ -107,7 +107,7 @@ The script acts as a wrapper around `preprovision` in ValidateOnly mode, providi
 ---
 title: check-dev-workstation Execution Flow
 ---
-flowchart TD
+flowchart LR
     %% ===== STYLE DEFINITIONS =====
     classDef primary fill:#4F46E5,stroke:#3730A3,color:#FFFFFF
     classDef secondary fill:#10B981,stroke:#059669,color:#FFFFFF
