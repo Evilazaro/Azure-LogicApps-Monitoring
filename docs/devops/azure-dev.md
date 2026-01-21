@@ -219,49 +219,66 @@ Deploys the application to the development environment.
 <summary>🔍 View deployment phases diagram</summary>
 
 ```mermaid
+---
+title: Deployment Phases Workflow
+---
 flowchart LR
+    %% ===== PHASE 1: SETUP =====
     subgraph Phase1["Phase 1: Setup"]
-        P1A[Checkout]
-        P1B[Install go-sqlcmd]
-        P1C[Install azd CLI]
-        P1D[Setup .NET SDK]
+        P1A["Checkout"]
+        P1B["Install go-sqlcmd"]
+        P1C["Install azd CLI"]
+        P1D["Setup .NET SDK"]
     end
 
+    %% ===== PHASE 2: AUTHENTICATION =====
     subgraph Phase2["Phase 2: Auth"]
-        P2A[azd auth login]
-        P2B[az login OIDC]
+        P2A["azd auth login"]
+        P2B["az login OIDC"]
     end
 
+    %% ===== PHASE 3: PROVISIONING =====
     subgraph Phase3["Phase 3: Provision"]
-        P3A[azd provision]
+        P3A["azd provision"]
     end
 
+    %% ===== PHASE 4: SQL CONFIGURATION =====
     subgraph Phase4["Phase 4: SQL Config"]
-        P4A[Refresh Credentials]
-        P4B[Create SQL User]
+        P4A["Refresh Credentials"]
+        P4B["Create SQL User"]
     end
 
+    %% ===== PHASE 5: DEPLOYMENT =====
     subgraph Phase5["Phase 5: Deploy"]
-        P5A[Refresh Credentials]
-        P5B[azd deploy]
+        P5A["Refresh Credentials"]
+        P5B["azd deploy"]
     end
 
-    Phase1 --> Phase2
-    Phase2 --> Phase3
-    Phase3 --> Phase4
-    Phase4 --> Phase5
+    %% ===== PHASE FLOW =====
+    Phase1 ==>|completes| Phase2
+    Phase2 ==>|authenticates| Phase3
+    Phase3 ==>|provisions| Phase4
+    Phase4 ==>|configures| Phase5
 
-    classDef setup fill:#2196F3,stroke:#1565C0,color:#fff
-    classDef auth fill:#FFC107,stroke:#FFA000,color:#000
-    classDef provision fill:#FF9800,stroke:#EF6C00,color:#fff
-    classDef sql fill:#9C27B0,stroke:#6A1B9A,color:#fff
-    classDef deploy fill:#4CAF50,stroke:#2E7D32,color:#fff
+    %% ===== NODE STYLING =====
+    classDef primary fill:#4F46E5,stroke:#3730A3,color:#FFFFFF
+    classDef input fill:#F3F4F6,stroke:#6B7280,color:#000000
+    classDef secondary fill:#10B981,stroke:#059669,color:#FFFFFF
+    classDef datastore fill:#F59E0B,stroke:#D97706,color:#000000
 
-    class P1A,P1B,P1C,P1D setup
-    class P2A,P2B auth
-    class P3A provision
-    class P4A,P4B sql
-    class P5A,P5B deploy
+    %% ===== APPLY NODE CLASSES =====
+    class P1A,P1B,P1C,P1D input
+    class P2A,P2B primary
+    class P3A secondary
+    class P4A,P4B datastore
+    class P5A,P5B primary
+
+    %% ===== SUBGRAPH STYLING =====
+    style Phase1 fill:#F3F4F6,stroke:#6B7280,stroke-width:2px
+    style Phase2 fill:#EEF2FF,stroke:#4F46E5,stroke-width:2px
+    style Phase3 fill:#ECFDF5,stroke:#10B981,stroke-width:2px
+    style Phase4 fill:#FEF3C7,stroke:#F59E0B,stroke-width:2px
+    style Phase5 fill:#E0E7FF,stroke:#4F46E5,stroke-width:2px
 ```
 
 </details>
