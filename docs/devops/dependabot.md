@@ -280,9 +280,21 @@ gh pr merge <pr-number> --squash
 gh pr close <pr-number>
 ```
 
-## Customization
+---
 
-### Adding New Package Groups
+## 💡 Best Practices
+
+| Practice                    | Implementation                        |
+| :-------------------------- | :------------------------------------ |
+| ✅ Weekly Checks            | Regular cadence for timely updates    |
+| ✅ Grouped Updates          | Reduces PR noise for related packages |
+| ✅ PR Limits                | Prevents overwhelming reviewers       |
+| ✅ Semantic Commit Messages | Clear, parseable commit history       |
+| ✅ Automated Labels         | Easy filtering and tracking           |
+
+### Customization
+
+#### Adding New Package Groups
 
 To add a new group, modify the `groups` section:
 
@@ -296,7 +308,7 @@ groups:
       - "Aspire.*"
 ```
 
-### Ignoring Specific Packages
+#### Ignoring Specific Packages
 
 To ignore a package or version range:
 
@@ -306,7 +318,7 @@ ignore:
     versions: ["9.x"] # Ignore all 9.x versions
 ```
 
-### Changing Schedule
+#### Changing Schedule
 
 To update more frequently:
 
@@ -317,12 +329,14 @@ schedule:
   timezone: "Etc/UTC"
 ```
 
-## Troubleshooting
+---
+
+## 🔧 Troubleshooting
 
 ### Common Issues
 
 | Issue                | Cause                      | Solution                            |
-| -------------------- | -------------------------- | ----------------------------------- |
+| :------------------- | :------------------------- | :---------------------------------- |
 | No PRs being created | No updates available       | Check package versions manually     |
 | PRs failing CI       | Breaking changes in update | Review changelog, update code       |
 | Too many PRs         | Many outdated dependencies | Increase `open-pull-requests-limit` |
@@ -334,8 +348,14 @@ schedule:
 2. Click on the ecosystem to view logs
 3. Check for any errors or warnings
 
-## Related Documentation
+---
+
+## 📚 Related Documentation
 
 - [Dependabot Configuration Options](https://docs.github.com/code-security/dependabot/dependabot-version-updates/configuration-options-for-the-dependabot.yml-file)
 - [Managing Dependabot Pull Requests](https://docs.github.com/code-security/dependabot/working-with-dependabot/managing-pull-requests-for-dependency-updates)
 - [Dependabot Security Updates](https://docs.github.com/code-security/dependabot/dependabot-security-updates)
+
+---
+
+[⬆️ Back to Top](#-dependabot-configuration)
