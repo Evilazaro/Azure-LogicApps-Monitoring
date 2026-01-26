@@ -1,24 +1,24 @@
-# Generate-Orders
+# 📦 Generate-Orders
 
 Generates sample order data for testing Azure Logic Apps monitoring.
 
-## Table of Contents
+## 📑 Table of Contents
 
-- [Overview](#overview)
-- [Prerequisites](#prerequisites)
-- [Parameters](#parameters)
-- [Environment Variables](#environment-variables)
-- [Functionality](#functionality)
-- [Usage Examples](#usage-examples)
-- [Platform Differences](#platform-differences)
-- [Exit Codes](#exit-codes)
-- [Related Hooks](#related-hooks)
+- [📋 Overview](#-overview)
+- [⚙️ Prerequisites](#️-prerequisites)
+- [🎯 Parameters](#-parameters)
+- [🌐 Environment Variables](#-environment-variables)
+- [⚙️ Functionality](#️-functionality)
+- [📖 Usage Examples](#-usage-examples)
+- [💻 Platform Differences](#-platform-differences)
+- [🚪 Exit Codes](#-exit-codes)
+- [🔗 Related Hooks](#-related-hooks)
 
-## Overview
+## 📋 Overview
 
 This script generates random e-commerce orders with products, customer information, and delivery addresses. The generated data is saved as JSON for use in testing and demonstration scenarios.
 
-### Key Features
+### ✨ Key Features
 
 - **Unique Order IDs**: Generated using GUIDs/UUIDs to ensure uniqueness across multiple runs
 - **Realistic Data**: Product catalog, customer names, and global delivery addresses
@@ -26,33 +26,33 @@ This script generates random e-commerce orders with products, customer informati
 - **Configurable**: Customizable order count, product quantities, and output location
 - **Date Range**: Orders dated between January 2024 and December 2025
 
-### When to Use
+### 📅 When to Use
 
 - Testing Logic Apps workflow processing
 - Load testing the Orders API
 - Demonstrating the monitoring solution
 - Generating sample data for development
 
-## Prerequisites
+## ⚙️ Prerequisites
 
-### Required Tools
+### 🔧 Required Tools
 
 | Tool | Minimum Version | Purpose |
-|------|-----------------|---------|
+|:-----|:---------------:|:--------|
 | PowerShell Core | 7.0+ | Script execution (PowerShell version) |
 | Bash | 4.0+ | Script execution (Bash version) |
 | jq | Latest | JSON generation (Bash version only) |
 
-### No Azure Dependencies
+### 🌐 No Azure Dependencies
 
 This script runs entirely locally and does not require Azure authentication or resources.
 
-## Parameters
+## 🎯 Parameters
 
 ### PowerShell Parameters
 
 | Parameter | Type | Required | Default | Description |
-|-----------|------|----------|---------|-------------|
+|:----------|:----:|:--------:|:-------:|:------------|
 | `-OrderCount` | Int | No | `2000` | Number of orders to generate (1-10000) |
 | `-OutputPath` | String | No | `../infra/data/ordersBatch.json` | Output file path |
 | `-MinProducts` | Int | No | `1` | Minimum products per order (1-20) |
@@ -64,7 +64,7 @@ This script runs entirely locally and does not require Azure authentication or r
 ### Bash Parameters
 
 | Parameter | Type | Required | Default | Description |
-|-----------|------|----------|---------|-------------|
+|:----------|:----:|:--------:|:-------:|:------------|
 | `-c`, `--count` | Int | No | `2000` | Number of orders to generate |
 | `-o`, `--output` | String | No | `../infra/data/ordersBatch.json` | Output file path |
 | `-m`, `--min-products` | Int | No | `1` | Minimum products per order |
@@ -74,7 +74,7 @@ This script runs entirely locally and does not require Azure authentication or r
 | `-v`, `--verbose` | Flag | No | `false` | Display detailed diagnostic information |
 | `-h`, `--help` | Flag | No | N/A | Display help message |
 
-## Environment Variables
+## 🌐 Environment Variables
 
 ### Variables Read
 
@@ -84,9 +84,9 @@ This script does not require any environment variables.
 
 This script does not set any environment variables.
 
-## Functionality
+## ⚙️ Functionality
 
-### Execution Flow
+### 🔄 Execution Flow
 
 ```mermaid
 flowchart TD
@@ -180,7 +180,7 @@ flowchart TD
     style F fill:#f44336,color:#fff
 ```
 
-### Generated Data Structure
+### 📄 Generated Data Structure
 
 ```json
 {
@@ -213,12 +213,12 @@ flowchart TD
 }
 ```
 
-### Product Catalog
+### 🛏️ Product Catalog
 
 The script includes 20 products across various categories:
 
 | Product ID | Description | Base Price |
-|------------|-------------|------------|
+|:-----------|:------------|----------:|
 | PROD-1001 | Wireless Mouse | $25.99 |
 | PROD-1002 | Mechanical Keyboard | $89.99 |
 | PROD-1003 | USB-C Hub | $34.99 |
@@ -240,7 +240,7 @@ The script includes 20 products across various categories:
 | PROD-9002 | Drawing Pen Set | $29.99 |
 | PROD-A001 | Wireless Earbuds | $129.99 |
 
-### Delivery Addresses
+### 🌍 Delivery Addresses
 
 20 global addresses from major cities:
 
@@ -252,7 +252,7 @@ The script includes 20 products across various categories:
 - Champs-Élysées, Paris, France
 - (and more...)
 
-## Usage Examples
+## 📖 Usage Examples
 
 ### PowerShell
 
@@ -295,7 +295,7 @@ The script includes 20 products across various categories:
 ./Generate-Orders.sh --help
 ```
 
-### Sample Output
+### 📝 Sample Output
 
 ```
 ═══════════════════════════════════════════════════════════════
@@ -330,34 +330,34 @@ Progress: [███████████████████████
 Execution time: 3.7 seconds
 ```
 
-## Platform Differences
+## 💻 Platform Differences
 
 | Aspect | PowerShell | Bash |
-|--------|------------|------|
+|:-------|:-----------|:-----|
 | GUID generation | `[Guid]::NewGuid()` | `uuidgen` or `/proc/sys/kernel/random/uuid` |
 | JSON serialization | `ConvertTo-Json` | `jq` |
 | Date handling | `[DateTime]::new()` | `date` command |
 | Random numbers | `Get-Random` | `$RANDOM` or `shuf` |
 | Progress display | `Write-Progress` | Manual progress bar |
 
-## Exit Codes
+## 🚪 Exit Codes
 
 | Code | Meaning |
-|------|---------|
+|:----:|:--------|
 | `0` | Success - orders generated and saved |
 | `1` | Error - validation failed or write error |
 | `130` | Script interrupted by user (SIGINT) |
 
-## Related Hooks
+## 🔗 Related Hooks
 
 | Hook | Relationship |
-|------|--------------|
+|:-----|:-------------|
 | [deploy-workflow](deploy-workflow.md) | Deploys Logic Apps that process the generated orders |
 | [postprovision](postprovision.md) | Configures APIs that receive the generated orders |
 
-## Using Generated Data
+## 📤 Using Generated Data
 
-### With the Orders API
+### 🌐 With the Orders API
 
 ```bash
 # Upload orders to the API
@@ -367,7 +367,7 @@ curl -X POST \
   https://api-orders-dev.azurewebsites.net/api/orders/batch
 ```
 
-### With Logic Apps
+### ⚙️ With Logic Apps
 
 The generated JSON can be:
 
@@ -375,7 +375,7 @@ The generated JSON can be:
 2. Posted to a Service Bus queue for message-based processing
 3. Used directly in Logic Apps testing via HTTP request
 
-### Data Validation
+### ✅ Data Validation
 
 ```powershell
 # Validate JSON structure
@@ -384,9 +384,9 @@ $orders.orders.Count  # Should match OrderCount
 $orders.orders[0].orderId  # Should be a valid GUID
 ```
 
-## Troubleshooting
+## 🔧 Troubleshooting
 
-### Common Issues
+### ⚠️ Common Issues
 
 1. **"Output directory not found"**
    - Ensure the parent directory exists

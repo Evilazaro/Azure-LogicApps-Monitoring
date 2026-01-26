@@ -1,60 +1,60 @@
-# sql-managed-identity-config
+# 🗄️ sql-managed-identity-config
 
 Configures Azure SQL Database user with Managed Identity authentication.
 
-## Table of Contents
+## 📑 Table of Contents
 
-- [Overview](#overview)
-- [Prerequisites](#prerequisites)
-- [Parameters](#parameters)
-- [Environment Variables](#environment-variables)
-- [Functionality](#functionality)
-- [Usage Examples](#usage-examples)
-- [Platform Differences](#platform-differences)
-- [Exit Codes](#exit-codes)
-- [Related Hooks](#related-hooks)
+- [📋 Overview](#-overview)
+- [⚙️ Prerequisites](#️-prerequisites)
+- [🎯 Parameters](#-parameters)
+- [🌐 Environment Variables](#-environment-variables)
+- [⚙️ Functionality](#️-functionality)
+- [📖 Usage Examples](#-usage-examples)
+- [💻 Platform Differences](#-platform-differences)
+- [🚪 Exit Codes](#-exit-codes)
+- [🔗 Related Hooks](#-related-hooks)
 
-## Overview
+## 📋 Overview
 
 Creates a database user from an external provider (Microsoft Entra ID/Managed Identity) and assigns specified database roles using Azure AD token-based authentication.
 
-### Key Features
+### ✨ Key Features
 
 - **Idempotent**: Can be safely re-run; skips existing users and role memberships
 - **Passwordless**: Uses Azure AD token authentication (no SQL passwords)
 - **Secure**: Access tokens are not logged or persisted
 - **Multi-cloud**: Supports Azure Public, Government, China, and Germany clouds
 
-### Key Operations
+### 🔑 Key Operations
 
 - Validates Azure CLI authentication
 - Acquires an access token for Azure SQL Database
 - Creates a contained database user from external provider
 - Assigns specified database roles to the user
 
-### When Executed
+### 📅 When Executed
 
 - **Automatically**: Called by `postprovision` script after infrastructure provisioning
 - **Manually**: When needing to configure additional managed identities
 
-## Prerequisites
+## ⚙️ Prerequisites
 
-### Required Tools
+### 🔧 Required Tools
 
 | Tool | Minimum Version | Purpose |
-|------|-----------------|---------|
+|:-----|:---------------:|:--------|
 | PowerShell Core | 7.0+ | Script execution (PowerShell version) |
 | Bash | 4.0+ | Script execution (Bash version) |
 | Azure CLI (az) | 2.60.0+ | Token acquisition |
 | sqlcmd | Latest | SQL Server connectivity (Bash version) |
 
-### Required Azure Configuration
+### ☁️ Required Azure Configuration
 
 - **SQL Server Entra Admin**: You must authenticate as an Entra ID administrator of the SQL Server
 - **Network Access**: Firewall rules must allow your client IP
 - **Managed Identity**: The identity must exist in Microsoft Entra ID
 
-### SQL Server Entra ID Admin Setup
+### 🔐 SQL Server Entra ID Admin Setup
 
 ```bash
 # Set Entra ID admin on SQL Server
@@ -65,12 +65,12 @@ az sql server ad-admin create \
   --object-id <admin-object-id>
 ```
 
-## Parameters
+## 🎯 Parameters
 
 ### PowerShell Parameters
 
 | Parameter | Type | Required | Default | Description |
-|-----------|------|----------|---------|-------------|
+|:----------|:----:|:--------:|:-------:|:------------|
 | `-SqlServerName` | String | **Yes** | N/A | SQL Server name (without `.database.windows.net`) |
 | `-DatabaseName` | String | **Yes** | N/A | Target database name (not `master`) |
 | `-PrincipalDisplayName` | String | **Yes** | N/A | Managed identity display name in Entra ID |
@@ -81,7 +81,7 @@ az sql server ad-admin create \
 ### Bash Parameters
 
 | Parameter | Type | Required | Default | Description |
-|-----------|------|----------|---------|-------------|
+|:----------|:----:|:--------:|:-------:|:------------|
 | `--sql-server-name`, `-s` | String | **Yes** | N/A | SQL Server name (without suffix) |
 | `--database-name`, `-d` | String | **Yes** | N/A | Target database name |
 | `--principal-name`, `-p` | String | **Yes** | N/A | Managed identity display name |
@@ -91,10 +91,10 @@ az sql server ad-admin create \
 | `--verbose`, `-v` | Flag | No | `false` | Enable verbose output |
 | `--help`, `-h` | Flag | No | N/A | Display help message |
 
-### Valid Database Roles
+### 📋 Valid Database Roles
 
 | Role | Description |
-|------|-------------|
+|:-----|:------------|
 | `db_owner` | Full permissions in the database |
 | `db_datareader` | Read all data from all user tables |
 | `db_datawriter` | Add, delete, or modify data in all user tables |
@@ -105,21 +105,21 @@ az sql server ad-admin create \
 | `db_denydatareader` | Cannot read any data in user tables |
 | `db_denydatawriter` | Cannot modify any data in user tables |
 
-## Environment Variables
+## 🌐 Environment Variables
 
 ### Variables Read
 
 | Variable | Required | Description |
-|----------|----------|-------------|
+|:---------|:--------:|:------------|
 | `AZURE_RESOURCE_GROUP` | No | Used for firewall configuration context |
 
 ### Variables Set
 
 This script does not set environment variables.
 
-## Functionality
+## ⚙️ Functionality
 
-### Execution Flow
+### 🔄 Execution Flow
 
 ```mermaid
 flowchart TD
@@ -214,7 +214,7 @@ flowchart TD
     style F fill:#f44336,color:#fff
 ```
 
-### SQL Commands Executed
+### 💻 SQL Commands Executed
 
 ```sql
 -- Check if user exists
@@ -230,16 +230,16 @@ SELECT IS_ROLEMEMBER(@RoleName, @PrincipalName)
 ALTER ROLE [db_datareader] ADD MEMBER [managed-identity-name]
 ```
 
-### Azure Cloud Endpoints
+### ☁️ Azure Cloud Endpoints
 
 | Environment | SQL Endpoint |
-|-------------|--------------|
+|:------------|:-------------|
 | `AzureCloud` | `database.windows.net` |
 | `AzureUSGovernment` | `database.usgovcloudapi.net` |
 | `AzureChinaCloud` | `database.chinacloudapi.cn` |
 | `AzureGermanCloud` | `database.cloudapi.de` |
 
-## Usage Examples
+## 📖 Usage Examples
 
 ### PowerShell
 
@@ -296,7 +296,7 @@ if ($result.Success) {
   -e AzureUSGovernment
 ```
 
-### Sample Output
+### 📝 Sample Output
 
 ```
 ═══════════════════════════════════════════════════════════════
@@ -335,7 +335,7 @@ if ($result.Success) {
   Execution Time: 5.2 seconds
 ```
 
-### PowerShell Result Object
+### 📄 PowerShell Result Object
 
 ```powershell
 # Successful result
@@ -369,32 +369,32 @@ if ($result.Success) {
 }
 ```
 
-## Platform Differences
+## 💻 Platform Differences
 
 | Aspect | PowerShell | Bash |
-|--------|------------|------|
+|:-------|:-----------|:-----|
 | SQL client | `System.Data.SqlClient` or `Microsoft.Data.SqlClient` | `sqlcmd` (mssql-tools) |
 | Token acquisition | `az account get-access-token` | `az account get-access-token` |
 | Result format | PSCustomObject | Exit code + stdout messages |
 | Timeout handling | `CommandTimeout` parameter | `-t` sqlcmd option |
 
-## Exit Codes
+## 🚪 Exit Codes
 
 | Code | Meaning |
-|------|---------|
+|:----:|:--------|
 | `0` | Success - user created and roles assigned |
 | `1` | Error - validation failed, connection failed, or SQL error |
 
-## Related Hooks
+## 🔗 Related Hooks
 
 | Hook | Relationship |
-|------|--------------|
+|:-----|:-------------|
 | [postprovision](postprovision.md) | Calls this script to configure SQL Database access |
 | [preprovision](preprovision.md) | Validates Azure CLI authentication used by this script |
 
-## Troubleshooting
+## 🔧 Troubleshooting
 
-### Common Issues
+### ⚠️ Common Issues
 
 1. **"Login failed for user"**
    - Ensure you're authenticated as an Entra ID admin of the SQL Server
@@ -412,7 +412,7 @@ if ($result.Success) {
    - Add your client IP to SQL Server firewall rules
    - Check if private endpoint is required
 
-### Verifying Configuration
+### ✅ Verifying Configuration
 
 ```sql
 -- Connect to the database and verify user
