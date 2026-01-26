@@ -131,16 +131,41 @@ public sealed class ServiceBusHealthCheckTests
         // Assert
         Assert.AreEqual(HealthStatus.Healthy, result.Status);
         Assert.IsNotNull(result.Description);
-        Assert.Contains(TestTopicName, result.Description);
+        StringAssert.Contains(result.Description, TestTopicName);
     }
 
     [TestMethod]
-    public async Task CheckHealthAsync_ServiceBusConnectionFails_ReturnsUnhealthy()
+    public async Task CheckHealthAsync_TransientServiceBusError_ReturnsDegraded()
     {
-        // Arrange
+        // Arrange - Transient errors should result in Degraded status per distributed systems best practices
         var expectedException = new ServiceBusException(
             "Connection refused",
-            ServiceBusFailureReason.ServiceCommunicationProblem);
+            ServiceBusFailureReason.ServiceCommunicationProblem,
+            innerException: null);
+
+        _serviceBusClient
+            .CreateSender(TestTopicName)
+            .Throws(expectedException);
+
+        // Act
+        var result = await _healthCheck.CheckHealthAsync(_healthCheckContext, CancellationToken.None);
+
+        // Assert - Transient errors return Degraded, not Unhealthy
+        Assert.AreEqual(HealthStatus.Degraded, result.Status);
+        Assert.IsNotNull(result.Description);
+        Assert.IsTrue(result.Description.Contains("transient error") || result.Description.Contains("degraded"),
+            $"Expected description to contain 'transient error' or 'degraded', but was: {result.Description}");
+        Assert.IsNotNull(result.Exception);
+        Assert.IsInstanceOfType<ServiceBusException>(result.Exception);
+    }
+
+    [TestMethod]
+    public async Task CheckHealthAsync_NonTransientServiceBusError_ReturnsUnhealthy()
+    {
+        // Arrange - Non-transient errors like entity not found should be Unhealthy
+        var expectedException = new ServiceBusException(
+            "Topic not found",
+            ServiceBusFailureReason.MessagingEntityNotFound);
 
         _serviceBusClient
             .CreateSender(TestTopicName)
@@ -151,7 +176,8 @@ public sealed class ServiceBusHealthCheckTests
 
         // Assert
         Assert.AreEqual(HealthStatus.Unhealthy, result.Status);
-        Assert.AreEqual("Service Bus connection failed", result.Description);
+        Assert.IsNotNull(result.Description);
+        StringAssert.Contains(result.Description, "Service Bus connection failed");
         Assert.IsNotNull(result.Exception);
         Assert.IsInstanceOfType<ServiceBusException>(result.Exception);
     }
@@ -171,7 +197,8 @@ public sealed class ServiceBusHealthCheckTests
 
         // Assert
         Assert.AreEqual(HealthStatus.Unhealthy, result.Status);
-        Assert.AreEqual("Service Bus connection failed", result.Description);
+        Assert.IsNotNull(result.Description);
+        StringAssert.Contains(result.Description, "Service Bus connection failed");
         Assert.IsNotNull(result.Exception);
         Assert.IsInstanceOfType<InvalidOperationException>(result.Exception);
     }
@@ -199,7 +226,7 @@ public sealed class ServiceBusHealthCheckTests
         // Assert
         Assert.AreEqual(HealthStatus.Healthy, result.Status);
         Assert.IsNotNull(result.Description);
-        Assert.Contains(DefaultTopicName, result.Description);
+        StringAssert.Contains(result.Description, DefaultTopicName);
         serviceBusClient.Received(1).CreateSender(DefaultTopicName);
     }
 
@@ -221,9 +248,9 @@ public sealed class ServiceBusHealthCheckTests
     }
 
     [TestMethod]
-    public async Task CheckHealthAsync_ExceptionOccurs_LogsError()
+    public async Task CheckHealthAsync_TransientException_LogsWarning()
     {
-        // Arrange
+        // Arrange - Transient errors should log Warning, not Error
         var expectedException = new ServiceBusException(
             "Auth failed",
             ServiceBusFailureReason.ServiceCommunicationProblem);
@@ -235,7 +262,31 @@ public sealed class ServiceBusHealthCheckTests
         // Act
         await _healthCheck.CheckHealthAsync(_healthCheckContext, CancellationToken.None);
 
-        // Assert - Verify logger was called with LogError
+        // Assert - Verify logger was called with LogWarning for transient errors
+        _logger.Received(1).Log(
+            LogLevel.Warning,
+            Arg.Any<EventId>(),
+            Arg.Any<object>(),
+            Arg.Any<Exception>(),
+            Arg.Any<Func<object, Exception?, string>>());
+    }
+
+    [TestMethod]
+    public async Task CheckHealthAsync_NonTransientException_LogsError()
+    {
+        // Arrange - Non-transient errors should log Error
+        var expectedException = new ServiceBusException(
+            "Entity not found",
+            ServiceBusFailureReason.MessagingEntityNotFound);
+
+        _serviceBusClient
+            .CreateSender(TestTopicName)
+            .Throws(expectedException);
+
+        // Act
+        await _healthCheck.CheckHealthAsync(_healthCheckContext, CancellationToken.None);
+
+        // Assert - Verify logger was called with LogError for non-transient errors
         _logger.Received(1).Log(
             LogLevel.Error,
             Arg.Any<EventId>(),
@@ -255,9 +306,10 @@ public sealed class ServiceBusHealthCheckTests
             tags: null);
         var degradedContext = new HealthCheckContext { Registration = degradedRegistration };
 
+        // Use non-transient error to verify registration failure status is used
         var expectedException = new ServiceBusException(
-            "Connection lost",
-            ServiceBusFailureReason.ServiceCommunicationProblem);
+            "Entity not found",
+            ServiceBusFailureReason.MessagingEntityNotFound);
 
         _serviceBusClient
             .CreateSender(TestTopicName)
@@ -266,7 +318,7 @@ public sealed class ServiceBusHealthCheckTests
         // Act
         var result = await _healthCheck.CheckHealthAsync(degradedContext, CancellationToken.None);
 
-        // Assert - Should use the failure status from registration
+        // Assert - Should use the failure status from registration for non-transient errors
         Assert.AreEqual(HealthStatus.Degraded, result.Status);
     }
 
@@ -297,14 +349,14 @@ public sealed class ServiceBusHealthCheckTests
         // Assert
         Assert.AreEqual(HealthStatus.Healthy, result.Status);
         Assert.IsNotNull(result.Description);
-        Assert.Contains(customTopicName, result.Description);
+        StringAssert.Contains(result.Description, customTopicName);
     }
 
     [TestMethod]
-    [DynamicData(nameof(GetServiceBusFailureReasons))]
-    public async Task CheckHealthAsync_VariousServiceBusFailures_ReturnsUnhealthy(ServiceBusFailureReason failureReason)
+    [DynamicData(nameof(GetTransientServiceBusFailureReasons))]
+    public async Task CheckHealthAsync_TransientFailures_ReturnsDegraded(ServiceBusFailureReason failureReason)
     {
-        // Arrange
+        // Arrange - Transient failures should return Degraded per distributed systems best practices
         var expectedException = new ServiceBusException($"Error: {failureReason}", failureReason);
 
         _serviceBusClient
@@ -314,7 +366,29 @@ public sealed class ServiceBusHealthCheckTests
         // Act
         var result = await _healthCheck.CheckHealthAsync(_healthCheckContext, CancellationToken.None);
 
-        // Assert
+        // Assert - Transient errors return Degraded
+        Assert.AreEqual(HealthStatus.Degraded, result.Status);
+        Assert.IsNotNull(result.Exception);
+        var serviceBusException = result.Exception as ServiceBusException;
+        Assert.IsNotNull(serviceBusException);
+        Assert.AreEqual(failureReason, serviceBusException.Reason);
+    }
+
+    [TestMethod]
+    [DynamicData(nameof(GetNonTransientServiceBusFailureReasons))]
+    public async Task CheckHealthAsync_NonTransientFailures_ReturnsUnhealthy(ServiceBusFailureReason failureReason)
+    {
+        // Arrange - Non-transient failures should return Unhealthy
+        var expectedException = new ServiceBusException($"Error: {failureReason}", failureReason);
+
+        _serviceBusClient
+            .CreateSender(TestTopicName)
+            .Throws(expectedException);
+
+        // Act
+        var result = await _healthCheck.CheckHealthAsync(_healthCheckContext, CancellationToken.None);
+
+        // Assert - Non-transient errors return Unhealthy
         Assert.AreEqual(HealthStatus.Unhealthy, result.Status);
         Assert.IsNotNull(result.Exception);
         var serviceBusException = result.Exception as ServiceBusException;
@@ -322,13 +396,19 @@ public sealed class ServiceBusHealthCheckTests
         Assert.AreEqual(failureReason, serviceBusException.Reason);
     }
 
-    private static IEnumerable<object[]> GetServiceBusFailureReasons()
+    private static IEnumerable<object[]> GetTransientServiceBusFailureReasons()
     {
+        // These are transient errors that may resolve on retry
         yield return [ServiceBusFailureReason.ServiceBusy];
         yield return [ServiceBusFailureReason.ServiceTimeout];
+        yield return [ServiceBusFailureReason.ServiceCommunicationProblem];
+    }
+
+    private static IEnumerable<object[]> GetNonTransientServiceBusFailureReasons()
+    {
+        // These are non-transient errors that require configuration changes
         yield return [ServiceBusFailureReason.MessagingEntityNotFound];
         yield return [ServiceBusFailureReason.QuotaExceeded];
-        yield return [ServiceBusFailureReason.ServiceCommunicationProblem];
     }
 
     #endregion

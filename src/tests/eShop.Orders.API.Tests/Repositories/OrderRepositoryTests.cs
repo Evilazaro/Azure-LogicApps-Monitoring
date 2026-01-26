@@ -9,7 +9,6 @@ using eShop.Orders.API.Interfaces;
 using eShop.Orders.API.Repositories;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 using NSubstitute;
 
 namespace eShop.Orders.API.Tests.Repositories;
@@ -161,6 +160,76 @@ public sealed class OrderRepositoryTests
         Assert.AreEqual(3, count);
     }
 
+    [TestMethod]
+    public async Task SaveOrderAsync_DuplicateOrderId_ThrowsException()
+    {
+        // Arrange
+        var order = CreateTestOrder();
+        await _repository.SaveOrderAsync(order, CancellationToken.None);
+
+        // Create another order with the same ID
+        var duplicateOrder = CreateTestOrder();
+
+        // Act & Assert
+        // In-memory database throws InvalidOperationException about tracking
+        // Real database throws InvalidOperationException about duplicate key
+        var exception = await Assert.ThrowsExactlyAsync<InvalidOperationException>(
+            () => _repository.SaveOrderAsync(duplicateOrder, CancellationToken.None));
+
+        // Verify it's related to the duplicate/tracking issue
+        Assert.IsTrue(
+            exception.Message.Contains("already") ||
+            exception.Message.Contains("tracked") ||
+            exception.Message.Contains("duplicate", StringComparison.OrdinalIgnoreCase),
+            $"Expected exception message to indicate duplicate/tracking issue but got: {exception.Message}");
+    }
+
+    [TestMethod]
+    public async Task SaveOrderAsync_OrderWithZeroTotal_SavesSuccessfully()
+    {
+        // Arrange
+        var order = new Order
+        {
+            Id = TestOrderId,
+            CustomerId = TestCustomerId,
+            Date = DateTime.UtcNow,
+            DeliveryAddress = TestDeliveryAddress,
+            Total = 0m,
+            Products = new List<OrderProduct>()
+        };
+
+        // Act
+        await _repository.SaveOrderAsync(order, CancellationToken.None);
+
+        // Assert
+        var savedOrder = await _dbContext.Orders.FirstOrDefaultAsync(o => o.Id == order.Id);
+        Assert.IsNotNull(savedOrder);
+        Assert.AreEqual(0m, savedOrder.Total);
+    }
+
+    [TestMethod]
+    public async Task SaveOrderAsync_OrderWithLargeTotal_SavesSuccessfully()
+    {
+        // Arrange
+        var order = new Order
+        {
+            Id = TestOrderId,
+            CustomerId = TestCustomerId,
+            Date = DateTime.UtcNow,
+            DeliveryAddress = TestDeliveryAddress,
+            Total = 999999999.99m,
+            Products = new List<OrderProduct>()
+        };
+
+        // Act
+        await _repository.SaveOrderAsync(order, CancellationToken.None);
+
+        // Assert
+        var savedOrder = await _dbContext.Orders.FirstOrDefaultAsync(o => o.Id == order.Id);
+        Assert.IsNotNull(savedOrder);
+        Assert.AreEqual(999999999.99m, savedOrder.Total);
+    }
+
     #endregion
 
     #region GetAllOrdersAsync Tests
@@ -223,6 +292,206 @@ public sealed class OrderRepositoryTests
         Assert.AreEqual(originalOrder.CustomerId, retrievedOrder.CustomerId);
         Assert.AreEqual(originalOrder.DeliveryAddress, retrievedOrder.DeliveryAddress);
         Assert.AreEqual(originalOrder.Total, retrievedOrder.Total);
+    }
+
+    #endregion
+
+    #region GetOrdersPagedAsync Tests
+
+    [TestMethod]
+    public async Task GetOrdersPagedAsync_DefaultParameters_ReturnsFirstPage()
+    {
+        // Arrange
+        await SeedTestOrders(25);
+
+        // Act
+        var (orders, totalCount) = await _repository.GetOrdersPagedAsync(cancellationToken: CancellationToken.None);
+
+        // Assert
+        Assert.AreEqual(25, totalCount);
+        Assert.AreEqual(20, orders.Count()); // Default page size is 20
+    }
+
+    [TestMethod]
+    public async Task GetOrdersPagedAsync_SecondPage_ReturnsCorrectOrders()
+    {
+        // Arrange
+        await SeedTestOrders(25);
+
+        // Act
+        var (orders, totalCount) = await _repository.GetOrdersPagedAsync(
+            pageNumber: 2,
+            pageSize: 10,
+            cancellationToken: CancellationToken.None);
+
+        // Assert
+        Assert.AreEqual(25, totalCount);
+        Assert.AreEqual(10, orders.Count());
+    }
+
+    [TestMethod]
+    public async Task GetOrdersPagedAsync_LastPagePartialResults_ReturnsRemainingOrders()
+    {
+        // Arrange
+        await SeedTestOrders(25);
+
+        // Act
+        var (orders, totalCount) = await _repository.GetOrdersPagedAsync(
+            pageNumber: 3,
+            pageSize: 10,
+            cancellationToken: CancellationToken.None);
+
+        // Assert
+        Assert.AreEqual(25, totalCount);
+        Assert.AreEqual(5, orders.Count()); // Only 5 remaining on page 3
+    }
+
+    [TestMethod]
+    public async Task GetOrdersPagedAsync_PageBeyondTotal_ReturnsEmptyCollection()
+    {
+        // Arrange
+        await SeedTestOrders(10);
+
+        // Act
+        var (orders, totalCount) = await _repository.GetOrdersPagedAsync(
+            pageNumber: 5,
+            pageSize: 10,
+            cancellationToken: CancellationToken.None);
+
+        // Assert
+        Assert.AreEqual(10, totalCount);
+        Assert.AreEqual(0, orders.Count());
+    }
+
+    [TestMethod]
+    public async Task GetOrdersPagedAsync_ZeroOrNegativePageNumber_NormalizesToOne()
+    {
+        // Arrange
+        await SeedTestOrders(10);
+
+        // Act
+        var (ordersZero, _) = await _repository.GetOrdersPagedAsync(
+            pageNumber: 0,
+            pageSize: 5,
+            cancellationToken: CancellationToken.None);
+
+        var (ordersNegative, _) = await _repository.GetOrdersPagedAsync(
+            pageNumber: -1,
+            pageSize: 5,
+            cancellationToken: CancellationToken.None);
+
+        // Assert - Both should return first page (normalized)
+        Assert.AreEqual(5, ordersZero.Count());
+        Assert.AreEqual(5, ordersNegative.Count());
+    }
+
+    [TestMethod]
+    public async Task GetOrdersPagedAsync_PageSizeExceedsMax_ClampedTo100()
+    {
+        // Arrange
+        await SeedTestOrders(150);
+
+        // Act
+        var (orders, totalCount) = await _repository.GetOrdersPagedAsync(
+            pageNumber: 1,
+            pageSize: 200, // Exceeds max of 100
+            cancellationToken: CancellationToken.None);
+
+        // Assert
+        Assert.AreEqual(150, totalCount);
+        Assert.AreEqual(100, orders.Count()); // Should be clamped to 100
+    }
+
+    [TestMethod]
+    public async Task GetOrdersPagedAsync_ZeroOrNegativePageSize_NormalizesToOne()
+    {
+        // Arrange
+        await SeedTestOrders(10);
+
+        // Act
+        var (ordersZero, _) = await _repository.GetOrdersPagedAsync(
+            pageNumber: 1,
+            pageSize: 0,
+            cancellationToken: CancellationToken.None);
+
+        var (ordersNegative, _) = await _repository.GetOrdersPagedAsync(
+            pageNumber: 1,
+            pageSize: -5,
+            cancellationToken: CancellationToken.None);
+
+        // Assert - Both should return 1 item (normalized)
+        Assert.AreEqual(1, ordersZero.Count());
+        Assert.AreEqual(1, ordersNegative.Count());
+    }
+
+    [TestMethod]
+    public async Task GetOrdersPagedAsync_EmptyDatabase_ReturnsEmptyCollectionWithZeroTotal()
+    {
+        // Arrange - Empty database
+
+        // Act
+        var (orders, totalCount) = await _repository.GetOrdersPagedAsync(cancellationToken: CancellationToken.None);
+
+        // Assert
+        Assert.AreEqual(0, totalCount);
+        Assert.AreEqual(0, orders.Count());
+    }
+
+    [TestMethod]
+    public async Task GetOrdersPagedAsync_IncludesProducts()
+    {
+        // Arrange
+        var order = CreateTestOrder(productCount: 3);
+        await _repository.SaveOrderAsync(order, CancellationToken.None);
+
+        // Act
+        var (orders, _) = await _repository.GetOrdersPagedAsync(cancellationToken: CancellationToken.None);
+
+        // Assert
+        var retrievedOrder = orders.First();
+        Assert.HasCount(3, retrievedOrder.Products);
+    }
+
+    [TestMethod]
+    public async Task GetOrdersPagedAsync_OrdersByDateDescending()
+    {
+        // Arrange - Create orders with different dates
+        var order1 = CreateTestOrder("order-1") with { Date = DateTime.UtcNow.AddDays(-2) };
+        var order2 = CreateTestOrder("order-2") with { Date = DateTime.UtcNow.AddDays(-1) };
+        var order3 = CreateTestOrder("order-3") with { Date = DateTime.UtcNow };
+
+        await _repository.SaveOrderAsync(order1, CancellationToken.None);
+        await _repository.SaveOrderAsync(order2, CancellationToken.None);
+        await _repository.SaveOrderAsync(order3, CancellationToken.None);
+
+        // Act
+        var (orders, _) = await _repository.GetOrdersPagedAsync(
+            pageNumber: 1,
+            pageSize: 10,
+            cancellationToken: CancellationToken.None);
+
+        // Assert - Most recent first
+        var ordersList = orders.ToList();
+        Assert.AreEqual("order-3", ordersList[0].Id);
+        Assert.AreEqual("order-2", ordersList[1].Id);
+        Assert.AreEqual("order-1", ordersList[2].Id);
+    }
+
+    [TestMethod]
+    public async Task GetOrdersPagedAsync_SingleItem_ReturnsCorrectly()
+    {
+        // Arrange
+        await SeedTestOrders(1);
+
+        // Act
+        var (orders, totalCount) = await _repository.GetOrdersPagedAsync(
+            pageNumber: 1,
+            pageSize: 10,
+            cancellationToken: CancellationToken.None);
+
+        // Assert
+        Assert.AreEqual(1, totalCount);
+        Assert.AreEqual(1, orders.Count());
     }
 
     #endregion
