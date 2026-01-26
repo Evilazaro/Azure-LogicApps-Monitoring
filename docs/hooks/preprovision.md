@@ -1,4 +1,26 @@
+---
+title: "preprovision Hook"
+description: "Pre-provisioning script for Azure Developer CLI (azd) deployment validation and environment preparation"
+author: "Evilazaro | Principal Cloud Solution Architect | Microsoft"
+date: "January 2026"
+version: "2.3.0"
+tags: ["preprovision", "validation", "azd", "azure-cli", "prerequisites"]
+---
+
 # ⚙️ preprovision
+
+> [!NOTE]
+> **Target Audience**: DevOps Engineers, Platform Engineers, Developers  
+> **Reading Time**: ~12 minutes
+
+<details>
+<summary>📖 Navigation</summary>
+
+| Previous | Index | Next |
+|:---------|:-----:|-----:|
+| [check-dev-workstation](check-dev-workstation.md) | [📚 Index](README.md) | [postprovision](postprovision.md) |
+
+</details>
 
 Pre-provisioning script for Azure Developer CLI (azd) deployment.
 
@@ -401,6 +423,12 @@ flowchart TD
    - This is informational only; provisioning may still succeed
 
 ---
+
+<div align="center">
+
+**[← check-dev-workstation](check-dev-workstation.md)** · **[⬆️ Back to Top](#-preprovision)** · **[postprovision →](postprovision.md)**
+
+</div>
 
 **Version**: 2.3.0  
 **Author**: Evilazaro | Principal Cloud Solution Architect | Microsoft  

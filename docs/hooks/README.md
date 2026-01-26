@@ -1,4 +1,26 @@
+---
+title: "Azure Logic Apps Monitoring - Hooks Documentation"
+description: "Comprehensive documentation for Azure Developer CLI (azd) hooks used in the Azure Logic Apps Monitoring solution"
+author: "Evilazaro | Principal Cloud Solution Architect | Microsoft"
+date: "January 2026"
+version: "2.0.0"
+tags: ["azure", "logic-apps", "azd", "hooks", "devops", "automation"]
+---
+
 # 📚 Azure Logic Apps Monitoring - Hooks Documentation
+
+> [!NOTE]
+> **Target Audience**: Platform Engineers, DevOps Engineers, Cloud Architects  
+> **Reading Time**: ~15 minutes
+
+<details>
+<summary>📖 Navigation</summary>
+
+| Previous | Index | Next |
+|:---------|:-----:|-----:|
+| — | **You are here** | [check-dev-workstation](check-dev-workstation.md) |
+
+</details>
 
 This documentation provides comprehensive details for all Azure Developer CLI (azd) hooks used in the Azure Logic Apps Monitoring solution.
 
@@ -177,6 +199,12 @@ When modifying hooks:
 - [Azure Logic Apps Documentation](https://learn.microsoft.com/azure/logic-apps/)
 
 ---
+
+<div align="center">
+
+**[⬆️ Back to Top](#-azure-logic-apps-monitoring---hooks-documentation)** · **[check-dev-workstation →](check-dev-workstation.md)**
+
+</div>
 
 **Version**: 2.0.0  
 **Last Updated**: January 2026  

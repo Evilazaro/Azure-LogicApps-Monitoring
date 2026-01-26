@@ -1,4 +1,26 @@
+---
+title: "deploy-workflow Hook"
+description: "Deploys Logic Apps Standard workflows to Azure during azd deploy"
+author: "Azure Logic Apps Monitoring Team"
+date: "January 2026"
+version: "2.0.1"
+tags: ["deploy", "workflow", "logic-apps", "azd", "zip-deployment"]
+---
+
 # 🚀 deploy-workflow
+
+> [!NOTE]
+> **Target Audience**: DevOps Engineers, Logic Apps Developers  
+> **Reading Time**: ~12 minutes
+
+<details>
+<summary>📖 Navigation</summary>
+
+| Previous | Index | Next |
+|:---------|:-----:|-----:|
+| [postinfradelete](postinfradelete.md) | [📚 Index](README.md) | [clean-secrets](clean-secrets.md) |
+
+</details>
 
 Deploys Logic Apps Standard workflows to Azure.
 
@@ -352,6 +374,12 @@ POST https://management.azure.com/subscriptions/{sub}/resourceGroups/{rg}/provid
 - Verify workflow definitions are valid JSON before deployment
 
 ---
+
+<div align="center">
+
+**[← postinfradelete](postinfradelete.md)** · **[⬆️ Back to Top](#-deploy-workflow)** · **[clean-secrets →](clean-secrets.md)**
+
+</div>
 
 **Version**: 2.0.1  
 **Author**: Azure Logic Apps Monitoring Team  

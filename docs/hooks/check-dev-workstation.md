@@ -1,4 +1,26 @@
+---
+title: "check-dev-workstation Hook"
+description: "Validates developer workstation prerequisites for Azure Logic Apps Monitoring solution"
+author: "Evilazaro | Principal Cloud Solution Architect | Microsoft"
+date: "January 2026"
+version: "1.0.0"
+tags: ["validation", "prerequisites", "developer-tools", "workstation-setup"]
+---
+
 # 🖥️ check-dev-workstation
+
+> [!NOTE]
+> **Target Audience**: Developers, DevOps Engineers  
+> **Reading Time**: ~8 minutes
+
+<details>
+<summary>📖 Navigation</summary>
+
+| Previous | Index | Next |
+|:---------|:-----:|-----:|
+| [README](README.md) | [📚 Index](README.md) | [preprovision](preprovision.md) |
+
+</details>
 
 Validates developer workstation prerequisites for Azure Logic Apps Monitoring solution.
 
@@ -234,6 +256,12 @@ The script delegates to `preprovision` which performs:
    - Run `az login` if Azure CLI authentication is required
 
 ---
+
+<div align="center">
+
+**[← README](README.md)** · **[⬆️ Back to Top](#-check-dev-workstation)** · **[preprovision →](preprovision.md)**
+
+</div>
 
 **Version**: 1.0.0  
 **Author**: Evilazaro | Principal Cloud Solution Architect | Microsoft  

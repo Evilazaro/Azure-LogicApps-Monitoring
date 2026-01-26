@@ -1,6 +1,28 @@
+---
+title: "postinfradelete Hook"
+description: "Post-infrastructure-delete hook that purges soft-deleted Logic Apps after azd down"
+author: "Evilazaro | Principal Cloud Solution Architect | Microsoft"
+date: "January 2026"
+version: "2.0.0"
+tags: ["postinfradelete", "cleanup", "soft-delete", "logic-apps", "azd-down"]
+---
+
 # 🗑️ postinfradelete
 
-Post-infrastructure-delete hook for Azure Developer CLI (azd).
+> [!NOTE]
+> **Target Audience**: DevOps Engineers, Platform Engineers  
+> **Reading Time**: ~10 minutes
+
+<details>
+<summary>📖 Navigation</summary>
+
+| Previous | Index | Next |
+|:---------|:-----:|-----:|
+| [postprovision](postprovision.md) | [📚 Index](README.md) | [deploy-workflow](deploy-workflow.md) |
+
+</details>
+
+Purges soft-deleted Logic Apps Standard resources after infrastructure deletion. This script is automatically executed by `azd` after `azd down` completes.
 
 ## 📑 Table of Contents
 
@@ -314,7 +336,8 @@ Total soft-deleted sites found: 2
 
 ### ⚠️ Resource Recovery
 
-> **Warning**: Purging is **irreversible**. If you might need to recover a deleted Logic App, do not run this script until you're certain the resource is no longer needed.
+> [!WARNING]
+> Purging is **irreversible**. If you might need to recover a deleted Logic App, do not run this script until you're certain the resource is no longer needed.
 
 ## 🔧 Troubleshooting
 
@@ -333,6 +356,12 @@ Total soft-deleted sites found: 2
    - When running via azd, authentication should be handled automatically
 
 ---
+
+<div align="center">
+
+**[← postprovision](postprovision.md)** · **[⬆️ Back to Top](#-postinfradelete)** · **[deploy-workflow →](deploy-workflow.md)**
+
+</div>
 
 **Version**: 2.0.0  
 **Author**: Evilazaro | Principal Cloud Solution Architect | Microsoft  

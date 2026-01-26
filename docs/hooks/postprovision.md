@@ -1,4 +1,26 @@
+---
+title: "postprovision Hook"
+description: "Post-provisioning script that configures .NET user secrets with Azure resource information"
+author: "Azure DevOps Team"
+date: "January 2026"
+version: "2.0.1"
+tags: ["postprovision", "user-secrets", "configuration", "azd", "sql-database"]
+---
+
 # 🚀 postprovision
+
+> [!NOTE]
+> **Target Audience**: DevOps Engineers, Backend Developers  
+> **Reading Time**: ~10 minutes
+
+<details>
+<summary>📖 Navigation</summary>
+
+| Previous | Index | Next |
+|:---------|:-----:|-----:|
+| [preprovision](preprovision.md) | [📚 Index](README.md) | [postinfradelete](postinfradelete.md) |
+
+</details>
 
 Post-provisioning script for Azure Developer CLI (azd).
 
@@ -368,6 +390,12 @@ Total secrets: 15
    - Check firewall rules allow your IP address
 
 ---
+
+<div align="center">
+
+**[← preprovision](preprovision.md)** · **[⬆️ Back to Top](#-postprovision)** · **[postinfradelete →](postinfradelete.md)**
+
+</div>
 
 **Version**: 2.0.1  
 **Author**: Azure DevOps Team  
