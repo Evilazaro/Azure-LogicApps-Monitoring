@@ -7,13 +7,37 @@ license: MIT
 languages: [PowerShell, Bash]
 ---
 
-# Generate-Orders
+# 📦 Generate-Orders
 
-## Overview
+---
+
+## 📑 Table of Contents
+
+- [📋 Overview](#-overview)
+- [📝 Description](#-description)
+- [📊 Workflow Diagram](#-workflow-diagram)
+- [✅ Prerequisites](#-prerequisites)
+- [⚙️ Parameters/Arguments](#️-parametersarguments)
+- [📥 Input/Output Specifications](#-inputoutput-specifications)
+- [💻 Usage Examples](#-usage-examples)
+- [⚠️ Error Handling and Exit Codes](#️-error-handling-and-exit-codes)
+- [🔒 Security Considerations](#-security-considerations)
+- [🚧 Known Limitations](#-known-limitations)
+- [🔗 Related Scripts](#-related-scripts)
+- [🛠️ Product Catalog Reference](#️-product-catalog-reference)
+- [📜 Changelog](#-changelog)
+
+---
+
+## 📋 Overview
 
 Generates sample e-commerce order data with products, customer information, and delivery addresses for testing Azure Logic Apps monitoring and workflow scenarios.
 
-## Description
+[⬆️ Back to top](#-generate-orders)
+
+---
+
+## 📝 Description
 
 This utility script creates realistic sample order data for testing and demonstration purposes within the Azure Logic Apps Monitoring solution. It generates random e-commerce orders complete with product selections from a predefined catalog, customer details, and delivery addresses from a global address pool.
 
@@ -21,7 +45,11 @@ Each order is assigned a unique GUID (PowerShell) or UUID (Bash) identifier to e
 
 The generated data is output as a JSON file containing an array of order objects, suitable for direct consumption by Logic Apps workflows, API testing, or bulk import scenarios. The product catalog includes 20 different tech products ranging from accessories to furniture, with prices from $12.99 to $499.99.
 
-## Workflow Diagram
+[⬆️ Back to top](#-generate-orders)
+
+---
+
+## 📊 Workflow Diagram
 
 ```mermaid
 flowchart TD
@@ -75,15 +103,19 @@ flowchart TD
     style AC fill:#9f9
 ```
 
-## Prerequisites
+[⬆️ Back to top](#-generate-orders)
+
+---
+
+## ✅ Prerequisites
 
 | Category | Requirement | Version | Verification Command | Required |
-|----------|-------------|---------|---------------------|----------|
-| Runtime | PowerShell Core | >= 7.0 | `$PSVersionTable.PSVersion` | Yes |
-| Runtime | Bash | >= 4.0 | `bash --version` | Yes |
-| CLI Tool | jq (Bash only) | Latest | `jq --version` | Yes (Bash) |
+|:---------|:------------|:--------|:---------------------|:--------:|
+| Runtime | PowerShell Core | >= 7.0 | `$PSVersionTable.PSVersion` | ✅ |
+| Runtime | Bash | >= 4.0 | `bash --version` | ✅ |
+| CLI Tool | jq (Bash only) | Latest | `jq --version` | ✅ (Bash) |
 
-### Installation Commands
+### 📦 Installation Commands
 
 ```bash
 # Install jq (Bash dependency for JSON generation)
@@ -97,38 +129,46 @@ sudo apt-get install jq
 sudo yum install jq
 ```
 
-## Parameters/Arguments
+[⬆️ Back to top](#-generate-orders)
+
+---
+
+## ⚙️ Parameters/Arguments
 
 ### PowerShell Parameters
 
 | Parameter | Type | Required | Default | Description |
-|-----------|------|----------|---------|-------------|
-| `-OrderCount` | `[int]` | No | `2000` | Number of orders to generate (1-10000) |
-| `-OutputPath` | `[string]` | No | `../infra/data/ordersBatch.json` | Output file path for generated orders |
-| `-MinProducts` | `[int]` | No | `1` | Minimum products per order (1-20) |
-| `-MaxProducts` | `[int]` | No | `6` | Maximum products per order (1-20) |
-| `-Force` | `[switch]` | No | `$false` | Force execution without prompting |
+|:----------|:-----|:--------:|:--------|:------------|
+| `-OrderCount` | `[int]` | ❌ | `2000` | Number of orders to generate (1-10000) |
+| `-OutputPath` | `[string]` | ❌ | `../infra/data/ordersBatch.json` | Output file path for generated orders |
+| `-MinProducts` | `[int]` | ❌ | `1` | Minimum products per order (1-20) |
+| `-MaxProducts` | `[int]` | ❌ | `6` | Maximum products per order (1-20) |
+| `-Force` | `[switch]` | ❌ | `$false` | Force execution without prompting |
 
 ### Bash Arguments
 
 | Position/Flag | Type | Required | Default | Description |
-|---------------|------|----------|---------|-------------|
-| `-c`, `--count` | number | No | `2000` | Number of orders to generate |
-| `-o`, `--output` | path | No | `../infra/data/ordersBatch.json` | Output file path |
-| `-m`, `--min-products` | number | No | `1` | Minimum products per order |
-| `-M`, `--max-products` | number | No | `6` | Maximum products per order |
-| `-f`, `--force` | flag | No | `false` | Force execution without prompting |
-| `-n`, `--dry-run` | flag | No | `false` | Show what would be generated without writing file |
-| `-v`, `--verbose` | flag | No | `false` | Display detailed diagnostic information |
-| `-h`, `--help` | flag | No | N/A | Display help message |
+|:--------------|:-----|:--------:|:--------|:------------|
+| `-c`, `--count` | number | ❌ | `2000` | Number of orders to generate |
+| `-o`, `--output` | path | ❌ | `../infra/data/ordersBatch.json` | Output file path |
+| `-m`, `--min-products` | number | ❌ | `1` | Minimum products per order |
+| `-M`, `--max-products` | number | ❌ | `6` | Maximum products per order |
+| `-f`, `--force` | flag | ❌ | `false` | Force execution without prompting |
+| `-n`, `--dry-run` | flag | ❌ | `false` | Show what would be generated without writing file |
+| `-v`, `--verbose` | flag | ❌ | `false` | Display detailed diagnostic information |
+| `-h`, `--help` | flag | ❌ | N/A | Display help message |
 
-## Input/Output Specifications
+[⬆️ Back to top](#-generate-orders)
+
+---
+
+## 📥 Input/Output Specifications
 
 ### Inputs
 
 **Environment Variables Read:**
 
-- None
+> **ℹ️ Note:** None required.
 
 **Built-in Data:**
 
@@ -141,9 +181,9 @@ sudo yum install jq
 **Exit Codes:**
 
 | Exit Code | Meaning |
-|-----------|---------|
-| 0 | Success - Orders generated |
-| 1 | Error - Parameter validation or file write failure |
+|:---------:|:--------|
+| `0` | Success — Orders generated |
+| `1` | Error — Parameter validation or file write failure |
 
 **stdout Output:**
 
@@ -177,7 +217,11 @@ sudo yum install jq
 ]
 ```
 
-## Usage Examples
+[⬆️ Back to top](#-generate-orders)
+
+---
+
+## 💻 Usage Examples
 
 ### Basic Usage
 
@@ -235,12 +279,16 @@ sudo yum install jq
     ./Generate-Orders.sh --count 500 --force
 ```
 
-## Error Handling and Exit Codes
+[⬆️ Back to top](#-generate-orders)
+
+---
+
+## ⚠️ Error Handling and Exit Codes
 
 | Exit Code | Meaning | Recovery Action |
-|-----------|---------|-----------------|
-| 0 | Success | N/A |
-| 1 | Error | Check parameter values, verify write permissions |
+|:---------:|:--------|:----------------|
+| `0` | Success | N/A |
+| `1` | Error | Check parameter values, verify write permissions |
 
 ### Error Handling Approach
 
@@ -258,9 +306,13 @@ sudo yum install jq
 - Output directory creation if needed
 - jq dependency check
 
-## Security Considerations
+[⬆️ Back to top](#-generate-orders)
 
-### Credential Handling
+---
+
+## 🔒 Security Considerations
+
+### 🔑 Credential Handling
 
 - [x] No credentials involved
 - [x] Generated data contains no real PII
@@ -269,41 +321,59 @@ sudo yum install jq
 ### Required Permissions
 
 | Permission/Role | Scope | Justification |
-|-----------------|-------|---------------|
+|:----------------|:------|:--------------|
 | File System Write | Output directory | Write generated JSON file |
 
-### Network Security
+### 🌐 Network Security
 
-- **Endpoints accessed:** None
-- **TLS requirements:** N/A
-- **Firewall rules needed:** None
+| Property | Value |
+|:---------|:------|
+| **Endpoints accessed** | None |
+| **TLS requirements** | N/A |
+| **Firewall rules needed** | None |
 
-### Logging Security
+### 📝 Logging Security
 
-- **Sensitive data masking:** N/A - no sensitive data
-- **Audit trail:** Generation statistics displayed
+> **✅ Security Features:**
+>
+> - **Sensitive data masking:** N/A — no sensitive data
+> - **Audit trail:** Generation statistics displayed
 
-## Known Limitations
+[⬆️ Back to top](#-generate-orders)
 
-- Product catalog is hardcoded (20 products)
-- Address pool is hardcoded (20 addresses)
-- Date range fixed to 2024-2025
-- Maximum order count limited to 10,000
-- Large order counts may take several minutes
-- JSON output is not streamed (entire file built in memory)
-- Bash version requires jq for JSON generation
+---
 
-## Related Scripts
+## 🚧 Known Limitations
+
+> **⚠️ Important Notes:**
+>
+> - Product catalog is hardcoded (20 products)
+> - Address pool is hardcoded (20 addresses)
+> - Date range fixed to 2024-2025
+> - Maximum order count limited to 10,000
+> - Large order counts may take several minutes
+> - JSON output is not streamed (entire file built in memory)
+> - Bash version requires jq for JSON generation
+
+[⬆️ Back to top](#-generate-orders)
+
+---
+
+## 🔗 Related Scripts
 
 | Script | Relationship | Description |
-|--------|--------------|-------------|
+|:-------|:-------------|:------------|
 | [deploy-workflow.md](deploy-workflow.md) | Consumes data | Workflows process generated orders |
 | [postprovision.md](postprovision.md) | Related | Sets up environment for order processing |
 
-## Product Catalog Reference
+[⬆️ Back to top](#-generate-orders)
+
+---
+
+## 🛠️ Product Catalog Reference
 
 | Product ID | Description | Base Price |
-|------------|-------------|------------|
+|:-----------|:------------|:----------:|
 | PROD-1001 | Wireless Mouse | $25.99 |
 | PROD-1002 | Mechanical Keyboard | $89.99 |
 | PROD-1003 | USB-C Hub | $34.99 |
@@ -325,10 +395,16 @@ sudo yum install jq
 | PROD-9002 | Drawing Pen Set | $29.99 |
 | PROD-A001 | Wireless Earbuds | $129.99 |
 
-## Changelog
+[⬆️ Back to top](#-generate-orders)
+
+---
+
+## 📜 Changelog
 
 | Version | Date | Changes |
-|---------|------|---------|
+|:-------:|:----:|:--------|
 | 2.0.1 | 2026-01-06 | Improved date range handling, added statistics |
 | 2.0.0 | 2025-12-01 | Added configurable product count per order |
 | 1.0.0 | 2025-01-01 | Initial release |
+
+[⬆️ Back to top](#-generate-orders)

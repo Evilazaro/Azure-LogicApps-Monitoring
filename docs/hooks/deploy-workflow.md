@@ -7,13 +7,36 @@ license: MIT
 languages: [PowerShell, Bash]
 ---
 
-# deploy-workflow
+# 🚀 deploy-workflow
 
-## Overview
+---
+
+## 📑 Table of Contents
+
+- [📋 Overview](#-overview)
+- [📝 Description](#-description)
+- [📊 Workflow Diagram](#-workflow-diagram)
+- [✅ Prerequisites](#-prerequisites)
+- [⚙️ Parameters/Arguments](#️-parametersarguments)
+- [📥 Input/Output Specifications](#-inputoutput-specifications)
+- [💻 Usage Examples](#-usage-examples)
+- [⚠️ Error Handling and Exit Codes](#️-error-handling-and-exit-codes)
+- [🔒 Security Considerations](#-security-considerations)
+- [🚧 Known Limitations](#-known-limitations)
+- [🔗 Related Scripts](#-related-scripts)
+- [📜 Changelog](#-changelog)
+
+---
+
+## 📋 Overview
 
 Deploys Logic Apps Standard workflow definitions from the local OrdersManagement project to Azure, resolving environment variable placeholders and configuring API connections.
 
-## Description
+[⬆️ Back to top](#-deploy-workflow)
+
+---
+
+## 📝 Description
 
 This script handles the deployment of Azure Logic Apps Standard workflows as part of the Azure Developer CLI (azd) predeploy hook. It packages workflow definitions, resolves environment variable placeholders in configuration files, and deploys the complete workflow package to Azure using zip deployment.
 
@@ -21,7 +44,11 @@ The script performs several sophisticated operations: setting up environment var
 
 Files matching patterns defined in `.funcignore` (debug files, local settings, test files, etc.) are excluded from the deployment package to minimize deployment size and prevent accidental deployment of development artifacts.
 
-## Workflow Diagram
+[⬆️ Back to top](#-deploy-workflow)
+
+---
+
+## 📊 Workflow Diagram
 
 ```mermaid
 flowchart TD
@@ -71,20 +98,24 @@ flowchart TD
     style V fill:#9f9
 ```
 
-## Prerequisites
+[⬆️ Back to top](#-deploy-workflow)
+
+---
+
+## ✅ Prerequisites
 
 | Category | Requirement | Version | Verification Command | Required |
-|----------|-------------|---------|---------------------|----------|
-| Runtime | PowerShell Core | >= 7.0 | `$PSVersionTable.PSVersion` | Yes |
-| Runtime | Bash | >= 4.0 | `bash --version` | Yes |
-| CLI Tool | Azure CLI | >= 2.50 | `az --version` | Yes |
-| CLI Tool | jq (Bash only) | Latest | `jq --version` | Yes (Bash) |
-| CLI Tool | zip (Bash only) | Latest | `zip --version` | Yes (Bash) |
-| Environment Variable | AZURE_SUBSCRIPTION_ID | N/A | `echo $AZURE_SUBSCRIPTION_ID` | Yes |
-| Environment Variable | AZURE_RESOURCE_GROUP | N/A | `echo $AZURE_RESOURCE_GROUP` | Yes |
-| Environment Variable | LOGIC_APP_NAME | N/A | `echo $LOGIC_APP_NAME` | Yes |
+|:---------|:------------|:--------|:---------------------|:--------:|
+| Runtime | PowerShell Core | >= 7.0 | `$PSVersionTable.PSVersion` | ✅ |
+| Runtime | Bash | >= 4.0 | `bash --version` | ✅ |
+| CLI Tool | Azure CLI | >= 2.50 | `az --version` | ✅ |
+| CLI Tool | jq (Bash only) | Latest | `jq --version` | ✅ (Bash) |
+| CLI Tool | zip (Bash only) | Latest | `zip --version` | ✅ (Bash) |
+| Environment Variable | AZURE_SUBSCRIPTION_ID | N/A | `echo $AZURE_SUBSCRIPTION_ID` | ✅ |
+| Environment Variable | AZURE_RESOURCE_GROUP | N/A | `echo $AZURE_RESOURCE_GROUP` | ✅ |
+| Environment Variable | LOGIC_APP_NAME | N/A | `echo $LOGIC_APP_NAME` | ✅ |
 
-### Installation Commands
+### 📦 Installation Commands
 
 ```bash
 # Install jq and zip (Bash dependencies)
@@ -98,35 +129,43 @@ sudo apt-get install jq zip
 sudo yum install jq zip
 ```
 
-## Parameters/Arguments
+[⬆️ Back to top](#-deploy-workflow)
+
+---
+
+## ⚙️ Parameters/Arguments
 
 ### PowerShell Parameters
 
 | Parameter | Type | Required | Default | Description |
-|-----------|------|----------|---------|-------------|
-| `-WorkflowPath` | `[string]` | No | `../workflows/OrdersManagement/OrdersManagementLogicApp` | Path to workflow project directory |
+|:----------|:-----|:--------:|:--------|:------------|
+| `-WorkflowPath` | `[string]` | ❌ | `../workflows/OrdersManagement/OrdersManagementLogicApp` | Path to workflow project directory |
 
 ### Bash Arguments
 
 | Position/Flag | Type | Required | Default | Description |
-|---------------|------|----------|---------|-------------|
-| `$1` (positional) | string | No | `../workflows/OrdersManagement/OrdersManagementLogicApp` | Path to workflow project directory |
+|:--------------|:-----|:--------:|:--------|:------------|
+| `$1` (positional) | string | ❌ | `../workflows/OrdersManagement/OrdersManagementLogicApp` | Path to workflow project directory |
 
-## Input/Output Specifications
+[⬆️ Back to top](#-deploy-workflow)
+
+---
+
+## 📥 Input/Output Specifications
 
 ### Inputs
 
 **Environment Variables Read (set by azd):**
 
 | Variable | Required | Description |
-|----------|----------|-------------|
-| `AZURE_SUBSCRIPTION_ID` | Yes | Azure subscription GUID |
-| `AZURE_RESOURCE_GROUP` | Yes | Resource group containing Logic App |
-| `AZURE_LOCATION` | No | Azure region (default: westus3) |
-| `LOGIC_APP_NAME` | Yes | Name of target Logic App |
-| `SERVICE_BUS_CONNECTION_RUNTIME_URL` | No | Pre-configured Service Bus URL |
-| `AZURE_BLOB_CONNECTION_RUNTIME_URL` | No | Pre-configured Blob Storage URL |
-| `MANAGED_IDENTITY_NAME` | No | Managed identity for connections |
+|:---------|:--------:|:------------|
+| `AZURE_SUBSCRIPTION_ID` | ✅ | Azure subscription GUID |
+| `AZURE_RESOURCE_GROUP` | ✅ | Resource group containing Logic App |
+| `AZURE_LOCATION` | ❌ | Azure region (default: westus3) |
+| `LOGIC_APP_NAME` | ✅ | Name of target Logic App |
+| `SERVICE_BUS_CONNECTION_RUNTIME_URL` | ❌ | Pre-configured Service Bus URL |
+| `AZURE_BLOB_CONNECTION_RUNTIME_URL` | ❌ | Pre-configured Blob Storage URL |
+| `MANAGED_IDENTITY_NAME` | ❌ | Managed identity for connections |
 
 **Files/Paths Expected:**
 
@@ -143,9 +182,9 @@ sudo yum install jq zip
 **Exit Codes:**
 
 | Exit Code | Meaning |
-|-----------|---------|
-| 0 | Success - Workflow deployed |
-| 1 | Error - Deployment failed |
+|:---------:|:--------|
+| `0` | Success — Workflow deployed |
+| `1` | Error — Deployment failed |
 
 **stdout Output:**
 
@@ -157,7 +196,11 @@ sudo yum install jq zip
 
 - Logic App workflow definitions updated
 
-## Usage Examples
+[⬆️ Back to top](#-deploy-workflow)
+
+---
+
+## 💻 Usage Examples
 
 ### Basic Usage
 
@@ -212,12 +255,16 @@ sudo yum install jq zip
     LOGIC_APP_NAME: ${{ vars.LOGIC_APP_NAME }}
 ```
 
-## Error Handling and Exit Codes
+[⬆️ Back to top](#-deploy-workflow)
+
+---
+
+## ⚠️ Error Handling and Exit Codes
 
 | Exit Code | Meaning | Recovery Action |
-|-----------|---------|-----------------|
-| 0 | Success | N/A |
-| 1 | Deployment error | Check Azure CLI auth, verify Logic App exists |
+|:---------:|:--------|:----------------|
+| `0` | Success | N/A |
+| `1` | Deployment error | Check Azure CLI auth, verify Logic App exists |
 
 ### Error Handling Approach
 
@@ -236,9 +283,13 @@ sudo yum install jq zip
 - Dependency validation (jq, zip)
 - Detailed error logging
 
-## Security Considerations
+[⬆️ Back to top](#-deploy-workflow)
 
-### Credential Handling
+---
+
+## 🔒 Security Considerations
+
+### 🔑 Credential Handling
 
 - [x] No hardcoded secrets
 - [x] Connection strings resolved from environment
@@ -248,40 +299,60 @@ sudo yum install jq zip
 ### Required Permissions
 
 | Permission/Role | Scope | Justification |
-|-----------------|-------|---------------|
+|:----------------|:------|:--------------|
 | Logic App Contributor | Resource Group | Deploy workflow definitions |
 | API Connections Reader | Resource Group | Retrieve connection runtime URLs |
 
-### Network Security
+### 🌐 Network Security
 
-- **Endpoints accessed:** Azure Resource Manager, Logic App deployment endpoint
-- **TLS requirements:** TLS 1.2+
-- **Firewall rules needed:** Outbound HTTPS (443)
+| Property | Value |
+|:---------|:------|
+| **Endpoints accessed** | Azure Resource Manager, Logic App deployment endpoint |
+| **TLS requirements** | TLS 1.2+ |
+| **Firewall rules needed** | Outbound HTTPS (443) |
 
-### Logging Security
+### 📝 Logging Security
 
-- **Sensitive data masking:** Connection strings resolved but not logged in full
-- **Audit trail:** Deployment logs with timestamps
+> **✅ Security Features:**
+>
+> - **Sensitive data masking:** Connection strings resolved but not logged in full
+> - **Audit trail:** Deployment logs with timestamps
 
-## Known Limitations
+[⬆️ Back to top](#-deploy-workflow)
 
-- Placeholder resolution only supports `${VARIABLE}` format
-- Unresolved placeholders generate warnings but don't fail deployment
-- Zip deployment may timeout for large workflow packages
-- Connection runtime URL retrieval requires existing API connections
-- Environment aliases may not cover all custom variable names
+---
 
-## Related Scripts
+## 🚧 Known Limitations
+
+> **⚠️ Important Notes:**
+>
+> - Placeholder resolution only supports `${VARIABLE}` format
+> - Unresolved placeholders generate warnings but don't fail deployment
+> - Zip deployment may timeout for large workflow packages
+> - Connection runtime URL retrieval requires existing API connections
+> - Environment aliases may not cover all custom variable names
+
+[⬆️ Back to top](#-deploy-workflow)
+
+---
+
+## 🔗 Related Scripts
 
 | Script | Relationship | Description |
-|--------|--------------|-------------|
+|:-------|:-------------|:------------|
 | [postprovision.md](postprovision.md) | Precedes | Sets up environment variables used by this script |
 | [preprovision.md](preprovision.md) | Related | Validates prerequisites before deployment |
 
-## Changelog
+[⬆️ Back to top](#-deploy-workflow)
+
+---
+
+## 📜 Changelog
 
 | Version | Date | Changes |
-|---------|------|---------|
+|:-------:|:----:|:--------|
 | 2.0.1 | 2026-01-06 | Added ANSI color disable for CI compatibility |
 | 2.0.0 | 2025-12-01 | Complete rewrite with environment aliasing |
 | 1.0.0 | 2025-06-01 | Initial release |
+
+[⬆️ Back to top](#-deploy-workflow)

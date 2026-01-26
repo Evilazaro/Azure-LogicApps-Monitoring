@@ -7,13 +7,37 @@ license: MIT
 languages: [PowerShell, Bash]
 ---
 
-# sql-managed-identity-config
+# 🔐 sql-managed-identity-config
 
-## Overview
+---
+
+## 📑 Table of Contents
+
+- [📋 Overview](#-overview)
+- [📝 Description](#-description)
+- [📊 Workflow Diagram](#-workflow-diagram)
+- [✅ Prerequisites](#-prerequisites)
+- [⚙️ Parameters/Arguments](#️-parametersarguments)
+- [📥 Input/Output Specifications](#-inputoutput-specifications)
+- [💻 Usage Examples](#-usage-examples)
+- [⚠️ Error Handling and Exit Codes](#️-error-handling-and-exit-codes)
+- [🔒 Security Considerations](#-security-considerations)
+- [🚧 Known Limitations](#-known-limitations)
+- [🔗 Related Scripts](#-related-scripts)
+- [💾 T-SQL Commands Executed](#-t-sql-commands-executed)
+- [📜 Changelog](#-changelog)
+
+---
+
+## 📋 Overview
 
 Configures Azure SQL Database user authentication with Managed Identity by creating a contained database user from an external provider (Microsoft Entra ID) and assigning specified database roles.
 
-## Description
+[⬆️ Back to top](#-sql-managed-identity-config)
+
+---
+
+## 📝 Description
 
 This script enables passwordless authentication from Azure resources to Azure SQL Database using Managed Identities. It creates a contained database user in the target database that maps to a Microsoft Entra ID (formerly Azure AD) managed identity or service principal, then assigns the specified database roles to grant appropriate permissions.
 
@@ -21,7 +45,11 @@ The script uses Azure AD token-based authentication to connect to the SQL Databa
 
 Key security benefits include: no SQL passwords stored or transmitted, authentication tied to Azure AD identity lifecycle, role-based access control within the database, and full audit trail through Azure AD and SQL audit logs. This is the recommended authentication pattern for Azure applications connecting to Azure SQL Database.
 
-## Workflow Diagram
+[⬆️ Back to top](#-sql-managed-identity-config)
+
+---
+
+## 📊 Workflow Diagram
 
 ```mermaid
 flowchart TD
@@ -83,27 +111,31 @@ flowchart TD
     style AD fill:#9f9
 ```
 
-## Prerequisites
+[⬆️ Back to top](#-sql-managed-identity-config)
+
+---
+
+## ✅ Prerequisites
 
 | Category | Requirement | Version | Verification Command | Required |
-|----------|-------------|---------|---------------------|----------|
-| Runtime | PowerShell Core | >= 7.0 | `$PSVersionTable.PSVersion` | Yes |
-| Runtime | Bash | >= 4.0 | `bash --version` | Yes |
-| CLI Tool | Azure CLI | >= 2.60.0 | `az --version` | Yes |
-| CLI Tool | sqlcmd (Bash only) | Latest | `sqlcmd -?` | Yes (Bash) |
-| Azure Config | Entra ID Authentication | N/A | SQL Server must have Entra admin configured | Yes |
+|:---------|:------------|:--------|:---------------------|:--------:|
+| Runtime | PowerShell Core | >= 7.0 | `$PSVersionTable.PSVersion` | ✅ |
+| Runtime | Bash | >= 4.0 | `bash --version` | ✅ |
+| CLI Tool | Azure CLI | >= 2.60.0 | `az --version` | ✅ |
+| CLI Tool | sqlcmd (Bash only) | Latest | `sqlcmd -?` | ✅ (Bash) |
+| Azure Config | Entra ID Authentication | N/A | SQL Server must have Entra admin configured | ✅ |
 | Environment Variable | AZURE_RESOURCE_GROUP | N/A | For firewall configuration | Conditional |
 
-### Critical Prerequisites
+### ⚠️ Critical Prerequisites
 
-> **IMPORTANT**: The authenticated Azure CLI user must be the Entra ID administrator of the target SQL Server, or have equivalent permissions. Set the admin using:
+> **❗ IMPORTANT:** The authenticated Azure CLI user must be the Entra ID administrator of the target SQL Server, or have equivalent permissions. Set the admin using:
 >
 > ```bash
 > az sql server ad-admin create --resource-group <rg> --server-name <server> \
 >   --display-name <name> --object-id <id>
 > ```
 
-### Installation Commands (Bash Dependencies)
+### 📦 Installation Commands (Bash Dependencies)
 
 ```bash
 # Install sqlcmd (mssql-tools)
@@ -118,36 +150,40 @@ brew tap microsoft/mssql-release https://github.com/Microsoft/homebrew-mssql-rel
 brew install mssql-tools
 ```
 
-## Parameters/Arguments
+[⬆️ Back to top](#-sql-managed-identity-config)
+
+---
+
+## ⚙️ Parameters/Arguments
 
 ### PowerShell Parameters
 
 | Parameter | Type | Required | Default | Description |
-|-----------|------|----------|---------|-------------|
-| `-SqlServerName` | `[string]` | Yes | N/A | Azure SQL Server name (without .database.windows.net suffix) |
-| `-DatabaseName` | `[string]` | Yes | N/A | Target database name (cannot be 'master') |
-| `-PrincipalDisplayName` | `[string]` | Yes | N/A | Managed identity or service principal display name from Entra ID |
-| `-DatabaseRoles` | `[string[]]` | No | `@("db_datareader", "db_datawriter")` | Array of database roles to assign |
-| `-AzureEnvironment` | `[string]` | No | `AzureCloud` | Azure cloud environment |
-| `-CommandTimeout` | `[int]` | No | `120` | SQL command timeout in seconds (30-600) |
+|:----------|:-----|:--------:|:--------|:------------|
+| `-SqlServerName` | `[string]` | ✅ | N/A | Azure SQL Server name (without .database.windows.net suffix) |
+| `-DatabaseName` | `[string]` | ✅ | N/A | Target database name (cannot be 'master') |
+| `-PrincipalDisplayName` | `[string]` | ✅ | N/A | Managed identity or service principal display name from Entra ID |
+| `-DatabaseRoles` | `[string[]]` | ❌ | `@("db_datareader", "db_datawriter")` | Array of database roles to assign |
+| `-AzureEnvironment` | `[string]` | ❌ | `AzureCloud` | Azure cloud environment |
+| `-CommandTimeout` | `[int]` | ❌ | `120` | SQL command timeout in seconds (30-600) |
 
 ### Bash Arguments
 
 | Position/Flag | Type | Required | Default | Description |
-|---------------|------|----------|---------|-------------|
-| `--sql-server-name`, `-s` | string | Yes | N/A | Azure SQL Server name (without suffix) |
-| `--database-name`, `-d` | string | Yes | N/A | Target database name |
-| `--principal-name`, `-p` | string | Yes | N/A | Managed identity display name |
-| `--database-roles`, `-r` | string | No | `db_datareader,db_datawriter` | Comma-separated database roles |
-| `--environment`, `-e` | string | No | `AzureCloud` | Azure environment |
-| `--timeout`, `-t` | number | No | `120` | SQL command timeout (30-600) |
-| `--verbose`, `-v` | flag | No | `false` | Enable verbose output |
-| `--help`, `-h` | flag | No | N/A | Display help message |
+|:--------------|:-----|:--------:|:--------|:------------|
+| `--sql-server-name`, `-s` | string | ✅ | N/A | Azure SQL Server name (without suffix) |
+| `--database-name`, `-d` | string | ✅ | N/A | Target database name |
+| `--principal-name`, `-p` | string | ✅ | N/A | Managed identity display name |
+| `--database-roles`, `-r` | string | ❌ | `db_datareader,db_datawriter` | Comma-separated database roles |
+| `--environment`, `-e` | string | ❌ | `AzureCloud` | Azure environment |
+| `--timeout`, `-t` | number | ❌ | `120` | SQL command timeout (30-600) |
+| `--verbose`, `-v` | flag | ❌ | `false` | Enable verbose output |
+| `--help`, `-h` | flag | ❌ | N/A | Display help message |
 
 ### Valid Database Roles
 
 | Role | Permissions |
-|------|-------------|
+|:-----|:------------|
 | `db_owner` | Full permissions in the database |
 | `db_datareader` | Read all data from all user tables |
 | `db_datawriter` | Add, delete, or modify data in all user tables |
@@ -161,20 +197,24 @@ brew install mssql-tools
 ### Azure Environments
 
 | Environment | SQL Endpoint Suffix |
-|-------------|-------------------|
+|:------------|:-------------------:|
 | `AzureCloud` | `.database.windows.net` |
 | `AzureUSGovernment` | `.database.usgovcloudapi.net` |
 | `AzureChinaCloud` | `.database.chinacloudapi.cn` |
 | `AzureGermanCloud` | `.database.cloudapi.de` |
 
-## Input/Output Specifications
+[⬆️ Back to top](#-sql-managed-identity-config)
+
+---
+
+## 📥 Input/Output Specifications
 
 ### Inputs
 
 **Environment Variables Read:**
 
 | Variable | Required | Description |
-|----------|----------|-------------|
+|:---------|:--------:|:------------|
 | `AZURE_RESOURCE_GROUP` | Conditional | Used for firewall rule configuration |
 
 ### Outputs
@@ -182,9 +222,9 @@ brew install mssql-tools
 **Exit Codes:**
 
 | Exit Code | Meaning |
-|-----------|---------|
-| 0 | Success - User configured with roles |
-| 1 | Error - Configuration failed |
+|:---------:|:--------|
+| `0` | Success — User configured with roles |
+| `1` | Error — Configuration failed |
 
 **PowerShell Output Object:**
 
@@ -207,7 +247,11 @@ brew install mssql-tools
 }
 ```
 
-## Usage Examples
+[⬆️ Back to top](#-sql-managed-identity-config)
+
+---
+
+## 💻 Usage Examples
 
 ### Basic Usage
 
@@ -284,12 +328,16 @@ if ($result.Success) {
       --principal-name "${{ vars.MANAGED_IDENTITY_NAME }}"
 ```
 
-## Error Handling and Exit Codes
+[⬆️ Back to top](#-sql-managed-identity-config)
+
+---
+
+## ⚠️ Error Handling and Exit Codes
 
 | Exit Code | Meaning | Recovery Action |
-|-----------|---------|-----------------|
-| 0 | Success | N/A |
-| 1 | Error | Check Azure CLI auth, verify Entra admin permissions |
+|:---------:|:--------|:----------------|
+| `0` | Success | N/A |
+| `1` | Error | Check Azure CLI auth, verify Entra admin permissions |
 
 ### Error Handling Approach
 
@@ -308,9 +356,13 @@ if ($result.Success) {
 - Token acquisition error handling
 - Cleanup of temporary files
 
-## Security Considerations
+[⬆️ Back to top](#-sql-managed-identity-config)
 
-### Credential Handling
+---
+
+## 🔒 Security Considerations
+
+### 🔑 Credential Handling
 
 - [x] No hardcoded secrets
 - [x] No SQL passwords - uses Azure AD token authentication
@@ -320,39 +372,57 @@ if ($result.Success) {
 ### Required Permissions
 
 | Permission/Role | Scope | Justification |
-|-----------------|-------|---------------|
+|:----------------|:------|:--------------|
 | SQL Server Contributor | Resource Group | Manage SQL Server firewall rules |
 | Entra ID Administrator | SQL Server | Create users from external provider |
 | db_owner | Target Database | Create users and assign roles |
 
-### Network Security
+### 🌐 Network Security
 
-- **Endpoints accessed:** Azure SQL Database (FQDN based on environment)
-- **TLS requirements:** TLS 1.2+ enforced
-- **Firewall rules needed:** Client IP must be allowed (auto-configured if AZURE_RESOURCE_GROUP set)
+| Property | Value |
+|:---------|:------|
+| **Endpoints accessed** | Azure SQL Database (FQDN based on environment) |
+| **TLS requirements** | TLS 1.2+ enforced |
+| **Firewall rules needed** | Client IP must be allowed (auto-configured if AZURE_RESOURCE_GROUP set) |
 
-### Logging Security
+### 📝 Logging Security
 
-- **Sensitive data masking:** Access tokens never logged
-- **Audit trail:** Azure SQL audit logs, Entra ID sign-in logs
+> **✅ Security Features:**
+>
+> - **Sensitive data masking:** Access tokens never logged
+> - **Audit trail:** Azure SQL audit logs, Entra ID sign-in logs
 
-## Known Limitations
+[⬆️ Back to top](#-sql-managed-identity-config)
 
-- Cannot create users in 'master' database (by design for security)
-- Principal names with special characters may require bracketing in Entra ID
-- Requires Entra ID authentication to be enabled on SQL Server
-- Bash version requires sqlcmd utility installation
-- Firewall rule creation requires AZURE_RESOURCE_GROUP environment variable
-- Token expiration (typically 1 hour) may affect long operations
+---
 
-## Related Scripts
+## 🚧 Known Limitations
+
+> **⚠️ Important Notes:**
+>
+> - Cannot create users in 'master' database (by design for security)
+> - Principal names with special characters may require bracketing in Entra ID
+> - Requires Entra ID authentication to be enabled on SQL Server
+> - Bash version requires sqlcmd utility installation
+> - Firewall rule creation requires AZURE_RESOURCE_GROUP environment variable
+> - Token expiration (typically 1 hour) may affect long operations
+
+[⬆️ Back to top](#-sql-managed-identity-config)
+
+---
+
+## 🔗 Related Scripts
 
 | Script | Relationship | Description |
-|--------|--------------|-------------|
+|:-------|:-------------|:------------|
 | [postprovision.md](postprovision.md) | Called by | May invoke this script after SQL provisioning |
 | [preprovision.md](preprovision.md) | Related | Validates Azure CLI authentication |
 
-## T-SQL Commands Executed
+[⬆️ Back to top](#-sql-managed-identity-config)
+
+---
+
+## 💾 T-SQL Commands Executed
 
 ```sql
 -- Check if user exists
@@ -371,8 +441,14 @@ WHERE rp.name = N'{RoleName}' AND mp.name = N'{PrincipalDisplayName}'
 ALTER ROLE [{RoleName}] ADD MEMBER [{PrincipalDisplayName}]
 ```
 
-## Changelog
+[⬆️ Back to top](#-sql-managed-identity-config)
+
+---
+
+## 📜 Changelog
 
 | Version | Date | Changes |
-|---------|------|---------|
+|:-------:|:----:|:--------|
 | 1.0.0 | 2026-01-06 | Initial release |
+
+[⬆️ Back to top](#-sql-managed-identity-config)
