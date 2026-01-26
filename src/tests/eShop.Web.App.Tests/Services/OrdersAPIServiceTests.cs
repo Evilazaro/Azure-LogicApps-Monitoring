@@ -105,8 +105,7 @@ public sealed class OrdersAPIServiceTests
     [TestMethod]
     public async Task PlaceOrderAsync_NullOrderId_ThrowsArgumentException()
     {
-        // Arrange - Create an order with null ID by using reflection or a workaround
-        // Since Order.Id is required, we need to create one with an empty/whitespace ID
+        // Arrange - Create an order with null ID to test validation
         var order = new Order
         {
             Id = null!, // Intentionally null to test validation
@@ -126,8 +125,8 @@ public sealed class OrdersAPIServiceTests
             ]
         };
 
-        // Act & Assert
-        var exception = await Assert.ThrowsExactlyAsync<ArgumentNullException>(
+        // Act & Assert - The service validates order.Id with string.IsNullOrWhiteSpace
+        var exception = await Assert.ThrowsExactlyAsync<ArgumentException>(
             () => _sut.PlaceOrderAsync(order));
 
         Assert.AreEqual("order", exception.ParamName);
