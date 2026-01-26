@@ -101,44 +101,109 @@ Environment aliases are set temporarily during execution for placeholder resolut
 
 ### Execution Flow
 
-```
-┌─────────────────────────────────────────────────────────────────┐
-│                      deploy-workflow                             │
-├─────────────────────────────────────────────────────────────────┤
-│  1. Parse command-line arguments                                │
-│  2. Set environment variable aliases (AZURE_* → WORKFLOWS_*)    │
-│  3. Validate workflow path exists                               │
-│                                                                 │
-│  ┌─────────────────────────────────────────────────────────────┐│
-│  │              Placeholder Resolution                         ││
-│  ├─────────────────────────────────────────────────────────────┤│
-│  │  4. For each file in workflow directory:                    ││
-│  │     ├── Read file content                                   ││
-│  │     ├── Find ${VARIABLE} patterns                           ││
-│  │     ├── Replace with environment variable values            ││
-│  │     └── Write resolved content to staging directory         ││
-│  └─────────────────────────────────────────────────────────────┘│
-│                                                                 │
-│  ┌─────────────────────────────────────────────────────────────┐│
-│  │              Connection Runtime URLs                        ││
-│  ├─────────────────────────────────────────────────────────────┤│
-│  │  5. For each API connection:                                ││
-│  │     └── Retrieve runtime URL via Azure REST API             ││
-│  │  6. Update connections.json with runtime URLs               ││
-│  └─────────────────────────────────────────────────────────────┘│
-│                                                                 │
-│  ┌─────────────────────────────────────────────────────────────┐│
-│  │              Package and Deploy                             ││
-│  ├─────────────────────────────────────────────────────────────┤│
-│  │  7. Exclude debug/test files per .funcignore                ││
-│  │  8. Create zip package                                      ││
-│  │  9. Deploy via az webapp deployment source config-zip       ││
-│  └─────────────────────────────────────────────────────────────┘│
-│                                                                 │
-│  10. Display deployment summary                                 │
-│  11. Cleanup staging directory                                  │
-│  12. Exit with appropriate code                                 │
-└─────────────────────────────────────────────────────────────────┘
+```mermaid
+flowchart TD
+    A([Start]) --> B[Parse Arguments]
+    B --> C[Disable ANSI Colors]
+    C --> D[Display Banner]
+    
+    subgraph "Environment Setup"
+        D --> E[Set Workflow Environment Aliases]
+        E --> F[Load Configuration from Environment]
+        F --> G{Required Variables<br/>Present?}
+        G -->|No| H[Error: Missing Variables]
+        H --> I([Exit 1])
+        G -->|Yes| J[Log Target Configuration]
+    end
+    
+    subgraph "Workflow Discovery"
+        J --> K{Custom Workflow<br/>Path Provided?}
+        K -->|Yes| L[Use Custom Path]
+        K -->|No| M[Search Default Path]
+        M --> N{Path<br/>Exists?}
+        N -->|No| O[Error: Project Not Found]
+        O --> I
+        N -->|Yes| P[Resolve Full Path]
+        L --> P
+        
+        P --> Q[Scan for Workflow Folders]
+        Q --> R[Filter by workflow.json]
+        R --> S[Apply Exclude Patterns]
+        S --> T{Workflows<br/>Found?}
+        T -->|No| U[Error: No Workflows]
+        U --> I
+        T -->|Yes| V[Log Discovered Workflows]
+    end
+    
+    subgraph "Connection Setup"
+        V --> W{Service Bus URL<br/>in Environment?}
+        W -->|No| X[Fetch from Azure REST API]
+        W -->|Yes| Y[Use Environment Value]
+        X --> Z{Fetch<br/>Successful?}
+        Z -->|No| AA[Warning: URL Not Found]
+        Z -->|Yes| AB[Store Runtime URL]
+        Y --> AB
+        AA --> AB
+        
+        AB --> AC{Blob URL<br/>in Environment?}
+        AC -->|No| AD[Fetch from Azure REST API]
+        AC -->|Yes| AE[Use Environment Value]
+        AD --> AF{Fetch<br/>Successful?}
+        AF -->|No| AG[Warning: URL Not Found]
+        AF -->|Yes| AH[Store Runtime URL]
+        AE --> AH
+        AG --> AH
+    end
+    
+    subgraph "Staging"
+        AH --> AI[Create Staging Directory]
+        AI --> AJ[Copy host.json]
+        AJ --> AK[Process connections.json]
+        AK --> AL[Resolve Placeholders]
+        AL --> AM[Process parameters.json]
+        AM --> AN[Resolve Placeholders]
+        
+        AN --> AO[For Each Workflow]
+        AO --> AP[Create Workflow Directory]
+        AP --> AQ[Process workflow.json]
+        AQ --> AR[Resolve Placeholders]
+        AR --> AS{More<br/>Workflows?}
+        AS -->|Yes| AO
+        AS -->|No| AT[Staging Complete]
+    end
+    
+    subgraph "Packaging"
+        AT --> AU[Create Zip Archive]
+        AU --> AV[Log Package Size]
+    end
+    
+    subgraph "Deployment"
+        AV --> AW[Update App Settings]
+        AW --> AX{Settings<br/>Updated?}
+        AX -->|No| AY[Warning: Settings Failed]
+        AX -->|Yes| AZ[Settings Updated ✓]
+        AY --> AZ
+        
+        AZ --> BA[Record Start Time]
+        BA --> BB[Deploy via az functionapp]
+        BB --> BC{Deployment<br/>Successful?}
+        BC -->|No| BD[Error: Deployment Failed]
+        BD --> BE[Fetch Deployment Logs]
+        BE --> I
+        BC -->|Yes| BF[Calculate Duration]
+    end
+    
+    subgraph "Cleanup"
+        BF --> BG[Remove Staging Directory]
+        BG --> BH[Remove Zip File]
+        BH --> BI[Display Success Banner]
+    end
+    
+    BI --> BJ([Exit 0])
+    
+    style A fill:#4CAF50,color:#fff
+    style BJ fill:#4CAF50,color:#fff
+    style I fill:#f44336,color:#fff
 ```
 
 ### Placeholder Pattern

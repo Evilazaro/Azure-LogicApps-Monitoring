@@ -87,48 +87,77 @@ This script does not set any environment variables.
 
 ### Execution Flow
 
-```
-┌─────────────────────────────────────────────────────────────────┐
-│                      clean-secrets                               │
-├─────────────────────────────────────────────────────────────────┤
-│  1. Parse command-line arguments                                │
-│  2. Enable strict mode and configure preferences                │
-│  3. Display script banner                                       │
-│                                                                 │
-│  ┌─────────────────────────────────────────────────────────────┐│
-│  │              Prerequisites Validation                       ││
-│  ├─────────────────────────────────────────────────────────────┤│
-│  │  4. Validate .NET SDK is installed                          ││
-│  │  5. Validate .NET SDK version >= 10.0                       ││
-│  └─────────────────────────────────────────────────────────────┘│
-│                                                                 │
-│  ┌─────────────────────────────────────────────────────────────┐│
-│  │              Project Validation                             ││
-│  ├─────────────────────────────────────────────────────────────┤│
-│  │  6. Validate app.AppHost path exists                        ││
-│  │  7. Validate eShop.Orders.API path exists                   ││
-│  │  8. Validate eShop.Web.App path exists                      ││
-│  └─────────────────────────────────────────────────────────────┘│
-│                                                                 │
-│  ┌─────────────────────────────────────────────────────────────┐│
-│  │              Confirmation (unless --force)                  ││
-│  ├─────────────────────────────────────────────────────────────┤│
-│  │  9. Display projects to be cleared                          ││
-│  │  10. Prompt for confirmation                                ││
-│  └─────────────────────────────────────────────────────────────┘│
-│                                                                 │
-│  ┌─────────────────────────────────────────────────────────────┐│
-│  │              Clear Secrets                                  ││
-│  ├─────────────────────────────────────────────────────────────┤│
-│  │  11. For each project:                                      ││
-│  │      ├── Navigate to project directory                      ││
-│  │      ├── Run: dotnet user-secrets clear                     ││
-│  │      └── Track success/failure                              ││
-│  └─────────────────────────────────────────────────────────────┘│
-│                                                                 │
-│  12. Display execution summary with statistics                  │
-│  13. Exit with appropriate code                                 │
-└─────────────────────────────────────────────────────────────────┘
+```mermaid
+flowchart TD
+    A([Start]) --> B[Parse Arguments]
+    B --> C[Initialize Statistics]
+    
+    subgraph "Validation"
+        C --> D{.NET SDK<br/>Installed?}
+        D -->|No| E[Error: .NET Not Found]
+        E --> F([Exit 1])
+        D -->|Yes| G{.NET Version<br/>>= 10.0?}
+        G -->|No| H[Error: Version Too Low]
+        H --> F
+        G -->|Yes| I[.NET Validated ✓]
+    end
+    
+    subgraph "Project Discovery"
+        I --> J[Build Project Paths]
+        J --> K[app.AppHost Path]
+        K --> L[eShop.Orders.API Path]
+        L --> M[eShop.Web.App Path]
+        M --> N[Create Project List]
+    end
+    
+    subgraph "Confirmation"
+        N --> O{Force Mode<br/>or Dry Run?}
+        O -->|No| P[Display Projects to Clear]
+        P --> Q[Prompt for Confirmation]
+        Q --> R{User<br/>Confirmed?}
+        R -->|No| S[Operation Cancelled]
+        S --> T([Exit 0])
+        R -->|Yes| U[Proceed with Clear]
+        O -->|Yes| U
+    end
+    
+    subgraph "Clear Secrets Loop"
+        U --> V[For Each Project]
+        V --> W{Project Path<br/>Exists?}
+        W -->|No| X[Log: Project Not Found]
+        X --> Y[Increment Failure Count]
+        Y --> Z{More<br/>Projects?}
+        
+        W -->|Yes| AA{Dry Run<br/>Mode?}
+        AA -->|Yes| AB[Log: Would Clear]
+        AB --> Z
+        
+        AA -->|No| AC[Execute dotnet user-secrets clear]
+        AC --> AD{Clear<br/>Successful?}
+        AD -->|No| AE[Log Error]
+        AE --> Y
+        AD -->|Yes| AF[Log Success]
+        AF --> AG[Increment Success Count]
+        AG --> Z
+        
+        Z -->|Yes| V
+        Z -->|No| AH[Generate Summary]
+    end
+    
+    subgraph "Summary"
+        AH --> AI[Display Statistics]
+        AI --> AJ{Any<br/>Failures?}
+        AJ -->|Yes| AK[Exit with Warning]
+        AK --> AL([Exit 0 with warnings])
+        AJ -->|No| AM[All Successful]
+        AM --> AN([Exit 0])
+    end
+    
+    style A fill:#4CAF50,color:#fff
+    style AN fill:#4CAF50,color:#fff
+    style AL fill:#FF9800,color:#fff
+    style T fill:#4CAF50,color:#fff
+    style F fill:#f44336,color:#fff
 ```
 
 ### Clear Command
