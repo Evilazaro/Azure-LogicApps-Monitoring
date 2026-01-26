@@ -20,6 +20,7 @@ namespace eShop.Orders.API.Tests.Controllers;
 /// Verifies HTTP endpoint behavior with mocked dependencies.
 /// </summary>
 [TestClass]
+[DoNotParallelize]
 public sealed class OrdersControllerTests : IDisposable
 {
     private ILogger<OrdersController> _logger = null!;

@@ -21,6 +21,7 @@ namespace eShop.Orders.API.Tests.Services;
 /// Verifies business logic behavior with mocked dependencies.
 /// </summary>
 [TestClass]
+[DoNotParallelize]
 public sealed class OrderServiceTests : IDisposable
 {
     private ILogger<OrderService> _logger = null!;
@@ -49,8 +50,8 @@ public sealed class OrderServiceTests : IDisposable
         _activitySource = new ActivitySource("Tests.OrderService");
         _meterFactory = Substitute.For<IMeterFactory>();
 
-        // Setup meter factory to return a real meter
-        _meterFactory.Create(Arg.Any<string>()).Returns(new Meter("TestMeter"));
+        // Setup meter factory to return a real meter - use ReturnsForAnyArgs to avoid Arg.Any leaking in parallel tests
+        _meterFactory.Create(default!).ReturnsForAnyArgs(new Meter("TestMeter"));
 
         // Setup service scope factory
         _serviceScopeFactory.CreateScope().Returns(_serviceScope);
@@ -268,7 +269,7 @@ public sealed class OrderServiceTests : IDisposable
         var exception = await Assert.ThrowsExactlyAsync<InvalidOperationException>(
             () => _orderService.PlaceOrderAsync(order, CancellationToken.None));
 
-        Assert.IsTrue(exception.Message.Contains("already exists"));
+        StringAssert.Contains(exception.Message, "already exists");
     }
 
     [TestMethod]
@@ -281,7 +282,7 @@ public sealed class OrderServiceTests : IDisposable
         var exception = await Assert.ThrowsExactlyAsync<ArgumentException>(
             () => _orderService.PlaceOrderAsync(order, CancellationToken.None));
 
-        Assert.IsTrue(exception.Message.Contains("Order ID"));
+        StringAssert.Contains(exception.Message, "Order ID");
     }
 
     [TestMethod]
@@ -294,7 +295,7 @@ public sealed class OrderServiceTests : IDisposable
         var exception = await Assert.ThrowsExactlyAsync<ArgumentException>(
             () => _orderService.PlaceOrderAsync(order, CancellationToken.None));
 
-        Assert.IsTrue(exception.Message.Contains("Customer ID"));
+        StringAssert.Contains(exception.Message, "Customer ID");
     }
 
     [TestMethod]
@@ -307,7 +308,7 @@ public sealed class OrderServiceTests : IDisposable
         var exception = await Assert.ThrowsExactlyAsync<ArgumentException>(
             () => _orderService.PlaceOrderAsync(order, CancellationToken.None));
 
-        Assert.IsTrue(exception.Message.Contains("total"));
+        StringAssert.Contains(exception.Message, "total");
     }
 
     [TestMethod]
@@ -320,7 +321,7 @@ public sealed class OrderServiceTests : IDisposable
         var exception = await Assert.ThrowsExactlyAsync<ArgumentException>(
             () => _orderService.PlaceOrderAsync(order, CancellationToken.None));
 
-        Assert.IsTrue(exception.Message.Contains("total"));
+        StringAssert.Contains(exception.Message, "total");
     }
 
     [TestMethod]
@@ -333,7 +334,7 @@ public sealed class OrderServiceTests : IDisposable
         var exception = await Assert.ThrowsExactlyAsync<ArgumentException>(
             () => _orderService.PlaceOrderAsync(order, CancellationToken.None));
 
-        Assert.IsTrue(exception.Message.Contains("product"));
+        StringAssert.Contains(exception.Message, "product");
     }
 
     [TestMethod]
@@ -346,7 +347,7 @@ public sealed class OrderServiceTests : IDisposable
         var exception = await Assert.ThrowsExactlyAsync<ArgumentException>(
             () => _orderService.PlaceOrderAsync(order, CancellationToken.None));
 
-        Assert.IsTrue(exception.Message.Contains("product"));
+        StringAssert.Contains(exception.Message, "product");
     }
 
     [TestMethod]
@@ -414,7 +415,7 @@ public sealed class OrderServiceTests : IDisposable
 
         // Assert
         var resultList = result.ToList();
-        Assert.AreEqual(3, resultList.Count);
+        Assert.HasCount(3, resultList);
     }
 
     [TestMethod]
@@ -437,7 +438,7 @@ public sealed class OrderServiceTests : IDisposable
         var exception = await Assert.ThrowsExactlyAsync<ArgumentException>(
             () => _orderService.PlaceOrdersBatchAsync(orders, CancellationToken.None));
 
-        Assert.IsTrue(exception.Message.Contains("empty"));
+        StringAssert.Contains(exception.Message, "empty");
     }
 
     [TestMethod]
@@ -460,7 +461,7 @@ public sealed class OrderServiceTests : IDisposable
 
         // Assert - Should return all orders (successful + already existing)
         var resultList = result.ToList();
-        Assert.AreEqual(3, resultList.Count);
+        Assert.HasCount(3, resultList);
     }
 
     [TestMethod]
@@ -523,7 +524,8 @@ public sealed class OrderServiceTests : IDisposable
         var result = await _orderService.PlaceOrdersBatchAsync(orders, cts.Token);
 
         // Assert - Should have fewer than all orders processed
-        Assert.IsTrue(result.Count() < 10);
+        var resultCount = result.Count();
+        Assert.IsTrue(resultCount < 10 && resultCount >= 0, $"Expected fewer than 10 orders when cancellation was requested, got {resultCount}");
     }
 
     #endregion
@@ -993,11 +995,28 @@ public sealed class OrderServiceTests : IDisposable
 
     private void SetupScopedServicesForBatch()
     {
-        var asyncScope = Substitute.For<AsyncServiceScope>();
-        asyncScope.ServiceProvider.Returns(_scopedServiceProvider);
-        _serviceScopeFactory.CreateAsyncScope().Returns(asyncScope);
-        _scopedServiceProvider.GetRequiredService(typeof(IOrderRepository)).Returns(_orderRepository);
-        _scopedServiceProvider.GetRequiredService(typeof(IOrdersMessageHandler)).Returns(_ordersMessageHandler);
+        // Setup the service scope factory to return a real scope that provides our mocked services
+        var scopeFactory = Substitute.For<IServiceScopeFactory>();
+        var scope = Substitute.For<IServiceScope>();
+        var serviceProvider = Substitute.For<IServiceProvider>();
+
+        scopeFactory.CreateScope().Returns(scope);
+        scopeFactory.CreateAsyncScope().Returns(new AsyncServiceScope(scope));
+        scope.ServiceProvider.Returns(serviceProvider);
+        serviceProvider.GetService(typeof(IOrderRepository)).Returns(_orderRepository);
+        serviceProvider.GetService(typeof(IOrdersMessageHandler)).Returns(_ordersMessageHandler);
+        serviceProvider.GetRequiredService(typeof(IOrderRepository)).Returns(_orderRepository);
+        serviceProvider.GetRequiredService(typeof(IOrdersMessageHandler)).Returns(_ordersMessageHandler);
+
+        // Re-create the order service with the new scope factory
+        _orderService.Dispose();
+        _orderService = new OrderService(
+            _logger,
+            _orderRepository,
+            _ordersMessageHandler,
+            scopeFactory,
+            _activitySource,
+            _meterFactory);
     }
 
     #endregion
