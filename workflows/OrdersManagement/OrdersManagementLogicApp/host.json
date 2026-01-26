@@ -1,4 +1,5 @@
 {
+  "$schema": "https://json.schemastore.org/host.json",
   "version": "2.0",
   "logging": {
     "applicationInsights": {

@@ -1,4 +1,5 @@
 {
+  "$schema": "https://json.schemastore.org/vs-code-settings.json",
   "azureLogicAppsStandard.deploySubpath": ".",
   "azureLogicAppsStandard.projectLanguage": "JavaScript",
   "azureLogicAppsStandard.projectRuntime": "~4",

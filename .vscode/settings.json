@@ -3,5 +3,10 @@
   "azureLogicAppsStandard.projectLanguage": "JavaScript",
   "azureLogicAppsStandard.projectRuntime": "~4",
   "debug.internalConsoleOptions": "neverOpen",
-  "azureFunctions.suppressProject": true
+  "azureFunctions.suppressProject": true,
+  "files.associations": {
+    "*.json": "jsonc"
+  },
+  "json.schemas": [],
+  "editor.formatOnSave": true
 }

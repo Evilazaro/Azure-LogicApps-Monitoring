@@ -1,3 +1,6 @@
 {
-  "recommendations": ["ms-azuretools.vscode-azurelogicapps"]
+  "$schema": "https://json.schemastore.org/vs-code-extensions.json",
+  "recommendations": [
+    "ms-azuretools.vscode-azurelogicapps"
+  ]
 }
