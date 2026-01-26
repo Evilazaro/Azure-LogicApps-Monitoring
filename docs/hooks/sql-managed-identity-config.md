@@ -1,13 +1,31 @@
 ---
+title: sql-managed-identity-config Script Documentation
+description: Configures Azure SQL Database user authentication with Managed Identity by creating contained database user from Microsoft Entra ID
 name: sql-managed-identity-config
 version: 1.0.0
 author: Evilazaro | Principal Cloud Solution Architect | Microsoft
+date: 2026-01-26
 last_modified: 2026-01-06
 license: MIT
 languages: [PowerShell, Bash]
+tags: [sql, managed-identity, entra-id, azure-ad, authentication, database, security, passwordless]
 ---
 
 # 🔐 sql-managed-identity-config
+
+> [!NOTE]
+> **Target Audience:** Database Administrators, DevOps Engineers, Security Engineers  
+> **Estimated Reading Time:** 12 minutes
+
+<details>
+<summary>📍 <strong>Navigation</strong></summary>
+<br>
+
+| Previous | Index | Next |
+|:---------|:-----:|-----:|
+| [Generate-Orders](Generate-Orders.md) | [📑 Index](README.md) | [check-dev-workstation](check-dev-workstation.md) |
+
+</details>
 
 ---
 
@@ -128,7 +146,8 @@ flowchart TD
 
 ### ⚠️ Critical Prerequisites
 
-> **❗ IMPORTANT:** The authenticated Azure CLI user must be the Entra ID administrator of the target SQL Server, or have equivalent permissions. Set the admin using:
+> [!IMPORTANT]
+> The authenticated Azure CLI user must be the Entra ID administrator of the target SQL Server, or have equivalent permissions. Set the admin using:
 >
 > ```bash
 > az sql server ad-admin create --resource-group <rg> --server-name <server> \
@@ -387,7 +406,8 @@ if ($result.Success) {
 
 ### 📝 Logging Security
 
-> **✅ Security Features:**
+> [!TIP]
+> **Security Features:**
 >
 > - **Sensitive data masking:** Access tokens never logged
 > - **Audit trail:** Azure SQL audit logs, Entra ID sign-in logs
@@ -398,7 +418,8 @@ if ($result.Success) {
 
 ## 🚧 Known Limitations
 
-> **⚠️ Important Notes:**
+> [!CAUTION]
+> **Important Notes:**
 >
 > - Cannot create users in 'master' database (by design for security)
 > - Principal names with special characters may require bracketing in Entra ID
@@ -452,3 +473,11 @@ ALTER ROLE [{RoleName}] ADD MEMBER [{PrincipalDisplayName}]
 | 1.0.0 | 2026-01-06 | Initial release |
 
 [⬆️ Back to top](#-sql-managed-identity-config)
+
+---
+
+<div align="center">
+
+**[⬅️ Previous: Generate-Orders](Generate-Orders.md)** · **[📑 Index](README.md)** · **[Next: check-dev-workstation ➡️](check-dev-workstation.md)**
+
+</div>

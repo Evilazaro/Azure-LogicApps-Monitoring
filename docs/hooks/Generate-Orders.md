@@ -1,13 +1,31 @@
 ---
+title: Generate-Orders Script Documentation
+description: Generates sample e-commerce order data with products, customer information, and delivery addresses for testing
 name: Generate-Orders
 version: 2.0.1
 author: Evilazaro | Principal Cloud Solution Architect | Microsoft
+date: 2026-01-26
 last_modified: 2026-01-06
 license: MIT
 languages: [PowerShell, Bash]
+tags: [testing, sample-data, orders, e-commerce, json, data-generation, utilities]
 ---
 
 # 📦 Generate-Orders
+
+> [!NOTE]
+> **Target Audience:** Developers, QA Engineers, Demo Preparers  
+> **Estimated Reading Time:** 11 minutes
+
+<details>
+<summary>📍 <strong>Navigation</strong></summary>
+<br>
+
+| Previous | Index | Next |
+|:---------|:-----:|-----:|
+| [deploy-workflow](deploy-workflow.md) | [📑 Index](README.md) | [sql-managed-identity-config](sql-managed-identity-config.md) |
+
+</details>
 
 ---
 
@@ -168,7 +186,8 @@ sudo yum install jq
 
 **Environment Variables Read:**
 
-> **ℹ️ Note:** None required.
+> [!NOTE]
+> None required.
 
 **Built-in Data:**
 
@@ -334,7 +353,8 @@ sudo yum install jq
 
 ### 📝 Logging Security
 
-> **✅ Security Features:**
+> [!TIP]
+> **Security Features:**
 >
 > - **Sensitive data masking:** N/A — no sensitive data
 > - **Audit trail:** Generation statistics displayed
@@ -345,7 +365,8 @@ sudo yum install jq
 
 ## 🚧 Known Limitations
 
-> **⚠️ Important Notes:**
+> [!IMPORTANT]
+> **Important Notes:**
 >
 > - Product catalog is hardcoded (20 products)
 > - Address pool is hardcoded (20 addresses)
@@ -408,3 +429,11 @@ sudo yum install jq
 | 1.0.0 | 2025-01-01 | Initial release |
 
 [⬆️ Back to top](#-generate-orders)
+
+---
+
+<div align="center">
+
+**[⬅️ Previous: deploy-workflow](deploy-workflow.md)** · **[📑 Index](README.md)** · **[Next: sql-managed-identity-config ➡️](sql-managed-identity-config.md)**
+
+</div>
