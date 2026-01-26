@@ -144,96 +144,129 @@ This script does not set environment variables.
 ### 🔄 Execution Flow
 
 ```mermaid
+---
+title: sql-managed-identity-config Execution Flow
+---
 flowchart TD
-    A([Start]) --> B[Parse Arguments]
-    B --> C[Validate Parameters]
+    %% ===== CLASS DEFINITIONS =====
+    classDef primary fill:#4F46E5,stroke:#3730A3,color:#FFFFFF
+    classDef secondary fill:#10B981,stroke:#059669,color:#FFFFFF
+    classDef datastore fill:#F59E0B,stroke:#D97706,color:#000000
+    classDef external fill:#6B7280,stroke:#4B5563,color:#FFFFFF,stroke-dasharray:5 5
+    classDef failed fill:#F44336,stroke:#C62828,color:#FFFFFF
+    classDef trigger fill:#818CF8,stroke:#4F46E5,color:#FFFFFF
+    classDef decision fill:#FFFBEB,stroke:#F59E0B,color:#000000
+    classDef input fill:#F3F4F6,stroke:#6B7280,color:#000000
+
+    %% ===== INITIALIZATION =====
+    A([Start]) -->|begin| B[Parse Arguments]
+    B -->|validate| C[Validate Parameters]
     
-    subgraph "Parameter Validation"
-        C --> D{SQL Server Name<br/>Valid Format?}
+    %% ===== PARAMETER VALIDATION =====
+    subgraph ParamValidation["Parameter Validation"]
+        C -->|check| D{SQL Server Name<br/>Valid Format?}
         D -->|No| E[Error: Invalid Name]
-        E --> F([Exit 1])
+        E -->|terminate| F([Exit 1])
         D -->|Yes| G{Database Name<br/>!= 'master'?}
         G -->|No| H[Error: Cannot Use Master]
-        H --> F
+        H -->|terminate| F
         G -->|Yes| I{Roles<br/>Valid?}
         I -->|No| J[Error: Invalid Role]
-        J --> F
+        J -->|terminate| F
         I -->|Yes| K[Parameters Valid ✓]
     end
     
-    subgraph "Prerequisites Check"
-        K --> L{Azure CLI<br/>Installed?}
+    %% ===== PREREQUISITES CHECK =====
+    subgraph PrereqCheck["Prerequisites Check"]
+        K -->|check| L{Azure CLI<br/>Installed?}
         L -->|No| M[Error: Install Azure CLI]
-        M --> F
+        M -->|terminate| F
         L -->|Yes| N{Azure CLI<br/>Authenticated?}
         N -->|No| O[Error: Run az login]
-        O --> F
+        O -->|terminate| F
         N -->|Yes| P{sqlcmd/SqlClient<br/>Available?}
         P -->|No| Q{Can<br/>Auto-Install?}
         Q -->|Yes| R[Install go-sqlcmd]
-        R --> S{Install<br/>Successful?}
+        R -->|verify| S{Install<br/>Successful?}
         S -->|No| T[Error: Install Failed]
-        T --> F
+        T -->|terminate| F
         S -->|Yes| U[Prerequisites Valid ✓]
         Q -->|No| T
         P -->|Yes| U
     end
     
-    subgraph "Token Acquisition"
-        U --> V[Build Server FQDN]
-        V --> W["server.database.windows.net"]
-        W --> X[Request Azure AD Token]
-        X --> Y["az account get-access-token<br/>--resource https://database.windows.net"]
-        Y --> Z{Token<br/>Acquired?}
+    %% ===== TOKEN ACQUISITION =====
+    subgraph TokenAcquisition["Token Acquisition"]
+        U -->|build| V[Build Server FQDN]
+        V -->|format| W["server.database.windows.net"]
+        W -->|request| X[Request Azure AD Token]
+        X -->|execute| Y["az account get-access-token<br/>--resource https://database.windows.net"]
+        Y -->|verify| Z{Token<br/>Acquired?}
         Z -->|No| AA[Error: Token Failed]
-        AA --> F
+        AA -->|terminate| F
         Z -->|Yes| AB[Token Acquired ✓]
     end
     
-    subgraph "Database Operations"
-        AB --> AC[Build Connection String]
-        AC --> AD[Connect to Database]
-        AD --> AE{Connection<br/>Successful?}
+    %% ===== DATABASE OPERATIONS =====
+    subgraph DBOperations["Database Operations"]
+        AB -->|build| AC[Build Connection String]
+        AC -->|connect| AD[Connect to Database]
+        AD -->|verify| AE{Connection<br/>Successful?}
         AE -->|No| AF[Error: Connection Failed]
-        AF --> AG[Check Firewall Rules]
-        AG --> F
+        AF -->|check| AG[Check Firewall Rules]
+        AG -->|terminate| F
         AE -->|Yes| AH[Connected ✓]
         
-        AH --> AI{User<br/>Exists?}
+        AH -->|check| AI{User<br/>Exists?}
         AI -->|Yes| AJ[Skip User Creation]
         AI -->|No| AK[CREATE USER FROM EXTERNAL PROVIDER]
-        AK --> AL{Creation<br/>Successful?}
+        AK -->|verify| AL{Creation<br/>Successful?}
         AL -->|No| AM[Error: User Creation Failed]
-        AM --> F
+        AM -->|terminate| F
         AL -->|Yes| AN[User Created ✓]
-        AJ --> AN
+        AJ -->|continue| AN
     end
     
-    subgraph "Role Assignment"
-        AN --> AO[For Each Role]
-        AO --> AP{Role Member<br/>Exists?}
+    %% ===== ROLE ASSIGNMENT =====
+    subgraph RoleAssignment["Role Assignment"]
+        AN -->|iterate| AO[For Each Role]
+        AO -->|check| AP{Role Member<br/>Exists?}
         AP -->|Yes| AQ[Skip Role Assignment]
         AP -->|No| AR[ALTER ROLE ADD MEMBER]
-        AR --> AS{Assignment<br/>Successful?}
+        AR -->|verify| AS{Assignment<br/>Successful?}
         AS -->|No| AT[Error: Role Failed]
-        AT --> F
+        AT -->|terminate| F
         AS -->|Yes| AU[Role Assigned ✓]
-        AQ --> AV{More<br/>Roles?}
-        AU --> AV
+        AQ -->|check| AV{More<br/>Roles?}
+        AU -->|check| AV
         AV -->|Yes| AO
         AV -->|No| AW[All Roles Assigned ✓]
     end
     
-    subgraph "Result"
-        AW --> AX[Build Result Object]
-        AX --> AY[Return Success]
+    %% ===== RESULT =====
+    subgraph Result["Result"]
+        AW -->|build| AX[Build Result Object]
+        AX -->|return| AY[Return Success]
     end
     
-    AY --> AZ([Exit 0])
-    
-    style A fill:#4CAF50,color:#fff
-    style AZ fill:#4CAF50,color:#fff
-    style F fill:#f44336,color:#fff
+    AY -->|complete| AZ([Exit 0])
+
+    %% ===== SUBGRAPH STYLES =====
+    style ParamValidation fill:#EEF2FF,stroke:#4F46E5,stroke-width:2px
+    style PrereqCheck fill:#ECFDF5,stroke:#10B981,stroke-width:2px
+    style TokenAcquisition fill:#E0E7FF,stroke:#4F46E5,stroke-width:2px
+    style DBOperations fill:#FEF3C7,stroke:#F59E0B,stroke-width:2px
+    style RoleAssignment fill:#D1FAE5,stroke:#10B981,stroke-width:1px
+    style Result fill:#F3F4F6,stroke:#6B7280,stroke-width:2px
+
+    %% ===== NODE CLASS ASSIGNMENTS =====
+    class A,AZ trigger
+    class B,C,V,W,X,Y,AC,AD,AK,AR,AX,AY primary
+    class K,U,AB,AH,AN,AU,AW secondary
+    class D,G,I,L,N,P,Q,S,Z,AE,AI,AL,AP,AS,AV decision
+    class E,H,J,M,O,T,AA,AF,AG,AM,AT,AJ,AQ input
+    class R,AO external
+    class F failed
 ```
 
 ### 💻 SQL Commands Executed

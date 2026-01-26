@@ -111,95 +111,127 @@ This script does not set any environment variables.
 ### 🔄 Execution Flow
 
 ```mermaid
+---
+title: Generate-Orders Execution Flow
+---
 flowchart TD
-    A([Start]) --> B[Parse Arguments]
-    B --> C[Validate Parameters]
+    %% ===== CLASS DEFINITIONS =====
+    classDef primary fill:#4F46E5,stroke:#3730A3,color:#FFFFFF
+    classDef secondary fill:#10B981,stroke:#059669,color:#FFFFFF
+    classDef datastore fill:#F59E0B,stroke:#D97706,color:#000000
+    classDef external fill:#6B7280,stroke:#4B5563,color:#FFFFFF,stroke-dasharray:5 5
+    classDef failed fill:#F44336,stroke:#C62828,color:#FFFFFF
+    classDef trigger fill:#818CF8,stroke:#4F46E5,color:#FFFFFF
+    classDef decision fill:#FFFBEB,stroke:#F59E0B,color:#000000
+    classDef input fill:#F3F4F6,stroke:#6B7280,color:#000000
+
+    %% ===== INITIALIZATION =====
+    A([Start]) -->|begin| B[Parse Arguments]
+    B -->|validate| C[Validate Parameters]
     
-    subgraph "Validation"
-        C --> D{Order Count<br/>1-10000?}
+    %% ===== VALIDATION =====
+    subgraph Validation["Validation"]
+        C -->|check| D{Order Count<br/>1-10000?}
         D -->|No| E[Error: Invalid Count]
-        E --> F([Exit 1])
+        E -->|terminate| F([Exit 1])
         D -->|Yes| G{MinProducts<br/><= MaxProducts?}
         G -->|No| H[Error: Invalid Range]
-        H --> F
+        H -->|terminate| F
         G -->|Yes| I{Output Path<br/>Writable?}
         I -->|No| J[Error: Cannot Write]
-        J --> F
+        J -->|terminate| F
         I -->|Yes| K[Parameters Valid ✓]
     end
     
-    subgraph "Confirmation"
-        K --> L{Force Mode<br/>or Dry Run?}
+    %% ===== CONFIRMATION =====
+    subgraph Confirmation["Confirmation"]
+        K -->|check| L{Force Mode<br/>or Dry Run?}
         L -->|No| M[Display Configuration]
-        M --> N[Prompt for Confirmation]
-        N --> O{User<br/>Confirmed?}
+        M -->|prompt| N[Prompt for Confirmation]
+        N -->|evaluate| O{User<br/>Confirmed?}
         O -->|No| P[Operation Cancelled]
-        P --> Q([Exit 0])
+        P -->|complete| Q([Exit 0])
         O -->|Yes| R[Proceed]
         L -->|Yes| R
     end
     
-    subgraph "Generation"
-        R --> S{Dry Run<br/>Mode?}
+    %% ===== GENERATION =====
+    subgraph Generation["Generation"]
+        R -->|check| S{Dry Run<br/>Mode?}
         S -->|Yes| T[Display: Would Generate X Orders]
-        T --> Q
+        T -->|complete| Q
         S -->|No| U[Initialize Order Array]
         
-        U --> V[Record Start Time]
-        V --> W[For i = 1 to OrderCount]
+        U -->|start| V[Record Start Time]
+        V -->|loop| W[For i = 1 to OrderCount]
         
-        subgraph "Generate Single Order"
-            W --> X[Generate Order GUID]
-            X --> Y["ORD-{12-char-hex}"]
-            Y --> Z[Generate Customer GUID]
-            Z --> AA["CUST-{8-char-hex}"]
-            AA --> AB[Generate Random Date]
-            AB --> AC["2024-01-01 to 2025-12-31"]
-            AC --> AD[Select Random Address]
-            AD --> AE[Determine Product Count]
-            AE --> AF["Random(Min, Max)"]
+        %% ===== GENERATE SINGLE ORDER =====
+        subgraph SingleOrder["Generate Single Order"]
+            W -->|create| X[Generate Order GUID]
+            X -->|format| Y["ORD-{12-char-hex}"]
+            Y -->|create| Z[Generate Customer GUID]
+            Z -->|format| AA["CUST-{8-char-hex}"]
+            AA -->|generate| AB[Generate Random Date]
+            AB -->|range| AC["2024-01-01 to 2025-12-31"]
+            AC -->|select| AD[Select Random Address]
+            AD -->|determine| AE[Determine Product Count]
+            AE -->|random| AF["Random(Min, Max)"]
             
-            AF --> AG[For Each Product]
-            AG --> AH[Select Random Product]
-            AH --> AI[Generate Quantity 1-5]
-            AI --> AJ[Apply Price Variation ±20%]
-            AJ --> AK[Calculate Subtotal]
-            AK --> AL[Generate OrderProduct GUID]
-            AL --> AM["OP-{12-char-hex}"]
-            AM --> AN{More<br/>Products?}
+            AF -->|iterate| AG[For Each Product]
+            AG -->|pick| AH[Select Random Product]
+            AH -->|generate| AI[Generate Quantity 1-5]
+            AI -->|apply| AJ[Apply Price Variation ±20%]
+            AJ -->|compute| AK[Calculate Subtotal]
+            AK -->|create| AL[Generate OrderProduct GUID]
+            AL -->|format| AM["OP-{12-char-hex}"]
+            AM -->|check| AN{More<br/>Products?}
             AN -->|Yes| AG
             AN -->|No| AO[Calculate Order Total]
         end
         
-        AO --> AP[Add Order to Array]
-        AP --> AQ{More<br/>Orders?}
+        AO -->|add| AP[Add Order to Array]
+        AP -->|check| AQ{More<br/>Orders?}
         AQ -->|Yes| W
         AQ -->|No| AR[Generation Complete]
     end
     
-    subgraph "Output"
-        AR --> AS[Serialize to JSON]
-        AS --> AT[Ensure Output Directory Exists]
-        AT --> AU[Write to File]
-        AU --> AV{Write<br/>Successful?}
+    %% ===== OUTPUT =====
+    subgraph Output["Output"]
+        AR -->|serialize| AS[Serialize to JSON]
+        AS -->|prepare| AT[Ensure Output Directory Exists]
+        AT -->|write| AU[Write to File]
+        AU -->|verify| AV{Write<br/>Successful?}
         AV -->|No| AW[Error: Write Failed]
-        AW --> F
+        AW -->|terminate| F
         AV -->|Yes| AX[Calculate Duration]
     end
     
-    subgraph "Summary"
-        AX --> AY[Display Statistics]
-        AY --> AZ["Orders: X, Products: Y, Total: $Z"]
-        AZ --> BA[Display File Path]
-        BA --> BB[Display File Size]
+    %% ===== SUMMARY =====
+    subgraph Summary["Summary"]
+        AX -->|display| AY[Display Statistics]
+        AY -->|show| AZ["Orders: X, Products: Y, Total: $Z"]
+        AZ -->|show| BA[Display File Path]
+        BA -->|show| BB[Display File Size]
     end
     
-    BB --> BC([Exit 0])
-    
-    style A fill:#4CAF50,color:#fff
-    style BC fill:#4CAF50,color:#fff
-    style Q fill:#4CAF50,color:#fff
-    style F fill:#f44336,color:#fff
+    BB -->|complete| BC([Exit 0])
+
+    %% ===== SUBGRAPH STYLES =====
+    style Validation fill:#EEF2FF,stroke:#4F46E5,stroke-width:2px
+    style Confirmation fill:#ECFDF5,stroke:#10B981,stroke-width:2px
+    style Generation fill:#FEF3C7,stroke:#F59E0B,stroke-width:2px
+    style SingleOrder fill:#E0E7FF,stroke:#4F46E5,stroke-width:1px
+    style Output fill:#D1FAE5,stroke:#10B981,stroke-width:2px
+    style Summary fill:#F3F4F6,stroke:#6B7280,stroke-width:2px
+
+    %% ===== NODE CLASS ASSIGNMENTS =====
+    class A,BC,Q trigger
+    class B,C,M,N,U,V,X,Y,Z,AA,AB,AC,AD,AE,AF,AH,AI,AJ,AK,AL,AM,AS,AT,AU,AX,AY,AZ,BA,BB primary
+    class K,R,AR,AO,AP secondary
+    class D,G,I,L,O,S,AN,AQ,AV decision
+    class E,H,J,P,T,AW input
+    class W,AG external
+    class F failed
 ```
 
 ### 📄 Generated Data Structure
