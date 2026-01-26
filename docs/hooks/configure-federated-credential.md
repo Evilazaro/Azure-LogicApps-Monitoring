@@ -7,13 +7,36 @@ license: MIT
 languages: [PowerShell, Bash]
 ---
 
-# configure-federated-credential
+# 🔐 configure-federated-credential
 
-## Overview
+---
+
+## 📑 Table of Contents
+
+- [📋 Overview](#-overview)
+- [📝 Description](#-description)
+- [📊 Workflow Diagram](#-workflow-diagram)
+- [✅ Prerequisites](#-prerequisites)
+- [⚙️ Parameters/Arguments](#️-parametersarguments)
+- [📥 Input/Output Specifications](#-inputoutput-specifications)
+- [💻 Usage Examples](#-usage-examples)
+- [⚠️ Error Handling and Exit Codes](#️-error-handling-and-exit-codes)
+- [🔒 Security Considerations](#-security-considerations)
+- [🚧 Known Limitations](#-known-limitations)
+- [🔗 Related Scripts](#-related-scripts)
+- [📜 Changelog](#-changelog)
+
+---
+
+## 📋 Overview
 
 Configures federated identity credentials for GitHub Actions OIDC authentication in an Azure AD App Registration, enabling passwordless authentication from GitHub Actions workflows.
 
-## Description
+[⬆️ Back to top](#-configure-federated-credential)
+
+---
+
+## 📝 Description
 
 This script adds or updates federated identity credentials in an Azure AD (Microsoft Entra ID) App Registration to enable GitHub Actions workflows to authenticate using OpenID Connect (OIDC). OIDC authentication eliminates the need to store long-lived secrets in GitHub, improving security posture significantly.
 
@@ -21,7 +44,11 @@ The script is designed to run as an Azure Developer CLI (azd) hook where environ
 
 When executed, the script validates Azure CLI authentication, looks up the App Registration by name or Object ID, checks for existing federated credentials to avoid duplicates, and creates a new federated credential configured for the specified GitHub repository and environment. The credential allows GitHub Actions running in that environment to obtain Azure AD tokens without storing client secrets.
 
-## Workflow Diagram
+[⬆️ Back to top](#-configure-federated-credential)
+
+---
+
+## 📊 Workflow Diagram
 
 ```mermaid
 flowchart TD
@@ -80,18 +107,22 @@ flowchart TD
     style Y fill:#9f9
 ```
 
-## Prerequisites
+[⬆️ Back to top](#-configure-federated-credential)
+
+---
+
+## ✅ Prerequisites
 
 | Category | Requirement | Version | Verification Command | Required |
-|----------|-------------|---------|---------------------|----------|
-| Runtime | PowerShell Core | >= 7.0 | `$PSVersionTable.PSVersion` | Yes |
-| Runtime | Bash | >= 4.0 | `bash --version` | Yes |
-| CLI Tool | Azure CLI | >= 2.50 | `az --version` | Yes |
-| CLI Tool | jq (Bash only) | Latest | `jq --version` | Yes (Bash) |
-| Permission | Application.ReadWrite.All | N/A | Microsoft Graph API | Yes |
-| Permission | Directory.Read.All | N/A | Microsoft Graph API | Yes |
+|:---------|:------------|:--------|:---------------------|:--------:|
+| Runtime | PowerShell Core | >= 7.0 | `$PSVersionTable.PSVersion` | ✅ |
+| Runtime | Bash | >= 4.0 | `bash --version` | ✅ |
+| CLI Tool | Azure CLI | >= 2.50 | `az --version` | ✅ |
+| CLI Tool | jq (Bash only) | Latest | `jq --version` | ✅ (Bash) |
+| Permission | Application.ReadWrite.All | N/A | Microsoft Graph API | ✅ |
+| Permission | Directory.Read.All | N/A | Microsoft Graph API | ✅ |
 
-### Installation Commands
+### 📦 Installation Commands
 
 ```bash
 # Install jq (Bash dependency)
@@ -105,35 +136,43 @@ sudo apt-get install jq
 sudo yum install jq
 ```
 
-## Parameters/Arguments
+[⬆️ Back to top](#-configure-federated-credential)
+
+---
+
+## ⚙️ Parameters/Arguments
 
 ### PowerShell Parameters
 
 | Parameter | Type | Required | Default | Description |
-|-----------|------|----------|---------|-------------|
-| `-AppName` | `[string]` | No | N/A | Display name of the Azure AD App Registration |
-| `-AppObjectId` | `[string]` | No | N/A | Object ID of the Azure AD App Registration |
-| `-GitHubOrg` | `[string]` | No | `Evilazaro` | GitHub organization or username |
-| `-GitHubRepo` | `[string]` | No | `Azure-LogicApps-Monitoring` | GitHub repository name |
-| `-Environment` | `[string]` | No | `dev` | GitHub Environment name to configure |
+|:----------|:-----|:--------:|:--------|:------------|
+| `-AppName` | `[string]` | ❌ | N/A | Display name of the Azure AD App Registration |
+| `-AppObjectId` | `[string]` | ❌ | N/A | Object ID of the Azure AD App Registration |
+| `-GitHubOrg` | `[string]` | ❌ | `Evilazaro` | GitHub organization or username |
+| `-GitHubRepo` | `[string]` | ❌ | `Azure-LogicApps-Monitoring` | GitHub repository name |
+| `-Environment` | `[string]` | ❌ | `dev` | GitHub Environment name to configure |
 
 ### Bash Arguments
 
 | Position/Flag | Type | Required | Default | Description |
-|---------------|------|----------|---------|-------------|
-| `--app-name` | string | No | N/A | Display name of the Azure AD App Registration |
-| `--app-object-id` | string | No | N/A | Object ID of the Azure AD App Registration |
-| `--github-org` | string | No | `Evilazaro` | GitHub organization or username |
-| `--github-repo` | string | No | `Azure-LogicApps-Monitoring` | GitHub repository name |
-| `--environment` | string | No | `dev` | GitHub Environment name to configure |
+|:--------------|:-----|:--------:|:--------|:------------|
+| `--app-name` | string | ❌ | N/A | Display name of the Azure AD App Registration |
+| `--app-object-id` | string | ❌ | N/A | Object ID of the Azure AD App Registration |
+| `--github-org` | string | ❌ | `Evilazaro` | GitHub organization or username |
+| `--github-repo` | string | ❌ | `Azure-LogicApps-Monitoring` | GitHub repository name |
+| `--environment` | string | ❌ | `dev` | GitHub Environment name to configure |
 
-## Input/Output Specifications
+[⬆️ Back to top](#-configure-federated-credential)
+
+---
+
+## 📥 Input/Output Specifications
 
 ### Inputs
 
 **Environment Variables Read:**
 
-- None required (can be passed as parameters)
+> **ℹ️ Note:** None required — can be passed as parameters.
 
 **Required API Permissions:**
 
@@ -145,9 +184,9 @@ sudo yum install jq
 **Exit Codes:**
 
 | Exit Code | Meaning |
-|-----------|---------|
-| 0 | Success - Credential created or already exists |
-| 1 | Error - Azure CLI not authenticated or permission denied |
+|:---------:|:--------|
+| `0` | Success — Credential created or already exists |
+| `1` | Error — Azure CLI not authenticated or permission denied |
 
 **stdout Output:**
 
@@ -160,7 +199,11 @@ sudo yum install jq
 
 - Federated identity credential added to App Registration
 
-## Usage Examples
+[⬆️ Back to top](#-configure-federated-credential)
+
+---
+
+## 💻 Usage Examples
 
 ### Basic Usage
 
@@ -213,12 +256,16 @@ sudo yum install jq
     ./hooks/configure-federated-credential.sh --app-name "${{ vars.APP_NAME }}" --environment "prod"
 ```
 
-## Error Handling and Exit Codes
+[⬆️ Back to top](#-configure-federated-credential)
+
+---
+
+## ⚠️ Error Handling and Exit Codes
 
 | Exit Code | Meaning | Recovery Action |
-|-----------|---------|-----------------|
-| 0 | Success | N/A |
-| 1 | Error | Check Azure CLI auth, verify permissions |
+|:---------:|:--------|:----------------|
+| `0` | Success | N/A |
+| `1` | Error | Check Azure CLI auth, verify permissions |
 
 ### Error Handling Approach
 
@@ -236,9 +283,13 @@ sudo yum install jq
 - Temporary file cleanup on exit
 - Clear error messages for common failures
 
-## Security Considerations
+[⬆️ Back to top](#-configure-federated-credential)
 
-### Credential Handling
+---
+
+## 🔒 Security Considerations
+
+### 🔑 Credential Handling
 
 - [x] No hardcoded secrets
 - [x] OIDC eliminates need for long-lived secrets
@@ -248,40 +299,60 @@ sudo yum install jq
 ### Required Permissions
 
 | Permission/Role | Scope | Justification |
-|-----------------|-------|---------------|
+|:----------------|:------|:--------------|
 | Application.ReadWrite.All | Microsoft Graph | Create federated credentials |
 | Directory.Read.All | Microsoft Graph | List App Registrations |
 | Application Administrator | Entra ID Role | Alternative to Graph permissions |
 
-### Network Security
+### 🌐 Network Security
 
-- **Endpoints accessed:** Microsoft Graph API (`graph.microsoft.com`)
-- **TLS requirements:** TLS 1.2+
-- **OIDC Issuer:** `https://token.actions.githubusercontent.com`
-- **Audience:** `api://AzureADTokenExchange`
+| Property | Value |
+|:---------|:------|
+| **Endpoints accessed** | Microsoft Graph API (`graph.microsoft.com`) |
+| **TLS requirements** | TLS 1.2+ |
+| **OIDC Issuer** | `https://token.actions.githubusercontent.com` |
+| **Audience** | `api://AzureADTokenExchange` |
 
-### Logging Security
+### 📝 Logging Security
 
-- **Sensitive data masking:** Object IDs shown, no secrets logged
-- **Audit trail:** Azure AD audit logs capture credential creation
+> **✅ Security Features:**
+>
+> - **Sensitive data masking:** Object IDs shown, no secrets logged
+> - **Audit trail:** Azure AD audit logs capture credential creation
 
-## Known Limitations
+[⬆️ Back to top](#-configure-federated-credential)
 
-- Only configures environment-scoped credentials (not branch or PR)
-- Interactive prompt required if App name not provided
-- Cannot update existing credentials (must delete and recreate)
-- Requires Application Administrator or equivalent permissions
-- GitHub Enterprise Server may require different OIDC issuer
+---
 
-## Related Scripts
+## 🚧 Known Limitations
+
+> **⚠️ Important Notes:**
+>
+> - Only configures environment-scoped credentials (not branch or PR)
+> - Interactive prompt required if App name not provided
+> - Cannot update existing credentials (must delete and recreate)
+> - Requires Application Administrator or equivalent permissions
+> - GitHub Enterprise Server may require different OIDC issuer
+
+[⬆️ Back to top](#-configure-federated-credential)
+
+---
+
+## 🔗 Related Scripts
 
 | Script | Relationship | Description |
-|--------|--------------|-------------|
+|:-------|:-------------|:------------|
 | [preprovision.md](preprovision.md) | Related | May trigger this as part of setup |
 | [postprovision.md](postprovision.md) | Related | May be called after provisioning |
 
-## Changelog
+[⬆️ Back to top](#-configure-federated-credential)
+
+---
+
+## 📜 Changelog
 
 | Version | Date | Changes |
-|---------|------|---------|
+|:-------:|:----:|:--------|
 | 1.0.0 | 2026-01-06 | Initial release |
+
+[⬆️ Back to top](#-configure-federated-credential)
