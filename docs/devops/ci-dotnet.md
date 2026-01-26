@@ -1,35 +1,35 @@
-# CI - .NET Build and Test
+# 🛠️ CI - .NET Build and Test
 
 ![Workflow Status](https://github.com/Evilazaro/Azure-LogicApps-Monitoring/actions/workflows/ci-dotnet.yml/badge.svg)
 
-Orchestrates the CI pipeline by calling the reusable workflow for .NET builds, tests, and security scanning.
+> Orchestrates the CI pipeline by calling the reusable workflow for .NET builds, tests, and security scanning.
 
 ---
 
-## Table of Contents
+## 📑 Table of Contents
 
-- [Overview](#overview)
+- [📋 Overview](#-overview)
   - [Purpose](#purpose)
   - [Scope](#scope)
   - [Key Features](#key-features)
   - [When to Use](#when-to-use)
-- [Workflow Diagram](#workflow-diagram)
-- [Prerequisites](#prerequisites)
-- [Trigger Events](#trigger-events)
-- [Configuration Reference](#configuration-reference)
+- [📊 Workflow Diagram](#-workflow-diagram)
+- [✅ Prerequisites](#-prerequisites)
+- [⚡ Trigger Events](#-trigger-events)
+- [⚙️ Configuration Reference](#️-configuration-reference)
   - [Environment Variables](#environment-variables)
   - [Secrets](#secrets)
   - [Repository Variables](#repository-variables)
-- [Jobs & Steps Breakdown](#jobs--steps-breakdown)
+- [🔧 Jobs & Steps Breakdown](#-jobs--steps-breakdown)
   - [CI Job](#ci-job)
-- [Artifacts](#artifacts)
-- [Usage Examples](#usage-examples)
-- [Troubleshooting](#troubleshooting)
-- [Related Resources](#related-resources)
+- [📦 Artifacts](#-artifacts)
+- [💡 Usage Examples](#-usage-examples)
+- [🔍 Troubleshooting](#-troubleshooting)
+- [🔗 Related Resources](#-related-resources)
 
 ---
 
-## Overview
+## 📋 Overview
 
 ### Purpose
 
@@ -59,7 +59,7 @@ This workflow serves as the orchestration layer for continuous integration. It h
 
 ---
 
-## Workflow Diagram
+## 📊 Workflow Diagram
 
 ```mermaid
 flowchart TD
@@ -109,10 +109,10 @@ flowchart TD
 
 ---
 
-## Prerequisites
+## ✅ Prerequisites
 
 | Requirement | Type | Description | Setup Instructions |
-|-------------|------|-------------|-------------------|
+|:------------|:-----|:------------|:-------------------|
 | **contents: read** | Permission | Read repository contents for checkout | Configured in workflow permissions |
 | **checks: write** | Permission | Create check runs for test results | Configured in workflow permissions |
 | **pull-requests: write** | Permission | Post comments and status on PRs | Configured in workflow permissions |
@@ -122,10 +122,10 @@ flowchart TD
 
 ---
 
-## Trigger Events
+## ⚡ Trigger Events
 
 | Event | Branches | Paths | Conditions |
-|-------|----------|-------|------------|
+|:------|:---------|:------|:-----------|
 | **push** | `main`, `feature/**`, `bugfix/**`, `hotfix/**`, `release/**`, `chore/**`, `docs/**`, `refactor/**`, `test/**` | `src/**`, `app.*/**`, `*.sln`, `global.json`, `.github/workflows/ci-dotnet.yml`, `.github/workflows/ci-dotnet-reusable.yml` | Automatic on push |
 | **pull_request** | `main` | `src/**`, `app.*/**`, `*.sln`, `global.json`, `.github/workflows/ci-dotnet.yml`, `.github/workflows/ci-dotnet-reusable.yml` | Automatic on PR |
 | **workflow_dispatch** | Any | N/A | Manual trigger with inputs |
@@ -133,7 +133,7 @@ flowchart TD
 ### Branch Pattern Details
 
 | Pattern | Description | Example |
-|---------|-------------|---------|
+|:--------|:------------|:--------|
 | `main` | Main development branch | Direct commits (protected) |
 | `feature/**` | New feature development | `feature/add-login` |
 | `bugfix/**` | Bug fix branches | `bugfix/fix-null-ref` |
@@ -147,13 +147,13 @@ flowchart TD
 ### Manual Trigger Inputs
 
 | Input | Type | Default | Options | Description |
-|-------|------|---------|---------|-------------|
+|:------|:-----|:--------|:--------|:------------|
 | `configuration` | choice | `Release` | `Release`, `Debug` | Build configuration to use |
 | `enable-code-analysis` | boolean | `true` | `true`, `false` | Enable code formatting analysis |
 
 ---
 
-## Configuration Reference
+## ⚙️ Configuration Reference
 
 ### Environment Variables
 
@@ -162,7 +162,7 @@ This workflow does not define workflow-level environment variables. All configur
 ### Secrets
 
 | Secret Name | Required | Source | Purpose |
-|-------------|----------|--------|---------|
+|:------------|:---------|:-------|:--------|
 | `inherit` | Yes | Repository | All secrets inherited for reusable workflow |
 
 ### Repository Variables
@@ -171,7 +171,7 @@ This workflow does not require repository variables. All configuration is hardco
 
 ---
 
-## Jobs & Steps Breakdown
+## 🔧 Jobs & Steps Breakdown
 
 ### CI Job
 
@@ -184,7 +184,7 @@ This workflow does not require repository variables. All configuration is hardco
 **Configuration Passed:**
 
 | Input | Value | Description |
-|-------|-------|-------------|
+|:------|:------|:------------|
 | `configuration` | `${{ inputs.configuration \|\| 'Release' }}` | Build configuration from input or default |
 | `dotnet-version` | `10.0.x` | .NET SDK version |
 | `solution-file` | `app.sln` | Solution file path |
@@ -207,12 +207,12 @@ This workflow does not require repository variables. All configuration is hardco
 
 ---
 
-## Artifacts
+## 📦 Artifacts
 
-All artifacts are generated by the reusable workflow. See [ci-dotnet-reusable.md](ci-dotnet-reusable.md#artifacts) for detailed artifact documentation.
+All artifacts are generated by the reusable workflow. See [ci-dotnet-reusable.md](ci-dotnet-reusable.md#-artifacts) for detailed artifact documentation.
 
 | Artifact Name | Contents | Retention | Usage |
-|---------------|----------|-----------|-------|
+|:--------------|:---------|:----------|:------|
 | `build-artifacts-{os}` | Compiled binaries per platform | 30 days | Deployment pipelines |
 | `test-results-{os}` | Test results (.trx) per platform | 30 days | Test analysis |
 | `code-coverage-{os}` | Coverage reports (Cobertura) per platform | 30 days | Coverage tools |
@@ -220,7 +220,7 @@ All artifacts are generated by the reusable workflow. See [ci-dotnet-reusable.md
 
 ---
 
-## Usage Examples
+## 💡 Usage Examples
 
 ### Automatic Trigger (Push)
 
@@ -284,10 +284,10 @@ gh run watch <run-id>
 
 ---
 
-## Troubleshooting
+## 🔍 Troubleshooting
 
 | Symptom | Possible Cause | Solution |
-|---------|----------------|----------|
+|:--------|:---------------|:---------|
 | **Workflow not triggering on push** | Path filters not matching changed files | Verify changes are in `src/**`, `app.*/**`, or other monitored paths |
 | **Workflow not triggering on PR** | PR not targeting `main` branch | Ensure PR base branch is `main` |
 | **Previous run not cancelled** | Concurrency group mismatch | Check that branch name matches expected pattern |
@@ -336,14 +336,14 @@ gh run cancel <run-id>
 
 ---
 
-## Related Resources
+## 🔗 Related Resources
 
-### Internal
+### 📚 Internal
 
 - [ci-dotnet-reusable.md](ci-dotnet-reusable.md) - Detailed documentation for the reusable CI workflow
 - [azure-dev.md](azure-dev.md) - CD workflow that depends on this CI workflow
 
-### External
+### 🌐 External
 
 - [GitHub Actions Workflow Syntax](https://docs.github.com/actions/using-workflows/workflow-syntax-for-github-actions)
 - [Reusing Workflows](https://docs.github.com/actions/using-workflows/reusing-workflows)
@@ -351,10 +351,11 @@ gh run cancel <run-id>
 - [Workflow Concurrency](https://docs.github.com/actions/using-workflows/workflow-syntax-for-github-actions#concurrency)
 - [.NET Build and Test Documentation](https://docs.github.com/actions/automating-builds-and-tests/building-and-testing-net)
 
-### Support
+### 🆘 Support
 
 - 📖 [Repository Issues](https://github.com/Evilazaro/Azure-LogicApps-Monitoring/issues)
 - 💬 Contact the DevOps team for CI pipeline assistance
 
 ---
 
+[⬆️ Back to Top](#️-ci---net-build-and-test)
