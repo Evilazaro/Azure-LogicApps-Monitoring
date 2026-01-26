@@ -115,87 +115,120 @@ This script does not set any environment variables.
 ### 🔄 Execution Flow
 
 ```mermaid
+---
+title: postinfradelete Execution Flow
+---
 flowchart TD
-    A([Start: azd down completed]) --> B[Parse Arguments]
-    B --> C[Initialize Logging]
+    %% ===== CLASS DEFINITIONS =====
+    classDef primary fill:#4F46E5,stroke:#3730A3,color:#FFFFFF
+    classDef secondary fill:#10B981,stroke:#059669,color:#FFFFFF
+    classDef datastore fill:#F59E0B,stroke:#D97706,color:#000000
+    classDef external fill:#6B7280,stroke:#4B5563,color:#FFFFFF,stroke-dasharray:5 5
+    classDef failed fill:#F44336,stroke:#C62828,color:#FFFFFF
+    classDef trigger fill:#818CF8,stroke:#4F46E5,color:#FFFFFF
+    classDef decision fill:#FFFBEB,stroke:#F59E0B,color:#000000
+    classDef input fill:#F3F4F6,stroke:#6B7280,color:#000000
+
+    %% ===== INITIALIZATION =====
+    A([Start: azd down completed]) -->|begin| B[Parse Arguments]
+    B -->|setup| C[Initialize Logging]
     
-    subgraph "Prerequisites Check"
-        C --> D{Azure CLI<br/>Installed?}
+    %% ===== PREREQUISITES CHECK =====
+    subgraph PrereqCheck["Prerequisites Check"]
+        C -->|check| D{Azure CLI<br/>Installed?}
         D -->|No| E[Error: Install Azure CLI]
-        E --> F([Exit 1])
+        E -->|terminate| F([Exit 1])
         D -->|Yes| G{jq Installed?<br/>Bash only}
         G -->|No| H[Error: Install jq]
-        H --> F
+        H -->|terminate| F
         G -->|Yes| I{Azure CLI<br/>Authenticated?}
         I -->|No| J[Error: Run az login]
-        J --> F
+        J -->|terminate| F
         I -->|Yes| K[Prerequisites Valid ✓]
     end
     
-    subgraph "Environment Validation"
-        K --> L{AZURE_SUBSCRIPTION_ID<br/>Set?}
+    %% ===== ENVIRONMENT VALIDATION =====
+    subgraph EnvValidation["Environment Validation"]
+        K -->|check| L{AZURE_SUBSCRIPTION_ID<br/>Set?}
         L -->|No| M[Warning: Skip Purge]
-        M --> N([Exit 0 - Non-blocking])
+        M -->|exit| N([Exit 0 - Non-blocking])
         L -->|Yes| O{AZURE_LOCATION<br/>Set?}
         O -->|No| M
         O -->|Yes| P[Environment Valid ✓]
     end
     
-    subgraph "Query Deleted Resources"
-        P --> Q[Build REST API URI]
-        Q --> R[Call GET /deletedSites]
-        R --> S{Response<br/>Successful?}
+    %% ===== QUERY DELETED RESOURCES =====
+    subgraph QueryDeleted["Query Deleted Resources"]
+        P -->|build| Q[Build REST API URI]
+        Q -->|call| R[Call GET /deletedSites]
+        R -->|verify| S{Response<br/>Successful?}
         S -->|No| T[Warning: Query Failed]
-        T --> N
+        T -->|exit| N
         S -->|Yes| U[Parse JSON Response]
-        U --> V[Filter by kind: workflowapp]
+        U -->|filter| V[Filter by kind: workflowapp]
     end
     
-    subgraph "Apply Filters"
-        V --> W{AZURE_RESOURCE_GROUP<br/>Set?}
+    %% ===== APPLY FILTERS =====
+    subgraph ApplyFilters["Apply Filters"]
+        V -->|check| W{AZURE_RESOURCE_GROUP<br/>Set?}
         W -->|Yes| X[Filter by Resource Group]
         W -->|No| Y[No RG Filter]
-        X --> Z{LOGIC_APP_NAME<br/>Set?}
-        Y --> Z
+        X -->|check| Z{LOGIC_APP_NAME<br/>Set?}
+        Y -->|check| Z
         Z -->|Yes| AA[Filter by Name Pattern]
         Z -->|No| AB[No Name Filter]
-        AA --> AC[Filtered Results]
-        AB --> AC
+        AA -->|collect| AC[Filtered Results]
+        AB -->|collect| AC
     end
     
-    subgraph "Purge Process"
-        AC --> AD{Any Logic Apps<br/>Found?}
+    %% ===== PURGE PROCESS =====
+    subgraph PurgeProcess["Purge Process"]
+        AC -->|evaluate| AD{Any Logic Apps<br/>Found?}
         AD -->|No| AE[No Logic Apps to Purge]
-        AE --> N
+        AE -->|exit| N
         AD -->|Yes| AF[Display Logic Apps List]
-        AF --> AG{Force Mode<br/>Enabled?}
+        AF -->|check| AG{Force Mode<br/>Enabled?}
         AG -->|No| AH[Prompt for Confirmation]
-        AH --> AI{User<br/>Confirmed?}
+        AH -->|verify| AI{User<br/>Confirmed?}
         AI -->|No| AJ[Purge Cancelled]
-        AJ --> N
+        AJ -->|exit| N
         AI -->|Yes| AK[Begin Purge]
         AG -->|Yes| AK
     end
     
-    subgraph "Execute Purge"
-        AK --> AL[For Each Logic App]
-        AL --> AM[Call DELETE /deletedSites/id]
-        AM --> AN{Purge<br/>Successful?}
+    %% ===== EXECUTE PURGE =====
+    subgraph ExecutePurge["Execute Purge"]
+        AK -->|iterate| AL[For Each Logic App]
+        AL -->|call| AM[Call DELETE /deletedSites/id]
+        AM -->|verify| AN{Purge<br/>Successful?}
         AN -->|No| AO[Log Error, Continue]
         AN -->|Yes| AP[Log Success]
-        AO --> AQ{More Logic Apps?}
-        AP --> AQ
+        AO -->|check| AQ{More Logic Apps?}
+        AP -->|check| AQ
         AQ -->|Yes| AL
         AQ -->|No| AR[Display Summary]
     end
     
-    AR --> AS[Purged: X, Failed: Y]
-    AS --> AT([Exit 0])
-    
-    style A fill:#FF9800,color:#fff
-    style AT fill:#4CAF50,color:#fff
-    style N fill:#4CAF50,color:#fff
-    style F fill:#f44336,color:#fff
+    AR -->|report| AS[Purged: X, Failed: Y]
+    AS -->|complete| AT([Exit 0])
+
+    %% ===== SUBGRAPH STYLES =====
+    style PrereqCheck fill:#EEF2FF,stroke:#4F46E5,stroke-width:2px
+    style EnvValidation fill:#ECFDF5,stroke:#10B981,stroke-width:2px
+    style QueryDeleted fill:#FEF3C7,stroke:#F59E0B,stroke-width:2px
+    style ApplyFilters fill:#F3F4F6,stroke:#6B7280,stroke-width:2px
+    style PurgeProcess fill:#E0E7FF,stroke:#4F46E5,stroke-width:2px
+    style ExecutePurge fill:#FEE2E2,stroke:#F44336,stroke-width:2px
+
+    %% ===== NODE CLASS ASSIGNMENTS =====
+    class A datastore
+    class AT,N trigger
+    class B,C,Q,R,U,V,AF,AL,AM,AR,AS primary
+    class K,P,AC,AP secondary
+    class D,G,I,L,O,S,W,Z,AD,AG,AI,AN,AQ decision
+    class E,H,J,M,T,AE,AH,AJ,AO input
+    class X,Y,AA,AB,AK external
+    class F failed
 ```
 
 ### 🌐 Azure REST API Calls
