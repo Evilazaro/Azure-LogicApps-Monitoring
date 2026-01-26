@@ -13,45 +13,20 @@ public sealed class FluentDesignSystemTests
     #region Spacing Tests
 
     [TestMethod]
-    public void Spacing_XSmall_HasExpectedValue()
+    [DataRow(nameof(FluentDesignSystem.Spacing.XSmall), "4")]
+    [DataRow(nameof(FluentDesignSystem.Spacing.Small), "8")]
+    [DataRow(nameof(FluentDesignSystem.Spacing.Medium), "12")]
+    [DataRow(nameof(FluentDesignSystem.Spacing.Large), "16")]
+    [DataRow(nameof(FluentDesignSystem.Spacing.XLarge), "20")]
+    [DataRow(nameof(FluentDesignSystem.Spacing.XXLarge), "24")]
+    [DataRow(nameof(FluentDesignSystem.Spacing.XXXLarge), "32")]
+    public void Spacing_HasExpectedValues(string propertyName, string expectedValue)
     {
-        Assert.AreEqual("4", FluentDesignSystem.Spacing.XSmall);
-    }
+        // Arrange
+        var actualValue = GetSpacingValue(propertyName);
 
-    [TestMethod]
-    public void Spacing_Small_HasExpectedValue()
-    {
-        Assert.AreEqual("8", FluentDesignSystem.Spacing.Small);
-    }
-
-    [TestMethod]
-    public void Spacing_Medium_HasExpectedValue()
-    {
-        Assert.AreEqual("12", FluentDesignSystem.Spacing.Medium);
-    }
-
-    [TestMethod]
-    public void Spacing_Large_HasExpectedValue()
-    {
-        Assert.AreEqual("16", FluentDesignSystem.Spacing.Large);
-    }
-
-    [TestMethod]
-    public void Spacing_XLarge_HasExpectedValue()
-    {
-        Assert.AreEqual("20", FluentDesignSystem.Spacing.XLarge);
-    }
-
-    [TestMethod]
-    public void Spacing_XXLarge_HasExpectedValue()
-    {
-        Assert.AreEqual("24", FluentDesignSystem.Spacing.XXLarge);
-    }
-
-    [TestMethod]
-    public void Spacing_XXXLarge_HasExpectedValue()
-    {
-        Assert.AreEqual("32", FluentDesignSystem.Spacing.XXXLarge);
+        // Assert
+        Assert.AreEqual(expectedValue, actualValue, $"Spacing.{propertyName} should be {expectedValue}");
     }
 
     [TestMethod]
@@ -60,13 +35,13 @@ public sealed class FluentDesignSystemTests
         // Arrange
         var spacingValues = new[]
         {
-            int.Parse(FluentDesignSystem.Spacing.XSmall),
-            int.Parse(FluentDesignSystem.Spacing.Small),
-            int.Parse(FluentDesignSystem.Spacing.Medium),
-            int.Parse(FluentDesignSystem.Spacing.Large),
-            int.Parse(FluentDesignSystem.Spacing.XLarge),
-            int.Parse(FluentDesignSystem.Spacing.XXLarge),
-            int.Parse(FluentDesignSystem.Spacing.XXXLarge)
+            int.Parse(GetSpacingValue(nameof(FluentDesignSystem.Spacing.XSmall))),
+            int.Parse(GetSpacingValue(nameof(FluentDesignSystem.Spacing.Small))),
+            int.Parse(GetSpacingValue(nameof(FluentDesignSystem.Spacing.Medium))),
+            int.Parse(GetSpacingValue(nameof(FluentDesignSystem.Spacing.Large))),
+            int.Parse(GetSpacingValue(nameof(FluentDesignSystem.Spacing.XLarge))),
+            int.Parse(GetSpacingValue(nameof(FluentDesignSystem.Spacing.XXLarge))),
+            int.Parse(GetSpacingValue(nameof(FluentDesignSystem.Spacing.XXXLarge)))
         };
 
         // Act & Assert
@@ -77,230 +52,245 @@ public sealed class FluentDesignSystemTests
         }
     }
 
+    private static string GetSpacingValue(string propertyName) => propertyName switch
+    {
+        nameof(FluentDesignSystem.Spacing.XSmall) => FluentDesignSystem.Spacing.XSmall,
+        nameof(FluentDesignSystem.Spacing.Small) => FluentDesignSystem.Spacing.Small,
+        nameof(FluentDesignSystem.Spacing.Medium) => FluentDesignSystem.Spacing.Medium,
+        nameof(FluentDesignSystem.Spacing.Large) => FluentDesignSystem.Spacing.Large,
+        nameof(FluentDesignSystem.Spacing.XLarge) => FluentDesignSystem.Spacing.XLarge,
+        nameof(FluentDesignSystem.Spacing.XXLarge) => FluentDesignSystem.Spacing.XXLarge,
+        nameof(FluentDesignSystem.Spacing.XXXLarge) => FluentDesignSystem.Spacing.XXXLarge,
+        _ => throw new ArgumentException($"Unknown spacing property: {propertyName}")
+    };
+
     #endregion
 
     #region FontSizes Tests
 
     [TestMethod]
-    public void FontSizes_Caption_HasExpectedValue()
+    [DataRow(nameof(FluentDesignSystem.FontSizes.Caption), "11px")]
+    [DataRow(nameof(FluentDesignSystem.FontSizes.Body), "13px")]
+    [DataRow(nameof(FluentDesignSystem.FontSizes.BodyLarge), "14px")]
+    [DataRow(nameof(FluentDesignSystem.FontSizes.Subtitle), "15px")]
+    [DataRow(nameof(FluentDesignSystem.FontSizes.Title), "16px")]
+    [DataRow(nameof(FluentDesignSystem.FontSizes.LargeTitle), "18px")]
+    public void FontSizes_HasExpectedValues(string propertyName, string expectedValue)
     {
-        Assert.AreEqual("11px", FluentDesignSystem.FontSizes.Caption);
-    }
+        // Arrange
+        var actualValue = GetFontSizeValue(propertyName);
 
-    [TestMethod]
-    public void FontSizes_Body_HasExpectedValue()
-    {
-        Assert.AreEqual("13px", FluentDesignSystem.FontSizes.Body);
-    }
-
-    [TestMethod]
-    public void FontSizes_BodyLarge_HasExpectedValue()
-    {
-        Assert.AreEqual("14px", FluentDesignSystem.FontSizes.BodyLarge);
-    }
-
-    [TestMethod]
-    public void FontSizes_Subtitle_HasExpectedValue()
-    {
-        Assert.AreEqual("15px", FluentDesignSystem.FontSizes.Subtitle);
-    }
-
-    [TestMethod]
-    public void FontSizes_Title_HasExpectedValue()
-    {
-        Assert.AreEqual("16px", FluentDesignSystem.FontSizes.Title);
-    }
-
-    [TestMethod]
-    public void FontSizes_LargeTitle_HasExpectedValue()
-    {
-        Assert.AreEqual("18px", FluentDesignSystem.FontSizes.LargeTitle);
+        // Assert
+        Assert.AreEqual(expectedValue, actualValue, $"FontSizes.{propertyName} should be {expectedValue}");
     }
 
     [TestMethod]
     public void FontSizes_AllValuesEndWithPx()
     {
         // Arrange
-        var fontSizes = new[]
+        var fontSizeProperties = new[]
         {
-            FluentDesignSystem.FontSizes.Caption,
-            FluentDesignSystem.FontSizes.Body,
-            FluentDesignSystem.FontSizes.BodyLarge,
-            FluentDesignSystem.FontSizes.Subtitle,
-            FluentDesignSystem.FontSizes.Title,
-            FluentDesignSystem.FontSizes.LargeTitle
+            nameof(FluentDesignSystem.FontSizes.Caption),
+            nameof(FluentDesignSystem.FontSizes.Body),
+            nameof(FluentDesignSystem.FontSizes.BodyLarge),
+            nameof(FluentDesignSystem.FontSizes.Subtitle),
+            nameof(FluentDesignSystem.FontSizes.Title),
+            nameof(FluentDesignSystem.FontSizes.LargeTitle)
         };
 
         // Act & Assert
-        foreach (var fontSize in fontSizes)
+        foreach (var propertyName in fontSizeProperties)
         {
+            var fontSize = GetFontSizeValue(propertyName);
             Assert.IsTrue(fontSize.EndsWith("px", StringComparison.Ordinal),
-                $"Font size '{fontSize}' should end with 'px'");
+                $"Font size '{propertyName}' with value '{fontSize}' should end with 'px'");
         }
     }
+
+    private static string GetFontSizeValue(string propertyName) => propertyName switch
+    {
+        nameof(FluentDesignSystem.FontSizes.Caption) => FluentDesignSystem.FontSizes.Caption,
+        nameof(FluentDesignSystem.FontSizes.Body) => FluentDesignSystem.FontSizes.Body,
+        nameof(FluentDesignSystem.FontSizes.BodyLarge) => FluentDesignSystem.FontSizes.BodyLarge,
+        nameof(FluentDesignSystem.FontSizes.Subtitle) => FluentDesignSystem.FontSizes.Subtitle,
+        nameof(FluentDesignSystem.FontSizes.Title) => FluentDesignSystem.FontSizes.Title,
+        nameof(FluentDesignSystem.FontSizes.LargeTitle) => FluentDesignSystem.FontSizes.LargeTitle,
+        _ => throw new ArgumentException($"Unknown font size property: {propertyName}")
+    };
 
     #endregion
 
     #region FontWeights Tests
 
     [TestMethod]
-    public void FontWeights_Regular_HasExpectedValue()
+    [DataRow(nameof(FluentDesignSystem.FontWeights.Regular), "400")]
+    [DataRow(nameof(FluentDesignSystem.FontWeights.SemiBold), "600")]
+    [DataRow(nameof(FluentDesignSystem.FontWeights.Bold), "700")]
+    public void FontWeights_HasExpectedValues(string propertyName, string expectedValue)
     {
-        Assert.AreEqual("400", FluentDesignSystem.FontWeights.Regular);
-    }
+        // Arrange
+        var actualValue = GetFontWeightValue(propertyName);
 
-    [TestMethod]
-    public void FontWeights_SemiBold_HasExpectedValue()
-    {
-        Assert.AreEqual("600", FluentDesignSystem.FontWeights.SemiBold);
-    }
-
-    [TestMethod]
-    public void FontWeights_Bold_HasExpectedValue()
-    {
-        Assert.AreEqual("700", FluentDesignSystem.FontWeights.Bold);
+        // Assert
+        Assert.AreEqual(expectedValue, actualValue, $"FontWeights.{propertyName} should be {expectedValue}");
     }
 
     [TestMethod]
     public void FontWeights_ValuesAreValidCssFontWeights()
     {
         // Arrange
-        var fontWeights = new[]
+        var fontWeightProperties = new[]
         {
-            FluentDesignSystem.FontWeights.Regular,
-            FluentDesignSystem.FontWeights.SemiBold,
-            FluentDesignSystem.FontWeights.Bold
+            nameof(FluentDesignSystem.FontWeights.Regular),
+            nameof(FluentDesignSystem.FontWeights.SemiBold),
+            nameof(FluentDesignSystem.FontWeights.Bold)
         };
 
         // Act & Assert
-        foreach (var weight in fontWeights)
+        foreach (var propertyName in fontWeightProperties)
         {
+            var weight = GetFontWeightValue(propertyName);
             Assert.IsTrue(int.TryParse(weight, out int parsedWeight),
-                $"Font weight '{weight}' should be a valid integer");
+                $"Font weight '{propertyName}' with value '{weight}' should be a valid integer");
             Assert.IsTrue(parsedWeight >= 100 && parsedWeight <= 900,
                 $"Font weight {parsedWeight} should be between 100 and 900");
-            Assert.IsTrue(parsedWeight % 100 == 0,
+            Assert.AreEqual(0, parsedWeight % 100,
                 $"Font weight {parsedWeight} should be a multiple of 100");
         }
     }
+
+    private static string GetFontWeightValue(string propertyName) => propertyName switch
+    {
+        nameof(FluentDesignSystem.FontWeights.Regular) => FluentDesignSystem.FontWeights.Regular,
+        nameof(FluentDesignSystem.FontWeights.SemiBold) => FluentDesignSystem.FontWeights.SemiBold,
+        nameof(FluentDesignSystem.FontWeights.Bold) => FluentDesignSystem.FontWeights.Bold,
+        _ => throw new ArgumentException($"Unknown font weight property: {propertyName}")
+    };
 
     #endregion
 
     #region MaxWidths Tests
 
     [TestMethod]
-    public void MaxWidths_Small_HasExpectedValue()
+    [DataRow(nameof(FluentDesignSystem.MaxWidths.Small), "800px")]
+    [DataRow(nameof(FluentDesignSystem.MaxWidths.Medium), "1000px")]
+    [DataRow(nameof(FluentDesignSystem.MaxWidths.Large), "1400px")]
+    public void MaxWidths_HasExpectedValues(string propertyName, string expectedValue)
     {
-        Assert.AreEqual("800px", FluentDesignSystem.MaxWidths.Small);
-    }
+        // Arrange
+        var actualValue = GetMaxWidthValue(propertyName);
 
-    [TestMethod]
-    public void MaxWidths_Medium_HasExpectedValue()
-    {
-        Assert.AreEqual("1000px", FluentDesignSystem.MaxWidths.Medium);
-    }
-
-    [TestMethod]
-    public void MaxWidths_Large_HasExpectedValue()
-    {
-        Assert.AreEqual("1400px", FluentDesignSystem.MaxWidths.Large);
+        // Assert
+        Assert.AreEqual(expectedValue, actualValue, $"MaxWidths.{propertyName} should be {expectedValue}");
     }
 
     [TestMethod]
     public void MaxWidths_AllValuesEndWithPx()
     {
         // Arrange
-        var maxWidths = new[]
+        var maxWidthProperties = new[]
         {
-            FluentDesignSystem.MaxWidths.Small,
-            FluentDesignSystem.MaxWidths.Medium,
-            FluentDesignSystem.MaxWidths.Large
+            nameof(FluentDesignSystem.MaxWidths.Small),
+            nameof(FluentDesignSystem.MaxWidths.Medium),
+            nameof(FluentDesignSystem.MaxWidths.Large)
         };
 
         // Act & Assert
-        foreach (var width in maxWidths)
+        foreach (var propertyName in maxWidthProperties)
         {
+            var width = GetMaxWidthValue(propertyName);
             Assert.IsTrue(width.EndsWith("px", StringComparison.Ordinal),
-                $"Max width '{width}' should end with 'px'");
+                $"Max width '{propertyName}' with value '{width}' should end with 'px'");
         }
     }
+
+    private static string GetMaxWidthValue(string propertyName) => propertyName switch
+    {
+        nameof(FluentDesignSystem.MaxWidths.Small) => FluentDesignSystem.MaxWidths.Small,
+        nameof(FluentDesignSystem.MaxWidths.Medium) => FluentDesignSystem.MaxWidths.Medium,
+        nameof(FluentDesignSystem.MaxWidths.Large) => FluentDesignSystem.MaxWidths.Large,
+        _ => throw new ArgumentException($"Unknown max width property: {propertyName}")
+    };
 
     #endregion
 
     #region Padding Tests
 
     [TestMethod]
-    public void Padding_Small_HasExpectedValue()
+    [DataRow(nameof(FluentDesignSystem.Padding.Small), "16px")]
+    [DataRow(nameof(FluentDesignSystem.Padding.Medium), "20px")]
+    [DataRow(nameof(FluentDesignSystem.Padding.Large), "24px")]
+    public void Padding_HasExpectedValues(string propertyName, string expectedValue)
     {
-        Assert.AreEqual("16px", FluentDesignSystem.Padding.Small);
-    }
+        // Arrange
+        var actualValue = GetPaddingValue(propertyName);
 
-    [TestMethod]
-    public void Padding_Medium_HasExpectedValue()
-    {
-        Assert.AreEqual("20px", FluentDesignSystem.Padding.Medium);
-    }
-
-    [TestMethod]
-    public void Padding_Large_HasExpectedValue()
-    {
-        Assert.AreEqual("24px", FluentDesignSystem.Padding.Large);
+        // Assert
+        Assert.AreEqual(expectedValue, actualValue, $"Padding.{propertyName} should be {expectedValue}");
     }
 
     [TestMethod]
     public void Padding_AllValuesEndWithPx()
     {
         // Arrange
-        var paddingValues = new[]
+        var paddingProperties = new[]
         {
-            FluentDesignSystem.Padding.Small,
-            FluentDesignSystem.Padding.Medium,
-            FluentDesignSystem.Padding.Large
+            nameof(FluentDesignSystem.Padding.Small),
+            nameof(FluentDesignSystem.Padding.Medium),
+            nameof(FluentDesignSystem.Padding.Large)
         };
 
         // Act & Assert
-        foreach (var padding in paddingValues)
+        foreach (var propertyName in paddingProperties)
         {
+            var padding = GetPaddingValue(propertyName);
             Assert.IsTrue(padding.EndsWith("px", StringComparison.Ordinal),
-                $"Padding '{padding}' should end with 'px'");
+                $"Padding '{propertyName}' with value '{padding}' should end with 'px'");
         }
     }
+
+    private static string GetPaddingValue(string propertyName) => propertyName switch
+    {
+        nameof(FluentDesignSystem.Padding.Small) => FluentDesignSystem.Padding.Small,
+        nameof(FluentDesignSystem.Padding.Medium) => FluentDesignSystem.Padding.Medium,
+        nameof(FluentDesignSystem.Padding.Large) => FluentDesignSystem.Padding.Large,
+        _ => throw new ArgumentException($"Unknown padding property: {propertyName}")
+    };
 
     #endregion
 
     #region DataGridColumns Tests
 
     [TestMethod]
-    public void DataGridColumns_ProductsGrid_HasExpectedValue()
-    {
-        Assert.AreEqual("100px 1fr 80px 120px 120px", FluentDesignSystem.DataGridColumns.ProductsGrid);
-    }
-
-    [TestMethod]
-    public void DataGridColumns_OrdersHeader_HasExpectedValue()
-    {
-        Assert.AreEqual("20px 90px 110px 150px 1fr 100px 32px", FluentDesignSystem.DataGridColumns.OrdersHeader);
-    }
-
-    [TestMethod]
-    public void DataGridColumns_ProductsGrid_HasCorrectColumnCount()
+    [DataRow(nameof(FluentDesignSystem.DataGridColumns.ProductsGrid), "100px 1fr 80px 120px 120px")]
+    [DataRow(nameof(FluentDesignSystem.DataGridColumns.OrdersHeader), "20px 90px 110px 150px 1fr 100px 32px")]
+    public void DataGridColumns_HasExpectedValues(string propertyName, string expectedValue)
     {
         // Arrange
-        var columns = FluentDesignSystem.DataGridColumns.ProductsGrid.Split(' ');
+        var actualValue = GetDataGridColumnsValue(propertyName);
 
         // Assert
-        Assert.AreEqual(5, columns.Length, "ProductsGrid should have 5 columns");
+        Assert.AreEqual(expectedValue, actualValue, $"DataGridColumns.{propertyName} should be {expectedValue}");
     }
 
     [TestMethod]
-    public void DataGridColumns_OrdersHeader_HasCorrectColumnCount()
+    [DataRow(nameof(FluentDesignSystem.DataGridColumns.ProductsGrid), 5)]
+    [DataRow(nameof(FluentDesignSystem.DataGridColumns.OrdersHeader), 7)]
+    public void DataGridColumns_HasCorrectColumnCount(string propertyName, int expectedCount)
     {
         // Arrange
-        var columns = FluentDesignSystem.DataGridColumns.OrdersHeader.Split(' ');
+        var columns = GetDataGridColumnsValue(propertyName).Split(' ');
 
         // Assert
-        Assert.AreEqual(7, columns.Length, "OrdersHeader should have 7 columns");
+        Assert.AreEqual(expectedCount, columns.Length, $"DataGridColumns.{propertyName} should have {expectedCount} columns");
     }
+
+    private static string GetDataGridColumnsValue(string propertyName) => propertyName switch
+    {
+        nameof(FluentDesignSystem.DataGridColumns.ProductsGrid) => FluentDesignSystem.DataGridColumns.ProductsGrid,
+        nameof(FluentDesignSystem.DataGridColumns.OrdersHeader) => FluentDesignSystem.DataGridColumns.OrdersHeader,
+        _ => throw new ArgumentException($"Unknown data grid columns property: {propertyName}")
+    };
 
     #endregion
 }
