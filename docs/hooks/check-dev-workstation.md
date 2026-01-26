@@ -69,32 +69,56 @@ Unlike the preprovision script which can clear secrets and modify the environmen
 ## 📊 Workflow Diagram
 
 ```mermaid
+---
+title: Check Dev Workstation Execution Flow
+---
 flowchart TD
-    subgraph Initialization
-        A([Start]) --> B[Locate preprovision Script]
-        B --> C{Script Found?}
-        C -->|Yes| D[Resolve PowerShell/Bash Path]
-        C -->|No| Z([Exit with Error])
+    %% ===== INITIALIZATION PHASE =====
+    subgraph Initialization["🚀 Initialization"]
+        direction TB
+        Start(["▶️ Start"]) -->|locates| LocateScript["Locate preprovision Script"]
+        LocateScript -->|validates| ScriptFound{"Script Found?"}
+        ScriptFound -->|yes| ResolvePath["Resolve PowerShell/Bash Path"]
+        ScriptFound -->|no| ExitError(["❌ Exit with Error"])
     end
     
-    subgraph Execution["Child Process Execution"]
-        D --> E[Build Arguments Array]
-        E --> F[Add -ValidateOnly Flag]
-        F --> G[Execute preprovision Script]
-        G --> H[Stream Output to Console]
+    %% ===== EXECUTION PHASE =====
+    subgraph Execution["⚡ Child Process Execution"]
+        direction TB
+        ResolvePath -->|builds| BuildArgs["Build Arguments Array"]
+        BuildArgs -->|adds| AddFlag["Add -ValidateOnly Flag"]
+        AddFlag -->|executes| ExecScript["Execute preprovision Script"]
+        ExecScript -->|streams| StreamOutput["Stream Output to Console"]
     end
     
-    subgraph Results["Result Evaluation"]
-        H --> I{Exit Code = 0?}
-        I -->|Yes| J[Display Success Message]
-        I -->|No| K[Display Warning Message]
-        J --> L([Success])
-        K --> M([Exit with Warning])
+    %% ===== RESULTS PHASE =====
+    subgraph Results["📊 Result Evaluation"]
+        direction TB
+        StreamOutput -->|evaluates| CheckExit{"Exit Code = 0?"}
+        CheckExit -->|yes| SuccessMsg["Display Success Message"]
+        CheckExit -->|no| WarnMsg["Display Warning Message"]
+        SuccessMsg -->|completes| Success(["✅ Success"])
+        WarnMsg -->|exits| Warning(["⚠️ Exit with Warning"])
     end
     
-    style Z fill:#f96
-    style L fill:#9f9
-    style M fill:#ff9
+    %% ===== NODE STYLING =====
+    classDef primary fill:#4F46E5,stroke:#3730A3,color:#FFFFFF
+    classDef secondary fill:#10B981,stroke:#059669,color:#FFFFFF
+    classDef decision fill:#FFFBEB,stroke:#F59E0B,color:#000000
+    classDef failed fill:#F44336,stroke:#C62828,color:#FFFFFF
+    classDef trigger fill:#818CF8,stroke:#4F46E5,color:#FFFFFF
+    classDef external fill:#6B7280,stroke:#4B5563,color:#FFFFFF,stroke-dasharray:5 5
+    
+    class Start,Success trigger
+    class LocateScript,ResolvePath,BuildArgs,AddFlag,ExecScript,StreamOutput,SuccessMsg primary
+    class ScriptFound,CheckExit decision
+    class ExitError failed
+    class WarnMsg,Warning external
+    
+    %% ===== SUBGRAPH STYLING =====
+    style Initialization fill:#EEF2FF,stroke:#4F46E5,stroke-width:2px
+    style Execution fill:#ECFDF5,stroke:#10B981,stroke-width:2px
+    style Results fill:#FEF3C7,stroke:#F59E0B,stroke-width:2px
 ```
 
 [⬆️ Back to top](#-check-dev-workstation)

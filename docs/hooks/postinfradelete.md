@@ -69,59 +69,92 @@ The script queries the Azure REST API to retrieve all soft-deleted Logic Apps in
 ## 📊 Workflow Diagram
 
 ```mermaid
+---
+title: Post-Infrastructure Delete Execution Flow
+---
 flowchart TD
-    subgraph Initialization
-        A([Start - azd hook]) --> B[Parse Arguments]
-        B --> C[Initialize Logging]
+    %% ===== INITIALIZATION PHASE =====
+    subgraph Initialization["🚀 Initialization"]
+        direction TB
+        Start(["▶️ Start - azd hook"]) -->|begins| ParseArgs["Parse Arguments"]
+        ParseArgs -->|configures| InitLog["Initialize Logging"]
     end
     
-    subgraph Validation["Environment Validation"]
-        C --> D{Validate AZURE_SUBSCRIPTION_ID}
-        D -->|Set| E{Validate AZURE_LOCATION}
-        D -->|Missing| Z([Exit with Error])
-        E -->|Set| F[Environment Valid]
-        E -->|Missing| Z
+    %% ===== VALIDATION PHASE =====
+    subgraph Validation["✅ Environment Validation"]
+        direction TB
+        InitLog -->|validates| CheckSub{"Validate AZURE_SUBSCRIPTION_ID"}
+        CheckSub -->|set| CheckLoc{"Validate AZURE_LOCATION"}
+        CheckSub -->|missing| ExitError(["❌ Exit with Error"])
+        CheckLoc -->|set| EnvValid["Environment Valid"]
+        CheckLoc -->|missing| ExitError
     end
     
-    subgraph AzureAuth["Azure Authentication"]
-        F --> G{Azure CLI Authenticated?}
-        G -->|Yes| H[Get Access Token]
-        G -->|No| Z
-        H --> I[Set Subscription Context]
+    %% ===== AZURE AUTH PHASE =====
+    subgraph AzureAuth["🔑 Azure Authentication"]
+        direction TB
+        EnvValid -->|checks| CheckAuth{"Azure CLI Authenticated?"}
+        CheckAuth -->|yes| GetToken["Get Access Token"]
+        CheckAuth -->|no| ExitError
+        GetToken -->|sets| SetContext["Set Subscription Context"]
     end
     
-    subgraph Discovery["Soft-Delete Discovery"]
-        I --> J[Query Deleted Sites API]
-        J --> K{Deleted Apps Found?}
-        K -->|No| L([No Apps to Purge])
-        K -->|Yes| M[Filter by Location]
-        M --> N{Matching Apps?}
-        N -->|No| L
-        N -->|Yes| O[Display App List]
+    %% ===== DISCOVERY PHASE =====
+    subgraph Discovery["🔍 Soft-Delete Discovery"]
+        direction TB
+        SetContext -->|queries| QueryAPI["Query Deleted Sites API"]
+        QueryAPI -->|evaluates| AppsFound{"Deleted Apps Found?"}
+        AppsFound -->|no| NoApps(["✅ No Apps to Purge"])
+        AppsFound -->|yes| FilterLoc["Filter by Location"]
+        FilterLoc -->|checks| Matching{"Matching Apps?"}
+        Matching -->|no| NoApps
+        Matching -->|yes| DisplayList["Display App List"]
     end
     
-    subgraph Confirmation["User Confirmation"]
-        O --> P{Force Mode?}
-        P -->|Yes| Q[Skip Confirmation]
-        P -->|No| R{User Confirms?}
-        R -->|Yes| Q
-        R -->|No| S([Cancelled by User])
+    %% ===== CONFIRMATION PHASE =====
+    subgraph Confirmation["⚠️ User Confirmation"]
+        direction TB
+        DisplayList -->|checks| ForceMode{"Force Mode?"}
+        ForceMode -->|yes| SkipConfirm["Skip Confirmation"]
+        ForceMode -->|no| UserConfirm{"User Confirms?"}
+        UserConfirm -->|yes| SkipConfirm
+        UserConfirm -->|no| Cancelled(["⏹️ Cancelled by User"])
     end
     
-    subgraph Purge["Purge Operations"]
-        Q --> T[Begin Purge Loop]
-        T --> U[Purge Logic App]
-        U --> V{More Apps?}
-        V -->|Yes| U
-        V -->|No| W[Generate Summary]
+    %% ===== PURGE PHASE =====
+    subgraph Purge["🗑️ Purge Operations"]
+        direction TB
+        SkipConfirm -->|starts| BeginLoop["Begin Purge Loop"]
+        BeginLoop -->|purges| PurgeApp["Purge Logic App"]
+        PurgeApp -->|checks| MoreApps{"More Apps?"}
+        MoreApps -->|yes| PurgeApp
+        MoreApps -->|no| GenSummary["Generate Summary"]
     end
     
-    W --> X([Success])
+    %% ===== COMPLETION =====
+    GenSummary -->|finishes| Success(["✅ Success"])
     
-    style Z fill:#f96
-    style S fill:#ff9
-    style L fill:#9f9
-    style X fill:#9f9
+    %% ===== NODE STYLING =====
+    classDef primary fill:#4F46E5,stroke:#3730A3,color:#FFFFFF
+    classDef secondary fill:#10B981,stroke:#059669,color:#FFFFFF
+    classDef decision fill:#FFFBEB,stroke:#F59E0B,color:#000000
+    classDef failed fill:#F44336,stroke:#C62828,color:#FFFFFF
+    classDef trigger fill:#818CF8,stroke:#4F46E5,color:#FFFFFF
+    classDef external fill:#6B7280,stroke:#4B5563,color:#FFFFFF,stroke-dasharray:5 5
+    
+    class Start,Success,NoApps trigger
+    class ParseArgs,InitLog,EnvValid,GetToken,SetContext,QueryAPI,FilterLoc,DisplayList,SkipConfirm,BeginLoop,PurgeApp,GenSummary primary
+    class CheckSub,CheckLoc,CheckAuth,AppsFound,Matching,ForceMode,UserConfirm,MoreApps decision
+    class ExitError failed
+    class Cancelled external
+    
+    %% ===== SUBGRAPH STYLING =====
+    style Initialization fill:#EEF2FF,stroke:#4F46E5,stroke-width:2px
+    style Validation fill:#ECFDF5,stroke:#10B981,stroke-width:2px
+    style AzureAuth fill:#E0E7FF,stroke:#4F46E5,stroke-width:2px
+    style Discovery fill:#FEF3C7,stroke:#F59E0B,stroke-width:2px
+    style Confirmation fill:#F3F4F6,stroke:#6B7280,stroke-width:2px
+    style Purge fill:#FEE2E2,stroke:#F44336,stroke-width:2px
 ```
 
 [⬆️ Back to top](#️-postinfradelete)

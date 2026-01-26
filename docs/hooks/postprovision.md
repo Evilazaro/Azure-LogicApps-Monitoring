@@ -69,53 +69,84 @@ The configuration enables local development against Azure resources without hard
 ## 📊 Workflow Diagram
 
 ```mermaid
+---
+title: Post-Provision Script Execution Flow
+---
 flowchart TD
-    subgraph Initialization
-        A([Start - azd hook]) --> B[Parse Arguments]
-        B --> C[Initialize Logging]
+    %% ===== INITIALIZATION PHASE =====
+    subgraph Initialization["🚀 Initialization"]
+        direction TB
+        Start(["▶️ Start - azd hook"]) -->|begins| ParseArgs["Parse Arguments"]
+        ParseArgs -->|configures| InitLog["Initialize Logging"]
     end
     
-    subgraph Validation["Environment Validation"]
-        C --> D{Validate AZURE_SUBSCRIPTION_ID}
-        D -->|Set| E{Validate AZURE_RESOURCE_GROUP}
-        D -->|Missing| Z([Exit with Error])
-        E -->|Set| F{Validate AZURE_LOCATION}
-        E -->|Missing| Z
-        F -->|Set| G[Environment Valid]
-        F -->|Missing| Z
+    %% ===== VALIDATION PHASE =====
+    subgraph Validation["✅ Environment Validation"]
+        direction TB
+        InitLog -->|validates| CheckSub{"Validate AZURE_SUBSCRIPTION_ID"}
+        CheckSub -->|set| CheckRG{"Validate AZURE_RESOURCE_GROUP"}
+        CheckSub -->|missing| ExitError(["❌ Exit with Error"])
+        CheckRG -->|set| CheckLoc{"Validate AZURE_LOCATION"}
+        CheckRG -->|missing| ExitError
+        CheckLoc -->|set| EnvValid["Environment Valid"]
+        CheckLoc -->|missing| ExitError
     end
     
-    subgraph ACR["Container Registry Auth"]
-        G --> H{ACR Configured?}
-        H -->|Yes| I[Authenticate to ACR]
-        H -->|No| J[Skip ACR Auth]
-        I -->|Success| J
-        I -->|Fail| K[Log Warning]
-        K --> J
+    %% ===== CONTAINER REGISTRY PHASE =====
+    subgraph ACR["🐳 Container Registry Auth"]
+        direction TB
+        EnvValid -->|checks| ACRConfig{"ACR Configured?"}
+        ACRConfig -->|yes| AuthACR["Authenticate to ACR"]
+        ACRConfig -->|no| SkipACR["Skip ACR Auth"]
+        AuthACR -->|success| SkipACR
+        AuthACR -->|fail| LogWarn["Log Warning"]
+        LogWarn -->|continues| SkipACR
     end
     
-    subgraph SecretsSetup["User Secrets Configuration"]
-        J --> L[Clear Existing Secrets]
-        L --> M[Set Azure Subscription Secret]
-        M --> N[Set Resource Group Secret]
-        N --> O[Set Location Secret]
-        O --> P{Additional Resources?}
-        P -->|Yes| Q[Configure Resource Secrets]
-        P -->|No| R[Generate Summary]
-        Q --> R
+    %% ===== SECRETS SETUP PHASE =====
+    subgraph SecretsSetup["🔐 User Secrets Configuration"]
+        direction TB
+        SkipACR -->|initializes| ClearSecrets["Clear Existing Secrets"]
+        ClearSecrets -->|sets| SetSub["Set Azure Subscription Secret"]
+        SetSub -->|sets| SetRG["Set Resource Group Secret"]
+        SetRG -->|sets| SetLoc["Set Location Secret"]
+        SetLoc -->|checks| AddResources{"Additional Resources?"}
+        AddResources -->|yes| ConfigResources["Configure Resource Secrets"]
+        AddResources -->|no| GenSummary["Generate Summary"]
+        ConfigResources -->|completes| GenSummary
     end
     
-    subgraph SQLConfig["SQL Database Config"]
-        R --> S{SQL Database Provisioned?}
-        S -->|Yes| T[Configure Managed Identity]
-        S -->|No| U[Skip SQL Config]
-        T --> U
+    %% ===== SQL CONFIG PHASE =====
+    subgraph SQLConfig["🗃️ SQL Database Config"]
+        direction TB
+        GenSummary -->|checks| SQLProvisioned{"SQL Database Provisioned?"}
+        SQLProvisioned -->|yes| ConfigMI["Configure Managed Identity"]
+        SQLProvisioned -->|no| SkipSQL["Skip SQL Config"]
+        ConfigMI -->|completes| SkipSQL
     end
     
-    U --> V([Success])
+    %% ===== COMPLETION =====
+    SkipSQL -->|finishes| Success(["✅ Success"])
     
-    style Z fill:#f96
-    style V fill:#9f9
+    %% ===== NODE STYLING =====
+    classDef primary fill:#4F46E5,stroke:#3730A3,color:#FFFFFF
+    classDef secondary fill:#10B981,stroke:#059669,color:#FFFFFF
+    classDef decision fill:#FFFBEB,stroke:#F59E0B,color:#000000
+    classDef failed fill:#F44336,stroke:#C62828,color:#FFFFFF
+    classDef trigger fill:#818CF8,stroke:#4F46E5,color:#FFFFFF
+    classDef datastore fill:#F59E0B,stroke:#D97706,color:#000000
+    
+    class Start,Success trigger
+    class ParseArgs,InitLog,EnvValid,AuthACR,SkipACR,LogWarn,ClearSecrets,SetSub,SetRG,SetLoc,ConfigResources,GenSummary,ConfigMI,SkipSQL primary
+    class CheckSub,CheckRG,CheckLoc,ACRConfig,AddResources,SQLProvisioned decision
+    class ExitError failed
+    
+    %% ===== SUBGRAPH STYLING =====
+    style Initialization fill:#EEF2FF,stroke:#4F46E5,stroke-width:2px
+    style Validation fill:#ECFDF5,stroke:#10B981,stroke-width:2px
+    style ACR fill:#E0E7FF,stroke:#4F46E5,stroke-width:2px
+    style SecretsSetup fill:#FEF3C7,stroke:#F59E0B,stroke-width:2px
+    style SQLConfig fill:#D1FAE5,stroke:#10B981,stroke-width:2px
 ```
 
 [⬆️ Back to top](#️-postprovision)
