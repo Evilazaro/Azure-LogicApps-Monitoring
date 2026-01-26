@@ -124,108 +124,143 @@ Environment aliases are set temporarily during execution for placeholder resolut
 ### 🔄 Execution Flow
 
 ```mermaid
+---
+title: deploy-workflow Execution Flow
+---
 flowchart TD
-    A([Start]) --> B[Parse Arguments]
-    B --> C[Disable ANSI Colors]
-    C --> D[Display Banner]
+    %% ===== CLASS DEFINITIONS =====
+    classDef primary fill:#4F46E5,stroke:#3730A3,color:#FFFFFF
+    classDef secondary fill:#10B981,stroke:#059669,color:#FFFFFF
+    classDef datastore fill:#F59E0B,stroke:#D97706,color:#000000
+    classDef external fill:#6B7280,stroke:#4B5563,color:#FFFFFF,stroke-dasharray:5 5
+    classDef failed fill:#F44336,stroke:#C62828,color:#FFFFFF
+    classDef trigger fill:#818CF8,stroke:#4F46E5,color:#FFFFFF
+    classDef decision fill:#FFFBEB,stroke:#F59E0B,color:#000000
+    classDef input fill:#F3F4F6,stroke:#6B7280,color:#000000
+
+    %% ===== INITIALIZATION =====
+    A([Start]) -->|begin| B[Parse Arguments]
+    B -->|configure| C[Disable ANSI Colors]
+    C -->|display| D[Display Banner]
     
-    subgraph "Environment Setup"
-        D --> E[Set Workflow Environment Aliases]
-        E --> F[Load Configuration from Environment]
-        F --> G{Required Variables<br/>Present?}
+    %% ===== ENVIRONMENT SETUP =====
+    subgraph EnvSetup["Environment Setup"]
+        D -->|map| E[Set Workflow Environment Aliases]
+        E -->|load| F[Load Configuration from Environment]
+        F -->|validate| G{Required Variables<br/>Present?}
         G -->|No| H[Error: Missing Variables]
-        H --> I([Exit 1])
+        H -->|terminate| I([Exit 1])
         G -->|Yes| J[Log Target Configuration]
     end
     
-    subgraph "Workflow Discovery"
-        J --> K{Custom Workflow<br/>Path Provided?}
+    %% ===== WORKFLOW DISCOVERY =====
+    subgraph WorkflowDiscovery["Workflow Discovery"]
+        J -->|check| K{Custom Workflow<br/>Path Provided?}
         K -->|Yes| L[Use Custom Path]
         K -->|No| M[Search Default Path]
-        M --> N{Path<br/>Exists?}
+        M -->|verify| N{Path<br/>Exists?}
         N -->|No| O[Error: Project Not Found]
-        O --> I
+        O -->|terminate| I
         N -->|Yes| P[Resolve Full Path]
-        L --> P
+        L -->|resolve| P
         
-        P --> Q[Scan for Workflow Folders]
-        Q --> R[Filter by workflow.json]
-        R --> S[Apply Exclude Patterns]
-        S --> T{Workflows<br/>Found?}
+        P -->|scan| Q[Scan for Workflow Folders]
+        Q -->|filter| R[Filter by workflow.json]
+        R -->|exclude| S[Apply Exclude Patterns]
+        S -->|verify| T{Workflows<br/>Found?}
         T -->|No| U[Error: No Workflows]
-        U --> I
+        U -->|terminate| I
         T -->|Yes| V[Log Discovered Workflows]
     end
     
-    subgraph "Connection Setup"
-        V --> W{Service Bus URL<br/>in Environment?}
+    %% ===== CONNECTION SETUP =====
+    subgraph ConnectionSetup["Connection Setup"]
+        V -->|check| W{Service Bus URL<br/>in Environment?}
         W -->|No| X[Fetch from Azure REST API]
         W -->|Yes| Y[Use Environment Value]
-        X --> Z{Fetch<br/>Successful?}
+        X -->|verify| Z{Fetch<br/>Successful?}
         Z -->|No| AA[Warning: URL Not Found]
         Z -->|Yes| AB[Store Runtime URL]
-        Y --> AB
-        AA --> AB
+        Y -->|store| AB
+        AA -->|continue| AB
         
-        AB --> AC{Blob URL<br/>in Environment?}
+        AB -->|check| AC{Blob URL<br/>in Environment?}
         AC -->|No| AD[Fetch from Azure REST API]
         AC -->|Yes| AE[Use Environment Value]
-        AD --> AF{Fetch<br/>Successful?}
+        AD -->|verify| AF{Fetch<br/>Successful?}
         AF -->|No| AG[Warning: URL Not Found]
         AF -->|Yes| AH[Store Runtime URL]
-        AE --> AH
-        AG --> AH
+        AE -->|store| AH
+        AG -->|continue| AH
     end
     
-    subgraph "Staging"
-        AH --> AI[Create Staging Directory]
-        AI --> AJ[Copy host.json]
-        AJ --> AK[Process connections.json]
-        AK --> AL[Resolve Placeholders]
-        AL --> AM[Process parameters.json]
-        AM --> AN[Resolve Placeholders]
+    %% ===== STAGING =====
+    subgraph Staging["Staging"]
+        AH -->|create| AI[Create Staging Directory]
+        AI -->|copy| AJ[Copy host.json]
+        AJ -->|process| AK[Process connections.json]
+        AK -->|resolve| AL[Resolve Placeholders]
+        AL -->|process| AM[Process parameters.json]
+        AM -->|resolve| AN[Resolve Placeholders]
         
-        AN --> AO[For Each Workflow]
-        AO --> AP[Create Workflow Directory]
-        AP --> AQ[Process workflow.json]
-        AQ --> AR[Resolve Placeholders]
-        AR --> AS{More<br/>Workflows?}
+        AN -->|iterate| AO[For Each Workflow]
+        AO -->|create| AP[Create Workflow Directory]
+        AP -->|process| AQ[Process workflow.json]
+        AQ -->|resolve| AR[Resolve Placeholders]
+        AR -->|check| AS{More<br/>Workflows?}
         AS -->|Yes| AO
         AS -->|No| AT[Staging Complete]
     end
     
-    subgraph "Packaging"
-        AT --> AU[Create Zip Archive]
-        AU --> AV[Log Package Size]
+    %% ===== PACKAGING =====
+    subgraph Packaging["Packaging"]
+        AT -->|compress| AU[Create Zip Archive]
+        AU -->|report| AV[Log Package Size]
     end
     
-    subgraph "Deployment"
-        AV --> AW[Update App Settings]
-        AW --> AX{Settings<br/>Updated?}
+    %% ===== DEPLOYMENT =====
+    subgraph Deployment["Deployment"]
+        AV -->|configure| AW[Update App Settings]
+        AW -->|verify| AX{Settings<br/>Updated?}
         AX -->|No| AY[Warning: Settings Failed]
         AX -->|Yes| AZ[Settings Updated ✓]
-        AY --> AZ
+        AY -->|continue| AZ
         
-        AZ --> BA[Record Start Time]
-        BA --> BB[Deploy via az functionapp]
-        BB --> BC{Deployment<br/>Successful?}
+        AZ -->|record| BA[Record Start Time]
+        BA -->|deploy| BB[Deploy via az functionapp]
+        BB -->|verify| BC{Deployment<br/>Successful?}
         BC -->|No| BD[Error: Deployment Failed]
-        BD --> BE[Fetch Deployment Logs]
-        BE --> I
+        BD -->|fetch| BE[Fetch Deployment Logs]
+        BE -->|terminate| I
         BC -->|Yes| BF[Calculate Duration]
     end
     
-    subgraph "Cleanup"
-        BF --> BG[Remove Staging Directory]
-        BG --> BH[Remove Zip File]
-        BH --> BI[Display Success Banner]
+    %% ===== CLEANUP =====
+    subgraph Cleanup["Cleanup"]
+        BF -->|remove| BG[Remove Staging Directory]
+        BG -->|remove| BH[Remove Zip File]
+        BH -->|display| BI[Display Success Banner]
     end
     
-    BI --> BJ([Exit 0])
-    
-    style A fill:#4CAF50,color:#fff
-    style BJ fill:#4CAF50,color:#fff
-    style I fill:#f44336,color:#fff
+    BI -->|complete| BJ([Exit 0])
+
+    %% ===== SUBGRAPH STYLES =====
+    style EnvSetup fill:#EEF2FF,stroke:#4F46E5,stroke-width:2px
+    style WorkflowDiscovery fill:#ECFDF5,stroke:#10B981,stroke-width:2px
+    style ConnectionSetup fill:#E0E7FF,stroke:#4F46E5,stroke-width:2px
+    style Staging fill:#FEF3C7,stroke:#F59E0B,stroke-width:2px
+    style Packaging fill:#D1FAE5,stroke:#10B981,stroke-width:1px
+    style Deployment fill:#F3F4F6,stroke:#6B7280,stroke-width:2px
+    style Cleanup fill:#FEE2E2,stroke:#F44336,stroke-width:2px
+
+    %% ===== NODE CLASS ASSIGNMENTS =====
+    class A,BJ trigger
+    class B,C,D,E,F,J,Q,R,S,V,AI,AJ,AK,AL,AM,AN,AO,AP,AQ,AR,AU,AV,AW,BA,BB,BF,BG,BH,BI primary
+    class AT,AZ secondary
+    class G,K,N,T,W,Z,AC,AF,AS,AX,BC decision
+    class H,O,U,AA,AG,AY,BD,BE input
+    class L,M,P,X,Y,AB,AD,AE,AH external
+    class I failed
 ```
 
 ### 🔄 Placeholder Pattern
