@@ -7,13 +7,36 @@ license: MIT
 languages: [PowerShell, Bash]
 ---
 
-# check-dev-workstation
+# 💻 check-dev-workstation
 
-## Overview
+---
+
+## 📑 Table of Contents
+
+- [📋 Overview](#-overview)
+- [📝 Description](#-description)
+- [📊 Workflow Diagram](#-workflow-diagram)
+- [✅ Prerequisites](#-prerequisites)
+- [⚙️ Parameters/Arguments](#️-parametersarguments)
+- [📥 Input/Output Specifications](#-inputoutput-specifications)
+- [💻 Usage Examples](#-usage-examples)
+- [⚠️ Error Handling and Exit Codes](#️-error-handling-and-exit-codes)
+- [🔒 Security Considerations](#-security-considerations)
+- [🚧 Known Limitations](#-known-limitations)
+- [🔗 Related Scripts](#-related-scripts)
+- [📜 Changelog](#-changelog)
+
+---
+
+## 📋 Overview
 
 Developer-friendly validation wrapper script that checks workstation prerequisites for the Azure Logic Apps Monitoring solution without making any changes to the environment.
 
-## Description
+[⬆️ Back to top](#-check-dev-workstation)
+
+---
+
+## 📝 Description
 
 This script provides a convenient way for developers to validate their workstation setup before beginning development work on the Azure Logic Apps Monitoring solution. It acts as a wrapper around the `preprovision` script, executing it in validation-only mode to check all prerequisites without performing any modifications.
 
@@ -21,7 +44,11 @@ The script performs comprehensive validation including checking PowerShell/Bash 
 
 Unlike the preprovision script which can clear secrets and modify the environment, this wrapper is completely read-only and safe to run at any time. It provides clear, actionable feedback on any issues found, helping developers quickly identify and resolve configuration problems before they impact development work.
 
-## Workflow Diagram
+[⬆️ Back to top](#-check-dev-workstation)
+
+---
+
+## 📊 Workflow Diagram
 
 ```mermaid
 flowchart TD
@@ -52,53 +79,65 @@ flowchart TD
     style M fill:#ff9
 ```
 
-## Prerequisites
+[⬆️ Back to top](#-check-dev-workstation)
+
+---
+
+## ✅ Prerequisites
 
 | Category | Requirement | Version | Verification Command | Required |
-|----------|-------------|---------|---------------------|----------|
-| Runtime | PowerShell Core | >= 7.0 | `$PSVersionTable.PSVersion` | Yes |
-| Runtime | Bash | >= 4.0 | `bash --version` | Yes |
-| Script | preprovision.ps1 / preprovision.sh | N/A | Must exist in same directory | Yes |
+|:---------|:------------|:--------|:---------------------|:--------:|
+| Runtime | PowerShell Core | >= 7.0 | `$PSVersionTable.PSVersion` | ✅ |
+| Runtime | Bash | >= 4.0 | `bash --version` | ✅ |
+| Script | preprovision.ps1 / preprovision.sh | N/A | Must exist in same directory | ✅ |
 
-**Note:** All other prerequisites are validated by this script, not required to run it.
+> **ℹ️ Note:** All other prerequisites are validated by this script, not required to run it.
 
-## Parameters/Arguments
+[⬆️ Back to top](#-check-dev-workstation)
+
+---
+
+## ⚙️ Parameters/Arguments
 
 ### PowerShell Parameters
 
 | Parameter | Type | Required | Default | Description |
-|-----------|------|----------|---------|-------------|
-| `-Verbose` | `[switch]` | No | `$false` | Displays detailed diagnostic information during validation |
+|:----------|:-----|:--------:|:--------|:------------|
+| `-Verbose` | `[switch]` | ❌ | `$false` | Displays detailed diagnostic information during validation |
 
 ### Bash Arguments
 
 | Position/Flag | Type | Required | Default | Description |
-|---------------|------|----------|---------|-------------|
-| `-v`, `--verbose` | flag | No | `false` | Display detailed diagnostic information during validation |
-| `-h`, `--help` | flag | No | N/A | Display help message and exit |
+|:--------------|:-----|:--------:|:--------|:------------|
+| `-v`, `--verbose` | flag | ❌ | `false` | Display detailed diagnostic information during validation |
+| `-h`, `--help` | flag | ❌ | N/A | Display help message and exit |
 
-## Input/Output Specifications
+[⬆️ Back to top](#-check-dev-workstation)
+
+---
+
+## 📥 Input/Output Specifications
 
 ### Inputs
 
 **Environment Variables Read:**
 
-- None (all validation is performed by preprovision script)
+> **ℹ️ Note:** None — all validation is performed by preprovision script.
 
 **Files/Paths Expected:**
 
-- `preprovision.ps1` (PowerShell) or `preprovision.sh` (Bash) - Must exist in the same directory
+- `preprovision.ps1` (PowerShell) or `preprovision.sh` (Bash) — Must exist in the same directory
 
 ### Outputs
 
 **Exit Codes:**
 
 | Exit Code | Meaning |
-|-----------|---------|
-| 0 | Validation successful - All prerequisites met |
-| 1 | General error - Missing script or invalid execution |
-| >1 | Validation failed - See preprovision exit codes for details |
-| 130 | Script interrupted by user (Ctrl+C) |
+|:---------:|:--------|
+| `0` | Validation successful — All prerequisites met |
+| `1` | General error — Missing script or invalid execution |
+| `>1` | Validation failed — See preprovision exit codes for details |
+| `130` | Script interrupted by user (Ctrl+C) |
 
 **stdout Output:**
 
@@ -106,7 +145,11 @@ flowchart TD
 - Success or warning summary message
 - Troubleshooting steps on error
 
-## Usage Examples
+[⬆️ Back to top](#-check-dev-workstation)
+
+---
+
+## 💻 Usage Examples
 
 ### Basic Usage
 
@@ -155,14 +198,18 @@ flowchart TD
     ./hooks/check-dev-workstation.sh --verbose
 ```
 
-## Error Handling and Exit Codes
+[⬆️ Back to top](#-check-dev-workstation)
+
+---
+
+## ⚠️ Error Handling and Exit Codes
 
 | Exit Code | Meaning | Recovery Action |
-|-----------|---------|-----------------|
-| 0 | Success - All prerequisites met | N/A |
-| 1 | General error | Check if preprovision script exists |
-| 2+ | Validation failure | Address specific issues from preprovision output |
-| 130 | User interrupted | Re-run script when ready |
+|:---------:|:--------|:----------------|
+| `0` | Success — All prerequisites met | N/A |
+| `1` | General error | Check if preprovision script exists |
+| `2+` | Validation failure | Address specific issues from preprovision output |
+| `130` | User interrupted | Re-run script when ready |
 
 ### Error Handling Approach
 
@@ -180,9 +227,13 @@ flowchart TD
 - Graceful interrupt handling (Ctrl+C)
 - Color-coded error messages
 
-## Security Considerations
+[⬆️ Back to top](#-check-dev-workstation)
 
-### Credential Handling
+---
+
+## 🔒 Security Considerations
+
+### 🔑 Credential Handling
 
 - [x] No credentials handled directly
 - [x] Read-only operation - no modifications to environment
@@ -191,39 +242,59 @@ flowchart TD
 ### Required Permissions
 
 | Permission/Role | Scope | Justification |
-|-----------------|-------|---------------|
+|:----------------|:------|:--------------|
 | None | Local | Only reads local configuration |
 | Reader | Azure (via preprovision) | Validates Azure access |
 
-### Network Security
+### 🌐 Network Security
 
-- **Endpoints accessed:** None directly (preprovision handles Azure calls)
-- **TLS requirements:** N/A
-- **Firewall rules needed:** N/A
+| Property | Value |
+|:---------|:------|
+| **Endpoints accessed** | None directly (preprovision handles Azure calls) |
+| **TLS requirements** | N/A |
+| **Firewall rules needed** | N/A |
 
-### Logging Security
+### 📝 Logging Security
 
-- **Sensitive data masking:** Yes - preprovision handles masking
-- **Audit trail:** Standard console output
+> **✅ Security Features:**
+>
+> - **Sensitive data masking:** Yes — preprovision handles masking
+> - **Audit trail:** Standard console output
 
-## Known Limitations
+[⬆️ Back to top](#-check-dev-workstation)
 
-- Requires preprovision script in the same directory
-- Cannot fix issues - only reports them
-- PowerShell version must execute child processes correctly
-- Some validation requires Azure CLI authentication
-- Windows may require execution policy bypass
+---
 
-## Related Scripts
+## 🚧 Known Limitations
+
+> **⚠️ Important Notes:**
+>
+> - Requires preprovision script in the same directory
+> - Cannot fix issues — only reports them
+> - PowerShell version must execute child processes correctly
+> - Some validation requires Azure CLI authentication
+> - Windows may require execution policy bypass
+
+[⬆️ Back to top](#-check-dev-workstation)
+
+---
+
+## 🔗 Related Scripts
 
 | Script | Relationship | Description |
-|--------|--------------|-------------|
+|:-------|:-------------|:------------|
 | [preprovision.md](preprovision.md) | Called by | Underlying validation logic |
 | [postprovision.md](postprovision.md) | Related | Post-provisioning configuration |
 | [clean-secrets.md](clean-secrets.md) | Related | Secrets management utility |
 
-## Changelog
+[⬆️ Back to top](#-check-dev-workstation)
+
+---
+
+## 📜 Changelog
 
 | Version | Date | Changes |
-|---------|------|---------|
+|:-------:|:----:|:--------|
 | 1.0.0 | 2026-01-07 | Initial release |
+
+[⬆️ Back to top](#-check-dev-workstation)
