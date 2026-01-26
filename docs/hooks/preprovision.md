@@ -132,90 +132,121 @@ This script does not set environment variables. It prepares the local environmen
 ### 🔄 Execution Flow
 
 ```mermaid
+---
+title: preprovision Execution Flow
+---
 flowchart TD
-    A([Start]) --> B[Parse Command-Line Arguments]
-    B --> C[Initialize Logging]
+    %% ===== CLASS DEFINITIONS =====
+    classDef primary fill:#4F46E5,stroke:#3730A3,color:#FFFFFF
+    classDef secondary fill:#10B981,stroke:#059669,color:#FFFFFF
+    classDef datastore fill:#F59E0B,stroke:#D97706,color:#000000
+    classDef external fill:#6B7280,stroke:#4B5563,color:#FFFFFF,stroke-dasharray:5 5
+    classDef failed fill:#F44336,stroke:#C62828,color:#FFFFFF
+    classDef trigger fill:#818CF8,stroke:#4F46E5,color:#FFFFFF
+    classDef decision fill:#FFFBEB,stroke:#F59E0B,color:#000000
+    classDef input fill:#F3F4F6,stroke:#6B7280,color:#000000
+
+    %% ===== INITIALIZATION =====
+    A([Start]) -->|begin| B[Parse Command-Line Arguments]
+    B -->|setup| C[Initialize Logging]
     
-    subgraph "Shell Validation"
-        C --> D{Shell Version<br/>Valid?}
+    %% ===== SHELL VALIDATION =====
+    subgraph ShellValidation["Shell Validation"]
+        C -->|check| D{Shell Version<br/>Valid?}
         D -->|No| E[Error: Upgrade Shell]
-        E --> F([Exit 1])
+        E -->|terminate| F([Exit 1])
         D -->|Yes| G[Continue]
     end
     
-    subgraph "Tool Validation"
-        G --> H{.NET SDK<br/>Installed?}
+    %% ===== TOOL VALIDATION =====
+    subgraph ToolValidation["Tool Validation"]
+        G -->|check| H{.NET SDK<br/>Installed?}
         H -->|No| I{Auto-Install<br/>Enabled?}
         I -->|Yes| J[Install .NET SDK]
-        J --> H
+        J -->|retry| H
         I -->|No| K[Error: Install .NET]
-        K --> F
+        K -->|terminate| F
         
         H -->|Yes| L{azd<br/>Installed?}
         L -->|No| M{Auto-Install<br/>Enabled?}
         M -->|Yes| N[Install azd]
-        N --> L
+        N -->|retry| L
         M -->|No| O[Error: Install azd]
-        O --> F
+        O -->|terminate| F
         
         L -->|Yes| P{Azure CLI<br/>Installed?}
         P -->|No| Q{Auto-Install?}
         Q -->|Yes| R[Install Azure CLI]
-        R --> P
+        R -->|retry| P
         Q -->|No| S[Error: Install az]
-        S --> F
+        S -->|terminate| F
         
         P -->|Yes| T{Bicep CLI<br/>Installed?}
         T -->|No| U[Install via Azure CLI]
-        U --> T
+        U -->|retry| T
         T -->|Yes| V[Tools Validated ✓]
     end
     
-    subgraph "Azure Authentication"
-        V --> W{Azure CLI<br/>Authenticated?}
+    %% ===== AZURE AUTHENTICATION =====
+    subgraph AzureAuth["Azure Authentication"]
+        V -->|check| W{Azure CLI<br/>Authenticated?}
         W -->|No| X{Device Code<br/>Flow?}
         X -->|Yes| Y[az login --use-device-code]
         X -->|No| Z[az login]
-        Y --> AA{Login<br/>Successful?}
-        Z --> AA
+        Y -->|verify| AA{Login<br/>Successful?}
+        Z -->|verify| AA
         AA -->|No| F
         AA -->|Yes| AB[Authenticated ✓]
         W -->|Yes| AB
     end
     
-    subgraph "Azure Validation"
-        AB --> AC[Check Resource Providers]
-        AC --> AD{All Providers<br/>Registered?}
+    %% ===== AZURE VALIDATION =====
+    subgraph AzureValidation["Azure Validation"]
+        AB -->|check| AC[Check Resource Providers]
+        AC -->|evaluate| AD{All Providers<br/>Registered?}
         AD -->|No| AE[Warning: Register Providers]
         AD -->|Yes| AF[Providers Valid ✓]
-        AE --> AF
+        AE -->|continue| AF
         
-        AF --> AG[Check Subscription Quotas]
-        AG --> AH{Quotas<br/>Sufficient?}
+        AF -->|check| AG[Check Subscription Quotas]
+        AG -->|evaluate| AH{Quotas<br/>Sufficient?}
         AH -->|No| AI[Warning: Quota Issues]
         AH -->|Yes| AJ[Quotas Valid ✓]
-        AI --> AJ
+        AI -->|continue| AJ
     end
     
-    subgraph "Secrets Management"
-        AJ --> AK{Validate Only<br/>Mode?}
+    %% ===== SECRETS MANAGEMENT =====
+    subgraph SecretsManagement["Secrets Management"]
+        AJ -->|evaluate| AK{Validate Only<br/>Mode?}
         AK -->|Yes| AL[Skip Secrets Clear]
         AK -->|No| AM{Skip Secrets<br/>Clear?}
         AM -->|Yes| AL
         AM -->|No| AN[Execute clean-secrets]
-        AN --> AO{Secrets<br/>Cleared?}
+        AN -->|verify| AO{Secrets<br/>Cleared?}
         AO -->|No| AP[Warning: Clear Failed]
         AO -->|Yes| AQ[Secrets Cleared ✓]
-        AP --> AQ
-        AL --> AQ
+        AP -->|continue| AQ
+        AL -->|continue| AQ
     end
     
-    AQ --> AR[Display Summary]
-    AR --> AS([Exit 0])
-    
-    style A fill:#4CAF50,color:#fff
-    style AS fill:#4CAF50,color:#fff
-    style F fill:#f44336,color:#fff
+    AQ -->|summarize| AR[Display Summary]
+    AR -->|complete| AS([Exit 0])
+
+    %% ===== SUBGRAPH STYLES =====
+    style ShellValidation fill:#EEF2FF,stroke:#4F46E5,stroke-width:2px
+    style ToolValidation fill:#ECFDF5,stroke:#10B981,stroke-width:2px
+    style AzureAuth fill:#E0E7FF,stroke:#4F46E5,stroke-width:2px
+    style AzureValidation fill:#FEF3C7,stroke:#F59E0B,stroke-width:2px
+    style SecretsManagement fill:#F3F4F6,stroke:#6B7280,stroke-width:2px
+
+    %% ===== NODE CLASS ASSIGNMENTS =====
+    class A,AS trigger
+    class B,C,AC,AG,AN,AR primary
+    class G,V,AB,AF,AJ,AQ secondary
+    class D,H,I,L,M,P,Q,T,W,X,AA,AD,AH,AK,AM,AO decision
+    class E,K,O,S,AE,AI,AP input
+    class J,N,R,U,Y,Z,AL external
+    class F failed
 ```
 
 ### ✅ Validation Details

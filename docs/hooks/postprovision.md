@@ -133,15 +133,30 @@ This script configures .NET user secrets (not environment variables):
 ### 🔄 Execution Flow
 
 ```mermaid
+---
+title: postprovision Execution Flow
+---
 flowchart TD
-    A([Start]) --> B[Parse Arguments]
-    B --> C[Record Start Time]
+    %% ===== CLASS DEFINITIONS =====
+    classDef primary fill:#4F46E5,stroke:#3730A3,color:#FFFFFF
+    classDef secondary fill:#10B981,stroke:#059669,color:#FFFFFF
+    classDef datastore fill:#F59E0B,stroke:#D97706,color:#000000
+    classDef external fill:#6B7280,stroke:#4B5563,color:#FFFFFF,stroke-dasharray:5 5
+    classDef failed fill:#F44336,stroke:#C62828,color:#FFFFFF
+    classDef trigger fill:#818CF8,stroke:#4F46E5,color:#FFFFFF
+    classDef decision fill:#FFFBEB,stroke:#F59E0B,color:#000000
+    classDef input fill:#F3F4F6,stroke:#6B7280,color:#000000
+
+    %% ===== INITIALIZATION =====
+    A([Start]) -->|begin| B[Parse Arguments]
+    B -->|initialize| C[Record Start Time]
     
-    subgraph "Environment Validation"
-        C --> D[Load Required Environment Variables]
-        D --> E{AZURE_SUBSCRIPTION_ID<br/>Set?}
+    %% ===== ENVIRONMENT VALIDATION =====
+    subgraph EnvValidation["Environment Validation"]
+        C -->|load| D[Load Required Environment Variables]
+        D -->|check| E{AZURE_SUBSCRIPTION_ID<br/>Set?}
         E -->|No| F[Error: Missing Variable]
-        F --> G([Exit 1])
+        F -->|terminate| G([Exit 1])
         E -->|Yes| H{AZURE_RESOURCE_GROUP<br/>Set?}
         H -->|No| F
         H -->|Yes| I{AZURE_LOCATION<br/>Set?}
@@ -149,70 +164,90 @@ flowchart TD
         I -->|Yes| J[Environment Valid ✓]
     end
     
-    subgraph "ACR Authentication"
-        J --> K{ACR Endpoint<br/>Configured?}
+    %% ===== ACR AUTHENTICATION =====
+    subgraph ACRAuth["ACR Authentication"]
+        J -->|check| K{ACR Endpoint<br/>Configured?}
         K -->|No| L[Skip ACR Login]
         K -->|Yes| M{Azure CLI<br/>Installed?}
         M -->|No| N[Warning: Skip ACR]
-        N --> L
+        N -->|skip| L
         M -->|Yes| O[az acr login]
-        O --> P{Login<br/>Successful?}
+        O -->|verify| P{Login<br/>Successful?}
         P -->|No| Q[Warning: ACR Failed]
-        Q --> L
+        Q -->|continue| L
         P -->|Yes| R[ACR Authenticated ✓]
-        R --> L
+        R -->|continue| L
     end
     
-    subgraph "Clear Existing Secrets"
-        L --> S{Dry Run<br/>Mode?}
+    %% ===== CLEAR EXISTING SECRETS =====
+    subgraph ClearSecrets["Clear Existing Secrets"]
+        L -->|check| S{Dry Run<br/>Mode?}
         S -->|Yes| T[Skip Secret Operations]
         S -->|No| U[Clear Existing Secrets]
-        U --> V[dotnet user-secrets clear]
+        U -->|execute| V[dotnet user-secrets clear]
     end
     
-    subgraph "Configure AppHost Secrets"
-        V --> W[Get AppHost Project Path]
-        W --> X[Set Azure Configuration Secrets]
-        X --> Y[Set Container Registry Secrets]
-        Y --> Z[Set App Insights Secrets]
-        Z --> AA[Set Managed Identity Secrets]
+    %% ===== CONFIGURE APPHOST SECRETS =====
+    subgraph AppHostSecrets["Configure AppHost Secrets"]
+        V -->|locate| W[Get AppHost Project Path]
+        W -->|configure| X[Set Azure Configuration Secrets]
+        X -->|configure| Y[Set Container Registry Secrets]
+        Y -->|configure| Z[Set App Insights Secrets]
+        Z -->|configure| AA[Set Managed Identity Secrets]
     end
     
-    subgraph "Configure API Secrets"
-        AA --> AB[Get API Project Path]
-        AB --> AC[Set SQL Connection Secrets]
-        AC --> AD[Set Service Bus Secrets]
-        AD --> AE[Set App Insights Secrets]
+    %% ===== CONFIGURE API SECRETS =====
+    subgraph APISecrets["Configure API Secrets"]
+        AA -->|locate| AB[Get API Project Path]
+        AB -->|configure| AC[Set SQL Connection Secrets]
+        AC -->|configure| AD[Set Service Bus Secrets]
+        AD -->|configure| AE[Set App Insights Secrets]
     end
     
-    subgraph "Configure Web App Secrets"
-        AE --> AF[Get Web App Project Path]
-        AF --> AG[Set App Insights Secrets]
-        AG --> AH[Set API Endpoint Secrets]
+    %% ===== CONFIGURE WEB APP SECRETS =====
+    subgraph WebAppSecrets["Configure Web App Secrets"]
+        AE -->|locate| AF[Get Web App Project Path]
+        AF -->|configure| AG[Set App Insights Secrets]
+        AG -->|configure| AH[Set API Endpoint Secrets]
     end
     
-    subgraph "SQL Configuration"
-        AH --> AI{SQL Server<br/>Deployed?}
+    %% ===== SQL CONFIGURATION =====
+    subgraph SQLConfig["SQL Configuration"]
+        AH -->|check| AI{SQL Server<br/>Deployed?}
         AI -->|No| AJ[Skip SQL Config]
         AI -->|Yes| AK{Managed Identity<br/>Available?}
         AK -->|No| AJ
         AK -->|Yes| AL[Call sql-managed-identity-config]
-        AL --> AM{Config<br/>Successful?}
+        AL -->|verify| AM{Config<br/>Successful?}
         AM -->|No| AN[Warning: SQL Config Failed]
-        AN --> AJ
+        AN -->|continue| AJ
         AM -->|Yes| AO[SQL Configured ✓]
-        AO --> AJ
+        AO -->|continue| AJ
     end
     
-    T --> AP[Display Summary]
-    AJ --> AP
-    AP --> AQ[Calculate Duration]
-    AQ --> AR[Display Statistics]
-    AR --> AS([Exit 0])
-    
-    style A fill:#4CAF50,color:#fff
-    style AS fill:#4CAF50,color:#fff
-    style G fill:#f44336,color:#fff
+    T -->|summarize| AP[Display Summary]
+    AJ -->|summarize| AP
+    AP -->|calculate| AQ[Calculate Duration]
+    AQ -->|report| AR[Display Statistics]
+    AR -->|complete| AS([Exit 0])
+
+    %% ===== SUBGRAPH STYLES =====
+    style EnvValidation fill:#EEF2FF,stroke:#4F46E5,stroke-width:2px
+    style ACRAuth fill:#ECFDF5,stroke:#10B981,stroke-width:2px
+    style ClearSecrets fill:#FEE2E2,stroke:#F44336,stroke-width:2px
+    style AppHostSecrets fill:#E0E7FF,stroke:#4F46E5,stroke-width:2px
+    style APISecrets fill:#D1FAE5,stroke:#10B981,stroke-width:1px
+    style WebAppSecrets fill:#D1FAE5,stroke:#059669,stroke-width:1px
+    style SQLConfig fill:#FEF3C7,stroke:#F59E0B,stroke-width:2px
+
+    %% ===== NODE CLASS ASSIGNMENTS =====
+    class A,AS trigger
+    class B,C,D,W,X,Y,Z,AA,AB,AC,AD,AE,AF,AG,AH,AP,AQ,AR primary
+    class J,R,AO secondary
+    class E,H,I,K,M,P,S,AI,AK,AM decision
+    class F,N,Q,AN,T input
+    class O,U,V,AL external
+    class G failed
 ```
 
 ### 📂 Configured Projects
