@@ -3,9 +3,7 @@
 // Tests for verifying Azure credentials and Application Insights configuration
 // =============================================================================
 
-using Aspire.Hosting;
 using Aspire.Hosting.ApplicationModel;
-using Aspire.Hosting.Azure;
 using Aspire.Hosting.Testing;
 using Microsoft.Extensions.DependencyInjection;
 

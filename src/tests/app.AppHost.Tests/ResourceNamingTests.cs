@@ -3,7 +3,6 @@
 // Tests for verifying resource naming conventions and consistency
 // =============================================================================
 
-using Aspire.Hosting;
 using Aspire.Hosting.ApplicationModel;
 using Aspire.Hosting.Testing;
 using Microsoft.Extensions.DependencyInjection;

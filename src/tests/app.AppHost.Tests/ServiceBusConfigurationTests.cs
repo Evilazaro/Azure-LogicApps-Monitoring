@@ -3,11 +3,8 @@
 // Tests for verifying Azure Service Bus configuration and topology
 // =============================================================================
 
-using Aspire.Hosting;
 using Aspire.Hosting.ApplicationModel;
-using Aspire.Hosting.Azure;
 using Aspire.Hosting.Testing;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace app.AppHost.Tests;

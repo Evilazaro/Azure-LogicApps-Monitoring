@@ -3,7 +3,6 @@
 // Tests for verifying configuration validation and error handling
 // =============================================================================
 
-using Aspire.Hosting;
 using Aspire.Hosting.ApplicationModel;
 using Aspire.Hosting.Azure;
 using Aspire.Hosting.Testing;

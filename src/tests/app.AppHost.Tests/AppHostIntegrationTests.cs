@@ -4,10 +4,8 @@
 // Using Aspire.Hosting.Testing for integration-level testing
 // =============================================================================
 
-using Aspire.Hosting;
 using Aspire.Hosting.ApplicationModel;
 using Aspire.Hosting.Testing;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace app.AppHost.Tests;
