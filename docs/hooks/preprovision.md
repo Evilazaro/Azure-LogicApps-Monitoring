@@ -7,13 +7,36 @@ license: MIT
 languages: [PowerShell, Bash]
 ---
 
-# preprovision
+# 🚀 preprovision
 
-## Overview
+---
+
+## 📑 Table of Contents
+
+- [📋 Overview](#-overview)
+- [📝 Description](#-description)
+- [📊 Workflow Diagram](#-workflow-diagram)
+- [✅ Prerequisites](#-prerequisites)
+- [⚙️ Parameters/Arguments](#️-parametersarguments)
+- [📥 Input/Output Specifications](#-inputoutput-specifications)
+- [💻 Usage Examples](#-usage-examples)
+- [⚠️ Error Handling and Exit Codes](#️-error-handling-and-exit-codes)
+- [🔒 Security Considerations](#-security-considerations)
+- [🚧 Known Limitations](#-known-limitations)
+- [🔗 Related Scripts](#-related-scripts)
+- [📜 Changelog](#-changelog)
+
+---
+
+## 📋 Overview
 
 Pre-provisioning script for Azure Developer CLI (azd) deployment that validates the development environment and clears .NET user secrets to ensure a clean state before Azure resources are provisioned.
 
-## Description
+[⬆️ Back to top](#-preprovision)
+
+---
+
+## 📝 Description
 
 This script performs comprehensive pre-provisioning tasks before Azure infrastructure is deployed using Azure Developer CLI (azd). It serves as the first step in the deployment pipeline, ensuring that all prerequisites are met and the environment is properly configured.
 
@@ -21,7 +44,11 @@ The script validates multiple layers of dependencies including PowerShell/Bash v
 
 When executed without the `--validate-only` flag, the script clears existing .NET user secrets to ensure a clean configuration state. This prevents stale secrets from interfering with the provisioning process. The script provides detailed logging, color-coded output for different message types, and comprehensive error handling with actionable recovery suggestions.
 
-## Workflow Diagram
+[⬆️ Back to top](#-preprovision)
+
+---
+
+## 📊 Workflow Diagram
 
 ```mermaid
 flowchart TD
