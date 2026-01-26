@@ -57,53 +57,84 @@ Hooks are scripts that execute at specific points during the Azure Developer CLI
 ## 🔄 Hook Execution Order
 
 ```mermaid
+---
+title: Azure Developer CLI Hook Execution Order
+---
 flowchart TD
-    subgraph "Pre-Deployment"
-        A([Start]) --> B[check-dev-workstation]
-        B --> C{Prerequisites<br/>Valid?}
+    %% ===== CLASS DEFINITIONS =====
+    classDef primary fill:#4F46E5,stroke:#3730A3,color:#FFFFFF
+    classDef secondary fill:#10B981,stroke:#059669,color:#FFFFFF
+    classDef datastore fill:#F59E0B,stroke:#D97706,color:#000000
+    classDef external fill:#6B7280,stroke:#4B5563,color:#FFFFFF,stroke-dasharray:5 5
+    classDef failed fill:#F44336,stroke:#C62828,color:#FFFFFF
+    classDef trigger fill:#818CF8,stroke:#4F46E5,color:#FFFFFF
+    classDef decision fill:#FFFBEB,stroke:#F59E0B,color:#000000
+    classDef input fill:#F3F4F6,stroke:#6B7280,color:#000000
+
+    %% ===== PRE-DEPLOYMENT STAGE =====
+    subgraph PreDeploy["Pre-Deployment"]
+        A([Start]) -->|initiate| B[check-dev-workstation]
+        B -->|validate| C{Prerequisites<br/>Valid?}
         C -->|No| D[Install Missing<br/>Dependencies]
-        D --> B
+        D -->|retry| B
         C -->|Yes| E[preprovision]
     end
 
-    subgraph "Provisioning"
-        E --> F{Secrets<br/>Cleared?}
+    %% ===== PROVISIONING STAGE =====
+    subgraph Provision["Provisioning"]
+        E -->|check| F{Secrets<br/>Cleared?}
         F -->|No| G[clean-secrets]
-        G --> F
+        G -->|cleared| F
         F -->|Yes| H[azd provision]
-        H --> I[postprovision]
+        H -->|configure| I[postprovision]
     end
 
-    subgraph "Database Setup"
-        I --> J{SQL Server<br/>Deployed?}
+    %% ===== DATABASE SETUP STAGE =====
+    subgraph DBSetup["Database Setup"]
+        I -->|evaluate| J{SQL Server<br/>Deployed?}
         J -->|Yes| K[sql-managed-identity-config]
         J -->|No| L[Skip SQL Config]
-        K --> L
+        K -->|complete| L
     end
 
-    subgraph "Deployment"
-        L --> M[deploy-workflow]
-        M --> N{Generate<br/>Test Data?}
+    %% ===== DEPLOYMENT STAGE =====
+    subgraph Deploy["Deployment"]
+        L -->|execute| M[deploy-workflow]
+        M -->|check| N{Generate<br/>Test Data?}
         N -->|Yes| O[Generate-Orders]
         N -->|No| P[Deployment Complete]
-        O --> P
+        O -->|finish| P
     end
 
-    subgraph "CI/CD Setup"
-        P --> Q{Setup<br/>GitHub Actions?}
+    %% ===== CI/CD SETUP STAGE =====
+    subgraph CICD["CI/CD Setup"]
+        P -->|evaluate| Q{Setup<br/>GitHub Actions?}
         Q -->|Yes| R[configure-federated-credential]
         Q -->|No| S([End])
-        R --> S
+        R -->|complete| S
     end
 
-    subgraph "Cleanup"
-        T[azd down] --> U[postinfradelete]
-        U --> V([Resources Purged])
+    %% ===== CLEANUP STAGE =====
+    subgraph Cleanup["Cleanup"]
+        T[azd down] -->|trigger| U[postinfradelete]
+        U -->|purge| V([Resources Purged])
     end
 
-    style A fill:#4CAF50,color:#fff
-    style S fill:#4CAF50,color:#fff
-    style V fill:#FF9800,color:#fff
+    %% ===== SUBGRAPH STYLES =====
+    style PreDeploy fill:#EEF2FF,stroke:#4F46E5,stroke-width:2px
+    style Provision fill:#ECFDF5,stroke:#10B981,stroke-width:2px
+    style DBSetup fill:#FEF3C7,stroke:#F59E0B,stroke-width:2px
+    style Deploy fill:#E0E7FF,stroke:#4F46E5,stroke-width:2px
+    style CICD fill:#F3F4F6,stroke:#6B7280,stroke-width:2px
+    style Cleanup fill:#FEE2E2,stroke:#F44336,stroke-width:2px
+
+    %% ===== NODE CLASS ASSIGNMENTS =====
+    class A,S trigger
+    class B,E,H,I,K,M,R,T,U primary
+    class G,O secondary
+    class C,F,J,N,Q decision
+    class D,L,P input
+    class V datastore
 ```
 
 ## ⚙️ Prerequisites

@@ -105,41 +105,63 @@ This script does not set any environment variables.
 ### 🔄 Execution Flow
 
 ```mermaid
+---
+title: check-dev-workstation Execution Flow
+---
 flowchart TD
-    A([Start]) --> B[Parse Arguments]
-    B --> C{Valid<br/>Arguments?}
+    %% ===== CLASS DEFINITIONS =====
+    classDef primary fill:#4F46E5,stroke:#3730A3,color:#FFFFFF
+    classDef secondary fill:#10B981,stroke:#059669,color:#FFFFFF
+    classDef datastore fill:#F59E0B,stroke:#D97706,color:#000000
+    classDef external fill:#6B7280,stroke:#4B5563,color:#FFFFFF,stroke-dasharray:5 5
+    classDef failed fill:#F44336,stroke:#C62828,color:#FFFFFF
+    classDef trigger fill:#818CF8,stroke:#4F46E5,color:#FFFFFF
+    classDef decision fill:#FFFBEB,stroke:#F59E0B,color:#000000
+    classDef input fill:#F3F4F6,stroke:#6B7280,color:#000000
+
+    %% ===== INITIALIZATION =====
+    A([Start]) -->|begin| B[Parse Arguments]
+    B -->|validate| C{Valid<br/>Arguments?}
     C -->|No| D[Show Error/Help]
-    D --> E([Exit 1])
+    D -->|terminate| E([Exit 1])
     
     C -->|Yes| F{preprovision.ps1/sh<br/>Exists?}
     F -->|No| G[Error: Script Not Found]
-    G --> E
+    G -->|terminate| E
     
     F -->|Yes| H[Resolve PowerShell/Bash Path]
-    H --> I[Execute preprovision<br/>--validate-only]
+    H -->|execute| I[Execute preprovision<br/>--validate-only]
     
-    subgraph "Validation Process"
-        I --> J[Validate Shell Version]
-        J --> K[Validate .NET SDK]
-        K --> L[Validate Azure Developer CLI]
-        L --> M[Validate Azure CLI]
-        M --> N[Validate Bicep CLI]
-        N --> O[Check Resource Providers]
-        O --> P[Check Subscription Quotas]
+    %% ===== VALIDATION PROCESS =====
+    subgraph Validation["Validation Process"]
+        I -->|check| J[Validate Shell Version]
+        J -->|check| K[Validate .NET SDK]
+        K -->|check| L[Validate Azure Developer CLI]
+        L -->|check| M[Validate Azure CLI]
+        M -->|check| N[Validate Bicep CLI]
+        N -->|check| O[Check Resource Providers]
+        O -->|check| P[Check Subscription Quotas]
     end
     
-    P --> Q{Exit Code<br/>= 0?}
+    P -->|evaluate| Q{Exit Code<br/>= 0?}
     Q -->|Yes| R[✓ Validation Successful]
-    R --> S([Exit 0])
+    R -->|complete| S([Exit 0])
     
     Q -->|No| T[⚠ Validation Issues Found]
-    T --> U[Display Remediation Steps]
-    U --> V([Exit with preprovision code])
-    
-    style A fill:#4CAF50,color:#fff
-    style S fill:#4CAF50,color:#fff
-    style E fill:#f44336,color:#fff
-    style V fill:#FF9800,color:#fff
+    T -->|report| U[Display Remediation Steps]
+    U -->|terminate| V([Exit with preprovision code])
+
+    %% ===== SUBGRAPH STYLES =====
+    style Validation fill:#ECFDF5,stroke:#10B981,stroke-width:2px
+
+    %% ===== NODE CLASS ASSIGNMENTS =====
+    class A,S trigger
+    class B,H,I primary
+    class J,K,L,M,N,O,P secondary
+    class C,F,Q decision
+    class D,G,T,U input
+    class R datastore
+    class E,V failed
 ```
 
 ### ✅ Validations Performed
