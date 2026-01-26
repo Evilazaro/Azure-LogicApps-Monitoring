@@ -52,6 +52,17 @@ builder.Build().Run();
 // Helper Methods
 // =============================================================================
 
+/// <summary>
+/// Configures Azure credentials for local development environments.
+/// Sets AZURE_TENANT_ID and AZURE_CLIENT_ID environment variables when configured.
+/// </summary>
+/// <param name="builder">The distributed application builder.</param>
+/// <param name="ordersApi">The orders API project resource to configure with Azure credentials.</param>
+/// <remarks>
+/// This method only applies to local development mode. In Azure Container Apps deployment,
+/// Aspire automatically configures the managed identity. Adding credentials here during
+/// publish mode would create duplicates and potentially cause authentication failures.
+/// </remarks>
 static void ConfigureAzureCredentials(IDistributedApplicationBuilder builder, IResourceBuilder<ProjectResource> ordersApi)
 {
     ArgumentNullException.ThrowIfNull(builder);
