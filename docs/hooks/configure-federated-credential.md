@@ -99,33 +99,78 @@ This script does not set any environment variables.
 
 ### Execution Flow
 
-```
-┌─────────────────────────────────────────────────────────────────┐
-│                  configure-federated-credential                  │
-├─────────────────────────────────────────────────────────────────┤
-│  1. Parse command-line arguments                                │
-│  2. Validate Azure CLI login status                             │
-│                                                                 │
-│  ┌─────────────────────────────────────────────────────────────┐│
-│  │              App Registration Lookup                        ││
-│  ├─────────────────────────────────────────────────────────────┤│
-│  │  3. If AppObjectId provided: use directly                   ││
-│  │     Else if AppName provided: lookup by name                ││
-│  │     Else: list available apps and prompt for selection      ││
-│  │  4. Display App Registration details                        ││
-│  └─────────────────────────────────────────────────────────────┘│
-│                                                                 │
-│  ┌─────────────────────────────────────────────────────────────┐│
-│  │              Federated Credential Configuration             ││
-│  ├─────────────────────────────────────────────────────────────┤│
-│  │  5. Build subject claim for GitHub environment              ││
-│  │  6. Check if credential already exists                      ││
-│  │  7. Create or update federated identity credential          ││
-│  └─────────────────────────────────────────────────────────────┘│
-│                                                                 │
-│  8. Display configuration summary                               │
-│  9. Show next steps for GitHub Actions setup                    │
-└─────────────────────────────────────────────────────────────────┘
+```mermaid
+flowchart TD
+    A([Start]) --> B[Parse Arguments]
+    B --> C[Validate Dependencies]
+    
+    subgraph "Azure Authentication"
+        C --> D{Azure CLI<br/>Installed?}
+        D -->|No| E[Error: Install Azure CLI]
+        E --> F([Exit 1])
+        D -->|Yes| G{Azure CLI<br/>Authenticated?}
+        G -->|No| H[Error: Run az login]
+        H --> F
+        G -->|Yes| I[Display Account Info]
+    end
+    
+    subgraph "App Registration Lookup"
+        I --> J{AppObjectId<br/>Provided?}
+        J -->|Yes| K[Use Provided Object ID]
+        J -->|No| L{AppName<br/>Provided?}
+        L -->|No| M[List All App Registrations]
+        M --> N[Display Available Apps]
+        N --> O[Prompt for App Name]
+        L -->|Yes| P[Lookup App by Name]
+        O --> P
+        P --> Q{App<br/>Found?}
+        Q -->|No| R[Error: App Not Found]
+        R --> F
+        Q -->|Yes| S[Extract Object ID]
+        K --> T[App Registration Resolved ✓]
+        S --> T
+    end
+    
+    subgraph "Credential Configuration"
+        T --> U[Build Subject Identifier]
+        U --> V["repo:{org}/{repo}:environment:{env}"]
+        V --> W[Generate Credential Name]
+        W --> X["github-{org}-{repo}-{env}"]
+        
+        X --> Y[Check Existing Credentials]
+        Y --> Z{Credential<br/>Exists?}
+        Z -->|Yes| AA[Warning: Already Configured]
+        AA --> AB[Display Existing Config]
+        AB --> AC([Exit 0])
+        
+        Z -->|No| AD[Build Credential JSON]
+    end
+    
+    subgraph "Create Credential"
+        AD --> AE[Create Temp JSON File]
+        AE --> AF[Call az ad app federated-credential create]
+        AF --> AG{Creation<br/>Successful?}
+        AG -->|No| AH[Error: Creation Failed]
+        AH --> AI[Display Error Details]
+        AI --> F
+        AG -->|Yes| AJ[Credential Created ✓]
+    end
+    
+    subgraph "Display Guidance"
+        AJ --> AK[Display Success Message]
+        AK --> AL[Show Workflow Permissions]
+        AL --> AM["permissions:<br/>  id-token: write<br/>  contents: read"]
+        AM --> AN[Show azure/login Action]
+        AN --> AO["uses: azure/login@v2<br/>with:<br/>  client-id: ...<br/>  tenant-id: ...<br/>  subscription-id: ..."]
+        AO --> AP[Remind to Set Secrets]
+    end
+    
+    AP --> AQ([Exit 0])
+    
+    style A fill:#4CAF50,color:#fff
+    style AQ fill:#4CAF50,color:#fff
+    style AC fill:#4CAF50,color:#fff
+    style F fill:#f44336,color:#fff
 ```
 
 ### Federated Credential Structure

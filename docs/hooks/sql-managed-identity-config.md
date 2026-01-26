@@ -121,42 +121,97 @@ This script does not set environment variables.
 
 ### Execution Flow
 
-```
-┌─────────────────────────────────────────────────────────────────┐
-│                  sql-managed-identity-config                     │
-├─────────────────────────────────────────────────────────────────┤
-│  1. Parse and validate command-line arguments                   │
-│  2. Validate SQL Server name format                             │
-│  3. Validate database name (not 'master')                       │
-│  4. Validate database roles against allowed list                │
-│                                                                 │
-│  ┌─────────────────────────────────────────────────────────────┐│
-│  │              Azure Authentication                           ││
-│  ├─────────────────────────────────────────────────────────────┤│
-│  │  5. Verify Azure CLI is authenticated                       ││
-│  │  6. Get SQL endpoint for target cloud environment           ││
-│  │  7. Acquire Azure AD access token for SQL                   ││
-│  └─────────────────────────────────────────────────────────────┘│
-│                                                                 │
-│  ┌─────────────────────────────────────────────────────────────┐│
-│  │              Database User Creation                         ││
-│  ├─────────────────────────────────────────────────────────────┤│
-│  │  8. Connect to SQL Database using token                     ││
-│  │  9. Check if user already exists                            ││
-│  │  10. If not exists: CREATE USER FROM EXTERNAL PROVIDER      ││
-│  └─────────────────────────────────────────────────────────────┘│
-│                                                                 │
-│  ┌─────────────────────────────────────────────────────────────┐│
-│  │              Role Assignment                                ││
-│  ├─────────────────────────────────────────────────────────────┤│
-│  │  11. For each database role:                                ││
-│  │      ├── Check if user is already member                    ││
-│  │      └── If not: ALTER ROLE ADD MEMBER                      ││
-│  └─────────────────────────────────────────────────────────────┘│
-│                                                                 │
-│  12. Return structured result object                            │
-│  13. Display configuration summary                              │
-└─────────────────────────────────────────────────────────────────┘
+```mermaid
+flowchart TD
+    A([Start]) --> B[Parse Arguments]
+    B --> C[Validate Parameters]
+    
+    subgraph "Parameter Validation"
+        C --> D{SQL Server Name<br/>Valid Format?}
+        D -->|No| E[Error: Invalid Name]
+        E --> F([Exit 1])
+        D -->|Yes| G{Database Name<br/>!= 'master'?}
+        G -->|No| H[Error: Cannot Use Master]
+        H --> F
+        G -->|Yes| I{Roles<br/>Valid?}
+        I -->|No| J[Error: Invalid Role]
+        J --> F
+        I -->|Yes| K[Parameters Valid ✓]
+    end
+    
+    subgraph "Prerequisites Check"
+        K --> L{Azure CLI<br/>Installed?}
+        L -->|No| M[Error: Install Azure CLI]
+        M --> F
+        L -->|Yes| N{Azure CLI<br/>Authenticated?}
+        N -->|No| O[Error: Run az login]
+        O --> F
+        N -->|Yes| P{sqlcmd/SqlClient<br/>Available?}
+        P -->|No| Q{Can<br/>Auto-Install?}
+        Q -->|Yes| R[Install go-sqlcmd]
+        R --> S{Install<br/>Successful?}
+        S -->|No| T[Error: Install Failed]
+        T --> F
+        S -->|Yes| U[Prerequisites Valid ✓]
+        Q -->|No| T
+        P -->|Yes| U
+    end
+    
+    subgraph "Token Acquisition"
+        U --> V[Build Server FQDN]
+        V --> W["server.database.windows.net"]
+        W --> X[Request Azure AD Token]
+        X --> Y["az account get-access-token<br/>--resource https://database.windows.net"]
+        Y --> Z{Token<br/>Acquired?}
+        Z -->|No| AA[Error: Token Failed]
+        AA --> F
+        Z -->|Yes| AB[Token Acquired ✓]
+    end
+    
+    subgraph "Database Operations"
+        AB --> AC[Build Connection String]
+        AC --> AD[Connect to Database]
+        AD --> AE{Connection<br/>Successful?}
+        AE -->|No| AF[Error: Connection Failed]
+        AF --> AG[Check Firewall Rules]
+        AG --> F
+        AE -->|Yes| AH[Connected ✓]
+        
+        AH --> AI{User<br/>Exists?}
+        AI -->|Yes| AJ[Skip User Creation]
+        AI -->|No| AK[CREATE USER FROM EXTERNAL PROVIDER]
+        AK --> AL{Creation<br/>Successful?}
+        AL -->|No| AM[Error: User Creation Failed]
+        AM --> F
+        AL -->|Yes| AN[User Created ✓]
+        AJ --> AN
+    end
+    
+    subgraph "Role Assignment"
+        AN --> AO[For Each Role]
+        AO --> AP{Role Member<br/>Exists?}
+        AP -->|Yes| AQ[Skip Role Assignment]
+        AP -->|No| AR[ALTER ROLE ADD MEMBER]
+        AR --> AS{Assignment<br/>Successful?}
+        AS -->|No| AT[Error: Role Failed]
+        AT --> F
+        AS -->|Yes| AU[Role Assigned ✓]
+        AQ --> AV{More<br/>Roles?}
+        AU --> AV
+        AV -->|Yes| AO
+        AV -->|No| AW[All Roles Assigned ✓]
+    end
+    
+    subgraph "Result"
+        AW --> AX[Build Result Object]
+        AX --> AY[Return Success]
+    end
+    
+    AY --> AZ([Exit 0])
+    
+    style A fill:#4CAF50,color:#fff
+    style AZ fill:#4CAF50,color:#fff
+    style F fill:#f44336,color:#fff
 ```
 
 ### SQL Commands Executed
