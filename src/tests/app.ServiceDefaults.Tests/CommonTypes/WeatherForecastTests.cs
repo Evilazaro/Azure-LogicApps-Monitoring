@@ -3,8 +3,8 @@
 // Tests for the WeatherForecast class including property validation and calculations
 // =============================================================================
 
-using System.ComponentModel.DataAnnotations;
 using app.ServiceDefaults.CommonTypes;
+using System.ComponentModel.DataAnnotations;
 
 namespace app.ServiceDefaults.Tests.CommonTypes;
 

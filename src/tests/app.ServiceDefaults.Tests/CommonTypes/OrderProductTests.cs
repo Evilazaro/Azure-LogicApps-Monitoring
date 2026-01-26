@@ -3,8 +3,8 @@
 // Tests for the OrderProduct record including property validation and record behavior
 // =============================================================================
 
-using System.ComponentModel.DataAnnotations;
 using app.ServiceDefaults.CommonTypes;
+using System.ComponentModel.DataAnnotations;
 
 namespace app.ServiceDefaults.Tests.CommonTypes;
 
