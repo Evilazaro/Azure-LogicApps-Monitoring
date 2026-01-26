@@ -9,7 +9,7 @@ languages: [PowerShell, Bash]
 
 # configure-federated-credential
 
-## Synopsis
+## Overview
 
 Configures federated identity credentials for GitHub Actions OIDC authentication in an Azure AD App Registration, enabling passwordless authentication from GitHub Actions workflows.
 

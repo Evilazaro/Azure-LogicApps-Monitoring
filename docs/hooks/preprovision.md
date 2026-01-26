@@ -9,7 +9,7 @@ languages: [PowerShell, Bash]
 
 # preprovision
 
-## Synopsis
+## Overview
 
 Pre-provisioning script for Azure Developer CLI (azd) deployment that validates the development environment and clears .NET user secrets to ensure a clean state before Azure resources are provisioned.
 

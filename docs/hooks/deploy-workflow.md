@@ -9,7 +9,7 @@ languages: [PowerShell, Bash]
 
 # deploy-workflow
 
-## Synopsis
+## Overview
 
 Deploys Logic Apps Standard workflow definitions from the local OrdersManagement project to Azure, resolving environment variable placeholders and configuring API connections.
 

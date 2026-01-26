@@ -9,7 +9,7 @@ languages: [PowerShell, Bash]
 
 # check-dev-workstation
 
-## Synopsis
+## Overview
 
 Developer-friendly validation wrapper script that checks workstation prerequisites for the Azure Logic Apps Monitoring solution without making any changes to the environment.
 

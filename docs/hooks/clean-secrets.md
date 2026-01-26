@@ -9,7 +9,7 @@ languages: [PowerShell, Bash]
 
 # clean-secrets
 
-## Synopsis
+## Overview
 
 Clears .NET user secrets for all projects in the Azure Logic Apps Monitoring solution to ensure a clean configuration state before re-provisioning or troubleshooting.
 

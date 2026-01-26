@@ -9,7 +9,7 @@ languages: [PowerShell, Bash]
 
 # sql-managed-identity-config
 
-## Synopsis
+## Overview
 
 Configures Azure SQL Database user authentication with Managed Identity by creating a contained database user from an external provider (Microsoft Entra ID) and assigning specified database roles.
 

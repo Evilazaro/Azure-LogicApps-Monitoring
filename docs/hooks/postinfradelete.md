@@ -9,7 +9,7 @@ languages: [PowerShell, Bash]
 
 # postinfradelete
 
-## Synopsis
+## Overview
 
 Post-infrastructure-delete hook for Azure Developer CLI (azd) that purges soft-deleted Logic Apps Standard resources after infrastructure deletion to ensure complete cleanup.
 

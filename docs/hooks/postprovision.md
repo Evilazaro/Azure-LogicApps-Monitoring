@@ -9,7 +9,7 @@ languages: [PowerShell, Bash]
 
 # postprovision
 
-## Synopsis
+## Overview
 
 Post-provisioning script for Azure Developer CLI (azd) that configures .NET user secrets with Azure resource information after infrastructure provisioning completes.
 

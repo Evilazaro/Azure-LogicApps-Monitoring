@@ -9,7 +9,7 @@ languages: [PowerShell, Bash]
 
 # Generate-Orders
 
-## Synopsis
+## Overview
 
 Generates sample e-commerce order data with products, customer information, and delivery addresses for testing Azure Logic Apps monitoring and workflow scenarios.
 
