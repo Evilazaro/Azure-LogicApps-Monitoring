@@ -110,76 +110,106 @@ This script does not set any environment variables.
 ### 🔄 Execution Flow
 
 ```mermaid
+---
+title: clean-secrets Execution Flow
+---
 flowchart TD
-    A([Start]) --> B[Parse Arguments]
-    B --> C[Initialize Statistics]
+    %% ===== CLASS DEFINITIONS =====
+    classDef primary fill:#4F46E5,stroke:#3730A3,color:#FFFFFF
+    classDef secondary fill:#10B981,stroke:#059669,color:#FFFFFF
+    classDef datastore fill:#F59E0B,stroke:#D97706,color:#000000
+    classDef external fill:#6B7280,stroke:#4B5563,color:#FFFFFF,stroke-dasharray:5 5
+    classDef failed fill:#F44336,stroke:#C62828,color:#FFFFFF
+    classDef trigger fill:#818CF8,stroke:#4F46E5,color:#FFFFFF
+    classDef decision fill:#FFFBEB,stroke:#F59E0B,color:#000000
+    classDef input fill:#F3F4F6,stroke:#6B7280,color:#000000
+
+    %% ===== INITIALIZATION =====
+    A([Start]) -->|begin| B[Parse Arguments]
+    B -->|setup| C[Initialize Statistics]
     
-    subgraph "Validation"
-        C --> D{.NET SDK<br/>Installed?}
+    %% ===== VALIDATION =====
+    subgraph Validation["Validation"]
+        C -->|check| D{.NET SDK<br/>Installed?}
         D -->|No| E[Error: .NET Not Found]
-        E --> F([Exit 1])
+        E -->|terminate| F([Exit 1])
         D -->|Yes| G{.NET Version<br/>>= 10.0?}
         G -->|No| H[Error: Version Too Low]
-        H --> F
+        H -->|terminate| F
         G -->|Yes| I[.NET Validated ✓]
     end
     
-    subgraph "Project Discovery"
-        I --> J[Build Project Paths]
-        J --> K[app.AppHost Path]
-        K --> L[eShop.Orders.API Path]
-        L --> M[eShop.Web.App Path]
-        M --> N[Create Project List]
+    %% ===== PROJECT DISCOVERY =====
+    subgraph ProjectDiscovery["Project Discovery"]
+        I -->|build| J[Build Project Paths]
+        J -->|resolve| K[app.AppHost Path]
+        K -->|resolve| L[eShop.Orders.API Path]
+        L -->|resolve| M[eShop.Web.App Path]
+        M -->|collect| N[Create Project List]
     end
     
-    subgraph "Confirmation"
-        N --> O{Force Mode<br/>or Dry Run?}
+    %% ===== CONFIRMATION =====
+    subgraph Confirmation["Confirmation"]
+        N -->|check| O{Force Mode<br/>or Dry Run?}
         O -->|No| P[Display Projects to Clear]
-        P --> Q[Prompt for Confirmation]
-        Q --> R{User<br/>Confirmed?}
+        P -->|prompt| Q[Prompt for Confirmation]
+        Q -->|verify| R{User<br/>Confirmed?}
         R -->|No| S[Operation Cancelled]
-        S --> T([Exit 0])
+        S -->|exit| T([Exit 0])
         R -->|Yes| U[Proceed with Clear]
         O -->|Yes| U
     end
     
-    subgraph "Clear Secrets Loop"
-        U --> V[For Each Project]
-        V --> W{Project Path<br/>Exists?}
+    %% ===== CLEAR SECRETS LOOP =====
+    subgraph ClearSecretsLoop["Clear Secrets Loop"]
+        U -->|iterate| V[For Each Project]
+        V -->|check| W{Project Path<br/>Exists?}
         W -->|No| X[Log: Project Not Found]
-        X --> Y[Increment Failure Count]
-        Y --> Z{More<br/>Projects?}
+        X -->|increment| Y[Increment Failure Count]
+        Y -->|check| Z{More<br/>Projects?}
         
         W -->|Yes| AA{Dry Run<br/>Mode?}
         AA -->|Yes| AB[Log: Would Clear]
-        AB --> Z
+        AB -->|check| Z
         
         AA -->|No| AC[Execute dotnet user-secrets clear]
-        AC --> AD{Clear<br/>Successful?}
+        AC -->|verify| AD{Clear<br/>Successful?}
         AD -->|No| AE[Log Error]
-        AE --> Y
+        AE -->|increment| Y
         AD -->|Yes| AF[Log Success]
-        AF --> AG[Increment Success Count]
-        AG --> Z
+        AF -->|increment| AG[Increment Success Count]
+        AG -->|check| Z
         
         Z -->|Yes| V
         Z -->|No| AH[Generate Summary]
     end
     
-    subgraph "Summary"
-        AH --> AI[Display Statistics]
-        AI --> AJ{Any<br/>Failures?}
+    %% ===== SUMMARY =====
+    subgraph Summary["Summary"]
+        AH -->|display| AI[Display Statistics]
+        AI -->|evaluate| AJ{Any<br/>Failures?}
         AJ -->|Yes| AK[Exit with Warning]
-        AK --> AL([Exit 0 with warnings])
+        AK -->|exit| AL([Exit 0 with warnings])
         AJ -->|No| AM[All Successful]
-        AM --> AN([Exit 0])
+        AM -->|complete| AN([Exit 0])
     end
-    
-    style A fill:#4CAF50,color:#fff
-    style AN fill:#4CAF50,color:#fff
-    style AL fill:#FF9800,color:#fff
-    style T fill:#4CAF50,color:#fff
-    style F fill:#f44336,color:#fff
+
+    %% ===== SUBGRAPH STYLES =====
+    style Validation fill:#EEF2FF,stroke:#4F46E5,stroke-width:2px
+    style ProjectDiscovery fill:#ECFDF5,stroke:#10B981,stroke-width:2px
+    style Confirmation fill:#E0E7FF,stroke:#4F46E5,stroke-width:2px
+    style ClearSecretsLoop fill:#FEF3C7,stroke:#F59E0B,stroke-width:2px
+    style Summary fill:#F3F4F6,stroke:#6B7280,stroke-width:2px
+
+    %% ===== NODE CLASS ASSIGNMENTS =====
+    class A,AN,T trigger
+    class B,C,J,K,L,M,N,P,Q,V,AC,AH,AI primary
+    class I,AF,AG,AM secondary
+    class D,G,O,R,W,AA,AD,AJ,Z decision
+    class E,H,S,X,AE,AK,AB input
+    class U external
+    class AL datastore
+    class F failed
 ```
 
 ### 💻 Clear Command

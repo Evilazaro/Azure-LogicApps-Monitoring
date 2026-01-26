@@ -122,77 +122,107 @@ This script does not set any environment variables.
 ### 🔄 Execution Flow
 
 ```mermaid
+---
+title: configure-federated-credential Execution Flow
+---
 flowchart TD
-    A([Start]) --> B[Parse Arguments]
-    B --> C[Validate Dependencies]
+    %% ===== CLASS DEFINITIONS =====
+    classDef primary fill:#4F46E5,stroke:#3730A3,color:#FFFFFF
+    classDef secondary fill:#10B981,stroke:#059669,color:#FFFFFF
+    classDef datastore fill:#F59E0B,stroke:#D97706,color:#000000
+    classDef external fill:#6B7280,stroke:#4B5563,color:#FFFFFF,stroke-dasharray:5 5
+    classDef failed fill:#F44336,stroke:#C62828,color:#FFFFFF
+    classDef trigger fill:#818CF8,stroke:#4F46E5,color:#FFFFFF
+    classDef decision fill:#FFFBEB,stroke:#F59E0B,color:#000000
+    classDef input fill:#F3F4F6,stroke:#6B7280,color:#000000
+
+    %% ===== INITIALIZATION =====
+    A([Start]) -->|begin| B[Parse Arguments]
+    B -->|validate| C[Validate Dependencies]
     
-    subgraph "Azure Authentication"
-        C --> D{Azure CLI<br/>Installed?}
+    %% ===== AZURE AUTHENTICATION =====
+    subgraph AzureAuth["Azure Authentication"]
+        C -->|check| D{Azure CLI<br/>Installed?}
         D -->|No| E[Error: Install Azure CLI]
-        E --> F([Exit 1])
+        E -->|terminate| F([Exit 1])
         D -->|Yes| G{Azure CLI<br/>Authenticated?}
         G -->|No| H[Error: Run az login]
-        H --> F
+        H -->|terminate| F
         G -->|Yes| I[Display Account Info]
     end
     
-    subgraph "App Registration Lookup"
-        I --> J{AppObjectId<br/>Provided?}
+    %% ===== APP REGISTRATION LOOKUP =====
+    subgraph AppLookup["App Registration Lookup"]
+        I -->|check| J{AppObjectId<br/>Provided?}
         J -->|Yes| K[Use Provided Object ID]
         J -->|No| L{AppName<br/>Provided?}
         L -->|No| M[List All App Registrations]
-        M --> N[Display Available Apps]
-        N --> O[Prompt for App Name]
+        M -->|display| N[Display Available Apps]
+        N -->|prompt| O[Prompt for App Name]
         L -->|Yes| P[Lookup App by Name]
-        O --> P
-        P --> Q{App<br/>Found?}
+        O -->|search| P
+        P -->|verify| Q{App<br/>Found?}
         Q -->|No| R[Error: App Not Found]
-        R --> F
+        R -->|terminate| F
         Q -->|Yes| S[Extract Object ID]
-        K --> T[App Registration Resolved ✓]
-        S --> T
+        K -->|resolve| T[App Registration Resolved ✓]
+        S -->|resolve| T
     end
     
-    subgraph "Credential Configuration"
-        T --> U[Build Subject Identifier]
-        U --> V["repo:{org}/{repo}:environment:{env}"]
-        V --> W[Generate Credential Name]
-        W --> X["github-{org}-{repo}-{env}"]
+    %% ===== CREDENTIAL CONFIGURATION =====
+    subgraph CredentialConfig["Credential Configuration"]
+        T -->|build| U[Build Subject Identifier]
+        U -->|format| V["repo:{org}/{repo}:environment:{env}"]
+        V -->|generate| W[Generate Credential Name]
+        W -->|format| X["github-{org}-{repo}-{env}"]
         
-        X --> Y[Check Existing Credentials]
-        Y --> Z{Credential<br/>Exists?}
+        X -->|query| Y[Check Existing Credentials]
+        Y -->|verify| Z{Credential<br/>Exists?}
         Z -->|Yes| AA[Warning: Already Configured]
-        AA --> AB[Display Existing Config]
-        AB --> AC([Exit 0])
+        AA -->|display| AB[Display Existing Config]
+        AB -->|exit| AC([Exit 0])
         
         Z -->|No| AD[Build Credential JSON]
     end
     
-    subgraph "Create Credential"
-        AD --> AE[Create Temp JSON File]
-        AE --> AF[Call az ad app federated-credential create]
-        AF --> AG{Creation<br/>Successful?}
+    %% ===== CREATE CREDENTIAL =====
+    subgraph CreateCredential["Create Credential"]
+        AD -->|create| AE[Create Temp JSON File]
+        AE -->|execute| AF[Call az ad app federated-credential create]
+        AF -->|verify| AG{Creation<br/>Successful?}
         AG -->|No| AH[Error: Creation Failed]
-        AH --> AI[Display Error Details]
-        AI --> F
+        AH -->|report| AI[Display Error Details]
+        AI -->|terminate| F
         AG -->|Yes| AJ[Credential Created ✓]
     end
     
-    subgraph "Display Guidance"
-        AJ --> AK[Display Success Message]
-        AK --> AL[Show Workflow Permissions]
-        AL --> AM["permissions:<br/>  id-token: write<br/>  contents: read"]
-        AM --> AN[Show azure/login Action]
-        AN --> AO["uses: azure/login@v2<br/>with:<br/>  client-id: ...<br/>  tenant-id: ...<br/>  subscription-id: ..."]
-        AO --> AP[Remind to Set Secrets]
+    %% ===== DISPLAY GUIDANCE =====
+    subgraph DisplayGuidance["Display Guidance"]
+        AJ -->|show| AK[Display Success Message]
+        AK -->|show| AL[Show Workflow Permissions]
+        AL -->|display| AM["permissions:<br/>  id-token: write<br/>  contents: read"]
+        AM -->|show| AN[Show azure/login Action]
+        AN -->|display| AO["uses: azure/login@v2<br/>with:<br/>  client-id: ...<br/>  tenant-id: ...<br/>  subscription-id: ..."]
+        AO -->|remind| AP[Remind to Set Secrets]
     end
     
-    AP --> AQ([Exit 0])
-    
-    style A fill:#4CAF50,color:#fff
-    style AQ fill:#4CAF50,color:#fff
-    style AC fill:#4CAF50,color:#fff
-    style F fill:#f44336,color:#fff
+    AP -->|complete| AQ([Exit 0])
+
+    %% ===== SUBGRAPH STYLES =====
+    style AzureAuth fill:#EEF2FF,stroke:#4F46E5,stroke-width:2px
+    style AppLookup fill:#ECFDF5,stroke:#10B981,stroke-width:2px
+    style CredentialConfig fill:#FEF3C7,stroke:#F59E0B,stroke-width:2px
+    style CreateCredential fill:#E0E7FF,stroke:#4F46E5,stroke-width:2px
+    style DisplayGuidance fill:#F3F4F6,stroke:#6B7280,stroke-width:2px
+
+    %% ===== NODE CLASS ASSIGNMENTS =====
+    class A,AQ,AC trigger
+    class B,C,I,M,N,O,P,U,V,W,X,Y,AD,AE,AF,AK,AL,AM,AN,AO,AP primary
+    class T,S,AJ secondary
+    class D,G,J,L,Q,Z,AG decision
+    class E,H,R,AA,AB,AH,AI input
+    class K external
+    class F failed
 ```
 
 ### 📄 Federated Credential Structure
