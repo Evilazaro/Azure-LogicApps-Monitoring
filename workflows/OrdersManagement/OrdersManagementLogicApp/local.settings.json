@@ -1,4 +1,5 @@
 {
+  "$schema": "https://json.schemastore.org/local.settings.json",
   "IsEncrypted": false,
   "Values": {
     "APP_KIND": "workflowapp",

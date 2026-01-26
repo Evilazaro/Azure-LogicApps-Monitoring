@@ -1,12 +1,30 @@
+// ============================================================================
+// VS Code Workspace Settings
+// ============================================================================
+// Purpose:     Configure VS Code behavior for this workspace
+// Used by:     VS Code IDE, Azure Logic Apps extension, Azure Functions extension
+// Environment: Development
+//
+// Documentation: https://code.visualstudio.com/docs/getstarted/settings
+// ============================================================================
 {
+  "$schema": "https://json.schemastore.org/vs-code-settings.json",
+  // Azure Logic Apps Standard Configuration
   "azureLogicAppsStandard.deploySubpath": ".",
   "azureLogicAppsStandard.projectLanguage": "JavaScript",
   "azureLogicAppsStandard.projectRuntime": "~4",
-  "debug.internalConsoleOptions": "neverOpen",
+  // Azure Functions Configuration
+  // Suppresses project prompts for Logic Apps which use Functions runtime
   "azureFunctions.suppressProject": true,
+  // Debug Configuration
+  "debug.internalConsoleOptions": "neverOpen",
+  // File Associations
+  // Treat all JSON files as JSONC to allow comments
   "files.associations": {
     "*.json": "jsonc"
   },
+  // JSON Schema Validation
   "json.schemas": [],
+  // Editor Behavior
   "editor.formatOnSave": true
 }

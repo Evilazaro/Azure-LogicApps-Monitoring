@@ -1,7 +1,18 @@
+// ============================================================================
+// VS Code Launch Configuration
+// ============================================================================
+// Purpose:     Define debug configurations for the workspace
+// Used by:     VS Code Debugger, Azure Logic Apps extension
+// Environment: Development
+//
+// Documentation: https://code.visualstudio.com/docs/editor/debugging
+// ============================================================================
 {
-  "$schema": "https://json.schemastore.org/launchsettings.json",
+  "$schema": "https://json.schemastore.org/vs-code-launch.json",
   "version": "0.2.0",
   "configurations": [
+    // Debug Configuration: Azure Logic App
+    // Attaches debugger to the running Logic App process
     {
       "name": "Run/Debug logic app OrdersManagementLogicApp",
       "type": "coreclr",

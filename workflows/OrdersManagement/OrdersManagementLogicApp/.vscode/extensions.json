@@ -1,6 +1,16 @@
+// ============================================================================
+// OrdersManagement Logic App - Recommended Extensions
+// ============================================================================
+// Purpose:     Recommend VS Code extensions for this workspace
+// Used by:     VS Code Extension Manager
+// Environment: All
+//
+// Documentation: https://code.visualstudio.com/docs/editor/extension-marketplace
+// ============================================================================
 {
   "$schema": "https://json.schemastore.org/vs-code-extensions.json",
   "recommendations": [
+    // Azure Logic Apps (Standard) extension for workflow development
     "ms-azuretools.vscode-azurelogicapps"
   ]
 }

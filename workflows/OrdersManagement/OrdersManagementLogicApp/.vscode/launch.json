@@ -1,7 +1,18 @@
+// ============================================================================
+// OrdersManagement Logic App - Debug Configuration
+// ============================================================================
+// Purpose:     Define debug configurations for Logic App workflow debugging
+// Used by:     VS Code Debugger, Azure Logic Apps extension
+// Environment: Development
+//
+// Documentation: https://learn.microsoft.com/azure/logic-apps/create-single-tenant-workflows-visual-studio-code
+// ============================================================================
 {
-  "$schema": "https://json.schemastore.org/launchsettings.json",
+  "$schema": "https://json.schemastore.org/vs-code-launch.json",
   "version": "0.2.0",
   "configurations": [
+    // Debug Configuration: Attach to Logic App Process
+    // Use this after running the "func: host start" task
     {
       "name": "Run/Debug logic app OrdersManagementLogicApp",
       "type": "coreclr",
