@@ -309,7 +309,7 @@ az bicep install
 
 ## 🔒 Security Considerations
 
-### Credential Handling
+### 🔑 Credential Handling
 
 - [x] No hardcoded secrets
 - [x] Credentials sourced from: Azure CLI session (interactive or service principal)
@@ -319,42 +319,62 @@ az bicep install
 ### Required Permissions
 
 | Permission/Role | Scope | Justification |
-|-----------------|-------|---------------|
+|:----------------|:------|:--------------|
 | Reader | Subscription | Validate resource provider registrations |
 | User Access Administrator | Subscription | Check quota availability |
 | Contributor | Resource Group | Deploy Azure resources (after validation) |
 
-### Network Security
+### 🌐 Network Security
 
-- **Endpoints accessed:** Azure Resource Manager (`management.azure.com`), Azure AD (`login.microsoftonline.com`)
-- **TLS requirements:** TLS 1.2+
-- **Firewall rules needed:** Outbound HTTPS (443) to Azure endpoints
+| Property | Value |
+|:---------|:------|
+| **Endpoints accessed** | Azure Resource Manager (`management.azure.com`), Azure AD (`login.microsoftonline.com`) |
+| **TLS requirements** | TLS 1.2+ |
+| **Firewall rules needed** | Outbound HTTPS (443) to Azure endpoints |
 
-### Logging Security
+### 📝 Logging Security
 
-- **Sensitive data masking:** Yes - access tokens and secrets are not logged
-- **Audit trail:** Script execution logs with timestamps
+> **✅ Security Features:**
+>
+> - **Sensitive data masking:** Yes — access tokens and secrets are not logged
+> - **Audit trail:** Script execution logs with timestamps
 
-## Known Limitations
+[⬆️ Back to top](#-preprovision)
 
-- Quota checking is informational only and does not block execution
-- Auto-install feature requires elevated permissions on some systems
-- Device code login requires manual browser interaction
-- Resource provider registration may require subscription owner permissions
-- Windows execution policy may require bypass (`-ExecutionPolicy Bypass`)
+---
 
-## Related Scripts
+## 🚧 Known Limitations
+
+> **⚠️ Important Notes:**
+>
+> - Quota checking is informational only and does not block execution
+> - Auto-install feature requires elevated permissions on some systems
+> - Device code login requires manual browser interaction
+> - Resource provider registration may require subscription owner permissions
+> - Windows execution policy may require bypass (`-ExecutionPolicy Bypass`)
+
+[⬆️ Back to top](#-preprovision)
+
+---
+
+## 🔗 Related Scripts
 
 | Script | Relationship | Description |
-|--------|--------------|-------------|
+|:-------|:-------------|:------------|
 | [clean-secrets.md](clean-secrets.md) | Called by | Clears .NET user secrets for all projects |
 | [postprovision.md](postprovision.md) | Follows | Configures secrets after Azure provisioning |
 | [check-dev-workstation.md](check-dev-workstation.md) | Wrapper | Developer-friendly validation wrapper |
 
-## Changelog
+[⬆️ Back to top](#-preprovision)
+
+---
+
+## 📜 Changelog
 
 | Version | Date | Changes |
-|---------|------|---------|
+|:-------:|:----:|:--------|
 | 2.3.0 | 2026-01-06 | Added auto-install feature, improved quota checking |
 | 2.0.0 | 2025-12-01 | Added Azure Resource Provider validation |
 | 1.0.0 | 2025-01-01 | Initial release |
+
+[⬆️ Back to top](#-preprovision)
