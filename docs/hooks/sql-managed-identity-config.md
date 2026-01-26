@@ -452,6 +452,12 @@ WHERE u.name = 'my-app-identity';
 
 ---
 
+<div align="center">
+
+**[← configure-federated-credential](configure-federated-credential.md)** · **[⬆️ Back to Top](#-sql-managed-identity-config)** · **[Generate-Orders →](Generate-Orders.md)**
+
+</div>
+
 **Version**: 1.0.0  
 **Author**: Evilazaro | Principal Cloud Solution Architect | Microsoft  
 **Last Modified**: January 2026

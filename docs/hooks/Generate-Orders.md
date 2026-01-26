@@ -1,4 +1,26 @@
+---
+title: "Generate-Orders Hook"
+description: "Generates sample e-commerce order data for testing Azure Logic Apps monitoring workflows"
+author: "Azure Logic Apps Monitoring Team"
+date: "January 2026"
+version: "2.0.1"
+tags: ["generate-orders", "test-data", "sample-data", "e-commerce", "testing"]
+---
+
 # 📦 Generate-Orders
+
+> [!NOTE]
+> **Target Audience**: Developers, QA Engineers, Solution Architects  
+> **Reading Time**: ~10 minutes
+
+<details>
+<summary>📖 Navigation</summary>
+
+| Previous | Index | Next |
+|:---------|:-----:|-----:|
+| [sql-managed-identity-config](sql-managed-identity-config.md) | [📚 Index](README.md) | — |
+
+</details>
 
 Generates sample order data for testing Azure Logic Apps monitoring.
 
@@ -404,6 +426,12 @@ $orders.orders[0].orderId  # Should be a valid GUID
    - Use `--verbose` to see progress
 
 ---
+
+<div align="center">
+
+**[← sql-managed-identity-config](sql-managed-identity-config.md)** · **[⬆️ Back to Top](#-generate-orders)** · **[📚 Index](README.md)**
+
+</div>
 
 **Version**: 2.0.1  
 **Author**: Evilazaro | Principal Cloud Solution Architect | Microsoft  
