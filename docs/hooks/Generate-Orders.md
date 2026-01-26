@@ -88,40 +88,96 @@ This script does not set any environment variables.
 
 ### Execution Flow
 
-```
-┌─────────────────────────────────────────────────────────────────┐
-│                      Generate-Orders                             │
-├─────────────────────────────────────────────────────────────────┤
-│  1. Parse and validate command-line arguments                   │
-│  2. Validate MinProducts <= MaxProducts                         │
-│  3. Validate output directory exists (create if needed)         │
-│                                                                 │
-│  ┌─────────────────────────────────────────────────────────────┐│
-│  │              Confirmation (unless --force)                  ││
-│  ├─────────────────────────────────────────────────────────────┤│
-│  │  4. Display generation parameters                           ││
-│  │  5. Prompt for confirmation                                 ││
-│  └─────────────────────────────────────────────────────────────┘│
-│                                                                 │
-│  ┌─────────────────────────────────────────────────────────────┐│
-│  │              Order Generation                               ││
-│  ├─────────────────────────────────────────────────────────────┤│
-│  │  6. For each order (1 to OrderCount):                       ││
-│  │      ├── Generate unique Order ID (GUID/UUID)               ││
-│  │      ├── Generate random order date (2024-2025)             ││
-│  │      ├── Select random customer name                        ││
-│  │      ├── Select random delivery address                     ││
-│  │      ├── Generate 1-N products:                             ││
-│  │      │   ├── Select random product from catalog             ││
-│  │      │   ├── Apply ±20% price variation                     ││
-│  │      │   └── Generate random quantity                       ││
-│  │      └── Calculate order total                              ││
-│  │  7. Show progress indicator                                 ││
-│  └─────────────────────────────────────────────────────────────┘│
-│                                                                 │
-│  8. Write JSON array to output file                             │
-│  9. Display generation summary                                  │
-└─────────────────────────────────────────────────────────────────┘
+```mermaid
+flowchart TD
+    A([Start]) --> B[Parse Arguments]
+    B --> C[Validate Parameters]
+    
+    subgraph "Validation"
+        C --> D{Order Count<br/>1-10000?}
+        D -->|No| E[Error: Invalid Count]
+        E --> F([Exit 1])
+        D -->|Yes| G{MinProducts<br/><= MaxProducts?}
+        G -->|No| H[Error: Invalid Range]
+        H --> F
+        G -->|Yes| I{Output Path<br/>Writable?}
+        I -->|No| J[Error: Cannot Write]
+        J --> F
+        I -->|Yes| K[Parameters Valid ✓]
+    end
+    
+    subgraph "Confirmation"
+        K --> L{Force Mode<br/>or Dry Run?}
+        L -->|No| M[Display Configuration]
+        M --> N[Prompt for Confirmation]
+        N --> O{User<br/>Confirmed?}
+        O -->|No| P[Operation Cancelled]
+        P --> Q([Exit 0])
+        O -->|Yes| R[Proceed]
+        L -->|Yes| R
+    end
+    
+    subgraph "Generation"
+        R --> S{Dry Run<br/>Mode?}
+        S -->|Yes| T[Display: Would Generate X Orders]
+        T --> Q
+        S -->|No| U[Initialize Order Array]
+        
+        U --> V[Record Start Time]
+        V --> W[For i = 1 to OrderCount]
+        
+        subgraph "Generate Single Order"
+            W --> X[Generate Order GUID]
+            X --> Y["ORD-{12-char-hex}"]
+            Y --> Z[Generate Customer GUID]
+            Z --> AA["CUST-{8-char-hex}"]
+            AA --> AB[Generate Random Date]
+            AB --> AC["2024-01-01 to 2025-12-31"]
+            AC --> AD[Select Random Address]
+            AD --> AE[Determine Product Count]
+            AE --> AF["Random(Min, Max)"]
+            
+            AF --> AG[For Each Product]
+            AG --> AH[Select Random Product]
+            AH --> AI[Generate Quantity 1-5]
+            AI --> AJ[Apply Price Variation ±20%]
+            AJ --> AK[Calculate Subtotal]
+            AK --> AL[Generate OrderProduct GUID]
+            AL --> AM["OP-{12-char-hex}"]
+            AM --> AN{More<br/>Products?}
+            AN -->|Yes| AG
+            AN -->|No| AO[Calculate Order Total]
+        end
+        
+        AO --> AP[Add Order to Array]
+        AP --> AQ{More<br/>Orders?}
+        AQ -->|Yes| W
+        AQ -->|No| AR[Generation Complete]
+    end
+    
+    subgraph "Output"
+        AR --> AS[Serialize to JSON]
+        AS --> AT[Ensure Output Directory Exists]
+        AT --> AU[Write to File]
+        AU --> AV{Write<br/>Successful?}
+        AV -->|No| AW[Error: Write Failed]
+        AW --> F
+        AV -->|Yes| AX[Calculate Duration]
+    end
+    
+    subgraph "Summary"
+        AX --> AY[Display Statistics]
+        AY --> AZ["Orders: X, Products: Y, Total: $Z"]
+        AZ --> BA[Display File Path]
+        BA --> BB[Display File Size]
+    end
+    
+    BB --> BC([Exit 0])
+    
+    style A fill:#4CAF50,color:#fff
+    style BC fill:#4CAF50,color:#fff
+    style Q fill:#4CAF50,color:#fff
+    style F fill:#f44336,color:#fff
 ```
 
 ### Generated Data Structure
