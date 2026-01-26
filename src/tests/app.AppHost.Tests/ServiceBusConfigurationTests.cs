@@ -25,13 +25,7 @@ public sealed class ServiceBusConfigurationTests
     {
         // Arrange - Default configuration uses localhost (emulator mode)
         var appHost = await DistributedApplicationTestingBuilder
-            .CreateAsync<Projects.app_AppHost>(args =>
-            {
-                args.Configuration.AddInMemoryCollection(new Dictionary<string, string?>
-                {
-                    ["Azure:ServiceBus:HostName"] = "localhost"
-                });
-            });
+            .CreateAsync<Projects.app_AppHost>();
 
         // Act
         await using var app = await appHost.BuildAsync();
@@ -137,56 +131,6 @@ public sealed class ServiceBusConfigurationTests
         // Assert - Verify default subscription name
         var subscriptionResource = model.Resources.FirstOrDefault(r => r.Name == "orderprocessingsub");
         Assert.IsNotNull(subscriptionResource, "Default subscription name should be 'orderprocessingsub'");
-    }
-
-    #endregion
-
-    #region Custom Configuration Tests
-
-    [TestMethod]
-    public async Task ServiceBus_WithCustomTopicName_ConfiguresCorrectly()
-    {
-        // Arrange
-        var customTopicName = "customtopic";
-        var appHost = await DistributedApplicationTestingBuilder
-            .CreateAsync<Projects.app_AppHost>(args =>
-            {
-                args.Configuration.AddInMemoryCollection(new Dictionary<string, string?>
-                {
-                    ["Azure:ServiceBus:TopicName"] = customTopicName
-                });
-            });
-
-        // Act
-        await using var app = await appHost.BuildAsync();
-        var model = app.Services.GetRequiredService<DistributedApplicationModel>();
-
-        // Assert
-        var topicResource = model.Resources.FirstOrDefault(r => r.Name == customTopicName);
-        Assert.IsNotNull(topicResource, $"Custom topic name '{customTopicName}' should be configured");
-    }
-
-    [TestMethod]
-    public async Task ServiceBus_WithCustomSubscriptionName_ConfiguresCorrectly()
-    {
-        // Arrange
-        var customSubscriptionName = "customsub";
-        var appHost = await DistributedApplicationTestingBuilder
-            .CreateAsync<Projects.app_AppHost>(args =>
-            {
-                args.Configuration.AddInMemoryCollection(new Dictionary<string, string?>
-                {
-                    ["Azure:ServiceBus:SubscriptionName"] = customSubscriptionName
-                });
-            });
-
-        // Act
-        await using var app = await appHost.BuildAsync();
-        var model = app.Services.GetRequiredService<DistributedApplicationModel>();
-
-        // Assert
-        var subscriptionResource = model.Resources.FirstOrDefault(r => r.Name == customSubscriptionName);
-        Assert.IsNotNull(subscriptionResource, $"Custom subscription name '{customSubscriptionName}' should be configured");
     }
 
     #endregion

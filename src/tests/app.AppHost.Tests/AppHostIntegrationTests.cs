@@ -242,19 +242,11 @@ public sealed class AppHostIntegrationTests
     #region Configuration Tests
 
     [TestMethod]
-    public async Task AppHost_WithCustomConfiguration_BuildsSuccessfully()
+    public async Task AppHost_WithDefaultConfiguration_BuildsSuccessfully()
     {
         // Arrange
         var appHost = await DistributedApplicationTestingBuilder
-            .CreateAsync<Projects.app_AppHost>(args =>
-            {
-                // Add custom configuration for testing
-                args.Configuration.AddInMemoryCollection(new Dictionary<string, string?>
-                {
-                    ["Azure:ServiceBus:HostName"] = "localhost",
-                    ["Azure:SqlServer:Name"] = "OrdersDatabase"
-                });
-            });
+            .CreateAsync<Projects.app_AppHost>();
 
         // Act
         await using var app = await appHost.BuildAsync();

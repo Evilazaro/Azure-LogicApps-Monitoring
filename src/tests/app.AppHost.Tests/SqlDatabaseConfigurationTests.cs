@@ -24,13 +24,7 @@ public sealed class SqlDatabaseConfigurationTests
     {
         // Arrange - Default configuration uses local container mode
         var appHost = await DistributedApplicationTestingBuilder
-            .CreateAsync<Projects.app_AppHost>(args =>
-            {
-                args.Configuration.AddInMemoryCollection(new Dictionary<string, string?>
-                {
-                    ["Azure:SqlServer:Name"] = "OrdersDatabase" // Default local name
-                });
-            });
+            .CreateAsync<Projects.app_AppHost>();
 
         // Act
         await using var app = await appHost.BuildAsync();
