@@ -436,7 +436,7 @@ public sealed class OrderTests
 
         // Assert
         Assert.IsFalse(isValid, "Order with multiple invalid properties should fail validation");
-        Assert.IsTrue(results.Count > 0, "Should have validation errors");
+        Assert.IsNotEmpty(results, "Should have validation errors");
     }
 
     #endregion

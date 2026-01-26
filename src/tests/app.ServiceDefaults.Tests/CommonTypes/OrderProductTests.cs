@@ -317,7 +317,7 @@ public sealed class OrderProductTests
 
         // Assert
         Assert.IsFalse(isValid, "Product with invalid quantity and price should fail validation");
-        Assert.IsTrue(results.Count >= 2, "Should have at least 2 validation errors");
+        Assert.IsGreaterThanOrEqualTo(results.Count, 2, "Should have at least 2 validation errors");
     }
 
     #endregion

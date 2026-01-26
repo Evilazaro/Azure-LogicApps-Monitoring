@@ -164,7 +164,7 @@ public sealed class WeatherForecastTests
 
         // Assert
         Assert.IsFalse(isValid, "Summary exceeding 100 characters should fail validation");
-        Assert.IsTrue(results.Count > 0, "Should have validation error");
+        Assert.IsNotEmpty(results, "Should have validation error");
     }
 
     [TestMethod]
