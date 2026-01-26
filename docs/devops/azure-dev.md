@@ -1,6 +1,36 @@
+---
+title: "CD - Azure Deployment Workflow"
+description: "Continuous deployment workflow documentation for Azure infrastructure provisioning and application deployment using Azure Developer CLI (azd) with OIDC authentication"
+author: "DevOps Team"
+date: "2026-01-26"
+version: "1.0.0"
+tags:
+  - azure
+  - deployment
+  - ci-cd
+  - github-actions
+  - azd
+  - oidc
+---
+
 # 🚀 CD - Azure Deployment
 
 ![Workflow Status](https://github.com/Evilazaro/Azure-LogicApps-Monitoring/actions/workflows/azure-dev.yml/badge.svg)
+
+> [!NOTE]
+> **Target Audience:** DevOps Engineers, Platform Engineers, Developers<br>
+> **Reading Time:** ~15 minutes
+
+<details>
+<summary>📍 <strong>Navigation</strong></summary>
+
+| Previous | Index | Next |
+|:---------|:------|:-----|
+| — | [DevOps Documentation](./README.md) | [CI - .NET Build and Test](ci-dotnet.md) → |
+
+</details>
+
+---
 
 > Provisions Azure infrastructure and deploys the .NET application using Azure Developer CLI (azd) with OpenID Connect (OIDC) authentication.
 
@@ -161,7 +191,8 @@ flowchart TD
 |:------------|:---------|:-------|:--------|
 | `inherit` | Yes | Reusable workflow | All secrets inherited for CI workflow |
 
-> **ℹ️ Note:** This workflow uses OIDC authentication and does not require stored Azure credentials secrets.
+> [!NOTE]
+> This workflow uses OIDC authentication and does not require stored Azure credentials secrets.
 
 ### Repository Variables
 
@@ -288,7 +319,8 @@ gh workflow run azure-dev.yml
 gh workflow run azure-dev.yml -f skip-ci=true
 ```
 
-> ⚠️ **Warning:** Skipping CI bypasses build verification and security scanning. Use only for critical hotfixes.
+> [!WARNING]
+> Skipping CI bypasses build verification and security scanning. Use only for critical hotfixes.
 
 ### Typical Developer Workflow
 
@@ -351,7 +383,17 @@ az login --federated-token <token> --service-principal \
 
 ---
 
-## 🔗 Related Resources
+## � Related Documents
+
+| Document | Description |
+|:---------|:------------|
+| [ci-dotnet.md](ci-dotnet.md) | CI orchestration workflow documentation |
+| [ci-dotnet-reusable.md](ci-dotnet-reusable.md) | Reusable CI workflow documentation |
+| [infra/README.md](../../infra/README.md) | Infrastructure documentation |
+
+---
+
+## �🔗 Related Resources
 
 ### 📚 Internal
 
@@ -373,4 +415,8 @@ az login --federated-token <token> --service-principal \
 
 ---
 
-[⬆️ Back to Top](#-cd---azure-deployment)
+<div align="center">
+
+[⬆️ Back to Top](#-cd---azure-deployment) | [CI - .NET Build and Test →](ci-dotnet.md)
+
+</div>

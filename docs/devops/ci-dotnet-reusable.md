@@ -1,6 +1,36 @@
+---
+title: "CI - .NET Reusable Workflow"
+description: "Comprehensive reusable CI workflow for .NET solutions with cross-platform builds, testing, code analysis, and CodeQL security scanning"
+author: "DevOps Team"
+date: "2026-01-26"
+version: "1.0.0"
+tags:
+  - dotnet
+  - ci-cd
+  - github-actions
+  - reusable-workflow
+  - codeql
+  - testing
+---
+
 # 🔄 CI - .NET Reusable Workflow
 
 ![Workflow Status](https://github.com/Evilazaro/Azure-LogicApps-Monitoring/actions/workflows/ci-dotnet-reusable.yml/badge.svg)
+
+> [!NOTE]
+> **Target Audience:** DevOps Engineers, Platform Engineers, Developers<br>
+> **Reading Time:** ~12 minutes
+
+<details>
+<summary>📍 <strong>Navigation</strong></summary>
+
+| Previous | Index | Next |
+|:---------|:------|:-----|
+| ← [CI - .NET Build and Test](ci-dotnet.md) | [DevOps Documentation](./README.md) | [CD - Azure Deployment](azure-dev.md) → |
+
+</details>
+
+---
 
 > Comprehensive reusable CI workflow for .NET solutions with cross-platform builds, testing, code analysis, and security scanning.
 
@@ -144,7 +174,8 @@ flowchart TD
 |:------|:---------|:------|:-----------|
 | **workflow_call** | N/A | N/A | Called by other workflows with inputs |
 
-> **ℹ️ Note:** This is a reusable workflow and cannot be triggered directly. It must be called using `uses:` syntax from another workflow.
+> [!IMPORTANT]
+> This is a reusable workflow and cannot be triggered directly. It must be called using `uses:` syntax from another workflow.
 
 ---
 
@@ -435,7 +466,16 @@ codeql database analyze codeql-db --format=sarif-latest --output=results.sarif
 
 ---
 
-## 🔗 Related Resources
+## � Related Documents
+
+| Document | Description |
+|:---------|:------------|
+| [ci-dotnet.md](ci-dotnet.md) | CI orchestration workflow that calls this reusable workflow |
+| [azure-dev.md](azure-dev.md) | CD workflow that depends on this CI workflow |
+
+---
+
+## �🔗 Related Resources
 
 ### 📚 Internal
 
@@ -457,4 +497,8 @@ codeql database analyze codeql-db --format=sarif-latest --output=results.sarif
 
 ---
 
-[⬆️ Back to Top](#-ci---net-reusable-workflow)
+<div align="center">
+
+[← CI - .NET Build and Test](ci-dotnet.md) | [⬆️ Back to Top](#-ci---net-reusable-workflow) | [CD - Azure Deployment →](azure-dev.md)
+
+</div>

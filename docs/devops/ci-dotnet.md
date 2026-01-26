@@ -1,6 +1,34 @@
+---
+title: "CI - .NET Build and Test"
+description: "CI orchestration workflow that triggers the reusable .NET CI workflow for build, test, and code analysis"
+author: "DevOps Team"
+date: "2026-01-26"
+version: "1.0.0"
+tags:
+  - dotnet
+  - ci-cd
+  - github-actions
+  - orchestration
+---
+
 # 🛠️ CI - .NET Build and Test
 
 ![Workflow Status](https://github.com/Evilazaro/Azure-LogicApps-Monitoring/actions/workflows/ci-dotnet.yml/badge.svg)
+
+> [!NOTE]
+> **Target Audience:** DevOps Engineers, Developers, Contributors<br>
+> **Reading Time:** ~8 minutes
+
+<details>
+<summary>📍 <strong>Navigation</strong></summary>
+
+| Previous | Index | Next |
+|:---------|:------|:-----|
+| ← [CD - Azure Deployment](azure-dev.md) | [DevOps Documentation](./README.md) | [CI - .NET Reusable Workflow](ci-dotnet-reusable.md) → |
+
+</details>
+
+---
 
 > Orchestrates the CI pipeline by calling the reusable workflow for .NET builds, tests, and security scanning.
 
@@ -336,6 +364,15 @@ gh run cancel <run-id>
 
 ---
 
+## 📚 Related Documents
+
+| Document | Description |
+|:---------|:------------|
+| [ci-dotnet-reusable.md](ci-dotnet-reusable.md) | Detailed reusable CI workflow documentation |
+| [azure-dev.md](azure-dev.md) | CD workflow for Azure deployment |
+
+---
+
 ## 🔗 Related Resources
 
 ### 📚 Internal
@@ -358,4 +395,8 @@ gh run cancel <run-id>
 
 ---
 
-[⬆️ Back to Top](#️-ci---net-build-and-test)
+<div align="center">
+
+[← CD - Azure Deployment](azure-dev.md) | [⬆️ Back to Top](#%EF%B8%8F-ci---net-build-and-test) | [CI - .NET Reusable Workflow →](ci-dotnet-reusable.md)
+
+</div>
