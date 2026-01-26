@@ -30,11 +30,10 @@ public sealed class AppHostIntegrationTests
 
         // Act
         await using var app = await appHost.BuildAsync();
-        var resourceNotificationService = app.Services.GetRequiredService<ResourceNotificationService>();
+        var model = app.Services.GetRequiredService<DistributedApplicationModel>();
 
         // Assert - Verify orders-api resource exists
-        var ordersApiResource = app.Services.GetServices<IResource>()
-            .FirstOrDefault(r => r.Name == "orders-api");
+        var ordersApiResource = model.Resources.FirstOrDefault(r => r.Name == "orders-api");
 
         Assert.IsNotNull(ordersApiResource, "orders-api resource should be configured");
     }
@@ -48,10 +47,10 @@ public sealed class AppHostIntegrationTests
 
         // Act
         await using var app = await appHost.BuildAsync();
+        var model = app.Services.GetRequiredService<DistributedApplicationModel>();
 
         // Assert - Verify web-app resource exists
-        var webAppResource = app.Services.GetServices<IResource>()
-            .FirstOrDefault(r => r.Name == "web-app");
+        var webAppResource = model.Resources.FirstOrDefault(r => r.Name == "web-app");
 
         Assert.IsNotNull(webAppResource, "web-app resource should be configured");
     }
@@ -65,10 +64,10 @@ public sealed class AppHostIntegrationTests
 
         // Act
         await using var app = await appHost.BuildAsync();
+        var model = app.Services.GetRequiredService<DistributedApplicationModel>();
 
         // Assert - Verify messaging (Service Bus) resource exists
-        var messagingResource = app.Services.GetServices<IResource>()
-            .FirstOrDefault(r => r.Name == "messaging");
+        var messagingResource = model.Resources.FirstOrDefault(r => r.Name == "messaging");
 
         Assert.IsNotNull(messagingResource, "messaging resource should be configured for Service Bus");
     }
@@ -82,10 +81,10 @@ public sealed class AppHostIntegrationTests
 
         // Act
         await using var app = await appHost.BuildAsync();
+        var model = app.Services.GetRequiredService<DistributedApplicationModel>();
 
         // Assert - Verify database resource exists (either OrdersDatabase or OrderDb)
-        var allResources = app.Services.GetServices<IResource>().ToList();
-        var databaseResource = allResources.FirstOrDefault(r =>
+        var databaseResource = model.Resources.FirstOrDefault(r =>
             r.Name.Contains("Database", StringComparison.OrdinalIgnoreCase) ||
             r.Name.Contains("OrderDb", StringComparison.OrdinalIgnoreCase));
 
@@ -105,10 +104,12 @@ public sealed class AppHostIntegrationTests
 
         // Act
         await using var app = await appHost.BuildAsync();
-        var resources = app.Services.GetServices<IResource>().ToList();
+        var model = app.Services.GetRequiredService<DistributedApplicationModel>();
+        var resources = model.Resources.ToList();
 
         // Assert - Should have at least: orders-api, web-app, messaging, database
-        Assert.IsGreaterThanOrEqualTo(resources.Count, 4,
+        // IsGreaterThanOrEqualTo(lowerBound, value) checks if value >= lowerBound
+        Assert.IsGreaterThanOrEqualTo(4, resources.Count,
             $"Should have at least 4 resources. Found: {string.Join(", ", resources.Select(r => r.Name))}");
     }
 
@@ -125,8 +126,8 @@ public sealed class AppHostIntegrationTests
 
         // Act
         await using var app = await appHost.BuildAsync();
-        var ordersApiResource = app.Services.GetServices<IResource>()
-            .FirstOrDefault(r => r.Name == "orders-api");
+        var model = app.Services.GetRequiredService<DistributedApplicationModel>();
+        var ordersApiResource = model.Resources.FirstOrDefault(r => r.Name == "orders-api");
 
         // Assert
         Assert.IsNotNull(ordersApiResource);
@@ -143,8 +144,8 @@ public sealed class AppHostIntegrationTests
 
         // Act
         await using var app = await appHost.BuildAsync();
-        var webAppResource = app.Services.GetServices<IResource>()
-            .FirstOrDefault(r => r.Name == "web-app");
+        var model = app.Services.GetRequiredService<DistributedApplicationModel>();
+        var webAppResource = model.Resources.FirstOrDefault(r => r.Name == "web-app");
 
         // Assert
         Assert.IsNotNull(webAppResource);

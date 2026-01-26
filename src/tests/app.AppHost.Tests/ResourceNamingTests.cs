@@ -110,9 +110,9 @@ public sealed class ResourceNamingTests
         // Assert
         foreach (var resource in projectResources)
         {
-            Assert.IsFalse(resource.Name.Contains(' '),
+            Assert.DoesNotContain(' ', resource.Name,
                 $"Resource name '{resource.Name}' should not contain spaces");
-            Assert.IsTrue(resource.Name == resource.Name.ToLowerInvariant(),
+            Assert.AreEqual(resource.Name.ToLowerInvariant(), resource.Name,
                 $"Project resource name '{resource.Name}' should be lowercase");
         }
     }
@@ -132,7 +132,7 @@ public sealed class ResourceNamingTests
         var uniqueNames = resourceNames.Distinct().ToList();
 
         // Assert
-        Assert.AreEqual(resourceNames.Count, uniqueNames.Count,
+        Assert.HasCount(resourceNames.Count, uniqueNames,
             $"All resource names should be unique. Found duplicates: {string.Join(", ", resourceNames.GroupBy(n => n).Where(g => g.Count() > 1).Select(g => g.Key))}");
     }
 

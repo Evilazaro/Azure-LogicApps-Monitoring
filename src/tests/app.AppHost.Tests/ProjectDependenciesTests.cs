@@ -112,7 +112,7 @@ public sealed class ProjectDependenciesTests
 
         // Verify annotations are present (connection strings, etc.)
         var annotations = ordersApiResource.Annotations.ToList();
-        Assert.IsGreaterThan(annotations.Count, 0, "orders-api should have annotations for database reference");
+        Assert.IsGreaterThan(0, annotations.Count, "orders-api should have annotations for database reference");
     }
 
     [TestMethod]
