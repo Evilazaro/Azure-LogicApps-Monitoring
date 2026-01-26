@@ -7,13 +7,36 @@ license: MIT
 languages: [PowerShell, Bash]
 ---
 
-# clean-secrets
+# 🧹 clean-secrets
 
-## Overview
+---
+
+## 📑 Table of Contents
+
+- [📋 Overview](#-overview)
+- [📝 Description](#-description)
+- [📊 Workflow Diagram](#-workflow-diagram)
+- [✅ Prerequisites](#-prerequisites)
+- [⚙️ Parameters/Arguments](#️-parametersarguments)
+- [📥 Input/Output Specifications](#-inputoutput-specifications)
+- [💻 Usage Examples](#-usage-examples)
+- [⚠️ Error Handling and Exit Codes](#️-error-handling-and-exit-codes)
+- [🔒 Security Considerations](#-security-considerations)
+- [🚧 Known Limitations](#-known-limitations)
+- [🔗 Related Scripts](#-related-scripts)
+- [📜 Changelog](#-changelog)
+
+---
+
+## 📋 Overview
 
 Clears .NET user secrets for all projects in the Azure Logic Apps Monitoring solution to ensure a clean configuration state before re-provisioning or troubleshooting.
 
-## Description
+[⬆️ Back to top](#-clean-secrets)
+
+---
+
+## 📝 Description
 
 This utility script clears all .NET user secrets from the configured projects in the solution. User secrets in .NET provide a way to store sensitive configuration data outside of the project tree, but these secrets can become stale or misconfigured over time, leading to application issues.
 
@@ -21,7 +44,11 @@ The script targets three specific projects: `app.AppHost` (the Aspire applicatio
 
 This script is typically called by the preprovision script but can also be run standalone when troubleshooting configuration issues or preparing for a fresh deployment. The script includes comprehensive validation, detailed logging, and execution statistics to provide visibility into the cleanup operation.
 
-## Workflow Diagram
+[⬆️ Back to top](#-clean-secrets)
+
+---
+
+## 📊 Workflow Diagram
 
 ```mermaid
 flowchart TD
@@ -68,55 +95,67 @@ flowchart TD
     style V fill:#9f9
 ```
 
-## Prerequisites
+[⬆️ Back to top](#-clean-secrets)
+
+---
+
+## ✅ Prerequisites
 
 | Category | Requirement | Version | Verification Command | Required |
-|----------|-------------|---------|---------------------|----------|
-| Runtime | PowerShell Core | >= 7.0 | `$PSVersionTable.PSVersion` | Yes |
-| Runtime | Bash | >= 4.0 | `bash --version` | Yes |
-| SDK | .NET SDK | >= 10.0 | `dotnet --version` | Yes |
+|:---------|:------------|:--------|:---------------------|:--------:|
+| Runtime | PowerShell Core | >= 7.0 | `$PSVersionTable.PSVersion` | ✅ |
+| Runtime | Bash | >= 4.0 | `bash --version` | ✅ |
+| SDK | .NET SDK | >= 10.0 | `dotnet --version` | ✅ |
 
-## Parameters/Arguments
+[⬆️ Back to top](#-clean-secrets)
+
+---
+
+## ⚙️ Parameters/Arguments
 
 ### PowerShell Parameters
 
 | Parameter | Type | Required | Default | Description |
-|-----------|------|----------|---------|-------------|
-| `-Force` | `[switch]` | No | `$false` | Skips confirmation prompts |
-| `-WhatIf` | `[switch]` | No | `$false` | Shows what would be cleared without making changes |
-| `-Verbose` | `[switch]` | No | `$false` | Displays detailed diagnostic information |
+|:----------|:-----|:--------:|:--------|:------------|
+| `-Force` | `[switch]` | ❌ | `$false` | Skips confirmation prompts |
+| `-WhatIf` | `[switch]` | ❌ | `$false` | Shows what would be cleared without making changes |
+| `-Verbose` | `[switch]` | ❌ | `$false` | Displays detailed diagnostic information |
 
 ### Bash Arguments
 
 | Position/Flag | Type | Required | Default | Description |
-|---------------|------|----------|---------|-------------|
-| `-f`, `--force` | flag | No | `false` | Skip confirmation prompts and force execution |
-| `-n`, `--dry-run` | flag | No | `false` | Show what would be executed without making changes |
-| `-v`, `--verbose` | flag | No | `false` | Display detailed diagnostic information |
-| `-h`, `--help` | flag | No | N/A | Display help message and exit |
+|:--------------|:-----|:--------:|:--------|:------------|
+| `-f`, `--force` | flag | ❌ | `false` | Skip confirmation prompts and force execution |
+| `-n`, `--dry-run` | flag | ❌ | `false` | Show what would be executed without making changes |
+| `-v`, `--verbose` | flag | ❌ | `false` | Display detailed diagnostic information |
+| `-h`, `--help` | flag | ❌ | N/A | Display help message and exit |
 
-## Input/Output Specifications
+[⬆️ Back to top](#-clean-secrets)
+
+---
+
+## 📥 Input/Output Specifications
 
 ### Inputs
 
 **Environment Variables Read:**
 
-- None
+> **ℹ️ Note:** None required.
 
 **Files/Paths Expected:**
 
-- `../app.AppHost/` - AppHost project directory (relative to script)
-- `../src/eShop.Orders.API/` - Orders API project directory
-- `../src/eShop.Web.App/` - Web App project directory
+- `../app.AppHost/` — AppHost project directory (relative to script)
+- `../src/eShop.Orders.API/` — Orders API project directory
+- `../src/eShop.Web.App/` — Web App project directory
 
 ### Outputs
 
 **Exit Codes:**
 
 | Exit Code | Meaning |
-|-----------|---------|
-| 0 | Success - All secrets cleared |
-| 1 | Error - One or more operations failed |
+|:---------:|:--------|
+| `0` | Success — All secrets cleared |
+| `1` | Error — One or more operations failed |
 
 **stdout Output:**
 
@@ -130,7 +169,11 @@ flowchart TD
 - User secrets removed from `%APPDATA%\Microsoft\UserSecrets\` (Windows)
 - User secrets removed from `~/.microsoft/usersecrets/` (macOS/Linux)
 
-## Usage Examples
+[⬆️ Back to top](#-clean-secrets)
+
+---
+
+## 💻 Usage Examples
 
 ### Basic Usage
 
@@ -182,12 +225,16 @@ flowchart TD
     ./hooks/clean-secrets.sh --force
 ```
 
-## Error Handling and Exit Codes
+[⬆️ Back to top](#-clean-secrets)
+
+---
+
+## ⚠️ Error Handling and Exit Codes
 
 | Exit Code | Meaning | Recovery Action |
-|-----------|---------|-----------------|
-| 0 | Success | N/A |
-| 1 | Error | Check project paths exist, verify .NET SDK |
+|:---------:|:--------|:----------------|
+| `0` | Success | N/A |
+| `1` | Error | Check project paths exist, verify .NET SDK |
 
 ### Error Handling Approach
 
@@ -205,9 +252,13 @@ flowchart TD
 - Success/failure counters for reporting
 - Non-fatal errors logged but execution continues
 
-## Security Considerations
+[⬆️ Back to top](#-clean-secrets)
 
-### Credential Handling
+---
+
+## 🔒 Security Considerations
+
+### 🔑 Credential Handling
 
 - [x] No hardcoded secrets
 - [x] Removes stored credentials (intentional operation)
@@ -216,40 +267,60 @@ flowchart TD
 ### Required Permissions
 
 | Permission/Role | Scope | Justification |
-|-----------------|-------|---------------|
+|:----------------|:------|:--------------|
 | File System Write | User secrets directory | Remove secret files |
 
-### Network Security
+### 🌐 Network Security
 
-- **Endpoints accessed:** None
-- **TLS requirements:** N/A
-- **Firewall rules needed:** None
+| Property | Value |
+|:---------|:------|
+| **Endpoints accessed** | None |
+| **TLS requirements** | N/A |
+| **Firewall rules needed** | None |
 
-### Logging Security
+### 📝 Logging Security
 
-- **Sensitive data masking:** Secret values never logged (only cleared)
-- **Audit trail:** Timestamped operation logs
+> **✅ Security Features:**
+>
+> - **Sensitive data masking:** Secret values never logged (only cleared)
+> - **Audit trail:** Timestamped operation logs
 
-## Known Limitations
+[⬆️ Back to top](#-clean-secrets)
 
-- Only clears secrets for predefined projects (not configurable)
-- Requires projects to have been initialized with user secrets
-- Cannot selectively clear individual secrets
-- Project paths are relative to script location
-- Does not validate secret content before clearing
+---
 
-## Related Scripts
+## 🚧 Known Limitations
+
+> **⚠️ Important Notes:**
+>
+> - Only clears secrets for predefined projects (not configurable)
+> - Requires projects to have been initialized with user secrets
+> - Cannot selectively clear individual secrets
+> - Project paths are relative to script location
+> - Does not validate secret content before clearing
+
+[⬆️ Back to top](#-clean-secrets)
+
+---
+
+## 🔗 Related Scripts
 
 | Script | Relationship | Description |
-|--------|--------------|-------------|
+|:-------|:-------------|:------------|
 | [preprovision.md](preprovision.md) | Called by | Pre-provisioning validation and setup |
 | [postprovision.md](postprovision.md) | Related | Configures secrets after provisioning |
 | [check-dev-workstation.md](check-dev-workstation.md) | Related | Workstation validation |
 
-## Changelog
+[⬆️ Back to top](#-clean-secrets)
+
+---
+
+## 📜 Changelog
 
 | Version | Date | Changes |
-|---------|------|---------|
+|:-------:|:----:|:--------|
 | 2.0.1 | 2026-01-06 | Improved error handling, added execution statistics |
 | 2.0.0 | 2025-12-01 | Added dry-run support, enhanced logging |
 | 1.0.0 | 2025-01-01 | Initial release |
+
+[⬆️ Back to top](#-clean-secrets)
