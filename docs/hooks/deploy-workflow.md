@@ -69,51 +69,85 @@ Files matching patterns defined in `.funcignore` (debug files, local settings, t
 ## 📊 Workflow Diagram
 
 ```mermaid
+---
+title: Deploy Workflow Script Execution Flow
+---
 flowchart TD
-    subgraph Initialization
-        A([Start - azd hook]) --> B[Parse Arguments]
-        B --> C[Disable ANSI Colors]
-        C --> D[Set Environment Aliases]
+    %% ===== INITIALIZATION PHASE =====
+    subgraph Initialization["🚀 Initialization"]
+        direction TB
+        Start(["▶️ Start - azd hook"]) -->|parses| ParseArgs["Parse Arguments"]
+        ParseArgs -->|disables| DisableAnsi["Disable ANSI Colors"]
+        DisableAnsi -->|sets| SetAliases["Set Environment Aliases"]
     end
     
-    subgraph ConfigLoad["Configuration Loading"]
-        D --> E[Load Environment Variables]
-        E --> F{Required Variables Set?}
-        F -->|No| Z([Exit with Error])
-        F -->|Yes| G[Resolve Workflow Path]
+    %% ===== CONFIG LOAD PHASE =====
+    subgraph ConfigLoad["📋 Configuration Loading"]
+        direction TB
+        SetAliases -->|loads| LoadEnv["Load Environment Variables"]
+        LoadEnv -->|validates| ReqVarsSet{"Required Variables Set?"}
+        ReqVarsSet -->|no| ExitError(["❌ Exit with Error"])
+        ReqVarsSet -->|yes| ResolvePath["Resolve Workflow Path"]
     end
     
-    subgraph ConnectionSetup["Connection Configuration"]
-        G --> H[Get Service Bus Runtime URL]
-        H --> I[Get Blob Storage Runtime URL]
-        I --> J[Export Runtime URLs to Env]
+    %% ===== CONNECTION SETUP PHASE =====
+    subgraph ConnectionSetup["🔌 Connection Configuration"]
+        direction TB
+        ResolvePath -->|retrieves| GetSBUrl["Get Service Bus Runtime URL"]
+        GetSBUrl -->|retrieves| GetBlobUrl["Get Blob Storage Runtime URL"]
+        GetBlobUrl -->|exports| ExportUrls["Export Runtime URLs to Env"]
     end
     
-    subgraph Staging["Staging Preparation"]
-        J --> K[Create Staging Directory]
-        K --> L[Copy Workflow Files]
-        L --> M[Apply Exclude Patterns]
-        M --> N[Resolve Placeholders in Files]
+    %% ===== STAGING PHASE =====
+    subgraph Staging["📦 Staging Preparation"]
+        direction TB
+        ExportUrls -->|creates| CreateStaging["Create Staging Directory"]
+        CreateStaging -->|copies| CopyFiles["Copy Workflow Files"]
+        CopyFiles -->|applies| ApplyExclude["Apply Exclude Patterns"]
+        ApplyExclude -->|resolves| ResolvePlaceholders["Resolve Placeholders in Files"]
     end
     
-    subgraph Deployment["Deployment Execution"]
-        N --> O[Create Zip Package]
-        O --> P[Upload to Logic App]
-        P --> Q{Deployment Successful?}
-        Q -->|Yes| R[Display Success]
-        Q -->|No| S[Display Error]
+    %% ===== DEPLOYMENT PHASE =====
+    subgraph Deployment["🚀 Deployment Execution"]
+        direction TB
+        ResolvePlaceholders -->|creates| CreateZip["Create Zip Package"]
+        CreateZip -->|uploads| UploadToApp["Upload to Logic App"]
+        UploadToApp -->|evaluates| DeploySuccess{"Deployment Successful?"}
+        DeploySuccess -->|yes| DisplaySuccess["Display Success"]
+        DeploySuccess -->|no| DisplayError["Display Error"]
     end
     
-    subgraph Cleanup["Cleanup"]
-        R --> T[Remove Staging Directory]
-        S --> T
-        T --> U[Remove Zip File]
+    %% ===== CLEANUP PHASE =====
+    subgraph Cleanup["🧹 Cleanup"]
+        direction TB
+        DisplaySuccess -->|removes| RemoveStaging["Remove Staging Directory"]
+        DisplayError -->|removes| RemoveStaging
+        RemoveStaging -->|removes| RemoveZip["Remove Zip File"]
     end
     
-    U --> V([Complete])
+    %% ===== COMPLETION =====
+    RemoveZip -->|finishes| Complete(["✅ Complete"])
     
-    style Z fill:#f96
-    style V fill:#9f9
+    %% ===== NODE STYLING =====
+    classDef primary fill:#4F46E5,stroke:#3730A3,color:#FFFFFF
+    classDef secondary fill:#10B981,stroke:#059669,color:#FFFFFF
+    classDef decision fill:#FFFBEB,stroke:#F59E0B,color:#000000
+    classDef failed fill:#F44336,stroke:#C62828,color:#FFFFFF
+    classDef trigger fill:#818CF8,stroke:#4F46E5,color:#FFFFFF
+    classDef external fill:#6B7280,stroke:#4B5563,color:#FFFFFF,stroke-dasharray:5 5
+    
+    class Start,Complete trigger
+    class ParseArgs,DisableAnsi,SetAliases,LoadEnv,ResolvePath,GetSBUrl,GetBlobUrl,ExportUrls,CreateStaging,CopyFiles,ApplyExclude,ResolvePlaceholders,CreateZip,UploadToApp,DisplaySuccess,RemoveStaging,RemoveZip primary
+    class ReqVarsSet,DeploySuccess decision
+    class ExitError,DisplayError failed
+    
+    %% ===== SUBGRAPH STYLING =====
+    style Initialization fill:#EEF2FF,stroke:#4F46E5,stroke-width:2px
+    style ConfigLoad fill:#ECFDF5,stroke:#10B981,stroke-width:2px
+    style ConnectionSetup fill:#E0E7FF,stroke:#4F46E5,stroke-width:2px
+    style Staging fill:#FEF3C7,stroke:#F59E0B,stroke-width:2px
+    style Deployment fill:#D1FAE5,stroke:#10B981,stroke-width:2px
+    style Cleanup fill:#F3F4F6,stroke:#6B7280,stroke-width:2px
 ```
 
 [⬆️ Back to top](#-deploy-workflow)

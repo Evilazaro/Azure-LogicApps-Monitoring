@@ -69,48 +69,73 @@ This script is typically called by the preprovision script but can also be run s
 ## 📊 Workflow Diagram
 
 ```mermaid
+---
+title: Clean Secrets Script Execution Flow
+---
 flowchart TD
-    subgraph Initialization
-        A([Start]) --> B[Parse Arguments]
-        B --> C[Validate .NET SDK]
-        C --> D{.NET Available?}
-        D -->|Yes| E[Load Project Config]
-        D -->|No| Z([Exit with Error])
+    %% ===== INITIALIZATION PHASE =====
+    subgraph Initialization["🚀 Initialization"]
+        direction TB
+        Start(["▶️ Start"]) -->|parses| ParseArgs["Parse Arguments"]
+        ParseArgs -->|validates| ValidateDotNet["Validate .NET SDK"]
+        ValidateDotNet -->|checks| DotNetAvail{"NET Available?"}
+        DotNetAvail -->|yes| LoadConfig["Load Project Config"]
+        DotNetAvail -->|no| ExitError(["❌ Exit with Error"])
     end
     
-    subgraph Confirmation["User Confirmation"]
-        E --> F{Force Mode?}
-        F -->|Yes| G[Skip Confirmation]
-        F -->|No| H{Dry Run Mode?}
-        H -->|Yes| G
-        H -->|No| I{User Confirms?}
-        I -->|Yes| G
-        I -->|No| J([Cancelled])
+    %% ===== CONFIRMATION PHASE =====
+    subgraph Confirmation["⚠️ User Confirmation"]
+        direction TB
+        LoadConfig -->|checks| ForceMode{"Force Mode?"}
+        ForceMode -->|yes| SkipConfirm["Skip Confirmation"]
+        ForceMode -->|no| DryRun{"Dry Run Mode?"}
+        DryRun -->|yes| SkipConfirm
+        DryRun -->|no| UserConfirm{"User Confirms?"}
+        UserConfirm -->|yes| SkipConfirm
+        UserConfirm -->|no| Cancelled(["⏹️ Cancelled"])
     end
     
-    subgraph Processing["Project Processing"]
-        G --> K[Begin Project Loop]
-        K --> L{Validate Project Path}
-        L -->|Valid| M{Dry Run?}
-        L -->|Invalid| N[Log Warning]
-        M -->|Yes| O[Display Would Clear]
-        M -->|No| P[Clear User Secrets]
-        P --> Q{Clear Successful?}
-        Q -->|Yes| R[Increment Success]
-        Q -->|No| S[Increment Failure]
-        N --> T{More Projects?}
-        O --> T
-        R --> T
-        S --> T
-        T -->|Yes| K
-        T -->|No| U[Generate Summary]
+    %% ===== PROCESSING PHASE =====
+    subgraph Processing["⚡ Project Processing"]
+        direction TB
+        SkipConfirm -->|begins| BeginLoop["Begin Project Loop"]
+        BeginLoop -->|validates| ValidatePath{"Validate Project Path"}
+        ValidatePath -->|valid| CheckDry{"Dry Run?"}
+        ValidatePath -->|invalid| LogWarn["Log Warning"]
+        CheckDry -->|yes| DisplayWould["Display Would Clear"]
+        CheckDry -->|no| ClearSecrets["Clear User Secrets"]
+        ClearSecrets -->|evaluates| ClearSuccess{"Clear Successful?"}
+        ClearSuccess -->|yes| IncSuccess["Increment Success"]
+        ClearSuccess -->|no| IncFailure["Increment Failure"]
+        LogWarn -->|checks| MoreProjects{"More Projects?"}
+        DisplayWould -->|checks| MoreProjects
+        IncSuccess -->|checks| MoreProjects
+        IncFailure -->|checks| MoreProjects
+        MoreProjects -->|yes| BeginLoop
+        MoreProjects -->|no| GenSummary["Generate Summary"]
     end
     
-    U --> V([Complete])
+    %% ===== COMPLETION =====
+    GenSummary -->|finishes| Complete(["✅ Complete"])
     
-    style Z fill:#f96
-    style J fill:#ff9
-    style V fill:#9f9
+    %% ===== NODE STYLING =====
+    classDef primary fill:#4F46E5,stroke:#3730A3,color:#FFFFFF
+    classDef secondary fill:#10B981,stroke:#059669,color:#FFFFFF
+    classDef decision fill:#FFFBEB,stroke:#F59E0B,color:#000000
+    classDef failed fill:#F44336,stroke:#C62828,color:#FFFFFF
+    classDef trigger fill:#818CF8,stroke:#4F46E5,color:#FFFFFF
+    classDef external fill:#6B7280,stroke:#4B5563,color:#FFFFFF,stroke-dasharray:5 5
+    
+    class Start,Complete trigger
+    class ParseArgs,ValidateDotNet,LoadConfig,SkipConfirm,BeginLoop,DisplayWould,ClearSecrets,IncSuccess,GenSummary primary
+    class DotNetAvail,ForceMode,DryRun,UserConfirm,ValidatePath,CheckDry,ClearSuccess,MoreProjects decision
+    class ExitError,IncFailure failed
+    class LogWarn,Cancelled external
+    
+    %% ===== SUBGRAPH STYLING =====
+    style Initialization fill:#EEF2FF,stroke:#4F46E5,stroke-width:2px
+    style Confirmation fill:#F3F4F6,stroke:#6B7280,stroke-width:2px
+    style Processing fill:#ECFDF5,stroke:#10B981,stroke-width:2px
 ```
 
 [⬆️ Back to top](#-clean-secrets)

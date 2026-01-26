@@ -69,60 +69,88 @@ When executed, the script validates Azure CLI authentication, looks up the App R
 ## 📊 Workflow Diagram
 
 ```mermaid
+---
+title: Configure Federated Credential Execution Flow
+---
 flowchart TD
-    subgraph Initialization
-        A([Start]) --> B[Parse Parameters]
-        B --> C[Validate Dependencies]
-        C --> D{jq Installed? - Bash}
-        D -->|Yes| E[Continue]
-        D -->|No| Z1([Exit - Install jq])
+    %% ===== INITIALIZATION PHASE =====
+    subgraph Initialization["🚀 Initialization"]
+        direction TB
+        Start(["▶️ Start"]) -->|parses| ParseParams["Parse Parameters"]
+        ParseParams -->|validates| ValidateDeps["Validate Dependencies"]
+        ValidateDeps -->|checks| JqInstalled{"jq Installed? - Bash"}
+        JqInstalled -->|yes| Continue["Continue"]
+        JqInstalled -->|no| ExitJq(["❌ Exit - Install jq"])
     end
     
-    subgraph Authentication["Azure Authentication"]
-        E --> F{Azure CLI Logged In?}
-        F -->|Yes| G[Display Account Info]
-        F -->|No| Z2([Exit - az login required])
+    %% ===== AUTHENTICATION PHASE =====
+    subgraph Authentication["🔑 Azure Authentication"]
+        direction TB
+        Continue -->|validates| AzLoggedIn{"Azure CLI Logged In?"}
+        AzLoggedIn -->|yes| DisplayAccount["Display Account Info"]
+        AzLoggedIn -->|no| ExitLogin(["❌ Exit - az login required"])
     end
     
-    subgraph AppLookup["App Registration Lookup"]
-        G --> H{AppObjectId Provided?}
-        H -->|Yes| I[Use Provided ID]
-        H -->|No| J{AppName Provided?}
-        J -->|Yes| K[Lookup by Name]
-        J -->|No| L[List Available Apps]
-        L --> M[Prompt for Selection]
-        M --> K
-        K --> N{App Found?}
-        N -->|Yes| O[Display App Details]
-        N -->|No| Z3([Exit - App Not Found])
-        I --> O
+    %% ===== APP LOOKUP PHASE =====
+    subgraph AppLookup["🔍 App Registration Lookup"]
+        direction TB
+        DisplayAccount -->|checks| ObjectIdProvided{"AppObjectId Provided?"}
+        ObjectIdProvided -->|yes| UseProvidedId["Use Provided ID"]
+        ObjectIdProvided -->|no| AppNameProvided{"AppName Provided?"}
+        AppNameProvided -->|yes| LookupByName["Lookup by Name"]
+        AppNameProvided -->|no| ListApps["List Available Apps"]
+        ListApps -->|prompts| PromptSelect["Prompt for Selection"]
+        PromptSelect -->|triggers| LookupByName
+        LookupByName -->|evaluates| AppFound{"App Found?"}
+        AppFound -->|yes| DisplayDetails["Display App Details"]
+        AppFound -->|no| ExitNotFound(["❌ Exit - App Not Found"])
+        UseProvidedId -->|displays| DisplayDetails
     end
     
-    subgraph CredentialCheck["Existing Credential Check"]
-        O --> P[List Federated Credentials]
-        P --> Q{Credential Exists?}
-        Q -->|Yes| R[Display Existing Credential]
-        Q -->|No| S[Prepare New Credential]
+    %% ===== CREDENTIAL CHECK PHASE =====
+    subgraph CredentialCheck["🔐 Existing Credential Check"]
+        direction TB
+        DisplayDetails -->|queries| ListCreds["List Federated Credentials"]
+        ListCreds -->|evaluates| CredExists{"Credential Exists?"}
+        CredExists -->|yes| DisplayExisting["Display Existing Credential"]
+        CredExists -->|no| PrepareNew["Prepare New Credential"]
     end
     
-    subgraph Creation["Credential Creation"]
-        R --> T{Update Requested?}
-        T -->|Yes| U[Update Credential]
-        T -->|No| V([Skip - Already Exists])
-        S --> U
-        U --> W{Creation Successful?}
-        W -->|Yes| X[Display Success]
-        W -->|No| Z4([Exit with Error])
+    %% ===== CREATION PHASE =====
+    subgraph Creation["⚙️ Credential Creation"]
+        direction TB
+        DisplayExisting -->|checks| UpdateReq{"Update Requested?"}
+        UpdateReq -->|yes| UpdateCred["Update Credential"]
+        UpdateReq -->|no| SkipExists(["⏭️ Skip - Already Exists"])
+        PrepareNew -->|creates| UpdateCred
+        UpdateCred -->|evaluates| CreateSuccess{"Creation Successful?"}
+        CreateSuccess -->|yes| DisplaySuccess["Display Success"]
+        CreateSuccess -->|no| ExitError(["❌ Exit with Error"])
     end
     
-    X --> Y([Complete])
+    %% ===== COMPLETION =====
+    DisplaySuccess -->|finishes| Complete(["✅ Complete"])
     
-    style Z1 fill:#f96
-    style Z2 fill:#f96
-    style Z3 fill:#f96
-    style Z4 fill:#f96
-    style V fill:#ff9
-    style Y fill:#9f9
+    %% ===== NODE STYLING =====
+    classDef primary fill:#4F46E5,stroke:#3730A3,color:#FFFFFF
+    classDef secondary fill:#10B981,stroke:#059669,color:#FFFFFF
+    classDef decision fill:#FFFBEB,stroke:#F59E0B,color:#000000
+    classDef failed fill:#F44336,stroke:#C62828,color:#FFFFFF
+    classDef trigger fill:#818CF8,stroke:#4F46E5,color:#FFFFFF
+    classDef external fill:#6B7280,stroke:#4B5563,color:#FFFFFF,stroke-dasharray:5 5
+    
+    class Start,Complete trigger
+    class ParseParams,ValidateDeps,Continue,DisplayAccount,UseProvidedId,LookupByName,ListApps,PromptSelect,DisplayDetails,ListCreds,DisplayExisting,PrepareNew,UpdateCred,DisplaySuccess primary
+    class JqInstalled,AzLoggedIn,ObjectIdProvided,AppNameProvided,AppFound,CredExists,UpdateReq,CreateSuccess decision
+    class ExitJq,ExitLogin,ExitNotFound,ExitError failed
+    class SkipExists external
+    
+    %% ===== SUBGRAPH STYLING =====
+    style Initialization fill:#EEF2FF,stroke:#4F46E5,stroke-width:2px
+    style Authentication fill:#ECFDF5,stroke:#10B981,stroke-width:2px
+    style AppLookup fill:#E0E7FF,stroke:#4F46E5,stroke-width:2px
+    style CredentialCheck fill:#FEF3C7,stroke:#F59E0B,stroke-width:2px
+    style Creation fill:#D1FAE5,stroke:#10B981,stroke-width:2px
 ```
 
 [⬆️ Back to top](#-configure-federated-credential)

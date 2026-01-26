@@ -70,63 +70,97 @@ Key security benefits include: no SQL passwords stored or transmitted, authentic
 ## 📊 Workflow Diagram
 
 ```mermaid
+---
+title: SQL Managed Identity Configuration Flow
+---
 flowchart TD
-    subgraph Initialization
-        A([Start]) --> B[Parse Parameters]
-        B --> C[Validate Parameters]
-        C --> D{Parameters Valid?}
-        D -->|No| Z([Exit with Error])
-        D -->|Yes| E[Validate Environment]
+    %% ===== INITIALIZATION PHASE =====
+    subgraph Initialization["🚀 Initialization"]
+        direction TB
+        Start(["▶️ Start"]) -->|parses| ParseParams["Parse Parameters"]
+        ParseParams -->|validates| ValidateParams["Validate Parameters"]
+        ValidateParams -->|checks| ParamsValid{"Parameters Valid?"}
+        ParamsValid -->|no| ExitError(["❌ Exit with Error"])
+        ParamsValid -->|yes| ValidateEnv["Validate Environment"]
     end
     
-    subgraph Authentication["Azure Authentication"]
-        E --> F{Azure CLI Logged In?}
-        F -->|No| Z
-        F -->|Yes| G[Determine SQL Endpoint]
-        G --> H[Acquire Access Token]
-        H --> I{Token Acquired?}
-        I -->|No| Z
-        I -->|Yes| J[Configure Firewall - Optional]
+    %% ===== AUTHENTICATION PHASE =====
+    subgraph Authentication["🔑 Azure Authentication"]
+        direction TB
+        ValidateEnv -->|checks| AzLoggedIn{"Azure CLI Logged In?"}
+        AzLoggedIn -->|no| ExitError
+        AzLoggedIn -->|yes| DetermineSql["Determine SQL Endpoint"]
+        DetermineSql -->|acquires| AcquireToken["Acquire Access Token"]
+        AcquireToken -->|evaluates| TokenAcquired{"Token Acquired?"}
+        TokenAcquired -->|no| ExitError
+        TokenAcquired -->|yes| ConfigFirewall["Configure Firewall - Optional"]
     end
     
-    subgraph SQLConnection["SQL Connection"]
-        J --> K[Build Connection String]
-        K --> L[Create SQL Connection]
-        L --> M{Connection Successful?}
-        M -->|No| Z
-        M -->|Yes| N[Begin Transaction]
+    %% ===== SQL CONNECTION PHASE =====
+    subgraph SQLConnection["🗃️ SQL Connection"]
+        direction TB
+        ConfigFirewall -->|builds| BuildConnStr["Build Connection String"]
+        BuildConnStr -->|creates| CreateConn["Create SQL Connection"]
+        CreateConn -->|evaluates| ConnSuccess{"Connection Successful?"}
+        ConnSuccess -->|no| ExitError
+        ConnSuccess -->|yes| BeginTx["Begin Transaction"]
     end
     
-    subgraph UserCreation["User Creation"]
-        N --> O[Check if User Exists]
-        O --> P{User Exists?}
-        P -->|Yes| Q[Skip User Creation]
-        P -->|No| R[Create User from External Provider]
-        R --> S{Creation Successful?}
-        S -->|No| T[Rollback Transaction]
-        S -->|Yes| Q
-        T --> Z
+    %% ===== USER CREATION PHASE =====
+    subgraph UserCreation["👤 User Creation"]
+        direction TB
+        BeginTx -->|checks| CheckUser["Check if User Exists"]
+        CheckUser -->|evaluates| UserExists{"User Exists?"}
+        UserExists -->|yes| SkipCreate["Skip User Creation"]
+        UserExists -->|no| CreateUser["Create User from External Provider"]
+        CreateUser -->|evaluates| CreateSuccess{"Creation Successful?"}
+        CreateSuccess -->|no| RollbackTx["Rollback Transaction"]
+        CreateSuccess -->|yes| SkipCreate
+        RollbackTx -->|fails| ExitError
     end
     
-    subgraph RoleAssignment["Role Assignment"]
-        Q --> U[Begin Role Assignment Loop]
-        U --> V[Check Role Membership]
-        V --> W{Already Member?}
-        W -->|Yes| X[Skip Role]
-        W -->|No| Y[Add Role Member]
-        Y --> AA{More Roles?}
-        X --> AA
-        AA -->|Yes| U
-        AA -->|No| AB[Commit Transaction]
+    %% ===== ROLE ASSIGNMENT PHASE =====
+    subgraph RoleAssignment["🔐 Role Assignment"]
+        direction TB
+        SkipCreate -->|begins| BeginRoleLoop["Begin Role Assignment Loop"]
+        BeginRoleLoop -->|checks| CheckRole["Check Role Membership"]
+        CheckRole -->|evaluates| AlreadyMember{"Already Member?"}
+        AlreadyMember -->|yes| SkipRole["Skip Role"]
+        AlreadyMember -->|no| AddRole["Add Role Member"]
+        AddRole -->|checks| MoreRoles{"More Roles?"}
+        SkipRole -->|checks| MoreRoles
+        MoreRoles -->|yes| BeginRoleLoop
+        MoreRoles -->|no| CommitTx["Commit Transaction"]
     end
     
-    subgraph Completion["Result Generation"]
-        AB --> AC[Generate Success Result]
-        AC --> AD([Return Result Object])
+    %% ===== COMPLETION PHASE =====
+    subgraph Completion["✅ Result Generation"]
+        direction TB
+        CommitTx -->|generates| GenResult["Generate Success Result"]
+        GenResult -->|returns| ReturnResult(["📋 Return Result Object"])
     end
     
-    style Z fill:#f96
-    style AD fill:#9f9
+    %% ===== NODE STYLING =====
+    classDef primary fill:#4F46E5,stroke:#3730A3,color:#FFFFFF
+    classDef secondary fill:#10B981,stroke:#059669,color:#FFFFFF
+    classDef decision fill:#FFFBEB,stroke:#F59E0B,color:#000000
+    classDef failed fill:#F44336,stroke:#C62828,color:#FFFFFF
+    classDef trigger fill:#818CF8,stroke:#4F46E5,color:#FFFFFF
+    classDef datastore fill:#F59E0B,stroke:#D97706,color:#000000
+    classDef external fill:#6B7280,stroke:#4B5563,color:#FFFFFF,stroke-dasharray:5 5
+    
+    class Start,ReturnResult trigger
+    class ParseParams,ValidateParams,ValidateEnv,DetermineSql,AcquireToken,ConfigFirewall,BuildConnStr,CreateConn,BeginTx,CheckUser,SkipCreate,CreateUser,BeginRoleLoop,CheckRole,SkipRole,AddRole,CommitTx,GenResult primary
+    class ParamsValid,AzLoggedIn,TokenAcquired,ConnSuccess,UserExists,CreateSuccess,AlreadyMember,MoreRoles decision
+    class ExitError,RollbackTx failed
+    
+    %% ===== SUBGRAPH STYLING =====
+    style Initialization fill:#EEF2FF,stroke:#4F46E5,stroke-width:2px
+    style Authentication fill:#ECFDF5,stroke:#10B981,stroke-width:2px
+    style SQLConnection fill:#E0E7FF,stroke:#4F46E5,stroke-width:2px
+    style UserCreation fill:#FEF3C7,stroke:#F59E0B,stroke-width:2px
+    style RoleAssignment fill:#D1FAE5,stroke:#10B981,stroke-width:2px
+    style Completion fill:#F3F4F6,stroke:#6B7280,stroke-width:2px
 ```
 
 [⬆️ Back to top](#-sql-managed-identity-config)
