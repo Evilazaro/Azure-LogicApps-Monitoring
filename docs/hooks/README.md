@@ -1,6 +1,29 @@
+---
+title: Hooks Scripts Documentation
+description: Comprehensive documentation for all automation scripts in the Azure Logic Apps Monitoring solution hooks folder
+author: Evilazaro | Principal Cloud Solution Architect | Microsoft
+date: 2026-01-26
+version: 1.0.0
+tags: [documentation, azure, logic-apps, automation, powershell, bash, devops]
+---
+
 # 📁 Hooks Scripts Documentation
 
+> [!NOTE]
+> **Target Audience:** DevOps Engineers, Platform Engineers, Developers  
+> **Estimated Reading Time:** 8 minutes
+
 This directory contains comprehensive documentation for all automation scripts in the `hooks/` folder of the Azure Logic Apps Monitoring solution.
+
+<details>
+<summary>📍 <strong>Navigation</strong></summary>
+<br>
+
+| Previous | Index | Next |
+|:---------|:-----:|-----:|
+| — | **You are here** | [preprovision](preprovision.md) |
+
+</details>
 
 ---
 
@@ -134,7 +157,8 @@ Scripts rely on environment variables set by azd during provisioning:
 
 ## 🔒 Security Notes
 
-> **💡 Best Practices Implemented:**
+> [!TIP]
+> **Best Practices Implemented:**
 >
 > - All scripts use Azure CLI session for authentication
 > - No credentials are hardcoded
@@ -178,4 +202,12 @@ When modifying or adding scripts:
 
 ---
 
+<div align="center">
+
+**[⬅️ Previous: —](.)** · **[📑 Index](README.md)** · **[Next: preprovision ➡️](preprovision.md)**
+
+---
+
 *📅 Documentation generated on 2026-01-26*
+
+</div>

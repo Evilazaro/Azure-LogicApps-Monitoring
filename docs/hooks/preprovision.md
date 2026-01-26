@@ -1,13 +1,31 @@
 ---
+title: preprovision Script Documentation
+description: Pre-provisioning script for Azure Developer CLI (azd) deployment that validates development environment and clears .NET user secrets
 name: preprovision
 version: 2.3.0
 author: Evilazaro | Principal Cloud Solution Architect | Microsoft
+date: 2026-01-26
 last_modified: 2026-01-06
 license: MIT
 languages: [PowerShell, Bash]
+tags: [azd, provisioning, validation, prerequisites, azure-cli, dotnet]
 ---
 
 # 🚀 preprovision
+
+> [!NOTE]
+> **Target Audience:** DevOps Engineers, Cloud Architects, Developers  
+> **Estimated Reading Time:** 12 minutes
+
+<details>
+<summary>📍 <strong>Navigation</strong></summary>
+<br>
+
+| Previous | Index | Next |
+|:---------|:-----:|-----:|
+| [README](README.md) | [📑 Index](README.md) | [postprovision](postprovision.md) |
+
+</details>
 
 ---
 
@@ -182,7 +200,8 @@ az bicep install
 
 **Environment Variables Read:**
 
-> **ℹ️ Note:** None required — script is self-contained for validation.
+> [!NOTE]
+> None required — script is self-contained for validation.
 
 **Files/Paths Expected:**
 
@@ -334,7 +353,8 @@ az bicep install
 
 ### 📝 Logging Security
 
-> **✅ Security Features:**
+> [!TIP]
+> **Security Features:**
 >
 > - **Sensitive data masking:** Yes — access tokens and secrets are not logged
 > - **Audit trail:** Script execution logs with timestamps
@@ -345,7 +365,8 @@ az bicep install
 
 ## 🚧 Known Limitations
 
-> **⚠️ Important Notes:**
+> [!WARNING]
+> **Important Notes:**
 >
 > - Quota checking is informational only and does not block execution
 > - Auto-install feature requires elevated permissions on some systems
@@ -378,3 +399,11 @@ az bicep install
 | 1.0.0 | 2025-01-01 | Initial release |
 
 [⬆️ Back to top](#-preprovision)
+
+---
+
+<div align="center">
+
+**[⬅️ Previous: README](README.md)** · **[📑 Index](README.md)** · **[Next: postprovision ➡️](postprovision.md)**
+
+</div>

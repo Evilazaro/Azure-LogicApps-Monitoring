@@ -1,13 +1,31 @@
 ---
+title: postinfradelete Script Documentation
+description: Post-infrastructure-delete hook for Azure Developer CLI (azd) that purges soft-deleted Logic Apps Standard resources
 name: postinfradelete
 version: 2.0.0
 author: Evilazaro | Principal Cloud Solution Architect | Microsoft
+date: 2026-01-26
 last_modified: 2026-01-09
 license: MIT
 languages: [PowerShell, Bash]
+tags: [azd, cleanup, logic-apps, soft-delete, purge, azure]
 ---
 
 # 🗑️ postinfradelete
+
+> [!NOTE]
+> **Target Audience:** DevOps Engineers, Cloud Architects, Platform Engineers  
+> **Estimated Reading Time:** 9 minutes
+
+<details>
+<summary>📍 <strong>Navigation</strong></summary>
+<br>
+
+| Previous | Index | Next |
+|:---------|:-----:|-----:|
+| [postprovision](postprovision.md) | [📑 Index](README.md) | [clean-secrets](clean-secrets.md) |
+
+</details>
 
 ---
 
@@ -311,7 +329,8 @@ sudo yum install jq
 
 ### 📝 Logging Security
 
-> **✅ Security Features:**
+> [!TIP]
+> **Security Features:**
 >
 > - **Sensitive data masking:** Access tokens not logged
 > - **Audit trail:** Timestamped operation logs
@@ -322,12 +341,13 @@ sudo yum install jq
 
 ## 🚧 Known Limitations
 
-> **⚠️ Important Notes:**
+> [!CAUTION]
+> **Important Notes:**
 >
 > - Only targets Logic Apps Standard (not Consumption tier)
 > - Requires Azure CLI authentication with sufficient permissions
 > - Location filtering is case-sensitive
-> - Cannot recover purged Logic Apps after execution
+> - **Cannot recover purged Logic Apps after execution**
 > - Rate limiting may affect large-scale purge operations
 
 [⬆️ Back to top](#️-postinfradelete)
@@ -353,3 +373,11 @@ sudo yum install jq
 | 1.0.0 | 2025-06-01 | Initial release |
 
 [⬆️ Back to top](#️-postinfradelete)
+
+---
+
+<div align="center">
+
+**[⬅️ Previous: postprovision](postprovision.md)** · **[📑 Index](README.md)** · **[Next: clean-secrets ➡️](clean-secrets.md)**
+
+</div>

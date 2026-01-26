@@ -1,13 +1,31 @@
 ---
+title: postprovision Script Documentation
+description: Post-provisioning script for Azure Developer CLI (azd) that configures .NET user secrets with Azure resource information
 name: postprovision
 version: 2.0.1
 author: Azure DevOps Team
+date: 2026-01-26
 last_modified: 2026-01-06
 license: MIT
 languages: [PowerShell, Bash]
+tags: [azd, provisioning, user-secrets, azure, configuration, dotnet]
 ---
 
 # ⚙️ postprovision
+
+> [!NOTE]
+> **Target Audience:** DevOps Engineers, Cloud Architects, Developers  
+> **Estimated Reading Time:** 10 minutes
+
+<details>
+<summary>📍 <strong>Navigation</strong></summary>
+<br>
+
+| Previous | Index | Next |
+|:---------|:-----:|-----:|
+| [preprovision](preprovision.md) | [📑 Index](README.md) | [postinfradelete](postinfradelete.md) |
+
+</details>
 
 ---
 
@@ -313,7 +331,8 @@ flowchart TD
 
 ### 📝 Logging Security
 
-> **✅ Security Features:**
+> [!TIP]
+> **Security Features:**
 >
 > - **Sensitive data masking:** Yes — connection strings and tokens are not logged
 > - **Audit trail:** Timestamped execution logs
@@ -324,7 +343,8 @@ flowchart TD
 
 ## 🚧 Known Limitations
 
-> **⚠️ Important Notes:**
+> [!WARNING]
+> **Important Notes:**
 >
 > - Requires azd to have completed provisioning successfully
 > - Environment variables must be set before execution
@@ -357,3 +377,11 @@ flowchart TD
 | 1.0.0 | 2025-01-01 | Initial release |
 
 [⬆️ Back to top](#️-postprovision)
+
+---
+
+<div align="center">
+
+**[⬅️ Previous: preprovision](preprovision.md)** · **[📑 Index](README.md)** · **[Next: postinfradelete ➡️](postinfradelete.md)**
+
+</div>
