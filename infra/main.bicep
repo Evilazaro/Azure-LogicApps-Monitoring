@@ -99,6 +99,7 @@ resource rg 'Microsoft.Resources/resourceGroups@2025-04-01' = {
 // Shared Infrastructure Module
 // Deploys identity, monitoring, and data infrastructure
 // Must be deployed first as workload module depends on its outputs
+@description('Deploys shared infrastructure: identity, monitoring, network, and data resources')
 module shared 'shared/main.bicep' = {
   scope: rg
   params: {
@@ -146,6 +147,7 @@ output AZURE_SQL_DATABASE_NAME string = shared.outputs.AZURE_SQL_DATABASE_NAME
 // Workload Infrastructure Module
 // Deploys managed identity, messaging (Service Bus), container services, and Logic Apps
 // Depends on monitoring outputs for workspace ID and Application Insights connection string
+@description('Deploys workload infrastructure: messaging, container services, and Logic Apps workflows')
 module workload './workload/main.bicep' = {
   scope: resourceGroup(resourceGroupName)
   params: {

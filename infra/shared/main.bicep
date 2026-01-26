@@ -80,6 +80,7 @@ var allMetricsSettings array = [
 
 // ========== Modules ==========
 
+@description('Deploys virtual network infrastructure with subnets for Container Apps, Logic Apps, and data services')
 module network 'network/main.bicep' = {
   params: {
     name: name
@@ -160,7 +161,8 @@ output AZURE_STORAGE_ACCOUNT_ID_LOGS string = monitoring.outputs.AZURE_STORAGE_A
 
 // Data Module: Deploys storage accounts and SQL Server
 // Provides storage for workflows and persistent data
-@description('Deploys storage accounts and SQL Server database for workflow data storage')
+// Depends on identity for managed identity and monitoring for diagnostic settings
+@description('Deploys storage accounts, SQL Server database, and private endpoints for workflow data storage')
 module data 'data/main.bicep' = {
   params: {
     name: name

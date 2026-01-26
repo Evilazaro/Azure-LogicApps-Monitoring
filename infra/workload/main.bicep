@@ -179,7 +179,8 @@ output AZURE_CONTAINER_APPS_ENVIRONMENT_DEFAULT_DOMAIN string = services.outputs
 // Logic Apps Module: Deploys Logic Apps Standard workflow engine
 // Depends on identity and messaging storage account outputs
 // Ensures storage role assignments are complete before deploying
-@description('Deploys Logic Apps Standard workflow engine with App Service Plan')
+// NOTE: This module must wait for messaging module to complete due to Service Bus namespace dependency
+@description('Deploys Logic Apps Standard workflow engine with App Service Plan and API connections')
 module workflows 'logic-app.bicep' = {
   params: {
     name: name
@@ -199,7 +200,8 @@ module workflows 'logic-app.bicep' = {
   }
 }
 
-// Logic Apps Outputs
+// ========== Logic Apps Outputs ==========
+
 @description('Name of the deployed Logic App')
 output LOGIC_APP_NAME string = workflows.outputs.logicAppName
 
@@ -212,5 +214,5 @@ output SERVICE_BUS_CONNECTION_RUNTIME_URL string = workflows.outputs.SERVICE_BUS
 @description('Runtime URL of the Azure Blob Storage API connection')
 output AZURE_BLOB_CONNECTION_RUNTIME_URL string = workflows.outputs.AZURE_BLOB_CONNECTION_RUNTIME_URL
 
-@description('Storage account name for Logic Apps workflows and data')
+@description('Storage account name for Logic Apps workflows and runtime data')
 output AZURE_STORAGE_ACCOUNT_NAME_WORKFLOW string = workflowStorageAccountName
