@@ -100,27 +100,31 @@ flowchart TD
     style U fill:#9f9
 ```
 
-## Prerequisites
+[⬆️ Back to top](#-preprovision)
+
+---
+
+## ✅ Prerequisites
 
 | Category | Requirement | Version | Verification Command | Required |
-|----------|-------------|---------|---------------------|----------|
-| Runtime | PowerShell Core | >= 7.0 | `$PSVersionTable.PSVersion` | Yes |
-| Runtime | Bash | >= 4.0 | `bash --version` | Yes |
-| SDK | .NET SDK | >= 10.0 | `dotnet --version` | Yes |
-| CLI Tool | Azure CLI | >= 2.60.0 | `az --version` | Yes |
-| CLI Tool | Azure Developer CLI (azd) | Latest | `azd version` | Yes |
-| CLI Tool | Bicep CLI | >= 0.30.0 | `az bicep version` | Yes |
-| Permission | Azure Subscription Access | N/A | `az account show` | Yes |
-| Azure Provider | Microsoft.App | N/A | `az provider show -n Microsoft.App` | Yes |
-| Azure Provider | Microsoft.ServiceBus | N/A | `az provider show -n Microsoft.ServiceBus` | Yes |
-| Azure Provider | Microsoft.Storage | N/A | `az provider show -n Microsoft.Storage` | Yes |
-| Azure Provider | Microsoft.Web | N/A | `az provider show -n Microsoft.Web` | Yes |
-| Azure Provider | Microsoft.ContainerRegistry | N/A | `az provider show -n Microsoft.ContainerRegistry` | Yes |
-| Azure Provider | Microsoft.Insights | N/A | `az provider show -n Microsoft.Insights` | Yes |
-| Azure Provider | Microsoft.OperationalInsights | N/A | `az provider show -n Microsoft.OperationalInsights` | Yes |
-| Azure Provider | Microsoft.ManagedIdentity | N/A | `az provider show -n Microsoft.ManagedIdentity` | Yes |
+|:---------|:------------|:--------|:---------------------|:--------:|
+| Runtime | PowerShell Core | >= 7.0 | `$PSVersionTable.PSVersion` | ✅ |
+| Runtime | Bash | >= 4.0 | `bash --version` | ✅ |
+| SDK | .NET SDK | >= 10.0 | `dotnet --version` | ✅ |
+| CLI Tool | Azure CLI | >= 2.60.0 | `az --version` | ✅ |
+| CLI Tool | Azure Developer CLI (azd) | Latest | `azd version` | ✅ |
+| CLI Tool | Bicep CLI | >= 0.30.0 | `az bicep version` | ✅ |
+| Permission | Azure Subscription Access | N/A | `az account show` | ✅ |
+| Azure Provider | Microsoft.App | N/A | `az provider show -n Microsoft.App` | ✅ |
+| Azure Provider | Microsoft.ServiceBus | N/A | `az provider show -n Microsoft.ServiceBus` | ✅ |
+| Azure Provider | Microsoft.Storage | N/A | `az provider show -n Microsoft.Storage` | ✅ |
+| Azure Provider | Microsoft.Web | N/A | `az provider show -n Microsoft.Web` | ✅ |
+| Azure Provider | Microsoft.ContainerRegistry | N/A | `az provider show -n Microsoft.ContainerRegistry` | ✅ |
+| Azure Provider | Microsoft.Insights | N/A | `az provider show -n Microsoft.Insights` | ✅ |
+| Azure Provider | Microsoft.OperationalInsights | N/A | `az provider show -n Microsoft.OperationalInsights` | ✅ |
+| Azure Provider | Microsoft.ManagedIdentity | N/A | `az provider show -n Microsoft.ManagedIdentity` | ✅ |
 
-### Installation Commands
+### 📦 Installation Commands
 
 ```powershell
 # Install .NET SDK 10.0+ (Windows/macOS/Linux)
@@ -140,53 +144,61 @@ flowchart TD
 az bicep install
 ```
 
-## Parameters/Arguments
+[⬆️ Back to top](#-preprovision)
+
+---
+
+## ⚙️ Parameters/Arguments
 
 ### PowerShell Parameters
 
 | Parameter | Type | Required | Default | Description |
-|-----------|------|----------|---------|-------------|
-| `-Force` | `[switch]` | No | `$false` | Skips confirmation prompts and forces execution of all operations |
-| `-SkipSecretsClear` | `[switch]` | No | `$false` | Skips the user secrets clearing step |
-| `-ValidateOnly` | `[switch]` | No | `$false` | Only validates prerequisites without making any changes |
-| `-UseDeviceCodeLogin` | `[switch]` | No | `$false` | Uses device code flow for Azure authentication (useful for remote/headless sessions) |
-| `-AutoInstall` | `[switch]` | No | `$false` | Automatically installs missing prerequisites without prompting |
+|:----------|:-----|:--------:|:--------|:------------|
+| `-Force` | `[switch]` | ❌ | `$false` | Skips confirmation prompts and forces execution of all operations |
+| `-SkipSecretsClear` | `[switch]` | ❌ | `$false` | Skips the user secrets clearing step |
+| `-ValidateOnly` | `[switch]` | ❌ | `$false` | Only validates prerequisites without making any changes |
+| `-UseDeviceCodeLogin` | `[switch]` | ❌ | `$false` | Uses device code flow for Azure authentication (useful for remote/headless sessions) |
+| `-AutoInstall` | `[switch]` | ❌ | `$false` | Automatically installs missing prerequisites without prompting |
 
 ### Bash Arguments
 
 | Position/Flag | Type | Required | Default | Description |
-|---------------|------|----------|---------|-------------|
-| `--force` | flag | No | `false` | Skip confirmation prompts and force execution |
-| `--skip-secrets-clear` | flag | No | `false` | Skip the user secrets clearing step |
-| `--validate-only` | flag | No | `false` | Only validate prerequisites without making changes |
-| `--use-device-code-login` | flag | No | `false` | Use device code flow for Azure authentication |
-| `--auto-install` | flag | No | `false` | Automatically install missing prerequisites |
-| `--verbose` | flag | No | `false` | Enable verbose output |
-| `--help` | flag | No | N/A | Display help message |
+|:--------------|:-----|:--------:|:--------|:------------|
+| `--force` | flag | ❌ | `false` | Skip confirmation prompts and force execution |
+| `--skip-secrets-clear` | flag | ❌ | `false` | Skip the user secrets clearing step |
+| `--validate-only` | flag | ❌ | `false` | Only validate prerequisites without making changes |
+| `--use-device-code-login` | flag | ❌ | `false` | Use device code flow for Azure authentication |
+| `--auto-install` | flag | ❌ | `false` | Automatically install missing prerequisites |
+| `--verbose` | flag | ❌ | `false` | Enable verbose output |
+| `--help` | flag | ❌ | N/A | Display help message |
 
-## Input/Output Specifications
+[⬆️ Back to top](#-preprovision)
+
+---
+
+## 📥 Input/Output Specifications
 
 ### Inputs
 
 **Environment Variables Read:**
 
-- None required (script is self-contained for validation)
+> **ℹ️ Note:** None required — script is self-contained for validation.
 
 **Files/Paths Expected:**
 
-- `clean-secrets.ps1` / `clean-secrets.sh` - Must exist in same directory for secrets clearing
+- `clean-secrets.ps1` / `clean-secrets.sh` — Must exist in same directory for secrets clearing
 
 ### Outputs
 
 **Exit Codes:**
 
 | Exit Code | Meaning |
-|-----------|---------|
-| 0 | Success - All validations passed and operations completed |
-| 1 | General error - Unexpected failure during execution |
-| 2 | Missing prerequisites - Required tools not installed |
-| 3 | Validation failure - Prerequisites check failed |
-| 4 | Azure authentication failure - Not logged in or session expired |
+|:---------:|:--------|
+| `0` | Success — All validations passed and operations completed |
+| `1` | General error — Unexpected failure during execution |
+| `2` | Missing prerequisites — Required tools not installed |
+| `3` | Validation failure — Prerequisites check failed |
+| `4` | Azure authentication failure — Not logged in or session expired |
 
 **stdout Output:**
 
@@ -198,7 +210,11 @@ az bicep install
 
 - .NET user secrets cleared for configured projects (unless `--skip-secrets-clear` or `--validate-only`)
 
-## Usage Examples
+[⬆️ Back to top](#-preprovision)
+
+---
+
+## 💻 Usage Examples
 
 ### Basic Usage
 
@@ -257,15 +273,19 @@ az bicep install
     ./hooks/preprovision.sh --validate-only --force
 ```
 
-## Error Handling and Exit Codes
+[⬆️ Back to top](#-preprovision)
+
+---
+
+## ⚠️ Error Handling and Exit Codes
 
 | Exit Code | Meaning | Recovery Action |
-|-----------|---------|-----------------|
-| 0 | Success | N/A |
-| 1 | General error | Check stderr output for details, review logs |
-| 2 | Missing prerequisites | Install missing tools using provided commands |
-| 3 | Validation failure | Address specific validation failures shown in output |
-| 4 | Azure authentication failure | Run `az login` to authenticate |
+|:---------:|:--------|:----------------|
+| `0` | Success | N/A |
+| `1` | General error | Check stderr output for details, review logs |
+| `2` | Missing prerequisites | Install missing tools using provided commands |
+| `3` | Validation failure | Address specific validation failures shown in output |
+| `4` | Azure authentication failure | Run `az login` to authenticate |
 
 ### Error Handling Approach
 
@@ -283,7 +303,11 @@ az bicep install
 - Cleanup function ensures resources are released
 - Color-coded error messages to stderr
 
-## Security Considerations
+[⬆️ Back to top](#-preprovision)
+
+---
+
+## 🔒 Security Considerations
 
 ### Credential Handling
 
