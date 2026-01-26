@@ -82,17 +82,42 @@ This script does not set any environment variables.
 
 ### Execution Flow
 
-```
-┌─────────────────────────────────────────────────────────────────┐
-│                  check-dev-workstation                          │
-├─────────────────────────────────────────────────────────────────┤
-│  1. Validate preprovision script exists in same directory       │
-│  2. Resolve PowerShell/Bash executable path                     │
-│  3. Execute preprovision script with --validate-only flag       │
-│  4. Stream validation output to console                         │
-│  5. Capture and propagate exit code                             │
-│  6. Display success/failure summary                             │
-└─────────────────────────────────────────────────────────────────┘
+```mermaid
+flowchart TD
+    A([Start]) --> B[Parse Arguments]
+    B --> C{Valid<br/>Arguments?}
+    C -->|No| D[Show Error/Help]
+    D --> E([Exit 1])
+    
+    C -->|Yes| F{preprovision.ps1/sh<br/>Exists?}
+    F -->|No| G[Error: Script Not Found]
+    G --> E
+    
+    F -->|Yes| H[Resolve PowerShell/Bash Path]
+    H --> I[Execute preprovision<br/>--validate-only]
+    
+    subgraph "Validation Process"
+        I --> J[Validate Shell Version]
+        J --> K[Validate .NET SDK]
+        K --> L[Validate Azure Developer CLI]
+        L --> M[Validate Azure CLI]
+        M --> N[Validate Bicep CLI]
+        N --> O[Check Resource Providers]
+        O --> P[Check Subscription Quotas]
+    end
+    
+    P --> Q{Exit Code<br/>= 0?}
+    Q -->|Yes| R[✓ Validation Successful]
+    R --> S([Exit 0])
+    
+    Q -->|No| T[⚠ Validation Issues Found]
+    T --> U[Display Remediation Steps]
+    U --> V([Exit with preprovision code])
+    
+    style A fill:#4CAF50,color:#fff
+    style S fill:#4CAF50,color:#fff
+    style E fill:#f44336,color:#fff
+    style V fill:#FF9800,color:#fff
 ```
 
 ### Validations Performed

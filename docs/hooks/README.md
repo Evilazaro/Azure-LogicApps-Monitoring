@@ -22,34 +22,54 @@ Hooks are scripts that execute at specific points during the Azure Developer CLI
 
 ## Hook Execution Order
 
-```
-┌─────────────────────────────────────────────────────────────────┐
-│                        azd provision                             │
-├─────────────────────────────────────────────────────────────────┤
-│  1. preprovision.ps1/.sh                                        │
-│     └── Validates prerequisites, clears user secrets            │
-│  2. [Infrastructure Deployment]                                 │
-│  3. postprovision.ps1/.sh                                       │
-│     ├── Configures .NET user secrets                            │
-│     └── sql-managed-identity-config.ps1/.sh                     │
-│         └── Configures SQL Database access                      │
-└─────────────────────────────────────────────────────────────────┘
+```mermaid
+flowchart TD
+    subgraph "Pre-Deployment"
+        A([Start]) --> B[check-dev-workstation]
+        B --> C{Prerequisites<br/>Valid?}
+        C -->|No| D[Install Missing<br/>Dependencies]
+        D --> B
+        C -->|Yes| E[preprovision]
+    end
 
-┌─────────────────────────────────────────────────────────────────┐
-│                          azd deploy                              │
-├─────────────────────────────────────────────────────────────────┤
-│  1. deploy-workflow.ps1/.sh                                     │
-│     └── Deploys Logic Apps workflows with resolved placeholders │
-│  2. [Application Deployment]                                    │
-└─────────────────────────────────────────────────────────────────┘
+    subgraph "Provisioning"
+        E --> F{Secrets<br/>Cleared?}
+        F -->|No| G[clean-secrets]
+        G --> F
+        F -->|Yes| H[azd provision]
+        H --> I[postprovision]
+    end
 
-┌─────────────────────────────────────────────────────────────────┐
-│                           azd down                               │
-├─────────────────────────────────────────────────────────────────┤
-│  1. [Infrastructure Deletion]                                   │
-│  2. postinfradelete.ps1/.sh                                     │
-│     └── Purges soft-deleted Logic Apps                          │
-└─────────────────────────────────────────────────────────────────┘
+    subgraph "Database Setup"
+        I --> J{SQL Server<br/>Deployed?}
+        J -->|Yes| K[sql-managed-identity-config]
+        J -->|No| L[Skip SQL Config]
+        K --> L
+    end
+
+    subgraph "Deployment"
+        L --> M[deploy-workflow]
+        M --> N{Generate<br/>Test Data?}
+        N -->|Yes| O[Generate-Orders]
+        N -->|No| P[Deployment Complete]
+        O --> P
+    end
+
+    subgraph "CI/CD Setup"
+        P --> Q{Setup<br/>GitHub Actions?}
+        Q -->|Yes| R[configure-federated-credential]
+        Q -->|No| S([End])
+        R --> S
+    end
+
+    subgraph "Cleanup"
+        T[azd down] --> U[postinfradelete]
+        U --> V([Resources Purged])
+    end
+
+    style A fill:#4CAF50,color:#fff
+    style S fill:#4CAF50,color:#fff
+    style V fill:#FF9800,color:#fff
 ```
 
 ## Prerequisites

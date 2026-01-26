@@ -110,48 +110,87 @@ This script configures .NET user secrets (not environment variables):
 
 ### Execution Flow
 
-```
-┌─────────────────────────────────────────────────────────────────┐
-│                      postprovision                               │
-├─────────────────────────────────────────────────────────────────┤
-│  1. Parse command-line arguments                                │
-│  2. Enable strict mode and configure preferences                │
-│  3. Display script banner                                       │
-│                                                                 │
-│  ┌─────────────────────────────────────────────────────────────┐│
-│  │              Environment Validation                         ││
-│  ├─────────────────────────────────────────────────────────────┤│
-│  │  4. Validate AZURE_SUBSCRIPTION_ID                          ││
-│  │  5. Validate AZURE_RESOURCE_GROUP                           ││
-│  │  6. Validate AZURE_LOCATION                                 ││
-│  └─────────────────────────────────────────────────────────────┘│
-│                                                                 │
-│  ┌─────────────────────────────────────────────────────────────┐│
-│  │              Azure Container Registry Auth                   ││
-│  ├─────────────────────────────────────────────────────────────┤│
-│  │  7. If CONTAINER_REGISTRY_NAME is set:                      ││
-│  │     └── Authenticate to ACR via az acr login                ││
-│  └─────────────────────────────────────────────────────────────┘│
-│                                                                 │
-│  ┌─────────────────────────────────────────────────────────────┐│
-│  │              User Secrets Configuration                     ││
-│  ├─────────────────────────────────────────────────────────────┤│
-│  │  8. Clear existing secrets for each project                 ││
-│  │  9. Configure secrets for app.AppHost                       ││
-│  │  10. Configure secrets for eShop.Orders.API                 ││
-│  │  11. Configure secrets for eShop.Web.App                    ││
-│  └─────────────────────────────────────────────────────────────┘│
-│                                                                 │
-│  ┌─────────────────────────────────────────────────────────────┐│
-│  │              SQL Database Configuration                     ││
-│  ├─────────────────────────────────────────────────────────────┤│
-│  │  12. If SQL_SERVER_NAME and MANAGED_IDENTITY_NAME are set:  ││
-│  │      └── Execute sql-managed-identity-config                ││
-│  └─────────────────────────────────────────────────────────────┘│
-│                                                                 │
-│  13. Display execution summary                                  │
-│  14. Exit with appropriate code                                 │
-└─────────────────────────────────────────────────────────────────┘
+```mermaid
+flowchart TD
+    A([Start]) --> B[Parse Arguments]
+    B --> C[Record Start Time]
+    
+    subgraph "Environment Validation"
+        C --> D[Load Required Environment Variables]
+        D --> E{AZURE_SUBSCRIPTION_ID<br/>Set?}
+        E -->|No| F[Error: Missing Variable]
+        F --> G([Exit 1])
+        E -->|Yes| H{AZURE_RESOURCE_GROUP<br/>Set?}
+        H -->|No| F
+        H -->|Yes| I{AZURE_LOCATION<br/>Set?}
+        I -->|No| F
+        I -->|Yes| J[Environment Valid ✓]
+    end
+    
+    subgraph "ACR Authentication"
+        J --> K{ACR Endpoint<br/>Configured?}
+        K -->|No| L[Skip ACR Login]
+        K -->|Yes| M{Azure CLI<br/>Installed?}
+        M -->|No| N[Warning: Skip ACR]
+        N --> L
+        M -->|Yes| O[az acr login]
+        O --> P{Login<br/>Successful?}
+        P -->|No| Q[Warning: ACR Failed]
+        Q --> L
+        P -->|Yes| R[ACR Authenticated ✓]
+        R --> L
+    end
+    
+    subgraph "Clear Existing Secrets"
+        L --> S{Dry Run<br/>Mode?}
+        S -->|Yes| T[Skip Secret Operations]
+        S -->|No| U[Clear Existing Secrets]
+        U --> V[dotnet user-secrets clear]
+    end
+    
+    subgraph "Configure AppHost Secrets"
+        V --> W[Get AppHost Project Path]
+        W --> X[Set Azure Configuration Secrets]
+        X --> Y[Set Container Registry Secrets]
+        Y --> Z[Set App Insights Secrets]
+        Z --> AA[Set Managed Identity Secrets]
+    end
+    
+    subgraph "Configure API Secrets"
+        AA --> AB[Get API Project Path]
+        AB --> AC[Set SQL Connection Secrets]
+        AC --> AD[Set Service Bus Secrets]
+        AD --> AE[Set App Insights Secrets]
+    end
+    
+    subgraph "Configure Web App Secrets"
+        AE --> AF[Get Web App Project Path]
+        AF --> AG[Set App Insights Secrets]
+        AG --> AH[Set API Endpoint Secrets]
+    end
+    
+    subgraph "SQL Configuration"
+        AH --> AI{SQL Server<br/>Deployed?}
+        AI -->|No| AJ[Skip SQL Config]
+        AI -->|Yes| AK{Managed Identity<br/>Available?}
+        AK -->|No| AJ
+        AK -->|Yes| AL[Call sql-managed-identity-config]
+        AL --> AM{Config<br/>Successful?}
+        AM -->|No| AN[Warning: SQL Config Failed]
+        AN --> AJ
+        AM -->|Yes| AO[SQL Configured ✓]
+        AO --> AJ
+    end
+    
+    T --> AP[Display Summary]
+    AJ --> AP
+    AP --> AQ[Calculate Duration]
+    AQ --> AR[Display Statistics]
+    AR --> AS([Exit 0])
+    
+    style A fill:#4CAF50,color:#fff
+    style AS fill:#4CAF50,color:#fff
+    style G fill:#f44336,color:#fff
 ```
 
 ### Configured Projects

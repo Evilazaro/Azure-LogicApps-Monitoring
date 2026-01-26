@@ -92,43 +92,88 @@ This script does not set any environment variables.
 
 ### Execution Flow
 
-```
-┌─────────────────────────────────────────────────────────────────┐
-│                      postinfradelete                             │
-├─────────────────────────────────────────────────────────────────┤
-│  1. Parse command-line arguments                                │
-│  2. Enable strict mode and configure preferences                │
-│  3. Display script banner                                       │
-│                                                                 │
-│  ┌─────────────────────────────────────────────────────────────┐│
-│  │              Environment Validation                         ││
-│  ├─────────────────────────────────────────────────────────────┤│
-│  │  4. Validate AZURE_SUBSCRIPTION_ID                          ││
-│  │  5. Validate AZURE_LOCATION                                 ││
-│  │  6. Verify Azure CLI authentication                         ││
-│  └─────────────────────────────────────────────────────────────┘│
-│                                                                 │
-│  ┌─────────────────────────────────────────────────────────────┐│
-│  │              Soft-Deleted Sites Discovery                   ││
-│  ├─────────────────────────────────────────────────────────────┤│
-│  │  7. Query Azure for deleted sites in location               ││
-│  │     GET /subscriptions/{sub}/providers/Microsoft.Web/       ││
-│  │         locations/{location}/deletedSites                   ││
-│  │  8. Filter sites matching resource group pattern            ││
-│  └─────────────────────────────────────────────────────────────┘│
-│                                                                 │
-│  ┌─────────────────────────────────────────────────────────────┐│
-│  │              Purge Operations                               ││
-│  ├─────────────────────────────────────────────────────────────┤│
-│  │  9. For each matching deleted site:                         ││
-│  │     ├── Confirm purge (unless --force)                      ││
-│  │     └── DELETE /deletedSites/{deletedSiteId}                ││
-│  │  10. Track success/failure counts                           ││
-│  └─────────────────────────────────────────────────────────────┘│
-│                                                                 │
-│  11. Display execution summary                                  │
-│  12. Exit with appropriate code                                 │
-└─────────────────────────────────────────────────────────────────┘
+```mermaid
+flowchart TD
+    A([Start: azd down completed]) --> B[Parse Arguments]
+    B --> C[Initialize Logging]
+    
+    subgraph "Prerequisites Check"
+        C --> D{Azure CLI<br/>Installed?}
+        D -->|No| E[Error: Install Azure CLI]
+        E --> F([Exit 1])
+        D -->|Yes| G{jq Installed?<br/>Bash only}
+        G -->|No| H[Error: Install jq]
+        H --> F
+        G -->|Yes| I{Azure CLI<br/>Authenticated?}
+        I -->|No| J[Error: Run az login]
+        J --> F
+        I -->|Yes| K[Prerequisites Valid ✓]
+    end
+    
+    subgraph "Environment Validation"
+        K --> L{AZURE_SUBSCRIPTION_ID<br/>Set?}
+        L -->|No| M[Warning: Skip Purge]
+        M --> N([Exit 0 - Non-blocking])
+        L -->|Yes| O{AZURE_LOCATION<br/>Set?}
+        O -->|No| M
+        O -->|Yes| P[Environment Valid ✓]
+    end
+    
+    subgraph "Query Deleted Resources"
+        P --> Q[Build REST API URI]
+        Q --> R[Call GET /deletedSites]
+        R --> S{Response<br/>Successful?}
+        S -->|No| T[Warning: Query Failed]
+        T --> N
+        S -->|Yes| U[Parse JSON Response]
+        U --> V[Filter by kind: workflowapp]
+    end
+    
+    subgraph "Apply Filters"
+        V --> W{AZURE_RESOURCE_GROUP<br/>Set?}
+        W -->|Yes| X[Filter by Resource Group]
+        W -->|No| Y[No RG Filter]
+        X --> Z{LOGIC_APP_NAME<br/>Set?}
+        Y --> Z
+        Z -->|Yes| AA[Filter by Name Pattern]
+        Z -->|No| AB[No Name Filter]
+        AA --> AC[Filtered Results]
+        AB --> AC
+    end
+    
+    subgraph "Purge Process"
+        AC --> AD{Any Logic Apps<br/>Found?}
+        AD -->|No| AE[No Logic Apps to Purge]
+        AE --> N
+        AD -->|Yes| AF[Display Logic Apps List]
+        AF --> AG{Force Mode<br/>Enabled?}
+        AG -->|No| AH[Prompt for Confirmation]
+        AH --> AI{User<br/>Confirmed?}
+        AI -->|No| AJ[Purge Cancelled]
+        AJ --> N
+        AI -->|Yes| AK[Begin Purge]
+        AG -->|Yes| AK
+    end
+    
+    subgraph "Execute Purge"
+        AK --> AL[For Each Logic App]
+        AL --> AM[Call DELETE /deletedSites/id]
+        AM --> AN{Purge<br/>Successful?}
+        AN -->|No| AO[Log Error, Continue]
+        AN -->|Yes| AP[Log Success]
+        AO --> AQ{More Logic Apps?}
+        AP --> AQ
+        AQ -->|Yes| AL
+        AQ -->|No| AR[Display Summary]
+    end
+    
+    AR --> AS[Purged: X, Failed: Y]
+    AS --> AT([Exit 0])
+    
+    style A fill:#FF9800,color:#fff
+    style AT fill:#4CAF50,color:#fff
+    style N fill:#4CAF50,color:#fff
+    style F fill:#f44336,color:#fff
 ```
 
 ### Azure REST API Calls

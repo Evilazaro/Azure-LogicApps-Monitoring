@@ -109,41 +109,91 @@ This script does not set environment variables. It prepares the local environmen
 
 ### Execution Flow
 
-```
-┌─────────────────────────────────────────────────────────────────┐
-│                      preprovision                                │
-├─────────────────────────────────────────────────────────────────┤
-│  1. Parse command-line arguments                                │
-│  2. Enable strict mode and configure preferences                │
-│  3. Display script banner and version                           │
-│                                                                 │
-│  ┌─────────────────────────────────────────────────────────────┐│
-│  │              Prerequisites Validation                       ││
-│  ├─────────────────────────────────────────────────────────────┤│
-│  │  4. Validate PowerShell/Bash version                        ││
-│  │  5. Validate .NET SDK version                               ││
-│  │  6. Validate Azure Developer CLI (azd)                      ││
-│  │  7. Validate Azure CLI version                              ││
-│  │  8. Validate Azure CLI authentication                       ││
-│  │  9. Validate Bicep CLI version                              ││
-│  │  10. Validate Azure Resource Provider registrations         ││
-│  │  11. Check Azure subscription quotas (informational)        ││
-│  └─────────────────────────────────────────────────────────────┘│
-│                                                                 │
-│  If --validate-only: EXIT with validation results              │
-│                                                                 │
-│  ┌─────────────────────────────────────────────────────────────┐│
-│  │              Secrets Clearing (unless skipped)              ││
-│  ├─────────────────────────────────────────────────────────────┤│
-│  │  12. Invoke clean-secrets.ps1/.sh                           ││
-│  │      ├── Clear secrets for app.AppHost                      ││
-│  │      ├── Clear secrets for eShop.Orders.API                 ││
-│  │      └── Clear secrets for eShop.Web.App                    ││
-│  └─────────────────────────────────────────────────────────────┘│
-│                                                                 │
-│  13. Display execution summary                                  │
-│  14. Exit with appropriate code                                 │
-└─────────────────────────────────────────────────────────────────┘
+```mermaid
+flowchart TD
+    A([Start]) --> B[Parse Command-Line Arguments]
+    B --> C[Initialize Logging]
+    
+    subgraph "Shell Validation"
+        C --> D{Shell Version<br/>Valid?}
+        D -->|No| E[Error: Upgrade Shell]
+        E --> F([Exit 1])
+        D -->|Yes| G[Continue]
+    end
+    
+    subgraph "Tool Validation"
+        G --> H{.NET SDK<br/>Installed?}
+        H -->|No| I{Auto-Install<br/>Enabled?}
+        I -->|Yes| J[Install .NET SDK]
+        J --> H
+        I -->|No| K[Error: Install .NET]
+        K --> F
+        
+        H -->|Yes| L{azd<br/>Installed?}
+        L -->|No| M{Auto-Install<br/>Enabled?}
+        M -->|Yes| N[Install azd]
+        N --> L
+        M -->|No| O[Error: Install azd]
+        O --> F
+        
+        L -->|Yes| P{Azure CLI<br/>Installed?}
+        P -->|No| Q{Auto-Install?}
+        Q -->|Yes| R[Install Azure CLI]
+        R --> P
+        Q -->|No| S[Error: Install az]
+        S --> F
+        
+        P -->|Yes| T{Bicep CLI<br/>Installed?}
+        T -->|No| U[Install via Azure CLI]
+        U --> T
+        T -->|Yes| V[Tools Validated ✓]
+    end
+    
+    subgraph "Azure Authentication"
+        V --> W{Azure CLI<br/>Authenticated?}
+        W -->|No| X{Device Code<br/>Flow?}
+        X -->|Yes| Y[az login --use-device-code]
+        X -->|No| Z[az login]
+        Y --> AA{Login<br/>Successful?}
+        Z --> AA
+        AA -->|No| F
+        AA -->|Yes| AB[Authenticated ✓]
+        W -->|Yes| AB
+    end
+    
+    subgraph "Azure Validation"
+        AB --> AC[Check Resource Providers]
+        AC --> AD{All Providers<br/>Registered?}
+        AD -->|No| AE[Warning: Register Providers]
+        AD -->|Yes| AF[Providers Valid ✓]
+        AE --> AF
+        
+        AF --> AG[Check Subscription Quotas]
+        AG --> AH{Quotas<br/>Sufficient?}
+        AH -->|No| AI[Warning: Quota Issues]
+        AH -->|Yes| AJ[Quotas Valid ✓]
+        AI --> AJ
+    end
+    
+    subgraph "Secrets Management"
+        AJ --> AK{Validate Only<br/>Mode?}
+        AK -->|Yes| AL[Skip Secrets Clear]
+        AK -->|No| AM{Skip Secrets<br/>Clear?}
+        AM -->|Yes| AL
+        AM -->|No| AN[Execute clean-secrets]
+        AN --> AO{Secrets<br/>Cleared?}
+        AO -->|No| AP[Warning: Clear Failed]
+        AO -->|Yes| AQ[Secrets Cleared ✓]
+        AP --> AQ
+        AL --> AQ
+    end
+    
+    AQ --> AR[Display Summary]
+    AR --> AS([Exit 0])
+    
+    style A fill:#4CAF50,color:#fff
+    style AS fill:#4CAF50,color:#fff
+    style F fill:#f44336,color:#fff
 ```
 
 ### Validation Details
