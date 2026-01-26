@@ -1,42 +1,42 @@
-# CI - .NET Reusable Workflow
+# 🔄 CI - .NET Reusable Workflow
 
 ![Workflow Status](https://github.com/Evilazaro/Azure-LogicApps-Monitoring/actions/workflows/ci-dotnet-reusable.yml/badge.svg)
 
-Comprehensive reusable CI workflow for .NET solutions with cross-platform builds, testing, code analysis, and security scanning.
+> Comprehensive reusable CI workflow for .NET solutions with cross-platform builds, testing, code analysis, and security scanning.
 
 ---
 
-## Table of Contents
+## 📑 Table of Contents
 
-- [Overview](#overview)
+- [📋 Overview](#-overview)
   - [Purpose](#purpose)
   - [Scope](#scope)
   - [Key Features](#key-features)
   - [When to Use](#when-to-use)
-- [Workflow Diagram](#workflow-diagram)
-- [Prerequisites](#prerequisites)
-- [Trigger Events](#trigger-events)
-- [Configuration Reference](#configuration-reference)
+- [📊 Workflow Diagram](#-workflow-diagram)
+- [✅ Prerequisites](#-prerequisites)
+- [⚡ Trigger Events](#-trigger-events)
+- [⚙️ Configuration Reference](#️-configuration-reference)
   - [Environment Variables](#environment-variables)
   - [Secrets](#secrets)
-- [Inputs & Outputs](#inputs--outputs)
+- [📥 Inputs & Outputs](#-inputs--outputs)
   - [Inputs](#inputs)
   - [Outputs](#outputs)
-- [Jobs & Steps Breakdown](#jobs--steps-breakdown)
+- [🔧 Jobs & Steps Breakdown](#-jobs--steps-breakdown)
   - [Build Job](#build-job)
   - [Test Job](#test-job)
   - [Analyze Job](#analyze-job)
   - [CodeQL Job](#codeql-job)
   - [Summary Job](#summary-job)
   - [On-Failure Job](#on-failure-job)
-- [Artifacts](#artifacts)
-- [Usage Examples](#usage-examples)
-- [Troubleshooting](#troubleshooting)
-- [Related Resources](#related-resources)
+- [📦 Artifacts](#-artifacts)
+- [💡 Usage Examples](#-usage-examples)
+- [🔍 Troubleshooting](#-troubleshooting)
+- [🔗 Related Resources](#-related-resources)
 
 ---
 
-## Overview
+## 📋 Overview
 
 ### Purpose
 
@@ -67,7 +67,7 @@ This reusable workflow provides a comprehensive CI pipeline for .NET solutions. 
 
 ---
 
-## Workflow Diagram
+## 📊 Workflow Diagram
 
 ```mermaid
 flowchart TD
@@ -124,10 +124,10 @@ flowchart TD
 
 ---
 
-## Prerequisites
+## ✅ Prerequisites
 
 | Requirement | Type | Description | Setup Instructions |
-|-------------|------|-------------|-------------------|
+|:------------|:-----|:------------|:-------------------|
 | **.NET SDK** | Software | .NET SDK matching `dotnet-version` input | Automatically installed by workflow |
 | **contents: read** | Permission | Read repository contents for checkout | Configured in workflow permissions |
 | **checks: write** | Permission | Create check runs for test results | Configured in workflow permissions |
@@ -138,22 +138,22 @@ flowchart TD
 
 ---
 
-## Trigger Events
+## ⚡ Trigger Events
 
 | Event | Branches | Paths | Conditions |
-|-------|----------|-------|------------|
+|:------|:---------|:------|:-----------|
 | **workflow_call** | N/A | N/A | Called by other workflows with inputs |
 
-> **Note:** This is a reusable workflow and cannot be triggered directly. It must be called using `uses:` syntax from another workflow.
+> **ℹ️ Note:** This is a reusable workflow and cannot be triggered directly. It must be called using `uses:` syntax from another workflow.
 
 ---
 
-## Configuration Reference
+## ⚙️ Configuration Reference
 
 ### Environment Variables
 
 | Variable | Scope | Default | Description |
-|----------|-------|---------|-------------|
+|:---------|:------|:--------|:------------|
 | `DOTNET_SKIP_FIRST_TIME_EXPERIENCE` | Workflow | `true` | Skip .NET first-run experience for faster startup |
 | `DOTNET_NOLOGO` | Workflow | `true` | Suppress .NET welcome banner |
 | `DOTNET_CLI_TELEMETRY_OPTOUT` | Workflow | `true` | Disable .NET CLI telemetry collection |
@@ -161,17 +161,17 @@ flowchart TD
 ### Secrets
 
 | Secret Name | Required | Source | Purpose |
-|-------------|----------|--------|---------|
+|:------------|:---------|:-------|:--------|
 | `inherit` | Optional | Calling workflow | Secrets can be inherited if needed by custom steps |
 
 ---
 
-## Inputs & Outputs
+## 📥 Inputs & Outputs
 
 ### Inputs
 
 | Input | Type | Required | Default | Description |
-|-------|------|----------|---------|-------------|
+|:------|:-----|:---------|:--------|:------------|
 | `configuration` | string | No | `Release` | Build configuration (`Release` or `Debug`) |
 | `dotnet-version` | string | No | `10.0.x` | .NET SDK version to use (e.g., `8.0.x`, `9.0.x`) |
 | `solution-file` | string | No | `app.sln` | Path to the solution file |
@@ -186,7 +186,7 @@ flowchart TD
 ### Outputs
 
 | Output | Source Job | Description |
-|--------|------------|-------------|
+|:-------|:-----------|:------------|
 | `build-version` | `build` | Generated semantic version (e.g., `1.0.42`) |
 | `build-result` | `build` | Build job result status |
 | `test-result` | `test` | Test job result status |
@@ -195,7 +195,7 @@ flowchart TD
 
 ---
 
-## Jobs & Steps Breakdown
+## 🔧 Jobs & Steps Breakdown
 
 ### Build Job
 
@@ -303,10 +303,10 @@ flowchart TD
 
 ---
 
-## Artifacts
+## 📦 Artifacts
 
 | Artifact Name | Contents | Retention | Usage |
-|---------------|----------|-----------|-------|
+|:--------------|:---------|:----------|:------|
 | `build-artifacts-ubuntu-latest` | Compiled binaries (Linux) | Configurable (default: 30 days) | Deployment, further testing |
 | `build-artifacts-windows-latest` | Compiled binaries (Windows) | Configurable (default: 30 days) | Windows-specific deployment |
 | `build-artifacts-macos-latest` | Compiled binaries (macOS) | Configurable (default: 30 days) | macOS-specific deployment |
@@ -320,7 +320,7 @@ flowchart TD
 
 ---
 
-## Usage Examples
+## 💡 Usage Examples
 
 ### Basic Usage
 
@@ -382,10 +382,10 @@ jobs:
 
 ---
 
-## Troubleshooting
+## 🔍 Troubleshooting
 
 | Symptom | Possible Cause | Solution |
-|---------|----------------|----------|
+|:--------|:---------------|:---------|
 | **Build fails on one platform only** | Platform-specific code issues or dependencies | Check build logs for platform-specific errors; verify conditional compilation |
 | **Test reporter shows no results** | Path mismatch or empty test projects | Verify `.trx` files are generated; check `path-replace-backslashes: true` on Windows |
 | **Code formatting check fails** | Code doesn't match `.editorconfig` rules | Run `dotnet format <solution>` locally before committing |
@@ -435,14 +435,14 @@ codeql database analyze codeql-db --format=sarif-latest --output=results.sarif
 
 ---
 
-## Related Resources
+## 🔗 Related Resources
 
-### Internal
+### 📚 Internal
 
 - [ci-dotnet.md](ci-dotnet.md) - CI orchestration workflow that calls this reusable workflow
 - [azure-dev.md](azure-dev.md) - CD workflow that depends on this CI workflow
 
-### External
+### 🌐 External
 
 - [GitHub Reusable Workflows](https://docs.github.com/actions/using-workflows/reusing-workflows)
 - [.NET CLI Reference](https://learn.microsoft.com/dotnet/core/tools/)
@@ -450,10 +450,11 @@ codeql database analyze codeql-db --format=sarif-latest --output=results.sarif
 - [dorny/test-reporter Action](https://github.com/dorny/test-reporter)
 - [EditorConfig Reference](https://editorconfig.org/)
 
-### Support
+### 🆘 Support
 
 - 📖 [Repository Issues](https://github.com/Evilazaro/Azure-LogicApps-Monitoring/issues)
 - 💬 Contact the DevOps team for CI pipeline assistance
 
 ---
 
+[⬆️ Back to Top](#-ci---net-reusable-workflow)
